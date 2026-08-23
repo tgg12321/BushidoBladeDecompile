@@ -1,7 +1,7 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 5,
+ "session_count": 6,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 1,
    "modality": "forensics",
    "headline": "Forensics: allocator instrumented end-to-end (seats = allocno priority order alone); all three s5 frontier items KILLED with named passes (cse1 dest-swap + flow DCE; cse1 copy canonicalisation vs comb"
+  },
+  {
+   "session": 6,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Forensics: both s6 frontier items KILLED with named passes (cse.c make_regs_eqv canonicality; local-alloc find_free_reg ascending scan), and a NEW chassis found whose callee-saved seats are ALL target"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ledger already contains ONE existence proof of a counted-then-combine-deleted out2 copy - rejected/s4-form-minus-banned-wrap-floor9.c reaches out2 5 refs / live 42 BYTE-FREE - and it has never been dumped. If the reason cse1 spared that single-use copy is a reproducible condition rather than mere adjacency to its use, the same condition at a ~20-insn def->use span yields 5 refs / live 59-67 = pri 1481-1666, inside the window, byte-free = match.",
-   "mechanism": "an unidentified cse.c condition that blocks the copy propagation measured in every other position (candidates: the source qty invalidated between def and use, or the use sitting inside the call-argument setup sequence after invalidate_for_call), followed by combine.c deleting the producer post-flow.",
-   "next_probe": "Run tmp/grind/func_80041188/s5/idump.sh on that form and diff the loop2 region of its .cse and .combine against s5/va/* insn by insn to name the sparing condition; then try to reproduce that condition with the copy placed earlier in loop2."
+   "hypothesis": "A byte-free +1 reference on `i` (78) in the i-FIRST order closes the all-target-seats chassis outright: i needs >= 9 flow refs (2783 > tbl's 2553) and <= 11 (3402 < stptr's 3409), and everything else in rejected/tbl-symK-ilate-alltarget-seats-emission-swapped.c - including the 4 preamble insns the i-late spelling gets wrong - is already target.",
+   "mechanism": "flow.c takes reg_n_refs before combine runs, so any `i` mention that is deleted by combine (rather than by cse1's constant propagation or flow's dead-store elimination) is a free +1; uses placed INSIDE loop1/loop2 cost nothing in live length by this session's loop-carried invariance law and are not constant-foldable there.",
+   "next_probe": "Enumerate combine-deletable `i` mentions inside the loops: exit tests whose compare operand is produced by a separate insn combine folds in (`if (i - 0x12 < 0)`, `if ((s32)(i - 0x14) < 0)`), an index/offset expression in a loop body that consumes i and is folded into an existing addiu, and a staged copy of i placed under the s7 canonicality rule (after every other i use in its block, single consumer). For each: .lreg reg_n_refs for 78 plus the insn count, then sandbox."
   },
   {
-   "hypothesis": "The seats can be fixed WITHOUT any reference lift by changing the hard-reg CONFLICT set: if the pa4 carrier conflicted with hard reg 22 ($s6) the way every allocno here already conflicts with reg 16 ($s0), the carrier would take s7 at its existing pri 1473 and out2 would take s6 at 714 - target seating with the C otherwise unchanged.",
-   "mechanism": "global.c global_conflicts / mark_reg_live records a hard-reg conflict for every hard reg live across an allocno's range, and find_reg excludes it in both passes (visible in the BB2_FINDREG_DEBUG 'conflicts:' lines).",
-   "next_probe": "Establish WHAT makes reg 16 live across almost every allocno in this function (read .flow/.greg for hard-reg 16 ranges and the global_conflicts path), then decide whether any ORDINARY-C construct (register-asm pins are banned) can hold a live value in a callee-saved hard reg across the carrier's range."
+   "hypothesis": "The preamble emission order can be attacked directly on the i-late (target-seat) spelling instead of the seats, since sched1 - not the allocator - is what puts the tbl pair first.",
+   "mechanism": "sched1 ranks by INSN_PRIORITY (longest path to the end of the block) and breaks ties by LUID; both preamble defs are dependence-free within block 0, so the tie falls to RTL order. A block-0 consumer of `i` would raise the i pair's priority above the tbl pair's - but every block-0 use of i is constant-propagated by cse1 before flow and sched see it.",
+   "next_probe": "Look for a block-0 consumer of i that cse1 cannot fold (its value not literally 1 at that point) and that costs no bytes, or conversely for a construct that lengthens the tbl pair's dependence path; dump .sched for the i-late chassis and read the ready-list order to confirm the tie-break before spelling anything."
   },
   {
-   "hypothesis": "The body shape itself is the obstacle: every chassis in the ledger assumes the merged 'stptr' (loop1 walker re-initialised as loop2's pointer), and no perturbation of it can supply a combine-deletable out2 mention. A different loop2-pointer structure derived from the target asm may supply one naturally.",
-   "mechanism": "H-s6-5: target's three materialised s6 references plus the pure-priority seat rule force >= 4 flow-counted out2 references in the original, so the original source shape differs from ours somewhere that costs no bytes.",
-   "next_probe": "Rederive in 'rederive' modality from target asm + m2c under the explicit constraint 'out2 has >= 4 flow refs and exactly 3 materialised ones', instead of perturbing the current body (the rule-era chassis warning applies: the committed shape was calibrated to 16 regfix rules and is not evidence of original structure)."
+   "hypothesis": "The original never lifted tbl at all: rederive the source shape under the joint constraint 'out2 has >= 4 flow refs and exactly 3 materialised ones, with pri in (1473.7, 1702.1)' rather than perturbing the current body.",
+   "mechanism": "H-s6-5 (target's s6 carries only three materialised references, so the 4th was deleted post-flow by combine) plus this session's finding that the tbl sym-K chain - our own invention, and a construct that would have to survive the cheat checklist - is the only thing forcing the i-vs-tbl fight.",
+   "next_probe": "In `rederive` modality: m2c output plus target asm, deriving loop2's pointer structure from scratch (separate local, different loop1/loop2 split, or an a4 store/reload shape) under that constraint, instead of reusing the merged-stptr chassis every session in this ledger assumes."
   }
  ],
  "judge_constraints": [

@@ -490,3 +490,87 @@ CONFIRMED:
 - probe: Counted every $s6 occurrence in asm/funcs/func_80041188.s and mapped the full callee-saved seating.
 - result: Target's s6 carries exactly THREE materialised references (def 'addiu s6,s7,0x20' plus two loop1 'addu a1,s6,zero') and never appears in loop2, so 3 refs at live ~42 = pri 714 would seat it in $fp. Since the seats are pure priority order, the original's out2 must have carried >= 4 flow-counted references of which only 3 survived into the bytes: the extra reference was deleted AFTER flow counted reg_n_refs, and combine.c is the only pass in this pipeline that can do that. The remaining search is precisely 'which combine-deletable out2 mention lands (refs, live) inside the window'.
 - verdict: CONFIRMED
+
+## [s7] The floor-9 form's staged out2 copy is spared by cse1 because of a reproducible condition that could be reproduced at a ~20-insn def->use span (s6 frontier #1).
+- mechanism: an unidentified cse.c condition (candidates: source qty invalidated between def and use; the use sitting inside the call-argument setup after invalidate_for_call).
+- probe: instrumented-cc1 dump of rejected/s4-form-minus-banned-wrap-floor9.c (tmp/grind/func_80041188/s6/f9/*), tracing reg 86 through .rtl/.cse/.flow/.combine and comparing against the s5/va dumps.
+- result: The condition IS reproducible but it is not new and it does not scale. cse.c make_regs_eqv makes the copy's DEST canonical whenever its last textual reference outlives the source's; in the floor-9 form the copy sits after loop2's other pointer use, so 86 is canonical, cse1 has nothing to rewrite, flow counts def+use (5 refs / live 42) and combine deletes the copy at its single consumer. The same rule forces the copy to sit between the last-but-one and the last pointer use, so the def->use span is ~1 insn; a ~20-insn span necessarily steps over the second func_8004A348, which puts a second consumer on the copy and makes it materialise (+1 insn).
+- verdict: KILLED (the mechanism is named; the lever does not exist)
+
+## [s7] The seats can be fixed with no ref lift by giving the pa4 carrier a hard-reg conflict with reg 22 ($s6), the way every allocno here conflicts with reg 16 (s6 frontier #2).
+- mechanism: global.c global_conflicts records a hard-reg conflict for every hard reg live across an allocno's range; find_reg excludes it in both passes.
+- probe: identified the source of the reg-16 conflicts (local-alloc block-local quantities), read tools/gcc-2.7.2/local-alloc.c find_free_reg, and cross-checked the target's own register usage in asm/funcs/func_80041188.s.
+- result: The reg-16 conflict comes from loop1's `offset` temp - a block-local quantity live across the first func_8004A348, so it needs a callee-saved register - and find_free_reg scans hard regs STRICTLY ASCENDING (MIPS defines no REG_ALLOC_ORDER; the only override, qty_phys_copy_sugg, is populated solely from hard-reg copies, i.e. call args/returns, all call-clobbered). Reaching hard reg 22 would require six further simultaneously-live call-crossing block-local quantities in a region overlapping the carrier and a3 but not out2, and the first of them would take reg 16 and displace stptr2 from $s0. The target's asm shows the identical $s0 loop1 temp, so the original had the same single conflict.
+- verdict: KILLED
+
+## [s7] The tbl sym-K ref lift becomes usable if `i` outranks the lifted tbl, which the never-swept position of `i = 1` can supply.
+- mechanism: pri = floor_log2(refs)*refs/live*10000; i at 8 refs scores 2474 at live 97 and 2500 at live 96, tbl at 6 refs scores 2553 at live 47 and 2500 at live 48. Seats are pure priority order (s6), so moving i's def relative to tbl's def flips their order.
+- probe: 30 (tbl-advance position x i-def position) variants, instrumented-cc1 allocno tables for each, sandbox on the 10 that seat correctly; plus 5 variants that move tbl's symbol init out of the declaration into a statement after `i = 1;`.
+- result: CONFIRMED as a seat fix. With `i = 1` placed after at least two preamble statements, i is 8/96 = 2500.0 and tbl is 6/48 = 2500.0, an exact tie broken our way by allocno number, and EVERY callee-saved disposition equals target for the first time in the ledger (sandbox 4, 132 insns, 10 spellings). But the seats are anti-correlated with the preamble EMISSION order: the def that comes first in the C is emitted first (equal INSN_PRIORITY, sched1 LUID tie-break) and also gets live+1, so the i-first order that matches target's `sw s4/addiu s4` before `sw s5/lui s5` gives i 2474 < tbl 2553 and tbl steals s4 (sandbox 12).
+- verdict: CONFIRMED as the best structure so far (sandbox 4); the emission-order half is the new residual.
+
+## [s7] A loop-carried pseudo's reg_live_length can be moved by repositioning its uses inside the loop.
+- mechanism: flow.c reg_live_length counts insns where the reg is live; s5 had recorded tbl's live as "scheduler-pinned 45-47" without a mechanism.
+- probe: 16 positions of loop1's `tbl++` (t01..t16), instrumented allocno table for each.
+- result: bit-identical tables in all 16 (tbl 6 refs / live 47). A pseudo live across the back edge is live over the entire loop body, so in-loop position is irrelevant; only defs/uses outside the loop move the number. The whole "advance position" axis is retired.
+- verdict: KILLED
+
+## Frontier for the next session
+
+1. **A byte-free +1 reference on `i` (78) in the i-FIRST order closes the
+   all-target-seats chassis.** i needs >= 9 flow refs (3*9/97 = 2783 > tbl's
+   2553) and <= 11 (3*11/97 = 3402 < stptr's 3409); everything else in
+   rejected/tbl-symK-ilate-alltarget-seats-emission-swapped.c is already target,
+   including the 4 preamble insns that the i-late spelling gets wrong.
+   mechanism: flow.c counts reg_n_refs before combine runs, so any i mention
+   deleted by combine (not by cse1 or by flow's dead-store elimination) is a
+   free +1. Known blockers: preamble uses of i are constant-propagated (i is
+   literally 1 there); split-init ref lifts only work on symbol-constant
+   pseudos (s5 law); dead stores are deleted uncounted by flow (s2 law).
+   next probe: enumerate combine-deletable i mentions in LOOP1/LOOP2 (uses
+   inside a loop cost nothing in live length - the s7 invariance law - and are
+   not constant-foldable there): e.g. an exit test spelled so the compare's
+   operand is produced by a separate insn combine folds in (`if (i - 0x12 < 0)`,
+   `if ((s32)(i - 0x14) < 0)`), or an address/offset expression in the loop body
+   that consumes i and is folded into an existing addiu. Measure .lreg refs for
+   78 and the insn count for each.
+2. **Attack the preamble emission order directly instead of the seats.** In the
+   i-late (target-seat) spelling the only defect is that sched1 emits the tbl
+   pair before the i pair. sched1 ranks by INSN_PRIORITY and breaks ties by
+   LUID, so giving `li i,1` a dependent inside block 0 would raise its priority
+   above the `la tbl` - but every block-0 use of i is constant-propagated by
+   cse1 before flow/sched see it. next probe: look for a block-0 consumer of i
+   that cse1 CANNOT fold (i.e. one whose value is not the literal 1 at that
+   point) yet costs no bytes, or a dependence edge that lengthens the tbl pair's
+   path instead of shortening i's.
+3. **Rederive under the joint constraint** (unchanged from s6 frontier #3, now
+   sharper): the original has out2 with >= 4 flow refs / exactly 3 materialised
+   ones AND `i` outranking a 6-ref tbl - or, more likely, it never lifted tbl at
+   all and out2's 4th reference lands in (1473.7, 1702.1) some other way. The
+   tbl sym-K chain is our invention and would face the cheat checklist; a
+   rederivation that removes the need for it is worth more than one that keeps
+   it.
+
+## [s6] The floor-9 form's staged out2 copy is spared by cse1 through a reproducible condition that could be reproduced at a ~20-insn def->use span, yielding out2 5 refs / live 59-67 byte-free (s6 frontier #1).
+- mechanism: An unidentified cse.c condition was hypothesised (source qty invalidated between def and use, or the use sitting inside the call-argument setup after invalidate_for_call).
+- probe: Instrumented-cc1 dump of rejected/s4-form-minus-banned-wrap-floor9.c (tmp/grind/func_80041188/s6/f9/*), tracing reg 86 through .rtl/.cse/.flow/.combine and comparing against the banked s5/va dumps.
+- result: The condition is real but is the already-known cse.c make_regs_eqv canonicality rule, read in the other direction: on a copy `new = old`, NEW becomes the qty's canonical register iff regno_last_uid[new] outlives regno_last_uid[old]. In the floor-9 form the copy sits AFTER loop2's other pointer use, so 86 is canonical, cse1 has nothing to rewrite (.cse leaves insn 256 `86 = 87` and insn 263 `a1 = 86` untouched), flow counts both (5 refs / live 42) and combine substitutes 87 into 263 and deletes 256. The same rule pins the copy between the last-but-one and the last pointer use, so the def->use span is ~1 insn; any longer span steps over the second func_8004A348, giving the copy a second consumer and materialising it (+1 insn).
+- verdict: KILLED
+
+## [s6] The seats can be fixed with no reference lift by giving the pa4 carrier a hard-reg conflict with reg 22 ($s6), the way every allocno here conflicts with reg 16 ($s0) (s6 frontier #2).
+- mechanism: global.c global_conflicts records a hard-reg conflict for every hard reg live across an allocno's range and find_reg excludes it in both passes.
+- probe: Traced the reg-16 conflicts to their source in the .lreg dump (block-local, call-crossing quantities), read tools/gcc-2.7.2/local-alloc.c find_free_reg (~line 2249), and cross-checked $s0's usage in asm/funcs/func_80041188.s.
+- result: The reg-16 conflict comes from loop1's `offset` temp - a block-1 local live across the first func_8004A348, hence needing a callee-saved register - and local-alloc's find_free_reg scans hard registers STRICTLY ASCENDING (MIPS defines no REG_ALLOC_ORDER; the only override, qty_phys_copy_sugg, is populated solely from hard-reg copies, i.e. call arguments/returns, all call-clobbered). Reaching hard reg 22 would need six further simultaneously-live call-crossing block-local quantities confined to loop2, and the first of them would take reg 16 and displace stptr2 from $s0. The target's own asm shows the identical $s0 loop1 offset temp (0x800411F8-0x80041238) and $s0 as stptr2 only from 0x800412A8, so the original had exactly one such conflict too.
+- verdict: KILLED
+
+## [s6] The banked tbl sym-K ref lift becomes usable if `i` (78) outranks the lifted tbl (79), which the never-swept C position of `i = 1` can supply.
+- mechanism: pri = floor_log2(refs)*refs/live*10000 and seats are pure priority order (s6): i scores 2474 at 8/97 and 2500 at 8/96; tbl scores 2553 at 6/47 and 2500 at 6/48, so the relative def order of the two flips their ranking.
+- probe: 30 variants (5 tbl-advance positions x 6 i-def positions), instrumented-cc1 allocno table for each, then sandbox --disable all on the 10 that seat correctly; plus 5 further variants (x1-x5) that move tbl's symbol initialiser out of the declaration into a statement after `i = 1;`.
+- result: CONFIRMED as a seat fix: with `i = 1` placed after at least two preamble statements, i is 8 refs/live 96 = 2500.0 and tbl is 6/48 = 2500.0 - an exact tie broken our way on allocno number (78 < 79) - and EVERY callee-saved disposition equals target for the first time in this ledger (73 a1 s1, 74 a2 s2, 87 stptr s3, 90 stptr2 s0, 78 i s4, 79 tbl s5, 86 out2 s6, 77 pa4 s7, 75 a3 fp, 85 saved spilled). Sandbox 4 at 132 insns in all 10 spellings, with one identical residual: the preamble emits `sw s5,52 / lui s5 / addiu s5 / sw s4,48 / addiu s4,zero,1` where target emits the s4 pair first. That order is anti-correlated with the seats (see next hypothesis).
+- verdict: CONFIRMED
+
+## [s6] A loop-carried pseudo's reg_live_length can be moved by repositioning its uses inside the loop (the axis s5 recorded as 'tbl live scheduler-pinned to 45-47').
+- mechanism: flow.c's reg_live_length counts every insn where the register is live.
+- probe: 16 positions of loop1's `tbl++` (tmp/grind/func_80041188/s6/t/t01..t16), instrumented-cc1 allocno table for each.
+- result: Bit-identical tables in all 16 (tbl 6 refs / live 47). A pseudo live across the loop back edge is live over the WHOLE body, so in-loop statement position cannot change its live length; only defs/uses outside the loop can. Separately measured: the live length moves by exactly +/-1 with the relative ORDER of the two preamble defs (i-first => i 97 / tbl 47 in every a*i0 and x1-x5 variant; tbl-first => 96 / 48 in every a0i2..a3i5 variant), and sched1 emits the two defs in that same order (equal INSN_PRIORITY, LUID tie-break). The 'advance position' axis is retired.
+- verdict: KILLED

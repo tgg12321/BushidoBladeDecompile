@@ -32,6 +32,15 @@
  * the entire staged-copy ref-lift family: cse1 either propagates a single-use
  * copy away (flow then deletes it UNCOUNTED) or pulls a second consumer onto it
  * (combine can then never delete it, +1 insn). See evidence.md s6.
+ *
+ * s7 (forensics, 2026-08-23) re-verified this form at sandbox 1 / 132 insns.
+ * It also found a DIFFERENT chassis with ALL-TARGET callee-saved seats at 132
+ * insns but sandbox 4 (rejected/tbl-symK-ilate-alltarget-seats-emission-
+ * swapped.c): pa4-read re-init + out2 staging + the tbl sym-K ref lift +
+ * `i = 1` moved to the last preamble statement. Its residual is a 4-insn
+ * preamble emission-order swap that is anti-correlated with the seats; see
+ * evidence.md s7 and hypotheses.md frontier 1-2. This file remains the best
+ * scoring form (1).
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
