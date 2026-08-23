@@ -1144,3 +1144,152 @@ block so that `out3` can be defined from a4 instead of from out2.
 - [s8] Real C loops stay dead in the two-locals chassis: loop1-real scores 5 (loop.c rewrites the induction variables, new pseudo 125 at 9 refs / live 40) and loop1-real with out3 from pa4 scores 13.
 
 - [s8] a4's two 0x20-byte objects are PsyQ MATRIX-sized and func_8004A348(SVECTOR-ish buf, m) / func_800523E0(m0, m1, ...) read as matrix construction - a `MATRIX *` typed spelling of pa4/out2/out3 has never been tried and is the most likely original form.
+
+## s9 evidence (structural, 2026-08-23)
+
+- **E-s9-0 (chassis).** `memory/grind/func_80041188/candidate.c` re-measures at
+  `sandbox func_80041188 --disable all` = 1, 132 target / 132 build insns, both at
+  the start and at the end of the session; src/text1a_pre.c is left holding it.
+  The s8 harness (`tmp/grind/func_80041188/s8/mkfd.py` + `one.sh`) still reproduces
+  the full-TU `.lreg` table pseudo-for-pseudo, and s9 added a mechanical seat
+  checker on top of it (`tmp/grind/func_80041188/s9/run.sh`, which parses
+  `;; Register dispositions:` out of `.greg` and prints `SEATS ALL-TARGET` or the
+  list of wrong seats). candidate.c prints `SEATS ALL-TARGET`, confirming its
+  single residual insn is a FORM difference, not an allocation difference.
+
+- **E-s9-1 (the all-target-seats form on the two-locals chassis).** I2 (s8's
+  separated between-loops restore, the only form that emits target's slot-72
+  `addiu $s3,$s7,0x20`) + the s4/s5 tbl sym-K ref lift (tbl 4 -> 6 refs) + `i = 1`
+  moved to the LAST statement of block 0 gives, for the first time on the s7
+  two-locals chassis, EVERY callee-saved seat equal to target:
+  stptr 7/41 = 3414 -> $s3, stptr2 6/48 = 2500 -> $s0, tbl 6/48 = 2500 -> $s5,
+  i 8/96 = 2500 -> $s4 (tie with tbl broken by allocno 78 < 79), out2 5/42 = 2380
+  -> $s6, pa4 7/95 = 1473 -> $s7, a3 4/99 = 808 -> $fp, out3 3/47 = 638 -> $s3,
+  saved 2/47 = 425 spilled. sandbox --disable all = 4, 132/132 insns.
+  (`rejected/m1-i2-symk-ilate-alltarget-seats-preamble-order4.c`.)
+
+- **E-s9-2 (that form's whole residual is the preamble emission ORDER).**
+  Disassembly of the sandbox object: ours emits
+  `sw s5,52(sp) / lui s5,HI / addiu s5,s5,LO / sw s4,48(sp) / li s4,1`;
+  target emits `sw s4,48(sp) / li s4,1 / sw s5,52(sp) / lui s5,HI / addiu s5,s5,LO`
+  (`asm/funcs/func_80041188.s:9-13`). Everything else in 132 insns is identical.
+  The register-save `sw`s track their register's first definition, so the whole
+  4-slot residual is one binary fact: which of i's def and tbl's def is emitted
+  first.
+
+- **E-s9-3 (named mechanism for the s7 anti-correlation law).** Read out of the
+  compiler, not inferred. `flow.c:1685` increments `reg_live_length` once per insn
+  for every pseudo in the live set, walking the RTL insn order, and flow runs at
+  `toplev.c:2983`, before sched1 at 3033. `sched.c rank_for_schedule` compares
+  `INSN_PRIORITY` first, then a 3-way dependence class relative to
+  `last_scheduled_insn`, and finally returns `INSN_LUID (y) - INSN_LUID (x)` -
+  i.e. for two insns that tie on both, the ready list is ordered by descending
+  LUID, and because GCC 2.7.2 schedules each block BACKWARD the insn popped first
+  is placed LAST. The `.sched` dump for this function shows both defs at
+  `priority = 1, ref_count = 0` (i's def is a `li`, tbl's a symbol load; neither
+  has an in-block consumer), so the LUID fallback decides, and emission order ==
+  RTL order == the order flow used to compute live lengths. Live length and
+  emission order are therefore the SAME variable for this pair; s7's measured
+  "whichever is defined first gets live+1 and the other live-1" law now has its
+  mechanism.
+
+- **E-s9-4 (new lever: `i = 0x12`'s position inside the between-loops block).**
+  i's live range has a HOLE between loop1's exit test and its re-definition, and
+  moving `i = 0x12;` later inside the 6-statement between-loops block grows the
+  hole and shortens `reg_live_length[i]`: 3rd statement (the committed position)
+  = 97 (2474), 4th = 96 (2500), 5th = 95 (2526), 6th/last = 95 (2526).
+  95 is the floor. This lever was not in the ledger before s9.
+  (`rejected/i12-last-in-between-block-ilive95-floor.c`.)
+
+- **E-s9-5 (the hole cannot be grown from its left edge).** Insns added to the
+  between-loops block BEFORE `i = 0x12` are live-NEUTRAL for i: a separated
+  self-update of stptr2 (`stptr2 = saved; out3 = out2; stptr2 += 0x750;`) is
+  demonstrably a real added insn - stptr2 goes 6 -> 8 refs and a1/a2's live length
+  goes 99 -> 100 - yet i stays at 8/95 and tbl at 6/47. flow.c:1685 only counts
+  insns in which the pseudo is LIVE, and i is dead there.
+  (`rejected/between-block-hole-insns-are-live-neutral-for-i.c`.)
+
+- **E-s9-6 (tbl's reg_live_length has a hard ceiling of 47).** Nine distinct
+  block-0 mutations measured this session - the sym-K advance in five different
+  slots, the stptr split-init in three placements, the saved split-init, the
+  base two-step, a fresh-intermediate copy, and three placements of `i = 1`
+  within block 0 - all leave tbl at 45 or 47 at refs 6, never 48. 47 = loop1's
+  41 insns plus a fixed 6-insn block-0 tail. Combined with s8's tbl-assignment
+  sweep and s6's 16-position `tbl++` sweep, the ONLY mutation in the entire
+  ledger that has ever produced tbl live 48 is moving `i = 1` past tbl's
+  definition. (`rejected/tbl-live-ceiling-47-advance-position-sweep.c`,
+  `rejected/i-def-position-inside-block0-is-inert.c`.)
+
+- **E-s9-7 (closed form: the i-FIRST order is arithmetically shut for a 6-ref
+  tbl).** In the i-first definition order - the one that yields target's preamble
+  emission - tbl is pinned at 6 refs / live 47 = 2553 and i's live floor is 95 =
+  2526. tbl outranks i by 27 points and steals $s4. Adding insns inside tbl's live
+  range raises i's live by the same amount (both are live there), so a single
+  SURVIVING insn placed after tbl's definition is exactly what is needed and
+  sufficient: it makes tbl 6/48 = 2500 and i 8/96 = 2500, an exact tie that
+  breaks our way on allocno 78 < 79.
+
+- **E-s9-8 (the one surviving-insn spelling found, and why it fails).** `saved =
+  base; out2 = ...; saved += 0x94;` - a separated SELF-update of the `saved`
+  pseudo - is the only block-0 mutation that both survives cse1 into flow and
+  raises tbl to live 48 while keeping the i-FIRST order. It produces the winning
+  arithmetic outright (tbl 6/48 = 2500, i 8/96 = 2500, tie to allocno 78 < 79,
+  stptr still top at 3414, out2 down at 2272). It fails because it lifts `saved`
+  from 2 refs / pri 425 to 5 refs / pri 2083 - a TENTH claimant on nine
+  callee-saved seats - so global_alloc seats `saved` and SPILLS a3, where target
+  seats a3 in $fp and spills `saved` (`sw $t0,0x18($sp)` / `lw $t0,0x18($sp)`).
+  Corollary that constrains every future probe: the donor of the surviving insn
+  must be a pseudo that ALREADY holds a callee-saved seat in target.
+  (`rejected/saved-selfupdate-split-raises-tbl-to-48-but-spills-a3.c`.)
+
+- **E-s9-9 (cse1 survival rule, refined and now three-way).** A two-step
+  definition reaches flow (and is counted) only when the second step is a
+  SELF-update of the SAME pseudo with a register-valued first step and at least
+  one intervening statement. The two other shapes both die before flow:
+  a fresh-intermediate copy (`b2 = base; ...; saved = b2 + 0x94;`) is
+  copy-propagated and deleted, leaving the .lreg table bit-identical
+  (`rejected/fresh-intermediate-copy-is-propagated-away-not-counted.c`); and a
+  CONSTANT two-step (`i = 0x10; ...; i += 2;`, `stptr2 = saved + 0x740; ...;
+  stptr2 += 0x10;`) is constant-folded, also bit-identical
+  (`rejected/i-constant-splitinit-folded-no-9th-ref.c`). This supersedes the
+  looser s8 statement that "separation" alone is what makes a split survive.
+
+- **E-s9-10 (i cannot get a ninth reference from a constant).** A ninth
+  flow-counted reference would put i at 27/95 = 2842, comfortably above tbl's
+  2553 ceiling, and would close the i-FIRST order outright without touching any
+  other pseudo. The constant split-init route is dead (E-s9-9); what is still
+  untried is a register-valued self-update of i.
+
+- [s9] The s9 seat checker (tmp/grind/func_80041188/s9/run.sh) prints SEATS ALL-TARGET or the exact wrong seats straight from .greg; candidate.c is already ALL-TARGET, so its floor-1 residual is a form difference, not an allocation one.
+- [s9] I2 + tbl sym-K + `i = 1` last in block 0 is the first ALL-TARGET-SEATS form on the two-locals chassis: sandbox 4, 132/132, residual is only the 5-insn preamble emission order (ours puts tbl's lui/addiu pair and its sw before i's li and its sw; target the reverse).
+- [s9] Mechanism for s7's anti-correlation law, read out of the compiler: flow.c:1685 counts live length over RTL order (flow at toplev.c:2983, before sched1 at 3033) and sched.c rank_for_schedule falls back to INSN_LUID(y)-INSN_LUID(x) for the two priority-1/ref_count-0 leaf defs, with backward block scheduling. Emission order and live length are the same variable for this pair.
+- [s9] NEW LEVER: moving `i = 0x12;` later inside the between-loops block grows the dead hole in i's live range - position 3rd/4th/5th/6th gives i live 97/96/95/95. 95 is the floor.
+- [s9] Insns added to the between-loops block before `i = 0x12` are live-neutral for i (they sit in the hole where i is dead), even when they demonstrably survive to flow.
+- [s9] tbl's reg_live_length has a hard ceiling of 47 at 6 refs: nine distinct block-0 mutations this session all give 45 or 47, never 48. Only moving `i = 1` past tbl's definition has ever produced 48.
+- [s9] The i-first (target emission) order needs exactly ONE surviving block-0 insn after tbl's definition: that makes tbl 6/48 = 2500 and i 8/96 = 2500, an exact tie won by allocno 78 < 79.
+- [s9] The only such surviving spelling found (a separated self-update of `saved`) produces exactly that arithmetic but lifts `saved` from pri 425 to 2083, making it a tenth claimant on nine callee-saved seats: global_alloc seats saved and spills a3. Target spills saved, so the donor must be a pseudo that already holds a seat.
+- [s9] cse1 survival rule refined to three cases: SELF-update of the same pseudo with a register-valued first step and an intervening statement SURVIVES; a fresh-intermediate copy is copy-propagated away; a constant two-step is constant-folded. Only the first is counted by flow.
+
+- [s9] Chassis re-verified twice: candidate.c in src/text1a_pre.c gives sandbox --disable all = 1 at 132/132 insns at the start and again at the end of the session; src is left holding candidate.c.
+
+- [s9] New tooling: tmp/grind/func_80041188/s9/run.sh extends the s8 extraction-TU harness with a mechanical seat checker that reads ';; Register dispositions:' out of .greg and prints SEATS ALL-TARGET or the exact wrong seats, in the same ~1s run that prints the allocno priority table.
+
+- [s9] candidate.c already holds ALL-TARGET callee-saved seats, so its single residual insn (move $s3,$s6 vs addiu $s3,$s7,0x20) is a FORM difference, not an allocation difference - a fact no prior session had established.
+
+- [s9] I2 (the s8 separated between-loops restore) + the s4/s5 tbl sym-K ref lift + `i = 1` moved to the last statement of block 0 is the first ALL-TARGET-SEATS form on the s7 two-locals chassis: stptr 7/41=3414 -> $s3, stptr2 6/48=2500 -> $s0, tbl 6/48=2500 -> $s5, i 8/96=2500 -> $s4 (tie won by allocno 78 < 79), out2 5/42=2380 -> $s6, pa4 7/95=1473 -> $s7, a3 4/99=808 -> $fp, out3 3/47=638 -> $s3, saved 2/47=425 spilled. sandbox 4, 132/132.
+
+- [s9] That form's entire residual is the preamble emission order: ours emits sw s5,52(sp) / lui s5,HI / addiu s5,s5,LO / sw s4,48(sp) / li s4,1, target emits sw s4,48(sp) / li s4,1 / sw s5,52(sp) / lui s5,HI / addiu s5,s5,LO (asm/funcs/func_80041188.s:9-13). The register-save sw insns track their register's first definition, so the whole 4-slot residual is one binary fact.
+
+- [s9] Mechanism for s7's anti-correlation law, read out of the compiler rather than inferred: flow.c:1685 increments reg_live_length once per insn for every live pseudo walking RTL order, flow runs at toplev.c:2983 before sched1 at 3033, and sched.c rank_for_schedule falls back to INSN_LUID(y)-INSN_LUID(x) for the two priority-1 / ref_count-0 leaf defs. With backward block scheduling this makes emission order == RTL order == the order flow measured. Live length and emission order are the same variable for this pair.
+
+- [s9] NEW LEVER: moving `i = 0x12;` later inside the between-loops block grows the dead hole in i's live range - 3rd/4th/5th/6th statement gives i live 97/96/95/95, i.e. pri 2474/2500/2526/2526. 95 is the hard floor.
+
+- [s9] Insns added to the between-loops block BEFORE `i = 0x12` are live-neutral for i even when they demonstrably survive to flow (stptr2 self-update: stptr2 6 -> 8 refs, a1/a2 live 99 -> 100, i unchanged at 8/95), because they sit where i is already dead.
+
+- [s9] tbl's reg_live_length has a hard ceiling of 47 at 6 refs: nine distinct block-0 mutations this session (sym-K advance in five slots, stptr split in three placements, saved split, base two-step, fresh-intermediate copy, three `i = 1` placements) all give 45 or 47, never 48. 47 = loop1's 41 insns + a fixed 6-insn block-0 tail.
+
+- [s9] The i-FIRST (target emission) order needs exactly ONE surviving block-0 insn placed after tbl's definition: that makes tbl 6/48 = 2500 and i 8/96 = 2500, an exact tie won by allocno 78 < 79, with out2 down at 2272 and stptr still top at 3414.
+
+- [s9] The only surviving-insn spelling found (a separated self-update of `saved`: `saved = base; out2 = ...; saved += 0x94;`) produces exactly that arithmetic but lifts saved from pri 425 to 2083, making it a tenth claimant on nine callee-saved seats; global_alloc seats saved and spills a3. Target spills saved (sw $t0,0x18($sp) / lw $t0,0x18($sp)), so the donor of the surviving insn must be a pseudo that ALREADY holds a callee-saved seat.
+
+- [s9] cse1 survival rule refined to three cases, superseding the looser s8 statement that separation alone suffices: a SELF-update of the same pseudo with a register-valued first step and an intervening statement SURVIVES into flow and is counted; a fresh-intermediate copy is copy-propagated away; a constant two-step is constant-folded. Only the first is counted at flow.c:2081.

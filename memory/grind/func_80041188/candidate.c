@@ -53,6 +53,15 @@
  * runs, the original's 4th out2 reference must be an insn in the
  * between-loops block that combine deleted. Finding a byte-free spelling of
  * that reference is the whole remaining problem - see hypotheses.md s7.
+ *
+ * s9 ADDENDUM (structural, 2026-08-23). This body still scores 1 and, newly
+ * measured this session with a mechanical seat checker, it already holds
+ * ALL-TARGET callee-saved seats - so its single residual insn is a FORM
+ * difference, not an allocation difference. s9 also produced the first
+ * all-target-seats form on the I2 chassis (rejected/m1-i2-symk-ilate-...c,
+ * sandbox 4) whose entire residual is the preamble emission ORDER, and proved
+ * that order and tbl's live length are the same variable (sched.c
+ * rank_for_schedule's INSN_LUID fallback + flow.c:1685). See evidence.md s9.
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {

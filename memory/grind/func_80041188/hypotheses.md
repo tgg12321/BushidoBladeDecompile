@@ -891,3 +891,106 @@ statement, which has never been tried in block 0.
 - probe: Built `out2 = (s32*)((u8*)pa4 + 0x20); stptr2 = saved + 0x750; out3 = out2;` (variant I2) and the adjacent control; read .lreg, read the emitted cc1 asm for the between-loops block, and ran sandbox --disable all on both.
 - result: CONFIRMED. I2 emits `addu $19,$23,32` (= `addiu $s3,$s7,0x20`) at the between-loops slot - the first time in this ledger that target's slot-72 form has been produced - at 132 insns and sandbox 9. The nine residual diffs are purely the $s5/$s6 swap: out2 reaches 5 refs / live 42 = 2380.9 and now outranks tbl at 4/47 = 1702.1. The adjacent control degenerates to out2 3 refs / live 42, i.e. to the plain `out3 = pa4+0x20` score-15 class, which also re-explains H-s7-3: block-0 split-inits die from ADJACENCY, not from being in block 0.
 - verdict: CONFIRMED
+
+## [s9] The H-s8-5 SEPARATED-staging mechanism works inside block 0 too, and three such staging insns after tbl's definition raise tbl's reg_live_length from 47 to 50 byte-free (s8 frontier #1).
+- mechanism: cse1 substitutes a SET_SRC into the immediately following insn but not across an intervening statement, so separated two-step definitions survive cse1/cse2 into flow (where reg_n_refs and reg_live_length are fixed) and are merged back by combine afterwards, costing no bytes; each surviving insn after tbl's definition adds +1 to tbl's live length.
+- probe: Built the extraction-TU harness with a mechanical seat checker (tmp/grind/func_80041188/s9/run.sh reads `;; Register dispositions:` from .greg) and swept nineteen block-0 variants on the I2 chassis: the sym-K advance in five slots, the stptr split-init in three placements, the saved split-init alone and combined with stptr's, a `base` two-step, a fresh-intermediate copy, and three placements of `i = 1`. Read `Register 79 used N times across M insns` for each.
+- result: HALF-CONFIRMED, and the useful half is the negative one. Separated staging DOES survive in block 0 - but only in one spelling (a self-update of the same pseudo with a register-valued first step), and tbl's reg_live_length NEVER reaches 48 from any of them: every variant reads 45 or 47. The predicted "+1 live per staging insn" is false. The one variant that did reach tbl 6/48 = 2500 with i 8/96 = 2500 (the exact winning tie) did so by lifting `saved` from 2 refs to 5, which makes saved a tenth claimant on nine callee-saved seats and spills a3 - fatal, because target spills saved. Two further spellings were killed with named mechanisms: a fresh intermediate is copy-propagated by cse1 and never counted, and a constant two-step is constant-folded.
+- verdict: KILLED (as stated: three staging insns are not obtainable; the requirement is now known to be exactly ONE surviving insn from a pseudo that already holds a seat).
+
+## [s9] tbl reaches the priority window from the 5-reference side at live 41, i.e. with its definition as the last insn before loop1 (s8 frontier #2).
+- mechanism: reg_live_length counts the insns in which a pseudo is live; H-s8-1 proved the SOURCE position of tbl's assignment cannot move that count, so what pins it is the six block-0 insns following the definition in the pre-flow RTL stream, and moving those above the definition is a different lever.
+- probe: Instead of the .rtl/.flow insn census the s8 frontier proposed, swept the position of the sym-K ADVANCE insn (which is what actually starts tbl's counted live range once the split-init exists) across every slot of block 0, and separately swept the position of `i = 1` across three slots that keep it before tbl.
+- result: KILLED, and with a stronger statement than the frontier asked for. tbl's live length is not merely position-invariant upward - it has a hard CEILING of 47 (= loop1's 41 insns + a fixed 6-insn block-0 tail). The advance's position can LOWER it to 45 (advance last) but nothing raises it. `i = 1`'s position inside block 0 is completely inert; three placements give bit-identical .lreg tables. Therefore the 5-refs/live-41 window is unreachable in the opposite direction as well: tbl's live length is a one-sided quantity in this chassis.
+- verdict: KILLED
+
+## [s9] Target's preamble emission order and tbl's winning live length can be had simultaneously, because sched1 runs after flow and could be steered independently.
+- mechanism: flow_analysis (toplev.c:2983) fixes reg_live_length from the RTL insn order; sched1 (toplev.c:3033) decides emission order from INSN_PRIORITY, then a dependence class relative to last_scheduled_insn, then INSN_LUID. If the two defs could be separated on priority or class, RTL order (hence live lengths) and emission order would decouple.
+- probe: Read sched.c rank_for_schedule end-to-end and the function's own .sched dump for the priorities and ready-list trace of the two definition insns.
+- result: KILLED for every lever available from C. Both defs are leaves - `.sched` reports `priority = 1, ref_count = 0` for each, because neither has an in-block consumer - so the priority test is a tie; neither can take a dependence class other than 3 (i's def is a `li` with no inputs, so it cannot be data-dependent on anything, and nothing else writes either pseudo in block 0), so the class test is a tie; and the final `INSN_LUID (y) - INSN_LUID (x)` fallback with backward block scheduling reproduces RTL order exactly. Raising tbl's def priority would need an in-block consumer that survives combine into sched1, which by definition materialises a byte. The anti-correlation is structural, not incidental.
+- verdict: KILLED
+
+## [s9] i's live length can be shortened enough for the i-FIRST order to seat tbl, by exploiting the dead hole in i's live range between loop1's exit test and `i = 0x12`.
+- mechanism: flow.c:1685 counts only insns in which the pseudo is live, and i is dead across the leading part of the between-loops block; moving its re-definition later grows that hole and shortens reg_live_length[i].
+- probe: Four-position sweep of `i = 0x12;` inside the 6-statement between-loops block on the I2+symK chassis, plus a control that ADDS a surviving insn to the hole (a separated self-update of stptr2) to see whether the hole can also be grown from the left.
+- result: CONFIRMED as a lever, KILLED as a solution. The sweep works and is new to the ledger: i live 97 -> 96 -> 95 -> 95 as the re-definition moves to the 4th, 5th and 6th statement. But 95 (pri 2526) is the floor, and tbl's ceiling of 6/47 = 2553 still outranks it by 27 points. The left-edge control confirms the hole is one-sided: adding a demonstrably-surviving insn before `i = 0x12` (stptr2 6 -> 8 refs, a1/a2 live 99 -> 100) leaves i at 8/95 unchanged, because those insns sit where i is already dead.
+- verdict: CONFIRMED (lever) / KILLED (as a standalone solution)
+
+## [s9] i can be given a ninth flow-counted reference, which would put it at 27/95 = 2842 and close the i-FIRST order outright without touching any other pseudo.
+- mechanism: reg_n_refs is fixed by flow before combine runs, so a reference in an insn that combine later deletes is free; floor_log2(9)*9 = 27 against floor_log2(8)*8 = 24 is a 12.5% jump in the numerator with no live-length cost if the added insn sits in i's dead hole.
+- probe: `i = 0x10; a2 += 0x6C; i += 2;` in the between-loops block - a separated self-update, the shape that survives for register-valued pseudos - measured against `i = 0x12;`.
+- result: KILLED for the constant spelling. cse1 constant-folds the pair before flow sees it and i stays at 8 refs / live 97, bit-identical to the plain form. This matches the third case of the refined cse1 survival rule (E-s9-9): self-updates survive only when the first step is register-valued. A register-valued self-update of i has not been tried and is the single most valuable open probe.
+- verdict: KILLED (constant spelling only; the family remains open)
+
+## s9 frontier (for s10)
+1. **A register-valued ninth reference for `i`.** This is the highest-value open
+   probe in the ledger: nine flow-counted references put i at 27/95 = 2842,
+   clear of tbl's 2553 ceiling, in the i-FIRST definition order that already
+   produces target's preamble emission - and it needs no change to tbl, out2,
+   stptr, stptr2, saved, pa4 or a3.
+   *Mechanism:* E-s9-9's survival rule - a self-update `i = i OP x` with a
+   REGISTER-valued operand and an intervening statement survives cse1 into flow
+   (constants are folded, fresh intermediates are copy-propagated), is counted at
+   flow.c:2081, and is merged back by combine before any byte is emitted.
+   *Next probe:* find a register-valued expression for i's re-definition in the
+   between-loops block that is semantically honest. Note loop1 exits with i
+   already equal to 0x12, so `i = 0x12;` is arithmetically a no-op there; look
+   for a spelling that derives loop2's starting index from a value that is live
+   at that point (a1/a2's advance, stptr, saved) rather than from a literal, and
+   measure `Register 78 used N times` in .lreg. Also try the self-update inside
+   loop1 (`i++` split with a register operand), which adds +1 to tbl's live as
+   well and would land the 2500/2500 tie from the other side.
+2. **A surviving block-0 insn whose donor already holds a callee-saved seat.**
+   E-s9-7/8 reduce the i-first order to exactly one requirement: one insn that
+   survives cse1 into flow, sits after tbl's definition in block 0, and does not
+   create a tenth claimant on the nine callee-saved seats. `saved` is the wrong
+   donor (it is spilled in target). `stptr` (7/41 = 3414, comfortably top) is the
+   right shape of donor but its separated split measured +1 ref / +3 live with no
+   added insn in three placements.
+   *Mechanism:* same cse1 self-update rule; the donor's priority must stay in its
+   target band so the seat order is untouched.
+   *Next probe:* enumerate self-update spellings of `stptr` and of `pa4` in block
+   0 (both already hold seats) and read tbl's live length; a donor whose priority
+   rises but stays in the same rank position is acceptable, one that adds a new
+   register claimant is not. Use tmp/grind/func_80041188/s9/run.sh - it prints
+   the priority table AND the seat verdict in one ~1s run.
+3. **The MATRIX * respelling (carried over from s8, still unspent).** a4
+   addresses two adjacent 0x20-byte objects, PsyQ's MATRIX is 0x20 bytes, and
+   func_8004A348(buf, m) / func_800523E0(m0, m1, a3, dst) read as matrix
+   construction and consumption. Spelling pa4/out2/out3 as `MATRIX *m = (MATRIX *)a4;`
+   with `&m[0]` / `&m[1]` would make the between-loops re-take of `&m[1]` read as
+   ordinary scoping rather than as a dead-store re-init, which materially changes
+   the layer-1 exposure of any form built on the I2 chassis.
+   *Next probe:* re-spell candidate.c and the M1 variant with a MATRIX-typed (or
+   equivalent 0x20-byte struct) local and confirm the .lreg table is unchanged;
+   if it is, adopt that spelling everywhere before stacking any further construct.
+
+## [s9] s8 frontier #1 - the separated-staging mechanism works inside block 0 too, and three such staging insns placed after tbl's definition raise tbl's reg_live_length from 47 to 50 byte-free, putting tbl at 12/50 = 2400 tied with i at 24/100 = 2400 and won by i on allocno 78 < 79.
+- mechanism: cse1 substitutes a SET_SRC into the immediately following insn but not across an intervening statement, so a separated two-step definition survives cse1/cse2 into flow (where reg_n_refs and reg_live_length are fixed at flow.c:2081/1685) and is merged back by combine afterwards, costing no bytes; each such surviving insn after tbl's definition should add +1 to tbl's live length.
+- probe: Built an extraction-TU harness with a mechanical seat checker (tmp/grind/func_80041188/s9/run.sh parses ';; Register dispositions:' out of .greg and prints SEATS ALL-TARGET or the wrong seats) and swept nineteen block-0 variants on the I2 chassis: the sym-K advance in five slots, the stptr split-init in three placements, the saved split-init alone and combined with stptr's, a base two-step, a fresh-intermediate copy, and three placements of `i = 1`. Read 'Register 79 used N times across M insns' from .lreg for each.
+- result: The '+1 live per staging insn' prediction is FALSE. Separated staging does survive in block 0, but only in one spelling, and tbl's reg_live_length never reaches 48 from any of them - every variant reads 45 or 47. The single variant that did produce the winning arithmetic (tbl 6/48 = 2500, i 8/96 = 2500, tie won by allocno 78 < 79, stptr still top at 3414) got there by lifting `saved` from 2 refs / pri 425 to 5 refs / pri 2083, which makes saved a TENTH claimant on nine callee-saved seats: global_alloc seats saved and spills a3, where target seats a3 in $fp and spills saved. Two further spellings were killed with named mechanisms - a fresh intermediate is copy-propagated by cse1 and never counted, and a constant two-step is constant-folded.
+- verdict: KILLED
+
+## [s9] s8 frontier #2 - tbl reaches the priority window from the 5-reference side at live 41, which requires its definition to be the last insn before loop1; the six block-0 insns that follow the definition are what pin the count, and moving those above it is a lever distinct from moving the definition.
+- mechanism: reg_live_length counts the insns in which a pseudo is live (flow.c:1685, one increment per insn per live pseudo, walking RTL order); H-s8-1 proved the source position of tbl's assignment cannot move the count, so the pin must be the trailing block-0 insns.
+- probe: Swept the position of the sym-K ADVANCE insn (which is what starts tbl's counted live range once the split-init exists) across every slot of block 0, and separately swept the position of `i = 1` across three slots that keep it before tbl's definition.
+- result: Stronger than the frontier asked for: tbl's reg_live_length is a ONE-SIDED quantity with a hard CEILING of 47 at 6 refs (= loop1's 41 insns + a fixed 6-insn block-0 tail). The advance's position can LOWER it to 45 (advance placed last) but nothing raises it above 47. `i = 1`'s position inside block 0 is completely inert - three placements give bit-identical .lreg tables (i 8/95 = 2526, tbl 6/47 = 2553). Nine distinct block-0 mutations across s9, plus s8's tbl-assignment sweep and s6's 16-position tbl++ sweep, and the only mutation in the whole ledger that has ever produced tbl live 48 is moving `i = 1` past tbl's definition.
+- verdict: KILLED
+
+## [s9] Target's preamble emission order and tbl's winning live length can be obtained simultaneously, because sched1 runs after flow and its ordering could be steered independently of the RTL order that flow measures.
+- mechanism: flow_analysis (toplev.c:2983) fixes reg_live_length from the RTL insn order; sched1 (toplev.c:3033) decides emission order from INSN_PRIORITY, then a dependence class relative to last_scheduled_insn, then INSN_LUID. Separating the two definition insns on priority or class would decouple live length from emission order.
+- probe: Read sched.c rank_for_schedule end-to-end and the function's own .sched dump for the priorities, ref_counts and ready-list trace of the two definition insns.
+- result: KILLED for every lever reachable from C. Both defs are leaves - .sched reports 'priority = 1, ref_count = 0' for each, because neither has an in-block consumer - so the priority test ties; neither can take a dependence class below 3 (i's def is a `li` with no inputs and so cannot be data-dependent, and nothing else writes either pseudo in block 0), so the class test ties; and the final `return INSN_LUID (tmp) - INSN_LUID (tmp2)` fallback, with GCC 2.7.2 scheduling each block BACKWARD, reproduces RTL order exactly. Raising tbl's def priority would require an in-block consumer surviving combine into sched1, which by definition materialises a byte. s7's measured anti-correlation law now has its named mechanism and is structural, not incidental.
+- verdict: KILLED
+
+## [s9] i's live length can be shortened enough for the i-FIRST definition order (the one that yields target's preamble emission) to seat tbl, by exploiting the dead hole in i's live range between loop1's exit test and its re-definition `i = 0x12`.
+- mechanism: flow.c:1685 counts only insns in which the pseudo is live; i is dead across the leading part of the between-loops block, so moving its re-definition later grows that hole and shortens reg_live_length[i] without touching any other pseudo.
+- probe: Four-position sweep of `i = 0x12;` inside the 6-statement between-loops block on the I2+symK chassis, plus a left-edge control that ADDS a demonstrably-surviving insn to the hole (a separated self-update of stptr2).
+- result: CONFIRMED as a lever, KILLED as a standalone solution, and new to the ledger. The sweep works: i live 97 (committed 3rd position) -> 96 (4th) -> 95 (5th) -> 95 (6th/last), i.e. pri 2474 -> 2500 -> 2526. But 95 is the floor and tbl's ceiling of 6/47 = 2553 still outranks it by 27 points, so tbl steals $s4. The control proves the hole is one-sided: the stptr2 self-update is a real added insn (stptr2 6 -> 8 refs, a1/a2 live 99 -> 100) yet i stays at 8/95, because it lands where i is already dead.
+- verdict: CONFIRMED
+
+## [s9] i can be given a ninth flow-counted reference, putting it at 27/95 = 2842 and closing the i-FIRST order outright without touching tbl, out2, stptr, stptr2, saved, pa4 or a3.
+- mechanism: reg_n_refs is fixed by flow before combine runs, so a reference in an insn combine later deletes is free; floor_log2(9)*9 = 27 against floor_log2(8)*8 = 24 is a 12.5% numerator jump, and an insn placed in i's dead hole costs no live length at all.
+- probe: `i = 0x10; a2 += 0x6C; i += 2;` in the between-loops block - a separated SELF-update, the shape that survives for register-valued pseudos - measured against the plain `i = 0x12;` in .lreg.
+- result: KILLED for the constant spelling: cse1 constant-folds the pair before flow sees it and i stays at 8 refs / live 97, bit-identical to the plain form. This pins down the third case of the refined cse1 survival rule - self-updates survive only when the first step is REGISTER-valued. The family is not closed: a register-valued self-update of i has never been tried and is now the single highest-value open probe in the ledger.
+- verdict: KILLED

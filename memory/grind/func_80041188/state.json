@@ -1,8 +1,8 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 8,
- "current_modality": "rederive",
+ "session_count": 9,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -57,23 +57,29 @@
    "floor": 1,
    "modality": "rederive",
    "headline": "s7 frontier #1 closed by structure; a SEPARATED between-loops restore emits target's residual insn `addiu $s3,$s7,0x20` for the first time (sandbox 9), reducing the whole problem to raising pri(tbl) i"
+  },
+  {
+   "session": 9,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Floor holds at 1; s9 produced the first ALL-TARGET-SEATS form on the two-locals chassis (sandbox 4, residual = preamble emission order only), named the GCC mechanism that makes emission order and tbl'"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The H-s8-5 SEPARATED-staging mechanism works inside block 0 too, and three such staging insns placed after tbl's definition raise tbl's reg_live_length from 47 to 50 byte-free; combined with the banked s4 sym-K 6-reference lift that puts tbl at 12/50 = 2400.0, exactly tied with i at 24/100 = 2400.0 and won by i on allocno 78 < 79, giving every seat target's in the I2 chassis.",
-   "mechanism": "cse1 substitutes a SET_SRC into the immediately following insn but not across an intervening statement; separated two-step definitions therefore survive cse1/cse2 into flow (where reg_n_refs and reg_live_length are fixed) and are merged back by combine afterwards, costing no bytes. Each such surviving insn placed after tbl's definition adds +1 to tbl's live length, and +1 to i's, and i's larger live length means the ratio moves in tbl's favour only from N >= 3.",
-   "next_probe": "On the I2 chassis (rejected/i2-separated-restore-emits-target-insn-seatswap9.c), rewrite out2's / saved's / stptr's block-0 definitions as SEPARATED two-step forms placed after tbl's definition and read `Register 79 used N times across M insns` in .lreg for each count of staging insns; then stack the s4 sym-K chain (rejected/tbl-symK-splitinit-refs6-steals-s4.c). Confirm in .combine that each staging insn is deleted before trusting the sandbox score. Use tmp/grind/func_80041188/s8/one.sh - it turns each variant into one ~1s cc1 run."
+   "hypothesis": "A REGISTER-valued ninth reference for `i` closes the i-FIRST order outright: nine flow-counted references put i at 27/95 = 2842, clear of tbl's 2553 ceiling, in the definition order that already produces target's preamble emission - and it needs no change to tbl, out2, stptr, stptr2, saved, pa4 or a3.",
+   "mechanism": "E-s9-9's refined survival rule - a self-update `i = i OP x` with a REGISTER-valued operand and at least one intervening statement survives cse1 into flow (constants are folded, fresh intermediates are copy-propagated), is counted at flow.c:2081, and is merged back by combine before any byte is emitted. Placed inside i's dead hole in the between-loops block it also costs zero live length.",
+   "next_probe": "Find a register-valued spelling of loop2's starting index. Note loop1 exits with i already equal to 0x12, so `i = 0x12;` is arithmetically a no-op there - look for a derivation from a value live at that point (a1/a2 after their 0x6C advance, stptr, saved) rather than from a literal, and read `Register 78 used N times across M insns` in .lreg. Also try the self-update inside loop1 (an `i++` split with a register operand), which adds +1 to tbl's live length as well and would land the 2500/2500 tie from the other side. tmp/grind/func_80041188/s9/run.sh turns each variant into one ~1s cc1 run and prints both the priority table and the seat verdict."
   },
   {
-   "hypothesis": "tbl reaches the same window from the 5-reference side: 5 refs at live 41 = 2439, which needs no change to i at all. Live 41 means tbl's entire live range is loop1's block, i.e. its definition must be the last insn before the loop1 label.",
-   "mechanism": "reg_live_length is the count of insns in which the pseudo is live; H-s8-1 proved the SOURCE position of tbl's assignment cannot move that count, so what pins it is the six block-0 insns that follow tbl's definition in the pre-flow RTL stream, and moving those above the definition is a different lever from moving the definition.",
-   "next_probe": "Dump .rtl and .flow for the I2 chassis and locate reg 79's definition insn, then count and IDENTIFY the six insns between it and loop1's code_label (they are almost certainly base's lui/addu/lw, saved's addiu, saved's spill store, out2's addiu and stptr's addiu). Test whether any of them can be made to precede tbl's definition in the RTL stream, and separately whether a 5th tbl reference exists that is byte-free."
+   "hypothesis": "A surviving block-0 insn whose donor already holds a callee-saved seat gives the i-FIRST order its single missing insn, without creating a tenth register claimant.",
+   "mechanism": "Same cse1 self-update rule; the requirement from E-s9-7/8 is exactly one insn that survives cse1 into flow and sits after tbl's definition in block 0, and the constraint is that the donor's priority must stay in its target rank band so the seat order is untouched. `saved` is the wrong donor because target spills it; `stptr` (7/41 = 3414, comfortably top of the table) and `pa4` (7/95, seated in $s7) are the right shape of donor.",
+   "next_probe": "Enumerate self-update spellings of `stptr` and `pa4` in block 0 and read tbl's live length for each. stptr's separated split has been measured in three placements and gives +1 ref / +3 live with no added insn - vary the number and identity of the intervening statements, since the survival rule is sensitive to exactly that. Accept a donor whose priority rises but keeps its rank position; reject any that adds a new register claimant (watch for `saved` leaving the spilled state in the seat checker)."
   },
   {
-   "hypothesis": "The winning form should be spelled through a real PsyQ `MATRIX *` local rather than as a re-store of a raw `s32 *`, so that the between-loops restore reads as ordinary scoping to a human reviewer instead of as a dead-store coercion.",
-   "mechanism": "a4 addresses two adjacent 0x20-byte objects (MATRIX is 0x20 bytes in PsyQ); func_8004A348(buf, m) builds a rotation matrix and func_800523E0(m0, m1, a3, dst) consumes the pair, so the natural original source is `MATRIX *m = (MATRIX *)a4;` with `&m[0]` / `&m[1]`, and a second loop that re-takes `&m[1]` before it starts.",
-   "next_probe": "Re-spell candidate.c and the I2 variant with a MATRIX-typed (or equivalently a 0x20-byte struct) local and confirm the .lreg table is unchanged; if it is, prefer that spelling everywhere, because the frontier-1 form will otherwise stack a dead-store re-store, a sym-K chain and block-0 staging in one diff and is very likely to draw a layer-1 FAIL on aggregate."
+   "hypothesis": "Spelling pa4/out2/out3 through a real PsyQ `MATRIX *` local is byte-neutral and materially reduces the layer-1 exposure of every form built on the I2 chassis (carried over from s8, still unspent).",
+   "mechanism": "a4 addresses two adjacent 0x20-byte objects and PsyQ's MATRIX is 0x20 bytes; func_8004A348(buf, m) builds a rotation matrix and func_800523E0(m0, m1, a3, dst) consumes the pair, so the natural original source is `MATRIX *m = (MATRIX *)a4;` with `&m[0]` / `&m[1]`, and a second loop that re-takes `&m[1]` before it starts reads as ordinary scoping rather than as a dead-store re-init.",
+   "next_probe": "Re-spell candidate.c and the M1 variant (rejected/m1-i2-symk-ilate-alltarget-seats-preamble-order4.c) with a MATRIX-typed - or equivalent 0x20-byte struct - local and confirm the .lreg table and the seat verdict are unchanged. If they are, adopt that spelling everywhere BEFORE stacking any further construct, because the frontier-1 and frontier-2 forms will otherwise combine a re-init, a sym-K chain and block-0 staging in one diff."
   }
  ],
  "judge_constraints": [
