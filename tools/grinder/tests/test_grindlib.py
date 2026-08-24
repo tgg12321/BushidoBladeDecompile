@@ -133,16 +133,19 @@ class TestApplyAndLadder(unittest.TestCase):
 
     def test_ladder(self):
         # R2 order (owner ruling asm-until-matched, 2026-08-19): synthesis at s6
-        # (index 5), before forensics/rederive.
+        # (index 5), before forensics/rederive. Solver rung added 2026-08-24
+        # (escalation-not-parked rollout): s7 (index 6), between synthesis and
+        # forensics.
         self.assertEqual(G.assign_modality(0), "recon")
         self.assertEqual(G.assign_modality(1), "structural")
         self.assertEqual(G.assign_modality(2), "structural")
         self.assertEqual(G.assign_modality(3), "permuter")
         self.assertEqual(G.assign_modality(5), "synthesis")
-        self.assertEqual(G.assign_modality(6), "forensics")
-        self.assertEqual(G.assign_modality(8), "rederive")
-        self.assertEqual(G.assign_modality(10), "structural")  # ladder repeats
-        self.assertEqual(G.assign_modality(14), "synthesis")
+        self.assertEqual(G.assign_modality(6), "solver")
+        self.assertEqual(G.assign_modality(7), "forensics")
+        self.assertEqual(G.assign_modality(9), "rederive")
+        self.assertEqual(G.assign_modality(11), "structural")  # ladder repeats
+        self.assertEqual(G.assign_modality(15), "synthesis")
 
     def test_permuter_hard_cap(self):
         # R3: two permuter sessions ever, regardless of yield — a 3rd is never

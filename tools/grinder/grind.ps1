@@ -457,7 +457,7 @@ $(if ($v.constraint) { "**Constraint recorded for any future session:** $($v.con
     $disp = "REFUSED under the current frozen policy (endgame-lock standing ruling 2026-07-27, extended by judge-sole-gate 2026-08-18); terminal OWNER-ACCEPTED INCOMPLETE park; candidate preserved at memory/grind/$func/candidate.c; re-attemptable if a later owner ruling spends this entry."
     python tools/grinder/grindlib.py log-borderline . $func $ekind $evid $disp $date | Out-Null
     Invoke-Eng @('queue', 'park', $func, '--reason', "OWNER-ACCEPTED INCOMPLETE (judge ESCALATE $ekind, logged to borderline.md per ruling 2026-08-18): $ref") | Out-Null
-    Journal "$func JUDGE ESCALATE ($kind, $ekind) — logged to borderline ledger, parked terminally (nothing pending)."
+    Journal "$func JUDGE ESCALATE ($kind, $ekind) — logged to borderline ledger, ESCALATED with decision packet (owner ruling 2026-08-24)."
     Log "${func}: judge ESCALATE — borderline-logged + terminal park (no owner wait)."
     git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
     git -C $Root commit -m "grind: $func judge ESCALATE — borderline-logged, terminal park [skip-park-src-guard]" 2>$null | Out-Null
@@ -609,10 +609,10 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
                       "tools/grinder/scope_allow.txt for this function, or reprioritise it."
             Invoke-Eng @('queue', 'park', $func, '--reason', $reason) | Out-Null
             Add-Decision $func 'scope livelock' 'OWNER-ESCALATION' $reason
-            Journal "$func SCOPE-LIVELOCK — parked after $n identical out-of-scope candidates ($($offStem -join ', '))."
-            Log "${func}: SCOPE LIVELOCK — parked so the queue advances; owner decision needed."
+            Journal "$func SCOPE-LIVELOCK — escalated after $n identical out-of-scope candidates ($($offStem -join ', '))."
+            Log "${func}: SCOPE LIVELOCK — escalated so the queue advances; owner decision needed."
             git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
-            git -C $Root commit -m "grind: $func parked on scope livelock [skip-park-src-guard]" 2>$null | Out-Null
+            git -C $Root commit -m "grind: $func escalated on scope livelock [skip-park-src-guard]" 2>$null | Out-Null
             $script:livelockParks++
             if ($script:livelockParks -ge 3) {
                 Circuit-Break "scope livelock on $script:livelockParks distinct functions — the scope gate looks systemically wrong, not function-specific"
@@ -1123,7 +1123,7 @@ while ($true) {
             if ($escRef -match 'RESOLVED BY STANDING RULING') {
                 $reason = "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): $escRef"
                 Invoke-Eng @('queue', 'park', $func, '--reason', $reason) | Out-Null
-                Log "${func}: STANDING RULING APPLIED — REFUSED / OWNER-ACCEPTED INCOMPLETE, parked terminally ($escRef)."
+                Log "${func}: ENDGAME LOCK — ESCALATED with decision packet ($escRef; owner ruling 2026-08-24)."
                 Journal "$func s$sessionN [$modality] STANDING RULING (2026-07-27) applied — OWNER-ACCEPTED INCOMPLETE: $($o.headline)"
             } elseif ($escRef -match 'CANONICAL-ASM GRANT PATH') {
                 # Owner ruling 2026-08-18 (judge-sole-gate, b9d91163): STRONG-tier
@@ -1150,7 +1150,7 @@ while ($true) {
                 python tools/grinder/grindlib.py log-borderline . $func 'policy-question' "session-filed escalation: $escRef" "terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry." $date | Out-Null
                 $reason = "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): $escRef"
                 Invoke-Eng @('queue', 'park', $func, '--reason', $reason) | Out-Null
-                Log "${func}: OWNER-GATED — borderline-logged + parked terminally (no owner wait): $escRef"
+                Log "${func}: OWNER-GATED — borderline-logged + ESCALATED with decision packet: $escRef"
                 Journal "$func s$sessionN [$modality] OWNER-GATED — borderline-logged, terminal park: $($o.headline)"
             }
             # engine/queue.json is where `queue park` wrote the parked status — it
@@ -1191,7 +1191,7 @@ while ($true) {
                 } else {
                     $bsReason = "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): $ref"
                     Invoke-Eng @('queue', 'park', $func, '--reason', $bsReason) | Out-Null
-                    Log "${func}: ESCALATION BACKSTOP — session dodged in escalation modality (floor $($o.floor) >= prior $priorFloor); driver auto-filed + parked."
+                    Log "${func}: ESCALATION BACKSTOP — session dodged in escalation modality (floor $($o.floor) >= prior $priorFloor); driver auto-filed + escalated."
                     Journal "$func s$sessionN [escalation] AUTO-FILED by driver backstop (session did not self-file): $ref"
                     git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
                     git -C $Root commit -m "grind: $func auto-escalated owner-gated (backstop) [skip-park-src-guard]" 2>$null | Out-Null

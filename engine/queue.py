@@ -35,10 +35,15 @@ entirely):
              evidence + Judge verdict; the driver writes the grant. No user
              sign-off wait; pre-2026-08-18 this bucket meant "needs user
              canonical-asm sign-off")
-  parked     blocked; skipped by `next`. Sticky across `regen`.
+  escalated  carries a decision packet awaiting an owner ruling
+             (.claude/rules/escalation-not-parked.md, owner ruling
+             2026-08-24). Skipped by `next`; sticky across `regen`; NEVER
+             indefinite — a ruling returns it to active. Replaces the
+             retired `parked` status (legacy `parked` items are read
+             compatibly and count as escalated).
 
 Queue file: engine/queue.json (committed). Driven by `python3 -m engine.cli
-queue {next,done,park,status,regen}`.
+queue {next,done,escalate,unpark,status,regen,reopen}`.
 
 Concurrency: every mutator (mark_done / mark_parked / reopen / generate) runs
 its load-modify-save under an advisory lock (`engine/queue.json.lock`) and
@@ -70,7 +75,7 @@ from . import score
 
 QUEUE_PATH = "engine/queue.json"
 _AUTHORIZE = {"ASM-WHOLE", "ASM-STRUCTURAL", "JTBL-INFRA"}
-_STATUS_RANK = {"active": 0, "authorize": 1, "parked": 2}
+_STATUS_RANK = {"active": 0, "authorize": 1, "escalated": 2, "parked": 2}
 
 
 class QueueConflict(RuntimeError):
@@ -277,7 +282,8 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
             # were auto-routed by the distance>500 heuristic, which that audit
             # found is not evidence of hand-coded asm) and the owner returned to
             # active on 2026-08-01.
-            if (it.get("status") == "parked" or it.get("origin") == "regression"
+            if (it.get("status") in ("parked", "escalated")
+                    or it.get("origin") == "regression"
                     or it.get("owner_override")):
                 prev[it["func"]] = it
     verdicts = {r["func"]: r["verdict"] for r in canonical.scan_all()}
@@ -617,13 +623,15 @@ def mark_done(func: str) -> dict:
                         else "COMPLETED-C")
     result = {"ok": True, "func": func, "completion": completion_state,
               "sha1": v.get("build_sha1")}
-    if item.get("status") == "parked":
-        # Transparency, not refusal (2026-08-19 audit): completing a parked
+    if item.get("status") in ("parked", "escalated"):
+        # Transparency, not refusal (2026-08-19 audit): completing a parked/escalated
         # item OVERRIDES a terminal owner disposition. That is usually strictly
         # good — every completion gate above still applied — but the override
         # must be loud in the done record, not silent, so the park's audit
         # trail (borderline.md / decisions.md) can be reconciled.
-        result["park_overridden"] = item.get("park_reason") or "(no reason recorded)"
+        result["park_overridden"] = (item.get("escalation")
+                                     or item.get("park_reason")
+                                     or "(no reason recorded)")
     if gates:
         # Transparency, not refusal: fidelity-class gates model the original
         # assembler (no C spelling exists) — record the dependency so the
@@ -648,6 +656,27 @@ def mark_parked(func: str, reason: str = "") -> dict:
     return {"ok": True, "func": func, "park_reason": reason}
 
 
+def mark_escalated(func: str, packet: str = "") -> dict:
+    """Escalate: the item carries a concrete decision packet awaiting an
+    owner ruling (.claude/rules/escalation-not-parked.md, 2026-08-24 —
+    replaces the retired terminal park). The packet must state a DECIDABLE
+    question (grant / family / fidelity / routing); "this is hard" is not a
+    packet — that stays ACTIVE with a modality change. `mark_unparked`
+    is the mechanism that spends the ruling and returns it to active."""
+    with _locked():
+        q = load()
+        tok = _fingerprint()
+        item = next((it for it in q.get("items", []) if it["func"] == func), None)
+        if item is None:
+            return {"ok": False, "func": func, "reason": "not in queue"}
+        item["status"] = "escalated"
+        item["escalation"] = packet
+        q["items"].sort(key=_sort_key)
+        q["counts"] = _counts(q["items"])
+        save(q, expect=tok)
+    return {"ok": True, "func": func, "escalation": packet}
+
+
 def mark_unparked(func: str, reason: str = "") -> dict:
     """Lift a park: status back to active, with the spending ruling recorded.
     A park is a terminal disposition 're-attemptable if a later owner ruling
@@ -661,10 +690,12 @@ def mark_unparked(func: str, reason: str = "") -> dict:
         item = next((it for it in q.get("items", []) if it["func"] == func), None)
         if item is None:
             return {"ok": False, "func": func, "reason": "not in queue"}
-        if item.get("status") != "parked":
-            return {"ok": False, "func": func, "reason": "not parked"}
+        if item.get("status") not in ("parked", "escalated"):
+            return {"ok": False, "func": func, "reason": "not parked/escalated"}
         item["status"] = "active"
-        item["unparked_from"] = item.pop("park_reason", "")
+        item["unparked_from"] = (item.pop("escalation", "")
+                                 or item.pop("park_reason", ""))
+        item.pop("park_reason", None)
         item["unpark_reason"] = (reason or "")[:400]
         q["items"].sort(key=_sort_key)
         q["counts"] = _counts(q["items"])

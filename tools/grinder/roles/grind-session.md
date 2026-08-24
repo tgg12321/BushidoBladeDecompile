@@ -241,3 +241,14 @@ same work in fewer, bigger turns (owner policy 2026-07-20):
   escape hatch for hard-but-grindable work — the driver rejects the claim
   unless the escalation entry exists and names your function. Never file an
   "awaiting owner ruling" entry; that shape is retired.
+
+## Solver suite (available to every modality; the `solver` modality is dedicated to it)
+
+`tools/ra_solver` (global.c / local-alloc / reload models + `inverse.py` +
+`inverse_compose.py classify` triage + `sweep.py` batch driver) and
+`tools/sched_solver` (both scheduler passes, order- and clock-exact) convert
+RA/scheduler residual guessing into typed REACHABLE / FORECLOSED verdicts
+with ranked C-lever vectors. If your residual is a register seat or an
+emission-order tie, classify it with `inverse_compose.py classify` before
+burning measurements. Verdicts are hypotheses until a spelled C form
+measures. Full operational rules are in the `solver` modality playbook.

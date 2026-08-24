@@ -15,7 +15,7 @@ import json
 import os
 import re
 
-MODALITIES = ["recon", "structural", "permuter", "forensics", "rederive", "synthesis"]
+MODALITIES = ["recon", "structural", "permuter", "solver", "forensics", "rederive", "synthesis"]
 # Sessions walk this ladder ONCE; a flat floor across the cycle forces the
 # escalation modality (R1, owner ruling 2026-08-19) — never a second cycle.
 # R2 (modality-effectiveness 2026-08-19, owner ruling asm-until-matched): the single
@@ -24,8 +24,13 @@ MODALITIES = ["recon", "structural", "permuter", "forensics", "rederive", "synth
 # entirely in its FIRST pass, and at its old s10 slot it sat OUTSIDE the 8-session
 # flat window, so exhaustion could fire before the one plateau-breaker ever ran.
 # Revert trigger: ~15 early-synthesis sessions with zero drops.
+# "solver" (added 2026-08-24, escalation-not-parked rollout): ra_solver /
+# sched_solver inverse search — sits after synthesis, before forensics: it is
+# strictly downstream of a dump but cheaper than a full forensics session and
+# converts guess-and-measure into typed REACHABLE/FORECLOSED verdicts. Built
+# for the RA/scheduler-tiebreak endgame class returning to the active lane.
 LADDER = ["structural", "structural", "permuter", "permuter", "synthesis",
-          "forensics", "forensics", "rederive", "rederive"]
+          "solver", "forensics", "forensics", "rederive", "rederive"]
 RESULTS = ("progress", "candidate-ready", "ruling-request", "owner-gated")
 MAX_FRONTIER = 3
 
@@ -598,7 +603,7 @@ def validate_outcome(o, modality, root, func=None):
     if not proven:
         return False, ("progress requires >=1 hypothesis with verdict "
                        "CONFIRMED/KILLED and a numeric measurement in result")
-    if modality in ("permuter", "forensics"):
+    if modality in ("permuter", "forensics", "solver"):
         arts = [a for a in o.get("artifacts", [])
                 if os.path.isfile(os.path.join(root, a)) and
                 os.path.getsize(os.path.join(root, a)) > 0]
@@ -767,14 +772,17 @@ the next session authors the whole-body canonical form per
 the final call; on its verdict the driver writes the inline_asm_canonical.txt grant and logs
 it to docs/grind/borderline.md for later owner audit."""
     else:
-        ref = f"{date} — {func} — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (auto-filed by driver, exhaustion backstop)"
+        ref = f"{date} — {func} — OWNER-ESCALATION — ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
         tail = f"""Both AND-gates fail on the ledger evidence: canonical-asm — `scan_hand_coded --single
 {func}` = **{scan_tier}** (ordinary GCC RA/scheduler artifact, no hand-coded signature);
 coercion family — no SOTN-master precedent recorded for the residual axes. Per the owner's
-STANDING AUTO-RULING (2026-07-27, .claude/rules/endgame-lock-disposition.md): option (b)
-applies immediately — REFUSED / OWNER-ACCEPTED INCOMPLETE, any retained cheat holds the
-byte-match only and is not sanctioned, parked terminally out of active grind, eligible for
-re-attempt if a genuine pure-C lever emerges. No owner action is pending."""
+2026-08-24 ruling (.claude/rules/escalation-not-parked.md): the item is ESCALATED with a
+decision packet, not parked — the packet must state the DECIDABLE question this function's
+residual poses (the specific grant/family/fidelity/routing choice), the evidence pointers,
+and the consequence of each answer. The two AND-gates remain the unchanged STANDARD; the
+owner rules on packets in batches, and the ruling returns the item to active either way.
+If no decidable question exists, the item stays ACTIVE with a modality change instead
+(difficult-is-not-impossible) — "this is hard" is not a packet."""
     entry = f"""
 ## {ref}
 
@@ -863,6 +871,25 @@ MODALITY_PLAYBOOK = {
                  "harvest --stop, then write your outcome. Findings are PROPOSALS — vet "
                  "against the cheat catalog. Save logs under tmp/grind/<func>/s<N>/ and "
                  "list them in artifacts."),
+    "solver": ("SOLVER modality — tools/ra_solver + tools/sched_solver inverse search "
+               "(validated: global 10/10, reload 194/194, sched 6978/6978 blocks). "
+               "Operational rules, in order: (1) run `python3 tools/ra_solver/inverse_compose.py "
+               "classify <stem> <func>` FIRST — it triages the residual PRE-RA / RA / SCHED / "
+               "IDENTICAL and stops you searching the wrong layer. (2) If the ledger banks a "
+               "candidate that beats main, RE-DERIVE the model from the CANDIDATE body applied "
+               "to src, never from stripped main (func_80072CD4 baseline-routing defect). "
+               "(3) State the FULL target register disposition as the goal — a subset goal "
+               "voids the vectors (func_80041188 s2 lesson). (4) Scheduler searches: "
+               "`perturb.py --atoms luid,luid_move` first, and pin the target with "
+               "`--target <stem>.tgt.head.s` (regfix indexes against HEAD). (5) A typed "
+               "UNREACHABLE/FORECLOSED verdict is PROGRESS — bank the kill with the vector "
+               "space and depth; it closes an axis mechanically. (6) inverse.py lacks "
+               "atom-masking; a working reference fork is tmp/grind/func_80041188/s3/"
+               "masked_inverse.py if dead atoms pollute the search. Solver verdicts are "
+               "HYPOTHESES until a spelled C form measures — a foreclosure was once "
+               "retracted by hand-restructuring (func_8001B748 s2); spell and measure the "
+               "top vectors before crediting a negative. Save reports under "
+               "tmp/grind/<func>/s<N>/ and list them in artifacts."),
     "forensics": ("Instrumented cc1: RTL/ALLOCDBG/GREG dumps. Name the exact GCC pass and "
                   "decision producing the divergence. Save dumps under tmp/grind/<func>/s<N>/ "
                   "and list them in artifacts."),

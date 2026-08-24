@@ -39,8 +39,8 @@ counts do not).
 | **COMPLETED-C** | **1,051** |
 | **COMPLETED-INLINE-ASM-CANONICAL** (`inline_asm_canonical.txt`) | 179 |
 | **INCOMPLETE** (queue items) | 244 |
-| — active (grinder-eligible) | 211 |
-| — parked (terminal dispositions, re-attemptable by later rulings) | 33 |
+| — active (grinder-eligible) | 240 |
+| — escalated (decision packets awaiting owner rulings — [[escalation-not-parked]] 2026-08-24) | 4 |
 | Data-as-code symbols (excluded by ruling) | 12 |
 
 Queue verdict breakdown (2026-08-24):
@@ -102,20 +102,23 @@ and gates every completion through a default-FAIL Judge. Spec:
 `docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md`; skill:
 `decomp-grind`. Owner audits: `docs/grind/decisions.md` + `docs/grind/journal.md`.
 
-### Parked-set review (2026-08-24)
-All 33 parks audited against the two-gate standard: 28 stand; 9 false-positive
-deferrals migrated (sweep 2); metadata repaired (floors, park prose, inert
-prologue entry). Open recommendations: bounded re-opens for CD_datasync,
-func_800307D0, CD_sync; two standing owner questions (func_80048AD0 prototype
-correction; prebuilt-crt0 routing for func_80083794). Record:
-`docs/grind/borderline.md` 2026-08-24 entry.
+### Escalation model (owner ruling 2026-08-24, [[escalation-not-parked]])
+The parked state is retired: every INCOMPLETE item is ACTIVE or ESCALATED
+(a concrete decision packet awaiting an owner ruling; batched, non-blocking,
+never indefinite). All 33 former parks converted: 29 returned to active
+(with per-item directives; the RA/scheduler endgame class gets the new
+`solver` grinder modality), 4 escalated with packets (main — maspsx
+branch-fill fidelity; func_80048AD0 — prototype correction;
+func_80083794 + motion_Close — prebuilt-object routing).
 
 ### Solver tooling (2026-08-04/05)
 Two models of GCC 2.7.2's back end now back the hard cases: `tools/ra_solver`
 (the whole allocation stack — global.c, local-alloc, reload/retry, suggested
 registers) and `tools/sched_solver` (sched.c's list scheduler, exact on
 6,978/6,978 blocks, both passes). The engine's inverse solver composes them into
-minimal-perturbation lever hypotheses.
+minimal-perturbation lever hypotheses — concretely `tools/ra_solver/inverse_compose.py`
+(classify / hypothesis) and `tools/ra_solver/sweep.py` (batch driver); the Grinder
+dispatches them via the `solver` modality (added 2026-08-24).
 
 ### Manual close-out path
 Manual per-function work uses the `decomp-orchestrate` skill (single focused

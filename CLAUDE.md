@@ -120,7 +120,7 @@ the top each session; `queue status` shows progress.
 |---|---|
 | `queue next` | print the top active item (func, file, verdict, distance, rule count) |
 | `queue done <func>` | mark complete — re-checks ZERO rules + ZERO non-canonical cheat-asm + build SHA1 == oracle (refuses otherwise). On success the function is REMOVED from the queue. `python3 tools/check_completion_integrity.py` audits the invariants still hold. |
-| `queue park <func> --reason "…"` | block an item (terminal dispositions only — no pending-owner states per [[judge-sole-gate]]); `next` skips it |
+| `queue escalate <func> --reason "…"` | escalate with a DECISION PACKET (owner ruling 2026-08-24, [[escalation-not-parked]] — the parked state is retired; `park` is a legacy alias); `next` skips it until the owner rules and it returns to active |
 | `queue status` | counts by status/verdict + the current top |
 | `queue regen` | rebuild the queue (preserves done/parked); run after big changes |
 | `queue unpark <func>` | return a parked item to active (with `--reason`) |
