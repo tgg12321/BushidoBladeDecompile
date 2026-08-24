@@ -530,3 +530,130 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s44] Ledger bank intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, byte-proven floor-10 Wall-1-solved form) + 9 rejected forms including the byte-proven, trace-proven n1 union form (judge-fail-0717-1708.c) referenced by escalation option (a).
 
 - [s44] No src/ edits made; regfix.txt:2190 and the committed byte-correct form untouched on main per the 2026-07-17 17:34 Judge disposition item (3); working tree clean except the metrics/events.jsonl append.
+
+## [s45] escalation modality — chassis re-measurement + source-level enumeration proof of the cross-jump wall
+
+- [s45] CHASSIS RE-MEASURED under the current toolchain (post cc1 fork-crash fix adopted 2026-08-24,
+  decisions.md:10340). `sandbox func_80038C70 --disable all` on the committed HEAD form:
+  score=1, target_insns=402, build_insns=402, rules_dropped=1, cheat_asm_stripped=7.
+  The digest's "ledger floor 10" is STALE/mis-tracked bookkeeping — the honest floor of the
+  committed form is 1 (the single `addiu $s0,$zero,0xC` immediate that regfix.txt:1095
+  rewrites to 13), and 402/402 insn parity holds. Every s14/s27..s44 measurement of "1" is
+  reconfirmed on the new chassis; the cc1 fix changed nothing here.
+
+- [s45] THE HONEST FORM RE-MEASURED on the new chassis. Edited src/code6cac_c_mid.c
+  `case 9: case 11: sel = 0xC;` -> `sel = 0xD;` (the semantic truth the rule fakes) and re-ran the
+  sandbox: score=2, target_insns=402, build_insns=400. The honest 0xD form is TWO INSNS SHORT,
+  not one: jump2's cross-jump deletes BOTH the `addiu $s0,$zero,0xD` and its `j sel_dispatch`
+  from one arm. (Prior sessions recorded "1 word short"; the correct figure on this chassis is
+  a 2-insn deletion, and the committed form's score-1 is the immediate only.) Source restored;
+  form banked at rejected/s45-honest-0xD-crossjump-merge-400insns.c.
+
+- [s45] THE TWO MERGE-CANDIDATE ARMS, located exactly (jump2 RTL dump, artifact
+  tmp/grind/func_80038C70/s45/jump2_fn.txt, extracted from the .jump2 dump produced this
+  session by tools/grinder/dump.ps1):
+    * arm A (if-chain, `if (v0 != 10) sel = 0xD;`): insn 211 `(set (reg/v:SI 16 s0) (const_int 13))`
+      + jump_insn 223 `(set (pc) (label_ref 444))` {jump}  -> target bytes 0x80038DA8 `j .L80038EDC`
+      with delay slot 0x80038DAC `addiu $s0,$zero,0xD`.
+    * arm B (switch case 9/11): insn at dump line 892 `(set (reg/v:SI 16 s0) (const_int 12))`
+      + jump_insn at line 897 `(set (pc) (label_ref 444))` {jump}  -> target bytes 0x80038EC8
+      `j .L80038EDC` with delay slot 0x80038ECC `addiu $s0,$zero,0xD`.
+  Label 444 == sel_dispatch == .L80038EDC (0x80038EDC). Twelve jumps in this function target it.
+
+- [s45] THE F1 DISCRIMINATOR QUESTION IS ANSWERED, AND THE LEDGER'S PRIOR ANSWER WAS WRONG.
+  The 2026-07-17 17:34 Judge instruction was: find the real discriminator protecting the -1/0xF
+  pair and respell it honestly at the 13 pair. The ledger recorded the answer as "sched2
+  slack-hoisting". That attribution cannot be right (sched2 runs AFTER jump2 and cannot protect
+  anything from a jump2 deletion). The real discriminator, read directly out of
+  tools/gcc-2.7.2/jump.c:1996: the whole cross-jump attempt is gated by
+      `if (cross_jump && simplejump_p (insn))`
+  The 0xF pair's if-chain arm terminates in jump_insn 207, a `{branch_equality}` CONDITIONAL
+  branch (`(if_then_else (eq (reg s1) (reg v0)) (label_ref 444) (pc))`, dump lines 445-451) whose
+  delay slot carries `(set s0 (const_int 15))` (insn 1166). A conditional branch is not
+  `simplejump_p`, so cross-jumping is NEVER ATTEMPTED from it — that, not sched2, is what keeps
+  the two 0xF producers distinct in the target bytes.
+
+- [s45] WHY THAT DISCRIMINATOR CANNOT BE TRANSPLANTED TO THE 0xD PAIR (byte-level, not
+  spelling-level). Transplanting it requires one of the two 0xD arms to reach sel_dispatch via a
+  conditional branch rather than an unconditional jump. Both arms' terminators are FIXED BY THE
+  TARGET BYTES as unconditional jumps: 0x80038DA8 and 0x80038EC8 are both `0803E3B7`
+  (`j .L80038EDC`). The one fall-through slot immediately preceding .L80038EDC is already
+  occupied by the default arm (0x80038ED8 `addu $s0,$zero,$zero`). So neither the
+  conditional-branch shape nor the fall-through shape is available at the 0xD pair: the
+  protective shape is excluded by the target itself, not by our failure to find a spelling.
+
+- [s45] COMPLETE ENUMERATION OF THE REMAINING BREAKERS, from find_cross_jump's own source
+  (tools/gcc-2.7.2/jump.c:2403ff, read first-hand this session). The backward walk is:
+      i1 = prev_nonnote_insn (i1);
+      i2 = PREV_INSN (i2); while (i2 && (NOTE || CODE_LABEL)) i2 = PREV_INSN (i2);
+      if (GET_CODE (i1) == CODE_LABEL) { --minimum; break; }        /* LABEL-BONUS: helps merging */
+      if (i2 == 0 || GET_CODE (i1) != GET_CODE (i2)) break;         /* insn-code mismatch */
+      ... rtx_renumbered_equal_p (p1, p2) ...                       /* pattern mismatch */
+  With both terminators identical `{jump}` insns to label 444, the walk's FIRST step compares the
+  two `addiu $s0,$zero,0xD` setters. For the merge to fail, the streams must desynchronize at
+  exactly that step. The exhaustive option set is:
+    (1) different insn CODE at that position — requires interposing a non-NOTE RTL object in
+        exactly one stream that emits ZERO bytes. In GCC 2.7.2 that set is exactly {USE, CLOBBER}
+        (BARRIER cannot sit between a set and its following jump; a CODE_LABEL there is
+        impossible, and a CODE_LABEL in stream 1 hits LABEL-BONUS, which HELPS the merge).
+        This is precisely family F5, the union-constructor CLOBBER — REFUSED by owner ruling
+        2026-07-19 (decisions.md:789).
+    (2) different PATTERN at that position while emitting the same bytes — requires one arm's
+        `addiu $s0,$zero,13` to come from an RTL other than `movsi_internal2 (set (reg:SI 16)
+        (const_int 13))`. The only candidate is an add-form `(plus (reg X) (const_int 13))`, which
+        assembles to `addiu $16,$X,13`; to keep the target bytes X must be $zero, and any C
+        expression GCC can prove is zero-plus-13 is const-folded back to `(const_int 13)` before
+        jump2 (cse/combine), while any expression it cannot prove allocates a real register and
+        changes the register field. The quadrant is empty.
+    (3) make one arm not `simplejump_p` or make it fall through — excluded by the target bytes
+        above.
+  This closes the 2026-07-17 F1 frontier with a SOURCE-LEVEL ENUMERATION rather than an
+  exhaustion argument: F5 is not merely the last lever anyone found, it is the ONLY member of the
+  breaker set that GCC 2.7.2's own code admits, and it is owner-refused.
+
+- [s45] ENDGAME-LOCK GATE (a) — `python3 tools/scan_hand_coded.py --single func_80038C70`:
+  tier=LOW, score=0/8 (427 insns; S1..S8 all unset). Canonical-asm grant path FAILS.
+  Additionally the function is jtbl-coupled (its switch emits jtbl_80010BB4, referenced from
+  asm/funcs/func_80038C70.s), which is why the 2026-08-19 asm-until-matched migration REFUSED
+  it for INCLUDE_ASM — a whole-body asm form would orphan the C-generated jump table.
+
+- [s45] ENDGAME-LOCK GATE (b) — SOTN-master precedent for the closing construct: ABSENT,
+  re-verified this session. Grepping docs/reference/sotn-construct-index.md for
+  cross-jump / cross_jump / clobber / union returns ZERO hits across all 1,056 indexed entries.
+  This independently reconfirms the s7 survey (zero precedent in sotn-decomp / rood-reverse /
+  esa) that the owner's 2026-07-19 refusal rested on. Gate (b) FAILS.
+
+- [s45] OWNER-ACT CONFLICT IDENTIFIED (this is the decidable question the packet raises).
+  Two owner acts now govern this one function and they point opposite ways:
+    * 2026-07-19 (decisions.md:789-812) — OWNER RULING, escalation option (b): the F5 family is
+      REFUSED; func_80038C70 is dispositioned as an owner-signed PERMANENT EXCEPTION, keeping the
+      byte-correct committed form plus its regfix rule on main as INCOMPLETE-owner-accepted,
+      PARKED out of the active queue, with "No further grinding."
+    * 2026-08-24 (decisions.md:10358) — OWNER CAMPAIGN rules-to-zero: the final 89 rules "every
+      one retiring at that function's COMPLETED-C", with func_80038C70 placed FIRST in the
+      campaign lane (1 rule, lowest queue distance) and unparked into active.
+  The campaign presupposes a reachable COMPLETED-C for every lane member. For this function that
+  presupposition is false unless the 2026-07-19 refusal is revisited: the s45 enumeration shows
+  COMPLETED-C requires F5 and nothing else.
+
+- [s45] Chassis re-measured on the current toolchain (post cc1 fork-crash fix, decisions.md:10340): committed form scores 1 with target 402 / build 402 insns; the honest `sel = 0xD` form scores 2 with build 400. The digest's 'ledger floor 10' is stale bookkeeping — the true honest floor is 1 for the committed rule-era form.
+
+- [s45] The residual is exactly one nibble: regfix.txt:1095 `func_80038C70: subst "addiu\t$16,$zero,12" "addiu\t$16,$zero,13" @ 149`, faking `case 9: case 11: sel = 0xC;` into the target's 0xD. It is this function's only rule and one of the campaign's final 89.
+
+- [s45] The two merge candidates are byte-identical tails: arm A (if-chain `if (v0 != 10) sel = 0xD;`) at 0x80038DA8 `j .L80038EDC` + 0x80038DAC `addiu $s0,$zero,0xD`, and arm B (switch case 9/11) at 0x80038EC8 / 0x80038ECC — the same two words. In jump2 RTL they are insn 211 + jump_insn 223 and the pair at dump lines 892/897, both `(set (pc) (label_ref 444))`.
+
+- [s45] LEDGER CORRECTION: the F1 discriminator protecting the 0xF pair is NOT 'sched2 slack-hoisting' (sched2 runs after jump2 and cannot prevent a jump2 deletion). It is the caller gate `if (cross_jump && simplejump_p (insn))` at tools/gcc-2.7.2/jump.c:1996 — the 0xF pair's if-chain arm ends in a conditional {branch_equality} insn, so cross-jumping is never attempted from it.
+
+- [s45] That protection is unavailable at the 0xD pair BY THE TARGET BYTES: 0x80038DA8 and 0x80038EC8 are both 0803E3B7 (unconditional `j`), and the one fall-through slot before .L80038EDC is occupied by the default arm at 0x80038ED8 (`addu $s0,$zero,$zero`).
+
+- [s45] COMPLETE ENUMERATION from find_cross_jump's own source (jump.c:2403ff): with both terminators identical `{jump}`s to label 444, the merge fails only if the streams desynchronize at the first backward step (the two `addiu $s0,$zero,0xD` setters). The three quadrants are: zero-byte non-NOTE interposition = exactly {USE, CLOBBER} = family F5 (owner-refused); same-bytes-different-pattern = only `(plus (reg $zero) 13)`, which GCC const-folds back before jump2 (empty); non-simplejump/fall-through terminator (excluded by target bytes). F5 is the unique breaker GCC 2.7.2 admits.
+
+- [s45] Endgame gate (a): `tools/scan_hand_coded.py --single func_80038C70` -> tier=LOW score=0/8, no indicator set. Also jtbl-coupled (emits jtbl_80010BB4), the reason asm-until-matched refused INCLUDE_ASM for it in 2026-08-19.
+
+- [s45] Endgame gate (b): docs/reference/sotn-construct-index.md (1,056 entries) has ZERO hits for cross-jump / cross_jump / clobber / union — no SOTN-master precedent for the closing construct, independently reconfirming the s7 survey that the owner's 2026-07-19 refusal rested on.
+
+- [s45] OWNER-ACT CONFLICT: decisions.md:789 (2026-07-19) refuses F5 and dispositions this function as an owner-signed permanent exception, parked, 'No further grinding'; decisions.md:10358 (2026-08-24) launches rules-to-zero with this function FIRST in the lane and COMPLETED-C as the stated goal. The campaign presupposes a reachable COMPLETED-C, which the s45 enumeration shows is false unless the F5 refusal is revisited.
+
+- [s45] Decision packet filed this session at docs/grind/decisions.md:10376 with the single decidable question, evidence pointers, and four consequence branches (A exempt / B1 re-sanction F5 / B2 owner-override canonical-asm / B3 fidelity deviation, plus C reframe-as-campaign-success). Grind-lane recommendation: (A) or (C) — the evidence behind the 2026-07-19 refusal is unchanged and was reconfirmed this session.
+
+- [s45] src/ left clean: the honest-0xD probe edit was reverted immediately after measurement (git status shows only docs/grind/decisions.md, the two ledger files, the new rejected form, and metrics/events.jsonl).

@@ -1,8 +1,8 @@
 {
  "func": "motion_SetMotion",
  "file": "code6cac_c_mid",
- "session_count": 44,
- "current_modality": "rederive",
+ "session_count": 45,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -273,18 +273,29 @@
    "floor": 10,
    "modality": "rederive",
    "headline": "motion_SetMotion owner-gated: 2026-07-18 OWNER-ESCALATION verified on file and unruled (docs/grind/decisions.md:761-776; only later entry is the D_80082050 PASS at :778); mandated rederive axis is dea"
+  },
+  {
+   "session": 45,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "s45 escalation: both endgame gates FAIL (scan LOW 0/8; zero SOTN precedent) and the cross-jump wall is now closed by a GCC-source ENUMERATION, not exhaustion \u2014 {USE,CLOBBER} (family F5, owner-refused "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner rules option (a): sanction the union-constructor CLOBBER family",
-   "mechanism": "Family-level sanction with per-use dossier (hirahira_w_frie style): measured lever-exhaustion + named GCC pass (expr.c:2996 CLOBBER emission; s7-traced stream-desync GET_CODE break in find_cross_jump) + mandatory /* FAKE */ annotation; the banked n1 form is byte-proven and trace-proven",
-   "next_probe": "Re-propose rejected/judge-fail-0717-1708.c through the normal candidate path; driver re-proves bytes, default-FAIL Judge makes the final call"
+   "hypothesis": "Owner answers (A)/(C): the 2026-07-19 permanent exception controls and func_80038C70 is exempt from rules-to-zero.",
+   "mechanism": "The 2026-07-19 ruling is the more specific owner act for this function and its factual basis (zero community precedent for F5) was independently reconfirmed by s45's index sweep; the campaign's blanket 'every rule retires at COMPLETED-C' cannot bind a function whose COMPLETED-C is provably unreachable without the refused family.",
+   "next_probe": "Owner rules on the packet at decisions.md:10376; the driver removes func_80038C70 from the campaign lane and the project's rule floor is restated as 1 (or the campaign is scoped to the other 7 functions + func_80041188's prologue_config entry)."
   },
   {
-   "hypothesis": "Owner rules option (b): refuse the family",
-   "mechanism": "Per no-park-permanently only the owner can sign a disposition for regfix.txt:2190; a function carrying a rule is INCOMPLETE by definition",
-   "next_probe": "Owner signs the rule disposition in docs/grind/decisions.md; the function leaves the grind queue under that owner act"
+   "hypothesis": "Owner answers (B1): F5 is re-sanctioned as an owner-signed per-function last resort with a mandatory /* FAKE */ dossier.",
+   "mechanism": "s45 proves F5 is the unique member of the breaker set, so a rules-to-zero completion for this function is equivalent to sanctioning F5; the byte-proven and trace-proven form is already banked.",
+   "next_probe": "Re-propose memory/grind/func_80038C70/rejected/judge-fail-0717-1708.c through the normal candidate path with a FAKE annotation naming jump.c:2403 find_cross_jump stream desynchronization as the mechanism; the driver re-proves bytes and the default-FAIL Judge makes the final call. Note gate (b) still fails, so this is an explicit owner override of the SOTN-viability bar, not a satisfied gate."
+  },
+  {
+   "hypothesis": "Owner answers (B2): canonical-asm is granted despite tier LOW.",
+   "mechanism": "Overrides the canonical gate, which routes this body as ordinary compiled C (scan 0/8).",
+   "next_probe": "Before any such grant is actionable, decide where jtbl_80010BB4 is emitted from once the body is no longer C \u2014 the jtbl coupling is exactly why the 2026-08-19 asm-until-matched migration refused this function, and no INCLUDE_ASM/whole-body-asm form exists that keeps the table alive."
   }
  ],
  "judge_constraints": [

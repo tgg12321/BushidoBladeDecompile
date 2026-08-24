@@ -10372,3 +10372,150 @@ seeded with class facts (jtbl route = pure-C match, wave-2 representation
 retirement measured dead; masked-score warnings; asmfix body-coupling;
 solver-modality guidance). Standards unchanged — every completion through
 the full gates.
+
+## 2026-08-24 — func_80038C70 (motion_SetMotion, src/code6cac_c_mid.c) — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Filed by grind session 45 (escalation modality) under the 2026-08-24 rules-to-zero
+campaign, which unparked this function and placed it FIRST in the campaign lane.
+Both endgame-lock AND-gates were evaluated this session and BOTH FAIL; what makes
+this a decision packet rather than a terminal refusal is a genuine conflict between
+two owner acts, described below.
+
+### (i) The single decidable question
+
+**Two owner acts now govern func_80038C70 and they point opposite ways. Which one
+controls?**
+
+- **2026-07-19** (this file, line 789) — OWNER RULING on the 2026-07-18 escalation,
+  option (b): the union-constructor CLOBBER family (F5) is **REFUSED**, and
+  func_80038C70 is dispositioned as an **owner-signed permanent exception** — the
+  byte-correct committed form plus its one regfix rule stay on main as
+  INCOMPLETE-owner-accepted, PARKED out of the active queue, "**No further
+  grinding.**"
+- **2026-08-24** (this file, line 10358) — OWNER CAMPAIGN *rules-to-zero*: the final
+  89 rules, "every one retiring at that function's COMPLETED-C", with
+  func_80038C70 named first in the campaign lane (1 rule, lowest queue distance)
+  and returned to `active`.
+
+The campaign presupposes that COMPLETED-C is reachable for every lane member. For
+this function that presupposition is **false unless the 2026-07-19 refusal is
+revisited** — session 45 has now proven, from GCC's own source, that F5 is not
+merely the last lever anyone found but the **only** member of the breaker set.
+
+### (ii) Evidence pointers
+
+**The residual, exactly.** `regfix.txt:1095` — `func_80038C70: subst
+"addiu\t$16,$zero,12" "addiu\t$16,$zero,13" @ 149`. The committed C writes
+`case 9: case 11: sel = 0xC;` and the rule rewrites the immediate to 13. That is a
+semantic lie of one nibble, and it is the project's only remaining rule for this
+function.
+
+**Chassis re-measured this session** (post cc1 fork-crash fix, this file line 10340):
+- committed form: `sandbox --disable all` → score **1**, target 402 / build **402**.
+- honest form (`sel = 0xD`): score **2**, target 402 / build **400**.
+  jump2 cross-jumping deletes BOTH the `addiu $s0,$zero,0xD` and its
+  `j sel_dispatch` from one arm. (Earlier sessions recorded "1 word short"; the
+  correct figure is a 2-insn deletion. The digest's "floor 10" is stale bookkeeping;
+  the true floor is 1.)
+
+**The mechanism, named at GCC-source level (not inferred).** The two merge
+candidates are the identical tails `[ (set (reg:SI 16 s0) (const_int 13)) ;
+(jump → label 444) ]` at arm A (if-chain, target bytes 0x80038DA8 `j .L80038EDC`,
+delay slot 0x80038DAC `addiu $s0,$zero,0xD`) and arm B (switch case 9/11, target
+bytes 0x80038EC8 / 0x80038ECC — same two words). Ledger:
+`memory/grind/func_80038C70/evidence.md` [s45]; RTL artifact
+`tmp/grind/func_80038C70/s45/jump2_fn.txt`.
+
+**A ledger correction that matters.** The 2026-07-17 17:34 Judge instruction was to
+find the real discriminator protecting the -1/0xF pair and respell it honestly at
+the 13 pair. Sessions s6–s44 carried the answer as "sched2 slack-hoisting", which
+cannot be right — sched2 runs *after* jump2 and cannot protect anything from a jump2
+deletion. The real discriminator is the caller gate at `tools/gcc-2.7.2/jump.c:1996`,
+`if (cross_jump && simplejump_p (insn))`: the 0xF pair's if-chain arm ends in a
+**conditional** `{branch_equality}` insn carrying `(set s0 15)` in its delay slot, so
+cross-jumping is never attempted from it. **That protection is unavailable at the 0xD
+pair by the target bytes themselves** — 0x80038DA8 and 0x80038EC8 are both
+`0803E3B7`, unconditional `j`, and the one fall-through slot before `.L80038EDC` is
+already occupied by the default arm (0x80038ED8 `addu $s0,$zero,$zero`).
+
+**Complete enumeration of the breaker set** (`find_cross_jump`, jump.c:2403ff, read
+first-hand this session). The backward walk is `i1 = prev_nonnote_insn(i1)` on stream 1
+and PREV_INSN-skipping-NOTE-and-CODE_LABEL on stream 2; a CODE_LABEL reached in
+stream 1 triggers `--minimum; break` (the LABEL-BONUS, which *helps* merging). With
+both terminators identical `{jump}`s to label 444, the merge can only fail if the two
+streams differ at the first backward step — the `addiu $s0,$zero,0xD` setters. Exactly
+three quadrants exist and all three are closed:
+1. **Interpose a non-NOTE, zero-byte RTL object in one stream.** In GCC 2.7.2 that set
+   is exactly `{USE, CLOBBER}` — i.e. family **F5**, owner-refused. (A BARRIER cannot
+   sit between a set and its following jump; a CODE_LABEL cannot either, and in
+   stream 1 it would help the merge, not block it.)
+2. **Same bytes from a different pattern.** Only an add-form
+   `(plus (reg X) (const_int 13))` assembles to the same `addiu`, and it requires
+   `X == $zero`, which GCC emits only after const-folding the expression back to
+   `(const_int 13)` before jump2. Provably empty.
+3. **Non-`simplejump_p` or fall-through terminator.** Excluded by the target bytes.
+
+This upgrades the long-standing s10 "closure theorem" from an exhaustion argument to a
+source-level enumeration.
+
+**Gate (a) — canonical-asm: FAILS.** `python3 tools/scan_hand_coded.py --single
+func_80038C70` → **tier=LOW, score=0/8** (427 insns, no indicator set). Independently,
+the function is jtbl-coupled — its switch emits `jtbl_80010BB4` — which is why the
+2026-08-19 asm-until-matched migration REFUSED it for INCLUDE_ASM; a whole-body asm
+form would orphan the C-generated jump table.
+
+**Gate (b) — SOTN-master precedent for the closing construct: FAILS.**
+`docs/reference/sotn-construct-index.md` (1,056 entries) returns **zero** hits for
+cross-jump / cross_jump / clobber / union constructs, independently reconfirming the
+s7 survey (zero precedent across sotn-decomp, rood-reverse, esa) that the owner's
+2026-07-19 refusal rested on.
+
+**Exhaustion of record:** 45 sessions; all five ladder modalities measured dead
+(structural r1–r13; permuter 168,754 iterations across three campaigns from both sides
+of the merge boundary; forensics with two BB2_XJUMP_DEBUG white-box traces plus this
+session's jump2 RTL + GCC-source read; rederive; synthesis); nine rejected forms banked
+under `memory/grind/func_80038C70/rejected/`.
+
+### (iii) Consequence of each answer
+
+- **(A) The 2026-07-19 permanent exception controls; func_80038C70 is EXEMPT from
+  rules-to-zero.** The campaign's real target becomes 88 rules across 7 functions plus
+  func_80041188's prologue_config entry, not 89 across 8. This function returns to the
+  parked, owner-accepted-INCOMPLETE state and leaves the active queue permanently; the
+  project's rule floor is 1, not 0, and `rules-to-zero` should be renamed or scoped
+  accordingly. **Nothing else in the campaign lane is affected** — the next lane item
+  (func_80041188) proceeds immediately.
+- **(B) rules-to-zero supersedes, and the owner supplies the closing mechanism.** Given
+  the enumeration above, the only mechanisms that exist are:
+  - **(B1) Re-sanction F5** (the union-constructor CLOBBER) as an owner-signed
+    per-function last-resort with a mandatory `/* FAKE: ... */` dossier — reversing the
+    2026-07-19 refusal for this one use. The banked byte-proven and trace-proven form
+    already exists at `rejected/judge-fail-0717-1708.c`; the driver would re-prove
+    bytes and the default-FAIL Judge would still make the final call. Cost: the
+    2026-07-19 "no community precedent" basis is unchanged — gate (b) still fails, so
+    this is an explicit owner override of the SOTN-viability bar, not a satisfied gate.
+  - **(B2) Owner-override canonical-asm** despite `scan_hand_coded` tier LOW (0/8),
+    which would also require deciding where `jtbl_80010BB4` is emitted from once the
+    body is no longer C. This contradicts the standing rule that the canonical gate,
+    not the agent (or the owner's convenience), decides what qualifies.
+  - **(B3) Accept a fidelity deviation** — keep an honest `sel = 0xD` C body and accept
+    a 2-insn (8-byte) mismatch against the oracle. This breaks the oracle invariant and
+    is listed only for completeness.
+- **(C) Neither — treat the rule itself as the deliverable.** Declare
+  `regfix.txt:1095` an owner-signed *documented* exception (as 2026-07-19 already did)
+  and close the campaign at "89 → 1 rule, all remaining rules retired". Operationally
+  identical to (A) but framed as campaign success rather than exemption.
+
+**Recommendation from the grind lane:** (A) or (C). The evidence that made the owner
+refuse F5 on 2026-07-19 is unchanged and was independently reconfirmed this session;
+nothing found since strengthens the case for the family — what session 45 adds is a
+*proof that no alternative exists*, which sharpens the choice but does not move it.
+
+**References:** owner ruling 2026-07-19 (this file, line 789); owner campaign
+2026-08-24 (this file, line 10358); ledger
+`memory/grind/func_80038C70/{evidence.md [s45], hypotheses.md [s45], candidate.c}` and
+`rejected/` (9 forms, incl. this session's
+`s45-honest-0xD-crossjump-merge-400insns.c`); artifacts
+`tmp/grind/func_80038C70/s45/jump2_fn.txt` and
+`tmp/grind/func_80038C70/dumps/code6cac_c_mid.jump2`; GCC source
+`tools/gcc-2.7.2/jump.c:1996` and `:2403`.

@@ -443,3 +443,63 @@
 - probe: Ledger check against the Judge-certified closure theorem: it quantifies over jump2-time RTL invariants of ALL byte-matching compiles (any such compile forces both 13-sites to [set13; j] with a heading CODE_LABEL, guaranteeing the counted-match + label-bonus merge), not over source spellings; nine independent confirmations banked incl. two white-box BB2_XJUMP_DEBUG traces; s35/s36 rederive sessions already verified this axis dead.
 - result: Any rederived chassis lands in one of the s10 three basins (merged / unmerged-with-cost / unsanctioned USE-CLOBBER breaker); the only byte-free breaker class is forbidden by the binding Judge constraints pending the owner ruling.
 - verdict: KILLED
+
+## [s45] The chassis change (cc1 fork-crash fix, adopted 2026-08-24) reopened the 13-pair wall by altering codegen for this TU
+- mechanism: The brief's chassis warning: every banked spelling conclusion is chassis-relative. A cc1 change that perturbed jump2's input could leave the two 0xD arms unmergeable, or change the insn-count parity.
+- probe: Re-ran `sandbox func_80038C70 --disable all` on the committed HEAD form (score 1, 402/402, 1 rule dropped, 7 cheat-asm stripped elsewhere in the TU), then edited `case 9: case 11: sel = 0xC;` -> `sel = 0xD;` and re-ran it (score 2, target 402 / build 400). Source restored immediately afterwards; git diff clean apart from metrics/events.jsonl.
+- result: Nothing reopened. The honest 0xD form still merges at jump2 and is now measured as a TWO-insn deletion (400 vs 402), correcting the ledger's long-standing "1 word short" phrasing (the score-1 of the committed form is the 0xC-vs-0xD immediate, a different quantity). Floor on the current chassis: 1 with the rule-era 0xC lie in place, 2 for the honest form.
+- verdict: KILLED
+
+## [s45] The F1 discriminator that protects the 0xF (-1) pair is sched2 slack-hoisting, as the ledger recorded
+- mechanism: The 2026-07-17 17:34 Judge asked for the real discriminator protecting the -1 pair so it could be respelled honestly at the 13 pair; sessions s6-s44 carried "sched2 slack-hoisting" as the answer.
+- probe: Read the jump2 RTL for the function first-hand (tmp/grind/func_80038C70/s45/jump2_fn.txt, from this session's tools/grinder/dump.ps1 run) and then read find_cross_jump and its caller in tools/gcc-2.7.2/jump.c (lines 1996 and 2403ff).
+- result: FALSIFIED. sched2 runs after jump2 and cannot protect anything from a jump2 deletion. The actual discriminator is the caller's gate `if (cross_jump && simplejump_p (insn))` at jump.c:1996: the 0xF pair's if-chain arm ends in jump_insn 207, a `{branch_equality}` CONDITIONAL branch carrying `(set s0 15)` (insn 1166) in its delay slot, so cross-jumping is never attempted from it. Ledger attribution corrected for all future sessions.
+- verdict: KILLED
+
+## [s45] The 0xF pair's protective shape (conditional-branch terminator, or fall-through) can be transplanted honestly onto the 0xD pair — i.e. the Judge's F1 instruction is satisfiable
+- mechanism: If one of the two 0xD arms reached sel_dispatch via a conditional branch, or by falling through to the label, `simplejump_p` would be false / no jump insn would exist, and find_cross_jump would never fire on the pair.
+- probe: Compared the required shapes against the target bytes in asm/funcs/func_80038C70.s: 0x80038DA8 = `0803E3B7` `j .L80038EDC` (delay 0x80038DAC `addiu $s0,$zero,0xD`); 0x80038EC8 = `0803E3B7` `j .L80038EDC` (delay 0x80038ECC `addiu $s0,$zero,0xD`); the single fall-through slot before .L80038EDC is occupied by 0x80038ED8 `addu $s0,$zero,$zero` (the default arm).
+- result: KILLED by the target bytes, not by search failure. Both 0xD arms are unconditional jumps in the shipped executable and the fall-through slot is taken, so neither protective shape exists at this pair. The F1 instruction is answerable but not satisfiable: the discriminator is real, and it is provably unavailable here.
+- verdict: KILLED
+
+## [s45] Some honest C spelling other than F5 can desynchronize find_cross_jump's backward walk at the 0xD pair
+- mechanism: The walk (jump.c:2403ff) fails only if, at the first backward step, the two streams differ in insn CODE or in PATTERN. Any such spelling would be an honest breaker outside the refused union-CLOBBER family.
+- probe: Read find_cross_jump end-to-end and enumerated the ways that first step can differ, under the constraint that the emitted bytes must remain `addiu $s0,$zero,0xD` + `j .L80038EDC` in BOTH arms.
+- result: The breaker set is exactly three quadrants and all three are closed. (1) Interpose a non-NOTE zero-byte RTL object in one stream: in GCC 2.7.2 that set is exactly {USE, CLOBBER} — family F5, owner-REFUSED 2026-07-19; a CODE_LABEL cannot sit between the set and its jump, and a CODE_LABEL in stream 1 hits the LABEL-BONUS `--minimum; break` which HELPS the merge; a BARRIER cannot precede a jump inside a block. (2) Same bytes from a different pattern: only an add-form `(plus (reg X) (const_int 13))` assembles to the same `addiu`, and it needs X == $zero, which GCC only emits when it has const-folded the expression back to `(const_int 13)` before jump2 — the quadrant is provably empty. (3) Non-simplejump / fall-through terminator: excluded by the target bytes (previous hypothesis). This upgrades the s10 closure theorem from an exhaustion argument to a source-level enumeration: F5 is the unique member of the breaker set.
+- verdict: KILLED
+
+## [s45] Both endgame-lock AND-gates are open for func_80038C70 under the 2026-08-24 rules-to-zero campaign
+- mechanism: Gate (a) canonical-asm needs a STRONG scan_hand_coded tier; gate (b) needs an in-hand SOTN-master precedent (file+line) for the closing construct.
+- probe: Ran `python3 tools/scan_hand_coded.py --single func_80038C70`; grepped docs/reference/sotn-construct-index.md (1,056 entries) for cross-jump / clobber / union constructs; re-read the 2026-07-19 owner ruling and the 2026-08-24 campaign entry.
+- result: BOTH GATES FAIL. (a) tier=LOW, score=0/8, no indicator set; and the function is jtbl-coupled (emits jtbl_80010BB4), which is why asm-until-matched already REFUSED it for INCLUDE_ASM — a whole-body asm form would orphan the C-generated jump table. (b) zero index hits, reconfirming the s7 zero-precedent survey the owner's refusal rested on. What IS newly decidable is the conflict between the 2026-07-19 permanent-exception disposition ("No further grinding") and the 2026-08-24 rules-to-zero campaign that unparked this function expecting COMPLETED-C. Filed as a decision packet at docs/grind/decisions.md (2026-08-24 entry, this session).
+- verdict: CONFIRMED
+
+## [s45] The chassis change (cc1 fork-crash fix adopted 2026-08-24) reopened the 13-pair cross-jump wall by altering codegen for this TU.
+- mechanism: Every banked spelling conclusion is chassis-relative; a cc1 change perturbing jump2's input could leave the two 0xD arms unmergeable or shift insn-count parity.
+- probe: Re-ran `sandbox func_80038C70 --disable all` on the committed HEAD form (score 1, target 402 / build 402, 1 rule dropped, 7 cheat-asm stripped elsewhere in the TU), then edited `case 9: case 11: sel = 0xC;` -> `sel = 0xD;` and re-ran (score 2, target 402 / build 400). Source restored immediately; src/ clean at session end.
+- result: Nothing reopened. The honest 0xD form still merges at jump2, and the deletion is measured as TWO insns (both the `addiu $s0,$zero,0xD` and its `j sel_dispatch`), correcting the ledger's long-standing '1 word short' phrasing. Digest 'floor 10' is stale bookkeeping; true floor is 1 (committed, rule-era) / 2 (honest).
+- verdict: KILLED
+
+## [s45] The F1 discriminator protecting the 0xF (-1) pair is sched2 slack-hoisting, as sessions s6-s44 recorded.
+- mechanism: The 2026-07-17 17:34 Judge asked for the real discriminator so it could be respelled honestly at the 13 pair; the ledger's answer has been 'sched2 slack-hoisting' for 38 sessions.
+- probe: Read this session's jump2 RTL for the function (tmp/grind/func_80038C70/s45/jump2_fn.txt) and then find_cross_jump plus its caller in tools/gcc-2.7.2/jump.c (lines 1996, 2403ff).
+- result: FALSIFIED. sched2 runs AFTER jump2 and cannot protect anything from a jump2 deletion. The real discriminator is the caller gate `if (cross_jump && simplejump_p (insn))` at jump.c:1996 — the 0xF pair's if-chain arm ends in a conditional {branch_equality} insn (jump_insn 207) carrying `(set s0 15)` in its delay slot, so cross-jumping is never attempted from it. Ledger attribution corrected for all future sessions.
+- verdict: KILLED
+
+## [s45] The 0xF pair's protective shape (conditional-branch terminator, or fall-through into the label) can be transplanted honestly onto the 0xD pair, satisfying the Judge's F1 instruction.
+- mechanism: If one 0xD arm reached sel_dispatch via a conditional branch, or fell through to the label, `simplejump_p` would be false / no jump insn would exist and find_cross_jump would never fire on the pair.
+- probe: Compared the required shapes against the shipped bytes in asm/funcs/func_80038C70.s: 0x80038DA8 = 0803E3B7 `j .L80038EDC` (delay 0x80038DAC `addiu $s0,$zero,0xD`); 0x80038EC8 = 0803E3B7 `j .L80038EDC` (delay 0x80038ECC same); the single fall-through slot before .L80038EDC is occupied by 0x80038ED8 `addu $s0,$zero,$zero` (the default arm).
+- result: KILLED by the target bytes rather than by search failure. Both 0xD arms are unconditional jumps in the shipped executable and the fall-through slot is taken, so neither protective shape exists at this pair. The F1 instruction is answerable but not satisfiable.
+- verdict: KILLED
+
+## [s45] Some honest C spelling other than family F5 can desynchronize find_cross_jump's backward walk at the 0xD pair.
+- mechanism: The walk fails only if, at the first backward step, the two streams differ in insn CODE or in PATTERN; any such spelling would be an honest breaker outside the owner-refused union-CLOBBER family.
+- probe: Read find_cross_jump end-to-end (tools/gcc-2.7.2/jump.c:2403ff) and enumerated every way the first step can differ, under the constraint that BOTH arms must still emit `addiu $s0,$zero,0xD` followed by `j .L80038EDC`.
+- result: The breaker set has exactly three quadrants and all three are closed. (1) Interpose a non-NOTE zero-byte RTL object in one stream: in GCC 2.7.2 that set is exactly {USE, CLOBBER} — family F5, owner-REFUSED 2026-07-19; a BARRIER cannot sit between a set and its following jump, a CODE_LABEL cannot either, and a CODE_LABEL reached in stream 1 hits the LABEL-BONUS `--minimum; break` which HELPS the merge. (2) Same bytes from a different pattern: only an add-form `(plus (reg X) (const_int 13))` assembles to the same `addiu`, requiring X == $zero, which GCC emits only after const-folding back to `(const_int 13)` before jump2 — provably empty. (3) Non-simplejump / fall-through terminator: excluded by the target bytes. This upgrades the s10 closure theorem from an exhaustion argument to a source-level enumeration: F5 is the UNIQUE member of the breaker set.
+- verdict: KILLED
+
+## [s45] Either endgame-lock AND-gate is open for func_80038C70 under the 2026-08-24 rules-to-zero campaign.
+- mechanism: Gate (a) canonical-asm needs a STRONG scan_hand_coded tier; gate (b) needs an in-hand SOTN-master precedent (file+line) for the closing construct.
+- probe: Ran `python3 tools/scan_hand_coded.py --single func_80038C70`; grepped docs/reference/sotn-construct-index.md (1,056 entries) for cross-jump / cross_jump / clobber / union; re-read the 2026-07-19 owner ruling (decisions.md:789) and the 2026-08-24 campaign entry (decisions.md:10358).
+- result: BOTH GATES FAIL. (a) tier=LOW, score=0/8, no S1-S8 indicator set (427 insns); independently the function is jtbl-coupled (emits jtbl_80010BB4), which is why asm-until-matched already REFUSED it for INCLUDE_ASM — whole-body asm would orphan the C-generated jump table. (b) zero index hits, independently reconfirming the s7 zero-precedent survey the owner's refusal rested on. What IS newly decidable is the conflict between the 2026-07-19 permanent-exception disposition ('No further grinding') and the 2026-08-24 campaign that unparked this function expecting COMPLETED-C.
+- verdict: CONFIRMED
