@@ -593,13 +593,49 @@ void func_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 
 void func_80048A7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
     func_80048864(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
 }
-extern s32 snd_LoadBgm(u8);
+extern s32 *snd_LoadBgm(s32); /* corrected to the definition (src/sound.c:134) — owner ruling 2026-08-24, escalation packet func_80048AD0 */
 extern s32 snd_PlayBgm(s32);
 extern u8 D_80099BCC;
 extern s32 D_800A33E0;
 extern s32 D_800A33E4;
 extern s32 func_8004153C(s32);
-INCLUDE_ASM("asm/funcs", func_80048AD0);
+s32 func_80048AD0(s32 arg0) {
+    s32 temp_v0;
+    s32 sound;
+    s32 idx;
+    u8 *base;
+    s32 delta;
+    u8 *p;
+    u8 *q;
+
+    temp_v0 = func_8004153C(arg0);
+    if (temp_v0 == 0) return 0;
+    idx = *(s16 *)(temp_v0 + 8);
+    D_800A33E0 = arg0;
+    sound = (&D_80099BCC)[idx];
+    if (sound == 0xFF) return 0;
+    base = (u8 *)snd_LoadBgm(sound);
+    p = base + ((*(u32 *)(base + 8) >> 2) << 2);
+    delta = (s32)(p - base);
+    D_800A33E4 = (s32)p;
+    q = p + 0xA;
+    /* FAKE: the record counter reuses `sound` rather than a fresh local.
+       snd_LoadBgm's argument copy gives `sound` a hard-reg $a0 preference;
+       global.c expand_preferences propagates it to the counter, which stops
+       prune_preferences making the counter yield $a0 to `delta`. With a
+       separate counter the pair allocates $a2/$a0 instead of target's
+       $a0/$a2. Measured exhaustion: ~60 variants over 8 sweeps + kills in
+       grind s1/s2 — see memory/grind/func_80048AD0/evidence.md. */
+    for (sound = 0; sound < 0x11; sound++) {
+        *(s16 *)(q - 8 + sound * 0x68) = sound;
+        *(s16 *)(q - 6 + sound * 0x68) = 9;
+        p[sound * 0x68] = 0xF;
+        *(s8 *)(q - 9 + sound * 0x68) = 0;
+        *(s16 *)(q + sound * 0x68) = (s16)arg0;
+    }
+    snd_PlayBgm(delta + 0x6E8);
+    return 1;
+}
 extern s32 g_snd_play_count;
 void func_80048B8C(s32 a0) {
     g_snd_play_count += a0;

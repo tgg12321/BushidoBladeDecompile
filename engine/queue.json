@@ -2131,17 +2131,7 @@
       "rules": 0,
       "status": "escalated",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, operator-filed 2026-08-11): 2-byte reorg branch-target residual unreachable from C under frozen pipeline; both endgame gates FAILED (scan LOW 0/8, no SOTN precedent); 25 rules retained to hold byte-match; see docs/grind/decisions.md 2026-08-11 entry [2026-08-24: prose predates the 2026-08-19 migration \u2014 the 25 rules are retired and main is INCLUDE_ASM (cheat-free); distance 0 is a MASKED zero (real residual: scorer-invisible 2-byte ASPSX reorg branch-target gap)]",
-      "escalation": "DECISION: adopt a per-function-gated maspsx ASPSX-parity branch-target fill (fidelity-class, same family as maspsx_label_nop_funcs.txt) to close the scorer-invisible 2-byte reorg residual? Evidence: decisions.md 2026-08-11 entry + memory/grind/main ledger (class census: 12 candidates / 138 sites / 96 funcs). YES -> gated fill + full oracle verify (may close the whole reorg class); NO -> returns to active with the residual provably unreachable under the frozen pipeline (frontier: none known)."
-    },
-    {
-      "func": "func_80048AD0",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "escalated",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, in-person 2026-08-10): prototype-correction grant refused x3; RA artifact + no SOTN precedent for the correction direction; pins at text1b.c:606-609 held solely for the oracle [2026-08-24: the 4 pins were removed \u2014 migrated to INCLUDE_ASM, oracle green; the sandbox-0-under-prototype-correction candidate stays banked in the ledger (grant thrice refused)]",
-      "escalation": "DECISION: correct the local extern to snd_LoadBgm's ACTUAL definition (s32* (s32), sound.c:133)? The banked body is sandbox-0 (47/47) under the correction; byte-neutrality verified in f035516b (reverted a5b0b6a4). Refused 3x on SOTN precedent-direction grounds (decisions.md 2026-08-10). YES -> COMPLETED-C same-day (fresh layer-2 review rerun first); NO -> active; frontier = reaching 0 under the wrong prototype (measured blocked by find_reg pass-0 copy-preference repulsion; solver-modality candidate)."
+      "escalation": "DECLINED 2026-08-24 (decisions.md escalation-packet rulings, packet 3): maspsx ASPSX-parity branch-target fill refused \u2014 self-healing transform, full fill-algorithm reimplementation required, ~120 already-correct census sites at risk. Residual (2-byte reorg branch-target gap) provably unreachable under the frozen pipeline. Re-decision triggers: census candidates regrow, or ASPSX fill semantics become documented."
     },
     {
       "func": "motion_Close",
@@ -2165,11 +2155,11 @@
     }
   ],
   "counts": {
-    "total": 244,
+    "total": 243,
     "active": 240,
     "by_status": {
       "active": 240,
-      "escalated": 4
+      "escalated": 3
     },
     "by_verdict": {
       "C": 204,
