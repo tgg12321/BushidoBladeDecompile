@@ -244,11 +244,13 @@ def _route(func: str, opcode_verdict: str, distance: int) -> str:
 
 
 def _sort_key(it: dict):
-    # Owner-directed campaign (2026-08-18): functions still keying asmfix.txt
-    # rules sort ahead of everything else (easiest-first within the group) so
-    # the grinder retires asmfix to zero first. Membership is derived live from
-    # asmfix.txt, so the campaign self-retires when the file empties.
-    campaign = 0 if it["func"] in cheats.asmfix_funcs() else 1
+    # Owner-directed campaign (2026-08-18 asmfix; GENERALIZED 2026-08-24,
+    # rules-to-zero — decisions.md "OWNER CAMPAIGN: rules-to-zero"): functions
+    # still keying ANY rule file sort ahead of everything else (easiest-first
+    # within the group) so the grinder retires the last rule debt first.
+    # Membership is derived live from the rule files, so the campaign
+    # self-retires when they empty.
+    campaign = 0 if it["func"] in cheats.all_keyed_functions() else 1
     return (_STATUS_RANK.get(it["status"], 0), campaign,
             it["distance"], it["file"], it["func"])
 

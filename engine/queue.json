@@ -1,8 +1,54 @@
 {
-  "generated_at": "2026-08-24T17:46:45",
+  "generated_at": "2026-08-24T18:11:14",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
+    {
+      "func": "func_80038C70",
+      "file": "code6cac_c_mid",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. jtbl-coupled (motion_SetMotion alias). The queue distance 1 is MASKED \u2014 the honest-0xD form full-builds 82e50f76 != oracle; only full-build SHA1 / raw byte-diff are valid metrics here (ledger headline). F5 union-CLOBBER remains"
+    },
+    {
+      "func": "func_80041188",
+      "file": "text1a_pre",
+      "distance": 27,
+      "verdict": "C",
+      "rules": 16,
+      "status": "active",
+      "prologue_fix": 1,
+      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. 16 regfix + the project's LAST prologue_config entry retire at match. Ledger floor 1; both explored routes measured arithmetically closed \u2014 solver modality + a FRESH chassis are the frontier; the banked candidate's stptr split "
+    },
+    {
+      "func": "func_80040B44",
+      "file": "text1a_pre",
+      "distance": 32,
+      "verdict": "C",
+      "rules": 15,
+      "status": "active",
+      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. 15 regfix. Migration measured it byte-coupled (full-build e29f91cc != oracle on body removal) \u2014 FIRST characterize what shifts (rodata/position?) since that mismatch is free coupling evidence; then grind to COMPLETED-C."
+    },
+    {
+      "func": "func_80040D48",
+      "file": "text1a_pre",
+      "distance": 34,
+      "verdict": "C",
+      "rules": 34,
+      "status": "active",
+      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. 34 regfix (the largest remaining stack); jtbl-coupled \u2014 the compiled switch emits the jtbl, so pure-C COMPLETED-C is the route (do not re-attempt INCLUDE_RODATA; wave-2 measured dead)."
+    },
+    {
+      "func": "func_800460E4",
+      "file": "text1a_c2",
+      "distance": 35,
+      "verdict": "C",
+      "rules": 10,
+      "status": "active",
+      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. 10 regfix; jtbl-coupled, same route as func_80040D48 (wave-2 INCLUDE_RODATA measured SHA1-dead for THIS function specifically)."
+    },
     {
       "func": "func_80060A68",
       "file": "text1b",
@@ -10,7 +56,25 @@
       "verdict": "C",
       "rules": 2,
       "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
+      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. the project's LAST 2 asmfix rules (whole-body splice) \u2014 their delete_between anchor is BODY-COUPLED: any candidate must retire both rules in the SAME change as the body land. Ledger floor 2; the residual is one sched2 ready-lis"
+    },
+    {
+      "func": "SioSyncroRead",
+      "file": "main",
+      "distance": 41,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active",
+      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. 6 regfix; genuine rodata emitter \u2014 a string literal in a MATCHED C body is fine, so this is an ordinary grind to 0; rules retire at match."
+    },
+    {
+      "func": "func_80019568",
+      "file": "code6cac",
+      "distance": 42,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active",
+      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. 5 regfix; jtbl-coupled, same pure-C route as the other jtbl members."
     },
     {
       "func": "func_800307D0",
@@ -20,15 +84,6 @@
       "rules": 0,
       "status": "active",
       "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: ONE bounded re-test under the 2026-08-20 or-tree carve-out (this refusal predates it); check expand_binop canonicalization reachability first"
-    },
-    {
-      "func": "func_80038C70",
-      "file": "code6cac_c_mid",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_800645B0",
@@ -99,8 +154,7 @@
       "distance": 4,
       "verdict": "C",
       "rules": 0,
-      "status": "active",
-      "prologue_fix": 1
+      "status": "active"
     },
     {
       "func": "func_80062020",
@@ -265,16 +319,6 @@
       "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
-      "func": "func_80041188",
-      "file": "text1a_pre",
-      "distance": 27,
-      "verdict": "C",
-      "rules": 16,
-      "status": "active",
-      "prologue_fix": 1,
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
-    },
-    {
       "func": "func_8002FC80",
       "file": "code6cac_b",
       "distance": 28,
@@ -296,8 +340,7 @@
       "distance": 29,
       "verdict": "C",
       "rules": 0,
-      "status": "active",
-      "prologue_fix": 1
+      "status": "active"
     },
     {
       "func": "func_80023648",
@@ -349,14 +392,6 @@
       "status": "active"
     },
     {
-      "func": "func_80040B44",
-      "file": "text1a_pre",
-      "distance": 32,
-      "verdict": "C",
-      "rules": 15,
-      "status": "active"
-    },
-    {
       "func": "func_800770B8",
       "file": "text1b",
       "distance": 32,
@@ -389,14 +424,6 @@
       "status": "active"
     },
     {
-      "func": "func_80040D48",
-      "file": "text1a_pre",
-      "distance": 34,
-      "verdict": "C",
-      "rules": 34,
-      "status": "active"
-    },
-    {
       "func": "func_80027640",
       "file": "code6cac_b",
       "distance": 35,
@@ -418,14 +445,6 @@
       "distance": 35,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800460E4",
-      "file": "text1a_c2",
-      "distance": 35,
-      "verdict": "C",
-      "rules": 10,
       "status": "active"
     },
     {
@@ -570,22 +589,6 @@
       "distance": 40,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "SioSyncroRead",
-      "file": "main",
-      "distance": 41,
-      "verdict": "C",
-      "rules": 6,
-      "status": "active"
-    },
-    {
-      "func": "func_80019568",
-      "file": "code6cac",
-      "distance": 42,
-      "verdict": "C",
-      "rules": 5,
       "status": "active"
     },
     {
