@@ -1,0 +1,37 @@
+{
+ "func": "func_80040B44",
+ "file": "text1a_pre",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 32,
+   "modality": "recon",
+   "headline": "Recon: owner coupling directive executed (INCLUDE_ASM emits at TU .text START, shifting 9 siblings +372B \u2014 pure emission-position, no constraint on the C); full 32-diff map banked in 5 classes with m2"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "H1-ORDER: per-site addend order (index-first at 5 sites, base-first only at the *t4 store) closes the 5 commutative addu diffs",
+   "mechanism": "GCC 2.7.2 preserves source addend order in non-constant PLUS expansion; m2c+target agree on the original per-site orders",
+   "next_probe": "edit the 5 expressions, sandbox --disable all, diff; read or-tree-shape-shift.md first for the vet"
+  },
+  {
+   "hypothesis": "H2-FRESH: fresh per-loop locals (m2c partition) fix the a0/a1/v0 init-loop seat swaps",
+   "mechanism": "reused i/ptr merges liveness across loops and flips local-alloc seats; original had fresh vars per m2c",
+   "next_probe": "rewrite both init loops with fresh locals, measure; on failure read .lreg death counts via tools/grinder/dump.ps1"
+  },
+  {
+   "hypothesis": "H3-DEADDEC: honest producer for the dead t3-=2 (m2c single-advance read shape, then loop-exit-work-inside-loop; dead-store-fake-exception only after both measure dead)",
+   "mechanism": "some honest spelling kept the compensation live under the same compiler; rule @175 insert_after is the forbidden class and can never be the answer",
+   "next_probe": "measure m2c's read shape (a3=*t3; a0_val=*(u16*)((u8*)t3+2); t3+=4) with post-loop t3-=2"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-24T23:37:58.010817+00:00"
+}
