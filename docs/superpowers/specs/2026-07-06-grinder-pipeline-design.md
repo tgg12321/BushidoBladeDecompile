@@ -100,6 +100,14 @@ The persistent brain — what makes session N+1 deeper than session N. Schema:
   progress: searched space.
 - **`candidate.c` + `rejected/`**: best form so far; every rejected form named
   for the violated rule. Sessions may not re-submit anything in `rejected/`.
+- **`self_vet.md`** (added later): mandatory self-vet record for any
+  `candidate-ready` claim (see `grindlib.py`).
+- **`migration_pin.json`** (2026-08-19 asm-until-matched migration): the
+  honest floor measured at migration, read by `engine/queue.py` for queue
+  ordering when the body is INCLUDE_ASM. See
+  `.claude/rules/asm-until-matched.md`.
+- **`retired-chassis-2026-08/`** (same migration): banked pre-migration body
+  (`body.c`) + retired rule stack (`rules.txt`).
 
 Caps are structural, not truncation: frontier ≤3; floor_history unlimited;
 evidence/hypotheses append-only (nothing compacted away). This deliberately
@@ -144,6 +152,13 @@ not choose:
    Kengo/sibling transplant — a structurally different C shape.
 6. **Synthesis** (10): re-read the whole ledger, write the merged attack,
    reset the frontier. Ladder repeats from 2.
+
+> **Amended 2026-08-19** (R1/R2/R3, `docs/grind/modality-effectiveness-2026-08-19.md`,
+> owner ruling in `.claude/rules/asm-until-matched.md`): synthesis moved to
+> rung 5 (session 6), the ladder never cycles a second time (one flat cycle ⇒
+> escalation), and permuter is hard-capped at 2 sessions per function. The
+> live order is `grindlib.py:LADDER`, which is authoritative:
+> `structural ×2 → permuter ×2 → synthesis → forensics ×2 → rederive ×2`.
 
 A modality is "spent" only when its ledger section shows real output (dumps
 captured, forms swept with scores) — checked mechanically by the driver, so a
@@ -302,7 +317,14 @@ Six changes. Five were owner-approved 2026-08-07 from the audit findings; the si
    ESCALATE means *the work is sound and complete but the grant is above my
    authority* (rule extension, new family, owner-policy question). The driver
    files an OWNER-ESCALATION and parks the function exactly like an owner-gated
-   park, instead of triggering a re-grind. Default-FAIL is unchanged: uncertainty
+   park, instead of triggering a re-grind.
+   > **SUPERSEDED 2026-08-18/19**: `.claude/rules/judge-sole-gate.md` retired
+   > owner-pending states (ESCALATE resolves under standing policy — terminal
+   > park or pipeline grant, never a wait), and
+   > `.claude/rules/integration-handoff-self-serve.md` makes
+   > `escalate_kind=integration-handoff` driver-executed with the function
+   > STAYING ACTIVE (`grind.ps1` add-scope-allow path).
+   Default-FAIL is unchanged: uncertainty
    about whether a construct is a CHEAT is still a FAIL. The Judge also now
    states `fail_ground` (CONSTRUCT / EVIDENCE / ANNOTATION-FORMAT) and
    `banned_construct`, which is what makes change 3 mechanical.

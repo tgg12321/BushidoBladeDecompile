@@ -61,7 +61,7 @@ inconsistently elsewhere:
 
 | Source | Count | Note |
 |---|---|---|
-| `asm/funcs/*.s` files | 1,437 | splat's per-function split — the authoritative enumeration (post-wave count) |
+| `asm/funcs/*.s` files | 1,437 (2026-08-07 snapshot — the duplicate pairs were subsequently deleted and asm-until-matched moves the file count both ways; regenerate the census before quoting) | splat's per-function split — the authoritative enumeration (post-wave count) |
 | minus `D_8007E08C.s` | 1,436 | data-as-code blob, not a function |
 | minus 7 stale duplicate pairs | **1,429** | 2 same-glabel pairs (`cdrom_FramesToBcd.s`/`func_800806A4.s`, `stage_InitCollision.s`/`func_8003F274.s`) **plus 5 same-address pairs invisible to glabel scans** (`cpu_get_dist`/`func_8003032C`, `cpu_set_move_command_and_dir`/`func_80030A2C`, `cpu_check_same_dir_timer`/`func_8003339C`, `replay_camera_Init`/`func_80036D98`, `special_camera_get_rot_dir`/`func_80037348`). All 7 pairs instruction-identical, none INCLUDE_ASM-referenced; worth deleting separately. |
 

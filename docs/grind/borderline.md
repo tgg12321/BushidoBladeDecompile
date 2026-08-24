@@ -25,6 +25,16 @@ Categories:
   FAIL; the reviewer's question recorded here.
 - **policy-question** — a genuine project-architecture question (e.g. global
   rodata reorder); work proceeds elsewhere, nothing blocks on it.
+- **resolution** — an earlier entry SPENT or superseded (e.g. by a later owner
+  ruling or measurement); recorded for closure.
+- **integration-handoff** — a driver-executed scope grant per
+  `.claude/rules/integration-handoff-self-serve.md` (emitted mechanically by
+  `tools/grinder/grind.ps1`).
+
+> Entries below are HISTORICAL and dated — each describes state AS OF ITS OWN
+> DATE. For current park state read `engine/queue.json` (`park_reason` /
+> `unparked_from`), never a count quoted in an entry (e.g. the 2026-08-19
+> re-audit's "24 parks STAND" predates the 2026-08-24 migration sweep).
 
 ---
 

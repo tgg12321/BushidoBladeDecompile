@@ -33,7 +33,7 @@ Matching decompilation of **Bushido Blade 2** (SLUS-00663) — a PS1 fighting ga
 - Stack: `0x801FFFF0`, GP: `0x800A30CC`
 - Text+data size: `0x93800` (604,160 bytes), loads at file offset `0x800`
 - Code ends ~`0x8008D070`, data/tables from ~`0x8008D080` to `0x800A3800`
-- 1,429 unique functions identified by splat (per the naming census, `docs/naming/README.md`, corrected by the 2026-08-07 duplicate survey: 1,437 `asm/funcs/*.s` files, minus the `D_8007E08C` data-as-code blob, minus 7 stale duplicate-address pairs — 2 same-glabel pairs plus 5 same-address pairs invisible to glabel scans; see `docs/TASK19-PROTO-ANALYSIS.md`)
+- 1,429 unique functions identified by splat (per the naming census, `docs/naming/README.md`, corrected by the 2026-08-07 duplicate survey: 1,437 `asm/funcs/*.s` files as of the 2026-08-07 survey (the count drifts — asm-until-matched adds/removes `.s` files; regenerate the census before quoting), minus the `D_8007E08C` data-as-code blob, minus 7 stale duplicate-address pairs — 2 same-glabel pairs plus 5 same-address pairs invisible to glabel scans; see `docs/TASK19-PROTO-ANALYSIS.md`)
 
 **Overlay EXE:** `disc/STR/MOVOVL.EXE` (122,880 bytes) — FMV/MDEC playback overlay
 - Loads at `0x801D8800`, entry `0x801DA084` — no overlap with main EXE
@@ -84,9 +84,12 @@ All build commands run inside WSL (Ubuntu 24.04) for Linux toolchain compatibili
 ```bash
 cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile"
 source .venv/bin/activate
-make setup    # re-run splat (regenerate asm, linker script)
 make          # build and verify SHA1 match
 make clean    # remove build artifacts
+# make setup  # DO NOT RUN — bb2.ld is HAND-MAINTAINED since the 2026-06-09
+#             # rodata cleanup; `make setup` re-adds dead rodata lines and
+#             # conflicts with const decls now in src/*.c (recovery procedure
+#             # in splat.yaml). Re-run splat only via that documented procedure.
 ```
 
 From Git Bash on Windows host:
@@ -100,8 +103,9 @@ Invoking WSL through a Windows-side agent nests multiple shells (Git Bash → ws
 PowerShell → wsl → bash); every `$`, quote, and backslash is parsed at each layer, which silently
 breaks inline `awk`/`sed`, shell-function definitions, heredocs, and hand-escaped quotes. Standards:
 
-- **Run engine commands through `tools/eng.ps1`** (PowerShell): `& tools/wteng.ps1 main queue next`. Zero
-  quoting; it builds the `wsl bash -c '…'` string internally.
+- **Run engine commands through `tools/wteng.ps1`** (PowerShell): `& tools/wteng.ps1 main queue next`. Zero
+  quoting; it builds the `wsl bash -c '…'` string internally and pins the repo. (`tools/eng.ps1` is its
+  superseded predecessor — guards steer away from it.)
 - **Anything beyond one simple command** (awk/sed, multi-statement pipelines, heredocs) → **write a
   `.py`/`.sh`/`.ps1` file and run that file**, not an inline `-c` string. A Python script is more
   robust and readable than inline `awk`.
@@ -133,14 +137,14 @@ Required local deps (gitignored):
 - `tools/gcc-2.7.2/` — PsyQ-era GCC cross-compiler (built from `decompals/mips-gcc-2.7.2`)
 - `tools/maspsx/` — ASPSX compatibility layer (cloned from `mkst/maspsx`)
 - `tools/decomp-permuter/` — [decomp-permuter](https://github.com/simonlindholm/decomp-permuter) for auto-matching C code
-- `tools/cc1psx.exe` — original PsyQ cc1psx (calibration only — see CLAUDE.md notes)
+- `tools/cc1psx.exe` — original PsyQ cc1psx (calibration/self-disproof only; never a build path — see the cc1psx-calibration-only policy in the Claude memory / `.claude/rules/no-compiler-divergence.md`)
 - `.venv/` — Python virtual env with splat, m2c, etc.
 - `disc/` — extracted disc filesystem
 
 ## File-edit conventions (cross-tool)
 
 - **Build files** (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, the project `*.txt` files like `regfix.txt`, `asmfix.txt`, `named_syms.txt`, `sdata*.txt`, `expand_lb_funcs.txt`) **MUST be saved with Unix LF line endings**. Editing from Windows-side editors that default to CRLF silently breaks the GNU toolchain. Edit via WSL or configure your editor to enforce LF on these paths.
-- The `tmp/` directory is for scratch — fully gitignored except `tmp/batch_attempt.csv` (queue working state).
+- The `tmp/` directory is for scratch — fully gitignored. (An old carve-out for `tmp/batch_attempt.csv` described the retired dc.sh-era queue; the live worklist is `engine/queue.json`.)
 - `permuter/` directories are gitignored (per-function permuter workspaces).
 - `auto_matches/` and `codex_lab/` are gitignored (workspace artifacts).
 
@@ -162,7 +166,7 @@ Tooling that enforces this:
 
 ## Commit conventions
 
-See [`docs/COMMIT_CONVENTIONS.md`](docs/COMMIT_CONVENTIONS.md) for the subject-prefix catalog and body structure used across this project. The audit tooling (`tools/hooks/llm_audit.sh`) and `git log` searches parse commit subjects/bodies for structured information, so consistency improves searchability and audit reliability.
+See [`docs/COMMIT_CONVENTIONS.md`](docs/COMMIT_CONVENTIONS.md) for the subject-prefix catalog and body structure used across this project. The commit-msg guard chain (`tools/hooks/commit_msg_chain.sh`), the manual cheat audit (`tools/audit_asm_cheats.py`), and `git log` searches parse commit subjects/bodies for structured information, so consistency improves searchability and audit reliability.
 
 ## Asset/format reverse engineering
 
@@ -182,7 +186,7 @@ Asset catalog data: `docs/formats/ndata_filemap.csv` (763 entries with semantic 
 - **Not-yet-decompiled functions are committed as `INCLUDE_ASM("asm/funcs", <func>);`**
   (owner ruling 2026-08-19): no regfix/asmfix rules, no cheat constructs, no draft C
   on `main` — C lands once, when the function byte-matches honestly. In-progress
-  candidates live in `memory/grind/<func>/`. (68 byte-coupling exceptions carry a
+  candidates live in `memory/grind/<func>/`. (56 byte-coupling exceptions as of 2026-08-24 carry a
   legacy representation until solved — see `docs/grind/borderline.md` 2026-08-19.)
 - When adding known symbol names, add them to `symbol_addrs.txt` and re-run splat
 

@@ -7,15 +7,15 @@ Matching decompilation rebuilds the original program from human-written C that c
 
 ## Status
 
-The build currently verifies SHA1 against the original. About 840 of the 1,435 identified functions have reached **COMPLETED-C** (pure-C body, zero build-time rules, byte-identical); the rest are still authored as `replace_with_asmfile` bridges, carry `regfix`/`asmfix` rules, or exist as authorized canonical inline assembly. The project goal is pure C plus a small, audited set of canonically hand-assembled functions (BIOS trampolines, GTE primitives, custom calling conventions).
+The build currently verifies SHA1 against the original. 1,051 of the 1,429 identified functions have reached **COMPLETED-C** (pure-C body, zero build-time rules, byte-identical); 179 are authorized canonical inline assembly; 244 are INCOMPLETE. Since the 2026-08-19 **asm-until-matched** ruling, an INCOMPLETE function is committed as `INCLUDE_ASM("asm/funcs", <func>);` — the original bytes, honestly labeled, with zero cheats on main (56 byte-coupled functions still carry legacy build rules until solved). In-progress candidates live in `memory/grind/<func>/`. The project goal is pure C plus a small, audited set of canonically hand-assembled functions (BIOS trampolines, GTE primitives, custom calling conventions). The default autonomous workflow is **the Grinder** (`tools/grinder/` — see `CLAUDE.md`).
 
 | Metric | Value |
 |---|---|
-| Total functions identified | 1,435 |
-| **COMPLETED-C** (pure C, zero rules, byte-identical) | ~840 |
-| **COMPLETED-INLINE-ASM-CANONICAL** ([`inline_asm_canonical.txt`](inline_asm_canonical.txt)) | 170 |
-| **INCOMPLETE** ([`engine/queue.json`](engine/queue.json)) | 423 (354 active, 69 parked) |
-| C source files | 31 (`src/*.c`, ~51k lines) |
+| Total functions identified | 1,429 |
+| **COMPLETED-C** (pure C, zero rules, byte-identical) | 1,051 |
+| **COMPLETED-INLINE-ASM-CANONICAL** ([`inline_asm_canonical.txt`](inline_asm_canonical.txt)) | 179 |
+| **INCOMPLETE** ([`engine/queue.json`](engine/queue.json)) | 244 (211 active, 33 parked) |
+| C source files | 32 (`src/*.c`, ~38k lines) |
 | Build SHA1 | matches original (`62efab4f…`) |
 
 Live counts: `& tools/wteng.ps1 main queue status` for the worklist,
@@ -23,7 +23,7 @@ Live counts: `& tools/wteng.ps1 main queue status` for the worklist,
 
 ## Project goals (1.0 release criteria)
 
-1. **Pure C source.** Every function compiled from C in `src/*.c` — no `replace_with_asmfile` bridges, no `INCLUDE_ASM` stubs. The only inline `__asm__()` permitted is for genuinely hand-coded original assembly (BIOS calling conventions, GTE coprocessor ops, a handful of custom-ABI math kernels). Authorized list: [`inline_asm_canonical.txt`](inline_asm_canonical.txt).
+1. **Pure C source.** Every function compiled from C in `src/*.c` — no build-rule rewrites, no `INCLUDE_ASM` stubs. (Until 1.0, `INCLUDE_ASM` stubs are the MANDATED interim representation of not-yet-matched functions — asm-until-matched ruling 2026-08-19 — so their presence is progress-honesty, not debt to paper over.) The only inline `__asm__()` permitted is for genuinely hand-coded original assembly (BIOS calling conventions, GTE coprocessor ops, a handful of custom-ABI math kernels). Authorized list: [`inline_asm_canonical.txt`](inline_asm_canonical.txt).
 2. **Byte-identical to original.** Every commit must rebuild to SHA1 `62efab4f…`. The match is preserved by a per-function build pipeline (see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)).
 3. **Named and organized.** Functions, globals, structs, and constants given semantic names where evidence supports it. Subsystem boundaries clear enough to navigate.
 4. **Mod-ready foundation.** Once 1.0 lands, this source tree should be usable as the starting point for translation patches, gameplay mods, ports, and engine research.
@@ -64,7 +64,9 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full build-pipeline g
 3. Extract the disc, build, verify:
    ```bash
    python3 tools/extract_iso.py
-   make setup        # run splat once to generate asm/
+   make setup        # FIRST-TIME SETUP ONLY: runs splat to generate asm/.
+                     # NEVER re-run it on an existing tree — bb2.ld is
+                     # hand-maintained (recovery procedure in splat.yaml).
    make              # builds and prints "OK: bb2 matches!" on success
    ```
 
@@ -75,14 +77,14 @@ If the final line is `OK: bb2 matches!`, you have a byte-identical rebuild.
 ```
 .
 |-- asm/                       # Disassembly. .text in 6CAC.s + asm/funcs/<name>.s; data in asm/data/
-|-- asm/funcs/                 # Per-function .s files (1,433 total); shrinks as src/ grows
+|-- asm/funcs/                 # Per-function .s files (~1,434); count moves BOTH ways (INCLUDE_ASM migration adds, COMPLETED-C removes)
 |-- build/                     # All build artifacts (gitignored)
 |-- disc/                      # Extracted disc filesystem (gitignored; reproduced by extract_iso.py)
 |-- docs/                      # Contributor / maintainer documentation
 |-- include/                   # Project headers (common.h, gte.h, psx.h, game.h, etc.)
 |-- Kengo/                     # Sister-engine reference: Kengo (PS2) debug symbols, ~2,500 named functions
-|-- memory/                    # (gitignored copy of) Claude-internal feedback files; see CLAUDE.md
-|-- src/                       # Decompiled C source — 31 files, ~51k lines
+|-- memory/                    # TRACKED pipeline state: grind ledgers (memory/grind/<func>/), WIP checkpoints, closer research
+|-- src/                       # Decompiled C source — 32 files, ~38k lines
 |-- tools/                     # Build pipeline (regfix, asmfix, maspsx, decomp-permuter, engine/, grinder/, ...)
 |-- engine/                    # The workflow spine: queue, canonical gate, sandbox, retire, verify-oracle
 |-- engine/queue.json          # Canonical ordered work list (`& tools/wteng.ps1 main queue status`)

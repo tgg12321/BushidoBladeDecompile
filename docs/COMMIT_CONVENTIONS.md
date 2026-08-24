@@ -1,8 +1,8 @@
 # Commit conventions
 
-Subject-line prefixes and body structure used across this project. **These are conventions, not enforced rules** — but the project's audit tooling (`tools/hooks/llm_audit.sh`) and `git log` searches parse commit subjects and bodies for structured information, so consistency improves searchability and audit reliability. _(The former `dc.sh lessons` / `tools/commit_lessons.py` "CommitAtlas" query tool is retired — archived under `archive/dcsh_workflow_2026-05-26/`.)_
+Subject-line prefixes and body structure used across this project. **These are conventions, not enforced rules** — but the commit-msg guard chain (`tools/hooks/commit_msg_chain.sh`) and `git log` searches parse commit subjects and bodies for structured information, so consistency improves searchability and audit reliability. _(The former `dc.sh lessons` / `tools/commit_lessons.py` "CommitAtlas" query tool is retired — archived under `archive/dcsh_workflow_2026-05-26/`.)_
 
-For the enforcement layer, see `tools/hooks/commit_audit_guard.sh` (commit-time cheat audit: programmatic `audit_asm_cheats.py --check-new` + the adversarial LLM auditor `tools/hooks/llm_audit.sh`). _(The `active_func_guard.sh` active-function commit blocker was deprecated 2026-05-22.)_
+The LIVE enforcement layer (2026-08-24) is the installed `commit-msg` chain — `tools/hooks/commit_msg_chain.sh` running `park_src_guard` → `no_new_regfix_guard` → `wip_compaction_guard` → `detector_config_guard`. The programmatic cheat audit (`tools/audit_asm_cheats.py --check-new`) is a MANUAL detector, not a wired hook; semantic review is the layer-2 `cheat-reviewer` agent / the Grinder's Judge. _(The former `commit_audit_guard.sh` / `llm_audit.sh` audit hooks and the `active_func_guard.sh` blocker are retired.)_
 
 ## Subject line format
 
@@ -12,7 +12,7 @@ For the enforcement layer, see `tools/hooks/commit_audit_guard.sh` (commit-time 
 
 Examples:
 ```
-Match func_80052788 (GTE gpf/gpl LERP wrapper, pure C with hardcoded $reg asm)
+Match: func_80038658 — COMPLETED-C (grinder, 1 sessions)
 cheat-cleanup: func_800826CC -- retire 2 lost_codegen via volatile aliasing + switch
 auth: func_8004BB68 (text1b.c recursive subdivision, custom callee-save ABI)
 naming: medium-tier cleanup -- 2 more HELPER aliases for UNCLEAR stubs
@@ -34,12 +34,12 @@ These prefixes are what `git log --grep '^<prefix>'` matches on. Keep them recog
 
 | Prefix | Meaning |
 |---|---|
-| `Match func_XXXXXXXX` | New pure-C match of a function. Body should describe the technique. |
+| `Match: func_XXXXXXXX` | New pure-C match of a function. Body should describe the technique. |
 | `cheat-cleanup: <name>` | Retiring a cheat (lost_codegen, wildcard subst, splice, etc.). Body documents what was retired and how. |
 | `cleanup: <name>` | Stripping stale regfix rules from already-bridged functions (lighter than full cheat retirement). |
 | `auth: <func>` / `inline_asm_canonical: <func>` | Canonical-asm authorization (function declared as hand-coded asm with documented evidence). Body MUST include evidence tags per [evidence-driven-authorization rule](../memory/rules/evidence-driven-authorization.md). |
 | `wip: <func>` | Save / update a checkpoint in `memory/wip/<func>/` — candidate C body + measured floor + technique + remaining gap. NOT a Match; the build is unchanged. Body should describe the lever and the new floor. See [memory/wip/README.md](../memory/wip/README.md). |
-| `park: <func>` | Function not yet COMPLETED-C; advance the queue with evidence. Touches `engine/queue.json` + `memory/project/` or `memory/wip/`; the build is unchanged. The `park_src_guard` hook BLOCKS `park:` commits that modify build-pipeline files (override: `[skip-park-src-guard]` + justification). |
+| `park: <func>` | Terminal disposition only (judge-sole-gate 2026-08-18 — no pending-owner states). Touches `engine/queue.json` + `memory/project/` or `memory/wip/`; the build is unchanged. The `park_src_guard` hook BLOCKS `park:` commits that modify build-pipeline files (override: `[skip-park-src-guard]` + justification). |
 | `text1b.c: <action>`, `code6cac.c: <action>`, etc. | File-level work (often function matches that benefit from the file context being in the subject). |
 
 ### Project infrastructure
@@ -60,7 +60,13 @@ These prefixes are what `git log --grep '^<prefix>'` matches on. Keep them recog
 |---|---|
 | `Merge <branch>: <summary>` | Merge commit from a worktree branch (e.g., naming-evidence). Body summarizes what was merged. |
 | `Revert "<original-subject>"` | Standard git revert. Body explains WHY (auditor REJECT, regression caught, etc.). |
-| `queue: <change>` | `engine/queue.json` regeneration (`queue regen`). |
+| `queue: <change>` | `engine/queue.json` regeneration (`queue regen`) or park-metadata changes. |
+| `grind: <topic>` | Grinder driver output: ledger updates, park filings, discarded-session markers (often `[skip-park-src-guard]`). |
+| `grinder: <change>` | Changes to the Grinder driver itself (`tools/grinder/`). |
+| `migrate: <topic>` | asm-until-matched representation migrations (INCLUDE_ASM conversion + rule retirement). |
+| `rules: <change>` | Owner rulings landed as `.claude/rules/` records (per ruling-record-lands-before-code). |
+| `metrics: <change>` | Metrics capture/reporting layer. |
+| `memory: <change>` | Repo memory maintenance (ledgers/wip). |
 | `audit: <topic>` | Changes to `tools/audit_*.py` or audit policy. |
 | `trace: <topic>` | Investigation notes that don't change source — typically commits to `docs/naming/*` or a research file. |
 | `research: <topic>` | Exploratory work that did or didn't pan out. Document the outcome. |
@@ -106,10 +112,10 @@ Verification:
   - verify-oracle --rebuild result (full-build SHA1 == oracle)
   - cascade check on sibling functions
 
-Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+Co-Authored-By: <the current Claude model> <noreply@anthropic.com>
 ```
 
-The `Pure-C attempts:` block is the load-bearing part — `tools/hooks/llm_audit.sh` (adversarial cheat-auditor) checks for it on canonical-asm and minimize-asm-when-blocked work. See [evidence-driven-authorization](../memory/rules/evidence-driven-authorization.md) for the exact grammar.
+The `Pure-C attempts:` block is the load-bearing part — POLICY requires it on canonical-asm work (checked by the layer-2 reviewer / Judge, not by a wired hook). See [evidence-driven-authorization](../memory/rules/evidence-driven-authorization.md) for the exact grammar.
 
 #### For `auth:` / `inline_asm_canonical:` commits
 
@@ -151,10 +157,10 @@ Lighter. One paragraph of context + a what-changed list. Co-author trailer if AI
 ### Co-author trailer (AI-assisted commits)
 
 ```
-Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+Co-Authored-By: <the current Claude model> <noreply@anthropic.com>
 ```
 
-Add when an agent generated substantive content. Trivial mechanical commits (queue refreshes, file moves) don't need it.
+(Model-agnostic — use whatever model actually did the work.) Add when an agent generated substantive content. Trivial mechanical commits (queue refreshes, file moves) don't need it.
 
 Put the trailer last; git keeps it for attribution and PR review.
 
@@ -166,9 +172,7 @@ _(The `dc.sh lessons` / `tools/commit_lessons.py` "CommitAtlas" query tool that 
 - Spell function names fully in the canonical `func_[0-9A-F]{8}` form → exact `git log --grep` / pickaxe (`git log -S`) hits.
 - Substantive bodies = better discoverability later; subject + body text is the search corpus.
 
-## What the audit hook (`llm_audit.sh`) actually enforces
-
-Not commit-message format directly, but content-of-diff structure that interacts with commit messages:
+## What POLICY requires on completion-class commits (no longer hook-enforced — the layer-2 `cheat-reviewer` / Judge are the gates)
 
 - Canonical-asm authorizations (`inline_asm_canonical.txt` additions) require a documented evidence tag — usually in both the commit message body AND the `inline_asm_canonical.txt` line comment
 - New cheat patterns (regfix `subst ".*"`, `splice` over thresholds, `insert "addu $sN, $0, $zero"` patterns) are blocked at commit time

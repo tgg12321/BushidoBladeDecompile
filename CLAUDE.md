@@ -11,7 +11,7 @@ details) live in [AGENTS.md](AGENTS.md) — `@AGENTS.md` imports them into conte
 All decomp work goes through the **decomp engine** (`engine/`, run under WSL) — a deterministic
 spine: route C-vs-asm → measure the honest cheat-free distance → triage → verify a byte+link
 match. By construction, cheating can't help and asm functions aren't pure-C-grinded. Full design:
-[memory/project/greenfield-engine-v2.md](memory).
+the auto-memory `project/greenfield-engine-v2.md` (Claude Code harness memory, not a repo path).
 
 ### PowerShell-first scripting (enforced by `shell_footgun_guard.py`)
 `wsl bash -c 'cd … && source .venv && python3 -m engine.cli …'` nests three shells and the quoting
@@ -41,8 +41,10 @@ tool-agnostic rationale.) Claude-Code specifics:
 Every function is in exactly ONE state — no gradations, no "almost done." Cheats (regfix/asmfix
 rules, register pins, cheat-asm `__asm__` blocks, scheduling barriers) are NEVER an end state.
 Full policy: [[completion-standard]].
-  - **INCOMPLETE** — in `engine/queue.json`; carries a cheat (regfix/asmfix rule, cheat-asm
-    pin/`__asm__`, OR non-zero honest pure-C distance). Stays queued until it reaches a COMPLETED state.
+  - **INCOMPLETE** — in `engine/queue.json`; non-zero honest pure-C distance. Committed as
+    `INCLUDE_ASM("asm/funcs", <func>);` since 2026-08-19 ([[asm-until-matched]]) — no cheats on main
+    (56 byte-coupling deferred functions still carry a legacy rule/cheat-asm representation).
+    Stays queued until it reaches a COMPLETED state.
   - **COMPLETED-C** — zero rules, zero cheat-asm, byte-matches. Not in the queue, not in
     `inline_asm_canonical.txt`. The SOTN community bar; the default goal for every function.
   - **COMPLETED-INLINE-ASM-CANONICAL** — zero rules, canonical inline asm (GTE/cop2, BIOS/syscall
@@ -103,9 +105,10 @@ history). Two load-bearing warnings persist:
 All outstanding work lives in ONE ordered list — `engine/queue.json`. **Since the asm-until-matched
 migration (owner ruling 2026-08-19, [[asm-until-matched]]) an INCOMPLETE function is committed as
 `INCLUDE_ASM("asm/funcs", <func>);`** — no rules, no cheat-asm on main; candidates live in
-`memory/grind/<func>/` and queue distance comes from the pinned/ledger honest floor. 68 deferred
-functions (jtbl-coupled, rodata-emitting, position-coupled — see `docs/grind/borderline.md`
-2026-08-19 migration record) still carry the legacy representation (a regfix/asmfix rule stack OR
+`memory/grind/<func>/` and queue distance comes from the pinned/ledger honest floor. 56 deferred
+functions as of 2026-08-24 (jtbl-coupled, rodata-emitting, position-coupled — see `docs/grind/borderline.md`
+2026-08-19 migration record + the 2026-08-24 sweep-2 entry, which migrated 9 false-positive
+deferrals) still carry the legacy representation (a regfix/asmfix rule stack OR
 cheat-asm) until solved. Every queue item is
 INCOMPLETE by definition; reaching a COMPLETED state drops it off. The queue is **pre-ordered
 easiest-first** by honest pure-C distance: **no triage, no cherry-picking, NO DEFERRAL (user directive
@@ -120,6 +123,10 @@ the top each session; `queue status` shows progress.
 | `queue park <func> --reason "…"` | block an item (terminal dispositions only — no pending-owner states per [[judge-sole-gate]]); `next` skips it |
 | `queue status` | counts by status/verdict + the current top |
 | `queue regen` | rebuild the queue (preserves done/parked); run after big changes |
+| `queue unpark <func>` | return a parked item to active (with `--reason`) |
+| `queue reopen <func> --file <stem>` | re-add a silently-dropped function to the queue |
+
+(`queue next`/`status` always print JSON — there is no `--json` flag. Low-level engine commands not tabled above: `oracle-lock`, `build-c`, `parity`, `fixtures-add`, `retire-redundant`, `canonical-scan`.)
 
 Items routed `ASM-STRUCTURAL` / `ASM-WHOLE` sit in an `authorize` bucket (not `active`) — they take the
 pipeline canonical-asm grant path (STRONG scanner evidence + Judge verdict, driver-written grant,
@@ -137,7 +144,7 @@ BEFORE saving (FAIL ⇒ `rejected/<slug>.c`); WIP files are CURRENT-STATE docs u
 ledgers (`memory/grind/<func>/`) and seeds them from any existing WIP entry.
 
 ## Substrate — do NOT break
-Load-bearing stage tools: cc1, maspsx, `regfix.py`/`asmfix.py`, `prologue_fix`, `multu_pad`, `fix_lwl`,
+Load-bearing stage tools: cc1, maspsx, `regfix.py`/`asmfix.py`, `prologue_fix`, `multu_pad` (`fix_lwl` RETIRED 2026-08-04 — stage inert under `-mel`),
 `as`/`ld`/`objcopy`, `make_psexe`, splat, decomp-permuter — plus the original EXE, `asm/`, `src/`,
 `include/`, `disc/`, the `*.txt` configs, and the Makefile. The oracle guards every change; the engine's
 own logic (distance metric, canonical gate, cheat-stripping) is pinned by `engine test` — keep it green
@@ -145,17 +152,23 @@ whenever you touch `engine/` code. (`audit_asm_cheats.py` is a manual detector o
 cheat-invisibility is the mechanical enforcement.)
 
 ## Guards (hooks)
-Active: root-write cleanliness, CRLF/tooling-error (WSL env-failure) detection, the cc1psx-footgun block,
-memory/CLAUDE.md hygiene (pre-commit), a SessionStart metrics-preflight (never blocks), and the
+Active: root-write cleanliness, CRLF/tooling-error (WSL env-failure) detection,
+memory/CLAUDE.md hygiene (pre-commit), SessionStart metrics-preflight + queue-top (never block),
+**archive_read_guard** (blocks `archive/` reads — retired dc.sh-era code), **grind_check** (Stop hook:
+refuses to end a grind turn with an orphaned permuter campaign), soft bash-guard warnings, and the
 `commit-msg` chain (`tools/hooks/commit_msg_chain.sh` → install via `cp` to `.git/hooks/commit-msg`):
 **park_src_guard** (blocks `park:` commits touching build-pipeline files; `[skip-park-src-guard]`
 override), **no_new_regfix_guard** (net rule additions forbidden; `[infra-rule: <category>]` escape),
-**wip_compaction_guard** (WIP current-state caps; `[skip-wip-compaction]` override). Legacy decomp-loop
-hooks are removed.
+**wip_compaction_guard** (WIP current-state caps; `[skip-wip-compaction]` override),
+**detector_config_guard** (detector/allowlist config changes). Legacy decomp-loop
+hooks are removed. (Root-write cleanliness is wired via `settings.local.json`, not the committed
+settings — a fresh clone must re-enable it.)
 
-**PreToolUse worktree-era guards — DORMANT since 2026-07-06** (no `bb2-work-*` worktrees exist; both are
-NO-OPs in solo/grinder mode and fail open): **worktree_contamination_guard** + **main_reintegration_lock**
-re-arm automatically if worker worktrees are ever recreated — don't recreate them while the Grinder runs
+**PreToolUse worktree-era guards:** **main_reintegration_lock** is DORMANT since 2026-07-06 (NO-OP
+without `bb2-work-*` worktrees). **worktree_contamination_guard** stays ACTIVE for command vectors —
+it blocks relative `eng.ps1`, unpinned `make`, and raw `python3 -m engine.cli` regardless of worktree
+state (use `& tools/wteng.ps1 main <cmd>`); only its Edit/Write vector is worktree-gated. Both re-arm
+fully if worker worktrees are ever recreated — don't recreate them while the Grinder runs
 (see the decomp-grind skill's invariants; protocol in the hook docstrings + `tools/reintegrate_lock.ps1`).
 
 ## Metrics (`metrics/` + `tools/metrics/`)
@@ -168,5 +181,6 @@ Full design: `metrics/README.md` + [[metrics-system]].
 See [docs/COMMIT_CONVENTIONS.md](docs/COMMIT_CONVENTIONS.md). Engine work uses the `engine:` prefix.
 
 ## Getting help
-CLI help: `/help`. New-session orientation: `memory/MEMORY.md` (auto-loaded) +
-`memory/project/greenfield-engine-v2.md`.
+CLI help: `/help`. New-session orientation: the Claude Code auto-memory index (`MEMORY.md`, loaded
+each session from the harness memory directory — NOT a repo path) + its
+`project/greenfield-engine-v2.md`. Non-Claude agents: `docs/STATUS.md` + `AGENTS.md`.

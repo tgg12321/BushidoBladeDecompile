@@ -33,6 +33,10 @@ CPP          := mipsel-linux-gnu-cpp
 # -G8: enable GP-relative for files that need it (uses sdata_syms.txt filtering)
 # -funsigned-char: common PsyQ convention
 # -mcpu=3000: target R3000A
+# -mel: MANDATORY. The prebuilt cc1's mips-mips-gnu triple defaults BIG-endian;
+# -mel flips BYTES_BIG_ENDIAN (spill-slot layout, bitfield direction, lwl/lwr).
+# Load-bearing for the oracle match — do not remove (see AGENTS.md + the
+# FIX_LWL retirement note below).
 CC_FLAGS     := -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel
 CC_FLAGS_GP  := -O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel
 AS_FLAGS     := -Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0

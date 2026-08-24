@@ -1,5 +1,12 @@
 # Grinder judge decisions — the owner's audit trail
 
+> APPEND-ONLY, driver-written. Three structural conventions: (1) the heading
+> tokens `OWNER-ESCALATION` and `CANONICAL-ASM GRANT PATH` are machine-read by
+> the driver (`tools/grinder/grind.ps1` session validation) — never reword
+> them; (2) a `DISCARDED-SESSION MARKER (driver-stamped)` heading VOIDS the
+> ruling-shaped text immediately ABOVE it (the discarded session's append) —
+> read downward past a marker before crediting any entry; (3) entries are
+> historical, dated records — for current state read `engine/queue.json`.
 
 ## 2026-07-07 00:08 — camera_SetMatrix_8001DBE4 — final call — **PASS**
 
