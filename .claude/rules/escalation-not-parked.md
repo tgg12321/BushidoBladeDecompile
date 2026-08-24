@@ -1,0 +1,73 @@
+---
+name: escalation-not-parked
+paths: ["engine/queue.py", "tools/grinder/**", ".claude/rules/*.md", "docs/grind/*.md"]
+description: "Owner ruling 2026-08-24: the parked state is RETIRED. Two dispositions only — ACTIVE (grinding) or ESCALATED (a concrete decision packet owed an owner ruling; batched, non-blocking, never indefinite). Every escalation returns to active once ruled."
+metadata:
+  type: rules
+---
+
+# Owner ruling 2026-08-24 — escalation replaces parking
+
+Owner (Trenton), verbatim:
+
+> "I don't want anything parked anymore. Everything has to be decompiled
+> eventually. There should be no reason to park an item indefinitely. It
+> should just be either escalated for a decision on our part, or kicked back
+> for further grinding if it isn't up to our standards."
+
+## The two-state model
+
+Every INCOMPLETE function is in exactly ONE of:
+
+- **ACTIVE** — in the distance-ordered grind lane. The grinder works the top;
+  no deferral, no cherry-picking (unchanged).
+- **ESCALATED** — carries a **decision packet**: a concrete, decidable
+  question only the owner can answer (a grant, a family question, a
+  toolchain-fidelity question, a routing question). The grinder skips
+  escalated items. An escalation is NEVER indefinite: once the owner rules,
+  the item RETURNS TO ACTIVE — either with the grant applied, or with a
+  refusal plus (implicitly) "keep grinding under standing policy."
+
+There is no third state. "Terminal park", "OWNER-ACCEPTED INCOMPLETE",
+"park permanently" do not exist as dispositions.
+
+## Decision-packet requirements
+
+An item may be escalated ONLY with a packet containing:
+1. **The question**, phrased so a yes/no (or option-select) answer is
+   executable without re-litigation.
+2. **The evidence**, as pointers (ledger, decisions.md lines, measurements)
+   — not prose dumps.
+3. **The consequence of each answer** (what closes, what resumes, at what
+   floor).
+
+"This function is hard" is not a packet. Exhaustion without a decidable
+question means the item stays ACTIVE and the modality changes
+(difficult-is-not-impossible, no-deferral — both unchanged).
+
+## Relationship to judge-sole-gate (2026-08-18)
+
+This ruling AMENDS judge-sole-gate rule 1: a pending-owner state exists
+again, but only in the batched, non-blocking form above — the pipeline keeps
+grinding the rest of the queue; the owner rules on packets at their own
+cadence; nothing else waits. The Judge remains the sole acceptance gate for
+completions; the borderline ledger remains the audit trail (an escalation's
+resolution is recorded there and in decisions.md). What changes is that a
+both-gates-fail endgame lock now produces an ESCALATED item with a packet
+instead of a terminal park.
+
+## Supersessions
+
+- endgame-lock-disposition option (b) "terminal OWNER-ACCEPTED INCOMPLETE
+  park" → escalate with packet (the two AND-gates are unchanged as the
+  STANDARD; only the disposition shape changes).
+- [[no-park-permanently]] — strengthened: not only is no park permanent,
+  the park state itself is gone.
+- Queue statuses: `parked` is migrated to `escalated` (2026-08-24); the
+  legacy park_reason strings are preserved as history on each item.
+
+## Related
+
+[[judge-sole-gate]] · [[endgame-lock-disposition]] ·
+[[no-deferral-work-to-completion]] · [[difficult-is-not-impossible]] ·
+[[asm-until-matched]]
