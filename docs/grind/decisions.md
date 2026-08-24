@@ -10519,3 +10519,125 @@ nothing found since strengthens the case for the family — what session 45 adds
 `tmp/grind/func_80038C70/s45/jump2_fn.txt` and
 `tmp/grind/func_80038C70/dumps/code6cac_c_mid.jump2`; GCC source
 `tools/gcc-2.7.2/jump.c:1996` and `:2403`.
+
+## 2026-08-24 — func_80041188 — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Filed by grind session 12 (modality `escalation`) under the escalation-not-parked model
+(`.claude/rules/escalation-not-parked.md`, owner ruling 2026-08-24). This SUPERSEDES the
+2026-08-23 terminal entry for this function in this file: the owner's rules-to-zero campaign
+(2026-08-24) explicitly re-activated `func_80041188` because it carries part of the project's
+final 89 rules, so "REFUSED / OWNER-ACCEPTED INCOMPLETE" is no longer a disposition that
+satisfies the campaign's goal. The technical picture is unchanged and is now CLOSED-FORM
+complete; what is open is a routing decision only the owner can make.
+
+### (i) The single decidable question
+
+**Does the owner grant a canonical-asm authorization for `func_80041188` as an explicit
+owner override of the STRONG-scanner-tier requirement — or does the rules-to-zero campaign
+accept that this one function's 16 regfix/asmfix rules and the project's LAST
+`prologue_config.json` entry are permanent, so "rules to zero" terminates at 17 carriers
+rather than 0?**
+
+This is not "the function is hard". The pure-C residual is now proven to be a fixed point of
+GCC 2.7.2's allocno-priority arithmetic rather than an unfound spelling (evidence below), and
+both endgame-lock AND-gates fail on their own terms, so no in-pipeline mechanism can close it:
+the canonical-asm grant path requires STRONG scanner evidence this function does not have, and
+the sanctioned-family path requires an in-hand SOTN-master precedent that does not exist. The
+only remaining lever is an owner override, and overriding the scanner tier is exactly the kind
+of judgement the frozen policy reserves to the owner.
+
+### (ii) Evidence pointers
+
+**Chassis, re-measured this session.** `memory/grind/func_80041188/candidate.c` applied to
+`src/text1a_pre.c`: `sandbox func_80041188 --disable all` = **score 1, 132 target / 132 build
+insns**, `rules_dropped: 16, cheat_asm_stripped: 2`, and ALL-TARGET callee-saved seats. The
+single residual insn is slot 72: ours `move $s3, $s6` vs target `addiu $s3, $s7, 0x20`
+(`asm/funcs/func_80041188.s:74`).
+
+**Gate (a) — canonical asm: FAILS.** `python3 tools/scan_hand_coded.py --single func_80041188`
+re-run this session = **tier LOW, score 0/8**, "no strong hand-coded indicators" (S1 0 multu
+pairs, S2 no empty-body branches, S3 132 insns / 11 spills / 15 distinct regs, S4 max load
+burst 3, S5 no high-similarity siblings, S6 no BIOS jumptable, S7 all callee-saves have `$sp`
+saves, S8 no redundant mask-before-shift). The `canonical` gate independently routes the
+function **C**. A GCC allocno-priority artifact is ordinary compiler output, not a hand-coded
+signature — the scanner is right and this packet does not dispute it.
+
+**Gate (b) — in-hand SOTN-master precedent for the closing construct: FAILS.** The closing
+construct would be a byte-free extra `reg_n_refs` reference on `out2` in the between-loops
+block. `docs/reference/sotn-construct-index.md` carries no PSX entry exhibiting one, and every
+family that could host one is measured dead for this shape (dead stores uncounted by
+`flow.c:2081`; `duplicated-statement-into-arms` has no arms — the body is two `goto` loops;
+the `do { } while (0)` weighting is Judge-BANNED for this function, layer-1 FAIL 2026-08-22
+23:24 in this file; the F1 chain-extender materialises 134 insns and inverts pa4 above out2).
+
+**The residual is closed-form, not unfound (completed this session).** target's seating needs
+`tbl > out2 > pa4 > a3`, i.e. out2's priority strictly inside **(1263, 1702)** — `pa4`
+(6 refs / live 95 = 1263) and `a3` (4 / 99 = 808) are pinned by the call signatures and `tbl`
+is pinned at 4 / 47 = 1702 with live bounded at 48 (s10, sixteen block-0 mutations). With
+`pri = floor_log2(n) * n / live * 10000` the band admits (n=3, live 17.6..23.7),
+(n=4, live 47.0..54.9), (n=5, live 58.7..79.2), (n=6, live 70.5..95.0). out2's ACHIEVABLE
+pairs are now measured exhaustively:
+
+- definition in block 0, no post-loop1 reference (the ONLY chassis that emits target's
+  `addiu`): live pinned to 42-43, so n=3 gives 714/697 (below pa4 AND a3, sandbox 15) and n=4
+  gives 1904/1860 (above tbl, steals `$s5`, sandbox 10). **s11.**
+- definition inside loop1 (**new, s12**): 4 refs / live 21 = **3809**, more than double the top
+  of the band; position-inert across four spellings; sandbox 23 at 132 insns.
+  `rejected/out2-def-inside-loop1-live21-pri3809-overshoots-window.c`.
+- n=5 / n=6 need live 59..95, i.e. out2 live through loop2 — the single-local chassis, which
+  loses seven insns (125 vs 132). Re-confirmed this session from a second direction by the
+  `MATRIX *` probe: `&m[1]` folds to the SAME `(plus (reg) (const_int 32))` RTL as
+  `((u8 *)pa4) + 0x20`, so cse1 collapses it to one pseudo — sandbox 43 / 125 insns.
+  `rejected/matrix-single-local-collapses-out2-out3-125insn.c`. This retires the last carried
+  structural frontier item (open since s8).
+- definition in block 0 WITH a between-loops reference: live 47, n=4 = 1702.1, inside the band
+  — this is `candidate.c`, and that reference IS the residual insn.
+
+Therefore target's out2 priority is reachable **only** with a between-loops reference to out2,
+and s8 proved none can be byte-free (combine's LOG_LINKS are intra-block; the six insns target
+emits in that block — `addiu $s1,+0x6C`, `addiu $s2,+0x6C`, `addiu $s4,0x12`,
+`lw $t0,0x18($sp)`, `addiu $s3,$s7,0x20`, `addiu $s0,$t0,0x750` — consume neither `$s6` nor
+any out2-derived value, so the only possible consumer is out3's own definition). Full
+derivation: `memory/grind/func_80041188/evidence.md` E-s12-3.
+
+**Exhaustion record.** 12 sessions; modalities structural, synthesis, forensics, rederive,
+escalation; **44 banked rejected forms**; the allocator instrumented end-to-end
+(ALLOCDBG / BB2_FLOW_DEBUG) so seats are read, not inferred.
+
+**Options already measured DEAD, so the owner does not need to weigh them.**
+(1) Extending the frozen SOTN family list to sanction a byte-free `reg_n_refs` construct does
+NOT close this function — E-s12-3 shows no such reference exists in the between-loops block
+under ANY family. (2) Converting to `INCLUDE_ASM` under asm-until-matched is dead: the
+2026-08-24 deferral probe recorded `FAILED: sha1=3e9fe25b... != oracle - ROLLED BACK`, which is
+why this is one of the byte-coupling deferred functions in the first place. (3) Shipping
+`candidate.c` as COMPLETED-C is impossible at floor 1, and it separately carries an
+un-annotated F1 chain-extender (`stptr = base; stptr += 0xFC;` — un-splitting it takes the
+floor 1 to 15 at an unchanged 132 insns), so it is not a clean-C artifact either.
+
+### (iii) Consequence of each answer
+
+- **ANSWER A — grant the canonical-asm authorization (owner override of the LOW scanner
+  tier).** `func_80041188` is authorized in `inline_asm_canonical.txt` and the next session
+  authors the whole-body `__asm__("glabel ...")` form. This retires **all 16 regfix/asmfix
+  rules AND the project's last `prologue_config.json` entry**, taking the rules-to-zero
+  campaign to its actual target of 0 carriers and moving the function to
+  COMPLETED-INLINE-ASM-CANONICAL. Cost: one function completes as canonical asm on an owner
+  override rather than on scanner evidence, which is a precedent the frozen policy currently
+  forbids agents from creating — hence this packet. The owner would presumably want the grant
+  recorded as OWNER-OVERRIDE-EXPLICIT so no agent may generalise from it (the non-extension
+  clause shape).
+
+- **ANSWER B — decline the override; the 2026-08-23 terminal disposition stands.** The
+  function stays INCOMPLETE with the rule-era body on main, `candidate.c` remains the accepted
+  best clean form (floor 1, all-target seats, pin-free but F1-annotated), and the rules-to-zero
+  campaign completes at **17 permanent carriers** (16 rules + 1 `prologue_config` entry) rather
+  than 0. The queue advances either way; nothing else in the project is blocked on this.
+
+- **ANSWER C — neither; direct a specific further attack.** The two in-pipeline modalities not
+  yet spent on this function are `solver` (`tools/ra_solver` + `inverse_compose.py classify` on
+  the out2 seat) and `permuter`. Session 12's judgement is that both are formally redundant
+  with E-s12-3 — the solver would be asked to invert an arithmetic system whose reachable set
+  has already been enumerated by measurement, and the permuter searches spellings, which is the
+  axis the enumeration closes — but the owner may want the solver's independent
+  REACHABLE/FORECLOSED verdict as a second opinion before spending an override. That is a cheap
+  answer to give and a defensible one.

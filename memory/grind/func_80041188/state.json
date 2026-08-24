@@ -1,7 +1,7 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -75,18 +75,24 @@
    "floor": 1,
    "modality": "escalation",
    "headline": "Endgame lock confirmed: both gates fail (scan LOW 0/8; no SOTN precedent) - s11 closed the block-0 side of the residual with an empty priority window and killed the last unspent sanctioned family (F1 "
+  },
+  {
+   "session": 12,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "Both carried frontiers killed by measurement (MATRIX* chassis = the single-local chassis, 125 insns/sandbox 43; out2-def-inside-loop1 = 4 refs/live 21/pri 3809, sandbox 23) -- the out2 priority window"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "If the function is ever reopened, the only remaining un-falsified direction is a chassis in which the SECOND loop's pointer is not a copy or a re-derivation of the first at all - e.g. both matrices addressed through one real PsyQ `MATRIX *` local with &m[0] / &m[1], so that loop2's &m[1] is an ordinary re-scoped address expression rather than out3 = out2 or out3 = pa4 + 0x20.",
-   "mechanism": "a4 addresses two adjacent 0x20-byte objects and PsyQ's MATRIX is 0x20 bytes; func_8004A348(buf, m) builds a rotation matrix and func_800523E0(m0, m1, a3, dst) consumes the pair. A MATRIX-typed local changes the RTL address expressions cc1 emits for both pointers (scaled index vs plain plus), which is the one input to the allocno-priority arithmetic that every chassis measured so far holds fixed.",
-   "next_probe": "Re-spell candidate.c with `MATRIX *m = (MATRIX *)a4;` and &m[0] / &m[1] everywhere (including loop2's re-take), then read the .lreg priority table and seat verdict via tmp/grind/func_80041188/s10/batch.sh under WSL. This was carried unspent from s8/s9 as Judge-facing cosmetics; s11's arithmetic makes it the only structural variable left, since it is the only change that can move out2's live-range endpoints rather than just its reference count."
+   "hypothesis": "candidate.c can be made genuinely FAKE-free by replacing the load-bearing stptr = base; stptr += 0xFC; chain-extender with a spelling that reaches stptr 7 refs / live 41 without a byte-neutral detour. This is the only remaining item that is about the ARTIFACT rather than the floor -- it does not close the function, but candidate.c cannot be presented as clean C until it is resolved.",
+   "mechanism": "stptr must outrank stptr2 (6 refs / 48 = 2500) to keep $s3; at live 41 that needs >= 7 references, and target emits only a single addiu for its definition, so the extra references have to come from real in-loop uses of stptr rather than from its initialisation.",
+   "next_probe": "Enumerate loop1 spellings in which stptr is read for real values target already computes from it (stptr + 0x38, stptr + 6, stptr + 0x68) as separate named intermediates or repeated reads instead of folded expressions; measure r88's refs/live in .lreg via tmp/grind/func_80041188/s10/batch.sh and require build_insns == 132."
   },
   {
-   "hypothesis": "candidate.c can be made genuinely FAKE-free by finding a replacement for the load-bearing `stptr = base; stptr += 0xFC;` chain-extender that reaches stptr 7 refs / live 41 without a byte-neutral detour.",
-   "mechanism": "stptr must outrank stptr2 (6 refs / 48 = 2500) to keep $s3; at live 41 that needs >= 7 references, and target emits only a single addiu for its definition, so the extra references have to come from real in-loop uses of stptr rather than from its initialisation.",
-   "next_probe": "Enumerate loop1 spellings in which stptr is read for real values that target already computes from it (stptr + 0x38, stptr + 6, stptr + 0x68) as separate named intermediates or repeated reads instead of folded expressions; measure r88's refs/live in .lreg and require build_insns == 132."
+   "hypothesis": "The solver suite can return an independent REACHABLE/FORECLOSED verdict on the out2 seat, corroborating (or refuting) this session's hand-enumerated closure of the (1263, 1702) priority band. Session 12's judgement is that this is formally redundant with E-s12-3, but it is the cheapest possible second opinion before an owner override is spent, and Answer C of the decision packet explicitly offers it.",
+   "mechanism": "tools/ra_solver models GCC 2.7.2's entire allocation stack (global.c / local-alloc / reload) and inverse_compose.py classify converts a residual register seat into a typed verdict with ranked C-lever vectors; the out2 residual is exactly a register-seat residual, which is the solver's designed input.",
+   "next_probe": "Run tools/ra_solver/inverse_compose.py classify against the candidate.c chassis targeting out2's seat ($s6) with tbl/pa4/a3 pinned at their measured refs/live, and compare its lever vectors against the four (n, live) achievability classes recorded in evidence.md E-s12-3."
   }
  ],
  "judge_constraints": [

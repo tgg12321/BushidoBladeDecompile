@@ -1470,3 +1470,109 @@ block so that `out3` can be defined from a4 instead of from out2.
 - [s11] GATE (b) SOTN precedent FAILS: dead stores are measured inert here (flow.c:2081 counts a SET only on the branch where it is needed); duplicated-statement-into-arms has no arms in this function and its Non-extension list excludes the CALL statements that are out2's only references; the do-while(0) wrap is Judge-BANNED for this function (layer-1 FAIL 2026-08-22 23:24) and separately measured to trigger loop.c induction rewriting; F1 is measured materializing. No PSX entry in docs/reference/sotn-construct-index.md exhibits a cancelling-term reference of this shape.
 
 - [s11] Disposition filed this session as a standing-ruling entry in docs/grind/decisions.md (2026-08-23, func_80041188, REFUSED / OWNER-ACCEPTED INCOMPLETE) with both gates' evidence and the 11-session / 5-modality / 42-rejected-form exhaustion record.
+
+## s12 (escalation, 2026-08-24)
+
+Chassis re-measured at session start with `memory/grind/func_80041188/candidate.c`
+applied to `src/text1a_pre.c`: **score 1, 132 target / 132 build insns**,
+`rules_dropped: 16, cheat_asm_stripped: 2`. The ledger floor is confirmed against
+the current chassis; nothing about the toolchain or the surrounding TU has moved.
+
+**E-s12-1 — the `MATRIX *` chassis is the single-local chassis, not a new one.**
+`MATRIX` is `{ s16 m[3][3]; u16 pad; s32 t[3]; }` (`include/gte.h:29`) = exactly
+0x20 bytes, so `MATRIX *m = (MATRIX *)a4;` with `&m[0]` / `&m[1]` is a semantically
+faithful spelling of the two adjacent matrices a4 points at. It is NOT a different
+RTL address form: GCC's C front end folds the array index to a constant byte
+offset, so `&m[1]` and `((u8 *)pa4) + 0x20` produce the identical
+`(plus (reg) (const_int 32))`. Consequence, measured: cse1 collapses all four
+occurrences to one value and the .lreg table drops from 11 pseudos to 8 — `out2`
+and `out3` cease to exist as separate allocnos and `pa4` rises to 8 refs / live 94
+(from 6 / 95) because `&m[0]` is now inline at four call sites. Build is
+**125 insns against target's 132 (sandbox 43)** — the seven missing insns are the
+copies/definitions the two-locals chassis needs. This re-derives s7's finding from
+a different direction: target holds `a4 + 0x20` in TWO callee-saved registers
+(`$s6` across loop1, `$s3` across loop2) and GCC 2.7.2 has no live-range splitting,
+so the source MUST have two distinct locals. A typedef cannot change that.
+Artifact: `tmp/grind/func_80041188/s12/A_matrix.c`,
+banked `rejected/matrix-single-local-collapses-out2-out3-125insn.c`.
+
+**E-s12-2 — an out2 defined inside loop1 gets 4 refs / live 21 / priority 3809,
+and the in-loop definition position is inert.** Four spellings (`B0_loop1top`,
+`B1_beforecall1`, `B2_aftercall1`, `B3_midlate`) on the `out3 = pa4 + 0x20`
+chassis produced BYTE-IDENTICAL .lreg priority tables and .greg
+`Register dispositions` lines:
+
+    r74=16/99:6464  r73=16/99:6464  r86(out2)=4/21:3809  r88(stptr)=7/42:3333
+    r91(stptr2)=6/48:2500  r78(i)=8/97:2474  r79(tbl)=4/47:1702
+    r77(pa4)=6/95:1263  r75(a3)=4/99:808  r87(out3)=3/47:638  r85=2/47:425
+
+cse1 normalises the in-loop definition to one place regardless of where the
+statement is written, so position is a dead lever inside the loop exactly as s7
+showed it is dead inside block 0. `B0_loop1top` scores **sandbox 23 at 132 insns**
+and its seats are wholesale permuted (out2 → `$s3`, tbl → `$s6`, stptr → `$s4`).
+Artifacts: `tmp/grind/func_80041188/s12/B{0,1,2,3}*.c`, banked
+`rejected/out2-def-inside-loop1-live21-pri3809-overshoots-window.c`.
+
+**E-s12-3 — THE COMPLETE out2 WINDOW ENUMERATION (closes s11's proof on the
+second side).** target's seating requires `tbl > out2 > pa4 > a3`, i.e. out2's
+global.c allocno priority strictly inside **(1263, 1702)** — pa4 is pinned at
+6 refs / live 95 = 1263 and a3 at 4 / 99 = 808 by the call signatures (they are
+call arguments in both loops; neither reference count nor live length is
+source-controllable), and tbl at 4 / 47 = 1702 with its live length bounded at 48
+by sixteen distinct block-0 mutations (s10). With
+`pri = floor_log2(n) * n / live * 10000`, the band admits exactly these
+(n, live) pairs:
+
+| n (refs) | live length that lands in (1263, 1702) |
+|---|---|
+| 3 | 17.6 .. 23.7 |
+| 4 | 47.0 .. 54.9 |
+| 5 | 58.7 .. 79.2 |
+| 6 | 70.5 .. 95.0 |
+
+and out2's ACHIEVABLE (n, live) pairs are now measured exhaustively, because
+out2's definition can sit in exactly two places and its last use in exactly two:
+
+- **definition in block 0, no reference after loop1** (the chassis that emits
+  target's `addiu $s3,$s7,0x20`): live is pinned to **42 or 43** — 42 normally,
+  43 with the definition made the very first statement of the body (s7's 7-way
+  order sweep, s11's ceiling measurement). n = 3 → 714 / 697 (BELOW pa4 and even
+  below a3: the whole {out2, pa4, a3} triple permutes, sandbox 15). n = 4 (s7's
+  `out2 - 8` in-loop reference) → **1904** (ABOVE tbl: out2 steals `$s5`,
+  sandbox 10). The band's n = 4 requirement of live ≥ 47 is unreachable because
+  nothing after loop1 references out2 on this chassis.
+- **definition inside loop1** (this session): live **21**, n **4** → **3809**,
+  more than double the top of the band (sandbox 23). Position-inert.
+- **definition in block 0 WITH a reference in the between-loops block**: live
+  **47**, n **4** → **1702.1**, inside the band and tied with tbl, broken the
+  right way by allocno number (79 < 86). This is `candidate.c` — ALL-TARGET seats,
+  132/132 insns, **and the between-loops reference is precisely the insn that
+  materialises as `move $s3, $s6` instead of target's `addiu $s3, $s7, 0x20`.**
+- **n = 5 or n = 6** would need live 59..95, i.e. out2 live through loop2 — which
+  is the single-local chassis (E-s12-1, s7): one pseudo cannot hold `$s6` across
+  loop1 and `$s3` across loop2, and the build loses seven insns.
+
+**Conclusion.** target's out2 priority is reachable ONLY with a between-loops
+reference to out2, and s8 proved no such reference can be byte-free: combine's
+LOG_LINKS are intra-block, and the six insns target emits in the between-loops
+block (`addiu $s1,+0x6C`, `addiu $s2,+0x6C`, `addiu $s4,0x12`, `lw $t0,0x18($sp)`,
+`addiu $s3,$s7,0x20`, `addiu $s0,$t0,0x750`) consume neither `$s6` nor any
+out2-derived value, so the only possible consumer of an out2 reference there is
+out3's own definition — which is the residual insn itself. Flow-level dead stores
+are separately measured uncounted (s8, `flow.c:2081`;
+`rejected/dead-store-out2-uncounted-by-flow.c`). The residual is a fixed point of
+the priority arithmetic, not an unfound spelling.
+
+- [s12] Chassis re-measured at session start with memory/grind/func_80041188/candidate.c applied to src/text1a_pre.c: sandbox func_80041188 --disable all = score 1, 132 target / 132 build insns, rules_dropped 16, cheat_asm_stripped 2, ALL-TARGET callee-saved seats. The ledger floor is confirmed against the current chassis.
+
+- [s12] Gate (a) re-run this session: python3 tools/scan_hand_coded.py --single func_80041188 = tier LOW, score 0/8, 'no strong hand-coded indicators' (S1 0 multu pairs, S2 no empty-body branches, S3 132 insns / 11 spills / 15 distinct regs, S4 max load burst 3, S5 no high-similarity siblings, S6 no BIOS jumptable, S7 all callee-saves have $sp saves, S8 no redundant mask-before-shift). The canonical gate independently routes the function C. Gate (a) FAILS.
+
+- [s12] Gate (b) FAILS: the closing construct would be a byte-free extra reg_n_refs reference on out2 in the between-loops block; docs/reference/sotn-construct-index.md carries no PSX entry exhibiting one, and every family that could host one is measured dead for this shape (dead stores uncounted by flow.c:2081; duplicated-statement-into-arms has no arms since the body is two goto loops; the do{}while(0) weighting is Judge-BANNED for this function per the layer-1 FAIL of 2026-08-22 23:24; the F1 chain-extender materialises 134 insns and inverts pa4 above out2).
+
+- [s12] MATRIX is {s16 m[3][3]; u16 pad; s32 t[3];} = exactly 0x20 bytes (include/gte.h:29), so &m[0]/&m[1] is a semantically faithful spelling of the two adjacent matrices -- but it is codegen-identical to the pointer arithmetic, because the front end folds the index to a constant. Measured: 125 build insns vs target 132, sandbox 43, 8 pseudos instead of 11.
+
+- [s12] In-loop definition position for out2 is inert: four distinct source positions inside loop1 produce byte-identical .lreg priority tables and .greg register dispositions (r86=4/21:3809, r88=7/42:3333, r91=6/48:2500, r78=8/97:2474, r79=4/47:1702, r77=6/95:1263, r75=4/99:808, r87=3/47:638).
+
+- [s12] Options the owner does not need to weigh, because they are already measured dead: extending the frozen SOTN family list does NOT close this function (no byte-free reference exists in the between-loops block under ANY family); INCLUDE_ASM conversion is dead (2026-08-24 deferral probe: sha1=3e9fe25b... != oracle, ROLLED BACK -- this is why the function is byte-coupling-deferred); and candidate.c cannot ship as COMPLETED-C at floor 1, and separately carries a load-bearing un-annotated F1 chain-extender (stptr = base; stptr += 0xFC -- un-splitting it takes the floor 1 -> 15 at an unchanged 132 insns).
+
+- [s12] src/text1a_pre.c was restored to its committed rule-era body at the end of the session; the working tree is clean apart from the ledger, the two banked rejected forms, and the decisions.md packet.

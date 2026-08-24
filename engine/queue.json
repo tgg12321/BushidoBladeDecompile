@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80041188",
-      "file": "text1a_pre",
-      "distance": 27,
-      "verdict": "C",
-      "rules": 16,
-      "status": "active",
-      "prologue_fix": 1,
-      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. 16 regfix + the project's LAST prologue_config entry retire at match. Ledger floor 1; both explored routes measured arithmetically closed \u2014 solver modality + a FRESH chassis are the frontier; the banked candidate's stptr split "
-    },
-    {
       "func": "func_80040B44",
       "file": "text1a_pre",
       "distance": 32,
@@ -2100,6 +2090,17 @@
       "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:10376 \u2014 '2026-08-24 \u2014 func_80038C70 (motion_SetMotion, src/code6cac_c_mid.c) \u2014 OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET'"
     },
     {
+      "func": "func_80041188",
+      "file": "text1a_pre",
+      "distance": 27,
+      "verdict": "C",
+      "rules": 16,
+      "status": "escalated",
+      "prologue_fix": 1,
+      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. 16 regfix + the project's LAST prologue_config entry retire at match. Ledger floor 1; both explored routes measured arithmetically closed \u2014 solver modality + a FRESH chassis are the frontier; the banked candidate's stptr split ",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md -- '## 2026-08-24 - func_80041188 - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (appended this session; the single decidable question is whether the owner grants a canonical-asm authorization for func_80041188 as an explicit override of the LOW scan_hand_coded tier, which would retire all 16 regfix/asmfix rules plus the project's last prologue_config.json entry and take the rules-to-zero campaign to 0 carriers, versus declining the override and accepting 17 permanent carriers)."
+    },
+    {
       "func": "main",
       "file": "ings",
       "distance": 0,
@@ -2112,13 +2113,13 @@
   ],
   "counts": {
     "total": 242,
-    "active": 240,
+    "active": 239,
     "by_status": {
-      "active": 240,
-      "escalated": 2
+      "active": 239,
+      "escalated": 3
     },
     "by_verdict": {
-      "C": 204,
+      "C": 203,
       "ASM-PARTIAL": 36
     }
   }

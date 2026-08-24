@@ -96,6 +96,23 @@
  * candidate must either carry a FAKE: F1 annotation on it (family:
  * .claude/rules/dead-store-fake-exception.md:32) or replace it; shipped
  * un-annotated it is a layer-1 FAIL. See evidence.md E-s11-3.
+ *
+ * s12 ADDENDUM (escalation, 2026-08-24). Re-measured at the start of s12 on the
+ * current chassis: STILL sandbox 1 / 132 of 132 insns / ALL-TARGET seats. s12
+ * retired the last carried structural frontier (a single PsyQ `MATRIX *` local
+ * addressing both matrices as &m[0]/&m[1]) by measurement: `&m[1]` folds to the
+ * SAME `(plus (reg) (const_int 32))` RTL as `((u8 *)pa4) + 0x20`, so cse1
+ * collapses it to one pseudo and the build loses seven insns (125 vs 132,
+ * sandbox 43) - it is the single-local chassis s7 already disproved, not a new
+ * one. s12 also closed the out2 priority window from BELOW: defining out2 inside
+ * loop1 gives 4 refs / live 21 = 3809, more than double the top of the required
+ * (1263, 1702) band, and the in-loop definition position is inert across four
+ * spellings (sandbox 23). With s11's ceiling this makes the enumeration complete
+ * - see evidence.md E-s12-3: target's out2 priority is reachable ONLY with a
+ * reference to out2 in the between-loops block, and that reference IS the
+ * residual insn. The remaining unspent item is cosmetic-but-blocking: the
+ * `stptr = base; stptr += 0xFC;` chain-extender above still needs either a
+ * FAKE-free replacement or its annotation before this body could ship.
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
