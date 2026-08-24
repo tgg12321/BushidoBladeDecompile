@@ -128,6 +128,40 @@ def build_sha1():
     return None, r.stdout + r.stderr
 
 
+def strip_asm_constructs(s):
+    """Remove register-pin specifiers and __asm__/asm blocks before the
+    rodata-literal scan. Quotes inside them are CODE (pin names, templates,
+    constraints), not .rodata sources — leaving them in false-fails every
+    pinned body (observed 2026-08-24: all 10 parked pin-carriers were
+    refused as 'body emits .rodata' purely on their own cheat-asm quotes)."""
+    out = []
+    i, n = 0, len(s)
+    opener = re.compile(r"(?:__asm__|(?<![\w])asm)\s*(?:volatile\s*)?\(")
+    while i < n:
+        m = opener.search(s, i)
+        if not m:
+            out.append(s[i:])
+            break
+        out.append(s[i:m.start()])
+        j, depth, in_str = m.end(), 1, False
+        while j < n and depth:
+            c = s[j]
+            if in_str:
+                if c == "\\":
+                    j += 1
+                elif c == '"':
+                    in_str = False
+            elif c == '"':
+                in_str = True
+            elif c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+            j += 1
+        i = j
+    return "".join(out)
+
+
 def find_body_span(text, func):
     span = inlineasm._func_body_span(text, func)
     if span is None:
@@ -173,6 +207,7 @@ def migrate_one(func, stem, dry, defer_build=False):
     # breaks the byte-match (observed sweep batch 2: MISMATCH). Defer them.
     stripped = re.sub(r"/\*.*?\*/", "", body, flags=re.S)
     stripped = re.sub(r"//[^\n]*", "", stripped)
+    stripped = strip_asm_constructs(stripped)
     if ('"' in stripped or re.search(r"\bconst\b", stripped)
             or re.search(r"\b\d+\.\d+f?\b", stripped)):
         return ("REFUSED: body emits .rodata (string/const/FP literal) — "
