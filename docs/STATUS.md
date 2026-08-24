@@ -140,7 +140,7 @@ agent on `main` driving the engine as a toolkit). Layer-2 fresh
 | Function naming | Census + phase-2 reset wave complete (2026-08-07/10); 334 Sony names applied byte-neutral. `docs/naming/README.md` |
 | Rodata cleanup | Phase A + B COMPLETE (2026-06-09; `bb2.ld` hand-maintained since) |
 | maspsx gate-dependent completions | 6, tracked for transparency (fidelity-class assembler gates, not cheats) |
-| Owner escalation shelf | `docs/escalations/` — incl. the cc1 fork-divergence ruling request (`_spu_FiDMA`) |
+| Owner escalation shelf | retired 2026-08-24 — the `_spu_FiDMA` fork-crash question is a borderline.md policy-question entry |
 | WSL nonpaged-pool leak | Known host issue (~1 Job object per `wsl.exe` call) — surfaced only when it actually breaks something ([[wsl-kernel-object-leak-audio]]) |
 
 ## Regenerating this snapshot

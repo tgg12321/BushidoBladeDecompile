@@ -2,21 +2,18 @@
 
 This directory holds the contributor-facing documentation for the *Bushido Blade 2* matching decompilation. If you just landed on the project, start with the top-level [`../README.md`](../README.md) (the front door) and [`../BUILD.md`](../BUILD.md) (toolchain setup).
 
-> **Workflow note (2026-05):** the decomp workflow is now the **engine** (`engine/`,
-> `python3 -m engine.cli`), run on `main` by a single focused agent — see
-> [`../CLAUDE.md`](../CLAUDE.md). The **reference** docs here (ARCHITECTURE, MATCHING,
-> GLOSSARY, `formats/`) stay accurate: the build pipeline, regfix/asmfix mechanics, and
-> MIPS techniques are unchanged. The **process** framing in some docs — the `dc.sh`-driven
-> loop, `WORK_QUEUE.md`, the `.bb2_active_func` active-marker, worktrees, sub-agents — is
-> **historical**. `WORK_QUEUE.md` was retired; the current worklist is
-> `python3 -m engine.cli scan-redundant --all`, and the per-function loop lives in CLAUDE.md.
-> The **named-recipe library** (`tools/recipes/*.json` + `capture_recipe.py`/`recipes.py`)
-> was archived 2026-05-26 to `archive/dcsh_workflow_2026-05-26/recipes/` — the engine doesn't
-> consume recipes. Reusable techniques now live as path-scoped docs in
-> [`../.claude/rules/`](../.claude/rules) (auto-load on matching source reads; fingerprinted by
-> the metrics layer); agents register new findings there at match-finish (the "Register
-> findings" loop step in CLAUDE.md). The technique *knowledge* still reads as reference in
-> MATCHING.md.
+> **Workflow note (refreshed 2026-08-24):** the decomp workflow is the
+> **engine** (`engine/`, via `& tools/wteng.ps1 main <cmd>`) driven by the
+> **Grinder** (`tools/grinder/` — the default autonomous pipeline since
+> 2026-07-06); the worklist is `engine/queue.json` (`queue next` / `queue
+> status`). See [`../CLAUDE.md`](../CLAUDE.md). Since 2026-08-19
+> (asm-until-matched) a not-yet-decompiled function is committed as
+> `INCLUDE_ASM("asm/funcs", <func>);`. The **reference** docs here
+> (ARCHITECTURE, MATCHING, GLOSSARY, `formats/`) stay accurate. **Historical**
+> framing you may still meet in older docs: the `dc.sh` loop, `WORK_QUEUE.md`,
+> active-markers, worktrees, the multi-agent fleet, the recipe library — all
+> retired (see HISTORY.md). Reusable techniques live as path-scoped rules in
+> [`../.claude/rules/`](../.claude/rules).
 
 ## In this directory
 
@@ -26,7 +23,9 @@ This directory holds the contributor-facing documentation for the *Bushido Blade
 | [`TOOLS.md`](TOOLS.md) | You need to find a standalone Python tool for a specific task. Catalog of ~100 Python tools grouped by workflow phase (plus the retired `dc.sh` subcommand catalog, kept for archaeology). |
 | [`MATCHING.md`](MATCHING.md) | You're stuck on matching a function. Symptom-indexed playbook: penalty-profile routing, C-side techniques, regfix syntax and recipes, named recipes (LICM unhoist, call-loop, early-exit alias, GTE 3x3, etc.), common gotchas, dead ends, decision trees. |
 | [`GLOSSARY.md`](GLOSSARY.md) | You encounter an unfamiliar term (PsyQ, MIPS, decomp jargon, or BB2-specific Japanese romanizations from the Marionation engine). |
-| [`STATUS.md`](STATUS.md) | You want function counts and health indicators (a hand-refreshed, dated snapshot). For the live worklist run `python3 -m engine.cli scan-redundant --all`. |
+| [`STATUS.md`](STATUS.md) | You want function counts and health indicators (a hand-refreshed, dated snapshot). For the live worklist run `& tools/wteng.ps1 main queue status`. |
+| [`grind/`](grind/) | The Grinder's owner-audit surfaces: `decisions.md` (every Judge ruling, append-only, driver-written), `journal.md` (one line per session), `borderline.md` (logged policy questions/grants — nothing in it is pending). |
+| [`superpowers/specs/`](superpowers/specs/) | Design specs — including the Grinder pipeline design (2026-07-06, amended 2026-08-19). |
 | [`HISTORY.md`](HISTORY.md) | You want the timeline: when each major piece of infrastructure landed, when milestones were hit, when rules changed. Compiled from `git log` and the Codex handoff documents. |
 
 ## Elsewhere in the repo

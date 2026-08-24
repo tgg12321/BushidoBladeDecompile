@@ -24,7 +24,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # Note: dated handoff/audit docs moved to docs/handoffs/ and docs/naming/
 # as part of the 2026-05-18 root-cleanup pass.
 ALLOWED_DOCS = {
-    "README.md", "CLAUDE.md", "AGENTS.md", "CONTRIBUTING.md", "BUILD.md", "CLAIMS.md",
+    "README.md", "CLAUDE.md", "AGENTS.md", "CONTRIBUTING.md", "BUILD.md",
 }
 
 # Build/project configuration files
@@ -84,6 +84,23 @@ ALLOWED_DOTFILE_RE = re.compile(r"^\..+")
 ALLOWED_FILES = (ALLOWED_DOCS | ALLOWED_BUILD | ALLOWED_BUILD_TXT |
                  ALLOWED_CSV | ALLOWED_DISC | ALLOWED_USER_LOCAL)
 
+# Expected root DIRECTORIES (2026-08-24: the scan previously checked only
+# files, so accident dirs — e.g. an unquoted "Bushido Blade 2 Decompile"
+# path mkdir'ing `2/`, `Blade/`, `Decompile/` — survived unnoticed).
+# Dot-directories (.git, .venv, .claude, ...) are always allowed.
+ALLOWED_DIRS = {
+    "asm", "build", "disc", "docs", "engine", "include", "memory",
+    "metrics", "oracle", "permuter", "src", "tmp", "tools", "logs",
+    "Kengo",    # sister-engine (PS2) debug-symbol reference — see README
+    "archive",  # retired-workflow storage (archive_read_guard-gated)
+    "movovl",   # MOVOVL.EXE (FMV overlay) decomp sub-project — own Makefile/splat/sha1
+}
+
+# Directories that must NOT exist at root (known footguns)
+FORBIDDEN_DIRS = {
+    "nonmatchings": "decomp-permuter import.py run from repo root drops this — delete it (grinder-nonmatchings-scope-break)",
+}
+
 # Patterns for files that SHOULD have gone to tmp/ or logs/
 SUSPICIOUS_PATTERNS = [
     (re.compile(r"^gccdump\."), "GCC dump file — should be in tmp/ or gitignored"),
@@ -135,6 +152,17 @@ def main() -> int:
             suspicious.append((p.name, reason))
         else:
             unknown.append(p.name)
+
+    # Directory scan (dotdirs always allowed)
+    for p in sorted(root.iterdir(), key=lambda x: x.name.lower()):
+        if not p.is_dir() or p.name.startswith("."):
+            continue
+        if p.name in FORBIDDEN_DIRS:
+            suspicious.append((p.name + "/", FORBIDDEN_DIRS[p.name]))
+        elif p.name not in ALLOWED_DIRS:
+            empty = not any(p.rglob("*"))
+            hint = " (EMPTY — likely an unquoted-path mkdir artifact; safe to delete)" if empty else ""
+            unknown.append(p.name + "/" + hint)
 
     print(f"Root scan: {len(files)} files ({allowed_count} allowed, {state_count} runtime-state, "
           f"{len(suspicious)} suspicious, {len(unknown)} unknown)")

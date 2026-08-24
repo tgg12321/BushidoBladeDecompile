@@ -1,5 +1,12 @@
 # Finished C Subsystem Map - 2026-05-12
 
+> **STALENESS NOTE (2026-08-24):** this map predates the 2026-08-06
+> canonical-extraction wave (text1b.c 17,743 -> ~7,000 lines) and the
+> 2026-08-19 asm-until-matched migration (INCOMPLETE functions became
+> INCLUDE_ASM stubs), so line numbers and "finished C" claims are historical.
+> Address ranges and subsystem attribution remain broadly valid. Regenerate
+> from `build/bb2.map` before trusting specifics.
+
 Worktree: `C:/tmp/bb2-codex-audit-existing-c`
 
 This is a navigation map for the finished C surface. It is intentionally not a

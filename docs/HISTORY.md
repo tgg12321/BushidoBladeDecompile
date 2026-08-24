@@ -159,7 +159,7 @@ naming*. The Grinder ran continuously underneath it all.
 - **INCOMPLETE queue**: 244 items (211 active, 33 parked). Verdict breakdown: 208 C / 36 ASM-PARTIAL. INCOMPLETE = committed as `INCLUDE_ASM("asm/funcs", <func>);` except the 56 byte-coupling deferred ([[asm-until-matched]]).
 - **Rules**: 689 outstanding across 37 functions (all inside the 56 deferred) — down from 1,573 on 2026-08-17; all debt per the 2026-08-06/2026-08-19 rulings, retiring per function at COMPLETED-C.
 - **Retired work streams**: `dc.sh` workflow (2026-05-26), named-recipe library (2026-05-26), multi-agent fleet (2026-07-06), `dc.sh active_func_guard` hook (2026-05-22), Closer Phase 3 (2026-07-13).
-- **Owner escalation shelf**: `docs/escalations/` — incl. the cc1 fork-divergence ruling request (`_spu_FiDMA`: our decompals fork segfaults on Sony's faithful volatile-MMIO wait loop that original cc1psx compiles to target bytes).
+- **Owner escalation shelf**: retired 2026-08-24 (judge-sole-gate — no owner-wait surfaces); the `_spu_FiDMA` fork-crash question moved to `docs/grind/borderline.md` (2026-08-24 policy-question entry).
 
 ## Major handoff documents
 
@@ -171,4 +171,4 @@ naming*. The Grinder ran continuously underneath it all.
 | [`NAMING_TRIAGE_2026-05-12.md`](naming/2026-05-12-triage.md) | Per-symbol triage of 17 score-4 Kengo-derived names. Keep / demote / rename decisions with evidence. |
 | [`SUBSYSTEM_MAP_2026-05-12.md`](handoffs/2026-05-12-subsystem-map.md) | Object-level map: what lives in each `src/*.c` and at what address range. Plus a line/address landmark map for `text1b.c`. |
 | [`KENGO_RENAME_QUEUE_2026-05-12.md`](naming/2026-05-12-rename-queue.md) | Reviewed action queue for Kengo-derived renames, machine-readable in `kengo_name_decisions.csv`. |
-| [`CLAIMS.md`](../CLAIMS.md) | Active session claims and stabilizer-fragility tracking (kept up-to-date when significant cross-session coordination is needed). |
+| `CLAIMS.md` (retired 2026-08-24) | April-era cross-session claims protocol — obsolete since the single-lane workflow; removed (git history preserves it). |
