@@ -71,8 +71,15 @@ def lock(fixtures: list | None = None, git_commit: str | None = None) -> dict:
     the orchestrator captures the commit from Windows git and passes it here.
     """
     ORACLE_DIR.mkdir(exist_ok=True)
-    if fixtures is None and MANIFEST.exists():
-        fixtures = json.loads(MANIFEST.read_text()).get("golden_fixtures", [])
+    notes = {}
+    if MANIFEST.exists():
+        prev = json.loads(MANIFEST.read_text())
+        if fixtures is None:
+            fixtures = prev.get("golden_fixtures", [])
+        # Free-form provenance notes (e.g. the cc1 host build command — owner
+        # ruling 2026-08-24, cc1 crash-fix governance) round-trip across locks
+        # so a re-lock never silently drops toolchain provenance.
+        notes = prev.get("notes", {})
     if git_commit is None:
         git_commit = _git(["rev-parse", "HEAD"]) or None
     manifest = {
@@ -89,6 +96,8 @@ def lock(fixtures: list | None = None, git_commit: str | None = None) -> dict:
         "config_files": {p: P.sha1(p) for p in CONFIG_FILES if Path(p).exists()},
         "golden_fixtures": fixtures or [],
     }
+    if notes:
+        manifest["notes"] = notes
     MANIFEST.write_text(json.dumps(manifest, indent=2) + "\n")
     return manifest
 

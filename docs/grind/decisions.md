@@ -10336,3 +10336,21 @@ verification either way: all 9 probes re-run; full build SHA1 ==
 BEFORE adoption; then oracle-lock re-records cc1_sha1. Governance
 prerequisites shipped with the adoption: the cc1 binary tracked in git and
 the host build command recorded in oracle/manifest.json.
+
+## 2026-08-24 — cc1 fork-crash fix ADOPTED (per the same-date owner ruling)
+
+Root cause: reorg.c never includes expr.h, so `negate_rtx` (returns rtx) fell
+to a K&R implicit-int declaration — on the 64-bit host the returned pointer
+truncates to 32 bits and the garbage operand SIGSEGVs insn-recog via
+arith_operand (fill_slots_from_thread increment-compensation, reorg.c:~3646).
+Fix: ONE extern declaration, applied to both source trees (tmp/cc1build =
+build source; tools/gcc-2.7.2/reorg.c = instrumented copy). Verification per
+the ruling: 9/9 crash probes + the psyz seed shape now compile; codegen
+byte-identical on every previously-compiling probe; FULL BUILD SHA1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa (all ~1,400 matched functions);
+engine test 332/332; oracle re-locked (new cc1_sha1) with the host build
+command recorded in manifest notes (round-tripped by oracle.py across future
+locks). Governance: the cc1 binary + reorg.c fix are now git-tracked; prior
+binary banked at tools/gcc-2.7.2/build/cc1.PRE-CRASHFIX-045c9543. Unblocked:
+the faithful Sony wait-loop spelling for _spu_FiDMA (active, dist 48) and
+the crash-class axis generally — closes via ordinary queue work.
