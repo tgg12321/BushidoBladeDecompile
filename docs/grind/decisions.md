@@ -10266,3 +10266,55 @@ seats, pin-free). Note for any future work: candidate.c's `stptr = base; stptr +
 a load-bearing **un-annotated F1 chain-extender** (un-splitting it takes the floor 1 → 15 at an
 unchanged 132 insns), so that candidate could not ship as-is without a FAKE annotation on it — a
 further reason the clean-C claim on this chassis is weaker than the floor suggests.
+
+## 2026-08-24 — escalation-packet rulings (owner, in conversation; operator-filed) — FOUR PACKETS RESOLVED
+
+Owner (Trenton), 2026-08-24, ruling on the four decision packets presented under
+the escalation-not-parked model (.claude/rules/escalation-not-parked.md, landed
+earlier this date). Owner's words: "Go ahead with your recommendations" — the
+recommendations ruled on being, verbatim from the presented packet sheet:
+
+1. **func_80048AD0 — prototype correction: GRANTED.** The local extern
+   `extern s32 snd_LoadBgm(u8);` in src/text1b.c may be corrected to the
+   function's ACTUAL definition signature (`s32 *snd_LoadBgm(s32)`,
+   src/sound.c:134). Basis presented and accepted: the old prototype
+   contradicts the callee's own definition (objectively wrong C, not a
+   coercion); the banked body is sandbox-0 (47/47) under the correction and
+   full-build byte-neutrality was verified in f035516b; the prior 2026-08-10
+   in-person refusal rested on SOTN's style norm of keeping annotated wrong
+   prototypes — a community convention the owner here overrides for this
+   project ("escalated for a decision on our part"). This ruling SUPERSEDES
+   the 2026-08-10 refusal and its v3 bar for THIS function. Scope: the
+   text1b.c declaration only (text1b_b.c's u8 extern untouched). Layer-2
+   review still gates the commit as usual.
+
+2. **func_80083794 — prebuilt-object canonical routing: GRANTED.** The libgcc
+   __main / crt0 ctor-walker (0x80083794-0x80083800) is routed
+   COMPLETED-INLINE-ASM-CANONICAL: provably prebuilt object (7 provenance
+   results; REG_PARM_STACK_SPACE proof that no C input to our cc1 reaches
+   target's frame — decisions.md 2026-08-13; byte-contiguous with _start,
+   authorized 2026-08-06 in the same crt0 grant family). The fused splat file
+   is split; motion_Close (0x80083804) gets its own .s + INCLUDE_ASM and
+   RETURNS TO ACTIVE with a provenance-first directive (establish whether it
+   too is prebuilt/different-flags before further pure-C grinding). The 18
+   legacy regfix rules on the pair retire with the routing.
+
+3. **main — maspsx ASPSX-parity branch-target fill: DECLINED.** Investigation
+   2026-08-24: the one-clause version is self-healing (reorg refills by a
+   different route), a real remedy is a from-scratch reimplementation of
+   ASPSX's undocumented fill algorithm + -fno-delayed-branch on the frozen
+   flags, ~120 of the 138 census sites are already byte-correct and would be
+   re-decided, and the beneficiary set has decayed to ~5-6 functions. main
+   STAYS ESCALATED with its packet annotated declined; re-decision triggers:
+   the census candidates regrowing, or ASPSX fill semantics becoming
+   documented.
+
+4. **cc1 fork-crash (_spu_FiDMA class) — MEASURE-FIRST, no ruling.** The
+   probe grid predates the 2026-08-07 cc1 rebuild; _spu_FiDMA is an active
+   queue item (dist 48) with an unmeasured PsyQ-4.0 Sony-source transplant
+   seed whose loop spelling likely avoids the crash. The pipeline runs the
+   free diagnostics (probe re-run on the current binary; psyz seed measure;
+   out-of-tree gdb backtrace per the instrumented-cc1 precedent) as ordinary
+   work. The policy question returns as a concrete packet only if still
+   needed. Governance regardless: track the cc1 binaries in git and record
+   host build flags in the oracle manifest.
