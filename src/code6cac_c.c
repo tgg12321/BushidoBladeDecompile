@@ -265,29 +265,7 @@ void func_800379D8(void) {
     TestEvent(D_800A3848);
     TestEvent(D_800A3850);
 }
-s32 func_80037A20(s32 arg0, s32 arg1)
-{
-  register s32 *var_s0 asm("s0");
-  register s32 var_s1 asm("s1");
-  s32 sp10[8];
-  s32 v0_val;
-  var_s0 = (s32 *)&D_80102810;
-  sprintf(sp10, (s32) (&g_str_memcard_fmt), arg0, arg1);
-  var_s1 = 0;
-  if (firstfile(sp10, var_s0) != 0)
-  {
-    __asm__("" : "=r"(var_s1) : "0"(var_s1));
-    var_s1++;
-    loop:
-    var_s0 = (s32 *) (((u8 *) var_s0) + 0x28);
-    v0_val = nextfile(var_s0);
-    var_s1 += 1;
-    if (v0_val) goto loop;
-    var_s1 -= 1;
-  }
-  D_800A38C8 = var_s1;
-  return var_s1;
-}
+INCLUDE_ASM("asm/funcs", func_80037A20);
 s32 func_80037AA4(void) {
     s8 *var_v1;
     s32 var_a1;
@@ -320,61 +298,7 @@ s32 func_80037AA4(void) {
     var_a0 = var_v0 >> sh;
     return 0xF - var_a0;
 }
-s32 func_80037B00(u8 *arg0) {
-    s32 sp_dummy[2];
-    register s32 var_t1 asm("t1");
-    register s32 var_t3 asm("t3");
-    register s32 var_t2 asm("t2");
-    register s8 *var_a3 asm("a3");
-    register s8 *var_a1 asm("a1");
-    register s8 *var_a2 asm("a2");
-    register s8 *var_t0 asm("t0");
-    register s32 var_v1 asm("v1");
-    register s32 var_v0 asm("v0");
-
-    var_t1 = 0;
-    var_v0 = D_800A38C8;
-    if (var_v0 <= 0) {
-        goto block_end;
-    }
-    var_t3 = var_v0;
-    var_a3 = (s8 *)&D_80102810;
-loop_outer:
-    var_t2 = 0;
-    var_a1 = var_a3;
-    var_a2 = (s8 *)arg0;
-    var_t0 = var_a3 + 0x15;
-loop_inner:
-    var_v1 = (u8)*var_a2;
-    if (var_v1 == 0) {
-        goto block_5c;
-    }
-    var_v0 = (u8)*var_a1;
-    if (var_v1 != var_v0) {
-        goto block_6c;
-    }
-    var_a1 += 1;
-    var_a2 += 1;
-    if ((s32)var_a1 < (s32)var_t0) {
-        goto loop_inner;
-    }
-block_5c:
-    var_t1 += 1;
-    if (var_t2 != 0) {
-        goto block_74;
-    }
-    return 1;
-block_6c:
-    var_t2 = 1;
-    goto block_5c;
-block_74:
-    if (var_t1 < var_t3) {
-        var_a3 += 0x28;
-        goto loop_outer;
-    }
-block_end:
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_80037B00);
 extern s32 open(s32 *, s32);
 typedef void (*Func79A30_5)(s32 *, s32 *, s32, s32, s32);
 s32 func_80037B90(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {

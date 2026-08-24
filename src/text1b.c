@@ -661,42 +661,7 @@ extern u8 D_80099BCC;
 extern s32 D_800A33E0;
 extern s32 D_800A33E4;
 extern s32 func_8004153C(s32);
-s32 func_80048AD0(s32 arg0) {
-    s32 temp_v0;
-    u8 sound;
-    u8 *base;
-    register s32 delta asm("$6");
-    register u8 *p asm("$3");
-    register u8 *q asm("$5");
-    register s32 i asm("$4");
-
-    temp_v0 = func_8004153C(arg0);
-    if (temp_v0 == 0) return 0;
-    {
-        s32 idx = *(s16 *)(temp_v0 + 8);
-        D_800A33E0 = arg0;
-        sound = (&D_80099BCC)[idx];
-    }
-    if (sound == 0xFF) return 0;
-    base = (u8 *)snd_LoadBgm(sound);
-    p = base + ((*(u32 *)(base + 8) >> 2) << 2);
-    delta = (s32)(p - base);
-    q = p + 0xA;
-    D_800A33E4 = (s32)p;
-    i = 0;
-    do {
-        *(s16 *)(q - 8) = i;
-        *(s16 *)(q - 6) = 9;
-        *p = 0xF;
-        *(s8 *)(q - 9) = 0;
-        *(s16 *)q = (s16)arg0;
-        q += 0x68;
-        i += 1;
-        p += 0x68;
-    } while (i < 0x11);
-    snd_PlayBgm(delta + 0x6E8);
-    return 1;
-}
+INCLUDE_ASM("asm/funcs", func_80048AD0);
 extern s32 g_snd_play_count;
 void func_80048B8C(s32 a0) {
     g_snd_play_count += a0;
@@ -3659,37 +3624,7 @@ extern u8 D_800F115C;
 extern s32 D_800F116C;
 extern s32 D_800A3464;
 extern s32 D_800A3468;
-void func_80061658(s32 *arg0, s32 arg1) {
-    s32 *v1 = (s32 *)&D_800F116C;
-    register s32 t asm("$2");
-    register s32 mask asm("$3");
-    u8 *p;
-    s32 val;
-    D_800A3468 = (s32)v1;
-    D_800F1178 = (s32)arg0;
-    switch (arg1) {
-    case 0:
-        val = 0x21000C;
-        p = &D_800F115C;
-        *p = 0;
-        D_800F1180 = (s32)p;
-        *v1 = val;
-        break;
-    case 1:
-        val = 0x21000D;
-        p = &D_800F115C + 1;
-        *p = 0;
-        D_800F1180 = (s32)p;
-        *v1 = val;
-        break;
-    }
-    func_80060A68();
-    t = arg0[0]; D_800F1140 = t;
-    t = arg0[1]; D_800F1144 = t;
-    mask = 0x10FFFF;
-    D_800A3464 = mask;
-    t = arg0[2]; D_800F1148 = t;
-}
+INCLUDE_ASM("asm/funcs", func_80061658);
 void func_80061710(s32 *arg0, s32 arg1) {
     s32 *v1 = (s32 *)&D_800F116C;
     register s32 t asm("$2");
@@ -4026,39 +3961,7 @@ extern s32 D_800A32B8;
 extern s32 D_800F1198;
 extern s32 D_800F119C;
 extern s32 D_800F11A0;
-void func_80062020(s32 *arg0) {
-    register s32 *a0 asm("$4") = arg0;
-    register s32 i asm("$5");
-    register s32 ofs asm("$3");
-    register s32 t asm("$2");
-    s32 *p;
-    s32 i12;
-    t = a0[0];
-    D_800A32B8 = 0;
-    i = 0;
-    if ((t & 1) == 0) goto end;
-    ofs = 0;
-    do {
-        t = a0[0];
-        *(s32 *)((u8 *)&D_800F1198 + ofs) = t;
-        t = a0[1];
-        i = i + 1;
-        *(s32 *)((u8 *)&D_800F119C + ofs) = t;
-        t = a0[2];
-        a0 = (s32 *)((u8 *)a0 + 12);
-        *(s32 *)((u8 *)&D_800F11A0 + ofs) = t;
-        t = a0[0];
-        ofs = ofs + 12;
-    } while ((t & 1) != 0);
-end:
-    i12 = i + i;
-    i12 = i12 + i;
-    i12 = i12 << 2;
-    p = (s32 *)((u8 *)&D_800F1198 + i12);
-    p[2] = 0;
-    p[1] = 0;
-    *(s32 *)((u8 *)&D_800F1198 + i12) = 0;
-}
+INCLUDE_ASM("asm/funcs", func_80062020);
 INCLUDE_ASM("asm/funcs", func_800620B8);
 s32 func_8006288C(void) {
     extern s32 D_800A3460;
@@ -4213,49 +4116,7 @@ void func_800644FC(s32 *arg0, s32 arg1, s32 arg2)
 }
 extern s32 rand(void);
 extern void *D_800A347C;
-s32 func_800645B0(void) {
-    register s32 s3 asm("$19");
-    s32 mask;
-    s32 a0;
-    s32 s0;
-    s32 idx2;
-    s32 cont;
-    s3 = 0;
-    D_800F10EC = 1;
-    do {
-        a0 = 0;
-loop_inner:
-        s0 = s3 + a0;
-        {
-            register s32 one asm("$3") = 1;
-            mask = one << s0;
-        }
-        a0 += 1;
-        if (!(D_800A3444 & mask)) {
-            idx2 = s0 << 1;
-            *((s32 *)(((s32)(&D_800F0D78)) + ((idx2 + s0) << 2))) = (((s32 *)D_800A347C)[0] + (rand() & 0xFF)) - 0x7F;
-            s3 += 4;
-            *((s32 *)(((s32)(&D_800F0D7C)) + ((idx2 + s0) << 2))) = (((s32 *)D_800A347C)[1] + (rand() & 0xFF)) - 0x7F;
-            *((s32 *)(((s32)(&videoDec)) + ((idx2 + s0) << 2))) = (((s32 *)D_800A347C)[2] + (rand() & 0xFF)) - 0x7F;
-            {
-                s32 last = rand();
-                s32 bits = D_800A3444;
-                *((s16 *)(((s32)(&D_800F0BCC)) + idx2)) = last & 7;
-                D_800A3444 = bits | mask;
-            }
-            do { } while (0);
-            cont = s3 < 0xF;
-        } else {
-            if (a0 >= 4) {
-                s3 += 4;
-                cont = s3 < 0xF;
-            } else {
-                goto loop_inner;
-            }
-        }
-    } while (cont != 0);
-    return 1;
-}
+INCLUDE_ASM("asm/funcs", func_800645B0);
 INCLUDE_ASM("asm/funcs", func_800646E8);
 extern void *D_800A347C;
 extern s32 D_800F0CA0;

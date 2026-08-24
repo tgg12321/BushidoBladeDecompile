@@ -1,0 +1,6 @@
+regfix.txt:1865: func_80078654: $16 <-> $17
+regfix.txt:1868: func_80078654: subst "sw\s+\$17,72" "sw	$17,76" @ 1
+regfix.txt:1869: func_80078654: subst "sw\s+\$16,76" "sw	$16,72" @ 9
+regfix.txt:1872: func_80078654: subst "lw\s+\$16,76" "lw	$16,72" @ 109
+regfix.txt:1873: func_80078654: subst "lw\s+\$17,72" "lw	$17,76" @ 110
+regfix.txt:1875: func_80078654: reorder 110,109 @ 109-110

@@ -1829,7 +1829,6 @@ func_800485EC: subst "sh\s+\$3,6" "sh	$2,6" @ 58
 # iter 2 main inserts (post-delete idx 26)
 # iter 3 main inserts (post-delete idx 35)
 # iter 4: j-delay-slot fill (sw into delay slot)
-func_800645B0: reorder 3,1,2 @ 1-3
 # RETIRED (targeted-permuter): func_8007D9C4: subst "nop" "addu $5,$0,$zero" @ 31
 # RETIRED (targeted-permuter): func_8007D9C4: subst "addu\s+\$5,\$0,\$zero" "nop" @ 38
 # func_8007526C: switch constant un-hoisting via inline addiu $2,$0,N (LICM unhoist)
@@ -1863,17 +1862,11 @@ func_8007526C: reorder 0,2,1,3 @ 0-3
 # GCC's natural arg0/var_s0 register pick from $s0/$s1 -> $s1/$s0.
 # Pre-swap regs: $16=arg0, $17=var_s0, $18=zero
 # Target regs:   $16=var_s0, $17=arg0, $18=zero
-func_80078654: $16 <-> $17
 # Fix save offsets after register swap (swap moved $17@72 + $16@76;
 # target wants $16@72 + $17@76).
-func_80078654: subst "sw\s+\$17,72" "sw	$17,76" @ 1
-func_80078654: subst "sw\s+\$16,76" "sw	$16,72" @ 9
 # Fix epilog load offsets (indices shifted +1 from original cheat-era
 # config because inline_move_aliasing emits one instruction at idx 38).
-func_80078654: subst "lw\s+\$16,76" "lw	$16,72" @ 109
-func_80078654: subst "lw\s+\$17,72" "lw	$17,76" @ 110
 # Reorder epilog loads: mine has s0,s1 but target has s1,s0.
-func_80078654: reorder 110,109 @ 109-110
 
 # func_80074220: loop label needs to attach to reordered first instruction
 

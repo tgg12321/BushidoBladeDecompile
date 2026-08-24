@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-20T00:38:37",
+  "generated_at": "2026-08-24T14:49:08",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
@@ -539,6 +539,14 @@
       "status": "active"
     },
     {
+      "func": "func_80018094",
+      "file": "code6cac",
+      "distance": 77,
+      "verdict": "ASM-PARTIAL",
+      "rules": 75,
+      "status": "active"
+    },
+    {
       "func": "func_80074B18",
       "file": "text1b",
       "distance": 79,
@@ -570,14 +578,6 @@
       "distance": 97,
       "verdict": "ASM-PARTIAL",
       "rules": 45,
-      "status": "active"
-    },
-    {
-      "func": "func_80018094",
-      "file": "code6cac",
-      "distance": 103,
-      "verdict": "ASM-PARTIAL",
-      "rules": 75,
       "status": "active"
     },
     {
@@ -1847,7 +1847,7 @@
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, operator-filed 2026-08-11): 2-byte reorg branch-target residual unreachable from C under frozen pipeline; both endgame gates FAILED (scan LOW 0/8, no SOTN precedent); 25 rules retained to hold byte-match; see docs/grind/decisions.md 2026-08-11 entry"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, operator-filed 2026-08-11): 2-byte reorg branch-target residual unreachable from C under frozen pipeline; both endgame gates FAILED (scan LOW 0/8, no SOTN precedent); 25 rules retained to hold byte-match; see docs/grind/decisions.md 2026-08-11 entry [2026-08-24: prose predates the 2026-08-19 migration \u2014 the 25 rules are retired and main is INCLUDE_ASM (cheat-free); distance 0 is a MASKED zero (real residual: scorer-invisible 2-byte ASPSX reorg branch-target gap)]"
     },
     {
       "func": "func_800307D0",
@@ -1865,7 +1865,27 @@
       "verdict": "C",
       "rules": 1,
       "status": "parked",
-      "park_reason": "OWNER-ACCEPTED EXCEPTION (ruling b, 2026-07-19): CLOBBER family refused; byte-correct form + regfix.txt:2190 kept on main; INCOMPLETE-owner-accepted, no further grinding"
+      "park_reason": "OWNER-ACCEPTED EXCEPTION (ruling b, 2026-07-19): CLOBBER family refused; byte-correct form + regfix.txt:2190 kept on main; INCOMPLETE-owner-accepted, no further grinding [2026-08-24: rule line drifted \u2014 the case-9/11 li-13 subst now sits at regfix.txt:1326; jtbl-deferred (wave-2 INCLUDE_RODATA retirement measured SHA1-dead, borderline.md:78)]"
+    },
+    {
+      "func": "func_80048AD0",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, in-person 2026-08-10): prototype-correction grant refused x3; RA artifact + no SOTN precedent for the correction direction; pins at text1b.c:606-609 held solely for the oracle [2026-08-24: the 4 pins were removed \u2014 migrated to INCLUDE_ASM, oracle green; the sandbox-0-under-prototype-correction candidate stays banked in the ledger (grant thrice refused)]"
+    },
+    {
+      "func": "func_800645B0",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 ## 2026-08-13 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**",
+      "unpark_reason": "owner ruling 2026-08-20 (a5a5c1ec): or-tree-shape-shift carve-out spends this park",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-20 \u2014 func_800645B0 \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (post-unpark re-affirmation)' (appended this session, at end of file) [2026-08-24: the 2 pins + 1 regfix reorder rule were removed \u2014 migrated to INCLUDE_ASM, oracle green]"
     },
     {
       "func": "func_8002EA24",
@@ -1883,7 +1903,7 @@
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): preheader emit-order (8 rules); both endgame-lock gates fail (scan 2/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): preheader emit-order (8 rules); both endgame-lock gates fail (scan 2/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned [2026-08-24: the 8 rules were retired by the 2026-08-19 migration; main is INCLUDE_ASM, cheat-free]"
     },
     {
       "func": "CD_sync",
@@ -1901,8 +1921,7 @@
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "prologue_fix": 1,
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): canonical-asm refused (no hand-coded evidence, scan 0/8); prologue_fix retained to hold match; not sanctioned, eligible for re-attempt"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): canonical-asm refused (no hand-coded evidence, scan 0/8); prologue_fix retained to hold match; not sanctioned, eligible for re-attempt [2026-08-24: inert prologue_config.json entry removed (function is INCLUDE_ASM since 2026-08-19, prologue_fix never sees its body; removal build-verified SHA1==oracle); item now fully clean]"
     },
     {
       "func": "func_80017848",
@@ -1915,15 +1934,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:5981 - the `2026-08-18 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE` entry (session 24, modality escalation), plus its same-day re-dispatch addendum recording this session's independent re-verification of both gates and the floor."
     },
     {
-      "func": "func_80057CC8",
-      "file": "text1b",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:8107 \u2014 ## 2026-08-20 \u2014 func_80057CC8 (src/text1b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
-    },
-    {
       "func": "func_80033550",
       "file": "code6cac_b",
       "distance": 4,
@@ -1931,6 +1941,15 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:8216 - 2026-08-20 - func_80033550 (src/code6cac_b.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
+    },
+    {
+      "func": "func_80062020",
+      "file": "text1b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): col-a partial-CSE closable only via same-lvalue dual-spelling (refused, no precedent); NO cheat on main, clean floor-4 candidate retained; both endgame-lock gates fail (scan LOW 0/8) [2026-08-24: the 4 legacy pins (which contradicted this reason's 'NO cheat on main') were removed \u2014 migrated to INCLUDE_ASM, oracle green; clean floor-4 candidate stays in the ledger]"
     },
     {
       "func": "func_80072CD4",
@@ -1951,13 +1970,31 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:2789 \u2014 '2026-08-01 \u2014 saEft01Init (src/system.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
     },
     {
+      "func": "func_80061658",
+      "file": "text1b",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): constant-staging-through-reused-live-local family REFUSED (no census-established SOTN precedent); reg-2/reg-3 asm pins retained only to hold byte-match, not sanctioned [2026-08-24: the reg-2/reg-3 pins were removed \u2014 migrated to INCLUDE_ASM (oracle green); sanctioned floor 7 (s4's score-0 is the banned staging form, floor_history corrected)]"
+    },
+    {
       "func": "func_8001F938",
       "file": "code6cac",
       "distance": 8,
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling 2026-07-27, options a+b refused): signedness-split dual-read family REFUSED (F2 census NOT ESTABLISHED); canonical-asm refused (pure-C form exists); 13 regfix rules retained only to hold byte-match, not sanctioned"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling 2026-07-27, options a+b refused): signedness-split dual-read family REFUSED (F2 census NOT ESTABLISHED); canonical-asm refused (pure-C form exists); 13 regfix rules retained only to hold byte-match, not sanctioned [2026-08-24: the 13 regfix rules were retired by the 2026-08-19 migration; main is INCLUDE_ASM, cheat-free]"
+    },
+    {
+      "func": "special_camera_get_rot_dir",
+      "file": "code6cac_b2_post",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): copy_end->s5 rotation reachable only via register pin (refused); NO cheat on main, clean floor-9 candidate retained; both endgame-lock gates fail (scan LOW 2/8, no SOTN precedent) [2026-08-24: the 4 legacy pins (which contradicted this reason's 'NO cheat on main') were removed \u2014 migrated to INCLUDE_ASM, oracle green; clean floor-9 candidate stays in the ledger]"
     },
     {
       "func": "get_alarm",
@@ -1967,15 +2004,6 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:8621 \u2014 ## 2026-08-20 \u2014 get_alarm / func_8007DC9C (src/display.c) \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**"
-    },
-    {
-      "func": "func_80061658",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): constant-staging-through-reused-live-local family REFUSED (no census-established SOTN precedent); reg-2/reg-3 asm pins retained only to hold byte-match, not sanctioned"
     },
     {
       "func": "func_80061710",
@@ -1994,6 +2022,15 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-13 \u2014 func_80034F88 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
+    },
+    {
+      "func": "func_800871D4",
+      "file": "main",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: 2026-07-28 \u2014 func_800871D4 \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE [2026-08-24: the 2 coercive andi __asm__ blocks + scheduling barrier were removed \u2014 migrated to INCLUDE_ASM, oracle green]"
     },
     {
       "func": "func_80045878",
@@ -2023,31 +2060,13 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): +8 phantom slot (combine REG_DEAD strand) \u2014 no C construct can remove a slot; 11 regfix substs retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 1/8)"
     },
     {
-      "func": "special_camera_get_rot_dir",
-      "file": "code6cac_b2_post",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): copy_end->s5 rotation reachable only via register pin (refused); NO cheat on main, clean floor-9 candidate retained; both endgame-lock gates fail (scan LOW 2/8, no SOTN precedent)"
-    },
-    {
-      "func": "func_80062020",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): col-a partial-CSE closable only via same-lvalue dual-spelling (refused, no precedent); NO cheat on main, clean floor-4 candidate retained; both endgame-lock gates fail (scan LOW 0/8)"
-    },
-    {
       "func": "func_80037A20",
       "file": "code6cac_c",
       "distance": 13,
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): s0<->s1 allocno-priority swap + cse REG_WAS_0 fold (cc1psx-identical); 2 pins + opt-barrier retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): s0<->s1 allocno-priority swap + cse REG_WAS_0 fold (cc1psx-identical); 2 pins + opt-barrier retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent) [2026-08-24: the 2 pins + opt-barrier were removed \u2014 migrated to INCLUDE_ASM, oracle green]"
     },
     {
       "func": "func_80037B00",
@@ -2056,25 +2075,16 @@
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 section '2026-07-28 \u2014 func_80037B00 \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 section '2026-07-28 \u2014 func_80037B00 \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE' [2026-08-24: the 9 pins + sp_dummy[2] were removed \u2014 migrated to INCLUDE_ASM, oracle green]"
     },
     {
-      "func": "func_800871D4",
-      "file": "main",
-      "distance": 15,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: 2026-07-28 \u2014 func_800871D4 \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
-    },
-    {
-      "func": "func_80048AD0",
-      "file": "text1b",
+      "func": "func_80078654",
+      "file": "text1b_b",
       "distance": 19,
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, in-person 2026-08-10): prototype-correction grant refused x3; RA artifact + no SOTN precedent for the correction direction; pins at text1b.c:606-609 held solely for the oracle"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-13 \u2014 func_80078654 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**' [2026-08-24: the inherited inline-move __asm__ + 6 regfix rules were removed \u2014 migrated to INCLUDE_ASM, oracle green; floor-19 clean candidate in the ledger]"
     },
     {
       "func": "motion_Close",
@@ -2086,17 +2096,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:4801 - '## 2026-08-12 - motion_Close - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     },
     {
-      "func": "func_800645B0",
-      "file": "text1b",
-      "distance": 21,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 ## 2026-08-13 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**",
-      "unpark_reason": "owner ruling 2026-08-20 (a5a5c1ec): or-tree-shape-shift carve-out spends this park",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-20 \u2014 func_800645B0 \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (post-unpark re-affirmation)' (appended this session, at end of file)"
-    },
-    {
       "func": "func_80083794",
       "file": "ings2",
       "distance": 23,
@@ -2104,15 +2103,6 @@
       "rules": 9,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: ## 2026-08-13 - func_80083794 - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**"
-    },
-    {
-      "func": "func_80078654",
-      "file": "text1b_b",
-      "distance": 23,
-      "verdict": "C",
-      "rules": 6,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-13 \u2014 func_80078654 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     },
     {
       "func": "func_800324D0",
@@ -2132,6 +2122,15 @@
       "status": "parked",
       "prologue_fix": 1,
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-23 - func_80041188 - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
+    },
+    {
+      "func": "func_80057CC8",
+      "file": "text1b",
+      "distance": 30,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:8107 \u2014 ## 2026-08-20 \u2014 func_80057CC8 (src/text1b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE [2026-08-24: migration-pin floor corrected 9->30 per decisions.md:8107 (s29) \u2014 pre-migration floors 3/9 measured banned-construct chassis; honest ban-compliant floor is 30]"
     }
   ],
   "counts": {
