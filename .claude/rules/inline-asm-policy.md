@@ -146,12 +146,12 @@ The only path with measured non-zero ROI for cheat-asm retirement:
 to COMPLETED-C (pure C). A successful retirement removes the function's
 cheat-asm and rules. There is **no "declare it needs hints and commit"
 outcome** — a function that won't reach pure C stays INCOMPLETE; you
-keep switching technique ([[escalation-ladder]]). The only non-pure-C
+keep switching technique (escalation-ladder (archived)). The only non-pure-C
 finish is canonical-asm authorization (COMPLETED-INLINE-ASM-CANONICAL)
 for a construct proven physically un-compilable — never cheat-asm.
 (Attempt logging in `.bb2_attempts/` is still useful as a record of what
 was tried, but it no longer unlocks a cheat-asm commit — see
-[[attempts-log-gate]].)
+attempts-log-gate (archived).)
 
 Secondary path: **reclassify cheat-asm functions whose inline asm is
 load-bearing.** The diagnostic surfaced 5 functions where stripping the
@@ -164,7 +164,7 @@ without changing any source code.
 
 - [[inline-move-aliasing]] — the most common cheat-asm pattern
 - [[register-asm-pins]] — pin reliability + when they're cheats
-- [[attempts-log-gate]] — gate enforcement for new cheat-asm commits
+- attempts-log-gate (archived) — gate enforcement for new cheat-asm commits
 - [[compiler-patch-low-roi]] — 0/16 measured ROI for the compiler-
   patch route (so it's not on the table)
 - [[cc1psx-calibration-only]] — prior project decision to not switch

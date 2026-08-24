@@ -79,4 +79,4 @@ functions unmatched, and none are). Treat "maybe it's the flags" as answered: no
 - [[no-compiler-divergence]] — the standing HARD RULE: no cc1/maspsx patches, no cc1psx-switch, no fork. The compiler is frozen; this rule (flags) is a corollary.
 - [[cross-jump-call-merge]] — the real wall for multi-jalr dispatch functions
 - [[compiler-patch-low-roi]] — patching cc1 itself is also low-ROI (measured) — superseded as POLICY by [[no-compiler-divergence]]
-- [[minimize-regfix]] — the remaining walls are closed with C structure, not flags
+- [[no-new-regfix-rules]] — the remaining walls are closed with C structure, not flags

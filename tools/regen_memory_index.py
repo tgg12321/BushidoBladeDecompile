@@ -171,6 +171,19 @@ def main() -> int:
                 paths_list = [p.strip().strip('"').strip("'") for p in inner.split(",") if p.strip()]
             path_scoped_stems.append((stem, paths_list))
 
+    # The REPO memory tree (memory/{project,closer,grind,wip} in the repo, git-
+    # tracked — distinct from the harness auto-memory this tool indexes) also
+    # hosts link targets: research notes like sotn-family-research-2026-07-01
+    # live at memory/project/*.md. Accept their stems so cross-references from
+    # rules/memories to repo research notes don't false-flag as broken
+    # (2026-08-24 — they were ~30 of the reported "dangling" links).
+    repo_memory_dir = REPO_PATH_RULES_DIR.parent.parent / "memory"
+    if repo_memory_dir.exists():
+        for path in repo_memory_dir.rglob("*.md"):
+            all_stems.add(path.stem)
+    # Deliberate placeholder slugs used in how-to-write examples, never files.
+    all_stems.update({"other-slug", "Y"})
+
     # Phase 2: validate all [[links]] resolve (across memory/ + .claude/rules/)
     broken: list[tuple[str, str]] = []
     for path in sorted(MEMORY_DIR.rglob("*.md")):

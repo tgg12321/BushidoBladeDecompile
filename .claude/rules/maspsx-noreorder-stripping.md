@@ -106,6 +106,6 @@ bare). Adding the SPACE-form duplicates restored `as` to reorder
 mode for subsequent functions and matched immediately. The
 spurious `.L1076` → `.L1080` rewrite had to be reverted manually.
 
-See also: [[bridge-is-not-decomp]] (avoid asm shortcuts as a
+See also: bridge-is-not-decomp (archived) (avoid asm shortcuts as a
 default), and `inline_asm_canonical.txt` for the list of
 functions where file-scope asm IS canonical.

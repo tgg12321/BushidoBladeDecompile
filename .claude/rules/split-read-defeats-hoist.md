@@ -76,7 +76,7 @@ control-flow shape*. They cannot discover a different shape. So:
 > computation is split across control flow.
 
 The "floor" is an artifact of the wrong structure, not a real floor. More pins, levers,
-or permuter iterations past this point are wasted effort -- see [[escalation-ladder]]
+or permuter iterations past this point are wasted effort -- see escalation-ladder (archived)
 (switch technique, not target) and `docs/PERMUTER_PIPELINE.md` (isolated score != full
 build).
 
@@ -103,10 +103,10 @@ re-route it to active.
 
 ## Related
 
-- [[escalation-ladder]] -- switch technique not target; this is the canonical instance
-- [[voice-control-playbook]] / [[gte-3x3]] -- defeat hoisting of CONSTANTS via asm
+- escalation-ladder (archived) -- switch technique not target; this is the canonical instance
+- voice-control-playbook (archived) / [[gte-3x3]] -- defeat hoisting of CONSTANTS via asm
   barriers (different: those ADD a barrier; this REMOVES the hoist by restructuring)
-- [[cheat-cleanup-techniques]] -- statement-vs-branch placement; its "place init after
+- cheat-cleanup-techniques (archived) -- statement-vs-branch placement; its "place init after
   the early-exit branch to avoid duplication" note is the inverse of this technique
 - [[register-asm-pins]] -- why the pins you reach for first don't stick (cluster coupling)
 - [[strength-reduce-defeat]] -- another "the structure forces the codegen" case

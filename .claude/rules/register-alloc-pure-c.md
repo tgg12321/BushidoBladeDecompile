@@ -251,7 +251,7 @@ the three-exit kill list: [[local-alloc-death-count-class-wall]].
 - [[inline-move-aliasing]] — the asm escape valve (cheat-asm); prefer the pure-C
   levers here first.
 - [[dead-vars-local-array]] — Levers C and D worked end-to-end there.
-- [[minimize-regfix]] — every pin and rule is debt; these levers retire both.
+- [[no-new-regfix-rules]] — every pin and rule is debt; these levers retire both.
 - [[difficult-is-not-impossible]] — the matching C exists; coupling, not impossibility.
 - [[cc1psx-calibration-only]] — the cross-check this section ran against (cc1psx
   matches target's scheduling, not target's allocation — confirms C-structure gap).
