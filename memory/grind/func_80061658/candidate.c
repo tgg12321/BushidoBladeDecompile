@@ -1,3 +1,9 @@
+/* 2026-08-24 MIGRATION NOTE: HEAD is now INCLUDE_ASM — migrated in
+   a7892ba2 (2026-08-24 sweep 2); all rules retired and all in-source cheat-asm removed
+   from main. Statements below about "HEAD", pins, rules carried, or
+   "applied to src" describe the PRE-MIGRATION tree (banked at
+   retired-chassis-2026-08/body.c). This body must be pasted over the
+   INCLUDE_ASM line before any sandbox re-measure. */
 /* func_80061658 — BYTES-PROVEN pure-C form (honest sandbox --disable all = 0,
  * rules_dropped 0, zero pins/__asm__ this func). Found by the s4 directed
  * permuter (7 independent score-0 finds). PENDING OWNER RULING — see

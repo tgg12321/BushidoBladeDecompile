@@ -1,3 +1,9 @@
+/* 2026-08-24 MIGRATION NOTE: HEAD is now INCLUDE_ASM — migrated in
+   a7892ba2 (2026-08-24 sweep 2); all rules retired and all in-source cheat-asm removed
+   from main. Statements below about "HEAD", pins, rules carried, or
+   "applied to src" describe the PRE-MIGRATION tree (banked at
+   retired-chassis-2026-08/body.c). This body must be pasted over the
+   INCLUDE_ASM line before any sandbox re-measure. */
 /* func_800645B0 (src/text1b.c) — the "SB" chassis, the standing honest floor.
  * `sandbox func_800645B0 --disable all` = score 1, target_insns 78,
  * build_insns 78, rules_dropped 1 — re-measured in grind session 9c

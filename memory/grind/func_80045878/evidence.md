@@ -1,3 +1,7 @@
+> **2026-08-24 MIGRATION NOTE:** HEAD is now `INCLUDE_ASM` (migrated in
+> 4faaa384 (2026-08-19 batch 2)); rules retired, in-source cheat-asm removed. "HEAD"
+> claims below describe the pre-migration tree (`retired-chassis-2026-08/body.c`).
+
 # Evidence bank — func_80045878
 
 ## s1 (recon, 2026-07-23)

@@ -1,3 +1,7 @@
+> **2026-08-24 MIGRATION NOTE:** HEAD is now `INCLUDE_ASM` (migrated in
+> a7892ba2 (2026-08-24 sweep 2)); rules retired, in-source cheat-asm removed. "HEAD"
+> claims below describe the pre-migration tree (`retired-chassis-2026-08/body.c`).
+
 # Evidence — func_800645B0 (src/text1b.c)
 
 ## Session 1 (2026-08-12, modality: recon) — reached distance 0, layer-1 FAILed

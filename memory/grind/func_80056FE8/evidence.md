@@ -1,3 +1,5 @@
+> **ALIAS NOTE (2026-08-24):** this ledger's function is `func_80056FE8` (formerly `ang_hosei_80056FE8` — decisions.md rulings and interior prose may use either name; any `memory/grind/ang_hosei_80056FE8/` path is this dir).
+
 # Evidence bank — ang_hosei_80056FE8
 
 - WIP rejected_form: {'form': 'drop the `var_v0 =` test-assignment (test the load directly)', 'score': 14, 'reason': 'Worse: target reuses the loaded value, so removing the assignment changes the load. Keep `(var_v0 = *(s16*)(arg0+0x5E))`.'}

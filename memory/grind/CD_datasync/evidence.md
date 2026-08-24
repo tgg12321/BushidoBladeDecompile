@@ -1,3 +1,5 @@
+> **ALIAS NOTE (2026-08-24):** this ledger's function is `CD_datasync` (formerly `saEft01Init` â€” decisions.md rulings and interior prose may use either name; any `memory/grind/saEft01Init/` path is this dir).
+
 # Evidence bank â€” saEft01Init
 
 Function: `saEft01Init` in `src/system.c` (target `asm/funcs/saEft01Init.s`,
@@ -308,7 +310,7 @@ holder was tried and regresses to 22/93 â€” banked in `rejected/`).
 
 - [s2] [s2] The k reuse belongs to the [[defeat-licm-hoist-var-reuse]] / SOTN 'variable reuse for codegen control' family and has NOT been through cheat-reviewer. Any completion claim on a form containing it must clear layer-1 and layer-2 review first; a more natural two-set spelling is preferred if one can be found (using v0 as the holder was tried and regresses to 22/93).
 
-## Session 3 (structural) — banked facts
+## Session 3 (structural) ï¿½ banked facts
 
 * **Floor unchanged at 18** (92 build insns vs 91 target). 13 further
   structural variants measured this session; none beat the session-2
@@ -337,7 +339,7 @@ holder was tried and regresses to 22/93 â€” banked in `rejected/`).
   followed directly by `code_label 218`). RTL captured in
   `tmp/grind/saEft01Init/s3/dbr_w1_goto_exits/system.i.dbr`.
 * **Target materialises the two loop constants in TWO DIFFERENT hard
-  registers** — `lui $v0,(0x3C0000>>16)` at asm idx 41 and
+  registers** ï¿½ `lui $v0,(0x3C0000>>16)` at asm idx 41 and
   `lui $v1,(0x1000000>>16)` at idx 83. One C variable is one pseudo and one
   hard register (ours puts both in `$a0`), so the candidate's single reused
   `k` is provably NOT the original spelling. It stays the best-scoring form
@@ -348,7 +350,7 @@ holder was tried and regresses to 22/93 â€” banked in `rejected/`).
   are false. So a USER local whose live range crosses a branch, set where
   `maybe_never` is already 1, stays inline in its own pseudo with no
   double-set. Measured: this works for the 0x1000000 mask constant
-  (27/97 vs the 30/98 both-hoisted baseline) but not for 0x3C0000 —
+  (27/97 vs the 30/98 both-hoisted baseline) but not for 0x3C0000 ï¿½
   `maybe_never` is still 0 that early in the loop body (loop.c:930 sets it
   at the first in-loop CODE_LABEL/JUMP_INSN), and moving the set later
   makes it basic-block-local.
@@ -357,7 +359,7 @@ holder was tried and regresses to 22/93 â€” banked in `rejected/`).
 * **The exit flag `v0` cannot hold a constant in any combination**: v0 for
   both (s2 H8) 22/93; v0 for the timeout plus a spanning mask local 22/94;
   v0 for the timeout plus a literal mask 29/95.
-* **Tooling:** `BB2_DBR_DEBUG=1` produces NOTHING — the shipped
+* **Tooling:** `BB2_DBR_DEBUG=1` produces NOTHING ï¿½ the shipped
   `tools/gcc-2.7.2/build/cc1` predates reorg.c's DBRDBG instrumentation,
   exactly as session 2 found for `BB2_ALLOC_DEBUG`. Read the `-da` `.dbr`
   RTL dump instead; `tmp/grind/saEft01Init/s3/dbrscan.py` extracts the

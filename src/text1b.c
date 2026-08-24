@@ -173,78 +173,16 @@ void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
         } while ((count--) != 0);
     }
 }
-/* func_800481E8 - src/text1b.c - s5 SYNTHESIS COMPOSITE, BYTES PROVEN.
- *
- * STATUS 2026-08-20 (grind s5, synthesis modality): this body was applied to
- * src/text1b.c in place of `INCLUDE_ASM("asm/funcs", func_800481E8);` (line 176) and
- * the FULL DRIVER BUILD produced SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
- * oracle (tmp/grind/func_800481E8/s5/build_pad.log). The built object's frame is
- * `addiu sp,sp,-72`, identical to target, and the whole 58-line body disassembles
- * identical to asm/funcs/func_800481E8.s
- * (tmp/grind/func_800481E8/s5/built_func.txt). The function is byte-matched by this C.
- *
- * `sandbox func_800481E8 --disable all` still prints 10, NOT 0 - the sandbox strips
- * the unwritten pad unconditionally until func_800481E8 has its row in
- * engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS
- * ("func_800481E8": frozenset({("pre_pad", 8)})). engine/ is outside a grind session's
- * allowed surface AND outside the add-scope-allow classes
- * (.claude/rules/integration-handoff-self-serve.md denylist), so this is an
- * INTEGRATION HANDOFF requiring the same one-line owner grant the two in-file siblings
- * received on 2026-08-20. Operator steps: docs/grind/decisions.md, the 2026-08-20 s5
- * func_800481E8 entry.
- *
- * THE SYNTHESIS THAT CLOSED IT (what s1-s4 had wrong). s2's five-way frame taxonomy
- * filed this function's 32 untouched bytes under "(v) unwritten TAIL", and the owner's
- * 2026-08-20 grant entry accordingly said the sibling ruling does not extend to
- * trailing/tail-pad shapes. That taxonomy label was a mis-read of the frame map. The
- * untouched region sits at sp+0x18..0x37: ABOVE the outgoing-args area (0x00-0x17,
- * whose 5th-arg slot is written by `sw $v0,0x10($sp)` at 0x80048288) and BELOW the
- * saved-regs block (0x38-0x47: s0/s1/s2/ra). That is the VARS region - exactly where a
- * FIRST-DECLARED local lands - and it is byte-for-byte the same 32-byte
- * args24/vars32/regs16 = .frame 72 layout as the two granted siblings
- * func_80047EE8 and func_80047FBC. So the correct family was the LEADING-pad shape the
- * owner had already sanctioned generally (2026-08-18) and granted twice in this very
- * file, not the tail-pad shape that has no precedent. One first-decl
- * `volatile u32 pre_pad[8];` closed the entire 10-instruction residual on the first
- * try, with no other change to the s1 chassis.
- *
+/* func_800481E8 — COMPLETED-C 2026-08-22 (commit 272e47c4, layer-2 PASS;
+ * allowlist row granted per the parked-but-proven audit, ruling cbcfda04).
  * Two annotated constructs, both in sanctioned families:
- *  - `volatile u32 pre_pad[8];` - phantom-frame-slot volatile pad local family (owner
- *    ruling 2026-08-18, .claude/rules/no-new-park-categories.md:390), ARRAY form,
- *    first-decl position, no (void) shim.
- *  - `arg0 = 0;` - dead-store-fake-exception (dead store to a PARAM), the same lever
- *    Judge-PASSed on the in-file sibling func_80047EE8.
- *
- * Everything below the pad is the s1 chassis verbatim (walking pointer `p`, base copy,
- * early a0_for_call precompute, always-advance in the delay slot), re-measured
- * unchanged at floor 10 on the post-migration chassis by s4 and again by s5.
- * Prior-session notes retained below for provenance:
- *
- * s4 (permuter, 2026-08-20) CHASSIS RE-VERIFICATION -- READ THIS FIRST:
- *   - HEAD changed under this ledger: the 2026-08-19 asm-until-matched migration
- *     replaced the old 12-regfix-rule + $16-pin + INLINE_MOVE_ALIASING form in
- *     src/text1b.c with `INCLUDE_ASM("asm/funcs", func_800481E8);`. regfix.txt now
- *     holds only a COMMENT line for this function (regfix.txt:2442), zero rules.
- *   - The callee was renamed by a naming wave: the old `efc_buki_draw_zanzou` in
- *     this file is now `func_800482C8` (the jal target in asm/funcs/func_800481E8.s).
- *     This file has been updated accordingly. There is NO prototype for it above
- *     func_800481E8 in src/text1b.c (it is defined below), so the call is
- *     unprototyped/int-promoted -- the same ABI the banked floor was measured under.
- *   - MEASURED on the new chassis (s4): applying this file over the INCLUDE_ASM line
- *     gives sandbox --disable all = 10, 56/56 insns, rules_dropped 0,
- *     cheat_asm_stripped 278. Floor is UNCHANGED at 10 and the residual is still
- *     exactly the 10 frame-offset instructions. The migration is codegen-neutral here.
- *
- * s4-RERUN (permuter, 2026-08-20) -- RE-MEASURED AGAIN on HEAD after the driver
- * discarded the first s4 session and reverted its src/ edits: applying this file
- * over `INCLUDE_ASM("asm/funcs", func_800481E8);` at src/text1b.c:68 gives
- * sandbox --disable all = 10, 56/56 insns, rules_dropped 0, cheat_asm_stripped 278.
- * Unchanged. A third permuter seed (directed hybrid, PERM_GENERAL x PERM_LINESWAP
- * spanning both prior chassis) ran 46,124 iterations with ZERO finds -- banked in
- * rejected/directed-hybrid-seed-permuter-dry.c. Also measured: struct-walk (47
- * insns) and array-index (49 insns) chassis LOSE body instructions, so the
- * walking-pointer spelling below is load-bearing, not stylistic.
- */
+ *  - `volatile u32 pre_pad[8];` — phantom-frame-slot volatile pad (owner
+ *    ruling 2026-08-18), ARRAY form, first-decl, engine allowlist row in
+ *    engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS.
+ *  - `arg0 = 0;` — dead-store-fake-exception (dead store to a param), same
+ *    lever Judge-PASSed on the in-file sibling func_80047EE8.
+ * Full derivation: docs/grind/decisions.md 2026-08-20/22 entries + this
+ * block's pre-completion history in git (272e47c4^). */
 void func_800481E8(s32 arg0, s32 arg1)
 {
     /* Pure C (s1 recon): the sibling InitHiraRmd_80047FBC prologue technique

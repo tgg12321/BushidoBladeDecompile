@@ -1,3 +1,9 @@
+/* 2026-08-24 MIGRATION NOTE: HEAD is now INCLUDE_ASM — migrated in
+   a7892ba2 (2026-08-24 sweep 2); all rules retired and all in-source cheat-asm removed
+   from main. Statements below about "HEAD", pins, rules carried, or
+   "applied to src" describe the PRE-MIGRATION tree (banked at
+   retired-chassis-2026-08/body.c). This body must be pasted over the
+   INCLUDE_ASM line before any sandbox re-measure. */
 /* candidate — honest pin/barrier-free faithful body. sandbox --disable all = 13.
  * Floor NOT improved this session (recon). The committed HEAD "matches" only via
  * two register asm() pins + an __asm__ opt-barrier (all cheats); this is the

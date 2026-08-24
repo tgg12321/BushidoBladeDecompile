@@ -1,3 +1,7 @@
+> **2026-08-24 MIGRATION NOTE:** HEAD is now `INCLUDE_ASM` (migrated in
+> a7892ba2 (2026-08-24 sweep 2)); rules retired, in-source cheat-asm removed. "HEAD"
+> claims below describe the pre-migration tree (`retired-chassis-2026-08/body.c`).
+
 # Evidence bank — func_80037A20
 
 - s1 (recon) GREG-CONFIRMED mechanism (artifact tmp/grind/func_80037A20/s1/dump/pre.i.greg).

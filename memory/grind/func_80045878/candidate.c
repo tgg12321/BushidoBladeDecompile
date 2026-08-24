@@ -1,3 +1,9 @@
+/* 2026-08-24 MIGRATION NOTE: HEAD is now INCLUDE_ASM — migrated in
+   4faaa384 (2026-08-19 batch 2); all rules retired and all in-source cheat-asm removed
+   from main. Statements below about "HEAD", pins, rules carried, or
+   "applied to src" describe the PRE-MIGRATION tree (banked at
+   retired-chassis-2026-08/body.c). This body must be pasted over the
+   INCLUDE_ASM line before any sandbox re-measure. */
 /* func_80045878 (text1a_c.c) — best pure-C form, sandbox --disable all = 10
  * (build_insns 107 vs target 108). This IS the HEAD body; apply verbatim to
  * src/text1a_c.c to resume at the floor. Two coupled residual gaps remain:

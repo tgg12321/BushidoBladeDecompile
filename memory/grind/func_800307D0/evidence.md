@@ -1,3 +1,5 @@
+> **ALIAS NOTE (2026-08-24):** this ledger's function is `func_800307D0` (formerly `cpu_check_tubazeri_2` — decisions.md rulings and interior prose may use either name; any `memory/grind/cpu_check_tubazeri_2/` path is this dir).
+
 # Evidence bank — cpu_check_tubazeri_2
 
 - s1 [recon] MEASURED: current HEAD src floor = 9 (carried a `*(u16*)(0, (u8*)a0+0x330)` comma cheat + `after_sll` goto split). Applying memory candidate.c → honest sandbox floor **4** CONFIRMED (target_insns=build_insns=76, scorable, 9 rules dropped). candidate.c is strictly better + cheat-free; left applied to src.

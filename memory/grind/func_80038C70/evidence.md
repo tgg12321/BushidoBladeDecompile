@@ -1,3 +1,5 @@
+> **ALIAS NOTE (2026-08-24):** this ledger's function is `func_80038C70` (formerly `motion_SetMotion` — decisions.md rulings and interior prose may use either name; any `memory/grind/motion_SetMotion/` path is this dir).
+
 # Evidence bank — motion_SetMotion
 
 - WIP rejected_form: {'form': 'case 9: case 11: sel = 0xD; (with rule removed)', 'score': 0, 'reason': 'WRONG: full build SHA1 mismatch 82e50f76. Cross_jump fires when both case9/11 and D_800A3207==3 non-10 have sel=0xD â€” minimum-2 (`li s0,13; j sel_dispatch`) met â†’ blocks merged â†’ different binary.'}

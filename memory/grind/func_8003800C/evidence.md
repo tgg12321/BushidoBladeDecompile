@@ -1,3 +1,5 @@
+> **ALIAS NOTE (2026-08-24):** this ledger's function is `func_8003800C` (formerly `damage_DebugDisp` — decisions.md rulings and interior prose may use either name; any `memory/grind/damage_DebugDisp/` path is this dir).
+
 # Evidence bank — damage_DebugDisp
 
 ## s1 (recon, 2026-07-22) — floor 8 confirmed, diff map nailed

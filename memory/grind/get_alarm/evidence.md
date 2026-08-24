@@ -1,4 +1,6 @@
-# Evidence bank — func_8007DC9C
+> **ALIAS NOTE (2026-08-24):** this ledger's function is `get_alarm` (formerly `func_8007DC9C` — decisions.md rulings and interior prose may use either name; any `memory/grind/func_8007DC9C/` path is this dir).
+
+# Evidence bank — get_alarm (formerly func_8007DC9C)
 
 - s1 recon (2026-07-22): baseline re-confirmed THIS session — `canonical` verdict C distance 9; `sandbox --disable all` score 9 (target 91 / build 90 insns, rules_dropped 4, cheat_asm_stripped 150). Gap = 1 combine-fold insertion (BF68[0], axis A) + 8-op sched1 reorder cluster (first debug_printf setup, axis B).
 

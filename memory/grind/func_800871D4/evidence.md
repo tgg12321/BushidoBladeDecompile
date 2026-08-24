@@ -1,3 +1,7 @@
+> **2026-08-24 MIGRATION NOTE:** HEAD is now `INCLUDE_ASM` (migrated in
+> a7892ba2 (2026-08-24 sweep 2)); rules retired, in-source cheat-asm removed. "HEAD"
+> claims below describe the pre-migration tree (`retired-chassis-2026-08/body.c`).
+
 # Evidence bank — func_800871D4
 
 - WIP rejected_form: one-expr var_v1 = temp_a0 & 0xFFFF: GCC FOLDS the redundant andi (higher score)

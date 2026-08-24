@@ -1,3 +1,9 @@
+/* 2026-08-24 MIGRATION NOTE: HEAD is now INCLUDE_ASM — migrated in
+   a7892ba2 (2026-08-24 sweep 2); all rules retired and all in-source cheat-asm removed
+   from main. Statements below about "HEAD", pins, rules carried, or
+   "applied to src" describe the PRE-MIGRATION tree (banked at
+   retired-chassis-2026-08/body.c). This body must be pasted over the
+   INCLUDE_ASM line before any sandbox re-measure. */
 /* s5 (forensics, 2026-08-07): floor still 1; body unchanged. Fresh-counter
  * mechanism named: find_reg pass-0 regs_someone_prefers repulsion -- delta's
  * full-pref {$a0} (set_preference on the one-insn addiu arg copy) excludes

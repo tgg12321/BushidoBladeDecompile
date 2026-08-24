@@ -1,3 +1,5 @@
+> **ALIAS NOTE (2026-08-24):** this ledger's function is `CD_sync` (formerly `cpu_side_move_dir_4` — decisions.md rulings and interior prose may use either name; any `memory/grind/cpu_side_move_dir_4/` path is this dir).
+
 # Evidence bank — cpu_side_move_dir_4
 
 - WIP rejected_form: {'form': 'volatile u8 *idx_1494 (v15/v12/v14)', 'score': 7, 'reason': 'Policy: prong-1 fails (writer synchronous). Also only bought idx-pair order, not the reg half.'}
