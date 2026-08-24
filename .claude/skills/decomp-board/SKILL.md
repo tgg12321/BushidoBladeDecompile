@@ -6,6 +6,11 @@ description: >-
   (decomp-grind skill) is the autonomous pipeline. Historical reference only.
 ---
 
+> **RETIRED 2026-07-06 — HISTORICAL REFERENCE ONLY.** Do not execute any
+> command below; some would mutate retired surfaces or (decomp-work)
+> create `bb2-work-*` worktrees that break a live Grinder invariant.
+> Use the `decomp-grind` skill.
+
 # BB2 Decomp board — agent queue interface
 
 The **GitHub board is a queue.** Every remaining function needs decompiling, so

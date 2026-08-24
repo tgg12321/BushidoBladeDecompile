@@ -22,9 +22,12 @@ the oracle is the only truth.
 
 1. **`CLAUDE.md` + `AGENTS.md`** auto-load — they ARE the workflow spec. Re-read
    the "non-negotiables", the queue section, and "Orchestrator post-run protocol".
-2. **`memory/MEMORY.md`** (auto-loaded index) → read **`project/greenfield-engine-v2.md`**
-   (engine design + state) and **`user/role.md`**.
-3. **`reference/matching-playbook.md`** — the codegen techniques (GCC 2.7.2 + ASPSX 2.34).
+2. **The Claude Code auto-memory** (loaded by the harness each session — these
+   are NOT repo paths): the `MEMORY.md` index → `project/greenfield-engine-v2.md`
+   (engine design + state) and `user/role.md`.
+3. Auto-memory **`reference/matching-playbook.md`** — the codegen techniques
+   (GCC 2.7.2 + ASPSX 2.34); in-repo equivalent:
+   `.claude/rules/codegen-technique-index.md`.
 4. **Path-scoped rules in `.claude/rules/`** auto-load when you read a matching
    file (e.g. opening `src/*.c` surfaces the register-alloc / inline-asm / loop
    rules). Trust them; they're hard-won. Don't re-derive what they document.
@@ -33,8 +36,13 @@ the oracle is the only truth.
 
 Every function is in exactly ONE state. No gradations, no "almost done."
 
-  - **INCOMPLETE** — in `engine/queue.json`. Carries a regfix/asmfix rule,
-    cheat-asm pin/__asm__, OR non-zero honest pure-C distance.
+  - **INCOMPLETE** — in `engine/queue.json`. Since 2026-08-19
+    ([[asm-until-matched]]) committed as `INCLUDE_ASM("asm/funcs", <f>);` —
+    zero rules, zero cheat-asm on main; candidate C + banked chassis live in
+    `memory/grind/<f>/` and the queue distance is the pinned/ledger honest
+    floor. (56 byte-coupling deferred functions still carry a legacy
+    rule/cheat-asm representation until solved.) Never commit an
+    intermediate C body — C lands on main exactly once, at COMPLETED-C.
   - **COMPLETED-C** — zero rules, zero cheat-asm in source, byte-matches.
     Not in the queue. Not in `inline_asm_canonical.txt`. The SOTN bar; the
     default goal for every function.
@@ -96,6 +104,11 @@ engine.cli…'`** — that nests three shells and the quoting eats awk/sed/hered
    `git commit -F`).
 
 ## 4. Autonomous operation — drive workers + review
+
+> **LEGACY PATH.** The Grinder (`decomp-grind` skill, `tools/grinder/`) has
+> been the default autonomous pipeline since 2026-07-06 — use it instead.
+> This section survives only for a deliberately hand-driven batch, and its
+> ESCALATE semantics predate [[judge-sole-gate]] (nothing waits on the owner).
 
 - **Run:** `pwsh tools/headless_loop.ps1 -MaxIterations N [-Model opus]
   [-MaxSameFunc 2] [-DryRun]`. It invokes `claude -p` once per queue item
@@ -248,10 +261,13 @@ high-value codegen + workflow rules: `sandbox-zero-retire-fails`,
 `loop-rotation-two-shift`, `gte-3x3`, `packed-multiply-cluster`,
 `maspsx-noreorder-stripping`, plus the auto-handle rules in §6.
 
-`memory/` (index: `MEMORY.md`): `project/greenfield-engine-v2` (engine),
+The Claude Code **auto-memory** (harness-loaded, NOT repo paths; index:
+`MEMORY.md`): `project/greenfield-engine-v2` (engine),
 `project/build-and-internals`, `reference/matching-playbook`,
 `reference/scoring-systems`, `rules/completion-standard`,
-`rules/community-standard`. Metrics design: `metrics/README.md` + `[[metrics-system]]`.
+`rules/community-standard`. The REPO `memory/` dir is different — it holds
+grind ledgers (`memory/grind/<func>/`), WIP checkpoints (`memory/wip/`), and
+closer research. Metrics design: `metrics/README.md` + `[[metrics-system]]`.
 
 ## Quick reference — the tools you drive
 

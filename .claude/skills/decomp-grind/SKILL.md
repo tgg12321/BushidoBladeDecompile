@@ -16,7 +16,8 @@ You operate **the Grinder** (`tools/grinder/`): one deterministic driver, one
 function at a time, grind-until-done. You are the operator, not a worker — you
 verify preconditions, launch it detached, and report; the pipeline does the
 decomp. Design: `docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md`.
-Operational memory: `memory/project/grinder-pipeline.md` ([[grinder-pipeline]]).
+Operational memory: the auto-memory `project/grinder-pipeline.md`
+([[grinder-pipeline]] — harness memory, not a repo path).
 
 > **Prime directives:** no cheat reaches `main` (bytes proven BEFORE a
 > default-FAIL Judge rules on the C); no token/time/cost framing anywhere
@@ -93,6 +94,11 @@ queue top continuously; completions land as `Match: <func> — COMPLETED-C
    already loaded its script; stop → edit → drill → relaunch.
 5. **The queue is the only worklist** — no cherry-picking, no rotation. The
    owner can reorder the queue; the grinder just takes the top.
+6. **INCOMPLETE = `INCLUDE_ASM` on main** (owner ruling 2026-08-19,
+   [[asm-until-matched]]): sessions never commit intermediate C; candidates,
+   banked chassis (`retired-chassis-2026-08/`), and the queue-ordering floor
+   (`migration_pin.json`) live in `memory/grind/<func>/`. 56 byte-coupling
+   deferred functions still carry legacy rules/cheat-asm until solved.
 
 ## Failure modes the driver already handles (don't intervene)
 - Session crash / usage-limit / timeout → invalid session, discarded,

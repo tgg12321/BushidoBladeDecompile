@@ -24,6 +24,10 @@ The PS1 decompilation community standard — established by Symphony of the Nigh
 - **`INCLUDE_ASM`** — the function is canonical hand-coded asm (no C form
   exists). The whole-body `__asm__("glabel ...")` block is the accepted finished
   form. This is our **COMPLETED-INLINE-ASM-CANONICAL** state.
+  **BB2 caveat (2026-08-19, [[asm-until-matched]]):** in this repo the same
+  token ALSO marks not-yet-decompiled work — an INCOMPLETE function is
+  committed as `INCLUDE_ASM` too. The disambiguator is `engine/queue.json`
+  (INCOMPLETE) vs `inline_asm_canonical.txt` (done), never the source token.
 
 That's it. No "and also a small list of post-cc1 rules that paper over a
 register diff." No "scheduling reorders applied via an external pipeline stage."

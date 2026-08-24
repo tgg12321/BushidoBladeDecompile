@@ -1,7 +1,7 @@
 ---
 name: verify-claims-against-main
 description: Workers in worktrees can read stale files and make confident claims about line numbers / sibling rules / link behavior that don't match current main. Always verify the file/line numbers and the empirical behavior before recording a claim in a WIP entry or as evidence in a commit message.
-paths: ["memory/wip/**", ".claude/workflows/**", "tools/setup_worktree.ps1", "engine/wip.py"]
+paths: ["memory/wip/**", "tools/setup_worktree.ps1", "engine/wip.py"]
 metadata:
   type: rule
 ---

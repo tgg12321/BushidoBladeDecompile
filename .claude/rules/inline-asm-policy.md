@@ -87,10 +87,16 @@ For a long time the BB2 project lumped canonical and cheat asm together as
   allocation or scheduling control. That's cheat-asm, and it's BB2's gap
   from the SOTN community standard.
 
-`INCLUDE_ASM`-ing a cheat-asm function as if it were unsolved would hide
-real work. Pretending cheat-asm functions are at SOTN standard would lie.
-The honest position is: canonical inline asm is fine; cheat-asm is a
-measurable debt metric we track and reduce over time.
+> **Superseded 2026-08-19 ([[asm-until-matched]]):** an INCOMPLETE function
+> IS committed as `INCLUDE_ASM("asm/funcs", <func>)` — the honest floor
+> lives in `memory/grind/<func>/migration_pin.json`, the retired chassis in
+> `retired-chassis-2026-08/`. Cheat-asm on main is now (near-)zero by
+> construction, not a tracked debt metric; only the byte-coupling deferred
+> set still carries legacy cheats. `INCLUDE_ASM` is therefore ambiguous at
+> the source level: it marks EITHER not-yet-decompiled work (queue item) OR
+> a COMPLETED-INLINE-ASM-CANONICAL body (listed in
+> `inline_asm_canonical.txt`) — disambiguate via `engine/queue.json` /
+> `inline_asm_canonical.txt`, never by the token alone.
 
 # Concrete examples in BB2
 

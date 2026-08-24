@@ -16,7 +16,11 @@ encode measured, often multi-session findings; re-deriving them wastes a
 session. Never use a sanctioned-exception or forbidden-family construct
 without reading its rule. (Policy rules — no-new-park-categories,
 review-discipline-before-commit, inline-asm-policy, no-compiler-divergence,
-difficult-is-not-impossible — still auto-load and are not listed here.)
+difficult-is-not-impossible, asm-until-matched, decomp-loop,
+no-new-regfix-rules, verify-claims-against-main — auto-load on their own
+globs and are not listed here. Two 2026-08-18/19 escalation-policy rules
+have NO auto-load glob and must be read directly when relevant:
+**judge-sole-gate** and **integration-handoff-self-serve**.)
 
 ## Register-allocation / register-rename diffs
 
@@ -28,7 +32,7 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 - **drop-param-alias-local** — param→local alias pins → drop the alias so the param register frees up for reuse.
 - **exit-path-return-set-cse-join** — shared finish label where a copy into `$v0` feeds an op → set the return value in EACH exit path, not at the join.
 - **hoist-shared-arm-computation-defeats-copy-pref** (saTan2Main, 2026-07-12) — two if/else branches duplicate the same `z = x + y` where a downstream compare's residual is register-choice ($v1 vs $a0); the duplicated sum pseudo inherits `y`'s arg-copy-pref via `expand_preferences` → hoist the shared expression OUT of both arms into a single post-if/else statement; single-pseudo RA picks the natural register; jump2 duplicates the assignment back into arms at codegen.
-- **divmod-coalesce-reuse-var** (memory/reference/) — GCC's quotient→move→var divmod allocation.
+- **divmod-coalesce-reuse-var** (AUTO-MEMORY `reference/` — harness memory, not a repo file) — GCC's quotient→move→var divmod allocation.
 - **staged-value-reused-variable** — SANCTIONED 2026-07-03: a load places too LATE (fresh single-set dest gets the scheduler's load-late LAUNCH priority) → stage the value through an EXISTING currently-dead local (`v0 = idx[1]; arg5 = tbl[v0];`), FAKE-annotated + lever-exhaustion; live code only (zero dead stores); SOTN ships the shape ("fake reuse of i", 6 files).
 
 - **local-alloc-death-count-class-wall** — a clean `$v0`<->`$v1` swap between a variable reused across several loads and a short constant/mask beside it; every reorder / decl-order / split measured flat or worse. NOT a priority tie: `local-alloc.c:472` gates local allocation on `reg_n_deaths == 1`, so the multi-death temp is unconditionally punted to global and the single-death constant takes `$v0` by ascending first-free. Read the `.lreg` "dies in D places" line BEFORE applying any lever from register-alloc-pure-c. Three exits, all measured dead; the only flip is an invented staging local (a cheat).
@@ -45,7 +49,7 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 - **switch-break-shared-return-sched-hoist** — per-case `return 0;` lets sched1 hoist the v0-set into a load-delay slot → `break;` + shared trailing `return 0;`.
 - **loop-exit-work-inside-loop-sched-fence** — post-loop inits hoisted above a tail-store region → move the loop's exit work INSIDE the loop (`if (cond) continue; tail; break;`).
 - **loop-note-fixes-delay-slot-steal** — a memory-clobber barrier that only blocks a delay-slot steal → write the loop as a real `while`/`do`.
-- **loop-counter-fills-load-delay** (func_80045294, 2026-06-14) — accumulator loop `sum += *(p+off); i++; off+=0x10;` leaves a maspsx nop in the `lw` load-delay slot (your build hoists `i++` to the loop top) → split the load into a named temp and reorder so the address-advance comes BETWEEN load and use, `i++` just before the consume: `s32 val = *(p+off); off+=0x10; i++; sum+=val;`. cc1's first-pass scheduler then drops `i++` into the lw delay slot (no nop). NB: `i++` BEFORE `sum+=` matters — the 4 forms keeping `i++` ahead of the load all failed; the `off+=` between load and use is the lever. Pure C, no dead store.
+- **loop-counter-fills-load-delay** (INLINE — no rule file; full recipe here) (func_80045294, 2026-06-14) — accumulator loop `sum += *(p+off); i++; off+=0x10;` leaves a maspsx nop in the `lw` load-delay slot (your build hoists `i++` to the loop top) → split the load into a named temp and reorder so the address-advance comes BETWEEN load and use, `i++` just before the consume: `s32 val = *(p+off); off+=0x10; i++; sum+=val;`. cc1's first-pass scheduler then drops `i++` into the lw delay slot (no nop). NB: `i++` BEFORE `sum+=` matters — the 4 forms keeping `i++` ahead of the load all failed; the `off+=` between load and use is the lever. Pure C, no dead store.
 - **walking-pointer-serializes-parallel-loads** — memory-clobber barriers OR per-load `register asm("$N")` pins between independent parallel-array element stores (`G0=r[0]+a[0]; ...` or `Gi=a0[i]`) → walk the array(s) with post-increment pointers (`*ap++`); the pointer dependence serializes the loads so GCC keeps the per-element lw/sw and stops stealing later loads into delay slots. An interleaved independent constant/global store whose `lui` GCC hoists too early: move that store PAST the loads so it schedules into the freed delay slots.
 - **hoist-call-arg-local-flips-jal-delay** — fill_delay regfix cluster around a call → hoist the late-loaded arg into a local declared FIRST in the block.
 - **store-before-jal** — arg saved into a callee-save between a table load and its call; ordering recipe.
@@ -125,3 +129,10 @@ the section above that fits. Only enforcement-critical POLICY rules get a
 broad `src/*.c` glob — never technique recipes. New-technique-family rule
 docs additionally need layer-2 review + user sign-off per
 [[review-discipline-before-commit]].
+
+## TU-scoped / config-gate rules (auto-load only on their own files — listed here so other TUs can find them)
+
+- **gte-3x3** (`src/display.c`, `src/text1b.c`) — ARCHIVED/forbidden recipe pointer: routes the display.c GTE mvmva wrapper cluster to canonical-asm instead of the old pin/barrier recipe.
+- **packed-multiply-cluster** (`src/display.c`, `src/text1b.c`) — S8 redundant-mask signal (hand-coded vs C) + the u64 widening-multiply H-structure for the genuinely-C members.
+- **scratchpad-gte** (`src/text1b.c`, `src/display.c`) — ARCHIVED/forbidden recipe pointer: scratchpad+GTE cluster; restructure in C or canonical-asm, never the old pin/volatile-cast recipe.
+- **maspsx-gate-lists** (the `*_funcs.txt` gate files) — what each maspsx fidelity gate list does and when adding a function is legitimate.

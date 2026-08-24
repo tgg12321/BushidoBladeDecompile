@@ -6,6 +6,11 @@ description: >-
   decomp-orchestrate for driving one function by hand. Historical reference only.
 ---
 
+> **RETIRED 2026-07-06 — HISTORICAL REFERENCE ONLY.** Do not execute any
+> command below; some would mutate retired surfaces or (decomp-work)
+> create `bb2-work-*` worktrees that break a live Grinder invariant.
+> Use the `decomp-grind` skill.
+
 # BB2 Decomp worker — work a batch off the board
 
 You are ONE worker. You take **N items of a lane** off the "BB2 Decomp" board and

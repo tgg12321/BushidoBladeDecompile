@@ -41,16 +41,19 @@ barriers, INLINE_MOVE_ALIASING, volatile-coercion (alias-rename / cast /
 plain extern / `(void)volatile` discard), unused-local-array frame
 coercion (with `&`, with `(void)`, with volatile-typed scalar),
 dead-param-assign (Lever D), dead-conditional-store, empty-body
-`if (cond) { }` dead-read, `if (1) { ... }` always-true wrapping,
-dead-goto label-pad, DImode chain for scheduling, goto-end-with-ret-val
+`if (cond) { }` dead-read (EXCEPT the exact F6 shapes sanctioned
+2026-08-18 — see the additions block below), `if (1) { ... }` always-true
+wrapping, dead-goto label-pad, DImode chain for scheduling,
+goto-end-with-ret-val
 accumulator + shared label, param-local-alias declaration-order trick,
-`s32 one = 1;`
-opaque variable to defeat single-bit transform, lowercase `asm(...)`
+lowercase `asm(...)`
 cheat blocks bypassing detector regex. (The combine-foldable
-chain-extender to bump `reg_n_refs` was moved to the sanctioned F1
-family by owner ruling 2026-07-01 — FAKE-annotated last-resort per
+chain-extender to bump `reg_n_refs` was moved to a sanctioned family by
+owner ruling 2026-07-01 — FAKE-annotated last-resort per
 [[dead-store-fake-exception]]'s chain-extender clause; un-annotated or
-byte-materializing instances remain FAIL.)
+byte-materializing instances remain FAIL. Do NOT call it "F1" — the
+2026-08-18 survey uses F1 for the REFUSED constant-staging chain, a
+different family.)
 
 # SOTN-accepted techniques (treat as ALLOWED in the family check)
 
@@ -243,6 +246,33 @@ in memory/project/sotn-*-research-*.md with citation:
   authorizes adding a symbol to the allowlist. When torn between PASS
   and FAIL on this construct, **choose FAIL.**
 
+## 2026-08-17/18 additions (owner rulings — authoritative text in
+## `.claude/rules/no-new-park-categories.md`; read it, this is a pointer list)
+
+The enumerated list above stops at the 2026-07-01 rulings and has drifted
+twice; `.claude/rules/no-new-park-categories.md` is the AUTHORITY for the
+sanctioned-family set. Later additions this brief must honor:
+
+- **Per-word splat symbol → aggregate merge** (2026-08-17; five mandatory
+  prongs incl. evidence-independent object model + complete merge).
+- **Named-intermediate clarification** (2026-08-17; six prongs — fresh,
+  once-written/once-read, real value, byte-neutral, not a borrow, not
+  live-pre-initialized).
+- **F3 compound-address duplication across call arg-lists** (2026-08-18).
+- **F6 semantically-null fabricated statement pairs** (2026-08-18): the
+  EXACT cancellation pair (`i++; i--;`) and empty-condition shapes
+  (`if (!i) { }`, `if (p && p)`) with `!FAKE` annotation — the ONLY
+  carve-out from this brief's empty-body-if FAIL line; the `+= 2 / -= 1`
+  respelling remains banned.
+- **F7 unconditional-common-store duplication into both arms** (2026-08-18).
+- **Phantom-frame-slot volatile pad** (2026-08-18): `volatile u32 pad[N];`
+  first-declared, `// !FAKE`-annotated, with a per-function row in
+  `engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS` — this is the
+  one exception to test #6's pad-naming FAIL below; no row ⇒ FAIL.
+- Surveyed and REFUSED same ruling (still FAIL): F1 constant-staging
+  chain, F2 signedness-split dual read, F4 cross-symbol arithmetic,
+  F5 union CLOBBER; also the fabricated dead call site (2026-08-17).
+
 # The "is this a cheat" test (apply each, in order)
 
 For EVERY construct in the proposed source change, walk this checklist:
@@ -297,7 +327,10 @@ For EVERY construct in the proposed source change, walk this checklist:
    don't justify them are suspect. The worker may rename to a less
    incriminating name; check the USE patterns, not just the name.
    **FAIL** if the only uses are discards / unused / address-of /
-   declaration.
+   declaration — EXCEPT an allowlisted `volatile u32 pad[N];` with a
+   matching per-function row in
+   `engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS` (the
+   2026-08-18 phantom-pad family; no row ⇒ FAIL as before).
 
 If a construct passes ALL six checks for every line of the proposed
 change, you can mark it PASS. The bar is high by design.
@@ -341,8 +374,12 @@ worker has genuinely exhausted clean levers — re-parks the function
 with the FAIL evidence captured as a memory note.
 
 A NEEDS_USER verdict means you can't tell — the construct is borderline
-under the policy lens, and a human policy decision is needed before the
-commit can land. Identify the specific question for the user.
+under the policy lens. Per owner ruling 2026-08-18 ([[judge-sole-gate]])
+this is NOT a blocking wait: downstream it maps to **FAIL + a
+`needs-user-downgrade` entry in `docs/grind/borderline.md`** recording
+your specific question. The work is not committed; the ledger entry is
+the disposition. Still identify the precise policy question — that text
+IS the ledger entry.
 
 A PASS verdict is the rare positive — you have affirmatively walked
 the checklist and ruled out cheat patterns. Commit can proceed.

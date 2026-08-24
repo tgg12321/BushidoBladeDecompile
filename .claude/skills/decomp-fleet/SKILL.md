@@ -9,6 +9,11 @@ description: >-
   Auditor+Verifier gate, Overseer. Do not launch the fleet.
 ---
 
+> **RETIRED 2026-07-06 — HISTORICAL REFERENCE ONLY.** Do not execute any
+> command below; some would mutate retired surfaces or (decomp-work)
+> create `bb2-work-*` worktrees that break a live Grinder invariant.
+> Use the `decomp-grind` skill.
+
 # BB2 Autonomous Decomp Fleet — operator
 
 You operate the **Autonomous Decomp Fleet**: a zero-human-intervention multi-agent
