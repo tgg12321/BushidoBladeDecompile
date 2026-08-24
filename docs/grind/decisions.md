@@ -10354,3 +10354,21 @@ locks). Governance: the cc1 binary + reorg.c fix are now git-tracked; prior
 binary banked at tools/gcc-2.7.2/build/cc1.PRE-CRASHFIX-045c9543. Unblocked:
 the faithful Sony wait-loop spelling for _spu_FiDMA (active, dist 48) and
 the crash-class axis generally — closes via ordinary queue work.
+
+## 2026-08-24 — OWNER CAMPAIGN: rules-to-zero (operator-filed, owner in conversation)
+
+Owner (Trenton): "Rather than kick off the grinder, let's do a dedicated
+campaign to clear out these remaining rules." Exactly 89 rules remain (87
+regfix + 2 asmfix) across 8 byte-coupled functions, plus func_80041188's one
+live prologue_config entry — every one retiring at that function's
+COMPLETED-C. Mechanism: the 2026-08-18 asmfix-campaign sort key generalizes —
+queue items keying ANY rule file sort ahead of everything else
+(easiest-first within the group; membership derived live from the rule
+files, so the campaign self-retires at rules-zero). Campaign lane, by queue
+distance: func_80038C70 (1 rule), func_80041188 (16 + prologue),
+func_80040B44 (15), func_80040D48 (34), func_800460E4 (10), func_80060A68
+(2 asmfix), SioSyncroRead (6), func_80019568 (5). Per-function directives
+seeded with class facts (jtbl route = pure-C match, wave-2 representation
+retirement measured dead; masked-score warnings; asmfix body-coupling;
+solver-modality guidance). Standards unchanged — every completion through
+the full gates.
