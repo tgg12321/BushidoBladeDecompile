@@ -186,7 +186,7 @@ Asset catalog data: `docs/formats/ndata_filemap.csv` (763 entries with semantic 
 - **Not-yet-decompiled functions are committed as `INCLUDE_ASM("asm/funcs", <func>);`**
   (owner ruling 2026-08-19): no regfix/asmfix rules, no cheat constructs, no draft C
   on `main` — C lands once, when the function byte-matches honestly. In-progress
-  candidates live in `memory/grind/<func>/`. (56 byte-coupling exceptions as of 2026-08-24 carry a
+  candidates live in `memory/grind/<func>/`. (16 byte-coupling exceptions as of 2026-08-24 sweep 3 carry a
   legacy representation until solved — see `docs/grind/borderline.md` 2026-08-19.)
 - When adding known symbol names, add them to `symbol_addrs.txt` and re-run splat
 

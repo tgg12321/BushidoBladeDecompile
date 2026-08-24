@@ -40,7 +40,7 @@ Every function is in exactly ONE state. No gradations, no "almost done."
     ([[asm-until-matched]]) committed as `INCLUDE_ASM("asm/funcs", <f>);` —
     zero rules, zero cheat-asm on main; candidate C + banked chassis live in
     `memory/grind/<f>/` and the queue distance is the pinned/ledger honest
-    floor. (56 byte-coupling deferred functions still carry a legacy
+    floor. (16 byte-coupling deferred functions still carry a legacy
     rule/cheat-asm representation until solved.) Never commit an
     intermediate C body — C lands on main exactly once, at COMPLETED-C.
   - **COMPLETED-C** — zero rules, zero cheat-asm in source, byte-matches.

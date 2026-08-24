@@ -20,13 +20,11 @@ build health run `verify-oracle`. The workflow itself lives in
 INCOMPLETE function is committed as `INCLUDE_ASM("asm/funcs", <func>);` — no
 rules, no cheat-asm, no draft C on `main`. Candidates live in
 `memory/grind/<func>/`; queue distance comes from the pinned/ledger honest
-floor. **56** functions are byte-coupling deferred (jtbl-referencing /
-rodata-emitting / position-coupled) and keep the legacy representation until
-solved. NOTE (2026-08-24): the original deferral heuristic had false
-positives — 9 parked "rodata-emitting" deferrals were actually eligible and
-were migrated in sweep 2 (`a7892ba2`); the remaining 56 deferral reasons are
-individually recorded in `tmp/migration-deferred.txt` / borderline.md but the
-set has NOT been re-proven member-by-member.
+floor. **16** functions are byte-coupling deferred and keep the legacy representation
+until solved — and as of sweep 3 (2026-08-24) every membership is PROVEN
+per-function: 6 jtbl-coupled, 6 genuine rodata emitters, 4 measured
+byte-coupled (real mismatch SHA1s recorded on rollback). Sweeps 2+3 migrated
+36 false-positive deferrals (~607 rules retired) after the heuristic fix.
 
 ## Function inventory (2026-08-24)
 
@@ -51,17 +49,17 @@ Queue verdict breakdown (2026-08-24):
 | ASM-PARTIAL | 35 | 1 | Contains canonical GTE/BIOS/HW asm |
 
 Debt indicators — the 2026-08-19 asm-until-matched migration (191 functions)
-plus the 2026-08-24 sweep 2 (9 more) converted 200 INCOMPLETE functions to
+plus the 2026-08-24 sweeps 2+3 (36 more) converted 227 INCOMPLETE functions to
 `INCLUDE_ASM` and retired their rules wholesale:
 
 | | Count | Was 2026-08-19 | Was 2026-08-17 |
 |---|------:|------:|------:|
-| Rule-carrying functions (all in the 56 deferred) | 37 | 41 | 96 |
-| Total regfix+asmfix rules outstanding | 689 | 708 | 1,573 |
+| Rule-carrying functions (all in the 16 deferred) | ~10 | 41 | 96 |
+| Total regfix+asmfix rules outstanding | 89 | 708 | 1,573 |
 
 Owner rulings 2026-08-06/2026-08-19: **all** rules are debt; the end state is
 zero regfix + zero asmfix ([[asmfix-all-debt-end-state]], [[asm-until-matched]]).
-The remaining 689 retire per function at COMPLETED-C (their bodies are
+The remaining 89 retire per function at COMPLETED-C (their bodies are
 byte-coupled to the build; the wave-2 mechanical retirement was measured a
 dead end — borderline.md 2026-08-19).
 

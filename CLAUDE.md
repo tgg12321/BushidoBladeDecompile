@@ -43,7 +43,7 @@ rules, register pins, cheat-asm `__asm__` blocks, scheduling barriers) are NEVER
 Full policy: [[completion-standard]].
   - **INCOMPLETE** — in `engine/queue.json`; non-zero honest pure-C distance. Committed as
     `INCLUDE_ASM("asm/funcs", <func>);` since 2026-08-19 ([[asm-until-matched]]) — no cheats on main
-    (56 byte-coupling deferred functions still carry a legacy rule/cheat-asm representation).
+    (16 byte-coupling deferred functions still carry a legacy rule/cheat-asm representation — every reason proven per-function, sweep 3 2026-08-24).
     Stays queued until it reaches a COMPLETED state.
   - **COMPLETED-C** — zero rules, zero cheat-asm, byte-matches. Not in the queue, not in
     `inline_asm_canonical.txt`. The SOTN community bar; the default goal for every function.
@@ -105,8 +105,8 @@ history). Two load-bearing warnings persist:
 All outstanding work lives in ONE ordered list — `engine/queue.json`. **Since the asm-until-matched
 migration (owner ruling 2026-08-19, [[asm-until-matched]]) an INCOMPLETE function is committed as
 `INCLUDE_ASM("asm/funcs", <func>);`** — no rules, no cheat-asm on main; candidates live in
-`memory/grind/<func>/` and queue distance comes from the pinned/ledger honest floor. 56 deferred
-functions as of 2026-08-24 (jtbl-coupled, rodata-emitting, position-coupled — see `docs/grind/borderline.md`
+`memory/grind/<func>/` and queue distance comes from the pinned/ledger honest floor. 16 deferred
+functions as of 2026-08-24 (sweep 3) (jtbl-coupled, rodata-emitting, position-coupled — see `docs/grind/borderline.md`
 2026-08-19 migration record + the 2026-08-24 sweep-2 entry, which migrated 9 false-positive
 deferrals) still carry the legacy representation (a regfix/asmfix rule stack OR
 cheat-asm) until solved. Every queue item is
