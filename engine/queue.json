@@ -9,7 +9,8 @@
       "distance": 39,
       "verdict": "C",
       "rules": 2,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_800307D0",
@@ -17,7 +18,8 @@
       "distance": 1,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: ONE bounded re-test under the 2026-08-20 or-tree carve-out (this refusal predates it); check expand_binop canonicalization reachability first"
     },
     {
       "func": "func_80038C70",
@@ -25,7 +27,8 @@
       "distance": 1,
       "verdict": "C",
       "rules": 1,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_800645B0",
@@ -33,7 +36,8 @@
       "distance": 1,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_8002EA24",
@@ -41,7 +45,8 @@
       "distance": 2,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_8003800C",
@@ -49,7 +54,8 @@
       "distance": 2,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "CD_sync",
@@ -57,7 +63,8 @@
       "distance": 2,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: chain-extender family (sanctioned 2026-08-19/20, untested here) against the p106/val5 allocno tie; also the psyz PsyQ-4.0 reference axis (ver"
     },
     {
       "func": "func_80045294",
@@ -65,7 +72,8 @@
       "distance": 2,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_80017848",
@@ -73,7 +81,8 @@
       "distance": 3,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_80033550",
@@ -81,7 +90,8 @@
       "distance": 4,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: chain-extender family as the NEW lever the 2026-08-20 entry requires (F6+F7 seam ground is spent)."
     },
     {
       "func": "CD_ready",
@@ -98,7 +108,8 @@
       "distance": 4,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_80072CD4",
@@ -106,7 +117,8 @@
       "distance": 4,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_80061710",
@@ -114,7 +126,8 @@
       "distance": 6,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "CD_datasync",
@@ -122,7 +135,8 @@
       "distance": 7,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: exploit the banked SOTN LIBCD reference (memory/grind/CD_datasync/ref/sotn_libcd_bios_CD_datasync.c) + frontier F29 (sched1 LUID-order replay"
     },
     {
       "func": "func_80061658",
@@ -130,7 +144,8 @@
       "distance": 7,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_8001F938",
@@ -138,7 +153,8 @@
       "distance": 8,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "special_camera_get_rot_dir",
@@ -146,7 +162,8 @@
       "distance": 9,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "get_alarm",
@@ -154,7 +171,8 @@
       "distance": 9,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_80056FE8",
@@ -162,7 +180,8 @@
       "distance": 9,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_80034F88",
@@ -170,7 +189,8 @@
       "distance": 10,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_800871D4",
@@ -178,7 +198,8 @@
       "distance": 10,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_80045878",
@@ -186,7 +207,8 @@
       "distance": 10,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_80022F34",
@@ -194,7 +216,8 @@
       "distance": 11,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_80037A20",
@@ -202,7 +225,8 @@
       "distance": 13,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "motion_Close",
@@ -210,7 +234,8 @@
       "distance": 13,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner packet-2 ruling 2026-08-24: provenance-first \u2014 establish whether motion_Close is itself prebuilt/different-flags object code (REG_PARM_STACK_SPACE frame wall suggests non-our-pipeline provenance) BEFORE further pure-C grinding. Own .s split from the fused crt0 file; 9 legacy rules retired; floor pin 13."
     },
     {
       "func": "func_80037B00",
@@ -218,7 +243,8 @@
       "distance": 15,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_80078654",
@@ -226,7 +252,8 @@
       "distance": 19,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_800324D0",
@@ -234,7 +261,8 @@
       "distance": 27,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_80041188",
@@ -243,7 +271,8 @@
       "verdict": "C",
       "rules": 16,
       "status": "active",
-      "prologue_fix": 1
+      "prologue_fix": 1,
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_8002FC80",
@@ -292,7 +321,8 @@
       "distance": 30,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
       "func": "func_800485EC",

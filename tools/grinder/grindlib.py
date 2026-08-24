@@ -14,6 +14,7 @@ import datetime
 import json
 import os
 import re
+import sys
 
 MODALITIES = ["recon", "structural", "permuter", "solver", "forensics", "rederive", "synthesis"]
 # Sessions walk this ladder ONCE; a flat floor across the cycle forces the
@@ -1058,7 +1059,7 @@ def psyq_identity(root, func):
     return "\n".join(out)
 
 
-def knowledge_sweep(root, func, limit=40):
+def knowledge_sweep(root, func, limit=40, names=None):
     """file:line hits for `func` across durable knowledge surfaces OUTSIDE the
     function's own ledger (process improvement #3, 2026-08-18 — the libcd-twins
     failure class: memory/closer/ solved CD_ready while its grind ledger never
@@ -1070,7 +1071,7 @@ def knowledge_sweep(root, func, limit=40):
                 + _glob.glob(os.path.join(root, ".claude", "rules", "*.md")))
     own = os.path.join("memory", "grind", func) + os.sep
     hits = []
-    pat = re.compile(r"\b" + re.escape(func) + r"\b")
+    pat = re.compile(r"\b(?:" + "|".join(re.escape(n) for n in (names or [func])) + r")\b")
     try:
         for p in surfaces:
             if own in p or not os.path.isfile(p):
@@ -1151,8 +1152,31 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
     # Sony-library provenance goes ABOVE the modality playbook: if the target is
     # library code with published reference C, that changes what the session
     # should DO, so it must be read before the playbook frames the work.
+    # Full-picture hook (owner directive 2026-08-24, full-picture-first): the
+    # dossier auditor supplies name aliases (rulings often live under OLD
+    # names) and cross-surface consistency warnings. Degrades silently.
+    _names, _warns = [func], []
+    try:
+        _cwd = os.getcwd()
+        os.chdir(root)
+        try:
+            sys.path.insert(0, root)
+            from engine import dossier as _dos
+            _names = _dos.aliases(func)
+            _warns = _dos.audit(func)
+        finally:
+            os.chdir(_cwd)
+    except Exception:
+        pass
+    consistency = ""
+    if _warns:
+        consistency = ("\n## CONSISTENCY WARNINGS (auto-audit — account for these BEFORE probing)\n"
+                       + "\n".join("  - " + w for w in _warns) + "\n")
+    if len(_names) > 1:
+        consistency = ("\n## NAME ALIASES: " + ", ".join(_names) + " — grep ALL of these when "
+                       "searching decisions.md / ledgers / rules.\n") + consistency
     psyq = psyq_identity(root, func)
-    ksweep = knowledge_sweep(root, func)
+    ksweep = knowledge_sweep(root, func, names=_names)
     last_floor = next((e.get("floor") for e in reversed(st["floor_history"])
                        if isinstance(e.get("floor"), int)), None)
     chassis = (f"\n## CHASSIS CHECK (driver-measured at dispatch — trust THIS number)\n"
@@ -1193,7 +1217,7 @@ modality for THIS session is: **{modality}**
 {psyq}
 {ksweep}{chassis}
 {MODALITY_PLAYBOOK[modality]}
-{fixup}{directive}{banned}
+{fixup}{directive}{consistency}{banned}
 ## Ledger state (your inheritance — do not re-derive any of it)
 Floor history:
 {floors}

@@ -1,3 +1,8 @@
+/* 2026-08-24 MIGRATION NOTE: HEAD is now INCLUDE_ASM (asm-until-matched
+   wave 1, 2026-08-19); rules retired. Statements below about "HEAD",
+   rules carried, or "applied to src" describe the PRE-MIGRATION tree
+   (banked at retired-chassis-2026-08/body.c). Paste this body over the
+   INCLUDE_ASM line before any sandbox re-measure. */
 /* func_80033550 — best honest form, sessions 1-4 (floor 4, zero cheat-asm).
  * s2 (structural, 24 variants): tail geometry closed. s3 (structural, 14
  * variants): loop-region census-invariance proven (6 spellings, identical

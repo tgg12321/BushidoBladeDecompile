@@ -83,6 +83,9 @@ def main() -> int:
     cnp.add_argument("func")
     cnp.add_argument("--fast", action="store_true", help="opcode-only; skip the structural distance check (no build)")
     sub.add_parser("canonical-scan", help="classify every function as C / ASM-WHOLE / ASM-PARTIAL")
+    dop = sub.add_parser("dossier", help="the FULL live-verified picture of one function (aliases, queue, src, rules, ledger, record trail, consistency audit). --audit-all = drift detector across every item/ledger/rule key")
+    dop.add_argument("func", nargs="?", default="")
+    dop.add_argument("--audit-all", action="store_true")
     sub.add_parser("test", help="run the engine regression suite (fast pure-logic + build-read tiers)")
 
     qp = sub.add_parser("queue", help="consolidated INCOMPLETE-work queue — work the TOP item to done")
@@ -276,6 +279,24 @@ def main() -> int:
         MET.record_event("canonical", a.func, r, extra={"fast": a.fast})
         return 0
 
+    if a.cmd == "dossier":
+        from . import dossier as DOS
+        if a.audit_all:
+            res = DOS.audit_all()
+            for f, ws in res.items():
+                for w in ws:
+                    print(f"{f}: {w}")
+            from .dossier import audit_all_severity
+            real, info = audit_all_severity(res)
+            tail = (f"{real} warning(s), {info} informational, across "
+                    f"{len(res)} function(s)") if res else \
+                "audit-all: coherent — no cross-surface warnings."
+            print("\n" + tail)
+            return 0 if real == 0 else 1
+        if not a.func:
+            print("dossier: give a function name or --audit-all"); return 2
+        print(DOS.dossier(a.func))
+        return 0
     if a.cmd == "canonical-scan":
         from collections import Counter
         res = CANON.scan_all()

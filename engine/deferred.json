@@ -1,0 +1,22 @@
+{
+  "_doc": "Proven byte-coupling deferred set (asm-until-matched exceptions). Every membership verified per-function in sweep 3 (2026-08-24): REFUSED = static coupling (jtbl / genuine rodata emission); FAILED = measured full-build SHA1 mismatch, auto-rolled-back. Maintained by tools/migrate_include_asm.py runs; consumed by engine/dossier.py's consistency audit.",
+  "verified": "2026-08-24",
+  "members": {
+    "func_80060A68": "FAILED: sha1=699695d890f0570a3039af734ed84a6a7c44302c != oracle \u2014 ROLLED BACK. Build tail:",
+    "func_80038C70": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",
+    "func_800324D0": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",
+    "func_80041188": "FAILED: sha1=3e9fe25b6909958246876089d1a153b794e89543 != oracle \u2014 ROLLED BACK. Build tail:",
+    "func_8003D888": "REFUSED: body emits .rodata (string/const/FP literal) \u2014 removal shifts section layout (deferred)",
+    "func_80040B44": "FAILED: sha1=e29f91cc3054aef4ec75be34376b4d386d8d4460 != oracle \u2014 ROLLED BACK. Build tail:",
+    "func_80040D48": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",
+    "func_80043BD0": "REFUSED: body emits .rodata (string/const/FP literal) \u2014 removal shifts section layout (deferred)",
+    "func_80043D34": "REFUSED: body emits .rodata (string/const/FP literal) \u2014 removal shifts section layout (deferred)",
+    "func_800460E4": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",
+    "func_80043C7C": "REFUSED: body emits .rodata (string/const/FP literal) \u2014 removal shifts section layout (deferred)",
+    "func_80043DE0": "REFUSED: body emits .rodata (string/const/FP literal) \u2014 removal shifts section layout (deferred)",
+    "func_8004473C": "FAILED: sha1=6ebfcef51837fcd4c900e8479231e98a0cb69ae7 != oracle \u2014 ROLLED BACK. Build tail:",
+    "SioSyncroRead": "REFUSED: body emits .rodata (string/const/FP literal) \u2014 removal shifts section layout (deferred)",
+    "func_80019568": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",
+    "func_8003F6D8": "FAILED: sha1=None != oracle \u2014 ROLLED BACK. Build tail:"
+  }
+}

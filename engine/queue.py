@@ -284,7 +284,11 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
             # active on 2026-08-01.
             if (it.get("status") in ("parked", "escalated")
                     or it.get("origin") == "regression"
-                    or it.get("owner_override")):
+                    or it.get("owner_override")
+                    # Owner directives on ACTIVE items must survive regen too —
+                    # the 2026-08-24 sweep-3 regen silently dropped all 30
+                    # (caught by the dossier auditor's first run).
+                    or it.get("unpark_reason")):
                 prev[it["func"]] = it
     verdicts = {r["func"]: r["verdict"] for r in canonical.scan_all()}
     canon_funcs = cheats.canonical_asm_funcs()
