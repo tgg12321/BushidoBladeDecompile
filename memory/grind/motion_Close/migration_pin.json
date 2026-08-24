@@ -1,0 +1,7 @@
+{
+  "floor": 13,
+  "measured": "2026-08-24",
+  "source": "ledger floor_history (s13 escalation, decisions.md 2026-08-12)",
+  "banked_body": "retired-chassis-2026-08/body.c",
+  "rules_retired": 9
+}

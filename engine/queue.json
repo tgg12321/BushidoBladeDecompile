@@ -265,6 +265,16 @@
       "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
     },
     {
+      "func": "motion_Close",
+      "file": "ings2",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active",
+      "unparked_from": "DECISION rides with func_80083794 (fused asm/funcs/func_80083794.s pair, same REG_PARM_STACK_SPACE frame wall -> no C containing a call reaches target's 16-byte frame; decisions.md 2026-08-12). motion_Close is GAME code, so a YES on prebuilt routing needs a separate provenance check here (the wall suggests different original build flags, not hand-asm). NO -> active; frontier: none known.",
+      "unpark_reason": "owner packet-2 ruling 2026-08-24 (decisions.md escalation-packet entry): returned to ACTIVE with a provenance-first directive \u2014 establish whether motion_Close is itself prebuilt/different-flags object code (its REG_PARM_STACK_SPACE frame wall suggests non-our-pipeline provenance) BEFORE further pure-C grinding. Own .s split from the fused crt0 file; 9 legacy rules retired; floor pin 13."
+    },
+    {
       "func": "func_800324D0",
       "file": "code6cac_b",
       "distance": 27,
@@ -2132,37 +2142,17 @@
       "status": "escalated",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, operator-filed 2026-08-11): 2-byte reorg branch-target residual unreachable from C under frozen pipeline; both endgame gates FAILED (scan LOW 0/8, no SOTN precedent); 25 rules retained to hold byte-match; see docs/grind/decisions.md 2026-08-11 entry [2026-08-24: prose predates the 2026-08-19 migration \u2014 the 25 rules are retired and main is INCLUDE_ASM (cheat-free); distance 0 is a MASKED zero (real residual: scorer-invisible 2-byte ASPSX reorg branch-target gap)]",
       "escalation": "DECLINED 2026-08-24 (decisions.md escalation-packet rulings, packet 3): maspsx ASPSX-parity branch-target fill refused \u2014 self-healing transform, full fill-algorithm reimplementation required, ~120 already-correct census sites at risk. Residual (2-byte reorg branch-target gap) provably unreachable under the frozen pipeline. Re-decision triggers: census candidates regrow, or ASPSX fill semantics become documented."
-    },
-    {
-      "func": "motion_Close",
-      "file": "ings2",
-      "distance": 21,
-      "verdict": "C",
-      "rules": 9,
-      "status": "escalated",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:4801 - '## 2026-08-12 - motion_Close - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'",
-      "escalation": "DECISION rides with func_80083794 (fused asm/funcs/func_80083794.s pair, same REG_PARM_STACK_SPACE frame wall -> no C containing a call reaches target's 16-byte frame; decisions.md 2026-08-12). motion_Close is GAME code, so a YES on prebuilt routing needs a separate provenance check here (the wall suggests different original build flags, not hand-asm). NO -> active; frontier: none known."
-    },
-    {
-      "func": "func_80083794",
-      "file": "ings2",
-      "distance": 23,
-      "verdict": "C",
-      "rules": 9,
-      "status": "escalated",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: ## 2026-08-13 - func_80083794 - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**",
-      "escalation": "DECISION: may provably-prebuilt library code be routed COMPLETED-INLINE-ASM-CANONICAL despite scan LOW? This is libgcc __main / crt0: 7 independent provenance results, byte-contiguous with _start (already INCLUDE_ASM), and the REG_PARM_STACK_SPACE frame proof shows our cc1 cannot produce target from ANY C (decisions.md 2026-08-13). YES -> canonical grant + split assessment for the fused motion_Close pair; NO -> active; frontier: none known (arithmetic bound 9)."
     }
   ],
   "counts": {
-    "total": 243,
-    "active": 240,
+    "total": 242,
+    "active": 241,
     "by_status": {
-      "active": 240,
-      "escalated": 3
+      "active": 241,
+      "escalated": 1
     },
     "by_verdict": {
-      "C": 204,
+      "C": 205,
       "ASM-PARTIAL": 36
     }
   }

@@ -610,46 +610,13 @@ INCLUDE_ASM("asm/funcs", func_800836C8);
 INCLUDE_ASM("asm/funcs", _start);
 /* kengo:MED  |  common/ang_hosei  |  47i  |  +4 8.5% */
 /* motion_Open + motion_Close (paired open/close functions) */
-extern s32 D_800A2668;
-extern void (*D_8008D070)(void);
-extern s32 D_00000000;
-
-void func_80083794(void) {
-    register void (**p)(void) asm("s0");
-    register s32 count asm("s1");
-
-    if (D_800A2668 == 0) {
-        D_800A2668 = 1;
-        p = &D_8008D070;
-        count = (s32)&D_00000000;
-        if (count != 0) {
-            do {
-                register void (*f)(void) asm("t0") = *p;
-                p++;
-                __asm__ volatile("jalr %0" :: "r"(f) : "ra", "memory");
-                __asm__ volatile("addiu $17, $17, -1" : "=r"(count) : "0"(count));
-            } while (count != 0);
-        }
-    }
-}
-
-void motion_Close(void) {
-    register void (**p)(void) asm("s0");
-    register s32 count asm("s1");
-
-    if (D_800A2668 != 0) {
-        p = &D_8008D070;
-        count = (s32)&D_00000000;
-        if (count != 0) {
-            do {
-                register void (*f)(void) asm("t0") = *p;
-                p++;
-                __asm__ volatile("jalr %0" :: "r"(f) : "ra", "memory");
-                __asm__ volatile("addiu $17, $17, -1" : "=r"(count) : "0"(count));
-            } while (count != 0);
-        }
-    }
-}
+/* 0x80083794 = libgcc __main / crt0 ctor-walker — COMPLETED-INLINE-ASM-CANONICAL
+   (owner routing ruling 2026-08-24: provably prebuilt PsyQ object; our cc1 cannot
+   produce the 16-byte frame from any C — REG_PARM_STACK_SPACE proof, decisions.md
+   2026-08-13; entry in inline_asm_canonical.txt). Split from the fused splat file
+   that also carried motion_Close @0x80083804 (below, INCOMPLETE). */
+INCLUDE_ASM("asm/funcs", func_80083794);
+INCLUDE_ASM("asm/funcs", motion_Close);
 /* kengo:HIGH  |  is_motion/motion_Open  |  54i */
 __asm__(
     ".section .text\n"

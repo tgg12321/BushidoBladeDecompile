@@ -1,0 +1,3 @@
+regfix.txt (pre-retirement, 2026-08-24): 9 motion_Close rules — see git
+history of this commit for exact text ($2<->$8 @0-4, insert nop @6,
+reorder 2,3,5,4 @2-5, six substs).

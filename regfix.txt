@@ -77,26 +77,8 @@
 # func_800477E8: swap t1/t2 and v1/a1 registers
 
 # motion_Open: prologue register v0->t0, save offsets 0/4/8->4/8/C, ori for delay
-func_80083794: $2 <-> $8 @ 0-7
-func_80083794: reorder 2,3,5,4 @ 2-5
-func_80083794: subst "\$31,8" "$16,4" @ 2
-func_80083794: subst ",4\(" ",8(" @ 3
-func_80083794: subst "\$16,0\(" "$31,0xc(" @ 5
-func_80083794: subst "addiu" "ori" @ 6
-func_80083794: subst ",8\(" ",0xc(" @ 18
-func_80083794: subst ",4\(" ",8(" @ 19
-func_80083794: subst ",0\(" ",4(" @ 20
 
 # motion_Close: prologue register v0->t0, save offsets, insert nop for delay slot
-motion_Close: $2 <-> $8 @ 0-4
-motion_Close: insert "nop" @ 6
-motion_Close: reorder 2,3,5,4 @ 2-5
-motion_Close: subst "\$31,8" "$16,4" @ 2
-motion_Close: subst ",4\(" ",8(" @ 3
-motion_Close: subst "\$16,0\(" "$31,0xc(" @ 5
-motion_Close: subst ",8\(" ",0xc(" @ 16
-motion_Close: subst ",4\(" ",8(" @ 17
-motion_Close: subst ",0\(" ",4(" @ 18
 # damage_DebugDisp: swap j<->sum registers in inner loop body (TEXT 7-15)
 # damage_DebugDisp: transform constants-before-moves at TEXT 55-59
 # Original: move,move,lui,lui,ori -> Target: lui,lui,ori,move,move
