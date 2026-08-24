@@ -10318,3 +10318,21 @@ recommendations ruled on being, verbatim from the presented packet sheet:
    work. The policy question returns as a concrete packet only if still
    needed. Governance regardless: track the cc1 binaries in git and record
    host build flags in the oracle manifest.
+
+## 2026-08-24 — cc1 fork-crash fix — OWNER RULING: APPROVED as bug-fix scope
+
+Owner (Trenton), in conversation, on the concrete packet (borderline.md
+2026-08-24 cc1 fork-crash entry): "yes i approve." A minimal crash-ACCEPTANCE
+fix for the fork's 64-bit host pointer-truncation bug (SIGSEGV in
+arith_operand via reorg.c:3562 fill_slots_from_thread; op = low 32 bits of a
+heap rtx pointer) is classified BUG-FIX SCOPE, analogous to the maspsx
+bug-fix allowance in no-compiler-divergence §2. Codegen remains externally
+pinned: the cc1psx exhibit (tmp/closer/spu3/t_psx.s) plus the full-build SHA1
+oracle. Preference order per the packet: (1) host-build-flags fix (-m32 /
+equivalent — zero source lines) if it clears the crash; (2) minimal int->
+pointer type correction at the truncation site otherwise. MANDATORY
+verification either way: all 9 probes re-run; full build SHA1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa on the ~1,400 matched functions
+BEFORE adoption; then oracle-lock re-records cc1_sha1. Governance
+prerequisites shipped with the adoption: the cc1 binary tracked in git and
+the host build command recorded in oracle/manifest.json.
