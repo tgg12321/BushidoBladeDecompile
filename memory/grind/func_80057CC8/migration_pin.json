@@ -1,7 +1,8 @@
 {
-  "floor": 9,
+  "floor": 30,
   "measured": "2026-08-19",
   "source": "pre-migration chassis",
   "banked_body": "retired-chassis-2026-08/body.c",
-  "rules_retired": 7
+  "rules_retired": 7,
+  "corrected": "2026-08-24 operator: pre-migration chassis floor 9 measured a banned-construct body; honest ban-compliant floor is 30 per decisions.md:8107 (s29) \u2014 'the old 3 was a pre-migration chassis artifact and must not be quoted forward'"
 }

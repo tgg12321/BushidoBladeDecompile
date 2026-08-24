@@ -77,28 +77,5 @@
     "nop",
     "sll\t$s0, $v0, 1",
     "addu\t$s0, $s0, $v0"
-  ],
-  "func_80045294": [
-    "addiu\t$sp, $sp, -0x30",
-    "sw\t$s2, 0x18($sp)",
-    "addu\t$s2, $a0, $zero",
-    "sw\t$s3, 0x1C($sp)",
-    "addu\t$s3, $a1, $zero",
-    "sw\t$s1, 0x14($sp)",
-    "addu\t$s1, $zero, $zero",
-    "sw\t$s0, 0x10($sp)",
-    "addu\t$s0, $s2, $zero",
-    "sll\t$v1, $s2, 4",
-    "sw\t$ra, 0x28($sp)",
-    "sw\t$s5, 0x24($sp)",
-    "sw\t$s4, 0x20($sp)",
-    "lui\t$at, %hi(D_800EED14)",
-    "addu\t$at, $at, $v1",
-    "lw\t$s4, %lo(D_800EED14)($at)",
-    "lw\t$a0, %gp_rel(D_800A33AC)($gp)",
-    "nop",
-    "slt\t$v0, $s0, $a0",
-    "beqz\t$v0, .L80045308",
-    "addu\t$s5, $s4, $s3"
   ]
 }

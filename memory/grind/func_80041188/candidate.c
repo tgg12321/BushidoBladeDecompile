@@ -114,7 +114,10 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     saved = base + 0x94;
     out2 = (s32 *) (((u8 *) pa4) + 0x20);
     stptr = base;
-    stptr += 0xFC;
+    stptr += 0xFC; /* FAKE: F1 combine-foldable chain-extender (see header s11
+                      correction) — byte-neutral split whose only effect is
+                      lifting stptr's reg_n_refs 5->7 (floor 15->1); target
+                      emits the single addiu. NOT committable un-annotated. */
     loop1:
     offset = (*tbl) * 6;
     p = (u16 *) (offset + (s32) a1);
