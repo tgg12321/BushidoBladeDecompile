@@ -1131,6 +1131,23 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
                  f"  kind: {fx.get('kind')}\n  defect: {fx.get('detail')}\n")
     else:
         fixup = ""
+    # Per-item owner directive (escalation-not-parked rollout 2026-08-24): a
+    # queue item returned to active by an owner ruling may carry a DIRECTIVE
+    # in unpark_reason (e.g. "or-tree carve-out re-test", "chain-extender
+    # first", "provenance before pure-C"). Sessions previously never saw it —
+    # 30 directives were invisible. Surface it ABOVE the ledger state.
+    directive = ""
+    try:
+        with open(os.path.join(root, "engine", "queue.json"), encoding="utf-8") as fh:
+            _qi = next((i for i in json.load(fh).get("items", [])
+                        if i.get("func") == func), None)
+        if _qi and _qi.get("unpark_reason"):
+            directive = ("\n## OWNER DIRECTIVE FOR THIS FUNCTION (from the queue item)\n"
+                         f"  {_qi['unpark_reason']}\n"
+                         "  Follow it BEFORE default modality work unless the ledger shows it\n"
+                         "  already executed and measured.\n")
+    except (OSError, ValueError, StopIteration):
+        pass
     # Sony-library provenance goes ABOVE the modality playbook: if the target is
     # library code with published reference C, that changes what the session
     # should DO, so it must be read before the playbook frames the work.
@@ -1176,7 +1193,7 @@ modality for THIS session is: **{modality}**
 {psyq}
 {ksweep}{chassis}
 {MODALITY_PLAYBOOK[modality]}
-{fixup}{banned}
+{fixup}{directive}{banned}
 ## Ledger state (your inheritance — do not re-derive any of it)
 Floor history:
 {floors}
@@ -1213,10 +1230,10 @@ memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting
 - "candidate-ready" means: sandbox distance 0 THIS session, edits in place in src/. The driver re-verifies bytes itself — never claim it speculatively.
 - SELF-VET IS MANDATORY FOR candidate-ready. Before you write the outcome JSON, write memory/grind/{func}/self_vet.md using the template in your role prompt: a CONSTRUCTS: line, the six cheat-checklist tests answered IN WRITING for every construct in your diff, a SANCTIONED-FAMILY-CLAIMS: section (each claimed family carrying its rule's SCOPE sentence quoted VERBATIM plus a PRECEDENT as file:line or a commit hash), and an ANNOTATION-CONFORMANCE: line. The driver checks all of that mechanically and DISCARDS a candidate-ready session that lacks it — the same disposition as a scope violation. Then a fresh adversarial cheat-reviewer (layer 1) rules on your diff BEFORE the Judge is spawned; a layer-1 FAIL bounces straight back without a Judge cycle. Writing the vet honestly is how you pass both: if you cannot quote a scope sentence and cite a precedent for a family you are claiming, you do not have that family, and the correct outcome is `ruling-request`, not a submission.
 - "ruling-request" is for a construct you cannot classify (sanctioned SOTN family vs cheat; genuine hand-written-asm evidence). Ask a precise question.
-- "owner-gated" is for when every remaining sanctioned axis is measured dead. FILE the entry in docs/grind/decisions.md YOURSELF THIS session (docs/grind/ is in your allowed surface), THEN return owner-gated with escalation_ref citing it — you do not wait for an entry to pre-exist, you create it. The driver verifies the entry names {func} and parks the function so the queue advances. Never use it to defer work that is still grindable (a floor still dropping is grindable). This is the mandated outcome in `escalation` modality.
+- "owner-gated" is for when every remaining sanctioned axis is measured dead. FILE the entry in docs/grind/decisions.md YOURSELF THIS session (docs/grind/ is in your allowed surface), THEN return owner-gated with escalation_ref citing it — you do not wait for an entry to pre-exist, you create it. The driver verifies the entry names {func} and ESCALATES the function (decision packet awaiting an owner ruling — .claude/rules/escalation-not-parked.md, 2026-08-24) so the queue advances. Never use it to defer work that is still grindable (a floor still dropping is grindable). This is the mandated outcome in `escalation` modality.
 - OWNER'S STANDING AUTO-RULING (2026-07-27) — this governs HOW you word an escalation, and it NEVER authorizes ending a function early. Two separate questions, do not conflate them:
   (A) IS THE FUNCTION EXHAUSTED? This is the DRIVER's call, not yours. The driver assigns `escalation` modality only after the honest floor has been FLAT across many sessions AND >=4 DISTINCT modalities. If your mandated modality is NOT `escalation`, the answer is NO — you may not dispose of the function, however dead your own axis looks. A killed axis is a `progress` outcome with the kills banked; the ladder still has untried modalities (forensics / rederive / synthesis) and the owner's standing directive is to work the top item to completion however many sessions it takes ([[no-deferral-work-to-completion]], [[difficult-is-not-impossible]]). Judge FAILs do NOT make a function exhausted — a FAILed construct is one dead lever, and a FAIL on annotation FORMAT is a one-comment fix, not a wall.
-  (B) ONCE THE DRIVER HAS DECLARED EXHAUSTION (you are in `escalation` modality), evaluate the two endgame-lock AND-gates: (1) canonical-asm needs STRONG `scan_hand_coded` signals (S1/S2/S6); (2) a coercion/spelling family needs an in-hand SOTN-master precedent you can CITE (file+line or commit). "Same spirit", "genre-adjacent", "only lever left", "measured to work", and a partition/elimination argument do NOT qualify — and a census you ran that came back NEGATIVE is a FAILED gate, not an open question. If BOTH gates fail (the overwhelmingly common case), the owner has PRE-DECIDED it: title your entry `## <date> — <func> — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**`, state both gates' evidence, and return owner-gated. That is terminal — the driver parks it and NOTHING is pending on the owner. Do NOT write "awaiting owner ruling" / "pending owner action" / a multi-option packet for a both-gates-fail case; that is a process error. ONLY when a gate genuinely PASSES (STRONG scan tier, or a real cited precedent) do you file a pending `**OWNER-ESCALATION**` for owner sign-off.
+  (B) ONCE THE DRIVER HAS DECLARED EXHAUSTION (you are in `escalation` modality), evaluate the two endgame-lock AND-gates: (1) canonical-asm needs STRONG `scan_hand_coded` signals (S1/S2/S6); (2) a coercion/spelling family needs an in-hand SOTN-master precedent you can CITE (file+line or commit). "Same spirit", "genre-adjacent", "only lever left", "measured to work", and a partition/elimination argument do NOT qualify — and a census you ran that came back NEGATIVE is a FAILED gate, not an open question. Whatever the gate outcome, your entry is a DECISION PACKET (owner ruling 2026-08-24, .claude/rules/escalation-not-parked.md): title it `## <date> — {func} — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**` and state (i) the single DECIDABLE question this residual poses (the specific grant / family / fidelity / routing choice — with the gate evidence), (ii) evidence POINTERS (ledger lines, measurements, scan output), (iii) the concrete consequence of each answer (what closes at what floor / what resumes). The driver escalates the item; the owner rules on packets in batches and the item returns to active either way — nothing is terminal. "This is hard" is NOT a packet: if no decidable question exists, the honest outcome is `progress` with the kills banked, and the item stays active for the next modality.
 - Bytes proven but blocked ONLY by a surface you may not touch (regfix.txt/asmfix.txt/prologue_config.json/inline_asm_canonical.txt) is an INTEGRATION HANDOFF, not an endgame lock: say so plainly in the entry, list the exact operator steps, and return owner-gated. Do not dress it up as exhaustion — and note the operator still runs a fresh layer-2 cheat-reviewer on your C before it is accepted, so a Judge PASS on a construct is not a guarantee of acceptance.
 - A hypothesis KILLED with measurements is a fully successful session. Eliminating search space IS the job. There is no such thing as a failed session — only an unproven one, and unproven sessions are discarded by the driver as if they never ran.
 """

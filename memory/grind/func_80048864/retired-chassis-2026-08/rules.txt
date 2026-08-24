@@ -1,0 +1,36 @@
+regfix.txt:1746: func_80048864: delete @ 36
+regfix.txt:1747: func_80048864: delete @ 44
+regfix.txt:1748: func_80048864: insert "addiu	$2,$0,1" @ 53
+regfix.txt:1749: func_80048864: insert_after "addu	$12,$12,2" @ 50
+regfix.txt:1750: func_80048864: $11 <-> $12
+regfix.txt:1751: func_80048864: $10 <-> $13
+regfix.txt:1752: func_80048864: $9 <-> $10
+regfix.txt:1754: func_80048864: reorder 85,78,79,80,81,82,83,84 @ 78-85
+regfix.txt:1756: func_80048864: subst "andi\s+\$3,\$2,0x001f" "andi	$9,$2,0x001f" @ 51
+regfix.txt:1757: func_80048864: subst "sll\s+\$5,\$3,3" "sll	$5,$9,3" @ 52
+regfix.txt:1758: func_80048864: subst "beq\s+\$18,\$9,\.L\d+" "beq	$18,$2,{lbl#4}" @ 55
+regfix.txt:1760: func_80048864: subst "addu\s+\$6,\$2,\$4" "addu	$2,$2,$4" @ 73
+regfix.txt:1761: func_80048864: subst "sll\s+\$2,\$6,6" "sll	$2,$2,6" @ 74
+regfix.txt:1762: func_80048864: subst "addu\s+\$6,\$2,\$4" "addu	$2,$2,$4" @ 75
+regfix.txt:1763: func_80048864: subst "sll\s+\$2,\$6,3" "sll	$3,$2,3" @ 76
+regfix.txt:1764: func_80048864: subst "subu\s+\$6,\$2,\$6" "subu	$4,$3,$2" @ 77
+regfix.txt:1765: func_80048864: subst "addu\s+\$6,\$6,\$2" "addu	$2,$4,$6" @ 86
+regfix.txt:1767: func_80048864: subst "sll\s+\$2,\$10,14" "sll	$6,$10,14" @ 85
+regfix.txt:1769: func_80048864: subst "sll\s+\$2,\$3,1" "sll	$2,$9,4" @ 78
+regfix.txt:1770: func_80048864: subst "addu\s+\$2,\$2,\$3" "addu	$2,$2,$5" @ 79
+regfix.txt:1771: func_80048864: subst "subu\s+\$2,\$2,\$3" "subu	$2,$2,$5" @ 81
+regfix.txt:1772: func_80048864: subst "subu\s+\$2,\$2,\$3" "subu	$2,$2,$5" @ 83
+regfix.txt:1773: func_80048864: subst "sll\s+\$13,\$2,6" "sll	$5,$2,3" @ 84
+regfix.txt:1775: func_80048864: subst "addu\s+\$6,\$6,\$13" "addu	$2,$2,$5" @ 87
+regfix.txt:1776: func_80048864: subst "sra\s+\$13,\$6,15" "sra	$4,$2,15" @ 88
+regfix.txt:1777: func_80048864: subst "mult\s+\$13,\$22" "mult	$4,$22" @ 89
+regfix.txt:1778: func_80048864: subst "or\s+\$4,\$7,\$4" "or	$2,$7,$4" @ 104
+regfix.txt:1779: func_80048864: subst "sll\s+\$6,\$6,5" "sll	$3,$6,5" @ 105
+regfix.txt:1780: func_80048864: subst "or\s+\$4,\$4,\$6" "or	$2,$2,$3" @ 106
+regfix.txt:1781: func_80048864: subst "sll\s+\$5,\$5,10" "sll	$3,$5,10" @ 107
+regfix.txt:1782: func_80048864: subst "or\s+\$4,\$4,\$5" "or	$2,$2,$3" @ 108
+regfix.txt:1783: func_80048864: subst "sh\s+\$4,0\(\$11\)" "sh	$2,0($11)" @ 109
+regfix.txt:1785: func_80048864: insert_label ".LBNE_TGT:" @ 43
+regfix.txt:1786: func_80048864: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.LBNE_TGT" @ 40
+regfix.txt:1788: func_80048864: insert_label ".LJMP_TGT:" @ 101
+regfix.txt:1789: func_80048864: subst "j\s+\.L\d+" "j	.LJMP_TGT" @ 57

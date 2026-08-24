@@ -1,4 +1,4 @@
-regfix.txt:2813: func_8002FC80: delete @ 29
-regfix.txt:2814: func_8002FC80: reorder 31,32,29,30 @ 29-32
-regfix.txt:2815: func_8002FC80: subst "lw \$5, 0x1F800388" "lw $4,0($2)" @ 55
-regfix.txt:2816: func_8002FC80: subst "lw\s+\$4,0\(\$2\)" "lw $5, 0x1F800388" @ 56
+regfix.txt:2277: func_8002FC80: delete @ 29
+regfix.txt:2278: func_8002FC80: reorder 31,32,29,30 @ 29-32
+regfix.txt:2279: func_8002FC80: subst "lw \$5, 0x1F800388" "lw $4,0($2)" @ 55
+regfix.txt:2280: func_8002FC80: subst "lw\s+\$4,0\(\$2\)" "lw $5, 0x1F800388" @ 56

@@ -126,53 +126,7 @@ void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
         } while ((count--) != 0);
     }
 }
-void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
-{
-    register s32 saved_arg0 asm("$18");
-    register s32 sx_arg2 asm("$22");
-    register s32 sx_arg3 asm("$21");
-    register s32 sx_arg4 asm("$20");
-    register s32 sx_arg5 asm("$19");
-    u32 *p;
-    s32 count;
-    p = (u32 *)(arg0 + (((s32)(arg1 << 16)) >> 14));
-    p = (u32 *)(arg0 + (((*p) >> 2) << 2));
-    count = *(p++);
-    saved_arg0 = arg0;
-    if (count != 0) {
-        count--;
-        sx_arg2 = arg2;
-        sx_arg3 = arg3;
-        sx_arg4 = arg4;
-        sx_arg5 = arg5;
-        do {
-            u32 word;
-            s16 a1v;
-            s16 a2v;
-            s16 a3v;
-            s16 v0v;
-            s32 v_plus;
-            unsigned int new_var2;
-            word = *p;
-            p = (u32 *)(((s32)p) + 4);
-            a1v = (s16)(*((u16 *)p));
-            p = (u32 *)(((s32)p) + 2);
-            a2v = (s16)(*((u16 *)p));
-            p = (u32 *)(((s32)p) + 2);
-            a3v = (s16)(*((u16 *)p));
-            p = (u32 *)(((s32)p) + 2);
-            v0v = (s16)(*((u16 *)p));
-            p = (u32 *)(((s32)p) + 2);
-            v_plus = (s32)v0v + sx_arg5;
-            new_var2 = word >> 2;
-            func_800482C8(saved_arg0 + (new_var2 << 2),
-                          (s32)a1v + sx_arg2,
-                          (s32)a2v + sx_arg3,
-                          (s32)a3v + sx_arg4,
-                          v_plus);
-        } while ((count--) != 0);
-    }
-}
+INCLUDE_ASM("asm/funcs", func_800480C0);
 /* func_800481E8 — COMPLETED-C 2026-08-22 (commit 272e47c4, layer-2 PASS;
  * allowlist row granted per the parked-but-proven audit, ruling cbcfda04).
  * Two annotated constructs, both in sanctioned families:
@@ -389,46 +343,7 @@ s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
     func_800485EC(entry, arg3, (s16)a, (s16)b, (s16)c, (s16)d);
     return count;
 }
-void func_800485EC(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5)
-{
-    register s32 s1 asm("s1") = arg0;
-    register s32 s0 asm("s0") = arg1;
-    register s32 s2 asm("s2") = arg2;
-    register s32 s3 asm("s3") = arg3;
-    s32 v1;
-    s32 flags;
-    v1 = *((u8 *) s1);
-    if (v1 != 0x10) {
-        return;
-    }
-    s1 += 4;
-    flags = *((s32 *) s1);
-    s1 += 4;
-    *((s16 *) (s0 + 0)) = (s16)(flags & 7);
-    if (flags & 8) {
-        register u32 size asm("v0");
-        v1 = s1;
-        size = *((u32 *) v1);
-        *((u16 *) (s0 + 0xA)) = arg4;
-        *((u16 *) (s0 + 0xC)) = arg5;
-        s1 = v1 + ((size >> 2) << 2);
-        v1 += 8;
-        *((u16 *) (s0 + 0x10)) = *((u16 *) (v1 + 2));
-        *((s16 *) (s0 + 0xE)) = (s16)*((s32 *)v1);
-        *((s32 *) (s0 + 0x1C)) = v1 + 4;
-        *((s16 *) (s0 + 0x14)) = GetClut(*((s16 *) (s0 + 0xA)), *((s16 *) (s0 + 0xC)));
-    } else {
-        *((s16 *) (s0 + 0x14)) = 0;
-    }
-    v1 = s1 + 8;
-    asm volatile("" : "=r"(v1) : "0"(v1));
-    *((s16 *) (s0 + 2)) = (s16)s2;
-    *((s16 *) (s0 + 4)) = (s16)s3;
-    *((u16 *) (s0 + 8)) = *((u16 *) (v1 + 2));
-    *((s16 *) (s0 + 6)) = (s16)*((s32 *)v1);
-    *((s32 *) (s0 + 0x18)) = v1 + 4;
-    *((s16 *) (s0 + 0x12)) = GetTPage(*((s16 *) (s0 + 0)), 0, (*((s16 *) (s0 + 2))) & 0xFFC0, (*((s16 *) (s0 + 4))) & 0xFF00);
-}
+INCLUDE_ASM("asm/funcs", func_800485EC);
 extern s16 g_color_mode;
 s32 file_GetFlag0(void);
 s16 func_800486FC(void) {
@@ -484,112 +399,7 @@ s32 func_8004881C(s32 arg0, s32 arg1, s32 arg2) {
     return (arg0 + arg1 + arg2) >> 12;
 }
 
-void func_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 dx, s32 dy)
-{
-  u16 src_buf[256];
-  u16 dst_buf[256];
-  s16 rect[4];
-  volatile s32 unused;
-  u16 *sp;
-  u16 *dp;
-  s32 i;
-  u32 a3_val;
-  u32 v1_val;
-  s32 r5;
-  s32 g5;
-  s32 b5;
-  s32 r8;
-  s32 g8;
-  s32 b8;
-  register s32 alpha asm("a3");
-  s32 lum;
-  register s32 nr asm("a0");
-  register s32 ng asm("a2");
-  register s32 nb asm("a1");
-  DrawSync(0);
-  rect[0] = (s16) sx;
-  rect[1] = (s16) sy;
-  rect[2] = (s16) w;
-  rect[3] = 1;
-  StoreImage(rect, src_buf);
-  DrawSync(0);
-  sp = src_buf;
-  dp = dst_buf;
-  i = 0;
-  if (w > 0)
-  {
-    do
-    {
-      a3_val = (u32) (*sp);
-      v1_val = a3_val & 0xFFFF;
-      r5 = v1_val == 0;
-      if (r5)
-      {
-        *dp = (u16) a3_val;
-        sp++;
-      }
-      else
-      {
-        r5 = a3_val & 0x1F;
-        do
-        {
-          sp++;
-          g5 = (v1_val >> 5) & 0x1F;
-          b5 = (v1_val >> 10) & 0x1F;
-          r8 = r5 << 3;
-          g8 = g5 << 3;
-          b8 = b5 << 3;
-          alpha = a3_val & 0x8000;
-        }
-        while (0);
-        switch (mode)
-        {
-          case 0:
-            nr = (r8 * mr) >> 15;
-            ng = (g8 * mg) >> 15;
-            nb = (b8 * mb) >> 15;
-            break;
-
-          case 1: {
-            int t = (r5 << 4) + r8;  /* t = r5*16 + r5*8 = r5*24 */
-            t = (t << 6) + r8;        /* t = r5*1536 + r5*8 = r5*0x608 */
-            t = (t << 3) - t;         /* t = r5*0x608 * 7 = r5*0x2A38 */
-            i = 1856 * (b5 * 3);
-            t = t + (g5 << 14);
-            g8 = t + i;
-            lum = g8 >> 15;
-            i = lum;
-            nr = (i * mr) >> 12;
-            ng = (nr * mg) >> 12;
-            nb = (nr * mb) >> 12;
-            break;
-          }
-
-          default:
-            r8 = r8 & 0x1F;
-            nr = r8;
-            ng = g8;
-            nb = b8;
-            break;
-
-        }
-
-        nr &= 0x1F;
-        ng &= 0x1F;
-        nb &= 0x1F;
-        r5 = 5;
-        *dp = (u16) (((alpha | nr) | (ng << r5)) | (nb << 10));
-      }
-      dp++;
-      i++;
-    }
-    while (i < w);
-  }
-  rect[0] = (s16) dx;
-  rect[1] = (s16) dy;
-  LoadImage(rect, dst_buf);
-  DrawSync(0);
-}
+INCLUDE_ASM("asm/funcs", func_80048864);
 void func_80048A7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
     func_80048864(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
 }
@@ -1760,26 +1570,7 @@ INCLUDE_ASM("asm/funcs", func_80056CB8);
 extern u8 D_8009A830;
 extern s8 D_8009A838;
 extern u8 D_8009A840;
-s32 func_80056FE8(s32 arg0) {
-    s32 a2 = *((s32 *) arg0);
-    s32 a3 = *((u8 *) ((*((s32 *) (a2 + 0x58))) + 3));
-    s32 base = a3 * 40;
-    s32 var_v0;
-    if ((*((u8 *) (a2 + 0xA3))) != 0xFF) {
-        if ((var_v0 = *((s16 *) (arg0 + 0x5E))) == 0) {
-            var_v0 = (*((u8 *) (((s32) (&D_8009A830)) + (*((s16 *) (a2 + 0xE)))))) * 2;
-        } else {
-            var_v0 = (*((s8 *) (((s32) (&D_8009A838)) + (*((s16 *) (a2 + 0xE)))))) * 8;
-        }
-    } else {
-        var_v0 = (*((u8 *) (((s32) (&D_8009A840)) + (*((s16 *) (a2 + 0x14)))))) * 2;
-    }
-    {
-        register s32 partial asm("$5") = base + var_v0;
-        asm volatile("" : : "r"(partial));
-        return partial + (*((s16 *) ((*((s32 *) arg0)) + 0x40A))) + 0x12C;
-    }
-}
+INCLUDE_ASM("asm/funcs", func_80056FE8);
 extern s32 ratan2(s32, s32);
 extern s32 func_800233AC(void *, s32 *);
 extern s32 D_8009AA50[];
@@ -3467,35 +3258,7 @@ void func_800611A4(s32 *arg0, s32 *arg1) {
     D_800A3464 = 0xFFFFEF;
 }
 extern volatile u8 D_800F1159;
-void func_80061250(s32 *arg0) {
-    s32 *v1 = (s32 *)&D_800F116C;
-    register s32 t asm("$2");
-    register s32 mask asm("$3");
-    D_800A3468 = (s32)v1;
-    D_800F1178 = (s32)arg0;
-    if ((&D_800F1159)[0] != 0) {
-        if ((&D_800F1159)[1] != 0) {
-            (&D_800F1159)[1] = 0;
-            (&D_800F1159)[0] = 0;
-        }
-        if ((&D_800F1159)[0] != 0) goto check_one_zero;
-    }
-    *(s32 *)((s32)D_800A3468 + 0x14) = (s32)&D_800F1159;
-    *(s32 *)D_800A3468 = 0x210009;
-    goto end;
-check_one_zero:
-    if ((&D_800F1159)[1] == 0) {
-        D_800F1180 = (s32)((&D_800F1159) + 1);
-        *v1 = 0x21000A;
-    }
-end:
-    func_80060A68();
-    t = arg0[0]; D_800F1140 = t;
-    t = arg0[1]; D_800F1144 = t;
-    mask = 0xFF0060;
-    D_800A3464 = mask;
-    t = arg0[2]; D_800F1148 = t;
-}
+INCLUDE_ASM("asm/funcs", func_80061250);
 extern u8 D_800F1154;
 extern s32 D_800A3464;
 extern s32 D_800A3468;
@@ -3599,37 +3362,7 @@ extern s32 D_800F116C;
 extern s32 D_800A3464;
 extern s32 D_800A3468;
 INCLUDE_ASM("asm/funcs", func_80061658);
-void func_80061710(s32 *arg0, s32 arg1) {
-    s32 *v1 = (s32 *)&D_800F116C;
-    register s32 t asm("$2");
-    register s32 mask asm("$3");
-    u8 *p;
-    s32 val;
-    D_800A3468 = (s32)v1;
-    D_800F1178 = (s32)arg0;
-    switch (arg1) {
-    case 0:
-        val = 0x21000E;
-        p = &D_800F115C + 2;
-        *p = 0;
-        D_800F1180 = (s32)p;
-        *v1 = val;
-        break;
-    case 1:
-        val = 0x21000F;
-        p = &D_800F115C + 3;
-        *p = 0;
-        D_800F1180 = (s32)p;
-        *v1 = val;
-        break;
-    }
-    func_80060A68();
-    t = arg0[0]; D_800F1140 = t;
-    t = arg0[1]; D_800F1144 = t;
-    mask = 0x10FF10;
-    D_800A3464 = mask;
-    t = arg0[2]; D_800F1148 = t;
-}
+INCLUDE_ASM("asm/funcs", func_80061710);
 extern u8 D_800F1160[];
 void func_800617C8(s32 *arg0) {
     s32 *v1 = (s32 *)&D_800F116C;
@@ -4060,34 +3793,7 @@ u8 func_80063BA4(void) {
 }
 INCLUDE_ASM("asm/funcs", func_80063BD0);
 INCLUDE_ASM("asm/funcs", func_80063E10);
-void func_800644FC(s32 *arg0, s32 arg1, s32 arg2)
-{
-    s32 i;
-    s32 ptr;
-    s32 *bits_p;
-    s32 mul50;
-    s32 dummy_pad;
-    __asm__ volatile ("" : "=m"(dummy_pad));
-    __asm__ volatile ("" : "=m"(dummy_pad));
-    if ((*arg0) > 0) {
-        bits_p = (s32 *)((s32)&D_800A3454 + (arg2 << 2));
-        mul50 = (arg2 + (arg2 << 2)) << 4;
-        ptr = arg1;
-        i = 0;
-        do {
-            register s32 one asm("$2") = 1;
-            register s32 mask asm("$2");
-            mask = one << i;
-            if ((*bits_p) & mask) {
-                u8 *base;
-                __asm__ volatile ("" : "=r"(base) : "0"(&D_800F1000));
-                RotMatrix((u16 *)(base + mul50 + (i << 3)), (u8 *)ptr);
-            }
-            i += 1;
-            ptr += 0x20;
-        } while (i < (*arg0));
-    }
-}
+INCLUDE_ASM("asm/funcs", func_800644FC);
 extern s32 rand(void);
 extern void *D_800A347C;
 INCLUDE_ASM("asm/funcs", func_800645B0);
@@ -6147,100 +5853,7 @@ typedef struct EnvA {
     u8   col_b;
 } EnvA;
 
-s32 func_8007352C(EnvA *_env) {
-    register EnvA *env asm("s4") = _env;
-    register s32 *hdr asm("s6") = env->header;
-    register s32 buf asm("s5") = env->out;
-    s32 fp;
-    register s32 i asm("s7");
-    register s32 dst asm("s3");
-    s32 v_tail;
-    s8 *e;
-    s32 a1, x, y, v1;
-    s32 raw;
-    s32 saved_buf;
-
-    {
-        register s32 j asm("v1");
-        raw = GetClut(*((u16 *)hdr + 2), *((u16 *)hdr + 3));
-        j = (s32)*((u8 *)hdr + 2) - 1;
-        fp = raw & 0xFFFF;
-        if (j < 0) goto exit;
-        i = j;
-    }
-    dst = buf + 6;
-
-loop_top:
-    e = env->table + ((i << 16) >> 13);
-    a1 = *(s16 *)(e + 0);
-    x = a1 + env->x;
-    y = *(s16 *)(e + 2) + env->y;
-    {
-        s32 x_check = x + (s32)*((u8 *)e + 6);
-        v1 = y + (s32)*((u8 *)e + 7);
-        if (x_check <= 0) goto next_compute_v_tail;
-    }
-    v_tail = i - 1;
-    if (x >= 0x280) goto merge_v_tail;
-    if (y >= 0xF0) goto next_compute_v_tail;
-    v_tail = i - 1;
-    if (v1 <= 0) goto merge_v_tail;
-    SetSprt(buf, (s16)a1);
-    *(s16 *)(dst + 8) = (s16)fp;
-    *(s16 *)(dst + 2) = (s16)x;
-    *(s16 *)(dst + 4) = (s16)y;
-    *(s8 *)(dst + 6) = (s8)((s32)*((u8 *)e + 4) + (s32)*((u8 *)hdr + 8));
-    *(s8 *)(dst + 7) = (s8)((s32)*((u8 *)e + 5) + (s32)*((u8 *)hdr + 0xA));
-    *(s16 *)(dst + 0xA) = (s16)*((u8 *)e + 6);
-    *(s16 *)(dst + 0xC) = (s16)*((u8 *)e + 7);
-    if (env->has_color != 0) {
-        SetShadeTex(buf, 0);
-        *((u8 *)dst - 2) = env->col_r;
-        *((u8 *)dst - 1) = env->col_g;
-        *((u8 *)dst + 0) = env->col_b;
-    } else {
-        SetShadeTex(buf, 1);
-    }
-    SetSemiTrans(buf, env->semi);
-    {
-        register s32 sleep_arg asm("$5") = buf;
-        if (env->ot_idx >= 0x1006U) {
-            env->ot_idx = 1U;
-            func_8003D52C(&D_800159A0, buf);
-            /* INLINE_MOVE_ALIASING: target re-emits `addu $a1,$s5,$zero` after
-             * DispSleepMenuTex at 0x800736b8 (lost_codegen pattern from regfix
-             * line 4222: `insert "addu $5,$21,$zero" @ 93`). Plain `saved_buf
-             * = buf;` is folded by CSE; this barrier forces a real re-emission.
-             * Placed INSIDE the if-body so it's skipped when branch taken
-             * (matches target's bnez offset of 7 not 6).
-             *   - technique=plain_copy: `saved_buf = buf;` per dump-text —
-             *     GCC scheduled the move into jal-delay-slot ONLY (1 less insn
-             *     than target; the second emission was elided by CSE since
-             *     $s5 unchanged across the call).
-             *   - technique=decl_reorder: moving `saved_buf = buf;` BEFORE the
-             *     if block created an extra `addu $s0,$s5,$zero` (1 extra
-             *     instruction); GCC promoted saved_buf to a callee-save reg
-             *     to preserve it across DispSleepMenuTex.
-             *   - technique=plain_inline_after: placing `__asm__ ("move %0,%1")`
-             *     AFTER if-block produced correct 508-byte function with all
-             *     instructions present but bnez offset off by 1 (the move was
-             *     outside the if-body, target wants it inside).
-             * Per feedback_inline_move_aliasing.md, single-insn escape valve. */
-            __asm__ volatile("move %0, %1" : "=r"(sleep_arg) : "r"(buf));
-        }
-        saved_buf = sleep_arg;
-    }
-    dst += 0x14;
-    buf += 0x14;
-    AddPrim(D_800A374C + env->ot_idx * 4, saved_buf);
-next_compute_v_tail:
-    v_tail = i - 1;
-merge_v_tail:
-    i = v_tail;
-    if ((v_tail << 16) >= 0) goto loop_top;
-exit:
-    return buf;
-}
+INCLUDE_ASM("asm/funcs", func_8007352C);
 
 INCLUDE_ASM("asm/funcs", func_80073728);
 INCLUDE_ASM("asm/funcs", func_80073C78);
@@ -6355,77 +5968,7 @@ extern s32 AddPrim(s32, GameObj *);
 extern u8 *D_800A36A0;
 extern s32 D_800A374C;
 
-void func_80074B18(s32 arg0, s32 arg1, s32 arg2) {
-    s32 var_v1;
-    s32 var_s3;
-    s32 var_fp;
-    s32 var_s4;
-    s32 var_s5;
-    s32 var_s7;
-    register s32 var_s6 asm("s6");
-    s32 var_s2;
-    register s32 var_s1 asm("s1");
-    register s32 var_s0 asm("s0");
-    s32 v0;
-    s32 a0_loc;
-
-    var_v1 = 5;
-    if (arg2 != 0) {
-        var_v1 = 8;
-    }
-    a0_loc = (s32)D_800A36A0;
-    var_s3 = *(s32 *)(arg0 + 0x14);
-    var_fp = 0;
-    if (((s32) *(u8 *)(a0_loc + 0x65)) + 3 != 0) {
-        s32 sp28 = var_v1;
-        s32 sp30 = (var_v1 > 0);
-        var_s6 = ((arg1 << 4) - arg1) << 4;
-        do {
-            var_s2 = *(s32 *)(*(s32 *)(a0_loc + 4) + 0x3C);
-            var_s4 = 0;
-            if (sp30 != 0) {
-                var_s5 = (((var_fp << 16) >> 16) << 4) + ((var_fp << 16) >> 16);
-                var_s7 = var_s5 << 1;
-                var_s1 = var_s2 + 2;
-                var_s0 = var_s3 + 0xA;
-                do {
-                    SetTile((GameObj *)var_s3);
-                    *(u8 *)(var_s0 - 6) = *(u8 *)(var_s1 + 6);
-                    *(u8 *)(var_s0 - 5) = *(u8 *)(var_s1 + 7);
-                    *(u8 *)(var_s0 - 4) = *(u8 *)(var_s1 + 8);
-                    *(u16 *)(var_s0 + 2) = *(u16 *)(var_s1 + 2);
-                    *(u16 *)(var_s0 + 4) = *(u16 *)(var_s1 + 4);
-                    SetSemiTrans((GameObj *)var_s3, 0);
-                    if (arg2 != 0) {
-                        *(s16 *)(var_s0 - 2) = *(u16 *)var_s2 + var_s6;
-                        v0 = *(u16 *)var_s1 + var_s7 + 0x2B;
-                    } else {
-                        *(s16 *)(var_s0 - 2) = *(u16 *)var_s2 + var_s6;
-                        v0 = *(u16 *)var_s1 + var_s5 + 0x7C;
-                    }
-                    *(s16 *)var_s0 = v0;
-                    if (arg1 != 0) {
-                        a0_loc = 0x15;
-                    } else {
-                        a0_loc = 0xB;
-                    }
-                    {
-                        s32 a3_loc = var_s3;
-                        var_s0 += 0x10;
-                        var_s3 += 0x10;
-                        var_s1 += 0xC;
-                        var_s2 += 0xC;
-                        AddPrim(D_800A374C + (a0_loc << 2), (GameObj *)a3_loc);
-                    }
-                    var_s4 += 1;
-                } while ((s16)var_s4 < sp28);
-            }
-            var_fp += 1;
-            a0_loc = (s32)D_800A36A0;
-        } while ((s16)var_fp < (((s32) *(u8 *)(a0_loc + 0x65)) + 3));
-    }
-    *(s32 *)(arg0 + 0x14) = var_s3;
-}
+INCLUDE_ASM("asm/funcs", func_80074B18);
 typedef struct {
     s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
     s8 sp40;
@@ -6458,61 +6001,7 @@ void func_80074D2C(s32 arg0, s32 arg1, s32 arg2) {
 }
 INCLUDE_ASM("asm/funcs", func_80074E08);
 extern u8 *D_800A36A0;
-void func_8007526C(void) {
-    register u8 *p asm("a0");
-    register s32 i asm("a2");
-
-    i = 0;
-    p = D_800A36A0;
-    do {
-        switch (*(u8 *)(p + 0x10)) {
-        case 1:
-            *(u16 *)(p + 8) = *(u16 *)(p + 8) + 0xA;
-            *(u16 *)(p + 0xC) = *(u16 *)(p + 0xC) + 0xA;
-            if ((s16)*(u16 *)(p + 0xC) >= 0xC8) {
-                if ((*(u16 *)(p + 0x10) >> 8) == 0) {
-                    *(u16 *)(p + 0x10) = *(u16 *)(p + 0x10) + 1;
-                }
-                *(u16 *)(p + 8) = 0;
-                *(u16 *)(p + 0xC) = 0xC8;
-                *(u16 *)(p + 0x14) = *(u16 *)(p + 0x18);
-                *(u16 *)(p + 0x3C) = *(u16 *)(p + 0x38);
-            }
-            break;
-        case 3:
-            *(u16 *)(p + 0xC) = *(u16 *)(p + 0xC) + 0xA;
-            if ((s16)*(u16 *)(p + 0xC) >= 0xC8) {
-                *(u16 *)(p + 8) = 0xC8;
-                *(u16 *)(p + 0xC) = 0xC8;
-                *(u16 *)(p + 0x14) = *(u16 *)(p + 0x18);
-                *(u16 *)(p + 0x3C) = *(u16 *)(p + 0x38);
-                if ((*(u16 *)(p + 0x10) >> 8) == 0) {
-                    *(u16 *)(p + 0x10) = *(u16 *)(p + 0x10) + 1;
-                }
-            }
-            break;
-        case 2:
-            *(u16 *)(p + 0xC) = *(u16 *)(p + 0xC) - 0xA;
-            if ((s16)*(u16 *)(p + 0xC) <= 0) {
-                *(u16 *)(p + 8) = 0;
-                *(u16 *)(p + 0xC) = 0;
-                *(u16 *)(p + 0x10) = 0;
-            }
-            break;
-        case 4:
-            *(u16 *)(p + 8) = *(u16 *)(p + 8) - 0xA;
-            *(u16 *)(p + 0xC) = *(u16 *)(p + 0xC) - 0xA;
-            if ((s16)*(u16 *)(p + 0xC) <= 0) {
-                *(u16 *)(p + 8) = 0;
-                *(u16 *)(p + 0xC) = 0;
-                *(u16 *)(p + 0x10) = 0;
-            }
-            break;
-        }
-        i++;
-        p += 2;
-    } while (i < 2);
-}
+INCLUDE_ASM("asm/funcs", func_8007526C);
 INCLUDE_ASM("asm/funcs", func_800753D8);
 extern u8 *D_800A36A0;
 extern s16 D_800A35D0;
@@ -6655,106 +6144,7 @@ extern s32 snd_StopAll(void);
 extern s32 func_8006E950(s32, s32 *);
 extern s32 func_80076FF8(s32 *);
 extern u8 *func_8006E49C(s32, s32);
-void func_800770B8(s32 arg0_in, s32 arg1, long arg2)
-{
-  register s32 arg0 asm("$16") = arg0_in;
-  u16 sp[2];
-  s32 *p_old;
-  u8 *p;
-  s32 r;
-  s16 t0;
-  s16 a2;
-  p_old = (s32 *) (arg0 + 0x58);
-  __asm__ volatile("" : : "r"(arg1) : "memory");
-  sp[0] = 0;
-  sp[1] = 0;
-  ClearOTagR(D_800A374C, 0x1008);
-  D_800A35D8 = arg0;
-  snd_StopAll();
-  func_8006E950(6, p_old);
-  r = func_80076FF8(p_old);
-  {
-    s32 *prev = p_old;
-    p_old = (s32 *) func_8006E49C(r, D_800A35D8);
-    D_800A36A0 = (u8 *) p_old;
-    *((s32 *) ((u8 *) p_old + 4)) = (s32) prev;
-    *((s32 *) ((u8 *) p_old + 0x30)) = 0;
-    *((s16 *) ((u8 *) p_old + 0x34)) = 0;
-    p = (u8 *) p_old;
-  }
-  t0 = 0;
-  a2 = 0;
-  do
-  {
-    u8 *base = D_800A36A0;
-    *((s16 *) ((base + (t0 * 2)) + 0x10)) = 0;
-    *((s16 *) ((base + (t0 * 2)) + 0x8)) = 0;
-    *((s16 *) ((base + (t0 * 2)) + 0xC)) = 0;
-    *((s16 *) ((base + (t0 * 2)) + 0x14)) = 0;
-    *((s16 *) ((base + (t0 * 2)) + 0x3C)) = 0;
-    {
-      s16 *p_d0 = &(&D_800A35D0)[t0 * 2];
-      p_d0[1] = 0;
-      p_d0[0] = 0;
-    }
-    *((s16 *) ((base + (t0 * 4)) + 0x42)) = 0;
-    *((s16 *) ((base + (t0 * 4)) + 0x40)) = 0;
-    *((u8 *) ((base + t0) + 0x68)) = (u8) t0;
-    {
-      s16 *p_6a = (s16 *) ((D_800A36A0 + (t0 * 10)) + 0x6A);
-      s16 *p_7e = (s16 *) ((D_800A36A0 + (t0 * 10)) + 0x7E);
-      do
-      {
-        p_6a[a2] = -1;
-        p_7e[a2] = 0;
-        a2 = (s16) (a2 + 1);
-      }
-      while (a2 < 5);
-    }
-    a2 = 0;
-    *((s16 *) ((D_800A36A0 + (t0 * 2)) + 0x5C)) = 0;
-    *((s16 *) ((D_800A36A0 + (t0 * 2)) + 0x60)) = 5;
-    do
-    {
-      s16 idx = (s16) (a2 + (t0 * 10));
-      (&D_8009BCE4)[idx] = (u8) ((&D_8009BCE4)[idx] & 0xF2);
-      if ((arg2 & (1 << idx)) != 0)
-      {
-        (&D_8009BCE4)[idx] = (u8) ((&D_8009BCE4)[idx] | 1);
-        sp[t0] += 1;
-      }
-      a2 = (s16) (a2 + 1);
-    }
-    while (a2 < 0xA);
-    t0 = (s16) (t0 + 1);
-    a2 = 0;
-  }
-  while (t0 < 2);
-  p = D_800A36A0;
-  *((s32 *) (p + 0x20)) = 0;
-  *((s32 *) (p + 0x1C)) = 0;
-  if (((s16) sp[0]) < ((s16) sp[1]))
-  {
-    *((s8 *) (p + 0x64)) = (s8) (((s16) sp[0]) - 3);
-  }
-  else
-  {
-    *((s8 *) (p + 0x64)) = (s8) (((s16) sp[1]) - 3);
-  }
-  if ((*((u8 *) (D_800A36A0 + 0x64))) >= 3)
-  {
-    *((u8 *) (D_800A36A0 + 0x64)) = 2;
-  }
-  p = D_800A36A0;
-  *((s32 *) p) = arg1;
-  *((s8 *) (p + 0x65)) = 0;
-  p = D_800A36A0;
-  *((u8 *) (p + 0x67)) = 1;
-  p = D_800A36A0;
-  *((u8 *) (p + 0x66)) = (&D_8009BD21)[(*((u8 *) (p + 0x67))) * 2];
-  arg0 = 1;
-  D_800A35DC = arg0;
-}
+INCLUDE_ASM("asm/funcs", func_800770B8);
 INCLUDE_ASM("asm/funcs", func_80077374);
 extern s32 D_800A36AC;
 extern s32 *func_80077098(s32);

@@ -1,0 +1,45 @@
+regfix.txt:1851: func_8002EBDC: delete @ 19  # auto (replace): drop `sh	$3,528483250`
+regfix.txt:1852: func_8002EBDC: insert_after "sh	$v1,(0x1F8003B2 & 0xFFFF)($at)" @ 18  # auto (replace): target has after idx 18
+regfix.txt:1853: func_8002EBDC: insert_after "lui	$at,(0x1F8003B2 >> 16)" @ 18  # auto (replace): target has after idx 18
+regfix.txt:1854: func_8002EBDC: delete @ 29  # auto (replace): drop `lui	$18,(528482304 >> 16) & 0xFFFF`
+regfix.txt:1855: func_8002EBDC: delete @ 28  # auto (replace): drop `ori	$16,$16,0x02b8`
+regfix.txt:1856: func_8002EBDC: delete @ 27  # auto (replace): drop `lui	$16,(528482304 >> 16) & 0xFFFF`
+regfix.txt:1857: func_8002EBDC: insert_after "lui	$s0,(0x1F8002B8 >> 16)" @ 26  # auto (replace): target has after idx 26
+regfix.txt:1858: func_8002EBDC: subst "sltu\s+\$2,\$4,1024" "sltiu	$v0,$a0,0x400" @ 32  # auto: was `sltu	$2,$4,1024` -> `sltiu	$v0,$a0,0x400`
+regfix.txt:1859: func_8002EBDC: subst "ori\s+\$18,\$18,0x0390" "ori	$s0,$s0,(0x1F8002B8 & 0xFFFF)" @ 34  # auto: was `ori	$18,$18,0x0390` -> `ori	$s0,$s0,(0x1F8002B8 & 0xFFFF)`
+regfix.txt:1862: func_8002EBDC: subst "srl\s+\$2,\$4,\$3" "srlv	$v0,$a0,$v1" @ 52  # auto: was `srl	$2,$4,$3` -> `srlv	$v0,$a0,$v1`
+regfix.txt:1863: func_8002EBDC: subst "srl\s+\$5,\$4,\$2" "srlv	$a1,$a0,$v0" @ 60  # auto: was `srl	$5,$4,$2` -> `srlv	$a1,$a0,$v0`
+regfix.txt:1864: func_8002EBDC: subst "addiu\s+\$17,\$zero,4096" "addiu	$s1,$s0,0xD8" @ 63  # auto: was `addiu	$17,$zero,4096` -> `addiu	$s1,$s0,0xD8`
+regfix.txt:1865: func_8002EBDC: subst "addu\s+\$5,\$18,\$zero" "addu	$a1,$s1,$zero" @ 64  # auto: was `addu	$5,$18,$zero` -> `addu	$a1,$s1,$zero`
+regfix.txt:1866: func_8002EBDC: insert_after "addiu	$s2,$zero,0x1000" @ 67  # auto: target has this after idx 67
+regfix.txt:1867: func_8002EBDC: subst "sh\s+\$17,216\(\$16\)" "sh	$s2,0xD8($s0)" @ 69  # auto: was `sh	$17,216($16)` -> `sh	$s2,0xD8($s0)`
+regfix.txt:1868: func_8002EBDC: subst "sh\s+\$17,224\(\$16\)" "sh	$s2,0xE0($s0)" @ 73  # auto: was `sh	$17,224($16)` -> `sh	$s2,0xE0($s0)`
+regfix.txt:1869: func_8002EBDC: subst "sh\s+\$17,232\(\$16\)" "sh	$s2,0xE8($s0)" @ 78  # auto: was `sh	$17,232($16)` -> `sh	$s2,0xE8($s0)`
+regfix.txt:1870: func_8002EBDC: subst "addu\s+\$5,\$18,\$zero" "addu	$a1,$s1,$zero" @ 81  # auto: was `addu	$5,$18,$zero` -> `addu	$a1,$s1,$zero`
+regfix.txt:1871: func_8002EBDC: subst "addu\s+\$12,\s+\$18,\$zero" "addu	$t4,$s1,$zero" @ 82  # auto: was `addu	$12, $18,$zero` -> `addu	$t4,$s1,$zero`
+regfix.txt:1872: func_8002EBDC: subst "ctc2\s+\$13,\s+\$0" "ctc2	$t5,$0 /* handwritten instruction */" @ 85  # auto: was `ctc2 $13, $0` -> `ctc2	$t5,$0 /* handwritten instruction */`
+regfix.txt:1873: func_8002EBDC: subst "ctc2\s+\$14,\s+\$1" "ctc2	$t6,$1 /* handwritten instruction */" @ 86  # auto: was `ctc2 $14, $1` -> `ctc2	$t6,$1 /* handwritten instruction */`
+regfix.txt:1874: func_8002EBDC: subst "ctc2\s+\$13,\s+\$2" "ctc2	$t5,$2 /* handwritten instruction */" @ 90  # auto: was `ctc2 $13, $2` -> `ctc2	$t5,$2 /* handwritten instruction */`
+regfix.txt:1875: func_8002EBDC: subst "ctc2\s+\$14,\s+\$3" "ctc2	$t6,$3 /* handwritten instruction */" @ 91  # auto: was `ctc2 $14, $3` -> `ctc2	$t6,$3 /* handwritten instruction */`
+regfix.txt:1876: func_8002EBDC: subst "ctc2\s+\$15,\s+\$4" "ctc2	$t7,$4 /* handwritten instruction */" @ 92  # auto: was `ctc2 $15, $4` -> `ctc2	$t7,$4 /* handwritten instruction */`
+regfix.txt:1877: func_8002EBDC: subst "mtc2\s+\$13,\s+\$0" "mtc2	$t5,$0 /* handwritten instruction */" @ 98  # auto: was `mtc2 $13, $0` -> `mtc2	$t5,$0 /* handwritten instruction */`
+regfix.txt:1879: func_8002EBDC: subst "swc2\s+\$26,\s+4\(\$12\)" "swc2	$26,0x4($t4) /* handwritten instruction */" @ 105  # auto: was `swc2 $26, 4($12)` -> `swc2	$26,0x4($t4) /* handwritten instruction */`
+regfix.txt:1880: func_8002EBDC: subst "swc2\s+\$27,\s+8\(\$12\)" "swc2	$27,0x8($t4) /* handwritten instruction */" @ 106  # auto: was `swc2 $27, 8($12)` -> `swc2	$27,0x8($t4) /* handwritten instruction */`
+regfix.txt:1881: func_8002EBDC: subst "addu\s+\$5,\$18,\$zero" "addu	$a1,$s1,$zero" @ 130  # auto: was `addu	$5,$18,$zero` -> `addu	$a1,$s1,$zero`
+regfix.txt:1882: func_8002EBDC: subst "sh\s+\$17,216\(\$16\)" "sh	$s2,0xD8($s0)" @ 134  # auto: was `sh	$17,216($16)` -> `sh	$s2,0xD8($s0)`
+regfix.txt:1883: func_8002EBDC: subst "sh\s+\$17,224\(\$16\)" "sh	$s2,0xE0($s0)" @ 138  # auto: was `sh	$17,224($16)` -> `sh	$s2,0xE0($s0)`
+regfix.txt:1884: func_8002EBDC: subst "sh\s+\$17,232\(\$16\)" "sh	$s2,0xE8($s0)" @ 142  # auto: was `sh	$17,232($16)` -> `sh	$s2,0xE8($s0)`
+regfix.txt:1885: func_8002EBDC: subst "subu\s+\$4,\$0,\$4" "negu	$a0,$a0" @ 144  # auto: was `subu	$4,$0,$4` -> `negu	$a0,$a0`
+regfix.txt:1886: func_8002EBDC: subst "addu\s+\$5,\$18,\$zero" "addu	$a1,$s1,$zero" @ 146  # auto: was `addu	$5,$18,$zero` -> `addu	$a1,$s1,$zero`
+regfix.txt:1887: func_8002EBDC: subst "subu\s+\$4,\$0,\$4" "negu	$a0,$a0" @ 148  # auto: was `subu	$4,$0,$4` -> `negu	$a0,$a0`
+regfix.txt:1888: func_8002EBDC: subst "addu\s+\$12,\s+\$18,\$zero" "addu	$t4,$s1,$zero" @ 149  # auto: was `addu	$12, $18,$zero` -> `addu	$t4,$s1,$zero`
+regfix.txt:1889: func_8002EBDC: subst "ctc2\s+\$13,\s+\$0" "ctc2	$t5,$0 /* handwritten instruction */" @ 152  # auto: was `ctc2 $13, $0` -> `ctc2	$t5,$0 /* handwritten instruction */`
+regfix.txt:1890: func_8002EBDC: subst "ctc2\s+\$14,\s+\$1" "ctc2	$t6,$1 /* handwritten instruction */" @ 153  # auto: was `ctc2 $14, $1` -> `ctc2	$t6,$1 /* handwritten instruction */`
+regfix.txt:1891: func_8002EBDC: subst "ctc2\s+\$13,\s+\$2" "ctc2	$t5,$2 /* handwritten instruction */" @ 157  # auto: was `ctc2 $13, $2` -> `ctc2	$t5,$2 /* handwritten instruction */`
+regfix.txt:1892: func_8002EBDC: subst "ctc2\s+\$14,\s+\$3" "ctc2	$t6,$3 /* handwritten instruction */" @ 158  # auto: was `ctc2 $14, $3` -> `ctc2	$t6,$3 /* handwritten instruction */`
+regfix.txt:1893: func_8002EBDC: subst "ctc2\s+\$15,\s+\$4" "ctc2	$t7,$4 /* handwritten instruction */" @ 159  # auto: was `ctc2 $15, $4` -> `ctc2	$t7,$4 /* handwritten instruction */`
+regfix.txt:1894: func_8002EBDC: subst "mtc2\s+\$13,\s+\$0" "mtc2	$t5,$0 /* handwritten instruction */" @ 165  # auto: was `mtc2 $13, $0` -> `mtc2	$t5,$0 /* handwritten instruction */`
+regfix.txt:1896: func_8002EBDC: subst "swc2\s+\$26,\s+4\(\$12\)" "swc2	$26,0x4($t4) /* handwritten instruction */" @ 171  # auto: was `swc2 $26, 4($12)` -> `swc2	$26,0x4($t4) /* handwritten instruction */`
+regfix.txt:1897: func_8002EBDC: subst "swc2\s+\$27,\s+8\(\$12\)" "swc2	$27,0x8($t4) /* handwritten instruction */" @ 172  # auto: was `swc2 $27, 8($12)` -> `swc2	$27,0x8($t4) /* handwritten instruction */`
+regfix.txt:1900: func_8002EBDC: reorder 29,28 @ 28-29
+regfix.txt:1903: func_8002EBDC: reorder 71,67,68,69,70 @ 67-71

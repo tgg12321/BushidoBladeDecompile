@@ -1,0 +1,11 @@
+regfix.txt:1972: func_8007352C: subst "nop" "andi	$30,$2,0xffff" @ 20
+regfix.txt:1973: func_8007352C: delete @ 23
+regfix.txt:1975: func_8007352C: subst "addu\s+\$4,\$18,\$3" "addu	$3,$18,$3" @ 40
+regfix.txt:1977: func_8007352C: subst "addu\s+\$3,\$23,-1" "addu	$2,$23,-1" @ 43
+regfix.txt:1979: func_8007352C: subst "blez\s+\$4," "blez	$3," @ 47
+regfix.txt:1981: func_8007352C: subst "nop" "addu	$2,$23,-1" @ 48
+regfix.txt:1983: func_8007352C: subst "addu\s+\$3,\$23,-1" "addu	$2,$23,-1" @ 107
+regfix.txt:1984: func_8007352C: subst "addu\s+\$23,\$3,\$zero" "addu	$23,$2,$zero" @ 108
+regfix.txt:1985: func_8007352C: subst "sll\s+\$2,\$3,16" "sll	$2,$2,16" @ 109
+regfix.txt:1987: func_8007352C: insert_label ".LCF352C_t:" @ 105
+regfix.txt:1988: func_8007352C: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LCF352C_t" @ 45

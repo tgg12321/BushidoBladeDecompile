@@ -1,0 +1,65 @@
+regfix.txt:1450: func_8002D780: subst "addu\t\$12,\$16,248" "nop" @ 26
+regfix.txt:1452: func_8002D780: subst "addu\t\$12,\$16,256" "addiu\t$2,$16,256" @ 33
+regfix.txt:1454: func_8002D780: insert_after "addu\t$12,$2,$zero" @ 28
+regfix.txt:1455: func_8002D780: insert_after "addiu\t$2,$16,248" @ 28
+regfix.txt:1457: func_8002D780: insert_after "addu\t$12,$2,$zero" @ 33
+regfix.txt:1463: func_8002D780: subst "\$8" "$9" @ 44
+regfix.txt:1464: func_8002D780: subst "\$3" "$2" @ 47
+regfix.txt:1465: func_8002D780: subst "\$8" "$9" @ 47
+regfix.txt:1466: func_8002D780: subst "\$3" "$2" @ 48
+regfix.txt:1467: func_8002D780: subst "\$6" "$7" @ 49
+regfix.txt:1468: func_8002D780: subst "\$7" "$8" @ 50
+regfix.txt:1469: func_8002D780: subst "\$9" "$10" @ 51
+regfix.txt:1471: func_8002D780: subst "addu\t\$2,\$6,\$7" "addu\t$3,$7,$8" @ 52
+regfix.txt:1472: func_8002D780: subst "\$2" "$3" @ 54
+regfix.txt:1473: func_8002D780: subst "\$4" "$6" @ 55
+regfix.txt:1475: func_8002D780: subst "\$3" "$2" @ 56
+regfix.txt:1476: func_8002D780: subst "\$3" "$2" @ 56
+regfix.txt:1478: func_8002D780: subst "\$9" "$10" @ 57
+regfix.txt:1479: func_8002D780: subst "\$9" "$10" @ 57
+regfix.txt:1480: func_8002D780: subst "\$3" "$2" @ 57
+regfix.txt:1481: func_8002D780: subst "\$6" "$7" @ 58
+regfix.txt:1482: func_8002D780: subst "\$9" "$10" @ 58
+regfix.txt:1484: func_8002D780: subst "\$2" "$3" @ 60
+regfix.txt:1485: func_8002D780: subst "\$2" "$3" @ 60
+regfix.txt:1487: func_8002D780: subst "subu\t\$10,\$4,\$2" "subu\t$6,$6,$3" @ 61
+regfix.txt:1489: func_8002D780: subst "\$8" "$9" @ 62
+regfix.txt:1490: func_8002D780: subst "\$10" "$6" @ 62
+regfix.txt:1492: func_8002D780: subst "\$2" "$17" @ 63
+regfix.txt:1494: func_8002D780: subst "\$6" "$7" @ 66
+regfix.txt:1496: func_8002D780: subst "\$3" "$4" @ 67
+regfix.txt:1498: func_8002D780: subst "\$8" "$9" @ 70
+regfix.txt:1500: func_8002D780: subst "subu\t\$2,\$14,\$2" "subu\t$2,$14,$17" @ 71
+regfix.txt:1502: func_8002D780: subst "\$17" "$2" @ 72
+regfix.txt:1504: func_8002D780: subst "subu\t\$3,\$3,\$17" "subu\t$3,$4,$2" @ 73
+regfix.txt:1506: func_8002D780: subst "\$7" "$8" @ 76
+regfix.txt:1507: func_8002D780: subst "\$9" "$10" @ 76
+regfix.txt:1511: func_8002D780: subst "\$10" "$6" @ 80
+regfix.txt:1513: func_8002D780: subst "\$7" "$8" @ 84
+regfix.txt:1515: func_8002D780: subst "\$14" "$17" @ 90
+regfix.txt:1517: func_8002D780: subst "\$14" "$17" @ 91
+regfix.txt:1521: func_8002D780: subst "\$7" "$8" @ 94
+regfix.txt:1522: func_8002D780: subst "\$6" "$7" @ 94
+regfix.txt:1524: func_8002D780: subst "\$9" "$10" @ 95
+regfix.txt:1525: func_8002D780: subst "\$8" "$9" @ 95
+regfix.txt:1527: func_8002D780: subst "\$9" "$8" @ 97
+regfix.txt:1529: func_8002D780: subst "\$8" "$9" @ 98
+regfix.txt:1531: func_8002D780: subst "subu\t\$2,\$10,\$6" "subu\t$2,$6,$7" @ 99
+regfix.txt:1533: func_8002D780: subst "\$7" "$6" @ 101
+regfix.txt:1535: func_8002D780: subst "\$8" "$9" @ 102
+regfix.txt:1537: func_8002D780: subst "\$6" "$7" @ 106
+regfix.txt:1539: func_8002D780: subst "\$9" "$8" @ 109
+regfix.txt:1540: func_8002D780: subst "\$7" "$6" @ 109
+regfix.txt:1544: func_8002D780: subst "\$15" "$24" @ 118
+regfix.txt:1546: func_8002D780: subst "\$15" "$24" @ 119
+regfix.txt:1548: func_8002D780: subst "nop" "addu\t$4,$17,$zero" @ 122
+regfix.txt:1550: func_8002D780: subst "\$17" "$4" @ 130
+regfix.txt:1552: func_8002D780: subst "addu\t\$12,\$sp,16" "addiu\t$2,$sp,16" @ 133
+regfix.txt:1553: func_8002D780: insert_after "addu\t$12,$2,$zero" @ 133
+regfix.txt:1555: func_8002D780: subst "\$17" "$4" @ 139
+regfix.txt:1559: func_8002D780: subst "addu\t\$4,\$18,\$zero" "addiu\t$2,$zero,1" @ 186
+regfix.txt:1561: func_8002D780: delete @ 193
+regfix.txt:1562: func_8002D780: delete @ 191
+regfix.txt:1564: func_8002D780: insert_after "addu\t$4,$18,$zero" @ 186
+regfix.txt:1571: func_8002D780: reorder 67,68,69,70,71,72,73,75,63,64,65,76,66,74 @ 63-76
+regfix.txt:1574: func_8002D780: reorder 98,97 @ 97-98

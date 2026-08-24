@@ -626,39 +626,7 @@ void func_8003C560(void) {
         }
     }
 }
-void func_8003C714(void) {
-    u8 buf[4];
-    s32 *s0;
-    register s32 i asm("t0");
-    register u8 *src asm("a2");
-    register u8 *dst asm("a1");
-
-    s0 = func_80077D00();
-    func_800372C0();
-    gpu_InitDisplay();
-    func_80060758();
-    i = 0;
-    src = (u8 *)&D_80106A58;
-    dst = (u8 *)s0;
-    do {
-        *(u8 *)(dst + 0x21) = (u8)(*(s32 *)(src + 4) / 1800);
-        *(u8 *)(dst + 0x22) = (u8)((*(s32 *)(src + 4) / 30) % 60);
-        i += 1;
-        *(u8 *)(dst + 0x23) = (u8)(((*(s32 *)(src + 4) % 30) * 100) / 30);
-        *(u8 *)(dst + 0x24) = *src;
-        src += 8;
-        dst += 4;
-    } while (i < 3);
-    func_8001CD68(buf);
-    *(u8 *)((u8 *)s0 + 0x2D) = (u8)*(u16 *)buf;
-    *(u8 *)((u8 *)s0 + 0x2E) = buf[2];
-    *(u8 *)((u8 *)s0 + 0x2F) = buf[3];
-    *(u8 *)((u8 *)s0 + 0x30) = (u8)D_80101ED2;
-    disp_SetFramebufferMode(1, 0, 0, 0);
-    D_800A37B8 = 0;
-    D_800A3834 = 0x1F;
-    gpu_DisableDisplay();
-}
+INCLUDE_ASM("asm/funcs", func_8003C714);
 /* kengo:LOW  |  su_menu_edit/_SetCurrentCursor  |  104i  |  PS2 UI — reverted */
 void func_8003C8B4(void) {
     s32 ret;
@@ -953,53 +921,7 @@ void func_8003D330(void) {
     ot->addr = (u32)p;
 }
 extern u32 D_800A3930;
-void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
-    register s32 sx asm("t0") = x;
-    register s32 sy asm("t1") = y;
-    register s32 scolor asm("t2") = color;
-    register u32 mask_lo asm("a3");
-    register u32 mask_hi asm("a2");
-    register u32 tag asm("a1");
-    register s32 count asm("v1");
-    register u8 *p asm("a0");
-    register u32 cmd_tag asm("v1");
-    u32 *ot;
-
-    count = D_800A3358;
-    if (count == 0x20) return;
-
-    mask_lo = 0x00FFFFFF;
-    {
-        register u32 v0_t asm("v0") = count + 1;
-        D_800A3358 = v0_t;
-    }
-    {
-        register u32 v0_off asm("v0") = count << 4;
-        register u8 *arr_ptr asm("v1") = (u8 *)&D_800A3930;
-        v0_off += (u32)arr_ptr;
-        p = (u8 *)((D_800A3218 << 9) + v0_off);
-    }
-    cmd_tag = 0x74000000;
-
-    p[3] = 3;
-    p[7] = 0x74;
-    p[0xC] = ((ch & 7) << 3) - 0x40;
-    p[0xD] = ((ch >> 5) << 3) - 0x20;
-    *(u16 *)(p + 0xE) = ((ch << 3) & 0xC0) | 0x773F;
-    tag = *(u32 *)p;
-    {
-        register u32 cmd_v0 asm("v0");
-        cmd_v0 = (scolor >> 1) | cmd_tag;
-        *(u32 *)(p + 4) = cmd_v0;
-    }
-    ot = (u32 *)D_800A374C;
-    mask_hi = 0xFF000000;
-    *(s16 *)(p + 8) = sx;
-    *(s16 *)(p + 0xA) = sy;
-    tag = (tag & mask_hi) | (*ot & mask_lo);
-    *(u32 *)p = tag;
-    *ot = (*ot & mask_hi) | ((u32)p & mask_lo);
-}
+INCLUDE_ASM("asm/funcs", func_8003D39C);
 void func_8003D478(s32 x, s32 y, u8 *str, s32 color) {
     s32 ch;
     s32 start_x = x;
@@ -1029,87 +951,7 @@ typedef char *va_list;
 s32 strlen(u8 *);
 void sprintf(u8 *, u8 *, s32);
 
-void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
-    u8 buf[0x400];
-    u8 seg[0x100];
-    register va_list ap asm("s3");
-    s32 cur_arg;
-    s32 seen_pct;
-    register u8 *seg_ptr asm("s1");
-    s32 ch;
-
-    cur_arg = first_arg;
-    seen_pct = 0;
-    seg_ptr = seg;
-    va_start(ap, first_arg);
-    buf[0] = 0;
-
-    ch = *fmt++;
-    if (ch != 0) {
-        s32 pct = 0x25;
-        u8 *buf_ptr = buf;
-        u8 *seg_start = seg_ptr;
-
-        do {
-            if (ch == pct) {
-                if (seen_pct == 0) {
-                    seen_pct = 1;
-                } else {
-                    *seg_ptr = 0;
-                    sprintf(buf_ptr + strlen(buf), seg_start, cur_arg);
-                    seg_ptr = seg_start;
-                    cur_arg = va_arg(ap, s32);
-                }
-            }
-            *seg_ptr++ = ch;
-            ch = *fmt++;
-        } while (ch != 0);
-    }
-
-    *seg_ptr = 0;
-    sprintf(buf + strlen(buf), seg, cur_arg);
-
-    ch = buf[0];
-    if (ch != 0) {
-        u8 *p = &buf[1];
-        do {
-            s32 row = D_800A3360;
-            if (row >= 0x1A) goto done;
-
-            if (ch == 0x20) goto inc_col;
-            if (ch == 0x0A) {
-                D_800A335C = 0;
-                D_800A3360 = row + 1;
-                goto check_wrap;
-            }
-            if (ch == 0x7E) {
-                ch = *p++;
-                if (ch == 0) goto done;
-                if (ch == 0x63 || ch == 0x43) {
-                    s32 d1, d2, d3;
-                    d1 = *p++;
-                    if (d1 == 0) goto done;
-                    d2 = *p++;
-                    if (d2 == 0) goto done;
-                    d3 = *p++;
-                    if (d3 == 0) goto done;
-                    D_800A3364 = ((d1 - 0x30) << 5) | ((d2 - 0x30) << 13) | ((d3 - 0x30) << 21);
-                }
-                goto check_wrap;
-            }
-            func_8003D39C(D_800A335C * 8 + 0x10, row * 8 + 0x10, ch, D_800A3364);
-        inc_col:
-            D_800A335C = D_800A335C + 1;
-        check_wrap:
-            if (D_800A335C >= 0x4C) {
-                D_800A335C = 0;
-                D_800A3360 = D_800A3360 + 1;
-            }
-            ch = *p++;
-        } while (ch != 0);
-    }
-done:;
-}
+INCLUDE_ASM("asm/funcs", func_8003D52C);
 
 /* kengo:LOW  |  su_menu_home/_DispSleepMenuTex  |  146i  |  PS2 UI — reverted */
 void func_8003D774(s32 arg0, s32 arg1) {
@@ -1359,102 +1201,7 @@ void func_8003DDF8(u32 arg0) {
     arg0 &= 0xFFFFFF;
     ptr[0x3FFC / 4] = arg0;
 }
-void func_8003DE14(s16 *rect, s32 count) {
-    u16 src_buf[0x200];
-    u16 dst_buf[0x200];
-    u8 color_info[0x20];
-    register s32 i asm("s1");
-    register s32 saved_y asm("s7");
-    register s32 r asm("s5");
-    register s32 g asm("s4");
-    register s32 b asm("s3");
-    s32 target_color;
-
-    DrawSync(0);
-    count--;
-    StoreImage((s32 *)rect, src_buf);
-    DrawSync(0);
-    i = 0;
-    ((u16 *)rect)[1] -= ((u16 *)rect)[3];
-    LoadImage((s32)rect, (s32)src_buf);
-    saved_y = rect[1];
-    rect[1] = ((u16 *)rect)[3] + saved_y;
-    func_80052BE4(color_info);
-
-    r = color_info[0];
-    g = color_info[1];
-    b = color_info[2];
-    target_color = (u32)r >> 3;
-    target_color |= ((g & 0xF8) << 2) | (s32)-0x8000;
-    target_color |= (b & 0xF8) << 7;
-
-    if (count > 0) {
-        s32 blend_base = 0x1000;
-        do {
-            s32 total = rect[2] * rect[3];
-            u16 *src = src_buf;
-            u16 *dst = dst_buf;
-            s32 factor = ((i + 1) << 12) / count;
-            s32 j = 0;
-
-            if (total > 0) {
-                s32 complement = blend_base - factor;
-                do {
-                    __asm__ volatile("" : "=r"(count) : "0"(count));
-                    if (i == count - 1) {
-                        u16 pixel = *src;
-                        if (pixel == 0) {
-                            *dst = pixel;
-                            src++;
-                            goto advance_dst;
-                        }
-                        *dst++ = target_color;
-                        src++;
-                        goto loop_check;
-                    }
-                    {
-                        u16 pixel = *src;
-                        s32 px = pixel & 0xFFFF;
-                        if (px == 0) {
-                            *dst = pixel;
-                            src++;
-                            goto advance_dst;
-                        }
-                        {
-                            s32 r_src = (pixel & 0x1F) << 3;
-                            s32 g_src = ((u32)px >> 2) & 0xF8;
-                            s32 b_src = ((u32)px >> 7) & 0xF8;
-                            s32 r_ch;
-                            s32 g_ch;
-                            s32 b_shift;
-                            src++;
-                            r_ch = ((r_src * complement + r * factor) >> 15) & 0x1F;
-                            g_ch = ((g_src * complement + g * factor) >> 10) & 0x3E0;
-                            b_shift = (b_src * complement + b * factor) >> 5;
-                            *dst = (pixel & 0x8000) | r_ch | g_ch | (b_shift & 0x7C00);
-                        }
-                    }
-                advance_dst:
-                    dst++;
-                loop_check:
-                    j++;
-                } while (j < rect[2] * rect[3]);
-            }
-
-            {
-                s32 new_y = ((u16 *)rect)[1] + ((u16 *)rect)[3];
-                ((u16 *)rect)[1] = new_y;
-                if ((s16)new_y >= 0x200) {
-                    rect[1] = saved_y;
-                    ((u16 *)rect)[0] += ((u16 *)rect)[2];
-                }
-            }
-            LoadImage((s32)rect, (s32)dst_buf);
-            DrawSync(0);
-            i++;
-        } while (i < count);
-    }
-}
+INCLUDE_ASM("asm/funcs", func_8003DE14);
 void func_8003E0E0(void) {
     s16 buf[4];
     buf[1] = 0x1E1;

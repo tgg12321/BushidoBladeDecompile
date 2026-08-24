@@ -1,0 +1,16 @@
+regfix.txt:2209: func_800325E0: subst "subu\s+\$4,\$4,\$3" "subu\t$5,$4,$3" @ 118
+regfix.txt:2210: func_800325E0: subst "bgez\s+\$4," "bgez\t$5," @ 122
+regfix.txt:2211: func_800325E0: subst "addu\s+\$4,\$0,\$zero" "addu\t$5,$0,$zero" @ 124
+regfix.txt:2212: func_800325E0: subst "addu\s+\$2,\$4,\$zero" "addu\t$2,$5,$zero" @ 129
+regfix.txt:2213: func_800325E0: subst "addu\s+\$4,\$3,\$zero" "addu\t$5,$6,$zero" @ 130
+regfix.txt:2214: func_800325E0: subst "mult\s+\$8,\$4" "mult\t$8,$5" @ 132
+regfix.txt:2215: func_800325E0: subst "subu\s+\$3,\$3,\$2" "subu\t$6,$3,$2" @ 123
+regfix.txt:2216: func_800325E0: subst "bgez\s+\$3," "bgez\t$6," @ 125
+regfix.txt:2217: func_800325E0: subst "addu\s+\$3,\$0,\$zero" "addu\t$6,$0,$zero" @ 127
+regfix.txt:2218: func_800325E0: subst "addu\s+\$3,\$2,\$zero" "addu\t$6,$2,$zero" @ 131
+regfix.txt:2219: func_800325E0: subst "mult\s+\$8,\$3" "mult\t$8,$6" @ 136
+regfix.txt:2220: func_800325E0: subst "mflo\s+\$8$" "mflo\t$7" @ 29
+regfix.txt:2221: func_800325E0: subst "addu\s+\$2,\$2,\$8" "addu\t$2,$2,$7" @ 33
+regfix.txt:2222: func_800325E0: subst "mflo\s+\$9$" "mflo\t$3" @ 133
+regfix.txt:2223: func_800325E0: subst "sra\s+\$5,\$9,16" "sra\t$5,$3,16" @ 137
+regfix.txt:2224: func_800325E0: reorder 58,55,56,57 @ 55-58

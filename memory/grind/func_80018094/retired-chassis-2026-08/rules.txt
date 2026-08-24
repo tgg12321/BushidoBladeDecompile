@@ -1,0 +1,75 @@
+regfix.txt:1017: func_80018094: subst "lui\t\$3" "lui\t$1" @ 15
+regfix.txt:1018: func_80018094: delete @ 16
+regfix.txt:1019: func_80018094: subst "sw\t\$2,0\(\$3\)" "sw\t$2,0x0024($1)" @ 17
+regfix.txt:1021: func_80018094: subst "lui\t\$3" "lui\t$1" @ 25
+regfix.txt:1022: func_80018094: delete @ 26
+regfix.txt:1023: func_80018094: subst "sw\t\$2,0\(\$3\)" "sw\t$2,0x0028($1)" @ 27
+regfix.txt:1025: func_80018094: subst "lui\t\$2" "lui\t$1" @ 39
+regfix.txt:1026: func_80018094: delete @ 40
+regfix.txt:1027: func_80018094: subst "sw\t\$3,0\(\$2\)" "sw\t$2,0x002c($1)" @ 41
+regfix.txt:1030: func_80018094: subst "lw\t\$3,28" "lw\t$2,28" @ 30
+regfix.txt:1031: func_80018094: subst "lw\t\$2,48" "lw\t$3,48" @ 31
+regfix.txt:1032: func_80018094: delete @ 29
+regfix.txt:1033: func_80018094: reorder 28,27 @ 27-28
+regfix.txt:1035: func_80018094: subst "mflo\t\$5" "mflo\t$4" @ 32
+regfix.txt:1036: func_80018094: subst "subu\t\$3,\$3,\$2" "subu\t$2,$2,$3" @ 33
+regfix.txt:1037: func_80018094: subst "mult\t\$3,\$3" "mult\t$2,$2" @ 35
+regfix.txt:1040: func_80018094: subst "lui\t\$4" "lui\t$3" @ 37
+regfix.txt:1041: func_80018094: subst "ori\t\$4,\$4" "ori\t$3,$3" @ 38
+regfix.txt:1042: func_80018094: subst "slt\t\$4,\$4" "slt\t$3,$3" @ 45
+regfix.txt:1043: func_80018094: subst "bne\t\$4" "bne\t$3" @ 46
+regfix.txt:1046: func_80018094: subst "mflo\t\$7" "mflo\t$5" @ 21
+regfix.txt:1047: func_80018094: subst "addu\t\$2,\$7,\$5" "addu\t$2,$5,$4" @ 42
+regfix.txt:1048: func_80018094: subst "mflo\t\$8" "mflo\t$7" @ 43
+regfix.txt:1049: func_80018094: subst "addu\t\$5,\$2,\$8" "addu\t$5,$2,$7" @ 44
+regfix.txt:1053: func_80018094: delete @ 36
+regfix.txt:1054: func_80018094: subst "nop" "addiu\t$3,$zero,256" @ 47
+regfix.txt:1056: func_80018094: subst "nop" "addu\t$4,$5,$zero" @ 53
+regfix.txt:1058: func_80018094: subst "addu\t\$6,\$0,\$zero" "addu\t$3,$0,$zero" @ 51
+regfix.txt:1061: func_80018094: subst "srl\t\$3" "srl\t$5" @ 58
+regfix.txt:1062: func_80018094: subst "addu\t\$12,\$5" "addu\t$12,$4" @ 59
+regfix.txt:1063: func_80018094: subst "sra\t\$3,\$4" "sra\t$5,$4" @ 77
+regfix.txt:1064: func_80018094: subst "sll\t\$3,\$3,6" "sll\t$3,$5,6" @ 80
+regfix.txt:1065: func_80018094: subst "mfhi\t\$9" "mfhi\t$6" @ 83
+regfix.txt:1066: func_80018094: subst "sra\t\$2,\$9" "sra\t$2,$6" @ 84
+regfix.txt:1067: func_80018094: subst "addu\t\$6,\$2" "addu\t$3,$2" @ 86
+regfix.txt:1070: func_80018094: reorder 56,57,55 @ 55-57
+regfix.txt:1074: func_80018094: subst "lui\t\$5" "lui\t$2" @ 87
+regfix.txt:1075: func_80018094: delete @ 88
+regfix.txt:1076: func_80018094: subst "lw\t\$2,0\(\$5\)" "lw\t$2,0x0024($2)" @ 89
+regfix.txt:1077: func_80018094: subst "mult\t\$2,\$6" "mult\t$2,$3" @ 91
+regfix.txt:1079: func_80018094: subst "lui\t\$4" "lui\t$2" @ 92
+regfix.txt:1080: func_80018094: delete @ 93
+regfix.txt:1081: func_80018094: subst "mflo\t\$8" "mflo\t$7" @ 94
+regfix.txt:1082: func_80018094: subst "lw\t\$2,0\(\$4\)" "lw\t$2,0x0028($2)" @ 95
+regfix.txt:1083: func_80018094: subst "mult\t\$2,\$6" "mult\t$2,$3" @ 97
+regfix.txt:1085: func_80018094: subst "lui\t\$3" "lui\t$2" @ 98
+regfix.txt:1086: func_80018094: delete @ 99
+regfix.txt:1087: func_80018094: subst "mflo\t\$7" "mflo\t$4" @ 100
+regfix.txt:1088: func_80018094: subst "lw\t\$2,0\(\$3\)" "lw\t$2,0x002c($2)" @ 101
+regfix.txt:1089: func_80018094: subst "mult\t\$2,\$6" "mult\t$2,$3" @ 103
+regfix.txt:1092: func_80018094: reorder 87,86 @ 86-87
+regfix.txt:1093: func_80018094: reorder 92,91 @ 91-92
+regfix.txt:1096: func_80018094: subst "sra\t\$2,\$8" "sra\t$2,$7" @ 104
+regfix.txt:1097: func_80018094: insert "lui\t$1,0x1f80" @ 97
+regfix.txt:1098: func_80018094: subst "sw\t\$2,0\(\$5\)" "sw\t$2,0x0024($1)" @ 105
+regfix.txt:1099: func_80018094: subst "sra\t\$2,\$7" "sra\t$2,$4" @ 106
+regfix.txt:1100: func_80018094: insert "lui\t$1,0x1f80" @ 99
+regfix.txt:1101: func_80018094: subst "sw\t\$2,0\(\$4\)" "sw\t$2,0x0028($1)" @ 107
+regfix.txt:1102: func_80018094: subst "mflo\t\$10" "mflo\t$3" @ 108
+regfix.txt:1103: func_80018094: subst "sra\t\$2,\$10" "sra\t$2,$3" @ 109
+regfix.txt:1104: func_80018094: insert "lui\t$1,0x1f80" @ 102
+regfix.txt:1105: func_80018094: subst "sw\t\$2,0\(\$3\)" "sw\t$2,0x002c($1)" @ 110
+regfix.txt:1109: func_80018094: $6 <-> $7 @ 114-128
+regfix.txt:1110: func_80018094: $5 <-> $6 @ 114-128
+regfix.txt:1111: func_80018094: $4 <-> $5 @ 114-128
+regfix.txt:1113: func_80018094: subst "nop" "addu\t$4,$17,$zero" @ 112
+regfix.txt:1114: func_80018094: subst "addu\t\$4,\$17,\$zero" "nop" @ 130
+regfix.txt:1116: func_80018094: subst "\$17\)" "$4)" @ 117
+regfix.txt:1117: func_80018094: subst "\$17\)" "$4)" @ 118
+regfix.txt:1118: func_80018094: subst "\$17\)" "$4)" @ 119
+regfix.txt:1119: func_80018094: subst "\$17\)" "$4)" @ 120
+regfix.txt:1120: func_80018094: subst "\$17\)" "$4)" @ 125
+regfix.txt:1121: func_80018094: subst "\$17\)" "$4)" @ 126
+regfix.txt:1122: func_80018094: subst "\$17\)" "$4)" @ 127
+regfix.txt:1123: func_80018094: subst "\$17\)" "$4)" @ 128

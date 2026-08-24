@@ -1,7 +1,7 @@
 {
-  "floor": 27,
-  "measured": "2026-08-19",
+  "floor": 38,
+  "measured": "2026-08-24",
   "source": "pre-migration chassis",
   "banked_body": "retired-chassis-2026-08/body.c",
-  "rules_retired": 16
+  "rules_retired": 11
 }

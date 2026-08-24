@@ -1,0 +1,42 @@
+regfix.txt:682: CD_ready: $21 <-> $23
+regfix.txt:683: CD_ready: $21 <-> $22
+regfix.txt:685: CD_ready: $17 <-> $20
+regfix.txt:686: CD_ready: $17 <-> $19
+regfix.txt:687: CD_ready: $17 <-> $18
+regfix.txt:690: CD_ready: subst "lbu\t\$2,0\(\$18\)" "lbu\t$4,0($18)" @ 41
+regfix.txt:691: CD_ready: subst "lbu\t\$3,1\(\$18\)" "lbu\t$2,1($18)" @ 42
+regfix.txt:692: CD_ready: subst "sll\t\$2,\$2,2" "sll\t$4,$4,2" @ 44
+regfix.txt:693: CD_ready: subst "addu\t\$2,\$2,\$21" "addu\t$4,$4,$21" @ 45
+regfix.txt:694: CD_ready: subst "sll\t\$3,\$3,2" "sll\t$2,$2,2" @ 46
+regfix.txt:695: CD_ready: subst "addu\t\$3,\$3,\$21" "addu\t$2,$2,$21" @ 47
+regfix.txt:696: CD_ready: subst "lw\t\$7,0\(\$2\)" "lw\t$7,0($4)" @ 48
+regfix.txt:697: CD_ready: subst "lw\t\$3,0\(\$3\)" "lw\t$3,0($2)" @ 50
+regfix.txt:698: CD_ready: reorder 41,42,43,46,47,44,50,49,45,51,52,53,54,55,48 @ 41-55
+regfix.txt:701: CD_ready: subst "sw\t\$23,44\(\$sp\)" "sw\t$23,52($sp)" @ 1
+regfix.txt:702: CD_ready: subst "sw\t\$20,28\(\$sp\)" "sw\t$20,40($sp)" @ 2
+regfix.txt:703: CD_ready: subst "sw\t\$22,52\(\$sp\)" "sw\t$22,48($sp)" @ 7
+regfix.txt:704: CD_ready: subst "sw\t\$21,48\(\$sp\)" "sw\t$21,44($sp)" @ 8
+regfix.txt:705: CD_ready: subst "sw\t\$19,40\(\$sp\)" "sw\t$19,36($sp)" @ 9
+regfix.txt:706: CD_ready: subst "sw\t\$18,36\(\$sp\)" "sw\t$18,32($sp)" @ 10
+regfix.txt:707: CD_ready: subst "sw\t\$17,32\(\$sp\)" "sw\t$17,28($sp)" @ 11
+regfix.txt:711: CD_ready: subst "lw\t\$22,52\(\$sp\)" "lw\t$23,52($sp)" @ 145
+regfix.txt:712: CD_ready: subst "lw\t\$21,48\(\$sp\)" "lw\t$22,48($sp)" @ 146
+regfix.txt:713: CD_ready: subst "lw\t\$23,44\(\$sp\)" "lw\t$21,44($sp)" @ 147
+regfix.txt:714: CD_ready: subst "lw\t\$19,40\(\$sp\)" "lw\t$20,40($sp)" @ 148
+regfix.txt:715: CD_ready: subst "lw\t\$18,36\(\$sp\)" "lw\t$19,36($sp)" @ 149
+regfix.txt:716: CD_ready: subst "lw\t\$17,32\(\$sp\)" "lw\t$18,32($sp)" @ 150
+regfix.txt:717: CD_ready: subst "lw\t\$20,28\(\$sp\)" "lw\t$17,28($sp)" @ 151
+regfix.txt:720: CD_ready: subst "lbu\t\$6" "lbu\t$2" @ 106
+regfix.txt:721: CD_ready: subst "lbu\t\$6" "lbu\t$2" @ 124
+regfix.txt:722: CD_ready: subst "addu.*" "nop" @ 127
+regfix.txt:723: CD_ready: subst "\.L\d+" ".L999" @ 111
+regfix.txt:724: CD_ready: subst "\.L\d+" ".L999" @ 129
+regfix.txt:725: CD_ready: subst "j" ".L999:\n\tj" @ 139
+regfix.txt:726: CD_ready: subst "nop" "addu\t$2,$0,$zero" @ 142
+regfix.txt:727: CD_ready: delete @ 143
+regfix.txt:728: CD_ready: insert "andi\t$6,$2,0x00FF" @ 108
+regfix.txt:729: CD_ready: insert "andi\t$6,$2,0x00FF" @ 126
+regfix.txt:730: CD_ready: insert "addu\t$5,$20,$zero" @ 130
+regfix.txt:731: CD_ready: reorder 3,2 @ 2-3
+regfix.txt:732: CD_ready: reorder 113,111,112,114,115,116 @ 111-116
+regfix.txt:733: CD_ready: reorder 133,132,130,131,134,135 @ 130-135

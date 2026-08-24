@@ -1,0 +1,1 @@
+regfix.txt:851: func_8003D52C: insert "sw	$21,1340($29)" @ 19

@@ -1,0 +1,2 @@
+regfix.txt:151: func_80019310: insert "nop" @ 3
+regfix.txt:153: func_80019310: reorder 2,1 @ 1-2

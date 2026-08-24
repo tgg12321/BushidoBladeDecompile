@@ -1,16 +1,16 @@
-regfix.txt:2012: func_8002304C: subst "lui\t\$23.*" "nop" @ 26
-regfix.txt:2013: func_8002304C: subst "ori\t\$23.*" "nop" @ 31
-regfix.txt:2014: func_8002304C: subst "lui\t\$23.*" "nop" @ 36
-regfix.txt:2016: func_8002304C: subst "\$8" "$2" @ 154
-regfix.txt:2017: func_8002304C: subst "\$8" "$2" @ 155
-regfix.txt:2019: func_8002304C: subst "addu\t\$4,\$22.*" "sw\t$2,16($29)" @ 156
-regfix.txt:2020: func_8002304C: subst "addu\t\$5,\$20" "addu\t$4,$22" @ 157
-regfix.txt:2021: func_8002304C: subst "addu\t\$6,\$22" "addu\t$5,$20" @ 158
-regfix.txt:2022: func_8002304C: subst "addu\t\$7,\$0" "addu\t$6,$22" @ 159
-regfix.txt:2023: func_8002304C: subst "sw\t\$8.*" "addu\t$7,$0,$0" @ 161
-regfix.txt:2025: func_8002304C: subst "lhu\t\$3" "lhu\t$4" @ 167
-regfix.txt:2026: func_8002304C: subst "\$3," "$4," @ 172
-regfix.txt:2028: func_8002304C: delete @ 37
-regfix.txt:2030: func_8002304C: insert "andi $3,$4,0xFFFF" @ 168
-regfix.txt:2032: func_8002304C: insert_after "ori $23,$23,0x02B8" @ 17
-regfix.txt:2033: func_8002304C: insert_after "lui $23,0x1F80" @ 17
+regfix.txt:1616: func_8002304C: subst "lui\t\$23.*" "nop" @ 26
+regfix.txt:1617: func_8002304C: subst "ori\t\$23.*" "nop" @ 31
+regfix.txt:1618: func_8002304C: subst "lui\t\$23.*" "nop" @ 36
+regfix.txt:1620: func_8002304C: subst "\$8" "$2" @ 154
+regfix.txt:1621: func_8002304C: subst "\$8" "$2" @ 155
+regfix.txt:1623: func_8002304C: subst "addu\t\$4,\$22.*" "sw\t$2,16($29)" @ 156
+regfix.txt:1624: func_8002304C: subst "addu\t\$5,\$20" "addu\t$4,$22" @ 157
+regfix.txt:1625: func_8002304C: subst "addu\t\$6,\$22" "addu\t$5,$20" @ 158
+regfix.txt:1626: func_8002304C: subst "addu\t\$7,\$0" "addu\t$6,$22" @ 159
+regfix.txt:1627: func_8002304C: subst "sw\t\$8.*" "addu\t$7,$0,$0" @ 161
+regfix.txt:1629: func_8002304C: subst "lhu\t\$3" "lhu\t$4" @ 167
+regfix.txt:1630: func_8002304C: subst "\$3," "$4," @ 172
+regfix.txt:1632: func_8002304C: delete @ 37
+regfix.txt:1634: func_8002304C: insert "andi $3,$4,0xFFFF" @ 168
+regfix.txt:1636: func_8002304C: insert_after "ori $23,$23,0x02B8" @ 17
+regfix.txt:1637: func_8002304C: insert_after "lui $23,0x1F80" @ 17
