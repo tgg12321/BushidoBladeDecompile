@@ -7,14 +7,13 @@
 # `git rev-parse --show-toplevel`, so this works from the main repo
 # OR any git worktree without manual configuration.
 #
-# Also auto-bootstraps the worktree (symlinks gitignored deps from
-# main repo) the first time it's invoked in a freshly-created worktree
-# that's missing the cc1 binary. Silent when no work needed.
+# (Worktree auto-bootstrap was removed 2026-05-26 — see the note below;
+#  the live convenience is the venv auto-repair. Silent when no work needed.)
 #
 # Usage:
 #   bash tools/wsl.sh 'make 2>&1 | tail -5'
 #   bash tools/wsl.sh 'source .venv/bin/activate && python3 -m splat split splat.yaml'
-#   bash tools/wsl.sh 'bash tools/dc.sh verify --all'
+#   bash tools/wsl.sh 'source .venv/bin/activate && python3 -m engine.cli queue next'
 #
 # The command is passed verbatim to WSL bash -c, after `cd`-ing into the
 # project directory. Quote your command with single quotes to prevent Git
@@ -27,11 +26,11 @@ if [ "$#" -eq 0 ]; then
 usage: bash tools/wsl.sh '<command>'
 
 Runs <command> inside WSL with cwd set to the current worktree root.
-Auto-bootstraps the worktree if gitignored deps (cc1, .venv, etc.) are missing.
+Auto-repairs the .venv python3 symlink if missing (bootstrap was removed 2026-05-26).
 
 Examples:
   bash tools/wsl.sh 'make 2>&1 | tail -5'
-  bash tools/wsl.sh 'bash tools/dc.sh verify --all'
+  bash tools/wsl.sh 'source .venv/bin/activate && python3 -m engine.cli queue next'
   bash tools/wsl.sh 'python3 tools/regen_memory_index.py'
 EOF
     exit 2

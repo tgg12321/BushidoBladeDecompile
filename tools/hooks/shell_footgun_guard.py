@@ -13,7 +13,7 @@ one-command `wsl bash -c 'git status'`, pipes, and POSIX one-liners are allowed.
 
 Blocks (exit 2, reason on stderr):
   1. Nested single-quote escaping  '"'"'  or  '\''   (always a footgun)
-  2. Hand-rolled engine invocation `python3 -m engine.cli ...` (use tools/eng.ps1)
+  2. Hand-rolled engine invocation `python3 -m engine.cli ...` (use tools/wteng.ps1 main)
   3. Inside a `wsl bash -c '...'`: a heredoc (<<), a shell function def `() {`,
      or inline awk/sed touching `$` -> write a .py/.sh/.ps1 file in tmp/ and run it.
 
@@ -35,9 +35,9 @@ FUNCDEF_RE = re.compile(r"\b[A-Za-z_]\w*\s*\(\)\s*\{")
 AWK_SED_DOLLAR_RE = re.compile(r"\b(?:awk|sed)\b[^|;&]*\\?\$")
 
 SAFE = ("\nThe safe path:\n"
-        "  - engine/build commands  ->  the PowerShell tool with  tools/eng.ps1\n"
-        "        & tools/eng.ps1 queue next\n"
-        "        & tools/eng.ps1 sandbox func_X --disable all\n"
+        "  - engine/build commands  ->  the PowerShell tool with  tools/wteng.ps1 main\n"
+        "        & tools/wteng.ps1 main queue next\n"
+        "        & tools/wteng.ps1 main sandbox func_X --disable all\n"
         "  - anything beyond ONE simple command (awk/sed/heredoc/multi-statement)\n"
         "        ->  Write a .py/.sh/.ps1 file to tmp/ and run THAT (zero nested quoting)\n"
         "  - a multi-line commit message  ->  Write tmp/msg.txt, then  git commit -F tmp/msg.txt\n"
@@ -57,7 +57,7 @@ def reasons_for(cmd: str) -> list[str]:
         out.append(
             "Hand-rolled `python3 -m engine.cli ...`. Engine commands go through the "
             "PowerShell wrapper so there is zero quoting and metrics get attributed: "
-            "`& tools/eng.ps1 <subcommand> ...`."
+            "`& tools/wteng.ps1 main <subcommand> ...`."
         )
 
     if WSL_NEST_RE.search(cmd):
@@ -67,7 +67,7 @@ def reasons_for(cmd: str) -> list[str]:
                 "clobbered across the nested shells (you read the outer shell's "
                 "status, not the inner command's; it silently shows 0). Capture exit "
                 "codes via the PowerShell tool's `$LASTEXITCODE` after the `wsl`/`& "
-                "tools/eng.ps1` call instead."
+                "tools/wteng.ps1 main` call instead."
             )
         if HEREDOC_RE.search(cmd):
             out.append(

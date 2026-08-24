@@ -14,9 +14,8 @@ Write-Host ("driver: " + $(if ($alive) { "RUNNING (pid $gpid)" } else { "stopped
 # call leaks nonpaged pool that only a reboot frees; audio degrades ~2.5 GB.
 try {
     $npGB = [math]::Round((Get-Counter '\Memory\Pool Nonpaged Bytes').CounterSamples[0].CookedValue / 1GB, 2)
-    $note = if ($npGB -ge 2.5) { ' — DEGRADED, reboot recommended (audio stutter territory)' }
-            elseif ($npGB -ge 1.8) { ' — elevated (WSL leak), reboot when convenient' } else { '' }
-    Write-Host "nonpaged pool: $npGB GB$note"
+  # nonpaged-pool level measured but NOT printed (owner directive 2026-08-19:
+  # no pool levels / reboot reminders in reports; surface breakage, not numbers)
 } catch { }
 # Bridge state — the lever on the leak above (default ON since 2026-08-14).
 try {

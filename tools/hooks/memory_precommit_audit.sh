@@ -7,7 +7,7 @@
 # - MEMORY.md would exceed the 200-line / 24KB Claude Code auto-load limit
 # - Frontmatter parse errors in any memory file
 #
-# Only runs if the commit touches memory/, .claude/rules/, CLAUDE.md,
+# Only runs if the commit touches .claude/rules/, CLAUDE.md,
 # AGENTS.md, or the indexer/audit tools themselves. Otherwise pass.
 #
 # Install via:
@@ -29,7 +29,8 @@ while IFS= read -r f; do
     esac
 done <<< "$STAGED"
 
-# Also trigger if any memory/ file was modified (they live outside the repo,
+# (Deliberately does NOT trigger on repo memory/ — that dir is grind/wip
+#  ledger data written by the pipeline, not curated memory.)
 # but the indexer may have updated MEMORY.md anyway — re-run to be safe)
 if [ "$TRIGGER" -eq 0 ]; then
     # Quick: if no staged files match and no memory tool changed, skip

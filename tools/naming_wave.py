@@ -103,7 +103,7 @@ PY_EXCLUDE_PARTS = {"archive", "maspsx", "decomp-permuter", "gcc-2.7.2", ".venv"
 PY_EXCLUDE_FILES = {
     "tools/rename_funcs.py",
     "tools/propose_function_names.py",
-    # Same class: its RESOLVED set is matched against docs/fleet/regressions.md,
+    # Same class: its RESOLVED set is matched against docs/fleet/regressions.md (fleet-era, RETIRED 2026-07-06),
     # and docs deliberately keep historical names. Renaming the key desyncs the
     # tool from its own data source (layer-2 finding, 2026-08-07). A tool whose
     # string keys index HISTORY must keep history's spelling.

@@ -63,6 +63,7 @@ DIR_ORDER = [
     ("audit",     "Cheat detection + authorization patterns."),
     ("naming",    "Naming-specific lessons."),
     ("project",   "Current state — the greenfield engine (the workflow) + durable function facts."),
+    ("feedback",  "Guidance the user has given on how agents should work — corrections and confirmed approaches, with the why."),
     ("user",      "User profile + standing directives. Loaded first by the agent harness."),
     ("history",   "Archived dated session notes. Not auto-loaded; browse for traceability of past sessions."),
 ]

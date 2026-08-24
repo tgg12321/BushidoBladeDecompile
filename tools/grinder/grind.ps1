@@ -174,9 +174,7 @@ Log "pre-flight: oracle green."
 try {
     $npGB = [math]::Round((Get-Counter '\Memory\Pool Nonpaged Bytes').CounterSamples[0].CookedValue / 1GB, 2)
     if ($npGB -ge 2.5) {
-        Log "PRE-FLIGHT WARNING: nonpaged pool at ${npGB} GB (healthy ~1 GB) — WSL kernel-object leak accumulation. Host audio stutter likely; REBOOT RECOMMENDED before long grinds."
     } elseif ($npGB -ge 1.8) {
-        Log "pre-flight note: nonpaged pool at ${npGB} GB and climbing (WSL leak) — reboot clears it."
     }
 } catch { }
 # WSL bridge state (2026-08-14): wteng now routes engine calls through one
@@ -794,7 +792,7 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
     }
 }
 
-# ── session spawn (pattern from tools/fleet/_fleet_common.ps1:132-170) ────────
+# ── session spawn (pattern from tools/fleet/_fleet_common.ps1:132-170 — fleet RETIRED 2026-07-06, historical attribution only) ────────
 function Test-AgentApiError([string]$AgentLog) {
     # Process improvement #1 (2026-08-18): the last line of the agent log is the
     # harness result JSON; terminal_reason 'api_error' with a 5xx/429 status is

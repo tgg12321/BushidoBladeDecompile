@@ -1,16 +1,7 @@
-"""engine CLI — Phase 0 surface.
-
-  python3 -m engine.cli oracle-lock            capture oracle/manifest.json
-  python3 -m engine.cli verify-oracle [--rebuild]
-                                               confirm byte-identical build + report drift
-  python3 -m engine.cli build                  full clean-driver build -> SHA1 check
-  python3 -m engine.cli build-c <stem>         build one C object into build/src/
-  python3 -m engine.cli parity [--out D --ref D]
-                                               build all C objects with the driver and
-                                               byte-compare vs a reference build dir
-
-Run from the repo root, inside WSL.
-"""
+"""engine CLI — run `python3 -m engine.cli --help` for the CURRENT
+subcommand list (the CLAUDE.md CLI table mirrors it). Run from the repo
+root, inside WSL. NOTE: `queue next` / `queue status` always print JSON;
+there is no --json flag."""
 from __future__ import annotations
 
 import argparse

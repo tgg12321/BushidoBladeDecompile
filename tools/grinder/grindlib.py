@@ -16,7 +16,8 @@ import os
 import re
 
 MODALITIES = ["recon", "structural", "permuter", "forensics", "rederive", "synthesis"]
-# Sessions 2..10 cycle through this ladder, then repeat (spec: "ladder repeats from 2").
+# Sessions walk this ladder ONCE; a flat floor across the cycle forces the
+# escalation modality (R1, owner ruling 2026-08-19) — never a second cycle.
 # R2 (modality-effectiveness 2026-08-19, owner ruling asm-until-matched): the single
 # synthesis pass runs at s6 — it is the only modality with deep-plateau yield (4/44
 # after 3+ flat vs 2% baseline; all three 5+-flat drops in the dataset), its value is
@@ -662,7 +663,8 @@ def _exhaustion_ready(state):
 
 
 def assign_modality(session_count, state=None):
-    """Modality for the NEXT session. Session 1 = recon; then walk/repeat LADDER —
+    """Modality for the NEXT session. Session 1 = recon; then walk LADDER (one
+    cycle — R1 escalation fires on a flat cycle, not a repeat) —
     UNLESS the function is exhaustion-ready (flat floor across many modalities), in
     which case force `escalation` so the run reaches a disposition instead of
     looping. `state` is optional for back-compat; without it the trigger never fires.

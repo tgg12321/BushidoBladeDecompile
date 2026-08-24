@@ -5,6 +5,7 @@
   leaks) that linger after an agent run ends and eat RAM.
 
 .DESCRIPTION
+  NOTE: the 'fleet' harness is RETIRED (2026-07-06); that mode is a historical no-op.
   DEFAULT-DENY. A process is a kill target ONLY if it matches an explicit positive
   orphan signature below. "old", "idle", or "not interactive" are NEVER sufficient on
   their own. Anything unmatched is left strictly alone.
