@@ -2309,3 +2309,156 @@ loop1's bytes.
 - [s17] loop1 RTL insn counts on candidate.c: .combine 45, .lreg (post-sched1) 45, .greg (post-reload) 46, emitted asm 46. The single reload-created insn is uid 300, `lw $t0,24($sp)`, the reload of spilled pseudo 85 (`saved`), and it sits in the between-loops block, not loop1. With E-s16-2 this closes the live-length side of requirement (A) completely: stptr live 41 is invariant under every source form that preserves loop1's bytes.
 
 - [s17] candidate.c updated (comment-only): an s17 addendum records the law, and the FAKE annotation's lever-exhaustion pointer now reads s7..s17. The code is byte-for-byte the same body that measured 1 this session.
+
+## s18 (rederive, 2026-08-24) — the memory layout is rederived, the +1 reference wall is DERIVED and then BROKEN by loop-note weighting
+
+Chassis re-measured at the START of s18 with `candidate.c` applied to
+`src/text1a_pre.c`: `sandbox func_80041188 --disable all` = **score 1, 132 target /
+132 build insns**, rules_dropped 16, cheat_asm_stripped 2. `src/text1a_pre.c` was
+restored to `candidate.c` at the end of the session. The floor did NOT move this
+session; what moved is the frontier.
+
+### E-s18-1 — the function's memory layout, rederived from the constants
+
+`0x94 + 0x68 == 0xFC` and `0x94 + 0x750 == 0x7E4`, and `0x750 == 18 * 0x68`. So the
+three "unrelated" block-0/block-2 constants are ONE array: **entries of stride 0x68
+based at `base + 0x94`**, `saved` is `&entries[0]`, loop1's `stptr` starts at
+`&entries[1]`, loop2's `stptr2` starts at `&entries[18]`, and `i` (1..0x11 then
+0x12..0x13) IS the entry index. Loop1 runs 17 iterations, so `stptr`'s FINAL value is
+`0xFC + 17*0x68 = 0x7E4` — **exactly `stptr2`'s initial value**: the two loops walk one
+continuous array, and the original recomputes the pointer rather than carrying it
+(target's `lw $t0,0x18($sp)` + `addiu $s0,$t0,0x750`). This is the first semantic
+reading of the layout in 18 sessions; it also explains the `saved` spill (a value
+computed in block 0 whose only use is in block 2, and which combine cannot fold into
+`base + 0x7E4` because the two insns sit in different basic blocks).
+
+### E-s18-2 — cse1 REASSOCIATES any plus-derivation inside the definition's EBB, even when the derived value is real
+
+The natural spellings that the E-s18-1 layout suggests, measured on the candidate
+chassis with the instrumented cc1 (`s17/dump17.sh`, ALLOCDBG = the exact
+`allocno_compare` inputs):
+
+| spelling | intent | measured | verdict |
+|---|---|---|---|
+| `stptr = saved + 0x68;` (V1a) | derive loop1's pointer from the array base | table identical to the un-split baseline: `stptr` 5 refs / 41 = 2439, `saved` 2 refs | inert |
+| `stptr = saved; stptr += 0x68;` (V2a) | s17-law chain sourced from `saved` | `stptr` 5 / 41 = 2439 — folded, no lift (donor `saved` outlives `stptr`, exactly as the s17 law predicts) | KILLED |
+| `stptr = base + 0xFC; saved = stptr - 0x68;` (V3a) | give `stptr` a 6th reference through a REAL, later-consumed value | `stptr` 5 refs / **42** (live +1 from the block-0 order change), `saved` 2 refs — cse1 reassociated `(plus (plus base 252) -104)` into `base + 148` and the reference vanished before flow | KILLED |
+
+V3a is the load-bearing row: it extends s16's E-s16-4 (which only sampled artificial
+fold-backs) to a *semantically real* derivation. **Any reassociable arithmetic
+derivation from a pseudo whose definition is in the SAME cse extended basic block is
+folded before `flow` counts it.** Only a REG-COPY chain survives (s17's make_regs_eqv
+law), and only when the donor dies first. Enumerating block-0 pseudos for such a donor
+(the carried frontier item 1): `base` (works — the current F1 construct), `saved`
+(KILLED above), the `D_800A9A10 + a0*4` address regs and `a0` (their values are a LOAD
+away from `base`, so no constant `K` exists). **Frontier item 1 is closed: `base` is the
+only donor.** Banked: `rejected/saved-from-stptr-cse1-reassociates-no-stptr-lift.c`,
+`rejected/stptr-chain-from-saved-folds-donor-outlives.c`.
+
+### E-s18-3 — WHY reference deltas were quantised to +2 (derivation, not sampling)
+
+`flow` counts a pseudo's references before `combine` runs, so a byte-free lift needs an
+insn that `flow` sees and `combine` deletes. `combine` deletes an insn only by merging
+it into a consumer **in the same basic block**. Merging insn A (`q = R + k`) into insn B
+(`... = q ...`) yields ONE insn mentioning `R` once — A+B mentioned `R` once too, so a
+use-only extra reference can never survive as a lift. The only shape that gains is an
+insn that both SETS and USES the pseudo itself (`R = D; R += k;`), which flow counts
+twice. Hence **+2 or nothing** — with the consequence that s15's four minimal Z0
+inverse-solver vectors were all unreachable in principle (#1 `tbl 4->5` + `out2 3->4`,
+#2 `tbl live 47->39` + `out2 3->4`, #3 `out2 3->4` + `out2 live 42->50` all demand an
+ODD delta; #4 `pa4 refs 7->4` demands deleting three semantically necessary uses of the
+matrix pointer). That closed the Z0 chassis — until E-s18-4. NOTE the scope: this
+derivation assumes the no-loop-note regime, i.e. it is a statement about
+combine-deletable insns, not about `flow`'s counting rule.
+
+### E-s18-4 — THE LEVER: `do { } while (0);` is a per-reference +1 dial (flow.c:2081)
+
+`flow.c:2081` is `reg_n_refs[regno] += loop_depth;`, and `loop_depth` is the **NOTE
+nesting depth**: `find_basic_blocks` sets `basic_block_loop_depth` from
+NOTE_INSN_LOOP_BEG/END (flow.c:440-471), `propagate_block` re-derives it while scanning
+backwards (flow.c:1385-1449), and flow.c:1453 `abort()`s if it ever reaches 0 — i.e. the
+no-note baseline is 1 and each enclosing loop note adds 1. A `do { ... } while (0);`
+wrap emits LOOP_BEG/END notes with **no back edge**, so every reference inside it is
+counted twice by flow while `loop.c` leaves the region alone. **This is the only
+construct in this compiler that produces an odd reference delta**, and it makes s15's
+Z0 vector #1 spellable. (Family: `.claude/rules/do-while-zero-exception.md` — sanctioned
+for ANY codegen effect incl. register allocation, owner ruling 2026-07-06, with a
+mandatory inline FAKE annotation; the rule's own example annotation is literally
+"loop-note ref weighting seats tbl in s5".)
+
+MEASURED (form `memory/grind/func_80041188/alt_V7_wraps_alltarget_s18.c`, three wraps —
+`offset = (*tbl) * 6;` / `func_8004A348(buf, out2);` / `*((s16 *)(stptr + 6)) = 2;` —
+honest un-split `stptr = base + 0xFC;`, Z0 block 2 `out3 = (s32 *)((u8 *)pa4 + 0x20)`):
+the ALLOCDBG table came out EXACTLY as predicted and **every callee-saved seat is
+target's** — `stptr` 6/41 = 2926 -> $s3, `stptr2` 6/48 = 2500 -> $s0, `i` 8/97 = 2474 ->
+$s4, `tbl` 5/47 = 2127 -> $s5, `out2` 4/42 = 1904 -> $s6, `pa4` 7/95 = 1473 -> $s7,
+`a3` 4/99 = 808 -> $fp, `out3` 3/47 -> $s3, `saved` spilled. This is **the first form in
+18 sessions that has target's seats AND target's block-2 insn shape
+(`addiu $s3,$s7,0x20`) simultaneously** — the "floor-1 lock" of E-s16-5 (the only
+construct that gives out2 a 4th reference is the one that makes slot 71 wrong) is
+BROKEN. Sandbox: **8, 132 target / 133 build insns.** The whole residual is ONE insn.
+
+### E-s18-5 — the residual is a scheduling side effect of WHERE the wrap sits
+
+Per-placement sweep (`s18/sweep.ps1`, each measured on the same chassis):
+
+| form | wraps | sandbox | build insns |
+|---|---|---|---|
+| T1 | tbl load only | 33 | **132** |
+| T3 | `*(s16*)(stptr+6) = 2;` only | 15 | **132** |
+| T2 | `func_8004A348(buf, out2);` only | 30 | 134 |
+| V7 | all three | 8 | 133 |
+| U4 | tbl + {`i++` + a2-half stores + out2 call}, `stptr` via the F1 chain | **6** | 133 |
+| U1 / U5 | tbl + stptr + {a2-half stores (+`p=`/`i++`) + out2 call} | 7 | 133 |
+| U6 | tbl + {`offset += a2` .. out2 call}, `stptr` via F1 chain | 24 | **132** |
+| U8 | U6 + a symmetric a1-half wrap | 11 | 135 |
+
+Reading: the tbl and stptr wraps are insn-free; the out2 wrap is not. Objdump of U4
+names the mechanism — with the wrap in place the scheduler hoists `offset = offset +
+(s32) a2;` ABOVE the first `jal` (target keeps it after) and `i++` then lands before
+`lhu $v0,0($s0)` instead of filling its load-delay slot, so a `nop` appears. Pulling
+`offset += a2` INSIDE the wrap fixes the insn count (U6 = 132) but adds a reference to
+`a2`, which breaks the `a1`/`a2` 16/16 tie (a2 17 -> 6868 > a1 6464) and permutes their
+seats (sandbox 24); restoring the tie with a symmetric a1-half wrap costs three insns
+(U8 = 135). **The s19 problem is exactly: give `out2` its +1 from a wrap whose boundary
+neither frees `offset += a2` to hoist nor adds a reference to `a1`/`a2`.**
+
+### E-s18-6 — a REAL `do { } while (i < 0x12)` loop1 also reaches all-target seats, and is killed by loop.c instead
+
+Same weighting mechanism from a genuine loop note (`rejected/loop1-real-dowhile-honest-
+alltarget-seats-loopc-giv-score5.c`; honest un-split `stptr`, `out3 = out2`): all seats
+target's (`stptr` 9/40 = 6750 -> $s3, `i` 11/97 -> $s4, `tbl` 7/47 -> $s5, `out2` 6/46 ->
+$s6, `pa4` 8/94 -> $s7, `stptr2` 6/48 -> $s0, `a3` 5/99 -> $fp), 132 build insns,
+**sandbox 5** — the best score ever recorded on a form carrying no FAKE construct at
+all. Its residual is `loop.c`'s strength reduction, which the do-while(0) wrap does NOT
+trigger: with a real back edge loop.c biases the biv to `base + 0x134` and emits
+`move $7,$19` + `sh $8,-50($19)` where target has `addiu $a3,$s3,0x38` +
+`sh $v0,0x6($s3)`. Also note `stptr`'s live length is 40 there (not 41) — the other atom
+s15 asked for. So the note-weighting regime is byte-usable ONLY through wraps.
+The Z0 variant of the same real-loop form (V6) is NOT all-target: the loop weighting
+lifts `pa4` to 9 refs / 94 = 2872 above `out2` 5/41 = 2439 and the two swap seats.
+
+### s18 artifacts
+
+`tmp/grind/func_80041188/s18/` — `run.sh`, `sweep.ps1`, `apply.py`, `xdiff.py`,
+`ledger.py`, and the variant bodies (`V1a/V2a/V3a/V5/V6/V7/T1..T4/U1/U4/U5/U6/U7/U8.c`);
+ALLOCDBG dumps and cc1 asm under `tmp/grind/func_80041188/s17/<TAG>/` (the reused s17
+dump script writes there).
+
+- [s18] Chassis re-measured at session start AND end with candidate.c applied: sandbox func_80041188 --disable all = score 1, 132 target / 132 build insns, rules_dropped 16, cheat_asm_stripped 2. src/text1a_pre.c was restored to HEAD at the end; no build-pipeline file was touched.
+
+- [s18] Memory-layout rederivation: 0x94 + 0x68 = 0xFC, 0x750 = 18*0x68, 0x94 + 0x750 = 0x7E4 = 0xFC + 17*0x68. One 0x68-stride array based at base+0x94; loop1 walks entries 1..17, loop2 entries 18..19, and loop1's exit pointer equals loop2's entry pointer. `saved` is the array base; `i` is the entry index.
+
+- [s18] V3a (`stptr = base + 0xFC; saved = stptr - 0x68;`) measured stptr 5 refs / live 42: cse1 reassociates a plus-derivation inside the definition's EBB even when the derived value is real and consumed in a later block. This extends E-s16-4 from artificial fold-backs to real values.
+
+- [s18] V1a/V2a measured stptr 5 refs / 41 = 2439 (identical to the un-split baseline): a copy-chain sourced from `saved` folds, because `saved` outlives `stptr` — s17's make_regs_eqv law validated for a third time, and the block-0 donor enumeration is now complete with `base` as the only donor.
+
+- [s18] flow.c:2081 is `reg_n_refs[regno] += loop_depth;` and loop_depth is the loop-NOTE nesting depth (flow.c:440-471, 1385-1449, abort at 0 => baseline 1). Therefore any do-while(0) wrap is a +1 reference dial over exactly the references it encloses, and it is the only construct in this compiler that produces an ODD reference delta.
+
+- [s18] V7 (3 wraps, honest un-split stptr, Z0 block 2) measured ALL-TARGET callee-saved seats — stptr 6/41=2926 $s3, stptr2 6/48=2500 $s0, i 8/97=2474 $s4, tbl 5/47=2127 $s5, out2 4/42=1904 $s6, pa4 7/95=1473 $s7, a3 4/99=808 $fp, out3 3/47 $s3, saved spilled — while emitting target's block-2 addiu $s3,$s7,0x20. Sandbox 8 at 133 build insns.
+
+- [s18] Wrap placement is also a scheduling constraint: tbl-load wrap alone = 132 insns (sandbox 33), stptr-store wrap alone = 132 (15), out2-call wrap alone = 134 (30), V7 = 133 (8), U4 = 133 (6), U6 (out2 wrap widened over `offset += a2`) = 132 (24, a2 17 refs breaks the a1/a2 tie), U8 (symmetric a1 wrap) = 135 (11).
+
+- [s18] Objdump of U4 names the extra insn: with the out2 wrap present the scheduler hoists `offset = offset + (s32) a2;` above the first jal (target keeps it after), so `i++` no longer fills the `lhu $v0,0($s0)` load-delay slot and a nop appears.
+
+- [s18] V5 (real do-while loop1, no FAKE construct anywhere) = ALL-TARGET seats, 132 insns, sandbox 5; its residual is loop.c's giv rewrite (biv biased to base+0x134, `sh $8,-50($19)`), which the note-only do-while(0) wrap does not trigger. stptr's live length there is 40, the other atom s15's replay asked for.

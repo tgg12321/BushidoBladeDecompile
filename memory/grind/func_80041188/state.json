@@ -1,8 +1,8 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 17,
- "current_modality": "forensics",
+ "session_count": 18,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -111,23 +111,29 @@
    "floor": 1,
    "modality": "forensics",
    "headline": "Forensics named the exact cse.c decision that governs F1 chain-extender survival (make_regs_eqv cse.c:844-857 + canon_reg cse.c:2569) and turned it into a predictive live-range law, validated in both "
+  },
+  {
+   "session": 18,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "The floor-1 lock is broken: do-while(0) loop-note ref weighting (flow.c:2081) is a per-reference +1 dial, and form V7 reaches ALL-TARGET seats together with target's block-2 addiu $s3,$s7,0x20 for the"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "With out2's lift dead by derivation and stptr's live length invariant, the ENTIRE floor-1 residual is now confined to one atom \u2014 stptr refs 5 -> 6 on the P1 chassis \u2014 and the s17 law says the only construct that can produce it is a chain-extender whose SOURCE pseudo dies before stptr does. `base` is the obvious such source (that is the current FAKE construct); the open question is whether any OTHER block-0 pseudo holding a value one add away from base+0xFC also dies before loop1 ends, which would give a second, differently-shaped spelling to weigh against the F1 annotation.",
-   "mechanism": "make_regs_eqv (cse.c:844-857) only lets the defined register stay canonical when its last use is later than the source's; every block-0 pseudo whose last use is inside block 0 therefore qualifies as a donor, and combine folds the pair back for zero bytes (combine.c:55-56 never re-adjusts reg_n_refs).",
-   "next_probe": "Enumerate every pseudo live only inside block 0 in tmp/grind/func_80041188/s17/CAND/f.flow (candidates seen so far: reg 80 `base`, reg 83/84 the D_800A9A10 address arithmetic, reg 85 `saved` before its between-block use is moved) and, for each, measure the ALLOCDBG table for a stptr chain sourced from it via tmp/grind/func_80041188/s17/dump17.sh. Seconds per variant; the law predicts each outcome in advance, so any disagreement is itself a finding."
+   "hypothesis": "V7's single extra insn is closable: some wrap boundary gives out2 its +1 without freeing `offset = offset + (s32) a2;` to hoist above the first jal and without adding a reference to a1/a2.",
+   "mechanism": "The wrap's LOOP_BEG/END notes constrain sched1's motion across the boundary, so the boundary chooses BOTH which references get +1 (flow.c:2081) and which insns may move (sched.c); U6 shows the insn count is recoverable, and V7 shows the seat table is, but not yet in the same form.",
+   "next_probe": "Measure, in this order with s17/dump17.sh then the sandbox: (a) wrap `func_800523E0(pa4, out2, a3, stptr + 0x38);` instead of the out2 call, pairing it with a wrap that lifts `i` so pa4's 7->8 (2526) stays below i; (b) introduce a second walking pointer local for the a2 row so the widened wrap contains that pointer's reference instead of a2's, keeping the a1/a2 16/16 tie; (c) reorder the a2-half statements so the pre-jal slot the scheduler wants is already occupied."
   },
   {
-   "hypothesis": "The honest (FAKE-free) route to distance 0 is now the better-conditioned one: s14's alt_fakefree_floor3_s14.c already satisfies requirement (A) with ordinary C (i live 99 via `i = 0x12;` first) and scores 3 at 132/132, its entire residual being a sched1 INSN_LUID emission-order cost (`li $s4,18` at slot 67 instead of 69). Both live-length sides of the residual are now closed by s16+s17, so that +2 emission-order cost is the last open quantity on the honest chassis.",
-   "mechanism": "sched.c rank_for_schedule falls back to INSN_LUID on equal priority, so the slot of `li $s4,18` is decided by RTL emission order, which is decided by statement order \u2014 and s15 measured that the ONE scheduler vector that fixes it also sets reg_live_length(i) = 97 and breaks (A). Emission order and i's live length were the same variable ONLY under the statement orders tried so far.",
-   "next_probe": "Re-run tools/sched_solver on alt_fakefree_floor3_s14.c asking specifically for vectors that move `li $s4,18` from slot 67 to 69 WITHOUT shortening i's live range below 99 (i.e. constrain the solver on both quantities at once rather than solving the order alone, as s15 did), then spell and measure the top vectors with s17/dump17.sh before any sandbox run."
+   "hypothesis": "s15's Z0 inverse-solver vectors #1/#2/#3 are all live again, and one of them needs fewer weighted references than V7's three (each wrap is a scheduling risk).",
+   "mechanism": "The solver enumerated +/-1..2 reference and +/-1..4 live-length perturbations and reported four minimal size-2 vectors; they were then dismissed because +1 lifts were believed unspellable (E-s18-3). Wrap weighting supplies exactly +1 per enclosed reference, so the arithmetic stands and the verdicts do not.",
+   "next_probe": "Re-run tools/ra_solver/inverse.py on the Z0 allocno table asking for the solution that minimises the NUMBER of distinct references that must be weighted (not the number of atoms), then spell the winner with the smallest possible wrap and check the insn count before the sandbox. Vector #2 (tbl live 47->39 + out2 3->4) has never been spelled."
   },
   {
-   "hypothesis": "Reference-count deltas on this function are QUANTIZED to +2 (the chain step is the only surviving lift; s16 killed every use-only +1 spelling), so any of s15's four two-atom inverse vectors that requires an ODD reference delta (tbl 4 -> 5, out2 3 -> 4) is unreachable in principle, not merely unspelled.",
-   "mechanism": "flow.c:2081 counts a set+use chain step as +2 references; a use-only fold-back adds an insn that cse2 folds before flow ever sees it (s16 E-s16-4), so no +1 lift exists in this compiler configuration.",
-   "next_probe": "Re-read s15's four inverse-solver vectors in evidence.md (E-s15-4 and the s15 vector table), classify each by the parity of every reference delta it demands, and record which survive the quantization. Any vector needing only even deltas becomes the next spelling target; the odd ones can be banked as derived kills without further measurement."
+   "hypothesis": "The remaining seat requirement can be met with FEWER wraps by combining one wrap with the already-sanctioned F1 chain-extender, which is what makes U4 (score 6, two wraps) beat V7 (score 8, three wraps).",
+   "mechanism": "A wrap and the chain-extender lift the same quantity (reg_n_refs) through different passes \u2014 flow.c:2081 vs a combine-deleted set+use \u2014 so they compose; fewer wraps means fewer scheduling boundaries inside loop1.",
+   "next_probe": "Starting from U4, drop the tbl wrap and re-derive whether tbl's 4->5 can instead come from a chain-extender on tbl (E-s16-6 measured the sym-K chain at 6 refs / 2553, which steals $s3 \u2014 so check whether the wrap-lifted stptr at 6 refs / 2926 now dominates it, which would make the previously-fatal tbl chain usable)."
   }
  ],
  "judge_constraints": [

@@ -1459,3 +1459,94 @@ statement, which has never been tried in block 0.
 - probe: Count RTL insns between `code_label loop1` and `code_label loop2` in candidate.c's -da dumps at .combine, .lreg (post-sched1) and .greg (post-reload), diff the insn uids to identify what reload adds, and compare against the emitted asm.
 - result: 45 / 45 / 46, emitted 46. Reload creates exactly ONE insn in the whole region: uid 300, `(set (reg t0) (mem (plus (reg sp) 24)))`, the reload of the SPILLED pseudo 85 (`saved`, ALLOCDBG hardreg=-1) feeding `stptr2 = saved + 0x750` — and it lands in the between-loops block, not in loop1. loop1 proper gains zero insns at reload; its emitted count equals its post-sched1 count. The 'three insns' premise was a mismatch between BB2_SLL_DEBUG's per-block accounting (40) and the RTL insn count (45), not a real gap.
 - verdict: KILLED
+
+## s18 (rederive, 2026-08-24)
+
+### Killed this session
+
+- **H-s18-a — "the array-base reading gives an honest `stptr` reference lift."** The
+  layout rederivation (E-s18-1) says loop1's pointer is `&arr[1]` with `arr = base +
+  0x94`, so the natural spellings are `stptr = saved + 0x68;` or `saved = stptr - 0x68;`.
+  BOTH are inert: cse1 reassociates any plus-derivation inside the definition's EBB, even
+  when the derived value is real and consumed in a later block (E-s18-2). KILLED.
+- **H-s18-b — carried frontier item 1: "another block-0 pseudo may be a chain donor for
+  `stptr`."** Enumerated and closed: `saved` is measured dead (it outlives `stptr`, so
+  s17's make_regs_eqv law folds the copy), and the `D_800A9A10 + a0*4` / `a0` pseudos hold
+  values a LOAD away from `base`, so no constant-add chain exists. `base` is the only
+  donor. KILLED (E-s18-2).
+- **H-s18-c — carried frontier item 3, upgraded from sampling to derivation.** Reference
+  deltas ARE quantised to +2 in the no-note regime, and the reason is that `combine` can
+  only delete an insn by merging it into a same-block consumer, which never increases the
+  merged pseudo's pre-combine count unless the insn both sets and uses it (E-s18-3).
+  CONFIRMED — and with it, all four of s15's minimal Z0 vectors are unreachable in the
+  no-note regime.
+- **H-s18-d — "a genuine `do { } while (i < 0x12)` loop1 buys the weighting honestly."**
+  It does buy ALL-TARGET seats at 132 insns (sandbox 5, the best FAKE-free score on
+  record), but `loop.c`'s strength reduction rewrites the biv (`base + 0x134`,
+  `sh -50($19)`), a 5-insn residual that no seat change can remove. KILLED as a route to
+  zero; kept as the proof that the weighting regime is real (E-s18-6).
+
+### CONFIRMED this session — the new lever
+
+- **H-s18-e — `do { } while (0);` weights every reference inside it by +1
+  (flow.c:2081 `reg_n_refs += loop_depth`).** This is the only construct that produces an
+  odd reference delta, and it makes s15's Z0 inverse vector #1 (`tbl 4->5` AND
+  `out2 3->4`) spellable. Measured on form V7: the predicted ALLOCDBG table exactly, and
+  **ALL-TARGET seats together with target's block-2 `addiu $s3,$s7,0x20`** — the first
+  form in 18 sessions with both (E-s18-4). Sandbox 8 at 133 insns; the U4 variant is 6.
+
+### Live frontier for s19
+
+1. **Close V7's single extra insn.** The residual is one load-delay `nop`: with the out2
+   wrap present the scheduler hoists `offset = offset + (s32) a2;` above the first `jal`
+   (target keeps it after), so `i++` no longer fills the `lhu $v0,0($s0)` delay slot.
+   Pulling `offset += a2` inside the wrap fixes the count (U6, 132 insns) but adds an `a2`
+   reference and breaks the `a1`/`a2` tie. Probes, in order of cheapness: (a) keep the
+   wrap boundary but change WHICH out2 reference is weighted — wrap
+   `func_800523E0(pa4, out2, a3, stptr + 0x38);` instead and compensate the `pa4` +1
+   (7 -> 8 = 2526, which must stay below `i`, so pair it with a wrap that lifts `i`);
+   (b) spell the a2 half so the add is not an `a2` reference (e.g. a second walking
+   pointer local for the a2 row, so the wrap contains the pointer's own reference instead
+   of `a2`'s); (c) re-order the a2-half statements so the hoist target is occupied.
+2. **Re-run `tools/ra_solver/inverse.py` on the Z0 table with ODD deltas re-enabled.**
+   s15's vector enumeration is still valid arithmetic, but its verdicts were filtered by
+   the (now-superseded) belief that +1 lifts are unspellable. Vectors #1/#2/#3 are all
+   live again under wrap weighting, and #2 (`tbl live 47->39` + `out2 3->4`) has never
+   been spelled. Ask the solver for the vector with the SMALLEST number of weighted
+   references, since each wrap is a scheduling risk (E-s18-5).
+3. **Use the layout reading (E-s18-1) for statement geometry, not for reference lifts.**
+   `i` is the entry index and `stptr`'s exit value equals `stptr2`'s entry value, so
+   spellings like `stptr2 = stptr;` are semantically exact (they cost `saved` entirely and
+   change the insn count, so they are not byte-candidates) — but the reading is what
+   justifies which statement orders are natural when choosing among equal-scoring forms,
+   and it should be quoted in any future ruling-request about `saved`.
+
+## [s18] The three block-0/block-2 constants are one 0x68-stride array based at base+0x94 (saved = &entries[0], stptr = &entries[1], stptr2 = &entries[18], i is the index, and loop1's exit pointer 0x7E4 equals stptr2's entry value), so the natural array-relative spellings of stptr should be the original's shape.
+- mechanism: 0x94+0x68 == 0xFC, 0x94+0x750 == 0x7E4 == 0xFC + 17*0x68, and 0x750 == 18*0x68; combine cannot fold saved's def into base+0x7E4 because the two insns are in different basic blocks, which is why target computes base+0x94 in block 0 and spills it.
+- probe: Spelled three array-relative forms on the candidate chassis and read the instrumented-cc1 ALLOCDBG table for each (s17/dump17.sh V1a/V2a/V3a): stptr = saved + 0x68; stptr = saved, stptr += 0x68; and stptr = base + 0xFC with saved = stptr - 0x68.
+- result: All three leave stptr at 5 references (2439 / 2380): cse1 reassociates (plus (plus base 252) -104) into base+148 and the reference vanishes before flow. The layout reading is correct arithmetic but yields no reference lift.
+- verdict: KILLED
+
+## [s18] Carried frontier item 1: some OTHER block-0 pseudo dying before loop1 ends can donate an s17-law copy-chain to stptr, giving a differently-shaped alternative to the FAKE F1 construct.
+- mechanism: make_regs_eqv (cse.c:844-857) keeps the defined register canonical only when its last use is later than the source's, so any block-0 pseudo dying inside block 0 qualifies as a donor and combine folds the pair back for zero bytes.
+- probe: Enumerated the block-0 pseudos and measured the only non-trivial candidate: chain sourced from `saved` (V2a). The D_800A9A10+a0*4 address regs and a0 were closed by derivation (their values are a LOAD, not a constant add, away from base).
+- result: The `saved` chain folds (saved outlives stptr — the law's own prediction, now validated a third time); no other donor exists. `base` is the unique donor, i.e. the current F1 chain-extender has no alternative spelling on this chassis.
+- verdict: KILLED
+
+## [s18] Carried frontier item 3: byte-free reference deltas are quantised to +2, so every s15 Z0 inverse vector that needs an odd delta (tbl 4->5, out2 3->4) is unreachable in principle.
+- mechanism: flow counts references before combine; combine deletes an insn only by merging it into a same-basic-block consumer, and merging A (`q = R + k`) into B (`... q ...`) leaves the pair mentioning R exactly as often as B alone would. Only an insn that both SETS and USES the pseudo (a copy-chain) is counted twice by flow and then folded away.
+- probe: Derived the rule from combine's merge algebra and cross-checked it against every measured spelling in the ledger (s16 E-s16-4's four, plus this session's V1a/V2a/V3a).
+- result: CONFIRMED for the no-loop-note regime — which closes the Z0 chassis under that regime — but the derivation is a statement about combine, NOT about flow's counting rule, and that gap is what hypothesis 4 exploits.
+- verdict: CONFIRMED
+
+## [s18] A `do { ... } while (0);` wrap gives every reference inside it +1, which is the missing odd-delta dial and makes s15's Z0 vector #1 (tbl 4->5 AND out2 3->4) spellable.
+- mechanism: flow.c:2081 is `reg_n_refs[regno] += loop_depth;` and loop_depth is the NOTE nesting depth (flow.c:440-471 / 1385-1449; flow.c:1453 aborts at 0, so the no-note baseline is 1). A do-while(0) emits LOOP_BEG/END notes with no back edge, so flow double-counts the enclosed references while loop.c performs no giv rewrite.
+- probe: Form V7 (three wraps: the tbl load, func_8004A348(buf,out2), and *(s16*)(stptr+6) = 2), honest un-split stptr = base + 0xFC, Z0 block 2 (out3 = pa4 + 0x20): read the ALLOCDBG table, then sandboxed it and six placement variants (T1..T4, U1, U4..U8).
+- result: The table matched the prediction exactly and every callee-saved seat is target's (stptr 6/41=2926 $s3, stptr2 6/48=2500 $s0, i 8/97=2474 $s4, tbl 5/47=2127 $s5, out2 4/42=1904 $s6, pa4 7/95=1473 $s7, a3 4/99=808 $fp, out3 $s3, saved spilled) WHILE block 2 emits target's addiu $s3,$s7,0x20 — the E-s16-5 lock is broken. Sandbox 8 at 132 target / 133 build insns; the U4 variant scores 6. The single extra insn is a load-delay nop.
+- verdict: CONFIRMED
+
+## [s18] A genuine `do { } while (i < 0x12)` loop1 buys the same weighting honestly (no wrap, no FAKE construct at all).
+- mechanism: A real loop note raises loop_depth to 2 inside loop1, so every in-loop reference counts twice — stptr 9 refs, i 11, tbl 7, out2 6, pa4 8.
+- probe: Form V5 (real do-while loop1, honest un-split stptr, out3 = out2): ALLOCDBG table + sandbox; and V6, its Z0 variant.
+- result: V5 reaches ALL-TARGET seats at 132 insns and sandbox 5 — the best score ever recorded on a wholly FAKE-free form — but loop.c's strength reduction rewrites the biv (base+0x134, `move $7,$19`, `sh $8,-50($19)` vs target's addiu $a3,$s3,0x38 / sh $v0,0x6($s3)); that 5-insn residual is not a seat question. V6 (Z0 block 2) is not all-target: weighting lifts pa4 to 9/94=2872 above out2 5/41=2439 and the two swap.
+- verdict: KILLED
