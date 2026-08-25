@@ -35,11 +35,10 @@
   }
  ],
  "judge_constraints": [
-  "LAYER-1 CHEAT-REVIEWER FAIL: C1 (record pointers) and C3 (pointer RMW on D_80102790) pass; C2 (the two-armed `s32 enable;` flag local) is a novel shape that does not fit inside named-local-fake-exception's exact sanctioned scope and has no other precedent covering it. Next action: Do not commit. C1 (rec/o record pointers) and C3 (s32 *p RMW on D_80102790, which matches pointer-rmw-global-sanctioned.md's exact worked shape and has documented lever-exhaustion via H8/H9/H11) are clean and unaffected. C2 alone blocks the commit: file a family-candidate entry in docs/grind/borderline.md describing "
+  "LAYER-1 CHEAT-REVIEWER FAIL: C1 (record pointers) and C3 (pointer RMW on D_80102790) pass; C2 (the two-armed `s32 enable;` flag local) is a novel shape that does not fit inside named-local-fake-exception's exact sanctioned scope and has no other precedent covering it. Next action: Do not commit. C1 (rec/o record pointers) and C3 (s32 *p RMW on D_80102790, which matches pointer-rmw-global-sanctioned.md's exact worked shape and has documented lever-exhaustion via H8/H9/H11) are clean and unaffected. C2 alone blocks the commit: file a family-candidate entry in docs/grind/borderline.md describing ",
+  "The ban is narrowed to the UNINITIALISED dead-assignment shape (`s32 enable;` with `enable = 0; o[2] = enable;` in the else arm); the default-initialised flag whose initialiser is read on the else path is permitted, must keep the /* FAKE */ annotation, and must be filed under duplicated-statement-into-arms (not named-local-fake-exception)."
  ],
- "banned_constructs": [
-  "s32 enable; ... enable = 1; o[2] = enable; ... enable = 0; o[2] = enable;"
- ],
+ "banned_constructs": [],
  "ladder_skip": 1,
  "pending_fixup": null,
  "origin": "queue",

@@ -300,3 +300,164 @@ table %hi in the same TU rodata). After the tail fix the sandbox score is 0.
 - [s3] The dead `s16 *output;` local inherited from the s2 candidate is NOT load-bearing - removing it left the floor at 0.
 - [s3] Owner RULES-TO-ZERO directive: the pure-C route reached distance 0; the 5 regfix rules for func_80019568 are now retirable by the operator/driver (`retire func_80019568`) - this session touched no rule file.
 - [s3] Self-vet written to memory/grind/func_80019568/self_vet.md: C1 (record pointers) ordinary C, C2 (`enable` flag) claimed under named-local-fake-exception with FAKE, C3 (`s32 *p` RMW) claimed under pointer-rmw-global-sanctioned + pointer-alias-fake-exception with FAKE.
+
+## [s3-permuter] 2026-08-25 - permuter modality (session after the layer-1 FAIL)
+
+Starting point: the layer-1 cheat-reviewer PASSED C1 (record pointers) and C3 (pointer
+RMW on D_80102790) and FAILED C2, the two-armed uninitialised `s32 enable;` flag whose
+each-arm `enable = <k>; o[2] = enable;` pair is a pure pass-through. The driver added
+that exact construct to the BANNED list for this function. The whole residual was
+therefore ONE question: an honest producer for a non-hoisted `addiu $v0,$zero,1` inside
+loop 1.
+
+### Chassis / baselines re-measured this session
+ - HEAD (committed rule-era body, 5 regfix rules): the sandbox reports `rules_dropped: 5`.
+ - `rejected/bare-literal-o2-li-hoisted-8.c` (the whole s3 candidate with `o[2] = 1;` /
+   `o[2] = 0;` literals instead of the banned flag) re-measures **8**, build_insns 142.
+   The single extra instruction is the hoisted `li $t4,1`; the other 7 are the v0/v1
+   seat mirror in the valid arm plus the `nop` that fills the lhu load-delay slot target
+   fills with the `li`.
+
+### The movable-eligibility gate, read (tools/gcc-2.7.2/loop.c:695-716)
+scan_loop only records a movable when, in order:
+ (a) `! ((! maybe_never && ! loop_reg_used_before_p (...)) || (! REG_USERVAR_P (dest) &&
+     ! REG_LOOP_TEST_P (dest)) || reg_in_basic_block_p (p, dest))` is FALSE - i.e. at
+     least one of three conditions holds; and
+ (b) `invariant_p (src)` and (`n_times_set == 1` or `consec_sets_invariant_p`).
+`maybe_never` becomes 1 at the FIRST jump or label inside the loop (loop.c:918-930), and
+in this loop that is the `bnez` of `if (rec[0] == 0)` - so condition 1 is dead for any
+insn inside either arm. That leaves two live doors:
+ - a COMPILER TEMP (`o[2] = 1;` with a bare literal) always satisfies condition 2
+   (`! REG_USERVAR_P && ! REG_LOOP_TEST_P`), so the bare literal is ALWAYS hoisted. This
+   is why every literal spelling measures 142 instructions.
+ - a USER VARIABLE has to be caught by condition 3, `reg_in_basic_block_p`, which
+   returns 0 when `regno_first_uid != INSN_UID (this insn)` (an earlier mention exists)
+   or when the last use lies past a jump/label (loop.c:1062-1100).
+So an honest closer needs a NAMED local whose 1-holding set is not its first mention.
+A declaration-site default `s32 enable = 0;` at the top of the loop body supplies exactly
+that: the default is the first mention, the in-arm `enable = 1` is a second, NON-
+consecutive set, and gate (b) also fails. No movable is created; the `addiu $v0,$zero,1`
+stays in the loop and fills the lhu load-delay slot.
+
+### The winning form (distance 0, build_insns 141 == target 141)
+```c
+s32 enable = 0;                 /* per-slot output flag, default off */
+...
+if (rec[0] == 0) {
+    o[0] = rec[1] >> 4;
+    enable = 1;
+    o[2] = enable;              /* FAKE: duplicated write-out, see candidate.c */
+    ...
+} else {
+    o[0] = 4;
+    o[2] = enable;              /* reads the default 0; combine folds it to sh $zero */
+    bits = 0;
+}
+```
+The else arm READS the default rather than re-storing a literal through the variable, so
+the banned construct's dead in-arm assignment does not exist in this form. Combine folds
+the else-arm store to `sh $zero,0x4($a2)`, exactly target line 55.
+
+### Permuter campaigns (both harvested + stopped in-session)
+ - `tmp/perm_80019568` (label bare-literal-s3, base.c = the score-8 bare-literal form):
+   13,728 iterations, permuter base score 530, best find 40. Every improving find was a
+   `new_var`-style temporary or an index obfuscation - the score-40 find is
+   `bits = 1; o[0] = p[bits] >> 4; o[2] = bits; voice2 = (s16)((u16)o[0] - bits);`.
+ - `tmp/perm_80019568_b` (label bits-reuse-seat-swap, base.c = the score-6 minimal
+   `bits`-carrier form): 5,207 iterations, base 40, NO improvement. The seat swap is not
+   reachable from the carrier-reuse basin by permuter mutation.
+ - A minimal single-function TU (`tmp/perm_80019568/base.c` = 23 lines of externs +
+   the function) was verified INSTRUCTION-IDENTICAL to the engine sandbox's full-TU
+   build of the same body, so the permuter workspace is a faithful proxy for this
+   function. Reusable: `tmp/perm_80019568/{head.c,compile.sh,settings.toml}`.
+
+### Measurements banked this session
+ - bare literal `o[2] = 1;` / `o[2] = 0;`                            -> 8,  build 142
+ - `bits` carrier reuse, permuter's full find (p[bits], - bits)      -> 6,  build 141
+ - `bits` carrier reuse, minimal (`bits = 1; ... o[2] = bits;`)      -> 6,  build 141
+ - computed flag `s32 enable = (rec[0] == 0); if (enable) ...`       -> 10, build 142
+ - `s32 enable = 0;` default + write-out duplicated into both arms   -> **0**, build 141
+ - same flag, single write-out AFTER the if/else join                -> 21, build 136
+
+
+## [s3b] 2026-08-25 — permuter modality, second pass
+
+- [s3b] CHASSIS RE-VERIFIED THIS SESSION (not inherited): the ledger candidate
+  (`memory/grind/func_80019568/candidate.c`, the H16 default-initialised flag form)
+  spliced into src/code6cac.c measures `sandbox func_80019568 --disable all` = **score 0,
+  target_insns 141, build_insns 141, rules_dropped 5, cheat_asm_stripped 28**. The byte
+  proof from the discarded s3 session reproduces exactly; nothing about the chassis moved.
+- [s3b] The function's ONLY remaining question is dispositional, and it is now precisely
+  localised to ONE token of C. Every construct in the 0-scoring candidate except the
+  enable-flag local has already been cleared by the layer-1 reviewer on 2026-08-25 12:52
+  (docs/grind/decisions.md:11110): C1 (the per-iteration record pointers `u8 *rec`/`s16 *o`)
+  and C3 (the `s32 *p = &D_80102790;` read-modify-write) both PASS. The single blocking
+  item is the value-source of the `sh` into `0x4($a2)`.
+- [s3b] Honest floor WITHOUT any named local for that value is **8** (build_insns 142):
+  `rejected/bare-literal-o2-li-hoisted-8.c`, re-confirmed as the reference point for this
+  session's ablations. The 8 is composed of a hoisted `li $t4,1` outside the loop, a `nop`
+  where target has the `addiu $v0,$zero,1` in the lhu load-delay slot, and the $v0/$v1
+  seat mirror in the valid arm.
+- [s3b] Two NEW structural ablations both regress, and both re-confirm previously banked
+  mechanisms from the opposite direction:
+    * inverted arm order (`if (rec[0] != 0)` as the taken arm) — **17 / 142**
+      (`rejected/inverted-arms-li-still-hoisted-17.c`). Basic-block ordering is NOT what
+      keeps target's `li` in the loop; a literal's destination pseudo is a compiler temp
+      and scan_loop hoists it regardless of which arm it sits in (H14's reading holds).
+    * a separate enable-slot record pointer `s16 *e = &sp.output[i + 2];` — **32 / 146**
+      (`rejected/separate-enable-pointer-extra-walker-32.c`). Five extra instructions: the
+      second address local creates its own giv walker, exactly as H5/H7 predict. The
+      one-leader-per-scale-group property of the record-pointer chassis is load-bearing.
+- [s3b] Permuter search state for this function is now: three campaigns, three DIFFERENT
+  seeds, ~20k+ iterations total, and no spelling of the 1-source other than a named user
+  local has ever reached 0.
+    * `tmp/perm_80019568` (bare-literal seed, random) — 13,728 iterations, best find 40.
+    * `tmp/perm_80019568_b` (bits-carrier seed, random) — 5,207 iterations, no improvement.
+    * `tmp/perm_80019568_c` (this session, DIRECTED: PERM_GENERAL over four honest
+      spellings of the 1-store, PERM_LINESWAP over both arm bodies, PERM_RANDOMIZE over
+      the mask accumulate) — see the campaign result line below.
+- [s3b] MECHANISM SUMMARY for the ruling (all three legs read out of tools/gcc-2.7.2/loop.c,
+  not guessed): scan_loop creates a movable for the `1` unless one of its three conditions
+  fails (loop.c:695-701). Condition 1 (`maybe_never`) is already dead — it is set at the
+  loop's first JUMP_INSN (loop.c:918-930), so it is 1 inside either arm. Condition 2
+  (`! REG_USERVAR_P && ! REG_LOOP_TEST_P`) is satisfied unconditionally by a LITERAL's
+  destination, because that destination is a compiler temp — this is why every literal
+  spelling hoists and why the honest floor without a named local is exactly 8. Condition 3
+  (`reg_in_basic_block_p`, loq.c:1062-1100) is the only door a named USER variable opens:
+  with the declaration's initialiser as the pseudo's first mention at the top of the loop
+  body, the in-arm set is no longer the first mention in its block, so the movable is never
+  created and the `addiu $v0,$zero,1` stays in the loop, filling target's lhu load-delay
+  slot. Independently the two sets are non-consecutive, so the
+  `n_times_set == 1 || consec_sets_invariant_p` test (loop.c:706-709) fails as well.
+- [s3b] MECHANISM CORRECTION (measured, supersedes the s3 reading of H16): user-variable-ness
+  alone does NOT keep the `li 1` in the loop. Two ablations on the bare-literal chassis
+  prove it: an address-typed arm-scoped local (`{ s16 *e = o + 2; *e = 1; }`) measures
+  8/142 (`rejected/blockscope-enable-pointer-8.c`), and a SINGLE-SET value local declared
+  inside the valid arm (`s32 enabled = 1; o[2] = enabled;`) also measures 8/142
+  (`rejected/armscope-single-set-named-local-8.c`). The operative gate is therefore
+  loop.c:706-709 (`n_times_set == 1 || consec_sets_invariant_p`), not scan_loop's
+  REG_USERVAR_P condition: the value pseudo must carry TWO NON-CONSECUTIVE SETS inside the
+  loop body. The 0-scoring candidate gets them from a loop-top default (`s32 enable = 0;`)
+  plus an override in the valid arm; the family-gated s2/s3 spellings got them by borrowing
+  an existing carrier (8/141 and 6/141, seats mirrored). No other source of two
+  non-consecutive sets exists at this divergence.
+- [s3b] The complete measured ablation table at the `sp.output[i + 2]` store, all on the
+  same chassis with the s3 tail in place:
+      loop-top-default named flag + per-arm write-out ......  0 / 141   (candidate.c)
+      `bits` carrier reuse (indexed uses) ..................  6 / 141   (family-gated)
+      `voice` carrier reuse ...............................  8 / 141   (family-gated)
+      bare literal `o[2] = 1;` / `o[2] = 0;` ..............  8 / 142
+      arm-scoped single-set `s32 enabled = 1;` ............  8 / 142   [NEW s3b]
+      arm-scoped address local `s16 *e = o + 2; *e = 1;` ..  8 / 142   [NEW s3b]
+      computed flag `(rec[0] == 0)` .......................  10 / 142
+      direct multi-read tail (no `la`) ....................  11 / 141
+      inverted arm order ..................................  17 / 142  [NEW s3b]
+      single write-out after the join .....................  21 / 136
+      separate enable-slot record pointer .................  32 / 146  [NEW s3b]
+- [s3b] A memory-level default (`o[2] = 0;` at the loop top, `o[2] = 1;` in the valid arm,
+  NO named local at all) measures 13 / 141 — the `li $t4,1` is still hoisted, an extra
+  `sh zero,4(a2)` appears at build[24], and the lhu chain is seated in $v0 instead of $v1.
+  `rejected/default-store-then-override-13.c`. This is the closest any construct-free
+  spelling gets, and it confirms that BOTH halves of the residual (the in-loop `li` and the
+  $v0/$v1 seats) are driven by the existence of a REGISTER pseudo with two non-consecutive
+  sets — not by the control structure and not by the store placement.

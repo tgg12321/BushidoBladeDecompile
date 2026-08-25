@@ -192,3 +192,47 @@ disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 �
 category: integration-handoff
 evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-08-25 — SioSyncroRead — JUDGE ESCALATE on final call (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
 disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: SioSyncroRead volatile_extern_allowlist.txt; function stays ACTIVE.
+
+## 2026-08-25 — func_80019568 — family-candidate
+category: family-candidate
+filed by: grind session s3b (permuter modality), at the explicit instruction of the
+2026-08-25 12:52 layer-1 review (docs/grind/decisions.md:11110).
+construct: a per-slot enable flag local inside the loop-1 body —
+`s32 enable = 0;` declared at the top of the loop body, `enable = 1;` in the
+packet-valid arm, and the write-out `sp.output[i + 2] = enable;` (spelled `o[2] = enable;`
+through the per-iteration record pointer) appearing in BOTH arms. The else arm READS the
+declaration's initialiser; there is no in-arm `enable = 0;` assignment, which is what
+distinguishes it from the shape the driver has banned for this function
+(`s32 enable; ... enable = 1; o[2] = enable; ... enable = 0; o[2] = enable;` — the
+12:52 layer-1 FAIL, banked as rejected/layer1-fail-0825-1252.c).
+semantics: `sp.output[i + 2]` is the slot's enable word; target stores 1 in the valid arm
+(`addiu $v0,$zero,1; sh $v0,0x4($a2)`, target line 34) and 0 in the invalid arm
+(`sh $zero,0x4($a2)`, target line 55). Both stores are real program output; neither the
+flag nor either store is dead.
+mechanism (read out of tools/gcc-2.7.2/loop.c, and CORRECTED this session by ablation):
+scan_loop hoists the `1` unless the value pseudo fails
+`n_times_set == 1 || consec_sets_invariant_p` (loop.c:706-709). The loop-top default and
+the in-arm override are two non-consecutive sets, so no movable is created and the
+`addiu $v0,$zero,1` stays in the loop, filling target's lhu load-delay slot. Because the
+flag is a pseudo DISTINCT from the shifted voice id, local-alloc also seats the voice temp
+in $v0 and the lhu reload in $v1 (target's assignment) instead of the mirror that every
+carrier-reuse spelling produces.
+why it is a family candidate rather than an obvious pass: the gate it trips is the SAME
+loop.c gate the FAKE-gated variable-reuse family trips (defeat-licm-hoist-var-reuse.md /
+staged-value-reused-variable.md). The difference is that the two sets belong to a fresh
+variable whose two values are the program's own two values, not to a borrowed carrier.
+It is not named-local-fake-exception (that rule's scope is a constant HOLDER, one value),
+not dead-store-fake-exception (nothing here is dead), and only arguably
+duplicated-statement-into-arms (the two copies are the same statement text but that rule's
+prerequisite 2 demands byte-neutrality vs the shared-label form, and here the joined
+spelling measures 21/136 — four target instructions short — so the duplication is NOT
+byte-neutral; it reproduces a duplication the target itself has).
+measured stakes: with the construct, `sandbox func_80019568 --disable all` = 0,
+build_insns 141 == target_insns 141, re-verified this session. Without any named local at
+this store the honest floor is 8. The full ablation table (11 spellings) is in
+memory/grind/func_80019568/evidence.md [s3b]; three permuter campaigns from three distinct
+seeds (~28k iterations) found no other spelling that reaches 0.
+consequence of a YES: func_80019568 completes as COMPLETED-C and its 5 regfix rules retire
+(owner's rules-to-zero campaign). Consequence of a NO: the function's honest floor is 8 and
+it returns to the ladder with every spelling at this divergence measured and banked.
+disposition taken: session emitted `ruling-request`; no code committed.
