@@ -1,3 +1,10 @@
+/* MIGRATION NOTE (2026-08-25, commit 0bef2aa3): main now carries
+ * INCLUDE_ASM("asm/funcs", func_80060A68) — the rule-era C body and the last
+ * 2 asmfix rules are retired (owner ruling (b), decisions.md 2026-08-25;
+ * chassis banked in retired-chassis-2026-08/). HEAD-state claims below
+ * predate the migration: "HEAD's own committed body measures 39 / 64" refers
+ * to the RETIRED chassis, not current main. This candidate (2 / 66) remains
+ * the working frontier. */
 /* [s10 2026-08-25 - escalation/disposition.  BODY UNCHANGED.  Re-measured 2 / 66 / 66 on today's
  * HEAD (HEAD's own committed body measures 39 / 64).]
  *
