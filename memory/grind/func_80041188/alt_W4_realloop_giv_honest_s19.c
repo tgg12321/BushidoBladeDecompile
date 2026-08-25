@@ -1,3 +1,15 @@
+/* !!! FORECLOSED 2026-08-25 (s22, evidence.md E-s22-1) !!!
+ * This chassis CANNOT reach 0. loop.c's hoist of loop1's invariant `li 2` is
+ * unconditional here by exact arithmetic: threshold * savings * lifetime >=
+ * insn_count reads 61 * 1 * 1 >= 48 (threshold = 1 * (1 + n_non_fixed_regs),
+ * n_non_fixed_regs = 60 from mips.h FIXED_REGISTERS / FIRST_PSEUDO_REGISTER = 68),
+ * and the three scan_loop eligibility tests at loop.c:686-700 are an OR whose
+ * clauses each pass independently (control W4b measures 3, byte-identical). The
+ * hoisted pseudo is live across every call, so it spills and reload rematerialises
+ * `li 2` into $t0 against target's $v0. Every real-loop form of loop1 therefore
+ * starts +2 behind, i.e. this body's 3 = 2 (tax) + 1 (out3 lock). Keep it as the
+ * reference measurement of the loop-note weighting regime; do not grind it.
+ */
 /* func_80041188 -- s19 (rederive) ALTERNATIVE CHASSIS. sandbox --disable all = 3,
  * 132 target / 132 build insns, ALL-TARGET callee-saved seats, and ZERO FAKE
  * constructs (no chain-extender, no wrap, no variable reuse, no dead code).

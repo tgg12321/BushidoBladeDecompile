@@ -2853,3 +2853,183 @@ directories (`N1/`, `N5/`, `P5/`, `S1/`, `CANDF/`) holding `red.i.*` pass dumps 
 - [s21] Eight block-0 statement permutations of Q1 (R1..R8) score 8..14 -- the order saved / out2 / stptr / tbl is already optimal on that chassis.
 
 - [s21] A wrap around `tbl++` instead of the tbl read materialises an insn (133 build insns, sandbox 21); a single wrap enclosing both the tbl and out2 definitions scores 8 (T3) / 12 (T1) / 13 (T4).
+
+## s22 (synthesis, 2026-08-25) — the real-loop chassis is FORECLOSED by exact loop.c arithmetic, and the F1 chain-extender is closed for out2 by a derived law
+
+Chassis re-measured at the START of s22: `memory/grind/func_80041188/candidate.c`
+remains the floor at **sandbox 1**; this session worked the two ALTERNATE chassis
+(s19's real loop, s21's pa4-free goto) and re-measured both controls — `W4` = **3**
+at 132/132 and `Q1`/A0 = **7** at 132/132, both reproducing their banked tables
+insn-for-insn and allocno-for-allocno. `src/text1a_pre.c` was restored to HEAD at the
+end of the session; no build-pipeline file was touched. The floor did not move. What
+moved is the size of the live search space: one whole chassis and one whole construct
+family are now closed with named mechanisms and exact numbers.
+
+### E-s22-1 — the real-loop chassis (s19 W4/W6/W8, s21 frontier item 3) is FORECLOSED: loop.c's hoist of the invariant `li 2` is unconditional here, by arithmetic
+
+s19's E-s19-3 asserted that `move_movables`' profitability test "passes for ANY
+lifetime once the loop has calls". That is imprecise, and the precise form is what
+closes the chassis. The loop dump prints the decision verbatim
+(`tmp/grind/func_80041188/s22/W4/red.i.loop:109-111`):
+
+```
+Loop from 42 to 172: 48 real insns.
+Insn 155: regno 122 (life 1), move-insn savings 1  moved to 315
+```
+
+so `insn_count = 48`, `m->lifetime = 1`, `savings = 1`. The test at loop.c:1631 is
+`threshold * savings * m->lifetime >= insn_count`, with
+`threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (loop.c:532).
+`n_non_fixed_regs` is counted in regclass.c:380-387 over `FIXED_REGISTERS`, which for
+this target (mips.h:1188) holds **8** ones out of `FIRST_PSEUDO_REGISTER = 68`
+(mips.h:1181) — so `n_non_fixed_regs = 60` and **threshold = 61**. 61 * 1 * 1 = 61 >=
+48. The margin is 13 and `insn_count` (the loop's real-insn count) is the ONLY term a
+C spelling can move: blocking the hoist would require thirteen more real instructions
+inside loop1, which is by definition not byte-free.
+
+The three eligibility tests at loop.c:686-700 are an OR, and each passes
+INDEPENDENTLY here, so no single spelling change disqualifies the movable:
+  (1) `! maybe_never && ! loop_reg_used_before_p` — loop1's only jump is its trailing
+      conditional, so `maybe_never` is 0 at the `li`;
+  (2) `! REG_USERVAR_P && ! REG_LOOP_TEST_P` — true for a compiler pseudo;
+  (3) `reg_in_basic_block_p` — loop1's body is a single basic block (calls do not end
+      a basic block in GCC 2.7.2), so the `li`/`sh` pair lives entirely inside it.
+**Measured control W4b** (`{ s16 two = 2; *((s16 *)(ents + i*0x68 + 6)) = two; }`,
+which falsifies test (2) and nothing else) = **sandbox 3 at 132/132, byte-identical to
+W4**. Banked: `rejected/realloop-const-user-variable-still-hoisted-threshold-61.c`.
+
+The hoisted pseudo (122) is then live across every call in the loop, so it cannot take
+a call-clobbered hard register and taking a callee-saved one would cost a save/restore
+pair; global.c spills it (3 refs / live 92, hardreg -1) and reload rematerialises the
+constant into `$t0` where target's in-place, local-alloc-owned `li` gets `$v0`
+(`s22/W4/red.s:258-259` — `li $8,2` / `sh $8,6($19)`). That is W4's +2, in full.
+
+**Consequence.** Any form of this function in which loop1 is a real C loop starts two
+diffs behind, permanently. s19's W4 = 3 decomposes as 2 (this tax) + 1 (the out3 lock),
+so even a perfect solution of the out3 lock leaves the real-loop chassis at 2, against
+candidate.c's 1. s21's frontier item 3 ("rebuild W4 with the pa4 local deleted") cannot
+reach 0 and is withdrawn. The loop-note reference dial (E-s18-3) is therefore only ever
+available at a cost of 2 on loop1, or as an isolated `do { } while (0)` wrap.
+
+### E-s22-2 — the F1 split-init chain-extender is closed for `out2` on EVERY chassis, by a derived iff-law
+
+Form A1 = s21's Q1 (pa4-free goto chassis) with the block-0 `do { out2 = ...; } while (0)`
+FAKE wrap replaced by an honest-looking split-init chain sourced from the parameter:
+`out2 = (s32 *) a4; out2 = (s32 *)(((u8 *) out2) + 0x20);`. **Measured: sandbox 10 at
+132 of 132 build insns** — the chain is genuinely byte-free on this chassis (unlike the
+pa4-chassis attempt banked as `rejected/out2-chain-from-a4-survives-cse-but-materializes-pa4-move.c`,
+which materialised a copy) — **but out2 stays at 3 refs / live 42 = 714** and is seated
+`$fp`, with a3 4/99 = 808 in `$s6` and a4 7/190 = 736 in `$s7`.
+
+The dumps name the mechanism exactly. In `s22/A1/red.i.cse` insns 34 and 37 are still
+present but insn 37's source has been rewritten from `(plus (reg 85) 32)` to
+`(plus (reg 76) 32)`: reg 76 is the parameter a4, which OUTLIVES out2, so by the s17
+make_regs_eqv law (cse.c:844-857) a4 — not out2 — is the canonical register of the
+equivalence class. That leaves insn 34 (`out2 = a4`) dead, and it is **absent from
+`s22/A1/red.i.flow`**: per E-s21-5, flow.c deletes dead insns inside life analysis, so
+its registers are never counted.
+
+Stating it as a law, which is what makes this a closure rather than one more measured
+case: **an F1 split-init chain-extender delivers its +1 flow-counted reference if and
+only if the RECIPIENT outlives the DONOR.** `stptr = base; stptr += 0xFC;` works
+because `base` dies at that point, so stptr is canonical, the chain survives cse1, and
+combine (which runs after flow's counting) merges it. Nothing sourced from the matrix
+pointer can ever work for out2, on any chassis, because the matrix pointer outlives
+out2 by construction — and it is the only block-0 quantity out2 can honestly be derived
+from (E-s20-3 already closed the reverse direction). No further spelling of this idea
+should be measured. Banked:
+`rejected/out2-chain-from-param-cse-canonicalises-flow-deletes.c`.
+
+### E-s22-3 — s21's frontier item 2 (give tbl's definition an in-block consumer) is closed by enumeration of target's own block 0
+
+s21 proposed rescuing the late-tbl horn by giving tbl's `lui`/`addiu` pair an in-block
+successor, so sched.c's `rank_for_schedule` would lift it on INSN_PRIORITY instead of
+sinking it on INSN_LUID. That requires a block-0 insn target ALREADY emits to be
+legitimately sourced from tbl. Target's block 0 (asm/funcs/func_80041188.s:2-28) is
+exhaustively: the frame `addiu $sp`; nine callee-saved `sw`s plus `sw $ra`; the
+parameter homing copies `addu $s1,$a1` / `addu $s2,$a2` / `addu $fp,$a3`;
+`addiu $s4,zero,1` (i); the tbl `lui`/`addiu` pair itself; `sll $a0,$a0,2` plus
+`lui $at` / `addu $at,$a0` / `lw $v0,%lo(D_800A9A10)($at)` (base);
+`lw $s7,0x58($sp)` (a4); `addiu $t0,$v0,0x94` (ents); `addiu $s6,$s7,0x20` (out2);
+`addiu $s3,$v0,0xFC` (stptr); `sw $t0,0x18($sp)` (the ents spill). **Not one of these
+values is a function of `D_80094CFC`** — every one derives from a parameter, from the
+`D_800A9A10[a0]` load, or from a literal. There is therefore no zero-insn in-block
+consumer for tbl, and the late-tbl horn's 4-position emission-order cost is structural.
+Closed by derivation; do not spend a measurement on it.
+
+### E-s22-4 — the A1 table is the first measurement of the "everything natural" allocno vector, and it localises the whole problem to two adjacent priorities
+
+A1 (no wrap, no tbl trick, out2 at its natural 3 references) measures
+stptr 7/41 = 3414 `$s3`, stptr2 6/48 = 2500 `$s0`, i 8/97 = 2474 `$s4`,
+tbl 4/47 = 1702 `$s5`, a3 4/99 = 808 `$s6`, a4 7/190 = 736 `$s7`,
+out2 3/42 = 714 `$fp`, out3 3/47 `$s3`. **Four of the seven contested callee-saved
+seats are already target's with zero constructs**, tbl sits at its EARLY-definition
+priority (1702, the value s21's dilemma wants), and the only defect is that out2 (714)
+sits below a3 (808) instead of above it. Every quantised repair of that one gap needs
+out2 at 4 references — 4 refs at live 42..47 gives 1904..1702, which then also demands
+that tbl be lifted above it (the s21 dilemma) — or a3 pushed below 714, which needs a3's
+live length above 113 against a measured 99. The function's entire remaining residual,
+on every chassis that is still alive, is **one flow-counted, byte-free reference on
+out2**, and s22 has now removed the last untried honest delivery mechanism for it.
+
+### E-s22-5 — the merged map of the whole function after 22 sessions
+
+Three chassis have been carried in parallel; s22 reduces them to one.
+  * **goto chassis with `out3 = out2` (candidate.c)** — sandbox **1**. Its 4th out2
+    reference IS an emitted `move $s3,$s6`, and that emitted move IS the single residual
+    diff against target's `addiu $s3,$s7,0x20`. Needs the `stptr = base; stptr += 0xFC;`
+    F1 chain-extender (which E-s22-2 now explains as legitimate-by-mechanism: `base`
+    dies, so the chain survives cse1 and is merged by combine).
+  * **goto chassis with target's block-2 spelling** — needs out2's 4th reference from
+    somewhere else. Enumerated dead on the pa4 chassis (E-s20-5); reachable on the
+    pa4-free chassis only via the block-0 `do { } while (0)` wrap (s21 N1/Q1, sandbox 7),
+    which is a FAKE construct and drags the tbl positional dilemma (E-s21-4) behind it;
+    and the honest chain-extender substitute is now closed (E-s22-2).
+  * **real-loop chassis** — FORECLOSED (E-s22-1).
+So the endgame question is singular and unchanged in shape but much sharper in
+statement: **is there a C construct that puts a fourth flow-counted reference on out2,
+which (a) survives cse1 — i.e. is not a copy whose destination dies before its source —
+and (b) is removed by COMBINE rather than by flow.c or by nothing at all?** Every
+family tried to date fails exactly one of those two clauses: dead stores and copies fail
+(a)/(b) by flow deletion (E-s21-5, E-s22-2); `out3 = out2` satisfies both clauses'
+letter but is never deleted, so it costs the residual insn; the do-while(0) wrap
+sidesteps the clauses entirely by re-weighting rather than re-counting, at the price of
+being a FAKE construct plus emission-order damage.
+
+### s22 artifacts
+
+`tmp/grind/func_80041188/s22/` — `apply.py`, `dump.sh`, `sweep.ps1`, `odiff.py`,
+`text1a_pre.c.orig`, the variant bodies `W4.c` / `W4b.c` / `Q1.c` / `A0.c` / `A1.c` /
+`A2.c`, and the per-tag cc1 dump directories `W4/` and `A1/` holding the full `red.i.*`
+pass dumps (including `red.i.loop` with the movable decision and `red.i.cse` /
+`red.i.flow` with the canonicalisation) plus `cc1.err` with the ALLOCDBG tables.
+
+- [s22] Chassis re-measured at session start: candidate.c is still the floor at sandbox 1; the two alternate chassis reproduce exactly (W4 = 3 at 132/132, Q1/A0 = 7 at 132/132). src/text1a_pre.c restored to HEAD; no build-pipeline file touched.
+- [s22] The real-loop chassis is FORECLOSED. loop.c's hoist of loop1's invariant `li 2` is decided by threshold * savings * lifetime >= insn_count = 61 * 1 * 1 >= 48; threshold = 1 * (1 + n_non_fixed_regs) with n_non_fixed_regs = 60 (mips.h FIXED_REGISTERS has 8 ones, FIRST_PSEUDO_REGISTER = 68). insn_count is the only C-side term and the margin is 13 real insns, so no byte-free spelling blocks the hoist.
+- [s22] The three scan_loop eligibility tests (loop.c:686-700) are an OR and each passes independently here; W4b (the stored value made a user variable inside the loop) measures 3 at 132/132, byte-identical to W4, confirming test (2) is not load-bearing.
+- [s22] Because the hoisted pseudo is live across every call in loop1 it cannot take a call-clobbered hard reg and a callee-saved one would cost a save/restore pair, so global.c spills it and reload rematerialises `li 2` into $t0 where target's local-alloc-owned in-place `li` gets $v0. The real-loop +2 is structural; s19's W4 = 2 (tax) + 1 (out3 lock); s21's frontier item 3 cannot reach 0 and is withdrawn.
+- [s22] Form A1 (pa4-free chassis, block-0 wrap replaced by `out2 = (s32 *) a4; out2 = (s32 *)((u8 *) out2 + 0x20);`) is byte-free at 132/132 but leaves out2 at 3 refs / live 42 = 714 -- sandbox 10. A2 (same plus tbl restored to a declaration initialiser) also 10.
+- [s22] LAW: an F1 split-init chain-extender delivers its +1 flow-counted reference IFF the recipient outlives the donor. cse1 canonicalises the class to the longer-lived register (make_regs_eqv, cse.c:844-857), which for out2 is always the matrix pointer, so the copy dies and flow.c deletes it inside life analysis before counting (E-s21-5). Read directly out of s22/A1/red.i.cse (insn 37 rewritten to `(plus (reg 76) 32)`) and red.i.flow (insn 34 absent). The chain-extender family is closed for out2 on EVERY chassis, by derivation.
+- [s22] s21 frontier item 2 is closed by enumeration: target's block 0 contains no value that is a function of D_80094CFC, so tbl's lui/addiu pair can have no zero-insn in-block consumer and cannot be lifted by sched.c's INSN_PRIORITY ranking; the late-tbl horn's emission-order cost is structural.
+- [s22] A1 is the first "all natural" allocno vector: stptr 7/41=3414 $s3, stptr2 6/48=2500 $s0, i 8/97=2474 $s4, tbl 4/47=1702 $s5, a3 4/99=808 $s6, a4 7/190=736 $s7, out2 3/42=714 $fp. Four contested callee-saved seats are already target's with zero constructs, tbl already sits at its early-definition priority, and the single defect is out2 (714) below a3 (808).
+- [s22] E-s22-2 also supplies the mechanistic defence of candidate.c's `stptr = base; stptr += 0xFC;`: it is not an arbitrary reference pump but the only spelling whose donor (`base`) dies at the split point, which is precisely why it survives cse1 and is merged by combine. That is a testable structural property, not a coincidence of search.
+
+- [s22] Chassis re-measured this session: candidate.c = sandbox 1 (floor unchanged); the two alternate chassis reproduce exactly — W4 (real loop) = 3 at 132/132, Q1/A0 (pa4-free goto) = 7 at 132/132. src/text1a_pre.c restored to HEAD at the end; no build-pipeline file touched.
+
+- [s22] loop.c's hoist of loop1's invariant `li 2` is unconditional here by arithmetic: insn_count = 48, m->lifetime = 1, savings = 1 (printed verbatim in s22/W4/red.i.loop:109-111), against threshold = 1 * (1 + 60) = 61 derived from mips.h:1188 FIXED_REGISTERS (8 ones) and mips.h:1181 FIRST_PSEUDO_REGISTER = 68. insn_count is the only C-side dial and the margin is 13 real insns.
+
+- [s22] The three scan_loop movable-eligibility tests (loop.c:686-700) are an OR and each passes independently on this loop; W4b (the stored constant made a user variable, falsifying test (2) only) measures 3 at 132/132, byte-identical to W4.
+
+- [s22] The hoisted constant pseudo is live across every call in loop1, so it must spill; reload rematerialises `li 2` into $t0 where target's in-place local quantity gets $v0. The real-loop +2 is therefore structural, s19's W4 = 2 (tax) + 1 (out3 lock), and the WHOLE real-loop chassis is foreclosed for a byte-exact match — it cannot beat candidate.c's 1, let alone reach 0.
+
+- [s22] LAW (s22 E-s22-2): an F1 split-init chain-extender delivers its +1 flow-counted reference IF AND ONLY IF the recipient outlives the donor. cse1 canonicalises an equivalence class to the longer-lived register (make_regs_eqv, cse.c:844-857); if the donor wins, the copy goes dead and flow.c deletes it inside life analysis, before counting. Read directly out of s22/A1/red.i.cse (insn 37 rewritten to (plus (reg 76) 32)) and red.i.flow (insn 34 absent).
+
+- [s22] Corollary: nothing sourced from the matrix pointer can ever pay out2 a reference on ANY chassis, because the matrix pointer outlives out2 by construction — and E-s20-3 already closed the reverse derivation direction. The chain-extender family is closed for out2 by derivation, not by cases.
+
+- [s22] Corollary 2 (the defence of candidate.c's construct): `stptr = base; stptr += 0xFC;` pays its reference precisely BECAUSE `base` dies at the split point, which makes stptr the canonical register, the chain survive cse1, and combine merge the pair back into target's single `addiu $s3,$v0,0xFC`. It is a structural property with a named pass at each end, not a coincidence of search.
+
+- [s22] s21 frontier item 2 closed by enumeration: no insn in target's block 0 is a function of D_80094CFC, so tbl's lui/addiu pair can have no zero-insn in-block consumer and sched.c will always sink a late-LUID tbl definition. The late-tbl horn's 4-position emission-order cost is structural.
+
+- [s22] A1's 'everything natural' table (first ever measured): stptr 7/41=3414 $s3, stptr2 6/48=2500 $s0, i 8/97=2474 $s4, tbl 4/47=1702 $s5, a3 4/99=808 $s6, a4 7/190=736 $s7, out2 3/42=714 $fp. Four contested seats already target's, zero constructs, and one adjacent-priority defect.
+
+- [s22] MERGED MAP after 22 sessions — three chassis reduce to one live chassis and one live atom. out2 needs a fourth flow-counted reference that is byte-free; flow.c deletes dead insns inside life analysis, so 'byte-free by being dead' is self-defeating; combine runs after flow's counting, so the ONLY viable shape is an insn that is live and useful through cse1 and flow and that COMBINE then merges into a consumer. `out3 = out2` is live but never merged (it IS the residual insn); dead stores and copy chains are flow-deleted; the do-while(0) wrap does not add a reference at all, it re-weights an existing one, and is FAKE plus emission-order-costly.
