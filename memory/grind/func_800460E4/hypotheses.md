@@ -27,5 +27,28 @@ visible uses, so a split-pseudo original is arithmetically excluded) → merged
 the variable in C; measured.
 Verdict: **CONFIRMED — sandbox 0** (35 → 0 total this session).
 
-Frontier: (empty — function at sandbox 0; remaining work is integration:
-rule retirement via the normal retire path + Judge gates.)
+## [s3] 2026-08-25 (recon, after the layer-1 FAIL banned H3's merge construct)
+
+H4 — "With the banned merge reverted (s1 restored) but the [s1] spelling wins
+kept, the honest floor is the pure 3-seat rotation."
+Probe: reverted src; measured. Verdict: **CONFIRMED — sandbox 32** (248/248).
+
+H5 — "The duplicated-statement-into-arms family can add the +2 byte-dead refs
+on pseudo 73/80."
+Probe: mapped every $s1 ref in target asm against our pseudo refs. All `s1 =
+s2;` stores are arm HEADS; cross-jump merges only TAILS; no mergeable
+real-statement site involving s1/arg1 exists. Verdict: **KILLED (structural —
+no site; see evidence.md [s3])**.
+
+H6 — "A combine-foldable chain-extender (dead-store-fake-exception scope
+extension, rule line 32) on s1's default init adds exactly the +2 reg_n_refs
+the ra_solver inverse demands, folds to zero bytes, and flips the rotation."
+Probe: `s1 = (s32*)((s32)s4 - (s32)s0); s1 = (s32*)((s32)s1 + (s32)s0);`
+measured + dumps (flow: refs 11→13; greg: 73→$17, 78→$18, 79→$19, 80→$17 =
+target seating; insns 248/248, score 0).
+Verdict: **CONFIRMED — sandbox 0, measured twice (with and without the FAKE
+annotation).**
+
+Frontier: (empty — function at sandbox 0 WITHOUT the banned construct;
+remaining work is integration: rule retirement via the normal retire path +
+layer-1/Judge gates on the new, narrower FAKE construct.)

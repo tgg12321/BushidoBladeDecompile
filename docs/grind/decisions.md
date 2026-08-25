@@ -10706,3 +10706,7 @@ Regression-origin item: the layer-1 FAIL diagnosis (judge_constraints) was the b
 ## 2026-08-25 03:37 — func_800460E4 — layer-1 review — **FAIL**
 
 Construct (3) is a whole-function variable merge (delete local s1, repoint ~8 assignment/use sites across the entire switch and the final call onto the dead parameter arg1) justified explicitly by GCC allocno_compare ref-count priority — this is materially larger in scope than what staged-value-reused-variable actually sanctions, and the self-vet's own T3 answer is a textbook GCC-internals-mechanism justification.
+
+## 2026-08-25 03:53 — func_800460E4 — layer-1 review — **FAIL**
+
+This session's own new constructs (scaled-index respelling, dropped param-alias locals, FAKE-annotated combine-foldable chain-extender on s1) are legitimate and correctly cited, but the candidate body still carries an unresolved, unsanctioned volatile-cast coercion in case 3 that the worker's own self-vet flags as load-bearing and unresolved — that construct alone blocks COMPLETED-C.

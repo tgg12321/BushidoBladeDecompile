@@ -1,7 +1,11 @@
-/* candidate for func_800460E4 - session s1 2026-08-25
- * sandbox --disable all == 0 measured this session (248/248 insns, 10 regfix
- * rules dropped in scoring). Exact copy of the src/text1a_c2.c body at
- * measurement time. See evidence.md / self_vet.md.
+/* candidate for func_800460E4 - session s3 2026-08-25
+ * sandbox --disable all == 0 measured twice this session (248/248 insns,
+ * 10 regfix rules dropped in scoring), with the layer-1-BANNED arg1/s1
+ * merge REVERTED (s32 *s1; restored, arg1 untouched past the fp_ptr block).
+ * The rotation is closed instead by a sanctioned combine-foldable
+ * chain-extender (dead-store-fake-exception scope extension, owner ruling
+ * 2026-07-01) on s1's default init. See evidence.md [s3] / self_vet.md.
+ * Exact copy of the src/text1a_c2.c body at measurement time.
  */
 
 void func_800460E4(s32 stage_id, s32 arg1) {
@@ -9,6 +13,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     s32 s7;
     s32 *s6, *s4, *s2;
     s32 s3;
+    s32 *s1;
     s32 *fp_ptr;
     s32 *sp10, *sp18, *sp20;
 
@@ -83,16 +88,16 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     }
 
     D_8009947A = 0;
-    /* FAKE: arg1 (dead past the fp_ptr block) is reused as the carrier for the
-       value passed to func_80045600, mechanism: global.c allocno_compare — the
-       merged pseudo's ref count lifts its priority above the s2/s4 pointers so
-       it takes $s1 first as in target, lever-exhaustion:
-       memory/grind/func_800460E4/evidence.md (ra_solver inverse: honest split
-       ref-counts measured unable to reach target order) */
-    arg1 = (s32)s4;
+    /* FAKE: live default init of s1 routed through a delta-rebase detour that
+       combine folds back to s1 = s4 with zero emitted bytes, mechanism: flow.c
+       reg_n_refs (+2 on s1's pseudo) lifts its global.c allocno_compare
+       priority above the s2 pointer so allocation order matches target,
+       lever-exhaustion: this function's grind ledger evidence.md [s1]+[s3] */
+    s1 = (s32 *)((s32)s4 - (s32)s0);
+    s1 = (s32 *)((s32)s1 + (s32)s0);
     switch (stage_id) {
     case 3:
-        arg1 = (s32)s2;
+        s1 = s2;
         {
             s32 *ptr = (s32 *)((s3 << 2) + (s32)s0);
             s32 raw_m2 = ptr[-2];
@@ -105,16 +110,16 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     case 4:
     case 7:
     case 18:
-        arg1 = (s32)s2;
+        s1 = s2;
         func_80044010(PTR_OFF(s0, ALIGN4(s0[5])), 8);
-        arg1 = func_80044670(PTR_OFF(s0, ALIGN4(s0[6])), 8, arg1);
+        s1 = (s32 *)func_80044670(PTR_OFF(s0, ALIGN4(s0[6])), 8, (s32)s1);
         break;
     case 11:
-        snd_SetVolume(arg1);
-        arg1 = arg1 + snd_GetMaxFade();
+        snd_SetVolume((s32)s1);
+        s1 = (s32 *)((s32)s1 + snd_GetMaxFade());
         break;
     case 13:
-        arg1 = (s32)s2;
+        s1 = s2;
         {
             s32 *ptr = (s32 *)((s3 << 2) + (s32)s0);
             s32 off1 = ALIGN4(ptr[-2]);
@@ -126,7 +131,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         }
         break;
     case 34:
-        arg1 = (s32)s2;
+        s1 = s2;
         D_8009947A = 1;
         s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[5]));
         break;
@@ -139,7 +144,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     D_800A33B0 = (s32)sp18;
     D_800A33B4 = (s32)sp20;
     DrawSync(0);
-    func_80045600(s7, arg1);
+    func_80045600(s7, (s32)s1);
     func_80045694(s7, (s32)func_800466C0);
     stage_ExecInitFunc();
     if (D_800A38DC != 0) {

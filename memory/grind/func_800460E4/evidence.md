@@ -87,6 +87,79 @@ Artifacts: tmp/grind/func_800460E4/s1/ (ours.dis, ours2.dis,
 extract_candidate.py), tmp/grind/func_800460E4/dumps/ (full -da dump set),
 tmp/ra_solver_work/func_800460E4.model.json.
 
+## [s3] 2026-08-25 — recon session after the layer-1 FAIL (new close, banned merge reverted; NOTE: chronologically AFTER [s2] below)
+
+Context: the [s1]/[s2] close was layer-1 FAILED (decisions.md 2026-08-25 03:37) —
+construct (3), the whole-function arg1/s1 variable merge, is BANNED for this
+function in any spelling. This session reverted it and closed the rotation by a
+different, sanctioned attack.
+
+### Honest floor re-established without the banned construct
+
+Reverted state = [s1] candidate MINUS the merge (s32 *s1; restored as the
+carrier; arg1 dead after the fp_ptr block; all [s1] spelling wins kept: the
+four `(s32 *)((s3 << 2) + (s32)s0)` integer-add scaled-index sites + the p/p2
+alias drops). Measured THIS session: **sandbox --disable all = 32** (248/248,
+rules_dropped=10) — the pure 3-seat rotation, exactly the [s1] banked residual.
+canonical: verdict C (distance 32). No duplicate leads (tmp/duplicates_leads.txt
+has no entry for this function).
+
+### Structural kill: duplicated-statement-into-arms has NO site here
+
+Target asm mapping (asm/funcs/func_800460E4.s): every $s1 ref is byte-pinned —
+prologue `addu $s1,$a1,$zero` (line 6) + 9 more arg1-lifetime uses = 10 = our
+pseudo-73 refs; `addu $s1,$s4,$zero` in the range-guard beqz delay slot (line
+133) + per-case heads `addu $s1,$s2,$zero` (142/158/182/205) + case-11 pair
+(176/180) + case-4/7/18 pair (167/173) + final call read (237) = 11 = our
+pseudo-80 refs. The `s1 = s2;` stores are all arm HEADS; cross-jump merges only
+TAILS, so no real-statement duplication can add flow-visible-but-byte-dead refs
+on 73/80 in this control structure. The [[duplicated-statement-into-arms]]
+family (the usual byte-free ref-lift) is therefore structurally unavailable —
+this completes the exhaustion chain: solver inverse says ONLY refs_up(73|80)+2
+reaches the target seating; honest visible refs already equal target's; dead
+stores are INERT for global RA (flow deletes before counting, motion_SetMotion
+measurement); duplication has no site.
+
+### The closing edit — sanctioned combine-foldable chain-extender
+
+`.claude/rules/dead-store-fake-exception.md:32` (owner ruling 2026-07-01
+same-day scope extension): a LIVE store routed through an algebraically-
+equivalent detour that combine folds back to the direct form with zero emitted
+bytes — surviving effect = the extra reg_n_refs flow.c records. Applied to
+s1's default init:
+
+    s1 = (s32 *)((s32)s4 - (s32)s0);   /* FAKE-annotated in src */
+    s1 = (s32 *)((s32)s1 + (s32)s0);
+
+Dump-proven mechanism (tmp/grind/func_800460E4/dumps/, regenerated this
+session at the closing chassis):
+- text1a_c2.flow:22 — "Register 80 used 13 times" (11 honest + 2 detour).
+- text1a_c2.greg:29-31 — dispositions **73 in 17, 78 in 18, 79 in 19,
+  80 in 17** = target's exact seating (arg1 and s1 share $s1 with disjoint
+  lifetimes; s2→$s2, s3→$s3).
+- Zero-byte fold verified: build_insns == target_insns == 248 AND score 0
+  (no subtract materializes; the sandbox compares full opcodes, only branch
+  targets masked).
+
+**Result: sandbox --disable all = 0 (248/248), measured twice this session
+(before and after adding the FAKE annotation). rules_dropped=10,
+cheat_asm_stripped=0.** The banned construct is ABSENT: s1 is a real local
+carrier, arg1 is never written, no assignment/use site is repointed.
+
+### Pre-existing case-3 volatile read — measured load-bearing, flagged
+
+`s32 raw_m1 = *(volatile s32 *)&ptr[-1];` (case 3) predates every grind session
+(rule-era committed body; unchanged by [s1]/[s3] diffs; present in the body the
+2026-08-25 03:37 layer-1 review examined and did not cite). Probed this session:
+removing the qualifier → sandbox 9, build 245/248 — the compiler folds 3 insns
+target keeps. Load-bearing; fold not diagnosed; restored as inherited. Banked as
+rejected/case3-plain-read-no-volatile.c and disclosed in self_vet.md so the
+reviewer rules on it with the measurement in hand.
+
+Integration note: unchanged from [s1] — the 10 regfix rules at
+regfix.txt:868-882 retire via the normal retire path; jtbls stay C-emitted;
+wave-2 INCLUDE_RODATA remains unnecessary and dead.
+
 ## [s2] 2026-08-25 — resubmission session (vet-format fix only)
 
 The prior session's candidate-ready outcome was DISCARDED by the driver
