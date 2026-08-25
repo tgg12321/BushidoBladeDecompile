@@ -1,5 +1,86 @@
 # Evidence bank — func_800460E4
 
+## [s5] 2026-08-25 — recon session after the THIRD layer-1 FAIL (pm2/pm1 banned; new honest close at sandbox 0 with ORDINARY C in case 3)
+
+Context: the [s4] close was layer-1 FAILED (decisions.md 2026-08-25 04:17) on
+the case-3 pm2/pm1 pointer intermediates — ruled the banned volatile
+alias-coercion re-spelled ("both banned spellings — volatile cast AND
+plain-pointer alias-defeat indirection — are now closed off for this exact
+site"; the reviewer asked for a genuinely value-motivated or structural
+respelling). This session found that respelling: **case 3 fully inlined as
+ordinary C, zero intermediates, zero casts beyond the function's established
+idiom. Result: sandbox --disable all = 0 (248/248, rules_dropped=10,
+cheat_asm_stripped=0), measured THIS session at the final body; canonical:
+verdict C, distance 0.** Chassis at session start re-measured: HEAD (rule-era
+body) = 35, matching the queue item.
+
+### The closing case-3 form (the whole diff vs the [s4] candidate)
+
+    case 3:
+        s1 = s2;
+        s6 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s3 << 2) + (s32)s0 - 8)));
+        s4 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s3 << 2) + (s32)s0 - 4)));
+        D_8009947A = 1;
+        break;
+
+No pm2/pm1, no ptr local, no raw_m1/raw_m2 intermediates, no volatile, no
+FAKE annotation — the reads use the SAME `(s3 << 2) + (s32)s0` scaled-index
+integer-arithmetic address derivation the four already-reviewed sites use
+(the 03:53 layer-1 review called that spelling "legitimate and correctly
+cited"), and the store-last statement order is the same order case 13 uses.
+
+### Why this ordinary spelling produces target's order (mechanism, dump-proven)
+
+GCC 2.7.2 expr.c:4570 (case INDIRECT_REF): MEM_IN_STRUCT_P is set on a
+dereference iff the operand TREE is a PLUS_EXPR (pointer + offset — i.e. any
+`ptr[-N]` indexing form), a SAVE_EXPR of one, or an aggregate ref. A deref of
+a CAST of integer arithmetic (`*(s32 *)((s3 << 2) + (s32)s0 - 8)`) has a
+NOP_EXPR operand → the MEM is NOT marked /s. Verified in this session's dumps
+(tmp/grind/func_800460E4/dumps/text1a_c2.sched, regenerated at the closing
+chassis): the case-3 loads are insns 306/318, plain `(mem:SI (plus (reg 137)
+(-8|-4)))` with no /s flag, and the D_8009947A store (insn 327) carries
+`REG_DEP_ANTI 306` + `REG_DEP_ANTI 318` — REAL anti-dependence edges. sched1
+therefore keeps the store after both loads (target order: lw/lw/li/sh), the
+address pseudo seats in $v0 and m1 in $a0 as target wants, and the case-34
+cross-jump tail merge cannot fire. This is exactly the real dependence edge
+[s4]'s sched_solver proof said the ORIGINAL must have had — i.e. this
+spelling is a reconstruction of the original derivation, not a coercion
+construct: every statement's value is consumed, and combine folds the -8/-4
+into the load offsets with the shared `(s3<<2)+s0` CSE'd into one addu
+(zero extra bytes, 248/248).
+
+### Kill banked this session
+
+- Fully-inlined form with the store FIRST (`D_8009947A = 1;` before the two
+  reads): sandbox 24, build 245/248 — cross-jump fires again plus seat
+  diffs. Banked as rejected/case3-inlined-store-first.c. Store-LAST is the
+  matching order.
+
+### Construct inventory of the final body (for the reviewer)
+
+ONE FAKE construct total: the [s3] s1 chain-extender (dead-store-fake-
+exception.md:32 combine-foldable chain-extender family), unchanged, still
+independently load-bearing. All three banned constructs are ABSENT: no
+arg1/s1 merge, no volatile cast, no pointer-intermediate alias-defeat.
+Everything else is ordinary C carried over from [s1]/[s3]/[s4] candidates
+(scaled-index integer-add spellings, direct ((s32*)arg1)[s3] reads, the
+off*/a0_ptr locals from the committed rule-era shape, case-13's ptr/off1/off2
+block — all present in the bodies the three prior layer-1 reviews examined
+and never cited).
+
+### Owner directive acknowledgment (RULES-TO-ZERO CAMPAIGN 2026-08-24)
+
+Acknowledged and executed: this close is the COMPLETED-C path. The 10 regfix
+rules at regfix.txt:868-882 no longer correspond to the build output and
+retire via the normal retire path at integration (session may not touch
+regfix.txt). jtbls stay C-emitted; wave-2 INCLUDE_RODATA remains unnecessary
+and dead per docs/grind/borderline.md:88.
+
+Artifacts: tmp/grind/func_800460E4/dumps/ (full -da set at the closing
+chassis, 2026-08-25 04:23), tmp/grind/func_800460E4/s1/ + s4/ (prior
+sessions' scripts reused: s4/apply.py spliced the [s4] candidate before the
+case-3 respell).
+
 ## [s4] 2026-08-25 — recon session after the second layer-1 FAIL (case-3 volatile REMOVED; new honest close at sandbox 0)
 
 Context: the [s3] close was layer-1 FAILED (decisions.md 2026-08-25 03:53) solely

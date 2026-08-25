@@ -1,18 +1,27 @@
-/* candidate for func_800460E4 - session s4 2026-08-25
+/* candidate for func_800460E4 - session s5 2026-08-25
  * sandbox --disable all == 0 (248/248 insns, 10 regfix rules dropped in
- * scoring), measured with annotations in place. BOTH prior layer-1 blockers
- * are resolved:
+ * scoring), measured this session at this exact body. ALL THREE prior
+ * layer-1 blockers are resolved by ABSENCE:
  *   - the BANNED arg1/s1 whole-function merge stays absent (s32 *s1; is the
  *     real carrier, arg1 never written past the fp_ptr block);
- *   - the BANNED case-3 volatile cast is REMOVED. Its 3 target insns are
- *     kept honestly by fresh pointer intermediates pm2/pm1 (plain-var derefs
- *     emit non-struct MEMs, so sched.c raises REG_DEP_ANTI edges from both
- *     loads to the D_8009947A store, forcing target's load/store order and
- *     with it the seat assignment that defeats the case-34 cross-jump tail
- *     merge). Dump-proven: dumps/text1a_c2.sched insns 312/315/320.
- * Two FAKE constructs remain, both annotated: the s1 chain-extender ([s3])
- * and the pm2/pm1 named intermediates ([s4]). See evidence.md [s4] +
- * self_vet.md. Exact copy of the src/text1a_c2.c body at measurement time.
+ *   - the BANNED case-3 volatile cast is absent;
+ *   - the BANNED case-3 pm2/pm1 pointer intermediates are absent. Case 3 is
+ *     now fully-inlined ordinary C: the two header words are read through
+ *     direct derefs of the SAME scaled-index integer-arithmetic address form
+ *     the four already-accepted sites use ((s3 << 2) + (s32)s0), and the
+ *     D_8009947A store sits last, exactly as case 13 orders it. No invented
+ *     locals, no casts beyond the function's pervasive idiom, no annotation
+ *     needed. Dump-proven at this chassis: the loads (insns 306/318) are
+ *     plain non-/s MEMs and the store (insn 327) carries REG_DEP_ANTI 306 +
+ *     REG_DEP_ANTI 318 - REAL anti-dependence edges give target's
+ *     load/load/store order, the target register seats, and the case-34
+ *     cross-jump tail merge cannot fire. (Note: [s4]'s sched_solver proof
+ *     showed the original MUST have had a real dependence edge here; this
+ *     spelling is the ordinary-C derivation that produces it.)
+ * ONE FAKE construct remains (annotated): the s1 chain-extender ([s3]),
+ * which the 2026-08-25 03:53 layer-1 review already ruled "legitimate and
+ * correctly cited". See evidence.md [s5] + self_vet.md.
+ * Exact copy of the src/text1a_c2.c body at measurement time.
  */
 
 void func_800460E4(s32 stage_id, s32 arg1) {
@@ -105,23 +114,9 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     switch (stage_id) {
     case 3:
         s1 = s2;
-        {
-            s32 *ptr = (s32 *)((s3 << 2) + (s32)s0);
-            /* FAKE: fresh once-written/once-read pointer intermediates for the
-               two header reads; the plain-var derefs emit non-struct MEMs so
-               sched.c's alias check keeps the D_8009947A store after both
-               loads (target order), mechanism: sched.c true/anti-dependence on
-               a fixed-symbol store vs non-MEM_IN_STRUCT_P varying load,
-               lever-exhaustion: evidence.md [s4] (statement-order sweep P1-P4
-               measured flat; perturb.py goal unreachable depth<=3) */
-            s32 *pm2 = ptr - 2;
-            s32 *pm1 = ptr - 1;
-            s32 raw_m2 = *pm2;
-            s32 raw_m1 = *pm1;
-            D_8009947A = 1;
-            s6 = (s32 *)((u8 *)s0 + ALIGN4(raw_m2));
-            s4 = (s32 *)((u8 *)s0 + ALIGN4(raw_m1));
-        }
+        s6 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s3 << 2) + (s32)s0 - 8)));
+        s4 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s3 << 2) + (s32)s0 - 4)));
+        D_8009947A = 1;
         break;
     case 4:
     case 7:

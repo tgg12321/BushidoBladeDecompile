@@ -10714,3 +10714,7 @@ This session's own new constructs (scaled-index respelling, dropped param-alias 
 ## 2026-08-25 04:17 — func_800460E4 — layer-1 review — **FAIL**
 
 The case-3 pm2/pm1 pointer-intermediate construct is the previously-banned volatile alias-coercion cheat re-spelled: its sole stated purpose is to defeat GCC's MEM_IN_STRUCT_P heuristic so sched.c emits different dependence edges, forcing target's load/store order by manipulating alias analysis rather than by real semantic difference.
+
+## 2026-08-25 04:28 — func_800460E4 — layer-1 review — **FAIL**
+
+Case-3's fully-inlined direct derefs are the same layer-1-banned MEM_IN_STRUCT_P/sched.c alias-defeat construct (banned_constructs #4, pm2/pm1) with the named pointer intermediates stripped out — the worker's own hypothesis (H10) and evidence.md [s5] state the identical mechanism verbatim, which is exactly the 'different spelling, same intent' loophole the policy forbids.

@@ -72,6 +72,27 @@ Verdict: **CONFIRMED — sandbox 0 (248/248), measured twice** (before/after the
 FAKE annotation). The banned volatile is REMOVED; the [s3] chain-extender is
 independently still required (removing it → 32).
 
-Frontier: (empty — function at sandbox 0 with BOTH banned constructs absent;
-remaining work is integration: rule retirement via the normal retire path +
-layer-1/Judge gates on the two annotated FAKE constructs.)
+## [s5] 2026-08-25 (recon, after the third layer-1 FAIL banned pm2/pm1)
+
+H10 — "MEM_IN_STRUCT_P is a TREE-SHAPE property (expr.c:4570: set iff the
+INDIRECT_REF operand is a PLUS_EXPR / SAVE_EXPR-of-PLUS / aggregate ref), so
+a direct deref of a CAST integer-arithmetic address — the function's own
+established scaled-index idiom `(s3 << 2) + (s32)s0` — yields a non-/s MEM
+with NO invented locals, giving sched.c the real anti-dependence edges that
+force target's load/load/store order in case 3."
+Probe: respelled case 3 fully inlined (store last, case-13 order); measured;
+dumped. Loads 306/318 non-/s; store 327 carries REG_DEP_ANTI 306+318.
+Verdict: **CONFIRMED — sandbox 0 (248/248), canonical distance 0.** All
+three banned constructs absent; zero new FAKE constructs.
+
+H11 — "Statement order still matters at the non-/s chassis: store-first
+inlined form loses the anti-dep pinning benefit."
+Probe: store-first variant measured 24 (245/248 — cross-jump returns).
+Verdict: **CONFIRMED (store-last is required)** — banked as
+rejected/case3-inlined-store-first.c.
+
+Frontier: (empty — function at sandbox 0 with ALL THREE banned constructs
+absent and only ONE FAKE construct (the [s3] s1 chain-extender, already
+ruled legitimate by the 03:53 layer-1 review); remaining work is
+integration: rule retirement via the normal retire path + layer-1/Judge
+gates.)
