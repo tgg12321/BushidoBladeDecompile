@@ -1,5 +1,87 @@
 # Evidence bank — func_800460E4
 
+## [s2] 2026-08-25 - STRUCTURAL modality: the case-3 residual is FORECLOSED in structural space; the 3-insn cross-jump deletion is proven SCORE-NEUTRAL
+
+Chassis re-measured at session start: candidate.c applied to src/text1a_c2.c
+(HEAD src still carried the rule-era body incl. the BANNED volatile cast - it
+was replaced with candidate.c before any probe). **sandbox --disable all = 9
+(245/248, rules_dropped=10, cheat_asm_stripped=0)** - the ledger floor
+reproduces at this chassis. Re-measured 9/245 again at session end after
+restoring the candidate body.
+
+### The decisive structural finding (it closes the modality)
+
+Case-3 codegen is **insensitive to whole-function structural shape** and
+**insensitive to case-3 statement order**. Two independent measurements:
+
+1. **Whole-function perturbation leaves case 3 byte-identical.** Probe A
+   (split the dual-purpose `s7` local into a separate `keep` flag + the
+   `s7 = 7` channel id) changes the whole-function allocation drastically -
+   sandbox 46, build_insns 240, the first switch's flag moves from $s7 to $s2
+   - yet the emitted case-3 block is BYTE-IDENTICAL to the baseline's
+   (tmp/grind/func_800460E4/s2/pA.dis:130-141). Case 3's temps are
+   call-clobbered ($v0/$v1/$a0) and its live-in set ({s0,s2,s3}) is fixed by
+   the target, so nothing outside the block can reach it.
+2. **Every statement order inside case 3 canonicalizes to one schedule.**
+   Store FIRST (the one slot [s4]'s P1-P4 sweep had not covered at the mem/s
+   chassis) measures 9/245 with a BYTE-IDENTICAL case-3 block
+   (s2/pB.dis:132-143). `s1 = s2;` moved to the end of case 3: 9/245. cse +
+   sched1 collapse every position onto li/lui/sh in the FIRST load's delay
+   slot.
+
+Combined with [s4]'s sched_solver UNREACHABLE verdict and [s7]'s proof that
+target's case-3 atom multiset is identical to ours, this exhausts the
+structural axis: with a fixed atom set, a fixed live-in set, a fixed
+dependence graph and an order-invariant schedule, **no C-level structural
+lever exists that changes the case-3 block**. The only remaining inputs are
+the dependence edges - and every honest spelling of those is already
+banned/refused (layer-1 FAILs 03:53/04:17/04:28 on the load side; ruling
+04:46 on the store side; H14's volatile two-prong gate unmet).
+
+### Refinement of the residual's composition (corrects the [s4]/[s7] account)
+
+[s4]/[s7] recorded "9 = the 3 insns jump2 find_cross_jump ate + the seat
+swap". That decomposition is **wrong**: the 3-insn deletion is
+**score-neutral**. Probes D/E/F (compute s4 from the -4 header word BEFORE s6
+from the -8 word, at all three store positions) defeat the cross-jump merge -
+our case-3 tail becomes `addu s6,s0,v0`, no longer byte-identical to case 34's
+`addu s4,s0,v0` - giving **build_insns 248 == target_insns** with the score
+still exactly **9** (s2/pD.dis:132-146). All 9 differing instructions are the
+case-3 seat/order divergence itself; the jump2 fold merely relocated 3
+already-wrong instructions. A future session must NOT treat "defeat the
+cross-jump" as worth 3 points - it is worth 0.
+
+Not adopted as the candidate: the swap buys zero score and introduces a
+case-3-vs-case-13 statement-order divergence whose only motivation would be
+defeating a jump2 fold - the same smell the 04:28 layer-1 FAIL banned for the
+address-form choice. Banked at
+rejected/case3-assign-order-swap-defeats-crossjump.c.
+
+### Seat map (measured this session, across all six variants)
+
+Ours (invariant): address pseudo -> $a0, first-read value -> $v1, and li(1)
+plus the second-read value share -> $v0, with li/lui/sh in the first load's
+delay slot. Target: address -> $v0, -8 word -> $v1, -4 word -> $a0, li(1)
+REUSING the then-dead address register $v0 after BOTH loads. Seats are a
+consequence of order (local-alloc runs after sched1; with li born inside the
+address's live range the address cannot hold $v0), so order is the only lever
+- and order is invariant under C here. Contrast with case 13, which we
+byte-match: that block carries two extra atoms (`$a1 = 8` and the
+`lw 0x14(s0)` call argument) and target itself seats the address in $v1, not
+$v0 - target's case-3 seating is not a general rule of this function, it is
+specific to that block's schedule.
+
+### Owner directive (RULES-TO-ZERO) - status
+
+Unchanged, still in execution: the 10 regfix rules (regfix.txt:868-882) retire
+only at COMPLETED-C; the honest floor stayed 9 this session, so no rule
+retirement is possible yet. wave-2 INCLUDE_RODATA remains measured SHA1-dead
+for this function (docs/grind/borderline.md:88).
+
+Artifacts: tmp/grind/func_800460E4/s2/ (apply.py, dis.sh, cand_body.c,
+pA/pB/pC/pD/pE/pF_body.c, pA.dis, pB.dis, pD.dis).
+
+
 ## [s7] 2026-08-25 — recon re-baseline after the aggregate-merge REFUSAL (04:46 ruling): honest floor 9 re-established with zero banned constructs; new target-asm forensics; H15 indexed-spelling killed by byte-identity
 
 Context: the [s6] ruling-request was REFUSED (decisions.md 2026-08-25 04:46 —
@@ -574,3 +656,17 @@ integration note in [s1]).
 - [s1] Exhaustion map: load-side non-/s spellings all banned (layer-1 03:53/04:17/04:28); store-side /s aggregate refused (04:46); volatile-extern gate unmet (H14); statement orders swept flat ([s4] P1-P4) and solver-unreachable; tree respelling RTL-equivalent (H15)
 
 - [s1] Owner directive (RULES-TO-ZERO 2026-08-24) acknowledged in ledger evidence.md [s7]: COMPLETED-C path continues at floor 9; wave-2 INCLUDE_RODATA stays dead per borderline.md:88; the 10 rules retire at retirement
+
+- [s2] Chassis: HEAD src/text1a_c2.c still carried the rule-era body INCLUDING the banned volatile cast; candidate.c was applied before any probe and measured sandbox --disable all = 9 (245/248, rules_dropped=10, cheat_asm_stripped=0), re-measured 9/245 again at session end. src/ was restored to HEAD before finishing; the candidate form lives in memory/grind/func_800460E4/candidate.c.
+
+- [s2] Case-3 codegen is insensitive to whole-function structural shape: a perturbation that moved the whole-function allocation (sandbox 46, 240 insns, first-switch flag $s7->$s2) left case 3 byte-identical. Its temps are call-clobbered ($v0/$v1/$a0) and its live-in set ({s0,s2,s3}) is pinned by the target, so no out-of-block C change can reach it.
+
+- [s2] Case-3 codegen is insensitive to statement order: store-first, store-mid, store-last and s1=s2-last all emit the identical block; only swapping WHICH header word is consumed first changes anything, and that change is score-neutral.
+
+- [s2] CORRECTION to the [s4]/[s7] ledger: '9 = 3 merged insns + the seat swap' is wrong. The jump2 find_cross_jump merge costs 0 points; all 9 differing instructions are the case-3 seat/order divergence. A future session must not spend probes on defeating the fold.
+
+- [s2] Seat map (invariant across all six variants measured this session): ours = address pseudo -> $a0, first-read value -> $v1, li(1) and the second-read value sharing $v0, with li/lui/sh in the FIRST load's delay slot. Target = address -> $v0, -8 word -> $v1, -4 word -> $a0, li(1) reusing the then-dead address register $v0 AFTER both loads. Seats follow from order (local-alloc runs after sched1), so order is the only lever and it is C-invariant here.
+
+- [s2] Contrast that pins the mechanism: in case 13 (which we byte-match) the block carries two extra atoms ($a1 = 8 and lw 0x14(s0)) and TARGET ITSELF seats the address in $v1, not $v0 - target's case-3 seating is not a general property of this function, it is specific to that block's schedule.
+
+- [s2] Owner RULES-TO-ZERO directive acknowledged and in execution: the 10 regfix rules (regfix.txt:868-882) retire only at COMPLETED-C; the floor stayed 9 so no retirement is possible yet; wave-2 INCLUDE_RODATA remains measured SHA1-dead for this function (docs/grind/borderline.md:88).

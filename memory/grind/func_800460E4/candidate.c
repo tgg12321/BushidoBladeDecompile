@@ -49,6 +49,20 @@
  * Exact copy of the src/text1a_c2.c body at measurement time.
  */
 
+/* s2 UPDATE 2026-08-25 (structural modality) - body UNCHANGED, re-measured
+ * sandbox --disable all = 9 (245/248) at session start and again at session
+ * end. Two corrections/additions to the header above:
+ *  - The "9 = 3 merged insns + seat swap" decomposition is WRONG. The jump2
+ *    find_cross_jump merge is SCORE-NEUTRAL: computing s4 before s6 in case 3
+ *    defeats the merge (build_insns 248 == target_insns) and the score stays
+ *    exactly 9. All 9 diffs are the case-3 seat/order divergence.
+ *    Not adopted - zero gain, and it would make case 3 diverge from case 13 in
+ *    statement order for no reason but a jump2 fold.
+ *  - STRUCTURAL modality is now EXHAUSTED: case 3's block is byte-identical
+ *    under a drastic whole-function perturbation (s7 flag split, sandbox 46)
+ *    and under every statement order incl. store-FIRST (the last unswept slot).
+ *    See evidence.md [s2] / hypotheses.md H16-H18.
+ */
 void func_800460E4(s32 stage_id, s32 arg1) {
     s32 *s0;
     s32 s7;

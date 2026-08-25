@@ -191,3 +191,85 @@ Frontier (mechanism-grounded, in order):
 - probe: sandbox at HEAD rule-era body, then at the rebuilt [s5]-minus-banned-case-3 form
 - result: HEAD = 35 (248/248, rules_dropped 10); floor-9 form = 9 (245/248), measured twice
 - verdict: CONFIRMED
+
+## [s2] 2026-08-25 (structural)
+
+H16 - "A whole-function structural change (splitting the dual-purpose `s7`
+local into a separate early-return flag and the `s7 = 7` channel id - the
+spelling a human writing from spec would use) alters case 3's block entry
+state and therefore its schedule/seats."
+Probe: split spelled, measured, object disassembled and case 3 diffed against
+the baseline build.
+Verdict: **KILLED, twice over.** (a) As a candidate: sandbox 46 (240/248) vs
+baseline 9 - the `s7` reuse is load-bearing whole-function (with the split the
+first switch's flag lands in $s2, not target's $s7). (b) As a mechanism, and
+this is the important half: case 3's emitted block is BYTE-IDENTICAL to the
+baseline's under this drastic whole-function perturbation
+(tmp/grind/func_800460E4/s2/pA.dis:130-141). Case-3 codegen does not see
+whole-function shape. Banked rejected/s7-flag-split-whole-function.c.
+
+H17 - "The one case-3 statement slot [s4]'s P1-P4 sweep never covered at the
+mem/s chassis - the store `D_8009947A = 1;` placed FIRST, before both header
+reads - reaches target's li/sh-after-both-loads order."
+Probe: spelled store-first; measured; disassembled. Also measured `s1 = s2;`
+moved to the END of case 3.
+Verdict: **KILLED - 9/245 with a case-3 block BYTE-IDENTICAL to store-last**
+(s2/pB.dis:132-143). Store position is inert: cse + sched1 canonicalize every
+position onto li/lui/sh in the FIRST load's delay slot. Banked
+rejected/case3-store-first-at-mem-s-chassis.c.
+
+H18 - "The 3 insns jump2 find_cross_jump eats are an independent component of
+the 9, so defeating the merge lowers the floor."
+Probe: computed s4 (the -4 word) BEFORE s6 (the -8 word) in case 3, at all
+three store positions (D/E/F); measured each; disassembled D.
+Verdict: **KILLED - the merge is SCORE-NEUTRAL.** All three variants measure
+sandbox 9 with build_insns 248 == target_insns: the merge is defeated (our
+tail becomes `addu s6,s0,v0`, no longer identical to case 34's `addu
+s4,s0,v0`) and the score does not move. This CORRECTS the [s4]/[s7] ledger
+account of "9 = 3 merged insns + seat swap": all 9 are the seat/order
+divergence; the fold merely relocated 3 already-wrong instructions. Not
+adopted (zero score gain, and it introduces a case-3-vs-case-13
+statement-order divergence motivated only by defeating a jump2 fold - the
+smell the 04:28 layer-1 FAIL banned for the address-form choice). Banked
+rejected/case3-assign-order-swap-defeats-crossjump.c.
+
+**Modality verdict: STRUCTURAL is EXHAUSTED for this function.** Case 3's atom
+multiset is fixed (= target's, [s7]), its live-in set is fixed, its schedule
+is order-invariant (H17 + [s4] P1-P4 + sched_solver UNREACHABLE), and its
+block is insensitive to whole-function shape (H16). The seats are a
+consequence of the schedule, not an independent lever. The only remaining
+input is the dependence graph, and every honest spelling that changes it is
+banned (load side: 03:53/04:17/04:28) or refused (store side: 04:46) or
+gate-failed (H14 volatile).
+
+Frontier (unchanged in substance from [s7], now with structural eliminated):
+(1) SOLVER modality - tools/ra_solver inverse_compose.py classify on the
+    case-3 seat pair (address -> $v0, -4 word -> $a0) plus an explicit sched
+    pass-2 model, for a typed REACHABLE/FORECLOSED verdict. This session's
+    order-invariance measurements are strong prior evidence for FORECLOSED;
+    a typed verdict is what an escalation packet would need.
+(2) REDERIVE modality - a whole-function fresh derivation is now known NOT to
+    reach case 3 by shape alone (H16); it is only worth running if it changes
+    case 3's OWN statements (i.e. finds a different set of atoms), which
+    [s7]'s atom-multiset identity argues against.
+(3) If (1) returns FORECLOSED, the exhaustion chain is escalation-packet
+    material for a fidelity/routing question ONLY (the aggregate-merge refusal
+    is final; any family re-ask is auto-reject-class).
+
+## [s2] A whole-function structural change (splitting the dual-purpose s7 local into a separate early-return flag and the s7=7 channel id - the spelling a human writing from spec would use) alters case 3's block entry state and therefore its schedule/seats.
+- mechanism: different pseudo set / conflicts / live-in state entering block 19 -> different local-alloc seating even with unchanged block-local atoms (the [s7] frontier item 2 mechanism)
+- probe: spelled the split; sandbox --disable all; objdump -M no-aliases of the sandbox object; diffed the emitted case-3 block against the baseline build (tmp/grind/func_800460E4/s2/pA.dis:130-141)
+- result: sandbox 46 (240/248) vs baseline 9 (245/248) - the s7 reuse is load-bearing whole-function (the first switch's flag moves from target's $s7 to $s2). AND the emitted case-3 block is BYTE-IDENTICAL to the baseline's despite that drastic global change.
+- verdict: KILLED
+
+## [s2] The one case-3 statement slot the [s4] P1-P4 sweep never covered at the mem/s chassis - the store D_8009947A=1 placed FIRST, before both header reads - reaches target's li/sh-after-both-loads order.
+- mechanism: sched1's input-stream order feeds the list scheduler's tie-breaks; a store-first stream might not be sunk past the loads
+- probe: spelled store-first in case 3; sandbox; disassembled and diffed case 3 (tmp/grind/func_800460E4/s2/pB.dis:132-143). Also measured 's1 = s2;' relocated to the END of case 3.
+- result: store-first = 9 (245/248) with a case-3 block BYTE-IDENTICAL to store-last; s1=s2-last = 9 (245/248). cse+sched1 canonicalize every position onto li/lui/sh in the FIRST load's delay slot.
+- verdict: KILLED
+
+## [s2] The 3 insns jump2 find_cross_jump eats (case 3's tail merged into case 34's) are an independent component of the 9, so defeating the merge lowers the floor.
+- mechanism: find_cross_jump merges byte-identical block suffixes; making case 3's tail 'addu s6,s0,v0' instead of 'addu s4,s0,v0' removes the identity
+- probe: computed s4 (the -4 header word) BEFORE s6 (the -8 word) in case 3, at all three store positions (probes D/E/F); measured each; disassembled D (tmp/grind/func_800460E4/s2/pD.dis:132-146)
+- result: all three measure sandbox 9 with build_insns 248 == target_insns - the merge IS defeated and the score does not move at all. The 3-insn deletion is score-neutral; all 9 diffs are the case-3 seat/order divergence. Not adopted (zero gain, plus a case-3-vs-case-13 statement-order divergence motivated only by defeating a jump2 fold - the smell the 04:28 layer-1 FAIL banned for the address-form choice).
+- verdict: KILLED
