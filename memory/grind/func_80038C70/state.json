@@ -304,5 +304,6 @@
   "OWNER RULING 2026-07-19 (decisions.md): escalation resolved option (b) \u2014 the union-constructor CLOBBER family is REFUSED (no community precedent; forbidden coercion, do not re-propose). motion_SetMotion is dispositioned as an owner-signed permanent exception: byte-correct committed form + regfix.txt:2190 stay on main, function is INCOMPLETE-owner-accepted (NOT COMPLETED-C), kept PARKED out of the active queue. No further grinding."
  ],
  "origin": "queue",
- "created": "2026-07-07T15:21:59.271930+00:00"
+ "created": "2026-07-07T15:21:59.271930+00:00",
+ "owner_continue_until_session": 60
 }

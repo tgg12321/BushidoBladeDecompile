@@ -107,5 +107,6 @@
  "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-08-21T05:03:13.523115+00:00"
+ "created": "2026-08-21T05:03:13.523115+00:00",
+ "owner_continue_until_session": 24
 }

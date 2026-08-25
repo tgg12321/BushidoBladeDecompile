@@ -41,7 +41,28 @@ An item may be escalated ONLY with a packet containing:
 3. **The consequence of each answer** (what closes, what resumes, at what
    floor).
 
-"This function is hard" is not a packet. Exhaustion without a decidable
+"This function is hard" is not a packet.
+
+## The AUTO-REJECT class (owner ruling 2026-08-24, second ruling)
+
+Owner, verbatim: "We won't be sanctioning any kind of permanent rules...
+That may as well be an auto-reject if it's considered. We are going to keep
+things to the highest standard we can. If there is no SOTN precedent and it
+feels like backsliding on our own standards, then it should not be
+considered."
+
+A packet whose YES answer would LOWER a standard is not a decision — it is
+pre-decided NO and MUST NOT be filed as an escalation. The class includes:
+- sanctioning any rule/cheat as PERMANENT (there is no permanent-carrier
+  state; every rule retires at COMPLETED-C);
+- granting a coercion family with no in-hand SOTN-master precedent;
+- overriding the canonical-asm evidence bar (a LOW scan tier is an answer,
+  not an obstacle to be waived);
+- any "accept the debt" disposition in new wording.
+Functions whose only known closer is auto-reject-class stay ACTIVE and keep
+grinding under standing policy (difficult-is-not-impossible) — the honest
+escalations that remain are fidelity/routing/provenance questions and
+genuinely gate-PASSING evidence. Exhaustion without a decidable
 question means the item stays ACTIVE and the modality changes
 (difficult-is-not-impossible, no-deferral — both unchanged).
 

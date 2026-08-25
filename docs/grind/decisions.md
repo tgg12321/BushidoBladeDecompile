@@ -10645,3 +10645,29 @@ floor 1 to 15 at an unchanged 132 insns), so it is not a clean-C artifact either
 ## 2026-08-24 19:18 — func_80040B44 — final call — **PASS**
 
 Ordinary C; no sanctioned family is claimed and none is needed. Constructs: integer-domain address arithmetic at 5 sites ((s32)base + idx*stride), one shared init-loop counter with fresh block-scoped cursors p1/p2, the stream advance written at the loop top, and the else arm addressed through t5 instead of a second t4 cursor. Each computes something the program needs; none is inert-as-text-but-load-bearing-as-codegen (T1/T3), all are routine embedded-C spellings (T2), no forbidden-family member appears (T5: no asm, no volatile, no pins, no rules, no FAKE, no dead locals), no name announces intent (T6). Decisive fact: the diff is a NET REMOVAL of constructs — it deletes the `s32 one = 1;` opaque-arithmetic holder and the redundant `t4` pointer, and the one instruction a lever would have faked (retired regfix @175's `addiu t3,t3,-2`) is now reorg.c delay-slot compensation emitted from an ordinary loop shape, with no source statement behind it. Verified myself, not credited from the vet: `sandbox func_80040B44 --disable all` = score 0 / 93==93 / rules_dropped 0, and `verify-oracle` = 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle with this C in source position and the 15 rules deleted; src/text1a_pre.c's only two asm() sites (L562, L751) are pre-existing pins in other functions, untouched by this diff. Evidence trail: hypotheses.md H1-H5 + the allocno_compare seat model, evidence.md L99-L112, six measured failures in rejected/. state.json carries no judge_constraints and no banned_constructs.
+
+## 2026-08-24 — packet resolutions: func_80038C70 + func_80041188 — OWNER RULING (auto-reject class established)
+
+Owner, in conversation, on the two campaign packets: "We won't be sanctioning
+any kind of permanent rules if that's what that first escalation is implying.
+That may as well be an auto-reject if it's considered. We are going to keep
+things to the highest standard we can. If there is no SOTN precedent and it
+feels like backsliding on our own standards, then it should not be
+considered."
+
+- **func_80038C70 (decisions.md:10376 packet):** the ruling-conflict question
+  is answered — the 2026-08-24 campaign CONTROLS; the 2026-07-19 "permanent
+  exception / no further grinding" clause is VOIDED (no permanent-rule state
+  exists). F5 union-CLOBBER remains REFUSED (no SOTN precedent). Disposition:
+  ACTIVE, keep grinding under standing policy; its 1 rule retires at
+  COMPLETED-C whenever the honest lever is found. Continue-directive set
+  (owner_continue_until_session: 60) — solver modality has never run on it.
+- **func_80041188 (this date's packet):** the canonical-asm LOW-tier override
+  is DECLINED as auto-reject class (evidence-bar override = backsliding).
+  Disposition: ACTIVE, keep grinding; 16 rules + the prologue entry retire at
+  COMPLETED-C. Continue-directive set (owner_continue_until_session: 24) —
+  solver modality has never run on it; the enumeration-complete residual is
+  precisely the shape the solver instruments.
+- **Standing effect:** the auto-reject class is codified in
+  .claude/rules/escalation-not-parked.md and the session brief; sessions must
+  not file standard-lowering packets at all.
