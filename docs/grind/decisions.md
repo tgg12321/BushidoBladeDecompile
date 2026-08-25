@@ -11002,3 +11002,54 @@ disassemblies in `tmp/grind/func_80060A68/s10/`.
 ## 2026-08-25 10:34 — SioSyncroRead — ruling: Grant D_800F1AE0 (Sony LIBCOMB COMB module state halfword, block sibling at -2 o — **PASS**
 
 D_800F1AE0 qualifies under Ruling 4 (docs/closer/rulings.md:68, owner-granted CLASS). Both prongs verified independently, not taken from the ledger: (1) census identity — the symbol is referenced ONLY by SioSyncroRead.s and _comb_control.s, both verbatim LIBCOMB/COMB (psyq-library-census.md:313/316), so it is module-local Sony state; (2) ground-truth codegen — target emits the unfolded lui/addiu/lhu-0 at SioSyncroRead.s:22-24 while the SAME function folds non-volatile sibling D_800F1AE6 to lui/lhu %lo three insns later (:26-27). That per-symbol asymmetry IS the MEM_VOLATILE_P fold-block signature, identical in kind and module to the AE2 grant (allowlist:46). I re-ran `sandbox SioSyncroRead --disable all`: score 0, 160/160, rules_dropped 6 — the banked measurement is real. Same ruling extends to D_800F1AFC: COMB-local (SioAnsyncRead/SioSyncroRead/_comb_control), and target carries the expand_increment dead-reload fingerprint at SioSyncroRead.s:118-121 (lw 4($s1); addiu; sw; lw 4($s1)) — the exact AEC evidence. SPELLING DEFECT (constraint, not a construct objection): candidate.c injects volatility at the pointer over a non-volatile decl (`extern u16 D_800F1AE0;` + `volatile u16 *p_ae0`), and likewise `volatile s32 *st = flag` over non-volatile D_800F1AFC. volatile_extern_allowlist.txt's header and engine/volatile_cheats.py:68-72 state the allowlist covers pattern 3 ONLY; pointer/cast-injected volatility is never covered. The committed twin never does this — every FAKE handle there (main.c:3052, 3084, 3092, 3105) copies volatility from an ALREADY-GRANTED decl. Fix the spelling and the grant carries it.
+
+## 2026-08-25 — func_800460E4 — **OWNER RULING: YES** (decision packet of 2026-08-25 09:49)
+
+**Ruling (owner, Trenton, 2026-08-25):** YES — the 06:39 carve-out controls. The s9
+single-local named-intermediate form banked at
+`memory/grind/func_800460E4/rejected/s9-ruling-pending-single-local-named-intermediate-248-0.c`
+**qualifies under the frozen named-intermediate family**
+(`.claude/rules/no-new-park-categories.md:193-214`, in-hand SOTN-master precedent
+`sotn-decomp/src/weapon/w_037.c:301-302`, PSX / GCC 2.7.2) and may be submitted as a
+candidate.
+
+**Basis (owner-adopted):**
+- It qualifies **because it is the pre-existing named-intermediate family** — a shape
+  carve-out that predates this chase — NOT because persistence eroded a ban. All six
+  prongs are measured satisfied (once-written/once-read; real value in target's own
+  bytes; byte-neutral 248/248; fresh local; fresh block scope; dump-proven mechanism
+  + exhaustion + FAKE annotation + the two review layers still to run).
+- All 248 instructions come from GCC compiling ordinary, semantically honest C: no
+  rules, no asm, no volatile lie, no second handle, no multi-set carrier. The three
+  earlier layer-1 kills on this mechanism (volatile cast; pm2/pm1 two-pointer
+  respelling of BOTH header words; inlined cast-derefs) remain correct and remain
+  banned — they were semantic lies or wholesale respellings with no plausible
+  source-level identity. This form respells ONE lvalue with an ordinary named pointer
+  local and keeps the -8 word in the function's own `s0[s3 - 2]` idiom.
+- The 09:06 axis-closure was premised on the s8 finding that every closing form was a
+  banned construct behind a 249-insn wall; s9 killed that premise by measurement
+  (248/248 score 0). A constraint premised on a dead fact yields to the earlier 06:39
+  ruling, which pre-authorized exactly this route conditional on 248-insn
+  byte-neutrality — the condition now met.
+
+**Scope — read this narrowly:**
+1. The 09:06 standing constraint ("the /s axis is closed for func_800460E4 in every
+   direction") is **superseded ONLY for the exact banked s9 form**: one fresh
+   once-written/once-read pointer local (`hp`) respelling the -4 header read, with
+   the base spelled `(s32 *)((s3 << 2) + (s32)s0) - 1` and the -8 read left as
+   `s0[s3 - 2]`.
+2. Everything else the 09:06 entry and banned_constructs #1–#8 close **stays
+   closed**: volatile casts, alias-rename second handles, the pm2/pm1 two-pointer
+   form, inlined cast-deref respellings, multi-word respellings, function-invented
+   multi-set carriers.
+3. This is an APPLICATION of the frozen family, not an extension — no new park
+   category, no new sanctioned family.
+4. Prong (6) still gates: the next session applies the banked block to
+   `candidate.c`, re-measures 0, and the candidate goes through layer-1 AND layer-2
+   cheat review before `queue done`. The reviewers judge the construct against THIS
+   ruling and the frozen family entry; the superseded portion of the 09:06
+   constraint is not a valid FAIL basis, but every other constraint is live.
+
+**Consequence:** func_800460E4 returns to active. On a clean review pass it reaches
+COMPLETED-C, retiring its 10 regfix rules (10 of the project's final 89 —
+RULES-TO-ZERO campaign) and clearing the last jtbl-coupled deferral on its TU.
