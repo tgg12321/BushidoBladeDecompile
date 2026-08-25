@@ -133,6 +133,21 @@ def _replace_with_asmfile(func):
                      txt, re.M) is not None
 
 
+def _include_asm_routed(stem, func):
+    """True if FUNC is committed as INCLUDE_ASM in src/<stem>.c (the
+    asm-until-matched INCOMPLETE representation, owner ruling 2026-08-19).
+    For such a function src carries no C body, so the src-derived <stem>.tgt.s
+    cannot contain the target stream — same blindness as replace_with_asmfile,
+    through a different door (owner ruling 2026-08-25, func_800645B0 packet)."""
+    try:
+        txt = (ROOT / "src" / f"{stem}.c").read_text(errors="replace")
+    except OSError:
+        return False
+    return re.search(
+        rf'^\s*INCLUDE_ASM\("asm/funcs",\s*{re.escape(func)}\s*\)\s*;',
+        txt, re.M) is not None
+
+
 def cmd_classify(a):
     # GUARD (2026-08-06): for a `replace_with_asmfile` function this classifier
     # returns a FICTITIOUS verdict rather than no verdict, which is worse — it
@@ -143,16 +158,29 @@ def cmd_classify(a):
     # DISASSEMBLY, so identical instructions compare unequal (`subu $sp,$sp,144`
     # vs `addiu $sp, $sp, -0x90`). Measured on func_80089F3C: PRE-RA with a
     # 287-vs-318 gap when the real codegen residual was ZERO.
-    wired = _replace_with_asmfile(a.func)
+    # GUARD (2026-08-25, owner ruling on the func_800645B0 packet): an
+    # INCLUDE_ASM-routed function has the same unreadable/absent target in
+    # <stem>.tgt.s (src carries no C body since asm-until-matched), and the
+    # measured failure mode is identical — a FICTITIOUS PRE-RA verdict off a
+    # stale .tgt.s (ground truth on func_800645B0 was 78/78 with ONE
+    # operand-order diff; the classifier reported a 71-vs-69 multiset gap from
+    # a 19-day-old file). Route to the object-level classifier.
+    asmfile_wired = _replace_with_asmfile(a.func)
+    inc_routed = _include_asm_routed(a.stem, a.func)
+    wired = asmfile_wired or inc_routed
+    why = ("wired `replace_with_asmfile` in asmfix.txt" if asmfile_wired
+           else f"committed as INCLUDE_ASM in src/{a.stem}.c "
+                f"(asm-until-matched)")
     if wired and a.force_text:
         print("PATH: text-stream classifier, GUARD OVERRIDDEN (--force-text) — "
-              f"{a.func} IS wired `replace_with_asmfile`, so the verdict below "
+              f"{a.func} is {why}, so the verdict below "
               "is FICTION. Do not act on it.\n")
     elif wired:
         sys.exit(
-            f"{a.func} is wired `replace_with_asmfile` in asmfix.txt, so its "
-            f"target in {a.stem}.tgt.s is disassembly text this classifier "
-            f"cannot read; it would report a FICTITIOUS PRE-RA verdict.\n"
+            f"{a.func} is {why}, so its "
+            f"target in {a.stem}.tgt.s is absent or unreadable to this "
+            f"text-stream classifier; it would report a FICTITIOUS PRE-RA "
+            f"verdict.\n"
             f"Use the object-level classifier instead:\n"
             f"  python3 tools/ra_solver/goal_from_tgt.py classify {a.stem} {a.func}\n"
             f"(--force-text bypasses this guard for debugging the guard itself.)\n"
@@ -166,6 +194,14 @@ def cmd_classify(a):
         if not p.exists():
             sys.exit(f"missing {p} — run: bash tools/ra_solver/mkasm_honest.sh "
                      f"{a.stem}")
+    # Staleness guard (2026-08-25): a .tgt.s older than its .hon.s means the
+    # target half failed on a later run and a previous run's file survived —
+    # comparing fresh honest against stale target produces confident fiction.
+    if tgt_p.stat().st_mtime + 5 < hon_p.stat().st_mtime:
+        sys.exit(f"{tgt_p.name} is STALE (older than {hon_p.name}) — the last "
+                 f"mkasm_honest.sh run did not regenerate the target half. "
+                 f"Re-run it and check for 'TARGET HALF FAILED'; for an "
+                 f"INCLUDE_ASM-routed function use goal_from_tgt.py instead.")
     try:
         hon = [t for t, _ in G.asm_body(hon_p, a.func)]
         tgt = [t for t, _ in G.asm_body(tgt_p, a.func)]

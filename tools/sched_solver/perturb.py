@@ -302,6 +302,16 @@ def main():
     ap.add_argument("--target", help="pin the target stream to this .s file "
                                      "(REQUIRED once the source is edited: "
                                      "regfix is indexed to HEAD's positions)")
+    ap.add_argument("--target-object",
+                    help="derive target order from this .o instead of a .s "
+                         "stream (build/src/<stem>.o) — REQUIRED for "
+                         "INCLUDE_ASM-routed functions, whose src-derived "
+                         ".tgt.s cannot carry the target (owner ruling "
+                         "2026-08-25). Needs --ours-object.")
+    ap.add_argument("--ours-object",
+                    help="the cheat-stripped sandbox .o built from the SAME "
+                         "source state as <stem>.hon.s "
+                         "(tmp/sandbox/<func>/<stem>.o)")
     a = ap.parse_args()
     only = set(a.atoms.split(",")) if a.atoms else None
 
@@ -314,7 +324,9 @@ def main():
     if a.goal_from_target:
         import goalmap
         gm = goalmap.build_map(Path(a.root), a.goal_from_target, a.func,
-                               verbose=True, target=a.target)
+                               verbose=True, target=a.target,
+                               target_object=a.target_object,
+                               ours_object=a.ours_object)
         rc = 0
         for f in model["funcs"]:
             if f["func"] != a.func or f["pass"] != a.passno:

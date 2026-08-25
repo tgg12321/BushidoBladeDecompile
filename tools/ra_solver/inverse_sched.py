@@ -196,6 +196,13 @@ def main():
     ap.add_argument("--goal-before", action="append", default=[])
     ap.add_argument("--goal-from-target", metavar="STEM")
     ap.add_argument("--target", help="pin target's stream to this .s")
+    ap.add_argument("--target-object",
+                    help="derive target order from this .o (build/src/<stem>.o)"
+                         " — REQUIRED for INCLUDE_ASM-routed functions (owner "
+                         "ruling 2026-08-25). Needs --ours-object.")
+    ap.add_argument("--ours-object",
+                    help="cheat-stripped sandbox .o from the SAME source state "
+                         "as <stem>.hon.s (tmp/sandbox/<func>/<stem>.o)")
     ap.add_argument("--depth", type=int, default=2)
     ap.add_argument("--top", type=int, default=8)
     ap.add_argument("--root", default=".")
@@ -223,7 +230,9 @@ def main():
     elif a.goal_from_target:
         import goalmap
         m = goalmap.build_map(Path(a.root), a.goal_from_target, a.func,
-                              verbose=True, target=a.target)
+                              verbose=True, target=a.target,
+                              target_object=a.target_object,
+                              ours_object=a.ours_object)
         bu = [int(k) for k, n in blk["nodes"].items() if not n.get("extern")]
         order, unresolved, interp = goalmap.goal_for_block(m, bu, ours, blk)
         bad = goalmap.topo_violations(blk, order)

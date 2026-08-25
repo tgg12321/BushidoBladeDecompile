@@ -46,6 +46,13 @@ python3 tools/multu_pad.py --funcs multu_pad_funcs.txt < "$OUT/$STEM.m.s" > "$OU
 echo "  honest     rc=$? lines=$(wc -l < "$OUT/$STEM.hon.s")"
 
 # ---- target: original source, all cheat stages applied -------------------
+# Owner ruling 2026-08-25 (func_800645B0 packet): a stale .tgt.s left behind a
+# failed target half poisons every downstream classifier with fiction — remove
+# it up front, and fail LOUDLY below if this half does not produce a fresh one.
+# For an INCLUDE_ASM-routed function this half CANNOT produce the target stream
+# (src carries no C body since asm-until-matched); use the object-level path:
+#   python3 tools/ra_solver/goal_from_tgt.py classify <stem> <func>
+rm -f "$OUT/$STEM.tgt.s"
 $CPP "src/$STEM.c" 2>/dev/null > "$OUT/$STEM.tgt.i"
 $CC1 $CC1F "$OUT/$STEM.tgt.i" -o "$OUT/$STEM.tcc1.s" 2>/dev/null
 python3 tools/prologue_fix.py < "$OUT/$STEM.tcc1.s" > "$OUT/$STEM.tp.s" 2>/dev/null
@@ -55,6 +62,12 @@ python3 tools/regfix.py < "$OUT/$STEM.th.s" 2>/dev/null > "$OUT/$STEM.r1.s"
 REGFIX_CONFIG=regfix_stage2.txt python3 tools/regfix.py < "$OUT/$STEM.r1.s" 2>/dev/null > "$OUT/$STEM.r2.s"
 python3 tools/asmfix.py < "$OUT/$STEM.r2.s" 2>/dev/null > "$OUT/$STEM.tgt.s"
 echo "  target     rc=$? lines=$(wc -l < "$OUT/$STEM.tgt.s")"
+if [ ! -s "$OUT/$STEM.tgt.s" ]; then
+    rm -f "$OUT/$STEM.tgt.s"
+    echo "  TARGET HALF FAILED — no $STEM.tgt.s produced (stale file removed)." >&2
+    echo "  For INCLUDE_ASM-routed functions the text path cannot work; use:" >&2
+    echo "    python3 tools/ra_solver/goal_from_tgt.py classify $STEM <func>" >&2
+fi
 
 rm -f "$OUT/$STEM.p.s" "$OUT/$STEM.m.s" "$OUT/$STEM.tp.s" "$OUT/$STEM.tm.s" \
       "$OUT/$STEM.th.s" "$OUT/$STEM.tcc1.s" "$OUT/$STEM.r1.s" "$OUT/$STEM.r2.s"

@@ -206,21 +206,52 @@ def align(a, b, label="", verbose=False):
 
 
 # --------------------------------------------------------------------------
-def build_map(root: Path, stem: str, func: str, verbose=False, target=None):
+def build_map(root: Path, stem: str, func: str, verbose=False, target=None,
+              target_object=None, ours_object=None):
     """-> dict with uid->target-position and the intermediate streams.
 
     TARGET pins the target stream to a specific file.  This matters as soon as
     you iterate: regfix rules are indexed to HEAD's instruction positions, so
     regenerating `<stem>.tgt.s` from an EDITED source produces fiction.  Capture
     it once from clean HEAD (`<stem>.tgt.head.s`) and pass it on every later
-    round -- target is the original binary and does not change with our edits."""
+    round -- target is the original binary and does not change with our edits.
+
+    TARGET_OBJECT (owner ruling 2026-08-25, func_800645B0 packet): for an
+    INCLUDE_ASM-routed function src carries no C body, so no src-derived
+    `<stem>.tgt.s` can contain the target stream.  Pass the canonical build
+    object (build/src/<stem>.o -- its block IS the split asm file's bytes) as
+    TARGET_OBJECT and the cheat-stripped sandbox object
+    (tmp/sandbox/<func>/<stem>.o) as OURS_OBJECT.  Both sides are then objdump
+    renderings in the SAME language, the hop-3 alignment runs object-vs-object,
+    and the hon text stream maps to its object 1:1 by position (enforced)."""
     S = root / "tmp" / "sched_map"
     cc1 = [t for t, _ in asm_body(S / f"{stem}.cc1.s", func)]
     hon = [t for t, _ in asm_body(S / f"{stem}.hon.s", func)]
-    tpath = Path(target) if target else S / f"{stem}.tgt.s"
-    tgt = [t for t, _ in asm_body(tpath, func)]
-    if verbose and target:
-        print(f"  target pinned to {tpath}")
+    if target_object:
+        if not ours_object:
+            raise RuntimeError("target_object requires ours_object (the "
+                               "cheat-stripped sandbox .o for the same source "
+                               "state as <stem>.hon.s)")
+        import sys as _sys
+        if str(root) not in _sys.path:
+            _sys.path.insert(0, str(root))
+        from engine import score as _score
+        tgt = _score.normalized_insns(str(target_object), func, mask=True)
+        hon_obj = _score.normalized_insns(str(ours_object), func, mask=True)
+        if len(hon_obj) != len(hon):
+            raise RuntimeError(
+                f"{func}: honest object has {len(hon_obj)} insns but "
+                f"{stem}.hon.s body has {len(hon)} lines -- the sandbox object "
+                f"was built from a DIFFERENT source state than the sched_map "
+                f"streams. Re-run mkasm.sh and the sandbox on the same tree.")
+        if verbose:
+            print(f"  target from object {target_object} "
+                  f"(ours: {ours_object})")
+    else:
+        tpath = Path(target) if target else S / f"{stem}.tgt.s"
+        tgt = [t for t, _ in asm_body(tpath, func)]
+        if verbose and target:
+            print(f"  target pinned to {tpath}")
     uids, seqs = dbr_uids(root, stem, func)
 
     if verbose:
@@ -238,8 +269,12 @@ def build_map(root: Path, stem: str, func: str, verbose=False, target=None):
 
     # hop 2: cc1 -> honest
     c2h, _ = align(cc1, hon, "cc1->hon", verbose)
-    # hop 3: honest -> target
-    h2t, ops = align(hon, tgt, "hon->tgt", verbose)
+    # hop 3: honest -> target (object mode aligns the objdump renderings, which
+    # share a language; hon text index == hon object index by the length check)
+    if target_object:
+        h2t, ops = align(hon_obj, tgt, "honobj->tgtobj", verbose)
+    else:
+        h2t, ops = align(hon, tgt, "hon->tgt", verbose)
 
     # cc1 index -> target position, with interpolation for unmapped slots.
     # An instruction that difflib could not pair (a MISSING/EXTRA cluster, e.g.

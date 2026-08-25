@@ -27,8 +27,17 @@ echo "  maspsx     rc=$? lines=$(wc -l < $OUT/$STEM.m.s)"
 python3 tools/multu_pad.py --funcs multu_pad_funcs.txt < "$OUT/$STEM.m.s" > "$OUT/$STEM.hon.s" 2>/dev/null
 echo "  multu_pad  rc=$? lines=$(wc -l < $OUT/$STEM.hon.s)"
 
+# Owner ruling 2026-08-25 (func_800645B0 packet): never leave a stale .tgt.s
+# behind a failed target half — it poisons goal derivation with fiction. For
+# INCLUDE_ASM-routed functions this stream cannot carry the target; use the
+# object-level goal path (--target-object build/src/<stem>.o).
+rm -f "$OUT/$STEM.tgt.s"
 python3 tools/regfix.py < "$OUT/$STEM.hon.s" 2>/dev/null > "$OUT/$STEM.r1.s"
 REGFIX_CONFIG=regfix_stage2.txt python3 tools/regfix.py < "$OUT/$STEM.r1.s" 2>/dev/null > "$OUT/$STEM.r2.s"
 python3 tools/asmfix.py < "$OUT/$STEM.r2.s" 2>/dev/null > "$OUT/$STEM.tgt.s"
 echo "  cheats     rc=$? lines=$(wc -l < $OUT/$STEM.tgt.s)"
+if [ ! -s "$OUT/$STEM.tgt.s" ]; then
+    rm -f "$OUT/$STEM.tgt.s"
+    echo "  TARGET HALF FAILED — no $STEM.tgt.s produced (stale file removed)." >&2
+fi
 rm -f "$OUT/$STEM.p.s" "$OUT/$STEM.m.s" "$OUT/$STEM.r1.s" "$OUT/$STEM.r2.s" "$OUT/$STEM.i"
