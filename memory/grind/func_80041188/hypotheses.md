@@ -1184,3 +1184,105 @@ statement, which has never been tried in block 0.
 - probe: tmp/grind/func_80041188/s13/perm_lr seeded from memory/grind/func_80041188/rejected/loop1-real-do-while-newchassis-score5.c, perm_ins_block = 0, -j 8, harvested with --stop.
 - result: KILLED, and the premise was wrong. The permuter's weighted base score for this chassis is 420 -- 4.8x the 88 of the seat-permutation chassis and 6.7x the 63 of the floor-9 chassis -- because reordering diffs cost 60 apiece in its metric while a wrong register costs 5. 4,737 iterations produced 6 finds with a best of 355; the campaign never came within 300 points of closing. Strength-reduction-shaped residuals are invisible to this search. Honest sandbox distance does NOT predict permuter tractability; residual SHAPE does -- s4's rule confirmed from the opposite side.
 - verdict: KILLED
+
+## [s14] The residual is a SINGLE requirement on out2's allocno priority (the framing every session s7..s13 worked from).
+- mechanism: E-s12-3 enumerated out2's achievable (refs, live) pairs against a band (1263, 1702) bounded below by pa4 at 6 refs / 95 and above by tbl at 4 refs / 47, and concluded the only reachable point inside it is the one whose 4th reference IS the residual instruction.
+- probe: Reproduced target's honest reference vector exactly (`V1_honest_both` = candidate.c with `stptr = base + 0xFC;` un-split and `out3 = (s32 *)((u8 *)pa4 + 0x20);`) and read the full `.lreg` priority table plus the `.greg` seat verdict through `bash tools/wsl.sh 'bash tmp/grind/func_80041188/s10/batch.sh ...'`, then compared the resulting rank order against target's seats.
+- result: FALSE as a single requirement. Target's seats require the strict order stptr > i > tbl > out2 > pa4 > a3, which is TWO independent conditions: (A) stptr > i, and (B) tbl > out2 > pa4 > a3. The honest vector violates BOTH — i 2474 > stptr 2439, and out2 714 < a3 808 < pa4 1473. Additionally the band in (B) is (1473, 1702), not (1263, 1702): on the only chassis that emits target's slot-71 `addiu $s3,$s7,0x20`, pa4 carries out3's reference and measures 7 refs / 95 = 1473. The s12 enumeration's CONCLUSION survives the correction (no achievable out2 pair lands in (1473, 1702) either) but its arithmetic was taken from the wrong chassis.
+- verdict: KILLED (as a single-requirement framing); replaced by the two-requirement decomposition in E-s14-1.
+
+## [s14] Requirement (A) — stptr > i — can be satisfied in ordinary C, retiring candidate.c's un-annotated F1 chain-extender `stptr = base; stptr += 0xFC;`.
+- mechanism: flow.c:1685 counts one live insn per RTL insn a pseudo spans, and `i` is DEAD in the between-loops block between loop1's last read and the `i = 0x12;` redefinition. Moving the redefinition earlier shortens that dead gap and LENGTHENS reg_live_length(i), which LOWERS its priority `floor_log2(8)*8/live*10000`. At live 99 i measures 2424, below an un-split stptr's 5 refs / 41 = 2439 — so (A) flips without touching stptr at all.
+- probe: Four-position sweep of `i = 0x12;` through the between-loops block on the un-split-stptr chassis (`X0_ipos` .. `X3_ipos`), each read for the full `.lreg` priority table and `.greg` seat verdict; `X0_ipos` then spliced into `src/text1a_pre.c` and scored with `sandbox func_80041188 --disable all`, and its residual slots extracted with a normalized objdump comparator (`tmp/grind/func_80041188/s14/cmp.py`).
+- result: CONFIRMED. i measures 99/98/97/96 live (2424 / 2448 / 2474 / 2500) at positions 1/2/3/4, and position 1 alone gives ALL-TARGET callee-saved seats with the chain-extender REMOVED — the first form in the ledger with all-target seats and zero FAKE constructs of any kind. It scores 3 at 132/132 insns; the residual is exactly `li $s4,18` at slot 67 instead of slot 69 (pushing the two `addiu $s1/$s2,,0x6C` down one each) plus the long-known slot-71 `move $s3,$s6`. Banked as `memory/grind/func_80041188/alt_fakefree_floor3_s14.c`.
+- verdict: CONFIRMED
+
+## [s14] The +2 emission-order cost of the `i = 0x12;`-first fix can be decoupled from its live-length win by extending i's live range at the FRONT (earlier definition) or by shortening stptr's live range instead.
+- mechanism: reg_live_length is computed by flow on PRE-sched RTL while emission order is decided by sched1's `rank_for_schedule`, which falls back to INSN_LUID for the three dependency-free between-block insns — both read the same source order, so any decoupling has to come from a different variable than statement position in that block.
+- probe: `Y1_ifirst` (`s32 i = 1;` declared first), `Y2_ilate_init` (`s32 i;` declaration split from an `i = 1;` statement placed at the head of block 0), and `Y3_stptr_first` (stptr defined before `saved` and `out2`, to shorten stptr's live range from 41 to 40 and satisfy (A) from stptr's side). Full `.lreg` + `.greg` for each.
+- result: KILLED, all three. Y1: i stays 8 refs / live 97 — the parameter copies emitted by `expand_function_start` always precede any user statement, so i's range cannot be extended at the front; only the allocno numbering changes (i becomes r77, pa4 r78). Y2: i 8 / 96 = 2500, worse. Y3: stptr 5 / 44 = 2272, worse — stptr's live range is pinned to loop1's insn count from below and lengthens, never shortens, when its definition moves earlier. The +2 is therefore structural on this chassis.
+- verdict: KILLED
+
+## [s14] With requirement (A) satisfied honestly, the fully honest chassis reduces to requirement (B) alone.
+- mechanism: n/a — direct measurement of the composed form.
+- probe: `Z0_honest_ifirst` = un-split stptr + `out3 = (s32 *)((u8 *)pa4 + 0x20)` + `i = 0x12;` first; `.lreg` table, `.greg` seats, and `sandbox --disable all` after splicing into src.
+- result: CONFIRMED. stptr 2439 > i 2424 > tbl 1702 > pa4 1473 > a3 808 > out2 714; stptr, i, tbl, stptr2, a1 and a2 all seat on target and the only defect is the {out2, pa4, a3} 3-cycle (`out2=30 pa4=22 a3=23`). sandbox 17 at 132/132 insns. The remaining problem is now exactly one scalar: lift out2 from 714 into (1473, 1702) with no emitted byte.
+- verdict: CONFIRMED — banked as `rejected/honest-vector-ifirst-out2-714-3cycle.c`.
+
+## [s14] An in-loop1 definition of out2 can co-exist with target's slot-71 `addiu $s3,$s7,0x20`.
+- mechanism: the source spelling of out3 was assumed to control the emitted form of out3's definition independently of where out2 is defined.
+- probe: `W1_o2_loop1top` and `W2_o2_beforecall2` (out2 defined inside loop1, out3 spelled `(s32 *)((u8 *)pa4 + 0x20)`), `.lreg` tables plus a read of the post-flow RTL in `tmp/grind/func_80041188/s8/fd.flow`.
+- result: KILLED, with the pass named. The `.flow` dump shows cse1 has already rewritten out3's definition to `(insn 164 (set (reg/v:SI 87) (reg/v:SI 86)))` — a plain `out3 = out2` copy — because with out2 defined inside loop1 the between-loops block sits in the SAME cse extended basic block as that definition, so cse1 knows `out2 == pa4 + 0x20` and substitutes the cheaper register. That substituted copy is also the source of the mysterious 4th reference s12 measured (4 refs / live 21 = 3809). Contrapositive, now proven: target's slot-71 insn REQUIRES out2's definition in block 0, a different EBB — which is exactly the region where s11 measured out2's live length capped at 43.
+- verdict: KILLED
+
+## s14 frontier (for s15)
+
+1. **Requirement (B) is now a one-scalar problem with a named double bind, and the solver
+   modality is the instrument for it.** out2 must reach a priority in (1473, 1702) — i.e.
+   3 refs at live 17.6..20.4, or 4 refs at live 47.0..54.3 — while its DEFINITION stays in
+   block 0 (E-s14-5: any other EBB placement makes cse1 rewrite out3's definition into the
+   residual `move`). Mechanism: `tools/ra_solver` models global.c / local-alloc / reload
+   exactly and `inverse_compose.py classify` converts a register-seat residual into a typed
+   REACHABLE / FORECLOSED verdict with ranked C-lever vectors. Next probe: run
+   `inverse_compose.py classify` against the `Z0_honest_ifirst` chassis (not candidate.c —
+   Z0 is the form whose ONLY defect is this one seat) with stptr / i / tbl / stptr2 / a3
+   pinned at their measured refs/live, goal = out2 into `$s6`; then check its lever vectors
+   against the block-0-definition constraint from E-s14-5, which no previous solver run
+   carried.
+
+2. **Land the FAKE-free (A) fix and re-attack (B) from the `out3 = out2` chassis.**
+   `alt_fakefree_floor3_s14.c` scores 3 with all-target seats and zero FAKE constructs; the
+   shipping candidate scores 1 but carries an un-annotated F1 chain-extender that s11 proved
+   would FAIL layer 1. Those are two different assets and the next session should decide
+   which one is the base. Mechanism: the +2 gap between them is a sched1 INSN_LUID
+   tie-break among three dependency-free between-block insns (E-s14-3), which is a
+   `sched_solver` question, not an RA one. Next probe: run `tools/sched_solver` on the
+   between-loops block of `X0_ipos` asking whether any dependency-preserving source order
+   emits `addiu $s1`, `addiu $s2`, `li $s4,18` in target's order while keeping
+   `i = 0x12;` at LUID position 1 — if it says no, the +2 is proven structural and the
+   candidate must satisfy (A) some other way.
+
+3. **Find the flow-counted / never-emitted construct target itself must contain.**
+   E-s14-2 is a proof by measurement that target's honest reference vector cannot produce
+   target's register assignment, so the original source contains at least one construct
+   whose insns flow counts and which never reaches the bytes. The catalogue of passes that
+   can delete an insn AFTER `flow_analysis` fixes `reg_n_refs` (toplev.c:2983) is short:
+   combine (intra-block only — kills every between-block spelling, s8), reload's redundant
+   copy elimination, and jump2 / cross-jump tail merging (which runs after allocation, so
+   its deletions are free). s2's H2 tried the cross-jump route and failed only on
+   byte-neutrality because sched1 interleaved the fall-in copy. Next probe: re-run the
+   `duplicated-statement-into-arms` construction on the CURRENT `Z0_honest_ifirst` chassis
+   rather than s2's long-dead split model, targeting out2 rather than tbl, and measure
+   whether `jump2` re-merges the duplicated tails (read `.jump2` in the dump, not the
+   sandbox score) — the two chassis differ by six sessions of structure and the s2 verdict
+   is not chassis-valid.
+
+## [s14] The residual is a SINGLE requirement on out2's allocno priority, as every session s7..s13 framed it (E-s12-3's band (1263,1702)).
+- mechanism: global.c allocno_compare pri = floor_log2(reg_n_refs)*reg_n_refs/reg_live_length*10000; E-s12-3 enumerated out2's achievable (refs,live) pairs against a band bounded below by pa4 at 6 refs / 95 = 1263 and above by tbl at 4 refs / 47 = 1702.
+- probe: Reproduced target's honest reference vector exactly (V1_honest_both = candidate.c with `stptr = base + 0xFC;` un-split AND `out3 = (s32 *)((u8 *)pa4 + 0x20);`), read the full .lreg priority table and .greg seat verdict via `bash tools/wsl.sh 'bash tmp/grind/func_80041188/s10/batch.sh ...'`, and compared the resulting rank order against target's seats in asm/funcs/func_80041188.s.
+- result: FALSE as a single requirement. Target's seats require the strict order stptr > i > tbl > out2 > pa4 > a3, which is TWO conditions: (A) stptr > i and (B) tbl > out2 > pa4 > a3. The honest vector violates BOTH (i 2474 > stptr 2439; out2 714 < a3 808 < pa4 1473). The band in (B) is also (1473, 1702) not (1263, 1702): on the only chassis that emits target's slot-71 insn, pa4 carries out3's reference and measures 7 refs / 95 = 1473. E-s12-3's conclusion survives the correction (no achievable out2 pair lands in (1473,1702) either) but its arithmetic came from the wrong chassis.
+- verdict: KILLED
+
+## [s14] Requirement (A) — stptr > i — can be satisfied in ordinary C, retiring candidate.c's un-annotated F1 chain-extender `stptr = base; stptr += 0xFC;`.
+- mechanism: flow.c:1685 counts one live insn per RTL insn a pseudo spans, and `i` is DEAD in the between-loops block between loop1's last read and the `i = 0x12;` redefinition. Moving the redefinition earlier shortens that dead gap, LENGTHENS reg_live_length(i), and therefore LOWERS i's priority floor_log2(8)*8/live*10000 — flipping (A) without touching stptr at all.
+- probe: Four-position sweep of `i = 0x12;` through the between-loops block on the un-split-stptr chassis (X0_ipos..X3_ipos), each read for the full .lreg table plus the .greg seat verdict; X0_ipos then spliced into src/text1a_pre.c, scored with `sandbox func_80041188 --disable all`, and its residual slots extracted with a normalized objdump comparator (tmp/grind/func_80041188/s14/cmp.py).
+- result: CONFIRMED. i measures 99/98/97/96 live (priority 2424 / 2448 / 2474 / 2500) at positions 1/2/3/4, and position 1 alone gives ALL-TARGET callee-saved seats with the chain-extender REMOVED — the first form in the ledger with all-target seats and zero FAKE constructs of any kind. sandbox 3 at 132/132 insns; residual is exactly `li $s4,18` emitted at slot 67 instead of slot 69 (pushing the two `addiu $s1/$s2,,0x6C` down one each) plus the long-known slot-71 `move $s3,$s6` vs `addiu $s3,$s7,0x20`.
+- verdict: CONFIRMED
+
+## [s14] The +2 emission-order cost of the `i = 0x12;`-first fix can be decoupled from its live-length win — by extending i's live range at the FRONT (earlier definition) or by shortening stptr's live range instead.
+- mechanism: reg_live_length is computed by flow on PRE-sched RTL while emission order is decided by sched1's rank_for_schedule, which falls back to INSN_LUID for the three dependency-free between-block insns; both read the same source order, so decoupling needs a different variable than statement position in that block.
+- probe: Y1_ifirst (`s32 i = 1;` declared first), Y2_ilate_init (`s32 i;` declaration split from an `i = 1;` statement at the head of block 0), Y3_stptr_first (stptr defined before saved/out2, to shorten stptr's live range from 41 to 40 and satisfy (A) from stptr's side). Full .lreg + .greg for each.
+- result: KILLED, all three. Y1: i stays 8 refs / live 97 — the parameter copies emitted by expand_function_start always precede any user statement, so i's range cannot be extended at the front (only the allocno numbering changes: i becomes r77, pa4 r78). Y2: i 8 / 96 = 2500, worse. Y3: stptr 5 / 44 = 2272, worse — stptr's live range is pinned to loop1's insn count from below and lengthens, never shortens, when its definition moves earlier. The +2 is structural on this chassis.
+- verdict: KILLED
+
+## [s14] With requirement (A) satisfied honestly, the fully honest chassis reduces to requirement (B) alone.
+- mechanism: direct measurement of the composed form (no new mechanism claim).
+- probe: Z0_honest_ifirst = un-split stptr + `out3 = (s32 *)((u8 *)pa4 + 0x20)` + `i = 0x12;` first; .lreg table, .greg seats, and `sandbox func_80041188 --disable all` after splicing into src/text1a_pre.c.
+- result: CONFIRMED. stptr 2439 > i 2424 > tbl 1702 > pa4 1473 > a3 808 > out2 714; stptr, i, tbl, stptr2, a1 and a2 all seat on target and the ONLY defect is the {out2, pa4, a3} 3-cycle (out2=$fp, pa4=$s6, a3=$s7). sandbox 17 at 132/132 insns. The remaining problem is now exactly one scalar: lift out2 from 714 into (1473, 1702) with no emitted byte.
+- verdict: CONFIRMED
+
+## [s14] An in-loop1 definition of out2 (the only shape reaching a short live range) can co-exist with target's slot-71 `addiu $s3,$s7,0x20`.
+- mechanism: the source spelling of out3 was assumed to control the emitted form of out3's definition independently of where out2 is defined.
+- probe: W1_o2_loop1top and W2_o2_beforecall2 (out2 defined inside loop1, out3 spelled `(s32 *)((u8 *)pa4 + 0x20)`), .lreg tables plus a direct read of the post-flow RTL in tmp/grind/func_80041188/s8/fd.flow.
+- result: KILLED, with the pass named. The .flow dump shows cse1 has ALREADY rewritten out3's definition to `(insn 164 (set (reg/v:SI 87) (reg/v:SI 86)))` — a plain `out3 = out2` copy — because with out2 defined inside loop1 the between-loops block sits in the SAME cse extended basic block as that definition, so cse1 knows out2 == pa4 + 0x20 and substitutes the cheaper register. That substituted copy is also the source of the unexplained 4th reference s12 measured (4 refs / live 21 = 3809). Contrapositive, now proven: target's slot-71 insn REQUIRES out2's definition in block 0 (a different EBB), which is exactly the region where s11 measured out2's live length capped at 43.
+- verdict: KILLED

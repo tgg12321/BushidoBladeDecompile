@@ -1694,3 +1694,169 @@ then proved has no non-`ins_block` exit. Banked as
 - [s13] TOOLING FIX (reusable): the s4 workspace recipe's extraction awk (/^\t\.ent\tfunc_80041188$/) matches nothing, because maspsx strips the leading tab from directives, so as fails with '.frame outside of .ent'. The working pattern is /^[ \t]*\.ent[ \t]+func_80041188$/ ... /^[ \t]*\.end[ \t]+func_80041188$/. Fixed copies live in tmp/grind/func_80041188/s13/perm_*/compile.sh.
 
 - [s13] No campaign outlived the session: all four were harvested with --stop (perm_f9 self-stopped on zero), 18 worker processes were killed in total, and pgrep shows no permuter process remaining.
+
+## s14 (synthesis, 2026-08-24) — the residual decomposes into TWO independent priority requirements, and one of them is now solvable in ordinary C
+
+Chassis re-measured at the start of the session: `memory/grind/func_80041188/candidate.c`
+spliced into `src/text1a_pre.c` scores `sandbox func_80041188 --disable all` = **1**,
+132 target / 132 build insns, `rules_dropped: 16, cheat_asm_stripped: 2`. Every number
+below is from that chassis measured this session through
+`tmp/grind/func_80041188/s10/batch.sh`, which must be run through WSL —
+`bash tools/wsl.sh 'bash tmp/grind/func_80041188/s10/batch.sh <files>'`. The Windows-side
+Bash tool cannot spawn the cc1 harness; it returns a bare `FileNotFoundError` that
+`batch.sh` swallows into a plausible-looking but FAKE `|SEATS ...` line. That cost this
+session one wasted probe and will cost the next session one too unless it uses `wsl.sh`.
+
+### E-s14-1 — the empirical seat rule, stated and validated on two chassis
+
+Across every measured form the six contested allocnos `{stptr, i, tbl, out2, pa4, a3}`
+take the seats `$s3, $s4, $s5, $s6, $s7, $fp` **in DESCENDING allocno-priority order**
+(`pri = floor_log2(reg_n_refs) * reg_n_refs / reg_live_length * 10000`), with exact ties
+broken by ascending allocno number. Validated in both directions this session:
+
+* `candidate.c` — stptr 3414, i 2474, tbl 1702, out2 1702, pa4 1263, a3 808 →
+  `$s3,$s4,$s5,$s6,$s7,$fp` = **ALL-TARGET**.
+* `V1_honest_both` — i 2474, stptr 2439, tbl 1702, pa4 1473, a3 808, out2 714 →
+  `$s3,$s4,$s5,$s6,$s7,$fp` = i, stptr, tbl, pa4, a3, out2, which is EXACTLY the measured
+  `.greg` disposition (`i=19 out2=30 pa4=22 a3=23 stptr=20 out3=20`).
+
+Target's seats (`asm/funcs/func_80041188.s`: `$s3`=stptr then out3, `$s4`=i, `$s5`=tbl,
+`$s6`=out2, `$s7`=pa4, `$fp`=a3) therefore require the priority order
+**stptr > i > tbl > out2 > pa4 > a3**, i.e. TWO independent requirements:
+
+* **(A) `stptr > i`.**
+* **(B) `tbl > out2 > pa4 > a3`** — out2 strictly inside the band bounded by pa4 below
+  and tbl above.
+
+Sessions s7..s13 folded these together and attacked only (B). They are separable, and (A)
+has an ordinary-C solution (E-s14-3).
+
+### E-s14-2 — target's OWN honest reference vector is exactly reproducible, and it does NOT seat like target
+
+Reference counts read directly off `asm/funcs/func_80041188.s`: stptr 5, out2 3, out3 3,
+pa4 7, tbl 4, i 8, stptr2 6, a3 4, a1/a2 16. `tmp/grind/func_80041188/s14/V1_honest_both.c`
+(candidate.c with `stptr = base + 0xFC;` un-split AND `out3 = (s32 *)((u8 *)pa4 + 0x20);`)
+measures **exactly that vector**: `r88=5/41:2439 r86=3/42:714 r87=3/47:638 r77=7/95:1473
+r79=4/47:1702 r78=8/97:2474 r91=6/48:2500 r75=4/99:808`. Banked as
+`rejected/honest-vector-exact-target-refs-seats-permute.c`.
+
+It fails BOTH requirements: i (2474) > stptr (2439), and out2 (714) sits below pa4 (1473)
+AND below a3 (808). **So the honest reference vector alone cannot produce target's register
+assignment.** This is the sharpest statement of the residual the ledger has carried: it is
+not "out2 needs a 4th reference", it is "target's source contains at least one construct
+that flow counts and that never reaches the emitted bytes", and that construct has to move
+(A) and/or (B).
+
+Corrected band for (B) on the honest chassis: with `out3 = pa4 + 0x20`, pa4 carries out3's
+reference and measures **7 refs / 95 = 1473** — NOT the 6 refs / 1263 that s12's E-s12-3
+enumeration used, which is the `out3 = out2` chassis's value. The required band is
+therefore **(1473, 1702)**, which at 3 references means live length 17.6..20.4 and at 4
+references means live length 47.0..54.3. s11's ceiling (block-0 definition, live <= 43) and
+s12's floor (in-loop definition, 4 refs / live 21 = 3809) still exclude every achievable
+pair, so E-s12-3's conclusion survives the correction unchanged — but the numbers it was
+argued from were wrong for the only chassis that emits target's slot-71 insn, and are
+replaced here.
+
+### E-s14-3 — (A) is satisfiable in ORDINARY C: `i` live length 99 retires the FAKE chain-extender
+
+s11 proved `candidate.c`'s `stptr = base; stptr += 0xFC;` is an un-annotated F1
+combine-foldable chain-extender whose ONLY effect is lifting stptr from 5 refs to 7 refs
+(2439 -> 3414), and that un-splitting it drops the floor 1 -> 15. This session shows WHY it
+is load-bearing and what can replace it: the split exists solely to satisfy (A).
+
+With stptr un-split (5 refs / 41 = 2439) the ONLY defect versus target is (A) —
+`V2_unsplit_o2` measures `i=19 stptr=20 out3=20` and every other seat correct. Moving
+`i = 0x12;` to be the **first** statement of the between-loops block closes the dead gap
+between loop1's last read of `i` and its redefinition, raising `reg_live_length(i)` from 97
+to 99 and dropping its priority 2474 -> **2424, below stptr's 2439**:
+
+| form | `i = 0x12;` position in the between-block | i refs/live/pri | seats |
+|---|---|---|---|
+| `X0_ipos` | 1st | 8 / 99 / **2424** | **ALL-TARGET** |
+| `X1_ipos` | 2nd | 8 / 98 / 2448 | i=$s3, stptr=$s4 |
+| `X2_ipos` | 3rd (= candidate.c) | 8 / 97 / 2474 | i=$s3, stptr=$s4 |
+| `X3_ipos` | 4th | 8 / 96 / 2500 | i=$s3, stptr=$s4 |
+
+`X0_ipos` therefore reaches **ALL-TARGET callee-saved seats with NO FAKE construct anywhere
+in the body** — no split chain-extender, no variable reuse, no dead store, no do-while(0).
+Its `sandbox --disable all` score is **3 at 132/132 insns**, and a normalized objdump
+comparison (`tmp/grind/func_80041188/s14/cmp.py`) shows the residual is exactly three slots:
+`li $s4,18` emitted at slot 67 instead of slot 69 (the two `addiu $s1/$s2,,0x6C` insns shift
+down one each), plus the long-known slot-71 `move $s3,$s6` vs `addiu $s3,$s7,0x20`. Banked
+as `memory/grind/func_80041188/alt_fakefree_floor3_s14.c`.
+
+The +2 is a sched1 emission-order cost and it is structurally coupled to the win: flow
+computes `reg_live_length` on PRE-sched RTL (source order) while sched1's
+`rank_for_schedule` falls back to `INSN_LUID` (also source order) for the three
+dependency-free between-block insns, so the same statement order that buys i live 99 also
+forces `i = 0x12` to be emitted first. Three independent attempts to decouple them failed:
+
+* `Y1_ifirst` (declare `s32 i = 1;` first) — i stays 8 / 97. The parameter copies emitted by
+  `expand_function_start` always precede it, so i's live range cannot be extended at the
+  front; only the allocno NUMBERING changes (i becomes r77, pa4 becomes r78).
+* `Y2_ilate_init` (split `s32 i;` declaration from an `i = 1;` statement) — i 8 / **96**,
+  which is worse.
+* `Y3_stptr_first` (define stptr before saved/out2, satisfying (A) from the other side by
+  shortening stptr's live range to 40) — stptr goes to 5 / **44** = 2272, worse. stptr's
+  live range is pinned to loop1's insn count and cannot shrink.
+
+### E-s14-4 — with (A) satisfied honestly, the honest chassis reduces to a pure 3-cycle on {out2, pa4, a3}
+
+`Z0_honest_ifirst` = the honest vector (un-split stptr, `out3 = pa4 + 0x20`) PLUS the
+`i = 0x12;`-first fix: `r88=5/41:2439 r78=8/99:2424 r79=4/47:1702 r77=7/95:1473 r75=4/99:808
+r86=3/42:714`, seats `out2=30 pa4=22 a3=23` — stptr, i, tbl, stptr2, a1 and a2 all land on
+target and the ONLY defect left is the {out2, pa4, a3} 3-cycle, i.e. requirement (B) alone.
+`sandbox --disable all` = **17** at 132/132 insns. Banked as
+`rejected/honest-vector-ifirst-out2-714-3cycle.c`. This is the cleanest statement of what
+remains: **one number — out2's allocno priority — must be lifted from 714 into (1473, 1702)
+without adding an emitted byte.**
+
+### E-s14-5 — cse1 substitutes `out2` for `pa4 + 0x20` whenever their EBBs coincide (mechanism read out of the RTL)
+
+Probing why an in-loop1 definition of out2 measures 4 references rather than the 3 the
+source shape suggests (`W1_o2_loop1top` and `W2_o2_beforecall2` are byte-identical in
+`.lreg`, re-confirming s12's position-inertness on the un-split chassis as well), the
+`.flow` dump names the mechanism directly. In `tmp/grind/func_80041188/s8/fd.flow` the
+source's `out3 = (s32 *)((u8 *)pa4 + 0x20);` has been rewritten by cse1 into
+`(insn 164 (set (reg/v:SI 87) (reg/v:SI 86)))` — a plain `out3 = out2` copy. With out2's
+definition inside loop1, the between-loops block lies in the SAME cse extended basic block
+as that definition, so cse1 knows `out2 == pa4 + 0x20` and substitutes the cheaper register.
+The 4th reference IS that substituted copy — and it also means the in-loop-def chassis can
+NEVER emit target's `addiu $s3,$s7,0x20`, no matter how out3 is spelled in the source.
+
+The contrapositive is the useful half, and it is now proven rather than assumed:
+**target's slot-71 `addiu $s3,$s7,0x20` requires out2's definition to sit in a DIFFERENT
+extended basic block from the between-loops block** — i.e. in block 0 — because only there
+does cse1 leave the `pa4 + 0x20` expression alone. Block 0 is also exactly where s11
+measured out2's live length capped at 43. The two constraints together are what make (B)
+hard, and they are now attributable to a named pass (cse.c EBB scoping) rather than to an
+empirical coincidence.
+
+### s14 artifacts
+`tmp/grind/func_80041188/s14/` — `V0_candidate.c`, `V1_honest_both.c`, `V2_unsplit_o2.c`,
+`V3_split_o3.c`, `W1_o2_loop1top.c`, `W2_o2_beforecall2.c`, `W3_o2_endblock0.c`,
+`X0_ipos.c` .. `X3_ipos.c`, `Y1_ifirst.c`, `Y2_ilate_init.c`, `Y3_stptr_first.c`,
+`Z0_honest_ifirst.c`, `splice.py` (candidate-into-src splicer), `cmp.py` (normalized
+objdump-vs-splat slot comparator), `text1a_pre.orig.c`.
+
+- [s14] Chassis re-measured this session: memory/grind/func_80041188/candidate.c spliced into src/text1a_pre.c scores `sandbox func_80041188 --disable all` = 1, 132 target / 132 build insns, rules_dropped 16, cheat_asm_stripped 2. Unchanged from the ledger floor.
+
+- [s14] SEAT RULE (E-s14-1, validated in both directions this session): the six contested allocnos {stptr, i, tbl, out2, pa4, a3} take $s3,$s4,$s5,$s6,$s7,$fp in DESCENDING allocno-priority order, exact ties broken by ascending allocno number. candidate.c (3414/2474/1702/1702/1263/808) -> ALL-TARGET; V1_honest_both (i 2474, stptr 2439, tbl 1702, pa4 1473, a3 808, out2 714) -> the measured .greg disposition i=$s3, stptr=$s4, tbl=$s5, pa4=$s6, a3=$s7, out2=$fp, exactly as the rule predicts.
+
+- [s14] Target's seats therefore require the strict priority order stptr > i > tbl > out2 > pa4 > a3, i.e. TWO independent requirements: (A) stptr > i, and (B) tbl > out2 > pa4 > a3. Sessions s7..s13 attacked only (B).
+
+- [s14] Target's honest reference vector, read directly off asm/funcs/func_80041188.s (stptr 5, out2 3, out3 3, pa4 7, tbl 4, i 8, stptr2 6, a3 4, a1/a2 16), is reproduced EXACTLY by V1_honest_both: r88=5/41:2439 r86=3/42:714 r87=3/47:638 r77=7/95:1473 r79=4/47:1702 r78=8/97:2474 r91=6/48:2500 r75=4/99:808 — and it fails BOTH requirements. Target's own reference counts cannot produce target's register assignment, so the original source contains at least one construct that flow counts and that never reaches the emitted bytes.
+
+- [s14] CORRECTION to s12's E-s12-3 arithmetic: on the `out3 = pa4 + 0x20` chassis (the only one that emits target's slot-71 insn) pa4 carries out3's reference and measures 7 refs / 95 = 1473, not the 6 refs / 1263 the enumeration used. The band for (B) is (1473, 1702): 3 refs needs live 17.6..20.4, 4 refs needs live 47.0..54.3. E-s12-3's CONCLUSION survives — s11's ceiling (block-0 def, live <= 43) and s12's floor (in-loop def, 4 refs / 21 = 3809) still exclude every achievable pair — but the numbers it was argued from are replaced.
+
+- [s14] (A) HAS AN ORDINARY-C SOLUTION. `i = 0x12;` as the FIRST statement of the between-loops block closes i's dead gap and raises reg_live_length(i) 97 -> 99, dropping i's priority 2474 -> 2424, below an UN-SPLIT stptr's 5 refs / 41 = 2439. Sweep: position 1 -> live 99 / 2424 / ALL-TARGET SEATS; position 2 -> 98 / 2448 / fail; position 3 (= candidate.c) -> 97 / 2474 / fail; position 4 -> 96 / 2500 / fail.
+
+- [s14] memory/grind/func_80041188/alt_fakefree_floor3_s14.c is the resulting form: ALL-TARGET callee-saved seats, sandbox --disable all = 3 at 132/132 insns, and ZERO FAKE constructs — no split chain-extender, no variable reuse, no dead store, no do-while(0) wrap. It is the first such form in fourteen sessions. Its residual is `li $s4,18` at slot 67 instead of slot 69 (2 insns) plus the slot-71 `move $s3,$s6` vs `addiu $s3,$s7,0x20` (1 insn).
+
+- [s14] The +2 is a sched1 INSN_LUID emission-order cost structurally coupled to the win: flow reads reg_live_length off PRE-sched RTL (source order) while sched1's rank_for_schedule falls back to INSN_LUID (also source order) for the three dependency-free between-block insns. Three decoupling attempts failed: Y1_ifirst (i declared first) leaves i at 8/97 because expand_function_start's parameter copies always precede any user statement; Y2_ilate_init gives 8/96 (worse); Y3_stptr_first gives stptr 5/44 = 2272 (worse — stptr's live range is pinned to loop1's insn count and only lengthens when its definition moves earlier).
+
+- [s14] Z0_honest_ifirst (un-split stptr + out3 = pa4 + 0x20 + `i = 0x12;` first) reduces the honest chassis to requirement (B) ALONE: stptr, i, tbl, stptr2, a1, a2 all seat on target and the only defect is the {out2, pa4, a3} 3-cycle. sandbox 17 at 132/132. The whole remaining problem is one scalar: out2 from 714 into (1473, 1702) with no emitted byte.
+
+- [s14] MECHANISM NAMED (E-s14-5, read out of tmp/grind/func_80041188/s8/fd.flow, not guessed): with out2's definition inside loop1, cse1 rewrites the source's `out3 = (s32 *)((u8 *)pa4 + 0x20);` into `(insn 164 (set (reg/v:SI 87) (reg/v:SI 86)))` — a plain `out3 = out2` copy — because the between-loops block is then in the SAME cse extended basic block as out2's definition. This explains the unattributed 4th reference s12 measured (4 refs / live 21) AND proves the contrapositive: target's slot-71 `addiu $s3,$s7,0x20` REQUIRES out2's definition in block 0, which is exactly where s11 capped out2's live length at 43.
+
+- [s14] HARNESS WARNING for the next session: tmp/grind/func_80041188/s10/batch.sh must be run through WSL (`bash tools/wsl.sh 'bash tmp/grind/func_80041188/s10/batch.sh <files>'`). Run from the Windows-side Bash tool it cannot spawn cc1, raises a bare FileNotFoundError that the script swallows, and emits a plausible-looking but FABRICATED `|SEATS ...` line with no priority table in front of it. That cost this session one wasted probe.

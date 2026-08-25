@@ -2,7 +2,7 @@
  * --disable all == 1, 132/132 insns, frame 72 == target 0x48.
  *
  * ORDINARY C. No register pin, no inline asm, no volatile, no dead code, no
- * unused local, NO /* FAKE *â€‹/ construct, no variable reuse, no do-while(0)
+ * unused local, NO /* FAKE *Ã¢â‚¬â€¹/ construct, no variable reuse, no do-while(0)
  * wrap. Every local is once-declared, written where a human would write it,
  * and read for its real value. This REPLACES the s3/s5/s6 "merged stptr"
  * chassis (loop2's pointer reusing the dead loop1 walker via an out2 read),
@@ -128,6 +128,29 @@
  * that same dead basin (its one find is a same-value re-store of out2, honest
  * sandbox 9). See evidence.md s13. The `stptr = base; stptr += 0xFC;`
  * chain-extender below is STILL the one unresolved artifact defect.
+  *
+ * s14 ADDENDUM (synthesis, 2026-08-24). Re-measured at the start of s14 on this exact
+ * body: STILL sandbox 1 / 132 of 132 insns / ALL-TARGET seats. s14 decomposed the
+ * residual into TWO independent allocno-priority requirements instead of one:
+ *   (A) stptr > i, and (B) tbl > out2 > pa4 > a3,
+ * because the six contested allocnos take $s3,$s4,$s5,$s6,$s7,$fp in DESCENDING
+ * priority order (validated in both directions, E-s14-1). The `stptr = base;
+ * stptr += 0xFC;` chain-extender flagged by s11 exists SOLELY to satisfy (A), and
+ * s14 found an ordinary-C replacement for it: moving `i = 0x12;` to be the FIRST
+ * statement of the between-loops block lengthens reg_live_length(i) 97 -> 99 and drops
+ * i's priority 2474 -> 2424, below an UN-SPLIT stptr's 2439. That form
+ * (memory/grind/func_80041188/alt_fakefree_floor3_s14.c) reaches ALL-TARGET seats with
+ * ZERO FAKE constructs and scores 3 at 132/132 — the extra 2 over this body is a sched1
+ * INSN_LUID emission-order cost (`li $s4,18` lands at slot 67 instead of 69) that three
+ * decoupling attempts could not remove (E-s14-3). So the shipping choice is now explicit:
+ * THIS body is floor 1 but carries the un-annotated F1 chain-extender s11 proved would
+ * FAIL layer 1; alt_fakefree_floor3_s14.c is floor 3 but is honestly committable.
+ * s14 also corrected s12's band arithmetic — on the only chassis that emits target's
+ * slot-71 insn, pa4 is 7 refs / 95 = 1473 (not 1263), so (B) needs out2 in (1473, 1702)
+ * — and named the pass that forbids the obvious escape: with out2's definition in the
+ * same cse extended basic block as the between-loops block, cse1 rewrites
+ * `out3 = pa4 + 0x20` into `out3 = out2` itself (E-s14-5, read out of fd.flow insn 164),
+ * so target's `addiu $s3,$s7,0x20` REQUIRES out2 defined in block 0.
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
@@ -147,7 +170,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     out2 = (s32 *) (((u8 *) pa4) + 0x20);
     stptr = base;
     stptr += 0xFC; /* FAKE: F1 combine-foldable chain-extender (see header s11
-                      correction) — byte-neutral split whose only effect is
+                      correction) â€” byte-neutral split whose only effect is
                       lifting stptr's reg_n_refs 5->7 (floor 15->1); target
                       emits the single addiu. NOT committable un-annotated. */
     loop1:

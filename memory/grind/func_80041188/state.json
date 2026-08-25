@@ -1,8 +1,8 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 13,
- "current_modality": "permuter",
+ "session_count": 14,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -87,23 +87,29 @@
    "floor": 1,
    "modality": "permuter",
    "headline": "Permuter proves the BANNED do-while(0) wrap is the UNIQUE route to distance 0 on the floor-9 chassis (0 in 2.6k iters with it; 22.4k iters and ZERO finds with perm_ins_block=0); the two-locals pa4-out"
+  },
+  {
+   "session": 14,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Synthesis split the residual into TWO independent allocno-priority requirements; (A) stptr>i is now solvable in ORDINARY C (i live 99 via `i = 0x12;` first), producing the ledger's first ALL-TARGET-se"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "candidate.c can be made genuinely FAKE-free by replacing the load-bearing 'stptr = base; stptr += 0xFC;' chain-extender with a spelling that reaches stptr 7 refs / live 41 without a byte-neutral detour. Unchanged by s13: 22k wrap-free mutations of a chassis containing that split never produced an alternative spelling, which is weak negative evidence but not a directed probe of it.",
-   "mechanism": "stptr must outrank stptr2 (6 refs / 48 = 2500) to keep $s3; at live 41 that needs >= 7 references, and target emits only a single addiu for its definition, so the extra references have to come from real in-loop uses of stptr rather than from its initialisation.",
-   "next_probe": "Enumerate loop1 spellings in which stptr is read for real values target already computes from it (stptr + 0x38, stptr + 6, stptr + 0x68) as separate named intermediates or repeated reads instead of folded expressions; measure r88's refs/live in .lreg via tmp/grind/func_80041188/s10/batch.sh and require build_insns == 132."
+   "hypothesis": "Requirement (B) is now a one-scalar problem with a named double bind \u2014 out2 must reach a priority in (1473, 1702) WHILE its definition stays in block 0 \u2014 and the solver suite is the instrument designed for exactly this shape.",
+   "mechanism": "tools/ra_solver models GCC 2.7.2's entire allocation stack (global.c / local-alloc / reload) and inverse_compose.py classify converts a register-seat residual into a typed REACHABLE / FORECLOSED verdict with ranked C-lever vectors. The out2 residual is a pure register-seat residual, and s14 has reduced its surrounding chassis to a form where every other seat is already correct, so the solver's goal is now unambiguous.",
+   "next_probe": "Run tools/ra_solver/inverse_compose.py classify against the Z0_honest_ifirst chassis (NOT candidate.c \u2014 Z0 is the form whose only defect is this one seat) with stptr 5/41, i 8/99, tbl 4/47, stptr2 6/48, pa4 7/95 and a3 4/99 pinned at their measured values, goal = out2 into $s6; then filter its lever vectors against the block-0-definition constraint from E-s14-5, which no previous solver run carried."
   },
   {
-   "hypothesis": "The solver suite can return an independent REACHABLE/FORECLOSED verdict on the out2 seat, corroborating or refuting the hand-enumerated closure of the (1263, 1702) priority band. Now doubly motivated: s13's campaign 4 had the permuter independently re-derive E-s12-3's conclusion by random search, so a third, typed confirmation would make the closure argument tri-modal.",
-   "mechanism": "tools/ra_solver models GCC 2.7.2's entire allocation stack (global.c / local-alloc / reload) and inverse_compose.py classify converts a residual register seat into a typed verdict with ranked C-lever vectors; the out2 residual is exactly a register-seat residual, which is the solver's designed input.",
-   "next_probe": "Run tools/ra_solver/inverse_compose.py classify against the candidate.c chassis targeting out2's seat ($s6) with tbl/pa4/a3 pinned at their measured refs/live, and compare its lever vectors against the four (n, live) achievability classes recorded in evidence.md E-s12-3."
+   "hypothesis": "The +2 emission-order gap between alt_fakefree_floor3_s14.c (floor 3, honest) and candidate.c (floor 1, un-annotated F1) is a sched1 tie-break question, not an RA question, and tools/sched_solver can rule it REACHABLE or FORECLOSED \u2014 which decides which of the two forms the pipeline should carry as its base.",
+   "mechanism": "sched.c's rank_for_schedule falls back to INSN_LUID for ready insns of equal priority, and the three between-block insns (addiu $s1,0x6C; addiu $s2,0x6C; li $s4,18) are mutually independent with no in-block consumers, so their emission order is decided purely by source order \u2014 the same source order that sets reg_live_length(i). tools/sched_solver models both scheduler passes order- and clock-exact.",
+   "next_probe": "Run tools/sched_solver on the between-loops block of X0_ipos asking whether any dependency-preserving source order emits addiu $s1, addiu $s2, li $s4,18 in target's order while keeping `i = 0x12;` at LUID position 1; if FORECLOSED, the +2 is proven structural and (A) must be satisfied by some other honest lever, so re-open the search for one (e.g. a 6th honest stptr reference at live 41 = 2926)."
   },
   {
-   "hypothesis": "A permuter campaign seeded from the CANDIDATE chassis itself (floor 1, permuter base 200) with perm_ins_block = 0 would settle whether the floor-1 basin has any wrap-free neighbour at all. s4's campaign 1 killed that basin with the STOCK transform set (22.3k iterations, one semantics-breaking find), so the wrap-free result is inferable but has never been measured.",
-   "mechanism": "Same weight_overrides mechanism as s13's campaigns 2-4. The floor-1 chassis's residual is a single wrong-opcode instruction (move $s3,$s6 vs addiu $s3,$s7,0x20), which the permuter's metric treats as a cliff (base 200) rather than a gradient, so a null result is expected -- but it is cheap and it closes the last unmeasured permuter cell for this function.",
-   "next_probe": "Copy tmp/grind/func_80041188/s13/perm_f9b, rebuild base.c from memory/grind/func_80041188/candidate.c via the s13 mkws_*.sh recipe, launch with --stop-on-zero, wait two ~9-minute windows via permuter_campaign.py wait, harvest --stop, and bank the iteration count as the wrap-free null for the floor-1 basin."
+   "hypothesis": "Target's source contains a construct whose insns flow counts and which is deleted AFTER flow fixes reg_n_refs \u2014 E-s14-2 proves such a construct must exist \u2014 and the surviving candidate family is jump2 / cross-jump tail merging, which runs after allocation so its deletions are free.",
+   "mechanism": "flow_analysis fixes reg_n_refs at toplev.c:2983; the passes that can delete an insn afterwards are combine (intra-block only \u2014 which is why every between-block spelling died in s8), reload's redundant-copy elimination, and jump2 / cross-jump tail merging. The sanctioned duplicated-statement-into-arms family (.claude/rules/duplicated-statement-into-arms.md) is exactly the cross-jump lever, and s2 measured its ref-lift mechanism CONFIRMED, failing only on byte-neutrality because sched1 interleaved the fall-in copy.",
+   "next_probe": "Re-run the duplicated-statement-into-arms construction on the CURRENT Z0_honest_ifirst chassis rather than s2's long-dead split model, targeting out2 rather than tbl, and read the .jump2 dump (pwsh tools/grinder/dump.ps1 func_80041188) to see whether the duplicated tails re-merge \u2014 the sandbox score alone cannot distinguish 'not merged' from 'merged but mis-seated', and the two chassis differ by six sessions of structure so the s2 verdict is not chassis-valid."
   }
  ],
  "judge_constraints": [
