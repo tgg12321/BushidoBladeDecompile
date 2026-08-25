@@ -1,11 +1,18 @@
-/* candidate.c — func_80040D48 — s1 2026-08-24 — honest floor 24 (from 34)
- * Session s1 (recon): pin removed; prologue two-var load shape; s5 variable
- * reuse across s4+0x2C role AND Copy8-loop source pointer (goto-loop spelling
- * to avoid rotation). Remaining 24: a4p IV-bias cluster (4), a2p/a3p seats
- * (~14), a2p2/-1 seats (6). See evidence.md s1 map.
+/* candidate.c — func_80040D48 — s2 2026-08-24 — honest floor 4 (from 24)
+ * s1: pin removed; prologue two-var load; s5 variable reuse (s4+0x2C role +
+ *     Copy8-loop source pointer), goto-loop spelling to defeat rotation.  -> 24
+ * s2: a2p (the Copy8 loop's list-push walker, s4+0x10D4) and the later
+ *     s4+0x8B4 walker are ONE variable in the original.  Merging them raises
+ *     that pseudo's global.c priority above the a3p copy pointer's, so a2p is
+ *     allocated first and takes $a2 while a3p falls to $a3 — exactly target.
+ *     Closed Class B (14 diffs) AND Class C (6 diffs) in one edit.       -> 4
+ * Remaining 4 = Class A: the case-0 init loop's a4p induction variable is
+ * biased +0x14 (base addiu s3,124 with sh offsets -4/-2/0) because loop.c
+ * combine_givs merges the three dest-address givs onto the LAST one and
+ * strength-reduces; target is provably UNREDUCED (base s3,104 = the biv
+ * itself, offsets +16/+18/+20).  See evidence.md s2 for the full mechanism.
  * Apply: replace the func_80040D48 region in src/text1a_pre.c (incl. the
- * typedef/extern prelude) with this file. Measured floor 24 THIS chassis
- * (HEAD 250f7ee6 + this body).
+ * typedef/extern prelude) with this file.  Measured floor 4 THIS chassis.
  */
 typedef void (*FuncPtr_40D48)(s16 *, s16 *);
 typedef struct { s32 a, b, c, d, e, f, g, h; } Copy8_40D48;
@@ -180,19 +187,16 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
             goto copyloop;
         }
     copydone:;
-    }
 
-    {
-        s16 *a2p2;
-        a2p2 = (s16 *)(s4 + 0x8B4);
+        a2p = s4 + 0x8B4;
         if (*(s16 *)(s4 + 0x8B6) != -1) {
             do {
                 s32 *list4;
                 list4 = (s32 *)D_800A3820;
                 D_800A3820 = (s32)(list4 + 1);
-                *list4 = (s32)a2p2;
-                a2p2 = (s16 *)((u8 *)a2p2 + 0x68);
-            } while (a2p2[1] != -1);
+                *list4 = (s32)a2p;
+                a2p += 0x68;
+            } while (*(s16 *)(a2p + 2) != -1);
         }
     }
 

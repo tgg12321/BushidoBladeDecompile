@@ -119,3 +119,141 @@ structural change (probe relativity). Both lessons applied here.
 - [s1] greg/lreg dumps read for pass attribution: seat swap was global.c priority order (pseudo 77 arg5 4refs/362 vs 79 ptr 2refs/109, adjacent); flow.c:2081 reg_n_refs += loop_depth is the weighting that lets the merged-variable structure win
 
 - [s1] cse1-folds-derived-base-anchors banked as a dead mechanism class for ref-bumping (rejected/derived-base-anchor-ref-cse-folded.c)
+
+## [s2 2026-08-24, structural] Floor 24 → 4: the a2p/a2p2 merge closes Classes B and C
+
+**Chassis re-measurement.** s1's candidate.c re-applied to src/text1a_pre.c
+reproduced `sandbox --disable all` = **24** (272/272, 34 rules dropped, 2
+cheat-asm stripped) on HEAD abf5600a. s1's floor is chassis-valid; every
+number below is on that chassis with the candidate body in src.
+
+**The Class B mechanism, measured (not guessed).** `pwsh tools/grinder/dump.ps1
+func_80040D48` regenerated against the current body. From the `.lreg` dump the
+two Copy8-loop pointers are pseudo **186 = a2p** (`s4 + 0x10D4`) and pseudo
+**187 = a3p** (`s4 + 0x10EC`). The `.flow` dump gives the exact global.c inputs:
+
+    Register 186 used 4 times across 13 insns; dies in 0 places; pointer.
+    Register 187 used 5 times across 12 insns; dies in 0 places; pointer.
+
+`global.c allocno_compare` = `floor_log2(n_refs) * n_refs / live_length`
+(×10000×size), sorted DESCENDING:
+  - 186: floor_log2(4)*4/13 = 8/13 = **0.615**
+  - 187: floor_log2(5)*5/12 = 10/12 = **0.833**
+
+The `.greg` order line confirms it verbatim — `;; 23 regs to allocate: 99 97
+192 178 82 168 83 213 187 95 81 75 186 84 80 173 74 78 202 73 79 77 72` — 187
+is 9th, 186 is 13th. MIPS defines no `REG_ALLOC_ORDER`, so `find_reg` scans
+ascending and the first-allocated of the pair takes the lowest free reg. With
+187 first: 187→$6, 186→$7. Target is the opposite.
+
+Note a3p's 5 refs are irreducible: def, `lw 0x40($a3)`, the BLKmode struct copy
+(ONE insn at flow time, not 8), and the increment (set+use = 2). a2p's 4 are
+def, the list store, and the increment (2). Target's a2p also has only 4 refs,
+so **no ref-count edit inside the copy loop can flip the order** — the flip has
+to come from OUTSIDE the loop.
+
+**The fix — a2p and the tail walker are ONE variable in the original.** Target
+holds the Copy8 loop's list-push pointer (`s4+0x10D4`) in `$a2` AND the later
+`s4+0x8B4` walker (Class C's `a2p2`) in `$a2` as well. Merging them into a
+single local (`a2p = s4 + 0x8B4;` reusing the same variable after `copydone:`)
+raises the merged pseudo to ~9 refs over a ~25-insn live range (pri ≈ 1.08),
+which sorts it AHEAD of a3p. Result, measured:
+
+    24 → 4   (272/272 insns)
+
+Class B (14 diffs: `$6`/`$7` swap across the whole copy loop) and Class C
+(6 diffs: `a2p2`→`$6`, the `-1` holder→`$4`) BOTH closed in that one edit. This
+is the same "target's register serves two roles ⇒ the original had one
+variable" reasoning that closed the `$s5` seat in s1, and it is object-model
+reconstruction, not a codegen lever. Banked:
+`rejected/separate-a2p-and-a2p2-locals-seat-inversion.c`.
+
+**Residual = Class A only (4 diffs), and it is now fully attributed.**
+Diff (artifact `tmp/grind/func_80040D48/s2/`, lines are 0-based insn index):
+
+    50  ours: addiu $a0,$s3,124   target: addiu $a0,$s3,104
+    65  ours: sh $v0,-4($a0)      target: sh $v0,0x10($a0)
+    75  ours: sh $v0,-2($a0)      target: sh $v0,0x12($a0)
+    85  ours: sh $v0,0($a0)       target: sh $v0,0x14($a0)
+
+`.loop` dump, case-0 init loop (`Loop from 118 to 197: 28 real insns`):
+
+    Insn 162: possible biv, reg 82,  const = 1     (the s0 counter)
+    Insn 165: possible biv, reg 95,  const = 4     (the D_80094CFC tbl pointer)
+    Insn 184: possible biv, reg 96,  const = 104   (a4p)
+    Insn 137: dest address src reg 96 benefit 2 used 1 lifetime 1 replaceable mult 1 add 16
+    Insn 156: dest address src reg 96 benefit 2 used 1 lifetime 1 replaceable mult 1 add 18
+    Insn 181: dest address src reg 96 benefit 2 used 1 lifetime 1 replaceable mult 1 add 20
+    biv 96 can be eliminated.
+    giv at 156 combined with giv at 181
+    giv at 137 combined with giv at 181
+    giv at 181 reduced to (reg:SI 213)
+    biv 96 was eliminated.
+
+Source read (`tools/gcc-2.7.2/loop.c`):
+  - `combine_givs` iterates `bl->giv` head-first and `record_giv` PREPENDS, so
+    the head is the LAST-discovered giv — insn 181, the `+0x14` store. The base
+    of the combination is therefore always the highest-offset (last-emitted)
+    address, which is why our reduced register is `s3 + 0x68 + 0x14 = s3+124`
+    and the three stores become `-4/-2/0`.
+  - `combine_givs` credits the base with the absorbed benefits
+    (`g1->benefit += g2->benefit`), so the combined giv has benefit 6.
+  - The reduction test is `v->lifetime * threshold * benefit < insn_count`
+    (loop.c:3823) with `benefit -= add_cost * bl->biv_count` and
+    `threshold = (loop_has_call ? 1 : 2) * (3 + n_non_fixed_regs)`.
+    Measured `add_cost = 2` — the sibling single-giv loops in this same function
+    print `giv of insn 499 not worth while, 0 vs 12`, i.e. benefit 2 − 2*1 = 0.
+    Combined: 6 − 2*1 = 4, lifetime 3 → 3*threshold*4 ≫ 28 ⇒ always reduced.
+
+**Target is provably UNREDUCED, and no combination base can produce it.** If
+target's `$a0` were a reduced giv with base add A, the last-emitted store would
+sit at offset 0 (it is the base). Target's last store is at `+0x14`, and its
+base register value is exactly `s3 + 0x68` = the biv's initial value. So in the
+original this loop's three dest-address givs were NOT combined and NOT reduced,
+i.e. `benefit ≤ 0` there. Two corollaries for the next session:
+  - Re-basing a4p so one store sits at offset 0 does NOT help: loop.c does not
+    record a mult-1/add-0 address as a giv at all, so the remaining two still
+    combine AND the biv then survives as a second live register (+insns). Both
+    `a4p = s3+0x78` (offsets 0/2/4) and `a4p = s3+0x7C` (offsets -4/-2/0) are
+    dead by this argument — do not spend measurements on them.
+  - Changing the store ORDER only moves the base to a different nonzero offset;
+    no permutation yields base `+0` with offsets `+16/+18/+20`.
+  The only shapes that reach target are (a) `a4p` failing biv verification in
+  loop.c (any second SET of that pseudo inside the loop body sets
+  `reg_iv_type = NOT_BASIC_INDUCT`, after which the three addresses stay
+  biv-relative and the single `addiu $a0,$a0,0x68` is emitted as an ordinary
+  add — this is target's shape exactly), or (b) `bl->biv_count >= 3` (three
+  increment insns — costs +2 insns, dead). Route (a) is the live axis.
+
+**Sibling confirmation of the model.** The second init loop in the same
+function (`p = s3 + 0x6E8; *(s16*)(p+6) = 0; p -= 0x68`) has ONE address giv,
+prints `not worth while`, keeps its biv, and MATCHES target byte-for-byte. Same
+for the a4p push loop (`Cannot eliminate biv 178: biv used in insn 516` — the
+`*list2 = (s32)a4p` store uses the biv value directly, so no reduction). The
+case-0 init loop is the only three-giv loop in the function and the only one
+that diverges. That is the whole of the remaining residual.
+
+- [s2] Chassis re-verified: s1 candidate re-applied = floor 24 on HEAD abf5600a (272/272)
+- [s2] .flow gives exact allocator inputs: a2p(186) refs=4 len=13 pri .615; a3p(187) refs=5 len=12 pri .833 -> a3p allocated first, takes $6; target needs the reverse
+- [s2] a2p (Copy8 list-push walker) and a2p2 (s4+0x8B4 tail walker) are ONE variable in the original — merging them raises the pseudo's priority above a3p's and closes Classes B (14) and C (6) together: floor 24 -> 4
+- [s2] Class A fully attributed to loop.c combine_givs + strength reduction; target proven UNREDUCED (base = biv, last store at +0x14 not 0); re-basing a4p and store reordering both proven dead by the loop.c source, the live axis is defeating biv verification of a4p
+
+- [s2] Chassis re-verified: s1's candidate.c re-applied to src/text1a_pre.c reproduces sandbox --disable all = 24 (272/272, rules_dropped 34, cheat_asm_stripped 2) on HEAD abf5600a. s1's banked floor is chassis-valid.
+
+- [s2] Exact global.c inputs read from the .flow dump (not guessed): 'Register 186 used 4 times across 13 insns' (a2p) and 'Register 187 used 5 times across 12 insns' (a3p); the .greg allocation-order line confirms 187 is allocated 4 slots before 186.
+
+- [s2] a3p's 5 refs are def + lw 0x40($a3) + the BLKmode struct copy (ONE insn at flow time, not 8 stores) + increment set/use; a2p's 4 are def + list store + increment set/use. Target's a2p has the same 4 refs, so no in-loop ref edit can flip the order.
+
+- [s2] Merging a2p with the s4+0x8B4 tail walker into one local measured 24 -> 4 (272/272). Classes B and C closed together; every insn in the function now matches target except the four Class A lines.
+
+- [s2] Class A residual (0-based insn index): 50 ours addiu $a0,$s3,124 vs target addiu $a0,$s3,104; 65/75/85 ours sh $v0,-4/-2/0($a0) vs target sh $v0,0x10/0x12/0x14($a0).
+
+- [s2] loop.c .loop dump for the case-0 init loop: three dest-address givs (add 16/18/20, benefit 2, lifetime 1) off biv 96 (const 104); 'giv at 156 combined with giv at 181', 'giv at 137 combined with giv at 181', 'giv at 181 reduced to (reg:SI 213)', 'biv 96 was eliminated'.
+
+- [s2] add_cost measured = 2 from this function's own sibling loops, which print 'giv of insn 499 not worth while, 0 vs 12' for a single uncombined giv (benefit 2 - 2*1 = 0). Combined benefit 6 - 2 = 4 always passes the threshold.
+
+- [s2] Model cross-checked against the two loops in this function that already MATCH target: the s3+0x6E8 backward init loop and the a4p push loop each have a single address giv (or use the biv value directly), print 'not worth while' / 'Cannot eliminate biv', keep their biv, and match byte-for-byte. The case-0 init loop is the only three-giv loop and the only one that diverges.
+
+- [s2] Proven dead without measurement (do not spend probes): re-basing a4p to s3+0x78 (offsets 0/2/4) or s3+0x7C (offsets -4/-2/0), and any permutation of the three stores. loop.c does not record a mult-1/add-0 address as a giv, so a zero-offset store forces the biv to survive alongside the reduced register.
+
+- [s2] Owner directive (RULES-TO-ZERO campaign) followed: pure-C route only, no INCLUDE_RODATA / INCLUDE_ASM probes attempted. The 34 regfix rules are retired by reaching COMPLETED-C, and the honest floor is now 4.

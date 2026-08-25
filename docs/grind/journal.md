@@ -1158,3 +1158,4 @@
 - 2026-08-24 18:48 func_80040B44 s1 [recon] floor=32: Recon: owner coupling directive executed (INCLUDE_ASM emits at TU .text START, shifting 9 siblings +372B — pure emission-position, no constraint on the C); full 32-diff map banked in 5 classes with m2c-grounded frontier
 - 2026-08-24 19:18 func_80040B44 COMPLETED-C after 2 sessions (closer: s2 [structural]).
 - 2026-08-24 19:36 func_80040D48 s1 [recon] floor=24: s1 recon: floor 34 -> 24 honestly (pin removed) — prologue two-var load + s5 variable-reuse across the Copy8 loop (goto spelling defeats rotation); 24 residual = 3 seat/bias clusters, all mapped with pass attribution
+- 2026-08-24 19:58 func_80040D48 s2 [structural] floor=4: Floor 24 -> 4: a2p (Copy8 list-push walker) and the s4+0x8B4 tail walker are ONE variable in the original; merging them flips the global.c priority order and closes Classes B (14 diffs) and C (6 diffs) together. Residual = Class A only, now fully attributed to loop.c combine_givs.
