@@ -1725,3 +1725,119 @@ should not cite the double-`lui` as the reason.
 - [s7] The single construct is scalar-to-one-element-array re-typing of a global. It fails header-type-correction prong (a), has no SOTN-master precedent (index grep returns only &g_Entities[1] pointer aliases), and has no independent aggregate evidence — first reach of an unsanctioned family, hence a ruling request rather than a submission.
 - [s7] Methodological correction: [s6.3]'s double-`lui` argument is not sound on its own (the assembler macro re-materialises $at per %hi regardless of object identity). The aggregate-merge verdict stands on the 04:46 ruling and on the absence of indexed/base-register access, not on that observation.
 - [s7] L5 (pointer alias to the global) measured 246/58 and 246/43 - sanctioned family, dead on instruction count.
+
+## [s7f] FORENSICS (session 7, 2026-08-25) — the sched1 decision is now CLOCK-EXACT, and the LUID/emission-order axis is dead
+
+Chassis re-measured first: candidate.c applied to src/text1a_c2.c,
+`& tools/wteng.ps1 main sandbox func_800460E4 --disable all` prints
+`"score": 9, "target_insns": 248, "build_insns": 245, "rules_dropped": 10,
+"cheat_asm_stripped": 0`. The ledger floor of 9 holds on the current chassis.
+src was reverted to HEAD afterwards; the tree is HEAD-clean.
+
+[s7f.1] **THE COMPLETE sched1 TRACE FOR BLOCK 19 IS NOW ON DISK.** Ran the
+instrumented cc1 (tools/gcc-2.7.2/cc1) with `BB2_PRIO_DEBUG=1 BB2_RANK_DEBUG=1
+BB2_SCHED_DEBUG=1` (harness: tmp/grind/func_800460E4/s7/rank.sh; output:
+tmp/grind/func_800460E4/s7/base2.rank.txt). Every pick in the case-3 block is
+recorded with clock, ready-list contents, per-insn priority and LUID. The block's
+RTL nodes (base body):
+
+    luid 0=298  2=302(sll s3,2) 3=304(addu s0) 3=308 lw -8 [unit 0, icost 2]
+    4=309 srl  5=310 sll  6=312 addu(s6)  7=322 lw -4 [unit 0, icost 2]
+    8=323 srl  9=324 sll 10=326 addu(s4) 11=329 li 1  12=331 sh D_8009947A
+
+sched1 schedules BACKWARDS. Pick order c1..c14 was
+`333, 326, 324, 323, 312, 322, 310, 309, 331, 329, 308, 304, 302, 298`, i.e.
+forward emission `... 308(lw -8), 329(li 1), 331(sh), 309, 310, 322(lw -4) ...`
+— the known 9-diff residual. Target instead emits `308, 322, 329, 331, 309 ...`.
+
+[s7f.2] **THE DECIDING PROPERTY IS PRIORITY TIER MEMBERSHIP, NOT A TIE-BREAK.**
+`adjust_priority` (sched.c:2543-2592) raises EVERY register-setting insn with zero
+REG_DEAD notes and `birthing_insn_p` true to `max_priority` = 2130706433
+(0x7F000001). The trace shows 302, 304, 308, 309, 310, 322, 324, 326, 329 all at
+2130706433 and only 312 (pri 2) and **331, the `sh`, at pri 1** — a store's
+SET_DEST is a MEM, so `birthing_insn_p` returns 0 and the store never joins the
+boosted tier. In a backward walk, the lowest tier is picked LAST = emitted FIRST,
+which is why the `li`/`sh` pair always lands at the top of the block, in the
+load-delay slot of the first load. For target's order the -4 load must sink into
+that same late-pick region, which happens only if it is still unready when the
+store is scheduled — i.e. only via the store->load anti-dependence edge.
+
+[s7f.3] **CORRECTION TO [s3]'s ATTRIBUTION (banked as mis-attribution).** [s3]
+recorded the lever as "sched.c adjust_priority birthing boost + schedule_select
+potential_hazard". The trace refutes the second half and re-scopes the first:
+  - `potential_hazard`/SELBEST never fires in this block: 23 SELBEST lines exist
+    in the whole TU, ZERO of them inside block 19 (`awk NR>1050&&NR<1120 | grep -c
+    SELBEST` = 0). The `j - i - q > 1` largest-potential-hazard selection is not
+    the mechanism here.
+  - The birthing boost is UNIFORM across all nine register-setting insns of the
+    block, so it does not discriminate between the -4 load and anything else; what
+    discriminates is that the STORE is excluded from the boost.
+  - `adjust_priority`'s `n_deaths` switch is dead code exactly as GCC's own
+    comment says ("REG_DEAD notes are removed before we ever get here"):
+    `grep -n "deaths=[1-9]"` over the whole 6059-line trace returns nothing.
+
+[s7f.4] **THE LUID / EMISSION-ORDER AXIS IS MEASURED DEAD — NEW KILL.** The one
+remaining non-/s input to `rank_for_schedule` is its final
+`INSN_LUID (tmp) - INSN_LUID (tmp2)` tie-break, i.e. the RTL emission order, which
+IS reachable from C. Probed with a form that gives the ideal layout — both header
+words read into once-written/once-read named intermediates so the two `lw`s are
+ADJACENT in the RTL and both precede the whole shift/add work:
+
+    { s32 hdr_a = s0[s3 - 2]; s32 hdr_b = s0[s3 - 1];
+      s6 = (s32 *)((u8 *)s0 + ALIGN4(hdr_a));
+      s4 = (s32 *)((u8 *)s0 + ALIGN4(hdr_b)); }
+
+The RTL really does change (v1 luids: 4 = `lw -8`, **5 = `lw -4`**, 6..8 = first
+shift chain, 9..11 = second, 13 = `li`, 14 = `sh`) — the loads are adjacent at the
+RTL level, which is what target's bytes show. **The schedule is nevertheless
+byte-identical: 245 insns / 9 diffs.** v1's backward picks put the -4 load at
+clock 6 and the store at clock 9, reproducing exactly the same forward order
+`lw -8, li, sh, srl, sll, addu, lw -4`. A single-word variant (stage only the -4
+word) is likewise 245/9. Banked:
+rejected/s7f-luid-adjacent-loads-rtl-245-9-schedule-invariant.c and
+rejected/s7f-luid-single-staged-m4-word-245-9-inert.c.
+CONSEQUENCE: the sched1 outcome is INVARIANT under every RTL-order change C can
+express, because the store is pinned to the bottom priority tier by
+`birthing_insn_p` regardless of where it sits in the insn stream. This closes the
+LUID axis independently of the /s axis, and it explains why [s2]'s whole-statement-
+order sweep came back byte-identical — that was not luck, it is structural.
+
+[s7f.5] **THE TWO PREVIOUSLY-FOUND LEVERS ARE ONE DECISION, AND `birthing_insn_p`
+IS NOW FULLY ENUMERATED.** `birthing_insn_p` (sched.c:2505-2540) has exactly three
+terms: (1) `reload_completed == 0` (true in sched1, not controllable); (2) PATTERN
+is a `SET` whose DEST is a REG and whose REGNO is live in `bb_live_regs` (always
+true for a load whose result is consumed); (3) `reg_n_sets[dest] == 1`. Only (3)
+is reachable from C, and it is the multi-set carrier — banned for this function
+twice (judge_constraints; rulings 07:19 and the 07:54 layer-1 FAIL). So the
+multi-set-carrier lever and the MEM_IN_STRUCT_P/anti-dependence lever are not two
+independent findings: both work by removing the -4 load from the boosted tier at
+the moment the store is scheduled (one by demoting the load's priority, the other
+by making it unready). Every C-reachable input to that single decision is now
+enumerated: anti_dependence's five terms ([s7] L1-L5) plus birthing_insn_p's three
+terms plus the LUID tie-break ([s7f.4]) — and each is either impossible, banned,
+dead on instruction count, or (L4) refused by the 09:06 ruling.
+
+- [s7f] Chassis re-measured: floor 9 (245/248) with candidate.c applied; ledger floor confirmed on the current chassis.
+- [s7f] The full clock-exact sched1 pick trace for case 3's block is banked (tmp/grind/func_800460E4/s7/base2.rank.txt, harness s7/rank.sh); it supersedes guesswork about which sched.c mechanism orders the block.
+- [s7f] The `sh` to D_8009947A is the ONLY insn in the block excluded from adjust_priority's birthing boost (a store's SET_DEST is a MEM), which pins it to the bottom priority tier and therefore to the top of the forward emission — this, not potential_hazard, is why it lands in the first load's delay slot.
+- [s7f] MIS-ATTRIBUTION CORRECTED: [s3]'s "schedule_select potential_hazard" half is wrong — zero SELBEST decisions occur in this block; and adjust_priority's n_deaths switch is dead code (no `deaths=` value other than 0 anywhere in the 6059-line trace).
+- [s7f] KILLED: the LUID/RTL-emission-order axis. A once-written/once-read two-intermediate form genuinely makes the two `lw`s adjacent in the RTL (luids 4 and 5, both before all shift work) and still measures 245/9 — the schedule is invariant under C-reachable RTL order because the store's tier membership does not depend on its position.
+- [s7f] UNIFICATION: the multi-set-carrier lever and the /s alias-edge lever are the same single decision (is the -4 load in the boosted tier when the store is scheduled?), so no combination of them opens a new axis; birthing_insn_p's three terms are now enumerated and only reg_n_sets is C-reachable (banned).
+
+- [s7] Chassis re-measured this session: honest floor 9 (245/248, rules_dropped 10, cheat_asm_stripped 0) with candidate.c applied - the ledger floor is current, the queue's 35 is the rule-era number.
+
+- [s7] The complete clock-exact sched1 pick trace for case 3's block is banked (tmp/grind/func_800460E4/s7/base2.rank.txt, harness s7/rank.sh, instrumented cc1 with BB2_PRIO_DEBUG/BB2_RANK_DEBUG/BB2_SCHED_DEBUG): every pick with clock, ready-list contents, per-insn priority and LUID.
+
+- [s7] adjust_priority (sched.c:2543-2592) raises every register-setting insn of the block to max_priority 0x7F000001 (2130706433); the `sh` to D_8009947A is the ONLY insn left at priority 1, because birthing_insn_p needs a REG SET_DEST and a store's dest is a MEM. sched1 walks backwards, so the bottom tier is picked last = emitted first - the store is structurally pinned into the first load's delay slot.
+
+- [s7] For target's order (`lw -8, lw -4, li 1, sh`) the -4 load must still be UNREADY when the store is scheduled, which is exactly the store->load anti-dependence edge the /s axis controls; this is an independent, dump-level confirmation of the [s6]/[s7] account rather than a new lever.
+
+- [s7] MIS-ATTRIBUTION CORRECTED: [s3]'s lever was recorded as 'adjust_priority birthing boost + schedule_select potential_hazard'. potential_hazard/SELBEST never fires in this block (0 of the TU's 23 SELBEST decisions), and the birthing boost is UNIFORM across all nine register-setting insns, so it discriminates nothing - what discriminates is the store's EXCLUSION from it. adjust_priority's n_deaths switch is dead code (no nonzero `deaths=` in 6059 trace lines).
+
+- [s7] NEW KILL - the LUID / RTL-emission-order axis: a once-written/once-read two-intermediate form makes the two `lw`s adjacent in the RTL (v1 luids 4 and 5, both ahead of all shift/add work, which is the layout target's bytes show) and still measures 245/9; the single-intermediate variant is likewise 245/9. The schedule is invariant under every RTL order C can express, because the store's priority-tier membership does not depend on its position. This explains [s2]'s statement-order sweep structurally instead of empirically.
+
+- [s7] UNIFICATION: the multi-set-carrier lever and the MEM_IN_STRUCT_P/anti-dependence lever are not independent findings - both work by removing the -4 load from the boosted tier at the moment the store is scheduled (one by demoting its priority, the other by making it unready). Combining them therefore opens no new axis.
+
+- [s7] The C-reachable inputs to that single decision are now fully enumerated: anti_dependence's five terms ([s7] L1-L5: L1 banned, L2/L3 impossible, L4 refused by the 2026-08-25 09:06 ruling, L5 dead at 246/58), birthing_insn_p's three terms ([s7f.5]: two not controllable, one banned), and rank_for_schedule's LUID tie-break ([s7f.4]: measured dead).
+
+- [s7] Banked rejected forms: rejected/s7f-luid-adjacent-loads-rtl-245-9-schedule-invariant.c and rejected/s7f-luid-single-staged-m4-word-245-9-inert.c.

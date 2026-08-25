@@ -1,7 +1,7 @@
 {
  "func": "func_800460E4",
  "file": "text1a_c2",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 9,
    "modality": "forensics",
    "headline": "Forensics: the /s + sched1 account is now RTL-dump-proven, the residual narrows to ONE lvalue (only the -4 read needs /s=0: 248/0 vs 245/9), the aggregate model is contradicted by binary-wide evidence"
+  },
+  {
+   "session": 7,
+   "floor": 9,
+   "modality": "forensics",
+   "headline": "Forensics: the case-3 sched1 decision is now clock-exact on disk - the store is the ONE insn excluded from adjust_priority's birthing boost, which structurally pins it into the first load's delay slot"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is a single FIDELITY question about ONE lvalue: was the original case-3 read of the -4 stage-header word written through a pointer-variable lvalue (giving the non-PLUS_EXPR INDIRECT_REF, hence the dependence edge target's schedule requires), or does the standing alias-defeat ban stand? [s6] narrows the [s9] frontier item from a two-read construct to one read and removes the aggregate branch on evidence.",
-   "mechanism": "expr.c:4567-4577 (/s set iff PLUS_EXPR address subtree) + sched.c:831-839 (exemption), both now dump-proven; the one-sided measurement (248/0 for the -4 read alone, 245/9 for the -8 read alone) isolates the single lvalue.",
-   "next_probe": "escalation modality only: file a DECISION PACKET posing the one-lvalue fidelity question, citing evidence.md [s6.1]/[s6.2]/[s6.5] and the 248/0 vs 245/9 pair. Do NOT re-file any family question \u2014 aggregate merge is now dead on evidence ([s6.3]), fresh carrier (07:19), hoisted pre-existing carrier (07:54) and walking pointers ([s6.4]) are all closed."
+   "hypothesis": "The residual remains the single FIDELITY question about the case-3 read of the -4 stage-header word (was it written through a pointer-variable lvalue, giving the non-PLUS_EXPR INDIRECT_REF whose dependence edge target's schedule requires?), and it is now the ONLY undecided input to the one sched1 decision that produces all 9 diffs.",
+   "mechanism": "expr.c:4567-4577 (/s set iff PLUS_EXPR address subtree) + sched.c:843-864 (the five-term anti_dependence exemption) + sched.c:2505-2592 (birthing tier membership) - the complete input set is enumerated across [s7] L1-L5, [s7f.4] and [s7f.5], and every member except this fidelity question is impossible, banned, refused or measured dead.",
+   "next_probe": "escalation modality only: file a DECISION PACKET posing the one-lvalue fidelity question, citing evidence.md [s6.1]/[s6.2]/[s6.5], the 248/0 vs 245/9 one-sided pair, and [s7f.5]'s enumeration. Do NOT re-file any family question - aggregate merge ([s6.3], ruling 04:46), fresh carrier (07:19), hoisted pre-existing carrier (07:54), walking pointers ([s6.4]) and scalar-to-array re-typing (09:06) are all closed."
   },
   {
    "hypothesis": "If the fidelity question is answered against the pointer form, the honest floor of 9 is terminal in pure C under the current bans and the remaining question is routing (canonical-asm grant path vs continued INCLUDE_ASM deferral), not grinding.",
-   "mechanism": "The 9-insn residual is entirely case-3-local: the jump2 cross-jump merge plus the three seats it implies, all downstream of the one missing dependence edge. No un-banned C spelling can change the /s bit ([s6.5]).",
+   "mechanism": "All 9 diffs are downstream of one backward-scheduler pick in block 19; no un-banned C spelling changes any of that pick's three input families.",
    "next_probe": "escalation modality: run tools/scan_hand_coded.py --single func_800460E4 and report the STRONG (S1/S2/S6) gate result in the packet either way; a negative census is a FAILED gate and the item stays active under standing policy."
   },
   {
-   "hypothesis": "Nothing in solver, permuter, structural, synthesis, atom-set or forensics space remains untried for this function.",
-   "mechanism": "s1 recon, s2/s3 structural, s4 sched_solver UNREACHABLE, s5 permuter (perm_e 16658 iterations, no zero), s8 synthesis/atom-set, s9 solver, s6 forensics (dump attribution + one-sided /s isolation + aggregate evidence survey + walking-pointer sweep) \u2014 each closed its own axis with measurements banked.",
-   "next_probe": "do not re-open any of them. A session dispatched in a non-escalation modality should re-read evidence.md [s6] and [s9] first and report the modality exhausted rather than re-deriving a carrier, a detour, or a pointer spelling."
+   "hypothesis": "The owner's RULES-TO-ZERO directive for this function (10 regfix rules, jtbl-coupled, wave-2 INCLUDE_RODATA already measured SHA1-dead for THIS function specifically) is satisfied automatically by a COMPLETED-C close and has no separate grindable content.",
+   "mechanism": "The sandbox already scores this function with all 10 rules dropped (rules_dropped 10, cheat_asm_stripped 0), so the rules are inert to the floor; retiring them is a consequence of reaching 0, not an independent axis. Recorded here because the dispatch audit flagged the directive as never acknowledged in the ledger.",
+   "next_probe": "none as a probe - a future session should note the directive is acknowledged and subsumed, and not spend measurements on rule retirement while the floor is non-zero."
   }
  ],
  "judge_constraints": [

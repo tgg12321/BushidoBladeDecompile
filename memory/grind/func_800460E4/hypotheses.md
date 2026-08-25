@@ -905,3 +905,62 @@ L1 load-/s: only the banned pm1 construct ([s6.5]). L2, L3: impossible by
 construction. L4 store-/s: CLOSES at 248/0 but needs an unsanctioned re-typing
 (H31/H32/H33). L5 store-address-varying: sanctioned family available but dead on
 instruction count (H35). No sixth term exists.
+
+## H36 [s7f] — the sched1 pick that separates the two case-3 loads is decided by rank_for_schedule's LUID tie-break, so a C form that emits the -4 load's RTL adjacent to the -8 load's closes it — **KILLED**
+Mechanism: sched.c:2464 `return INSN_LUID (tmp) - INSN_LUID (tmp2);` is the last
+resort of rank_for_schedule, and LUID is RTL emission order, which C statement
+structure controls.
+Probe: two once-written/once-read named intermediates staging both raw header
+words before any ALIGN4/add work (tmp/grind/func_800460E4/s7/v1.c), plus a
+single-intermediate variant (v2.c); both scored through s8/pr.sh and traced with
+BB2_SCHED_DEBUG.
+Result: the RTL order DID change as designed (v1 luids: 4 = `lw -8`, 5 = `lw -4`,
+adjacent, both ahead of the shift chains) and the emitted schedule did NOT:
+245 insns / 9 diffs for both variants, the identical residual.
+Verdict: KILLED. The store is excluded from adjust_priority's birthing boost
+(SET_DEST is a MEM), so it occupies the bottom priority tier no matter where it
+sits in the insn stream; in a backward walk that pins it to the top of the block,
+in the first load's delay slot. Emission order cannot move it. This also explains
+[s2]'s statement-order sweep result structurally rather than empirically.
+
+## H37 [s7f] — schedule_select's potential_hazard selection is part of the case-3 lever ([s3]) — **KILLED (mis-attribution)**
+Probe: BB2_SCHED_DEBUG trace of the whole TU (6059 lines).
+Result: 23 SELBEST decisions exist in the TU, ZERO inside case 3's block; the
+`j - i - q > 1` branch never runs there. Separately, adjust_priority's n_deaths
+switch is dead code (GCC's own comment says REG_DEAD notes are already removed;
+no `deaths=` value other than 0 appears anywhere in the trace).
+Verdict: KILLED as a lever and corrected in the ledger. The real discriminator is
+tier membership via birthing_insn_p, not hazard ranking.
+
+## H38 [s7f] — birthing_insn_p offers a C-reachable term other than reg_n_sets — **KILLED**
+Probe: read sched.c:2505-2540 term by term against the trace.
+Result: three terms — `reload_completed == 0` (sched1 only, not controllable),
+`SET` with a REG dest live in bb_live_regs (unavoidably true for a consumed load),
+and `reg_n_sets[dest] == 1` (the multi-set carrier, already banned twice for this
+function). No fourth term.
+Verdict: KILLED. The multi-set-carrier lever and the MEM_IN_STRUCT_P lever are the
+same decision seen from two sides, so combining them opens nothing new.
+
+## [s7] The sched1 pick that separates case 3's two header loads is decided by rank_for_schedule's final INSN_LUID tie-break, so a C form that emits the -4 load's RTL adjacent to the -8 load's will close it.
+- mechanism: sched.c:2464 `return INSN_LUID (tmp) - INSN_LUID (tmp2)` is rank_for_schedule's last resort and LUID is RTL emission order, which C statement structure controls.
+- probe: Two once-written/once-read named intermediates staging both raw header words before any ALIGN4/add work (tmp/grind/func_800460E4/s7/v1.c) plus a single-intermediate variant (v2.c); scored through tmp/grind/func_800460E4/s8/pr.sh and traced with BB2_SCHED_DEBUG via s7/rank.sh.
+- result: The RTL order changed exactly as designed (v1 luids: 4 = `lw -8`, 5 = `lw -4`, adjacent and both ahead of the two shift chains) but the emitted schedule did not: 245 insns / 9 diffs for both variants, the identical residual, identical forward order `lw -8, li 1, sh, srl, sll, addu, lw -4`.
+- verdict: KILLED
+
+## [s7] schedule_select's potential_hazard selection is part of the case-3 lever, as [s3] recorded.
+- mechanism: sched.c:2712-2723 picks the insn with the largest potential hazard among equal-priority ready insns (the `j - i - q > 1` branch).
+- probe: BB2_SCHED_DEBUG trace of the whole TU (6059 lines, tmp/grind/func_800460E4/s7/base2.rank.txt); counted SELBEST decisions inside case 3's block versus the whole file.
+- result: 23 SELBEST decisions exist in the TU and ZERO of them are in case 3's block; the branch never runs there. Separately, adjust_priority's n_deaths switch is dead code exactly as GCC's own comment states - no `deaths=` value other than 0 appears anywhere in the trace.
+- verdict: KILLED
+
+## [s7] birthing_insn_p offers a C-reachable input other than the banned reg_n_sets multi-set carrier.
+- mechanism: sched.c:2505-2540; adjust_priority only boosts an insn to max_priority when birthing_insn_p is true, and tier membership is what decides the block's order.
+- probe: Read the predicate term by term against the captured trace (which prints birth=0/1 per insn).
+- result: Exactly three terms: reload_completed==0 (sched1 only, not controllable), a SET with a REG dest live in bb_live_regs (unavoidably true for a consumed load), and reg_n_sets[dest]==1 (the multi-set carrier, banned twice for this function). No fourth term; and the trace shows the store fails the predicate for a reason no C can change (its SET_DEST is a MEM).
+- verdict: KILLED
+
+## [s7] The ledger floor of 9 still holds on the current chassis (dispatch reported the measurement as unavailable, and the queue item still shows a rule-era distance of 35).
+- mechanism: candidate.c applied to src/text1a_c2.c, scored cheat-invisibly with all 10 regfix rules dropped.
+- probe: `& tools/wteng.ps1 main sandbox func_800460E4 --disable all`.
+- result: score 9, target_insns 248, build_insns 245, rules_dropped 10, cheat_asm_stripped 0. src reverted to HEAD afterwards; tree is HEAD-clean apart from metrics/events.jsonl.
+- verdict: CONFIRMED

@@ -1,3 +1,26 @@
+/* [s7f] FORENSICS SESSION 7 (2026-08-25) - BODY BELOW IS UNCHANGED.
+ * Re-measured on the current chassis: sandbox --disable all = 9 (245/248,
+ * rules_dropped 10, cheat_asm_stripped 0). The ledger floor holds.
+ *
+ * What is new: the sched1 decision that produces the 9-diff residual is now
+ * CLOCK-EXACT on disk (tmp/grind/func_800460E4/s7/base2.rank.txt, captured with
+ * BB2_PRIO_DEBUG/BB2_RANK_DEBUG/BB2_SCHED_DEBUG on the instrumented cc1), and it
+ * says something simpler than [s3] recorded:
+ *   - adjust_priority raises EVERY register-setting insn in the block to
+ *     max_priority 0x7F000001; the `sh` to D_8009947A is the only insn excluded,
+ *     because birthing_insn_p requires a REG dest and a store's is a MEM. The
+ *     bottom tier is picked last in sched1's BACKWARD walk = emitted FIRST, so
+ *     the store is structurally pinned into the first load's delay slot.
+ *   - schedule_select/potential_hazard is NOT involved: zero SELBEST decisions
+ *     occur in this block ([s3]'s attribution corrected).
+ * Consequence for future sessions: the LUID / RTL-emission-order axis is DEAD.
+ * A once-written/once-read two-intermediate form really does make the two `lw`s
+ * adjacent in the RTL (luids 4 and 5, ahead of all shift work) and still measures
+ * 245/9 - the schedule is invariant under any RTL order C can express, because
+ * the store's tier membership does not depend on its position. Banked at
+ * rejected/s7f-luid-adjacent-loads-rtl-245-9-schedule-invariant.c.
+ * Do not re-derive it. See evidence.md [s7f] and hypotheses.md H36-H38.
+ */
 /* [s7] FORENSICS-SESSION UPDATE 2026-08-25 (session 7) - READ THIS FIRST.
  * The BODY BELOW IS UNCHANGED (still the [s7]/[s8]/[s9] non-banned form,
  * re-measured 245 insns / 9 diffs this session). What changed is that the
