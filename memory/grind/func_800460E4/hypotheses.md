@@ -1135,3 +1135,15 @@ packet is ruled on:
 - probe: python3 tools/scan_hand_coded.py --single func_800460E4
 - result: tier=LOW, score 0/8, every indicator unset: S1 0 multu/mflo pairs, S2 no empty-body branches, S3 257 insns / 13 spills / 14 distinct regs, S4 max load burst 3 in any 8-insn window, S5 jaccard < 0.5 vs siblings, S6 no BIOS jumptable pattern, S7 all callee-save uses have an $sp save, S8 no redundant mask-before-shift.
 - verdict: KILLED
+
+## [s10] The owner-sanctioned case-3 named intermediate closes func_800460E4 at honest floor 0 when applied to the full candidate body on the live chassis.
+- mechanism: a fresh, block-scoped, once-written/once-read pointer local naming the address of the stage header's last word gives that read a MEM the expander does not mark MEM_IN_STRUCT_P (tools/gcc-2.7.2/expr.c:4567-4577), which lets sched.c's anti_dependence exemption fire and produces target's own sched1 load/store order in block 19 - the single decision that the s3/s6/s7 forensics traced the entire 9-instruction residual to.
+- probe: paste rejected/s9-ruling-pending-single-local-named-intermediate-248-0.c's case 3 into candidate.c, splice the whole candidate body over the rule-era body in src/text1a_c2.c, delete the two duplicate splat-named externs, then `& tools/wteng.ps1 main sandbox func_800460E4 --disable all`.
+- result: score 0, target_insns 248, build_insns 248, rules_dropped 10, cheat_asm_stripped 0 - measured twice, with the edits in place in src/.
+- verdict: CONFIRMED
+
+## [s10] The FAKE delta-rebase detour on s1 is still load-bearing, and still non-materializing, on the ZERO-scoring body (it was only ever validated on the floor-9 body).
+- mechanism: flow.c records two extra reg_n_refs on s1's pseudo before combine folds the detour back to the direct copy; that count lifts s1's global.c allocno_compare priority above the s2 pointer, so allocation order matches target. If the fold ever MATERIALIZED, the construct would be a real code change and fall outside the 2026-07-01 dead-store scope extension.
+- probe: replace the two detour statements with `s1 = s4;`, change nothing else, re-run the sandbox.
+- result: score 0 -> 32 with build_insns unchanged at 248. Load-bearing (the score moves) and non-materializing (the instruction count does not).
+- verdict: CONFIRMED

@@ -1,128 +1,56 @@
-# SELF-VET — func_800460E4  (permuter-modality session, 2026-08-25, re-measured chassis)
+# SELF-VET — func_800460E4
 
-Measured state: `sandbox func_800460E4 --disable all` = **0** (248/248 insns,
-rules_dropped=10, cheat_asm_stripped=0), measured THIS session with this exact body in
-src/text1a_c2.c (HEAD's rule-era body measures 35 at the identical chassis).
-
-CONSTRUCTS: (1) declaration hoist - four scratch offset variables and a0_ptr are declared at the top of the routine instead of in inner braces, each keeping its original job (measured byte-neutral); (2) the stage-3 arm stages two stage-record values through the pre-existing scratch offsets off_a and off_b, refining each in place, every stage consumed by the next statement (FAKE-annotated; staged-value-reused-variable); (3) the early-switch off_b site is spelled with that in-place two-step refinement too (FAKE-annotated); (4) INHERITED unchanged from the body that passed layer-1 at 03:53 - the FAKE combine-foldable chain-extender on s1's init; (5) INHERITED unchanged - the scaled-index spelling of the stage-record pointer and the dropped p/p2 param-alias locals.
+CONSTRUCTS: (1) `hp`, a fresh block-scoped pointer local in the second switch's stage-3 arm, assigned exactly once and dereferenced exactly once, naming the location of the stage table's final entry; (2) a FAKE-annotated algebraically-neutral detour on the live default initialization of the stage-pointer local, which folds back to the direct assignment with zero emitted bytes; (3) the mainline scaled base expression bound to `a0_ptr`, with the earlier parameter-alias locals dropped; (4) canonical header names `g_stage_id` / `g_stage_variant` replacing this file's duplicate splat-named externs for those two objects; (5) ordinary block-scoped offset locals `off1_raw`, `off`, `off3`.
 
 ## T1 semantic purpose
-(1) None beyond style, and none is claimed: the object is byte-identical with and without
-the hoist (score 0 both ways). No variable is created or destroyed by it — the four offset
-temps and a0_ptr all exist in HEAD's committed body with the same jobs.
-(2) The borrow computes exactly the values the one-expression spelling computes; program
-behaviour is identical. Its observable effect is on instruction order and register seats.
-DISCLOSED AS SUCH — that is precisely the property the staged-value-reused-variable family
-exists to sanction ("one line of C written as two"); the family's own worked example and
-the func_800200DC PASS have the same property.
-(3) Same class as (2): the two-step refinement computes the byte offset the flat ALIGN4
-expression computes.
-(4)/(5) Unchanged from the body layer-1 already ruled legitimate at 03:53; (4) folds to
-zero bytes and is a live init of a value the function really uses, (5) is ordinary C.
+- (1) `hp` names a real address that the target itself computes (`sll v0,s3,2 / addu v0,v0,s0 / lw a0,-4(v0)`) and the word it loads is the stage pointer that initializes `s4`. The value is consumed; the local is not a discard, not an address-of pad, not a constant holder. It is byte-neutral: 248 built insns vs 248 target insns.
+- (2) The detour carries a LIVE value: the stage-pointer local's default initialization. Removing it entirely (measured this session as the direct assignment) still builds 248 insns but scores 32, so the construct is load-bearing; combine folds it back to the direct form and it materializes no bytes. Declared as a FAKE construct under the sanctioned scope extension below — its surviving effect is the `reg_n_refs` count, and I state that plainly rather than dressing it as semantics.
+- (3) An ordinary base-plus-scaled-index address expression, consumed three times in the mainline. Dropping the parameter-alias locals removes indirection rather than adding it.
+- (4) Pure hygiene with a semantic purpose: it removes a genuine defect (two C handles for each of 0x80099478 and 0x8009947A inside one TU). Byte-neutral, measured both ways in session 8.
+- (5) Ordinary named sub-expressions holding real, consumed offsets.
 
 ## T2 human-programmer
-(1) YES. Declaring every local at the top of the routine is C89 / PsyQ house style, and the
-inner-brace declarations it replaces are decomp-era artifacts of the rule-era chassis, not
-evidence of the original shape (the dispatch brief's RULE-ERA CHASSIS warning says so
-explicitly for this function). I do note the honest tension: widening those temps' scope is
-what makes them borrowable at all, so a reviewer should weigh (1) and (2) together rather
-than separately — I am not hiding that behind byte-neutrality.
-(2)/(3) A 1998 programmer reusing a scratch offset variable that is finished with, and
-refining an offset in place before using it, is ordinary period C; SOTN's matched sources
-ship this shape (`j = menu->unk1D; // FAKE?`). A reader asks "why reuse off_a here?" and the
-truthful answer is "it is a free scratch offset". I do NOT claim the reuse was inevitable —
-the licence comes from the sanctioned family, not from a naturalness claim.
-(4)/(5) Ruled on at 03:53.
+- (1) Yes. A programmer reading a stage header whose word count lives in `s0[0]` naturally names the pointer to the header's last word before dereferencing it. The same file already spells the mainline read this way (`a0_ptr[-1]`).
+- (2) No — this one would draw a "why is this here?" from a reader, which is exactly why it is FAKE-annotated and claimed under an explicitly sanctioned scope extension rather than presented as natural code.
+- (3), (4), (5) Yes. These are the forms a programmer writes by default; (4) is what the rest of the TU already does.
 
 ## T3 GCC-internals justification
-YES for (2) and (3), stated openly rather than dressed up. Mechanism: GCC 2.7.2 sched.c
-`adjust_priority` -> `birthing_insn_p`, which lifts a newly-ready insn to max_priority only
-when `reg_n_sets[regno] == 1`; borrowing variables that are already written elsewhere clears
-that boost on both stage-record loads and dissolves the block-19 scheduler tie (dump-read at
-the floor-9 chassis, hypotheses.md H20,
-tmp/grind/func_800460E4/dumps/text1a_c2.sched:368-407). For (3) the secondary mechanism is
-local-alloc.c quantity tying (the refinement writes back into the same pseudo, so both
-shifts take the carrier's own hard register). A GCC-internals mechanism is a cheat SIGNAL in
-general. It is not disqualifying HERE only because it is the mechanism the owner NAMED when
-sanctioning this exact family (.claude/rules/staged-value-reused-variable.md "Origin":
-"Mechanism reference: GCC 2.7.2 sched.c `adjust_priority` -> `birthing_insn_p` (the
-'assigned once?' check is literally `reg_n_sets[regno] == 1`)"), and because the construct
-sits inside that family's six bounds (worked bound-by-bound below).
-For (1) there is no GCC-internals justification at all — it is byte-neutral.
+- (1) The mechanism is dump-proven (evidence.md [s6]/[s7]) and I name it in the FAKE annotation as the rules require, but the construct does not need the mechanism to be defensible: it is a once-written/once-read fresh local holding a real consumed value, which the frozen entry admits "whatever GCC pass it acts through". I am not claiming that GCC internals make an otherwise-pointless construct legitimate.
+- (2) The mechanism (`flow.c` `reg_n_refs` feeding `global.c` allocno priority) IS the justification, and I say so — that is what the sanctioned scope extension for this family explicitly contemplates, together with its extra prerequisite that the fold emits zero bytes, which I verified.
+- (3), (4), (5) No GCC-internals justification; these are program-logic forms.
 
 ## T4 permuter/search provenance
-This session's mandated modality is permuter. The closing form did NOT come from random
-search and I do not claim it did: the prior permuter session ran campaign perm_e (label
-s5-b1-staged-s6s4-246, base score 435, 16658 iterations, best new find 80, NO zero,
-harvested and stopped in-session) and it died — the form came from the directed carrier
-sweep tmp/grind/func_800460E4/s4/s5a.py .. s5g.py (variant j4), which enumerated which
-PRE-EXISTING variable is borrowed. That is the route the 2026-08-25 07:19 ruling itself left
-open ("the follow-on PASS closed at 0 only after moving to PRE-EXISTING carriers",
-docs/grind/decisions.md:10730). This session re-derived nothing by search: it re-applied the
-banked form, re-measured it at the current chassis (0), verified every citation resolves,
-and rewrote this vet. No construct here passes detectors by spelling — each mechanism is
-named in its own annotation.
+No permuter or automated search produced any construct in this diff. (1) was derived by hand in session 9 from the frozen entry's six prongs and measured; (2) dates to session 1 and is unchanged; (3)/(4)/(5) were hand-authored in sessions 7-8. Nothing here passes detectors merely because a detector misses the spelling: every construct is declared and claimed to a named family below.
 
 ## T5 family check
-(1) No family needed — ordinary C, measured byte-neutral.
-(2) and (3): staged-value-reused-variable (owner ruling 2026-07-03), all six bounds met;
-scope quoted and bounds worked below.
-(4) F1 combine-foldable chain-extender (owner ruling 2026-07-01), unchanged from the body
-that passed layer-1 at 03:53.
-Forbidden-family sweep, explicit and complete: there are no register pins, no `$N` asm, no
-inline asm of any kind, no scheduling barrier, no `volatile` anywhere, no alias rename, no
-dead local or dead array, no dead-param-assign, no dead-conditional-store, no `if (1)`
-wrapper, no goto pad, no DImode chain, no aggregate merge of the two s16 globals, no
-integer-cast byte-offset deref, no width cast, no build-pipeline or linker-script edit. I
-re-read all six state.json banned entries against the diff line by line; every one of them
-is absent, and the two stage-record loads in the stage-3 arm are spelled with the ordinary
-`s0[s3 - 2]` / `s0[s3 - 1]` index this routine already uses elsewhere, so the address-form
-objections have no purchase on this body either.
-BOUNDARY I AM NOT CROSSING: the 07:19 ruling refused a FRESH twice-written carrier. Both
-borrowed variables pre-exist in HEAD's committed body with their own real jobs (off_a holds
-the mainline stage-block offset `s0[1]`; off_b holds the early switch's sub-block offset),
-which is exactly the distinction that ruling drew.
+- (1) Frozen named-intermediate entry, and the owner's 2026-08-25 ruling on the session-9 decision packet sanctions this exact form for this exact function.
+- (2) The dead-store family's own 2026-07-01 scope extension (see claims below), FAKE-annotated, byte-neutral, non-materializing.
+- (3), (4), (5) No family needed — ordinary C.
+- Explicit non-matches, checked against this function's standing bans: no volatile cast anywhere in the body; no second C handle for any object (construct (4) removes the only such pair); no two-pointer respelling of the header words — the -8 word keeps the plain array-index idiom identical to the stage-13 arm; no inlined integer-cast byte-offset deref; no function-invented multi-write carrier, since every local introduced here is written once; the parameter is not reused as a carrier and the stage-pointer local is not deleted.
 
 ## T6 naming-announces-intent
-No `pad` / `dummy` / `unused` / `spill` / `tail` / `slack` / `_buf` anywhere. `off_a`..`off_d`
-name what they hold (byte offsets into the stage record) and every one of them is read;
-`a0_ptr` is the pre-existing name for the stage-record pointer. No name announces a codegen
-purpose.
+No name in the diff is `pad`, `dummy`, `unused`, `spill`, `tail`, `slack`, or any sibling. `hp` = header pointer, `a0_ptr` / `off1_raw` / `off` / `off3` describe the values they hold, and every one of them is read. `g_stage_id` / `g_stage_variant` are the committed canonical names from `include/game.h`.
 
 SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: staged-value-reused-variable (constructs 2 and 3)
-  SCOPE: "**The variable already exists for a real job.** You may only borrow a variable the function genuinely uses elsewhere (a loop counter, a status flag, a poll result). Inventing a new variable just to have something to borrow is NOT this rule (a fresh named intermediate is fine C on its own merits and needs no exception — but then it also won't have the "assigned more than once" property this trick needs)."
-  PRECEDENT: .claude/rules/staged-value-reused-variable.md:64
-  PRECEDENT: docs/grind/decisions.md:1844
-  PRECEDENT: docs/reference/sotn-construct-index.md:70
-  Bound-by-bound:
-  (1) value real and used — every staged assignment is consumed by the next statement
-  (off_a -> s6, off_b -> s4, off_b -> func_8003EDC0); zero dead code, zero dead stores.
-  (2) variable already exists for a real job — off_a holds the mainline stage-block offset
-  (`off_a = s0[1]` -> s6) and off_b holds the early switch's sub-block offset
-  (`func_8003EDC0(PTR_OFF(s0, off_b), 7)`); neither is invented for the borrow. Disclosed
-  qualification: both are hoisted from inner braces to the top of the routine (construct 1),
-  which is what puts them in scope at the borrow site.
-  (3) borrow provably safe — at the stage-3 arm off_a's mainline value has already been
-  consumed into s6 and is never read again; off_b's early-switch value is dead there and on
-  the path that reaches the stage-3 arm it was never written at all (stage_id 3 takes the
-  `break` arm above); neither is read afterwards.
-  (4) annotated — see ANNOTATION-CONFORMANCE.
-  (5) last resort with receipts — five prior sessions of ladder work recorded in
-  hypotheses.md (H8, H15-H21: statement order, declaration order, whole-function shape,
-  pre-sched stream order, 22 once-written spellings, every dependence-graph route) all
-  measured dead, and this session re-measured the resulting form rather than reopening them.
-  (6) everything else applies — no dead stores, no unused variables, no pins, no asm, no
-  volatile, no build-time edits.
+  FAMILY: named intermediate (fresh once-written/once-read local), for construct (1)
+  SCOPE: "A fresh named intermediate therefore qualifies under this entry **whatever GCC pass it acts through** (LUID bias, cse.c re-materialization, allocno priority), provided ALL of: (1) once-written, once-read — multi-write carriers are NOT this entry (the `y1` FAIL, decisions.md:1833, stands); (2) real value — the intermediate holds a computation that appears in the target's own bytes and only relocates where the value is named; pure no-op copies stay with the dead-store family and its prerequisites; (3) byte-neutral — `build_insns == target_insns`, the compiler folds the copy; (4) fresh local, not a borrow — [[staged-value-reused-variable]] keeps its own bounds; (5) destination not live-pre-initialized (the `x/tx` FAIL, decisions.md:4251, stands); (6) standard prerequisites: dump-proven named mechanism, documented lever exhaustion, `/* FAKE: ... */` annotation, layer-1 + layer-2 review."
+  PRECEDENT: docs/reference/sotn-construct-index.md:113
+  PRECEDENT: docs/grind/decisions.md:11006
+  PRECEDENT: .claude/rules/no-new-park-categories.md:193
 
-  FAMILY: F1 combine-foldable chain-extender (construct 4, INHERITED unchanged)
-  SCOPE: "The combine-foldable chain-extender to bump `reg_n_refs` was moved to the sanctioned F1 family by owner ruling 2026-07-01 — FAKE-annotated last-resort; un-annotated or byte-materializing instances remain FAIL."
+  FAMILY: dead-store FAKE exception, 2026-07-01 scope extension, for construct (2)
+  SCOPE: "a LIVE store/computation routed through an algebraically-equivalent detour that combine folds back to the direct form with ZERO emitted bytes — its only surviving effect is the extra `reg_n_refs` count flow.c records before the fold."
   PRECEDENT: .claude/rules/dead-store-fake-exception.md:32
-  PRECEDENT: docs/grind/decisions.md:10710
 
 ANNOTATION-CONFORMANCE:
+  /* FAKE: fresh once-written/once-read pointer intermediate naming the address of the stage header's last word, mechanism: expand-time MEM_IN_STRUCT_P (expr.c:4567-4577) -> sched.c anti_dependence exemption -> sched1 load/store order, lever-exhaustion: memory/grind/func_800460E4/hypotheses.md + evidence.md [s1]-[s8r] */
   /* FAKE: live default init of s1 routed through a delta-rebase detour that combine folds back to s1 = s4 with zero emitted bytes, mechanism: flow.c reg_n_refs (+2 on s1's pseudo) lifts its global.c allocno_compare priority above the s2 pointer so allocation order matches target, lever-exhaustion: this function's grind ledger evidence.md [s1]+[s3] */
-  /* FAKE: the sub-block byte offset is staged through the scratch offset off_b in two steps (word index, then aligned offset) rather than one ALIGN4 expression; every stage is a real value consumed by the next statement, mechanism: GCC 2.7.2 local-alloc.c quantity tying - the refinement writes back into the same pseudo, so both shifts take the carrier's own hard register ($a0) instead of a fresh one, which is also what makes off_b's pseudo multiply-set for sched.c adjust_priority -> birthing_insn_p (reg_n_sets[regno] == 1) at its case-3 borrow, lever-exhaustion: memory/grind/func_800460E4/hypotheses.md H8/H15/H17/H19/H20 + evidence.md [s1]-[s5] */
-  /* FAKE: the two stage-header words are staged through the function's existing scratch offsets off_a (whose mainline value s0[1] is dead - already consumed into s6 above) and off_b (whose early-switch value is dead, and is not even written on the path that reaches here), each refined in place to an aligned offset and consumed on the next statement, mechanism: GCC 2.7.2 sched.c adjust_priority -> birthing_insn_p boosts a newly-ready insn only when reg_n_sets[regno] == 1; borrowing these multiply-set locals clears the boost on both header loads, so only ONE boosted insn is ready at block 19's reverse-cycle T-6, the tie that produced the 9-instruction residual disappears and both loads issue adjacently as in target, lever-exhaustion: memory/grind/func_800460E4/hypotheses.md H8/H15-H21 + evidence.md [s1]-[s5] (order, declaration order, whole-function shape, stream order and 22 once-written spellings all measured dead) */
-  All three annotations are present verbatim at their construct sites in src/text1a_c2.c and
-  each carries what + mechanism + lever-exhaustion.
+  Both lines are present verbatim at their construct sites in src/text1a_c2.c, and both carry what + a named GCC-pass mechanism + a lever-exhaustion pointer. Both constructs sit inside the sanctioned families claimed above.
+
+## Prong evidence for construct (1) — the six named-intermediate prongs
+(1) once-written, once-read: sole write is the initializer, sole read is the single dereference. (2) real value: the address is target's own (`sll` / `addu` / `lw -4`), and the loaded word is the stage pointer stored into `s4`. (3) byte-neutral: `sandbox func_800460E4 --disable all` printed score 0, target_insns 248, build_insns 248, rules_dropped 10, cheat_asm_stripped 0 THIS session. (4) fresh local, not a borrow: declared in the arm's own block. (5) destination not live-pre-initialized. (6) mechanism dump-proven in evidence.md [s6]/[s7]; exhaustion is 10 sessions, 6 modalities, 56+ banked rejected forms plus the source-level enumeration [s8r.2]; the FAKE line is present; layer-1 and layer-2 review are the open item.
+
+## Verification record
+- `& tools/wteng.ps1 main sandbox func_800460E4 --disable all` → score 0, 248/248, rules_dropped 10, cheat_asm_stripped 0.
+- Control measured this session: replacing construct (2) with the direct assignment → score 32 (248/248). Construct (2) is load-bearing and non-materializing.
+- The 10 regfix/asmfix rules this function still carries on main are now dead weight: the honest body needs none of them. Retiring them is an operator/driver step (`retire`), outside this session's allowed surface.

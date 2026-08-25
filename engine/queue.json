@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800460E4",
-      "file": "text1a_c2",
-      "distance": 35,
-      "verdict": "C",
-      "rules": 10,
-      "status": "active",
-      "unpark_reason": "Owner ruling 2026-08-25 YES on the s9 decision packet: the banked single-local named-intermediate form (measured 248/248 score 0) qualifies under the frozen named-intermediate family; return to active to apply + layer-1/layer-2 review toward COMPLETED-C (retires 10 rules, RULES-TO-ZERO).",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:10742 - '## 2026-08-25 - func_800460E4 - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**'"
-    },
-    {
       "func": "SioSyncroRead",
       "file": "main",
       "distance": 41,
@@ -2087,14 +2077,14 @@
     }
   ],
   "counts": {
-    "total": 239,
-    "active": 236,
+    "total": 238,
+    "active": 235,
     "by_status": {
-      "active": 236,
+      "active": 235,
       "escalated": 3
     },
     "by_verdict": {
-      "C": 200,
+      "C": 199,
       "ASM-PARTIAL": 36
     }
   }

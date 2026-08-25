@@ -5,8 +5,6 @@
 #include "game.h"
 #include "code6cac.h"
 
-extern s16 D_80099478;
-extern s16 D_8009947A;
 extern s32 D_800A33B0;
 extern s32 D_800A33B4;
 extern s32 *func_800457A0(s32);
@@ -44,7 +42,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
 
     s0 = func_800457A0(7);
     if (s0 != NULL) {
-        if (D_80099478 == stage_id) {
+        if (g_stage_id == stage_id) {
             s7 = 1;
             switch (stage_id) {
             case 3:
@@ -69,7 +67,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         }
     }
 
-    D_80099478 = (s16)stage_id;
+    g_stage_id = (s16)stage_id;
     s7 = 7;
     s0 = func_800455AC(7);
 
@@ -80,9 +78,8 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     }
 
     if (arg1 != 0) {
-        s32 *p = (s32 *)arg1;
-        s3 = p[0];
-        func_80045824(arg1, (s32)s0, p[s3]);
+        s3 = *(s32 *)arg1;
+        func_80045824(arg1, (s32)s0, ((s32 *)arg1)[s3]);
     }
 
     {
@@ -90,7 +87,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         s3 = s0[0];
         s6 = (s32 *)((u8 *)s0 + ALIGN4(off1_raw));
         {
-            s32 *a0_ptr = (s32 *)((u8 *)s0 + (s3 << 2));
+            s32 *a0_ptr = (s32 *)((s3 << 2) + (s32)s0);
             s4 = (s32 *)((u8 *)s0 + ALIGN4(a0_ptr[-1]));
             sp10 = (s32 *)((u8 *)s0 + ALIGN4(s0[2]));
             sp18 = (s32 *)((u8 *)s0 + ALIGN4(s0[3]));
@@ -102,9 +99,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
             }
 
             if (arg1 != 0) {
-                s32 *p2 = (s32 *)((u8 *)arg1 + (s3 << 2));
-                s32 off2 = ALIGN4(p2[0]);
-                fp_ptr = (s32 *)((u8 *)arg1 + off2);
+                fp_ptr = (s32 *)((u8 *)arg1 + ALIGN4(((s32 *)arg1)[s3]));
             } else {
                 fp_ptr = s2;
                 {
@@ -115,20 +110,28 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         }
     }
 
-    D_8009947A = 0;
-    s1 = s4;
+    g_stage_variant = 0;
+    /* FAKE: live default init of s1 routed through a delta-rebase detour that
+       combine folds back to s1 = s4 with zero emitted bytes, mechanism: flow.c
+       reg_n_refs (+2 on s1's pseudo) lifts its global.c allocno_compare
+       priority above the s2 pointer so allocation order matches target,
+       lever-exhaustion: this function's grind ledger evidence.md [s1]+[s3] */
+    s1 = (s32 *)((s32)s4 - (s32)s0);
+    s1 = (s32 *)((s32)s1 + (s32)s0);
     switch (stage_id) {
-    case 3:
+    case 3: {
+        /* FAKE: fresh once-written/once-read pointer intermediate naming the
+         * address of the stage header's last word, mechanism: expand-time
+         * MEM_IN_STRUCT_P (expr.c:4567-4577) -> sched.c anti_dependence
+         * exemption -> sched1 load/store order, lever-exhaustion:
+         * memory/grind/func_800460E4/hypotheses.md + evidence.md [s1]-[s8r] */
+        s32 *hp = (s32 *)((s3 << 2) + (s32)s0) - 1;
         s1 = s2;
-        {
-            s32 *ptr = (s32 *)((u8 *)s0 + (s3 << 2));
-            s32 raw_m2 = ptr[-2];
-            s32 raw_m1 = *(volatile s32 *)&ptr[-1];
-            D_8009947A = 1;
-            s6 = (s32 *)((u8 *)s0 + ALIGN4(raw_m2));
-            s4 = (s32 *)((u8 *)s0 + ALIGN4(raw_m1));
-        }
+        s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
+        s4 = (s32 *)((u8 *)s0 + ALIGN4(*hp));
+        g_stage_variant = 1;
         break;
+    }
     case 4:
     case 7:
     case 18:
@@ -142,19 +145,14 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         break;
     case 13:
         s1 = s2;
-        {
-            s32 *ptr = (s32 *)((u8 *)s0 + (s3 << 2));
-            s32 off1 = ALIGN4(ptr[-2]);
-            s32 off2 = ALIGN4(ptr[-1]);
-            s6 = (s32 *)((u8 *)s0 + off1);
-            s4 = (s32 *)((u8 *)s0 + off2);
-            func_80044010(PTR_OFF(s0, ALIGN4(s0[5])), 8);
-            D_8009947A = 1;
-        }
+        s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
+        s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
+        func_80044010(PTR_OFF(s0, ALIGN4(s0[5])), 8);
+        g_stage_variant = 1;
         break;
     case 34:
         s1 = s2;
-        D_8009947A = 1;
+        g_stage_variant = 1;
         s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[5]));
         break;
     }

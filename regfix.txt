@@ -867,19 +867,9 @@ SioSyncroRead: $3 <-> $6 @ 39-44
 
 # func_800460E4: 3-way register rotation ($17->$18, $18->$19, $19->$17)
 # Two swaps on body only (exclude prologue 0-14 and epilogue 227+)
-func_800460E4: $17 <-> $19 @ 15-226
-func_800460E4: $18 <-> $19 @ 15-226
 # Prologue: register+offset corrections
-func_800460E4: subst "sw\t\$19,52\(\$sp\)" "sw\t$17,44($sp)" @ 3
-func_800460E4: subst "\$19" "$17" @ 4
-func_800460E4: subst "sw\t\$18,48\(\$sp\)" "sw\t$19,52($sp)" @ 11
-func_800460E4: subst "sw\t\$17,44\(\$sp\)" "sw\t$18,48($sp)" @ 12
 # Stack variable offsets: sp10/sp18/sp20 shifted -4
 # Operand order: addu commuted operands (post-swap patterns)
-func_800460E4: subst "addu\t\$4,\$16,\$5" "addu\t$4,$5,$16" @ 76
-func_800460E4: subst "addu\t\$2,\$17,\$5" "addu\t$2,$5,$17" @ 102
-func_800460E4: subst "addu\t\$2,\$16,\$2" "addu\t$2,$2,$16" @ 129
-func_800460E4: subst "addu\t\$3,\$16,\$3" "addu\t$3,$3,$16" @ 165
 
 # func_800325E0: 23 register diffs (corrected TEXT indices, .word not counted)
 # arg0 save: $9(t1) -> $10(t2)
