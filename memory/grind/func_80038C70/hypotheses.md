@@ -623,3 +623,64 @@
 - probe: Direct read of tools/gcc-2.7.2/jump.c:3262-3276 during the dual-label investigation.
 - result: Not a lever - it only makes the label collapse MORE aggressive during the cross-jump-enabled pass, and the only insns it steps over are bare USE/CLOBBER, i.e. family F5, owner-REFUSED 2026-07-19 (docs/grind/decisions.md:789). Banked so a future session does not re-discover it as an apparent opening.
 - verdict: KILLED
+
+## s49 (forensics) — 2026-08-24
+
+- hypothesis: The 13-pair cross-jump merge is unavoidable ONLY under the unexamined premise that
+  the `D_800A3207 == 3` if-arm must contribute a `(set (reg 16) (const_int 13))` block reaching
+  jump2. If the arm is instead spelled as a `goto` into the switch handler that already
+  implements the same behaviour (the idiom HEAD already uses for v0 == 8, `goto case8_sel;`),
+  the arm's jump2 blocks contain no set insn at all, its jumps carry the CASE labels rather than
+  the join label, and find_cross_jump is never even offered the pair.
+  mechanism: jump.c:2013-2021 pairs candidates only among jumps sharing a JUMP_LABEL, and
+  find_cross_jump's backward walk needs a matching non-jump insn before the label bonus can take
+  minimum to 0. With the arm spelled as gotos to the case labels, both conditions fail at the
+  first step. The two emitted words are then produced after jump2 by reorg: fill_slots_from_thread
+  copies the target thread's first insn (`li $16,15` / `li $16,13`) into each jump's delay slot
+  (not own_thread -> copy, case bodies survive for the jump-table paths) and relax_delay_slots
+  threads the redirected jumps past the case blocks' own `j join` to the join label.
+  probe: applied the 6-line edit to src/code6cac_c_mid.c (if-arm -> `if (v0 == 10) goto
+  case12_sel; goto case9_11_sel;`; labels `case9_11_sel:` / `case12_sel:` added to the existing
+  case bodies; `sel = 0xC;` corrected to `sel = 0xD;`), then `engine sandbox func_80038C70
+  --disable all` and a full `engine build`.
+  result: **sandbox score 0, target_insns 402, build_insns 402**; full build SHA1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH. regfix.txt:1080 is inert (its
+  pattern no longer occurs) and was not touched.
+  verdict: CONFIRMED
+
+- hypothesis: Converting only the 0xD arm to a goto is enough (the 0xF arm can stay as an
+  assignment).
+  mechanism: same as above, applied to one arm only.
+  probe: `if (v0 != 10) goto case9_11_sel; else sel = 0xF;` + `engine sandbox --disable all`;
+  instrumented-cc1 XJDBG capture at tmp/grind/func_80038C70/s49/dbg_goto/.
+  result: score 5, build_insns 400. Emits `bne $17,$2,.L221 / li $16,13` then `j .L221 /
+  li $16,15` — right footprint, inverted branch sense and swapped constants, and a merge still
+  fires (DO_CROSS_JUMP jump=416 newjpos=414 newlpos=219 in dbg_goto/xjdbg.txt:2085) because the
+  surviving `sel = 0xF;` assignment re-creates a mergeable identical block. BOTH arms must be
+  gotos, which is also what the target's byte layout says (no set insn on either path).
+  verdict: KILLED (as a sufficient form; retained as the diagnostic that fixed the branch sense)
+
+- hypothesis: The pre-existing FAKE duplicate `sel2 = D_800A3350;` in `case 0:` is no longer
+  needed once the if-arm is restructured, and can be replaced by the cleaner `goto load_sel2;`
+  or deleted.
+  mechanism: if the restructure changed sel2's def count, the reg_n_refs priority that lands
+  sel2 -> $s2 / result -> $s3 might now come from elsewhere.
+  probe: measured both spellings with `engine sandbox --disable all` on top of the score-0 form.
+  result: `goto load_sel2;` = score 13; outright deletion = score 13. The duplicate is still
+  load-bearing exactly as annotated. Left unchanged from HEAD.
+  verdict: KILLED
+
+- hypothesis: reorg never deletes real insns after jump2, so a block's target word-count equals
+  its jump2 insn count (the premise under s46's "each 0xD arm holds exactly ONE real insn"
+  closure).
+  mechanism: if reorg can delete, an interposed real insn could break find_cross_jump at zero
+  byte cost — a whole additional honest quadrant.
+  probe: per-function `(insn|jump_insn|call_insn)` census of the `.jump2` vs `.dbr` dumps of this
+  TU (tmp/grind/func_80038C70/s49/count2.py) plus enumeration of reorg.c's deletion sites.
+  result: FALSE in general — func_80038658 drops 4 jump_insns and func_800383A4 drops 1 between
+  jump2 and dbr; reorg.c:3454 (`redundant_insn` -> `delete_insn (trial)`, own_thread, no
+  delay-slot compensation) and reorg.c:3878/3908/3916 (`relax_delay_slots`) are the sites. TRUE
+  for func_80038C70 specifically (83 -> 83 jump_insns; the +68 `(insn` delta is delay-slot nops,
+  MIPS `(const_int 0)`). Superseded as a lever by the goto form, but banked because other
+  functions' closures should not lean on the general claim.
+  verdict: KILLED (as a general premise)

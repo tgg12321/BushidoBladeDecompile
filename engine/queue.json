@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80038C70",
-      "file": "code6cac_c_mid",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "unpark_reason": "OWNER RULING 2026-08-24 (auto-reject class): the 2026-07-19 permanent-exception clause is VOIDED \u2014 no permanent rules exist. F5 stays refused; keep grinding under standing policy. RULES-TO-ZERO CAMPAIGN member (1 rule). Masked-score warning stands: honest-form full-build 82e50f76 != oracle; only full SHA1/byte-diff are valid metrics. Solver modality untried.",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:10376 \u2014 '2026-08-24 \u2014 func_80038C70 (motion_SetMotion, src/code6cac_c_mid.c) \u2014 OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET'"
-    },
-    {
       "func": "func_80041188",
       "file": "text1a_pre",
       "distance": 27,
@@ -2103,14 +2093,14 @@
     }
   ],
   "counts": {
-    "total": 241,
-    "active": 240,
+    "total": 240,
+    "active": 239,
     "by_status": {
-      "active": 240,
+      "active": 239,
       "escalated": 1
     },
     "by_verdict": {
-      "C": 204,
+      "C": 203,
       "ASM-PARTIAL": 36
     }
   }

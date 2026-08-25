@@ -872,3 +872,93 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s48] Rejected form banked: memory/grind/func_80038C70/rejected/s48-dual-join-label-collapses-in-mark-jump-label.c (full TU with the dual-label + honest 0xD spelling and a header comment naming jump.c:3262 as the killer).
 
 - [s48] src/code6cac_c_mid.c restored byte-for-byte from tmp/grind/func_80038C70/s48/orig.c; git status --porcelain shows only metrics/events.jsonl.
+
+## s49 (forensics) — 2026-08-24 — SOLVED: honest pure-C distance 0, full-build SHA1 == oracle
+
+- [s49] **THE FUNCTION IS MATCHED IN PURE C.** `engine sandbox func_80038C70 --disable all` =
+  **score 0**, target_insns 402, build_insns 402, rules_dropped 1, cheat_asm_stripped 7. A full
+  `engine build` with the new C in place produced build/bb2.exe sha1
+  `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle, **MATCH**. The 48-session wall is closed
+  and it was closed with ordinary C control flow, not with any exception family.
+
+- [s49] THE FORM (6-line diff to src/code6cac_c_mid.c, banked as candidate.c):
+      -        if (v0 != 10) {          |   +        if (v0 == 10) {
+      -            sel = 0xD;           |   +            goto case12_sel;
+      -        } else {                 |   +        }
+      -            sel = 0xF;           |   +        goto case9_11_sel;
+      -        }                        |
+      -        goto sel_dispatch;       |
+      ... and, in the switch:  `case 9: case 11:` gains the label `case9_11_sel:` with the
+      constant corrected `sel = 0xC;` -> `sel = 0xD;`, and `case 12:` gains `case12_sel:`.
+  The `D_800A3207 == 3` if-arm now expresses ALL THREE of its outcomes the same way HEAD already
+  expressed the v0 == 8 outcome — `goto case8_sel;` (src/code6cac_c_mid.c:880) — i.e. by jumping
+  to the switch handler that implements the identical behaviour instead of retyping its body.
+
+- [s49] WHY IT WORKS (the mechanism the whole ledger was missing). Every prior session attacked
+  jump.c's `find_cross_jump` while accepting that the if-arm must contain a
+  `(set (reg 16) (const_int 13))` reaching jump2. It does not. With the arm spelled as two
+  gotos, the arm's basic blocks at jump2 contain **no set insn at all** — they are
+  `(jump_insn -> L_case12)` and `(jump_insn -> L_case9_11)`, whose JUMP_LABELs are the two case
+  labels, not the join label 444. Consequences, each of which independently kills the merge:
+  (a) the two jumps are not in the join label's `jump_chain`, so the caller loop at
+      jump.c:2013-2021 never pairs either of them with the case-9/11 block's jump;
+  (b) the own-label `find_cross_jump(insn, JUMP_LABEL(insn), 1)` call walks back from the arm's
+      jump and immediately hits the preceding conditional branch (a JUMP_INSN) against the
+      case block's non-matching predecessor — insn-code mismatch, minimum never reaches 0.
+  The two words the arm still needs are then produced *after* jump2 by reorg: each jump's delay
+  slot is filled from the first insn of its TARGET thread (`li $16,15` for case 12, `li $16,13`
+  for cases 9/11 — the case blocks are not own_thread, so the insns are COPIED, not deleted, and
+  the case bodies survive intact for the jump-table paths), and `relax_delay_slots` then threads
+  each redirected jump past the case block's own `j join` straight to the join. Emitted result:
+  `beq $s1,$v0,.L80038EDC / addiu $s0,$zero,0xF` then `j .L80038EDC / addiu $s0,$zero,0xD` —
+  the shipped bytes at 0x80038DA0..0x80038DAC, exactly.
+
+- [s49] THE LEDGER'S LOAD-BEARING PREMISE WAS FALSE, AND IT WAS NEVER MEASURED. s45/s46/s47/s48
+  jointly "closed" this function by enumerating every way to stop `find_cross_jump` from merging
+  two identical `{set 13; j join}` blocks, and every one of those closures is still correct. The
+  error was upstream of all of them: the premise that the if-arm contributes such a block at all.
+  s48's own frontier line named the escape ("look for a C shape in which the arm's sel value is
+  produced by something other than a fresh (set (reg) (const_int 13)) that survives to jump2")
+  and then priced it as expensive; it costs six lines. Generalisable lesson for the pipeline: an
+  enumeration over the ways a pass can be *stopped* is not an enumeration over the ways the input
+  to that pass can be *shaped*, and a multi-session "wall" statement should always name which
+  premise about the RTL INPUT it is conditioned on.
+
+- [s49] THE SEMANTIC LIE IS GONE. regfix.txt:1080 was `subst "addiu\t$16,$zero,12" ->
+  "addiu $16,$zero,13" @ 149`: the C said the case-9/11 handler selects 12, a build rule rewrote
+  the emitted immediate to 13, and the shipped program selects 13. The new C says 13. The rule is
+  now **inert** — its pattern no longer occurs in the emitted stream — which is why the full
+  build matches the oracle with the rule still physically present in regfix.txt. INTEGRATION
+  NOTE FOR THE OPERATOR: deleting that single line (`engine retire func_80038C70`) takes the
+  function to zero rules and COMPLETED-C; no other pipeline file is involved. This session did
+  not touch regfix.txt.
+
+- [s49] MEASURED VARIANTS (both banked):
+  * SINGLE goto (only the 0xD arm converted: `if (v0 != 10) goto case9_11_sel; else sel = 0xF;`)
+    = **score 5**, build_insns 400. Instructive: the arm collapses to
+    `bne $17,$2,.L221 / li $16,13` + `j .L221 / li $16,15` — the correct 4-word footprint but with
+    the BRANCH SENSE and the two constants swapped relative to target, and still 2 insns short
+    because the surviving `sel = 0xF;` block re-created a mergeable pair elsewhere. The pair of
+    gotos is required precisely because the target's arm contains no set insn on EITHER path.
+  * `case 0: sel = 0x11; goto load_sel2;` (replacing the pre-existing FAKE duplicate
+    `sel2 = D_800A3350;`) = **score 13**; deleting that statement outright also = **score 13**.
+    The HEAD FAKE duplicate is therefore still load-bearing exactly as its annotation claims
+    (reg_n_refs priority, sel2 -> $s2 / result -> $s3), and it is unchanged by this session.
+    Banked: rejected/s49-goto-load-sel2-drops-ra-priority-score13.c.
+
+- [s49] NEW GENERAL CHASSIS FACT (measured, reusable on every queued function): reorg CAN delete
+  real insns after jump2, so "the target footprint has N words therefore the block had N insns at
+  jump2" is not a safe inference in general. Per-function insn-count comparison of the `.jump2`
+  and `.dbr` dumps of this whole TU (tmp/grind/func_80038C70/s49/count2.py) shows func_80038658
+  losing FOUR jump_insns between the two dumps and func_800383A4 losing one. The deletion sites
+  are enumerated in tools/gcc-2.7.2/reorg.c: `redundant_insn` -> `delete_insn (trial)` at
+  reorg.c:3454 (own_thread redundant insn removed with NO delay-slot compensation),
+  `relax_delay_slots`' `delete_jump` at reorg.c:3878 and its label/next deletions at
+  reorg.c:3908-3916. For THIS function the jump_insn count is 83 -> 83 (the +68 `(insn` delta is
+  delay-slot nops, MIPS `(const_int 0)`), so no post-jump2 deletion occurs here — but the
+  general inference is unsound and should not be reused as a closure premise elsewhere.
+
+- [s49] Scope/hygiene: only src/code6cac_c_mid.c is modified (6 insertions / 6 deletions, diff in
+  the outcome JSON and in candidate.c). regfix.txt, asmfix.txt, engine/, tools/, Makefile and the
+  linker script are untouched; no `retire`, no `queue done`, no commit. `git diff --stat` at
+  session end: src/code6cac_c_mid.c only (plus the untracked metrics append).

@@ -879,12 +879,10 @@ s32 func_80038C70(void) {
         if (v0 == 8) {
             goto case8_sel;
         }
-        if (v0 != 10) {
-            sel = 0xD;
-        } else {
-            sel = 0xF;
+        if (v0 == 10) {
+            goto case12_sel;
         }
-        goto sel_dispatch;
+        goto case9_11_sel;
     }
 
     switch (v0) {
@@ -943,9 +941,11 @@ s32 func_80038C70(void) {
         goto load_sel2;
     case 9:
     case 11:
-        sel = 0xC;
+    case9_11_sel:
+        sel = 0xD;
         goto sel_dispatch;
     case 12:
+    case12_sel:
         sel = 0xF;
         goto sel_dispatch;
     default:

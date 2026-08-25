@@ -1077,7 +1077,6 @@ func_80040D48: subst "\$5" "$4" @ 236
 # bne before sw for delay slot fill
 
 # motion_SetMotion: anti-cross-jump fix
-func_80038C70: subst "addiu\t\$16,\$zero,12" "addiu	$16,$zero,13" @ 149
 
 # === SUBSTS (ORIGINAL indices) ===
 

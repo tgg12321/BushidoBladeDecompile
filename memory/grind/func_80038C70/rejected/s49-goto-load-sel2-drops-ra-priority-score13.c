@@ -888,11 +888,7 @@ s32 func_80038C70(void) {
     switch (v0) {
     case 0:
         sel = 0x11;
-        sel2 = D_800A3350; /* FAKE: duplicate of load_sel2's store — jump2 cross-jump re-merges it
-                              (zero emitted bytes); the extra real def lifts sel2's reg_n_refs
-                              priority above result's so RA lands sel2->$s2 / result->$s3 (target).
-                              SOTN duplicate-into-arms family. */
-        goto sel_dispatch;
+        goto load_sel2;
     case 13:
     case 17:
         sel = 6;
