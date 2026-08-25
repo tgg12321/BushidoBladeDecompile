@@ -1,67 +1,56 @@
-/* candidate for func_800460E4 - session s7 2026-08-25 (recon re-baseline)
- * STATE: sandbox --disable all = 9 (245/248, 10 regfix rules dropped in
- * scoring), measured THIS session (three times: at HEAD-body chassis 35, at
- * the rebuilt floor-9 form with case-13-style ptr spelling, and at this
- * final uniform indexed spelling - the last two produce BYTE-IDENTICAL
- * objects, diff-verified tmp/grind/func_800460E4/s7/).
+/* candidate for func_800460E4 - session s4 2026-08-25 (permuter modality)
  *
- * This is the BEST NON-BANNED FORM. The prior [s6] candidate (StageState
- * aggregate merge, sandbox 4 = scorer artifact) was REFUSED by the
- * 2026-08-25 04:46 ruling (prong (a) fails all three evidence classes;
- * prong (c) unsatisfiable while asm consumers need both symbols) and is
- * banked at rejected/aggregate-merge-refused-0446.c. Honest floor per that
- * ruling and per this session's measurement: 9.
+ * STATE: `sandbox func_800460E4 --disable all` = **0** (248/248 insns,
+ * rules_dropped=10, cheat_asm_stripped=0), measured THIS session with this
+ * exact body in src/text1a_c2.c. The previous floor was 9 and had been flat
+ * for three sessions; the floor-9 body is preserved next to this file as
+ * candidate_floor9_prev.c.
  *
- * The 9 (characterized s7, tmp/grind/func_800460E4/s7/ours_s7.dis vs
- * asm/funcs/func_800460E4.s): all case-3-local. Ours seats the case-3
- * address in $a0 / raw_m1 in $v0 with li/sh(D_8009947A=1) filling the FIRST
- * lw's delay slot; target seats address $v0 / raw_m1 $a0 with li/sh after
- * BOTH loads (target's li v0,1 REUSES the then-dead address register, which
- * is only possible in that order - seats and order are one rigid solution).
- * Our m1-in-$v0 makes case 3's s4 tail (srl/sll/addu $s4,$s0,$v0)
- * byte-identical to case 34's, so jump2 find_cross_jump merges the 3-insn
- * suffix (j into case 34). 9 = 3 merged insns + the seat-swapped registers.
+ * !!! THIS FORM IS *NOT* CLEARED FOR SUBMISSION. The session that produced it
+ * returned `ruling-request`, NOT `candidate-ready`, because the construct that
+ * closes the last 9 instructions - reading the two stage-header words as
+ *     *(s32 *)((s32)&s0[s3] - 8)   /  *(s32 *)((s32)&s0[s3] - 4)
+ * instead of s0[s3 - 2] / s0[s3 - 1] - is a RESPELLING of the address form in
+ * state.json banned_constructs #5 (and is adjacent to #4 and #6). Per the
+ * grind contract a candidate-ready that re-declares a banned construct is
+ * mechanically discarded, so the next session must carry the ruling before it
+ * submits. See the ruling_question in tmp/grind/outcome_func_800460E4.json and
+ * evidence.md [s4].
  *
- * EXHAUSTION STATE for the case-3 residual (do not re-probe):
- *  - every load-side non-/s spelling BANNED (volatile cast, pm2/pm1,
- *    inlined cast-derefs, address-form divergence - layer-1 FAILs 03:53 /
- *    04:17 / 04:28);
- *  - store-side /s via aggregate merge REFUSED (ruling 04:46);
- *  - volatile-extern two-prong gate unmet (H14, no IRQ consumer);
- *  - statement-order space swept flat ([s4] P1-P4) and sched_solver-proven
- *    UNREACHABLE by perturbation of our RTL atoms (depth 2 all 584 atoms,
- *    depth 3 the 273 spellable);
- *  - indexed-read respelling s0[s3-2]/s0[s3-1] (this file's spelling)
- *    measured RTL-EQUIVALENT to the block-local-ptr spelling (H15 kill,
- *    byte-identical objects) - adopted here purely because it is the
- *    function's own first-switch idiom (see ALIGN4(s0[s3 - 1]) in the
- *    first switch) - most natural spelling, no block-local ptr, no named
- *    intermediates, zero divergence between case 3 and case 13.
- * Target's case-3 atom multiset is IDENTICAL to ours (15 insns) - the
- * divergence is order+seats only. Frontier: sched_solver classify at this
- * chassis incl. pass 2 / atom-set (not just perturbation) analysis, then
- * whole-function rederivation. See hypotheses.md [s7] frontier.
+ * WHAT CHANGED vs the floor-9 body (the ENTIRE diff, two lines per site, and
+ * the SAME two lines at BOTH sites):
+ *   case 3  and  case 13:
+ *     - s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
+ *     - s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
+ *     + s6 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s32)&s0[s3] - 8)));
+ *     + s4 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s32)&s0[s3] - 4)));
+ * Nothing else in the function changed. The inherited FAKE-annotated s1
+ * chain-extender (ruled legitimate by the 2026-08-25 03:53 layer-1 review) is
+ * unchanged and still load-bearing.
  *
- * ONE FAKE construct: the [s3] s1 chain-extender (dead-store-fake-exception
- * combine-foldable chain-extender family; ruled legitimate by the 03:53
- * layer-1 review; independently load-bearing - removing it returns the
- * 3-seat rotation, floor 32).
- * Exact copy of the src/text1a_c2.c body at measurement time.
- */
-
-/* s2 UPDATE 2026-08-25 (structural modality) - body UNCHANGED, re-measured
- * sandbox --disable all = 9 (245/248) at session start and again at session
- * end. Two corrections/additions to the header above:
- *  - The "9 = 3 merged insns + seat swap" decomposition is WRONG. The jump2
- *    find_cross_jump merge is SCORE-NEUTRAL: computing s4 before s6 in case 3
- *    defeats the merge (build_insns 248 == target_insns) and the score stays
- *    exactly 9. All 9 diffs are the case-3 seat/order divergence.
- *    Not adopted - zero gain, and it would make case 3 diverge from case 13 in
- *    statement order for no reason but a jump2 fold.
- *  - STRUCTURAL modality is now EXHAUSTED: case 3's block is byte-identical
- *    under a drastic whole-function perturbation (s7 flag split, sandbox 46)
- *    and under every statement order incl. store-FIRST (the last unswept slot).
- *    See evidence.md [s2] / hypotheses.md H16-H18.
+ * WHY THE SPELLING IS UNIFORM: applying the byte-offset read at case 3 ONLY
+ * also measures 0 (tmp/grind/func_800460E4/s4/src_r5_zero.c), but that is the
+ * exact "address form choice vs. case 13's indexed form" divergence banned as
+ * #6. Applying it identically at both sites that read these two header words
+ * removes the divergence entirely and still measures 0 - so the form kept here
+ * is the maximally self-consistent one, not the minimal-diff one.
+ *
+ * MECHANISM (measured, not hypothesised - cc1 -dS .sched dumps in
+ * tmp/grind/func_800460E4/s4/dumps_qa/ and dumps_bs/): the whole 9-instruction
+ * residual was one scheduler tie in case 3's block. With the indexed spelling
+ * the ready list at reverse-cycle T-6 carries BOTH the second header load and
+ * the first shift of the other ALIGN4 chain, each lifted to 0x7f000001 by
+ * sched.c adjust_priority's birthing boost; the tie resolves toward the load
+ * and everything else in the block (address seat, both load seats, li/lui/sh
+ * placement, the jump2 cross-jump merge) follows. Under this spelling the two
+ * chains desynchronise and T-6 carries only ONE boosted insn, which is exactly
+ * the schedule target has.
+ *
+ * PROVENANCE: found by decomp-permuter. Campaign perm_a (label
+ * s4-floor9-baseline, 41334 iterations) produced output-110-1, which reached
+ * target's exact case-3 order and seats with one extra `addu` (sandbox 2);
+ * directed probe r5_addr_cast_m1 (tmp/grind/func_800460E4/s4/probe3.py) then
+ * removed the extra insn and reached 0.
  */
 void func_800460E4(s32 stage_id, s32 arg1) {
     s32 *s0;
@@ -153,8 +142,8 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     switch (stage_id) {
     case 3:
         s1 = s2;
-        s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
-        s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
+        s6 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s32)&s0[s3] - 8)));
+        s4 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s32)&s0[s3] - 4)));
         D_8009947A = 1;
         break;
     case 4:
@@ -170,8 +159,8 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         break;
     case 13:
         s1 = s2;
-        s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
-        s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
+        s6 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s32)&s0[s3] - 8)));
+        s4 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s32)&s0[s3] - 4)));
         func_80044010(PTR_OFF(s0, ALIGN4(s0[5])), 8);
         D_8009947A = 1;
         break;

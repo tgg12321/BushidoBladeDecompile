@@ -357,3 +357,33 @@ Frontier (in order):
 - probe: u32 hdr_m1, hdr_m2; vs u32 hdr_m2, hdr_m1; at the P6 chassis; sandbox --disable all
 - result: sandbox 18 both ways - inert
 - verdict: KILLED
+
+## [s4] The [s3] frontier holds: an atom-set change inside case 3's block that makes one of the two competing insns NOT newly-ready at reverse-cycle T-6 breaks the birthing-boost tie and yields target's order AND all of its seats.
+- mechanism: sched.c adjust_priority's birthing boost (0x7f000001) is granted per newly-ready insn; the divergence exists only because the second header load and the first shift of the other ALIGN4 chain become ready in the SAME cycle. Desynchronising the two chains removes the tie entirely rather than trying to win it.
+- probe: decomp-permuter campaign perm_a (seed = inherited floor-9 candidate, 41334 iterations) produced output-110-1, whose case 3 is semantically identical to the baseline but routes the -4 header word through `nv = &s0[s3 - 1]`; reproduced by hand as q_a_repro, measured with `sandbox func_800460E4 --disable all`, and both spellings' cc1 `-dS` .sched dumps compared block-for-block (tmp/grind/func_800460E4/s4/dumps_bs vs dumps_qa, ready-list group 19)
+- result: floor-9 spelling ready list at T-6 = `332/331 (1) 298 (1) 310 (7f000001) 322 (7f000001)` (two boosted insns, tie); winning spelling = `332 (1) 298 (1) 310 (7f000001)` (one boosted insn, no tie). The object reaches target's exact case-3 order and every seat, including `li v0,1` reusing the dead address register after both loads. sandbox --disable all = 2 (249/248) - the only residual is GCC materialising the `&s0[s3-1]` base a second time (`addu v1,v0,s0`) plus that load's seat.
+- verdict: CONFIRMED
+
+## [s4] The duplicated base can be removed while keeping the desynchronisation, by reading the header word through a byte-offset cast-deref off the same address expression instead of through a second pointer object.
+- mechanism: `*(s32 *)((s32)&s0[s3] - 4)` yields one address pseudo (both loads at -8/-4 off it, exactly target's 15-atom block) while still not being an array-ref MEM off the same base as the other read, so the two ALIGN4 chains stay desynchronised
+- probe: directed sweep tmp/grind/func_800460E4/s4/probe2.py + probe3.py (13 spellings of the two header-word reads, scored against target with tmp/grind/func_800460E4/s4/score.py), then the winner re-measured in src/text1a_c2.c with `sandbox func_800460E4 --disable all`
+- result: **sandbox --disable all = 0 (248/248, rules_dropped=10, cheat_asm_stripped=0)**. Applying the same byte-offset read to BOTH header words at BOTH sites (case 3 and case 13) also measures 0, and that fully-uniform form is what candidate.c carries.
+- verdict: CONFIRMED (bytes) — LICENCE OPEN: the construct respells state.json banned_constructs #5, so the session returned `ruling-request` rather than `candidate-ready`
+
+## [s4] Pointer-local spellings of the same address (`p = &s0[s3]; p[-2]; p[-1]`) do NOT desynchronise the chains.
+- mechanism: an array-ref MEM off a pointer local produces the same dependence/readiness structure as the direct `s0[s3-2]` index, so the T-6 tie survives
+- probe: q_d / q_g / r1 / r2 / r4 in probe2.py / probe3.py (pointer local at &s0[s3], at &s0[s3-1], at &s0[s3-2], with the two reads distributed every way), diffed against target
+- result: 245-246 instructions, 9 diffs - identical to the floor-9 baseline in every case
+- verdict: KILLED (and this is the strongest counter-argument for the ruling: the same address written as a pointer local closes nothing, so the winning construct's only observable difference is codegen)
+
+## [s4] Re-indexing case 3 through a decremented s3 (`s3 -= 2; s0[s3]; s0[s3+1]`) is catastrophic, not neutral.
+- mechanism: s3 is live into the post-switch region's register allocation; clobbering it re-seats s1/s2/s3 across the whole tail
+- probe: p1_s3minus2 / p2_s3minus2_s4first in probe.py
+- result: 246 / 249 instructions, 135 / 139 diffs
+- verdict: KILLED
+
+## [s4] Permuter-seed calibration for this function (methodology, not a codegen claim).
+- mechanism: the permuter's weighted metric charges 100 per inserted/deleted instruction, so the jump2 cross-jump merge in the floor-9 candidate costs 300 points that carry no information
+- probe: launched the same search from the floor-9 candidate (perm_a) and from its merge-free twin with case 3's s4 assigned before s6 (perm_b, also sandbox 9)
+- result: base scores 550 vs 260 for two bodies at the same honest distance. Seed the merge-free twin in future campaigns on this function.
+- verdict: CONFIRMED

@@ -811,3 +811,151 @@ dis.sh) and the regenerated tmp/grind/func_800460E4/dumps/ set.
 - [s3] Owner RULES-TO-ZERO directive (2026-08-24) acknowledged and in execution: the 10 regfix rules at regfix.txt:868-882 retire only at COMPLETED-C; the floor did not move this session, so no retirement is possible yet; wave-2 INCLUDE_RODATA remains measured SHA1-dead for this function (docs/grind/borderline.md:88).
 
 - [s3] Sanction note recorded in the ledger: the shared-scratch probes are research forms only, all measured WORSE than the floor, none of them is in candidate.c. Any descendant that reaches 0 is a variable-reuse-for-codegen-control construct whose stated mechanism is a named GCC internal, so it needs a family ruling plus a FAKE annotation BEFORE submission, not after.
+
+## [s4] 2026-08-25 (permuter modality) — THE FLOOR BROKE: 9 → 0
+
+Baseline re-measured at session start with the inherited floor-9 candidate.c
+applied to src/text1a_c2.c: **sandbox --disable all = 9 (245/248,
+rules_dropped=10, cheat_asm_stripped=0)** — chassis unchanged from [s3].
+By session end the same command printed **0 (248/248, rules_dropped=10,
+cheat_asm_stripped=0)**. src/ was restored to HEAD before finishing; the
+zero-distance body lives in memory/grind/func_800460E4/candidate.c and a
+verbatim copy of the measured src file is
+tmp/grind/func_800460E4/s4/src_uniform_zero.c.
+
+**The session returned `ruling-request`, NOT `candidate-ready`** — see "The
+construct question" below. The bytes are proven; the licence is not.
+
+### Owner directive (RULES-TO-ZERO, 2026-08-24) — executed
+Acknowledged and acted on: the goal is COMPLETED-C, which retires the 10
+regfix rules at regfix.txt:868-882. Wave-2 INCLUDE_RODATA remains measured
+SHA1-dead for this function (docs/grind/borderline.md:88) and was not
+re-probed. This session moved the honest distance to 0 with the rules dropped
+in scoring, so the retirement is now blocked ONLY on the construct ruling.
+
+### The permuter workspace (reusable — build it the same way next time)
+`tmp/grind/func_800460E4/s4/mkws.sh <dir>` builds a workspace whose
+`compile.sh` mirrors the Makefile pipeline exactly (cpp already applied to
+base.c; `cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls
+-fno-builtin -w **-mel**` | prologue_fix | maspsx | multu_pad), then extracts
+ONLY func_800460E4's region with `extract_fn.py` and assembles it. `target.o`
+is decomp-permuter's prelude + asm/funcs/func_800460E4.s. base.c is the full
+preprocessed TU, so codegen context is exact; decomp-permuter confines
+randomisation to `func_name` (src/randomizer.py:2469 extracts that fn), so the
+other functions in the TU are inert. Scoring helper:
+`tmp/grind/func_800460E4/s4/score.py` (difflib alignment with branch targets
+and the jump-table %lo addend normalised — the naive positional diff is
+useless as soon as the instruction count changes).
+
+### Campaign telemetry
+- **perm_a** (label `s4-floor9-baseline`, seed = inherited floor-9 candidate,
+  -j 6): base permuter score **550**, 41334 iterations, 65 finds, best **110**
+  (`output-110-1`).
+- **perm_b** (label `s4-s4first-nomerge`, seed = same body with case 3's s4
+  assignment before s6 — the [s2] "defeats the jump2 cross-jump" variant, 248
+  insns, sandbox 9, -j 4): base permuter score **260**, 15309 iterations, 2
+  finds, best **65** at 414 s. Stopped as superseded. NOTE the base-score gap:
+  550 vs 260 for two bodies that both measure sandbox 9 — the cross-jump merge
+  costs 3 instructions × 100 in the permuter metric, so the floor-9 candidate
+  is a much WORSE permuter seed than its no-merge twin. Seed the twin.
+- **perm_c** (label `s4-q_a-2diff-basin`, seed = the reproduced 2-diff form,
+  -j 6): base score **110**, 14979 iterations, 1 find, best **55**. Stopped
+  once the directed probe reached 0.
+All three harvested with `--stop`; no campaign outlived the session.
+
+### The decisive find and what it proved
+`perm_a/output-110-1` mutated case 3 to
+`s6 = ...ALIGN4(s0[s3 - 2]); nv = &s0[s3 - 1]; s4 = ...ALIGN4(*nv);` — which
+is SEMANTICALLY IDENTICAL to the baseline. Its object reached **target's exact
+case-3 instruction ORDER and every SEAT** (address in $v0, -8 word in $v1, -4
+word in $a0, `li v0,1` reusing the dead address register after both loads,
+`srl v1`/`addu s6,s0,v1` then `srl a0`/`addu s4,s0,a0`). Residual: ONE extra
+`addu v1,v0,s0` (GCC materialised the `&s0[s3-1]` base a second time) plus the
+seat of the -8 load. Reproduced as a hand-written probe (`q_a_repro`) and
+measured on the real chassis: **sandbox --disable all = 2 (249/248)**.
+
+That is the first time in this function's history that the case-3 order and
+seats were reproduced, and it CONFIRMS the [s3] frontier hypothesis verbatim:
+"an atom-set change inside block 19 that makes one of the two competing insns
+not newly-ready at T-6 breaks the tie".
+
+### Mechanism, read out of cc1's own scheduler dump (not hypothesised)
+`tmp/grind/func_800460E4/s4/dumps_bs/in.c.sched` (floor-9 spelling) vs
+`dumps_qa/in.c.sched` (the 2-diff spelling), block group 19 in both:
+
+    floor-9  ;; ready list at T-6: 331 (1) 298 (1) 310 (7f000001) 322 (7f000001), now 322 310 331 298
+    2-diff   ;; ready list at T-6: 332 (1) 298 (1) 310 (7f000001), now 310 332 298
+
+Two boosted insns compete at T-6 in the floor-9 spelling (the second header
+load 310 and the first shift 322 of the other ALIGN4 chain, both at
+`adjust_priority`'s 0x7f000001 birthing boost); in the winning spelling the
+chains have desynchronised and only ONE boosted insn is ready at that cycle,
+so there is no tie to lose. Everything downstream — address seat, both load
+seats, li/lui/sh placement, the jump2 cross-jump merge — follows from that one
+pick, exactly as [s3] predicted.
+
+### From 2 to 0 — the directed probe sweep
+`tmp/grind/func_800460E4/s4/probe2.py` and `probe3.py` swept the spelling of
+the two header-word reads on the perm_a chassis (diff counts via score.py,
+target = 248 insns):
+
+    q_a_repro            (s6 indexed; nv = &s0[s3-1]; s4 = *nv)   249  diffs=2
+    q_b_both_via_m1      (both via nv = &s0[s3-1])                249  diffs=4  (-1 folds to addiu)
+    q_e_blockscope_m1    (same, block-scope decl)                 249  diffs=4
+    q_c_both_via_m2      (both via nv = &s0[s3-2])                246  diffs=9
+    q_d / q_g / r1 / r2 / r4  (ptr local at &s0[s3], indexed)     245/246 diffs=9
+    p1/p2 (s3 -= 2 re-index)                                      246/249 diffs=135/139
+    r3_nv_m1_first                                                249  diffs=8
+    r6_nv_used_twice_m1                                           249  diffs=2
+    **r5_addr_cast_m1**  (s4 = ...ALIGN4(*(s32*)((s32)&s0[s3]-4)))  **248  diffs=0**
+
+r5 removes the duplicated base (one address pseudo, both loads at -8/-4 off
+it) AND keeps the desynchronised chains. Measured on the real chassis:
+**sandbox --disable all = 0**. Applying the same byte-offset read to the OTHER
+header word as well, and at BOTH sites that read them (case 3 and case 13),
+also measures **0** — that fully-uniform form is what candidate.c carries,
+because the case-3-only form is precisely the address-form divergence banned
+as banned_constructs #6.
+
+### The construct question (why this is a ruling-request)
+The closing construct is
+`*(s32 *)((s32)&s0[s3] - 8)` / `*(s32 *)((s32)&s0[s3] - 4)` in place of
+`s0[s3 - 2]` / `s0[s3 - 1]`. It is a respelling of the address form in
+state.json banned_constructs #5 (`*(s32 *)((s3 << 2) + (s32)s0 - 8)` …) and is
+adjacent to #4 (pm2/pm1 pointer intermediates) and #6 (address-form choice
+divergence). The grind contract discards a candidate-ready that re-declares a
+banned construct under any spelling, so this session did not submit. What is
+NEW since those rulings, and what the ruling should weigh:
+ (a) the earlier instances were floor-9-era probes that closed NOTHING; this
+     one is byte-exact 0 on the honest chassis with all 10 rules dropped;
+ (b) the earlier FAILs asserted the mechanism was MEM_IN_STRUCT_P alias-defeat
+     (a worker hypothesis); this session has cc1's own .sched ready-list trace
+     showing the effect is a birthing-boost readiness desynchronisation at
+     T-6, and shows the same schedule is reachable by a purely ADDITIVE route
+     (the `nv` pointer local, sandbox 2 at +1 insn) that involves no cast;
+ (c) the form is now applied UNIFORMLY at both header-word sites in both
+     cases, so the #6 "two constructs apart in the same function" divergence
+     does not exist in the submitted body;
+ (d) the function's own surrounding code already reads these header words
+     through byte-address arithmetic (`a0_ptr = (s32 *)((s3 << 2) + (s32)s0)`
+     in the pre-switch block, and the `PTR_OFF(base, off)` macro throughout),
+     so the idiom is not foreign to the file.
+Counter-consideration the ruling must not ignore: `p[-2]`/`p[-1]` on a pointer
+local is the SAME address and measures 9, so the construct's only observable
+difference is the codegen — which is the classic T1/T2 cheat smell.
+
+### Frontier if the ruling goes AGAINST the construct
+The 2-diff `nv` route (`q_a_repro`) and the 4-diff `q_b` route are the same
+family, so a ban on #5's address form probably bans them too. What would still
+be open is any OTHER way to desynchronise the two ALIGN4 chains inside block 19
+without adding an instruction — the .sched dumps in
+tmp/grind/func_800460E4/s4/dumps_{bs,qa}/ give the exact readiness predicate to
+aim at, and the sweep above is the measured map of what does and does not move
+it.
+
+- [s4] Baseline 9 re-measured at session start; **honest floor moved 9 → 0** (248/248, rules_dropped=10, cheat_asm_stripped=0) with the uniform byte-offset header-word read at case 3 and case 13. src/ restored to HEAD before finishing.
+- [s4] The [s3] frontier hypothesis is CONFIRMED by measurement: desynchronising the two ALIGN4 chains inside block 19 so that only one birthing-boosted insn is ready at reverse-cycle T-6 reproduces target's case-3 order AND all of its seats.
+- [s4] decomp-permuter found it: perm_a/output-110-1 (semantically identical to the baseline, `nv = &s0[s3-1]`) reached target's order+seats at sandbox 2; the directed follow-up r5_addr_cast_m1 removed the duplicated base and reached sandbox 0.
+- [s4] Permuter-seed lesson for this function: the floor-9 candidate scores 550 as a permuter seed but its jump2-cross-jump-free twin (case 3's s4 assigned before s6, same sandbox 9) scores 260 — seed the twin, the merge costs 300 points of pure noise.
+- [s4] Workspace recipe banked at tmp/grind/func_800460E4/s4/mkws.sh + extract_fn.py + score.py (full-TU preprocessed base.c, Makefile-exact pipeline INCLUDING -mel, per-function region extraction, branch/jtbl-normalised diff scoring).
+- [s4] Outcome is `ruling-request`, not `candidate-ready`: the closing construct respells state.json banned_constructs #5 and the driver discards a candidate-ready that re-declares a banned construct. The bytes are proven and banked; only the licence is open.
