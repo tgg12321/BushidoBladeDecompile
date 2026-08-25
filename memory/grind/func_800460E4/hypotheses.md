@@ -810,3 +810,98 @@ synthesis space remains untried.
 - probe: Read t.flow for this TU's own mainline reads and for the CSE-folded ((s32 *)arg1)[s3] loads.
 - result: s0[0] and a0_ptr[0] are (mem:SI (reg/v:SI 74)) / (mem:SI (reg/v:SI 109)) with no /s; a0_ptr[-1] and a0_ptr[1] are (mem/s:SI (plus:SI ...)); insns 170 and 246 are (mem/s:SI (reg ...)) — bare-register addresses that still carry /s from a PLUS_EXPR birth.
 - verdict: CONFIRMED
+
+## [s7] 2026-08-25 — FORENSICS modality (session 7)
+
+### H31 — the sched.c anti_dependence exemption can be broken from the STORE side, not only the LOAD side
+**Statement.** [s6.5]/[s9.7] declared the closing set to be exactly one (banned)
+construct on the ground that the `-4` header load must lose MEM_IN_STRUCT_P. That
+enumeration covered only one term of a five-term conjunction in
+`anti_dependence` (tools/gcc-2.7.2/sched.c:843-864). Setting MEM_IN_STRUCT_P on
+the *store's* MEM breaks the same exemption and restores the dependence edge,
+with the loads left untouched.
+**Mechanism.** sched.c:855-859 — the exemption requires
+`MEM_IN_STRUCT_P(load) && rtx_addr_varies_p(load) && mode != QImode &&
+!MEM_IN_STRUCT_P(store) && !rtx_addr_varies_p(store)`. expr.c:4567-4577 / 4888 /
+4329 / 5788 set /s on a MEM from `AGGREGATE_TYPE_P` of the accessed object's
+type, so an aggregate-typed global gives its store /s while emitting the same
+single `sh` through the assembler's `%hi/%lo` macro.
+**Probe.** `extern s16 D_8009947A[1];` with the four accesses spelled
+`D_8009947A[0]`, everything else identical to the [s7]/[s8]/[s9] candidate body;
+scored through tmp/grind/func_800460E4/s8/pr.sh.
+**Result.** 248 insns / 19 diffs (base 245 / 9). Case 3 becomes **byte-exact**
+against target lines 131-145 — adjacent `lw -8` / `lw -4`, store after both. The
+19 diffs are a global $s2/$s3 seat swap and a case-34 order inversion.
+**Verdict: CONFIRMED.**
+
+### H32 — with the store carrying /s, case 34 must be written load-before-store, and that reorder is byte-inert on its own
+**Statement.** The 19 residual diffs of H31 are not a case-3 problem; they follow
+from case 34, where the same store now has a live anti-dependence against
+`s0[5]`, so source order decides an ordering that used to be a free scheduler
+choice.
+**Mechanism.** Same exemption clause; target's case 34 emits `lw v0,20(s0)`
+before `li v1,1; sh v1`, so the source statement order must be
+`s4 = ...ALIGN4(s0[5]); D_8009947A = 1;`.
+**Probe.** (a) case-34 reorder alone on the plain-scalar chassis; (b) array-typed
+decl + case-34 reorder together.
+**Result.** (a) **245 / 9 — completely inert** (so the reorder carries no
+coercion content of its own); (b) **248 / 0**, and
+`sandbox func_800460E4 --disable all` independently prints `score: 0,
+build_insns: 248, target_insns: 248, rules_dropped: 10, cheat_asm_stripped: 0`.
+**Verdict: CONFIRMED.**
+
+### H33 — the closing construct is a first reach of an unsanctioned family, so it may not be submitted
+**Statement.** Re-typing `extern s16 D_8009947A;` as `extern s16 D_8009947A[1];`
+is not covered by any sanctioned family.
+**Probe.** Read `.claude/rules/header-type-correction-from-use-sites.md` in full;
+grepped `docs/reference/sotn-construct-index.md`; re-checked the symbol map
+around 0x8009947A.
+**Result.** Prong (a) of header-type-correction fails on its own terms (no
+independent use site *requires* the array type — every `[0]` is authored by this
+diff). The SOTN construct index has no scalar-to-array re-typing entry (only two
+`&g_Entities[1]` pointer aliases into a genuine array, one PSX one PSP). The
+symbol map shows three separately named neighbours (`g_stage_id` 0x80099478,
+`g_stage_variant` 0x8009947A, `g_stage_data` 0x8009947C) and no indexed or
+base-register access anywhere in the binary. **Verdict: CONFIRMED (it is a first
+reach).** Disposition: ruling-request; the form is banked in
+rejected/s7-ruling-pending-array-typed-store-248-0.c and NOT promoted to
+candidate.c.
+
+### H34 — [s6.3]'s double-`lui` argument is not sound in isolation
+**Statement.** func_8004668C re-materialising `$at` with a second `lui` for
+back-to-back stores to the two symbols does not discriminate between "two scalars"
+and "one aggregate".
+**Mechanism.** GCC emits one RTL store per member; the assembler's `sh sym+k`
+macro expands each into its own `lui $at` / `%lo` pair regardless of object
+identity.
+**Verdict: CONFIRMED** (the aggregate-merge conclusion still stands, on the 04:46
+ruling and on the absence of any indexed/base-register access — but future
+sessions must not cite the double-`lui` as the reason).
+
+### Dead on this session's evidence — do NOT re-run
+- L2 (make the case-3 load address non-varying): impossible, it is `s0 + (s3<<2)`.
+- L3 (make the load QImode): impossible, the header words are 32-bit.
+### H35 — L5 (make the store's address varying, via a C-level pointer alias to the global) is DEAD on measurement
+**Statement.** The remaining store-side term, `!rtx_addr_varies_p(store)`, can be
+broken by routing the four `D_8009947A` accesses through a function-scope pointer
+alias `s16 *vp = &D_8009947A;` — a form that would sit in the SANCTIONED
+pointer-alias family (`.claude/rules/pointer-alias-fake-exception.md`) rather than
+needing a new family grant. If it closed, it would be strictly preferable to H31.
+**Mechanism.** `(mem:HI (reg))` has a varying address, so the exemption's fifth
+term fails and the anti-dependence edge is restored — the same end state as H31,
+reached without re-typing anything.
+**Probe.** `s16 *vp = &D_8009947A;` declared with the other locals; all four
+accesses spelled `*vp`. Measured with and without the H32 case-34 reorder.
+**Result.** **246 / 58** and **246 / 43** (base 245 / 9; target 248). Holding the
+global's address in a pointer costs an extra address materialisation and
+re-shuffles allocation across the whole function — the failure mode is identical
+in kind to the walking-pointer kill in [s6.4]: the lever works, the instruction
+budget does not. **Verdict: KILLED.**
+Banked: rejected/s7-store-pointer-alias-246-58.c and
+rejected/s7-store-pointer-alias-case34-246-43.c.
+
+### The conjunction is now fully enumerated
+L1 load-/s: only the banned pm1 construct ([s6.5]). L2, L3: impossible by
+construction. L4 store-/s: CLOSES at 248/0 but needs an unsanctioned re-typing
+(H31/H32/H33). L5 store-address-varying: sanctioned family available but dead on
+instruction count (H35). No sixth term exists.

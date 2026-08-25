@@ -1,3 +1,36 @@
+/* [s7] FORENSICS-SESSION UPDATE 2026-08-25 (session 7) - READ THIS FIRST.
+ * The BODY BELOW IS UNCHANGED (still the [s7]/[s8]/[s9] non-banned form,
+ * re-measured 245 insns / 9 diffs this session). What changed is that the
+ * residual is no longer a one-lvalue question, and a SECOND, fully independent
+ * route to sandbox 0 now exists:
+ *
+ *  - [s6.5]/[s9.7]'s "there is exactly one closing construct and it is banned"
+ *    enumerated only ONE term of sched.c's five-term anti_dependence exemption
+ *    (tools/gcc-2.7.2/sched.c:843-864). The exemption also requires the STORE's
+ *    MEM to have no /s AND a non-varying address. Both are reachable.
+ *  - L4 (give the D_8009947A store MEM_IN_STRUCT_P by typing the global as
+ *    `extern s16 D_8009947A[1]` and spelling its four accesses `D_8009947A[0]`)
+ *    makes case 3 byte-exact against target with case 3 LEFT IN THIS FUNCTION'S
+ *    OWN PLAIN IDIOM (s0[s3-2] / s0[s3-1], identical to case 13) - no pointer
+ *    intermediate, no volatile, no carrier, no borrow. Measured 248/19 alone,
+ *    and 248/0 once case 34 is written load-before-store (that reorder is
+ *    byte-INERT on the plain-scalar chassis, so it carries no coercion content).
+ *    `sandbox func_800460E4 --disable all` independently printed score 0.
+ *    Form banked at rejected/s7-ruling-pending-array-typed-store-248-0.c.
+ *    It is NOT promoted here because scalar-to-one-element-array re-typing of a
+ *    global is a FIRST REACH of an unsanctioned family (fails
+ *    header-type-correction prong (a); no SOTN-master precedent; no independent
+ *    aggregate evidence). Session 7 returned `ruling-request` on exactly that.
+ *  - L5 (the sanctioned pointer-alias family: `s16 *vp = &D_8009947A; *vp = 1;`)
+ *    reaches the same edge honestly but measures 246/58 and 246/43 - dead on
+ *    instruction count, same failure mode as the [s6.4] walking pointers.
+ *
+ * If the ruling on L4 is YES, this function closes immediately at 0 by applying
+ * rejected/s7-ruling-pending-array-typed-store-248-0.c. If it is NO, the
+ * conjunction is fully enumerated (L1 banned, L2/L3 impossible, L4 unsanctioned,
+ * L5 dead) and the remaining question is routing, not grinding.
+ * See evidence.md [s7] and hypotheses.md H31-H35.
+ */
 /* [s6] FORENSICS-SESSION UPDATE 2026-08-25 - read this with the [s9] note below.
  * Body UNCHANGED (still the [s7] non-banned form; re-measured 245 insns / 9 diffs
  * this session). Four things are now settled that were not before:

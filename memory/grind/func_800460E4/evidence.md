@@ -1595,3 +1595,133 @@ from a PLUS_EXPR.
 - [s6] Closing corollary, now measurement-backed: a matching case-3 spelling must keep the base register at s0+(s3<<2) (literal -8/-4 offsets) AND give the -4 read a non-PLUS_EXPR operand. Those two requirements intersect in exactly one construct, `s32 *pm1 = ptr - 1; ... *pm1`, which is banned_constructs #4/#5. No fourth spelling and no fourth shape exists.
 
 - [s6] Portable GCC 2.7.2 fact confirmed in this TU's dump: p[0] / *p on a pointer variable gives a MEM with /s = 0 (fold collapses PLUS_EXPR(p, 0)), p[k] for k != 0 gives /s = 1, and /s survives CSE address folding (insns 170 and 246 are bare-register MEMs that still carry /s).
+
+## [s7] 2026-08-25 (FORENSICS modality) — the dependence exemption has FOUR levers, not one; the STORE-side lever closes the function at sandbox 0 with case 3 written in the plain idiom
+
+[s7.0] Chassis re-measured at session start: the [s7]/[s8]/[s9] candidate body
+(memory/grind/func_800460E4/candidate.c, spliced onto src's preamble/tail as
+tmp/grind/func_800460E4/s7b/base.c) measures **245 insns / 9 diffs** through
+tmp/grind/func_800460E4/s8/pr.sh — unchanged from [s6]. src/text1a_c2.c was
+edited exactly once (to run the real `sandbox` on the find, see [s7.4]) and
+reverted with `git checkout --` before this write-up; `git status` shows only the
+pre-existing metrics/events.jsonl dirt.
+
+[s7.1] **THE ENUMERATION GAP.** Sessions [s6] and [s9] framed the residual as
+"the two case-3 header loads carry MEM_IN_STRUCT_P (/s), therefore sched.c
+exempts the D_8009947A store from an anti-dependence, therefore sched1 hoists the
+store between the loads", and then enumerated only spellings that clear /s on the
+LOAD. Read the exemption clause itself (tools/gcc-2.7.2/sched.c:843-864,
+`anti_dependence(mem = the load's MEM, x = the store's MEM)`):
+
+    && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
+          && GET_MODE (mem) != QImode
+          && ! MEM_IN_STRUCT_P (x) && ! rtx_addr_varies_p (x))
+
+The exemption is a **five-term conjunction**. Breaking ANY term restores the
+dependence edge. Four of the five are reachable in principle:
+  (L1) clear MEM_IN_STRUCT_P on the load  — the only axis [s6]/[s9] enumerated;
+  (L2) make the load's address non-varying — impossible, it is s0 + (s3<<2);
+  (L3) make the load QImode                — impossible, the header words are s32;
+  (L4) **set MEM_IN_STRUCT_P on the STORE** — never enumerated before this session;
+  (L5) make the STORE's address varying     — never enumerated before this session.
+(The mirrored second clause cannot re-fire: it needs `! MEM_IN_STRUCT_P (mem)`,
+and the load keeps its /s in every L4/L5 form.)
+[s6.5]'s "there is no fourth spelling and now no fourth *shape* either" is
+therefore true only of the LOAD side (L1). The corollary that the intersection is
+the single banned pm1 construct does not survive the L4/L5 axes.
+
+[s7.2] **HOW L4 IS REACHED.** expr.c's INDIRECT_REF expander (4567-4577) sets /s
+when the address subtree is a PLUS_EXPR **or** when
+`AGGREGATE_TYPE_P (TREE_TYPE (exp))` **or** when the operand is an ADDR_EXPR of an
+object with aggregate type; and the VAR_DECL / ARRAY_REF paths (expr.c:4888,
+4329, 5788) set /s from `AGGREGATE_TYPE_P` of the accessed object's type. A store
+to a scalar `extern s16 D_8009947A;` therefore always produces a bare
+`(mem:HI (symbol_ref))` with /s = 0 — which is precisely what makes the exemption
+fire. Typing the same storage as an aggregate makes the store's MEM carry /s.
+Confirmed empirically: BOTH `extern s16 D_8009947A[1]; ... D_8009947A[0] = 1;`
+AND `... *(s16 *)D_8009947A = 1;` set /s (the latter because array-to-pointer
+decay yields ADDR_EXPR of an ARRAY_TYPE object — clause 4 of expr.c:4570-4572).
+Emitted bytes for the store are identical in every spelling: one `sh` through the
+assembler's `%hi/%lo` macro.
+
+[s7.3] **THE MEASUREMENTS (all through s8/pr.sh, target = 248 insns).**
+
+  * base (candidate.c body, plain scalar decl)                      -> 245 / 9
+  * array-typed decl at ALL FOUR store sites, nothing else changed  -> **248 / 19**
+    (case 3 becomes byte-exact against target lines 131-145: `sll v0,sX,2;
+    addu v0,v0,s0; lw v1,-8(v0); lw a0,-4(v0); li v0,1; lui at; sh v0,0(at); ...`
+    — the two loads are adjacent and the store follows them, exactly as target.
+    The 19 residual diffs are a global $s2/$s3 seat swap plus a case-34 order
+    inversion, NOT a case-3 problem.)
+    Banked: rejected/s7-array-store-only-248-19-case34-disturbed.c
+  * case-34 statement order alone (`s4 = ...; D_8009947A = 1;` instead of
+    store-then-load), plain scalar decl                             -> 245 / 9 (INERT)
+    Banked: rejected/s7-case34-reorder-only-245-9-inert.c
+  * **array-typed decl + case-34 order**                            -> **248 / 0**
+    Banked: rejected/s7-ruling-pending-array-typed-store-248-0.c
+
+[s7.4] **VERIFIED ON THE REAL SANDBOX, NOT ONLY THE PROBE HARNESS.** The 248/0
+form was applied to src/text1a_c2.c (LF-normalised) and
+`& tools/wteng.ps1 main sandbox func_800460E4 --disable all` printed
+`"score": 0, "build_insns": 248, "target_insns": 248, "rules_dropped": 10,
+"cheat_asm_stripped": 0`. The honest, cheat-invisible floor of this form is **0**.
+src was reverted immediately afterwards; the tree is HEAD-clean.
+
+[s7.5] **WHY THE CASE-34 REORDER IS PART OF IT, AND WHY IT IS HONEST.** Once the
+store carries /s, its anti-dependence against `s0[5]` in case 34 also stops being
+exempt, so sched1 can no longer float that load above the store. Target's case 34
+emits `move s1,s2; lw v0,20(s0); li v1,1; lui at; sh v1,0(at)` — load first. With
+the edge present, source order decides, so the source must read
+`s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[5])); D_8009947A = 1;`. That is ordinary,
+semantically neutral C (two independent statements in the order target executes
+them) and it is byte-INERT on the plain-scalar chassis ([s7.3], 245/9), so it
+carries no coercion content of its own.
+
+[s7.6] **WHAT THIS ROUTE DOES *NOT* CONTAIN.** case 3 is left exactly as the
+function's own first-switch idiom writes it —
+`s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2])); s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1])); D_8009947A = 1;`
+— identical in shape to case 13. No pointer intermediate, no volatile cast, no
+inlined byte-offset deref, no invented carrier, no borrow, no declaration hoist,
+no detour, no statement duplication. Every one of banned_constructs #1-#7 is
+absent. The FAKE s1 chain-extender inherited from [s3] is still present and still
+load-bearing (unchanged from the [s7]/[s8]/[s9] body).
+
+[s7.7] **THE ONE THING IT DOES CONTAIN, STATED HONESTLY.** It re-types a global:
+`extern s16 D_8009947A;` becomes `extern s16 D_8009947A[1];`, and its four
+accesses in this function become `D_8009947A[0]`. Classified against the rules:
+  - It is NOT the D_80099478/D_8009947A **aggregate merge** the 04:46 ruling
+    closed — it touches one symbol and asserts nothing about its neighbour.
+  - It is NOT **header-type-correction-from-use-sites**: that rule's prong (a)
+    requires at least one independent use site that positively *requires* the new
+    type, and there is none — every `[0]` in the diff was written by this session
+    (rule read in full this session; prong (a) fails on its own terms).
+  - There is **no SOTN-master precedent**: `grep -in "MEM_IN_STRUCT\|\[1\];"
+    docs/reference/sotn-construct-index.md` returns only two `&g_Entities[1]`
+    alias entries (one PSX, one PSP), which are pointer aliases into a real
+    array, not scalar-to-array re-typing.
+  - There is **no independent aggregate evidence** in the binary: [s6.3]'s survey
+    stands, and the symbol map has no run around 0x8009947A (`g_stage_id` 0x…478,
+    `g_stage_variant` 0x…47A, `g_stage_data` 0x…47C — three separately named
+    objects).
+  So this is a **first reach of an unsanctioned family**, and per the standing
+  policy the correct disposition is a ruling request, not a submission. It is
+  banked in rejected/ (not promoted to candidate.c) pending that ruling.
+
+[s7.8] **CORRECTION TO [s6.3]'s "decisive negative" (does not change its
+verdict).** [s6.3] treats func_8004668C's back-to-back stores re-materialising the
+base with a *second* `lui $at` as proof the two halfwords are not one aggregate.
+That inference is not sound in isolation: with the assembler's `sh sym+k` macro
+form, GCC emits one RTL store per member and the assembler expands each into its
+own `lui $at` / `%lo` pair regardless of whether the members belong to one object.
+The aggregate-merge verdict still stands — on the 04:46 ruling and on the absence
+of any base-register or stride access anywhere in the binary — but future sessions
+should not cite the double-`lui` as the reason.
+
+- [s7] sched.c's anti_dependence exemption is a FIVE-term conjunction; [s6]/[s9] enumerated only the load-/s term. The store-side terms (set /s on the store, or make the store's address varying) were never probed.
+- [s7] L4 measured: typing D_8009947A as `extern s16 D_8009947A[1]` (accesses `D_8009947A[0]`) gives the store MEM_IN_STRUCT_P, restores the anti-dependence edge, and makes case 3 byte-exact against target — 248/19 alone, and 248/0 once case 34's two independent statements are written in target's order.
+- [s7] Real-sandbox verified: `sandbox func_800460E4 --disable all` prints score 0 / build_insns 248 / rules_dropped 10 / cheat_asm_stripped 0 for that form. The honest floor of this route is 0, not 9.
+- [s7] The case-34 statement reorder is byte-inert on the plain-scalar chassis (245/9), so it carries no coercion content; it only becomes visible once the store has /s.
+- [s7] This route contains NONE of banned_constructs #1-#7 and leaves case 3 in the function's own `s0[s3-2]`/`s0[s3-1]` idiom, identical to case 13.
+- [s7] The single construct is scalar-to-one-element-array re-typing of a global. It fails header-type-correction prong (a), has no SOTN-master precedent (index grep returns only &g_Entities[1] pointer aliases), and has no independent aggregate evidence — first reach of an unsanctioned family, hence a ruling request rather than a submission.
+- [s7] Methodological correction: [s6.3]'s double-`lui` argument is not sound on its own (the assembler macro re-materialises $at per %hi regardless of object identity). The aggregate-merge verdict stands on the 04:46 ruling and on the absence of indexed/base-register access, not on that observation.
+- [s7] L5 (pointer alias to the global) measured 246/58 and 246/43 - sanctioned family, dead on instruction count.
