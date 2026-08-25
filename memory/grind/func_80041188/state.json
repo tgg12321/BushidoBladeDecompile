@@ -1,7 +1,7 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 23,
+ "session_count": 24,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -147,23 +147,29 @@
    "floor": 1,
    "modality": "synthesis",
    "headline": "The cse1 EBB law partitions the residual: out2's missing 4th reference may not be sited in block 2 or as an in-loop1 DEFINITION (cse1 folds both into the residual move), a3 is proven rigid at 4/99 acr"
+  },
+  {
+   "session": 24,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Synthesis proves the residual is a TWO-reference problem, not one: target's own bytes force out2 to 4 refs / live 42 = 1904, which outranks a natural tbl (1702), so the original must also carry a FIFT"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "out2's fourth flow-counted reference exists as a USE inside loop1 that combine absorbs - the one site the cse-EBB law leaves open, and the one no session has probed.",
-   "mechanism": "combine.c's try_combine runs after flow.c has fixed reg_n_refs, so a reference in an insn combine later absorbs is both counted and byte-free (the shape E-s16-5 proved target's own stptr reference has). E-s23-1 proves a USE is safe where a DEFINITION is not: a use records no expression in cse's table, so block 2's `addiu $s3,$s7,0x20` survives. Block 2 and in-loop1 definitions are both closed; block 0 is enumerated down to the FAKE do-while(0) wrap.",
-   "next_probe": "Work from combine.c's side, not from C. Enumerate the try_combine 2->1 patterns whose OUTPUT is `(set reg (plus reg const))`, `(set reg (mem ...))` or `(set (mem ...) reg)` and whose deleted INPUT insn mentions a third register; for each, write the loop1 C that generates that input pair with out2 as the third register, and check build_insns FIRST (a surviving insn is fatal - E-s20-2, and now G1 at 133). The candidate consumers are target's own loop1 insns: the `addiu $a0,$sp,0x10` buf address, the `addu $a1,...` argument moves, the `addiu $a2,$s3,0x38` and `addiu $a3,...` argument computations for func_800523E0, the `sh` into 6($s3), and the `addiu $s3,$s3,0x68` walk. Rule out in advance anything arithmetically collapsible before combine sees it (cse1 reassociates - E-s20-3) and anything that is a DEFINITION of a value equal to a4 + 0x20 (E-s23-1)."
+   "hypothesis": "A byte-free fourth flow-counted reference on out2, sited as a USE inside loop1 that combine absorbs - now known to be needed TOGETHER with a fifth tbl reference, whose byte-free delivery is already measured (V11 at 132 insns).",
+   "mechanism": "combine.c's try_combine runs after flow.c has fixed reg_n_refs, so a reference in an insn combine absorbs is both counted and byte-free (the shape E-s16-5 proved target's own stptr reference has); E-s23-1 proves a USE is safe where a DEFINITION is not, because a use records no expression in cse's table. E-s24-5 removes the tbl half of the problem from the critical path.",
+   "next_probe": "Work from combine.c's side on the V8 chassis (memory/grind/func_80041188/alt_V8_alltarget_133_s24.c, every other seat already target's): enumerate try_combine 2->1 patterns whose OUTPUT is (set reg (plus reg const)), (set reg (mem ...)) or (set (mem ...) reg) and whose deleted INPUT insn mentions a third register; for each write the loop1 C that generates that input pair with out2 as the third register and check build_insns FIRST (a surviving insn is fatal - E-s20-2, G1). Candidate consumers are target's own loop1 insns: addiu $a0,$sp,0x10; the addu $a1,$s6,$zero argument moves; addiu $a2,$s3,0x38 / addiu $a3,... for func_800523E0; the sh into 6($s3); addiu $s3,$s3,0x68. Exclude anything cse1 reassociates (E-s20-3) and anything that DEFINES a value equal to a4 + 0x20 (E-s23-1)."
   },
   {
-   "hypothesis": "Since out2 is now proven to need four references, the live axis is the one all-target-seats form that already delivers them with target's block-2 spelling - s21's Q1 (pa4-free, block-0 do-while(0) wrap, sandbox 7 at 132/132) - whose entire residual is seven sched1 EMISSION-ORDER diffs. tools/sched_solver has never been run on it.",
-   "mechanism": "The closure argument: a3 is immovable at 808, so out2 must exceed 808; at 3 references that needs live <= 37 while block-0 definitions floor at 41 and the sub-41 route (in-loop1 definition) is dead twice over. So every surviving chassis needs out2 at >= 4 references, and exactly one measured form delivers that with target's block-2 addiu at 132 insns. Q1's remaining cost is not allocation at all - it is sched.c's ordering of block 0 (the sw $s5 / lui $s5 / addiu $s5 trio ~7 slots late, sw $t0,0x18($sp) 2 slots early - E-s21-4), which is exactly what tools/sched_solver models order- and clock-exactly.",
-   "next_probe": "Apply memory/grind/func_80041188/alt_Q1_pa4free_alltarget_s21.c, dump red.i.sched, and run tools/sched_solver on block 0 against target's block-0 order for a typed REACHABLE / FORECLOSED verdict plus a ranked C-lever vector for the seven diffs. FORECLOSED kills the do-while(0) route as a byte-exact form and reduces the function to frontier item 1 alone; REACHABLE names the first concrete levers for a form that already holds every target seat. Note the layer-1 constraint: the BANNED do-while(0) is the loop1-half wrap entered by an external goto, NOT a self-contained block-0 wrap around a single statement - but the wrap is still a FAKE construct needing its annotation and its family citation."
+   "hypothesis": "V8's residual is a small number of sched1 ORDER decisions inside loop1 plus the one load-delay nop, and tools/sched_solver has still never been run on an all-target-seat form.",
+   "mechanism": "E-s24-4 names the two displaced insns exactly (i++ out of the delay slot at index 44-46, tbl++ sunk from index 40 to 48) and E-s24-7 shows C statement order does not move them - the regime tools/sched_solver models order- and clock-exactly.",
+   "next_probe": "Apply alt_V8_alltarget_133_s24.c, dump red.i.sched, run tools/sched_solver on loop1 against target's order for a typed REACHABLE / FORECLOSED verdict plus a ranked C-lever vector. FORECLOSED proves the loop-note delivery of out2's +1 can never be byte-exact regardless of annotation and leaves frontier item 1 as the only route; REACHABLE names the first concrete levers."
   },
   {
-   "hypothesis": "candidate.c's `stptr = base; stptr += 0xFC;` may be the owner-sanctioned split-init-accumulation family rather than an F1 chain-extender needing a FAKE annotation - and which it is decides whether the floor-1 candidate is one insn from landing or cannot be landed at all. (Carried unchanged from the s22 frontier; still unanswered, still gating.)",
-   "mechanism": "E-s22-2 shows the construct is not an arbitrary reference pump: it pays its +1 precisely because `base` dies at the split point, so make_regs_eqv (cse.c:844-857) keeps stptr canonical, the chain survives cse1, and combine merges the pair back into target's single `addiu $s3,$v0,0xFC`. Meanwhile feedback/split-init-accumulation-sanctioned.md records the owner sanctioning same-variable split-init accumulation (var = a; var += b) as pure C on 2026-06-13, the standing owner directive for this function calls the same construct an F1 chain-extender needing FAKE-or-replacement, and the frozen family list carries F1 as a FAKE-annotated last resort.",
-   "next_probe": "This is a ruling-request, not a measurement: ask whether the construct is (i) sanctioned split-init accumulation, (ii) the F1 family needing only the /* FAKE: what + mechanism + lever-exhaustion */ comment, or (iii) neither. Resolve it before another session spends its measurements on the one-insn residual, because answer (iii) moves the target."
+   "hypothesis": "The i allocno is the untested third dial: a consistent vector also exists at tbl 6 refs / 47 = 2553 if i can be lifted 8 -> 9 references (2474 -> 2783), which would revive the (currently +2, byte-costly) split-init family on tbl.",
+   "mechanism": "global.c's floor_log2(refs)*refs/live formula gives i a large single-step jump at 8 -> 9 references, and no session has ever probed i's reference count. Unlike a3 (proven rigid in ten forms, E-s23-2), i is a real loop counter with four independent split sites: initialiser, increment, compare, and the i = 0x12 reset in block 2.",
+   "next_probe": "On the V8 chassis measure i's reference-count response to each of the four sites (split initialiser, split increment, split reset, duplicated compare), reading ALLOCDBG and build_insns each time; the only question is whether any of them delivers exactly +1 byte-free. A yes reopens the tbl question at 6 references and widens the space - worth settling before more effort goes into the out2 +1 spelling hunt."
   }
  ],
  "judge_constraints": [

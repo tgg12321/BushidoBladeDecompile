@@ -3189,3 +3189,95 @@ the full `red.i.*` pass dumps (`red.i.cse` and `red.i.flow` carry the fold evide
 - [s23] Full ALLOCDBG tables banked for B0/C0/C3/C4/D1/D2/D5/D6/F1/F2/G1 in tmp/grind/func_80041188/s23/*/cc1.err, each with the matching red.i.* pass dumps.
 
 - [s23] The standing owner directive's outstanding item is unchanged and unanswered: candidate.c's `stptr = base; stptr += 0xFC;` still needs either the sanctioned-split-init ruling, the /* FAKE: F1 */ annotation, or a replacement before this body could land.
+
+- [s24 synthesis] Chassis re-measured at session start: candidate.c applied to
+  src/text1a_pre.c = sandbox 1 at 132 target / 132 build insns, rules_dropped 16,
+  cheat_asm_stripped 2. Floor unchanged at 1. src/text1a_pre.c restored to HEAD at the
+  end; no build-pipeline file touched.
+- [s24] E-s24-1 (THE SYNTHESIS RESULT — target's own allocno vector is FORCED, and it is a
+  TWO-reference problem, not a one-reference problem). Target's `$s6` (out2) has exactly
+  three EMITTED references (asm/funcs/func_80041188.s:25 def, :56, :61) and its last one is
+  inside loop1, so target's out2 live length is 42 — the same 42 our pa4-chassis forms
+  measure — because reg_live_length is recomputed post-combine (sched.c:5106) while
+  reg_n_refs is not (flow.c:2081, fixed pre-combine). E-s23-5 independently proves out2
+  must carry at least FOUR flow-counted references. Four references at live 42 is
+  pri = 2*4/42*10000 = 1904. tbl at its natural, target-like EARLY definition measures
+  4 refs / live 47 = 1702. 1904 > 1702, so out2 outranks tbl and takes tbl's seat. Therefore
+  the original source CANNOT have had tbl at four references: it must have carried a FIFTH
+  flow-counted tbl reference (5/47 = 2127 > 1904), or tbl at four references with live <= 41
+  (1951), which is s21's Q1 late-definition horn and is proven emission-costly (E-s22-4).
+- [s24] E-s24-2 (measured, the kill that forces E-s24-1). Form P1 = candidate.c chassis with
+  target's block-2 spelling restored (`out3 = (s32 *)(((u8 *) pa4) + 0x20);`) plus ONE
+  zero-insn +1 reference on out2 in loop1 (a `do { func_8004A348(buf, out2); } while (0);`
+  loop-note weight used purely as an INSTRUMENT to buy the reference — not a candidate).
+  ALLOCDBG: out2 4 refs / live 42 = 1904 -> hardreg 21 ($s5); tbl 4 / 47 = 1702 -> hardreg 22
+  ($s6). The two seats are SWAPPED with respect to target. This kills the shape s20-s23 were
+  all searching for — "one byte-free +1 reference on out2, everything else natural" — for any
+  delivery mechanism whatsoever, because the arithmetic depends only on the reference count
+  and the live length, not on how the reference is spelled. Artifact:
+  tmp/grind/func_80041188/s24/P1/, rejected/out2-inloop1-plus1-alone-swaps-s5-s6.c.
+- [s24] E-s24-3 (the required vector, reproduced and re-measured on the current chassis).
+  s18's V7 already spells the vector E-s24-1 derives, and it reproduces exactly:
+  stptr 6/41 = 2926 -> $s3, stptr2 6/48 = 2500 -> $s0, i 8/97 = 2474 -> $s4,
+  tbl 5/47 = 2127 -> $s5, out2 4/42 = 1904 -> $s6, a4 7/95 = 1473 -> $s7,
+  a3 4/99 = 808 -> $fp, out3 3/47 = 638 -> $s3. ALL-TARGET callee-saved seats WITH target's
+  block-2 `addiu $s3,$s7,0x20`. Form V8 (= V7 with the stptr loop-note wrap replaced by
+  candidate.c's F1 `stptr = base; stptr += 0xFC;` chain-extender, stptr 7/41 = 3414) measures
+  the identical seat vector: sandbox 8 at 133 of 132 insns. Saved as
+  memory/grind/func_80041188/alt_V8_alltarget_133_s24.c.
+- [s24] E-s24-4 (attribution of V8's 133rd insn — it is ONE load-delay nop, and the whole
+  residual is sched1 order). fdiff of V8 against target: indices 0..39 identical; at index 44
+  ours emits `lhu $v0,0($s0)` followed by a `nop` where target fills that load-delay slot
+  with `addiu $s4,$s4,1` (`i++`), and every later insn is shifted by one. Target also emits
+  `addiu $s5,$s5,4` (`tbl++`) at index 40 where ours sinks it to 48. So the all-target-seat
+  form's entire cost is sched1's ordering inside loop1, displaced by the wraps' loop notes —
+  not allocation, not an extra computation. Artifact: tmp/grind/func_80041188/s24/od.txt +
+  s24/fdiff.py.
+- [s24] E-s24-5 (WHICH construct costs the nop — the tbl +1 is byte-free, the out2 +1 is not).
+  V11 = V8 with the out2 loop-note wrap removed and the tbl loop-note wrap kept measures
+  132 of 132 build insns (sandbox 19, seats wrong because out2 falls back to 3 refs). So a
+  loop-note +1 on tbl is BYTE-FREE on this chassis, while the loop-note +1 on out2 is what
+  materialises the 133rd insn. Combined with E-s24-1 this reduces the entire function to a
+  single open question: a byte-free fourth flow-counted reference on out2 sited in loop1.
+- [s24] E-s24-6 (the address-constant split-init family is DEAD on tbl, in both directions).
+  T1 = V8 with the tbl loop-note wrap replaced by an honest-looking address-constant chain
+  extender (`tbl = D_80094CFC - 1; tbl += 1;`, which is value-identical and needs no new
+  symbol). It is NOT folded away before flow — tbl measures 6 refs / live 47 = 2553 — so the
+  mechanism does deliver references. It fails twice: (i) it delivers +2, not +1, and 2553
+  outranks `i` (8/97 = 2474), so tbl takes $s4 and i takes $s5 (measured hardregs 20 / 21);
+  (ii) combine does NOT fold `la BASE` + `addiu off` back into a single address constant, so
+  the form costs a real instruction — 134 of 132 build insns, sandbox 19. Both failures are
+  independent of which base symbol is chosen, so the "tbl is really a member of a larger
+  table" reading buys nothing at the byte level either. Artifact:
+  rejected/tbl-address-constant-split-plus2-refs-costs-insn.c.
+- [s24] E-s24-7 (source statement order is not a lever on the delay slot). V14 = V8 with
+  `i++` moved to sit immediately after `buf[0] = p[0];` — exactly where target's schedule
+  puts it — measures byte-identically to V8 (sandbox 8, 133 insns). sched1 owns the slot;
+  the C-level position of the increment inside the block does not move it. Artifact:
+  rejected/v8-iplusplus-reorder-inert-sched1-owns-delay-slot.c.
+- [s24] E-s24-8 (directive execution — frontier item 3 is ANSWERED by the standing owner
+  directive, not open). The queue item's owner directive for this function states verbatim
+  that "candidate's stptr chain-extender still needs FAKE annotation or replacement on land",
+  i.e. the owner has already classified `stptr = base; stptr += 0xFC;` as the F1 family
+  requiring the /* FAKE */ annotation, NOT as sanctioned split-init accumulation. candidate.c
+  already carries that annotation with what + mechanism + lever-exhaustion at its site
+  (candidate.c:289). No ruling-request is needed and none should be filed again; the s22/s23
+  frontier item asking the question is retired.
+
+- [s24] Chassis re-measured this session: candidate.c applied to src/text1a_pre.c = sandbox 1 at 132 target / 132 build insns (rules_dropped 16, cheat_asm_stripped 2). Floor unchanged at 1. src/text1a_pre.c restored to HEAD at session end; no build-pipeline file touched.
+
+- [s24] E-s24-1: target's $s6 (out2) has exactly three emitted references (asm/funcs/func_80041188.s:25 def, :56, :61), all inside block 0 / loop1, so the original's out2 live length is 42 post-combine; with the >= 4 references E-s23-5 proves necessary its priority is 1904, ABOVE a naturally-defined tbl at 4/47 = 1702. The original source must therefore have carried a fifth flow-counted tbl reference (2127) - a requirement no session had derived.
+
+- [s24] E-s24-2: form P1 measures the kill directly - out2 4/42 = 1904 seats at hardreg 21 ($s5) and tbl 4/47 = 1702 at hardreg 22 ($s6), the two target seats exchanged. Because the priority formula reads only (refs, live length), this closes the entire 'one byte-free +1 on out2' search direction that s20-s23 pursued, for every possible spelling.
+
+- [s24] E-s24-3: the required vector is reproducible on the current chassis - V7 (three loop-note wraps) and V8 (V7 with the stptr wrap replaced by candidate.c's F1 chain-extender) both give ALL-TARGET callee-saved seats together with target's block-2 addiu $s3,$s7,0x20, at sandbox 8 / 133 insns. V8 saved as memory/grind/func_80041188/alt_V8_alltarget_133_s24.c.
+
+- [s24] E-s24-4: fdiff attributes V8's single extra instruction precisely - at index 44 ours emits `lhu $v0,0($s0)` then a load-delay `nop`, where target fills that slot with `addiu $s4,$s4,1`; target also emits `addiu $s5,$s5,4` at index 40 where ours sinks it to 48. Indices 0..39 are identical. The all-target-seat form's whole cost is sched1 ordering inside loop1, not allocation and not an extra computation.
+
+- [s24] E-s24-5: V11 (tbl loop-note wrap kept, out2 wrap removed) measures 132 of 132 build insns, so a +1 on tbl is BYTE-FREE on this chassis while the out2 +1 delivery is what materialises the nop. Half of the two-reference requirement is therefore already solved byte-free; the open half is out2's.
+
+- [s24] E-s24-6: the address-constant split-init family is dead on tbl - it delivers +2 references (tbl 6/47 = 2553, overshooting i at 2474 and stealing $s4) and combine does not fold `la BASE` + `addiu off`, so it costs an instruction (134 insns, sandbox 19). Independent of which base symbol is chosen, so the 'tbl is really a member of a larger table' reading buys nothing at the byte level.
+
+- [s24] E-s24-7: C-level statement order is not a lever on sched1's delay-slot choice (V14 byte-identical to V8).
+
+- [s24] E-s24-8 (owner directive executed): the queue item's standing directive states that candidate.c's stptr chain-extender 'still needs FAKE annotation or replacement on land', which classifies `stptr = base; stptr += 0xFC;` as the F1 family requiring the /* FAKE */ annotation rather than as sanctioned split-init accumulation. candidate.c already carries that annotation with what + mechanism + lever-exhaustion (candidate.c:289). The s22/s23 frontier item asking this question is retired - no ruling-request should be filed for it again.

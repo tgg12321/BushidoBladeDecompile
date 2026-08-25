@@ -2017,3 +2017,124 @@ residual `move $s3,$s6` (E-s23-1). Block 0's deliveries are enumerated and only 
 - probe: Combine the measured floors: block-0 definitions floor out2's live length at 41 (C3/C4, the whole monotone position sweep), and the only route below 41 is an in-loop1 definition, killed independently by the cse-EBB fold and by the addiu's emission block.
 - result: No 3-reference out2 can clear either a3 or a4 on any measured chassis. candidate.c's `out3 = out2;` is therefore not one arbitrary choice among many - it is the only measured delivery of a requirement now proven necessary, and the whole remaining problem is whether a byte-free spelling of that same reference exists.
 - verdict: CONFIRMED
+
+# ============================ s24 (synthesis) ============================
+
+## [s24] The residual is a ONE-reference problem: a byte-free +1 on out2, with everything else natural.
+- mechanism: 23 sessions' shared frame. out2 needs a fourth flow-counted reference
+  (E-s23-5); tbl, i, stptr, stptr2, a4, a3 are at their natural counts in the
+  all-target-seat forms; find the byte-free spelling of out2's +1 and the function closes.
+- probe: read target's own bytes for out2's ($s6) reference count and live range, then
+  measure form P1 = candidate chassis + target's block-2 spelling + exactly one zero-insn
+  in-loop1 +1 on out2 (loop-note weight as an instrument), and read the ALLOCDBG table.
+- result: out2 lands at 4 refs / live 42 = 1904 and tbl stays at its natural 4 / 47 = 1702,
+  so out2 outranks tbl and the two take each other's seats (hardregs 21 / 22 instead of
+  22 / 21). The arithmetic depends only on (refs, live length), so NO spelling of a single
+  out2 +1 can work while tbl is at four references and an early definition. Target's own
+  emitted code fixes out2's live length at 42, so this is a statement about the ORIGINAL
+  source, not about our chassis.
+- verdict: KILLED
+
+## [s24] The original source gave `tbl` a FIFTH flow-counted reference.
+- mechanism: forced by the kill above. out2 = 4 refs / live 42 = 1904 in the original;
+  target seats tbl in $s5 above out2 in $s6; tbl's early definition (asm/funcs/func_80041188.s:12-13
+  puts its lui/addiu at block-0 insns 3-4) fixes its live length at 47; 4 refs at 47 is 1702,
+  below out2. Five references at 47 is 2127, above out2 and below `i` (2474) — the exact
+  vector s18's V7 spells and s24 re-measured.
+- probe: re-measure V7 on the current chassis, and V8 (V7 with the stptr loop-note wrap
+  replaced by candidate.c's F1 chain-extender); read ALLOCDBG + sandbox + fdiff.
+- result: CONFIRMED as the required vector — V7 and V8 both produce ALL-TARGET callee-saved
+  seats together with target's block-2 `addiu $s3,$s7,0x20`, at sandbox 8 / 133 insns. The
+  only other consistent vector is tbl at 4 refs with live <= 41 (Q1's late definition, 1951),
+  which E-s22-4 proves emission-costly and structural.
+- verdict: CONFIRMED
+
+## [s24] An address-constant split-init (`tbl = D_80094CFC - 1; tbl += 1;`) buys tbl's fifth reference byte-free.
+- mechanism: the F1 chain-extender law (E-s22-2) with a donor that dies immediately; combine
+  was expected to fold `la BASE` + `addiu off` back into one address constant, exactly as it
+  folds candidate.c's `stptr = base; stptr += 0xFC;` into a single addiu.
+- probe: T1 = V8 with the tbl loop-note wrap replaced by that split; ALLOCDBG + sandbox.
+- result: the references ARE delivered (tbl 6 / 47 = 2553 — the construct is not folded away
+  before flow), but (i) it is +2, not +1, and 2553 outranks `i` at 2474 so tbl takes $s4 and
+  i takes $s5, and (ii) combine does NOT fold the pair, costing a real instruction:
+  134 of 132 build insns, sandbox 19. Both failures are independent of the base symbol
+  chosen, so no "tbl is a member of a larger table" reading rescues it.
+- verdict: KILLED
+
+## [s24] Frontier reset — the strongest 1-3 hypotheses for the next ladder pass
+
+1. **A byte-free fourth flow-counted reference on out2, sited as a USE inside loop1 that
+   combine absorbs — now known to be needed TOGETHER with a byte-free fifth reference on
+   tbl, and the tbl half is already solved byte-free.**
+   - mechanism: E-s24-5 measured V11 (tbl loop-note wrap alone, no out2 wrap) at 132 of 132
+     insns, so the tbl +1 is byte-free on this chassis; the out2 loop-note wrap is what
+     materialises the 133rd insn (a load-delay nop, E-s24-4). combine.c's try_combine runs
+     after flow.c has fixed reg_n_refs, so a reference living in an insn combine absorbs is
+     both counted and byte-free (the shape E-s16-5 proved target's own stptr reference has),
+     and E-s23-1 proves a USE is safe where a DEFINITION is not.
+   - next probe: work from combine.c's side. Enumerate try_combine 2->1 patterns whose OUTPUT
+     is `(set reg (plus reg const))`, `(set reg (mem ...))` or `(set (mem ...) reg)` and whose
+     deleted INPUT insn mentions a third register; write the loop1 C that generates that pair
+     with out2 as the third register; check build_insns FIRST (a surviving insn is fatal —
+     E-s20-2, G1). Candidate consumers are target's own loop1 insns: `addiu $a0,$sp,0x10`,
+     the `addu $a1,$s6,$zero` argument moves, `addiu $a2,$s3,0x38`/`addiu $a3,...` for
+     func_800523E0, the `sh` into 6($s3), and `addiu $s3,$s3,0x68`. Rule out in advance
+     anything cse1 reassociates (E-s20-3) and anything that is a DEFINITION of a value equal
+     to a4 + 0x20 (E-s23-1). Do the work on the V8 chassis
+     (memory/grind/func_80041188/alt_V8_alltarget_133_s24.c) with the out2 wrap replaced by
+     the candidate spelling — every other seat is already target's there.
+
+2. **V8's residual is seven-or-fewer sched1 ORDER diffs plus one load-delay nop, and
+   `tools/sched_solver` has still never been run on an all-target-seat form.**
+   - mechanism: E-s24-4 attributes the 133rd insn precisely — at index 44 ours emits
+     `lhu $v0,0($s0)` + `nop` where target fills the delay slot with `addiu $s4,$s4,1`, and
+     target emits `addiu $s5,$s5,4` at index 40 where ours sinks it to 48. Both are sched1
+     ranking decisions perturbed by the wraps' loop notes; E-s24-7 shows C-level statement
+     order does not move them, which is exactly the regime tools/sched_solver models order-
+     and clock-exactly.
+   - next probe: apply alt_V8_alltarget_133_s24.c, dump red.i.sched, and run
+     tools/sched_solver on loop1 (block 1) against target's order for a typed
+     REACHABLE / FORECLOSED verdict plus a ranked C-lever vector. FORECLOSED would prove the
+     loop-note delivery of out2's +1 can never be byte-exact regardless of annotation, and
+     would leave hypothesis 1 as the only route; REACHABLE names the first concrete levers.
+
+3. **The `i` allocno is the untested third dial: with tbl forced to five references, a
+   consistent vector also exists at tbl 6 / 47 = 2553 IF `i` can be lifted from 8 refs to 9
+   (2783), which would make the (byte-costly, +2) address-split family on tbl viable if its
+   instruction cost can be paid back elsewhere.**
+   - mechanism: floor_log2 makes the 8 -> 9 step worth a jump from 2474 to 2783 (the exponent
+     goes 3 -> 3 but the count rises, and 9 crosses no boundary downward), so `i` is the one
+     allocno whose priority moves by a large step on a single extra reference. No session has
+     ever probed `i`'s reference count; s23 proved a3 is rigid, but a3 is a parameter with no
+     definition to split while `i` is a real loop counter with an initialiser, an increment,
+     a compare and a reset (`i = 0x12`) — four independent split sites.
+   - next probe: measure `i`'s reference count response to each of the four sites (split
+     initialiser, split increment, split reset, duplicated compare) on the V8 chassis, reading
+     ALLOCDBG and build_insns; the question is only whether ANY of them delivers exactly +1
+     byte-free. If one does, the whole tbl question reopens at 6 references and the search
+     space widens rather than narrows — worth knowing before more effort goes into the +1
+     spelling hunt for out2.
+
+## [s24] The residual is a one-reference problem: a byte-free 4th flow-counted reference on out2, with every other allocno at its natural count, closes the function.
+- mechanism: The frame shared by s20-s23. out2 needs 4 references (E-s23-5); tbl/i/stptr/stptr2/a4/a3 sit at natural counts in the all-target-seat forms; only out2's +1 spelling was thought to be open.
+- probe: Read target's own $s6 references (asm/funcs/func_80041188.s:25,56,61 - three emitted, last one inside loop1, so live length 42 post-combine), then measure form P1 = candidate chassis + target's block-2 spelling (out3 from pa4) + exactly one zero-insn in-loop1 +1 on out2 (do-while(0) loop-note weight used purely as an instrument), and read the ALLOCDBG table.
+- result: out2 = 4 refs / live 42 = pri 1904 -> hardreg 21 ($s5); tbl = 4 / 47 = 1702 -> hardreg 22 ($s6). The seats are SWAPPED with respect to target. The arithmetic depends only on (refs, live length), never on the spelling, so no delivery mechanism for a single out2 +1 can work while tbl is at 4 references with target's early definition.
+- verdict: KILLED
+
+## [s24] The original source therefore gave tbl a FIFTH flow-counted reference (5/47 = 2127), and that vector is exactly s18's V7.
+- mechanism: reg_n_refs is fixed by flow.c:2081 pre-combine and never recomputed; reg_live_length IS recomputed post-combine (sched.c:5106). Target's $s6 dies inside loop1, so the original's out2 live length is 42 and its priority is 1904 at 4 references. Target seats tbl above out2, and tbl's early definition (asm/funcs/func_80041188.s:12-13 = block-0 insns 3-4) fixes its live length at 47, so 4 refs (1702) is impossible and 5 refs (2127) is required.
+- probe: Re-measure V7 and V8 (= V7 with the stptr loop-note wrap replaced by candidate.c's F1 chain-extender) on the current chassis: ALLOCDBG + sandbox + fdiff against target.
+- result: Both reproduce ALL-TARGET callee-saved seats WITH target's block-2 addiu $s3,$s7,0x20: stptr 3414 $s3, stptr2 2500 $s0, i 2474 $s4, tbl 5/47=2127 $s5, out2 4/42=1904 $s6, a4 1473 $s7, a3 808 $fp. Sandbox 8 at 133 of 132 insns. The only other consistent vector is tbl at 4 refs with live <= 41 (Q1's late definition, 1951), which E-s22-4 already proved emission-costly and structural.
+- verdict: CONFIRMED
+
+## [s24] An honest address-constant split-init on tbl (tbl = D_80094CFC - 1; tbl += 1;) buys the required fifth reference byte-free, the way candidate.c's stptr chain-extender does.
+- mechanism: The F1 chain-extender law (E-s22-2): a donor that dies at the split point keeps the recipient canonical through cse1, flow counts the extra reference, and combine folds the pair back into one instruction. The value is identical and no new symbol is needed.
+- probe: T1 = V8 with the tbl loop-note wrap replaced by that split; ALLOCDBG + sandbox + build_insns.
+- result: The references ARE delivered (tbl 6 refs / 47 = 2553, so the construct is not folded away before flow), but it fails twice: it delivers +2 rather than +1, and 2553 outranks i (8/97 = 2474) so tbl takes $s4 and i takes $s5; and combine does NOT fold `la BASE` + `addiu off` back into one address constant, costing a real instruction - 134 of 132 build insns, sandbox 19. Both failures are independent of the base symbol chosen.
+- verdict: KILLED
+
+## [s24] The 133rd instruction of the all-target-seat form is a structural cost of the wraps, and moving i++ in the C source to where target schedules it recovers the slot.
+- mechanism: fdiff shows ours emits `lhu $v0,0($s0)` + `nop` at index 44-45 where target fills the load-delay slot with `addiu $s4,$s4,1`; if sched1's choice tracked C statement order, writing i++ immediately after the load would restore it.
+- probe: V14 = V8 with i++ moved to sit immediately after buf[0] = p[0]; sandbox + build_insns.
+- result: Byte-identical to V8 (sandbox 8, 133 insns). sched1 owns the delay slot; the C-level position of the increment inside the block does not move it. Separately, V11 (tbl wrap kept, out2 wrap removed) measures 132 of 132 insns, which attributes the nop to the out2 +1 delivery and proves the tbl +1 is byte-free.
+- verdict: KILLED
