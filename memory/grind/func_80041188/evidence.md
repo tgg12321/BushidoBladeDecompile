@@ -1988,3 +1988,191 @@ below comes from a form measured this session.
 - [s15] Two-counter chassis measured at sandbox 19 / 132 of 132 and killed by replay: zero single-pseudo and zero {i,j}-pair perturbations reach all-target; the minimum is a 3-atom lift (i +1 ref, j +1 ref, out3 +2 refs), and out3 at 6+ refs then steals stptr2's $s0.
 
 - [s15] src/text1a_pre.c was restored to HEAD at the end of the session; no build-pipeline file was touched.
+
+## s16 (forensics, 2026-08-24) — the live-length side of the residual is CLOSED, and target's own source is proven to carry a combine-deleted `stptr` reference
+
+Chassis this session: `memory/grind/func_80041188/alt_P1_honest_ipos3_s15.c` ("P1")
+spliced into `src/text1a_pre.c`. Dumps captured with `pwsh tools/grinder/dump.ps1
+func_80041188` (build/cc1, `-da`) into `tmp/grind/func_80041188/dumps/`; per-pseudo
+priority tables and per-block live SEGMENTS captured with the INSTRUMENTED cc1
+(`tools/gcc-2.7.2/cc1`) on the s15 reduced TU via
+`tmp/grind/func_80041188/s16/model.sh` and `.../sll.sh`. `src/text1a_pre.c` was
+restored to HEAD at the end of the session; no build-pipeline file was touched.
+
+### E-s16-1 — WHO OWNS `reg_live_length` AT ALLOCATION TIME: sched1, not flow
+
+Read out of the compiler source, not inferred. `flow.c` computes `reg_n_refs`
+(`flow.c:2081`, `+= loop_depth`) and a first `reg_live_length` (`flow.c:1685`,
+`flow.c:2087`). `combine.c:55-56` states in its own header comment that
+"reg_live_length is not updated" and "reg_n_refs is not adjusted". But
+`sched.c:5074-5106` OVERWRITES `reg_live_length[regno]` with
+`sched_reg_live_length[regno]`, which sched1 accumulates per basic block in
+`finish_sometimes_live` (`sched.c:3165`) over the SCHEDULED insn list.
+
+Consequence (this is the mechanism that makes the whole F1 family work here, and it
+was previously stated in the ledger only as an empirical observation):
+**a reference that `combine` deletes is counted in `reg_n_refs` and costs NOTHING in
+`reg_live_length`**, because refs are frozen pre-combine and live lengths are
+recomputed post-combine. `combine` is the only pass between the two that deletes
+insns (toplev pass order banked in s8), and `combine` only combines insns linked by
+LOG_LINKS, which `flow.c` builds WITHIN a basic block — so any such construct must
+be spelled entirely inside one basic block.
+
+### E-s16-2 — MEASURED per-block live SEGMENTS (BB2_SLL_DEBUG), and the proof that `stptr` live 40 is unreachable
+
+`BB2_SLL_DEBUG=<pseudo>` on the instrumented cc1 prints one `SLLDBG reg=R seg=N
+total=T` line per basic-block segment. Measured on P1:
+
+| pseudo | segments (block0, loop1, between, loop2) | total |
+|---|---|---|
+| 73 (a1) | 8, 40, 5, 46 | 99 |
+| 78 (i) | (8), 40, (3), 46 | 97 |
+| 79 (tbl) | (7), 40 | 47 |
+| 86 (out2) | (2), 40, 5 | 47 |
+| 77 (pa4) | (4), 40, 5, 46 | 95 |
+| **88 (stptr)** | **(1), 40** | **41** |
+
+The scheduled block sizes are therefore block0 = 9, block1 (loop1) = 40, block2
+(between-loops) = 5, block3 (loop2) = 46 insns at sched1 time. `stptr`'s block-0
+segment is **1**: its defining insn is ALREADY the last insn of the scheduled block 0
+(confirmed in the RTL: `(insn 43 ... (set (reg/v:SI 88) (plus (reg/v:SI 80)
+(const_int 252))))` immediately precedes `(code_label 44 "loop1")` in
+`tmp/grind/func_80041188/dumps/text1a_pre.flow`), and it cannot be pushed later
+because the next insn is the loop label. Its block-1 segment is the FULL 40 insns
+because `stptr` is loop-carried (live across the back edge), so no scheduling or
+statement order can shorten it.
+
+**KILLED: `stptr` live 41 -> 40, one of the three single-atom families E-s15-4
+enumerated.** Reaching live 40 requires loop1 to contain one fewer insn at sched1
+time, which is a byte change. (The only theoretical loophole is converting one
+sched1-era loop1 insn into an insn that `reload` re-materialises — loop1 emits 43 asm
+insns from 40 sched1 insns — but no source lever for that is known and it is not a
+C-level construct.) The P1 frontier therefore reduces from three atoms to one:
+`stptr` refs 5 -> 6 (or -> 7).
+
+### E-s16-3 — TARGET'S OWN SOURCE PROVABLY CONTAINS A COMBINE-DELETED `stptr` REFERENCE
+
+Target's block 0 (`asm/funcs/func_80041188.s:2-28`) is insn-for-insn identical to
+ours in ORDER and in insn kind — `addiu $sp,-0x48 / sw $s1 / addu $s1,$a1 / sw $s2 /
+addu $s2,$a2 / sw $fp / addu $fp,$a3 / sw $s4 / addiu $s4,$zero,1 / sw $s5 / lui+addiu
+$s5,D_80094CFC / sll $a0,2 / sw $ra / sw $s7 / sw $s6 / sw $s3 / sw $s0 / lui+addu+lw
+$v0,D_800A9A10 / lw $s7,0x58($sp) / addiu $t0,$v0,0x94 / addiu $s6,$s7,0x20 /
+**addiu $s3,$v0,0xFC** / sw $t0,0x18($sp)` — and P1's emitted block 0 matches it
+position for position (only the register numbers differ). Target's block 2 emits
+`addu $s1,108 / addu $s2,108 / addiu $s4,$zero,0x12 / lw / addiu $s3,$s7,0x20 /
+addiu $s0,$t0,1872`, i.e. `i`'s redefinition is the 3rd scheduled insn of block 2 —
+which is exactly P1's emission order (that is what s15's sched_solver vector bought).
+
+Because live lengths are a function of the SCHEDULED block layout (E-s16-1/E-s16-2)
+and that layout is identical, target's own `reg_live_length` values are ours:
+`stptr` = 1 + 40 = **41**, `i` = 8 + 40 + 3 + 46 = **97**. Target's `i` reference
+vector read off its bytes is 8 (`addiu $s4,1`; `addu $s4,$s4,1`; `slt ...,18`;
+`addiu $s4,0x12`; `addu $s4,$s4,1`; `slt ...,20` — set+use insns counted twice), so
+target's `pri(i) = floor_log2(8)*8/97*10000 = 2474`. Target seats `stptr` in `$s3`
+ABOVE `i` in `$s4`, which by the s14 seat rule requires `pri(stptr) > 2474`. At live
+41 that is impossible with 5 references (2439); it needs **>= 6** (6 refs -> 2926,
+7 refs -> 3414).
+
+Target's bytes contain exactly FIVE insns referencing `$s3` in loop1 (`addiu
+$s3,$v0,0xFC`; `addiu $a3,$s3,0x38`; `sh $v0,0x6($s3)`; `addiu $s3,$s3,0x68` = set+use).
+**Therefore the original source referenced `stptr` at least once more than its bytes
+show, and that reference was deleted between `flow` and `global_alloc` — i.e. by
+`combine`.** This is the first ledger result that derives the existence of the
+construct from TARGET rather than from our search: `candidate.c`'s F1 chain-extender
+`stptr = base; stptr += 0xFC;` is a reconstruction of a construct the original
+demonstrably had, not an artefact of our chassis.
+
+### E-s16-4 — four new atom spellings measured; all four fold BEFORE `flow` and lift nothing
+
+All measured as single-atom deltas on P1 through `s16/model.sh` (instrumented cc1
+`ALLOCDBG` table = `nrefs`/`livelen`/`pri` per pseudo, the exact inputs
+`allocno_compare` uses):
+
+| spelling | intent | measured | verdict |
+|---|---|---|---|
+| `tb1 = tbl + 1; offset = tb1[-1] * 6;` | tbl refs 4 -> 5 (use-only fold-back) | tbl stays 4 refs; one extra insn survives (every live length +1) | KILLED |
+| `o2b = (s32*)((u8*)out2 + 4); func_8004A348(buf, (s32*)((u8*)o2b - 4));` | out2 refs +1 (use-only fold-back) | out2 refs unchanged | KILLED |
+| `out2 = pa4; out2 = (s32*)((u8*)out2 + 0x20);` | out2 refs +2 (copy-then-modify — the EXACT shape that works on stptr) | out2 stays 4 refs / 47, table otherwise identical to P1 | KILLED |
+| `if (i - 0x12 < 0)` in loop1 | i refs 8 -> 9 (compare split, hoping `combine`'s `simplify_comparison` absorbs it) | i stays 8 refs | KILLED |
+
+The third row is the important one: **the F1 chain-extender is NOT shape-portable.**
+`stptr = base; stptr += 0xFC;` survives cse and lifts `stptr` 5 -> 7 refs, while the
+character-for-character identical shape on `out2` (`out2 = pa4; out2 += 0x20;`) is
+folded away before `flow` and lifts nothing. Survival is a per-pseudo property of
+cse's cost gate / qty canonicalisation, not of the syntax. Any future ref-lift
+proposal on this function must be MEASURED, never predicted from a working sibling.
+
+Banked: `rejected/useonly-foldback-plus1-tbl-and-out2-both-cse-folded-preflow.c`,
+`rejected/out2-copy-then-modify-plus2-folds-preflow-unlike-stptr.c`,
+`rejected/i-compare-split-minus-form-folds-preflow-refs-inert.c`,
+`rejected/tbl-symk-on-P1-2553-outranks-i-2474-steals-s3.c`.
+
+### E-s16-5 — P1's table re-read: requirement (B) is ALREADY satisfied on the `out3 = out2` chassis by an allocno-number TIE
+
+The instrumented `ALLOCDBG` table for P1 (same numbers as s15, re-measured):
+`73/74 a1,a2 16/99 = 6464 · 91 stptr2 6/48 = 2500 · 78 i 8/97 = 2474 ·
+88 stptr 5/41 = 2439 · 79 tbl 4/47 = 1702 · 86 out2 4/47 = 1702 ·
+77 pa4 6/95 = 1263 · 75 a3 4/99 = 808 · 87 out3 3/47 = 638 · 85 saved 2/47 spilled`.
+`tbl` and `out2` are EXACTLY TIED at 1702 and the tie is broken by ascending allocno
+number (79 before 86, `global.c:635-656`), which happens to be target's order
+(`$s5` then `$s6`). So on this chassis requirement (B) holds for free and the sole
+defect is (A). The `out2` 4th reference here is the `out3 = out2;` copy — which is
+also precisely the statement that costs the slot-71 `addiu $s3,$s7,0x20`. That is the
+floor-1 lock restated in one line: **the only construct that gives `out2` its 4th
+reference on this chassis is the one construct that makes slot 71 wrong.**
+
+### E-s16-6 — the B2 re-measurement on P1 (tbl sym-K chain), for the record
+
+`tbl = (s32*)((u8*)D_80094CFC - 0x10);` + `tbl = (s32*)((u8*)tbl + 0x10);` still
+survives cse on the P1 chassis and gives `tbl` 6 refs / 47 = **2553**, which now
+outranks `i` (2474) and takes hard reg 19 (`$s3`), pushing `stptr` to 21. So the
+sym-K lift remains realisable and remains wrong on this chassis for the same reason
+s8 recorded: its only landing zone is the window (2381, 2474), i.e. 6 refs at live
+49-50, and tbl's live length is 47 = 7 (block 0) + 40 (loop1), with the block-0 part
+bounded above by the parameter copies that `expand_function_start` always emits
+first (s14 Y1).
+
+### s16 artifacts
+`tmp/grind/func_80041188/dumps/` (P1 `-da` set: .flow .lreg .greg .sched .combine .cse2 …),
+`tmp/grind/func_80041188/s16/` — `sll.sh` (BB2_SLL_DEBUG per-block segment harness),
+`model.sh` (one-call instrumented ALLOCDBG priority table from `src/`), `sweep.sh`
+(splice+model over a list of variants), `splice.py`, `A_refs.c`, `B1_out2copy.c`,
+`B2_tblsymk.c`, `B3_icmp.c`, `text1a_pre.HEAD.c`, `cc1.err`, `red.i`, `red.s`.
+
+- [s16] MECHANISM FROM SOURCE: reg_n_refs is frozen at flow (flow.c:2081) and never recomputed (combine.c:55-56 says so in its own header comment), while reg_live_length is OVERWRITTEN by sched1 (sched.c:5106) from its own per-block accounting (sched.c:3165) over the SCHEDULED insn list. A combine-deleted reference therefore costs zero live length — this is why the F1 chain-extender works — and it must be spelled inside ONE basic block, because combine only follows LOG_LINKS, which flow builds within a block.
+
+- [s16] MEASURED per-block live segments on P1 via BB2_SLL_DEBUG: scheduled block sizes are block0 = 9, loop1 = 40, between = 5, loop2 = 46. stptr (88) = 1 + 40 = 41, i (78) = 8 + 40 + 3 + 46 = 97, tbl (79) = 7 + 40 = 47, out2 (86) = 2 + 40 + 5 = 47, pa4 (77) = 4 + 40 + 5 + 46 = 95.
+
+- [s16] KILLED (one of E-s15-4's three single atoms): stptr live 41 -> 40 is structurally unreachable. stptr's defining insn is already the LAST insn of scheduled block 0 (RTL insn 43 immediately precedes code_label 44), so its block-0 segment is the minimum 1, and it is loop-carried so its block-1 segment is the whole 40-insn loop. Live 40 would require loop1 to lose an insn at sched1 time = a byte change. The P1 frontier is now exactly one atom: stptr refs 5 -> 6 (or 7).
+
+- [s16] PROVEN FROM TARGET, not from our search: target's block-0 emission (asm/funcs/func_80041188.s:2-28) and block-2 emission are insn-for-insn identical in order to P1's, so target's own reg_live_length values are ours (stptr 41, i 97) and its i reference vector is 8 -> pri(i) = 2474. Target seats stptr above i, which at live 41 needs >= 6 references, but target's bytes contain only FIVE stptr-referencing insns. The original source therefore contained at least one stptr reference that combine deleted. candidate.c's F1 chain-extender reconstructs a construct the original demonstrably had.
+
+- [s16] KILLED (four new atom spellings, all fold before flow so no reference is counted): use-only fold-back +1 on tbl (`tb1 = tbl + 1; offset = tb1[-1] * 6;`); use-only fold-back +1 on out2 (`o2b = out2 + 4; call(o2b - 4)`); copy-then-modify +2 on out2 (`out2 = pa4; out2 += 0x20;`); compare-split +1 on i (`if (i - 0x12 < 0)`).
+
+- [s16] THE F1 CHAIN-EXTENDER IS NOT SHAPE-PORTABLE. `stptr = base; stptr += 0xFC;` survives cse and lifts stptr 5 -> 7 refs; the character-for-character identical shape on out2 (`out2 = pa4; out2 += 0x20;`) is folded away pre-flow and lifts nothing. Survival is a per-pseudo property of cse's cost gate, not of the syntax — every ref-lift proposal must be measured, never predicted from a working sibling.
+
+- [s16] P1's re-measured table shows tbl (79) and out2 (86) EXACTLY TIED at 1702, broken by ascending allocno number into target's own order, so requirement (B) is already satisfied on the `out3 = out2` chassis and (A) is the sole defect. But out2's 4th reference there IS the `out3 = out2;` copy — the same statement that makes slot 71 emit `move $s3,$s6` instead of target's `addiu $s3,$s7,0x20`. The floor-1 lock in one line: the only construct giving out2 a 4th reference on this chassis is the one construct that makes slot 71 wrong.
+
+- [s16] Chassis measured THIS session: memory/grind/func_80041188/candidate.c spliced into src/text1a_pre.c gives `sandbox func_80041188 --disable all` = score 1, 132 target / 132 build insns, rules_dropped 16, cheat_asm_stripped 2. src/text1a_pre.c was restored to HEAD afterwards; no build-pipeline file was touched.
+
+- [s16] MECHANISM FROM COMPILER SOURCE: reg_n_refs is counted at flow (flow.c:2081, += loop_depth) and never recomputed -- combine.c:55-56 states 'reg_live_length is not updated' and 'reg_n_refs is not adjusted' in its own header comment -- while reg_live_length IS overwritten by sched1 (sched.c:5106) from its per-block accumulation in finish_sometimes_live (sched.c:3165) over the SCHEDULED insn list. A combine-deleted reference is therefore counted and costs zero live length. This is the mechanism the F1 family runs on, previously banked only as an empirical observation.
+
+- [s16] combine only follows LOG_LINKS, which flow builds WITHIN a basic block, so any combine-deleted reference construct must be spelled entirely inside one basic block -- a cross-block staging pair cannot work.
+
+- [s16] MEASURED per-block live segments on P1 with BB2_SLL_DEBUG (instrumented cc1, s15 reduced TU): scheduled block sizes are block0 = 9, loop1 = 40, between-loops = 5, loop2 = 46 insns. stptr (88) = 1 + 40 = 41; i (78) = 8 + 40 + 3 + 46 = 97; tbl (79) = 7 + 40 = 47; out2 (86) = 2 + 40 + 5 = 47; pa4 (77) = 4 + 40 + 5 + 46 = 95; a1 (73) = 8 + 40 + 5 + 46 = 99.
+
+- [s16] stptr's defining insn is ALREADY the last insn of scheduled block 0 (RTL insn 43 immediately precedes code_label 44 'loop1' in the .flow dump), so its block-0 segment is at its floor of 1, and it is loop-carried so its loop1 segment is the full 40. stptr live 40 is structurally unreachable without deleting an insn from loop1 -- E-s15-4's three single atoms reduce to one (refs 5 -> 6 or 7).
+
+- [s16] Target's block 0 (asm/funcs/func_80041188.s:2-28) is insn-for-insn identical in ORDER to P1's emitted block 0, differing only in register numbers, and target's block 2 emits i's redefinition 3rd exactly as P1 does. Target's own reg_live_length values are therefore ours: stptr 41, i 97, pri(i) = 2474.
+
+- [s16] Target's loop1 contains exactly FIVE $s3-referencing insns, which at live 41 gives pri = 2439 < 2474 -- yet target seats stptr in $s3 above i in $s4. The original source therefore carried at least one stptr reference that combine deleted. This is the ledger's first target-derived (rather than search-derived) proof that the F1 chain-extender in candidate.c reconstructs a construct the original had.
+
+- [s16] Four new atom spellings measured on P1 and KILLED, all folding before flow so no reference is counted: use-only fold-back +1 on tbl (`tb1 = tbl + 1; offset = tb1[-1] * 6;`); use-only fold-back +1 on out2 (`o2b = out2 + 4; call(o2b - 4)`); copy-then-modify +2 on out2 (`out2 = pa4; out2 += 0x20;`); compare-split +1 on i (`if (i - 0x12 < 0)`).
+
+- [s16] THE F1 CHAIN-EXTENDER IS NOT SHAPE-PORTABLE: `stptr = base; stptr += 0xFC;` survives cse and lifts stptr 5 -> 7 refs, while the character-for-character identical shape on out2 folds away pre-flow and lifts nothing. Every future ref-lift proposal must be measured, never predicted from a working sibling.
+
+- [s16] P1's re-measured ALLOCDBG table: 73/74 a1,a2 16/99 = 6464; 91 stptr2 6/48 = 2500; 78 i 8/97 = 2474; 88 stptr 5/41 = 2439; 79 tbl 4/47 = 1702; 86 out2 4/47 = 1702; 77 pa4 6/95 = 1263; 75 a3 4/99 = 808; 87 out3 3/47 = 638; 85 saved 2/47 spilled. tbl and out2 are EXACTLY TIED at 1702 and the tie breaks by ascending allocno number (global.c:635-656) into target's own order, so requirement (B) already holds on the out3 = out2 chassis and (A) is the sole defect -- but out2's 4th reference there IS the `out3 = out2;` copy, the same statement that makes slot 71 emit `move $s3,$s6` instead of target's `addiu $s3,$s7,0x20`.
+
+- [s16] The tbl sym-K chain re-measured on P1: tbl 6 refs / 47 = 2553, which now outranks i (2474) and takes hard reg 19 ($s3), pushing stptr to 21. Its only landing zone remains the window (2381, 2474) = 6 refs at live 49-50, and tbl's live 47 = 7 (block 0) + 40 (loop1) with the block-0 part bounded above by the parameter copies expand_function_start always emits first (s14 Y1).
+
+- [s16] OWNER DIRECTIVE EXECUTED (partially): candidate.c's stptr chain-extender now carries a complete /* FAKE: ... */ annotation with all three required parts -- what, a named GCC-pass mechanism (flow.c:2081 / combine.c:55-56 / sched.c:5106 / global.c:635-656), and a lever-exhaustion pointer into hypotheses.md s7..s16 -- and the s7 header sentence that wrongly claimed 'NO FAKE construct' is corrected in place. The change is comment-only: candidate.c re-measures at sandbox 1 with it applied.

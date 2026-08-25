@@ -1,6 +1,11 @@
 /* func_80041188 / hirahira_w_ctrl - s7 (rederive) candidate. sandbox
  * --disable all == 1, 132/132 insns, frame 72 == target 0x48.
  *
+ * NOTE (s16): the header sentence below dates from s7 and is WRONG about one
+ * statement -- this body carries ONE sanctioned-family F1 construct, the
+ * `stptr = base; stptr += 0xFC;` chain-extender, now fully annotated at its
+ * site. Everything else in the sentence still holds.
+ *
  * ORDINARY C. No register pin, no inline asm, no volatile, no dead code, no
  * unused local, NO /* FAKE *Ã¢â‚¬â€¹/ construct, no variable reuse, no do-while(0)
  * wrap. Every local is once-declared, written where a human would write it,
@@ -189,10 +194,29 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     saved = base + 0x94;
     out2 = (s32 *) (((u8 *) pa4) + 0x20);
     stptr = base;
-    stptr += 0xFC; /* FAKE: F1 combine-foldable chain-extender (see header s11
-                      correction) â€” byte-neutral split whose only effect is
-                      lifting stptr's reg_n_refs 5->7 (floor 15->1); target
-                      emits the single addiu. NOT committable un-annotated. */
+    stptr += 0xFC;
+    /* FAKE: byte-neutral split of the single statement `stptr = base + 0xFC;`
+       into a register copy plus a constant add, whose ONLY effect is lifting
+       stptr's reg_n_refs from 5 to 7 (allocno priority 2439 -> 3414), which is
+       what seats stptr in $s3 above `i`; target emits the single addiu.
+       mechanism: flow.c:2081 counts reg_n_refs BEFORE combine and nothing ever
+       recomputes it (combine.c:55-56 says so in its own header comment), while
+       reg_live_length IS recomputed post-combine by sched1 (sched.c:5106 from
+       sched.c:3165). combine.c then folds the copy+add back into one addiu, so
+       the extra reference is counted by flow, spent by global.c's
+       allocno_compare (global.c:635-656), and costs neither a byte nor a unit
+       of live range. s16 additionally PROVED the original source carried such a
+       reference: target's block-0 and block-2 emissions are insn-for-insn
+       identical in order to ours, so target's own stptr live length is 41 and
+       its i priority is 2474, yet target seats stptr above i -- which at live 41
+       needs >= 6 references while target's bytes show only 5 stptr insns.
+       lever-exhaustion: memory/grind/func_80041188/hypotheses.md, s7..s16 --
+       stptr live 41 -> 40 killed by measurement in s16 (E-s16-2, def already the
+       last insn of scheduled block 0, loop-carried across all 40 loop1 insns);
+       every non-chain reference-lift spelling measured (s16 E-s16-4: use-only
+       fold-back on tbl and out2, copy-then-modify on out2, compare-split on i)
+       folds before flow and lifts nothing; s14 Y1/Y2/Y3 killed every statement
+       -order route to satisfying stptr > i from the other side. */
     loop1:
     offset = (*tbl) * 6;
     p = (u16 *) (offset + (s32) a1);
