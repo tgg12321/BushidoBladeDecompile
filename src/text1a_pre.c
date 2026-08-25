@@ -559,18 +559,19 @@ extern void func_800400B0(s32 *, s32);
 extern void func_8003F62C(s32 *);
 extern void func_800420E8(s32, s32);
 void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
-    register s32 a0_s7 asm("s7") = a0;
     u8 *s4;
     u8 *s5;
     u8 *s3;
     u8 *s2;
     s32 s0;
     s16 *s1;
+    s32 ent;
 
-    s4 = (u8 *)D_800A9A10[a0_s7];
-    if (s4 == 0) {
+    ent = D_800A9A10[a0];
+    if (ent == 0) {
         return;
     }
+    s4 = (u8 *)ent;
 
     *(s16 *)(s4 + 0x3C) = a3[0];
     *(s16 *)(s4 + 0x3E) = a3[1];
@@ -587,13 +588,11 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     switch (a1) {
     case 0: {
         s32 *tbl;
-        u8 *a4p;
         u8 *p;
         FuncPtr_40D48 *s0_fn;
         s0 = 1;
         tbl = D_80094CFC;
         s1 = arg4;
-        a4p = s3 + 0x68;
 
         *(s32 *)(s3 + 0x4C) = 0;
         *(s32 *)(s3 + 0x50) = 0;
@@ -604,15 +603,16 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
 
         do {
             s32 idx;
+            u8 *a4p;
+            a4p = s3 + s0 * 0x68;
             idx = *tbl;
             *(s16 *)(a4p + 0x10) = *(u16 *)((u8 *)s1 + idx * 6);
             idx = *tbl;
             *(s16 *)(a4p + 0x12) = -(s16)*(u16 *)((u8 *)s1 + idx * 6 + 2);
             idx = *tbl;
+            *(s16 *)(a4p + 0x14) = -(s16)*(u16 *)((u8 *)s1 + idx * 6 + 4);
             s0++;
             tbl++;
-            *(s16 *)(a4p + 0x14) = -(s16)*(u16 *)((u8 *)s1 + idx * 6 + 4);
-            a4p += 0x68;
         } while (s0 < 0x12);
 
         s0 = 0x11;
@@ -703,34 +703,28 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         a2p = s4 + 0x10D4;
         a3p = s4 + 0x10EC;
         for (;;) {
-            s32 *s5p;
-            s5p = *(s32 **)(a3p + 0x40);
-            if (s5p == 0) break;
-
-            *(Copy8_40D48 *)a3p = *(Copy8_40D48 *)((u8 *)s5p + 0x18);
-
-            {
-                s32 *list3;
-                list3 = (s32 *)D_800A3820;
-                a3p += 0x68;
-                D_800A3820 = (s32)(list3 + 1);
-                *list3 = (s32)a2p;
+            s32 *list3;
+            s5 = *(u8 **)(a3p + 0x40);
+            if (s5 == 0) {
+                break;
             }
+            *(Copy8_40D48 *)a3p = *(Copy8_40D48 *)(s5 + 0x18);
+            list3 = (s32 *)D_800A3820;
+            a3p += 0x68;
+            D_800A3820 = (s32)(list3 + 1);
+            *list3 = (s32)a2p;
             a2p += 0x68;
         }
-    }
 
-    {
-        s16 *a2p2;
-        a2p2 = (s16 *)(s4 + 0x8B4);
+        a2p = s4 + 0x8B4;
         if (*(s16 *)(s4 + 0x8B6) != -1) {
             do {
                 s32 *list4;
                 list4 = (s32 *)D_800A3820;
                 D_800A3820 = (s32)(list4 + 1);
-                *list4 = (s32)a2p2;
-                a2p2 = (s16 *)((u8 *)a2p2 + 0x68);
-            } while (a2p2[1] != -1);
+                *list4 = (s32)a2p;
+                a2p += 0x68;
+            } while (*(s16 *)(a2p + 2) != -1);
         }
     }
 
@@ -738,7 +732,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     *(s16 *)(s4 + 0x1A84) = (s16)arg5;
     func_800400B0((s32 *)s4, arg5);
     func_8003F62C((s32 *)s4);
-    func_800420E8(a0_s7, (s32)(s3 + 0x2C));
+    func_800420E8(a0, (s32)(s3 + 0x2C));
 }
 
 extern s32 D_80094CFC[];

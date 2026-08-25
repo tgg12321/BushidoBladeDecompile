@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80040D48",
-      "file": "text1a_pre",
-      "distance": 34,
-      "verdict": "C",
-      "rules": 34,
-      "status": "active",
-      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. 34 regfix (the largest remaining stack); jtbl-coupled \u2014 the compiled switch emits the jtbl, so pure-C COMPLETED-C is the route (do not re-attempt INCLUDE_RODATA; wave-2 measured dead)."
-    },
-    {
       "func": "func_800460E4",
       "file": "text1a_c2",
       "distance": 35,
@@ -2094,14 +2085,14 @@
     }
   ],
   "counts": {
-    "total": 240,
-    "active": 238,
+    "total": 239,
+    "active": 237,
     "by_status": {
-      "active": 238,
+      "active": 237,
       "escalated": 2
     },
     "by_verdict": {
-      "C": 202,
+      "C": 201,
       "ASM-PARTIAL": 36
     }
   }

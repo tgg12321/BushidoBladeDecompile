@@ -1,46 +1,3 @@
-/* candidate.c - func_80040D48 - s3b 2026-08-25 - honest floor 0 (from 4/0-FAILed)
- * MEASURED: `sandbox func_80040D48 --disable all` = score 0, 272/272 insns,
- * rules_dropped 34, with this exact body in src/text1a_pre.c on HEAD fc9361d6.
- *
- * This body REPLACES the 2026-08-25 02:53 layer-1 FAILed form. Both goto-spelled
- * loops are gone and so is the s1/arg4-walker merge that followed from them; the
- * function now contains no labels, no gotos, and no loop-note suppression.
- *
- * The two edits that replaced the FAILed levers:
- *  (1) case-0 init loop: the destination cursor is written as an ARRAY INDEX
- *      (`a4p = s3 + s0 * 0x68;`) instead of a separately-incremented pointer.
- *      This makes the cursor a GIV of the counter rather than a BIV of its own,
- *      and loop.c's combine_givs then merges the three +0x10/+0x12/+0x14 address
- *      givs ONTO the cursor giv (whose add_val is +0x68) instead of onto the
- *      last-recorded address giv (+0x14). The reduced base register therefore
- *      holds s3+0x68 with stores at 16/18/20 and one `addiu $a0,$a0,0x68` --
- *      target's exact shape, from an ordinary `do { } while (s0 < 0x12);`.
- *      The counter/table increments must sit AFTER the third store (with them
- *      before it the giv update is emitted mid-body, forcing a `move` copy that
- *      displaces the index temp out of $v1: measured score 20, banked in
- *      rejected/index-init-loop-incr-before-last-store-score20.c).
- *  (2) Copy8 loop: `for (;;) { src = ...; if (src == 0) break; ... }`. A `while`
- *      spelling puts an unconditional jump immediately after NOTE_INSN_LOOP_BEG,
- *      which is the precondition for jump.c's duplicate_loop_exit_test
- *      (jump.c:2163); that copies the entry test above the loop where cse folds
- *      it to an s4-relative load -- 273 insns, score 7 (banked in
- *      rejected/while-copy8-duplicate-loop-exit-test-273.c). `for (;;)` with an
- *      explicit break leaves the test at the top of the loop and an
- *      unconditional `j` at the bottom, which is target's own shape.
- *
- * Three spellings that are load-bearing and were RE-MEASURED this session:
- *   - the prologue two-variable load (`ent` then `s4`): collapsing to one
- *     variable measures 4 (rejected/single-var-prologue-entry-load-floor4.c);
- *   - `s5` carrying both the s4+0x2C role and the Copy8 source: splitting it
- *     measures 35, at block scope or function scope
- *     (rejected/split-copy8-source-*.c);
- *   - `a2p` carrying both the Copy8 list-push walker and the s4+0x8B4 tail
- *     walker: splitting it measures 20, at block scope or function scope
- *     (rejected/split-tail-walker-*.c).
- *
- * Apply: replace the func_80040D48 region in src/text1a_pre.c (incl. the
- * typedef/extern prelude) with this file.
- */
 typedef void (*FuncPtr_40D48)(s16 *, s16 *);
 typedef struct { s32 a, b, c, d, e, f, g, h; } Copy8_40D48;
 extern s32 D_800A9A10[];
@@ -103,9 +60,9 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
             idx = *tbl;
             *(s16 *)(a4p + 0x12) = -(s16)*(u16 *)((u8 *)s1 + idx * 6 + 2);
             idx = *tbl;
-            *(s16 *)(a4p + 0x14) = -(s16)*(u16 *)((u8 *)s1 + idx * 6 + 4);
             s0++;
             tbl++;
+            *(s16 *)(a4p + 0x14) = -(s16)*(u16 *)((u8 *)s1 + idx * 6 + 4);
         } while (s0 < 0x12);
 
         s0 = 0x11;
@@ -153,16 +110,19 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
 
     {
         s32 scaled;
-        s32 *s1p;
+        // s1 (the arg4 pointer above) carries this walker too: target's $s1
+        // holds arg4 through case 0 and is then redefined by addu $s1,$s3,$zero
+        // for this walk. A separate local for it takes a ninth callee-saved
+        // register and shifts the whole bank (measured 274 insns, score 111).
         scaled = (*(s32 *)(s3 + 0x50) * *(s16 *)(s4 + 0x12)) >> 12;
         s0 = 0;
-        s1p = (s32 *)s3;
+        s1 = (s16 *)s3;
         *(s32 *)(s3 + 0x50) = scaled;
         *(s16 *)(s5 + 6) = 0;
         do {
-            func_800417D0(s1p);
+            func_800417D0((s32 *)s1);
             s0++;
-            s1p = (s32 *)((u8 *)s1p + 0x68);
+            s1 = (s16 *)((u8 *)s1 + 0x68);
         } while (s0 < 0x12);
     }
 
@@ -195,19 +155,27 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         u8 *a3p;
         a2p = s4 + 0x10D4;
         a3p = s4 + 0x10EC;
-        for (;;) {
-            s32 *list3;
+        // Label + backward goto: a while/for spelling gives loop.c notes, the
+        // loop rotates to a bottom test and cse folds the first-iteration load
+        // to an s4-relative one (measured 273 insns, score 7).
+    copyloop:
+        {
             s5 = *(u8 **)(a3p + 0x40);
-            if (s5 == 0) {
-                break;
-            }
+            if (s5 == 0) goto copydone;
+
             *(Copy8_40D48 *)a3p = *(Copy8_40D48 *)(s5 + 0x18);
-            list3 = (s32 *)D_800A3820;
-            a3p += 0x68;
-            D_800A3820 = (s32)(list3 + 1);
-            *list3 = (s32)a2p;
+
+            {
+                s32 *list3;
+                list3 = (s32 *)D_800A3820;
+                a3p += 0x68;
+                D_800A3820 = (s32)(list3 + 1);
+                *list3 = (s32)a2p;
+            }
             a2p += 0x68;
+            goto copyloop;
         }
+    copydone:;
 
         a2p = s4 + 0x8B4;
         if (*(s16 *)(s4 + 0x8B6) != -1) {

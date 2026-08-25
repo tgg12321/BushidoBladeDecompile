@@ -355,3 +355,39 @@ in the house style of this TU's matched siblings; re-measured 0 with them in pla
 - [s3] Merging the func_800417D0 walker into the existing `s1` (arg4) local restores counter-first allocation order and closes the last 4 diffs: floor 0, 272/272. Target's $s1 serves exactly those two roles (stack-slot load + 0x6C..0x82 reads, then addu $s1,$s3,$zero for the walk).
 - [s3] Prologue respelled `s32 ent = D_800A9A10[a0]; if (ent == 0) return; s4 = (u8 *)ent;` (byte-neutral, two distinctly typed values); the one-variable collapse measures 4, so the split is load-bearing and mirrors target's load-into-$a0 / test / copy-in-delay-slot shape.
 - [s3] Copy8 loop as a `while ((s5 = ...) != 0)` re-tested on this chassis: 7 (273/272), same rotation+cse fold s1 measured. The goto spelling stands.
+
+## [s3b 2026-08-25] Floor 4 / layer-1-FAILed-0 -> honest floor 0 with NO goto and NO loop-note suppression
+
+- The 2026-08-25 02:53 layer-1 FAIL was correct about the mechanism and wrong about the
+  necessity: the init loop does NOT have to lose its NOTE_INSN_LOOP_BEG to reach target.
+  Target's "unreduced-looking" shape (base register = s3+0x68, stores at +0x10/+0x12/+0x14,
+  a single `addiu $a0,$a0,0x68`) is exactly what loop.c PRODUCES when the destination
+  cursor is a GIV of the counter rather than a BIV of its own -- i.e. when the C indexes
+  the array (`a4p = s3 + s0 * 0x68;`) instead of hand-incrementing a pointer. combine_givs
+  then merges the three DEST_ADDR givs onto the cursor giv (add_val 0x68) instead of onto
+  the last-recorded address giv (add_val 0x7C), and the reduced base is the cursor itself.
+- The increments must sit AFTER the third store. loop.c emits the giv update immediately
+  after the biv increment; with `s0++; tbl++;` before the third store the update lands
+  mid-body and RTL has to copy the pre-increment cursor (`move v1,a1`), which takes $v1
+  and pushes the index temp out of it, shifting cursor/table from $a0/$a1 to $a1/$a2.
+  Measured: increments early = score 20, increments late = score 0.
+- The Copy8 loop's rotation is jump.c:2163 `duplicate_loop_exit_test`, invoked from
+  jump.c:626 ONLY when the insn following NOTE_INSN_LOOP_BEG is an unconditional jump.
+  That is the `while` expansion (jump to a bottom test). `for (;;)` with an explicit
+  `break` puts the test at the top and an unconditional `j` at the bottom -- the transform
+  never runs, cse never sees a constant-offset copy of the entry load, and the shape is
+  target's (target insn 229 `j @`, delay slot 230 `addiu a2,a2,104`). Measured:
+  `while` = 273 insns / score 7, `for (;;)`+break = 272/272 score 0.
+- With the init loop's notes restored, the s1/arg4 walker merge that s3's H9 needed is
+  gone: reverting the walker to its own local keeps score 0. That construct (a banned one
+  for this function) is out of the body entirely, as are both goto spellings.
+- Re-measured on the score-0 chassis and still load-bearing (all four banked in
+  rejected/): the prologue two-variable load (collapse = 4), the `s5` reuse (split = 35 at
+  block scope AND at function scope), the `a2p` reuse (split = 20 at both scopes).
+  Declaration placement changes nothing for either reuse.
+- Diff tooling for this function: `tmp/grind/func_80040D48/s3/dif2.py` prints the
+  masked instruction-by-instruction diff via `engine.score.normalized_insns` against
+  `build/src/text1a_pre.o`; `reg.py <lo> <hi>` prints an aligned window. Both are far
+  cheaper than eyeballing objdump and correctly ignore %hi/%lo and branch targets.
+  `apply.sh <bodyfile>` swaps a candidate body into src/text1a_pre.c (head.c/tail.c
+  are the frozen prefix/suffix of the file).

@@ -191,3 +191,51 @@ no remaining codegen frontier. What remains is acceptance:
    covers a global.c allocno-priority reuse, which is the honest classification gap.
 3. If the body is accepted, `queue done func_80040D48` retires the largest remaining
    rule stack in the project (34 of the final 89).
+
+## [s3b] H12 -- target's case-0 init cursor is a GIV of the loop counter, not a BIV of its own; spelling it as an array index (`a4p = s3 + s0 * 0x68;`) makes combine_givs merge the three address givs ONTO the cursor instead of onto the last-recorded address giv
+- mechanism: loop.c combine_givs can merge giv B into giv A when B's value is A's value plus a small constant (ADDRESS_COST 1). With the cursor hand-incremented (`a4p += 0x68`) the cursor is a BIV, so the only combination candidates are the three DEST_ADDR givs and the base becomes the last-recorded one (+0x14) -> base register s3+124, stores at -4/-2/0 (the s2 finding, score 4). With the cursor written as `s3 + s0 * 0x68` the cursor itself becomes a giv of the counter with add_val 0x68, it is a legal combination base for all three address givs (+0x10/+0x12/+0x14 = cursor + 16/18/20), and the reduced register is initialised to s3+0x68 and incremented once by 0x68 -- target's exact shape, from an ordinary do/while.
+- probe: respell the case-0 loop as `do { u8 *a4p; a4p = s3 + s0 * 0x68; ... } while (s0 < 0x12);` + sandbox --disable all
+- result: 272 insns, score 20 with the increments where they were (`s0++; tbl++;` BEFORE the third store); moving both increments AFTER the third store gives **score 0**. With the increments early, loop.c emits the giv update immediately after the biv increment, mid-body, which forces a `move v1,a1` copy to preserve the pre-increment cursor for the third store; that copy takes $v1 and displaces the index temp out of $v1, shifting the cursor/table pair from $a0/$a1 to $a1/$a2 (all 20 diffs).
+- verdict: CONFIRMED. Kills the entire "the init loop must lose its loop notes" premise of s3's H7 -- the loop keeps its notes, keeps flow.c's loop-depth ref weighting, and still reaches target's unreduced-looking shape. rejected/index-init-loop-incr-before-last-store-score20.c banks the increment-position measurement.
+
+## [s3b] H13 -- the Copy8 loop's rotation is jump.c's duplicate_loop_exit_test, and it fires only for the `while` shape (unconditional jump immediately after NOTE_INSN_LOOP_BEG), so `for (;;)` + explicit `break` avoids it
+- mechanism: jump.c:2163 `duplicate_loop_exit_test` is called from jump.c:626 only when the insn after NOTE_INSN_LOOP_BEG is an unconditional jump -- i.e. the `while` / `for(init;cond;)` expansion, which jumps to a bottom test. It copies the exit test above the loop (<=20 insns, no CALL_INSN / CODE_LABEL / nested LOOP_BEG / BLOCK_BEG / LOOP_CONT in the test) and deletes the jump; cse then folds the copied `lw 0x40(a3p)` to the s4-relative `lw 4396(s4)` because a3p is a known constant offset at that point. `for (;;)` expands with the test at the TOP of the loop body and an unconditional `j` at the bottom, so the note is not followed by a jump and the transform never runs.
+- probe: `while ((s5 = *(u8 **)(a3p + 0x40)) != 0) { ... }` vs `for (;;) { src = *(u8 **)(a3p + 0x40); if (src == 0) break; ... }` + sandbox each
+- result: `while` -> 273 insns / score 7, with the duplicated+folded entry test exactly as predicted (rejected/while-copy8-duplicate-loop-exit-test-273.c). `for (;;)` + break -> **score 0**, 272/272; target's own shape is test-at-top plus `j` in the delay slot at the bottom (target insn 229 `j @` / 230 `addiu a2,a2,104`).
+- verdict: CONFIRMED. s1's H3 recorded `for(;;)+break` as rotating; that was chassis-relative and is now superseded -- on the s3b chassis the `for (;;)` spelling is byte-exact and the goto spelling is unnecessary.
+
+## [s3b] H14 -- the s1/arg4 walker merge (s3's H9) was a consequence of the goto loops, not an independent requirement
+- mechanism: H9's cascade came from the goto spelling stripping the init loop's NOTE_INSN_LOOP_BEG, which cost the shared counter its flow.c loop-depth ref weighting and inverted global.c's allocno order. With the loop notes restored by H12 the weighting is back.
+- probe: revert the walker to its own local (`s32 *s1p;`) on the H12+H13 chassis + sandbox
+- result: score 0, 272/272 -- unchanged. The merge is not needed.
+- verdict: KILLED (as a requirement). The construct is removed from the body; the layer-1-FAILed form is banked at rejected/layer1-fail-0825-0253.c.
+
+## [s3b] H15 -- the s5 reuse (s4+0x2C role -> Copy8 source) and the a2p reuse (Copy8 walker -> s4+0x8B4 tail walker) might also be goto-chassis artifacts
+- mechanism: hoped both were, like H14, consequences of the suppressed loop notes
+- probe: four measurements on the score-0 chassis -- split the Copy8 source into a fresh local at block scope and at function scope; split the tail walker into a fresh local at block scope and at function scope
+- result: Copy8 source split = score 35 at BOTH scopes; tail walker split = score 20 at BOTH scopes. Declaration placement is irrelevant; the merges are load-bearing and are the s1/s2 object-model findings, not goto artifacts. Banked: rejected/split-copy8-source-local-score35.c, rejected/split-copy8-source-func-scope-score35.c, rejected/split-tail-walker-local-score20.c, rejected/split-tail-walker-func-scope-score20.c.
+- verdict: KILLED
+
+## [s3b] H16 -- the prologue two-variable load might collapse on the new chassis
+- mechanism: hoped s3's H10 result was chassis-relative
+- probe: `s4 = (u8 *)D_800A9A10[a0]; if (s4 == 0) return;` on the score-0 chassis + sandbox
+- result: score 4 -- unchanged from H10. The entry value and the object base are two values in the original.
+- verdict: KILLED (re-confirmed on the s3b chassis)
+
+## Frontier (post-s3b)
+
+**The function is at honest floor 0 (272/272, all 34 regfix rules dropped) with BOTH
+layer-1-FAILed goto loops and the s1 merge REMOVED.** What remains is acceptance:
+1. `memory/grind/func_80040D48/self_vet.md` is rewritten for this body and claims NO
+   sanctioned family. The two constructs a reviewer will query are the `s5` reuse and
+   the `a2p` reuse; the vet states openly that if layer-1 classifies them into the
+   variable-reuse family the correct disposition is a ruling, not a self-approval.
+2. If layer-1 FAILs on those two reuses, the next session's question is narrow and
+   decidable: is there a spelling that keeps the Copy8 source and/or the tail walker
+   separate at score 0? Four splits are measured dead (35 / 20, both scopes); the
+   untried axis is changing what ELSE the loops' refs look like (e.g. reading the link
+   through a3p in a different width/type, or restructuring the tail walker's
+   terminator test) so that global.c's allocno_compare lands the same seats without
+   the merge. Do NOT re-measure the four banked splits.
+3. If the body is accepted, `queue done func_80040D48` retires the largest remaining
+   rule stack in the project (34 of the final 89).
