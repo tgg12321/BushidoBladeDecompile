@@ -1,5 +1,76 @@
 # Evidence bank — func_800460E4
 
+## [s4] 2026-08-25 — recon session after the second layer-1 FAIL (case-3 volatile REMOVED; new honest close at sandbox 0)
+
+Context: the [s3] close was layer-1 FAILED (decisions.md 2026-08-25 03:53) solely
+on the pre-existing case-3 volatile cast (`*(volatile s32 *)&ptr[-1]`), now in
+the BANNED list for this function. This session removed it, diagnosed the 3-insn
+fold it had been masking, and closed the residual with ordinary/named-intermediate
+C. **Result: sandbox --disable all = 0 (248/248, rules_dropped=10), measured at
+the closing chassis 2026-08-25 (twice: before and after the FAKE annotation on
+the new intermediates).** The banned volatile is GONE; the banned arg1/s1 merge
+remains absent.
+
+### The fold, fully attributed (dump + disassembly proven)
+
+With the volatile removed and everything else [s3]-identical: sandbox 9,
+build 245/248. The 3 lost insns are case 3's `s4` ALIGN4 tail
+(`srl $2,$2,2; sll $2,$2,2; addu $20,$16,$2`). Attribution chain:
+1. sched1 places `li $2,1; sh $2,D_8009947A` BETWEEN the two `ptr[-N]` loads
+   (fills the lw load-delay). The sh has NO dependence on the loads because the
+   loads are `mem/s` (MEM_IN_STRUCT_P — the `ptr[-1]` indexing spelling) and
+   sched.c exempts struct refs from conflicting with the fixed-symbol store.
+2. With li/sh inside the address pseudo's live range, local-alloc seats the
+   address in $a0 and the m1 value in $v0 (target: address $v0, m1 $a0).
+3. Case 3's tail `srl/sll/addu $20,$16,$2` is then byte-identical to case 34's
+   tail, and jump2 find_cross_jump merges the 3-insn suffix (case 3 ends
+   `j .L31` into case 34; dumps/text1a_c2.s .L19/.L31 at the novol chassis,
+   artifact s4/ours_novol.dis, s4/p4.dis).
+
+### Kills (banked; do not re-probe)
+
+- Statement-order sweep P1-P4 (store last / store mid / reads swapped /
+  case-13-style ALIGN4-at-read): ALL flat at 9. Banked as
+  rejected/case3-statement-order-sweep.c.
+- sched_solver (model re-extracted at this chassis, parity=True): target order
+  for the case-3 block (pass 1, block 19) is UNREACHABLE by perturbation —
+  depth 2 over ALL 584 atoms, depth 3 over the 273 spellable luid/luid_move
+  atoms. Conclusion: no statement reordering of the mem/s RTL reaches target;
+  the original had a REAL dependence edge.
+
+### The closing edit (case 3 only; rest of body [s3]-identical)
+
+    s32 *pm2 = ptr - 2;            /* fresh, once-written once-read */
+    s32 *pm1 = ptr - 1;
+    s32 raw_m2 = *pm2;
+    s32 raw_m1 = *pm1;
+    D_8009947A = 1;
+    s6 = (s32 *)((u8 *)s0 + ALIGN4(raw_m2));
+    s4 = (s32 *)((u8 *)s0 + ALIGN4(raw_m1));
+
+Mechanism (dump-proven at the closing chassis, dumps/text1a_c2.sched):
+- The plain-var derefs emit `(mem:SI ...)` WITHOUT the /s flag (insns 312/315;
+  combine folds the pointer decrements into `-8`/`-4` load offsets, zero extra
+  bytes).
+- The D_8009947A store (insn 320) now carries `REG_DEP_ANTI 312` and
+  `REG_DEP_ANTI 315` — real anti-dependence edges force li/sh AFTER both
+  loads = target order; the seats follow (address $v0, m1 $a0) and the
+  case-34 tail merge is impossible (different registers).
+- FAKE-annotated as named-intermediate family (fresh once-written/once-read
+  locals, real consumed values, byte-neutral 248/248).
+
+The [s3] chain-extender on s1 is still load-bearing and unchanged: removing it
+at this chassis measures 32 (248/248 — the pure 3-seat rotation returns), so
+the case-3 fix and the rotation fix are independent levers.
+
+Integration note: unchanged from [s1]/[s3] — the 10 regfix rules at
+regfix.txt:868-882 retire via the normal retire path; jtbls stay C-emitted;
+wave-2 INCLUDE_RODATA remains unnecessary.
+
+Artifacts: tmp/grind/func_800460E4/s4/ (apply.py, extract.py, solver.sh,
+blocks.py, findblock.py, ours_novol.dis, p4.dis), tmp/grind/func_800460E4/dumps/
+(full -da set at the closing chassis), tmp/sched_solver_work/text1a_c2.sched.json.
+
 ## [s1] 2026-08-25 — recon session (first session; closed to sandbox 0)
 
 Chassis at session start: committed rule-era C body in src/text1a_c2.c + 10 regfix

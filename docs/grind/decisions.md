@@ -10710,3 +10710,7 @@ Construct (3) is a whole-function variable merge (delete local s1, repoint ~8 as
 ## 2026-08-25 03:53 — func_800460E4 — layer-1 review — **FAIL**
 
 This session's own new constructs (scaled-index respelling, dropped param-alias locals, FAKE-annotated combine-foldable chain-extender on s1) are legitimate and correctly cited, but the candidate body still carries an unresolved, unsanctioned volatile-cast coercion in case 3 that the worker's own self-vet flags as load-bearing and unresolved — that construct alone blocks COMPLETED-C.
+
+## 2026-08-25 04:17 — func_800460E4 — layer-1 review — **FAIL**
+
+The case-3 pm2/pm1 pointer-intermediate construct is the previously-banned volatile alias-coercion cheat re-spelled: its sole stated purpose is to defeat GCC's MEM_IN_STRUCT_P heuristic so sched.c emits different dependence edges, forcing target's load/store order by manipulating alias analysis rather than by real semantic difference.

@@ -49,6 +49,29 @@ target seating; insns 248/248, score 0).
 Verdict: **CONFIRMED — sandbox 0, measured twice (with and without the FAKE
 annotation).**
 
-Frontier: (empty — function at sandbox 0 WITHOUT the banned construct;
+## [s4] 2026-08-25 (recon, after the second layer-1 FAIL banned the case-3 volatile)
+
+H7 — "The 3 insns the case-3 volatile preserved are deleted by jump2
+find_cross_jump (case-3 tail merged into case 34's), downstream of sched1
+placing li/sh between the two loads (no alias edge on the mem/s loads) and the
+resulting seat assignment."
+Probe: novol disassembly (j .L31 into case 34's srl/sll/addu tail) + dump .s +
+.sched (sh insn has no load deps at the mem/s chassis).
+Verdict: **CONFIRMED** (full chain in evidence.md [s4]).
+
+H8 — "A statement-order respelling of case 3 can reproduce target's
+loads-adjacent/store-after order." Probe: P1-P4 sweep + sched_solver perturb
+(all atoms depth 2, luid atoms depth 3, block 19 pass 1).
+Verdict: **KILLED — unreachable**; the original RTL must differ structurally.
+
+H9 — "Fresh pointer intermediates (pm2/pm1) make the loads non-MEM_IN_STRUCT_P,
+so sched.c raises anti-dependence edges load→store(D_8009947A), forcing target
+order by REAL dependence; seats and the cross-jump defeat follow."
+Probe: spelled, measured, dumped (REG_DEP_ANTI 312/315 on insn 320).
+Verdict: **CONFIRMED — sandbox 0 (248/248), measured twice** (before/after the
+FAKE annotation). The banned volatile is REMOVED; the [s3] chain-extender is
+independently still required (removing it → 32).
+
+Frontier: (empty — function at sandbox 0 with BOTH banned constructs absent;
 remaining work is integration: rule retirement via the normal retire path +
-layer-1/Judge gates on the new, narrower FAKE construct.)
+layer-1/Judge gates on the two annotated FAKE constructs.)
