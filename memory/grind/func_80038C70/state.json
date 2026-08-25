@@ -1,8 +1,8 @@
 {
  "func": "motion_SetMotion",
  "file": "code6cac_c_mid",
- "session_count": 46,
- "current_modality": "synthesis",
+ "session_count": 47,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 0,
@@ -285,23 +285,29 @@
    "floor": 1,
    "modality": "synthesis",
    "headline": "Synthesis: s45's 'F5 is the unique cross-jump breaker' enumeration FALSIFIED by this function's own -1 pair (an honest real-insn interposition); closure re-proved premise-free from block capacity (eac"
+  },
+  {
+   "session": 47,
+   "floor": 1,
+   "modality": "solver",
+   "headline": "Solver axis executed and TYPED-CLOSED: inverse_compose classify returns PRE-RA (honest 394 vs target 396) - 'no backend, the residual is upstream of every model'; ra_solver and sched_solver are mechan"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The solver suite can convert the s46 block-capacity closure from a hand argument into a typed FORECLOSED verdict \u2014 the one tool axis never run on this function, and the axis the owner directive explicitly names as untried.",
-   "mechanism": "The residual is an emission-order/basic-block-content question, which is exactly what tools/sched_solver (order- and clock-exact model of both scheduler passes) and tools/ra_solver/inverse_compose.py classify are built to type.",
-   "next_probe": "Run `python3 tools/ra_solver/inverse_compose.py classify` and the sched_solver on the arm-A (insn 211 / jump 223) and arm-B (insn 406 / jump 408) blocks, asking: can any C-reachable block content leave a non-set13 insn adjacent to either 0xD arm's jump at jump2 time within a 2-word footprint? Expected FORECLOSED; a REACHABLE verdict would name the C lever and reopen the wall."
+   "hypothesis": "The residual is now TYPED PRE-RA, so the only axis that remains open in principle is the RTL multiset the front end and early optimisers build - i.e. C-level expression shape. Every allocation and scheduling axis is foreclosed by tool verdict, not by argument.",
+   "mechanism": "inverse_compose.py classify compares the honest and target instruction multisets; a difference means RA and scheduler models permute a fixed set that already excludes the answer. tools/ra_solver and tools/sched_solver can never express this residual on this function.",
+   "next_probe": "Do NOT run an ra_solver or sched_solver backend on func_80038C70 - the classifier explicitly routes to 'no backend' and a backend search here reproduces the func_80072CD4 fiction defect. Re-run only `inverse_compose.py classify` (with the two-run split) after any toolchain change, to confirm the verdict is still PRE-RA."
   },
   {
-   "hypothesis": "The closure is chassis-relative and must be re-established (not re-argued) after any toolchain change, since it is a statement about jump2-time basic-block formation rather than about source spelling.",
-   "mechanism": "A cc1 change that alters block formation, scheduling, or reorg's slot filling could give one 0xD arm a second real insn at zero byte cost, which is precisely the honest breaker demonstrated at the -1 pair.",
-   "next_probe": "Three steps, one turn: (i) sandbox the honest `sel = 0xD` form and record build_insns; (ii) `pwsh tools/grinder/dump.ps1 func_80038C70` and census arm A / arm B block contents in the .jump2 dump; (iii) objdump the sandbox object to confirm the merge shape. s46 ran all three and recorded the baselines to diff against."
+   "hypothesis": "Any future candidate must destroy exactly one object: the CODE_LABEL heading arm B's jump2-time block, which is the sole supplier of find_cross_jump's `--minimum` bonus.",
+   "mechanism": "Directional asymmetry of find_cross_jump's walkers (i1 prev_nonnote_insn takes the label bonus, jump.c:2452-2458; i2's PREV_INSN loop skips labels and dies on arm B's BARRIER, jump.c:2426-2430). With that label present, 1 matched insn always suffices against minimum 2; without it, the merge scores 1 against 2 and fails.",
+   "next_probe": "Before building ANY new spelling, census the candidate's arm-B jump2 block: if it is still headed by a CODE_LABEL and still holds exactly one real insn, the merge is guaranteed and no build is needed. The label is the jump-table entry for cases 9 and 11 ('jlabel .L80038EC8', asm/funcs/func_80038C70.s:170), so removing it requires the shipped jump table to stop pointing there - which the target bytes forbid."
   },
   {
-   "hypothesis": "The spelling axis is spent and must not be re-funded: what s45 got wrong was the REASON (family uniqueness), not the VERDICT, and the verdict now rests on block capacity, which no source spelling can change.",
-   "mechanism": "r1-r13, three permuter campaigns (168,754 iterations, both sides of the merge boundary) and two white-box BB2_XJUMP_DEBUG traces all land inside the corrected partition; every honest chassis presents both 0xD arms as one-real-insn blocks.",
-   "next_probe": "If a future session is tempted by a new spelling, first census the candidate's arm-A/arm-B jump2 block contents \u2014 a spelling that does not raise either block above one real insn cannot break the merge and needs no build."
+   "hypothesis": "The closure remains chassis-relative and must be re-established, not re-argued, after any toolchain change.",
+   "mechanism": "It is a statement about jump2-time basic-block formation, so a cc1 change altering block formation, scheduling, or reorg's slot filling could give one 0xD arm a second real insn at zero byte cost - the honest breaker the -1 pair already ships.",
+   "next_probe": "Three steps, one turn: (i) apply the honest `sel = 0xD` edit and `sandbox func_80038C70 --disable all` (expect score 2, 402/400); (ii) `pwsh tools/grinder/dump.ps1 func_80038C70` and census arm A / arm B block contents in the .jump2 dump (expect one real insn each); (iii) run the two-run classify split (expect PRE-RA). s46 and s47 recorded all three baselines to diff against."
   }
  ],
  "judge_constraints": [

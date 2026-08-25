@@ -760,3 +760,90 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s46] OWNER DIRECTIVE 2026-08-24 (auto-reject class) executed for the first time in this ledger: the 2026-07-19 permanent-exception clause is VOIDED, F5 stays refused, the function keeps grinding under standing policy, and no standards-lowering packet may be filed. No escalation filed this session; the s45 packet at docs/grind/decisions.md:10376 is treated as resolved by that ruling.
 
 - [s46] Scope: src/code6cac_c_mid.c restored byte-for-byte after the probe (backup tmp/grind/func_80038C70/s46/orig_backup.c); regfix.txt untouched; no engine mutation commands run; git status shows only the three ledger files plus the metrics append. candidate.c refreshed from the restored HEAD form (byte-correct floor-1 chassis).
+
+## s47 (solver modality — owner directive "Solver modality untried" EXECUTED)
+
+- [s47] CHASSIS RE-MEASURED THIS SESSION on the current tree: committed rule-era form
+  `sandbox func_80038C70 --disable all` = score 1, target_insns 402, build_insns 402,
+  rules_dropped 1, cheat_asm_stripped 7. Honest form (src line 946 `case 9: case 11:
+  sel = 0xC;` -> `0xD`) = score 2, target 402 / build 400. Identical to the s45/s46
+  numbers; nothing in the chassis moved. src/ was restored to the committed form and
+  `git status --porcelain` shows only metrics/events.jsonl at session end.
+
+- [s47] SOLVER AXIS TYPED-CLOSED. `python3 tools/ra_solver/inverse_compose.py classify
+  code6cac_c_mid func_80038C70` returns **FIRST DIVERGENCE: PRE-RA** (honest 394 insns,
+  target 396) with "next tool: no backend — the residual is upstream of every model".
+  The only non-label shape delta is `target only: addiu $#,$#,13` plus one surplus `j`;
+  the rest of the listed deltas are `.LNNN` renumbering artifacts of the deleted block.
+  Because the instruction MULTISETS differ, neither tools/ra_solver (global/local/reload)
+  nor tools/sched_solver can express the residual — both models permute and rename a
+  FIXED multiset. Running either backend anyway is precisely the func_80072CD4 defect the
+  classifier exists to prevent, so no backend search was performed and none should be in
+  future sessions. Artifact: tmp/grind/func_80038C70/s47/classify.txt.
+
+- [s47] METHOD TRAP (applies to every rule-carrying deferred function, not just this one):
+  tools/ra_solver/mkasm_honest.sh builds BOTH `.hon.s` and `.tgt.s` from src/ — hon from
+  the cheat-stripped source with no rules, tgt from the same source with regfix /
+  regfix_stage2 / asmfix applied. If you apply the honest edit to src FIRST and then run
+  it, regfix.txt:2190 stops firing, `.tgt.s` degenerates to the honest stream, and classify
+  reports a FALSE "IDENTICAL". Observed first-hand this session (394 vs 394) before the
+  correct two-run split was used. Correct recipe: honest-edit -> mkasm_honest -> save
+  hon.s aside -> restore committed src -> mkasm_honest (regenerates a real tgt.s) ->
+  copy the saved hon.s back -> classify. Saved honest stream:
+  tmp/grind/func_80038C70/s47/hon_0xD.s.
+
+- [s47] CC1 BINARY DIVERGENCE IN THE SOLVER TOOLING (chassis fact worth carrying):
+  mkasm_honest.sh pins `CC1="tools/gcc-2.7.2/build/cc1"` (md5 3a39fad1c4d1c15ed55601f9fc4522f8,
+  mtime 2026-08-24 17:22) while the actual build and the instrumented dumps use
+  `tools/gcc-2.7.2/cc1` (md5 29b10d86208d55701be682dbad588188, mtime 2026-08-07 03:00) —
+  two DIFFERENT binaries (cf. the instrumented-cc1-location memory). On this function they
+  agree about the merge: the honest stream produced by build/cc1 contains exactly ONE
+  arm-A `addiu $16,$zero,13` under a compiler-created `.L321` label plus case 10's own
+  independent `addiu $16,$zero,13`, i.e. arm B's block is gone, matching the sandbox's
+  400-vs-402. Still: solver artifacts are compiled by a non-canonical cc1 and must be
+  spot-checked against `sandbox --disable all` before any conclusion is credited.
+
+- [s47] INDEPENDENT BYTE-LEVEL CONFIRMATION THAT THE ORIGINAL DID NOT CROSS-JUMP: in the
+  merged honest stream, do_cross_jump's `get_label_before (newlpos)` synthesises a fresh
+  label immediately above arm A's pair — the honest .s reads
+  `beq $17,$2,.L221 / addiu $16,$zero,15 / .L321: / j .L221 / addiu $16,$zero,13`.
+  The shipped executable has NO label at 0x80038DA8 (asm/funcs/func_80038C70.s:84-87:
+  the `j .L80038EDC` at 0x80038DA8 follows the 0xF delay slot directly, with the next
+  `jlabel` only at .L80038EC8). So the absence of a redirect label in target is a second,
+  independent witness that the merge never fired in the original build.
+
+- [s47] THRESHOLD/CHAIN LEVERS ENUMERATED DEAD IN GCC SOURCE: the cross-jump acceptance
+  minima are integer literals at their call sites — jump.c:2004 `find_cross_jump (insn,
+  JUMP_LABEL (insn), 1, ...)` and jump.c:2020 `find_cross_jump (insn, target, 2, ...)`.
+  `max_uid` is recomputed per jump_optimize call as (max INSN_UID)+1 (jump.c:174-201) and
+  `max_jump_chain = max_uid * 14 / 10` (jump.c:226), so the registration guards at
+  jump.c:2012 and 1982 are unconditionally satisfied at any function size. No body-size,
+  UID, or insn-count lever exists; the merge cannot be priced out.
+
+- [s47] THE WALL'S LOAD-BEARING FACT, NAMED (sharper than s46's "one real insn each"):
+  the merge is DIRECTIONAL. find_cross_jump's two walkers are asymmetric — i1 uses
+  `prev_nonnote_insn` (skips NOTEs, and BREAKS on a CODE_LABEL with the `--minimum` bonus,
+  jump.c:2452-2458), while i2 uses a PREV_INSN loop that skips NOTE and CODE_LABEL but not
+  BARRIER (jump.c:2426-2430). With arm A as e1 the walk dies at step 2 comparing
+  jump_insn 207 against arm B's barrier 401 — 1 match against minimum 2, NO merge. With
+  arm B as e1 step 2 lands on code_label 403, takes the bonus, and 1 match >= 1 merges.
+  The entire wall therefore rests on ONE fact: arm B's block is headed by a CODE_LABEL,
+  because it is the jump-table entry for cases 9 and 11 (`jlabel .L80038EC8`,
+  asm/funcs/func_80038C70.s:170). That label is mandatory in any byte-matching compile, so
+  this is not a lever — but it is the exact object a future candidate would have to
+  destroy, and any spelling that does not remove arm B's label or add a second real insn
+  to a 2-word arm block cannot break the merge and does not need a build.
+
+- [s47] Chassis re-measured this session: committed rule-era form `sandbox func_80038C70 --disable all` = score 1, target_insns 402, build_insns 402, rules_dropped 1, cheat_asm_stripped 7. Honest form (src:946 0xC -> 0xD) = score 2, target 402 / build 400. Identical to s45/s46; nothing moved. src restored; `git status --porcelain` shows only metrics/events.jsonl at session end.
+
+- [s47] TYPED SOLVER VERDICT: inverse_compose.py classify -> FIRST DIVERGENCE: PRE-RA, honest 394 insns vs target 396, 'next tool: no backend - the residual is upstream of every model'. Both tools/ra_solver (global/local/reload) and tools/sched_solver are foreclosed by construction for this function.
+
+- [s47] Method trap banked for every rule-carrying deferred function: mkasm_honest.sh builds hon.s AND tgt.s from src/, so applying the honest edit before running it silences the regfix rule and yields a FALSE 'IDENTICAL'. Two-run split recipe recorded in the ledger.
+
+- [s47] Chassis fact: mkasm_honest.sh pins CC1=tools/gcc-2.7.2/build/cc1 (md5 3a39fad1c4d1c15ed55601f9fc4522f8, 2026-08-24 17:22) while the build and the instrumented dumps use tools/gcc-2.7.2/cc1 (md5 29b10d86208d55701be682dbad588188, 2026-08-07 03:00) - DIFFERENT binaries. They agree on this function's merge outcome, but solver artifacts must be spot-checked against `sandbox --disable all` before being credited.
+
+- [s47] Independent byte-level witness that the ORIGINAL compile did not cross-jump: do_cross_jump's get_label_before synthesises a fresh label above arm A in the merged honest stream ('.L321: / j .L221 / addiu $16,$zero,13'), whereas the shipped executable has NO label at 0x80038DA8 (asm/funcs/func_80038C70.s:84-87; the next jlabel is .L80038EC8).
+
+- [s47] GCC-source enumeration: cross-jump minima are literals (jump.c:2004 minimum=1 own-label call, jump.c:2020 minimum=2 chain-partner call); max_uid is recomputed per jump_optimize call (jump.c:174-201) and max_jump_chain = max_uid*14/10 (jump.c:226), so the chain-registration guards (jump.c:1982, 2012) hold at any body size. No threshold or chain lever exists.
+
+- [s47] The merge is directional: it fires only with arm B (the jtbl-label-headed block) as e1, because i1 uses prev_nonnote_insn and takes the CODE_LABEL `--minimum` bonus while i2's loop skips CODE_LABELs and dies on arm B's BARRIER. Arm B's label is the jump-table entry for cases 9/11 and is mandatory in any byte-matching compile.
