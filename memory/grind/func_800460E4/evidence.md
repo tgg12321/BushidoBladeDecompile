@@ -1304,3 +1304,150 @@ whole effect is on the jump2 cross-jump merge (245/248 insn counts) — consiste
 - [s4] Order space re-confirmed inert at this chassis (24-point cross): source load order and detour-completion order are canonicalised by cse; only s6-vs-s4 consumption order and store position move anything, and only via the jump2 cross-jump merge (245 vs 248 insns) - consistent with [s2] H17/H18, and nothing in that space goes below 9.
 
 - [s4] New reusable tooling: tmp/grind/func_800460E4/s8/pr.sh plus runlist.sh score a full src variant through the exact pipeline in seconds and agree with `sandbox --disable all`. Two traps recorded: regenerate s4/perm_a/target_nr.dis (the inherited copy was empty, which shows up as a 245-diff score), and never write the variant-name list with Windows Python (CRLF turns every entry into a missing file).
+
+
+
+## [s9] 2026-08-25 (SOLVER modality) — the residual reduced to ONE RTL flag, mechanically
+
+[s9.0] Chassis. HEAD src carries the rule-era body. The [s7]/[s8] candidate body
+re-applied to src/text1a_c2.c measures **9** through the s8/pr.sh harness
+(245 insns vs target 248) — unchanged, no chassis drift since [s8].
+
+[s9.1] TOOL TRAP, banked for every future solver session on a RULE-CARRYING
+function: `tools/ra_solver/mkasm_honest.sh` builds `<stem>.tgt.s` by applying
+regfix/regfix_stage2/asmfix to WHATEVER IS IN src/ RIGHT NOW. For a deferred
+function whose 10 regfix rules were calibrated against HEAD's rule-era body,
+running it with the CANDIDATE body in src produces a fictional "target": the
+rules re-apply on top of a body that already has the registers right, and
+`inverse_compose.py classify` then reports a confident RA verdict describing a
+clean $17/$18/$19 three-cycle rotation that does not exist. The correct
+procedure (used for everything below) is two runs: build `.tgt.s` with HEAD's
+src (that stream IS the original — the tree is SHA1-identical), save it, then
+rebuild `.hon.s` with the candidate body and restore the saved `.tgt.s` before
+classifying. Artifacts: s5b/tgt_true.s, s5b/hon_cand.s, s5b/head_src.c.
+
+[s9.2] CLASSIFY at the honest chassis: **PRE-RA**, honest 237 insns vs target
+240. The multiset difference is NOT upstream RTL shape — it is jump2, which the
+classifier's three-stage funnel does not model. Our case-3 arm (.L19) ends
+`j .L31` into case 34's tail; target's does not merge and emits its own
+`srl $4,$4,2 / sll $4,$4,2 / addu $20,$16,$4` inline before `j .L18`. Those 3
+instructions are the entire 245-vs-248 gap. Full diff: s5b/hon_cand.s vs
+s5b/tgt_true.s.
+COROLLARY: the cross-jump merge is a CONSEQUENCE of the register seats, not an
+independent lever. It merges only because our case-3 tail happens to hold the
+-4 header word in the same register ($v0) as case 34's tail; in target that word
+is in $a0, the two tails are textually different, and find_cross_jump cannot
+merge them. [s8.7]'s "order space only moves the jump2 merge" is explained: the
+merge is downstream of the seats, and the seats are downstream of the schedule.
+
+[s9.3] LOCAL-ALLOC MODEL — the decisive result. `local_extract.py text1a_c2` at
+the candidate chassis dumps block 19's four quantities, and the validated
+`qty_compare` arithmetic (floor_log2(refs)*refs*size/(death-birth)*10000, tie ->
+lower qty) plus ascending `find_free_reg` reproduces OUR seats exactly:
+    address (refs5, span 14) pri 7142  ranks LAST  -> $a0
+    -4 word (refs6, span 8)  pri 15000 ranks FIRST -> $v0
+Hand-replaying the SAME model on TARGET's block-19 instruction order reproduces
+TARGET's seats exactly:
+    address (refs5, span 6)  pri 16666 ranks FIRST -> $v0
+    -8 word -> $v1; li 1 -> $v0 (address already dead); -4 word (span 18) -> $a0
+Full table: tmp/grind/func_800460E4/s5b/block19_localalloc.md.
+**Therefore [s8]'s requirement (B) is not a requirement at all.** "The address
+pseudo must sit in $v0" and "each ALIGN4 chain must refine in place" are not
+independent goals needing a multiply-assigned carrier: they are the mechanical
+output of local_alloc once the two loads are adjacent, because adjacency
+shortens the address quantity's live span from 7 insns to 3 and lifts its
+qty_compare priority from 7142 to 16666, above every other quantity in the
+block. The ENTIRE carrier line of attack — the axis that produced the 07:19
+ruling and the 07:54 layer-1 FAIL — was aimed at a goal that does not exist.
+
+[s9.4] KILL — the whole atom-set / rebase-detour axis ([s8] frontier item 1) is
+FORECLOSED by construction, not by search. Re-ran `local_extract.py` with the
+vC xor-rebase body (rejected/s8-xor-rebase-detour-248-10-seats-right-address-v1.c)
+in src: block 19's address quantity STILL has refs5 and span 14 (pri 7142,
+allocated last, got $v1) even though the loads are adjacent there. A detour that
+buys adjacency by leaving extra atoms alive across the loads necessarily keeps
+the address quantity live across them too, so it can never win the qty_compare
+race it needs to win. Any construct in that family is self-defeating — which is
+why [s8.4] measured the address in $v1 and read it as a second, independent
+requirement. No further sweeping of "honest spellings whose extra atoms survive
+combine into sched1" can close this function.
+
+[s9.5] The residual is now ONE BIT, named at source level.
+- `tools/gcc-2.7.2/expr.c:4567-4577` (INDIRECT_REF): `MEM_IN_STRUCT_P (temp) = 1`
+  iff the address subtree is a `PLUS_EXPR` (or a SAVE_EXPR of one, or the type is
+  aggregate). It has nothing to do with structs; in GCC 2.7.2 it is a purely
+  syntactic property of the tree the front end built ("If address was computed by
+  addition, mark this as an element of an aggregate").
+- `tools/gcc-2.7.2/sched.c:831-839` (`true_dependence`): the conflict is
+  suppressed when one mem is `MEM_IN_STRUCT_P && rtx_addr_varies_p` and the other
+  is neither. Our header-word loads (address = PLUS_EXPR -> /s; register address
+  -> varies) against the `sh` to `D_8009947A` (no /s, constant address) hit that
+  clause exactly, so sched1 sees NO edge and hoists `li 1 / sh` between the two
+  loads. Target's original had the edge, so it could not.
+So: load adjacency <=> the two loads' address subtrees are not PLUS_EXPRs.
+
+[s9.6] MEASURED — the one bit closes the whole function at this chassis. With
+case 3 spelled `s32 *ptr = (s32 *)((s3 << 2) + (s32)s0); s32 *pm2 = ptr - 2;
+s32 *pm1 = ptr - 1; s32 raw_m2 = *pm2; s32 raw_m1 = *pm1;` the object is
+**248 insns, 0 diffs** (s4b2/s5pm2.dis). This is the banned #4 construct and is
+NOT proposed — it is banked as a research measurement only, at
+rejected/s9-research-only-banned-pm-ptr-form-measures-0-at-s7-chassis.c. Its value
+is the proof that nothing else in this function is wrong: the honest floor of 9
+and the single MEM_IN_STRUCT_P bit are the same fact.
+A near-miss control worth keeping: spelling the base as `&s0[s3] - 2` instead of
+`(s32 *)((s3 << 2) + (s32)s0)` leaves exactly 1 diff — `addu v0,s0,v0` where
+target has `addu v0,v0,s0` — because `pointer_int_sum` builds
+`PLUS_EXPR(base, scaled_index)` while the integer-cast form builds
+`PLUS_EXPR(scaled_index, base)`, and the MIPS addu inherits that operand order.
+(rejected/s9-research-only-banned-pm-form-1-diff-addu-operand-order.c.)
+
+[s9.7] EXHAUSTION ENUMERATION — the mechanical part, and what makes the residual
+decidable rather than merely hard. By expr.c:4567-4577 the ONLY C spellings that
+produce a non-/s load are those whose INDIRECT_REF operand is not a PLUS_EXPR:
+ (a) a plain pointer VARIABLE (`*pm2`) — banned_constructs #4/#5;
+ (b) an integer- or pointer-cast byte-offset expression (`*(s32 *)((s32)ptr - 8)`,
+     `*(s32 *)((u8 *)s0 + k)`) — closed by the 06:39 ruling and the standing judge
+     constraint "do not respell the header-word reads as inlined integer-cast
+     byte-offset derefs in any form";
+ (c) an aggregate / COMPONENT_REF read, which sets /s unconditionally
+     (expr.c:4888) and is separately closed by the 04:46 aggregate-merge ruling.
+(a) ∪ (b) ∪ (c) is the whole space and all three are closed for this function.
+There is no fourth spelling.
+
+[s9.8] SCHED-SOLVER status at this chassis: `sched_solver/extract.py` reports
+parity=True, and `inverse_sched.py --block 19 --goal-from-target` refuses to
+search: **GOAL INVALID — 1 dependence violation (304,308)**, because the hon->tgt
+alignment cannot pair a 14-insn block against a target arm that jump2 never
+merged (the 3-insn count gap of [s9.2]). The scheduler backend therefore cannot
+be driven from an automatic goal on this block at any chassis where the merge
+happens. This does not weaken [s4]'s UNREACHABLE verdict — it explains it: at a
+FIXED atom set there is no luid arrangement that produces target's order, because
+the missing thing is a dependence EDGE, and [s9.5] names the exact source
+property that creates it.
+
+Artifacts: tmp/grind/func_800460E4/s5b/ (head_src.c, cand.c, tgt_true.s,
+hon_cand.s, research_pm.c, research_pm2.c, block19_localalloc.md,
+evidence_s9.md), tmp/grind/func_800460E4/s4b2/s5cand.dis, s5pm.dis, s5pm2.dis,
+tmp/ra_solver_work/text1a_c2.local.json, tmp/sched_solver_work/text1a_c2.sched.json.
+
+- [s5] [s9] Chassis unchanged: the [s7]/[s8] candidate body re-applied to src measures 245 insns / 9 diffs through tmp/grind/func_800460E4/s8/pr.sh, at session start and again at session end. src/text1a_c2.c was restored to HEAD before finishing.
+
+- [s5] [s9] TOOL TRAP for rule-carrying (asm-until-matched deferred) functions: tools/ra_solver/mkasm_honest.sh builds <stem>.tgt.s by running regfix/regfix_stage2/asmfix over whatever is in src/ right now. With a candidate body in src the rules re-apply on top of already-correct registers and inverse_compose.py classify returns confident fiction (a clean $17/$18/$19 rotation). Correct procedure: build .tgt.s from HEAD's src, save it, rebuild .hon.s from the candidate body, restore the saved .tgt.s, then classify. Artifacts s5b/tgt_true.s + s5b/hon_cand.s.
+
+- [s5] [s9] Honest classify verdict is PRE-RA (237 vs 240 insns), and the 3-insn multiset gap is entirely jump2: our case-3 arm ends `j .L31` into case 34's tail, while target emits its own `srl $4,$4,2 / sll $4,$4,2 / addu $20,$16,$4` and jumps to .L18. The merge happens only because our case-3 tail holds the -4 header word in the same register ($v0) as case 34's tail; in target it is in $a0 and the tails are textually different, so find_cross_jump cannot merge. The cross-jump is a CONSEQUENCE of the seats, not a lever.
+
+- [s5] [s9] local_alloc's qty_compare + find_free_reg replay reproduces BOTH our block-19 seats and target's block-19 seats, and target's fall out of target's instruction ORDER alone. Ours: address refs5 span14 pri 7142 (last) -> $a0; -8 word refs6 span12 pri 10000 -> $v1; li 1 refs2 span2 pri 10000 -> $v0; -4 word refs6 span8 pri 15000 (first) -> $v0. Target: address refs5 span6 pri 16666 (first) -> $v0; -8 word -> $v1; li 1 -> $v0; -4 word span18 pri 6666 (last) -> $a0.
+
+- [s5] [s9] Consequence: [s8]'s requirement (B) (address to $v0 + in-place ALIGN4 refinement) is NOT an independent requirement and needs NO multiply-assigned carrier. The 07:19 ruling and the 07:54 layer-1 FAIL were both spent on a goal that does not exist; every future session should stop looking for a carrier.
+
+- [s5] [s9] The rebase/atom-set axis is foreclosed by construction: on the vC xor-rebase chassis (loads adjacent) block 19's address quantity is still refs5 / span 14 / pri 7142 / seated $v1, because the detour's surviving atoms keep the address live across the loads. Adjacency bought with extra live atoms can never deliver the seats.
+
+- [s5] [s9] Root mechanism named at source level: expr.c:4567-4577 sets MEM_IN_STRUCT_P on an INDIRECT_REF iff the address subtree is a PLUS_EXPR (a syntactic GCC 2.7.2 quirk, not a struct property); sched.c:831-839 true_dependence then proves a varying /s load disjoint from the non-varying non-/s store to D_8009947A, so sched1 hoists li 1 / sh between the two loads and destroys adjacency.
+
+- [s5] [s9] The one bit closes the whole function: the pointer-variable spelling `s32 *ptr = (s32 *)((s3 << 2) + (s32)s0); s32 *pm2 = ptr - 2; s32 *pm1 = ptr - 1; s32 raw_m2 = *pm2; s32 raw_m1 = *pm1;` measures 248 insns / 0 diffs at this chassis. It is banned_constructs #4 and is NOT proposed - banked purely as the proof that nothing else in the function is wrong.
+
+- [s5] [s9] Control worth keeping: `&s0[s3] - 2` instead of the integer-cast base leaves exactly 1 diff (`addu v0,s0,v0` vs target's `addu v0,v0,s0`), because pointer_int_sum builds PLUS_EXPR(base, scaled_index) while the integer-cast form builds PLUS_EXPR(scaled_index, base) and the MIPS addu inherits the operand order.
+
+- [s5] [s9] Exhaustion enumeration: by expr.c:4567-4577 the only non-/s spellings are (a) plain pointer variable, (b) integer/pointer-cast byte-offset deref, (c) aggregate COMPONENT_REF (which sets /s unconditionally at expr.c:4888). (a) is banned_constructs #4/#5, (b) is the 06:39 ruling + the standing constraint, (c) is the 04:46 aggregate-merge ruling. There is no fourth spelling.
+
+- [s5] [s9] sched_solver at this chassis: extract.py parity=True, but inverse_sched.py --block 19 --goal-from-target refuses with GOAL INVALID (1 dependence violation, 304<-308) because the hon->tgt alignment cannot pair a 14-insn block against a target arm jump2 never merged. The scheduler backend cannot be driven from an automatic goal on this block; this explains rather than weakens [s4]'s UNREACHABLE verdict - the missing thing is a dependence EDGE, and [s9.5] names the source property that creates it.

@@ -1,3 +1,23 @@
+/* [s9] SOLVER-SESSION UPDATE 2026-08-25 — read this first.
+ * The body below is UNCHANGED (still the [s7] non-banned form, sandbox 9,
+ * 245/248, re-measured this session). What changed is the diagnosis:
+ *  - The residual is NOT two independent requirements. local_alloc's qty_compare
+ *    replay (s5b/block19_localalloc.md) reproduces TARGET's block-19 seats from
+ *    TARGET's instruction ORDER alone: load adjacency shortens the address
+ *    quantity's span 7 insns -> 3, priority 7142 -> 16666, so it ranks first and
+ *    takes $v0, and $v1/$a0 follow. No multiply-assigned carrier is needed for
+ *    anything. The whole carrier axis was aimed at a non-existent goal.
+ *  - The rebase/atom-set axis is foreclosed by construction: extra atoms alive
+ *    across the loads keep the ADDRESS alive too, so its span never shrinks
+ *    (measured on the vC chassis: still 7142, still $v1).
+ *  - The one remaining bit is MEM_IN_STRUCT_P on the two case-3 header loads
+ *    (expr.c:4567-4577 sets it iff the address subtree is a PLUS_EXPR;
+ *    sched.c:831-839 then lets sched1 hoist li/sh between them). Flip it and the
+ *    function measures 248/0 — every /s=0 spelling is already banned for this
+ *    function (evidence.md [s9.7]).
+ * Do NOT spend another session on carriers, borrows, detours, statement order, or
+ * scheduler perturbation. See evidence.md [s9] and hypotheses.md H26-H30.
+ */
 /* candidate for func_800460E4 - session s8 2026-08-25 (SYNTHESIS modality)
  *
  * STATE: `sandbox func_800460E4 --disable all` = **9** (245/248, rules_dropped=10),

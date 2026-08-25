@@ -1,8 +1,8 @@
 {
  "func": "func_800460E4",
  "file": "text1a_c2",
- "session_count": 4,
- "current_modality": "synthesis",
+ "session_count": 5,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 9,
    "modality": "synthesis",
    "headline": "Synthesis: residual split into two independent halves - load adjacency plus both value seats are now reachable with NO multi-set carrier (sched1 atom-set lever, dump-proven), leaving only the address "
+  },
+  {
+   "session": 5,
+   "floor": 9,
+   "modality": "solver",
+   "headline": "Solver: local_alloc replay proves target's case-3 seats follow from target's ORDER alone - the multi-carrier goal never existed; the atom-set/detour axis is foreclosed by construction; the whole resid"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Requirement (B) alone - address pseudo to $v0 plus in-place ALIGN4 refinement - is decidable by the RA solver at the new adjacency-achieved chassis, where everything else in the block is already byte-exact.",
-   "mechanism": "local-alloc/global-alloc seating of three pseudos in a block whose order and value seats now match target; a much smaller and better-posed question than any solver run this function has had",
-   "next_probe": "solver modality: run tools/ra_solver inverse_compose.py classify on the address pseudo -> $v0 and on each ALIGN4 result pseudo -> its own input register, at the 248-insn adjacency chassis (rejected/s8-xor-rebase-detour-248-10-seats-right-address-v1.c as the MEASUREMENT chassis, never as a candidate), for a typed REACHABLE/FORECLOSED verdict with ranked C-lever vectors"
+   "hypothesis": "Every sanctioned axis at the instruction-selection, allocation and scheduling levels is now measured or proven dead, and the residual is a single FIDELITY question about the original source at one site: was the original case-3 read of the two stage-header words written through a pointer lvalue (giving a non-PLUS_EXPR INDIRECT_REF and hence the dependence edge target's schedule requires)?",
+   "mechanism": "expr.c:4567-4577 / sched.c:831-839; the answer space is mechanically enumerated in evidence.md [s9.7] and every member is already banned for this function, so no further spelling search can terminate differently.",
+   "next_probe": "escalation modality only: file a DECISION PACKET posing the fidelity question (is the pointer-variable spelling the honest reconstruction of the original at this site, or does the standing alias-defeat ban stand?), citing evidence.md [s9.3]-[s9.7] and the 248/0 measurement. This is a fidelity/provenance question, not a family-sanction or standard-lowering one. Do NOT re-file any family question - aggregate merge (04:46), fresh carrier (07:19) and hoisted pre-existing carrier (07:54) are all auto-reject class."
   },
   {
-   "hypothesis": "There is an HONEST C spelling (one that passes T1/T2 on its own semantics) whose extra block-19 atoms survive combine into sched1 and are removed afterwards by reload coalescing or jump2, giving requirement (A) byte-neutrally.",
-   "mechanism": "confirmed lever: atoms present at sched1 shift the ready cycles and flip schedule_select tie-break without touching the dependence graph or reg_n_sets",
-   "next_probe": "atom-set modality: sweep spellings whose extra atoms are genuinely motivated - a real second consumer of one header word that the cross-jump merge later eats, and copy-shaped sub-expression spellings that reload coalesces - checking insn count 248 and the block-19 T-6 ready list in the .sched dump for each"
+   "hypothesis": "If the fidelity question is answered against the pointer form, the function's honest floor of 9 is terminal in pure C under the current bans, and the remaining disposition question is routing (canonical-asm grant path vs continued INCLUDE_ASM deferral), not grinding.",
+   "mechanism": "the 9-insn residual is entirely case-3-local and consists of the jump2 cross-jump merge plus the three seats it implies; no un-banned C spelling can change the /s bit that drives it.",
+   "next_probe": "escalation modality: run tools/scan_hand_coded.py --single func_800460E4 to see whether the STRONG (S1/S2/S6) canonical-asm gate passes; report the result in the packet either way (a negative census is a FAILED gate, and the item then stays active under standing policy)."
   },
   {
-   "hypothesis": "If the solver returns FORECLOSED for the address/in-place seats AND no honest adjacency spelling exists, the instruction-selection level is exhausted and the residual is a fidelity/routing question only.",
-   "mechanism": "escalation-not-parked decision-packet path; every family question here is already closed (aggregate merge 04:46, fresh multi-set carrier 07:19, hoisted pre-existing carrier 07:54) and re-asking is auto-reject class",
-   "next_probe": "driver-assigned escalation modality only; the packet would have to pose a fidelity/routing question, never a family or standard-lowering one"
+   "hypothesis": "Nothing in solver, permuter, structural, synthesis or atom-set space remains untried for this function.",
+   "mechanism": "s1 recon, s2/s3 structural, s4 sched_solver UNREACHABLE, s5 permuter (perm_e 16658 iterations, no zero), s8 synthesis/atom-set, s9 solver - each closed its own axis with measurements banked.",
+   "next_probe": "do not re-open any of them; if a future session is dispatched in a non-escalation modality, the correct action is to re-read evidence.md [s9] first and report that the modality is already exhausted rather than re-deriving a carrier or a detour."
   }
  ],
  "judge_constraints": [

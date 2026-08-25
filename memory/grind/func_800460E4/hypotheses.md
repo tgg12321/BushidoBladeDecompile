@@ -655,3 +655,86 @@ Frontier (in order, for the next ladder pass):
 - probe: the +4/-4 variant measured through the same harness and its case-3 block diffed against the baseline
 - result: 9/248 with a case-3 schedule identical to the baseline, while the -s0/+s0 and ^s0 rebases measure 10/246 and 10/248 with adjacency. Corollary: combine runs before sched1 (toplev.c:3004 vs :3033), so any construct whose whole effect combine folds cannot influence this tie; only constructs whose extra atoms survive combine and are removed later (reload coalescing, jump2) can be both effective and byte-neutral.
 - verdict: CONFIRMED
+
+
+
+## [s9] 2026-08-25 — SOLVER modality
+
+H26 (KILLED, and it kills the axis it came from). "Requirement (B) — the address
+pseudo to $v0 plus in-place ALIGN4 refinement — is an INDEPENDENT requirement
+decidable by the RA solver." FALSE. Probe: `local_extract.py text1a_c2` at the
+[s7] candidate chassis + hand replay of the validated `qty_compare` /
+`find_free_reg` arithmetic on TARGET's block-19 instruction order
+(tmp/grind/func_800460E4/s5b/block19_localalloc.md). The model reproduces OUR
+seats and TARGET's seats exactly, and target's seats fall out of target's ORDER
+alone: adjacency shrinks the address quantity's live span from 7 insns to 3,
+lifting its priority 7142 -> 16666 so it ranks first and takes $v0; $v1 and $a0
+then follow mechanically. There is no separate seat question and no need for a
+multiply-assigned carrier — the goal the 07:19 ruling and the 07:54 layer-1 FAIL
+were both chasing does not exist.
+
+H27 (KILLED). "There is an honest C spelling whose extra block-19 atoms survive
+combine into sched1, buy adjacency, and are removed afterwards byte-neutrally."
+FORECLOSED BY CONSTRUCTION. Probe: `local_extract.py` re-run with the vC
+xor-rebase body in src. Block 19's address quantity still carries refs5 / span 14
+(pri 7142, allocated last, seated $v1) despite the loads being adjacent. Extra
+atoms that stay live across the two loads necessarily keep the ADDRESS live
+across them too, so no member of that family can win the qty_compare race it
+must win. [s8] frontier item 1 is closed; do not sweep it again.
+
+H28 (CONFIRMED). "The entire remaining residual is the MEM_IN_STRUCT_P bit on the
+two case-3 header-word loads." Mechanism: `expr.c:4567-4577` sets /s on an
+INDIRECT_REF iff its address subtree is a PLUS_EXPR; `sched.c:831-839`
+true_dependence then proves a varying /s load disjoint from the non-varying,
+non-/s store to `D_8009947A`, so sched1 is free to hoist `li 1 / sh` between the
+loads. Probe: the pointer-variable spelling (banned #4, research measurement
+only) measures 248 insns / 0 diffs at this chassis — nothing else in the function
+is wrong.
+
+H29 (CONFIRMED, enumeration). "The set of C spellings that yield a non-/s load is
+(a) plain pointer variable, (b) integer/pointer-cast byte-offset deref,
+(c) aggregate COMPONENT_REF — and all three are already banned for this
+function." (a) = banned #4/#5; (b) = the 06:39 ruling + the standing "no inlined
+integer-cast byte-offset derefs in any form" constraint; (c) sets /s
+unconditionally (expr.c:4888) and is closed by the 04:46 aggregate-merge ruling.
+No fourth spelling exists in GCC 2.7.2's INDIRECT_REF expansion.
+
+H30 (open — the only remaining shape of a question). The residual is no longer a
+search problem or a family-sanction problem; it is a FIDELITY question about the
+original source at one site, with a mechanically enumerated answer space. The
+next modality that can move it is `escalation`, whose packet asks a
+fidelity/routing question (what the original C at case 3 was, and whether the
+already-banned pointer-variable spelling is the honest reconstruction of it
+rather than an alias-defeat trick) — NOT a family-sanction or standard-lowering
+question, which is auto-reject class. Nothing in solver / permuter / structural /
+synthesis space remains untried.
+
+## [s5] [s8] requirement (B) - the address pseudo to $v0 plus in-place ALIGN4 refinement - is an INDEPENDENT requirement, decidable by the RA solver, and only ever produced by a multiply-assigned carrier.
+- mechanism: local_alloc (block_alloc) qty_compare priority floor_log2(refs)*refs*size/(death-birth)*10000 with tie to lower qty, then ascending find_free_reg over regs live in [birth,death).
+- probe: tools/ra_solver/local_extract.py text1a_c2 at the [s7] candidate chassis (block 19 = case 3), plus a hand replay of the same validated arithmetic on TARGET's block-19 emission order; table banked at tmp/grind/func_800460E4/s5b/block19_localalloc.md.
+- result: The model reproduces OUR seats exactly (address refs5 span14 pri 7142 ranks LAST -> $a0; -4 word refs6 span8 pri 15000 ranks FIRST -> $v0) and reproduces TARGET's seats exactly from TARGET's order alone (address refs5 span6 pri 16666 ranks FIRST -> $v0; -8 word -> $v1; li 1 -> $v0; -4 word span18 -> $a0). Adjacency of the two loads shortens the address quantity from 7 insns to 3 and is by itself sufficient for every seat in the block.
+- verdict: KILLED
+
+## [s5] There is an honest C spelling whose extra block-19 atoms survive combine into sched1, buy load adjacency, and are removed afterwards byte-neutrally by reload coalescing or jump2 ([s8] frontier item 1).
+- mechanism: atoms present at sched1 shift ready cycles and flip schedule_select's tie-break without touching the dependence graph or reg_n_sets.
+- probe: local_extract.py re-run with the vC xor-rebase body (rejected/s8-xor-rebase-detour-248-10-seats-right-address-v1.c) installed in src/text1a_c2.c; read block 19's quantity rows.
+- result: FORECLOSED BY CONSTRUCTION, not by search. On the adjacency-achieved detour chassis the address quantity STILL carries refs5 / span 14 (pri 7142, allocated last, seated $v1). Any construct whose extra atoms stay live across the two loads necessarily keeps the ADDRESS live across them too, so it can never win the qty_compare race it must win. This is the mechanical explanation of [s8.4]'s '$v1 where target has $v0' and it closes the entire rebase/atom-set family.
+- verdict: KILLED
+
+## [s5] The entire remaining 9-instruction residual is the MEM_IN_STRUCT_P (/s) flag on the two case-3 header-word loads.
+- mechanism: tools/gcc-2.7.2/expr.c:4567-4577 sets MEM_IN_STRUCT_P on an INDIRECT_REF iff its address subtree is a PLUS_EXPR ('If address was computed by addition, mark this as an element of an aggregate') - a purely syntactic GCC 2.7.2 property, nothing to do with structs. tools/gcc-2.7.2/sched.c:831-839 true_dependence then suppresses the conflict between a varying /s load and the non-varying non-/s store to D_8009947A, so sched1 is free to hoist li 1 / sh between the two loads; target's original carried the edge and could not.
+- probe: Read both compiler sources; then measure the pointer-variable spelling (banned construct #4, research measurement only) through tmp/grind/func_800460E4/s8/pr.sh at the current chassis.
+- result: 248 insns, 0 diffs (tmp/grind/func_800460E4/s4b2/s5pm2.dis). Nothing else in this function is wrong: the honest floor of 9 and the single /s bit are the same fact. Banked as research only at rejected/s9-research-only-banned-pm-ptr-form-measures-0-at-s7-chassis.c - NOT proposed.
+- verdict: CONFIRMED
+
+## [s5] The set of C spellings that produce a non-/s load of those two words is exactly {plain pointer variable, integer/pointer-cast byte-offset deref, aggregate COMPONENT_REF}, and all three are already banned for this function.
+- mechanism: expr.c:4567-4577 enumerates the /s condition (PLUS_EXPR address subtree, SAVE_EXPR of one, or aggregate type); expr.c:4888 sets /s unconditionally for COMPONENT_REF.
+- probe: Source enumeration against the function's banned_constructs list and standing judge constraints.
+- result: (a) pointer variable = banned_constructs #4/#5; (b) integer/pointer-cast byte-offset deref = the 06:39 ruling plus the standing constraint 'do not respell the header-word reads as inlined integer-cast byte-offset derefs in any form'; (c) aggregate = the 04:46 aggregate-merge ruling. There is no fourth spelling in GCC 2.7.2's INDIRECT_REF expansion.
+- verdict: CONFIRMED
+
+## [s5] inverse_compose.py classify can be run directly on this function to triage the residual.
+- mechanism: mkasm_honest.sh derives <stem>.tgt.s by applying regfix/regfix_stage2/asmfix to whatever is currently in src/.
+- probe: Ran classify with the candidate body in src (fictional target), then re-ran with .tgt.s rebuilt from HEAD's rule-era src and .hon.s from the candidate.
+- result: The naive run reports a confident RA verdict describing a clean $17/$18/$19 three-cycle rotation that DOES NOT EXIST - the 10 regfix rules re-apply on top of a body whose registers are already right. With the target pinned correctly the verdict is PRE-RA (honest 237 vs target 240), and the 3-insn gap is jump2 cross-jumping, which the classifier's funnel does not model. Procedure banked in evidence.md [s9.1] for every future solver session on a rule-carrying function.
+- verdict: CONFIRMED
