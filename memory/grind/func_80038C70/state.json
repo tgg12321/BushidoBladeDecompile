@@ -1,8 +1,8 @@
 {
  "func": "motion_SetMotion",
  "file": "code6cac_c_mid",
- "session_count": 47,
- "current_modality": "solver",
+ "session_count": 48,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -291,23 +291,29 @@
    "floor": 1,
    "modality": "solver",
    "headline": "Solver axis executed and TYPED-CLOSED: inverse_compose classify returns PRE-RA (honest 394 vs target 396) - 'no backend, the residual is upstream of every model'; ra_solver and sched_solver are mechan"
+  },
+  {
+   "session": 48,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Forensics: instrumented-cc1 BB2_XJUMP_DEBUG capture measures the sole cross-jump event (e1=408 arm B, MATCH i1=406/i2=211, LABEL-BONUS, DO_CROSS_JUMP jump=408) confirming s47's hand-trace, and closes "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is now TYPED PRE-RA, so the only axis that remains open in principle is the RTL multiset the front end and early optimisers build - i.e. C-level expression shape. Every allocation and scheduling axis is foreclosed by tool verdict, not by argument.",
-   "mechanism": "inverse_compose.py classify compares the honest and target instruction multisets; a difference means RA and scheduler models permute a fixed set that already excludes the answer. tools/ra_solver and tools/sched_solver can never express this residual on this function.",
-   "next_probe": "Do NOT run an ra_solver or sched_solver backend on func_80038C70 - the classifier explicitly routes to 'no backend' and a backend search here reproduces the func_80072CD4 fiction defect. Re-run only `inverse_compose.py classify` (with the two-run split) after any toolchain change, to confirm the verdict is still PRE-RA."
+   "hypothesis": "The 13-pair cross-jump wall now has four independently closed quadrants (backward-walk desync via zero-byte insn = F5 refused; via same-bytes-different-pattern = provably empty; via non-simplejump/fall-through terminator = excluded by target bytes; via distinct JUMP_LABEL = collapsed in mark_jump_label). No fifth entry point into find_cross_jump has been identified from the source.",
+   "mechanism": "jump.c's cross-jump machinery has exactly two gates a C spelling could reach: the caller's shared-JUMP_LABEL selection (jump.c:2013-2021) and find_cross_jump's backward walk (jump.c:2403-2613). Both are now enumerated against this function's shipped 2-word arm footprints.",
+   "next_probe": "Do NOT re-attack the 13 pair through jump.c. If a future session wants a fifth entry point it must come from BEFORE jump2 - i.e. an RTL multiset that never presents two matching [set13; j L] blocks at all (consistent with s47's PRE-RA classify verdict). Concretely: look for a C shape in which the if-chain arm's sel value for the 'not 8, not 0xA' case is produced by something other than a fresh (set (reg) (const_int 13)) that survives to jump2 - and price it against the 2-word footprint at 0x80038DA8/DAC before building."
   },
   {
-   "hypothesis": "Any future candidate must destroy exactly one object: the CODE_LABEL heading arm B's jump2-time block, which is the sole supplier of find_cross_jump's `--minimum` bonus.",
-   "mechanism": "Directional asymmetry of find_cross_jump's walkers (i1 prev_nonnote_insn takes the label bonus, jump.c:2452-2458; i2's PREV_INSN loop skips labels and dies on arm B's BARRIER, jump.c:2426-2430). With that label present, 1 matched insn always suffices against minimum 2; without it, the merge scores 1 against 2 and fails.",
-   "next_probe": "Before building ANY new spelling, census the candidate's arm-B jump2 block: if it is still headed by a CODE_LABEL and still holds exactly one real insn, the merge is guaranteed and no build is needed. The label is the jump-table entry for cases 9 and 11 ('jlabel .L80038EC8', asm/funcs/func_80038C70.s:170), so removing it requires the shipped jump table to stop pointing there - which the target bytes forbid."
+   "hypothesis": "Instrumented-cc1 XJDBG tracing is a general, cheap, previously unused forensic capability for every cross-jump-suspect function in the queue, not just this one.",
+   "mechanism": "bb2_xjump_debug_p (jump.c:69) gates a complete trace of jump.c's cross-jump decisions; combined with per-function UID segmentation from the .sched2 dump it turns 'which pair merged and why' from a multi-session hand-trace into one compile.",
+   "next_probe": "Reuse tmp/grind/func_80038C70/s48/xj.py + seg.py verbatim on any function whose honest build is SHORTER than target by an even number of words at a switch/if join - that signature is the cross-jump merge, and the trace names the pair in one run."
   },
   {
-   "hypothesis": "The closure remains chassis-relative and must be re-established, not re-argued, after any toolchain change.",
-   "mechanism": "It is a statement about jump2-time basic-block formation, so a cc1 change altering block formation, scheduling, or reorg's slot filling could give one 0xD arm a second real insn at zero byte cost - the honest breaker the -1 pair already ships.",
-   "next_probe": "Three steps, one turn: (i) apply the honest `sel = 0xD` edit and `sandbox func_80038C70 --disable all` (expect score 2, 402/400); (ii) `pwsh tools/grinder/dump.ps1 func_80038C70` and census arm A / arm B block contents in the .jump2 dump (expect one real insn each); (iii) run the two-run classify split (expect PRE-RA). s46 and s47 recorded all three baselines to diff against."
+   "hypothesis": "The chassis-relative closure must be re-established (not re-argued) after any toolchain change; the cheapest re-establishment is now a single instrumented compile rather than a dump census.",
+   "mechanism": "The whole closure is a statement about jump2-time basic-block formation. A cc1 change altering block formation, scheduling or reorg slot-filling could give one 0xD arm a second real insn at zero byte cost.",
+   "next_probe": "After any toolchain change: apply the honest sel = 0xD edit, run sandbox (expect score 2, 402/400), then run tmp/grind/func_80038C70/s48/xj.py and grep the resulting xjdbg.txt for 'DO_CROSS_JUMP'. If the sole merge event with e1 = arm B's jump and the LABEL-BONUS line is gone, the wall has moved and the function is worth re-grinding."
   }
  ],
  "judge_constraints": [
