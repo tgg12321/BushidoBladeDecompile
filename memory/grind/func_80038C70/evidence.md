@@ -657,3 +657,106 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s45] Decision packet filed this session at docs/grind/decisions.md:10376 with the single decidable question, evidence pointers, and four consequence branches (A exempt / B1 re-sanction F5 / B2 owner-override canonical-asm / B3 fidelity deviation, plus C reframe-as-campaign-success). Grind-lane recommendation: (A) or (C) — the evidence behind the 2026-07-19 refusal is unchanged and was reconfirmed this session.
 
 - [s45] src/ left clean: the honest-0xD probe edit was reverted immediately after measurement (git status shows only docs/grind/decisions.md, the two ledger files, the new rejected form, and metrics/events.jsonl).
+
+## [s46] synthesis modality - merged attack; two ledger corrections; closure re-proved from block capacity
+
+- [s46] CHASSIS RE-MEASURED (this session): `sandbox func_80038C70 --disable all` on committed HEAD =
+  score 1, target 402 / build 402, rules_dropped 1 (regfix.txt:1095 subst "addiu\t$16,$zero,12" ->
+  "...,13" @ 149), cheat_asm_stripped 7. The honest form (`case 9: case 11: sel = 0xD;`) = score 2,
+  target 402 / build 400. Both figures reproduce s45 exactly; src was restored immediately and
+  `git status --porcelain` shows only the metrics append. The brief's "ledger floor 1" is correct;
+  the historical "floor 10" is stale queue-weighted bookkeeping.
+
+- [s46] NEW MEASUREMENT (nobody had disassembled the merged output in 46 sessions):
+  `objdump -d tmp/sandbox/func_80038C70/code6cac_c_mid.o` on the honest-0xD build
+  (artifact tmp/grind/func_80038C70/s46/honest.dis) shows arm B's block DOES NOT survive as
+  `j; nop` - it is DELETED ENTIRELY. The layout runs `e7c: j d90 / e80: nop` (case-10 goto
+  load_sel2) straight into `e84: j e90 / e88: li s0,15` (case 12) and then `e8c: move s0,zero`
+  (default). do_cross_jump deletes arm B's set13 and redirects its jump to a new label ahead of
+  arm A's set13; arm B's block is then a bare `j` whose only predecessors are ADDR_VEC entries, so
+  the jump-to-jump canonicalization retargets the jtbl entries at arm A's block (d64) and deletes
+  the block as unreachable. Net -2 insns = the 400-vs-402 figure. CONSEQUENCE: the "let the merge
+  fire and let reorg steal the target insn back into the delay slot" idea is dead - after the merge
+  there is no jump at arm B for reorg to fill.
+
+- [s46] LEDGER CORRECTION 1 - s45's falsification of the sched2 attribution is ITSELF FALSE.
+  s45 argued "sched2 runs AFTER jump2 and cannot protect anything from a jump2 deletion".
+  tools/gcc-2.7.2/toplev.c: `schedule_insns` (sched2) is at line 3117; the only cross-jump-enabled
+  `jump_optimize (insns, 1, 1, 0)` is at line 3142. sched2 runs BEFORE jump2 - s1 read this
+  correctly in 2026-07-07 and s45 overturned it on a wrong premise.
+
+- [s46] LEDGER CORRECTION 2 - s45's "F5 is the UNIQUE member of the breaker set" is FALSIFIED by a
+  counterexample inside this same function. s45's replacement discriminator (caller gate
+  `if (cross_jump && simplejump_p (insn))`, jump.c:1996) is true but explains the 0xF PAIR, not the
+  -1 pair that the 2026-07-17 17:34 Judge instruction was about. The -1 pair's two producers are
+  BOTH unconditional simplejumps to label 444 - 0x80038E10 (case 8, jtbl block) and 0x80038E9C
+  (case-10 inner path) - so by s45's enumeration they must merge. They do not, in our build or in
+  the shipped binary. jump2 RTL (s45/jump2_fn.txt, re-read this session) shows the mechanism:
+  case-8's block is [code_label 288 "case8_sel"; insn 291 set s0,-1; jump_insn 293 -> 444], while
+  the case-10 block is [insn 358 s1=0; insn 374 set s0,-1; insn 361/363/366/368 (v0=5, sb
+  D_800A3207, v0=90, sb D_800A334C); insn 371 sb D_800A3350=0; jump_insn 376 -> 444]. Iteration 1
+  compares insn 291 (set -1) against insn 371 (sb mem,0): PATTERN MISMATCH, last1 == 0, no merge in
+  either direction. reorg then pulls insn 374 down past four insns into the jump's delay slot,
+  restoring target bytes `sb zero,..; j .L80038EDC; delay addiu $s0,-1`.
+
+- [s46] THE OMITTED QUADRANT, NAMED: there IS an honest, byte-neutral, non-F5 cross-jump breaker,
+  and this function already ships one. It is NOT s45's "zero-byte interposition" (which is exactly
+  {USE, CLOBBER} = F5); it is REAL-INSN INTERPOSITION that costs zero net bytes because the
+  interposed insn is already in the block and the displaced `set` lands in the jump's delay slot.
+  It requires the arm's jump2-time basic block to hold >= 2 real insns (block slack).
+
+- [s46] BLOCK-CENSUS OF BOTH 0xD ARMS at jump2 (s45/jump2_fn.txt, read first-hand this session):
+  arm A = [jump_insn 207 {branch_equality} -> 444; NOTE 209; NOTE 217; insn 211 (set s0 13);
+  jump_insn 223 -> 444; barrier 224] - ONE real insn; `insn 1166` (set s0,15) sits in the
+  PRE-branch block, before insn 206/jump_insn 207. arm B = [jump_insn 400 -> 1207; barrier 401;
+  code_label 403; insn 406 (set s0 12); jump_insn 408 -> 444; barrier 409] - ONE real insn, and
+  nothing can fall into it (a BARRIER precedes its label). Each arm's target footprint is exactly
+  2 words (0x80038DA8/DAC and 0x80038EC8/ECC).
+
+- [s46] BLOCK-CAPACITY CLOSURE (replaces the family-uniqueness closure): a block ending in an
+  unconditional jump with a 2-word footprint can carry at most 2 real insns - one fills its own
+  jump's delay slot, and a second could only survive by being donated upward into the PRECEDING
+  conditional branch's delay slot. That donation route is closed from reorg.c's own source, not by
+  assumption: `fill_slots_from_thread` (tools/gcc-2.7.2/reorg.c:3399) DOES scan the whole thread
+  and can lift a non-first insn out of it, but the win test at reorg.c:3466 requires
+  `! insn_sets_resource_p (trial, &opposite_needed, 1)` - at arm A the opposite (taken) thread
+  needs `$s0 == 0xF`, so NO $s0-writing insn from arm A's block is donatable, and the beq's delay
+  slot is necessarily filled from the pre-branch block with `set s0,15` (which is exactly what the
+  dump shows). Arm B has no preceding branch to donate to at all. Therefore the insn adjacent to
+  each 0xD arm's jump is necessarily its own `set13`; find_cross_jump iteration 1 always counts the
+  match, arm B's heading CODE_LABEL always supplies the `--minimum; break` bonus, and the merge is
+  unavoidable in ANY byte-matching compile.
+
+- [s46] CORRECTED BREAKER SET (supersedes the s45 enumeration): { F5 zero-byte USE/CLOBBER
+  interposition - owner-REFUSED 2026-07-19 and re-refused 2026-08-24; real-insn interposition -
+  honest, demonstrated at this function's -1 pair, requires >= 2 real insns of block slack }. The
+  honest member is unavailable at BOTH 0xD arms because the target's own 2-word footprints deny the
+  slack. The verdict s45 reached is upheld; its stated reason was wrong and is now replaced by a
+  premise-free byte-count argument.
+
+- [s46] OWNER DIRECTIVE (2026-08-24 auto-reject class) ACKNOWLEDGED AND EXECUTED for the first time
+  in this ledger: the 2026-07-19 permanent-exception clause is VOIDED, F5 stays refused, the
+  function keeps grinding under standing policy, and NO standards-lowering packet may be filed. No
+  escalation was filed this session; the s45 packet at docs/grind/decisions.md:10376 is treated as
+  resolved by that ruling. Solver modality remains untried and is now frontier item 1.
+
+- [s46] src/code6cac_c_mid.c restored byte-for-byte after the probe (backup at
+  tmp/grind/func_80038C70/s46/orig_backup.c); regfix.txt untouched; no engine mutation commands run.
+  memory/grind/func_80038C70/candidate.c refreshed from the restored HEAD form (the byte-correct
+  floor-1 chassis). Full write-up: tmp/grind/func_80038C70/s46/synthesis.md.
+
+- [s46] Chassis re-measured this session: sandbox func_80038C70 --disable all on committed HEAD = score 1, target 402 / build 402, rules_dropped 1 (regfix.txt:1095 subst 'addiu\t$16,$zero,12' -> '...,13' @ 149), cheat_asm_stripped 7. Honest 'sel = 0xD' form = score 2, target 402 / build 400. Both reproduce s45 exactly.
+
+- [s46] NEW: the merged output's bytes were disassembled for the first time in 46 sessions (tmp/grind/func_80038C70/s46/honest.dis). Arm B's block is deleted outright, not left as 'j; nop' — the jtbl entries for cases 9/11 are retargeted at arm A's block (d64). This is the full explanation of the -2 insn delta and it kills the 'let the merge fire, let reorg repair it' family.
+
+- [s46] LEDGER CORRECTION 1: s45's premise 'sched2 runs AFTER jump2' is false. tools/gcc-2.7.2/toplev.c:3117 is sched2; toplev.c:3142 is the only cross-jump-enabled jump_optimize. sched2 runs BEFORE jump2, as s1 recorded on 2026-07-07.
+
+- [s46] LEDGER CORRECTION 2: s45's 'F5 is the unique member of the breaker set' is falsified by this function's own -1 pair — two unconditional simplejumps to the same label 444 that do NOT merge, protected by a REAL-INSN interposition (case-10's set s0,-1 is scheduled five insns above its jump; the pre-jump insn is 'sb D_800A3350,0'; reorg later pulls the set into the delay slot). s45's replacement discriminator (jump.c:1996 simplejump_p gate) is true but describes the 0xF pair, not the -1 pair.
+
+- [s46] CORRECTED BREAKER SET: { F5 zero-byte USE/CLOBBER interposition (owner-REFUSED 2026-07-19, re-refused 2026-08-24); real-insn interposition (honest, shipped at this function's -1 pair, requires >= 2 real insns of block slack) }.
+
+- [s46] CORRECTED CLOSURE (block capacity, premise-free): each 0xD arm's jump2 basic block holds exactly ONE real insn (arm A: insn 211; arm B: insn 406), and each has a 2-word target footprint. A second real insn is byte-free only via donation into a preceding conditional branch's delay slot; reorg.c:3399 permits lifting a non-first thread insn, but reorg.c:3466 rejects any insn setting a resource needed at the opposite thread — arm A's taken thread needs $s0 == 0xF, so no $s0-writing insn is donatable and that slot is filled from the pre-branch block with set s0,15. Arm B is preceded by a BARRIER and has no donation target. Therefore the merge is unavoidable in any byte-matching compile.
+
+- [s46] OWNER DIRECTIVE 2026-08-24 (auto-reject class) executed for the first time in this ledger: the 2026-07-19 permanent-exception clause is VOIDED, F5 stays refused, the function keeps grinding under standing policy, and no standards-lowering packet may be filed. No escalation filed this session; the s45 packet at docs/grind/decisions.md:10376 is treated as resolved by that ruling.
+
+- [s46] Scope: src/code6cac_c_mid.c restored byte-for-byte after the probe (backup tmp/grind/func_80038C70/s46/orig_backup.c); regfix.txt untouched; no engine mutation commands run; git status shows only the three ledger files plus the metrics append. candidate.c refreshed from the restored HEAD form (byte-correct floor-1 chassis).

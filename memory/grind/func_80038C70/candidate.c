@@ -14,7 +14,7 @@
 #define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
 
 /* Extern data declarations */
-extern u8 D_800F33D8;
+extern u8 D_800F33D8[];
 extern u32 D_800A378C;
 extern u32 D_80101E3C;
 extern u32 D_80101E44;
@@ -26,8 +26,8 @@ extern void game_FrameInit(void);
 extern void game_FrameLoop(void);
 extern void func_800194F4(void);
 extern void seq_Reset(void);
-extern void sys_VSync(s32);
-extern void gpu_LoadImage(s32, s32);
+extern void VSync(s32);
+extern void LoadImage(s32, s32);
 extern s32 func_80036FD4(void);
 extern void func_80035FA8(void);
 extern s32 D_800109BC;
@@ -63,34 +63,34 @@ extern s16 *snd_GetSeId(void);
 extern void func_8003553C(void);
 
 extern void sys_Panic(void);
-extern s32 EndADRSound(void);
+extern s32 func_80020D38(void);
 extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
-extern s32 bb2_memcpy(s32 *, s32, s32);
+extern s32 memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
-extern void motion_LoadPreCalcData_8005B98C(s32);
+extern void func_8005B98C(s32);
 extern s32 func_80036D88(void);
-extern void gnd_disp_loop_ctrl(void);
+extern void func_800174F4(void);
 extern s32 D_800A384C;
-extern s32 single_game_getEnemyCharId(s32, s32);
+extern s32 ratan2(s32, s32);
 extern s16 D_80101E74;
 
 extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void get_point_value(void);
+extern void func_8005B50C(void);
 extern void special_camera_get_rot_dir(s32 *);
-extern void pad_Init(void);
-extern void irq_Reset(void);
+extern void StopPAD(void);
+extern void StopCallback(void);
 extern s32 D_800A3210;
-extern void func_8008BE04(void);
+extern void AddCOMB(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
-extern s32 gnd_close_8004939C(void);
+extern s32 func_8004939C(void);
 extern u8 D_8008E6A4;
 extern s16 Judge;
 extern s16 D_800A3678;
@@ -146,33 +146,33 @@ extern s32 D_800A3915_ext;
 extern s32 D_800A36F4_ext;
 
 /* Extern function declarations for decompiled functions */
-extern s32 bios_TestEvent(s32);
-extern void bios_CloseEvent(s32);
-extern void bios_EnableEvent(s32);
+extern s32 TestEvent(s32);
+extern void CloseEvent(s32);
+extern void EnableEvent(s32);
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
-extern void bios_FileRead_B(s32, s32 *, s32);
-extern void bios_FileClose_B(s32);
-extern s32 bios_firstfile_B(s32 *, s32 *);
-extern s32 bios_nextfile_B(s32 *);
-extern void func_80078BA8(s32);
-extern s32 func_80078B04(s32);
-extern void func_8007A400(void);
-extern void func_8008BE4C(void);
+extern void read(s32, s32 *, s32);
+extern void close(s32);
+extern s32 firstfile(s32 *, s32 *);
+extern s32 nextfile(s32 *);
+extern void ResetRCnt(s32);
+extern s32 GetRCnt(s32);
+extern void StopCARD(void);
+extern void DelCOMB(void);
 extern void func_8006BEC4(s32, s32);
-extern void gnd_open(void);
+extern void func_8003E22C(void);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
-extern void tslDmaDrawListDelAll(s32);
+extern void SetGeomScreen(s32);
 extern void func_8001B6F4(void);
-extern void pad_button_info_clear(u8 *);
+extern void func_80022568(u8 *);
 extern s32 g_str_memcard_fmt;
 extern s32 D_80102810;
 extern s32 D_800F34D8;
 extern s32 D_800A31F0;
 extern s32 D_800A3794;
-extern s32 _CardCheckPulled2(s32, s32);
-extern void camera_SetMatrix(void *);
+extern s32 func_80037A20(s32, s32);
+extern void func_80037F40(void *);
 extern s32 func_80037AA4(void);
 extern s32 func_80037B00(s32);
 extern s32 func_80037B90(s32, s32, s32, void *, s32);
@@ -180,10 +180,10 @@ extern s32 func_80037C34(s32, s32, s32, void *, s32, s32, s32);
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
-s32 motion_LoadPreCalcData_80037F08(s32 a0, s32 a1) {
+s32 func_80037F08(s32 a0, s32 a1) {
     s32 buf[2];
-    func_80079A30(buf, &D_800109C8, a0, a1);
-    return bios_FormatDevice_B(buf);
+    sprintf(buf, &D_800109C8, a0, a1);
+    return format(buf);
 }
 
 typedef struct { s32 w[4]; } Quad;
@@ -239,82 +239,11 @@ void func_80037F40(u8 *a0) {
 }
 typedef struct { s32 w0, w1, w2, w3; } CopyBlock;
 
-s32 damage_DebugDisp(s32 *arg0) {
-    u8 *base = (u8 *)arg0;
-    s32 i;
-    s32 *chkptr;
-    s32 offset;
-
-    i = 0;
-    chkptr = (s32 *)base;
-    offset = 0;
-    do {
-        s32 sum;
-        u8 *bp;
-        u32 j;
-
-        j = 0;
-        bp = base + offset;
-        sum = 0;
-        do {
-            sum += *bp;
-            bp++;
-            j++;
-        } while (j < 0x24U);
-        if (sum == *(s32 *)((u8 *)chkptr + 0x6C)) {
-            break;
-        }
-        chkptr++;
-        i++;
-        offset += 0x24;
-    } while (i < 3);
-
-    if (i == 3) {
-        return 0;
-    }
-
-    if (D_800A31FC != 0) {
-        return 1;
-    }
-
-    {
-        u8 *src = base + i * 0x24;
-        s32 k = 0;
-        s32 *ap;
-        u8 *a2p;
-
-        if (!(*(src + 0x23) & 0x80)) {
-            CopyBlock *dst = (CopyBlock *)&D_80106A50;
-            CopyBlock *sp2 = (CopyBlock *)src;
-            CopyBlock *end = (CopyBlock *)((u8 *)src + 0x20);
-            do {
-                *dst = *sp2;
-                sp2++;
-                dst++;
-            } while (sp2 != end);
-            k = 0;
-            *(s32 *)dst = *(s32 *)sp2;
-        }
-
-        ap = (s32 *)base;
-        a2p = base;
-        do {
-            u16 *ptr = *(u16 **)((u8 *)ap + 0x78);
-            if ((u32)((u32)ptr - 0x80000000U) <= 0x1FFFFF) {
-                *ptr = *(u16 *)(a2p + 0xD0);
-            }
-            a2p += 2;
-            k++;
-            ap++;
-        } while (k < 0x16);
-    }
-
-    return 1;
-}
+INCLUDE_ASM("asm/funcs", func_8003800C);
 /* kengo:HIGH  |  is_damage_calc/damage_DebugDisp  |  79i */
 
 void func_80038148(void) {
-    u8 *p = &D_800F33D8;
+    u8 *p = D_800F33D8;
     s32 i = 0;
     do {
         *p = 0;
@@ -322,7 +251,7 @@ void func_80038148(void) {
         p++;
     } while ((u32)i < 0x200);
 }
-extern u8 D_8008F1C0;
+extern u8 D_8008F1C0[];
 /* Rodata moved from asm/data/101C.rodata_pre_post.s (rodata-cleanup project,
  * docs/rodata-cleanup-project.md, 2026-06-09). func_80038170 (this file) is the
  * sole owner — uses these as &-addressed byte/word lookups. Declared as u32
@@ -347,22 +276,23 @@ const u32 D_80010A2C[38] = {
 };
 extern u8 D_800A3200;
 extern u8 D_800A3201;
-extern u8 *func_80079194(u8 *, u8 *);
+extern u8 *strcpy(u8 *, u8 *);
 
 void func_80038170(u8 *out) {
-    register s32 i asm("a3");
-    register s32 mask asm("a1");
-    s32 s1 = 0, s2 = 0, s3 = 0;
+    s32 s1, s2, s3;
+    s32 i;
+    s32 mask;
     s32 bit;
-    s32 dummy0, dummy1;
-    __asm__ volatile ("" :: "m"(dummy0), "m"(dummy1));
 
+    s3 = 0;
+    s2 = 0;
+    s1 = 0;
     mask = D_80106A50;
 
     for (i = 0; i < 0x1B; i++) {
         bit = 1 << i;
         if (mask & bit) {
-            s32 v = (&D_8008F204)[i];
+            s32 v = D_8008F204[i];
             switch (v) {
                 case 0: s1++; break;
                 case 1: s2++; break;
@@ -386,18 +316,18 @@ void func_80038170(u8 *out) {
         } while (i >= 0);
     }
 
-    func_80079194(out + 4, &D_8008F1C0);
+    strcpy(out + 4, D_8008F1C0);
 
-    out[0x22] = (&D_8008F1A8)[s1 * 2 + 0];
-    out[0x23] = (&D_8008F1A8)[s1 * 2 + 1];
-    out[0x3C] = (&D_8008F1A8)[s2 * 2 + 0];
-    out[0x3D] = (&D_8008F1A8)[s2 * 2 + 1];
+    out[0x22] = D_8008F1A8[s1 * 2 + 0];
+    out[0x23] = D_8008F1A8[s1 * 2 + 1];
+    out[0x3C] = D_8008F1A8[s2 * 2 + 0];
+    out[0x3D] = D_8008F1A8[s2 * 2 + 1];
 
     if (s3 > 0) {
         out[0x40] = D_800A3200;
         out[0x41] = D_800A3201;
-        out[0x42] = (&D_8008F19C)[s3 * 2];
-        out[0x43] = (&D_8008F19D)[s3 * 2];
+        out[0x42] = D_8008F19C[s3 * 2 + 0];
+        out[0x43] = D_8008F19C[s3 * 2 + 1];
     }
 
     i = 0x1B;
@@ -443,7 +373,7 @@ void func_80038170(u8 *out) {
     }
 }
 
-void pad_FuncAnalog(void) {
+void func_800383A4(void) {
     s32 var_v1;
     s32 var_v0;
     s32 temp_s0;
@@ -499,7 +429,7 @@ state_other:
 
 state_3:
     D_800A379E = 1;
-    _CardCheckPulled2(0, 0);
+    func_80037A20(0, 0);
     temp_s0 = func_80037AA4();
     if (func_80037B00(D_800A31F0) != 0) {
         var_s1 = 0;
@@ -517,10 +447,10 @@ state_3:
 setup_load:
     D_800A38CC = 1;
     func_80038148();
-    func_80038170(&D_800F33D8);
-    camera_SetMatrix(&D_800F33D8 + 0x100);
-    if (func_80037C34(0, 0, D_800A31F0, &D_800F33D8, 1, 0x200, var_s1) != 0) {
-        bios_FileClose_B(D_800A3794);
+    func_80038170(D_800F33D8);
+    func_80037F40(D_800F33D8 + 0x100);
+    if (func_80037C34(0, 0, D_800A31F0, D_800F33D8, 1, 0x200, var_s1) != 0) {
+        close(D_800A3794);
         var_v0 = 3;
         goto finish;
     }
@@ -528,7 +458,7 @@ setup_load:
     return;
 
 state_5:
-    _CardCheckPulled2(0, 0);
+    func_80037A20(0, 0);
     func_80037AA4();
     if (func_80037B00(D_800A31F0) == 0) {
         var_v0 = 0xE;
@@ -536,8 +466,8 @@ state_5:
     }
     D_800A379E = 4;
     func_80038148();
-    if (func_80037B90(0, 0, D_800A31F0, &D_800F33D8, 0x200) != 0) {
-        bios_FileClose_B(D_800A3794);
+    if (func_80037B90(0, 0, D_800A31F0, D_800F33D8, 0x200) != 0) {
+        close(D_800A3794);
         var_v0 = 6;
         goto finish;
     }
@@ -545,7 +475,7 @@ state_5:
     return;
 
 state_7:
-    var_v0 = motion_LoadPreCalcData_80037F08(0, 0);
+    var_v0 = func_80037F08(0, 0);
     if (var_v0 != 0) {
         var_v0 = 0xB;
         goto finish;
@@ -557,69 +487,65 @@ finish:
 }
 
 /* kengo:HIGH  |  is_pad/pad_FuncAnalog  |  173i */
-extern s32 damage_DebugDisp(s32 *);
+extern s32 func_8003800C(s32 *);
+/* func_80038658 — CD-load/save state-machine completion handler: dispatches
+ * on D_800A31F4 (state 4 = post-read, state 6 = post-write), reaps
+ * func_800378A8()'s status, closes the file handle, and posts a result code
+ * to D_800A379E. The ret==0 ("still pending") paths route through the shared
+ * fail_store end label (the shared-end-label recipe,
+ * .claude/rules/shared-end-label.md) so GCC cannot constant-fold the
+ * per-state fail codes. */
 void func_80038658(void) {
-    register s32 var_v1 asm("v1");
-    register s32 var_v0 asm("v0");
-    s32 var_s0;
+    s32 ret;
+    s32 fail;
 
-    var_v1 = D_800A31F4;
-    if (var_v1 == 4) {
-        goto block_4;
-    }
-    if (var_v1 == 6) {
-        goto block_6;
+    switch (D_800A31F4) {
+    case 4:
+        ret = func_800378A8();
+        if (ret == 0) {
+            fail = 1;
+            goto fail_store;
+        }
+        close(D_800A3794);
+        if (ret == 1) {
+            D_800A379E = 2;
+        } else {
+            D_800A379E = 3;
+        }
+        D_800A31F4 = 0;
+        return;
+    case 6:
+        ret = func_800378A8();
+        if (ret == 0) {
+            fail = 4;
+            goto fail_store;
+        }
+        close(D_800A3794);
+        if (ret == 1) {
+            D_800A379E = 5;
+            if (func_8003800C(&D_800F34D8) == 0) {
+                D_800A379E = 0xF;
+            }
+        } else {
+            D_800A379E = 6;
+        }
+        D_800A31F4 = 0;
+        return;
     }
     return;
-block_4:
-    var_s0 = func_800378A8();
-    var_v0 = 1;
-    if (var_s0 == 0) {
-        goto block_store;
-    }
-    bios_FileClose_B(D_800A3794);
-    var_v0 = 1;
-    if (var_s0 != var_v0) {
-        var_v0 = 3;
-        goto block_store_clear;
-    }
-    var_v0 = 2;
-    goto block_store_clear;
-block_6:
-    var_s0 = func_800378A8();
-    var_v0 = 4;
-    if (var_s0 == 0) {
-        goto block_store;
-    }
-    bios_FileClose_B(D_800A3794);
-    var_v0 = 1;
-    if (var_s0 != var_v0) {
-        var_v0 = 6;
-        goto block_store_clear;
-    }
-    var_v0 = 5;
-    D_800A379E = (s16)var_v0;
-    if (damage_DebugDisp(&D_800F34D8) != 0) {
-        goto block_clear;
-    }
-    var_v0 = 0xF;
-block_store_clear:
-    D_800A379E = (s16)var_v0;
-block_clear:
-    D_800A31F4 = 0;
-    return;
-block_store:
-    D_800A379E = (s16)var_v0;
+
+fail_store:
+    D_800A379E = fail;
 }
 s32 func_80038734(void) {
     if ((u32)D_800A31F4 < 2) {
         D_800A31F8 = func_80037D14(0, 0);
     }
-    pad_FuncAnalog();
+    func_800383A4();
     func_80038658();
     return D_800A379E;
 }
-void motion_shift_check_m_hit_stop(void) {
+void func_8003877C(void) {
     D_800A379E = 4;
     D_800A3814 = 0;
     D_800A37C8 = 0;
@@ -647,7 +573,7 @@ void func_800387E8(void) {
 }
 extern u8 D_800A3203;
 extern u8 D_800A31FC;
-extern void motion_shift_check_m_hit_stop(void);
+extern void func_8003877C(void);
 extern s32 func_80038734(void);
 extern void func_8006BEC4(s32, s32);
 
@@ -659,7 +585,7 @@ s32 func_8003880C(void) {
     if (D_800A3203) {
         D_800A3203 = 0;
         D_800A31FC = 1;
-        motion_shift_check_m_hit_stop();
+        func_8003877C();
     }
     v0 = func_80038734();
     switch (v0 - 4) {
@@ -761,7 +687,7 @@ s32 func_80038988(void) {
         D_800A3328 = 0;
         D_800A332C = 0;
         D_800A31FC = 1;
-        motion_shift_check_m_hit_stop();
+        func_8003877C();
         D_800A3205 = 0;
         D_800A3330 = 0x5A;
         D_800A3334 = 0;
@@ -818,7 +744,7 @@ s32 func_80038988(void) {
                 D_800A3330 = 0x5A;
                 break;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         case 11:
             D_800A332C++;
@@ -826,7 +752,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 break;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         case 6:
             D_800A3328++;
@@ -834,7 +760,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 break;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         case 10:
             D_800A3324++;
@@ -842,7 +768,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 break;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         case 2:
             D_800A31FC = 0;
@@ -853,7 +779,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 D_800A3338 = 1;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         default:
             break;
@@ -891,11 +817,8 @@ end:
     return result;
 }
 
-asm(".section .rodata
-	.space 4
-	.previous");
 
-s32 motion_SetMotion(void) {
+s32 func_80038C70(void) {
     extern u8 D_800A3207;
     extern u8 D_800A334C;
     extern u8 D_800A3350;
@@ -906,7 +829,7 @@ s32 motion_SetMotion(void) {
     extern u8 D_800A3348;
     extern void func_8006BEC4(s32, s32);
     extern void func_8005C650(s32, s32, s32);
-    extern void motion_shift_check_m_hit_stop(void);
+    extern void func_8003877C(void);
     extern void func_8003879C(void);
     extern void func_800387C0(void);
     extern void func_800387E8(void);
@@ -1046,7 +969,7 @@ sel_dispatch:
                 D_800A334C = 0x5A;
                 break;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         case 1: case 2: case 3:
         case 9: case 10: case 11:
@@ -1056,7 +979,7 @@ sel_dispatch:
                 func_8003879C();
                 break;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         case 6:
             D_800A3344++;
@@ -1064,7 +987,7 @@ sel_dispatch:
                 D_800A31FC = 0;
                 break;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         default:
             break;
@@ -1116,7 +1039,7 @@ sel_dispatch:
             break;
         case 11:
             D_800A31FC = 1;
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             D_800A3207 = 3;
             D_800A334C = 0x5A;
             break;
@@ -1144,7 +1067,7 @@ sel_dispatch:
                     D_800A3340 = 0;
                     D_800A3344 = 0;
                     D_800A31FC = 1;
-                    motion_shift_check_m_hit_stop();
+                    func_8003877C();
                 } else {
                     if (D_800A3350 != 0) goto area_c_long;
                     func_800387C0();
@@ -1203,7 +1126,7 @@ end:
 }
 /* kengo:MED  |  is_motion/motion_SetMotion  |  425i  |  -23 5.4% */
 s32 *func_800392B8(void) {
-    return &D_800F33D8;
+    return (s32 *)D_800F33D8;
 }
 void func_800392C8(void) {
     u8 val;
@@ -1213,7 +1136,7 @@ void func_800392C8(void) {
 
     val = 0xFF;
     i = 0x1F0;
-    D_800A36EC = (u8 *)&D_800F33D8;
+    D_800A36EC = (u8 *)D_800F33D8;
     D_800A36F8 = 0;
     D_800A3782 = 0;
 loop1:
@@ -1224,7 +1147,7 @@ loop1:
     new_var = -1;
     j = 0xB30;
 loop2:
-    *((s16 *)((u8 *)&D_800F68E0 + j)) = new_var;
+    *((s16 *)((u8 *)D_800F68E0 + j)) = new_var;
     j -= 0x10;
     if (j >= 0) goto loop2;
 }
@@ -1249,7 +1172,7 @@ void func_80039320(void) {
         p += 0x10;
     } while (i < 0x20);
 
-    q = (s16 *)&D_800F68E0;
+    q = D_800F68E0;
     i = 0;
     do {
         val = *q;
@@ -1267,117 +1190,7 @@ void func_80039320(void) {
     D_800A379C = 0;
     D_800A3714 = 0;
 }
-void saSeInit_2(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
-    extern s16 D_800A3714;
-    extern u8 D_800A3209;
-    s32 frame_pad[2];
-    register u8 mode asm("t4") = arg0;
-    register u8 *slot asm("a0") = (u8 *)&D_800F68E0;
-    register s32 i asm("t2") = 0;
-    register u8 *tail asm("t1") = slot + 0xE;
-    s32 next;
-    s32 value;
-
-    if ((u32)&frame_pad[0] == 0) {
-        D_800A3209 = D_800A3209;
-    }
-
-loop:
-    {
-        register s32 state asm("t0") = *(s16 *)slot;
-        s32 v0 = -1;
-
-        if (state == v0) {
-            goto miss;
-        }
-        v0 = state - 1;
-
-        {
-            register u8 age asm("t3") = *(u8 *)(tail - 0xC);
-            s32 v1 = age & 0xFF;
-
-            if (v1 != v0) {
-                goto miss;
-            }
-            v0 = (u32)v1 < 0xFF;
-            if (v0 == 0) {
-                goto miss;
-            }
-
-            {
-                u32 raw_rot = *(u16 *)(tail - 4) << 16;
-                s16 rot = raw_rot >> 16;
-
-                if ((raw_rot >> 28) != mode) {
-                    goto miss;
-                }
-                if (*(s16 *)(tail - 0xA) != arg2[0]) {
-                    goto miss;
-                }
-                if (*(s16 *)(tail - 8) != arg2[1]) {
-                    goto miss;
-                }
-                if (*(s16 *)(tail - 6) != arg2[2]) {
-                    goto miss;
-                }
-                if (((rot - *(s16 *)(arg3 + 0)) & 0xFFF) != 0) {
-                    goto miss;
-                }
-                if (((*(s16 *)(tail - 2) - *(s16 *)(arg3 + 1)) & 0xFFF) != 0) {
-                    goto miss;
-                }
-                if (((*(s16 *)(tail + 0) - *(s16 *)(arg3 + 2)) & 0xFFF) == 0) {
-                    *(u8 *)(slot + 2) = age + 1;
-                    goto end;
-                }
-            }
-        }
-    }
-
-miss:
-    i++;
-    tail += 0x10;
-    if (i < 0xB4) {
-        slot += 0x10;
-        goto loop;
-    }
-
-    value = D_800A3714;
-    slot = (u8 *)&D_800F68E0 + value * 0x10;
-
-    if (value < 0xB4) {
-find_free:
-        if (*(s16 *)slot != -1) {
-            next = value + 1;
-            D_800A3714 = next;
-            slot += 0x10;
-            value = (s16)next;
-            if (value < 0xB4) {
-                goto find_free;
-            }
-        }
-    }
-
-    value = mode << 12;
-    next = D_800A3714;
-    if (next == 0xB4) {
-        D_800A3209++;
-        goto end;
-    }
-
-    *(s16 *)(slot + 0) = 0;
-    *(u8 *)(slot + 3) = arg1;
-    *(u8 *)(slot + 2) = 0;
-    *(s16 *)(slot + 4) = arg2[0];
-    *(s16 *)(slot + 6) = arg2[1];
-    *(s16 *)(slot + 8) = arg2[2];
-    *(u16 *)(slot + 0xA) = (arg3[0] & 0xFFF) | value;
-    *(u16 *)(slot + 0xC) = arg3[1];
-    *(u16 *)(slot + 0xE) = arg3[2];
-
-end:
-    return;
-}
+INCLUDE_ASM("asm/funcs", func_800393C8);
 /* kengo:MED  |  sa_se/saSeInit_2  |  123i  |  x2 size collision */
 void func_800395B4(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
     extern u8 D_800A3208;
@@ -1467,11 +1280,11 @@ void func_800397A0(void) {
 }
 void func_800397D4(void) {
     gpu_EnableDisplay();
-    gnd_open();
+    func_8003E22C();
     game_SetPlayerCount(0);
-    tslDmaDrawListDelAll(disp_CalcFov(0x2D));
-    gnd_init_80041688(0, 0);
-    gnd_init_80041688(1, 0);
+    SetGeomScreen(disp_CalcFov(0x2D));
+    func_80041688(0, 0);
+    func_80041688(1, 0);
     func_8001B6F4();
     game_Cleanup();
     D_800A37D0 = 0;
@@ -1512,71 +1325,70 @@ neg:
         *arg2 = -1;
     }
 }
-void func_8003993C(void) {
-}
+INCLUDE_ASM("asm/funcs", func_8003993C);
 void func_8003A174(void) {
     s32 neg1;
     EnterCriticalSection();
     neg1 = -1;
     do {
-        D_800A3738 = bios_OpenEvent(0xF000000B, 0x400, 0x2000, 0);
+        D_800A3738 = OpenEvent(0xF000000B, 0x400, 0x2000, 0);
     } while (D_800A3738 == neg1);
     neg1 = -1;
     do {
-        D_800A3810 = bios_OpenEvent(0xF000000B, 0x8000, 0x2000, 0);
+        D_800A3810 = OpenEvent(0xF000000B, 0x8000, 0x2000, 0);
     } while (D_800A3810 == neg1);
     ExitCriticalSection();
     neg1 = -1;
-    sys_VSync(2);
-    func_8008BE04();
+    VSync(2);
+    AddCOMB();
     do {
-        D_800A373C = bios_FileOpen_B(&D_800A3210, 2);
+        D_800A373C = open(&D_800A3210, 2);
     } while (D_800A373C == neg1);
     neg1 = -1;
     do {
-        D_800A3734 = bios_FileOpen_B(&D_800A3210, 0x8001);
+        D_800A3734 = open(&D_800A3210, 0x8001);
     } while (D_800A3734 == neg1);
-    func_8008C464(2, 0, 0);
-    func_8008C464(1, 3, 0xE100);
-    func_8008C464(1, 4, 1);
+    _comb_control(2, 0, 0);
+    _comb_control(1, 3, 0xE100);
+    _comb_control(1, 4, 1);
 }
 void func_8003A264(void) {
-    bios_FileClose_B(D_800A3734);
-    bios_FileClose_B(D_800A373C);
+    close(D_800A3734);
+    close(D_800A373C);
     EnterCriticalSection();
-    bios_CloseEvent(D_800A3738);
-    bios_CloseEvent(D_800A3810);
+    CloseEvent(D_800A3738);
+    CloseEvent(D_800A3810);
     ExitCriticalSection();
-    sys_VSync(2);
-    func_8008BE4C();
-    func_8008C464(1, 1, 0);
+    VSync(2);
+    DelCOMB();
+    _comb_control(1, 1, 0);
 }
 s32 func_8003A2DC(void) {
-    return (func_8008C464(0, 0, 0) & 0x180) == 0;
+    return (_comb_control(0, 0, 0) & 0x180) == 0;
 }
 void func_8003A308(void) {
-    if (func_8008C464(3, 1, 0) != 0) {
+    if (_comb_control(3, 1, 0) != 0) {
         D_800A38A0 = 1;
     } else {
         D_800A38A0 = 0;
     }
-    func_8008C464(3, 0, 1);
+    _comb_control(3, 0, 1);
 }
 void func_8003A360(void) {
-    bios_EnableEvent(D_800A3810);
-    bios_EnableEvent(D_800A3738);
+    EnableEvent(D_800A3810);
+    EnableEvent(D_800A3738);
     D_800A320C = 1;
     D_800A3730 = 0;
 }
 void func_8003A39C(void) {
     D_800A320C = 0;
     D_800A3730 = 0;
-    func_8008C464(2, 0, 0);
-    func_8008C464(1, 1, 0);
+    _comb_control(2, 0, 0);
+    _comb_control(1, 1, 0);
     func_8003A264();
     D_800A3834 = 8;
 }
-void motion_SavePreCalcData_8003A3F0(void) {
+void func_8003A3F0(void) {
     func_8003A39C();
     D_800A3928 = 1;
 }
@@ -1594,25 +1406,25 @@ s32 func_8003A450(void) {
     s32 s1;
     s32 s0;
 
-    s1 = func_80078B04(0xF2000001);
+    s1 = GetRCnt(0xF2000001);
     if (s1 >= 0x401) {
-        func_80078BA8(0xF2000001);
+        ResetRCnt(0xF2000001);
         s1 = 0;
     }
 
     while (1) {
         while (1) {
-            if (func_8008C464(3, 1, 0) != 0) {
+            if (_comb_control(3, 1, 0) != 0) {
                 break;
             }
-            if (func_80078B04(0xF2000001) - s1 >= 0x7801) {
+            if (GetRCnt(0xF2000001) - s1 >= 0x7801) {
                 return 0;
             }
         }
 
         s0 = 0;
         do {
-            if (func_8008C464(3, 1, 0) == 0) {
+            if (_comb_control(3, 1, 0) == 0) {
                 break;
             }
             s0++;
@@ -1623,19 +1435,19 @@ s32 func_8003A450(void) {
         }
     }
 
-    func_8008C464(1, 1, 1);
+    _comb_control(1, 1, 1);
     D_800A382C = 1;
-    func_8008C464(4, 0, (s32)&func_8003A42C);
-    bios_FileWrite_B(D_800A373C, &D_800A3698, 8);
-    func_8008C464(4, 0, 0);
-    func_8008C464(1, 1, 0);
+    _comb_control(4, 0, (s32)&func_8003A42C);
+    write(D_800A373C, &D_800A3698, 8);
+    _comb_control(4, 0, 0);
+    _comb_control(1, 1, 0);
     return D_800A382C;
 }
-void motion_SavePreCalcData_8003A574(void) {
-    bios_FileRead_B(D_800A3734, &D_800A3688, 8);
+void func_8003A574(void) {
+    read(D_800A3734, &D_800A3688, 8);
 }
 extern s32 D_800A38D0;
-s32 pad_ClearAppliBuffer(void) {
+s32 func_8003A5A0(void) {
     s32 s0;
     s32 s1;
     s32 a1;
@@ -1643,66 +1455,58 @@ s32 pad_ClearAppliBuffer(void) {
     s32 v0;
 
     s1 = 0;
-    s0 = func_80078B04(0xF2000001);
+    s0 = GetRCnt(0xF2000001);
     if (s0 >= 0x401) {
         goto overflow;
     }
     goto loop_check;
 overflow:
-    func_80078BA8(0xF2000001);
+    ResetRCnt(0xF2000001);
     s0 = 0;
 loop_check:
-    if (bios_TestEvent(D_800A3738) != 0) {
+    if (TestEvent(D_800A3738) != 0) {
         goto success;
     }
-    if (bios_TestEvent(D_800A3810) == 0) {
+    if (TestEvent(D_800A3810) == 0) {
         goto poll;
     }
     s1 += 1;
     if (s1 >= 5) {
         goto ret0_tramp;
     }
-    func_8008C464(2, 0, 0);
+    _comb_control(2, 0, 0);
     s0 = 0;
-    motion_SavePreCalcData_8003A574();
-    func_80078BA8(0xF2000001);
+    func_8003A574();
+    ResetRCnt(0xF2000001);
 poll:
-    v0 = (func_8008C464(0, 0, 0) >> 7) & 3;
-    if (v0 == 1) {
+    if (((_comb_control(0, 0, 0) >> 7) & 3) == 1) {
         goto loop_check;
     }
-    v0 = func_80078B04(0xF2000001) - s0;
-    if (v0 < 0x3C01) {
+    if (GetRCnt(0xF2000001) - s0 < 0x3C01) {
         goto loop_check;
     }
     s1 += 1;
-    v0 = 0;
     if (s1 >= 5) {
-        goto epilogue;
+        goto ret0_tramp;
     }
     goto overflow;
 success:
     a1 = D_800A3688;
     a0 = D_800A368C;
-    v0 = a1 >> 16;
-    v0 = v0 ^ a1;
+    v0 = a1 ^ (a1 >> 16);
     v0 = v0 ^ (a0 >> 16);
     v0 = v0 & 0xFFFF;
     if ((a0 & 0xFFFF) == v0) {
         goto match;
     }
-    v0 = 0;
     D_800A38D0 += 1;
-    goto epilogue;
+    return 0;
 ret0_tramp:
-    v0 = 0;
-    goto epilogue;
+    return 0;
 match:
-    v0 = 1;
     D_800A36C0 = a1;
     D_800A36C4 = a0;
-epilogue:
-    return v0;
+    return 1;
 }
 /* kengo:HIGH  |  is_pad/pad_ClearAppliBuffer  |  87i */
 s32 func_8003A6FC(u32 arg0) {
@@ -1726,116 +1530,7 @@ extern s32 D_800A38FC;
 
 typedef s32 (*FuncBufType)(void *);
 
-void func_8003A728(s32 a0) {
-    register s32 buf8 asm("s0");
-    register s32 lower asm("s2");
-    s32 packed;
-    s32 hash;
-    s32 hi16;
-    s32 vsync;
-    s32 v0;
-    s32 v1;
-
-    if (D_800A320C == 0) goto end_zero;
-
-    buf8 = *(volatile s32 *)(a0 + 8);
-    __asm__ volatile("" ::: "memory");
-    vsync = D_800A38A0;
-
-    packed = (vsync << 31)
-           | (D_800A3730 << 30)
-           | ((D_800A3870 & 3) << 28);
-    lower = buf8 & 0xFFFF;
-    packed |= ((s32)*(s16 *)a0 << 16);
-    packed |= lower;
-
-    hi16 = (s32)D_800A37C4 << 16;
-
-    D_800A3698 = packed;
-    hash = hi16 | (((packed ^ (packed >> 16)) ^ (hi16 >> 16)) & 0xFFFF);
-    D_800A369C = hash;
-
-    if (D_800A3916 == 0) goto path_pad;
-
-    if (vsync == 0) {
-        motion_SavePreCalcData_8003A574();
-        goto post_8F4;
-    }
-
-    if (((FuncBufType)func_8003A450)(&D_800A3698) == 0) goto err_no_check;
-    D_800A3908 += func_8003A6FC(lower);
-    motion_SavePreCalcData_8003A574();
-    goto post_8F4;
-
-path_pad:
-    if (pad_ClearAppliBuffer() == 0) goto err_no_check;
-    if (D_800A38A0 != 1) goto retry_a450;
-    if ((D_800A36C0 & 0x40000000) != 0) goto err_with_check;
-    if ((D_800A36D0 & 0x40000000) != 0) goto err_with_check;
-
-retry_a450:
-    if (((FuncBufType)func_8003A450)(&D_800A3698) != 0) goto continue_a450;
-err_no_check:
-    motion_SavePreCalcData_8003A3F0();
-    return;
-continue_a450:
-    D_800A3908 += func_8003A6FC(buf8 & 0xFFFF);
-    motion_SavePreCalcData_8003A574();
-    if (D_800A38A0 != 0) goto post_8F4;
-    if (D_800A3730 != 0) goto err_with_check;
-    if ((D_800A36C0 & 0x40000000) == 0) goto post_8F4;
-
-err_with_check:
-    func_8003A39C();
-    return;
-
-post_8F4:
-    if (D_800A3916 != 0) goto skip_buf_update;
-
-    {
-        extern u16 _D_36C0_u16 asm("D_800A36C0");
-        extern u16 _D_36D0_u16 asm("D_800A36D0");
-        extern u16 _D_3698_u16 asm("D_800A3698");
-        D_800A38FC += func_8003A6FC(_D_36C0_u16);
-        {
-            register u32 c0lo asm("v1") = _D_36C0_u16;
-            s32 t;
-            if (D_800A38A0 == 0) {
-                *(s32 *)(a0 + 8) = (c0lo << 16) | _D_3698_u16;
-                t = D_800A36C2;
-                v0 = t & 0xF;
-            } else {
-                *(s32 *)(a0 + 8) = (_D_36D0_u16 << 16) | c0lo;
-                t = D_800A36C2;
-                *(s16 *)a0 = t & 0xF;
-                t = D_800A36D2;
-                v0 = t & 0xF;
-            }
-        }
-    }
-    *(s16 *)(a0 + 2) = v0;
-
-    if (D_800A38A0 == 0) {
-        v1 = (D_800A36C0 >> 28) & 3;
-        if (v1 != 2) goto skip_buf_update;
-        v0 = D_800A3870;
-    } else {
-        v1 = (D_800A36C0 >> 28) & 3;
-        if (v1 != 2) goto skip_buf_update;
-        v0 = (D_800A36D0 >> 28) & 3;
-    }
-    if (v0 != v1) goto skip_buf_update;
-    D_800A3870 = 0;
-
-skip_buf_update:
-    D_800A3916 = 0;
-    D_800A36D0 = D_800A3698;
-    D_800A36D4 = D_800A369C;
-    return;
-
-end_zero:
-    D_800A3870 = 0;
-}
+INCLUDE_ASM("asm/funcs", func_8003A728);
 
 void func_8003AA48(void) {
     s16 buf[12];
@@ -1846,26 +1541,26 @@ void func_8003AA48(void) {
 }
 void func_8003AA78(void) {
     D_800A3870 = 1;
-    sys_VSync(2);
+    VSync(2);
     func_8003AA48();
-    sys_VSync(2);
+    VSync(2);
 }
 void func_8003AAB0(void) {
     s32 val;
     D_800A3870 = 2;
-    sys_VSync(2);
+    VSync(2);
     val = 2;
     do {
         func_8003AA48();
         if (D_800A320C == 0) {
             goto end;
         }
-        func_80078BA8(0xF2000001);
+        ResetRCnt(0xF2000001);
         do {
-        } while (func_80078B04(0xF2000001) < 0x100);
+        } while (GetRCnt(0xF2000001) < 0x100);
     } while (D_800A3870 == val);
 end:
-    sys_VSync(2);
+    VSync(2);
     func_8003AA48();
-    sys_VSync(2);
+    VSync(2);
 }

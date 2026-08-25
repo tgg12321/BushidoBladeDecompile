@@ -1,8 +1,8 @@
 {
  "func": "motion_SetMotion",
  "file": "code6cac_c_mid",
- "session_count": 45,
- "current_modality": "escalation",
+ "session_count": 46,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -279,23 +279,29 @@
    "floor": 1,
    "modality": "escalation",
    "headline": "s45 escalation: both endgame gates FAIL (scan LOW 0/8; zero SOTN precedent) and the cross-jump wall is now closed by a GCC-source ENUMERATION, not exhaustion \u2014 {USE,CLOBBER} (family F5, owner-refused "
+  },
+  {
+   "session": 46,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Synthesis: s45's 'F5 is the unique cross-jump breaker' enumeration FALSIFIED by this function's own -1 pair (an honest real-insn interposition); closure re-proved premise-free from block capacity (eac"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner answers (A)/(C): the 2026-07-19 permanent exception controls and func_80038C70 is exempt from rules-to-zero.",
-   "mechanism": "The 2026-07-19 ruling is the more specific owner act for this function and its factual basis (zero community precedent for F5) was independently reconfirmed by s45's index sweep; the campaign's blanket 'every rule retires at COMPLETED-C' cannot bind a function whose COMPLETED-C is provably unreachable without the refused family.",
-   "next_probe": "Owner rules on the packet at decisions.md:10376; the driver removes func_80038C70 from the campaign lane and the project's rule floor is restated as 1 (or the campaign is scoped to the other 7 functions + func_80041188's prologue_config entry)."
+   "hypothesis": "The solver suite can convert the s46 block-capacity closure from a hand argument into a typed FORECLOSED verdict \u2014 the one tool axis never run on this function, and the axis the owner directive explicitly names as untried.",
+   "mechanism": "The residual is an emission-order/basic-block-content question, which is exactly what tools/sched_solver (order- and clock-exact model of both scheduler passes) and tools/ra_solver/inverse_compose.py classify are built to type.",
+   "next_probe": "Run `python3 tools/ra_solver/inverse_compose.py classify` and the sched_solver on the arm-A (insn 211 / jump 223) and arm-B (insn 406 / jump 408) blocks, asking: can any C-reachable block content leave a non-set13 insn adjacent to either 0xD arm's jump at jump2 time within a 2-word footprint? Expected FORECLOSED; a REACHABLE verdict would name the C lever and reopen the wall."
   },
   {
-   "hypothesis": "Owner answers (B1): F5 is re-sanctioned as an owner-signed per-function last resort with a mandatory /* FAKE */ dossier.",
-   "mechanism": "s45 proves F5 is the unique member of the breaker set, so a rules-to-zero completion for this function is equivalent to sanctioning F5; the byte-proven and trace-proven form is already banked.",
-   "next_probe": "Re-propose memory/grind/func_80038C70/rejected/judge-fail-0717-1708.c through the normal candidate path with a FAKE annotation naming jump.c:2403 find_cross_jump stream desynchronization as the mechanism; the driver re-proves bytes and the default-FAIL Judge makes the final call. Note gate (b) still fails, so this is an explicit owner override of the SOTN-viability bar, not a satisfied gate."
+   "hypothesis": "The closure is chassis-relative and must be re-established (not re-argued) after any toolchain change, since it is a statement about jump2-time basic-block formation rather than about source spelling.",
+   "mechanism": "A cc1 change that alters block formation, scheduling, or reorg's slot filling could give one 0xD arm a second real insn at zero byte cost, which is precisely the honest breaker demonstrated at the -1 pair.",
+   "next_probe": "Three steps, one turn: (i) sandbox the honest `sel = 0xD` form and record build_insns; (ii) `pwsh tools/grinder/dump.ps1 func_80038C70` and census arm A / arm B block contents in the .jump2 dump; (iii) objdump the sandbox object to confirm the merge shape. s46 ran all three and recorded the baselines to diff against."
   },
   {
-   "hypothesis": "Owner answers (B2): canonical-asm is granted despite tier LOW.",
-   "mechanism": "Overrides the canonical gate, which routes this body as ordinary compiled C (scan 0/8).",
-   "next_probe": "Before any such grant is actionable, decide where jtbl_80010BB4 is emitted from once the body is no longer C \u2014 the jtbl coupling is exactly why the 2026-08-19 asm-until-matched migration refused this function, and no INCLUDE_ASM/whole-body-asm form exists that keeps the table alive."
+   "hypothesis": "The spelling axis is spent and must not be re-funded: what s45 got wrong was the REASON (family uniqueness), not the VERDICT, and the verdict now rests on block capacity, which no source spelling can change.",
+   "mechanism": "r1-r13, three permuter campaigns (168,754 iterations, both sides of the merge boundary) and two white-box BB2_XJUMP_DEBUG traces all land inside the corrected partition; every honest chassis presents both 0xD arms as one-real-insn blocks.",
+   "next_probe": "If a future session is tempted by a new spelling, first census the candidate's arm-A/arm-B jump2 block contents \u2014 a spelling that does not raise either block above one real insn cannot break the merge and needs no build."
   }
  ],
  "judge_constraints": [
