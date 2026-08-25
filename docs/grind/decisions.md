@@ -11118,3 +11118,28 @@ The ban does NOT extend. Banned form: uninitialised `s32 enable;` whose every in
 ## 2026-08-25 14:00 — func_80019568 — final call — **PASS**
 
 Three constructs. C1 (per-iteration `rec`/`o` record pointers) and C4/C5 are ordinary C. C3 (`s32 *p = &D_80102790;` load-then-store) is the exact zero-displacement RMW shape sanctioned by .claude/rules/pointer-rmw-global-sanctioned.md (neutral name, one load + one store, `old_mask` consumed downstream). C2's per-arm `o[2] = enable;` is duplicated-statement-into-arms (frozen list, .claude/rules/no-new-park-categories.md:285) and all four prereqs hold; the flag itself is default-initialised with the initialiser READ on the else path, which is precisely what state.json judge_constraints[1] permits over the banned uninitialised pass-through shape. Decisive fact I verified myself: target emits BOTH stores — asm/funcs/func_80019568.s:35-36 `addiu $v0,$zero,1; sh $v0,0x4($a2)` and :61 `sh $zero,0x4($a2)` — so the duplication reproduces target's own duplication rather than materialising instructions; the FAKE annotation is present on the valid-arm copy with family, rule path, mechanism (loop.c scan_loop movable) and exhaustion pointers. Also checked: all register pins and both `__asm__` blocks are gone, and regfix.txt's 5 func_80019568 rules are deleted. Exhaustion verified against hypotheses.md H14-H24 + rejected/{bare-literal-o2-li-hoisted-8, bits-carrier-reuse-*-6, computed-flag-sltiu-10, flag-store-after-join-21}.c, not the agent's claim. One blemish, not grounds to bounce: `s16 *output;` (src/code6cac.c:375) is declared and never referenced, contradicting self_vet.md T2/T6's 'no unused variable' claim; evidence.md:300 measured its removal codegen-neutral and a never-live pseudo takes no frame slot, so it steers nothing and is inert leftover, not a frame-coercion construct. Worth deleting on any later touch of this TU.
+
+## 2026-08-25 — func_80060A68 — **OWNER RULING: (b)** (decision packet of 2026-08-25 10:04)
+
+**Ruling (owner, Trenton, 2026-08-25):** option **(b)** — an operator-side lane is
+authorized to diagnose and repair the asm-until-matched migration for this ONE
+function: land `INCLUDE_ASM("asm/funcs", func_80060A68);` and retire
+asmfix.txt:82-83 (the project's last two asmfix rules, the whole-body
+`delete_between`/`insert_before` splice) in the SAME oracle-verified change.
+
+**Scope and consequences:**
+- Representation/routing only. No standard is relaxed, no grant issued, no
+  completion conferred. The function stays INCOMPLETE and ACTIVE on the queue at
+  its honest ledger floor 2; `candidate.c` (score 2/66) and the 67 disproven bodies
+  stay in `memory/grind/func_80060A68/`.
+- Per [[asm-until-matched]] the migration banks the retired chassis (the committed
+  rule-era C body + the two asmfix rules) in the ledger and writes
+  `migration_pin.json` with the honest floor (2) for queue ordering.
+- The lane is bounded to: src/text1b.c (this function's body), asmfix.txt:73-83
+  (its comment block + rules), the func_80060A68 ledger, engine/queue.json, and
+  the grind record files. The oracle (SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa)
+  gates the change; on any mismatch the operator diagnoses (the sweep-3 attempt
+  failed at sha1=699695d890f0570a3039af734ed84a6a7c44302c and was rolled back) —
+  never commits a red tree.
+- RULES-TO-ZERO consequence: asmfix.txt converges to zero rules; regfix-only debt
+  remains for the campaign.
