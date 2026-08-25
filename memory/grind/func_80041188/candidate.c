@@ -219,6 +219,22 @@
  * rejected/split-pa4-copy-*): ALL-TARGET seats WITH target's `addiu $s3,$s7,0x20`, at
  * 133 insns, the single extra insn being `addu $s7,$v0,$zero` — so a spelling that
  * separates a4's and pa4's reference sets without materialising that copy is distance 0.
+ *
+ * s21 ADDENDUM (structural, 2026-08-25). Re-measured at the START of s21 with this
+ * exact body: STILL sandbox 1 / 132 of 132 insns. This body is UNCHANGED and remains
+ * the best form. s21's result is a NEW CHASSIS, not an improvement to this one:
+ * deleting the `pa4` local and writing the parameter `a4` at every use site reopens
+ * E-s20-5's block-0 site, because the block-0 do-while(0) wrap's unavoidable second
+ * +1 then lands on a4 (live 190, 8 refs = 1263) instead of on pa4 (live 95, 8 refs =
+ * 2526). On that chassis form Q1 (memory/grind/func_80041188/alt_Q1_pa4free_alltarget_s21.c)
+ * holds ALL-TARGET seats WITH target's block-2 `addiu $s3,$s7,0x20` at 132 insns and
+ * scores 7, its entire residual being sched1 emission order in block 0. Two warnings
+ * for anyone editing THIS body: (1) the `pa4` local here is chassis-defining, not
+ * cosmetic -- deleting it drops a4 to 6/190 = 631, below a3's 808, and the two swap
+ * $s7/$fp (sandbox 1 -> 13, evidence.md E-s21-2); (2) a dead store `out3 = out2;` is
+ * byte-free but flow-INVISIBLE (E-s21-5), so it cannot buy out2 a reference. The
+ * `stptr = base; stptr += 0xFC;` chain-extender below is still the one unresolved
+ * artifact defect and still needs its FAKE annotation (present) or a replacement.
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {

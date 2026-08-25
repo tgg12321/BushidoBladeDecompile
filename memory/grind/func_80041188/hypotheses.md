@@ -1670,3 +1670,63 @@ statement, which has never been tried in block 0.
 - probe: block 0 measured this session (Y1 / Y2a / Y2b / Z1); loop1 by E-s18-3's +2-or-nothing derivation plus E-s16-4's measured fold-backs; block 2 by E-s17-3 / E-s14-5 plus a direct read of target's block-2 insns for a possible combine consumer.
 - result: All three sites dead. block 0: weighting the definition co-weights pa4, parameter-sourcing is inert, splitting the copy materialises an insn, cross-derivation reassociates. loop1: a use-only extra reference cannot survive combine's merge. block 2: the reference survives cse1 (different EBB) but combine can only delete it by merging into a same-basic-block consumer, and target's block 2 (addiu $s1/$s2,0x6C, addiu $s4,zero,0x12, lw $t0,0x18($sp), addiu $s3,$s7,0x20, addiu $s0,$t0,0x750) contains no insn that could absorb one -- the un-absorbed copy IS the standing residual move $s3,$s6.
 - verdict: CONFIRMED
+
+## [s21] E-s20-5's block-0 kill is chassis-relative: DELETING the `pa4` local removes the co-weighting that killed Y1, so a block-0 do-while(0) wrap around out2's definition can lift out2 alone.
+- mechanism: flow.c:2081 weights every reference in the enclosed INSN, and out2's definition necessarily references the matrix pointer. On the pa4 chassis that second +1 lands on pa4 at 7 -> 8 refs, and floor_log2(8) = 3 makes the priority JUMP (1473 -> 2526) above out2, tbl and i. With no `pa4` local at all the same insn references the PARAMETER a4, whose live length is 190 (it spans both loops) instead of 95 -- so a4 at 8 refs / 190 is 1263, which crosses the same floor_log2 boundary but lands BELOW out2 and above a3 (808). The wrap's unavoidable second +1 becomes harmless.
+- probe: N1 = s20's Y1 with `s32 *pa4 = a4;` deleted and every `pa4` rewritten to `a4` (target's block-2 spelling `out3 = (s32 *)((u8 *)a4 + 0x20);` kept); ALLOCDBG via tmp/grind/func_80041188/s21/dump20.sh + sandbox --disable all + objdump differ.
+- result: ALL-TARGET callee-saved seats WITH target's block-2 `addiu $s3,$s7,0x20` at 132 build insns -- stptr 6/41=2926 $s3, stptr2 6/48=2500 $s0, i 8/97=2474 $s4, tbl 5/47=2127 $s5, out2 4/42=1904 $s6, a4 8/190=1263 $s7, a3 4/99=808 $fp, out3 3/47 $s3 -- sandbox 7 where the same construct on the pa4 chassis scored 27. Every remaining diff is sched1 emission ORDER, not allocation.
+- verdict: CONFIRMED
+
+## [s21] On the pa4-free chassis tbl needs no wrap at all if its definition is demoted from a declaration initialiser to the LAST statement of block 0.
+- mechanism: tbl's live length is measured from its defining insn to `tbl++` in loop1, so moving the definition down block 0 shortens it 47 -> 41 without touching its reference count; at 4 refs the priority rises 1702 -> 1951, which clears out2's wrapped 1860 without the +1 the loop-note dial would have to supply.
+- probe: Q1 = N3 (F1 stptr, no loop1 wrap) with `s32 *tbl;` + `tbl = D_80094CFC;` as the final block-0 statement; positional controls Q2/Q3/Q4 (after `stptr = base;` / after the out2 wrap / after `saved`) and P3/P4/P5 (the same positions with the tbl assignment still wrapped).
+- result: Q1 scores 7 at 132 insns with ALL-TARGET seats (tbl 4/41=1951 > out2 4/43=1860), i.e. identical to the two-wrap N1/N3 forms with one fewer FAKE construct. The position ladder is monotone: Q1 (last) 7, Q2 8, Q3 8, Q4 (after saved) 11, declaration-initialiser (N6) 11 -- the last two because tbl's live length reaches 45..47 and its priority falls under out2's.
+- verdict: CONFIRMED
+
+## [s21] The residual on the pa4-free chassis is a positional DILEMMA on tbl's definition, not a missing reference.
+- mechanism: target emits `addiu $s4,zero,1` / `sw $s5,0x34($sp)` / `lui $s5` / `addiu $s5,$s5` as the first four insns of block 0, so target's tbl definition is early in LUID; sched1 cannot schedule a late-LUID block-0 insn with no in-block successors up to the top. But an early tbl definition means live 47, at which 4 references give 1702 -- under out2's 1860/1904 -- so tbl needs a FIFTH reference, and the loop-note dial is the only construct in this compiler that produces an odd reference delta (E-s18-3), so it needs a second wrap, whose notes then cost emission order somewhere else.
+- probe: both horns measured. Early tbl + loop1 wrap on `offset = (*tbl) * 6;` (N1/N3); early tbl + block-0 wrap on the tbl assignment at five positions (N4/N5/P3/P4/P5); one wrap enclosing BOTH definitions (T1/T3/T4); the wrap moved onto `tbl++` (N9); and eight block-0 statement permutations on the Q1 chassis (R1..R8).
+- result: Nothing beats 7. Early-tbl forms pay ~6 loop1 order diffs (tbl++ hoisted past the `addiu $a0,$sp,0x10` / `addu $a1,$s7,$zero` setup, `addu $s0,$s0,$s2` following) plus 1 block-0 diff; late-tbl forms pay 4 block-0 positions (the `sw $s5,0x34($sp)` / `lui $s5` / `addiu $s5` trio ~7 slots late, `sw $t0,0x18($sp)` 2 slots early). N9 materialises an insn (133). T3 = 8, T1 = 12, T4 = 13, N4 = 13, R1..R8 = 8..14.
+- verdict: CONFIRMED
+
+## [s21] A dead store `out3 = out2;` immediately before `out3 = (s32 *)((u8 *)a4 + 0x20);` buys out2 its fourth flow-counted reference for free (the E-s20-5 site-3 escape).
+- mechanism: flow.c fixes reg_n_refs before combine, so a reference that a LATER pass deletes is still counted (this is exactly how the F1 chain-extender works); a store killed by an immediately following store to the same pseudo emits nothing, so the form would be byte-free.
+- probe: S1 = the pa4-free chassis with the block-0 out2 wrap removed and the dead store inserted; ALLOCDBG + sandbox.
+- result: KILLED, and cleanly. 132 build insns (the store really is byte-free) but out2 stays at 3 refs / live 42 = 714 and the seats collapse (a3 takes $s6, a4 $s7, out2 $fp), sandbox 10. flow.c's own dead-code elimination runs INSIDE life analysis and deletes the insn as it scans, so its registers are never counted -- unlike a combine deletion, which happens after counting. The distinction "deleted by flow = uncounted, deleted by combine = counted" is the operative law for every byte-free-reference hunt on this function.
+- verdict: KILLED
+
+## [s21] The `pa4` local is chassis-defining, not cosmetic: candidate.c does NOT survive its removal.
+- mechanism: on candidate.c's chassis (`out3 = out2;`, no out3-from-a4 definition) the matrix pointer has only 6 references without the `pa4 = a4` copy insn; 6 refs over live 190 is 631, below a3's 808.
+- probe: CANDF = candidate.c verbatim with `s32 *pa4 = a4;` deleted and pa4 -> a4 throughout; ALLOCDBG + sandbox.
+- result: a4 6/190 = 631 and a3 4/99 = 808 SWAP seats ($s7 <-> $fp); sandbox 1 -> 13 at 132 insns. The pa4-free chassis works only where out3 is defined from a4, because that definition is the 8th reference that pushes a4 across the floor_log2 boundary to 1263.
+- verdict: CONFIRMED
+
+## [s21] E-s20-5's block-0 kill is chassis-relative: with the `pa4` local deleted and the parameter `a4` written at every use site, a block-0 do-while(0) wrap around out2's definition lifts out2 without the co-weighting that killed s20's Y1.
+- mechanism: flow.c:2081 weights every reference in the ENCLOSED INSN, and out2's definition necessarily references the matrix pointer. On the pa4 chassis that second +1 puts pa4 at 8 refs / live 95, and floor_log2(8)=3 makes the priority jump 1473 -> 2526, above out2, tbl and i. With no pa4 local the reference lands on the parameter a4, whose live length is 190 (it spans both loops), so 8 refs give 1263 -- across the same floor_log2 boundary but landing between out2 (1904) and a3 (808).
+- probe: N1 = s20's Y1 with `s32 *pa4 = a4;` deleted and pa4 -> a4 throughout, keeping target's block-2 spelling `out3 = (s32 *)((u8 *)a4 + 0x20);`. ALLOCDBG via tmp/grind/func_80041188/s21/dump20.sh, sandbox --disable all, objdump differ via s21/odiff.py.
+- result: ALL-TARGET callee-saved seats WITH target's block-2 addiu $s3,$s7,0x20 at 132 build insns of 132: stptr 6/41=2926 $s3, stptr2 6/48=2500 $s0, i 8/97=2474 $s4, tbl 5/47=2127 $s5, out2 4/42=1904 $s6, a4 8/190=1263 $s7, a3 4/99=808 $fp, out3 3/47 $s3. Sandbox 7, where the identical construct scored 27 on the pa4 chassis. Every remaining diff is sched1 emission order.
+- verdict: CONFIRMED
+
+## [s21] On the pa4-free chassis tbl needs no reference lift at all: demoting its declaration initialiser to a plain assignment as the LAST statement of block 0 raises its priority above out2 by shortening its live range.
+- mechanism: reg_live_length(tbl) is the distance from tbl's defining insn to `tbl++` in loop1, so moving the definition down block 0 shortens it 47 -> 41 with the reference count unchanged; at 4 refs the priority rises 1702 -> 1951, clearing out2's wrapped 1860 without needing the loop-note dial's +1.
+- probe: Q1 (tbl assignment last in block 0, no tbl wrap) plus the full position ladder Q2/Q3/Q4/N6 unwrapped and P3/P4/P5/N4/N5 wrapped; ALLOCDBG + sandbox on each.
+- result: Q1 = sandbox 7 at 132 insns with ALL-TARGET seats and ONE fewer FAKE construct than N1 (tbl 4/41=1951 > out2 4/43=1860). Ladder: last 7, after `stptr = base;` 8, after the out2 wrap 8, after `saved` 11, declaration initialiser 11. Wrapping the tbl assignment as well buys nothing anywhere (13/8/8/8/7).
+- verdict: CONFIRMED
+
+## [s21] The residual on the pa4-free chassis is a single positional DILEMMA on tbl's definition, not a missing reference.
+- mechanism: target's first four block-0 insns are addiu $s4,zero,1 / sw $s5,0x34($sp) / lui $s5 / addiu $s5,$s5, so target's tbl definition is early in LUID, and sched1 cannot lift a late-LUID block-0 insn with no in-block successors to the top. But an early definition means tbl live 47, where 4 refs = 1702 sits under out2's 1860/1904, so tbl then needs a FIFTH reference; per E-s18-3 the loop-note dial is the only construct in GCC 2.7.2 producing an odd reference delta, so a second do-while(0) wrap is required and its notes cost emission order elsewhere.
+- probe: Both horns plus permutations: early tbl + loop1 wrap (N1/N3), early tbl + block-0 tbl wrap at five positions (N4/N5/P3/P4/P5), one wrap enclosing both definitions (T1/T3/T4), the wrap moved onto `tbl++` (N9), and eight block-0 statement permutations of Q1 (R1..R8).
+- result: Nothing beats 7. Early-tbl forms pay ~6 loop1 order diffs (tbl++ hoisted past the addiu $a0,$sp,0x10 / addu $a1,$s7,$zero setup, addu $s0,$s0,$s2 dragged with it) plus one block-0 diff; late-tbl forms pay 4 block-0 positions (the sw $s5 / lui $s5 / addiu $s5 trio ~7 slots late, sw $t0,0x18($sp) 2 slots early). N9 materialises an insn (133, sandbox 21); T3 8, T1 12, T4 13, N4 13, R1..R8 8..14.
+- verdict: CONFIRMED
+
+## [s21] A dead store `out3 = out2;` immediately before `out3 = (s32 *)((u8 *)a4 + 0x20);` buys out2 its fourth flow-counted reference for free -- the byte-free escape from E-s20-5's site 3.
+- mechanism: flow.c fixes reg_n_refs before combine runs, so a reference deleted by a LATER pass is still counted (this is how the F1 chain-extender works), and a store killed by an immediately following store to the same pseudo emits nothing, so the form should be byte-free AND counted.
+- probe: S1 = the pa4-free chassis with the block-0 out2 wrap removed and the dead store inserted; ALLOCDBG + sandbox.
+- result: The store IS byte-free (132 build insns) but flow-INVISIBLE: out2 stays at 3 refs / live 42 = 714 and the seats collapse (a3 -> $s6, a4 -> $s7, out2 -> $fp), sandbox 10. flow.c's dead-code elimination runs INSIDE life analysis -- propagate_block deletes the insn during the same backward scan that increments reg_n_refs -- so its registers are never counted. Deleted-by-flow is uncounted; only deleted-by-combine is counted.
+- verdict: KILLED
+
+## [s21] The `pa4` local in candidate.c is a redundant copy that can be deleted without changing candidate.c's codegen.
+- mechanism: cse1 canonicalises a4 and pa4 into one quantity (s17 make_regs_eqv law), so the copy looked cosmetic.
+- probe: CANDF = candidate.c verbatim with `s32 *pa4 = a4;` deleted and pa4 -> a4 throughout; ALLOCDBG + sandbox.
+- result: KILLED. Without the copy insn the matrix pointer has only 6 references, and 6/190 = 631 falls BELOW a3's 4/99 = 808, so a4 and a3 swap $s7/$fp: sandbox 1 -> 13 at 132 insns. The pa4-free chassis works only where `out3 = (s32 *)((u8 *)a4 + 0x20);` supplies an 8th reference. The two chassis are disjoint.
+- verdict: KILLED

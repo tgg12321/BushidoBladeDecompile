@@ -2740,3 +2740,116 @@ ALLOCDBG tables.
 - [s20] Z3 (wraps + `out3 = out2;`) holds ALL-TARGET seats at 132 insns yet scores 8 where candidate.c scores 1 with the same seats: loop1 do-while(0) wraps are insn-count-neutral but NOT sched1-emission-order-neutral (tbl++ and sw $t0,0x18($sp) displaced), so the wrap family is not a cheaper substitute for the F1 chain-extender on this chassis.
 
 - [s20] ENUMERATION (E-s20-5): on the goto chassis with target's block-2 spelling, out2's required 4th flow-counted reference has exactly three possible sites -- block 0, loop1, block 2 -- and all three are now measured or derived dead, closing the chassis for that spelling.
+
+### E-s21-1 - deleting the `pa4` local REOPENS E-s20-5 site 1 (block 0)
+
+s20 closed the block-0 site because the do-while(0) wrap around out2's definition
+necessarily co-weights the matrix pointer, and on the pa4 chassis that pushed pa4
+7 -> 8 refs / live 95 = 1473 -> 2526, above out2, tbl and i (Y1, sandbox 27).
+s21 deleted the `pa4` local entirely and wrote the parameter `a4` at all six use
+sites. The co-weighting still happens, but a4's live length is 190 (it spans both
+loops, where pa4's was 95), so 8 refs give 1263 -- across the same floor_log2(8)=3
+boundary, yet landing between out2 (1904) and a3 (808).
+
+MEASURED (form N1 = s20's Y1 minus the pa4 local; `tmp/grind/func_80041188/s21/N1.c`):
+stptr 6/41 = 2926 -> $s3, stptr2 6/48 = 2500 -> $s0, i 8/97 = 2474 -> $s4,
+tbl 5/47 = 2127 -> $s5, out2 4/42 = 1904 -> $s6, a4 8/190 = 1263 -> $s7,
+a3 4/99 = 808 -> $fp, out3 3/47 -> $s3, saved spilled. **ALL-TARGET callee-saved
+seats WITH target's block-2 `addiu $s3,$s7,0x20`, at 132 build insns of 132,
+sandbox 7.** The same construct on the pa4 chassis scored 27. Every one of the
+seven remaining diffs is sched1 EMISSION ORDER; there is no allocation defect and
+no insn-count defect left on this chassis.
+
+### E-s21-2 - the pa4-free chassis is NOT a superset: candidate.c dies without pa4
+
+Control CANDF (candidate.c verbatim, `s32 *pa4 = a4;` deleted, pa4 -> a4): a4 falls
+to 6 refs / live 190 = 631, BELOW a3's 4/99 = 808, and the two swap $s7/$fp;
+sandbox 1 -> 13 at 132 insns. The `pa4 = a4` copy insn is the 7th reference that
+keeps the pointer above a3 on candidate.c's chassis. The pa4-free chassis only
+works where `out3 = (s32 *)((u8 *)a4 + 0x20);` supplies an 8th reference. The two
+chassis are disjoint, and "delete the redundant local" is a chassis switch, not a
+cleanup.
+
+### E-s21-3 - on the pa4-free chassis tbl needs no reference lift, only a later definition
+
+tbl's live length is the distance from its defining insn to `tbl++` in loop1.
+Demoting `s32 *tbl = D_80094CFC;` to `s32 *tbl;` plus a plain `tbl = D_80094CFC;`
+as the LAST statement of block 0 shortens it 47 -> 41, lifting tbl 1702 -> 1951 at
+its natural 4 references -- clearing out2's 1860 with no wrap on tbl at all.
+Form Q1 (`memory/grind/func_80041188/alt_Q1_pa4free_alltarget_s21.c`) measures
+sandbox 7 / 132 insns / ALL-TARGET seats with exactly two constructs: the block-0
+out2 wrap and candidate.c's F1 stptr chain-extender. Position ladder (all 132
+insns, seats correct until noted): last statement 7, after `stptr = base;` 8,
+after the out2 wrap 8, after `saved` 11 (tbl live 45, priority under out2),
+declaration initialiser 11. With the tbl assignment itself wrapped the same ladder
+reads 13 / 8 / 8 / 8 / 7 (N4 / N5 / P3 / P4 / P5) -- i.e. the wrap on tbl buys
+nothing anywhere the plain assignment already works.
+
+### E-s21-4 - the whole residual is one positional dilemma on tbl's definition
+
+target's first four block-0 insns are `addiu $s4,zero,1`, `sw $s5,0x34($sp)`,
+`lui $s5,%hi(D_80094CFC)`, `addiu $s5,$s5,%lo(D_80094CFC)` -- so in the original
+source tbl's definition is early (a declaration initialiser, right after `i = 1`).
+sched1 cannot lift a late-LUID block-0 insn with no in-block successors to the top,
+so a late tbl definition emits its lui/addiu (and the dependent `sw $s5` prologue
+save that must precede the clobber) ~7 slots after target's position: that trio
+plus `sw $t0,0x18($sp)` two slots early is Q1's entire 7-diff residual.
+But an EARLY tbl definition means live 47, where 4 references give 1702, under
+out2's 1860/1904 -- so tbl then needs a FIFTH reference, and per E-s18-3 the
+loop-note dial is the only construct in GCC 2.7.2 that yields an odd reference
+delta, so a second do-while(0) wrap is required, and its notes cost emission order
+elsewhere. Measured horns: early tbl + loop1 wrap on `offset = (*tbl) * 6;`
+(N1 / N3) = 7, of which 1 diff is block 0 (`sw $t0,0x18($sp)`) and ~6 are loop1
+(tbl++ hoisted past the `addiu $a0,$sp,0x10` / `addu $a1,$s7,$zero` argument setup,
+`addu $s0,$s0,$s2` dragged with it); the wrap moved onto `tbl++` materialises an
+insn (N9, 133, sandbox 21); one wrap enclosing BOTH definitions T3 = 8, T1 = 12,
+T4 = 13; and eight block-0 statement permutations of Q1 (R1..R8) score 8..14, none
+better than Q1's order.
+
+### E-s21-5 - deleted-by-flow is uncounted; only deleted-by-combine is counted
+
+The obvious byte-free escape for E-s20-5's site 3 is a dead store: write
+`out3 = out2;` immediately before `out3 = (s32 *)((u8 *)a4 + 0x20);`. Measured
+(form S1): the build stays at 132 insns -- the store really is byte-free -- but
+out2 stays at **3 refs / live 42 = 714** and the seats collapse (a3 -> $s6,
+a4 -> $s7, out2 -> $fp), sandbox 10. flow.c's dead-code elimination runs INSIDE
+life analysis (propagate_block deletes the insn during the same backward scan that
+increments reg_n_refs), so a flow-deleted insn's registers are never counted, where
+a combine-deleted insn's registers already have been. This is the operative law for
+every remaining byte-free-reference hunt on this function: the reference must
+survive into combine, not merely disappear.
+
+### s21 artifacts
+
+`tmp/grind/func_80041188/s21/` -- `apply.py`, `dump20.sh`, `sweep.ps1`, `odiff.py`,
+`text1a_pre.c.orig`, the variant bodies `CAND.c` / `CANDF.c` / `N1..N9.c` /
+`P3..P5.c` / `Q1..Q4.c` / `R1..R8.c` / `S1.c` / `T1,T3,T4.c`, and per-tag cc1 dump
+directories (`N1/`, `N5/`, `P5/`, `S1/`, `CANDF/`) holding `red.i.*` pass dumps +
+`cc1.err` with the ALLOCDBG tables.
+
+- [s21] Chassis re-measured at session start with candidate.c applied to src/text1a_pre.c: sandbox func_80041188 --disable all = score 1, 132 target / 132 build insns. src/text1a_pre.c restored to HEAD at the end; no build-pipeline file touched.
+- [s21] Deleting the `pa4` local (writing the parameter a4 at all use sites) REOPENS E-s20-5's block-0 site: the do-while(0) wrap around out2's definition still co-weights the matrix pointer, but a4's live length is 190 rather than pa4's 95, so 8 refs = 1263 lands between out2 (1904) and a3 (808) instead of above everything. Form N1 = ALL-TARGET seats WITH target's block-2 addiu $s3,$s7,0x20 at 132 insns, sandbox 7 (the same construct scored 27 on the pa4 chassis).
+- [s21] The two chassis are disjoint: candidate.c with pa4 deleted (CANDF) drops a4 to 6/190 = 631, below a3's 808, swapping $s7/$fp -- sandbox 1 -> 13. The pa4-free chassis works only where out3 is defined from a4, that definition being a4's 8th reference.
+- [s21] On the pa4-free chassis tbl needs no reference lift: demoting its declaration initialiser to a plain assignment as the LAST statement of block 0 shortens live 47 -> 41 and lifts it 1702 -> 1951, clearing out2's 1860. Form Q1 = ALL-TARGET seats, 132 insns, sandbox 7, with only two constructs (block-0 out2 wrap + the F1 stptr chain-extender).
+- [s21] The residual is now a single positional dilemma: target's tbl definition is EARLY (its lui/addiu are block 0's insns 3-4), but an early definition means live 47, where 4 refs = 1702 sits under out2, so tbl would need a fifth (odd -> loop-note-only) reference whose notes then cost emission order. Early-tbl forms pay ~6 loop1 order diffs, late-tbl forms pay 4 block-0 positions; both horns and eight block-0 permutations measure 7..14, none below 7.
+- [s21] A dead store `out3 = out2;` before the out3 definition is byte-free (132 insns) but flow-INVISIBLE: out2 stays at 3 refs. flow.c deletes dead insns inside life analysis, so their registers are never counted -- unlike combine deletions, which happen after counting. Every byte-free-reference spelling on this function must survive into combine.
+
+- [s21] Chassis re-measured at session start with candidate.c applied to src/text1a_pre.c: sandbox func_80041188 --disable all = score 1, 132 target / 132 build insns. src/text1a_pre.c restored to HEAD at the end; no build-pipeline file touched.
+
+- [s21] Form N1 (pa4 local deleted, block-0 out2 wrap, tbl loop1 wrap, F1 stptr): ALL-TARGET callee-saved seats WITH target's block-2 addiu $s3,$s7,0x20, 132 of 132 insns, sandbox 7 -- the same construct scored 27 on the pa4 chassis (s20 Y1).
+
+- [s21] a4's live length is 190 on the pa4-free chassis versus pa4's 95, which is why the block-0 wrap's unavoidable second +1 (8 refs, floor_log2 = 3) yields 1263 and lands harmlessly between out2 (1904) and a3 (808) instead of above everything at 2526.
+
+- [s21] Form Q1 (memory/grind/func_80041188/alt_Q1_pa4free_alltarget_s21.c): same seats and same 132 insns at sandbox 7 with ONE fewer construct -- tbl's definition demoted to the last statement of block 0 shortens its live range 47 -> 41 and lifts it 1702 -> 1951, so no tbl wrap is needed.
+
+- [s21] tbl definition-position ladder on the pa4-free chassis (all 132 insns): last statement 7, after `stptr = base;` 8, after the out2 wrap 8, after `saved` 11, declaration initialiser 11 -- the last two because tbl's live length reaches 45..47 and its priority falls under out2's.
+
+- [s21] Target's block 0 opens addiu $s4,zero,1 / sw $s5,0x34($sp) / lui $s5,%hi(D_80094CFC) / addiu $s5,$s5,%lo(D_80094CFC), so the original source defines tbl early -- which on this chassis costs tbl the priority it needs, giving the dilemma that is now the entire residual.
+
+- [s21] A dead store `out3 = out2;` is byte-free (132 insns) yet leaves out2 at 3 refs: flow.c deletes dead insns inside life analysis, so their registers are never counted, unlike combine deletions which happen after counting. Every remaining byte-free-reference spelling must survive into combine.
+
+- [s21] candidate.c does NOT survive deletion of its pa4 local (a4 6/190 = 631 falls below a3's 808; sandbox 1 -> 13), so the pa4-free chassis is a switch, not a cleanup, and the two chassis are disjoint.
+
+- [s21] Eight block-0 statement permutations of Q1 (R1..R8) score 8..14 -- the order saved / out2 / stptr / tbl is already optimal on that chassis.
+
+- [s21] A wrap around `tbl++` instead of the tbl read materialises an insn (133 build insns, sandbox 21); a single wrap enclosing both the tbl and out2 definitions scores 8 (T3) / 12 (T1) / 13 (T4).

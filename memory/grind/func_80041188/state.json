@@ -1,7 +1,7 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 20,
+ "session_count": 21,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -129,23 +129,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Goto chassis CLOSED for target's block-2 spelling: out2's required 4th flow reference has exactly three sites, all now dead; the parameter-split form (Y2b/Y4) reaches ALL-TARGET seats WITH target's ad"
+  },
+  {
+   "session": 21,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Deleting the pa4 local REOPENS E-s20-5's block-0 site: a new chassis holds ALL-TARGET seats WITH target's block-2 addiu $s3,$s7,0x20 at 132 insns (sandbox 7), residual now pure sched1 block-0 emission"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The Y2b/Y4 parameter split is one insn from distance 0: a spelling that keeps a4's and pa4's reference sets apart WITHOUT materialising `addu $s7,$v0,$zero` gives ALL-TARGET seats plus target's block-2 addiu at 132 insns.",
-   "mechanism": "The copy exists only because a4 becomes a block-0-LOCAL quantity (its last use is the copy itself), so local_alloc assigns it a call-clobbered register before global_alloc seats pa4, and GCC 2.7 never coalesces a local quantity into a global allocno. Anything that makes a4 and pa4 share one hard register -- or that removes one pa4 reference so the wrap's +1 nets back to 7 without splitting at all -- removes the insn.",
-   "next_probe": "Two spellings to measure on Y4: (a) give a4 a use in a LATER block so it becomes a global allocno and global.c's copy preference can seat it in $s7 (watch whether it then steals a seat and spills a3, as the s19 uservar copy did); (b) enumerate whether any ONE of pa4's seven references can be re-sourced through out2 or out3 without changing emitted bytes -- pa4 at 7 refs with the wrap's +1 is exactly the 1473 the seat order wants."
+   "hypothesis": "On the pa4-free chassis, target's block-0 emission order is reachable if tbl's definition can be EARLY (declaration-initialiser position, live 47) while tbl's priority still clears out2 -- which needs either a fifth tbl reference that emits no loop notes, or out2 pushed below 1702.",
+   "mechanism": "tbl at 4 refs / live 47 = 1702; out2 at 4 refs / live 42..43 = 1904/1860. The gap is one floor_log2 step. E-s18-3 says only the loop-note dial produces an ODD reference delta, and every wrap measured this session costs 4..6 emission-order diffs; an F1 chain-extender gives +2 (tbl 6/47 = 2553), which overshoots i (2474) and steals $s4. The escape would be an F1 +2 combined with i's live length shortened below 93 (8/93 = 2580 > 2553), i.e. `i = 1;` demoted from a declaration initialiser to a later block-0 statement.",
+   "next_probe": "Measure the pair together on the Q1/N3 chassis: keep tbl as a declaration initialiser but split its definition into a combine-foldable chain (watch the insn count FIRST -- a surviving addiu is fatal), and simultaneously demote `i = 1;` to a plain statement swept across block-0 positions, reading tbl/i/out2 priorities out of ALLOCDBG before looking at the score. Note the tbl chain-extender's only honest spelling may be out-of-bounds pointer arithmetic, in which case the measurement is a KILL, not a candidate."
   },
   {
-   "hypothesis": "The remaining live chassis is the real-loop one (s19 W6/W8), where out2's +1 is free from the loop-note dial and the ONLY residual is loop.c's constant-hoist tax (2 insns).",
-   "mechanism": "s19 E-s19-3 derived the tax from scan_loop's movable test (loop.c:686-700) and move_movables' profitability test (loop.c:1631), both of which pass unconditionally for a single-basic-block loop body; the hoisted `li 2` becomes a whole-function allocno, global.c spills it and reload rematerialises it into $t0 where target has $v0. The escape is to make the constant NOT loop-invariant rather than to defeat the hoist.",
-   "next_probe": "Measure a single real loop i = 1..0x13 whose body selects the stored constant from the index (2 for i < 0x12, else 1), checking FIRST whether the extra branch splits the loop body's basic block -- which would also break reg_in_basic_block_p and defeat the movable test outright -- and comparing the insn count against 132 before looking at seats."
+   "hypothesis": "The 4-position block-0 order cost of a late tbl definition is a sched1 ranking artifact that a dependency, not a position, could fix: if tbl's defining insn acquired an in-block successor, sched1 would schedule it early despite its late LUID.",
+   "mechanism": "sched.c's rank_for_schedule ranks by INSN_PRIORITY (the dependency critical path) and falls back to INSN_LUID. tbl's lui/addiu pair has no consumer inside block 0 -- its only use is `lw $v0,0($s5)` in loop1 -- so its priority is minimal and it sinks, dragging the dependent `sw $s5,0x34($sp)` prologue save with it. Target's copy is early because its LUID is early.",
+   "next_probe": "Enumerate whether any block-0 value target already computes could legitimately be sourced from tbl (e.g. an address or a compare operand), giving the lui/addiu an in-block consumer without adding an insn; if none exists, this closes the late-tbl horn by derivation and leaves only the early-tbl horn from frontier item 1."
   },
   {
-   "hypothesis": "On the goto chassis the F1 chain-extender in candidate.c can be replaced by an honest index-derived address whose multiply combine folds, satisfying requirement (A) (stptr > i) without loop notes.",
-   "mechanism": "s14 showed (A) is stptr > i; s19 showed an index-derived address makes the pointer's reference count large. Without loop notes there is no strength reduction, so the multiply must be folded by combine while flow still counts the extra references -- the same combine-deletes-after-flow window the F1 family exploits, but with a semantically real expression.",
-   "next_probe": "On the BASE chassis spell loop1's address as `ents + i * 0x68` with the goto loop and measure: count the emitted insns first (a surviving multiply is fatal), then read stptr's and i's reg_n_refs from ALLOCDBG."
+   "hypothesis": "The real-loop chassis (s19 W6/W8) may be strictly better than both goto horns now, because on it out2's +1 comes free from the loop-note dial and the pa4-free discovery removes the parameter-copy tax that blocked s20's Y2b/Y4.",
+   "mechanism": "s19 E-s19-4/E-s19-5 left the real-loop chassis with a single residual -- loop.c's constant-hoist tax of 2 insns -- while its reference weighting is free (every loop1 reference counts at depth 2). s21 has now shown that writing the parameter directly rather than through a local changes the pointer's live length from 95 to 190 and hence its floor_log2 band, a lever never applied on the real-loop chassis.",
+   "next_probe": "Rebuild s19's alt_W4_realloop_giv_honest_s19.c with the pa4 local deleted (a4 written at all use sites) and out3 defined from a4, then read ALLOCDBG for a4's refs/live before scoring -- the question is only whether a4 lands between out2 and a3 there as it does on the goto chassis."
   }
  ],
  "judge_constraints": [
