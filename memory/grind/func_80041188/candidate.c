@@ -206,6 +206,19 @@
  * from loop.c:686-700 + loop.c:1631), after which reload rematerialises it into $t0
  * where target has $v0. On that chassis the whole out3 lock reduces to ONE missing
  * flow-counted reference on out2 (E-s19-4/E-s19-5).
+ *
+ * s20 ADDENDUM (structural, 2026-08-25). Re-measured at the START of s20 with this
+ * exact body: STILL sandbox 1 / 132 of 132 insns. s20 worked the GOTO chassis (this
+ * one) and CLOSED it for target's block-2 spelling: out2's required 4th flow-counted
+ * reference has exactly three possible sites and all three are now dead (evidence.md
+ * E-s20-5). Two results bear on the FAKE annotation below. (1) The do-while(0) wrap
+ * family is NOT a cheaper substitute for it here: Z3 reproduces this body's exact seat
+ * table with wraps at 132 insns and still scores 8, because the LOOP notes displace
+ * `tbl++` and `sw $t0,0x18($sp)` in sched1's emission order (E-s20-4). (2) The one axis
+ * that got further than this body's residual is the parameter split (Y2b/Y4,
+ * rejected/split-pa4-copy-*): ALL-TARGET seats WITH target's `addiu $s3,$s7,0x20`, at
+ * 133 insns, the single extra insn being `addu $s7,$v0,$zero` — so a spelling that
+ * separates a4's and pa4's reference sets without materialising that copy is distance 0.
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {

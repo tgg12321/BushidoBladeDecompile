@@ -1,8 +1,8 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 19,
- "current_modality": "rederive",
+ "session_count": 20,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -123,23 +123,29 @@
    "floor": 1,
    "modality": "rederive",
    "headline": "Rederived loop1 as a REAL loop over s18's 0x68-stride array (i as the biv, address inline): loop.c's giv hands the walking pointer 9 refs/live 40 for free, giving a second FAKE-free form at sandbox 3 "
+  },
+  {
+   "session": 20,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Goto chassis CLOSED for target's block-2 spelling: out2's required 4th flow reference has exactly three sites, all now dead; the parameter-split form (Y2b/Y4) reaches ALL-TARGET seats WITH target's ad"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "On the real-loop chassis (W6) the last missing +1 on out2 can come from a reference that survives cse1 and is deleted only by combine, placed in block 0 or the between-loops block where wraps are byte-free.",
-   "mechanism": "flow.c:2081 weights by note depth and block-0 wraps are byte-neutral here (E-s19-6), so any out2 reference that survives cse1 into flow -- by the s17 make_regs_eqv law (cse.c:844-857) that means a copy whose SOURCE outlives out2 -- would be counted, then folded by combine for zero bytes. The one donor tried (o2t) dies immediately and folds; the search is for a block-0 or block-2 value that outlives loop1 and is legitimately equal to a4 + 0x20 without adding a second pa4 reference inside the wrap.",
-   "next_probe": "Enumerate block-0/block-2 pseudos that outlive loop1 (ents, base, a3, stptr2's inputs) and test whether any can carry out2 as a copy destination; then measure the wrapped copy on the W6 chassis with s19/run.sh + the sandbox, watching pa4's ref count (it must stay at 9) and out2's live length (it must stay 41)."
+   "hypothesis": "The Y2b/Y4 parameter split is one insn from distance 0: a spelling that keeps a4's and pa4's reference sets apart WITHOUT materialising `addu $s7,$v0,$zero` gives ALL-TARGET seats plus target's block-2 addiu at 132 insns.",
+   "mechanism": "The copy exists only because a4 becomes a block-0-LOCAL quantity (its last use is the copy itself), so local_alloc assigns it a call-clobbered register before global_alloc seats pa4, and GCC 2.7 never coalesces a local quantity into a global allocno. Anything that makes a4 and pa4 share one hard register -- or that removes one pa4 reference so the wrap's +1 nets back to 7 without splitting at all -- removes the insn.",
+   "next_probe": "Two spellings to measure on Y4: (a) give a4 a use in a LATER block so it becomes a global allocno and global.c's copy preference can seat it in $s7 (watch whether it then steals a seat and spills a3, as the s19 uservar copy did); (b) enumerate whether any ONE of pa4's seven references can be re-sourced through out2 or out3 without changing emitted bytes -- pa4 at 7 refs with the wrap's +1 is exactly the 1473 the seat order wants."
   },
   {
-   "hypothesis": "The real-loop constant tax can be dodged not by defeating the hoist but by making the hoisted pseudo cheap to reload in $v0 -- or by keeping loop1 goto-based while still obtaining the giv, e.g. a real loop that contains ONLY the two address uses.",
-   "mechanism": "The tax is entirely reload's register pick for a spilled REG_EQUIV constant (loop.c:686-700 / 1631 make the hoist unavoidable). If loop1's constant store sat in a region where the constant is not loop-invariant -- for instance if the two stores of 2 and 1 were unified into one loop over 19 entries with the constant selected by the index -- there would be no movable at all.",
-   "next_probe": "Measure a single real loop i = 1..0x13 whose body branches on i < 0x12 for the two halves, checking first whether the branch splits loop1's basic block (which also breaks reg_in_basic_block_p and would defeat the movable test outright), and compare the insn count against 132 before looking at seats."
+   "hypothesis": "The remaining live chassis is the real-loop one (s19 W6/W8), where out2's +1 is free from the loop-note dial and the ONLY residual is loop.c's constant-hoist tax (2 insns).",
+   "mechanism": "s19 E-s19-3 derived the tax from scan_loop's movable test (loop.c:686-700) and move_movables' profitability test (loop.c:1631), both of which pass unconditionally for a single-basic-block loop body; the hoisted `li 2` becomes a whole-function allocno, global.c spills it and reload rematerialises it into $t0 where target has $v0. The escape is to make the constant NOT loop-invariant rather than to defeat the hoist.",
+   "next_probe": "Measure a single real loop i = 1..0x13 whose body selects the stored constant from the index (2 for i < 0x12, else 1), checking FIRST whether the extra branch splits the loop body's basic block -- which would also break reg_in_basic_block_p and defeat the movable test outright -- and comparing the insn count against 132 before looking at seats."
   },
   {
-   "hypothesis": "The goto chassis (candidate.c, floor 1) can drop its FAKE F1 chain-extender by importing s19's finding differently: stptr's priority requirement (A) is satisfiable if the pointer is derived from an index expression WITHOUT a loop note, e.g. a multiply that combine folds.",
-   "mechanism": "s14 showed requirement (A) is stptr > i; s19 showed an index-derived address makes the pointer's reference count large. Without loop notes there is no strength reduction, so the multiply must be folded away by combine while flow still counts the extra references -- the same combine-deletes-after-flow window the F1 family exploits, but with a semantically real expression.",
-   "next_probe": "On the BASE chassis, spell loop1's address as `ents + i * 0x68` with the goto loop (no notes) and measure: count the emitted insns first (a surviving multiply is fatal), then read stptr's/i's reg_n_refs from ALLOCDBG."
+   "hypothesis": "On the goto chassis the F1 chain-extender in candidate.c can be replaced by an honest index-derived address whose multiply combine folds, satisfying requirement (A) (stptr > i) without loop notes.",
+   "mechanism": "s14 showed (A) is stptr > i; s19 showed an index-derived address makes the pointer's reference count large. Without loop notes there is no strength reduction, so the multiply must be folded by combine while flow still counts the extra references -- the same combine-deletes-after-flow window the F1 family exploits, but with a semantically real expression.",
+   "next_probe": "On the BASE chassis spell loop1's address as `ents + i * 0x68` with the goto loop and measure: count the emitted insns first (a surviving multiply is fatal), then read stptr's and i's reg_n_refs from ALLOCDBG."
   }
  ],
  "judge_constraints": [

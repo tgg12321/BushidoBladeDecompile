@@ -2590,3 +2590,153 @@ tables.
 - [s19] A do-while(0) wrap in BLOCK 0 costs zero insns (W10 = 132 build insns) whereas the same wrap inside loop1 costs three; but a block-0 wrap weights nothing unless the enclosed reference survives cse1 (W10 lifts out2 by 0; W11, the unwrapped control, is byte-identical to W6).
 
 - [s19] s18's V5 score of 5 now decomposes exactly: 2 (giv/biv rewrite, removed by W4's indexed form) + 2 (loop.c constant hoist tax, killed by derivation) + 1 (the out3 lock).
+
+## s20 (structural, 2026-08-25) — the Z0 route on the GOTO chassis is closed by enumeration: out2's 4th reference has exactly three possible sites and all three are dead
+
+Chassis re-measured at the START of s20 with `candidate.c` applied to
+`src/text1a_pre.c`: `sandbox func_80041188 --disable all` = **score 1, 132 target /
+132 build insns**. `src/text1a_pre.c` was restored to HEAD at the end of the session;
+no build-pipeline file was touched. The floor did not move. s20 worked the GOTO
+chassis (candidate.c's chassis), complementing s19, which worked the real-loop one.
+
+All s20 forms are variants of s18's V7 (goto loop1, tbl-load wrap + stptr-store wrap,
+Z0 block-2 spelling `out3 = (s32 *)((u8 *)pa4 + 0x20)`) with V7's costly out2-CALL wrap
+removed. Tags/bodies + ALLOCDBG dumps: `tmp/grind/func_80041188/s20/`.
+
+### E-s20-1 — a block-0 do-while(0) wrap DOES lift out2, correcting the scope of s19's E-s19-6
+
+s19 concluded from W10 that a block-0 wrap "weights nothing unless the enclosed
+reference survives cse1", having wrapped a redundant COPY (`out2 = o2t`) that cse1
+deleted. s20 wrapped out2's own DEFINITION instead —
+`do { out2 = (s32 *)(((u8 *)pa4) + 0x20); } while (0);` (form Y1) — and the lift is
+real: **out2 3 -> 4 refs, live 42, priority 714 -> 1904**, at 132 build insns. The
+distinction is that a definition-by-plus is not deletable by cse1, so flow counts it
+at loop_depth 2. E-s19-6's rule should be read as being about *redundant copies*, not
+about block-0 wraps in general.
+
+1904 is exactly where the seat order wants out2 on this chassis (the required window
+is (pa4 1473, tbl 2127) with the tbl wrap in place). **The wrap nevertheless fails,
+for a different reason:** flow.c:2081 weights EVERY reference in the enclosed insn, and
+out2's definition necessarily references pa4, so pa4 goes 7 -> 8 refs (1473 -> 2526) and
+jumps above out2, tbl AND i in one step. Y1 measures **sandbox 27** with
+stptr 6/41=2926 $s3, pa4 8/95=2526 $s4, stptr2 6/48=2500 $s0, i 8/97=2474 $s5,
+tbl 5/47=2127 $s6, out2 4/42=1904 $s7, a3 808 $fp.
+Banked: `rejected/block0-wrap-out2-def-lifts-pa4-to-8refs-2526.c`.
+
+### E-s20-2 — writing the wrapped definition from the PARAMETER is inert; SPLITTING the parameter copy works but materialises one insn
+
+Y2a (Y1 with the wrapped definition written `(u8 *)a4 + 0x20` while the declaration
+`s32 *pa4 = a4;` stays the first statement) measures an ALLOCDBG table **byte-identical**
+to Y1 (pa4 8/95 = 2526, sandbox 27): cse1 canonicalises a4 and pa4 to one quantity inside
+block 0's EBB — pa4 outlives a4, so pa4 is the canonical register (s17 make_regs_eqv law,
+cse.c:844-857) — and the reference lands on pa4 anyway.
+
+Y2b demotes the declaration to `s32 *pa4;` and writes `pa4 = a4;` as a statement AFTER
+the a4-sourced wrapped definition, so the equivalence class is only formed after out2's
+definition has already referenced a4. The two pseudos stay distinct and the table
+becomes **ALL-TARGET seats WITH target's block-2 `addiu $s3,$s7,0x20`** — the combination
+E-s16-5 declared impossible on the goto chassis: stptr 6/41=2926 $s3, stptr2 6/48=2500
+$s0, i 8/98=2448 $s4, tbl 5/48=2083 $s5, out2 4/43=1860 $s6, pa4 6/93=1290 $s7,
+a3 4/100=800 $fp, out3 3/47 $s3. **Sandbox 12 at 133 build insns.** Y4 (the same split
+with the stptr wrap dropped and stptr bought with candidate.c's F1 chain-extender
+instead — one loop1 wrap in total) measures the same 12/133 with stptr 7/41=3414;
+dropping the tbl wrap as well (Y9) costs the tbl/out2 order and scores 15.
+
+The single defect is named by objdump: target loads the parameter straight into its
+callee-saved seat (`lw $s7,0x58($sp)`), while the split makes a4 a **block-0-local
+quantity**, so local_alloc seats it in a call-clobbered register ($v0) before
+global_alloc ever sees pa4, and the copy `addu $s7,$v0,$zero` is emitted (133 vs 132).
+GCC 2.7 has no coalescing that merges a local quantity into a global allocno, so the
+copy is structural, not schedulable away. Banked:
+`rejected/a4-sourced-wrapped-out2-def-cse1-canonicalises-to-pa4-inert.c`,
+`rejected/split-pa4-copy-alltarget-seats-plus-Z0-costs-one-param-copy-insn.c`,
+`rejected/split-pa4-copy-f1-stptr-alltarget-seats-still-one-copy-insn.c`.
+
+### E-s20-3 — no block-0 arithmetic derivation of one matrix pointer from the other survives cse1, in EITHER direction
+
+Z1 back-derives the first pointer from the second — `out2 = (s32 *)((u8 *)a4 + 0x20);
+pa4 = (s32 *)((u8 *)out2 - 0x20);` — to buy out2 a fourth reference from a
+semantically real statement with no wrap at all. Measured **sandbox 23 at 133 insns
+with out2 at 3 refs / live 43 = 697**, i.e. the intended reference does not exist; the
+ALLOCDBG table and score are IDENTICAL to Z2 (`pa4 = a4;` written plainly), proving cse1
+reassociated `(plus (plus a4 32) -32)` to `a4` before flow counted anything. This
+extends E-s18-2 from the ADD direction to the SUBTRACT direction and to a derived value
+consumed throughout the function. Banked:
+`rejected/pa4-backderived-from-out2-cse1-reassociates-to-a4.c`.
+
+### E-s20-4 — loop1 wraps are insn-count-neutral but NOT emission-order-neutral on the goto chassis
+
+Z3 (Y1 with the ledger's `out3 = out2;` spelling instead of Z0) reaches **ALL-TARGET
+seats at 132 build insns** — stptr 6/41=2926 $s3, stptr2 6/48=2500 $s0, i 8/97=2474 $s4,
+tbl 5/47=2127 $s5, out2 5/47=2127 $s6 (exact tie with tbl, broken the right way by
+allocno number 79 < 86), pa4 7/95=1473 $s7, a3 808 $fp — yet scores **8**, where
+candidate.c scores 1 with the SAME seats. objdump attributes every extra diff to the
+LOOP_BEG/END notes' effect on sched1's emission order, not to allocation: `tbl++`
+(`addiu $s5,$s5,0x4`) is displaced past the `addiu $a0,$sp,0x10` / `addu $a1,$s7,$zero`
+argument setup, `addu $s0,$s0,$s2` moves with it, and `sw $t0,0x18($sp)` is displaced in
+block 0. **A loop1 do-while(0) wrap is therefore strictly worse than candidate.c's F1
+chain-extender on this chassis even when it produces identical seats** — which also
+means the wrap family is not a cheaper substitute for the F1 annotation here. Banked:
+`rejected/wraps-alltarget-seats-notes-cost-six-sched-order-diffs.c`.
+
+### E-s20-5 — the enumeration: the Z0 route on the goto chassis is CLOSED
+
+On the goto chassis with target's block-2 spelling, the seat order needs out2's priority
+inside (pa4, tbl); with pa4 at its natural 7 refs / 95 = 1473 the only quantised
+solutions are 4 refs at live 42 (1904, tbl must be wrapped to 2127) or 4 refs at live 47
+(1702, tie with an unwrapped tbl broken the right way). Either way out2 needs a FOURTH
+flow-counted reference, and there are exactly three sites for it:
+  1. **block 0** — out2's only block-0 insn is its definition from pa4. Weighting it
+     co-weights pa4 (E-s20-1); sourcing it from the parameter is inert (E-s20-2);
+     splitting the parameter copy to dodge the co-weighting materialises one insn
+     (E-s20-2); deriving either pointer from the other is reassociated away (E-s20-3).
+  2. **loop1** — closed by E-s18-3's +2-or-nothing derivation plus E-s16-4's measured
+     fold-backs: a use-only extra reference cannot survive combine's merge.
+  3. **block 2** — closed by E-s17-3/E-s14-5: a reference there survives cse1 (different
+     EBB) but combine can only delete it by merging it into a consumer in the same basic
+     block, and target's block 2 contains no insn that could absorb an out2 reference
+     (`addiu $s1/$s2,0x6C`, `addiu $s4,zero,0x12`, `lw $t0,0x18($sp)`,
+     `addiu $s3,$s7,0x20`, `addiu $s0,$t0,0x750`). The un-absorbed copy IS the residual
+     `move $s3,$s6`.
+
+**Consequence:** target's block-2 `addiu $s3,$s7,0x20` and target's seats cannot be held
+simultaneously and byte-free on the goto chassis. The remaining live routes are (a) the
+real-loop chassis, where the +1 comes from the loop-note dial and the residual is s19's
+loop.c constant-hoist tax, and (b) making the Y2b/Y4 parameter copy free.
+
+### s20 artifacts
+
+`tmp/grind/func_80041188/s20/` — `apply.py`, `run.sh`, `dump20.sh`, `sweep.ps1`,
+`odiff.py`, the variant bodies `CAND.c`/`Y0.c`/`Y1.c`/`Y2a.c`/`Y2b.c`/`Y3.c`/`Y4.c`/
+`Y9.c`/`Z1.c`/`Z2.c`/`Z3.c`, and per-tag cc1 dump directories (`Y0/`, `Y1/`, `Y2a/`,
+`Y2b/`, `Y3/`, `Y4/`, `Z1/`, `Z3/`) holding `red.i.*` pass dumps + `cc1.err` with the
+ALLOCDBG tables.
+
+- [s20] Chassis re-measured at session start with candidate.c applied: sandbox func_80041188 --disable all = score 1, 132 target / 132 build insns. src/text1a_pre.c restored to HEAD at the end; no build-pipeline file touched.
+- [s20] A block-0 do-while(0) wrap around out2's DEFINITION does lift out2 (3 -> 4 refs, 714 -> 1904) at zero insn cost — correcting the scope of s19's E-s19-6, which had only wrapped a cse1-deletable copy. It fails because the same wrap co-weights pa4 (7 -> 8 refs, 1473 -> 2526) and pa4 jumps above out2, tbl and i (Y1, sandbox 27).
+- [s20] Writing the wrapped definition from the parameter `a4` while `s32 *pa4 = a4;` remains the first statement is inert (Y2a's ALLOCDBG table is byte-identical to Y1's): cse1 canonicalises a4 to pa4 inside block 0's EBB.
+- [s20] Splitting the parameter copy (`s32 *pa4;` + `pa4 = a4;` AFTER the a4-sourced wrapped definition) keeps the pseudos distinct and produces ALL-TARGET seats together with target's block-2 addiu $s3,$s7,0x20 on the GOTO chassis for the first time (out2 4/43=1860 $s6, pa4 6/93=1290 $s7) — sandbox 12 at 133 insns, the single extra insn being `addu $s7,$v0,$zero`, because a4 becomes a block-0-local quantity that local_alloc seats in a call-clobbered register before global_alloc sees pa4.
+- [s20] Y4 (the same split with only the tbl wrap left, stptr bought with the F1 chain-extender) also scores 12/133 with stptr 7/41=3414; dropping the tbl wrap too (Y9) scores 15. The stptr wrap is emission-neutral on this chassis; the tbl wrap is load-bearing for the tbl/out2 order.
+- [s20] Back-deriving pa4 from out2 (`pa4 = (s32 *)((u8 *)out2 - 0x20);`) is reassociated to `pa4 = a4` by cse1 before flow counts anything — Z1 and Z2 measure identically (sandbox 23, out2 3 refs). E-s18-2 now covers the subtract direction and real, function-wide-consumed derivations.
+- [s20] Z3 (wraps + `out3 = out2`) holds ALL-TARGET seats at 132 insns yet scores 8 vs candidate.c's 1 with the same seats: the LOOP notes displace `tbl++` past the argument setup and `sw $t0,0x18($sp)` in block 0. loop1 wraps are insn-count-neutral but not emission-order-neutral, so the do-while(0) family is not a cheaper substitute for the F1 chain-extender here.
+- [s20] ENUMERATION: on the goto chassis with target's block-2 spelling, out2's required 4th flow-counted reference has exactly three possible sites (block 0 / loop1 / block 2) and all three are now measured or derived dead — so target's addiu $s3,$s7,0x20 and target's seats cannot be held simultaneously and byte-free on this chassis.
+
+- [s20] Chassis re-measured at session start with candidate.c applied to src/text1a_pre.c: sandbox func_80041188 --disable all = score 1, 132 target / 132 build insns, rules_dropped 16, cheat_asm_stripped 2. src/text1a_pre.c restored to HEAD at the end; no build-pipeline file touched.
+
+- [s20] s19's E-s19-6 rule ('a block-0 wrap weights nothing unless the enclosed reference survives cse1') is now correctly scoped: it is a statement about redundant COPIES. A block-0 wrap around out2's DEFINITION lifts out2 3 -> 4 refs at zero insn cost (Y1, 132 build insns).
+
+- [s20] flow.c:2081's weighting is per-INSN, not per-symbol: wrapping out2's definition also lifts pa4 (7 -> 8 refs, 1473 -> 2526), which is why Y1 scores 27 despite out2 landing at exactly the required 1904.
+
+- [s20] cse1 canonicalises the parameter a4 to the local copy pa4 inside block 0's EBB whenever `s32 *pa4 = a4;` precedes the use, so writing a wrapped definition from a4 is a measured no-op (Y2a's ALLOCDBG is byte-identical to Y1's).
+
+- [s20] Writing `pa4 = a4;` as a statement AFTER an a4-sourced out2 definition keeps the two pseudos distinct and yields ALL-TARGET callee-saved seats together with target's block-2 addiu $s3,$s7,0x20 on the goto chassis (Y2b: out2 4/43=1860 $s6, pa4 6/93=1290 $s7, stptr 6/41=2926 $s3, i 8/98=2448 $s4, tbl 5/48=2083 $s5, stptr2 6/48=2500 $s0, a3 4/100=800 $fp) -- sandbox 12 at 133 insns.
+
+- [s20] Y2b's single extra insn is `addu $s7,$v0,$zero`: target loads the parameter straight into its callee-saved seat (lw $s7,0x58($sp)), while the split makes a4 a block-0-local quantity that local_alloc seats in a call-clobbered register before global_alloc ever sees pa4; GCC 2.7 has no coalescing that merges a local quantity into a global allocno.
+
+- [s20] Y4 (the same split with only the tbl wrap left and stptr bought with candidate.c's F1 chain-extender) also measures 12 at 133 insns with stptr 7/41=3414 -- the stptr wrap is emission-neutral on this chassis; Y9 (tbl wrap also dropped) costs the tbl/out2 order at 15.
+
+- [s20] Back-deriving one matrix pointer from the other (`pa4 = (s32 *)((u8 *)out2 - 0x20);`) is reassociated to `pa4 = a4` by cse1 before flow counts anything: Z1 and Z2 measure identically (sandbox 23, out2 3 refs / live 43). E-s18-2 therefore holds in the subtract direction too.
+
+- [s20] Z3 (wraps + `out3 = out2;`) holds ALL-TARGET seats at 132 insns yet scores 8 where candidate.c scores 1 with the same seats: loop1 do-while(0) wraps are insn-count-neutral but NOT sched1-emission-order-neutral (tbl++ and sw $t0,0x18($sp) displaced), so the wrap family is not a cheaper substitute for the F1 chain-extender on this chassis.
+
+- [s20] ENUMERATION (E-s20-5): on the goto chassis with target's block-2 spelling, out2's required 4th flow-counted reference has exactly three possible sites -- block 0, loop1, block 2 -- and all three are now measured or derived dead, closing the chassis for that spelling.

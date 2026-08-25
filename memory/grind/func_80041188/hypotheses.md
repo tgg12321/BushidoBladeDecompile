@@ -1610,3 +1610,63 @@ statement, which has never been tried in block 0.
 - probe: W10 = W6 + `o2t = (u8 *)pa4 + 0x20; do { out2 = (s32 *)o2t; } while (0);`, with W11 (same split, no wrap) as the control.
 - result: Byte-neutrality CONFIRMED (132 build insns vs 135 for the in-loop wrap) but the lift is KILLED: out2 stayed at 5 refs because the wrapped insn is a copy whose destination outlives its source, so make_regs_eqv (cse.c:844-857) keeps out2 canonical and cse1 deletes the copy before flow counts it (W11 measures identical to W6). A block-0 wrap must enclose a reference that survives cse1; out2's only block-0 donor is pa4, whose reference the same wrap would also weight (pa4 -> 10 refs / 3191, back above out2).
 - verdict: KILLED
+
+## [s20] A do-while(0) wrap in BLOCK 0 can supply out2's missing flow reference on the GOTO chassis (s19 concluded block-0 wraps weight nothing).
+- mechanism: flow.c:2081 (`reg_n_refs += loop_depth`) counts every reference in an insn enclosed by LOOP_BEG/END notes twice. s19's W10 wrapped a redundant COPY, which cse1 deletes before flow; out2's DEFINITION is a plus, which cse1 cannot delete, so it should be counted at depth 2.
+- probe: Form Y1 = s18 V7 with the costly out2-CALL wrap replaced by `do { out2 = (s32 *)(((u8 *)pa4) + 0x20); } while (0);` in block 0; ALLOCDBG via s20/dump20.sh + sandbox.
+- result: The lift is REAL and free — out2 3 -> 4 refs at live 42, priority 714 -> 1904 (exactly inside the required (pa4, tbl) window), 132 build insns. But the same wrap co-weights pa4 (7 -> 8 refs, 1473 -> 2526), which jumps pa4 above out2, tbl AND i: sandbox 27.
+- verdict: CONFIRMED as a mechanism (correcting E-s19-6's scope), KILLED as a route — out2's only block-0 insn references pa4 by construction.
+
+## [s20] Sourcing the wrapped definition from the parameter name (`a4`) instead of the local copy keeps the wrap's second +1 off pa4.
+- mechanism: If a4 and pa4 are distinct pseudos, the wrapped insn references a4, leaving pa4 at its natural 7 refs.
+- probe: Y2a (declaration `s32 *pa4 = a4;` kept, wrapped def written from a4) vs Y2b (declaration demoted to `s32 *pa4;`, `pa4 = a4;` written as a statement AFTER the wrapped def).
+- result: Y2a is INERT — its ALLOCDBG table is byte-identical to Y1 (pa4 8/95 = 2526, sandbox 27), because cse1 canonicalises a4 to pa4 inside block 0's EBB (pa4 outlives a4; s17 make_regs_eqv law). Y2b DOES keep them distinct and delivers ALL-TARGET seats together with target's block-2 `addiu $s3,$s7,0x20` — the first time that combination has been reached on the goto chassis (out2 4/43=1860 $s6, pa4 6/93=1290 $s7, stptr $s3, i $s4, tbl $s5, a3 $fp, stptr2 $s0) — but at 133 build insns, sandbox 12. The split makes a4 a block-0-LOCAL quantity, so local_alloc seats it in $v0 before global_alloc sees pa4, and `addu $s7,$v0,$zero` is emitted where target has `lw $s7,0x58($sp)` straight into the seat. Y4 (same split, stptr via the F1 chain instead of a wrap) measures identically at 12/133.
+- verdict: KILLED as spelled (the copy is structural — GCC 2.7 does not coalesce a local quantity into a global allocno), but the AXIS is alive: any spelling that keeps the two reference sets apart without materialising the copy is distance 0.
+
+## [s20] A semantically real back-derivation (`pa4 = (s32 *)((u8 *)out2 - 0x20);`) gives out2 a fourth reference without any wrap.
+- mechanism: E-s18-2 killed forward plus-derivations inside the definition's EBB; the reverse direction (deriving the SOURCE pointer from the derived one) puts the surviving reference on out2 instead of pa4.
+- probe: Z1, with Z2 (`pa4 = a4;` written plainly) as the control; ALLOCDBG + sandbox.
+- result: Z1 and Z2 measure IDENTICALLY (sandbox 23 at 133 insns, out2 3 refs / live 43 = 697, pa4 6/93 = 1290) — cse1 reassociated `(plus (plus a4 32) -32)` to `a4` before flow counted anything. E-s18-2 therefore covers the subtract direction and derivations whose result is consumed function-wide.
+- verdict: KILLED
+
+## [s20] The do-while(0) wrap family can replace candidate.c's F1 chain-extender at the same floor on the goto chassis.
+- mechanism: Both buy reference counts; if the wraps are insn-count-neutral (s18 T1/T3 measured 132) the seat-correct wrap form should score what candidate.c scores.
+- probe: Z3 = Y1 with the ledger's `out3 = out2;` block-2 spelling — i.e. the wrap form that reproduces candidate.c's exact seat table.
+- result: ALL-TARGET seats at 132 build insns (out2 5/47 = 2127 tying tbl 5/47, broken the right way by allocno number 79 < 86; pa4 7/95 = 1473) yet sandbox 8 against candidate.c's 1. objdump attributes every extra diff to sched1 emission order under the LOOP notes: `tbl++` (`addiu $s5,$s5,0x4`) displaced past the `addiu $a0,$sp,0x10` / `addu $a1,$s7,$zero` setup, `addu $s0,$s0,$s2` following it, `sw $t0,0x18($sp)` displaced in block 0.
+- verdict: KILLED — loop1 wraps are insn-count-neutral but not emission-order-neutral, so on this chassis they are strictly worse than the F1 chain-extender even at identical seats.
+
+## [s20] ENUMERATION — target's block-2 `addiu $s3,$s7,0x20` and target's callee-saved seats are simultaneously unreachable, byte-free, on the goto chassis.
+- mechanism: With pa4 at its natural 7 refs / 95 = 1473, the seat order needs out2 in (1473, tbl); the quantised solutions are 4 refs at live 42 (1904, needs the tbl wrap) or 4 refs at live 47 (1702, ties an unwrapped tbl the right way). Both require a FOURTH flow-counted out2 reference, and out2 exists in exactly three regions.
+- probe: block 0 = E-s20-1/E-s20-2/E-s20-3 (measured); loop1 = E-s18-3's +2-or-nothing derivation + E-s16-4's measured fold-backs; block 2 = E-s17-3/E-s14-5 plus a read of target's block-2 insns for a possible combine consumer.
+- result: All three sites dead. Block 0: weighting co-weights pa4, parameter-sourcing is inert, splitting materialises a copy, cross-derivation reassociates. loop1: a use-only reference cannot survive combine's merge. Block 2: the reference survives cse1 but combine can only delete it by merging into a same-block consumer, and target's block 2 (`addiu $s1/$s2,0x6C`, `addiu $s4,zero,0x12`, `lw $t0,0x18($sp)`, `addiu $s3,$s7,0x20`, `addiu $s0,$t0,0x750`) has none — the un-absorbed copy IS the residual `move $s3,$s6`.
+- verdict: CONFIRMED (closure). The live routes are now the real-loop chassis (s19's +1 dial, residual = loop.c's constant-hoist tax) and making the Y2b/Y4 parameter copy free.
+
+## [s20] A do-while(0) wrap in BLOCK 0 can supply out2's missing flow-counted reference on the goto chassis (s19's E-s19-6 concluded block-0 wraps weight nothing).
+- mechanism: flow.c:2081 (reg_n_refs += loop_depth) counts every reference in an insn enclosed by LOOP_BEG/END notes twice. s19's W10 wrapped a redundant COPY, which cse1 deletes before flow ever counts it; out2's DEFINITION is a plus, which cse1 cannot delete, so it should be counted at depth 2.
+- probe: Form Y1 = s18 V7 with the costly out2-CALL wrap replaced by `do { out2 = (s32 *)(((u8 *)pa4) + 0x20); } while (0);` in block 0; ALLOCDBG via tmp/grind/func_80041188/s20/dump20.sh + sandbox --disable all.
+- result: The lift is real and byte-free: out2 3 -> 4 refs at live 42, priority 714 -> 1904 (exactly inside the required (pa4 1473, tbl 2127) window), 132 build insns. But the same wrap co-weights pa4 (7 -> 8 refs, 1473 -> 2526), which jumps pa4 above out2, tbl AND i at once: sandbox 27. out2's only block-0 insn references pa4 by construction, so a block-0 wrap can never lift out2 alone.
+- verdict: KILLED
+
+## [s20] Sourcing the wrapped block-0 definition from the PARAMETER a4 instead of the local copy pa4 keeps the wrap's second +1 off pa4.
+- mechanism: If a4 and pa4 are distinct pseudos the wrapped insn references a4, leaving pa4 at its natural 7 refs / 1473, below out2's wrapped 1904.
+- probe: Y2a (declaration `s32 *pa4 = a4;` kept, wrapped def written from a4) and Y2b (declaration demoted to `s32 *pa4;`, `pa4 = a4;` written as a statement AFTER the a4-sourced wrapped def); ALLOCDBG + sandbox + objdump differ (s20/odiff.py).
+- result: Y2a is INERT (ALLOCDBG byte-identical to Y1, pa4 8/95 = 2526, sandbox 27): cse1 canonicalises a4 to pa4 inside block 0's EBB, pa4 being the later-dying register (s17 make_regs_eqv law, cse.c:844-857). Y2b DOES keep them distinct and produces ALL-TARGET seats together with target's block-2 `addiu $s3,$s7,0x20` -- the first time on the goto chassis (out2 4/43=1860 $s6, pa4 6/93=1290 $s7, stptr $s3, i $s4, tbl $s5, stptr2 $s0, a3 $fp) -- but at 133 insns, sandbox 12: the split makes a4 a block-0-LOCAL quantity, so local_alloc seats it in $v0 before global_alloc sees pa4 and `addu $s7,$v0,$zero` is emitted where target has `lw $s7,0x58($sp)` straight into the seat. Y4 (same split, stptr via the F1 chain instead of the stptr wrap) measures identically 12/133; Y9 (tbl wrap also dropped) 15/133.
+- verdict: KILLED
+
+## [s20] A semantically real back-derivation `pa4 = (s32 *)((u8 *)out2 - 0x20);` gives out2 a fourth reference with no wrap at all.
+- mechanism: E-s18-2 killed forward plus-derivations inside the definition's EBB; reversing the direction puts the surviving reference on out2 rather than on pa4.
+- probe: Z1 with Z2 (`pa4 = a4;` written plainly) as the control; ALLOCDBG + sandbox.
+- result: Z1 and Z2 measure IDENTICALLY (sandbox 23 at 133 insns, out2 3 refs / live 43 = 697, pa4 6/93 = 1290): cse1 reassociated (plus (plus a4 32) -32) to a4 before flow counted anything. E-s18-2 now provably covers the subtract direction and derivations whose result is consumed function-wide.
+- verdict: KILLED
+
+## [s20] The do-while(0) wrap family can replace candidate.c's FAKE F1 chain-extender at the same floor on the goto chassis.
+- mechanism: Both buy reference counts, and s18 measured the tbl-load and stptr-store wraps as insn-count-neutral (132), so the seat-correct wrap form should score what candidate.c scores.
+- probe: Z3 = Y1 with the ledger's `out3 = out2;` block-2 spelling, i.e. the wrap form that reproduces candidate.c's exact seat table; sandbox + objdump differ.
+- result: ALL-TARGET seats at 132 build insns (out2 5/47 = 2127 tying tbl 5/47, broken the right way by allocno number 79 < 86; pa4 7/95 = 1473; stptr 6/41 = 2926) yet sandbox 8 against candidate.c's 1. Every extra diff is sched1 emission order under the LOOP notes: `tbl++` (addiu $s5,$s5,0x4) displaced past the addiu $a0,$sp,0x10 / addu $a1,$s7,$zero setup, addu $s0,$s0,$s2 following it, sw $t0,0x18($sp) displaced in block 0.
+- verdict: KILLED
+
+## [s20] ENUMERATION: target's block-2 addiu $s3,$s7,0x20 and target's callee-saved seats are simultaneously unreachable, byte-free, on the goto chassis.
+- mechanism: With pa4 at its natural 7 refs / live 95 = 1473 the seat order needs out2 in (1473, tbl); floor_log2 quantisation admits only 4 refs at live 42 (1904, needs the tbl wrap) or 4 refs at live 47 (1702, ties an unwrapped tbl the right way). Both demand a FOURTH flow-counted out2 reference, and out2 exists in exactly three regions of the function.
+- probe: block 0 measured this session (Y1 / Y2a / Y2b / Z1); loop1 by E-s18-3's +2-or-nothing derivation plus E-s16-4's measured fold-backs; block 2 by E-s17-3 / E-s14-5 plus a direct read of target's block-2 insns for a possible combine consumer.
+- result: All three sites dead. block 0: weighting the definition co-weights pa4, parameter-sourcing is inert, splitting the copy materialises an insn, cross-derivation reassociates. loop1: a use-only extra reference cannot survive combine's merge. block 2: the reference survives cse1 (different EBB) but combine can only delete it by merging into a same-basic-block consumer, and target's block 2 (addiu $s1/$s2,0x6C, addiu $s4,zero,0x12, lw $t0,0x18($sp), addiu $s3,$s7,0x20, addiu $s0,$t0,0x750) contains no insn that could absorb one -- the un-absorbed copy IS the standing residual move $s3,$s6.
+- verdict: CONFIRMED
