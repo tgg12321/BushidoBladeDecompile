@@ -34,9 +34,13 @@
    "next_probe": "Read tmp/grind/func_80019568/dumps/code6cac.cse and .combine for the tail block; then grep docs/reference/sotn-construct-index.md for a load+store-through-one-address-register global RMW precedent; then read .claude/rules/pointer-rmw-global-sanctioned.md BEFORE assuming .claude/rules/pointer-alias-fake-exception.md applies."
   }
  ],
- "judge_constraints": [],
- "banned_constructs": [],
- "ladder_skip": 0,
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: C1 (record pointers) and C3 (pointer RMW on D_80102790) pass; C2 (the two-armed `s32 enable;` flag local) is a novel shape that does not fit inside named-local-fake-exception's exact sanctioned scope and has no other precedent covering it. Next action: Do not commit. C1 (rec/o record pointers) and C3 (s32 *p RMW on D_80102790, which matches pointer-rmw-global-sanctioned.md's exact worked shape and has documented lever-exhaustion via H8/H9/H11) are clean and unaffected. C2 alone blocks the commit: file a family-candidate entry in docs/grind/borderline.md describing "
+ ],
+ "banned_constructs": [
+  "s32 enable; ... enable = 1; o[2] = enable; ... enable = 0; o[2] = enable;"
+ ],
+ "ladder_skip": 1,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-25T16:21:05.765499+00:00"

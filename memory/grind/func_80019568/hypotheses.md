@@ -182,3 +182,66 @@ F3 (R2, ~13 insns): tail block. The aggregate hypothesis is KILLED (H8) and stat
 - probe: v7 measured and diffed
 - result: 17 but build_insns 138 vs target 141 -- target's 'lhu v1,0(a2); addiu v1,v1,-1; sll 16; sra 16' chain is deleted. A FALSE minimum: the o[2] store sitting between the o[0] store and the reload is load-bearing for the match.
 - verdict: KILLED
+
+## [s3] 2026-08-25 - structural
+
+H10 (CONFIRMED): the honest replacement for the s2 FAKE-gated variable-reuse spelling is a
+real per-slot flag local written 1 in the valid arm and 0 in the invalid arm, stored
+inside each arm.
+- mechanism: loop.c:702-716 - scan_loop creates a movable only when invariant_p(src) and
+  (n_times_set==1 or consec_sets_invariant_p). Two sets in two different arms are
+  non-consecutive, so no movable exists for the `li 1` and it stays in the loop filling
+  target lhu load-delay slot. Additionally, because `enable` is a DISTINCT pseudo from
+  the shifted voice id, local-alloc seats voice in $v0 (the lbu temp seat) and the lhu
+  reload in $v1 - target assignment - instead of the s2 mirror image.
+- probe: v9 applied to src/code6cac.c and measured with sandbox --disable all, then two
+  ablations with the s3 tail in place: bare literal (no local) and the s2 voice-reuse.
+- result: 20 -> 12 with the s2 tail; with the s3 tail, flag local = 0, bare literal = 8
+  (build 142, li hoisted), voice-reuse = 8 (build 141, v0/v1 swapped). The flag local is
+  the unique closer.
+- verdict: CONFIRMED
+
+H11 (KILLED): dropping the `old_mask` local and reading D_80102790 directly three times
+(store last) makes cse share one address register for the load and the stores.
+- mechanism: cse would have to hoist a (symbol_ref) address into a pseudo.
+- probe: v10 measured.
+- result: 11, build 141. cse folds the three READS into one `lw`, but each access is still
+  a (mem (symbol_ref)) assembled as lui $at/%lo, so no `la` is ever emitted and the
+  D_80102790 store still sinks below the nor/and chain.
+  rejected/tail-direct-multiread-no-la-11.c
+- verdict: KILLED
+
+H12 (CONFIRMED): the tail register-held &D_80102790 comes from a pointer local used for
+a read-modify-write of that global.
+- mechanism: on MIPS a MEM whose address is a bare symbol_ref is already a legitimate
+  address, so no pass materialises it; only a pointer VALUE forces
+  `lui/addiu` (la) and lets both the load and the store use 0($v0). It also anchors the
+  store early, ahead of the nor/and chain, matching target order.
+- probe: v11 = v9 + `s32 *p = &D_80102790; old_mask = *p; *p = sp.voice_mask;`
+- result: 12 -> **0**, build_insns 141 == target_insns 141. sandbox --disable all score 0.
+- verdict: CONFIRMED
+
+H13 (KILLED as a live question): R1, the if-arm v0<->v1 local-alloc seat swap, needs a
+tools/ra_solver classification.
+- mechanism: it was never an allocator tie; it was a consequence of the C-level variable
+  partition (the s2 spelling made ONE variable carry both the voice id and the constant 1,
+  which forced the mirror seats).
+- probe: the H10 flag local; the swap disappeared with no solver run and no
+  declaration-order games.
+- verdict: KILLED (question dissolved, not answered)
+
+## Frontier for s4+ (only if this candidate is bounced)
+
+The function is at sandbox distance 0 with build_insns == target_insns. There is no
+measured residual left. The only open items are dispositional, not technical:
+ 1. C2 (`enable`) is claimed under .claude/rules/named-local-fake-exception.md
+    (constant-holder / named scalar local) with a FAKE annotation. It is a two-valued
+    per-arm flag rather than that rule canonical `s32 k = 1;`-held-across-a-call
+    example. If layer 1 or the Judge holds that the family does not reach this shape,
+    the correct next outcome is a ruling-request on C2 ALONE - C1 (record pointers,
+    ordinary C) and C3 (pointer RMW, separately user-sanctioned) are unaffected and the
+    byte-proof stands. Do NOT re-grind: the measured alternatives are exhausted and
+    banked (bare literal 8/142, variable-reuse 8/141).
+ 2. Integration: func_80019568 still carries 5 regfix rules calibrated to the old
+    rule-era body. They must be retired by the operator/driver (`retire func_80019568`)
+    before/with the full-build SHA1 verify. This session touched no rule file.

@@ -216,3 +216,87 @@ R3 masked-by-scorer, not real: move-vs-addu spellings, %hi/%lo reloc addends, an
 - [s2] Owner RULES-TO-ZERO directive: this session continued the pure-C route (no regfix/asmfix touched, src reverted to HEAD at end); the 5 rules retire when this reaches COMPLETED-C.
 
 - [s2] Two independent GCC passes were named from dumps, not guessed: loop.c strength_reduce/scan_loop for both wins; the dumps are in tmp/grind/func_80019568/dumps/.
+
+## [s3] 2026-08-25 - structural (SOLVED: honest floor 20 -> 0, build_insns 141 == target 141)
+
+Chassis re-measured at session start: s2 candidate.c re-applied to src/code6cac.c
+reproduced **20** exactly (build 141 == target 141), so every s2 conclusion is
+chassis-valid and was spent, not re-derived.
+
+### F2b SOLVED - and it was worth far more than the family question it was raised to answer.
+
+s2 frontier F2b asked for an honest, non-variable-reuse spelling that gives the
+1-holding pseudo two NON-consecutive sets. The spelling is a real per-slot flag local
+written in BOTH arms and stored inside each arm:
+
+    s32 enable;
+    if (rec[0] == 0) { o[0] = rec[1] >> 4; enable = 1; o[2] = enable; ... }
+    else             { o[0] = 4;           enable = 0; o[2] = enable; bits = 0; }
+
+Measured: 20 -> **12** (build 141). It does TWO things, not one:
+ (a) it keeps the `li 1` inside the loop (the F2 win, same loop.c:702-716 mechanism as
+     the s2 variable-reuse spelling), and
+ (b) it ALSO closes R1, the v0<->v1 seat swap in the if-arm that s2 banked as a pure
+     local-alloc question needing tools/ra_solver. With `enable` a distinct pseudo from
+     the shifted voice id, local-alloc gives `voice` the lbu temp seat ($v0) and the
+     lhu reload $v1, exactly like target; the s2 reuse spelling forced the mirror image.
+     R1 therefore never needed the RA solver - it was a consequence of the wrong
+     C-level variable partition, not of an allocator tie.
+
+Ablations (all with the s3 tail in place, so they isolate this construct):
+ - bare `o[2] = 1;` / `o[2] = 0;` (no local at all): **8**, build 142 - the `li 1` is
+   hoisted out of the loop again (+1 insn). rejected/bare-literal-o2-li-hoisted-8.c
+ - s2 variable-reuse spelling (`voice = 1; o[2] = voice;`): **8**, build 141 - keeps
+   the li inside but re-introduces the v0<->v1 swap.
+   rejected/voice-reuse-instead-of-flag-8.c
+ - the flag local: **0**.
+
+INDEPENDENT EVIDENCE THAT THE ORIGINAL SOURCE HELD THIS VALUE IN A VARIABLE: in the same
+loop the literal 4 is written bare in two arms (case 4/6 and the invalid arm) and target
+HOISTS it into $t2 in the prologue (loop.c combine_movables merges the two equal-constant
+movables). The 1 is not hoisted. The only thing GCC 2.7.2 can see that differs between
+those two constants is n_times_set on the pseudo - i.e. whether a declared variable
+carried the value. So target own bytes say the original wrote the 4 as a literal and
+the o[2] value through a variable.
+
+### F3 SOLVED - the tail &D_80102790 is a read-modify-write pointer handle.
+
+Two honest tail spellings were measured first:
+ - drop `old_mask` entirely and read D_80102790 three times, storing it last:
+   **11**, build 141. cse folds the three reads to one `lw`, but every access is still a
+   (mem (symbol_ref)) so the address is never materialised.
+   rejected/tail-direct-multiread-no-la-11.c
+ - (s2, already banked) statement reordering to target emission order: INERT at 20.
+Then the RMW pointer:
+
+    s32 *p = &D_80102790;
+    old_mask = *p;
+    *p = sp.voice_mask;
+
+Measured: 12 -> **0**, build 141 == target 141. This produces target
+`lui $v0,%hi(D_80102790); addiu $v0,$v0,%lo(D_80102790); lw $a0,0($v0); sw $v1,0($v0)`
+- one `la` shared by the load and the store - and pulls the D_80102790 store EARLY,
+ahead of the nor/and chain, which is where target has it. Mechanism: on MIPS a MEM whose
+address is a bare symbol_ref is already a legitimate address, so no pass ever cse-s that
+address into a register; only a pointer VALUE forces the la pair. This is the exact
+zero-displacement pointer-RMW shape user-sanctioned on 2026-06-10
+(.claude/rules/pointer-rmw-global-sanctioned.md).
+
+### Cleanups verified codegen-neutral at 0
+ - The s2 candidate carried a DEAD `s16 *output;` declaration. Removed; floor stayed 0.
+   No dead local is load-bearing in this function.
+ - Loop-local packet pointer renamed p -> rec (it shadowed the tail `s32 *p`);
+   function-scope `packets` renamed pk. Names are codegen-neutral; re-measured 0.
+
+### Final residual: NONE
+tmp/grind/func_80019568/s3/v9.od + the s2 normalizer showed the ONLY remaining diff
+classes before the tail fix were scorer-masked artifacts (move-vs-addu spellings,
+%hi/%lo reloc addends, and `lw v0,32(at)` for jtbl_80010088 addressed off the first
+table %hi in the same TU rodata). After the tail fix the sandbox score is 0.
+
+- [s3] Honest floor progression this session: 20 (s2 candidate re-measured) -> 12 (flag local) -> 11 (tail multi-read, dead end) -> 0 (tail pointer RMW). build_insns 141 == target 141 throughout the winning line.
+- [s3] R1 (the v0<->v1 local-alloc seat swap s2 flagged for tools/ra_solver) was NOT an allocator tie: it fell out for free once the o[2] value got its own C variable instead of borrowing `voice`. No solver run was needed.
+- [s3] The `li 1` hoist and the v0/v1 seats are ONE C-level question (which variable holds the o[2] value), not two independent residuals.
+- [s3] The dead `s16 *output;` local inherited from the s2 candidate is NOT load-bearing - removing it left the floor at 0.
+- [s3] Owner RULES-TO-ZERO directive: the pure-C route reached distance 0; the 5 regfix rules for func_80019568 are now retirable by the operator/driver (`retire func_80019568`) - this session touched no rule file.
+- [s3] Self-vet written to memory/grind/func_80019568/self_vet.md: C1 (record pointers) ordinary C, C2 (`enable` flag) claimed under named-local-fake-exception with FAKE, C3 (`s32 *p` RMW) claimed under pointer-rmw-global-sanctioned + pointer-alias-fake-exception with FAKE.

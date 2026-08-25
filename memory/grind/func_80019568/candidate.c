@@ -1,42 +1,25 @@
-/* candidate - func_80019568 - s2 (2026-08-25)
+/* candidate - func_80019568 - s3 (2026-08-25)   ***  sandbox --disable all == 0  ***
  *
- * BEST STRUCTURALLY-CORRECT FORM: sandbox --disable all = 20, build_insns 141 == target 141.
- * (s1 best: 34 honest / 28 with a diagnostic non-submittable probe.)
+ * build_insns 141 == target_insns 141.  Floor history: s1 34 -> s2 20 -> s3 0.
  *
- * Two structural levers found this session, both mechanism-grounded in tools/gcc-2.7.2/loop.c:
+ * Structure (all mechanism-grounded in tools/gcc-2.7.2/loop.c, read not guessed):
+ *  L1  per-iteration record pointers `u8 *rec = &pk[i*8]; s16 *o = &sp.output[i];`
+ *      at the top of the loop body.  Collapses each scale group to ONE "add 0"
+ *      DEST_REG giv leader; a lone leader has benefit 2 and loop.c:3804 subtracts
+ *      add_cost(2)*biv_count(1) -> 0 -> loop.c:3824 "not worth while" -> ignore=1 ->
+ *      all_reduced=0 -> the loop.c:4034 gate skips biv elimination, so counter `i`
+ *      survives and the exit test stays `slti v0,t0,2`.  ORDINARY C.  (s2)
+ *  L2  `enable` flag local, 1 in the valid arm / 0 in the invalid arm, stored inside
+ *      each arm.  Two NON-consecutive sets => no scan_loop movable for the `li 1`
+ *      (loop.c:702-716), so it stays in the loop filling the lhu load-delay slot,
+ *      AND the v0/v1 seats in that block snap to target.  20 -> 12.  (s3, FAKE)
+ *  L3  `s32 *p = &D_80102790;` read-modify-write in the tail: one `la` shared by the
+ *      load and the store, matching target's `lui/addiu; lw 0(v0); sw 0(v0)`.
+ *      12 -> 0.  (s3, FAKE; .claude/rules/pointer-rmw-global-sanctioned.md shape)
  *
- *  L1 - per-iteration record pointers "u8 *p = &packets[i*8]; s16 *o = &sp.output[i];"
- *       declared at the TOP of the loop body.  This collapses the two i*8 and the three
- *       i*2 DEST_REG "add 0" givs into ONE each; a lone giv leader has benefit 2 and
- *       loop.c:3804 subtracts add_cost(=2)*biv_count(=1) -> 0 -> "giv of insn NN not worth
- *       while, 0 vs 51" -> v->ignore=1 -> all_reduced=0 -> the "all_reduced == 1" gate at
- *       loop.c:4034 skips biv elimination entirely, so counter i SURVIVES and the exit
- *       test stays "slti v0,t0,2" (target).  The ignored intermediates are dead once the
- *       add-reg givs reduce to the a2/a3 walkers, so they cost nothing.
- *       Register file now matches target exactly: i->t0, mask->t1, const4->t2, jtbl->t3,
- *       a2 = output walker (offsets 0/4), a3 = packet walker (offsets 0..3).
- *
- *  L2 - "voice" reused for both the shifted voice id and the constant 1
- *       (voice = p[1] >> 4; o[0] = voice; voice = 1; o[2] = voice;).  Two NON-consecutive
- *       sets of the same pseudo inside the loop make n_times_set==2 and
- *       consec_sets_invariant_p fail, so scan_loop never creates a movable for the 1
- *       (loop.c:703-708).  Target keeps "addiu v0,zero,1" inside the loop filling the lhu
- *       load-delay slot; without L2 it is hoisted ("Insn 74: regno 101 (life 1),
- *       move-insn savings 1 moved").
- *       NOTE FOR SUBMISSION: L2 is the variable-reuse family
- *       (.claude/rules/defeat-licm-hoist-var-reuse.md + staged-value-reused-variable.md)
- *       and would need a FAKE annotation + lever-exhaustion evidence, OR an honest
- *       replacement, before any candidate-ready.  L1 is ordinary C and needs neither.
- *
- * REMAINING RESIDUAL (20):
- *   R1 (~6)  v0<->v1 swap in the if-arm: target ties "voice" to the lbu temp
- *            (srl v0,v0,4; lhu v1,0(a2)); ours gets srl v1,v0,4 / lhu v0,0(a2).
- *            Pure local-alloc seat assignment; declaration-order swaps measured inert.
- *   R2 (~13) tail block: target materializes &D_80102790 (lui+addiu) and uses 0(v0) for
- *            BOTH the load and the store, storing early; ours emits two independent
- *            %hi/%lo accesses.  Statement reordering measured inert.  Sibling
- *            func_800194F4 proves the four words are plain scalars, so the "la" comes from
- *            an address-in-a-register producer (pointer-alias family territory).
+ * Self-vet: memory/grind/func_80019568/self_vet.md
+ * NOTE FOR INTEGRATION: func_80019568 still carries 5 regfix rules calibrated to the
+ * old rule-era body; they must be retired (operator `retire`) for the full build.
  */
 void func_80019568(s32 arg0) {
     struct {
@@ -47,11 +30,11 @@ void func_80019568(s32 arg0) {
         s32 unk_24;
         s32 packets[4];
     } sp;
-    u8 *packets;
-    s16 *output;
+    u8 *pk;
     s32 i;
     s32 voice_mask;
     s32 old_mask;
+    s32 *p;
     s16 *base_addr;
     s16 *dst1;
     s16 *dst0;
@@ -59,24 +42,32 @@ void func_80019568(s32 arg0) {
 
     voice_mask = 0;
     i = 0;
-    packets = (u8 *)&sp.packets[0];
+    pk = (u8 *)&sp.packets[0];
     sp.packets[0] = D_800FF580;
     sp.packets[1] = D_800FF584;
     sp.packets[2] = D_800FF5A4;
     sp.packets[3] = D_800FF5A8;
     do {
-        u8 *p = &packets[i * 8];
+        u8 *rec = &pk[i * 8];
         s16 *o = &sp.output[i];
         s32 bits;
+        /* FAKE: constant-holder flag local for output[i+2]; two non-consecutive sets
+         * (1 in the valid arm, 0 in the invalid arm) stop scan_loop from creating a
+         * movable for the `li 1`.  mechanism: loop.c:702-716 (movable requires
+         * n_times_set==1 or consec_sets_invariant_p); the literal 4, which IS written
+         * as a bare literal in two arms, is hoisted into $t2 in target, so target's
+         * un-hoisted 1 proves the original held it in a variable.
+         * lever-exhaustion: memory/grind/func_80019568/hypotheses.md H6/H10/H12 -
+         * bare `o[2] = 1;` measures 8 (build 142, li hoisted); the variable-reuse
+         * spelling measures 8 (build 141); this form measures 0. */
+        s32 enable;
 
-        if (p[0] == 0) {
+        if (rec[0] == 0) {
             s32 voice2;
-            s32 voice;
 
-            voice = p[1] >> 4;
-            o[0] = voice;
-            voice = 1;
-            o[2] = voice;
+            o[0] = rec[1] >> 4;
+            enable = 1;
+            o[2] = enable;
             voice2 = (s16)((u16)o[0] - 1);
 
             if ((u32)voice2 < 8) {
@@ -87,7 +78,7 @@ void func_80019568(s32 arg0) {
                 case 1:
                 case 2:
                 case 3:
-                    bits = ~((p[2] << 8) | p[3]);
+                    bits = ~((rec[2] << 8) | rec[3]);
                     break;
                 case 0:
                 case 5:
@@ -101,7 +92,8 @@ void func_80019568(s32 arg0) {
             }
         } else {
             o[0] = 4;
-            o[2] = 0;
+            enable = 0;
+            o[2] = enable;
             bits = 0;
         }
 
@@ -152,8 +144,17 @@ void func_80019568(s32 arg0) {
         dst1++;
     } while (i < 2);
 
-    old_mask = D_80102790;
-    D_80102790 = sp.voice_mask;
+    /* FAKE: read-modify-write handle for D_80102790 - one `la` address kept in a
+     * register for both the load and the store instead of two independent
+     * %hi/%lo symbol MEMs.  mechanism: address materialization / CSE shape at
+     * expand time (a MEM whose address is a symbol_ref never gets its address
+     * cse'd into a register on MIPS).  lever-exhaustion:
+     * memory/grind/func_80019568/hypotheses.md H8 (aggregate KILLED), H9
+     * (statement reordering INERT), H11 (direct multi-read of the global
+     * measures 11). */
+    p = &D_80102790;
+    old_mask = *p;
+    *p = sp.voice_mask;
     D_80102794 = sp.voice_mask & ~old_mask;
     D_8010279C = ~sp.voice_mask;
     D_80102798 = ~sp.voice_mask & old_mask;
