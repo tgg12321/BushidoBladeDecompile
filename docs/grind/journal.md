@@ -1196,3 +1196,4 @@
 - 2026-08-25 10:52 func_800460E4 COMPLETED-C after 10 sessions (closer: s10 [escalation]).
 - 2026-08-25 11:08 SioSyncroRead JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: SioSyncroRead volatile_extern_allowlist.txt), function stays active.
 - 2026-08-25 11:21 SioSyncroRead COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-08-25 12:06 func_80019568 s1 [recon] floor=28: Recon: rule-era chassis discarded; fresh indexed pure-C derivation reaches 34 honest / 28 with a diagnostic biv-elimination blocker; dominant residual mechanism identified as loop.c biv elimination of the loop-1 counter

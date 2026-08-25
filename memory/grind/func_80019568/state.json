@@ -1,0 +1,37 @@
+{
+ "func": "func_80019568",
+ "file": "code6cac",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 28,
+   "modality": "recon",
+   "headline": "Recon: rule-era chassis discarded; fresh indexed pure-C derivation reaches 34 honest / 28 with a diagnostic biv-elimination blocker; dominant residual mechanism identified as loop.c biv elimination of"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "An honest spelling exists under which `while (i < 2)` survives biv elimination and emits plain slti v0,t0,2",
+   "mechanism": "compare rewrite needs a giv with always_computable && !maybe_dead && mode match; every output/packet giv site is inside conditional arms, so identifying and respelling the one qualifying giv (out-class, mult 2, add reg191) should leave no eligible giv; alternate axis: make one giv fail the worthwhile test (loop.c:3824) so all_reduced=0",
+   "next_probe": "instrumented cc1 (tools/gcc-2.7.2/cc1 BB2 debug hooks) or targeted bisection to name the qualifying giv's source statement; ALSO census the other solved jtbl-cluster members' ledgers for a proven counter-survival idiom before deriving"
+  },
+  {
+   "hypothesis": "The li-1 for sp.output[i+2]=1 stays inside the loop in the original (fills the lhu load-delay slot) \u2014 ours is hoisted by scan_loop as a movable",
+   "mechanism": "loop.c movables ('Insn 87: regno 109 move-insn savings 1 moved', dump line 861); may resolve for free once F1 changes register pressure",
+   "next_probe": "re-measure after F1; if independent, find what placement makes the 1-pseudo unmovable"
+  },
+  {
+   "hypothesis": "Tail block: target materializes &D_80102790 (lui+addiu, lw/sw via 0(reg)) and stores it early, order 9C,94,98; an honest producer exists (possibly the D_80102788..D_8010279C aggregate)",
+   "mechanism": "rule-era body used a pointer-alias local (FAKE family) for this; split-scalars-hide-aggregate recipe requires independent evidence (adjacent .data words, sibling stride use) before declaring an aggregate",
+   "next_probe": "gather aggregate evidence from asm/data and the sibling writers (func_800194F4/func_80019534); only fall back to a FAKE pointer alias after lever exhaustion"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-25T16:21:05.765499+00:00"
+}
