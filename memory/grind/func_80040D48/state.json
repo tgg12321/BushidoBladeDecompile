@@ -1,0 +1,37 @@
+{
+ "func": "func_80040D48",
+ "file": "text1a_pre",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 24,
+   "modality": "recon",
+   "headline": "s1 recon: floor 34 -> 24 honestly (pin removed) \u2014 prologue two-var load + s5 variable-reuse across the Copy8 loop (goto spelling defeats rotation); 24 residual = 3 seat/bias clusters, all mapped with "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Class B: the original's a2p qty outranked/preceded a3p's in local-alloc; an honest ordering (decl/def/first-use permutation) flips the $6/$7 seats",
+   "mechanism": "local-alloc.c qty_compare priority over the two loop-local pointer qtys",
+   "next_probe": "read .lreg qty order + qty_compare source, then sweep def-order/first-use-order spellings of the copy loop; re-measure Class C after"
+  },
+  {
+   "hypothesis": "Class A: a spelling of the case-0 init loop keeps the a4p induction variable at bias 0 (anchor s3+0x68, offsets 0x10/0x12/0x14) instead of loop.c's +0x14 re-bias",
+   "mechanism": "loop.c strength-reduction giv combination",
+   "next_probe": "regenerate dumps vs current body, read .loop giv records for the a4p biv; probe increment position / condition-carrier variants; compare func_80040B44's matched init loops"
+  },
+  {
+   "hypothesis": "Class C (a2p2 -> $6, -1 -> $4) resolves itself once Class B frees/reorders $6/$7",
+   "mechanism": "straight-line local-alloc first-free assignment downstream of the copy loop's register roles",
+   "next_probe": "re-measure after Class B; only then spend levers"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-25T00:18:32.249859+00:00"
+}
