@@ -2462,3 +2462,131 @@ dump script writes there).
 - [s18] Objdump of U4 names the extra insn: with the out2 wrap present the scheduler hoists `offset = offset + (s32) a2;` above the first jal (target keeps it after), so `i++` no longer fills the `lhu $v0,0($s0)` load-delay slot and a nop appears.
 
 - [s18] V5 (real do-while loop1, no FAKE construct anywhere) = ALL-TARGET seats, 132 insns, sandbox 5; its residual is loop.c's giv rewrite (biv biased to base+0x134, `sh $8,-50($19)`), which the note-only do-while(0) wrap does not trigger. stptr's live length there is 40, the other atom s15's replay asked for.
+
+## s19 (rederive, 2026-08-25) — the loop is REAL: loop.c's giv replaces the FAKE chain-extender, and the Z0 residual shrinks to ONE reference
+
+Chassis re-measured at the START of s19 with `candidate.c` applied to `src/text1a_pre.c`:
+`sandbox func_80041188 --disable all` = **score 1, 132 target / 132 build insns**,
+rules_dropped 16, cheat_asm_stripped 2. `src/text1a_pre.c` was restored to HEAD at the
+end of the session; no build-pipeline file was touched. The floor did not move; a new
+chassis and a much sharper frontier did.
+
+### E-s19-1 — the rederivation: write s18's array layout literally and loop.c produces target's pointer insns for free
+
+s18 (E-s18-1) proved the constants describe ONE 0x68-stride array based at `base + 0x94`
+with `i` as the entry index. s19 wrote that reading as C — loop1 as a real
+`do { ... } while (i < 0x12);` with the entry address written INLINE at its two use
+sites (`ents + i * 0x68 + 0x38`, `*(s16 *)(ents + i * 0x68 + 6)`) and no pointer local
+at all. Measured (`memory/grind/func_80041188/alt_W4_realloop_giv_honest_s19.c`, tag W4):
+**sandbox 3, 132 target / 132 build insns, ALL-TARGET callee-saved seats, ZERO FAKE
+constructs.** loop.c strength-reduces the multiply into a giv whose initial value folds
+to target's `addiu $s3,$v0,0xFC`, whose increment is target's `addiu $s3,$s3,0x68` in
+the branch delay slot, and whose allocno is **9 refs / live 40 = 6750** — obtained for
+free, where candidate.c has to buy `stptr` 7 refs with the FAKE-annotated F1
+chain-extender. Loop2's initial value comes out as `ents + 0x750`, i.e. target's own
+`lw $t0,0x18($sp)` + `addiu $s0,$t0,0x750`, so the block-0 spill of `ents` is now
+EXPLAINED by the layout rather than hand-placed. This is the first FAKE-free form whose
+walking-pointer priority is honest.
+
+### E-s19-2 — the induction address must NOT be a named local (loop.c copies into user variables)
+
+The same body with the address in a local (`ent = ents + i * 0x68;`) scores **80**. Cause,
+read out of `tmp/grind/func_80041188/s19/W1/red.i.combine` insn 339: because the giv's
+destination is a user variable (REG_USERVAR_P), loop.c does not rename it to the giv —
+it emits `ent = <giv>` at the top of every iteration. That copy is a second quantity live
+across the calls, local_alloc seats it in $s1, the nine callee-saved seats are exhausted
+before `a3` is reached and **a3 spills**. Banked:
+`rejected/realloop-giv-uservar-copy-steals-s1-a3-spills.c`. Corollary for any future
+strength-reduction attempt in this project: never name an induction address.
+
+### E-s19-3 — the real-loop regime carries a FIXED +2 tax: loop.c hoists the `li 2`, global.c spills it, reload picks $t0
+
+W4's three residual insns are `addiu $t0,zero,2` / `sh $t0,6($s3)` (target: $v0) plus the
+standing lock. Mechanism, read from the dumps and confirmed in loop.c source: a loop with
+a single-basic-block body always satisfies `scan_loop`'s movable test — the `li 2`'s
+destination is a compiler pseudo, so test (2) at loop.c:686-700 (`! REG_USERVAR_P &&
+! REG_LOOP_TEST_P`) passes, and test (3) `reg_in_basic_block_p` passes too — and
+`move_movables`' profitability test `threshold * savings * m->lifetime >= insn_count`
+(loop.c:1631) passes for ANY lifetime, because `threshold = (loop_has_call ? 1 : 2) *
+(1 + n_non_fixed_regs)` (loop.c:532) is ~31 against an insn_count of ~40. The constant is
+therefore hoisted into the preheader, becomes a global allocno (3 refs / live 92),
+global.c spills it, and reload rematerialises it into $t0 — where target's in-place `li`
+is a local quantity that local_alloc gives $v0. **All three escape routes are closed by
+the source of the test itself** (making the value a user variable does not help: tests
+(1) and (3) still pass), so every real-loop form of loop1 starts 2 insns behind. This
+also decomposes s18's V5 score of 5 exactly: 2 (giv rewrite) + 2 (this tax) + 1 (lock),
+and W4 removes the first term.
+
+### E-s19-4 — on the real-loop chassis with target's block-2 spelling, the ENTIRE residual is ONE reference on out2
+
+W6 = W4 with target's own `out3 = (s32 *)((u8 *)pa4 + 0x20)` (so block 2 emits
+`addiu $s3,$s7,0x20`). Measured table (`s19/W6/cc1.err`): giv 9/40=6750 $s3, i 11/97=3402
+$s4, tbl 7/47=2978 $s5, **pa4 9/94=2872 $s6**, stptr2 6/48=2500 $s0, **out2 5 refs /
+live 41 = 2439 $s7**, a3 5/99=1010 $fp, out3 3/47 $s3. Only out2 and pa4 are swapped;
+every other seat is target's. The arithmetic then states the requirement exactly: out2
+must land in (2872, 2978), and at floor_log2 quantisation the ONLY solution is **6 refs
+at live 41** = 2926 — and out2's live length on this chassis is ALREADY 41. So the whole
+endgame of this chassis is one extra flow-counted, byte-free reference to out2. (Contrast
+the old goto-loop regime, where E-s11-1 needed out2 live 47..55 at 4 refs and the window
+was empty.) Banked: `rejected/realloop-Z0-out2-5refs-live41-one-reference-short.c`.
+
+### E-s19-5 — the +1 model is CONFIRMED by construction, and the in-loop wrap costs three nops
+
+W8 = W6 + `do { func_8004A348(buf, out2); } while (0);` inside loop1. The predicted table
+appears exactly: **out2 6 refs / live 41 = 2926, seated $s6, pa4 $s7, tbl $s5, i $s4, giv
+$s3, stptr2 $s0, a3 $fp, out3 $s3** — all-target seats WHILE block 2 emits target's
+`addiu $s3,$s7,0x20`, the combination that E-s16-5 called impossible on the goto chassis.
+Cost: **135 build insns** (cc1 emits the same 142 raw insns; the three extra are
+load-delay nops maspsx must insert because the extra LOOP_BEG/END notes stop the
+scheduler filling those slots). Banked:
+`rejected/realloop-Z0-inloop-wrap-alltarget-seats-costs-3-nops.c`.
+
+### E-s19-6 — a do-while(0) wrap in BLOCK 0 is byte-neutral, but it can only weight a reference that survives cse1
+
+W10 = W6 + `o2t = (u8 *)pa4 + 0x20; do { out2 = (s32 *)o2t; } while (0);`. Two independent
+facts: (1) the block-0 wrap costs **zero insns** (132 build insns) — unlike the in-loop
+wrap of W8 — so wrap placement OUTSIDE the loop is scheduling-free on this function;
+(2) it lifts nothing (out2 stays 5 refs). The wrapped insn is a register copy whose
+destination outlives its source, so by the s17 make_regs_eqv law (cse.c:844-857) `out2`
+is the canonical register, cse1 rewrites `o2t`'s definition to set out2 directly, and the
+copy is gone before flow counts it. W11 (the same split without the wrap) measures
+identical to W6, confirming the fold. **Rule for the next session: a block-0 wrap is
+free, but the reference it weights must survive cse1 — which by the s17 law means the
+donor must outlive the recipient, and the only block-0 donor for out2 is `pa4`, whose own
+reference the same wrap would also weight (pa4 -> 10 refs / 3191, back above out2).**
+
+### s19 artifacts
+
+`tmp/grind/func_80041188/s19/` — `apply.py`, `run.sh`, `dump19.sh`, `sweep.ps1`,
+`odiff.py` (normalising objdump-vs-target insn differ), variant bodies
+`BASE.c`/`W1.c`..`W11.c`, and per-tag cc1 dump directories (`W1/`, `W2/`, `W4/`, `W6/`,
+`W8/`, `W10/`, `BASE/`) holding `red.i.*` pass dumps + `cc1.err` with the ALLOCDBG
+tables.
+
+- [s19] Chassis re-measured at session start with candidate.c applied: sandbox func_80041188 --disable all = score 1, 132/132. src/text1a_pre.c restored to HEAD at the end.
+- [s19] Writing s18's array layout literally (real do-while loop1 + inline `ents + i * 0x68` addressing) gives sandbox 3 at 132/132 with ALL-TARGET seats and ZERO FAKE constructs — the giv's 9 refs / live 40 replace the FAKE F1 chain-extender's whole purpose. Form: alt_W4_realloop_giv_honest_s19.c.
+- [s19] Naming the induction address (`ent = ents + i * 0x68;`) makes loop.c emit `ent = <giv>` per iteration (REG_USERVAR_P destinations are not renamed), which costs a callee-saved seat and spills a3 (sandbox 80).
+- [s19] Every real-loop form pays a fixed +2: loop.c hoists the invariant `li 2` (scan_loop tests at loop.c:686-700 and the threshold test at loop.c:1631 both pass unconditionally here), global.c spills the hoisted pseudo (3 refs / live 92) and reload rematerialises it into $t0 where target has $v0. Decomposes s18's V5 = 2 giv + 2 tax + 1 lock.
+- [s19] On the real-loop chassis with target's block-2 spelling (W6), out2 is 5 refs / live 41 = 2439 and pa4 9/94 = 2872; every other seat is target's. The needed window is (2872, 2978), whose unique quantised solution is out2 6 refs at live 41 = 2926 — one reference, live length already correct.
+- [s19] W8 confirms the model by construction: one in-loop do-while(0) wrap on the out2 call gives out2 6/41 = 2926, ALL-TARGET seats AND target's `addiu $s3,$s7,0x20` simultaneously — at a cost of three maspsx load-delay nops (135 insns).
+- [s19] A do-while(0) wrap in BLOCK 0 costs zero insns (W10 = 132), but weights nothing unless the enclosed reference survives cse1; a copy whose destination outlives its source is folded by make_regs_eqv (cse.c:844-857) before flow counts it (W10 lifts out2 by 0; W11, the unwrapped control, is byte-identical to W6).
+
+- [s19] Chassis re-measured at session start with candidate.c applied: sandbox func_80041188 --disable all = score 1, 132 target / 132 build insns, rules_dropped 16, cheat_asm_stripped 2. src/text1a_pre.c restored to HEAD at the end; no build-pipeline file touched.
+
+- [s19] W4 (loop1 a real do-while + inline `ents + i * 0x68` addressing, no pointer local) = sandbox 3 at 132/132 with ALL-TARGET callee-saved seats and ZERO FAKE constructs: a1 17/99 $s1, a2 17/99 $s2, giv 9/40=6750 $s3, i 11/97=3402 $s4, tbl 7/47=2978 $s5, out2 6/46=2608 $s6, pa4 8/94=2553 $s7, stptr2 6/48=2500 $s0, a3 5/99=1010 $fp, out3 3/47 $s3.
+
+- [s19] W4's residual is exactly 3 insns and both causes are named: 2 = addiu $t0,zero,2 / sh $t0,6($s3) (target $v0; loop.c constant hoist + spill + reload rematerialisation) and 1 = move $s3,$s6 vs addiu $s3,$s7,0x20 (the standing out3 lock).
+
+- [s19] loop.c's strength reduction supplies the walking pointer 9 references / live length 40 for free, which is the honest structural replacement for candidate.c's FAKE-annotated F1 chain-extender (`stptr = base; stptr += 0xFC;`), whose sole purpose was buying stptr enough references to outrank i.
+
+- [s19] Naming the induction address makes loop.c emit a per-iteration copy into the user variable (red.i.combine insn 339), which costs a callee-saved seat and spills a3 (sandbox 80).
+
+- [s19] Both loops converted to real loops (W2/W7) inflates every reference (a1/a2 to 29 refs, pa4 to 10) and also spills a3: sandbox 78 / 20. The note-weighting regime is usable on one loop at a time.
+
+- [s19] W6 (real-loop chassis + target's block-2 spelling) = sandbox 11 at 132/132 with out2 5 refs / live 41 = 2439 and pa4 9/94 = 2872 the only pair out of target order; the required window (2872, 2978) has the unique quantised solution out2 6 refs at live 41 = 2926, and the live length is already correct.
+
+- [s19] W8 proves that solution: one in-loop do-while(0) wrap on the out2 call produces out2 6/41 = 2926 with ALL-TARGET seats AND target's addiu $s3,$s7,0x20 at once (the combination E-s16-5 called impossible on the goto chassis), at a cost of three maspsx load-delay nops.
+
+- [s19] A do-while(0) wrap in BLOCK 0 costs zero insns (W10 = 132 build insns) whereas the same wrap inside loop1 costs three; but a block-0 wrap weights nothing unless the enclosed reference survives cse1 (W10 lifts out2 by 0; W11, the unwrapped control, is byte-identical to W6).
+
+- [s19] s18's V5 score of 5 now decomposes exactly: 2 (giv/biv rewrite, removed by W4's indexed form) + 2 (loop.c constant hoist tax, killed by derivation) + 1 (the out3 lock).

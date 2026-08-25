@@ -1550,3 +1550,63 @@ statement, which has never been tried in block 0.
 - probe: Form V5 (real do-while loop1, honest un-split stptr, out3 = out2): ALLOCDBG table + sandbox; and V6, its Z0 variant.
 - result: V5 reaches ALL-TARGET seats at 132 insns and sandbox 5 — the best score ever recorded on a wholly FAKE-free form — but loop.c's strength reduction rewrites the biv (base+0x134, `move $7,$19`, `sh $8,-50($19)` vs target's addiu $a3,$s3,0x38 / sh $v0,0x6($s3)); that 5-insn residual is not a seat question. V6 (Z0 block 2) is not all-target: weighting lifts pa4 to 9/94=2872 above out2 5/41=2439 and the two swap.
 - verdict: KILLED
+
+## [s19] s18's V5 residual is a giv/biv-elimination artefact, and writing the memory layout as an INDEXED array (i as the biv, address inline) removes it — giving a FAKE-free form whose walking-pointer priority is honest.
+- mechanism: with an explicit walking pointer, `stptr` is itself the biv and loop.c eliminates it in favour of the `stptr + 0x38` giv (base+0x134, `sh $8,-50($19)`). With `i` as the biv the biv cannot be eliminated (it feeds the exit test and loop2), so loop.c creates ONE address giv and expresses both uses as offsets from it — exactly target's `addiu $a3,$s3,0x38` + `sh $v0,0x6($s3)`.
+- probe: form W4 (memory/grind/func_80041188/alt_W4_realloop_giv_honest_s19.c) — loop1 a real `do {} while (i < 0x12)`, address written inline as `ents + i * 0x68 (+0x38 / +6)`, no pointer local; ALLOCDBG table + sandbox + objdump differ (tmp/grind/func_80041188/s19/odiff.py).
+- result: CONFIRMED. sandbox 3 at 132 target / 132 build insns with ALL-TARGET callee-saved seats and ZERO FAKE constructs; the giv allocno is 9 refs / live 40 = 6750, which is the free, honest replacement for candidate.c's FAKE F1 chain-extender. The 3 residual insns are 2 (real-loop constant tax, next entry) + 1 (the standing out3 lock).
+- verdict: CONFIRMED
+
+## [s19] The induction address may be given a name (`ent = ents + i * 0x68;`) without cost.
+- mechanism (expected): loop.c renames the giv's destination, so a user variable and a compiler pseudo should be interchangeable.
+- probe: form W1, identical to W4 except the address is a local; ALLOCDBG + sandbox + red.i.combine.
+- result: KILLED, sandbox 80. loop.c does NOT rename a REG_USERVAR_P destination — it emits `ent = <giv>` at the top of every iteration (insn 339). That copy is a second quantity live across the calls; local_alloc seats it in $s1, the nine callee-saved seats fill before a3 is reached, and a3 spills. Never name an induction address in this project.
+- verdict: KILLED
+
+## [s19] The 2-insn constant residual of every real-loop form (`addiu $t0,zero,2` / `sh $t0,6($s3)` vs target's $v0) is removable at C level.
+- mechanism (tested): loop.c hoists the invariant `li 2` out of loop1, the hoisted pseudo becomes a whole-function allocno (3 refs / live 92), global.c spills it, and reload rematerialises the constant into $t0 — where target's in-place `li` is a local quantity local_alloc gives $v0. The C-level escape would be to make scan_loop reject the movable.
+- probe: read scan_loop's movable test (loop.c:686-700) and move_movables' profitability test (loop.c:1631) against this loop's parameters, and cross-checked the decomposition against s18's V5 score (2 giv + 2 tax + 1 lock = 5) and W4's (0 + 2 + 1 = 3).
+- result: KILLED BY DERIVATION. The three movable conditions are OR'd; a single-basic-block loop body satisfies (3) `reg_in_basic_block_p` unconditionally, so making the value a user variable (which defeats (2)) changes nothing, and (1) also passes because the store is executed on every iteration. The profitability test passes for any lifetime >= 1 since `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` ~ 31 against insn_count ~ 40. Every real-loop spelling of loop1 therefore starts 2 insns behind candidate.c's goto chassis — this, not the seats, is what caps the whole real-loop family at floor 2.
+- verdict: KILLED
+
+## [s19] On the real-loop chassis with target's block-2 spelling (Z0), out2 needs exactly ONE more flow-counted reference and nothing else.
+- mechanism: measured priorities on W6 put pa4 at 9 refs / live 94 = 2872 and tbl at 7/47 = 2978 with every other seat already target's, so out2 must land in the open interval (2872, 2978); floor_log2 quantisation admits exactly one solution, 6 refs at live 41 = 2926, and out2's live length on this chassis is already 41.
+- probe: W6 (Z0, honest) ALLOCDBG + sandbox; then W8 = W6 + one in-loop `do { func_8004A348(buf, out2); } while (0);` to synthesise the missing reference.
+- result: CONFIRMED by construction. W8's table is the predicted one and it is the FIRST form to hold ALL-TARGET seats AND emit target's `addiu $s3,$s7,0x20` on the real-loop chassis; its only cost is three maspsx load-delay nops (135 insns) caused by the extra LOOP notes inside the loop body. The requirement is therefore exactly: +1 reference on out2, byte-free, without adding LOOP notes inside loop1.
+- verdict: CONFIRMED
+
+## [s19] A do-while(0) wrap placed in BLOCK 0 (outside loop1) can supply that +1 for free.
+- mechanism: flow.c:2081's `+= loop_depth` applies wherever the notes are, and block 0 is not scheduled against the loop body, so a block-0 wrap should be byte-neutral.
+- probe: W10 = W6 + `o2t = (u8 *)pa4 + 0x20; do { out2 = (s32 *)o2t; } while (0);`, with W11 (same split, no wrap) as the control.
+- result: HALF-CONFIRMED, HALF-KILLED. The wrap IS byte-neutral (132 build insns, versus 135 for the in-loop wrap) — a reusable fact. But it lifted nothing: out2 stayed at 5 refs, because the wrapped insn is a copy whose destination outlives its source, so make_regs_eqv (cse.c:844-857) keeps out2 canonical and cse1 deletes the copy before flow counts it (W11 measures identical to W6). A block-0 wrap must enclose a reference that SURVIVES cse1; by the s17 law that means the donor must outlive the recipient, and out2's only block-0 donor is pa4 — whose reference the same wrap would also weight, pushing pa4 to 10 refs / 3191, back above out2.
+- verdict: KILLED (as spelled); the byte-neutrality of block-0 wraps is CONFIRMED and carried.
+
+## [s19] s18's V5 residual is a giv/biv-elimination artefact, and writing the memory layout as an INDEXED array (i as the biv, the entry address written inline at its use sites) removes it, giving a FAKE-free form whose walking-pointer priority is honest.
+- mechanism: With an explicit walking pointer, stptr is itself the biv and loop.c eliminates it in favour of the stptr+0x38 giv (base+0x134, sh $8,-50($19)). With i as the biv the biv cannot be eliminated (it feeds the exit test and loop2), so loop.c creates ONE address giv and expresses both uses as offsets from it -- target's addiu $a3,$s3,0x38 + sh $v0,0x6($s3).
+- probe: Form W4 (memory/grind/func_80041188/alt_W4_realloop_giv_honest_s19.c): loop1 a real do{}while(i<0x12), address inline as ents + i*0x68 (+0x38/+6), no pointer local. ALLOCDBG table via s19/dump19.sh + sandbox + objdump differ (s19/odiff.py).
+- result: sandbox 3 at 132 target / 132 build insns, ALL-TARGET callee-saved seats, ZERO FAKE constructs; giv allocno 9 refs / live 40 = 6750 (candidate.c has to buy stptr 7 refs with the FAKE F1 chain-extender). Loop2's init comes out as ents + 0x750 = target's lw $t0,0x18($sp) + addiu $s0,$t0,0x750, so the block-0 spill is explained by the layout.
+- verdict: CONFIRMED
+
+## [s19] The induction address may be given a name (ent = ents + i * 0x68;) without cost.
+- mechanism: Expected loop.c to rename the giv's destination, making a user variable and a compiler pseudo interchangeable.
+- probe: Form W1 (identical to W4 except the address is a local); ALLOCDBG + sandbox + red.i.combine insn 339.
+- result: sandbox 80. loop.c does NOT rename a REG_USERVAR_P destination: it emits `ent = <giv>` at the top of every iteration. That copy is a second quantity live across the calls, local_alloc seats it in $s1, the nine callee-saved seats fill before a3 is reached, and a3 SPILLS. Banked as rejected/realloop-giv-uservar-copy-steals-s1-a3-spills.c.
+- verdict: KILLED
+
+## [s19] The 2-insn constant residual of every real-loop form (addiu $t0,zero,2 / sh $t0,6($s3) where target has $v0) is removable at C level.
+- mechanism: loop.c hoists the invariant `li 2` out of loop1; the hoisted pseudo becomes a whole-function allocno (3 refs / live 92), global.c spills it, and reload rematerialises the constant into $t0, where target's in-place li is a local quantity local_alloc gives $v0.
+- probe: Read scan_loop's movable test (loop.c:686-700) and move_movables' profitability test (loop.c:1631) against this loop's parameters; cross-checked the decomposition against s18's V5 score (2 giv + 2 tax + 1 lock = 5) and W4's (0 + 2 + 1 = 3).
+- result: KILLED BY DERIVATION. The three movable conditions are OR'd and a single-basic-block loop body satisfies (3) reg_in_basic_block_p unconditionally, so making the value a user variable (which defeats (2)) changes nothing, and (1) also passes because the store executes every iteration. Profitability passes for any lifetime >= 1 since threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) ~ 31 against insn_count ~ 40. Every real-loop spelling of loop1 therefore starts 2 insns behind the goto chassis; this caps the whole real-loop family at floor 2.
+- verdict: KILLED
+
+## [s19] On the real-loop chassis with target's own block-2 spelling (out3 = (s32 *)((u8 *)pa4 + 0x20)), out2 needs exactly ONE more flow-counted reference and nothing else.
+- mechanism: Measured priorities put pa4 at 9 refs / live 94 = 2872 and tbl at 7/47 = 2978 with every other seat already target's, so out2 must land in the open interval (2872, 2978); floor_log2 quantisation admits exactly one solution, 6 refs at live 41 = 2926, and out2's live length on this chassis is already 41.
+- probe: W6 (Z0, honest) ALLOCDBG + sandbox; then W8 = W6 + one in-loop do { func_8004A348(buf, out2); } while (0); to synthesise the missing reference.
+- result: CONFIRMED by construction. W8's table is the predicted one (out2 6/41 = 2926 -> $s6, pa4 $s7, tbl $s5, i $s4, giv $s3, stptr2 $s0, a3 $fp, out3 $s3) and it is the first form on this chassis to hold ALL-TARGET seats AND emit target's addiu $s3,$s7,0x20; its only cost is three maspsx load-delay nops (135 insns) caused by the extra LOOP notes inside the loop body.
+- verdict: CONFIRMED
+
+## [s19] A do-while(0) wrap placed in BLOCK 0 (outside loop1) can supply that +1 reference for free.
+- mechanism: flow.c:2081's += loop_depth applies wherever the notes are, and block 0 is not scheduled against the loop body, so a block-0 wrap should be byte-neutral.
+- probe: W10 = W6 + `o2t = (u8 *)pa4 + 0x20; do { out2 = (s32 *)o2t; } while (0);`, with W11 (same split, no wrap) as the control.
+- result: Byte-neutrality CONFIRMED (132 build insns vs 135 for the in-loop wrap) but the lift is KILLED: out2 stayed at 5 refs because the wrapped insn is a copy whose destination outlives its source, so make_regs_eqv (cse.c:844-857) keeps out2 canonical and cse1 deletes the copy before flow counts it (W11 measures identical to W6). A block-0 wrap must enclose a reference that survives cse1; out2's only block-0 donor is pa4, whose reference the same wrap would also weight (pa4 -> 10 refs / 3191, back above out2).
+- verdict: KILLED

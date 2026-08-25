@@ -1,7 +1,7 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 18,
+ "session_count": 19,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -117,23 +117,29 @@
    "floor": 1,
    "modality": "rederive",
    "headline": "The floor-1 lock is broken: do-while(0) loop-note ref weighting (flow.c:2081) is a per-reference +1 dial, and form V7 reaches ALL-TARGET seats together with target's block-2 addiu $s3,$s7,0x20 for the"
+  },
+  {
+   "session": 19,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "Rederived loop1 as a REAL loop over s18's 0x68-stride array (i as the biv, address inline): loop.c's giv hands the walking pointer 9 refs/live 40 for free, giving a second FAKE-free form at sandbox 3 "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "V7's single extra insn is closable: some wrap boundary gives out2 its +1 without freeing `offset = offset + (s32) a2;` to hoist above the first jal and without adding a reference to a1/a2.",
-   "mechanism": "The wrap's LOOP_BEG/END notes constrain sched1's motion across the boundary, so the boundary chooses BOTH which references get +1 (flow.c:2081) and which insns may move (sched.c); U6 shows the insn count is recoverable, and V7 shows the seat table is, but not yet in the same form.",
-   "next_probe": "Measure, in this order with s17/dump17.sh then the sandbox: (a) wrap `func_800523E0(pa4, out2, a3, stptr + 0x38);` instead of the out2 call, pairing it with a wrap that lifts `i` so pa4's 7->8 (2526) stays below i; (b) introduce a second walking pointer local for the a2 row so the widened wrap contains that pointer's reference instead of a2's, keeping the a1/a2 16/16 tie; (c) reorder the a2-half statements so the pre-jal slot the scheduler wants is already occupied."
+   "hypothesis": "On the real-loop chassis (W6) the last missing +1 on out2 can come from a reference that survives cse1 and is deleted only by combine, placed in block 0 or the between-loops block where wraps are byte-free.",
+   "mechanism": "flow.c:2081 weights by note depth and block-0 wraps are byte-neutral here (E-s19-6), so any out2 reference that survives cse1 into flow -- by the s17 make_regs_eqv law (cse.c:844-857) that means a copy whose SOURCE outlives out2 -- would be counted, then folded by combine for zero bytes. The one donor tried (o2t) dies immediately and folds; the search is for a block-0 or block-2 value that outlives loop1 and is legitimately equal to a4 + 0x20 without adding a second pa4 reference inside the wrap.",
+   "next_probe": "Enumerate block-0/block-2 pseudos that outlive loop1 (ents, base, a3, stptr2's inputs) and test whether any can carry out2 as a copy destination; then measure the wrapped copy on the W6 chassis with s19/run.sh + the sandbox, watching pa4's ref count (it must stay at 9) and out2's live length (it must stay 41)."
   },
   {
-   "hypothesis": "s15's Z0 inverse-solver vectors #1/#2/#3 are all live again, and one of them needs fewer weighted references than V7's three (each wrap is a scheduling risk).",
-   "mechanism": "The solver enumerated +/-1..2 reference and +/-1..4 live-length perturbations and reported four minimal size-2 vectors; they were then dismissed because +1 lifts were believed unspellable (E-s18-3). Wrap weighting supplies exactly +1 per enclosed reference, so the arithmetic stands and the verdicts do not.",
-   "next_probe": "Re-run tools/ra_solver/inverse.py on the Z0 allocno table asking for the solution that minimises the NUMBER of distinct references that must be weighted (not the number of atoms), then spell the winner with the smallest possible wrap and check the insn count before the sandbox. Vector #2 (tbl live 47->39 + out2 3->4) has never been spelled."
+   "hypothesis": "The real-loop constant tax can be dodged not by defeating the hoist but by making the hoisted pseudo cheap to reload in $v0 -- or by keeping loop1 goto-based while still obtaining the giv, e.g. a real loop that contains ONLY the two address uses.",
+   "mechanism": "The tax is entirely reload's register pick for a spilled REG_EQUIV constant (loop.c:686-700 / 1631 make the hoist unavoidable). If loop1's constant store sat in a region where the constant is not loop-invariant -- for instance if the two stores of 2 and 1 were unified into one loop over 19 entries with the constant selected by the index -- there would be no movable at all.",
+   "next_probe": "Measure a single real loop i = 1..0x13 whose body branches on i < 0x12 for the two halves, checking first whether the branch splits loop1's basic block (which also breaks reg_in_basic_block_p and would defeat the movable test outright), and compare the insn count against 132 before looking at seats."
   },
   {
-   "hypothesis": "The remaining seat requirement can be met with FEWER wraps by combining one wrap with the already-sanctioned F1 chain-extender, which is what makes U4 (score 6, two wraps) beat V7 (score 8, three wraps).",
-   "mechanism": "A wrap and the chain-extender lift the same quantity (reg_n_refs) through different passes \u2014 flow.c:2081 vs a combine-deleted set+use \u2014 so they compose; fewer wraps means fewer scheduling boundaries inside loop1.",
-   "next_probe": "Starting from U4, drop the tbl wrap and re-derive whether tbl's 4->5 can instead come from a chain-extender on tbl (E-s16-6 measured the sym-K chain at 6 refs / 2553, which steals $s3 \u2014 so check whether the wrap-lifted stptr at 6 refs / 2926 now dominates it, which would make the previously-fatal tbl chain usable)."
+   "hypothesis": "The goto chassis (candidate.c, floor 1) can drop its FAKE F1 chain-extender by importing s19's finding differently: stptr's priority requirement (A) is satisfiable if the pointer is derived from an index expression WITHOUT a loop note, e.g. a multiply that combine folds.",
+   "mechanism": "s14 showed requirement (A) is stptr > i; s19 showed an index-derived address makes the pointer's reference count large. Without loop notes there is no strength reduction, so the multiply must be folded away by combine while flow still counts the extra references -- the same combine-deletes-after-flow window the F1 family exploits, but with a semantically real expression.",
+   "next_probe": "On the BASE chassis, spell loop1's address as `ents + i * 0x68` with the goto loop (no notes) and measure: count the emitted insns first (a surviving multiply is fatal), then read stptr's/i's reg_n_refs from ALLOCDBG."
   }
  ],
  "judge_constraints": [

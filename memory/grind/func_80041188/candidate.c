@@ -193,6 +193,19 @@
  * the between-loops block, evidence.md E-s17-4). The remaining defect is unchanged:
  * the stptr chain-extender below is a FAKE-annotated F1 construct, and s14's
  * alt_fakefree_floor3_s14.c remains the honest-but-floor-3 alternative.
+ *
+ * s19 ADDENDUM (rederive, 2026-08-25). Re-measured at the START of s19 with this exact
+ * body: STILL sandbox 1 / 132 of 132 insns. s19 produced a SECOND honest alternative on
+ * a new chassis -- alt_W4_realloop_giv_honest_s19.c, sandbox 3, ALL-TARGET seats, zero
+ * FAKE constructs -- by writing s18's array layout literally: loop1 as a real
+ * `do { } while (i < 0x12);` with the entry address inline as `ents + i * 0x68`. There
+ * loop.c's strength reduction hands the walking pointer 9 refs / live 40 = 6750 for
+ * free, i.e. the FAKE F1 chain-extender below has an honest structural replacement.
+ * What keeps that chassis 2 insns behind THIS one is not allocation but loop.c hoisting
+ * the invariant `li 2` out of the real loop (evidence.md E-s19-3, killed by derivation
+ * from loop.c:686-700 + loop.c:1631), after which reload rematerialises it into $t0
+ * where target has $v0. On that chassis the whole out3 lock reduces to ONE missing
+ * flow-counted reference on out2 (E-s19-4/E-s19-5).
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
