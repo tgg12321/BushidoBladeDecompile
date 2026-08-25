@@ -113,6 +113,21 @@
  * residual insn. The remaining unspent item is cosmetic-but-blocking: the
  * `stptr = base; stptr += 0xFC;` chain-extender above still needs either a
  * FAKE-free replacement or its annotation before this body could ship.
+ *
+ * s13 ADDENDUM (permuter, 2026-08-24). Floor re-measured 1 / 132 of 132 at the
+ * start and again at the end of s13; this body is unchanged. s13 spent four
+ * permuter campaigns (~54k iterations) and killed three chassis-level
+ * hypotheses. The load-bearing one: on the floor-9 chassis (this form's s4
+ * ancestor minus the banned do-while(0) wrap) the stock permuter reaches
+ * distance 0 in 2,588 iterations and its ONLY delta is the banned wrap
+ * re-derived verbatim, while the same chassis with `perm_ins_block = 0` in
+ * settings.toml runs 22,418 iterations and finds NOTHING better than its base.
+ * The wrap is therefore the unique route to zero inside the permuter's
+ * transform set, not one option among several. The two-locals
+ * `out3 = pa4 + 0x20` chassis was permuted for the first time and drains into
+ * that same dead basin (its one find is a same-value re-store of out2, honest
+ * sandbox 9). See evidence.md s13. The `stptr = base; stptr += 0xFC;`
+ * chain-extender below is STILL the one unresolved artifact defect.
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {

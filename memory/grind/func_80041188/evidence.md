@@ -1576,3 +1576,121 @@ the priority arithmetic, not an unfound spelling.
 - [s12] Options the owner does not need to weigh, because they are already measured dead: extending the frozen SOTN family list does NOT close this function (no byte-free reference exists in the between-loops block under ANY family); INCLUDE_ASM conversion is dead (2026-08-24 deferral probe: sha1=3e9fe25b... != oracle, ROLLED BACK -- this is why the function is byte-coupling-deferred); and candidate.c cannot ship as COMPLETED-C at floor 1, and separately carries a load-bearing un-annotated F1 chain-extender (stptr = base; stptr += 0xFC -- un-splitting it takes the floor 1 -> 15 at an unchanged 132 insns).
 
 - [s12] src/text1a_pre.c was restored to its committed rule-era body at the end of the session; the working tree is clean apart from the ledger, the two banked rejected forms, and the decisions.md packet.
+
+## s13 (permuter, 2026-08-24) — FLOOR 1 held; the banned do-while(0) wrap proven to be the permuter's UNIQUE route to zero
+
+Chassis re-measured at session start and again at session end with
+`memory/grind/func_80041188/candidate.c` applied to `src/text1a_pre.c`:
+`sandbox func_80041188 --disable all` = **score 1, 132 target / 132 build insns**
+(`rules_dropped: 16, cheat_asm_stripped: 2`). HEAD's committed body is still the
+stale rule-era one carrying `register s32 *s7_a4 asm("s7")`; the candidate was
+applied on top of it for every measurement in this session and restored at the end.
+
+### Infrastructure (reusable, fixes an s4 defect)
+
+The s4 minimal-TU permuter recipe (`tmp/grind/func_80041188/s4/mkws.sh`) is still
+valid, but its extraction awk is BROKEN as committed: `/^\t\.ent\tfunc_80041188$/`
+matches nothing because maspsx strips the leading tab from directives (the gotcha
+s4's own evidence text records but its script does not implement), so `as` fails
+with `.frame outside of .ent`. The working pattern is
+`/^[ \t]*\.ent[ \t]+func_80041188$/` … `/^[ \t]*\.end[ \t]+func_80041188$/`.
+Fixed copies live in `tmp/grind/func_80041188/s13/perm_*/compile.sh`.
+
+NEW this session: the permuter's transform set can be constrained per-campaign
+through `settings.toml`:
+
+    [weight_overrides]
+    perm_ins_block = 0
+
+`perm_ins_block` (tools/decomp-permuter/src/randomizer.py:1092, default weight 10
+in `default_weights.toml:19`) is the randomizer that wraps a statement run in
+`do { ... } while (0);` — i.e. it is the SOLE source of the construct this
+function's Judge has BANNED. Zeroing its weight turns "is the banned wrap
+necessary?" into a directly measurable question, and that is what s13 measured.
+
+### Campaign 1 — floor-9 chassis, FULL transform set (`s13/perm_f9`)
+
+Base = `rejected/s4-form-minus-banned-wrap-floor9.c` (the s4 distance-0 form with
+the banned wrap removed): honest sandbox 9, 132/132, permuter base score 63.
+Its objdump residual is a PURE `$s5`/`$s6` swap between `tbl` and `out2` plus the
+three prologue `sw`/`lui`/`addiu` slots that follow the seats — the build already
+emits target's `addiu $sN,$s7,0x20` at slot 24.
+
+**2,588 iterations / 125 s → `output-0-1`, a distance-ZERO find.** Its only delta
+from the base is the BANNED construct, re-derived verbatim: a
+`do { loop1: … func_8004A348(buf, out2); } while (0);` wrapping loop1's leading
+half with the `loop1:` label INSIDE the wrap and the back edge entering it from
+outside. This is the same construct s4 found (its `output-50-1`) and the same one
+the 2026-08-22 layer-1 cheat-reviewer FAILed. Banked as
+`tmp/grind/func_80041188/s13/f9_zero_banned_wrap.c` — NOT re-proposed.
+
+### Campaign 2 — same chassis, `perm_ins_block = 0` (`s13/perm_f9b`)
+
+**22,418 iterations / 1,121 s → ZERO finds.** Not a single candidate scored below
+the base 63 — no partial improvement, no register-shaped near-miss, nothing. The
+contrast with campaign 1 is the measurement: with block insertion available the
+permuter closes this chassis in 2.6k iterations; with it removed, 22.4k iterations
+(8.7x) produce no improvement at all. Within the permuter's transform set the
+`do { } while (0)` wrap is not *a* route from the floor-9 chassis to zero, it is
+the ONLY route.
+
+### Campaign 3 — loop1-as-a-real-do-while chassis (`s13/perm_lr`), `perm_ins_block = 0`
+
+Base = `rejected/loop1-real-do-while-newchassis-score5.c` (honest sandbox 5 — the
+lowest-distance non-candidate chassis in the bank, and the only one whose allocno
+priority ORDER is already target's). Permuter base score **420**, i.e. the metric
+ranks it far WORSE than the sandbox does, because its residual is loop.c's
+induction-variable rewrite (`addiu $s3,$v0,308` vs target `252`; `move $a3,$s3` /
+`sh $t0,-50($s3)` vs target `addiu $a3,$s3,56` / `sh $v0,6($s3)`) and reordering
+diffs cost 60 each in the permuter's weighting. **4,737 iterations / 6 finds,
+best 355** — the campaign never got within 300 points of the base's own sandbox
+distance. This re-confirms s4's rule in the opposite direction: the permuter
+hill-climbs REGISTER-shaped residuals and is blind to strength-reduction-shaped
+ones, so a low honest distance is NOT a reason to seed a chassis.
+
+### Campaign 4 — two-locals / `out3 = pa4 + 0x20` chassis (`s13/perm_2l`), `perm_ins_block = 0`
+
+Base = `rejected/two-locals-out3-from-a4-seat-permutation.c` (honest sandbox 15;
+permuter base 88 — identical to s4's winning chassis2 base, and a pure
+{out2, pa4, a3} seat permutation, exactly the residual shape the permuter is good
+at). This chassis had never been permuted: it is the TWO-LOCALS analogue of the
+single-local chassis s4 won on, and it is one of the two chassis that emit
+target's `addiu $s3,$s7,0x20` natively.
+
+**21,853 iterations / 1,100 s → exactly ONE find, score 63**, produced in the
+first 29 seconds and never improved on afterwards. The find is
+`out2 = (s32 *) (((u8 *) pa4) + 0x20);` re-executed as a statement in the
+between-loops block, immediately followed by `out3 = out2;` — i.e. a SAME-VALUE
+re-store of `out2` (dead-store family, `.claude/rules/dead-store-fake-exception.md`,
+FAKE-requiring) whose only effect is to hand `out2` the between-loops reference the
+priority arithmetic needs. Hand-re-measured in the honest sandbox rather than
+trusted: **score 9, 132/132 — byte-identical in distance to the floor-9 chassis of
+campaigns 1-2.** So the two-locals chassis does not open a new basin at all; its
+single reachable improvement funnels into the SAME floor-9 basin that campaign 2
+then proved has no non-`ins_block` exit. Banked as
+`rejected/twolocals-permuter-samevalue-restore-funnels-to-floor9-basin.c`.
+
+### What s13 establishes
+
+- [s13] The banned `do { } while (0)` wrap is the permuter's UNIQUE route from the floor-9 chassis to distance 0: full transform set closes it in 2,588 iterations; with `perm_ins_block` weighted to 0, 22,418 iterations produce no improvement whatsoever over the base score
+- [s13] `perm_ins_block = 0` under `[weight_overrides]` in a permuter `settings.toml` is a working, reusable way to forbid a Judge-banned construct AT THE SEARCH LEVEL instead of filtering it out of the finds afterwards — it converts "is this construct necessary?" into a measurement
+- [s13] The two-locals `out3 = pa4 + 0x20` chassis (sandbox 15) is NOT an independent basin: its only permuter-reachable improvement is a same-value re-store of `out2` that lands at sandbox 9, byte-for-byte the floor-9 chassis, which campaign 2 then exhausted
+- [s13] The loop1-real chassis (honest sandbox 5) is permuter-hostile (base score 420, best find 355 over 4.7k iterations): its residual is loop.c strength reduction, which the permuter's weighting buries under reordering penalties. Honest distance does NOT predict permuter tractability — residual SHAPE does (s4's rule, re-confirmed)
+- [s13] The s4 workspace recipe's extraction awk is broken as committed (maspsx strips the leading tab from `.ent`); use `/^[ \t]*\.ent[ \t]+func_80041188$/`. Working copies: `tmp/grind/func_80041188/s13/perm_*/compile.sh`
+- [s13] Three of the four campaigns ran with `perm_ins_block = 0`, so every find banked this session is wrap-free by construction; the only wrap this session produced is campaign 1's, kept solely as the proof that it is the unique route
+
+- [s13] Chassis re-measured with memory/grind/func_80041188/candidate.c applied to src/text1a_pre.c at session start AND again at session end: sandbox func_80041188 --disable all = score 1, 132 target / 132 build insns, rules_dropped 16, cheat_asm_stripped 2. HEAD's committed body is still the stale rule-era one carrying register s32 *s7_a4 asm("s7"); the candidate was applied on top of it for every measurement this session and restored at the end.
+
+- [s13] The banned do-while(0) wrap is the permuter's UNIQUE route from the floor-9 chassis to distance 0: the stock transform set closes it in 2,588 iterations / 125 s, while with perm_ins_block weighted to 0, 22,418 iterations / 1,121 s produce no candidate better than the base score 63 at all.
+
+- [s13] '[weight_overrides] perm_ins_block = 0' in a permuter settings.toml is a working, reusable way to forbid a Judge-banned construct AT THE SEARCH LEVEL instead of filtering it out of the finds afterwards -- it converts 'is this construct necessary?' into a direct measurement. perm_ins_block is tools/decomp-permuter/src/randomizer.py:1092, default weight 10 at default_weights.toml:19, and is the only randomizer that emits do{...}while(0).
+
+- [s13] The two-locals out3 = pa4 + 0x20 chassis (honest sandbox 15, permuter base 88) is NOT an independent basin: its single permuter-reachable improvement over 21,853 iterations is a same-value re-store of out2 that measures honest sandbox 9, byte-for-byte the floor-9 chassis that campaign 2 then exhausted.
+
+- [s13] The loop1-real chassis is permuter-hostile despite its honest sandbox 5: permuter base 420, best find 355 over 4,737 iterations. Its residual is loop.c strength reduction, which the permuter's 60-per-reordering penalty buries.
+
+- [s13] Three of the four campaigns ran with perm_ins_block = 0, so every find banked this session is wrap-free by construction; the one wrap produced (campaign 1) is retained only as the proof that it is the unique route, and is explicitly NOT re-proposed.
+
+- [s13] TOOLING FIX (reusable): the s4 workspace recipe's extraction awk (/^\t\.ent\tfunc_80041188$/) matches nothing, because maspsx strips the leading tab from directives, so as fails with '.frame outside of .ent'. The working pattern is /^[ \t]*\.ent[ \t]+func_80041188$/ ... /^[ \t]*\.end[ \t]+func_80041188$/. Fixed copies live in tmp/grind/func_80041188/s13/perm_*/compile.sh.
+
+- [s13] No campaign outlived the session: all four were harvested with --stop (perm_f9 self-stopped on zero), 18 worker processes were killed in total, and pgrep shows no permuter process remaining.
