@@ -1841,3 +1841,127 @@ dead on instruction count, or (L4) refused by the 09:06 ruling.
 - [s7] The C-reachable inputs to that single decision are now fully enumerated: anti_dependence's five terms ([s7] L1-L5: L1 banned, L2/L3 impossible, L4 refused by the 2026-08-25 09:06 ruling, L5 dead at 246/58), birthing_insn_p's three terms ([s7f.5]: two not controllable, one banned), and rank_for_schedule's LUID tie-break ([s7f.4]: measured dead).
 
 - [s7] Banked rejected forms: rejected/s7f-luid-adjacent-loads-rtl-245-9-schedule-invariant.c and rejected/s7f-luid-single-staged-m4-word-245-9-inert.c.
+
+## [s8r] REDERIVE session 8 — 2026-08-25
+
+**Chassis.** `& tools/wteng.ps1 main sandbox func_800460E4 --disable all` with the
+[s7] candidate body (canonical-named, see below) in src/text1a_c2.c printed
+`score 9, target_insns 248, build_insns 245, rules_dropped 10,
+cheat_asm_stripped 0`. The ledger floor of 9 holds on the current chassis. src was
+reverted to HEAD afterwards; the tree is HEAD-clean apart from metrics/events.jsonl.
+All variant measurements below were taken through the exact build pipeline with
+`tmp/grind/func_800460E4/s8/pr.sh` (cpp | cc1 -O2 -G0 -mel | prologue_fix | maspsx |
+multu_pad | as | objdump), scored against `s4/perm_a/target_nr.dis`.
+
+**[s8r.1] The residual is 100% case-3-local, and the instruction-count gap is a
+jump2 cross-jump.** A full `diff -u` of target vs. the candidate's disassembly
+(tmp/grind/func_800460E4/s8b/) shows differing instructions in exactly one hunk —
+case 3's block — plus branch-target offsets that follow from it. Target's case 3 is
+`move s1,s2 / sll v0,s3,2 / addu v0,v0,s0 / lw v1,-8(v0) / lw a0,-4(v0) /
+li v0,1 / lui at / sh v0 / srl v1 / sll v1 / addu s6,s0,v1 / srl a0 / sll a0 /
+j / addu s4,s0,a0`. Ours is `move s1,s2 / sll a0,s3,2 / addu a0,a0,s0 /
+lw v1,-8(a0) / li v0,1 / lui at / sh v0 / lw v0,-4(a0) / srl v1 / sll v1 /
+j 0x2fc / addu s6,s0,v1`. The three "missing" instructions (245 vs 248) are NOT a
+lost computation: because our -4 value lands in `$v0`, our case-3 tail
+`srl v0,v0,2 / sll v0,v0,2 / addu s4,s0,v0` is textually identical to case 34's
+tail and jump2 cross-jumps it away. The cross-jump is a downstream consequence of
+the seat, which is a downstream consequence of the one sched1 ordering decision.
+Nothing in the function outside case 3 needs re-derivation — which is the
+rederive modality's own answer: at function scope there is no residual to
+re-derive.
+
+**[s8r.2] The /s = 0 spelling space is now enumerated at the C-tree level.**
+Read `tools/gcc-2.7.2/expr.c:4567-4577` directly: `MEM_IN_STRUCT_P` is set on an
+`INDIRECT_REF`'s MEM iff `TREE_CODE (TREE_OPERAND (exp, 0)) == PLUS_EXPR`, or that
+operand is a `SAVE_EXPR` of a `PLUS_EXPR`, or the referenced type is aggregate, or
+the operand is an `ADDR_EXPR` of an aggregate. GCC 2.7.2's `c-typeck.c`
+`pointer_int_sum` rewrites *every* `p + k`, `p - k` and `p[k]` (including
+`k` negative) into a `PLUS_EXPR`, so the only C constructs that can reach expand
+with a non-PLUS address subtree are: (a) a bare deref of a pointer `VAR_DECL`
+(`*p`), (b) a deref of an integer expression cast to a pointer (`NOP_EXPR`), and
+(c) a `volatile`-qualified access, which instead satisfies the
+`MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem)` clause of `anti_dependence`. All
+three are already banned for this function (banned_constructs #3/#4/#5 plus the
+standing judge constraint closing the MEM_IN_STRUCT_P axis in every direction).
+There is no fourth spelling; this replaces the previous measurement-by-measurement
+enumeration with a source-level one.
+
+**[s8r.3] Zero cost requires the pointer VAR_DECL to be SINGLE-USE — measured.**
+This is the mechanism behind [s6.4]'s walking-pointer kill, which the ledger had
+recorded only as "costs one addiu".
+- Two-use pointer, `s32 *hp = &s0[s3 - 1]; ... hp[-1] ... *hp`: **249 / 4**. The
+  case-3 schedule, the seats ($v1 / $a0), the store position and the absence of the
+  cross-jump are ALL target-exact; the four diffs are purely the address
+  materialisation (extra `addiu v0,v0,-4`, `addu v0,s0,v0` operand order, load
+  offsets -4/0 instead of -8/-4). Two uses prevent combine from propagating the
+  pointer's `(plus base -4)` into either MEM, so it needs its own register.
+  Banked: rejected/s8r-hdrend-twouse-pointer-249-4-addiu-not-folded.c.
+- One pointer, single use, no shared base
+  (`s32 *last = &s0[s3 - 1];` for the -4 word, `s0[s3 - 2]` left as-is): **249 / 8**.
+  CSE does not share `s0 + s3*4` between the two independently spelled addresses.
+  Banked: rejected/s8r-one-pointer-single-use-no-shared-base-249-8.c.
+- Shared base + single-use intermediate
+  (`base = (s32 *)((s3 << 2) + (s32)s0); hp = base - 1; base[-2]; *hp`): **248 / 0**,
+  byte-exact. One use lets combine fold `(plus base -4)` straight into the load's
+  MEM address while `/s` (set at expand time) survives as 0. This is the banned
+  pm2/pm1 construct; banked research-only as
+  rejected/s8r-single-use-ptr-intermediate-248-0-BANNED-family.c.
+- Control: the same single-use intermediate applied to the **-8** word instead
+  (`hp = base - 2; *hp` / `base[-1]`) measures **245 / 9**, i.e. completely inert.
+  Independently re-confirms [s6.2] — only the -4 read's bit is load-bearing.
+  Banked: rejected/s8r-single-use-ptr-on-minus8-word-245-9-inert.c.
+
+**[s8r.4] NEW independent term: the case-3 base spelling controls the `addu`
+operand order.** With `/s` already correct, spelling the base `&s0[s3]` instead of
+`(s32 *)((s3 << 2) + (s32)s0)` leaves exactly ONE diff — `addu v0,s0,v0` where
+target has `addu v0,v0,s0` (**248 / 1**). This term is orthogonal to the scheduler
+question and is the same spelling the mainline already uses for `a0_ptr` (target:
+`sll a1,s3,2 / addu a0,a1,s0`). Any future closing form must carry it. Banked:
+rejected/s8r-single-use-ptr-amp-index-248-1-addu-operand-order.c.
+
+**[s8r.5] Hygiene defect found and fixed in candidate.c: a dual C handle for each
+stage global.** `symbol_addrs.txt:151-152` and `named_syms.txt:122-123` name
+0x80099478 / 0x8009947A as `g_stage_id` / `g_stage_variant`, and
+`undefined_syms_auto.txt:55,1227` *also* emit `D_80099478` / `D_8009947A` for the
+same two addresses. src/text1a_c2.c consequently declared `extern s16 D_80099478;`
+/ `extern s16 D_8009947A;` at file scope and used those names inside
+func_800460E4, while every other function in the same TU used the canonical
+game.h names — two C identifiers for one global in one TU, which is the shape a
+layer-1 reviewer reads as an alias-rename even though it arrives via the pipeline
+symbol files rather than `asm("...")`. Respelling the four uses inside
+func_800460E4 to `g_stage_id` / `g_stage_variant` and deleting the two file-top
+externs is **byte-neutral** (measured 245 / 9 both ways; the sandbox printed
+score 9 with the canonical-named body in place). candidate.c now carries the
+canonical names and an apply note about deleting the externs.
+
+**[s8r.6] Disposition.** The rederive modality is exhausted for this function.
+There is no whole-function shape question left (100% of the residual is nine
+instructions in one block), and the block's closing form is now known at
+source level to be a single-use pointer intermediate and nothing else — a
+construct banned twice by layer-1 and closed by a standing judge constraint on the
+whole MEM_IN_STRUCT_P axis. The remaining question is not a grinding question but
+the fidelity/routing one the frontier already states.
+
+- [s8] Chassis re-measured this session: `sandbox func_800460E4 --disable all` = score 9, target_insns 248, build_insns 245, rules_dropped 10, cheat_asm_stripped 0, with the [s7] body (canonical-named) in src/text1a_c2.c. src reverted to HEAD afterwards; the tree is HEAD-clean apart from metrics/events.jsonl.
+
+- [s8] The full target-vs-build disassembly diff has differing instructions in exactly ONE hunk (case 3) plus branch-target offsets downstream of it. Target case 3: move s1,s2 / sll v0,s3,2 / addu v0,v0,s0 / lw v1,-8(v0) / lw a0,-4(v0) / li v0,1 / lui at / sh v0 / srl v1 / sll v1 / addu s6,s0,v1 / srl a0 / sll a0 / j / addu s4,s0,a0. Ours: move s1,s2 / sll a0,s3,2 / addu a0,a0,s0 / lw v1,-8(a0) / li v0,1 / lui at / sh v0 / lw v0,-4(a0) / srl v1 / sll v1 / j 0x2fc / addu s6,s0,v1.
+
+- [s8] The 245-vs-248 instruction gap is a jump2 CROSS-JUMP, not lost codegen: because our -4 value is seated in $v0, our case-3 tail (srl v0,v0,2 / sll v0,v0,2 / addu s4,s0,v0) is textually identical to case 34's tail and is merged away. It is a downstream consequence of the seat, which is a downstream consequence of the single sched1 pick - not an independent lever.
+
+- [s8] expr.c:4567-4577 (read directly this session) sets MEM_IN_STRUCT_P on an INDIRECT_REF's MEM iff TREE_CODE(TREE_OPERAND(exp,0)) == PLUS_EXPR, or that operand is a SAVE_EXPR of a PLUS_EXPR, or AGGREGATE_TYPE_P(TREE_TYPE(exp)), or the operand is an ADDR_EXPR of an aggregate. c-typeck.c's pointer_int_sum turns every p+k / p-k / p[k] into PLUS_EXPR, negative k included.
+
+- [s8] Therefore the complete C-tree space that can give the -4 read /s = 0 is three constructs: bare deref of a pointer VAR_DECL, deref of an integer expression cast to a pointer (NOP_EXPR), and a volatile access (which wins on anti_dependence's MEM_VOLATILE_P clause). All three are already banned for this function; there is no fourth spelling.
+
+- [s8] Measured 249/4 for a two-use walking pointer `s32 *hp = &s0[s3 - 1]` (hp[-1] for the -8 word, *hp for the -4 word): the case-3 SCHEDULE, both value seats ($v1/$a0), the store's position after both loads, and the absence of the cross-jump are all target-exact; the only diffs are an extra `addiu v0,v0,-4`, the `addu v0,s0,v0` operand order and the two load offsets shifted to -4/0.
+
+- [s8] Measured 248/0 (byte-exact) for shared base + SINGLE-USE intermediate: `s32 *base = (s32 *)((s3 << 2) + (s32)s0); s32 *hp = base - 1; s6 = ...ALIGN4(base[-2]); s4 = ...ALIGN4(*hp);`. One use lets combine fold (plus base -4) into the load's MEM address while the /s bit set at expand survives as 0, so the form costs nothing. This is banned_constructs #4/#5 and is banked research-only.
+
+- [s8] Measured 249/8 for the most natural single-pointer spelling (`s32 *last = &s0[s3 - 1];` used exactly once, with the -8 word left as the function's own s0[s3 - 2] idiom): CSE does not share s0 + s3*4 between the two independently spelled addresses.
+
+- [s8] Measured 245/9 (completely inert) for the same single-use intermediate applied to the -8 word instead of the -4 word - an independent re-confirmation of [s6.2] that only the SECOND header read's MEM_IN_STRUCT_P bit is load-bearing.
+
+- [s8] Measured 248/1 for the byte-exact form with the base spelled `&s0[s3]` instead of `(s32 *)((s3 << 2) + (s32)s0)`: the lone residual is `addu v0,s0,v0` vs target's `addu v0,v0,s0`. The base spelling is an orthogonal term, independent of the scheduler question.
+
+- [s8] Dual-handle defect: 0x80099478 / 0x8009947A are named BOTH g_stage_id / g_stage_variant (symbol_addrs.txt:151-152, named_syms.txt:122-123) and D_80099478 / D_8009947A (undefined_syms_auto.txt:55,1227). src/text1a_c2.c used the D_ names inside func_800460E4 and the g_ names everywhere else in the same TU. Respelling to the canonical names and deleting the two file-top externs measures 245/9 - byte-neutral - and is now in candidate.c.
+
+- [s8] Owner RULES-TO-ZERO directive acknowledged: the sandbox already scores this function with all 10 regfix rules dropped (rules_dropped 10, cheat_asm_stripped 0), so the rules are inert to the floor and retiring them is a consequence of reaching 0, not an independent axis. No measurements were spent on rule retirement.

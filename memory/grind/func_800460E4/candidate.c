@@ -1,3 +1,58 @@
+/* [s8r] REDERIVE SESSION 8 (2026-08-25) - the body below is the [s7] non-banned
+ * form with ONE change: the two stage globals are now spelled with their
+ * canonical names g_stage_id / g_stage_variant (include/game.h) instead of the
+ * splat auto-names D_80099478 / D_8009947A. This is BYTE-NEUTRAL (measured 245
+ * insns / 9 diffs both ways, and `sandbox func_800460E4 --disable all` printed
+ * score 9 with this exact body in src/). It is a hygiene fix, not a lever: the
+ * committed file previously carried TWO C handles for each of 0x80099478 and
+ * 0x8009947A - the file-top `extern s16 D_80099478; extern s16 D_8009947A;`
+ * used inside this function, and game.h's g_stage_id / g_stage_variant used by
+ * every other function in the same TU. WHEN APPLYING THIS BODY, ALSO DELETE
+ * those two extern lines from the top of src/text1a_c2.c; a dual-handle-for-one-
+ * global is exactly the shape a layer-1 reviewer reads as an alias-rename.
+ *
+ * WHAT THE REDERIVE MODALITY SETTLED (do not re-derive):
+ *  - 100% of the residual is inside case 3. Every other block of the function -
+ *    prologue, the early switch, the whole mainline (including a0_ptr's
+ *    `sll a1,s3,2 / addu a0,a1,s0` shared-index form), cases 4/7/18, 11, 13, 34
+ *    and the entire tail - is byte-identical to target. A fresh whole-function
+ *    re-derivation therefore has no residual to explain: the rederive axis is
+ *    exhausted at function scope.
+ *  - The 9 diffs decompose as: (i) one sched1 ordering decision (target issues
+ *    the two header loads adjacently, we hoist `li 1 / lui / sh` between them),
+ *    (ii) the seats that follow from it ($v0 address dying into the constant 1,
+ *    values in $v1/$a0 - ours puts the address in $a0 and the -4 value in $v0),
+ *    and (iii) THREE MISSING INSTRUCTIONS: because our -4 value lands in $v0,
+ *    our case-3 tail `srl v0,v0,2 / sll v0,v0,2 / addu s4,s0,v0` is textually
+ *    identical to case 34's tail and jump2 CROSS-JUMPS it away (245 vs 248).
+ *    The cross-jump is a downstream consequence of the seat, not an independent
+ *    lever.
+ *  - The /s = 0 spelling space is now enumerated at the C-TREE level, not just
+ *    by measurement. expr.c:4567-4577 sets MEM_IN_STRUCT_P on an INDIRECT_REF
+ *    iff the address subtree is PLUS_EXPR (or a SAVE_EXPR of one, or the type is
+ *    aggregate). c-typeck.c's pointer_int_sum rewrites EVERY `p - k` / `p[k]`
+ *    into PLUS_EXPR, so the ONLY C forms that reach expand with a non-PLUS
+ *    address subtree are (a) a bare deref of a pointer VAR_DECL, (b) a deref of
+ *    an integer expression cast to a pointer (NOP_EXPR), and (c) a volatile
+ *    access (which wins on the MEM_VOLATILE_P clause instead). All three are
+ *    already banned for this function. There is no fourth spelling.
+ *  - Zero-cost requires the pointer VAR_DECL to be SINGLE-USE. Measured this
+ *    session: single-use -> combine folds `(plus base -4)` into the load's MEM
+ *    address, 248 insns / 0 diffs (rejected/s8r-single-use-ptr-intermediate-
+ *    248-0-BANNED-family.c). Two uses -> the pointer needs its own register and
+ *    the block pays an `addiu`, 249 / 4 (rejected/s8r-hdrend-twouse-pointer-
+ *    249-4-addiu-not-folded.c). One pointer with no shared base -> CSE does not
+ *    share the address, 249 / 8 (rejected/s8r-one-pointer-single-use-no-shared-
+ *    base-249-8.c). So the ONLY closing form is the banned pointer intermediate.
+ *  - NEW independent term, isolated this session: even with /s = 0 correct, the
+ *    case-3 base must be spelled `(s32 *)((s3 << 2) + (s32)s0)`; `&s0[s3]` leaves
+ *    exactly one diff, `addu v0,s0,v0` vs target's `addu v0,v0,s0`
+ *    (rejected/s8r-single-use-ptr-amp-index-248-1-addu-operand-order.c). This
+ *    term is orthogonal to the scheduler question and is the same spelling the
+ *    mainline already uses for a0_ptr.
+ *  - Control re-confirmed: the single-use pointer applied to the -8 word instead
+ *    is completely inert (245 / 9), so only the -4 read's bit is load-bearing.
+ */
 /* [s7f] FORENSICS SESSION 7 (2026-08-25) - BODY BELOW IS UNCHANGED.
  * Re-measured on the current chassis: sandbox --disable all = 9 (245/248,
  * rules_dropped 10, cheat_asm_stripped 0). The ledger floor holds.
@@ -155,7 +210,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
 
     s0 = func_800457A0(7);
     if (s0 != NULL) {
-        if (D_80099478 == stage_id) {
+        if (g_stage_id == stage_id) {
             s7 = 1;
             switch (stage_id) {
             case 3:
@@ -180,7 +235,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         }
     }
 
-    D_80099478 = (s16)stage_id;
+    g_stage_id = (s16)stage_id;
     s7 = 7;
     s0 = func_800455AC(7);
 
@@ -223,7 +278,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         }
     }
 
-    D_8009947A = 0;
+    g_stage_variant = 0;
     /* FAKE: live default init of s1 routed through a delta-rebase detour that
        combine folds back to s1 = s4 with zero emitted bytes, mechanism: flow.c
        reg_n_refs (+2 on s1's pseudo) lifts its global.c allocno_compare
@@ -236,7 +291,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         s1 = s2;
         s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
         s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
-        D_8009947A = 1;
+        g_stage_variant = 1;
         break;
     case 4:
     case 7:
@@ -254,11 +309,11 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
         s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
         func_80044010(PTR_OFF(s0, ALIGN4(s0[5])), 8);
-        D_8009947A = 1;
+        g_stage_variant = 1;
         break;
     case 34:
         s1 = s2;
-        D_8009947A = 1;
+        g_stage_variant = 1;
         s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[5]));
         break;
     }

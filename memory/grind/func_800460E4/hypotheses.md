@@ -964,3 +964,108 @@ same decision seen from two sides, so combining them opens nothing new.
 - probe: `& tools/wteng.ps1 main sandbox func_800460E4 --disable all`.
 - result: score 9, target_insns 248, build_insns 245, rules_dropped 10, cheat_asm_stripped 0. src reverted to HEAD afterwards; tree is HEAD-clean apart from metrics/events.jsonl.
 - verdict: CONFIRMED
+
+## H39 [s8r] — a fresh whole-function re-derivation can reach a case-3 shape whose sched1 outcome differs — **KILLED**
+**Statement.** The committed body's shape is rule-era; a structurally different
+derivation of func_800460E4 (fresh reading of the target asm + the function's own
+sibling idioms) could produce a case-3 block that schedules like target without
+touching MEM_IN_STRUCT_P.
+**Mechanism.** A different variable decomposition changes pseudo numbering, LUIDs,
+live ranges and CSE opportunities, any of which could change the block-19 pick.
+**Probe.** Full `diff -u` of target vs. the candidate disassembly; re-read target's
+mainline (asm/funcs/func_800460E4.s:58-128) and case 13 / case 34 against the C.
+**Result.** Every block of the function except case 3 is already byte-identical to
+target, including the mainline's shared scaled-index form
+(`sll a1,s3,2 / addu a0,a1,s0`, reused for the arg1 branch) and case 13's
+identically-spelled header reads. There is no whole-function shape question left to
+re-derive: the residual is nine instructions in one block, and the 3-instruction
+count gap is a jump2 cross-jump of case 3's tail into case 34's tail, itself
+downstream of the seat, itself downstream of the one sched1 pick.
+**Verdict: KILLED.** See evidence.md [s8r.1].
+
+## H40 [s8r] — a semantically natural walking-pointer spelling can give the -4 header read /s = 0 at zero instruction cost — **KILLED**
+**Statement.** `[s6.4]` killed walking pointers on instruction count, but only tried
+`*hp++` / `*--hp` shapes. A plain "pointer to the last header word"
+(`s32 *hp = &s0[s3 - 1];`, read `hp[-1]` and `*hp`) is ordinary C, sits in no
+coercion family, and might let combine fold the address so the block costs nothing
+extra.
+**Mechanism.** expr.c:4567-4577 gives `*hp` no `/s`; combine propagates a
+`(plus base k)` pseudo into a MEM address when the pseudo is dead after one use.
+**Probe.** Measured through pr.sh: two-use pointer (v1), one-pointer-no-shared-base
+(v6), shared-base + single-use intermediate (v5, v3), and the -8-word control (v4).
+**Result.** Two-use pointer: **249 / 4** — schedule, seats, store position and the
+absence of the cross-jump are all target-exact, and the only diffs are the extra
+`addiu` and the offsets that follow it. One pointer, no shared base: **249 / 8**.
+Shared base + SINGLE-USE intermediate: **248 / 0** byte-exact — but that is exactly
+banned_constructs #4/#5. Control on the -8 word: **245 / 9**, inert.
+**Verdict: KILLED.** Combine only folds a single-use pointer, and a single-use
+pointer intermediate *is* the banned construct. There is no natural multi-use
+spelling that pays nothing. See evidence.md [s8r.3].
+
+## H41 [s8r] — some fourth C spelling can produce a non-PLUS_EXPR address subtree for the -4 read — **KILLED (at source level, not by measurement)**
+**Statement.** The ledger had enumerated the five terms of `anti_dependence`'s
+exemption but not the C-tree space that can flip the first one.
+**Mechanism.** `expr.c:4567-4577` sets `MEM_IN_STRUCT_P` iff the `INDIRECT_REF`'s
+operand is a `PLUS_EXPR` (or a `SAVE_EXPR` of one, or an aggregate type, or an
+`ADDR_EXPR` of an aggregate). `c-typeck.c`'s `pointer_int_sum` converts every
+`p + k` / `p - k` / `p[k]` — negative `k` included — into a `PLUS_EXPR`.
+**Probe.** Read both compiler sources directly rather than inferring from scores.
+**Result.** Exactly three C constructs can reach expand with a non-PLUS address
+subtree: a bare deref of a pointer `VAR_DECL`; a deref of an integer expression
+cast to a pointer (`NOP_EXPR`); and a `volatile` access (which wins on the
+`MEM_VOLATILE_P` clause instead). All three are already banned for this function.
+An aggregate/array re-typing of `s0` would set `/s`, not clear it, and is banned
+independently.
+**Verdict: KILLED — the spelling space is closed, exhaustively, at source level.**
+
+## H42 [s8r] — the case-3 base spelling is a separate, still-open term — **CONFIRMED**
+**Statement.** Getting `/s` right is not sufficient; the base expression's spelling
+independently decides the `addu` operand order.
+**Probe.** The 248/0 form with the base spelled `&s0[s3]` instead of
+`(s32 *)((s3 << 2) + (s32)s0)`.
+**Result.** **248 / 1** — the single residual is `addu v0,s0,v0` vs. target's
+`addu v0,v0,s0`. **Verdict: CONFIRMED.** Any future closing form must carry the
+`(s3 << 2) + (s32)s0` spelling, which is the same one the mainline already uses and
+which the 2026-08-25 03:53 layer-1 review ruled legitimate.
+
+## H43 [s8r] — func_800460E4 carries a dual C handle for each stage global, and fixing it is byte-neutral — **CONFIRMED**
+**Statement.** The TU declares `extern s16 D_80099478/D_8009947A` at file scope and
+uses them inside func_800460E4 while the rest of the TU uses game.h's
+`g_stage_id` / `g_stage_variant` for the same two addresses.
+**Probe.** Grepped symbol_addrs.txt / named_syms.txt / undefined_syms_auto.txt;
+respelled the four uses and deleted the two externs; measured.
+**Result.** Both name sets resolve to 0x80099478 / 0x8009947A.
+Respelling measures **245 / 9**, identical, and the sandbox printed score 9 with the
+canonical-named body in src/. **Verdict: CONFIRMED — free hygiene fix, now in
+candidate.c.** A dual-handle-for-one-global is the shape layer-1 reads as an
+alias-rename; a future candidate-ready must not ship it.
+
+## [s8] A fresh whole-function re-derivation can reach a case-3 shape whose sched1 outcome differs from the committed body's.
+- mechanism: A different variable decomposition changes pseudo numbering, LUIDs, live ranges and CSE opportunities, any of which could change the block-19 scheduling pick.
+- probe: Full `diff -u` of target_nr.dis vs the candidate's disassembly through the exact build pipeline (pr.sh); re-read target's mainline (asm/funcs/func_800460E4.s:58-128), case 13 and case 34 against the C.
+- result: Every block except case 3 is already byte-identical to target, including the mainline's shared scaled-index form (sll a1,s3,2 / addu a0,a1,s0, reused for the arg1 branch) and case 13's identically-spelled header reads. The 3-instruction count gap (245 vs 248) is not a lost computation: our -4 value lands in $v0, making case 3's tail textually identical to case 34's tail, so jump2 cross-jumps it away. There is no whole-function shape question left to re-derive.
+- verdict: KILLED
+
+## [s8] A semantically natural walking-pointer spelling can give the -4 header read /s = 0 at zero instruction cost, unlike [s6.4]'s *hp++ / *--hp forms.
+- mechanism: expr.c:4567-4577 gives a bare `*hp` no MEM_IN_STRUCT_P; combine propagates a (plus base k) pseudo into a MEM address when the pseudo is dead after one use, so the pointer could cost nothing.
+- probe: Measured four spellings through the exact pipeline: two-use pointer `s32 *hp = &s0[s3-1]` (hp[-1], *hp); one pointer single-use with no shared base; shared base + single-use intermediate; and the -8-word control.
+- result: Two-use pointer 249/4 - the case-3 schedule, both seats ($v1/$a0), the store position and the absence of the cross-jump are ALL target-exact and the four diffs are purely the extra addiu and the offsets that follow it. One pointer, no shared base: 249/8 (CSE does not share s0+s3*4). Shared base + SINGLE-USE intermediate: 248/0 byte-exact - but that is exactly banned_constructs #4/#5. Control on the -8 word: 245/9, inert (re-confirms [s6.2]). Combine only folds a single-use pointer, and a single-use pointer intermediate IS the banned construct.
+- verdict: KILLED
+
+## [s8] Some fourth C spelling can produce a non-PLUS_EXPR address subtree for the -4 read, i.e. the /s=0 space is larger than the three already-banned forms.
+- mechanism: expr.c:4567-4577 sets MEM_IN_STRUCT_P iff the INDIRECT_REF's operand is a PLUS_EXPR (or a SAVE_EXPR of one, or an aggregate type, or an ADDR_EXPR of an aggregate); c-typeck.c pointer_int_sum rewrites every p+k / p-k / p[k], negative k included, into a PLUS_EXPR.
+- probe: Read tools/gcc-2.7.2/expr.c:4540-4586 and the pointer_int_sum path directly instead of inferring the space from scores.
+- result: Exactly three C constructs reach expand with a non-PLUS address subtree: a bare deref of a pointer VAR_DECL, a deref of an integer expression cast to a pointer (NOP_EXPR), and a volatile access (which instead satisfies anti_dependence's MEM_VOLATILE_P clause). All three are already banned for this function. An aggregate/array re-typing of s0 would SET /s, not clear it. The spelling space is closed exhaustively at source level, not merely by measurement.
+- verdict: KILLED
+
+## [s8] Getting /s right is sufficient to close case 3; the base expression's spelling is not a separate term.
+- mechanism: The base is materialised by sll+addu either way, so its C spelling should be byte-neutral.
+- probe: The 248/0 research form with the case-3 base spelled `&s0[s3]` instead of `(s32 *)((s3 << 2) + (s32)s0)`.
+- result: 248/1 - the single residual is `addu v0,s0,v0` where target has `addu v0,v0,s0`. The base spelling is an INDEPENDENT, orthogonal term that any future closing form must also carry; it is the same spelling the mainline already uses for a0_ptr and that the 2026-08-25 03:53 layer-1 review ruled legitimate.
+- verdict: CONFIRMED
+
+## [s8] func_800460E4 carries a dual C handle for each stage global, and normalising it is byte-neutral.
+- mechanism: symbol_addrs.txt:151-152 / named_syms.txt:122-123 name 0x80099478 and 0x8009947A as g_stage_id / g_stage_variant, while undefined_syms_auto.txt:55,1227 also emit D_80099478 / D_8009947A for the same addresses; src/text1a_c2.c declared and used the latter inside func_800460E4 while the rest of the TU used the former.
+- probe: Respelled the four uses to the canonical names, deleted the two file-top externs, measured with pr.sh and with `sandbox func_800460E4 --disable all`.
+- result: 245/9 both ways and the sandbox printed score 9 with the canonical-named body in src/. Byte-neutral. candidate.c now carries the canonical names plus an apply note to delete the two externs - a dual-handle-for-one-global is the shape a layer-1 reviewer reads as an alias-rename even though it arrives via the pipeline symbol files rather than an asm() rename.
+- verdict: CONFIRMED

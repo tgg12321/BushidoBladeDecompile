@@ -1,8 +1,8 @@
 {
  "func": "func_800460E4",
  "file": "text1a_c2",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 9,
    "modality": "forensics",
    "headline": "Forensics: the case-3 sched1 decision is now clock-exact on disk - the store is the ONE insn excluded from adjust_priority's birthing boost, which structurally pins it into the first load's delay slot"
+  },
+  {
+   "session": 8,
+   "floor": 9,
+   "modality": "rederive",
+   "headline": "Rederive: 100% of the residual is 9 insns in case 3 (3 of them a jump2 cross-jump), and the /s=0 spelling space is now closed at C-tree source level - the only zero-cost closing form is a SINGLE-USE p"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual remains the single FIDELITY question about the case-3 read of the -4 stage-header word (was it written through a pointer-variable lvalue, giving the non-PLUS_EXPR INDIRECT_REF whose dependence edge target's schedule requires?), and it is now the ONLY undecided input to the one sched1 decision that produces all 9 diffs.",
-   "mechanism": "expr.c:4567-4577 (/s set iff PLUS_EXPR address subtree) + sched.c:843-864 (the five-term anti_dependence exemption) + sched.c:2505-2592 (birthing tier membership) - the complete input set is enumerated across [s7] L1-L5, [s7f.4] and [s7f.5], and every member except this fidelity question is impossible, banned, refused or measured dead.",
-   "next_probe": "escalation modality only: file a DECISION PACKET posing the one-lvalue fidelity question, citing evidence.md [s6.1]/[s6.2]/[s6.5], the 248/0 vs 245/9 one-sided pair, and [s7f.5]'s enumeration. Do NOT re-file any family question - aggregate merge ([s6.3], ruling 04:46), fresh carrier (07:19), hoisted pre-existing carrier (07:54), walking pointers ([s6.4]) and scalar-to-array re-typing (09:06) are all closed."
+   "hypothesis": "The residual remains the single FIDELITY question about the case-3 read of the -4 stage-header word - was it written through a bare pointer-variable lvalue? - and that question is now source-level closed on the C side: the ONLY zero-cost spelling is a single-use pointer intermediate off a shared base, which is banned_constructs #4/#5. No un-banned C form exists.",
+   "mechanism": "expr.c:4567-4577 + c-typeck.c pointer_int_sum bound the /s = 0 space to three constructs (bare pointer deref, integer-cast deref, volatile), all banned; combine folds the pointer's address only when it has ONE use, so every multi-use (i.e. non-coercive-looking) spelling pays an addiu and measures 249. See evidence.md [s8r.2]/[s8r.3].",
+   "next_probe": "Escalation modality only: file a DECISION PACKET posing the one-lvalue fidelity question, now citing the source-level enumeration ([s8r.2]) and the 248/0 vs 249/4 vs 249/8 cost table ([s8r.3]) rather than only the earlier 248/0-vs-245/9 pair. Do NOT re-file any family question - aggregate merge, fresh carrier, hoisted carrier, walking pointers and scalar-to-array re-typing are all closed."
   },
   {
-   "hypothesis": "If the fidelity question is answered against the pointer form, the honest floor of 9 is terminal in pure C under the current bans and the remaining question is routing (canonical-asm grant path vs continued INCLUDE_ASM deferral), not grinding.",
-   "mechanism": "All 9 diffs are downstream of one backward-scheduler pick in block 19; no un-banned C spelling changes any of that pick's three input families.",
-   "next_probe": "escalation modality: run tools/scan_hand_coded.py --single func_800460E4 and report the STRONG (S1/S2/S6) gate result in the packet either way; a negative census is a FAILED gate and the item stays active under standing policy."
+   "hypothesis": "Any closing form must ALSO carry the case-3 base spelled `(s32 *)((s3 << 2) + (s32)s0)`; `&s0[s3]` costs one diff on its own.",
+   "mechanism": "Measured 248/1 vs 248/0 - `addu v0,s0,v0` vs `addu v0,v0,s0`. Orthogonal to MEM_IN_STRUCT_P and to the scheduler; the mainline already uses this spelling for a0_ptr and the 03:53 layer-1 review ruled it legitimate.",
+   "next_probe": "None as an independent probe - record it so a future closing form (or an owner grant) is not spent on a 248/1 near-miss."
   },
   {
-   "hypothesis": "The owner's RULES-TO-ZERO directive for this function (10 regfix rules, jtbl-coupled, wave-2 INCLUDE_RODATA already measured SHA1-dead for THIS function specifically) is satisfied automatically by a COMPLETED-C close and has no separate grindable content.",
-   "mechanism": "The sandbox already scores this function with all 10 rules dropped (rules_dropped 10, cheat_asm_stripped 0), so the rules are inert to the floor; retiring them is a consequence of reaching 0, not an independent axis. Recorded here because the dispatch audit flagged the directive as never acknowledged in the ledger.",
-   "next_probe": "none as a probe - a future session should note the directive is acknowledged and subsumed, and not spend measurements on rule retirement while the floor is non-zero."
+   "hypothesis": "The rederive modality is exhausted for this function: there is no whole-function shape question left.",
+   "mechanism": "100% of the residual is nine instructions in case 3, three of which are a jump2 cross-jump downstream of one seat; every other block including the mainline's shared scaled-index form and case 13's identically-spelled header reads is already byte-identical to target.",
+   "next_probe": "Do not re-run a fresh m2c / decomp.me / Kengo derivation for this function; the byte evidence already shows the non-case-3 C is correct. Route the next session to escalation."
   }
  ],
  "judge_constraints": [
