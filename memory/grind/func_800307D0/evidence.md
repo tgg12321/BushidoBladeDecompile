@@ -257,3 +257,34 @@ don't move it.
 - [s9] OWN DUMP, OWN PASS ATTRIBUTION (tmp/grind/func_800307D0/s9/idx25_rtl.txt, from `pwsh tools/grinder/dump.ps1 func_800307D0` on the matched TU): initial RTL insn 76 = `(set (reg 94) (ashift (reg 93) (const_int 1)))` carrying `REG_EQUAL (mult (reg/v 74) (const_int 2))`; insn 78 = `(set (reg 95) (plus (reg 94 = scaled index) (reg/v 72 = a0)))` -- INDEX-FIRST even though a0 carries the LOWER pseudo (72 < 94). That rules out pseudo-numbering / register allocation as the actor and confirms the expr.c:5288-5290 `both_summands` address-context swap ("put a multiplication first"), reachable only under EXPAND_SUM (expr.c:5237-5239) with a surviving MULT rtx.
 - [s9] OWNER DIRECTIVE RE-EXECUTED INDEPENDENTLY ("ONE bounded re-test under the 2026-08-20 or-tree carve-out; check expand_binop canonicalization reachability first"). expand_binop reachability: **NEGATIVE**, confirmed by reading tools/gcc-2.7.2/optabs.c:399-421 against this session's own dump -- the commutative swap fires only when `(op1 is REG && op0 is not REG) || target == op1 || op0 is CONST_INT`; insn 78's operands are two pseudo REGs, so it never fires, which is exactly why s3/s6/s7's assignment-context RTL traces correctly found that order immovable. Carve-out verdict: **INERT** for this residual -- its lever is choosing a written operand order, and written order is provably irrelevant in the pointer domain (c-typeck.c:1988 normalises `int + ptr` to `PLUS_EXPR(ptr,int)`; s7's 8-spelling type matrix). No carve-out is claimed and no FAKE annotation is emitted, because what moves the bytes is a change of EXPANSION CONTEXT (read through the dereference vs. materialise a named pointer first) -- a structural, semantics-identical difference between two ordinary C spellings, not an operand-order shuffle.
 - [s9] DISPOSITION: deliberately NOT submitted as candidate-ready. The s8 layer-1 FAIL produced a driver-enforced ban on "inlining the scaled-index address expression directly into the dereference instead of materializing a named pointer", and the s9 form -- however differently derived and however well precedented in-repo -- has that shape. Per the session contract ("if you believe a ban is wrong, emit ruling-request"), this session returns `ruling-request` carrying the precedent + m2c + dump package rather than respelling a banned construct into the Judge. src/code6cac_b.c is left untouched at HEAD (INCLUDE_ASM), and the standing 2026-07-22 OWNER-ESCALATION is NOT declared moot by this session -- that unilateral disposition was one of the s8 FAIL grounds and is explicitly not repeated here.
+
+== s10 (rederive, 2026-08-25) — APPLIED TO src/, DISTANCE 0, SHA1 == ORACLE ==
+
+- [s10] The 2026-08-25 15:45 ruling (docs/grind/decisions.md:11151, **PASS**) narrowed the
+  s8-derived layer-1 ban: `s3 = *(s16 *)(a0 + s1 * 2 + 0x332);` on a `u8 *a0` param is NOT a
+  respelling of the FAILED `v0 + (s32)a0` int-cast (there is no int cast of the pointer at
+  all), it is this TU's dominant idiom for this array, and it needs no exception. The ruling
+  corrected s9's sibling line citations: the true func_80030B10 lines are
+  src/code6cac_b.c:1226 and :1239 (s9 wrote :1270/:1283); I re-verified both live this session,
+  plus func_8003047C at :1123 and func_80021904 at src/code6cac.c:2002. Bans #2 (the s8 7-row
+  enumerated variant matrix as justification) and #4 (unilateral escalation-mootness
+  declaration) STAND and are not invoked anywhere in this session.
+- [s10] The standing 2026-07-22 OWNER-ESCALATION did not need a mootness declaration from any
+  agent: the owner's 2026-08-24 ruling (.claude/rules/escalation-not-parked.md) retired the
+  parked state and returned this function to active grinding, and the owner directive on the
+  queue item mandated exactly one bounded or-tree re-test plus an expand_binop reachability
+  check — both executed and both NEGATIVE (s9 hypotheses, re-read this session, not re-run).
+- [s10] MEASURED THIS SESSION with the body applied at src/code6cac_b.c:1159 (INCLUDE_ASM
+  replaced): `sandbox func_800307D0 --disable all` => score **0**, target_insns 76,
+  build_insns 76, scorable true, rules_dropped 0. Full `build` => sha1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH. Zero regfix/asmfix rules, zero
+  cheat constructs, no sanctioned-family claim.
+- [s10] The applied body is the s2–s7 reviewer-PASSed floor-1 candidate with exactly two
+  sibling-transplanted changes (param typed `u8 *a0` as func_80030900/func_80030B10 do; head
+  read written in the file's own inline scaled-index idiom). Per the Judge's standing
+  constraint the candidate.c grind-narration header was stripped: src/ carries NO ledger or
+  mechanism narrative, and memory/grind/func_800307D0/candidate.c is now a verbatim copy of
+  the applied body under a 4-line provenance comment.
+- [s10] self_vet.md rewritten for this diff: six tests answered per construct,
+  SANCTIONED-FAMILY-CLAIMS none (ordinary C, per the initDrawMode precedent
+  docs/grind/decisions.md:1156 and the 2026-08-25 15:45 ruling), ANNOTATION-CONFORMANCE n/a.

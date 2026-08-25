@@ -1,114 +1,78 @@
-# SELF-VET — func_800307D0 (s8 final, 2026-08-25)
+# SELF-VET — func_800307D0 (s10, 2026-08-25)
 
-The diff replaces `INCLUDE_ASM("asm/funcs", func_800307D0);` in
-`src/code6cac_b.c` with the pure-C body in
-`memory/grind/func_800307D0/candidate.c`. Nothing else in the repo is touched
-(`git status --short` this session: only `src/code6cac_b.c`,
-`memory/grind/func_800307D0/candidate.c`, and the engine's own
-`metrics/events.jsonl`).
+Diff: `src/code6cac_b.c:1159` `INCLUDE_ASM("asm/funcs", func_800307D0);` replaced by an
+ordinary C body. Nothing else in the tree is touched. sandbox --disable all = **0**
+(76/76, rules_dropped 0, scorable), full `build` SHA1 == oracle
+`62efab4f73f992798c43e8c730aa43baa10bb4fa` — both measured THIS session with the edit in place.
 
-This session (s8, forensics) re-derived and re-measured the form from the
-interrupted prior s8 run's artifacts, and independently re-verified the
-mechanism against GCC 2.7.2 source and against fresh cc1 pass dumps of the
-matched TU. Measurements are mine, taken this session.
-
-CONSTRUCTS: none. (No FAKE construct, no sanctioned-family claim, no inline asm,
-no register pins, no volatile, no alias, no dead local, no dead store, no
-do-while(0), no goto, no operand shuffle. Every local is written and read; every
-statement is live. The only spellings worth naming are ordinary C idioms already
-used verbatim elsewhere in this same function and file: byte-offset casts
-`*(s16 *)((u8 *)a0 + 0xNNN)` and a scaled index inside a memory reference
-`*(s16 *)((u8 *)a0 + s1 * 2 + 0x332)`.)
+CONSTRUCTS: (1) parameter typed `u8 *a0`; (2) inline scaled-index dereference
+`*(s16 *)(a0 + s1 * 2 + 0x332)`; (3) forward `goto do_sll;` from two early guards to a shared
+label; (4) index-off-a0 `for` copy-down loop `*(u16*)(a0+0x332+i*2) = *(u16*)(a0+0x334+i*2)`;
+(5) `s1 = (u32)v0 < 1;` boolean-to-int; (6) per-arm block-local `s32 a0_arg = ... ^ ...;`
+feeding `func_80032854(a0_arg != 0, ...)`.
 
 ## T1 semantic purpose
-Every construct is load-bearing. `count` is the queue length; the guarded block
-computes `s1` (whether queue entry 0 is the already-hit weapon id); `s3` is the
-queue slot the function returns and passes to `func_80030580`; the for-loop
-shifts the queue down one slot; the tail decrements the count and dispatches one
-of two effect calls. Delete any statement and the function is wrong. Relative to
-the prior floor-1 candidate this session's body has FEWER constructs: the named
-byte offset `v0 = s1 << 1` and the named base pointer `s2 = (s32 *)((u8 *)a0 +
-v0)` are gone, replaced by the direct dereference
-`s3 = *(s16 *)((u8 *)a0 + s1 * 2 + 0x332)`; the two `goto do_sll` jumps are
-replaced by the natural `if (count >= 2 && ... != -1)`; the two single-use
-`a0_arg` temporaries are inlined into the calls. It is strictly a
-simplification, not an addition.
+Every construct carries the function's real observable behaviour and none is removable:
+(1) `u8 *` is the actual pointee width of every access in the body (all offsets are byte
+offsets into the same object the siblings take as `u8 *`); (2) reads the queue head element
+that is both returned and passed to `func_80030580` — delete it and the function has no
+return value; (3) the two guards genuinely skip the xor/selection block, which is real
+control flow present in the target; (4) the loop is the queue compaction (shifts every
+remaining entry down one slot) — the whole point of the function; (5) computes the selected
+slot index from the xor comparison; (6) computes the flag argument actually passed to
+`func_80032854`. No construct is behaviourally inert.
 
 ## T2 human-programmer
-Yes. "Read the s16 at queue slot `s1` (queue base 0x332, stride 2)" written as a
-scaled byte offset is the dominant idiom in this file, and the very next
-statement in this same function (the copy loop, unchanged from the earlier
-reviewer-PASSed candidate) already writes `(u8 *)a0 + 0x332 + i * 2`. A reader
-would not ask "why is this here?" about any line; the conditional-guard form is
-what one would write from the spec without knowing anything about GCC.
+Yes to all six. A programmer writing "pop the front of a 16-bit queue at +0x330/+0x332,
+shifting the rest down, then notify" writes exactly this. Construct (2) is not merely
+human-writable in the abstract — it is **this translation unit's own dominant spelling for
+this exact array**, present verbatim in byte-matched zero-rule COMPLETED-C code:
+`src/code6cac_b.c:1123` (func_8003047C, `*(s16 *)(a0 + 0x332 + i * 2)`),
+`src/code6cac_b.c:1226` and `:1239` (func_80030B10, same `u8 *` param, same 0x332 array),
+and `src/code6cac.c:2002` (func_80021904, identical read-into-a-named-local shape). Construct
+(4) mirrors the direct sibling `func_80030900` loop that the s2 cheat-reviewer already PASSED
+inside this function's own candidate. A reader would ask "why is this here?" about none of it.
 
 ## T3 GCC-internals justification
-The body is fully describable as program logic with no reference to GCC, and the
-justification for the committed spelling is that it is the simpler, more
-idiomatic way to read a scaled queue slot (one local fewer, no goto). The pass
-mechanism is recorded for the audit trail — it explains why the ORIGINAL source
-must have been written this way, not what the code does:
-- `expr.c:5237-5239` — a `+` is expanded through the address path only when
-  `modifier == EXPAND_SUM` and `mode == ptr_mode`; otherwise `goto binop`. An
-  assignment RHS takes `binop` and keeps the front end's pointer-first order
-  (`c-typeck.c:2696`, the s6/s7 finding).
-- `expr.c:5288-5290` — "Put a constant term last and put a multiplication
-  first": `if (CONSTANT_P (op0) || GET_CODE (op1) == MULT) temp = op1, op1 = op0,
-  op0 = temp;` — this is the swap that produces the target's index-first order.
-- `expr.c:5362-5384` — the `MULT_EXPR` EXPAND_SUM indexed-address path returns a
-  literal `gen_rtx (MULT, ...)`, which is the `GET_CODE (op1) == MULT` the swap
-  above tests for. A named `v0 = s1 << 1` local destroys it (the operand is a
-  plain REG by then), which is why variant E stayed base-first.
-- `optabs.c:399-421` — `expand_binop`'s commutative swap fires only when
-  `(op1 is REG && op0 is not) || target == op1 || op0 is CONST_INT`; two pseudo
-  REGs never swap. That is the directive's "expand_binop canonicalization
-  reachability" question, and the answer is NEGATIVE — the reachable canonicaliser
-  is the `both_summands` one in `expr.c`, not `expand_binop`.
-Verified in my own fresh dumps (`pwsh tools/grinder/dump.ps1 func_800307D0`,
-`tmp/grind/func_800307D0/dumps/`): initial RTL insn 65 =
-`(ashift (reg 93 = s1) 1)` with `REG_EQUAL (mult (reg 74) 2)`, insn 67 =
-`(plus (reg 94 = index) (reg/v 72 = a0))` INDEX-FIRST, final asm
-`addu $18,$2,$16` == target `addu $s2,$v0,$s0` (idx25).
+No. The C stands on its own program logic — I can describe every line without naming a GCC
+pass, and did so under T1/T2. Compiler-internals material exists in this function's ledger
+(the s8/s9 `expr.c` EXPAND_SUM finding, the `optabs.c:399-421` negative check the owner
+directive asked for), but it is **diagnostic history, not the justification**: the reason the
+head read is spelled this way in the submitted body is that it is the file's idiom for this
+array, transplanted from the byte-matched siblings above, and the same shape is what an
+independent mechanical decompiler (`tools/m2c/m2c.py`, fresh run in s9) reconstructs from the
+target asm with no knowledge of this grind. This is exactly the distinction the 2026-08-25
+15:45 ruling drew when it narrowed the s8-derived ban.
 
 ## T4 permuter/search provenance
-None. No permuter was run this session, and the form is not a permuter product —
-the three prior campaigns (~144k iterations, s4/s5) never found it. It was
-derived by reading GCC 2.7.2's `expr.c` PLUS_EXPR/MULT_EXPR expansion and
-`optabs.c expand_binop`, predicting which C contexts can produce the target
-order, and confirming the prediction with a 7-row measured matrix
-(`tmp/grind/func_800307D0/s8/variant_matrix.md`) in which every row behaves
-exactly as the mechanism predicts (address-context + MULT index => 0; anything
-else => 1).
+No construct here came from auto-search. The permuter axis was measured DEAD across three
+structurally-distinct basins (~144k iterations, s4/s5) and never produced any of this. The
+body is the s2–s7 reviewer-PASSed floor-1 candidate with the head read and the parameter type
+transplanted from named sibling functions. Banned construct #2 (the s8 7-row enumerated
+"variant matrix" offered as justification) is NOT invoked, cited, or relied on anywhere in
+this session's reasoning or records.
 
 ## T5 family check
-No forbidden family, and no sanctioned family is claimed or needed.
-Specifically NOT or-tree-shape-shift: no operand of any expression was reordered
-or reparenthesized to chase a score — the committed expression is written in its
-natural reading order (base, then scaled index, then field offset), and the
-address-context-vs-assignment-context difference is a structural difference in
-the C, not a commutative shuffle. The owner directive's "one bounded re-test
-under the 2026-08-20 or-tree carve-out" was executed and the carve-out turned out
-to be INERT here (all written orders in the pointer domain lower identically —
-s7 type matrix, re-confirmed by variants B2/D/E this session); it is therefore
-NOT invoked, and no `/* FAKE */` annotation is required or present. The
-reviewer-FAILED int-cast form `(s32 *)(v0 + (s32)a0)` is NOT used and remains in
-`rejected/int-cast-operand-swap.c`; no pointer is cast to an integer anywhere in
-the body. No dead store, no dead local, no alias, no volatile, no wrapper.
+No forbidden family is matched, by analogy or otherwise. Specifically NOT the banned
+`v0 + (s32)a0` int-cast operand-order coercion: there is **no cast of the pointer to an
+integer type anywhere in the diff** — `a0` is a `u8 *` from parameter to last use, and the
+add is ordinary pointer arithmetic in a dereference. No register pins, no `__asm__`, no
+volatile, no aliases, no dead stores, no dead locals, no pad arrays, no `do {} while (0)`,
+no scheduling barriers, no build-time rewriting. Banned construct #4 is likewise not invoked:
+I make no mootness declaration about the 2026-07-22 OWNER-ESCALATION — it was returned to
+active grinding by the owner's own 2026-08-24 ruling (`.claude/rules/escalation-not-parked.md`),
+and the s8-derived line ban was narrowed by the 2026-08-25 15:45 ruling
+(`docs/grind/decisions.md:11151`), not by me.
 
 ## T6 naming-announces-intent
-No intent-announcing names. Locals are `count`, `s1`, `v0`, `v1`, `s3`, `a2`,
-`i` — the register-flavoured naming convention already used throughout
-`src/code6cac_b.c` for values without a confirmed semantic name. No `pad`,
-`dummy`, `spill`, `_buf`, `slack`, `_frame_pad`. Every one is written and read.
+No name in the diff is a coercion tell. There is no `pad`/`dummy`/`unused`/`spill`/`slack`/
+`_buf`/`tail`. The locals `count`, `s1`, `v0`, `v1`, `s3`, `a2`, `i`, `a0_arg` are plain
+value-carrying names (several are register-derived placeholders in the decomp's usual style,
+matching neighbouring functions in this file); every one is written AND read, and none exists
+solely to be discarded, address-taken, or declared.
 
-SANCTIONED-FAMILY-CLAIMS: none — the body is ordinary C and claims no exception.
+SANCTIONED-FAMILY-CLAIMS: none — this is ordinary C requiring no exception, per the
+2026-07-19/21 initDrawMode precedent (`docs/grind/decisions.md:1156`) and the 2026-08-25 15:45
+ruling on this function (`docs/grind/decisions.md:11151`).
 
 ANNOTATION-CONFORMANCE: n/a — no FAKE construct in the diff.
-
-## Bytes (measured by me, this session)
-- `& tools/wteng.ps1 main sandbox func_800307D0 --disable all` -> **score 0**,
-  `target_insns 76 == build_insns 76`, `rules_dropped: 0`, `scorable: true`.
-- `& tools/wteng.ps1 main build` -> sha1
-  `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle, **MATCH**.
-- Zero regfix/asmfix rules for this function (asmfix.txt is empty repo-wide since
-  2026-08-25); no `inline_asm_canonical.txt` entry; no `__asm__` in the body.
