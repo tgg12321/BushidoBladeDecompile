@@ -187,3 +187,8 @@ disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 �
 category: policy-question
 evidence: session-filed escalation: docs/grind/decisions.md - '## 2026-08-25 - func_80060A68 - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (grind s10): both endgame gates re-measured and failed (scan_hand_coded --single = tier LOW 1/8, S4 only; no construct in play so no SOTN-master precedent is applicable), floor flat at 2 across ten sessions and six modalities, and the decidable question posed is the representation/routing choice for the project's last two asmfix rules (asmfix.txt:82-83, body-coupled whole-body splice): keep the legacy splice while the function is INCOMPLETE, or authorize an operator-side lane to repair the 2026-08-24 INCLUDE_ASM migration failure (sha1 699695d890f0570a3039af734ed84a6a7c44302c != oracle) so those rules retire and the function continues as an ordinary INCLUDE_ASM queue item at honest floor 2. No grant, family sanction or evidence-bar override is requested.
 disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.
+
+## 2026-08-25 — SioSyncroRead — integration-handoff
+category: integration-handoff
+evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-08-25 — SioSyncroRead — JUDGE ESCALATE on final call (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
+disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: SioSyncroRead volatile_extern_allowlist.txt; function stays ACTIVE.
