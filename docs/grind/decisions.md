@@ -11553,3 +11553,7 @@ not the session, supersedes escalations — done herewith: the 2026-07-22 option
 refusal for func_8003800C is superseded by the honest match). Layer-1 + Judge still
 gate the commit; the 17:06 FAIL and ban[0]/ban[1] are not a valid FAIL basis for this
 exact construct.
+
+## 2026-08-25 17:52 — func_800307D0 — final call — **PASS**
+
+Body carries zero match-hack constructs: no inline asm, alias, volatile, dead store, do-while(0), variable reuse, or FAKE annotation; sandbox re-measured by me = score 0, 76/76, rules_dropped 0. Decisive fact I verified independently: asm/funcs/func_800307D0.s corroborates every questioned spelling as FAITHFUL, not coercive - line 'xor $v0,$v0,$v1' + 'sltiu $s1,$v0,0x1' is exactly `top = top ^ cur; idx = (u32)top < 1;`, and 'xori $a0,$a0,0xE'/'xor $a0,$v1,$a0' + 'sltu $a0,$zero,$a0' is exactly `(x ^ y) != 0` (same idiom already shipped in-TU at src/code6cac_b.c:1329). Head read `*(s16 *)(a0 + idx*2 + 0x332)` is owner-ruled ordinary C (docs/grind/decisions.md, 2026-08-25 func_800307D0 OWNER RULING (a), read at :11472ff) - the vacated bans are not a FAIL basis. KEPT bans respected: no enumerated-variant-matrix justification and no self-declared escalation mootness (self_vet.md cites the owner's written ruling, which I confirmed exists). jc[2] satisfied: src/code6cac_b.c:1159 carries no grind narration; diff touches only this function. Full evidence: memory/grind/func_800307D0/{self_vet.md,hypotheses.md,evidence.md,rejected/}.
