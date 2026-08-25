@@ -1,5 +1,134 @@
 # Evidence bank — func_800460E4
 
+## [s6] 2026-08-25 — recon session after the FOURTH layer-1 FAIL (all case-3 alias-defeat spellings banned; NEW honest mechanism found: the D_80099478/D_8009947A aggregate — sandbox 4, and the 4 is a proven scorer artifact, bytes byte-identical at link)
+
+Context: the 04:28 layer-1 FAIL banned the [s5] fully-inlined case-3 derefs as
+the pm2/pm1 construct respelled, closing EVERY spelling whose mechanism is
+making the case-3 loads non-/s (volatile cast, pointer intermediates, inlined
+cast-derefs, and the address-form choice itself vs case 13). This session
+re-baselined and attacked from the OTHER side of the dependence relation: not
+the loads, the STORE.
+
+### Baseline re-established (no banned constructs anywhere)
+
+Candidate body with case 3 spelled EXACTLY like case 13 (block-local
+`s32 *ptr = (s32 *)((s3 << 2) + (s32)s0);` + `ALIGN4(ptr[-2])/ALIGN4(ptr[-1])`
+reads, store LAST): **sandbox --disable all = 9 (245/248)** — matches [s4]'s
+novol measurement. The 9 = the 3-insn case-3 tail eaten by jump2
+find_cross_jump into case 34 + the case-3-local $v0/$a0 seat swap, downstream
+of sched1 placing li/sh between the two loads (no dependence edge at the
+mem/s chassis). Chassis: rules_dropped=10, cheat_asm_stripped=0.
+
+### H12 — the store side: sched.c needs only ONE side of the pair to be non-exempt, and the STORE side has a genuine object-model account
+
+GCC 2.7.2 sched.c anti_dependence/true_dependence (sched.c:831-839, 855-863):
+after memrefs_conflict_p returns maybe, the conflict is DISMISSED iff one ref
+is MEM_IN_STRUCT_P+varying and the OTHER is non-struct+fixed. The banned
+family attacked the load side (make the loads non-/s). The unexplored side:
+make the STORE /s — a COMPONENT_REF store to a struct member is /s, so BOTH
+exemption clauses fail (each requires the other ref be non-struct) and the
+anti-dependence edges load->store form from REAL dependence analysis.
+
+The object-model account: D_80099478 (s16, named g_stage_id in
+symbol_addrs.txt:151) and D_8009947A (s16, g_stage_variant,
+symbol_addrs.txt:152) are adjacent halfwords declared back-to-back in
+include/game.h:15-16, always used as a semantic pair (id selects the stage,
+variant flags the alternate set), written back-to-back in func_8004668C
+(asm lines 7-10: sh id; sh $zero variant), reset together, and consumed by
+the same stage-machine functions. Declaring them one struct
+(`struct { s16 id; s16 variant; }` at 0x80099478) is a plausible original
+object model, and — decisively — [s4]'s sched_solver proof showed target's
+case-3 order is UNREACHABLE without a real dependence edge, while the case-3
+LOAD spelling is pinned to the /s indexed form by case 13's match. Within
+GCC 2.7.2's dependence machinery the original edge therefore existed iff the
+original store was /s (struct member) or volatile (no IRQ evidence — two-prong
+gate unmet; killed as an axis). The compiler's own dependence rules are
+forensic evidence the ORIGINAL declared this pair as an aggregate.
+
+### Measurements (all this session, at this chassis)
+
+1. Struct probe (TU-local: typedef struct { s16 id; s16 variant; } StageState;
+   extern StageState D_80099478; — all 7 refs in func_800460E4 respelled to
+   .id/.variant; case 3 kept the case-13 ptr[-2]/ptr[-1] spelling, store LAST):
+   **sandbox 21 (248/248)** — case 3 became BYTE-PERFECT (lw/lw/li/sh, $v1/$a0
+   target seats, cross-jump defeated, the 3 insns back), but case 34 (C had
+   store-FIRST) now mis-ordered (li/sh before its lw: the /s store's
+   true_dependence pins the load) and a whole-function C-s2/C-s3 seat swap
+   cascaded.
+2. Case 34 respelled store-LAST (s4 = ...ALIGN4(s0[5]) THEN variant = 1 —
+   mirrors target's literal lw/li/sh order): **sandbox 4 (248/248)**, seat
+   swap resolved. Banked the store-first kill as
+   rejected/case34-store-first-under-struct.c.
+3. Full instruction-level diff (tmp/grind/func_800460E4/s6_ours2.dis vs
+   asm/funcs/func_800460E4.s, every region compared): EVERY instruction
+   matches target — opcodes, register seats, ordering, all five switch cases,
+   prologue, header block, tail, epilogue. The residual 4 is EXACTLY the four
+   variant stores `sh ...,2($at)` carrying reloc D_80099478+2 (ours offsets
+   0x1D8, 0x224, 0x2E8, 0x304) vs target's `sh ...,%lo(D_8009947A)($at)`.
+4. The 4 is a SCORER ARTIFACT, not a byte difference: %hi(0x80099478+2) =
+   0x800A (carry: 0x947A+0x8000 >= 0x10000) and %lo = 0x947A — the exact
+   halfwords in target's words (0A80013C lui / 7A9420A4 sh). engine/score.py
+   deliberately does NOT mask named-symbol reloc addends (2026-08-07 fix note:
+   "Named-symbol relocs are NOT masked — their immediate is a source-level
+   addend, a real difference") — correct in general, but D_80099478+2 and
+   D_8009947A+0 ALIAS the same address, so the linked bytes are identical
+   while the sandbox can never read 0 for this spelling. Same artifact class
+   as memory/project/sandbox-lo16-text-addend-false-distance.md (saEft00Add),
+   named-symbol variant.
+
+### Why this is NOT the banned construct respelled
+
+The banned family's mechanism was defeating MEM_IN_STRUCT_P on the LOADS —
+inventing spellings so an analysis mis-classifies unchanged semantics. The
+struct merge changes the DECLARED OBJECT MODEL to what the evidence says the
+original had; the store is /s because it genuinely stores to a struct member.
+It is the sanctioned aggregate-merge family (no-new-park-categories.md
+2026-08-17 entry, SOTN Vram-struct precedent) — with one honest gap: prong (a)
+demands base-register or stride addressing evidence, and every access in the
+binary is per-symbol lui/%lo (checked: all 16 sites across 8 functions; no
+shared-base addressing — though for two adjacent halfwords GCC 2.7.2 emits
+per-member %lo even for true structs, so absence here is weak counter-evidence
+at best; splat-symbol-names-are-not-evidence cuts both ways). The available
+prong-(a)-class evidence is: the semantic-pair naming census
+(symbol_addrs.txt:151-152 + game.h:15-16 adjacency), the paired write site
+(func_8004668C), and the sched-forensics elimination argument above. Whether
+that satisfies prong (a) is EXACTLY the classification question this session
+cannot self-answer -> ruling-request.
+
+### Completion path if granted (for the next session / integration)
+
+- Full merge per prongs (b)-(e): declare the struct ONCE in include/game.h
+  (replacing the g_stage_id/g_stage_variant externs, e.g.
+  extern StageState g_stage_state;), respell the two src/sound.c getters
+  (src/sound.c:127,131) and this TU's func_800464C4/func_8004659C uses;
+  asm-only consumers (func_800466C0, func_80046798, func_800467A8,
+  func_8004668C — still INCLUDE_ASM/deferred) keep referencing D_8009947A /
+  D_80099478 until they are themselves decompiled, so both symbol names must
+  survive in the link (splat config unchanged until those land).
+- The sandbox-4 scorer artifact needs a driver/operator disposition (an
+  engine/score.py aliasing-aware mask, or an oracle-based acceptance like the
+  saEft00Add judge ruling) — session may not touch engine/. Full-build proof
+  requires the 10 stale rules at regfix.txt:868-882 dropped first (they were
+  calibrated to the rule-era body and misfire on any new body) — the normal
+  retire path at integration, same note as [s1]-[s5].
+- Case-34 C order under the struct is store-LAST (measured; rejected/
+  case34-store-first-under-struct.c). Case 3 and case 13 keep the identical
+  block-local ptr spelling — no per-site divergence, no banned constructs,
+  and the [s3] s1 chain-extender (already ruled legitimate 03:53) remains
+  the only FAKE construct.
+
+### Kills banked this session
+
+- Case-34 store-first under the /s store: 21 vs 4 — dead
+  (rejected/case34-store-first-under-struct.c).
+- Volatile-extern route for g_stage_variant: no IRQ-handler evidence at any
+  use site (all consumers are stage-machine functions); the
+  legitimate-volatile-interrupt-touched two-prong gate is unmet — dead
+  without new evidence.
+
+Artifacts: tmp/grind/func_800460E4/s6_ours.dis (struct probe, pre-case-34-fix),
+tmp/grind/func_800460E4/s6_ours2.dis (final form, the full-diff basis).
+
 ## [s5] 2026-08-25 — recon session after the THIRD layer-1 FAIL (pm2/pm1 banned; new honest close at sandbox 0 with ORDINARY C in case 3)
 
 Context: the [s4] close was layer-1 FAILED (decisions.md 2026-08-25 04:17) on
@@ -13,6 +142,8 @@ idiom. Result: sandbox --disable all = 0 (248/248, rules_dropped=10,
 cheat_asm_stripped=0), measured THIS session at the final body; canonical:
 verdict C, distance 0.** Chassis at session start re-measured: HEAD (rule-era
 body) = 35, matching the queue item.
+[NOTE added by s6: this [s5] form was itself layer-1 FAILED at 04:28 — the
+fully-inlined derefs are banned_constructs #6/#7. Kept for the record only.]
 
 ### The closing case-3 form (the whole diff vs the [s4] candidate)
 

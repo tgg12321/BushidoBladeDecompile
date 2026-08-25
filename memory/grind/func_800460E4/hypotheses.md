@@ -96,3 +96,42 @@ absent and only ONE FAKE construct (the [s3] s1 chain-extender, already
 ruled legitimate by the 03:53 layer-1 review); remaining work is
 integration: rule retirement via the normal retire path + layer-1/Judge
 gates.)
+
+## [s6] 2026-08-25 (recon, after the fourth layer-1 FAIL banned every load-side non-/s spelling for case 3)
+
+H12 - "The original dependence edge came from the STORE side, not the loads:
+D_80099478/D_8009947A are one aggregate (struct { s16 id; s16 variant; } =
+g_stage_id/g_stage_variant), so the variant store is a /s COMPONENT_REF MEM
+and sched.c's struct/non-struct exemption (anti_dependence, sched.c:855-863,
+which requires the OTHER ref be non-struct) cannot dismiss the load->store
+conflict - the anti-dependence edges form from real dependence analysis with
+case 3 keeping case 13's exact ptr[-2]/ptr[-1] spelling."
+Probe: TU-local struct probe, all 7 pair-refs respelled; measured + full
+instruction diff (tmp/grind/func_800460E4/s6_ours2.dis).
+Verdict: **CONFIRMED mechanically - every instruction matches target
+(sandbox 4 = exactly the four variant-store reloc spellings D_80099478+2 vs
+D_8009947A+0, which alias the same address at link; %hi/%lo arithmetic proven
+identical to target's emitted halfwords). Sanction question (aggregate-merge
+prong (a)) is open -> ruling-request.**
+
+H13 - "Under the /s store, case 34 must be spelled store-LAST (s4 compute
+then variant store), mirroring target's lw/li/sh order; store-first forces
+the lw after the sh via true_dependence and cascades a whole-function
+C-s2/C-s3 seat swap."
+Probe: measured both orders (21 store-first vs 4 store-last).
+Verdict: **CONFIRMED** - banked rejected/case34-store-first-under-struct.c.
+
+H14 - "g_stage_variant qualifies for the legitimate-volatile-interrupt-touched
+carve-out as the alternative store-side mechanism."
+Probe: censused all 16 access sites across 8 functions - every consumer is a
+synchronous stage-machine function; no IRQ handler touches the pair.
+Verdict: **KILLED (two-prong gate unmet; no IRQ evidence).**
+
+Frontier: (1) obtain the aggregate-merge ruling for the g_stage_id/g_stage_variant
+struct (the ONLY open question between the current form and COMPLETED-C);
+(2) if granted, complete the merge per prongs (b)-(e) (game.h canonical decl,
+respell src/sound.c getters + this TU's other two functions) and resolve the
+sandbox named-symbol-addend-alias artifact at the driver/operator level
+(engine/score.py is session-forbidden); (3) if refused, the case-3 residual
+returns to floor 9 with every measured mechanism banned or unmet - next
+modality would need a genuinely new axis (none currently known).

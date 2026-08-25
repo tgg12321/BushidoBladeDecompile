@@ -1,28 +1,42 @@
-/* candidate for func_800460E4 - session s5 2026-08-25
- * sandbox --disable all == 0 (248/248 insns, 10 regfix rules dropped in
- * scoring), measured this session at this exact body. ALL THREE prior
- * layer-1 blockers are resolved by ABSENCE:
- *   - the BANNED arg1/s1 whole-function merge stays absent (s32 *s1; is the
- *     real carrier, arg1 never written past the fp_ptr block);
- *   - the BANNED case-3 volatile cast is absent;
- *   - the BANNED case-3 pm2/pm1 pointer intermediates are absent. Case 3 is
- *     now fully-inlined ordinary C: the two header words are read through
- *     direct derefs of the SAME scaled-index integer-arithmetic address form
- *     the four already-accepted sites use ((s3 << 2) + (s32)s0), and the
- *     D_8009947A store sits last, exactly as case 13 orders it. No invented
- *     locals, no casts beyond the function's pervasive idiom, no annotation
- *     needed. Dump-proven at this chassis: the loads (insns 306/318) are
- *     plain non-/s MEMs and the store (insn 327) carries REG_DEP_ANTI 306 +
- *     REG_DEP_ANTI 318 - REAL anti-dependence edges give target's
- *     load/load/store order, the target register seats, and the case-34
- *     cross-jump tail merge cannot fire. (Note: [s4]'s sched_solver proof
- *     showed the original MUST have had a real dependence edge here; this
- *     spelling is the ordinary-C derivation that produces it.)
- * ONE FAKE construct remains (annotated): the s1 chain-extender ([s3]),
- * which the 2026-08-25 03:53 layer-1 review already ruled "legitimate and
- * correctly cited". See evidence.md [s5] + self_vet.md.
- * Exact copy of the src/text1a_c2.c body at measurement time.
+/* candidate for func_800460E4 - session s6 2026-08-25
+ * STATE: sandbox --disable all = 4 (248/248, 10 regfix rules dropped in
+ * scoring) - and the 4 is a PROVEN scorer artifact, not a byte difference:
+ * every instruction matches target (full diff: tmp/grind/func_800460E4/
+ * s6_ours2.dis vs asm/funcs/func_800460E4.s); the 4 counted diffs are the
+ * four variant stores whose reloc is D_80099478+2 where target's .s spells
+ * D_8009947A+0 - the SAME address (0x8009947A), identical %hi/%lo halfwords
+ * (0x800A/0x947A, matching target words 0A80013C/7A9420A4). engine/score.py
+ * does not mask named-symbol addends, so this spelling cannot read 0 even
+ * though the linked bytes are identical.
+ *
+ * GATING QUESTION (ruling-request, this session's outcome): the body depends
+ * on declaring D_80099478/D_8009947A (g_stage_id/g_stage_variant,
+ * include/game.h:15-16) as ONE struct:
+ *     typedef struct { s16 id; s16 variant; } StageState;
+ *     extern StageState D_80099478;
+ * The /s COMPONENT_REF store restores the load->store anti-dependence edges
+ * in sched.c (anti_dependence exemption needs the other ref NON-struct,
+ * sched.c:855-863), giving target's case-3 lw/lw/li/sh order, target seats,
+ * and the cross-jump defeat - with case 3 spelled EXACTLY like case 13
+ * (no banned construct; all four banned case-3 spellings absent).
+ * Aggregate-merge family (no-new-park-categories.md 2026-08-17): prong (a)
+ * base-register/stride evidence is ABSENT (all accesses are per-symbol
+ * lui/%lo); available evidence = semantic-pair census (symbol_addrs.txt:
+ * 151-152), game.h adjacency, paired write in func_8004668C, and the [s4]
+ * sched_solver proof that the original MUST have had this dependence edge.
+ * Do not resubmit candidate-ready until that ruling lands.
+ *
+ * Case 34 must stay store-LAST (rejected/case34-store-first-under-struct.c).
+ * ONE FAKE construct: the [s3] s1 chain-extender (ruled legitimate 03:53).
+ * Exact copy of the src/text1a_c2.c body at measurement time; the typedef
+ * above replaces the two s16 externs at the top of the TU.
  */
+
+typedef struct {
+    s16 id;      /* current stage index (g_stage_id) */
+    s16 variant; /* stage variant flag (g_stage_variant) */
+} StageState;
+/* extern StageState D_80099478;  (replaces extern s16 D_80099478/D_8009947A) */
 
 void func_800460E4(s32 stage_id, s32 arg1) {
     s32 *s0;
@@ -35,7 +49,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
 
     s0 = func_800457A0(7);
     if (s0 != NULL) {
-        if (D_80099478 == stage_id) {
+        if (D_80099478.id == stage_id) {
             s7 = 1;
             switch (stage_id) {
             case 3:
@@ -60,7 +74,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         }
     }
 
-    D_80099478 = (s16)stage_id;
+    D_80099478.id = (s16)stage_id;
     s7 = 7;
     s0 = func_800455AC(7);
 
@@ -103,7 +117,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         }
     }
 
-    D_8009947A = 0;
+    D_80099478.variant = 0;
     /* FAKE: live default init of s1 routed through a delta-rebase detour that
        combine folds back to s1 = s4 with zero emitted bytes, mechanism: flow.c
        reg_n_refs (+2 on s1's pseudo) lifts its global.c allocno_compare
@@ -114,9 +128,12 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     switch (stage_id) {
     case 3:
         s1 = s2;
-        s6 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s3 << 2) + (s32)s0 - 8)));
-        s4 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s3 << 2) + (s32)s0 - 4)));
-        D_8009947A = 1;
+        {
+            s32 *ptr = (s32 *)((s3 << 2) + (s32)s0);
+            s6 = (s32 *)((u8 *)s0 + ALIGN4(ptr[-2]));
+            s4 = (s32 *)((u8 *)s0 + ALIGN4(ptr[-1]));
+            D_80099478.variant = 1;
+        }
         break;
     case 4:
     case 7:
@@ -138,13 +155,13 @@ void func_800460E4(s32 stage_id, s32 arg1) {
             s6 = (s32 *)((u8 *)s0 + off1);
             s4 = (s32 *)((u8 *)s0 + off2);
             func_80044010(PTR_OFF(s0, ALIGN4(s0[5])), 8);
-            D_8009947A = 1;
+            D_80099478.variant = 1;
         }
         break;
     case 34:
         s1 = s2;
-        D_8009947A = 1;
         s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[5]));
+        D_80099478.variant = 1;
         break;
     }
 
