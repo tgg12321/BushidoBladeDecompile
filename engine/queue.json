@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002EA24",
-      "file": "code6cac_b",
-      "distance": 2,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "Owner ruling 2026-08-25 (032909be): no decidable question in the backstop packet; return to active. Directive: run SOLVER modality first once the solver-toolkit repair lands (same residual shape the solver cracked on func_8003800C).",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-25 \u0393\u00c7\u00f6 func_8002EA24 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
-    },
-    {
       "func": "func_8003800C",
       "file": "code6cac_c_mid",
       "distance": 2,
@@ -2050,18 +2040,29 @@
       "unpark_reason": "Owner ruling YES 2026-08-25 (032909be): solver-toolkit target-stream repair authorized and landing operator-side; once landed, run solver modality per the 2026-08-24 directive (now executable).",
       "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md \u2014 '## 2026-08-25 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET**' (appended this session; decidable question: repair the solver toolkits' target-stream derivation for INCLUDE_ASM-routed functions so the owner's own 2026-08-24 solver directive becomes executable \u2014 a fidelity/routing question that lowers no standard and requests no family grant)",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 ## 2026-08-25 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (solver axis discharged)**"
+    },
+    {
+      "func": "func_8002EA24",
+      "file": "code6cac_b",
+      "distance": 2,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "Owner ruling 2026-08-25 (032909be): no decidable question in the backstop packet; return to active. Directive: run SOLVER modality first once the solver-toolkit repair lands (same residual shape the solver cracked on func_8003800C).",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-25 \u0393\u00c7\u00f6 func_8002EA24 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:11688 -- 2026-08-25 func_8002EA24 OWNER-ESCALATION -- ESCALATED WITH DECISION PACKET (tooling-repair authorization; solver-first directive executed)"
     }
   ],
   "counts": {
     "total": 235,
-    "active": 232,
+    "active": 231,
     "by_status": {
-      "active": 232,
-      "escalated": 3
+      "active": 231,
+      "escalated": 4
     },
     "by_verdict": {
-      "ASM-PARTIAL": 36,
-      "C": 196
+      "C": 196,
+      "ASM-PARTIAL": 35
     }
   }
 }

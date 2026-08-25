@@ -456,3 +456,26 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
  * SUGGESTED-REGISTER pass, whose inputs the BB2_QTY_DEBUG hook does not dump --
  * an engine/tools extension, not a C-spelling search.
  * ------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------------
+ * SESSION 16 (escalation modality, owner solver-first directive, 2026-08-25)
+ * BODY UNCHANGED -- floor re-measured at 2 (104/104, 0 rules) on the current
+ * chassis, and the solver search space extended from depth 1 to depth 2.
+ *
+ * The depth-2 unfocused sweep of global.c's modelled inputs (947 atoms,
+ * 435,448 pairs) found a route no previous session had named -- a new conflict
+ * edge 102 (`y`) <-> 103 (`neg_threshold`) plus a +4 live-length bump on `y`
+ * -- and it is now measured dead: the only C spelling of that edge (hoisting
+ * the `y` load above the z range test) takes `y`'s live length 5 -> 41 instead
+ * of 5 -> 9, strips its $a0 preference, demotes it to LAST in the allocation
+ * order where it takes target's $t1 for itself, and does not even create the
+ * edge (GCC sinks the load back). Scores 10/11 at 102-103 insns vs this body's
+ * 2 at 104. Banked as rejected/yhoist-route-c-edge-never-created-score10.c.
+ *
+ * All three routes that reach the goal inside the model are now RTL-foreclosed
+ * with measurements (A: preference unrepresentable; B: 97 edge costs an allocno;
+ * C: 102 edge costs 36 live-length units against the 4 the route needs), and a
+ * coarsened depth-3 sweep that EXCLUDES both foreclosed atom families returns
+ * zero reaching vectors at depths 1 and 2. See hypotheses.md H10/H10a/H10b/H10c
+ * and evidence.md "SESSION 16".
+ */

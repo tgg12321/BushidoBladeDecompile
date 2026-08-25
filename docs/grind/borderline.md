@@ -246,3 +246,8 @@ disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 �
 category: policy-question
 evidence: session-filed escalation: docs/grind/decisions.md — '## 2026-08-25 — func_800645B0 — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**' (appended this session; decidable question: repair the solver toolkits' target-stream derivation for INCLUDE_ASM-routed functions so the owner's own 2026-08-24 solver directive becomes executable — a fidelity/routing question that lowers no standard and requests no family grant)
 disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.
+
+## 2026-08-25 — func_8002EA24 — policy-question
+category: policy-question
+evidence: session-filed escalation: docs/grind/decisions.md:11688 -- 2026-08-25 func_8002EA24 OWNER-ESCALATION -- ESCALATED WITH DECISION PACKET (tooling-repair authorization; solver-first directive executed)
+disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.

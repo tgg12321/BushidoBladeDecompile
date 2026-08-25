@@ -11684,3 +11684,125 @@ standing ruling of 2026-07-27 (`.claude/rules/endgame-lock-disposition.md`),
 `func_800645B0` is **REFUSED / OWNER-ACCEPTED INCOMPLETE**. No owner action is
 requested and nothing waits on one. Ledger: `memory/grind/func_800645B0/`; this
 session's measurements and solver transcripts: `tmp/grind/func_800645B0/s13/`.
+
+## 2026-08-25 — func_8002EA24 (src/code6cac_b.c) — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET** (tooling-repair authorization; solver-first directive executed)
+
+**This packet supersedes the 2026-08-25 backstop packet (decisions.md:11401), which the
+owner ruled states no decidable question.** That ruling returned the item to ACTIVE with a
+directive: *"run the SOLVER modality first once the func_800645B0 toolkit repair lands."*
+Session 16 executed that directive. It produced a genuinely new route, killed it with
+measurements, extended the solver search space from depth 1 to depth 2 (and to depth 3
+outside the foreclosed families), and surfaced **one decidable tooling question** — the same
+species as the func_800645B0 packet the owner ruled YES on earlier the same day.
+
+### What session 16 measured (the directive, executed)
+
+Chassis re-measured first: banked candidate applied to `src/code6cac_b.c`,
+`sandbox func_8002EA24 --disable all` → **score 2, 104/104 insns, 0 rules,
+cheat_asm_stripped 47**.
+
+1. **The 2026-08-25 solver repair (`661dc8dc`) does not cover the state a grind session runs
+   `classify` in.** `inverse_compose.py classify code6cac_b func_8002EA24` still takes the
+   text path and still reports the fictitious `FIRST DIVERGENCE: PRE-RA` on a 93-vs-105 gap
+   whose entire content is the two stripped GTE islands. The repair's refusal predicate
+   (`_is_include_asm_routed`, inverse_compose.py:137-190) tests whether `src/<stem>.c`
+   *currently* carries the `INCLUDE_ASM` line — but a session pastes its candidate body into
+   src before running any classifier, which is the only state where the honest stream means
+   anything. General form: for **any zero-rule function** the src-derived `<stem>.tgt.s` is
+   our own build modulo cheat-asm stripping. Artifact:
+   `tmp/grind/func_8002EA24/s16/classify.txt`.
+2. **Depth-2 solver sweep — new Route C found.** Unfocused sweep of `global.c`'s modelled
+   input space on the plain control (947 atoms; 435,448 admissible pairs;
+   `tmp/grind/func_8002EA24/s16/depth2_sweep.py`, log `depth2_plain.txt`): 142 reaching
+   pairs, 4 of them CLEAN, and **every single one contains the same new conflict edge
+   102 (`y`) ↔ 103 (`neg_threshold`)** — a route 15 sessions of hand and depth-1 search never
+   named (all earlier routes ran through 97, `a0_var`).
+3. **Route C killed, with the model naming the reason.** The only C spelling of that edge is
+   hoisting `y = *(s32 *)(obj + 0x108)` above the z range test. Six measured bodies: 10 / 11
+   at 102-103 insns against the banked 2 at 104. The extracted model of the hoisted body
+   (`s16/yhoist.model.json` vs `s15/plain.model.json`) shows a double failure: `y`'s live
+   length goes 5 → **41** where the route needs 5 → 9, `y` loses its `$a0` preference,
+   `allocno_compare` demotes it from 8th to LAST, and it takes target's `$t1` **for itself**;
+   and the edge is not even created (103 absent from 102's conflict set — GCC sinks the load
+   back past the test). Geometric cause: 103 dies at the z range test and `y` is born ~25
+   instructions later, past the squared-distance + LZC/GTE block, so the cheapest attainable
+   overlap costs ≈ +36 live-length units against the +4 the route needs. Banked as
+   `memory/grind/func_8002EA24/rejected/yhoist-route-c-edge-never-created-score10.c`.
+4. **Depth-3 closure outside the foreclosed families.** A coarsened 461-atom grid excluding
+   both foreclosed atom families (any new conflict edge touching 103; any own hard-reg
+   preference on 103) returns **zero** reaching vectors at depths 1 and 2 (104,722
+   combinations) and **zero at depth 3 as well** -- the full sweep evaluated
+   **15,525,735 vectors** and found none reaching (`tmp/grind/func_8002EA24/s16/depth3_no103.txt`).
+
+All three routes that reach the goal inside the model are now RTL-foreclosed **with
+measurements**: A (own `$t1` preference — unrepresentable in the pre-RA RTL, s15);
+B (edge 97↔103 — obtainable only by deleting an allocno or hoisting the mult/mflo pairs;
+15 / 21, s15); C (edge 102↔103 — 25-instruction gap; 10 / 11, s16).
+
+### The gates (unchanged, both still FAIL)
+
+* **(a) canonical-asm:** `python3 tools/scan_hand_coded.py --single func_8002EA24` →
+  `tier=TIGHT_C score=3/8`; only the weak signals S3/S4/S5 fire, all three STRONG signals
+  (S1 multu pacing, S2 empty branch, S6 BIOS jumptable) clear. Identical reading to
+  2026-07-30, 2026-08-20 and s13/s14. **FAIL.**
+* **(b) SOTN-master precedent:** there is no closing construct to cite a precedent *for*; the
+  three censuses that were run (decomp.me ×2, s9; `docs/reference/sotn-construct-index.md`
+  for conflict / allocno / find_reg / global_alloc, s13/s14) all came back NEGATIVE, which is
+  a failed gate, not an open question. **FAIL.**
+
+**No rule, family, grant, or standard is requested by this packet.** Nothing here asks to
+accept debt, sanction a construct, or lower an evidence bar.
+
+### (i) The DECIDABLE question
+
+**May the operator extend the instrumented cc1's `BB2_QTY_DEBUG` hook
+(`tools/gcc-2.7.2/local-alloc.c`, `block_alloc`) to dump local-alloc's SUGGESTED-REGISTER
+sets (`qty_phys_copy_sugg` / `qty_phys_sugg`, and the companion gap `qty_size`), and repair
+`inverse_compose.py`'s routing predicate so the text path is refused for any zero-rule
+function rather than only for one whose src still carries `INCLUDE_ASM`?**
+
+This is a fidelity/tooling question, identical in species to the func_800645B0 packet the
+owner ruled **YES** on 2026-08-25: a measurement channel that exists in the compiler but is
+not observable through our instrumentation, so a mechanism cannot be measured — only guessed.
+Local-alloc's suggestion pass is the **last mechanism in the allocation stack that has never
+been observed for this function**, it runs *upstream* of `global_alloc` (it seeds
+`regs_used_so_far` for pass 0 — the exact set that excludes `$a0` from pseudo 103), and it is
+therefore the one remaining candidate explanation for a residual that sixteen sessions of
+global-alloc-level search have not moved. `tools/ra_solver/README.md` already documents the
+gap; `local_alloc.py` prints `sugg` rows but cannot score them.
+
+### (ii) Evidence pointers
+
+* `memory/grind/func_8002EA24/evidence.md` — "SESSION 16" section (all numbers above).
+* `memory/grind/func_8002EA24/hypotheses.md` — H10 / H10a / H10b / H10c (this session),
+  H9 / H9a / H9b / H9c (s15, Routes A and B), s1–s14 per-session kill record.
+* `memory/grind/func_8002EA24/rejected/` — 47 disproven bodies, each named for why it is dead.
+* `tmp/grind/func_8002EA24/s16/` — `depth2_plain.txt`, `depth3_no103.txt`, `classify.txt`,
+  `yhoist.model.json`, `depth2_sweep.py`, `depth3_sweep.py`, `variant.py`, `cmp.py`.
+* Exhaustion: 16 sessions, 8 distinct modalities (recon, structural, permuter, forensics,
+  rederive, synthesis, escalation, solver), ~118k+ permuter iterations, floor flat at 2 since
+  session 4.
+
+### (iii) Consequence of each answer
+
+* **YES — authorize the two tool repairs.** A tooling session extends the `BB2_QTY_DEBUG`
+  fprintf, rebuilds the instrumented cc1 (`TMPDIR=/dev/shm make cc1`), re-runs
+  `local_extract.py` + `local_alloc.py` on `code6cac_b`, and asks whether any quantity in the
+  range-test window carries a suggestion for `$a0` or `$t1`. If it does, the `$a0`/`$t1` split
+  is decided upstream of everything sessions 6–16 measured and the function resumes with a
+  named, measurable lever; if it does not, the allocation stack is closed **observationally**
+  rather than by an exhaustion argument, and the 2026-07-27 standing ruling applies on a typed
+  negative. The `classify` repair additionally un-breaks the first diagnostic every future
+  grind session runs, on every zero-rule function in the queue — the same blast radius that
+  justified the func_800645B0 YES.
+* **NO — leave the instrumentation as it is.** The suggestion pass is permanently
+  unobservable, the modelled C-side search is closed in closed form (depth ≤ 2 exhaustive,
+  depth 3 outside the two foreclosed families), both endgame-lock gates FAIL, and the function
+  falls under the owner's 2026-07-27 standing ruling (REFUSED / OWNER-ACCEPTED INCOMPLETE)
+  with the honest floor 2 preserved. `src/code6cac_b.c:905` stays
+  `INCLUDE_ASM("asm/funcs", func_8002EA24);` per asm-until-matched — there is no cheat on main
+  for this function — and the whole ledger stays banked for whenever new tooling arrives.
+
+Best form preserved at `memory/grind/func_8002EA24/candidate.c` (score 2, 104/104 insns,
+zero regfix/asmfix rules, zero cheat-asm; the two FAKE-annotated constructs it carries are
+both [[staged-value-reused-variable]], the family sanctioned 2026-07-03).

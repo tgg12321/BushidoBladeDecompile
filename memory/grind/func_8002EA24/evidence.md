@@ -1784,3 +1784,152 @@ search space narrowed to the two model-external mechanisms in hypotheses.md H9.
 - [s15] No decision packet was filed, deliberately. Under the owner's second 2026-08-24 ruling (.claude/rules/escalation-not-parked.md) the previously-filed 'REFUSED / OWNER-ACCEPTED INCOMPLETE' shape is in the AUTO-REJECT class -- its YES would lower a standard -- and the one fidelity/provenance question this session could have posed (could the original GTE island have put a hard $t1 in the pre-RA RTL and opened route A?) was answered NO against target's own bytes. Per that ruling the residual stays ACTIVE under standing policy.
 
 - [s15] 45 rejected forms now banked in memory/grind/func_8002EA24/rejected/ (2 added this session).
+
+## SESSION 16 (escalation modality, owner directive: solver-first, 2026-08-25)
+
+**Chassis re-measured first.** Banked candidate body (candidate.c lines 229-373)
+pasted over `src/code6cac_b.c:905` (`INCLUDE_ASM("asm/funcs", func_8002EA24);`),
+`sandbox func_8002EA24 --disable all` -> **score 2, target_insns 104,
+build_insns 104, rules_dropped 0, cheat_asm_stripped 47**. Unchanged from s13/s14/s15.
+The whole ledger is valid on the current chassis.
+
+**Owner directive executed.** The queue item's 2026-08-25 directive ("run SOLVER
+modality first once the func_800645B0 toolkit repair lands") is now executable:
+the repair is commit `661dc8dc`. Both halves were run.
+
+### 1. The repaired `classify` is still unsound in the state a grind session uses it
+
+`python3 tools/ra_solver/inverse_compose.py classify code6cac_b func_8002EA24`
+with the candidate pasted still prints `PATH: text-stream classifier`,
+`honest 93 insns, target 105 insns`, `FIRST DIVERGENCE: PRE-RA`. The repair's
+refusal predicate (`_is_include_asm_routed`, inverse_compose.py:137-190) keys on
+whether `src/<stem>.c` currently carries the `INCLUDE_ASM` line -- but a grind
+session pastes its candidate body into src before running any classifier, which
+is the only state where the honest stream means anything. The general form of
+the defect: for ANY zero-rule function the src-derived `<stem>.tgt.s` IS our own
+build modulo cheat-asm stripping, so the text path can only ever report the
+stripping artifact (here: the two GTE islands, 93 vs 105). `goal_from_tgt.py`
+(object-level) remains the correct entry point and aligns 104/104.
+Artifact: `tmp/grind/func_8002EA24/s16/classify.txt`.
+
+### 2. Depth-2 solver sweep -- a NEW route (Route C), then killed
+
+`tmp/grind/func_8002EA24/s16/depth2_sweep.py` on the plain control model
+(`s15/plain.model.json`, score-3 body = candidate minus L3): 947 atoms, 435,448
+admissible pairs, pairs containing a depth-1-reaching atom excluded.
+
+    depth-1 reaching: 3   (conf97<->103 x2 orientations, prefs[103]=[$t1])
+    depth-2 reaching pairs (neither atom reaching alone): 142
+      CLEAN (no collateral allocno change): 4
+        p102:refs3->2      + conf102<->103
+        p102:livelen5->9   + conf102<->103
+      with collateral: 138 -- every one of them also contains conf102<->103
+
+So **every reaching vector at depth <= 2 requires a new conflict edge from 103
+onto 97 or onto 102.** Route C (the 102 edge) is new: 15 sessions of hand and
+depth-1 search only ever reached 97.
+
+**Route C measured dead, four bodies (`tmp/grind/func_8002EA24/s16/variant.py`):**
+
+    nol3 (plain control)                        score  3   104 insns
+    nol3 + y load before the z test             score 11   102
+    L3   + y load before the z test             score 10   103
+    L3   + y load before the z LOAD             score 10   103
+    nol3 + y load before the z LOAD             score 11   102
+    L3 / nol3 + y load above the x range test   score 11   103
+
+**Why, from the extracted model** (`s16/yhoist.model.json` vs
+`s15/plain.model.json`, compared by `s16/cmp.py`):
+
+    plain   p102: refs=3 livelen=5  conf=[97,99,100,102]                    prefs=[4]
+    yhoist  p102: refs=3 livelen=41 conf=[72,74,75,96,97,99,100,101,102,108,109,117] prefs=[]
+
+    plain   order [101,96,97,100,109,108,72,102,117,103,74,99,75]  103 -> $a0 (4)
+    yhoist  order [101,97,96,100,109,108,72,117,103,99,74,75,102]  103 -> $a0 (4), 102 -> $t1 (9)
+
+The C move overshoots the live-length atom by 8x (5->41, the route needs 5->9),
+`y` loses its `$a0` preference, `allocno_compare` (live_length in the
+denominator) demotes it from 8th to LAST, and it takes target's `$t1` for
+itself. And the edge the route needs is **not created at all** -- 103 is absent
+from 102's conflict set in the hoisted model, because GCC sinks the load back
+past the test it was hoisted over.
+
+**The geometric reason (H10b).** 103 (`neg_threshold`) is born at the top of the
+block and dies at the z range test; 102 (`y`) is born ~25 instructions later,
+past the whole squared-distance + LZC/GTE reciprocal block. An overlap therefore
+costs >= ~25 live-length units on one side; the route needs +4. The attainable
+values of `y`'s live length are 5 (no overlap) and ~41 (overlap) -- 9 is not on
+the menu. Shrinking the gap means moving the mult/mflo + LZC block, which is the
+already-banked `ztest-after-sum` family (score 21). Route C is dead for exactly
+the reason Route B is: **the edge is obtainable only by paying an allocno.**
+
+Banked: `memory/grind/func_8002EA24/rejected/yhoist-route-c-edge-never-created-score10.c`.
+
+### 3. Depth-3 closure over the non-foreclosed atom families
+
+`tmp/grind/func_8002EA24/s16/depth3_sweep.py`: a coarsened 461-atom grid that
+EXCLUDES both foreclosed families (any new conflict edge touching 103; any own
+hard-reg preference on 103), swept at depths 1, 2 and 3.
+Log: `tmp/grind/func_8002EA24/s16/depth3_no103.txt`.
+
+    depth 1 cumulative evaluated=461         hits=0
+    depth 2 cumulative evaluated=104,722     hits=0
+    depth 3 cumulative evaluated=15,525,735  hits=0
+    TOTAL vectors evaluated: 15,525,735
+    reaching vectors with NO 103-edge / NO 103-pref: 0
+
+i.e. **no vector of one, two or three ordinary live-range / reference-count /
+preference perturbations anywhere else in the function moves 103 out of `$a0`.**
+Every route to the goal inside the model runs through one of the two
+RTL-foreclosed atom families, and that is now a closed-form result over
+15.5 million vectors rather than an exhaustion argument.
+
+### Standing summary after s16
+
+The modelled input space of `global.c` is now exhausted to depth 2 in full and
+to depth 3 outside the two foreclosed atom families. All three routes that reach
+the goal are RTL-foreclosed with measurements:
+
+  * **Route A** own `$t1` preference on 103 -- `set_preference` can only record a
+    hard register that appears in the pre-RA RTL; `$t1` never does (s15).
+  * **Route B** edge 97<->103 -- creating it deletes an allocno (backward) or
+    hoists the mult/mflo pairs (forward); measured 15 / 21 (s15).
+  * **Route C** edge 102<->103 -- 25-instruction gap, cheapest overlap is +36
+    live length against the +4 the route needs; measured 10 / 11 and the edge is
+    not even produced (s16, this session).
+
+The one mechanism in the allocation stack that has still never been OBSERVED is
+local-alloc's suggested-register pass (`qty_phys_copy_sugg` / `qty_phys_sugg`),
+because the `BB2_QTY_DEBUG` hook in `tools/gcc-2.7.2/local-alloc.c` does not dump
+the suggestion sets (stated as a known gap in `tools/ra_solver/README.md`).
+That is an engine/tools change, outside a grind session's writable surface.
+
+## [s16] H10d -- the score-2 CANDIDATE body's residual is not an allocation question at all, so ra_solver cannot express it; only the plain control's 103 -> $t1 goal is RA-expressible.
+- mechanism: ra_solver's simulate.py permutes and renames a FIXED set of allocnos. If our body and target differ in the NUMBER of pseudos, no perturbation of the model's inputs can reach target, however the goal is phrased.
+- probe: simulate tmp/grind/func_8002EA24/s15/cand.model.json (the banked score-2 body) and read off 103's assignment (tmp/grind/func_8002EA24/s16/candmodel.py).
+- result: the candidate already allocates 103 to hard reg 9 = $t1, i.e. TARGET's choice -- that is exactly what L3 buys. The remaining 2 points are that our body computes the first range test's boolean INTO a0_var (97, $a0) while target computes it into a separate short-lived $v0 temp and still has a0_var in $a0: target has one MORE pseudo than we do, at the same 104 instructions. That is a pseudo-identity (split) difference, not an assignment difference, so it is FORECLOSED to the RA model by construction, and the only RA-expressible framing of this function's residual is the plain control's 103 -> $t1 goal -- which s15 (depth 1) and s16 (depth 2, plus depth 3 outside the foreclosed families) have now closed.
+- verdict: CONFIRMED
+
+- [s16] Chassis re-measured this session: banked candidate body applied to src/code6cac_b.c -> sandbox func_8002EA24 --disable all = score 2, target_insns 104, build_insns 104, rules_dropped 0, cheat_asm_stripped 47. Unchanged since session 4; src restored to INCLUDE_ASM afterwards (tree clean, no src modification).
+
+- [s16] Depth-2 unfocused sweep of global.c's modelled inputs (947 atoms, 435,448 admissible pairs): 142 reaching pairs, 4 CLEAN, and EVERY reaching pair contains the new conflict edge 102 (y) <-> 103 (neg_threshold). Combined with s15's depth-1 result, every reaching vector at depth <= 2 requires a new conflict edge from 103 onto 97 or onto 102.
+
+- [s16] Route C (edge 102<->103) measured dead across six bodies: 10 or 11 at 102-103 insns versus the banked 2 at 104. The extracted model shows the C hoist takes y's live length 5 -> 41 (route needs 5 -> 9), strips y's $a0 preference, demotes it from 8th to LAST in the allocation order where it takes target's $t1 for itself, and does not create the 102<->103 edge at all because GCC sinks the load back past the test.
+
+- [s16] Geometric closure: 103 dies at the z range test and y is born ~25 instructions later past the squared-distance + LZC/GTE block, so the cheapest attainable overlap costs ~+36 live-length units against the +4 the modelled route needs. Same structural reason Route B is foreclosed: the edge is obtainable only by paying an allocno.
+
+- [s16] Depth-3 sweep excluding both foreclosed atom families (461 atoms): zero reaching vectors at depths 1 and 2 and at depth 3 (15,525,735 vectors evaluated in total); log at tmp/grind/func_8002EA24/s16/depth3_no103.txt.
+
+- [s16] TOOLING: the 661dc8dc classify repair is defeated by the candidate-pasted state every grind session uses. The predicate should key on 'zero regfix/asmfix rules' (or on the queue/canonical routing), not on src's transient INCLUDE_ASM line -- for any zero-rule function the src-derived target stream is our own build.
+
+- [s16] Endgame-lock gate (a): scan_hand_coded --single func_8002EA24 = tier=TIGHT_C score=3/8, all three STRONG signals clear -- FAIL (unchanged from 2026-07-30, 2026-08-20, s13, s14).
+
+- [s16] Endgame-lock gate (b): no closing construct exists to cite a precedent for; three censuses (decomp.me x2 in s9, sotn-construct-index.md in s13/s14) returned NEGATIVE -- FAIL.
+
+- [s16] Decision packet filed at docs/grind/decisions.md:11688 asking one decidable tooling question (extend BB2_QTY_DEBUG to dump qty_phys_copy_sugg / qty_phys_sugg + qty_size, and repair inverse_compose.py's routing predicate). No rule, family, grant or standard is requested; nothing in it lowers a standard.
+
+- [s16] Banked this session: memory/grind/func_8002EA24/rejected/yhoist-route-c-edge-never-created-score10.c (47 rejected bodies total); candidate.c body UNCHANGED with a session-16 header note.
+
+- [s16] Gate (a) re-run first-hand THIS session, not quoted from the ledger: `python3 tools/scan_hand_coded.py --single func_8002EA24` -> `HAND_CODED: tier=TIGHT_C score=3/8 (func_8002EA24, 110 insns)`; S3/S4/S5 set, S1/S2/S6/S7/S8 clear.
+
+- [s16] The candidate body already allocates pseudo 103 to $t1 (target's choice); its score-2 residual is a pseudo COUNT difference (target splits the range-test boolean into its own $v0 temp), which the RA model cannot express at all -- so the plain control's 103 -> $t1 goal is the only RA-expressible framing, and it is now closed to depth 2 in full and depth 3 outside the foreclosed families.
