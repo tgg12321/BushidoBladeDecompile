@@ -363,13 +363,6 @@ void func_80019534(void) {
     D_8010278E = 1;
 }
 void func_80019568(s32 arg0) {
-    typedef struct {
-        u8 b0;
-        u8 b1;
-        u8 b2;
-        u8 b3;
-        u8 _pad[4];
-    } VoicePacket;
     struct {
         s16 output[4];
         s32 voice_mask;
@@ -378,13 +371,12 @@ void func_80019568(s32 arg0) {
         s32 unk_24;
         s32 packets[4];
     } sp;
-    register s32 arg0_reg asm("s0") = arg0;
-    register s16 *output asm("a2");
-    register VoicePacket *packets asm("a3");
-    register s32 i asm("t0");
-    register s32 voice_mask asm("t1");
+    u8 *packets;
+    s16 *output;
+    s32 i;
+    s32 voice_mask;
     s32 old_mask;
-    s32 *D_80102790_p;
+    s32 *p;
     s16 *base_addr;
     s16 *dst1;
     s16 *dst0;
@@ -392,34 +384,47 @@ void func_80019568(s32 arg0) {
 
     voice_mask = 0;
     i = 0;
-    output = &sp.output[0];
+    packets = (u8 *)&sp.packets[0];
     sp.packets[0] = D_800FF580;
     sp.packets[1] = D_800FF584;
     sp.packets[2] = D_800FF5A4;
     sp.packets[3] = D_800FF5A8;
-    packets = (VoicePacket *)&sp.packets[0];
     do {
-        register s32 bits asm("v1");
+        u8 *rec = &packets[i * 8];
+        s16 *o = &sp.output[i];
+        s32 enable = 0;
+        s32 bits;
 
-        if (packets->b0 == 0) {
-            register s32 voice asm("v0");
+        if (rec[0] == 0) {
             s32 voice2;
 
-            voice = packets->b1 >> 4;
-            output[0] = voice;
-            __asm__ volatile ("addiu %0, $zero, 1" : "=r"(voice));
-            output[2] = voice;
-            voice2 = (s16)((u16)output[0] - 1);
+            o[0] = rec[1] >> 4;
+            enable = 1;
+            /* FAKE: the `o[2] = enable;` store is written into BOTH arms rather
+             * than once after the join (family: duplicated-statement-into-arms,
+             * .claude/rules/duplicated-statement-into-arms.md; owner ruling
+             * 2026-08-25 13:45, docs/grind/decisions.md).  mechanism: loop.c scan_loop
+             * (loop.c:695-716) only creates a movable for the `1`-holding
+             * pseudo when it has a single set or consecutive sets; the
+             * loop-top default plus this in-arm set are non-consecutive, so no
+             * movable exists and the `addiu $v0,$zero,1` stays in the loop
+             * filling target's lhu load-delay slot.
+             * lever-exhaustion: memory/grind/func_80019568/hypotheses.md
+             * H6/H10/H12 + s3 H14-H17 (bare literal 8/142, `bits` carrier
+             * reuse 6/141, computed `enable = (rec[0] == 0)` 10/142,
+             * single store after the join 21/136). */
+            o[2] = enable;
+            voice2 = (s16)((u16)o[0] - 1);
 
             if ((u32)voice2 < 8) {
                 switch (voice2) {
                 case 4:
                 case 6:
-                    output[0] = 4;
+                    o[0] = 4;
                 case 1:
                 case 2:
                 case 3:
-                    bits = ~((packets->b2 << 8) | packets->b3);
+                    bits = ~((rec[2] << 8) | rec[3]);
                     break;
                 case 0:
                 case 5:
@@ -432,25 +437,19 @@ void func_80019568(s32 arg0) {
                 bits = 0;
             }
         } else {
-            output[0] = 4;
-            output[2] = 0;
+            o[0] = 4;
+            o[2] = enable;
             bits = 0;
         }
 
-        {
-            register s32 vm_shifted asm("v0");
-            __asm__ volatile ("srl %0, %1, 16" : "=r"(vm_shifted) : "r"(voice_mask));
-            voice_mask = vm_shifted | (bits << 16);
-        }
-        output++;
+        voice_mask = ((u32)voice_mask >> 16) | (bits << 16);
         i++;
-        packets = (VoicePacket *)((u8 *)packets + 8);
     } while (i < 2);
 
     sp.voice_mask = voice_mask;
     func_8001B138(&sp.voice_mask);
 
-    if (D_800A3834 == 1 && arg0_reg == 0) {
+    if (D_800A3834 == 1 && arg0 == 0) {
         s32 voice_state = D_800A38DC;
 
         if ((u32)voice_state < 7) {
@@ -475,7 +474,7 @@ void func_80019568(s32 arg0) {
 
     func_8003A728((s32)&sp.output[0]);
 
-    __asm__ volatile ("addu %0, $zero, $zero" : "=r"(i));
+    i = 0;
     base_addr = &D_80102788;
     dst1 = base_addr + 2;
     dst0 = base_addr;
@@ -490,10 +489,10 @@ void func_80019568(s32 arg0) {
         dst1++;
     } while (i < 2);
 
-    D_80102790_p = &D_80102790;
-    old_mask = *D_80102790_p;
-    *D_80102790_p = sp.voice_mask;
-    arg0_reg = (D_80102794 = sp.voice_mask & ~old_mask);
+    p = &D_80102790;
+    old_mask = *p;
+    *p = sp.voice_mask;
+    D_80102794 = sp.voice_mask & ~old_mask;
     D_8010279C = ~sp.voice_mask;
     D_80102798 = ~sp.voice_mask & old_mask;
 }

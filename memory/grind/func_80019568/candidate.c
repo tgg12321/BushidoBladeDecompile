@@ -1,10 +1,15 @@
-/* candidate - func_80019568 - s3b permuter session (2026-08-25)
- *  *** sandbox --disable all == 0, build_insns 141 == target_insns 141 ***
- *  *** NOT SUBMITTED: the L2 flag local is the subject of an open ruling-request. ***
+/* candidate - func_80019568 - s4 (session 3 of the grind, permuter modality, 2026-08-25)
+ *  *** sandbox --disable all == 0, build_insns 141 == target_insns 141, re-measured
+ *      THIS session on today's chassis with the body in place in src/code6cac.c ***
+ *  *** SUBMITTED as candidate-ready.  The open ruling-request that blocked s3b was
+ *      ANSWERED PASS on 2026-08-25 13:45 (docs/grind/decisions.md:11114): the
+ *      default-initialised `s32 enable = 0;` flag is ordinary C needing no exception,
+ *      and the per-arm write-out is duplicated-statement-into-arms (NOT
+ *      named-local-fake-exception, which was the 12:52 layer-1 FAIL's mis-citation).
+ *      The banned shape - uninitialised `s32 enable;` whose every in-arm assignment is
+ *      a dead pass-through - is NOT this form and is not present. ***
  *
- * Floor history: s1 34 -> s2 20 -> s3 0 (layer-1 FAIL on the two-armed `enable` shape)
- * -> s3b: byte proof re-verified on today's chassis, mechanism corrected, disposition
- * escalated as a ruling-request (docs/grind/borderline.md 2026-08-25 family-candidate).
+ * Floor history: s1 34 -> s2 20 -> s3 0 (layer-1 FAIL on citation) -> s3 (this session) 0.
  *
  * Structure (all mechanism-grounded in tools/gcc-2.7.2/loop.c, read not guessed):
  *  L1  per-iteration record pointers `u8 *rec = &packets[i*8]; s16 *o = &sp.output[i];`
@@ -15,24 +20,25 @@
  *      survives and the exit test stays `slti v0,t0,2`.  ORDINARY C.  (s2, H5)
  *      Layer-1 PASSED this construct on 2026-08-25 12:52.
  *  L2  `s32 enable = 0;` - the slot's enable word, defaulted at the top of the loop
- *      body, raised to 1 in the valid arm, written out in each arm.  THE OPEN QUESTION.
- *      Mechanism (CORRECTED in s3b by ablation - the s3 reading was wrong): what keeps
- *      the `addiu $v0,$zero,1` inside the loop is NOT REG_USERVAR_P but the
- *      `n_times_set == 1 || consec_sets_invariant_p` test at loop.c:706-709 - the
- *      loop-top default and the in-arm override are two NON-CONSECUTIVE sets, so
- *      scan_loop never builds a movable.  Proof: a single-set arm-scoped named local
- *      measures 8/142 (rejected/armscope-single-set-named-local-8.c) and an
- *      address-typed arm-scoped local measures 8/142
- *      (rejected/blockscope-enable-pointer-8.c).  Because `enable` is a pseudo DISTINCT
- *      from the shifted voice id, local-alloc also seats the voice temp in $v0 and the
- *      lhu reload in $v1 (target) rather than the carrier-reuse mirror.
+ *      body, raised to 1 in the valid arm, written out in each arm.  RULED ORDINARY C
+ *      for the flag itself; the per-arm write-out is filed under
+ *      .claude/rules/duplicated-statement-into-arms.md with its FAKE annotation.
+ *      Mechanism for why the alternatives lose: what keeps the `addiu $v0,$zero,1`
+ *      inside the loop is the `n_times_set == 1 || consec_sets_invariant_p` test at
+ *      loop.c:706-709 - the loop-top default and the in-arm override are two
+ *      NON-CONSECUTIVE sets, so scan_loop never builds a movable.  Measured:
+ *      single-set arm-scoped named local 8/142 (rejected/armscope-single-set-named-local-8.c),
+ *      address-typed arm-scoped local 8/142 (rejected/blockscope-enable-pointer-8.c),
+ *      single store after the join 21/136 (rejected/flag-store-after-join-21.c).
  *  L3  `s32 *p = &D_80102790;` read-modify-write in the tail: one `la` address kept
  *      in a register for the load and the store, matching target's
  *      `lui/addiu; lw 0(v0); sw 0(v0)`.  (s3, H12; pointer-rmw-global-sanctioned.md)
  *      Layer-1 PASSED this construct on 2026-08-25 12:52.
  *
  * NOTE FOR INTEGRATION: func_80019568 still carries 5 regfix rules calibrated to the
- * old rule-era body; they must be retired (operator `retire`) for the full build.
+ * old rule-era body; they must be retired (operator/driver `retire`) for the full build.
+ * Self-vet: memory/grind/func_80019568/self_vet.md (rewritten this session with the
+ * corrected family citation).
  */
 void func_80019568(s32 arg0) {
     struct {
@@ -73,7 +79,9 @@ void func_80019568(s32 arg0) {
             o[0] = rec[1] >> 4;
             enable = 1;
             /* FAKE: the `o[2] = enable;` store is written into BOTH arms rather
-             * than once after the join.  mechanism: loop.c scan_loop
+             * than once after the join (family: duplicated-statement-into-arms,
+             * .claude/rules/duplicated-statement-into-arms.md; owner ruling
+             * 2026-08-25 13:45, docs/grind/decisions.md).  mechanism: loop.c scan_loop
              * (loop.c:695-716) only creates a movable for the `1`-holding
              * pseudo when it has a single set or consecutive sets; the
              * loop-top default plus this in-arm set are non-consecutive, so no

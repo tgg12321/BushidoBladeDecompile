@@ -461,3 +461,54 @@ the else-arm store to `sh $zero,0x4($a2)`, exactly target line 55.
   spelling gets, and it confirms that BOTH halves of the residual (the in-loop `li` and the
   $v0/$v1 seats) are driven by the existence of a REGISTER pseudo with two non-consecutive
   sets — not by the control structure and not by the store placement.
+
+## [s4] session 3 of the grind — 2026-08-25, permuter modality — CANDIDATE SUBMITTED
+
+- [s4] CHASSIS RE-MEASUREMENT (mandatory, done first). The s3b candidate body was applied
+  verbatim to src/code6cac.c (replacing the rule-era body at src/code6cac.c:365-499) and
+  measured on TODAY's chassis: `sandbox func_80019568 --disable all` ->
+  `{"score": 0, "target_insns": 141, "build_insns": 141, "scorable": true,
+  "rules_dropped": 5, "cheat_asm_stripped": 28}`. The byte proof therefore survives the
+  chassis and is not a stale ledger claim. Log: tmp/grind/func_80019568/s3/sandbox_final.json;
+  disassembly of the produced object: tmp/grind/func_80019568/s3/build_func.txt (spot-checked
+  against asm/funcs/func_80019568.s at the loop-1 divergence: build 0x338-0x358
+  `srl v0,v0,4 / sh v0,0(a2) / lhu v1,0(a2) / li v0,1 / sh v0,4(a2) / addiu v1,v1,-1 /
+  sll / sra / sltiu v0,v1,8` is instruction-for-instruction target :33-:40).
+- [s4] THE BLOCKING QUESTION WAS ALREADY ANSWERED. s3b ended as a ruling-request with the
+  L2 flag local as the open item. The ruling landed the same day and PASSED:
+  docs/grind/decisions.md:11114 (2026-08-25 13:45). Its holding, in two parts:
+  (a) the BAN is narrow — it covers only the UNINITIALISED `s32 enable;` whose every
+  in-arm assignment is a dead pass-through (a value-less holder); it does NOT extend to
+  the default-initialised flag whose initialiser is READ on the else path, which is
+  "ordinary C a human writes from spec; needs no exception";
+  (b) the per-arm write-out is duplicated-statement-into-arms, NOT
+  named-local-fake-exception, and all four of that family's prerequisites hold — the
+  Judge personally verified both stores exist in the target (func_80019568.s:35-36
+  `addiu $v0,$zero,1; sh $v0,0x4($a2)` and :61 `sh $zero,0x4($a2)`) and corrected the
+  s3 vet's byte-neutrality misreading (neutrality is measured against TARGET, and the
+  joined spelling at 21/136 is four target instructions SHORT, so the duplication
+  reproduces target's duplication rather than materialising instructions).
+  state.json banned_constructs is empty; there is nothing outstanding to unban.
+- [s4] THE 12:52 LAYER-1 FAIL WAS A CITATION DEFECT, NOT A CONSTRUCT DEFECT. C1 (record
+  pointers) and C3 (pointer RMW) were PASSED by that same review and are untouched. C2
+  was filed under named-local-fake-exception — the constant-holder / dead-scalar rule,
+  which genuinely does not cover a live default-off flag. self_vet.md has been rewritten
+  this session with the correct family, the verbatim scope sentence, and a file:line
+  precedent for each of the two claimed families
+  (.claude/rules/duplicated-statement-into-arms.md:63 and
+  .claude/rules/pointer-rmw-global-sanctioned.md:36).
+- [s4] PERMUTER MODALITY IS VACUOUS AT FLOOR 0 — recorded so no later session re-spends it.
+  A permuter campaign searches for a lower-scoring spelling; the honest floor is already
+  0 with 141/141, so there is no residual for a campaign to descend and any run would be
+  a pure cost. This is on top of the s3/s3b kill (verdict KILLED in hypotheses.md: three
+  distinct seeds, ~40k iterations — 13,728 random from the bare-literal chassis, 5,207
+  random from the `bits`-carrier chassis, 21,147 directed from bare-literal with explicit
+  alternatives injected at the exact divergence — with no novel find). Permuter as a
+  modality on func_80019568 is closed in both directions: it cannot improve on 0, and it
+  has already failed to find any construct-free route to 0.
+- [s4] INTEGRATION STATE. The 5 regfix rules are still in regfix.txt, calibrated to the
+  superseded rule-era body; the sandbox scores with them dropped (`rules_dropped: 5`), so
+  the driver's normal `retire func_80019568` step must run before the full-build SHA1
+  check. That is an ordinary driver step in the documented per-function loop, not a
+  blocked surface, so this is a candidate-ready submission and not an integration handoff.
+  I did not touch regfix.txt, asmfix.txt, or any rule/engine/tool file.

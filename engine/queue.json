@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80019568",
-      "file": "code6cac",
-      "distance": 42,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active",
-      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. 5 regfix; jtbl-coupled, same pure-C route as the other jtbl members."
-    },
-    {
       "func": "func_800307D0",
       "file": "code6cac_b",
       "distance": 1,
@@ -2068,14 +2059,14 @@
     }
   ],
   "counts": {
-    "total": 237,
-    "active": 234,
+    "total": 236,
+    "active": 233,
     "by_status": {
-      "active": 234,
+      "active": 233,
       "escalated": 3
     },
     "by_verdict": {
-      "C": 198,
+      "C": 197,
       "ASM-PARTIAL": 36
     }
   }

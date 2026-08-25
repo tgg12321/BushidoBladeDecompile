@@ -441,3 +441,42 @@ body, `o[2] = 1;` in the valid arm only, no flag variable anywhere) reproduces t
   seeds and ~40k iterations (13,728 random from bare-literal + 5,207 random from the bits
   carrier + 21,147 directed from bare-literal with explicit alternatives at the exact
   divergence). No spelling other than a named local with two non-consecutive sets reaches 0.
+
+## H25 [s4, 2026-08-25] — the s3b byte proof is chassis-independent
+- statement: the s3b candidate body still reaches distance 0 on the current HEAD chassis,
+  so the banked byte proof can be spent rather than re-derived.
+- mechanism: the candidate's three constructs are all C-level and touch no rule surface;
+  the only chassis coupling would be a change in code6cac.c's surrounding compilation
+  context or in the pipeline flags, neither of which moved.
+- probe: apply candidate.c to src/code6cac.c:365-499, run
+  `sandbox func_80019568 --disable all`.
+- result: score 0, target_insns 141, build_insns 141, rules_dropped 5.
+- verdict: CONFIRMED.
+
+## H26 [s4, 2026-08-25] — a permuter campaign can still contribute at floor 0
+- statement: the mandated permuter modality has remaining value on this function.
+- mechanism: decomp-permuter descends a nonzero score; with build_insns == target_insns
+  and score 0 there is no residual and no gradient, so the search space it explores is
+  empty by construction. Independently, the s3/s3b campaigns already returned the KILLED
+  verdict across three seeds and ~40k iterations.
+- probe: none run — launching one would burn ~30 min of wall clock to search for a
+  spelling that scores below 0, which does not exist. Recorded as a reasoned negative so
+  a later session does not re-spend the modality.
+- verdict: KILLED (modality closed for this function in both directions).
+
+## H27 [s4, 2026-08-25] — the layer-1 FAIL was a citation defect, repairable without a
+##     construct change
+- statement: the 2026-08-25 12:52 layer-1 FAIL can be cleared by re-filing C2 under the
+  correct family rather than by respelling or removing any construct.
+- mechanism: the FAIL text names exactly one defect — C2 "does not fit inside
+  named-local-fake-exception's exact sanctioned scope and has no other precedent covering
+  it". The 13:45 ruling supplied the covering precedent
+  (duplicated-statement-into-arms) and held the flag itself to be ordinary C, so the
+  premise of the FAIL is discharged by citation, not by code.
+- probe: rewrote self_vet.md with FAMILY duplicated-statement-into-arms, the verbatim
+  scope sentence from .claude/rules/duplicated-statement-into-arms.md:13-15, precedent
+  .claude/rules/duplicated-statement-into-arms.md:63, and each of the family's five
+  prerequisites answered against this diff; added the family name and the ruling pointer
+  to the in-source FAKE annotation (comment-only, so codegen is untouched); re-measured.
+- result: score 0, 141/141 after the annotation edit — the repair is byte-inert.
+- verdict: CONFIRMED.

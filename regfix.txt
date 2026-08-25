@@ -1763,8 +1763,3 @@ func_80041188: subst "\$5,\$22,\$zero" "$5,$19,$zero" @ 109
 # target chain. Pure-C structurally equivalent; remaining diffs are
 # frame layout + save offset bumps (SUBSTs, no instruction injection).
 
-func_80019568: reorder 7,12,5,8,9,10,11,6 @ 5-12
-func_80019568: reorder 27,26 @ 26-27
-func_80019568: subst "lbu\s+\$3,2\(\$7\)" "lbu\t$2,2($7)" @ 41
-func_80019568: subst "lbu\s+\$2,3\(\$7\)" "lbu\t$3,3($7)" @ 42
-func_80019568: subst "sll\s+\$3,\$3,8" "sll\t$2,$2,8" @ 43

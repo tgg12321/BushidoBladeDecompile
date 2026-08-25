@@ -1,134 +1,164 @@
-# SELF-VET — func_80019568
+# SELF-VET — func_80019568   (session 3, 2026-08-25, permuter modality)
 
-Diff surface: `src/code6cac.c` lines 365-499 replaced with the s3 body
-(`memory/grind/func_80019568/candidate.c`). Measured `sandbox func_80019568
---disable all` = **score 0**, `build_insns 141 == target_insns 141`, this session,
-with the edits in place in `src/`. No `__asm__`, no `register T x asm("$N")` pin, no
-`volatile`, no regfix/asmfix/rule/engine/tool/Makefile/*.ld file touched.
+Measured THIS session, on today's chassis, with the diff in place in src/code6cac.c:
+`& tools/wteng.ps1 main sandbox func_80019568 --disable all` ->
+`{"score": 0, "target_insns": 141, "build_insns": 141, "rules_dropped": 5}`
+(log: tmp/grind/func_80019568/s3/sandbox_final.json; disassembly of the produced
+object: tmp/grind/func_80019568/s3/build_func.txt).
 
-CONSTRUCTS: (C1) per-iteration record pointers `u8 *rec = &pk[i * 8]; s16 *o = &sp.output[i];` at the top of the loop-1 body; (C2) `s32 enable;` flag local set to 1 in the valid arm and 0 in the invalid arm and stored to `o[2]` inside each arm; (C3) `s32 *p = &D_80102790;` used for a read-modify-write of that global in the tail.
+This vet SUPERSEDES the 2026-08-25 12:52 vet that drew a layer-1 FAIL. The FAIL was
+a CITATION defect, not a construct defect: C2 was filed under
+named-local-fake-exception, whose scope does not cover it. The owner/Judge ruling of
+2026-08-25 13:45 (docs/grind/decisions.md:11114) resolved the family question — the
+default-initialised flag is ordinary C and the per-arm write-out is
+duplicated-statement-into-arms — and that is how it is filed here. The uninitialised
+dead-pass-through shape that was banned (`s32 enable;` with no initialiser and a
+value-less `enable = 0;` in the else arm) is NOT present in this diff.
 
-## T1 semantic purpose:
-- C1: YES, real. `rec` and `o` are the address of this iteration's 8-byte packet record and
-  of this iteration's output slot. Every subsequent access in the loop body reads through
-  them; removing them means re-spelling `pk[i*8+k]` / `sp.output[i]` at each of the six use
-  sites. This is a value a reader needs and the program consumes.
-- C2: The stored VALUE (1 / 0) is real and lands in target's bytes (`addiu $v0,$zero,1;
-  sh $v0,4($a2)` and `sh $zero,4($a2)`). The VARIABLE holding it is not observable:
-  `o[2] = 1;` / `o[2] = 0;` is behaviourally identical. So the local itself has no
-  observable effect -> it is a codegen construct and is FAKE-annotated as such.
-- C3: The pointer's VALUE is real and materialised in target's bytes (`lui $v0,%hi(D_80102790);
-  addiu $v0,$v0,%lo(D_80102790)`), and it is dereferenced for both a load and a store. But
-  writing `D_80102790` directly is behaviourally identical, so the handle is a codegen
-  construct and is FAKE-annotated as such.
+CONSTRUCTS: (C1) per-iteration record pointers `u8 *rec` / `s16 *o` at the top of the
+loop body; (C2) `s32 enable = 0;` default-off flag local, raised to 1 in the valid arm,
+with the `o[2] = enable;` store written into BOTH arms; (C3) `s32 *p = &D_80102790;`
+read-modify-write in the tail; (C4) the `sp` frame struct + `u8 *packets` byte view over
+`sp.packets[]`; (C5) walking pointers `dst0`/`dst1`/`src` in the copy-out loop.
 
-## T2 human-programmer:
-- C1: YES, unreservedly. Hoisting `rec`/`o` out of six subscript expressions is what any
-  programmer writes for a per-record loop; a reader would not ask "why is this here?".
-- C2: A flag local named `enable`, assigned per branch and stored, is ordinary idiomatic C —
-  but a reader could reasonably ask why it is not just `o[2] = 1;`. It is therefore treated
-  as a construct, not as ordinary C. There is, however, POSITIVE evidence that the original
-  source had exactly this variable: in the same loop the literal `4` IS written bare in two
-  arms, and target hoists it into `$t2` in the prologue (loop.c combine_movables), while the
-  `1` is NOT hoisted. The only difference GCC 2.7.2 can see between those two constants is
-  `n_times_set` on the pseudo, i.e. whether a declared variable carried the value. So the
-  bytes themselves say the original held this value in a variable and the `4` in a literal.
-- C3: Read-modify-write through a pointer local is a 1990s idiom that real programmers use
-  even for plain globals; this is the exact shape the owner sanctioned on 2026-06-10.
+## T1 semantic purpose
+C1: yes — `rec` and `o` are the record being parsed and the slot being written this
+iteration; every subsequent statement in the body reads one of them. Removing them
+means re-writing `packets[i*8+k]` / `sp.output[i+k]` at nine use sites.
+C2: yes — `enable` carries live state across the join. It is DEFAULT-OFF at the top of
+the body and RAISED to 1 only when the record is valid (`rec[0] == 0`); the initialiser
+is READ on the else path. Delete the initialiser and the else arm stores garbage; delete
+the variable and the slot's enable word is never written. It is not a dead pass-through.
+C3: yes — `*p` is loaded (`old_mask`), the global is then overwritten with the new mask,
+and `old_mask` is consumed by three subsequent expressions. Real read-modify-write.
+C4: yes — the outgoing SPU packet block and its 4 s16 outputs live in this frame; both
+are passed by address to func_8001B138 / func_8003A728. `packets` is the byte view the
+per-field record reads need.
+C5: yes — the copy-out loop moves four halfwords into two destination runs.
+Only the DUPLICATION of C2's single store into two arms (rather than one copy after the
+join) is match-motivated rather than semantically forced; it is FAKE-annotated below.
 
-## T3 GCC-internals justification:
-Named honestly, because they ARE the mechanism for C2/C3, and both sit inside sanctioned
-families where a named pass is a REQUIRED prerequisite (not a substitute for one):
-- C1's justification is program logic first (see T2); its loop.c effect (a single "add 0" giv
-  leader per scale group tripping the worthwhile test at loop.c:3824, so biv `i` survives the
-  loop.c:4034 elimination gate) is a consequence, and C1 carries no family claim and no FAKE.
-- C2: `loop.c:702-716` — scan_loop only creates a movable when `invariant_p(src)` and
-  (`n_times_set == 1` or `consec_sets_invariant_p`). Two non-consecutive sets in the two arms
-  give `n_times_set == 2` with non-adjacent sets, so no movable is created and the `li 1`
-  stays in the loop, filling target's lhu load-delay slot.
-- C3: address materialisation at expand time — a MEM whose address is a bare `symbol_ref` is
-  a legitimate MIPS address, so GCC never cse's it into a register; a pointer VALUE forces the
-  `la` (lui+addiu) pair that target uses for both the `lw 0($v0)` and the `sw 0($v0)`.
+## T2 human-programmer
+Yes for all five. A programmer writing "for each of the two records: if the record is
+valid, publish its voice id and mark the slot enabled, else publish the fallback and
+leave the slot disabled" writes a default-off flag and per-iteration record pointers
+without prompting. `s32 *p = &G; old = *p; *p = new;` for a global read-modify-write is
+idiomatic 1990s C. Nothing here reads as "why is this here?" from a spec standpoint:
+there is no unused variable, no self-assignment, no empty statement, no discard, no
+address-of-only local, no width-only cast, and no name announcing coercion intent.
 
-## T4 permuter/search provenance:
-NONE of the three came from a permuter or any automated search. No permuter campaign was run
-this session (no permuter artifacts exist for it). C1 was derived in s2 by reading
-`tools/gcc-2.7.2/loop.c` and confirmed against `tmp/grind/func_80019568/dumps/code6cac.loop`.
-C2 was derived this session from the same loop.c gate plus the `4`-is-hoisted / `1`-is-not
-asymmetry in the target asm. C3 was derived from the target asm's `la` + `0($v0)` pair and
-from the s2 kills of the aggregate (H8) and statement-order (H9) explanations.
+## T3 GCC-internals justification
+The PROGRAM LOGIC is the explanation for every construct; the GCC mechanism is recorded
+as evidence for why the alternative spellings measured worse, not as the reason a
+construct exists.
+C1 is how you parse a record per iteration. (The banked mechanism — a lone DEST_REG giv
+leader has benefit 2, loop.c:3804 subtracts add_cost*biv_count to 0, loop.c:3824 marks it
+not-worth-while, all_reduced=0, so loop.c:4034 skips biv elimination and the counter
+survives — explains why the flat-index spelling diverged, and it also says the ORIGINAL
+was the pointer spelling, since target keeps the counter and the `slti` exit test.)
+C2's flag is program state; the movable analysis (loop.c:695-716: no movable is created
+for a pseudo with n_times_set==2 and non-consecutive sets, so the `addiu $v0,$zero,1`
+stays in the loop) is the evidence that target's own bytes came from a multiply-set
+variable — target hoists the literal 4 into $t2 at :49/:60 but leaves the 1 in-loop.
+C3 is an RMW; the note that one address register serves both accesses is a consequence.
+No construct here is justified by an allocator/scheduler internal with no program-level
+reading, and there are no lever-named constructs, no register pins, no barriers.
 
-## T5 family check:
-- C1: no family. Ordinary C; nothing in the forbidden catalog covers "hoist a subscript base
-  into a local that every use reads through".
-- C2: constant-holder / named scalar local — the frozen SOTN family "constant-holder / dead
-  scalar locals", rule `.claude/rules/named-local-fake-exception.md`. NOT the named-intermediate
-  family (that requires once-written, and `enable` is written once per arm, i.e. twice in the
-  function). NOT the variable-reuse family (`enable` is a fresh local with ONE meaning, not an
-  existing local borrowed for a second unrelated value; the variable-reuse spelling of this
-  same slot was measured separately and is strictly worse — 8 vs 0). Declared and annotated
-  under named-local-fake-exception; see the honest caveat at the end of this vet.
-- C3: pointer alias to a global, in its read-modify-write shape — frozen family "C-level
-  pointer alias to a global"; the exact zero-displacement RMW shape is separately
-  user-sanctioned in `.claude/rules/pointer-rmw-global-sanctioned.md`. It is NOT an
-  `asm("Sym")` alias rename (forbidden), NOT a volatile-cast alias, NOT a single-use alias,
-  NOT a chain of pointer re-spellings: it has exactly one load use and one store use with real
-  program logic between them.
+## T4 permuter/search provenance
+None of these came out of a permuter run as an opaque winner. C1/C2/C3 were derived by
+reading tools/gcc-2.7.2/loop.c and the target asm and were each measured by hand
+(hypotheses.md H5, H6/H10/H14-H24, H8/H9/H11/H12). ~40k permuter iterations across three
+distinct seeded chassis produced NO novel form and are recorded as a negative result in
+evidence.md [s3]/[s3b], not as the provenance of anything in the diff. Every construct
+survives explanation without reference to a search: I can state what each one does from
+the spec, and the rejected/ bank shows the alternatives that were tried and what they
+measured.
 
-## T6 naming-announces-intent:
-No name in the diff is `pad`, `_pad`, `dummy`, `unused`, `spill`, `sp_*`, `_buf`, `tail`,
-`slack` or `_frame_pad`. Names are `rec` (the packet record), `o` (this slot's output),
-`enable` (the slot-enabled flag), `p` (the RMW pointer — the neutral name the RMW rule names
-explicitly). Every one of them is read: `rec` 4 times, `o` 5 times, `enable` twice, `p` twice.
-There are no declaration-only, address-of-only or `(void)`-discarded locals. The s2 candidate's
-dead `s16 *output;` declaration was REMOVED this session and the floor stayed 0, so no dead
-local is load-bearing here.
+## T5 family check
+C1, C4, C5 are ordinary C and claim no family; layer-1 already PASSED C1 on 2026-08-25.
+C2 needs one family for the DUPLICATION of the store into both arms:
+duplicated-statement-into-arms. The flag itself needs no family (owner ruling
+2026-08-25 13:45). C3 is pointer-rmw-global-sanctioned and layer-1 already PASSED it on
+2026-08-25. I checked the adjacent families and they do NOT apply, deliberately:
+ - named-local-fake-exception is the WRONG file for C2 (that is the constant-holder /
+   dead-scalar shape; `enable` is neither dead nor a constant holder). This is the exact
+   mis-citation that produced the 12:52 FAIL and it is corrected here.
+ - dead-store-fake-exception does not apply: neither `o[2] = enable;` copy is dead — the
+   target emits both (`addiu $v0,$zero,1; sh $v0,0x4($a2)` at func_80019568.s:35-36 and
+   `sh $zero,0x4($a2)` at :61).
+ - defeat-licm-hoist-var-reuse does not apply: `enable` is a FRESH local, not an
+   existing local borrowed for a second unrelated value.
+ - pointer-alias-fake-exception does not apply to C3: this is a load AND a store through
+   `p`, which is the RMW shape the narrower rule sanctions, not a single-use alias.
+No construct in the diff matches any entry in the forbidden-family catalog, by analogy
+or by respelling: there is no register-asm pin, no hardcoded-$N asm, no scheduling
+barrier, no volatile coercion of any spelling, no unused-local-array frame coercion, no
+dead-param-assign, no dead-conditional-store, no empty-body if, no `if (1)`, no
+dead-goto pad, no DImode chain, no `asm("sym")` rename, no opaque `s32 one = 1;`, no
+redundant width cast, and no linker-script reorder. The diff also DELETES the rule-era
+body's cheat-asm content and retires 5 regfix rules — the direction is strictly
+cheat-reducing.
+
+## T6 naming-announces-intent
+Names in the diff: `rec`, `o`, `enable`, `bits`, `voice2`, `voice_mask`, `old_mask`, `p`,
+`packets`, `output`, `base_addr`, `dst0`, `dst1`, `src`, `i`, `sp`. None is `pad`,
+`_pad`, `dummy`, `unused`, `spill`, `sp_*`, `_buf`, `tail`, `slack`, or `_frame_pad`.
+Every one of them is read at least once on a live path; none exists only as a discard,
+an address-of, or a bare declaration. `enable` names the slot word it writes and `p`
+names the pointer it is.
 
 SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: constant-holder / named scalar local (C2, `s32 enable`)
-  SCOPE: "a local variable whose only purpose is codegen influence — holding a constant in a register across calls/statements, or existing as a declaration that biases register allocation — is a sanctioned last-resort matching lever under the prerequisites below."
-  PRECEDENT: docs/reference/sotn-construct-index.md:945
+  FAMILY: duplicated-statement-into-arms  (construct C2's per-arm `o[2] = enable;`)
+  SCOPE: "Writing the SAME real statement in two or more control-flow arms — instead of sharing one copy via a label/goto — is a legitimate matching technique, **including** when:"
+  PRECEDENT: .claude/rules/duplicated-statement-into-arms.md:63
+    Prerequisites, each verified against this diff:
+    (1) REAL on its path — target emits both stores (asm/funcs/func_80019568.s:35-36 and :61).
+    (2) Byte-neutral vs the canonical reference — build_insns 141 == target_insns 141,
+        sandbox score 0 this session. (The joined spelling measures 21/136, i.e. FOUR
+        target instructions SHORT, so the duplication reproduces target's own duplication
+        rather than materialising instructions; this was the misreading the Judge
+        corrected on 2026-08-25 13:45.)
+    (3) Lever-exhaustion documented — hypotheses.md H14/H15/H17-H20/H22-H24 plus the
+        rejected/ bank: armscope-single-set-named-local-8.c, blockscope-enable-pointer-8.c,
+        bare-literal-o2-li-hoisted-8.c, computed-flag-sltiu-10.c,
+        default-store-then-override-13.c, flag-store-after-join-21.c,
+        inverted-arms-li-still-hoisted-17.c, voice-reuse-instead-of-flag-8.c, plus ~40k
+        permuter iterations over three seeds with no novel find.
+    (4) FAKE annotation present on the duplicated copy — see ANNOTATION-CONFORMANCE.
+    (5) Dual review — layer-1 runs on this diff; layer-2 at integration.
 
-  FAMILY: C-level pointer alias to a global — read-modify-write shape (C3, `s32 *p`)
-  SCOPE: "a pointer local to a global used for an actual READ-MODIFY-WRITE sequence (load through it, compute, store through it) — the pointer has at least one load AND one store use."
+  FAMILY: pointer-rmw-global-sanctioned  (construct C3, `s32 *p = &D_80102790;`)
+  SCOPE: "Sanctioned: a pointer local to a global used for an actual READ-MODIFY-WRITE sequence (load through it, compute, store through it) — the pointer has at least one load AND one store use."
   PRECEDENT: .claude/rules/pointer-rmw-global-sanctioned.md:36
-
-  FAMILY: C-level pointer alias to a global — general (C3, second citation)
-  SCOPE: "a local pointer that provides a second C handle to a global — where using the global directly would be semantically identical — is a sanctioned last-resort matching lever under the prerequisites below."
-  PRECEDENT: docs/reference/sotn-construct-index.md:681
+    Shape check: `p` has exactly one load (`old_mask = *p;`) and one store
+    (`*p = sp.voice_mask;`), zero displacement, neutral name, and real program logic
+    between them (the three derived masks consume `old_mask`). Layer-1 PASSED this exact
+    construct on 2026-08-25 12:52. Lever-exhaustion: hypotheses.md H8/H9/H11/H12
+    (aggregate and statement-order explanations both KILLED by measurement).
 
 ANNOTATION-CONFORMANCE:
-  /* FAKE: constant-holder flag local for output[i+2]; two non-consecutive sets
-   * (1 in the valid arm, 0 in the invalid arm) stop scan_loop from creating a
-   * movable for the `li 1`.  mechanism: loop.c:702-716 (movable requires
-   * n_times_set==1 or consec_sets_invariant_p); the literal 4, which IS written
-   * as a bare literal in two arms, is hoisted into $t2 in target, so target's
-   * un-hoisted 1 proves the original held it in a variable.
-   * lever-exhaustion: memory/grind/func_80019568/hypotheses.md H6/H10/H12 -
-   * bare `o[2] = 1;` measures 8 (build 142, li hoisted); the variable-reuse
-   * spelling measures 8 (build 141); this form measures 0. */
-  /* FAKE: read-modify-write handle for D_80102790 - one `la` address kept in a
-   * register for both the load and the store instead of two independent
-   * %hi/%lo symbol MEMs.  mechanism: address materialization / CSE shape at
-   * expand time (a MEM whose address is a symbol_ref never gets its address
-   * cse'd into a register on MIPS).  lever-exhaustion:
-   * memory/grind/func_80019568/hypotheses.md H8 (aggregate KILLED), H9
-   * (statement reordering INERT), H11 (direct multi-read of the global
-   * measures 11). */
-  Both carry what + a named GCC-pass mechanism + a lever-exhaustion pointer, per the
-  template. C1 carries no annotation because it carries no family claim (ordinary C).
+  /* FAKE: the `o[2] = enable;` store is written into BOTH arms rather
+   * than once after the join (family: duplicated-statement-into-arms,
+   * .claude/rules/duplicated-statement-into-arms.md; owner ruling
+   * 2026-08-25 13:45, docs/grind/decisions.md).  mechanism: loop.c scan_loop
+   * (loop.c:695-716) only creates a movable for the `1`-holding
+   * pseudo when it has a single set or consecutive sets; the
+   * loop-top default plus this in-arm set are non-consecutive, so no
+   * movable exists and the `addiu $v0,$zero,1` stays in the loop
+   * filling target's lhu load-delay slot.
+   * lever-exhaustion: memory/grind/func_80019568/hypotheses.md
+   * H6/H10/H12 + s3 H14-H17 (bare literal 8/142, `bits` carrier
+   * reuse 6/141, computed `enable = (rec[0] == 0)` 10/142,
+   * single store after the join 21/136). */
+  It carries all three required parts: WHAT (the store is duplicated into both arms
+  instead of sharing one copy after the join), MECHANISM (a NAMED GCC pass —
+  loop.c scan_loop's movable creation test at loop.c:695-716), and LEVER-EXHAUSTION (a
+  pointer to the hypotheses ledger plus the four measured alternatives with their
+  scores). C3 carries no FAKE annotation and needs none:
+  pointer-rmw-global-sanctioned.md is a user-decision precedent for the exact shape and
+  states no annotation prerequisite.
 
-## Honest caveats for the reviewer (stated, not hidden)
-1. FAKE prerequisite (a) is "the full modality ladder demonstrably spent". This function has
-   run three sessions (recon, structural, structural); the ladder is not literally exhausted.
-   What IS documented, per-residual and measured, is in `hypotheses.md`: for C2 —
-   H4 (s16 counter, 74), H6 (variable-reuse spelling, 8), H10 (bare literal, 8/142); for
-   C3 — H8 (aggregate KILLED by sibling func_800194F4's plain %lo stores), H9 (statement
-   reordering INERT), H11 (direct multi-read of the global, 11). Both constructs are the
-   unique measured closers of their residual, not a first reach.
-2. C2 is a two-valued flag rather than the rule's canonical `s32 k = 1;` held across a call.
-   It is a scalar local carrying a constant to a store, which is the family's shape and
-   inside its "scalars only" bound (no array, no frame coercion), but it is not verbatim the
-   rule's worked example. If the reviewer holds that the constant-holder family does not
-   reach a two-valued per-arm flag, the correct disposition is a ruling on C2 alone — C1 and
-   C3 are unaffected and the byte-proof stands.
+INTEGRATION NOTE (not a construct question): func_80019568 still carries 5 regfix rules
+calibrated to the superseded rule-era body. They must be retired by the driver's normal
+`retire` step before the full build; the sandbox already scores with them dropped. I did
+not touch regfix.txt.
