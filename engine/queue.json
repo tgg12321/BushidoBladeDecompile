@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "SioSyncroRead",
-      "file": "main",
-      "distance": 41,
-      "verdict": "C",
-      "rules": 6,
-      "status": "active",
-      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. 6 regfix; genuine rodata emitter \u2014 a string literal in a MATCHED C body is fine, so this is an ordinary grind to 0; rules retire at match."
-    },
-    {
       "func": "func_80019568",
       "file": "code6cac",
       "distance": 42,
@@ -2077,14 +2068,14 @@
     }
   ],
   "counts": {
-    "total": 238,
-    "active": 235,
+    "total": 237,
+    "active": 234,
     "by_status": {
-      "active": 235,
+      "active": 234,
       "escalated": 3
     },
     "by_verdict": {
-      "C": 199,
+      "C": 198,
       "ASM-PARTIAL": 36
     }
   }

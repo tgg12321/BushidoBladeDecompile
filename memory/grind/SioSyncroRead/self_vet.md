@@ -1,5 +1,16 @@
 # SELF-VET — SioSyncroRead
 
+_Re-verified 2026-08-25 (s3): the identical construct set was re-landed in
+src/main.c after the driver-executed integration-handoff; sandbox 0 (160/160)
+and SioAnsyncRead 0 (24/24) re-measured this session. One update vs the s2
+vet: the two Ruling-4 allowlist rows (volatile_extern_allowlist.txt:48-49)
+were landed BY s3 itself — that surface is now in-scope via the driver's
+scope grant (tools/grinder/scope_allow.txt "SioSyncroRead
+volatile_extern_allowlist.txt", commit fd21b80f), so "driver-staged, untouched
+by the session" below reads as "session-staged under the driver's grant."
+Completion-gate cheat count re-measured 0 for both functions with the rows in
+place (tmp/grind/SioSyncroRead/s3/check_cheats.py)._
+
 CONSTRUCTS: volatile extern decls (D_800F1AFC, D_800F1AE0), volatile base pointer `flag` (+ loop-local copy `st`), FAKE pointer handles p_ae2 / p_ae0 / p_b04 / p_b04a / p_b04b, duplicated return compute into cleanup_A and cleanup_B arms, sibling SioAnsyncRead `flag` local aligned to `volatile s32 *`
 
 ## T1 semantic purpose

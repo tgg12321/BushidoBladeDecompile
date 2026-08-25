@@ -80,3 +80,47 @@ tmp/ra_solver_work/SioSyncroRead.model.json (RA model, dispositions confirm
 final seats s0=count s1=st s2=retries s3=r_arg1... — model extracted at the
 pre-F chassis showing p74=s4/p78=s3, i.e. the swap this session's F-variant
 fixed).
+
+## [s3] 2026-08-25 — integration landing: verified body + granted allowlist rows in place, sandbox 0 re-proven
+
+**What this session did (recon modality, superseded by the standing owner
+directive + the executed integration-handoff — both acknowledged here per the
+dossier's DIRECTIVE-NOT-YET-IN-LEDGER warning; the RULES-TO-ZERO directive is
+executed by this landing, since a candidate-ready acceptance retires the
+function's 6 regfix rules at COMPLETED-C).**
+
+The tree at session start still carried the RULE-ERA body (la-asm handles,
+`# A`/`# B` memory barriers) and non-volatile D_800F1AFC / D_800F1AE0 decls —
+the s2 session's verified working tree was never committed (only its ledger,
+docs, and the driver's scope grant landed in fd21b80f). candidate.c on disk was
+the SUPERSEDED injection spelling (pre-Judge). This session reconstructed the
+Judge-verified spelling from the s2 self_vet + the 10:34 PASS ruling + the
+Judge ESCALATE packet (decisions.md:11061/11079), which together specify it
+completely:
+
+1. Decl-level volatile: `extern volatile s32 D_800F1AFC;` (main.c:2891),
+   `extern volatile u16 D_800F1AE0;` (main.c:2913). Every pointer in the body
+   INHERITS volatility (`volatile s32 *flag = &D_800F1AFC;`,
+   `volatile u16 *p_ae0 = &D_800F1AE0;`) — the binding spelling constraint.
+2. SioAnsyncRead's `flag` local aligned to `volatile s32 *` (shared decl).
+3. Body otherwise identical to the s1 variant-G structure (see [s1] ladder).
+4. The two Ruling-4 allowlist rows landed at volatile_extern_allowlist.txt:48
+   (D_800F1AE0) and :49 (D_800F1AFC), each with the full audit comment
+   (census prong, codegen prong, consumers, ruling + handoff citations).
+   This surface is in-scope THIS session via the driver-executed scope grant
+   (tools/grinder/scope_allow.txt "SioSyncroRead volatile_extern_allowlist.txt").
+   regfix.txt untouched (session-forbidden; the 6 rules retire via the
+   driver's `retire` at acceptance — sandbox already drops them).
+
+**Measurements this session (all fresh, not inherited):**
+- `sandbox SioSyncroRead --disable all` → score 0, 160/160, rules_dropped 6.
+- `sandbox SioAnsyncRead --disable all` → score 0, 24/24 (decl-volatile +
+  flag alignment byte-neutral, re-confirming the s2 measurement).
+- Completion-gate check (engine/inlineasm.func_cheat_asm_count, the exact
+  `queue done` refusal source): SioSyncroRead = 0, SioAnsyncRead = 0 — the
+  s2 blocker ("2 cheat construct(s) in src/main.c") is CLEARED by the rows.
+  Script: tmp/grind/SioSyncroRead/s3/check_cheats.py.
+
+**State for the next session (should not be needed):** body in src/main.c,
+rows in the allowlist, candidate.c refreshed to the landed spelling,
+self_vet.md current. Outcome: candidate-ready.

@@ -567,17 +567,11 @@ func_80041188: subst "\$5,\$22,\$zero" "$5,$19,$zero" @ 109
 # cpu_side_move_dir_3: target swaps r_arg1 (s4<->s3) and loop counter/flag (s1<->s0)
 # r_arg1 in s3 instead of s4; chunk_size in s4 instead of s3
 # Range [0,134] = body+prologue saves; epilogue restores at [136-140] keep their slots
-SioSyncroRead: $19 <-> $20 @ 0-134
 # Loop counter in s0 instead of s1; loop_flag pointer in s1 instead of s0
-SioSyncroRead: $16 <-> $17 @ 68-121
 # After s3<->s4 swap, prologue saves have wrong offsets:
-SioSyncroRead: subst "32" "28" @ 1
-SioSyncroRead: subst "28" "32" @ 5
 # Fill beqz delay slot (idx 67 nop) with loop counter init (idx 68 = addu $16,$0,$zero after swap)
-SioSyncroRead: fill_delay @ 66 <- 68
 # cleanup_B uses $v1 for D_800A3044 pointer; GCC picks $a2 (carried over from main_work).
 # Range [39,44] covers cleanup_B's lw/lhu/sh uses; cleanup_A and loop_top still use $a2.
-SioSyncroRead: $3 <-> $6 @ 39-44
 
 # func_8003B9D0: target schedules andi ,,0x0010 into beqz delay slot of &0x30 check.
 # GCC put nop in delay because asm constraint (=r/0 on eda) blocks scheduling past la.
