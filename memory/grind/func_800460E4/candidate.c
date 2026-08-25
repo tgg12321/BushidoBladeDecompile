@@ -1,3 +1,15 @@
+/* [s9] ESCALATION SESSION 9 (2026-08-25) - BODY BELOW IS UNCHANGED and remains the
+ * best NON-BLOCKED form: re-measured this session at score 9 (245/248) with all 10
+ * regfix rules dropped, and the [s8r.5] canonical-name hygiene fix re-confirmed
+ * byte-neutral. Session 9 measured a case-3 replacement that scores 0 (248/248)
+ * using ONE fresh once-written/once-read pointer local - see
+ * rejected/s9-ruling-pending-single-local-named-intermediate-248-0.c - but did NOT
+ * merge it here: it is blocked by the 2026-08-25 09:06 standing /s constraint while
+ * simultaneously satisfying the condition the 06:39 ruling set for the
+ * named-intermediate route. That conflict is filed as a decision packet in
+ * docs/grind/decisions.md (2026-08-25 OWNER-ESCALATION entry). DO NOT paste that
+ * case-3 block into this file until the packet is ruled on.
+ */
 /* [s8r] REDERIVE SESSION 8 (2026-08-25) - the body below is the [s7] non-banned
  * form with ONE change: the two stage globals are now spelled with their
  * canonical names g_stage_id / g_stage_variant (include/game.h) instead of the

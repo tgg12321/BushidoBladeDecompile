@@ -1965,3 +1965,107 @@ the fidelity/routing one the frontier already states.
 - [s8] Dual-handle defect: 0x80099478 / 0x8009947A are named BOTH g_stage_id / g_stage_variant (symbol_addrs.txt:151-152, named_syms.txt:122-123) and D_80099478 / D_8009947A (undefined_syms_auto.txt:55,1227). src/text1a_c2.c used the D_ names inside func_800460E4 and the g_ names everywhere else in the same TU. Respelling to the canonical names and deleting the two file-top externs measures 245/9 - byte-neutral - and is now in candidate.c.
 
 - [s8] Owner RULES-TO-ZERO directive acknowledged: the sandbox already scores this function with all 10 regfix rules dropped (rules_dropped 10, cheat_asm_stripped 0), so the rules are inert to the floor and retiring them is a consequence of reaching 0, not an independent axis. No measurements were spent on rule retirement.
+
+---
+
+## [s9] ESCALATION SESSION 9 (2026-08-25) — the 06:39 carve-out has an occupant
+
+**[s9.1] Chassis re-measured three ways this session.** `& tools/wteng.ps1 main
+sandbox func_800460E4 --disable all`, rules_dropped 10 / cheat_asm_stripped 0 in
+every run:
+- committed rule-era HEAD body → **score 35**, build_insns 248 / target_insns 248;
+- the ledger's non-banned `candidate.c` body (canonical-named, with the two file-top
+  `extern s16 D_800994xx;` lines deleted per [s8r.5]) → **score 9**, 245 / 248. The
+  ledger floor of 9 holds on the current chassis and the [s8r.5] hygiene respelling
+  is confirmed byte-neutral end-to-end;
+- the s8 shared-base two-local form (banned_constructs #4/#5) → **score 0**, 248 /
+  248. Banked research-only as
+  `rejected/s9-banned-single-use-ptr-intermediate-MEASURES-0-on-s9-chassis.c`. This
+  is the first time that form's 0 has been reproduced on the current chassis rather
+  than inherited from the s7/s8 ledger.
+
+**[s9.2] NEW MEASUREMENT — a SINGLE fresh once-written/once-read pointer local closes
+case 3 at 248 instructions.** The form is
+
+```c
+s32 *hp = (s32 *)((s3 << 2) + (s32)s0) - 1;
+...
+s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));   /* unchanged array idiom */
+s4 = (s32 *)((u8 *)s0 + ALIGN4(*hp));
+```
+
+and it measures **score 0, build_insns 248 == target_insns 248**. This is a genuinely
+new point in the space, not a respelling of anything already banked:
+- banned_constructs #4/#5 (pm2/pm1, and the s8 `base` + `hp` shared-base variant)
+  respell BOTH header words through TWO pointer locals; the s8 variant's `base` is
+  read twice and therefore fails prong (1) of the named-intermediate entry outright.
+  This form has ONE local, respells ONE word, and leaves the -8 word in the
+  function's own `s0[s3 - 2]` array-index idiom — the same spelling case 13 ships and
+  already matches byte-for-byte.
+- [s8r.3]'s nearest shape ("one pointer, single use, no shared base") measured 249/8,
+  but it was spelled `&s0[s3 - 1]`. The scaled-index integer-cast base is what
+  recovers the 248. The combination *cast base + inlined `- 1` + array idiom retained
+  for the -8 word* had never been measured in sessions 1-8.
+- Consequence: the 249-insn wall the 06:39 ruling relied on is not a property of the
+  named-intermediate route; it was a property of the two spellings that ruling had in
+  view.
+
+**[s9.3] [s8r.4]'s base-spelling term re-confirmed on the s9 chassis.** The same
+single-local form with the base spelled using the function's OWN mainline `a0_ptr`
+idiom, `(s32 *)((u8 *)s0 + (s3 << 2)) - 1`, measures **248 / 1** — the lone residual
+is `addu v0,s0,v0` where target has `addu v0,v0,s0`. The closing form therefore
+REQUIRES `(s32 *)((s3 << 2) + (s32)s0)`; both `(s32 *)((u8 *)s0 + (s3 << 2))` and
+`&s0[s3]` cost exactly one diff on their own. Banked:
+`rejected/s9-a0ptr-idiom-base-248-1-addu-operand-order.c`. (Note the mild oddity this
+records: target itself uses BOTH `addu` operand orders — `addu a0,a1,s0` in the
+mainline for a0_ptr, `addu v0,v0,s0` in case 3 — so the two spellings are both
+"target's own" at different sites, and the case-3 one is fixed.)
+
+**[s9.4] Gate (a) canonical-asm is measured DEAD.**
+`python3 tools/scan_hand_coded.py --single func_800460E4` → **tier=LOW, score 0/8**,
+with every indicator unset: S1 0 multu/mflo pairs, S2 no empty-body branches, S3 257
+insns with 13 spills across 14 distinct registers, S4 max load burst 3 in any 8-insn
+window, S5 no high-similarity siblings (jaccard < 0.5), S6 no BIOS jumptable call
+pattern, S7 every callee-save use has an $sp save, S8 no redundant mask-before-shift.
+Banked at `tmp/grind/func_800460E4/s9/scan_hand_coded.txt`. The canonical-asm grant
+path is unavailable for this function; a future session must not re-run this scan
+hoping for a different tier.
+
+**[s9.5] Two Judge rulings on this function are in direct conflict once [s9.2]
+exists.** `decisions.md:10726` (06:39) closes with "NOT closed: a byte-neutral
+(248-insn) fresh named pointer local holding a real consumed address stays available
+under the named-intermediate entry's prongs -- but the measured nv routes are 249
+insns, so they fail byte-neutrality and close nothing". `decisions.md:10738` (09:06,
+later, and answering a *global re-typing* request) produced the standing constraint
+that no lvalue spelling — "global declaration type, second handle, pointer
+intermediate, or cast" — may be chosen to change MEM_IN_STRUCT_P, closing the /s axis
+"in every direction". [s9.2] satisfies the 06:39 condition exactly and violates the
+09:06 constraint literally. Which controls is not a grind-session call, so session 9
+filed a decision packet (`docs/grind/decisions.md`, 2026-08-25 OWNER-ESCALATION
+entry) and did NOT submit the form; it is banked ruling-pending at
+`rejected/s9-ruling-pending-single-local-named-intermediate-248-0.c`.
+
+**[s9.6] RULES-TO-ZERO directive: acknowledged and measured, not merely noted.**
+`grep -c func_800460E4 regfix.txt` = 11 lines (10 active rules by the sandbox's
+count), `asmfix.txt` = 0, cheat-asm = 0. Every sandbox run above reports
+`rules_dropped: 10`, i.e. the honest floor is already computed with all ten rules
+inert. Retiring them is therefore a consequence of reaching 0 and never an
+independent axis; no measurement was spent on rule retirement in this session either.
+
+- [s9] [s9] Chassis measured three ways this session with `& tools/wteng.ps1 main sandbox func_800460E4 --disable all` (rules_dropped 10, cheat_asm_stripped 0 every run): committed rule-era HEAD body = score 35 (248/248); the ledger's non-banned candidate.c body = score 9 (245/248), so the ledger floor of 9 holds on the current chassis and the [s8r.5] canonical-name hygiene respelling is confirmed byte-neutral end-to-end; the s8 shared-base two-local form (banned_constructs #4/#5) = score 0 (248/248), reproduced on the current chassis rather than inherited.
+
+- [s9] [s9] NEW: a SINGLE fresh once-written/once-read pointer local closes case 3 completely. `s32 *hp = (s32 *)((s3 << 2) + (s32)s0) - 1;` with the -8 word left as `s0[s3 - 2]` and `s4 = (s32 *)((u8 *)s0 + ALIGN4(*hp));` measures score 0, build_insns 248 == target_insns 248. This is a new point in the space: banned #4/#5 respell BOTH header words through TWO pointer locals (and the s8 `base` local is read twice, failing prong (1) outright), whereas this form has ONE local and respells ONE word, leaving the -8 read in the idiom case 13 already ships byte-exactly.
+
+- [s9] [s9] The nearest previously-measured shape ([s8r.3] 'one pointer, single use, no shared base') measured 249/8 only because it was spelled `&s0[s3 - 1]`; the scaled-index integer-cast base is what recovers the 248. The combination cast-base + inlined `- 1` + array idiom retained for the -8 word had never been measured in sessions 1-8, which is why the 06:39 ruling could state that only 249-insn routes existed.
+
+- [s9] [s9] Prong-by-prong against .claude/rules/no-new-park-categories.md:193-214 (named intermediate, owner clarification 2026-08-17), all measured or satisfiable: (1) once-written/once-read YES (sole write is the initialiser, sole read is *hp); (2) real value in target's own bytes YES (target case 3 is `sll v0,s3,2 / addu v0,v0,s0 / lw a0,-4(v0)`; the address is target's own and the loaded word is s4's stage pointer); (3) byte-neutral YES, build_insns 248 == target_insns 248 - the exact prong 06:39 said was failing; (4) fresh local not a borrow YES; (5) destination not live-pre-initialised YES; (6) dump-proven mechanism (evidence.md [s6]/[s7]) + documented exhaustion (9 sessions, 55 banked rejected forms, the C-tree-level enumeration [s8r.2]) + FAKE annotation present + layer-1/2 review as the open item.
+
+- [s9] [s9] Two Judge rulings on this function are in direct conflict once the 248-insn form exists. docs/grind/decisions.md:10726 (06:39) closes verbatim: 'NOT closed: a byte-neutral (248-insn) fresh named pointer local holding a real consumed address stays available under the named-intermediate entry's prongs -- but the measured nv routes are 249 insns, so they fail byte-neutrality and close nothing.' docs/grind/decisions.md:10738 (09:06, later, and answering a GLOBAL RE-TYPING request) produced the standing constraint that no lvalue spelling - 'global declaration type, second handle, pointer intermediate, or cast' - may be chosen to change MEM_IN_STRUCT_P, closing the /s axis 'in every direction'. The s9 form satisfies the first exactly and violates the second literally.
+
+- [s9] [s9] Endgame-lock gate (a) measured DEAD: scan_hand_coded --single func_800460E4 returns tier=LOW score 0/8 with every indicator unset (output banked at tmp/grind/func_800460E4/s9/scan_hand_coded.txt). The canonical-asm grant path is unavailable; a future session must not re-run this scan hoping for a different tier.
+
+- [s9] [s9] Endgame-lock gate (b) PASSES for the named-intermediate family: .claude/rules/no-new-park-categories.md:195 records the SOTN-master shape the entry is built on (`randy = basePoint.x; baseX = randy;`, 'FAKE but makes register allocation work'), exhibited at sotn-decomp/src/weapon/w_037.c:301-302 (PSX, GCC 2.7.2) - a once-written, once-read fresh local whose value is real and consumed. This is a family the frozen list ALREADY sanctions, so the packet asks about application, not extension.
+
+- [s9] [s9] Owner RULES-TO-ZERO directive acknowledged and measured: grep -c func_800460E4 regfix.txt = 11 lines (10 active rules by the sandbox's count), asmfix.txt = 0, cheat-asm = 0, and every sandbox run reports rules_dropped 10 - the honest floor is already computed with all ten rules inert, so retiring them is a consequence of reaching 0 and never an independent axis. No measurements were spent on rule retirement.
+
+- [s9] [s9] Nothing was submitted: the 248/0 form is banked ruling-pending at memory/grind/func_800460E4/rejected/s9-ruling-pending-single-local-named-intermediate-248-0.c with an explicit DO-NOT-SUBMIT header, candidate.c still carries the non-blocked floor-9 body (with an [s9] pointer note), and src/text1a_c2.c was restored to HEAD - the tree is HEAD-clean apart from metrics/events.jsonl, the ledger files, the three new rejected/ files and the decisions.md packet.

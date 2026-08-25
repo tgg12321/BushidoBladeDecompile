@@ -1,8 +1,8 @@
 {
  "func": "func_800460E4",
  "file": "text1a_c2",
- "session_count": 8,
- "current_modality": "rederive",
+ "session_count": 9,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,29 @@
    "floor": 9,
    "modality": "rederive",
    "headline": "Rederive: 100% of the residual is 9 insns in case 3 (3 of them a jump2 cross-jump), and the /s=0 spelling space is now closed at C-tree source level - the only zero-cost closing form is a SINGLE-USE p"
+  },
+  {
+   "session": 9,
+   "floor": 9,
+   "modality": "escalation",
+   "headline": "Escalation: the 249-insn wall the 06:39 ruling relied on is KILLED - a SINGLE fresh once-written/once-read pointer local closes case 3 at 248/248 score 0, satisfying all six named-intermediate prongs "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual remains the single FIDELITY question about the case-3 read of the -4 stage-header word - was it written through a bare pointer-variable lvalue? - and that question is now source-level closed on the C side: the ONLY zero-cost spelling is a single-use pointer intermediate off a shared base, which is banned_constructs #4/#5. No un-banned C form exists.",
-   "mechanism": "expr.c:4567-4577 + c-typeck.c pointer_int_sum bound the /s = 0 space to three constructs (bare pointer deref, integer-cast deref, volatile), all banned; combine folds the pointer's address only when it has ONE use, so every multi-use (i.e. non-coercive-looking) spelling pays an addiu and measures 249. See evidence.md [s8r.2]/[s8r.3].",
-   "next_probe": "Escalation modality only: file a DECISION PACKET posing the one-lvalue fidelity question, now citing the source-level enumeration ([s8r.2]) and the 248/0 vs 249/4 vs 249/8 cost table ([s8r.3]) rather than only the earlier 248/0-vs-245/9 pair. Do NOT re-file any family question - aggregate merge, fresh carrier, hoisted carrier, walking pointers and scalar-to-array re-typing are all closed."
+   "hypothesis": "func_800460E4 is one owner ruling away from COMPLETED-C at floor 0: the case-3 single-local named intermediate satisfies all six prongs of the frozen named-intermediate entry and measures 248/248 score 0, but a later per-function standing constraint names 'pointer intermediate' among the spellings closed on the /s axis.",
+   "mechanism": "expand-time MEM_IN_STRUCT_P (tools/gcc-2.7.2/expr.c:4567-4577) on the -4 header read -> sched.c anti_dependence exemption -> the single sched1 ordering decision that produces target's adjacent header loads and both value seats. The 06:39 ruling left the named-intermediate route open conditional on byte-neutrality at 248 insns and believed only 249-insn routes existed; s9 measured a 248-insn route.",
+   "next_probe": "None by a grind session - this is the filed decision packet (docs/grind/decisions.md:10742). On a YES the next session pastes the banked case-3 block into candidate.c, applies it, re-measures 0, writes the self-vet claiming the named-intermediate family with the .claude/rules/no-new-park-categories.md:193-214 scope sentence and the w_037.c:301-302 precedent, and runs layer-1/layer-2. On a NO the pure-C route is finished by [s8r.2]'s source-level enumeration and the disposition is terminal deferral at floor 9 with the 10 rules recorded as pure-C-unreachable."
   },
   {
-   "hypothesis": "Any closing form must ALSO carry the case-3 base spelled `(s32 *)((s3 << 2) + (s32)s0)`; `&s0[s3]` costs one diff on its own.",
-   "mechanism": "Measured 248/1 vs 248/0 - `addu v0,s0,v0` vs `addu v0,v0,s0`. Orthogonal to MEM_IN_STRUCT_P and to the scheduler; the mainline already uses this spelling for a0_ptr and the 03:53 layer-1 review ruled it legitimate.",
-   "next_probe": "None as an independent probe - record it so a future closing form (or an owner grant) is not spent on a 248/1 near-miss."
+   "hypothesis": "Any closing form must spell the case-3 base `(s32 *)((s3 << 2) + (s32)s0)`; the function's own mainline a0_ptr idiom and `&s0[s3]` each cost exactly one diff.",
+   "mechanism": "addu operand order - `addu v0,s0,v0` vs target's `addu v0,v0,s0`. Orthogonal to MEM_IN_STRUCT_P and to the scheduler. Target itself uses both orders at different sites (`addu a0,a1,s0` in the mainline for a0_ptr), so this is per-site, not a global preference.",
+   "next_probe": "None as an independent probe - re-confirmed twice now (s8r.4 and s9.3). Recorded so a future closing form or grant is not spent on a 248/1 near-miss."
   },
   {
-   "hypothesis": "The rederive modality is exhausted for this function: there is no whole-function shape question left.",
-   "mechanism": "100% of the residual is nine instructions in case 3, three of which are a jump2 cross-jump downstream of one seat; every other block including the mainline's shared scaled-index form and case 13's identically-spelled header reads is already byte-identical to target.",
-   "next_probe": "Do not re-run a fresh m2c / decomp.me / Kengo derivation for this function; the byte evidence already shows the non-case-3 C is correct. Route the next session to escalation."
+   "hypothesis": "The canonical-asm grant path is permanently unavailable for this function.",
+   "mechanism": "scan_hand_coded tier=LOW, score 0/8, no S1/S2/S6 signal of any kind; the body is ordinary compiled C by every indicator the scanner measures.",
+   "next_probe": "Do not re-run scan_hand_coded for func_800460E4; the result is banked at tmp/grind/func_800460E4/s9/scan_hand_coded.txt. If the packet is answered NO, the routing outcome is deferral, not a canonical-asm grant."
   }
  ],
  "judge_constraints": [

@@ -10738,3 +10738,157 @@ Case-3's off_a/off_b borrow is a fresh function-invented multi-set carrier assem
 ## 2026-08-25 09:06 — func_800460E4 — ruling: May func_800460E4 close by re-typing ONE global at its extern declaration - `ext — **FAIL**
 
 NO. The array re-typing is a cheat, not a header correction. Decisive fact I verified myself: the same memory is already declared `extern s16 g_stage_variant;` in include/game.h and read/written as a plain scalar in src/sound.c:131 and at src/text1a_c2.c:184/204/218/244 - inside the very TU that would carry the `[1]` declaration. The proposal therefore gives one object two coexisting C handles of different types, differing solely to change GCC's alias view: the alias-rename coercion family of .claude/rules/inline-asm-injection.md, and the same MEM_IN_STRUCT_P/sched.c lever already banned as banned_constructs #3-#5. header-type-correction prong (a) fails as the session itself concedes (every `[0]` authored this session; no site requires the type), prong (b) fails (no pre-existing compensating casts), and judge_constraints already forbid deriving an object model from dependence-analysis behavior. sotn-construct-index has no scalar-to-array precedent (only the two `&g_Entities[1]` pointer-alias lines 825/838). Store bytes identical in both spellings = scheduling-only effect, T1/T3 failures. Per the request this also answers [s6.2] in the negative: an lvalue spelling adopted solely to clear /s is banned by the same reasoning. Ledger: state.json judge_constraints, evidence.md [s6]/[s7], rejected/s7-ruling-pending-array-typed-store-248-0.c.
+
+## 2026-08-25 — func_800460E4 — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Session 9, modality `escalation` (driver-declared exhaustion: floor 9 flat across 8
+sessions and 5 distinct modalities — recon, structural x2, synthesis, solver,
+forensics x2, rederive). This packet is filed because session 9 measured a fact that
+neither of the two governing Judge rulings had, and that fact puts those two rulings
+in direct conflict. It is a fidelity/scope question about an ALREADY-SANCTIONED
+family applied under its own published prongs — it asks for no new family, no new
+permanent rule, no evidence-bar override, and no acceptance of debt.
+
+### (i) The decidable question
+
+**Does func_800460E4's case 3 close under the frozen named-intermediate entry
+(`.claude/rules/no-new-park-categories.md:193-214`, owner clarification 2026-08-17),
+given that a SINGLE fresh once-written/once-read pointer local now measures
+byte-neutral at 248 instructions and score 0 — the exact condition the 06:39 ruling
+itself named as the route that "stays available"? Or does the LATER 09:06 standing
+constraint ("no lvalue spelling ... pointer intermediate ... may be chosen to change
+MEM_IN_STRUCT_P") override it and close the axis regardless of prong satisfaction?**
+
+The two rulings, both on this function, both in this repo:
+
+- `docs/grind/decisions.md:10726` (2026-08-25 06:39) — closing sentence, verbatim:
+  "NOT closed: a byte-neutral (248-insn) fresh named pointer local holding a real
+  consumed address stays available under the named-intermediate entry's prongs --
+  but the measured nv routes are 249 insns, so they fail byte-neutrality and close
+  nothing, and reviving pm2/pm1's alias-defeat justification re-enters banned #4."
+- `docs/grind/decisions.md:10738` (2026-08-25 09:06) — "Per the request this also
+  answers [s6.2] in the negative: an lvalue spelling adopted solely to clear /s is
+  banned by the same reasoning", which the ledger records as the standing constraint
+  closing the /s axis "in every direction", naming "pointer intermediate" explicitly.
+
+The 06:39 ruling set a condition and believed it unsatisfiable — only 249-insn routes
+existed at that time, and evidence.md [s8r.3] independently reproduces 249/4 and 249/8
+for the two shapes it had in view. Session 9 measured a 248-insn route. The 09:06
+ruling was answering a **global re-typing** request (`extern s16 g_stage_variant[1]`)
+and its sweeping /s sentence was written without a 248-insn named intermediate in
+front of it. Which of the two controls is not something a grind session may decide
+for itself.
+
+### (ii) Evidence pointers — all measured THIS session on THIS chassis
+
+Chassis: `& tools/wteng.ps1 main sandbox func_800460E4 --disable all`, with
+rules_dropped 10 and cheat_asm_stripped 0 in every run.
+
+| body in src/text1a_c2.c | score | build_insns / target_insns |
+|---|---:|---|
+| committed rule-era HEAD body | 35 | 248 / 248 |
+| non-banned ledger candidate (`memory/grind/func_800460E4/candidate.c`) | 9 | 245 / 248 |
+| **s9 single-local named intermediate** (below) | **0** | **248 / 248** |
+| same, base spelled with the mainline a0_ptr idiom `(s32 *)((u8 *)s0 + (s3 << 2))` | 1 | 248 / 248 |
+| s8 shared-base two-local form (banned #4/#5) | 0 | 248 / 248 |
+
+The form that measures 0 is one local and one respelled word:
+
+```c
+case 3: {
+    /* FAKE: fresh once-written/once-read pointer intermediate naming the address
+     * of the stage header's last word, mechanism: expand-time MEM_IN_STRUCT_P
+     * (expr.c:4567-4577) -> sched.c anti_dependence exemption -> sched1
+     * load/store order, lever-exhaustion: memory/grind/func_800460E4/ */
+    s32 *hp = (s32 *)((s3 << 2) + (s32)s0) - 1;
+    s1 = s2;
+    s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));   /* unchanged; case 13's idiom */
+    s4 = (s32 *)((u8 *)s0 + ALIGN4(*hp));
+    g_stage_variant = 1;
+    break;
+}
+```
+
+Banked verbatim at
+`memory/grind/func_800460E4/rejected/s9-ruling-pending-single-local-named-intermediate-248-0.c`
+— banked REJECTED and deliberately NOT submitted as a candidate, pending this ruling.
+
+How it differs from the twice-banned pm2/pm1 construct (banned_constructs #4/#5):
+that construct respelled BOTH stage-header words through TWO pointer locals, and the
+s8 shared-base variant has a `base` local that is read twice and therefore fails
+prong (1) outright. This form has exactly ONE local, respells ONE word, and leaves
+the -8 word in the function's own `s0[s3 - 2]` array-index idiom — byte-identical to
+the spelling case 13 already ships and already matches. The nearest previously
+measured shape (s8: one single-use pointer with the -8 word left as the array idiom)
+measured 249/8 because it was spelled `&s0[s3 - 1]`; the scaled-index cast base is
+what recovers the 248, and that exact combination had never been measured before
+session 9.
+
+Prong-by-prong against `.claude/rules/no-new-park-categories.md:193-214`:
+(1) once-written / once-read — YES: the sole write is the initialiser, the sole read
+is `*hp`;
+(2) real value present in the target's own bytes — YES: target case 3 is
+`sll v0,s3,2 / addu v0,v0,s0 / lw a0,-4(v0)`, so the address `hp` names is target's
+own and the loaded word is s4's stage pointer, a genuinely consumed value;
+(3) byte-neutral — YES: build_insns 248 == target_insns 248. This is precisely the
+prong the 06:39 ruling said was failing;
+(4) fresh local, not a borrow — YES;
+(5) destination not live-pre-initialised — YES, fresh block scope;
+(6) dump-proven mechanism + documented lever exhaustion + FAKE + layer-1/2 review —
+the mechanism is RTL-dump-proven in `memory/grind/func_800460E4/evidence.md`
+[s6]/[s7]; exhaustion is 9 sessions, 55 banked rejected forms, and the C-tree-level
+enumeration [s8r.2] (expr.c:4567-4577 plus c-typeck.c `pointer_int_sum` bound the
+MEM_IN_STRUCT_P = 0 space to exactly three constructs, with no fourth spelling); the
+FAKE line is present above; the two review layers are the open item this packet
+gates.
+
+Family precedent, in hand rather than "same spirit":
+`.claude/rules/no-new-park-categories.md:195` records the SOTN-master shape the entry
+is built on — `randy = basePoint.x; baseX = randy;` with "FAKE but makes register
+allocation work" — exhibited at `sotn-decomp/src/weapon/w_037.c:301-302` (PSX,
+GCC 2.7.2): a once-written, once-read fresh local whose value is real and consumed.
+
+Endgame-lock AND-gates, evaluated as the disposition protocol requires:
+
+- Gate (a), canonical-asm: `python3 tools/scan_hand_coded.py --single func_800460E4`
+  → **tier=LOW, score 0/8**, no indicator set (S1 0 multu/mflo pairs, S2 no empty-body
+  branches, S3 257 insns with 13 spills, S4 max load burst 3 in any 8-insn window,
+  S5 jaccard < 0.5, S6 no BIOS jumptable pattern, S7 all callee-save uses have an
+  $sp save, S8 no redundant mask-before-shift). Gate **FAILS** — canonical asm is not
+  the route for this function. Output banked at
+  `tmp/grind/func_800460E4/s9/scan_hand_coded.txt`.
+- Gate (b), in-hand SOTN-master precedent for the closing construct: **PASSES** for
+  the named-intermediate family as cited above. Note this is a family the frozen list
+  ALREADY sanctions, so the question is application, not extension.
+- What currently holds the byte-match on main: 11 `func_800460E4` lines in
+  `regfix.txt` (10 active rules as counted by the sandbox), 0 in `asmfix.txt`, 0
+  cheat-asm. The sandbox scores with all 10 dropped, so the rules are inert to the
+  floor and retiring them is a consequence of reaching 0, not an independent axis —
+  the owner's RULES-TO-ZERO directive for this function is thereby acknowledged and
+  measured rather than merely noted.
+
+### (iii) Consequence of each answer
+
+- **YES — the 06:39 carve-out controls, and the 248-insn single-local form qualifies
+  under the named-intermediate prongs.** func_800460E4 closes at honest floor **0**
+  immediately; that is measured this session, not projected. The next session applies
+  `candidate.c` with the case-3 block above, runs layer-1 and layer-2 review on the
+  single new construct, and the function reaches COMPLETED-C — retiring 10 of the
+  project's final 89 rules and clearing the last jtbl-coupled deferral on this TU.
+- **NO — the 09:06 standing constraint controls, and the /s axis stays closed in
+  every direction, including a prong-satisfying named intermediate.** Then the pure-C
+  route is genuinely finished: [s8r.2] proves at C-tree source level that only three
+  spellings can give the -4 read MEM_IN_STRUCT_P = 0 (bare pointer deref,
+  integer-cast deref, volatile access), and a NO closes all three. With gate (a) at
+  LOW the canonical-asm route is also unavailable, so the disposition is terminal
+  deferral: func_800460E4 stays at floor 9 in its rule-era representation with its 10
+  rules, and the RULES-TO-ZERO campaign should record those 10 as permanently
+  unreachable by pure C under the current family list. That is a real project-level
+  cost, and it is precisely why the question is being put rather than self-answered.
+
+Ledger pointers: `memory/grind/func_800460E4/state.json` (judge_constraints,
+banned_constructs), `evidence.md` [s8r.2] / [s8r.3] / [s8r.4] and the new [s9] block,
+`hypotheses.md`, and
+`rejected/s9-ruling-pending-single-local-named-intermediate-248-0.c`,
+`rejected/s9-a0ptr-idiom-base-248-1-addu-operand-order.c`,
+`rejected/s9-banned-single-use-ptr-intermediate-MEASURES-0-on-s9-chassis.c`.

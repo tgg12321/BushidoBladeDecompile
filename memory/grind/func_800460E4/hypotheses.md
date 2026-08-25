@@ -1069,3 +1069,69 @@ alias-rename; a future candidate-ready must not ship it.
 - probe: Respelled the four uses to the canonical names, deleted the two file-top externs, measured with pr.sh and with `sandbox func_800460E4 --disable all`.
 - result: 245/9 both ways and the sandbox printed score 9 with the canonical-named body in src/. Byte-neutral. candidate.c now carries the canonical names plus an apply note to delete the two externs - a dual-handle-for-one-global is the shape a layer-1 reviewer reads as an alias-rename even though it arrives via the pipeline symbol files rather than an asm() rename.
 - verdict: CONFIRMED
+
+---
+
+## [s9] Session 9 (escalation modality, 2026-08-25)
+
+**H-s9.1 — "The 249-insn wall on the single-pointer route is a property of the
+named-intermediate FAMILY for this site, so no prong-satisfying form can exist."**
+Mechanism claimed by the 06:39 ruling: every fresh-named-pointer spelling of the -4
+header read pays an extra address materialisation (`addiu`) because combine can only
+fold `(plus base -4)` into the MEM when the pointer has a single use AND the base is
+shared, and a shared base needs its own multi-use local.
+Probe: spell the base expression INLINE inside the single local's initialiser —
+`s32 *hp = (s32 *)((s3 << 2) + (s32)s0) - 1;` — leaving the -8 word in the function's
+existing `s0[s3 - 2]` array-index idiom, so exactly one local exists and it is
+once-written / once-read.
+Result: **score 0, build_insns 248 == target_insns 248.**
+Verdict: **KILLED.** The wall was a property of the two spellings the ruling had in
+view (`&s0[s3 - 1]` at 249/8 and the two-use walking pointer at 249/4), not of the
+family. A prong-satisfying byte-neutral form exists.
+
+**H-s9.2 — "The closing form can be spelled with the function's own mainline base
+idiom, removing the last 'chosen cast' objection."**
+Mechanism: `a0_ptr` at src/text1a_c2.c:93 is `(s32 *)((u8 *)s0 + (s3 << 2))`, is read
+three times, and is byte-identical to target's `sll a1,s3,2 / addu a0,a1,s0`. If the
+same spelling worked in case 3, the base would be the file's own established idiom
+rather than a form picked for its bytes.
+Probe: `s32 *hp = (s32 *)((u8 *)s0 + (s3 << 2)) - 1;` with everything else identical
+to H-s9.1's winning form.
+Result: **248 / 1** — the single residual is `addu v0,s0,v0` vs target's
+`addu v0,v0,s0`.
+Verdict: **KILLED.** The case-3 base spelling is fixed at
+`(s32 *)((s3 << 2) + (s32)s0)`; this independently re-confirms [s8r.4] on the s9
+chassis. Target itself uses both `addu` operand orders at different sites, so this is
+a per-site fact, not a global one.
+
+**H-s9.3 — "The canonical-asm grant path is open for this function."**
+Probe: `python3 tools/scan_hand_coded.py --single func_800460E4`.
+Result: tier=LOW, score 0/8, every one of S1-S8 unset.
+Verdict: **KILLED.** Endgame-lock gate (a) fails. Do not re-run this scan for
+func_800460E4; the answer is banked at
+`tmp/grind/func_800460E4/s9/scan_hand_coded.txt`.
+
+**Open (owner-gated, not a hypothesis a session may resolve):** whether the 06:39
+carve-out or the later 09:06 standing /s constraint governs the H-s9.1 form. Filed as
+a decision packet in `docs/grind/decisions.md` (2026-08-25 OWNER-ESCALATION entry).
+The form is banked ruling-pending and MUST NOT be submitted as a candidate until the
+packet is ruled on:
+`rejected/s9-ruling-pending-single-local-named-intermediate-248-0.c`.
+
+## [s9] The 249-insn wall on the single-fresh-pointer route is a property of the named-intermediate family at this site, so no prong-satisfying byte-neutral form can exist (the premise the 2026-08-25 06:39 ruling relied on when it left that route nominally open).
+- mechanism: combine folds (plus base -4) into the load's MEM only when the pointer VAR_DECL has a single use AND the scaled base s0 + s3*4 is shared; a shared base was assumed to need its own multi-use local, which costs an addiu (measured 249/4 two-use, 249/8 unshared-base at s8).
+- probe: Inline the base expression into the single local's initialiser instead of giving it its own local: `s32 *hp = (s32 *)((s3 << 2) + (s32)s0) - 1;`, leave the -8 word in the function's existing `s0[s3 - 2]` array-index idiom (case 13's byte-exact spelling), and read `*hp` once. Measured with `& tools/wteng.ps1 main sandbox func_800460E4 --disable all`.
+- result: score 0, build_insns 248 == target_insns 248, rules_dropped 10, cheat_asm_stripped 0. All seats target-exact, no cross-jump, no missing instruction. Exactly one fresh local, once written, once read.
+- verdict: KILLED
+
+## [s9] The closing form can carry the function's OWN mainline base idiom `(s32 *)((u8 *)s0 + (s3 << 2))` (the a0_ptr spelling at src/text1a_c2.c:93), which would remove the last 'the cast was chosen for its bytes' objection.
+- mechanism: a0_ptr uses that spelling, is read three times, and is already byte-identical to target's `sll a1,s3,2 / addu a0,a1,s0` in the mainline, so it is the file's established idiom rather than a picked form.
+- probe: Same single-local form as above with only the base spelling swapped: `s32 *hp = (s32 *)((u8 *)s0 + (s3 << 2)) - 1;`.
+- result: score 1, 248/248. The lone residual is `addu v0,s0,v0` where target case 3 has `addu v0,v0,s0`. Independently re-confirms [s8r.4] on the s9 chassis; target itself uses both operand orders at different sites, so this is a per-site fact.
+- verdict: KILLED
+
+## [s9] The canonical-asm grant path (endgame-lock gate (a)) is open for func_800460E4.
+- mechanism: scan_hand_coded's STRONG tier requires S1/S2/S6-class signals (multu pacing, empty-body branches, BIOS jumptable dispatch) that indicate the original body was hand-written asm rather than compiled C.
+- probe: python3 tools/scan_hand_coded.py --single func_800460E4
+- result: tier=LOW, score 0/8, every indicator unset: S1 0 multu/mflo pairs, S2 no empty-body branches, S3 257 insns / 13 spills / 14 distinct regs, S4 max load burst 3 in any 8-insn window, S5 jaccard < 0.5 vs siblings, S6 no BIOS jumptable pattern, S7 all callee-save uses have an $sp save, S8 no redundant mask-before-shift.
+- verdict: KILLED
