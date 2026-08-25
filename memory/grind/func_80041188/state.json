@@ -1,8 +1,8 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 14,
- "current_modality": "synthesis",
+ "session_count": 15,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 0,
@@ -93,23 +93,29 @@
    "floor": 1,
    "modality": "synthesis",
    "headline": "Synthesis split the residual into TWO independent allocno-priority requirements; (A) stptr>i is now solvable in ORDINARY C (i live 99 via `i = 0x12;` first), producing the ledger's first ALL-TARGET-se"
+  },
+  {
+   "session": 15,
+   "floor": 1,
+   "modality": "solver",
+   "headline": "Solver suite unblocked on this TU (instrumented cc1 segfaults on func_80040CB8; reduced-TU shim restores parity=True) and it reduces the whole honest residual to ONE atom: the FAKE-free P1 chassis rea"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Requirement (B) is now a one-scalar problem with a named double bind \u2014 out2 must reach a priority in (1473, 1702) WHILE its definition stays in block 0 \u2014 and the solver suite is the instrument designed for exactly this shape.",
-   "mechanism": "tools/ra_solver models GCC 2.7.2's entire allocation stack (global.c / local-alloc / reload) and inverse_compose.py classify converts a register-seat residual into a typed REACHABLE / FORECLOSED verdict with ranked C-lever vectors. The out2 residual is a pure register-seat residual, and s14 has reduced its surrounding chassis to a form where every other seat is already correct, so the solver's goal is now unambiguous.",
-   "next_probe": "Run tools/ra_solver/inverse_compose.py classify against the Z0_honest_ifirst chassis (NOT candidate.c \u2014 Z0 is the form whose only defect is this one seat) with stptr 5/41, i 8/99, tbl 4/47, stptr2 6/48, pa4 7/95 and a3 4/99 pinned at their measured values, goal = out2 into $s6; then filter its lever vectors against the block-0-definition constraint from E-s14-5, which no previous solver run carried."
+   "hypothesis": "An ordinary-C sixth flow-counted reference to `stptr`, or one insn off the start of its live range, turns the FAKE-free P1 chassis into an all-target-seat form at floor 1 - retiring the un-annotated F1 chain-extender that currently blocks candidate.c from ever landing.",
+   "mechanism": "global.c allocno priority floor_log2(n)*n/live*10000: stptr is 5 refs / live 41 = 2439 and must pass i's 2474; 6 refs gives 2926, live 40 gives 2500. The forward replay proves these are the ONLY single atoms that reach target's complete disposition on P1.",
+   "next_probe": "Splice memory/grind/func_80041188/alt_P1_honest_ipos3_s15.c, run `pwsh tools/grinder/dump.ps1 func_80041188` and read the .sched/.greg dumps for block 0 to see which insn sits between `addiu $s3,$v0,0xFC` and the block end (target's own block 0 is identical to ours, so the answer must come from the START of the live range or from a sixth reference). Iterate with `bash tmp/grind/func_80041188/s15/remodel.sh` + the allocdbg table, which answers in seconds without a sandbox run; the sched_solver can now also be asked about block 0 directly."
   },
   {
-   "hypothesis": "The +2 emission-order gap between alt_fakefree_floor3_s14.c (floor 3, honest) and candidate.c (floor 1, un-annotated F1) is a sched1 tie-break question, not an RA question, and tools/sched_solver can rule it REACHABLE or FORECLOSED \u2014 which decides which of the two forms the pipeline should carry as its base.",
-   "mechanism": "sched.c's rank_for_schedule falls back to INSN_LUID for ready insns of equal priority, and the three between-block insns (addiu $s1,0x6C; addiu $s2,0x6C; li $s4,18) are mutually independent with no in-block consumers, so their emission order is decided purely by source order \u2014 the same source order that sets reg_live_length(i). tools/sched_solver models both scheduler passes order- and clock-exact.",
-   "next_probe": "Run tools/sched_solver on the between-loops block of X0_ipos asking whether any dependency-preserving source order emits addiu $s1, addiu $s2, li $s4,18 in target's order while keeping `i = 0x12;` at LUID position 1; if FORECLOSED, the +2 is proven structural and (A) must be satisfied by some other honest lever, so re-open the search for one (e.g. a 6th honest stptr reference at live 41 = 2926)."
+   "hypothesis": "One of the two tbl-lift vectors on the Z0 chassis (tbl refs 4->5 or tbl live 47->39, each paired with out2 refs 3->4) reaches target seats on the chassis that already emits target's `addiu $s3,$s7,0x20` - the axis s11/s12 believed closed.",
+   "mechanism": "With tbl at 2127 (5 refs / 47) or 2051 (4 refs / 39), out2 may sit at 1904 (4 refs / live 42) instead of needing the unreachable 47..55 live window that s11 measured as ceilinged at 43.",
+   "next_probe": "Enumerate the honest 5th tbl reference: `*tbl` is read once and `tbl++` once in loop 1, and a re-read placed across the intervening func_8004A348 call cannot be CSE'd (the call may clobber memory), so it is a real flow-counted reference. Spell it on Z0, re-model with remodel.sh, and read whether combine deletes it again before it materialises an insn - decide on the model, then confirm with one sandbox run."
   },
   {
-   "hypothesis": "Target's source contains a construct whose insns flow counts and which is deleted AFTER flow fixes reg_n_refs \u2014 E-s14-2 proves such a construct must exist \u2014 and the surviving candidate family is jump2 / cross-jump tail merging, which runs after allocation so its deletions are free.",
-   "mechanism": "flow_analysis fixes reg_n_refs at toplev.c:2983; the passes that can delete an insn afterwards are combine (intra-block only \u2014 which is why every between-block spelling died in s8), reload's redundant-copy elimination, and jump2 / cross-jump tail merging. The sanctioned duplicated-statement-into-arms family (.claude/rules/duplicated-statement-into-arms.md) is exactly the cross-jump lever, and s2 measured its ref-lift mechanism CONFIRMED, failing only on byte-neutrality because sched1 interleaved the fall-in copy.",
-   "next_probe": "Re-run the duplicated-statement-into-arms construction on the CURRENT Z0_honest_ifirst chassis rather than s2's long-dead split model, targeting out2 rather than tbl, and read the .jump2 dump (pwsh tools/grinder/dump.ps1 func_80041188) to see whether the duplicated tails re-merge \u2014 the sandbox score alone cannot distinguish 'not merged' from 'merged but mis-seated', and the two chassis differ by six sessions of structure so the s2 verdict is not chassis-valid."
+   "hypothesis": "Vector #4 (pa4 refs 7->4 + out2 live 42->34) reaches target seats without any 4th out2 reference - the only minimal vector that does not depend on the ledger's oldest unsolved sub-problem.",
+   "mechanism": "pa4 is 7 refs / 95 = 1473 on Z0 and every one of those references is a real call argument in target's bytes, so the drop must come from re-routing three of them through a value that already exists, not from deleting them.",
+   "next_probe": "Read the .flow dump for the Z0 chassis to see which of pa4's 7 references are the `pa4 = a4` copy and its cse'd descendants; if the parameter a4 and pa4 remain distinct pseudos pre-regmove, try a source form that passes `a4` directly for the loop-2 arguments and re-model."
   }
  ],
  "judge_constraints": [

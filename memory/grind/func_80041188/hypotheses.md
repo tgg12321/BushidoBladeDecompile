@@ -1286,3 +1286,92 @@ statement, which has never been tried in block 0.
 - probe: W1_o2_loop1top and W2_o2_beforecall2 (out2 defined inside loop1, out3 spelled `(s32 *)((u8 *)pa4 + 0x20)`), .lreg tables plus a direct read of the post-flow RTL in tmp/grind/func_80041188/s8/fd.flow.
 - result: KILLED, with the pass named. The .flow dump shows cse1 has ALREADY rewritten out3's definition to `(insn 164 (set (reg/v:SI 87) (reg/v:SI 86)))` — a plain `out3 = out2` copy — because with out2 defined inside loop1 the between-loops block sits in the SAME cse extended basic block as that definition, so cse1 knows out2 == pa4 + 0x20 and substitutes the cheaper register. That substituted copy is also the source of the unexplained 4th reference s12 measured (4 refs / live 21 = 3809). Contrapositive, now proven: target's slot-71 insn REQUIRES out2's definition in block 0 (a different EBB), which is exactly the region where s11 measured out2's live length capped at 43.
 - verdict: KILLED
+
+## s15 (solver, 2026-08-24) — hypotheses and the frontier handed to s16
+
+### Killed this session
+- **H-s15-A (KILLED).** "The +2 emission-order gap on the honest `alt_fakefree`
+  chassis is a sched1 tie-break that some other dependency-preserving source order
+  can fix while keeping `i` live 99." `tools/sched_solver` enumerated the whole
+  spellable atom space for block 2 (30 single atoms + all pairs) and returned a
+  single vector, which IS the `i`-at-position-3 order; spelled → sandbox 15.
+  Emission order and `reg_live_length(i)` are the same variable. (E-s15-1)
+- **H-s15-B (KILLED).** "Loop 2 has its own counter in the original (`j`), which
+  frees `i` from spanning both loops and solves requirement (A) for free."
+  Measured sandbox 19; requirement (A) is indeed solved, but both counters fall
+  below tbl/out2 and the chassis then needs a **3-atom** byte-free reference lift
+  (i +1, j +1, out3 +2) versus P1's **1**. (E-s15-5)
+- **H-s15-C (RETRACTED, not killed — s11/s12's claim).** "The out2 priority window
+  (1473, 1702) is empty, therefore the residual is enumeration-complete." True only
+  with tbl pinned at 1702. `inverse.py` returns two minimal vectors that lift tbl
+  instead (E-s15-3), so the axis is open again — unspelled, but not closed.
+
+### The frontier (ranked)
+
+1. **Give `stptr` a sixth flow-counted reference, or end its live range one insn
+   earlier, in ordinary C — on the P1 chassis.** P1
+   (`memory/grind/func_80041188/alt_P1_honest_ipos3_s15.c`, sandbox 15, zero FAKE
+   constructs, target's block-2 emission order already correct) reaches target's
+   COMPLETE callee-saved disposition under that one perturbation and under nothing
+   else (E-s15-4). Success = an honest floor 1 whose only residual is the
+   long-standing slot-71 `out3` shape, i.e. it retires the un-annotated F1
+   chain-extender that currently blocks candidate.c from ever landing.
+   Mechanism: `global.c` allocno priority
+   `floor_log2(n_refs)*n_refs/live_length*10000`; `stptr` is 5 refs / live 41 =
+   2439 and needs to pass `i`'s 2474 — 6 refs gives 2926, live 40 gives 2500.
+   Next probe: `stptr`'s live range starts at its block-0 definition (already the
+   last statement of block 0 in source order) and ends at `stptr += 0x68` in loop
+   1's delay slot, so attack the START: read the `.sched`/`.greg` dumps for P1
+   (`pwsh tools/grinder/dump.ps1 func_80041188` after splicing P1) to see which
+   block-0 insn sits between `addiu $s3,$v0,0xFC` and the block end, and whether
+   any source-level reordering of `saved` / `out2` / `stptr` (or of the `saved`
+   spill store `sw $t0,0x18($sp)`) moves the definition one slot later. Re-model
+   with `bash tmp/grind/func_80041188/s15/remodel.sh` and read `allocdbg` — the
+   model answers in seconds without a sandbox run. Note the sched_solver can be
+   asked the same question directly for block 0 now that extraction works.
+
+2. **Spell one of the two tbl-lift vectors on the Z0 chassis** (`tbl refs 4→5` or
+   `tbl live 47→39`, each paired with `out2 refs 3→4`). This is the axis s11/s12
+   believed closed. Mechanism: with tbl at 2127 (5 refs / 47) or 2051 (4 / 39),
+   out2 may sit at 1904 (4 refs / live 42) instead of needing the unreachable
+   47..55 live window, and Z0 is the chassis that already emits target's
+   `addiu $s3,$s7,0x20`. Next probe: enumerate the honest 5th `tbl` reference —
+   `*tbl` is read once and `tbl++` once in loop 1, and a re-read across the
+   intervening `func_8004A348` call cannot be CSE'd (the call may clobber memory),
+   so it is a real flow-counted reference; measure whether combine/cse delete it
+   again before it materialises an insn, using the model rather than the sandbox.
+
+3. **Vector #4: `pa4 refs 7→4` + `out2 live 42→34`** — the only minimal vector that
+   needs no 4th `out2` reference at all, and therefore the only one that does not
+   depend on the ledger's oldest unsolved sub-problem. Mechanism: `pa4` is 7 refs /
+   95 = 1473 on Z0 and every reference is a real call argument in target's bytes,
+   so the lift must come from re-routing three of them through a value that already
+   exists (not from deleting them). Next probe: check in the `.flow` dump which of
+   `pa4`'s 7 references are the `pa4 = a4` copy and its cse'd descendants — if the
+   parameter `a4` and `pa4` are separate pseudos pre-regmove, a source form that
+   uses `a4` directly for the loop-2 arguments may split the reference count
+   without changing a byte.
+
+## [s15] The +2 emission-order gap between the FAKE-free s14 form (floor 3) and candidate.c (floor 1) is a sched1 tie-break that some other dependency-preserving source order can fix while keeping reg_live_length(i) = 99.
+- mechanism: sched.c rank_for_schedule falls back to INSN_LUID (= source order) for the three mutually independent between-block insns; flow's live-length bookkeeping reads the same order, so the two are coupled only if no order separates them.
+- probe: tools/sched_solver extract (via the reduced-TU shim) + goalmap + perturb.py --atoms luid,luid_move --depth 2 with the target pinned to a tgt.head.s built from HEAD source; then spell the returned vector in C and measure.
+- result: Block 2 (5 insns) differs in 3 slots; 30 single atoms + all pairs yield exactly ONE vector, 'luid_move 152 -> immediately before 161' = move `i = 0x12;` to sit immediately before `stptr2 = saved + 0x750;'. Spelled and measured: emission order becomes target's and the sandbox score goes 3 -> 15, because that same position sets reg_live_length(i) = 97 instead of 99 (i 2474 > stptr 2439).
+- verdict: KILLED
+
+## [s15] The original has a SEPARATE loop-2 counter (target re-initialises $s4 with `addiu $s4,$zero,0x12` between the loops), which frees `i` from spanning both loops and satisfies requirement (A) without any FAKE construct.
+- mechanism: Two non-conflicting locals can share one hard register in GCC 2.7.2 (as out3/stptr already do here), and each counter's reg_live_length collapses from 97-99 to ~48, dropping both priorities below stptr's 2439.
+- probe: Spelled `s32 j` for loop 2 on the P1 chassis, measured the sandbox, re-extracted the RA model, and forward-replayed global.c over all single-pseudo and all {i,j}-pair perturbations.
+- result: sandbox 19 / 132 of 132. Requirement (A) IS solved (i 4 refs/48 = 1666, j 4/49 = 1632, both under stptr 2439) but both counters fall below tbl and out2 (1702) so four seats permute; zero single-pseudo and zero {i,j}-pair perturbations reach all-target seats, because j and out3 conflict across loop 2 and target wants the LOWER-priority out3 in the LOWER register $s3. The minimum that works is a 3-atom lift (i +1 ref, j +1 ref, out3 +2 refs) versus P1's 1 atom.
+- verdict: KILLED
+
+## [s15] s11/s12's enumeration-completeness claim - out2's priority must land inside (1473, 1702) and its live-length ceiling on the pa4-derived chassis is 43, therefore the residual is closed - holds.
+- mechanism: global.c allocno priority floor_log2(n)*n/live*10000 with tbl's 1702 treated as a fixed upper bound.
+- probe: tools/ra_solver/inverse.py global on the Z0 (out3 = pa4 + 0x20) chassis with the FULL target disposition as the goal, depth 2 and depth 3.
+- result: RETRACTED. Minimal solution size 2, four vectors: (tbl refs 4->5 + out2 refs 3->4), (tbl live 47->39 + out2 refs 3->4), (out2 refs 3->4 + out2 live 42->50), (pa4 refs 7->4 + out2 live 42->34). The (1473,1702) window is empty only with tbl pinned at 1702: out2 at 4 refs/live 42 = 1904 works if tbl is lifted to 2127 (5 refs) or 2051 (live 39). Two of the four vectors, and the pa4-refs-down vector, were never considered by any prior session. All four remain unspelled.
+- verdict: KILLED
+
+## [s15] With the block-2 emission order already correct (P1), target's complete callee-saved disposition is far out of reach and needs a multi-atom restructure.
+- mechanism: P1's measured allocno table has i at 2474 outranking stptr at 2439 by 35 priority units, shifting stptr/i/out3 one seat each.
+- probe: Forward-replayed global.c on P1's extracted model over every +/-1..4 live-length and +/-1..2 reference perturbation of all ten contested pseudos (tmp/grind/func_80041188/s15/probe_ra.py).
+- result: FALSE, and this is the session's load-bearing result: P1 reaches ALL-TARGET seats under a SINGLE atom, and only these - stptr live 41->40 (also 39/38/37), stptr refs 5->6 (also 7), or i live 97->99 (the s14 route that costs the +2 emission order). Nothing else in the model reaches it. The honest problem is now one unit of stptr live range or one honest stptr reference - exactly what candidate.c's un-annotated F1 chain-extender fakes.
+- verdict: CONFIRMED

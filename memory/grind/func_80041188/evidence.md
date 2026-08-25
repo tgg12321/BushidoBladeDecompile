@@ -1860,3 +1860,131 @@ objdump-vs-splat slot comparator), `text1a_pre.orig.c`.
 - [s14] MECHANISM NAMED (E-s14-5, read out of tmp/grind/func_80041188/s8/fd.flow, not guessed): with out2's definition inside loop1, cse1 rewrites the source's `out3 = (s32 *)((u8 *)pa4 + 0x20);` into `(insn 164 (set (reg/v:SI 87) (reg/v:SI 86)))` — a plain `out3 = out2` copy — because the between-loops block is then in the SAME cse extended basic block as out2's definition. This explains the unattributed 4th reference s12 measured (4 refs / live 21) AND proves the contrapositive: target's slot-71 `addiu $s3,$s7,0x20` REQUIRES out2's definition in block 0, which is exactly where s11 capped out2's live length at 43.
 
 - [s14] HARNESS WARNING for the next session: tmp/grind/func_80041188/s10/batch.sh must be run through WSL (`bash tools/wsl.sh 'bash tmp/grind/func_80041188/s10/batch.sh <files>'`). Run from the Windows-side Bash tool it cannot spawn cc1, raises a bare FileNotFoundError that the script swallows, and emits a plausible-looking but FABRICATED `|SEATS ...` line with no priority table in front of it. That cost this session one wasted probe.
+
+## s15 (solver, 2026-08-24) — the solver suite runs on this function for the first time
+
+Chassis re-measured at the start of s15: `alt_fakefree_floor3_s14.c` applied to
+`src/text1a_pre.c` → `sandbox func_80041188 --disable all` = **score 3, 132 target /
+132 build insns** (rules_dropped 16, cheat_asm_stripped 2), matching the s14 record.
+`candidate.c` was NOT re-measured this session (s14 measured it at 1); every number
+below comes from a form measured this session.
+
+- **[E-s15-0] INFRASTRUCTURE: the solver modality was structurally blocked on this TU
+  and is now unblocked.** `tools/gcc-2.7.2/cc1` (the instrumented compiler both solvers
+  extract from) **segfaults on `func_80040CB8`** in `src/text1a_pre.c` — exit 139, output
+  truncated after `func_80040B44` — so the stock `extract.py` never reaches
+  `func_80041188` and emits no model for it (`parity=False`, 22 funcs, none of them
+  ours). `tools/gcc-2.7.2/build/cc1` (the build compiler) compiles the TU fine, which is
+  why every earlier session's `-da` dumps worked and only the solvers were blocked.
+  **Workaround (reusable for any text1a_pre function):**
+  `tmp/grind/func_80041188/s15/reduce_i.py` rewrites the preprocessed TU keeping every
+  declaration and stubbing every OTHER function body to `{}`. Measured consequences:
+  instrumented cc1 == build/cc1 on the reduced TU (**parity=True**), and the reduced
+  TU's `func_80041188` asm is **byte-identical to the full-TU build except CODE_LABEL
+  NUMBERS** (`.L166`→`.L15`), i.e. `label_num` only. Shims:
+  `s15/extract_red.py` (sched_solver), `s15/ra_extract_red.py` (ra_solver),
+  `s15/remodel.sh` (one call: cpp → reduce → RA model → honest/target asm).
+
+- **[E-s15-1] The +2 emission-order gap between `alt_fakefree_floor3_s14.c` (floor 3)
+  and `candidate.c` (floor 1) has EXACTLY ONE scheduler vector, and s15 spelled it.**
+  `tools/sched_solver` on the alt chassis, pass 1, target pinned to a `tgt.head.s` built
+  from HEAD source (regfix indexes against HEAD): blocks 0, 1 and 3 are `GOAL == OURS
+  (identity)`; **block 2 (5 insns) differs in 3 slots** — ours `li $20,0x12 / addu
+  $17,108 / addu $18,108`, target `addu $17,108 / addu $18,108 / li $20,0x12`. Searching
+  30 single atoms plus all pairs (`--atoms luid,luid_move --depth 2`) returns
+  **1 vector**: `luid_move 152 -> immediately before 161` = move the `i = 0x12;`
+  statement to sit immediately before `stptr2 = saved + 0x750;`. Spelled and measured:
+  the emission order becomes target's and the score goes **3 → 15**, because that source
+  position is also what sets `reg_live_length(i) = 97` instead of 99. So s14's
+  requirement (A) and the block-2 emission order are not two problems but ONE: both are
+  functions of the same statement position, and no scheduler-side spelling separates
+  them. (Form saved as `memory/grind/func_80041188/alt_P1_honest_ipos3_s15.c` — "P1".)
+
+- **[E-s15-2] Typed triage of the two chassis (`inverse_compose.py classify`, target
+  pinned to `tgt.head.s`).** On P1 / alt (`out3 = out2`) the first divergence is
+  **PRE-RA**: registers-blanked multisets differ, ours `addu $#,$#,$#` vs target
+  `addu $#,$#,32` — that is the slot-71 residual, and it means RA/sched searches on this
+  chassis are fiction. On `Z0_honest_ifirst` (`out3 = (s32 *)((u8 *)pa4 + 0x20)`) the
+  multiset MATCHES and the verdict is **RA**: a pure 3-cycle, ours `$s6→$s7`, `$fp→$s6`,
+  `$s7→$fp` (13 substituted operands over 12 insns). This confirms mechanically what the
+  ledger asserted structurally: requirement (B) is a PRE-RA insn-shape question on the
+  `out3 = out2` chassis and an RA-seat question on the `out3 = pa4+0x20` chassis.
+
+- **[E-s15-3] The Z0 (pa4-derived out3) chassis: the minimal RA solution is 2 atoms, and
+  the four minimal vectors SUPERSEDE s11/s12's "the out2 priority window is empty".**
+  Z0's extracted allocno table: 73/74 a1,a2 16/99 = 6464 · 91 stptr2 6/48 = 2500 ·
+  88 stptr 5/41 = 2439 · 78 i 8/99 = 2424 · 79 tbl 4/47 = 1702 · 77 pa4 7/95 = 1473 ·
+  75 a3 4/99 = 808 · **86 out2 3/42 = 714** · 87 out3 3/47 = 638 · 85 saved 2/47 = 425
+  (no hard reg — target spills it to `0x18($sp)` too). `inverse.py global` with the FULL
+  target disposition as the goal (`{73:17,74:18,88:19,91:16,78:20,79:21,86:22,77:23,
+  75:30,87:19}`), at depth 2 and depth 3, reports **minimal solution size 2, four
+  vectors**:
+  (#1) `tbl refs 4→5` + `out2 refs 3→4`; (#2) `tbl live 47→39` + `out2 refs 3→4`;
+  (#3) `out2 refs 3→4` + `out2 live 42→50`; (#4) `pa4 refs 7→4` + `out2 live 42→34`.
+  s11/s12 concluded the residual was enumeration-complete because out2's priority had to
+  land inside (1473, 1702) and its live-length ceiling on this chassis is 43. That is only
+  true **with tbl held at 1702**: at 4 refs / live 42 out2 is 1904, which overshoots tbl,
+  and vectors #1/#2 fix that by lifting tbl (5 refs → 2127, or live 39 → 2051) instead of
+  by shrinking out2. The window is not empty; it was measured with one variable pinned.
+  Vector #4 needs no 4th out2 reference at all. All four remain unspelled.
+
+- **[E-s15-4] THE LOAD-BEARING RESULT — P1 is ONE atom from an all-target, FAKE-free
+  chassis.** P1's own extracted model: 91 stptr2 6/48 = 2500 · **78 i 8/97 = 2474** ·
+  **88 stptr 5/41 = 2439** · 79 tbl 4/47 = 1702 · 86 out2 4/47 = 1702 · 77 pa4 6/95 =
+  1263 · 75 a3 4/99 = 808 · 87 out3 3/47 = 638. The ONLY defect is `i` outranking `stptr`
+  by 35 priority units, which shifts `stptr`, `i` and `out3` one seat each (measured
+  sandbox 15). Forward-replaying global.c on that model over every ±1..4 live-length and
+  ±1..2 reference perturbation of all ten contested pseudos
+  (`tmp/grind/func_80041188/s15/probe_ra.py`) gives **ALL-TARGET seats under exactly three
+  single-atom families, all on the same two pseudos**:
+  `stptr` live 41→40 (also 39/38/37, pri 2439→2500); `stptr` refs 5→6 (also 7, pri
+  2439→2926); `i` live 97→99 (pri 2474→2424 — the s14 alt route, and the one that costs
+  the +2 emission order per E-s15-1).
+  Nothing else reaches it: `i` refs 8→7 drops i to 1443, below tbl, and permutes
+  {i, tbl, out2}; every perturbation of tbl, out2, pa4, a3, stptr2 misses. **So the whole
+  honest problem is now one unit of `stptr` live range or one honest `stptr` reference** —
+  exactly what candidate.c buys with the F1 chain-extender `stptr = base; stptr += 0xFC;`
+  (5 refs → 7), which s11 proved is an un-annotated FAKE and therefore not committable.
+  Note the arithmetic: with 5 refs the priority is `100000/live`, so live 41 gives 2439
+  and live 40 gives 2500 — there is no value strictly between 2474 and 2500 at 5 refs, and
+  2500 exactly ties `stptr2`; the tie is decided in `stptr`'s favour (lower allocno number
+  is ordered first) and the replay confirms ALL-TARGET, so live 40 is a genuine solution,
+  not a knife-edge failure.
+
+- **[E-s15-5] KILLED: the two-counter chassis (separate loop-2 counter `j`).** Never tried
+  in 14 sessions and a natural reading of target (which re-initialises `$s4` with
+  `addiu $s4,$zero,0x12` between the loops). Spelled on P1 and measured: **sandbox 19**,
+  132/132. It DOES solve requirement (A) outright — i 4/48 = 1666 and j 4/49 = 1632 both
+  fall below `stptr` 2439 — but it costs more than it buys: both counters now sit BELOW
+  tbl (1702) and out2 (1702), so four seats permute. Forward replay over all single-pseudo
+  perturbations of the two-counter model: **zero** reach ALL-TARGET (probe_ra2.py); over
+  all {i, j} pairs (refs +1/+2, live −2/−3/−4): **zero** (probe_ra3.py). The residual is
+  always the same `j`/`out3` inversion (`j` takes $s3, `out3` takes $s4) because `j` and
+  `out3` conflict across loop 2 and the higher-priority one takes the lower-numbered
+  register, while target wants the LOWER-priority `out3` in $s3. The minimum that works is
+  a **3-atom lift** — `i` refs 4→5 AND `j` refs 4→5 AND `out3` refs 3→5 (measured
+  ALL-TARGET in replay; `out3` refs 6+ then steals `stptr2`'s $s0). Three simultaneous
+  byte-free reference lifts is strictly worse than P1's one, so the one-counter chassis is
+  the correct base. Form banked at `rejected/two-counters-needs-3atom-lift-i-j-out3.c`.
+
+- [s15] INFRASTRUCTURE: tools/gcc-2.7.2/cc1 (the instrumented compiler both solvers extract from) SEGFAULTS on func_80040CB8 in src/text1a_pre.c (exit 139, asm truncated after func_80040B44), so the stock extract.py never reaches func_80041188 - the solver modality was structurally unavailable on this TU for 14 sessions. tools/gcc-2.7.2/build/cc1 compiles the TU fine, which is why -da dumps always worked.
+
+- [s15] The workaround is reusable for any text1a_pre function: tmp/grind/func_80041188/s15/reduce_i.py keeps every declaration and stubs every other function body; on the reduced TU instrumented cc1 == build/cc1 (parity=True) and func_80041188's asm is byte-identical to the full-TU build except CODE_LABEL numbers (.L166 -> .L15). Shims: s15/extract_red.py (sched), s15/ra_extract_red.py (RA), s15/remodel.sh (one call).
+
+- [s15] Chassis re-measured at session start: alt_fakefree_floor3_s14.c applied to src = sandbox score 3, 132 target / 132 build insns, rules_dropped 16, cheat_asm_stripped 2. candidate.c was not re-measured (s14: 1); the reported floor 1 is the ledger's.
+
+- [s15] sched_solver on the alt chassis: blocks 0, 1, 3 are GOAL == OURS (identity); block 2 (5 insns) differs in 3 slots (ours li $20,0x12 / addu $17,108 / addu $18,108; target addu $17,108 / addu $18,108 / li $20,0x12). Exactly one vector in 30 single atoms + all pairs reaches the goal.
+
+- [s15] Spelling that vector (P1 = alt with `i = 0x12;` moved to immediately before `stptr2 = ...`) measures sandbox 15 / 132 of 132: correct emission order, broken requirement (A).
+
+- [s15] inverse_compose.py classify types the two chassis: out3 = out2 is PRE-RA (multiset differs, ours addu $#,$#,$# vs target addu $#,$#,32 - the slot-71 residual), out3 = pa4+0x20 is RA (a pure 3-cycle $s6->$s7, $fp->$s6, $s7->$fp over 13 operands / 12 insns).
+
+- [s15] Z0 allocno table (extracted): stptr2 6/48=2500, stptr 5/41=2439, i 8/99=2424, tbl 4/47=1702, pa4 7/95=1473, a3 4/99=808, out2 3/42=714, out3 3/47=638, saved 2/47=425 (spilled, as target spills it to 0x18($sp)).
+
+- [s15] P1 allocno table (extracted): stptr2 6/48=2500, i 8/97=2474, stptr 5/41=2439, tbl 4/47=1702, out2 4/47=1702, pa4 6/95=1263, a3 4/99=808, out3 3/47=638. The single defect is i outranking stptr by 35 units.
+
+- [s15] At 5 references the priority is 100000/live, so stptr live 41 = 2439 and live 40 = 2500: no value lies strictly between i's 2474 and stptr2's 2500, and the 2500 tie is decided in stptr's favour (lower allocno number ordered first) - the forward replay confirms live 40 gives ALL-TARGET, so it is a genuine solution, not a knife-edge.
+
+- [s15] Two-counter chassis measured at sandbox 19 / 132 of 132 and killed by replay: zero single-pseudo and zero {i,j}-pair perturbations reach all-target; the minimum is a 3-atom lift (i +1 ref, j +1 ref, out3 +2 refs), and out3 at 6+ refs then steals stptr2's $s0.
+
+- [s15] src/text1a_pre.c was restored to HEAD at the end of the session; no build-pipeline file was touched.

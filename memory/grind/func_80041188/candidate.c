@@ -151,6 +151,26 @@
  * same cse extended basic block as the between-loops block, cse1 rewrites
  * `out3 = pa4 + 0x20` into `out3 = out2` itself (E-s14-5, read out of fd.flow insn 164),
  * so target's `addiu $s3,$s7,0x20` REQUIRES out2 defined in block 0.
+ *
+ * s15 ADDENDUM (solver, 2026-08-24). This body was NOT re-measured this session
+ * (s14 measured it at 1); the s14 honest alternative was, and still scores 3.
+ * s15 ran tools/sched_solver and tools/ra_solver on this function for the first
+ * time - they were structurally blocked until now because the instrumented cc1
+ * SEGFAULTS on func_80040CB8 in this TU and never reaches func_80041188
+ * (workaround + parity proof: evidence.md E-s15-0). Two results bear on this
+ * body's one remaining defect, the un-annotated F1 chain-extender below:
+ *   (1) The +2 emission-order cost of the FAKE-free s14 alternative has exactly
+ *       ONE scheduler vector - move `i = 0x12;` to sit immediately before
+ *       `stptr2 = ...` - and spelling it also sets reg_live_length(i) = 97, so
+ *       requirement (A) breaks and the score goes 3 -> 15. Emission order and
+ *       i's live length are the same variable (E-s15-1).
+ *   (2) That measured form ("P1", memory/grind/func_80041188/
+ *       alt_P1_honest_ipos3_s15.c) is ONE single-atom perturbation away from
+ *       target's COMPLETE callee-saved disposition, and the only atoms that
+ *       reach it are `stptr` live 41->40 or `stptr` refs 5->6 (E-s15-4) - i.e.
+ *       precisely what the chain-extender below fakes. An honest sixth stptr
+ *       reference, or one insn off stptr's live range, replaces this annotation
+ *       with ordinary C at the same floor. That is s16's frontier item 1.
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
