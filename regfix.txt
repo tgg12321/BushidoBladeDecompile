@@ -154,27 +154,12 @@
 # func_80041988: swap v0<->v1 in dispatch (li and beq)
 
 # rob_calc_2d_position: global data_ptr/t2 swap
-func_80040B44: $10 <-> $11
 # rob_calc_2d_position: first init loop counter/ptr swap
-func_80040B44: $4 <-> $5 @ 5-12
 # rob_calc_2d_position: second init loop - counter $5->$4
-func_80040B44: subst "\$5,\$zero" "$4,$zero" @ 13
-func_80040B44: subst "\$5,\$5,-1" "$4,$4,-1" @ 16
-func_80040B44: subst "\$5," "$4," @ 17
 # rob_calc_2d_position: second init loop - ptr $4->$2
-func_80040B44: subst "\$4,\$14" "$2,$14" @ 14
-func_80040B44: subst "6708\(\$4\)" "6708($2)" @ 15
-func_80040B44: subst "\$4,\$4,-4" "$2,$2,-4" @ 18
 # rob_calc_2d_position: operand order fixes in addu
-func_80040B44: subst "\$5,\$sp,\$2" "$5,$2,$sp" @ 31
-func_80040B44: subst "\$3,\$15,\$3" "$3,$3,$15" @ 41
-func_80040B44: subst "\$2,\$14,\$2" "$2,$2,$14" @ 43
-func_80040B44: subst "\$6,\$15,\$2" "$6,$2,$15" @ 54
-func_80040B44: subst "\$2,\$14,\$2" "$2,$2,$14" @ 81
 # rob_calc_2d_position: insert dead t3-=2 after loop delay slot
-func_80040B44: insert_after "addu $11,$11,-2" @ 87
 # rob_calc_2d_position: reorder constant setup block
-func_80040B44: reorder 24,27,25,26 @ 24-27
 # func_800430E4: GCC hoists scratchpad addresses into regs, target uses inline lui/lo
 # Register renames: arg saves t6->t2, t7->t3; dst t5->t1; loaded val t4->t0; FF610 ptr t3->a1
 # Scratchpad accesses: replace register-relative with pseudo instructions

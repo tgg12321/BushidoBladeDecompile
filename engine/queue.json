@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80040B44",
-      "file": "text1a_pre",
-      "distance": 32,
-      "verdict": "C",
-      "rules": 15,
-      "status": "active",
-      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. 15 regfix. Migration measured it byte-coupled (full-build e29f91cc != oracle on body removal) \u2014 FIRST characterize what shifts (rodata/position?) since that mismatch is free coupling evidence; then grind to COMPLETED-C."
-    },
-    {
       "func": "func_80040D48",
       "file": "text1a_pre",
       "distance": 34,
@@ -2112,14 +2103,14 @@
     }
   ],
   "counts": {
-    "total": 242,
-    "active": 239,
+    "total": 241,
+    "active": 238,
     "by_status": {
-      "active": 239,
+      "active": 238,
       "escalated": 3
     },
     "by_verdict": {
-      "C": 203,
+      "C": 202,
       "ASM-PARTIAL": 36
     }
   }
