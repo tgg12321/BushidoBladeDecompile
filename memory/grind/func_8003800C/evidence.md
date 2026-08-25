@@ -836,3 +836,48 @@ counters merge and `sum=0` leads the preheader, none of them is needed.
   j-first chassis, not a property of the function.
 - [s16] Target's checksum counter and fixup counter are both $a1 and are ONE variable in the
   original source. Splat-style per-loop locals were the agent's invention, not the game's.
+
+---
+
+## S16b (solver) — measured facts
+
+- **ra_solver is exact on this function, on both chassis tested.** `simulate.py` reports
+  `sort order: MATCH` and `dispositions: 17/17` for the sum-first two-counter chassis and for
+  the goto-outer chassis. Priorities quoted below are model output cross-checked against the
+  `.greg` dump by the tool itself.
+- **Sum-first two-counter chassis (score 9) priority table:**
+  `bp(78) n_refs=11 LL=8 pri=41250 -> $a0` · `j(79) n_refs=11 LL=7 pri=47142 -> $v1` ·
+  `sum(77) n_refs=10 LL=11 pri=27272 -> $a1`. Target needs `bp -> $v1, sum -> $a0, j -> $a1`,
+  which (find_reg scans hard regs ASCENDING: $v1=3 < $a0=4 < $a1=5) means the required sort
+  order is `41250 > pri(sum) > pri(j)`.
+- **Exact thresholds** (fine-grained inverse fork, every integer LL delta in [-12,+16], refs
+  +12/-6, depth 2, 311-336 atoms): LL(j) >= **13** (12 is insufficient: 27500 > 27272), or
+  n_refs(j) <= **7**, or LL(sum) <= 6 AND LL(bp) <= 6. 15 one-atom vectors, all on pseudo 79.
+- **Loop-depth weighting is uniform.** Respelling the outer record loop with `goto` (no
+  NOTE_INSN_LOOP_BEG for that level) moves the checksum loop to loop_depth 1 and reweights
+  every depth-2 reference 3 -> 2: j 11 -> 7, sum 10 -> 6, bp 11 -> 8; priorities become
+  j 20000 > bp 17500 > sum 10909. Sort order preserved, score unchanged at 9. The solver's
+  `refs_down(79) 11->7` vector is therefore RETRACTED as a C lever here.
+- **`pref_add(79,$a1)` is foreclosed by the function shape:** the target contains **0** `jal`
+  or `jalr`, and the function takes exactly one argument ($a0). No insn anywhere copies a
+  pseudo to or from $a1, so global.c can never record that preference.
+- **Uniqueness result.** Excluding all three pseudo-79 atom families, the depth-2 space still
+  contains 136 vectors but all of them are `live_shrink(77) LL 11 -> <=6` paired with
+  `live_shrink(78) LL 8 -> <=6`. LL(sum)=11 decomposes as 3 preheader + 6 loop + 2 compare
+  insns, both endpoints pinned in s15; <=6 would require sum not to be live across its own
+  accumulation loop. So `live_extend(79) >= +6` is the **unique** modelled route.
+- **`sum += p[j]` over a loop-invariant base scores 4 with no FAKE construct at all** — the
+  best FAKE-free score on this function (plain sum-first = 9, plain j-first = 4, ledger floor 2
+  needs two do-while(0) brackets). loop.c strength-reduces `p[j]` to a walking giv and then
+  ELIMINATES the biv `j`; the 4 residual insns are exactly the counter that the target keeps.
+  With j gone as an allocno the seats are target-exact for free: sum(77) $a0 (pri 30000),
+  walking giv(124) $v1 (91428), end-pointer giv(125) $a1 (16666). This is the cleanest
+  statement of the lock: the entire Region-A residual is the cost of keeping `j` an allocno,
+  and the target bytes require `j` to be one.
+- **`offset` vs `i * 0x24` is a free spelling choice.** Deleting the `offset` local and writing
+  `bp = base + i * 0x24;` produces identical bytes, identical seats and identical priorities
+  (score 9). loop.c manufactures the same giv either way.
+- **Process fact:** src/code6cac_c_mid.c was left at `INCLUDE_ASM("asm/funcs", func_8003800C);`
+  at the end of this session; `memory/grind/func_8003800C/candidate.c` still holds the
+  previous-s16 matched-but-banned body, unchanged, because it is the subject of the ruling
+  request and no better non-banned form exists.

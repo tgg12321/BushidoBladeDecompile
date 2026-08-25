@@ -586,3 +586,121 @@ pos6). The whole game is: give sum its 11th weighted ref WITHOUT bracketing sum=
 3. **Two per-loop locals are an agent habit, not evidence.** When two loops in a function use
    the SAME hard register in the target, test the single-variable spelling — it is both the
    C89-idiomatic form and a live-range lever.
+
+---
+
+# SESSION 16b (solver modality — re-spawn after the 2026-08-25 17:06 layer-1 FAIL)
+
+Context: the previous s16 reached score 0 + oracle SHA1 with a single shared counter `j`
+(checksum loop + fixup loop). Layer-1 FAILed it and the driver BANNED that construct, plus
+its provenance framing. src was reverted to `INCLUDE_ASM`. This session executed the owner's
+2026-08-24 directive: run the solver suite on the residual and report typed verdicts.
+Everything below was measured THIS session on the two-counter sum-first chassis (score 9),
+with `ra_solver` re-validated on it (`simulate.py`: sort order MATCH, dispositions 17/17).
+
+## [s16b] The exact RA arithmetic of the Region-A lock, restated as a threshold (not a single vector).
+- mechanism: global.c `allocno_compare` pri = floor_log2(n_refs)*n_refs/live_length*10000*size,
+  with reg_n_refs flow-weighted by (1 + loop_depth). find_reg scans hard regs ASCENDING, so on
+  this function $v1(3) is handed out before $a0(4) before $a1(5); the target disposition
+  therefore requires the SORT ORDER bp(78) > sum(77) > j(79), i.e. 41250 > pri(sum) > pri(j).
+- probe: `extract.py` + `simulate.py` on the sum-first two-counter chassis, then a FORK of
+  `inverse.py` with the coarse live-length atom grid (-2,-4,-8 / +2,+4,+8) replaced by every
+  integer delta in [-12, +16] (`tmp/grind/func_8003800C/s16b/inverse_fine.py`).
+- result: baseline sum(77) n_refs=10 LL=11 pri=27272; bp(78) n_refs=11 LL=8 pri=41250;
+  j(79) n_refs=11 LL=7 pri=47142. The fine grid pins the EXACT thresholds that the coarse grid
+  only bracketed: **LL(j) must reach >= 13** (7->13 is the smallest sufficient extension; 7->12
+  gives 27500 > 27272 and FAILS), or **n_refs(j) must fall to <= 7** (f(n)*n < 19.09), or
+  LL(sum) <= 6 together with LL(bp) <= 6. 15 one-atom vectors exist, all on pseudo 79.
+- verdict: CONFIRMED (threshold arithmetic; supersedes the coarse "7->15" reading of s16).
+
+## [s16b] The refs_down(79) 11->7 vector is reachable in honest C by removing the outer loop notes (goto-spelled outer loop), and reaches the target disposition.
+- mechanism: reg_n_refs is flow-weighted by (1 + loop_depth). A `goto`-spelled outer record
+  loop emits no NOTE_INSN_LOOP_BEG/END for that level, so the checksum loop drops from
+  loop_depth 2 to 1 and the three depth-2 references of j reweight 3 -> 2 each: 11 -> 7 exactly.
+- probe: `rejected/s16b-gotoouter-loopdepth-uniform-scale.c` — outer loop respelled with
+  `rec_loop:` / `goto rec_loop;`, inner loop and preheader order untouched. sandbox + extract +
+  simulate.
+- result: the refs prediction is EXACT (j 11 -> 7) but the lever is UNIFORM, not selective:
+  sum 10 -> 6 and bp 11 -> 8 in the same step, so pri becomes j 20000 > bp 17500 > sum 10909 —
+  the sort order is preserved (bp in fact falls BELOW j, which is worse) and the score stays 9.
+- verdict: KILLED — and this **RETRACTS solver vector refs_down(79)** as a C lever for this
+  function. The single-atom assumption behind it is violated by every C mechanism that reaches
+  it. Loop-depth weighting cannot reorder allocnos that all live at the same depth.
+  (Generalisable to other functions: treat a `refs_down` vector whose only C route is depth
+  reduction as invalid unless the target pseudo's references sit at a DIFFERENT loop depth
+  from its competitors.)
+
+## [s16b] The pref_add(79, $a1) vector has no C route in this function.
+- mechanism: global.c records a copy preference only from an insn copying to or from a HARD
+  register — argument setup, a call return, or the return-value copy.
+- probe: call census of the target (`grep -c "jal|jalr" asm/funcs/func_8003800C.s`) plus the
+  argument census of the prototype.
+- result: **0 calls** in the 79-insn target and exactly ONE incoming argument ($a0). $a1 is
+  never a copy source or destination against a pseudo anywhere in the function, so no
+  preference for $a1 can be recorded for any pseudo, let alone for j.
+- verdict: KILLED (FORECLOSED — the mechanism is absent, not merely expensive).
+
+## [s16b] With every pseudo-79 atom excluded, some other >=2-atom vector reaches the target disposition.
+- mechanism: exhaustive depth-2 search over the remaining 311-atom space (refs +12/-6, LL
+  integer deltas [-12,+16], calls_crossed, conflict_add, pref_add) with
+  `RA_EXCLUDE="live_extend pseudo 79;pref_add pseudo 79;refs_down pseudo 79"`.
+- probe: `tmp/grind/func_8003800C/s16b/inverse_fine_no_79atoms.txt`.
+- result: minimal solution size 2, 136 vectors — and every ranked vector is the SAME shape:
+  `live_shrink 77 (LL 11 -> <=6)` + `live_shrink 78 (LL 8 -> <=6)`. LL(sum)=11 is 3 preheader
+  insns + 6 loop insns + 2 post-loop compare insns; s15 already pinned both endpoints (birth =
+  the first preheader init, which the target byte order REQUIRES; death = the mandatory
+  post-loop `sum == chk` compare). LL(sum) <= 6 would mean sum is not live across its own
+  accumulation loop: physically impossible, not merely unspelled.
+- verdict: KILLED (FORECLOSED). **Therefore `live_extend(79) >= +6` is the UNIQUE modelled
+  route to the target disposition**, and the only C spellings of it are a post-checksum-loop
+  use of the counter — i.e. the banned counter-merge, or the banned `offset += j` (s3).
+
+## [s16b] The inner accumulate is an INDEX over a loop-invariant base in the original source (`sum += p[j]`), with the target walking pointer being a strength-reduced giv.
+- mechanism: loop.c strength reduction turns `p[j]` (p invariant for the inner loop) into a
+  walking giv; the s10 rejection `base[offset + j]` failed only because it has TWO varying
+  indices and cannot be reduced. This re-tests the correct spelling, on the sum-first chassis.
+- probe: `rejected/s16b-index-invariant-base-biv-eliminated.c`; sandbox + extract + simulate +
+  per-insn objdump diff against `asm/funcs/func_8003800C.s`.
+- result: **score 4** (79/79) — the best score ever recorded on this function from a body
+  containing NO FAKE construct of any kind (the ledger floor 2 carries two do-while(0)
+  brackets; the plain j-first chassis is 4; the plain sum-first chassis is 9). loop.c
+  strength-reduces AND THEN **eliminates the biv j outright** (its only surviving use is the
+  loop compare, which becomes a giv-vs-giv pointer compare), so the 4 residual insns ARE the
+  counter: ours `addiu $a1,$v1,0x24` / `sltu $v0,$v1,$a1` / `addiu $v1,$v1,1` displaced out of
+  the delay slot / `nop`, versus target `addu $a1,$zero,$zero` / `addiu $a1,$a1,1` /
+  `sltiu $v0,$a1,0x24` with `addiu $v1,$v1,1` in the delay slot.
+  **The positive half is the important one:** once j is not an allocno the seats land EXACTLY
+  on target with zero coercion — sum(77) $a0 at pri 30000, walking giv(124) $v1 at 91428,
+  end-pointer giv(125) $a1. The whole Region-A residual is the price of keeping j alive, and
+  the target bytes require j alive.
+- verdict: KILLED as a match; CONFIRMED as the sharpest statement of the lock.
+
+## [s16b] `offset` is a source variable rather than a strength-reduced giv of `i`.
+- mechanism: the target computes the record base with `addiu $a3,$a3,0x24`, which is equally
+  consistent with a source-level `offset += 0x24` and with a giv of `i * 0x24`.
+- probe: `rejected/s16b-no-offset-giv-equivalent.c` — `offset` deleted, preheader written
+  `bp = base + i * 0x24;`.
+- result: score 9, 79 insns, identical seats and identical priorities. loop.c produces the same
+  giv either way.
+- verdict: KILLED as a lever (the two spellings are free variants; neither moves an RA input).
+
+## FRONTIER (s16b)
+1. **PRIMARY — a classification ruling on the counter-merge.** The solver now proves
+   `live_extend(79)` is the UNIQUE modelled route (pref_add foreclosed by 0 calls / 1 arg;
+   refs_down retracted by the goto-outer measurement; the only non-79 alternative needs a
+   physically impossible LL(sum) <= 6). The construct that spells it reached score 0 AND the
+   oracle SHA1, is the FIRST entry of the frozen SOTN-accepted list ("variable reuse for
+   codegen control"), and carries a cited SOTN-master precedent (`// fake reuse of i?`). It is
+   currently BANNED for this function by the layer-1 FAIL. A grind session cannot re-submit it;
+   the question is a classification question, filed as this session's `ruling-request`.
+2. **Secondary — keep j alive as a biv on the `p[j]` chassis without merging counters.**
+   Probe B shows the target seats fall out for free once the competitor is gone; the mirror
+   question is whether any honest C keeps `sum += p[j]` (giv walker) while blocking the biv
+   elimination of j in loop.c, which would give the target byte shape with the giv seating.
+   loop.c eliminates a biv only when ALL of its non-increment uses are replaceable; a second
+   real, non-givifiable use of j is what would block it — and every such use found so far is
+   the banned merge. Next probe: read the `.loop` and `.combine` dumps of probe B (via
+   `pwsh tools/grinder/dump.ps1 func_8003800C`) to see exactly what `maybe_eliminate_biv`
+   accepted, then test whether a width or signedness variation on `j` (`u8`/`s16`/`s32`
+   counter) defeats the giv-vs-biv compare replacement byte-neutrally.
+3. **Tertiary — none.** The sanctioned-axis space on this chassis is measured empty.
