@@ -11468,3 +11468,88 @@ The counter-merge ('j' now shared by the checksum loop and the unrelated fixup l
 ## 2026-08-25 17:30 — func_8003800C — ruling: CLASSIFICATION QUESTION (sanctioned SOTN family vs cheat), raised under the 'if  — **PASS**
 
 RULING: SANCTIONED FAMILY. One function-scope `s32 j` counting two sequential loops sits verbatim inside frozen entry 'Variable reuse for codegen control' (.claude/rules/no-new-park-categories.md:169-172 — 'reusing one C variable for two unrelated values to influence loop-invariant detection or RA'); prerequisites hold (named mechanism global.c allocno_compare; exhaustion in hypotheses.md s1-s16b + 25 rejected/ files; /* FAKE */ on the decl; layer-1 done). DECISIVE FACT I verified independently: asm/funcs/func_8003800C.s seats BOTH counters in $a1 (line 12/14 `addiu $a1,$a1,1`/`sltiu $v0,$a1,0x24`; line 81/82 `addiu $a1,$a1,1`/`slti $v0,$a1,0x16`) — the target's own bytes are affirmative evidence the original source used one counter, so this passes test #2 (human-writable from spec) on evidence, not assertion. It adds nothing: no wrapper, dead store, alias, cast, volatile or pin; it DELETES a declaration. All three 2026-08-25 17:06 FAIL grounds fail on inspection: (a) 'respelling' — the banned precedents (rejected/offset-plus-j-flips-regionA-but-cheat.c, the two do-while(0) brackets) ADD fake elements; sharing a GCC input (live_length) is not a construct identity, or every RA lever would be pre-banned; (b) provenance — not a criterion in the 6-test checklist, the frozen list or the completion standard, and the owner's own 2026-08-24 directive mandated the solver modality here; (c) 'stretched' — the frozen entry's text covers it directly (the sotn-construct-index.md:51 hit is untagged-PSX corroboration, not the authority; I could not open the pinned checkout to read cutscene.c:172's surroundings, and the ruling does not rest on it). Scope note: this sanctions the C89 idiomatic reuse of a LOOP COUNTER whose every reference is real and consumed — not a general license to merge arbitrary unrelated locals to tune live ranges. Not ruled here: bytes. I did not re-measure (src is INCLUDE_ASM); the resubmission takes the normal scope/layer-1/SHA1 gates and a FINAL CALL. Bans #1 and #2 cleared (needle 'counter'); ban #3 (self-declared supersession) stands and is moot — this ruling, not the session, is the authority.
+
+## 2026-08-25 — func_800307D0 (cpu_check_tubazeri_2) — **OWNER RULING: (a)** (decision packet of 2026-08-25 16:01)
+
+**Ruling (owner, Trenton, 2026-08-25):** option **(a)** — the construct is ordinary C.
+The head read `*(s16 *)(a0 + s1 * 2 + 0x332)` (and the `(u8 *)`-cast variant) is a
+structural choice between two ordinary, semantically identical C spellings of the same
+in-TU-idiomatic array read, and is judged on the construct's own merits, not on how the
+author found it.
+
+**Basis (owner-adopted):** three already-COMPLETED-C functions in the same TU ship this
+exact idiom on the same 0x332 array (src/code6cac_b.c:1123, :1226, :1239;
+src/code6cac.c:2002 — verified in the 15:45 PASS ruling) — direct evidence the original
+programmer wrote this shape in this file. The body is byte-proven twice (sandbox 0,
+76/76, zero rules, zero constructs; full-build SHA1 == oracle). The
+GCC-internals-justification test exists to kill constructs with no semantic purpose; it
+does not poison an ordinary idiomatic spelling because the worker read expr.c to choose
+between two honest forms. Same principle as the func_800460E4 YES (2026-08-25): judge
+the construct, not the provenance.
+
+**Scope:**
+1. VACATED as FAIL bases: the two head-read spelling bans (state.json
+   banned_constructs — the `(u8 *)a0 + s1 * 2 + 0x332` EXPAND_SUM entry and the
+   `(a0 + s1 * 2 + 0x332)` address-context entry), the sibling-precedent-rationale ban,
+   and the reliance-on-15:45 ban. The 2026-07-22 ruling (decisions.md:1311) covered the
+   integer-cast form `v0 + (s32)a0` and is NOT disturbed — that form stays refused.
+2. KEPT in force: the method bans — the 7-row enumeration-as-justification entry and
+   the unilateral escalation-mootness entry. Deriving a spelling via compiler-internals
+   research is fine; JUSTIFYING it purely by that research in the self-vet, or
+   self-resolving a standing escalation, is not.
+3. Next session re-applies the banked body (memory/grind/func_800307D0/candidate.c),
+   re-proves sandbox 0 + oracle, and takes the normal layer-1 + Judge path. The
+   reviewers judge the construct against THIS ruling; the vacated bans are not a valid
+   FAIL basis. Strip the grind-narration header per jc[2] before commit.
+
+## 2026-08-25 — func_800645B0 — **OWNER RULING: YES** (decision packet of 2026-08-25 16:19)
+
+**Ruling (owner, Trenton, 2026-08-25):** YES — the solver toolkits' target-stream
+derivation is a repairable TOOL defect, and the operator is authorized to repair it:
+(1) mkasm_honest.sh / mkasm.sh must never leave a stale `<stem>.tgt.s` behind a failed
+target half; (2) `inverse_compose.py classify` must refuse INCLUDE_ASM-routed functions
+on the text path (routing to the object-level classifier `goal_from_tgt.py`, which is
+already correct for them: `build/src/<stem>.o` carries the target bytes) and must refuse
+a `.tgt.s` staler than its `.hon.s`; (3) the sched-goal path gains an object-level
+target derivation for INCLUDE_ASM-routed functions, validated against this function's
+known ground truth (78/78, single operand-order diff at index 20). Fidelity/routing
+only — no standard changes. func_800645B0 returns to active; once the repair lands, its
+next session runs the solver modality per the 2026-08-24 directive, which this repair
+makes executable.
+
+## 2026-08-25 — func_8002EA24 — **OWNER RULING: no decidable question** (auto-filed packet of 2026-08-25 16:39)
+
+**Ruling (owner, Trenton, 2026-08-25):** the backstop-filed packet states no decidable
+question (both gates fail, no family proposed) — per the packet template's own rule,
+"this is hard" is not a packet. No grant, no refusal. The item returns to ACTIVE with a
+modality directive: run the SOLVER modality first once the func_800645B0 toolkit repair
+lands — this function's profile (15 sessions flat at floor 2 across 7 modalities,
+RA/scheduler-tiebreak residual) is exactly the shape the solver suite cracked on
+func_8003800C in one session, and solver has never validly run on any
+INCLUDE_ASM-routed function.
+
+## 2026-08-25 — func_8003800C (damage_DebugDisp) — **OWNER RULING: YES** (proactive, on the 17:06 layer-1 FAIL)
+
+**Ruling (owner, Trenton, 2026-08-25):** YES — the single-counter reuse (`s32 j` as the
+counter for both the checksum loop and the fixup loop, FAKE-annotated at the
+declaration) **qualifies under the frozen "Variable reuse for codegen control" family**
+(.claude/rules/no-new-park-categories.md, SOTN precedent: "fake reuse of i" /
+`idxSub = idxSub`, shipped across 6 SOTN files) and may be submitted as a candidate.
+
+**Basis (owner-adopted):** the body is byte-proven (sandbox 0, 79/79, zero rules;
+full-build SHA1 == oracle) and strictly REDUCES the cheat surface (drops both
+`do { x = 0; } while (0);` brackets and the `for(;;)`+`continue` fence). The ra_solver
+target-disposition evidence (both counters seated in `$a1` in the target; the
+signedness split `j < 0x24U` / `j < 0x16` falls out for free) supports that the
+original used one variable — reusing a loop counter is ordinary 1990s C. The 17:06
+layer-1 FAIL's objection is provenance (found via directed inverse-solver search) and
+precedent-stretch; per this ruling and the func_800307D0 (a) ruling above, provenance
+does not disqualify a construct that fits a frozen family on its own merits.
+
+**Scope:** narrow — this sanctions the single fresh `s32 j` counter reuse in this
+function's matched body only, as an APPLICATION of the frozen family; the ledger's
+method note about self-declaring the 2026-07-22 escalation superseded stays (the owner,
+not the session, supersedes escalations — done herewith: the 2026-07-22 option-(b)
+refusal for func_8003800C is superseded by the honest match). Layer-1 + Judge still
+gate the commit; the 17:06 FAIL and ban[0]/ban[1] are not a valid FAIL basis for this
+exact construct.
