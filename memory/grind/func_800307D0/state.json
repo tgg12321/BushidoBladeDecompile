@@ -1,8 +1,8 @@
 {
  "func": "cpu_check_tubazeri_2",
  "file": "code6cac_b",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -51,13 +51,24 @@
    "floor": 1,
    "modality": "forensics",
    "headline": "s7 forensics: type-matrix RTL census proves idx25 base-first is UNIVERSAL across all 8 pointer spellings (type/width/sign/written-order/subscript) and integer-domain preserves written order, so target"
+  },
+  {
+   "session": 8,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Structural axis re-closed by exhaustive partition (all three GCC `+` expansion contexts measured); live chassis re-confirmed at honest ban-free floor 1 with a single-instruction idx25 residual; the re"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "cpu_check_tubazeri_2's disposition requires an owner faithfulness-vs-coercion ruling; all agent-reachable axes are exhausted and the sole distance-0 form is not autonomously approvable.",
-   "mechanism": "idx25 index-first is a front-end tree-build property provably unreachable from any pointer spelling (s7 type-matrix); only integer-domain-index-first source (v0+(s32)a0) reaches it, which the s2 reviewer FAILED and the 02:10 Judge FAILED per AND-gate #2 (no community precedent). No cheat is retained -- the function is cheat-free at honest floor-1.",
-   "next_probe": "OWNER action: rule on the filed 2026-07-22 OWNER-ESCALATION -- (a) sanction the int-domain address-arithmetic reconstruction as an SOTN-family per-use exception (then it closes via the normal candidate path, bytes re-proven by the driver), or (b) authorize INCOMPLETE-owner-accepted at floor-1. Alternatively, owner/community SOTN-master/VS/ESA precedent research for casting a pointer param to int to reproduce a proven integer-domain operand order. No further pure-C grinding is warranted."
+   "hypothesis": "func_800307D0's disposition is a decidable owner routing question, not a grindable residual: either the byte-proven distance-0 body is ordinary C (bans #0/#3/#5/#6 vacated, function closes COMPLETED-C next session) or it is refused (function held INCOMPLETE at honest floor 1 and removed from grinding rotation).",
+   "mechanism": "The distance-0 body is proven twice on main (sandbox 0 + full-build SHA1 == oracle) but foreclosed by a ban union whose key element (the 15:52 T3 finding against the evidence trail) is unpassable for any future session, because the ledger permanently records the derivation. Below floor 1 the technical space is measured empty across structural (3 sessions, exhaustive 3-context partition), permuter (3 basins, ~144k iters) and forensics (2 sessions, exact-source-line RTL proofs).",
+   "next_probe": "OWNER action on the 2026-08-25 decision packet at the end of docs/grind/decisions.md. (a) construct is ordinary C -> vacate bans #0/#3/#5/#6 (keeping #1/#2/#4), a fresh session re-applies candidate.c, re-proves sandbox 0 + SHA1 == oracle, closes through the normal candidate path. (b) construct is refused -> hold INCOMPLETE at honest floor 1 with rejected/floor1-named-pointer-head-score1.c as the record body, and stop dispatching grinding modalities at this function."
+  },
+  {
+   "hypothesis": "If answer (b) is taken, the floor-1 body is the correct permanent record and no further pure-C axis is worth a session.",
+   "mechanism": "All three GCC `+` expansion contexts are measured; the sole index-first-reaching cells are (i) the banned address-context head reads and (ii) the owner-refused integer cast. There is no fourth context, so the sub-floor-1 space is provably empty rather than merely unsearched.",
+   "next_probe": "None warranted in pure C. If the owner wants a further avenue at all, it is community-precedent research (SOTN master / Vagrant Story / ESA) for an address-context dereference-vs-named-pointer spelling choice, which would settle AND-gate #2 for this residual one way or the other."
   }
  ],
  "judge_constraints": [

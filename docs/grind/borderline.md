@@ -236,3 +236,8 @@ consequence of a YES: func_80019568 completes as COMPLETED-C and its 5 regfix ru
 (owner's rules-to-zero campaign). Consequence of a NO: the function's honest floor is 8 and
 it returns to the ladder with every spelling at this divergence measured and banked.
 disposition taken: session emitted `ruling-request`; no code committed.
+
+## 2026-08-25 — func_800307D0 — policy-question
+category: policy-question
+evidence: session-filed escalation: docs/grind/decisions.md — '## 2026-08-25 — func_800307D0 (cpu_check_tubazeri_2, src/code6cac_b.c) — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**' (final entry in the file, filed by this session); prior related entries: decisions.md:1311 (2026-07-22 owner ruling, option b, integer-cast form), :11147/:11151/:11155 (2026-08-25 FAIL/PASS/FAIL adjudications of the current body).
+disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.

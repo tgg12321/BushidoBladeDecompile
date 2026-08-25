@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800307D0",
-      "file": "code6cac_b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: ONE bounded re-test under the 2026-08-20 or-tree carve-out (this refusal predates it); check expand_binop canonicalization reachability first"
-    },
-    {
       "func": "func_800645B0",
       "file": "text1b",
       "distance": 1,
@@ -2056,17 +2047,27 @@
       "status": "escalated",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, operator-filed 2026-08-11): 2-byte reorg branch-target residual unreachable from C under frozen pipeline; both endgame gates FAILED (scan LOW 0/8, no SOTN precedent); 25 rules retained to hold byte-match; see docs/grind/decisions.md 2026-08-11 entry [2026-08-24: prose predates the 2026-08-19 migration \u2014 the 25 rules are retired and main is INCLUDE_ASM (cheat-free); distance 0 is a MASKED zero (real residual: scorer-invisible 2-byte ASPSX reorg branch-target gap)]",
       "escalation": "DECLINED 2026-08-24 (decisions.md escalation-packet rulings, packet 3): maspsx ASPSX-parity branch-target fill refused \u2014 self-healing transform, full fill-algorithm reimplementation required, ~120 already-correct census sites at risk. Residual (2-byte reorg branch-target gap) provably unreachable under the frozen pipeline. Re-decision triggers: census candidates regrow, or ASPSX fill semantics become documented."
+    },
+    {
+      "func": "func_800307D0",
+      "file": "code6cac_b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: ONE bounded re-test under the 2026-08-20 or-tree carve-out (this refusal predates it); check expand_binop canonicalization reachability first",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md \u2014 '## 2026-08-25 \u2014 func_800307D0 (cpu_check_tubazeri_2, src/code6cac_b.c) \u2014 **OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET**' (final entry in the file, filed by this session); prior related entries: decisions.md:1311 (2026-07-22 owner ruling, option b, integer-cast form), :11147/:11151/:11155 (2026-08-25 FAIL/PASS/FAIL adjudications of the current body)."
     }
   ],
   "counts": {
     "total": 236,
-    "active": 234,
+    "active": 233,
     "by_status": {
-      "active": 234,
-      "escalated": 2
+      "active": 233,
+      "escalated": 3
     },
     "by_verdict": {
-      "C": 198,
+      "C": 197,
       "ASM-PARTIAL": 36
     }
   }

@@ -288,3 +288,91 @@ don't move it.
 - [s10] self_vet.md rewritten for this diff: six tests answered per construct,
   SANCTIONED-FAMILY-CLAIMS none (ordinary C, per the initDrawMode precedent
   docs/grind/decisions.md:1156 and the 2026-08-25 15:45 ruling), ANNOTATION-CONFORMANCE n/a.
+
+
+== s11 (driver-labelled session 8, modality `structural`), 2026-08-25 ==
+
+- [s11] LIVE CHASSIS RE-MEASURED (the dispatch brief reported "measurement unavailable").
+  Applied the ban-free s2-s7 body (`rejected/floor1-named-pointer-head-score1.c`, named
+  byte offset `v0 = s1 << 1` + named base pointer `s2`) to src/code6cac_b.c:1159 and ran
+  `sandbox func_800307D0 --disable all`: **score 1**, target_insns 76 == build_insns 76,
+  scorable, rules_dropped 0. src was reverted to `INCLUDE_ASM("asm/funcs", func_800307D0);`
+  immediately afterwards; HEAD is unchanged. So the honest, submittable (ban-free) floor on
+  today's chassis is **1**, unchanged from s2 onward.
+
+- [s11] The score-1 residual is exactly ONE instruction and it is exactly idx25, verified
+  this session at instruction level rather than inherited from the ledger
+  (`tmp/grind/func_800307D0/s8/live_residual_2026-08-25.md`):
+    build   `addu s2, s0, v0`   (02029021, base-first)
+    target  `addu $s2, $v0, $s0` (21905000, index-first, asm/funcs/func_800307D0.s:30)
+  Every other insn in the 76/76 window matches, including the duplicated `sll v0, s1, 1`
+  emitted on both join paths (.L80030830 / .L80030834) and the following `lh s3, 0x332(s2)`.
+  No second, latent residual is hiding behind the operand-order one.
+
+- [s11] STRUCTURAL AXIS RE-CLOSED BY PARTITION, NOT BY A NEW GUESS. The structural search
+  space for this residual is partitioned exhaustively by two already-banked measured
+  matrices plus the integer-domain result, and the partition has no unmeasured cell:
+    * ASSIGNMENT context (the `+` expanded via `expr.c:5238 goto binop`): s7's 8-spelling
+      type matrix (pointee type u8*/s16*/s32* x index int/unsigned/long x index-written-left
+      x `&base[idx]` x the exact tubazeri shape) — ALL base-first, because
+      `c-typeck.c:1986/1988` force the pointer to `ptrop` and `pointer_int_sum:2696` builds
+      `PLUS_EXPR(ptrop, intop)` unconditionally.
+    * ADDRESS / EXPAND_SUM context (`expr.c:5237-5239` plus the `both_summands` swap at
+      `expr.c:5288-5290`): s8's 7-row head matrix — the two rows that reach index-first are
+      the inline scaled-index dereference and the array-subscript read; both are the shape
+      the driver has since banned (banned_constructs #0/#3), and every other row is
+      base-first.
+    * INTEGER domain (`v0 + (s32)a0`): reaches index-first; cheat-reviewer FAILED it
+      2026-07-22 and the owner ruled option (b) REFUSED the same day (decisions.md:1311).
+  GCC 2.7.2 has no fourth expansion context for a two-operand `+`, so any further structural
+  spelling necessarily lands in one of these three cells, all of which are measured.
+  `optabs.c:399-421 expand_binop` was re-confirmed NEGATIVE by s8 and independently by s9
+  (its commutative swap cannot fire on two pseudo REGs), so the 2026-08-20 or-tree carve-out
+  named in the owner directive is INERT — the directive has now been executed three times
+  (s8, s9, s11) with an identical result, and this session did not spend measurements
+  re-running it a fourth time.
+
+- [s11] THE RESIDUAL IS NO LONGER TECHNICAL — IT IS A PROCEDURAL DEADLOCK, and that is the
+  finding this session banks. State of the record as of 2026-08-25:
+    * A distance-0, zero-rule, zero-cheat-construct pure-C body EXISTS and has been proven
+      twice on main by two independent sessions (s8 and s10): sandbox 0 (76/76,
+      rules_dropped 0) AND full-build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+    * That body has been adjudicated three times with contradictory results:
+      layer-1 FAIL (decisions.md:11147, 15:28), ruling PASS (decisions.md:11151, 15:45 —
+      "the ban is over-broad as applied ... it needs no exception"), layer-1 FAIL
+      (decisions.md:11155, 15:52).
+    * The two FAILs do not rest on the construct's semantics. The 15:52 FAIL applies the
+      T3 GCC-internals-justification test to the WORKER'S EVIDENCE TRAIL ("expr.c EXPAND_SUM
+      / MULT-rtx / optabs.c reachability was the documented reason this exact spelling was
+      selected"), i.e. it is unpassable for ANY future session, because the ledger it is read
+      against permanently records how the spelling was found. A construct whose
+      acceptability depends on a derivation history the pipeline is required to preserve
+      cannot be cleared by any later session, however it is spelled.
+    * The driver has since banned the construct (#0, #3), the sibling-precedent rationale
+      (#5) and reliance on the PASS ruling (#6). The union of those bans forecloses every
+      known route to the only known distance-0 form.
+  Consequence: further structural (or permuter, or forensic) sessions cannot change the
+  outcome. They can only re-derive floor 1 and re-propose a banned construct, which the
+  driver discards. This session therefore returns `owner-gated` with a decision packet
+  (docs/grind/decisions.md, 2026-08-25) rather than spending a fourth modality on a closed
+  space.
+
+- [s11] NOTHING WAS SUBMITTED AND NO BAN WAS INVOKED. This session did not apply, re-spell,
+  re-derive or cite in support any of banned_constructs #0-#6; the only body applied to src
+  was the ban-free floor-1 form, and it was reverted. `candidate.c` is left exactly as s10
+  banked it (the distance-0 body), with its header amended to record that it is currently
+  UNSUBMITTABLE under the live ban list.
+
+- [s8] LIVE CHASSIS (2026-08-25, this session): the ban-free s2-s7 body scores exactly 1 - {"score":1,"target_insns":76,"build_insns":76,"scorable":true,"rules_dropped":0}. The dispatch brief reported 'measurement unavailable'; the honest, submittable floor is 1, unchanged since s2. src/code6cac_b.c:1159 was reverted to INCLUDE_ASM("asm/funcs", func_800307D0); no bytes are on main and the working tree carries no src change.
+
+- [s8] The score-1 residual is one instruction, verified at instruction level this session rather than inherited: build `addu s2,s0,v0` (02029021) vs target `addu $s2,$v0,$s0` (21905000). All 76 other instructions match. Artifact: tmp/grind/func_800307D0/s8/live_residual_2026-08-25.md.
+
+- [s8] STRUCTURAL PARTITION IS COMPLETE. GCC 2.7.2 has exactly three expansion contexts for a two-operand `+` and all three are measured: assignment context (s7's 8-spelling matrix, all base-first, forced by c-typeck.c:1986/1988 + pointer_int_sum:2696); address/EXPAND_SUM context (s8's 7-row matrix; the only index-first rows are banned_constructs #0/#3); integer domain (index-first, cheat-reviewer FAILED and owner-REFUSED 2026-07-22 at decisions.md:1311). No unmeasured cell remains, so no further structural spelling can exist that is both ban-free and distance-0.
+
+- [s8] OWNER DIRECTIVE EXECUTED AND INERT (third independent execution). 'ONE bounded re-test under the 2026-08-20 or-tree carve-out; check expand_binop canonicalization reachability first': optabs.c:399-421's commutative swap requires (op1 REG && op0 not REG) || target == op1 || op0 CONST_INT; the idx25 operands are two pseudo REGs, so it never fires. The actor is expr.c:5288-5290 in MEM-address context, which is an expansion-context question and not a written-operand-order question, so the carve-out's prerequisite-4 premise does not describe this residual at all. s8 and s9 reached the same result independently; this session did not spend measurements re-running it a fourth time.
+
+- [s8] THE OBSTACLE IS PROCEDURAL. A distance-0, zero-rule, zero-cheat pure-C body is byte-proven twice on main (sandbox 0, 76/76, rules_dropped 0; full-build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa - evidence.md == s8 == and == s10 ==), yet has been adjudicated three times in one day with contradictory verdicts: FAIL (decisions.md:11147), PASS (decisions.md:11151, 'the ban is over-broad as applied ... it needs no exception'), FAIL (decisions.md:11155). The driver's bans #0/#3/#5/#6 now foreclose both the construct and the two rationales the PASS ruling used, and the 15:52 T3 finding is against the derivation history rather than the construct - a test no future session can clear, because the pipeline requires that history to be preserved.
+
+- [s8] NO BAN WAS INVOKED OR RESPELLED THIS SESSION. The only body applied to src was the ban-free floor-1 form, and it was reverted. banned_constructs #0-#6 were neither applied, re-spelled, re-derived, nor cited in support of anything. candidate.c is left exactly as s10 banked it, with a header added recording that it is currently UNSUBMITTABLE under the live ban list and must not be re-applied or re-spelled.
+
+- [s8] DECISION PACKET FILED THIS SESSION at the end of docs/grind/decisions.md: '## 2026-08-25 - func_800307D0 (cpu_check_tubazeri_2, src/code6cac_b.c) - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**'. It is a routing/adjudication-conflict packet, not a standard-lowering one: answer (b) is simply the 2026-07-22 owner ruling (decisions.md:1311, option b) restated and extended, and answer (a) asks only whether the construct is judged on its own merits rather than on how the author found it. No family grant, no evidence-bar override, no 'accept the debt' wording.

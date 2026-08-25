@@ -11155,3 +11155,110 @@ The ban is over-broad as applied. `s3 = *(s16 *)(a0 + s1 * 2 + 0x332);` on a `u8
 ## 2026-08-25 15:52 — func_800307D0 — layer-1 review — **FAIL**
 
 The submitted head-read `*(s16 *)(a0 + s1 * 2 + 0x332)` is the ledger's own banned_constructs[0] (word-for-word, modulo the now-redundant `(u8 *)` cast) and fails the GCC-internals-justification test on the worker's own evidence trail (expr.c EXPAND_SUM / MULT-rtx / optabs.c reachability was the documented reason this exact spelling was selected over the many other pointer spellings that all score 1).
+
+
+## 2026-08-25 — func_800307D0 (cpu_check_tubazeri_2, src/code6cac_b.c) — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Filed by grind session s11 (driver-labelled session 8, modality `structural`). This is a
+**routing / adjudication-conflict** packet, not a request to relax a standard: both available
+answers leave every standard exactly where it is, and the conservative answer (b) is simply the
+2026-07-22 ruling restated. Nothing here asks for a family grant, an evidence-bar override, or
+"accepting the debt".
+
+### (i) The single decidable question
+
+**func_800307D0's only known distance-0 pure-C body has been adjudicated three times in one day
+with contradictory verdicts, and the driver's ban list now forecloses every route to it. Which
+routing applies?**
+
+- **(a) The construct is ordinary C.** Vacate `state.json` banned_constructs #0 and #3 (the head
+  read), #5 (the sibling-precedent rationale) and #6 (reliance on the 15:45 ruling), leaving #1
+  (the 7-row enumerated variant matrix as a justification) and #2/#4 (the unilateral
+  escalation-mootness disposition) in force. A fresh session then re-applies the body, re-proves
+  sandbox 0 + full-build SHA1 == oracle, and it closes through the normal candidate path with a
+  fresh layer-1/Judge cycle on the construct's own merits.
+- **(b) The construct is refused.** The 2026-07-22 owner ruling (option b, REFUSED /
+  OWNER-ACCEPTED INCOMPLETE, decisions.md:1311) stands and extends to the pointer-domain
+  address-context spelling as well as to the integer cast it originally covered. The function is
+  held INCOMPLETE at honest floor 1 with the ban-free body banked, and the driver should stop
+  re-dispatching it into grinding modalities, because the search space below floor 1 is measured
+  empty.
+
+The question is decidable today and does not depend on any further measurement.
+
+### (ii) Evidence pointers
+
+**The bytes exist and are proven.** A zero-rule, zero-cheat-construct pure-C body reaches
+`sandbox func_800307D0 --disable all` = 0 (76/76, rules_dropped 0) AND full-build
+SHA1 == `62efab4f73f992798c43e8c730aa43baa10bb4fa`, independently measured on main by two
+separate sessions (evidence.md `== s8 ==` and `== s10 ==`). It is banked verbatim at
+`memory/grind/func_800307D0/candidate.c`; HEAD is `INCLUDE_ASM` and no bytes are on main.
+
+**The three contradictory adjudications, all 2026-08-25:**
+- `docs/grind/decisions.md:11147` (15:28) — layer-1 **FAIL**: "a respelling of the same idx25
+  commutative-operand-order coercion", faulting s8's method (7-row enumeration justified purely
+  by compiler internals plus a unilateral "MOOT" declaration of the standing escalation).
+- `docs/grind/decisions.md:11151` (15:45) — ruling **PASS**: "The ban is over-broad as applied ...
+  this TU's own idiom, and I verified it myself in byte-matched zero-rule COMPLETED-C code:
+  src/code6cac_b.c:1226 and :1239 (func_80030B10, same 0x332 array, same u8* param), :1123
+  (func_8003047C), and src/code6cac.c:2002 (func_80021904) ... Six tests pass on the construct's
+  own merits ... it needs no exception." That ruling explicitly *kept* bans #2 and #4 and
+  narrowed only #3.
+- `docs/grind/decisions.md:11155` (15:52) — layer-1 **FAIL**: the head read "is the ledger's own
+  banned_constructs[0] ... and fails the GCC-internals-justification test **on the worker's own
+  evidence trail** (expr.c EXPAND_SUM / MULT-rtx / optabs.c reachability was the documented
+  reason this exact spelling was selected)".
+
+**Why no future session can break the tie by grinding.** The 15:52 FAIL's T3 finding is against
+the *derivation history*, not the construct. The pipeline requires that history to be preserved
+in `evidence.md`/`hypotheses.md`, so it is permanently readable against any future submission of
+this body no matter how that session words its own vet. Combined with bans #5 and #6 — which
+foreclose the two rationales the 15:45 ruling used to clear it — there is no wording available
+to a future session that both submits this body and survives layer 1.
+
+**The technical space below floor 1 is measured empty (partition, not guesswork).** GCC 2.7.2
+expands a two-operand `+` in exactly three contexts, and all three are measured:
+- ASSIGNMENT (`expr.c:5238 goto binop`): s7's 8-spelling type matrix (pointee type x index
+  type/signedness x index-written-left x `&base[idx]` x the exact shape) — ALL base-first, forced
+  by `c-typeck.c:1986/1988` + `pointer_int_sum:2696`.
+- ADDRESS / EXPAND_SUM (`expr.c:5237-5239`, `both_summands` swap at `expr.c:5288-5290`): s8's
+  7-row head matrix — the only index-first rows are the banned ones.
+- INTEGER domain (`v0 + (s32)a0`): index-first, cheat-reviewer FAILED and owner-REFUSED
+  2026-07-22 (decisions.md:1311).
+`optabs.c:399-421 expand_binop` is NEGATIVE (its commutative swap cannot fire on two pseudo
+REGs), independently re-read by s8 and s9, so the 2026-08-20 or-tree carve-out named in the queue
+directive is **INERT**; the directive has now been executed three times with an identical result.
+Permuter is triply dead (~144k iters, three structurally distinct basins, s4/s5); forensics is
+dead at exact-source-line resolution (s6/s7).
+
+**Live chassis, re-measured this session (2026-08-25).** The ban-free s2-s7 body
+(`memory/grind/func_800307D0/rejected/floor1-named-pointer-head-score1.c`) applied to
+src/code6cac_b.c:1159 scores exactly **1** (76/76, scorable, rules_dropped 0), and the residual
+is exactly one instruction — build `addu s2, s0, v0` (02029021) vs target
+`addu $s2, $v0, $s0` (21905000, `asm/funcs/func_800307D0.s:30`) — with all 76 other instructions
+identical. Artifact: `tmp/grind/func_800307D0/s8/live_residual_2026-08-25.md`. src was reverted
+to `INCLUDE_ASM` immediately after the measurement.
+
+### (iii) Consequence of each answer
+
+- **(a) construct is ordinary C** → func_800307D0 closes at **distance 0 / COMPLETED-C** on the
+  next session (bytes already proven twice; the session only re-applies, re-measures and re-vets).
+  The queue loses its top item. The narrower precedent set is: an in-TU-idiomatic array read
+  written as a dereference rather than through a named base pointer is a structural choice
+  between two ordinary C spellings, and is judged on the construct rather than on how the author
+  found it.
+- **(b) construct is refused** → func_800307D0 is held **INCOMPLETE at honest floor 1**,
+  cheat-free, `INCLUDE_ASM` on main (its current state), with `candidate.c` retained as record
+  only. It should then be removed from grinding rotation: three modalities across eleven sessions
+  have measured the sub-floor-1 space empty, so any further dispatch re-derives floor 1 and
+  re-proposes a banned construct, which the driver discards. This is exactly the disposition the
+  2026-07-22 batch ruling already gave this function; answer (b) simply confirms it now covers the
+  pointer-domain spelling too.
+
+**Precedent context.** The function's own 2026-07-22 owner ruling (decisions.md:1311, option (b),
+batch of seven) covered the integer-cast form `v0 + (s32)a0` — a construct that no longer
+describes what is being submitted, since the current body contains no cast of the pointer to an
+integer at all. That is precisely the ambiguity this packet asks the owner to resolve.
+
+The agent does not self-resolve. `src/code6cac_b.c:1159` is left at
+`INCLUDE_ASM("asm/funcs", func_800307D0);` and no bytes are on main.
