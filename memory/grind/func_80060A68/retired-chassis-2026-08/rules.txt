@@ -1,0 +1,11 @@
+# func_80060A68: asmfix-slice lifting target's body asm.  Structurally-
+# correct C body (pad_Init equivalent); GCC register-allocation/scheduling
+# diverged after ~120min of variations.  Per the asmfix-slice clause in
+# memory/feedback_voluntary_stop_forbidden.md, lift mid-body to asm.
+# NOTE: asmfix `delete_between` deletes the start anchor INCLUSIVELY
+# (text[:start.start()]), so the start anchor must be mine's FIRST body
+# instruction (lhu $4,0($3)), not the prologue's sw $ra (which must be
+# preserved).  end anchor (jal $31,$2) is kept; insert_before adds
+# target's body BEFORE it.
+func_80060A68: delete_between "^lhu\t\$4,0\(\$3\)$" "^jal\t\$31,\$2$"
+func_80060A68: insert_before "^jal\t\$31,\$2$" "lhu	$2,0($3)\nnop\nsll	$2,$2,2\nlui	$1,%hi(D_800F10D0)\naddu	$1,$1,$2\nsw	$0,%lo(D_800F10D0)($1)\nlw	$2,12($3)\nlw	$4,12($3)\nlw	$5,16($3)\nlw	$2,0($2)\nnop\nsw	$2,32($3)\nlw	$2,4($4)\nlw	$4,12($3)\nsw	$2,36($3)\nlw	$2,8($4)\nlw	$4,16($3)\nsw	$2,40($3)\nlhu	$2,0($4)\nlw	$4,16($3)\nsh	$2,24($3)\nlhu	$4,2($4)\naddu	$2,$3,24\nsw	$2,%gp_rel(D_800A3478)($28)\nsh	$4,26($3)\nlhu	$5,4($5)\nlhu	$4,0($3)\naddu	$2,$3,32\nsw	$2,%gp_rel(D_800A347C)($28)\nsh	$5,28($3)\nsll	$3,$4,2\nlui	$1,%hi(D_8009BA60)\naddu	$1,$1,$4\nlbu	$2,%lo(D_8009BA60)($1)\nlui	$1,%hi(D_800F10D0)\naddu	$1,$1,$3\nlw	$3,%lo(D_800F10D0)($1)\nnop\naddu	$2,$2,$3\nsll	$2,$2,2\nlui	$1,%hi(chractar_use_pset_combo_id_table)\naddu	$1,$1,$2\nlw	$2,%lo(chractar_use_pset_combo_id_table)($1)\nnop"
