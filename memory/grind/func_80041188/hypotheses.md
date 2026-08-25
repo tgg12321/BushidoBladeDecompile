@@ -2138,3 +2138,136 @@ residual `move $s3,$s6` (E-s23-1). Block 0's deliveries are enumerated and only 
 - probe: V14 = V8 with i++ moved to sit immediately after buf[0] = p[0]; sandbox + build_insns.
 - result: Byte-identical to V8 (sandbox 8, 133 insns). sched1 owns the delay slot; the C-level position of the increment inside the block does not move it. Separately, V11 (tbl wrap kept, out2 wrap removed) measures 132 of 132 insns, which attributes the nop to the out2 +1 delivery and proves the tbl +1 is byte-free.
 - verdict: KILLED
+
+# ============================ s25 (escalation) ============================
+
+## [s25] tools/sched_solver, run for the first time on an ALL-TARGET-SEAT form, will name a spellable lever for V8's loop1 emission-order residual.
+- mechanism: s24 attributed V8's 133rd instruction to two sched1 ranking decisions inside loop1
+  (i++ displaced out of a load-delay slot, tbl++ sunk eight slots) and E-s24-7 showed C statement
+  order does not move them — exactly the regime tools/sched_solver models order- and clock-exactly.
+- probe: apply alt_V8_alltarget_133_s24.c, extract the reduced-TU model (s15 shims), hand-build
+  target's block-1 goal order in our UIDs (the automatic goalmap alignment is INVALID here — it
+  mis-pairs the two identical `sh $2,20($sp)` texts and reports 4 dependence violations), then run
+  perturb.py --pass 1 --block 1 --atoms luid,luid_move.
+- result: at depth 1, 2340 single atoms, NONE reaches the goal. Depth 2 did not converge in ~40
+  minutes and was stopped. The scheduler's own model therefore agrees with E-s24-7: the wrap-borne
+  order damage is not a statement-order problem. The productive reading is that the wraps must GO,
+  not be re-positioned.
+- verdict: KILLED (at depth 1; depth 2 unresolved and low-value, since E-s25-3 removes the wraps
+  outright)
+
+## [s25] A byte-free reference lift is available at the INCREMENT site of a loop-carried variable, where every block-0 chain-extender spelling folds.
+- mechanism: the F1 chain-extender law (E-s22-2/E-s17-1) says flow.c:2081 counts reg_n_refs before
+  combine and combine folds the pair back. At a redefinition of a loop-carried pseudo the value is
+  not available in cse1's table (the reg is live-in from the latch), so cse cannot fold the two
+  arithmetic insns into one, and combine — which runs after flow — does.
+- probe: rewrite `i++;` as `i += 2; i -= 1;` and `tbl++;` as `tbl += 2; tbl -= 1;` on the V8
+  chassis; read ALLOCDBG and the emitted instruction count; then measure the combined form.
+- result: CONFIRMED and byte-free. i 8/97 = 2474 -> 10/97 = 3092; tbl 4/47 = 1702 -> 6/47 = 2553;
+  no emitted instruction changes. With both applied and BOTH do-while(0) wraps deleted, form V15a
+  measures sandbox 15 at 132 of 132 insns with goalmap reporting GOAL == OURS (identity) in all
+  four blocks — target's emission order everywhere. This is the first delivery of tbl's extra
+  references that costs nothing (s24's T1 cost an insn) and the first 132-insn form with target's
+  order and no wrap.
+- verdict: CONFIRMED
+
+## [s25] `i`'s reference count is a dial at all four of its split sites.
+- mechanism: s24 frontier item 3 — floor_log2 gives i a large single-step jump at 8 -> 9 refs, and
+  i has four independent split sites (initialiser, increment, compare, the i = 0x12 reset).
+- probe: measure each site separately on the V8 chassis with ALLOCDBG.
+- result: KILLED for three of the four. Split initialiser: 8 refs (live 97 -> 96). Split reset
+  (`i = 0x11; i++;`): 8 refs, otherwise identical to V8. Duplicated compare: 8 refs — jump.c folds
+  the second test. Only the in-loop increment moves the count, and it moves it by +2 (8 -> 10),
+  never +1. So the "+1 on i" vector s24 hoped for does not exist; the +2 vector does, and it is
+  free.
+- verdict: KILLED (three sites); the increment site is CONFIRMED as a +2-only dial
+
+## [s25] A block-0 chain-extender on `out2` with a donor that dies early lifts out2 to four references.
+- mechanism: E-s17's law says a chain `X = Y; X += K;` lifts reg_n_refs(X) iff cse1's make_regs_eqv
+  (cse.c:844-857) keeps X canonical, which requires X's last use to fall after Y's. V17's donor was
+  pa4, whose last use is in loop2 (after out2's), so it folded — but a FRESH donor dying in block 0
+  satisfies the condition.
+- probe: six spellings measured on two chassis — out2 = pa4 then +0x20; out2 = pa4+0x21 then -1;
+  tmp = pa4, out2 = tmp, out2 += 0x20; tmp = pa4+0x10, out2 = tmp, out2 += 0x10; out2 = pa4+0x20
+  then +0x20 then -0x20; and the same on the V15a chassis.
+- result: KILLED. All six leave out2 at exactly 3 refs / live 42 = 714. The law's condition is
+  NECESSARY BUT NOT SUFFICIENT: cse1 folds any constant-offset chain rooted in a pseudo already in
+  its table at that point, regardless of the donor's death point. The lifts that DO survive in this
+  function have a donor that is a memory-load result used again later (`base`, for stptr) or the
+  loop-carried variable itself (tbl, i).
+- verdict: KILLED
+
+## [s25] Frontier reset — the strongest hypotheses for the next ladder pass
+
+1. **On the V15a chassis the whole function is ONE byte-free flow-counted reference on `out2`,
+   and the only surviving reference-lift MECHANISM in this function is "a donor whose value cse1
+   cannot fold at that point".**
+   - mechanism: E-s25-5 proves V15a + one out2 reference = target's COMPLETE callee-saved
+     disposition WITH target's block-2 `addiu $s3,$s7,0x20` and target's emission order in all four
+     blocks; the only cost is the instrument (a do-while(0) wrap, 134 vs 132 insns). E-s25-7 says
+     block-0 constant-offset chains all fold; E-s25-3 says a redefinition of a loop-carried pseudo
+     does not.
+   - next probe: make `out2` loop-carried. On the V15a chassis, replace the invariant `out2` with a
+     pointer that is advanced and restored across loop1 (e.g. carried as `out2` with a real
+     per-iteration recomputation from a loop-carried base), or find a donor whose value is not in
+     cse1's table at out2's definition — the only two candidates in block 0 are `base` (the
+     `D_800A9A10[a0]` load result, already spent on stptr) and `saved`. Measure `out2 = saved - K;`
+     style derivations: `saved` is a load-derived value used again later (`stptr2 = saved + 0x750`
+     in block 2), which is exactly the shape that works for stptr. Check ALLOCDBG for
+     out2 == 4 refs AND build_insns == 132 in the same measurement; anything that materialises an
+     instruction is fatal.
+
+2. **The V15a chassis makes `out2`'s LIVE LENGTH a second, previously-unusable dial, because tbl
+   now sits at 2553 instead of 1702.**
+   - mechanism: with tbl lifted to 6/47 = 2553 the admissible band for out2 widens from
+     (1473, 1702) to (1473, 2553). At 3 references pri = 30000/live, so out2 is seatable at
+     live 12..20 — a window that did not exist in any earlier session's arithmetic (s23 computed
+     the 3-reference requirement as live <= 37 against a3 and <= 23 against a4 with tbl pinned low).
+   - next probe: enumerate block-0 positions and formulations for out2's definition that shorten its
+     live range below 21 WITHOUT moving the definition into loop1 (which E-s23-1's cse-EBB law
+     forbids, since it makes cse1 rewrite block 2's `out3 = pa4 + 0x20` into `out3 = out2`). The
+     obvious candidate is defining out2 as the LAST statement of block 0 combined with a later
+     first use; measure live length directly from ALLOCDBG rather than reasoning about it.
+
+3. **The s25 increment-split construct needs a family ruling before it can ever ship, and that
+   question should be settled before a session spends effort spelling a form around it.**
+   - mechanism: `i += 2; i -= 1;` is byte-free and its ONLY effect is reg_n_refs. It is not a
+     dead store (both statements are live arithmetic on a live variable), not a duplicated statement
+     into arms, not a named intermediate, and not the F1 combine-foldable chain-extender as that
+     family is described (which is a copy plus a constant add on a FRESH value, not a split of an
+     existing increment). No SOTN-master precedent has been searched for it.
+   - next probe: grep `docs/reference/sotn-construct-index.md` for split-increment forms
+     (`+= N; -= M;` on an induction variable) and, if absent, emit a `ruling-request` naming the
+     construct precisely — BEFORE building a candidate on it. If the ruling is NO, V15a's tbl and i
+     lifts must be re-derived from an honest structure (loop.c's giv on a real loop, s19's W4
+     chassis, is the only known honest source of extra references in this function).
+
+## [s25] tools/sched_solver, run for the first time on an ALL-TARGET-SEAT form, will name a spellable lever for V8's loop1 emission-order residual.
+- mechanism: s24 attributed V8's 133rd instruction to two sched1 ranking decisions inside loop1 (i++ displaced out of a load-delay slot, tbl++ sunk eight slots); E-s24-7 showed C statement order does not move them - the regime sched_solver models order- and clock-exactly.
+- probe: Applied alt_V8_alltarget_133_s24.c (re-measured: sandbox 8, 132 target / 133 build), extracted the reduced-TU model via the s15 shims, hand-built target's block-1 goal order in our RTL UIDs (the automatic goalmap alignment is INVALID here - it mis-pairs the two identical 'sh $2,20($sp)' texts and reports 4 dependence violations), then ran perturb.py --pass 1 --block 1 --atoms luid,luid_move --depth 1.
+- result: 2340 single atoms searched, NONE reaches the goal. The depth-2 search did not converge in ~40 minutes and was stopped before the turn ended (no orphan). The scheduler's own model therefore agrees with E-s24-7: the wrap-borne order damage is not a statement-order problem, so the wraps must be removed rather than re-positioned.
+- verdict: KILLED
+
+## [s25] A byte-free reference lift is available at the INCREMENT site of a loop-carried variable, where every block-0 chain-extender spelling folds.
+- mechanism: flow.c:2081 counts reg_n_refs before combine and combine folds the arithmetic pair back into one insn (the F1 law, E-s22-2/E-s17-1). At a redefinition of a loop-carried pseudo the value is live-in from the latch and is not in cse1's table, so cse1 cannot fold the split first.
+- probe: Rewrote 'i++;' as 'i += 2; i -= 1;' and 'tbl++;' as 'tbl += 2; tbl -= 1;' on the V8 chassis; read ALLOCDBG and the emitted instruction count; then measured the combined form (V15a) with sandbox and goalmap.
+- result: CONFIRMED and byte-free. i 8 refs/97 = 2474 -> 10/97 = 3092; tbl 4/47 = 1702 -> 6/47 = 2553; no emitted instruction changes. With both applied and BOTH do-while(0) wraps deleted, V15a = sandbox 15 at 132 build / 132 target insns, and goalmap reports GOAL == OURS (identity) in blocks 0, 1, 2 and 3 (hon=131 tgt=131). First zero-cost delivery of tbl's extra references (s24's T1 cost an instruction) and the first 132-insn form carrying target's emission order with no wrap.
+- verdict: CONFIRMED
+
+## [s25] The V15a chassis plus exactly one more flow-counted reference on out2 produces target's COMPLETE callee-saved disposition.
+- mechanism: V15a's residual is the {out2, pa4, a3} 3-cycle: out2 sits at 3 refs / live 42 = 714, below a3's 808 and pa4's 1473. At 4 refs / live 42 it is 1904, inside the admissible band (1473, 2553) that tbl's new 2553 opened.
+- probe: V23 = V15a with the loop1 func_8004A348(buf, out2) call wrapped in do { } while (0) purely as a reference-count instrument; read ALLOCDBG and sandbox.
+- result: CONFIRMED. ALLOCDBG: stptr 3414 -> $s3, i 3092 -> $s4, tbl 2553 -> $s5, stptr2 2500 -> $s0, out2 4/42 = 1904 -> $s6, pa4 1473 -> $s7, a3 808 -> $fp, out3 -> $s3 = ALL-TARGET seats, and this chassis derives out3 from pa4 so it carries target's block-2 'addiu $s3,$s7,0x20' rather than candidate.c's residual 'move $s3,$s6'. The only cost is the instrument: sandbox 9 at 134 insns (the loop note costs two instructions on this chassis, not V8's one).
+- verdict: CONFIRMED
+
+## [s25] i's reference count is a dial at all four of its split sites (s24 frontier item 3).
+- mechanism: floor_log2(refs)*refs/live gives i a large single-step jump at 8 -> 9 references, and i has four independent split sites: initialiser, increment, compare and the i = 0x12 reset.
+- probe: Measured each site separately on the V8 chassis with ALLOCDBG: s32 i = 0 plus i++ in block 0; i = 0x11 plus i++ at the reset; a duplicated compare if (i < 0x12) { if (i < 0x12) goto loop1; }; and the in-loop increment split.
+- result: KILLED for three of the four. Split initialiser leaves i at 8 refs (live 97 -> 96, pri 2500); split reset leaves it at 8 refs and is otherwise identical to V8; the duplicated compare leaves it at 8 refs because jump.c folds the second test. Only the in-loop increment moves the count, and it moves it by +2 (8 -> 10), never the +1 s24 hoped for.
+- verdict: KILLED
+
+## [s25] A block-0 chain-extender on out2 with a donor that dies early lifts out2 to four references.
+- mechanism: E-s17's law: a chain X = Y; X += K lifts reg_n_refs(X) iff cse1's make_regs_eqv (cse.c:844-857) keeps X canonical, which requires X's last use to fall after Y's. V17's donor pa4 has its last use in loop2, after out2's - but a FRESH donor dying in block 0 satisfies the condition.
+- probe: Six spellings measured across two chassis: out2 = pa4 then +0x20 (on the V8 and the V15a chassis); out2 = pa4 + 0x21 then -1; tmp = pa4, out2 = tmp, out2 += 0x20; tmp = pa4 + 0x10, out2 = tmp, out2 += 0x10; out2 = pa4 + 0x20 then +0x20 then -0x20.
+- result: KILLED. All six leave out2 at exactly 3 refs / live 42 = 714 (the last only shortens live to 41). The E-s17 condition is NECESSARY BUT NOT SUFFICIENT: cse1 folds any constant-offset chain rooted in a pseudo already in its table at that point, regardless of when the donor dies. The lifts that survive in this function all have a donor that is a memory-load result used again later (base, for stptr) or the loop-carried variable itself (tbl, i).
+- verdict: KILLED

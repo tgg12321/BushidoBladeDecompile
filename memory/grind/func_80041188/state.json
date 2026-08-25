@@ -1,8 +1,8 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 24,
- "current_modality": "synthesis",
+ "session_count": 25,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -153,23 +153,29 @@
    "floor": 1,
    "modality": "synthesis",
    "headline": "Synthesis proves the residual is a TWO-reference problem, not one: target's own bytes force out2 to 4 refs / live 42 = 1904, which outranks a natural tbl (1702), so the original must also carry a FIFT"
+  },
+  {
+   "session": 25,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "New byte-free reference-lift class found (split at an increment site of a loop-carried variable): form V15a reaches 132/132 insns with TARGET EMISSION ORDER IN ALL FOUR BLOCKS and no do-while(0) wrap,"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A byte-free fourth flow-counted reference on out2, sited as a USE inside loop1 that combine absorbs - now known to be needed TOGETHER with a fifth tbl reference, whose byte-free delivery is already measured (V11 at 132 insns).",
-   "mechanism": "combine.c's try_combine runs after flow.c has fixed reg_n_refs, so a reference in an insn combine absorbs is both counted and byte-free (the shape E-s16-5 proved target's own stptr reference has); E-s23-1 proves a USE is safe where a DEFINITION is not, because a use records no expression in cse's table. E-s24-5 removes the tbl half of the problem from the critical path.",
-   "next_probe": "Work from combine.c's side on the V8 chassis (memory/grind/func_80041188/alt_V8_alltarget_133_s24.c, every other seat already target's): enumerate try_combine 2->1 patterns whose OUTPUT is (set reg (plus reg const)), (set reg (mem ...)) or (set (mem ...) reg) and whose deleted INPUT insn mentions a third register; for each write the loop1 C that generates that input pair with out2 as the third register and check build_insns FIRST (a surviving insn is fatal - E-s20-2, G1). Candidate consumers are target's own loop1 insns: addiu $a0,$sp,0x10; the addu $a1,$s6,$zero argument moves; addiu $a2,$s3,0x38 / addiu $a3,... for func_800523E0; the sh into 6($s3); addiu $s3,$s3,0x68. Exclude anything cse1 reassociates (E-s20-3) and anything that DEFINES a value equal to a4 + 0x20 (E-s23-1)."
+   "hypothesis": "On the V15a chassis the entire function is ONE byte-free flow-counted reference on out2, and the only reference-lift MECHANISM that survives in this function is a donor whose value cse1 cannot fold at that point.",
+   "mechanism": "E-s25-5 proves V15a + one out2 reference = target's complete disposition with target's block-2 spelling and target's emission order in all four blocks; the only cost is the instrument. E-s25-7 shows block-0 constant-offset chains all fold; E-s25-3 shows a redefinition of a loop-carried pseudo does not.",
+   "next_probe": "On the V15a chassis, derive out2 from a donor cse1 cannot fold at that point - the only two candidates in block 0 are 'base' (the D_800A9A10[a0] load result, already spent on stptr) and 'saved', which is load-derived and used again in block 2 as stptr2 = saved + 0x750, i.e. exactly the shape that works for stptr. Measure 'out2 = saved - K;'-style derivations and any formulation that makes out2 loop-carried, requiring ALLOCDBG out2 == 4 refs AND build_insns == 132 in the SAME measurement; anything that materialises an instruction is fatal."
   },
   {
-   "hypothesis": "V8's residual is a small number of sched1 ORDER decisions inside loop1 plus the one load-delay nop, and tools/sched_solver has still never been run on an all-target-seat form.",
-   "mechanism": "E-s24-4 names the two displaced insns exactly (i++ out of the delay slot at index 44-46, tbl++ sunk from index 40 to 48) and E-s24-7 shows C statement order does not move them - the regime tools/sched_solver models order- and clock-exactly.",
-   "next_probe": "Apply alt_V8_alltarget_133_s24.c, dump red.i.sched, run tools/sched_solver on loop1 against target's order for a typed REACHABLE / FORECLOSED verdict plus a ranked C-lever vector. FORECLOSED proves the loop-note delivery of out2's +1 can never be byte-exact regardless of annotation and leaves frontier item 1 as the only route; REACHABLE names the first concrete levers."
+   "hypothesis": "out2's LIVE LENGTH is a second, newly-usable dial on the V15a chassis, because tbl now sits at 2553 instead of 1702.",
+   "mechanism": "At three references pri = 30000/live, so the widened band (1473, 2553) makes out2 seatable at live 12..20 - a window that did not exist while tbl was pinned at 1702 (s23 computed the 3-reference requirement as live <= 37 against a3 and <= 23 against pa4).",
+   "next_probe": "Enumerate block-0 positions and formulations for out2's definition that shorten its live range below 21 WITHOUT moving the definition into loop1 (E-s23-1's cse-EBB law forbids that: it makes cse1 rewrite block 2's out3 = pa4 + 0x20 into out3 = out2). Read live length directly from ALLOCDBG each time rather than reasoning about it."
   },
   {
-   "hypothesis": "The i allocno is the untested third dial: a consistent vector also exists at tbl 6 refs / 47 = 2553 if i can be lifted 8 -> 9 references (2474 -> 2783), which would revive the (currently +2, byte-costly) split-init family on tbl.",
-   "mechanism": "global.c's floor_log2(refs)*refs/live formula gives i a large single-step jump at 8 -> 9 references, and no session has ever probed i's reference count. Unlike a3 (proven rigid in ten forms, E-s23-2), i is a real loop counter with four independent split sites: initialiser, increment, compare, and the i = 0x12 reset in block 2.",
-   "next_probe": "On the V8 chassis measure i's reference-count response to each of the four sites (split initialiser, split increment, split reset, duplicated compare), reading ALLOCDBG and build_insns each time; the only question is whether any of them delivers exactly +1 byte-free. A yes reopens the tbl question at 6 references and widens the space - worth settling before more effort goes into the out2 +1 spelling hunt."
+   "hypothesis": "The s25 increment-split construct ('i += 2; i -= 1;') has no established family and needs a ruling before any candidate is built on it.",
+   "mechanism": "It is byte-free and its only effect is reg_n_refs. It is not a dead store (both statements are live arithmetic on a live variable), not a duplicated statement into arms, not a named intermediate, and not the F1 combine-foldable chain-extender as that family is described (a copy plus a constant add on a fresh value, not a split of an existing increment).",
+   "next_probe": "Grep docs/reference/sotn-construct-index.md for split-increment forms on an induction variable and, if absent, emit a ruling-request naming the construct precisely BEFORE spelling a candidate around it. If the ruling is NO, V15a's tbl and i lifts must be re-derived from an honest structure - loop.c's giv on a real loop (s19's W4 chassis) is the only known honest source of extra references in this function."
   }
  ],
  "judge_constraints": [

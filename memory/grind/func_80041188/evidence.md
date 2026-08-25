@@ -3281,3 +3281,143 @@ the full `red.i.*` pass dumps (`red.i.cse` and `red.i.flow` carry the fold evide
 - [s24] E-s24-7: C-level statement order is not a lever on sched1's delay-slot choice (V14 byte-identical to V8).
 
 - [s24] E-s24-8 (owner directive executed): the queue item's standing directive states that candidate.c's stptr chain-extender 'still needs FAKE annotation or replacement on land', which classifies `stptr = base; stptr += 0xFC;` as the F1 family requiring the /* FAKE */ annotation rather than as sanctioned split-init accumulation. candidate.c already carries that annotation with what + mechanism + lever-exhaustion (candidate.c:289). The s22/s23 frontier item asking this question is retired - no ruling-request should be filed for it again.
+
+## s25 (escalation, 2026-08-25) — a NEW byte-free reference-lift class is found (split at an increment site), and the residual is re-stated on a chassis that is emission-order identical to target
+
+Chassis re-measured at the start of s25 by applying `alt_V8_alltarget_133_s24.c` to
+`src/text1a_pre.c`: `sandbox func_80041188 --disable all` = **score 8, 132 target / 133 build
+insns**, `rules_dropped: 16, cheat_asm_stripped: 2` — reproducing s24's record exactly. The
+ledger floor (candidate.c, 1) was NOT re-measured this session; every number below comes from a
+form measured this session. `src/text1a_pre.c` was restored to HEAD at the end of the session and
+no build-pipeline file was touched.
+
+- **[E-s25-1] The owner directive of 2026-08-24 is now executed and its premise is corrected.**
+  The directive says "solver modality has never run on it"; s15 (2026-08-24) had in fact already
+  run both solvers. What had never run — frontier item 2 as carried since s24 — was
+  `tools/sched_solver` on an ALL-TARGET-SEAT form. s25 ran it. The auto goal derivation
+  (`goalmap.py --goal-from-target`) **cannot** be used on this function's loop1: it reports
+  `GOAL INVALID: 4 dependence violation(s)` because the aligner mis-pairs the two identical
+  `sh $2,20($sp)` texts in the two calls. The goal has to be hand-built from
+  `asm/funcs/func_80041188.s`, undoing reorg.c's four delay-slot fills (target insns 43, 56, 61,
+  66 are the fills for the jals at 42, 55, 60 and the branch at 65). Target's block-1 pick order
+  in our UIDs is
+  `170,169,166,163,161,158,156,154,152,150,136,126,124,134,123,120,118,132,117,114,109,112,103,97,90,88,100,87,84,82,95,81,78,93,76,73,59,58,56,53`
+  and it is dependence-valid (perturb accepts it and reports `baseline exact`). Recipe banked at
+  `tmp/grind/func_80041188/s25/` (`mk.sh` = pin target from HEAD + extract the reduced-TU model;
+  `tlist.py` = indexed target listing; `probe.sh` = apply + ALLOCDBG dump).
+
+- **[E-s25-2] KILLED at depth 1: no single spellable scheduler atom reaches target's loop1
+  emission order on the V8 (wrap-bearing) chassis.** `perturb.py --pass 1 --block 1
+  --atoms luid,luid_move --depth 1` searched **2340 single atoms**: none reaches the goal. The
+  depth-2 search was launched and had not converged after ~40 minutes; it was stopped before the
+  turn ended (no orphan). This confirms E-s24-7 mechanically and from the scheduler's own model:
+  the V8 chassis's loop1 order damage is NOT repairable by C statement order. The damage is caused
+  by the do-while(0) wraps' loop notes, and the correct response is to remove the wraps, not to
+  move statements — which is what E-s25-3 does.
+
+- **[E-s25-3] THE LOAD-BEARING RESULT — a byte-free +2 reference lift exists at the INCREMENT
+  site of a loop-carried variable, and it replaces the do-while(0) loop-note wrap.** Writing
+  `i++;` as `i += 2; i -= 1;` inside loop1 lifts `i` from 8 refs / live 97 = 2474 to
+  **10 refs / live 97 = 3092** with no change in emitted instructions; the same rewrite of
+  `tbl++;` lifts `tbl` from 4 / 47 = 1702 to **6 / 47 = 2553**, also byte-free. Combine folds the
+  pair back into the single `addiu` target emits; flow.c:2081 has already counted both references
+  by then. This is the F1 chain-extender law (E-s22-2 / E-s17-1) applied at a REDEFINITION of a
+  loop-carried pseudo rather than in straight-line block-0 code, and it is the first reference-lift
+  delivery for `tbl` that costs nothing — s24's T1 address-constant split delivered the same +2 but
+  materialised an instruction (134 vs 132). NOTE for the next session: this construct is an
+  unannotated FAKE at best and has no cited SOTN precedent; it is used here as a MEASUREMENT
+  INSTRUMENT and as proof that the reference is deliverable byte-free, not as a shippable form.
+
+- **[E-s25-4] Form V15a: 132 of 132 insns, TARGET EMISSION ORDER IN ALL FOUR BLOCKS, no
+  do-while(0) wrap, and a residual that is a pure register 3-cycle.** V15a = V8 with both wraps
+  deleted and both increments split (`tbl += 2; tbl -= 1;` and `i += 2; i -= 1;`).
+  `sandbox --disable all` = **score 15 at 132 build / 132 target insns**, and
+  `goalmap.py --model` reports **`block 0/1/2/3: GOAL == OURS (identity)`** with `hon=131 tgt=131`.
+  Allocno table: stptr 7/41 = 3414 → $s3 · i 10/97 = 3092 → $s4 · tbl 6/47 = 2553 → $s5 ·
+  stptr2 6/48 = 2500 → $s0 · pa4 7/95 = 1473 → **$s6** · a3 4/99 = 808 → **$s7** ·
+  out2 3/42 = 714 → **$fp** · out3 3/47 = 638 → $s3. Six of the nine seats are target's; the
+  entire residual is the {out2, pa4, a3} 3-cycle caused by out2 sitting at three references.
+  Banked as `memory/grind/func_80041188/alt_V15a_targetorder_purera_s25.c`.
+
+- **[E-s25-5] The vector is CONFIRMED end to end: V15a + one more out2 reference = target's
+  COMPLETE disposition.** V23 = V15a with the loop1 `func_8004A348(buf, out2)` call wrapped in
+  `do { } while (0);` purely as a reference-count instrument. ALLOCDBG: stptr $s3 · i $s4 ·
+  tbl $s5 · stptr2 $s0 · **out2 4/42 = 1904 → $s6** · **pa4 1473 → $s7** · **a3 808 → $fp** ·
+  out3 → $s3 — i.e. **ALL-TARGET seats together with target's block-2 `addiu $s3,$s7,0x20`**
+  (V15a derives out3 from pa4, not from out2, so this body does not contain candidate.c's
+  residual `move $s3,$s6` at all). Its only cost is the wrap itself: sandbox 9 at **134** insns,
+  because on this chassis the loop note costs two instructions rather than V8's one. **So the
+  entire function now reduces to a single, fully-specified question: a byte-free fourth
+  flow-counted reference on `out2`.** Everything else — all six other contested seats, target's
+  block-2 spelling, and target's emission order in every block — is delivered by arithmetic on
+  this chassis. Banked as
+  `rejected/v15a-plus-out2-wrap-alltarget-seats-but-wrap-costs-two-insns.c`.
+
+- **[E-s25-6] KILLED: three of `i`'s four split sites are inert; only the increment site is a
+  dial.** s24's frontier item 3 asked whether `i` could be lifted 8 → 9 references at any of four
+  sites. Measured on the V8 chassis with ALLOCDBG: split initialiser (`s32 i = 0;` + `i++;` in
+  block 0) leaves `i` at **8 refs** (live 97 → 96, pri 2500) — the constant pair folds before
+  flow; split reset (`i = 0x11; i++;`) leaves it at **8 refs** and is otherwise bit-identical to
+  V8; duplicated compare (`if (i < 0x12) { if (i < 0x12) goto loop1; }`) leaves it at **8 refs**
+  — jump.c folds the second test away. Only the in-loop increment moves it, and it moves it by
+  **+2, never +1** (E-s25-3). Banked at `rejected/i-split-initialiser-refs-rigid-at-8.c`,
+  `rejected/i-split-reset-refs-rigid-at-8.c`,
+  `rejected/i-duplicated-compare-folded-refs-rigid-at-8.c`.
+
+- **[E-s25-7] KILLED by direct measurement, on two chassis and in six spellings: NO block-0
+  chain-extender lifts `out2`.** Every one of these leaves out2 at exactly **3 refs / live 42 =
+  714**: `out2 = pa4; out2 = out2 + 0x20;` (V17, on the V8 chassis; V16, on the V15a chassis);
+  `out2 = pa4 + 0x21; out2 = out2 - 1;` (V15b); a fresh donor local
+  `tmp = pa4; out2 = tmp; out2 = out2 + 0x20;` (V19); a fresh donor carrying half the offset
+  `tmp = pa4 + 0x10; out2 = tmp; out2 = out2 + 0x10;` (V21); and a three-step
+  `out2 = pa4 + 0x20; out2 += 0x20; out2 -= 0x20;` (V22, which only shortens live 42 → 41).
+  This confirms E-s17-3 by measurement rather than by derivation and extends it: the E-s17 law's
+  "donor's last use precedes the recipient's" condition is NECESSARY BUT NOT SUFFICIENT — V19 and
+  V21 satisfy it with donors that die in block 0 and still fold, because cse1 folds a
+  constant-offset chain rooted in a pseudo already in its table at that point. The surviving lifts
+  in this function (stptr's `base` chain; tbl's and i's increment splits) all have a donor that is
+  either a memory-load result used again later (`base`) or the loop-carried variable itself.
+  Banked at `rejected/out2-chain-extender-fresh-donor-cse-folds-refs-rigid-3.c` and
+  `rejected/out2-chain-extender-split-constant-donor-cse-folds-refs-rigid-3.c`.
+
+- **[E-s25-8] Gate (a) re-measured this session, unchanged.** `python3 tools/scan_hand_coded.py
+  --single func_80041188` = **tier LOW, score 0/8** ("no strong hand-coded indicators"; S1 0 multu
+  pairs, S2 no empty-body branches, S3 132 insns / 11 spills / 15 distinct regs, S4 max load burst
+  3, S5 no high-similarity siblings, S6 no BIOS jumptable, S7 all callee-saves have `$sp` saves,
+  S8 no redundant mask-before-shift). The canonical-asm grant path stays closed, and the owner
+  DECLINED the LOW-tier override on 2026-08-24 as auto-reject class.
+
+- [s25] DISPOSITION NOTE. The driver dispatched this session in `escalation` modality, but both
+  dispositions that modality can file are foreclosed for this function by the owner's own
+  2026-08-24 rulings: the canonical-asm LOW-tier override was explicitly DECLINED as auto-reject
+  class, and the 2026-08-23 "REFUSED / OWNER-ACCEPTED INCOMPLETE" terminal entry was explicitly
+  SUPERSEDED by the rules-to-zero campaign with the instruction "keep grinding". Under the
+  auto-reject clause (a packet whose YES would lower a standard or accept the debt must NOT be
+  filed; the residual stays ACTIVE), no packet was filed and no decisions.md entry was added.
+  The honest outcome is `progress` with the s25 kills and the new chassis banked — and, unusually
+  for a disposition session, the search space GREW: a reference-lift class no session had, and a
+  chassis on which six of seven contested seats plus target's emission order come free.
+
+- [s25] Chassis re-measured this session: alt_V8_alltarget_133_s24.c applied to src/text1a_pre.c gives sandbox func_80041188 --disable all = score 8, 132 target / 133 build insns, rules_dropped 16, cheat_asm_stripped 2 - reproducing the s24 record exactly.
+
+- [s25] V15a (V8 minus both do-while(0) wraps, plus 'tbl += 2; tbl -= 1;' and 'i += 2; i -= 1;') = sandbox 15 at 132 build / 132 target insns, and goalmap.py --model reports 'block 0/1/2/3: GOAL == OURS (identity)' - target's emission order in every block. Banked as memory/grind/func_80041188/alt_V15a_targetorder_purera_s25.c.
+
+- [s25] The increment split is byte-free and counted: i 8 refs/97 = 2474 -> 10/97 = 3092 and tbl 4/47 = 1702 -> 6/47 = 2553, with no change in emitted instructions. This is a reference-lift delivery no previous session had; s24's T1 address-constant split delivered the same +2 on tbl but materialised an instruction (134 vs 132).
+
+- [s25] V23 (V15a + a do-while(0) wrap on the loop1 out2 call, used purely as an instrument) has ALL-TARGET callee-saved seats - stptr $s3, i $s4, tbl $s5, stptr2 $s0, out2 4/42 = 1904 -> $s6, pa4 $s7, a3 $fp, out3 $s3 - together with target's block-2 addiu $s3,$s7,0x20. Its only cost is the instrument (sandbox 9 at 134 insns).
+
+- [s25] tbl's lift to 2553 widens out2's admissible priority band from (1473, 1702) to (1473, 2553), which at three references corresponds to a live-length window of 12..20 that no earlier session's arithmetic contained.
+
+- [s25] sched_solver's automatic goal derivation is unusable on this function's loop1: goalmap reports 'GOAL INVALID: 4 dependence violation(s)' because the target aligner mis-pairs the two identical 'sh $2,20($sp)' texts. The hand-built goal (target's four reorg.c delay-slot fills undone) is dependence-valid and perturb accepts it with 'baseline exact'.
+
+- [s25] perturb.py --pass 1 --block 1 --atoms luid,luid_move --depth 1 on the V8 chassis: 2340 single atoms, none reaches target's loop1 order. Depth 2 did not converge in ~40 minutes and was stopped before the turn ended.
+
+- [s25] i's reference count is rigid at 8 across the split initialiser, the split reset and a duplicated compare; only the in-loop increment moves it, and only by +2.
+
+- [s25] out2's reference count is rigid at 3 across six distinct block-0 chain-extender spellings on two chassis, confirming E-s17-3 by measurement and extending it (donor death point is not the governing condition; cse1 foldability is).
+
+- [s25] Gate (a) re-measured: tools/scan_hand_coded.py --single func_80041188 = tier LOW, score 0/8, no strong hand-coded indicators. Gate (b) unchanged: no in-hand SOTN-master precedent for a byte-free reg_n_refs construct on out2.
+
+- [s25] No decision packet was filed. Both dispositions available to the escalation modality are foreclosed for this function by the owner's own 2026-08-24 rulings: the canonical-asm LOW-tier override was DECLINED as auto-reject class, and the 2026-08-23 REFUSED / OWNER-ACCEPTED INCOMPLETE entry was SUPERSEDED by the rules-to-zero campaign with the instruction 'keep grinding'. Per the auto-reject clause, a packet whose YES would lower a standard or accept the debt must NOT be filed and the residual stays ACTIVE.
+
+- [s25] src/text1a_pre.c was restored to HEAD at the end of the session; no build-pipeline file was touched and no commit was made.

@@ -4,17 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80041188",
-      "file": "text1a_pre",
-      "distance": 27,
-      "verdict": "C",
-      "rules": 16,
-      "status": "active",
-      "prologue_fix": 1,
-      "unpark_reason": "OWNER RULING 2026-08-24 (auto-reject class): canonical LOW-tier override DECLINED \u2014 evidence bar stands. Keep grinding. RULES-TO-ZERO CAMPAIGN member (16 rules + last prologue entry). Enumeration-complete residual (out2 4th-reference IS the residual insn) is the exact shape the untried solver modality instruments; candidate's stptr chain-extender still needs FAKE annotation or replacement on land.",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md -- '## 2026-08-24 - func_80041188 - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (appended this session; the single decidable question is whether the owner grants a canonical-asm authorization for func_80041188 as an explicit override of the LOW scan_hand_coded tier, which would retire all 16 regfix/asmfix rules plus the project's last prologue_config.json entry and take the rules-to-zero campaign to 0 carriers, versus declining the override and accepting 17 permanent carriers)."
-    },
-    {
       "func": "func_80040D48",
       "file": "text1a_pre",
       "distance": 34,
@@ -2082,6 +2071,18 @@
       "hand_coded_tier": "LOW"
     },
     {
+      "func": "func_80041188",
+      "file": "text1a_pre",
+      "distance": 27,
+      "verdict": "C",
+      "rules": 16,
+      "status": "escalated",
+      "prologue_fix": 1,
+      "unpark_reason": "OWNER RULING 2026-08-24 (auto-reject class): canonical LOW-tier override DECLINED \u2014 evidence bar stands. Keep grinding. RULES-TO-ZERO CAMPAIGN member (16 rules + last prologue entry). Enumeration-complete residual (out2 4th-reference IS the residual insn) is the exact shape the untried solver modality instruments; candidate's stptr chain-extender still needs FAKE annotation or replacement on land.",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md -- '## 2026-08-24 - func_80041188 - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (appended this session; the single decidable question is whether the owner grants a canonical-asm authorization for func_80041188 as an explicit override of the LOW scan_hand_coded tier, which would retire all 16 regfix/asmfix rules plus the project's last prologue_config.json entry and take the rules-to-zero campaign to 0 carriers, versus declining the override and accepting 17 permanent carriers).",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-25 \u0393\u00c7\u00f6 func_80041188 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
+    },
+    {
       "func": "main",
       "file": "ings",
       "distance": 0,
@@ -2094,13 +2095,13 @@
   ],
   "counts": {
     "total": 240,
-    "active": 239,
+    "active": 238,
     "by_status": {
-      "active": 239,
-      "escalated": 1
+      "active": 238,
+      "escalated": 2
     },
     "by_verdict": {
-      "C": 203,
+      "C": 202,
       "ASM-PARTIAL": 36
     }
   }

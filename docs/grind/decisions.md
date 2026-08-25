@@ -10675,3 +10675,22 @@ considered."
 ## 2026-08-24 21:05 — func_80038C70 — final call — **PASS**
 
 The diff is ordinary C89 control flow: two `goto`s to statement labels on the `case 9/11` and `case 12` handler bodies, replacing retyped copies of those bodies in the `D_800A3207 == 3` arm — the same idiom HEAD already ships two lines earlier (`goto case8_sel;`, src/code6cac_c_mid.c:880). No exception family is claimed or needed; no pin, asm, volatile/alias, dead local/store, or wrapper. Decisive fact I verified myself: the third change, `sel = 0xC` -> `sel = 0xD` in the case-9/11 handler, is a CORRECTION — asm/funcs/func_80038C70.s:170-172 (.L80038EC8) emits `addiu $s0,$zero,0xD`, and the retired regfix line existed solely to rewrite that immediate. The C now states the program's real value; the semantic lie is gone. Independently re-ran `sandbox --disable all`: score 0, 402/402, rules_dropped 0, and grep confirms zero regfix/asmfix rows and zero __asm__ in the function. The judge_constraints' banned USE/CLOBBER-manufacture family (union constructor / cast-to-union / single-member struct / struct-return / dead union local) is absent, not respelled — the diff adds no declaration, type, or operator at all. The pre-existing `/* FAKE */` duplicate `sel2 = D_800A3350;` in `case 0:` is unchanged from HEAD and sits verbatim inside the sanctioned duplicated-statement-into-arms family (.claude/rules/no-new-park-categories.md, 2026-07-01 ruling: 'incl. when cross-jump re-merges it byte-neutrally and the effect is a reg_n_refs priority lift'); its prerequisites hold — annotation present with named mechanism, byte-neutrality confirmed by my 402==402 measurement, exhaustion measured this session (both alternatives score 13, banked at rejected/s49-goto-load-sel2-drops-ra-priority-score13.c). Full evidence: memory/grind/func_80038C70/evidence.md s49 section, self_vet.md, hypotheses.md s49.
+
+## 2026-08-25 — func_80041188 — OWNER-ESCALATION — ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)
+
+**Auto-filed by the grinder driver (2026-08-25)** after 25 sessions held the honest
+floor flat at 1 across 9 distinct modalities (escalation, forensics, permuter, recon, rederive, solver, structural, synthesis, wip-import) without a
+session self-filing — the escalation-modality backstop (grind.ps1). This is the endgame-lock
+species per the standing 2026-07-20 endgame-lock-disposition policy: byte-matches on main only
+via a cheat (16 regfix/asmfix rule(s) or cheat-asm), honest pure-C floor 1,
+sanctioned levers exhausted across the full modality ladder (see memory/grind/func_80041188/
+evidence.md + hypotheses.md for the per-session kill record). Both AND-gates fail on the ledger evidence: canonical-asm — `scan_hand_coded --single
+func_80041188` = **LOW** (ordinary GCC RA/scheduler artifact, no hand-coded signature);
+coercion family — no SOTN-master precedent recorded for the residual axes. Per the owner's
+2026-08-24 ruling (.claude/rules/escalation-not-parked.md): the item is ESCALATED with a
+decision packet, not parked — the packet must state the DECIDABLE question this function's
+residual poses (the specific grant/family/fidelity/routing choice), the evidence pointers,
+and the consequence of each answer. The two AND-gates remain the unchanged STANDARD; the
+owner rules on packets in batches, and the ruling returns the item to active either way.
+If no decidable question exists, the item stays ACTIVE with a modality change instead
+(difficult-is-not-impossible) — "this is hard" is not a packet.
