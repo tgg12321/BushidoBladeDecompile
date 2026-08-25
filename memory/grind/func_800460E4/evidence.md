@@ -1451,3 +1451,147 @@ tmp/ra_solver_work/text1a_c2.local.json, tmp/sched_solver_work/text1a_c2.sched.j
 - [s5] [s9] Exhaustion enumeration: by expr.c:4567-4577 the only non-/s spellings are (a) plain pointer variable, (b) integer/pointer-cast byte-offset deref, (c) aggregate COMPONENT_REF (which sets /s unconditionally at expr.c:4888). (a) is banned_constructs #4/#5, (b) is the 06:39 ruling + the standing constraint, (c) is the 04:46 aggregate-merge ruling. There is no fourth spelling.
 
 - [s5] [s9] sched_solver at this chassis: extract.py parity=True, but inverse_sched.py --block 19 --goal-from-target refuses with GOAL INVALID (1 dependence violation, 304<-308) because the hon->tgt alignment cannot pair a 14-insn block against a target arm jump2 never merged. The scheduler backend cannot be driven from an automatic goal on this block; this explains rather than weakens [s4]'s UNREACHABLE verdict - the missing thing is a dependence EDGE, and [s9.5] names the source property that creates it.
+
+## [s6] 2026-08-25 (FORENSICS modality) — the MEM_IN_STRUCT_P account is now RTL-dump-proven, the residual narrows to ONE lvalue, and two more routes die on measurement
+
+[s6.0] Chassis re-measured at session start with the [s7]/[s8]/[s9] candidate body
+through `tmp/grind/func_800460E4/s8/pr.sh`: **245 insns / 9 diffs** — unchanged
+since [s8]. src/text1a_c2.c was NEVER edited this session (every probe was run as
+a standalone variant .c through pr.sh), so the tree stayed HEAD-clean.
+Owner directive (RULES-TO-ZERO, 2026-08-24) re-acknowledged: the goal is
+COMPLETED-C, which retires this function's 10 regfix rules; the wave-2
+INCLUDE_RODATA route was already measured SHA1-dead for this function
+specifically (docs/grind/borderline.md:88) and was not re-run.
+
+[s6.1] DUMP-PROVEN (upgrades [s9.5] from a source-read inference to an RTL fact).
+`tools/gcc-2.7.2/build/cc1 -O2 -da` on the candidate body, dumps under
+tmp/grind/func_800460E4/s6/dumps_cand/. In `t.flow` (pre-sched RTL) the case-3
+block is:
+
+    (insn 308 ... (set (reg 140) (mem/s:SI (plus:SI (reg 138) (const_int -8)))))
+    (insn 322 ... (set (reg 147) (mem/s:SI (plus:SI (reg 138) (const_int -4)))))
+    (insn 331 ... (set (mem:HI (symbol_ref:SI ("D_8009947A"))) (reg:HI 150)))
+
+Both header loads carry **/s** (MEM_IN_STRUCT_P) with a *varying* SImode address;
+the store's MEM carries **no /s** and a *non-varying* symbol_ref address. That is
+literally the operand pattern `sched.c:831-839` exempts in BOTH `true_dependence`
+and `anti_dependence`.
+In `t.sched` (sched1 output, excerpt banked at s6/sched_block19_hoist.txt) the
+emitted order is **308 -> 329 (li 1) -> 331 (sh) -> 309 -> 310 -> 322**: the store
+is scheduled BETWEEN the two loads, and insn 322's dependence `insn_list` names
+only insn 304 (its address), never 331 — the missing memory edge is visible in the
+dump itself rather than inferred. Pass attribution is therefore final: the
+divergence is BORN in `expr.c` expand (the /s bit) and TAKEN by **sched1**
+(`sched.c` true_dependence / anti_dependence). No later pass participates.
+Artifacts: s6/flow_block19_memflags.txt, s6/sched_block19_hoist.txt.
+
+[s6.2] NEW — the residual needs only ONE of the two reads to lose /s, and it is the
+**-4 (second) read**, not the pair. Derivation: the store follows both loads in
+source order, so it is anti-dependent on any load it is not exempt from; blocking
+it against the LAST load alone is sufficient to keep it out of the gap. Measured,
+both directions, at this chassis:
+
+  * `-4` read through a pointer variable, `-8` read left as `ptr[-2]`
+    -> **248 insns / 0 diffs** (the whole function closes)
+  * `-8` read through a pointer variable, `-4` read left as `ptr[-1]`
+    -> **245 insns / 9 diffs** (completely inert)
+
+Banked research-only (both are banned_constructs #4 family, NOT proposed):
+rejected/s6-research-only-banned-only-m1-ptr-248-0.c and
+rejected/s6-research-only-only-m2-ptr-245-9-inert.c.
+CONSEQUENCE for any future fidelity packet: the decidable question is about ONE
+lvalue — case 3's read of the `-4` stage-header word — not about a two-read
+construct. That is a strictly smaller question than the one the [s9] frontier
+posed.
+
+[s6.3] KILL — the aggregate-merge route (enumeration branch (c), closed by the
+04:46 ruling on procedural grounds) is now closed on **independent, pre-existing
+evidence**, which is exactly the prong (a) bar that ruling demanded
+(no-new-park-categories.md 2026-08-17: base-register or stride evidence, NOT
+adjacency). Surveyed every access to D_80099478 / D_8009947A in the shipped EXE —
+seven functions: func_800460E4, func_800464C4, func_8004659C, func_8004668C,
+func_800466C0, func_80046798, func_800467A8. **All twelve accesses use their own
+independent `lui %hi(SYM)` + `%lo(SYM)` pair.** The decisive negative is
+func_8004668C, which stores to BOTH symbols back to back
+(`lui $at,%hi(D_80099478); sh $v0,%lo(...); lui $at,%hi(D_8009947A); sh $zero,%lo(...)`)
+and re-materializes the base with a **second `lui $at`** instead of reusing the
+first with a +2 offset — precisely what GCC would NOT do if the two halfwords were
+members of one aggregate. There is no base-register or stride evidence anywhere in
+the binary. Prong (a) FAILS on evidence, not merely on procedure; the aggregate
+model is affirmatively contradicted. Do not re-file it.
+Artifact: s6/aggregate_evidence_survey.txt.
+
+[s6.4] KILL — the **walking-pointer** technique
+(.claude/rules/walking-pointer-serializes-parallel-loads.md; project-precedented,
+independent cheat-reviewer + owner sign-off 2026-06-15, ordinary C requiring no
+FAKE) is DEAD at this site, and it dies on INSTRUCTION COUNT, not on sanction.
+It was the strongest non-banned construct available for this residual: `*hp++`
+builds INDIRECT_REF(POSTINCREMENT_EXPR), which is not a PLUS_EXPR, so it clears /s
+on BOTH reads with no cast, no volatile, no invented scalar, and a plain human
+reading. Measured:
+
+  * `s32 *hp = &s0[s3 - 2]; s6 = ..ALIGN4(*hp++); s4 = ..ALIGN4(*hp++); D_8009947A = 1;`
+    -> **249 insns / 4 diffs**
+  * same with the store hoisted to the top of the block -> 246 / 25
+  * `s32 *hp = &s0[s3]; s4 = ..ALIGN4(*--hp); s6 = ..ALIGN4(*--hp);` -> 249 / 5
+
+Mechanism of the failure: target's base register holds exactly `s0 + (s3<<2)` and
+the two loads use literal offsets `-8` / `-4`. A walking pointer must *hold* the
+address it dereferences at offset 0, so GCC emits one extra `addiu` to bias the
+base — 249 insns against target's 248. The extra instruction is structural; no
+schedule removes it.
+Banked: rejected/s6-walking-pointer-postinc-249-4-extra-addiu.c,
+rejected/s6-walking-pointer-predec-249-5-extra-addiu.c,
+rejected/s6-walking-pointer-store-first-246-25.c.
+
+[s6.5] Enumeration [s9.7] is now closed by MEASUREMENT as well as by syntax, and
+the corollary is sharp. To match, a case-3 spelling must simultaneously
+
+  (i) leave the base register holding `s0 + (s3<<2)` so the loads keep their `-8` /
+      `-4` literal offsets (otherwise +1 addiu — [s6.4]), and
+  (ii) give the `-4` read a non-PLUS_EXPR INDIRECT_REF operand so /s clears
+      ([s6.1]/[s6.2]).
+
+(i) forbids the dereferenced address from living in the pointer that is
+dereferenced; (ii) requires the dereferenced operand to be a bare pointer
+*variable* (post/pre-increment and index-0 forms are the only other non-PLUS
+shapes, and both violate (i)). The intersection is exactly one construct —
+`s32 *pm1 = ptr - 1; ... *pm1` — which is banned_constructs #4/#5. There is no
+fourth spelling and now no fourth *shape* either.
+
+[s6.6] Mechanism fact worth carrying to other functions (dump-proven here):
+in GCC 2.7.2, `p[0]` / `*p` on a pointer VARIABLE produces a MEM with **/s = 0**
+(fold collapses `PLUS_EXPR(p, 0)`, so expr.c:4567-4577 never fires), while `p[k]`
+for any nonzero k produces **/s = 1**. Confirmed in this TU's own dump: the
+mainline `s0[0]` / `a0_ptr[0]` reads are `(mem:SI (reg/v:SI 74))` and
+`(mem:SI (reg/v:SI 109))` with no /s, while `a0_ptr[-1]` / `a0_ptr[1]` are
+`(mem/s:SI (plus:SI ...))`. Also confirmed: /s is a purely *tree-syntactic*
+property that survives CSE address folding — insns 170 and 246 carry
+`(mem/s:SI (reg ...))`, a bare-register address that still remembers it was born
+from a PLUS_EXPR.
+
+- [s6] Chassis 245/9 re-measured at session start and unchanged; src/ never edited (all probes run as standalone variant .c files through s8/pr.sh).
+- [s6] The /s account is now RTL-dump-proven end to end: t.flow shows both case-3 header loads as (mem/s:SI (plus (reg 138) (const_int -8|-4))) and the D_8009947A store as a bare (mem:HI (symbol_ref)); t.sched shows sched1 emitting 308 -> li 1 -> sh -> 309 -> 310 -> 322, with insn 322's dependence list naming only its address insn 304. The absent memory edge is visible in the dump.
+- [s6] Only the -4 (second) header read needs /s=0: flipping it alone measures 248/0, flipping only the -8 read measures 245/9 (inert). Any future fidelity question concerns ONE lvalue.
+- [s6] Aggregate merge is contradicted by binary-wide evidence, not merely closed by ruling: all 12 accesses to D_80099478/D_8009947A across 7 functions use independent lui %hi/%lo pairs, and func_8004668C emits TWO separate lui $at for back-to-back stores to the two symbols. Prong (a) FAILS on evidence.
+- [s6] Walking pointers (*hp++ / *--hp) DO clear /s honestly with no cast and no volatile, and the technique is project-sanctioned (walking-pointer-serializes-parallel-loads.md), but they measure 249/4, 249/5, 246/25 because holding the address in the pointer costs one extra addiu against target's 248. Dead on instruction count, not on sanction.
+- [s6] Closing corollary: matching requires the base register to stay at s0+(s3<<2) (literal -8/-4 offsets) AND the -4 read to be non-PLUS. Those two requirements intersect in exactly one construct, the banned pm1 pointer intermediate. No fourth shape exists.
+- [s6] Portable GCC 2.7.2 fact: p[0] / *p on a pointer variable yields a MEM without /s (fold kills PLUS_EXPR(p,0)); p[k] for k != 0 yields /s. /s survives CSE address folding (bare-register MEMs in this TU still carry /s).
+
+- [s6] Chassis re-measured at session start with the [s7]/[s8]/[s9] candidate body through tmp/grind/func_800460E4/s8/pr.sh: 245 insns / 9 diffs — unchanged since [s8]. src/text1a_c2.c was NEVER edited this session (all probes ran as standalone variant .c files through pr.sh), so the tree stayed HEAD-clean; git status shows only memory/grind ledger files.
+
+- [s6] Owner directive (RULES-TO-ZERO, 2026-08-24) re-acknowledged: the goal is COMPLETED-C, which retires this function's 10 regfix rules. The wave-2 INCLUDE_RODATA route was already measured SHA1-dead for this function specifically (docs/grind/borderline.md:88) and was not re-run.
+
+- [s6] RTL-dump proof of the mechanism (t.flow): case-3's two header loads are (mem/s:SI (plus:SI (reg 138) (const_int -8))) and (mem/s:SI (plus:SI (reg 138) (const_int -4))); the case-3 store is (set (mem:HI (symbol_ref:SI ("D_8009947A"))) (reg:HI 150)) with no /s and a non-varying address. That is exactly the operand pattern sched.c:831-839 exempts in both true_dependence and anti_dependence.
+
+- [s6] RTL-dump proof of the consequence (t.sched, sched1 output): emitted order 308 -> 329 (li 1) -> 331 (sh) -> 309 -> 310 -> 322, i.e. the store scheduled between the two loads; insn 322's dependence insn_list names only insn 304 (its address), never 331. The absent memory edge is visible in the dump rather than inferred.
+
+- [s6] One-sided /s measurement: clearing /s on ONLY the -4 (second) header read closes the function at 248 insns / 0 diffs; clearing /s on ONLY the -8 read leaves 245 / 9 (fully inert). The decidable residual concerns a single lvalue.
+
+- [s6] Aggregate-merge prong (a) fails on evidence: all 12 accesses to D_80099478 / D_8009947A across 7 functions use independent lui %hi / %lo pairs. func_8004668C stores to both symbols back to back and re-materializes the base with a second lui $at instead of offsetting the first — the opposite of what a single aggregate would produce.
+
+- [s6] Walking pointers clear /s honestly (INDIRECT_REF of POSTINCREMENT_EXPR / PREDECREMENT_EXPR is not a PLUS_EXPR) but cannot match: 249/4 (post-inc from &s0[s3-2]), 246/25 (same, store hoisted), 249/5 (pre-dec from &s0[s3]) against target's 248 insns. Holding the dereferenced address in the pointer costs one structural extra addiu.
+
+- [s6] Closing corollary, now measurement-backed: a matching case-3 spelling must keep the base register at s0+(s3<<2) (literal -8/-4 offsets) AND give the -4 read a non-PLUS_EXPR operand. Those two requirements intersect in exactly one construct, `s32 *pm1 = ptr - 1; ... *pm1`, which is banned_constructs #4/#5. No fourth spelling and no fourth shape exists.
+
+- [s6] Portable GCC 2.7.2 fact confirmed in this TU's dump: p[0] / *p on a pointer variable gives a MEM with /s = 0 (fold collapses PLUS_EXPR(p, 0)), p[k] for k != 0 gives /s = 1, and /s survives CSE address folding (insns 170 and 246 are bare-register MEMs that still carry /s).

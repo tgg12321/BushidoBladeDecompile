@@ -1,3 +1,27 @@
+/* [s6] FORENSICS-SESSION UPDATE 2026-08-25 - read this with the [s9] note below.
+ * Body UNCHANGED (still the [s7] non-banned form; re-measured 245 insns / 9 diffs
+ * this session). Four things are now settled that were not before:
+ *  1. The MEM_IN_STRUCT_P account is RTL-DUMP-PROVEN, not inferred: t.flow shows
+ *     both case-3 header loads as (mem/s:SI (plus (reg 138) (const_int -8|-4)))
+ *     and the D_8009947A store as a bare (mem:HI (symbol_ref)); t.sched shows
+ *     sched1 emitting 308 -> li 1 -> sh -> 309 -> 310 -> 322 with insn 322's
+ *     dependence list naming only its address insn. Born in expr.c expand, taken
+ *     by sched1. Dumps: tmp/grind/func_800460E4/s6/dumps_cand/.
+ *  2. Only the -4 (SECOND) header read needs /s = 0. Flipping it alone measures
+ *     248/0; flipping only the -8 read measures 245/9 (inert). The residual is a
+ *     fidelity question about ONE lvalue.
+ *  3. The aggregate merge is CONTRADICTED by the binary, not just closed by
+ *     ruling: all 12 accesses to D_80099478/D_8009947A across 7 functions use
+ *     independent lui %hi/%lo pairs, and func_8004668C emits two separate lui $at
+ *     for back-to-back stores to the two symbols.
+ *  4. Walking pointers (*hp++ / *--hp) - honest, project-precedented, and they DO
+ *     clear /s - are dead here on instruction count: holding the address in the
+ *     pointer costs one extra addiu (249 vs target's 248). Measured 249/4, 249/5,
+ *     246/25.
+ * Closing corollary: matching needs the base register to stay at s0+(s3<<2) AND
+ * the -4 read to be non-PLUS. Those intersect in exactly one construct, the banned
+ * pm1 pointer intermediate. See evidence.md [s6].
+ */
 /* [s9] SOLVER-SESSION UPDATE 2026-08-25 — read this first.
  * The body below is UNCHANGED (still the [s7] non-banned form, sandbox 9,
  * 245/248, re-measured this session). What changed is the diagnosis:
