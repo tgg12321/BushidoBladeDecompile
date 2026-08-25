@@ -4,6 +4,16 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_800460E4",
+      "file": "text1a_c2",
+      "distance": 35,
+      "verdict": "C",
+      "rules": 10,
+      "status": "active",
+      "unpark_reason": "Owner ruling 2026-08-25 YES on the s9 decision packet: the banked single-local named-intermediate form (measured 248/248 score 0) qualifies under the frozen named-intermediate family; return to active to apply + layer-1/layer-2 review toward COMPLETED-C (retires 10 rules, RULES-TO-ZERO).",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:10742 - '## 2026-08-25 - func_800460E4 - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**'"
+    },
+    {
       "func": "SioSyncroRead",
       "file": "main",
       "distance": 41,
@@ -2056,16 +2066,6 @@
       "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-25 \u0393\u00c7\u00f6 func_80041188 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
     },
     {
-      "func": "func_800460E4",
-      "file": "text1a_c2",
-      "distance": 35,
-      "verdict": "C",
-      "rules": 10,
-      "status": "escalated",
-      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. 10 regfix; jtbl-coupled, same route as func_80040D48 (wave-2 INCLUDE_RODATA measured SHA1-dead for THIS function specifically).",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:10742 - '## 2026-08-25 - func_800460E4 - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**'"
-    },
-    {
       "func": "func_80060A68",
       "file": "text1b",
       "distance": 39,
@@ -2088,13 +2088,13 @@
   ],
   "counts": {
     "total": 239,
-    "active": 235,
+    "active": 236,
     "by_status": {
-      "active": 235,
-      "escalated": 4
+      "active": 236,
+      "escalated": 3
     },
     "by_verdict": {
-      "C": 199,
+      "C": 200,
       "ASM-PARTIAL": 36
     }
   }
