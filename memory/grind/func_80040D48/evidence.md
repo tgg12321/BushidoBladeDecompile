@@ -257,3 +257,101 @@ that diverges. That is the whole of the remaining residual.
 - [s2] Proven dead without measurement (do not spend probes): re-basing a4p to s3+0x78 (offsets 0/2/4) or s3+0x7C (offsets -4/-2/0), and any permutation of the three stores. loop.c does not record a mult-1/add-0 address as a giv, so a zero-offset store forces the biv to survive alongside the reduced register.
 
 - [s2] Owner directive (RULES-TO-ZERO campaign) followed: pure-C route only, no INCLUDE_RODATA / INCLUDE_ASM probes attempted. The 34 regfix rules are retired by reaching COMPLETED-C, and the honest floor is now 4.
+
+
+## [s3 2026-08-25, structural] Floor 4 -> 0: the case-0 init loop is not a loop.c loop, and the walker is the arg4 variable
+
+**Chassis re-measurement.** s2's `candidate.c` re-applied to `src/text1a_pre.c`
+reproduced `sandbox func_80040D48 --disable all` = **4** (272/272, rules_dropped 34,
+cheat_asm_stripped 2 -- both strips are in the untouched `func_80041188`, line 752,
+not in this function) on HEAD 51a9e464. Every number below is on that chassis.
+
+**Class A closed -- and s2's attribution was right, but its conclusion ("the live axis
+is defeating biv verification of a4p") pointed at the wrong axis.** The correct
+reading of s2's own proof is stronger: target's loop was never processed by loop.c AT
+ALL. Reading `tools/gcc-2.7.2/loop.c:3775-3830` directly this session confirms the
+arithmetic is unwinnable from inside a note-delimited loop:
+  - `benefit -= add_cost * bl->biv_count` (loop.c:3803) and the skip test
+    `v->lifetime * threshold * benefit < insn_count` (loop.c:3823).
+  - For DEST_ADDR givs `record_giv` hardcodes `v->lifetime = 1` (loop.c:4394);
+    `combine_givs` (loop.c:5494) then does `g1->benefit += g2->benefit` and
+    `g1->lifetime += g2->lifetime`, so the merged giv is benefit 6 / lifetime 3.
+  - `threshold` is `(loop_has_call ? 1 : 2) * (3 + n_non_fixed_regs)` with
+    `n_non_fixed_regs == 60` on this target (measured and documented in
+    `.claude/rules/defeat-licm-hoist-var-reuse.md`), i.e. 126 (63 with a call).
+    `3 * 126 * 4 = 1512` vs `insn_count` 28. The skip can NEVER fire.
+  - Preventing the combine is equally impossible: `combine_givs_p` (loop.c:5458)
+    combines two DEST_ADDR givs when `express_from` yields a valid address whose
+    `ADDRESS_COST` is `<=` the original's. `ADDRESS_COST` for MIPS is
+    `(REG_P (ADDR) ? 1 : mips_address_cost (ADDR))` (mips.h:2897) and
+    `mips_address_cost` returns 1 for `PLUS(reg, SMALL_INT)` -- so any two stores
+    whose offsets differ by less than 0x8000 always combine. Target's offsets differ
+    by 2 and 4.
+  So with `NOTE_INSN_LOOP_BEG` present, GCC 2.7.2 CANNOT emit target's shape for this
+  loop, however the C is spelled. **PROBE: spell the loop with an explicit label and a
+  backward `goto` so no loop notes are emitted.** Measured: the four Class A diffs
+  vanish -- the loop body comes out byte-identical to target
+  (`addiu $a0,$s3,104` / `sh ...,16/18/20($a0)` / `addiu $a0,$a0,104` in the delay
+  slot), artifact `tmp/grind/func_80040D48/s3/build.insns` lines 52-93.
+
+**The wrapper does NOT work.** `do { ... goto initloop; ... } while (0);` (the idiom
+the COMPLETED sibling `func_80040CB8` uses at `src/text1a_pre.c:524-548`) re-creates
+the notes: measured back to **4**, byte-identical to the plain do/while form. Banked
+`rejected/dowhile0-wrapper-restores-loop-notes-floor4.c`. Losing the notes is the
+whole point; there is no spelling that keeps the weighting AND loses the reduction.
+
+**The price of losing the notes, and how the original paid it (floor 111 -> 0).**
+The goto spelling alone measured **111 (274/272)**: two extra insns and a global
+callee-saved rename. Attribution read from the regenerated dumps, not guessed:
+  - `.greg`: `;; 22 regs to allocate: 97 99 178 186 168 82 187 83 81 75 84 80 173 74
+    78 96 95 201 73 79 77 72` -- pseudo **168** (the `func_800417D0` walker) is
+    allocated BEFORE pseudo **82** (the shared counter).
+  - `.flow`: `Register 168 used 7 times across 10 insns` (pri
+    floor_log2(7)*7/10 = 1.40) vs `Register 82 used 25 times across 81 insns` (pri
+    floor_log2(25)*25/81 = 1.235). With the notes, flow.c's `reg_n_refs += loop_depth`
+    had boosted the counter over the walker; without them it loses the race.
+  - MIPS defines no `REG_ALLOC_ORDER`, so the walker takes the first free callee-saved
+    reg ($s0), the counter -- which conflicts with it inside that loop
+    (`;; 82 conflicts: ... 168 ...`) -- is pushed to $s1, and every later callee-saved
+    allocno shifts up one seat. The function ends up needing a NINTH callee-saved
+    register: `;; Register dispositions: 72 in 30` ($s8/$fp) and
+    `;; Hard regs used: ... 16 17 18 19 20 21 22 23 30 ...`, plus the `sw`/`lw` pair
+    that saves it (the +2 insns).
+  - **Fix, and it is the same object-model argument as s1's $s5 and s2's $a2:** in the
+    original that walker and the `arg4` pointer are ONE variable. Target's `$s1` is
+    loaded from the incoming stack slot, read through `0x6C..0x82($s1)` in case 0, and
+    then redefined by `addu $s1,$s3,$zero` to walk `s3` by 0x68. Reusing the existing
+    `s1` local for the walk restores counter-first order: **0 (272/272)**.
+  Banked `rejected/goto-init-loop-separate-s1p-walker-extra-s8.c`.
+
+**Prologue refinement (construct hygiene, byte-neutral).** s1's `u8 *tmp` two-var load
+was respelled as `s32 ent = D_800A9A10[a0]; if (ent == 0) return; s4 = (u8 *)ent;`.
+`D_800A9A10` is declared `extern s32 []`, so reading the element into an `s32`,
+null-checking it and casting is ordinary C with two distinctly TYPED values rather
+than two same-typed handles -- it removes the "why are there two pointers?" question
+s1 flagged for the Judge. Measured **0** (unchanged). The one-variable collapse
+(`s4 = (u8 *)D_800A9A10[a0]; if (s4 == 0) return;`) measures **4** -- banked
+`rejected/single-var-prologue-entry-load-floor4.c` -- so the split is load-bearing and
+mirrors target, which loads the entry into caller-saved `$a0`, tests THAT, and copies
+to `$s4` in the `beqz` delay slot.
+
+**Re-tested on the new chassis and still dead:** spelling the Copy8 loop as
+`while ((s5 = *(u8 **)(a3p + 0x40)) != 0) { ... }` measures **7 (273/272)** -- loop.c
+rotates it to a bottom test and cse folds the first-iteration load, exactly as s1
+measured for the `for(;;)+break` form. The `copyloop:`/`copydone:` spelling stands.
+
+**FINAL STATE: honest floor 0**, 272/272 insns, all 34 regfix rules dropped, zero
+inline asm, zero pins, zero volatile, zero dead code in the body. `self_vet.md`
+written (SANCTIONED-FAMILY-CLAIMS: none -- the argument is object-model
+reconstruction, mirroring the accepted sibling `func_80040B44` vet at `68065f31`).
+Three short explanatory comments were added at the two goto loops and the `s1` reuse,
+in the house style of this TU's matched siblings; re-measured 0 with them in place.
+
+- [s3] Chassis re-verified: s2 candidate re-applied = floor 4 (272/272, rules_dropped 34) on HEAD 51a9e464.
+- [s3] loop.c read directly (3775-3830, 4394, 5458-5530) + mips.h:2897 + mips_address_cost: with NOTE_INSN_LOOP_BEG present, three DEST_ADDR givs off one biv whose offsets differ by <0x8000 ALWAYS combine (ADDRESS_COST 1 <= 1) and the merged giv (benefit 6, lifetime 3) can NEVER hit the "not worth while" skip (3*126*4 = 1512 vs insn_count 28). Target's shape is unreachable from ANY note-delimited spelling of this loop.
+- [s3] Spelling the case-0 init loop as `initloop:` + backward `goto` (no loop notes -> loop.c never sees it) makes the loop body byte-identical to target: base addiu $a0,$s3,104, stores at 16/18/20, single addiu $a0,$a0,104 in the delay slot. Class A CLOSED.
+- [s3] `do { ... goto initloop; } while (0);` re-creates the loop notes and measures 4 again, byte-identical to the plain do/while. The sibling func_80040CB8 wrapper idiom does NOT suppress strength reduction.
+- [s3] The goto spelling alone measures 111 (274/272): losing the notes loses flow.c's loop_depth ref weighting for the shared counter, so global.c allocates the func_800417D0 walker (pseudo 168, 7 refs/10 insns, pri 1.40) before the counter (pseudo 82, 25 refs/81 insns, pri 1.235); they conflict, the counter is pushed off $s0, and the whole callee-saved bank shifts up, requiring a ninth register ($s8, "72 in 30") plus its save/restore.
+- [s3] Merging the func_800417D0 walker into the existing `s1` (arg4) local restores counter-first allocation order and closes the last 4 diffs: floor 0, 272/272. Target's $s1 serves exactly those two roles (stack-slot load + 0x6C..0x82 reads, then addu $s1,$s3,$zero for the walk).
+- [s3] Prologue respelled `s32 ent = D_800A9A10[a0]; if (ent == 0) return; s4 = (u8 *)ent;` (byte-neutral, two distinctly typed values); the one-variable collapse measures 4, so the split is load-bearing and mirrors target's load-into-$a0 / test / copy-in-delay-slot shape.
+- [s3] Copy8 loop as a `while ((s5 = ...) != 0)` re-tested on this chassis: 7 (273/272), same rotation+cse fold s1 measured. The goto spelling stands.

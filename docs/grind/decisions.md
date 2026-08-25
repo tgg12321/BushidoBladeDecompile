@@ -10694,3 +10694,7 @@ and the consequence of each answer. The two AND-gates remain the unchanged STAND
 owner rules on packets in batches, and the ruling returns the item to active either way.
 If no decidable question exists, the item stays ACTIVE with a modality change instead
 (difficult-is-not-impossible) — "this is hard" is not a packet.
+
+## 2026-08-25 02:53 — func_80040D48 — layer-1 review — **FAIL**
+
+The goto-spelled loops (and the s1/arg4-walker merge that follows from them) are explicitly, self-documented GCC-internals levers built to suppress loop.c's NOTE_INSN_LOOP_BEG so combine_givs/strength-reduction never fires — not an ordinary human spelling choice, and not covered by the narrow do-while(0) exception the project already tested and rejected for this exact spot.

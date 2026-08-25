@@ -142,3 +142,52 @@
 - probe: enumerate a3p's irreducible refs from the .lreg RTL (def, lw 0x40($a3), the BLKmode struct copy which is ONE insn at flow time, and the increment's set+use) and a2p's (def, list store, increment set+use), then compare against target's own instruction stream
 - result: KILLED. a3p's 5 refs and a2p's 4 are both irreducible, and target's a2p likewise has exactly 4 refs in its own bytes, so the flip provably cannot come from inside the loop -- it had to come from outside it (which is what the merge did).
 - verdict: KILLED
+
+
+## [s3] H7 -- target's case-0 init loop was never processed by loop.c at all, so spelling it without loop notes (label + backward goto) reproduces its unreduced shape
+- mechanism: loop.c strength_reduce only runs on regions delimited by NOTE_INSN_LOOP_BEG/END, which the C front end emits for for/while/do-while (including do-while(0)) and NOT for a label + backward goto. With notes present the three DEST_ADDR givs off biv a4p always combine (combine_givs_p -> ADDRESS_COST(PLUS(reg,SMALL_INT)) == 1 == the original's, mips.h:2897 + mips_address_cost) into one giv of benefit 6 / lifetime 3, and the skip test v->lifetime*threshold*benefit < insn_count (3 * 2*(3+60) * 4 = 1512 vs 28, loop.c:3823) can never fire.
+- probe: respell the loop as `{ s32 idx; initloop: ...; if (s0 < 0x12) goto initloop; }` + sandbox --disable all; read the resulting objdump for the loop region
+- result: all four Class A diffs gone (base `addiu $a0,$s3,104`, stores at 16/18/20, one `addiu $a0,$a0,104` in the delay slot) -- but score 111 / 274 insns from a register cascade (see H9)
+- verdict: CONFIRMED
+
+## [s3] H8 -- the do-while(0) wrapper (the COMPLETED sibling func_80040CB8's idiom) keeps loop notes for the flow.c weighting while still hiding the loop from strength reduction
+- mechanism: hoped the phony-loop rejection described in func_80040CB8's own comment would apply here
+- probe: `do { s32 idx; initloop: ...; if (s0 < 0x12) goto initloop; } while (0);` + sandbox
+- result: score 4, 272/272 -- byte-identical to the plain do/while. The wrapper's notes make loop.c see the region as a loop containing a4p's increment, so the givs combine and reduce exactly as before.
+- verdict: KILLED (rejected/dowhile0-wrapper-restores-loop-notes-floor4.c). There is no spelling that keeps the notes and loses the reduction; the notes must go.
+
+## [s3] H9 -- the +2 insns / global callee-saved rename that the goto spelling costs is the counter losing its loop-depth ref weighting, and the original paid for it by having ONE variable for the arg4 pointer and the func_800417D0 walker
+- mechanism: flow.c adds loop_depth to reg_n_refs for every reference inside a note-delimited loop. Without notes the shared counter (pseudo 82: 25 refs / 81 insns, floor_log2(25)*25/81 = 1.235) sorts BELOW the walker (pseudo 168: 7 refs / 10 insns = 1.40) in global.c allocno_compare, so the walker is allocated first and takes $s0 (no REG_ALLOC_ORDER on MIPS -> ascending first-free scan), the counter conflicts with it and is pushed to $s1, and the whole callee-saved bank shifts up one seat -- a ninth callee-saved register ($s8, `72 in 30`) plus its save/restore pair. Merging the walker into the existing arg4 pointer local raises that pseudo's live_length and drops its priority below the counter's, restoring counter-first order.
+- probe: reuse `s1` for the walk (`s1 = (s16 *)s3;` ... `func_800417D0((s32 *)s1); s1 = (s16 *)((u8 *)s1 + 0x68);`) + sandbox
+- result: **4 -> 0** (272/272). Every instruction in the function now matches target.
+- verdict: CONFIRMED
+
+## [s3] H10 -- the s1-session prologue `tmp` can be collapsed to a single variable now that the rest of the body has changed
+- mechanism: hoped the two-variable load was an artifact of the s1 chassis
+- probe: `s4 = (u8 *)D_800A9A10[a0]; if (s4 == 0) return;` + sandbox
+- result: score 4 (272/272) -- the entry value and the object base are genuinely two values in the original (target loads the entry into caller-saved $a0, tests THAT, and copies to $s4 in the beqz delay slot). Respelling as `s32 ent = D_800A9A10[a0]; if (ent == 0) return; s4 = (u8 *)ent;` keeps score 0 and gives the two values distinct TYPES, the natural reading of an `extern s32 []` table.
+- verdict: KILLED as stated; the typed-entry respelling CONFIRMED (rejected/single-var-prologue-entry-load-floor4.c)
+
+## [s3] H11 -- the Copy8 loop can be respelled as an ordinary `while` now that the chassis has moved
+- mechanism: hoped s1's rotation finding was chassis-relative
+- probe: `while ((s5 = *(u8 **)(a3p + 0x40)) != 0) { ... }` + sandbox
+- result: 7 (273/272) -- loop.c rotates to a bottom test and cse folds the first-iteration load to an s4-relative one, exactly as s1 measured for `for(;;)+break`
+- verdict: KILLED (s1's finding re-confirmed on the s3 chassis)
+
+## Frontier (post-s3)
+
+**The function is at honest floor 0 (272/272, all 34 regfix rules dropped).** There is
+no remaining codegen frontier. What remains is acceptance:
+1. `memory/grind/func_80040D48/self_vet.md` is written and claims NO sanctioned family
+   -- the argument throughout is object-model reconstruction (target's own $s5, $a2 and
+   $s1 each serve exactly the two roles the merged C variable serves), mirroring the
+   accepted sibling `func_80040B44` self_vet at `68065f31`.
+2. The two constructs a reviewer is most likely to query are named openly in the vet:
+   the `s5` reuse (s4+0x2C role -> Copy8 source) and the `s1` reuse (arg4 -> walker).
+   If layer-1 rules those into the variable-reuse family, the remedy is a FAKE
+   annotation plus a ruling on WHICH rule file governs allocation-priority reuse --
+   neither `staged-value-reused-variable.md` (scheduling / `reg_n_sets == 1`) nor
+   `defeat-licm-hoist-var-reuse.md` (LICM movable admission) has a scope sentence that
+   covers a global.c allocno-priority reuse, which is the honest classification gap.
+3. If the body is accepted, `queue done func_80040D48` retires the largest remaining
+   rule stack in the project (34 of the final 89).
