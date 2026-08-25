@@ -547,3 +547,42 @@ pos6). The whole game is: give sum its 11th weighted ref WITHOUT bracketing sum=
 - probe: Pin each input from the fresh dumps: size (word GP reg), live_length (endpoint analysis, this session), reg_n_refs (s11 exact model + this session's greg reproduction).
 - result: size=1 fixed; live_length=9 proven incompressible (this session); reg_n_refs(sum)=10 max non-bracket (only def+compare refs). plain-sum priority 33333 is HARD-pinned below j 36666, so sum is always allocated after j (sum=$a1 swap) on any non-bracket chassis. The sole escape reg_n_refs(sum)>=11 needs a loop-note bracket that relocates the ref to block-bottom -> sched1 emits sum=0 last (A'). Region A and A' are mutually exclusive at every priority input. Both reg_n_refs directions already dead (s11/s12 arithmetic + ~173k permuter iters).
 - verdict: KILLED
+
+## [s16] The Region-A' preheader residual is a sched1 INSN_LUID tie-break that some scheduler-input perturbation can flip.
+- mechanism: s6/s7/s10/s11 attributed the `sum=0` block-bottom emission to `rank_for_schedule`'s INSN_LUID tie-break under the do-while(0) bracket, implying a LUID/priority perturbation could reorder it.
+- probe: tools/sched_solver on the score-2 chassis: `extract.py code6cac_c_mid` (parity=True, 810/810 blocks order+clock exact; func_8003800C 19/19 both passes), then `goalmap.py . code6cac_c_mid func_8003800C --pass 1 --target <target order with the two preheader reg=0 moves swapped>`.
+- result: preheader block reports `ours [36,30,27]` / `goal [27,30,36]` and **GOAL INVALID: 2 dependence violation(s) [(27,36,0),(30,36,0)]** — insn 36 (`sum=0`) has TRUE (kind-0) dependences on both 27 (`j=0`) and 30 (`bp=...`). It is dependence-pinned last; no scheduler-input perturbation exists.
+- verdict: KILLED (and the six-session pass attribution CORRECTED — the do-while(0) bracket is a dependence fence, not a tie-break).
+
+## [s16] The preheader emit order and the sum/j seat are ONE constraint: the target's C must initialise sum FIRST and sum must win $a0.
+- mechanism: with no bracket the three preheader inits are independent and all priority 1, so sched1 emits them in source (LUID) order. Target's preheader is `$a0`-init, `bp`, `$a1`-init, and the inner loop shows `$a0` accumulating — so target's source is `sum=0; bp=...; j=0;` with sum seated in `$a0`.
+- probe: sched_solver block model + per-function objdump of the plain (j-first) chassis vs asm/funcs/func_8003800C.s.
+- result: CONFIRMED. The j-first chassis matches the preheader BYTES only because j holds `$a0`; flipping the seat there necessarily breaks the byte order (that is exactly the score-2 do-while(0) state). The "A/A' mutual exclusion" of s6-s15 is a property of the j-first chassis, not of the function.
+- verdict: CONFIRMED (reframes the residual as a single requirement on the sum-first chassis).
+
+## [s16] On the sum-first chassis the target disposition (sum=$a0, j=$a1, bp=$v1) is reachable by ONE modelled RA-input atom.
+- mechanism: global.c `allocno_compare` priority = floor_log2(n_refs)*n_refs/live_length*10000*size; whichever of sum/j sorts first takes `$a0` (MIPS has no REG_ALLOC_ORDER, so find_reg scans ascending).
+- probe: `ra_solver/extract.py func_8003800C code6cac_c_mid` + `simulate.py` (sort order MATCH, dispositions 17/17 — model exact) on both chassis, then `inverse.py global --goal '{"77":4,"79":5,"78":3}' --depth 2`.
+- result: sum-first two-counter baseline = bp(78)$a0 / sum(77)$a1 / j(79)$v1 with pri 41250 / 27272 (n=10,LL=11) / 47142 (n=11,LL=7). Inverse: **minimal solution size 1 atom**, vector #1 `live_extend pseudo 79: live length 7 -> 15` ("MERGE: reuse one variable for both values so the range spans both"); #2 `pref_add $a1` (no call/argument route exists in this function); #3/#4 `refs_down j 11->7/6` (byte-fixed by `addiu a1,a1,1` / `sltiu ...,0x24` / `j=0`).
+- verdict: CONFIRMED (REACHABLE, one atom, one named lever).
+
+## [s16] The checksum counter and the Region-B fixup counter are ONE variable in the original source; merging them supplies the live-range atom and closes the function.
+- mechanism: one function-scope `s32 j` used by both loops unions the two live ranges -> `reg_live_length(j)` rises -> j's allocno priority falls below sum's -> global_alloc seats sum first in `$a0`, j in `$a1`, bp in `$v1` (target). Target evidence: both counters are `$a1` (`sltiu $v0,$a1,0x24`, `slti $v0,$a1,0x16`) and the signedness split survives one `s32 j` for free (`j < 0x24U` promotes the compare to unsigned -> `sltiu`; `j < 0x16` -> `slti`).
+- probe: candidate rewritten with sum-first preheader order and a single shared `j`; `sandbox func_8003800C --disable all` after each simplification, then a full `build`.
+- result: **score 0** (79/79, rules_dropped 0) and full-build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == **oracle MATCH**. Score stayed 0 after removing the Region-B `do { k = 0; } while (0);` AND after rewriting the CopyBlock loop as a plain `do {...} while (sp2 != end);` — every FAKE construct of the s1-s15 line is unnecessary on this chassis. Intermediate measurements: plain j-first two-counter = 4; sum-first two-counter = 9 (both reconfirm s10).
+- verdict: CONFIRMED — FUNCTION MATCHED.
+
+## FRONTIER (s16) — none for this function; it is matched. Carry-forward for OTHER functions:
+1. **Run the solver suite BEFORE deep re-grinding any RA/scheduler residual.** Here it took
+   one session to close what 15 sessions of structural/forensic/permuter work could not, and
+   it also corrected a six-session pass mis-attribution. `sched_solver.goalmap` reporting
+   `GOAL INVALID: dependence violation(s)` is a hard FORECLOSED verdict for a scheduling
+   residual; `ra_solver.inverse` returning a 1-atom `live_extend`/`live_shrink` vector points
+   at VARIABLE IDENTITY (merge/split), which no permuter mutation reaches.
+2. **Ask the inverse solver for the TARGET DISPOSITION, not `--swap`.** `--swap A,B` only
+   exchanges the two current assignments; when a third pseudo has rotated into the seat
+   (bp here) the swap goal is the wrong question and reports a much harder problem
+   (2 atoms / 131 vectors) than the real one (1 atom / 5 vectors).
+3. **Two per-loop locals are an agent habit, not evidence.** When two loops in a function use
+   the SAME hard register in the target, test the single-variable spelling — it is both the
+   C89-idiomatic form and a live-range lever.

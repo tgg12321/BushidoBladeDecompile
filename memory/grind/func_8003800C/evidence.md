@@ -757,3 +757,82 @@ constants' priority. To flip, the constants would need higher priority OR lower 
 - [s15] OWNER-ESCALATION for damage_DebugDisp filed in docs/grind/decisions.md (2026-07-22, grind s15 forensics); no prior entry existed. Both options presented honestly with 'no precedent found' stated for option (a).
 
 - [s15] Every sanctioned axis measured dead across s1-s14 + this forensic closure: structural (s1-s3/s10-s12), forensics (s6/s7/s11/s15), rederive (s8/s9), blind permuter (s4/s5/s13), directed permuter + duplicated-into-arms (s14).
+
+## s16 (synthesis, 2026-08-25) — **FLOOR 2 -> 0. MATCHED.** The two counters are ONE variable in the original.
+Owner directive executed (queue item, 2026-08-24: "solver modality recommended before deep
+re-grind of RA/scheduler-tiebreak residuals"). Both solvers were run for the first time on
+this function; each returned an exact model, and together they closed the function.
+
+**1. sched_solver: the A' residual is NOT a schedulable tie-break (CORRECTS s6/s10).**
+`extract.py code6cac_c_mid` -> parity=True, 810/810 blocks order- AND clock-exact,
+`func_8003800C` 19/19 blocks exact in both passes. `goalmap.py --pass 1` with the target
+order pinned (the two preheader `reg=0` moves swapped) reports for the preheader block:
+`ours [36,30,27]` / `goal [27,30,36]` + **`GOAL INVALID: 2 dependence violation(s)
+[(27,36,0),(30,36,0)]`** — on the do-while(0) chassis insn 36 (`sum=0`) carries TRUE (kind-0)
+dependences on BOTH 27 (`j=0`) and 30 (`bp=...`), so it is dependence-PINNED to the bottom of
+the block. No perturbation of any scheduler input (priority, LUID, class) can lift it: the
+do-while(0) bracket is a hard dependence fence, not a LUID tie-break. Six sessions of
+"sched1 rank_for_schedule INSN_LUID tiebreak" framing (s6/s7/s10/s11) was the wrong pass.
+
+**2. The preheader order and the seat are ONE constraint, not two coupled residuals.**
+Without a bracket the three preheader inits are independent, all priority 1, so sched1 emits
+them in SOURCE (LUID) order. Target emits `$a0`-init, `bp`, `$a1`-init. Therefore the target's
+C initialises `sum` FIRST and `sum` holds `$a0`. The s1-s15 chassis (`j=0` first) matched the
+preheader BYTES only accidentally — j held `$a0` — while the roles inside the loop were
+swapped. There was never an "A vs A' mutual exclusion"; there was one requirement
+(sum source-first AND sum=$a0) that the j-first chassis cannot express.
+
+**3. ra_solver on the sum-first chassis named the single lever.**
+`extract.py func_8003800C code6cac_c_mid` + `simulate.py`: sort order MATCH, dispositions
+**17/17** on both chassis (the global model is exact here).
+* j-first two-counter chassis (score 4): sum(77) pri 33333 (n=10, LL=9) -> `$a1`;
+  j(79) pri 36666 (n=11, LL=9) -> `$a0`.
+* sum-first two-counter chassis (score 9): sum(77) 27272 (n=10, LL=11); j(79) 47142
+  (n=11, LL=7); bp(78) 41250 -> 3-way rotation bp=$a0 / sum=$a1 / j=$v1.
+`inverse.py global --goal '{"77":4,"79":5,"78":3}'` (the true target disposition) on the
+sum-first chassis: **minimal solution size 1 atom**, top vector
+**`live_extend pseudo 79 (j): live length 7 -> 15`** ("MERGE: reuse one variable for both
+values so the range spans both"). The other 1-atom vectors were `pref_add $a1` (no call/arg
+route exists) and `refs_down j 11->7/6` (byte-fixed).
+
+**4. The C that spells it: `j` and `k` are the same variable.**
+Target evidence that motivated the spelling: the checksum counter and the Region-B fixup
+counter are BOTH `$a1` in the target (`sltiu $v0,$a1,0x24` at 0x80038034 and
+`slti $v0,$a1,0x16` at 0x80038130), and the target's two `addu $a1,$zero,$zero` inits sit in
+the two arms around the CopyBlock loop. One function-scope `s32 j` used by both loops unions
+the live ranges, lifts `reg_live_length(j)` and drops j's allocno priority below sum's ->
+sum allocated first -> `$a0`. The signedness split is preserved for free by ONE `s32 j`:
+`j < 0x24U` (unsigned literal promotes the compare) -> `sltiu`; `j < 0x16` -> `slti`.
+
+**MEASURED RESULT (this session, in order):**
+| form | sandbox |
+|---|---|
+| s15 candidate (do-while0 x2, index-B, for(;;) fence, j-first, two counters) | 2 |
+| plain sum=0 in-position, two counters, j-first | 4 (reconfirms s10) |
+| sum-first, two counters (no merge) | 9 (reconfirms s10's "sum-first=9") |
+| **sum-first + merged j/k, region-B do-while(0) kept** | **0** |
+| **sum-first + merged j/k, region-B `j = 0;` PLAIN** | **0** |
+| **+ CopyBlock loop as a plain `do {...} while (sp2 != end);`** | **0** |
+Final form = the last row + the FAKE annotation on the declaration:
+`sandbox --disable all` = 0, 79/79, rules_dropped 0; `build` SHA1
+62efab4f73f992798c43e8c730aa43baa10bb4fa == **oracle MATCH**.
+**All three FAKE constructs of the s1-s15 line are gone** (both do-while(0) brackets and the
+for(;;)+continue fence): they were compensating for the j-first source order, and once the
+counters merge and `sum=0` leads the preheader, none of them is needed.
+- artifacts: tmp/grind/func_8003800C/s16/{final.c,plain.c,sumfirst.c,merge_jk_sumfirst.c,
+  merge_nodw0.c,merge_nodw0_plaincopy.c,inverse_global.txt,inverse_sumfirst.txt,
+  inverse_sumfirst_goal.txt,apply.py}, tmp/sched_solver_work/code6cac_c_mid.sched.json,
+  tmp/sched_map/code6cac_c_mid.tgt.head.s, tmp/ra_solver_work/func_8003800C.model.json
+
+- [s16] The owner's 2026-08-24 solver directive is EXECUTED and it closed the function: the
+  ra_solver inverse verdict on the sum-first chassis (1 atom: extend j's live range) is what
+  produced the matching C. Both solver models were exact on this function first (sched
+  19/19 blocks; RA 17/17 dispositions), so the verdicts were spendable rather than heuristic.
+- [s16] CORRECTS s6/s7/s10/s11: the do-while(0) preheader residual is a kind-0 DEPENDENCE pin
+  (sched_solver `GOAL INVALID`), not an INSN_LUID tie-break. A bracket around a preheader init
+  makes that init depend on every earlier insn in the block.
+- [s16] Preheader emit order == source order for independent equal-priority inits; the target
+  therefore initialises sum first. "Region A vs A' mutual exclusion" was an artifact of the
+  j-first chassis, not a property of the function.
+- [s16] Target's checksum counter and fixup counter are both $a1 and are ONE variable in the
+  original source. Splat-style per-loop locals were the agent's invention, not the game's.

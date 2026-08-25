@@ -11416,3 +11416,51 @@ and the consequence of each answer. The two AND-gates remain the unchanged STAND
 owner rules on packets in batches, and the ruling returns the item to active either way.
 If no decidable question exists, the item stays ACTIVE with a modality change instead
 (difficult-is-not-impossible) — "this is hard" is not a packet.
+
+## 2026-08-25 — damage_DebugDisp / func_8003800C (src/code6cac_c_mid.c) — **ESCALATION RESOLVED BY A PURE-C MATCH (no ruling needed)**
+
+The 2026-07-22 OWNER-ESCALATION for this function (filed by grind s15; ruled option (b)
+REFUSED / OWNER-ACCEPTED INCOMPLETE in the seven-function batch review) is **superseded**:
+grind session 16 (synthesis) matched the function honestly. `sandbox func_8003800C
+--disable all` = **0** (79/79 insns, 0 regfix/asmfix rules) and a full `build` gives SHA1
+`62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle. Nothing about the endgame-lock
+standards changed; the escalation's premise ("every sanctioned axis measured dead") was
+wrong in one specific place, and the owner's own 2026-08-24 directive is what found it.
+
+**What closed it.** The owner directive attached to the queue item on 2026-08-24 ("solver
+modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak
+residuals") was executed for the first time on this function.
+1. `sched_solver` (model exact: 810/810 blocks order+clock exact for the TU, 19/19 for this
+   function) reported the preheader goal as **`GOAL INVALID: 2 dependence violation(s)`** —
+   the `do { sum = 0; } while (0);` bracket makes that init depend on every earlier insn in
+   the block. Six sessions (s6/s7/s10/s11) had attributed the residual to a `rank_for_schedule`
+   INSN_LUID tie-break; it was a hard dependence pin, and no scheduler perturbation existed.
+2. With the bracket understood, the two "coupled residuals" collapse into one requirement:
+   the preheader's three independent inits are emitted in SOURCE order, and the target emits
+   the `$a0` init first — so the original C initialises `sum` first AND seats `sum` in `$a0`.
+3. `ra_solver` (model exact: 17/17 dispositions) on that sum-first chassis returned a
+   **single-atom** solution for the target disposition: `live_extend pseudo 79 (j):
+   live length 7 -> 15` — lengthen the checksum counter's live range.
+4. The C that spells it: the checksum counter and the Region-B fixup counter are **one
+   variable** in the original (both are `$a1` in the target; one `s32 j` preserves the
+   signedness split for free via `j < 0x24U` -> `sltiu` and `j < 0x16` -> `slti`).
+
+**Cheat-surface effect: strictly negative.** The matched body drops ALL THREE FAKE constructs
+the floor-2 candidate carried — both `do { x = 0; } while (0);` brackets and the
+`for(;;)`+`continue` fence on the CopyBlock loop. The only remaining codegen-motivated
+construct is the counter reuse itself (frozen SOTN-accepted "Variable reuse for codegen
+control", `.claude/rules/no-new-park-categories.md:170`; SOTN master ships the annotated
+counter-reuse shape at `docs/reference/sotn-construct-index.md:51`), FAKE-annotated on the
+declaration. Self-vet: `memory/grind/func_8003800C/self_vet.md`.
+
+**Transferable lesson (for the pipeline, not just this function).** Run the solver suite
+BEFORE deep re-grinding an RA/scheduler residual. A `GOAL INVALID: dependence violation`
+from `sched_solver.goalmap` is a hard FORECLOSED verdict; a 1-atom `live_extend`/`live_shrink`
+vector from `ra_solver.inverse` points at VARIABLE IDENTITY (merge/split two locals), which
+no permuter mutation reaches — ~173k permuter iterations here never touched it. Also: ask
+`inverse.py` for the TARGET DISPOSITION, not `--swap A,B`; when a third pseudo has rotated
+into the seat, the swap goal is the wrong question and reports a far harder problem.
+
+## 2026-08-25 17:06 — func_8003800C — layer-1 review — **FAIL**
+
+The counter-merge ('j' now shared by the checksum loop and the unrelated fixup loop) is a new spelling of the same RA-priority-tiebreak lever this function's own 15-session ledger already tried and rejected (offset+=j, do-while(0) live-length games) — found via a directed inverse-solver search targeting an exact live_length delta, disclosed via GCC-internals mechanism (allocno_compare/live_length/reg_n_refs), and stretched beyond the SOTN precedent it cites.

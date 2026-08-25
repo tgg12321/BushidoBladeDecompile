@@ -1,49 +1,51 @@
-/* Candidate body for damage_DebugDisp — score 2 vs prior floor 6 (HEAD 9).
- * s10 (synthesis) dropped the floor 6 -> 2 by CLOSING Region B, previously
- * believed (s1-s9) to require a constant-holder cheat. Two independent levers:
+/* MATCHED candidate body for damage_DebugDisp (func_8003800C) -- s16 (synthesis).
+ * sandbox --disable all = 0 (79/79 insns, 0 rules dropped) AND full-build SHA1
+ * == 62efab4f73f992798c43e8c730aa43baa10bb4fa (oracle) with this body in
+ * src/code6cac_c_mid.c.  All prior FAKE constructs are GONE: the two
+ * `do { x = 0; } while (0);` brackets (Region A RA-weighting, Region B
+ * biv-init fold) and the `for(;;)`+continue fence on the CopyBlock loop are
+ * all unnecessary on this chassis.  What replaced them is ONE structural
+ * change plus one statement-order change:
  *
- *   1) for-loop fence on the 4-block CopyBlock loop
- *      (loop-exit-work-inside-loop-sched-fence; user-sanctioned).
- *   2) `do { sum = 0; } while (0);` — do-while(0) RA-weighting on the inner
- *      accumulator init. Raises sum's loop-depth-weighted reg_n_refs 10->11
- *      (=tie j), global.c allocno_compare breaks the tie by allocno number
- *      (sum pseudo < j) -> sum wins $a0 (== target). RESOLVES Region A.
- *      /* FAKE: no-semantic do-while(0) for RA weighting (do-while-zero-exception). */
- *   3) *** NEW s10 *** Region B closed: the k-loop is written INDEX-BASED
- *      (base + k*4 / base + k*2) instead of explicit ap/a2p walking pointers,
- *      PLUS `do { k = 0; } while (0);`.
- *      MECHANISM: with explicit `ap=base; a2p=base;` preheader moves, LICM
- *      (loop.c move_movables emit_insn_before(loop_start)) hoists the range-
- *      check constants (0x80000000, 0x1FFFFF) to the preheader END, AFTER the
- *      moves -> sched1 LUID tiebreak emits moves-first (target = consts-first).
- *      Removing the explicit moves makes ap/a2p strength-reduced GIVs, whose
- *      inits are created by strength_reduce (runs AFTER move_movables) -> land
- *      AFTER the hoisted consts -> consts emit FIRST (== target order).
- *      The `do{k=0}while(0)` (a) gives the biv a clean dominating const-0 init
- *      so strength_reduce FOLDS the giv inits to plain `move a0,t1; move a2,a0`
- *      (not `sll;addu` bloat), and (b) its loop-depth ref bump wins k the $a1
- *      register tiebreak over the a2p giv (== target k=$a1, a2p=$a2) — the exact
- *      Region A do-while(0) mechanism, applied to Region B's counter.
- *      /* FAKE: no-semantic do-while(0) for RA weighting + biv-init fold. */
- *      Region B now byte-exact: lui/lui/ori ; move a0,t1 ; move a2,a0.
+ *  1) ONE counter.  `j` is declared at function scope and serves BOTH the
+ *     per-record checksum loop (0x24 bytes) AND the 0x16-entry fixup loop
+ *     (which s1-s15 spelled as a second local `k`).  This is the C89 spelling
+ *     a 1998 author would write, and it is the match lever:
+ *     MECHANISM (global.c allocno_compare, pri = floor_log2(n_refs)*n_refs
+ *     / live_length * 10000 * size) -- merging the two counters unions their
+ *     live ranges, so reg_live_length(j) rises far enough that j's priority
+ *     drops BELOW sum's; global_alloc then allocates sum first and sum takes
+ *     $a0 (target's seat), j takes $a1, bp takes $v1.  Measured by
+ *     tools/ra_solver (model exact 17/17 dispositions on this function):
+ *     the inverse solver named `live_extend pseudo 79 (j)` as THE single-atom
+ *     vector on the sum-first chassis (tmp/grind/func_8003800C/s16/
+ *     inverse_sumfirst_goal.txt).
+ *  2) sum=0 FIRST in the inner-loop preheader (`sum=0; bp=...; j=0;`).  The
+ *     preheader's three inits are independent and all priority 1, so sched1
+ *     emits them in source (LUID) order; target emits the $a0-init first,
+ *     which is sum.  s1-s15 had `j=0` first, which matched the preheader BYTES
+ *     only because j held $a0 -- the roles were swapped inside the loop.
  *
- * Remaining gap (score 2 = 2 objdump diffs) — Region A' ONLY:
- *   Inner-loop preheader emit ORDER. Target: `sum=0`($a0), `bp=base+offset`($v1),
- *   `j=0`($a1) — order sum,bp,j. Build (do-while(0) relocates sum=0 to the
- *   bracketed block-bottom = highest preheader LUID): j,bp,sum. sched1
- *   rank_for_schedule INSN_LUID tiebreak emits the block-bottom leaf (sum=0)
- *   LAST. IRREDUCIBLE on the do-while(0) chassis by def position (s6/s7),
- *   reconfirmed on this NEW index-B chassis (s10: sum-first plain=9, sum-first
- *   bracketed=9, co-bracket sum+bp=21). Target reaches sum=$a0 with sum=0 FIRST
- *   (low LUID) => sum has weighted-refs>=11 WITHOUT a bracket; that natural
- *   11th ref is the open question. Next: directed permuter on THIS score-2
- *   chassis (numbering changed vs the s4/s5 old-chassis campaigns).
+ * `j < 0x24U` (unsigned bound) is load-bearing and semantic: the byte index is
+ * compared unsigned -> `sltiu $v0,$a1,0x24`, while the fixup loop's signed
+ * `j < 0x16` -> `slti $v0,$a1,0x16`.  Both compares in the target use $a1 --
+ * the same register -- which is what first suggested the two counters are one
+ * variable in the original source.
+ *
+ * Region B keeps the index-based addressing (base + j*4 + 0x78 / base + j*2 +
+ * 0xD0) ruled semantically faithful by the Judge on 2026-07-22 06:02.
  */
 s32 damage_DebugDisp(s32 *arg0) {
     u8 *base = (u8 *)arg0;
     s32 i;
     s32 *chkptr;
     s32 offset;
+    /* FAKE: one counter 'j' serves both the per-record checksum loop and the
+       0x16-entry fixup loop (C89 counter reuse), mechanism: global.c
+       allocno_compare -- the merged live range lifts reg_live_length(j) so j's
+       allocno priority falls below sum's and sum takes $a0 (target's seat),
+       lever-exhaustion: memory/grind/func_8003800C/hypotheses.md s1-s15 */
+    s32 j;
 
     i = 0;
     chkptr = (s32 *)base;
@@ -51,11 +53,10 @@ s32 damage_DebugDisp(s32 *arg0) {
     do {
         s32 sum;
         u8 *bp;
-        u32 j;
 
-        j = 0;
+        sum = 0;
         bp = base + offset;
-        do { sum = 0; } while (0); /* FAKE: do-while(0) RA weighting (Region A) */
+        j = 0;
         do {
             sum += *bp;
             bp++;
@@ -79,30 +80,27 @@ s32 damage_DebugDisp(s32 *arg0) {
 
     {
         u8 *src = base + i * 0x24;
-        s32 k;
 
         if (!(*(src + 0x23) & 0x80)) {
             CopyBlock *dst = (CopyBlock *)&D_80106A50;
             CopyBlock *sp2 = (CopyBlock *)src;
             CopyBlock *end = (CopyBlock *)((u8 *)src + 0x20);
-            for (;;) {
+            do {
                 *dst = *sp2;
                 sp2++;
                 dst++;
-                if (sp2 != end) continue;
-                *(s32 *)dst = *(s32 *)sp2;
-                break;
-            }
+            } while (sp2 != end);
+            *(s32 *)dst = *(s32 *)sp2;
         }
 
-        do { k = 0; } while (0); /* FAKE: do-while(0) RA weighting + biv-init fold (Region B) */
+        j = 0;
         do {
-            u16 *ptr = *(u16 **)(base + k * 4 + 0x78);
+            u16 *ptr = *(u16 **)(base + j * 4 + 0x78);
             if ((u32)((u32)ptr - 0x80000000U) <= 0x1FFFFF) {
-                *ptr = *(u16 *)(base + k * 2 + 0xD0);
+                *ptr = *(u16 *)(base + j * 2 + 0xD0);
             }
-            k++;
-        } while (k < 0x16);
+            j++;
+        } while (j < 0x16);
     }
 
     return 1;
