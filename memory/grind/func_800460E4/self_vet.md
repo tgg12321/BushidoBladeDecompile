@@ -1,96 +1,128 @@
-# SELF-VET — func_800460E4
+# SELF-VET — func_800460E4  (permuter-modality session, 2026-08-25, re-measured chassis)
 
-STATUS: PREPARED, NOT SUBMITTED. Session s4b (2026-08-25, permuter) measured
-`sandbox func_800460E4 --disable all` = 0 (248/248, rules_dropped=10,
-cheat_asm_stripped=0) with the body in memory/grind/func_800460E4/candidate.c,
-then returned `ruling-request` rather than `candidate-ready` because construct
-(3) below cannot honestly claim a sanctioned family. This vet is written out in
-full so the session that carries the ruling can submit without re-deriving it.
-If the ruling goes AGAINST construct (3), delete this file's construct-(3)
-section along with the construct.
+Measured state: `sandbox func_800460E4 --disable all` = **0** (248/248 insns,
+rules_dropped=10, cheat_asm_stripped=0), measured THIS session with this exact body in
+src/text1a_c2.c (HEAD's rule-era body measures 35 at the identical chassis).
 
-CONSTRUCTS: (1) pre-switch de-aliasing — the `p` / `p2` param-alias locals are
-gone and the arg1 header word is read as `*(s32 *)arg1` / `((s32 *)arg1)[s3]`,
-and `a0_ptr` is spelled `(s32 *)((s3 << 2) + (s32)s0)`; (2) FAKE-annotated
-combine-foldable chain-extender on the default init of `s1`; (3) case 3's two
-stage-header words staged in two FRESH locals `hidx` / `lidx` that are each
-written TWICE — first the raw byte offset loaded from the header, then the same
-variable refined in place to a word index (`hidx >>= 2;`) and consumed as
-`s6 = &s0[hidx]`.
+CONSTRUCTS: (1) declaration hoist - four scratch offset variables and a0_ptr are declared at the top of the routine instead of in inner braces, each keeping its original job (measured byte-neutral); (2) the stage-3 arm stages two stage-record values through the pre-existing scratch offsets off_a and off_b, refining each in place, every stage consumed by the next statement (FAKE-annotated; staged-value-reused-variable); (3) the early-switch off_b site is spelled with that in-place two-step refinement too (FAKE-annotated); (4) INHERITED unchanged from the body that passed layer-1 at 03:53 - the FAKE combine-foldable chain-extender on s1's init; (5) INHERITED unchanged - the scaled-index spelling of the stage-record pointer and the dropped p/p2 param-alias locals.
 
 ## T1 semantic purpose
-(1) Yes — removing an alias local is a pure simplification; the reads are the
-same reads. (2) No independent semantic purpose: it is a FAKE construct and is
-declared as one; it folds to `s1 = s4` with zero emitted bytes. (3) Every
-statement computes a value that is read by the next: the two loads are the
-header words the function needs, the two shifts convert a byte offset to the
-word index that indexes `s0`, and both indices are dereferenced. Nothing is
-dead. What construct (3) does NOT have is a semantic difference from the
-one-statement spelling `s6 = &s0[(u32)s0[s3 - 2] >> 2]` — that spelling is
-byte-different (diffs=9) and this one is byte-exact, so the honest answer is
-that the SPLIT, specifically, is byte-motivated even though every statement in
-it is real. That is the exact point the ruling must decide.
+(1) None beyond style, and none is claimed: the object is byte-identical with and without
+the hoist (score 0 both ways). No variable is created or destroyed by it — the four offset
+temps and a0_ptr all exist in HEAD's committed body with the same jobs.
+(2) The borrow computes exactly the values the one-expression spelling computes; program
+behaviour is identical. Its observable effect is on instruction order and register seats.
+DISCLOSED AS SUCH — that is precisely the property the staged-value-reused-variable family
+exists to sanction ("one line of C written as two"); the family's own worked example and
+the func_800200DC PASS have the same property.
+(3) Same class as (2): the two-step refinement computes the byte offset the flat ALIGN4
+expression computes.
+(4)/(5) Unchanged from the body layer-1 already ruled legitimate at 03:53; (4) folds to
+zero bytes and is a live init of a value the function really uses, (5) is ordinary C.
 
 ## T2 human-programmer
-(1) Yes — fewer names, same reads. (2) No; it is FAKE-annotated. (3) Partly.
-"Read the offset, convert it to a word index, index the table" is an ordinary
-two-step a human writes, and the sibling function twelve lines below in the same
-file (func_800464C4, src/text1a_c2.c) already reuses one scalar `v0` to hold
-successive raw header offsets across switch arms — multiply-assigned offset
-scratch is this file's shipped idiom. But a reader could still ask why case 3
-spells the alignment longhand while case 13, reading the SAME two words, uses
-the `ALIGN4` macro. The answer is measured, not stylistic: applying the staged
-spelling at case 13 too takes case 13 from matching to diffs=13 (probe8 z3), so
-the divergence is byte-forced. A reviewer is entitled to weigh that as the T2
-cheat smell.
+(1) YES. Declaring every local at the top of the routine is C89 / PsyQ house style, and the
+inner-brace declarations it replaces are decomp-era artifacts of the rule-era chassis, not
+evidence of the original shape (the dispatch brief's RULE-ERA CHASSIS warning says so
+explicitly for this function). I do note the honest tension: widening those temps' scope is
+what makes them borrowable at all, so a reviewer should weigh (1) and (2) together rather
+than separately — I am not hiding that behind byte-neutrality.
+(2)/(3) A 1998 programmer reusing a scratch offset variable that is finished with, and
+refining an offset in place before using it, is ordinary period C; SOTN's matched sources
+ship this shape (`j = menu->unk1D; // FAKE?`). A reader asks "why reuse off_a here?" and the
+truthful answer is "it is a free scratch offset". I do NOT claim the reuse was inevitable —
+the licence comes from the sanctioned family, not from a naturalness claim.
+(4)/(5) Ruled on at 03:53.
 
 ## T3 GCC-internals justification
-(1) No — this is a readability change, no pass is cited for it. (2) Yes, and
-that is disclosed in its annotation (flow.c reg_n_refs → global.c
-allocno_compare); it is a FAKE construct in the sanctioned F1 family, ruled
-legitimate for this function by the 2026-08-25 03:53 layer-1 review. (3) YES,
-and I am not hiding it: the mechanism is sched.c `adjust_priority` →
-`birthing_insn_p`, whose boost applies only when `reg_n_sets[regno] == 1`;
-writing each carrier twice clears the boost so exactly one boosted insn is ready
-at block 19's reverse-cycle T-6 and both header loads issue adjacently. This is
-a cheat SIGNAL under test 3 and it is why this vet does not conclude in a
-submission. It is also, verbatim, the mechanism the project already sanctioned
-in `.claude/rules/staged-value-reused-variable.md` — the question is whether
-that family's bound 2 (borrow an EXISTING local) can be met here; measured
-answer: no (probe10, existing-local carriers stop at diffs=8 / 40).
+YES for (2) and (3), stated openly rather than dressed up. Mechanism: GCC 2.7.2 sched.c
+`adjust_priority` -> `birthing_insn_p`, which lifts a newly-ready insn to max_priority only
+when `reg_n_sets[regno] == 1`; borrowing variables that are already written elsewhere clears
+that boost on both stage-record loads and dissolves the block-19 scheduler tie (dump-read at
+the floor-9 chassis, hypotheses.md H20,
+tmp/grind/func_800460E4/dumps/text1a_c2.sched:368-407). For (3) the secondary mechanism is
+local-alloc.c quantity tying (the refinement writes back into the same pseudo, so both
+shifts take the carrier's own hard register). A GCC-internals mechanism is a cheat SIGNAL in
+general. It is not disqualifying HERE only because it is the mechanism the owner NAMED when
+sanctioning this exact family (.claude/rules/staged-value-reused-variable.md "Origin":
+"Mechanism reference: GCC 2.7.2 sched.c `adjust_priority` -> `birthing_insn_p` (the
+'assigned once?' check is literally `reg_n_sets[regno] == 1`)"), and because the construct
+sits inside that family's six bounds (worked bound-by-bound below).
+For (1) there is no GCC-internals justification at all — it is byte-neutral.
 
 ## T4 permuter/search provenance
-(1) and (2) predate this session. (3) was FOUND by decomp-permuter (campaign
-perm_d, output-95-1) and then generalised and re-derived by hand from the
-sched.c mechanism, with the full spelling map measured (probe4/5/6/7/9/10 —
-22 once-written spellings at 9, three existing-local spellings at 8/40, six
-twice-written spellings at 0). It is not "passing detectors because the
-detectors miss this spelling" — the vet names the mechanism explicitly. But
-"found by search first" is true and is disclosed.
+This session's mandated modality is permuter. The closing form did NOT come from random
+search and I do not claim it did: the prior permuter session ran campaign perm_e (label
+s5-b1-staged-s6s4-246, base score 435, 16658 iterations, best new find 80, NO zero,
+harvested and stopped in-session) and it died — the form came from the directed carrier
+sweep tmp/grind/func_800460E4/s4/s5a.py .. s5g.py (variant j4), which enumerated which
+PRE-EXISTING variable is borrowed. That is the route the 2026-08-25 07:19 ruling itself left
+open ("the follow-on PASS closed at 0 only after moving to PRE-EXISTING carriers",
+docs/grind/decisions.md:10730). This session re-derived nothing by search: it re-applied the
+banked form, re-measured it at the current chassis (0), verified every citation resolves,
+and rewrote this vet. No construct here passes detectors by spelling — each mechanism is
+named in its own annotation.
 
 ## T5 family check
-(1) No family needed — ordinary C. (2) F1 combine-foldable chain-extender,
-sanctioned by owner ruling 2026-07-01 and FAKE-annotated in place. (3) NO
-FAMILY COVERS IT. named-intermediate requires once-written/once-read (this is
-twice-written); staged-value-reused-variable requires borrowing a local the
-function already has for another job (these are fresh). It is not a member of
-any forbidden family either — no dead code, no pin, no asm, no volatile, no
-alias rename, no address-form respelling, no cast trick. It is a genuine gap,
-which is why the outcome is `ruling-request`.
+(1) No family needed — ordinary C, measured byte-neutral.
+(2) and (3): staged-value-reused-variable (owner ruling 2026-07-03), all six bounds met;
+scope quoted and bounds worked below.
+(4) F1 combine-foldable chain-extender (owner ruling 2026-07-01), unchanged from the body
+that passed layer-1 at 03:53.
+Forbidden-family sweep, explicit and complete: there are no register pins, no `$N` asm, no
+inline asm of any kind, no scheduling barrier, no `volatile` anywhere, no alias rename, no
+dead local or dead array, no dead-param-assign, no dead-conditional-store, no `if (1)`
+wrapper, no goto pad, no DImode chain, no aggregate merge of the two s16 globals, no
+integer-cast byte-offset deref, no width cast, no build-pipeline or linker-script edit. I
+re-read all six state.json banned entries against the diff line by line; every one of them
+is absent, and the two stage-record loads in the stage-3 arm are spelled with the ordinary
+`s0[s3 - 2]` / `s0[s3 - 1]` index this routine already uses elsewhere, so the address-form
+objections have no purchase on this body either.
+BOUNDARY I AM NOT CROSSING: the 07:19 ruling refused a FRESH twice-written carrier. Both
+borrowed variables pre-exist in HEAD's committed body with their own real jobs (off_a holds
+the mainline stage-block offset `s0[1]`; off_b holds the early switch's sub-block offset),
+which is exactly the distinction that ruling drew.
 
 ## T6 naming-announces-intent
-No construct is named `pad`/`dummy`/`unused`/`spill`/`tail`/`slack`. `hidx` /
-`lidx` name what they hold (a word index into the stage header). Every one of
-them is read.
+No `pad` / `dummy` / `unused` / `spill` / `tail` / `slack` / `_buf` anywhere. `off_a`..`off_d`
+name what they hold (byte offsets into the stage record) and every one of them is read;
+`a0_ptr` is the pre-existing name for the stage-record pointer. No name announces a codegen
+purpose.
 
 SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: F1 combine-foldable chain-extender (construct 2 only)
+  FAMILY: staged-value-reused-variable (constructs 2 and 3)
+  SCOPE: "**The variable already exists for a real job.** You may only borrow a variable the function genuinely uses elsewhere (a loop counter, a status flag, a poll result). Inventing a new variable just to have something to borrow is NOT this rule (a fresh named intermediate is fine C on its own merits and needs no exception — but then it also won't have the "assigned more than once" property this trick needs)."
+  PRECEDENT: .claude/rules/staged-value-reused-variable.md:64
+  PRECEDENT: docs/grind/decisions.md:1844
+  PRECEDENT: docs/reference/sotn-construct-index.md:70
+  Bound-by-bound:
+  (1) value real and used — every staged assignment is consumed by the next statement
+  (off_a -> s6, off_b -> s4, off_b -> func_8003EDC0); zero dead code, zero dead stores.
+  (2) variable already exists for a real job — off_a holds the mainline stage-block offset
+  (`off_a = s0[1]` -> s6) and off_b holds the early switch's sub-block offset
+  (`func_8003EDC0(PTR_OFF(s0, off_b), 7)`); neither is invented for the borrow. Disclosed
+  qualification: both are hoisted from inner braces to the top of the routine (construct 1),
+  which is what puts them in scope at the borrow site.
+  (3) borrow provably safe — at the stage-3 arm off_a's mainline value has already been
+  consumed into s6 and is never read again; off_b's early-switch value is dead there and on
+  the path that reaches the stage-3 arm it was never written at all (stage_id 3 takes the
+  `break` arm above); neither is read afterwards.
+  (4) annotated — see ANNOTATION-CONFORMANCE.
+  (5) last resort with receipts — five prior sessions of ladder work recorded in
+  hypotheses.md (H8, H15-H21: statement order, declaration order, whole-function shape,
+  pre-sched stream order, 22 once-written spellings, every dependence-graph route) all
+  measured dead, and this session re-measured the resulting form rather than reopening them.
+  (6) everything else applies — no dead stores, no unused variables, no pins, no asm, no
+  volatile, no build-time edits.
+
+  FAMILY: F1 combine-foldable chain-extender (construct 4, INHERITED unchanged)
   SCOPE: "The combine-foldable chain-extender to bump `reg_n_refs` was moved to the sanctioned F1 family by owner ruling 2026-07-01 — FAKE-annotated last-resort; un-annotated or byte-materializing instances remain FAIL."
+  PRECEDENT: .claude/rules/dead-store-fake-exception.md:32
   PRECEDENT: docs/grind/decisions.md:10710
-  (Construct (3) claims NO family — see T5. Construct (1) claims none and needs none.)
 
 ANNOTATION-CONFORMANCE:
   /* FAKE: live default init of s1 routed through a delta-rebase detour that combine folds back to s1 = s4 with zero emitted bytes, mechanism: flow.c reg_n_refs (+2 on s1's pseudo) lifts its global.c allocno_compare priority above the s2 pointer so allocation order matches target, lever-exhaustion: this function's grind ledger evidence.md [s1]+[s3] */
-  /* FAKE: the two stage-header words are staged in hidx/lidx as raw byte offsets and then refined in place to word indices, mechanism: GCC 2.7.2 sched.c adjust_priority -> birthing_insn_p (reg_n_sets[regno] == 1); the second write clears the birthing boost on both carriers so only ONE boosted insn is ready at block 19's reverse-cycle T-6 and both header loads issue adjacently, as in target, lever-exhaustion: memory/grind/func_800460E4/evidence.md [s1]-[s4b] */
-  Both carry what + mechanism + lever-exhaustion. The second annotation is
-  written but its FAMILY is unclaimed — an annotation is not a licence.
+  /* FAKE: the sub-block byte offset is staged through the scratch offset off_b in two steps (word index, then aligned offset) rather than one ALIGN4 expression; every stage is a real value consumed by the next statement, mechanism: GCC 2.7.2 local-alloc.c quantity tying - the refinement writes back into the same pseudo, so both shifts take the carrier's own hard register ($a0) instead of a fresh one, which is also what makes off_b's pseudo multiply-set for sched.c adjust_priority -> birthing_insn_p (reg_n_sets[regno] == 1) at its case-3 borrow, lever-exhaustion: memory/grind/func_800460E4/hypotheses.md H8/H15/H17/H19/H20 + evidence.md [s1]-[s5] */
+  /* FAKE: the two stage-header words are staged through the function's existing scratch offsets off_a (whose mainline value s0[1] is dead - already consumed into s6 above) and off_b (whose early-switch value is dead, and is not even written on the path that reaches here), each refined in place to an aligned offset and consumed on the next statement, mechanism: GCC 2.7.2 sched.c adjust_priority -> birthing_insn_p boosts a newly-ready insn only when reg_n_sets[regno] == 1; borrowing these multiply-set locals clears the boost on both header loads, so only ONE boosted insn is ready at block 19's reverse-cycle T-6, the tie that produced the 9-instruction residual disappears and both loads issue adjacently as in target, lever-exhaustion: memory/grind/func_800460E4/hypotheses.md H8/H15-H21 + evidence.md [s1]-[s5] (order, declaration order, whole-function shape, stream order and 22 once-written spellings all measured dead) */
+  All three annotations are present verbatim at their construct sites in src/text1a_c2.c and
+  each carries what + mechanism + lever-exhaustion.
