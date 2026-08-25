@@ -1694,3 +1694,89 @@ another session looking for a spelling that gets both.
 - probe: Applied `mask = 1 << idx;` in place of `val = 1; mask = val << idx;` on the WD chassis; honest sandbox.
 - result: 12 / 78 at 80 build insns — two insns MORE than target. The named local is load-bearing for the chassis. Banked at rejected/inline-const-one-drops-val-naming-80-insns.c.
 - verdict: KILLED
+
+## H61 (session 13, 2026-08-25) — the WD chassis' loop-head residual is decided by sched.c `adjust_priority`/`birthing_insn_p`, NOT by INSN_LUID, so no statement-order spelling can reach it
+
+- **statement:** On the WD chassis (fresh-destination sum `wid = idx2 + idx;`,
+  3/78, exact target operand order at index 20) the inner-loop-top placement —
+  target emits `addu $s0,$s3,$a0` first and `addiu $v1,$zero,1` second, we emit
+  them the other way — is fixed by the priority lift `adjust_priority` gives the
+  `idx = i + j` insn, and is therefore untouchable by C statement order.
+- **mechanism:** `tools/sched_solver/extract.py text1b` on the WD body, function
+  `func_800645B0`, pass 1, block 2 (the 6-insn inner-loop-top block:
+  `val = 1`, `idx = i + j`, the `D_800A3444` load, the sllv, the and, the branch).
+  The dump's `adjpri` records report `birth: 1, maxpri: 0x7F000001` for the
+  `idx = i + j` insn and `birth: 0` for the `val = 1` insn. `birthing_insn_p`
+  is `reg_n_sets == 1` on a live destination: on WD `idx` is written exactly once
+  (the *3 sum was moved to the fresh local `wid`) while `val` is written three
+  times. The list scheduler builds the block BACKWARD, so a max_priority insn is
+  picked first and therefore emitted LAST — the lifted addu goes to the bottom of
+  the block and `val = 1` occupies the loop top. reorg.c then steals the loop-top
+  insn into the back-edge delay slot and leaves the original above the moved
+  label, which is exactly the 3-position signature at stream indices 11 / 12 / 65.
+- **probe:** Wrote the WD body with the two statements in the OPPOSITE source
+  order (`val = 1;` before `idx = i + j;`), re-ran `extract.py text1b`, and
+  re-measured `sandbox func_800645B0 --disable all`.
+- **result:** The LUIDs follow the source order in both spellings (pre-swap
+  pass-1 block 2 has the idx addu at LUID 0; post-swap it is at LUID 1) and the
+  pass-1 and pass-2 pick lists change accordingly — **and the bytes do not move
+  at all**: 3/78 both ways, the same three differing positions
+  (11 `li v1,1` vs `addu s0,s3,a0`, 12 the mirror, 65 the delay-slot copy),
+  verified with `engine.score.normalized_insns` against `build/src/text1b.o`.
+  Banked at `rejected/statement-order-swap-inert-birthing-lift-not-luid.c`.
+- **verdict:** CONFIRMED. The priorities in this block are never tied, so
+  INSN_LUID — the only scheduler input C statement order controls — never gets
+  to decide. Every "move these two statements past each other" spelling is
+  byte-inert here, including the ones this function's judge_constraints already
+  ban. The single real knob is `reg_n_sets[idx]`.
+
+## H62 (session 13, 2026-08-25) — the inverse scheduler's own enumeration says the same thing: the goal is reachable only through atoms C cannot spell byte-neutrally
+
+- **statement:** With the goal "emit the `idx = i + j` addu before the `val = 1`
+  li at the inner-loop-top block", the full single-atom enumeration of the
+  scheduler's inputs returns only two families, and neither is spellable in C
+  without changing the emitted instructions.
+- **mechanism:** `tools/ra_solver/inverse_sched.py` /
+  `tools/sched_solver/perturb.py` enumerate `luid`, `luid_move`, `add_dep`,
+  `del_dep` and `cost` atoms over the block's extracted inputs and replay the
+  validated forward model (text1b: 2068/2068 blocks order- and clock-exact;
+  this block self-checks `sim == dump`).
+- **probe:** `inverse_sched.py … --func func_800645B0 --block 2 --pass 2
+  --goal-before <li>:<addu> --depth 3` (all atoms), then
+  `perturb.py … --atoms add_dep,del_dep,cost --depth 2` (LUID atoms excluded).
+- **result:** minimal solution size **1 atom, 8 vectors, every one of them class
+  `luid_order`** (a source statement move) — and H61 measures that class inert on
+  this chassis. Excluding LUID atoms leaves exactly 5 vectors over 52 single
+  atoms + depth-2 pairs: `add_dep <li> <- <addu>` (true/data), the same as an
+  anti/output dependence (kind 14), `add_dep <li> <- <lw>` (which reaches the
+  partial goal but produces `lw` first, not target's order), and
+  `cost <addu> := 3` / `cost <addu> := 12`. A true data dependence into the
+  const-1 set means the 1 is computed from `idx`, and a cost of 3 or 12 means the
+  index is produced by a multi-cycle instruction class — each necessarily changes
+  the instruction emitted at that slot, and the target's bytes there are a plain
+  `addiu $v1,$zero,0x1` and a plain `addu $s0,$s3,$a0`.
+- **verdict:** CONFIRMED (typed). The loop-head half of the residual is
+  FORECLOSED on the WD chassis under honest C: the only reachable lever class is
+  statement order, and statement order is measured byte-inert here (H61).
+  Combined with H58/H59 (the operand-order half is closed-form from
+  optabs.c:398-421 whenever the sum's destination is `idx`), the 1-vs-3 lock is
+  now named at BOTH ends with the deciding pass identified, and the two ends
+  share ONE variable: `reg_n_sets[idx]`.
+
+## [s13] The WD chassis' inner-loop-top placement (target emits `addu $s0,$s3,$a0` before `addiu $v1,$zero,1`; we emit them the other way, at stream indices 11/12 with the delay-slot copy at 65) is decided by sched.c's adjust_priority / birthing_insn_p priority lift, not by INSN_LUID, and is therefore untouchable by C statement order.
+- mechanism: tools/sched_solver/extract.py text1b (instrumented cc1, parity=True) reports for func_800645B0 pass 1 block 2 — the 6-insn inner-loop-top block [val=1, idx=i+j, D_800A3444 load, sllv, and, branch] — adjpri records of `birth: 1, maxpri: 0x7F000001` for the `idx = i + j` insn and `birth: 0` for the `val = 1` insn. birthing_insn_p is reg_n_sets == 1 on a live destination: on the WD chassis `idx` is written exactly once (the *3 sum goes to the fresh local `wid`) while `val` is written three times. The list scheduler builds each block BACKWARD, so a max_priority insn is picked first and therefore emitted LAST — the lifted idx addu goes to the bottom of the block and `val = 1` occupies the loop top. reorg.c then steals the loop-top insn into the back-edge delay slot and leaves the original above the moved label, producing exactly the 11/12/65 signature.
+- probe: Wrote the WD body with the two statements in the OPPOSITE source order (`val = 1;` before `idx = i + j;`), re-ran tools/sched_solver/extract.py text1b, dumped block 2 of both passes, and re-measured `sandbox func_800645B0 --disable all`; diffed the cheat-stripped sandbox object against build/src/text1b.o with engine.score.normalized_insns.
+- result: The LUIDs follow the source order in both spellings (pass-1 block 2: the idx addu sits at LUID 0 pre-swap and LUID 1 post-swap) and both passes' pick lists change accordingly — and the bytes do not move at all: 3/78 both ways, the same three differing positions (11 `li v1,1` vs `addu s0,s3,a0`, 12 the mirror, 65 the delay-slot copy). The priorities in this block are never tied, so INSN_LUID never gets to decide.
+- verdict: CONFIRMED
+
+## [s13] The inverse scheduler's own full input enumeration reaches the correct goal only through atoms C cannot spell byte-neutrally, so the loop-head half of the residual is FORECLOSED on the WD chassis.
+- mechanism: tools/ra_solver/inverse_sched.py and tools/sched_solver/perturb.py enumerate luid, luid_move, add_dep, del_dep and cost atoms over the block's extracted scheduler inputs and replay the validated forward model (text1b: 2068/2068 blocks order- and clock-exact; this block self-checks sim == dump).
+- probe: `inverse_sched.py tmp/sched_solver_work/text1b.sched.json --func func_800645B0 --block 2 --pass 2 --goal-before <li>:<addu> --depth 3` (all atom classes), then `perturb.py ... --atoms add_dep,del_dep,cost --depth 2` (LUID atoms excluded) over 52 single atoms plus depth-2 pairs.
+- result: Minimal solution size 1 atom, 8 vectors reported, EVERY one of class `luid_order` (a source statement move) — the class the first hypothesis measures inert. Excluding LUID atoms leaves exactly 5 vectors: add_dep <li> <- <addu> as a true data dependence, the same as an anti/output dependence (kind 14), add_dep <li> <- <lw> (which satisfies the partial ordering but emits the load first, not target's order), and cost <addu> := 3 / cost <addu> := 12. A data dependence into the const-1 set means the 1 is computed from idx, and a cost of 3 or 12 means the index is produced by a multi-cycle instruction class; each necessarily changes the instruction emitted at that slot, and the target's bytes there are a plain `addiu $v1,$zero,0x1` and a plain `addu $s0,$s3,$a0`.
+- verdict: CONFIRMED
+
+## [s13] The owner-authorised toolkit repair (661dc8dc) makes the object-level target derivation usable for this function on the ra_solver path, but the sched_solver goal mapper still refuses it for a second, unrelated reason.
+- mechanism: goalmap.build_map's object mode gates on len(hon_obj) == len(hon) — the honest OBJECT's instruction count against the honest asm TEXT's body line count — and raises 'the sandbox object was built from a DIFFERENT source state'. That 1:1 assumption holds only for functions whose bodies contain no assembler-expanded macros.
+- probe: Ran `perturb.py ... --goal-from-target text1b --target-object build/src/text1b.o --ours-object tmp/sandbox/func_800645B0/text1b.o` on the WD chassis, and separately verified build/src/text1b.o against asm/funcs/func_800645B0.s with engine.score.normalized_insns.
+- result: build/src/text1b.o is CONFIRMED to carry the target bytes (78 insns; the only positions differing from our object are the three the residual already names), so the authorised object-level derivation is sound. But goalmap raised: 'honest object has 78 insns but text1b.hon.s body has 69 lines'. Both come from the SAME tree — the body contains five absolute-address memory macros (sw $2,D_800F10EC; three sw $3,<sym>($16); sh $2,D_800F0BCC($17)) that `as` expands into lui/%lo pairs. Worked around without touching tools/: the goal for the single differing block is knowable by hand from asm/funcs/func_800645B0.s, so the block was inverted with an explicit --goal-before instead of --goal-from-target; a repaired goalmap would return the same vectors.
+- verdict: CONFIRMED

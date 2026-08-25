@@ -1340,3 +1340,87 @@ measures **12 / 78 at 80 build insns** — two insns MORE than target. The named
 - [s12] sched_solver's own README scopes it out of part of the WD residual: 'Everything after sched2 (delayed-branch scheduling in reorg.c, and maspsx's own reordering) is downstream of this model and out of its scope' — and stream index 65 of the WD residual is a back-edge delay slot.
 
 - [s12] Exhaustion as of this session: 12 sessions, 6 distinct modalities (recon, structural x2, permuter x2, forensics x2, rederive x2, escalation x3), ~92.5k permuter iterations across four structurally distinct chassis, 34 banked rejected forms.
+
+## Session 13 (2026-08-25, escalation modality + the owner's 2026-08-25 solver-repair ruling)
+
+**Floor re-measured today, both chassis, honest `sandbox --disable all`:**
+SB (`memory/grind/func_800645B0/candidate.c`) = **1 / 78**; WD
+(`rejected/wd-fresh-dest-sum-exact-operand-order-costs-loop-head.c`) = 3 / 78.
+Zero rules dropped, 173 cheat-asm lines stripped (all from other functions in
+the TU). HEAD remains `INCLUDE_ASM("asm/funcs", func_800645B0);`.
+
+**The owner-authorised toolkit repair (661dc8dc) is real and half-usable here.**
+`build/src/text1b.o` is confirmed to carry the TARGET bytes for this function
+(objdump-normalised via `engine.score.normalized_insns`, 78 insns, and the only
+positions differing from `asm/funcs/func_800645B0.s` are the ones our own body
+differs at), so the object-level target derivation the ruling authorised is
+sound. `ra_solver/inverse_compose.py classify` now correctly REFUSES the text
+path on a stale `.tgt.s` instead of emitting a fictitious PRE-RA verdict — the
+s12 hazard is closed.
+
+**A SECOND, distinct toolkit gap blocks the sched path (operator-side).**
+`tools/sched_solver/goalmap.py:241` guards object mode with
+`len(hon_obj) != len(hon)` — the honest OBJECT's instruction count against the
+honest TEXT's body line count — and raises
+"the sandbox object was built from a DIFFERENT source state". For
+func_800645B0 the two are 78 and 69 **from the same tree**: the body contains
+five absolute-address memory macros (`sw $2,D_800F10EC`,
+`sw $3,D_800F0D78($16)`, `sw $3,D_800F0D7C($16)`, `sw $3,videoDec($16)`,
+`sh $2,D_800F0BCC($17)`) plus other assembler-expanded forms, and `as` expands
+each into a `lui`/`%lo` pair. The 1:1 text-index == object-index assumption the
+repair documents holds only for functions with no macro expansions. This is
+not a source-state mismatch and re-running mkasm.sh cannot fix it.
+
+**Worked around without touching `tools/`:** the goal for the only differing
+block is knowable by hand (target emits `addu $s0,$s3,$a0` before
+`addiu $v1,$zero,0x1` at the inner-loop top), so the block was inverted with an
+explicit `--goal-before` instead of `--goal-from-target`. See H62.
+
+**New mechanism facts (H61, H62):**
+1. The inner-loop-top placement is decided by `sched.c` `adjust_priority` /
+   `birthing_insn_p` (`reg_n_sets == 1` on a live destination), NOT by
+   INSN_LUID. The pass-1 `adjpri` records for block 2 show `birth: 1` for the
+   `idx = i + j` insn and `birth: 0` for `val = 1`, because on the WD chassis
+   `idx` is written once and `val` three times. The lifted insn is picked first
+   by the backward list scheduler and therefore emitted LAST.
+2. Consequently, swapping the source order of `val = 1;` and `idx = i + j;`
+   changes the LUIDs and the pick lists in both passes and is **byte-identical**
+   (3/78, same three positions). Statement order is a measured dead lever on
+   this chassis.
+3. The inverse scheduler's full single-atom enumeration for the correct goal
+   returns 8 vectors, all class `luid_order` (dead per 2), and 5 non-LUID
+   vectors, all of which require changing the emitted instruction itself
+   (a data/anti dependence into the const-1 set, or an instruction cost of 3 or
+   12 for the index addu). Nothing byte-neutral reaches the goal.
+
+**The lock, now named at both ends with one shared variable.**
+`reg_n_sets[idx] > 1` (SB: `idx = idx2 + idx;`) denies the birthing lift and
+hands back the loop head, but forces optabs.c:398-421's commutative expansion to
+emit `(idx, idx2)` — losing the *3 operand order (1 / 78).
+`reg_n_sets[idx] == 1` (WD: `wid = idx2 + idx;`) wins the operand order exactly
+and loses the loop head (3 / 78). No spelling can hold both through the
+destination of that one statement. The only theoretical escape remains a second,
+semantically REAL write of `idx` — every spelling of which measured so far either
+costs an instruction or is a banned construct.
+
+- [s13] Floor re-measured today on the shipped SB chassis (memory/grind/func_800645B0/candidate.c pasted over the INCLUDE_ASM line): `sandbox func_800645B0 --disable all` = score 1, target_insns 78, build_insns 78, rules_dropped 0, cheat_asm_stripped 173 (all from other functions in the TU). WD chassis re-measured at 3/78 the same day.
+
+- [s13] build/src/text1b.o carries this function's TARGET bytes: engine.score.normalized_insns gives 78 insns and differs from the cheat-stripped sandbox object only at the positions the residual already names. The object-level target derivation authorised by the owner's 2026-08-25 ruling is therefore sound for this function.
+
+- [s13] The WD residual is exactly three stream positions: 11 (ours `li v1,1`, target `addu s0,s3,a0`), 12 (the mirror) and 65 (the back-edge delay-slot copy of the loop-top insn). Verified twice this session, before and after the source-order swap, byte-identical both times.
+
+- [s13] sched.c pass-1 adjpri for func_800645B0 block 2 records birth:1 (birthing_insn_p, reg_n_sets == 1 on a live destination) for the `idx = i + j` insn and birth:0 for the `val = 1` insn. On the WD chassis idx is written once and val three times, so the idx addu is lifted to max_priority in every spelling; the backward list scheduler picks it first, which means it is emitted last.
+
+- [s13] Swapping the source order of `val = 1;` and `idx = i + j;` moves the LUIDs and both passes' pick lists and is byte-identical (3/78, same three positions). Statement order — the lever family this function's judge_constraints already ban twice over — is measured DEAD on this chassis for a named reason, not merely unproductive.
+
+- [s13] inverse_sched depth-3, all atoms: minimal solution 1 atom, 8 vectors, all class luid_order. perturb.py with LUID atoms excluded, 52 single atoms + depth-2 pairs: 5 vectors, all requiring a dependence into the const-1 set or an instruction-cost class change for the index addu — none byte-neutral.
+
+- [s13] The 1-vs-3 lock is now named at BOTH ends with one shared variable, reg_n_sets[idx]: >1 (SB, `idx = idx2 + idx;`) denies the birthing lift and wins the loop head but forces optabs.c:398-421's commutative expansion to emit (idx, idx2), losing the *3 operand order — 1/78; ==1 (WD, `wid = idx2 + idx;`) wins the operand order exactly and loses the loop head — 3/78.
+
+- [s13] Endgame-lock gate (a) FAIL: `python3 tools/scan_hand_coded.py --single func_800645B0` = tier=LOW score=0/8, 'no strong hand-coded indicators', S1-S8 all unset. Re-run this session.
+
+- [s13] Endgame-lock gate (b) FAIL: no in-hand SOTN-master PSX precedent exists for either candidate closing construct (a dead/staged/self-assigning second write of idx, or a statement reordering chosen to steer adjust_priority/reorg.c); docs/reference/sotn-construct-index.md carries none and prior sessions' census came back negative.
+
+- [s13] Nothing holds a byte-match: zero regfix/asmfix rules, zero cheat-asm, main carries INCLUDE_ASM("asm/funcs", func_800645B0); per asm-until-matched. src/text1b.c was restored to HEAD before this outcome was written.
+
+- [s13] Disposition filed this session at docs/grind/decisions.md (## 2026-08-25 — func_800645B0 — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (solver axis discharged)).

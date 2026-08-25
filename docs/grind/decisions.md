@@ -11557,3 +11557,130 @@ exact construct.
 ## 2026-08-25 17:52 — func_800307D0 — final call — **PASS**
 
 Body carries zero match-hack constructs: no inline asm, alias, volatile, dead store, do-while(0), variable reuse, or FAKE annotation; sandbox re-measured by me = score 0, 76/76, rules_dropped 0. Decisive fact I verified independently: asm/funcs/func_800307D0.s corroborates every questioned spelling as FAITHFUL, not coercive - line 'xor $v0,$v0,$v1' + 'sltiu $s1,$v0,0x1' is exactly `top = top ^ cur; idx = (u32)top < 1;`, and 'xori $a0,$a0,0xE'/'xor $a0,$v1,$a0' + 'sltu $a0,$zero,$a0' is exactly `(x ^ y) != 0` (same idiom already shipped in-TU at src/code6cac_b.c:1329). Head read `*(s16 *)(a0 + idx*2 + 0x332)` is owner-ruled ordinary C (docs/grind/decisions.md, 2026-08-25 func_800307D0 OWNER RULING (a), read at :11472ff) - the vacated bans are not a FAIL basis. KEPT bans respected: no enumerated-variant-matrix justification and no self-declared escalation mootness (self_vet.md cites the owner's written ruling, which I confirmed exists). jc[2] satisfied: src/code6cac_b.c:1159 carries no grind narration; diff touches only this function. Full evidence: memory/grind/func_800307D0/{self_vet.md,hypotheses.md,evidence.md,rejected/}.
+
+## 2026-08-25 — func_800645B0 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (solver axis discharged)**
+
+Grind session 13, `escalation` modality, disposition session. This entry
+supersedes the 2026-08-25 16:19 decision packet on the same function: that
+packet's single decidable question ("repair the solver target-stream derivation
+so the last axis can be typed") was answered YES by the owner (ruling 2026-08-25,
+`032909be`), the repair landed in `661dc8dc`, and **this session ran the axis and
+it came back FORECLOSED.** There is no decidable question left to put to the
+owner, so the standing ruling applies instead of a new packet.
+
+### The owner's directive was executed
+
+`661dc8dc` is real and correct where it applies: `build/src/text1b.o` is
+confirmed to carry this function's TARGET bytes (78 insns, objdump-normalised
+via `engine.score.normalized_insns`, differing from our body only where our body
+differs from `asm/funcs/func_800645B0.s`), and `inverse_compose.py classify` now
+REFUSES a stale `.tgt.s` instead of emitting the fictitious PRE-RA verdict that
+wasted session 12. The s12 hazard is closed.
+
+One gap remains on the `sched_solver` half, recorded here for OTHER functions
+rather than as a request: `tools/sched_solver/goalmap.py:241` gates object mode
+on `len(hon_obj) == len(hon)` — the honest object's instruction count against the
+honest asm TEXT's body line count. For func_800645B0 those are 78 and 69 **from
+the same tree**, because the body contains five absolute-address memory macros
+(`sw $2,D_800F10EC`, three `sw $3,<sym>($16)`, `sh $2,D_800F0BCC($17)`) that `as`
+expands into `lui`/`%lo` pairs. The 1:1 text-index == object-index assumption
+holds only for macro-free functions. **This did not block the answer here:** the
+goal for the one differing block is knowable by hand from
+`asm/funcs/func_800645B0.s`, so the block was inverted with an explicit
+`--goal-before` instead of `--goal-from-target`, and a repaired goalmap would
+return the same vectors.
+
+### What the solver axis returned (the last untried axis, now dead)
+
+Chassis WD (`memory/grind/func_800645B0/rejected/wd-fresh-dest-sum-exact-operand-order-costs-loop-head.c`,
+3/78) — the only honest form that emits the target's *3 operand order exactly.
+Its entire residual is three stream positions: 11 / 12 (the inner-loop-top pair)
+and 65 (the back-edge delay-slot copy of the loop-top insn).
+
+* `tools/sched_solver/extract.py text1b` → `parity=True`, model exact for this
+  block (`sim == dump`). Pass-1 `adjpri` for block 2 records **`birth: 1`** for
+  the `idx = i + j` insn and **`birth: 0`** for the `val = 1` insn:
+  `birthing_insn_p` is `reg_n_sets == 1` on a live destination, and on WD `idx`
+  is written once (the *3 sum goes to the fresh `wid`) while `val` is written
+  three times. `adjust_priority` lifts the idx addu to `max_priority`; the list
+  scheduler builds the block BACKWARD, so the lifted insn is picked first and
+  therefore **emitted last**, putting `val = 1` at the loop top where the target
+  has the addu. reorg.c then steals the loop-top insn into the back-edge delay
+  slot and leaves the original above the moved label — exactly the 11/12/65
+  signature.
+* **Measured consequence:** writing the two statements in the opposite source
+  order changes the LUIDs (pass-1 block 2: the idx addu moves from LUID 0 to
+  LUID 1) and changes both passes' pick lists, and the bytes **do not move at
+  all** — 3/78, byte-identical, same three positions. Banked at
+  `memory/grind/func_800645B0/rejected/statement-order-swap-inert-birthing-lift-not-luid.c`.
+  The priorities in this block are never tied, so INSN_LUID — the only scheduler
+  input C statement order controls — never gets to decide.
+* `inverse_sched.py --block 2 --pass 2 --goal-before <li>:<addu> --depth 3`:
+  minimal solution size **1 atom, 8 vectors, every one of class `luid_order`** —
+  i.e. the only reachable lever is the one just measured inert.
+  `perturb.py --atoms add_dep,del_dep,cost --depth 2` (LUID excluded) over 52
+  single atoms plus depth-2 pairs returns exactly 5 vectors: a true or
+  anti/output dependence from the idx addu into the const-1 set, the same from
+  the `D_800A3444` load, and instruction costs 3 or 12 for the idx addu. Each
+  necessarily changes the instruction emitted at that slot; the target's bytes
+  there are a plain `addiu $v1,$zero,0x1` and a plain `addu $s0,$s3,$a0`.
+  **Verdict: FORECLOSED in honest C.**
+
+### The lock, now named at both ends with one shared variable
+
+`reg_n_sets[idx] > 1` (SB chassis, `idx = idx2 + idx;`) denies the birthing lift
+and hands back the loop head, but forces `optabs.c:398-421` (`expand_binop`,
+commutative case) to emit `(idx, idx2)` — losing the *3 operand order. **1 / 78.**
+`reg_n_sets[idx] == 1` (WD chassis, `wid = idx2 + idx;`) wins the operand order
+exactly and loses the loop head. **3 / 78.** Both halves are now pass-attributed
+from instrumented-cc1 dumps, and no spelling can hold both through the
+destination of that one statement. The only theoretical escape left is a second,
+semantically REAL write of `idx`; every spelling measured over 13 sessions either
+costs an instruction (`rejected/recomputed-i-plus-j-costs-an-extra-addu.c`,
+`rejected/second-set-of-idx-outside-if-body-folds-or-costs-prologue.c`,
+`rejected/sum-addend-rederived-from-idx2-costs-an-instruction.c`) or is a
+construct the Judge has already banned for this function (staged / dead /
+self-assigning second sets).
+
+### Endgame-lock AND-gates
+
+* **Gate (a) — canonical asm: FAIL.**
+  `python3 tools/scan_hand_coded.py --single func_800645B0` →
+  **`tier=LOW score=0/8`**, "no strong hand-coded indicators"; S1-S8 all unset
+  (0 multu/mflo pairs, no empty-body branches, 78 insns with 5 spills over 7
+  distinct regs, max load burst 2, no sibling cluster, no BIOS jumptable, all
+  callee-save uses saved, no redundant mask-before-shift). Re-run this session.
+* **Gate (b) — in-hand SOTN-master precedent: FAIL.** The closing construct
+  would have to be a second write of `idx` that is dead, staged or
+  self-assigning, or a statement reordering chosen to steer
+  `adjust_priority` / `reorg.c`. `docs/reference/sotn-construct-index.md` carries
+  no PSX entry exhibiting either; prior sessions' census came back negative, and
+  a negative census is a FAILED gate, not an open question.
+
+### Exhaustion record
+
+13 sessions; modalities recon, structural (x2), permuter (x2), forensics (x2),
+rederive (x2), escalation (x4, this one included); ~92.5k permuter iterations
+across two chassis in session 4 plus the session-9 sweep on the last two
+unsampled chassis (all zeros were the banned loop-note wrapper); 35 banked
+rejected forms in `memory/grind/func_800645B0/rejected/`; honest floor FLAT at
+**1 / 78** since session 2. Floor re-measured today with the shipped body:
+`sandbox func_800645B0 --disable all` → `score 1, target_insns 78,
+build_insns 78, rules_dropped 0`.
+
+### What holds the byte-match
+
+Nothing does — there is no byte-match to hold. Zero regfix/asmfix rules, zero
+cheat-asm; `main` carries `INCLUDE_ASM("asm/funcs", func_800645B0);` per
+asm-until-matched since the 2026-08-24 sweep-2 migration. The honest floor form
+is preserved at `memory/grind/func_800645B0/candidate.c` (SB chassis, ordinary C,
+1 / 78, zero constructs).
+
+### Disposition
+
+Both endgame-lock gates FAIL and the last untried axis is now measured
+FORECLOSED with the deciding GCC pass named on both halves. Per the owner's
+standing ruling of 2026-07-27 (`.claude/rules/endgame-lock-disposition.md`),
+`func_800645B0` is **REFUSED / OWNER-ACCEPTED INCOMPLETE**. No owner action is
+requested and nothing waits on one. Ledger: `memory/grind/func_800645B0/`; this
+session's measurements and solver transcripts: `tmp/grind/func_800645B0/s13/`.

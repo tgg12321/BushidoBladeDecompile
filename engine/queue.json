@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800645B0",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "Owner ruling YES 2026-08-25 (032909be): solver-toolkit target-stream repair authorized and landing operator-side; once landed, run solver modality per the 2026-08-24 directive (now executable).",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md \u2014 '## 2026-08-25 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET**' (appended this session; decidable question: repair the solver toolkits' target-stream derivation for INCLUDE_ASM-routed functions so the owner's own 2026-08-24 solver directive becomes executable \u2014 a fidelity/routing question that lowers no standard and requests no family grant)"
-    },
-    {
       "func": "func_8002EA24",
       "file": "code6cac_b",
       "distance": 2,
@@ -2049,18 +2039,29 @@
       "status": "escalated",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, operator-filed 2026-08-11): 2-byte reorg branch-target residual unreachable from C under frozen pipeline; both endgame gates FAILED (scan LOW 0/8, no SOTN precedent); 25 rules retained to hold byte-match; see docs/grind/decisions.md 2026-08-11 entry [2026-08-24: prose predates the 2026-08-19 migration \u2014 the 25 rules are retired and main is INCLUDE_ASM (cheat-free); distance 0 is a MASKED zero (real residual: scorer-invisible 2-byte ASPSX reorg branch-target gap)]",
       "escalation": "DECLINED 2026-08-24 (decisions.md escalation-packet rulings, packet 3): maspsx ASPSX-parity branch-target fill refused \u2014 self-healing transform, full fill-algorithm reimplementation required, ~120 already-correct census sites at risk. Residual (2-byte reorg branch-target gap) provably unreachable under the frozen pipeline. Re-decision triggers: census candidates regrow, or ASPSX fill semantics become documented."
+    },
+    {
+      "func": "func_800645B0",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "Owner ruling YES 2026-08-25 (032909be): solver-toolkit target-stream repair authorized and landing operator-side; once landed, run solver modality per the 2026-08-24 directive (now executable).",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md \u2014 '## 2026-08-25 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET**' (appended this session; decidable question: repair the solver toolkits' target-stream derivation for INCLUDE_ASM-routed functions so the owner's own 2026-08-24 solver directive becomes executable \u2014 a fidelity/routing question that lowers no standard and requests no family grant)",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 ## 2026-08-25 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (solver axis discharged)**"
     }
   ],
   "counts": {
     "total": 235,
-    "active": 233,
+    "active": 232,
     "by_status": {
-      "active": 233,
-      "escalated": 2
+      "active": 232,
+      "escalated": 3
     },
     "by_verdict": {
-      "C": 197,
-      "ASM-PARTIAL": 36
+      "ASM-PARTIAL": 36,
+      "C": 196
     }
   }
 }

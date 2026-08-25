@@ -1,7 +1,7 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 12,
+ "session_count": 13,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -75,24 +75,24 @@
    "floor": 1,
    "modality": "escalation",
    "headline": "Owner's 2026-08-24 solver directive measured UNEXECUTABLE (both solver toolkits derive 'target' from src+regfix, dead since asm-until-matched \u2014 inverse_compose classify returned a FICTITIOUS PRE-RA ve"
+  },
+  {
+   "session": 13,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "Owner-authorised solver repair executed: the last untried axis (the WD chassis' inner-loop-head placement) is now typed FORECLOSED \u2014 the only reachable lever class is source statement order, and state"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "With a repaired target-stream derivation, sched_solver can return a typed REACHABLE/FORECLOSED verdict on the WD chassis' inner-loop-head placement \u2014 the last residual and the only axis never run on this function.",
-   "mechanism": "sched_solver's forward model is order- and clock-exact on text1b (2068/2068 blocks, 1034/1034 in each pass) and extract.py reports parity=True on this TU today; only the GOAL is missing, because --goal-from-target derives it from a stream that is no longer the target. The goal for this function is fully known from asm/funcs/func_800645B0.s (preheader = [j=0, addu $s0,$s3,$a0], inner-loop head = addiu $v1,$zero,0x1).",
-   "next_probe": "OPERATOR-SIDE (outside a grind session's surface): teach tools/ra_solver/mkasm_honest.sh and tools/sched_solver/mkasm.sh to derive <stem>.tgt.s from asm/funcs/<func>.s for INCLUDE_ASM-routed functions, as the engine's scorer already does, and add a guard so a stale or non-derivable .tgt.s can never yield a silent PRE-RA verdict. Then run: sched_solver/extract.py text1b with the WD body in src, and inverse_sched.py --func func_800645B0 --pass 2 --block <inner-loop head> --goal-from-target text1b --atoms luid,luid_move --depth 2. Note reorg.c (index 65) is out of the model's scope, so a REACHABLE verdict covers indices 11/12 only.",
-   "note": "A grind session can approximate the goal without the tool fix by synthesising a .tgt.s from its own honest stream with the two loop-head insns transposed; that was scoped this session but not run (turn budget)."
+   "hypothesis": "A chassis exists in which the slot index is written twice for a genuine semantic reason, restoring the loop-head placement on top of the WD chassis' exact operand order. This is now the ONLY theoretical escape and it is precisely characterised: the second write must raise reg_n_sets[idx] above 1 without adding an instruction and without being dead, staged or self-assigning.",
+   "mechanism": "H61/H62 reduce the whole residual to a single compiler-visible quantity, reg_n_sets[idx]: >1 denies sched.c's birthing lift and hands back the inner-loop head; ==1 is what lets optabs.c emit the target's *3 operand order. Both halves are pass-attributed from instrumented-cc1 dumps. A different DATA MODEL (a walking pointer over the slot array, or the session-7 JD struct-array re-derivation) could give the index a second real write as part of ordinary iteration.",
+   "next_probe": "Re-derive the inner loop with the slot index as a real induction variable that is both initialised and updated inside the loop body (not `idx = i + j` recomputed from two counters), apply the WD fresh-destination sum on top, and measure. Any spelling whose second write is dead, self-assigning or staged is a BANNED construct and must not be proposed. Note the three already-banked failures: recomputed-i-plus-j-costs-an-extra-addu.c, second-set-of-idx-outside-if-body-folds-or-costs-prologue.c, sum-addend-rederived-from-idx2-costs-an-instruction.c."
   },
   {
-   "hypothesis": "A chassis exists in which the slot index is written twice for a genuine semantic reason, restoring the loop-head placement on top of the WD chassis' exact operand order.",
-   "mechanism": "H59 shows the ONLY escape from the closed-form 1-vs-3 lock is a second, semantically real assignment to idx that is neither the sum's write-back nor a dead/staged store. The current chassis writes idx once per inner iteration; a different DATA MODEL (e.g. the JD struct-array re-derivation from session 7, or a walking pointer over the slot array) could give the index a second real write as part of ordinary iteration.",
-   "next_probe": "Re-derive the inner loop with the slot index as a real induction variable that is both initialised and updated inside the loop body (not `idx = i + j` recomputed from two counters), then apply the WD fresh-destination sum on top and measure. Any spelling whose second write is dead, self-assigning, or staged is a BANNED construct and must not be proposed."
-  },
-  {
-   "hypothesis": "The WD chassis' loop-head placement is a loop.c / loop-rotation difference rather than a sched.c pick, in which case the lever is the loop's expression shape, not statement order.",
-   "mechanism": "In the WD honest stream the constant-1 set sits in the outer-loop preheader (.L515) and the index addu at the inner-loop head (.L525); in target the assignment is the other way round. Whether that is LICM hoisting the constant, loop rotation peeling the index, or a sched2 pick has NOT been attributed from a dump this session.",
-   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_800645B0` with the WD body in src and read tmp/grind/func_800645B0/dumps/*.loop (hoisting), *.sched2 (final pick order) and *.jump2/*.dbr for the rotation, side by side with the SB dumps. Attribute the pass BEFORE proposing any C form \u2014 this is the one part of the residual that has never been pass-attributed on the WD chassis."
+   "hypothesis": "tools/sched_solver/goalmap.py's object mode is unusable for any function whose body contains assembler-expanded macros, which will silently block the same axis on other functions.",
+   "mechanism": "build_map gates object mode on len(hon_obj) == len(hon), comparing an OBJECT instruction count to an asm TEXT line count. Absolute-address memory forms (sw/sh/lw against a bare symbol) expand 1 text line into a lui/%lo pair in the object, so the counts legitimately differ on the same tree \u2014 for func_800645B0, 78 vs 69.",
+   "next_probe": "OPERATOR-SIDE (outside a grind session's surface): replace the 1:1 length assertion with an expansion-aware mapping from hon text lines to object insn positions (or align cc1 -> object directly), keeping a guard that still refuses a genuinely mismatched source state. Not needed for func_800645B0 \u2014 this session obtained the verdict by hand-supplying the goal with --goal-before."
   }
  ],
  "judge_constraints": [
