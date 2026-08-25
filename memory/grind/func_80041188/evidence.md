@@ -3033,3 +3033,159 @@ pass dumps (including `red.i.loop` with the movable decision and `red.i.cse` /
 - [s22] A1's 'everything natural' table (first ever measured): stptr 7/41=3414 $s3, stptr2 6/48=2500 $s0, i 8/97=2474 $s4, tbl 4/47=1702 $s5, a3 4/99=808 $s6, a4 7/190=736 $s7, out2 3/42=714 $fp. Four contested seats already target's, zero constructs, and one adjacent-priority defect.
 
 - [s22] MERGED MAP after 22 sessions — three chassis reduce to one live chassis and one live atom. out2 needs a fourth flow-counted reference that is byte-free; flow.c deletes dead insns inside life analysis, so 'byte-free by being dead' is self-defeating; combine runs after flow's counting, so the ONLY viable shape is an insn that is live and useful through cse1 and flow and that COMBINE then merges into a consumer. `out3 = out2` is live but never merged (it IS the residual insn); dead stores and copy chains are flow-deleted; the do-while(0) wrap does not add a reference at all, it re-weights an existing one, and is FAKE plus emission-order-costly.
+
+## s23 (synthesis, 2026-08-25) — the cse1 EBB law: out2's fourth reference may not live in block 2 OR in loop1, and a3 is not a dial
+
+Chassis re-measured at the START of s23: HEAD (`INCLUDE_ASM`-era committed body) scores
+**27**; `memory/grind/func_80041188/candidate.c` applied to `src/text1a_pre.c` re-measures
+**sandbox 1 at 132 target / 132 build insns** — the floor is unchanged and chassis-valid.
+`src/text1a_pre.c` was restored to HEAD at the end of the session; no build-pipeline file
+was touched. The floor did not move. What moved is that the s22 frontier's item 2 is dead,
+item 1 has been redirected to a different set of insns, and a new pass-level law now
+partitions the whole remaining search space.
+
+### E-s23-1 — THE CSE-EBB LAW: which block a value is computed in decides whether cse1 can fold it into block 2
+
+`cse.c`'s `cse_end_of_basic_block` builds an extended basic block by following
+single-predecessor successors. In this function the CFG is: block 0 -> loop1's body
+(TWO predecessors: block 0's fall-through and the `goto loop1` back edge) -> block 2 (ONE
+predecessor) -> loop2's body (two predecessors). Therefore:
+  * the EBB that starts at **block 0 TERMINATES at loop1's head**, so nothing computed in
+    block 0 is in cse1's table when block 2 is processed;
+  * the EBB that starts at **loop1's body EXTENDS THROUGH block 2**, so everything
+    computed inside loop1 IS in cse1's table when block 2 is processed.
+
+Two measured controls, both on the `pa4` chassis with target's block-2 spelling
+`out3 = (s32 *)(((u8 *) pa4) + 0x20);`:
+  * **D5/D6** — out2's definition moved INSIDE loop1 (D5 just before its first use, D6 at
+    the top of the body). `s23/D5/red.i.flow` insn 167 is `(set (reg/v:SI 87) (reg/v:SI 86))`:
+    cse1 rewrote out3's definition to `out3 = out2`. Sandbox **23** at 132/132; out2
+    measures **4 refs / live 21 = 3809** (the 4th reference IS the fold), which then
+    outranks tbl.
+  * **G1** — out2 defined normally in block 0 AND recomputed identically at the end of
+    loop1's body. `s23/G1/red.i.cse` insn 170 is again `(set (reg/v:SI 87) (reg/v:SI 86))`.
+    Sandbox **12 at 133 of 132 insns** (the recompute materialises), out2 5 refs / 42 = 2380.
+  * The negative control is the whole measured B0/C0/C3/C4 family: with out2 defined ONLY in
+    block 0, out3's `(plus (reg a4) 32)` is NOT folded (out2 stays at 3 references) and
+    target's `addiu $s3,$s7,0x20` is emitted.
+
+**The law, and it is a DEFINITION law, not a reference law:** an in-loop1 *definition* of
+out2's value enables cse1's fold in block 2; an in-loop1 *use* of out2 does not (a use puts
+no expression in cse's table).
+
+**Consequence — the site partition for out2's missing 4th flow-counted reference is now
+three-way, and two thirds of it is dead:**
+  1. **In block 2** — E-s20-5 already enumerated this dead on the pa4 chassis; the cse law
+     now explains WHY, generally: any block-2 recomputation of `a4 + 0x20` is folded to
+     `out2`, which is precisely the residual `move $s3,$s6`.
+  2. **Inside loop1, as a DEFINITION** — dead by this law: it forces the same fold and so
+     destroys target's block-2 `addiu` even when it is byte-free (D5/D6).
+  3. **Inside loop1 as a USE, or anywhere in block 0** — the only two sites compatible with
+     target's block-2 spelling. Block 0's byte-free deliveries are already enumerated: the
+     `do { } while (0)` loop-note wrap (FAKE; s21 Q1 = 7, with the tbl positional dilemma)
+     and nothing else, since E-s22-2's iff-law closed the chain-extender and E-s21-5 closed
+     everything flow deletes. **The in-loop1 USE is the one site no session has probed.**
+
+### E-s23-2 — a3's allocno is RIGID: 4 references / live length 99 in ten measured forms
+
+s22's frontier item 2 ("push a3 down instead of lifting out2") is closed. a3 is measured at
+exactly **4 refs / live 99 / pri 808** in every one of B0, C0, C3, C4, D1, D2, D5, D6, F2
+and F1 — including:
+  * **D1** — loop2's `*((s16 *)(stptr2 + 6)) = 1;` moved BEFORE the `func_800523E0` that is
+    a3's last use, and **D2** — `i++` moved before it. Both were built specifically to
+    lengthen a3's live range past its last consumer. Both leave a3 at 99 exactly
+    (D1 sandbox 15, D2 sandbox 13).
+  * **F1/F2** — an explicit `s32 pa3 = a3;` homing-copy local used at all three call sites,
+    i.e. the exact analogue of the `pa4` local that halves a4's live length (190 -> 95) and
+    lifts it 736 -> 1263. a3 is unmoved at 4/99 = 808 on both chassis; the copy's only
+    visible effect is a1/a2 live 99 -> 100 and the schedule shift that follows (F1 = 5 on
+    the candidate chassis, F2 = 15 on the pa4-free chassis).
+The arithmetic the frontier item rested on needed a3's live length at >= 109 (to fall below
+a4's 736) or >= 114 (below out2's 714) — a +10 to +15 move, against a dial that does not
+move by 1. Banked: `rejected/a3-homing-copy-local-livelen-99-rigid.c`.
+
+### E-s23-3 — THE RATIO LAW closes the block-0 position sweep on the pa4-free chassis
+
+On the pa4-free goto chassis out2 has 3 references and a4 has 7, so `floor_log2` gives out2
+`30000/L(out2)` and a4 `140000/L(a4)`, and **out2 outranks a4 iff L(a4) > 4.667 x L(out2)**.
+The full block-0 position sweep of out2's definition was measured (ALLOCDBG in
+`s23/{C0,B0,C3,C4}/cc1.err`):
+
+| form | out2 def position | out2 | a4 | ratio | sandbox |
+|---|---|---|---|---|---|
+| C0 | first statement of block 0 | 3/43 = 697 | 7/192 = 729 | 4.465 | 13 |
+| B0 | natural (after `saved`) | 3/42 = 714 | 7/190 = 736 | 4.524 | 10 |
+| C3 | last statement of block 0 | 3/41 = 731 | 7/188 = 744 | 4.585 | 13 |
+| C4 | after `tbl = D_80094CFC;` | 3/41 = 731 | 7/188 = 744 | 4.585 | 13 |
+
+Moving the definition later shortens out2's live range AND a4's, in the same direction, so
+the ratio creeps toward 4.667 but the sweep is monotone and exhausted at 4.585. No block-0
+position of out2's definition seats it above a4 on the pa4-free chassis. Banked:
+`rejected/out2-block0-position-sweep-ratio-below-4.667.c`.
+
+### E-s23-4 — the short-live-length window is real, reachable, and structurally unusable
+
+The priority arithmetic admits a SECOND solution that no session had noticed: on the `pa4`
+chassis (where a4 = 6/95 = 1263 and tbl = 4/47 = 1702) out2 seats correctly at **3
+references and live length 18..23** (30000/L inside (1263,1702)) — with no fourth reference
+at all. That window is physically reachable: D5/D6 measure out2 at live **21**, at zero insn
+cost (132/132). It is nevertheless unusable, for two independent reasons, both proven this
+session: (i) live 21 requires a definition INSIDE loop1, which triggers E-s23-1's fold and
+hands out2 a 4th reference it does not want (3809, above tbl); and (ii) an in-loop1
+definition emits out2's `addiu` inside loop1, while target emits `addiu $s6,$s7,0x20` in
+block 0. Banked: `rejected/out2-inloop-def-cse-ebb-folds-out3-to-move.c`.
+
+### E-s23-5 — the merged attack after 23 sessions
+
+Everything collapses into one sentence. **out2 needs a fourth flow-counted reference; that
+reference must be (a) an insn that survives cse1 and is present when flow.c counts, (b)
+absorbed by combine rather than deleted by flow (E-s21-5), and (c) sited either in BLOCK 0
+or as a USE inside loop1 — because a definition in loop1, or any recomputation in block 2,
+is folded by cse1 into the residual `move` (E-s23-1).** Block 0's deliveries are enumerated
+and only the FAKE `do { } while (0)` wrap survives there. The untouched quadrant is
+therefore **an in-loop1 USE of out2 that combine absorbs**. s22's frontier item 1 pointed
+the combine-merge enumeration at target's BLOCK-2 insns; E-s23-1 proves that is the wrong
+list. The right list is target's own loop1 insns: the `addiu $a0,$sp,0x10` buf-address
+setup, the `addu $a1,...` argument moves, the `addiu $a2,$s3,0x38` / `addiu $a3,...`
+argument computations for `func_800523E0`, the `sh` into `6($s3)`, and the
+`addiu $s3,$s3,0x68` walk.
+
+### s23 artifacts
+
+`tmp/grind/func_80041188/s23/` — `apply.py`, `dump.sh`, `sweep.ps1`, `odiff.py`,
+`text1a_pre.c.orig`, the variant bodies `CAND.c` / `A1.c` / `B0.c` / `C0.c` / `C3.c` /
+`C4.c` / `D1.c` / `D2.c` / `D5.c` / `D6.c` / `F1.c` / `F2.c` / `G1.c`, and the per-tag cc1
+dump directories `B0/` `C0/` `C3/` `C4/` `D1/` `D2/` `D5/` `D6/` `F1/` `F2/` `G1/` holding
+the full `red.i.*` pass dumps (`red.i.cse` and `red.i.flow` carry the fold evidence) plus
+`cc1.err` with the ALLOCDBG tables.
+
+- [s23] Chassis re-measured at session start: HEAD = 27; candidate.c applied = sandbox 1 at 132/132. Floor unchanged. src/text1a_pre.c restored to HEAD at the end; no build-pipeline file touched.
+- [s23] CSE-EBB LAW: block 0's cse1 extended basic block terminates at loop1's head (two predecessors), while loop1's EBB extends through block 2 (one predecessor). So a value computed in block 0 is invisible to cse1 in block 2, and a value computed inside loop1 is visible there and gets folded. Measured in both directions: D5/D6 (out2 defined in loop1) rewrite block 2's `out3 = (u8*)pa4+0x20` to `out3 = out2` (s23/D5/red.i.flow insn 167); G1 (out2 defined in block 0 AND recomputed in loop1) does the same (s23/G1/red.i.cse insn 170); B0/C0/C3/C4 (block-0 definition only) do not fold and keep target's addiu.
+- [s23] It is a DEFINITION law, not a reference law: an in-loop1 definition of out2's value enables the fold; an in-loop1 USE of out2 does not, because a use records no expression in cse's table. That is what leaves the in-loop1-use quadrant alive.
+- [s23] Consequence: out2's missing 4th flow-counted reference cannot be sited in block 2 (folded to the residual move — this generalises E-s20-5 from enumeration to mechanism) and cannot be an in-loop1 definition (same fold; D5/D6 sandbox 23 at 132/132). Only block 0 (enumerated — FAKE do-while(0) wrap only) and an in-loop1 USE remain. s22's frontier-1 combine-merge enumeration was aimed at target's block-2 insns and must be re-aimed at loop1's insns.
+- [s23] a3 is NOT a dial. Measured 4 refs / live 99 / pri 808 in ten forms (B0, C0, C3, C4, D1, D2, D5, D6, F1, F2), including D1/D2 which move statements past a3's last use and F1/F2 which add `s32 pa3 = a3;` at all three call sites (the exact analogue of the pa4 local that halves a4's live length). The frontier needed +10 to +15 on a dial that does not move by 1. s22 frontier item 2 is KILLED.
+- [s23] RATIO LAW on the pa4-free chassis: out2 (3 refs) outranks a4 (7 refs) iff L(a4) > 4.667*L(out2). Full block-0 position sweep of out2's definition: C0 4.465 (sandbox 13), B0 4.524 (10), C3/C4 4.585 (13). The sweep moves both live lengths the same way, is monotone, and is exhausted below 4.667.
+- [s23] NEW SOLUTION WINDOW, found and closed in the same session: on the pa4 chassis out2 also seats correctly at 3 references with live length 18..23 (no fourth reference at all), and live 21 IS reachable at 132/132 via an in-loop1 definition. Unusable for two independent reasons — the definition triggers the cse fold (out2 becomes 4/21 = 3809, above tbl), and it emits out2's addiu inside loop1 where target emits it in block 0.
+- [s23] A same-value recompute of out2 at the end of loop1 (the dead-store family, in a position no session had tried) is byte-COSTLY here: out2's block-0 value is not in cse1's table for loop1's EBB, so the insn is not recognised as redundant and survives to the output (G1 = sandbox 12 at 133 of 132 insns).
+
+- [s23] Chassis re-measured at session start: HEAD (INCLUDE_ASM-era committed body) = sandbox 27; memory/grind/func_80041188/candidate.c applied to src/text1a_pre.c = sandbox 1 at 132 target / 132 build insns. Floor unchanged. src/text1a_pre.c restored to HEAD at the end of the session; no build-pipeline file touched.
+
+- [s23] CSE-EBB LAW (E-s23-1): cse.c's cse_end_of_basic_block extends an extended basic block through single-predecessor successors. loop1's head has two predecessors (block 0 fall-through + the `goto loop1` back edge), so the EBB starting at block 0 terminates there and nothing computed in block 0 is in cse1's table when block 2 is processed. Block 2 has one predecessor, so loop1's EBB extends through it and everything computed inside loop1 IS in the table there.
+
+- [s23] The law is measured in both directions: D5/D6 (out2's definition moved inside loop1) rewrite block 2's `out3 = (u8*)pa4 + 0x20` into `out3 = out2` - s23/D5/red.i.flow insn 167 is `(set (reg/v:SI 87) (reg/v:SI 86))`; G1 (out2 defined in block 0 AND recomputed in loop1) does the same at s23/G1/red.i.cse insn 170; B0/C0/C3/C4 (block-0 definition only) do NOT fold and keep target's `addiu $s3,$s7,0x20`.
+
+- [s23] It is a DEFINITION law, not a reference law: an in-loop1 definition of out2's value enables the fold, an in-loop1 USE does not, because a use records no expression in cse's hash table. That is what leaves the in-loop1-use quadrant alive.
+
+- [s23] Consequence for the atom: out2's missing 4th flow-counted reference cannot be sited in block 2 (this generalises E-s20-5 from a per-chassis enumeration to a mechanism) and cannot be an in-loop1 DEFINITION (D5/D6, sandbox 23 at 132/132). Only block 0 - already enumerated down to the FAKE do-while(0) wrap - and an in-loop1 USE remain. s22's frontier item 1 aimed the combine-merge enumeration at target's BLOCK-2 insns; that is now proven to be the wrong list, and the right list is target's own loop1 insns.
+
+- [s23] a3 is NOT a dial (E-s23-2): 4 refs / live 99 / pri 808 in ten measured forms (B0, C0, C3, C4, D1, D2, D5, D6, F1, F2), including D1/D2 which move statements past a3's last use inside loop2 and F1/F2 which add `s32 pa3 = a3;` at all three call sites - the exact analogue of the pa4 local that halves a4's live length 190 -> 95. The frontier needed +10 to +15 live length on a dial that does not move by 1.
+
+- [s23] RATIO LAW (E-s23-3) on the pa4-free chassis: out2 (3 refs) outranks a4 (7 refs) iff L(a4) > 4.667*L(out2). The complete block-0 position sweep of out2's definition gives C0 4.465 (out2 697 / a4 729, sandbox 13), B0 4.524 (714 / 736, sandbox 10), C3 and C4 4.585 (731 / 744, sandbox 13). The sweep moves both live lengths the same way, is monotone, and is exhausted below 4.667.
+
+- [s23] NEW SOLUTION WINDOW found and closed in one session (E-s23-4): on the pa4 chassis out2 also seats correctly at 3 references with live length 18..23 (no fourth reference at all), and live 21 IS reachable at 132/132 via an in-loop1 definition - but that definition triggers the cse fold (out2 becomes 4/21 = 3809, above tbl) and emits out2's addiu inside loop1 where target emits it in block 0.
+
+- [s23] A same-value recompute of out2 at the end of loop1 is byte-COSTLY here (G1 = sandbox 12 at 133 of 132 insns): out2's block-0 value is not in cse1's table for loop1's EBB, so the insn is not recognised as redundant and survives to the output.
+
+- [s23] Full ALLOCDBG tables banked for B0/C0/C3/C4/D1/D2/D5/D6/F1/F2/G1 in tmp/grind/func_80041188/s23/*/cc1.err, each with the matching red.i.* pass dumps.
+
+- [s23] The standing owner directive's outstanding item is unchanged and unanswered: candidate.c's `stptr = base; stptr += 0xFC;` still needs either the sanctioned-split-init ruling, the /* FAKE: F1 */ annotation, or a replacement before this body could land.

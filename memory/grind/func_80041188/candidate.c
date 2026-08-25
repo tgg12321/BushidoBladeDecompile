@@ -236,6 +236,38 @@
  * `stptr = base; stptr += 0xFC;` chain-extender below is still the one unresolved
  * artifact defect and still needs its FAKE annotation (present) or a replacement.
  */
+/* s23 ADDENDUM (synthesis, 2026-08-25). Re-measured at the start and end of s23:
+ * STILL sandbox 1 / 132 of 132 insns / ALL-TARGET seats. This body remains the floor.
+ * s23 did not change it; s23 changed what the next session may spend measurements on.
+ *
+ * THE CSE-EBB LAW (evidence.md E-s23-1). cse.c builds extended basic blocks by
+ * following single-predecessor successors. loop1's head has TWO predecessors, so the
+ * EBB that starts in block 0 terminates there and NOTHING computed in block 0 is in
+ * cse1's table at block 2; block 2 has ONE predecessor, so loop1's EBB extends
+ * through it and EVERYTHING computed inside loop1 IS. Measured both ways: with out2's
+ * definition moved into loop1 (D5/D6) or merely recomputed there (G1), cse1 rewrites
+ * block 2's `out3 = (u8 *)pa4 + 0x20` into `out3 = out2` -- i.e. it MANUFACTURES this
+ * body's residual `move $s3,$s6`. With the definition only in block 0, it does not.
+ * Consequence: out2's missing 4th flow-counted reference may NOT be sited in block 2
+ * (generalising E-s20-5 from enumeration to mechanism) and may NOT be an in-loop1
+ * DEFINITION. It is a definition law, not a reference law, so an in-loop1 USE is
+ * still open -- and that is now the single unprobed quadrant.
+ *
+ * TWO DIALS CLOSED. (1) a3 is rigid: 4 refs / live 99 / pri 808 in ten measured forms,
+ * including two that move statements past its last use and two that give it the same
+ * homing-copy local that halves a4's live length. (2) On the pa4-free chassis the
+ * block-0 position of out2's definition cannot seat it above a4: out2 outranks a4 iff
+ * L(a4) > 4.667*L(out2), and the whole monotone sweep tops out at 4.585.
+ *
+ * WHY out2 MUST HAVE FOUR REFERENCES (the closure, from both sides). At 3 references
+ * out2 needs live <= 37 to clear a3's 808 and live <= 23 to clear a4 on the pa4
+ * chassis; block-0 definitions floor at 41, and the only way below 41 is an in-loop1
+ * definition, which is dead twice over (cse fold + the addiu lands inside loop1 where
+ * target emits it in block 0). So this body's `out3 = out2;` is not one arbitrary
+ * choice among many -- it is the only measured delivery of a requirement that is now
+ * proven necessary. The open question is only whether a byte-free spelling of that
+ * same reference exists as an in-loop1 use that combine absorbs.
+ */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
     s32 *pa4 = a4;
