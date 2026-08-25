@@ -10892,3 +10892,109 @@ banned_constructs), `evidence.md` [s8r.2] / [s8r.3] / [s8r.4] and the new [s9] b
 `rejected/s9-ruling-pending-single-local-named-intermediate-248-0.c`,
 `rejected/s9-a0ptr-idiom-base-248-1-addu-operand-order.c`,
 `rejected/s9-banned-single-use-ptr-intermediate-MEASURES-0-on-s9-chassis.c`.
+
+## 2026-08-25 — func_80060A68 — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET** (grind s10, escalation modality; supersedes the 2026-08-19 s9 entry's disposition wording, which used the retired "RESOLVED BY STANDING RULING / OWNER-ACCEPTED INCOMPLETE" shape)
+
+**Why this entry exists.** The 2026-08-19 s9 entry for this function closed it as terminal under
+the 2026-07-27 standing auto-ruling. That shape was retired by the owner's 2026-08-24 ruling
+(`.claude/rules/escalation-not-parked.md`): escalations are decision packets and nothing is
+terminal. The function was re-activated under the RULES-TO-ZERO campaign (queue
+`unpark_reason`, owner 2026-08-24) and re-dispatched to grind s10. This entry restates the
+disposition in the current shape, adds s10's measurements, and — because the two endgame gates
+still fail and s10 found no lever that lowers the floor — poses the one question about this
+function that is actually DECIDABLE by the owner. It is a representation/routing question. Its
+YES lowers no standard; it REMOVES the project's last two asmfix rules from main.
+
+**Function.** func_80060A68 (src/text1b.c:2943, 66 target instructions). Its byte-match on main
+comes entirely from a whole-body asmfix splice: **asmfix.txt:82** (a `delete_between` whose start
+anchor is `lhu $4,0($3)` and whose end anchor is `jal $31,$2`) and **asmfix.txt:83** (an
+`insert_before` carrying target's entire body as rule text), documented by the comment block at
+asmfix.txt:73-81. (Line-number correction for the audit trail: the s9 entry says 105/106 and
+state.json's judge_constraints say 109-110; both are stale references to these same two rules.)
+These are the project's final two asmfix rules, and their `delete_between` start anchor is the
+FIRST body instruction of the committed C body — so they are body-coupled: any body swap must
+retire both rules in the same change, and landing a new body without retiring them duplicates the
+function in a full build.
+
+**Chassis re-measured this session (2026-08-25).** HEAD's committed body = score 39 / build 64.
+`memory/grind/func_80060A68/candidate.c` = **score 2 / build 66 / target 66**, carrying no rule,
+no register pin, no volatile, no inline asm, no dead local, no multiply-written local
+(`sandbox func_80060A68 --disable all`). Floor 2 has been flat since s1 across ten sessions and
+six modalities (recon, structural x2, permuter x2, forensics x2, rederive x2, synthesis,
+escalation x2), 65,445 permuter iterations with zero finds, 67 disproven bodies banked in
+`memory/grind/func_80060A68/rejected/`.
+
+**The residual, named to the instruction.** candidate.c differs from target in exactly two
+places (`tmp/grind/func_80060A68/s10/cmp.py cand`): line 22 emits `lhu v0,0(a1)` where target has
+`lhu v0,0(a0)`, and line 23 emits a `nop` where target has a third `lw a0,16(v1)`. Target loads
+`*(s32 *)(outer + 0x10)` THREE times (slots 12, 20, 23) and hoists the first of them —
+`lw a1,0x10($v1)` — seventeen slots above its only consumer, `lhu a1,0x4(a1)` at slot 30.
+
+**s10's new result (closes frontier item 1 with a C-level argument, not an enumeration).**
+GCC 2.7.2's cse folds a repeated `*(s32 *)(outer + 0x10)` onto the most recent live equivalent,
+and any aliasing store in between invalidates it. So "three separate loads" is exactly the
+condition "each of the three halfword reads is separated from the previous by an aliasing
+store", which is exactly the condition "every one of those loads has exactly ONE consumer" — and
+s9's dump-attributed ready-list-starvation law (`text1b.sched2:36617`, `;; ready list at T-30:
+39 (3), now 39`; sched.c schedules backward and never idles a cycle while anything is ready)
+then pins a one-consumer load adjacent to its consumer. Whichever read is chosen as the hoisted
+load's second consumer, that read loses BOTH its own load and its hard register, so the residual
+is invariant at 2 and only MOVES: s10 measured w1 and w2 (banked at
+`rejected/s10-mirrored-partition-p10-serves-plus2-lhu-a1-instead-of-a0-score2.c`), which put the
+hoisted load on the +2 read instead of the +0 read — line 22 becomes target-exact and line 26
+(`lhu a0,2(a1)` vs target `lhu a0,2(a0)`) breaks instead; both score 2 / 66 / 66 and are
+byte-identical to each other. A second consumer that is NOT one of the three reads has no
+existence in this function's semantics; it would have to be fabricated (discarded read,
+address-of, dead local) — the banned dead-read family, not a lever. **Only frontier item 2
+survives**: an outside insn ready at sched2's T-30 whose own emission slot is not target's
+slot-23 load-delay slot. s9 measured seven such sources in two-to-four seats each; all dead.
+
+**Gate 1 — canonical-asm: FAILS.** `python3 tools/scan_hand_coded.py --single func_80060A68`,
+re-run 2026-08-25: `tier=LOW score=1/8`, S4 (6 loads in an 8-insn window @ insn 9) the only
+signal; S1/S2/S6 all clear. Per `.claude/rules/endgame-lock-disposition.md` a LOW tier is
+dispositive against a canonical-asm grant, and this is exactly the case that rule describes: a
+fully-compiled body with a scheduling-placement residual.
+
+**Gate 2 — a cited SOTN-master precedent for a closing construct: FAILS by absence.** No
+coercion construct is proposed. Every body measured in s8, s9 and s10 is plain C with each local
+written exactly once. There is no family to cite a precedent for. The standing bans (the
+multiply-assigned pointer-staging carrier in all three partition seats; temp2's dual role) remain
+in force and were not approached this session.
+
+### The decidable question (representation / routing — NOT a request to relax a standard)
+
+func_80060A68 is INCOMPLETE and, on the evidence above, stays INCOMPLETE for now. Under the
+asm-until-matched ruling (2026-08-19) an INCOMPLETE function is committed as
+`INCLUDE_ASM("asm/funcs", func_80060A68);` with zero rules. This function did not migrate: the
+2026-08-24 sweep-3 record carried in the driver's consistency audit reports the attempt
+**FAILED the oracle (`sha1=699695d890f0570a3039af734ed84a6a7c44302c` != oracle) and was rolled
+back**, which is why it remains on the legacy asmfix representation. (Grind sessions cannot
+re-verify or repair that: asmfix.txt, the Makefile and bb2.ld are outside the session's allowed
+surface. `asm/funcs/func_80060A68.s` does exist and carries the full 66-instruction body.)
+
+**Question:** while func_80060A68 remains INCOMPLETE, which representation should it carry —
+
+  (a) **Keep the legacy asmfix whole-body splice** (asmfix.txt:82-83). Consequence: the
+      RULES-TO-ZERO campaign cannot reach zero asmfix rules while this function is unmatched;
+      main keeps a whole-body splice indefinitely; the function stays active on the pure-C
+      ladder at floor 2 and the next session works frontier item 2.
+
+  (b) **Authorize an operator-side lane to diagnose and repair the INCLUDE_ASM migration for
+      this one function** (why the sweep-3 attempt broke the SHA1 — position coupling, the
+      `.rodata`/gp-relative context of text1b, or the ordering of the C body's neighbours), then
+      land `INCLUDE_ASM("asm/funcs", func_80060A68);` and retire asmfix.txt:82-83 in the same
+      change. Consequence: the project's last two asmfix rules retire, main holds no whole-body
+      splice, RULES-TO-ZERO closes for asmfix, and the function continues on the queue as an
+      ordinary INCLUDE_ASM item at honest floor 2 with candidate.c preserved in
+      `memory/grind/func_80060A68/`.
+
+Either answer leaves the function ACTIVE and leaves the pure-C bar untouched; (b) strictly
+reduces the cheat surface on main. No grant, no family sanction and no evidence-bar override is
+requested, and none would be accepted from this packet.
+
+**Evidence pointers.** `memory/grind/func_80060A68/candidate.c` (s10 header names the two
+differing instructions); `hypotheses.md` [s10] (the conservation argument) and [s9] (the
+starvation law, dump-attributed at `tmp/grind/func_80060A68/dumps/text1b.sched2:36617`);
+`evidence.md` [s10] (chassis re-measurement, gate re-runs, the asmfix line-number correction);
+`rejected/` (67 disproven bodies, incl. s10's mirrored partition); this session's harness and
+disassemblies in `tmp/grind/func_80060A68/s10/`.

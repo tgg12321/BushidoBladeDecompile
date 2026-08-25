@@ -1,7 +1,7 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 9,
+ "session_count": 10,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -57,23 +57,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "s9 corrects the endgame mechanism (sched2 ready-list starvation, dump-attributed) and builds the first 66-insn three-load body (d8, 4/66, slots 30-63 target-identical); floor stays 2, both endgame gat"
+  },
+  {
+   "session": 10,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "s10 closes frontier item 1 with a C-level conservation argument (cse fold-to-latest => three loads iff every load has one consumer iff the +4 load is starvation-pinned), banks the mirrored score-2 par"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A C form in which the +4 address load has a SECOND, EARLY consumer that does not consume either of the other two 0x10 reads would put it at slot 12 in $a1 while keeping all three loads.",
-   "mechanism": "A second consumer makes the load ready before its +4 consumer is scheduled, so sched2 is not starved into pinning it adjacent; but every second consumer tried so far (the +0 read, the +2 read) is itself one of the three loads, which is why paying for it costs the third load.",
-   "next_probe": "Look for a use of the 0x10 pointer that target's own stream contains but the campaign has never bound to p10 - e.g. an address-arithmetic use, or a use inside the call-argument computation - and seat it early on the d8 order; measure with tmp/grind/func_80060A68/s9/run2.ps1 and diff with s9/cmp.py."
+   "hypothesis": "An OUTSIDE pressure source -- an insn that is ready at sched2's T-30 but whose own emission slot is not target's slot-23 load-delay slot -- would let the +4 address load reach slot 12 in $a1 while all three 0x10 loads survive. This is the ONLY surviving pure-C door after s10.",
+   "mechanism": "The +4 load is pinned adjacent to its single consumer only because it is the sole ready insn at that cycle; a second ready insn breaks the starvation. Dependence-free sources (idx read, outer+0x18, outer+0x20) are also the cheapest filler for the load-delay slot at forward slot 23 and steal it (f3, g1 both 8/66); dependent sources either break the copy triple (c4) or cost instructions (d1, c5).",
+   "next_probe": "Enumerate every insn in the block (slots 0-49; the jalr ends the basic block) by (i) whether all its dependents are scheduled by T-30 and (ii) its cost as a slot-23 filler, using tmp/grind/func_80060A68/dumps/text1b.sched2 with candidate.c and with w1 applied side by side, rather than by trying more source spellings blind. If no insn in the block satisfies both, frontier item 2 is closed too and the residual is a property of the block's dependence graph, which is itself a bankable terminal result."
   },
   {
-   "hypothesis": "A pressure source that is dependent on something late in the block but consumed early would be ready at sched2's T-30 without being schedulable into forward slot 23.",
-   "mechanism": "Slot 23 is a load-delay slot; any dependence-free value (idx, outer+0x18, outer+0x20) is the cheapest filler for it and takes it, which is exactly f3's and g1's 8-point cost. A value that depends on a late computation cannot be placed there.",
-   "next_probe": "On the d8 order, seat a local holding a value derived from the +2 or +4 halfword (already read late) and consumed by an early store, then re-check the slot and register of every lw ?,0x10($v1) with run2.ps1."
+   "hypothesis": "Frontier item 1 (a second, early consumer of the +0x10 pointer) is CLOSED -- do not re-open it under any spelling.",
+   "mechanism": "cse fold-to-latest plus the one-consumer starvation law make the two-instruction residual invariant; the second consumer only chooses WHICH read loses its load and register (candidate.c: the +0 read; s10's w1/w2: the +2 read).",
+   "next_probe": "None. Any future claim on this axis must first exhibit an honest consumer of the +0x10 pointer that is not one of the three halfword reads; the function computes no such value, so such a claim is a fabricated dead read and is banned."
   },
   {
-   "hypothesis": "Closed axes - do not re-open.",
-   "mechanism": "Killed with measurements across s1-s9: statement permutation of the staged read; the DImode/SUBREG door; the multiply-assigned carrier in all three partition seats (banned, Judge 2026-08-19); the permuter (65,445 iterations, zero finds); canonical-asm (scan_hand_coded LOW 1/8, re-run s9); the m2c-literal no-outer-local family; struct/array-typed member access; named or retyped address locals; sinking either gp store; early-consumed p10; the +0-value-hoist partition family; the u16 *dst sibling idiom; the full consumer-seat sweep; declaration order and local types; gp stores as cse separators; birthing_insn_p's bb_live_regs gate; the twelve-seat idx sweep; the LUID re-association family; the k-family sweep; and from s9 the b1/d8 three-load order family with seven outside pressure sources.",
-   "next_probe": "None. Any future claim must be written against the s9 causal chain (one-consumer loads are pinned by sched2 ready-list starvation; occupancy only decides the register) and must say which of frontier items 1 and 2 it addresses. The s6/s7 reg_n_sets framing is retired and must not be re-quoted."
+   "hypothesis": "The residual may be a FIDELITY signal rather than a codegen-lever gap: target's 17-slot gap between lw a1,0x10($v1) and lhu a1,0x4(a1), with three reloads of the same pointer, is the shape of a source expression the campaign has not reconstructed.",
+   "mechanism": "Every reconstruction so far treats the 0x18/0x1A/0x1C block as three inline halfword copies from *(s32 *)(outer + 0x10); target's stream is consistent with that, but the early $a1 load is exactly the second call-argument register, which suggests the +4 read and the call argument were spelled together in the original TU.",
+   "next_probe": "A rederive-modality session that derives the halfword-copy block from the CALL side (temp_a1 as the call's second argument expression) rather than from the store side, and checks the sibling family (func_80060B70, func_80061250, func_80061658, func_80061710 -- all in the same cluster) for the same lw/lhu 17-slot geometry to see whether any sibling's MATCHED C already exhibits it."
   }
  ],
  "judge_constraints": [

@@ -1178,3 +1178,51 @@ loads on target â€" at the price of a new, different 2-instruction gap.
 - probe: Seven sources measured on the b1 and d8 orders in two to four seats each: the idx read, a named gp18 = outer+0x18, a named gp20 = outer+0x20, copy 2 split into a c2 local, copy 3 split into a c3 local, the gp-347C store hoisted above the halfword group, and the +2 read hoisted (28 bodies total).
 - result: Dependence-free sources either steal slot 23 (g1 8/66, f3 8/66) or are inert on the placement (a2 6/66, g3 4/66, d4 5/67); dependent sources break the copy triple (c4 8/66 - cse keeps copy 2's base in $a0 so target's lw $a0,0xC($v1) reload is lost) or cost instructions (d1 8/68, c5 5/67, a3 11/65). No source both supplies the ready insn and leaves slots 23-31 alone.
 - verdict: KILLED
+
+## [s10 2026-08-25 - escalation] Frontier item 1 ("a SECOND, EARLY consumer of the +0x10 pointer that is not one of the other two 0x10 reads") is CLOSED for honest C by a C-level argument, not by enumeration.
+- statement: no pure-C body can hoist the +4 read's address load to slot 12 AND keep all three
+  `lw ?,0x10($v1)` loads, because the only honest consumers of the +0x10 pointer that this
+  function's semantics contain are the three halfword reads themselves.
+- mechanism: GCC 2.7.2's cse.c folds a repeated `*(s32 *)(outer + 0x10)` onto the MOST RECENT
+  live equivalent expression and any aliasing store in between invalidates it. Therefore
+  "three separate loads" is exactly equivalent to "each of the three reads is separated from
+  the previous one by an aliasing store", which is exactly equivalent to "each load has exactly
+  one consumer". Give any one load a second consumer and that consumer's own load disappears
+  (two loads, 66 insns, a nop where target's third load sits) and, additionally, that read
+  inherits the hoisted load's hard register. The only way out would be a consumer of the
+  pointer that is not a read of `p10[0]`, `p10[1]` or `p10[2]` - and the function computes no
+  such value, so it would have to be fabricated (a discarded read / address-of / dead local),
+  which is the banned dead-read family, not a lever.
+- probe: two new bodies measured this session with tmp/grind/func_80060A68/s10/run2.ps1 and
+  diffed slot-by-slot with s10/cmp.py: w1 (the +0 read taken into a `temp0` local ABOVE p10's
+  definition, so p10's second consumer becomes the +2 read) and w2 (same, with the +2 read
+  spelled as an inline re-read instead of `p10 + 2`).
+- result: w1 = w2 = score 2 / build 66 / target 66, and BYTE-IDENTICAL to each other. Both are
+  the exact mirror of candidate.c: `lw a1,16(v1)` still at slot 11 and the fresh `lw a0,16(v1)`
+  still at slot 19, but now the +0 read is target-exact (`lhu v0,0(a0)`, which candidate.c gets
+  wrong as `lhu v0,0(a1)`) and the +2 read is wrong instead (`lhu a0,2(a1)` vs target's
+  `lhu a0,2(a0)`). The missing third load (line 23, a nop) is common to both. The residual
+  count is invariant at 2 under the choice of second consumer - it only moves between reads.
+- verdict: CONFIRMED (the conservation is a property of cse fold-to-latest plus the one-consumer
+  starvation law from s9, not of any particular statement order). Frontier item 1 is CLOSED;
+  only frontier item 2 (an OUTSIDE pressure source ready at sched2's T-30 whose own emission
+  slot is not target's slot-23 load-delay slot) survives, and s9 measured seven such sources in
+  two-to-four seats each, all dead.
+
+## [s10] Frontier item 1 -- a SECOND, EARLY consumer of the +0x10 pointer that is not one of the other two 0x10 reads -- is unreachable in honest C, so no pure-C body can both hoist the +4 read's address load to slot 12 and keep all three lw ?,0x10($v1) loads.
+- mechanism: GCC 2.7.2's cse folds a repeated *(s32 *)(outer + 0x10) onto the most recent live equivalent and any aliasing store invalidates it, so 'three separate loads' == 'each of the three halfword reads separated from the previous by an aliasing store' == 'every one of those loads has exactly one consumer'; s9's ready-list-starvation law (sched.c schedules backward and never idles a cycle while anything is ready; text1b.sched2:36617 ';; ready list at T-30: 39 (3), now 39') then pins a one-consumer load adjacent to its consumer. The only escape would be a consumer of the pointer that is not a read of p10[0], p10[1] or p10[2] -- a value this function's semantics do not compute, so it would have to be fabricated (discarded read / address-of / dead local = banned dead-read family).
+- probe: Two new bodies measured with tmp/grind/func_80060A68/s10/run2.ps1 and diffed slot-by-slot with s10/cmp.py: w1 (the +0 read taken into a temp0 local ABOVE p10's definition so p10's second consumer becomes the +2 read) and w2 (same with the +2 read spelled as an inline re-read rather than p10 + 2). Both compared against candidate.c's disassembly and against s10/target.txt.
+- result: w1 = w2 = score 2 / build 66 / target 66 and byte-identical to each other; the load layout is unchanged (lw a1,16(v1) at slot 11, fresh lw a0,16(v1) at slot 19) but the residual MOVES: line 22 becomes target-exact (lhu v0,0(a0), which candidate.c gets wrong as lhu v0,0(a1)) and line 26 breaks instead (lhu a0,2(a1) vs target lhu a0,2(a0)). The missing third load at line 23 (a nop) is common to both. The residual count is invariant at 2 under the choice of second consumer.
+- verdict: CONFIRMED
+
+## [s10] The endgame-lock gate 1 (canonical-asm) still fails for func_80060A68 on today's chassis.
+- mechanism: scan_hand_coded scores S1..S8 hand-written-asm signals; only STRONG tiers with S1/S2/S6 qualify per .claude/rules/endgame-lock-disposition.md.
+- probe: python3 tools/scan_hand_coded.py --single func_80060A68, re-run 2026-08-25.
+- result: tier=LOW score=1/8, S4 (6 loads in an 8-insn window @ insn 9) the only signal; S1/S2/S6 all clear. Canonical-asm refused.
+- verdict: CONFIRMED
+
+## [s10] The endgame-lock gate 2 (an in-hand SOTN-master precedent for a closing construct) is not even in play for this function.
+- mechanism: A precedent can only be cited for a proposed construct; s8/s9/s10 propose none.
+- probe: Audit of every body measured in s8, s9 and s10 (95+ bodies): all plain C, every local written exactly once, no volatile, no pin, no inline asm, no dead local.
+- result: No family is claimed, so no precedent exists to cite. Gate fails by absence. The standing bans (multiply-assigned pointer-staging carrier in all three partition seats; temp2's dual role) were not approached.
+- verdict: CONFIRMED

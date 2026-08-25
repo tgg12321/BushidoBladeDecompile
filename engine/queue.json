@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80060A68",
-      "file": "text1b",
-      "distance": 39,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active",
-      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. the project's LAST 2 asmfix rules (whole-body splice) \u2014 their delete_between anchor is BODY-COUPLED: any candidate must retire both rules in the SAME change as the body land. Ledger floor 2; the residual is one sched2 ready-lis"
-    },
-    {
       "func": "SioSyncroRead",
       "file": "main",
       "distance": 41,
@@ -2075,6 +2066,16 @@
       "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:10742 - '## 2026-08-25 - func_800460E4 - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**'"
     },
     {
+      "func": "func_80060A68",
+      "file": "text1b",
+      "distance": 39,
+      "verdict": "C",
+      "rules": 2,
+      "status": "escalated",
+      "unpark_reason": "RULES-TO-ZERO CAMPAIGN (owner, 2026-08-24, decisions.md): this function carries part of the project's final 89 rules \u2014 the campaign goal is COMPLETED-C, which retires them. the project's LAST 2 asmfix rules (whole-body splice) \u2014 their delete_between anchor is BODY-COUPLED: any candidate must retire both rules in the SAME change as the body land. Ledger floor 2; the residual is one sched2 ready-lis",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md - '## 2026-08-25 - func_80060A68 - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (grind s10): both endgame gates re-measured and failed (scan_hand_coded --single = tier LOW 1/8, S4 only; no construct in play so no SOTN-master precedent is applicable), floor flat at 2 across ten sessions and six modalities, and the decidable question posed is the representation/routing choice for the project's last two asmfix rules (asmfix.txt:82-83, body-coupled whole-body splice): keep the legacy splice while the function is INCOMPLETE, or authorize an operator-side lane to repair the 2026-08-24 INCLUDE_ASM migration failure (sha1 699695d890f0570a3039af734ed84a6a7c44302c != oracle) so those rules retire and the function continues as an ordinary INCLUDE_ASM queue item at honest floor 2. No grant, family sanction or evidence-bar override is requested."
+    },
+    {
       "func": "main",
       "file": "ings",
       "distance": 0,
@@ -2087,13 +2088,13 @@
   ],
   "counts": {
     "total": 239,
-    "active": 236,
+    "active": 235,
     "by_status": {
-      "active": 236,
-      "escalated": 3
+      "active": 235,
+      "escalated": 4
     },
     "by_verdict": {
-      "C": 200,
+      "C": 199,
       "ASM-PARTIAL": 36
     }
   }

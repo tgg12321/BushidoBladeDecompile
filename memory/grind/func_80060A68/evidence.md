@@ -1720,3 +1720,56 @@ separator other than a copy store" as an open question.
 - [s9] New tooling: tmp/grind/func_80060A68/s9/cmp.py + target.txt give a one-command slot-by-slot target-vs-build diff (normalised registers/offsets), which is what turned 'the score is 4' into 'slot 24 vs slot 12, register $v0 vs $a1'.
 
 - [s9] src/text1b.c was reverted to HEAD before finishing; git status shows no build-file dirt. No rules touched, no commits, no queue/retire calls.
+
+## [s10 2026-08-25 - escalation/disposition] Banked facts
+
+- CHASSIS RE-MEASURED on 2026-08-25 HEAD: HEAD's committed body = score 39 / build 64
+  (`sandbox func_80060A68 --disable all`); memory/grind/func_80060A68/candidate.c = score 2 /
+  build 66 / target 66. Ledger floor 2 is intact on today's chassis.
+- The two differing instructions in candidate.c, named exactly (tmp/grind/func_80060A68/s10/cmp.py
+  against s10/target.txt): line 22 `lhu v0,0(a1)` where target has `lhu v0,0(a0)`, and line 23
+  `nop` where target has the third `lw a0,16(v1)`. Everything else, including all 15 relocation
+  sites, matches.
+- NEW BODIES (s10): w1 and w2, banked as
+  rejected/s10-mirrored-partition-p10-serves-plus2-lhu-a1-instead-of-a0-score2.c. Both score
+  2 / 66 / 66 and are byte-identical to each other; they mirror candidate.c's partition (p10's
+  hoisted load serves the +2 and +4 reads instead of the +0 and +4 reads). Line 22 becomes
+  target-exact; line 26 becomes wrong instead. Floor unchanged.
+- CONSERVATION (new, s10): with cse folding a repeated `*(s32 *)(outer + 0x10)` onto the most
+  recent live equivalent, "three loads" == "three aliasing-store-separated reads" == "every load
+  has exactly one consumer", and s9's ready-list-starvation law then pins the +4 load adjacent to
+  its consumer. Any second consumer costs both that read's load AND that read's hard register.
+  See hypotheses.md [s10].
+- GATE 1 re-run this session: `python3 tools/scan_hand_coded.py --single func_80060A68` =>
+  `tier=LOW score=1/8`, S4 (6 loads in an 8-insn window @ insn 9) the only signal; S1/S2/S6 all
+  clear. Canonical-asm remains refused.
+- GATE 2: no coercion construct is in play (every s8/s9/s10 body is plain C with single-write
+  locals), so there is no family for which to cite a SOTN-master precedent. Fails by absence.
+- LINE-NUMBER CORRECTION (audit hygiene): this function's two asmfix rules are at
+  **asmfix.txt:82 and asmfix.txt:83** on today's HEAD (the comment block explaining them is
+  asmfix.txt:73-81). The 2026-08-19 decisions.md entry says 105/106 and state.json's
+  judge_constraints say 109-110; both are stale line numbers for the same two rules. The
+  `delete_between` start anchor is `^lhu\t\$4,0\(\$3\)$` - the FIRST body instruction of the
+  committed C body - which is why any body swap must retire both rules in the same change.
+
+- [s10] Chassis re-measured 2026-08-25: HEAD's committed body = score 39 / build 64; memory/grind/func_80060A68/candidate.c = score 2 / build 66 / target 66 (sandbox func_80060A68 --disable all). The ledger floor 2 is intact on today's chassis; the driver's 'measurement unavailable' is resolved.
+
+- [s10] candidate.c's residual, named to the instruction (tmp/grind/func_80060A68/s10/cmp.py cand): line 22 emits lhu v0,0(a1) where target has lhu v0,0(a0), and line 23 emits a nop where target has a third lw a0,16(v1). All 15 relocation sites and all 64 other instructions match.
+
+- [s10] Target loads *(s32 *)(outer + 0x10) three times (slots 12, 20, 23) and hoists the first, lw a1,0x10($v1), seventeen slots above its only consumer lhu a1,0x4(a1) at slot 30 (asm/funcs/func_80060A68.s lines 13, 21, 24, 30).
+
+- [s10] NEW s10 bodies w1/w2 banked at memory/grind/func_80060A68/rejected/s10-mirrored-partition-p10-serves-plus2-lhu-a1-instead-of-a0-score2.c: score 2 / 66 / 66, byte-identical to each other, the exact mirror of candidate.c's partition. Source position of the +2 read (p10 + 2 vs inline re-read) is inert.
+
+- [s10] CONSERVATION (new, s10): with cse folding onto the most recent live equivalent, three loads is exactly equivalent to every load having exactly one consumer; any second consumer costs that read BOTH its own load and its hard register. Frontier item 1 is therefore closed for honest C; only frontier item 2 (an outside pressure source) survives.
+
+- [s10] Gate 1 re-run 2026-08-25: tools/scan_hand_coded.py --single func_80060A68 => tier=LOW score=1/8, S4 only.
+
+- [s10] Gate 2: no construct in play, no family claimed, no precedent citable.
+
+- [s10] AUDIT-TRAIL CORRECTION: this function's two asmfix rules are at asmfix.txt:82 and asmfix.txt:83 on today's HEAD (explanatory comment block at asmfix.txt:73-81). The 2026-08-19 decisions.md entry cites 105/106 and state.json's judge_constraints cite 109-110; both are stale line numbers for the same two rules. The delete_between start anchor is the committed C body's FIRST body instruction (lhu $4,0($3)), which is what makes the rules body-coupled.
+
+- [s10] The owner's RULES-TO-ZERO directive (queue unpark_reason, 2026-08-24) is now acknowledged in the ledger and executed as far as a grind session can: the rules can only retire in the same change as a body land, and no body reaches distance 0, so the remaining decision is the representation question filed in the packet.
+
+- [s10] src/text1b.c was reverted to HEAD at the end of the session; no rules, engine, tools, Makefile or linker-script files were touched; nothing was committed.
+
+- [s10] DECISION PACKET FILED: docs/grind/decisions.md, '## 2026-08-25 - func_80060A68 - OWNER-ESCALATION - ESCALATED WITH DECISION PACKET' (supersedes the retired-shape 2026-08-19 s9 entry).

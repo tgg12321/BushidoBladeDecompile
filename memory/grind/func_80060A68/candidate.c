@@ -1,3 +1,31 @@
+/* [s10 2026-08-25 - escalation/disposition.  BODY UNCHANGED.  Re-measured 2 / 66 / 66 on today's
+ * HEAD (HEAD's own committed body measures 39 / 64).]
+ *
+ * THE TWO MISSING INSTRUCTIONS, NAMED.  Diffed slot-by-slot this session
+ * (tmp/grind/func_80060A68/s10/cmp.py cand): line 22 emits `lhu v0,0(a1)` where target has
+ * `lhu v0,0(a0)`, and line 23 emits a `nop` where target has the third `lw a0,16(v1)`.
+ * Nothing else differs - all 15 relocation sites and all 64 other instructions match.
+ *
+ * s10's CONSERVATION RESULT (closes frontier item 1).  cse folds a repeated
+ * `*(s32 *)(outer + 0x10)` onto the most recent live equivalent, so "three separate
+ * `lw ?,0x10($v1)` loads" is the same condition as "each of the three halfword reads is
+ * separated from the previous by an aliasing store", which is the same condition as "each load
+ * has exactly one consumer" - and s9's ready-list-starvation law then pins the +4 load adjacent
+ * to its consumer.  Whichever read is chosen as p10's second consumer, that read loses BOTH its
+ * own load and its hard register, so the residual is invariant at 2 and only MOVES between
+ * reads: s10's w1/w2 (banked at rejected/s10-mirrored-partition-*.c) put p10 on the +2 read
+ * instead of the +0 read, make line 22 target-exact, and break line 26 instead.  A second
+ * consumer that is not one of the three reads does not exist in this function's semantics and
+ * would have to be fabricated (dead read / address-of / discard = banned family).
+ * FRONTIER AFTER s10: only an OUTSIDE pressure source - an insn ready at sched2's T-30 whose own
+ * emission slot is not target's slot-23 load-delay slot.  s9 measured seven, all dead.
+ *
+ * DISPOSITION s10: both endgame gates re-checked and both FAIL (scan_hand_coded --single =
+ * tier LOW 1/8, S4 only; no construct in play so no SOTN precedent is even applicable).  The
+ * function was ESCALATED WITH A DECISION PACKET (docs/grind/decisions.md, 2026-08-25) on the
+ * REPRESENTATION question raised by the RULES-TO-ZERO campaign, not on a request to relax any
+ * standard.  src/text1b.c was reverted to HEAD; no rules touched, no commits.
+ */
 /* [s9 2026-08-19 - escalation/disposition.  BODY UNCHANGED.  Re-measured 2 / 66 / 66 on today's
  * HEAD (HEAD's own body measures 39 / 64).  Read this note before spending anything the s6/s7/s8
  * notes below say about WHY the last two instructions are missing.]
