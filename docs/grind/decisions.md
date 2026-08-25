@@ -11143,3 +11143,7 @@ asmfix.txt:82-83 (the project's last two asmfix rules, the whole-body
   never commits a red tree.
 - RULES-TO-ZERO consequence: asmfix.txt converges to zero rules; regfix-only debt
   remains for the campaign.
+
+## 2026-08-25 15:28 — func_800307D0 — layer-1 review — **FAIL**
+
+The s8 form is a respelling of the same idx25 commutative-operand-order coercion the s2 cheat-reviewer and the 2026-07-22 Judge already FAILED, reached via directed compiler-internals research and a 7-row structural sweep, and committed by unilaterally declaring the standing OWNER-ESCALATION 'moot' rather than obtaining an actual owner ruling.
