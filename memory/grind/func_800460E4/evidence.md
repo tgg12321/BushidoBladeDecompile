@@ -1195,3 +1195,112 @@ pids) reports 0 live campaigns and 0 stale registry entries; perm_a..perm_e are
 all harvested and dead. No campaign was launched this session: the residual is
 not a search problem any more (perm_e's 16658 iterations produced no zero at this
 basin, hypotheses.md H25), and the banked form already measures 0.
+
+
+## [s8] 2026-08-25 (SYNTHESIS modality) — the residual decomposed into two independent halves
+
+[s8.0] Chassis. The 07:54 layer-1 FAIL removed the [s5]/[s6] zero-scoring body from
+play (banned_constructs #7: the off_a/off_b borrow plus the declaration hoist that
+stages it). The submittable body is the [s7] non-banned form; re-measured this
+session at the live chassis, `sandbox func_800460E4 --disable all` = **9**
+(245/248, rules_dropped=10, cheat_asm_stripped=0), at the start and again at the end
+of the session. memory/grind/func_800460E4/candidate.c now carries that body with a
+synthesis header; the banned zero form remains banked at
+rejected/layer1-fail-0825-0754.c.
+
+[s8.1] A fast probe harness for this function now exists and is worth reusing:
+tmp/grind/func_800460E4/s8/pr.sh compiles a FULL src/text1a_c2.c variant through the
+exact project pipeline (mipsel cpp with buildconfig's flags | cc1 -O2 -G0 ... -mel |
+prologue_fix | maspsx | multu_pad | extract_fn | as | objdump) and scores
+func_800460E4 positionally against target with tmp/grind/func_800460E4/s4/score.py.
+Its number agrees with `sandbox --disable all` on every form checked both ways
+(9 == 9, and the diff sets are the same instructions). One run is a few seconds
+versus a sandbox invocation, so a 24-point cross is one command
+(s8/runlist.sh <list>). Note for whoever reuses it: write the variant-name list with
+git-bash/`ls`, NOT with Windows Python — Windows Python rewrites the file to CRLF and
+every filename then carries a trailing \r ("compilation terminated" for every entry).
+Regenerate tmp/grind/func_800460E4/s4/perm_a/target_nr.dis from perm_a/target.o first;
+the copy left by the earlier sessions was empty (a 245-diff score is that symptom).
+
+[s8.2] KILL — the `bb_live_regs` half of `birthing_insn_p` is not a lever, and cannot
+become one. tools/gcc-2.7.2/sched.c:2504-2537 reads
+`if (bb_live_regs[offset] & bit) return (reg_n_sets[i] == 1); return 0;`. The list
+scheduler works BACKWARD through the block, so an insn is only ready once all of its
+block-local consumers have been scheduled, and scheduling a consumer is precisely the
+event that inserts the consumed pseudo into bb_live_regs. Therefore every ready insn
+whose pattern is `SET (REG, ...)` passes the liveness test by construction and
+birthing_insn_p degenerates to `reg_n_sets[dest] == 1`. Only non-REG SET_DESTs (a
+store, a SUBREG) fail it, which is not available as a spelling for a loaded word.
+Cross-checked against every 0x7f000001 entry in two different chassis' block-19 traces
+(s8/base.sched, s8/vC.sched). [s3] frontier item (2) is CLOSED.
+
+[s8.3] CONFIRMED — [s3] frontier item (1) is real, and it is the first non-banned
+route ever measured to target's load adjacency. Two value-neutral rebase detours on
+the two stage-header words (`m = word - (s32)s0; m = m + (s32)s0;`, or the same with
+`^`) leave extra insns in block 19 at sched1. They do not touch the dependence graph,
+they do not touch alias analysis, and they do NOT remove the birthing boost — both
+competing insns still carry 0x7f000001. What changes is the cycle at which each chain
+becomes ready, so schedule_select's tie-break resolves the other way:
+  baseline (s8/base.sched, block 19):
+    ;; ready list at T-6: 331 (1) 298 (1) 310 (7f000001) 322 (7f000001), now 322 310 ...
+  under the detour (s8/vC.sched, block 19):
+    ;; ready list at T-6: 346 (1) 298 (1) 332 (7f000001) 329 (7f000001), now 332 329 ...
+    ;; insn 329 has a greater potential hazard, now 329 332 346 298
+The emitted case-3 block then contains target's `lw ...,-8(base)` and
+`lw ...,-4(base)` back to back, with BOTH header values in target's exact hard
+registers: the -8 word in $v1 and the -4 word in $a0 (s8/x2.dis, s8/vC.dis).
+
+[s8.4] KILL — adjacency is NOT sufficient. At the adjacency-achieved chassis the
+residual is 10 (not 0) and consists of exactly two facts, both outside the tie:
+ (a) the ADDRESS pseudo is seated $v1 where target seats it $v0. Because $v1 is also
+     the -8 word's seat, the pair is forced to load -4 first and overwrite the base
+     with -8 second — target, holding the address in the otherwise-free $v0, can load
+     -8 first and then reuse the dead $v0 for its `li v0,1`;
+ (b) each ALIGN4 shift chain refines through $v0 instead of refining IN PLACE
+     (`srl v1,v1,0x2; sll v1,v1,0x2` and `srl a0,a0,0x2; sll a0,a0,0x2` in target).
+(b) is [s5] H23 restated from the other side: in-place refinement is an INDEPENDENT
+requirement, and the only construct ever measured to produce it is a carrier written
+more than once — the construct class closed by the 07:19 ruling (fresh) and the 07:54
+layer-1 FAIL (hoisted pre-existing).
+
+[s8.5] Control that isolates the mechanism: the `+ 4 / - 4` rebase (constant, folds
+completely before sched1) measures 9/248 with a case-3 schedule identical to the
+baseline's, while the `- s0 / + s0` and `^ s0` rebases (which survive into sched1)
+measure 10/246 and 10/248 with adjacency. The effect is caused by atoms PRESENT AT
+SCHED1, not by the source text. Corollary for pass attribution on this function:
+combine runs before sched1 (toplev.c:3004 vs :3033), so any construct whose whole
+effect is folded by combine cannot influence this tie at all; only constructs whose
+extra atoms survive combine and are removed later (reload coalescing, jump2) can be
+both effective and byte-neutral.
+
+[s8.6] Sanction status of the s8 research forms: the rebase detours are NOT
+submittable and are not proposed. They fail cheat-checklist T1 (no observable effect
+on the function's output) and T2 (no human writes `m = x - (s32)s0; m = m + (s32)s0;`
+to compute an offset). They are banked as measurement only:
+ rejected/s8-rebase-detour-both-words-246-10-adjacent-loads.c
+ rejected/s8-xor-rebase-detour-248-10-seats-right-address-v1.c
+ rejected/s8-const4-rebase-folds-fully-inert-at-9.c   (the control)
+ rejected/s8-s4-before-s6-store-early-248-9-no-crossjump.c
+Their value is that they PARTITION the residual: half of it (adjacency + both value
+seats) is now known to be reachable without any carrier trick at all, which reduces
+the open question to the address seat and in-place refinement.
+
+[s8.7] Order-space re-confirmation at this chassis (24-point cross): the load order
+and the detour-completion order in the C source are INERT (cse canonicalises them);
+only the s6-vs-s4 consumption order and the store position move the result, and their
+whole effect is on the jump2 cross-jump merge (245/248 insn counts) — consistent with
+[s2] H17/H18. Nothing in the order space reaches below 9.
+
+- [s4] Chassis re-established: with the 07:54-banned off_a/off_b form withdrawn, the submittable body is the [s7] non-banned form and `sandbox func_800460E4 --disable all` = 9 (245/248, rules_dropped=10), measured at session start and again at session end; candidate.c now carries that body with a synthesis header, and the banned zero-scoring form stays banked at rejected/layer1-fail-0825-0754.c.
+
+- [s4] The residual is now decomposed into two INDEPENDENT requirements: (A) the two header loads must issue adjacently, and (B) the address pseudo must sit in $v0 and each ALIGN4 chain must refine in place. (A) is reachable by a sched1 atom-set change with no carrier trick; (B) has only ever been produced by a multiply-assigned carrier.
+
+- [s4] sched.c birthing_insn_p liveness test is satisfied by construction for every ready insn with a SET(REG,...) pattern, because backward scheduling makes readiness imply that a consumer was already scheduled - so reg_n_sets is the ONLY half of the boost that is addressable, and [s3] frontier item (2) is closed.
+
+- [s4] Adjacency plus both header value seats ($v1 for the -8 word, $a0 for the -4 word) are achievable without touching alias analysis, the dependence graph, reg_n_sets, or any pre-existing local - previously every route to adjacency was a banned alias-defeat or a banned/refused multi-set carrier.
+
+- [s4] The s8 rebase detours are research forms only and are NOT proposed: they fail cheat-checklist T1 (no observable effect on output) and T2 (no human writes `m = x - (s32)s0; m = m + (s32)s0;`). Their value is the partition of the residual, not the bytes.
+
+- [s4] Order space re-confirmed inert at this chassis (24-point cross): source load order and detour-completion order are canonicalised by cse; only s6-vs-s4 consumption order and store position move anything, and only via the jump2 cross-jump merge (245 vs 248 insns) - consistent with [s2] H17/H18, and nothing in that space goes below 9.
+
+- [s4] New reusable tooling: tmp/grind/func_800460E4/s8/pr.sh plus runlist.sh score a full src variant through the exact pipeline in seconds and agree with `sandbox --disable all`. Two traps recorded: regenerate s4/perm_a/target_nr.dis (the inherited copy was empty, which shows up as a 245-diff score), and never write the variant-name list with Windows Python (CRLF turns every entry into a missing file).

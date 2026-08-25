@@ -1,63 +1,48 @@
-/* RE-MEASURED, permuter-modality session 2026-08-25 (the session after s5):
- * this exact body was re-applied to src/text1a_c2.c from scratch and
- * `sandbox func_800460E4 --disable all` printed **0** again (248/248,
- * rules_dropped=10, cheat_asm_stripped=0); HEAD's rule-era body measures 35 at
- * the identical chassis. The s5 session that produced this form was DISCARDED by
- * the driver validator for a SELF-VET WORDING collision, not for anything in the
- * C: grindlib._ban_trips scans only the vet's CONSTRUCTS: block, and s5's block
- * used enough of banned entry #6's vocabulary (case / same / header / word) to
- * trip the tripwire while actually asserting that construct's ABSENCE. The C is
- * unchanged; self_vet.md now states the same constructs in vocabulary that does
- * not collide (verified by running grindlib.check_banned_constructs directly:
- * True, max 6 hits of the 20-term threshold on any banned entry).
- */
-/* candidate for func_800460E4 - session s5 2026-08-25 (permuter modality)
+/* candidate for func_800460E4 - session s8 2026-08-25 (SYNTHESIS modality)
  *
- * STATE: `sandbox func_800460E4 --disable all` = **0** (248/248 insns,
- * rules_dropped=10, cheat_asm_stripped=0), measured THIS session with this exact
- * body in src/text1a_c2.c (measured three times: bare, after the local-declaration
- * hoist, and after the two FAKE annotations were added).
+ * STATE: `sandbox func_800460E4 --disable all` = **9** (245/248, rules_dropped=10),
+ * re-measured THIS session with this exact body in src/text1a_c2.c. This is the
+ * best form that carries NONE of the seven banned constructs.
  *
- * NONE of the six banned constructs in state.json is present, under any spelling:
- * no s1/arg1 merge, no volatile cast, no pm2/pm1 pointer intermediates, no inlined
- * integer-cast byte-offset derefs, no aggregate merge of D_80099478/D_8009947A, and
- * case 3 reads the two header words with EXACTLY case 13's address form
- * (`s0[s3 - 2]` / `s0[s3 - 1]`), so the 04:28 "two address forms in one function"
- * objection does not arise either.
+ * WHY THIS AND NOT THE PRIOR CANDIDATE: the [s5]/[s6] candidate measured 0 but was
+ * FAILED by the 2026-08-25 07:54 layer-1 review (the off_a/off_b borrow plus the
+ * declaration hoist that stages it is a fresh function-invented multi-set carrier);
+ * it is banked at rejected/layer1-fail-0825-0754.c and banned_constructs #7. The
+ * honest, submittable floor is therefore 9 again.
  *
- * WHAT CLOSES THE LAST 9 INSTRUCTIONS (the whole diff vs the floor-9 chassis):
- *  (1) All locals are declared at function top (C89 / PsyQ-era house style); the
- *      rule-era inner-block declarations (`s32 off1_raw`, `s32 off`, `s32 off3`,
- *      `s32 *a0_ptr`) become the function-scope scratch offsets off_a/off_b/off_c/
- *      off_d and a0_ptr, each keeping its original job. Measured byte-neutral on
- *      its own (score 0 both before and after the hoist).
- *  (2) case 3 stages the two stage-header words through TWO OF THOSE PRE-EXISTING
- *      scratch offsets - off_a (mainline value s0[1], already consumed into s6) and
- *      off_b (early-switch value, not even written on the path that reaches case 3)
- *      - refining each in place to an aligned offset, every stage consumed by the
- *      next statement. This is the owner-sanctioned staged-value-reused-variable
- *      family (.claude/rules/staged-value-reused-variable.md, 2026-07-03), the same
- *      shape the func_800200DC PASS accepted (docs/grind/decisions.md:1844), and it
- *      is explicitly NOT the fresh twice-written carrier the 2026-08-25 07:19 ruling
- *      refused: both carriers pre-exist and both keep their own semantic jobs.
- *  (3) The early switch's own offset site is spelled with the same in-place staging,
- *      which is what seats that value in $a0 at both of its sites (flat ALIGN4 there
- *      measures 3, see hypotheses.md H23).
- *  (4) The inherited FAKE s1 chain-extender (ruled legitimate by the 2026-08-25
- *      03:53 layer-1 review) is unchanged and remains load-bearing.
+ * SYNTHESIS OF THE WHOLE LEDGER (s1-s7 + this session), for the next session:
+ *  - The entire 9-instruction residual is case-3-local and is ONE sched1 decision in
+ *    block 19 at reverse-cycle T-6, dump-quoted (tmp/grind/func_800460E4/s4b2/
+ *    base.sched, block 19): two insns are both lifted to 0x7f000001 by sched.c
+ *    adjust_priority -> birthing_insn_p and the tie decides whether the two stage-
+ *    header loads issue adjacently (target) or with li/lui/sh hoisted between them
+ *    (ours).
+ *  - TWO independent things must both go right to close it: (A) the loads must issue
+ *    adjacently, and (B) each ALIGN4 shift chain must refine IN PLACE so the value
+ *    keeps its own hard register ($v1 for the -8 word, $a0 for the -4 word) instead
+ *    of running through $v0. (B) is [s5] H23. Every form that achieves (A) and (B)
+ *    together so far needs a carrier written more than once, which is exactly what
+ *    the 07:19 ruling (fresh carrier) and the 07:54 layer-1 FAIL (hoisted pre-existing
+ *    carrier) close, and every genuinely pre-existing function-scope local in this
+ *    function is live across the tail's calls, so global_alloc seats it callee-saved
+ *    and it cannot land in $v1/$a0 ([s5.2], measured 8/22/40 diffs).
+ *  - NEW THIS SESSION: (A) is reachable WITHOUT any multi-set carrier, by changing the
+ *    atom set that sched1 sees. Two value-neutral rebase detours on the two header
+ *    words (see rejected/s8-rebase-detour-both-words-246-10-adjacent-loads.c and
+ *    rejected/s8-xor-rebase-detour-248-10-seats-right-address-v1.c) put target's two
+ *    loads back to back and give BOTH header values target's exact hard registers
+ *    ($v1 / $a0) - the first non-banned construct in eight sessions to do so. What is
+ *    still wrong there is only (B) plus the address register ($v1 where target uses
+ *    $v0). Those rebase spellings are research forms, NOT submittable (T1/T2 cheat-
+ *    checklist failures: they have no semantic purpose and no human would write them);
+ *    they are banked purely as the proof that the frontier-1 lever is real.
  *
- * MECHANISM (measured + dump-proven at the floor-9 chassis in [s3]): the entire
- * 9-instruction residual was ONE sched1 tie in case 3's block 19 - the second header
- * load and the first shift of the other ALIGN4 chain were both lifted to 0x7f000001
- * by sched.c adjust_priority -> birthing_insn_p, which boosts only pseudos with
- * reg_n_sets[regno] == 1. Borrowing two already-multiply-set locals clears the boost
- * on both header loads without inventing anything; the loads issue adjacently and the
- * address seat ($v0), both load seats ($v1/$a0), the li/lui/sh placement and the jump2
- * cross-jump decision all follow into target's shape.
- *
- * PROVENANCE: permuter campaign perm_e (label s5-b1-staged-s6s4-246, base score 435,
- * 16658 iterations, best new find 80, NO zero) plus the directed sweeps
- * tmp/grind/func_800460E4/s4/s5a..s5g.py; the closing form is s5g variant j4.
+ * Everything else about this body is inherited and unchanged from [s7]:
+ *  - case 3 and case 13 read the two header words with the SAME indexed form
+ *    s0[s3 - 2] / s0[s3 - 1] (the function's own first-switch idiom);
+ *  - the p/p2 param-alias locals are dropped and the scaled index is spelled
+ *    (s3 << 2) + (s32)s0 (both ruled legitimate by the 03:53 layer-1 review);
+ *  - the FAKE s1 chain-extender is load-bearing (removing it: 9 -> 32).
  */
 void func_800460E4(s32 stage_id, s32 arg1) {
     s32 *s0;
@@ -67,8 +52,6 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     s32 *s1;
     s32 *fp_ptr;
     s32 *sp10, *sp18, *sp20;
-    s32 off_a, off_b, off_c, off_d;
-    s32 *a0_ptr;
 
     s0 = func_800457A0(7);
     if (s0 != NULL) {
@@ -81,21 +64,10 @@ void func_800460E4(s32 stage_id, s32 arg1) {
             case 7:
             case 18:
                 s3 = s0[0];
-                /* FAKE: the sub-block byte offset is staged through the scratch
-                   offset off_b in two steps (word index, then aligned offset)
-                   rather than one ALIGN4 expression; every stage is a real value
-                   consumed by the next statement, mechanism: GCC 2.7.2
-                   local-alloc.c quantity tying - the refinement writes back into
-                   the same pseudo, so both shifts take the carrier's own hard
-                   register ($a0) instead of a fresh one, which is also what makes
-                   off_b's pseudo multiply-set for sched.c adjust_priority ->
-                   birthing_insn_p (reg_n_sets[regno] == 1) at its case-3 borrow,
-                   lever-exhaustion: memory/grind/func_800460E4/hypotheses.md
-                   H8/H15/H17/H19/H20 + evidence.md [s1]-[s5] */
-                off_b = s0[s3 - 1];
-                off_b = (u32)off_b >> 2;
-                off_b = off_b << 2;
-                func_8003EDC0(PTR_OFF(s0, off_b), 7);
+                {
+                    s32 off = ALIGN4(s0[s3 - 1]);
+                    func_8003EDC0(PTR_OFF(s0, off), 7);
+                }
                 break;
             case 34:
                 s7 = 0;
@@ -124,19 +96,19 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     }
 
     {
-        off_a = s0[1];
+        s32 off1_raw = s0[1];
         s3 = s0[0];
-        s6 = (s32 *)((u8 *)s0 + ALIGN4(off_a));
+        s6 = (s32 *)((u8 *)s0 + ALIGN4(off1_raw));
         {
-            a0_ptr = (s32 *)((s3 << 2) + (s32)s0);
+            s32 *a0_ptr = (s32 *)((s3 << 2) + (s32)s0);
             s4 = (s32 *)((u8 *)s0 + ALIGN4(a0_ptr[-1]));
             sp10 = (s32 *)((u8 *)s0 + ALIGN4(s0[2]));
             sp18 = (s32 *)((u8 *)s0 + ALIGN4(s0[3]));
             sp20 = (s32 *)((u8 *)s0 + ALIGN4(s0[4]));
 
             {
-                off_c = ALIGN4(a0_ptr[0]);
-                s2 = (s32 *)((u8 *)s0 + off_c);
+                s32 off = ALIGN4(a0_ptr[0]);
+                s2 = (s32 *)((u8 *)s0 + off);
             }
 
             if (arg1 != 0) {
@@ -144,8 +116,8 @@ void func_800460E4(s32 stage_id, s32 arg1) {
             } else {
                 fp_ptr = s2;
                 {
-                    off_d = ALIGN4(a0_ptr[1]);
-                    func_80045230(PTR_OFF(s0, off_d));
+                    s32 off3 = ALIGN4(a0_ptr[1]);
+                    func_80045230(PTR_OFF(s0, off3));
                 }
             }
         }
@@ -162,28 +134,8 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     switch (stage_id) {
     case 3:
         s1 = s2;
-        /* FAKE: the two stage-header words are staged through the function's
-           existing scratch offsets off_a (whose mainline value s0[1] is dead -
-           already consumed into s6 above) and off_b (whose early-switch value is
-           dead, and is not even written on the path that reaches here), each
-           refined in place to an aligned offset and consumed on the next
-           statement, mechanism: GCC 2.7.2 sched.c adjust_priority ->
-           birthing_insn_p boosts a newly-ready insn only when
-           reg_n_sets[regno] == 1; borrowing these multiply-set locals clears the
-           boost on both header loads, so only ONE boosted insn is ready at block
-           19's reverse-cycle T-6, the tie that produced the 9-instruction
-           residual disappears and both loads issue adjacently as in target,
-           lever-exhaustion: memory/grind/func_800460E4/hypotheses.md H8/H15-H21
-           + evidence.md [s1]-[s5] (order, declaration order, whole-function
-           shape, stream order and 22 once-written spellings all measured dead) */
-        off_a = s0[s3 - 2];
-        off_b = s0[s3 - 1];
-        off_a = (u32)off_a >> 2;
-        off_a = off_a << 2;
-        s6 = (s32 *)((u8 *)s0 + off_a);
-        off_b = (u32)off_b >> 2;
-        off_b = off_b << 2;
-        s4 = (s32 *)((u8 *)s0 + off_b);
+        s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
+        s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
         D_8009947A = 1;
         break;
     case 4:

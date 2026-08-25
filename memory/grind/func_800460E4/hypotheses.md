@@ -515,3 +515,143 @@ live question is whether hoisting the borrowed temps out of inner braces
 disqualifies bound 2 — disclosed, not hidden), then the Judge, then retirement
 of the 10 regfix rules via the normal retire path with a full-build SHA1 verify,
 which are operator/driver surfaces this session may not touch.)
+
+## [s8] 2026-08-25 (SYNTHESIS modality — merged attack + frontier reset)
+
+Chassis re-established first: the 07:54 layer-1 FAIL banned the [s5]/[s6]
+candidate, so the submittable body is the [s7] non-banned form. Re-measured
+this session: `sandbox func_800460E4 --disable all` = **9** (245/248,
+rules_dropped=10), twice, and again at end of session. candidate.c now carries
+that body (the banned 0-scoring form stays banked at
+rejected/layer1-fail-0825-0754.c).
+
+H27 — "The `bb_live_regs` half of `birthing_insn_p` ([s3] frontier item 2) can
+be defeated by some C spelling, killing the boost while the carrier stays a
+block-local single-set pseudo."
+Mechanism as filed: sched.c:2505 `birthing_insn_p` returns 0 outright when the
+SET_DEST pseudo is not live in `bb_live_regs` at the scheduling point,
+independently of `reg_n_sets`.
+Probe: read the function verbatim (tools/gcc-2.7.2/sched.c:2504-2537) and
+checked it against the block-19 ready-list traces of two different chassis
+(tmp/grind/func_800460E4/s8/base.sched and s8/vC.sched — every 0x7f000001 entry
+in both).
+Verdict: **KILLED — structurally unreachable.** The list scheduler runs
+BACKWARD: an insn only becomes ready once all of its block-local consumers are
+already scheduled, and scheduling a consumer is exactly what puts the consumed
+pseudo INTO `bb_live_regs`. So for any ready insn whose pattern is
+`SET (REG, ...)`, the liveness test is satisfied by construction and
+`birthing_insn_p` degenerates to `reg_n_sets[dest] == 1`. The only patterns
+that fail the test are ones whose SET_DEST is not a REG (a store, a SUBREG),
+which is not a spelling choice for a loaded value. Frontier item (2) is closed:
+there is no liveness lever, only the reg_n_sets lever, and the reg_n_sets lever
+is what the 07:19 ruling and the 07:54 layer-1 FAIL close.
+
+H28 — "[s3] frontier item (1) is real: an atom-set change INSIDE block 19 that
+leaves the final atom multiset unchanged can flip the T-6 decision and give
+target's adjacent loads, with NO multiply-assigned carrier anywhere."
+Mechanism: sched1 sees the pre-reload insn stream. Extra insns that exist at
+sched1 shift each chain's ready cycle and the block's unit-hazard state, so
+`schedule_select`'s tie-break between the two 0x7f000001 insns resolves the
+other way — the dependence graph, the alias behaviour and reg_n_sets are all
+untouched.
+Probe: 38 spellings measured through tmp/grind/func_800460E4/s4b2/pr.sh (exact
+cpp|cc1|prologue_fix|maspsx|multu_pad pipeline, scored positionally against
+target with s4/score.py): a 24-point full cross of {load order} x {detour
+completion order} x {consumption order} x {store position}, plus 14 rebase-
+detour shapes (`- (s32)s0` / `+ (s32)s0`, the reverse sign, `^ (s32)s0` twice,
+`- s3` / `+ s3`, `+ 4` / `- 4`, one-word and two-word variants). cc1 `-da`
+dumps taken for the baseline and for the winning shape.
+Verdict: **CONFIRMED.** With a value-neutral rebase detour on BOTH header words
+the two loads issue back to back exactly as target does, and both header values
+land in target's exact hard registers (`lw a0,-4(v1)` / `lw v1,-8(v1)`: the -8
+word in $v1, the -4 word in $a0). This is the first non-banned construct in
+eight sessions to reach target's load adjacency. Dump evidence for the
+mechanism: baseline block 19 T-6 ready list is
+`331 (1) 298 (1) 310 (7f000001) 322 (7f000001)` and the scheduler takes 322;
+under the detour the same cycle reads
+`346 (1) 298 (1) 332 (7f000001) 329 (7f000001)` followed by GCC's own line
+`;; insn 329 has a greater potential hazard, now 329 332 346 298` — the boost
+is NOT removed (both insns still carry 0x7f000001, i.e. reg_n_sets is still 1
+for both dests), the tie simply resolves the other way because the detour's
+insns changed the cycle at which each chain became ready. This CORRECTS the
+guess in the [s3] frontier that the only way to influence T-6 is to remove a
+boost.
+Scores (positional diffs / insn count, target = 248): baseline 9/245;
+`-s0/+s0` detour both words, s6-then-s4 consumption, store last 10/246;
+same with s4-then-s6 consumption 10/248; `^s0` detour, s4-then-s6, store last
+10/248; same, store between 10/248; `+4/-4` detour 9/248 (the constant folds
+completely, so no atoms reach sched1 and the schedule reverts to baseline —
+the clean control that proves the effect comes from atoms surviving into
+sched1, not from the source text); `-s3/+s3` 40/246 (clobbers s3's seat).
+
+H29 — "Load adjacency is sufficient to close case 3."
+Probe: the winning detour forms above, diffed instruction by instruction
+against target.
+Verdict: **KILLED.** With adjacency achieved and both header values in
+target's registers, the residual is 10, not 0, and is exactly two things:
+(a) the ADDRESS pseudo is seated $v1 where target uses $v0 (which also forces
+our pair to load -4 before -8, because $v1 is simultaneously the -8 word's
+seat), and (b) each ALIGN4 shift chain refines through $v0 instead of refining
+IN PLACE in the value's own register the way target does
+(`srl v1,v1,0x2; sll v1,v1,0x2` / `srl a0,a0,0x2; sll a0,a0,0x2`). (b) is
+[s5] H23 restated: in-place refinement is the second, INDEPENDENT requirement,
+and the only spelling known to produce it is a carrier written more than once.
+
+**Modality verdict: SYNTHESIS complete.** The residual is now fully decomposed
+into two independent requirements with separate levers, one of which is newly
+open:
+  (A) load adjacency  — reachable by a sched1 atom-set change (H28, measured),
+      no multi-set carrier needed, no alias analysis touched;
+  (B) in-place ALIGN4 refinement + the address pseudo in $v0 — only ever
+      achieved so far by a multiply-assigned carrier (banned/refused), so this
+      is the open half.
+Every previously-open frontier item is now resolved: item (2) killed (H27),
+item (1) confirmed and half-spent (H28/H29).
+
+Frontier (in order, for the next ladder pass):
+(1) SOLVER modality on requirement (B) ONLY, at the H28 chassis (the
+    adjacency-achieved 248-insn body, 10 diffs, seats otherwise correct):
+    run tools/ra_solver inverse_compose.py classify on the two remaining seat
+    facts — address pseudo -> $v0, and each ALIGN4 result pseudo -> its own
+    input register — for a typed REACHABLE/FORECLOSED verdict with ranked
+    C-lever vectors. This is a much smaller and much better-posed question than
+    any solver run this function has had before, because everything else in the
+    block is already byte-exact.
+(2) ATOM-SET modality continued on requirement (A) with an HONEST spelling:
+    the rebase detours that produce adjacency are research forms only (T1/T2
+    failures — no semantic purpose, no human would write them). The open
+    question is whether any spelling a human WOULD write leaves an extra insn
+    in block 19 at sched1 that disappears before final: candidates not yet
+    swept are a genuinely used second consumer of one header word that
+    cross-jump or reload later removes, and sub-expression spellings whose
+    extra atoms are copies that reload coalesces.
+(3) Only if (1) returns FORECLOSED for the address/in-place seats AND (2) finds
+    no honest adjacency spelling is the instruction-selection level exhausted;
+    the residual would then be a fidelity/routing question for an escalation
+    packet. Do NOT re-ask any family question: the aggregate merge (04:46), the
+    fresh multi-set carrier (07:19) and the hoisted pre-existing carrier
+    (07:54) are all closed, and re-asking is auto-reject class.
+
+## [s4] The bb_live_regs half of sched.c birthing_insn_p ([s3] frontier item 2) can be defeated by a C spelling, killing the boost while the carrier stays a block-local single-set pseudo.
+- mechanism: sched.c:2504-2537 returns 0 outright when the SET_DEST pseudo is not live in bb_live_regs at the scheduling point, independently of reg_n_sets
+- probe: Read birthing_insn_p verbatim in tools/gcc-2.7.2/sched.c and checked it against every 0x7f000001 ready-list entry in two chassis block-19 traces (tmp/grind/func_800460E4/s8/base.sched, s8/vC.sched)
+- result: The list scheduler runs BACKWARD: an insn only becomes ready once all its block-local consumers are scheduled, and scheduling a consumer is exactly what puts the consumed pseudo INTO bb_live_regs. So for any ready insn with a SET(REG,...) pattern the liveness test holds by construction and birthing_insn_p degenerates to reg_n_sets[dest]==1. Only non-REG SET_DESTs (store, SUBREG) fail it, which is not a spelling choice for a loaded word.
+- verdict: KILLED
+
+## [s4] [s3] frontier item (1) is real: an atom-set change inside block 19 that leaves the final atom multiset unchanged can flip the T-6 tie and give target adjacent loads, with no multiply-assigned carrier anywhere and no change to alias analysis or the dependence graph.
+- mechanism: sched1 sees the pre-reload stream; extra insns shift each chain ready cycle and the block unit-hazard state, so schedule_select tie-break between the two 0x7f000001 insns resolves the other way
+- probe: 38 spellings through the new fast harness tmp/grind/func_800460E4/s8/pr.sh (exact cpp|cc1|prologue_fix|maspsx|multu_pad pipeline, scored positionally against target): a 24-point cross of load order x detour-completion order x consumption order x store position, plus 14 rebase-detour shapes; cc1 -da dumps for the baseline and the winning shape
+- result: Value-neutral rebase detours on both header words put target two loads back to back AND give both header values target exact hard registers (-8 word in $v1, -4 word in $a0) - the first non-banned construct in eight sessions to reach adjacency. Dumps: baseline T-6 ready list '331 (1) 298 (1) 310 (7f000001) 322 (7f000001), now 322 310 ...' vs detour '346 (1) 298 (1) 332 (7f000001) 329 (7f000001)' plus GCC own line ';; insn 329 has a greater potential hazard, now 329 332 346 298'. The boost is NOT removed (both still 0x7f000001) - the tie simply resolves differently, which corrects the [s3] frontier assumption that only boost-removal can move T-6.
+- verdict: CONFIRMED
+
+## [s4] Load adjacency is sufficient to close case 3.
+- mechanism: if the T-6 decision was the whole residual, fixing it should reach 0
+- probe: instruction-by-instruction diff of the adjacency-achieving forms against target (tmp/grind/func_800460E4/s8/x2.dis, s8/vC.dis)
+- result: Residual is 10, not 0, and is exactly two facts outside the tie: (a) the address pseudo is seated $v1 where target uses $v0 (and because $v1 is also the -8 word seat, our pair is forced to load -4 first), and (b) each ALIGN4 shift chain refines through $v0 instead of in place in the value own register as target does. (b) is [s5] H23 restated: in-place refinement is an INDEPENDENT requirement whose only known spelling is a carrier written more than once.
+- verdict: KILLED
+
+## [s4] The rebase-detour effect comes from the source text rather than from atoms surviving into sched1.
+- mechanism: control for the atom-set hypothesis - a constant rebase (+4/-4) folds completely before sched1
+- probe: the +4/-4 variant measured through the same harness and its case-3 block diffed against the baseline
+- result: 9/248 with a case-3 schedule identical to the baseline, while the -s0/+s0 and ^s0 rebases measure 10/246 and 10/248 with adjacency. Corollary: combine runs before sched1 (toplev.c:3004 vs :3033), so any construct whose whole effect combine folds cannot influence this tie; only constructs whose extra atoms survive combine and are removed later (reload coalescing, jump2) can be both effective and byte-neutral.
+- verdict: CONFIRMED

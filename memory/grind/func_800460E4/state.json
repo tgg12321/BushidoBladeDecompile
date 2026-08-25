@@ -1,8 +1,8 @@
 {
  "func": "func_800460E4",
  "file": "text1a_c2",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 9,
    "modality": "structural",
    "headline": "Case-3's entire 9-instruction residual traced to ONE scheduler tie (sched.c adjust_priority birthing boost + schedule_select potential_hazard) at T-6 of block 19; the lever is proven by measurement an"
+  },
+  {
+   "session": 4,
+   "floor": 9,
+   "modality": "synthesis",
+   "headline": "Synthesis: residual split into two independent halves - load adjacency plus both value seats are now reachable with NO multi-set carrier (sched1 atom-set lever, dump-proven), leaving only the address "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An atom-set change inside block 19 that makes one of the two competing insns not newly-ready at T-6 breaks the tie without touching the dependence graph and without a multi-set pseudo.",
-   "mechanism": "the tie exists only because insn 319 (queued 2 cycles when its consumer was scheduled at T-4) and insn 322 (freed at T-5) become ready at the same cycle; a chain of different length shifts one of them by a cycle",
-   "next_probe": "atom-set / synthesis modality: spell case 3 so one ALIGN4 chain has a different insn count at sched1 but folds to target's atoms afterwards, then re-read the block-19 ready-list trace in the .sched dump to confirm the T-6 ready list carries only one boosted insn"
+   "hypothesis": "Requirement (B) alone - address pseudo to $v0 plus in-place ALIGN4 refinement - is decidable by the RA solver at the new adjacency-achieved chassis, where everything else in the block is already byte-exact.",
+   "mechanism": "local-alloc/global-alloc seating of three pseudos in a block whose order and value seats now match target; a much smaller and better-posed question than any solver run this function has had",
+   "next_probe": "solver modality: run tools/ra_solver inverse_compose.py classify on the address pseudo -> $v0 and on each ALIGN4 result pseudo -> its own input register, at the 248-insn adjacency chassis (rejected/s8-xor-rebase-detour-248-10-seats-right-address-v1.c as the MEASUREMENT chassis, never as a candidate), for a typed REACHABLE/FORECLOSED verdict with ranked C-lever vectors"
   },
   {
-   "hypothesis": "The bb_live_regs half of birthing_insn_p can defeat the boost while the value stays a block-local single-set pseudo - the one combination P2..P7 could not achieve.",
-   "mechanism": "birthing_insn_p returns 0 outright when the destination pseudo is not live in bb_live_regs at the scheduling point, independently of reg_n_sets",
-   "next_probe": "forensics modality: run the existing probe set under BB2_SCHED_DEBUG=1 (the SCHEDDBG ADJPRI hook is already wired in tools/gcc-2.7.2/sched.c) to enumerate which liveness states suppress the boost, then hunt a C spelling that produces one"
+   "hypothesis": "There is an HONEST C spelling (one that passes T1/T2 on its own semantics) whose extra block-19 atoms survive combine into sched1 and are removed afterwards by reload coalescing or jump2, giving requirement (A) byte-neutrally.",
+   "mechanism": "confirmed lever: atoms present at sched1 shift the ready cycles and flip schedule_select tie-break without touching the dependence graph or reg_n_sets",
+   "next_probe": "atom-set modality: sweep spellings whose extra atoms are genuinely motivated - a real second consumer of one header word that the cross-jump merge later eats, and copy-shaped sub-expression spellings that reload coalesces - checking insn count 248 and the block-19 T-6 ready list in the .sched dump for each"
   },
   {
-   "hypothesis": "If both of the above die measured, the instruction-selection level is exhausted and the residual is a fidelity/routing question only.",
-   "mechanism": "escalation-not-parked decision-packet path; the 2026-08-25 04:46 aggregate-merge refusal is final and any family re-ask is auto-reject-class",
-   "next_probe": "driver-assigned escalation modality only; do not file a packet whose YES would lower a standard"
+   "hypothesis": "If the solver returns FORECLOSED for the address/in-place seats AND no honest adjacency spelling exists, the instruction-selection level is exhausted and the residual is a fidelity/routing question only.",
+   "mechanism": "escalation-not-parked decision-packet path; every family question here is already closed (aggregate merge 04:46, fresh multi-set carrier 07:19, hoisted pre-existing carrier 07:54) and re-asking is auto-reject class",
+   "next_probe": "driver-assigned escalation modality only; the packet would have to pose a fidelity/routing question, never a family or standard-lowering one"
   }
  ],
  "judge_constraints": [
