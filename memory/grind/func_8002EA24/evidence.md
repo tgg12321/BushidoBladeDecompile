@@ -1619,3 +1619,168 @@ instruction cost.
 - [s14] Residual localized inside the compiler, not the source: pass global_alloc (tools/gcc-2.7.2/global.c), decision point find_reg (:1012-1044), the pass-0 hard-register exclusion set for the neg_threshold allocno (pseudo 103) is missing hard register 4 ($a0); with the bit first-fit yields $t1 (target), without it $a0 (ours). All four GCC generators of that bit are enumerated and each measured dead (s5 live-at-entry costs instructions; s7 assigned-conflict-from-97 killed the priority axis; s11 closed expand_preferences by exhaustive recipient enumeration; s8/s9 completed the seventh-live-value carrier enumeration in both directions).
 
 - [s14] Disposition filed this session at docs/grind/decisions.md:7843, superseding the 2026-07-30 entry at :2457 whose gate-(b) facts the migration invalidated. Terminal per the owner's 2026-07-27 standing ruling; nothing pending on the owner; explicitly re-attempt-eligible.
+
+## SESSION 15 (2026-08-25, escalation modality; owner directive: run the SOLVER first)
+
+Chassis re-measured at the start and the end of the session with the banked
+candidate body applied to `src/code6cac_b.c`:
+`{"score": 2, "target_insns": 104, "build_insns": 104, "rules_dropped": 0}` —
+floor unchanged at 2, 0 regfix/asmfix rules on main.
+
+This is the first session to execute the owner directive of 2026-08-24 to run the
+solver suite (`tools/ra_solver`) before any further re-grind. The frontier that
+sessions 12-14 left ("re-attempt is gated on NEW TOOLING: a forward inversion of
+the mapping from C dataflow to the allocno conflict graph; plausible substrate
+tools/ra_solver, which does not invert") is now RESOLVED: `inverse.py`,
+`inverse_compose.py` and `sweep.py` exist and were run on this function for the
+first time. Four results.
+
+### 1. The residual is confirmed to be exactly ONE register substitution
+`goal_from_tgt.py goal code6cac_b func_8002EA24 --show` aligns our cheat-stripped
+object against `build/src/code6cac_b.o` (which still carries the INCLUDE_ASM
+target bytes) and reports:
+
+    align ours->tgt: |A|=104 |B|=104 {equal: 102, replace: 2}
+    register substitutions:  $a0 -> $v0   x2
+      ours[31] slt a0,a1,t1   tgt[31] slt v0,a1,t1
+      ours[32] bnez a0,@      tgt[32] bnez v0,@
+
+Attribution is AMBIGUOUS at register level (three pseudos hold $a0: 97, 122, 126),
+which is why the work below was done on the PLAIN control (no L3) instead: on
+that body the allocation matches target on EVERY allocno except pseudo 103
+(`neg_threshold`), which takes $a0 where target takes $t1. The plain control is
+therefore the honest statement of the residual: **one allocno, one register.**
+
+Note for whoever runs the solver next on an asm-until-matched function:
+`inverse_compose.py classify` and `goal_from_asm.py` are UNSOUND on this chassis
+— `mkasm_honest.sh` builds its "target" stream from `src/<stem>.c` plus the
+regfix/asmfix stages, which for an INCLUDE_ASM function with zero rules means it
+compares our own build against our own build minus the cheat-stripped GTE
+islands. Run this session it reported a fictitious `FIRST DIVERGENCE: PRE-RA`
+with a 93-vs-105 insn gap. `goal_from_tgt.py`, which compares OBJECTS
+(`tmp/sandbox/<func>/<stem>.o` vs `build/src/<stem>.o`), is the correct entry
+point and gave the exact 104/104 alignment above.
+
+### 2. `inverse.py` returns a FALSE NEGATIVE here — a tooling defect, recorded
+`inverse.py global <plain model> --goal {"103": 9} --depth 2` reports
+`NEGATIVE RESULT: no perturbation of any modelled input, up to depth 2, reaches
+the target assignment` and advises "the next move is INSTRUMENTATION, not another
+spelling search". That verdict is WRONG, and the counterexample is this
+function own banked candidate. The cause is structural, at
+`tools/ra_solver/inverse.py:182-190`: every atom is generated over
+
+    focus = goal pseudos + {q : q conflicts with a goal pseudo}
+
+so `CONFLICT_ADD` edges can only ever be proposed between the goal pseudo and
+someone it ALREADY conflicts with. On the plain control, 103 conflicts with
+{72, 74, 75, 96, 100}; the edge that actually works — 103 to 97 — is exactly the
+one the focus set cannot name, and 97 is the allocno L3 makes conflict with 103.
+**Consequence for other functions: an `inverse.py` NEGATIVE is only a negative
+over already-conflicting pairs; it must not be read as "no conflict lever
+exists".** (Recorded here rather than fixed: `tools/` is outside a grind
+session writable surface.)
+
+### 3. Unfocused depth-1 sweep — the modelled input space is now EXHAUSTED
+`tmp/grind/func_8002EA24/s15/depth1_sweep.py` re-runs the search without the
+focus restriction: for EVERY pseudo in the function (43 of them, not 6), every
+`nrefs` from 1 to +24, every live length from -16 to +32, `calls_crossed`, every
+conflict edge in the whole function, and every hard-register preference 2..25 —
+one atom at a time, against the validated `simulate.py` model of `global.c`.
+
+    atoms reaching 103->$t1: 3
+      CLEAN (no collateral allocno change): 3
+         conflict 97<->103
+         conflict 103<->97          (the same edge, both orientations)
+         pseudo 103: prefs []->[9]
+      with collateral: 0
+
+So over the whole modelled input space there are exactly **two** distinct
+perturbations that reach target, and both are clean:
+
+* **Route A — an own hard-register preference for $t1 on 103.** FORECLOSED with
+  a named mechanism, and the `inverse.py` appearability gate states it:
+  "$t1 never appears as a hard reg in this function pre-RA RTL, so
+  `global.c set_preference` can never record a preference for it." Checked
+  against target this session: the only $t1 occurrences in
+  `asm/funcs/func_8002EA24.s` are `negu $t1,$a2` and the two `slt`s that read it
+  — i.e. the ALLOCATED result, not a pre-RA hard reg — and target two GTE
+  islands use $t4 (`addu $t4,$v0,$zero`), exactly the register our authorized
+  island wording already pins. There is no fidelity question hiding here: no C
+  source and no island re-spelling puts a hard $t1 in the pre-RA RTL.
+* **Route B — the conflict edge 97 to 103** (a0_var live across the range chain).
+
+### 4. Route B is closed in C, now by a MECHANISM rather than by enumeration
+The model says the edge is clean even when it comes with everything a real
+carrier brings: `carrier_model.py` adds the edge together with conflicts against
+the entire window {72,74,75,96,100,102}, live-length growth to +32 and ref growth
+to +4 — 103 still lands in $t1 with zero collateral. So the model does NOT
+forbid a carrier. What forbids it is the RTL:
+
+* **Backward extension (a0_var born earlier).** a0_var can only be live before
+  the chain if it is DEFINED before the chain. Every value computed before the
+  chain in this function is ALREADY an allocno, so re-using one as the a0_var
+  pre-chain value creates the edge and simultaneously DELETES an allocno,
+  vacating the register target needs elsewhere. Measured this session on the one
+  carrier sessions 8-9 never tried — `z`, the rotated Z, the only value loaded
+  BETWEEN the two range tests: the edge IS created (`97 conflicts:` gains 103)
+  but the 97 refs go 13->18 and its live length 32->39, which re-ranks it from
+  THIRD to FIRST in the allocation order; max_y (100) falls $a1->$v1, y (102)
+  rises $v1->$a1, and 103 takes the vacated $a1. **score 15 at 104 insns**
+  (`rejected/zcarrier-merges-allocno-96-reranks-97-score15.c`). Same shape as the
+  session-9 `v2` carrier — with `z` measured, the family is closed generally: a
+  value that is not already an allocno is a new computation, i.e. extra
+  instructions.
+* **Forward extension (neg_threshold living longer).** The edge is symmetric, so
+  the dual is to move the a0_var BIRTH before the last read of neg_threshold.
+  That is semantics-preserving here (both remaining early-return tests are pure
+  and return the same value), and it was measured: computing the sum of squares
+  between the Z load and the Z range test keeps 104 instructions but emits the
+  two mult/mflo pairs and the add BEFORE the Z test, where target emits them
+  after both tests — **score 21**
+  (`rejected/ztest-after-sum-hoists-mults-score21.c`). This is the `accearly`
+  wall reached from the opposite direction. There is no honest later USE of
+  -threshold to extend 103 with instead: the tail tests mention only min_y,
+  max_y, y and a0_var.
+
+### Endgame-lock gates, re-evaluated on the current chassis
+* Gate (a) canonical-asm: `scan_hand_coded.py --single func_8002EA24` gives
+  `tier=TIGHT_C score=3/8`, signals S3/S4/S5 only, **no S1/S2/S6**. FAILS.
+* Gate (b) SOTN precedent for a closing construct: there is no closing construct
+  to cite a precedent FOR — both routes above are closed by named GCC mechanisms,
+  not by a missing spelling. The session-13 construct-index census
+  (conflict / allocno / find_reg / global_alloc) returned zero hits and has not
+  changed. FAILS.
+
+No decision packet was filed. Under the owner second ruling of 2026-08-24
+(`.claude/rules/escalation-not-parked.md`) the previously-filed
+"REFUSED / OWNER-ACCEPTED INCOMPLETE" shape is in the AUTO-REJECT class (a YES
+would lower a standard), and no fidelity / routing / provenance question with a
+decidable answer survives this session measurements — the one candidate (island
+register fidelity, i.e. "could the original island have put a hard $t1 in the
+pre-RA RTL and opened route A?") was CHECKED against the target bytes and
+answered NO. The residual therefore stays ACTIVE under standing policy, with the
+search space narrowed to the two model-external mechanisms in hypotheses.md H9.
+
+- [s15] Chassis re-measured at session start and end with the banked candidate applied: score 2, target_insns 104, build_insns 104, rules_dropped 0 -- floor unchanged, zero regfix/asmfix rules on main. src/code6cac_b.c reverted to INCLUDE_ASM at the end of the session; the candidate lives only in memory/grind/func_8002EA24/candidate.c.
+
+- [s15] First execution of the owner directive attached to this queue item (2026-08-24: run the solver modality before deeper re-grind). It also discharges the session-12..14 frontier item, which said re-attempt was gated on 'new tooling: a forward inversion of C dataflow to the allocno conflict graph' -- tools/ra_solver now has inverse.py / inverse_compose.py / sweep.py and they were run here.
+
+- [s15] The residual is one register substitution, not two: goal_from_tgt.py reports align 104/104 {equal 102, replace 2}, $a0 -> $v0 on `slt a0,a1,t1` / `bnez a0`. Register-level attribution is ambiguous on the banked body (pseudos 97, 122, 126 all hold $a0), which is why the analysis was done on the plain control, where the allocation equals target on every allocno except pseudo 103.
+
+- [s15] Exhaustive in-model result: over 43 pseudos and the full modelled input space at depth 1, exactly 3 atoms reach 103->$t1 and all 3 are collateral-free; they are two distinct routes (an own $t1 preference on 103; the conflict edge 97<->103).
+
+- [s15] Route A is FORECLOSED by set_preference appearability -- $t1 never appears as a hard reg in a C compile of this leaf. Target's own $t1 is the allocated `negu $t1,$a2`, and target's two GTE islands use $t4, matching our authorized island wording, so no island re-spelling opens the route.
+
+- [s15] Route B closed with a general mechanism rather than by enumeration: every value computed before the range chain is already an allocno, so any carrier creates the edge AND deletes an allocno. Measured on the one carrier sessions 8-9 never tried (z, the rotated Z, the only value loaded between the two range tests): score 15 at 104 insns, 97 re-ranks THIRD->FIRST, max_y and y swap registers, 103 takes the vacated $a1.
+
+- [s15] The symmetric forward extension (move a0_var's birth before neg_threshold's last read, semantics-preserving because both early-return tests are pure and return 0) measures 21 at 104 insns -- the mult/mflo pairs hoist above the Z range test. There is no honest later USE of -threshold: the tail tests mention only min_y, max_y, y and a0_var.
+
+- [s15] reload_sim.py: exactly one RETRY in the whole function, pseudo 117 (MD/$lo quantity) -> $v1, which both builds agree on. 103 never enters retry_global_alloc, so the pre-reload allocation is final for it and the H9a/H9b closure stands unqualified.
+
+- [s15] TOOLING DEFECT worth propagating: an inverse.py NEGATIVE is only a negative over already-conflicting pairs (focus set, inverse.py:182-190) -- it returned a confident negative on a goal for which this very ledger banks a working lever. And inverse_compose.py classify / goal_from_asm.py are unsound for asm-until-matched functions because mkasm_honest.sh builds its 'target' from src + regfix/asmfix; use goal_from_tgt.py (object-level) instead. tools/ is outside a grind session's writable surface, so this is recorded, not fixed.
+
+- [s15] Endgame-lock gates re-evaluated on the current chassis and both still FAIL: scan_hand_coded.py --single func_8002EA24 -> tier=TIGHT_C score=3/8 with S3/S4/S5 only and no S1/S2/S6; and there is no closing construct to cite a SOTN precedent FOR, since both routes are closed by named GCC mechanisms rather than by a missing spelling.
+
+- [s15] No decision packet was filed, deliberately. Under the owner's second 2026-08-24 ruling (.claude/rules/escalation-not-parked.md) the previously-filed 'REFUSED / OWNER-ACCEPTED INCOMPLETE' shape is in the AUTO-REJECT class -- its YES would lower a standard -- and the one fidelity/provenance question this session could have posed (could the original GTE island have put a hard $t1 in the pre-RA RTL and opened route A?) was answered NO against target's own bytes. Per that ruling the residual stays ACTIVE under standing policy.
+
+- [s15] 45 rejected forms now banked in memory/grind/func_8002EA24/rejected/ (2 added this session).

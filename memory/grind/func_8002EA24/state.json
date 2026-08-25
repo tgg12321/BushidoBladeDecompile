@@ -1,7 +1,7 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 14,
+ "session_count": 15,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -87,23 +87,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "Post-migration chassis re-measured (floor still exactly 2, 104/104 insns, zero rules on main); the one axis that looked new since the last escalation -- the owner's 2026-08-07 LZC-island pre-approval "
+  },
+  {
+   "session": 15,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Solver modality executed for the first time (owner directive 2026-08-24): an unfocused depth-1 sweep of global.c's entire modelled input space proves exactly TWO perturbations reach target's $t1 for n"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Re-attempt is gated on NEW TOOLING, not on another modality: a forward inversion of the mapping from C dataflow to the allocno conflict graph.",
-   "mechanism": "The residual is one bit in find_reg's pass-0 exclusion set for pseudo 103, and every C-visible generator of that bit is enumerated and measured dead. What is missing is not another guess but a tool that answers 'which C dataflow produces allocno conflict set X' in the forward direction instead of the guess-and-measure loop thirteen sessions have run. Plausible substrate: tools/ra_solver (memory/project/ra-solver-campaign-2026-08-04), which already models GCC 2.7.2's allocation stack and is validated, but does not invert.",
-   "next_probe": "Only if such a tool is built. Do NOT re-run structural / forensics / rederive / synthesis / permuter modalities on this function -- all are spent and their negatives are banked in memory/grind/func_8002EA24/."
+   "hypothesis": "The local-alloc SUGGESTED-REGISTER pass (qty_phys_copy_sugg / qty_phys_sugg) decides the $a0/$t1 split upstream of global_alloc, which is why 15 sessions of global-alloc-level search found nothing.",
+   "mechanism": "local_alloc.py reports but does not SCORE `sugg` rows because the BB2_QTY_DEBUG hook in local-alloc.c block_alloc does not dump the suggestion sets (stated as a known hook gap in tools/ra_solver/README.md). It is the last mechanism in the allocation stack that has never been observed for this function, and local-alloc renumberings also seed regs_used_so_far for global_alloc's pass 0 -- the exact set that excludes $a0 from pseudo 103.",
+   "next_probe": "Extend the BB2_QTY_DEBUG fprintf in tools/gcc-2.7.2/local-alloc.c to print qty_phys_copy_sugg / qty_phys_sugg (and qty_size, the other known gap), rebuild the instrumented cc1 with TMPDIR=/dev/shm make cc1, re-run local_extract.py + local_alloc.py on code6cac_b, and ask whether any quantity in the range-test window carries a suggestion for $a0 or $t1. This is an engine/tools change, OUTSIDE a grind session's writable surface -- it needs the operator or a tooling session, not another C-spelling modality."
   },
   {
-   "hypothesis": "A genuinely new sanctioned pure-C construct family, arriving from outside this function's grind and carrying its own community precedent, could close the last 2 points.",
-   "mechanism": "Gate (b) fails today only because nothing is known to close the residual. A future SOTN/VS/ESA-evidenced family that produces an allocator conflict at zero instruction cost would reopen the function immediately -- the park is explicitly re-attempt-eligible.",
-   "next_probe": "Re-open func_8002EA24 when such a family is sanctioned project-wide; apply it on top of memory/grind/func_8002EA24/candidate.c (score 2, 104/104 insns) rather than starting from HEAD."
+   "hypothesis": "inverse.py's focus-set restriction is hiding conflict levers on OTHER queue functions too, so its banked NEGATIVE verdicts across the 2026-08 sweep are unsound as stated.",
+   "mechanism": "Every CONFLICT_ADD atom is generated only between a goal pseudo and someone it already conflicts with (inverse.py:182-190). A conflict lever's whole point is to create an edge that does not yet exist, so the atom class most likely to close an RA residual is systematically absent. Demonstrated here by counterexample.",
+   "next_probe": "A tooling session: widen the CONFLICT_ADD atom source from `focus` to all pseudos (the unfocused sweep in tmp/grind/func_8002EA24/s15/depth1_sweep.py is a working 60-line reference implementation and runs in seconds on a 43-pseudo function), then re-run sweep.py over the functions whose ledgers cite an inverse.py NEGATIVE."
   },
   {
-   "hypothesis": "If the function ever reaches an otherwise-match, the LZC island can be banked immediately without a fresh escalation.",
-   "mechanism": "The owner's 2026-08-07 ruling (docs/grind/decisions.md:3906) pre-approves the LZC island WORDING for func_8002EA24, scoped LZC-only and conditioned on the function otherwise matching. The vector/MVMVA block is expressly excluded and would need its own authorization narrowed to `addu $t4, %0, $zero` plus cop2 ops with the address bound as an operand.",
-   "next_probe": "Not actionable at floor 2. Relevant only after condition 1 or 2 above closes the range-test residual."
+   "hypothesis": "A depth-2 combination inside the modelled space reaches target where no single atom does, on a body other than the plain control.",
+   "mechanism": "This session's sweep was depth 1 and was run against ONE baseline. The model is cheap enough that the full cross product of (structurally distinct score-2 body) x (depth-2 atom pairs) is affordable, and the seven known score-2 bodies have different pseudo sets, so a pair that is unspellable on one may be spellable on another.",
+   "next_probe": "For each banked score-2 body: extract.py -> goal_from_tgt.py goal --model (to get the body-specific goal) -> a depth-2 version of depth1_sweep.py restricted to CLEAN results. Report only vectors whose atoms are individually spellable in C; anything requiring a preference for a register absent from the pre-RA RTL is foreclosed by H9a's mechanism and must be dropped, not spelled."
   }
  ],
  "judge_constraints": [

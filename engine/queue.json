@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002EA24",
-      "file": "code6cac_b",
-      "distance": 2,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
-    },
-    {
       "func": "func_8003800C",
       "file": "code6cac_c_mid",
       "distance": 2,
@@ -2058,18 +2049,28 @@
       "status": "escalated",
       "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals.",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md \u2014 '## 2026-08-25 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET**' (appended this session; decidable question: repair the solver toolkits' target-stream derivation for INCLUDE_ASM-routed functions so the owner's own 2026-08-24 solver directive becomes executable \u2014 a fidelity/routing question that lowers no standard and requests no family grant)"
+    },
+    {
+      "func": "func_8002EA24",
+      "file": "code6cac_b",
+      "distance": 2,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals.",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-25 \u0393\u00c7\u00f6 func_8002EA24 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
     }
   ],
   "counts": {
     "total": 236,
-    "active": 232,
+    "active": 231,
     "by_status": {
-      "active": 232,
-      "escalated": 4
+      "active": 231,
+      "escalated": 5
     },
     "by_verdict": {
-      "ASM-PARTIAL": 36,
-      "C": 196
+      "C": 196,
+      "ASM-PARTIAL": 35
     }
   }
 }

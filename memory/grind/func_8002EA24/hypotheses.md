@@ -1667,3 +1667,133 @@ not re-run structural / forensics / rederive / synthesis / permuter here.
 - probe: python3 tools/scan_hand_coded.py --single func_8002EA24
 - result: tier=TIGHT_C score=3/8 -- only the weak signals S3 (no spills), S4 (front loads), S5 (cluster sibling func_8002D320, jaccard 0.60) fire; all three STRONG signals are clear. Identical to the 2026-07-30 reading.
 - verdict: KILLED
+
+## H9 (session 15, solver modality) — the residual is a two-route allocator question, and both routes are now closed in C
+
+**Statement.** Target register assignment for `func_8002EA24` differs from our
+honest build in exactly one allocno (pseudo 103, `neg_threshold`: ours $a0,
+target $t1) on the PLAIN control body, and the modelled input space of
+`global.c` contains exactly two perturbations that reach it — an own hard-reg
+preference for $t1 on 103, or a conflict edge between 103 and 97 (`a0_var`).
+
+**Probe.** `tools/ra_solver`: `goal_from_tgt.py goal` for the substitution;
+`extract.py` for the plain-control and candidate models;
+`tmp/grind/func_8002EA24/s15/depth1_sweep.py` for an UNFOCUSED depth-1 sweep of
+every modelled input of every pseudo (refs 1..+24, live length -16..+32,
+calls_crossed, all conflict edges, all hard-reg preferences 2..25);
+`conf_enum.py` for the conflict-edge-only enumeration;
+`carrier_model.py` for the composite a real carrier would bring.
+
+**Result.** 3 reaching atoms, all clean, collapsing to 2 distinct routes.
+
+**Verdict: CONFIRMED** (the two-route decomposition), with both routes then
+KILLED:
+
+* **H9a — Route A (own $t1 preference) is FORECLOSED.** `global.c set_preference`
+  can only record a preference for a hard register that appears in the pre-RA
+  RTL; $t1 appears nowhere in a C compile of this leaf. Verified against target:
+  the only $t1 in `asm/funcs/func_8002EA24.s` is `negu $t1,$a2` (the allocated
+  result) and both GTE islands use $t4, which our authorized island wording
+  already pins. **KILLED, mechanism named.**
+* **H9b — Route B (edge 97 to 103) is unreachable at zero instruction cost.**
+  Backward extension: every pre-chain value is already an allocno, so any carrier
+  creates the edge and deletes an allocno; measured on the last untried carrier
+  `z` (score 15, 104 insns; 97 re-ranks THIRD to FIRST, max_y and y swap, 103
+  takes the vacated $a1). Forward extension: moving the a0_var birth before the
+  last read of neg_threshold is semantics-preserving but hoists the mult/mflo
+  pairs above the Z range test (score 21, 104 insns). **KILLED, both directions
+  measured this session.**
+
+**Corollary (tooling, not this function).** `inverse.py` builds its atom space
+over `focus` = goal pseudos plus their EXISTING conflict neighbours
+(`tools/ra_solver/inverse.py:182-190`), so it can never propose the edge that
+closes this residual and returned a confident `NEGATIVE RESULT` on a goal for
+which a working lever is banked in this very ledger. An `inverse.py` negative is
+a negative over already-conflicting pairs only. `inverse_compose.py classify`
+and `goal_from_asm.py` are additionally unsound for asm-until-matched functions,
+because `mkasm_honest.sh` derives its "target" stream from `src/<stem>.c` plus
+regfix/asmfix — which, with zero rules and an INCLUDE_ASM body, is our own
+build. Use `goal_from_tgt.py` (object-level) instead.
+
+### What is left after H9 — the honest frontier
+
+The two mechanisms that remain are OUTSIDE the global-alloc model, and both were
+named by the solver output itself:
+
+1. **local-alloc suggested-register pass** (`qty_phys_copy_sugg` /
+   `qty_phys_sugg`). `local_alloc.py` reports but does not score `sugg` rows,
+   because the `BB2_QTY_DEBUG` hook does not dump the suggestion sets. If
+   local-alloc renumbers the compare temp into a hard register before
+   `global_alloc` runs, the $a0/$t1 split could be decided there, upstream of
+   everything sessions 6-15 measured.
+2. **reload spill-retry** (`retry_global_alloc`). The Phase-6 law says
+   preferences are inert at retry and the outcome is closed-form over conflicts
+   + forbidden_regs + class + calls-crossed; whether this function enters the
+   retry loop at all has never been checked (`reload_sim.py --show code6cac_b
+   func_8002EA24`), and `display.c` was measured to have ZERO retry calls, so
+   the answer may well be "no" — which would close this axis in one command.
+
+Neither is a C-spelling search. Both are one instrumentation/inspection step,
+and step 2 is cheap enough that the next session should run it first.
+
+### H9c (same session) — reload spill-retry does NOT own this residual
+
+Probe: `python3 tools/ra_solver/reload_sim.py --show code6cac_b func_8002EA24`
+against the banked tree-wide harvest `tmp/reload_work/code6cac_b.reload.log`.
+
+Result: the function enters the spill loop, but with **exactly one** RETRY, and
+it is not the residual pseudo:
+
+    RETRY pseudo=117 had=65 spillreg=65 nrefs=2 livelen=2 calls=0 -> got=3
+      forbidden=[0,1,2,4,5,6,7,9,10,12,26..31]  conflicts=[2,7,8,29]
+      find_reg alt=1 best=3 sim=3
+
+Pseudo 117 is an MD/`$lo` quantity kicked out when `new_spill_reg` takes regno 65
+and re-lands in $v1 — the same value both our build and target hold in $v1.
+Pseudo 103 (`neg_threshold`) never enters `retry_global_alloc`, so the
+pre-reload allocation the `simulate.py` model produces IS the final one for it,
+and the H9a/H9b closure stands unqualified.
+
+**Verdict: KILLED** (as an explanation for the residual).
+
+CAVEAT for the next session: `code6cac_b.reload.log` is the 2026-08-06 tree-wide
+harvest, i.e. it predates the asm-until-matched migration. Re-harvesting with
+`BB2_RELOAD_DEBUG=1` on the CURRENT body would make this airtight; the claim it
+supports (103 is not a retry pseudo) is robust to the difference because the
+retry is driven by the `$lo` spill in the LZC island, which is unchanged.
+
+That leaves **one** unexamined mechanism for the whole residual: the local-alloc
+SUGGESTED-REGISTER pass (`qty_phys_copy_sugg` / `qty_phys_sugg`), which
+`local_alloc.py` reports but does not score because the `BB2_QTY_DEBUG` hook does
+not dump the suggestion sets. Extending that hook is an engine/tools change,
+outside a grind session writable surface, and is the concrete next step.
+
+## [s15] H9 -- the score-2 residual is exactly one allocno (pseudo 103, neg_threshold: ours $a0, target $t1), and global.c's modelled input space contains only two perturbations that reach it.
+- mechanism: goal_from_tgt.py aligns tmp/sandbox/func_8002EA24/code6cac_b.o against build/src/code6cac_b.o (which still carries the INCLUDE_ASM target bytes) at 104/104, 102 equal, one substitution $a0->$v0 on slt/bnez. On the PLAIN control (candidate minus L3) the allocation equals target on every allocno except 103. An UNFOCUSED depth-1 sweep of simulate.py (validated 10/10 model of global.c) over every pseudo x {refs 1..+24, live length -16..+32, calls_crossed, every conflict edge in the function, every hard-reg preference 2..25} returns 3 reaching atoms, all clean, collapsing to two routes.
+- probe: tools/ra_solver/goal_from_tgt.py goal code6cac_b func_8002EA24 --model ...; tmp/grind/func_8002EA24/s15/depth1_sweep.py; tmp/grind/func_8002EA24/s15/conf_enum.py
+- result: atoms reaching 103->$t1: 3; CLEAN 3 (conflict 97<->103 in both orientations, and prefs[103]=[$t1]); with collateral: 0. Conflict-edge-only enumeration over all 43 pseudos: 103<->97 is the ONLY edge that reaches $t1, and it is clean; all 42 others leave 103 in $a0.
+- verdict: CONFIRMED
+
+## [s15] H9a -- Route A, an own hard-register preference for $t1 on pseudo 103, is unreachable from any C source or island wording.
+- mechanism: global.c set_preference can only record a preference for a hard register that appears in the pre-RA RTL (inverse.py's own appearability gate states this and foreclosed the atom). $t1 is a plain temp GCC assigns; it enters the RTL only via ABI or asm. Checked against target this session: the only $t1 in asm/funcs/func_8002EA24.s is `negu $t1,$a2` plus the two slt reads -- the ALLOCATED result -- and both GTE islands use $t4 (`addu $t4,$v0,$zero`), exactly the register our authorized island wording already pins, so there is no island-fidelity variant that opens this route.
+- probe: inverse.py FORECLOSED block; sed -n '1,40p' asm/funcs/func_8002EA24.s; grep -n t1 asm/funcs/func_8002EA24.s
+- result: FORECLOSED with mechanism; target's island register is $t4, identical to ours, so the provenance/fidelity variant of the question is answered NO.
+- verdict: KILLED
+
+## [s15] H9b -- Route B, the conflict edge 97<->103, is obtainable but never at zero instruction cost: the last untried backward carrier (z, the rotated Z) and the symmetric forward extension are both dead.
+- mechanism: carrier_model.py shows the model does NOT forbid a carrier -- the edge stays clean with conflicts against the whole window {72,74,75,96,100,102}, live-length +32 and refs +4. The RTL forbids it. Backward: every value computed before the range chain is ALREADY an allocno, so re-using one as a0_var's pre-chain value creates the edge and simultaneously DELETES an allocno, vacating the register target needs; a value that is not already an allocno is a new computation. Forward: moving a0_var's birth before neg_threshold's last read is semantics-preserving (both early-return tests are pure and return 0) but hoists the mult/mflo pairs above the Z range test, which target emits after both tests.
+- probe: two measured bodies in src/code6cac_b.c + sandbox --disable all; models re-extracted with extract.py
+- result: z-as-carrier: score 15 at 104 insns -- the edge IS created (97 conflicts gains 103) but 97's refs 13->18 and live length 32->39 re-rank it THIRD->FIRST, max_y (100) falls $a1->$v1, y (102) rises $v1->$a1, and 103 takes the vacated $a1. Late-Z-test (sum computed between the Z load and the Z range test): score 21 at 104 insns. Banked as rejected/zcarrier-merges-allocno-96-reranks-97-score15.c and rejected/ztest-after-sum-hoists-mults-score21.c.
+- verdict: KILLED
+
+## [s15] H9c -- reload's spill-retry does not own the residual: pseudo 103 never enters retry_global_alloc.
+- mechanism: reload_sim.py replays the BB2_RELOAD_DEBUG stream. If 103 were a retry pseudo, the pre-reload allocation the simulate.py model produces would not be its final assignment and every conclusion above would be provisional.
+- probe: python3 tools/ra_solver/reload_sim.py --show code6cac_b func_8002EA24
+- result: Exactly ONE retry in the function: pseudo 117 (an MD/$lo quantity kicked out when new_spill_reg takes regno 65) re-landing in $v1, which is where both our build and target hold it. 103 never retries. CAVEAT banked: the harvest log is the 2026-08-06 tree-wide run, pre-migration; the claim is robust because the retry is driven by the LZC island's $lo spill, which is unchanged.
+- verdict: KILLED
+
+## [s15] TOOLING -- inverse.py returns a false NEGATIVE on this residual, and inverse_compose.py classify / goal_from_asm.py are unsound on the asm-until-matched chassis.
+- mechanism: inverse.py:182-190 builds every atom over `focus` = goal pseudos plus their EXISTING conflict neighbours, so CONFLICT_ADD can only ever join pseudos that already conflict. On the plain control 103 conflicts with {72,74,75,96,100}; the working edge 103<->97 is exactly what focus cannot name. Separately, mkasm_honest.sh derives its `target` stream from src/<stem>.c plus the regfix/asmfix stages -- for a zero-rule INCLUDE_ASM function that is our OWN build minus the cheat-stripped GTE islands.
+- probe: inverse.py global plain.model.json --goal '{"103": 9}' --depth 2 (tmp/grind/func_8002EA24/s15/inverse_plain_103t1.txt); inverse_compose.py classify code6cac_b func_8002EA24 (tmp/grind/func_8002EA24/s15/classify.txt)
+- result: inverse.py: NEGATIVE RESULT at depth 2 with the advice 'the next move is INSTRUMENTATION, not another spelling search' -- contradicted by this ledger's own banked L3 lever. classify: fictitious 'FIRST DIVERGENCE: PRE-RA' on a 93-vs-105 insn gap whose entire content is the stripped GTE islands. goal_from_tgt.py (object-level) is the correct entry point and gave the exact 104/104 alignment.
+- verdict: CONFIRMED

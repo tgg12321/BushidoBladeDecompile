@@ -399,3 +399,60 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
  * ruling -- docs/grind/decisions.md:7843.  Re-attempt-eligible; on reopening,
  * start from THIS body, not from HEAD.
  * ------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------------
+ * SESSION 15 (escalation modality, 2026-08-25) -- BODY UNCHANGED, FLOOR
+ * RE-MEASURED AT 2, AND THE SOLVER MODALITY EXECUTED FOR THE FIRST TIME.
+ *
+ * The owner directive attached to this queue item (2026-08-24) said to run the
+ * solver suite before any deeper re-grind, and the session-12..14 frontier said
+ * re-attempt was gated on "new tooling: a forward inversion of C dataflow to the
+ * allocno conflict graph". Both are now discharged: tools/ra_solver grew
+ * inverse.py / inverse_compose.py / sweep.py, and they were run here.
+ *
+ *   sandbox func_8002EA24 --disable all
+ *   {"score": 2, "target_insns": 104, "build_insns": 104, "rules_dropped": 0}
+ *
+ * WHAT THE SOLVER SETTLED (full write-up: evidence.md session 15, hypotheses.md
+ * H9/H9a/H9b/H9c):
+ *
+ *   - goal_from_tgt.py aligns our object against build/src/code6cac_b.o at
+ *     104/104 with 102 equal insns and ONE register substitution, $a0 -> $v0 on
+ *     the `slt`/`bnez` pair. On the PLAIN control (this body without L3) the
+ *     allocation matches target on every allocno except pseudo 103
+ *     (neg_threshold): ours $a0, target $t1.
+ *
+ *   - An UNFOCUSED depth-1 sweep of global.c's entire modelled input space --
+ *     every pseudo, refs 1..+24, live length -16..+32, calls_crossed, every
+ *     conflict edge in the function, every hard-reg preference -- finds exactly
+ *     THREE reaching atoms, all clean, collapsing to TWO routes: an own $t1
+ *     preference on 103, or the conflict edge 97<->103.
+ *
+ *   - Route A is FORECLOSED: set_preference can only record a hard reg that
+ *     appears in the pre-RA RTL, and $t1 appears in none (target's own $t1 is
+ *     the allocated `negu $t1,$a2`; both GTE islands use $t4, exactly what our
+ *     authorized island wording pins). Route B is the edge L3 creates; its two
+ *     zero-cost generators were measured dead this session -- the last untried
+ *     carrier `z` (score 15: creates the edge but deletes allocno 96 and
+ *     re-ranks 97 to first) and the symmetric forward extension, moving a0_var's
+ *     birth before neg_threshold's last read (score 21: hoists the mult/mflo
+ *     pairs above the Z range test). Reload spill-retry is not involved: the
+ *     function has exactly one RETRY and it is pseudo 117, not 103.
+ *
+ *   - TOOLING DEFECT, recorded for every other function: inverse.py builds its
+ *     atom space over `focus` = goal pseudos plus their EXISTING conflict
+ *     neighbours, so it can never propose the very edge that works here, and it
+ *     returned a confident NEGATIVE RESULT on a goal for which this ledger banks
+ *     a working lever. And inverse_compose.py `classify` / goal_from_asm.py are
+ *     unsound on the asm-until-matched chassis (mkasm_honest.sh derives its
+ *     "target" from src + regfix/asmfix, which for a zero-rule INCLUDE_ASM
+ *     function is our own build). Use goal_from_tgt.py.
+ *
+ * DISPOSITION: no decision packet filed. Both endgame-lock gates still FAIL
+ * (scan_hand_coded TIGHT_C 3/8, no S1/S2/S6; no closing construct exists to cite
+ * a precedent for), and under the owner's second 2026-08-24 ruling the old
+ * "REFUSED / OWNER-ACCEPTED INCOMPLETE" shape is in the AUTO-REJECT class, so
+ * the residual stays ACTIVE. The one mechanism never examined is local-alloc's
+ * SUGGESTED-REGISTER pass, whose inputs the BB2_QTY_DEBUG hook does not dump --
+ * an engine/tools extension, not a C-spelling search.
+ * ------------------------------------------------------------------------- */
