@@ -62,14 +62,14 @@
  ],
  "judge_constraints": [
   "Do NOT commit the int-cast v0+(s32)a0 as COMPLETED-C on the forensic argument alone; hold cpu_check_tubazeri_2 at honest floor-1 (cheat-free, INCOMPLETE) and file an OWNER-ESCALATION in docs/grind/decisions.md carrying the verified s6/s7 proof for a human faithfulness-vs-coercion ruling (or SOTN/VS/ESA precedent research), per endgame-lock-disposition-policy AND-gate #2.",
-  "LAYER-1 CHEAT-REVIEWER FAIL: The s8 form is a respelling of the same idx25 commutative-operand-order coercion the s2 cheat-reviewer and the 2026-07-22 Judge already FAILED, reached via directed compiler-internals research and a 7-row structural sweep, and committed by unilaterally declaring the standing OWNER-ESCALATION 'moot' rather than obtaining an actual owner ruling. Next action: Do not commit. Revert src/code6cac_b.c to INCLUDE_ASM for func_800307D0 (already true at HEAD) and keep the candidate parked at the ledger's own floor-1/floor-0 forensic finding without applying it to src. File a"
+  "LAYER-1 CHEAT-REVIEWER FAIL: The s8 form is a respelling of the same idx25 commutative-operand-order coercion the s2 cheat-reviewer and the 2026-07-22 Judge already FAILED, reached via directed compiler-internals research and a 7-row structural sweep, and committed by unilaterally declaring the standing OWNER-ESCALATION 'moot' rather than obtaining an actual owner ruling. Next action: Do not commit. Revert src/code6cac_b.c to INCLUDE_ASM for func_800307D0 (already true at HEAD) and keep the candidate parked at the ledger's own floor-1/floor-0 forensic finding without applying it to src. File a",
+  "Before commit, strip candidate.c's 40-line grind-narration header to a normal source comment (or none) -- no ledger/mechanism narrative in src/ -- and re-prove sandbox 0 + full-build SHA1 == oracle on main; banned_constructs #2 (enumerated variant matrix as justification) and #4 (unilateral escalation-mootness disposition) remain in force."
  ],
  "origin": "queue",
  "created": "2026-07-22T04:30:07.458431+00:00",
  "banned_constructs": [
   "s3 = *(s16 *)((u8 *)a0 + s1 * 2 + 0x332); chosen specifically because address-context EXPAND_SUM triggers expr.c's both_summands swap and produces addu s2,v0,s0 instead of addu s2,s0,v0",
   "The 7-row 'variant matrix' (B, B2, D, E, F, ...) built this session to find which head-spelling scores 0 vs 1 on idx25",
-  "Inlining the scaled-index address expression directly into the dereference instead of materializing a named pointer, specifically to move idx25 from base-first to index-first",
   "Unilateral disposition: s8 evidence.md declares the standing 2026-07-22 OWNER-ESCALATION 'MOOT' and proceeds to commit without an owner ruling"
  ],
  "ladder_skip": 2
