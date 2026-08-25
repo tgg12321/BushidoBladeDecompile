@@ -2176,3 +2176,136 @@ first (s14 Y1).
 - [s16] The tbl sym-K chain re-measured on P1: tbl 6 refs / 47 = 2553, which now outranks i (2474) and takes hard reg 19 ($s3), pushing stptr to 21. Its only landing zone remains the window (2381, 2474) = 6 refs at live 49-50, and tbl's live 47 = 7 (block 0) + 40 (loop1) with the block-0 part bounded above by the parameter copies expand_function_start always emits first (s14 Y1).
 
 - [s16] OWNER DIRECTIVE EXECUTED (partially): candidate.c's stptr chain-extender now carries a complete /* FAKE: ... */ annotation with all three required parts -- what, a named GCC-pass mechanism (flow.c:2081 / combine.c:55-56 / sched.c:5106 / global.c:635-656), and a lever-exhaustion pointer into hypotheses.md s7..s16 -- and the s7 header sentence that wrongly claimed 'NO FAKE construct' is corrected in place. The change is comment-only: candidate.c re-measures at sandbox 1 with it applied.
+
+## s17 (forensics, 2026-08-24) — the cse decision that governs F1 chain-extender survival is NAMED, and it is a two-term arithmetic test
+
+Chassis re-measured at the START of this session with `memory/grind/func_80041188/candidate.c`
+spliced into `src/text1a_pre.c`: `sandbox func_80041188 --disable all` = **score 1**, 132 target /
+132 build insns, `rules_dropped: 16`, `cheat_asm_stripped: 2`. `src/text1a_pre.c` was restored to
+HEAD afterwards; no build-pipeline file was touched.
+
+### E-s17-1 — THE LAW: a chain-extender survives cse1 iff the DEFINED reg outlives the SOURCE reg
+
+s16 recorded, as a bare empirical fact, that `stptr = base; stptr += 0xFC;` survives cse and lifts
+`reg_n_refs` 5 -> 7 while the character-for-character identical `out2 = pa4; out2 += 0x20;` folds
+before `flow` and lifts nothing, and concluded "the F1 chain-extender is NOT shape-portable ...
+survival is a per-pseudo property of cse's cost gate". That conclusion is **wrong in its
+attribution and wrong in its consequence**: there is no cost gate involved, the deciding code is
+cse.c's quantity canonicalisation, and the property is not "per-pseudo" — it is a two-term test on
+live ranges that can be computed from the source before compiling anything.
+
+Read out of the RTL, side by side (both from `-da` dumps of the reduced TU, this session):
+
+| variant | pre-cse (`.rtl`) | post-cse1 (`.cse`) |
+|---|---|---|
+| `candidate.c` (stptr) | `43: (set (reg 88) (reg 80))` ; `46: (set (reg 88) (plus (reg 88) 252))` | **UNCHANGED** — both insns survive |
+| `s16/B1_out2copy.c` (out2) | `40: (set (reg 86) (reg 77))` ; `43: (set (reg 86) (plus (reg 86) 32))` | `43` rewritten to `(plus (reg 77) 32)`; the copy is now dead and `flow` deletes it |
+
+The pass and the decision:
+
+- `cse.c:2569` (`canon_reg`) replaces every pseudo occurrence with
+  `qty_first_reg[reg_qty[REGNO(x)]]` — the quantity's canonical register. That is the rewrite seen
+  in the B1 row.
+- `qty_first_reg` is chosen by `make_regs_eqv` (`cse.c:826-881`). When insn `X = Y` makes X
+  equivalent to Y, X displaces Y as canonical **iff**
+
+      (uid_cuid[regno_last_uid[X]] > cse_basic_block_end
+       || uid_cuid[regno_first_uid[X]] < cse_basic_block_start)
+      && uid_cuid[regno_last_uid[X]] > uid_cuid[regno_last_uid[Y]]
+
+  (`cse.c:844-857` — note the first clause is an **OR**, and the second conjunct is the
+  load-bearing one here). If X becomes canonical, `canon_reg(X)` returns X, the `X += K` insn keeps
+  referring to X, the copy stays live, and `flow` counts **+2** references for X. If Y stays
+  canonical, `canon_reg` substitutes Y, the copy dies, and the lift is zero.
+
+**Stated as a usable law:** `X = Y; X += K;` lifts `reg_n_refs(X)` by 2 **iff X's last use is after
+Y's last use** (and X's live range leaves the current cse extended basic block, which every
+loop-carried local in this function does). Nothing about the identity of X, its type, the constant,
+or the "cost" of the expression enters into it.
+
+### E-s17-2 — the law validated in BOTH directions, on two different pseudos
+
+Four measured points, each predicted before the run (ALLOCDBG `nrefs` from the instrumented cc1 via
+`tmp/grind/func_80041188/s17/dump17.sh`):
+
+| variant | X | Y | last(X) vs last(Y) | predicted | measured `nrefs(X)` |
+|---|---|---|---|---|---|
+| `candidate.c` | stptr | base (dies at the copy) | later | survive (+2) | **7** (unsplit baseline 5) |
+| `s16/B1_out2copy.c` | out2 | pa4 (lives through loop2) | earlier | fold (+0) | **4** (baseline 4) |
+| `s17/V1_out2_from_a4_chain.c` | out2 | the raw `a4` param pseudo, with `pa4 = a4` moved after the chain so `a4` dies in block 0 | later | survive (+2) | **6** |
+| `s17/V3_base_outlives_stptr.c` | stptr | base, with `saved = base + 0x94;` moved into the between-loops block so base now dies after loop1 | earlier | fold (+0) | **5** |
+
+V3 is the decisive one: it changes *nothing* about the chain-extender itself — only where `base`'s
+last use sits — and `stptr` drops 7 refs / pri 3414 to 5 refs / pri 2439, exactly the two references
+the F1 construct exists to buy. The construct's survival is a property of the SURROUNDING code's
+live ranges, not of the construct.
+
+Banked: `rejected/base-used-after-loop1-folds-stptr-chain-refs-7to5.c`,
+`rejected/out2-chain-from-a4-survives-cse-but-materializes-pa4-move.c`.
+
+### E-s17-3 — the law CLOSES the out2 reference-lift axis by derivation, not by enumeration
+
+Requirement (B) needs a 4th `out2` reference on the `out3 = pa4 + 0x20` chassis. By E-s17-1 a
+chain-extender on `out2` can only lift if its source pseudo dies before `out2` does. `out2`'s value
+is `a4 + 0x20`, so the only possible sources are `pa4` (lives through loop2 — folds, measured in B1)
+or a second, short-lived copy of the raw `a4` param (lifts, measured in V1). V1 measures `out2` at
+6 refs / live 51 **and 143 emitted insns instead of 142**: the extra insn is `move $23,$2` in block
+0, because once `a4`'s pseudo has a second use the `pa4 = a4` alias no longer coalesces into the
+stack load. Target's block 0 emits `lw $s7,0x58($sp)` followed directly by `addiu $s6,$s7,0x20`
+(`asm/funcs/func_80041188.s:2-28`) — in target, `a4` and `pa4` ARE the same register. So the only
+spelling that can lift `out2` is the one spelling target's bytes forbid. **There is no byte-free F1
+lift for `out2` on this function**, and that is now derived from cse.c plus target's own emission
+rather than sampled one spelling at a time.
+
+### E-s17-4 — frontier-3 KILLED: reload creates exactly ONE insn in the loop1 region, and it is not in loop1
+
+s16's frontier item 3 asked whether a source form could push a fourth loop1 insn across the
+sched1 -> reload boundary (which would drop `stptr`'s live length to 40 for free), on the premise
+that "loop1 emits 43 asm insns from 40 sched1-era RTL insns". Measured directly on `candidate.c`
+this session by counting RTL insns between `code_label loop1` and `code_label loop2` in the `-da`
+dumps:
+
+    .combine 45      .lreg (post-sched1) 45      .greg (post-reload) 46      emitted asm 46
+
+The single insn reload adds is uid **300**, `(set (reg t0) (mem (plus (reg sp) 24)))` — the reload
+of the SPILLED pseudo 85 (`saved`, ALLOCDBG `hardreg=-1`), inserted immediately before
+`stptr2 = saved + 0x750`, i.e. in the **between-loops block, not in loop1**. loop1 proper gains ZERO
+insns at reload: its emitted count equals its post-sched1 count. The premise of frontier 3 was a
+mismatch between two different counters (BB2_SLL_DEBUG's per-block accounting vs the RTL insn
+count), not a real gap. Together with E-s16-2 (stptr's def is already the last insn of scheduled
+block 0, and the range is loop-carried over all of loop1) this **closes the live-length side of
+requirement (A) completely**: `stptr` live 41 is invariant under every source form that keeps
+loop1's bytes.
+
+### s17 artifacts
+
+`tmp/grind/func_80041188/s17/` — `dump17.sh` (per-variant `-da` + ALLOCDBG harness), `xsec.py`
+(per-function section extractor for `-da` dumps), `V1_out2_from_a4_chain.c`,
+`V3_base_outlives_stptr.c`, and the full dump sets `CAND/`, `B1/`, `V1/`, `V3/`
+(`red.i.rtl .cse .loop .cse2 .flow .combine .lreg .greg .sched`, `red.s`, `cc1.err`).
+
+- [s17] Chassis re-measured: candidate.c spliced into src/text1a_pre.c gives sandbox --disable all = score 1, 132/132 insns, rules_dropped 16, cheat_asm_stripped 2. src restored to HEAD; no pipeline file touched.
+- [s17] THE LAW (mechanism from compiler source, validated in both directions): a chain-extender `X = Y; X += K;` lifts reg_n_refs(X) by 2 iff cse1's make_regs_eqv (cse.c:844-857) makes X the quantity's canonical register, which requires uid_cuid[last_uid[X]] > uid_cuid[last_uid[Y]] (plus X leaving the current cse extended basic block). Otherwise canon_reg (cse.c:2569) substitutes Y and flow deletes the dead copy. NOT a cost gate, NOT per-pseudo — a two-term live-range test computable from the source.
+- [s17] CORRECTS s16's E-s16-4 conclusion ("the F1 chain-extender is not shape-portable; survival is a per-pseudo property of cse's cost gate"). It IS portable; s16 happened to sample two pseudos whose source-operand live ranges differ.
+- [s17] MEASURED (rule validation, decisive): moving `saved = base + 0x94;` out of block 0 into the between-loops block — leaving the chain-extender itself untouched — makes `base` outlive `stptr` and drops stptr from 7 refs / 3414 to 5 refs / 2439, exactly the lift the F1 construct exists to buy. rejected/base-used-after-loop1-folds-stptr-chain-refs-7to5.c.
+- [s17] MEASURED (rule validation, other direction): chaining out2 off the raw `a4` param pseudo with `pa4 = a4` moved after it makes out2 outlive its source, the copy survives cse, and out2 goes 4 refs / live 47 to 6 refs / live 51 — the first out2 reference-lift ever measured on this function. But it emits 143 insns instead of 142: `pa4 = a4` stops coalescing into `lw $s7,0x58($sp)` and materialises as `move $23,$2`. rejected/out2-chain-from-a4-survives-cse-but-materializes-pa4-move.c.
+- [s17] DERIVED KILL of the out2 reference-lift axis: out2's value is a4+0x20, so its only possible chain sources are pa4 (outlives out2 -> folds) or a second short-lived copy of a4 (lifts, but forces the pa4 alias to materialise a move, which target's block 0 forbids since target emits `lw $s7,0x58($sp)` / `addiu $s6,$s7,0x20` with a4 and pa4 the same register). No byte-free F1 lift for out2 exists on this function.
+- [s17] KILLED s16 frontier item 3: loop1's RTL insn count is 45 at .combine, 45 at .lreg (post-sched1), 46 at .greg (post-reload), and 46 emitted. The one reload-created insn is uid 300, `lw $t0,24($sp)`, the reload of the SPILLED pseudo 85 (`saved`), and it lands in the between-loops block, not in loop1. loop1 proper gains zero insns at reload, so there is no sched1/reload-boundary route to stptr live 40. With E-s16-2 the live-length side of requirement (A) is now completely closed.
+
+- [s17] Chassis re-measured THIS session: memory/grind/func_80041188/candidate.c spliced into src/text1a_pre.c gives `sandbox func_80041188 --disable all` = score 1, 132 target / 132 build insns, rules_dropped 16, cheat_asm_stripped 2. src/text1a_pre.c restored to HEAD afterwards; no build-pipeline file touched.
+
+- [s17] THE LAW (from compiler source, validated in both directions): `X = Y; X += K;` lifts reg_n_refs(X) by 2 iff cse1's make_regs_eqv (cse.c:844-857) makes X the quantity's canonical register, which requires uid_cuid[last_uid[X]] > uid_cuid[last_uid[Y]] (plus X's range leaving the current cse extended basic block). Otherwise canon_reg (cse.c:2569) substitutes Y and flow deletes the dead copy uncounted. No cost gate is involved and the property is not per-pseudo — it is a two-term live-range test computable from the source before compiling.
+
+- [s17] This SUPERSEDES s16's E-s16-4 conclusion ('the F1 chain-extender is NOT shape-portable; survival is a per-pseudo property of cse's cost gate'). It is portable; s16 happened to sample two pseudos whose source-operand live ranges differ.
+
+- [s17] RTL evidence for the law: candidate.c pre-cse `43: (set (reg 88) (reg 80))` / `46: (set (reg 88) (plus (reg 88) 252))` is UNCHANGED post-cse1, while s16/B1_out2copy.c's `43: (set (reg 86) (plus (reg 86) 32))` is rewritten to `(plus (reg 77) 32)` and the copy dies.
+
+- [s17] Rule validation, decisive direction: moving `saved = base + 0x94;` out of block 0 into the between-loops block — leaving the chain-extender itself character-for-character untouched — makes `base` outlive `stptr` and drops stptr from 7 refs / 3414 to 5 refs / 2439. Banked as rejected/base-used-after-loop1-folds-stptr-chain-refs-7to5.c.
+
+- [s17] Rule validation, other direction: chaining out2 off the raw `a4` param pseudo with `pa4 = a4` moved after it lifts out2 from 4 refs / live 47 to 6 refs / live 51 — but emits 143 insns instead of 142 (`move $23,$2`, the pa4 alias losing its coalesce into `lw $s7,0x58($sp)`). Banked as rejected/out2-chain-from-a4-survives-cse-but-materializes-pa4-move.c.
+
+- [s17] DERIVED KILL of the out2 reference-lift axis: out2's value is a4+0x20, so its complete chain-source set is {pa4 (outlives out2 -> folds), a second short-lived copy of a4 (lifts, but materialises the pa4 move that target's block 0 forbids)}. No byte-free F1 lift for out2 exists on this function — derived over the whole source set rather than sampled.
+
+- [s17] loop1 RTL insn counts on candidate.c: .combine 45, .lreg (post-sched1) 45, .greg (post-reload) 46, emitted asm 46. The single reload-created insn is uid 300, `lw $t0,24($sp)`, the reload of spilled pseudo 85 (`saved`), and it sits in the between-loops block, not loop1. With E-s16-2 this closes the live-length side of requirement (A) completely: stptr live 41 is invariant under every source form that preserves loop1's bytes.
+
+- [s17] candidate.c updated (comment-only): an s17 addendum records the law, and the FAKE annotation's lever-exhaustion pointer now reads s7..s17. The code is byte-for-byte the same body that measured 1 this session.

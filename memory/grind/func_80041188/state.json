@@ -1,7 +1,7 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 16,
+ "session_count": 17,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -105,23 +105,29 @@
    "floor": 1,
    "modality": "forensics",
    "headline": "Forensics: sched1 owns reg_live_length (sched.c:5106), so stptr live 41->40 is structurally dead; and target's own bytes PROVE the original source carried a combine-deleted stptr reference (5 emitted "
+  },
+  {
+   "session": 17,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Forensics named the exact cse.c decision that governs F1 chain-extender survival (make_regs_eqv cse.c:844-857 + canon_reg cse.c:2569) and turned it into a predictive live-range law, validated in both "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "candidate.c's F1 chain-extender is now the ONLY unsanctioned-looking construct in a floor-1 body, and s16 proves target's own source carried a construct of exactly that class -- so the decidable question is whether the annotated F1 form is acceptable, or whether a sixth stptr reference exists in some spelling that survives cse2.",
-   "mechanism": "reg_n_refs frozen pre-combine (flow.c:2081, combine.c:55-56) vs reg_live_length recomputed post-combine (sched.c:5106) makes a combine-deleted reference free in live range; combine deletes an insn only by folding it into its consumer within one basic block, so a sixth stptr-referencing insn is structurally a constant-offset chain step -- i.e. an F1 construct by shape, whatever it is called.",
-   "next_probe": "Read tmp/grind/func_80041188/dumps/text1a_pre.cse2 for the stptr split on candidate.c and for the out2 copy-then-modify on rejected/out2-copy-then-modify-plus2-folds-preflow-unlike-stptr.c side by side, and name the exact cse.c decision (cost gate in fold_rtx / canon_reg qty canonicalisation) that keeps one and folds the other. That decision predicts which pseudos admit an F1 lift at all -- and would say whether any stptr spelling other than the copy+add exists."
+   "hypothesis": "With out2's lift dead by derivation and stptr's live length invariant, the ENTIRE floor-1 residual is now confined to one atom \u2014 stptr refs 5 -> 6 on the P1 chassis \u2014 and the s17 law says the only construct that can produce it is a chain-extender whose SOURCE pseudo dies before stptr does. `base` is the obvious such source (that is the current FAKE construct); the open question is whether any OTHER block-0 pseudo holding a value one add away from base+0xFC also dies before loop1 ends, which would give a second, differently-shaped spelling to weigh against the F1 annotation.",
+   "mechanism": "make_regs_eqv (cse.c:844-857) only lets the defined register stay canonical when its last use is later than the source's; every block-0 pseudo whose last use is inside block 0 therefore qualifies as a donor, and combine folds the pair back for zero bytes (combine.c:55-56 never re-adjusts reg_n_refs).",
+   "next_probe": "Enumerate every pseudo live only inside block 0 in tmp/grind/func_80041188/s17/CAND/f.flow (candidates seen so far: reg 80 `base`, reg 83/84 the D_800A9A10 address arithmetic, reg 85 `saved` before its between-block use is moved) and, for each, measure the ALLOCDBG table for a stptr chain sourced from it via tmp/grind/func_80041188/s17/dump17.sh. Seconds per variant; the law predicts each outcome in advance, so any disagreement is itself a finding."
   },
   {
-   "hypothesis": "The floor-1 residual (slot 71) needs out2 >= 4 references WITH out3 = pa4 + 0x20, and the only known byte-free out2 lift is s4's staged-value store; a cse-surviving F1 spelling for out2 would close it.",
-   "mechanism": "On the out3 = pa4 + 0x20 chassis out2 falls to 3 refs / 42 = 714 (below pa4's 1473) and target's band is (1473, 1702) at 3 refs or (1473, tbl) at 4-5 refs; s15's inverse solver gives four 2-atom vectors, three of which need out2 refs 3 -> 4.",
-   "next_probe": "Once the cse2 decision from frontier #1 is named, enumerate out2 spellings that satisfy it (e.g. deriving out2 from a two-insn symbol constant rather than from pa4, if any exists in this function's data layout) and measure each with tmp/grind/func_80041188/s16/model.sh -- seconds per variant, no sandbox run needed until the table lands."
+   "hypothesis": "The honest (FAKE-free) route to distance 0 is now the better-conditioned one: s14's alt_fakefree_floor3_s14.c already satisfies requirement (A) with ordinary C (i live 99 via `i = 0x12;` first) and scores 3 at 132/132, its entire residual being a sched1 INSN_LUID emission-order cost (`li $s4,18` at slot 67 instead of 69). Both live-length sides of the residual are now closed by s16+s17, so that +2 emission-order cost is the last open quantity on the honest chassis.",
+   "mechanism": "sched.c rank_for_schedule falls back to INSN_LUID on equal priority, so the slot of `li $s4,18` is decided by RTL emission order, which is decided by statement order \u2014 and s15 measured that the ONE scheduler vector that fixes it also sets reg_live_length(i) = 97 and breaks (A). Emission order and i's live length were the same variable ONLY under the statement orders tried so far.",
+   "next_probe": "Re-run tools/sched_solver on alt_fakefree_floor3_s14.c asking specifically for vectors that move `li $s4,18` from slot 67 to 69 WITHOUT shortening i's live range below 99 (i.e. constrain the solver on both quantities at once rather than solving the order alone, as s15 did), then spell and measure the top vectors with s17/dump17.sh before any sandbox run."
   },
   {
-   "hypothesis": "loop1 emits 43 asm insns from 40 sched1-era RTL insns, so three of loop1's emitted insns are created after sched1 (by reload). If a source form moved one MORE loop1 insn across that boundary, stptr's live length would drop to 40 with the bytes unchanged -- the only surviving loophole in the live-40 kill.",
-   "mechanism": "sched1 accumulates reg_live_length over its own scheduled list (sched.c:3165/5106), which does not yet contain reload-generated insns; the emitted count is what the scorer sees.",
-   "next_probe": "Diff tmp/grind/func_80041188/dumps/text1a_pre.greg (post-global, pre-reload) against text1a_pre.s inside loop1 to identify exactly which three emitted insns reload creates, then judge whether any source-level construct can push a fourth insn into that class (a spill of a loop1 value is the obvious candidate, and would have to be byte-identical to the current emission)."
+   "hypothesis": "Reference-count deltas on this function are QUANTIZED to +2 (the chain step is the only surviving lift; s16 killed every use-only +1 spelling), so any of s15's four two-atom inverse vectors that requires an ODD reference delta (tbl 4 -> 5, out2 3 -> 4) is unreachable in principle, not merely unspelled.",
+   "mechanism": "flow.c:2081 counts a set+use chain step as +2 references; a use-only fold-back adds an insn that cse2 folds before flow ever sees it (s16 E-s16-4), so no +1 lift exists in this compiler configuration.",
+   "next_probe": "Re-read s15's four inverse-solver vectors in evidence.md (E-s15-4 and the s15 vector table), classify each by the parity of every reference delta it demands, and record which survive the quantization. Any vector needing only even deltas becomes the next spelling target; the odd ones can be banked as derived kills without further measurement."
   }
  ],
  "judge_constraints": [

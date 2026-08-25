@@ -176,6 +176,23 @@
  *       precisely what the chain-extender below fakes. An honest sixth stptr
  *       reference, or one insn off stptr's live range, replaces this annotation
  *       with ordinary C at the same floor. That is s16's frontier item 1.
+ *
+ * s17 ADDENDUM (forensics, 2026-08-24). Re-measured at the START of s17: this body
+ * still scores 1 at 132 of 132 insns. s17 NAMED the compiler decision the FAKE
+ * annotation below depends on and turned it into a predictive law: a chain-extender
+ * `X = Y; X += K;` lifts reg_n_refs(X) by 2 if and only if cse1's make_regs_eqv
+ * (cse.c:844-857) makes X the quantity's canonical register, which requires X's last
+ * use to fall after Y's last use; otherwise canon_reg (cse.c:2569) substitutes Y and
+ * flow deletes the dead copy uncounted. Validated in both directions this session
+ * (rejected/base-used-after-loop1-folds-stptr-chain-refs-7to5.c drops stptr 7 -> 5 refs
+ * by moving `saved = base + 0x94;` alone). Two consequences for this body: (1) s16's
+ * "the F1 chain-extender is not shape-portable" is superseded -- it IS portable, and
+ * the law says exactly where; (2) the out2 reference-lift axis is now KILLED BY
+ * DERIVATION rather than by sampling (evidence.md E-s17-3), and s16 frontier item 3
+ * is killed too (reload creates exactly one insn in the loop1 region and it lands in
+ * the between-loops block, evidence.md E-s17-4). The remaining defect is unchanged:
+ * the stptr chain-extender below is a FAKE-annotated F1 construct, and s14's
+ * alt_fakefree_floor3_s14.c remains the honest-but-floor-3 alternative.
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
@@ -210,7 +227,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
        identical in order to ours, so target's own stptr live length is 41 and
        its i priority is 2474, yet target seats stptr above i -- which at live 41
        needs >= 6 references while target's bytes show only 5 stptr insns.
-       lever-exhaustion: memory/grind/func_80041188/hypotheses.md, s7..s16 --
+       lever-exhaustion: memory/grind/func_80041188/hypotheses.md, s7..s17 --
        stptr live 41 -> 40 killed by measurement in s16 (E-s16-2, def already the
        last insn of scheduled block 0, loop-carried across all 40 loop1 insns);
        every non-chain reference-lift spelling measured (s16 E-s16-4: use-only
