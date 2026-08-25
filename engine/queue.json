@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800307D0",
-      "file": "code6cac_b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "Owner ruling (a) 2026-08-25 (032909be): head-read spelling is ordinary in-TU-idiomatic C; spelling/rationale bans vacated, method bans kept. Re-apply candidate.c (strip narration header), re-prove sandbox 0 + oracle, normal layer-1 + Judge cycle.",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md \u2014 '## 2026-08-25 \u2014 func_800307D0 (cpu_check_tubazeri_2, src/code6cac_b.c) \u2014 **OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET**' (final entry in the file, filed by this session); prior related entries: decisions.md:1311 (2026-07-22 owner ruling, option b, integer-cast form), :11147/:11151/:11155 (2026-08-25 FAIL/PASS/FAIL adjudications of the current body)."
-    },
-    {
       "func": "func_800645B0",
       "file": "text1b",
       "distance": 1,
@@ -2062,14 +2052,14 @@
     }
   ],
   "counts": {
-    "total": 236,
-    "active": 234,
+    "total": 235,
+    "active": 233,
     "by_status": {
-      "active": 234,
+      "active": 233,
       "escalated": 2
     },
     "by_verdict": {
-      "C": 198,
+      "C": 197,
       "ASM-PARTIAL": 36
     }
   }
