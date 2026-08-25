@@ -135,3 +135,59 @@ sandbox named-symbol-addend-alias artifact at the driver/operator level
 (engine/score.py is session-forbidden); (3) if refused, the case-3 residual
 returns to floor 9 with every measured mechanism banned or unmet - next
 modality would need a genuinely new axis (none currently known).
+[RESOLVED by the 2026-08-25 04:46 ruling: REFUSED - branch (3) is live.]
+
+## [s7] 2026-08-25 (recon re-baseline after the 04:46 aggregate-merge refusal)
+
+H15 - "The indexed rvalue spelling `s0[s3-2]`/`s0[s3-1]` (the function's own
+first-switch idiom; ARRAY-index tree, /s preserved, NOT an alias-defeat)
+produces a structurally different RTL (per-read address arithmetic, different
+pseudo/LUID layout pre-cse) that could reorder sched1's li/sh placement in
+case 3."
+Probe: respelled case 3 (then case 13 too) as
+`s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2])); s4 = ... s0[s3 - 1] ...;`
+store last; measured; disassembly diffed against the block-local-ptr build.
+Verdict: **KILLED as a lever - sandbox flat at 9 and the object is
+BYTE-IDENTICAL to the ptr-spelled build** (cse canonicalizes both to one
+shared (s3<<2)+s0 pseudo with -8/-4 displacements; tmp/grind/func_800460E4/
+s7/ ours_s7.dis vs ours_s7_prev.dis, diff empty). Retained in candidate.c
+purely as the more natural uniform spelling (byte-neutrality proven).
+
+New forensic constraints banked (evidence.md [s7]): target's case-3 li
+reuses the dead address register $v0, so target seats+order are ONE RIGID
+SOLUTION (li-in-$v0 requires li after lw2); target's own case 34 has li/sh
+inside the load-delay window, so no store barrier existed in the original;
+target's case-3 atom multiset is identical to ours - divergence is
+order+seats only.
+
+Frontier (mechanism-grounded, in order):
+(1) SOLVER modality at this chassis: model PASS 2 explicitly - post-reload,
+    with target's seats, `li $v0,1` carries a genuine hard-reg
+    anti-dependence on `lw $a0,-4($v0)` and cannot lift, so target order is
+    sched2-self-consistent GIVEN target seats; the decidable technical
+    question is whether any honest ATOM-SET change (not luid perturbation -
+    that space is swept dead) lets sched1/local-alloc reach those seats.
+    Run inverse_compose.py classify on the case-3 seat pair (address
+    pseudo -> $v0, m1 pseudo -> $a0) at the floor-9 chassis for a typed
+    REACHABLE/FORECLOSED verdict with ranked C-lever vectors.
+(2) REDERIVE modality: whole-function fresh derivation (m2c + sibling
+    idioms + Kengo naming cross-reference) hunting a structurally different
+    global shape that changes the case-3 block's atom set or live-in state -
+    the only space the perturbation sweep does not cover.
+(3) If (1) returns FORECLOSED and (2) dies measured, the complete exhaustion
+    chain (solver order-unreachability + every dependence-edge mechanism
+    banned/refused/killed with citations) is escalation-packet material for
+    a fidelity/routing question ONLY - the aggregate-merge refusal is final
+    and any family re-ask is auto-reject-class.
+
+## [s1] H15: the indexed rvalue spelling s0[s3-2]/s0[s3-1] (the function's own first-switch idiom, /s preserved, not an alias-defeat) yields structurally different RTL that could reorder sched1's li/sh placement in case 3
+- mechanism: different tree derivation (per-read ARRAY-index address arithmetic) could produce different pseudo/LUID structure feeding sched1
+- probe: respelled case 3 and case 13 to ALIGN4(s0[s3-2])/ALIGN4(s0[s3-1]); sandbox; objdump diff vs the block-local-ptr build
+- result: flat at 9 and BYTE-IDENTICAL object (cse canonicalizes both to one shared (s3<<2)+s0 pseudo with -8/-4 displacements); adopted in candidate.c purely as the more natural uniform spelling
+- verdict: KILLED
+
+## [s1] Baseline validity: the [s6]-reported floor-9 non-banned baseline reproduces at the current chassis
+- mechanism: chassis re-measurement per the dispatch warning (HEAD floor was 'measurement unavailable')
+- probe: sandbox at HEAD rule-era body, then at the rebuilt [s5]-minus-banned-case-3 form
+- result: HEAD = 35 (248/248, rules_dropped 10); floor-9 form = 9 (245/248), measured twice
+- verdict: CONFIRMED

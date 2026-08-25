@@ -1,10 +1,33 @@
 {
  "func": "func_800460E4",
  "file": "text1a_c2",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 9,
+   "modality": "recon",
+   "headline": "Re-baselined post-refusal: honest floor 9 re-established with zero banned constructs; target-asm forensics prove case-3 seats+order are one rigid solution; H15 indexed-spelling killed by byte-identity"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "With target's seats, sched2 (post-reload) self-consistently keeps target order (li $v0,1 has a genuine hard-reg anti-dependence on lw $a0,-4($v0)); the residual is therefore a local-alloc/sched1 seat question, typed-solvable",
+   "mechanism": "hard-reg anti-dependence in sched2 vs pseudo-level freedom in sched1; the open space is honest ATOM-SET changes (not luid perturbations - swept dead) that steer local-alloc to address->$v0 / m1->$a0",
+   "next_probe": "solver modality: tools/ra_solver inverse_compose.py classify on the case-3 seat pair at the floor-9 chassis for a typed REACHABLE/FORECLOSED verdict with ranked C-lever vectors; re-extract sched model at this chassis and model pass 2 explicitly"
+  },
+  {
+   "hypothesis": "A structurally different whole-function derivation changes the case-3 block's atom set or live-in state - the only space the perturbation sweep does not cover",
+   "mechanism": "different global C shape -> different pseudos/conflicts entering block 19 -> different local-alloc seating even with unchanged block-local atoms",
+   "next_probe": "rederive modality: fresh m2c derivation + sibling idiom survey + Kengo naming cross-reference; measure any shape that alters the case-3 entry state"
+  },
+  {
+   "hypothesis": "If both die measured, the exhaustion chain is escalation-packet material for a fidelity/routing question only (any aggregate/family re-ask is auto-reject-class)",
+   "mechanism": "escalation-not-parked decision-packet path; merge refusal 04:46 is final",
+   "next_probe": "only after frontier items 1-2 return measured negatives; driver assigns escalation modality"
+  }
+ ],
  "judge_constraints": [
   "LAYER-1 CHEAT-REVIEWER FAIL: Construct (3) is a whole-function variable merge (delete local s1, repoint ~8 assignment/use sites across the entire switch and the final call onto the dead parameter arg1) justified explicitly by GCC allocno_compare ref-count priority \u2014 this is materially larger in scope than what staged-value-reused-variable actually sanctions, and the self-vet's own T3 answer is a textbook GCC-internals-mechanism justification. Next action: Revert construct (3) (restore s32 *s1; and its original assignment sites) and either (a) find a pure-C restructuring that doesn't require me",
   "LAYER-1 CHEAT-REVIEWER FAIL: This session's own new constructs (scaled-index respelling, dropped param-alias locals, FAKE-annotated combine-foldable chain-extender on s1) are legitimate and correctly cited, but the candidate body still carries an unresolved, unsanctioned volatile-cast coercion in case 3 that the worker's own self-vet flags as load-bearing and unresolved \u2014 that construct alone blocks COMPLETED-C. Next action: Do NOT commit. This session's three new constructs ((1) `(s3 << 2) + (s32)s0` scaled-index respelling, (2) dropped p/p2 alias locals, (3) the dead-store-fake-exception com",

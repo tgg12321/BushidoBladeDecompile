@@ -1,5 +1,103 @@
 # Evidence bank — func_800460E4
 
+## [s7] 2026-08-25 — recon re-baseline after the aggregate-merge REFUSAL (04:46 ruling): honest floor 9 re-established with zero banned constructs; new target-asm forensics; H15 indexed-spelling killed by byte-identity
+
+Context: the [s6] ruling-request was REFUSED (decisions.md 2026-08-25 04:46 —
+prong (a) fails all three evidence classes, prong (c) unsatisfiable while the
+asm-only consumers need both symbols; "Honest floor is 9"). The judge
+constraint now closes the D_80099478/D_8009947A merge entirely. The [s6]
+struct candidate is banked at rejected/aggregate-merge-refused-0446.c and
+candidate.c now carries the best NON-BANNED form.
+
+### Chassis + baseline (all measured THIS session, 2026-08-25)
+
+- HEAD (rule-era committed body): sandbox --disable all = **35** (248/248,
+  rules_dropped=10) — matches the queue item's distance.
+- Floor-9 form rebuilt from rejected/layer1-fail-0825-0428.c (the [s5] TU)
+  with case 3 respelled case-13-style (block-local ptr + ALIGN4(ptr[-2])/
+  ALIGN4(ptr[-1]), store LAST): sandbox = **9** (245/248) — confirms the
+  [s6] baseline number at this chassis.
+- Same body with case 3 AND case 13 respelled to the uniform indexed idiom
+  `ALIGN4(s0[s3 - 2])` / `ALIGN4(s0[s3 - 1])`: sandbox = **9** and the
+  disassembled object is **BYTE-IDENTICAL** to the ptr-spelled build
+  (diff-verified: tmp/grind/func_800460E4/s7/ours_s7.dis vs
+  ours_s7_prev.dis, `diff` empty). Adopted for candidate.c: it is the
+  function's own first-switch idiom (the committed first-switch case 4/7/18
+  already reads `ALIGN4(s0[s3 - 1])`, and target lines 36-45 show that read
+  compiling to exactly the sll/addu/lw -4 shape), eliminating the
+  case-3-vs-case-13 address-form divergence question with no invented
+  locals.
+
+### New target-asm forensics (asm/funcs/func_800460E4.s, read end-to-end)
+
+1. **Target's case-3 li reuses the dead address register.** Case 3
+   (.L800462EC, lines 141-156): `sll v0,s3,2; addu v0,v0,s0; lw v1,-8(v0);
+   lw a0,-4(v0); addiu v0,zero,1; lui at; sh v0,%lo(D_8009947A)(at);
+   srl/sll v1; addu s6; srl/sll a0; j; addu s4` — the constant 1 is
+   materialized INTO $v0, the address register, which is only dead after the
+   second lw. Therefore target's seats (address $v0, m1 $a0, li $v0) and
+   target's order (li/sh after BOTH loads) are ONE RIGID SOLUTION — neither
+   is reachable without the other.
+2. **Case 34 in TARGET has li/sh inside the load-delay window** (.L800463D8,
+   lines 204-212: lw v0,0x14(s0); addiu v1,zero,1; lui at; sh v1; srl v0...).
+   So the original compile had NO general load→store barrier on this symbol;
+   the store fills the first available load-delay slot when a single load is
+   present. The case-3 divergence is purely WHICH delay slot the li/sh pair
+   fills when TWO loads compete (ours: first lw's slot; target: second lw's).
+3. **Ours vs target at floor 9** (tmp/grind/func_800460E4/s7/ours_s7.dis
+   lines 132-143): ours seats address $a0 / m1 $v0, li/sh between the loads;
+   our m1-in-$v0 makes case 3's s4 tail (srl/sll/addu s4,s0,v0)
+   byte-identical to case 34's tail, so jump2 merges the 3-insn suffix
+   (our case 3 ends `j` into case 34's tail). 9 = those 3 insns + the seat
+   swap. Case 13, the header block, and everything else are byte-exact.
+4. **Target's case-3 atom multiset is IDENTICAL to ours** (15 insns,
+   same opcodes, same dependence skeleton) — the divergence is order+seats
+   only, which is exactly the space the [s4] sched_solver perturbation sweep
+   proved unreachable within our RTL.
+
+### H15 kill (this session's probe)
+
+Hypothesis: the indexed rvalue spelling `s0[s3-2]`/`s0[s3-1]` (a different
+TREE derivation: per-read address arithmetic, ARRAY-index form, /s preserved
+— NOT an alias-defeat, mechanism would have been different pseudo/LUID
+structure feeding sched1) might change the schedule. Measured: flat 9, and
+byte-identical object to the ptr spelling — cse canonicalizes both to the
+same RTL (shared (s3<<2)+s0 pseudo, -8/-4 displacements). KILLED as a lever;
+retained as the candidate's spelling for naturalness only.
+
+### Exhaustion map for the case-3 residual (state after this session)
+
+- Load-side non-/s respellings: ALL BANNED (layer-1 FAILs 03:53/04:17/04:28).
+- Store-side /s via aggregate merge: REFUSED (04:46 ruling; judge constraint).
+- volatile-extern: two-prong gate unmet (H14 kill, [s6]).
+- Statement order: swept flat ([s4] P1-P4); sched_solver UNREACHABLE by
+  perturbation (depth 2 all 584 atoms, depth 3 the 273 spellable).
+- Indexed/tree respelling of the reads: RTL-equivalent (H15, this session).
+- Remaining honest axes (frontier): (a) solver-modality re-run at this
+  chassis — classify the residual incl. PASS 2 (sched2 post-reload, where
+  hard-reg anti-dependences exist: with target seats, li v0,1 genuinely
+  cannot lift above lw2 because $v0 is the live address — so IF anything
+  hands RA the target seats, sched2 self-consistently keeps target order;
+  the open question is whether any honest atom-set change reorders
+  sched1/local-alloc's choice, not merely luid perturbations); (b) rederive
+  modality — whole-function fresh derivation (m2c + Kengo naming) hunting a
+  structurally different global shape that changes the case-3 block's atom
+  set or entry state; (c) if both die measured, the exhaustion chain above
+  is escalation-packet material for a fidelity/routing question (NOT a
+  family re-ask — the merge refusal is final and auto-reject-class).
+
+### Owner directive (RULES-TO-ZERO CAMPAIGN 2026-08-24) — acknowledged
+
+Acknowledged and in execution: this session re-established the honest
+COMPLETED-C path floor (9) with zero banned constructs after the merge
+refusal invalidated the [s6] path. The 10 regfix rules at regfix.txt:868-882
+retire at COMPLETED-C via the normal retire path; jtbls stay C-emitted;
+wave-2 INCLUDE_RODATA remains dead per docs/grind/borderline.md:88 (measured
+SHA1-dead for this function specifically).
+
+Artifacts: tmp/grind/func_800460E4/s7/ (dis.sh, ours_s7.dis,
+ours_s7_prev.dis — byte-identity proof pair).
+
 ## [s6] 2026-08-25 — recon session after the FOURTH layer-1 FAIL (all case-3 alias-defeat spellings banned; NEW honest mechanism found: the D_80099478/D_8009947A aggregate — sandbox 4, and the 4 is a proven scorer artifact, bytes byte-identical at link)
 
 Context: the 04:28 layer-1 FAIL banned the [s5] fully-inlined case-3 derefs as
@@ -462,3 +560,17 @@ line (validated with grindlib.validate_self_vet → (True, '')). Owner directive
 the COMPLETED-C path that retires the function's 10 regfix rules at
 integration (regfix.txt:868-882, operator/retire-path surface — see the
 integration note in [s1]).
+
+- [s1] 04:46 ruling executed: the [s6] StageState aggregate candidate is refused and banked at memory/grind/func_800460E4/rejected/aggregate-merge-refused-0446.c; candidate.c now carries the best non-banned form (floor 9, uniform indexed spelling, one FAKE construct: the [s3] s1 chain-extender already ruled legitimate)
+
+- [s1] Target case-3 forensics (asm/funcs/func_800460E4.s:141-156): li v0,1 REUSES the dead address register $v0, so target's seats (address $v0, m1 $a0, li $v0) and order (li/sh after both loads) are ONE RIGID SOLUTION - neither reachable without the other
+
+- [s1] Target case-34 (asm lines 204-212) has li/sh INSIDE the load-delay window - the original compile had no general load->store barrier on D_8009947A; the case-3 divergence is purely which lw delay slot the li/sh pair fills when two loads compete
+
+- [s1] Ours at floor 9 (tmp/grind/func_800460E4/s7/ours_s7.dis:132-143): address $a0 / m1 $v0, li/sh between the loads; m1-in-$v0 makes case 3's s4 tail byte-identical to case 34's so jump2 merges the 3-insn suffix; 9 = those 3 insns + the seat swap; everything else byte-exact
+
+- [s1] Target's case-3 atom multiset is IDENTICAL to ours (15 insns) - divergence is order+seats only, exactly the space the [s4] sched_solver perturbation sweep proved unreachable within our RTL
+
+- [s1] Exhaustion map: load-side non-/s spellings all banned (layer-1 03:53/04:17/04:28); store-side /s aggregate refused (04:46); volatile-extern gate unmet (H14); statement orders swept flat ([s4] P1-P4) and solver-unreachable; tree respelling RTL-equivalent (H15)
+
+- [s1] Owner directive (RULES-TO-ZERO 2026-08-24) acknowledged in ledger evidence.md [s7]: COMPLETED-C path continues at floor 9; wave-2 INCLUDE_RODATA stays dead per borderline.md:88; the 10 rules retire at retirement
