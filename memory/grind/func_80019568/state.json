@@ -1,31 +1,37 @@
 {
  "func": "func_80019568",
  "file": "code6cac",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 28,
    "modality": "recon",
    "headline": "Recon: rule-era chassis discarded; fresh indexed pure-C derivation reaches 34 honest / 28 with a diagnostic biv-elimination blocker; dominant residual mechanism identified as loop.c biv elimination of"
+  },
+  {
+   "session": 2,
+   "floor": 17,
+   "modality": "structural",
+   "headline": "F1 and F2 both SOLVED: loop.c biv elimination blocked honestly via per-iteration record pointers (all_reduced=0 path) and the li-1 hoist blocked via two non-consecutive sets; floor 34 -> 20 with build"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An honest spelling exists under which `while (i < 2)` survives biv elimination and emits plain slti v0,t0,2",
-   "mechanism": "compare rewrite needs a giv with always_computable && !maybe_dead && mode match; every output/packet giv site is inside conditional arms, so identifying and respelling the one qualifying giv (out-class, mult 2, add reg191) should leave no eligible giv; alternate axis: make one giv fail the worthwhile test (loop.c:3824) so all_reduced=0",
-   "next_probe": "instrumented cc1 (tools/gcc-2.7.2/cc1 BB2 debug hooks) or targeted bisection to name the qualifying giv's source statement; ALSO census the other solved jtbl-cluster members' ledgers for a proven counter-survival idiom before deriving"
+   "hypothesis": "An honest (non-variable-reuse) spelling gives the 1-holding pseudo two non-consecutive sets, removing the only family-gated construct from the candidate.",
+   "mechanism": "scan_loop movable creation requires n_times_set==1 or consecutive sets (loop.c:705-708). A real flag local written 1 in the if-arm and 0 in the else-arm, stored inside each arm, gives n_times_set==2 with non-adjacent sets; combine should fold the 0 arm to 'sh zero,4(a2)' since the MIPS movhi pattern accepts const_int 0 via $zero, while the 1 arm keeps its li.",
+   "next_probe": "Apply that flag-local variant on top of memory/grind/func_80019568/candidate.c and measure; target is 20 with build_insns 141. If it holds, the whole loop-1 form is ordinary C with no family claim."
   },
   {
-   "hypothesis": "The li-1 for sp.output[i+2]=1 stays inside the loop in the original (fills the lhu load-delay slot) \u2014 ours is hoisted by scan_loop as a movable",
-   "mechanism": "loop.c movables ('Insn 87: regno 109 move-insn savings 1 moved', dump line 861); may resolve for free once F1 changes register pressure",
-   "next_probe": "re-measure after F1; if independent, find what placement makes the 1-pseudo unmovable"
+   "hypothesis": "R1's v0<->v1 swap is a local-alloc seat assignment, reachable by a C lever the solver can name.",
+   "mechanism": "Target ties 'voice' to the lbu temp's seat (srl v0,v0,4) and puts the lhu temp in v1; ours is the mirror. Declaration-order swaps (voice before/after voice2) measured INERT, so spelling guesses are exhausted at the cheap end.",
+   "next_probe": "Run tools/ra_solver (inverse.py / inverse_compose.py classify) against tmp/grind/func_80019568/dumps/code6cac.lreg for the loop-1 block and get a REACHABLE/FORECLOSED verdict plus a ranked C-lever vector before spending more measurements."
   },
   {
-   "hypothesis": "Tail block: target materializes &D_80102790 (lui+addiu, lw/sw via 0(reg)) and stores it early, order 9C,94,98; an honest producer exists (possibly the D_80102788..D_8010279C aggregate)",
-   "mechanism": "rule-era body used a pointer-alias local (FAKE family) for this; split-scalars-hide-aggregate recipe requires independent evidence (adjacent .data words, sibling stride use) before declaring an aggregate",
-   "next_probe": "gather aggregate evidence from asm/data and the sibling writers (func_800194F4/func_80019534); only fall back to a FAKE pointer alias after lever exhaustion"
+   "hypothesis": "An honest producer exists for the tail's register-held &D_80102790 across the load and the store.",
+   "mechanism": "Aggregate (H8) and statement-order (H9) explanations are both KILLED. What remains is why cse/combine did not share one address register between the two (mem (symbol_ref D_80102790)) accesses, and whether an ordinary-C read-modify-write spelling forces it.",
+   "next_probe": "Read tmp/grind/func_80019568/dumps/code6cac.cse and .combine for the tail block; then grep docs/reference/sotn-construct-index.md for a load+store-through-one-address-register global RMW precedent; then read .claude/rules/pointer-rmw-global-sanctioned.md BEFORE assuming .claude/rules/pointer-alias-fake-exception.md applies."
   }
  ],
  "judge_constraints": [],

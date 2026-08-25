@@ -1,17 +1,42 @@
-/* candidate — func_80019568 — s1 (2026-08-25)
+/* candidate - func_80019568 - s2 (2026-08-25)
  *
- * BEST MEASURED: sandbox --disable all = 28 (target 141, build 143) with this file
- * applied verbatim.  HONEST-SUBMITTABLE FLOOR: 34 — obtained by changing the loop-1
- * exit test back to `} while (i < 2);` (build 141).
+ * BEST STRUCTURALLY-CORRECT FORM: sandbox --disable all = 20, build_insns 141 == target 141.
+ * (s1 best: 34 honest / 28 with a diagnostic non-submittable probe.)
  *
- * WARNING: the `} while (i + 1 < 3);` spelling below is a DIAGNOSTIC probe, not a
- * submission form.  It blocks loop.c biv elimination of `i` (maybe_eliminate_biv_1's
- * REG case fails on the biv nested in the PLUS), which aligns the whole register file
- * with target (i->t0, mask->t1, const4->t2, jtbl->t3), but combine cannot fold
- * (lt (plus i 1) 3) -> (lt i 2) for signed <, so it emits 2 extra insns and reads as a
- * coercion.  Frontier F1 (hypotheses.md) = find the honest spelling with the same
- * elimination-blocking effect.  Remaining residuals: F2 (li-1 hoisted out of loop),
- * F3 (tail block: materialized &D_80102790 + early store + order 9C,94,98).
+ * Two structural levers found this session, both mechanism-grounded in tools/gcc-2.7.2/loop.c:
+ *
+ *  L1 - per-iteration record pointers "u8 *p = &packets[i*8]; s16 *o = &sp.output[i];"
+ *       declared at the TOP of the loop body.  This collapses the two i*8 and the three
+ *       i*2 DEST_REG "add 0" givs into ONE each; a lone giv leader has benefit 2 and
+ *       loop.c:3804 subtracts add_cost(=2)*biv_count(=1) -> 0 -> "giv of insn NN not worth
+ *       while, 0 vs 51" -> v->ignore=1 -> all_reduced=0 -> the "all_reduced == 1" gate at
+ *       loop.c:4034 skips biv elimination entirely, so counter i SURVIVES and the exit
+ *       test stays "slti v0,t0,2" (target).  The ignored intermediates are dead once the
+ *       add-reg givs reduce to the a2/a3 walkers, so they cost nothing.
+ *       Register file now matches target exactly: i->t0, mask->t1, const4->t2, jtbl->t3,
+ *       a2 = output walker (offsets 0/4), a3 = packet walker (offsets 0..3).
+ *
+ *  L2 - "voice" reused for both the shifted voice id and the constant 1
+ *       (voice = p[1] >> 4; o[0] = voice; voice = 1; o[2] = voice;).  Two NON-consecutive
+ *       sets of the same pseudo inside the loop make n_times_set==2 and
+ *       consec_sets_invariant_p fail, so scan_loop never creates a movable for the 1
+ *       (loop.c:703-708).  Target keeps "addiu v0,zero,1" inside the loop filling the lhu
+ *       load-delay slot; without L2 it is hoisted ("Insn 74: regno 101 (life 1),
+ *       move-insn savings 1 moved").
+ *       NOTE FOR SUBMISSION: L2 is the variable-reuse family
+ *       (.claude/rules/defeat-licm-hoist-var-reuse.md + staged-value-reused-variable.md)
+ *       and would need a FAKE annotation + lever-exhaustion evidence, OR an honest
+ *       replacement, before any candidate-ready.  L1 is ordinary C and needs neither.
+ *
+ * REMAINING RESIDUAL (20):
+ *   R1 (~6)  v0<->v1 swap in the if-arm: target ties "voice" to the lbu temp
+ *            (srl v0,v0,4; lhu v1,0(a2)); ours gets srl v1,v0,4 / lhu v0,0(a2).
+ *            Pure local-alloc seat assignment; declaration-order swaps measured inert.
+ *   R2 (~13) tail block: target materializes &D_80102790 (lui+addiu) and uses 0(v0) for
+ *            BOTH the load and the store, storing early; ours emits two independent
+ *            %hi/%lo accesses.  Statement reordering measured inert.  Sibling
+ *            func_800194F4 proves the four words are plain scalars, so the "la" comes from
+ *            an address-in-a-register producer (pointer-alias family territory).
  */
 void func_80019568(s32 arg0) {
     struct {
@@ -40,24 +65,29 @@ void func_80019568(s32 arg0) {
     sp.packets[2] = D_800FF5A4;
     sp.packets[3] = D_800FF5A8;
     do {
+        u8 *p = &packets[i * 8];
+        s16 *o = &sp.output[i];
         s32 bits;
 
-        if (packets[i * 8] == 0) {
+        if (p[0] == 0) {
             s32 voice2;
+            s32 voice;
 
-            sp.output[i] = packets[i * 8 + 1] >> 4;
-            sp.output[i + 2] = 1;
-            voice2 = (s16)((u16)sp.output[i] - 1);
+            voice = p[1] >> 4;
+            o[0] = voice;
+            voice = 1;
+            o[2] = voice;
+            voice2 = (s16)((u16)o[0] - 1);
 
             if ((u32)voice2 < 8) {
                 switch (voice2) {
                 case 4:
                 case 6:
-                    sp.output[i] = 4;
+                    o[0] = 4;
                 case 1:
                 case 2:
                 case 3:
-                    bits = ~((packets[i * 8 + 2] << 8) | packets[i * 8 + 3]);
+                    bits = ~((p[2] << 8) | p[3]);
                     break;
                 case 0:
                 case 5:
@@ -70,14 +100,14 @@ void func_80019568(s32 arg0) {
                 bits = 0;
             }
         } else {
-            sp.output[i] = 4;
-            sp.output[i + 2] = 0;
+            o[0] = 4;
+            o[2] = 0;
             bits = 0;
         }
 
         voice_mask = ((u32)voice_mask >> 16) | (bits << 16);
         i++;
-    } while (i + 1 < 3);
+    } while (i < 2);
 
     sp.voice_mask = voice_mask;
     func_8001B138(&sp.voice_mask);

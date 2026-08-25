@@ -92,3 +92,127 @@ dumps are complete).
 - [s1] src/code6cac.c reverted to HEAD (5 regfix rules are index-calibrated to the committed body; probe bodies live in candidate.c)
 
 - [s1] Owner directive (RULES-TO-ZERO, 2026-08-24) acknowledged and executed: this session began the pure-C route; jtbl coupling confirmed (jtbl_80010068 8 entries, jtbl_80010088 7 entries, both emitted by the C switches)
+
+## [s2] 2026-08-25 - structural (F1 SOLVED, F2 SOLVED; floor 34 -> 20)
+
+Chassis re-measured at session start: s1's v2 body re-applied reproduced **34** exactly
+(build 141 == target 141), so every s1 conclusion is chassis-valid.
+
+### F1 SOLVED - biv `i` now survives loop.c elimination, honestly.
+
+Mechanism, read out of tools/gcc-2.7.2/loop.c (not guessed):
+- record_giv (loop.c:4386-4389): **DEST_ADDR givs are always_computable = 1
+  unconditionally** ("INSN merely uses the value of the giv"), and their mode is
+  GET_MODE(*location) = SImode. So ANY indexed memory access inside the loop yields a
+  giv that passes every eligibility test at maybe_eliminate_biv_1's COMPARE case
+  (loop.c:6160-6190). s1's v2 therefore could never keep the biv while its givs were
+  reduced: giv 207 (mult 2, add reg191) rewrote `slti i,2` into `slt a2,limit` with
+  limit = sp+20. The "every giv site is inside a conditional arm" angle in s1's F1(a)
+  is a DEAD LEAD - conditional placement only clears always_computable for DEST_REG
+  givs, never for DEST_ADDR ones.
+- The gate that actually decides is one level up: strength_reduce:4034
+  `if (all_reduced == 1 && bl->eliminable && maybe_eliminate_biv (...))`.
+  all_reduced is cleared by the worthwhile test at loop.c:3824
+  `v->lifetime * threshold * benefit < insn_count`, where benefit has already had
+  `benefit -= add_cost * bl->biv_count` applied (loop.c:3804).
+- combine_givs (loop.c:5517) does `g1->benefit += g2->benefit` for the leader, and the
+  per-giv loop SKIPS combined members (`if (v->ignore || v->same) continue;`, loop.c:3782).
+  So only giv-group LEADERS are ever tested. A DEST_REG "mult N add 0" leader with NO
+  other giv combined into it has benefit 2; add_cost measures 2 and biv_count is 1, so its
+  net benefit is exactly 0 -> "not worth while, 0 vs <insn_count>" -> ignore=1 ->
+  all_reduced=0 -> biv elimination is skipped ENTIRELY.
+
+The honest C that produces that: hoist a per-iteration record pointer to the top of the
+loop body, so each scale group has exactly ONE "add 0" intermediate instead of several:
+
+    do {
+        u8  *p = &packets[i * 8];
+        s16 *o = &sp.output[i];
+        ...  p[0] p[1] p[2] p[3]   o[0] o[2]  ...
+        i++;
+    } while (i < 2);
+
+Measured: 34 -> **20** (build 142). The .loop dump confirms the predicted mechanism
+verbatim: "giv of insn 51 not worth while, 0 vs 51." / "giv of insn 45 not worth while,
+0 vs 51." and NO "biv 75 was eliminated" line; the add-reg givs still reduce to reg
+167/168 = the a2/a3 walkers. Emitted exit test: `slt $8,2` (= target `slti v0,t0,2`).
+The whole register file snaps to target with no pins: i->t0, mask->t1, const4->t2,
+jtbl->t3, a2 = sp+16 walker with offsets 0/4, a3 = sp+40 walker with offsets 0..3.
+The ignored i*2/i*8 intermediates cost ZERO insns - they are dead once the address givs
+reduce, and DCE removes them.
+
+### F2 SOLVED - the `li 1` stays inside the loop.
+
+Mechanism: scan_loop's movable-candidate test (loop.c:702-716) requires
+`invariant_p(src) && (n_times_set[regno] == 1 || consec_sets_invariant_p(...))`.
+The desirability test at loop.c:1631 is `threshold * savings * m->lifetime >= insn_count`
+with threshold = 2*(1 + n_non_fixed_regs) (loop.c:532) - so once a movable EXISTS it is
+always hoisted here; the only lever is to stop the movable from being created.
+Two NON-consecutive sets of the same pseudo inside the loop do exactly that
+(n_times_set==2, and consec_sets_invariant_p fails because the sets are not adjacent).
+
+Spelled as reuse of the `voice` local:
+
+    voice = p[1] >> 4;
+    o[0] = voice;
+    voice = 1;
+    o[2] = voice;
+
+Measured: build_insns 142 -> **141 == target**, score still 20, and the emitted if-arm is
+now structurally identical to target (`li v1,1; sh v1,4(a2)` sitting between the lhu and
+the addiu -1, i.e. filling the load-delay slot) - only a v0<->v1 seat swap remains.
+FAMILY FLAG: this is the variable-reuse family (defeat-licm-hoist-var-reuse.md +
+staged-value-reused-variable.md, FAKE-gated). It is NOT yet cleared for submission. An
+honest non-reuse spelling that also gives the pseudo two non-consecutive sets has not been
+found; that is now frontier F2b.
+
+### Residual inventory at 20 (tmp/grind/func_80019568/s2/nd.py against asm/funcs)
+R1 (~6 insns) if-arm v0<->v1 swap. Target: `srl v0,v0,4; sh v0,0(a2); lhu v1,0(a2);
+   addiu v0,zero,1; sh v0,4(a2); addiu v1,v1,-1; sll v1,16; sra v1,16`.
+   Ours: same shape with v0/v1 exchanged for `voice` and the lhu temp. Target ties
+   `voice` to the lbu temp's seat; ours ties the lhu temp to it. Pure local-alloc seat
+   assignment - candidate for tools/ra_solver (inverse_compose.py classify).
+R2 (~13 insns) tail block. Target: `lui v0,%hi(D_80102790); addiu v0,v0,%lo; lw v1,24(sp);
+   lw a0,0(v0); sw v1,0(v0); nor; and; nor; sw 9C; and; sw 94; sw 98`. Ours emits two
+   independent %hi/%lo accesses for the load and the store and sinks the store.
+R3 masked-by-scorer, not real: move-vs-addu spellings, %hi/%lo reloc addends, and
+   `lw v0,32(at)` (jtbl_80010088 addressed off the first table's %hi in the same TU rodata).
+
+### Facts banked
+- Pointer-walking the arrays (out++/pk += 8) with a separate counter is DEAD as a match
+  route: measured 46 (build 146). It gives THREE extra walkers - `sp+20` for o[2], and a
+  SECOND packet walker anchored `sp+43` with offsets -2..0 - because with a pointer biv
+  the base access MEM(biv) is not a giv while MEM(biv+k) is, so the +k form reduces into
+  its own register. Only the indexed spelling combines all offsets into one walker.
+  Banked: rejected/pointer-walkers-split-givs.c.
+- Computing `voice2` BEFORE the `o[2]` store scores 17 (build 138) but is a FALSE minimum:
+  with no intervening store cse folds the `sh -> lhu` reload away, deleting target's
+  `lhu v1,0(a2); addiu v1,v1,-1; sll; sra` chain (3 insns short of target). The o[2]
+  store between the o[0] store and the reload is load-bearing.
+  Banked: rejected/voice2-early-cse-folds-lhu-reload.c.
+- Tail statement order (90, 9C, 94, 98 to match target emission order) is INERT: still 20.
+  The scheduler picks the store order; the residual is entirely the address materialization.
+  Banked: rejected/tail-store-order-9c-before-94-inert.c.
+- Sibling func_800194F4 writes D_80102788/8A and D_80102790/94/98/9C with plain per-symbol
+  `lui at,%hi / sw ,%lo(at)` - what a scalar declaration produces - and target's own tail
+  stores to 94/98/9C are likewise plain %lo stores off $at. Only D_80102790 gets a
+  register-held address. INDEPENDENT EVIDENCE AGAINST s1's aggregate hypothesis for F3.
+
+- [s2] Honest floor 34 -> 20 (structurally correct form, build_insns 141 == target 141)
+- [s2] src/code6cac.c reverted to HEAD at end of session; the s2 form lives in candidate.c
+
+- [s2] Chassis re-verified: s1's v2 body reproduces 34 exactly (build 141 == target 141), so all s1 conclusions remain chassis-valid.
+
+- [s2] loop.c:4386-4389 -- DEST_ADDR givs are always_computable=1 regardless of conditional placement, and their mode is Pmode/SImode. This forecloses s1's F1(a) angle (respelling giv sites so none is always_computable) for any indexed loop.
+
+- [s2] loop.c:3782 (worthwhile loop skips v->same/v->ignore), 3804 (benefit -= add_cost*biv_count), 3824 (worthwhile test), 4034 (all_reduced==1 && bl->eliminable gate), 5517 (combine_givs accumulates benefit into the leader) -- together: a giv-group LEADER with nothing combined into it and benefit 2 nets 0 and clears all_reduced, which is the ONLY practical honest lever against biv elimination in this loop.
+
+- [s2] loop.c:702-716 + 1631 + 532 -- a scan_loop movable, once created, is always hoisted here (threshold = 2*(1+n_non_fixed_regs) dwarfs insn_count); the only lever is to prevent creation, which two non-consecutive sets of the same pseudo do.
+
+- [s2] Honest floor progression this session: 34 (s1 v2 re-measured) -> 20 (v4, record pointers only, ORDINARY C with no family claim, build 142) -> 20 (v5, + voice reuse, build 141 == target 141) -> 17 (v7, false minimum, build 138).
+
+- [s2] Residual at 20 is exactly two clusters: R1 (~6 insns) a v0<->v1 local-alloc seat swap in the if-arm, and R2 (~13 insns) the tail block's &D_80102790 address materialization. Everything else in the objdump diff is scorer-masked (move-vs-addu, %hi/%lo addends, and lw v0,32(at) for jtbl_80010088 addressed off the first table's %hi).
+
+- [s2] Owner RULES-TO-ZERO directive: this session continued the pure-C route (no regfix/asmfix touched, src reverted to HEAD at end); the 5 rules retire when this reaches COMPLETED-C.
+
+- [s2] Two independent GCC passes were named from dumps, not guessed: loop.c strength_reduce/scan_loop for both wins; the dumps are in tmp/grind/func_80019568/dumps/.

@@ -1197,3 +1197,4 @@
 - 2026-08-25 11:08 SioSyncroRead JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: SioSyncroRead volatile_extern_allowlist.txt), function stays active.
 - 2026-08-25 11:21 SioSyncroRead COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-08-25 12:06 func_80019568 s1 [recon] floor=28: Recon: rule-era chassis discarded; fresh indexed pure-C derivation reaches 34 honest / 28 with a diagnostic biv-elimination blocker; dominant residual mechanism identified as loop.c biv elimination of the loop-1 counter
+- 2026-08-25 12:32 func_80019568 s2 [structural] floor=17: F1 and F2 both SOLVED: loop.c biv elimination blocked honestly via per-iteration record pointers (all_reduced=0 path) and the li-1 hoist blocked via two non-consecutive sets; floor 34 -> 20 with build_insns 141 == target 141 and the whole loop-1 register file matching target; 17 also measured but is a false minimum (cse eats the lhu reload).
