@@ -273,3 +273,87 @@ Frontier (unchanged in substance from [s7], now with structural eliminated):
 - probe: computed s4 (the -4 header word) BEFORE s6 (the -8 word) in case 3, at all three store positions (probes D/E/F); measured each; disassembled D (tmp/grind/func_800460E4/s2/pD.dis:132-146)
 - result: all three measure sandbox 9 with build_insns 248 == target_insns - the merge IS defeated and the score does not move at all. The 3-insn deletion is score-neutral; all 9 diffs are the case-3 seat/order divergence. Not adopted (zero gain, plus a case-3-vs-case-13 statement-order divergence motivated only by defeating a jump2 fold - the smell the 04:28 layer-1 FAIL banned for the address-form choice).
 - verdict: KILLED
+
+## [s3] 2026-08-25 (structural)
+
+H19 — "The pre-sched insn STREAM ORDER (LUID) is the lever: if the two header
+loads sit adjacent in the stream, sched1 will leave them adjacent."
+Probe: named the two words into block-local `w0`/`w1` in case 3, which makes
+the .combine stream literally equal target's final order; measured; diffed the
+object against baseline.
+Verdict: **KILLED, in the strongest available form** — sandbox 9 and the
+emitted object is BYTE-IDENTICAL to the baseline. Handing sched1 target's exact
+order as input does not survive the pass. Banked
+rejected/case3-both-loads-adjacent-in-stream-byte-identical.c.
+
+H20 — "The whole 9 is one scheduler tie: at T-6 of block 19 the second load
+(insn 319) and the first shift of the s6 chain (insn 322) are both lifted to
+`max_priority` by sched.c `adjust_priority`/`birthing_insn_p`, and
+`schedule_select` breaks the tie by `potential_hazard` in favour of the load.
+`birthing_insn_p` requires `reg_n_sets == 1`, so holding the header words in
+variables assigned in more than one place removes the boost and yields target's
+order."
+Probe: read the ready-list trace in the -da .sched dump (block 19, T-1..T-14);
+then four spellings — P2 (scratch pair shared case 3 + case 13), P3 (only the
+-4 word shared), P4 (second sites in the mainline + case 34), P6 (P2 plus
+in-place `>>= 2; <<= 2;` on a `u32` scratch so the shift chain writes the
+value's own register). Measured each; disassembled each.
+Verdict: **CONFIRMED as the mechanism.** The model predicts all three outcomes,
+including P3's swapped loads. P2/P4 reproduce target's case-3 first EIGHT
+instructions byte-exactly (address seat, both load seats, li reusing the dead
+address register, store placement). P6 brings case 3 to 6 differing
+instructions (baseline 9), differing from target ONLY by the two scratch
+variables' hard-register seats being swapped. Floors: P2 17, P3 22, P4 22,
+P5 19, P6 18, P7 18 — all WORSE than the floor 9 overall, because the required
+`reg_n_sets > 1` forces the value pseudo into global_alloc (one hard register
+for the whole function) while target seats the same semantic value differently
+in case 3 ($v1/$a0) than in case 13 ($v0/$v1) — proof that in target those
+values are block-local single-set pseudos, which is precisely the condition
+that GRANTS the boost. Not adopted; candidate.c unchanged at floor 9.
+
+H21 — "Declaration order of the scratch pair flips their global-alloc seats."
+Probe: `u32 hdr_m1, hdr_m2;` vs `u32 hdr_m2, hdr_m1;` at the P6 chassis.
+Verdict: **KILLED — inert, sandbox 18 both ways.** Global-alloc seating here is
+usage/priority-driven, not declaration-order-driven.
+
+**Modality verdict: STRUCTURAL is exhausted for statement order, declaration
+order, whole-function shape and variable-splitting — but this session moved the
+residual from "seats and order diverge, mechanism unknown" to a single named,
+dump-quoted scheduler tie with a proven lever and a proven reason the lever
+cannot be spent under the current dependence graph.**
+
+Frontier (in order):
+(1) ATOM-SET modality inside block 19: the tie only exists because BOTH the
+    second load and the s6 chain's first shift become ready at T-6 with the
+    boost. Any honest change that makes one of the two chains not newly-ready
+    at that cycle (a different-length chain, a different consumer) breaks the
+    tie without touching the dependence graph. [s7]'s atom-multiset identity
+    argues the final atoms are fixed, but it says nothing about atoms that are
+    present at sched1 and folded away afterwards.
+(2) `bb_live_regs` half of `birthing_insn_p`: the boost also requires the
+    destination pseudo to be LIVE at the scheduling point. A spelling in which
+    the -4 word's only consumer is scheduled such that its dest is not yet live
+    at T-6 would defeat the boost while keeping the pseudo block-local and
+    single-set — the one combination P2..P7 could not achieve.
+(3) If (1) and (2) die measured, the exhaustion chain is complete at the
+    instruction-selection level and the residual is a fidelity/routing question
+    only (the aggregate-merge refusal is final; any family re-ask is
+    auto-reject-class).
+
+## [s3] The pre-sched insn stream order (LUID) is the lever: if the two case-3 header loads sit adjacent in the pre-sched stream, sched1 leaves them adjacent as target does.
+- mechanism: rank_for_schedule falls through to INSN_LUID when priority and dependence class tie, so the input stream order is the final tie-break
+- probe: Named the two header words into block-local w0/w1 in case 3, which makes the .combine RTL stream literally equal target's final instruction order (insns 298,303,305,309,319,321,322,324,326,327,329,334,336); sandbox --disable all; objdump diff vs baseline (tmp/grind/func_800460E4/s3/pP1.dis)
+- result: sandbox 9 (245/248) and the emitted object is BYTE-IDENTICAL to the baseline - sched1 hoists li/lui/sh into lw(-8)'s delay slot regardless of being handed target's exact order
+- verdict: KILLED
+
+## [s3] The whole 9 is one scheduler tie: at T-6 of block 19 the second load (insn 319) and the first shift of the s6 chain (insn 322) both carry sched.c's adjust_priority/birthing_insn_p max_priority boost, and schedule_select's same-priority group rule breaks the tie by potential_hazard in favour of the memory-unit insn; birthing_insn_p requires reg_n_sets==1, so a header-word variable assigned in more than one place loses the boost and yields target's order and seats.
+- mechanism: sched.c:2545-2593 adjust_priority -> birthing_insn_p (sched.c:2505, returns reg_n_sets[dest]==1 when the dest is live) lifts a newly-ready insn to max_priority; schedule_select then picks within the equal-priority group by potential_hazard, which is nonzero for the memory unit and zero for the ALU
+- probe: Read GCC's own ready-list trace in tmp/grind/func_800460E4/dumps/text1a_c2.sched:368-407 (T-1..T-14 for block 19, including the literal dump line ';; insn 319 has a greater potential hazard'); then spelled and measured four boost-killing forms: P2 scratch pair shared by case 3 and case 13, P3 only the -4 word shared, P4 second set sites in the mainline and case 34, P6 = P2 with ALIGN4 spelled as in-place >>=2 / <<=2 updates on a u32 scratch; disassembled each
+- result: The model predicts every outcome. P2 and P4 reproduce target's case-3 FIRST EIGHT instructions byte-exactly (sll/addu address in $v0, lw $v1,-8($v0), lw $a0,-4($v0), addiu $v0,1, lui, sh - including target's li reusing the then-dead address register). P3 (only one boost killed) swaps the two loads exactly as predicted. P6 brings case 3 to 6 differing instructions vs the baseline's 9, differing from target ONLY by the two scratch variables' hard-register seats being swapped. Overall floors: P2 17, P3 22, P4 22, P5 19, P6 18 - all worse than 9, because reg_n_sets>1 forces the value pseudo into global_alloc (one hard register function-wide) while target seats the same value in $v1/$a0 in case 3 and $v0/$v1 in case 13
+- verdict: CONFIRMED
+
+## [s3] Declaration order of the scratch pair flips their global-alloc seats, which is the last thing separating P6's case 3 from byte-exact.
+- mechanism: global.c allocno ordering ties broken by allocno number, which follows declaration order
+- probe: u32 hdr_m1, hdr_m2; vs u32 hdr_m2, hdr_m1; at the P6 chassis; sandbox --disable all
+- result: sandbox 18 both ways - inert
+- verdict: KILLED

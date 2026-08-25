@@ -670,3 +670,144 @@ integration note in [s1]).
 - [s2] Contrast that pins the mechanism: in case 13 (which we byte-match) the block carries two extra atoms ($a1 = 8 and lw 0x14(s0)) and TARGET ITSELF seats the address in $v1, not $v0 - target's case-3 seating is not a general property of this function, it is specific to that block's schedule.
 
 - [s2] Owner RULES-TO-ZERO directive acknowledged and in execution: the 10 regfix rules (regfix.txt:868-882) retire only at COMPLETED-C; the floor stayed 9 so no retirement is possible yet; wave-2 INCLUDE_RODATA remains measured SHA1-dead for this function (docs/grind/borderline.md:88).
+
+## [s3] 2026-08-25 (structural) — the case-3 residual is ONE scheduler tie, now traced insn-by-insn
+
+Baseline re-measured at session start with candidate.c applied to src:
+**sandbox --disable all = 9 (245/248, rules_dropped=10)**, unchanged. src/ was
+restored to HEAD before finishing; the floor-9 form still lives in candidate.c.
+
+### The decision that produces the whole 9 (read out of the -da .sched dump, not hypothesised)
+
+`tmp/grind/func_800460E4/dumps/text1a_c2.sched:368-407` carries GCC's own
+ready-list trace for basic block 19 (case 3). Priorities in that block:
+
+    insn 298 (s1 = s2)            priority 1
+    insn 303/305 (sll/addu addr)  priority 1
+    insn 309 (lw -8)              priority 1
+    insn 319 (lw -4)              priority 1
+    insn 321/322/324 (srl/sll/addu -> s6)  priority 2
+    insn 326/327/329 (srl/sll/addu -> s4)  priority 2
+    insn 334 (li 1) / 336 (sh D_8009947A)  priority 1
+
+GCC 2.7.2 schedules a block in REVERSE (sched.c `schedule_block`; T-2 is the
+last insn emitted, T-14 the first). Our trace:
+
+    T-2 329, T-3 327, T-4 326, T-5 324,
+    T-6 "ready list: 336 (1) 298 (1) 322 (7f000001) 319 (7f000001), now 322 319 336 298"
+        ";; insn 319 has a greater potential hazard, now 319 322 336 298"   <-- THE DIVERGENCE
+    T-7 322, T-8 321, T-9 336, T-10 334, T-11 309, T-12 305, T-13 303, T-14 298
+
+`7f000001` is the `adjust_priority` birthing boost (sched.c:2545-2593): an insn
+whose destination pseudo is live and has `reg_n_sets == 1` (`birthing_insn_p`,
+sched.c:2505) is lifted to `max_priority`. At T-6 BOTH the second load (319)
+and the first shift of the s6 chain (322) carry that boost, so
+`rank_for_schedule` ties on priority AND on class, and `schedule_select`'s
+same-priority group rule ("select the first one with the largest potential
+hazard") picks the LOAD, because a memory-unit insn has a nonzero
+`potential_hazard` and an ALU insn has zero. Everything else in the block —
+the address seat, the -8/-4 seats, the li/lui/sh position, the jump2
+cross-jump — is a downstream consequence of that single pick.
+
+Target's block is the schedule you get when 319 does NOT win that tie:
+    T-6 322, T-7 321, T-8 336, T-9 334, T-10 319, T-11 309
+which is exactly `sll/addu; lw -8; lw -4; li; lui; sh; srl/sll/addu s6;
+srl/sll/addu s4` = asm/funcs/func_800460E4.s:145-159.
+
+### H19 — pre-sched STREAM ORDER is definitively not the lever (strongest possible form)
+
+Naming the two header words (`w0`/`w1` block-locals in case 3) makes the
+pre-sched RTL stream 298, sll, addu, lw(-8), lw(-4), srl, sll, addu s6, srl,
+sll, addu s4, li, sh — i.e. **literally target's final instruction order**
+(`tmp/grind/func_800460E4/dumps/text1a_c2.combine`, insns 298/303/305/309/319/
+321/322/324/326/327/329/334/336 in that order). sched1 still hoists li/sh into
+lw(-8)'s slot and the emitted object is **byte-identical to the baseline**
+(`s3/pP1.dis:132-146`), sandbox 9. This closes the LUID/statement-order axis at
+a level the [s4] sched_solver sweep and the [s2] P1-P4/store-first probes could
+only argue: even handing sched1 target's exact order as input does not survive.
+
+### H20 — the birthing boost IS the lever, and killing it reproduces target's order + seats
+
+`birthing_insn_p` returns `reg_n_sets[dest] == 1`, so a header-word value held
+in a variable that is assigned in MORE THAN ONE place loses the boost. Probes:
+
+- **P2** (`rejected/shared-scratch-case3-13-order-fixed-seats-lost.c`) — one
+  function-scope scratch pair `hdr_m2/hdr_m1` assigned in case 3 AND case 13
+  (2 sets each). Case 3 emits
+  `sll v0,s3,2; addu v0,v0,s0; lw v1,-8(v0); lw a0,-4(v0); addiu v0,1; lui; sh`
+  — **the first eight instructions byte-identical to target**, including the
+  address-in-$v0 seat, the -8/$v1 and -4/$a0 seats, and li reusing the dead
+  address register. Sandbox 17: the win is paid for by the shifts
+  (`srl v0,v1,2` instead of target's in-place `srl v1,v1,2`) and by case 13
+  regressing.
+- **P3** (only the -4 word shared) — sandbox 22; the two loads swap
+  (`lw a0,-4(v0); lw v0,-8(v0)`), exactly what the model predicts when only one
+  of the two boosts is removed. The model therefore predicts all three probes.
+- **P5/P6** (`rejected/shared-scratch-inplace-shift-case3-6-diffs-case13-broken.c`)
+  — same scratch pair, ALIGN4 spelled as in-place updates of the scratch
+  (`hdr >>= 2; hdr <<= 2;`) so the shift chain writes the value's own register.
+  With `u32` scratch (P6; `s32` gives `sra` not `srl`, P5 = 19) case 3 becomes
+  **byte-identical to target except that the two scratch variables' seats are
+  swapped** ($a0/$v1 where target wants $v1/$a0) — 6 differing instructions in
+  case 3 vs the baseline's 9, with order, address seat, store placement and the
+  whole block shape correct. Sandbox 18 (248/248 — the cross-jump fold is gone).
+- **P7** — declaration order flipped (`u32 hdr_m1, hdr_m2;`): sandbox 18, inert.
+  Global-alloc seating here is usage-driven, not declaration-order-driven.
+- **P4** (`rejected/shared-scratch-mainline-case34-worse.c`) — second set sites
+  moved to the mainline (`s0[1]`) and case 34 (`s0[5]`) so case 13 stays
+  pristine: sandbox 22, case 3's first eight insns still byte-exact.
+
+### The wall this leaves, stated precisely
+
+A pseudo with `reg_n_sets > 1` in this control structure is necessarily set in
+two different basic blocks, so `reg_basic_block` is GLOBAL and it is seated by
+global_alloc with ONE hard register for the whole function. Target's case 3
+seats the -8 word in $v1 and the -4 word in $a0; target's case 13 seats the -8
+word in $v0 and the -4 word in $v1 (reusing that block's address register) —
+**two different seats for the same semantic value in two blocks**, which only
+local_alloc can produce, i.e. in target those values are BLOCK-LOCAL,
+single-set pseudos. Local-and-single-set is exactly the condition that grants
+the birthing boost. So under the current dependence graph the two requirements
+(no boost / per-block seats) are mutually exclusive, and the remaining escape
+is the same one every earlier session hit: a dependence edge between the loads
+and the D_8009947A store, whose every honest spelling is banned (load side,
+layer-1 FAILs 03:53 / 04:17 / 04:28) or refused (store-side aggregate, 04:46)
+or gate-failed (H14 volatile-extern).
+
+Not probed here and left as the frontier: a spelling in which case 3's two
+header words are single-set block-locals but one of the two shift chains is
+NOT newly-ready at T-6 (i.e. an atom-set change inside the block that
+lengthens or breaks one chain), and the `bb_live_regs` half of
+`birthing_insn_p` (boost also requires the destination to be live at the
+scheduling point).
+
+CONSTRUCT-SANCTION NOTE for the next session: the shared-scratch forms above
+are RESEARCH PROBES ONLY, all measured WORSE than the floor, and none is in
+candidate.c. If a descendant of them ever reaches 0, it is a
+variable-reuse-for-codegen-control construct whose stated mechanism is a named
+GCC internal (`adjust_priority`/`birthing_insn_p`/`reg_n_sets`) — it needs a
+FAKE annotation plus a family ruling under
+`.claude/rules/defeat-licm-hoist-var-reuse.md` / `staged-value-reused-variable.md`
+bounds BEFORE submission, not after.
+
+Artifacts: tmp/grind/func_800460E4/s3/ (base.dis, pP1.dis, pP2.dis, pP3.dis,
+pP4.dis, pP5.dis, pP6.dis, pP*_body.c, sched_dbg.txt, sched_dbg.sh, apply.py,
+dis.sh) and the regenerated tmp/grind/func_800460E4/dumps/ set.
+
+- [s3] Baseline re-measured this session with candidate.c applied to src/text1a_c2.c: sandbox --disable all = 9 (245/248, rules_dropped=10, cheat_asm_stripped=0). src/ was restored to HEAD before finishing; candidate.c is unchanged (still the floor-9 form).
+
+- [s3] The case-3 residual is now decomposed to a single decision: block 19, reverse-schedule cycle T-6, ready list ';; ready list at T-6: 336 (1) 298 (1) 322 (7f000001) 319 (7f000001), now 322 319 336 298' followed by ';; insn 319 has a greater potential hazard, now 319 322 336 298'. Every other divergence in the block (address seat, -8/-4 load seats, li/lui/sh position, the jump2 cross-jump merge) is downstream of that one pick.
+
+- [s3] 0x7f000001 is sched.c's adjust_priority birthing boost, granted only when birthing_insn_p holds: the destination pseudo is live at the scheduling point AND reg_n_sets[dest]==1. Both competing insns satisfy it in every single-set spelling, so the tie always resolves in favour of the load.
+
+- [s3] Priorities in block 19 (same dump, and independently from the instrumented cc1's BB2_PRIO_DEBUG output in tmp/grind/func_800460E4/s3/sched_dbg.txt): both header loads and the li/sh pair are priority 1; both srl/sll/addu chains are priority 2; the block's jump is 0x7fffff3b.
+
+- [s3] Killing the boost on BOTH header-word values reproduces target's case-3 order AND its address/load seats exactly (first eight instructions byte-identical), which proves the mechanism rather than merely correlating with it.
+
+- [s3] The lever is unspendable under the current dependence graph: reg_n_sets>1 in this control structure necessarily means sets in two different basic blocks, hence reg_basic_block GLOBAL, hence global_alloc gives ONE hard register function-wide; but target seats the -8 word in $v1 in case 3 (asm/funcs/func_800460E4.s:145-152) and in $v0 in case 13 (:183-193), so in target those values are block-local single-set pseudos - which is exactly the condition that GRANTS the boost.
+
+- [s3] s32 scratch spells the ALIGN4 down-shift as sra (P5 = 19); u32 scratch restores srl (P6 = 18). Recorded so a future session does not lose a turn to it.
+
+- [s3] Owner RULES-TO-ZERO directive (2026-08-24) acknowledged and in execution: the 10 regfix rules at regfix.txt:868-882 retire only at COMPLETED-C; the floor did not move this session, so no retirement is possible yet; wave-2 INCLUDE_RODATA remains measured SHA1-dead for this function (docs/grind/borderline.md:88).
+
+- [s3] Sanction note recorded in the ledger: the shared-scratch probes are research forms only, all measured WORSE than the floor, none of them is in candidate.c. Any descendant that reaches 0 is a variable-reuse-for-codegen-control construct whose stated mechanism is a named GCC internal, so it needs a family ruling plus a FAKE annotation BEFORE submission, not after.

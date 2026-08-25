@@ -1,7 +1,7 @@
 {
  "func": "func_800460E4",
  "file": "text1a_c2",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 9,
    "modality": "structural",
    "headline": "STRUCTURAL modality exhausted: case-3's block is byte-identical under a drastic whole-function perturbation AND under every statement order (incl. the previously unswept store-first slot); the jump2 c"
+  },
+  {
+   "session": 3,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "Case-3's entire 9-instruction residual traced to ONE scheduler tie (sched.c adjust_priority birthing boost + schedule_select potential_hazard) at T-6 of block 19; the lever is proven by measurement an"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The case-3 seat pair (address -> $v0, -4 word -> $a0) is typed FORECLOSED rather than merely unreached: this session's order-invariance measurements are strong prior evidence, and a typed verdict is what an escalation packet would need.",
-   "mechanism": "local-alloc seats are a function of the sched1 order; sched1's order is invariant under every C-level perturbation of a fixed atom set with a fixed dependence graph",
-   "next_probe": "solver modality: tools/ra_solver inverse_compose.py classify on the case-3 seat pair at the floor-9 chassis, plus an explicit sched pass-2 model, for a typed REACHABLE/FORECLOSED verdict with ranked C-lever vectors"
+   "hypothesis": "An atom-set change inside block 19 that makes one of the two competing insns not newly-ready at T-6 breaks the tie without touching the dependence graph and without a multi-set pseudo.",
+   "mechanism": "the tie exists only because insn 319 (queued 2 cycles when its consumer was scheduled at T-4) and insn 322 (freed at T-5) become ready at the same cycle; a chain of different length shifts one of them by a cycle",
+   "next_probe": "atom-set / synthesis modality: spell case 3 so one ALIGN4 chain has a different insn count at sched1 but folds to target's atoms afterwards, then re-read the block-19 ready-list trace in the .sched dump to confirm the T-6 ready list carries only one boosted insn"
   },
   {
-   "hypothesis": "A whole-function rederivation can only help if it changes case 3's OWN statements (a different atom set), not merely the global shape - H16 removed the shape half of the [s7] frontier item 2.",
-   "mechanism": "case-3 block insensitivity to out-of-block shape (H16: byte-identical under a 46-score global perturbation) versus [s7]'s proof that target's case-3 atom multiset is identical to ours",
-   "next_probe": "rederive modality: fresh m2c derivation + sibling/Kengo idiom survey, scored ONLY on whether it changes case 3's atom multiset; if it does not, it cannot move the floor"
+   "hypothesis": "The bb_live_regs half of birthing_insn_p can defeat the boost while the value stays a block-local single-set pseudo - the one combination P2..P7 could not achieve.",
+   "mechanism": "birthing_insn_p returns 0 outright when the destination pseudo is not live in bb_live_regs at the scheduling point, independently of reg_n_sets",
+   "next_probe": "forensics modality: run the existing probe set under BB2_SCHED_DEBUG=1 (the SCHEDDBG ADJPRI hook is already wired in tools/gcc-2.7.2/sched.c) to enumerate which liveness states suppress the boost, then hunt a C spelling that produces one"
   },
   {
-   "hypothesis": "If the solver returns FORECLOSED, the complete exhaustion chain is escalation-packet material for a fidelity/routing question only.",
-   "mechanism": "escalation-not-parked decision-packet path; the 04:46 aggregate-merge refusal is final and any family re-ask is auto-reject-class",
-   "next_probe": "only after the solver verdict; driver assigns escalation modality"
+   "hypothesis": "If both of the above die measured, the instruction-selection level is exhausted and the residual is a fidelity/routing question only.",
+   "mechanism": "escalation-not-parked decision-packet path; the 2026-08-25 04:46 aggregate-merge refusal is final and any family re-ask is auto-reject-class",
+   "next_probe": "driver-assigned escalation modality only; do not file a packet whose YES would lower a standard"
   }
  ],
  "judge_constraints": [
