@@ -1596,3 +1596,101 @@ bar, or authorize canonical asm despite the LOW scan tier.
 - probe: Fresh `python3 tools/scan_hand_coded.py --single func_800645B0` this session; re-audit of the distance-0 closing-construct inventory (unchanged since s10) plus H55.
 - result: Gate 1 FAIL: tier=LOW score=0/8, S1/S2/S6 all negative. Gate 2 FAIL: every distance-0 form closes with one of the four layer-1-FAILed spellings of the single scheduling-steer lever or the permuter's 6/6 loop-note wrappers; no SOTN citation exists, and the one family sanctioned since s10 has no move here (H55). Floor re-measured 1/78 this session.
 - verdict: CONFIRMED
+
+## H57 (session 12) — the owner-directed solver modality can be executed on this function
+**Statement.** The queue item's owner directive (2026-08-24) says to run the
+`ra_solver` / `sched_solver` suite before any deep re-grind of this RA/scheduler
+residual. H57 is that the suite is actually runnable here and returns a typed
+verdict.
+**Mechanism.** `inverse_compose.py classify` triages which model owns the
+residual; `inverse_sched.py` / `sched_solver/perturb.py` then invert the
+scheduler with `--goal-from-target`.
+**Probe.** Applied the SB body, ran `mkasm_honest.sh text1b`, then
+`inverse_compose.py classify text1b func_800645B0`; separately ran
+`sched_solver/extract.py text1b` (parity=True, 474 funcs, 1656 blocks) and
+`sched_solver/mkasm.sh text1b`; and cross-checked every verdict against a
+ground-truth objdump differ (`tmp/grind/func_800645B0/s12/diff.py`).
+**Result.** `classify` returned **PRE-RA** ("no backend — the residual is
+upstream of every model") on a fabricated 71-vs-69 multiset gap. Ground truth is
+78 vs 78 with ONE operand-order difference. Root cause: both toolkits build the
+TARGET stream as `src/<stem>.c + regfix + asmfix`, which stopped being the
+target when asm-until-matched put `INCLUDE_ASM` in `src` and retired the rules;
+`mkasm_honest.sh`'s target half now fails (`rc=1`, no `tcc1.s`) and the
+classifier silently fell back to a stale Aug-7 `.tgt.s`. `--goal-from-target` is
+unusable for the same reason.
+**Verdict: KILLED — and the kill is INFRASTRUCTURAL, not about this function.**
+The solver modality cannot be executed on any `INCLUDE_ASM`-routed function
+until the target-stream derivation in `tools/ra_solver/mkasm_honest.sh` and
+`tools/sched_solver/mkasm.sh` is repaired (derive from `asm/funcs/<func>.s`, as
+the engine's own scorer already does). That surface is outside a grind session's
+scope, so this is the decision packet's question.
+
+## H58 (session 12) — the sum's target operand order is reachable in ordinary C
+**Statement.** Target's `addu $s0,$s1,$s0` at stream index 20 can be produced by
+a plain C statement with no staging, no dead store and no statement reordering.
+**Mechanism.** `tools/gcc-2.7.2/optabs.c:398-421` swaps the commutative pair
+only in the enumerated cases; with an expansion target that is NEITHER operand
+no swap fires, so `(plus idx2 idx)` survives to the emitted insn, and RA is free
+to give the fresh destination `$s0` because `idx` dies at that insn.
+**Probe.** WD chassis: declared `s32 wid;` and wrote `wid = idx2 + idx;`, using
+`wid` for the three word-offset stores. Measured with the honest sandbox and
+differed insn-for-insn.
+**Result.** 3 / 78. **Index 20 is EXACT** — the first honest spelling on this
+function ever to produce target's operand order. The residual moves wholesale to
+the inner-loop head: 11/12 swap (`addiu $v1,$zero,1` vs `addu $s0,$s3,$a0`) plus
+the back-edge delay slot at 65.
+**Verdict: CONFIRMED (as a reachability fact), and the chassis is rejected on
+score.** Banked at
+`rejected/wd-fresh-dest-sum-exact-operand-order-costs-loop-head.c`.
+
+## H59 (session 12) — SB and WD can be combined
+**Statement.** Some C form gets both halves: target's operand order at index 20
+AND target's loop-head placement.
+**Mechanism.** Would require the sum's expansion target to be a pseudo distinct
+from both operands (H58's requirement) while `reg_n_sets[idx]` stays >= 2 (the
+ledger's H24 requirement for the loop head), i.e. a SECOND, semantically real
+assignment to `idx` that is neither the sum's write-back nor a dead/staged store.
+**Probe.** Enumerated the destination cases against the optabs.c swap condition
+(both `idx = idx2 + idx` and `idx = idx + idx2` provably emit `(idx, idx2)`, so
+"destination is idx" and "target's operand order" are mutually exclusive by
+construction), then enumerated the function's semantics for a second real write
+to the slot index.
+**Result.** The slot index is written exactly once per inner iteration
+(`idx = i + j`); the function computes nothing else that lands in it. Every
+synthetic second set is a form this function's Judge has already banned
+(`val = idx; idx = idx2 + val;`, `wid = i + j; idx = wid;`, the dead
+`bit = 0;`, the relocated `j += 1;`).
+**Verdict: KILLED, closed-form.** The 1-vs-3 trade is a property of GCC 2.7.2's
+`expand_binop` plus this function's data flow, not of the search. Do not spend
+another session looking for a spelling that gets both.
+
+## H60 (session 12) — the `val = 1;` naming is cosmetic
+**Statement.** `mask = 1 << idx;` should be byte-neutral against
+`val = 1; mask = val << idx;`.
+**Probe.** Applied on the WD chassis, honest sandbox.
+**Result.** 12 / 78 at **80** build insns (two more than target).
+**Verdict: KILLED.** The named local is load-bearing; do not inline it.
+
+## [s12] The owner-directed solver modality (ra_solver / sched_solver) can be executed on func_800645B0 and returns a typed verdict.
+- mechanism: inverse_compose.py classify triages which model owns the residual; inverse_sched.py / sched_solver perturb.py then invert the scheduler with --goal-from-target. Both need a TARGET instruction stream, which tools/ra_solver/mkasm_honest.sh and tools/sched_solver/mkasm.sh derive as src/<stem>.c -> cc1 -> prologue_fix -> maspsx -> multu_pad -> regfix -> regfix_stage2 -> asmfix, on the header-documented assumption that the tree builds SHA1-identical from src plus rules.
+- probe: Applied the SB body to src/text1b.c, ran mkasm_honest.sh text1b, inverse_compose.py classify text1b func_800645B0, sched_solver/extract.py text1b and sched_solver/mkasm.sh text1b; cross-checked every verdict against a ground-truth objdump differ written this session (tmp/grind/func_800645B0/s12/diff.py: sandbox object vs asm/funcs/func_800645B0.s, with a normaliser for objdump-vs-splat spelling).
+- result: The asm-until-matched migration (2026-08-19) falsified the derivation's assumption: src now carries INCLUDE_ASM and the rule stacks are retired. mkasm_honest.sh's target half FAILS outright (rc=1, text1b.tcc1.s never produced), so classify silently fell back to a 19-day-old stale text1b.tgt.s and reported FIRST DIVERGENCE: PRE-RA ('no backend — the residual is upstream of every model', 'searching them would produce fiction') on a fabricated 71-vs-69 instruction-multiset gap ('ours only: lw $#,36($#) / sw $#,36($#)' — two invented stack spills). Ground truth is 78 vs 78 insns with exactly ONE difference (index 20, addu s0,s0,s1 vs addu s0,s1,s0). --goal-from-target is unusable for the same reason. sched_solver/extract.py itself is healthy (parity=True, 474 function-passes, 1656 blocks).
+- verdict: KILLED
+
+## [s12] Target's operand order at stream index 20 (addu $s0,$s1,$s0) is reachable by ordinary C — no staging, no dead store, no reordered statement.
+- mechanism: tools/gcc-2.7.2/optabs.c:398-421 (expand_binop, commutative case) swaps op0/op1 only in enumerated cases; with an expansion target that is NEITHER operand no swap fires, so (plus idx2 idx) survives to the emitted insn, and RA is free to give the fresh destination $s0 because idx dies at that insn.
+- probe: WD chassis: declared `s32 wid;` and wrote `wid = idx2 + idx;`, using wid for the three word-offset stores. Measured with `sandbox func_800645B0 --disable all` and differed insn-for-insn with s12/diff.py.
+- result: 3 / 78, and index 20 is EXACT — the first honest spelling ever measured on this function to produce target's operand order. The residual relocates wholesale to the inner-loop head: index 11/12 swap (addiu $v1,$zero,1 vs addu $s0,$s3,$a0) plus the back-edge delay slot at 65. Banked at memory/grind/func_800645B0/rejected/wd-fresh-dest-sum-exact-operand-order-costs-loop-head.c.
+- verdict: CONFIRMED
+
+## [s12] Some C form gets BOTH halves: target's operand order at index 20 AND target's loop-head placement.
+- mechanism: Would require the sum's expansion target to be a pseudo distinct from both operands (the H58 requirement) while reg_n_sets[idx] stays >= 2 (the ledger's H24 requirement for the loop head) — i.e. a second, semantically real assignment to idx that is neither the sum's write-back nor a dead/staged store.
+- probe: Enumerated the destination cases against optabs.c's swap condition — `idx = idx2 + idx` swaps (target == op1) and `idx = idx + idx2` never swaps, so BOTH emit (idx, idx2) — then enumerated the function's semantics for a second real write to the slot index.
+- result: 'Destination is idx' and 'target's operand order' are mutually exclusive by construction, so the second set of idx must come from elsewhere; the function writes the slot index exactly once per inner iteration (idx = i + j) and computes nothing else that lands in it. Every synthetic second set is a construct this function's Judge has already banned (val = idx; idx = idx2 + val; / wid = i + j; idx = wid; / the dead bit = 0; / the relocated j += 1;). The 1-vs-3 trade is a property of GCC 2.7.2's expand_binop plus this function's data flow, not of the search.
+- verdict: KILLED
+
+## [s12] The `val = 1;` naming is cosmetic — `mask = 1 << idx;` should be byte-neutral.
+- mechanism: Both spellings materialise the constant 1 into a register before the variable shift, so the emitted addiu/sllv pair should be identical.
+- probe: Applied `mask = 1 << idx;` in place of `val = 1; mask = val << idx;` on the WD chassis; honest sandbox.
+- result: 12 / 78 at 80 build insns — two insns MORE than target. The named local is load-bearing for the chassis. Banked at rejected/inline-const-one-drops-val-naming-80-insns.c.
+- verdict: KILLED

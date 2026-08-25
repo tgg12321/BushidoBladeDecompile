@@ -42,6 +42,23 @@
  * expression exists for the grouping sub-axis.  See hypotheses.md H55/H56 and
  * the 2026-08-20 decisions.md disposition entry.
  *
+ * s12 (2026-08-25, escalation + the owner's 2026-08-24 solver directive):
+ * floor re-confirmed 1/78 on that day's tree with this exact body, and the
+ * residual mechanically re-derived (78 vs 78 insns, ONE difference: index 20
+ * `addu s0,s0,s1` vs target `addu s0,s1,s0`) by
+ * tmp/grind/func_800645B0/s12/diff.py.  Two results the next session must not
+ * re-derive: (1) `wid = idx2 + idx;` with a FRESH destination local emits
+ * target's operand order EXACTLY -- ordinary C, no staging -- at a cost of 3/78,
+ * the residual moving wholesale to the inner-loop head (banked at
+ * rejected/wd-fresh-dest-sum-exact-operand-order-costs-loop-head.c); and (2)
+ * the 1-vs-3 trade is CLOSED-FORM from tools/gcc-2.7.2/optabs.c:398-421 --
+ * with the sum's expansion target == idx's pseudo, BOTH `idx = idx2 + idx`
+ * (swaps, target == op1) and `idx = idx + idx2` (never swaps) emit (idx, idx2),
+ * so target's operand order requires a destination distinct from both operands,
+ * which is exactly what drops reg_n_sets[idx] to 1 and hands the loop head
+ * back.  See hypotheses H58/H59.  Also killed: `mask = 1 << idx;` (dropping the
+ * `val = 1;` naming) = 12/78 at 80 insns -- the named local is load-bearing.
+ *
  * SIBLING CHASSIS (both banked, both 3 away, both structurally distinct):
  *   chassis_jd_inline_index_arith.c — 3 / 78, index arithmetic written inline
  *     with no idx2/wid locals; residual is the three loop-top points only.

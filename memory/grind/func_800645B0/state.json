@@ -1,7 +1,7 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -69,23 +69,30 @@
    "floor": 1,
    "modality": "escalation",
    "headline": "Post-unpark disposition: the 2026-08-20 or-tree carve-out (the unpark's sole premise) measured DEAD on this function \u2014 sum order is an RTL-expansion invariant, not a policy-blocked choice; both endgam"
+  },
+  {
+   "session": 12,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "Owner's 2026-08-24 solver directive measured UNEXECUTABLE (both solver toolkits derive 'target' from src+regfix, dead since asm-until-matched \u2014 inverse_compose classify returned a FICTITIOUS PRE-RA ve"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A second SET of `idx` placed OUTSIDE the loops denies the birthing_insn_p lift at zero instruction cost, and porting it onto the JD chassis closes JD outright.",
-   "mechanism": "sched.c's birthing_insn_p gives a priority bonus to a set of a pseudo with reg_n_sets == 1; a second set anywhere in the function removes it. Session 8's sweep25 KD measured exactly this (a second set outside the loops) at 4/78 with the loop top EXACT -- but on the older chassis, where the remaining points were the sum/halfword ones JD does not have. JD's residual IS the loop top and nothing else, so the same lever on JD has a different, much shorter ceiling.",
-   "next_probe": "Port KD's out-of-loop second set of `idx` onto chassis_jd_inline_index_arith.c and sweep its placements (before the outer loop, in the outer loop's init, in the outer loop's update, after the loops) with the s9c/sweep32.py harness, measuring each with the honest sandbox. Watch instruction count: the lever is only interesting at 78."
+   "hypothesis": "With a repaired target-stream derivation, sched_solver can return a typed REACHABLE/FORECLOSED verdict on the WD chassis' inner-loop-head placement \u2014 the last residual and the only axis never run on this function.",
+   "mechanism": "sched_solver's forward model is order- and clock-exact on text1b (2068/2068 blocks, 1034/1034 in each pass) and extract.py reports parity=True on this TU today; only the GOAL is missing, because --goal-from-target derives it from a stream that is no longer the target. The goal for this function is fully known from asm/funcs/func_800645B0.s (preheader = [j=0, addu $s0,$s3,$a0], inner-loop head = addiu $v1,$zero,0x1).",
+   "next_probe": "OPERATOR-SIDE (outside a grind session's surface): teach tools/ra_solver/mkasm_honest.sh and tools/sched_solver/mkasm.sh to derive <stem>.tgt.s from asm/funcs/<func>.s for INCLUDE_ASM-routed functions, as the engine's scorer already does, and add a guard so a stale or non-derivable .tgt.s can never yield a silent PRE-RA verdict. Then run: sched_solver/extract.py text1b with the WD body in src, and inverse_sched.py --func func_800645B0 --pass 2 --block <inner-loop head> --goal-from-target text1b --atoms luid,luid_move --depth 2. Note reorg.c (index 65) is out of the model's scope, so a REACHABLE verdict covers indices 11/12 only.",
+   "note": "A grind session can approximate the goal without the tool fix by synthesising a .tgt.s from its own honest stream with the two loop-head insns transposed; that was scoped this session but not run (turn budget)."
   },
   {
-   "hypothesis": "The *3 sum can be expanded with a target that is neither operand and still land in `idx`'s pseudo without a staging copy -- the NON-staging member of the family whose staging member is now banned.",
-   "mechanism": "optabs.c:403-421 swaps a commutative pair whenever the expansion target IS op1, so `idx = <x> + idx;` can never emit the target's operand order; with target == 0 the order is already correct (JD proves it). The missing piece is a C construct whose assignment does not pass `to_rtx` down as the RHS expansion target -- expr.c's expand_assignment / store_expr have such paths (want_value, RHS containing a CALL, safe_from_p clearing `target`) -- while still leaving reg_n_sets[idx] == 2.",
-   "next_probe": "Read expr.c's expand_assignment and store_expr, enumerate the C spellings that reach those paths (e.g. an assignment whose RHS also contains one of the rand() calls, or the sum as the value of a comma expression), and measure each on the SB chassis. Any spelling that is a variable-staging respelling is the BANNED construct and must not be proposed."
+   "hypothesis": "A chassis exists in which the slot index is written twice for a genuine semantic reason, restoring the loop-head placement on top of the WD chassis' exact operand order.",
+   "mechanism": "H59 shows the ONLY escape from the closed-form 1-vs-3 lock is a second, semantically real assignment to idx that is neither the sum's write-back nor a dead/staged store. The current chassis writes idx once per inner iteration; a different DATA MODEL (e.g. the JD struct-array re-derivation from session 7, or a walking pointer over the slot array) could give the index a second real write as part of ordinary iteration.",
+   "next_probe": "Re-derive the inner loop with the slot index as a real induction variable that is both initialised and updated inside the loop body (not `idx = i + j` recomputed from two counters), then apply the WD fresh-destination sum on top and measure. Any spelling whose second write is dead, self-assigning, or staged is a BANNED construct and must not be proposed."
   },
   {
-   "hypothesis": "The halfword-offset quantity can be steered off $s0 by an ordinary C-level copy relationship, closing the byte-offset route (DA/KB, 12/78).",
-   "mechanism": "The halfword offset needs a callee-save only because it is live across all four rand() calls; once the byte offset is routed into `idx` it is the only block-local call-crossing quantity and find_free_reg takes $s0 by reg_alloc_order. local-alloc.c:2205-2270 tries qty_phys_copy_sugg / qty_phys_sugg FIRST, so a suggestion for $s1 would restore the target's allocation -- which the target itself proves exists (its halfword offset is block-local and sits in $s1).",
-   "next_probe": "Dump .lreg with BB2_SUGG_DEBUG / BB2_QTY_DEBUG on the KB build to see which quantities local-alloc ranks and what copy suggestions exist, then re-measure KB/DA with the halfword offset written to participate in a real copy relationship."
+   "hypothesis": "The WD chassis' loop-head placement is a loop.c / loop-rotation difference rather than a sched.c pick, in which case the lever is the loop's expression shape, not statement order.",
+   "mechanism": "In the WD honest stream the constant-1 set sits in the outer-loop preheader (.L515) and the index addu at the inner-loop head (.L525); in target the assignment is the other way round. Whether that is LICM hoisting the constant, loop rotation peeling the index, or a sched2 pick has NOT been attributed from a dump this session.",
+   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_800645B0` with the WD body in src and read tmp/grind/func_800645B0/dumps/*.loop (hoisting), *.sched2 (final pick order) and *.jump2/*.dbr for the rotation, side by side with the SB dumps. Attribute the pass BEFORE proposing any C form \u2014 this is the one part of the residual that has never been pass-attributed on the WD chassis."
   }
  ],
  "judge_constraints": [

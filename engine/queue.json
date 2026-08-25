@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800645B0",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
-    },
-    {
       "func": "func_8002EA24",
       "file": "code6cac_b",
       "distance": 2,
@@ -2057,18 +2048,28 @@
       "status": "escalated",
       "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: ONE bounded re-test under the 2026-08-20 or-tree carve-out (this refusal predates it); check expand_binop canonicalization reachability first",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md \u2014 '## 2026-08-25 \u2014 func_800307D0 (cpu_check_tubazeri_2, src/code6cac_b.c) \u2014 **OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET**' (final entry in the file, filed by this session); prior related entries: decisions.md:1311 (2026-07-22 owner ruling, option b, integer-cast form), :11147/:11151/:11155 (2026-08-25 FAIL/PASS/FAIL adjudications of the current body)."
+    },
+    {
+      "func": "func_800645B0",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals.",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md \u2014 '## 2026-08-25 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET**' (appended this session; decidable question: repair the solver toolkits' target-stream derivation for INCLUDE_ASM-routed functions so the owner's own 2026-08-24 solver directive becomes executable \u2014 a fidelity/routing question that lowers no standard and requests no family grant)"
     }
   ],
   "counts": {
     "total": 236,
-    "active": 233,
+    "active": 232,
     "by_status": {
-      "active": 233,
-      "escalated": 3
+      "active": 232,
+      "escalated": 4
     },
     "by_verdict": {
-      "C": 197,
-      "ASM-PARTIAL": 36
+      "ASM-PARTIAL": 36,
+      "C": 196
     }
   }
 }

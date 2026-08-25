@@ -11262,3 +11262,138 @@ integer at all. That is precisely the ambiguity this packet asks the owner to re
 
 The agent does not self-resolve. `src/code6cac_b.c:1159` is left at
 `INCLUDE_ASM("asm/funcs", func_800307D0);` and no bytes are on main.
+
+## 2026-08-25 — func_800645B0 — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Session 12, `escalation` modality. Honest floor re-measured on today's tree with
+the SB body pasted over the `INCLUDE_ASM` line: `sandbox func_800645B0
+--disable all` = **score 1, target_insns 78, build_insns 78, rules_dropped 0**.
+
+### (i) The single decidable question
+
+**Is the last open axis on this function blocked by a repairable TOOL defect
+rather than by the C — and should the operator repair it?**
+
+Concretely: the queue item's own owner directive (2026-08-24,
+[[escalation-not-parked]]) recommends the solver modality
+(`tools/ra_solver` / `tools/sched_solver`) before any deep re-grind of this
+RA/scheduler-tiebreak residual. **That directive is currently unexecutable, and
+this session measured why.** Both toolkits derive the TARGET half of their
+comparison as `src/<stem>.c -> cc1 -> prologue_fix -> maspsx -> multu_pad ->
+regfix -> regfix_stage2 -> asmfix` (`tools/ra_solver/mkasm_honest.sh`,
+`tools/sched_solver/mkasm.sh`), on the header-documented assumption that "the
+tree builds SHA1-identical, so this stream IS the original executable's
+instruction order". **The asm-until-matched migration (2026-08-19) falsified that
+assumption**: `src/*.c` now carries `INCLUDE_ASM` for unmatched functions and the
+rule stacks are retired, so the derived stream is not the target.
+
+Measured consequences on this function:
+
+  * `bash tools/ra_solver/mkasm_honest.sh text1b` — honest half `rc=0`, **target
+    half `rc=1`** (`text1b.tcc1.s: No such file or directory` at the
+    prologue_fix / maspsx / regfix / asmfix stages), so `text1b.tgt.s` is never
+    rewritten.
+  * `python3 tools/ra_solver/inverse_compose.py classify text1b func_800645B0`
+    consequently compared the fresh honest stream against a **19-day-old stale
+    `text1b.tgt.s`** and returned **`FIRST DIVERGENCE: PRE-RA`** — the
+    classifier's strongest verdict, "no backend — the residual is upstream of
+    every model", "searching them would produce fiction" — on a **fabricated**
+    71-vs-69 instruction-multiset gap ("ours only: `lw $#,36($#)` /
+    `sw $#,36($#)`", i.e. two invented stack spills).
+  * Ground truth, from a differ written this session
+    (`tmp/grind/func_800645B0/s12/diff.py`, objdump of the sandbox object vs
+    `asm/funcs/func_800645B0.s`): **78 vs 78 insns, exactly one difference** —
+    index 20, `addu s0,s0,s1` (ours) vs `addu s0,s1,s0` (target). The
+    classifier's verdict is itself the fiction.
+  * The same breakage disables `--goal-from-target` in
+    `tools/ra_solver/inverse_sched.py` and `tools/sched_solver/perturb.py`,
+    which is the only supported way to derive a scheduler goal.
+    (`tools/sched_solver/extract.py text1b` itself is healthy: `parity=True`,
+    474 function-passes, 1656 blocks.)
+
+This is a general hazard, not a func_800645B0 quirk: `inverse_compose classify`
+already carries an explicit guard for `replace_with_asmfile`-wired functions
+precisely because a fictitious PRE-RA verdict "is worse than no verdict"
+(its docstring, 2026-08-06). The asm-until-matched migration re-opened the same
+hole through a different door and no guard covers it. Every future grind session
+that follows a solver directive on an `INCLUDE_ASM`-routed function will be told
+"stop, no model can reach this" and will believe it.
+
+The repair is small and is the one the engine's own scorer already performs:
+derive the target stream from `asm/funcs/<func>.s` when the function is
+`INCLUDE_ASM`-routed. It is in `tools/`, **outside a grind session's allowed
+surface**, which is why this is a packet and not a fix.
+
+**This is a fidelity/routing question, not an accept-the-debt question. Nothing
+in it lowers a standard**: no family grant, no permanent-rule sanction, no
+canonical evidence-bar override. Both answers leave the completion bar exactly
+where it is.
+
+### (ii) Evidence pointers
+
+  * Floor + scan: `sandbox --disable all` = 1/78 (this session);
+    `python3 tools/scan_hand_coded.py --single func_800645B0` = **tier=LOW
+    score=0/8**, "no strong hand-coded indicators", S1..S8 all unset —
+    unchanged from 2026-08-13 and 2026-08-20. **Endgame-lock gate (a) FAILS.**
+  * SOTN-master precedent for the closing construct: **none**. The only
+    constructs that close the remaining point are scheduling-tie steers, which
+    this function's own layer-1 history has FAILed three times under three
+    different spellings (`docs/grind/decisions.md` 2026-08-12 entries at
+    15:20 / 17:45 / 19:40 / 20:03). **Endgame-lock gate (b) FAILS.**
+  * What holds the byte-match: nothing on main — the function is
+    `INCLUDE_ASM("asm/funcs", func_800645B0);` since the 2026-08-24 sweep-2
+    migration (`a7892ba2`). Zero regfix/asmfix rules, zero cheat-asm. The
+    historical `regfix.txt:2521` prologue reorder is retired.
+  * Exhaustion: 12 sessions, 6 distinct modalities (recon, structural x2,
+    permuter x2, forensics x2, rederive x2, escalation x3), ~92.5k permuter
+    iterations across four structurally distinct chassis (s4 + s9), 34 banked
+    rejected forms. Ledger: `memory/grind/func_800645B0/`.
+  * New this session, and the reason the residual is now fully characterised:
+      - `rejected/wd-fresh-dest-sum-exact-operand-order-costs-loop-head.c` —
+        `wid = idx2 + idx;` with a FRESH local as the sum's destination is the
+        **first honest spelling ever measured on this function that emits
+        target's exact operand order at index 20** (`addu $s0,$s1,$s0`). No
+        staging, no dead store, no reordered statement. It measures 3/78; the
+        entire residual relocates to the inner-loop head (indices 11/12 plus the
+        back-edge delay slot at 65).
+      - The 1-vs-3 trade is now **closed-form**, from
+        `tools/gcc-2.7.2/optabs.c:398-421` (`expand_binop`, commutative case):
+        with the sum's expansion target == `idx`'s pseudo, `idx = idx2 + idx`
+        swaps (target == op1) and `idx = idx + idx2` never swaps — **both emit
+        `(idx, idx2)`**. Target's operand order therefore REQUIRES a destination
+        pseudo distinct from both operands, which is exactly what drops
+        `reg_n_sets[idx]` to 1 and hands the loop head back. The escape would be
+        a second, semantically real assignment to `idx`; the function's
+        semantics contain none (the slot index is written once per inner
+        iteration), and every synthetic one is already a banned construct here.
+        Recorded as hypotheses H58/H59.
+      - `rejected/inline-const-one-drops-val-naming-80-insns.c` —
+        `mask = 1 << idx;` measures 12/78 at **80** build insns; the named
+        `val` local is load-bearing (H60).
+
+### (iii) Consequence of each answer
+
+  * **YES — repair the solver target-stream derivation for `INCLUDE_ASM`-routed
+    functions** (and add the missing guard so a stale/derived `.tgt.s` can never
+    silently produce a PRE-RA verdict): the owner's own 2026-08-24 directive
+    becomes executable here. `sched_solver` then gets a valid goal for the WD
+    chassis' loop-head block and returns a typed REACHABLE / FORECLOSED verdict
+    with ranked C-lever vectors on the last residual — the only axis on this
+    function that has never been run. If REACHABLE, the vector is a candidate C
+    form and the function resumes at floor 3-going-to-0 on the WD chassis; if
+    FORECLOSED, the function is closed out on a typed negative rather than an
+    exhaustion argument. The repair also unblocks the solver modality for every
+    other queued `INCLUDE_ASM`-routed function, which is the whole active queue.
+  * **NO — leave the toolkits as they are**: the solver modality is permanently
+    unavailable to this function and to every other `INCLUDE_ASM`-routed one.
+    func_800645B0's ladder is then spent under the 2026-07-27 standing ruling
+    (both endgame-lock gates FAIL, as evidenced above), the honest floor stays 1
+    with the SB chassis preserved at `memory/grind/func_800645B0/candidate.c`,
+    and the item returns to active for whatever modality the driver picks next
+    — noting that H59 above closes the C-side search in closed form, so the next
+    modality has no un-tried C axis to work.
+
+**No rule, family, grant or standard is requested by this packet.** Best form
+preserved at `memory/grind/func_800645B0/candidate.c` (SB chassis, ordinary C,
+zero rules, zero cheat-asm, 1/78). `src/text1b.c` left as
+`INCLUDE_ASM("asm/funcs", func_800645B0);` per asm-until-matched.

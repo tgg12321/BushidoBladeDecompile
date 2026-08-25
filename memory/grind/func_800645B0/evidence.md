@@ -1209,3 +1209,134 @@ rejected/or-tree-carveout-orders-inert-or-worse.c.
 - [s11] Fresh scan_hand_coded: tier=LOW 0/8, all three STRONG signals negative — no canonical-asm case.
 
 - [s11] Disposition entry appended: docs/grind/decisions.md '2026-08-20 — func_800645B0 — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (post-unpark re-affirmation)'; src/text1b.c restored to HEAD (git checkout), only ledger/docs/scratch dirt remains.
+
+## Session 12 (2026-08-25, escalation modality + owner's 2026-08-24 solver directive)
+
+**Chassis re-confirmed.** SB body (`memory/grind/func_800645B0/candidate.c`)
+pasted over the `INCLUDE_ASM` line in `src/text1b.c`; `sandbox func_800645B0
+--disable all` = **score 1, target_insns 78, build_insns 78, rules_dropped 0**
+on today's tree. `python3 tools/scan_hand_coded.py --single func_800645B0` =
+**tier=LOW score=0/8** (S1..S8 all unset; "no strong hand-coded indicators"),
+unchanged from 2026-08-13 and 2026-08-20.
+
+**A ground-truth instruction differ now exists in the ledger.**
+`tmp/grind/func_800645B0/s12/diff.py` disassembles the sandbox object
+(`tmp/sandbox/func_800645B0/text1b.o`) and compares it insn-for-insn against
+`asm/funcs/func_800645B0.s` with a normaliser for the spelling differences
+(objdump vs splat: `$` prefixes, `0xF` vs `15`, unrelocated `0(reg)` vs
+`%lo(SYM)(reg)`, `li`/`move`/`nop` macro spellings). On the SB body it reports
+**78 vs 78 insns, exactly one real difference**:
+
+    20  OURS: addu s0,s0,s1  ||  TGT: addu s0,s1,s0
+
+This is the first time the "the residual is one operand order at index 20"
+claim has been mechanically re-derived rather than inherited; it holds on the
+current tree. Re-run it after any edit with
+`bash tools/wsl.sh 'cd <repo> && source .venv/bin/activate && python3 tmp/grind/func_800645B0/s12/diff.py'`
+(it reads whatever the last `sandbox` invocation left in `tmp/sandbox/`).
+
+**THE OWNER-DIRECTED SOLVER MODALITY CANNOT BE RUN ON THIS TREE — measured, not
+asserted.** The queue item's owner directive (2026-08-24) recommends
+`ra_solver`/`sched_solver` before any deep re-grind. Both toolkits derive the
+TARGET half of their comparison the same way — `tools/ra_solver/mkasm_honest.sh`
+and `tools/sched_solver/mkasm.sh` build `<stem>.tgt.s` as
+`src/<stem>.c -> cc1 -> prologue_fix -> maspsx -> multu_pad -> regfix ->
+regfix_stage2 -> asmfix`, on the documented assumption that "the tree builds
+SHA1-identical, so this stream IS the original executable's instruction order".
+**That assumption died with the asm-until-matched migration (2026-08-19):**
+`src/*.c` now carries `INCLUDE_ASM` for unmatched functions and the rule stacks
+are retired, so the "target" stream is no longer the target. Observed here:
+
+  * `bash tools/ra_solver/mkasm_honest.sh text1b` — the honest half succeeds
+    (`honest rc=0 lines=16643`), the **target half fails outright**
+    (`target rc=1`, `text1b.tcc1.s: No such file or directory` at the
+    prologue_fix/maspsx/regfix/asmfix stages), so `text1b.tgt.s` is never
+    rewritten.
+  * `python3 tools/ra_solver/inverse_compose.py classify text1b func_800645B0`
+    therefore silently compared the fresh honest stream against a **19-day-old
+    stale `text1b.tgt.s` (dated Aug 7)** and reported
+    **`FIRST DIVERGENCE: PRE-RA`**, "honest 71 insns, target 69 insns", with a
+    fabricated multiset gap ("ours only: `lw $#,36($#)` / `sw $#,36($#)`") —
+    i.e. an invented pair of stack spills. PRE-RA is the classifier's
+    strongest verdict: "no backend — the residual is upstream of every model",
+    "searching them would produce fiction". The ground truth (above) is 78 vs
+    78 with one operand order. **The classifier's verdict on this function is
+    itself the fiction.** Output banked at
+    `tmp/grind/func_800645B0/s12/classify_sb_head.txt`.
+  * The same breakage disables `--goal-from-target` in
+    `tools/ra_solver/inverse_sched.py` and `tools/sched_solver/perturb.py`,
+    which is how a scheduler goal is normally derived. The fix is in `tools/`
+    (derive the target stream from `asm/funcs/<func>.s` when the function is
+    `INCLUDE_ASM`-routed, exactly as the engine's own scorer already does) —
+    **outside a grind session's allowed surface**.
+
+  This is a general hazard for every future grind session, not a
+  func_800645B0 quirk: `inverse_compose classify` already carries a guard for
+  `replace_with_asmfile`-wired functions precisely because a fictitious PRE-RA
+  verdict "is worse than no verdict" (see its docstring, 2026-08-06). The
+  asm-until-matched migration re-opened the same hole through a different door
+  and no guard covers it.
+
+  Note also that even with a repaired goal, `sched_solver`'s own README scopes
+  it out of part of this residual: "Everything after sched2 (delayed-branch
+  scheduling in `reorg.c`, and maspsx's own reordering) is downstream of this
+  model and out of its scope" — and stream index 65 of the residual below is a
+  back-edge delay slot.
+
+**The target's loop shape, read off `asm/funcs/func_800645B0.s` directly** (new
+to the ledger; previous sessions worked from cc1 dumps):
+
+    .L800645D8:                 <- outer-loop top
+      addu  $a0, $zero, $zero   ; j = 0
+      addu  $s0, $s3, $a0       ; idx = i + j      <- in the PREHEADER
+    .L800645E0:                 <- inner-loop top
+      addiu $v1, $zero, 0x1     ; val = 1          <- INSIDE the inner loop
+      lw    $v0, %gp_rel(D_800A3444)($gp)
+      sllv  $s2, $v1, $s0
+
+**The WD chassis (new this session) and the closed-form 1-vs-3 lock.** See
+`memory/grind/func_800645B0/rejected/wd-fresh-dest-sum-exact-operand-order-costs-loop-head.c`
+for the full write-up and the body. Summary: `wid = idx2 + idx;` with a FRESH
+local as the sum's destination measures **3 / 78** and is the **first honest
+spelling ever measured on this function that emits target's exact operand order
+at index 20**. Its entire residual is the loop-head placement (indices 11, 12
+and the back-edge delay slot 65) — the mirror image of SB's. And the trade is a
+source-level identity, read out of `tools/gcc-2.7.2/optabs.c:398-421`
+(`expand_binop`, commutative case): the swap fires when
+`((target == 0 || REG) ? ((op1 REG && op0 not REG) || target == op1)
+: rtx_equal_p (op1, target)) || op0 is CONST_INT`. With the sum's expansion
+target == `idx`'s pseudo both spellings lose — `idx = idx2 + idx` has
+`target == op1` so the swap fires and emits `(idx, idx2)`; `idx = idx + idx2`
+never swaps and emits `(idx, idx2)` directly. **Any C statement whose
+destination is `idx` emits `addu $s0,$s0,$s1`.** Target's order therefore
+requires a destination pseudo distinct from both operands, which is exactly what
+drops `reg_n_sets[idx]` back to 1 and hands the loop head back. Sessions 5/6
+called the two halves "mutually exclusive" from RTL forensics; this is the same
+conclusion derived from the compiler's source plus a measurement, and it names
+the one escape that would break it: **a second, semantically real assignment to
+`idx` that is neither the sum's write-back nor a dead/staged store.** No such
+assignment exists in this function's semantics (the slot index is written once
+per inner iteration), and every synthetic one is a banned construct.
+
+**Also killed:** `mask = 1 << idx;` in place of `val = 1; mask = val << idx;`
+measures **12 / 78 at 80 build insns** — two insns MORE than target. The named
+`val` local is load-bearing for the chassis. Banked at
+`rejected/inline-const-one-drops-val-naming-80-insns.c`.
+
+- [s12] Floor re-confirmed on today's tree: SB body pasted over the INCLUDE_ASM line, `sandbox func_800645B0 --disable all` = score 1, target_insns 78, build_insns 78, rules_dropped 0.
+
+- [s12] Endgame-lock gate (a) FAILS: `python3 tools/scan_hand_coded.py --single func_800645B0` = tier=LOW score=0/8, 'no strong hand-coded indicators', S1..S8 all unset — unchanged from 2026-08-13 and 2026-08-20.
+
+- [s12] Endgame-lock gate (b) FAILS: no SOTN-master precedent exists for the closing construct; every construct that closes the remaining point is a scheduling-tie steer, which this function's own layer-1 history has FAILed three times under three different spellings.
+
+- [s12] What holds the byte-match: nothing on main. src/text1b.c:3763 is INCLUDE_ASM("asm/funcs", func_800645B0); since the 2026-08-24 sweep-2 migration (a7892ba2). Zero regfix/asmfix rules, zero cheat-asm. The historical regfix.txt:2521 prologue reorder is retired.
+
+- [s12] A ground-truth instruction differ now exists in the ledger (tmp/grind/func_800645B0/s12/diff.py): it disassembles tmp/sandbox/func_800645B0/text1b.o and compares insn-for-insn against asm/funcs/func_800645B0.s with a normaliser for objdump-vs-splat spelling ($ prefixes, 0xF vs 15, unrelocated 0(reg) vs %lo(SYM)(reg), li/move/nop macros). On SB it reports 78 vs 78 with exactly one real difference at index 20. This is the first mechanical re-derivation of the inherited 'one operand order' claim.
+
+- [s12] TOOL DEFECT, measured: tools/ra_solver/mkasm_honest.sh and tools/sched_solver/mkasm.sh build the TARGET stream from src/<stem>.c + regfix + asmfix. Post-asm-until-matched that is not the target. mkasm_honest.sh's target half now fails (rc=1, text1b.tcc1.s missing at the prologue_fix/maspsx/regfix/asmfix stages) and inverse_compose classify silently used a stale Aug-7 text1b.tgt.s, emitting its strongest verdict (PRE-RA, 'no backend', 'searching them would produce fiction') off a fabricated 71-vs-69 multiset gap. The classifier already guards this exact failure mode for replace_with_asmfile-wired functions ('a fictitious PRE-RA verdict is worse than no verdict', its docstring, 2026-08-06); asm-until-matched re-opened the hole through a different door and no guard covers it. This affects every INCLUDE_ASM-routed function, i.e. the whole active queue.
+
+- [s12] Target's loop shape, read directly off asm/funcs/func_800645B0.s (new to the ledger — prior sessions worked from cc1 dumps): .L800645D8 (outer-loop top) holds `addu $a0,$zero,$zero` then `addu $s0,$s3,$a0` (idx = i + j, in the PREHEADER), and the inner loop opens at .L800645E0 with `addiu $v1,$zero,0x1` (val = 1, INSIDE the loop) followed by lw D_800A3444 / sllv $s2,$v1,$s0. The WD chassis inverts this placement exactly.
+
+- [s12] sched_solver's own README scopes it out of part of the WD residual: 'Everything after sched2 (delayed-branch scheduling in reorg.c, and maspsx's own reordering) is downstream of this model and out of its scope' — and stream index 65 of the WD residual is a back-edge delay slot.
+
+- [s12] Exhaustion as of this session: 12 sessions, 6 distinct modalities (recon, structural x2, permuter x2, forensics x2, rederive x2, escalation x3), ~92.5k permuter iterations across four structurally distinct chassis, 34 banked rejected forms.
