@@ -1,56 +1,58 @@
-/* candidate for func_800460E4 - session s4 2026-08-25 (permuter modality)
+/* candidate for func_800460E4 - session s4b 2026-08-25 (permuter modality)
  *
  * STATE: `sandbox func_800460E4 --disable all` = **0** (248/248 insns,
  * rules_dropped=10, cheat_asm_stripped=0), measured THIS session with this
- * exact body in src/text1a_c2.c. The previous floor was 9 and had been flat
- * for three sessions; the floor-9 body is preserved next to this file as
- * candidate_floor9_prev.c.
+ * exact body in src/text1a_c2.c. It supersedes the previous 0-scoring body,
+ * whose closing construct (the `*(s32 *)((s32)&s0[s3] - 8)` byte-offset cast)
+ * was REFUSED by the 2026-08-25 06:39 ruling as banned_constructs #5 respelled.
+ * NOTHING in this body is a banned construct: case 3 and case 13 both read the
+ * header words as `s0[s3 - 2]` / `s0[s3 - 1]`, the file's own indexed idiom.
  *
- * !!! THIS FORM IS *NOT* CLEARED FOR SUBMISSION. The session that produced it
- * returned `ruling-request`, NOT `candidate-ready`, because the construct that
- * closes the last 9 instructions - reading the two stage-header words as
- *     *(s32 *)((s32)&s0[s3] - 8)   /  *(s32 *)((s32)&s0[s3] - 4)
- * instead of s0[s3 - 2] / s0[s3 - 1] - is a RESPELLING of the address form in
- * state.json banned_constructs #5 (and is adjacent to #4 and #6). Per the
- * grind contract a candidate-ready that re-declares a banned construct is
- * mechanically discarded, so the next session must carry the ruling before it
- * submits. See the ruling_question in tmp/grind/outcome_func_800460E4.json and
- * evidence.md [s4].
+ * !!! NOT CLEARED FOR SUBMISSION YET. This session returned `ruling-request`,
+ * not `candidate-ready`, because the ONE new construct that closes the last 9
+ * instructions - two FRESH locals each written TWICE (raw byte offset, then
+ * refined in place to a word index) - falls in the gap between two sanctioned
+ * families and I cannot quote a scope sentence for either:
+ *   - named-intermediate (narrow-byte-args-packed-call.md + the 2026-08-17
+ *     clarification) requires ONCE-written/ONCE-read; these are twice-written.
+ *   - staged-value-reused-variable.md is exactly the right MECHANISM
+ *     (adjust_priority -> birthing_insn_p, `reg_n_sets[regno] == 1`) but its
+ *     bound 2 requires borrowing a local the function ALREADY has for another
+ *     job; these are fresh, and its own parenthetical assumes a fresh
+ *     intermediate is single-assigned - which is precisely the case this
+ *     construct is not.
+ * The ruling question is in tmp/grind/outcome_func_800460E4.json.
  *
- * WHAT CHANGED vs the floor-9 body (the ENTIRE diff, two lines per site, and
- * the SAME two lines at BOTH sites):
- *   case 3  and  case 13:
- *     - s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
- *     - s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
- *     + s6 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s32)&s0[s3] - 8)));
- *     + s4 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s32)&s0[s3] - 4)));
- * Nothing else in the function changed. The inherited FAKE-annotated s1
- * chain-extender (ruled legitimate by the 2026-08-25 03:53 layer-1 review) is
- * unchanged and still load-bearing.
+ * WHAT CHANGED vs the floor-9 chassis (the ENTIRE diff is case 3):
+ *   -   s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
+ *   -   s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
+ *   +   u32 hidx = s0[s3 - 2];
+ *   +   u32 lidx = s0[s3 - 1];
+ *   +   hidx >>= 2;  s6 = &s0[hidx];
+ *   +   lidx >>= 2;  s4 = &s0[lidx];
+ * Case 13 keeps the plain ALIGN4 form and still matches byte-for-byte; the
+ * inherited FAKE s1 chain-extender (ruled legitimate by the 2026-08-25 03:53
+ * layer-1 review) is unchanged and re-measured LOAD-BEARING (removing it takes
+ * the diff from 0 to 32).
  *
- * WHY THE SPELLING IS UNIFORM: applying the byte-offset read at case 3 ONLY
- * also measures 0 (tmp/grind/func_800460E4/s4/src_r5_zero.c), but that is the
- * exact "address form choice vs. case 13's indexed form" divergence banned as
- * #6. Applying it identically at both sites that read these two header words
- * removes the divergence entirely and still measures 0 - so the form kept here
- * is the maximally self-consistent one, not the minimal-diff one.
+ * MECHANISM (measured): the whole 9-instruction residual was one sched1 tie in
+ * case 3's block. Two insns - the second header load and the first shift of the
+ * other ALIGN4 chain - were both lifted to 0x7f000001 by sched.c
+ * adjust_priority's birthing boost and were both ready at reverse-cycle T-6.
+ * `birthing_insn_p` only boosts an insn whose destination pseudo has
+ * `reg_n_sets[regno] == 1`. Writing each carrier TWICE (load, then in-place
+ * shift) clears the boost on both, exactly one boosted insn remains ready at
+ * T-6, both header loads issue adjacently, and the address seat ($v0), both
+ * load seats ($v1/$a0), the li/lui/sh placement and the jump2 cross-jump
+ * decision all follow into target's shape.
  *
- * MECHANISM (measured, not hypothesised - cc1 -dS .sched dumps in
- * tmp/grind/func_800460E4/s4/dumps_qa/ and dumps_bs/): the whole 9-instruction
- * residual was one scheduler tie in case 3's block. With the indexed spelling
- * the ready list at reverse-cycle T-6 carries BOTH the second header load and
- * the first shift of the other ALIGN4 chain, each lifted to 0x7f000001 by
- * sched.c adjust_priority's birthing boost; the tie resolves toward the load
- * and everything else in the block (address seat, both load seats, li/lui/sh
- * placement, the jump2 cross-jump merge) follows. Under this spelling the two
- * chains desynchronise and T-6 carries only ONE boosted insn, which is exactly
- * the schedule target has.
- *
- * PROVENANCE: found by decomp-permuter. Campaign perm_a (label
- * s4-floor9-baseline, 41334 iterations) produced output-110-1, which reached
- * target's exact case-3 order and seats with one extra `addu` (sandbox 2);
- * directed probe r5_addr_cast_m1 (tmp/grind/func_800460E4/s4/probe3.py) then
- * removed the extra insn and reached 0.
+ * PROVENANCE: decomp-permuter campaign perm_d (label s4b-v6-twin-248, base
+ * score 260, 28327 iterations, 2 finds) produced output-95-1, which reused a
+ * value local as the shift carrier and was the first form in this function's
+ * history to issue both header loads adjacently WITHOUT any address respelling.
+ * Directed probes probe6/probe7/probe9 generalised it: splitting BOTH ALIGN4
+ * chains through their own twice-written carrier reaches 0 (probe7 y3), and
+ * probe9 k3/k6 are the same thing in its most idiomatic spelling.
  */
 void func_800460E4(s32 stage_id, s32 arg1) {
     s32 *s0;
@@ -140,12 +142,24 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     s1 = (s32 *)((s32)s4 - (s32)s0);
     s1 = (s32 *)((s32)s1 + (s32)s0);
     switch (stage_id) {
-    case 3:
+    case 3: {
+        /* FAKE: the two stage-header words are staged in hidx/lidx as raw byte
+           offsets and then refined in place to word indices, mechanism: GCC
+           2.7.2 sched.c adjust_priority -> birthing_insn_p (reg_n_sets[regno]
+           == 1); the second write clears the birthing boost on both carriers so
+           only ONE boosted insn is ready at block 19's reverse-cycle T-6 and
+           both header loads issue adjacently, as in target,
+           lever-exhaustion: memory/grind/func_800460E4/evidence.md [s1]-[s4b] */
+        u32 hidx = s0[s3 - 2];
+        u32 lidx = s0[s3 - 1];
         s1 = s2;
-        s6 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s32)&s0[s3] - 8)));
-        s4 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s32)&s0[s3] - 4)));
+        hidx >>= 2;
+        s6 = &s0[hidx];
+        lidx >>= 2;
+        s4 = &s0[lidx];
         D_8009947A = 1;
         break;
+    }
     case 4:
     case 7:
     case 18:
@@ -159,8 +173,8 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         break;
     case 13:
         s1 = s2;
-        s6 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s32)&s0[s3] - 8)));
-        s4 = (s32 *)((u8 *)s0 + ALIGN4(*(s32 *)((s32)&s0[s3] - 4)));
+        s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
+        s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
         func_80044010(PTR_OFF(s0, ALIGN4(s0[5])), 8);
         D_8009947A = 1;
         break;

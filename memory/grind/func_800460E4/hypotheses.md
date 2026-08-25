@@ -387,3 +387,43 @@ Frontier (in order):
 - probe: launched the same search from the floor-9 candidate (perm_a) and from its merge-free twin with case 3's s4 assigned before s6 (perm_b, also sandbox 9)
 - result: base scores 550 vs 260 for two bodies at the same honest distance. Seed the merge-free twin in future campaigns on this function.
 - verdict: CONFIRMED
+
+
+## [s4b] 2026-08-25 (permuter)
+
+- H-s4b-1 - the 06:39 ruling's open route (byte-neutral, once-written fresh named
+  intermediate holding a real consumed value/address) can close case 3.
+  Mechanism: named-intermediate prongs; a real consumed value in the target's bytes.
+  Probe: probe4 (8 value-local spellings), probe5 (7 pointer-local spellings incl.
+  hdr = &s0[s3] at both source orders and both scopes), probe9 k4.
+  Result: all 22 measure diffs=9; 248-insn byte-neutral members exist and are still 9.
+  Verdict: KILLED.
+
+- H-s4b-2 - the birthing boost can be cleared by making the carrier multiply assigned,
+  and that alone closes the block.
+  Mechanism: sched.c adjust_priority -> birthing_insn_p boosts only pseudos with
+  reg_n_sets[regno] == 1; writing a carrier twice removes the boost, so only ONE boosted
+  insn is ready at block 19's reverse-cycle T-6 and the tie disappears.
+  Probe: permuter perm_d output-95-1 (found it), then probe6 x2 (one chain split: 7),
+  probe7 y3 (both chains split: 0), probe9 k1/k2/k3/k6 (0), probe6 x1/x3/x4/x6/x7/x8
+  (same splits with once-written carriers: 9).
+  Result: both carriers must be twice-written; then sandbox --disable all = 0 (248/248).
+  Verdict: CONFIRMED.
+
+- H-s4b-3 - the multiply-assigned carrier can be an EXISTING local (staged-value-reused-
+  variable bound 2) rather than a fresh one.
+  Mechanism: same reg_n_sets mechanism; s6/s4 are overwritten here so their old values are
+  dead, s3 dies after the two loads.
+  Probe: probe10 b1/b2/b4 (s6/s4 as their own carriers), b3 (s3 + one value local).
+  Result: 246 insns diffs=8, and 248 insns diffs=40. No existing-local borrow reaches 0.
+  Verdict: KILLED - this is why the closing form needs a ruling rather than a family claim.
+
+- H-s4b-4 - the staged spelling can be applied uniformly at case 13 to remove the
+  two-spellings-in-one-function divergence.
+  Probe: probe8 z3 / z4.
+  Result: case 13 goes from matching to diffs=13 (44 with the FAKE chain also dropped).
+  Verdict: KILLED - the divergence is byte-forced.
+
+- H-s4b-5 - the inherited FAKE s1 chain-extender is now redundant under the new case-3 form.
+  Probe: probe8 z2 (replace with plain s1 = s4;).
+  Result: 0 -> 32 diffs. Verdict: KILLED (it stays load-bearing).

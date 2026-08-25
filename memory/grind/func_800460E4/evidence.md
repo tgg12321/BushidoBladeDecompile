@@ -959,3 +959,118 @@ it.
 - [s4] Permuter-seed lesson for this function: the floor-9 candidate scores 550 as a permuter seed but its jump2-cross-jump-free twin (case 3's s4 assigned before s6, same sandbox 9) scores 260 — seed the twin, the merge costs 300 points of pure noise.
 - [s4] Workspace recipe banked at tmp/grind/func_800460E4/s4/mkws.sh + extract_fn.py + score.py (full-TU preprocessed base.c, Makefile-exact pipeline INCLUDING -mel, per-function region extraction, branch/jtbl-normalised diff scoring).
 - [s4] Outcome is `ruling-request`, not `candidate-ready`: the closing construct respells state.json banned_constructs #5 and the driver discards a candidate-ready that re-declares a banned construct. The bytes are proven and banked; only the licence is open.
+
+
+## [s4b] 2026-08-25 - permuter modality - floor 9 -> 0 with NO banned construct
+
+### What this session was for
+The 2026-08-25 06:39 ruling REFUSED the previous 0-scoring form (*(s32 *)((s32)&s0[s3] - 8)
+/ - 4) as banned_constructs #5 respelled, and closed the door with: "a closing form must
+differ from s0[s3-2]/s0[s3-1] by something other than its schedule." It left exactly one
+route open - "a byte-neutral (248-insn) fresh named pointer local holding a real consumed
+address stays available under the named-intermediate entry's prongs." This session (a)
+MEASURED that route dead, and (b) found a different, unbanned closing form that reaches 0
+while both case 3 and case 13 read the header words as s0[s3 - 2] / s0[s3 - 1] - the file's
+own indexed idiom, unchanged from the floor-9 chassis.
+
+### The residual, re-read from the objdump (not hypothesised)
+Floor-9 case-3 block vs target (perm_a/chk_base.dis vs target_nr.dis):
+
+    floor-9                      target
+    move  s1,s2                  move  s1,s2
+    sll   a0,s3,0x2              sll   v0,s3,0x2
+    addu  a0,a0,s0               addu  v0,v0,s0
+    lw    v1,-8(a0)              lw    v1,-8(v0)
+    li    v0,1                   lw    a0,-4(v0)      <-- both loads ADJACENT
+    lui   at,0x0                 li    v0,1           <-- li reuses the dead base seat
+    sh    v0,0(at)               lui   at,0x0
+    lw    v0,-4(a0)              sh    v0,0(at)
+    srl   v1,v1,0x2              srl   v1,v1,0x2
+    sll   v1,v1,0x2              sll   v1,v1,0x2
+    j     2fc  <- jump2 merge    addu  s6,s0,v1
+    addu  s6,s0,v1               srl   a0,a0,0x2
+                                 sll   a0,a0,0x2
+                                 j     314
+                                 addu  s4,s0,a0
+
+So the whole 9 is: the second header load is deferred past the flag store, which puts the
+address in $a0 instead of $v0, which makes case 3's tail register-identical to case 13's,
+which lets jump2 cross-jump-merge it and lose 3 insns (245 vs 248). ONE scheduling decision.
+Case 13 reads the SAME two words with the SAME indexed spelling and already matches target
+byte-for-byte - its block has an extra load and a call, so its own schedule already issues
+the two loads adjacently. The divergence is case-3-specific and byte-forced.
+
+### KILL 1 - the named-intermediate route the 06:39 ruling left open is DEAD
+probe4 (v1-v8, value locals), probe5 (w1-w7, pointer locals incl. hdr = &s0[s3]), probe9 k4
+(once-written word-index locals): EVERY once-written named intermediate, in every declaration
+order, scope, and statement position, measures diffs=9. Byte-neutral 248-insn members of that
+family DO exist (w1, w5, w6, w7, and v6) and are still 9. The disqualifier is
+single-assignment itself: adjust_priority -> birthing_insn_p boosts an insn only when its
+destination pseudo has reg_n_sets[regno] == 1, and a once-written intermediate keeps that
+property, so the tie survives.
+
+### KILL 2 - staging through EXISTING locals (what bound 2 actually sanctions) is DEAD
+probe10: s6/s4 used as their own staging carriers = 246 insns, diffs=8 (b1/b2/b4);
+s3 + one value local = 248 insns, diffs=40 (b3). No existing-local borrow reaches 0.
+
+### THE FIND - permuter perm_d, then generalised
+Campaign perm_d (label s4b-v6-twin-248, seed = the 248-insn no-cross-jump twin with value
+locals, base score 260, -j 8): 28327 iterations, 2 finds, best 95, both harvested with
+--stop. output-95-1 mutated case 3 to reuse a value local as the shift carrier
+(loff = (u32)hoff >> 2; s6 = ... (loff << 2);) and was the FIRST form in this function's
+history to issue both header loads adjacently with no address respelling (248 insns,
+diffs=10 on the honest scorer). Directed generalisation:
+
+    probe6 x2  split the SECOND chain only, reusing its carrier      248  diffs=7
+    probe7 y3  split BOTH chains, each reusing its own carrier       248  diffs=0
+    probe9 k1  same, hoff/loff s32 carriers                          248  diffs=0
+    probe9 k2  same, u32 carriers + >>=                              248  diffs=0
+    probe9 k3  same, carriers named as word indices + &s0[hidx]      248  diffs=0
+    probe9 k6  k3 with the flag store first                          248  diffs=0
+    probe6 x1/x3/x4/x6/x7/x8  same splits with FRESH once-written    245  diffs=9
+
+The single discriminating property is that each carrier is written TWICE. Fresh carriers that
+are written once collapse straight back to 9.
+
+Measured on the real chassis: sandbox func_800460E4 --disable all = 0, 248/248,
+rules_dropped=10, cheat_asm_stripped=0. The body is memory/grind/func_800460E4/candidate.c.
+
+### KILL 3 - the inherited FAKE s1 chain-extender is still load-bearing
+probe8 z2: replacing it with plain s1 = s4; under the new case-3 form takes the diff from
+0 to 32. It stays.
+
+### KILL 4 - the staged spelling cannot be applied uniformly at case 13
+probe8 z3: applying the same staged form at case 13 as well takes case 13 from matching to
+diffs=13 (z4, also dropping the FAKE chain: 44). Case 13 keeps the plain ALIGN4 spelling.
+So the two sites DO read the same two words with two different ALIGN4 spellings - but with
+the SAME address form (s0[s3 - 2] / s0[s3 - 1]), which is what banned_constructs #6 was
+actually about, and the difference is byte-forced, not chosen.
+
+### Why this is a ruling-request and not a candidate-ready
+The one new construct is two FRESH locals each written TWICE - raw byte offset, then refined
+in place to a word index. It sits in the gap between two sanctioned families:
+ - named-intermediate requires ONCE-written / ONCE-read - this is twice-written;
+ - .claude/rules/staged-value-reused-variable.md is exactly the right mechanism (its Origin
+   section names sched.c adjust_priority -> birthing_insn_p, "the 'assigned once?' check is
+   literally reg_n_sets[regno] == 1") but its bound 2 requires borrowing a local the function
+   already has for another job, and its own parenthetical - "a fresh named intermediate is
+   fine C on its own merits and needs no exception - but then it also won't have the
+   'assigned more than once' property this trick needs" - assumes a fresh intermediate is
+   single-assigned. This construct is the case that parenthetical did not anticipate: a fresh
+   intermediate that is multiply assigned because the value is genuinely computed in two
+   steps (byte offset -> word index).
+Per the grind contract ("if you cannot quote a rule's scope sentence and cite a precedent for
+a family you are claiming, you do not have that family") the honest outcome is the ruling.
+Supporting context for whoever rules: the sibling function directly below in the same file,
+func_800464C4 (src/text1a_c2.c), already reuses one scalar v0 to hold successive raw header
+offsets across switch arms, so multiply-assigned offset scratch is this file's own shipped
+idiom.
+
+- [s4b] Honest floor 9 -> 0 on the real chassis with zero banned constructs; case 3 and
+  case 13 both keep the indexed s0[s3 - 2] / s0[s3 - 1] reads.
+- [s4b] The 06:39 ruling's one open route (byte-neutral once-written named intermediate) is
+  MEASURED DEAD across 22 spellings; single-assignment is the disqualifier.
+- [s4b] Existing-local staging carriers (s6/s4/s3) measured dead at 8 and 40 diffs.
+- [s4b] The FAKE s1 chain-extender is re-measured load-bearing (0 -> 32 without it).
+- [s4b] The staged spelling is case-3-only by measurement, not by choice (case 13 breaks at 13).
+- [s4b] perm_d campaign banked: 28327 iterations, 2 finds (95, 95), harvested with --stop.
