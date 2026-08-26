@@ -13285,3 +13285,7 @@ instruction (`refs_up` pseudo 76 3->4, or `refs_down` pseudo 75 3->2). Ledger:
 ## 2026-08-26 04:08 — func_800871D4 — layer-1 review — **FAIL**
 
 The candidate keeps two 'andi $v1,$a0,0xFFFF' masks alive purely by giving the raw u16 load a second use so combine.c's can_combine_p refuses to fold them away — a redundant-width-cast codegen defeat, the exact family (F2, 'redundant width casts') the owner's 2026-07-01/2026-08-18 rulings explicitly REFUSED to sanction, and the worker's own self-vet admits it has zero semantic effect.
+
+## 2026-08-26 04:35 — func_800871D4 — layer-1 review — **FAIL**
+
+The u16-typed `voice` local and the idx/byte-offset addressing are clean and psyz-grounded, but the four intermediate locals (keyoff_lo/hi, keyon_lo/hi) that split each global RMW into separate load/compute/store phases and interleave the two 24-voice halves are a GCC-internals-motivated register-allocation lever, not the shape of the cited Sony reference, and do not fit any already-verified sanctioned family.

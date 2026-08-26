@@ -125,3 +125,45 @@
 - probe: hand-built workspace tools/decomp-permuter/nonmatchings/func_800871D4_s4 (full-TU cpp + cc1 -mel + maspsx + regfix + asmfix), 6 jobs, --stop-on-zero, PERM_RANDOMIZE over the entire body; ~2550 iterations.
 - result: base_score 160; best novel find score 40 at 103s, then 130 and 145; never approached 0. The analytic route (reading s3's ra_solver live-range accounting and reasoning about which atom family costs no instruction) reached 0 first. Harvested with --stop.
 - verdict: KILLED (as a route for THIS function; recorded as a negative campaign datum, log banked)
+
+## [s5] The target's two redundant-looking `andi $v1,$a0,0xFFFF` are not redundant at all: they are GCC 2.7.2 PROMOTE_MODE zero-extensions of an ordinary `u16` LOCAL, and no mask of any kind is needed to obtain them.
+- mechanism: PROMOTE_MODE puts a HImode local in an SImode pseudo without guaranteeing the upper bits are clean, so each `int`-context use of the local emits `zero_extend`. .flow shows `(set (reg/v:HI 75) (mem:HI D_8010280A))` then `(set (reg:SI 79) (zero_extend:SI (reg/v:HI 75)))` for the `sltiu`, and a second `zero_extend` of the same HI pseudo re-materialised at the end of the else arm once `voice - 16` has consumed the first extended copy. Both land at the target's exact positions, including the one inside the else arm that the then-path's `j` skips.
+- probe: Declare the local as `u16 voice;` (the type psyz's Sony source uses) and delete every `& 0xFFFF` from the body; sandbox --disable all; read tmp/grind/func_800871D4/dumps/main.flow and main.s.
+- result: both `andi`s present at the target positions, 52 insns, and the residual is purely emission order + the known $a1/$a2 seat swap. The s1/s2 "our cc1 folds the mask, cc1psx does not" finding and the s3/s4 dual-use-of-the-raw-load workaround were both artefacts of writing the local as `u32` with an explicit mask.
+- verdict: CONFIRMED
+
+## [s5] psyz's PsyQ 4.0 decomp of LIBSND/VM_NOWOF (`_SsVmKeyOffNow`) is a directly usable seed for this function, not merely a name identification.
+- mechanism: BB2 links an interim 4.0-lineage libsnd; the psyz body differs from BB2 only in the `_svm_voice[]` stride (52 vs BB2's 54, the documented SpuVoice growth) per memory/grind/note2pitch/psyz-sweep-2026-08-18.md.
+- probe: Transplant the psyz body verbatim with BB2 symbol names and `idx = voice * 54`; sandbox --disable all.
+- result: score 8, build_insns 52, ALL registers already correct. `voice * 54` reproduces the target's `sll 3 / subu / sll 2 / subu / sll 1` strength reduction exactly. Only the emission position of the two key-off loads diverges. Banked rejected/s5-psyz-verbatim-order-score8.c.
+- verdict: CONFIRMED
+
+## [s5] GCC 2.7.2's schedulers treat a store whose address is `(plus (reg) (symbol_ref))` as an absolute memory barrier, so the target's "key-off loads above the voice clears, key-off stores below them" order is unreachable from read-modify-write source.
+- mechanism: the 2.7.2 alias check cannot disambiguate `_svm_voice[voice].field` from a fixed global, so no load or store crosses it. Two plain `(symbol_ref)` references with different symbols ARE disambiguated and reorder freely (the key-on loads hoist over the key-off stores in every measured form).
+- probe: Move the two `_svm_okof* |=` read-modify-writes above the two `_svm_voice[voice]` clears; sandbox --disable all; compare emitted memory order with source order.
+- result: score 12, 52 insns; emitted memory order follows source EXACTLY - both the loads and the stores stayed above the clears. Banked rejected/s5-okof-rmw-before-clears-score12.c. Corollary: the target's order forces source in which the key-off LOADS are separated from the key-off STORES by the two clears.
+- verdict: CONFIRMED
+
+## [s5] With the key-off loads separated from the stores but the write-backs still done one group at a time, the emission order is exact and the last residual is the known global.c allocno-priority tie between the two mask locals.
+- mechanism: global.c allocno_compare sorts on floor_log2(n_refs)*n_refs*size/live_length; bitsLower is 3 refs / 19 (pri 1578) and bitsUpper 3 refs / 21 (pri 1428), so bitsLower sorts first and takes $a1 while the target wants bitsUpper there.
+- probe: `old1 = D_801078D8; old2 = D_801078DA;` above the clears, then `okof1 = old1 | bitsLower; D_801078D8 = okof1; D_800F1B10 &= ~okof1;` and the DA group after them; sandbox --disable all + tools/ra_solver/extract.py + inverse.py global --swap 73,74.
+- result: score 6, 52 insns, instruction-exact stream. inverse.py: REACHABLE at 1 atom; cheapest are `live_shrink 73: 21->19` (a TIE suffices - the lower allocno number wins it) and `live_extend 74: 19->21`. Banked rejected/s5-grouped-writeback-score6-a1a2-swap.c.
+- verdict: CONFIRMED
+
+## [s5] Source-level reordering of the pure-register operations inside the grouped-write-back shape can reach that atom.
+- mechanism: emission order of the `or`s changes the pseudos' death points and hence live_length.
+- probe: four spellings, all measured with sandbox --disable all and (for the first) a re-extracted RA model: compute `okof2` before `okof1`; hoist both key-on loads into locals ahead of both ORs; hoist only `on1`; the OR swap plus the `on1` hoist together (rejected/s5-or-swap-plus-keyon-hoist-score6.c).
+- result: ALL score 6 / 52 insns; the re-extracted model is unchanged (74 livelen 19, 73 livelen 21, dispositions identical). sched1 sinks each `or` to sit immediately before its own store regardless of source order, so bitsUpper's live range always exceeds bitsLower's by exactly the intervening key-on-1 group.
+- verdict: KILLED
+
+## [s5] Reusing bitsLower as the key-off accumulator (`bitsLower |= old1;`) is a usable live_extend lever.
+- mechanism: it extends bitsLower's live range to its store and the following `nor`, which is the `live_extend 74: 19->21` atom.
+- probe: `bitsLower |= old1; D_801078D8 = bitsLower; D_800F1B10 &= ~bitsLower;`; sandbox --disable all.
+- result: score 11, 52 insns. The lever works on live_length but retargets the `or`'s destination to the mask's register, emitting `or $a2,$v1,$a2` where target has `or $v1,$v1,$a2`. Banked rejected/s5-reuse-bitslower-accumulator-11.c.
+- verdict: KILLED
+
+## [s5] Advancing the two 24-voice halves in lockstep reaches the `live_shrink 73` atom at zero instruction cost and closes the function.
+- mechanism: reading both key-off words, clearing the voice slot, reading both key-on words, applying both masks, then storing both key-off words and both key-on words moves bitsUpper's last reference above the entire key-on-1 group. Its live_length drops to <= bitsLower's, so global.c allocno_compare sorts bitsUpper first and it takes $a1 - the target's seat - with no added instruction. The key-on stores may sit below the key-off stores in source because plain `(symbol_ref)` memory references with different symbols are disambiguated and reorder freely; only the `(plus reg symbol_ref)` voice-slot stores are barriers.
+- probe: the body now in src/main.c and memory/grind/func_800871D4/candidate.c; sandbox --disable all, then verify-oracle.
+- result: **score 0**, build_insns == target_insns == 52, rules_dropped 0; verify-oracle ok=true, build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true. Zero regfix/asmfix rules, zero inline asm, zero `/* FAKE */`, zero mask, no claimed coercion family. Self-vet: memory/grind/func_800871D4/self_vet.md.
+- verdict: CONFIRMED
