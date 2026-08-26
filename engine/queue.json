@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80078654",
-      "file": "text1b_b",
-      "distance": 19,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
-    },
-    {
       "func": "func_800324D0",
       "file": "code6cac_b",
       "distance": 27,
@@ -2004,17 +1995,27 @@
       "status": "escalated",
       "unpark_reason": "owner packet-2 ruling 2026-08-24: provenance-first \u2014 establish whether motion_Close is itself prebuilt/different-flags object code (REG_PARM_STACK_SPACE frame wall suggests non-our-pipeline provenance) BEFORE further pure-C grinding. Own .s split from the fused crt0 file; 9 legacy rules retired; floor pin 13.",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:13770 \u2014 ## 2026-08-26 \u2014 motion_Close (0x80083804, src/ings2.c) \u2014 **OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET (RE-FILED)**"
+    },
+    {
+      "func": "func_80078654",
+      "file": "text1b_b",
+      "distance": 19,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals.",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md - '## 2026-08-26 - func_80078654 - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (routing/investment question: instrument the [flow_analysis, global_alloc) deletion window and keep the function active, or leave it active under standing policy with no further body-level grinding; both endgame gates re-measured FAIL, no standard is asked to be lowered)"
     }
   ],
   "counts": {
     "total": 228,
-    "active": 208,
+    "active": 207,
     "by_status": {
-      "active": 208,
-      "escalated": 20
+      "active": 207,
+      "escalated": 21
     },
     "by_verdict": {
-      "C": 173,
+      "C": 172,
       "ASM-PARTIAL": 35
     }
   }

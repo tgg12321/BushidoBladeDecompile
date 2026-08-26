@@ -181,6 +181,36 @@
  *       the six regfix rules keep holding the byte match and the full-build
  *       oracle stays green, per that ruling's disposition clause.
  *
+ * SESSION 10 (escalation, owner-directed solver modality) ALSO left this form
+ * unchanged and still best at 19 (re-measured on the POST-MIGRATION chassis with
+ * this body pasted over the INCLUDE_ASM line: score 19, target_insns 116 ==
+ * build_insns 116, rules_dropped 0 — main carries no rules for this function any
+ * more). It executed the owner's 2026-08-24 directive (run the solver suite
+ * first) and got three results:
+ *   (a) ra_solver's forward model reproduces the instrumented-cc1 allocation
+ *       6/6 with sort order MATCH, and its INVERSE solver over 135 atoms in 6
+ *       classes at depth 2 returns exactly one minimal atom class —
+ *       `refs_up pseudo 73: 5 -> >=13` — independently confirming the ledger's
+ *       hand-derived s6 bound, and FORECLOSING the preference class outright (a
+ *       callee-save can never appear in pre-RA RTL from any C, so
+ *       global.c set_preference can never record one).
+ *   (b) the joint (refs x live_length) region is now enumerated, not just
+ *       bounded per axis: at the walk pointer's ceiling of 8 refs its live
+ *       length must be <= 60 (it is 91; <= 71 even against a maximally
+ *       stretched arg0), and the TARGET's own walk live span is 89 insns.
+ *   (c) THE DECISIVE ONE: the target's own emitted register census is
+ *       IDENTICAL to ours — $s1/arg0 13 references, $s0/walk 5 references — so
+ *       feeding the target's own numbers into the validated model predicts
+ *       arg0 -> $s0, the opposite of the target bytes. The original compile's
+ *       RA inputs therefore did not match its own output: >= 8 walk references
+ *       were counted at flow_analysis (where reg_n_refs is frozen, s6) and
+ *       deleted before global_alloc. The only insn-deleting code in that window
+ *       (toplev.c:2983-3080) is local-alloc.c's update_equiv_regs and
+ *       optimize_reg_copy_1/2, both measured non-firing here in s7.
+ *   Both endgame gates re-checked: scan_hand_coded = tier LOW score 0/8; no
+ *   SOTN precedent (still no closing CONSTRUCT to cite one for). Escalated with
+ *   a decision packet, docs/grind/decisions.md (2026-08-26, func_80078654).
+ *
  * NOTE FOR THE NEXT SESSION: HEAD does NOT carry this body â€” the s2/s3 ledger
  * commits are ledger-only, so src/text1b_b.c at HEAD still has the inherited
  * `s32 v;` + `__asm__ volatile("move %0, %1" ...)` form that scores 23. Apply

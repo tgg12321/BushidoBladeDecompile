@@ -721,3 +721,115 @@ re-attempt if a genuine new pure-C lever or new tooling emerges.
 - [s9] Exhaustion record: 9 sessions; 6 distinct modalities (recon, structural x2, permuter x2, forensics x2, rederive, escalation); 129,034 permuter iterations across three campaigns with ZERO score-improving finds; a per-insn provenance table proving both pseudos' reference counts are pinned from RTL expansion through RA with no post-RA reference; a full hand re-derivation from asm/funcs/func_80078654.s accounting for all 116 target instructions and converging on the current body; 14 disproven forms banked in memory/grind/func_80078654/rejected/.
 
 - [s9] Disposition applied per the standing ruling: src/text1b_b.c reverted to HEAD so the six regfix rules keep holding the byte match and the full-build oracle stays green. The retained rules are NOT sanctioned as a technique — they survive only to hold the match, and the function is openly flagged unresolved and remains eligible for re-attempt. The best honest pure-C form (floor 19, instruction-exact, zero inline asm — materially better than HEAD's inherited floor-23 inline-asm body) is preserved at memory/grind/func_80078654/candidate.c.
+
+## SESSION 10 (escalation — owner-directed solver modality)
+
+Chassis re-measure FIRST (the ledger's floor is chassis-relative and main has
+since migrated to INCLUDE_ASM under asm-until-matched): `candidate.c` pasted
+over `INCLUDE_ASM("asm/funcs", func_80078654);` at src/text1b_b.c:1009 and
+`sandbox func_80078654 --disable all` → **score 19, target_insns 116 ==
+build_insns 116, rules_dropped 0** (HEAD carries no rules for this function any
+more; the 2026-08-13 disposition's "six regfix rules hold the match" clause is
+obsolete — nothing holds a match on main, the function is INCLUDE_ASM). The
+inherited body still reproduces the ledger's floor exactly, so every banked
+spelling conclusion remains valid on this chassis. src/text1b_b.c was reverted
+to HEAD at end of session.
+
+- [s10] **The owner's 2026-08-24 directive (run the solver suite before any deep
+  re-grind) is now EXECUTED — first solver run in ten sessions.**
+  `tools/ra_solver/extract.py func_80078654 text1b_b` builds the model
+  (order=6 pseudos, 42 dispositions) and `simulate.py` reproduces the
+  instrumented-cc1 dump **6/6 dispositions, sort order MATCH** — the forward
+  model is exact for this function, so its inverse verdicts are load-bearing
+  rather than advisory.
+- [s10] **INVERSE SOLVER verdict (`inverse.py global --goal '{"72": 17, "73":
+  16}' --depth 2`, artifact tmp/grind/func_80078654/s10/inverse_d2.txt):**
+  atom space 135 single perturbations over 6 classes; **minimal solution size 1
+  atom, and every one of the 5 minimal vectors is the same atom class —
+  `refs_up pseudo 73: 5 -> 13..17`.** No conflict-class, no birth-order-class,
+  no live-length-class and no calls-crossed vector reaches the goal at depth 2.
+  This is an INDEPENDENT mechanical confirmation of the ledger's hand-derived
+  s6 bound (walk pointer needs >= 13 references, strict), produced by a
+  different code path from the hand analysis.
+- [s10] **The preference route is FORECLOSED mechanically, not merely measured
+  absent.** The inverse solver refuses to emit the two preference atoms
+  (`pseudo 72: preference for $s0` / `for $s1`) with the reason: a callee-saved
+  register can never appear as a hard reg in pre-RA RTL from any C at all, so
+  `global.c set_preference` can never record it — "only a forbidden register-asm
+  pin would". s2 measured that arg0's sole preference ($a0) is pruned; s10
+  upgrades that from a measurement about THIS body to a statement about every
+  possible C body.
+- [s10] **The 2-D (refs x live_length) reachable region is now closed, not just
+  bounded on one axis.** The ledger had bounds along each axis separately
+  (walk >= 13 refs at livelen 91; arg0 <= 5 refs at livelen 98) and two joint
+  points (s3, s8). Using the VALIDATED priority function (simulate.pri) the
+  whole region was enumerated (tmp/grind/func_80078654/s10/joint_region.txt):
+  at the walk pointer's measured dataflow ceiling of **8 references** its live
+  length must fall to **<= 60** (it is 91) to beat arg0's 3979; even against the
+  most favourable arg0 (live length stretched to the whole 116-insn function,
+  pri 3362) the requirement is only relaxed to **<= 71**. And the walk
+  pointer's live span in the TARGET'S OWN BYTES is 89 insns (def at
+  func_80078654.s:23, last use at :112), i.e. the original did not shorten it
+  either. Every (refs, livelen) pair reachable from this CFG is therefore a
+  losing pair; the live-length axis is dead in both directions (stretching
+  arg0's live length would need > 355 insns in a 116-insn function, and
+  local-alloc's REG_EQUIV x2 demotion is unreachable for a register-passed
+  parameter — s2).
+- [s10] **THE DECISIVE NEW MEASUREMENT — the target's own emitted register
+  census is IDENTICAL to ours, so the flip is NOT a priority-input phenomenon
+  at all** (artifact tmp/grind/func_80078654/s10/target_census.txt). Counted
+  directly from asm/funcs/func_80078654.s: `$s1` (= arg0) has 15 mentions = save
+  + restore + **13 references**; `$s0` (= the walk pointer) has 7 mentions =
+  save + restore + **5 references** (def :23 `addiu $s0,$v1,0x14`, uses :80,
+  :108 x2, :112). Those are exactly our two allocnos' numbers (13 refs / 98
+  live -> pri 3979; 5 refs / 91 live -> pri 1098). Feed the TARGET's own emitted
+  census into the validated forward model and it predicts **arg0 -> $s0**, which
+  is the opposite of what the target bytes contain. Therefore no compile whose
+  RA inputs match its own emitted code can produce the target's allocation: in
+  the original compile the walk pointer must have carried >= 8 references that
+  were counted at `flow_analysis` (where reg_n_refs is frozen, s6) and then
+  **disappeared before `global_alloc`**, leaving no trace in the bytes.
+- [s10] **The deletion window, enumerated from toplev.c.** Between
+  `flow_analysis` (toplev.c:2983) and `global_alloc` (:3080) exactly two things
+  run: `schedule_insns` (reorders; recomputes reg_live_length at sched.c:5106;
+  deletes nothing) and `regclass` + `local_alloc`. So the only insn-DELETING
+  code in the whole window is inside local-alloc.c: `update_equiv_regs`
+  (deletes the set of a reg equivalent to a constant/MEM used once) and
+  `optimize_reg_copy_1/2` (deletes reg-reg copies). s7 already measured both:
+  the RTL local_alloc consumes holds five reg<-reg copies, only one with a
+  pseudo destination (uid 4, the parameter home), none touching pseudo 73, and
+  every pseudo's post-local_alloc ALLOCDBG nrefs equals its `.combine` mention
+  count exactly — i.e. **zero deletions and zero transfers actually fire**. The
+  residual therefore lies in a mechanism the solver suite does not model and
+  that no measured spelling has been able to enter.
+- [s10] GATE 1 re-run this session (fresh, not quoted from s9):
+  `python3 tools/scan_hand_coded.py --single func_80078654` = **tier=LOW
+  score=0/8**, all eight signals absent (artifact
+  tmp/grind/func_80078654/s10/scan_hand_coded.txt). Canonical-asm grant path
+  refused, unchanged.
+- [s10] GATE 2 unchanged and still FAILING: no SOTN-master precedent is in
+  hand, and s10 sharpens WHY none can be sought — there is still no closing
+  CONSTRUCT to cite a precedent for. Every construct family that could raise the
+  walk pointer's reference count raises its EMITTED reference count, which
+  materialises instructions and breaks the exact 116-insn match (measured: s3
+  duplication +2 / +39 insns, s6 double-read +2 insns/ref, s5 index-walk +4
+  insns, s8 alias splits +3 insns and a fourth callee-save). The one route the
+  target actually used — references that exist at flow time and are deleted
+  before global_alloc — has no C spelling that any of ten sessions has found,
+  and both of its two possible deleters are measured non-firing.
+
+- [s10] Chassis re-measured this session on the post-migration tree (main is INCLUDE_ASM for this function since a7892ba2): candidate.c pasted over src/text1b_b.c:1009 gives sandbox --disable all score 19, target_insns 116 == build_insns 116, rules_dropped 0. The 2026-08-13 entry's clause that six regfix rules hold the byte match is obsolete - nothing holds a match on main. src/text1b_b.c reverted to HEAD at end of session.
+
+- [s10] ra_solver forward model is exact for func_80078654: simulate.py reproduces the instrumented-cc1 allocation 6/6 with sort order MATCH (pseudo 72 arg0 pri 3979 -> $s0; pseudo 73 walk pri 1098 -> $s1; pseudo 74 zero pri 176 -> $s2), so the inverse solver's negatives are load-bearing rather than advisory.
+
+- [s10] inverse.py forecloses the preference class MECHANICALLY, upgrading s2's measurement about this body into a statement about every possible C body: callee-saved registers cannot appear in pre-RA RTL from any C, so global.c set_preference can never record a callee-save preference for either pseudo.
+
+- [s10] The joint (refs x live_length) reachable region is now enumerated rather than bounded per axis: every pair this CFG can reach is a losing pair (walk needs <= 60 live at 8 refs, has 91; the target's own walk span is 89).
+
+- [s10] The target's emitted register census equals ours exactly (arg0 13 references, walk 5 references), which proves the original's RA inputs differed from its own output: >= 8 walk references existed at flow_analysis and were deleted before global_alloc.
+
+- [s10] The deletion window is exactly two passes wide (toplev.c:2983-3080 = schedule_insns + regclass/local_alloc), and the only insn-deleting code in it is local-alloc.c's update_equiv_regs and optimize_reg_copy_1/2, both measured non-firing for this function in session 7.
+
+- [s10] GATE 1 re-run fresh: scan_hand_coded.py --single func_80078654 = tier LOW, score 0/8, all eight signals absent. Canonical-asm grant path refused.
+
+- [s10] GATE 2 still fails: no SOTN-master precedent is in hand and there is still no closing CONSTRUCT to seek one for; every family that raises the walk pointer's EMITTED reference count materialises instructions and breaks the exact 116-insn match (duplication +2/+39, double-read +2 per ref, index-walk +4, alias split +3 plus a fourth callee-save).

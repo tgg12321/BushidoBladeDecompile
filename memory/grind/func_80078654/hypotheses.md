@@ -477,3 +477,69 @@ campaign.
 - probe: Ran `python3 tools/scan_hand_coded.py --single func_80078654` for gate 1; audited the ledger's six modalities for any closing construct against which a community precedent could be exhibited, for gate 2; and confirmed what holds the match with `grep func_80078654 regfix.txt asmfix.txt` plus the sandbox's rules_dropped field.
 - result: BOTH GATES FAIL. Gate 1: tier=LOW, score=0/8, reason 'no strong hand-coded indicators', all eight signals absent (0 multu/mflo pairs; no empty-body branches; 17 spills over 116 insns / 10 distinct regs; max load burst 3 per 8-insn window; no high-similarity siblings, jaccard < 0.5; no BIOS jumptable pattern; every callee-save use has an $sp save; no redundant mask-before-shift) — and a two-way callee-save allocation tiebreak is by definition ordinary GCC output, which the rule makes dispositive against authorizing asm. Gate 2: no precedent can be exhibited because no closing CONSTRUCT has been identified — every sanctioned family this CFG admits was built and measured and each leaves allocno_compare's ordering intact (duplication into arms raises the parameter 1.5x faster than the walk pointer and is not byte-neutral here; the base merge tops out at 2448 vs 3979; the sub-pointer lowering forces a fourth callee-save; the joint quadrant lands on an exact 2424/2424 tie that the strict lower-allocno-index tie-break resolves in the parameter's favour; reference transfer and allocno sharing are both dead; and this session's window alias is deleted before RA). A negative census is a failed gate, not an open question. Filed the RESOLVED-BY-STANDING-RULING entry at docs/grind/decisions.md (2026-08-13, func_80078654) and reverted src/text1b_b.c to HEAD so the six regfix rules keep the byte match and the full-build oracle green.
 - verdict: CONFIRMED
+
+## SESSION 10 (escalation — owner-directed solver modality)
+
+### H-s10-1 — "the solver suite (ra_solver) finds a lever the hand analysis missed"
+(the owner's 2026-08-24 directive: run ra_solver/sched_solver before any deep re-grind)
+**KILLED (and the hand analysis independently VALIDATED).** extract.py + simulate.py
+reproduce the instrumented-cc1 allocation 6/6 with sort order MATCH; inverse.py over
+135 atoms in 6 classes at depth 2 returns exactly ONE atom class as its minimal
+solution — `refs_up pseudo 73: 5 -> >=13` — which is the ledger's own s6 bound. It
+additionally FORECLOSES the preference class outright (a callee-save can never appear
+in pre-RA RTL from any C, so set_preference can never record it). No conflict,
+birth-order, calls-crossed or live-length vector reaches the goal.
+Artifact: tmp/grind/func_80078654/s10/inverse_d2.txt.
+
+### H-s10-2 — "the live-length axis is open where the reference axis is shut"
+(inverse.py only searches live-length deltas of +/-2,4,8, so its negative does not
+cover the joint region; computed analytically instead with the validated priority
+function)
+**KILLED.** Full 2-D enumeration (tmp/grind/func_80078654/s10/joint_region.txt): at
+the walk pointer's dataflow ceiling of 8 references its live length must be <= 60
+(measured 91; <= 71 even against a maximally-stretched arg0 at pri 3362), at 7 refs
+<= 35, at 5 refs <= 25. The TARGET's own walk-pointer live span is 89 insns
+(func_80078654.s:23 -> :112), so the original did not shrink it either. Both
+directions of the live-length axis are dead: arg0 would need live length > 355 in a
+116-insn function, and local-alloc's REG_EQUIV x2 demotion is unreachable for a
+register-passed parameter (s2).
+
+### H-s10-3 — "the flip is reachable from the priority inputs at all"
+**KILLED — and this reframes the whole residual.** The target's own emitted census
+(tmp/grind/func_80078654/s10/target_census.txt) is arg0 = 13 references, walk = 5
+references, walk live span 89 — IDENTICAL to ours. Feeding the target's own numbers
+into the validated forward model predicts arg0 -> $s0, the opposite of the target
+bytes. So the original compile's RA inputs did not match its own output: >= 8 walk
+references were counted at flow_analysis (where reg_n_refs is frozen, s6) and deleted
+before global_alloc. Enumerating toplev.c:2983-3080, the only insn-deleting code in
+that window is local-alloc.c's update_equiv_regs and optimize_reg_copy_1/2 — both
+measured non-firing for this function in s7 (zero deletions, zero transfers, nrefs ==
+.combine mention count for every pseudo).
+
+### Frontier after s10
+The residual is now proven to sit OUTSIDE the modelled input space, not at a hard
+point inside it. Any future attempt must attack the [flow_analysis, global_alloc)
+deletion window — i.e. find C that puts >= 8 walk-pointer references into insns that
+local_alloc deletes — and the honest next step is INSTRUMENTATION (a cc1 hook
+dumping the deleted-insn set and the reg_n_refs-vs-emitted-mentions delta across that
+window, plus an ra_solver atom class for it), not another spelling search. Nothing in
+the body-level partition space is left: ten sessions, seven modalities, 129,034
+permuter iterations, 14 banked rejected forms.
+
+## [s10] The solver suite (ra_solver/sched_solver), never run on this function in nine prior sessions, finds a lever the hand analysis missed.
+- mechanism: extract.py builds the global.c model from the instrumented cc1 (.greg/.flow/.lreg + ALLOCDBG); simulate.py replicates allocno_compare + prune_preferences + find_reg; inverse.py searches perturbations of every modelled input class (refs, live length, conflicts, preferences, birth order, calls-crossed) for a vector reaching target's assignment.
+- probe: extract.py func_80078654 text1b_b; simulate.py; inverse.py global --goal {"72": 17, "73": 16} --depth 2 --top 12 (tmp/grind/func_80078654/s10/inverse_d2.txt)
+- result: Forward model exact: 6/6 dispositions, sort order MATCH. Inverse: 135 atoms over 6 classes, minimal solution size 1 atom, and all 5 minimal vectors are the same class - refs_up pseudo 73: 5 -> 13..17, i.e. the ledger's own hand-derived s6 bound reproduced by an independent code path. No conflict, birth-order, calls-crossed or live-length vector reaches the goal. Additionally the solver refuses to emit the two preference atoms at all: a callee-saved register can never appear as a hard reg in pre-RA RTL from any C, so global.c set_preference can never record a preference for $s0/$s1 - only a forbidden register-asm pin would.
+- verdict: KILLED
+
+## [s10] The live-length axis is open where the reference axis is shut - some (walk refs, walk live length) pair inside this CFG's reach flips the sort.
+- mechanism: allocno_compare priority is floor_log2(nrefs)*nrefs/live_length*10000; inverse.py only searches live-length deltas of +/-2,4,8, so its negative does not cover the joint region. Enumerated analytically instead with the validated simulate.pri.
+- probe: tmp/grind/func_80078654/s10/joint.py -> joint_region.txt (full grid of walk refs 3..16 against the maximum live length that still strictly beats arg0, computed for arg0 at its measured live length 98 and at the whole-function maximum 116); walk live span read directly from the target disassembly.
+- result: At the walk pointer's measured dataflow ceiling of 8 references its live length must be <= 60 (it is 91), and <= 71 even against a maximally stretched arg0 at pri 3362; at 7 refs <= 35, at 5 refs <= 25. The target's OWN walk live span is 89 insns (asm/funcs/func_80078654.s:23 -> :112), so the original did not shorten it either. The opposite direction is worse: demoting arg0 by live length needs > 355 insns in a 116-insn function, and local-alloc's REG_EQUIV x2 demotion is unreachable for a register-passed parameter (s2).
+- verdict: KILLED
+
+## [s10] The flip is reachable from the priority inputs at all - i.e. some C form's (refs, live length) census produces target's allocation.
+- mechanism: If the original compile's RA inputs matched its own emitted code, then feeding the target's emitted census into the validated forward model must reproduce the target's assignment. Counting $s0/$s1 references straight out of asm/funcs/func_80078654.s tests exactly that.
+- probe: tmp/grind/func_80078654/s10/target_census.txt: $s1 (arg0) 15 mentions = save + restore + 13 references; $s0 (walk) 7 mentions = save + restore + 5 references (def :23, uses :80, :108 x2, :112).
+- result: The target's census is IDENTICAL to ours (13 refs / 5 refs). The validated model fed the target's own numbers predicts arg0 -> $s0, the opposite of the target bytes. So no compile whose RA inputs match its own output can emit these bytes. Since reg_n_refs is frozen at flow_analysis (s6), the original must have counted >= 8 walk-pointer references in insns deleted before global_alloc. Enumerating toplev.c:2983-3080, the only code in that window is schedule_insns (deletes nothing) and regclass + local_alloc, so the only insn-deleting code is local-alloc.c's update_equiv_regs and optimize_reg_copy_1/2 - both measured non-firing for this function in s7.
+- verdict: CONFIRMED

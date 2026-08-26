@@ -1,7 +1,7 @@
 {
  "func": "func_80078654",
  "file": "text1b_b",
- "session_count": 9,
+ "session_count": 10,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -57,18 +57,24 @@
    "floor": 19,
    "modality": "escalation",
    "headline": "Escalation: the last inductive premise (RMW-window-only alias split) is KILLED \u2014 cse deletes a call-free pure alias before RA, closing the alias axis at both endpoints \u2014 and both endgame gates fail (s"
+  },
+  {
+   "session": 10,
+   "floor": 19,
+   "modality": "escalation",
+   "headline": "Solver modality executed per the owner's 2026-08-24 directive: ra_solver validates 6/6 and its inverse returns only the ledger's own refs>=13 bound, the 2-D refs x live_length region is enumerated dea"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "If func_80078654 is ever re-attempted, the only remaining unexplored surface is a different TU-level or header-level premise, not a body-level respelling: every body-level partition of the twelve buffer accesses is now measured dead.",
-   "mechanism": "The forced-decomposition theorem is now fully deductive \u2014 the target has exactly three callee-save-resident values; every one of the twelve buffer accesses must be a direct dereference of a pseudo holding arg0's value (a derived pointer emits displacement 0 instead of 0xC/0x14); a pseudo carrying a proper subset either crosses a call (fourth callee-save, s8a) or is call-free and deleted by cse (s9). So reg_n_refs(arg0) = 13 / pri 3979 in every conforming compile, against a walk-pointer ceiling of 8 refs / pri 2448.",
-   "next_probe": "Only a premise OUTSIDE the function body could change the reference census \u2014 e.g. a corrected declared type for D_800A3610 or for the S78654 field layout that changes how many separate accesses the twelve buffer touches decompose into. That is a header/evidence question, not a codegen-lever question, and it requires evidence of the original object model (which memory/splat-symbol-names-are-not-evidence warns splat's D_ names cannot supply). Do NOT re-grind the body."
+   "hypothesis": "The original compile put >= 8 walk-pointer references into insns that local_alloc deleted, so the closing C form is one whose walk references DIE between flow_analysis and global_alloc rather than one that emits more of them.",
+   "mechanism": "reg_n_refs is frozen at flow_analysis (s6) and never recomputed before global_alloc, so any reference counted at flow survives into allocno priority even if its insn is gone by then. The only deleters in that window are local-alloc.c's update_equiv_regs (deletes the set of a reg equivalent to a constant/MEM used once) and optimize_reg_copy_1/2 (deletes reg-reg copies).",
+   "next_probe": "INSTRUMENTATION, not another spelling search: add an env-gated cc1 hook that dumps the insns deleted between flow_analysis and global_alloc plus each pseudo's reg_n_refs-vs-emitted-mentions delta, and add a matching ra_solver atom class. Only then can a candidate be screened for deletable walk references before it is built."
   },
   {
-   "hypothesis": "The ledger's instruments are reusable for any future re-attempt and should be exploited rather than rebuilt.",
-   "mechanism": "s7 established `mentions in in.c.combine` == `reg_n_refs at RA` as a measured identity for this function, and s5/eval.sh returns the allocno table plus a full-pipeline objdump diff in ONE call.",
-   "next_probe": "For any new form: `bash tmp/grind/func_80078654/s5/eval.sh <chassis.c> <label>` and require walk-pseudo priority to exceed arg0-pseudo priority in the printed ALLOCDBG table AND the callee-save count to stay at three; nothing else is worth assembling. Chassis must be comment-free (cc1 consumes preprocessed input) and must run under WSL via `bash tools/wsl.sh` (eval.sh cds to the /mnt/c path)."
+   "hypothesis": "The ledger's instruments remain the cheapest screen for any future form and should be used before assembling anything.",
+   "mechanism": "s7 established that mentions in in.c.combine == reg_n_refs at RA is a measured identity for this function; s10 adds that ra_solver's forward model is exact here, so a candidate's allocno table can be predicted from its reference census without a build.",
+   "next_probe": "bash tmp/grind/func_80078654/s5/eval.sh <chassis.c> <label> (comment-free chassis, run under WSL); require walk-pseudo priority to exceed arg0-pseudo priority in the printed ALLOCDBG table AND the callee-save count to stay at three. Then re-run tools/ra_solver/extract.py + simulate.py on the new form."
   }
  ],
  "judge_constraints": [],

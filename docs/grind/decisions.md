@@ -13974,3 +13974,117 @@ model). No standard is being lowered and no grant is being requested.
 ## 2026-08-26 13:30 — func_80037B00 — final call — **PASS**
 
 The diff contains no match-hack construct at all: plain locals, an entry guard, a top-tested outer while, an inner while(1) byte-compare with two breaks, three m2c-style labels/gotos for the shared tail, two returns. I verified independently: git status shows the working tree touches only src/code6cac_c.c (plus ledger/metrics) - no regfix.txt/asmfix.txt/inline_asm_canonical.txt change, and grep shows 0 entries for func_80037B00 in all three; no __asm__, volatile, register-asm pin, alias decl, FAKE annotation, dead local or holder in the body (every one of the nine locals is written and read on a live path). No sanctioned-family exception is claimed and none is needed, so the SOTN frozen list is not touched. Decisive fact: the close (hypotheses.md [s13]) is a pure re-spelling of the inner goto back-edge as while(1)+break, which only changes flow.c's loop_depth weighting of refs(78) 4->5 and flips the allocno order - zero constructs added, and the more conventional reading of the bounded compare. The two (s32) casts on the end-of-field test are an honest signed-compare type choice matching target's `slt $v0,$a1,$t0` (asm/funcs/func_80037B00.s:24), not a width coercion; block_NN labels have precedent in matched code (src/code6cac_b.c:1919, src/main.c:2587). judge_constraints (no nested do-while(0) + named-holder locals) is satisfied - that family is absent, and the ledger's earlier permuter modality (floor_history s5) plus s13's named-pass mechanism are banked. Full evidence: hypotheses.md [s13], evidence.md s13 section, self_vet.md, rejected/ (36 forms).
+
+## 2026-08-26 — func_80078654 — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Session 10, modality `escalation`. This packet supersedes the 2026-08-13 entry
+for the same function (which applied the 2026-07-27 standing ruling under the
+then-current "parked" disposition, retired by the owner's 2026-08-24 ruling
+[[escalation-not-parked]]). Two things changed since then: main migrated to
+`INCLUDE_ASM` for this function (a7892ba2, asm-until-matched sweep 2), so the
+2026-08-13 clause "six regfix rules are RETAINED so the oracle stays green" is
+obsolete — **nothing holds a byte match on main; the function is INCLUDE_ASM at
+src/text1b_b.c:1009 with an honest pure-C floor of 19**; and the owner's
+2026-08-24 kick-back directive asked for the solver suite (`ra_solver` /
+`sched_solver`) to be run before any deep re-grind. That directive is now
+EXECUTED, and it produced a result that reframes the residual rather than
+confirming it.
+
+**Chassis re-measure (this session, not quoted from the ledger).** `candidate.c`
+pasted over the `INCLUDE_ASM` line → `sandbox func_80078654 --disable all` =
+**score 19, target_insns 116 == build_insns 116, rules_dropped 0**. The entire
+19-point residual is still ONE two-way callee-save inversion: target holds the
+parameter `arg0` in `$s1` and the table-walk pointer in `$s0`; our build holds
+them the other way round. `src/text1b_b.c` was reverted to HEAD at end of
+session.
+
+**Solver result 1 — the forward model is exact here, so its negatives bind.**
+`tools/ra_solver/extract.py` + `simulate.py` reproduce the instrumented-cc1
+allocation **6/6 dispositions with sort order MATCH**.
+
+**Solver result 2 — the inverse solver's minimal solution is the ledger's own
+hand-derived bound, and the preference route is mechanically foreclosed.**
+`inverse.py global --goal '{"72": 17, "73": 16}' --depth 2` searches 135 single
+perturbations over 6 atom classes and returns **one minimal atom class:
+`refs_up pseudo 73: 5 -> >=13`**. No conflict, birth-order, calls-crossed or
+live-length vector reaches the goal. It also refuses to emit the preference
+atoms at all, with a mechanical reason: a callee-saved register can never appear
+as a hard reg in pre-RA RTL from any C, so `global.c set_preference` can never
+record a preference for `$s0`/`$s1` — "only a forbidden register-asm pin would".
+Artifact: `tmp/grind/func_80078654/s10/inverse_d2.txt`.
+
+**Solver result 3 — the 2-D (refs × live_length) region is closed.** The ledger
+had per-axis bounds; the full region was enumerated this session with the
+validated priority function
+(`tmp/grind/func_80078654/s10/joint_region.txt`): at the walk pointer's measured
+dataflow ceiling of 8 references its live length must fall to **≤ 60** (it is
+91), and ≤ 71 even against a maximally stretched arg0 (pri 3362). The target's
+own walk-pointer live span is **89 insns** (`asm/funcs/func_80078654.s:23` →
+`:112`), so the original did not shrink it either.
+
+**THE DECIDING MEASUREMENT — the target's own emitted census is identical to
+ours, so the flip is not a priority-input phenomenon at all.** Counted directly
+from the target disassembly (`tmp/grind/func_80078654/s10/target_census.txt`):
+`$s1` (arg0) = save + restore + **13 references**; `$s0` (walk) = save + restore
++ **5 references**. Those are exactly our two allocnos' numbers. Feed the
+TARGET's own emitted census into the validated forward model and it predicts
+**arg0 → `$s0`** — the opposite of what the target bytes contain. Therefore no
+compile whose RA inputs match its own output can produce the target's
+allocation. Since `reg_n_refs` is frozen at `flow_analysis` (measured, s6), the
+original compile must have counted **≥ 8 walk-pointer references in insns that
+were deleted before `global_alloc`**, leaving no trace in the bytes. Enumerating
+`toplev.c:2983-3080`, the only code in that window is `schedule_insns` (deletes
+nothing) and `regclass` + `local_alloc`; the only insn-DELETING code is
+therefore `local-alloc.c`'s `update_equiv_regs` and `optimize_reg_copy_1/2` —
+both measured non-firing for this function in session 7 (five reg←reg copies,
+only one with a pseudo destination, none touching the walk pseudo; every
+pseudo's post-`local_alloc` nrefs equals its `.combine` mention count exactly).
+
+**GATE 1 — canonical asm: FAILS (re-run fresh this session).**
+`python3 tools/scan_hand_coded.py --single func_80078654` = **tier=LOW,
+score=0/8**, all eight signals absent ("no strong hand-coded indicators").
+Artifact: `tmp/grind/func_80078654/s10/scan_hand_coded.txt`.
+
+**GATE 2 — SOTN-master precedent: FAILS.** None is in hand, and s10 sharpens
+why none can be sought: there is still no closing CONSTRUCT for which a citation
+could be requested. Every family that could raise the walk pointer's reference
+count raises its EMITTED count, which materialises instructions and breaks the
+exact 116-insn match (measured: duplication into arms +2 / +39 insns, double-read
++2 insns per reference, index-walk +4, alias splits +3 and a fourth callee-save).
+The route the original actually used — references deleted between `flow` and
+`global_alloc` — has no known C spelling, and both of its two possible deleters
+are measured non-firing.
+
+### The single DECIDABLE question
+The residual is now proven to sit **outside the modelled RA input space**, not at
+a hard point inside it. So the question is one of ROUTING / INVESTMENT, and it
+does not ask for any standard to be lowered:
+
+> Should func_80078654 be routed to **tooling work** — extend the instrumented
+> cc1 with an env-gated hook that dumps, for each pseudo, the insns deleted
+> between `flow_analysis` and `global_alloc` and the resulting
+> `reg_n_refs`-vs-emitted-mentions delta, plus a matching `ra_solver` atom class
+> — and stay ACTIVE pending that instrument; **or** should it be left ACTIVE
+> under standing policy with no further per-session grinding until such an
+> instrument exists for some other reason?
+
+Consequences. (a) Instrument-first: one tooling session builds a
+deletion-window model that is reusable across every RA residual in the queue,
+and this function becomes decidable — either a C form that seeds deletable walk
+references exists (floor 19 → 0) or the window is provably unenterable and the
+function is genuinely closed on deductive grounds. (b) Status quo: the function
+stays ACTIVE and INCOMPLETE at floor 19 (instruction-exact, zero inline asm,
+zero rules), and further body-level grind sessions are predictably wasted — ten
+sessions and seven modalities have now closed every body-level partition, with
+the 2-D priority region enumerated and the preference class mechanically
+foreclosed.
+
+Nothing in this packet asks for a family grant, an evidence-bar override or a
+debt acceptance; the terminal-refusal disposition of 2026-08-13 remains the
+fallback if the owner declines the tooling route.
+
+**Exhaustion record.** 10 sessions; 7 modalities (recon, structural ×2, permuter
+×2, forensics ×2, rederive, escalation ×2, solver); 129,034 permuter iterations
+with zero score-improving finds; 14 disproven forms banked. Full detail:
+`memory/grind/func_80078654/{evidence.md,hypotheses.md,candidate.c,rejected/}`;
+this session's artifacts in `tmp/grind/func_80078654/s10/`.
