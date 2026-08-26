@@ -1268,3 +1268,4 @@
 - 2026-08-26 15:30 func_80061250 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-08-26 15:53 func_8002304C s1 [recon] floor=1: Recon s1: floor 29 -> 1 with pure honest C (named 0x2B8 constant, decl/init-order prologue, inline-ternary step arg, wide->narrow mode/m); sole residual is the andi-vs-move fold at 0x232F4
 - 2026-08-26 16:11 func_8002304C: LAYER-1 citation-only FAIL — routed to re-cite fix-up (no ban, no Judge cycle): Construct is legitimate (verified in-tree sibling precedent for the redundant-mask idiom), but every citation to that precedent (source comment, self-vet, and rejected/ addendum) points to the wrong lines — a resolvable citation error, not a substantive defect.
+- 2026-08-26 16:19 func_8002304C COMPLETED-C after 2 sessions (closer: s2 [annotation-fix]).
