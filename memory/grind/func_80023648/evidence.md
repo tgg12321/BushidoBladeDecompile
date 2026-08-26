@@ -497,3 +497,37 @@
 - [s4] The s1-s3 seat map and the H9/H10/H11 allocno ids (129 = div16, 122 = abs_val, 86 = the table entry, ord list 129 122 85 81 72 134 ...) are now STALE: they were measured against the 30-floor body, and this session's two edits sit directly on the abs/clamp/div16 region those hypotheses describe.
 
 - [s4] All three campaigns were harvested with --stop inside the session; permuter_campaign.py status reports 0 live campaigns and 0 stale registry entries.
+
+## s5 (permuter, 2026-08-26)
+
+- [s5] Chassis re-measured at session start with the s4 candidate body applied to src/code6cac.c: score 15, target_insns 159, build_insns 159. The ledger's recorded floor of 15 is CURRENT and chassis-relative claims from s4 are still valid.
+
+- [s5] The permuter workspace scoring is now CALIBRATED against the sandbox for this function: a workspace whose base.c is the s4 candidate body scores permuter base_score 95, and that same body measures sandbox 15. Two structurally different chassis measured at the same time give the anchor points: the p14e pointer chassis is sandbox 16 but permuter 300, and the argp/varK chassis is sandbox 17 but permuter 285. The permuter's weighted score is therefore NOT a monotone function of the sandbox score across chassis - it heavily penalises frame/stack-offset and operand-shape differences that the sandbox's line-mismatch metric counts once. Consequence for future sessions: a permuter base_score far above 95 does NOT mean the chassis is a bad candidate form, and a find below 95 does NOT guarantee a sandbox improvement. Always re-measure a find with sandbox --disable all.
+
+- [s5] DIRECTED NAMED-INTERMEDIATE SWEEP IS EXHAUSTED AND DEAD (this closes s4's frontier item 3). A PERM_GENERAL cross-product was built over the six sites s4 nominated as "still anonymous or single-use": the D_800A310C/D_8008DA08 table chain, the (mult_res << 4) >> 12 limit computation, the sin index read of 0x1CA, the 0xD8 accumulate, the cos index read of 0x1CA+0x400, and the 0xE0 accumulate. Each site got 2-3 alternatives (inline expression / statement-expression with a named scalar intermediate / statement-expression with a named pointer intermediate). The permuter enumerated the full space - 216 iterations, no randomization - and EVERY SINGLE ONE scored exactly 95, identical to the base. Not one combination moved the score by a single point in either direction. GCC 2.7.2 folds all six of these spellings to the same RTL before the allocator ever sees them.
+
+- [s5] The s5 result above sharpens what the s4 varL lever actually is. Naming a value is NOT generically a lever on this function: naming `&Judge`, naming the shifted product, naming the sin/cos angle, and naming the accumulate temp are all provably codegen-neutral. varL worked because it named a COMPUTED ADDRESS that is then dereferenced (`ent = &row[a1]; a2 = *ent;`), splitting one address-arithmetic-plus-load RTL pattern into two insns' worth of separately-allocatable structure. The generalisation "named intermediates are broadly effective on this function" (s4 frontier item 3) is FALSE; the correct narrower statement is "splitting an address computation away from its load is effective".
+
+- [s5] The p14e pointer chassis (a `s16 *p14e = (s16 *)(arg0 + 0x14E);` local carrying all five 0x14E accesses - multi-use, ordinary C, not a dead construct) measures sandbox 16 at 159/159, one worse than the candidate. A 16,796-iteration campaign seeded from it (tmp/perm_23648_s5a, permuter base 300) never produced anything below 265. That whole basin is dead as a starting point.
+
+- [s5] Hoisting the tbl_val/mult_res/limit chain above the 0x14E arithmetic measures 44 at 157 insns - OFF-MULTISET, two instructions short of target. The hoist lets cse1 fold the two separate 0x1A loads/work that target keeps apart. Any future statement-reordering probe in this region must check build_insns, not just the score.
+
+- [s5] A 16,641-iteration campaign from the argp/varK chassis (tmp/perm_23648_s5b, permuter base 285) produced 19 finds, best output-85-1 - BELOW the candidate chassis's 95. Decomposed, its only semantic delta is that `argp = (s16 *)arg0;` is moved INSIDE the then-arm of the D_800A38BA guard, leaving argp UNINITIALISED on the else path. That is undefined behaviour, and the "improvement" is GCC being free to pass whatever register happens to hold the value. It is NOT a usable form. Three legal respellings of the same idea were measured at 159/159: argp declared+assigned inside the then arm with the else arm passing (s16 *)arg0 directly = 15 (exactly neutral); the same without the varL `ent` naming = 22 (so varL is still carrying the drop, and argp does not substitute for it); argp declared with row/ent and assigned in the then arm = 15 (neutral). The declaration position of argp is codegen-irrelevant once the else arm uses arg0 directly.
+
+- [s5] All three s5 campaigns were harvested with --stop inside the session. permuter_campaign.py status reports 0 live campaigns for this function.
+
+- [s5] Chassis re-measured at session start with the s4 candidate body applied to src/code6cac.c: score 15, target_insns 159, build_insns 159. The ledger's floor of 15 is CURRENT and s4's chassis-relative conclusions still hold.
+
+- [s5] Permuter scoring is now CALIBRATED against the sandbox for this function: the s4 candidate body = permuter base_score 95 / sandbox 15; the p14e pointer chassis = permuter 300 / sandbox 16; the argp/varK chassis = permuter 285 / sandbox 17. The permuter's weighted score is therefore NOT a monotone function of the sandbox score across chassis - it heavily penalises frame/stack-offset and operand-shape differences that the sandbox's line-mismatch metric counts once. A permuter base far above 95 does not mean a bad candidate form, and a find below 95 does not guarantee a sandbox improvement; always re-measure a find with sandbox --disable all.
+
+- [s5] The directed enumeration of named intermediates over six sites produced 216 iterations at a constant score of exactly 95 - the strongest possible negative result: those spellings are not merely non-improving, they are byte-identical to the base.
+
+- [s5] Hoisting the tbl_val/mult_res/limit chain above the 0x14E arithmetic measures 44 at 157 insns - OFF-MULTISET, two instructions short of target (cse1 folds work that target keeps apart). Any future statement-reordering probe in this region must check build_insns, not just the score.
+
+- [s5] The p14e pointer chassis (multi-use, ordinary C, not a dead construct) measures 16 at 159/159 - one worse than the candidate - and its basin is dead to 16.8k iterations.
+
+- [s5] argp does not substitute for varL: the then-arm-only argp form WITHOUT varL's `ent` naming measures 22, confirming varL still carries the 22 -> 15 drop.
+
+- [s5] All three s5 campaigns were harvested with --stop inside the session; permuter_campaign.py status reports no live campaigns for this function.
+
+- [s5] candidate.c's header was rewritten this session to carry the asm-until-matched MIGRATION BANNER (the consistency audit flagged it as asserting HEAD/main state while the representation on main is INCLUDE_ASM) and to record the s5 kills so the next session does not re-propose naming edits.

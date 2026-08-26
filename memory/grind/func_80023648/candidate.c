@@ -1,15 +1,22 @@
-/* candidate.c - func_80023648 (best-known form; s4 permuter, 2026-08-26)
- * Floor: 15 (sandbox --disable all, measured this session with this exact body
- * applied to src/code6cac.c; 159/159 insns). Down from 30 at s1-s3.
+/* candidate.c - func_80023648 (best-known form; floor 15; s4 permuter, header
+ * updated s5 2026-08-26)
  *
- * s4 (permuter modality) HOW THIS FORM WAS FOUND, and what it means for the
- * three-session RA analysis that preceded it.
+ * MIGRATION BANNER (asm-until-matched, owner ruling 2026-08-19): this function's
+ * representation on main is `INCLUDE_ASM("asm/funcs", func_80023648);`. NOTHING in
+ * this file is on main. Every score quoted below is a sandbox --disable all
+ * measurement taken with this body TEMPORARILY applied to src/code6cac.c inside a
+ * grind session and then reverted; the tree is left at HEAD when the session ends.
+ *
+ * FLOOR: 15 (sandbox --disable all, 159/159 insns). Re-measured and CONFIRMED at
+ * the start of s5 with this exact body applied. Down from 30 at s1-s3.
+ *
+ * ---------------------------------------------------------------------------
+ * HOW THIS FORM WAS FOUND (s4, permuter modality)
  *
  * Three campaigns were run through tools/permuter_campaign.py on a standalone
  * base.c that was first PROVEN faithful to the real chassis: the workspace's
- * base.o vs target.o comparison reproduces exactly the sandbox residual
- * (159/159 insns, 30 mismatching lines) before any permutation, so permuter
- * score movement in this workspace is real chassis movement.
+ * base.o vs target.o comparison reproduced exactly the sandbox residual
+ * (159/159 insns, 30 mismatching lines) before any permutation.
  *   1. tmp/perm_23648_s4  (vanilla, base = s3 candidate)   base_score 180
  *      -> 14 finds in ~12 min, best output-120-1.
  *   2. tmp/perm_23648_s4b (reseeded from varA below)       base_score 120
@@ -18,42 +25,49 @@
  *      -> 17032 iterations, ZERO finds. Basin dry; harvested + stopped.
  *
  * The two levers that actually moved the sandbox floor, each measured
- * SEPARATELY at an unchanged 159/159 (the permuter proposes whole diffs; every
- * delta below was re-spelled by hand and measured on its own before being
- * kept):
+ * SEPARATELY at an unchanged 159/159:
  *   varA  reuse the `div16` local to carry `(s16)new_14e` for the `limit <`
  *         comparison                                      30 -> 22
  *   varL  name the table-element address (`ent = &row[a1]; a2 = *ent;`)
  *         on top of varA                                  22 -> 15
- * Both are in this body. varL alone was not measured separately; varA alone is
- * banked at rejected/s4-perm-div16-reuse-only-22.c.
+ * Both are in this body. varA alone is banked at
+ * rejected/s4-perm-div16-reuse-only-22.c.
  *
- * What this OVERTURNS from s2/s3: s2 concluded "no declaration/scope/type/
- * statement-order change can reach the allocator here" and s3 narrowed the
- * root to a single regs_someone_prefers bit on allocno 129. The floor moving
- * 30 -> 15 on two ordinary C respellings, at a fixed 159-insn multiset, shows
- * the preference structure IS broadly reachable from C and that the s2/s3
- * "structural axis is dead" framing was too strong -- it was an artefact of
- * hand-enumerating a small neighbourhood, not a property of the function. It
- * does NOT overturn the mechanism findings themselves (H9/H10 are untouched and
- * were never probed this session); it removes their premise that spelling
- * cannot reach preferences.
+ * What this OVERTURNED from s2/s3: the floor moving 30 -> 15 on two ordinary C
+ * respellings, at a fixed 159-insn multiset, shows the preference structure IS
+ * reachable from C and that the s2/s3 "structural axis is dead" framing was too
+ * strong. It does NOT overturn the mechanism findings themselves (H9/H10 are
+ * untouched); it removes their premise that spelling cannot reach preferences.
  *
- * Deltas measured and REJECTED this session (all 159/159, all banked under
- * rejected/s4-perm-*.c): pointer local for the tail `0x14E` store (30, neutral
- * and a dead construct), `abs_val` reused for the 0xD8 accumulate temp (23),
- * `tbl_val = speed` reuse (24), both together (24), `a1 = a2` reuse in the else
- * arm (22, neutral on top of varA), fused `*(...) = (new_14e = sub_result)`
- * (22, neutral), `argp = (s16 *)arg0` for the two func_8001F860 calls (17 --
- * BETTER than varA but WORSE than varL), and argp+ent stacked (24 -- the two
- * pointer intermediates actively fight each other, so they are not additive).
+ * ---------------------------------------------------------------------------
+ * WHAT s5 ESTABLISHED ABOUT THESE TWO LEVERS (read this before proposing more
+ * naming edits - it will save you a whole session)
  *
- * NEXT SESSION: the productive move is another permuter cycle from THIS body
- * with a structurally different chassis (the s4c basin off this exact body is
- * dry after 17k iterations, so a plain reseed will not pay). Re-run the
- * seat-level analysis (BB2_ALLOC_DEBUG / BB2_FINDREG_DEBUG) against THIS body
- * first -- the s1-s3 seat map and the H9/H10 allocno ids (129 / 122) were
- * measured against the 30-floor body and are now stale.
+ * s4's frontier claimed "variable reuse and named address intermediates are
+ * broadly effective on this function's preference structure". s5 tested that
+ * EXHAUSTIVELY with a PERM_GENERAL cross-product over all six remaining
+ * anonymous/single-use sites (the D_800A310C/D_8008DA08 table chain, the
+ * (mult_res << 4) >> 12 limit computation, the sin index read of 0x1CA, the
+ * 0xD8 accumulate, the cos index read of 0x1CA+0x400, the 0xE0 accumulate),
+ * each with inline / named-scalar / named-pointer alternatives. The permuter
+ * enumerated the whole space (216 iterations) and EVERY combination scored
+ * EXACTLY the base score. Naming those values is invisible to GCC 2.7.2.
+ *
+ * So varL is NOT "a named intermediate". It is specifically the split of an
+ * ADDRESS COMPUTATION away from its LOAD. Do not propose more naming edits on
+ * plain values in this body; that axis is measured dead.
+ *
+ * Also measured dead in s5 (all banked in rejected/): the p14e pointer chassis
+ * (16), hoisting the tbl chain above the 0x14E arithmetic (44 at 157 insns -
+ * OFF-MULTISET), and three legal spellings of an `argp` alias for the two
+ * func_8001F860 calls (15 / 22 / 15 - neutral).
+ *
+ * NEXT SESSION: the seat-level RA analysis is the live axis. The s1-s3 seat map
+ * and the H9/H10 allocno ids (129 = div16, 122 = abs_val, 86 = the table entry)
+ * were measured against the 30-floor body and are STALE. Apply this body, run
+ * `pwsh tools/grinder/dump.ps1 func_80023648` plus BB2_ALLOC_DEBUG=1 and
+ * BB2_FINDREG_DEBUG, produce a fresh 159-line aligned seat diff, and re-state
+ * H9/H10 against the NEW allocno ids before spending a probe.
  */
 void func_80023648(u8 *arg0) {
     u16 kind = *(u16 *)(arg0 + 0x6A);
