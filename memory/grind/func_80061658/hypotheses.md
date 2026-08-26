@@ -167,3 +167,40 @@ constant; its placement is inert, KILLED s1).
 - probe: Fresh-seed campaign s4b-noval-freshseed on a structurally-different chassis with the reused local `val` REMOVED (switch constants inlined: `*v1 = 0x21000C;` / `0x21000D;`), base_score 510, -j8, 30,762 iterations, harvest+stop in-session. Plus independent engine re-verification of the s4 val-staging form.
 - result: best_new_score = 50 (the pure v0<->v1 swap), NO score-0 produced. output-50-1 synthesized its own temp `new_var` but staged arg0/p through it (not the mask), so RA did not flip. The val-staging form re-verified this session at engine sandbox --disable all = 0 (46/46, rules_dropped 0, zero pins). Denied the natural copy source, the permuter cannot reach a match.
 - verdict: CONFIRMED
+
+## [s5] The v0<->v1 residual is not an allocation-CLASS wall — it is an artifact of spelling the three element loads through ONE shared index temp.
+- mechanism: local-alloc.c:472 gates local allocation on `reg_basic_block >= 0 &&
+  reg_n_deaths == 1`. A single reused `t = arg0[i]` temp has three deaths -> global
+  alloc -> leftover $v1, leaving the 1-death mask constant to take $v0 locally.
+  Spelling the loads as a walking pointer (`p = arg0; D_800F1140 = *p++; ...`) gives
+  each load its own single-death single-block pseudo, all local-allocatable and
+  allocated before the mask; they take $v0 and the mask — live across the third load
+  and therefore conflicting — is pushed to $v1. Target allocation, ordinary C.
+- probe: cloned the shape of the COMPLETED-C structural twin func_80061710
+  (src/text1b.c:3365) onto func_80061658 and measured `sandbox --disable all`.
+- result: 0 (46/46, rules_dropped 0, zero pins/__asm__); full-tree verify-oracle
+  == 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle; canonical verdict C.
+- verdict: CONFIRMED — function MATCHED.
+
+## [s5] `val` (the switch-arm code word) is required by the target's shared-tail control flow, not by codegen.
+- mechanism: target cross-jumps both arms to one tail at .L800616B4; a shared tail
+  must read the arm-selected value from a variable.
+- probe: same body with the constants written inline in each arm (no `val`).
+- result: 12.
+- verdict: CONFIRMED (val is load-bearing ordinary C).
+
+## [s5] The pointer alias `s32 *v1 = (s32 *)&D_800F116C;` is load-bearing (pointer-alias prereq-1 measurement).
+- mechanism: address-materialization caching / base-register allocation in local-alloc.
+- probe: the accepted body with the alias removed and D_800F116C written directly.
+- result: 5 (build_insns 47 vs target 46) — the address is re-materialized.
+- verdict: CONFIRMED (direct-global form measured negative first; matches the
+  identical measurement on sibling func_80061710).
+
+## [s5] KILLED as a POLICY axis (measured 0, deliberately not submitted): single-variable reuse of `val` to also carry 0x10FFFF.
+- mechanism: making `val` multi-block moves it from local_alloc to global_alloc,
+  where it conflicts with the local `q`@$v0 in the switch arms and is pushed to $v1 —
+  a different mechanism from the s4 copy-preference staging, same refused family.
+- probe: H1, sandbox --disable all.
+- result: 0, but the construct is the family the owner REFUSED 2026-07-27 (F1 survey
+  WEAK 2026-08-18). Not submitted; banked in rejected/.
+- verdict: KILLED (policy) — and now MOOT, since the accepted form needs no reuse.

@@ -3325,7 +3325,43 @@ extern u8 D_800F115C;
 extern s32 D_800F116C;
 extern s32 D_800A3464;
 extern s32 D_800A3468;
-INCLUDE_ASM("asm/funcs", func_80061658);
+void func_80061658(s32 *arg0, s32 arg1) {
+    /* FAKE: local pointer alias to D_800F116C, mechanism: base-register
+     * allocation / address-materialization caching in local-alloc (the alias
+     * gives GCC one pseudo holding &D_800F116C, kept live in $a0 across the
+     * switch instead of being re-materialized per use), lever-exhaustion:
+     * memory/grind/func_80061658/hypotheses.md (s1-s3 structural + s4/s4b
+     * permuter all measured dead on the direct-global form; identical alias
+     * carried by the COMPLETED-C sibling func_80061710, src/text1b.c:3366). */
+    s32 *v1 = (s32 *)&D_800F116C;
+    s32 *p;
+    u8 *q;
+    s32 val;
+    D_800A3468 = (s32)v1;
+    D_800F1178 = (s32)arg0;
+    switch (arg1) {
+    case 0:
+        val = 0x21000C;
+        q = &D_800F115C;
+        break;
+    case 1:
+        val = 0x21000D;
+        q = &D_800F115C + 1;
+        break;
+    default:
+        goto done;
+    }
+    *q = 0;
+    D_800F1180 = (s32)q;
+    *v1 = val;
+done:
+    func_80060A68();
+    p = arg0;
+    D_800F1140 = *p++;
+    D_800F1144 = *p++;
+    D_800F1148 = *p;
+    D_800A3464 = 0x10FFFF;
+}
 void func_80061710(s32 *arg0, s32 arg1) {
     /* FAKE: local pointer alias to D_800F116C, mechanism: base-register
      * allocation / address-materialization caching in local-alloc (the alias

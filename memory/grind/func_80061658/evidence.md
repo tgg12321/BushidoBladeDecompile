@@ -230,3 +230,70 @@ proposal — no-new-park-categories forbids register-rotation infrastructure.)
 - [s4] KEY DISTINCTION from siblings: func_80061658 HAS a bytes-proven pure-C-0 form (the val-staging), so it is NOT a reachability wall; the block is purely the policy classification the Judge FAILed 2026-07-22 22:50 (route-to-sign-off), which requires an owner SOTN-master census to sanction or refuse the constant-staging family.
 
 - [s4] OWNER-ESCALATION filed docs/grind/decisions.md 2026-07-23 (both options presented honestly); driver parks the function until the owner rules.
+
+## s5 (2026-08-25, permuter modality) — MATCHED, honest pure C, floor 7 -> 0
+The permuter was NOT needed and NOT run. The function was closed by reading the
+COMPLETED-C siblings in its own file and cloning the structural twin.
+
+- [s5] Chassis re-measured from scratch before spending anything: the floor-9
+  pure-swap body (`t = arg0[i]` shared load-temp, `mask = 0x10FFFF`, pins stripped)
+  applied to src/text1b.c measures sandbox --disable all = 9 (46/46, rules_dropped 0),
+  reproducing the s1 chassis exactly. The ledger's "floor 7" (s2 lever-A middle-load
+  split) was the best banked structural form; both are now superseded.
+- [s5] THE CLOSING INSIGHT: func_80061658 is a structural TWIN of func_80061710
+  (src/text1b.c:3365), which was completed COMPLETED-C in 28f49ad0 — same switch on
+  arg1 with a `default: goto done;`, same shared arm tail (`*q = 0;
+  D_800F1180 = (s32)q; *v1 = val;`), same post-call walking-pointer block, only the
+  constants differ (0x21000C/D + 0x10FFFF here vs 0x21000E/F + 0x10FF10 there).
+  Five functions in this same file already ship the idiom: func_800611A4:3205,
+  func_8006133C:3232, func_800613C8:3247, func_80061710:3365, func_800617C8:3403.
+- [s5] MEASURED (sandbox --disable all, target_insns 46 throughout):
+    * base9 floor-9 pure-swap ......................................... 9
+    * H1 single-variable reuse (drop `mask`, reuse `val` for 0x10FFFF) . 0  [BANNED FAMILY]
+    * H2 walking-pointer tail + switch constants inlined (no `val`) .... 12
+    * H3 walking-pointer tail + `val` retained ........................ 0
+    * H4 exact clone of sibling func_80061710's shape ................. 0  [SUBMITTED]
+    * H5 = H4 without the `s32 *v1 = &D_800F116C;` alias .............. 5 (47 insns)
+  Full-tree verify-oracle with H4 in src: 62efab4f73f992798c43e8c730aa43baa10bb4fa
+  == oracle. canonical verdict = C. rules_dropped 0, zero pins, zero __asm__.
+- [s5] WHY THE WALKING POINTER BEATS THE s1-s3 LOCAL/GLOBAL WALL (this retires the
+  wall, it does not merely route around it): s3 proved the residual came from
+  local-alloc.c:472 gating on `reg_basic_block >= 0 && reg_n_deaths == 1` — the ONE
+  reused `t = arg0[i]` load temp loads three distinct values, so reg_n_deaths == 3,
+  so it is deferred to global_alloc and gets the leftover $v1, while the 1-death mask
+  constant is local-allocatable and (MIPS defines no REG_ALLOC_ORDER) takes the
+  lowest free caller-saved register, $v0. The walking-pointer spelling DELETES the
+  shared load temp: each `*p++` result is its own single-use, single-block pseudo, so
+  every load temp satisfies the reg_n_deaths == 1 gate and is allocated LOCALLY and
+  FIRST, taking $v0; the mask constant is live across the third load (target:
+  `lui $v1` at 800616DC precedes `lw $v0,8($s0)` at 800616E8), therefore CONFLICTS
+  with that load temp, and is pushed to $v1. That is the target allocation, produced
+  by ordinary C. The s1-s3 conclusion "no grouping-preserving structural transform
+  changes the local/global classification" was correct about the transforms tried and
+  wrong as a general claim: changing the SPELLING of the loads (index -> post-increment
+  pointer) changes the pseudo web itself, which is what the death-count gate reads.
+- [s5] `val` is LOAD-BEARING and semantically required, not a coercion: the target
+  cross-jumps both switch arms into ONE shared tail (`j .L800616B4`), and a shared
+  tail cannot store a constant materialized inside an arm. Deleting `val` and writing
+  `*v1 = 0x21000C;` inline in each arm measures 12
+  (rejected/walkptr-inlined-switch-constants-12.c).
+- [s5] KILLED / RE-CONFIRMED BANNED: the s5 single-variable form (H1) also reaches 0
+  and does so by a mechanism DIFFERENT from the s4 staging copy — making `val`
+  multi-block sends it to global_alloc where it conflicts with the local `q`@$v0 in
+  the arms and is pushed to $v1, no copy-preference involved. It is still "borrow a
+  live local for a second, unrelated value to steer register choice" — the family the
+  owner REFUSED for this function on 2026-07-27 and that the 2026-08-18 F1 survey
+  rated WEAK — so it was NOT submitted. Banked at
+  rejected/single-var-reuse-for-mask-BANNED-FAMILY.c. The accepted H4 needs no reuse:
+  `val` carries exactly one value.
+- [s5] The 2026-07-23 OWNER-ESCALATION question is now MOOT for func_80061658: the
+  escalation asked the owner to sanction-or-refuse the constant-staging family
+  because it was believed to be the ONLY pure-C route to 0. It was not. A form with
+  no reuse and no staging reaches 0. The escalation should be closed as SUPERSEDED,
+  not answered.
+- [s5] CLUSTER LEAD (high value, not yet measured): the same clone-the-sibling move
+  is the obvious first probe for the remaining cluster members still INCOMPLETE on
+  the same $2/$3 v0<->v1 residual — func_800618B4, func_80061250, and any sibling
+  still spelled with a shared `t = arg0[i]` load temp should be re-spelled as
+  `p = arg0; ... = *p++;` BEFORE any structural or permuter work. func_800611A4's own
+  2026-07-22 escalation may be moot for the same reason.
