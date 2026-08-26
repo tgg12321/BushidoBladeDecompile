@@ -1,38 +1,5 @@
-/* candidate.c - func_80023648 (best-known form; unchanged at s2, 2026-08-26)
- * Floor: 30 (sandbox --disable all, re-measured s2 with this body applied;
- * 159/159 insns). Residual is pure RA renames.
- *
- * s2 (structural modality) measured SEVEN structural respellings of this body;
- * every byte-neutral one scored exactly 30 and NONE changed the allocation:
- *   declmove (new_var declared in the inner block)          -> 30
- *   sib      (sibling func_800233AC's nested `s16 *tbl=...`)-> 30
- *   abs_outer(abs_val declared at the kind-block top)       -> 30
- *   merge_a2abs (ONE local serving table entry AND abs_val) -> 30 (no-op:
- *              ours already co-seats both in $v1)
- *   flatten  (decls hoisted out of the two nested sub-blocks)-> 30
- *   declorder(inner-block declaration order permuted)       -> 30
- *   scope_lookup (lookup pointers in their own nested scope)-> 30
- *   clamp_gt (`> 0x400` instead of `>= 0x401`)              -> 30
- * Non-neutral (banked in rejected/): declinit (`s16 *new_var = &D_8008EB40;`
- * as an inner declaration-with-initializer) -> 38; `s16 a2` narrowing of the
- * table value -> 39 at 161/159 insns.
- *
- * WHY none of them can work (s2 mechanism, measured with the instrumented cc1's
- * BB2_FINDREG_DEBUG hook, not hypothesised): the root flip is global.c
- * find_reg pass 0 for pseudo 86 (the D_8008EB40 table entry). Its measured
- * pass-0 state is conflicts={2,4,5,16,29}, someone_prefers={}, and
- * regs_used_so_far already contains 6($a2). $v1(3) is in NEITHER exclusion set,
- * so pass 0 takes the lowest free reg = 3. Target seats it in $a2. Adding 3 to
- * either hard_reg_conflicts[86] or regs_someone_prefers[86] lands $a2 exactly
- * -- but both sets are fixed by the DATA FLOW, which the 159-insn multiset
- * pins, so no declaration/scope/type/statement-order change can reach them.
- * Do NOT re-run the structural axis; do NOT respell the lookup region.
- * Next: see hypotheses.md H4/H5 (data-flow-level v1 occupancy; local-alloc
- * seat of pseudos 125/133 feeding set_preference).
- */
 void func_80023648(u8 *arg0) {
     u16 kind = *(u16 *)(arg0 + 0x6A);
-    s16 *new_var;
 
     if (kind == 0x13 || kind == 0x1B || kind == 0x30) {
         u32 bits = *(u32 *)(arg0 + 0x2C);
@@ -41,6 +8,7 @@ void func_80023648(u8 *arg0) {
             s32 a0;
             s32 a2;
             s16 *row;
+            s16 *new_var = &D_8008EB40;
 
             if (!(bits & 0x1000)) {
                 a1++;
@@ -50,7 +18,6 @@ void func_80023648(u8 *arg0) {
                 a0++;
             }
 
-            new_var = &D_8008EB40;
             row = new_var + (a0 * 3);
             a2 = row[a1];
 

@@ -1,31 +1,37 @@
 {
  "func": "func_80023648",
  "file": "code6cac",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 30,
    "modality": "recon",
    "headline": "Recon: chassis recovered (floor 30 re-measured), residual solver-classified as pure RA (30 renames, 5 seat classes); root-flip site = table-entry load (target $a2 fresh vs our $v1 reuse); lookup-respe"
+  },
+  {
+   "session": 2,
+   "floor": 30,
+   "modality": "structural",
+   "headline": "Structural axis KILLED with a mechanism, not enumeration: BB2_FINDREG_DEBUG proves the root flip is a global.c find_reg pass-0 scan for pseudo 86 (the D_8008EB40 table entry) whose exclusion sets are "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H1: seat the table-entry pseudo in $a2 (target's fresh-seat choice) and the a0/v1/a1 cascade follows",
-   "mechanism": "global.c allocno priority + find_reg used-set; root site 0x800236DC lh $a2,0x0($v1)",
-   "next_probe": "solver modality: disambiguate the table-entry pseudo among the 14 v1-holders in func_80023648.model.json by its lh def insn, then inverse.py goal {pseudo: $a2} for a ranked, typed REACHABLE/FORECLOSED lever vector"
+   "hypothesis": "H6 \u2014 attack pseudo 86 (the D_8008EB40 table entry) and only 86: it is the one confirmed find_reg pass-0 decision in the residual, and its gap is a single bit (hard reg 3 must enter hard_reg_conflicts[86] or regs_someone_prefers[86], after which pass 0 returns $a2 unchanged).",
+   "mechanism": "global.c find_reg pass 0, ascending scan with no MIPS REG_ALLOC_ORDER, fed by prune_preferences over the lower-priority conflicting allocnos 107 and 110",
+   "next_probe": "solver modality: inverse.py on tmp/ra_solver_work/func_80023648.model.json with goal {86: $a2}, restricted to the two named sub-levers \u2014 (a) a $v1-resident value live across insn 83, (b) a $v1 hard_reg_full_preferences bit on allocno 107 or 110 \u2014 for a typed REACHABLE/FORECLOSED verdict. In parallel run BB2_FINDREG_DEBUG for 107 and 110 to establish whether they even reach pass 0 (H5 proves this must be verified, never assumed)."
   },
   {
-   "hypothesis": "H2: the a2->a3 cluster is a local-alloc quantity that flips to $a3 for free once H1's assignment stands",
-   "mechanism": "local-alloc.c find_free_reg ascending scan; used-set at quantity birth",
-   "next_probe": "local_extract.py code6cac + local_alloc.py: identify the $a2-holding quantity and replay its assignment under H1's global seating"
+   "hypothesis": "H4 \u2014 the only lever on regs_someone_prefers[86] runs through the LOCAL-alloc seats of the block-local temporaries adjacent to allocnos 107/110, not through any global-pseudo declaration, because hard_reg_full_preferences bits are written only by set_preference() when one side of a SET is a hard reg or an already-locally-renumbered pseudo.",
+   "mechanism": "local-alloc.c block_alloc/find_free_reg ascending scan fixes those seats; global.c set_preference (called from mark_reg_store, global.c:1484) propagates them into hard_reg_full_preferences; prune_preferences unions them into regs_someone_prefers[86]",
+   "next_probe": "local_extract.py code6cac + local_alloc.py: replay the block containing insns 83-136, enumerate which local quantities (104, 109, 113, 117, 120) can legally take $v1, and check whether any reachable local seating makes 107 or 110 prefer $v1. Cheap relative to another C sweep."
   },
   {
-   "hypothesis": "H3-residue: if the inverse solve marks the table-entry seat FORECLOSED for all honest levers, the priority lever lies in the SURROUNDING intermediates (bits/a0/a1 flag computations), not the lookup",
-   "mechanism": "allocno nrefs/live-length of neighboring pseudos determine allocation order ahead of the table-entry pseudo",
-   "next_probe": "sweep declaration/scope variants of bits/a0/a1/abs_val only AFTER the solver ranks them; do not blind-sweep (three blind lookup respells already measured worse)"
+   "hypothesis": "H5-residue \u2014 the second half of the residual (div16 / abs_val / sub_result / mflo / speed) has NO cheap shared root with the first half, so it must be modelled separately rather than assumed to cascade from the table-entry seat.",
+   "mechanism": "127 never reaches find_reg pass 0 (measured), and 122 needs two exclusion bits plus removal of its own {3} preference, so the two halves are decided by different allocation paths",
+   "next_probe": "after H6 resolves, re-measure: apply whatever form seats 86 in $a2 and re-run the 159-line aligned diff to see how much of the second-half cascade actually follows for free. Do NOT assume it does \u2014 s1's H2 'follows for free' claim is still unmeasured and H5's kill makes it less likely."
   }
  ],
  "judge_constraints": [],
