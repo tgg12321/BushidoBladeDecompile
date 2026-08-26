@@ -275,3 +275,28 @@ NOT self-approved: the two staging locals are shape-adjacent to the banned s6
 form (which spelled the tail `D_800F1B10 &= ~okof1;` and justified itself from
 global.c allocno priorities). This session returns `ruling-request`; the
 question is in the outcome JSON and candidate.c's header.
+
+## [s8] Annotation-format cure measured and banked (2026-08-26, forensics)
+The candidate body is IN PLACE in src/main.c (replacing the INCLUDE_ASM at
+main.c:1130) and measures `sandbox --disable all` score **0**, target_insns ==
+build_insns == 52, rules_dropped 0; `verify-oracle` ok=true, build_sha1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true. The only change
+versus the s7 body is the /* FAKE: named-intermediate ... */ annotation above the
+two staging lines - the exact wording the 2026-08-26 05:09 Judge ruling prescribed,
+with the lever-exhaustion clause appended per the FAKE template - plus the filed
+family claim in self_vet.md. No statement changed.
+
+Forensic artifact added this session: tmp/grind/func_800871D4/s4/sched_win.txt,
+the .sched slice of the WINNING body. It shows the dependence edges running in both
+directions around the voice-slot clears (REG_DEP_ANTI 63/71 on insns 81 and 86;
+REG_DEP_OUTPUT 60/81/86 on insn 89), which is what makes the staging locals
+load-bearing rather than incidental: the key-off loads cannot sink below the clears
+and the key-off stores cannot rise above them, so the loaded words must be held in
+registers across the clears.
+
+Banned-construct hygiene for future sessions: this body contains NO mask anywhere
+(the dual-use `andi` ban is not engaged), does NOT phase-split any global RMW (the
+keyoff_lo/hi 4-local ban and its 2-local respelling are not engaged), keeps Sony's
+key-on lines verbatim (`D_800F1B10 &= ~D_801078D8;`) so each staging local is
+written once and read once, and carries no allocno-priority reasoning in its header
+or self-vet justification. The s6 twice-read tail (`... &= ~okof1;`) remains banned.

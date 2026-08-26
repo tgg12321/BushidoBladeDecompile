@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800871D4",
-      "file": "main",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
-    },
-    {
       "func": "func_80045878",
       "file": "text1a_c",
       "distance": 10,
@@ -2031,14 +2022,14 @@
     }
   ],
   "counts": {
-    "total": 231,
-    "active": 214,
+    "total": 230,
+    "active": 213,
     "by_status": {
-      "active": 214,
+      "active": 213,
       "escalated": 17
     },
     "by_verdict": {
-      "C": 179,
+      "C": 178,
       "ASM-PARTIAL": 35
     }
   }

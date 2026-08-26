@@ -1127,7 +1127,44 @@ extern s8 D_800F4E35;
 extern u16 D_8010280A;
 extern u16 D_801078D8;
 extern u16 D_801078DA;
-INCLUDE_ASM("asm/funcs", func_800871D4);
+/* Sony LIBSND `_SsVmKeyOffNow` (probable): mark the current voice's pending
+   key-off bit, release the voice slot, and drop the matching key-on bit.
+   Symbol map: D_8010280A <- _svm_cur.voice; D_800F4E18 <- _svm_voice[] base
+   (BB2 stride 54); D_801078D8/DA <- _svm_okof1/_svm_okof2; D_800F1B10/12 <-
+   _svm_okon1/_svm_okon2. */
+void func_800871D4(s32 mode) {
+    s32 bitsUpper;
+    s32 bitsLower;
+    u16 voice;
+    s32 idx;
+    u16 okof1;
+    u16 okof2;
+
+    voice = D_8010280A;
+    if (voice < 16) {
+        bitsLower = 1 << voice;
+        bitsUpper = 0;
+    } else {
+        bitsLower = 0;
+        bitsUpper = 1 << (voice - 16);
+    }
+    idx = voice * 54;
+    *(s8 *)((u8 *)&D_800F4E35 + idx) = 0;
+    /* FAKE: named-intermediate (no-new-park-categories.md 'Named-intermediate
+       declaration order' + owner clarification 2026-08-17) - okof1/okof2 stage
+       the key-off words across the voice-slot halfword clears; mechanism:
+       sched.c cannot move a bare-symbol MEM across a (plus (reg) (symbol_ref))
+       store; lever-exhaustion: memory/grind/func_800871D4/hypotheses.md [s3]-[s7]
+       + evidence.md (direct Sony form re-measured at 8). */
+    okof1 = D_801078D8 | bitsLower;
+    okof2 = D_801078DA | bitsUpper;
+    *(s16 *)((u8 *)&D_800F4E1C + idx) = 0;
+    *(s16 *)((u8 *)&D_800F4E18 + idx) = 0;
+    D_801078D8 = okof1;
+    D_801078DA = okof2;
+    D_800F1B10 &= ~D_801078D8;
+    D_800F1B12 &= ~D_801078DA;
+}
 INCLUDE_ASM("asm/funcs", func_800872A4);
 INCLUDE_ASM("asm/funcs", func_80087770);
 extern s16 D_80102806;
