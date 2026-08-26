@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80022F34",
-      "file": "code6cac",
-      "distance": 11,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
-    },
-    {
       "func": "func_80037A20",
       "file": "code6cac_c",
       "distance": 13,
@@ -2020,17 +2011,27 @@
       "status": "escalated",
       "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals.",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-26 - func_80045878 (src/text1a_c.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
+    },
+    {
+      "func": "func_80022F34",
+      "file": "code6cac",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals.",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-26 \u2014 func_80022F34 (src/code6cac.c) \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     }
   ],
   "counts": {
     "total": 230,
-    "active": 212,
+    "active": 211,
     "by_status": {
-      "active": 212,
-      "escalated": 18
+      "active": 211,
+      "escalated": 19
     },
     "by_verdict": {
-      "C": 177,
+      "C": 176,
       "ASM-PARTIAL": 35
     }
   }

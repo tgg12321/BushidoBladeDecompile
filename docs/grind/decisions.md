@@ -13400,3 +13400,93 @@ completeness, not as a live hope. **Consequence of "terminal":** the function st
 canonical-asm, and the queue advances. Standing ruling applied: **REFUSED / OWNER-ACCEPTED
 INCOMPLETE**; eligible for re-attempt only if a genuinely new pure-C lever or new tooling
 emerges — not by re-spelling the pointer copy, which is now closed-form proven dead.
+
+## 2026-08-26 — func_80022F34 (src/code6cac.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session s8 (escalation modality) under the owner's standing auto-ruling
+(`.claude/rules/endgame-lock-disposition.md`, 2026-07-27) after both endgame-lock AND-gates were
+re-measured and both FAIL. This supersedes nothing: it applies the existing 2026-07-27 ruling on this
+same function (`docs/grind/decisions.md`, "2026-07-27 — func_80022F34 — OWNER RULING (escalation option
+b)") to the post-migration chassis, and adds the mechanism-level closure that was missing from it.
+
+**Honest floor (this session, driver chassis):** `sandbox func_80022F34 --disable all` = **11**
+(build_insns 69, target 70, rules_dropped 0, verdict C). HEAD is `INCLUDE_ASM("asm/funcs",
+func_80022F34);` since the 2026-08-19 asm-until-matched migration, so the function carries **zero**
+regfix/asmfix rules and **zero** cheat-asm: the 11 is fully honest distance, and nothing on main is
+holding a false byte-match. Floor has been flat at 11 since s1 across s1 recon, s2/s3 structural,
+s4/s5 permuter (~48k iterations over three distinct chassis), s6 forensics, s7 solver, s8 escalation
+— eight sessions, six distinct modalities.
+
+**What s8 added — the residual is now closed at MECHANISM level, not by enumeration.**
+Two complementary chassis both score exactly 11 (`memory/grind/func_80022F34/candidate.c` = "base";
+`memory/grind/func_80022F34/chassis-vORIG.c` = "vORIG"), and s7 measured a 13-form separation law
+dividing every C spelling into exactly two classes. s8 measured 6 further forms (19 total — argument
+and definition-order reversal, val-temp defined last, scaled-offset temps, in-place `a0` reload with a
+fully inline `idx2`) with **zero exceptions**, then isolated the cause with two deliberately
+semantics-broken diagnostics:
+
+| form | CODE_LABEL before combine's i3? | strand | frame |
+|---|---|---|---|
+| `vDIAG` (loop, guard and switch all removed — straight line) | none | **0** | sp -32 |
+| `vDIAG2` (loop label kept, everything else removed) | loop label | **1** | sp -40 |
+
+Read against `tools/gcc-2.7.2/combine.c:10829-10846` this is decisive. `distribute_notes` walks back
+from `i3` looking for an insn that references the dying register; the address pseudo's only definition
+was deleted by the very fold that produces the per-access `lui/%lo` form, so no reference can exist,
+the walk reaches a `CODE_LABEL`, and the fallback branch emits `(use (reg N))` after that label
+"to prevent problems with call-state tracking in caller-save.c". `regclass` never sees a real operand
+for that pseudo (only a bare `USE`), `lreg` classes it `ST_REGS or none`, `greg` leaves it out of the
+dispositions despite an empty conflict set, and `reload`/`alter_reg` homes it to a fresh stack slot →
+`vars=8` → `subu $sp,$sp,40` instead of target's `-32`. **Therefore, for any loop-containing spelling
+of this function, the per-access fold class necessarily carries the +8 phantom slot** — a loop always
+supplies a preceding `CODE_LABEL`, and giving the note a legitimate anchor would require a second
+reference to the address pseudo, which is exactly what would prevent combine from folding in the first
+place. The two requirements are mutually exclusive by construction, not by accident of spelling.
+
+The complementary class is equally closed: keeping both `D_801027BC` loads inside the single call
+expression leaves the symbol pseudo with two uses, combine cannot delete its definition, no note is
+orphaned, the frame/prologue/epilogue/loop/switch match target byte-for-byte (39 leading normalized
+insns identical, `vars=0`, `sp -32`, saves at 16/20/24/28) — but cse2 then holds one shared
+`la D_801027BC` where target re-materialises `%hi/%lo` per access. Both classes cost exactly 11.
+
+**Gate 1 — canonical-asm (STRONG hand-coded signals): FAILS.**
+`python3 tools/scan_hand_coded.py --single func_80022F34` → **tier=LOW, score 1/8**; only S4
+(front-loaded loads) fires. S1/S2/S6 — the only signals that can carry a canonical-asm grant — are all
+absent. A byte-perfect pure-C *body* demonstrably exists (base's 60 body instructions match target
+exactly), so this is ordinary compiled C, not hand-written asm.
+
+**Gate 2 — an in-hand SOTN-master precedent for the closing construct: FAILS.**
+There is no closing construct to cite a precedent for. The residual is a compiler-**added** stack slot
+that the target does not have; every sanctioned SOTN family (variable reuse, opaque arithmetic,
+sub-word param reads, mixed exit forms, duplicate reads, named intermediates, `do {} while (0)`, dead
+stores, constant holders, pointer aliases, duplicated statements, written-never-read local arrays,
+volatile) either adds bytes or adds frame — none *removes* a frame slot GCC reserved for a pseudo that
+has no reaching definition. `docs/reference/sotn-construct-index.md` (1,056 lines, 1,365 entries) has
+**no** PSX entry for a phantom/compiler-added stack slot, `distribute_notes`, or `reg_n_refs`
+staleness; the single "phantom" hit (`src/dra/8C600.c:180`) is a PSP comment and carries no weight for
+GCC 2.7.2. This is the exact inverse of siblings func_80037540 / func_80049A2C, which *add* a slot the
+original reserved — that direction has a C form (declare a local); this direction has none.
+
+**Both gates fail ⇒ the 2026-07-27 standing ruling applies: REFUSED / OWNER-ACCEPTED INCOMPLETE.**
+Canonical-asm is refused (LOW 1/8, and a byte-perfect pure-C body exists). No family grant is sought —
+none would help, and per the owner's 2026-08-24 auto-reject rule a packet asking to relax a standard
+is pre-decided NO and is deliberately NOT filed here. The function remains INCOMPLETE at an honest
+floor of 11 with no rules and no cheat-asm on main, exactly as the asm-until-matched policy intends.
+
+**Exhaustion record (ledger `memory/grind/func_80022F34/`):** 8 sessions; modalities recon,
+structural x2, permuter x2, forensics, solver, escalation; ~48k permuter iterations across three
+structurally distinct chassis (base 174, vH 1250, vPRESW 760 — best find ever 224, never below base);
+ra_solver/sched_solver FORECLOSED (`goal_from_tgt.py classify` = PRE-RA on both chassis, "next tool:
+none"); 19 C forms measured under the separation law with zero exceptions; 17 forms banked in
+`memory/grind/func_80022F34/rejected/`.
+
+**If this is ever re-opened,** the one thing that would change the answer is a C shape in which
+`expand_expr` builds the address as a direct `(mem (plus (reg) (symbol_ref)))` — which
+`GO_IF_LEGITIMATE_ADDRESS` (`tools/gcc-2.7.2/config/mips/mips.h:2325-2349`, the "pretend the MIPS
+supports constant-address + register" clause) explicitly accepts — instead of forcing the symbol into
+a pseudo and letting combine fold it back. All 19 forms measured so far force the pseudo (`.rtl` dumps
+show `(set (reg) (symbol_ref))` in every one, including array-typed `extern s32 D_801027BC[]` and
+byte-pointer address arithmetic). No such shape is known; finding one is an expand-path question, not
+an RA, scheduler, permuter or spelling question. Also note the 1 remaining non-frame instruction is
+target's maspsx label-delay `nop`, retirable on the DONE path via `maspsx_label_nop_funcs.txt`
+(operator surface, outside the grind scope).

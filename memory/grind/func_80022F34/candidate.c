@@ -66,28 +66,50 @@
  *
  *
  * s7 (solver, 2026-08-26): floor re-measured at 11 on the post-migration chassis
- * (rules_dropped 0 — the 11 is now fully honest, no longer rule-masked).
+ * (rules_dropped 0 ï¿½ the 11 is now fully honest, no longer rule-masked).
  * SOLVER AXIS FORECLOSED: goal_from_tgt.py classify (the object-level path;
  * inverse_compose/mkasm_honest cannot serve an INCLUDE_ASM-routed function)
- * reports FIRST DIVERGENCE: PRE-RA, "next tool: none", on BOTH chassis — the
+ * reports FIRST DIVERGENCE: PRE-RA, "next tool: none", on BOTH chassis ï¿½ the
  * streams differ by a frame size / a cse2 materialisation, never by a register
  * seat or an emission order, so ra_solver and sched_solver have nothing to
  * invert. Do not re-run them.
  * s7 also CORRECTS s6: the switch-merge CODE_LABEL is NOT necessary for the
- * strand (vIF / vIF2 / vTERN / vMIN — no switch, no jump table, no case-merge
- * label — all still vars=8, strand=1), so "eliminate the switch-merge label" is
+ * strand (vIF / vIF2 / vTERN / vMIN ï¿½ no switch, no jump table, no case-merge
+ * label ï¿½ all still vars=8, strand=1), so "eliminate the switch-merge label" is
  * a dead lever, not a frontier. And it replaces the val1-placement/lifetime
  * framing with a measured 13-form invariant: separating EITHER D_801027BC load
  * into its own named s32 temp gives per-access + strand + vars=8; keeping BOTH
  * in the single call expression gives a shared `la` + no strand + vars=0.
  * A SECOND, COMPLEMENTARY 11-chassis is banked alongside this file:
- * memory/grind/func_80022F34/chassis-vORIG.c — target-exact frame, prologue,
+ * memory/grind/func_80022F34/chassis-vORIG.c ï¿½ target-exact frame, prologue,
  * epilogue, loop and switch (39 leading insns identical, vars=0, sp -32), whose
  * whole residual is one 15-insn block where cse2 shares the symbol base instead
  * of re-materialising it per access. THIS file is retained as the canonical
  * candidate (byte-perfect BODY); vORIG is the better handoff chassis for a
  * cse.c cost-model attack. Read both before choosing.
  * Measured: sandbox --disable all = 11, build_insns 69, target 70.
+ *
+ * s8 (escalation, 2026-08-26): THIS FILE REMAINS THE BEST FORM (floor 11,
+ * byte-perfect body). The residual is now CLOSED AT MECHANISM LEVEL rather
+ * than by enumeration. s8 measured 6 more forms (19 total, zero exceptions to
+ * s7's separation law: definition order, argument order, which value is named,
+ * and naming the scaled offset instead of the loaded value are all inert), then
+ * isolated the cause with two semantics-broken diagnostics: vDIAG (no CODE_LABEL
+ * anywhere in the function) -> strand=0, sp -32; vDIAG2 (loop label only) ->
+ * strand=1, sp -40. The +8 slot comes from combine.c:10829-10846, distribute_notes'
+ * fallback that emits `(use (reg N))` after a CODE_LABEL when a REG_DEAD note has
+ * no home. The fold that produces target's per-access lui/%lo bytes is the SAME
+ * event that deletes the address pseudo's only definition, so no anchor can exist
+ * for the note; an anchor would need a second reference, and a second reference is
+ * precisely what blocks the fold (vORIG's surviving insn 100 proves it). A loop
+ * always supplies the label. Target's form (fold AND vars=0, in a loop) is
+ * therefore unreachable in this fork for EVERY spelling. s8 also corrects s7's
+ * pass attribution: cse shares the symbol in BOTH classes (identical per-pass
+ * symbol-ref census); combine, not cse2, is the discriminator.
+ * Both endgame-lock gates re-measured and both FAIL (scan_hand_coded LOW 1/8;
+ * no PSX SOTN precedent for removing a compiler-added frame slot). Disposition
+ * filed in docs/grind/decisions.md (2026-08-26) under the owner's 2026-07-27
+ * standing ruling: REFUSED / OWNER-ACCEPTED INCOMPLETE.
  */
 void func_80022F34(void) {
     s32 i;
