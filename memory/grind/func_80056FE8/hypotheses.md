@@ -179,3 +179,49 @@ CLOSED. Structural (s2/s3, 21 forms), permuter (s4/s5, 4 chassis ~150k iters), c
 - probe: e3 is strictly SIMPLER than the s5/s6 floor-9 candidate — the double variable-reuse tail (`base += var_v0; var_v0 = *arg0;`) is deleted outright, and no construct replaces it.
 - result: CONFIRMED. The final matching body carries ZERO match-hack constructs (no reuse, no dead op, no pin, no volatile, no FAKE). The s6 OWNER-ESCALATION ("every sanctioned axis dead") was correct about its axes and wrong about the function: the untried axis was the accumulator spelling, which no session had reached because all six shared the cached-temp chassis.
 - verdict: CONFIRMED (methodological: an exhaustion claim is only ever exhaustion OF A CHASSIS; the solver's typed REACHABLE verdict is what re-opened it)
+
+## s7b (2026-08-26, forensics)
+
+### H7b-1 — CONFIRMED. The $a1/$a2 residual is visible as the allocno COLOUR ORDER in the standard `.greg` dump, not merely as an inferred priority comparison.
+Mechanism: GCC 2.7.2 `global.c`/`global_alloc` prints `;; N regs to allocate: <ids>`
+in the order it colours them (priority-sorted) and then `;; Register dispositions`.
+Probe: `pwsh tools/grinder/dump.ps1 func_80056FE8` on both chassis.
+Result: per-arm form → `77 73 72`, `77 in 5 ($a1) 73 in 6 ($a2)`, 43 insns, sandbox 0.
+Post-join-temp form → `82 73 77 72`, `73 in 5 ($a1) 77 in 6 ($a2)`, 42 insns, sandbox 13.
+Verdict: CONFIRMED. Any future session can settle this residual with ONE dump read.
+
+### H7b-2 — CONFIRMED. The three per-arm `base +=` statements are byte-neutral: post-reload `jump2` cross-jumping merges them into the target's single join `addu $a1,$a1,$v0`.
+Probe: count `plus:SI (reg/v:SI 5 a1)` insns per pass slice.
+Result: `.greg` 4, `.sched2` 4, `.jump2` 2, `.dbr` 2 (the surviving 2 = merged join
+add + return add). Verdict: CONFIRMED — the form emits no dead or extra instruction;
+it changes only how many references the `base` pseudo carries before RA.
+
+### H7b-3 — OPEN (ruling requested, not measurable). The per-arm form qualifies under `.claude/rules/proven-spelling-class-reconstruction.md` (user policy 2026-06-10) rather than being a coercion cheat.
+Prong-by-prong status as measured:
+ (1) mechanism-level proof of the original spelling class — SATISFIED by H7b-1: the
+     target bytes require `base`'s pseudo to be coloured before the struct pointer's,
+     which the post-join spelling class provably cannot produce (dump above), and
+     s1–s6 measured 21 structural forms + ~150k permuter iterations inside that class
+     without reaching it;
+ (2) plain natural C — the committed form has NO temp, no reuse, no dead op, no
+     volatile, no asm, no rules; it is strictly SIMPLER than the floor-9 candidate it
+     replaces (which carried a real match-hack: the s5/s6 double variable-reuse tail);
+ (3) most human-plausible representative — "each dispatch arm adds its own angle
+     adjustment into the accumulator" is the DRY reading of the function;
+ (4) exhaustively the last lever — six sessions, four modalities, an OWNER-ESCALATION
+     and its 2026-07-27 ruling.
+Blocker: the form is currently a BANNED CONSTRUCT for this function (s7 layer-1 FAIL,
+2026-08-26 02:34), and `proven-spelling-class-reconstruction` is not on the frozen
+sanctioned-family list quoted in the grind role prompt, so no session may self-approve
+it. This is a `ruling-request`, not a resubmission. Note the rule itself says
+"Reviewer verdict NEEDS_USER is the expected outcome for the first instance of a new
+proof shape" — this is a new proof shape (allocno colour order rather than the
+2026-06-10 `MEM_IN_STRUCT_P`/`true_dependence` shape).
+
+### Frontier if the ruling is NO
+The residual is then not a spelling question but a fidelity one: the target's
+allocation contains exactly three global allocnos with `base` first, and no measured
+C form in the post-join class reaches it. The next honest axis would have to change
+the function's TYPE/CALLEE surface (e.g. the real struct types behind `arg0`/`a2`
+from a header, which could alter live ranges without touching statement structure) —
+untried, because every session so far has worked from the m2c-style cast spelling.

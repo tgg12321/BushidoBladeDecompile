@@ -13017,3 +13017,77 @@ item leaves the queue as COMPLETED-C via the normal Judge path.
 ## 2026-08-26 02:34 — func_80056FE8 — layer-1 review — **FAIL**
 
 The per-arm `base +=` restructuring was reverse-engineered from an RA-solver's explicit reg_n_refs target for pseudo 77 (a GCC allocno-priority lever), not derived from program logic; the self-vet's precedent citation is directionally wrong and no sanctioned family's prerequisites (esp. FAKE annotation) are met.
+
+## 2026-08-26 — ang_hosei_80056FE8 / func_80056FE8 (src/text1b.c) — **RULING REQUEST** (construct classification; filed by grind s7b, forensics modality)
+
+**Status of the bytes.** Re-measured this session on today's chassis: with the
+s7 per-arm body in `src/text1b.c`, `sandbox func_80056FE8 --disable all` =
+**score 0, build_insns 43 == target 43**. The body carries zero rules, zero
+cheat-asm, no temp, no variable reuse, no dead op, no volatile, no pin. It is
+strictly simpler than the floor-9 candidate it replaces (the s5/s6 "double
+variable-reuse tail", which was itself a match-hack held under a `$5` pin).
+That body was layer-1 FAILed on 2026-08-26 02:34 and is now a BANNED CONSTRUCT
+for this function, so nothing is being resubmitted here — this entry asks a
+classification question.
+
+**New forensic evidence (this session, no solver involved).** GCC 2.7.2's
+`global_alloc` prints its allocnos in colouring order. `dump.ps1` on the two
+candidate spellings:
+
+- per-arm accumulate (`base += arm_value;` in each dispatch arm):
+  `;; 3 regs to allocate: 77 73 72` → `72 in 4 ($a0) 77 in 5 ($a1) 73 in 6 ($a2)`
+  = target-exact; 43 insns; sandbox 0.
+- post-join combine (`adj` temp, `base += adj;` after the join — the plainest
+  spelling of the s1–s6 chassis): `;; 4 regs to allocate: 82 73 77 72` →
+  `73 in 5 ($a1) 77 in 6 ($a2)` = the swap; 42 insns; sandbox 13. It also
+  creates a fourth global allocno (the temp) that the target's allocation
+  does not contain.
+
+Pass counts on the per-arm form show the three `base +=` statements are
+byte-neutral: `.greg` 4 accumulate insns → `.sched2` 4 → **`.jump2` 2** →
+`.dbr` 2. Post-reload cross-jumping in `jump2` tail-merges the three arms'
+`addu $a1,$a1,$v0` into the single instruction at `.L80057074`, which is the
+target's own instruction. No dead or extra insn is emitted.
+
+**(i) The decidable question.** Does the per-arm accumulation body fall under
+`.claude/rules/proven-spelling-class-reconstruction.md` (user policy 2026-06-10,
+the narrow same-bytes respelling exception), or is it — as the s7 layer-1
+reviewer ruled — a coercion cheat because a solver named `reg_n_refs` on pseudo
+77 before a human wrote the statements? Equivalently and more sharply: **when
+the target's own register allocation is only producible from spelling class A
+and not from spelling class B, is that fact evidence about the original 1998
+source (prong 1 of that rule), or is it a forbidden GCC-internals lever?** The
+four prongs as measured: (1) mechanism-level proof of the original spelling
+class — the dump table above, plus s1–s6's 21 structural forms and ~150k
+permuter iterations inside class B; (2) plain natural C — yes, and simpler than
+the incumbent; (3) most human-plausible representative — "each arm adds its own
+adjustment into the accumulator" is the DRY reading; (4) last lever — six
+sessions, four modalities, a filed escalation and its 2026-07-27 ruling.
+The rule itself anticipates this posture: "Reviewer verdict NEEDS_USER is the
+expected outcome for the first instance of a new proof shape", and this proof
+shape (allocno colour order) is new — the 2026-06-10 confirmed case used
+`MEM_IN_STRUCT_P` / `true_dependence`.
+
+**(ii) Evidence pointers.** `memory/grind/func_80056FE8/evidence.md` §s7b
+(dump table, ref-count arithmetic, jump2 merge counts);
+`memory/grind/func_80056FE8/hypotheses.md` §s7b (H7b-1/H7b-2 CONFIRMED, H7b-3
+OPEN); dumps in `tmp/grind/func_80056FE8/s7/` (`func_80056FE8.{rtl,combine,lreg,greg,sched2,jump2}`,
+`tempform.greg`); rejected control form
+`memory/grind/func_80056FE8/rejected/postjoin-temp-combine-p73-colored-first.c`;
+prior entries 2026-07-23 (escalation), 2026-07-27 (option (b) ruling),
+2026-08-26 (resolved-by-match) and 2026-08-26 02:34 (layer-1 FAIL).
+
+**(iii) Consequence of each answer.** YES (rule applies, first instance of the
+new proof shape): the ban is lifted for this specific spelling, the body is
+resubmitted with `CONSTRUCTS: per-arm accumulation` citing
+`proven-spelling-class-reconstruction` + the required in-source comment, and the
+function closes at floor 0 as COMPLETED-C via the normal Judge path. NO: the
+byte match stands but is inadmissible; the function returns to active grinding
+with the per-arm class closed, and the only untried honest axis left is a
+type/callee-surface reshape (real struct types behind `arg0`/`a2` instead of the
+m2c cast spelling), which no session has attempted — the RA/scheduler/permuter
+axes are all measured dead.
+
+## 2026-08-26 02:52 — func_80056FE8 — ruling: The byte match for func_80056FE8 (sandbox --disable all = 0, 43/43 insns, re-mea — **FAIL**
+
+Wrong door, right construct. proven-spelling-class-reconstruction is NOT on the frozen SOTN list and its own text makes a NEW proof shape (allocno colour order) owner-only, so I cannot grant prong 1 -- but the form does not need it. Per-arm `base += <arm value>` is a REAL statement on each path, sunk into the arms and cross-jump-merged byte-neutrally with a reg_n_refs priority lift: that is verbatim the frozen entry `duplicated-statement-into-arms` (no-new-park-categories.md L288-297; rule file prereqs 1-3 hold). I verified independently: asm/funcs/func_80056FE8.s has three arm adds j-ing to one join `addu $a1,$a1,$v0` (L47874); tmp/grind/func_80056FE8/s7/func_80056FE8.greg reads `;; 3 regs to allocate: 77 73 72` -> `77 in 5 73 in 6` vs tempform.greg `82 73 77 72` -> `73 in 5 77 in 6`; jump2 4->2 accumulate insns; build 43 == target 43 (evidence.md s7b). Defect is comment-only: the vet cited hoist-shared-arm-computation (wrong direction -- that family hoists OUT), then this request cited proven-spelling-class, and it declares `ANNOTATION-CONFORMANCE: n/a` while the correct family makes `/* FAKE: ... */` prerequisite 4 mandatory. Ban entry 1 is narrowed accordingly; ban entry 2 (the hoist-shared-arm citation) stands.

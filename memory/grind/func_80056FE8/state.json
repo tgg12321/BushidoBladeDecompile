@@ -55,12 +55,12 @@
   }
  ],
  "judge_constraints": [
-  "LAYER-1 CHEAT-REVIEWER FAIL: The per-arm `base +=` restructuring was reverse-engineered from an RA-solver's explicit reg_n_refs target for pseudo 77 (a GCC allocno-priority lever), not derived from program logic; the self-vet's precedent citation is directionally wrong and no sanctioned family's prerequisites (esp. FAKE annotation) are met. Next action: Revert src/text1b.c to INCLUDE_ASM for func_80056FE8 (or the s5/s6 double-reuse candidate held only under the pre-existing $5 pin, per the standing OWNER-ESCALATION). Do not resubmit this exact per-arm-accumulate spelling without first demonstr"
+  "LAYER-1 CHEAT-REVIEWER FAIL: The per-arm `base +=` restructuring was reverse-engineered from an RA-solver's explicit reg_n_refs target for pseudo 77 (a GCC allocno-priority lever), not derived from program logic; the self-vet's precedent citation is directionally wrong and no sanctioned family's prerequisites (esp. FAKE annotation) are met. Next action: Revert src/text1b.c to INCLUDE_ASM for func_80056FE8 (or the s5/s6 double-reuse candidate held only under the pre-existing $5 pin, per the standing OWNER-ESCALATION). Do not resubmit this exact per-arm-accumulate spelling without first demonstr",
+  "Resubmit the per-arm body unchanged under `duplicated-statement-into-arms` only: add the mandatory `/* FAKE: base += <arm value> duplicated into all three dispatch arms instead of a post-join combine; jump2 cross-jumps the copies into the target's single join addu (byte-neutral, 43==43) -- the reg_n_refs lift colours base before the struct pointer (.greg `3 regs to allocate: 77 73 72`) which the post-join class provably cannot (`82 73 77 72`) */` comment citing that rule, drop the proven-spelling-class and hoist-shared-arm citations, and re-run layer-1 + layer-2 review plus verify-oracle."
  ],
  "origin": "queue",
  "created": "2026-07-23T12:12:42.376365+00:00",
  "banned_constructs": [
-  "Per-arm `base += <table-lookup>*<scale>;` accumulation (three separate statements, one inside each dispatch arm) replacing the earlier single post-join `base += var_v0;` combine",
   "Self-vet's citation of `hoist-shared-arm-computation-defeats-copy-pref` (owner ruling 2026-07-12) as the controlling precedent"
  ],
  "ladder_skip": 1

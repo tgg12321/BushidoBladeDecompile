@@ -228,3 +228,64 @@ the sandbox score) plus the delay-slot-fill consequence.
 - `verify-oracle` with e3 in place: build_sha1 == original_sha1_locked == 62efab4f73f992798c43e8c730aa43baa10bb4fa, ok true. This is a COMPLETED-C state: zero regfix/asmfix rules, zero cheat-asm, zero match-hack constructs, no FAKE annotation needed.
 - Post-hoc model confirmation (`extract.py` on e3): coloring order [82,73,77,72] -> [77,73,72]; base(p77) refs 4->8, livelen 21->23, pri 3809 -> 10434 (now above a2local's 8571) -> colored first -> $a1; a2local(p73) -> $a2. Exactly target's disposition, exactly the solver's prediction.
 - Standing lesson for the pipeline: six sessions of "every sanctioned axis is dead" were all measured inside ONE chassis (adjustment cached in a temp, combined after the join). The residual was never a coercion problem; it was a spelling of ordinary C that no session had written. The solver's typed REACHABLE verdict plus its named input quantity (reg_n_refs of a specific pseudo) is what converted a 6-session escalation into a one-turn match.
+
+## s7b (2026-08-26, forensics) — the $a1/$a2 swap is decided by global.c ALLOCNO ORDER, and the standard `.greg` dump prints that order directly (no solver required)
+
+Chassis re-measured at HEAD this session (src/text1b.c was `INCLUDE_ASM`; the
+s7 per-arm candidate re-applied from memory/grind/func_80056FE8/candidate.c):
+`sandbox func_80056FE8 --disable all` = **score 0, build_insns 43 == target 43**.
+The byte match is real and reproducible on today's chassis; what is contested is
+only whether the C form that produces it is admissible (see hypotheses.md H7b-3).
+
+### The decisive dump line — `;; N regs to allocate: <ids>` (global.c allocno order)
+`pwsh tools/grinder/dump.ps1 func_80056FE8` → `tmp/grind/func_80056FE8/dumps/text1b.greg`,
+function slice extracted to `tmp/grind/func_80056FE8/s7/func_80056FE8.greg` /
+`tempform.greg`. GCC 2.7.2's `global_alloc` prints its allocnos in the order it
+will colour them (priority-sorted, `global.c`), followed by the final dispositions.
+Two chassis, same tool, same flags:
+
+| chassis | `regs to allocate` (colour order) | dispositions | insns | sandbox |
+|---|---|---|---|---|
+| **per-arm accumulate** (`base += arm_value;` in each of the 3 dispatch arms; committed candidate) | `77 73 72` — **base (p77) first** | `72 in 4 ($a0)  77 in 5 ($a1)  73 in 6 ($a2)` = **target-exact** | 43 | **0** |
+| **post-join combine** (`adj` temp; `base += adj;` after the join — the s1–s6 chassis in its plainest spelling) | `82 73 77 72` — **struct pointer (p73) before base** | `72 in 4 ($a0)  73 in 5 ($a1)  77 in 6 ($a2)` = **swapped** | 42 | 13 |
+
+So the whole six-session residual is one line of a standard `-da` dump. The
+post-join chassis additionally creates a FOURTH global allocno (p82, the `adj`
+temp, → `$v1`) that the target's allocation does not contain: the target
+function allocates exactly three globals, which is what the per-arm form emits.
+
+### Ref-count arithmetic behind the order (from the `.rtl`/`.combine` slices)
+`grep -c 'reg/v:SI 77'` per stage on the per-arm form: `.rtl` 8, `.combine` 9,
+`.lreg` 9, `.greg` 0 (hard regs assigned). p77's eight expand-time references are
+1 def (`base = a3*40`) + three per-arm read-modify-writes (2 each) + 1 use in the
+return add. In the post-join chassis the same pseudo has 4. GCC 2.7.2's allocno
+priority is a function of reference count and live length, so the ref count is
+the quantity that flips the colour order — this is the same conclusion s6 reached
+at `global.c` `find_reg`, now shown as a *printed ordering* rather than an
+inferred one.
+
+### The three per-arm adds are byte-neutral — `jump2` cross-jumps them into the target's single join add
+Accumulate insns (`plus:SI (reg/v:SI 5 a1) ...`) counted per pass on the per-arm form:
+`.greg` 4 → `.sched2` 4 → **`.jump2` 2** → `.dbr` 2. (The 4 = 3 per-arm adds + the
+return add; the 2 = 1 merged join add + the return add.) The post-reload
+cross-jumping in `jump2` tail-merges the three arms' `addu $a1,$a1,$v0` into the
+single instruction at `.L80057074`, which is exactly the target's
+`/* 47874 */ addu $a1, $a1, $v0`. Nothing dead, nothing extra is emitted: the C
+statements each materialise into a real target instruction that the compiler then
+shares between the arms. Insn counts: per-arm 43 == target 43; post-join 42.
+
+### What this means for provenance (the s7 layer-1 FAIL's charge)
+The layer-1 reviewer's charge was that the per-arm form was "reverse-engineered
+from an RA-solver's explicit `reg_n_refs` target for pseudo 77". This session
+reproduces the entire finding WITHOUT the solver: the target asm shows `base`
+living in `$a1` (the first-coloured global), and one `.greg` dump of the plainest
+alternative shows that alternative colouring the struct pointer first. The
+inference "the original source gave `base` more references than a post-join
+combine does" is available from the target bytes plus a standard dump — it is
+evidence about the ORIGINAL SOURCE's shape, not a lever invented to move a
+counter. See `.claude/rules/proven-spelling-class-reconstruction.md` prong 1.
+
+### Artifacts
+tmp/grind/func_80056FE8/s7/func_80056FE8.{rtl,combine,lreg,greg,sched2,jump2},
+tmp/grind/func_80056FE8/s7/tempform.greg, tmp/grind/func_80056FE8/s7/tempform.c,
+memory/grind/func_80056FE8/rejected/postjoin-temp-combine-p73-colored-first.c
