@@ -752,3 +752,41 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  *  docs/grind/decisions.md, the 2026-08-18 func_80017848 entry and its s24
  *  addendum.  This body (floor 3 at 127/127) is the preserved best pure-C form.
  */
+
+/* [s25 ESCALATION/DISPOSITION ADDENDUM - body unchanged, still 3, re-measured on
+ * the POST-MIGRATION chassis (2026-08-25).]
+ *
+ * CHASSIS: func_80017848 no longer carries any asmfix rule.  The 2026-08-19
+ * asm-until-matched migration retired both (migration_pin.json rules_retired 2),
+ * and src/ings.c:590 is now `INCLUDE_ASM("asm/funcs", func_80017848);`.  Splicing
+ * the body below (candidate.c:325-403) over that line and running
+ * `sandbox func_80017848 --disable all` gives score 3, 127/127, scorable,
+ * rules_dropped 0.  Identical floor, honest representation, zero debt.
+ *
+ * COMPILER FIDELITY IS ELIMINATED (H-s25-A).  The ORIGINAL PsyQ cc1psx.exe
+ * (GCC 2.7.2.SN.1, run diagnostically under dosemu2 - never a build path) was
+ * given the SAME preprocessed translation unit as tools/gcc-2.7.2/cc1.  Both
+ * emit 111 pre-maspsx instructions for this function and the streams are
+ * identical except for label spelling and one adjacent-pair scheduling swap at
+ * the math_Distance3D preamble (port `sll $16,$20,6 / lw $5,12($18)`; cc1psx the
+ * reverse).  All THREE residual instructions are byte-identical between the two
+ * compilers, and at the one divergent site TARGET agrees with the PORT.  So the
+ * residual is a genuine C-source-structure difference; the pure-C match exists in
+ * the C, and a future session must not spend a turn wondering about the compiler.
+ *
+ * SOLVER SUITE (H-s25-B, executes the queue item's owner directive).
+ * `inverse_compose.py classify ings func_80017848` reports "FIRST DIVERGENCE:
+ * IDENTICAL" - a FALSE verdict, because the function is not
+ * `replace_with_asmfile`-wired so ings.tgt.s is built from this same C body.  The
+ * model-side answer is s24's: the residual is two instruction KINDS plus one
+ * operand, outside both solvers by construction.
+ *
+ * TARGET'S SYMMETRY, stated once for the record: loop 1 (0x800178B4) and loop 2
+ * (0x80017914) have the SAME nine-instruction preheader shape - `lw $a0,0xC($s2)
+ * / sll $a1,$s4,6 / addu $v0,$a1,$a0 / lw $v0,<0x1C|0x20>($v0) / blez / addu
+ * $v1,$zero,$zero / addu $a3,$a0,$zero / lw $a2,0x10($s2) / addu $a0,$a1,$a3` -
+ * and loop 1's skip branch lands at 0x8001791C, PAST loop 2's re-read/re-shift
+ * pair.  Both of target's copies therefore exist with no second use anywhere,
+ * while this candidate buys loop 1's copy with `p = q` and pays for it in loop
+ * 1's exit tail.  That asymmetry IS the remaining 3.
+ */

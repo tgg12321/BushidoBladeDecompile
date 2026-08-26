@@ -12075,3 +12075,155 @@ and the consequence of each answer. The two AND-gates remain the unchanged STAND
 owner rules on packets in batches, and the ruling returns the item to active either way.
 If no decidable question exists, the item stays ACTIVE with a modality change instead
 (difficult-is-not-impossible) — "this is hard" is not a packet.
+
+
+## 2026-08-25 — func_80017848 (src/ings.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (re-filed on the post-migration chassis)
+
+Filed by grind session 25 (modality `escalation`, driver-assigned after the honest
+pure-C floor stayed FLAT at 3 across sixteen consecutive sessions and seven
+distinct modalities). This entry SUPERSEDES the 2026-08-18 filing above, which is
+now stale in one material respect: it states that two `asmfix.txt` rules hold the
+byte-match. They do not, any more.
+
+### What holds the byte-match today: NOTHING — the function is honest INCLUDE_ASM
+The 2026-08-19 asm-until-matched migration retired both `asmfix.txt` rules for
+this function (`memory/grind/func_80017848/migration_pin.json`: `rules_retired: 2`,
+pre-migration floor 16). `grep -n func_80017848 asmfix.txt` now returns nothing,
+and `src/ings.c:590` is `INCLUDE_ASM("asm/funcs", func_80017848);`. Re-measured
+this session with `memory/grind/func_80017848/candidate.c` spliced over that line:
+
+    sandbox func_80017848 --disable all
+      score 3, target_insns 127, build_insns 127, scorable true,
+      rules_dropped 0, cheat_asm_stripped 4   (the 4 are elsewhere in ings.c)
+
+So the function carries zero rules and zero cheat-asm of its own. It is INCOMPLETE
+under the completion standard purely because its best pure-C form is 3 instructions
+away, and it is represented honestly. There is no debt to accept and no cheat to
+clean up — which also means there is no integration-handoff here.
+
+### The residual (unchanged, re-confirmed against asm/funcs/func_80017848.s)
+
+    loop-1 exit tail:  target `lw   $a0,0xC($s2)`   ours `addu $a0,$a3,$zero`
+    loop-2 preheader:  target `addu $a3,$a0,$zero`  ours `lw   $v0,0xC($s2)`
+                       target `addu $a0,$a1,$a3`    ours `addu $a0,$a1,$v0`
+
+Loop 1's preheader, including target's dead reg-reg copy, is byte-exact; 124 of
+127 instructions match, in target's order, with target's registers.
+
+### GATE (a) — canonical-asm evidence: **FAILED** (re-run this session)
+
+    $ python3 tools/scan_hand_coded.py --single func_80017848
+      HAND_CODED: tier=LOW  score=0/8  (func_80017848, 127 insns)
+      all eight signals unset (0 multu/mflo pairs; no empty-body branches;
+      127 insns / 7 spills / 12 distinct regs; max load burst 3 in any 8-insn
+      window; no high-similarity sibling, jaccard < 0.5; no BIOS jumptable
+      pattern; every callee-save use has an $sp save; no redundant mask-before-
+      shift)
+
+Unchanged from sessions 17 and 24. Not STRONG, not a single signal. The
+canonical-asm grant path does not apply.
+
+### GATE (b) — in-hand SOTN-master precedent for a closing construct: **FAILED**
+There is still no closing construct to cite a precedent FOR. The residual is not a
+coercion or a spelling family awaiting sanction; every C-level handle that was
+identified has been measured dead (172 banked rejected forms in
+`memory/grind/func_80017848/rejected/`). No `docs/reference/sotn-construct-index.md`
+hit, no file:line, no commit hash is offered, because none exists.
+
+### NEW THIS SESSION (1) — the owner directive on the queue item is now executed
+The queue item carried `solver modality (ra_solver/sched_solver) recommended before
+deep re-grind of RA/scheduler-tiebreak residuals`, which the consistency audit
+flagged as never acknowledged by any session. It is executed and dead, for a
+reason worth recording because it is a PIPELINE hazard, not just a func_80017848
+fact:
+
+    $ bash tools/ra_solver/mkasm_honest.sh ings
+    $ python3 tools/ra_solver/inverse_compose.py classify ings func_80017848
+      PATH: text-stream classifier (ings.hon.s vs ings.tgt.s);
+            func_80017848 is not `replace_with_asmfile`-wired.
+      func_80017848 (ings): honest 127 insns, target 127 insns
+      FIRST DIVERGENCE: IDENTICAL
+        the honest stream already equals target for this function.
+
+That verdict is FICTION. Because the function is not `replace_with_asmfile`-wired,
+`ings.tgt.s` is built from the same spliced C body as `ings.hon.s`, so the
+classifier compares our own output against itself and reports IDENTICAL while the
+sandbox simultaneously reports 3. Any session that trusts an `inverse_compose.py
+classify` verdict on a function that is NOT asmfile-wired will be misled the same
+way. The correct verdict, taken from the model rather than the text path, is the
+one session 24 already recorded (H-s24-C): the residual is two instruction KINDS
+(a load where target has a copy and a copy where target has a load) plus the base
+add's operand, and neither RA nor the scheduler can convert a `lw` into an `addu`.
+Both solvers are structurally inapplicable to this residual.
+
+### NEW THIS SESSION (2) — compiler fidelity is ELIMINATED as an explanation
+Never run for this function in 24 prior sessions. Diagnostic only, per
+`.claude/rules/no-compiler-divergence.md` (cc1psx is calibration/self-disproof
+only and is NEVER a build path; this session did not touch the Makefile or any
+toolchain file).
+
+    cpp -Iinclude -undef -Wall -lang-c -fno-builtin src/ings.c > ings.i
+    tools/gcc-2.7.2/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1
+        -mno-abicalls -fno-builtin -w -mel  ->  ings.gnu.s
+    bash tools/cc1psx_wrapper.sh -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -w
+        (the ORIGINAL PsyQ cc1psx.exe, GCC 2.7.2.SN.1, under dosemu2)
+        ->  ings.psx.s
+
+Both compilers emit exactly 111 pre-maspsx instructions for func_80017848 from
+`candidate.c`'s body, and the two streams are IDENTICAL except for label spelling
+(`$L128` vs `.L129`) and ONE adjacent-pair scheduling swap at the math_Distance3D
+call preamble:
+
+    port  (gnu cc1) :  sll $16,$20,6 / lw $5,12($18) / sll $17,$19,6
+    cc1psx          :  lw $5,12($18) / sll $16,$20,6 / sll $17,$19,6
+    TARGET (8174..) :  sll $s0,$s4,6 / lw $a1,0xC($s2) / sll $s1,$s3,6
+
+Two consequences. (i) The three residual instructions are BYTE-FOR-BYTE THE SAME
+under cc1psx as under our port: the original PsyQ compiler, given this C, also
+emits `addu $a0,$a3,$zero` in loop 1's exit tail and `lw` + `addu ...,$v0` in loop
+2's preheader. The residual is therefore a genuine C-SOURCE-STRUCTURE difference,
+not an artifact of the decompals port. "The toolchain is the variable" is now
+disproven for this function by measurement, exactly as
+`.claude/rules/no-compiler-divergence.md` predicts it always will be. (ii) At the
+one site where the two compilers DO differ, TARGET agrees with the port and
+disagrees with cc1psx — independent evidence that `decompals/mips-gcc-2.7.2` is
+the correct calibration for this executable, and that a cc1psx opt-in would make
+this function worse (>= 5), not better. This is a project-wide datum, banked here
+because it is the first measured cc1psx-vs-port codegen divergence in the grind
+ledgers.
+
+### Exhaustion evidence (from `memory/grind/func_80017848/`)
+- **25 sessions**, **7 distinct modalities** (recon, structural, permuter,
+  rederive, synthesis, forensics, escalation), floor flat at 3 for the last
+  **16** of them.
+- **5 permuter campaigns, 180,472 iterations**, 41 distinct finds, zero
+  engine-scored improvements on any of four chassis, including a directed
+  cross-product campaign; the permuter's own ranking is measurably
+  anti-correlated with engine distance on this function (reproduced 5x).
+- **~260 hand-built structural cells** across s11/s12/s16/s17/s23/s24;
+  **172 rejected forms** banked.
+- s15/s16 instrumented-cc1 forensics established the preheader-copy survival
+  trichotomy per-pass; s16 killed `optimize_reg_copy_2` analytically and by
+  measurement; s17 enumerated all seven `can_combine_p` refusal paths and killed
+  the only untried one (`use_crosses_set_p`) with two controls; s23 built the
+  first C form emitting target's ENTIRE instruction stream at 127/127 (register
+  identity only, floor 12) and derived the allocno-priority instrument; s24
+  closed the `use_crosses_set_p` family to exactly two measured-dead positions
+  and retired the last frontier item.
+
+### Disposition
+Both gates fail. Per the standing ruling this is **REFUSED / OWNER-ACCEPTED
+INCOMPLETE**. Nothing is pending on the owner and nothing here asks for a standard
+to be lowered: no family sanction is requested, no canonical evidence-bar
+override, no debt acceptance. The function is honestly represented as INCLUDE_ASM
+with zero rules and zero cheat-asm; its best pure-C form (distance 3) is preserved
+at `memory/grind/func_80017848/candidate.c` with the full derivation in its
+header, and the ledger records every dead axis so no future session re-spends the
+search.
+
+The only genuinely open question this residual now poses is a PROVENANCE one, and
+it is not a gate on this function: the cc1psx-vs-port scheduling divergence
+measured above is the first of its kind in the grind ledgers, and a systematic
+calibration-only differential census across the queue would say whether it is an
+isolated tie-break or a class. Recorded here for the owner's information; it does
+not block, and no session should read it as licence to touch the build path.

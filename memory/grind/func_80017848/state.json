@@ -1,7 +1,7 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 24,
+ "session_count": 25,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -147,18 +147,29 @@
    "floor": 3,
    "modality": "escalation",
    "headline": "Floor re-measured at 3 (127/127) with candidate.c applied and 16 at committed HEAD; both endgame-lock gates re-run and FAIL (scan_hand_coded tier=LOW 0/8; no SOTN-master file:line precedent), so the o"
+  },
+  {
+   "session": 25,
+   "floor": 3,
+   "modality": "escalation",
+   "headline": "Floor re-measured at 3 on the POST-MIGRATION chassis (127/127, rules_dropped 0 - the two asmfix rules are gone and the function is honest INCLUDE_ASM); the queue item's un-executed solver directive is"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The allocno-priority instrument (E-s23-3, floor_log2(n_refs)*n_refs/live_length read off .lreg's per-register header) closes register-identity-only residuals elsewhere in the queue without any spelling search.",
-   "mechanism": "global.c's allocno_compare sorts allocnos by that priority, so splitting a C variable (fewer refs, shorter live range) lowers it and fusing uses raises it, moving find_reg's assignment order deterministically. Validated on this function: it predicted, on the first try, that splitting base into base1/base2 (10/22 -> 5/11) would drop below p (0.923) and hand p the $a0 it lacked, and cell S1's .greg confirmed it.",
-   "next_probe": "On the next queue item whose sandbox residual is register identity only (same instruction kinds, same count, same order), dump .lreg, compute the priority table by hand, and predict the split/fuse that reorders the two conflicting allocnos before spending any sandbox run. It has no purchase on func_80017848 - that residual is two instruction KINDS, and no allocation order turns a lw into an addu."
+   "hypothesis": "tools/ra_solver/inverse_compose.py classify returns a confidently WRONG verdict ('FIRST DIVERGENCE: IDENTICAL') for every queue function that is not `replace_with_asmfile`-wired, so any grind session dispatched in `solver` modality on such a function will conclude its residual does not exist.",
+   "mechanism": "The text path diffs <stem>.hon.s against <stem>.tgt.s; when the function is not asmfile-wired, tgt.s is built from the same C source as hon.s, so the two streams are trivially equal regardless of the true distance. The tool prints the wiring caveat but still emits a verdict.",
+   "next_probe": "Operator-side (outside a grind session's allowed surface): make the text path REFUSE to emit a verdict for a non-asmfile-wired function (or diff against asm/funcs/<func>.s instead), and have `classify` exit non-zero so a session cannot bank the fiction. Until then, any session in `solver` modality must first check whether its function is asmfile-wired and disregard an IDENTICAL verdict that contradicts the sandbox."
   },
   {
-   "hypothesis": "grindlib.validate_outcome's file reads are a single-byte-fragile failure mode for the whole pipeline, not just for this function: any session that writes a cp1252 character into docs/grind/decisions.md discards itself and every later owner-gated session until someone repairs the file.",
-   "mechanism": "grindlib.py:388 opens the file with encoding='utf-8' and no errors= policy, inside the owner-gated branch, before the OWNER-ESCALATION check; the exception escapes validate_outcome entirely rather than becoming a validation failure with a message.",
-   "next_probe": "Operator-side (outside a grind session's allowed surface): either pass errors='replace' at grindlib.py:388 or wrap the read so a decode error becomes a named validation failure, and add a pre-commit check that docs/grind/*.md is valid UTF-8. Until then, sessions writing that file must emit ASCII or explicit UTF-8."
+   "hypothesis": "The cc1psx-vs-port scheduling divergence measured here is a CLASS rather than an isolated tie-break, and a calibration-only differential census would identify a set of queue functions whose residual sits exactly on it.",
+   "mechanism": "The single divergence in this function is an adjacent-pair swap of a `lw` and an `sll` feeding a jal preamble - a first-pass scheduler ranking tie broken differently by the SN fork and the kmc-tailored port. If the two schedulers rank that pattern differently in general, the same swap should appear in other TUs, and at each site the target picks one of the two orders.",
+   "next_probe": "Diagnostic only (never a build path): compile a handful of already-COMPLETED-C TUs with both cc1 and cc1psx from the same preprocessed input, diff per function, and tabulate how often target agrees with the port versus cc1psx. If the port wins everywhere, the frozen-compiler policy gains a measured justification; if some sites favour cc1psx, the affected residual class is identified without any C search."
+  },
+  {
+   "hypothesis": "The allocno-priority instrument (s23 E-s23-3, floor_log2(n_refs)*n_refs/live_length read off .lreg's per-register header) closes register-identity-only residuals elsewhere in the queue without any spelling search.",
+   "mechanism": "global.c's allocno_compare sorts allocnos by that priority, so splitting a C variable (fewer refs, shorter live range) lowers it and fusing uses raises it, moving find_reg's assignment order deterministically. Validated on this function: it predicted on the first try that splitting `base` into base1/base2 (10/22 -> 5/11) would drop below `p` (0.923) and hand `p` the $a0 it lacked, and cell S1's .greg confirmed it.",
+   "next_probe": "On the next queue item whose sandbox residual is register identity only (same instruction kinds, same count, same order), dump .lreg, compute the priority table by hand, and predict the split/fuse that reorders the two conflicting allocnos before spending any sandbox run. It has no purchase on func_80017848 - that residual is two instruction KINDS, and no allocation order turns a lw into an addu."
   }
  ],
  "judge_constraints": [],

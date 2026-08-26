@@ -2170,3 +2170,83 @@ register-identity-only residuals, not to this one.
 - probe: Byte-scanned docs/grind/decisions.md for non-UTF-8 sequences, re-encoded each offending byte via cp1252 -> UTF-8, then re-read the file as UTF-8; separately confirmed the s24 ledger writes (evidence.md E-s24-1..4, hypotheses.md H-s24-A..C, 2 new rejected forms, the decisions.md entry) were intact on disk.
 - result: 8 offending bytes found, all 0x97 (cp1252 em dash), first at byte offset 1237144 inside the 2026-08-18 rederive entry; all re-encoded to UTF-8 U+2014 and the 1,249,661-byte file now decodes cleanly. All s24 ledger artifacts present and unmodified; rejected bank stands at 172 files.
 - verdict: CONFIRMED
+
+## s25 (2026-08-25, escalation/disposition)
+
+### H-s25-A - KILLED
+**Statement.** The three-instruction residual is (or may be) an artifact of the
+decompals/mips-gcc-2.7.2 port rather than a difference in C source structure - i.e.
+the original PsyQ cc1psx, given candidate.c's body, would emit target's
+`lw $a0,0xC($s2)` / `addu $a3,$a0,$zero` / `addu $a0,$a1,$a3` where our port emits
+a copy / a load / an add on $v0.
+**Mechanism (predicted).** cc1psx is GCC 2.7.2.SN.1, SN Systems' fork; the port is
+kmc-tailored. A fork difference in combine's copy-substitution or in the first
+scheduler pass would show up exactly as an instruction-KIND swap of this shape, and
+would explain why 24 sessions of C-level search cannot move it.
+**Probe.** Diagnostic-only calibration per .claude/rules/no-compiler-divergence.md
+(never a build path; no toolchain/Makefile file touched). One preprocessed
+`src/ings.c` (candidate body spliced in) compiled twice - `tools/gcc-2.7.2/cc1`
+with canonical CC_FLAGS, and `tools/cc1psx_wrapper.sh` with the flag subset
+cc1psx accepts - then func_80017848's pre-maspsx instruction streams diffed.
+**Result.** 111 instructions each. Identical except for label spelling and ONE
+adjacent-pair scheduling swap at the math_Distance3D preamble
+(port `sll $16,$20,6 / lw $5,12($18)`; cc1psx `lw $5,12($18) / sll $16,$20,6`).
+All three residual instructions are byte-identical between the compilers. At the
+one divergent site, TARGET matches the PORT, so cc1psx would score >= 5.
+**Verdict. KILLED** - and it is a positive result: the residual is a genuine
+C-source-structure difference, the port is the correct calibration for this
+executable, and the pure-C match therefore provably exists in the C, exactly where
+25 sessions have been looking.
+
+### H-s25-B - KILLED (executes the queue item's owner directive)
+**Statement.** The ra_solver / sched_solver suite can type this residual as
+REACHABLE or FORECLOSED and hand back a ranked C-lever vector, as the owner
+directive on the queue item recommends for RA/scheduler-tiebreak residuals.
+**Mechanism (predicted).** `inverse_compose.py classify` picks the model that owns
+the first divergence; if it lands on global.c/local-alloc, the allocno-priority
+instrument (E-s23-3) gives a directed perturbation instead of a spelling search.
+**Probe.** `bash tools/ra_solver/mkasm_honest.sh ings` then
+`python3 tools/ra_solver/inverse_compose.py classify ings func_80017848`.
+**Result.** The tool selected its TEXT-stream path (func_80017848 is not
+`replace_with_asmfile`-wired) and reported "FIRST DIVERGENCE: IDENTICAL - the
+honest stream already equals target", while the sandbox reported 3 for the same
+tree. The verdict is fiction: not being asmfile-wired, `ings.tgt.s` is built from
+the same C body as `ings.hon.s`, so the classifier diffed our output against
+itself.
+**Verdict. KILLED** on two independent grounds. (1) The tool is inapplicable to
+this function as wired, and - the transferable part - its `classify` verdict must
+not be trusted for ANY function that is not replace_with_asmfile-wired. (2) The
+model-side answer is unchanged from H-s24-C: the residual is two instruction KINDS
+plus one operand, and no allocation order or schedule turns a `lw` into an `addu`,
+so both solvers are structurally outside this residual regardless of wiring.
+
+### H-s25-C - CONFIRMED (chassis correction)
+**Statement.** The 2026-08-18 escalation entry's premise - "two asmfix.txt rules
+hold the byte-match" - is no longer true, so the disposition had to be re-derived
+on the current chassis rather than re-affirmed from the ledger.
+**Probe.** `grep -n func_80017848 asmfix.txt` (empty); `src/ings.c:590` is
+`INCLUDE_ASM("asm/funcs", func_80017848);`; sandbox with candidate.c spliced in.
+**Result.** score 3, 127/127, scorable, **rules_dropped 0**, cheat_asm_stripped 4
+(all four belong to other functions in ings.c). The floor is identical to the
+pre-migration measurement, so every banked spelling conclusion transfers, but the
+function now carries zero rules and zero cheat-asm of its own.
+**Verdict. CONFIRMED.** The disposition is a pure "3 instructions short in honest
+C" refusal, not a debt or an integration handoff.
+
+## [s25] The three-instruction residual is an artifact of the decompals/mips-gcc-2.7.2 port rather than a difference in C source structure - i.e. the original PsyQ cc1psx, given candidate.c's body, would emit target's lw/addu/addu where our port emits a copy, a load and an add on $v0.
+- mechanism: cc1psx is GCC 2.7.2.SN.1 (SN Systems fork); the port is kmc-tailored. A fork difference in combine's copy substitution or in the first scheduler pass would present exactly as an instruction-KIND swap of this shape and would explain why 24 sessions of C-level search cannot move it.
+- probe: Diagnostic-only calibration per .claude/rules/no-compiler-divergence.md (never a build path; no toolchain or Makefile file touched). One preprocessed src/ings.c with candidate.c's body spliced in, compiled twice: tools/gcc-2.7.2/cc1 with canonical CC_FLAGS, and tools/cc1psx_wrapper.sh (cc1psx.exe under dosemu2) with the flag subset it accepts. func_80017848's pre-maspsx instruction streams diffed (tmp/grind/func_80017848/s25/cc1psx_vs_port.diff).
+- result: 111 instructions from each compiler. Streams identical except for label spelling ($L128 vs .L129) and ONE adjacent-pair scheduling swap at the math_Distance3D preamble: port 'sll $16,$20,6 / lw $5,12($18)', cc1psx 'lw $5,12($18) / sll $16,$20,6'. All three residual instructions are byte-identical between the compilers. At the one divergent site TARGET (asm/funcs/func_80017848.s, 0x80017974: sll $s0,$s4,6 / lw $a1,0xC($s2)) agrees with the PORT, so cc1psx would score >= 5, not better.
+- verdict: KILLED
+
+## [s25] The ra_solver / sched_solver suite can type this residual as REACHABLE or FORECLOSED and return a ranked C-lever vector, as the owner directive on the queue item recommends for RA/scheduler-tiebreak residuals.
+- mechanism: inverse_compose.py classify picks the model that owns the first divergence; if it lands on global.c / local-alloc, the s23 allocno-priority instrument gives a directed perturbation instead of a spelling search.
+- probe: bash tools/ra_solver/mkasm_honest.sh ings, then python3 tools/ra_solver/inverse_compose.py classify ings func_80017848.
+- result: The tool selected its TEXT-stream path ('func_80017848 is not replace_with_asmfile-wired') and reported 'FIRST DIVERGENCE: IDENTICAL - the honest stream already equals target', while the sandbox reported 3 on the same tree. The verdict is fiction: not being asmfile-wired, ings.tgt.s is built from the same spliced C body as ings.hon.s, so the classifier diffed our own output against itself.
+- verdict: KILLED
+
+## [s25] The 2026-08-18 escalation entry's premise - that two asmfix.txt rules hold this function's byte-match - still describes the tree, so the disposition can be re-affirmed from the ledger rather than re-derived.
+- mechanism: The 2026-08-19 asm-until-matched migration retired rules for the queue's INCOMPLETE functions; migration_pin.json records rules_retired 2 for this one.
+- probe: grep -n func_80017848 asmfix.txt; read src/ings.c:590; splice candidate.c:325-403 over the INCLUDE_ASM line and run sandbox func_80017848 --disable all.
+- result: asmfix.txt has no entry for this function; src/ings.c:590 is INCLUDE_ASM("asm/funcs", func_80017848);. Sandbox with the candidate body: score 3, target_insns 127, build_insns 127, scorable true, rules_dropped 0, cheat_asm_stripped 4 (all four belong to other functions in ings.c). The premise is FALSE - the floor is unchanged but the function now carries zero rules and zero cheat-asm of its own.
+- verdict: KILLED

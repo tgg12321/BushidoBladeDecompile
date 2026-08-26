@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80017848",
-      "file": "ings",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
-    },
-    {
       "func": "func_80033550",
       "file": "code6cac_b",
       "distance": 4,
@@ -2045,17 +2036,27 @@
       "unpark_reason": "Owner ruling (b) 2026-08-25 executed (commit 0bef2aa3): migrated to INCLUDE_ASM, last 2 asmfix rules retired. Ordinary active item at honest ledger floor 2 (candidate.c score 2/66); s10 conservation argument closed frontier item 1 \u2014 next session works frontier item 2 (outside insn ready at sched2 T-30).",
       "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md - '## 2026-08-25 - func_80060A68 - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (grind s10): both endgame gates re-measured and failed (scan_hand_coded --single = tier LOW 1/8, S4 only; no construct in play so no SOTN-master precedent is applicable), floor flat at 2 across ten sessions and six modalities, and the decidable question posed is the representation/routing choice for the project's last two asmfix rules (asmfix.txt:82-83, body-coupled whole-body splice): keep the legacy splice while the function is INCOMPLETE, or authorize an operator-side lane to repair the 2026-08-24 INCLUDE_ASM migration failure (sha1 699695d890f0570a3039af734ed84a6a7c44302c != oracle) so those rules retire and the function continues as an ordinary INCLUDE_ASM queue item at honest floor 2. No grant, family sanction or evidence-bar override is requested.",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-25 \u0393\u00c7\u00f6 func_80060A68 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
+    },
+    {
+      "func": "func_80017848",
+      "file": "ings",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals.",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-25 - func_80017848 (src/ings.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (re-filed on the post-migration chassis)'"
     }
   ],
   "counts": {
     "total": 234,
-    "active": 227,
+    "active": 226,
     "by_status": {
-      "active": 227,
-      "escalated": 7
+      "active": 226,
+      "escalated": 8
     },
     "by_verdict": {
-      "C": 192,
+      "C": 191,
       "ASM-PARTIAL": 35
     }
   }
