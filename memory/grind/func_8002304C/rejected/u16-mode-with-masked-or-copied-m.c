@@ -27,3 +27,26 @@
  * one that keeps two pseudos alive; the narrow->wide direction lets combine
  * collapse them; address-taking spills.
  */
+
+/* ---------------------------------------------------------------------------
+ * s2 ADDENDUM (2026-08-26) — this file's closing advice was WRONG about the
+ * remaining quadrant, and the function is now MATCHED.
+ *
+ * The four s1 variants span only three of the four (mode-width x m-width)
+ * quadrants: A = (u16, s32-masked), B = (u16, u16), KEPT = (s32, u16),
+ * C = (s32, address-taken). The fourth — **(s32 mode, s32 m = mode & 0xFFFF)**,
+ * i.e. BOTH operands wide with an explicit mask — was never measured. It
+ * scores **0** (216/216 insns, full verify-oracle SHA1 match) and is the
+ * original author's own idiom: func_80023E40 in this same TU
+ * (src/code6cac.c:2535-2536, COMPLETED-C at 6d255e79) reads the identical
+ * field obj+0x6A with exactly that two-line spelling.
+ *
+ * Mechanism (why the wide/wide quadrant is the one that works): combine
+ * refuses to substitute `reg = zero_extend:SI(mem:HI)` into
+ * `reg2 = and:SI(reg, 65535)` while `reg` stays live afterwards (`mode - 0x17`
+ * reads it), so the standalone andsi3 survives as `andi $v1,$a0,0xffff`.
+ * Narrowing EITHER side (variants A/B) creates a truncate/extend pair that an
+ * earlier pass collapses before liveness can protect it. A/B/C remain
+ * correctly rejected; only the "wide->narrow is the right direction"
+ * conclusion in the note above is superseded.
+ * ------------------------------------------------------------------------- */

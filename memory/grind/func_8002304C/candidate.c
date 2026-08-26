@@ -1,18 +1,32 @@
-/* func_8002304C (tanren_CameraControl) — BEST BANKED FORM, honest floor 1
- * Measured 2026-08-26 (s1, recon): sandbox --disable all == 1, 216/216 insns,
- * zero pins, zero rules, zero FAKE constructs. APPLIED to src/code6cac.c at
- * session end (replaces the INCLUDE_ASM line; typedef Quad_2304C { s32 a,b,c,d; }
- * already exists in the TU just above the function).
+/* func_8002304C (tanren_CameraControl) - MATCHED, honest distance 0.
+ * Measured 2026-08-26 (s2, structural): `sandbox func_8002304C --disable all`
+ * == 0 (216/216 insns) and full-build `verify-oracle` SHA1 ==
+ * 62efab4f73f992798c43e8c730aa43baa10bb4fa. Zero regfix/asmfix rules, zero
+ * register pins, zero inline asm, zero FAKE constructs.
  *
- * Sole residual (1 pt): target 0x232F4 `andi $v1,$a0,0xffff` vs our
- * `addu $v1,$a0,$zero` — same position, same registers, opcode-only.
- * Mechanism (read, not guessed): GCC 2.7.2 combine.c nonzero_bits REG case
- * (combine.c:6885-6923) proves the same-BB single-set lhu value <= 0xFFFF via
- * reg_last_set_value/get_last_value and simplifies zero_extend(subreg:HI) to a
- * copy. The reg_nonzero_bits full-mask fallback (combine.c:6920-6923) is only
- * reachable for multi-set pseudos whose last set is in a DIFFERENT label
- * region (label_tick mismatch) — impossible here: the lhu and the mask use
- * are 2 insns apart in one BB. See evidence.md [s1-E6..E8] + hypotheses.md.
+ * The s1 residual (target 0x232F4 `andi $v1,$a0,0xffff` vs our
+ * `addu $v1,$a0,$zero`) closed by spelling the masked state id the way the
+ * ORIGINAL AUTHOR spelled it in the sibling function 250 lines below in this
+ * same TU: func_80023E40 (COMPLETED-C since 6d255e79, src/code6cac.c:2535-2536)
+ * reads the identical field with the identical two-line idiom
+ *     s32 a0 = *(u16 *)(arg0 + 0x6A);
+ *     s32 v1 = a0 & 0xFFFF;
+ * and runs the identical comparison cascade (== 8, == 0x22,
+ * (u32)(a0 - 0x17) < 2, == 0xA). The two functions are copy-paste siblings in
+ * the original source; reconstructing the same idiom here is source fidelity,
+ * not coercion. Both operands stay s32: `mode` is the raw widened load that
+ * feeds `mode - 0x17`, `m` is the masked state id that feeds the three
+ * equality tests.
+ *
+ * Why the mask survives to bytes (mechanism, dump-read not guessed):
+ * combine sees (insn A) reg74 = zero_extend:SI(mem:HI) and (insn B)
+ * reg75 = and:SI(reg74, 65535). It cannot substitute A into B because reg74 is
+ * still live afterwards (`mode - 0x17`), so the AND is never brought into a
+ * combination where nonzero_bits() could prove it redundant, and the standalone
+ * andsi3 insn reaches the assembler as `andi $v1,$a0,0xffff`. Every s1
+ * spelling that typed either side narrow (u16 mode, or u16 m) let combine fold
+ * the truncate/extend pair into a copy or delete it outright - see
+ * rejected/u16-mode-with-masked-or-copied-m.c.
  */
 void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
 {
@@ -58,16 +72,14 @@ void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
       scratch[8] = pos2[0] - pos1[0];
       scratch[9] = pos2[1] - pos1[1];
       scratch[10] = pos2[2] - pos1[2];
-      {
-        func_8002EBDC(scratch_d, (s16 *) scratch_c, (s32 *) scratch_d, 0,
-                      (*((u16 *) (obj + 0x6A)) == 0x15) ? 0x80 : 0x100);
-      }
+      func_8002EBDC(scratch_d, (s16 *) scratch_c, (s32 *) scratch_d, 0,
+                    (*((u16 *) (obj + 0x6A)) == 0x15) ? 0x80 : 0x100);
       {
         s16 vel_y = *((s16 *) (((u8 *) scratch) + 0x12));
         if (vel_y >= (-0x7FF))
         {
           s32 mode = *((u16 *) (obj + 0x6A));
-          u16 m = mode;
+          s32 m = mode & 0xFFFF;
           if (((((m != 8) && (m != 0x22)) && (((u32) (mode - 0x17)) >= 2)) && (m != 0xA)) && ((*((s16 *) (obj + 0x72))) == 0))
           {
             scratch[9] = 0;
@@ -86,7 +98,5 @@ void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
   }
 
   done:
-  ;
-
   ;
 }

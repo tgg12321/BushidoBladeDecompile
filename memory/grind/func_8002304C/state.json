@@ -31,7 +31,11 @@
  "judge_constraints": [],
  "banned_constructs": [],
  "ladder_skip": 0,
- "pending_fixup": null,
+ "pending_fixup": {
+  "kind": "citation",
+  "detail": "Construct is legitimate (verified in-tree sibling precedent for the redundant-mask idiom), but every citation to that precedent (source comment, self-vet, and rejected/ addendum) points to the wrong lines \u2014 a resolvable citation error, not a substantive defect. Fix the citation only, no re-grind needed: replace every '2531-2552' / '2535-2536' reference (in the src/code6cac.c header comment for func_8002304C, in hypotheses.md/evidence.md if they also carry the wrong lines, and in rejected/u16-mode-with-masked-or-copied-m.c's s2 addendum) with the correct location \u2014 func_80023E40 spans src/code6",
+  "set": "2026-08-26T21:11:22.226336+00:00"
+ },
  "origin": "queue",
  "created": "2026-08-26T20:30:49.008456+00:00"
 }

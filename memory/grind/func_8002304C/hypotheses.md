@@ -87,3 +87,35 @@
 - probe: compiler-source read + 4 measured spellings (retypes, explicit &0xFFFF, address-taken)
 - result: all fold to addu copy or worse; no same-BB escape found
 - verdict: KILLED
+
+## s2 (2026-08-26, structural)
+
+## [s2] The andi residual is NOT a nonzero_bits/label-region problem; the mask survives whenever combine cannot attempt the i2->i3 substitution
+- mechanism: can_combine_p refuses to substitute the zero_extend load into the AND while the load's pseudo is live past the AND (`mode - 0x17` reads it), so nonzero_bits (combine.c:6885-6923) never runs on the AND and the standalone andsi3 reaches the assembler as `andi $v1,$a0,0xffff`
+- probe: read tmp/grind/func_8002304C/dumps/code6cac.combine (dump.ps1); found the surviving `(and:SI (reg/v:SI 74) (const_int 65535))` in the same TU's func_80023E40 and traced why it survives there
+- result: s1's H5 KILL was scoped to the wrong gate; the escape needs wide-mode operands + a live raw pseudo, not a label_tick mismatch
+- verdict: CONFIRMED (supersedes H5's KILL, which stands only for the narrow-typed spellings it actually measured)
+
+## [s2] The original author's spelling of this block is recoverable from the copy-paste sibling func_80023E40 in the same TU
+- mechanism: source fidelity, not codegen coercion — func_80023E40 (COMPLETED-C, 0 rules, matched at 6d255e79) reads the identical field obj+0x6A with `s32 a0 = *(u16*)(arg0+0x6A); s32 v1 = a0 & 0xFFFF;` and runs the identical ==8 / ==0x22 / (u32)(a0-0x17)<2 / ==0xA cascade
+- probe: apply that exact idiom (both locals s32, explicit & 0xFFFF) to func_8002304C's vel_y block; measure
+- result: sandbox --disable all 1 -> **0**, 216/216 insns; full verify-oracle SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa
+- verdict: CONFIRMED — function MATCHED in pure C
+
+## [s2] F1 (label-crossing multi-set shape) and F3 (endgame/canonical routing) are moot
+- mechanism: the residual they were aimed at no longer exists
+- probe: n/a — closed by the s2 match before either was spent
+- result: F1 never needed; F3's func_800871D4 endgame equivalence is now known to be a FALSE sibling for this function (there the andi was missing entirely; here it was an unfoldable-mask spelling problem)
+- verdict: KILLED (as live frontier items)
+
+## Live frontier (post-match)
+
+- none for this function; it is MATCHED. Carry-forward for OTHER functions:
+  when a target shows a redundant `andi rX, rY, 0xffff` (or any redundant
+  width mask) that our build renders as a copy or deletes, check whether the
+  raw pseudo is LIVE past the mask; if so, spell BOTH the raw value and the
+  masked value in the SAME wide mode with an explicit `& 0xFFFF`, and grep the
+  same TU for an already-matched sibling that reads the same field — the
+  original's idiom is often already in the tree. This is the direct
+  counter-recipe to memory/reference/redundant-byte-andi-satan0main.md (which
+  covers the NARROW direction for the byte case).

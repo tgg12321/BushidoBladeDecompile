@@ -89,3 +89,62 @@
 - [s1] cc1psx does not fold this pattern (2026-06-16 calibration recorded in decisions.md:2124) — informational only per no-compiler-divergence
 
 - [s1] Full session ledger in memory/grind/func_8002304C/evidence.md [s1-E1..E11] + hypotheses.md; rejected spellings banked in rejected/u16-mode-with-masked-or-copied-m.c
+
+## s2 (2026-08-26, structural) — floor 1 -> 0; MATCH
+
+- [s2-E1] **Chassis re-measured before spending anything.** s1's candidate.c
+  re-applied to src/code6cac.c (it had been reverted to `INCLUDE_ASM` by the
+  driver's asm-until-matched commit): `sandbox --disable all` == **1**,
+  216/216 insns, rules_dropped 0. The ledger's floor was reproduced exactly,
+  so every s1 spelling conclusion was still chassis-valid.
+- [s2-E2] **PASS ATTRIBUTION CORRECTION — the residual was never a
+  nonzero_bits problem.** `pwsh tools/grinder/dump.ps1 func_8002304C` +
+  reading tmp/grind/func_8002304C/dumps/code6cac.combine. s1's [s1-E8] read
+  combine.c:6885-6923 (the `nonzero_bits` REG case) and concluded no same-BB
+  honest spelling can escape the fold. That analysis is correct **as far as it
+  goes** but it analyses the wrong gate: `nonzero_bits` only ever runs on the
+  AND if combine actually ATTEMPTS the i2->i3 substitution. Combine cannot
+  attempt it when i2's destination is live past i3. So the escape does not
+  need a label-region trick at all — it needs the raw load's pseudo to stay
+  LIVE across the mask insn, which this function already does (`mode - 0x17`
+  is read after the mask). The blocking factor in s1's spellings was purely
+  that a narrow-typed operand let the truncate/extend pair collapse before
+  liveness mattered.
+- [s2-E3] **IN-TU COMPLETED-C PRECEDENT for the exact idiom, same field.**
+  While grepping the .combine dump I hit `(set (reg/v:SI 75) (and:SI
+  (reg/v:SI 74) (const_int 65535)))` surviving combine in a function whose
+  first insn is `reg/v:SI 73 = 528482736` (= 0x1F8001B0). That is
+  **func_80023E40**, src/code6cac.c:2531-2552 — a COMPLETED-C function
+  (0 regfix rules, 0 asmfix rules, not in engine/queue.json, not in
+  inline_asm_canonical.txt), matched at commit `6d255e79` (2026-03-26). Its
+  body reads the SAME struct field with the SAME two-line idiom:
+      s32 a0; s32 v1;
+      a0 = *(u16 *)(arg0 + 0x6A);
+      v1 = a0 & 0xFFFF;
+  and runs the SAME comparison cascade (`v1 == 8`, `v1 == 0x22`,
+  `(u32)(a0 - 0x17) < 2`, `v1 == 0xA`; E40 has one extra arm, `v1 == 0x28`).
+  The two functions are copy-paste siblings in the original source. This is
+  in-tree, byte-proven, original-author evidence that the `& 0xFFFF` is IN
+  THE ORIGINAL C — it is not a coercion invented to move bytes.
+- [s2-E4] **The spelling s1 never measured closes it.** s1's rejected bank
+  covers `u16 mode` + `s32 m = mode & 0xFFFF` (variant A, score 3),
+  `u16 mode` + `u16 m = mode` (variant B, score 3), `s32 mode` + `u16 m`
+  (kept, score 1) and `s32 mode` + `u16 m = *(u16*)&mode` (variant C, score
+  25). The **`s32 mode` + `s32 m = mode & 0xFFFF`** quadrant — wide load AND
+  wide mask, i.e. func_80023E40's exact spelling — was never tried. Applied
+  verbatim: `sandbox --disable all` == **0**, 216/216 insns, rules_dropped 0.
+- [s2-E5] **Full oracle verified this session.** `verify-oracle`:
+  build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa == original,
+  build_matches true, with func_8002304C in pure C in src/code6cac.c.
+  Zero regfix/asmfix rules, zero register pins, zero inline asm, zero FAKE
+  constructs, zero volatile.
+- [s2-E6] **Mechanism of the surviving andi (dump-read).** Combine holds
+  insn A `reg74(SI) = zero_extend:SI(mem:HI(obj+106))` and insn B
+  `reg75(SI) = and:SI(reg74, 65535)`. `can_combine_p` refuses A->B because
+  reg74 has a later use (`plus:SI(reg74, -23)` for the 0x17..0x18 range test),
+  so the AND is never folded into a substitution and `nonzero_bits` never gets
+  the chance to prove it redundant. andsi3 with 0xFFFF emits
+  `andi $v1,$a0,0xffff`. The generalizable lesson: **a redundant-looking mask
+  survives GCC 2.7.2 exactly when the masked pseudo is still live afterwards
+  and both operands are the same (wide) mode** — narrowing either side lets an
+  earlier pass collapse the pair before liveness can protect it.
