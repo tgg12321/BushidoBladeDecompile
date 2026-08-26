@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "special_camera_get_rot_dir",
-      "file": "code6cac_b2_post",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
-    },
-    {
       "func": "get_alarm",
       "file": "display",
       "distance": 9,
@@ -2034,17 +2025,27 @@
       "status": "escalated",
       "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals.",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 2026-08-25 entry: \"func_8001F938 (src/code6cac.c) \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**\""
+    },
+    {
+      "func": "special_camera_get_rot_dir",
+      "file": "code6cac_b2_post",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals.",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md \u2014 '2026-08-26 \u2014 special_camera_get_rot_dir (src/code6cac_b2_post.c) \u2014 OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET': may include/code6cac.h be added to tools/grinder/scope_allow.txt for this function so the stale 1-arg CdRead prototype at include/code6cac.h:510 can be corrected at its canonical location? Bytes are proven at floor 0 (verify-oracle SHA1 match); all four placements of the corrected prototype are enumerated and only the header one is honest."
     }
   ],
   "counts": {
     "total": 232,
-    "active": 218,
+    "active": 217,
     "by_status": {
-      "active": 218,
-      "escalated": 14
+      "active": 217,
+      "escalated": 15
     },
     "by_verdict": {
-      "C": 183,
+      "C": 182,
       "ASM-PARTIAL": 35
     }
   }

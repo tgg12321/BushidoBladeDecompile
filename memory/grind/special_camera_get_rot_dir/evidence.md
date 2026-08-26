@@ -912,3 +912,173 @@ include/code6cac.h`, `func_80038170 include/code6cac.h`) - NOT a candidate diff.
   `li $a2,0x80` per call site, 69 insns, score 12
   (rejected/literal-mode-no-local-score12.c). The target holds 0x80 in callee-saved
   $s4 across the whole loop.
+
+---
+
+## s7 (2026-08-26, structural modality) — the residual is byte-closed; what remains is a scope grant
+
+### Chassis re-measurement (the driver dispatched with "measurement unavailable")
+
+Every number below was produced THIS session, from a clean `main` tree with only
+`src/code6cac_b2_post.c` modified. The ledger's recorded floor of 9 is superseded: it
+described the pre-s7 chassis in which `special_camera_get_rot_dir` was still
+`INCLUDE_ASM` and the copy loop was being hand-written in C.
+
+| variant applied to src/ | special_camera_get_rot_dir | func_800372F4 |
+|---|---|---|
+| v1 — 3-arg wrapper forwarding to a 3-arg CdRead declared at block scope | **score 0**, 72/72 insns | **score 0**, 21/21 insns |
+| v2 — 3-arg wrapper, body still calls the header's 1-arg CdRead (params unread) | **score 0**, 72/72 insns | **score 0**, 21/21 insns |
+| v3 — same as v1 but the 3-arg CdRead declared at FILE scope, right under `#include "code6cac.h"` | **score 0**, 72/72 insns | (unchanged) |
+
+Full-build oracle, run with v1 in place:
+
+```
+verify-oracle -> "ok": true
+                 "build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa"
+                 "build_matches": true
+```
+
+So the honest floor for this function is **0**, and it links. The nine-instruction
+residual that s1–s6 chased is gone.
+
+### FACT 1 — `copy_end` was never a C object, which is why five sessions could not move it
+
+s1–s6 modelled `copy_end` ($s5 = sp+0x50) as a C local whose live length had to be
+raised into a target window, and built an 8/8-exact `ra_solver` model of the resulting
+live-length chain. That model was internally correct and still produced no match,
+because its central pseudo does not come from the C at all.
+
+The target's copy block — the `.L800373C0` / `bne $a2,$s5` four-word loop plus its
+three-word tail — is emitted by GCC's MIPS backend block-move expander from ONE
+aggregate assignment:
+
+```
+config/mips/mips.c:2362-2368   expand_block_move()
+    constp && bytes(60) > 2*MAX_MOVE_BYTES(32) && align >= 4 && optimize
+      -> block_move_loop()     (mips.c:2222-2288)
+```
+
+`block_move_loop` emits, in this order: `final_src = src_reg + 48`; `emit_label(L)`;
+`movstrsi_internal` for 16 bytes (4 `lw` + 4 `sw`); `src += 16`; `dst += 16`;
+`cmpsi(src, final_src)`; `bne L`; then the leftover `movstrsi` for
+`60 % 16 = 12` bytes (3 `lw` + 3 `sw`). That is the target block instruction for
+instruction, including the `move $a3,$s0` / `addiu $a2,$sp,0x20` pair produced by the
+two `copy_addr_to_reg()` calls at mips.c:2352-2353.
+
+`copy_end` is `block_move_loop`'s `final_src`: a backend pseudo born at RTL expand
+time. It has no C-level definition site, so no amount of declaration ordering,
+def placement, or live-length arithmetic at the C level could ever have reached it.
+The six-register rotation that the ledger had characterised as an allocno-priority
+wall (`local-alloc.c:1064` doubling, `update_equiv_regs` REG_EQUIV gating, the
+`L(buf2) < L(index) < L(cam) <= L(const) <= L(copy_end)` chain) simply does not arise
+once the copy is written as `*(CamRot *)dest = *(CamRot *)&sp_buf[0x10];`. Those
+mechanisms were real GCC behaviour, accurately described; they were being applied to a
+pseudo that the correct source never creates.
+
+**Consequence for the frontier the driver handed me:** all three s6 frontier routes
+(R1 kill-the-REG_EQUIV via `reg_n_sets >= 2`; R2 pull the doubled length back with
+`optimize_reg_copy_1`; R3 pre-RA scheduling to shift the base length) are moot, not
+disproven. They were routes to raise `copy_end`'s live length in a chassis that no
+longer exists. None of them needs to be run.
+
+### FACT 2 — `CdRead` genuinely takes three arguments, and the header is stale
+
+`include/code6cac.h:510` declares `extern void CdRead(s32);`. That contradicts this
+repo's own byte-matched definition:
+
+```
+src/system.c:901   s32 CdRead(s32 sectors, s32 buf, s32 mode)
+```
+
+which reads all three (`D_800A14DC = mode;` `D_800A14D4 = buf;` `*ps = sectors;`).
+`include/m2c_context.h:1123` independently carries the same three-argument form. The
+header is wrong, and it is wrong independently of this grind.
+
+The target corroborates the three-argument call through the wrapper. Both call sites in
+`asm/funcs/special_camera_get_rot_dir.s` set two argument registers plus the delay-slot
+`$a2`:
+
+```
+800373A0  addiu $a0, $zero, 0x800     800373A4  addiu $a1, $sp, 0x10
+80037428  lw    $a0, 0xC($s0)         8003742C  lw    $a1, 0x8($s0)
+```
+
+and `asm/funcs/func_800372F4.s` recomputes `$a0` only, never writing `$a1`/`$a2`
+before `jal CdRead` — so the buffer address and the CD mode reach `CdRead` through the
+wrapper's second and third parameters untouched.
+
+### FACT 3 — the arity is byte-inert; the remaining question is fidelity, not codegen
+
+v1 and v2 above differ precisely in whether `buf`/`mode` are forwarded to `CdRead`, and
+they produce identical bytes in both functions. The wrapper's incoming `$a1`/`$a2` are
+already its outgoing `$a1`/`$a2`, so forwarding them is a register identity that costs
+nothing.
+
+This is the decisive structural finding of the session: **no measurement can select
+among the candidate spellings, because they all measure 0.** The only discriminator
+left is which one is the original source. That makes it an owner decision about source
+fidelity, not a target for further grinding.
+
+### FACT 4 — both in-scope placements of the corrected prototype are the same workaround
+
+There are exactly three places the corrected `CdRead` prototype can go.
+
+1. **`include/code6cac.h:510`, its canonical location.** Correct, one line, fixes a real
+   repo defect for every TU. **Out of scope** for this function's candidates.
+2. **Block scope, inside `func_800372F4`.** Layer-1 cheat-reviewer **FAIL**,
+   2026-08-26 01:42: "a scope-gate workaround, not a reconstruction of the original
+   source". Banked at `rejected/layer1-fail-0826-0142.c`.
+3. **File scope, immediately below `#include "code6cac.h"`.** s7 measured it: GCC 2.7.2
+   accepts the conflicting redeclaration and it scores 0 (72/72), so it is a genuinely
+   byte-valid, genuinely in-scope form. It is banked as **rejected** anyway
+   (`rejected/filescope-cdread-redecl-conflicts-header.c`) on semantics: no human
+   programmer writes a prototype that contradicts the header two lines above it — they
+   fix the header. It is placement 2's workaround moved one scope level outward, and
+   proposing it would be respelling a construct that already FAILed layer 1.
+
+Leaving the parameters unread (v2) is placement-free but is the shape that FAILed
+layer 1 on 2026-08-26 01:09; banked at `rejected/unread-params-arity-inert.c`.
+
+So there is no honest form confined to `src/code6cac_b2_post.c`. Per the standing
+out-of-scope constraint on this function, the prescribed disposition is to file an
+escalation requesting `include/code6cac.h` be added to `tools/grinder/scope_allow.txt`
+and return `owner-gated`. That is what s7 did — see `docs/grind/decisions.md`,
+2026-08-26 entry.
+
+### FACT 5 — two placement facts inside the matching form (unchanged from s7's predecessor, re-confirmed)
+
+- The `sp+0x50` (block-move `final_src`) and `sp+0x810` (`sp_buf2` address) preheader
+  computations come out in `loop.c` hoist order. Taking `sp_buf2`'s address at its two
+  use sites — i.e. **not** introducing a pre-loop pointer local — gives the target
+  order. A pre-loop `buf2_ptr` local costs exactly 2
+  (`rejected/preloop-buf2ptr-hoist-order-score2.c`). The matching form has *fewer*
+  locals, not more.
+- `mode` is a named variable, not the literal `0x80`. With the literal, GCC
+  rematerialises `li $a2,0x80` at each call site and the function drops to 69 insns,
+  score 12 (`rejected/literal-mode-no-local-score12.c`). The target holds `0x80` in
+  callee-saved `$s4` across the whole loop — direct evidence the original source named
+  the value.
+
+- [s7] Chassis re-measured this session from a clean main tree: special_camera_get_rot_dir scores 0 at 72/72 insns and func_800372F4 scores 0 at 21/21 insns with the s7 form in src/code6cac_b2_post.c. The ledger's recorded floor of 9 is superseded — it described the pre-s7 chassis in which the function was still INCLUDE_ASM and the copy loop was being hand-written in C.
+
+- [s7] Full-build oracle run with the form in place: verify-oracle returns "ok": true, "build_matches": true, build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa. The match links.
+
+- [s7] The target's copy block is not in the source. The .L800373C0 / bne $a2,$s5 four-word loop plus its three-word tail is emitted by GCC's MIPS backend from ONE aggregate assignment: expand_block_move (config/mips/mips.c:2362-2368) sees constp && bytes(60) > 2*MAX_MOVE_BYTES(32) && align >= 4 && optimize and dispatches to block_move_loop (mips.c:2222-2288), which emits final_src = src_reg + 48, the label, movstrsi_internal for 16 bytes (4 lw + 4 sw), src += 16, dst += 16, cmpsi, bne, then the leftover movstrsi for 60 % 16 = 12 bytes (3 lw + 3 sw).
+
+- [s7] This is why sessions s1-s6 could not move the floor: copy_end ($s5 = sp+0x50) is block_move_loop's final_src, a backend pseudo born at RTL expand time with no C-level definition site. Five sessions of declaration-order, def-placement and live-length work at the C level could not reach it. The s5/s6 ra_solver model was 8/8-exact and still yielded nothing precisely because its central pseudo is not a C object.
+
+- [s7] CdRead genuinely takes three arguments. include/code6cac.h:510 declares `extern void CdRead(s32);`, contradicting this repo's own byte-matched definition `s32 CdRead(s32 sectors, s32 buf, s32 mode)` at src/system.c:901, which reads all three (D_800A14DC = mode; D_800A14D4 = buf; *ps = sectors). include/m2c_context.h:1123 independently carries the 3-argument form. The header is a defect independent of this grind.
+
+- [s7] The target corroborates the 3-argument call through the wrapper: both call sites set two argument registers plus $a2 (800373A0 addiu $a0,$zero,0x800 / 800373A4 addiu $a1,$sp,0x10; 80037428 lw $a0,0xC($s0) / 8003742C lw $a1,0x8($s0); $a2 = $s4, the mode held callee-saved across the whole loop), and asm/funcs/func_800372F4.s recomputes $a0 only and never writes $a1/$a2 before jal CdRead.
+
+- [s7] The CdRead arity is byte-inert: forwarding buf/mode to a 3-arg CdRead and calling the header's 1-arg CdRead produce identical bytes in both functions (0/72 and 0/21 either way). No measurement can select among the candidate spellings, which is what makes the remaining question one of source fidelity rather than codegen.
+
+- [s7] All four placements of the corrected prototype are now enumerated and measured, and exactly one is honest: include/code6cac.h:510 (correct, OUT OF SCOPE); block scope inside func_800372F4 (layer-1 FAIL 2026-08-26 01:42, 'a scope-gate workaround, not a reconstruction of the original source'); file scope under the include (s7-measured, compiles, scores 0, in scope, but a prototype contradicting the header two lines above it — the same workaround one level outward); and omitting the forwarding so buf/mode are unread (layer-1 FAIL 2026-08-26 01:09).
+
+- [s7] Two placement facts inside the matching form, re-confirmed: a pre-loop buf2_ptr pointer local costs exactly 2 (the matching form takes sp_buf2's address at its two use sites and has FEWER locals, not more — rejected/preloop-buf2ptr-hoist-order-score2.c); and mode must be a named variable, since with the literal 0x80 GCC rematerialises li $a2,0x80 at each call site and the function drops to 69 insns, score 12 (rejected/literal-mode-no-local-score12.c) — the target holds 0x80 in callee-saved $s4 across the whole loop.
+
+- [s7] The prior escalations on this function (2026-07-23 OWNER-ESCALATION and the 2026-07-27 ruling, option (b) REFUSED / OWNER-ACCEPTED INCOMPLETE) are obsolete: both rested on an allocno-priority wall around copy_end that does not exist in the matching form.
+
+- [s7] src/ was reverted to its committed state before this session ended; `git diff --stat src/` is empty. The only modified tracked files are docs/grind/decisions.md, the ledger under memory/grind/special_camera_get_rot_dir/, and metrics/events.jsonl.
+
+- [s7] This is an INTEGRATION HANDOFF, not an endgame lock: the bytes are proven and the blocker is a single one-line edit to a surface this function's candidates may not touch. The operator still runs a fresh layer-2 cheat-reviewer on the C before acceptance.

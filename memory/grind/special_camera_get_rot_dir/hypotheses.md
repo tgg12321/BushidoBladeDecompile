@@ -565,3 +565,120 @@ and func_800372F4 is a 3-parameter wrapper that forwards buf and mode to it.**
 - Verdict: CONFIRMED. No scope grant is required for the match. A scope grant remains
   the correct mechanism only if the operator prefers the declaration at its canonical
   home in include/code6cac.h.
+
+---
+
+## s7 (2026-08-26, structural) — hypothesis dispositions
+
+### H-s7-1 — CONFIRMED (with the full-build oracle)
+**Statement.** The aggregate-assignment chassis (one 60-byte struct copy, `mode` as a
+named local, `sp_buf2`'s address taken at its use sites, `func_800372F4` widened to
+three arguments) is a complete byte match for `special_camera_get_rot_dir` on the
+current chassis, and it does not perturb the rest of the build.
+
+**Mechanism.** `expand_block_move` (config/mips/mips.c:2362-2368) dispatches the 60-byte
+constant-size, 4-byte-aligned copy to `block_move_loop` (mips.c:2222-2288), which emits
+the target's `.L800373C0` loop and its 12-byte tail verbatim, `final_src` (= `$s5`,
+sp+0x50) included.
+
+**Probe.** Applied to `src/code6cac_b2_post.c`; `sandbox --disable all` on both
+functions; then `verify-oracle`.
+
+**Result.** `special_camera_get_rot_dir` score 0 (72/72); `func_800372F4` score 0
+(21/21); `verify-oracle` `"ok": true`, `"build_matches": true`,
+`build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa`.
+
+**Verdict.** CONFIRMED. The honest floor is 0, not 9.
+
+---
+
+### H-s7-2 — CONFIRMED
+**Statement.** The `CdRead` prototype's arity contributes zero bytes to either function,
+so no measurement can discriminate among the candidate spellings of the wrapper.
+
+**Mechanism.** `func_800372F4`'s incoming `$a1`/`$a2` are already its outgoing
+`$a1`/`$a2` at the `jal CdRead`; forwarding the parameters is a register identity and
+GCC emits nothing for it. `asm/funcs/func_800372F4.s` confirms the wrapper never writes
+either register.
+
+**Probe.** Built v1 (forward all three to a 3-arg `CdRead`) and v2 (widen the wrapper
+but call the header's 1-arg `CdRead`, leaving `buf`/`mode` unread) and compared.
+
+**Result.** Byte-identical: both score 0 at 72/72 and 21/21.
+Banked at `rejected/unread-params-arity-inert.c`.
+
+**Verdict.** CONFIRMED — and this is what reclassifies the residual from a codegen
+problem to a source-fidelity problem.
+
+---
+
+### H-s7-3 — KILLED
+**Statement.** An honest form of this function exists that is confined to
+`src/code6cac_b2_post.c` (i.e. the corrected `CdRead` prototype can be relocated into
+the .c file rather than fixed in the header).
+
+**Mechanism tested.** GCC 2.7.2's pre-ANSI tolerance of a redeclaration that conflicts
+with an earlier one, which would let a correct `extern s32 CdRead(s32, s32, s32);` sit
+at file scope in the .c file despite `include/code6cac.h:510` declaring
+`extern void CdRead(s32);`.
+
+**Probe.** Placed the corrected prototype at file scope directly beneath
+`#include "code6cac.h"` and measured.
+
+**Result.** It compiles and scores 0 (72/72) — byte-valid and in scope. Killed on
+semantics, not bytes: it is a prototype contradicting the header two lines above it,
+which is the same scope-gate workaround the 2026-08-26 01:42 layer-1 review already
+FAILed at block scope, relocated one level outward. Re-proposing it would be respelling
+a FAILed construct (T2 human-programmer). Banked at
+`rejected/filescope-cdread-redecl-conflicts-header.c`.
+
+**Verdict.** KILLED. All three placements of the corrected prototype are now
+enumerated and measured; exactly one (the header) is honest, and it is out of scope.
+
+---
+
+### H-s6-1 / H-s6-2 / H-s6-3 — MOOT (withdrawn, not disproven)
+The three s6 frontier routes — (R1) make `reg_n_sets >= 2` for the `cam`/`const`
+pseudos to strip their REG_EQUIV and defeat the `local-alloc.c:1064` doubling;
+(R2) pull the doubled live length back into the window via `optimize_reg_copy_1`
+(local-alloc.c:820-831); (R3) use `tools/sched_solver` to find a legal sched1 ordering
+that shifts the base live lengths — were all routes to raise `copy_end`'s live length
+into a target window.
+
+`copy_end` is `block_move_loop`'s `final_src`, a backend pseudo created during RTL
+expansion of an aggregate assignment the correct source writes as a single statement.
+It has no C-level definition site, and in the matching form the live-length chain the
+`ra_solver` model described never forms at all. The GCC mechanisms those routes cite are
+real and were accurately characterised; they were simply being aimed at a pseudo the
+original source does not create. **Do not spend sessions on R1/R2/R3.**
+
+Note for the next session: the s1–s6 `ra_solver`/`sched_solver` modelling was not
+wasted — the 8/8-exact live-length model is what made it possible to state precisely
+that the chain does not exist in the matching form. The transferable lesson is the one
+in `[[full-picture-first]]`: when an RA model is exact and still yields nothing, check
+whether the pseudo under study is C-level or backend-generated **before** iterating on
+C-level levers.
+
+## [s7] The aggregate-assignment chassis (one 60-byte struct copy, mode as a named local, sp_buf2's address taken at its use sites, func_800372F4 widened to three arguments) is a complete byte match for special_camera_get_rot_dir and does not perturb the rest of the build.
+- mechanism: expand_block_move (config/mips/mips.c:2362-2368) dispatches the 60-byte constant-size, 4-byte-aligned copy to block_move_loop (mips.c:2222-2288), which emits the target's .L800373C0 four-word loop, its cmpsi/bne, and its 12-byte (3 lw + 3 sw) tail verbatim, including the move $a3,$s0 / addiu $a2,$sp,0x20 pair from the two copy_addr_to_reg() calls at mips.c:2352-2353. copy_end ($s5 = sp+0x50) is block_move_loop's final_src.
+- probe: Applied the form to src/code6cac_b2_post.c; ran `sandbox special_camera_get_rot_dir --disable all` and `sandbox func_800372F4 --disable all`; then ran the full-build `verify-oracle`.
+- result: special_camera_get_rot_dir score 0 (72/72 insns); func_800372F4 score 0 (21/21 insns); verify-oracle "ok": true, "build_matches": true, build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+- verdict: CONFIRMED
+
+## [s7] The CdRead prototype's arity contributes zero bytes to either function, so no measurement can discriminate among the candidate spellings of the wrapper — the residual is a source-fidelity question, not a codegen question.
+- mechanism: func_800372F4's incoming $a1/$a2 are already its outgoing $a1/$a2 at the jal CdRead, so forwarding the parameters is a register identity and GCC emits nothing for it. asm/funcs/func_800372F4.s confirms the wrapper recomputes $a0 only and never writes either register.
+- probe: Built v1 (three-argument wrapper forwarding buf/mode to a correctly declared 3-arg CdRead) and v2 (three-argument wrapper whose body still calls the header's 1-arg CdRead, leaving buf/mode unread) and compared both functions' scores.
+- result: Byte-identical: both variants score 0 at 72/72 and 0 at 21/21. Banked at memory/grind/special_camera_get_rot_dir/rejected/unread-params-arity-inert.c.
+- verdict: CONFIRMED
+
+## [s7] An honest form of this function exists that is confined to src/code6cac_b2_post.c — i.e. the corrected CdRead prototype can be relocated into the .c file rather than fixed in include/code6cac.h.
+- mechanism: GCC 2.7.2's pre-ANSI tolerance of a redeclaration conflicting with an earlier one, which would allow `extern s32 CdRead(s32, s32, s32);` at file scope in the .c file despite include/code6cac.h:510 declaring `extern void CdRead(s32);`.
+- probe: Placed the corrected prototype at file scope immediately below `#include "code6cac.h"` in src/code6cac_b2_post.c and measured. This exhausts the placement enumeration: header (out of scope), block scope (layer-1 FAIL 2026-08-26 01:42), file scope (this probe), and omitting the forwarding entirely (layer-1 FAIL 2026-08-26 01:09).
+- result: It compiles under GCC 2.7.2 and scores 0 (72/72) — byte-valid AND in scope. Killed on semantics, not bytes: it is a prototype contradicting the header two lines above it, which is the identical scope-gate workaround the 01:42 layer-1 review already FAILed at block scope, relocated one level outward; proposing it would be respelling a FAILed construct (T2 human-programmer). Banked at rejected/filescope-cdread-redecl-conflicts-header.c. No honest in-scope form exists.
+- verdict: KILLED
+
+## [s7] The three s6 frontier routes (R1 kill the REG_EQUIV by making reg_n_sets >= 2 for the cam/const pseudos; R2 pull the doubled live length back into the window via optimize_reg_copy_1; R3 use sched_solver to shift the pre-RA base live lengths) are worth running.
+- mechanism: All three were routes to raise copy_end's live length into the [32,38] target window implied by the s5/s6 live-length chain L(buf2) < L(index) < L(cam) <= L(const) <= L(copy_end), via update_equiv_regs / local-alloc.c:1064 doubling / local-alloc.c:820-831 / sched1 ordering.
+- probe: Structural re-derivation of what copy_end actually is, cross-checked against the MIPS backend block-move expander and confirmed by the byte match in H-s7-1.
+- result: MOOT, not disproven. copy_end is block_move_loop's final_src — a backend pseudo created during RTL expansion of an aggregate assignment the correct source writes as a single statement. It has no C-level definition site, and in the matching form the live-length chain never forms at all. The GCC mechanisms cited by R1/R2/R3 are real and were accurately characterised by s5/s6; they were aimed at a pseudo the original source does not create. Do not spend sessions on them.
+- verdict: KILLED

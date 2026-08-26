@@ -1,8 +1,8 @@
 {
  "func": "special_camera_get_rot_dir",
  "file": "code6cac_b2_post",
- "session_count": 6,
- "current_modality": "synthesis",
+ "session_count": 7,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -45,23 +45,29 @@
    "floor": 9,
    "modality": "synthesis",
    "headline": "Residual reduced to ONE named GCC line: local-alloc.c:1064 doubles the live length of the two REG_EQUIV constant pseudos (cam=&SpecialCam, const=0x80); the def-order chassis that satisfies the target "
+  },
+  {
+   "session": 7,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "Floor 0 proven this session (72/72, 21/21, verify-oracle SHA1 match) \u2014 the copy loop is GCC's block_move_loop, not C; only blocker left is the stale 1-arg CdRead prototype at include/code6cac.h:510, w"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A zero-instruction-cost C spelling exists that makes reg_n_sets >= 2 for the cam and const pseudos, removing their REG_EQUIV and therefore the x2 doubling, and it lands the byte match from the def-order chassis.",
-   "mechanism": "update_equiv_regs (local-alloc.c ~1015-1030) bails out with continue before granting REG_EQUIV whenever reg_n_sets[regno] != 1, and the x2 at local-alloc.c:1064 is gated on that note. reg_n_sets is counted by flow's life_analysis, which runs BEFORE combine/sched/local-alloc, while cross-jumping (jump2) and reload's no-op-move deletion run AFTER \u2014 so a second SET that exists at flow time can be absent from the emitted stream.",
-   "next_probe": "Seed src from memory/grind/special_camera_get_rot_dir/rejected/routeC-seed-deforder-basewindow-score16.c and iterate with `bash tmp/grind/special_camera_get_rot_dir/s6/alloc.sh <tag>` (one call, exact allocno table off src/). Success signal readable in that one table: 74 and 76 report livelen in [32,38] with L(74) <= L(76), copy_end 77 at 38, at 72 build insns. Two ranked spellings: (a) two identical assignments placed in cross-jumpable tails \u2014 both `if (v0 != 0) goto retry;` sites are candidates, since cross-jump merges identical tails after reload; (b) initialise via a REG-to-REG copy across an EBB boundary so cse attaches no constant REG_EQUAL (cse.c:6923 requires GET_CODE (src_const) != REG), letting optimize_reg_copy_1/2 tie the pseudos and reload delete the move. ALWAYS confirm the insn count is still 72 \u2014 rejected/twoset-kills-regequiv-plus2insns.c proves the doubling dies but cost +2."
+   "hypothesis": "Once include/code6cac.h is in tools/grinder/scope_allow.txt (or the header defect is fixed as a standalone commit outside the grind), memory/grind/special_camera_get_rot_dir/candidate.c closes BOTH special_camera_get_rot_dir and func_800372F4 as COMPLETED-C with no further search.",
+   "mechanism": "The form already measures 0/72 and 0/21 with verify-oracle SHA1-matching; the only edit still outstanding is replacing `extern void CdRead(s32);` at include/code6cac.h:510 with `extern s32 CdRead(s32, s32, s32);` to match src/system.c:901, which makes the wrapper's forwarding of buf/mode honest instead of a scope workaround.",
+   "next_probe": "Apply candidate.c plus the one-line header fix, re-run sandbox on both functions and verify-oracle to reconfirm, then run a fresh layer-2 cheat-reviewer and `queue done special_camera_get_rot_dir`. Do NOT re-open the RA/scheduler search \u2014 H-s7-1 already banked the match."
   },
   {
-   "hypothesis": "The doubled length can instead be pulled back INTO the window by local-alloc's direct live-length arithmetic, leaving the REG_EQUIV in place.",
-   "mechanism": "optimize_reg_copy_1, called from the same update_equiv_regs insn loop (local-alloc.c:1003-1015), writes reg_live_length[sregno] -= length and reg_live_length[dregno] += d_length at local-alloc.c:820-831 \u2014 the only site besides the x2 that edits a live length after flow. cam at 72 needs to land anywhere in [32,38] and const at 74 anywhere in [L(cam),38].",
-   "next_probe": "From the same def-order chassis, introduce a reg-reg copy consuming cam (and const) whose source is NOT dead at the copy \u2014 the precondition at local-alloc.c:1003-1007 \u2014 and read the resulting livelen off alloc.sh. Pure measurement: it either moves the two numbers into the window at 72 insns or it does not."
+   "hypothesis": "The stale CdRead prototype at include/code6cac.h:510 mis-declares a Sony library entry point for every TU that includes code6cac.h, so other call sites in the tree may be silently passing the wrong number of arguments.",
+   "mechanism": "include/code6cac.h:510 says `extern void CdRead(s32);` while the matched definition at src/system.c:901 is `s32 CdRead(s32, s32, s32)` and include/m2c_context.h:1123 carries the 3-argument form. Under GCC 2.7.2 a call through the 1-arg declaration leaves $a1/$a2 undefined at the callee.",
+   "next_probe": "Grep the tree for CdRead call sites outside src/system.c and src/code6cac_b2_post.c and check each against the 3-argument definition. This is repo-hygiene work adjacent to, but independent of, this function; worth folding into whatever commit fixes the header."
   },
   {
-   "hypothesis": "Route R3 (pre-RA scheduling moves a live length without moving a C statement) survives s6 untouched and now has twice the leverage.",
-   "mechanism": "Live lengths are measured on the post-sched1 stream while emitted byte order is set by sched2, so two byte-identical C forms can present different pre-RA live lengths. Because the x2 is applied AFTER flow, a scheduling change that shortens the BASE by k shortens the doubled value by 2k. tools/sched_solver models both passes order- and clock-exactly and has still never been pointed at this function.",
-   "next_probe": "Run tools/sched_solver on the def-order chassis and ask one question only: can any legal sched1 ordering move base(cam)/base(const) (or their doubled values) into [32,38] while leaving copy_end at 38 and the emitted stream byte-identical? Then confirm with inverse_compose.py classify that the residual is still RA-owned rather than PRE-RA."
+   "hypothesis": "The s1-s6 failure mode on this function is general and cheap to detect: an exact RA/scheduler model that yields nothing is a signal that the pseudo under study may be backend-generated rather than C-level.",
+   "mechanism": "GCC's MIPS backend creates pseudos during RTL expansion (block_move_loop's final_src here; similarly in expand_block_move's movstrsi paths, and in library-call and structure-return expansion). Such pseudos appear in .lreg/.greg dumps indistinguishably from C locals, so a live-length model can be 8/8-exact about them and still be unactionable from C.",
+   "next_probe": "For any function whose ledger shows an exact RA model plus a flat floor across multiple sessions, run `pwsh tools/grinder/dump.ps1 <func>` and check whether the stuck pseudo has a definition in the .rtl/expand dump that traces to a backend expander rather than a C statement, BEFORE spending another session on C-level levers."
   }
  ],
  "judge_constraints": [

@@ -12769,3 +12769,118 @@ The aggregate-copy/retry-loop/mode reconstruction is well-evidenced and clears t
 ## 2026-08-26 01:42 — special_camera_get_rot_dir — layer-1 review — **FAIL**
 
 The aggregate-copy/retry-loop reconstruction and func_800372F4's widened, fully-read (nbytes,buf,mode) signature are legitimate and well-evidenced, but the block-scope `extern s32 CdRead(s32, s32, s32);` inside func_800372F4 is a scope-gate workaround, not a reconstruction of the original source, and the ledger's own prescribed path (escalate for a scope_allow.txt grant to fix include/code6cac.h:510 at its canonical location) was not taken.
+
+---
+
+## 2026-08-26 — special_camera_get_rot_dir (src/code6cac_b2_post.c) — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Filed by grind session s7 (structural modality). **This is an INTEGRATION HANDOFF, not
+an endgame lock.** The function is byte-closed. Nothing about it is hard any more, and
+nothing here asks for a standard to be lowered.
+
+### Status: bytes fully proven, this session, on the current chassis
+
+With the s7 form in `src/code6cac_b2_post.c` (saved verbatim at
+`memory/grind/special_camera_get_rot_dir/candidate.c`):
+
+```
+sandbox special_camera_get_rot_dir --disable all -> score 0, 72/72 insns
+sandbox func_800372F4              --disable all -> score 0, 21/21 insns
+verify-oracle -> "ok": true, "build_matches": true,
+                 build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa
+```
+
+Zero regfix/asmfix rules, zero inline asm, zero register pins, zero `volatile`, zero
+dead locals, zero `goto`, zero FAKE-annotated constructs, zero permuter output. The
+ledger's long-standing floor of 9 is superseded — see the s7 section of
+`memory/grind/special_camera_get_rot_dir/evidence.md` for why the previous six sessions
+could not reach it (the `copy_end` pseudo they were modelling is
+`block_move_loop`'s `final_src`, created during RTL expansion of an aggregate
+assignment, not a C local).
+
+### (i) The single decidable question
+
+> **May `include/code6cac.h` be added to `tools/grinder/scope_allow.txt` for this
+> function, so that the stale one-argument `CdRead` prototype at
+> `include/code6cac.h:510` can be corrected at its canonical location?**
+
+This is a source-fidelity / routing question about where one already-correct line of C
+is allowed to live. It is not a request for a new construct family, a coercion
+sanction, an evidence-bar override, or an acceptance of debt.
+
+**Why the edit is needed.** `func_800372F4` is a thin wrapper that tail-calls `CdRead`.
+Its asm recomputes `$a0` only and never writes `$a1`/`$a2`, so the buffer address and CD
+mode reach `CdRead` through the wrapper's second and third parameters. Both call sites
+in the target set them (`800373A4 addiu $a1,$sp,0x10`; `8003742C lw $a1,0x8($s0)`; `$a2
+= $s4`, the mode held callee-saved across the loop). Writing that honestly requires a
+correct `CdRead` prototype to be visible inside the wrapper.
+
+**Why the header is wrong today.** `include/code6cac.h:510` says
+`extern void CdRead(s32);`. This repo's own byte-matched definition is
+`s32 CdRead(s32 sectors, s32 buf, s32 mode)` at `src/system.c:901`, and it reads all
+three parameters (`D_800A14DC = mode; D_800A14D4 = buf; *ps = sectors;`).
+`include/m2c_context.h:1123` independently carries the three-argument form. The header
+declaration is a defect that exists independently of this grind and currently
+mis-describes a Sony library entry point to every TU that includes it.
+
+**Why no in-scope form is honest — all three placements enumerated and measured.**
+
+| placement | bytes | disposition |
+|---|---|---|
+| `include/code6cac.h:510`, canonical | 0 / 72 | correct; **out of scope** |
+| block scope inside `func_800372F4` | 0 / 72 | layer-1 **FAIL** 2026-08-26 01:42 — "a scope-gate workaround, not a reconstruction of the original source" |
+| file scope in the .c, under `#include "code6cac.h"` | 0 / 72 | s7-measured: compiles, byte-valid, in scope — **rejected on semantics**: a prototype contradicting the header two lines above it; the same workaround one level outward |
+| omit the forwarding, leave `buf`/`mode` unread | 0 / 72 | layer-1 **FAIL** 2026-08-26 01:09 — unread parameters |
+
+The arity is byte-inert (the wrapper's incoming `$a1`/`$a2` are already its outgoing
+ones), so every row measures 0. **No measurement can pick among them** — the choice is
+purely about which is the original source, which is why it is on your desk rather than
+in another grind session.
+
+### (ii) Evidence pointers
+
+- `memory/grind/special_camera_get_rot_dir/candidate.c` — the full form, with the
+  measurements and the mips.c `block_move_loop` derivation in its header comment.
+- `memory/grind/special_camera_get_rot_dir/evidence.md`, s7 section — FACTS 1-5.
+- `memory/grind/special_camera_get_rot_dir/hypotheses.md`, s7 section — H-s7-1
+  (CONFIRMED, with oracle), H-s7-2 (CONFIRMED, arity byte-inert), H-s7-3 (KILLED, no
+  honest in-scope placement), and the withdrawal of the three s6 RA routes as moot.
+- `rejected/filescope-cdread-redecl-conflicts-header.c`,
+  `rejected/unread-params-arity-inert.c`, `rejected/layer1-fail-0826-0142.c`,
+  `rejected/layer1-fail-0826-0109.c`.
+- `src/system.c:901` (matched 3-arg `CdRead`) vs `include/code6cac.h:510` (stale 1-arg);
+  `include/m2c_context.h:1123` (independent 3-arg form).
+- `asm/funcs/func_800372F4.s` (never writes `$a1`/`$a2`);
+  `asm/funcs/special_camera_get_rot_dir.s:25-27, 60-62` (the two 3-arg call sites).
+- Prior escalations on this function — 2026-07-23 OWNER-ESCALATION and the 2026-07-27
+  ruling (option (b), REFUSED / OWNER-ACCEPTED INCOMPLETE) — are **obsolete**. Both
+  rested on an allocno-priority wall around `copy_end` that does not exist in the
+  matching form.
+
+### (iii) Consequence of each answer
+
+**YES (grant scope).** Operator steps, all mechanical:
+
+1. `include/code6cac.h:510` — replace `extern void CdRead(s32);` with
+   `extern s32 CdRead(s32, s32, s32);` (matching `src/system.c:901`).
+2. Apply the two bodies from
+   `memory/grind/special_camera_get_rot_dir/candidate.c` to
+   `src/code6cac_b2_post.c`, replacing the current 1-arg `func_800372F4` (~line 413),
+   the two unused leftover `Quad`/`Triple` typedefs, and the
+   `INCLUDE_ASM("asm/funcs", special_camera_get_rot_dir);` line.
+3. `sandbox` both functions, `verify-oracle`, then a fresh **layer-2 cheat-reviewer** on
+   the C before acceptance (a layer-1 pass is not acceptance).
+4. `queue done special_camera_get_rot_dir`.
+
+Outcome: `special_camera_get_rot_dir` and `func_800372F4` both close at floor 0 as
+**COMPLETED-C**, and a genuine header defect is fixed for every TU that includes
+`code6cac.h`. Worth checking during step 1 whether other call sites of `CdRead` are
+currently mis-declared through the same header.
+
+**NO (scope stays as it is).** The function cannot be completed honestly. The bytes are
+proven and will keep being re-proven by every future session, but the only spellings
+available inside `src/code6cac_b2_post.c` are the two the layer-1 reviewer has already
+FAILed, so the item would sit at a proven floor of 0 that no session is permitted to
+land. If that is the ruling, the useful follow-up is to say whether the header defect
+should instead be fixed as a standalone `fix:` commit outside the grind, after which
+this function becomes in-scope automatically and closes with no further ruling needed.
