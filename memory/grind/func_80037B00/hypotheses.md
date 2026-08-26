@@ -810,3 +810,48 @@ otherwise, with end=$8($t0) as target wants, flag=$9, counter=$10 (target: count
 - probe: Read asm/funcs/func_80037AA4.s against its MATCHED C at src/code6cac_c.c:285-316.
 - result: func_80037AA4 - same file, same table D_80102810, same bound D_800A38C8, MATCHED - carries the SAME phantom `addiu $sp,$sp,-0x8` / `addiu $sp,$sp,0x8` with no `($sp)` reference, and its accepted C uses exactly the counter-naming guard `var_a1 = 0; var_a2 = D_800A38C8; if (var_a1 < var_a2)`. candidate.c's refs-8 chassis IS the author's idiom. The same sibling's own RA residual was closed with a Judge-sanctioned /* FAKE */ constant-holder (ruling 2026-07-28) whose lever (reload's update_equiv_regs deleting the li) moves none of L73 / refs(78) / L78 here, so it still does not transfer.
 - verdict: CONFIRMED
+
+## [s13] The counter-vs-end-pointer priority inequality can be satisfied from allocno 78's NUMERATOR (its reference COUNT), not only from allocno 73's live_length - because flow.c weights each reference by LOOP NESTING DEPTH and the inner loop was spelled with a goto back-edge, which carries no loop notes.
+- mechanism: GCC 2.7.2 flow.c accumulates `REG_N_REFS (regno) += loop_depth`, and loop_depth is
+  driven by NOTE_INSN_LOOP_BEG/END, which only `for`/`while`/`do` source loops emit - a `goto`
+  back-edge produces none. s0..s12 all spelled the inner byte-compare loop as
+  `loop_inner: ... if (cond) goto loop_inner;`, so flow saw the ENTIRE outer body at depth 2 and
+  charged the end pointer's two references (its def at the loop top and its use in the bottom
+  `slt`) 2 + 2 = 4. Re-spelling that loop as `while (1) { ... break; ... }` gives it real loop
+  notes; the def stays at depth 2 but the use moves to depth 3, so refs(78) becomes 5 while
+  live_length(78) is unchanged at 9. global.c's
+  `pri = floor_log2(refs)*refs/live_length` then reads pri(78) = 2*5/9 = 1.111, which is above
+  pri(73) = 3*8/23 = 1.0435 and below pri(75) = 1.350 - so 78 is allocated immediately after
+  var_a3 and takes $t0, and 73 falls to $t1. s12's unified rule ("both chassis reduce to
+  live_length(73) >= 28") was correct arithmetic on a fixed refs(78) = 4, but refs(78) was never
+  actually pinned: s10 measured it, it was never varied.
+- probe: `tmp/grind/func_80037B00/s13/v1_inner_while1.c` - candidate.c with ONLY the inner loop
+  re-spelled (`goto loop_inner` -> `while (1)` with `break` on the NUL test and on the inverted
+  end-of-field test); measured with `tmp/grind/func_80037B00/s13/probe.sh` (cpp | cc1 -da,
+  .lreg/.greg/.s read) and then with `sandbox func_80037B00 --disable all`.
+- result: CONFIRMED, and it CLOSES THE FUNCTION.
+  .lreg goes `78 used 4 times across 9 insns` -> `78 used 5 times across 9 insns`, with
+  refs(73)=8/L73=23, refs(74)=6/L74=16 and refs(75)=9/L75=20 ALL unchanged (the counter, the flag
+  and the table pointer are outer-level variables, so their weights do not move). The only other
+  registers whose refs rise are 76/77/79/80/87 - the inner-loop temporaries, already allocated
+  first, and their relative order is unchanged.
+  .greg goes `;; 11 regs to allocate: 79 76 77 75 73 83 78 74 82 81 72` with `73 in 8  78 in 9`
+  -> `;; 11 regs to allocate: 79 76 77 75 78 73 83 74 82 81 72` with `78 in 8  73 in 9  74 in 10`,
+  i.e. end pointer = $t0, counter = $t1, match flag = $t2 - target's assignment exactly.
+  The phantom 8-byte frame survives (`.frame $sp,8,$31 # vars= 8`) because the counter-naming
+  entry guard is untouched, and the emitted stream is the same length (30 cc1 lines, 36 after
+  maspsx). `sandbox --disable all` = score 0 / 36 vs 36 / rules_dropped 0; `verify-oracle` = ok,
+  build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
+- verdict: CONFIRMED - func_80037B00 is COMPLETED-C.
+
+## [s13] Generalisable lesson for the pipeline (worth carrying to other RA-order residuals).
+When a residual is an allocno ORDER defect under global.c's priority formula, there are FOUR
+inputs, not two: refs, live_length, floor_log2(refs), and the loop DEPTH at which each reference
+sits. A goto-spelled loop and a `while`-spelled loop with identical control flow and identical
+emitted bytes differ in the third input for every variable used inside them, because loop notes -
+not the CFG - are what flow.c counts. s7..s12 treated refs(78) = 4 as a property of the
+instruction stream; it was a property of the SOURCE SPELLING of the enclosing loop, and it was
+free to change at zero emitted-byte cost. Any future session facing "allocno A must overtake
+allocno B" should enumerate loop-note spellings of the containing loops BEFORE attacking live
+ranges, since a note change moves refs by whole multiples while a liveness change moves it by one
+and (per s12's wE) always drags a reference along with it.

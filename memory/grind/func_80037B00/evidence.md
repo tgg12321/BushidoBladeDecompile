@@ -675,3 +675,41 @@ and the bottom `slt`/`bnez`, all mandated by the stream. Reachable cells: (20,18
 - [s12] func_80037AA4 (same file, same table, MATCHED) carries the identical phantom 8-byte frame and the counter-naming guard, so candidate.c's chassis is the original author's idiom, not a search artefact.
 
 - [s12] Ledger updated: memory/grind/func_80037B00/hypotheses.md (5 new entries) and evidence.md (s12 section, 7 facts). Six forms banked under memory/grind/func_80037B00/rejected/ (flag-reuse-as-guard-zero-refs74-8-no-frame.c, invented-zero-local-guard-no-orphan-no-frame.c, refs7-init-before-guard-gap7.c, counter-live-to-end-costs-refs9-10.c, looptop-foldable-pair-plus1-refs75-blowup.c, two-preheader-pairs-distinct-vars-still-plus1.c). src/code6cac_c.c restored to its committed INCLUDE_ASM state; candidate.c (score 5) unchanged as the best form.
+
+## s13 (2026-08-26) - structural - FUNCTION MATCHED, score 5 -> 0
+
+- Chassis re-measured at session start: candidate.c (s8 form) = `sandbox --disable all` score 5,
+  target_insns 36, build_insns 36; .lreg `73 used 8 times across 23 insns`,
+  `78 used 4 times across 9 insns`; .greg `;; 11 regs to allocate: 79 76 77 75 73 83 78 74 82 81 72`,
+  seats `73 in 8  78 in 9`; `.frame $sp,8,$31 # vars= 8`. Identical to the ledger's record, so
+  every s8..s12 conclusion was chassis-valid.
+- THE CLOSE: the inner byte-compare loop was re-spelled from a `goto loop_inner` back-edge to
+  `while (1) { ... break; ... }`. Nothing else in the function changed.
+- flow.c weights a register reference by LOOP NESTING DEPTH (`REG_N_REFS += loop_depth`), and
+  loop_depth only advances across NOTE_INSN_LOOP_BEG/END, which a goto back-edge never emits.
+  With the goto spelling the whole outer body sat at depth 2, so the end pointer's def + use were
+  charged 2 + 2 = 4. With loop notes the use sits at depth 3: refs(78) = 5, live_length(78)
+  unchanged at 9.
+- global.c `pri = floor_log2(refs)*refs/live_length`: pri(78) 2*4/9 = 0.888 -> 2*5/9 = 1.111,
+  which now sits between pri(73) = 3*8/23 = 1.0435 and pri(75) = 1.350. Allocation order becomes
+  `79 76 77 75 78 73 83 74 82 81 72`, seats `78 in 8` ($t0), `73 in 9` ($t1), `74 in 10` ($t2) -
+  target's register assignment exactly.
+- Everything s12 measured as pinned STAYED pinned: refs(73)=8, L73=23, refs(74)=6, L74=16,
+  refs(75)=9, L75=20, the phantom 8-byte frame (`vars= 8`), and the instruction count.
+- s12's unified rule "both chassis reduce to live_length(73) >= 28" was arithmetically correct but
+  rested on refs(78) = 4 being fixed. refs(78) had only ever been MEASURED, never VARIED. The
+  fourth input to the priority formula - the loop depth of each reference, i.e. the source
+  spelling of the enclosing loops - was the free variable nobody had touched.
+- VERIFICATION: `sandbox func_80037B00 --disable all` -> score 0, 36 vs 36, rules_dropped 0,
+  zero regfix/asmfix rules for this function. `verify-oracle` -> `"ok": true`,
+  `"build_matches": true`, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == the locked
+  oracle. The body is pure C with no inline asm, no volatile, no FAKE construct and no
+  sanctioned-family exception claimed (self_vet.md).
+- The `while (1)` + `break` spelling is also the more conventional reading of the bounded strncmp
+  the function performs, so this is a fidelity improvement as well as a match.
+- Superseded frontier entries: s12 frontier #1 (a combine-absorbed loop-top insn to lift L73 to
+  28) and #2 (gap <= 3 on the refs-7 chassis) are both MOOT - neither was needed, and the refs-7
+  chassis is abandoned. s12 frontier #3 (file a fidelity/routing packet on the one-register
+  transposition) must NOT be filed: the transposition is gone.
+- Artifacts: tmp/grind/func_80037B00/s13/probe.sh, base.c, v1_inner_while1.c, d_base/,
+  d_v1_inner_while1/ (x.s, x.lreg, x.greg, x.flow, x.combine and the full -da series).
