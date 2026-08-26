@@ -12556,3 +12556,80 @@ recovered from bytes outranks uniformity-of-spelling when the two conflict.
   over the 2026-07-24 one is that the remaining gap is no longer a search: s6's derivation
   plus s7's seven-shape validation closes the uniform-spelling space by proof. Continued
   grinding can only re-measure shapes the law already predicts.
+
+## 2026-08-25 — func_80072CD4 (src/text1b.c) — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Filed by grind session s11 (mandated modality: escalation) under .claude/rules/escalation-not-parked.md
+(owner ruling 2026-08-24). The prior 2026-08-20 "terminal park" disposition for this function is
+superseded by that ruling; this entry replaces it with a decision packet. **No family grant, no
+permanent-rule sanction and no canonical-evidence-bar override is requested** — the only known
+closing construct (the per-arm duplication of the @4/@0xC stores) is AUTO-REJECT class and is
+deliberately NOT the subject of this packet.
+
+### (i) The decidable question
+
+func_80072CD4's residual is 4 with the instruction COUNT already exact (79 == 79) and every
+instruction correct; the entire residual is the EMISSION ORDER of two `sb` instructions in the
+merge block. This session executed the owner's 2026-08-24 solver directive (never executed by
+s1-s10) and obtained a typed result:
+
+> With target's own instruction set held fixed, target's emission order for this function is not
+> reachable from our dependence graph by any source-order change, and the only model-level input
+> changes that do reach it are ones target's own bytes contradict.
+
+**The question, as a routing/fidelity choice:**
+
+- **Option A — fund a toolchain-fidelity probe.** Treat the unreachability as a signal that this
+  function (or this TU/era) was built under a cc1 / ASPSX configuration that differs from ours in a
+  way that changes scheduler inputs, and authorise a calibration-only probe (per
+  .claude/rules/cc1psx-calibration-only.md — `tools/cc1psx_wrapper.sh` is a calibration and
+  self-disproof path, never a build path) to confirm or kill that hypothesis.
+- **Option B — no fidelity probe; keep grinding under standing policy.** The item returns to
+  ACTIVE immediately with the next modality set to `solver / ra_solver`: the one remaining
+  in-model vector (E6 below) has a register-identity half that is an allocation question rather
+  than a scheduling one, and `tools/ra_solver` has not been run on this function.
+
+Either answer returns the item to ACTIVE. Nothing else in the queue waits on it.
+
+### (ii) Evidence (pointers, not prose)
+
+- Chassis re-measured this session: `sandbox func_80072CD4 --disable all` = **4**, build_insns 79 ==
+  target_insns 79, rules_dropped 0. Ledger: memory/grind/func_80072CD4/evidence.md [s11] E1.
+- Model trust: `tools/sched_solver/extract.py text1b` -> `parity=True`; text1b is 2068/2068 blocks
+  order-exact AND clock-exact in tools/sched_solver/README.md's ground-truth table; every search
+  below printed `baseline exact`. Ledger E2.
+- Target's structure read directly off asm/funcs/func_80072CD4.s: the arms end in
+  `addiu $v0,$zero,0x32/0x46` and the merge label is followed by `sb $v1,0x4 / sb $v1,0xC /
+  sb $v0,0xE` — i.e. target is the CROSS-BLOCK chassis
+  (memory/grind/func_80072CD4/rejected/xblock_sched1_hoist.c, 13/78), not the per-arm chassis.
+  Ledger E3.
+- Cross-block chassis, sched1, both arms: goal = target's order. C-spellable atom classes
+  (`luid`, `luid_move`) return **zero** vectors at depth 2. Full atom set returns vectors, all of
+  one shape: `add_dep <li> <- <store> (true/data)` + `cost <store> := 2|3|12` — a constant
+  materialisation data-depending on a store, plus that store taking a LOAD's cost. Ledger E4;
+  transcript tmp/grind/func_80072CD4/s11/solver_results.md §A, §B.
+- Cross-block chassis, sched2 merge block: the exact goal is **not reachable at depth 2 by any atom
+  class at all**. Ledger E5; transcript §C.
+- Floor-4 chassis, sched2 merge block: reachable in-model, but only via
+  `add_dep 92 <- 89` + `add_dep 95 <- 92`, whose second half is a post-reload anti/output edge that
+  requires the merge `li`'s destination register to be the register the @0xC store reads — target's
+  bytes fix those as `$v0` and `$v1` respectively. Ledger E6; transcript §D.
+- Endgame-lock gates, both re-checked: (i) `scan_hand_coded --single func_80072CD4` = tier **LOW**,
+  score 0/8, S1-S8 all negative (tmp/grind/func_80072CD4/s11/scan_hand_coded.txt); (ii) no exhibited
+  SOTN-master precedent (s10 census over docs/reference/sotn-construct-index.md returned only a
+  heuristic single-line textual `dup_if_else_arm` hit). Ledger E7.
+- Search limits stated honestly: perturb.py pairs at depth 2 (no depth 3), atom vocabulary is
+  luid / luid_move / add_dep / cost over one block's inputs. Ledger E8.
+- Exhaustion context: 11 sessions, modalities structural / permuter / synthesis / forensics /
+  escalation / solver, a 15.8k-iteration directed PERM_LINESWAP campaign over exactly these stores
+  (s4), and 35 banked rejected forms in memory/grind/func_80072CD4/rejected/.
+
+### (iii) Consequence of each answer
+
+- **A (fidelity probe):** the next session runs the calibration probe instead of another C variant.
+  If a configuration difference is confirmed it plausibly explains other order-only residuals in the
+  queue as well; if disproven, the divergence hypothesis is killed and the item returns to ACTIVE
+  with Option B's plan. Floor unchanged at 4 in the meantime.
+- **B (keep grinding):** the item returns to ACTIVE at floor 4 with modality `solver / ra_solver`
+  targeting the E6 register-identity half. No standard changes; the per-arm duplication closer
+  stays banned.

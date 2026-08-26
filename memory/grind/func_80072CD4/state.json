@@ -1,7 +1,7 @@
 {
  "func": "func_80072CD4",
  "file": "text1b",
- "session_count": 10,
+ "session_count": 11,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -69,13 +69,29 @@
    "floor": 4,
    "modality": "escalation",
    "headline": "ESCALATION: floor re-measured 4/79==79 on the current chassis; both endgame-lock AND-gates re-evaluated and both FAIL (scan_hand_coded LOW 0/8; SOTN precedent census returns only a heuristic dup_if_el"
+  },
+  {
+   "session": 11,
+   "floor": 4,
+   "modality": "escalation",
+   "headline": "Solver modality (the owner's never-executed 2026-08-24 directive) kills both named frontier levers with typed sched_solver verdicts; floor holds 4/79; escalated with a fidelity/routing decision packet"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "TERMINAL - no open grind item. The function is disposed as REFUSED / OWNER-ACCEPTED INCOMPLETE; the driver should park it and advance the queue.",
-   "mechanism": "Both endgame-lock AND-gates fail (canonical-asm scan LOW 0/8; no exhibited SOTN precedent), which is exactly the case the owner pre-decided in the standing 2026-07-27 ruling (.claude/rules/endgame-lock-disposition.md). Nothing waits on the owner.",
-   "next_probe": "None. Re-attempt is eligible only on a NAMED new lever: (a) pin the cross-block var_v0 li at the arm tail without an arm-local sb, (b) move jump2's cross-jumped tail off the merge-block head, (c) an actually-exhibited SOTN-master file+function citation of a cross-jump-dead common-tail duplication used for store scheduling, or (d) an explicit owner extension of the frozen family list. A sixth respelling of the per-arm duplication is not a lever."
+   "hypothesis": "The E6 register-identity half (`add_dep 95 <- 92`: the merge li's destination register equal to the @0xC store's value register) has a C form that does NOT collapse the two 0xFC materialisations.",
+   "mechanism": "Post-reload anti/output dependence in sched2; whether the two 0xFC constants land in $v1 and $v0 as target has them is a global_alloc/reload decision, i.e. tools/ra_solver's axis, not sched_solver's.",
+   "next_probe": "Run tools/ra_solver (extract + inverse_compose.py classify) on func_80072CD4's merge block for the seat assignment target uses, then check whether any REACHABLE lever vector also creates the sched2 edge. If ra_solver returns FORECLOSED, the last in-model vector is closed too."
+  },
+  {
+   "hypothesis": "The owner decision packet (docs/grind/decisions.md, 2026-08-25 entry) resolves toward Option A: the unreachability is a toolchain-fidelity signal rather than a C-search failure.",
+   "mechanism": "With target's instruction set pinned, the sched.c inputs are pinned; an exact-validated model that cannot produce target's order from those inputs is evidence about the compiler configuration, not about the C.",
+   "next_probe": "Calibration-only probe per .claude/rules/cc1psx-calibration-only.md (tools/cc1psx_wrapper.sh, never a build path): does the original cc1psx schedule these blocks differently from decompals cc1 2.7.2 at the same flags?"
+  },
+  {
+   "hypothesis": "A depth-3 or wider-vocabulary sched_solver search finds a spellable vector the depth-2 pair search cannot express.",
+   "mechanism": "perturb.py's search enumerates combinations of 2 atoms; a three-atom vector (e.g. two luid moves plus one memory dep) is outside it.",
+   "next_probe": "Extend the search to triples over the restricted --atoms luid,luid_move set only (cheap: 84 and 63 atoms respectively) for pass-1 blocks 2 and 3 of the cross-block chassis, and confirm the zero-vector result survives."
   }
  ],
  "judge_constraints": [

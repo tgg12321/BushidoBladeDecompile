@@ -1034,3 +1034,81 @@ merge head from the merge block) was right; its stated mechanism was not.
 - [s10] Terminal disposition FILED this session at docs/grind/decisions.md:8484 - '## 2026-08-20 - func_80072CD4 (src/text1b.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'. It explicitly supersedes the voided s5 entry at decisions.md:8312 (driver DISCARDED-SESSION MARKER at :8386) and names four specific re-attempt conditions for any future unpark.
 
 - [s10] candidate.c is unchanged and remains the clean, reviewer-passable floor-4 body (one `int fc_const` local; no pins, __asm__, volatile, barrier, do-while(0), dead store or duplication). The banned per-arm duplication forms stay in rejected/ and in state.json's banned_constructs.
+
+## [s11-escalation] 2026-08-25 — sched_solver verdicts (owner-directed solver modality)
+
+**E1 — chassis.** Floor re-measured on the current chassis with candidate.c applied:
+score 4, build_insns 79 == target_insns 79, rules_dropped 0. src/text1b.c restored to
+`INCLUDE_ASM("asm/funcs", func_80072CD4);` immediately afterwards; `git status --porcelain src/`
+clean at session end.
+
+**E2 — the model is trustworthy for THIS TU.** `tools/sched_solver/extract.py text1b` reports
+`parity=True` (the instrumented cc1 is byte-identical to `build/cc1` on text1b) and text1b is one
+of the six TUs scored 100% order-exact AND clock-exact in the solver's ground-truth table
+(2068/2068 blocks). Every perturb.py run below printed `baseline exact` for the block it searched,
+so the simulator reproduces our own schedule for these exact blocks before any perturbation.
+
+**E3 — target's structure is the XBLOCK chassis, not the per-arm chassis.** Read off
+asm/funcs/func_80072CD4.s directly: each inner arm ends `addiu $v0,$zero,0x32` / `0x46` (which
+reorg puts in the `j` delay slot of the then-arm), and the merge label `.L80072D64` is followed by
+`sb $v1,0x4` / `sb $v1,0xC` / `sb $v0,0xE`. That is `rejected/xblock_sched1_hoist.c`'s shape (arms
+assign a variable, the merge block stores it), not candidate.c's shape (arms store @0xE directly).
+This is a fact about target, independent of any scheduling argument, and it means the ONLY chassis
+that can reach target's bytes is the xblock one — the floor-4 chassis cannot, because jump2 splices
+the cross-jumped `sb $v0,0xE` at the merge LABEL head (s9 E4, insn 84 after the invented label 214),
+i.e. AHEAD of anything block 4 itself can schedule, whereas target puts it THIRD.
+
+**E4 — the xblock chassis is foreclosed at sched1, by measurement.** Its residual is that sched1
+hoists the arm-tail `li` into the pseudo to the arm TOP. Searching the exact goal (target's order)
+over the C-spellable atom classes `luid` and `luid_move` returns ZERO vectors at depth 2 for BOTH
+arms: no permutation of the arm's source statements reaches target's order. Over the full atom
+set the goal is reachable, but every vector (5 exact / 8 weakened in the then-arm, 7 in the
+else-arm) is the same pair `add_dep <li> <- <store> (true/data)` + `cost <store> := 2|3|12` — a
+true data dependence of a constant materialisation on a store, plus that store acquiring a LOAD's
+instruction cost. Neither half is a C spelling of the same instruction; both demand a different
+instruction. Transcript: tmp/grind/func_80072CD4/s11/solver_results.md sections A and B.
+
+**E5 — the xblock chassis's merge block is separately foreclosed at sched2.** With the 15-insn
+merge block (including `sb v0,0xE`), the exact target order is NOT reachable at depth 2 by any
+atom class at all — spellable or not. The weakened "leading stores at the head" goal is reachable
+only by the same load-for-store demand as E4. Section C.
+
+**E6 — the floor-4 chassis's merge block is reachable in-model but byte-contradictory.** Six
+exact-goal vectors exist there, all of the form `add_dep 92 <- 89` (memory dep between the @4 and
+@0xC stores) + `add_dep 95 <- 92` (dep of the merge `li 0xFC` on store 92), with no cost half. The
+second half is a post-reload anti/output edge, so it exists only if the register the li writes is
+the register the store reads — and target's bytes fix them as different (`sb $v1,0x4` vs
+`addiu $v0,$zero,0xFC`). Creating the edge collapses the two 0xFC materialisations target keeps
+distinct (s9 measured that at 6/77 and 17/77). Section D. Even if it were spelled, E3 shows this
+chassis still cannot reach target's `4, 0xC, 0xE` merge head.
+
+**E7 — endgame-lock gates, re-checked this session.** `scan_hand_coded --single func_80072CD4` =
+tier LOW, score 0/8, S1-S8 all negative (tmp/grind/func_80072CD4/s11/scan_hand_coded.txt). Gate (ii)
+unchanged from s10: no exhibited SOTN-master precedent for the closing construct.
+
+**E8 — search limits, stated honestly.** perturb.py's pair search is depth 2; there is no depth 3.
+The atom vocabulary is `luid` / `luid_move` / `add_dep` / `cost` applied to one block's inputs, so a
+hypothetical C form producing a DIFFERENT instruction set is out of its scope — but target's
+instruction set is pinned (79 insns, each one identified in E3's reading), which is what makes the
+foreclosure argument bite: with the insns fixed, the dependence graph is fixed, and the only free
+input left is source order, which E4/E5 measure as contributing nothing.
+
+- [s11] Floor re-measured this session on the current chassis: sandbox --disable all = 4, build_insns 79 == target_insns 79, rules_dropped 0; src/text1b.c restored to INCLUDE_ASM("asm/funcs", func_80072CD4) and git status --porcelain src/ clean at session end.
+
+- [s11] The owner's 2026-08-24 solver directive was executed for the first time (s1-s10 never ran it; the driver's consistency audit flagged it as unacknowledged). tools/sched_solver/extract.py text1b reports parity=True (instrumented cc1 byte-identical to build/cc1 on the TU) and text1b is 2068/2068 blocks order- AND clock-exact in the solver's ground-truth table; every perturb.py run printed `baseline exact` before perturbation.
+
+- [s11] Target's own structure, read off asm/funcs/func_80072CD4.s, is the CROSS-BLOCK chassis: arms end in addiu $v0,$zero,0x32/0x46 and the merge label is followed by sb $v1,0x4 / sb $v1,0xC / sb $v0,0xE. The floor-4 per-arm chassis cannot reach that order for a structural reason confirmed in s9: jump2 splices the cross-jumped sb $v0,0xE at the merge label HEAD, ahead of anything block 4 can schedule.
+
+- [s11] sched1, both arms of the cross-block chassis: the C-spellable atom classes (luid swap, luid_move) return ZERO vectors at depth 2 for the exact goal and for the weakened 'li emitted last' goal. Source statement order is measured exhausted, not argued exhausted.
+
+- [s11] Every full-atom-set vector for the cross-block chassis (both sched1 arms and the sched2 merge block) is the pair `add_dep <li> <- <store> (true/data)` + `cost <store> := 2|3|12`: a constant materialisation data-depending on a store, plus that store acquiring a LOAD's instruction cost (block 1's lw insns are icost 2; all stores and addiu are icost 1). Neither half is a C spelling of the same instruction.
+
+- [s11] The cross-block chassis's 15-insn sched2 merge block does not reach target's exact order at depth 2 under ANY atom class, spellable or not.
+
+- [s11] The floor-4 chassis's 14-insn sched2 merge block DOES reach its goal in-model, via `add_dep 92 <- 89` + `add_dep 95 <- 92` (no cost half). The second edge is post-reload and therefore requires the merge li's destination register to equal the register the @0xC store reads; target's bytes fix them as $v0 and $v1, and any C form creating the edge collapses the two 0xFC materialisations target keeps distinct (s9: 6/77, 17/77).
+
+- [s11] Endgame-lock gates re-checked this session: scan_hand_coded --single func_80072CD4 = tier LOW, score 0/8, S1-S8 all negative; no exhibited SOTN-master precedent for the closing construct. Both fail, so no family grant is requested and none may be - that class is pre-decided NO under escalation-not-parked.
+
+- [s11] Search limits stated for the next session: perturb.py pairs at depth 2 (there is no depth 3) and its atom vocabulary is luid / luid_move / add_dep / cost over a single block's inputs. What makes the foreclosure bite is that target's instruction SET is pinned (79 insns, each identified), so the dependence graph is pinned too and source order is the only free input left - which the luid searches measure as contributing nothing.
+
+- [s11] tools/ra_solver has never been run on this function; the one surviving in-model vector's blocking half is a register-identity question, which is ra_solver's axis rather than sched_solver's.

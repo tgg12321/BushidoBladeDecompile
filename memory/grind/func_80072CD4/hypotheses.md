@@ -1133,3 +1133,78 @@ function and should not re-open any axis listed above.
 - probe: Reviewed the 35-form rejected/ bank plus s9's analytic enumeration of the three dependence kinds sched.c can create for a store; searched for any axis not represented.
 - result: No un-tried lever found. Every axis (merge order via 15.8k-iteration directed permuter, cross-block chassis, shared-constant holder, pre-branch hoist, base-pointer/walking-pointer spellings, branch polarity and arm order, half-duplication, rgb2/rgb3 duplication, sibling-chassis transplant, alias serialisation, register sharing) is measured dead and banked with its floor.
 - verdict: KILLED
+
+## [s11-escalation] 2026-08-25 — owner-directed SOLVER modality (first execution of the 2026-08-24 directive)
+
+The queue item's owner directive ("solver modality (ra_solver/sched_solver) recommended before
+deep re-grind of RA/scheduler-tiebreak residuals") had never been executed by any prior session
+(the driver's consistency audit flagged it). This session executed it against BOTH candidate
+chassis and converted the two NAMED re-attempt levers from the s10 escalation entry — (a) "pin the
+cross-block var_v0 li at the arm tail without an arm-local sb" and (b) "move jump2's cross-jumped
+tail off the merge-block head" — from analytic arguments into typed solver verdicts.
+
+## [s11] The honest pure-C floor of 4 still holds on the current chassis.
+- mechanism: candidate.c (one `int fc_const` local, no coercion construct) is the clean floor-4 body; the residual is merge-block store ORDER with the instruction count already exact at 79.
+- probe: `python3 tmp/grind/func_80072CD4/s11/apply.py memory/grind/func_80072CD4/candidate.c` then `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`.
+- result: score 4, target_insns 79, build_insns 79, scorable true, rules_dropped 0. src/text1b.c reverted to INCLUDE_ASM afterwards (`git status --porcelain src/` clean).
+- verdict: CONFIRMED
+
+## [s11] Frontier lever (a): the cross-block (xblock) chassis — which is target's OWN structure (arms set 5/6/0xD and leave the 0xE value in a pseudo; the merge block writes @4, @0xC, @0xE) — can be made to keep the arm-tail `li 0x32/0x46` at the arm TAIL by some C-expressible change, defeating the sched1 hoist.
+- mechanism: sched1 schedules each arm bottom-up. The arm-tail `li` into the cross-block pseudo (UID 57 in the then-arm, 80 in the else-arm) has unit=-1, pri=1 and no in-block consumer, so it loses every equal-priority tie-break to the arm's own unit=0 stores and is picked LAST bottom-up == emitted FIRST. Target emits it last (reorg then puts it in the branch delay slot). sched_solver models schedule_block order- and clock-exactly (6978/6978 blocks, 100%), so the question "which input change produces target's order" is decidable rather than guessable.
+- probe: `tools/sched_solver/extract.py text1b` with rejected/xblock_sched1_hoist.c applied (parity=True), then `perturb.py --pass 1 --block 2 --goal-order 59,57,54,52,49,47,44,42` and `--block 3 --goal-order 80,77,75,72,70,67,65`, first with `--atoms luid,luid_move` (the C-spellable statement-move atoms) and then with the full atom set, both at `--depth 2`. Weakened `--goal-before` variants (only "the li is emitted last") re-run identically. Full transcript: tmp/grind/func_80072CD4/s11/solver_results.md sections A and B.
+- result: **Statement order is exhausted** — the spellable atom classes (`luid` swap, `luid_move`) produce ZERO vectors at depth 2 for either arm, i.e. no permutation of the arm's source statements reaches target's order. With the full atom set the goal IS reachable, but every one of the 5 (exact goal) / 8 (weak goal) / 7 (else-arm) vectors has the identical unspellable shape: `add_dep <li> <- <store> (true/data)` PAIRED WITH `cost <store> := 2|3|12`. A true DATA dependence of a constant materialisation on a store is not expressible: a `sb` defines no register, so the only way the li could data-depend on it is for the li to be a LOAD of that byte — which is exactly what the required `cost := 2` (this machine description's LOAD cost; cf. block 1's two `lw` insns at icost 2, against icost 1 for every store and every `addiu`) says independently. Both halves are needed jointly (no depth-1 vector exists), and both demand a different INSTRUCTION, not a different C spelling of the same instruction.
+- verdict: KILLED
+
+## [s11] Frontier lever (b): on the xblock chassis, the merge block's three leading stores (@4, @0xC, @0xE) can be lifted from the sched2 block TAIL to the block HEAD by some C-expressible change.
+- mechanism: same sched2 bottom-up rule as s9's finding, now measured on the chassis whose block structure actually matches target's (15-insn merge block including `sb v0,0xE`).
+- probe: `perturb.py --pass 2 --block 4 --goal-order 121,119,114,117,111,109,106,104,101,99,96,94,91,88,85` with `--atoms luid,luid_move` and then with the full atom set, `--depth 2`; plus the weakened `--goal-before 94:85/94:88/94:91` form. Transcript: solver_results.md section C.
+- result: the exact goal is NOT reachable at depth 2 by ANY atom class, spellable or not. The weakened goal is reachable only by the same `add_dep 94 <- <store> (true/data) + cost <store> := 2|3|12` shape as lever (a) — the same unspellable load-for-store demand. Statement order again contributes nothing (`luid`/`luid_move`: zero vectors).
+- verdict: KILLED
+
+## [s11] The FLOOR-4 chassis's own merge block can be reordered to put `sb v1,4` / `sb v1,0xC` at the block head.
+- mechanism: distinct from (b) because on this chassis `sb v0,0xE` is written per-arm and jump2 splices it at the merge label AFTER sched2, so block 4 holds only 14 insns.
+- probe: re-extracted the model with candidate.c applied (parity=True, picks=13566), then `perturb.py --pass 2 --block 4 --goal-order 122,120,115,118,112,110,107,105,102,100,97,95,92,89` and the weakened `--goal-before 95:89/95:92`, full atom set, depth 2. Transcript: solver_results.md section D.
+- result: **REACHABLE in the model, but foreclosed by target's own bytes.** Six exact-goal vectors exist, all of a shape not seen in A-C: a pair of `add_dep`s, `add_dep 92 <- 89` (a memory dependence between the two @4/@0xC stores) AND `add_dep 95 <- 92` (a dependence of the merge block's `li 0xFC` on store 92). No `cost` half is required. The first half is the alias-serialisation axis, already measured dead in three spellings (6/79, 11/78, 13/79) because every C form that stops memrefs_conflict_p from disambiguating `4($17)` from `12($17)` also changes the address materialisation. The second half is decisive on its own: this is pass 2 (post-reload), so an anti/output dependence of the `li` on store 92 exists if and only if the register the li WRITES is the register store 92 READS — and target's own bytes fix those as different registers (`sb $v1,0x4` / `sb $v1,0xC` against `addiu $v0,$zero,0xFC`). Any C form that creates the edge collapses the two 0xFC materialisations target keeps distinct, which s9 already measured at 6/77 and 17/77. So the vector is byte-contradictory, not merely unspellable.
+- verdict: KILLED
+
+## [s11] Either endgame-lock AND-gate passes on the current chassis.
+- mechanism: gate (i) canonical-asm needs a STRONG scan_hand_coded tier (S1/S2/S6); gate (ii) needs an in-hand SOTN-master file+line exhibit of the closing construct.
+- probe: `python3 tools/scan_hand_coded.py --single func_80072CD4` re-run this session (tmp/grind/func_80072CD4/s11/scan_hand_coded.txt); gate (ii) re-checked against s10's census result, not re-run.
+- result: gate (i) tier=LOW score=0/8, S1-S8 all negative — unchanged from s10. Gate (ii) remains FAILED (s10's census over docs/reference/sotn-construct-index.md returned only a heuristic single-line textual `dup_if_else_arm` hit that exhibits none of the operative property). Both gates fail.
+- verdict: KILLED
+
+## [s11] The honest pure-C floor of 4 still holds on the current chassis.
+- mechanism: candidate.c is the clean floor-4 body (one int fc_const local, no coercion construct); the residual is merge-block store ORDER with instruction count already exact at 79.
+- probe: Apply candidate.c to src/text1b.c via tmp/grind/func_80072CD4/s11/apply.py, then `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`; revert src afterwards.
+- result: score 4, target_insns 79, build_insns 79, scorable true, rules_dropped 0; git status --porcelain src/ clean after revert.
+- verdict: CONFIRMED
+
+## [s11] Target's func_80072CD4 was compiled from the CROSS-BLOCK chassis (arms assign a variable, the merge block stores it), not from the per-arm chassis our floor-4 candidate uses.
+- mechanism: Direct reading of target bytes: the arms end in `addiu $v0,$zero,0x32/0x46` (the then-arm's copy sitting in the `j` delay slot) and the merge label .L80072D64 is followed by `sb $v1,0x4 / sb $v1,0xC / sb $v0,0xE`.
+- probe: Read asm/funcs/func_80072CD4.s against tmp/sched_map/text1b.hon.s for both chassis.
+- result: Target's shape is rejected/xblock_sched1_hoist.c's (13/78). The floor-4 chassis provably cannot reach it: jump2 splices the cross-jumped `sb $v0,0xE` at the merge LABEL head (s9 E4, insn 84 after invented label 214), i.e. ahead of every block-4 insn, whereas target puts it THIRD.
+- verdict: CONFIRMED
+
+## [s11] Frontier lever (a): on the cross-block chassis, the sched1 hoist of the arm-tail `li 0x32/0x46` to the arm TOP is defeatable by some C-expressible change.
+- mechanism: sched1 builds each arm bottom-up; the arm-tail li (unit=-1, pri=1, no in-block consumer) loses every equal-priority tie-break to the arm's unit=0 stores and is picked last == emitted first. sched_solver models schedule_block order- and clock-exactly (6978/6978 blocks; text1b 2068/2068, parity=True), making the question decidable rather than guessable.
+- probe: extract.py text1b with xblock applied; perturb.py --pass 1 --block 2 --goal-order 59,57,54,52,49,47,44,42 and --block 3 --goal-order 80,77,75,72,70,67,65, with --atoms luid,luid_move and then the full atom set, --depth 2; plus weakened --goal-before variants. Transcript: solver_results.md sections A and B.
+- result: The C-spellable atom classes (luid swap, luid_move) return ZERO vectors at depth 2 for BOTH arms - source statement order is measured exhausted. The full atom set reaches the goal only via one shape; the 5 (exact) / 8 (weak) / 7 (else-arm) vectors are all `add_dep <li> <- <store> (true/data)` PAIRED WITH `cost <store> := 2|3|12`. A sb defines no register so nothing can true-data-depend on it, and the demanded cost is this machine description's LOAD cost (block 1's two lw insns are icost 2; every store and every addiu is icost 1). Both halves are needed jointly (no depth-1 vector exists) and both demand a different INSTRUCTION, not a different C spelling of the same instruction.
+- verdict: KILLED
+
+## [s11] Frontier lever (b): on the cross-block chassis, the merge block's three leading stores (@4, @0xC, @0xE) can be lifted from the sched2 block tail to the block head by some C-expressible change.
+- mechanism: Same sched2 bottom-up placement rule as s9's finding, now measured on the 15-insn merge block whose structure actually matches target's.
+- probe: perturb.py --pass 2 --block 4 --goal-order 121,119,114,117,111,109,106,104,101,99,96,94,91,88,85 with --atoms luid,luid_move and then the full atom set, --depth 2; plus the weakened --goal-before 94:85 / 94:88 / 94:91 form. Transcript: section C.
+- result: The exact goal is NOT reachable at depth 2 by ANY atom class, spellable or not. The weakened goal is reachable only by the same `add_dep 94 <- <store> (true/data) + cost <store> := 2|3|12` load-for-store demand. luid/luid_move again contribute zero vectors.
+- verdict: KILLED
+
+## [s11] The floor-4 chassis's own merge block can be reordered to put `sb v1,4` / `sb v1,0xC` at the block head.
+- mechanism: Distinct from lever (b): on this chassis `sb v0,0xE` lives in the arms and jump2 splices it at the merge label after sched2, so block 4 holds only 14 insns.
+- probe: Re-extracted the model with candidate.c applied (parity=True, picks=13566); perturb.py --pass 2 --block 4 --goal-order 122,120,115,118,112,110,107,105,102,100,97,95,92,89 plus the weakened --goal-before 95:89 / 95:92, full atom set, depth 2. Transcript: section D.
+- result: REACHABLE in the model but byte-contradictory. All six exact-goal vectors are a pair of add_deps - `add_dep 92 <- 89` (memory dependence between the @4 and @0xC stores) plus `add_dep 95 <- 92` (dependence of the merge `li 0xFC` on store 92), with no cost half. The first half is the alias-serialisation axis already measured dead in three spellings (6/79, 11/78, 13/79). The second half is decisive on its own: this is pass 2 (post-reload), so the edge exists iff the register the li WRITES is the register store 92 READS, and target's bytes fix those as different (`sb $v1,0x4` against `addiu $v0,$zero,0xFC`); any C form creating it collapses the two 0xFC materialisations target keeps distinct (s9 measured 6/77 and 17/77). Per hypothesis 2 this chassis cannot reach target's merge head anyway.
+- verdict: KILLED
+
+## [s11] Either endgame-lock AND-gate passes on the current chassis.
+- mechanism: Gate (i) canonical-asm needs a STRONG scan_hand_coded tier (S1/S2/S6); gate (ii) needs an in-hand SOTN-master file+line exhibit of the closing construct.
+- probe: python3 tools/scan_hand_coded.py --single func_80072CD4 re-run this session (tmp/grind/func_80072CD4/s11/scan_hand_coded.txt); gate (ii) carried from s10's census over docs/reference/sotn-construct-index.md.
+- result: Gate (i) tier=LOW, score 0/8, S1-S8 all negative. Gate (ii) still FAILED - only a heuristic single-line textual dup_if_else_arm hit that exhibits none of the operative property. Both gates fail, so the only known closer is AUTO-REJECT class under .claude/rules/escalation-not-parked.md and is deliberately NOT the subject of the filed packet.
+- verdict: KILLED

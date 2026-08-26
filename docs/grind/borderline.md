@@ -256,3 +256,8 @@ disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 �
 category: policy-question
 evidence: session-filed escalation: docs/grind/decisions.md - '## 2026-08-25 - func_80062020 (src/text1b.c) - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (filed by this session under the binding judge_constraint of the 2026-08-25 21:17 ruling; replaces the partly-false 2026-07-24 packet)
 disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.
+
+## 2026-08-25 — func_80072CD4 — policy-question
+category: policy-question
+evidence: session-filed escalation: docs/grind/decisions.md - '## 2026-08-25 - func_80072CD4 (src/text1b.c) - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (fidelity/routing question: Option A toolchain-fidelity calibration probe vs Option B return to ACTIVE with modality solver/ra_solver; no family grant, no permanent-rule sanction and no canonical evidence-bar override requested)
+disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.
