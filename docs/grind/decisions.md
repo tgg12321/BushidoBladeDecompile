@@ -12884,3 +12884,84 @@ FAILed, so the item would sit at a proven floor of 0 that no session is permitte
 land. If that is the ruling, the useful follow-up is to say whether the header defect
 should instead be fixed as a standalone `fix:` commit outside the grind, after which
 this function becomes in-scope automatically and closes with no further ruling needed.
+
+## 2026-08-26 - get_alarm / func_8007DC9C (src/display.c) - STATUS CORRECTION (not an escalation, no owner decision requested)
+
+This entry corrects the record left by `## 2026-08-20 - get_alarm / func_8007DC9C
+(src/display.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED /
+OWNER-ACCEPTED INCOMPLETE` (docs/grind/decisions.md:8628), whose closing sentence -
+"no further grind sessions should be dispatched" - is no longer operative. **No owner
+decision is requested here and nothing is pending.**
+
+**1. The 2026-08-20 disposition is superseded by the owner's own later ruling.** The owner
+ruled on 2026-08-24 (`.claude/rules/escalation-not-parked.md`) that the parked state is
+retired - "There should be no reason to park an item indefinitely" - and, in the second
+2026-08-24 ruling, that a packet whose YES would lower a standard is AUTO-REJECT CLASS,
+explicitly including "any 'accept the debt' disposition in new wording". The 2026-08-20
+entry is exactly that shape. Under the current standard it must not be re-filed, and
+get_alarm stays ACTIVE. The queue item already carries the owner's directive to run the
+solver modality (ra_solver / sched_solver) before any deep re-grind; grind session 42
+(2026-08-26) executed that directive for the first time.
+
+**2. The exhaustion premise behind the 2026-08-20 entry is falsified by measurement.** The
+entry described axis B as an "over-determined sched1 8-op emit-order + load-delay-hazard
+volatile-order lock" with no pure-C lever - the attribution banked by sessions s6 / s33 /
+s34. Session 42 built the exact scheduler model (`tools/sched_solver/extract.py display`,
+parity=True, 598 blocks, 3264 picks) and measured the residual directly:
+
+- Axis B is a **one-instruction move**, not an 8-op cluster. Our pass-2 emitted order for
+  block 2 is `36,54,43,38,60,45,56,47,58,52,64,66,62,68`; target's (read off
+  `asm/funcs/get_alarm.s` 0x8007DCEC-0x8007DD38) is `36,60,38,43,54,45,56,47,58,52,64,66,62,68`.
+  Only the format-string `la` (pass-2 UID 60) moves, from emit slot 4 to slot 1.
+- In pass 2 the dead `*g_gpu_stat_reg` read (UID 38) and the fmt `la` (UID 60) carry the
+  **same** priority (2). The banked "priority 2 vs 1" story is a pass-1 fact and is not
+  what fixes the emitted byte order.
+- An exhaustive single-atom search over all **4391** atoms returns **exactly one** vector
+  reaching target's order: `del_dep 60 <- 38` - deletion of the pass-2 **output dependence
+  on hard register `$a0`** between the dead read (greg seats its pseudo in `$4`) and the
+  fmt `la` (which writes `$4`). Target seats that same dead read in `$v0`
+  (`lw $v0,0($v1)` @ 0x8007DCFC), so in target's compile the edge does not exist.
+- No `luid` / `luid_move` atom reaches the goal at depth 1: statement reordering alone is
+  foreclosed *while the `$a0` output dependence stands*.
+
+**Consequence: axis B is a register-allocation seat residual, not a frozen scheduler tie.**
+The decidable, never-probed question is "what pure-C form makes local-alloc/greg seat the
+dead volatile read in `$v0` instead of `$a0`?" Forty-one sessions did not probe that surface
+because the function was believed to be scheduler-locked. Three ordinary-C spellings of the
+discarded read were measured in s42 as a first pass (bare `(void)*g_gpu_stat_reg;` = 9,
+ties the floor and is now the banked candidate; comma-expression-in-arg = 12; staged `que`
+= 12), so the surface is open, not exhausted.
+
+**3. A tooling gap worth the owner's awareness (no decision needed).**
+`tools/ra_solver/inverse_compose.py classify` is inapplicable to any INCLUDE_ASM-routed
+function: it falls back to the text-stream classifier and requires
+`tmp/inverse_work/<stem>.tgt.s`, which after the 2026-08-19 asm-until-matched migration
+carries OUR bytes rather than target's. `sched_solver` received a `--target-object` escape
+for exactly this case (owner ruling 2026-08-25); `ra_solver` has no equivalent. Every
+post-migration function whose residual is an RA seat is currently un-analysable by the RA
+solver until that path exists.
+
+Evidence pointers: `memory/grind/get_alarm/evidence.md` [s42] block;
+`memory/grind/get_alarm/hypotheses.md` [s42] entries;
+`tmp/grind/get_alarm/s42/solver_report.md` (full derivation, UID legend, command lines).
+Filed by grind session 42 under `.claude/rules/escalation-not-parked.md` (2026-08-24) and
+[[difficult-is-not-impossible]]. get_alarm remains ACTIVE.
+
+## 2026-08-26 — get_alarm — OWNER-ESCALATION — ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)
+
+**Auto-filed by the grinder driver (2026-08-26)** after 42 sessions held the honest
+floor flat at 9 across 8 distinct modalities (escalation, forensics, permuter, recon, rederive, structural, synthesis, wip-import) without a
+session self-filing — the escalation-modality backstop (grind.ps1). This is the endgame-lock
+species per the standing 2026-07-20 endgame-lock-disposition policy: byte-matches on main only
+via a cheat (0 regfix/asmfix rule(s) or cheat-asm), honest pure-C floor 9,
+sanctioned levers exhausted across the full modality ladder (see memory/grind/get_alarm/
+evidence.md + hypotheses.md for the per-session kill record). Both AND-gates fail on the ledger evidence: canonical-asm — `scan_hand_coded --single
+get_alarm` = **LOW** (ordinary GCC RA/scheduler artifact, no hand-coded signature);
+coercion family — no SOTN-master precedent recorded for the residual axes. Per the owner's
+2026-08-24 ruling (.claude/rules/escalation-not-parked.md): the item is ESCALATED with a
+decision packet, not parked — the packet must state the DECIDABLE question this function's
+residual poses (the specific grant/family/fidelity/routing choice), the evidence pointers,
+and the consequence of each answer. The two AND-gates remain the unchanged STANDARD; the
+owner rules on packets in batches, and the ruling returns the item to active either way.
+If no decidable question exists, the item stays ACTIVE with a modality change instead
+(difficult-is-not-impossible) — "this is hard" is not a packet.

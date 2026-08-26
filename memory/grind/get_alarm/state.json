@@ -1,7 +1,7 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 41,
+ "session_count": 42,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -255,13 +255,29 @@
    "floor": 9,
    "modality": "escalation",
    "headline": "s41 escalation/disposition: floor re-measured chassis-current at 9 (rules_dropped 0); BOTH endgame-lock AND-gates re-measured FAILED (scan_hand_coded LOW 1/8, S1/S2/S6 absent; sotn-construct-index neg"
+  },
+  {
+   "session": 42,
+   "floor": 9,
+   "modality": "escalation",
+   "headline": "Owner's 2026-08-24 solver directive executed for the first time: sched_solver RE-ATTRIBUTES axis B from a frozen sched1 priority tie to a pass-2 $a0 OUTPUT DEPENDENCE (exactly 1 of 4391 atoms reaches "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "get_alarm is terminally disposed (INCOMPLETE-owner-accepted) under the 2026-07-27 standing ruling, re-affirmed on the post-migration chassis; no further grind sessions should be dispatched.",
-   "mechanism": "Both endgame-lock AND-gates measured FAILED this session (scan LOW 1/8; SOTN census negative), and the residual is two orthogonal compiler-internal axes with no legitimate pure-C lever across six modalities.",
-   "next_probe": "Driver parks the function citing docs/grind/decisions.md:8621; queue advances. Re-attempt only on (a) a genuinely new whole-function idiom outside the reporter topology, (b) new tooling reaching the combine/sched interaction, or (c) an owner census establishing an SOTN family for a dead second address-use or a non-IRQ-use-site extern volatile global."
+   "hypothesis": "A pure-C form exists that makes local-alloc/greg seat the dead volatile *g_gpu_stat_reg read in $v0 instead of $a0; with that output dependence gone, sched2 lifts the fmt `la` to emit slot 1 and axis B (8 of the 9 residual ops) closes.",
+   "mechanism": "The solver's unique reaching atom is `del_dep 60 <- 38`, a pass-2 OUTPUT DEPENDENCE on hard register $a0. It exists only because greg gave the dead read's zero-use pseudo the same hard register the fmt `la` must write. Target seats the identical dead read in $v0 (lw $v0,0($v1) @ 0x8007DCFC), so the edge is absent there and the `la` floats freely.",
+   "next_probe": "Run the RA solver at the dead pseudo: tools/ra_solver local_alloc/global.c models -> the C-lever vector that changes its seat from $4 to $2. FIRST fix the tooling blocker: inverse_compose.py classify needs target bytes, so either build build/src/display.o from the INCLUDE_ASM state and derive the goal from that object, or extend inverse_compose with the --target-object path sched_solver already has (owner ruling 2026-08-25). Cheap ordinary-C spellings of the discarded read (bare (void) read, comma-in-arg, staged temp) are already measured 9/12/12 and banked - do not repeat them."
+  },
+  {
+   "hypothesis": "A PAIR of statement-order (luid) moves reaches target's pass-2 order even though no single one does.",
+   "mechanism": "Depth 1 proved no single luid atom lifts the fmt `la` past 38/43/54; the goal needs it to jump three slots, which a pair of moves could conceivably do without touching the $a0 output dependence.",
+   "next_probe": "Finish the run this session started and stopped: `python3 tools/sched_solver/perturb.py tmp/sched_solver_work/display.sched.json --func get_alarm --pass 2 --block 2 --goal-before 38:60 --goal-before 43:60 --goal-before 54:60 --atoms luid,luid_move --depth 2`. It is a pure-Python replay with no build in the loop (~4391^2 pairs, minutes-to-hours) - launch it FIRST in the session and harvest in the same turn. A positive result is a spellable statement-order lever; a negative result closes the statement-order surface at depth 2 and hardens the RA-seat conclusion."
+  },
+  {
+   "hypothesis": "Axis A (the remaining 1 insn, the &D_8009BF68 materialization) may be reachable once axis B is closed, because the register pressure and pass-2 dependence graph both change.",
+   "mechanism": "Every axis-A probe in s1-s41 was run against a chassis where the dead read occupies $a0 and the fmt `la` is late. combine.c:1458 added_sets_2 is a pre-RA decision so it should be unaffected, but the two axes were only ever proven orthogonal against the CURRENT seat assignment - that orthogonality has not been re-tested under the $v0 seat.",
+   "next_probe": "Deferred until a $v0-seat form exists. If one is found and the floor drops to 1, re-run the s2/s3 axis-A declaration/access-shape enumeration against the NEW chassis before concluding axis A is still dead - a chassis-relative conclusion must be re-measured on the chassis it is quoted against."
   }
  ],
  "judge_constraints": [],
