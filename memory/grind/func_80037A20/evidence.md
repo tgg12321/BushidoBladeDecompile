@@ -544,3 +544,112 @@ function is INCOMPLETE. candidate.c is the faithful pin/barrier-free body
 - [s10] The remaining 6 diffs are entirely one entry-block scheduling decision plus the known cse1 fold. Ours: [sp] a2 a3 | sw s1 | s1=0 | sw s0 | la s0 | la a1 | sw ra | jal | (delay) addiu a0. Target: [sp] a2 a3 | sw s0 | la s0 | addiu a0 | la a1 | sw ra | jal | (delay) sw s1 | s1=0. `move s1,zero` has no consumer in the entry block, so rank_for_schedule falls through to a DESCENDING INSN_LUID sort; the hoisted statement has a low LUID and is emitted first where target emits it last.
 
 - [s10] The candidate body contains no construct from any forbidden or sanctioned-exception family: it is a single walking pointer, a counter, a stack buffer that is actually written by sprintf, and a do/while loop. The only unusual thing about it is the ORDER of two ordinary initialisations.
+
+## [s11] rederive modality — floor stays 6; the allocation/schedule conflict is now a closed-form inequality
+
+- [s11] Chassis re-verified at session start: the s10 candidate applied to
+  src/code6cac_c.c measures `sandbox func_80037A20 --disable all` = **6**,
+  33/33 insns, 0 rules, 4 cheat-asm stripped (unrelated neighbours in the TU).
+  The ledger floor of 6 is current; nothing drifted.
+
+- [s11] The exact 6-diff residual, read off objdump of the sandbox object vs
+  asm/funcs/func_80037A20.s.  Entry-block emission, ours then target:
+    ours   : addiu sp,-64 | move a2,a0 | move a3,a1 | sw s1,52 | move s1,zero |
+             sw s0,48 | la s0 | la a1 | sw ra,56 | jal sprintf | (delay) addiu a0,sp,16 |
+             addiu a0,sp,16 | jal firstfile | (delay) move a1,s0
+    target : addiu sp,-64 | move a2,a0 | move a3,a1 | sw s0,48 | la s0 |
+             addiu a0,sp,16 | la a1 | sw ra,56 | jal sprintf | (delay) sw s1,52 |
+             move s1,zero | addiu a0,sp,16 | jal firstfile | (delay) move a1,s0
+  Everything from the beqz onward is identical except the peeled increment
+  (`li $s1,1` vs `addiu $s1,$s1,1`).  Same insn count, same registers.
+
+- [s11] MIPS has no `REG_ALLOC_ORDER` in GCC 2.7.2 (`tools/gcc-2.7.2/config/mips/mips.h`
+  defines none), and every hard-reg preference for both allocnos is pruned
+  (measured: `prefs == {}`, `copy_prefs == {"74": [], "75": []}` on all bodies).
+  Therefore the first allocno in global.c's priority sort takes $s0 and the second
+  takes $s1, unconditionally.  The only lever on the disposition is the priority
+  `floor_log2(nrefs)*nrefs*size/live_length*10000`, and its only pure-C inputs are
+  the weighted ref count and the live length.
+
+- [s11] Weighted ref counts are structurally fixed by target's own byte stream:
+  pointer Rp = 8, counter Rc = 10 with our folded peel (11 with target's
+  `addiu $s1,$s1,1`).  Both counts are forced by the 33 instructions target emits,
+  so the inequality cannot be re-balanced from the ref side.  Consequently the
+  pointer wins the $s0 seat iff **Lc >= 1.25 * Lp** (or 1.375 with the unfolded
+  peel).
+
+- [s11] Full 2x2 statement-position matrix, sandbox + ALLOCDBG (models in
+  tmp/grind/func_80037A20/s11/model_{base,v7,v9}.json):
+      ptr before / zero before : 8/16=15000 vs 10/20=15000  TIE -> ptr $s0 : **6**
+      ptr after  / zero before :                                        : **7**
+      ptr after  / zero after  : 8/11=21818 vs 10/15=20000  ptr $s0      : **8**
+      ptr before / zero after  : 8/17=14117 vs 10/14=21428  counter $s0  : **13**
+  Target's own layout (la before the jal AND zero-init after the jal) demands
+  Lp ~= 17 with Lc ~= 14, a ratio of 0.82 against a requirement of 1.25.  The
+  statement-position route to target is FORECLOSED by a factor of 1.5.
+
+- [s11] The `ptr after / zero after` body (sandbox 8) is the first body in eleven
+  sessions to place `move $s1,$zero` in target's slot (immediately after the
+  sprintf jal) with `sw $s1,0x34($sp)` in the delay slot AND keep target's $s0/$s1
+  assignment.  Its only entry-block defect is the `la $s0` sinking past the jal.
+  Saved as memory/grind/func_80037A20/rejected/s11-both-inits-after-call-la-sinks.c
+  — worth re-reading, it is the closest thing to a second chassis.
+
+- [s11] First-hand sched1 attribution (dumps/code6cac_c.sched, this session):
+  block 0 = insns 4..40, containing BOTH calls; every insn ties at INSN_PRIORITY 1
+  except the terminating jump (0x7fffffae) and two argument moves that carry the
+  birthing boost (0x7f000001) but are deleted by coalescing.  The emitted order is
+  exactly ascending insn number.  **sched1 performs no reordering in this function**,
+  so entry-block emission order == RTL order == source statement order.  The s10
+  frontier item that hoped to sink the zero-init via the birthing boost is dead
+  twice over: reg_n_sets[counter] == 4 (no boost possible), and even a boosted insn
+  caps at 0x7f000001 < the jump's 0x7fffffae, so it could only reach the
+  second-to-last slot of the block — never past the jal.
+
+- [s11] The callee-saved saves are NOT RTL insns.  mips.c prints `sw $sN,off($sp)`
+  as text immediately before the first insn that touches $sN (verified on raw cc1
+  output, tmp/grind/func_80037A20/s11/tu.s: `sw $17,52` precedes `move $17,$0`,
+  `sw $16,48` precedes `la $16`, `sw $31,56` precedes the jal).  Target obeys the
+  same rule.  So the `sw $s1` position is a dependent variable, never a target in
+  its own right.
+
+- [s11] The remaining reconciliation, and the frontier: if reorg left the sprintf
+  jal's delay slot EMPTY on the base body, the lazy `sw $s1` save plus
+  `move $s1,$zero` would fall after the jal (assembler pulls the save into the
+  slot) and `addiu $a0,$sp,0x10` would stay at its RTL position before `la $a1` —
+  reproducing target's entry block exactly, with the 15000/15000 tie untouched
+  because the RTL order does not move.  reorg currently fills the slot with insn 21
+  (`addiu $a0,$sp,0x10`): both `la`s are length-8 macros and ineligible, so insn 21
+  is the nearest eligible candidate in the backward scan.  Unread this session:
+  tmp/grind/func_80037A20/dumps/code6cac_c.dbr (generated) and
+  tools/gcc-2.7.2/reorg.c `fill_simple_delay_slots`.
+
+- [s11] Rederived loop/exit shapes, all measured, all worse: branch-target peel with
+  duplicated tail 34 insns / 17; `while(1){...break}` 34 / 10; early-exit
+  `if (!firstfile) { D = 0; return 0; }` 34 / 17; nextfile inlined into the
+  do/while condition 35 / 9.  `u8 sp10[32]` instead of `s32 sp10[8]` is byte-
+  identical (33 / 6) — the buffer's C type is inert.
+
+- [s11] Chassis re-verified: the s10 candidate applied to src/code6cac_c.c measures sandbox --disable all = 6, 33/33 insns, 0 rules. The ledger floor of 6 is current; nothing drifted this session.
+
+- [s11] The exact residual, objdump of the sandbox object vs asm/funcs/func_80037A20.s: ours = [addiu sp,-64 | move a2,a0 | move a3,a1 | sw s1,52 | move s1,zero | sw s0,48 | la s0 | la a1 | sw ra,56 | jal sprintf | (delay) addiu a0,sp,16 | addiu a0,sp,16 | jal firstfile | (delay) move a1,s0]; target = [addiu sp,-64 | move a2,a0 | move a3,a1 | sw s0,48 | la s0 | addiu a0,sp,16 | la a1 | sw ra,56 | jal sprintf | (delay) sw s1,52 | move s1,zero | addiu a0,sp,16 | jal firstfile | (delay) move a1,s0]. Everything from the beqz onward matches except the peeled increment (li $s1,1 vs addiu $s1,$s1,1).
+
+- [s11] MIPS has no REG_ALLOC_ORDER in GCC 2.7.2 and every hard-reg preference for both allocnos is pruned (prefs == {} measured on all bodies), so the first allocno in global.c's sort takes $s0 unconditionally and the only pure-C lever is the priority formula's two inputs (weighted refs, live length).
+
+- [s11] Weighted ref counts are fixed by target's own byte stream: pointer Rp = 8 (la 1 + loop addiu 2*2 + loop move a0 1*2 + move a1 1) and counter Rc = 10 folded / 11 unfolded (init 1 + peel 1 or 2 + loop addiu 2*2 + tail addiu -1 2 + sw 1 + move v0 1). Hence the pointer wins the $s0 seat iff Lc >= 1.25*Lp (1.375 unfolded).
+
+- [s11] 2x2 statement-position matrix with ALLOCDBG ground truth: (ptr before, zero before) 15000/15000 tie -> ptr $s0, sandbox 6; (ptr after, zero before) sandbox 7; (ptr after, zero after) 21818/20000 -> ptr $s0, sandbox 8; (ptr before, zero after) 14117/21428 -> counter $s0, sandbox 13. Target needs Lp ~ 17 with Lc ~ 14 simultaneously (ratio 0.82) against a bar of 1.25.
+
+- [s11] The (ptr after, zero after) body at sandbox 8 is the first body in eleven sessions to place move $s1,$zero in target's slot immediately after the sprintf jal AND put sw $s1,0x34($sp) in the delay slot AND keep target's $s0/$s1 assignment; its only entry-block defect is the la $s0 sinking past the jal. Banked as memory/grind/func_80037A20/rejected/s11-both-inits-after-call-la-sinks.c - it is effectively a second chassis, not just a dead form.
+
+- [s11] First-hand sched1 attribution: block 0 = insns 4..40 containing both calls; all insns tie at INSN_PRIORITY 1 except the terminating jump (0x7fffffae) and two coalesced-away argument moves (0x7f000001); the emitted sequence is exactly ascending insn number, so sched1 performs no reordering in this function and entry-block emission order == source statement order.
+
+- [s11] Insn identities in block 0 for future sessions: 4 = reg72 <- $a0; 6 = reg73 <- $a1; 13 = reg75 <- 0 (the counter zero-init); 16 = reg74 <- &D_80102810 (the la); 21 = $a0 <- sp+16; 23 = $a1 <- fmt; 25/27 = $a2/$a3 <- reg72/reg73 (deleted by coalescing); 29 = call sprintf; 32 = $a0 <- sp+16; 34 = $a1 <- reg74; 36 = call firstfile; 40 = beqz.
+
+- [s11] The callee-saved saves are not RTL insns: mips.c emits sw $sN,off($sp) as text immediately before the first insn touching $sN. Verified on raw cc1 output (tmp/grind/func_80037A20/s11/tu.s) and consistent with target. The sw $s1 position is therefore fully determined by the move $s1,$zero position.
+
+- [s11] Reconciliation candidate (the new frontier): reorg fills the sprintf jal delay slot with insn 21 (addiu $a0,$sp,0x10) because both la insns are length-8 macros and hence ineligible, leaving insn 21 as the nearest eligible candidate in fill_simple_delay_slots' backward scan. If that slot were instead left empty, the lazy sw $s1 save plus move $s1,$zero would fall after the jal (the assembler pulls the save into the slot) and addiu $a0,$sp,0x10 would stay at its RTL position before la $a1 - reproducing target's entry block bit-for-bit with the 15000/15000 allocation tie untouched, because the RTL order does not change.
+
+- [s11] Rederived shapes measured and dead: branch-target peel with duplicated tail 34 insns/17; while(1){...break} 34/10; early-exit return-zero 34/17; nextfile inlined into the loop condition 35/9. u8 sp10[32] vs s32 sp10[8] is byte-identical at 33/6.
+
+- [s11] src/code6cac_c.c was reverted to HEAD (INCLUDE_ASM) at end of session; the working body lives in memory/grind/func_80037A20/candidate.c and is unchanged from s10.

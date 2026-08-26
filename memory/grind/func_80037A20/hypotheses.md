@@ -436,3 +436,201 @@ s9 candidate's structural regression was explained and undone.
 - probe: do-while(0) wrap of the entry increment, the `var_s1 = var_s1 + 1` spelling, and a single-set zero-init local, all measured on the s10 chassis.
 - result: All fail. do-while(0) measures 14 (it does not defeat the cse1 REG_WAS_0 fold AND it costs the allocation tie); `var_s1 = var_s1 + 1` is byte-identical to `var_s1++` at 6; the single-set zero-init local measures 13 (the extra pseudo perturbs both live lengths and loses the tie). On this chassis the fold is not independently attackable - it is coupled to the same live-range balance that wins the allocation.
 - verdict: KILLED
+
+## [s11] The disposition of $s0/$s1 is decided ENTIRELY by global.c allocno order (no hard-reg preference path exists on this function), so target's register assignment is a closed-form inequality on ref counts and live lengths.
+- mechanism: `tools/gcc-2.7.2/config/mips/mips.h` defines NO `REG_ALLOC_ORDER`, so
+  global.c `find_reg` walks hard regs 0..N and takes the first available in the
+  allocno's class; the first allocno in the priority sort therefore takes $16 and
+  the second takes $17. The preference machinery (`hard_reg_preferences`,
+  `hard_reg_copy_preferences`, `hard_reg_full_preferences`, `regs_someone_prefers`)
+  is INERT here: `prune_preferences` clears every preference because the only
+  hard-reg copies either allocno participates in are to CALL-CLOBBERED regs
+  ($v0 for the counter, $a0/$a1 for the pointer) and both allocnos cross calls.
+- probe: `tools/ra_solver/extract.py func_80037A20 code6cac_c` on four bodies;
+  read `prefs` / `copy_prefs` / `full_prefs` / `hard_conflicts` out of the model
+  JSONs (tmp/grind/func_80037A20/s11/model_{base,v7,v9}.json).
+- result: prefs == {} and copy_prefs == {"74": [], "75": []} on EVERY body measured.
+  hard_conflicts for both allocnos are only {2,4,5,(6,7),29} — never 16 or 17.
+  There is therefore no pure-C lever that can hand $s1 to an allocno that sorts
+  first: the ONLY lever is the priority sort itself,
+  `pri = floor_log2(nrefs)*nrefs*size/live_length*10000`.
+- verdict: CONFIRMED
+
+## [s11] KILLED — no assignment of source statement positions produces BOTH target's `la $s0` position AND target's `move $s1,$zero` position, because the two requirements pull the allocation inequality in opposite directions.
+- mechanism: block 0 is emitted in RTL order (see the sched1 hypothesis below), so
+  the `la` lands before the sprintf jal iff the pointer-init statement is before the
+  sprintf call, and `move $s1,$zero` lands after the jal iff the counter-init
+  statement is after the sprintf call. But the pointer's live length Lp is measured
+  from the `la` and the counter's Lc from its zero-init, so "la early" maximises Lp
+  and "zero-init late" minimises Lc. The pointer only wins the allocation when
+  floor_log2(8)*8/Lp >= floor_log2(10)*10/Lc, i.e. **Lc >= 1.25 * Lp**.
+  Rp = 8 and Rc = 10 are STRUCTURALLY FIXED by target's own 33-insn stream
+  (loop-depth-weighted: pointer = la 1 + loop `addiu` 2*2 + loop `move a0` 1*2 +
+  `move a1` 1 = 8; counter = init 1 + peel 1 + loop `addiu` 2*2 + `addiu -1` 2 +
+  `sw` 1 + `move v0` 1 = 10), so the inequality cannot be re-balanced by refs.
+- probe: the full 2x2 statement-position matrix, each measured with
+  `sandbox --disable all` AND `tools/ra_solver/extract.py` (ALLOCDBG ground truth):
+    ptr BEFORE call, zero BEFORE call (s10 candidate / base):
+        ptr(74) 8 refs / livelen 16 = 15000 ; counter(75) 10 / 20 = 15000
+        EXACT TIE -> pseudo 74 first -> $s0 = pointer (TARGET's allocation)
+        la BEFORE jal (target) ; `move s1,zero` FIRST in block (NOT target)
+        **sandbox 6**
+    ptr AFTER  call, zero BEFORE call (s11/v1_ptr_after_call.c):
+        **sandbox 7** ; la sinks past the jal (NOT target)
+    ptr AFTER  call, zero AFTER  call (s11/v7_both_after_call.c):
+        ptr 8/11 = 21818 ; counter 10/15 = 20000 -> ptr wins STRICTLY -> $s0 = ptr
+        `move s1,zero` lands immediately AFTER the jal (TARGET's slot!) and
+        `sw $s1,0x34($sp)` lands in the jal delay slot (TARGET) — but the `la`
+        sinks past the jal (NOT target).  **sandbox 8**
+    ptr BEFORE call, zero AFTER  call (= target's apparent statement order,
+        s11/v9_ptrbefore_zeroafter.c):
+        ptr 8/17 = 14117 ; counter 10/14 = 21428 -> COUNTER sorts first and takes
+        $s0.  Allocation is target-INVERTED.  **sandbox 13**
+  Target needs Lp≈17 and Lc≈14 simultaneously, i.e. Lc/Lp = 0.82, against a
+  requirement of >= 1.25.  Foreclosed by a factor of 1.5.
+- verdict: KILLED (the s10 frontier item "sweep loop-shape/tail-shape variants with
+  the zero-init AFTER the call" is closed: the obstruction is not the loop shape,
+  it is the ref/live-length inequality, and no loop or tail shape changes Rp/Rc.)
+
+## [s11] sched1 does NOT reorder func_80037A20's entry block at all — every insn ties at INSN_PRIORITY 1 and rank_for_schedule's descending-INSN_LUID tie-break reproduces the RTL order exactly. The s10 "birthing boost sinks the zero-init" frontier is therefore misframed.
+- mechanism: `tools/gcc-2.7.2/sched.c` rank_for_schedule sorts descending
+  INSN_PRIORITY, then by class relative to last_scheduled_insn, then descending
+  INSN_LUID; schedule_block walks BACKWARD, so a descending-LUID ready list is
+  emitted in ascending-LUID (= original) order. adjust_priority()'s birthing boost
+  (`birthing_insn_p` -> `reg_n_sets[dest] == 1`) can only raise an insn to
+  max_priority = 0x7f000001, which is still BELOW the block-terminating jump's
+  0x7fffffae, so the very best a boosted insn can do is be emitted second-to-last
+  in the block — one slot before the jal, never after it.
+- probe: `pwsh tools/grinder/dump.ps1 func_80037A20`, then the
+  `;; Function func_80037A20` segment of tmp/grind/func_80037A20/dumps/code6cac_c.sched.
+- result: block 0 spans insns 4..40 and contains BOTH calls (29 = sprintf,
+  36 = firstfile) — calls do NOT split scheduling blocks here.
+  All of 13,16,21,23,25,27,32,34,36 have `priority = 1`; only insn 40 (the block's
+  jump) has 0x7fffffae and insns 25/27 carry the birthing boost 0x7f000001.
+  The emitted sequence is T-11..T-1 = 13,16,21,23,25,27,29,32,34,36,40 — exactly
+  ascending insn number.  Identification of the insns:
+    4  reg72 = $a0      6  reg73 = $a1     13 reg75 = 0 (the counter zero-init)
+    16 reg74 = &D_80102810 (the `la`)      21 $a0 = sp+16   23 $a1 = fmt
+    25 $a2 = reg72 (deleted: reg72 -> $a2) 27 $a3 = reg73 (deleted)
+    29 call sprintf     32 $a0 = sp+16     34 $a1 = reg74   36 call firstfile
+    40 beqz
+  Additionally reg_n_sets[counter] == 4 (init, peel, loop +1, tail -1), so the
+  boost can never apply to insn 13 in any case.
+- verdict: CONFIRMED (kills s10 frontier item 1 as stated)
+
+## [s11] The callee-saved register SAVES are NOT RTL insns — mips.c emits `sw $sN,off($sp)` as text immediately before the first insn that defines/uses $sN — so target's `sw $s1,0x34($sp)` in the sprintf delay slot is a CONSEQUENCE of `move $s1,$zero` sitting after the jal, not an independent scheduling fact.
+- mechanism: the sched1 dump's block-0 insn list contains no store-to-stack insns,
+  yet raw cc1 output (tmp/grind/func_80037A20/s11/tu.s) interleaves
+  `sw $17,52($sp)` / `sw $16,48($sp)` / `sw $31,56($sp)` between scheduled insns —
+  each one immediately preceding the first appearance of its register.
+- probe: raw cc1 .s (tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -mcpu=3000
+  -mips1 -mno-abicalls -mel) vs the .sched insn inventory above.
+- result: base body prints `sw $17,52` right before insn 13 (`move $17,$0`),
+  `sw $16,48` right before insn 16 (`la $16`), `sw $31,56` right before the jal.
+  Target prints `sw $16,48` before its `la $16` (idx 3/4) and `sw $17,52` in the
+  jal delay slot immediately before its `move $17,$0` (idx 11/12).  Same rule,
+  different `move $17,$0` position.  Corollary: chasing the `sw $s1` position
+  independently is wasted work — it is fully determined.
+- verdict: CONFIRMED
+
+## [s11] Defeating the `li $s1,1` -> `addiu $s1,$s1,1` fold is QUANTITATIVELY self-defeating on the base chassis: unfolding raises the counter's weighted ref count 10 -> 11, which raises the allocation bar from Lc >= 1.25*Lp to Lc >= 1.375*Lp, and the base body sits exactly at 1.25.
+- mechanism: target's `addiu $s1,$s1,1` mentions $s1 twice where our folded
+  `li $s1,1` mentions it once, so Rc becomes 11 and floor_log2(11)*11 = 33.
+  On the base body (Lp = 16, Lc = 20) that gives counter 33/20 = 16500 against
+  pointer 24/16 = 15000 — the counter would sort FIRST and take $s0.
+- probe: arithmetic on the measured ALLOCDBG numbers for the base body
+  (tmp/grind/func_80037A20/s11/model_base.json: 74 -> 8/16/15000,
+  75 -> 10/20/15000), applying the same
+  pri = floor_log2(nrefs)*nrefs*size/live_length*10000 formula the tool reproduces
+  exactly on all four measured bodies.
+- result: the fold and the allocation are not two levers, they are ONE constraint.
+  Any body that shows target's `addiu $s1,$s1,1` must ALSO satisfy
+  Lc >= 1.375*Lp, which no measured statement ordering reaches (best is 1.25).
+  s10 recorded this coupling qualitatively; this is the number.
+- verdict: CONFIRMED (this is why every s10 fold-defeat attempt cost the tie)
+
+## [s11] Structural re-derivations of the loop/exit shape all cost insns; the entry-block residual is not a loop-shape problem.
+- mechanism: rederive modality — four structurally distinct bodies, all measured
+  with sandbox --disable all against the 33-insn target.
+- probe: tmp/grind/func_80037A20/s11/{v3_branch_target_peel,v4_while_break,
+  v8_early_exit_zero,v15_no_temp,v16_u8buf}.c
+- result: branch-target peel with duplicated tail (`goto found;` so the peeled
+  increment is the branch TARGET rather than the fall-through — an attempt to put
+  the increment outside cse1's extended-basic-block path and so defeat the fold):
+  **34 insns, sandbox 17** — jump2 does not cross-jump the duplicated
+  `sw`+`move v0`+return.  `while (1) { ...; if (!nextfile) break; ... }`:
+  **34 insns, sandbox 10**.  Early-exit `if (!firstfile) { D = 0; return 0; }`:
+  **34 insns, sandbox 17**.  Inlining the nextfile result into the do/while
+  condition instead of a named temp: **35 insns, sandbox 9**.  Declaring the
+  sprintf buffer as `u8 sp10[32]` instead of `s32 sp10[8]`: **33 insns, sandbox 6**
+  — byte-identical to base, buffer type is inert.
+- verdict: KILLED (all four)
+
+## [s11] OPEN — the whole 6-diff residual is reproduced exactly if reorg leaves the sprintf jal's delay slot EMPTY on the base body; reorg currently fills it with insn 21 (`addiu $a0,$sp,0x10`), the nearest length-4 eligible insn.
+- mechanism: on the base body the pre-reorg block-0 stream is
+  13 (`move $17,$0`), 16 (`la $16`, length 8), 21 (`addiu $4,$sp,16`, length 4),
+  23 (`la $5`, length 8), 29 (call).  reorg's fill_simple_delay_slots scans
+  backward from the call; both `la`s are two-instruction macros and are ineligible
+  for a delay slot, so the first eligible candidate is insn 21, which reorg moves
+  down into the slot.  If instead NO candidate were eligible, the slot would be
+  left to the assembler, and — by the save-emission rule confirmed above —
+  mips.c's lazy `sw $17,52($sp)` (printed immediately before the first def of $17)
+  plus `move $17,$0` would follow the jal, with the assembler pulling the `sw` into
+  the slot.  The resulting entry block is
+  `sw $16 / la $16 / addiu $a0,$sp,16 / la $a1 / sw $ra / jal / sw $s1 (delay) /
+   move $s1,$zero / addiu $a0,$sp,16 / jal / move $a1,$s0` — bit-for-bit target's,
+  with the 15000/15000 allocation tie completely untouched (the RTL ORDER does not
+  change, so Lp and Lc do not change).  This is the only reading found so far that
+  reconciles target's schedule with target's allocation; the statement-position
+  route is proven impossible above.
+- probe (for the next session): (a) confirm the delay-slot choice first-hand in
+  tmp/grind/func_80037A20/dumps/code6cac_c.dbr (the reorg dump was generated this
+  session but not read) — identify which insn reorg picks and WHY insn 21 is
+  eligible; (b) read `fill_simple_delay_slots` in tools/gcc-2.7.2/reorg.c to
+  enumerate the byte-free conditions under which insn 21 becomes ineligible or is
+  not reached by the backward scan (resource conflict with an intervening insn,
+  `eligible_for_delay` length test, basic-block boundary, or the scan's step
+  limit); (c) then look for a pure-C spelling that satisfies one of those
+  conditions WITHOUT changing the RTL order of insns 13/16 — candidates: change
+  which insn is nearest-before-the-call by altering the sprintf ARGUMENT
+  expressions (target emits $a0 before $a1, same as ours, so the lever is what
+  sits between $a1's `la` and the call), or make the $a0 setup itself a two-insn
+  sequence.  Note the constraint: any spelling that ADDS an insn is out (33/33
+  already).
+- verdict: OPEN — this is the whole remaining frontier.
+
+## [s11] The $s0/$s1 disposition in func_80037A20 is decided entirely by global.c allocno sort order, with no hard-register preference path available to pure C.
+- mechanism: GCC 2.7.2's tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so global.c find_reg walks hard regs 0..N and the first allocno in the priority sort takes $16 ($s0) while the second takes $17 ($s1). The preference machinery (hard_reg_preferences / hard_reg_copy_preferences / hard_reg_full_preferences / regs_someone_prefers) is inert because prune_preferences clears every preference: the only hard-reg copies either allocno takes part in are to call-clobbered registers ($v0 for the counter, $a0/$a1 for the pointer) and both allocnos cross calls.
+- probe: tools/ra_solver/extract.py func_80037A20 code6cac_c on four distinct bodies; read prefs / copy_prefs / full_prefs / hard_conflicts out of tmp/grind/func_80037A20/s11/model_{base,v7,v9}.json.
+- result: prefs == {} and copy_prefs == {"74": [], "75": []} on every body measured; hard_conflicts for both allocnos are only {2,4,5,(6,7),29}, never 16 or 17. The only lever on the disposition is the priority formula pri = floor_log2(nrefs)*nrefs*size/live_length*10000.
+- verdict: CONFIRMED
+
+## [s11] No assignment of source statement positions produces BOTH target's `la $s0` position (before the sprintf jal) and target's `move $s1,$zero` position (after the sprintf jal), because the two requirements pull the allocation inequality in opposite directions.
+- mechanism: Entry-block emission order equals RTL order equals source statement order (sched1 does no reordering here, separately confirmed). So the `la` precedes the jal iff the pointer-init statement precedes the sprintf call, and `move $s1,$zero` follows the jal iff the counter-init statement follows the sprintf call. The pointer's live length Lp starts at the `la` and the counter's Lc starts at its zero-init, so `la early' maximises Lp while `zero-init late' minimises Lc. The pointer wins the $s0 seat only when floor_log2(8)*8/Lp >= floor_log2(10)*10/Lc, i.e. Lc >= 1.25*Lp. Rp = 8 and Rc = 10 are structurally fixed by target's own 33-instruction stream under flow.c's loop-depth ref weighting, so the inequality cannot be re-balanced from the ref side.
+- probe: Full 2x2 statement-position matrix, each cell measured with `sandbox func_80037A20 --disable all` AND tools/ra_solver/extract.py ALLOCDBG ground truth.
+- result: ptr before / zero before (the s10 candidate): ptr(74) 8 refs/livelen 16 = 15000, counter(75) 10/20 = 15000, EXACT TIE -> pseudo 74 first -> $s0 = pointer, sandbox 6. ptr after / zero before: sandbox 7. ptr after / zero after: ptr 8/11 = 21818, counter 10/15 = 20000, ptr wins strictly, `move s1,zero` lands in TARGET's slot right after the jal with `sw $s1,0x34($sp)` in the delay slot, but the `la` sinks past the jal, sandbox 8. ptr before / zero after (= target's apparent statement order): ptr 8/17 = 14117, counter 10/14 = 21428, COUNTER sorts first and takes $s0 (target-inverted), sandbox 13. Target's own layout demands Lp ~ 17 with Lc ~ 14, ratio 0.82, against a requirement of 1.25 - foreclosed by a factor of 1.5.
+- verdict: KILLED
+
+## [s11] sched1 sinks or could sink `move $s1,$zero` to the end of the entry block via adjust_priority's birthing boost (the s10 frontier item 1).
+- mechanism: sched.c rank_for_schedule sorts descending INSN_PRIORITY, then by dependence class relative to last_scheduled_insn, then descending INSN_LUID; schedule_block walks backward, so a descending-LUID ready list is emitted in ascending-LUID order. adjust_priority raises an insn to max_priority = 0x7f000001 when birthing_insn_p (reg_n_sets[dest] == 1) holds.
+- probe: pwsh tools/grinder/dump.ps1 func_80037A20, then the `;; Function func_80037A20' segment of tmp/grind/func_80037A20/dumps/code6cac_c.sched, with insn identities cross-read from the RTL in the same dump.
+- result: Block 0 spans insns 4..40 and contains BOTH calls (29 = sprintf, 36 = firstfile) - calls do not split scheduling blocks here. Every insn ties at priority 1 except insn 40 (the terminating jump, 0x7fffffae) and insns 25/27 (argument moves carrying the birthing boost 0x7f000001, both deleted by coalescing). The emitted sequence T-11..T-1 is 13,16,21,23,25,27,29,32,34,36,40 - exactly ascending insn number, i.e. sched1 performs NO reordering in this function. The hypothesis is dead twice over: reg_n_sets[counter] == 4 (init, peel, loop +1, tail -1) so the boost can never apply to insn 13, and even a boosted insn caps at 0x7f000001 < the jump's 0x7fffffae, so it could at best reach the second-to-last slot of the block, never past the jal.
+- verdict: KILLED
+
+## [s11] The callee-saved register saves (`sw $s0/$s1/$ra`) are schedulable RTL insns whose position can be attacked independently.
+- mechanism: If they were RTL insns they would appear in the sched1 block inventory and could be moved by sched1/reorg.
+- probe: Compared the sched1 block-0 insn inventory (which contains no store-to-stack insns) against raw cc1 output for the same body (tmp/grind/func_80037A20/s11/tu.s, produced with tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel).
+- result: The saves are TEXT emitted by mips.c immediately before the first insn that touches the corresponding register: `sw $17,52($sp)` precedes `move $17,$0`, `sw $16,48($sp)` precedes `la $16`, `sw $31,56($sp)` precedes the jal. Target obeys the identical rule (its `sw $16,48` precedes its `la $16`; its `sw $17,52` sits in the jal delay slot immediately before its `move $17,$0`). The `sw $s1` position is therefore a dependent variable of the `move $s1,$zero` position and must never be chased on its own.
+- verdict: KILLED
+
+## [s11] The `li $s1,1` vs target `addiu $s1,$s1,1` fold can be attacked independently of the allocation on the s10 chassis.
+- mechanism: Target's `addiu $s1,$s1,1` mentions $s1 twice where our folded `li $s1,1` mentions it once, so unfolding raises the counter's loop-depth-weighted ref count from 10 to 11 and floor_log2(11)*11 = 33, which raises the allocation bar from Lc >= 1.25*Lp to Lc >= 1.375*Lp.
+- probe: Arithmetic on the measured ALLOCDBG numbers for the s10/base body (model_base.json: pseudo 74 -> 8 refs / livelen 16 / pri 15000; pseudo 75 -> 10 / 20 / 15000), using the same priority formula that the tool reproduces exactly on all four bodies measured this session.
+- result: On the base body (Lp = 16, Lc = 20, ratio exactly 1.25) an unfolded peel would give the counter 33/20 = 16500 against the pointer's 24/16 = 15000, so the counter would sort first and take $s0 - the tie is lost. The fold and the allocation are ONE constraint, not two levers; this is the quantitative reason every s10 fold-defeat attempt cost the tie.
+- verdict: CONFIRMED
+
+## [s11] A structurally different loop/exit shape (rederive modality) reaches target's entry block or defeats the cse1 fold.
+- mechanism: Four distinct rewrites of the counting loop and the early-exit path, including one specifically designed to put the peeled increment on the branch-TARGET side rather than the fall-through side so it would fall outside cse1's extended-basic-block path and escape the constant fold.
+- probe: sandbox func_80037A20 --disable all on tmp/grind/func_80037A20/s11/{v3_branch_target_peel,v4_while_break,v8_early_exit_zero,v15_no_temp,v16_u8buf}.c
+- result: branch-target peel with duplicated tail: 34 insns, sandbox 17 (jump2 does not cross-jump the duplicated gp store + return move, matching the s10 tail-split finding). while(1){...;break}: 34 insns, sandbox 10. early-exit `if (!firstfile) { D_800A38C8 = 0; return 0; }`: 34 insns, sandbox 17. nextfile inlined into the do/while condition instead of a named temp: 35 insns, sandbox 9. `u8 sp10[32]` instead of `s32 sp10[8]`: 33 insns, sandbox 6 - byte-identical, buffer C type is inert. The entry-block residual is not a loop-shape problem.
+- verdict: KILLED

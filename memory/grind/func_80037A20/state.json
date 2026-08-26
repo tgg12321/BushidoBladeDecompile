@@ -1,7 +1,7 @@
 {
  "func": "func_80037A20",
  "file": "code6cac_c",
- "session_count": 10,
+ "session_count": 11,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -69,23 +69,29 @@
    "floor": 6,
    "modality": "rederive",
    "headline": "rederive: dropped the s9 pointer split for the ordinary one-pointer body and hoisted `var_s1 = 0;` above the sprintf call - honest floor 8 -> 6, with target's $s0/$s1 allocation AND target's la placem"
+  },
+  {
+   "session": 11,
+   "floor": 6,
+   "modality": "rederive",
+   "headline": "rederive: floor holds at 6; the s10 allocation-vs-schedule frontier is now a closed-form inequality (Lc >= 1.25*Lp with Rp=8/Rc=10 fixed) and the statement-position route to target is FORECLOSED - the"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "`move s1,zero` can be emitted LAST in the entry block (target's slot) while keeping the long live range that wins the 15000/15000 allocation tie, by giving its destination reg_n_sets == 1 so sched1's birthing boost sinks it regardless of INSN_LUID.",
-   "mechanism": "rank_for_schedule falls through to a DESCENDING INSN_LUID sort for insns with no consumer in the block, so the hoisted zero-init (low LUID) is emitted first. adjust_priority()/birthing_insn_p() overrides LUID entirely when reg_n_sets[dest] == 1 - the same lever that HURT the s9 pointer split, used here in the direction that helps. The naive spelling (a separate single-set local copied into the counter, rejected/s10-zero-init-split-single-set-pseudo.c) does sink the insn but perturbs both live lengths and loses the tie at 13, so the spelling must leave the counter's own live range intact.",
-   "next_probe": "Enumerate spellings where the value 0 reaches the counter through a pseudo written exactly once that dies immediately, without adding an allocno that changes either live length - e.g. the zero sourced from a once-written local whose live range sits entirely in the pre-call region, or an ordering where the counter's first WRITE is the entry increment and the 0 arrives on the not-taken path. Measure each with tools/ra_solver/extract.py (both pris must stay at 15000, or the pointer must be strictly above) AND check the block-0 ready list in tmp/grind/func_80037A20/dumps/code6cac_c.sched for a `(7f...)` boost on the zero-init insn."
+   "hypothesis": "The entire 6-diff residual collapses if reorg leaves the sprintf jal's delay slot EMPTY on the s10/base body - no RTL reordering and no allocation change required.",
+   "mechanism": "The saves are lazy text emitted by mips.c immediately before the first def of each callee-saved register, and sched1 does not reorder block 0. With the delay slot unfilled, cc1 prints jal, then (reorder mode) sw $s1,0x34($sp) and move $s1,$zero, and the assembler pulls the save into the slot - giving target's sw-in-delay-slot / move-after-jal pair - while addiu $a0,$sp,0x10 stays at its RTL position before la $a1, which is also exactly target. Because the RTL order is untouched, Lp stays 16 and Lc stays 20 and the 15000/15000 allocno tie that already gives target's $s0/$s1 assignment survives. reorg currently fills the slot with insn 21 (addiu $a0,$sp,0x10) - the nearest length-4 eligible insn, since both la macros are length 8.",
+   "next_probe": "(a) Read tmp/grind/func_80037A20/dumps/code6cac_c.dbr (generated this session, never read) to confirm first-hand which insn reorg selects for the sprintf jal delay slot and what it rejected. (b) Read fill_simple_delay_slots / eligible_for_delay in tools/gcc-2.7.2/reorg.c and enumerate the byte-free conditions under which insn 21 stops being reachable or eligible in the backward scan (resource conflict with an intervening insn, delay-slot length test, basic-block boundary, scan step limit). (c) Search for a pure-C spelling meeting one of those conditions WITHOUT changing the RTL order of insns 13 and 16 - candidates are the sprintf ARGUMENT expressions (what sits between la $a1 and the call) and making the $a0 setup itself a two-insn sequence. Hard constraint: any spelling that adds an insn is out, the body is already 33/33."
   },
   {
-   "hypothesis": "A byte-free way to lengthen the counter's live range or shorten the pointer's that does NOT depend on the zero-init's source position decouples the allocation from the schedule, letting the zero-init keep a late (target) source position.",
-   "mechanism": "The allocation currently rides on statement position because that is the only live-length lever s10 found. Any other perturbation that moves ptr livelen 17 -> 16 (or the counter 14 -> 20) leaves the zero-init free to sit after the sprintf call, where its high INSN_LUID emits it last in the block exactly as target does.",
-   "next_probe": "Sweep loop-shape and tail-shape variants of the ONE-POINTER body with the zero-init AFTER the call, reading tools/ra_solver/extract.py after each: loop-exit spelling (goto end vs fallthrough), where the -1 compensation sits, the position of the gp store relative to the return, and whether the nextfile result is consumed in the while-condition versus a named temp. Target is ptr pri >= counter pri at 33 insns."
+   "hypothesis": "The (ptr after, zero after) body at sandbox 8 is a second usable chassis: it already has target's move $s1,$zero slot, target's sw $s1 delay slot and target's $s0/$s1 assignment with STRICT priority margin (21818 vs 20000), so its only defect is the la $s0 sinking past the sprintf jal.",
+   "mechanism": "On that body the pointer's live length is only 11 (the la is after the call), which is why the pointer wins outright rather than by a tie. The strict margin means there is slack: the pointer could afford Lp up to 12 before losing (24/12 = 20000 == the counter's 30/15). Any lever that pulls the la one insn earlier without lengthening Lp beyond 12 lands target's la position on a body that already has everything else right.",
+   "next_probe": "Measure Lp and Lc for every source position of the pointer-init statement between the two calls on that body (immediately after the sprintf call, after the a0 re-setup, immediately before the firstfile call) with tools/ra_solver/extract.py, and check whether any of them holds Lp <= 12 while moving the la earlier in the emitted stream. Also test whether the la can be pulled into block 0 by an expression form whose address is computed before the call but whose pseudo is only born after it (note: s10 already killed byte-free second-set spellings of an address pseudo, so do NOT re-try the format-string / stack-buffer reuse forms)."
   },
   {
-   "hypothesis": "The entry-increment fold (`li $s1,1` vs target `addiu $s1,$s1,1`) closes for free once the schedule is fixed, because on this chassis it is not independently attackable.",
-   "mechanism": "s6 pinned the fold to the FIRST cse.c pass (REG_WAS_0 note on the dominating zero-init). Every s10 attempt to break it either failed to break it or cost the allocation tie, which suggests the fold and the tie are two readings of the same live-range balance rather than independent levers.",
-   "next_probe": "After (and only after) the schedule frontier above lands, re-measure the fold on whatever body wins: if the zero-init ends up sunk by the birthing boost, first grep REG_WAS_0 in the func_80037A20 region of tmp/grind/func_80037A20/dumps/code6cac_c.cse to see whether cse1 still attaches the note at all, before spending any spelling attempts on it."
+   "hypothesis": "Either Rp can be raised or Rc lowered by a spelling that does not change the 33 emitted instructions, which would relax the Lc >= 1.25*Lp bar enough for target's statement order to become reachable.",
+   "mechanism": "The bar comes entirely from floor_log2(Rp)*Rp vs floor_log2(Rc)*Rc. Target's statement order (Lp ~ 17, Lc ~ 14) becomes reachable if floor_log2(Rc)*Rc <= 19, i.e. Rc <= 7 (from 10), or if floor_log2(Rp)*Rp >= 37, i.e. Rp >= 13 (from 8). flow.c weights each reference by loop_depth, so a reference moved into or out of the loop body counts double.",
+   "next_probe": "Enumerate, from the target instruction stream itself, whether any of the counter's ten weighted references can be attributed to a different pseudo without changing a byte - in particular whether the tail pair (sw $s1,gp_rel + addu $v0,$s1,$zero) can be carried by a pseudo that is coalesced onto $s1 in local-alloc rather than being references of the counter allocno. If yes, Rc drops to 8, which is still short of 7; if the tail pair AND the peel can be moved off, Rc = 7 and the bar drops to Lc >= 0.583*Lp, which target's order satisfies easily. Measure any candidate with tools/ra_solver/extract.py and confirm the insn count stays 33."
   }
  ],
  "judge_constraints": [],

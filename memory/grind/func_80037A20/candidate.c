@@ -1,4 +1,40 @@
-/* candidate [s10, rederive modality] - honest, pin-free, cheat-free.
+/* candidate [s11, rederive modality] - UNCHANGED body from s10; floor still 6.
+ *
+ * s11 re-measured this exact body at sandbox --disable all = 6 (33/33 insns,
+ * 0 rules) and then closed the s10 frontier with measurements:
+ *
+ *  - The $s0/$s1 disposition is decided ONLY by global.c allocno order (MIPS has
+ *    no REG_ALLOC_ORDER in 2.7.2 and every hard-reg preference is pruned:
+ *    prefs == {} on every body measured).  First allocno takes $s0.
+ *  - Weighted ref counts are fixed by target's own 33 insns: Rp = 8, Rc = 10
+ *    (11 with target's un-folded `addiu $s1,$s1,1`).  So the pointer wins the
+ *    $s0 seat iff Lc >= 1.25 * Lp (1.375 un-folded).
+ *  - Full 2x2 statement-position matrix (sandbox / ALLOCDBG):
+ *       ptr before, zero before : 15000 vs 15000 tie -> ptr $s0 : 6   (this file)
+ *       ptr after,  zero before :                                 : 7
+ *       ptr after,  zero after  : 21818 vs 20000    -> ptr $s0 : 8
+ *       ptr before, zero after  : 14117 vs 21428    -> ctr $s0 : 13
+ *    Target needs Lp~17 with Lc~14 (ratio 0.82) against a bar of 1.25:
+ *    THE STATEMENT-POSITION ROUTE TO TARGET IS FORECLOSED.
+ *  - sched1 does NOT reorder this entry block (all insns tie at priority 1;
+ *    emission == RTL order), and the callee-saved `sw $sN` saves are TEXT emitted
+ *    by mips.c immediately before the first def of $sN - not RTL insns.
+ *  - Therefore the remaining 6 diffs reduce to ONE reorg decision: reorg fills the
+ *    sprintf jal delay slot with `addiu $a0,$sp,0x10` (the nearest length-4
+ *    eligible insn; both `la`s are length-8 macros).  If that slot were left
+ *    empty, mips.c's lazy `sw $s1` + `move $s1,$zero` would land after the jal and
+ *    `addiu $a0,$sp,0x10` would stay before `la $a1` - bit-for-bit target, with
+ *    the 15000/15000 tie untouched.  See hypotheses.md [s11] OPEN item.
+ *
+ * HEAD is INCLUDE_ASM (asm-until-matched); paste this body over the INCLUDE_ASM
+ * line in src/code6cac_c.c before any sandbox re-measure.
+ * Every construct is ordinary C: no coercion construct, no FAKE annotation,
+ * nothing from any sanctioned-exception family.  The declaration order
+ * `s32 *var_s0;` before `s32 var_s1;` is load-bearing (it is the allocno tie-break),
+ * and `var_s1 = 0;` must precede `var_s0 = ...` which must precede the sprintf call.
+ *
+ * ---- s10 header retained below ----
+ candidate [s10, rederive modality] - honest, pin-free, cheat-free.
  * sandbox --disable all = 6  (s9 was 8, s1..s8 were 13; 33/33 insns).  FLOOR DROPPED.
  *
  * HEAD is INCLUDE_ASM (asm-until-matched); paste this body over the
