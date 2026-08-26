@@ -1,8 +1,8 @@
 {
  "func": "func_80023648",
  "file": "code6cac",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 30,
    "modality": "structural",
    "headline": "Root re-located: the first-allocated allocno is pseudo 129 (div16), not 86, and its $v1 gap is a single regs_someone_prefers PREFERENCE bit (reachable from C) rather than a conflict bit (multiset-pinn"
+  },
+  {
+   "session": 4,
+   "floor": 15,
+   "modality": "permuter",
+   "headline": "Permuter broke the three-session 30-floor plateau: 30 -> 15 at an unchanged 159/159 on two ordinary-C respellings (div16 variable reuse + a named table-element pointer), disproving s2/s3's 'spelling c"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H9 - regs_someone_prefers[129]'s single $v1 bit is contributed by allocno 122 (abs_val), whose hard_reg_full_preferences is measured to be exactly {3}; removing that contribution seats div16 in $v1 and unwinds the whole cascade.",
-   "mechanism": "prune_preferences (global.c:882-931) walks allocnos least-important-first and, for each higher-priority allocno i, unions hard_reg_full_preferences[j] over every lower-priority j with CONFLICTP(i,j). 122 is ord=1, exactly one step below 129 (ord=0), and is the only allocno in this function measured to carry a $v1 full-preference bit.",
-   "next_probe": "PROVE the attribution before spending any C: run BB2_FINDREG_DEBUG over every allocno in the ord list to confirm 122 is the unique $v1-preferrer, and confirm CONFLICTP(129,122) by checking in the .lreg RTL whether abs_val's live range overlaps the *(s16 *)(arg0 + 0x1A) read. Only then attack 122's PREFERENCE (not its seat): locate the SET that pairs 122 with a $v1-seated local quantity and re-spell the abs/clamp block so that pairing does not form. Every candidate must measure at 159/159 - a form that changes the insn count is not a candidate."
+   "hypothesis": "Another permuter cycle - reseeded from a STRUCTURALLY DIFFERENT chassis, not from the 15-floor body - will keep moving the floor, because the preference-reachable spelling space is now proven large and only a fraction of it has been sampled.",
+   "mechanism": "Preference bits (set_preference / prune_preferences, global.c:1671 / 882-931) are written off the RTL copy structure, which C-level naming and reassociation control directly; s3 confirmed the lever and s4 confirmed it is worth 15 points. The s4c basin being dry after 17k iterations is a statement about ONE starting point, not about the space.",
+   "next_probe": "Rebuild from tmp/perm_23648_s4/ (validate base.o vs target.o first - it must reproduce the CURRENT sandbox residual of 15 mismatching lines at 159/159). Seed campaign A from the varK (argp, floor 17) body rather than varL, since varK is a different seat assignment at a comparable floor and its basin is completely unexplored. Seed campaign B from a hand-restructured chassis in the abs/clamp/div16 region. Use tools/permuter_annotate.py to focus randomization on the diverging region. Harvest+stop each at the no-novel-find window."
   },
   {
-   "hypothesis": "H10 - the CONFLICTP prong is the cheaper half of H9: if div16's read is moved so its live range no longer overlaps abs_val's, 122 stops being a lower-priority CONFLICTING allocno of 129 and its $v1 preference never enters regs_someone_prefers[129], regardless of where that preference came from.",
-   "mechanism": "prune_preferences only merges preferences across a CONFLICTP pair, so killing the overlap is equivalent to killing the preference for this purpose; live-range placement is exactly what structural statement re-association controls.",
-   "next_probe": "Structural variants that move the *(s16 *)(arg0 + 0x1A) read relative to the abs/clamp block (above it, below the 0x14E store, into the arm that consumes it), each measured with sandbox at 159/159, with BB2_FINDREG_DEBUG=129 re-run on any variant that changes the score to read whether someone_prefers lost the 3."
+   "hypothesis": "The remaining 15-line residual is a small, nameable set of seats that a fresh RA read can localise, exactly as s3 did for the 30-line residual - but every allocno id from s1-s3 must be re-derived first.",
+   "mechanism": "global.c allocates in a fixed priority order and each assignment ORs its hard reg into the conflicts of every conflicting allocno, so the whole seat map shifts when the first-allocated allocno changes; two of this session's edits sit on the region that produced ord=0.",
+   "next_probe": "With the current candidate applied, run `pwsh tools/grinder/dump.ps1 func_80023648` plus BB2_ALLOC_DEBUG=1 and BB2_FINDREG_DEBUG over the new ord list; produce a fresh 159-line aligned seat diff (the s3 scripts tmp/grind/func_80023648/s3/{allocdbg.sh,findreg.sh,diffseats.sh} still work). Then RE-STATE H9/H10 against the new ids - do NOT spend a probe on the old 129/122/86 numbering."
   },
   {
-   "hypothesis": "H11 - the seat map's second half (sub_result, mflo temps, speed) follows for free once 129 is seated in $v1, because 129 is ord=0 and every other allocno is allocated after it.",
-   "mechanism": "global.c allocates in a fixed priority order and each assignment ORs its hard reg into the conflicts of every conflicting allocno, so a change at ord=0 propagates through the whole subsequent scan.",
-   "next_probe": "Do NOT assume it (s1's identical 'follows for free' claim about 86 is still unmeasured and s2's kills made it less likely). Once any form seats 129 in $v1, immediately re-run BB2_ALLOC_DEBUG=1 and the 159-line aligned diff and record which seats actually followed and which did not."
+   "hypothesis": "The two levers found this session generalise: variable reuse and named address intermediates are broadly effective on this function's preference structure, so a systematic sweep of BOTH over every eligible site will find further drops that random search missed.",
+   "mechanism": "Both winning deltas are the same shape - give an already-computed value a second C-level identity so the RTL copy structure (and therefore set_preference's bit) changes. There are roughly a dozen more eligible sites in this body that neither the permuter's random walk nor s2/s3's enumeration has covered.",
+   "next_probe": "Enumerate every value in the body that is currently anonymous or single-use (the 0x1CA reads, the mult/shift chain, the sin/cos index expressions, the D8/E0 accumulates) and measure a named-intermediate and a variable-reuse spelling of each ON TOP OF the current 15-floor body, one at a time at 159/159. Measure singly first - s4 proved these levers contend rather than compose, so stacking without per-delta measurement is misleading."
   }
  ],
  "judge_constraints": [],

@@ -462,3 +462,38 @@
 - [s3] Structural probes measured this session, all at 159/159 insns: swapadd 33, swapelse 30 (byte-neutral), swapboth 33, andcond 47, condswap 36. Banked to memory/grind/func_80023648/rejected/s3-swapadd-operand-order-33.c, s3-andcond-nonshortcircuit-47.c, s3-condswap-36.c.
 
 - [s3] candidate.c is unchanged as code (still the 30-floor body) but its header comment now carries the s3 correction so the next session does not act on s2's superseded 'attack pseudo 86' conclusion.
+
+## s4 (permuter, 2026-08-26)
+- Chassis at session start, re-measured with the s3 candidate applied: score 30, target_insns 159, build_insns 159. Matches the ledger.
+- A standalone permuter workspace for this function is chassis-faithful and cheap to rebuild: tmp/perm_23648_s4/{base.c,compile.sh,settings.toml,target.o}. compile.sh reproduces the CURRENT code6cac pipeline (cpp -> cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w **-mel** -> prologue_fix -> maspsx 2.34 -> multu_pad); note the older tmp/perm_22F34 workspace in this repo is STALE — it lacks -mel and still pipes through the retired tools/fix_lwl.py. base.c needs only s8/u8/s16/u16/s32/u32 typedefs and six externs (D_8008DA08, D_800A310C, D_800A38BA, D_8008EB40, Judge, func_8001F860). Validation before launch: base.o vs target.o = 159/159 insns, 30 mismatching lines — identical to the sandbox residual.
+- FLOOR MOVED 30 -> 15 this session, at an unchanged 159/159, on two ordinary-C respellings found by the permuter and hand-verified one at a time:
+  * `div16` local reused to carry `(s16)new_14e` for the `limit <` comparison: 30 -> 22.
+  * `ent = &row[a1]; a2 = *ent;` (naming the table-element address) stacked on top: 22 -> 15.
+- Permuter campaign telemetry: vanilla base_score 180, 14 finds in ~12 min (best 120); varA reseed base_score 120, 10 finds in ~21 min (best 80); varL reseed base_score 95, 17032 iterations, ZERO finds. The dry third campaign is the fresh-seed stopping signal — a plain reseed off the 15-floor body will not pay.
+- The permuter's own weighted score tracks the sandbox score directionally but NOT proportionally, and its best find is not the best sandbox form: vanilla's output-120-1 carried TWO deltas, only one of which (div16 reuse) helped; the other (a pointer local for the tail 0x14E store) was exactly neutral at 30 and is a dead construct. Always decompose a find and measure each delta separately.
+- Competing-not-additive result (load-bearing for the next session): the pointer-intermediate levers contend for the same seat. `argp = (s16 *)arg0` alone scores 17; `ent = &row[a1]` alone scores 15; both together score 24. There is one allocation decision here with many spellings, not a stack of independent knobs.
+- Neutral-on-this-chassis deltas (measured, 159/159, no floor movement): `a1 = a2` reuse in the else arm (22), fused `*(s16 *)(arg0+0x14E) = (new_14e = sub_result)` (22), pointer local for the tail store (30).
+- Regressions from stacking (measured, 159/159): `abs_val` reused for the 0xD8 accumulate temp 23; `tbl_val = speed` 24; both 24; argp+ent 24.
+- Methodological correction to s2/s3: s2's conclusion that "no declaration/scope/type/statement-order change can reach the allocator here" is FALSE as stated. It held only for the small hand-enumerated neighbourhood s2/s3 explored, and only for hard_reg_conflicts bits. s3 had already flagged this (its operand-order finding), and s4 confirms it with 15 points of floor. The s1-s3 seat map and the H9/H10 allocno ids (129/122/86) are now STALE — they were measured against the 30-floor body, and this session's edits sit directly on the region they describe.
+
+- [s4] Chassis re-measured at session start with the s3 candidate applied: score 30, target_insns 159, build_insns 159 - matches the ledger's recorded floor.
+
+- [s4] FLOOR IS NOW 15, measured with the new body in place in src/code6cac.c at 159/159 insns (down from 30, flat across s1-s3).
+
+- [s4] A chassis-faithful standalone permuter workspace for this function is cheap to rebuild and is banked at tmp/perm_23648_s4/{base.c,compile.sh,settings.toml,target.o,valid.sh}. It needs only the s8/u8/s16/u16/s32/u32 typedefs plus six externs (D_8008DA08, D_800A310C, D_800A38BA, D_8008EB40, Judge, func_8001F860), and its pre-launch validation (base.o vs target.o = 159/159, 30 mismatching lines) reproduced the sandbox residual exactly.
+
+- [s4] WARNING for future sessions: the pre-existing tmp/perm_22F34 workspace in this repo is STALE as a template - it omits cc1's -mel flag and still pipes through the retired tools/fix_lwl.py. Copying it verbatim yields a workspace that does not model the current chassis.
+
+- [s4] The permuter's weighted score tracks the sandbox score directionally but not proportionally, and its best find is NOT the best sandbox form: vanilla's output-120-1 carried two deltas, only one of which helped; the other was exactly neutral. Always decompose a find and measure each delta on its own.
+
+- [s4] Competing-not-additive: argp alone 17, ent alone 15, argp+ent 24. One allocation decision, many spellings.
+
+- [s4] Neutral deltas measured at 159/159 (banked in rejected/): a1 = a2 reuse in the else arm (22), fused *(s16 *)(arg0+0x14E) = (new_14e = sub_result) (22), pointer local for the tail 0x14E store (30).
+
+- [s4] Regressions measured at 159/159 (banked in rejected/): abs_val reuse for the 0xD8 accumulate temp 23, tbl_val = speed 24, both 24, argp+ent 24.
+
+- [s4] s2's conclusion that 'no declaration/scope/type/statement-order change can reach the allocator here' is FALSE as stated - it held only for the small hand-enumerated neighbourhood and only for hard_reg_conflicts bits. 15 points of floor movement on two ordinary-C respellings disproves the generalisation.
+
+- [s4] The s1-s3 seat map and the H9/H10/H11 allocno ids (129 = div16, 122 = abs_val, 86 = the table entry, ord list 129 122 85 81 72 134 ...) are now STALE: they were measured against the 30-floor body, and this session's two edits sit directly on the abs/clamp/div16 region those hypotheses describe.
+
+- [s4] All three campaigns were harvested with --stop inside the session; permuter_campaign.py status reports 0 live campaigns and 0 stale registry entries.

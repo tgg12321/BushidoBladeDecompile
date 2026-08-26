@@ -1,53 +1,59 @@
-/* candidate.c - func_80023648 (best-known form; unchanged at s2, 2026-08-26)
- * Floor: 30 (sandbox --disable all, re-measured s2 with this body applied;
- * 159/159 insns). Residual is pure RA renames.
+/* candidate.c - func_80023648 (best-known form; s4 permuter, 2026-08-26)
+ * Floor: 15 (sandbox --disable all, measured this session with this exact body
+ * applied to src/code6cac.c; 159/159 insns). Down from 30 at s1-s3.
  *
- * s3 (structural, 2026-08-26) UPDATE -- READ THIS BEFORE TRUSTING THE s2 NOTE
- * BELOW. The s2 note's "attack pseudo 86" conclusion is superseded. Measured
- * with the instrumented cc1's second hook, BB2_ALLOC_DEBUG=1 (global.c:601-618),
- * the REAL allocation order is `129 122 85 81 72 134 176 75 86 126 153 83 110
- * 135 192 107 158 173` -- div16 is pseudo 129 (not 127; 127 is not an allocno
- * at all, which is why s2's BB2_FINDREG_DEBUG=127 showed NO HIT), and 129 is
- * ord=0, the FIRST allocno find_reg scans. Its measured pass-0 state is
- * conflicts={2,29}, someone_prefers={3}: $v1 is denied to div16 by a single
- * regs_someone_prefers bit -- a PREFERENCE bit, not a conflict bit. Target
- * seats div16 in $v1. So the root divergence is 129, pseudo 86 (ord=8) is
- * cascade, and the lever is preference structure (reachable from C: s3's
- * `swapadd` operand-order variant moved the score to 33 at 159/159, proving
- * set_preference retargeting works here) rather than conflict structure (which
- * the 159-insn multiset pins). s2's lever (A) is dead: s3's `andcond`
- * diagnostic put two values live across the table-entry load and the entry took
- * $v0, not $a2. See hypotheses.md H9 for the live frontier.
- * s3 structural probes, all 159/159: swapadd 33, swapelse 30 (neutral),
- * swapboth 33, andcond 47, condswap 36 -- banked in rejected/s3-*.c.
+ * s4 (permuter modality) HOW THIS FORM WAS FOUND, and what it means for the
+ * three-session RA analysis that preceded it.
  *
- * s2 (structural modality) measured SEVEN structural respellings of this body;
- * every byte-neutral one scored exactly 30 and NONE changed the allocation:
- *   declmove (new_var declared in the inner block)          -> 30
- *   sib      (sibling func_800233AC's nested `s16 *tbl=...`)-> 30
- *   abs_outer(abs_val declared at the kind-block top)       -> 30
- *   merge_a2abs (ONE local serving table entry AND abs_val) -> 30 (no-op:
- *              ours already co-seats both in $v1)
- *   flatten  (decls hoisted out of the two nested sub-blocks)-> 30
- *   declorder(inner-block declaration order permuted)       -> 30
- *   scope_lookup (lookup pointers in their own nested scope)-> 30
- *   clamp_gt (`> 0x400` instead of `>= 0x401`)              -> 30
- * Non-neutral (banked in rejected/): declinit (`s16 *new_var = &D_8008EB40;`
- * as an inner declaration-with-initializer) -> 38; `s16 a2` narrowing of the
- * table value -> 39 at 161/159 insns.
+ * Three campaigns were run through tools/permuter_campaign.py on a standalone
+ * base.c that was first PROVEN faithful to the real chassis: the workspace's
+ * base.o vs target.o comparison reproduces exactly the sandbox residual
+ * (159/159 insns, 30 mismatching lines) before any permutation, so permuter
+ * score movement in this workspace is real chassis movement.
+ *   1. tmp/perm_23648_s4  (vanilla, base = s3 candidate)   base_score 180
+ *      -> 14 finds in ~12 min, best output-120-1.
+ *   2. tmp/perm_23648_s4b (reseeded from varA below)       base_score 120
+ *      -> 10 finds in ~21 min, best output-80-1.
+ *   3. tmp/perm_23648_s4c (reseeded from THIS body)        base_score 95
+ *      -> 17032 iterations, ZERO finds. Basin dry; harvested + stopped.
  *
- * WHY none of them can work (s2 mechanism, measured with the instrumented cc1's
- * BB2_FINDREG_DEBUG hook, not hypothesised): the root flip is global.c
- * find_reg pass 0 for pseudo 86 (the D_8008EB40 table entry). Its measured
- * pass-0 state is conflicts={2,4,5,16,29}, someone_prefers={}, and
- * regs_used_so_far already contains 6($a2). $v1(3) is in NEITHER exclusion set,
- * so pass 0 takes the lowest free reg = 3. Target seats it in $a2. Adding 3 to
- * either hard_reg_conflicts[86] or regs_someone_prefers[86] lands $a2 exactly
- * -- but both sets are fixed by the DATA FLOW, which the 159-insn multiset
- * pins, so no declaration/scope/type/statement-order change can reach them.
- * Do NOT re-run the structural axis; do NOT respell the lookup region.
- * Next: see hypotheses.md H4/H5 (data-flow-level v1 occupancy; local-alloc
- * seat of pseudos 125/133 feeding set_preference).
+ * The two levers that actually moved the sandbox floor, each measured
+ * SEPARATELY at an unchanged 159/159 (the permuter proposes whole diffs; every
+ * delta below was re-spelled by hand and measured on its own before being
+ * kept):
+ *   varA  reuse the `div16` local to carry `(s16)new_14e` for the `limit <`
+ *         comparison                                      30 -> 22
+ *   varL  name the table-element address (`ent = &row[a1]; a2 = *ent;`)
+ *         on top of varA                                  22 -> 15
+ * Both are in this body. varL alone was not measured separately; varA alone is
+ * banked at rejected/s4-perm-div16-reuse-only-22.c.
+ *
+ * What this OVERTURNS from s2/s3: s2 concluded "no declaration/scope/type/
+ * statement-order change can reach the allocator here" and s3 narrowed the
+ * root to a single regs_someone_prefers bit on allocno 129. The floor moving
+ * 30 -> 15 on two ordinary C respellings, at a fixed 159-insn multiset, shows
+ * the preference structure IS broadly reachable from C and that the s2/s3
+ * "structural axis is dead" framing was too strong -- it was an artefact of
+ * hand-enumerating a small neighbourhood, not a property of the function. It
+ * does NOT overturn the mechanism findings themselves (H9/H10 are untouched and
+ * were never probed this session); it removes their premise that spelling
+ * cannot reach preferences.
+ *
+ * Deltas measured and REJECTED this session (all 159/159, all banked under
+ * rejected/s4-perm-*.c): pointer local for the tail `0x14E` store (30, neutral
+ * and a dead construct), `abs_val` reused for the 0xD8 accumulate temp (23),
+ * `tbl_val = speed` reuse (24), both together (24), `a1 = a2` reuse in the else
+ * arm (22, neutral on top of varA), fused `*(...) = (new_14e = sub_result)`
+ * (22, neutral), `argp = (s16 *)arg0` for the two func_8001F860 calls (17 --
+ * BETTER than varA but WORSE than varL), and argp+ent stacked (24 -- the two
+ * pointer intermediates actively fight each other, so they are not additive).
+ *
+ * NEXT SESSION: the productive move is another permuter cycle from THIS body
+ * with a structurally different chassis (the s4c basin off this exact body is
+ * dry after 17k iterations, so a plain reseed will not pay). Re-run the
+ * seat-level analysis (BB2_ALLOC_DEBUG / BB2_FINDREG_DEBUG) against THIS body
+ * first -- the s1-s3 seat map and the H9/H10 allocno ids (129 / 122) were
+ * measured against the 30-floor body and are now stale.
  */
 void func_80023648(u8 *arg0) {
     u16 kind = *(u16 *)(arg0 + 0x6A);
@@ -60,6 +66,7 @@ void func_80023648(u8 *arg0) {
             s32 a0;
             s32 a2;
             s16 *row;
+            s16 *ent;
 
             if (!(bits & 0x1000)) {
                 a1++;
@@ -71,7 +78,8 @@ void func_80023648(u8 *arg0) {
 
             new_var = &D_8008EB40;
             row = new_var + (a0 * 3);
-            a2 = row[a1];
+            ent = &row[a1];
+            a2 = *ent;
 
             if (D_800A38BA != 0 && *(s16 *)(arg0 + 6) == 0) {
                 func_8001F860((s16 *)arg0, *(s16 *)(arg0 + 0x1CA) + a2 / 4);
@@ -115,7 +123,8 @@ void func_80023648(u8 *arg0) {
                 mult_res = sub_result * tbl_val;
                 limit = (mult_res << 4) >> 12;
 
-                if (limit < (s16)new_14e) {
+                div16 = (s16)new_14e;
+                if (limit < div16) {
                     *(s16 *)(arg0 + 0x14E) = limit;
                 } else if ((s16)new_14e < 0) {
                     *(s16 *)(arg0 + 0x14E) = 0;
