@@ -408,3 +408,98 @@ Cheat reference (diff only): `git show dfb9e9ac` on branch work/orch3a.
   (F1 object-model forensics; whole-function 2D-array model), one search space
   closed by derivation (the two-shape theorem), one gate assertion overturned
   (SOTN precedent). Outcome: ruling-request.
+
+## s7 findings (synthesis modality) — two-shape theorem PREDICTIVELY VALIDATED (7 tree-node classes); Judge FAIL absorbed; corrected escalation packet FILED
+
+- [s7] CHASSIS RE-MEASURE (first act, before any probe). The task brief reported the
+  driver-side floor as "measurement unavailable", so it was measured directly:
+  candidate.c re-applied to src/text1b.c gives `sandbox func_80062020 --disable all`
+  = **score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 173**
+  — identical to s5 and s6. The chassis has not moved; every banked spelling conclusion
+  remains chassis-valid. src/text1b.c was left in exactly this state (clean floor-4
+  candidate: 0 rules, 0 pins, 0 volatile, 0 dead vars, 0 asm).
+
+- [s7] JUDGE RULING ABSORBED (docs/grind/decisions.md 2026-08-25 21:17, **FAIL**). The s6
+  ruling-request on the row-alias-plus-direct-flag-store epilogue was FAILed: the
+  pointer-alias family "sanctions introducing a redundant handle in place of the global,
+  not deliberately routing one element of one address around that handle"; the shape is
+  inverted relative to all 34 cited SOTN instances (the alias's own offset-0 target is
+  precisely the element not reached through it) and is therefore first-reach of an
+  un-exemplified shape, which cluster precedent cannot license; default-FAIL governs the
+  residual doubt. The ruling expressly PRESERVES s6's derivation work (two-shape theorem,
+  F1 forensics, refutation of s4's "no precedent" assertion) as genuine ledger advances
+  that "narrow the escalation packet". Hypotheses frontier item 1 is therefore RESOLVED
+  (answer: NO) and item 3 (rewrite the packet) is now the governing instruction.
+
+- [s7] **TWO-SHAPE THEOREM PREDICTIVELY VALIDATED — the law is no longer an enumeration.**
+  s6 derived it from five measured tree shapes; a derivation that only explains its own
+  training set is an enumeration in disguise. This session pre-registered two predictions
+  on tree-node classes the derivation had never seen — chosen as the most plausible
+  remaining falsifiers, because their offset-0 access is spelled with a DIFFERENT RTL tree
+  node than the `p[0]` ARRAY_REF the law was built on — and measured both:
+    * **(A) INDIRECT_REF.** `p = (s32*)((u8*)&D_800F1198+ofs); p[2]=0; p[1]=0; *p = 0;`
+      Predicted base+disp for col a (`sw zero,0(v0)`), score 4 / 35. Measured **4 / 35**.
+    * **(B) union COMPONENT_REF at offset 0.** `union RowU { s32 a; s32 w[3]; }`,
+      `p->w[2]=0; p->w[1]=0; p->a=0;` — the offset-0 member ALIASES the whole row, the one
+      configuration where a symbol-relative re-expansion was conceivable. Predicted
+      base+disp for all three, score 4 / 35. Measured **4 / 35**.
+  Both hit exactly, insn count included. Prong 1 of the law ("once the element address
+  `sym + ofs` becomes a pointer VALUE in the tree, EVERY access off it — offset 0 included
+  — expands to `(mem (plus base K))`") now holds across **seven distinct tree-node
+  classes**: pointer ARRAY_REF, pointer INDIRECT_REF, struct COMPONENT_REF, COMPONENT_REF
+  whose member is a 1-element array, union COMPONENT_REF at offset 0, union COMPONENT_REF
+  over an array member, plus (prong 2, the contrapositive) 2D ARRAY_REF `arr[i][K]`, which
+  keeps the symbol in the address, folds K into the symbol for every column, and never
+  forms a shared base. Artifacts: tmp/grind/func_80062020/s7/two_shape_law_validation.md,
+  vA_indirect_ref_col_a.c, vB_union_member_offset0.c (both floor-equivalent, NOT disproven
+  — kept as artifacts, not banked to rejected/).
+
+- [s7] TARGET EPILOGUE RE-READ FROM BYTES (asm/funcs/func_80062020.s:29-39) to confirm the
+  theorem's premise rather than inherit it: `sll v1,a1,1; addu v1,v1,a1; sll v1,v1,2` (one
+  index), `lui v0,%hi; addiu v0,v0,%lo; addu v0,v1,v0` (row base as a pointer VALUE),
+  `sw zero,8(v0)`, `sw zero,4(v0)`, then `lui at,%hi(D_800F1198); addu at,at,v1;
+  sw zero,%lo(D_800F1198)(at)`. Same index register `$v1` feeds both forms — the two
+  treatments are applied to ONE address, not to two different rows. Premise confirmed.
+
+- [s7] CONSEQUENCE (the merged attack, stated plainly): the uniform-spelling search space
+  is closed BY PROOF, not by exhaustion. Any further pure-C shape is predicted by the law
+  before it is compiled — force_reg shapes land at 4 (occasionally 5 on store order),
+  symbol-keeping shapes land at 6+ (2D shapes 10-15, whole-function 2D 24). Continued
+  grinding on this function can only re-measure predictions. The single remaining decision
+  is not a spelling but a policy question about provenance, which is what the packet asks.
+
+- [s7] CORRECTED ESCALATION PACKET FILED THIS SESSION (docs/grind/decisions.md, 2026-08-25,
+  `**OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**`), replacing the 2026-07-24 packet
+  whose precedent-gate assertion s6 measured false. The packet asks ONE decidable
+  fidelity/provenance/routing question — does byte-derived provenance (the two-shape
+  theorem, a derivation about the ORIGINAL source recovered from target instructions) make
+  reproducing the original's non-uniform address spelling a decompilation-fidelity act on
+  the standard the owner credited for func_800651F0 (decisions.md 2026-07-27 23:04:
+  "that is decompilation evidence recovered from target bytes, not GCC-steering
+  rationale"), or does the 2026-08-25 Judge FAIL stand as terminal, routing func_80062020
+  to a fidelity-limited INCLUDE_ASM at honest floor 4? It requests no permanent-rule
+  sanction, no family grant, no canonical evidence-bar override, and contains no
+  accept-the-debt wording; both answers leave every standard where it is, and the
+  canonical-asm gate remains an independent hard FAIL (scan_hand_coded LOW 0/8).
+
+- [s7] Floor flat at 4. Two predictions confirmed (law validated on 2 new node classes),
+  one frontier item resolved by the Judge (the alias/direct classification: NO), one packet
+  corrected and filed. Outcome: owner-gated.
+
+- [s6] CHASSIS: brief reported the driver-side floor as 'measurement unavailable'; measured directly this session. candidate.c applied to src/text1b.c -> sandbox func_80062020 --disable all = score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 173. Identical to s5 and s6; every banked spelling conclusion remains chassis-valid. src/text1b.c is left in exactly this state (0 rules, 0 pins, 0 volatile, 0 dead vars, 0 asm).
+
+- [s6] NEW MEASUREMENT (A): col a as `*p = 0;` (pointer INDIRECT_REF instead of the p[0] ARRAY_REF) measures score 4 / build_insns 35 - exactly as the two-shape law predicted. Artifact tmp/grind/func_80062020/s7/vA_indirect_ref_col_a.c.
+
+- [s6] NEW MEASUREMENT (B): `union RowU { s32 a; s32 w[3]; }` row pointer, `p->w[2]=0; p->w[1]=0; p->a=0;` measures score 4 / build_insns 35 - exactly as predicted. The union's offset-0 member aliases the entire row, which was the last configuration in which an offset-0 access could plausibly have been re-expanded symbol-relatively off a force_reg'd base. Artifact tmp/grind/func_80062020/s7/vB_union_member_offset0.c.
+
+- [s6] The two-shape theorem's prong 1 now holds across SEVEN distinct tree-node classes: pointer ARRAY_REF, pointer INDIRECT_REF, struct COMPONENT_REF, COMPONENT_REF whose member is a 1-element array, union COMPONENT_REF at offset 0, union COMPONENT_REF over an array member (s5 + s7), plus the prong-2 contrapositive 2D ARRAY_REF arr[i][K] which keeps the symbol in the address, folds K into the symbol per column, and never forms a shared base. The law is validated, not merely derived.
+
+- [s6] TARGET PREMISE RE-VERIFIED FROM BYTES (asm/funcs/func_80062020.s:29-39): sll v1,a1,1; addu v1,v1,a1; sll v1,v1,2 (one index) -> lui v0,%hi; addiu v0,v0,%lo; addu v0,v1,v0 (row base as a pointer VALUE) -> sw zero,8(v0); sw zero,4(v0) -> lui at,%hi(D_800F1198); addu at,at,v1; sw zero,%lo(D_800F1198)(at). Same index register, same symbol: ONE address written in TWO expression shapes.
+
+- [s6] CONSEQUENCE (merged attack): the uniform-spelling search space is closed BY PROOF, not by exhaustion. The law predicts the score of any candidate shape before it is compiled - force_reg shapes land at 4 (5 on some store orders), symbol-keeping shapes at 6, 2D shapes 10-15, whole-function 2D at 24. Continued grinding can only re-measure predictions.
+
+- [s6] JUDGE FAIL ABSORBED (decisions.md 2026-08-25 21:17): the s6 alias+direct construct is not available under any current family; the s6 derivation work (two-shape theorem, F1 forensics, refutation of s4's 'no SOTN precedent' assertion) is expressly preserved by the same ruling as genuine ledger advances that 'narrow the escalation packet'.
+
+- [s6] PACKET FILED THIS SESSION (docs/grind/decisions.md, 2026-08-25, 'OWNER-ESCALATION - ESCALATED WITH DECISION PACKET'), REPLACING the 2026-07-24 packet whose precedent-gate assertion s6 measured false. One decidable fidelity/provenance/routing question; requests no permanent-rule sanction, no family grant, no canonical evidence-bar override, and carries no accept-the-debt wording. Canonical-asm remains an independent hard FAIL (scan_hand_coded LOW 0/8, re-verified s2 and s4), so it is not an available answer either way.
+
+- [s6] Every sanctioned axis is measured dead across six prior sessions and five modalities: recon (s1, 20->10), structural (s2 ofs-reuse register lever 10->4; s3 store-order invariance), permuter (s4, two fresh-seed basins, ~46k iters), synthesis (s5 pass attribution corrected to RTL-expand via the .rtl dump, aggregate/tree-shape KILLED, solver measured INAPPLICABLE because the residual is PRE-RA at 35 vs 38 insns - the owner's 2026-08-24 solver directive is discharged with measurements), forensics (s6 F1: sole consumer func_800620B8 addresses all three columns identically and its arithmetic refutes a flag/data object split, col a packing x*2 | flag; whole-function 2D model KILLED at 24).

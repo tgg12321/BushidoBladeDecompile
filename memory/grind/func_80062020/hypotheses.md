@@ -386,50 +386,97 @@ right for the wrong reason, and the correct generalization is stronger:
   you can CITE") is no longer a failed gate for the alias family; it is a live
   citation.
 
-## Open frontier (reset for the next ladder pass)
+## s7 (synthesis) — predictions tested
 
-The floor-4 -> 0 gap is now a single, fully characterised classification
-question, not a search. Everything below is downstream of the ruling.
+**H-s7-1. The two-shape theorem's prong 1 is node-independent: any tree shape that
+turns `&D_800F1198 + ofs` into a pointer VALUE will emit the offset-0 store as
+`base+disp`, whatever RTL node spells that access.**
+Mechanism: MIPS `legitimize_address` at RTL expansion decides addressing from the
+address expression, not from the access node; once the element address is force_reg'd
+into a pseudo, `(mem (plus base K))` is the only legal form for every K including 0.
+Probe: two PRE-REGISTERED predictions on node classes s5 never measured, chosen as
+the most plausible falsifiers — (A) `*p = 0;` (INDIRECT_REF instead of the ARRAY_REF
+`p[0]` the law was built on) and (B) `union RowU { s32 a; s32 w[3]; }` with `p->a = 0`
+(a union whose offset-0 member ALIASES the whole row, the one configuration where a
+symbol-relative re-expansion was conceivable). Both predicted score 4 / build_insns 35.
+Result: **A = 4 / 35, B = 4 / 35 — both exact, insn count included.**
+Verdict: **CONFIRMED.** Prong 1 now holds across seven distinct tree-node classes
+(pointer ARRAY_REF, pointer INDIRECT_REF, struct COMPONENT_REF, 1-element-array member,
+union member at offset 0, union member that is an array, plus the prong-2 contrapositive
+2D ARRAY_REF). The theorem is a validated law, not an enumeration of measured shapes.
 
-1. **[RULING] Is the row-alias-plus-direct-flag-store epilogue an instance of
-   the sanctioned pointer-alias family, or the banked same-lvalue dual-spelling
-   cheat?** Both readings are defensible and this session did not self-approve
-   either. FOR: `.claude/rules/pointer-alias-fake-exception.md` scopes exactly
-   "a local pointer that provides a second C handle to a global — where using
-   the global directly would be semantically identical — is a sanctioned
-   last-resort matching lever"; the coexistence of alias and direct access to
-   the same lvalue in one function is shipped SOTN-master PSX idiom (34 hits,
-   e_chamber.c:72/:201/:240 hand-verified); prereqs 1 and 2 are already
-   satisfied by this ledger and the two-shape theorem; the form measures score 0
-   / 38 insns / 0 rules / 0 pins / 0 dead vars on the current chassis.
-   AGAINST: in every SOTN hit the mix is incidental programmer habit, whereas
-   here it is load-bearing (swap either spelling and bytes move); and every SOTN
-   hit aliases the whole object with the direct access hitting an incidental
-   member, whereas here the alias's own target (offset 0) is precisely the
-   element deliberately NOT reached through it — an inverted shape with no
-   exemplar among the 34. Next probe: this is not a probe, it is a ruling.
-   Exhibit: tmp/grind/func_80062020/s6/v_alias_plus_direct.c; packet material:
-   tmp/grind/func_80062020/s6/sotn_precedent_scan.md.
+**H-s7-2. The two treatments in target's epilogue are applied to ONE address, not to two
+different rows (the theorem's premise).**
+Mechanism: if col a's store used a different index than the row base, a uniform C form
+would exist and the whole derivation would collapse.
+Probe: re-read the target bytes directly (asm/funcs/func_80062020.s:29-39) rather than
+inheriting the ledger's claim. Result: `$v1` (= count*12) feeds BOTH the `addu $v0,$v1,$v0`
+row base and the `addu $at,$at,$v1` LO_SUM address; `%hi/%lo` on both sides name the same
+symbol `D_800F1198`. Verdict: **CONFIRMED** — one address, two shapes.
 
-2. **[IF THE RULING IS YES] Land the form with full family conformance.** The
-   diff is: rename the local to something non-intent-announcing (`row`), attach
-   the mandatory `/* FAKE: second C handle to the terminator row; mechanism:
-   RTL expansion / MIPS legitimize_address selects LO_SUM for
-   (symbol_ref + reg) and force_reg+disp for (symbol_ref + reg + const);
-   lever-exhaustion: memory/grind/func_80062020/hypotheses.md s1-s6 */` at the
-   alias declaration per prereq 3, write the self-vet claiming FAMILY
-   pointer-alias with the rule's scope sentence and the e_chamber.c precedent,
-   and submit candidate-ready. Expected: score 0, build_insns 38.
+**H-s7-3 (inherited from s6 frontier item 1, resolved by the Judge, not by measurement).
+Is the row-alias-plus-direct-flag-store epilogue an instance of the sanctioned
+pointer-alias family, or the banked same-lvalue dual-spelling?**
+Result: docs/grind/decisions.md 2026-08-25 21:17 — **FAIL**. The family sanctions
+introducing a redundant handle in place of the global, not routing one element of one
+address around that handle; the shape is inverted relative to all 34 cited SOTN instances
+and is first-reach of an un-exemplified shape; default-FAIL governs the residual doubt.
+Verdict: **KILLED.** The construct is not available under any current family, and s6's
+derivation work is expressly preserved by the same ruling.
 
-3. **[IF THE RULING IS NO] The function is a fidelity-limited endgame lock and
-   the escalation packet must be REWRITTEN, not re-filed.** s4's packet is now
-   partly false (its precedent gate assertion is overturned) and must not be
-   cited as-is. The honest replacement packet is a routing question: the target's
-   original C provably used two address-expression shapes for one row (the
-   two-shape theorem), so a byte-exact pure-C reconstruction is only reachable
-   by reproducing that non-uniformity; if BB2 policy forbids reproducing it, the
-   decidable question is whether func_80062020 routes to a fidelity-accepted
-   INCOMPLETE floor-4 or elsewhere. Note the canonical-asm gate remains a hard
-   FAIL independently (scan_hand_coded LOW 0/8, re-verified s2 and s4), so
-   canonical asm is not an available answer. Next probe: none — file only in
-   `escalation` modality, and only after the ruling in item 1.
+## Open frontier (reset for the next ladder pass — s7)
+
+The floor-4 -> 0 gap is a CLOSED search space plus ONE open policy question. There is no
+spelling left to find: the two-shape law now predicts the score of any candidate shape
+before it is compiled (force_reg shapes -> 4, occasionally 5 on store order; symbol-keeping
+shapes -> 6, 2D shapes 10-15, whole-function 2D 24), and the only shape that reaches 0 is
+the one the Judge FAILed on 2026-08-25.
+
+1. **[OWNER DECISION — FILED 2026-08-25, packet in docs/grind/decisions.md] Does
+   byte-derived provenance govern over uniformity of spelling for this function?**
+   The two-shape theorem is a derivation about the ORIGINAL source recovered from target
+   instructions, which is the standard the owner credited in the func_800651F0 rulings
+   ("decompilation evidence recovered from target bytes, not GCC-steering rationale",
+   decisions.md 2026-07-27 23:04). The Judge FAILed the FAMILY claim and applied
+   default-FAIL to the leftover classification doubt while expressly preserving the
+   derivation. YES -> the function closes at 0 with a provenance-annotated two-shape
+   epilogue, function-specific and evidence-gated, no rule text changed. NO -> the
+   function is a fidelity-limited lock and routes out of active grinding as a
+   proved-closed search space at honest floor 4 (canonical-asm is independently
+   unavailable: scan_hand_coded LOW 0/8). Next probe: none — this is a ruling.
+
+2. **[ONLY IF SOMEONE DOUBTS THE LAW] Falsify the two-shape theorem rather than search
+   under it.** The productive form of doubt is no longer "try another spelling" but
+   "produce ONE C tree shape that emits a shared `base+disp` for two columns AND a LO_SUM
+   symbol-relative address for a third column of the same row". Seven node classes have
+   now failed to do it, and prong 2 explains why every symbol-keeping shape refuses to
+   share a base. Next probe: if attempted, do it as a MINIMAL standalone cc1 test case
+   outside this function (a 3-word global row, one indexed store per column), not as
+   another src/text1b.c edit — it is a compiler-behaviour question, not a BB2 question,
+   and the sandbox loop is the slow way to ask it.
+
+3. **[DO NOT RE-RUN] Axes measured dead, with the session that killed them.** structural
+   (s2 lever, s3 store-order invariance), permuter (s4, 2 basins ~46k iters),
+   aggregate/tree-shape (s5), solver (s5: residual is PRE-RA, 35 vs 38 insns; the
+   classifier is not even wired for this function), forensics (s6: one consumer,
+   func_800620B8, addresses all three columns identically and its arithmetic refutes a
+   flag/data object split — col a packs `x*2 | flag`), whole-function 2D model (s6,
+   score 24). Re-running any of these is re-measuring a prediction.
+
+## [s6] The two-shape theorem's prong 1 is node-independent: any C tree shape that turns &D_800F1198+ofs into a pointer VALUE emits the offset-0 store as base+disp, whatever RTL node spells the access.
+- mechanism: MIPS legitimize_address at RTL expansion decides addressing from the address expression, not from the access node; once the element address is force_reg'd into a pseudo, (mem (plus base K)) is the only legal form for every K including 0.
+- probe: Two PRE-REGISTERED predictions on node classes s5 never measured, chosen as the most plausible falsifiers: (A) `*p = 0;` (INDIRECT_REF, not the ARRAY_REF p[0] the law was built on); (B) `union RowU { s32 a; s32 w[3]; }` with `p->a = 0` and cols b,c via p->w[2]/p->w[1] (offset-0 member ALIASES the whole row - the one configuration where a symbol-relative re-expansion was conceivable). Both predicted score 4 / build_insns 35.
+- result: A measured 4 / 35; B measured 4 / 35. Both predictions exact, insn count included.
+- verdict: CONFIRMED
+
+## [s6] The two addressing treatments in target's epilogue are applied to ONE address (the theorem's premise), not to two different rows.
+- mechanism: If col a's store used a different index than the row base, a uniform C form would exist and the entire derivation would collapse; the premise had been inherited from s1 and never re-read from bytes.
+- probe: Re-read asm/funcs/func_80062020.s:29-39 directly.
+- result: $v1 (= count*12) feeds BOTH `addu $v0,$v1,$v0` (row base, pointer value) and `addu $at,$at,$v1` (LO_SUM); %hi/%lo name the same symbol D_800F1198 on both sides.
+- verdict: CONFIRMED
+
+## [s6] The row-alias-plus-direct-flag-store epilogue (score 0) is an instance of the sanctioned pointer-alias family rather than the banked same-lvalue dual-spelling.
+- mechanism: s6 cited .claude/rules/pointer-alias-fake-exception.md plus 34 SOTN-master PSX instances of alias+direct access to one lvalue in one function.
+- probe: Judge ruling on the s6 ruling-request (docs/grind/decisions.md 2026-08-25 21:17).
+- result: FAIL. The family sanctions introducing a redundant handle in place of the global, not routing one element of one address around that handle; the shape is inverted relative to all 34 instances (the alias's own offset-0 target is precisely the element not reached through it) and is first-reach of an un-exemplified shape; default-FAIL governs the residual doubt. The ruling expressly preserves s6's derivation work.
+- verdict: KILLED

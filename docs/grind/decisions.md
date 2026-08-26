@@ -12457,3 +12457,102 @@ predate the naming wave and will not compile without it.
 ## 2026-08-25 21:17 — func_80062020 — ruling: func_80062020's honest pure-C floor is 4 and the residual is fully characterised — **FAIL**
 
 The construct is the same-lvalue dual-spelling already banked FAILed twice in this ledger (rejected/epilogue-dual-spelling-col0.c, audit-orch3a retro-audit FAIL; rejected/epilogue-dual-spelling-closes-at-0-s2.c, the identical form at score 0). Relabelling it as pointer-alias does not move it: .claude/rules/pointer-alias-fake-exception.md sanctions introducing a redundant handle in place of the global, not deliberately routing one element of one address around that handle. The session's own objections (a) and (b) are decisive and I credit them: the alias/direct mix here is load-bearing (swapping either spelling moves bytes) so GCC-steering is its sole function -- 6-test #1/#2/#3 fail; and the shape is inverted relative to all 34 cited instances (the alias's own offset-0 target is precisely the element not reached through it), so it is first-reach of an un-exemplified shape, which cluster precedent cannot license (no-new-park-categories.md, and the 2026-08-17 clarification's closing limit: 'licenses no extra handles to one object'). Verified independently: the index's pointer_alias class (docs/reference/sotn-construct-index.md:740-743, e_chamber.c:56/72) records only plain `Tilemap* tilemap = &g_Tilemap;` alias declarations -- incidental coexistence of alias and direct access, never a deliberate per-element split of one address. Default-FAIL governs the remaining classification doubt. s6's derivation work stands and is not disturbed: the two-shape theorem, the F1 forensics, and the refutation of s4's 'no precedent' assertion are all genuine ledger advances (state.json s6 headline, hypotheses.md s6) -- they narrow the escalation packet, they do not sanction this body.
+
+## 2026-08-25 — func_80062020 (src/text1b.c) — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Filed by grind s7 (synthesis modality) under the binding judge_constraint carried by the
+2026-08-25 21:17 ruling on this function, which states verbatim that "the correct next move
+is to rewrite the s4 escalation packet as a fidelity-limited lock, correcting the now-false
+'no SOTN precedent' assertion and grounding the refusal in the two-shape theorem plus this
+ruling." **This packet REPLACES the 2026-07-24 packet, which must not be cited as-is: its
+precedent-gate assertion ("no SOTN/VS/ESA/oot/MGS precedent for a same-lvalue respelling")
+was scanned in s6 and measured FALSE.** Nothing here asks for a permanent-rule sanction, a
+new family grant, a canonical evidence-bar override, or acceptance of a debt; both answers
+below leave every standard exactly where it is.
+
+### (i) The single decidable question
+
+**Does byte-derived provenance evidence — a derivation from the target's own instructions
+that the ORIGINAL 1998 source wrote one address in two different expression shapes — make
+reproducing that non-uniformity a decompilation-fidelity act (the standard the owner
+credited in the 2026-07-27 23:04 / 23:56 func_800651F0 rulings, "that is decompilation
+evidence recovered from target bytes, not GCC-steering rationale"), or does the 2026-08-25
+Judge FAIL stand as terminal for func_80062020, routing it to a fidelity-limited
+INCLUDE_ASM at honest floor 4?**
+
+This is a fidelity/provenance/routing question, not a family-grant request. The Judge FAILed
+the *family claim* (pointer-alias) and applied default-FAIL to the residual classification
+doubt; the Judge explicitly preserved the derivation work ("s6's derivation work stands and
+is not disturbed ... they narrow the escalation packet"). The narrowed packet is exactly the
+question the Judge could not answer under default-FAIL and the owner can: whether provenance
+recovered from bytes outranks uniformity-of-spelling when the two conflict.
+
+### (ii) Evidence pointers
+
+- **Honest floor, re-measured this session on the live chassis:** `sandbox func_80062020
+  --disable all` = score **4**, build_insns 35, target_insns 38, rules_dropped 0,
+  cheat_asm_stripped 173. src/text1b.c is left carrying the clean floor-4 candidate
+  (`memory/grind/func_80062020/candidate.c`): 0 rules, 0 pins, 0 volatile, 0 dead vars,
+  0 asm. Flat at 4 across s2-s7.
+- **The two-shape theorem (s6 derivation, s7 predictive validation).** MIPS
+  `legitimize_address` under GCC 2.7.2 accepts `(plus (symbol_ref S) (reg X))` as an address
+  (LO_SUM; the symbol never enters a register) but not `(plus (symbol_ref S) (reg X)
+  (const K))`, which it folds into the symbol and force_regs. Consequently a shared
+  `base+disp` form (target's `8($v0)` / `4($v0)`) requires the row address to exist as a
+  POINTER VALUE in the tree before the constant is applied, while target's col-a store
+  (`lui $at,%hi(D_800F1198); addu $at,$at,$v1; sw $zero,%lo(D_800F1198)($at)`) requires the
+  symbol to have stayed OUT of a register. Target applies both to the same `$v1`-indexed
+  address (asm/funcs/func_80062020.s:29-39). Treatment is selected per C tree shape and is
+  uniform across that shape's accesses, so the original source wrote the address twice, in
+  two shapes. Validated across seven distinct tree-node classes (s5: pointer ARRAY_REF,
+  struct COMPONENT_REF, 1-element-array member, 2D ARRAY_REF; s7 NEW: pointer INDIRECT_REF
+  `*p`, union COMPONENT_REF at offset 0, union COMPONENT_REF over an array member — both s7
+  predictions hit exactly at score 4 / 35 insns). Artifact:
+  `tmp/grind/func_80062020/s7/two_shape_law_validation.md`.
+- **Every sanctioned axis is measured dead, over six sessions and five modalities:**
+  recon (s1, floor 20->10), structural (s2 floor 10->4 via the `ofs`-reuse register lever;
+  s3 store-order invariance KILL), permuter (s4, two fresh-seed basins, ~46k iters — the
+  only byte-0 basin is the contested spelling), synthesis (s5 pass attribution corrected to
+  RTL-expand via the `.rtl` dump; aggregate/tree-shape axis KILLED; solver modality measured
+  INAPPLICABLE because the residual is PRE-RA, 35 vs 38 insns — the owner's 2026-08-24
+  solver directive is thereby discharged with measurements), forensics (s6 F1: the table's
+  sole consumer `func_800620B8` addresses all three columns identically and its arithmetic
+  refutes a flag/data object split — col a packs `x*2 | flag`; whole-function 2D-array model
+  KILLED at score 24). Ledger: `memory/grind/func_80062020/evidence.md`,
+  `hypotheses.md`, 11 forms in `rejected/`.
+- **The canonical-asm gate is an independent hard FAIL and is NOT what is being asked:**
+  `scan_hand_coded --single func_80062020` = tier LOW, 0/8, re-verified in s2 and s4.
+- **Precedent facts, corrected:** s6 scanned sotn-decomp master (PSX only, HEAD
+  db41b28eee52969244a52cc269c8163d1ed8826a): 830 functions mix a local pointer alias with
+  direct access to the same global, and 34 hit the narrow same-lvalue gate (hand-verified
+  exemplar `src/st/cen/e_chamber.c` `EntityPlatform`: alias at :72, `tilemap->height` at
+  :201, `g_Tilemap.height` at :240). The 2026-08-25 Judge examined these and ruled the SHAPE
+  inverted relative to all 34 (here the alias's own offset-0 target is precisely the element
+  not reached through it) — so the citation defeats s4's blanket "no precedent" claim
+  without licensing the construct on cluster precedent. Scan scripts and hit lists:
+  `tmp/grind/func_80062020/s6/sotn_precedent_scan.md`.
+- **The contested body, for reference only (not proposed, not in src):**
+  `tmp/grind/func_80062020/s6/v_alias_plus_direct.c` measures score **0**, build_insns 38,
+  rules_dropped 0, zero pins/volatile/dead-vars/asm on this chassis. Its disposition has been
+  FAILed twice on the merits (2026-06-14 retro-audit of `dfb9e9ac`; 2026-08-25 Judge).
+
+### (iii) Consequence of each answer
+
+- **YES — byte-derived provenance governs.** func_80062020 closes at distance 0 as
+  COMPLETED-C with the two-shape epilogue (the col-a store spelled in the table's native
+  whole-program idiom, cols b,c through the row pointer), carrying a provenance annotation
+  citing the two-shape theorem rather than a family claim. The ruling would be
+  function-specific and evidence-gated exactly as func_800651F0's was; it changes no rule
+  text and grants no family. Cost: one grind session to land, self-vet, and re-review.
+- **NO — uniformity of spelling governs and the 2026-08-25 Judge FAIL is terminal.**
+  func_80062020 is a fidelity-limited lock: its byte-exact source is derivably
+  non-uniform and BB2 policy declines to reproduce non-uniformity, so no pure-C body can
+  reach 0. It stays committed as `INCLUDE_ASM` (asm-until-matched) at honest floor 4 with
+  the clean candidate preserved in `memory/grind/func_80062020/candidate.c`, and the queue
+  should route it out of active grinding on THAT ground — a closed search space proved by
+  derivation, not an unfinished one. Canonical-asm is not an available answer either way
+  (LOW 0/8).
+- **Either answer ends the re-measurement loop.** The distinguishing fact this packet adds
+  over the 2026-07-24 one is that the remaining gap is no longer a search: s6's derivation
+  plus s7's seven-shape validation closes the uniform-spelling space by proof. Continued
+  grinding can only re-measure shapes the law already predicts.

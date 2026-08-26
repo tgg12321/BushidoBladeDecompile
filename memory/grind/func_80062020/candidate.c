@@ -79,6 +79,17 @@
  * is NOT proposed here — it sits in the rejected bank and its disposition is a
  * ruling question (see hypotheses.md s6 frontier item 1). THIS form remains the
  * best UNCONTESTED body: clean pure C, floor 4.
+ *
+ * s7 (synthesis): floor re-measured on the live chassis = score 4, build_insns 35,
+ * target 38, 0 rules (unchanged). The s6 ruling-request was FAILed by the Judge
+ * (decisions.md 2026-08-25 21:17): the alias+direct epilogue is first-reach of a shape
+ * inverted relative to all 34 SOTN instances, and no family covers it. THIS body remains
+ * the best available form. The two-shape theorem was PREDICTIVELY VALIDATED on two
+ * unmeasured tree-node classes (`*p = 0` INDIRECT_REF, and a union whose offset-0 member
+ * aliases the whole row) - both predicted and measured 4 / 35 - so prong 1 now holds
+ * across seven node classes and the uniform-spelling search space is closed by proof.
+ * A corrected escalation packet (fidelity/provenance/routing question, replacing the
+ * partly-false 2026-07-24 packet) was filed in docs/grind/decisions.md 2026-08-25.
  */
 
 void func_80062020(s32 *arg0) {
