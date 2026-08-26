@@ -320,3 +320,69 @@ candidate.c: 23 honest insn diff, 15 weighted-masked. NOT lowered this session.
 - [s8] TOOL NOTE for the next session: tmp/grind/func_80037B00/s7/probe.sh prints nothing even on success (its awk pattern misses the tab in cc1's `.ent` line) — read the `.frame` line out of tmp/grind/func_80037B00/s7/raw.s instead. s7/apply.py crashes both on the INCLUDE_ASM HEAD state and on cp1252 bytes elsewhere in code6cac_c.c; use the fixed tmp/grind/func_80037B00/s8/apply.py. s7/dis.sh needs its `cd` line stripped, must run under WSL (`bash tools/wsl.sh 'bash .../dis.sh'`), and reads tmp/sandbox/func_80037B00/code6cac_c.o, which only refreshes on an actual `sandbox` run — a stale object silently misreports the variant you just spliced.
 
 - [s8] src/code6cac_c.c was reverted to HEAD (INCLUDE_ASM) at session end; no tracked build file is modified.
+
+## s9 (forensics, 2026-08-26) — pass-attributed facts about the last two registers
+
+1. **Chassis re-verified.** candidate.c measures score 5 / 36 vs 36 / 0 rules on
+   HEAD this session. The RA inputs reproduce exactly: allocno 73 (counter
+   var_t1) = 8 refs / 23 live, allocno 78 (end pointer var_t0) = 4 refs / 9
+   live; greg order `79 76 77 75 73 83 78 74 82 81 72`; dispositions 73→$8,
+   78→$9 where target wants 73→$9 ($t1) and 78→$8 ($t0).
+
+2. **global.c's priority is integer-truncated.** `global.c:642-649` casts
+   `(double)(floor_log2(refs)*refs)/live * 10000 * size` to int, and
+   `global.c:655` breaks ties toward the LOWER allocno. Baseline integer
+   priorities: 79=30000, 76=27272, 77=24000, 75=13500, 73=10434, 78=8888,
+   74=7500, 81=1428, 72=1250. Full reachable-cell enumeration:
+   `tmp/grind/func_80037B00/s9/prisolve.py`.
+
+3. **An extra flow-visible insn that does NOT mention the end pointer can never
+   help.** Any insn added inside the inner loop lengthens BOTH live ranges, and
+   `8/(9+N) > 24/(23+N)` has no positive solution. The perturbation must add a
+   reference to allocno 78.
+
+4. **flow.c deletes cse-dead insns BEFORE counting them.** Traced insn-by-insn
+   through .rtl/.jump/.cse/.loop/.cse2/.flow for the split-definition spelling
+   (`var_t0 = var_a3; var_t0 += 0x15;`): cse1 rewrites the second insn's operand
+   from reg 78 to reg 75, the now-dead copy survives loop and cse2 intact, and
+   the FLOW pass turns it into `NOTE_INSN_DELETED`. Since propagate_block's
+   dead-insn deletion and its `reg_n_refs` accumulation are the same scan, the
+   occurrence is never credited. Corollary and permanent correction to the s8
+   model note: "reg_n_refs is computed before combine" only buys an occurrence
+   if the insn is LIVE at flow time. The only insn-deleting pass after flow is
+   combine (toplev.c:3004), and the only combine absorption available on MIPS
+   for a pointer is folding `(plus reg const)` into a `mem` address — target's
+   36-instruction stream contains no memory access based on the end pointer.
+
+5. **cse1 does NOT reach across the inner loop's blocks.** Reusing the end
+   pointer to step to the next table entry (`var_a3 = var_t0 + 0x13;` at
+   block_74) is NOT folded back to `var_a3 + 0x28`: allocno 78 measures 6 refs /
+   14 live, the exact +2 the weight-2 model predicts. So a second in-loop
+   reference IS obtainable in ordinary C; the binding constraint is distance,
+   not cse. To land inside the window the extra reference must keep
+   live_length(78) <= 11, i.e. it must sit within ~2 insns of the `slt` that is
+   currently the end pointer's last use.
+
+6. **Declaration order = pseudo order** on this chassis (measured, not inferred):
+   declaring `var_t0` before `var_t1` renumbers the end pointer to allocno 73
+   and the counter to 74 with every priority and every seat unchanged. This
+   makes the end pointer win an exact tie, converting the target window from
+   `pri(end) > pri(counter)` to `>=` at zero cost. Banked as
+   memory/grind/func_80037B00/decl_order_swap_vC.c — apply it only in
+   combination with a priority-moving change.
+
+- [s9] HEAD chassis re-measured this session: memory/grind/func_80037B00/candidate.c gives sandbox --disable all score 5, target_insns 36, build_insns 36, rules_dropped 0; the s8 RA table reproduces exactly (73 = 8 refs/23 live -> $8, 78 = 4 refs/9 live -> $9; greg order 79 76 77 75 73 83 78 74 82 81 72).
+
+- [s9] global.c:642-649 truncates the priority to int: the baseline integers are 79=30000, 76=27272, 77=24000, 75=13500, 73=10434, 78=8888, 74=7500, 81=1428, 72=1250; global.c:655 breaks ties toward the lower allocno.
+
+- [s9] Reachable cells that transpose the pair and leave every other seat intact (tmp/grind/func_80037B00/s9/prisolve.py): end pointer at (refs 4, live 6), (4,7), (5,8), (5,9), (6,9), (6,10), (6,11); counter at (7,16..18) or (8,28..32).
+
+- [s9] PASS ATTRIBUTION: a same-block re-mention of the end pointer is folded by cse1 (visible as (plus 78 21) -> (plus 75 21) in x.cse), and the resulting dead insn survives loop and cse2 but is turned into NOTE_INSN_DELETED by the FLOW pass - so it is never counted. 'reg_n_refs is computed before combine' only buys an occurrence whose insn is LIVE at flow time.
+
+- [s9] The only insn-deleting pass after flow is combine (toplev.c:3004); the only combine absorption available for a pointer on MIPS is folding (plus reg const) into a mem address, and target's 36-instruction stream has no memory access based on the end pointer - so a zero-cost extra reference cannot come from a combine-absorbed insn on THIS stream.
+
+- [s9] A cross-block reference is NOT folded by cse1: vG raises allocno 78 to 6 refs / 14 live. The refs axis is therefore open; the binding constraint is that live_length(78) must stay <= 11, i.e. the extra reference must sit within about two insns of the slt that is currently its last use.
+
+- [s9] Declaration order = pseudo order (measured with vC): declaring var_t0 first renumbers the end pointer to allocno 73 and the counter to 74 with identical priorities and identical seats - a free precondition for the tie-break route.
+
+- [s9] The counter side is the weaker axis: its window needs either refs 7 with live 16-18 (the only removable weight-1 occurrence is the guard's compare, and removing it breaks the single-blez merge the floor-5 form depends on - measured in s8 as the double-blez family) or refs 8 with live 28-32, i.e. the counter live in the return blocks, which costs an instruction.

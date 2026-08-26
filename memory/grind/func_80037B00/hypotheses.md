@@ -374,3 +374,82 @@ every live_length in the table is a function of block boundaries.
 - probe: Enumerated every insn outside the loop notes in tmp/grind/func_80037B00/s8/flow.rtl and checked allocno 78's liveness at each; cross-checked against the 36-instruction stream, where every out-of-loop instruction is one target also has.
 - result: KILLED as stated. It is however no longer the only route: on the floor-5 form the window widened to (1.0435, 1.350) and the refs-6 row (one extra IN-LOOP reference, live_length 9, 10 or 11) is newly available.
 - verdict: KILLED
+
+## s9 (forensics) — the 73/78 transposition, measured against the dumps
+
+Chassis re-measured at session start: `sandbox --disable all` on candidate.c =
+score 5, target_insns 36, build_insns 36, rules_dropped 0. The s8 RA table
+reproduces EXACTLY (`tmp/grind/func_80037B00/s9/d_candidate/x.lreg`):
+73 = 8 refs / 23 live, 78 = 4 refs / 9 live, greg order
+`79 76 77 75 73 83 78 74 82 81 72`, dispositions 73→$8, 78→$9.
+
+### The window, recomputed with global.c's ACTUAL arithmetic
+`tools/gcc-2.7.2/global.c:635-656` — `pri = (int)((double)(floor_log2(refs)*refs)
+/ live_length * 10000 * size)`, ties broken by `*v1 - *v2` (LOWER allocno wins).
+Truncation to int matters: the baseline priorities are the integers
+79=30000, 76=27272, 77=24000, 75=13500, **73=10434, 78=8888**, 74=7500,
+81=1428, 72=1250. `tmp/grind/func_80037B00/s9/prisolve.py` enumerates every
+(refs, live_length) cell that transposes the pair while leaving all other seats
+intact; the reachable low-cost rows are
+  * 78 at (4,6) / (4,7)      — same refs, live range 2-3 insns SHORTER
+  * 78 at (5,8) / (5,9)      — one extra weight-1 (out-of-loop) reference
+  * 78 at (6,9) / (6,10) / (6,11) — one extra weight-2 (in-loop) reference,
+    live range allowed to grow by up to two insns
+  * 73 at (7,16..18) or (8,28..32) — the counter side
+Also proved by the same enumeration: adding pre-combine insns that do NOT
+reference 78 can never help — 8/(9+N) > 24/(23+N) has no solution for N>0, so
+any extra flow-visible insn must MENTION the end pointer.
+
+## [s9] The refs-6 row is reachable by spelling the end pointer's definition or its exit test as a two-insn chain (the "reg_n_refs is computed before combine" route).
+- mechanism: reg_n_refs is set by flow.c's life_analysis, which runs BEFORE combine (toplev.c:3004 combine, :3049 local_alloc — life_analysis precedes both), so an occurrence in an insn that combine later folds away was expected to still count.
+- probe: vB (`var_t0 = var_a3; var_t0 += 0x15;`) and vA (`if ((s32)var_t0 - (s32)var_a1 > 0)`), both built with tools/grinder/dump.ps1's exact front half into tmp/grind/func_80037B00/s9/d_vB_split_def/ and d_vA_ptrdiff_test/. Traced insn 46/49 through .rtl → .jump → .cse → .loop → .cse2 → .flow.
+- result: KILLED, and the pass is named. In vB the initial RTL does carry two insns; **cse1 rewrites `(set 78 (plus 78 21))` into `(set 78 (plus 75 21))`** (visible in x.cse), which makes the copy `(set 78 (reg 75))` dead. The copy still exists as an insn in .loop and .cse2 and is turned into `NOTE_INSN_DELETED` **by the flow pass itself**, i.e. propagate_block's dead-store elimination runs in the same scan that counts refs, so the occurrence is never credited. vA's RA table is byte-identical to the baseline's (73 = 8/23, 78 = 4/9, same greg order and dispositions) — the ptrdiff test folds before flow too. PERMANENT MODEL CORRECTION: "counted before combine" is true only for insns that are LIVE at flow time; anything cse1 makes dead is deleted by flow before counting. The only insn-deleting pass AFTER flow is combine, so an extra reference can only survive if combine (not cse) is what absorbs it — i.e. it must be an insn combine merges INTO its consumer (on MIPS: essentially only an address `(plus reg const)` folded into a `mem`, and target's stream has no memory access based on the end pointer).
+- verdict: KILLED
+
+## [s9] A named intermediate copy of the end pointer used in the exit test (`var_e = var_t0; if (var_a1 < var_e)`) adds a flow-visible reference.
+- mechanism: same family as above but with the copy CONSUMED rather than overwritten, so it is not a dead store.
+- probe: tmp/grind/func_80037B00/s9/vE_copy_into_cmp.c; dumps in d_vE_copy_into_cmp/.
+- result: KILLED. cse1 propagates the copy into the compare and the copy dies; the emitted assembly is IDENTICAL to the baseline (same 26 cc1 insns, counter $8 / end $9), the RA banner shows 73 = 8/23 and the same seats. The extra C variable only renumbers pseudos.
+- verdict: KILLED
+
+## [s9] cse1's equivalence table reaches every use of the end pointer, so no C-level second reference can survive it.
+- mechanism: if true, the refs axis is closed outright.
+- probe: vG (`var_a3 = var_t0 + 0x13;` at block_74 instead of `var_a3 += 0x28;` — the end pointer reused to step to the next 0x28-byte entry). tmp/grind/func_80037B00/s9/vG_reuse_end_for_next.c, dumps in d_vG_reuse_end_for_next/.
+- result: KILLED — and this is the session's positive find. The reference SURVIVES: allocno 78 measures **6 refs / 14 live** (up from 4/9), exactly the +2 weight-2 credit the flow.c model predicts, so cse1 does NOT fold `var_t0 + 0x13` back into `var_a3 + 0x28` across the intervening blocks. The form is nevertheless dead as a candidate: pri(78) = 2*6/14 = 8571 is still below pri(73) = 10434 because the live range now stretches to block_74, and the reuse also collapses var_a3 (allocno 75 → 5 refs / 6 live) and drops the stream to 25 cc1 insns. What it proves is the SITE constraint, not the mechanism: an extra in-loop reference is available in ordinary C, but it must sit close enough to the last use (the `slt`) that live_length stays ≤ 11.
+- verdict: KILLED (as a candidate) / CONFIRMED (as the mechanism)
+
+## [s9] Declaration order controls pseudo numbering on the floor-5 chassis, so the tie-break can be pointed at the end pointer for free.
+- mechanism: global.c:655 breaks an exact priority tie with `*v1 - *v2` (lower allocno first); allocnos are numbered in pseudo order and pseudos in C declaration order.
+- probe: vC (declare `s8 *var_t0;` before `s32 var_t1;`), tmp/grind/func_80037B00/s9/vC_declorder.c, banked as memory/grind/func_80037B00/decl_order_swap_vC.c.
+- result: CONFIRMED and INERT-at-score. The end pointer becomes allocno 73 (4 refs / 9 live) and the counter 74 (8 refs / 23 live); the priorities and therefore the seats are unchanged ($8 counter, $9 end). The lever is precondition-only: it costs nothing and converts the required window from strict `pri(end) > pri(counter)` to `pri(end) >= pri(counter)`. Apply it only together with whatever moves a priority — on its own it changes nothing. NOTE the tie enumeration found exactly one tie cell (end pointer at 8 refs / 23 live, pri 10434), which is not plausibly reachable.
+- verdict: CONFIRMED (mechanism), INERT (score)
+
+## [s9] The refs-6 row for allocno 78 (end pointer) is reachable by spelling its definition or its exit test as a two-insn chain, because reg_n_refs is computed in flow.c before combine.
+- mechanism: toplev.c runs life_analysis (flow) before combine_instructions (toplev.c:3004) and before local_alloc (toplev.c:3049), so an occurrence in an insn combine later folds away was expected to still be credited by flow.c's reg_n_refs accumulation.
+- probe: Built vB (var_t0 = var_a3; var_t0 += 0x15;) and vA (exit test as (s32)var_t0 - (s32)var_a1 > 0) through the project's exact cpp|cc1 -da front half; traced the insns through .rtl -> .jump -> .cse -> .loop -> .cse2 -> .flow in tmp/grind/func_80037B00/s9/d_vB_split_def/ and d_vA_ptrdiff_test/.
+- result: The initial RTL does carry two insns, but cse1 rewrites (set 78 (plus 78 21)) to (set 78 (plus 75 21)); the resulting dead copy survives loop and cse2 unchanged and is turned into NOTE_INSN_DELETED by the FLOW pass itself. propagate_block's dead-insn deletion and its ref counting are the same scan, so the occurrence is never credited: the RA banner is byte-identical to the baseline (73 = 8 refs/23 live, 78 = 4/9, same greg order, same seats). vA's RA table is identical to the baseline as well.
+- verdict: KILLED
+
+## [s9] A named intermediate copy of the end pointer that is CONSUMED by the exit test (var_e = var_t0; if (var_a1 < var_e)) survives to flow and adds the missing reference.
+- mechanism: A consumed copy is not a dead store, so flow's dead-insn deletion should not remove it; combine would then fold the copy into the slt at zero instruction cost.
+- probe: tmp/grind/func_80037B00/s9/vE_copy_into_cmp.c, dumps in tmp/grind/func_80037B00/s9/d_vE_copy_into_cmp/; compared the cc1 assembly and the .lreg banner against the baseline.
+- result: cse1 propagates the copy into the compare before flow runs, so the copy is dead again and is deleted. Emitted assembly identical to the baseline (counter $8, end pointer $9); the extra C variable only renumbers pseudos. No refs change.
+- verdict: KILLED
+
+## [s9] cse1's equivalence table reaches every use of the end pointer, so no C-level second reference to it can survive into flow's count.
+- mechanism: If cse1 always folds a re-mention back onto var_a3, the whole refs axis is closed and only the live-length axis remains.
+- probe: vG: replaced 'var_a3 += 0x28;' at block_74 with 'var_a3 = var_t0 + 0x13;' (the end pointer reused to step to the next 0x28-byte entry). tmp/grind/func_80037B00/s9/vG_reuse_end_for_next.c, dumps in tmp/grind/func_80037B00/s9/d_vG_reuse_end_for_next/.
+- result: FALSE as stated. The reference survives: allocno 78 measures 6 refs / 14 live, exactly the +2 weight-2 credit flow.c's model predicts, so cse1 does not fold var_t0 + 0x13 back into var_a3 + 0x28 across the intervening blocks. The form is still not a candidate (pri = 2*6/14 = 8571 < pri(73) = 10434 because the live range now reaches block_74; var_a3 collapses to 5 refs/6 live and the stream drops to 25 cc1 insns), but the mechanism is confirmed and the constraint is now distance, not cse.
+- verdict: CONFIRMED
+
+## [s9] Declaration order controls pseudo numbering on the floor-5 chassis, so global.c's tie-break can be pointed at the end pointer for free.
+- mechanism: global.c:655 breaks an exact priority tie with *v1 - *v2 (lower allocno wins); allocnos are numbered in pseudo order and pseudos follow C declaration order.
+- probe: vC: declared 's8 *var_t0;' before 's32 var_t1;'. tmp/grind/func_80037B00/s9/vC_declorder.c; banked as memory/grind/func_80037B00/decl_order_swap_vC.c.
+- result: Confirmed: the end pointer becomes allocno 73 (4 refs/9 live) and the counter 74 (8 refs/23 live) with every priority and every seat unchanged. The lever is precondition-only and costs nothing; it converts the required window from pri(end) > pri(counter) to pri(end) >= pri(counter). The tie enumeration finds exactly one tie cell (end pointer at 8 refs/23 live) which is not plausibly reachable, so this must be paired with a priority-moving change.
+- verdict: CONFIRMED
+
+## [s9] An extra flow-visible insn inside the inner loop that does not itself mention the end pointer can transpose the pair by lengthening the counter's live range.
+- mechanism: Both live ranges grow by the same N, and pri(78) = 8/(9+N) must exceed pri(73) = 24/(23+N).
+- probe: Solved the inequality over the measured baseline inputs in tmp/grind/func_80037B00/s9/prisolve.py together with the full (refs, live_length) cell enumeration.
+- result: 8(23+N) > 24(9+N) reduces to -32 > 16N, which has no positive solution. Any perturbation that reaches the window MUST add a reference to allocno 78 itself. This closes an entire class of 'add a harmless insn' spellings without measuring them.
+- verdict: KILLED

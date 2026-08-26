@@ -1,7 +1,7 @@
 {
  "func": "func_80037B00",
  "file": "code6cac_c",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -57,23 +57,29 @@
    "floor": 5,
    "modality": "forensics",
    "headline": "Floor 9 -> 5: spelling the entry guard AS the loop's own test (`if (var_t1 < D_800A38C8)` around a top-tested while) makes the phantom frame, the single blez, the preheader `la` and the `addu $t3,$v0,"
+  },
+  {
+   "session": 9,
+   "floor": 5,
+   "modality": "forensics",
+   "headline": "Floor holds at 5 (36/36 exact stream, one $t0/$t1 transposition left); forensics named the passes: cse1 folds every same-block re-mention of the end pointer and FLOW deletes the dead insn before count"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "One extra IN-LOOP reference to the end pointer (var_t0), with its live range allowed to grow by up to two insns, transposes allocnos 73 and 78 and closes the function.",
-   "mechanism": "global.c allocno_compare seats the eight mutually-conflicting allocnos into [$3,$5,$6,$7,$8,$9,$10,$11] strictly by pri = floor_log2(refs)*refs/live_length. On the floor-5 form pri(78) = 0.888 must land inside (pri(73) = 1.0435, pri(75) = 1.350). In-loop references weigh 2 (flow.c:434 sets depth=1 outside, +1 per NOTE_INSN_LOOP_BEG; flow.c:2081 etc. add loop_depth per OCCURRENCE), so one extra in-loop raw reference takes refs 4 -> 6, and 12/9 = 1.333, 12/10 = 1.200 and 12/11 = 1.0909 all sit inside the window. reg_n_refs is computed in flow.c BEFORE combine, so an occurrence that combine later folds away still counts toward the priority while costing no instruction.",
-   "next_probe": "Splice variants with tmp/grind/func_80037B00/s8/apply.py, measure with `& tools/wteng.ps1 main sandbox func_80037B00 --disable all`, and screen EVERY candidate with a disassembly diff (`bash tools/wsl.sh 'bash tmp/grind/func_80037B00/s7/dis.sh'` against asm/funcs/func_80037B00.s) before looking at the score \u2014 anything that is not 36 instructions in target's order is dead on arrival. Then read tmp/grind/func_80037B00/dumps/code6cac_c.flow for the pre-combine occurrence count of allocno 78 and tmp/grind/func_80037B00/s7/rainfo.sh for the resulting refs/live_length. Start with spellings of the inner-loop exit test and of the `var_t0 = var_a3 + 0x15;` definition that mention the end pointer twice at RTL level but still fold to the single `slt $v0,$a1,$t0` cc1 already emits."
+   "hypothesis": "An ordinary-C reference to the end pointer placed in block_5c or block_6c - the two blocks reached immediately after the inner loop's last use of it - raises allocno 78 to 6 refs while keeping live_length at 10 or 11, landing inside (10434, 13500) and closing the function.",
+   "mechanism": "vG proved cse1 does not fold a cross-block re-mention of var_t0 (78 went 4 refs -> 6 refs, weight 2 per flow.c:434 / flow.c:2081). vG failed only on distance: block_74 stretches live_length to 14 (pri 8571). block_5c sits 2-3 insns past the slt, so the same +2 refs there gives pri 12000 (live 10) or 10909 (live 11), both inside the window. Pair it with the free declaration-order swap (memory/grind/func_80037B00/decl_order_swap_vC.c) so that even an exact tie seats the end pointer first.",
+   "next_probe": "Enumerate spellings that mention var_t0 once in block_5c / block_6c while keeping the stream at 36 instructions in target's order - the candidate consumers are the 'var_t1 += 1' / 'var_t2 = 1' statements and the two exit arms. Splice with tmp/grind/func_80037B00/s9/apply.py, screen FIRST with tmp/grind/func_80037B00/s9/probe.sh (it prints the .lreg banner and the cc1 assembly in one call, no sandbox needed), accept only rows where 78 shows refs 6 and live <= 11 AND the cc1 stream is unchanged, then confirm with '& tools/wteng.ps1 main sandbox func_80037B00 --disable all'. POLICY BOUNDARY before spelling: a re-store of a local for its own sake is the dead-store family (FAKE-gated, .claude/rules/dead-store-fake-exception.md) - look first for a spelling where the mention is the function's own logic (e.g. an exit arm that legitimately consumes the end pointer)."
   },
   {
-   "hypothesis": "If the extra in-loop reference cannot be had without perturbing an instruction, the same swap is reachable from the other side by lowering the counter's priority instead.",
-   "mechanism": "pri(73) must drop below pri(78) = 0.888 while staying above pri(74) = 0.750. With refs 7 (floor_log2 = 2) that needs live_length in (15.8, 18.7) against a measured 23; with refs 8 it needs live_length in (27, 32). The counter is live from its init (before the `if`) to the bottom test, so its live range shortens if the init moves inside the guarded body \u2014 which costs the blez delay-slot fill and must therefore be paired with another insn that reorg can steal.",
-   "next_probe": "Measure the counter's live_length as a function of where `var_t1 = 0;` sits and of the statement order inside the guarded preheader, using tmp/grind/func_80037B00/s7/rainfo.sh, while checking the delay slot in the disassembly each time. Look specifically for a preheader ordering that keeps the blez slot filled by some other insn while shortening the counter's range into 16-18 at refs 7."
+   "hypothesis": "The (refs 4, live 6) / (4,7) row - same refs, live range 2-3 insns SHORTER - is reachable by making the end pointer's definition later in the PRE-COMBINE insn order while the final scheduled stream keeps 'addiu $t0,$a3,0x15' as the fourth insn of the loop head.",
+   "mechanism": "reg_live_length is computed by flow's life_analysis on the pre-combine, pre-sched stream (toplev.c order: flow -> combine -> sched1 -> local_alloc), so it measures the RTL order cc1 emitted, not the order the scheduler finally prints. Any spelling whose expansion emits the end-pointer definition closer to the slt shortens live_length without touching the emitted stream, and (4,7) alone gives pri 11428 > 10434.",
+   "next_probe": "Read tmp/grind/func_80037B00/s9/flow.rtl (allocno 78 spans insn 46 to insn 82) and identify exactly which insns flow counts inside the span; then try loop-head statement orders and expression spellings that move the definition of var_t0 down the RTL while sched1 restores target's order. Screen with probe.sh's .lreg banner: the row to look for is 'Register 78 used 4 times across 6 insns' (or 7)."
   },
   {
-   "hypothesis": "The tie-break route: pseudo numbers follow C declaration order exactly in this function, so an exact priority TIE between the counter and the end pointer closes the swap through declaration order alone.",
-   "mechanism": "global.c breaks priority ties in favour of the lower pseudo number, and s7 measured that pseudos are assigned in C declaration order. Declaring var_t0 before var_t1 makes the end pointer the lower-numbered allocno, so any spelling that produces pri(78) == pri(73) exactly seats the end pointer first. With the current numbers that means, e.g., refs(78) = 6 / live 9 = 1.333 against refs(73) = 8 / live 18, or refs(78) = 4 / live 9 = 0.888 against refs(73) = 8 / live 27.",
-   "next_probe": "Treat this as the fallback if the refs-6 row is unreachable: it needs a lever on one of the two live lengths anyway. If a structural change ever lands both priorities on the same value, reorder the declarations so var_t0 precedes var_t1 and re-measure \u2014 declaration reordering is ordinary C and costs nothing."
+   "hypothesis": "If neither row is reachable at 36 instructions, the residual is a chassis property rather than a spelling property: a DIFFERENT source shape that emits the same 36 instructions but with different block boundaries would move both live lengths at once.",
+   "mechanism": "Every live_length in the table is a function of the pre-combine block structure, and the floor-5 chassis fixes that structure (source-level guard spelled as the loop test, top-tested while, goto-spelled inner loop). s8 measured the alternative chassis at 34 / 35 / 37 instructions, so this axis needs a NEW chassis that still reaches 36 - not a re-run of the banked ones.",
+   "next_probe": "Re-read the s8 addendum's chassis table in memory/grind/func_80037B00/hypotheses.md first; then look for a chassis whose inner loop places the end-pointer definition after the first byte load (which both shortens 78's span and gives block_5c a natural consumer). Measure with probe.sh, and treat any form that is not 36 instructions in target's order as dead on arrival."
   }
  ],
  "judge_constraints": [
