@@ -421,3 +421,47 @@ the permuter, or the structured-loop retry chassis; all are killed with mechanis
 - probe: `python3 tools/ra_solver/inverse_compose.py classify code6cac_b2_post special_camera_get_rot_dir`.
 - result: FIRST DIVERGENCE: RA. No sched_solver run needed; the axis is not live.
 - verdict: KILLED
+
+---
+
+## s7 (forensics, 2026-08-26) — function SOLVED, floor 0. Frontier closed.
+
+- **CONFIRMED — the target's inner copy loop is compiler-generated, not source-level.**
+  Mechanism: `expand_block_move` (config/mips/mips.c:2332) routes a 60-byte, word-aligned,
+  constant-size aggregate copy to `block_move_loop` (mips.c:2222), which emits
+  `final_src = src+48`, a bare `emit_label`, a 16-byte `movstrsi_internal`, two `addsi3`s,
+  `cmpsi`, `bne`, and a 12-byte leftover `movstrsi_internal`.
+  Probe: read mips.c; write the copy as `*(CamRot *)dest = *(CamRot *)&sp_buf[0x10];`;
+  `sandbox --disable all`. Result: score 2 immediately (only a preheader ordering pair
+  wrong), then **score 0** after moving the sp_buf2 address-take inside the loop.
+  Full-build SHA1 == oracle. Dump-confirmed at `.rtl`/`.flow` (one loop-note triple in
+  the whole function; block-move insns present at expand).
+
+- **KILLED (as a problem, not as a fact) — the entire s1-s6 live-length / REG_EQUIV /
+  allocno-priority program.** `copy_end` is `block_move_loop`'s `final_src`, a pseudo
+  created at RTL expand. Its reference weighting is low because `block_move_loop` opens
+  its loop with `emit_label()` and never `NOTE_INSN_LOOP_BEG`, so `flow.c`'s `loop_depth`
+  (the multiplier on every `REG_N_REFS` increment) does not rise inside it. Nothing had
+  to be steered. Route R1 (kill the REG_EQUIV doubling), route R2 (`optimize_reg_copy_1`
+  live-length arithmetic) and route R3 (`sched_solver` on the def-order chassis) are all
+  MOOT — they were levers for a chassis that does not correspond to the original source.
+
+- **CONFIRMED — the banned asymmetric loop spelling was a symptom of the wrong
+  reconstruction, not a necessary technique.** The s6 form needed a `goto` inner loop only
+  because it expressed the copy in C. With the aggregate assignment there is exactly one
+  loop in the source and it is an ordinary structured `for(;;)` retry; the asymmetry the
+  allocator needs is produced by the backend. Banked as
+  `rejected/handwritten-copy-loop-quad-triple.c`.
+
+- **CONFIRMED — `mode` (0x80) is a real source variable, not a coercion.** Literal form
+  measures 69 insns / score 12 (`li $a2,0x80` rematerialised per call). The target's
+  callee-saved `$s4` holding 0x80 across the whole loop is how GCC materialises a user
+  local. Corroborated semantically: `func_800372F4` passes `$a1`/`$a2` through to
+  `CdRead(sectors, buf, mode)`, so 0x80 = `CdlModeSpeed`.
+
+**Generalisable lesson for other functions (worth a sweep):** a 4-word `lw` x4 / `sw` x4
+loop bounded by `bne <src>, <endptr>` followed by a short `lw`/`sw` tail is the GCC 2.7.2
+MIPS `block_move_loop` signature. Do not reconstruct it as a C pointer loop — it means
+the source performed ONE aggregate assignment of `N` bytes where `N > 32`, `N` is
+constant, and the tail length is `N % 16`. Grepping the queue's remaining functions for
+that instruction shape is a cheap, high-value cross-function probe.

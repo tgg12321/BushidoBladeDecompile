@@ -664,3 +664,87 @@ last, into $s5. Measured allocno table of the matching form (alloc.sh tag s7p1):
   exactly and enumerates the four realistic loop-spelling reference-count vectors against
   the measured live lengths. Exactly one hits the target. That enumeration is the whole
   derivation; no permuter, no random search.
+
+---
+
+## s7 (forensics, 2026-08-26) — SOLVED. Floor 9 -> 0. Honest pure C, no coercion.
+
+**Headline: the inner copy loop was never in the C source.** It is emitted by GCC's
+MIPS backend block-move expander. Six sessions modelled `copy_end` ($s5) as a
+C-level pseudo and tried to move its live length / reference count; it is a BACKEND
+pseudo created at RTL expand time, and its favourable reference weighting is produced
+by the compiler for free.
+
+### The mechanism, read out of the compiler source and confirmed in the dump
+- `config/mips/mips.c:2332 expand_block_move()` — for a constant-size, word-aligned
+  block copy with `optimize`, the dispatch at `mips.c:2362-2368` is:
+  `bytes <= 2*MAX_MOVE_BYTES (32)` -> one inline `movstrsi_internal`;
+  otherwise -> `block_move_loop()`. Our copy is **60 bytes (0x3C)**, so `block_move_loop`.
+- `mips.c:2222-2288 block_move_loop()` emits, in this exact order:
+  `final_src = src_reg + 48` (60 - 60%16); `emit_label(L)`;
+  `movstrsi_internal(dest,src,16)` = 4 `lw` + 4 `sw`; `src += 16`; `dest += 16`;
+  `cmpsi(src, final_src)`; `bne L`; then the leftover `movstrsi_internal(...,12)`
+  = 3 `lw` + 3 `sw`.
+  That is target `.L800373C0 .. 80037400` instruction-for-instruction, including the
+  `addiu $a2,$sp,0x20` / `move $a3,$s0` pair, which are the two `copy_addr_to_reg()`
+  calls at `mips.c:2352-2353`.
+- `$s5 = sp+0x50` IS `final_src`. `sp_buf` is at `sp+0x10`, the copy source is
+  `sp_buf+0x10 = sp+0x20`, and `sp+0x20 + 48 = sp+0x50`. The ledger's `copy_end`.
+- **Why the reference-count asymmetry the s1-s6 ledger chased is free here:**
+  `block_move_loop` opens its loop with `emit_label()`, never
+  `NOTE_INSN_LOOP_BEG/_CONT/_END`. `flow.c` derives `loop_depth` (which multiplies every
+  `REG_N_REFS` increment) from those notes only. So references inside the backend copy
+  loop are weighted at the ENCLOSING depth, while the four genuine C locals in the retry
+  loop are weighted at retry-loop depth. That asymmetry is what the s6 candidate faked
+  with a hand-written `goto copyloop` (layer-1 cheat FAIL, 2026-08-26 00:52).
+- **Dump confirmation (not hypothesis):** `tmp/grind/special_camera_get_rot_dir/dumps/`
+  (`pwsh tools/grinder/dump.ps1`). Extracted function bodies in
+  `tmp/grind/special_camera_get_rot_dir/s7/rtl_fn.txt` and `flow_fn.txt`:
+  the whole function contains exactly **one** `NOTE_INSN_LOOP_BEG` / `_CONT` / `_END`
+  triple (the C retry loop), and the block-move sequence is already present at `.rtl`
+  (expand) as `code_label 64` + `(set (mem:BLK (reg:SI 79)) (mem:BLK (reg:SI 80)))`
+  + `jump_insn 71` + the second `mem:BLK` pair for the 12-byte tail.
+
+### The matching form (see candidate.c; live in src/code6cac_b2_post.c)
+One `for(;;)` retry loop, one aggregate assignment
+`*(CamRot *)dest = *(CamRot *)&sp_buf[0x10];` with
+`typedef struct { s32 rot[15]; } CamRot;`, and `s32 mode = 0x80;`.
+Zero goto, zero inline asm, zero rules, zero volatile, zero dead locals, zero FAKE.
+- `sandbox special_camera_get_rot_dir --disable all` = **score 0**, 72/72 insns.
+- `verify-oracle`: full build SHA1 = `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle.
+- `tools/audit_asm_cheats.py --check-new`: clean.
+
+### Two placement facts measured on the way (both banked as rejected forms)
+1. **buf2 address must be taken INSIDE the loop.** The preheader holds two hoisted
+   address computations, `addiu $s5,$sp,0x50` (block-move `final_src`) then
+   `addiu $s1,$sp,0x810` (`sp_buf2`). Writing a pre-loop `s32 *buf2_ptr = (s32 *)sp_buf2;`
+   emits `$s1` FIRST and costs exactly 2 (score 2, otherwise byte-identical) — the C
+   statement is emitted at its source position, ahead of anything loop.c hoists. Using
+   plain `(s32)sp_buf2` at both use sites inside the loop lets LICM hoist it, and LICM
+   hoists in body order, i.e. after the copy. Banked:
+   `rejected/preloop-buf2ptr-hoist-order-score2.c`.
+2. **`mode` must be a variable, not the literal `0x80`.** With the literal the function
+   is 69 insns / score 12: GCC rematerialises `li $a2,0x80` per call instead of holding
+   it in a callee-saved register. The target's prologue `addiu $s4,$zero,0x80`, live
+   across the entire loop, is how GCC materialises a user local — direct evidence the
+   original source had this variable. Banked:
+   `rejected/literal-mode-no-local-score12.c` (supersedes the s5-era
+   `final-call-literal-const-score10.c`, which was measured on a different chassis).
+
+### Collateral correction in the same file
+`func_800372F4` was declared/defined with one parameter but is a pass-through wrapper:
+it computes only `$a0` (bytes -> sectors) and calls `CdRead`, leaving `$a1`/`$a2`
+untouched, so they ARE CdRead's `buf` and `mode`. Widened to
+`s32 func_800372F4(s32 arg0, u32 *buf, s32 mode)`; its own bytes are unchanged
+(`sandbox func_800372F4 --disable all` = 0, 21/21 insns). This also removed the
+`((s32 (*)())func_800372F4)(...)` function-pointer casts the older candidates needed.
+`0x80` is therefore the CdRead mode byte, `CdlModeSpeed`.
+
+### Ledger corrections for the record
+- The s5/s6 live-length CHAIN model (`L(buf2) < L(index) < L(cam) <= L(const) <=
+  L(copy_end)`) and the s6 `local-alloc.c:1064` REG_EQUIV-doubling program were both
+  built on the assumption that `copy_end` is a C variable. They were solving a
+  self-inflicted problem. No further work is needed on either.
+- The s2/s3 conclusion "copy_end -> $s5 is unreachable via allocno priority" was correct
+  FOR THE HAND-WRITTEN COPY LOOP chassis, and is simply not binding once the copy is an
+  aggregate assignment.

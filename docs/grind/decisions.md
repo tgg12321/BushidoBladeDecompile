@@ -12761,3 +12761,7 @@ further search, from the body already banked in `rejected/layer1-fail-0825-2329.
 ## 2026-08-26 00:52 — special_camera_get_rot_dir — layer-1 review — **FAIL**
 
 The outer-for(;;)/inner-goto loop-spelling asymmetry was derived and selected purely to control flow.c's loop-depth weighting of reg_n_refs and land a target register permutation — an admitted GCC-internals justification for a spelling choice, found via a directed enumeration over candidate spellings, matching no sanctioned family.
+
+## 2026-08-26 01:09 — special_camera_get_rot_dir — layer-1 review — **FAIL**
+
+The aggregate-copy/retry-loop/mode reconstruction is well-evidenced and clears the checklist, but the func_800372F4 prototype widening to (arg0, u32 *buf, s32 mode) adds two parameters that are never read anywhere in the callee body, and the self-vet's justification for it is factually false.
