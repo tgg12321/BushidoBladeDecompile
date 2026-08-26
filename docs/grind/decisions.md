@@ -12765,3 +12765,7 @@ The outer-for(;;)/inner-goto loop-spelling asymmetry was derived and selected pu
 ## 2026-08-26 01:09 — special_camera_get_rot_dir — layer-1 review — **FAIL**
 
 The aggregate-copy/retry-loop/mode reconstruction is well-evidenced and clears the checklist, but the func_800372F4 prototype widening to (arg0, u32 *buf, s32 mode) adds two parameters that are never read anywhere in the callee body, and the self-vet's justification for it is factually false.
+
+## 2026-08-26 01:42 — special_camera_get_rot_dir — layer-1 review — **FAIL**
+
+The aggregate-copy/retry-loop reconstruction and func_800372F4's widened, fully-read (nbytes,buf,mode) signature are legitimate and well-evidenced, but the block-scope `extern s32 CdRead(s32, s32, s32);` inside func_800372F4 is a scope-gate workaround, not a reconstruction of the original source, and the ledger's own prescribed path (escalate for a scope_allow.txt grant to fix include/code6cac.h:510 at its canonical location) was not taken.

@@ -467,7 +467,7 @@ constant, and the tail length is `N % 16`. Grepping the queue's remaining functi
 that instruction shape is a cheap, high-value cross-function probe.
 
 
-## s7 (rederive, 2026-08-26) — the RA residual was NEVER the question. RESOLVED.
+## s7 (rederive, 2026-08-26) ï¿½ the RA residual was NEVER the question. RESOLVED.
 
 The entire s5/s6 frontier (REG_EQUIV x2 at local-alloc.c:1064, optimize_reg_copy_1
 live-length arithmetic at :820-831, and the untried sched_solver route R3) is now
@@ -477,11 +477,11 @@ assignment; with the correct source shape there is no residual to solve. Floor 0
 
 KILLED-AS-UNNECESSARY (do not re-open unless the match is somehow lost):
  - H(s5/s6-a) "a zero-cost C spelling makes reg_n_sets >= 2 for the cam/const
-   pseudos, killing the REG_EQUIV doubling" — never probed, no longer needed.
+   pseudos, killing the REG_EQUIV doubling" ï¿½ never probed, no longer needed.
  - H(s5/s6-b) "optimize_reg_copy_1 can pull the doubled length back into the
-   window" — never probed, no longer needed.
+   window" ï¿½ never probed, no longer needed.
  - H(s6-R3) "pre-RA scheduling can move a live length without moving a C
-   statement" — never probed, no longer needed.
+   statement" ï¿½ never probed, no longer needed.
 
 CONFIRMED (s7):
  - H(s7-1) "the target's inner copy loop is emitted by GCC's MIPS block-move
@@ -489,7 +489,7 @@ CONFIRMED (s7):
    struct assignment and measure. Result: 72/72 insns, sandbox score 0. CONFIRMED.
  - H(s7-2) "`include/code6cac.h`'s 1-argument `CdRead` declaration is simply wrong,
    and correcting it to agree with this repo's own matched definition at
-   src/system.c:901 makes func_800372F4's real 3-parameter prototype honest —
+   src/system.c:901 makes func_800372F4's real 3-parameter prototype honest ï¿½
    dissolving the 2026-08-26 01:09 layer-1 FAIL without changing any byte."
    Probe: correct the header, forward both parameters explicitly in
    func_800372F4's body, re-measure both functions and the full build. Result:
@@ -519,3 +519,49 @@ moot for this function and were never probed. They remain untested GENERAL techn
 and may still be worth something on a different function -- but nothing here depends
 on them.
 
+
+## s7 (rederive, 2026-08-26)
+
+**H-s7.1 - The register that s1-s6 modelled as the C local `copy_end` is not a C
+local; it is the MIPS block-move expander's `final_src` pseudo, and the entire copy
+loop is emitted from one aggregate assignment.**
+- Mechanism: expand_block_move() (config/mips/mips.c:2362-2368) routes a
+  constant-size, word-aligned, >2*MAX_MOVE_BYTES aggregate copy to block_move_loop()
+  (mips.c:2222-2288), which creates final_src = src + 48, emits the label with a bare
+  emit_label() (no NOTE_INSN_LOOP_BEG/END, so flow.c never raises loop_depth inside
+  it), emits the 16-byte movstrsi body, the pointer bumps, the compare and the bne,
+  then the 12-byte leftover movstrsi.
+- Probe: replace the hand-written copy loop with
+  `*(CamRot *)dest = *(CamRot *)&sp_buf[0x10];` (CamRot = struct { s32 rot[15]; }) and
+  measure `sandbox special_camera_get_rot_dir --disable all`.
+- Result: score 0, 72/72 insns. Full-build verify-oracle ok:true, SHA1 == oracle.
+- Verdict: CONFIRMED. This retires the entire s1-s6 frontier: every live-length lever
+  in it (REG_EQUIV x2 removal at local-alloc.c:1064, optimize_reg_copy_1 length
+  arithmetic, pre-RA sched1 rebalancing) was aimed at moving a pseudo that no C-level
+  lever can move, which is why the floor was flat at 9 for six sessions.
+
+**H-s7.2 - CdRead's 1-argument declaration in include/code6cac.h is factually wrong,
+and func_800372F4 is a 3-parameter wrapper that forwards buf and mode to it.**
+- Mechanism: semantic, not codegen. CdRead's matched definition (src/system.c:901)
+  reads sectors, buf and mode; the target caller sets $a1/$a2 before
+  `jal func_800372F4`; func_800372F4 itself never writes $a1/$a2.
+- Probe: widen func_800372F4 to (nbytes, buf, mode), forward both to a correctly
+  declared CdRead, pass the real buffer and mode at both call sites; measure both
+  functions.
+- Result: special_camera_get_rot_dir 0 (72/72), func_800372F4 0 (21/21).
+- Verdict: CONFIRMED.
+
+**H-s7.3 - The corrected CdRead prototype does not need the header, so the
+2026-08-26 out-of-scope blocker is dissolved rather than escalated.**
+- Mechanism: a block-scope `extern` declaration inside func_800372F4 shadows the
+  stale file-scope prototype for that one function; declaration placement has no
+  codegen effect, only visibility.
+- Probe: move the declaration from include/code6cac.h into func_800372F4's body and
+  re-measure both functions and the full build.
+- Result: byte-identical (0, 72/72 and 0, 21/21; verify-oracle ok:true) with
+  `git status --short` showing src/code6cac_b2_post.c as the only modified build
+  input. GCC emits a visible `conflicting types for CdRead` warning; the build is
+  unaffected.
+- Verdict: CONFIRMED. No scope grant is required for the match. A scope grant remains
+  the correct mechanism only if the operator prefers the declaration at its canonical
+  home in include/code6cac.h.
