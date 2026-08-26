@@ -215,3 +215,162 @@
 - probe: Arithmetic against the priority model re-validated on this exact form: predicted rank order [79 76 77 75 73 87 78 74 86 81 72] equals the greg's `;; 11 regs to allocate:` line verbatim, and the eight mutually-conflicting allocnos take [$3,$5,$6,$7,$8,$9,$10,$11] in that order.
 - result: FORECLOSED. The counter is set in block 0 and last used at the outer-loop bottom test, so it already spans 22 of the function's ~26 RTL insns and nothing uses it after the loop - the range cannot reach 27 without adding instructions. Dropping its refs from 8 to 7 instead lands it at 0.636, below the flag allocno's 0.750, which mis-seats $t2.
 - verdict: KILLED
+
+
+## s8 (2026-08-26, forensics) — frontier replacement
+
+**Status of the s7 frontier.** #1 (add one weight-1 reference to the end
+pointer on the candidate.c chassis) is FORECLOSED: the weighting question it
+was gated on resolved in its favour (out-of-loop refs really do weigh 1 —
+flow.c:434 `depth = 1`, flow.c:2081/2329/2515/2725 `reg_n_refs += loop_depth`),
+but the weight-1 region of this function contains no insn in which var_t0 is
+live, so the (refs 5, live 9) cell has no spelling site. #2 (a giv spelling
+that puts the `la` in the preheader) is SUPERSEDED, not by a better giv but by
+the discovery that the `la` never needed hoisting: writing the entry guard as
+a source-level `if` puts it in the preheader for free (alt_base_vF2.c). #3
+(engineer an exact priority tie) is unchanged and still parked.
+
+### F1 — Remove the redundant entry branch from the "explicit if + top-tested while" form.
+That form (rejected/if-while-init-before-if-double-guard.c and its
+init-inside-the-if sibling, tmp/grind/func_80037B00/s8/vG_if_while.c) is the
+only measured form that has BOTH the 8-byte phantom frame (`vars= 8`) AND the
+`la` in the guarded preheader. Its whole cost is that cc1 emits two
+`blez $2,.L40` branches: the source `if`, and loop.c's
+`duplicate_loop_exit_test` copy of the while's exit test placed in front of
+NOTE_INSN_LOOP_BEG. Both the frame's orphan compare pseudo and the redundant
+branch come from that duplication, so the question is precisely whether the
+*earlier*, source-level branch can be made to disappear while the duplicate
+stays.
+*Mechanism to read first:* `tools/gcc-2.7.2/loop.c`, `duplicate_loop_exit_test`
+— its bail-out conditions and exactly which insns it copies; and
+`tools/gcc-2.7.2/jump.c` `jump_optimize` / `thread_jumps`, to see why the two
+identical conditional branches on the same pseudo are not merged (jump1 runs
+before loop.c creates the second one; jump2 runs after reload).
+*Next probe:* dump `.loop`, `.jump2` and `.combine` for vG_if_while.c and
+locate the two branch insns; then test spellings of the source guard that
+jump2 CAN fold away — e.g. a guard whose condition is syntactically the loop
+test (`if (var_t1 < D_800A38C8)` with `var_t1` already 0), or a guard placed so
+that the la is the only insn between the two branches. Screen with
+build_insns: 36 with `vars= 8` is the target; anything at 37 is the same
+double guard.
+
+### F2 — Find a frame producer for the alt_base_vF2 chassis.
+alt_base_vF2.c is 34 insns and needs exactly the two `addiu $sp` adjusts; it
+has no unallocated pseudo (`vars= 0`) because its single source-level guard
+compare folds cleanly into `blez` and dies with zero refs. Producer #1 of
+`.claude/rules/phantom-slot-frame-lever.md` needs a guard comparison pseudo
+that combine folds into a bare branch while the pseudo still carries refs.
+*Next probe:* extract the block-0 RTL of alt_base_vF2 from `.flow` and
+`.combine` and compare it against the floor-9 form's insns 132/133/134 (see
+tmp/grind/func_80037B00/s8/flow.rtl:110-125), where pseudo 87 survives combine
+with 2 refs in ST_REGS and reaches reload homeless. Identify what gives 87 its
+surviving reference, then look for an ordinary-C guard spelling on the vF2
+chassis that reproduces it. NOTE the boundary in that rule file: the locals
+must be real and live and the guard must be the function's own logic — a dead
+conditional store that happens to produce the same orphan is the forbidden
+family and must not be reached for.
+
+### F3 — Re-open the RA swap only after F1 or F2 changes the stream.
+Both chassis are exactly one adjacent allocno swap from target and both swaps
+are currently cell-free:
+  * candidate.c (floor 9): need pri(78, end ptr) in (pri(73) = 1.0909,
+    pri(75) = 1.125); only (refs 5, live 9) fits and it has no spelling site.
+  * alt_base_vF2.c (score 10): need pri(73, counter) in (pri(74) = 0.750,
+    pri(78) = 0.888); refs 7 wants live_length 16-18 against a measured 23,
+    refs 8 wants 27-32 in a ~26-insn function.
+Any structural change from F1/F2 moves block boundaries and therefore every
+live_length, so re-run tmp/grind/func_80037B00/s7/rainfo.sh and recompute the
+window BEFORE spending probes on the swap. Note the measured coupling: moving
+the `la` into the preheader shortens allocno 75 from live 24 to live 21 and
+lifts its priority 1.125 -> 1.2857, which is what widens candidate.c's window.
+
+
+## s8 addendum — after the floor moved 9 -> 5
+
+F1 and F2 as written above are both CLOSED by the floor-5 form
+(memory/grind/func_80037B00/candidate.c): spelling the entry guard as the
+loop's own test (`if (var_t1 < D_800A38C8)` with var_t1 already 0) around a
+top-tested `while` gives ONE `blez` and still lets duplicate_loop_exit_test
+create the frame orphan, and reading the bound into `var_t3` as a source
+statement before the `var_a3` assignment puts target's `addu $t3,$v0,$zero`
+ahead of the `lui/addiu` pair. The instruction stream is exact, 36 for 36,
+position for position.
+
+### The single remaining frontier — the counter/end-pointer 2-swap
+Our outer counter takes $t0 and our inner end pointer takes $t1; target has
+counter=$t1, end=$t0. Allocnos 73 (counter, refs 8, live 23, pri 1.0435) and
+78 (end pointer, refs 4, live 9, pri 0.888) are adjacent in rank and must be
+transposed, i.e. pri(78) must land strictly inside
+(pri(73) = 1.0435, pri(75) = 1.350).
+
+Reachable cells (pri = floor_log2(refs)*refs/live_length; out-of-loop refs
+weigh 1, in-loop refs weigh 2 per flow.c:434/2081; a
+`(set (reg X) (plus (reg X) c))` counts TWO occurrences):
+  * refs 6, live_length 9  -> 1.333   (one extra IN-LOOP raw reference, live range unchanged)
+  * refs 6, live_length 10 -> 1.200
+  * refs 6, live_length 11 -> 1.0909
+  * refs 5, live_length 9  -> 1.111   (one extra OUT-OF-LOOP reference, live range unchanged)
+  * refs 5, live_length 8  -> 1.250
+  * refs 4, live_length 6 or 7        (shorten the live range instead)
+Or, symmetrically, lower pri(73) below 0.888 while keeping it above
+pri(74) = 0.750: refs 8 needs live_length in (27, 32) against a measured 23;
+refs 7 needs live_length in (15.8, 18.7).
+
+The refs-6 row is the one s7 never had access to, and it is much weaker than
+the s7 cell: it needs one additional in-loop reference to the end pointer and
+tolerates the live range growing by up to two insns. The constraint that
+remains hard is that the extra reference must not change any of the 36
+instructions. Candidate directions to measure, in order:
+  1. Spellings of the inner-loop exit test that mention the end pointer twice
+     at RTL level while still folding to the single `slt $v0,$a1,$t0` cc1
+     already emits — remember reg_n_refs is computed in flow.c BEFORE combine,
+     so an occurrence that combine later folds away still counts. Screen every
+     candidate with a disassembly diff first: anything that is not 36
+     instructions in target's order is dead on arrival.
+  2. Spellings that lengthen the end pointer's live range by 1-2 insns while
+     adding an in-loop reference (refs 6 / live 10 or 11 both land inside the
+     window), e.g. moving the `var_t0 = var_a3 + 0x15;` definition earlier
+     among the four loop-top statements — cc1 currently emits it last, and
+     target emits it last too, so any reordering must be checked against the
+     stream.
+  3. If the extra reference cannot be had without changing an instruction,
+     attack pri(73) instead: it is the only other allocno in the pair and its
+     window (0.750, 0.888) is reachable at refs 7 with live_length 16-18.
+Re-run tmp/grind/func_80037B00/s7/rainfo.sh after EVERY structural change —
+every live_length in the table is a function of block boundaries.
+
+## [s8] s7's open caveat — that an added 'outside-the-loop' reference might land at flow.c weight 2 rather than 1, which would make frontier #1's (refs 5, live_length 9) cell unreachable.
+- mechanism: GCC 2.7.2 flow.c computes basic_block_loop_depth[] by scanning for NOTE_INSN_LOOP_BEG / NOTE_INSN_LOOP_END with depth initialised to 1 (flow.c:434, 439-443); propagate_block seeds loop_depth from that array (flow.c:1385) and every ref site does reg_n_refs[regno] += loop_depth (flow.c:2081, 2329, 2515, 2725). A reference outside every loop note weighs exactly 1.
+- probe: Read the compiler source directly, then verified occurrence-by-occurrence against tmp/grind/func_80037B00/s8/flow.rtl (the .flow RTL slice for the floor-9 form; NOTE_INSN_LOOP_BEG at line 132, NOTE_INSN_LOOP_END at line 286). Allocno 73's refs = init at :100 (weight 1) + duplicated-guard compare at :115 (weight 1) + the plus insn's set AND use at :223/:224 (weight 2 each) + loop test at :274 (weight 2) = 8, matching the .lreg banner exactly. Allocno 78 = set at :151 (2) + slt at :208 (2) = 4.
+- result: The caveat resolves in favour of weight 1. s7's hand-count was off because reg_n_refs counts OCCURRENCES, not insns: `(set (reg 73) (plus (reg 73) 1))` contributes two refs. The counter's block-0 init is NOT double-weighted. This is a permanent correction to the RA model used by every future session on this function.
+- verdict: KILLED
+
+## [s8] Frontier #2 — target's lui/addiu for D_80102810 inside the guarded preheader requires a giv spelling whose invariant base folds into the induction variable's initial value.
+- mechanism: FALSE PREMISE. The `la` does not have to be hoisted by loop.c at all; it only has to be WRITTEN AFTER THE ENTRY GUARD in RTL order. A source-level `if` around the loop puts the guard branch ahead of the `var_a3 = (s8*)&D_80102810;` statement, so cc1 emits lui/addiu inside the guarded preheader for free.
+- probe: Built and measured the explicit-if family and disassembled each out of the honest sandbox object: vE (bound cached in a local before the if, do-while) score 11 / 34 insns; vF (bound re-read in the do-while test, init inside the if) score 10 / 35; vF2 (init before the if) score 10 / 34 with lui/addiu in target's position.
+- result: CONFIRMED that the guard placement, not strength reduction, controls the la position. s7's two giv spellings were solving a problem that does not exist; both cost +2 for nothing.
+- verdict: CONFIRMED
+
+## [s8] An explicit `if (D_800A38C8 > 0)` guard around a top-tested while gives both the 8-byte phantom frame and the correct la position.
+- mechanism: The frame comes from loop.c's duplicate_loop_exit_test: the copied exit test leaves an orphaned compare pseudo that reload's alter_reg pays off with a stack slot. An explicit source guard does not suppress that duplication.
+- probe: Measured both spellings: init inside the if -> score 10, build_insns 37, cc1 `.frame $sp,8,$31 # vars= 8`; init before the if -> score 14, build_insns 37. Read the cc1 assembly directly (tmp/grind/func_80037B00/s7/raw.s).
+- result: Both properties present, but cc1 emits TWO `blez $2,.L40` branches with the la between them (+3 insns) because the source guard's condition and the duplicated exit test are not the same jump for jump2 to merge. Banked rejected/if-while-init-before-if-double-guard.c. This kill is what pointed at the fix.
+- verdict: KILLED
+
+## [s8] Writing the entry guard AS the loop's own test — `if (var_t1 < D_800A38C8)` with var_t1 already 0 — collapses the two branches to one while keeping the duplicated exit test that produces the frame orphan.
+- mechanism: The source guard and loop.c's duplicated exit test are then the same comparison on the same pseudos, so only one `blez` survives, while duplicate_loop_exit_test still runs and still strands the compare pseudo that alter_reg pays off as the 8-byte frame.
+- probe: tmp/grind/func_80037B00/s8/vH_guard_is_loop_test.c: sandbox --disable all -> score=7, build_insns=36, target_insns=36; objdump shows one blez, the frame adjusts present, the la in the guarded preheader, and the blez delay slot filled with the counter init.
+- result: CONFIRMED — floor 9 -> 7. The only defect left on that form was that `move t3,v0` landed AFTER `lui/addiu a3`, because on that spelling the copy is duplicate_loop_exit_test's TRANSFER copy, inserted in front of NOTE_INSN_LOOP_BEG and therefore after the la.
+- verdict: CONFIRMED
+
+## [s8] Reading the loop bound into a local as a source statement placed BEFORE the `var_a3` assignment puts target's `addu $t3,$v0,$zero` ahead of the lui/addiu pair.
+- mechanism: cse sees D_800A38C8 already loaded into the guard's pseudo and turns `var_t3 = D_800A38C8;` into a register copy rather than a second lw; because it is a source statement, it is emitted in source order — before the la — which is target's order. This is a different copy-producing mechanism from s7's (loop.c hoist + cse of an in-test re-read), and it is the one that gets the ORDER right.
+- probe: tmp/grind/func_80037B00/s8/vI_count_local_in_if.c (== s8/FLOOR5.c == the new memory/grind/func_80037B00/candidate.c): sandbox --disable all -> score=5, target_insns=36, build_insns=36, cheat_asm_stripped=3, rules_dropped=0; cc1 `.frame $sp,8,$31 # vars= 8`; objdump diffed against asm/funcs/func_80037B00.s.
+- result: CONFIRMED — floor 7 -> 5, and the instruction stream is now EXACT position-for-position: every one of the 36 instructions matches target's opcode, operands and order. Note this does NOT contradict the s6 kill of `var_v0 = D_800A38C8; var_t3 = var_v0;` (rejected/split-count-copy-folded-by-copyprop.c): there the copy source was a source-level load that copy propagation folded; here the copy source is the guard's own pseudo.
+- verdict: CONFIRMED
+
+## [s8] Frontier #1 as s7 stated it — one extra reference to the end pointer OUTSIDE the loop, at zero instruction cost with live_length frozen at 9.
+- mechanism: The arithmetic was sound, but the SITE does not exist. The weight-1 region of this function is block 0, the insns duplicate_loop_exit_test copies in front of NOTE_INSN_LOOP_BEG, and the two return blocks. The end pointer is defined inside the outer loop body and is dead in all of them.
+- probe: Enumerated every insn outside the loop notes in tmp/grind/func_80037B00/s8/flow.rtl and checked allocno 78's liveness at each; cross-checked against the 36-instruction stream, where every out-of-loop instruction is one target also has.
+- result: KILLED as stated. It is however no longer the only route: on the floor-5 form the window widened to (1.0435, 1.350) and the refs-6 row (one extra IN-LOOP reference, live_length 9, 10 or 11) is newly available.
+- verdict: KILLED

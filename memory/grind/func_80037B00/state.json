@@ -1,8 +1,8 @@
 {
  "func": "func_80037B00",
  "file": "code6cac_c",
- "session_count": 7,
- "current_modality": "solver",
+ "session_count": 8,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -51,23 +51,29 @@
    "floor": 9,
    "modality": "solver",
    "headline": "Floor 11->9: the missing preheader copy is recovered by reading the loop bound in the loop test itself; the multiset now MATCHES target (36==36) and the residual is typed RA ($t0/$t1 2-swap) plus one "
+  },
+  {
+   "session": 8,
+   "floor": 5,
+   "modality": "forensics",
+   "headline": "Floor 9 -> 5: spelling the entry guard AS the loop's own test (`if (var_t1 < D_800A38C8)` around a top-tested while) makes the phantom frame, the single blez, the preheader `la` and the `addu $t3,$v0,"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "One extra reference to the end pointer (var_t0) OUTSIDE the loop, at zero instruction cost and with its live range unchanged at 9, moves pri(78) to 1.111 and swaps the $t0/$t1 seats - closing the RA residual.",
-   "mechanism": "global.c allocno_compare seats the eight mutually-conflicting allocnos into [$3,$5,$6,$7,$8,$9,$10,$11] strictly by pri = floor_log2(refs)*refs/live_length. The window (1.0909, 1.125) admits exactly one (refs, live_length) cell: (5, 9). refs=5 is an ODD count, so the extra reference must be weighted 1, i.e. outside the loop notes. Verify the weighting caveat first (allocno 73's block-0 init measured at weight 2), because if an added out-of-loop ref lands at weight 2 the cell is unreachable and the axis is foreclosed until residual (a) widens the window.",
-   "next_probe": "Re-measure the weighting question directly: splice a variant that adds ONE ordinary-C outside-the-loop reference to var_t0 and read s7/rainfo.sh - if `Register 78 used 5 times across 9 insns` appears, the seats swap and the score should collapse; if it reads 6 refs, the cell is unreachable. Only ordinary live C qualifies here - a dead store or a constant holder is a FAKE-annotated sanctioned-family construct and must NOT be reached for while residual (a) is still open (the exhaustion prong would fail)."
+   "hypothesis": "One extra IN-LOOP reference to the end pointer (var_t0), with its live range allowed to grow by up to two insns, transposes allocnos 73 and 78 and closes the function.",
+   "mechanism": "global.c allocno_compare seats the eight mutually-conflicting allocnos into [$3,$5,$6,$7,$8,$9,$10,$11] strictly by pri = floor_log2(refs)*refs/live_length. On the floor-5 form pri(78) = 0.888 must land inside (pri(73) = 1.0435, pri(75) = 1.350). In-loop references weigh 2 (flow.c:434 sets depth=1 outside, +1 per NOTE_INSN_LOOP_BEG; flow.c:2081 etc. add loop_depth per OCCURRENCE), so one extra in-loop raw reference takes refs 4 -> 6, and 12/9 = 1.333, 12/10 = 1.200 and 12/11 = 1.0909 all sit inside the window. reg_n_refs is computed in flow.c BEFORE combine, so an occurrence that combine later folds away still counts toward the priority while costing no instruction.",
+   "next_probe": "Splice variants with tmp/grind/func_80037B00/s8/apply.py, measure with `& tools/wteng.ps1 main sandbox func_80037B00 --disable all`, and screen EVERY candidate with a disassembly diff (`bash tools/wsl.sh 'bash tmp/grind/func_80037B00/s7/dis.sh'` against asm/funcs/func_80037B00.s) before looking at the score \u2014 anything that is not 36 instructions in target's order is dead on arrival. Then read tmp/grind/func_80037B00/dumps/code6cac_c.flow for the pre-combine occurrence count of allocno 78 and tmp/grind/func_80037B00/s7/rainfo.sh for the resulting refs/live_length. Start with spellings of the inner-loop exit test and of the `var_t0 = var_a3 + 0x15;` definition that mention the end pointer twice at RTL level but still fold to the single `slt $v0,$a1,$t0` cc1 already emits."
   },
   {
-   "hypothesis": "Residual (a) - target's `lui/addiu` for D_80102810 inside the guarded preheader - is reachable by a giv spelling whose base folds into the induction variable's INITIAL value instead of being re-added each iteration.",
-   "mechanism": "Confirmed this session that only loop.c writes into a preheader and that an invariant-base spelling does put the `la` there. The +2 cost came from two separable defects: (i) GCC reduced the mult giv but re-added the invariant base per iteration because the giv's target register is modified by the inner loop (cse1 substitutes the row-address expression into var_a1 and var_t0, coalescing them), and (ii) loop.c peeled the `var_t2 = 0` flag init into the preheader. Fixing (i) needs a spelling where the row address reaches loop.c in a register that the inner loop never writes.",
-   "next_probe": "Read tmp/grind/func_80037B00/dumps/code6cac_c.loop and .cse with vC_giv_pure.c applied and confirm whether `var_a3` survives cse1 as its own pseudo; if it does not, try spellings that keep it distinct (index the inner walk off a separate offset variable so var_a3 is never the modified register, or read the row through a struct-typed pointer so the inner walk uses a different lvalue). Screen every candidate with s7/dis.sh for build_insns first - anything above 36 is dead on arrival."
+   "hypothesis": "If the extra in-loop reference cannot be had without perturbing an instruction, the same swap is reachable from the other side by lowering the counter's priority instead.",
+   "mechanism": "pri(73) must drop below pri(78) = 0.888 while staying above pri(74) = 0.750. With refs 7 (floor_log2 = 2) that needs live_length in (15.8, 18.7) against a measured 23; with refs 8 it needs live_length in (27, 32). The counter is live from its init (before the `if`) to the bottom test, so its live range shortens if the init moves inside the guarded body \u2014 which costs the blez delay-slot fill and must therefore be paired with another insn that reorg can steal.",
+   "next_probe": "Measure the counter's live_length as a function of where `var_t1 = 0;` sits and of the statement order inside the guarded preheader, using tmp/grind/func_80037B00/s7/rainfo.sh, while checking the delay slot in the disassembly each time. Look specifically for a preheader ordering that keeps the blez slot filled by some other insn while shortening the counter's range into 16-18 at refs 7."
   },
   {
-   "hypothesis": "A spelling that produces an exact priority TIE between the counter and the end pointer closes the swap through declaration order alone, which is ordinary C with no coercion construct.",
-   "mechanism": "Ties in allocno_compare go to the lower pseudo number, and pseudo numbers were measured this session to follow C declaration order exactly (73..79 = var_t1, var_t2, var_a3, var_a1, var_a2, var_t0, var_v1). Declaring var_t0 before var_t1 makes the end pointer the lower-numbered allocno, so any spelling that lands 2*refs_e/L_e == 3*8/L_c wins the seat. Candidate ties: (refs_e=4, L_e=9) against (refs_c=8, L_c=27), or (refs_e=6, L_e=9) against L_c=18.",
-   "next_probe": "This only becomes actionable once a lever on the counter's live length exists, which s7 foreclosed under the current stream - so treat it as the fallback if frontier #1's weighting caveat kills the (5,9) cell. Concretely: after any structural change that alters block boundaries (e.g. a successful residual-(a) fix), re-run s7/rainfo.sh and check whether 24/live_length(73) and 2*refs(78)/live_length(78) can be made equal; if so, reorder the declarations so var_t0 precedes var_t1 and re-measure."
+   "hypothesis": "The tie-break route: pseudo numbers follow C declaration order exactly in this function, so an exact priority TIE between the counter and the end pointer closes the swap through declaration order alone.",
+   "mechanism": "global.c breaks priority ties in favour of the lower pseudo number, and s7 measured that pseudos are assigned in C declaration order. Declaring var_t0 before var_t1 makes the end pointer the lower-numbered allocno, so any spelling that produces pri(78) == pri(73) exactly seats the end pointer first. With the current numbers that means, e.g., refs(78) = 6 / live 9 = 1.333 against refs(73) = 8 / live 18, or refs(78) = 4 / live 9 = 0.888 against refs(73) = 8 / live 27.",
+   "next_probe": "Treat this as the fallback if the refs-6 row is unreachable: it needs a lever on one of the two live lengths anyway. If a structural change ever lands both priorities on the same value, reorder the declarations so var_t0 precedes var_t1 and re-measure \u2014 declaration reordering is ordinary C and costs nothing."
   }
  ],
  "judge_constraints": [
