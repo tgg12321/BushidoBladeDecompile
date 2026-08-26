@@ -2,6 +2,25 @@
  * Floor: 30 (sandbox --disable all, re-measured s2 with this body applied;
  * 159/159 insns). Residual is pure RA renames.
  *
+ * s3 (structural, 2026-08-26) UPDATE -- READ THIS BEFORE TRUSTING THE s2 NOTE
+ * BELOW. The s2 note's "attack pseudo 86" conclusion is superseded. Measured
+ * with the instrumented cc1's second hook, BB2_ALLOC_DEBUG=1 (global.c:601-618),
+ * the REAL allocation order is `129 122 85 81 72 134 176 75 86 126 153 83 110
+ * 135 192 107 158 173` -- div16 is pseudo 129 (not 127; 127 is not an allocno
+ * at all, which is why s2's BB2_FINDREG_DEBUG=127 showed NO HIT), and 129 is
+ * ord=0, the FIRST allocno find_reg scans. Its measured pass-0 state is
+ * conflicts={2,29}, someone_prefers={3}: $v1 is denied to div16 by a single
+ * regs_someone_prefers bit -- a PREFERENCE bit, not a conflict bit. Target
+ * seats div16 in $v1. So the root divergence is 129, pseudo 86 (ord=8) is
+ * cascade, and the lever is preference structure (reachable from C: s3's
+ * `swapadd` operand-order variant moved the score to 33 at 159/159, proving
+ * set_preference retargeting works here) rather than conflict structure (which
+ * the 159-insn multiset pins). s2's lever (A) is dead: s3's `andcond`
+ * diagnostic put two values live across the table-entry load and the entry took
+ * $v0, not $a2. See hypotheses.md H9 for the live frontier.
+ * s3 structural probes, all 159/159: swapadd 33, swapelse 30 (neutral),
+ * swapboth 33, andcond 47, condswap 36 -- banked in rejected/s3-*.c.
+ *
  * s2 (structural modality) measured SEVEN structural respellings of this body;
  * every byte-neutral one scored exactly 30 and NONE changed the allocation:
  *   declmove (new_var declared in the inner block)          -> 30

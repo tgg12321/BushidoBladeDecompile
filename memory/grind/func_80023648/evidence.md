@@ -258,3 +258,207 @@
 - [s2] Reusable harness for successors: tmp/grind/func_80023648/s2/findreg.sh <pseudo>, run as `bash tools/wsl.sh 'bash tmp/grind/func_80023648/s2/findreg.sh 86'`. It returns rc 33 from the pre-existing `parse error before GameObj` at src/code6cac.c:680/996 (a dump-only cpp flag-set artifact, see s1) yet still emits the FINDREGDBG lines — rc 33 is EXPECTED, not a broken harness. It requires the candidate body to be applied to src first (tmp/grind/func_80023648/s2/apply.py).
 
 - [s2] Reusable sweep harness: tmp/grind/func_80023648/s2/sweep.ps1 -Names <variant...> applies each tmp/grind/func_80023648/s2/var/<name>.c to src and prints score + build_insns, about 30s per variant.
+
+## [s3 2026-08-26 — structural] ROOT RE-LOCATED: the first divergence is allocno ord=0 (pseudo 129, `div16`), and its gap is a PREFERENCE bit, not a conflict bit
+
+- **Chassis re-measured this session: floor 30**, 159/159 insns, with the s1/s2
+  candidate body re-applied to src/code6cac.c via
+  `tmp/grind/func_80023648/s3/apply.py`. src restored to
+  `INCLUDE_ASM("asm/funcs", func_80023648);` before the session ended.
+
+- **NEW INSTRUMENTATION USED: `BB2_ALLOC_DEBUG=1`.** The instrumented cc1
+  (`tools/gcc-2.7.2/cc1`, global.c:601-618) has a second, previously unused hook
+  that dumps, for EVERY allocno in allocation order:
+  `ord / pseudo / hardreg / nrefs / livelen / priority`, plus the initial
+  `regs_used_so_far` seed. Harness: `tmp/grind/func_80023648/s3/allocdbg.sh <pseudo>`
+  (a one-line env addition to s2's findreg.sh; the FINDREGDBG output lands in the
+  same `findreg_<pseudo>.log`). **This is strictly better than reading the `.greg`
+  `;; N regs to allocate:` header and successors should use it by default.**
+
+- **s2's allocno table is SUPERSEDED and was WRONG in its pseudo ids.** s2 read
+  the `.greg` header list `127 122 85 81 72 130 176 75 86 126 153 83 110 131 192
+  107 158 173`. The measured ALLOCDBG order for this function is:
+
+      ord pseudo hardreg nrefs livelen pri
+       0   129     4($a0)   7   8   17500
+       1   122     3($v1)   7   9   15555
+       2    85     4($a0)   5   7   14285
+       3    81     3($v1)   6  11   10909
+       4    72    16($s0)  30 112   10714
+       5   134    65(LO)    2   2   10000
+       6   176    65(LO)    2   2   10000
+       7    75     3($v1)   5  11    9090
+       8    86     3($v1)   5  11    9090
+       9   126     5($a1)   5  11    9090
+      10   153     3($v1)   3   4    7500
+      11    83     5($a1)   4  15    5333
+      12   110     5($a1)   3   6    5000
+      13   135     4($a0)   3   6    5000
+      14   192    65(LO)    2   4    5000
+      15   107     2($v0)   2   6    3333
+      16   158    65(LO)    2   6    3333
+      17   173    -1 (no hard reg)  2  20  1000
+
+  Differences that matter: `div16` is pseudo **129**, not 127 (127 is not an
+  allocno at all — that is the real reason s2's `BB2_FINDREG_DEBUG=127` produced
+  "NO HIT", re-confirmed this session; s2 mis-read that null as "127 never
+  reaches pass 0"). `130` is really `134`; `131` is really `135`. The mflo temps
+  (134/176/192/158) sit in hard reg **65 = LO**, not in a GPR — s2's
+  "mflo temps ours $a2 / target $a3" seat-map row describes the *post-mflo copy*,
+  not these allocnos. Pseudo **173 gets NO hard register** (hardreg = -1).
+
+- **THE ROOT DIVERGENCE IS ord=0, pseudo 129 (`div16` = `*(s16 *)(arg0 + 0x1A)`),
+  NOT pseudo 86.** Ours seats it in `$a0`; target seats `div16` in `$v1`
+  (s2's value->seat map row "div16 ours $a0 / target $v1" — that row is correct).
+  129 is the FIRST allocno global.c allocates, so every other seat in this
+  function is decided downstream of it.
+
+- **MEASURED pass-0 state of 129 (`BB2_FINDREG_DEBUG=129`, log
+  `tmp/grind/func_80023648/s3/findreg_129.log`):**
+
+      FINDREGDBG func=func_80023648 pseudo=129 alt=0 acc=0 retry=0
+        conflicts: 2 29
+        someone_prefers: 3
+        used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 24 25 26 27 28 29 31
+        pass0_used: 0 1 2 3 16..23 26..31
+        own_copy_prefs: <empty>
+        own_full_prefs: <empty>
+
+  `$v1` (3) is **NOT in `hard_reg_conflicts[129]`**. It is excluded from pass 0
+  **only by `regs_someone_prefers[129]`**. Remove that one bit and pass 0's
+  ascending scan returns 3 = `$v1` = target's seat, with nothing else changed.
+  This is a strictly BETTER lever than s2's pseudo-86 gap: `regs_someone_prefers`
+  is built from `hard_reg_full_preferences` of *other* allocnos, and those are
+  written by `set_preference()` off the COPY STRUCTURE of the RTL — which C-level
+  spelling demonstrably does move (see the swapadd measurement below). s2's
+  86 gap needed a `hard_reg_conflicts` bit, which the 159-insn multiset pins.
+
+- **Who is putting the 3 there:** `prune_preferences` (global.c:882-931) unions
+  `hard_reg_full_preferences[j]` over every LOWER-priority allocno j that
+  CONFLICTS with 129. The only allocno measured to carry
+  `own_full_prefs = {3}` in this function is **122 (`abs_val`)** (s2's
+  measurement, still current), and 122 is ord=1, i.e. exactly one step lower in
+  priority than 129. So the prime suspect chain is **122's `$v1` full-preference
+  -> `regs_someone_prefers[129]` -> 129 loses `$v1` -> takes `$a0` -> the whole
+  downstream cascade.** It is NOT yet proven that CONFLICTP(129,122) holds, nor
+  that 122 is the only contributor — that is the next session's first
+  measurement.
+
+- **Corollary that rewrites s2's frontier:** s2's H6 ("attack pseudo 86 and only
+  86") is now the WRONG target. 86 is ord=8, eight allocations downstream of the
+  root, and its `$v1` exclusion would have to come from a conflict bit, which s2
+  itself proved the multiset forbids and which s3's `andcond` diagnostic
+  independently kills. Attack **129** instead, via **122's preference**, which is
+  a preference-structure lever.
+
+- **Structural probes measured this session (all at 159/159 insns):**
+
+  | variant | what | score |
+  |---|---|---|
+  | `swapadd`  | `a2 / 4 + *(s16 *)(arg0 + 0x1CA)` (call-arg operand order swapped) | **33** |
+  | `swapelse` | `a2 + *(s16 *)(arg0 + 0x1D8)` (else-arm operand order swapped) | 30 (neutral) |
+  | `swapboth` | both of the above | 33 |
+  | `andcond`  | `(D_800A38BA != 0) & (*(s16 *)(arg0+6) == 0)` — non-short-circuit | **47** |
+  | `condswap` | `*(s16 *)(arg0+6) == 0 && D_800A38BA != 0` (condition order) | 36 |
+
+  All banked to `memory/grind/func_80023648/rejected/s3-*.c`.
+
+- **`swapadd` is the load-bearing POSITIVE result, not just a rejection.** It
+  scores 33 at an unchanged 159/159 insn count, and the disassembly shows the
+  `lh $v0, 0x1CA($s0)` load MOVED (from before the `bgez` to after it) and seats
+  changed. Mechanism: `set_preference` (global.c:1671) unwraps an 'e'-format
+  SET_SRC exactly once, so for `(set (reg 5 a1) (plus (reg X) (reg Y)))` it is
+  **X — the FIRST plus operand — that receives the `$a1` preference**. Swapping
+  the C operand order re-targets that preference bit to Y. **So C-level operand
+  order IS a live, measurable lever on `hard_reg_full_preferences`, hence on
+  `regs_someone_prefers`, hence on pass-0 seats.** The residual is NOT
+  preference-frozen — s2's "spelling cannot reach the allocator" conclusion is
+  true only of the CONFLICT bits and must not be generalised to preference bits.
+
+- **`andcond` is the decisive diagnostic for the 86 conflict theory (KILL).**
+  Making the two guard conditions non-short-circuit puts BOTH guard values live
+  simultaneously across the table-entry load (asm: `sltu $v1,$zero,$v1 /
+  sltiu $v0,$v0,1 / and $v1,$v1,$v0` before `lh $v0,0($a0)`). The table entry
+  then took **`$v0`**, not `$a2`. This confirms find_reg pass 0 is pure
+  lowest-free-survivor: adding live values just walks the entry down the
+  ascending list. To land `$a2` (6) by conflicts alone, 2,3,4,5 must ALL be
+  excluded from 86 — an unreachable four-bit ask inside a fixed 159-insn
+  multiset. **Lever (A) from s2 (a `$v1`-live value across insn 83) is KILLED
+  as a route to `$a2`.**
+
+- **Three further global.c mechanism facts established by reading the source
+  (`tools/gcc-2.7.2/global.c`), each of which closes an axis:**
+  1. **`regs_used_so_far` is seeded with every `call_used_regs[i]`** (global.c:
+     363-367), so `$v0`-`$a3`/`$t0`-`$t9` are ALWAYS in it before the first
+     allocation. Therefore *no* allocno-priority reordering can make pass 0 skip
+     `$v1` via the "never allocate a register for the first time in pass 0" rule.
+     **Priority-reordering as a route to freeing `$v1` is KILLED.**
+  2. **After pass 0/1 pick `best_reg`, find_reg OVERRIDES it** with any free
+     same-class bit in `hard_reg_copy_preferences[allocno]`, then in
+     `hard_reg_preferences[allocno]` (global.c:1086-1160). So a pseudo with an
+     `$a2` copy-preference would get `$a2` regardless of the ascending scan.
+     For 86 this is unreachable: `$a2` never appears as a hard reg or a
+     local-alloc'd seat paired with 86, because this function's only call,
+     `func_8001F860`, takes two arguments, so `$a2` is not an argument register
+     in this frame.
+  3. **107 and 110 can never seat `$v1`**: both already carry 3 in
+     `hard_reg_conflicts` (measured this session — logs
+     `s3/findreg_107.log`, `s3/findreg_110.log`), and 110 carries
+     `own_full_prefs = {5}` while 107's `{5}` was pruned away by its own `$a1`
+     conflict. **s2's H4 (route `regs_someone_prefers[86]` through 107/110's
+     local seats) is KILLED.**
+
+- Artifacts: `tmp/grind/func_80023648/s3/` (apply.py, sweep.ps1, diffseats.sh,
+  allocdbg.sh, findreg.sh, findreg_86.log — which now also carries the ALLOCDBG
+  table — findreg_107.log, findreg_110.log, findreg_129.log, ours.txt,
+  target.txt, seatdiff.txt, var/*.c).
+
+- [s3] Chassis re-measured: sandbox --disable all = 30, 159/159, with candidate.c applied. src restored to INCLUDE_ASM before session end.
+
+- [s3] NEW TOOL: BB2_ALLOC_DEBUG=1 (global.c:601-618) dumps ord/pseudo/hardreg/nrefs/livelen/priority for every allocno plus the regs_used_so_far seed. Harness tmp/grind/func_80023648/s3/allocdbg.sh. Use this instead of reading the .greg header — the header list is not the allocation order and its pseudo ids misled s2.
+
+- [s3] s2's allocno table is SUPERSEDED: div16 is pseudo 129 (not 127; 127 is not an allocno at all, which is the real reason BB2_FINDREG_DEBUG=127 shows NO HIT), 130->134, 131->135; the mflo temps 134/176/192/158 live in hard reg 65 = LO, not in a GPR; pseudo 173 gets no hard register at all.
+
+- [s3] ROOT RE-LOCATED: the first-allocated allocno (ord=0) is pseudo 129 = div16 = *(s16*)(arg0+0x1A). Ours seats it $a0; target seats div16 in $v1. Every other seat in the function is decided downstream of it. Pseudo 86 (ord=8) is cascade, not root.
+
+- [s3] MEASURED (BB2_FINDREG_DEBUG=129): conflicts={2,29}, someone_prefers={3}, own prefs empty, pass0_used={0,1,2,3,16-23,26-31}. $v1 is excluded ONLY by regs_someone_prefers — a PREFERENCE bit, not a conflict bit. Clear that one bit and pass 0 returns $v1, target's seat, with nothing else changed.
+
+- [s3] The only allocno in this function measured to carry own_full_prefs={3} is 122 (abs_val), at ord=1 — exactly one step below 129. Prime suspect chain: 122's $v1 full-preference -> regs_someone_prefers[129] -> 129 loses $v1. NOT yet proven that CONFLICTP(129,122) holds or that 122 is the only contributor; that is the next measurement.
+
+- [s3] MEASURED POSITIVE LEVER: swapping the call-arg operand order (a2/4 + *(s16*)(arg0+0x1CA)) moved the score to 33 at an unchanged 159/159. Mechanism: set_preference (global.c:1671) unwraps an 'e'-format SET_SRC exactly once, so in `(set (reg 5 a1) (plus X Y))` it is X, the FIRST operand, that gets the $a1 preference; swapping the C operand order retargets it. C operand order IS a live lever on hard_reg_full_preferences and therefore on regs_someone_prefers. The residual is NOT preference-frozen.
+
+- [s3] KILLED (andcond diagnostic, 159/159, score 47): making both guards non-short-circuit puts two values live across the table-entry load; the entry then took $v0, not $a2. find_reg pass 0 is pure lowest-free-survivor, so landing $a2 by conflicts alone needs 2,3,4,5 all excluded from 86 — unreachable in a fixed 159-insn multiset. s2's lever (A) is dead as a route to $a2.
+
+- [s3] KILLED: allocno-priority reordering cannot free $v1 for a pass-0 skip. regs_used_so_far is seeded with every call_used_regs[i] (global.c:363-367), so $v0-$a3/$t0-$t9 are in it before the first allocation.
+
+- [s3] KILLED (s2's H4): 107 and 110 can never seat $v1 — both already carry 3 in hard_reg_conflicts (measured, s3/findreg_107.log and s3/findreg_110.log), 110 carries own_full_prefs={5}, and 107's {5} was pruned away by its own $a1 conflict.
+
+- [s3] MECHANISM: after pass 0/1 pick best_reg, find_reg OVERRIDES it with any free same-class bit in hard_reg_copy_preferences[allocno], then hard_reg_preferences[allocno] (global.c:1086-1160). Unreachable for 86 here: $a2 never appears as a hard reg or a local-alloc seat paired with 86, because this function's only call (func_8001F860) takes two arguments so $a2 is not an argument register in this frame.
+
+- [s3] Structural probes, all 159/159: swapadd 33, swapelse 30 (neutral), swapboth 33, andcond 47, condswap 36. Banked to memory/grind/func_80023648/rejected/s3-*.c.
+
+- [s3] Chassis re-measured this session with the s1/s2 candidate body applied: sandbox func_80023648 --disable all = 30, build_insns 159 == target_insns 159. src/code6cac.c restored to INCLUDE_ASM("asm/funcs", func_80023648); before the session ended.
+
+- [s3] NEW TOOL for all successors: BB2_ALLOC_DEBUG=1 (instrumented cc1, global.c:601-618) dumps ord / pseudo / hardreg / nrefs / livelen / priority for EVERY allocno in allocation order, plus the initial regs_used_so_far seed. Harness: tmp/grind/func_80023648/s3/allocdbg.sh <pseudo>. Use it instead of reading the .greg ';; N regs to allocate:' header - that header is not the allocation order and its pseudo ids misled s2 into a false KILL.
+
+- [s3] Measured allocation order and seats for func_80023648: ord0=129 $a0, ord1=122 $v1, ord2=85 $a0, ord3=81 $v1, ord4=72 $s0, ord5=134 LO, ord6=176 LO, ord7=75 $v1, ord8=86 $v1, ord9=126 $a1, ord10=153 $v1, ord11=83 $a1, ord12=110 $a1, ord13=135 $a0, ord14=192 LO, ord15=107 $v0, ord16=158 LO, ord17=173 no hard reg.
+
+- [s3] ROOT RE-LOCATED: the first-allocated allocno is pseudo 129 = div16 = *(s16 *)(arg0 + 0x1A). Ours seats it $a0; target seats div16 in $v1. Pseudo 86 (the table entry, ord=8) is downstream cascade, not the root.
+
+- [s3] MEASURED (BB2_FINDREG_DEBUG=129): conflicts={2,29}, someone_prefers={3}, own prefs empty. $v1 is excluded from 129's pass 0 ONLY by regs_someone_prefers - a preference bit, not a conflict bit - so clearing it returns target's seat with nothing else changed.
+
+- [s3] The only allocno in this function measured to carry own_full_prefs={3} is 122 (abs_val), at ord=1, exactly one step below 129. Prime suspect chain for the frontier: 122's $v1 full-preference -> regs_someone_prefers[129] -> 129 loses $v1 -> takes $a0 -> whole cascade. CONFLICTP(129,122) is NOT yet proven and must be measured before any C is spent.
+
+- [s3] MEASURED POSITIVE LEVER: swapping the call-arg operand order (a2 / 4 + *(s16 *)(arg0 + 0x1CA)) moved the score to 33 at an unchanged 159/159, with a visibly different schedule and seats. C operand order retargets set_preference's full-preference bit (global.c:1671 unwraps an 'e'-format SET_SRC exactly once, so the FIRST plus operand gets the bit). The residual is NOT preference-frozen.
+
+- [s3] KILLED (andcond diagnostic, 159/159, score 47): forcing both guards live across the table-entry load made the entry take $v0, not $a2. find_reg pass 0 is pure lowest-free-survivor, so landing $a2 by conflicts alone needs 2,3,4,5 all excluded from 86 - unreachable in a fixed 159-insn multiset. s2's lever (A) is dead.
+
+- [s3] KILLED: allocno-priority reordering cannot free $v1 for a pass-0 skip - regs_used_so_far is seeded with every call_used_regs[i] (global.c:363-367), so $v0-$a3/$t0-$t9 are in it before the first allocation.
+
+- [s3] KILLED (s2's H4): 107 and 110 can never seat $v1 - both already carry hard reg 3 in hard_reg_conflicts (measured), 110 carries own_full_prefs={5}, and 107's {5} was pruned away by its own $a1 conflict.
+
+- [s3] MECHANISM (newly established, useful project-wide): after pass 0/1 pick best_reg, find_reg OVERRIDES it with any free same-class bit in hard_reg_copy_preferences[allocno], then in hard_reg_preferences[allocno] (global.c:1086-1160). Unreachable for 86 here, because this function's only call (func_8001F860) takes two arguments, so $a2 never appears as a hard reg or a local-alloc seat paired with 86.
+
+- [s3] Structural probes measured this session, all at 159/159 insns: swapadd 33, swapelse 30 (byte-neutral), swapboth 33, andcond 47, condswap 36. Banked to memory/grind/func_80023648/rejected/s3-swapadd-operand-order-33.c, s3-andcond-nonshortcircuit-47.c, s3-condswap-36.c.
+
+- [s3] candidate.c is unchanged as code (still the 30-floor body) but its header comment now carries the s3 correction so the next session does not act on s2's superseded 'attack pseudo 86' conclusion.
