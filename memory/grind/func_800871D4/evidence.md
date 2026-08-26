@@ -80,3 +80,49 @@ Park with confirmed cc1psx divergence. The oracle requires cc1psx-specific behav
 - [s2] [s2] The remaining hypothesized levers from s1 frontier (H1 bitfield struct pun of &D_80102808; H2 alternative first-andi source crossed with in-place -=0x10) both reduce to a no-new-park-categories cheat-by-spelling: no semantic purpose in a bit-flag setter, GCC-internals-only justification, would not be written by a human programmer from the function's spec — not surfaced.
 
 - [s2] [s2] Filed docs/grind/decisions.md entry `2026-07-28 — func_800871D4 — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE` documenting both-gate failure and terminal disposition.
+
+- [s3] CHASSIS RE-MEASURE: candidate.c (s2 direct-read form) re-applied to src/main.c -> sandbox --disable all score=10, target_insns=52, build_insns=50. The ledger's floor=10 was confirmed live before any probe.
+
+- [s3] **THE ANDI MECHANISM IS SOLVED.** `x & 0xFFFF` on a u16-typed `lhu` result is folded by combine.c ONLY when the pseudo holding the load result has a SINGLE use. can_combine_p refuses to substitute the load insn into the AND insn when the load's destination register is still live afterwards, so simplify_and_const_int / nonzero_bits never runs on the combination and the mask is emitted as a real `andi`. Give the raw load TWO uses and BOTH masks survive. Measured: `temp_a0 = D_8010280A; var_v1 = temp_a0 & 0xFFFF; ... else { ...; var_v1 = temp_a0 & 0xFFFF; }` -> score=6, build_insns=52 == target_insns=52. This kills the s1/s2 conclusion that "our cc1 folds the andi and cc1psx does not" as the operative obstacle: our cc1 emits BOTH andis from pure C. The 2026-06-16 cc1psx-divergence finding was measuring a single-use spelling.
+
+- [s3] The s1 rejected form `m2c-shape-explicit-andi-restore.c` (score 12) failed for a DIFFERENT reason than recorded: it wrote `var_a1 = 1 << (var_v1 - 0x10)` instead of modifying var_v1 in place, which made the else-arm restore a dead store that DCE removed. Combined with the single-use fold, both andis vanished. The in-place `var_v1 -= 0x10` is load-bearing: it is what makes the restore LIVE.
+
+- [s3] At score=6 the instruction stream is STRUCTURALLY EXACT vs target (same opcodes, same order, both andis, correct delay slots). Verified by objdump of tmp/sandbox/func_800871D4/main.o and by tools/ra_solver/inverse_compose.py classify main func_800871D4, which reports "FIRST DIVERGENCE: IDENTICAL - the honest stream already equals target" (its comparison blanks registers). The entire residual is a REGISTER PERMUTATION: the two symmetric mask locals take each other's seats, $a1 <-> $a2.
+
+- [s3] RA model extracted (tools/ra_solver/extract.py func_800871D4 main). At score=6 the four global allocnos are pseudo 73 = raw u16 load (temp_a0), 74 = var_v1, 75 = then-arm mask (paired with D_801078D8), 76 = else-arm mask (paired with D_801078DA). global.c order = `74 73 75 76`, dispositions 73->$a0, 74->$v1, 75->$a1, 76->$a2. Target requires 75->$a2 and 76->$a1, i.e. the order `74 73 76 75`. global.c sorts by floor_log2(n_refs)*n_refs*size/live_length: 75 has 3 refs / 19 insns (pri .158), 76 has 3 refs / 21 insns (pri .143), so 75 sorts first and takes the lower free register. Allocation is strictly ascending from the first free hard reg; there are no preference atoms (inverse.py reports 8 preference atoms FORECLOSED - $a1/$a2 never appear as hard regs in this function's pre-RA RTL, so global.c set_preference can never record a preference for them).
+
+- [s3] `inverse.py global --swap 75,76` verdict: **REACHABLE, minimal solution size 1 atom, 18 distinct vectors.** The distinct atom families are: refs_down pseudo 75 (3->2 or 3->1); live_extend pseudo 75 (19->23 or 19->27); live_shrink pseudo 76 (21->17 or 21->13); refs_up pseudo 76 (3->4 .. 3->15). This is a solved specification, not a search.
+
+- [s3] live_extend of pseudo 75 CONFIRMED as a working atom: hoisting `var_a2 = 0` out of the else arm to the declaration (`s32 var_a2 = 0;`) extends 75's live range across block 0 and flips the order to `74 73 76 75` with dispositions 75->6 ($a2), 76->5 ($a1) - **the target's seats exactly**. sandbox score = 3, build_insns = 53. Re-extraction of the model confirms the flip is the priority sort, not luck.
+
+- [s3] The score-3 residual is ENTIRELY the +1 instruction the hoist costs. GCC's sched2 sinks the block-0 `move a2,zero` to immediately before the `beqz` (it has no successors inside block 0, so it ranks last), and reorg.c then claims it for the branch delay slot. The target's delay slot holds `addiu $v0,$zero,1`, which is what makes the constant 1 available to BOTH arms from one materialisation; with the delay slot occupied, `li v0,1` is emitted separately in each arm. Net: 53 insns, 3 edit-distance (delay-slot content + the duplicate li).
+
+- [s3] Placement of the zero-store WITHIN block 0 is INERT: as a declaration initialiser (`s32 var_a2 = 0;`) and as a plain statement immediately before the `if` both give score=3 / build_insns=53 with byte-identical output. sched2's ranking makes the source position irrelevant. Banked rejected/block0-zero-hoist-steals-delay-slot.c - do not re-measure block-0 positions.
+
+- [s3] Declaration-order swap of the two mask locals (var_a1 before var_a2) re-measured on the NEW 52-insn chassis: still completely inert (score stays 6). This reconfirms s0's finding on a different chassis - global.c priority, not declaration order, owns this seat.
+
+- [s3] Then-arm statement-order swap (`var_a1 = 0;` before the shift) on the new chassis: score=8, build_insns=53 - the `j` delay slot is lost because the shift is no longer the arm's last instruction. Banked rejected/then-arm-stmt-order-swap-53insn.c.
+
+- [s3] The 2026-07-28 docs/grind/decisions.md entry for this function (REFUSED / OWNER-ACCEPTED INCOMPLETE under the standing 2026-07-27 ruling) rested on two premises that are now MEASURED FALSE: (a) that our cc1 cannot emit the redundant andi from pure C, and (b) that the structural axis was exhausted at floor 10. The floor moved 10 -> 6 -> 3 this session with ordinary C and no annotation-bearing construct. A superseding note was appended to docs/grind/decisions.md.
+
+- [s3] Chassis re-measured live before probing: the s2 candidate (direct read) still gives score=10, target_insns=52, build_insns=50.
+
+- [s3] New floor this session: 3 (build_insns=53, target_insns=52), saved as memory/grind/func_800871D4/candidate.c.
+
+- [s3] Intermediate chassis at score=6 has build_insns == target_insns == 52 and a structurally exact instruction stream - same opcodes, same order, both andis, correct delay slots; banked as rejected/dualuse-52insn-a1a2-seats-swapped.c because the two mask pseudos take each other's seats.
+
+- [s3] tools/ra_solver/inverse_compose.py classify main func_800871D4 reports 'FIRST DIVERGENCE: IDENTICAL' on the score-6 chassis (its comparison blanks registers), independently confirming the residual is a pure register permutation.
+
+- [s3] RA model (score-6 chassis): allocnos 73=raw u16 load, 74=var_v1, 75=then-arm mask (pairs with D_801078D8), 76=else-arm mask (pairs with D_801078DA); global.c order 74 73 75 76; dispositions 73->$a0, 74->$v1, 75->$a1, 76->$a2. Target needs order 74 73 76 75.
+
+- [s3] inverse.py --swap 75,76 = REACHABLE, 1 atom, 18 vectors; 8 preference atoms FORECLOSED because $a1/$a2 never appear as hard regs in this function's pre-RA RTL.
+
+- [s3] The score-3 form's RA model re-extracts to order 74 73 76 75 with dispositions 75->6 ($a2), 76->5 ($a1) - the target's seats exactly. The only residual is the +1 instruction: the block-0 zero-store steals the beqz delay slot from `addiu $v0,$zero,1`, so `li v0,1` is emitted in both arms instead of once.
+
+- [s3] The s1 rejected m2c-shape form (score 12) failed because it wrote `1 << (var_v1 - 0x10)` rather than modifying var_v1 in place, making the else-arm restore a dead store DCE removed - not because 'cc1 folds both masks' as recorded.
+
+- [s3] Block-0 POSITION of the zero-store is inert (declaration initialiser vs statement before the if are byte-identical); do not re-measure block-0 placement variants.
+
+- [s3] The 2026-07-28 docs/grind/decisions.md terminal disposition for this function rested on two premises now measured false; a superseding note was appended to docs/grind/decisions.md this session. The function is grindable, not exhausted.
+
+- [s3] src/main.c was restored to its HEAD INCLUDE_ASM state at end of session; all candidate/rejected forms live in memory/grind/func_800871D4/.

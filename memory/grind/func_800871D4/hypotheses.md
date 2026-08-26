@@ -29,3 +29,75 @@
 - probe: s1 cross-tree BB2 sibling census (tmp/grind/func_800871D4/s1/find_sibling2.py); no SOTN checkout in-repo.
 - result: 5 BB2 siblings share the exact shape, ALL INCOMPLETE (2 parked ASM-STRUCTURAL, 2 ASM-SUSPECT, 1 active-C); zero COMPLETED-C sibling; no in-hand SOTN cite. Per the standing ruling, negative census = FAILED gate, not open question.
 - verdict: KILLED
+
+## [s3] The redundant `andi $v1,$a0,0xFFFF` survives combine.c when the pseudo holding the raw `lhu` result has MORE THAN ONE USE, because can_combine_p refuses to substitute a load into an AND whose source register is still live afterwards - so nonzero_bits never gets to prove the value 16-bit-clean and fold the mask.
+- mechanism: combine.c can_combine_p / try_combine require the i2 destination to be dead after the combination. With two uses of the load result the load-into-AND combination is rejected outright, and simplify_and_const_int (which is only reached inside try_combine) never runs on it. The AND is then emitted verbatim as `andi`.
+- probe: `temp_a0 = D_8010280A; var_v1 = temp_a0 & 0xFFFF;` up front plus the semantically-required restore `var_v1 = temp_a0 & 0xFFFF;` at the end of the else arm (kept LIVE by the in-place `var_v1 -= 0x10;`), giving temp_a0 two uses. sandbox --disable all.
+- result: score 10 -> 6; build_insns 50 -> 52 == target_insns 52; BOTH `andi $v1,$a0,0xFFFF` present at the target's positions; instruction stream structurally exact (objdump-verified, and inverse_compose classify reports register-blanked IDENTICAL).
+- verdict: CONFIRMED
+
+## [s3] Once both andis are present, the whole remaining residual is a global.c allocno-priority tie between the two symmetric mask locals, and it is REACHABLE from C.
+- mechanism: global.c sorts allocnos by floor_log2(n_refs)*n_refs*size/live_length and assigns strictly ascending from the first free hard register. Pseudo 75 (then-arm mask, 3 refs / 19 insns) outranks pseudo 76 (else-arm mask, 3 refs / 21 insns), so 75 takes $a1 and 76 takes $a2; the target wants the opposite. No preference lever exists: $a1/$a2 never appear as hard regs in this function's pre-RA RTL, so set_preference cannot record one (8 preference atoms reported FORECLOSED).
+- probe: tools/ra_solver/extract.py func_800871D4 main; tools/ra_solver/inverse.py global <model> --swap 75,76 --depth 2.
+- result: REACHABLE, minimal solution size 1 atom, 18 distinct vectors across four families - refs_down 75, live_extend 75, live_shrink 76, refs_up 76.
+- verdict: CONFIRMED
+
+## [s3] The live_extend-75 atom is realisable in ordinary C by hoisting the else-arm's `var_a2 = 0` to the declaration, and it produces the target's register seats.
+- mechanism: giving pseudo 75 a definition in block 0 extends its live range from 19 to >21 insns, dropping its priority below pseudo 76's and flipping the global.c order from `74 73 75 76` to `74 73 76 75`.
+- probe: `s32 var_a2 = 0;` at the declaration, `var_a2 = 0;` removed from the else arm; sandbox --disable all + re-extraction of the RA model.
+- result: dispositions 75->$a2, 76->$a1 - EXACTLY target. sandbox score = 3 (new floor), build_insns = 53.
+- verdict: CONFIRMED
+
+## [s3] The +1 instruction that the block-0 hoist costs can be recovered by moving the zero-store to a different position inside block 0.
+- mechanism: if the zero-store were not the last schedulable insn before the branch, reorg.c would fill the `beqz` delay slot from the arm instead (with `li v0,1`, as the target does), keeping the constant 1 materialised once for both arms.
+- probe: two spellings measured - declaration initialiser (`s32 var_a2 = 0;`) and plain statement immediately before the `if`.
+- result: byte-IDENTICAL output for both (score 3, build_insns 53). sched2 ranks the zero-store last inside block 0 unconditionally because it has no successors there, so its source position is inert; reorg.c always gets it.
+- verdict: KILLED
+
+## [s3] Declaration order of the two mask locals steers the seat assignment on the new (52-insn, both-andi) chassis.
+- mechanism: pseudo numbering follows declaration order at expand time and could break the priority tie.
+- probe: var_a1 declared before var_a2 on the score-6 chassis; sandbox --disable all.
+- result: score stays 6, no change in dispositions. The sort is driven by the priority quotient, and the two pseudos are not tied on it (.158 vs .143), so birth order never becomes the tie-break.
+- verdict: KILLED
+
+## [s3] Reordering statements inside the arms can flip the seats without cost.
+- mechanism: emission order changes birth LUIDs and hence live_length.
+- probe: then-arm `var_a1 = 0;` moved before the shift; sandbox --disable all.
+- result: score=8, build_insns=53 - the `j` delay slot is lost because the shift is no longer the arm's last instruction. Strictly worse than the score-6 chassis.
+- verdict: KILLED
+
+## [s3] The redundant `andi $v1,$a0,0xFFFF` survives combine.c whenever the pseudo holding the raw `lhu` result has MORE THAN ONE USE, so the long-standing 'our cc1 always folds the mask, cc1psx does not' conclusion described a single-use spelling, not a fork divergence.
+- mechanism: combine.c's can_combine_p / try_combine require the i2 destination to be dead after the combination. With two uses of the load result, the load-into-AND combination is rejected outright, and simplify_and_const_int (reachable only inside try_combine) never runs on the AND - so nonzero_bits never proves the value 16-bit-clean and the mask is emitted verbatim as `andi`.
+- probe: Cache the load in `temp_a0` and mask it twice: `temp_a0 = D_8010280A; var_v1 = temp_a0 & 0xFFFF;` up front, plus the semantically-required restore `var_v1 = temp_a0 & 0xFFFF;` at the end of the else arm, kept LIVE by the in-place `var_v1 -= 0x10`. sandbox --disable all; objdump of tmp/sandbox/func_800871D4/main.o.
+- result: score 10 -> 6; build_insns 50 -> 52 == target_insns 52; both `andi $v1,$a0,0xFFFF` present at the target's positions; instruction stream structurally exact (inverse_compose classify reports register-blanked IDENTICAL).
+- verdict: CONFIRMED
+
+## [s3] With both andis present, the entire remaining residual is a global.c allocno-priority tie between the two symmetric mask locals, and it is REACHABLE from C at a single atom.
+- mechanism: global.c sorts allocnos by floor_log2(n_refs)*n_refs*size/live_length and assigns strictly ascending from the first free hard reg. Pseudo 75 (then-arm mask, 3 refs / 19 insns, pri .158) outranks pseudo 76 (else-arm mask, 3 refs / 21, pri .143), taking $a1; the target wants the opposite. No preference lever exists - $a1/$a2 never appear as hard regs in this function's pre-RA RTL, so set_preference cannot record one.
+- probe: tools/ra_solver/extract.py func_800871D4 main; tools/ra_solver/inverse.py global tmp/ra_solver_work/func_800871D4.model.json --swap 75,76 --depth 2 --top 20.
+- result: REACHABLE, minimal solution size 1 atom, 18 distinct vectors in four families: refs_down 75 (3->2, 3->1), live_extend 75 (19->23, 19->27), live_shrink 76 (21->17, 21->13), refs_up 76 (3->4 .. 3->15). 8 preference atoms reported FORECLOSED.
+- verdict: CONFIRMED
+
+## [s3] The live_extend-75 atom is realisable in ordinary C by hoisting the else arm's `var_a2 = 0` to the declaration, and it produces the target's register seats exactly.
+- mechanism: A definition of pseudo 75 in block 0 extends its live range past 21 insns, dropping its priority below pseudo 76's and flipping the global.c order from `74 73 75 76` to `74 73 76 75`.
+- probe: `s32 var_a2 = 0;` at the declaration with the else-arm store removed; sandbox --disable all plus re-extraction of the RA model.
+- result: dispositions 75->$a2, 76->$a1 - exactly target. sandbox score 3 (new floor), build_insns 53. Objdump confirms the mask registers now match target throughout.
+- verdict: CONFIRMED
+
+## [s3] The +1 instruction the block-0 hoist costs can be recovered by repositioning the zero-store inside block 0 so reorg.c fills the `beqz` delay slot from the arm (with `li v0,1`) as the target does.
+- mechanism: reorg.c's fill_simple_delay_slots takes the last schedulable insn before the branch; if the zero-store were not last, the constant 1 would stay shared between both arms instead of being materialised twice.
+- probe: Two spellings measured - declaration initialiser (`s32 var_a2 = 0;`) and a plain statement immediately before the `if`.
+- result: byte-IDENTICAL output for both (score 3, build_insns 53). sched2 ranks the zero-store last inside block 0 unconditionally (no successors in that block), so its source position is inert and reorg.c always claims it.
+- verdict: KILLED
+
+## [s3] Declaration order of the two mask locals steers the seat assignment on the new 52-instruction both-andi chassis (re-measure of the s0 finding on a changed chassis).
+- mechanism: Pseudo numbering follows declaration order at expand time and could break the priority tie.
+- probe: var_a1 declared before var_a2 on the score-6 chassis; sandbox --disable all.
+- result: score stays 6, dispositions unchanged. The two pseudos are not tied on the priority quotient (.158 vs .143), so birth order never becomes the tie-break.
+- verdict: KILLED
+
+## [s3] Reordering statements inside the branch arms flips the seats at no instruction cost.
+- mechanism: Emission order changes birth LUIDs and hence live_length.
+- probe: then-arm `var_a1 = 0;` moved before the shift; sandbox --disable all.
+- result: score 8, build_insns 53 - the `j` delay slot is lost because the shift is no longer the arm's last instruction. Strictly worse than the score-6 chassis.
+- verdict: KILLED

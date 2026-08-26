@@ -13237,3 +13237,47 @@ synthesis, structural, permuter, escalation/solver), on top of thirteen earlier
 sessions, with 128 disproven forms in `memory/grind/func_80034F88/rejected/` and
 ~170,000 permuter iterations over five campaigns including two seeded at the
 floor itself.
+
+
+## 2026-08-26 - func_800871D4 - **SUPERSEDING NOTE: the 2026-07-28 "REFUSED / OWNER-ACCEPTED INCOMPLETE" disposition is VOID (both of its premises measured false)**
+
+Grind session 3 (structural modality, after the owner's 2026-08-24
+escalation-not-parked ruling returned this function to active) moved the honest
+pure-C floor from **10 to 3** with ordinary C and no annotation-bearing
+construct. No ruling is requested here; this note exists so the audit trail does
+not carry a terminal disposition that the measurements have overtaken.
+
+The 2026-07-28 entry rested on two premises. Both are now measured false:
+
+1. *"our cc1 folds `& 0xFFFF` on a u16-typed `lhu` result, cc1psx does not, and
+   this is an unreachable fork divergence."* The fold is not unconditional. It
+   requires combine.c to substitute the load insn into the AND insn, which
+   `can_combine_p` refuses when the load's destination is still live afterwards.
+   Giving the raw load TWO uses - the initial mask plus the semantically
+   required restore in the else arm, kept live by the in-place `var_v1 -= 0x10`
+   - makes **both** `andi $v1,$a0,0xFFFF` instructions appear from pure C.
+   Measured: score 10 -> 6, `build_insns == target_insns == 52`, instruction
+   stream structurally exact.
+
+2. *"the structural axis is exhausted at floor 10."* It was not; the s1/s2 probes
+   had measured single-use spellings only. The s1 `m2c-shape` form (score 12) is
+   now understood: it wrote `1 << (var_v1 - 0x10)` instead of modifying `var_v1`
+   in place, which made the else-arm restore a dead store that DCE removed.
+
+The remaining residual at score 6 was a pure global.c allocno-priority tie
+between the two symmetric mask locals ($a1 <-> $a2). `tools/ra_solver`
+classifies it **REACHABLE at 1 atom, 18 vectors** (refs_down 75 / live_extend 75
+/ live_shrink 76 / refs_up 76); the live_extend-75 vector was then realised in
+ordinary C (hoisting `var_a2 = 0` to the declaration), which produces the
+target's register seats **exactly** and lands at score 3 / 53 insns. The only
+cost is the +1 instruction the block-0 store adds: sched2 sinks it to just
+before the branch and reorg.c takes it for the `beqz` delay slot, displacing
+the `addiu $v0,$zero,1` that the target uses to share the constant 1 between
+both arms.
+
+Consequence: this function is **grindable, not exhausted**. The next session's
+job is to hit the same allocno-priority flip with an atom that costs no block-0
+instruction (`refs_up` pseudo 76 3->4, or `refs_down` pseudo 75 3->2). Ledger:
+`memory/grind/func_800871D4/{evidence.md,hypotheses.md,candidate.c}`; the
+52-instruction structurally exact chassis is banked at
+`memory/grind/func_800871D4/rejected/dualuse-52insn-a1a2-seats-swapped.c`.
