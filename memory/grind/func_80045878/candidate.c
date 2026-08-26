@@ -1,10 +1,19 @@
-/* !! s6 (2026-08-26) READ FIRST !!  This body is the lowest-SANDBOX-SCORE form
-   (10) but it is NOT the closest form and it is NOT the chassis to work from.
-   It is one instruction SHORT of target (107 vs 108).  The chassis to start
-   from is
-     rejected/chassis-armsplit-si-temp-tail-matches-except-basecopy.c
-   which scores 11 but has target's EXACT instruction multiset in the tail and
-   is one single insn (`addu v0,s1,zero`) away there.  See evidence.md s6. */
+/* !! s7 (2026-08-26) READ FIRST !!  This body is the lowest-SANDBOX-SCORE form
+   (10, re-verified s7) but it is NOT the closest form and it is NOT the
+   chassis to work from -- it is one instruction SHORT of target (107 vs 108).
+   The chassis to start from is now
+     rejected/chassis-p4-thenarm-p-tail-pure-rename.c
+   which scores 12 at build_insns 108 == target 108 and aligns with target
+   INDEX-FOR-INDEX, leaving exactly two divergences in the whole function:
+     * idx 89-97: the nine tail instructions in target's exact order and
+       shapes, differing ONLY by the register rename $a0 -> $v0 and
+       $v0 -> $v1;
+     * idx 50: ours fills the `beq v1,v0` delay slot with `move a0,s3`
+       (duplicated from idx 53) where target leaves a `nop` (reorg.c).
+   The s6 chassis (rejected/chassis-armsplit-si-temp-tail-matches-except-
+   basecopy.c) is superseded: P4 is that body plus the cse.c:826 early-mention
+   lever that materialises target's join base copy.  See evidence.md +
+   hypotheses.md [s7]. */
 /* 2026-08-24 MIGRATION NOTE: HEAD is now INCLUDE_ASM — migrated in
    4faaa384 (2026-08-19 batch 2); all rules retired and all in-source cheat-asm removed
    from main. Statements below about "HEAD", pins, rules carried, or

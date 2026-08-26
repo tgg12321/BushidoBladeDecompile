@@ -425,3 +425,90 @@ to HEAD (INCLUDE_ASM) at end of session.
 - [s6] Disposition note: owner-gated is NOT available here. The 2026-07-23 escalation was already ruled (2026-07-27, option (b)) and the owner returned the function to active on 2026-08-24; re-filing the same 'no pure-C form exists' packet is the auto-reject class, and it is now positively contradicted by the multiset-exact classification.
 
 - [s6] src/text1a_c.c restored to HEAD (INCLUDE_ASM) at end of session; no rules/pipeline/engine files touched; no permuter campaigns launched, none left alive.
+
+
+## s7 (2026-08-26, solver modality)
+
+- [s7] Chassis re-measure: the s6 arm-split body scores sandbox --disable all
+  = 11 at build_insns 108 vs target 108; the score-10 candidate.c body still
+  scores 10 at build_insns 107. Ledger floor 10 intact and re-verified this
+  session with the edits in place.
+- [s7] TOOL DEFECT for this function: `inverse_compose.py classify text1a_c
+  func_80045878` takes the TEXT-stream path (the function is INCLUDE_ASM-routed,
+  not `replace_with_asmfile`-wired) and returns a spurious "FIRST DIVERGENCE:
+  PRE-RA" with a 105-vs-106 insn count, because `.hon.s` is maspsx source and
+  the target side is disassembly (`addu $r,$r,3` vs `addiu $r, $r, 0x3`). The
+  correct tool is `goal_from_tgt.py classify`, which reports 108/108 and
+  FIRST DIVERGENCE: RA. Reports saved at
+  tmp/grind/func_80045878/s7/classify_armsplit.txt vs classify_obj_armsplit.txt.
+- [s7] cse.c:826 `make_regs_eqv` is the pass that eats the tail base copy, and
+  its canonicality condition is C-reachable: a pseudo needs a mention in an
+  EARLIER basic block (regno_first_uid comes from reg_scan, which runs before
+  cse) for `regno_first_uid[p] < cse_basic_block_start` to hold. That single
+  fact converts three sessions of "the base copy is copy-propagated, mechanism
+  unknown" into a spelled lever.
+- [s7] NEW CHASSIS "P4": s6 armsplit+SItemp + `s16 *p;` whose EARLY mention is
+  the then-arm store (`p = s1; p[3] = 0;`) + `p = s1;` at the join + the whole
+  tail through p. sandbox --disable all = 12, build_insns 108 == target 108,
+  alignment index-for-index. Banked at
+  memory/grind/func_80045878/rejected/chassis-p4-thenarm-p-tail-pure-rename.c.
+  The then-arm copy is propagated away and deleted (it costs nothing); the
+  join copy survives and lands in target's exact position.
+- [s7] On P4 the ENTIRE remaining residual is: (R2) idx 89-97, nine
+  instructions in target's exact order and shapes, differing ONLY by
+  $a0 -> $v0 and $v0 -> $v1; and (R1') idx 50, where ours fills the
+  `beq v1,v0` delay slot with `move a0,s3` (duplicated from idx 53) and target
+  leaves a `nop` (reorg.c). The s6 "R1 else-arm 4-insn rotation" is CLOSED on
+  this chassis. Side-by-side: tmp/grind/func_80045878/s7/sbs_p4.txt.
+- [s7] ra_solver ground truth on the P4 body: `extract.py` + `simulate.py`
+  reproduce the allocation 8/8 dispositions with sort order MATCH (the model
+  is exact here, so its negatives are trustworthy).
+  `local_extract.py`/`local_alloc.py text1a_c --func 80045878` report NO QTY
+  ROWS - local-alloc allocates nothing in this function, so the tail base and
+  tail scratch are both global.c allocnos.
+- [s7] The blocking inputs, named exactly (simulate.py --trace):
+  pseudo 78 (tail base p) pri=30000 calls=0 hard_conf=[2,29] prefs=[4,5]
+  -> best=$a0; pseudo 76 (tail scratch) pri=10000 calls=0 hard_conf=[29]
+  prefs=[2,4,5] -> best=$v0. p is allocated first and is barred from $v0 by a
+  HARD conflict with hard reg 2, then takes $a0 off its preference list.
+- [s7] `inverse.py global --goal '{"78": 2, "76": 3}' --depth 2` = NEGATIVE
+  RESULT / FORECLOSED across refs, live length, birth order, conflicts,
+  preferences and calls-crossed; 8 preference atoms additionally reported
+  mechanically unreachable (prune_preferences global.c:897 strips $v0 prefs
+  from call-crossing allocnos; $v1 never appears as a hard reg in the pre-RA
+  RTL so set_preference can never prefer it). Report:
+  tmp/grind/func_80045878/s7/inverse_p4.txt.
+- [s7] Reusing the existing local `v0` as the tail base (instead of a new p)
+  reproduces target's tail shape too but costs +1 insn (109): the v0 pseudo
+  then spans the call-result region, is hard-conflicted with $v0 there, gets
+  $a0 for its whole range and needs `move a0,v0` at idx 12.
+  rejected/tail-base-reuse-v0-hard-conflicts-with-v0.c;
+  `inverse.py global --goal '{"76": 2}'` on that body = FORECLOSED too.
+- [s7] Placing p's early mention in the ELSE arm instead of the THEN arm leaves
+  a second, non-removable copy (109 insns, score 15).
+  rejected/tail-base-p-early-mention-in-else-arm-copy-survives.c.
+- [s7] No FAKE/coercion construct was written or measured this session; every
+  probe is plain C (a named pointer local used for real stores).
+  src/text1a_c.c restored to HEAD (INCLUDE_ASM) at end of session; no
+  rules/pipeline/engine files touched; no permuter campaigns launched, none
+  left alive.
+
+- [s7] Floor re-verified this session with edits in place: the score-10 candidate.c body still scores sandbox --disable all = 10 at build_insns 107; the s6 arm-split body scores 11 at build_insns 108 == target 108.
+
+- [s7] TOOL ROUTING for this function: `inverse_compose.py classify` takes the text-stream path (INCLUDE_ASM-routed, not replace_with_asmfile-wired) and returns a spurious PRE-RA verdict with a 105-vs-106 insn count; `goal_from_tgt.py classify` is the correct entry point and returns 108/108 FIRST DIVERGENCE: RA.
+
+- [s7] cse.c:826 make_regs_eqv is the pass that eats the tail base copy; its canonicality condition needs regno_first_uid[p] < cse_basic_block_start, and regno_first_uid comes from reg_scan which runs before cse -- so an early mention in ANY prior basic block suffices, even one cse itself later deletes.
+
+- [s7] NEW CHASSIS 'P4' (memory/grind/func_80045878/rejected/chassis-p4-thenarm-p-tail-pure-rename.c): s6 armsplit+SItemp + `s16 *p;` with its early mention as the then-arm store (`p = s1; p[3] = 0;`) + `p = s1;` at the join + the whole tail through p. sandbox --disable all = 12, build_insns 108 == target 108, aligned index-for-index. Supersedes the s6 chassis.
+
+- [s7] On P4 the ENTIRE remaining residual is (R2) idx 89-97 -- nine instructions in target's exact order and shapes differing only by $a0->$v0 and $v0->$v1 -- plus (R1') idx 50, where ours fills the `beq v1,v0` delay slot with `move a0,s3` and target leaves a nop. The s6 else-arm 4-insn rotation is CLOSED on this chassis.
+
+- [s7] ra_solver model is exact on the P4 body: extract.py + simulate.py = 8/8 dispositions, sort order MATCH. local_extract.py/local_alloc.py report NO qty rows for func_80045878, so local-alloc allocates nothing here and every pseudo is global.c's -- the global model's negatives are trustworthy for this function.
+
+- [s7] Blocking inputs named exactly (simulate.py --trace on P4): pseudo 78 = tail base p, pri=30000 calls=0 hard_conf=[2,29] prefs=[4,5] -> best=$a0; pseudo 76 = tail scratch, pri=10000 calls=0 hard_conf=[29] prefs=[2,4,5] -> best=$v0.
+
+- [s7] inverse.py global --goal {78:2, 76:3} --depth 2 = FORECLOSED over refs/livelen/birth-order/conflicts/preferences/calls-crossed; the two inputs that must move (pseudo 78's HARD conflict with hard reg 2, and its $a0/$a1 preference set) are NOT in the atom space, so they must be attacked structurally from the C and the model re-extracted.
+
+- [s7] Placing p's early mention in the ELSE arm instead of the THEN arm leaves a second, non-removable copy (109 insns, score 15); duplicating `p = s1` into both arms gives 108 insns but two copies with the else-arm one hoisted by sched1.
+
+- [s7] No FAKE/coercion construct was written or measured this session -- every probe is plain C (a named pointer local used for real stores). src/text1a_c.c restored to HEAD (INCLUDE_ASM); no rules/pipeline/engine files touched; no permuter campaigns launched, none left alive.

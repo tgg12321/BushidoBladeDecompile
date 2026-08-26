@@ -278,3 +278,137 @@ multisets identical; `goal_from_tgt.py classify` = "FIRST DIVERGENCE: RA",
 - probe: pwsh tools/grinder/dump.ps1 (.sched) plus an instrumented BB2_SCHED_DEBUG=1 tools/gcc-2.7.2/cc1 run on the arm-split chassis; then read sched.c schedule_select / potential_hazard / priority and mips.md's define_function_unit entries.
 - result: Block 2 (the else arm), n_insns=15, units n0=2. The recompute (insn 75) has ZERO LOG_LINKS, insn_unit=-1, INSN_PRIORITY=1; the two `sh` are unit 0 with bmin=1 bmax=3 and INSN_PRIORITY=1. rank_for_schedule ALREADY sorts the recompute to pos 0 (= target's answer); schedule_select (sched.c:2661-2727) then overrides it because potential_hazard (sched.c:1327-1364) gives the stores 0x43*((2-1)*0x1000+0) = 274432 and gives an insn with no function unit 0. SELBEST clock=1 insn=72 pos=1. An arith insn can therefore never win a same-priority block-end tie against a store — which is exactly why s4's exhaustive directed line-swap sweep plateaued. Escape E1 (INSN_PRIORITY >= 2 via a predecessor with insn_cost 2, i.e. a load) has no material: block 2 contains zero loads and so does target's else arm (0x800458BC-0x800458F8). Escape E3 is impossible (backward scheduler; both stores have ref=0).
 - verdict: KILLED
+
+
+## [s7] `inverse_compose.py classify` mis-routes this function to the TEXT-stream path and reports a spurious PRE-RA verdict - CONFIRMED
+- statement: the modality's mandated first step (`inverse_compose.py classify
+  text1a_c func_80045878`) prints "PATH: text-stream classifier ...
+  func_80045878 is not `replace_with_asmfile`-wired", "honest 105 insns,
+  target 106", "FIRST DIVERGENCE: PRE-RA", "ours only: addu $#,$#,3 / target
+  only: addiu $#,$#,3 x2" - i.e. the one verdict that means "stop, no RA or
+  scheduler perturbation can reach this".
+- mechanism: exactly the failure documented in `goal_from_tgt.py`'s own module
+  docstring - `.hon.s` is maspsx assembler SOURCE and the target block is
+  DISASSEMBLY, so the same instruction is spelled `addu $r,$r,3` on one side
+  and `addiu $r, $r, 0x3` on the other and every register-blanked skeleton
+  compares unequal. Since func_80045878 is INCLUDE_ASM-routed (not
+  `replace_with_asmfile`-wired) the compose classifier does NOT auto-route to
+  the object-level path.
+- probe: ran both classifiers back-to-back on the identical arm-split chassis.
+- result: text-stream = PRE-RA / 105-vs-106; object-level
+  (`goal_from_tgt.py classify`) = "ours 108 insns, target 108 insns
+  [object-level: replace_with_asmfile-safe]  FIRST DIVERGENCE: RA  $v0 -> $v1
+  x1, $s1 -> $v0 x1".
+- verdict: CONFIRMED. On this function ALWAYS use `goal_from_tgt.py classify`.
+  Do not spend a session acting on the compose classifier's PRE-RA verdict.
+
+## [s7] The tail base copy dies because cse.c:826 `make_regs_eqv` never makes a JOIN-LOCAL pseudo canonical - CONFIRMED (mechanism, read from source)
+- statement: a fresh `s16 *p = s1;` at the join is copy-propagated for a
+  precise, C-visible reason, and the condition that would keep it is
+  satisfiable from C.
+- mechanism: `make_regs_eqv (new=p, old=s1)` (tools/gcc-2.7.2/cse.c:826) makes
+  NEW the canonical replacement for the quantity only if
+      (uid_cuid[regno_last_uid[new]]  > cse_basic_block_end
+    || uid_cuid[regno_first_uid[new]] < cse_basic_block_start)
+    && (uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]])
+  For a pseudo whose first AND last mention are both inside the tail block,
+  both halves of the first clause are false, so `s1` stays canonical,
+  `canon_reg` rewrites every use of p back to s1, and the copy becomes dead.
+  `regno_first_uid` is filled by `reg_scan` (regclass.c), which runs BEFORE
+  cse - so a mention of p in ANY earlier basic block flips the clause, even
+  one whose insn cse itself later deletes.
+- probe: source read + three measured spellings (below).
+- verdict: CONFIRMED. This retro-explains the s2 and s6 pointer-alias kills
+  (tail-mixed-p-s1-basecopy-propagated.c,
+  tail-p-alias-on-armsplit-si-chassis.c) without any appeal to "coin flip".
+
+## [s7] Giving the tail-base pointer an EARLY mention materialises target's join copy - CONFIRMED
+- statement: adding a use of p in an earlier basic block keeps the join copy.
+- probe/result, three spellings measured on the s6 armsplit+SItemp chassis:
+  * `p = s1;` at the END of BOTH arms of the third if - score 16,
+    build_insns 108. Copy materialises but sched1 hoists the else-arm one
+    above that arm's last three stores and the then-arm one survives as a
+    second copy. rejected/tail-base-p-duplicated-into-both-arms.c.
+  * early mention in the ELSE arm (its last three stores through p) -
+    score 15, build_insns 109; that copy is NOT removable, so it costs an
+    extra insn. rejected/tail-base-p-early-mention-in-else-arm-copy-survives.c.
+  * early mention in the THEN arm (`p = s1; p[3] = 0;`) + `p = s1;` at the
+    join + tail through p - **score 12, build_insns 108**, the then-arm copy
+    propagated away and deleted, the join copy standing in target's exact
+    position. Banked as
+    rejected/chassis-p4-thenarm-p-tail-pure-rename.c - THE NEW CHASSIS.
+- verdict: CONFIRMED.
+
+## [s7] On the P4 chassis the WHOLE tail residual (R2) is a two-register RA rename - CONFIRMED
+- statement: after P4 the build aligns index-for-index with target and only
+  two divergences remain.
+- probe: object-level side-by-side (tmp/grind/func_80045878/s7/sbs_p4.txt).
+- result: idx 89-97 ours `move a0,s1 / addiu v0,s2,3 / sh v0,22(a0) /
+  li v0,0x8000 / sh s2,4(a0) / sh s5,8(a0) / sh s2,20(a0) / sh s2,16(a0) /
+  sw v0,24(a0)` vs target the same nine instructions with $a0 -> $v0 and
+  $v0 -> $v1. Plus idx 50: ours fills the `beq v1,v0` delay slot with
+  `move a0,s3` (duplicated from idx 53) where target has `nop` (reorg.c).
+  Nothing else differs anywhere in 108 instructions.
+- verdict: CONFIRMED. R1 (the s6 else-arm 4-insn rotation) is GONE on this
+  chassis - the arm-split already fixed it; the only ordering residual left
+  is the single delay-slot fill at idx 50.
+
+## [s7] The $a0->$v0 flip for the tail base is reachable by perturbing global.c's modelled inputs - KILLED (typed FORECLOSED, depth 2)
+- statement: ra_solver's inverse search can name a C lever that gives the tail
+  base pseudo $v0.
+- mechanism/measurements: `extract.py` + `simulate.py` on the P4 body =
+  **8/8 dispositions, sort order MATCH** (the model is exact for this body).
+  `local_extract.py` + `local_alloc.py text1a_c --func 80045878` = **no qty
+  rows**, i.e. local-alloc allocates NOTHING here; every pseudo is global.c's.
+  Trace:
+      a=78 pri=30000 calls=0 hard_conf=[2,29] someone=[] best=4 prefs=[4,5]
+      a=76 pri=10000 calls=0 hard_conf=[29]   someone=[] best=2 prefs=[2,4,5]
+  pseudo 78 = the tail base p, pseudo 76 = the tail scratch. p is allocated
+  first (pri 30000) and is BARRED from $v0 by a HARD conflict with hard reg 2,
+  then takes $a0 off its own preference list [$a0,$a1]; the scratch takes $v0
+  after it.
+- probe: `inverse.py global tmp/ra_solver_work/func_80045878.model.json
+  --goal '{"78": 2, "76": 3}' --depth 2 --top 10` (and the analogous
+  single-goal run on the reuse-v0 body).
+- result: **NEGATIVE / FORECLOSED** - "no perturbation of any modelled input,
+  up to depth 2, reaches the target assignment" over refs (+12/-6), live
+  length (+/-2,4,8), birth order, conflicts, preferences and calls-crossed.
+  It additionally reports 8 preference atoms as mechanically unreachable
+  (prune_preferences, global.c:897, strips $v0 preferences from every
+  call-crossing allocno; $v1 never appears as a hard reg in this function's
+  pre-RA RTL so set_preference can never record a preference for it).
+- verdict: KILLED for the modelled inputs. The two inputs that must move are
+  NOT in the atom space: (i) pseudo 78's HARD conflict with $v0, and (ii) its
+  $a0/$a1 preference set. Both are properties of where p's live range sits and
+  what hard-reg copies touch it - attack them structurally, from the C, and
+  re-extract; do not re-run the same inverse search.
+
+## [s7] `inverse_compose.py classify text1a_c func_80045878` (the modality's mandated first step) gives a trustworthy triage verdict for this function.
+- mechanism: func_80045878 is INCLUDE_ASM-routed, not `replace_with_asmfile`-wired, so inverse_compose takes the TEXT-stream path: it compares `.hon.s` (maspsx assembler SOURCE, `addu $r,$r,3`) against the disassembled target (`addiu $r, $r, 0x3`). Every register-blanked skeleton compares unequal, so it reports a wholly different instruction multiset. This is the exact blindness documented in goal_from_tgt.py's own module docstring.
+- probe: Ran `inverse_compose.py classify` and `goal_from_tgt.py classify` back-to-back on the identical arm-split chassis; saved both reports.
+- result: inverse_compose: 'honest 105 insns, target 106', FIRST DIVERGENCE: PRE-RA, 'ours only addu $#,$#,3 / target only addiu $#,$#,3 x2' -- the one verdict meaning 'stop, no RA/sched perturbation can reach this'. goal_from_tgt: 'ours 108 insns, target 108 insns [object-level]', FIRST DIVERGENCE: RA, $v0->$v1 x1, $s1->$v0 x1. The object-level verdict is the correct one and was confirmed by the whole rest of the session.
+- verdict: KILLED
+
+## [s7] The tail base copy `addu v0,s1,zero` dies for an identifiable, C-reachable reason rather than being an irreducible allocation coin-flip (s2/s3/s6 attributions).
+- mechanism: cse.c:826 `make_regs_eqv(new=p, old=s1)` makes NEW the canonical register of the quantity only if `(uid_cuid[regno_last_uid[new]] > cse_basic_block_end || uid_cuid[regno_first_uid[new]] < cse_basic_block_start) && uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]]`. A fresh `s16 *p = s1;` at the join has its first AND last mention inside the tail block, so both halves of the first clause are false, s1 stays canonical, canon_reg rewrites every use of p back to s1, and the copy becomes dead. regno_first_uid is filled by reg_scan (regclass.c), which runs BEFORE cse, so a mention of p in ANY earlier basic block flips the clause -- even one whose insn cse itself later deletes.
+- probe: Read tools/gcc-2.7.2/cse.c make_regs_eqv end-to-end, then measured three spellings that place p's early mention in different blocks.
+- result: All three spellings materialise the base copy, which no prior session had ever produced: `p=s1` at the end of BOTH arms -> score 16 / 108 insns (two copies, else-arm one hoisted by sched1); early mention in the ELSE arm -> score 15 / 109 insns (second copy not removable); early mention in the THEN arm (`p = s1; p[3] = 0;`) -> score 12 / 108 insns with the then-arm copy propagated away and deleted and the join copy in target's EXACT position.
+- verdict: CONFIRMED
+
+## [s7] With the base copy materialised, the remaining residual of func_80045878 is larger than a register rename.
+- mechanism: s6 left two regions (R1 else-arm 4-insn rotation, R2 ~9-insn tail). The arm-split already closes R1; the early-mention lever closes R2's shape.
+- probe: Object-level index-for-index side-by-side of the P4 body against target (tmp/grind/func_80045878/s7/sbs_p4.txt).
+- result: 108 vs 108 instructions, aligned index-for-index, with exactly two divergences in the whole function: idx 89-97 = target's nine tail instructions in target's exact order and shapes differing ONLY by $a0->$v0 and $v0->$v1; idx 50 = ours fills the `beq v1,v0` delay slot with `move a0,s3` (duplicated from idx 53) where target leaves a `nop` (reorg.c). The s6 R1 rotation is gone.
+- verdict: KILLED
+
+## [s7] ra_solver's inverse search can name a C lever that gives the tail base pseudo $v0 (and the tail scratch $v1), i.e. closes R2.
+- mechanism: global.c allocno priority + find_reg. simulate.py reproduces this body's allocation 8/8 dispositions with sort order MATCH, and local_alloc.py reports NO qty rows for func_80045878, so every pseudo is a global.c allocno and the model is authoritative here.
+- probe: `extract.py` + `simulate.py --trace` + `local_extract.py`/`local_alloc.py` on the P4 body, then `inverse.py global tmp/ra_solver_work/func_80045878.model.json --goal '{"78": 2, "76": 3}' --depth 2 --top 10` (and the single-goal analogue on the reuse-v0 body).
+- result: NEGATIVE RESULT / FORECLOSED: no perturbation of refs (+12/-6), live length (+/-2,4,8), birth order, conflicts, preferences or calls-crossed reaches target at depth 2; 8 preference atoms additionally reported mechanically unreachable (prune_preferences global.c:897 strips $v0 preferences from every call-crossing allocno, and $v1 never appears as a hard reg in this function's pre-RA RTL so set_preference can never prefer it). The trace names the two blocking inputs precisely: pseudo 78 (tail base p) pri=30000 calls=0 hard_conf=[2,29] prefs=[4,5] -> $a0; pseudo 76 (tail scratch) pri=10000 calls=0 hard_conf=[29] prefs=[2,4,5] -> $v0. p is allocated first and is BARRED from $v0 by a hard conflict with hard reg 2, then takes $a0 off its own preference list.
+- verdict: KILLED
+
+## [s7] Reusing the existing local `v0` (the func_8004574C result) as the tail base is a cheaper way to buy the early mention than introducing a new pointer.
+- mechanism: v0 is genuinely used at the top, so regno_first_uid is early for free and cse.c:826 keeps the join copy.
+- probe: Applied the reuse-v0 body; sandbox --disable all; object-level side-by-side; `inverse.py global --goal '{"76": 2}' --depth 2`.
+- result: score 15, build_insns 109 vs target 108. The tail comes out as the same pure rename of target, so the cse mechanism works -- but the reuse costs a whole extra instruction (`move a0,v0` at idx 12): the v0 pseudo now spans the call-result region where $v0 is hard-conflicted, so global.c gives the whole pseudo $a0 and must copy the return value into it. inverse.py returned FORECLOSED for that pseudo -> $v0 as well.
+- verdict: KILLED
