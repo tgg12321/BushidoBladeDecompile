@@ -453,3 +453,111 @@ any extra flow-visible insn must MENTION the end pointer.
 - probe: Solved the inequality over the measured baseline inputs in tmp/grind/func_80037B00/s9/prisolve.py together with the full (refs, live_length) cell enumeration.
 - result: 8(23+N) > 24(9+N) reduces to -32 > 16N, which has no positive solution. Any perturbation that reaches the window MUST add a reference to allocno 78 itself. This closes an entire class of 'add a harmless insn' spellings without measuring them.
 - verdict: KILLED
+
+## s10 addendum (rederive, 2026-08-26) — FRONTIER REPLACED
+
+The s9 frontier (#1 "raise allocno 78 to 6 refs from block_5c/block_6c", #2 "shorten 78's
+live_length to 6 or 7", #3 "find a new 36-insn chassis") is superseded. #1 and #2 are KILLED by
+measurement + a stream-level invariance argument; #3 is narrowed to a single arithmetic target.
+
+### KILLED — s9 frontier #1 (raise refs(78) to 6)
+`$t0` occurs in exactly two of target's 36 instructions (its `addiu $t0,$a3,0x15` definition and
+the `slt $v0,$a1,$t0` loop test). A third occurrence must either materialise a 37th instruction,
+respell an existing instruction to name $t0 while keeping its encoding (impossible — no other
+target insn mentions $t0), or ride an insn that dies before flow counts it (s9 proved flow.c
+deletes cse-dead insns in the same scan that accumulates reg_n_refs). refs(78) = 4 is therefore a
+property of the target stream, not of our spelling.
+
+### KILLED — s9 frontier #2 (shorten live_length(78) to 6 or 7)
+78's pre-combine span (s9/flow.rtl insns 46..82) is exactly the inner loop: def, QI load,
+zero_extend, branch_zero, QI load, zero_extend, branch_equality, `a1 += 1`, `a2 += 1`, `slt`.
+Each of those ten insns is mandated by the 36-instruction stream. Three probes confirmed the span
+will not move: `u8 *` pointer retyping (inert), `u8` scalar retyping (inert), and relocating
+`var_a2 += 1` into the loop-back arm (stream unchanged, but BOTH ranges grow +1). live(78) = 9 is
+therefore also a property of the target stream.
+
+### THE WHOLE RESIDUAL, IN ONE LINE
+pri(78) = 8888 is fixed. refs(73) = 8 is fixed by the stream. Closing the function requires
+`live_length(73) >= 27` (27 ties at 8888 and is won by the decl-order swap in
+`memory/grind/func_80037B00/decl_order_swap_vC.c`; 28..31 wins outright; 32 loses the flag
+allocno 74 at 7500). live(73) is 23 today, so the ask is **+4 flow-visible insns that emit no
+bytes**, in a region where 73 is live and 78 is not.
+
+### THE REGION MAP (measured this session)
+| region | +1 to live(73)? | byte cost | probe |
+|---|---|---|---|
+| preheader (between `var_t1 = 0` and the loop head) | YES | 0, combine folds the pair | rejected/preheader-foldable-chain-plus1-only.c |
+| block_5c | YES | +1 insn — combine cannot fold across the block edge | s10/vG1_stride_at_5c.c |
+| block_74 | NO (flow.c:1685 only counts regs in `regs_sometimes_live`; 73 never changes state there) | n/a | rejected/stride-split-block74-no-counter-live-change.c |
+| inner-loop arm | YES but also +1 to live(78) — net worse | 0 | rejected/a2-inc-in-taken-arm-lengthens-both-ranges.c |
+
+### AND WHY THE +1 DOES NOT STACK
+A four-link constant chain on a fresh preheader temp buys +1, not +4: cse1 constant-folds the
+chain before flow runs and flow deletes the dead links, leaving a 5-insn residue pseudo
+(rejected/preheader-const-chain4-cse1-collapses.c, counter still 8/24 = pri 10000). The surviving
+`+0x14 / -0x14` pair works only because cse1 does not fold its two links into one another.
+
+### s10 FRONTIER (for the next session)
+1. **A 36-instruction chassis whose PREHEADER is naturally four pre-combine insns longer.**
+   The preheader today is two insns (`addu $t3,$v0,$zero`, the `la`). Any source shape that keeps
+   the emitted stream at exactly 36 in target's order but expands the preheader's pre-combine RTL
+   by four LIVE, combine-absorbed insns closes the function. Mechanism: flow.c:1685 counts
+   preheader insns for the counter (measured +1) and never for the end pointer (78 is not live
+   there). Next probe: enumerate expression spellings of the preheader's two statements whose
+   expansion is multi-insn and whose extra insns are absorbed by combine rather than deleted by
+   flow — e.g. address computations GCC expands through an intermediate (`&D_80102810` reached via
+   a subscript/member expression, a `(s8 *)((s32)X + k)` round trip, a bound read through a
+   narrower type that widens). Screen with tmp/grind/func_80037B00/s10/probe.sh: accept only rows
+   where the counter shows `used 8 times across >= 27 insns`, the end pointer still shows
+   `used 4 times across 9 insns`, and the cc1 insn count is still 26. POLICY BOUNDARY: the extra
+   insns must be the natural expansion of a statement the function genuinely needs. A chain
+   written purely to lengthen a live range is semantically purposeless (T1/T2/T3 FAIL) and at best
+   the F1 combine-foldable chain-extender family, which this session measured caps at +1 anyway.
+2. **A 36-instruction chassis with a THIRD outer-loop block in which the counter changes state.**
+   flow.c:1685's `regs_sometimes_live` gate is why block_74 is free: the counter neither starts nor
+   stops being live there. A chassis in which the counter's liveness CHANGES inside an
+   after-the-inner-loop block would make that block's insns count. Next probe: re-read the s8
+   chassis table in this file, then look for a spelling where the counter is dead on the `return 1`
+   arm and re-live at block_74 (or vice versa) — flow would then count the return-arm insns
+   (s9/flow.rtl insns 105, 107) and the epilogue (133, 147) for it, which is +4 at zero byte cost
+   and is exactly the required delta. Treat any form that is not 36 instructions in target's order
+   as dead on arrival.
+3. **If neither lands, this function is a decision packet, not a grind.** Both remaining knobs are
+   properties of GCC's flow pass rather than of the program, and the only measured lever that moves
+   them at zero byte cost is a purposeless one. The decidable question for the owner would be a
+   FIDELITY/ROUTING question (is a 36-of-36 exact stream with a single adjacent register
+   transposition a COMPLETED-C candidate under some named disposition?), NOT a family grant or a
+   standard-lowering ask — the latter is the pre-decided AUTO-REJECT class. Note for whoever writes
+   it: the same-file sibling func_80037AA4 closed an equivalent RA residual with a Judge-sanctioned
+   `/* FAKE */` constant-holder on 2026-07-28, but that precedent does NOT transfer, because no
+   constant-holder changes either of this function's two pinned quantities.
+
+## [s10] A sibling/Kengo rederive yields a structurally different C shape for func_80037B00.
+- mechanism: func_80037A20 and func_80037AA4 (both MATCHED, both in src/code6cac_c.c) walk the same table D_80102810 with the same bound global D_800A38C8, so their accepted C shows the original author's idiom for this loop; kengo_matches.csv proposes ki_every_little_thing as a transplant source.
+- probe: Read src/code6cac_c.c:268-316 (both matched siblings) and grep kengo_matches.csv for all three functions.
+- result: The siblings' accepted shape is `counter = 0; bound = D_800A38C8; if (counter < bound) { p = (s8*)&D_80102810; do {...; counter += 1; p += 0x28; } while (counter < bound); }` - i.e. candidate.c's floor-5 chassis IS the house idiom, not an artefact of our search. No structurally different shape is available from the siblings. Kengo is size-only-ambiguous (36 vs 36 insns, similarity 0.00/0.00/0.00/0.42) for all three functions - no transplant.
+- verdict: KILLED
+
+## [s10] s9 frontier #1: an ordinary-C reference to the end pointer in block_5c/block_6c raises allocno 78 to 6 refs at zero byte cost, landing pri(78) inside (10434, 13500).
+- mechanism: flow.c:434/2081 weight in-loop occurrences 2; a cross-block re-mention is not folded by cse1 (s9's vG measured 78 at 6 refs).
+- probe: Enumerate the target stream's uses of $t0 and cross-check against s9's proof that flow deletes cse-dead insns in the same scan that accumulates reg_n_refs.
+- result: $t0 appears in exactly TWO of target's 36 instructions - its definition `addiu $t0,$a3,0x15` and the loop test `slt $v0,$a1,$t0` - one occurrence each, both weight 2, total 4. A third occurrence must (i) materialise a 37th instruction, (ii) respell an existing instruction to name $t0 with an unchanged encoding (no such instruction exists), or (iii) ride an insn deleted before flow counts it (s9 proved that is never credited). refs(78)=4 is a property of the TARGET STREAM, not of our spelling.
+- verdict: KILLED
+
+## [s10] s9 frontier #2: the end pointer's live_length can be shortened from 9 to 6 or 7 by emitting its definition later in the pre-combine order while sched1 restores target's stream.
+- mechanism: reg_live_length is computed by flow on the pre-combine, pre-sched stream, so it measures cc1's RTL emission order rather than the final scheduled order.
+- probe: Counted 78's span in tmp/grind/func_80037B00/s9/flow.rtl (insn 46 def .. insn 82 slt), then measured three spellings that could plausibly shorten it with tmp/grind/func_80037B00/s10/probe.sh.
+- result: The span is exactly the inner loop's mandated pre-combine chain: def, QI load, zero_extend, branch_zero, QI load, zero_extend, branch_equality, `a1 += 1`, `a2 += 1`, `slt` - ten insns, every one required by the 36-instruction stream. Retyping the four pointers to `u8 *` and dropping the casts is RA-INERT (78 still 4/9, table byte-identical). Retyping var_v1/var_v0 to `u8` is RA-INERT (78 still 4/9) - so the QI-load+zero_extend split is not a product of the (u8) cast. Relocating `var_a2 += 1` into the loop-back arm leaves the emitted stream unchanged but costs BOTH ranges +1 (73 -> 8/24, 78 -> 4/10 = pri 8000), strictly worse. live(78)=9 is also a property of the target stream.
+- verdict: KILLED
+
+## [s10] There exists a region where an added flow-visible insn lengthens the counter's live range (allocno 73) WITHOUT lengthening the end pointer's, at zero emitted-byte cost.
+- mechanism: flow.c:1685 increments reg_live_length only for registers in regs_sometimes_live; 78 is not live outside the inner loop, and combine folds an adjacent `+k / -k` pair back into one instruction after flow has already counted both.
+- probe: Three splices measured with tmp/grind/func_80037B00/s10/probe.sh: a foldable `+0x14 / -0x14` pair in the preheader; the 0x28 stride split half at block_5c and half at block_74; the same stride split entirely inside block_74.
+- result: CONFIRMED for the preheader: `var_a3 = (s8 *)&D_80102810 + 0x14; var_a3 -= 0x14;` leaves the cc1 stream unchanged at 26 insns (combine folds the pair) while the counter goes 23 -> 24 live and the end pointer stays 4/9. This is the first measured zero-byte-cost +1 on the counter axis in this function's history. CONFIRMED for block_5c but at +1 emitted insn (combine cannot fold across the block edge). REFUTED for block_74: allocno 75 goes 9 -> 13 refs (so both insns ARE live and ARE counted for 75) yet the counter's live_length does not move - 73 never changes liveness state inside block_74, so flow.c:1685's regs_sometimes_live gate skips it. This is a permanent correction to the naive 'live_length = insn span' model used in s7-s9.
+- verdict: CONFIRMED
+
+## [s10] The measured +1 preheader mechanism can be stacked to the +4 the arithmetic requires (live(73) >= 27).
+- mechanism: If combine folds a chain of constant adds after flow has counted every link, N links should buy N-1 extra live insns for the counter at zero byte cost.
+- probe: Built the maximal form - a fresh pointer temp carrying a four-link constant chain in the preheader plus the s9 decl-order swap - and read its .lreg table (rejected/preheader-const-chain4-cse1-collapses.c).
+- result: Buys only +1, not +4: the counter measures 8 refs / 24 live (pri 10000, still above the end pointer's 8888) and a 5-insn residue pseudo (3 refs / 5 live) appears. cse1 constant-folds the chain BEFORE flow runs and flow deletes the dead links, exactly as s9's fact 4 predicts. The surviving `+0x14 / -0x14` pair works only because cse1 does not fold its two links into one another's operand; a longer chain is folded. The +1 is not a repeatable unit.
+- verdict: KILLED

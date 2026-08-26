@@ -386,3 +386,147 @@ candidate.c: 23 honest insn diff, 15 weighted-masked. NOT lowered this session.
 - [s9] Declaration order = pseudo order (measured with vC): declaring var_t0 first renumbers the end pointer to allocno 73 and the counter to 74 with identical priorities and identical seats - a free precondition for the tie-break route.
 
 - [s9] The counter side is the weaker axis: its window needs either refs 7 with live 16-18 (the only removable weight-1 occurrence is the guard's compare, and removing it breaks the single-blez merge the floor-5 form depends on - measured in s8 as the double-blez family) or refs 8 with live 28-32, i.e. the counter live in the return blocks, which costs an instruction.
+
+## s10 (rederive, 2026-08-26) — the residual is now an ARITHMETIC INVARIANT, not a spelling search
+
+- [s10] CHASSIS RE-VERIFIED ON HEAD. `memory/grind/func_80037B00/candidate.c` spliced into
+  src/code6cac_c.c measures `sandbox func_80037B00 --disable all` -> score 5, target_insns 36,
+  build_insns 36, rules_dropped 0, cheat_asm_stripped 3. The s8/s9 RA table reproduces verbatim:
+  73 (counter var_t1) = 8 refs / 23 live -> $8, 78 (end pointer var_t0) = 4 refs / 9 live -> $9,
+  greg order `79 76 77 75 73 83 78 74 82 81 72`. Target wants 78->$8 and 73->$9.
+
+- [s10] REDERIVE — SIBLING TRANSPLANT (new to this ledger; nine sessions never looked at it).
+  `func_80037AA4` (src/code6cac_c.c:285, MATCHED) and `func_80037A20` (src/code6cac_c.c:268,
+  MATCHED) walk the SAME table (`D_80102810`, stride 0x28) with the SAME counter/bound global
+  (`D_800A38C8`). func_80037AA4's accepted C is
+  `var_a1 = 0; var_a2 = D_800A38C8; if (var_a1 < var_a2) { var_v1 = (s8 *)&D_80102810;
+  do { ... var_a1 += 1; var_v1 += 0x28; } while (var_a1 < var_a2); }` — i.e. the counter-vs-bound
+  entry guard wrapped around the table walk is the ORIGINAL AUTHOR'S HOUSE IDIOM for this table,
+  and candidate.c's chassis is a faithful reconstruction of it, not an artefact of our search.
+  This answers the "is the floor-5 chassis the right shape?" question affirmatively.
+  NOTE FOR ANY FUTURE ESCALATION: func_80037AA4 closed its OWN final RA residual with a
+  Judge-sanctioned (2026-07-28) `/* FAKE */` constant-holder local (`s32 sh = 0xD;`) whose only
+  job was to lift an allocno's priority; reload's `update_equiv_regs` then deleted the `li` at
+  zero byte cost. That is a same-file, same-table, same-pass precedent — but it is NOT applicable
+  here: see the arithmetic below, no constant-holder can move this function's numbers.
+
+- [s10] REDERIVE — KENGO: no transplant exists. `kengo_matches.csv` rates func_80037B00 against
+  `ki_every_little_thing` (src/ishito/is_ki_control.c) as `size-only-ambiguous` (36 vs 36 insns,
+  similarity scores 0.00 / 0.00 / 0.00 / 0.42), i.e. size coincidence only, consistent with
+  [[slog-kengo-dead-end]]. The same row shape holds for both siblings. Do not re-run Kengo here.
+
+- [s10] THE SEAT RULE, RE-READ FROM SOURCE. `global.c:640-655` (`allocno_compare`) sorts by
+  `(int)((double)(floor_log2(refs)*refs)/live_length * 10000 * allocno_size)`, ties broken toward
+  the LOWER allocno number; `allocno_size` is 1 for every SImode allocno here, so it is inert.
+  Seats then fall out in rank order ($3,$5,$6,$7,$8,$9,$10,$11) for every allocno without a
+  hard-register copy preference (only 72 -> $4 and 82/84/87 -> $2 have one, from copies of a0/v0).
+  So the swap is EXACTLY: make pri(78) >= pri(73) (with 78 the lower allocno) while keeping
+  pri(75) = 13500 above it and pri(74) = 7500 below it.
+
+- [s10] **pri(78) IS INVARIANT AT 8888 ON ANY CHASSIS THAT EMITS TARGET'S 36 INSTRUCTIONS.**
+  Two independent legs, both now measured rather than argued:
+  (a) refs(78) = 4 is fixed. `$t0` appears in exactly TWO instructions of target's stream — its
+      definition `addiu $t0,$a3,0x15` and the loop test `slt $v0,$a1,$t0`. One occurrence each,
+      both inside the outer loop (weight 2 per flow.c:434 / flow.c:2081) = 4. A third occurrence
+      must come from an insn that either (i) materialises bytes (the stream is already exact at
+      36, so any new insn regresses), (ii) replaces an existing insn's operands (no other target
+      insn could name $t0 and keep its encoding), or (iii) is deleted before it is counted — and
+      s9 proved flow.c's propagate_block deletes cse-dead insns in the SAME scan that accumulates
+      reg_n_refs, so (iii) is never credited.
+  (b) live_length(78) = 9 is fixed. Read off `tmp/grind/func_80037B00/s9/flow.rtl`: 78's span is
+      insn 46 (def) .. insn 82 (the `slt` set), and the pre-combine chain between them is exactly
+      the inner loop — 46 def, 50 `(set (reg:QI 85) (mem))`, 51 `(set (reg 79) (zero_extend 85))`,
+      54 branch_zero, 63/64 the second QI load + zero_extend, 67 branch_equality, 76 `a1 += 1`,
+      79 `a2 += 1`, 82 `slt`. Every one of those ten insns is REQUIRED by the 36-insn stream
+      (2 lbu + 2 branches + 2 increments + slt + def), so the span cannot shrink.
+  Measured attempts to shrink it, all inert or worse:
+  * `rejected/u8-pointer-retyping-ra-inert.c` — var_a1/var_a2/var_a3/var_t0 retyped `u8 *`, casts
+    dropped: RA table byte-identical to baseline (78 still 4/9). The QI-load + zero_extend split
+    is NOT a product of the `(u8)` cast.
+  * `rejected/u8-scalar-retyping-ra-inert.c` — var_v1/var_v0 retyped `u8`: same, 78 still 4/9.
+  * `rejected/a2-inc-in-taken-arm-lengthens-both-ranges.c` — `var_a2 += 1` moved inside the
+    loop-back arm (semantically identical; a2 is dead on the exit edge): cc1 puts the increment
+    back in the delay slot and the emitted stream is unchanged, but the extra arm block costs
+    BOTH ranges +1 (73 -> 8/24, 78 -> 4/10 = pri 8000). Strictly worse.
+
+- [s10] **CONSEQUENCE: the only free variable left is live_length(73), and it must reach 27.**
+  With pri(78) pinned at 8888 and refs(73) pinned at 8 (init 1 + guard 1 + `t1 += 1` 2x2 +
+  while-test 1x2), pri(73) = 24/live*10000 must land in (7500, 8888] — 7500 is pri(74), the flag,
+  which must stay below. live(73) = 27 gives exactly 8888 (a TIE, won by the end pointer once
+  `memory/grind/func_80037B00/decl_order_swap_vC.c` makes it the lower allocno); live 28..31 wins
+  outright; 32 loses the flag. Current live(73) = 23, so the requirement is **+4 flow-visible
+  insns that emit no bytes**, placed where 73 is live and 78 is not.
+  Every other cell is arithmetically unreachable: refs(73) = 7 needs live 16..18 (a SHORTER range,
+  and the only removable weight-1 occurrence is the guard compare, whose removal costs the
+  single-blez merge — the s8 double-blez family); refs 6 needs live 14..15; refs 9 needs live
+  31..35; refs 8 is what the stream dictates.
+
+- [s10] **REGION MAP for "counts toward 73 but not 78" (measured, three probes).**
+  * PREHEADER — counts. `rejected/preheader-foldable-chain-plus1-only.c`
+    (`var_a3 = (s8 *)&D_80102810 + 0x14; var_a3 -= 0x14;`): cc1 stream UNCHANGED at 26 cc1 insns
+    (combine folds the pair), 73 goes 23 -> 24 live, 78 stays 4/9. This is the first measured
+    zero-byte-cost +1 on the counter axis in this function's history.
+  * BLOCK_5C — counts. `tmp/grind/func_80037B00/s10/vG1_stride_at_5c.c` (half the 0x28 stride
+    applied at block_5c, half at block_74): 73 -> 24 live, 74 -> 17, 78 unchanged. But combine
+    cannot fold across the block boundary, so it materialises a 27th cc1 insn. Byte-dead.
+  * BLOCK_74 — DOES NOT COUNT. `rejected/stride-split-block74-no-counter-live-change.c`
+    (`var_a3 += 0x14; var_a3 += 0x14;` both at block_74): 75 goes 9 -> 13 refs (so both insns ARE
+    live at flow time and ARE counted for 75), yet 73's live_length stays 23. flow.c:1685 only
+    increments `reg_live_length` for registers in `regs_sometimes_live`; 73 is live across the
+    whole of block_74 without changing state there, so the extra insn is invisible to it. This is
+    a permanent correction to the naive "live_length = insn span" model used in s7-s9.
+
+- [s10] **THE +4 IS NOT REACHABLE EVEN BY STACKING THE +1 MECHANISM.**
+  `rejected/preheader-const-chain4-cse1-collapses.c` builds the maximal version of the lever — a
+  fresh pointer temp carrying a four-link constant chain in the preheader
+  (`tmp = &D_80102810 + 0x10; tmp += 0x10; tmp += 0x10; tmp += 0x10; var_a3 = tmp - 0x40;`) plus
+  the decl-order swap — and it buys only +1, not +4: the counter measures 8 refs / 24 live (pri
+  10000, still above the end pointer's 8888) and a 5-insn residue pseudo (3 refs / 5 live) appears.
+  cse1 constant-folds the chain before flow ever sees it and flow deletes the dead links, exactly
+  as s9's fact 4 predicts. So the +1 of the two-link `+0x14 / -0x14` form is not a unit that can be
+  repeated; it survives only because its two links are not constant-foldable into one another's
+  operand in a way cse1 recognises, and a longer chain IS.
+
+- [s10] NET: the floor stays 5 and the SHAPE of the remaining question has changed. It is no longer
+  "find a spelling"; it is "produce four flow-visible, byte-free insns in the preheader or
+  block_5c". Every construct that does that is, by inspection, semantically purposeless (it exists
+  only to lengthen a live range) — a T1/T2/T3 failure, and at best the F1 combine-foldable
+  chain-extender family, which the measurement above shows caps out at +1 here.
+
+- [s10] src/code6cac_c.c reverted to HEAD (INCLUDE_ASM) at session end; no tracked build file is
+  modified. Artifacts: tmp/grind/func_80037B00/s10/{probe.sh,apply.py,flowdbg.sh,findcc1.sh,
+  vBASE.c,vA_a2inc_in_arm.c,vC_end_from_a1.c,vD_u8_ptrs.c,vE_u8_scalars.c,vF_split_stride_probe.c,
+  vG1_stride_at_5c.c,vG2_preheader_chain.c,vH_model_proof_chain4.c,d_*/}.
+
+- [s10] TOOL NOTE: `tools/gcc-2.7.2/cc1` IS the instrumented build (it carries the `BB2_FLOW_DEBUG`
+  hook at flow.c:1685 that prints `FLOWDBG reg=N insn=U bnum=B` for one regno), but
+  `engine/buildconfig.py` builds with `tools/gcc-2.7.2/build/cc1`, which is NOT instrumented. The
+  two binaries do not agree on pseudo numbering for this TU (the instrumented one printed only 6
+  FLOWDBG lines for reg 78 across the whole file, none of them func_80037B00's), so the hook cannot
+  audit this function's live ranges without first rebuilding the instrumented cc1 from current
+  source. Use the `.lreg` banner from `tmp/grind/func_80037B00/s10/probe.sh` instead — it is
+  calibrated against the s8/s9 tables and reproduces them exactly.
+
+- [s10] HEAD chassis re-verified this session: memory/grind/func_80037B00/candidate.c spliced into src/code6cac_c.c measures sandbox --disable all score 5, target_insns 36, build_insns 36, rules_dropped 0, cheat_asm_stripped 3; the s8/s9 RA table reproduces verbatim (73 = 8 refs/23 live -> $8, 78 = 4 refs/9 live -> $9, greg order 79 76 77 75 73 83 78 74 82 81 72).
+
+- [s10] REDERIVE, SIBLING: func_80037AA4 (src/code6cac_c.c:285) and func_80037A20 (src/code6cac_c.c:268) are both MATCHED, both walk D_80102810 at stride 0x28, and both use D_800A38C8 as the entry count. func_80037AA4's accepted C is the counter-vs-bound entry guard wrapped around the table walk - the same chassis candidate.c uses. The floor-5 shape is the original author's house idiom for this table, not an artefact of our search.
+
+- [s10] REDERIVE, SIBLING CAVEAT: func_80037AA4 closed its own final RA residual with a Judge-sanctioned (2026-07-28) /* FAKE */ constant-holder local (s32 sh = 0xD) that reload's update_equiv_regs deletes at zero byte cost. Same file, same table, same pass - but the precedent does NOT transfer to func_80037B00, because no constant-holder can move either of this function's two pinned quantities (refs(78) and live(78)).
+
+- [s10] REDERIVE, KENGO: kengo_matches.csv rates func_80037B00 against ki_every_little_thing (src/ishito/is_ki_control.c) as size-only-ambiguous - 36 vs 36 instructions with similarity scores 0.00/0.00/0.00/0.42. Same for both siblings. No Kengo transplant exists; consistent with the slog-kengo-dead-end memory. Do not re-run this axis.
+
+- [s10] global.c:640-655 (allocno_compare) re-read from source: priority = (int)((double)(floor_log2(refs)*refs)/live_length * 10000 * allocno_size), ties broken toward the LOWER allocno. allocno_size is 1 for every SImode allocno here, so it is an inert factor. Seats fall out in rank order ($3,$5,$6,$7,$8,$9,$10,$11) for every allocno without a hard-register copy preference; only 72 -> $4 and 82/84/87 -> $2 have one (copies of a0/v0), so there is no preference lever on 73 or 78.
+
+- [s10] pri(78) = 8888 is INVARIANT on any chassis emitting target's 36 instructions. refs(78)=4 because $t0 occurs in exactly two target instructions; live(78)=9 because 78's pre-combine span (s9/flow.rtl insns 46..82) is exactly the inner loop's ten mandated insns (2 QI loads + 2 zero_extends + 2 branches + 2 increments + slt + def).
+
+- [s10] Therefore the ONLY free variable left is live_length(73). With refs(73) pinned at 8 by the stream (init 1 + guard 1 + `t1 += 1` 2x2 + while-test 1x2), closing the function requires live(73) >= 27: 27 gives exactly 8888 (a tie, won by the end pointer once decl_order_swap_vC.c makes it the lower allocno), 28..31 wins outright, 32 drops below the flag allocno 74 at 7500. live(73) is 23 today, so the ask is +4 flow-visible insns that emit no bytes.
+
+- [s10] Every other cell for the counter is arithmetically unreachable: refs 7 needs live 16..18 (a SHORTER range, and the only removable weight-1 occurrence is the guard compare, whose removal costs the single-blez merge the floor-5 form depends on); refs 6 needs live 14..15; refs 9 needs live 31..35.
+
+- [s10] REGION MAP (measured): preheader insns count toward the counter and not the end pointer, at zero byte cost when combine folds them (+1 measured); block_5c insns count but cost a byte (combine cannot fold across the block edge); block_74 insns do NOT count for the counter at all (flow.c:1685 only increments reg_live_length for registers in regs_sometimes_live, and 73 never changes state inside block_74) even though they DO count for allocno 75 (9 -> 13 refs); inner-loop-arm insns count for BOTH ranges and are net negative.
+
+- [s10] The +1 preheader mechanism does not stack: a four-link constant chain on a fresh pointer temp is constant-folded by cse1 before flow and its dead links are deleted by flow, buying +1 and leaving a 5-insn residue pseudo (counter 8 refs/24 live, pri 10000). Even the F1 combine-foldable chain-extender family caps out at +1 on this function.
+
+- [s10] TOOL: tools/gcc-2.7.2/cc1 IS the instrumented build carrying the BB2_FLOW_DEBUG hook at flow.c:1685 (prints `FLOWDBG reg=N insn=U bnum=B`), but engine/buildconfig.py builds with tools/gcc-2.7.2/build/cc1, which is NOT instrumented, and the two disagree on pseudo numbering for this TU (only 6 FLOWDBG lines for reg 78 across the whole file, none of them func_80037B00's). The hook cannot audit this function's live ranges until the instrumented cc1 is rebuilt from current source; use the .lreg banner from tmp/grind/func_80037B00/s10/probe.sh, which is calibrated against the s8/s9 tables.
+
+- [s10] src/code6cac_c.c was reverted to HEAD (INCLUDE_ASM) at session end; no tracked build file is modified. candidate.c is unchanged (still the floor-5 form) because nothing this session lowered the floor.
