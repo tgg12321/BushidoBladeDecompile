@@ -1,7 +1,7 @@
 {
  "func": "func_80033550",
  "file": "code6cac_b",
- "session_count": 9,
+ "session_count": 10,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -57,18 +57,29 @@
    "floor": 4,
    "modality": "escalation",
    "headline": "s9 escalation: floor re-measured 4 on this chassis; both endgame-lock AND-gates fail (scan LOW 0/8; SOTN census negative for a byte-free register occupant) and the phantom-pad frontier is killed on pr"
+  },
+  {
+   "session": 10,
+   "floor": 4,
+   "modality": "escalation",
+   "headline": "s10 executed the owner's 2026-08-24 chain-extender directive first-hand and killed it in all three available modes, then gave the residual its first TYPED RA verdict (ra_solver inverse: NEGATIVE at de"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Some construct makes pseudo 72's hard-conflict set contain {2,3,4,5,6} while keeping the entry copy non-coalescable - i.e. defeats the (A)/(B) regime flip.",
-   "mechanism": "global.c set_preference / find_reg: the preferred register is tried before the numeric v0,v1,a0,a1,a2,a3 scan, so any liveness injection reaching 72's range also makes the entry copy coalescable and seats 72 in $a0. Two byte-free occupants ($a1 and $a2) are required simultaneously.",
-   "next_probe": "Only worth re-opening if a NEW sanctioned family that can occupy a register without emitting bytes is added to the frozen list. Evaluate any such family directly against the {2,3,4,5,6} conflict-set requirement before spending a session on spellings."
+   "hypothesis": "A future owner-sanctioned family can keep a value alive in a register across another value's live range WITHOUT emitting an instruction, making pseudo 72's hard-conflict set contain {2,3,4,5,6} while the entry copy stays non-coalescable.",
+   "mechanism": "global.c find_reg scans hard registers in numeric-ascending order (no REG_ALLOC_ORDER on MIPS here) over the complement of the hard-conflict set; only added conflicts on $a1 and $a2 can push the pointer to $a3, and priority/refs levers provably cannot add conflicts.",
+   "next_probe": "Do NOT spend a session on spellings. Evaluate any newly sanctioned family DIRECTLY against that arithmetic requirement first; s10 measured that the first surviving occupant already costs the entry-copy slot (rejected/s10-f1-chain-partial-detour-eats-entry-copy-slot-4.c), so a candidate family must beat that price before it is worth compiling."
+  },
+  {
+   "hypothesis": "The ra_solver could settle the remaining axis mechanically instead of by hand.",
+   "mechanism": "inverse.py's atom space has REFS_UP/DOWN, LIVE_EXTEND/SHRINK, CALLS_CROSSED, PREF_*, and a CONFLICT_ADD class that is pseudo-pseudo only over the focus set; there is no HARD-conflict-add atom, so 'give 72 hard conflicts 5 and 6' is unsearched.",
+   "next_probe": "A tools/ra_solver change is OUT OF SCOPE for a grind session (tools/ is a forbidden surface), so this is an operator/infra item: adding a HARD_CONFLICT_ADD atom class would let inverse.py return a typed REACHABLE/FORECLOSED verdict on the one remaining axis for this and every sibling seat residual."
   },
   {
    "hypothesis": "A rederive-modality reconstruction (a different overall shape) reaches the target seating.",
    "mechanism": "the s6 closure theorem is scoped to THIS 34-insn shape; a different source shape yields a different allocno set and entry-copy topology.",
-   "next_probe": "Subsumed but not independently measured: the target body carries only FOUR register-carrying values across the pointer's range (const-6/idx in $v0, i-then-w0 in $v1, w1 in $a0, w2 in $a1), so a fifth $a2 occupant must be byte-free - the same closed channel - and any insn-count change is itself distance. A rederive session would have to break that arithmetic, not merely try new shapes."
+   "next_probe": "Carried forward from s9 unchanged and now further constrained: the target body carries only FOUR register-carrying values across the pointer's range, everything except the pointer is LOCAL-allocated and already matches target byte-for-byte, and any insn-count change is itself distance. A rederive would have to break that arithmetic, not merely try new shapes."
   }
  ],
  "judge_constraints": [

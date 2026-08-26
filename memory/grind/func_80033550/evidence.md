@@ -689,3 +689,76 @@ verification.
 - [s9] src/code6cac_b.c was restored to its INCLUDE_ASM line at end of session; git status shows only docs/grind/decisions.md (this session's entry) and metrics/events.jsonl (engine-written).
 
 - [s9] Housekeeping for future sessions: memory/grind/func_80033550/candidate.c is stored with CRLF line endings - normalise to LF after pasting it into src/*.c or the toolchain silently sees a CRLF block.
+
+## s10 (2026-08-25, escalation modality — owner directive 2026-08-24, F1 chain-extender)
+
+**Chassis.** HEAD carries `INCLUDE_ASM("asm/funcs", func_80033550);` at
+src/code6cac_b.c:1855. candidate.c spliced in verbatim (LF-normalised):
+`sandbox func_80033550 --disable all` = score 4, target 34, build 34,
+rules_dropped 0, cheat_asm_stripped 47 (whole-TU figure, not this function).
+src/code6cac_b.c restored to HEAD at end of session.
+
+**The residual, restated from the objdump diff (exact, 4 insns).**
+build `move a1,a0` / `lw v1,0(a1)` / `lw a0,4(a1)` / `lw a1,8(a1)`
+target `addu $a3,$a0,$zero` / `lw $v1,0($a3)` / `lw $a0,4($a3)` / `lw $a1,8($a3)`
+Everything else is byte-identical, including the loop, the `sb`, the
+sll/addu/sll index chain and all three `lui/addu/sw` store triples.
+
+**NEW: the exact allocation model (ra_solver extract, first time banked).**
+`tmp/ra_solver_work/func_80033550.model.json` — only TWO global allocnos:
+  * 74 = `i` : nrefs 9, livelen 12, pri 22500, hard conflicts {2,29} -> $v1
+  * 72 = arg0: nrefs 5, livelen 16, pri  6250, hard conflicts {2,3,4,29} -> $a1
+  * everything else is LOCAL-alloc'd and already matches target:
+    75(w0)->$v1, 76(w1)->$a0, 77(w2)->$a1, and the index chain ->$v0.
+  * prefs / full_prefs / copy_prefs are EMPTY for both allocnos.
+  * prera_hard = [4] (the incoming $a0 parameter).
+So the seat is decided entirely by find_reg's ascending scan over
+{2,3,4,29}-minus: $a1 is the first free register. Target's $a3 requires the
+hard-conflict set to contain 5 and 6 as well — a LIVE-RANGE fact, not a
+priority fact. MIPS defines no REG_ALLOC_ORDER in this tree
+(tools/ra_solver/README.md), so the scan really is numeric-ascending.
+
+**Solver verdict (typed, first ever for this function).**
+`inverse.py global ... --goal '{"72": 7}'` at depth 2 and depth 3:
+NEGATIVE over 48 atoms in 5 classes, plus a FORECLOSED verdict on the
+preference route ("$a3 never appears as a hard reg in this function's pre-RA
+RTL, so global.c set_preference can never record a preference for it").
+Honest scope limit: CONFLICT_ADD atoms are pseudo-pseudo only; the solver does
+not model "add a HARD conflict on $a1/$a2", which is the one axis left, and
+that axis is the previously-measured closed channel.
+
+**Chain-extender measurements (the directive).** Three modes, all 34/34,
+all score 4 — banked as rejected/s10-f1-chain-*.c. Mode A (plain alias) is
+deleted before flow.c and never bumps refs. Mode B (folding detour on all
+three loads) survives combine only by replacing the entry copy
+(`addiu a1,a0,4` where target has `addu a3,a0,zero`) — count-neutral, not
+byte-neutral. Mode C (partial detour) splits the pointer into two global
+allocnos at 34 insns (72->$a0, 79->$a1) — the first time a second register
+occupant ever survived to RA here — but it, too, pays for itself with the
+entry-copy slot, and it moves arg0 to $a0, away from target. The law: with the
+three loads already in direct base+offset form and arg0 runtime-dependent, a
+detour is either folded pre-flow (inert) or slot-substituting (byte-changing).
+
+**Gates.** scan_hand_coded LOW 0/8 (all of S1-S8 negative). No SOTN-master
+precedent for a byte-free register occupant (s9 census, re-affirmed by mode C's
+measurement that the occupant is not byte-free).
+
+- [s10] Chassis: HEAD carries INCLUDE_ASM("asm/funcs", func_80033550); at src/code6cac_b.c:1855; candidate.c applied gives sandbox --disable all = score 4, 34/34 target/build insns, rules_dropped 0. src/code6cac_b.c restored to HEAD at end of session.
+
+- [s10] The residual is exactly 4 instructions (objdump diff): build `move a1,a0` / `lw v1,0(a1)` / `lw a0,4(a1)` / `lw a1,8(a1)` vs target `addu $a3,$a0,$zero` / `lw $v1,0($a3)` / `lw $a0,4($a3)` / `lw $a1,8($a3)`. All other 30 instructions are byte-identical, including the search loop, the sb, the sll/addu/sll index chain and all three lui/addu/sw store triples.
+
+- [s10] FIRST ra_solver model banked for this function: only TWO global allocnos — 74 = i (nrefs 9, livelen 12, pri 22500, hard conflicts {2,29}) -> $v1 which MATCHES target, and 72 = arg0 (nrefs 5, livelen 16, pri 6250, hard conflicts {2,3,4,29}) -> $a1 where target has $a3. prefs / full_prefs / copy_prefs are EMPTY for both; prera_hard = [4]. Everything else is local-alloc'd and already matches target (w0->$v1, w1->$a0, w2->$a1, index chain->$v0).
+
+- [s10] MIPS defines no REG_ALLOC_ORDER in this tree (tools/ra_solver/README.md), so find_reg's scan is numeric-ascending: $a1 is simply the first register not in {2,3,4,29}. Reaching target's $a3 requires 5 AND 6 in the hard-conflict set — a live-range-overlap fact, not a priority fact, which is why every priority lever (including the chain-extender) is structurally inert on this residual.
+
+- [s10] inverse.py returns NEGATIVE at depth 2 and depth 3 for goal {72: $a3}, and FORECLOSES the preference route with a named mechanism ($a3 never appears as a hard reg in the pre-RA RTL, so set_preference can never name it).
+
+- [s10] Chain-extender mode (C) is the first spelling in ten sessions to seat a SECOND surviving global allocno at 34 instructions — and it prices the occupant precisely: it consumes the entry-copy slot, converting `addu a3,a0,zero` into `addiu a1,a0,8`. That is direct measurement that the byte-free-occupant channel is closed in this shape, replacing the previous narrative argument.
+
+- [s10] Gate #1: scan_hand_coded --single func_80033550 = tier LOW, score 0/8 (tmp/grind/func_80033550/s10/scan_hand_coded.txt). Corroborated by s6's finding that cc1psx is instruction-identical on this C — the divergence is ordinary GCC register allocation, not hand-written assembly.
+
+- [s10] Gate #2: no SOTN-master precedent for a byte-free register occupant (s9 census of the 1,365-entry PSX index); pad_dummy_local is a frame-slot family and target func_80033550 has no stack frame (no $sp adjustment, no callee-save, epilogue is jr $ra + nop).
+
+- [s10] Exhaustion: floor FLAT at 4 across ten sessions and five distinct modalities (recon, structural, permuter, forensics, escalation); ~138k cumulative permuter iterations over 6 basins all converging to the score-20 ptr=$a1 attractor; 20 rejected forms banked in memory/grind/func_80033550/rejected/.
+
+- [s10] Disposition filed by this session at docs/grind/decisions.md:12231 — OWNER-ESCALATION RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE. No standard-lowering packet was filed: the only YES that would close this function is a no-precedent family grant for a byte-free register occupant, which is the pre-decided-NO auto-reject class under the owner's second 2026-08-24 ruling.

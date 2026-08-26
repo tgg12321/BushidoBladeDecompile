@@ -62,6 +62,23 @@
  * endgame-lock AND-gates fail (scan_hand_coded LOW 0/8; SOTN-master census
  * negative for a byte-free REGISTER occupant). Standing 2026-07-27 ruling
  * applied: REFUSED / OWNER-ACCEPTED INCOMPLETE, docs/grind/decisions.md:8216.
+ * s10 (2026-08-25, ESCALATION modality, owner directive 2026-08-24 = "F1
+ * chain-extender family"): directive EXECUTED and KILLED in three measured
+ * modes (rejected/s10-f1-chain-*.c) - a plain alias dies in cse before flow.c
+ * counts it (inert); a folding detour survives combine only by REPLACING the
+ * entry copy (addiu a1,a0,N where target has addu a3,a0,zero - count-neutral,
+ * not byte-neutral); a partial detour splits the pointer into two global
+ * allocnos at 34 insns (arg0->$a0, detour->$a1) but again pays with the
+ * entry-copy slot and moves arg0 AWAY from target. Law: arg0 is a runtime
+ * param and the three loads are already direct base+offset, so no detour is
+ * both surviving and byte-free. s10 also banked the first ra_solver model for
+ * this function (only TWO global allocnos: 74=i->$v1 pri 22500, 72=arg0->$a1
+ * pri 6250, hard conflicts {2,3,4,29}, EMPTY preference sets) and the first
+ * typed verdict: inverse.py --goal {"72": 7} is NEGATIVE at depth 2 AND 3 over
+ * 48 atoms in 5 classes, with the preference route FORECLOSED ($a3 never
+ * appears as a hard reg in the pre-RA RTL, so set_preference cannot name it).
+ * Both endgame-lock gates re-measured failing (scan LOW 0/8; no SOTN
+ * precedent). Standing 2026-07-27 ruling re-applied; see docs/grind/decisions.md.
  * NOTE: this file is CRLF - normalise to LF after pasting into src/*.c.
  * Residual 4 = arg0's pointer pseudo homed in $a1 (build) vs $a3 (target):
  * move + 3 lw base regs. See evidence.md for the RTL conflict analysis. */

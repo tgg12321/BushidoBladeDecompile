@@ -12227,3 +12227,128 @@ measured above is the first of its kind in the grind ledgers, and a systematic
 calibration-only differential census across the queue would say whether it is an
 isolated tie-break or a class. Recorded here for the owner's information; it does
 not block, and no session should read it as licence to touch the build path.
+
+## 2026-08-25 - func_80033550 (src/code6cac_b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (owner directive 2026-08-24 executed and measured)
+
+**Why this entry exists.** The owner's 2026-08-24 ruling ([[escalation-not-parked]]) retired the parked
+state and returned `func_80033550` to active grinding with a NAMED directive: *"chain-extender family as
+the NEW lever the 2026-08-20 entry requires (F6+F7 seam ground is spent)."* Session 10 (escalation
+modality) EXECUTED that named axis first-hand rather than re-quoting the 2026-08-20 disposition
+(decisions.md:8223). The axis is now measured dead in all three of its available modes, and the residual
+has for the first time been given a TYPED solver verdict. This entry records the measurements and
+re-applies the standing ruling.
+
+**Chassis (re-measured this session, not inherited).** HEAD carries
+`INCLUDE_ASM("asm/funcs", func_80033550);` at `src/code6cac_b.c:1855`.
+`memory/grind/func_80033550/candidate.c` spliced over that line (CRLF normalised to LF) ->
+`sandbox func_80033550 --disable all` = **score 4, target_insns 34, build_insns 34, rules_dropped 0**.
+`src/code6cac_b.c` restored to HEAD; working tree clean apart from the ledger, this entry and untracked
+scratch under `tmp/grind/func_80033550/s10/`.
+
+**The residual, exactly (objdump diff, 4 instructions).**
+`move a1,a0` / `lw v1,0(a1)` / `lw a0,4(a1)` / `lw a1,8(a1)` where target
+(`asm/funcs/func_80033550.s:2,24-26`) has `addu $a3,$a0,$zero` / `lw $v1,0($a3)` / `lw $a0,4($a3)` /
+`lw $a1,8($a3)`. Every other instruction of the 34 is byte-identical.
+
+**Directive axis - F1 combine-foldable chain-extender vs the arg0 pointer seat: KILLED (3 modes).**
+The sanctioned family (`.claude/rules/dead-store-fake-exception.md:32-46`, owner ruling 2026-07-01) has
+exactly ONE named mechanism: the extra `reg_n_refs` that flow.c records before combine folds the detour
+back. Measured here, each form banked under `memory/grind/func_80033550/rejected/`:
+- **(A) plain alias** `s32 *p = arg0;` feeding all three loads - the copy is deleted in cse/jump BEFORE
+  flow.c counts it, so the extracted allocation model is byte-identical to baseline (pseudo 72: nrefs 5,
+  livelen 16, pri 6250, hard conflicts {2,3,4,29}, seat $a1). Fully INERT. sandbox 4, 34/34.
+  `s10-f1-chain-plain-alias-inert-4.c`
+- **(B) folding detour** `s32 *p = arg0 + 1;` feeding `p[-1]/p[0]/p[1]` - combine rebases all three `lw`
+  offsets, and the detour survives to RA only by TAKING OVER the entry-copy slot: the emitted instruction
+  becomes `addiu a1,a0,4` where target has `addu a3,a0,zero`. Count-neutral (34), NOT byte-neutral. The
+  model moves (livelen 16->17, pri 6250->5882) but `nrefs` stays 5 and the hard-conflict set stays
+  {2,3,4,29}, so find_reg's ascending scan still returns $a1. sandbox 4, 34/34.
+  `s10-f1-chain-folding-detour-slot-substitutes-move-4.c`
+- **(C) partial detour** (arg0 feeds loads 0 and 1; `s32 *p = arg0 + 2;` feeds load 2) - the only spelling
+  in ten sessions that splits the pointer into TWO surviving global allocnos at 34 insns
+  (74=$v1 `i`; 72=$a0 arg0, nrefs 5, livelen 16; 79=$a1 detour, nrefs 2, livelen 17). arg0's hard-conflict
+  set LOSES 4 and the pointer keeps $a0 - the seat moves the WRONG way - and the second occupant is again
+  NOT byte-free: it consumes the entry-copy slot (`addiu a1,a0,8`). sandbox 4, 34/34.
+  `s10-f1-chain-partial-detour-eats-entry-copy-slot-4.c`
+
+**The structural law, and it generalizes** (same shape CD_sync s105 derived at decisions.md:11829): the
+three loads ALREADY use the direct base+offset addressing form and `arg0` is a runtime parameter, so an
+algebraically-neutral detour on it is either folded before flow.c counts it (mode A, inert) or survives
+only by occupying an instruction slot that already exists (modes B/C, byte-changing). There is no third
+mode. The chain-extender cannot buy a byte-free register occupant here.
+
+**NEW - the first typed RA verdict for this function (ra_solver).**
+`python3 tools/ra_solver/extract.py func_80033550 code6cac_b` produces a model with only TWO global
+allocnos (everything else is local-alloc'd and ALREADY matches target: w0->$v1, w1->$a0, w2->$a1, index
+chain->$v0):
+- 74 = `i`   : nrefs 9, livelen 12, pri 22500, hard conflicts {2,29}      -> $v1 (matches target)
+- 72 = arg0  : nrefs 5, livelen 16, pri  6250, hard conflicts {2,3,4,29}  -> $a1 (target: $a3)
+- `prefs` / `full_prefs` / `copy_prefs` are EMPTY for both; `prera_hard` = [4].
+
+MIPS defines no `REG_ALLOC_ORDER` in this tree (`tools/ra_solver/README.md`), so find_reg's scan is
+numeric-ascending and $a1 is simply the first register not in {2,3,4,29}. Target's $a3 therefore requires
+5 AND 6 in the hard-conflict set - a LIVE-RANGE fact, not a priority fact.
+`python3 tools/ra_solver/inverse.py global tmp/ra_solver_work/func_80033550.model.json --goal '{"72": 7}'`
+returns, at **depth 2 and again at depth 3**, over 48 single perturbations in 5 classes (refs +12/-6,
+live length +/-2/4/8, birth order, pseudo-pseudo conflict adds, calls-crossed, preference
+add/reroute/clear): **NEGATIVE RESULT - no perturbation of any modelled input reaches the target
+assignment**, plus an explicit **FORECLOSED** verdict on the preference route with its mechanism named:
+*"$a3 never appears as a hard reg in this function's pre-RA RTL, so global.c set_preference can never
+record a preference for it."* Artifacts: `tmp/grind/func_80033550/s10/inverse_d2.txt`, `inverse_d3.txt`.
+Honest scope limit, recorded so nobody over-reads it: `inverse.py`'s CONFLICT_ADD atoms are pseudo-pseudo
+only over the focus set {72,74}; there is no HARD-conflict-add atom, so the solver does not search "make
+$a1 and $a2 hard-conflict with 72". That single unsearched axis IS the channel s5/s7/s8/s9 already
+measured closed (it needs two byte-free register occupants alive across the pointer), and mode (C) above
+is the direct measurement that the FIRST such occupant already costs the entry-copy slot.
+
+**AND-gate #1 (canonical-asm) - FAILS.** `python3 tools/scan_hand_coded.py --single func_80033550`
+re-run this session: **tier=LOW score=0/8**, S1-S8 all negative (0 multu/mflo pairs, no empty-body
+branch, S3/S4 N/A at 34 < 40 insns, no sibling cluster jaccard >= 0.5, no BIOS jumptable, no unsaved
+$sN, no redundant mask). `tmp/grind/func_80033550/s10/scan_hand_coded.txt`. Corroborated by s6's
+measurement that cc1psx is instruction-identical on this C: the divergence is ordinary GCC register
+allocation, not hand-written assembly.
+
+**AND-gate #2 (an in-hand SOTN-master precedent for the closing construct) - FAILS.** The closing
+construct would still have to be a byte-free REGISTER occupant seated across the pointer's live range.
+The s9 census of `docs/reference/sotn-construct-index.md` (1,365 PSX-master entries) returned no such
+entry; the only adjacent family, `pad_dummy_local`, is a FRAME-SLOT family whose prerequisite fails here
+because target `func_80033550` has no stack frame at all (no `$sp` adjustment, no callee-save, epilogue
+is `jr $ra` + `nop`). This session adds an independent reason the gate cannot pass: mode (C) MEASURES
+that a surviving second occupant is not byte-free in this function's 34-insn shape.
+
+**Exhaustion record (ledger, `memory/grind/func_80033550/`).** s1 recon (floor 5 -> 4 cheat-free);
+s2-s3 structural (38 variants; tail geometry closed, loop-region census-invariance proven over 6
+spellings with identical `.greg`, REG_EQUIV const-pointer pseudos deleted pre-RA); s4-s5 permuter
+(6 basins, ~138k cumulative iterations, every basin converging to the score-20 ptr=$a1 attractor, zero
+sub-20 finds); s6 forensics (cc1psx instruction-identical - fork divergence KILLED; source-level closure
+theorem proven from mips.c:3447, global.c find_reg, final.c:1800, flow.c:1479); s7-s8 forensics
+(FAKE-family sweep; channel (f) opened then Judge-FAILed 2026-07-21 as a cheat-by-spelling, and its
+banked forms measure 11 vs the floor of 4); s9 escalation (phantom-pad family killed on prerequisite;
+both gates measured failing); s10 this session (chain-extender directive killed in 3 modes; first
+ra_solver model + NEGATIVE/FORECLOSED typed verdict at depth 3). 20 rejected forms banked in
+`memory/grind/func_80033550/rejected/`. Honest floor has been FLAT at 4 across ten sessions and five
+distinct modalities (recon, structural, permuter, forensics, escalation).
+
+**Disposition.** Both endgame-lock AND-gates fail, the owner's named 2026-08-24 directive axis is
+measured dead, and the residual now carries a typed FORECLOSED/NEGATIVE verdict from the RA solver
+rather than only a narrative one. Per the owner's standing auto-ruling of 2026-07-27
+(`.claude/rules/endgame-lock-disposition.md`) this is **REFUSED / OWNER-ACCEPTED INCOMPLETE**:
+`func_80033550` stays committed as `INCLUDE_ASM("asm/funcs", func_80033550);` and is classified NOT
+COMPLETED. Nothing waits on the owner (2026-08-18 [[judge-sole-gate]]). No packet is filed asking to
+lower a standard: the only YES that would close this function is a no-precedent family grant for a
+byte-free register occupant, which is the pre-decided-NO auto-reject class under the owner's second
+2026-08-24 ruling.
+
+**What would legitimately re-open it** (for a future sweep, stated as a measurable trigger, not a hope):
+a NEW owner-sanctioned family that can keep a value alive in a register across another value's live range
+WITHOUT emitting an instruction. Evaluate any such family directly against the arithmetic requirement -
+pseudo 72's hard-conflict set must contain {2,3,4,5,6} while the entry copy stays non-coalescable - before
+spending a session on spellings. A second, cheaper trigger: extending `inverse.py` with a HARD-conflict-add
+atom class would let the solver answer that requirement mechanically instead of by hand.
+
+**Precedent (same RA/scheduler-locked, hand-coded-LOW, no-SOTN-precedent species, all ruled the same
+way):** this function's own 2026-07-22 and 2026-08-20 rulings (decisions.md:1299, :8223), motion_SetMotion
+(2026-07-19 FAMILY REFUSED), saTan0Init / cpu_side_move_dir_4 / func_80057CC8 (2026-07-20), func_800611A4 /
+func_80049A2C / InitHiraRmd_80047FBC / gnd_init_80041688 / func_8007DC9C (2026-07-22), func_80041188
+(2026-08-23), CD_sync (2026-08-25, decisions.md:11814 - the direct methodological sibling: same 2026-08-24
+chain-extender directive, same first-hand execution, same kill).

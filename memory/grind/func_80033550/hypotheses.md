@@ -571,3 +571,99 @@ upward-exposed uses and whether any VALID construct reaches the same channel.
 - probe: searched docs/reference/sotn-construct-index.md (1,365 PSX-master entries) for uninitialised/garbage/occupant/pressure/dummy-local constructs.
 - result: no entry for a byte-free register occupant. The only adjacent family is pad_dummy_local (index line 29, 816 entries) which is a FRAME-SLOT family whose prerequisite fails here (no stack frame in target). The one construct that ever homed the pointer in $a3 - an invented identical-arms branch cross-jump-merged by jump2 - was Judge-FAILed 2026-07-21 as a cheat-by-spelling and is moot anyway (both banked seam forms re-measure at distance 11 vs the floor of 4).
 - verdict: KILLED
+
+## [s10] 2026-08-25 — escalation modality (owner directive 2026-08-24: F1 chain-extender)
+
+- H-s10.1 "The honest floor has moved on the current chassis."
+  KILLED. `memory/grind/func_80033550/candidate.c` spliced over
+  `INCLUDE_ASM("asm/funcs", func_80033550);` at src/code6cac_b.c:1855 ->
+  `sandbox func_80033550 --disable all` = **score 4, target_insns 34,
+  build_insns 34, rules_dropped 0**. Chassis-invariant across s1-s10.
+
+- H-s10.2 "The sanctioned F1 combine-foldable chain-extender
+  (.claude/rules/dead-store-fake-exception.md:32-46) can move pseudo 72 (the
+  arg0 pointer) out of $a1 — the owner's 2026-08-24 named directive."
+  KILLED, three measured modes + a solver verdict. The family's ONLY named
+  mechanism is the extra `reg_n_refs` flow.c records before combine folds the
+  detour. Measured here:
+    (A) plain alias `s32 *p = arg0;` — the copy dies in cse/jump BEFORE flow,
+        so refs are never bumped: the extracted model is byte-identical to
+        baseline (nrefs 5, livelen 16, pri 6250, hard conflicts {2,3,4,29},
+        seat $a1). Fully INERT. sandbox 4, 34/34.
+        rejected/s10-f1-chain-plain-alias-inert-4.c
+    (B) folding detour `s32 *p = arg0 + 1;` feeding p[-1]/p[0]/p[1] — combine
+        rebases all three lw offsets and the detour REPLACES the entry copy.
+        Insn count holds at 34 but the emitted instruction changes from
+        `addu a1,a0,zero` to `addiu a1,a0,4`, so it is count-neutral, not
+        byte-neutral. Model moves (livelen 16->17, pri 6250->5882) but nrefs
+        stays 5 and the hard-conflict set stays {2,3,4,29}; find_reg's
+        ascending scan still returns $a1. sandbox 4, 34/34.
+        rejected/s10-f1-chain-folding-detour-slot-substitutes-move-4.c
+    (C) partial detour (arg0 feeds loads 0,1; `s32 *p = arg0 + 2;` feeds load
+        2) — the ONLY spelling in 10 sessions that splits the pointer into TWO
+        surviving global allocnos at 34 insns: 74=$v1(i), 72=$a0(arg0, nrefs 5,
+        livelen 16), 79=$a1(detour, nrefs 2, livelen 17). arg0's hard-conflict
+        set LOSES 4, so the pointer keeps $a0 and the seat moves the WRONG way;
+        the second occupant is NOT byte-free — it consumed the entry-copy slot
+        (`addiu a1,a0,8` in place of `addu a3,a0,zero`). sandbox 4, 34/34.
+        rejected/s10-f1-chain-partial-detour-eats-entry-copy-slot-4.c
+  Structural reason, and it generalizes (same law CD_sync s105 derived): the
+  three loads ALREADY use the direct base+offset addressing form and arg0 is a
+  runtime parameter, so every algebraically-neutral detour on it is either
+  folded before flow.c counts it (mode A, inert) or survives to RA only by
+  taking over an existing instruction slot (modes B/C, byte-changing). There is
+  no third mode. The chain-extender axis of the 2026-08-24 directive is spent.
+
+- H-s10.3 "Some perturbation of the modelled RA inputs reaches the target seat
+  ($a3) for the pointer." KILLED by the ra_solver inverse backend — the first
+  typed verdict this function has ever had.
+  `python3 tools/ra_solver/extract.py func_80033550 code6cac_b` +
+  `python3 tools/ra_solver/inverse.py global tmp/ra_solver_work/func_80033550.model.json
+   --goal '{"72": 7}' --depth 2` and `--depth 3`:
+    * baseline reproduced exactly: {72: '$a1', 74: '$v1'};
+    * **NEGATIVE RESULT** at depth 2 AND depth 3 over 48 single perturbations in
+      5 classes (refs +12/-6, live length +/-2,4,8, birth order, pseudo-pseudo
+      conflict adds, calls-crossed, preference add/reroute/clear);
+    * **FORECLOSED** on the preference route with a named mechanism: "$a3 never
+      appears as a hard reg in this function's pre-RA RTL, so global.c
+      set_preference can never record a preference for it."
+  Scope note recorded honestly for the next session: `inverse.py`'s
+  CONFLICT_ADD atoms are pseudo-pseudo only (over the focus set {72,74}); there
+  is no HARD-conflict-add atom, so the solver does not search "make $a1 and $a2
+  hard-conflict with 72". That single unsearched axis is exactly the closed
+  channel s5/s7/s8/s9 already measured (it requires two byte-free register
+  occupants alive across the pointer, and mode C above shows the first such
+  occupant costs the entry-copy slot).
+  Artifacts: tmp/grind/func_80033550/s10/inverse_d2.txt, inverse_d3.txt.
+
+- H-s10.4 "An endgame-lock AND-gate passes." KILLED (both, re-measured).
+  Gate #1 `tools/scan_hand_coded.py --single func_80033550` = **tier=LOW
+  score=0/8**, S1-S8 all negative (tmp/grind/func_80033550/s10/scan_hand_coded.txt).
+  Gate #2 no in-hand SOTN-master precedent: the closing construct would still be
+  a byte-free REGISTER occupant, and the s9 census of
+  docs/reference/sotn-construct-index.md (1,365 PSX entries) returned nothing;
+  mode C above independently shows the construct is not byte-free here.
+
+## [s10] The honest floor has moved on the current chassis.
+- mechanism: chassis re-measurement — every banked spelling conclusion is chassis-relative and must be re-verified before it is spent.
+- probe: memory/grind/func_80033550/candidate.c spliced over INCLUDE_ASM("asm/funcs", func_80033550); at src/code6cac_b.c:1855 (CRLF normalised to LF), then `sandbox func_80033550 --disable all`.
+- result: score 4, target_insns 34, build_insns 34, rules_dropped 0. Identical to s1-s9.
+- verdict: KILLED
+
+## [s10] The sanctioned F1 combine-foldable chain-extender (.claude/rules/dead-store-fake-exception.md:32-46) can move pseudo 72 (the arg0 pointer) out of $a1 — the owner's named 2026-08-24 directive.
+- mechanism: the family's ONLY named mechanism is the extra reg_n_refs flow.c records before combine folds the algebraically-neutral detour back to the direct form with zero emitted bytes; that lifts the allocno's global.c priority.
+- probe: three spellings compiled and measured, each re-extracted through tools/ra_solver/extract.py: (A) plain alias `s32 *p = arg0;`; (B) folding detour `s32 *p = arg0 + 1;` feeding p[-1]/p[0]/p[1]; (C) partial detour with arg0 feeding loads 0,1 and `s32 *p = arg0 + 2;` feeding load 2.
+- result: (A) INERT — the copy dies in cse/jump before flow.c counts it; the model is byte-identical to baseline (nrefs 5, livelen 16, pri 6250, hard conflicts {2,3,4,29}, seat $a1); sandbox 4, 34/34. (B) count-neutral but NOT byte-neutral — combine rebases all three lw offsets and the detour survives only by replacing the entry copy, emitting `addiu a1,a0,4` where target has `addu a3,a0,zero`; model moves (livelen 16->17, pri 6250->5882) but nrefs and the hard-conflict set do not, so find_reg still returns $a1; sandbox 4, 34/34. (C) splits the pointer into TWO surviving global allocnos at 34 insns for the first time in ten sessions (74=$v1 i; 72=$a0 arg0; 79=$a1 detour) — arg0's hard-conflict set loses 4 and the seat moves the WRONG way, and the second occupant again consumes the entry-copy slot (`addiu a1,a0,8`); sandbox 4, 34/34. Structural law: the three loads are already in direct base+offset form and arg0 is a runtime parameter, so a detour is either folded pre-flow (inert) or slot-substituting (byte-changing) — there is no third mode.
+- verdict: KILLED
+
+## [s10] Some perturbation of the modelled register-allocation inputs reaches the target seat ($a3) for the arg0 pointer.
+- mechanism: global.c allocno_compare priority + find_reg's ascending scan; the solver searches refs, live length, birth order, pseudo-pseudo conflicts, calls-crossed and preferences and maps each surviving vector to a C lever.
+- probe: tools/ra_solver/extract.py func_80033550 code6cac_b, then tools/ra_solver/inverse.py global tmp/ra_solver_work/func_80033550.model.json --goal '{"72": 7}' at --depth 2 and --depth 3.
+- result: NEGATIVE RESULT at both depths over 48 single perturbations in 5 classes (refs +12/-6, live length +/-2/4/8, birth order, conflict adds, calls-crossed, preference add/reroute/clear), plus an explicit FORECLOSED verdict on the preference route with its mechanism named: '$a3 never appears as a hard reg in this function's pre-RA RTL, so global.c set_preference can never record a preference for it.' Honest scope limit recorded: inverse.py's CONFLICT_ADD atoms are pseudo-pseudo only, so 'make $a1 and $a2 HARD-conflict with 72' is not searched — and that single unsearched axis is exactly the byte-free-occupant channel s5/s7/s8/s9 already measured closed, which mode (C) above independently prices at one instruction slot.
+- verdict: KILLED
+
+## [s10] An endgame-lock AND-gate passes for func_80033550.
+- mechanism: gate #1 = STRONG scan_hand_coded signals (S1/S2/S6) authorise a canonical-asm grant; gate #2 = an in-hand SOTN-master precedent authorises a coercion/spelling family.
+- probe: python3 tools/scan_hand_coded.py --single func_80033550 re-run this session; s9's census of docs/reference/sotn-construct-index.md (1,365 PSX-master entries) re-affirmed against this session's measurement.
+- result: Gate #1 tier=LOW score=0/8, S1-S8 all negative (0 multu/mflo pairs, no empty-body branch, S3/S4 N/A at 34 < 40 insns, no sibling cluster, no BIOS jumptable, no unsaved $sN, no redundant mask). Gate #2 no precedent for a byte-free register occupant; the adjacent pad_dummy_local family is frame-slot-based and target func_80033550 has no stack frame at all — and mode (C) measures that a surviving second occupant is not byte-free in this 34-insn shape.
+- verdict: KILLED
