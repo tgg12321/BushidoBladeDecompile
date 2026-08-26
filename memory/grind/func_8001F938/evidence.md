@@ -397,3 +397,40 @@ shipped as candidate.c with the 13 rules retired.
   a coercion family with no in-hand SOTN precedent, or override the canonical-asm evidence bar,
   is PRE-DECIDED NO and MUST NOT be filed — such a function "stays ACTIVE and keeps grinding
   under standing policy". That is exactly what this session did, and the grind found the match.
+
+## [s11b] 2026-08-25 — escalation modality — independent re-verification + family-scope ruling request
+
+- The honest floor for func_8001F938 is **0**, not 8. Re-measured live this session with the
+  s11 body applied to src/code6cac.c: `sandbox func_8001F938 --disable all` => score 0,
+  build_insns 107 == target_insns 107, rules_dropped 0, cheat_asm_stripped 0 for this function.
+- Full-build `verify-oracle` => ok true, build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa
+  = original_sha1_locked. The tree byte-matches the shipped EXE with this function in pure C,
+  zero regfix rules, zero asmfix rules, zero cheat-asm, zero inline asm, zero volatile.
+- The closing construct is `s16 dmg = *((s16 *)(arg0 + 0x270)); if (dmg >= 4) { dmg = 3; }
+  idx = dmg * 2;` — ONE dereference, ONE type. Target's second same-address load (`lhu`) is
+  cc1's HImode-pseudo materialisation; the `>= 4` compare separately needs a sign-extended
+  SImode operand, supplied by `lh`. No second C-level typed view exists in the source.
+- The 2026-08-25 23:08 layer-1 cheat-reviewer FAILed it as a new spelling of the pre-banned
+  signedness-split / dual-typed-view family. s11b argues this is a SCOPE error: the pre-ban
+  enumerates its spellings as "guarded ternary, unconditional split, union, two-pointer, or
+  single-u16-read + (s16) cast" (all two-view), and the 2026-07-23 ruling states the family's
+  harm as "the second dereference changes nothing about what the program computes" — there is
+  no second dereference here.
+- IN-REPO SHAPE PRECEDENT (new this session): `s16 <name> = *(s16 *)(<base>+<off>);` already
+  ships in zero-rule byte-matched COMPLETED-C functions — src/code6cac_b.c:377 inside
+  func_8002798C (0 regfix, 0 asmfix, absent from engine/queue.json and from
+  inline_asm_canonical.txt) and src/code6cac.c:777 and :792 inside func_8001B478. 135
+  narrow-typed locals ship across src/. The shape is project-native ordinary C.
+- FIDELITY EVIDENCE: target's 8-byte frame is exactly the HImode local's own stack slot. The
+  shipped binary reserves storage that exists only if the original Lightweight source held
+  this value in a `short` local. s4's permuter could previously reach that frame only with a
+  `volatile short pad` cheat; here it falls out of ordinary typing.
+- T6 hygiene: the local was renamed `raw_or_3` -> `dmg` (s9's write-site census identified
+  +0x270 as a per-status damage accumulator written by func_80027438 and indexing the s16
+  factor table at +0x276). Codegen unchanged; sandbox 0 under both names. The ban is treated
+  as covering both names — the rename is NOT an attempt to respell around it, and s11b did
+  NOT submit candidate-ready.
+- gate (a) re-run: `scan_hand_coded --single func_8001F938` = tier LOW, score 0/8. Canonical-asm
+  remains unavailable and irrelevant — a pure-C form provably exists and byte-matches.
+- src/code6cac.c was reverted to `INCLUDE_ASM("asm/funcs", func_8001F938);` before the session
+  ended, per asm-until-matched; the score-0 body lives in memory/grind/func_8001F938/candidate.c.

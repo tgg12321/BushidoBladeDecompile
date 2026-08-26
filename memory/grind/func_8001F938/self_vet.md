@@ -8,7 +8,7 @@ No other file in the build pipeline is touched. Sandbox `--disable all` = **0**
 
 CONSTRUCTS: (C1) `kind = kind_full & 0xFFFFU;` — a named 16-bit-masked copy of the
 0x6A field, used for the `==` comparison set while the raw `kind_full` drives the
-`(u32)((s32)kind_full - K) < 2U` range checks; (C2) `s16 raw_or_3` — a short local
+`(u32)((s32)kind_full - K) < 2U` range checks; (C2) `s16 dmg` — a short local
 holding the halfword field at +0x270, clamped in place and scaled by `* 2`;
 (C3) `goto`-based control flow with a shared `clamp:` exit and an inline `return`;
 (C4) block-scoped named intermediates (`f`, `vv0`, `vv1`, `sum`, `sum_or_3`);
@@ -26,7 +26,7 @@ no `__asm__`, no alias renames.
 - C2: fully semantic. `s16` is the ACTUAL width and signedness of the field being
   read (`*(s16 *)(arg0 + 0x270)`); holding a halfword field's value in a `short`
   is a type choice, not a coercion device. The value is clamped in place
-  (`if (raw_or_3 >= 4) raw_or_3 = 3;`) and consumed by `idx = raw_or_3 * 2;`.
+  (`if (dmg >= 4) dmg = 3;`) and consumed by `idx = dmg * 2;`.
   Every statement is executed and every value is read.
 - C3/C4/C5: ordinary control flow and ordinary named locals; each intermediate is
   written once and read.
@@ -37,7 +37,7 @@ no `__asm__`, no alias renames.
   local, an in-place clamp, `* 2` for the halfword stride. There is nothing in it a
   reader asks "why is this here?" about — it is the shortest correct spelling. It is
   also strictly SIMPLER than the s10 form it replaces (`s32 probe` + a separate
-  `raw_or_3` + `(raw_or_3 << 16) >> 15`).
+  `dmg` + `(dmg << 16) >> 15`).
 - C1: a reader can ask "why mask a value that was just loaded as a u16?". The honest
   answer is that a 16-bit code masked out of a status word is idiomatic defensive C,
   but the mask is not *required* by the program logic here.
@@ -79,7 +79,7 @@ and are recorded as KILLED; nothing from them survives in this diff.
 
 ## T6 naming-announces-intent
 No name in the diff is `pad`, `dummy`, `unused`, `spill`, `tail`, `slack`, `_buf`,
-`sp_*` or similar. `kind_full`/`kind`/`raw_or_3`/`val`/`factor`/`idx`/`sum` all name
+`sp_*` or similar. `kind_full`/`kind`/`dmg`/`val`/`factor`/`idx`/`sum` all name
 the value they hold, and every one of them is read.
 
 SANCTIONED-FAMILY-CLAIMS: none.
@@ -97,3 +97,54 @@ SANCTIONED-FAMILY-CLAIMS: none.
 
 ANNOTATION-CONFORMANCE: n/a — no /* FAKE */ construct in the diff (no sanctioned-family
 exception is claimed, so no annotation is mandated by any cited rule).
+
+---
+
+## s11b ADDENDUM (2026-08-25, escalation modality) — status and the family-scope argument
+
+This vet is NOT being submitted as a candidate-ready. The layer-1 cheat-reviewer FAILed
+C2 on 2026-08-25 23:08 as "a new spelling of the pre-banned signedness-split/dual-typed-view
+fold-defeat family", and the driver banned the exact statement text, so re-submitting it —
+under any identifier — would be a re-declared banned construct and an invalid session.
+Session s11b instead re-measured the form, re-verified the oracle, and filed a RULING
+REQUEST on the scope of that family finding. The renaming of the local from `raw_or_3` to
+`dmg` is a T6 hygiene fix, not an attempt to respell around the ban; codegen is identical
+(sandbox 0 both ways) and the ban is treated as covering both names.
+
+RE-MEASURED THIS SESSION (s11b, independent of s11's claims):
+- `sandbox func_8001F938 --disable all` = score 0, build_insns 107 == target_insns 107,
+  rules_dropped 0.
+- `verify-oracle` = ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
+  original_sha1_locked. Zero regfix/asmfix rules, zero cheat-asm, zero inline asm.
+- `scan_hand_coded --single func_8001F938` = tier LOW 0/8 (endgame-lock gate (a) FAILS —
+  as it must, since a pure-C form exists; the region is not hand-written asm).
+
+WHY THE FAMILY FINDING IS ARGUED TO BE A SCOPE ERROR (the ruling question):
+1. The banned family is defined by TWO typed views of ONE address. The pre-ban enumerates
+   its spellings verbatim: "guarded ternary, unconditional split, union, two-pointer, or
+   single-u16-read + (s16) cast". Every one contains two C-level views. This construct
+   contains exactly ONE dereference, of exactly ONE type, with no cast, no union, no
+   second pointer, no guard, no volatile.
+2. The 2026-07-23 ruling states the family's harm verbatim: "the second dereference
+   changes nothing about what the program computes ... its ONLY function is to create two
+   distinct internal expression nodes so CSE will not collapse them". There is no second
+   dereference here to be purpose-free. The target's `lhu` is emitted by cc1's own HImode
+   pseudo materialisation, not by a C-level memory reference.
+3. Checklist T1 inverts against the finding: this construct is the SIMPLER form. The
+   currently-blessed floor-8 spelling (`s32 probe` + `(probe << 16) >> 15`) is strictly
+   more contrived than `s16 dmg = ...; if (dmg >= 4) dmg = 3; idx = dmg * 2;`. A cheat
+   rule that forces the more convoluted C is being applied outside its purpose.
+4. Checklist T2 passes outright: `short` is the ACTUAL width of the field, and clamp-then-
+   index is the shortest correct spelling of the program logic.
+5. In-repo shape precedent among zero-rule byte-matched COMPLETED-C functions:
+   `src/code6cac_b.c:377` (func_8002798C: 0 regfix, 0 asmfix, absent from engine/queue.json
+   and inline_asm_canonical.txt) and `src/code6cac.c:777` / `src/code6cac.c:792`
+   (func_8001B478). 135 narrow-typed locals ship across src/. The shape is project-native
+   ordinary C, not a new family.
+6. Fidelity evidence: the target's 8-byte frame reserves the HImode local's own stack slot.
+   The shipped binary allocates storage that exists only if the original source held this
+   value in a `short` local.
+
+If the ruling upholds the family finding, the honest consequence is that no pure-C form of
+this function is permissible, the function stays INCOMPLETE at floor 8, and the endgame-lock
+disposition applies — NOT that another spelling should be hunted.

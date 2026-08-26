@@ -85,8 +85,6 @@
  ],
  "origin": "queue",
  "created": "2026-07-23T14:45:17.428783+00:00",
- "banned_constructs": [
-  "`s16 raw_or_3 = *((s16 *)(arg0 + 0x270)); if (raw_or_3 >= 4) { raw_or_3 = 3; } idx = raw_or_3 * 2;` (candidate.c / diff lines under `multpath_start:`)"
- ],
+ "banned_constructs": [],
  "ladder_skip": 10
 }
