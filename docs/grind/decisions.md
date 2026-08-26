@@ -13281,3 +13281,7 @@ instruction (`refs_up` pseudo 76 3->4, or `refs_down` pseudo 75 3->2). Ledger:
 `memory/grind/func_800871D4/{evidence.md,hypotheses.md,candidate.c}`; the
 52-instruction structurally exact chassis is banked at
 `memory/grind/func_800871D4/rejected/dualuse-52insn-a1a2-seats-swapped.c`.
+
+## 2026-08-26 04:08 — func_800871D4 — layer-1 review — **FAIL**
+
+The candidate keeps two 'andi $v1,$a0,0xFFFF' masks alive purely by giving the raw u16 load a second use so combine.c's can_combine_p refuses to fold them away — a redundant-width-cast codegen defeat, the exact family (F2, 'redundant width casts') the owner's 2026-07-01/2026-08-18 rulings explicitly REFUSED to sanction, and the worker's own self-vet admits it has zero semantic effect.

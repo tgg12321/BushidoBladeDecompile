@@ -46,7 +46,14 @@
    "next_probe": "Confirm analytically from the model (allocno live_length is printed by extract.py) that no reordering permitted by the target's instruction stream removes 4 insns from pseudo 76's range; then record it KILLED so no future session spends sandbox runs on arm-reordering variants. This is a paper probe - do not burn measurements on it beyond one confirmation."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The candidate keeps two 'andi $v1,$a0,0xFFFF' masks alive purely by giving the raw u16 load a second use so combine.c's can_combine_p refuses to fold them away \u2014 a redundant-width-cast codegen defeat, the exact family (F2, 'redundant width casts') the owner's 2026-07-01/2026-08-18 rulings explicitly REFUSED to sanction, and the worker's own self-vet admits it has zero semantic effect. Next action: Do not commit. This is not a citation-only defect \u2014 the construct sits inside a family (redundant width casts, F2) that owner rulings have twice explicitly refused to san"
+ ],
  "origin": "queue",
- "created": "2026-07-28T21:34:02.006043+00:00"
+ "created": "2026-07-28T21:34:02.006043+00:00",
+ "banned_constructs": [
+  "`temp_a0 = D_8010280A; vc = raw & 0xFFFF; ... /* else arm */ vc = raw & 0xFFFF;` \u2014 caching the raw load in `raw` and masking it twice solely so the load pseudo has >1 use, which per the session's own mechanism analysis (evidence.md [s3]) makes combine.c's can_combine_p refuse to fold the load into the AND, so `nonzero_bits`/simplify_and_const_int never proves the value 16-bit-clean and both `andi`",
+  "In-tree precedent citation (SpuGetVoiceVolume src/main.c:2884/2891, _SsVmVSetUp src/main.c:1250) offered as evidence the shape is the tree's established idiom."
+ ],
+ "ladder_skip": 2
 }

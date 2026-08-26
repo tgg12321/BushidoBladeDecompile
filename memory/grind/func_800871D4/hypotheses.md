@@ -101,3 +101,27 @@
 - probe: then-arm `var_a1 = 0;` moved before the shift; sandbox --disable all.
 - result: score 8, build_insns 53 - the `j` delay slot is lost because the shift is no longer the arm's last instruction. Strictly worse than the score-6 chassis.
 - verdict: KILLED
+
+## [s4] The `live_shrink pseudo 76` atom that s3 declared unreachable is in fact reachable, because the target's instruction ORDER constrains the emitted stream, not the source statement order.
+- mechanism: global.c allocno_compare sorts on floor_log2(n_refs)*n_refs*size/live_length. The else-arm mask's live_length (21) is dominated by its block-3 contribution: it stays live from the join down to `or $a0,$a0,$a1`, 18 RTL insns in, only because the source completes the entire D_801078D8 read-modify-write group before starting the D_801078DA one. Interleaving the two groups at source level moves its last reference ~5 RTL insns earlier; sched1 (which runs before local/global alloc, so live_length is measured on ITS output) and sched2 are then free to re-emit the target's order. Live_length drops below the then-arm mask's 19, the sort flips, and the else-arm mask takes $a1 - the target's seat - with no block-0 store and therefore no extra instruction.
+- probe: On the s3 score-6 chassis (rejected/dualuse-52insn-a1a2-seats-swapped.c), replace the tail with: both key-off loads, both key-on loads, both ORs, both stores, both masked write-backs. sandbox --disable all, then verify-oracle.
+- result: score 6 -> 0, build_insns == target_insns == 52, rules_dropped 0. Full build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa (build_matches true). THE FUNCTION IS MATCHED.
+- verdict: CONFIRMED
+
+## [s4] A PARTIAL interleave suffices (moving only the D_801078DA `or` up).
+- mechanism: if the death point were set by the first post-join reference, hoisting just the OR would shorten the range.
+- probe: Two spellings - DA `or` moved next to the D8 `or`; DA `or` moved above the D_800F1B10 load. sandbox --disable all.
+- result: score=6, build_insns=52 for BOTH. live_length is set by the LAST reference, so the DA store and the D_800F1B12 write-back must move up as well.
+- verdict: KILLED
+
+## [s4] The two `& 0xFFFF` masks can be replaced by a type-level narrowing (a `u16` local), which would remove the width-redundancy question entirely.
+- mechanism: GCC 2.7.2 defines PROMOTE_MODE, so HImode locals live in SImode registers with an explicit zero-extension after each assignment - in principle the same `andi $v1,$a0,0xFFFF` the target needs, but emitted by the type system rather than by an explicit mask.
+- probe: three spellings on the interleaved chassis - `u16 raw` + `u16 vc` with no mask; `u32 raw` + `u16 vc`; `u32 raw` + `u32 vc` with no mask (plain copies). sandbox --disable all.
+- result: 55 insns / score 14; 54 insns / score 7; 53 insns / score 6 respectively. All strictly worse than 52. The extension GCC inserts after the in-place `vc -= 0x10` is the extra instruction in the first two; the third emits a copy instead of either `andi`. The explicit masks are load-bearing and no narrow-type spelling substitutes for them.
+- verdict: KILLED
+
+## [s4] A permuter campaign on the s3 score-3 chassis can find the seat flip.
+- mechanism: randomized C perturbation over the whole body (perm_reorder_stmts, perm_temp_for_expr, perm_refer_to_var etc.) exploring exactly the statement-order neighbourhood the RA residual lives in.
+- probe: hand-built workspace tools/decomp-permuter/nonmatchings/func_800871D4_s4 (full-TU cpp + cc1 -mel + maspsx + regfix + asmfix), 6 jobs, --stop-on-zero, PERM_RANDOMIZE over the entire body; ~2550 iterations.
+- result: base_score 160; best novel find score 40 at 103s, then 130 and 145; never approached 0. The analytic route (reading s3's ra_solver live-range accounting and reasoning about which atom family costs no instruction) reached 0 first. Harvested with --stop.
+- verdict: KILLED (as a route for THIS function; recorded as a negative campaign datum, log banked)
