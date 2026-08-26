@@ -13490,3 +13490,86 @@ byte-pointer address arithmetic). No such shape is known; finding one is an expa
 an RA, scheduler, permuter or spelling question. Also note the 1 remaining non-frame instruction is
 target's maspsx label-delay `nop`, retirable on the DONE path via `maspsx_label_nop_funcs.txt`
 (operator surface, outside the grind scope).
+
+## 2026-08-26 — func_80037A20 (src/code6cac_c.c) — **ESCALATION WITHDRAWN — FLOOR DROPPED 13 → 8 (solver modality)**
+
+**Disposition: the function is ACTIVE and grindable. No owner action is requested
+by this entry.** It exists to retract the standing endgame-lock record, which a
+future session would otherwise read as licence to dispose of the function.
+
+**What this supersedes.** The 2026-07-24 OWNER-ESCALATION (this file, line 1675)
+and the 2026-07-27 owner ruling applying escalation option (b) (line 1778) both
+rest on a single premise: "every sanctioned pure-C axis (s1 recon/greg, s2–s3
+structural, s4–s5 permuter, s6–s7 forensics/ALLOCDBG) is measured dead on
+func_80037A20's honest floor of 13." **That premise is now false.** Grind session
+s9 ran the solver modality — which the owner's own 2026-08-24 queue directive
+recommended for exactly this class of residual, and which no prior session had
+executed — and it produced an ordinary-C form that drops the honest floor from
+13 to 8 with no coercion construct of any kind.
+
+**The measurement.**
+- Start of session, s1–s8 candidate pasted over HEAD's INCLUDE_ASM:
+  `sandbox func_80037A20 --disable all` = **13**, 33/33 insns, 0 rules.
+- End of session, s9 candidate in place: `sandbox … --disable all` = **8**,
+  33/33 insns, 0 rules, no cheat construct. `objdump` confirms the emitted
+  function now holds the directory pointer in `$s0` and the counter in `$s1` —
+  target's assignment. Twelve of the thirteen diffs (the entire `$s0`↔`$s1`
+  rename that eight sessions had called a cc1-internal lock) are gone.
+
+**The lever, and why eight sessions missed it.** GCC 2.7.2 `global.c` sorts
+allocnos by `floor_log2(nrefs) * nrefs * size / live_length * 10000`. With one
+pointer local the pointer allocno is byte-forced at nrefs=5 / live_length=17 →
+pri 5882, the lowest priority any allocno in this function can hold, so it can
+never be allocated first and never wins `$s0`. Every prior session attacked the
+COUNTER side (lower its refs, lengthen its range) or tried to add pointer
+references; s3/s7/s8 correctly measured all of those dead, because nrefs and
+live_length are positively coupled here — every cut that lowers a pseudo's ref
+count shortens its live range by the same span and the quotient does not move.
+The lever is on the third axis: **split the pointer** into a base pointer (handed
+to `firstfile`) and a walking pointer the loop advances — the natural way to walk
+a DIRENTRY array — which cuts the 17-insn range into 12 + 6 and leaves the dense
+references on the SHORT half. Instrumented `BB2_ALLOC_DEBUG`, do/while loop:
+
+    walking p  p75  nrefs=7   live_length=6   pri=23333  -> $s0   [= target]
+    counter    p76  nrefs=10  live_length=16  pri=18750  -> $s1   [= target]
+    base       p74  nrefs=3   live_length=12  pri= 2500  -> $s0   [= target]
+
+The base dies at the copy, so it does not conflict with the walking pointer; both
+take `$s0` and the copy is a no-op move deleted by `final.c`, leaving the insn
+count at 33.
+
+**Construct review.** The new body contains two pointer locals and a `do/while`
+loop. Every value is real and consumed; nothing is dead, nothing is written for
+its codegen side effect, no `register`/`asm`/`volatile`/pad/alias appears. No
+sanctioned-exception family is claimed and no `/* FAKE */` annotation is required
+or present.
+
+**Remaining residual (8 diffs, both PRE-RA — register allocation is solved).**
+1. `la D_80102810` is emitted in the basic block after the `sprintf` jal; target
+   emits the `lui`/`addiu` pair in the ENTRY block, which changes how the three
+   register saves are distributed and which one fills the jal delay slot. With one
+   pointer local the la WAS at the top (the loop use held it there), so the split
+   traded the la position for the allocation; both are needed. Not yet
+   pass-attributed — the next session reads `tmp/grind/func_80037A20/dumps/*.cse`,
+   `*.loop`, `*.combine` first.
+2. The entry increment folds to `li $s1,1` (cse.c FIRST pass, `REG_WAS_0`
+   const-prop of the dominating `var_s1 = 0`) where target has `addiu $s1,$s1,1`.
+   s7's objection to defeating this fold — that unfolding adds a counter reference
+   and entrenches the counter's `$s0` win — no longer applies, because the counter
+   no longer competes for `$s0`.
+
+**Endgame-lock gates, for the record (both still FAIL, and both are now moot).**
+`scan_hand_coded --single func_80037A20` = tier **LOW, score 0/8** (re-run this
+session); no SOTN-master precedent is cited or needed, because the closing form
+requires no construct that would need one.
+
+**Ledger:** `memory/grind/func_80037A20/` — `evidence.md` [s9], `hypotheses.md`
+[s9], `candidate.c` (floor 8), `rejected/split-counter-partition-p2.c`.
+**Artifacts:** `tmp/grind/func_80037A20/s9/` (inverse_global.txt, classify.txt,
+partition_foreclosure.py/.txt, sweep.ps1, sweep2.ps1, final_C_dowhile.c).
+
+**Standing lesson (worth generalising):** an eight-session flat floor plus four
+dead modalities was not exhaustion — it was four modalities all attacking the
+same side of a two-sided quotient. The solver named the quotient and made the
+other side visible in one session. Where a ledger's kills all share one lever
+direction, run the solver before believing the wall.

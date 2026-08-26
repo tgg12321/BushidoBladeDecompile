@@ -366,3 +366,87 @@ function is INCOMPLETE. candidate.c is the faithful pin/barrier-free body
 - [s8] Axes measured dead across s1-s7: structural (s1-s3), permuter (s4-s5, 3 chassis / ~21k iters), compiler-divergence (s6, cc1psx==fork), ALLOCDBG dataflow lever (s7). No un-tried sanctioned axis remains.
 
 - [s8] OWNER-ESCALATION entry filed at docs/grind/decisions.md (## 2026-07-24 — func_80037A20 (src/code6cac_c.c) — OWNER-ESCALATION), naming func_80037A20 directly, with both mutually-exclusive owner options (a) sanction coercion / (b) refuse+accept INCOMPLETE.
+
+## [s9] solver modality — floor 13 -> 8; the endgame-lock claim is withdrawn
+
+- The owner's 2026-08-24 queue directive (run the solver before any deep re-grind
+  of an RA/scheduler-tiebreak residual) had never been executed here. s1-s8 all
+  predate it. Executing it broke the eight-session plateau in one session.
+- HEAD chassis re-measured at session start with the s1-s8 candidate pasted over
+  the INCLUDE_ASM line: sandbox --disable all = 13, 33/33 insns, 0 rules. Chassis
+  unchanged from the ledger.
+- global.c law (confirmed against instrumented ALLOCDBG output on this function):
+  pri = floor_log2(nrefs) * nrefs * size / live_length * 10000; allocnos sort by
+  pri DESC (tie -> lower pseudo number = birth order); the first allocno takes the
+  first free callee-saved register, i.e. $s0.
+- The POINTER allocno is byte-forced at nrefs=5, live_length=17, pri=5882 when the
+  function uses ONE pointer local: target's own stream puts the la at insn 5 and
+  the last pointer use at insn 20 with no dead gap. That is the lowest priority any
+  allocno in this function can have — which is why s1-s8 could never win $s0.
+- Counter-side levers are foreclosed, now with a measured instance rather than an
+  argument: the "n = var_s1 + 1" partition is byte-neutral (13 / 33 insns) and the
+  split survives to global alloc, but ALLOCDBG gives n(p79) nrefs=4 len=7 pri=11428
+  and count(p75) nrefs=4 len=8 pri=10000 — both still above 5882. Reason: nrefs and
+  live_length are positively coupled, so every cut lowers both and the quotient is
+  unmoved. Enumeration of all legal partitions:
+  tmp/grind/func_80037A20/s9/partition_foreclosure.txt (min max-pri 12500 vs 5882).
+  Banked at rejected/split-counter-partition-p2.c.
+- THE LEVER: split the POINTER, not the counter. A base pointer (handed to
+  firstfile) plus a walking pointer the loop advances — the natural spelling for
+  walking a DIRENTRY array — cuts the pointer's 17-insn live range into 12 + 6 and
+  leaves the dense references on the short half. Priority rises instead of falling.
+  With a do/while loop:
+      p    (walking) p75 nrefs=7  live_length=6  pri=23333 -> $s0   [= target]
+      ctr            p76 nrefs=10 live_length=16 pri=18750 -> $s1   [= target]
+      base           p74 nrefs=3  live_length=12 pri= 2500 -> $s0   [= target]
+  base dies at the copy so it does not conflict with p; both take $s0 and the copy
+  is a no-op move deleted by final.c, so the insn count stays 33.
+  **sandbox --disable all = 8** — objdump confirms $s0 = pointer, $s1 = counter.
+  The entire s0<->s1 rename (12 of the 13 diffs) is gone.
+- Family stability: C_dowhile, W1 (copy outside the if), W3 (copy before the entry
+  increment) and W4 (firstfile takes p) all measure 8 / 33. The goto-loop spelling
+  measures 16 (p pri 13333 < counter 15000 — pointer sorts second). Stacking the
+  counter split on top regresses to 18 / 35: the split counter no longer conflicts
+  with the walking pointer, re-takes $s0, and the base pointer is pushed to $s2,
+  costing a third save/restore pair.
+- No coercion construct is involved anywhere in the new form: two pointer locals
+  and a do/while loop, every value real and consumed. No FAKE annotation, no
+  sanctioned-exception family claimed, nothing from the forbidden catalog.
+- CONSEQUENCE FOR THE DISPOSITION: the 2026-07-24 OWNER-ESCALATION
+  (docs/grind/decisions.md:1675) and the 2026-07-27 refusal (…:1778) both rest on
+  "every sanctioned pure-C axis is measured dead". That premise is false. The
+  function is grindable and stays ACTIVE. Recorded in decisions.md as a
+  s9 correction entry.
+- Remaining 8 diffs are both PRE-RA — see hypotheses.md [s9] frontier: (1) the
+  `la D_80102810` lands in the block after the sprintf jal instead of the entry
+  block, re-scheduling the prologue saves; (2) the entry increment folds to
+  `li $s1,1` (cse.c first pass, REG_WAS_0) instead of `addiu $s1,$s1,1`. The s7
+  objection to defeating the fold (it adds a counter reference and entrenches the
+  counter's $s0 win) NO LONGER APPLIES, because the counter no longer competes for
+  $s0 — that lever is worth re-opening first.
+
+- [s9] Chassis re-measured at session start with the s1-s8 candidate pasted over HEAD's INCLUDE_ASM: sandbox --disable all = 13, 33/33 insns, 0 rules - matching the ledger, so every banked spelling conclusion was chassis-valid.
+
+- [s9] global.c law confirmed against instrumented ALLOCDBG output on this function: pri = floor_log2(nrefs)*nrefs*size/live_length*10000; allocnos sort pri DESC (tie -> lower pseudo = birth order); the first allocno takes the first free callee-saved register, i.e. $s0.
+
+- [s9] With ONE pointer local the pointer allocno is byte-forced at nrefs=5 / live_length=17 -> pri 5882, the lowest priority any allocno in this function can hold (target's own stream puts the la at insn 5 and the last pointer use at insn 20 with no dead gap). That, not a tiebreak, is why s1-s8 could never win $s0.
+
+- [s9] Counter-side foreclosure now has a measured instance rather than an argument: the n = var_s1 + 1 partition is byte-neutral (13 / 33 insns) and survives to global alloc, yet both halves (pri 11428 and 10000) still out-rank 5882. Enumeration of all legal partitions in tmp/grind/func_80037A20/s9/partition_foreclosure.txt gives min max-pri 12500 vs 5882.
+
+- [s9] The winning form: base pointer var_s0 handed to firstfile + walking pointer p advanced by a do/while loop. ALLOCDBG: p 7 refs / len 6 / pri 23333 -> $s0; counter 10 refs / len 16 / pri 18750 -> $s1; base 3 refs / len 12 / pri 2500 -> $s0. sandbox 8, 33/33 insns, 0 rules.
+
+- [s9] The base-to-walking copy is a no-op move once both land in $s0 and is deleted by final.c, so the pointer split costs zero instructions.
+
+- [s9] Loop shape is load-bearing: the goto-loop spelling gives p pri 13333 < counter 15000 (sandbox 16); the do/while spelling gives p 23333 > counter 18750 (sandbox 8).
+
+- [s9] The counter must stay UNSPLIT: splitting it removes its conflict with the walking pointer, it re-takes $s0 and the base is pushed to $s2 (+2 insns, sandbox 18).
+
+- [s9] No coercion construct appears anywhere in the new body: two pointer locals and a do/while loop, every value real and consumed, nothing dead, no register/asm/volatile/pad/alias. No FAKE annotation is needed or present and no sanctioned-exception family is claimed.
+
+- [s9] Endgame-lock gates re-run for the record and both still FAIL (and are now moot): scan_hand_coded --single func_80037A20 = tier LOW, score 0/8; no SOTN-master precedent is cited or needed because the closing form requires no construct that would need one.
+
+- [s9] Remaining 8 diffs are both PRE-RA - register allocation is SOLVED. (1) la D_80102810 is emitted in the basic block AFTER the sprintf jal; target emits the lui/addiu pair in the ENTRY block, which changes how the three register saves are distributed and which one fills the jal delay slot. (2) The entry increment folds to li $s1,1 (cse.c FIRST pass, REG_WAS_0 const-prop of the dominating var_s1 = 0) where target has addiu $s1,$s1,1.
+
+- [s9] s7's objection to defeating the fold - that unfolding adds a counter read-reference and entrenches the counter's $s0 win - NO LONGER APPLIES under the s9 allocation, because the counter no longer competes for $s0. That lever is re-opened.
+
+- [s9] ra_solver inverse_compose classify reports FIRST DIVERGENCE: PRE-RA on the honest-vs-target text streams (instruction multiset differs by exactly the folded entry increment), consistent with the post-s9 picture that only pre-RA residuals remain.

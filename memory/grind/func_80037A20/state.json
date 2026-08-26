@@ -1,7 +1,7 @@
 {
  "func": "func_80037A20",
  "file": "code6cac_c",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -57,18 +57,29 @@
    "floor": 13,
    "modality": "escalation",
    "headline": "Escalation modality: no un-tried lever drops the floor; endgame-lock AND-gates both satisfied (scan LOW 0/8; only reaching forms are pins+barrier with zero SOTN precedent). OWNER-ESCALATION filed."
+  },
+  {
+   "session": 9,
+   "floor": 8,
+   "modality": "escalation",
+   "headline": "Solver modality (never run before) broke the 8-session plateau: splitting the pointer into base + walking pointer flips the s0<->s1 allocation to target's and drops the honest floor 13 -> 8; the endga"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner ruling on the filed escalation (option (a) sanction a coercion form, or (b) refuse and accept INCOMPLETE-owner-accepted, retaining the cheat form on main to hold the oracle byte match).",
-   "mechanism": "Endgame-lock disposition: honest floor 13 RA+cse-fold internal lock under a byte-forced 33-insn structure; hand-coded certification NEGATIVE (LOW 0/8); byte-matchable only via forbidden cheat-asm; no SOTN precedent for the reaching coercion.",
-   "next_probe": "Await owner ruling per .claude/rules/endgame-lock-disposition.md; the driver parks func_80037A20 and advances the queue. Precedent species (motion_SetMotion, func_80017FA0, etc.) all ruled option (b) since 2026-07-20."
+   "hypothesis": "The la D_80102810 lands in the post-jal block because cse/combine propagated the symbol_ref to its first use once the loop stopped holding it; a spelling that keeps the address definition in the ENTRY block restores target's prologue schedule and closes most of the remaining 8 diffs.",
+   "mechanism": "With one pointer local the loop use held the la at the function top (measured in s1). After the split, the base pointer's only uses are the firstfile argument and the preheader copy, both dominated by the post-sprintf block, so the definition sinks there and the three register saves re-distribute (which save fills the jal delay slot changes).",
+   "next_probe": "MANDATORY FIRST: pwsh tools/grinder/dump.ps1 func_80037A20 and read tmp/grind/func_80037A20/dumps/*.cse, *.loop, *.combine to attribute which pass moves the (set reg (symbol_ref)) - do not hypothesise before reading. Then spell against that pass (see .claude/rules/defeat-combine-symbol-fold.md for the adjacent family) and re-measure. The allocation must be re-checked with tools/ra_solver/extract.py after every change, because the split's priority margin is what holds $s0."
   },
   {
-   "hypothesis": "Only if the owner rejects escalation: a faithful count that reads the counter through a distinct non-copy-propagated pseudo for the store/return (unlike s3's copy-propagated `result`), reducing its allocno refs to <=4 while holding 33 insns.",
-   "mechanism": "Redistribute allocno refs between the two callee-saved pseudos WITHOUT changing the emitted instruction stream (the divergence must be upstream of allocation, in pre-alloc RTL shape).",
-   "next_probe": "Structural search for a pseudo that survives copy-prop yet holds the store+return refs off the counter; must simultaneously hold 33 insns and the entry ++ at a cse boundary (the two pull against each other)."
+   "hypothesis": "Defeating the cse.c first-pass REG_WAS_0 fold of the entry increment now closes the last diff at no cost, because the counter no longer competes for $s0.",
+   "mechanism": "s6 pinned the fold to the FIRST cse pass (REG_WAS_0 note on the dominating var_s1 = 0). s7 measured that unfolding adds a counter read-reference, raising counter priority - which under the OLD allocation entrenched the wrong $s0 winner. Under the s9 allocation the counter is already second and is pinned to $s1 by its conflict with the walking pointer, so a priority rise is harmless as long as it stays below the walking pointer's 23333.",
+   "next_probe": "Re-try the honest fold-defeat spellings against the s9 body - NOT the s1-s8 body; every prior kill was measured on the old chassis and is now chassis-stale. Try a real cse-block boundary between the 0-init and the entry increment, and any faithful shape where the entry increment reads a value cse cannot prove is 0. After each, read ALLOCDBG to confirm the walking pointer still sorts first."
+  },
+  {
+   "hypothesis": "The two remaining diffs are coupled - both depend on where the counter's 0-init sits relative to the sprintf call - so a joint spelling reaches 0 where neither lever alone does.",
+   "mechanism": "s2 measured that moving var_s1 = 0 above the sprintf call costs +2 insns, but that was on the OLD chassis. On the s9 chassis the block structure around the call has changed (the la now sits in the post-jal block), so the interaction is unmeasured.",
+   "next_probe": "Sweep the joint space with the harness already built this session (tmp/grind/func_80037A20/s9/apply_variant.py plus a sweep .ps1 driver): counter-init position x address-definition position x loop shape, recording score+insns for each and ALLOCDBG for anything that improves on 8."
   }
  ],
  "judge_constraints": [],

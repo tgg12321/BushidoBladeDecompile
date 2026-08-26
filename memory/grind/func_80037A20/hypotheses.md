@@ -208,3 +208,103 @@ escalation-modality session. This forensics session names/quantifies; does not s
 - probe: Cross-check of the s7 coupling result against the s3 return-value-split kill.
 - result: Self-contradicting: unfolding the entry ++ ADDS a counter read-ref (s7 barrier probe raised counter pri 17142->22000, entrenching the swap); s3's return-value-split already tried the ref reduction and `result` copy-propagated away. The two requirements pull against each other.
 - verdict: KILLED
+
+## [s9] SOLVER MODALITY — the owner's 2026-08-24 directive, executed. FLOOR 13 -> 8.
+
+The owner's queue-item directive ("solver modality (ra_solver/sched_solver)
+recommended before deep re-grind of RA/scheduler-tiebreak residuals") had never
+been executed on this function: s1-s8 predate it. Running it did NOT confirm the
+endgame lock — it broke it.
+
+## [s9] The ra_solver inverse model says the s0<->s1 swap is reachable only by lowering the COUNTER allocno's global.c refs to <=4 (at live_length 14) or raising the POINTER's to >=10; at target's fixed byte stream neither is spellable, because refs and live_length are positively coupled in this function.
+- mechanism: global.c allocno_compare pri = floor_log2(nrefs)*nrefs*size/live_length*10000;
+  order is pri DESC (tie -> lower pseudo = birth order) and the FIRST allocno takes
+  the first free callee-saved register ($s0). The pointer allocno is byte-forced at
+  nrefs=5 / live_length=17 -> pri 5882 (the la is at insn 5 of target's stream and the
+  last use at insn 20, with no dead gap), so the only freedom is on the counter side.
+- probe: tools/ra_solver/extract.py + inverse.py global --goal '{"74":16,"75":17}'
+  (tmp/grind/func_80037A20/s9/inverse_global.txt), then an enumeration of every legal
+  contiguous partition of the counter's nine byte-forced references across multiple C
+  locals (tmp/grind/func_80037A20/s9/partition_foreclosure.py), then a MEASURED
+  instance of the most promising partition.
+- result: the enumeration predicted every partition leaves a counter allocno above the
+  pointer, minimum max-pri 12500 vs the pointer's 5882. MEASURED CONFIRMATION: the
+  "n = var_s1 + 1" split (rejected/split-counter-partition-p2.c) is byte-neutral
+  (13 / 33 insns) and the split SURVIVES to global alloc, but ALLOCDBG gives
+  p79(n) nrefs=4 len=7 pri=11428 and p75(count) nrefs=4 len=8 pri=10000 — both still
+  above the pointer's 5882, exactly as predicted (the model called 4/7/11428 to the
+  digit). Splitting the COUNTER is mechanically dead: every cut that lowers a pseudo's
+  ref count shortens its live range by the same span, so the quotient never falls.
+- verdict: CONFIRMED (counter-side levers foreclosed, with a measured instance)
+
+## [s9] KEY — splitting the POINTER (base + walking pointer) creates a short, reference-dense loop-carried allocno that out-ranks the counter, allocating the pointer family FIRST and reproducing target's $s0/$s1 assignment.
+- mechanism: the same allocno_compare quotient read in the other direction. The
+  counter's priority cannot be lowered, but the POINTER's can be RAISED — not by
+  adding references (s8 correctly killed that: the function has one if and one loop,
+  so there is nowhere byte-neutral to duplicate a pointer statement) but by
+  SHORTENING the live range of the allocno that carries them. A base pointer that
+  dies at the loop preheader plus a walking pointer born there splits the pointer's
+  17-insn range into 12 + 6 while the loop-carried half keeps the dense references.
+  The two halves do not conflict (the base dies at the copy), so they share $s0 and
+  the copy is a no-op move deleted by final.c — the insn count is unchanged.
+- probe: `p = var_s0;` in the loop preheader, loop advances p; measured across five
+  statement-order/loop-shape spellings (tmp/grind/func_80037A20/s9/sweep.ps1,
+  sweep2.ps1) with ALLOCDBG read for each.
+- result: with the goto loop the split alone gives p pri 13333 vs counter 15000 —
+  pointer sorts SECOND, sandbox 16. With a do/while loop the loop-carried pointer
+  gains references and tightens: p75 nrefs=7 len=6 pri=23333 -> $s0; counter p76
+  nrefs=10 len=16 pri=18750 -> $s1; base p74 nrefs=3 len=12 pri=2500 -> $s0.
+  That is TARGET's assignment exactly. **sandbox --disable all = 8** (was 13),
+  33/33 insns; objdump confirms $s0 = pointer, $s1 = counter throughout.
+  Four spellings of the family (C_dowhile, W1 copy-outside-if, W3 copy-before-inc,
+  W4 firstfile-uses-p) all land on 8; adding the counter split on top regresses to
+  18/35 (the split counter stops conflicting with the walking pointer, so it re-takes
+  $s0 and the base pointer is pushed to $s2, costing a third save/restore pair).
+- verdict: CONFIRMED — the s1-s8 "cc1-internal RA lock, no pure-C lever remains"
+  conclusion is REFUTED. The lock was a search boundary, not a mechanism.
+
+## Axis status after s9 — the endgame-lock claim is WITHDRAWN
+The 2026-07-24 OWNER-ESCALATION and the 2026-07-27 refusal ruling rest on
+"every sanctioned pure-C axis is measured dead". That premise is now false: the
+solver modality (never run before s9) produced an ordinary-C form that drops the
+honest floor 13 -> 8 with no coercion construct of any kind. func_80037A20 is
+plainly grindable and must stay ACTIVE.
+
+Remaining 8 diffs, both PRE-RA (register allocation is SOLVED):
+1. `la D_80102810` placement — target emits the lui/addiu pair in the ENTRY basic
+   block, before the sprintf jal; ours emits it in the block after the jal, which
+   re-schedules the whole prologue (the sw $s0 / sw $s1 / sw $ra distribution and
+   which save lands in the jal delay slot). With one pointer local (s1..s8) the la
+   WAS at the top — the loop use kept it there — so the split traded the la
+   position for the allocation. Both are needed. NOT yet pass-attributed: read
+   tmp/grind/func_80037A20/dumps/*.cse / *.loop / *.combine before hypothesising.
+2. the entry increment — ours `li $s1,1`, target `addiu $s1,$s1,1`; already
+   attributed in s6 to the FIRST cse.c pass (REG_WAS_0 const-prop of the
+   dominating `var_s1 = 0`). s7 showed defeating it ADDS a counter reference; under
+   the NEW allocation that is harmless (the counter is no longer competing for
+   $s0), so the s7 coupling objection no longer applies and this lever is worth
+   re-opening.
+
+## [s9] The s0<->s1 residual is reachable by perturbing the COUNTER allocno's global.c inputs (ra_solver inverse: counter refs 8->4 at live_length 14, or pointer refs 5->10).
+- mechanism: global.c allocno_compare pri = floor_log2(nrefs)*nrefs*size/live_length*10000; order is pri DESC (tie -> lower pseudo number = birth order) and the first allocno takes the first free callee-saved register ($s0).
+- probe: tools/ra_solver/extract.py + inverse.py global --goal {74:16, 75:17}; then an enumeration of every legal contiguous partition of the counter's byte-forced references across multiple C locals (partition_foreclosure.py); then a MEASURED instance of the most promising partition (n = var_s1 + 1).
+- result: Foreclosed on the counter side. The split is byte-neutral (13 / 33 insns) and DOES survive to global alloc, but ALLOCDBG gives n(p79) nrefs=4 len=7 pri=11428 and count(p75) nrefs=4 len=8 pri=10000 - both still above the pointer's byte-forced 5882, exactly as the enumeration predicted (it called 4/7/11428 to the digit). nrefs and live_length are positively coupled here, so every cut lowers both and the quotient is unmoved.
+- verdict: CONFIRMED
+
+## [s9] Splitting the POINTER into a base pointer (passed to firstfile) and a walking pointer the loop advances creates a short, reference-dense loop-carried allocno that out-ranks the counter, allocating the pointer family first and reproducing target's $s0/$s1 assignment.
+- mechanism: The same allocno_compare quotient read in the other direction: the counter's priority cannot be lowered, but the pointer's can be RAISED by shortening the live range of the allocno that carries its references - splitting the pointer's 17-insn range into 12 + 6 and leaving the dense references on the short half. The base dies at the copy so it does not conflict with the walking pointer; both take $s0 and the copy is a no-op move deleted by final.c, so the insn count stays 33.
+- probe: p = var_s0 in the loop preheader with the loop advancing p, measured across five statement-order / loop-shape spellings (tmp/grind/func_80037A20/s9/sweep.ps1, sweep2.ps1) with ALLOCDBG read for each, plus objdump of the emitted object.
+- result: With a do/while loop: p(p75) nrefs=7 len=6 pri=23333 -> $s0; counter(p76) nrefs=10 len=16 pri=18750 -> $s1; base(p74) nrefs=3 len=12 pri=2500 -> $s0 - target's assignment exactly. sandbox --disable all = 8 (was 13), 33/33 insns, 0 rules, no cheat construct; objdump confirms $s0 = pointer, $s1 = counter throughout. Four spellings of the family (C_dowhile, W1 copy-outside-if, W3 copy-before-inc, W4 firstfile-uses-p) all measure 8; the goto-loop spelling measures 16 (p pri 13333 < counter 15000).
+- verdict: CONFIRMED
+
+## [s9] Stacking the counter split on top of the pointer split lowers the floor further.
+- mechanism: Both splits independently reduce allocno priorities, so combining them should further separate the pointer family from the counter family.
+- probe: W2_counter_split (pointer split + n = var_s1 + 1 + do/while); sandbox + ALLOCDBG.
+- result: REGRESSES to 18 / 35 insns. The split counter is dead during the loop, so it no longer CONFLICTS with the walking pointer, re-takes $s0, and the base pointer is pushed to $s2 - costing a third callee-saved save/restore pair. The counter must stay UNSPLIT precisely so that it conflicts with the walking pointer and is forced to $s1.
+- verdict: KILLED
+
+## [s9] func_80037A20 is an endgame lock with every sanctioned pure-C axis measured dead (the premise of the 2026-07-24 OWNER-ESCALATION and the 2026-07-27 refusal ruling).
+- mechanism: s1-s8 measured the structural, permuter (3 chassis, ~21k iters), compiler-divergence and ALLOCDBG-forensics axes dead at a flat floor of 13.
+- probe: Executed the solver modality that the owner's 2026-08-24 queue directive recommended for exactly this class of residual and that no prior session had run.
+- result: DISPROVEN. An ordinary-C form with no coercion construct of any kind drops the honest floor to 8. The four dead modalities were all attacking the same side of a two-sided quotient; the solver named the quotient and made the other side visible in one session. Escalation withdrawn in docs/grind/decisions.md (2026-08-26 entry); the function stays ACTIVE and grindable.
+- verdict: KILLED
