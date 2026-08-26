@@ -193,3 +193,98 @@ nothing to "retain"; the clean floor-9 candidate is the best committable pure-C 
 - probe: tools/scan_hand_coded.py --single special_camera_get_rot_dir.
 - result: tier LOW, score 2/8 (only S4 front-loads + spurious S5 self-cluster to func_80037348 = same 0x80037348 address). No STRONG signal. The residual is ordinary GCC allocno-priority RA output; the only byte-0 form is a forbidden register pin (inline-asm-injection trap).
 - verdict: KILLED
+
+## s5 (synthesis) — FRONTIER RESET. The residual is a live-length CHAIN with two routes; s1-s4 only ever attacked one of them.
+
+The five-session framing "copy_end must land in callee-saved s5" is correct but under-specified,
+and the under-specification is what made it look like a wall. The exact condition (derived from an
+8/8-exact ra_solver model of THIS function, not estimated) is a total order on live lengths:
+
+      L(buf2) < L(index) < L(cam) <= L(const) <= L(copy_end)      [all nrefs=3]
+
+Two chassis satisfy different prefixes of it, and each opens a DIFFERENT route:
+  * top-def (score 12): 31 < 34 < 66 <= 76 — cam/const already correct; copy_end at L32 is the
+    single defect. Route A only (needs L(copy_end) >= 76). Route B foreclosed here.
+  * V_cefirst_constlast (score 10): 32 < 34, then 66 > 62 > 38 — copy_end already ABOVE index at
+    L38. Route B only (needs cam and const pulled down into [34,38]). Route A also open in principle.
+
+## KILLED (s5)
+- S1 (Route A' — reach the target by giving copy_end nrefs=2, which would relax its live-length
+  requirement from >=76 to >=51): KILLED by mechanism. `reg_n_refs` is loop-depth weighted
+  (flow.c:2081); copy_end's 2 textual RTL refs weigh 3 because its def is at loop depth 1 (retry
+  preheader) and its only use is the `bne` at loop depth 2 (inside the copy loop). nrefs=2 requires
+  the copy loop not to be a loop. Also disposed of the underlying premise: the TARGET's $s5 has the
+  same 2 machine refs, so the target is NOT reaching s5 via a lower ref count.
+- S2 (the ra_solver inverse solver hands us a spellable lever vector): KILLED as posed. Every
+  minimal (2-atom) vector it returns requires `refs 3->1` on copy_end, which no C spells. Its
+  live-length atoms are bounded to +/-{2,4,8} (inverse.py:206-220), so the -28/+44 deltas this
+  function actually needs are outside the searched space. Use the direct simulate.py sweeps instead
+  (banked). The run's FORECLOSED section is a genuine positive result: it mechanically re-derives
+  the s3 G2 kill — no callee-saved preference for $s3/$s4/$s5 can exist in pre-RA RTL from any C.
+
+## CONFIRMED (s5)
+- C1: ra_solver's forward model is EXACT for special_camera_get_rot_dir (8/8 dispositions + sort
+  order on two chassis). Reachability questions here are calculations. Sweep first, compile second.
+- C2: the reachability spec above (exhaustive simulation, 364 hits = exactly the chain).
+- C3: chassis choice determines which route is even available (see above); the floor-9 candidate is
+  a third basin that satisfies neither chain.
+
+## OPEN FRONTIER (for s6+) — ranked
+- **R1 (PRIMARY, never attempted in five sessions): Route B — shrink cam and const.** Seed from
+  `rejected/copyend-first-const-last-score10.c` (score 10, re-measured this session). Goal: pull
+  L(cam) from 66 into [34,38] and L(const) from 62 into [L(cam),38], leaving copy_end alone at L38.
+  Both are loop-invariant values held across the retry loop; the whole surplus is the span from
+  their (hoisted) defs down to their last uses. Probes worth running IN THIS ORDER:
+  (a) segment `tmp/grind/.../s5/flowdbg.py` per function (it currently reports TU-wide counts) and
+      get the per-block live-count breakdown for pseudos 73/74/76/77 — that names exactly which
+      blocks contribute cam's 66 and const's 62 versus index's 34, and therefore what has to stop
+      being live where;
+  (b) attack whichever block dominates the surplus with ordinary C (recompute rather than hold,
+      re-associate `index + cam_base` so cam's last use moves earlier, sink the def past the first
+      call), re-extracting the model after each edit — the simulator says immediately whether the
+      chain closed, without needing the sandbox score to move monotonically.
+  NB s2 already measured one const-shortening probe (literal 0x80 at the final call) as inert:
+  nrefs fell 3->2 but livelen stayed 76 because CSE still held the value. That is one spelling, not
+  the axis.
+- **R2: Route A revisited only if R1's per-block data shows copy_end's cap is softer than L38.**
+  The requirement is L(copy_end) >= 76 in the top-def chassis. s2/s3 killed this on def-placement
+  grounds; do not re-run the def-placement sweep. It reopens only if the per-block liveness trace
+  shows copy_end is being counted in fewer block visits than it structurally should be (i.e. the
+  cap is a flow-counting artifact rather than a last-use fact).
+- **R3: pre-RA scheduling (sched1) as the live-length lever.** Live lengths are measured on the
+  post-sched1 stream while the emitted order is set by sched2, so two C forms with identical bytes
+  can present different pre-RA live lengths. `tools/sched_solver` models both scheduler passes
+  order- and clock-exactly and has never been pointed at this function. This is the only remaining
+  mechanism that could move a live length without moving a statement.
+
+## DISPOSITION (s5): progress
+Not owner-gated. The 2026-07-23 OWNER-ESCALATION entry (docs/grind/decisions.md:1579) and the
+2026-07-27 ruling recorded the function as REFUSED / OWNER-ACCEPTED INCOMPLETE on the strength of
+"every grind-advanceable axis is measured dead". That claim is now FALSE: Route B (R1) and the
+sched_solver axis (R3) are both live and unmeasured, and the owner's 2026-08-24 escalation-not-parked
+ruling already returned the function to active grinding with exactly this instruction (use the
+solver before a deep re-grind). The function is grindable; the ladder should continue.
+
+## [s5] The target register assignment is reachable iff the six allocnos' live lengths satisfy L(buf2) < L(index) < L(cam) <= L(const) <= L(copy_end), all at nrefs=3 — i.e. the wall is a chain condition, not the single proposition 'copy_end must be lowest priority'.
+- mechanism: global.c assignment is pure allocno-priority order (pri = floor_log2(n)*n*10000/L, tie -> lower pseudo number), and find_reg takes the lowest available hard reg. With all four callee-saved invariants at nrefs=3 the priority order is fully determined by live length, so the target permutation {72 s0, 78 s1, 73 s2, 74 s3, 76 s4, 77 s5} is exactly one total order on live lengths.
+- probe: tools/ra_solver/extract.py + simulate.py on both chassis (8/8 dispositions and sort order MATCH each time), then exhaustive simulation over cam/const/copy_end live lengths in [28,46) on the score-10 model (tmp/grind/special_camera_get_rot_dir/s5/sweep3.py).
+- result: 364 hits, all and only the chain. Current chains: score-10 = 32 < 34 < 66 > 62 > 38 (two inversions); top-def = 31 < 34 < 66 <= 76 with copy_end at 32 (one inversion).
+- verdict: CONFIRMED
+
+## [s5] copy_end can be driven to nrefs=2, which would relax its live-length requirement from >=76 to >=51 and make Route A reachable.
+- mechanism: reg_n_refs enters the priority numerator as floor_log2(n)*n, so 3->2 is a 1.5x priority cut — a bigger lever than any live-length move measured in s1-s4. The target's $s5 carries only 2 machine refs, which made a lower ref count look like the target's own mechanism.
+- probe: Counted textual RTL refs per pseudo in the .flow/.combine/.lreg dumps (tools/grinder/dump.ps1) and compared against the instrumented-cc1 ALLOCDBG nrefs; then read tools/gcc-2.7.2/flow.c:2081 and flow.c:1685/2087.
+- result: copy_end has exactly 2 textual RTL refs but nrefs=3 because reg_n_refs is LOOP-DEPTH WEIGHTED (flow.c:2081, reg_n_refs[regno] += loop_depth) while reg_live_length is a plain per-insn-visit count: the def is at loop depth 1 (retry preheader) and the bne use at loop depth 2 (inside the copy loop). nrefs=2 requires the copy loop not to be a loop. The same weighting explains pseudos 81 (6 textual / 8 weighted) and 82 (7 / 10). Corollary: the target's $s5 has the identical 2-textual profile, so the target also allocates copy_end at nrefs=3 and reaches s5 by satisfying L(copy_end) >= L(const).
+- verdict: KILLED
+
+## [s5] ra_solver's inverse solver (owner directive 2026-08-24: run the solver before a deep re-grind) yields a spellable C-lever vector for this residual.
+- mechanism: inverse.py enumerates minimal perturbations of the modelled RA inputs that reach a goal assignment and maps each to catalogued C techniques.
+- probe: python3 tools/ra_solver/inverse.py global <model> --goal '{"74":19,"76":20,"77":21}' --depth 2 --top 10 on the score-10 model.
+- result: Minimal solution size 2 atoms, 6 vectors, but EVERY vector pairs a cam/const live_shrink with 'refs_down pseudo 77: refs 3->1', which no C spells (a 1-ref pseudo is def-only or use-only). The solver missed both real routes because its live-length atom space is hard-bounded to +/-{2,4,8} (tools/ra_solver/inverse.py:206-220) while the deltas needed here are -28 (cam) and +44 (copy_end). Its FORECLOSED section is a genuine positive: all 24 preference atoms naming $s3/$s4/$s5 are unreachable because callee-saved registers cannot appear in pre-RA RTL from any C — a mechanical re-derivation of the s3 G2 (copy-preference) kill.
+- verdict: KILLED
+
+## [s5] Chassis choice is load-bearing: the s3/s4 'best' score-10 form and the score-12 top-def form open OPPOSITE routes to the target, so the four-session conclusion 'every grind-advanceable axis is dead' was drawn from one branch only.
+- mechanism: Route B (pull cam and const below copy_end) needs L(copy_end) > L(index); Route A (lift copy_end above const) needs L(copy_end) >= L(const). The score-10 chassis has copy_end at L38 > index L34 (Route B open, Route A needs +38); the top-def chassis has copy_end at L32 < index L34 (Route B foreclosed, Route A needs +44).
+- probe: Re-measured all three forms on the current HEAD chassis (sandbox --disable all) and swept each model with simulate.py: sweep2.py (const x copy_end), sweep3.py (cam x const x copy_end), sweep_topdef.py (route A/A'/B on the top-def model).
+- result: candidate=9 (70 insns), score-10 form=10 (72), top-def=12 (72) — all chassis-valid. Route B reaches the target from the score-10 chassis for every L(cam) in [34,38] with L(const) in [L(cam),38], copy_end untouched at L38; Route B has ZERO hits from the top-def chassis; Route A needs L(copy_end)>=76 (nrefs 3) or >=51 (nrefs 2) from top-def.
+- verdict: CONFIRMED

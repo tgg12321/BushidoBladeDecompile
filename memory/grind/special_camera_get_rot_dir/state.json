@@ -1,8 +1,8 @@
 {
  "func": "special_camera_get_rot_dir",
  "file": "code6cac_b2_post",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -33,13 +33,29 @@
    "floor": 9,
    "modality": "permuter",
    "headline": "Permuter modality measured DEAD (~46k iters, 2 chassis, 0 score-0 finds); allocno-priority wall corroborated; filed OWNER-ESCALATION and returned owner-gated."
+  },
+  {
+   "session": 5,
+   "floor": 9,
+   "modality": "synthesis",
+   "headline": "Synthesis: the residual is an exact live-length CHAIN (L(buf2)<L(index)<L(cam)<=L(const)<=L(copy_end)), proven with an 8/8-exact ra_solver model; s1-s4 attacked only the 'raise copy_end' route, and th"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A genuine non-pin pure-C lever makes copy_end simultaneously call-crossing (callee-saved) AND longest-lived (lowest allocno priority), outside the measured structural + permuter axes.",
-   "mechanism": "copy_end->s5 needs a live range that both spans a call (hoisted) and out-lives constant_80 (L76); its sole use is structurally the earliest of the four invariants, and no byte-neutral later reference exists (Triple tail reads via src's reg a2). No known C form yields this.",
-   "next_probe": "Owner ruling on the filed OWNER-ESCALATION (endgame-lock-disposition AND-gates). If refused -> OWNER-ACCEPTED INCOMPLETE, park; re-attempt only if a novel non-pin lever emerges."
+   "hypothesis": "ROUTE B (PRIMARY, never attempted): shrink cam's live length from 66 into [34,38] and const's from 62 into [L(cam),38], leaving copy_end alone at L38, closing the chain from the score-10 chassis.",
+   "mechanism": "Assignment is pure priority order and priority is 30000/L at nrefs=3, so the target permutation is reached by lowering the two long-lived invariants under copy_end rather than lifting copy_end over them. cam and const are loop-invariant values held across the retry loop; their surplus is the span from their hoisted defs to their last uses (cam's is the cdrom_BcdToFrames call, const's is the final func_800372F4 call).",
+   "next_probe": "Seed src from memory/grind/special_camera_get_rot_dir/rejected/copyend-first-const-last-score10.c (re-measured at 10 this session). First segment tmp/grind/.../s5/flowdbg.py per function and dump the per-block live-count breakdown for pseudos 73/74/76/77 \u2014 that names which blocks contribute cam's 66 and const's 62 against index's 34. Then attack the dominant block with ordinary C (recompute rather than hold, re-associate index + cam_base so cam's last use moves earlier, sink the def past the first call), re-running tools/ra_solver/extract.py + simulate.py after each edit: the simulator reports chain closure directly, so the sandbox score does not have to move monotonically to show progress."
+  },
+  {
+   "hypothesis": "ROUTE R3: pre-RA scheduling (sched1) moves a live length without moving a C statement.",
+   "mechanism": "Live lengths are measured on the post-sched1 stream while the emitted byte order is set by sched2, so two C forms with byte-identical output can present different pre-RA live lengths. tools/sched_solver models both scheduler passes order- and clock-exactly and has never been pointed at this function.",
+   "next_probe": "Run tools/sched_solver on both chassis and ask whether any legal sched1 ordering moves cam's or const's last use earlier (Route B) or copy_end's def earlier (Route A) relative to the pre-RA stream, then use inverse_compose.py classify to confirm the residual is still RA-owned rather than PRE-RA."
+  },
+  {
+   "hypothesis": "ROUTE A reopens only if copy_end's L38 cap is a flow-counting artifact rather than a last-use fact.",
+   "mechanism": "reg_live_length counts per-insn live VISITS accumulated over propagate_block iterations, so a value that is loop-carried can score far above its linear span (const reaches 76 in a function whose pre-RA stream is much shorter). If copy_end is being counted in fewer block visits than its loop-carried liveness implies, the cap is soft.",
+   "next_probe": "From the same per-function-segmented flowdbg data, compare copy_end's per-block visit counts against const's block-for-block. If copy_end is absent from blocks where it must be live across the retry back-edge, that absence is the lever; if the counts track its true liveness, Route A is closed for good and the ledger should say so."
   }
  ],
  "judge_constraints": [],
