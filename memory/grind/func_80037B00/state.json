@@ -1,7 +1,7 @@
 {
  "func": "func_80037B00",
  "file": "code6cac_c",
- "session_count": 10,
+ "session_count": 11,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -69,23 +69,29 @@
    "floor": 5,
    "modality": "rederive",
    "headline": "Floor holds at 5; rederive confirms the chassis is the original author's house idiom (matched siblings func_80037AA4/func_80037A20 on the same table) and proves the last register swap is an arithmetic"
+  },
+  {
+   "session": 11,
+   "floor": 5,
+   "modality": "rederive",
+   "headline": "The guard is the pivot: naming the counter in the entry guard is what buys the phantom 8-byte frame AND what pins refs(73)=8; drop it and the $t0/$t1 transposition that walled s7-s10 is SOLVED (end po"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A 36-instruction chassis whose PREHEADER expands to four MORE pre-combine insns - all live at flow time and all absorbed by combine - closes the function, because preheader insns lengthen the counter's live range and never the end pointer's.",
-   "mechanism": "flow.c:1685 counts a preheader insn for allocno 73 (measured +1 with rejected/preheader-foldable-chain-plus1-only.c, stream unchanged at 26 cc1 insns) and never for allocno 78, which is not live there. live(73) 23 -> 27 ties pri at 8888 and the decl-order swap (memory/grind/func_80037B00/decl_order_swap_vC.c) then seats the end pointer first via global.c:655's lower-allocno tie-break.",
-   "next_probe": "Enumerate expression spellings of the preheader's two statements (`var_t3 = D_800A38C8;` and `var_a3 = (s8 *)&D_80102810;`) whose EXPANSION is naturally multi-insn and whose extra insns are absorbed by combine rather than constant-folded by cse1 and deleted by flow: address computations GCC expands through an intermediate (reaching the table via a subscript or member expression, a (s8 *)((s32)X + k) round trip), or the bound read through a narrower type that widens. Screen with tmp/grind/func_80037B00/s10/probe.sh and accept only rows where the counter shows `used 8 times across >= 27 insns`, the end pointer still shows `used 4 times across 9 insns`, and the cc1 insn count is still 26; confirm with `& tools/wteng.ps1 main sandbox func_80037B00 --disable all`. POLICY BOUNDARY: the extra insns must be the natural expansion of a statement the function genuinely needs. A chain written purely to lengthen a live range is semantically purposeless (T1/T2/T3 FAIL) and at best the F1 combine-foldable chain-extender family, which this session measured caps at +1 anyway."
+   "hypothesis": "There is an orphan-producing construct in this function's own logic that does NOT name the counter, which would combine the refs-7 register order with the 26-instruction stream and close the function.",
+   "mechanism": "The frame slot is paid by any pseudo that flow counts and combine then deletes, not specifically by an ST_REGS compare pseudo. The measured instance is a two-register signed `lt` folded into blez, and the only natural zero-valued register here is the counter - but a GR-class pseudo deleted by combine would do the same job: reload's alter_reg pays a slot to any allocno with refs and no hard register.",
+   "next_probe": "Enumerate GR-class combine-deleted pseudos reachable from statements this function genuinely needs, screening with tmp/grind/func_80037B00/s11/probe.sh for `subu $sp,$sp,8` plus `Register NN used ... GR_REGS or none` with no seat in the greg map. The strongest shapes to try first are address intermediates combine folds into a load's displacement (`p = var_a3 + k; v = *p;` where the target instruction is a single `lbu k($a3)`) and the inner-loop end-pointer computation reached through a second pointer (`var_t0 = var_a1 + 0x15;` after `var_a1 = var_a3;`). Read tmp/grind/func_80037B00/s11/d_v6_dowhile_t1guard/x.flow around insn 16 first for the exact shape that works today. Accept only rows with refs(73)=7, `78 in 8`, 26 cc1 insns and both sp adjusts."
   },
   {
-   "hypothesis": "A 36-instruction chassis in which the counter CHANGES liveness state in an after-the-inner-loop block makes that block's insns visible to flow's live_length accumulator, which is worth the full +4 at zero byte cost.",
-   "mechanism": "flow.c:1685's regs_sometimes_live gate is precisely why block_74 is free today (measured: block_74 insns move allocno 75 from 9 to 13 refs but leave 73 at 23 live). If the counter were dead on the `return 1` arm and re-live at block_74, flow would count the return-arm insns (s9/flow.rtl insns 105, 107) and the epilogue (133, 147) for it - exactly the +4 required.",
-   "next_probe": "Re-read the s8 chassis table in memory/grind/func_80037B00/hypotheses.md first, then look for spellings of the two exit arms that change WHERE the counter dies without changing the emitted stream (the `return 1` arm's `addiu $v0,$zero,0x1` and the shared `addu $v0,$zero,$zero` tail are the only instructions in play). Screen with s10/probe.sh: the row to look for is `Register 73 used 8 times across 27` (or 28..31) with `Register 78 used 4 times across 9` and cc1 count still 26. Treat any form that is not 36 instructions in target's order as dead on arrival."
+   "hypothesis": "In the refs-7 chassis the counter-vs-flag order (7*L74 >= 6*L73) is reachable without spending an emitted instruction.",
+   "mechanism": "L74 grows only for insns inside the flag's live range (loop top through the flag test); L73 is 3-4 insns longer because of the counter's definition and the bottom `slt`/`bnez`. v8 already reaches (20,17) by moving `var_a3 += 0x28` ahead of the flag test - it fails only because the bottom `bnez` then has no delay-slot filler.",
+   "next_probe": "Look for a spelling that keeps `var_a3 += 0x28` available to reorg as the bottom branch's delay-slot filler while its RTL still sits inside the flag's live range - e.g. duplicating the advance into both arms (the sanctioned duplicated-statement-into-arms family, .claude/rules/duplicated-statement-into-arms.md) so cross-jumping re-merges it, or reaching (21,18) by one extra combine-absorbed insn in the loop-top block placed BEFORE `var_t0 = var_a3 + 0x15` (78 is not live there, so pri(78) is unaffected). An exact tie at 7*L74 == 6*L73 is a WIN, not a loss - global.c:655 gives it to the lower allocno, which is 73. Targets: (20,18), (19,17), (21,18)."
   },
   {
-   "hypothesis": "If neither preheader expansion nor an exit-arm liveness change lands, func_80037B00 is a DECISION PACKET rather than a grind: both remaining knobs are properties of GCC's flow pass rather than of the program, and the only measured lever that moves them at zero byte cost is semantically purposeless.",
-   "mechanism": "The stream is exact 36-of-36, position for position, opcode and operand, with a single adjacent register transposition ($t0/$t1). refs(78), live(78) and refs(73) are all pinned by that stream, so no spelling can change them; live(73) is the sole remaining degree of freedom and needs +4 byte-free insns.",
-   "next_probe": "Do NOT file this until frontier #1 and #2 are measured dead - the driver has not declared exhaustion and the standing directive is to work the item to completion. When it is filed, the decidable question is a FIDELITY/ROUTING question (is a 36-of-36 exact stream with one adjacent register transposition a COMPLETED-C candidate under some named disposition?), NOT a family grant or a standard-lowering ask - the latter is the pre-decided AUTO-REJECT class of the 2026-08-24 ruling. Include the func_80037AA4 same-file precedent AND the measurement showing it does not transfer."
+   "hypothesis": "If the refs-7 chassis cannot recover the frame, the refs-8 chassis (candidate.c, floor 5) still needs live(73) in [28,31], which is s10's wall - but the window is now known to be a consequence of the guard, so the honest comparison is which of the two costs less.",
+   "mechanism": "With refs(73)=8, pri(73) = 24/L73 must sit below pri(78) = 8/9 and above pri(74) = 12/16, giving L73 in [28,31] against a measured 22-23. With refs(73)=7 the window is half-open (L73 >= 28 at the current 4-insn 73-only excess, or L73 >= 21 at a 3-insn excess), which is far more forgiving - the whole cost of the refs-7 route is the 2 frame instructions.",
+   "next_probe": "Do NOT file a decision packet before frontier #1 and #2 are measured dead: this session moved the residual from 'one pinned register transposition with no degrees of freedom' (s9/s10) to 'two independent, quantified knobs', so the function is demonstrably still grindable. If both frontiers do die, the decidable question to put to the owner is a FIDELITY/ROUTING one - whether an exact 36-of-36 stream with one adjacent register transposition has a named disposition - and it must carry this session's table showing the guard-vs-frame incompatibility, plus the func_80037AA4 precedent and the measurement that it does not transfer."
   }
  ],
  "judge_constraints": [

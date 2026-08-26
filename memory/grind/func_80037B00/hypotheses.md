@@ -561,3 +561,120 @@ chain before flow runs and flow deletes the dead links, leaving a 5-insn residue
 - probe: Built the maximal form - a fresh pointer temp carrying a four-link constant chain in the preheader plus the s9 decl-order swap - and read its .lreg table (rejected/preheader-const-chain4-cse1-collapses.c).
 - result: Buys only +1, not +4: the counter measures 8 refs / 24 live (pri 10000, still above the end pointer's 8888) and a 5-insn residue pseudo (3 refs / 5 live) appears. cse1 constant-folds the chain BEFORE flow runs and flow deletes the dead links, exactly as s9's fact 4 predicts. The surviving `+0x14 / -0x14` pair works only because cse1 does not fold its two links into one another's operand; a longer chain is folded. The +1 is not a repeatable unit.
 - verdict: KILLED
+
+## [s11] The outer loop's `while` form is load-bearing for the phantom 8-byte frame (s8 attribution).
+- mechanism: s8 attributed the frame to loop.c's `duplicate_loop_exit_test` copying the while's exit
+  test in front of NOTE_INSN_LOOP_BEG, combine folding the duplicate's compare into a bare `blez` and
+  leaving the compare pseudo referenced-but-homeless for reload's `alter_reg`.
+- probe: `tmp/grind/func_80037B00/s11/v6_dowhile_t1guard.c` — candidate.c with the outer `while
+  (var_t1 < var_t3) { ... }` rewritten as `do { ... } while (var_t1 < var_t3);`, everything else
+  byte-identical. Banked as `memory/grind/func_80037B00/alt_base_v6_dowhile.c`.
+- result: REFUTED. v6 is CODEGEN-IDENTICAL to candidate.c — 26 cc1 insns, `subu $sp,$sp,8` /
+  `addu $sp,$sp,8` both present, the same `;; 11 regs to allocate: 79 76 77 75 73 83 78 74 82 81 72`,
+  the same `73 in 8  78 in 9`. The frame comes from the GUARD, not from the loop form. The orphan is
+  visible in `tmp/grind/func_80037B00/s11/d_v6_dowhile_t1guard/x.flow` as
+  `(insn 16 ... (set (reg:SI 83) (lt:SI (reg/v:SI 73) ...)))` feeding `(if_then_else (eq (reg 83) 0))`;
+  reg 83 is gone from `x.combine` entirely, so it reaches local-alloc with flow's stale refs (2 refs /
+  2 insns, class ST_REGS), takes no hard reg, and `alter_reg` pays it a 4-byte slot that
+  MIPS_STACK_ALIGN rounds to 8. THE OUTER LOOP FORM IS FREE. This retires the s8 claim and means the
+  house-idiom `do { } while` of the matched siblings func_80037A20 / func_80037AA4 is usable.
+- verdict: KILLED (the attribution), CONFIRMED (the do-while chassis is equivalent)
+
+## [s11] refs(allocno 73) = 8 is a property of the target instruction stream.
+- mechanism: s10 argued every quantity in the priority formula is pinned by the 36-insn stream.
+- probe: measured refs(73) across guard spellings on an otherwise identical do-while chassis.
+- result: REFUTED, and this is the session's central finding. EXACTLY ONE of the 8 references comes
+  from the source guard naming the counter. `if (var_t1 < D_800A38C8)` -> refs(73) = 8
+  (v6, v7, candidate). `if (D_800A38C8 > 0)` / `if (D_800A38C8 >= 1)` / `if (D_800A38C8 < 1) return 0;`
+  / `if (var_t3 > 0)` -> refs(73) = 7 (v3, v5, v10, v11, v13, v14). The other seven are the stream's:
+  init (weight 1) + `var_t1 += 1` (set+use, weight 2 each = 4) + the bottom `slt` (weight 2).
+  A `while` outer loop re-adds the eighth even with a counter-free source guard, because loop.c's
+  duplicated exit test names the counter (v1: `while` + `D_800A38C8 > 0` guard = refs 8, 27 insns,
+  two `blez`).
+- verdict: KILLED (the pinning claim)
+
+## [s11] refs(73) = 7 crosses a floor_log2 boundary and SOLVES the $t0/$t1 transposition that blocked s7-s10.
+- mechanism: global.c priority = floor_log2(refs) * refs / live_length. refs 8 -> floor_log2 3 ->
+  24/live; refs 7 -> floor_log2 2 -> 14/live. At live(73) = 20-23 that is a drop from ~1.04 to ~0.65,
+  which is below pri(78) = 8/9 = 0.888 with room to spare.
+- probe: `tmp/grind/func_80037B00/s11/v3_dowhile_t3.c`, `v5_init_inside_last.c`, `v8_a3_before_flag.c`,
+  `v10..v18` — all measured with `tmp/grind/func_80037B00/s11/probe.sh`.
+- result: CONFIRMED. Every refs-7 form allocates the END POINTER FIRST:
+  `;; 10 regs to allocate: 79 76 77 75 78 74 73 81 72` with `78 in 8` — i.e. the inner-loop end
+  pointer takes $t0 exactly as target does. The three-session wall (s7 "typed RA residual", s9/s10
+  "refs(78)=4 and live(78)=9 are pinned, so live(73) must reach 28..31") is dissolved from the other
+  side of the formula: the fix was never to move 78, it was to stop the guard from naming 73.
+- verdict: CONFIRMED
+
+## [s11] A guard that does not name the counter can still produce the orphan compare pseudo (frame).
+- mechanism: the orphan is a pre-combine `(set (reg N) (lt (reg A) (reg B)))` whose `(ne (reg N) 0)`
+  branch combine rewrites into a bare `blez`. Any two-register signed `lt` whose left operand cse can
+  later prove is 0 should do it.
+- probe: four counter-free guard spellings measured for `subu $sp,$sp,8` and the cc1 insn count —
+  `if (D_800A38C8 > 0)` (v3/v5), `if (var_t3 > 0)` with the bound read first (v10),
+  `if (D_800A38C8 >= 1)` (v13), `if (D_800A38C8 < 1) { return 0; }` (v14).
+- result: KILLED. All four measure 23-24 cc1 insns and NO frame adjust. GCC canonicalises every
+  bound-vs-constant guard at expand time into MIPS `branch_zero` / `bgtz` and never materialises a
+  compare pseudo; `< 1` is folded to `<= 0` before expand, so the hoped-for `slti + bne -> blez`
+  combine never happens. The only natural zero-valued REGISTER in this function is the counter, so
+  every counter-free guard costs the 2 frame instructions. THIS IS THE NEW RESIDUAL: the guard must
+  name the counter to buy the frame, and must not name it to buy the register order.
+- verdict: KILLED
+
+## [s11] In the refs-7 family, the remaining order defect (counter 73 vs match-flag 74) is reachable.
+- mechanism: target needs 73 before 74 ($t1 then $t2). refs(73)=7, refs(74)=6, both floor_log2 2, so
+  the condition is 14/L73 >= 12/L74, i.e. 7*L74 >= 6*L73 (an exact tie is won by 73, the lower allocno,
+  via global.c:655).
+- probe: measured (L73, L74) over eight refs-7 spellings.
+- result: MEASURED BUT NOT YET REACHED. v5 (20,16) -> 112 < 120. v8 `var_a3 += 0x28` moved ahead of
+  the flag test (20,17) -> 119 < 120, ONE UNIT SHORT, and it costs +1 emitted insn because the bottom
+  `bnez`'s delay slot loses its filler. v15 counter-increment after the flag test (20,15) -> worse.
+  v11 early-return guard, v13/v14 guard respellings, v17/v18 shared-end-label: all (20,16) or (20,17).
+  L73 = 20 is rigid: 73 is live over the whole outer-loop body, and the three insns where 73 is live
+  and 74 is not (the counter's def, the bottom `slt`, the bottom `bnez`) are all mandated by the
+  stream. Reachable targets are (20,18), (19,17) or (21,18).
+- verdict: KILLED for the eight spellings measured; the axis itself is OPEN
+
+## [s11] s10's block_74 result re-confirmed on the 26-insn chassis.
+- probe: v19 — candidate/v6 with `var_a3 += 0x28` split into `var_a3 += 0x14; var_a3 += 0x14;` at
+  block_74 (`memory/grind/func_80037B00/rejected/block74-foldable-pair-no-live-change.c`).
+- result: L73 stays 23, L74 stays 16, refs(73) stays 8, stream stays 26 insns with the frame.
+  Insns added at block_74 buy nothing for the counter, exactly as s10 measured. Independent of the
+  regs_sometimes_live explanation s10 offered, the empirical rule holds on this chassis too.
+- verdict: CONFIRMED (s10's measurement)
+
+## [s11] The outer loop's `while` form is load-bearing for the phantom 8-byte frame (s8's attribution: loop.c's duplicate_loop_exit_test + combine folding the duplicate's compare).
+- mechanism: loop.c copies a while's exit test in front of NOTE_INSN_LOOP_BEG; combine folds the duplicate into a bare blez, leaving the compare pseudo referenced-but-homeless for reload's alter_reg, which pays it a 4-byte slot that MIPS_STACK_ALIGN rounds to 8.
+- probe: tmp/grind/func_80037B00/s11/v6_dowhile_t1guard.c - candidate.c with the outer `while (var_t1 < var_t3) {...}` rewritten as `do {...} while (var_t1 < var_t3);` and nothing else changed; banked as memory/grind/func_80037B00/alt_base_v6_dowhile.c.
+- result: REFUTED. v6 is codegen-identical to candidate.c: 26 cc1 insns, `subu $sp,$sp,8` and `addu $sp,$sp,8` both present, identical `;; 11 regs to allocate: 79 76 77 75 73 83 78 74 82 81 72`, identical seats `73 in 8  78 in 9`. The orphan is visible in tmp/grind/func_80037B00/s11/d_v6_dowhile_t1guard/x.flow as `(insn 16 (set (reg:SI 83) (lt:SI (reg/v:SI 73) ...)))` feeding `(if_then_else (eq (reg 83) 0))`; reg 83 is absent from x.combine, reaches local-alloc with flow's stale 2 refs / 2 insns in class ST_REGS, takes no hard register, and alter_reg gives it the slot. The frame comes from the SOURCE GUARD, not from the loop form. The do-while house idiom of the matched siblings func_80037A20 / func_80037AA4 is therefore free to use.
+- verdict: KILLED
+
+## [s11] refs(allocno 73) = 8 is a property of the target instruction stream and cannot be changed by spelling (s10's central claim).
+- mechanism: s10 argued every input to the priority formula is pinned by the 36-instruction stream, so live(73) was the sole degree of freedom.
+- probe: Measured refs(73) across guard spellings on an otherwise byte-identical do-while chassis with tmp/grind/func_80037B00/s11/probe.sh: v6/v7/candidate (`if (var_t1 < D_800A38C8)` / `if (var_t1 < var_t3)`) vs v3/v5/v10/v11/v13/v14 (`if (D_800A38C8 > 0)`, `if (var_t3 > 0)`, `if (D_800A38C8 >= 1)`, `if (D_800A38C8 < 1) return 0;`).
+- result: REFUTED. Exactly one of the eight references is the source guard naming the counter. Counter-naming guard -> refs(73)=8; every counter-free guard -> refs(73)=7. The other seven are stream-mandated: init (weight 1) + `var_t1 += 1` (set+use, weight 2 each = 4) + the bottom `slt` (weight 2). A `while` outer loop re-adds the eighth even with a counter-free source guard, because loop.c's duplicated exit test names the counter (v1: while + `D_800A38C8 > 0` = refs 8, 27 insns, two blez).
+- verdict: KILLED
+
+## [s11] Dropping the guard's reference to the counter (refs 7) crosses a floor_log2 boundary and seats the inner-loop end pointer in $t0, solving the $t0/$t1 transposition that s7-s10 reported as the entire residual.
+- mechanism: global.c priority = floor_log2(refs) * refs / live_length. refs 8 -> floor_log2 3 -> 24/live; refs 7 -> floor_log2 2 -> 14/live. At live(73)=20..23 that is a drop from ~1.04 to ~0.65, comfortably below pri(78) = 8/9 = 0.888, so allocno 78 is now allocated first.
+- probe: tmp/grind/func_80037B00/s11/v3_dowhile_t3.c, v5_init_inside_last.c, v8_a3_before_flag.c, v10..v18 - .lreg/.greg read for every one.
+- result: CONFIRMED. Every refs-7 form prints `;; 10 regs to allocate: 79 76 77 75 78 74 ... 73 ...` with `78 in 8` - i.e. the end pointer takes $t0 exactly as target does (`addiu $t0,$a3,0x15` / `slt $v0,$a1,$t0`). The three-session wall is dissolved from the other side of the formula: the fix was never to move allocno 78, it was to stop the guard from naming allocno 73. v5's sandbox score is 8 (build_insns 35 vs target 36) because the frame pair is gone, but it is the first form in this function's history whose end pointer lands in $t0.
+- verdict: CONFIRMED
+
+## [s11] A guard that does not name the counter can still materialise the orphan compare pseudo, so the refs-7 chassis can keep the phantom 8-byte frame.
+- mechanism: The orphan is a pre-combine `(set (reg N) (lt (reg A) (reg B)))` whose `(ne (reg N) 0)` branch combine rewrites into a bare blez. Any two-register signed `lt` whose left operand cse later proves is 0 should orphan the same way; `x < 1` in particular should expand to `slti` into a pseudo plus `bne`, which combine can fold to blez.
+- probe: Four counter-free guard spellings measured for `subu $sp,$sp,8` and cc1 insn count: `if (D_800A38C8 > 0)` (v3/v5), `if (var_t3 > 0)` with the bound read into a local first (v10), `if (D_800A38C8 >= 1)` (v13), `if (D_800A38C8 < 1) { return 0; }` (v14).
+- result: KILLED. All four measure 23-24 cc1 insns with NO frame adjust and no ST_REGS orphan in .lreg. GCC canonicalises every bound-vs-constant guard at expand time into MIPS branch_zero/bgtz and never materialises a compare pseudo; `< 1` is folded to `<= 0` before expand, so the hoped-for slti+bne -> blez combine never runs. The only natural zero-valued REGISTER in this function is the counter itself, so a counter-free guard always costs the 2 frame instructions.
+- verdict: KILLED
+
+## [s11] In the refs-7 family the remaining order defect (counter 73 must precede match-flag 74, i.e. $t1 then $t2) is reachable by ordinary statement placement.
+- mechanism: refs(73)=7 and refs(74)=6 both have floor_log2 2, so the condition is exactly 7*L74 >= 6*L73, with an exact tie won by 73 as the lower allocno (global.c:655).
+- probe: Measured (L73, L74) over eight refs-7 spellings: v5 baseline, v8 (`var_a3 += 0x28` moved ahead of the flag test), v11 (early-return guard), v13/v14 (guard respellings), v15/v16 (counter increment moved after the flag test), v17/v18 (shared end label for the `return 1` arm).
+- result: NOT REACHED, and bounded. v5 (20,16) = 112 vs 120. v8 (20,17) = 119 vs 120 - ONE UNIT SHORT - and it costs +1 emitted instruction because the bottom `bnez` loses its delay-slot filler. v15 (20,15) is worse. Everything else measures (20,16). L73 = 20 is rigid: the counter is live over the whole outer-loop body and the only three insns where 73 is live and 74 is not are the counter's definition and the bottom `slt`/`bnez`, all mandated by the stream. Reachable cells are (20,18), (19,17) and (21,18).
+- verdict: KILLED
+
+## [s11] s10's block_74 result (insns added after the inner loop buy nothing for the counter's live length) holds on the 26-instruction chassis too.
+- mechanism: s10 attributed it to flow.c:1685's regs_sometimes_live gate; whatever the explanation, the empirical rule is what matters for search pruning.
+- probe: v19 - candidate/v6 with `var_a3 += 0x28` split into `var_a3 += 0x14; var_a3 += 0x14;` at block_74 (memory/grind/func_80037B00/rejected/block74-foldable-pair-no-live-change.c).
+- result: CONFIRMED. L73 stays 23, L74 stays 16, refs(73) stays 8, the stream stays 26 insns with both frame adjusts. Insns placed at block_74 remain free of charge for the counter.
+- verdict: CONFIRMED

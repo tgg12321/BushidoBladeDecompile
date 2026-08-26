@@ -530,3 +530,102 @@ candidate.c: 23 honest insn diff, 15 weighted-masked. NOT lowered this session.
 - [s10] TOOL: tools/gcc-2.7.2/cc1 IS the instrumented build carrying the BB2_FLOW_DEBUG hook at flow.c:1685 (prints `FLOWDBG reg=N insn=U bnum=B`), but engine/buildconfig.py builds with tools/gcc-2.7.2/build/cc1, which is NOT instrumented, and the two disagree on pseudo numbering for this TU (only 6 FLOWDBG lines for reg 78 across the whole file, none of them func_80037B00's). The hook cannot audit this function's live ranges until the instrumented cc1 is rebuilt from current source; use the .lreg banner from tmp/grind/func_80037B00/s10/probe.sh, which is calibrated against the s8/s9 tables.
 
 - [s10] src/code6cac_c.c was reverted to HEAD (INCLUDE_ASM) at session end; no tracked build file is modified. candidate.c is unchanged (still the floor-5 form) because nothing this session lowered the floor.
+
+## s11 (rederive, 2026-08-26) — THE GUARD IS THE PIVOT; s7-s10's "pinned quantities" model is wrong
+
+Chassis re-measured at session start: `sandbox func_80037B00 --disable all` with candidate.c applied
+= **score 5, target_insns 36, build_insns 36, rules_dropped 0**. Floor unchanged.
+
+### The three-line summary
+1. The phantom 8-byte frame does NOT come from the `while` outer loop (s8's attribution). It comes
+   from the SOURCE GUARD `if (var_t1 < D_800A38C8)`: expand emits `(set (reg 83) (lt (reg 73) (reg X)))`
+   + `(if_then_else (eq (reg 83) 0))`, combine folds the pair into a bare `blez` and DELETES reg 83,
+   which then reaches local-alloc carrying flow's stale 2 refs / 2 insns in class ST_REGS, takes no
+   hard register, and gets a 4-byte slot from reload's `alter_reg` (rounded to 8). Proof:
+   `alt_base_v6_dowhile.c` — candidate.c with `while` rewritten as `do { } while` — is CODEGEN-IDENTICAL
+   (26 cc1 insns, both sp adjusts, identical allocno order and identical seats).
+2. refs(allocno 73) = 8 is NOT pinned by the target stream. Exactly one of the eight references is the
+   guard naming the counter. Every counter-free guard measures refs(73) = 7.
+3. refs 7 crosses a floor_log2 boundary (3 -> 2), collapsing pri(73) from 24/L73 to 14/L73, and that
+   **SOLVES the $t0/$t1 transposition** that s7, s8, s9 and s10 all reported as the whole residual:
+   the end pointer (allocno 78) is now allocated FIRST and takes $t0, exactly as target.
+
+### The measured matrix (all via tmp/grind/func_80037B00/s11/probe.sh; cc1 = tools/gcc-2.7.2/cc1,
+### codegen-identical to build/cc1 on this TU, both used and cross-checked this session)
+| variant | guard | outer loop | refs(73) | L73 | L74 | frame | cc1 insns | alloc order fragment |
+|---|---|---|---|---|---|---|---|---|
+| candidate.c | `var_t1 < D_800A38C8` | while | 8 | 23 | 16 | YES | 26 | 75 **73** 83 **78** 74 |
+| v6 | `var_t1 < D_800A38C8` | do-while | 8 | 23 | 16 | YES | 26 | 75 **73** 83 **78** 74 |
+| v7 (func_80037AA4 idiom, bound read before guard) | `var_t1 < var_t3` | do-while | 8 | 22 | 16 | YES | 25 | 75 **73** 82 **78** 74 |
+| v1 | `D_800A38C8 > 0` | while | 8 | 25 | 16 | no | 27 (two blez) | 75 **73** **78** 74 |
+| v3 | `D_800A38C8 > 0` | do-while | 7 | 22 | 16 | no | 24 | 75 **78** 74 82 **73** |
+| v5 (= v3, counter init last in preheader) | `D_800A38C8 > 0` | do-while | 7 | 20 | 16 | no | 24 | 75 82 **78** 74 **73** |
+| v8 (= v5 + `var_a3 += 0x28` before the flag test) | `D_800A38C8 > 0` | do-while | 7 | 20 | 17 | no | 25 | 75 82 **78** 74 **73** |
+| v10 | `var_t3 > 0` (bound read first) | do-while | 7 | 22 | 16 | no | 23 | 75 **78** 74 **73** |
+| v13 / v14 | `>= 1` / `< 1 return 0` | do-while | 7 | 20 | 16 | no | 24 | 75 82 **78** 74 **73** |
+| v11 / v15 / v16 / v17 / v18 | counter-free variants | do-while | 7 | 20 | 15-17 | no | 24-25 | **78** before **73** |
+| v19 | `var_t1 < D_800A38C8` + foldable `+0x14/+0x14` at block_74 | do-while | 8 | 23 | 16 | YES | 26 | unchanged |
+
+`v5` scores 8 on the sandbox (build_insns 35 vs target 36) — worse than candidate's 5, because the
+frame pair is gone; it is nonetheless the first form in this function's history whose END POINTER
+lands in $t0.
+
+### THE RESIDUAL, RESTATED (this replaces the s9/s10 statement of it)
+The guard is doing two incompatible jobs.
+- **Name the counter** -> the compare pseudo orphans -> the 8-byte phantom frame -> the 26-insn /
+  36-instruction stream is exact -> but refs(73) = 8 -> pri(73) = 24/L73 -> to sit below
+  pri(78) = 8/9 and above pri(74) = 12/16 needs **L73 in [28,31]** (L73 is 22-23; this is s10's wall).
+- **Do not name the counter** -> refs(73) = 7 -> pri(73) = 14/L73 -> **78 is seated before 73 and takes
+  $t0, the transposition is solved** -> but no orphan, no frame, cc1 emits 24 insns instead of 26.
+
+Four counter-free guard spellings were measured for an orphan and all four failed: `D_800A38C8 > 0`,
+`var_t3 > 0` (bound read into a local first), `D_800A38C8 >= 1`, `D_800A38C8 < 1` as an early return.
+GCC canonicalises a bound-vs-constant comparison at expand time into MIPS `branch_zero`/`bgtz` and
+never materialises a compare pseudo; `< 1` is folded to `<= 0` before expand, so the hoped-for
+`slti + bne -> blez` combine never runs. The only natural zero-valued REGISTER in this function is the
+counter itself.
+
+### The secondary (and much smaller) defect in the refs-7 family
+With 78 seated correctly, the next pair out of order is counter (73) vs match-flag (74): target wants
+$t1 then $t2, so 73 must precede 74. Both have floor_log2 2, so the condition is exactly
+**7 * L74 >= 6 * L73** (an exact tie is won by 73 via global.c:655's lower-allocno rule).
+Measured: v5 (20,16) = 112 vs 120; **v8 (20,17) = 119 vs 120 — one unit short**; v15 (20,15) worse.
+v8 buys its extra L74 by moving `var_a3 += 0x28` ahead of the flag test, which costs +1 emitted
+instruction (the bottom `bnez` loses its delay-slot filler), so v8 is not a usable end state as such.
+L73 = 20 is rigid: the only three insns where 73 is live and 74 is not are the counter's definition
+and the bottom `slt`/`bnez`, all mandated by the stream. Reachable cells: (20,18), (19,17), (21,18).
+
+### Method notes for the next session
+- `tmp/grind/func_80037B00/s11/probe.sh <variant.c>` — applies a variant and prints the .lreg register
+  table, the `;; N regs to allocate` order, the greg seat map, the cc1 asm and its insn count. ~20 s.
+- `tmp/grind/func_80037B00/s11/flowdbg.sh <variant.c> <regno>` — same but under the instrumented
+  `tools/gcc-2.7.2/cc1` with `BB2_FLOW_DEBUG=<regno>`, printing one `FLOWDBG reg= insn= bnum=` line per
+  `reg_live_length` increment (flow.c:1685). Caveat: life_analysis runs more than once and the pseudo
+  numbering differs between runs, so the raw trace needs correlating with `x.flow` before it is
+  quotable — the .lreg totals are the reliable reading.
+- The priority formula that reproduces every measured order in the table above:
+  `pri = floor_log2(refs) * refs / live_length`, ties broken by lower allocno number.
+
+- [s11] Chassis re-measured at session start: candidate.c applied to src/code6cac_c.c gives `sandbox func_80037B00 --disable all` = score 5, target_insns 36, build_insns 36, rules_dropped 0, cheat_asm_stripped 3. Floor unchanged at 5.
+
+- [s11] The phantom 8-byte frame is produced by the ENTRY GUARD, not by the `while` outer loop: alt_base_v6_dowhile.c (candidate.c with `do { } while` instead of `while`) is codegen-identical - same 26 insns, same sp adjusts, same allocno order, same seats. This retires s8's loop.c/duplicate_loop_exit_test attribution.
+
+- [s11] The orphan that pays the frame is `(set (reg:SI 83) (lt:SI (reg/v:SI 73) (reg X)))` at insn 16 of x.flow, gone from x.combine, surviving into .lreg as `Register 83 used 2 times across 2 insns in block 0; ST_REGS or none` and taking no hard register.
+
+- [s11] refs(allocno 73) is 8 with a counter-naming guard and 7 with any counter-free guard - measured across eight spellings. It is NOT pinned by the target stream, contrary to s10's central claim.
+
+- [s11] refs(73)=7 crosses the floor_log2 3->2 boundary and drops pri(73) from 24/L73 to 14/L73, which seats allocno 78 (the inner-loop end pointer) BEFORE the counter. Every refs-7 variant measured puts `78 in 8`, i.e. the end pointer in $t0 exactly as target - the transposition that s7, s8, s9 and s10 each reported as the whole residual is solved.
+
+- [s11] A `while` outer loop forces refs(73)=8 regardless of the source guard, because loop.c's duplicated exit test names the counter (v1: while + `D_800A38C8 > 0` = refs 8, 27 insns, two blez, no merge).
+
+- [s11] Four counter-free guard spellings (`> 0`, `var_t3 > 0`, `>= 1`, `< 1` early-return) all lose the orphan and emit 23-24 cc1 insns instead of 26: GCC canonicalises bound-vs-constant guards into MIPS branch_zero/bgtz at expand time and folds `< 1` to `<= 0` before expand.
+
+- [s11] The refs-7 family's remaining defect is counter-vs-flag order, governed exactly by 7*L74 >= 6*L73 with ties won by allocno 73. Best measured is v8 at (L73,L74) = (20,17) -> 119 vs 120, one unit short, and v8 costs +1 emitted instruction.
+
+- [s11] func_80037AA4's idiom transplanted verbatim (bound read into a local before the guard, v7) measures 25 cc1 insns with the frame present and refs 8 / L73 22 - one instruction short of target because the lw loads straight into the bound register and the `addu $t3,$v0,$zero` preheader copy never appears.
+
+- [s11] v5 (the cleanest refs-7 form) scores 8 on the sandbox with build_insns 35 vs target 36 - worse than candidate's 5, so candidate.c is unchanged as the best form; v5 is banked as rejected/dowhile-refs7-guard-loses-phantom-frame.c because of the frame, not because of the register order.
+
+- [s11] Reusable instruments left in place: tmp/grind/func_80037B00/s11/probe.sh (variant -> .lreg table + allocation order + seat map + cc1 asm and insn count, ~20 s) and tmp/grind/func_80037B00/s11/flowdbg.sh (same under the instrumented tools/gcc-2.7.2/cc1 with BB2_FLOW_DEBUG=<regno>, one line per flow.c:1685 live_length increment).
+
+- [s11] The priority model that reproduces every measured allocation order in this function: pri = floor_log2(refs) * refs / live_length, ties broken by lower allocno number (global.c:655).
