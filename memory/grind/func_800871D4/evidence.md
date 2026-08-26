@@ -204,3 +204,74 @@ Park with confirmed cc1psx divergence. The oracle requires cc1psx-specific behav
   62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches=true.
 - v1/v2/v6 (also 0) were rejected BY THIS SESSION as respellings of the
   layer-1-banned phase-split construct; only v3 avoids any RMW phase split.
+
+## [s7 forensics, 2026-08-26] The target's memory order, and why the direct Sony form cannot produce it
+
+Target instruction stream (asm/funcs/func_800871D4.s), memory ops only:
+
+    sb   $0,  %lo(D_800F4E35)($at)   # voice slot .unk1b clear   (addr = reg + symbol)
+    lhu  $v1, %lo(D_801078D8)($v1)   # key-off word 1 LOAD       (addr = bare symbol)
+    lhu  $a0, %lo(D_801078DA)($a0)   # key-off word 2 LOAD
+    sh   $0,  %lo(D_800F4E1C)($at)   # voice slot .unk04 clear   (addr = reg + symbol)
+    sh   $0,  %lo(D_800F4E18)($at)   # voice slot .unk0  clear
+    lhu  $v0, %lo(D_800F1B10)($v0)
+    or   $v1, $v1, $a2 ; sh $v1, %lo(D_801078D8)($at) ; nor $v1, $0, $v1 ; and ; sh D_800F1B10
+    lhu  $v0, %lo(D_800F1B12)($v0)
+    or   $a0, $a0, $a1 ; sh $a0, %lo(D_801078DA)($at) ; nor $a0, $0, $a0 ; and ; sh D_800F1B12
+
+Both key-off LOADS are above the two halfword clears; both key-off STORES are
+below them. A read-modify-write statement (`D_801078D8 |= bitsLower;`) emits
+its load and its store adjacent, so NO statement ordering of the direct form
+can straddle the clears - measured: psyz-verbatim order = score 8, key-off RMW
+hoisted above all clears = score 12 (both banked in rejected/).
+
+The scheduler cannot repair it. cc1 -dS slice, direct form
+(tmp/grind/func_800871D4/s4/sched_direct.txt):
+
+    ;; insn[  60]: priority = 1, ref_count = 8     (set (mem:QI (plus (reg 90) (symbol_ref "D_800F4E35"))) 0)
+    ;; insn[  65]: priority = 1, ref_count = 8     (set (mem:HI (plus (reg 90) (symbol_ref "D_800F4E1C"))) 0)
+    ;; insn[  70]: priority = 1, ref_count = 8     (set (mem:HI (plus (reg 90) (symbol_ref "D_800F4E18"))) 0)
+    (insn 73 ... (set (reg:HI 94) (mem:HI (symbol_ref "D_801078D8"))) ... (insn_list 60 (insn_list 65 (insn_list 70 ...
+
+Every later memory reference depends on all three voice-slot stores. GCC
+2.7.2's memrefs_conflict_p cannot disambiguate `(plus (reg) (symbol_ref))`
+from a bare `(symbol_ref)`, so sched.c treats the voice-slot stores as
+may-alias barriers for the key-off/key-on globals. CONTROL from the same
+dump: sched1 reordered insn 81 (load D_801078DA) above insns 76/78 (or +
+store D_801078D8) - two bare symbol_refs with DIFFERENT symbols are
+disambiguated and move freely. The barrier is specifically the
+register-plus-symbol address, i.e. `_svm_voice[voice].field`.
+
+**Consequence (the load-bearing fact for any future session):** the target's
+memory order requires the two loaded key-off words to be live in registers
+across the two voice-slot halfword clears. In C, holding a value across an
+intervening statement requires a local. There is no zero-local spelling of
+this function's byte stream, and the layer-1 review's stated remedy ("the
+DIRECT form with zero intermediate locals") is therefore measured dead, not
+merely unmeasured.
+
+## [s7 forensics] The zero-distance form, and where the target's `nor` comes from
+
+Adopted body (memory/grind/func_800871D4/candidate.c): psyz's `_SsVmKeyOffNow`
+with the two key-off words' new values computed before the voice slot is
+released and committed after, and Sony's key-on lines kept VERBATIM
+(`D_800F1B10 &= ~D_801078D8;`, i.e. re-reading the global rather than the
+local). Each staging local is written once and read once at the C level.
+
+Measured: sandbox --disable all score **0**, build_insns == target_insns == 52,
+rules_dropped 0, for both the `s32` and the `u16` spelling of the two locals;
+`u16` adopted since that is the globals' own type. Full build:
+verify-oracle ok=true, build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa,
+build_matches true.
+
+The target's `nor $v1,$0,$v1` (register reuse rather than reloading
+D_801078D8) is emitted by the COMPILER from that verbatim key-on line, not by
+a source-level reuse: the .cse slice
+(tmp/grind/func_800871D4/s4/cse_win.txt) shows cse.c store-to-load forwarding
+the re-read - `(insn 96 (set (reg:SI 103) (not:SI (reg:SI 96))))` with reg 96
+the OR result, and no reload of D_801078D8 anywhere after insn 89's store.
+
+NOT self-approved: the two staging locals are shape-adjacent to the banned s6
+form (which spelled the tail `D_800F1B10 &= ~okof1;` and justified itself from
+global.c allocno priorities). This session returns `ruling-request`; the
+question is in the outcome JSON and candidate.c's header.

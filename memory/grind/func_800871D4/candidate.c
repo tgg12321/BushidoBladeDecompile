@@ -1,107 +1,115 @@
-/* CANDIDATE - func_800871D4 (Sony LIBSND `_SsVmKeyOffNow`) - session 6 (solver, 2026-08-26)
+/* CANDIDATE - func_800871D4 (Sony LIBSND `_SsVmKeyOffNow`) - session 7 (forensics, 2026-08-26)
    sandbox --disable all: score = 0   (target_insns = build_insns = 52, rules_dropped = 0)
    FULL BUILD verified this session: verify-oracle ok=true,
    build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true.
-   goal_from_tgt.py classify: "NO DIVERGENCE: the two streams are identical."
-   ZERO regfix/asmfix rules, ZERO inline asm, ZERO /* FAKE */ construct,
-   ZERO mask, ZERO claimed coercion family.
+   ZERO regfix/asmfix rules, ZERO inline asm, ZERO /* FAKE */ construct, ZERO mask.
 
-   WHAT CHANGED vs THE LAYER-1-FAILED s5 FORM
-   ------------------------------------------
-   s5 also reached score 0, but it did so with FOUR intermediate locals
-   (keyoff_lo/keyoff_hi/keyon_lo/keyon_hi) that split each global
-   read-modify-write into separate load / compute / store phases and advanced
-   the two 24-voice halves in lockstep. The layer-1 cheat-reviewer FAILed that
-   as a GCC-internals-motivated register-allocation lever that does not match
-   the cited Sony reference, and its explicit remedy was "restructure to stay
-   closer to the cited Sony form". That is exactly what this form does, and it
-   turns out the FAITHFUL form is also the matching one.
+   STATUS: submitted as a RULING REQUEST, not as candidate-ready. The two
+   staging locals (`okof1`/`okof2`) are close enough in shape to the s6 form
+   the 2026-08-26 04:54 layer-1 review FAILed that a session may not
+   self-approve them; the question this session asks the owner/Judge is stated
+   at the bottom of this header and in the outcome JSON.
 
-   psyz's PsyQ-4.0 decomp of LIBSND/VM_NOWOF
-   (tmp/psyq_prov/psyz/decomp/src/libsnd/vm_nowof.c) ends `_SsVmKeyOffNow`
-   with the two key-off words updated TOGETHER and then the two key-on words
-   updated TOGETHER:
+   WHAT THE LAYER-1 REVIEW ASKED FOR, AND WHAT MEASURING IT PROVED
+   --------------------------------------------------------------
+   The 04:54 layer-1 FAIL's explicit remedy was: "First measure the DIRECT
+   form with zero intermediate locals - `D_801078D8 |= bitsLower;
+   D_801078DA |= bitsUpper; D_800F1B10 &= ~D_801078D8;
+   D_800F1B12 &= ~D_801078DA;`, grouped Sony's way". That form is byte-for-byte
+   psyz's PsyQ-4.0 decomp of LIBSND/VM_NOWOF, and this session measured it on
+   the current chassis: **score 8, build_insns 52**
+   (rejected/s5-psyz-verbatim-order-score8.c, re-measured 2026-08-26).
 
-       _svm_okof1 |= bitsLower;   _svm_okof2 |= bitsUpper;
-       _svm_okon1 &= ~_svm_okof1; _svm_okon2 &= ~_svm_okof2;
+   It is not merely "worse"; it is FORECLOSED, and the forensic dump names the
+   mechanism. The target's instruction stream is:
 
-   Every measured session-5 form interleaved those two groups
-   (okof1 store, okon1 update, okof2 store, okon2 update) - an interleaving
-   the session invented, not one Sony wrote. Restoring Sony's grouping is the
-   ONLY delta between this body and the banked score-6 form
-   (rejected/s5-grouped-writeback-score6-a1a2-swap.c), and it is worth 6
-   points: it is the whole residual.
+       sb   $0,  D_800F4E35(voice slot .unk1b)     <- voice-slot byte clear
+       lhu  $v1, D_801078D8                        <- key-off word 1 LOAD
+       lhu  $a0, D_801078DA                        <- key-off word 2 LOAD
+       sh   $0,  D_800F4E1C(voice slot .unk04)     <- voice-slot halfword clears
+       sh   $0,  D_800F4E18(voice slot .unk0)
+       ... or / sh D_801078D8 / nor / and / sh D_800F1B10 ...
 
-   THE ONE DEPARTURE FROM psyz, AND WHY IT IS ORDINARY C
-   ----------------------------------------------------
-   The two pending-key-off words are read and combined with this voice's bits
-   BEFORE the voice's own slot is released, and committed after. That ordering
-   is forced by the target's own instruction stream (both `lhu`s sit above the
-   two `sh $0` slot clears, both `sh`s below them) and it is measured, not
-   guessed: GCC 2.7.2's alias check cannot disambiguate a store whose address
-   is `(plus (reg) (symbol_ref))` - i.e. `_svm_voice[voice].field` - from a
-   fixed global, so neither scheduler will move any memory reference across
-   the slot clears. Writing psyz's statement order verbatim therefore emits
-   the loads below the clears and measures score 8
-   (rejected/s5-psyz-verbatim-order-score8.c); hoisting the whole
-   read-modify-write above the clears measures score 12
-   (rejected/s5-okof-rmw-before-clears-score12.c). Only "read, then release
-   the slot, then commit" produces the target's memory order.
+   i.e. both key-off LOADS sit between the byte clear and the two halfword
+   clears, while both key-off STORES sit below all three. In the direct form
+   the load and the store are one statement, so no source ordering can put
+   them on opposite sides of the halfword clears - and the scheduler cannot
+   fix it. tmp/grind/func_800871D4/s4/sched_direct.txt (cc1 -dS slice for this
+   function, direct form) shows sched.c's dependence lists:
 
-   `okof1` / `okof2` are the two updated key-off masks. Each is written once
-   and read twice - once to store back to the global, once to clear the same
-   bits out of the matching key-on word. Both reads are in the target's bytes:
-   after `or $3,$3,$5 ; sh $3,D_801078D8` the target does `nor $3,$0,$3`,
-   reusing the register rather than re-loading the global. So the value these
-   locals name is genuinely a value the original code held.
+       (insn 60 ... (set (mem:QI (plus:SI (reg:SI 90) (symbol_ref "D_800F4E35"))) 0)  ref_count = 8
+       (insn 65 ... (set (mem:HI (plus:SI (reg:SI 90) (symbol_ref "D_800F4E1C"))) 0)  ref_count = 8
+       (insn 70 ... (set (mem:HI (plus:SI (reg:SI 90) (symbol_ref "D_800F4E18"))) 0)  ref_count = 8
+       (insn 73 (set (reg:HI 94) (mem:HI (symbol_ref "D_801078D8")))
+                 ... (insn_list 60 (insn_list 65 (insn_list 70 ...
 
-   WHY THIS LANDS THE REGISTERS (solver-derived, tools/ra_solver)
-   -------------------------------------------------------------
-   The residual against the score-6 chassis was typed RA by
-   goal_from_tgt.py classify (52 vs 52 insns, identical skeleton, a pure
-   `$a1 <-> $a2` rename x1 each way). inverse.py global --swap 73,74 returned
-   REACHABLE at 1 atom, ranking `live_shrink pseudo 73: 21->17` third, and
-   this form is that atom:
+   Every later memory reference carries a true dependence on all three
+   voice-slot stores: GCC 2.7.2's memrefs_conflict_p cannot disambiguate a MEM
+   whose address is `(plus (reg) (symbol_ref))` from a MEM at a bare
+   `(symbol_ref)`, so sched.c refuses to move any load across them. (It DOES
+   disambiguate two bare symbol_refs with different symbols - the same dump
+   shows sched1 hoisting insn 81, the D_801078DA load, above insn 76/78, the
+   D_801078D8 or/store.) The pass and the decision are therefore named, not
+   guessed: sched.c dependence construction, on a store the alias check must
+   treat as may-alias.
 
-       score-6 chassis   73 (bitsUpper) nrefs 3 livelen 21 pri 1428  -> $a2
-                         74 (bitsLower) nrefs 3 livelen 19 pri 1578  -> $a1
-       this form         73 (bitsUpper) nrefs 3 livelen 17 pri 1764  -> $a1
-                         74 (bitsLower) nrefs 3 livelen 19 pri 1578  -> $a2
+   Conclusion: the target's memory order requires the loaded key-off words to
+   be held in registers ACROSS the two voice-slot halfword clears. In C the
+   only way to hold a value across an intervening statement is a local. That
+   is why this body has `okof1`/`okof2`, and it is a different justification
+   from the one the s6 form offered (which argued from global.c allocno
+   priorities and was FAILed for exactly that reason).
 
-   global.c's allocno_compare sorts on floor_log2(n_refs)*n_refs*size /
-   live_length; at 1764 > 1578 bitsUpper is now allocated first, and since it
-   conflicts only with bitsLower and voice ($a0) it takes $a1, leaving $a2 for
-   bitsLower - the target's disposition. The two 52-instruction streams are
-   byte-identical apart from those two register names, so the live-length
-   change is bookkeeping sched.c carries forward from the PRE-scheduling
-   statement order, not a difference in emitted code. That is why an ordinary
-   source-order choice - and specifically Sony's own grouping - is sufficient,
-   and why no invented local, mask, or annotation is needed.
+   WHAT CHANGED vs THE FAILED s6 FORM
+   ---------------------------------
+   s6 wrote the tail as `D_801078D8 = okof1; D_800F1B10 &= ~okof1;` - the
+   local read twice, and Sony's key-on line rewritten in terms of it. This
+   form keeps Sony's key-on lines VERBATIM:
 
-   Also measured 0 this session, and NOT chosen because each splits the global
-   read-modify-write into load/compute/store phases the way the FAILed s5 form
-   did: tmp/grind/func_800871D4/s4/{v1,v2,v6}.c. Measured 6 (grouping restored
-   but the two halves' write-backs re-interleaved in the other direction):
-   rejected/s4-upper-group-first-score6.c.
+       D_800F1B10 &= ~D_801078D8;      == _svm_okon1 &= ~_svm_okof1;
+       D_800F1B12 &= ~D_801078DA;      == _svm_okon2 &= ~_svm_okof2;
+
+   so at the C level each staging local is written ONCE and read ONCE, and the
+   only departure from psyz's source is that the two key-off words' new values
+   are computed before the voice slot is released and committed after.
+
+   The `nor $v1,$0,$v1` in the target - reusing the register rather than
+   reloading the global - is produced by the COMPILER, not by the source:
+   tmp/grind/func_800871D4/s4/cse_win.txt (the .cse slice for this form) shows
+   cse.c store-to-load forwarding the re-read, so after cse the insn is
+   `(insn 96 (set (reg:SI 103) (not:SI (reg:SI 96))))` where reg 96 is the OR
+   result, and no reload of D_801078D8 is emitted. The source's re-read of the
+   global is therefore honest C that costs nothing.
+
+   Both `s32 okof1/okof2` and `u16 okof1/okof2` measure 0 / 52 insns; `u16` is
+   adopted because it is the type of the globals being staged
+   (tmp/grind/func_800871D4/s4/v_reread.c is the s32 variant).
+
+   THE OPEN QUESTION (see outcome JSON `ruling_question`)
+   -----------------------------------------------------
+   Is a fresh, once-written / once-read local that stages a global's loaded
+   value across an intervening may-alias store - where the RTL dumps show the
+   staging is the ONLY C spelling of the target's memory order, and where the
+   local's value is literally in the target's bytes - ordinary C needing no
+   family, or must it be claimed under the named-intermediate family
+   (.claude/rules/narrow-byte-args-packed-call.md + the 2026-08-17
+   clarification) with a /* FAKE */ annotation? And does the existing ban on
+   the s6 spelling (`... &= ~okof1`, RA-justified) extend to this one
+   (`... &= ~D_801078D8`, memory-order-justified)?
 
    Symbol map (BB2 <- Sony): D_8010280A <- _svm_cur.voice; D_800F4E18 <-
    _svm_voice[] base (BB2 stride 54 vs stock PsyQ 4.0's 52 - the documented
    SpuVoice growth, memory/grind/note2pitch/psyz-sweep-2026-08-18.md), cleared
    fields at +0 (u16), +4 (u16) and +0x1d (u8); D_801078D8/DA <-
    _svm_okof1/_svm_okof2 (pending key-off masks, voices 0-15 / 16-23);
-   D_800F1B10/12 <- _svm_okon1/_svm_okon2 (matching key-on masks), which is why
-   each key-off bit is also cleared from the key-on word.
-
-   Every local here is written and read; nothing is dead, nothing is masked for
-   effect, nothing is annotated. See self_vet.md. */
-void func_800871D4(s32 mode)
-{
+   D_800F1B10/12 <- _svm_okon1/_svm_okon2 (matching key-on masks). */
+void func_800871D4(s32 mode) {
     s32 bitsUpper;
     s32 bitsLower;
     u16 voice;
     s32 idx;
-    s32 okof1;
-    s32 okof2;
+    u16 okof1;
+    u16 okof2;
 
     voice = D_8010280A;
     if (voice < 16) {
@@ -119,6 +127,6 @@ void func_800871D4(s32 mode)
     *(s16 *)((u8 *)&D_800F4E18 + idx) = 0;
     D_801078D8 = okof1;
     D_801078DA = okof2;
-    D_800F1B10 &= ~okof1;
-    D_800F1B12 &= ~okof2;
+    D_800F1B10 &= ~D_801078D8;
+    D_800F1B12 &= ~D_801078DA;
 }
