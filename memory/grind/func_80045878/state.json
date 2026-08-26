@@ -1,8 +1,8 @@
 {
  "func": "func_80045878",
  "file": "text1a_c",
- "session_count": 7,
- "current_modality": "solver",
+ "session_count": 8,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -51,23 +51,29 @@
    "floor": 10,
    "modality": "solver",
    "headline": "Solver session: named cse.c:826 as the pass that eats target's tail base copy, spelled the C lever that keeps it, and reduced the whole function to a 2-register RA rename (108/108, index-for-index) pl"
+  },
+  {
+   "session": 8,
+   "floor": 10,
+   "modality": "escalation",
+   "headline": "R2 proven closed-form dead: the tail base pseudo is cse-canonical iff multi-block and can win $v0 iff single-block; both endgame-lock gates fail, standing 2026-07-27 ruling applied."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "R2 closes when the tail base pseudo (p) loses its HARD conflict with hard reg $v0 and its $a0/$a1 preference set, at which point global.c's find_reg gives it $v0 and the scratch falls to $v1 -- the last nine instructions of the function.",
-   "mechanism": "simulate.py --trace on the P4 body: a=78 pri=30000 calls=0 hard_conf=[2,29] prefs=[4,5] -> best=$a0. p is allocated FIRST (highest priority) and is barred from $v0 only by the hard conflict with reg 2; it then takes $a0 straight off its own preference list. Both are consequences of WHERE p's surviving live range sits and which hard-reg copies touch it -- neither is in inverse.py's atom space, which is why the depth-2 search returned FORECLOSED.",
-   "next_probe": "On the P4 chassis run `pwsh tools/grinder/dump.ps1 func_80045878` and read the .greg/.flow dumps to find (a) exactly which insn range makes hard reg $v0 live simultaneously with p, and (b) which copy insn makes set_preference record $a0/$a1 for p -- do NOT guess either. Then move p's early mention to a block where $v0 is dead (candidates: inside the second `if (func_8004574C(s3) != 0) { func_800400F8(...); }` arm, or a store in the FIRST if's then arm) and re-run extract.py + simulate.py; success signature is a=78 with hard_conf lacking 2 and best=2."
+   "hypothesis": "Making the two tail scratch values non-block-local would stop local_alloc from taking $v0 and remove pseudo 78's hard conflict with hard reg 2 - the last mechanically-unexplored input.",
+   "mechanism": "local_alloc runs before global_alloc and only claims pseudos whose live range is inside one basic block (local-alloc.c:472 gates on reg_basic_block[i] >= 0). If the a0+3 value and the 0x8000 constant were live across a block boundary they would fall to global.c instead, and pseudo 78 (priority 30000, allocated first) would face no hard conflict with reg 2.",
+   "next_probe": "Recorded for completeness, NOT as a live hope: even with the conflict gone, pseudo 78 carries hard-reg preferences [4,5] and global.c find_reg tries preferred regs first, so it still lands on $a0; and hoisting a0+3 out of the tail re-folds it with s3 (s2/s3 measured this) while hoisting the 0x8000 constant lengthens a live range across calls. Before spending a session on it, measure whether removing the conflict alone changes anything on a throwaway body, and read where the [4,5] preference is actually recorded (global.c set_preference / expand_preferences) rather than assuming."
   },
   {
-   "hypothesis": "R1' (idx 50) closes when reorg.c stops filling the `beq v1,v0` delay slot with `move a0,s3` copied from the branch target block -- target leaves a nop there.",
-   "mechanism": "reorg.c fills the branch delay slot from the successor block; ours can because `move a0,s3` at idx 53 is available and unconditionally safe. In target that fill did not happen, so at reorg time either the slot's candidate was not annullable/safe or the successor's first insn was not that copy.",
-   "next_probe": "Read the .dbr/.sched2 dump on the P4 chassis for that branch (do not guess the pass). The likely C lever is changing what the third if's then arm leaves live -- e.g. whether `s3` is still the live call-argument pseudo at that point -- which the P4 then-arm change already perturbs; measure the P4 body with the then-arm early mention placed AFTER `s1[3] = 0` rather than before it, and with `p` typed/used so idx 53's copy is not the successor's first insn."
+   "hypothesis": "The residual is reachable at all from pure C.",
+   "mechanism": "Closed-form contradiction: cse.c:826 canonicality requires the tail base pseudo to be multi-block; local_alloc winning $v0 for it requires it to be single-block; flow.c:2074 fixes REG_BASIC_BLOCK before combine can undo the earlier mention.",
+   "next_probe": "Do NOT re-spell the pointer copy - all six placements are measured and banked in memory/grind/func_80045878/rejected/. Any future attempt must change the CFG itself (so the tail is not the function's last basic block, or so the tail block's scratch values are not born there), which is a whole-function reshape, not a spelling."
   },
   {
-   "hypothesis": "P4 is complete except for register assignment, so any remaining work must be graded on P4 (score 12, 108 insns), NOT on the score-10 candidate.c body (107 insns).",
-   "mechanism": "The sandbox score is a weighted penalty; a body that is one instruction SHORT of target can score lower than a body with target's exact instruction stream and two register renames. Grading on the score-10 body is exactly what routed s3-s5 into the permuter dead end (s6 finding), and grading on the s6 chassis would now repeat the mistake one level up.",
-   "next_probe": "Start every subsequent session by applying rejected/chassis-p4-thenarm-p-tail-pure-rename.c to src/text1a_c.c and confirming sandbox --disable all = 12 / build_insns 108, then re-running tmp/grind/func_80045878/s7/sbs2.py (object-level index-for-index side-by-side) to confirm the residual is still idx 50 + idx 89-97 before changing anything."
+   "hypothesis": "Pass attribution for this function can be taken from tools/grinder/dump.ps1 without cross-checking.",
+   "mechanism": "The dump tool did not pick up a source edit this session and emitted stale, byte-identical dumps.",
+   "next_probe": "Always take the dump immediately after the sandbox measurement it is meant to explain, and confirm the dumped .s function body matches the disassembly of tmp/sandbox/<func>/<stem>.o before citing it (helper: tmp/grind/func_80045878/s8/dis.sh)."
   }
  ],
  "judge_constraints": [],

@@ -412,3 +412,84 @@ multisets identical; `goal_from_tgt.py classify` = "FIRST DIVERGENCE: RA",
 - probe: Applied the reuse-v0 body; sandbox --disable all; object-level side-by-side; `inverse.py global --goal '{"76": 2}' --depth 2`.
 - result: score 15, build_insns 109 vs target 108. The tail comes out as the same pure rename of target, so the cse mechanism works -- but the reuse costs a whole extra instruction (`move a0,v0` at idx 12): the v0 pseudo now spans the call-result region where $v0 is hard-conflicted, so global.c gives the whole pseudo $a0 and must copy the return value into it. inverse.py returned FORECLOSED for that pseudo -> $v0 as well.
 - verdict: KILLED
+
+## [s8] The tail base pseudo can be BOTH cse-canonical (copy survives) and single-block (so local_alloc gives it $v0) - KILLED (closed-form, from cc1 source + 3 measurements)
+- statement: some C spelling of the tail base makes the join copy
+  `addu v0,s1,zero` survive AND lets the base win $v0, closing residual R2.
+- mechanism: (a) toplev.c pass order is flow_analysis (2983) -> combine
+  (3004) -> sched (3033) -> regclass+local_alloc (3049) -> global_alloc
+  (3077); REG_BASIC_BLOCK is written ONLY in flow.c (2072-2075, 2508-2511),
+  before combine. (b) The two tail scratch pseudos are born and die in the
+  tail block, so local_alloc claims them first and find_free_reg gives them
+  $v0 (.lreg: `Register 101/102 ... in block 13`, `;; Register 101 in 2.`,
+  `;; Register 102 in 2.`); that is the entire origin of pseudo 78's HARD
+  conflict with hard reg 2 (.greg: `;; 78 conflicts: 72 73 78 2 29`) which
+  s7 named as blocking and inverse.py reported outside its atom space.
+  Target's shape therefore requires the BASE to be block-local too, so
+  local-alloc allocates it first. (c) But cse.c:826 make_regs_eqv keeps the
+  copy only if the base is canonical, which for the join EBB requires
+  `uid_cuid[regno_first_uid[p]] < cse_basic_block_start` - a mention in an
+  EARLIER basic block (the sibling disjunct `regno_last_uid > cse_basic_block_end`
+  is unreachable: the tail block is the function's last block). (d) Any such
+  mention sets REG_BLOCK_GLOBAL at flow time, before combine deletes it -
+  measured: the P4 then-arm copy insns 121/124 are still in .flow and gone
+  only in .combine, yet .lreg reports pseudo 78 with no `in block N`.
+- probe: read toplev.c/flow.c/cse.c/local-alloc.c; re-measured P4 (12/108);
+  measured the dead-mention variant (then-arm store through s1) = 11/107;
+  measured the FIRST-if else-arm placement = 14/109; disassembled
+  tmp/sandbox/func_80045878/text1a_c.o for both to get index-for-index truth.
+- result: canonical IFF multi-block; $v0 IFF single-block. Mutually
+  exclusive. Every placement of the early mention is now measured: third-if
+  THEN arm 12/108 (s7, the only free one), third-if ELSE arm 15/109 (s7),
+  both arms 16/108 two copies (s7), FIRST-if else arm 14/109 (s8), dead
+  mention 11/107 (s8), reuse of local `v0` 15/109 (s7).
+- verdict: KILLED. Do NOT re-spell the pointer copy; the space is closed.
+
+## [s8] R1' (the idx-50 delay-slot fill) and R2 (the tail register pair) are independent residuals that can be closed separately - KILLED (they are anti-coupled through one C decision)
+- statement: s7 recorded R1' and R2 as two separate frontier items, implying
+  independent levers.
+- mechanism: reorg.c fills the `beq v1,v0` delay slot from the successor
+  block only when a safe copy is available there. Writing the third-if
+  then-arm store through `p` (P4) leaves `move a0,s3` available and reorg
+  takes it; writing the same store through `s1` leaves the slot empty.
+- probe: object-level diff of the two sandbox builds (p4.dis vs dead.dis in
+  tmp/grind/func_80045878/s8/).
+- result: with the then-arm store through s1 the slot is `nop`, EXACTLY as
+  target - R1' CLOSED - but that same spelling removes p's early mention and
+  the join base copy dies (107 insns), reopening R2 worse than before.
+  With the store through p, R2's shape is right and R1' is wrong.
+- verdict: KILLED as independent items. One C decision (the base of the
+  then-arm store) controls both, in opposite directions.
+
+## [s8] `pwsh tools/grinder/dump.ps1 func_80045878` reliably reflects the current src/text1a_c.c - KILLED (tool defect)
+- statement: the mandated pass-attribution dump tool tracks source edits.
+- probe: dumped P4, edited one statement (`p[3] = 0;` -> `s1[3] = 0;`),
+  re-dumped; then measured both variants with the sandbox and disassembled
+  the sandbox objects.
+- result: the two dumps were BYTE-IDENTICAL (.greg 468146 bytes both times,
+  identical .s function body including `move $4,$17`) while the sandbox
+  objects differed by a whole instruction (108 vs 107) and by the presence of
+  that very copy. The dump taken immediately after the P4 measurement is
+  valid; the one taken after the edit is stale.
+- verdict: KILLED. Take the dump immediately after the sandbox measurement it
+  is meant to explain, and cross-check any dump-based claim against
+  `mipsel-linux-gnu-objdump -d tmp/sandbox/<func>/<stem>.o`
+  (tmp/grind/func_80045878/s8/dis.sh).
+
+## [s8] Some C spelling of the tail base makes the join copy `addu v0,s1,zero` survive AND lets that pseudo win $v0, closing residual R2.
+- mechanism: toplev.c pass order is flow_analysis(2983) -> combine(3004) -> sched(3033) -> regclass+local_alloc(3049) -> global_alloc(3077), and REG_BASIC_BLOCK is written ONLY in flow.c (2072-2075, 2508-2511), before combine. The two tail scratch pseudos are born and die inside the tail block, so local_alloc claims them first and find_free_reg gives them $v0 (.lreg 'Register 101/102 ... in block 13' plus ';; Register 101 in 2.' / ';; Register 102 in 2.'); that is the whole origin of pseudo 78's HARD conflict with hard reg 2 (.greg ';; 78 conflicts: 72 73 78 2 29') - the input s7 named as blocking and inverse.py reported outside its atom space. Target's tail (base=$v0, scratch=$v1) therefore requires the BASE to be block-local too, so local_alloc allocates it first. But cse.c:826 make_regs_eqv keeps the copy only if the base is canonical, which at the join EBB requires uid_cuid[regno_first_uid[p]] < cse_basic_block_start, i.e. a mention in an EARLIER basic block (the sibling disjunct regno_last_uid > cse_basic_block_end is unreachable because the tail block is the function's last block). Any such mention sets REG_BLOCK_GLOBAL at flow time, before combine deletes it.
+- probe: Read toplev.c / flow.c / cse.c / local-alloc.c; re-measured the P4 chassis (sandbox --disable all = 12, build_insns 108); measured the dead-mention variant (then-arm store through s1) = 11 / 107; measured the FIRST-if else-arm placement = 14 / 109; disassembled tmp/sandbox/func_80045878/text1a_c.o for both variants for index-for-index truth.
+- result: Canonical IFF multi-block; $v0 IFF single-block - mutually exclusive. Every placement of the early mention is now measured: third-if THEN arm 12/108 (s7, the only cost-free one), third-if ELSE arm 15/109 (s7), both arms 16/108 with two copies (s7), FIRST-if else arm 14/109 (s8), dead mention 11/107 (s8), reuse of the existing `v0` local 15/109 (s7). On P4 the then-arm copy insns 121/124 are still present in .flow and gone only in .combine, yet .lreg reports pseudo 78 as 'used 9 times across 9 insns' with no 'in block N' suffix - flow.c:2074 had already made it global.
+- verdict: KILLED
+
+## [s8] R1' (the idx-50 delay-slot fill) and R2 (the tail register pair) are independent residuals closable by separate levers, as s7's frontier assumed.
+- mechanism: reorg.c fills the `beq v1,v0` delay slot from the successor block only when a safe copy is available there. Writing the third-if then-arm store through `p` leaves `move a0,s3` available and reorg takes it; writing the same store through `s1` leaves the slot empty.
+- probe: Object-level diff of the two sandbox builds (tmp/grind/func_80045878/s8/p4.dis vs dead.dis, produced by disassembling tmp/sandbox/func_80045878/text1a_c.o after each measurement).
+- result: With the then-arm store through s1 the slot comes out as `nop`, exactly as target has it - R1' CLOSED - but that same spelling removes p's early mention, the join base copy dies, and the build is 107 insns (one SHORT of target), reopening R2 worse than before. With the store through p, R2's shape is right and R1' is wrong. One C decision (the base of that store) controls both, in opposite directions.
+- verdict: KILLED
+
+## [s8] `pwsh tools/grinder/dump.ps1 func_80045878` reliably reflects the current src/text1a_c.c, so its dumps can be trusted for pass attribution.
+- mechanism: The dump script recompiles the TU with -da and writes the pass dumps under tmp/grind/<func>/dumps/.
+- probe: Dumped with P4 in place, edited exactly one statement (`p[3] = 0;` -> `s1[3] = 0;`), re-dumped, then measured both variants with the sandbox and disassembled the sandbox objects.
+- result: The two dumps were byte-identical (.greg 468146 bytes both times; identical .s function body including the `move $4,$17` join copy) while the sandbox objects differed by a whole instruction (108 vs 107) and by the presence of that very copy. The dump taken immediately after the P4 measurement is valid and is what every P4 dump citation rests on; the one taken after the edit is stale.
+- verdict: KILLED

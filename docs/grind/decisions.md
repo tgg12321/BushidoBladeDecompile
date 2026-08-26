@@ -13301,3 +13301,102 @@ Q1: reading (b). The okof1/okof2 staging locals are NOT ordinary C - their place
 ## 2026-08-26 05:23 — func_800871D4 — final call — **PASS**
 
 The only change since the 05:09 ANNOTATION-FORMAT FAIL is the prescribed /* FAKE */ comment: I diffed the src body against HEAD's Judge-verified candidate.c body and they are identical apart from those five annotation lines (banned dual-use `andi` absent, 4-local keyoff_lo/hi split absent, allocator-priority header replaced by a Sony symbol map, self_vet T5 no longer claims 'ordinary C'). Family = frozen 'Named-intermediate declaration order' (.claude/rules/no-new-park-categories.md:189-214, owner clarification 2026-08-17); I re-verified prong (1) myself in src/main.c:1140-1164 — okof1/okof2 are each declared, written once, read once, and Sony's key-on lines re-read the globals, which is the exact defect that killed the s6 spelling. Precedent docs/reference/sotn-construct-index.md:113 is the untagged PSX entry src/weapon/w_037.c:300 ('FAKE but makes register allocation work') — valid GCC 2.7.2 backing. Exhaustion (direct psyz form re-measured at score 8, ~2550-iteration permuter negative, 21 banked rejects) and the dump-named sched.c/memrefs_conflict_p mechanism live in hypotheses.md [s3]-[s7] lines 137/197/203/209 and self_vet.md's six-prong checklist. Bytes: sandbox 0, 52/52, 0 rules, full-build SHA1 == oracle per hypotheses.md [s7] line 210 and the task premise.
+
+## 2026-08-26 — func_80045878 (src/text1a_c.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session s8 (escalation modality, driver-declared exhaustion: honest floor
+FLAT at 10 across s0–s7 and five distinct modalities — recon, structural ×2, permuter ×2,
+synthesis, solver). This entry names **func_80045878** and applies the owner's standing
+2026-07-27 auto-ruling (.claude/rules/endgame-lock-disposition.md) rather than asking for a
+new ruling. It supersedes nothing: the 2026-07-23 escalation for this function was ruled
+option (b) on 2026-07-27, and the owner's 2026-08-24 escalation-not-parked ruling returned
+the item to active grinding, which is why s6/s7/s8 ran. s8's contribution is that the
+residual is no longer "an RA coin-flip we cannot explain" — it is a **proven structural
+contradiction inside GCC 2.7.2's pass order**, stated below in full so no future session
+re-derives it.
+
+### AND-gate #1 (canonical-asm) — FAILS
+`python3 tools/scan_hand_coded.py --single func_80045878` (re-run THIS session):
+`HAND_CODED: tier=LOW score=0/8 (108 insns)` — S1–S8 all negative; 108 insns, 7 spills,
+11 distinct regs. Ordinary GCC 2.7.2 output in every respect. Canonical-asm is not
+supportable, exactly as ruled on 2026-07-27.
+
+### AND-gate #2 (SOTN-master precedent for a closing construct) — FAILS, and vacuously
+There is **no closing construct to cite a precedent for**. This is the func_80022F34 shape,
+not the func_80061658 shape: no C form — sanctioned, unsanctioned, or forbidden — reaches
+distance 0, because the two properties target's tail requires are mutually exclusive under
+this compiler. Proof, from cc1 source + measurements taken this session:
+
+1. **Pass order** (`tools/gcc-2.7.2/toplev.c`): 2983 `flow_analysis` → 3004
+   `combine_instructions` → 3033 `sched` → 3049 `regclass`+`local_alloc` → 3077
+   `global_alloc`. `REG_BASIC_BLOCK` is assigned **only** inside flow.c
+   (flow.c:2072-2075, flow.c:2508-2511) — i.e. strictly before combine runs.
+2. **Target's tail wants base=$v0, scratch=$v1** (`addu $v0,$s1,$zero` / `addiu $v1,$s2,3`
+   / `ori $v1,$zero,0x8000` at 0x800459DC–0x800459FC). The two scratch pseudos are born and
+   die inside the tail basic block, so `local_alloc` — which runs BEFORE `global_alloc` —
+   claims them and `find_free_reg` hands them the lowest free GR. Measured on the P4 chassis
+   (`.lreg`): `Register 101 used 2 times across 2 insns in block 13`, `Register 102 ... in
+   block 13`, `;; Register 101 in 2.  ;; Register 102 in 2.` — both scratches get **$v0**
+   from local-alloc. Target's assignment is therefore only reachable if the tail BASE is
+   itself a block-13-local quantity with a longer live range, so local-alloc allocates it
+   first ($v0) and pushes both scratches to $v1.
+3. **That local-allocated $v0 is the origin of the hard conflict s7 could not explain.**
+   `.greg` on P4: `;; 78 conflicts: 72 73 78 2 29`, `;; 78 preferences: 4 5`, dispositions
+   `76 in 2 / 78 in 4`. Pseudo 78 (the tail base) conflicts with hard reg 2 *because
+   local-alloc already put 101/102 there*, then takes $a0 off its own preference list. This
+   closes s7's open question and explains why `inverse.py --depth 2` returned FORECLOSED:
+   the conflict is not an input global.c can be perturbed into dropping, it is a decision a
+   previous pass already committed.
+4. **The base copy only survives cse if the base pseudo is MULTI-block.** `cse.c:826
+   make_regs_eqv` makes the copy's destination canonical only if
+   `(uid_cuid[regno_last_uid[new]] > cse_basic_block_end || uid_cuid[regno_first_uid[new]] <
+   cse_basic_block_start) && uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]]`.
+   The tail block is the LAST block of the function, so the first disjunct is unreachable;
+   only an earlier-basic-block mention satisfies the second. Without it, `canon_reg` rewrites
+   every use of the base back to `s1` and the copy dies.
+5. **An earlier-basic-block mention makes the pseudo REG_BLOCK_GLOBAL at flow time**, before
+   combine can delete it. Measured: the P4 then-arm copy (insns 121/124) is still present in
+   the `.flow` dump and only gone in `.combine`, yet `.lreg` reports pseudo 78 as
+   `used 9 times across 9 insns` with **no** `in block N` suffix — i.e. flow.c:2074 already
+   set REG_BLOCK_GLOBAL and local-alloc will never touch it.
+
+⇒ **The tail base pseudo is canonical (copy survives) if and only if it is multi-block, and
+it can win $v0 if and only if it is single-block.** No C spelling can satisfy both. Every
+placement of the early mention has now been measured: third-if THEN arm = P4, score 12 /
+108 insns (s7); third-if ELSE arm = score 15 / 109 (s7); BOTH arms = score 16 / 108 with two
+copies (s7); FIRST-if else arm = score 14 / 109 (s8, new); early mention made dead (store
+through s1) = score 11 / **107** — the copy dies (s8, new); reuse of the existing `v0` local
+= score 15 / 109 (s7).
+
+### Second, independent anti-coupling found this session
+Residual R1' (idx 50: ours fills the `beq v1,v0` delay slot with `move a0,s3`, target leaves
+`nop`) **closes** when the third-if then-arm store is written through `s1` rather than through
+`p` — measured object-level, the slot comes out as `nop` exactly as target has it. But that is
+precisely the spelling that removes p's early mention and kills the base copy (107 insns).
+R1' and R2 are therefore anti-coupled through a single C decision — the base of one store —
+and no measured spelling closes both.
+
+### Exhaustion record
+s0 wip-import; s1 recon; s2/s3 structural (both gaps nailed at RTL, 10+ orderings killed);
+s4 permuter (4 chassis, ~156k iters, plateau 250/210); s5 permuter (5th fresh-seed chassis,
+13,769 iters, plateau 210, no zero); s6 synthesis (multiset-exact arm-split classification);
+s7 solver (ra_solver model exact 8/8, `inverse.py --depth 2` FORECLOSED, P4 chassis at 108/108
+index-for-index); s8 escalation (this entry). Honest floor 10 throughout; best chassis P4 at
+score 12 / 108 insns, whose residual is nine instructions differing only by two register names
+plus one delay slot.
+
+### The decidable question (routing/fidelity only — no standard is being asked to move)
+Given (i) canonical-asm gate LOW 0/8, (ii) no closing C construct of ANY family — sanctioned,
+unsanctioned or forbidden — and (iii) a source-level proof that target's tail register
+assignment is unreachable from C under GCC 2.7.2's flow→combine→local_alloc→global_alloc
+order: should func_80045878 continue to consume grind sessions, or is the standing 2026-07-27
+disposition its terminal state? **Consequence of "continue":** the only untested lever left is
+making the two tail scratch values non-block-local so they never take $v0 from local-alloc —
+which does not by itself help, because pseudo 78 still carries hard-reg preferences [4,5] and
+global.c `find_reg` tries preferred regs first; it is recorded on the frontier for
+completeness, not as a live hope. **Consequence of "terminal":** the function stays
+`INCLUDE_ASM("asm/funcs", func_80045878)` on main (0 regfix/asmfix rules, no cheat-asm — the
+2026-08-19 asm-until-matched representation), classified NOT COMPLETED-C and NOT
+canonical-asm, and the queue advances. Standing ruling applied: **REFUSED / OWNER-ACCEPTED
+INCOMPLETE**; eligible for re-attempt only if a genuinely new pure-C lever or new tooling
+emerges — not by re-spelling the pointer copy, which is now closed-form proven dead.

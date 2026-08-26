@@ -512,3 +512,111 @@ to HEAD (INCLUDE_ASM) at end of session.
 - [s7] Placing p's early mention in the ELSE arm instead of the THEN arm leaves a second, non-removable copy (109 insns, score 15); duplicating `p = s1` into both arms gives 108 insns but two copies with the else-arm one hoisted by sched1.
 
 - [s7] No FAKE/coercion construct was written or measured this session -- every probe is plain C (a named pointer local used for real stores). src/text1a_c.c restored to HEAD (INCLUDE_ASM); no rules/pipeline/engine files touched; no permuter campaigns launched, none left alive.
+
+
+## s8 (2026-08-26, escalation modality)
+
+- [s8] Chassis re-measure with edits in place: the P4 body
+  (rejected/chassis-p4-thenarm-p-tail-pure-rename.c) applied to
+  src/text1a_c.c scores sandbox --disable all = 12, build_insns 108 ==
+  target 108. Confirms s7's chassis on today's HEAD. Ledger floor 10
+  (the score-10 candidate.c body) unchanged this session.
+- [s8] PASS-ORDER GROUND TRUTH (read from tools/gcc-2.7.2/toplev.c, not
+  guessed): 2983 flow_analysis -> 3004 combine_instructions -> 3033 sched ->
+  3049 regclass + local_alloc -> 3077 global_alloc. `REG_BASIC_BLOCK` is
+  written ONLY in flow.c (flow.c:2072-2075 and flow.c:2508-2511), i.e.
+  strictly BEFORE combine.
+- [s8] ORIGIN OF PSEUDO 78's HARD CONFLICT WITH $v0 (the input s7 named as
+  blocking and inverse.py could not perturb): local_alloc gets there first.
+  P4 .lreg shows `Register 101 used 2 times across 2 insns in block 13` and
+  `Register 102 used 2 times across 4 insns in block 13`, and the
+  local-alloc disposition lines `;; Register 101 in 2.` / `;; Register 102 in
+  2.` -- both tail scratch pseudos (the a0+3 value and the 0x8000 constant)
+  are BLOCK-LOCAL, so local_alloc allocates them before global_alloc runs and
+  find_free_reg hands them $v0. Pseudo 78 (the tail base p) is then a global
+  allocno that conflicts with hard reg 2 for that reason alone. P4 .greg:
+  `;; 78 conflicts: 72 73 78 2 29` / `;; 78 preferences: 4 5` /
+  dispositions `76 in 2  78 in 4`.
+- [s8] THEREFORE target's tail assignment (base=$v0, scratch=$v1) requires the
+  tail BASE to be a block-13-LOCAL quantity with a longer live range than the
+  scratches, so that local_alloc allocates it first ($v0) and pushes both
+  scratches to $v1. Target's 0x800459DC-0x800459FC is exactly that shape.
+- [s8] BUT cse.c:826 make_regs_eqv can only keep the join copy alive if the
+  base pseudo has a mention in an EARLIER BASIC BLOCK (the other disjunct,
+  regno_last_uid > cse_basic_block_end, is unreachable because the tail block
+  is the last block of the function), and flow.c:2074 turns any such mention
+  into REG_BLOCK_GLOBAL before combine can delete it. Measured directly: on
+  P4 the then-arm copy insns 121/124 are STILL PRESENT in the .flow dump and
+  are gone only in .combine, yet .lreg reports pseudo 78 as
+  `used 9 times across 9 insns` with NO `in block N` suffix.
+- [s8] => STRUCTURAL CONTRADICTION, closed form: the tail base pseudo is
+  cse-canonical (its copy survives) IFF it is multi-block, and it can win $v0
+  IFF it is single-block. No C spelling satisfies both. This retires the
+  three-session framing of R2 as an RA tie-break that "some spelling" might
+  win.
+- [s8] NEW MEASUREMENT (early mention made dead): P4 with the third-if
+  then-arm store written `s1[3] = 0;` instead of `p[3] = 0;` gives sandbox
+  --disable all = 11, build_insns 107. cse re-canonicalises the store onto p
+  when p is set first, so the "dead store" is not actually dead in P4; when
+  the store genuinely uses s1 the join copy dies and the build is one insn
+  SHORT of target. Banked:
+  rejected/thenarm-store-through-s1-closes-delayslot-kills-basecopy.c.
+- [s8] NEW MEASUREMENT (R1' is anti-coupled to R2): in that same 107-insn
+  build the `beq v1,v0` delay slot at idx 50 comes out as `nop`, EXACTLY as
+  target has it -- residual R1' is CLOSED by writing the then-arm store
+  through s1. On P4 (store through p) reorg.c fills the slot with
+  `move a0,s3`. So the ONE C decision that closes R1' is the one that opens
+  R2, and vice versa; no measured spelling closes both.
+- [s8] NEW MEASUREMENT (last untried early-mention placement): early mention
+  in the FIRST if's ELSE arm (`p = s1; p[4] = -1; p[3] = 0;`) = sandbox 14,
+  build_insns 109 -- the block-2 copy is not propagated away and costs a whole
+  extra instruction, the same failure mode as s7's third-if else-arm probe.
+  Banked: rejected/firstelse-arm-p-early-mention-extra-copy.c. The third-if
+  THEN arm (P4) remains the ONLY placement where the early mention is free.
+- [s8] TOOL DEFECT (record before trusting a dump again): `pwsh
+  tools/grinder/dump.ps1 func_80045878` emitted BYTE-IDENTICAL .greg/.lreg/.s
+  output for two source variants that demonstrably compile to different
+  objects (108 vs 107 insns under the sandbox, verified by disassembling
+  tmp/sandbox/func_80045878/text1a_c.o). The dump taken immediately after the
+  P4 measurement IS valid and is what every P4 dump citation above rests on,
+  but the tool did not pick up the following edit. Cross-check any dump-based
+  claim against `mipsel-linux-gnu-objdump -d tmp/sandbox/<func>/<stem>.o`
+  (helper: tmp/grind/func_80045878/s8/dis.sh).
+- [s8] scan_hand_coded.py --single func_80045878 re-run: tier=LOW score=0/8,
+  108 insns, 7 spills, 11 distinct regs, S1-S8 all negative. AND-gate #1
+  fails, unchanged since s5.
+- [s8] DISPOSITION: both endgame-lock AND-gates fail and there is no closing
+  construct of any family to seek a precedent for, so the owner's standing
+  2026-07-27 auto-ruling was APPLIED and filed at docs/grind/decisions.md
+  (2026-08-26 entry) as REFUSED / OWNER-ACCEPTED INCOMPLETE, with the
+  closed-form proof above written into the entry. src/text1a_c.c restored to
+  HEAD (INCLUDE_ASM) at end of session; no rules/pipeline/engine files
+  touched; no permuter campaigns launched, none left alive.
+
+- [s8] P4 chassis re-measured on today's HEAD with edits in place: sandbox --disable all = 12, build_insns 108 == target 108. Ledger floor 10 (the score-10 candidate.c body) unchanged this session.
+
+- [s8] toplev.c pass order confirmed by source read: flow_analysis(2983) -> combine_instructions(3004) -> sched(3033) -> regclass+local_alloc(3049) -> global_alloc(3077).
+
+- [s8] REG_BASIC_BLOCK is assigned only inside flow.c (flow.c:2072-2075 and flow.c:2508-2511), i.e. strictly before combine - so a copy that combine later deletes has already forced the pseudo to REG_BLOCK_GLOBAL.
+
+- [s8] P4 .lreg: the two tail scratch pseudos are block-local ('Register 101 used 2 times across 2 insns in block 13', 'Register 102 ... in block 13') and local_alloc gives BOTH of them $v0 (';; Register 101 in 2.', ';; Register 102 in 2.'). That, and nothing else, is the source of pseudo 78's hard conflict with hard reg 2.
+
+- [s8] P4 .greg: ';; 78 conflicts: 72 73 78 2 29', ';; 78 preferences: 4 5', dispositions '76 in 2  78 in 4' - the tail base takes $a0 off its own preference list after being barred from $v0.
+
+- [s8] cse.c:826 make_regs_eqv's first disjunct (regno_last_uid[p] > cse_basic_block_end) is unreachable for this function because the tail block is the last basic block, so only an earlier-basic-block mention can keep the join copy alive.
+
+- [s8] NEW: P4 with the third-if then-arm store written through s1 instead of p = sandbox 11, build_insns 107 - the join copy dies. Banked as memory/grind/func_80045878/rejected/thenarm-store-through-s1-closes-delayslot-kills-basecopy.c.
+
+- [s8] NEW: in that same 107-insn build the idx-50 `beq v1,v0` delay slot comes out as `nop`, exactly as target has it - residual R1' is closed by that spelling, and only by it.
+
+- [s8] NEW: early mention placed in the FIRST if's else arm ('p = s1; p[4] = -1; p[3] = 0;') = sandbox 14, build_insns 109 - the block-2 copy is not propagated away. Banked as memory/grind/func_80045878/rejected/firstelse-arm-p-early-mention-extra-copy.c. The third-if THEN arm remains the only free placement.
+
+- [s8] AND-gate #1 re-run this session: tools/scan_hand_coded.py --single func_80045878 = tier=LOW score=0/8 (108 insns, 7 spills, 11 distinct regs), S1-S8 all negative. Canonical-asm is not supportable.
+
+- [s8] AND-gate #2 fails vacuously: there is no closing construct of any family - sanctioned, unsanctioned or forbidden - to seek a SOTN precedent for, because the two properties target's tail requires are mutually exclusive under this compiler.
+
+- [s8] TOOL DEFECT: tools/grinder/dump.ps1 produced byte-identical dumps for two source variants that compile to different objects; cross-check dump-based claims against mipsel-linux-gnu-objdump -d tmp/sandbox/<func>/<stem>.o (helper tmp/grind/func_80045878/s8/dis.sh).
+
+- [s8] src/text1a_c.c restored to HEAD (INCLUDE_ASM) at end of session; no rules/pipeline/engine files touched; no permuter campaigns launched, none left alive.
+
+- [s8] Disposition filed by this session at docs/grind/decisions.md, entry '## 2026-08-26 - func_80045878 (src/text1a_c.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'.
