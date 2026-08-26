@@ -64,6 +64,29 @@
  * owner-gated (docs/grind/decisions.md 2026-07-23, names func_80022F34).
  * base remains the best form (this file).
  *
+ *
+ * s7 (solver, 2026-08-26): floor re-measured at 11 on the post-migration chassis
+ * (rules_dropped 0 — the 11 is now fully honest, no longer rule-masked).
+ * SOLVER AXIS FORECLOSED: goal_from_tgt.py classify (the object-level path;
+ * inverse_compose/mkasm_honest cannot serve an INCLUDE_ASM-routed function)
+ * reports FIRST DIVERGENCE: PRE-RA, "next tool: none", on BOTH chassis — the
+ * streams differ by a frame size / a cse2 materialisation, never by a register
+ * seat or an emission order, so ra_solver and sched_solver have nothing to
+ * invert. Do not re-run them.
+ * s7 also CORRECTS s6: the switch-merge CODE_LABEL is NOT necessary for the
+ * strand (vIF / vIF2 / vTERN / vMIN — no switch, no jump table, no case-merge
+ * label — all still vars=8, strand=1), so "eliminate the switch-merge label" is
+ * a dead lever, not a frontier. And it replaces the val1-placement/lifetime
+ * framing with a measured 13-form invariant: separating EITHER D_801027BC load
+ * into its own named s32 temp gives per-access + strand + vars=8; keeping BOTH
+ * in the single call expression gives a shared `la` + no strand + vars=0.
+ * A SECOND, COMPLEMENTARY 11-chassis is banked alongside this file:
+ * memory/grind/func_80022F34/chassis-vORIG.c — target-exact frame, prologue,
+ * epilogue, loop and switch (39 leading insns identical, vars=0, sp -32), whose
+ * whole residual is one 15-insn block where cse2 shares the symbol base instead
+ * of re-materialising it per access. THIS file is retained as the canonical
+ * candidate (byte-perfect BODY); vORIG is the better handoff chassis for a
+ * cse.c cost-model attack. Read both before choosing.
  * Measured: sandbox --disable all = 11, build_insns 69, target 70.
  */
 void func_80022F34(void) {

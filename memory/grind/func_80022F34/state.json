@@ -1,8 +1,8 @@
 {
  "func": "func_80022F34",
  "file": "code6cac",
- "session_count": 6,
- "current_modality": "forensics",
+ "session_count": 7,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 0,
@@ -45,18 +45,29 @@
    "floor": 11,
    "modality": "forensics",
    "headline": "s6 forensics pins the +8 phantom to combine.c:10836-10846 (distribute_notes REG_DEAD->CODE_LABEL) + combine.c:52-59 stale reg_n_refs; fold==strand is one inseparable combine event; all sanctioned axes"
+  },
+  {
+   "session": 7,
+   "floor": 11,
+   "modality": "solver",
+   "headline": "Solver axis FORECLOSED (goal_from_tgt classify = PRE-RA on both chassis); s6's switch-merge-label mechanism falsified; the residual is now a single measured cse2 invariant, and a second, complementary"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner ruling under the endgame-lock policy: (a) authorize canonical-asm, or (b) OWNER-ACCEPTED INCOMPLETE retaining the 11 regfix substs.",
-   "mechanism": "Byte-match held ONLY by the 11 regfix frame-offset substs; honest floor 1 insn from clean; residual is a combine/reload phantom-slot RA artifact; canonical-asm refused (LOW 1/8, a byte-perfect pure-C body exists).",
-   "next_probe": "OWNER decision on docs/grind/decisions.md 2026-07-23 func_80022F34 entry. Grind-side: do NOT re-spin structural/permuter/forensic \u2014 all three measured dead."
+   "hypothesis": "A C-visible cse.c cost input makes cse2 re-materialise the D_801027BC symbol base per load on the vORIG chassis WITHOUT lifting either load into its own statement (which is what re-introduces the fold, the strand and the +8 slot).",
+   "mechanism": "On vORIG the frame, prologue, epilogue, loop and switch already match target byte-for-byte and no pseudo is stranded; the sole divergence is cse2 electing to hold `la D_801027BC` in a register across both indexed loads where target re-materialises lui/%lo per access. That is a pure PRE-RA cost decision in cse.c's address path for symbol_ref+index under -G0 MIPS (no explicit %hi/%lo relocs).",
+   "next_probe": "Read tools/gcc-2.7.2/cse.c's CSE_ADDRESS_COST / rtx_cost / fold_rtx address path for symbol_ref plus index and identify a C-visible cost input (live-range pressure at the use, cost of the shared base vs the re-materialisation, the -G0 lowering); then spell candidate forms on the vORIG chassis and measure with tmp/grind/func_80022F34/s7/probe2.sh (la= / per-access= / strand= / vars=) before spending a sandbox run."
   },
   {
-   "hypothesis": "A novel whole-function reshape changes reg100's fold/live-range relationship to the switch-merge label (only re-attempt lever if the owner rules option (b)).",
-   "mechanism": "The strand requires reg100 to (i) be folded per-access and (ii) live across the switch-merge code_label 85. A reshape that removes the switch-merge label entirely or keeps val1's def lexically before it WITHOUT reordering the a0-reload chain (vPRESW reorders -> 28) has not been found and is outside the measured axes.",
-   "next_probe": "Only if owner rules (b): search whole-function reshapes that eliminate the switch-merge label or restructure the val1/a0-reload data dependency; measure with the s6 .frame + combine-strand probe."
+   "hypothesis": "A permuter campaign seeded from the vORIG chassis reaches target, where the s4/s5 chassis (base 174, vH 1250, vPRESW 760) could not.",
+   "mechanism": "All three prior permuter chassis carried the +8 phantom or a gross reorder, so the scorer's gradient was dominated by frame/order bookkeeping. vORIG is a structurally NEW seed (fresh-seed discipline satisfied): frame-exact, strand-free, residual localised to one block and one instruction shape (addiu vs lui) plus the maspsx nop - the smallest, most concentrated gradient any chassis has offered for this function.",
+   "next_probe": "Rebuild the codegen-faithful workspace from s4's compile.sh (remember the banked gotcha: strip cc1's .file line before maspsx because the repo path contains spaces) with base.c = chassis-vORIG.c; run permuter_campaign with --stack-diffs, wait in-turn via `permuter_campaign.py wait`, harvest --stop before ending the turn."
+  },
+  {
+   "hypothesis": "The maspsx label-delay nop (target-only, 1 of the 11 on BOTH chassis) is separately retirable, so whichever chassis closes the address/frame question lands at 0 rather than 1.",
+   "mechanism": "Target's nop at 80022FD0 sits after the switch-merge .L label ahead of `sh $v0,8($a0)` - the store-value-consumer load-delay variant that maspsx emits only for functions listed in maspsx_label_nop_funcs.txt. The s0 WIP notes already identified this as a legitimate pure-C retirement path, not a cheat.",
+   "next_probe": "Do NOT spend grind measurements on it (maspsx_label_nop_funcs.txt is outside the grind surface). Record it as a one-line operator step in whatever DONE/handoff packet closes this function, and confirm it accounts for exactly 1 of the 11 on the closing chassis."
   }
  ],
  "judge_constraints": [],

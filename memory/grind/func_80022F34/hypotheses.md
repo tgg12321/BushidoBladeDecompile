@@ -191,3 +191,59 @@ No un-measured sanctioned axis remains. The residual is a compiler-ADDED phantom
 - probe: vNH = *(s32*)((u8*)&D_801027BC + idx1*20); vSECOND = s32 *q=&(&D_801027BC)[idx1*5]; val1=*q. cc1 .frame vars= + combine/greg dumps.
 - result: Both KILLED. vNH: identical strand (vars=8, reg100). vSECOND: phantom persists as pseudo reg83 (empty conflicts, no greg disposition) -> vars=8. The phantom is spelling-invariant.
 - verdict: KILLED
+
+## [s7] The residual is an RA seat or a scheduler emission-order tie, so ra_solver/sched_solver produce a ranked C-lever vector for it (the owner's 2026-08-24 solver directive).
+- mechanism: The endgame-lock residual is a frame-size/allocation artifact (reg100 unallocated -> alter_reg stack slot), which reads like global.c/reload territory; the solver suite converts exactly that class into typed REACHABLE/FORECLOSED verdicts with ranked lever vectors.
+- probe: `inverse_compose.py classify code6cac func_80022F34` FIRST (per the solver playbook). It refused: its text path needs `<stem>.tgt.s`, which an INCLUDE_ASM-routed function cannot produce (mkasm_honest.sh header documents this). Re-ran on the object-level path `goal_from_tgt.py classify code6cac func_80022F34` with candidate.c applied to src and `sandbox --disable all` (=11) run to produce the honest .o. Repeated on the s7 vORIG chassis.
+- result: **FIRST DIVERGENCE: PRE-RA** on BOTH chassis; `next tool: none — the residual is upstream of every model`. base chassis one-stream-only shapes = exactly the frame set (ours addiu -40 / sw+lw 32,36 / addiu 40 vs target addiu -32 / sw+lw 16,20 / addiu 32) + target `nop`. vORIG chassis one-stream-only shapes = ours `addiu #,#,0` x1 vs target `lui #,0x0` x1 + `nop` x1. Neither stream differs from target by a register assignment or an emission order, so there is no RA seat and no scheduler tie to invert.
+- verdict: KILLED (FORECLOSED). The ra_solver and sched_solver axes are closed mechanically for this function; do not re-run them, and do not spend measurements on RA/scheduler lever vectors. Artifacts: tmp/grind/func_80022F34/s7/{classify_base.txt,classify_vORIG.txt,objdiff_vORIG.txt}.
+
+## [s7] Eliminating the switch-merge CODE_LABEL (the s6 frontier's headline whole-function reshape) removes the orphaned (use regN) and the +8 phantom slot.
+- mechanism: s6 pinned the phantom to combine.c:10836-10846 distribute_notes emitting `(use reg100)` when the homeless REG_DEAD note walks back and hits a CODE_LABEL, and asserted the 4-way switch on D_800A38DC forces that label. If the label were gone the note would have nowhere to land.
+- probe: four fresh -mel `-da` forms (tmp/grind/func_80022F34/s7/probe.sh): vIF (if/else-if chain, jump table gone), vIF2 (reordered chain), vTERN (single store via a conditional expression), vMIN (the entire switch/val block DELETED — diagnostic, semantics intentionally broken). Read .frame vars=, sp, and the `(use (reg:SI N))` count in each .i.combine dump.
+- result: vIF vars=8 strand=1; vIF2 vars=8 strand=1; vTERN vars=8 strand=1; vMIN vars=8 regs=3/0 strand=1. The strand survives with NO switch, NO jump table and NO case-merge label whatsoever — the loop's own CODE_LABEL is sufficient for distribute_notes. (vIF/vIF2/vTERN also emit 5 fewer body insns than base's byte-perfect switch, so they are worse on the body too.)
+- verdict: KILLED — and it CORRECTS s6: the switch-merge label is not a necessary condition, so "remove the switch-merge label" is not a live lever and must not be re-attempted. Banked: rejected/switch-to-ifchain-strand-persists.c.
+
+## [s7] The strand is a property of val1 (its long lifetime across the a0 reload), so a spelling that shortens or relocates that lifetime removes the phantom while keeping per-access.
+- mechanism: s2/s3/s6 all framed the residual as a val1-PLACEMENT / val1-LIFETIME axis ("only val1 strands; val2 folds clean").
+- probe: 13 forms measured on one harness (tmp/grind/func_80022F34/s7/probe2.sh), varying WHICH load is separated, WHERE it is defined relative to the a0 reload, the symbol's declared TYPE, and the address spelling: base, vORIG, vO2 (val1 named, defined AFTER the reload), vO3, vO4 (both named), vO5 (idx1 named only, lives across the reload), vO6, vO7 (val2 named ONLY), vO11/vO12 (byte-pointer address arithmetic), vO13, vO14/vO16 (`extern s32 D_801027BC[];`).
+- result: A clean 7/6 dichotomy with ZERO exceptions. Separate EITHER load into its own named s32 temp -> per-access fold x2, exactly one stranded address pseudo, vars=8, frame -40 (base, vO2, vO4, vO6, vO7, vO13, vO16). Keep BOTH loads inside the single call expression -> cse2 shares one `la`, no fold, no strand, vars=0, frame -32 (vORIG, vO3, vO5, vO11, vO12, vO14). Placement is inert (vO2 defines val1 after the reload and still strands). Which load is separated is inert (vO7 separates val2 only and strands). Type is inert. Byte-pointer arithmetic is inert.
+- verdict: KILLED as stated, and REPLACED by a sharper invariant: the discriminator is STATEMENT SEPARATION of the two D_801027BC loads (a cse2 sharing decision), not val1's identity, lifetime or placement. Banked: rejected/val2-only-temp-strand-follows-the-separated-load.c, rejected/array-typed-global-inert-to-cse-dichotomy.c.
+
+## Revised frontier (grind s7) — floor 11; TWO complementary 11-chassis in hand; the ONE live question is a cse2 cost decision
+base (memory/grind/func_80022F34/candidate.c) = target's BODY byte-perfect + a compiler-added +8 frame slot.
+vORIG (memory/grind/func_80022F34/chassis-vORIG.c, NEW this session) = target's FRAME, PROLOGUE, EPILOGUE,
+LOOP and SWITCH byte-perfect (39 leading normalized insns identical, vars=0, sp -32, saves 16/20/24/28,
+strand=0) + a shared `la D_801027BC` base where target re-materialises %hi/%lo per access. Both score 11.
+The remaining question is now single and PRE-RA: **make cse2 re-materialise the symbol base per load
+WITHOUT lifting a load into its own statement** (lifting it is what re-introduces the fold, the strand and
+the +8 slot — the s7 dichotomy). Read tools/gcc-2.7.2/cse.c's address/rtx_cost model for symbol_ref+index
+(CSE_ADDRESS_COST, the `cse_gen_binary`/`fold_rtx` address path, and the -G0 / no-explicit-%hi-%lo MIPS
+lowering) and look for a C-visible cost input. Note target's form is one insn MORE expensive than ours
+(70 vs 69), which is the direction a cost lever moves. Do NOT re-run: ra_solver/sched_solver (s7 PRE-RA
+FORECLOSED), permuter (s4/s5, all three chassis), val1-placement or control-boundary structure (s2/s3),
+switch-label elimination (s7).
+
+## [s7] The residual is an RA seat or a scheduler emission-order tie, so ra_solver/sched_solver yield a ranked C-lever vector (the owner's 2026-08-24 solver directive).
+- mechanism: reg100 goes unallocated in greg and reload/alter_reg homes it to a stack slot (+8 frame) - that reads like global.c/reload territory, exactly the class the solver suite types as REACHABLE/FORECLOSED.
+- probe: inverse_compose.py classify code6cac func_80022F34 FIRST (per the playbook) - it refused: its text path needs <stem>.tgt.s, which an INCLUDE_ASM-routed function cannot produce (documented in mkasm_honest.sh). Re-ran the object-level path goal_from_tgt.py classify with candidate.c applied to src and sandbox --disable all (=11) run to build the honest .o; then repeated on the new vORIG chassis.
+- result: FIRST DIVERGENCE: PRE-RA on BOTH chassis, 'next tool: none - the residual is upstream of every model'. base one-stream-only shapes = exactly the frame set (ours addiu -40 / sw+lw 32,36 / addiu 40 vs target addiu -32 / sw+lw 16,20 / addiu 32) plus target nop. vORIG one-stream-only shapes = ours 'addiu #,#,0' x1 vs target 'lui #,0x0' x1 plus nop x1. Neither differs from target by a register assignment or an emission order.
+- verdict: KILLED
+
+## [s7] Eliminating the switch-merge CODE_LABEL (s6's headline whole-function reshape lever) removes the orphaned (use regN) and the +8 phantom slot.
+- mechanism: s6 pinned the phantom to combine.c:10836-10846 distribute_notes emitting (use reg100) when the homeless REG_DEAD note walks back and hits a CODE_LABEL, and asserted the 4-way switch on D_800A38DC forces that label.
+- probe: Four fresh -mel -da forms via tmp/grind/func_80022F34/s7/probe.sh: vIF (switch -> if/else-if chain, jump table gone), vIF2 (reordered chain), vTERN (single store via a conditional expression), vMIN (entire switch/val block deleted - diagnostic, semantics intentionally broken). Read .frame vars=, sp, and the (use (reg:SI N)) count in each .i.combine.
+- result: vIF vars=8 strand=1; vIF2 vars=8 strand=1; vTERN vars=8 strand=1; vMIN vars=8 regs=3/0 strand=1. The strand survives with no switch, no jump table and no case-merge label at all - the loop's own CODE_LABEL suffices for distribute_notes. vIF/vIF2/vTERN also emit 5 fewer body insns than base's byte-perfect switch, so they are worse on the body besides.
+- verdict: KILLED
+
+## [s7] The strand is a property of val1 (its long lifetime across the a0 reload), so a spelling that shortens or relocates that lifetime removes the phantom while keeping per-access.
+- mechanism: s2/s3/s6 all framed the residual as a val1-PLACEMENT / val1-LIFETIME axis ('only val1 strands; val2 folds clean').
+- probe: 13 forms on one harness (tmp/grind/func_80022F34/s7/probe2.sh) varying WHICH load is separated, WHERE it is defined relative to the a0 reload, the declared TYPE of D_801027BC, and the address spelling: base, vORIG, vO2 (val1 named but defined AFTER the reload), vO3, vO4 (both named), vO5 (idx1 named only, live across the reload), vO6, vO7 (val2 named ONLY), vO11/vO12 (byte-pointer address arithmetic), vO13, vO14/vO16 (extern s32 D_801027BC[]).
+- result: Clean 7/6 dichotomy, zero exceptions. Separate EITHER load into its own named s32 temp -> per-access fold x2, exactly one stranded address pseudo, vars=8, frame -40 (base, vO2, vO4, vO6, vO7, vO13, vO16). Keep BOTH loads inside the single call expression -> cse2 shares one la, no fold, no strand, vars=0, frame -32 (vORIG, vO3, vO5, vO11, vO12, vO14). Placement inert, which-load inert, type inert, byte-pointer arithmetic inert.
+- verdict: KILLED
+
+## [s7] Reading the a0 reload into a named pointer so BOTH D_801027BC loads can sit in one call expression removes the phantom frame slot outright.
+- mechanism: With no load lifted into its own statement, cse2 shares one symbol base, combine never folds an address into a mem, no REG_DEAD note is orphaned, no pseudo is left unallocated, and alter_reg reserves nothing.
+- probe: vORIG body: u8 *nxt = *(u8**)a0; s16 idx1 = *(s16*)(a0+0x4A); s16 idx2 = *(s16*)(nxt+0x4A); single_game_SetStatusUpData(i, (&D_801027BC)[idx1*5], (&D_801027BC)[idx2*5]);  Applied to src/code6cac.c, ran sandbox --disable all, goal_from_tgt classify, and an objdump-level normalized diff vs build/src/code6cac.o.
+- result: CONFIRMED for the frame: vars=0, regs=4/0, subu $sp,$sp,32 with saves at 16/20/24/28 - byte-identical to target's prologue AND epilogue; strand=0; the first 39 normalized insns (prologue, loop head, guard, whole switch, sh store, loop tail, epilogue) match target exactly. Score still 11 because the whole residual relocates into one 15-insn block: ours materialises la (lui+addiu) once and indexes it twice, target re-materialises lui/%lo per access. Multiset delta is literally one shape (ours addiu #,#,0 vs target lui #,0x0) plus target's maspsx nop.
+- verdict: CONFIRMED
