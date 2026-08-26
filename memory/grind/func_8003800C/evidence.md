@@ -881,3 +881,24 @@ counters merge and `sum=0` leads the preheader, none of them is needed.
   at the end of this session; `memory/grind/func_8003800C/candidate.c` still holds the
   previous-s16 matched-but-banned body, unchanged, because it is the subject of the ruling
   request and no better non-banned form exists.
+
+## s17 (2026-08-25) — MATCH RE-PROVED ON CURRENT HEAD (resubmission under the owner ruling)
+
+- With `memory/grind/func_8003800C/candidate.c` applied to `src/code6cac_c_mid.c` (replacing
+  `INCLUDE_ASM("asm/funcs", func_8003800C);` at :242; body byte-identical to the banked
+  candidate, only the function's NAME spelled `func_8003800C` to match the in-file extern
+  declaration and caller):
+  `sandbox func_8003800C --disable all` = **score 0**, 79/79 insns, rules_dropped 0.
+  Full `build` SHA1 = `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle (**MATCH**).
+  Measured THIS session on the current HEAD chassis, not quoted from the ledger.
+- Honest floor for this function is **0**. Every earlier floor line (2, and the older 6/9/12)
+  is historical.
+- Diff surface is exactly one file: `src/code6cac_c_mid.c`. Zero regfix/asmfix rules, zero
+  cheat-asm, no inline asm, no volatile, no alias, no pin. The matched body carries FEWER
+  constructs than the floor-2 candidate it replaces (both `do { x = 0; } while (0);` brackets
+  and the `for(;;)`+`continue` fence are gone) — the cheat surface strictly shrinks.
+- The one codegen-motivated construct is the single-counter reuse, owner-ruled 2026-08-25 to
+  qualify under the frozen "Variable reuse for codegen control" family
+  (`.claude/rules/no-new-park-categories.md:170`), FAKE-annotated on the declaration of `j`.
+- Solver-toolkit note: `inverse_compose.py classify` KeyErrors on a stale `code6cac_c_mid.hon.s`
+  that was generated while the function was INCLUDE_ASM-routed (see hypotheses.md s17).

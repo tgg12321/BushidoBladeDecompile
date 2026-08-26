@@ -1,11 +1,32 @@
-# SELF-VET — func_8003800C (damage_DebugDisp), grind session 16 (synthesis)
+# SELF-VET — func_8003800C (damage_DebugDisp), grind session 17 (solver modality, resubmission)
 
-Diff: `src/code6cac_c_mid.c` — `INCLUDE_ASM("asm/funcs", func_8003800C);` replaced by
-the C body in `memory/grind/func_8003800C/candidate.c`.
-Measurements THIS session, with the diff in place:
-`sandbox func_8003800C --disable all` = **score 0**, target 79 / build 79,
-**rules_dropped 0** (this function has no regfix/asmfix rules); full `build`
-SHA1 = `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle (**MATCH**).
+Diff: `src/code6cac_c_mid.c` — `INCLUDE_ASM("asm/funcs", func_8003800C);` (line 242) replaced
+by the C body banked at `memory/grind/func_8003800C/candidate.c`. The body is UNCHANGED from
+the banked candidate (including the `/* FAKE */` wording); the only textual difference is that
+the function is spelled `func_8003800C`, matching the in-file `extern s32 func_8003800C(s32 *);`
+(:490) and its caller (:526) — the ledger copy had used the census name `damage_DebugDisp`.
+No grind narration is carried into src: the candidate file's explanatory header stays in the
+ledger, and the only comment inside the function is the required `/* FAKE */` annotation.
+
+AUTHORITY FOR THIS RESUBMISSION (owner, not this session): **OWNER RULING 2026-08-25 — YES**
+(`docs/grind/decisions.md`, entry "## 2026-08-25 — func_8003800C (damage_DebugDisp) — **OWNER
+RULING: YES** (proactive, on the 17:06 layer-1 FAIL)"). It holds that the single-counter reuse
+qualifies under the frozen "Variable reuse for codegen control" family and may be submitted;
+that provenance (directed inverse-solver search) does not disqualify a construct that fits a
+frozen family on its own merits; and that the 17:06 layer-1 FAIL and banned_constructs[0]/[1]
+are not a valid FAIL basis for this exact construct. The owner ALSO — herself, in that ruling —
+superseded the 2026-07-22 option-(b) refusal for this function. This session does not and
+cannot declare that supersession (banned_constructs[2]); it cites the owner's written ruling,
+which is on disk and was read this session. The grant's scope is narrow and is respected here:
+ONE fresh `s32 j` reused as the counter of the two sequential loops, every reference real and
+consumed — no other local is merged with any other.
+
+MEASUREMENTS THIS SESSION, with the diff in place on the current HEAD chassis (re-measured,
+not quoted — the dispatch brief reported the HEAD floor as "measurement unavailable"):
+`sandbox func_8003800C --disable all` = **score 0**, target_insns 79, build_insns 79,
+scorable true, **rules_dropped 0** (this function has no regfix/asmfix rules; the report's
+`cheat_asm_stripped: 6` counts other functions in the same TU, none of them this one).
+Full `build` -> SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle, **MATCH**.
 No file outside `src/code6cac_c_mid.c` is touched by the diff.
 
 CONSTRUCTS: (1) single function-scope counter `j` reused by the checksum loop and the
@@ -79,13 +100,25 @@ Every name is semantic: `base`, `chkptr`, `offset`, `sum`, `bp`, `i`, `j`, `src`
 `sp2`, `end`, `ptr`. No `pad`, `dummy`, `unused`, `spill`, `tmp`, `slack`. Every declared
 variable is both written and read on a live path.
 
+## T3 addendum — provenance and the owner ruling
+The GCC-internals mechanism is disclosed above in full because the rules require a named pass
+for a `/* FAKE */` construct, and because it is honestly how the form was found. It is not the
+justification for the construct: the construct justifies itself as ordinary C89 (T2), and the
+TARGET'S OWN BYTES corroborate that the original source used one counter — `asm/funcs/func_8003800C.s`
+seats both loops' counters in `$a1` (`addiu $a1,$a1,1` / `sltiu $v0,$a1,0x24` in the checksum
+loop; `addiu $a1,$a1,1` / `slti $v0,$a1,0x16` in the fixup loop). The owner ruled on exactly
+this point on 2026-08-25 (and on the parallel func_800307D0 question): judge the construct, not
+the provenance.
+
 SANCTIONED-FAMILY-CLAIMS:
   FAMILY: Variable reuse for codegen control
   SCOPE: "**Variable reuse for codegen control** ([[defeat-licm-hoist-var-reuse]]): reusing one C variable for two unrelated values to influence loop-invariant detection or RA. SOTN ships `idxSub = idxSub;` and `randy = basePoint.x; baseX = randy;` with "FAKE but makes register allocation work" comments."
   PRECEDENT: .claude/rules/no-new-park-categories.md:170
   PRECEDENT: docs/reference/sotn-construct-index.md:51
+  PRECEDENT: docs/grind/decisions.md:11531
   (the second is SOTN master `src/boss/mar/cutscene.c:172` — `// fake reuse of i?`, the
-   same construct: an annotated reuse of a loop counter. PSX/GCC entry, untagged.)
+   same construct: an annotated reuse of a loop counter. PSX/GCC entry, untagged.  The third
+   is the owner's 2026-08-25 ruling granting THIS application of the frozen family.)
   PREREQUISITES: lever-exhaustion documented across 15 prior sessions in
   `memory/grind/func_8003800C/hypotheses.md` (structural s1–s3/s10–s12, forensics s6/s7/s15,
   rederive s8/s9, permuter s4/s5/s13/s14 ≈173k iters) — this is not a first-reach lever;

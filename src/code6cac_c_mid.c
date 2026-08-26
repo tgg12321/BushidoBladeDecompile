@@ -239,7 +239,76 @@ void func_80037F40(u8 *a0) {
 }
 typedef struct { s32 w0, w1, w2, w3; } CopyBlock;
 
-INCLUDE_ASM("asm/funcs", func_8003800C);
+s32 func_8003800C(s32 *arg0) {
+    u8 *base = (u8 *)arg0;
+    s32 i;
+    s32 *chkptr;
+    s32 offset;
+    /* FAKE: one counter 'j' serves both the per-record checksum loop and the
+       0x16-entry fixup loop (C89 counter reuse), mechanism: global.c
+       allocno_compare -- the merged live range lifts reg_live_length(j) so j's
+       allocno priority falls below sum's and sum takes $a0 (target's seat),
+       lever-exhaustion: memory/grind/func_8003800C/hypotheses.md s1-s15 */
+    s32 j;
+
+    i = 0;
+    chkptr = (s32 *)base;
+    offset = 0;
+    do {
+        s32 sum;
+        u8 *bp;
+
+        sum = 0;
+        bp = base + offset;
+        j = 0;
+        do {
+            sum += *bp;
+            bp++;
+            j++;
+        } while (j < 0x24U);
+        if (sum == *(s32 *)((u8 *)chkptr + 0x6C)) {
+            break;
+        }
+        chkptr++;
+        i++;
+        offset += 0x24;
+    } while (i < 3);
+
+    if (i == 3) {
+        return 0;
+    }
+
+    if (D_800A31FC != 0) {
+        return 1;
+    }
+
+    {
+        u8 *src = base + i * 0x24;
+
+        if (!(*(src + 0x23) & 0x80)) {
+            CopyBlock *dst = (CopyBlock *)&D_80106A50;
+            CopyBlock *sp2 = (CopyBlock *)src;
+            CopyBlock *end = (CopyBlock *)((u8 *)src + 0x20);
+            do {
+                *dst = *sp2;
+                sp2++;
+                dst++;
+            } while (sp2 != end);
+            *(s32 *)dst = *(s32 *)sp2;
+        }
+
+        j = 0;
+        do {
+            u16 *ptr = *(u16 **)(base + j * 4 + 0x78);
+            if ((u32)((u32)ptr - 0x80000000U) <= 0x1FFFFF) {
+                *ptr = *(u16 *)(base + j * 2 + 0xD0);
+            }
+            j++;
+        } while (j < 0x16);
+    }
+
+    return 1;
+}
 /* kengo:HIGH  |  is_damage_calc/damage_DebugDisp  |  79i */
 
 void func_80038148(void) {

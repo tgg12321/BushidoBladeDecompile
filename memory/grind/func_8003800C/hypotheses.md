@@ -704,3 +704,43 @@ with `ra_solver` re-validated on it (`simulate.py`: sort order MATCH, dispositio
    accepted, then test whether a width or signedness variation on `j` (`u8`/`s16`/`s32`
    counter) defeats the giv-vs-biv compare replacement byte-neutrally.
 3. **Tertiary — none.** The sanctioned-axis space on this chassis is measured empty.
+
+## s17 (solver modality, 2026-08-25) — RESUBMISSION SESSION, no open hypotheses
+
+Nothing new was hypothesised: the search space for this function is closed by the s16/s16b
+solver work, and the only open item was a classification question that the OWNER answered.
+
+**Authority for the resubmission (not self-declared).** Owner ruling 2026-08-25, "func_8003800C
+(damage_DebugDisp) — **OWNER RULING: YES** (proactive, on the 17:06 layer-1 FAIL)",
+`docs/grind/decisions.md`: the single-counter reuse (one fresh `s32 j` counting both the
+checksum loop and the fixup loop, FAKE-annotated at the declaration) **qualifies under the
+frozen "Variable reuse for codegen control" family** and may be submitted; the 17:06 layer-1
+FAIL and banned_constructs[0]/[1] are not a valid FAIL basis for this exact construct;
+provenance (directed inverse-solver search) does not disqualify a construct that fits a frozen
+family on its own merits. The owner — not a grind session — also supersedes the 2026-07-22
+option-(b) refusal for this function, and did so in that same ruling. Scope of the grant is
+narrow: the single fresh `s32 j` counter reuse in this body only, every reference real and
+consumed; no other local merges.
+
+**What this session did.** Re-applied `memory/grind/func_8003800C/candidate.c` to
+`src/code6cac_c_mid.c` in place of `INCLUDE_ASM("asm/funcs", func_8003800C);` (function named
+`func_8003800C`, matching the in-file `extern s32 func_8003800C(s32 *);` at :490 and the caller
+at :526 — the ledger copy previously used the `damage_DebugDisp` census name, now annotated),
+with NO change to the body or the `/* FAKE */` wording, and RE-PROVED the bytes on the CURRENT
+HEAD chassis (the brief reported "measurement unavailable" for the HEAD floor, so the whole
+proof was redone rather than quoted):
+  - `sandbox func_8003800C --disable all` -> **score 0**, target_insns 79, build_insns 79,
+    rules_dropped 0, scorable true. (`cheat_asm_stripped: 6` counts OTHER functions in the TU;
+    this function contributes none.)
+  - full `build` -> SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle, **MATCH**.
+The floor is therefore **0**, not 2; the ledger's floor-2 line is superseded.
+
+**Incidental solver-toolkit finding (banked for the next solver session on this TU).**
+`python3 tools/ra_solver/inverse_compose.py classify code6cac_c_mid func_8003800C` still dies
+with `KeyError: 'func_8003800C not found in code6cac_c_mid.hon.s'` when the cached
+`code6cac_c_mid.hon.s` predates the current src. The 2026-08-25 func_800645B0 toolkit repair
+covered the INCLUDE_ASM routing and the stale-`.tgt.s` case; a `.hon.s` that simply does not
+contain the requested function (because it was generated while the function was INCLUDE_ASM)
+still raises a raw KeyError instead of a "regenerate the honest stream" diagnostic. Harmless
+here — the residual is zero, so classify has nothing to triage — but it is one more instance of
+the same stale-stream class. Artifact: `tmp/grind/func_8003800C/s16/classify_after_match.txt`.

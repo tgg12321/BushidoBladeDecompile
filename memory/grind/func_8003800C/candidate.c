@@ -35,7 +35,7 @@
  * Region B keeps the index-based addressing (base + j*4 + 0x78 / base + j*2 +
  * 0xD0) ruled semantically faithful by the Judge on 2026-07-22 06:02.
  */
-s32 damage_DebugDisp(s32 *arg0) {
+s32 func_8003800C(s32 *arg0) {   /* named func_8003800C in src (callers + extern decl use that name) */
     u8 *base = (u8 *)arg0;
     s32 i;
     s32 *chkptr;
