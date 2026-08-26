@@ -370,3 +370,54 @@ the permuter, or the structured-loop retry chassis; all are killed with mechanis
 - probe: rejected/forloop-continue-loopdepth-worse.c measured with s6/alloc.sh.
 - result: Strictly worse. The front-end loop note raises loop_depth over the whole body and reg_n_refs is loop-depth weighted (flow.c:2081), so every count rises (buf2 5, index 5, cam 5, const 5, copy_end 4) while the doubling persists (74 L72, 76 L74) and the permutation is unchanged. The goto-retry spelling is the correct chassis; do not re-try the structured loop.
 - verdict: KILLED
+
+## [s7] The residual is a reference-count problem, not a live-length problem: making the retry a real C loop while spelling the inner copy loop with a backward goto lands the full target register permutation.
+- mechanism: global.c:allocno_compare ranks by floor_log2(n_refs)*n_refs*10000/live_length
+  (ties -> lower pseudo) and find_reg takes the lowest free hard register, so with all six
+  callee-saved allocnos mutually conflicting the hard-register assignment IS the allocation
+  order. flow.c weights each reference by loop_depth, and a goto-spelled loop emits no
+  NOTE_INSN_LOOP_BEG and therefore contributes no depth. A real `for(;;)` retry loop lifts
+  all five callee-saved pseudos from 3 refs to 5 (and dest from 4 to 7); a goto-spelled
+  INNER copy loop keeps copy_end's single use at depth 2 instead of 3, holding it alone at
+  3 refs. Its priority collapses to 937, below constant_80's 1315, so it is allocated last
+  and takes $s5.
+- probe: reproduced allocno_compare in tmp/grind/special_camera_get_rot_dir/s7/manifold.py,
+  enumerated the four realistic loop-spelling reference vectors against the live lengths
+  measured on the target-emission chassis, found exactly one solution, spelled it
+  (tmp/grind/.../s7/p1_loopretry_gotocopy.c) and measured with s6/alloc.sh + sandbox + build.
+- result: allocno table came out exactly as predicted (dest 7/38, buf2 5/31, index 5/34,
+  cam 5/66, const 5/76, copy_end 3/32) giving order 72,78,73,74,76,77 = the target
+  permutation. `sandbox --disable all` = **0** at 72/72 insns; full clean build SHA1 ==
+  62efab4f73f992798c43e8c730aa43baa10bb4fa. Zero rules, zero inline asm, zero pins, zero
+  volatile, zero dead locals, zero FAKE constructs.
+- verdict: CONFIRMED
+
+## [s7] The REG_EQUIV x2 at local-alloc.c:1064 on cam_base and constant_80 must be KEPT, not removed — s6's entire frontier pointed the wrong way.
+- mechanism: the doubling takes their live lengths from bases 33/38 to 66/76, which is what
+  ranks them BELOW index (34) — exactly where the target wants them ($s3/$s4 vs index's $s2).
+  Removing it would put cam at 33 < index at 34 and invert that pair.
+- probe: the matching form's measured allocno table carries livelen 66 and 76 for pseudos 74
+  and 76, i.e. both REG_EQUIVs alive, and it matches.
+- result: all three s6 frontier hypotheses (F1 zero-cost second SET to kill REG_EQUIV, F2
+  optimize_reg_copy_1 live-length subtraction, F3 sched1 base shortening) are moot: they all
+  aimed at destroying or shrinking a doubling that the match requires.
+- verdict: KILLED
+
+## [s7] s6's def-order chassis (rejected/routeC-seed-deforder-basewindow-score16.c) is byte-unreachable regardless of register assignment.
+- mechanism: it emits `addu $19,$sp,80` (copy_end) and `la $20,SpecialCam` (cam_base) before
+  the `jal func_80036EA8`; the target emits both after it (0x80037380-0x80037388). A register
+  permutation cannot reorder instructions, so no allocation makes that chassis match.
+- probe: read the cc1 output of both chassis against asm/funcs/special_camera_get_rot_dir.s.
+- result: the chassis whose emission order matches the target is
+  rejected/topdef-score12-routeA-seed-chassis.c (const, jal/index, cam, copy_end, buf2).
+  Every s6 model, simulation and "28-pair tolerance window" was computed on the wrong
+  chassis, and s6's pseudo->variable map was transposed on top of that.
+- verdict: KILLED
+
+## [s7] Route R3 (a pre-RA scheduling difference moving live lengths without moving a C statement) is closed.
+- mechanism: `inverse_compose.py classify` aligns the honest stream against the target stream
+  and types the first divergence. It reported RA — identical instructions, register
+  substitutions only — which means neither sched pass contributes to the residual.
+- probe: `python3 tools/ra_solver/inverse_compose.py classify code6cac_b2_post special_camera_get_rot_dir`.
+- result: FIRST DIVERGENCE: RA. No sched_solver run needed; the axis is not live.
+- verdict: KILLED

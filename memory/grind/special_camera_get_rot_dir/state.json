@@ -64,7 +64,15 @@
    "next_probe": "Run tools/sched_solver on the def-order chassis and ask one question only: can any legal sched1 ordering move base(cam)/base(const) (or their doubled values) into [32,38] while leaving copy_end at 38 and the emitted stream byte-identical? Then confirm with inverse_compose.py classify that the residual is still RA-owned rather than PRE-RA."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The outer-for(;;)/inner-goto loop-spelling asymmetry was derived and selected purely to control flow.c's loop-depth weighting of reg_n_refs and land a target register permutation \u2014 an admitted GCC-internals justification for a spelling choice, found via a directed enumeration over candidate spellings, matching no sanctioned family. Next action: Do not commit. This is a candidate NEW sanctioned-family question (asymmetric loop-note spelling to control loop-depth-weighted reg_n_refs), not a clear violation of an existing forbidden family by simple analogy \u2014 but per j"
+ ],
  "origin": "queue",
- "created": "2026-07-24T01:19:32.255878+00:00"
+ "created": "2026-07-24T01:19:32.255878+00:00",
+ "banned_constructs": [
+  "Outer retry loop spelled as a real `for (;;) { ...; continue; ...; break; }`, while the inner copy loop is deliberately spelled with a backward `goto copyloop;` instead of the equally natural `do { ... } while (src != copy_end);`",
+  "Same asymmetric loop-spelling pair",
+  "Asymmetric loop-spelling family (structured-vs-goto chosen per-loop to manipulate loop-depth-weighted reg_n_refs)"
+ ],
+ "ladder_skip": 1
 }

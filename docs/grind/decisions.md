@@ -12757,3 +12757,7 @@ header-type-correction escapes), escalation (s10, s11). 12 forms banked in `reje
 INCOMPLETE, not a cheat-carrying one. If the owner ever elects to rule on the frozen
 signedness-split family, this function closes to COMPLETED-C immediately and with no
 further search, from the body already banked in `rejected/layer1-fail-0825-2329.c`.
+
+## 2026-08-26 00:52 — special_camera_get_rot_dir — layer-1 review — **FAIL**
+
+The outer-for(;;)/inner-goto loop-spelling asymmetry was derived and selected purely to control flow.c's loop-depth weighting of reg_n_refs and land a target register permutation — an admitted GCC-internals justification for a spelling choice, found via a directed enumeration over candidate spellings, matching no sanctioned family.

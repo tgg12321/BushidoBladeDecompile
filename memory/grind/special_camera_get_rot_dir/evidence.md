@@ -575,3 +575,92 @@ constant-valued pseudo in this function is silently doubled**, and only those.
 - [s6] Tooling banked for s7: s6/alloc.sh reads src/ DIRECTLY (no sandbox round-trip) and prints the exact allocno table in one call — that table, not the sandbox score, is the correct gradient for this function. s6/isolate.py rewrites a preprocessed TU down to a single function body, which solves the TU-wide BB2_FLOW_DEBUG segmentation problem the s5 ledger left open and reproduces the full allocno table identically.
 
 - [s6] Floor re-measured this session on the current HEAD chassis: candidate.c (block-local copy_end) = 9 at 70 build insns; the def-order chassis = 16 at 72; src/ was restored to HEAD (INCLUDE_ASM) before finishing.
+
+---
+
+## s7 (solver modality, 2026-08-26) — MATCHED. sandbox --disable all = 0, full build SHA1 == oracle.
+
+### The final form
+See `candidate.c` (identical to what now sits in `src/code6cac_b2_post.c`). Zero regfix /
+asmfix rules, zero inline asm, zero pins, zero volatile, zero dead locals, zero /* FAKE */
+constructs. Two changes against the s6 "topdef" chassis:
+1. the retry `goto` loop becomes a real C loop — `for (;;) { ... if (v0 != 0) continue; ...
+   if (v0 == 0) break; }`;
+2. the inner block-copy `do { ... } while (src != copy_end);` becomes a label + backward
+   goto — `copyloop: ... if (src != copy_end) goto copyloop;`.
+Nothing else changed. Distance went 12 -> 0 in one step.
+
+### Why (the mechanism, stated exactly)
+The residual was never a live-length problem. It is a REFERENCE-COUNT problem.
+
+`global.c:allocno_compare` ranks allocnos by
+`floor_log2(n_refs) * n_refs * 10000 * size / live_length`, descending, ties broken by
+lower pseudo number; `find_reg` then takes the lowest free hard register. With all six
+callee-saved allocnos mutually conflicting, the assignment is therefore EXACTLY the
+allocation order, and the target permutation
+`dest $s0, buf2_ptr $s1, index $s2, cam_base $s3, constant_80 $s4, copy_end $s5`
+is one total order on that quotient.
+
+`flow.c` weights every reference by `loop_depth` (1 outside any loop, +1 per enclosing
+NOTE_INSN_LOOP_BEG). A `goto`-spelled loop emits no loop notes, so it contributes no
+depth. That is the entire lever:
+
+| spelling | dest | buf2 | index | cam | const | copy_end | resulting order |
+|---|---|---|---|---|---|---|---|
+| goto retry + do-while copy (s1-s6 chassis) | 4 | 3 | 3 | 3 | 3 | 3 | dest, buf2, copy_end, index, cam, const |
+| goto retry + goto copy | 4 | 3 | 3 | 3 | 3 | 2 | dest, buf2, cam, index, const, copy_end |
+| loop retry + do-while copy (s6's forloop probe) | 7 | 5 | 5 | 5 | 5 | 4 | dest, buf2, index, copy_end, cam, const |
+| **loop retry + goto copy (s7, MATCH)** | **7** | **5** | **5** | **5** | **5** | **3** | **dest, buf2, index, cam, const, copy_end** |
+
+Making the retry a real loop lifts every reference in the body to depth 2, so all five
+callee-saved pseudos go n_refs 3 -> 5 and `dest` goes 4 -> 7. `copy_end`'s ONLY use sits
+inside the inner copy loop; if that inner loop also carries loop notes the use is at
+depth 3 and `copy_end` lands at 4 refs, which is too high. Spelling the inner loop with a
+backward goto keeps the use at depth 2, so `copy_end` alone stays at 3 refs, its priority
+collapses to `floor_log2(3)*3*10000/32 = 937` — below `const`'s 1315 — and it is allocated
+last, into $s5. Measured allocno table of the matching form (alloc.sh tag s7p1):
+
+    ord=2 pseudo=72 (dest)      nrefs=7 livelen=38 pri=3684  -> $s0
+    ord=3 pseudo=78 (buf2_ptr)  nrefs=5 livelen=31 pri=3225  -> $s1
+    ord=4 pseudo=73 (index)     nrefs=5 livelen=34 pri=2941  -> $s2
+    ord=5 pseudo=74 (cam_base)  nrefs=5 livelen=66 pri=1515  -> $s3
+    ord=6 pseudo=76 (const_80)  nrefs=5 livelen=76 pri=1315  -> $s4
+    ord=7 pseudo=77 (copy_end)  nrefs=3 livelen=32 pri=937   -> $s5
+
+### Two ledger entries that were WRONG and cost sessions s2-s6
+1. **The REG_EQUIV x2 (local-alloc.c:1064) on `cam_base` and `constant_80` is CORRECT and
+   must be KEPT.** Their live lengths of 66 and 76 in the table above ARE the doubled
+   values (bases 33 and 38), and the doubling is precisely what pushes those two below
+   `index` where the target wants them. s6's entire frontier — three ranked hypotheses
+   about removing the doubling at zero insn cost — was pushing in the wrong direction.
+2. **s6's "def-order chassis" (`rejected/routeC-seed-deforder-basewindow-score16.c`) is
+   byte-unreachable regardless of registers.** It emits `addu $19,$sp,80` (copy_end) and
+   `la $20,SpecialCam` (cam) BEFORE the `jal func_80036EA8`; the target emits both AFTER
+   it (0x80037380-0x80037388). The chassis whose emission order matches the target is
+   `rejected/topdef-score12-routeA-seed-chassis.c` (const, jal/index, cam, copy_end,
+   buf2 — score 12, 72 insns), and every s6 measurement and simulation was taken on the
+   wrong one. s6's pseudo->variable map was also transposed (it read 77 as copy_end and
+   73 as index on a chassis where the emitted asm says the opposite).
+3. **`rejected/forloop-continue-loopdepth-worse.c` was mis-verdicted.** s6 recorded it as
+   "strictly worse ... the goto-retry spelling is the correct chassis; do not re-try the
+   structured loop." It was in fact ONE STEP from the answer: its measured counts
+   (buf2 5, index 5, cam 5, const 5, copy_end 4) are the matching counts except for
+   copy_end, and the only remaining change is the inner loop's spelling. A "worse score"
+   verdict on a register-permutation residual is not evidence about the chassis.
+
+### Solver-modality outputs (the tools that produced the above)
+- `inverse_compose.py classify` typed the residual **RA** (identical instruction streams,
+  register substitutions only) — correctly, and it ruled out PRE-RA and SCHED, which
+  closes route R3 (the s6 scheduling frontier) without a sched_solver run.
+- `ra_solver/inverse.py global` on the correct chassis with the correct goal returned
+  **exactly one vector at depth 3**: `refs_down pseudo 77 (copy_end): 3 -> 1`. That vector
+  is arithmetically unreachable as stated (a live value has at least one def and one use,
+  so n_refs >= 2), but it is the RIGHT DIRECTION — it says the answer is to collapse
+  copy_end's priority via its reference count, not via its live length. The tool's
+  search bounds (livelen +/-2,4,8) cannot see the +2 refs the other five pseudos needed,
+  which is why the vector reads as a lone unreachable atom rather than as the real
+  4-pseudo move; reading the direction rather than the literal atom is what unlocked it.
+- `tmp/grind/special_camera_get_rot_dir/s7/manifold.py` reproduces `allocno_compare`
+  exactly and enumerates the four realistic loop-spelling reference-count vectors against
+  the measured live lengths. Exactly one hits the target. That enumeration is the whole
+  derivation; no permuter, no random search.
