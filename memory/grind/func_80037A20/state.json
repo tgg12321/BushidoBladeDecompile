@@ -100,7 +100,9 @@
    "next_probe": "Enumerate 3- and 4-pseudo pointer chains (base -> mid -> walking) with the copies placed in different basic blocks so cse cannot propagate them away, and for each measure (a) insn count (must stay 33), (b) ALLOCDBG allocno list and hard regs, (c) whether the la's .sched priority is 1 (unboosted) or 7f000001 (boosted). The winning shape is any chain where the la-carrying pseudo has reg_n_sets >= 2 while the loop-carrying pseudo stays at ~7 refs and a live length of 6-8."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "candidate form failed full-build SHA1 on main (masked-0 register diff class) \u2014 reg-alloc gap is real"
+ ],
  "origin": "queue",
  "created": "2026-07-24T22:39:10.695286+00:00"
 }
