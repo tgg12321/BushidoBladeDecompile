@@ -1,8 +1,8 @@
 {
  "func": "func_80037B00",
  "file": "code6cac_c",
- "session_count": 6,
- "current_modality": "synthesis",
+ "session_count": 7,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 0,
@@ -45,23 +45,29 @@
    "floor": 11,
    "modality": "synthesis",
    "headline": "Floor 15->11: the 8-byte phantom frame is reachable from ordinary live C (GCC's own rotated-while entry guard orphans a compare pseudo); residual now ONE missing copy + one register 2-swap, and the s5"
+  },
+  {
+   "session": 7,
+   "floor": 9,
+   "modality": "solver",
+   "headline": "Floor 11->9: the missing preheader copy is recovered by reading the loop bound in the loop test itself; the multiset now MATCHES target (36==36) and the residual is typed RA ($t0/$t1 2-swap) plus one "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Target's missing `addu $t3,$v0,$zero` preheader copy appears when the loop bound's load result stays live past the rotation guard \u2014 i.e. the guard consumes one pseudo and the loop-carried bound is a genuinely separate pseudo that copy propagation cannot fold.",
-   "mechanism": "In our form the load destination IS the loop-bound pseudo, so GCC emits `lw $t3` and branches on $t3 directly. In target the load lands in $v0, blez reads $v0, and the preheader copies $v0 into $t3 \u2014 two pseudos surviving into RA. A C-level duplicate (`var_v0 = D_800A38C8; var_t3 = var_v0;`) is folded by copy propagation (KILLED this session), so the second pseudo has to be created by a pass, not by the source: the candidates are LICM hoisting a load whose value the rotation guard also needs, and loop.c's own bound-copy in the preheader.",
-   "next_probe": "Spell the bound as a memory expression read by the loop test itself \u2014 `while (var_t1 < D_800A38C8)` \u2014 with no count local at all, and read both instruments (tmp/grind/func_80037B00/s6/frame_probe.sh for vars, sandbox --disable all for the score) plus the .loop and .combine dumps in tmp/grind/func_80037B00/dumps/. If LICM hoists the load into the preheader while the rotation guard keeps its own copy, the `addu` appears and build_insns should reach 36. If instead a second `lw` appears, read the .loop dump to see whether loop.c created a bound copy at all in this shape, and pivot to making the bound's first use be something other than the guard."
+   "hypothesis": "One extra reference to the end pointer (var_t0) OUTSIDE the loop, at zero instruction cost and with its live range unchanged at 9, moves pri(78) to 1.111 and swaps the $t0/$t1 seats - closing the RA residual.",
+   "mechanism": "global.c allocno_compare seats the eight mutually-conflicting allocnos into [$3,$5,$6,$7,$8,$9,$10,$11] strictly by pri = floor_log2(refs)*refs/live_length. The window (1.0909, 1.125) admits exactly one (refs, live_length) cell: (5, 9). refs=5 is an ODD count, so the extra reference must be weighted 1, i.e. outside the loop notes. Verify the weighting caveat first (allocno 73's block-0 init measured at weight 2), because if an added out-of-loop ref lands at weight 2 the cell is unreachable and the axis is foreclosed until residual (a) widens the window.",
+   "next_probe": "Re-measure the weighting question directly: splice a variant that adds ONE ordinary-C outside-the-loop reference to var_t0 and read s7/rainfo.sh - if `Register 78 used 5 times across 9 insns` appears, the seats swap and the score should collapse; if it reads 6 refs, the cell is unreachable. Only ordinary live C qualifies here - a dead store or a constant holder is a FAKE-annotated sanctioned-family construct and must NOT be reached for while residual (a) is still open (the exhaustion prong would fail)."
   },
   {
-   "hypothesis": "The `lui/addiu` for D_80102810 moves from stream position 1-2 to target's 6-7 when the base-pointer initialisation is loop-invariant code that LICM places in the preheader, rather than a straight-line statement written before the loop.",
-   "mechanism": "Target emits the `la` after the blez, i.e. inside the guarded preheader \u2014 the classic position for an invariant hoisted OUT of the loop body. Our form assigns `var_a3` before the while, so it is ordinary straight-line code above the guard and sched1 pulls it further up to cover the lw's load delay. Deleting the programmer's pre-guard is what created the orphan (do not re-add it \u2014 KILLED this session), so the placement has to come from LICM instead of from dominance.",
-   "next_probe": "Move the base-pointer initialisation INTO the loop body as a genuine loop-invariant expression the algorithm justifies \u2014 e.g. carry only the byte offset in the loop and write `var_a1 = (s8 *)&D_80102810 + off;` inside, letting LICM hoist the `la` into the preheader while the `addu` stays. Watch build_insns for an added per-iteration add; if it appears, try instead making `var_a3` the induction variable but initialising it from an expression that is only computed once the loop is known non-empty. Measure vars= at every step \u2014 the frame must survive."
+   "hypothesis": "Residual (a) - target's `lui/addiu` for D_80102810 inside the guarded preheader - is reachable by a giv spelling whose base folds into the induction variable's INITIAL value instead of being re-added each iteration.",
+   "mechanism": "Confirmed this session that only loop.c writes into a preheader and that an invariant-base spelling does put the `la` there. The +2 cost came from two separable defects: (i) GCC reduced the mult giv but re-added the invariant base per iteration because the giv's target register is modified by the inner loop (cse1 substitutes the row-address expression into var_a1 and var_t0, coalescing them), and (ii) loop.c peeled the `var_t2 = 0` flag init into the preheader. Fixing (i) needs a spelling where the row address reaches loop.c in a register that the inner loop never writes.",
+   "next_probe": "Read tmp/grind/func_80037B00/dumps/code6cac_c.loop and .cse with vC_giv_pure.c applied and confirm whether `var_a3` survives cse1 as its own pseudo; if it does not, try spellings that keep it distinct (index the inner walk off a separate offset variable so var_a3 is never the modified register, or read the row through a struct-typed pointer so the inner walk uses a different lvalue). Screen every candidate with s7/dis.sh for build_insns first - anything above 36 is dead on arrival."
   },
   {
-   "hypothesis": "The last register 2-swap (our counter=$t0/end=$t1 vs target's counter=$t1/end=$t0) closes by raising the end-pointer allocno's priority above the counter's, which the validated priority model says needs the end pointer's live_length shortened to 5-6 insns (pri 0.33-0.40) so it sorts between the base pointer (0.417) and the counter (0.286).",
-   "mechanism": "global.c allocno_compare: pri = floor_log2(n_refs)*n_refs*size/live_length, ties to lower pseudo number. The model reproduced this function's rank order exactly, so it is a forward oracle: adding a fourth ref to the end pointer overshoots (2*4/11 = 0.727, jumping above the base pointer and breaking a correct assignment), while shortening its live range from 11 to 5 or 6 lands it exactly in the gap. Birth order is the tiebreak if priorities collide.",
-   "next_probe": "Re-derive the priority table for the s6 form first (rerun pwsh tools/grinder/dump.ps1 func_80037B00 with the candidate applied and read .flow/.greg \u2014 the numbers below are from the s0..s5 form and the ranks have shifted). Then look for a spelling that shortens the end pointer's live range without adding instructions: computing `var_t0` later in the block, or expressing the inner bound so the end pointer's first reference sits closer to its last. Check each candidate against the model on paper before compiling, and confirm with the .greg rank line rather than the score."
+   "hypothesis": "A spelling that produces an exact priority TIE between the counter and the end pointer closes the swap through declaration order alone, which is ordinary C with no coercion construct.",
+   "mechanism": "Ties in allocno_compare go to the lower pseudo number, and pseudo numbers were measured this session to follow C declaration order exactly (73..79 = var_t1, var_t2, var_a3, var_a1, var_a2, var_t0, var_v1). Declaring var_t0 before var_t1 makes the end pointer the lower-numbered allocno, so any spelling that lands 2*refs_e/L_e == 3*8/L_c wins the seat. Candidate ties: (refs_e=4, L_e=9) against (refs_c=8, L_c=27), or (refs_e=6, L_e=9) against L_c=18.",
+   "next_probe": "This only becomes actionable once a lever on the counter's live length exists, which s7 foreclosed under the current stream - so treat it as the fallback if frontier #1's weighting caveat kills the (5,9) cell. Concretely: after any structural change that alters block boundaries (e.g. a successful residual-(a) fix), re-run s7/rainfo.sh and check whether 24/live_length(73) and 2*refs(78)/live_length(78) can be made equal; if so, reorder the declarations so var_t0 precedes var_t1 and re-measure."
   }
  ],
  "judge_constraints": [
