@@ -1,7 +1,7 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 10,
+ "session_count": 11,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -63,23 +63,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "s10 closes frontier item 1 with a C-level conservation argument (cse fold-to-latest => three loads iff every load has one consumer iff the +4 load is starvation-pinned), banks the mirrored score-2 par"
+  },
+  {
+   "session": 11,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "s11 overturns the s9/s10 endgame mechanism with the sched2 dump: the +4 address load is held at T-30 by a reload-created REG_DEP_OUTPUT on $v0, not by ready-list starvation, so frontier item 2 is clos"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An OUTSIDE pressure source -- an insn that is ready at sched2's T-30 but whose own emission slot is not target's slot-23 load-delay slot -- would let the +4 address load reach slot 12 in $a1 while all three 0x10 loads survive. This is the ONLY surviving pure-C door after s10.",
-   "mechanism": "The +4 load is pinned adjacent to its single consumer only because it is the sole ready insn at that cycle; a second ready insn breaks the starvation. Dependence-free sources (idx read, outer+0x18, outer+0x20) are also the cheapest filler for the load-delay slot at forward slot 23 and steal it (f3, g1 both 8/66); dependent sources either break the copy triple (c4) or cost instructions (d1, c5).",
-   "next_probe": "Enumerate every insn in the block (slots 0-49; the jalr ends the basic block) by (i) whether all its dependents are scheduled by T-30 and (ii) its cost as a slot-23 filler, using tmp/grind/func_80060A68/dumps/text1b.sched2 with candidate.c and with w1 applied side by side, rather than by trying more source spellings blind. If no insn in the block satisfies both, frontier item 2 is closed too and the residual is a property of the block's dependence graph, which is itself a bankable terminal result."
+   "hypothesis": "A 66-instruction three-load body exists in which reload gives p10's pseudo $a1 rather than $v0. x2 proves the register is reachable in a three-load stream and d8 proves 66 instructions are reachable in a three-load stream; nothing yet proves the two are incompatible.",
+   "mechanism": "p10 lands in $v0 in d8 because at d8's p10 seat (between copy 2's store and copy 3) both $v0 and $a0 are free -- copy 2's value has already been stored and is dead. x2 keeps $v0 busy by delaying copy 2's store past the p10 read, which wins the register but costs one instruction because the delayed store no longer fills the slot the scheduler was using. The open question is whether some other value the function ALREADY computes is live across d8's p10 seat without needing its store delayed.",
+   "next_probe": "Enumerate what is genuinely live at d8's p10 seat rather than inventing carriers: take tmp/grind/func_80060A68/s11/sched2.d8 and the matching .lreg/.greg dumps side by side with the x2 dumps, list every pseudo whose live range crosses p10's, and check which of them local-alloc could be made to keep in $v0 by pure statement order (not by a new local -- all seven local shapes are now measured at 5/67). If no such pseudo exists, the $a1-at-66-insns combination is foreclosed and that is itself a terminal, bankable result for the function."
   },
   {
-   "hypothesis": "Frontier item 1 (a second, early consumer of the +0x10 pointer) is CLOSED -- do not re-open it under any spelling.",
-   "mechanism": "cse fold-to-latest plus the one-consumer starvation law make the two-instruction residual invariant; the second consumer only chooses WHICH read loses its load and register (candidate.c: the +0 read; s10's w1/w2: the +2 read).",
-   "next_probe": "None. Any future claim on this axis must first exhibit an honest consumer of the +0x10 pointer that is not one of the three halfword reads; the function computes no such value, so such a claim is a fabricated dead read and is banned."
+   "hypothesis": "The residual may be a FIDELITY signal rather than a codegen-lever gap: target's 17-slot gap between lw a1,0x10(v1) and lhu a1,0x4(a1), plus target's adjacent same-address pair lw $v0,0xC($v1); lw $a0,0xC($v1) at slots 10/11, is the shape of a source expression the campaign has not reconstructed.",
+   "mechanism": "Every reconstruction so far treats the 0x18/0x1A/0x1C block as three inline halfword copies from *(s32 *)(outer + 0x10). The early $a1 load is exactly the second call-argument register, which suggests the +4 read and the call argument were spelled together in the original TU. s11 adds a second, independent hint: x2 reproduces target's slots 0-11 EXACTLY, including the adjacent 0xC pair, from a body in which copy 2's value is a named local -- i.e. target's own prologue geometry is easier to hit from a staged-value spelling than from the pure inline-copy spelling.",
+   "next_probe": "A rederive-modality session that derives the halfword-copy block from the CALL side (temp_a1 as the call's second argument expression) rather than from the store side, and checks the sibling family (func_80060B70, func_80061250, func_80061658, func_80061710 -- all in the same cluster) for the same lw/lhu 17-slot geometry to see whether any sibling's MATCHED C already exhibits it. Start from x2's slots 0-11, which are already target-exact."
   },
   {
-   "hypothesis": "The residual may be a FIDELITY signal rather than a codegen-lever gap: target's 17-slot gap between lw a1,0x10($v1) and lhu a1,0x4(a1), with three reloads of the same pointer, is the shape of a source expression the campaign has not reconstructed.",
-   "mechanism": "Every reconstruction so far treats the 0x18/0x1A/0x1C block as three inline halfword copies from *(s32 *)(outer + 0x10); target's stream is consistent with that, but the early $a1 load is exactly the second call-argument register, which suggests the +4 read and the call argument were spelled together in the original TU.",
-   "next_probe": "A rederive-modality session that derives the halfword-copy block from the CALL side (temp_a1 as the call's second argument expression) rather than from the store side, and checks the sibling family (func_80060B70, func_80061250, func_80061658, func_80061710 -- all in the same cluster) for the same lw/lhu 17-slot geometry to see whether any sibling's MATCHED C already exhibits it."
+   "hypothesis": "Frontier item 1 (a second, early consumer of the +0x10 pointer) and frontier item 2 (an outside pressure source ready at sched2 T-30) are BOTH closed. Do not re-open either under any spelling.",
+   "mechanism": "Item 1: cse fold-to-latest plus the one-consumer law make the two-instruction residual invariant; the second consumer only chooses WHICH read loses its load and register. Item 2: the pin is a reload-created REG_DEP_OUTPUT on $v0, not readiness, and a priority-8 ready insn cannot be displaced more than one cycle by any number of competitors.",
+   "next_probe": "None. Any future claim on either axis must first exhibit, respectively, an honest consumer of the +0x10 pointer that is not one of the three halfword reads (the function computes no such value), or a competitor insn with INSN_PRIORITY >= 8 pending after T-32 (the block's priority table contains none)."
   }
  ],
  "judge_constraints": [

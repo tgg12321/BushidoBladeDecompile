@@ -1226,3 +1226,67 @@ loads on target �" at the price of a new, different 2-instruction gap.
 - probe: Audit of every body measured in s8, s9 and s10 (95+ bodies): all plain C, every local written exactly once, no volatile, no pin, no inline asm, no dead local.
 - result: No family is claimed, so no precedent exists to cite. Gate fails by absence. The standing bans (multiply-assigned pointer-staging carrier in all three partition seats; temp2's dual role) were not approached.
 - verdict: CONFIRMED
+
+## [s11] The +4 address load is pinned at sched2 T-30 by ready-list starvation, so an OUTSIDE pressure source ready at T-30 can free it (frontier item 2, inherited from s9/s10)
+
+**Mechanism claimed by s9/s10:** insn 39 becomes ready only when its single consumer is
+scheduled; nothing else is ready at that cycle; sched.c never idles; therefore the load is
+forced adjacent to its consumer, and a second ready insn at that cycle would break the pin.
+
+**Probe:** `pwsh tools/grinder/dump.ps1 func_80060A68` with the three-load body `d8` applied
+(re-measured 4/66 this session); read the full sched2 priority table, the whole T-1..T-54 trace,
+and the post-reload RTL of insn 39 including its dependence list. Dump banked at
+`tmp/grind/func_80060A68/s11/sched2.d8` (function region line 30625).
+
+**Result:** insn 39's dependence list is
+`(insn_list 152 (insn_list:REG_DEP_OUTPUT 51 (insn_list:REG_DEP_ANTI ...`, and insn 51 is the
++0 halfword read `(set (reg:HI 2 v0) (mem:HI (reg:SI 4 a0)))`. Insn 39 is
+`(set (reg/v:SI 2 v0) (mem:SI (plus (reg/v:SI 3 v1) (const_int 16))))`. Both write **$v0**; the
+dependence is an OUTPUT dependence created by reload's register assignment, and it is what gives
+insn 39 INSN_PRIORITY 8. Separately, the trace shows the displacement idea is arithmetically
+impossible: insn 39 has priority 8, the only other pending priority-8 insn from T-30 downward is
+insn 53, and every insn scheduled at T-33..T-45 has priority 7 or lower. sched2 picks the
+max-priority ready insn every cycle, so extra ready insns can displace a priority-8 insn by at
+most ONE cycle — target needs 13.
+
+**Verdict: KILLED** (twice over — wrong mechanism, and impossible on its own terms). Frontier
+item 2 is closed. The controlling quantity is not readiness but **which hard register reload
+gives p10's pseudo in a three-load body**.
+
+## [s11] Keeping $v0 (or $a0) busy across the p10 read via a named value/base local will push p10's pseudo off $v0 in the 66-instruction three-load body
+
+**Mechanism:** local-alloc assigns hard registers in class order ($v0, $v1, $a0, $a1, ...); if
+copy 1's or copy 2's loaded value (or base pointer) is still live across p10's read, $v0 and/or
+$a0 are unavailable and p10 falls to $a1 — target's register — which removes the REG_DEP_OUTPUT
+and lets the load schedule early.
+
+**Probe:** seven bodies (x1, x2, x4, x6, x7, x8, x9) placing a named `s32` local on copy 1's
+value, copy 2's value, copy 3's value, copy 1's base and copy 2's base, with `p10` at each seat
+inside the copy triple; plus a nine-seat sweep of `p10` on the c2-local frame (y2..y10). Measured
+with `tmp/grind/func_80060A68/s11/run.ps1` (apply + `sandbox --disable all`).
+
+**Result:** the register lever WORKS and the instruction count does not. All seven x-bodies
+measure **5 / 67** — one instruction over target — and x2's disassembly
+(`tmp/grind/func_80060A68/s11/x2.dis`) confirms the mechanism: three `lw ?,0x10($v1)` loads with
+the +4 load in **$a1**, slots 0-11 byte-identical to target (including target's adjacent
+`lw $v0,0xC($v1); lw $a0,0xC($v1)` pair), but the $a1 load lands at slot 24 instead of 12 and a
+`nop` is added. Every seat of `p10` inside the copy triple costs that instruction regardless of
+which value or base carries the local, so the only 66-instruction three-load body is still the
+bare `d8` seat, where p10 is in $v0. On the after-the-copy-triple seats (y6, y7, y8) the local is
+codegen-inert: 2/66, candidate.c's byte class.
+
+**Verdict: CONFIRMED as a register lever, KILLED as a floor lever.** It produces the first body
+in the campaign that holds target's register for the +4 load in a three-load stream; it cannot
+yet hold it at 66 instructions.
+
+## [s11] The +4 address load is pinned at sched2 T-30 by ready-list starvation, so an OUTSIDE pressure source ready at T-30 would free it (frontier item 2, inherited from s9/s10).
+- mechanism: s9/s10 claim: insn 39 becomes ready only when its single consumer is scheduled, nothing else is ready at that cycle, sched.c never idles a cycle, so the load is forced adjacent to its consumer; a second ready insn would break the pin.
+- probe: pwsh tools/grinder/dump.ps1 func_80060A68 with the three-load body d8 applied (re-measured 4/66 this session); read the full sched2 priority table, the whole T-1..T-54 trace, and the post-reload RTL of insn 39 including its dependence list. Dump banked at tmp/grind/func_80060A68/s11/sched2.d8 (function region line 30625).
+- result: Insn 39 is (set (reg/v:SI 2 v0) (mem:SI (plus (reg/v:SI 3 v1) (const_int 16)))) -- the +4 address load -- and its dependence list is (insn_list 152 (insn_list:REG_DEP_OUTPUT 51 (insn_list:REG_DEP_ANTI ...)). Insn 51 is (set (reg:HI 2 v0) (mem:HI (reg:SI 4 a0))), the +0 halfword read. BOTH ARE IN $v0. sched2 runs post-reload, so the dependence is an OUTPUT dependence manufactured by reload's register assignment, and it is what raises insn 39 to INSN_PRIORITY 8 and releases it only at T-30. Separately, the trace shows the displacement idea was arithmetically impossible: insn 39 has priority 8, insn 53 is the only other pending priority-8 insn from T-30 downward, and every insn scheduled at T-33..T-45 has priority 7 or lower; since sched2 picks the max-priority ready insn every cycle, extra ready insns can displace a priority-8 insn by at most ONE cycle, where target needs 13 (forward slot 12 is about T-43).
+- verdict: KILLED
+
+## [s11] Keeping $v0 or $a0 busy across the p10 read via a named value/base local will push p10's pseudo off $v0 in a 66-instruction three-load body, removing the output dependence and letting the +4 load schedule early.
+- mechanism: local-alloc assigns hard registers in class order ($v0, $v1, $a0, $a1, ...); if copy 1's or copy 2's loaded value or base pointer is still live across p10's read, $v0 and/or $a0 are unavailable and p10 falls to $a1 -- target's register -- which removes the REG_DEP_OUTPUT identified above.
+- probe: Seven bodies (x1 x2 x4 x6 x7 x8 x9) putting a named s32 local on copy 1's value, copy 2's value, copy 3's value, copy 1's base and copy 2's base, with p10 at each seat inside the copy triple; plus a nine-seat sweep of p10 on the c2-local frame (y2..y10). Measured via tmp/grind/func_80060A68/s11/run.ps1 (apply + sandbox --disable all); x2 and y6 disassembled.
+- result: The register lever works; the instruction count does not. All seven x-bodies measure exactly 5 / 67. x2's disassembly (tmp/grind/func_80060A68/s11/x2.dis) confirms the mechanism directly: THREE lw ?,0x10($v1) loads, the +4 address load in $a1 (target's register, not $v0), and slots 0-11 byte-identical to target including target's adjacent lw $v0,0xC($v1); lw $a0,0xC($v1) pair at slots 10/11 -- but the $a1 load lands at slot 24 instead of 12 and one extra nop is emitted. Every p10 seat inside the copy triple costs that instruction regardless of which value or base carries the local, so the only 66-instruction three-load body is still the bare d8 seat where p10 is in $v0. On the after-the-copy-triple seats the local is codegen-inert: y6 / y7 / y8 = 2 / 66, candidate.c's exact byte class (slot 12 lw a1,0x10(v1) correct, slot 22 lhu v0,0(a1) vs target's lhu v0,0(a0), slot 23 nop vs target's third lw a0,0x10(v1)).
+- verdict: CONFIRMED

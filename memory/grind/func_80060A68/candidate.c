@@ -1,3 +1,42 @@
+/* [s11 2026-08-25 - escalation modality.  BODY UNCHANGED.  Re-measured 2 / 66 / 66 on today's
+ * HEAD (HEAD carries INCLUDE_ASM since commit 0bef2aa3).]
+ *
+ * THE s9/s10 MECHANISM IS WRONG - DO NOT SPEND ANYTHING ON "OUTSIDE PRESSURE AT T-30".
+ * The sched2 dump with the three-load body d8 applied (tmp/grind/func_80060A68/s11/sched2.d8,
+ * function region at line 30625) shows the +4 address load, insn 39
+ *     (set (reg/v:SI 2 v0) (mem:SI (plus (reg/v:SI 3 v1) (const_int 16))))
+ * carrying REG_DEP_OUTPUT on insn 51, the +0 halfword read
+ *     (set (reg:HI 2 v0) (mem:HI (reg:SI 4 a0))).
+ * Both are in $v0.  sched2 is POST-RELOAD, so that output dependence is created by reload's
+ * register assignment, and it is what gives insn 39 INSN_PRIORITY 8 and releases it only at
+ * T-30.  The residual is an ALLOCATION fact, not a readiness fact.  Independently, the
+ * displacement idea was arithmetically impossible: from T-30 down, insn 53 is the only other
+ * pending priority-8 insn and every insn scheduled at T-33..T-45 has priority <= 7, so extra
+ * ready insns can displace a priority-8 insn by at most ONE cycle where target needs 13.
+ * FRONTIER ITEM 2 IS CLOSED.
+ *
+ * WHAT s11 OPENED INSTEAD.  Putting a named local on copy 2's loaded VALUE and seating p10
+ * between that load and its store (body x2, banked at
+ * rejected/s11-copy2-value-local-3loads-p10-reaches-a1-but-slot24-and-67insns-score5.c,
+ * disassembly at tmp/grind/func_80060A68/s11/x2.dis) is the FIRST body in the campaign with
+ * THREE lw ?,0x10($v1) loads whose +4 address load is in $a1 - target's register - and whose
+ * slots 0-11 are byte-identical to target, including target's adjacent
+ * `lw $v0,0xC($v1); lw $a0,0xC($v1)` pair at slots 10/11.  It costs one instruction (67) and
+ * puts the $a1 load at slot 24 instead of 12, so it measures 5.  All seven value/base-local
+ * shapes measured (x1 x2 x4 x6 x7 x8 x9) land at exactly 5/67; every p10 seat inside the copy
+ * triple costs that instruction.  The open question is now sharply stated: hold p10 off $v0 in
+ * a 66-instruction three-load body.
+ *
+ * ALSO KILLED: the c2 named intermediate is codegen-INERT in every after-the-copy-triple seat
+ * (y6/y7/y8 = 2/66, candidate.c's byte class - banked at
+ * rejected/s11-c2-named-intermediate-after-copy-triple-codegen-inert-score2.c).
+ *
+ * DISPOSITION s11.  Endgame gates re-checked: scan_hand_coded --single = tier LOW 1/8 (S4 only)
+ * so gate 1 FAILS; gate 2 is not applicable because this body carries no coercion construct at
+ * all.  No decision packet was filed: the 2026-08-25 representation packet was already ruled (b)
+ * and executed, and what remains is a grind question with a corrected mechanism and a live axis,
+ * not an owner-decidable one.  src/text1b.c was restored to HEAD; no rules, no commits.
+ */
 /* MIGRATION NOTE (2026-08-25, commit 0bef2aa3): main now carries
  * INCLUDE_ASM("asm/funcs", func_80060A68) — the rule-era C body and the last
  * 2 asmfix rules are retired (owner ruling (b), decisions.md 2026-08-25;

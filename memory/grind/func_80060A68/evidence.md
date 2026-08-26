@@ -1773,3 +1773,152 @@ separator other than a copy store" as an open question.
 - [s10] src/text1b.c was reverted to HEAD at the end of the session; no rules, engine, tools, Makefile or linker-script files were touched; nothing was committed.
 
 - [s10] DECISION PACKET FILED: docs/grind/decisions.md, '## 2026-08-25 - func_80060A68 - OWNER-ESCALATION - ESCALATED WITH DECISION PACKET' (supersedes the retired-shape 2026-08-19 s9 entry).
+
+## s11 (2026-08-25, escalation modality) — the residual's pass attribution is CORRECTED: it is a reload-induced REG_DEP_OUTPUT, not ready-list starvation
+
+Chassis re-measured first: `memory/grind/func_80060A68/candidate.c` applied to `src/text1b.c`
+measures **score 2 / build 66 / target 66** on today's HEAD (HEAD itself carries
+`INCLUDE_ASM("asm/funcs", func_80060A68);` since commit 0bef2aa3). Floor confirmed, not stale.
+`src/text1b.c` was restored to HEAD before this session finished; no rules touched, no commits.
+
+### 1. THE CORRECTION (this session's main result)
+
+s9 banked "THE LAW: a 0x10 load with exactly ONE consumer cannot be hoisted — it is pinned
+adjacent to that consumer by ready-list starvation", and s10 built frontier item 2 on top of it
+("find an OUTSIDE pressure source, an insn ready at sched2's T-30"). **That attribution is
+wrong, and the dump says so directly.**
+
+`pwsh tools/grinder/dump.ps1 func_80060A68` with the three-load body `d8`
+(`rejected/s9-three-loads-66insns-plus4-address-load-adjacent-to-consumer-slot24-v0-score4.c`,
+re-measured this session at **4 / 66**) applied; dump saved at
+`tmp/grind/func_80060A68/s11/sched2.d8`, function region at line 30625. The trace reads:
+
+    ;; insn[  53]: priority =    8, ref_count =   10
+    ;; insn[  39]: priority =    8, ref_count =    6
+    ;; ready list at T-29: 61 (8), now 61
+    ;; launching 39 before 61 with no stalls at T-30
+    ;; ready list at T-30: 39 (8), now 39
+
+and the RTL for insn 39 (extracted with the scripting in `tmp/grind/func_80060A68/s11/`) is
+
+    (insn 39 ... (set (reg/v:SI 2 v0) (mem:SI (plus:SI (reg/v:SI 3 v1) (const_int 16))))
+       159 {movsi_internal2}
+       (insn_list 152 (insn_list:REG_DEP_OUTPUT 51 (insn_list:REG_DEP_ANTI ...
+
+Insn 39 IS the +4 address load. Its dependence list carries **REG_DEP_OUTPUT 51**, and insn 51 is
+
+    (insn 51 ... (set (reg:HI 2 v0) (mem:HI (reg:SI 4 a0))) 163 {movhi_internal2} ...
+
+— the +0 halfword read. Both are in **$v0**. sched2 runs POST-RELOAD, so this is an output
+dependence between two hard-register writes that reload happened to give the same register. It
+is what raises insn 39's INSN_PRIORITY to 8, and that is why insn 39 is released only at T-30,
+where nothing else is ready.
+
+Consequence: the +4 load's slot is **not** a property of the block's dependence graph and cannot
+be moved by adding ready insns. The whole frontier-item-2 framing ("outside pressure source")
+was aimed at the wrong quantity. The controlling quantity is **which hard register reload gives
+p10's pseudo in a THREE-LOAD body**. (This also re-reads s8's "any winning body has to occupy
+$v0 AND $a0 across p10's sched1 range" as the same fact seen from the allocation side — s8 was
+closer to right than s9/s10.)
+
+Secondary consequence, also load-bearing: even taken on its own terms, frontier item 2 was
+arithmetically impossible. Insn 39 has priority 8; from T-30 downward the only other pending
+priority-8 insn is 53, and every insn scheduled at T-33..T-45 has priority 7, 6, 5, 4 or 3.
+sched2 picks the max-priority ready insn every cycle, so a priority-8 ready insn can be displaced
+at most ONE cycle no matter how many extra insns are made ready. Target needs the load 13 cycles
+further down (forward slot 12, i.e. about T-43). **No pressure source of any size could have
+worked.** Frontier item 2 is CLOSED, and closed for a reason unrelated to the one s10 proposed.
+
+### 2. Sixteen new bodies measured (all in `tmp/grind/func_80060A68/s11/bodies/`)
+
+Harness: `tmp/grind/func_80060A68/s8/apply.py` + `tmp/grind/func_80060A68/s11/run.ps1`
+(splice body, `sandbox --disable all`, report score/build/target).
+
+Value-and-base-local hoists intended to keep $v0 / $a0 busy across the `p10` read (all place
+`p10` INSIDE the copy triple):
+
+| body | shape | score | insns |
+|---|---|---|---|
+| x1 | copy-1 VALUE in a local `c1`, `p10` between the load and the store | 5 | 67 |
+| x2 | copy-2 VALUE in a local `c2`, `p10` between the load and the store | 5 | 67 |
+| x4 | copy-2 value local, `p10` after the 0x24 store | 5 | 67 |
+| x6 | copy-2 BASE in a local `b2`, `p10` after it | 5 | 67 |
+| x7 | copy-1 and copy-2 values both in locals, `p10` before the 0x24 store | 5 | 67 |
+| x8 | copy-1 BASE in a local `b1`, `p10` after it | 5 | 67 |
+| x9 | copy-3 VALUE in a local `c3`, `p10` before the 0x28 store | 5 | 67 |
+
+Every seat of `p10` inside the copy triple costs exactly one instruction (67 vs 66) and lands at
+score 5, **regardless of which value or base is given a named local**. The only 66-instruction
+three-load body remains the bare `d8` seat (`p10` between copy 2 and copy 3, no local) at 4/66.
+The named locals are therefore NOT a live-range lever here: GCC coalesces them away.
+
+`p10` seat sweep on the `c2`-local frame (`y2`..`y10`, `p10` inserted before statement N):
+
+    y2 (above copy triple) 5/67 · y3 5/67 · y4 5/67 · y5 (before copy 3) 5/67
+    y6 (after copy triple) 2/66 · y7 (after the 0x18 store) 2/66 · y8 (after the 0x1A source read) 2/66
+    y9 3/66 · y10 3/66
+
+### 3. x2 is the first three-load body in which reload gives p10 the TARGET register
+
+`tmp/grind/func_80060A68/s11/x2.dis` (67 insns). Its slots 0-11 are byte-identical to target,
+including target's adjacent pair `lw $v0,0xC($v1); lw $a0,0xC($v1)` at slots 10/11. It carries
+THREE `lw ?,0x10($v1)` loads (slots 19, 23, 24) and — this is the new part — the +4 address load
+is `lw $a1,0x10($v1)`, i.e. **$a1, target's register**, not $v0. What it does not have is the
+slot: target puts that load at slot 12, x2 at slot 24, and x2 pays one extra `nop`.
+
+So the two halves of the target stream have now each been reached, but never together:
+  * candidate.c / y6 / y7 / y8: `lw $a1,0x10($v1)` at **slot 12**, but only TWO 0x10 loads.
+  * x2: **THREE** 0x10 loads with the +4 load in **$a1**, but at slot 24 and at 67 insns.
+  * d8: THREE loads at 66 insns, but the +4 load in $v0 (hence the REG_DEP_OUTPUT, hence T-30).
+
+### 4. y6 confirms candidate.c's residual is unchanged and un-coupled to the c2 local
+
+`tmp/grind/func_80060A68/s11/y6.dis` (66 insns, score 2) is in candidate.c's byte class: slot 12
+`lw a1,0x10(v1)` correct, slot 22 emits `lhu v0,0(a1)` where target has `lhu v0,0(a0)`, slot 23
+emits `nop` where target has the third `lw a0,0x10(v1)`. The `c2` named intermediate is therefore
+codegen-INERT in every after-the-copy-triple seat — banked at
+`rejected/s11-c2-named-intermediate-after-copy-triple-codegen-inert-score2.c` so no future
+session spends a measurement on it.
+
+### 5. Endgame gates re-checked (unchanged)
+
+`python3 tools/scan_hand_coded.py --single func_80060A68` gives **tier LOW, score 1/8**, S4 only
+("6 loads in 8-insn window @ insn 9"). Gate 1 FAILS, as in s8/s9/s10. Gate 2 is not applicable:
+candidate.c contains no coercion construct at all, so there is no family for which a SOTN-master
+precedent could be cited.
+
+### 6. Why this session does NOT file a decision packet
+
+The 2026-08-25 packet (representation) was filed, ruled (b), and executed as commit 0bef2aa3.
+The residual that remains poses no question an owner can decide: it is a grind question with a
+newly-corrected mechanism and a newly-opened, concrete axis (section 3). A packet asking to relax
+a standard is pre-decided NO (owner ruling 2026-08-24, second), and "this is hard" is not a
+packet. The honest outcome is `progress` with the kills banked and the item ACTIVE.
+
+### 7. Artifacts
+
+    tmp/grind/func_80060A68/s11/sched2.d8        — sched2 dump with d8 applied (the REG_DEP_OUTPUT evidence)
+    tmp/grind/func_80060A68/s11/sched2.cand      — sched2 dump with candidate.c applied
+    tmp/grind/func_80060A68/s11/x2.dis           — 67-insn three-load body, +4 load in $a1
+    tmp/grind/func_80060A68/s11/y6.dis           — 66-insn floor-2 body, candidate byte class
+    tmp/grind/func_80060A68/s11/bodies/*.c       — all 16 measured bodies
+    tmp/grind/func_80060A68/s11/run.ps1          — batch apply+sandbox harness
+    tmp/grind/func_80060A68/s11/text1b.c.HEAD    — pristine HEAD copy used to restore src/
+
+- [s11] Chassis re-measured on today's HEAD: memory/grind/func_80060A68/candidate.c applied to src/text1b.c = score 2 / build 66 / target 66. HEAD itself carries INCLUDE_ASM("asm/funcs", func_80060A68); since commit 0bef2aa3 (owner ruling (b), executed). src/text1b.c was restored to HEAD before this session finished; no rules touched, no commits.
+
+- [s11] PASS ATTRIBUTION CORRECTED. The residual's controlling dependence is REG_DEP_OUTPUT between sched2 insn 39 (the +4 address load, (reg/v:SI 2 v0)) and sched2 insn 51 (the +0 halfword read, (reg:HI 2 v0)) in the three-load body d8. Both were assigned $v0 by reload; sched2 is post-reload, so the dependence is allocation-induced, not semantic. It sets INSN_PRIORITY 8 on insn 39 and is the actual reason the load is released at T-30. s9's 'ready-list starvation law' and s10's frontier item 2 named the wrong quantity.
+
+- [s11] FRONTIER ITEM 2 IS CLOSED, and closed independently of the mis-attribution: sched2 selects the max-priority ready insn each cycle; insn 39 has priority 8; from T-30 downward only insn 53 also has priority 8, and every insn scheduled at T-33..T-45 has priority 7, 6, 5, 4 or 3. Extra ready insns can therefore displace insn 39 by at most one cycle. Target needs it 13 cycles further down. No outside pressure source of any size could have worked, so the seven sources s9 measured dead were dead for a structural reason, not by accident.
+
+- [s11] x2 (copy-2 VALUE in a named local, p10 seated between that load and its store) is the FIRST body in eleven sessions with THREE lw ?,0x10($v1) loads whose +4 address load is in $a1 -- target's register -- and whose slots 0-11 are byte-identical to target including target's adjacent lw $v0,0xC($v1); lw $a0,0xC($v1) pair. It measures 5 / 67: the $a1 load sits at slot 24 rather than 12 and one nop is added. Banked at rejected/s11-copy2-value-local-3loads-p10-reaches-a1-but-slot24-and-67insns-score5.c, disassembly at tmp/grind/func_80060A68/s11/x2.dis.
+
+- [s11] The three halves of target's stream have now each been reached but never together: candidate.c / y6 / y7 / y8 put lw $a1,0x10($v1) at slot 12 but carry only TWO 0x10 loads; x2 carries THREE loads with the +4 load in $a1 but at slot 24 and 67 insns; d8 carries THREE loads at 66 insns but with the +4 load in $v0 (hence the output dependence, hence T-30).
+
+- [s11] Named value/base locals are NOT a live-range lever in this function: all seven shapes (copy-1 value, copy-2 value, copy-3 value, copy-1 base, copy-2 base, and the two-local combination) measure exactly 5 / 67 when p10 is seated inside the copy triple, and exactly 2 / 66 (candidate's byte class, codegen-inert) when p10 is seated after it. GCC coalesces them away. Banked so no future session re-spends these measurements: rejected/s11-c2-named-intermediate-after-copy-triple-codegen-inert-score2.c.
+
+- [s11] p10 seat sweep on the c2-local frame: y2 (above the copy triple) 5/67, y3 5/67, y4 5/67, y5 (before copy 3) 5/67, y6 (after the copy triple) 2/66, y7 (after the 0x18 store) 2/66, y8 (after the 0x1A source read) 2/66, y9 3/66, y10 3/66.
+
+- [s11] ENDGAME GATE 1 RE-CHECKED AND STILL FAILS: python3 tools/scan_hand_coded.py --single func_80060A68 gives tier LOW, score 1/8, S4 only ('6 loads in 8-insn window @ insn 9'). ENDGAME GATE 2 IS NOT APPLICABLE: candidate.c carries no coercion construct at all, so there is no family for which a SOTN-master precedent could be cited.
+
+- [s11] NO DECISION PACKET WAS FILED THIS SESSION, deliberately. The 2026-08-25 packet (the representation question) was filed, ruled (b) and executed as commit 0bef2aa3; docs/grind/decisions.md:11122 records the ruling. What remains poses no owner-decidable question: it is a grind question whose mechanism this session corrected and whose replacement axis this session opened. A packet asking to relax a standard is pre-decided NO (owner ruling 2026-08-24, second), and 'this is hard' is not a packet, so the honest outcome is progress with the kills banked and the item ACTIVE.

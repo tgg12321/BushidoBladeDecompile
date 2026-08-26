@@ -12056,3 +12056,22 @@ owner rulings 2026-07-20 (this file, line 942), 2026-07-27
 (`.claude/rules/judge-sole-gate.md`), 2026-08-24
 (`.claude/rules/escalation-not-parked.md`); toolkits `tools/sched_solver/README.md`,
 `tools/ra_solver/README.md`.
+
+## 2026-08-25 — func_80060A68 — OWNER-ESCALATION — ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)
+
+**Auto-filed by the grinder driver (2026-08-25)** after 11 sessions held the honest
+floor flat at 2 across 6 distinct modalities (escalation, forensics, recon, rederive, structural, synthesis) without a
+session self-filing — the escalation-modality backstop (grind.ps1). This is the endgame-lock
+species per the standing 2026-07-20 endgame-lock-disposition policy: byte-matches on main only
+via a cheat (0 regfix/asmfix rule(s) or cheat-asm), honest pure-C floor 2,
+sanctioned levers exhausted across the full modality ladder (see memory/grind/func_80060A68/
+evidence.md + hypotheses.md for the per-session kill record). Both AND-gates fail on the ledger evidence: canonical-asm — `scan_hand_coded --single
+func_80060A68` = **LOW** (ordinary GCC RA/scheduler artifact, no hand-coded signature);
+coercion family — no SOTN-master precedent recorded for the residual axes. Per the owner's
+2026-08-24 ruling (.claude/rules/escalation-not-parked.md): the item is ESCALATED with a
+decision packet, not parked — the packet must state the DECIDABLE question this function's
+residual poses (the specific grant/family/fidelity/routing choice), the evidence pointers,
+and the consequence of each answer. The two AND-gates remain the unchanged STANDARD; the
+owner rules on packets in batches, and the ruling returns the item to active either way.
+If no decidable question exists, the item stays ACTIVE with a modality change instead
+(difficult-is-not-impossible) — "this is hard" is not a packet.
