@@ -281,3 +281,8 @@ disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 �
 category: policy-question
 evidence: session-filed escalation: docs/grind/decisions.md:14092 - 2026-08-26 func_800324D0 OWNER-ESCALATION - ESCALATED WITH DECISION PACKET (representation/routing: may asm/rodata/jtbl_800105A0.s be wired back into the link so func_800324D0 can migrate to INCLUDE_ASM and its four register-asm pins leave main?)
 disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.
+
+## 2026-08-26 — func_8002FC80 — policy-question
+category: policy-question
+evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-08-26 — func_8002FC80 — JUDGE ESCALATE on final call (policy-question) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
+disposition taken: REFUSED under the current frozen policy (endgame-lock standing ruling 2026-07-27, extended by judge-sole-gate 2026-08-18); terminal OWNER-ACCEPTED INCOMPLETE park; candidate preserved at memory/grind/func_8002FC80/candidate.c; re-attemptable if a later owner ruling spends this entry.

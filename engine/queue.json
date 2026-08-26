@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002FC80",
-      "file": "code6cac_b",
-      "distance": 28,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80061250",
       "file": "text1b",
       "distance": 28,
@@ -2006,18 +1998,27 @@
       "status": "escalated",
       "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals.",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:14092 - 2026-08-26 func_800324D0 OWNER-ESCALATION - ESCALATED WITH DECISION PACKET (representation/routing: may asm/rodata/jtbl_800105A0.s be wired back into the link so func_800324D0 can migrate to INCLUDE_ASM and its four register-asm pins leave main?)"
+    },
+    {
+      "func": "func_8002FC80",
+      "file": "code6cac_b",
+      "distance": 28,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "escalated",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (judge ESCALATE policy-question, logged to borderline.md per ruling 2026-08-18): 2026-08-26 \u2014 func_8002FC80 \u2014 JUDGE ESCALATE on final call (policy-question) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
     }
   ],
   "counts": {
     "total": 228,
-    "active": 206,
+    "active": 205,
     "by_status": {
-      "active": 206,
-      "escalated": 22
+      "active": 205,
+      "escalated": 23
     },
     "by_verdict": {
-      "ASM-PARTIAL": 35,
-      "C": 171
+      "C": 171,
+      "ASM-PARTIAL": 34
     }
   }
 }

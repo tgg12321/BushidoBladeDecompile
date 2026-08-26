@@ -14173,3 +14173,234 @@ func_800324D0 can be migrated to `INCLUDE_ASM("asm/funcs", func_800324D0)` and t
   (a different 68-insn instruction sequence), not another allocation-steering spelling.
 
 Either answer returns the item to active. Nothing is terminal, and no standard moves.
+
+## 2026-08-26 14:30 — func_8002FC80 — final call — **ESCALATE**
+
+WHAT WAS BUILT (plain English, no assembly knowledge assumed)
+
+func_8002FC80 takes three 3-D points. It subtracts the first point from the
+other two to get two direction vectors, writes both into the console's small
+fast-memory area ("scratchpad"), hands them to the PlayStation's geometry
+coprocessor to compute a cross product, and returns the angle of the result
+(plus 180 degrees when one component is positive). Everything except the
+coprocessor handoff is written as ordinary C. The coprocessor handoff itself
+is three short blocks of assembly that are verbatim copies of Sony's own
+PsyQ SDK macro bodies (SetRotMatrix / load-long-vector / store-long-vector)
+plus one coprocessor instruction word.
+
+WHY THE WORK IS SOUND (I verified each of these myself, not from the ledger)
+
+1. The bytes are right. `sandbox func_8002FC80 --disable all` = 0 (74 of 74
+   instructions, zero rules dropped), and a full clean build with the
+   candidate applied produced SHA1 62efab4f...bb4fa, exactly the original
+   executable. So this is a genuine match, not a partial one.
+2. The assembly blocks are not a cheat by the project's own definition.
+   The owner already ruled on this exact shape on 2026-08-17 for the sibling
+   function func_8002FDB0, and that ruling ends with a CLUSTER RULING
+   extending the same disposition to 28 enumerated functions in the same
+   address band. func_8002FC80 is one of the 28, listed by name at
+   .claude/rules/cop2-addressing-preamble-cluster.md:83 (SetRotMatrix
+   sub-family) — I read that row. The authorized exemplar is
+   inline_asm_canonical.txt:268, and this candidate's three blocks are that
+   entry's spelling with only the memory addresses changed.
+3. The cluster ruling's four mechanical conditions hold. (1) sandbox 0 —
+   measured above. (2) Zero register pins, zero "move %0,%1" aliasing blocks,
+   zero scheduling barriers — I grepped the new body; the only __asm__ in it
+   is the three coprocessor blocks and the one instruction word. (3) The
+   general-purpose instructions inside those blocks are only the SDK macro's
+   own address copy and its data loads plus the two mandatory coprocessor
+   load-delay slots — nothing else was swallowed into the templates.
+   (4) Full-build SHA1 == oracle — measured above.
+4. The pure-C part is legitimate on its own terms. The six subtract-and-store
+   blocks are real computation whose values the coprocessor consumes; the
+   locals v1/v2/p/ret are all read and written; nothing is dead, nothing is
+   byte-inert, no volatile, no alias rename, no FAKE construct, and no name
+   announces a codegen purpose. The one spelling choice worth naming — storing
+   through ((VECTOR *)0x1F800360)->vx rather than a plain word cast — is an
+   object-model correction, not a qualifier hack: those three scratchpad
+   triples genuinely ARE VECTORs (0x10 stride, consumed as a rotation-matrix
+   row / long vector / result vector by the SDK macros), and
+   .claude/rules/split-scalars-hide-aggregate.md prescribes exactly this
+   "reach for the object model first" move. The session disclosed honestly in
+   its self-vet that it FOUND this spelling by watching the scheduler; the
+   justification nonetheless stands on program logic alone, which is the test.
+
+WHY I AM NOT SIMPLY PASSING IT
+
+A PASS means "merge as COMPLETED-C". This function cannot be COMPLETED-C: it
+finishes with authorized inline assembly, so its end state is
+COMPLETED-INLINE-ASM-CANONICAL, which requires a one-line entry for
+func_8002FC80 in the root file inline_asm_canonical.txt. There is no such
+entry (I checked: only func_8002FDB0 at line 268). Without it `queue done`
+mechanically refuses, so a PASS would bank a constraint and re-grind a
+function that is already finished. Writing that line is a grant, and I am
+read-only — I never write grants.
+
+THE PRECISE QUESTION FOR THE RECORD
+
+The pipeline has exactly ONE door for writing an inline_asm_canonical.txt
+entry: grindlib.grant_canonical_asm, which refuses unless
+tools/scan_hand_coded.py reports the STRONG tier. I ran it: func_8002FC80
+scores LOW (1 of 8 signals). That gate is correct for a FRESH grant with no
+owner ruling behind it — it is the evidence bar standing in for a decision.
+But this function is not a fresh grant. The owner already decided this
+family on 2026-08-17 and enumerated this function as a member, and the
+cluster rule states the Judge applies the inherited disposition "without
+re-escalation" subject only to the four mechanical conditions above — all
+four of which are now verified. The scanner tier is not one of those four
+conditions, and the exemplar's own evidence was never a scanner tier either
+(it was the redundant address-copy idiom, the unfilled delay slots, and
+splat's handwritten-instruction tags).
+
+So: the grant mechanism has no path for an owner-granted CLUSTER MEMBER, and
+the 2026-08-19 integration-handoff route cannot help either — that route's
+path denylist explicitly excludes inline_asm_canonical.txt. The decidable
+question is therefore one of pipeline architecture, not of this function:
+
+  Should grant_canonical_asm accept "enumerated member of a landed owner
+  cluster ruling, four mechanical conditions verified by the Judge" as an
+  alternative evidence door to the STRONG scanner tier?
+
+CONSEQUENCES OF EACH ANSWER
+
+  YES  — func_8002FC80 takes its allowlist line and integrates immediately to
+         COMPLETED-INLINE-ASM-CANONICAL at distance 0. The same door then
+         serves the other near-miss cluster members already close to the
+         floor (func_80032314 at 27, func_8002D320 at 32, func_8002D518 at
+         33, func_8002E838 at 36, func_800300B4 at 37, func_800325E0 at 37),
+         none of which will scan STRONG either.
+  NO   — every one of the 28 cluster members is unreachable no matter how
+         well it is ground, because the disposition the owner granted them
+         has no mechanism to be spent. The 2026-08-17 cluster ruling would be
+         inert in practice.
+
+Note this does NOT lower any standard: the four mechanical conditions stay,
+the frozen family list is untouched, and the family itself was owner-granted
+nine days ago. It is a question about which evidence the existing grant tool
+will accept, nothing more.
+
+MINOR, NON-BLOCKING DEFECTS IN THE CANDIDATE (fix on the way in, not grounds
+for anything): the comment block contains mis-encoded em dashes rendered as
+"GammaCedillaOslash" byte garbage in three places, and the self-vet cites
+docs/grind/decisions.md:5610 where the owner-rulings header actually sits at
+:5611 (the section is real and is the right one; the offset is one line).
+
+## 2026-08-26 — func_8002FC80 — JUDGE ESCALATE on final call (policy-question) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-08-26)** — verdict ESCALATE (policy-question): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+WHAT WAS BUILT (plain English, no assembly knowledge assumed)
+
+func_8002FC80 takes three 3-D points. It subtracts the first point from the
+other two to get two direction vectors, writes both into the console's small
+fast-memory area ("scratchpad"), hands them to the PlayStation's geometry
+coprocessor to compute a cross product, and returns the angle of the result
+(plus 180 degrees when one component is positive). Everything except the
+coprocessor handoff is written as ordinary C. The coprocessor handoff itself
+is three short blocks of assembly that are verbatim copies of Sony's own
+PsyQ SDK macro bodies (SetRotMatrix / load-long-vector / store-long-vector)
+plus one coprocessor instruction word.
+
+WHY THE WORK IS SOUND (I verified each of these myself, not from the ledger)
+
+1. The bytes are right. `sandbox func_8002FC80 --disable all` = 0 (74 of 74
+   instructions, zero rules dropped), and a full clean build with the
+   candidate applied produced SHA1 62efab4f...bb4fa, exactly the original
+   executable. So this is a genuine match, not a partial one.
+2. The assembly blocks are not a cheat by the project's own definition.
+   The owner already ruled on this exact shape on 2026-08-17 for the sibling
+   function func_8002FDB0, and that ruling ends with a CLUSTER RULING
+   extending the same disposition to 28 enumerated functions in the same
+   address band. func_8002FC80 is one of the 28, listed by name at
+   .claude/rules/cop2-addressing-preamble-cluster.md:83 (SetRotMatrix
+   sub-family) — I read that row. The authorized exemplar is
+   inline_asm_canonical.txt:268, and this candidate's three blocks are that
+   entry's spelling with only the memory addresses changed.
+3. The cluster ruling's four mechanical conditions hold. (1) sandbox 0 —
+   measured above. (2) Zero register pins, zero "move %0,%1" aliasing blocks,
+   zero scheduling barriers — I grepped the new body; the only __asm__ in it
+   is the three coprocessor blocks and the one instruction word. (3) The
+   general-purpose instructions inside those blocks are only the SDK macro's
+   own address copy and its data loads plus the two mandatory coprocessor
+   load-delay slots — nothing else was swallowed into the templates.
+   (4) Full-build SHA1 == oracle — measured above.
+4. The pure-C part is legitimate on its own terms. The six subtract-and-store
+   blocks are real computation whose values the coprocessor consumes; the
+   locals v1/v2/p/ret are all read and written; nothing is dead, nothing is
+   byte-inert, no volatile, no alias rename, no FAKE construct, and no name
+   announces a codegen purpose. The one spelling choice worth naming — storing
+   through ((VECTOR *)0x1F800360)->vx rather than a plain word cast — is an
+   object-model correction, not a qualifier hack: those three scratchpad
+   triples genuinely ARE VECTORs (0x10 stride, consumed as a rotation-matrix
+   row / long vector / result vector by the SDK macros), and
+   .claude/rules/split-scalars-hide-aggregate.md prescribes exactly this
+   "reach for the object model first" move. The session disclosed honestly in
+   its self-vet that it FOUND this spelling by watching the scheduler; the
+   justification nonetheless stands on program logic alone, which is the test.
+
+WHY I AM NOT SIMPLY PASSING IT
+
+A PASS means "merge as COMPLETED-C". This function cannot be COMPLETED-C: it
+finishes with authorized inline assembly, so its end state is
+COMPLETED-INLINE-ASM-CANONICAL, which requires a one-line entry for
+func_8002FC80 in the root file inline_asm_canonical.txt. There is no such
+entry (I checked: only func_8002FDB0 at line 268). Without it `queue done`
+mechanically refuses, so a PASS would bank a constraint and re-grind a
+function that is already finished. Writing that line is a grant, and I am
+read-only — I never write grants.
+
+THE PRECISE QUESTION FOR THE RECORD
+
+The pipeline has exactly ONE door for writing an inline_asm_canonical.txt
+entry: grindlib.grant_canonical_asm, which refuses unless
+tools/scan_hand_coded.py reports the STRONG tier. I ran it: func_8002FC80
+scores LOW (1 of 8 signals). That gate is correct for a FRESH grant with no
+owner ruling behind it — it is the evidence bar standing in for a decision.
+But this function is not a fresh grant. The owner already decided this
+family on 2026-08-17 and enumerated this function as a member, and the
+cluster rule states the Judge applies the inherited disposition "without
+re-escalation" subject only to the four mechanical conditions above — all
+four of which are now verified. The scanner tier is not one of those four
+conditions, and the exemplar's own evidence was never a scanner tier either
+(it was the redundant address-copy idiom, the unfilled delay slots, and
+splat's handwritten-instruction tags).
+
+So: the grant mechanism has no path for an owner-granted CLUSTER MEMBER, and
+the 2026-08-19 integration-handoff route cannot help either — that route's
+path denylist explicitly excludes inline_asm_canonical.txt. The decidable
+question is therefore one of pipeline architecture, not of this function:
+
+  Should grant_canonical_asm accept "enumerated member of a landed owner
+  cluster ruling, four mechanical conditions verified by the Judge" as an
+  alternative evidence door to the STRONG scanner tier?
+
+CONSEQUENCES OF EACH ANSWER
+
+  YES  — func_8002FC80 takes its allowlist line and integrates immediately to
+         COMPLETED-INLINE-ASM-CANONICAL at distance 0. The same door then
+         serves the other near-miss cluster members already close to the
+         floor (func_80032314 at 27, func_8002D320 at 32, func_8002D518 at
+         33, func_8002E838 at 36, func_800300B4 at 37, func_800325E0 at 37),
+         none of which will scan STRONG either.
+  NO   — every one of the 28 cluster members is unreachable no matter how
+         well it is ground, because the disposition the owner granted them
+         has no mechanism to be spent. The 2026-08-17 cluster ruling would be
+         inert in practice.
+
+Note this does NOT lower any standard: the four mechanical conditions stay,
+the frozen family list is untouched, and the family itself was owner-granted
+nine days ago. It is a question about which evidence the existing grant tool
+will accept, nothing more.
+
+MINOR, NON-BLOCKING DEFECTS IN THE CANDIDATE (fix on the way in, not grounds
+for anything): the comment block contains mis-encoded em dashes rendered as
+"GammaCedillaOslash" byte garbage in three places, and the self-vet cites
+docs/grind/decisions.md:5610 where the owner-rulings header actually sits at
+:5611 (the section is real and is the right one; the offset is one line).
+
+**Constraint recorded for any future session:** func_8002FC80 is DONE at distance 0 — do not re-grind the C. It is blocked solely on an inline_asm_canonical.txt entry; if that entry lands, integrate the banked candidate.c verbatim (fixing the mojibake em dashes in its comments) and close as COMPLETED-INLINE-ASM-CANONICAL.
