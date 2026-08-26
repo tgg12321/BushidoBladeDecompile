@@ -1,8 +1,8 @@
 {
  "func": "func_80045878",
  "file": "text1a_c",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -39,13 +39,29 @@
    "floor": 10,
    "modality": "permuter",
    "headline": "Permuter re-confirmed dead (5th chassis, fresh-seed arm-split 13.8k iters plateau 210, no zero); scan_hand_coded LOW 0/8; all sanctioned axes dead, no pure-C-0 form -> OWNER-ESCALATION filed (endgame-"
+  },
+  {
+   "session": 6,
+   "floor": 10,
+   "modality": "synthesis",
+   "headline": "Synthesis reframes the function: on the arm-split chassis our build already has target's EXACT instruction multiset (classify = RA; 9 replace + 1 moved), and arm-split+SI-temp collapses the ~9-diff ta"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A novel structural insight outside the measured structural + permuter axes reshapes cc1's local_alloc/sched1 tie-break for one or both residuals.",
-   "mechanism": "The matching pure-C provably exists (difficult-is-not-impossible); all levers found so far are measured dead, so any close requires a lever of a different kind - a whole-function CFG reshape or a callee-signature/type change that shifts the .L800459DC join-block allocation.",
-   "next_probe": "Owner ruling pending (parked). If re-attempted: forensics/rederive modality - instrument cc1 with BB2_ALLOC_DEBUG / BB2_SCHED_DEBUG / BB2_PRIO_DEBUG on the arm-split chassis to read the exact local_alloc split decision at .L800459DC and the sched1 launch-priority for the else recompute; look for a C-visible input to those decisions not yet varied."
+   "hypothesis": "R2 closes when the tail's base pointer is a value cse cannot prove equal to the record pointer at the tail, so a real `addu v0,s1,zero` is emitted rather than copy-propagated \u2014 the last single instruction between the armsplit+SItemp chassis and target's tail.",
+   "mechanism": "On the armsplit+SItemp chassis cse no longer holds a shared (HI)a0 pseudo, so the tail's only reg-reg copy slot is free; target spends it on the base, ours spends nothing. A single-set `s16 *p = s1;` is copy-propagated (KILLED s6). Not yet tried on this chassis: a base that is NOT provably equal to s1 at the tail \u2014 e.g. two distinct defs reaching the join so no single copy can be propagated, or a base re-derived from a value cse cannot fold.",
+   "next_probe": "On rejected/chassis-armsplit-si-temp-tail-matches-except-basecopy.c run the full ra_solver path: `goal_from_tgt.py goal text1a_c func_80045878 --model <model.json>` then `inverse.py` (and `local_extract.py`/`local_alloc.py` for the tail block) to get a typed REACHABLE/FORECLOSED verdict plus ranked C-lever vectors for 'base pseudo gets a caller-save while the record pseudo stays callee-save'. Then spell the top-ranked vector and measure."
+  },
+  {
+   "hypothesis": "R1 closes only by SPLITTING the else arm's basic block so the recompute's block has unit_n_insns[memory] <= 1 (escape E2); statement ordering/spelling is proven foreclosed.",
+   "mechanism": "schedule_select's potential_hazard tie-break is decided by the per-block memory-unit insn count (cleared per block, sched.c:3251). With the two `sh` in the recompute's block the stores always take the block-end slot; with <=1 memory insn in that block the factor (unit_n_insns-1)*0x1000 is 0, all costs tie at 0, and rank_for_schedule's ordering \u2014 which already puts the recompute first \u2014 stands.",
+   "next_probe": "Find a C shape where `s1[4] = -1; s1[3] = 0;` and the recompute sit in different basic blocks at sched1 time without emitting an extra instruction (an edge/label that jump.c or cross-jumping later removes). Verify DIRECTLY with BB2_SCHED_DEBUG=1: success is a block header printing `units n0<=1` (or the recompute alone in its block) followed by `PICK clock=1 picked=<recompute uid>`; do not judge this probe by sandbox score alone."
+  },
+  {
+   "hypothesis": "The two regions are independent (re-confirmed s2) and can be closed in either order, so the next session should stack the R2 fix onto the armsplit+SItemp chassis first and only then attack R1's block split.",
+   "mechanism": "R2 is worth ~8 of the 11 diffs on the arm-split chassis and is now one instruction; R1 is worth the remaining rotation. Closing R2 first yields a chassis at build_insns 108 with a target-identical tail, which is also the cleanest input for the sched-solver work on R1.",
+   "next_probe": "After any R2 candidate, re-run `goal_from_tgt.py classify` \u2014 the expected signature of success is the diff shrinking to the idx 29-32 rotation ONLY (align: 104 equal, 4 replace/moved), which is the exact point at which sched_solver (tools/sched_solver) can be pointed at a single block with a single question."
   }
  ],
  "judge_constraints": [],

@@ -279,3 +279,149 @@ param-reuse-base-copy-cse-canon).
 - [s5] OWNER-ESCALATION filed in docs/grind/decisions.md (2026-07-23, func_80045878) with two owner options: (a) canonical-asm NOT supportable (LOW 0/8); (b) REFUSE -> OWNER-ACCEPTED INCOMPLETE as sibling func_800611A4 et al. No campaign left alive; no build-pipeline/rules/engine files touched.
 
 - [s5] PID-reuse noise: permuter_campaign status shows recycled PID 417 as alive across many historical entries, but only armsplit-freshseed-s5 was registered ACTIVE and it was harvested --stop (0 active after).
+
+## s6 (synthesis, 2026-08-26)
+CHASSIS RE-MEASURE: score-10 body (candidate.c) re-applied to src and
+re-measured on today's HEAD — sandbox --disable all score=10, build_insns 107
+vs target 108, 0 rules. The ledger floor is intact; every banked spelling
+conclusion remains chassis-valid.
+
+### THE CENTRAL s6 FINDING — the score-10 chassis is the WRONG chassis
+`goal_from_tgt.py classify text1a_c func_80045878` was run for the first time
+(owner directive 2026-08-24: solver before deep re-grind). Run on the ARM-SPLIT
+chassis (rejected/armsplit-…, sandbox 11, build_insns 108) it reports:
+
+    ours 108 insns, target 108 insns   [object-level: replace_with_asmfile-safe]
+    FIRST DIVERGENCE: RA        $v0 -> $v1  x1 ,  $s1 -> $v0  x1
+    align ours->tgt: |A|=108 |B|=108 {'equal': 98, 'replace': 9, 'delete': 0,
+                                      'insert': 0, 'moved': 1}
+
+i.e. on the arm-split chassis our build has the EXACT target instruction
+multiset (register-blanked multisets identical, 108 vs 108) and the whole
+residual is 9 replaced + 1 moved instruction in two disjoint regions. The
+PRE-RA gap that s5 used to justify "no pure-C-0 form exists / reachability
+wall" DOES NOT EXIST on this chassis — it is an artifact of grading on the
+score-10 HEAD body, which is one insn SHORT. sandbox score is NOT the right
+ordering here: 11-with-the-right-multiset is strictly closer than
+10-with-a-missing-insn. **All future work starts from the arm-split chassis.**
+
+Region-aligned residual (objdump, masked, s6):
+    idx  ours                     target
+    29   addiu s3,s2,3            li    v0,-1          <- R1: 4-insn rotation
+    30   li    v0,-1              sh    v0,8(s1)
+    31   sh    v0,8(s1)           sh    zero,6(s1)
+    32   sh    zero,6(s1)         addiu s3,s2,3
+    89   addiu v0,s2,3            move  v0,s1          <- R2: tail block
+    90   sh    v0,22(s1)          addiu v1,s2,3
+    91   move  v0,s2              sh    v1,22(v0)
+    92   sh    v0,4(s1)           li    v1,0x8000
+    93   sh    v0,20(s1)          sh    s2,4(v0)
+    94   sh    v0,16(s1)          sh    s5,8(v0)
+    95   li    v0,0x8000          sh    s2,20(v0)
+    96   sh    s5,8(s1)           sh    s2,16(v0)
+    97   sw    v0,24(s1)          sw    v1,24(v0)
+
+### R2 (tail) COLLAPSED to ONE missing insn — new chassis armsplit+SItemp
+Adding the SI temp `{ s32 t = a0 + 3; s1[11] = t; }` to the arm-split chassis
+(s2 measured this ONLY on the score-10 HEAD chassis, saw 107->106 and filed it
+"wrong direction" — that mis-scoping cost s3/s4/s5) removes the HImode
+truncation of a0 that created the shared (HI)a0 pseudo cse was reusing. Result
+(sandbox: score 11, build_insns 107) — the tail becomes:
+
+    addiu v0,s2,3 / sh v0,22(s1) / li v0,0x8000 / sh s2,4(s1) / sh s5,8(s1)
+    / sh s2,20(s1) / sh s2,16(s1) / sw v0,24(s1)
+
+which is target's tail EXCEPT for the single leading `move v0,s1` base copy
+(and the renames that follow from having it). a0 is now stored DIRECTLY from
+s2 three times, exactly as target does. The entire ~9-diff "Gap B" is now ONE
+missing instruction. Banked as
+rejected/chassis-armsplit-si-temp-tail-matches-except-basecopy.c (a CHASSIS,
+not a dead end).
+KILLED on that chassis: `s16 *p = s1;` alias over the whole tail — still
+107 / score 11, byte-identical to the chassis without it (cse copy-propagates
+the single-set copy regardless of tail shape).
+rejected/tail-p-alias-on-armsplit-si-chassis.c.
+
+### R1 (else-arm rotation) — FORECLOSURE PROOF from cc1 source + instrumented run
+Pass attribution done by DUMP, not guess (`pwsh tools/grinder/dump.ps1`, plus
+an instrumented `BB2_SCHED_DEBUG=1 tools/gcc-2.7.2/cc1` run; artifacts
+tmp/grind/func_80045878/s6/{scheddbg.txt,block2_sched1.txt}). The else arm is
+basic block 2, n_insns=15. Ground truth from the instrumented run:
+
+    SCHEDDBG units n0=2 n1=0 ...            (memory unit has exactly the 2 `sh`)
+    node insn=75 (addiu s3,s2,3) unit=-1 icost=0 pri=1 ref=0 bmin=-1 bmax=-1
+                 -- and NO dep lines at all: zero LOG_LINKS
+    node insn=69 (sh v0,8(s1))   unit=0  icost=0 pri=1 bmin=1 bmax=3
+    node insn=72 (sh zero,6(s1)) unit=0  icost=0 pri=1 bmin=1 bmax=3
+    initial ready list (sorted by SCHED_SORT): pos=0 insn=75, pos=1 insn=72,
+                                               pos=2 insn=69
+    SELBEST clock=1 insn=72 pos=1   ->  PICK clock=1 picked=72
+
+Reading (sched.c is backward: the insn picked at clock 1 becomes the block's
+LAST insn). rank_for_schedule ALREADY sorts our recompute (highest LUID = last
+in source) into pos 0 — i.e. target's answer. It is then overridden by
+`schedule_select` (sched.c:2661-2727), which, within a group of equal
+INSN_PRIORITY, picks the insn with the largest `potential_hazard`
+(sched.c:1327-1364):
+
+    ncost = minb * 0x40 + maxb;                      /* 1*0x40+3 = 0x43 */
+    ncost *= (unit_n_insns[unit] - 1) * 0x1000 + unit;   /* (2-1)*0x1000 */
+
+For the two stores (function unit "memory", mips.md:161) that is 0x43*0x1000 =
+274432. For the recompute, `insn_unit` is -1 (no function unit) so
+potential_hazard returns 0. **An arith insn can therefore NEVER win a
+same-priority tie against a store in the block-end slot.** The only C-visible
+escapes are:
+  E1  give the recompute INSN_PRIORITY >= 2 so it forms its own, earlier
+      group. priority() (sched.c:1432-1500) is
+      `max(priority(pred) + insn_cost(pred) - 1, 1)`, so this needs a
+      predecessor with cost 2 — on r3000 that is a LOAD (mips.md:157-159,
+      load ready-delay 2). MEASURED FACT: block 2 contains ZERO loads (every
+      other insn is a call or arith, unit=-1), and target's else arm
+      (asm/funcs/func_80045878.s, 0x800458BC-0x800458F8) also contains zero
+      loads. So no in-block load exists to hang the recompute off.
+  E2  make `unit_n_insns[memory] == 1` for the block — then the factor
+      `(1-1)*0x1000 + 0` is 0, all costs tie at 0, and pos 0 (the recompute)
+      wins. Requires one of the two `sh` to leave the block.
+  E3  make both stores unavailable at the block-end slot — impossible: the
+      scheduler is backward, readiness means "all dependents scheduled", and
+      both stores have ref=0 (no dependents at all).
+Since target's else block has the same 15 insns, the same 2 stores, and no
+loads, the target's order is NOT producible by sched1/sched2 from a block with
+this shape. => target's `addiu` was NOT in this basic block when the scheduler
+ran, or the block was split at that point. E2 (block splitting) is the live
+lever, not spelling.
+
+### Disposition
+NOT owner-gated: the 2026-07-23 escalation for this function was already ruled
+(2026-07-27, option (b)) and the owner kicked the function back to active on
+2026-08-24; re-filing the same "no pure-C form exists" packet is the
+auto-reject class, and it is now positively CONTRADICTED by the multiset-exact
+arm-split classification above. Floor unchanged at 10; src/text1a_c.c restored
+to HEAD (INCLUDE_ASM) at end of session.
+
+- [s6] Chassis re-measure 2026-08-26: the score-10 body re-applied to src/text1a_c.c still scores sandbox --disable all = 10, build_insns 107 vs target 108, 0 rules dropped. Ledger floor intact; banked spelling conclusions remain chassis-valid.
+
+- [s6] goal_from_tgt.py classify on the arm-split chassis: ours 108 / target 108, register-blanked multisets identical, FIRST DIVERGENCE = RA ($v0->$v1 x1, $s1->$v0 x1), align 98 equal / 9 replace / 0 delete / 0 insert / 1 moved. The s5 'no pure-C-0 form exists, reachability/RA-class wall' conclusion was an artifact of grading on a chassis that is one insn short.
+
+- [s6] Residual is exactly two disjoint regions on the arm-split chassis: R1 = idx 29-32, a 4-insn rotation (ours addiu/li/sh/sh vs target li/sh/sh/addiu); R2 = idx 89-97, the tail store block.
+
+- [s6] arm-split + SI temp ({ s32 t = a0 + 3; s1[11] = t; }) makes the tail store a0 directly from s2 three times exactly as target does; the whole ~9-diff Gap B reduces to the single missing `addu v0,s1,zero` base copy. Banked as memory/grind/func_80045878/rejected/chassis-armsplit-si-temp-tail-matches-except-basecopy.c (a CHASSIS, not a dead end).
+
+- [s6] s2 measured that same SI temp only on the score-10 HEAD chassis (107->106, score unchanged) and filed it 'wrong direction'; that mis-scoping is what routed s3/s4/s5 into the coin-flip/permuter dead end.
+
+- [s6] `s16 *p = s1;` over the tail is copy-propagated on the new chassis too (107 / score 11, byte-identical) — the base copy is not reachable by any C-level pointer copy measured to date.
+
+- [s6] sched1 ground truth (instrumented cc1, BB2_SCHED_DEBUG=1): block 2 n_insns=15, units n0=2; insn 75 (addiu s3,s2,3) unit=-1 icost=0 pri=1 ref=0 and NO dep lines at all; insns 69/72 (the two sh) unit=0 bmin=1 bmax=3 pri=1; initial SCHED_SORT ready list pos0=75 pos1=72 pos2=69; SELBEST clock=1 insn=72 pos=1.
+
+- [s6] Mechanism named from cc1 source, not guessed: sched.c:2661-2727 schedule_select picks the largest potential_hazard within an equal-INSN_PRIORITY group; sched.c:1327-1364 computes ncost = (minb*0x40 + maxb) * ((unit_n_insns[unit]-1)*0x1000 + unit), which is 274432 for a store on the 'memory' unit (mips.md:161) when the block holds two memory insns, and 0 for any insn with insn_unit == -1. unit_n_insns is cleared per block (sched.c:3251), so it is a per-block, C-visible quantity.
+
+- [s6] sched.c:1432-1500 priority() = max(priority(pred) + insn_cost(pred) - 1, 1), so INSN_PRIORITY >= 2 requires a predecessor of cost 2 — on r3000 a LOAD (mips.md:157-159, load ready-delay 2). Measured: block 2 has zero loads, and target's else arm 0x800458BC-0x800458F8 has zero loads.
+
+- [s6] Target's else arm and ours contain the same 15 instructions and the same 2 stores, so target's order is NOT producible by sched1/sched2 from a block of this shape — the recompute must have been in a DIFFERENT basic block when the scheduler ran. That makes block SPLITTING (escape E2), not spelling, the live lever.
+
+- [s6] Target's THEN arm ends `lw s1,4(v0); j .L800458FC; nop` — an UNFILLED delay slot at 0x800458B8 that reorg would normally have filled from the preceding lw. Our arm-split build reproduces insns 0-28 byte-identically including that j+nop, so the divergence is localised strictly inside the else arm.
+
+- [s6] Disposition note: owner-gated is NOT available here. The 2026-07-23 escalation was already ruled (2026-07-27, option (b)) and the owner returned the function to active on 2026-08-24; re-filing the same 'no pure-C form exists' packet is the auto-reject class, and it is now positively contradicted by the multiset-exact classification.
+
+- [s6] src/text1a_c.c restored to HEAD (INCLUDE_ASM) at end of session; no rules/pipeline/engine files touched; no permuter campaigns launched, none left alive.

@@ -1,3 +1,10 @@
+/* !! s6 (2026-08-26) READ FIRST !!  This body is the lowest-SANDBOX-SCORE form
+   (10) but it is NOT the closest form and it is NOT the chassis to work from.
+   It is one instruction SHORT of target (107 vs 108).  The chassis to start
+   from is
+     rejected/chassis-armsplit-si-temp-tail-matches-except-basecopy.c
+   which scores 11 but has target's EXACT instruction multiset in the tail and
+   is one single insn (`addu v0,s1,zero`) away there.  See evidence.md s6. */
 /* 2026-08-24 MIGRATION NOTE: HEAD is now INCLUDE_ASM — migrated in
    4faaa384 (2026-08-19 batch 2); all rules retired and all in-source cheat-asm removed
    from main. Statements below about "HEAD", pins, rules carried, or

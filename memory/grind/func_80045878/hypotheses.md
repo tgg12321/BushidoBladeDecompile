@@ -191,3 +191,90 @@ copy or anchors the Gap-A recompute last, reaching a sub-210 (ultimately zero) f
 - probe: tools/scan_hand_coded.py --single func_80045878 (read-only).
 - result: tier=LOW score=0/8 (108 insns, 7 spills, 11 regs; no S1 multu pacing, no S2 empty branch, no S4 front-load burst, no S5 sibling cluster, no S6 BIOS jumptable, no S7 unsaved $sN, no S8 redundant mask). Ordinary GCC 2.7.2 RA/sched output; canonical-asm unsupportable.
 - verdict: KILLED
+
+## [s6] SYNTHESIS — frontier reset. The score-10 chassis was the wrong chassis.
+Everything below supersedes the s3/s4/s5 framing ("both residuals are cc1
+coin-flips below C reach / no pure-C-0 form exists"). That framing was derived
+on the score-10 HEAD body, which is one insn SHORT of target. On the ARM-SPLIT
+chassis the instruction multiset is EXACT (108 vs 108, register-blanked
+multisets identical; `goal_from_tgt.py classify` = "FIRST DIVERGENCE: RA",
+9 replace + 1 moved). Work the arm-split chassis from now on.
+
+## [s6] The tail residual ("Gap B", ~9 diffs) is ONE missing instruction — CONFIRMED
+- statement: on the arm-split chassis, adding the SI temp
+  `{ s32 t = a0 + 3; s1[11] = t; }` removes the HImode truncation of a0 that
+  created the shared (HI)a0 pseudo cse reuses, so the tail stores a0 directly
+  from s2 exactly as target does; the only remaining tail difference is the
+  single leading base copy `addu v0,s1,zero`.
+- mechanism: expander truncates a0 to HImode BEFORE the +3 when the store is
+  `s1[11] = a0 + 3` (s2's RTL insns 213/215); cse then reuses that (HI)a0
+  pseudo for the three `s1[N] = a0` HImode stores, which is what pinned the
+  base in s1 and produced the extra `move v0,s2`. An SI-mode named
+  intermediate blocks the early truncation.
+- probe: src = arm-split + SI temp; sandbox --disable all + masked objdump of
+  the tail.
+- result: score 11, build_insns 107. Tail = `addiu v0,s2,3 / sh v0,22(s1) /
+  li v0,0x8000 / sh s2,4(s1) / sh s5,8(s1) / sh s2,20(s1) / sh s2,16(s1) /
+  sw v0,24(s1)` vs target `move v0,s1 / addiu v1,s2,3 / sh v1,22(v0) /
+  li v1,0x8000 / sh s2,4(v0) / sh s5,8(v0) / sh s2,20(v0) / sh s2,16(v0) /
+  sw v1,24(v0)`. Delta = exactly the base copy + the renames it forces.
+- verdict: CONFIRMED. Chassis banked at
+  rejected/chassis-armsplit-si-temp-tail-matches-except-basecopy.c.
+- NOTE: s2 measured this same SI temp on the score-10 HEAD chassis, saw
+  107->106, and filed it "wrong direction". That mis-scoping is what sent
+  s3/s4/s5 down the coin-flip/permuter path.
+
+## [s6] `s16 *p = s1;` tail alias materialises the base copy on the NEW chassis — KILLED
+- mechanism: hoped the different tail cse state (no shared (HI)a0 pseudo) would
+  let a single-set pointer copy survive copy-prop.
+- probe: arm-split + SI temp + whole tail rewritten through `s16 *p = s1;`.
+- result: score 11, build_insns 107 — byte-identical to the chassis without the
+  alias. cse copy-propagates the single-set copy regardless of tail shape.
+- verdict: KILLED. rejected/tail-p-alias-on-armsplit-si-chassis.c.
+
+## [s6] The else-arm rotation is a sched1 `potential_hazard` tie the C cannot win by SPELLING — CONFIRMED (foreclosure)
+- statement: our `addiu s3,s2,3` is placed 3 slots early because
+  `schedule_select` overrides rank_for_schedule's (already correct) ordering.
+- mechanism: sched.c:2661-2727 picks, within an equal-INSN_PRIORITY group, the
+  insn with the largest `potential_hazard` (sched.c:1327-1364:
+  `ncost = minb*0x40 + maxb; ncost *= (unit_n_insns[unit]-1)*0x1000 + unit`).
+  The two `sh` are on function unit "memory" (mips.md:161) with bmin=1 bmax=3
+  and unit_n_insns[memory]=2 -> cost 0x43*0x1000; the addiu has insn_unit=-1
+  -> cost 0. An arith insn can never win that tie.
+- probe: `pwsh tools/grinder/dump.ps1` (.sched) + instrumented
+  `BB2_SCHED_DEBUG=1 tools/gcc-2.7.2/cc1` on the arm-split chassis.
+- result: block 2, n_insns=15, `units n0=2`; insn 75 (the addiu) has ZERO
+  LOG_LINKS, unit=-1, pri=1; ready list sorted pos0=75 (target's answer) then
+  `SELBEST clock=1 insn=72 pos=1` overrides it. Block 2 contains ZERO loads,
+  and so does target's else arm — so escape E1 (priority>=2 via a load-fed
+  dependence, insn_cost 2 on r3000) has no material to work with in either
+  build. Escape E3 is impossible (backward scheduler; both stores have ref=0).
+- verdict: CONFIRMED as a foreclosure for statement-level spelling/ordering
+  (which is exactly why s4's exhaustive directed line-swap sweep plateaued).
+  The one surviving escape is E2: the recompute and the two stores must be in
+  DIFFERENT basic blocks when sched runs, so that the recompute's block has
+  unit_n_insns[memory] <= 1.
+
+## [s6] The score-10 HEAD body is the right chassis to grade progress on, and the residual contains a genuine PRE-RA (missing-instruction) gap that no RA/sched perturbation can reach.
+- mechanism: s5 concluded a reachability/RA-class wall from measurements taken on the score-10 body, which is 107 insns vs target's 108.
+- probe: Applied the arm-split chassis (build_insns 108) and ran tools/ra_solver/goal_from_tgt.py classify text1a_c func_80045878 (object-level path, required because the function is INCLUDE_ASM-routed) — the owner-directed solver step, never run before.
+- result: ours 108 / target 108, register-blanked multisets IDENTICAL; FIRST DIVERGENCE: RA ($v0->$v1 x1, $s1->$v0 x1); align = 98 equal, 9 replace, 0 delete, 0 insert, 1 moved. There is no missing-instruction gap on this chassis; the whole residual is 9 replaced + 1 moved insn in two disjoint regions (else-arm rotation, tail store block).
+- verdict: KILLED
+
+## [s6] The ~9-diff tail ('Gap B') is an irreducible local_alloc coin-flip requiring a base copy that C cannot produce.
+- mechanism: s2/s3 attributed the tail to a local_alloc live-range split of the 2-pred join .L800459DC after cse materialised a shared (HI)a0 pseudo.
+- probe: Re-ran s2's SI-temp probe ({ s32 t = a0 + 3; s1[11] = t; }) on the ARM-SPLIT chassis (s2 had only measured it on the score-10 HEAD chassis) and disassembled the tail with engine.score.normalized_insns.
+- result: score 11, build_insns 107; the tail becomes addiu v0,s2,3 / sh v0,22(s1) / li v0,0x8000 / sh s2,4(s1) / sh s5,8(s1) / sh s2,20(s1) / sh s2,16(s1) / sw v0,24(s1) — a0 is now stored DIRECTLY from s2 three times exactly as target does, and the ONLY remaining tail difference is target's single leading base copy `addu v0,s1,zero` plus the renames it forces. The ~9-diff block is now one instruction.
+- verdict: CONFIRMED
+
+## [s6] A C-level pointer alias over the tail materialises the base copy once the shared (HI)a0 pseudo is gone (i.e. the WIP/s2 kill was chassis-specific).
+- mechanism: Different cse state in the tail was hoped to let a single-set `s16 *p = s1;` survive copy-propagation.
+- probe: arm-split + SI temp + whole tail rewritten through `s16 *p = s1;`; sandbox --disable all.
+- result: score 11, build_insns 107 — byte-identical to the same chassis without the alias. cse copy-propagates the single-set copy regardless of the surrounding tail shape.
+- verdict: KILLED
+
+## [s6] The else-arm 4-insn rotation ('Gap A' residual) is reachable by some C statement ordering/spelling that lowers the recompute's scheduling priority.
+- mechanism: s3 GUESSED 'the recompute feeds the next call arg so it has genuinely higher launch priority'. Checked against the dumps this session instead of guessed.
+- probe: pwsh tools/grinder/dump.ps1 (.sched) plus an instrumented BB2_SCHED_DEBUG=1 tools/gcc-2.7.2/cc1 run on the arm-split chassis; then read sched.c schedule_select / potential_hazard / priority and mips.md's define_function_unit entries.
+- result: Block 2 (the else arm), n_insns=15, units n0=2. The recompute (insn 75) has ZERO LOG_LINKS, insn_unit=-1, INSN_PRIORITY=1; the two `sh` are unit 0 with bmin=1 bmax=3 and INSN_PRIORITY=1. rank_for_schedule ALREADY sorts the recompute to pos 0 (= target's answer); schedule_select (sched.c:2661-2727) then overrides it because potential_hazard (sched.c:1327-1364) gives the stores 0x43*((2-1)*0x1000+0) = 274432 and gives an insn with no function unit 0. SELBEST clock=1 insn=72 pos=1. An arith insn can therefore never win a same-priority block-end tie against a store — which is exactly why s4's exhaustive directed line-swap sweep plateaued. Escape E1 (INSN_PRIORITY >= 2 via a predecessor with insn_cost 2, i.e. a load) has no material: block 2 contains zero loads and so does target's else arm (0x800458BC-0x800458F8). Escape E3 is impossible (backward scheduler; both stores have ref=0).
+- verdict: KILLED
