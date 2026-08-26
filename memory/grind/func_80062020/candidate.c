@@ -41,7 +41,7 @@
  * form (clean floor-4 pure C, 0 rules) and stays on main.
  *
  * s5 (synthesis): PASS ATTRIBUTION CORRECTED. The `.rtl` post-expand dump shows
- * `p[0]` is already `(set (mem (reg 76)) 0)` AT EXPAND (insn 112) — the col-a
+ * `p[0]` is already `(set (mem (reg 76)) 0)` AT EXPAND (insn 112) ï¿½ the col-a
  * "fold" is an RTL-expansion / MIPS legitimize_address decision keyed on the C
  * TREE SHAPE, not a CSE decision. There is no fold to defeat, so every
  * CSE-defeat-style lever is a category error here. New expand-time law
@@ -52,9 +52,33 @@
  * base. Target mixes both on one element; no uniform tree shape can. Aggregate/
  * tree-shape axis KILLED; solver axis measured inapplicable (residual is PRE-RA:
  * 35 insns vs 38). A struct-row declaration IS byte-free in the pointer idiom
- * (score 4, identical to this form) — so the object model is not the obstacle.
+ * (score 4, identical to this form) ï¿½ so the object model is not the obstacle.
  * Frontier reset to FORENSICS: recover the original object model from sibling
  * byte evidence (the func_800651F0 ruling's standard), then re-classify.
+ *
+ * s6 (synthesis): FRONTIER F1 EXECUTED AND RESOLVED. The table has exactly one
+ * consumer (func_800620B8); it addresses all three columns identically
+ * (per-column symbol + byte-index, LO_SUM), reading all three columns of one row
+ * back to back with the index register live and never forming a shared row base.
+ * No flag/data object split exists â€” and the consumer's arithmetic refutes one
+ * (col a packs x*2 | flag: bit 0 is the terminator flag, the rest is the X
+ * coordinate). Whole-function 2D-array model KILLED (score 24 / 30 insns): the
+ * target bumps the count MID-loop and the byte offset in the loop-end delay slot,
+ * i.e. two independent bivs, so the loop source carries an explicit byte offset â€”
+ * this form. TWO-SHAPE THEOREM established: MIPS legitimize_address accepts
+ * (symbol_ref + reg) as an address (LO_SUM, symbol never entering a register) but
+ * not (symbol_ref + reg + const), which it folds into the symbol and force_regs;
+ * so target's mix of LO_SUM (col a) and shared base+disp (cols b,c) on ONE row
+ * address requires that address to be written in TWO tree shapes. The search for
+ * a uniform legitimate spelling is closed by derivation, not exhaustion. Finally,
+ * s4's "no SOTN precedent" gate assertion is measured FALSE: 34 SOTN-master PSX
+ * instances spell the same lvalue both via a local pointer alias and directly in
+ * one function (hand-verified: src/st/cen/e_chamber.c EntityPlatform, alias at
+ * :72, tilemap->height at :201, g_Tilemap.height at :240). The contested
+ * alias+direct epilogue measures score 0 / 38 insns / 0 rules on this chassis but
+ * is NOT proposed here â€” it sits in the rejected bank and its disposition is a
+ * ruling question (see hypotheses.md s6 frontier item 1). THIS form remains the
+ * best UNCONTESTED body: clean pure C, floor 4.
  */
 
 void func_80062020(s32 *arg0) {

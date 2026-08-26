@@ -314,3 +314,122 @@ right for the wrong reason, and the correct generalization is stronger:
 - probe: struct S3 { s32 a,b,c; } used in the POINTER idiom with the explicit split-init index: ofs = i+i; ofs += i; ofs <<= 2; q = (struct S3 *)((u8 *)&D_800F1198 + ofs); q->c = 0; q->b = 0; q->a = 0; then sandbox --disable all.
 - result: score 4, build_insns 35 - exactly ties the byte-offset candidate. The +6/+7 penalty of the earlier struct shapes is caused entirely by the rows[i] array-ref index materialization order (la(sym) hoisted ahead of the index), not by the struct type. An aggregate object model is byte-free here.
 - verdict: CONFIRMED
+
+## s6 findings (synthesis) — F1 resolved, 2D whole-function model killed, precedent gate overturned; floor flat at 4
+
+- **H-F1-object-model [KILLED].** "Sibling asm sites reveal an original object
+  model in which the flag column is addressed through a different idiom than the
+  data columns." Probe: full symbol sweep of asm/funcs/, src/, include/ for
+  D_800F1198/119C/11A0; six consumer sites classified by addressing form
+  (tmp/grind/func_80062020/s6/forensics_sweep.md). Result: the table's only
+  consumer, func_800620B8, addresses all three columns identically — per-column
+  symbol + byte-index (LO_SUM) — and at 800623A4..80062418 reads all three
+  columns of ONE row back to back with the same index register live, emitting
+  three independent LO_SUM addresses and never forming a shared row base. No
+  divergent idiom exists. Additionally the consumer's arithmetic REFUTES a split:
+  col a is `sra`'d by 1 into a vector's X component while its bit 0 is the list
+  terminator flag, i.e. col a packs `x*2 | flag` — flag and coordinate are the
+  same word. Verdict: KILLED, and this is the branch the s5 frontier itself
+  pre-registered as "a uniform result closes this line honestly".
+
+- **H-F2-adopt-recovered-aggregate [MOOT].** F1 recovered no aggregate to adopt,
+  so the s5 finding that a struct-row declaration is byte-free (score 4,
+  identical to the candidate) has nothing to attach to. It stays banked as a
+  fact; it is not a live lever.
+
+- **H-2D-wholefunction [KILLED, new measurement].** "The loop's three per-column
+  LO_SUM stores come from a single 2D array `s32 tbl[N][3]`, and putting the
+  WHOLE function (not just the epilogue, as s5 did) in that shape changes the
+  epilogue's landscape." Probe: `s32 (*tbl)[3] = (s32 (*)[3])&D_800F1198;` with
+  `tbl[i][0..2]` in the loop and `tbl[i][2..0]` in the epilogue; sandbox.
+  Result: **score 24, build_insns 30** (vs floor 4 / 35). Mechanism, read
+  straight off target: `addiu $a1,$a1,1` (count) fires MID-loop at 8006204C
+  while `addiu $v1,$v1,0xC` (byte offset) fires in the loop-end delay slot at
+  80062080 — two INDEPENDENT induction variables bumped at different points. A
+  giv derived from `i` would be bumped where `i` is bumped, so the loop's source
+  provably carries an explicit byte-offset variable alongside the count. The
+  candidate's three-distinct-expression loop is therefore the source shape, and
+  it agrees with the consumer's idiom. Verdict: KILLED. Banked:
+  rejected/epilogue-2d-wholefunction-loop-biv-broken.c.
+
+- **H-two-shape-theorem [CONFIRMED — closes the uniform-spelling search space by
+  derivation].** "Target's epilogue cannot be produced by ANY single C tree
+  shape, for a reason that follows from MIPS `legitimize_address` rather than
+  from enumeration." Mechanism: at RTL expansion,
+  `(plus (symbol_ref S) (reg X))` with no constant IS a legal MIPS address, so
+  expand emits `sw $0,S($X)` directly and the symbol never enters a general
+  register — that is target's col-a store, the whole loop, and all six consumer
+  sites. `(plus (symbol_ref S) (reg X) (const K))` with K != 0 is NOT legal, so
+  GCC folds K into the symbol (`la(S+K)`) and force_regs that — which is exactly
+  why s5 measured the 2D shape emitting a separate `la(sym+4K)` per column with
+  no shared base. A shared `base+disp` (target's `8(v0)`/`4(v0)`) therefore
+  requires the row address to exist as a POINTER VALUE before the constant is
+  applied. Target applies both treatments to the same row address; the treatment
+  is chosen by tree shape and is uniform across a shape's accesses; therefore the
+  original C wrote that address in two different expression shapes. Verdict:
+  CONFIRMED. Consequence: hunting for a uniform legitimate spelling is now
+  provably futile, not merely unproductive across s1-s5. Any future session that
+  proposes one is re-deriving a closed question.
+
+- **H-sotn-precedent-empty [KILLED — s4's gate assertion is false].** s4's
+  escalation asserts "no SOTN/VS/ESA/oot/MGS precedent for a same-lvalue
+  respelling"; it was never scanned. Probe: two scripted scans of the
+  sotn-decomp master clone (HEAD db41b28eee52969244a52cc269c8163d1ed8826a),
+  PSX sources only. Result: 830 functions carry a local pointer alias to a
+  global alongside direct access to that same global; **34 instances hit the
+  narrow same-lvalue gate** (`p = &GLOBAL[idx];` with both `p->member` and
+  `GLOBAL[idx].member` in one function). Hand-verified exemplar with function
+  boundaries confirmed: SOTN `src/st/cen/e_chamber.c` `EntityPlatform`
+  (lines 70-571) — `Tilemap* tilemap = &g_Tilemap;` at :72, `tilemap->height`
+  at :201/:335/:382/:489/:547, `g_Tilemap.height` read DIRECTLY at :240.
+  Verdict: KILLED. The endgame-lock AND-gate 2 ("in-hand SOTN-master precedent
+  you can CITE") is no longer a failed gate for the alias family; it is a live
+  citation.
+
+## Open frontier (reset for the next ladder pass)
+
+The floor-4 -> 0 gap is now a single, fully characterised classification
+question, not a search. Everything below is downstream of the ruling.
+
+1. **[RULING] Is the row-alias-plus-direct-flag-store epilogue an instance of
+   the sanctioned pointer-alias family, or the banked same-lvalue dual-spelling
+   cheat?** Both readings are defensible and this session did not self-approve
+   either. FOR: `.claude/rules/pointer-alias-fake-exception.md` scopes exactly
+   "a local pointer that provides a second C handle to a global — where using
+   the global directly would be semantically identical — is a sanctioned
+   last-resort matching lever"; the coexistence of alias and direct access to
+   the same lvalue in one function is shipped SOTN-master PSX idiom (34 hits,
+   e_chamber.c:72/:201/:240 hand-verified); prereqs 1 and 2 are already
+   satisfied by this ledger and the two-shape theorem; the form measures score 0
+   / 38 insns / 0 rules / 0 pins / 0 dead vars on the current chassis.
+   AGAINST: in every SOTN hit the mix is incidental programmer habit, whereas
+   here it is load-bearing (swap either spelling and bytes move); and every SOTN
+   hit aliases the whole object with the direct access hitting an incidental
+   member, whereas here the alias's own target (offset 0) is precisely the
+   element deliberately NOT reached through it — an inverted shape with no
+   exemplar among the 34. Next probe: this is not a probe, it is a ruling.
+   Exhibit: tmp/grind/func_80062020/s6/v_alias_plus_direct.c; packet material:
+   tmp/grind/func_80062020/s6/sotn_precedent_scan.md.
+
+2. **[IF THE RULING IS YES] Land the form with full family conformance.** The
+   diff is: rename the local to something non-intent-announcing (`row`), attach
+   the mandatory `/* FAKE: second C handle to the terminator row; mechanism:
+   RTL expansion / MIPS legitimize_address selects LO_SUM for
+   (symbol_ref + reg) and force_reg+disp for (symbol_ref + reg + const);
+   lever-exhaustion: memory/grind/func_80062020/hypotheses.md s1-s6 */` at the
+   alias declaration per prereq 3, write the self-vet claiming FAMILY
+   pointer-alias with the rule's scope sentence and the e_chamber.c precedent,
+   and submit candidate-ready. Expected: score 0, build_insns 38.
+
+3. **[IF THE RULING IS NO] The function is a fidelity-limited endgame lock and
+   the escalation packet must be REWRITTEN, not re-filed.** s4's packet is now
+   partly false (its precedent gate assertion is overturned) and must not be
+   cited as-is. The honest replacement packet is a routing question: the target's
+   original C provably used two address-expression shapes for one row (the
+   two-shape theorem), so a byte-exact pure-C reconstruction is only reachable
+   by reproducing that non-uniformity; if BB2 policy forbids reproducing it, the
+   decidable question is whether func_80062020 routes to a fidelity-accepted
+   INCOMPLETE floor-4 or elsewhere. Note the canonical-asm gate remains a hard
+   FAIL independently (scan_hand_coded LOW 0/8, re-verified s2 and s4), so
+   canonical asm is not an available answer. Next probe: none — file only in
+   `escalation` modality, and only after the ruling in item 1.

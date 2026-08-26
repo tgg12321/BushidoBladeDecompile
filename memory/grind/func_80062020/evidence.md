@@ -291,3 +291,120 @@ Cheat reference (diff only): `git show dfb9e9ac` on branch work/orch3a.
 - [s5] Solver modality measured INAPPLICABLE, not merely unpromising: inverse_compose classify is not wired for this function and returns a false IDENTICAL; and the honest-vs-target insn multiset differs in size (35 vs 38), which is PRE-RA by the classifier's own taxonomy. The owner's 2026-08-24 solver recommendation is discharged with measurements.
 
 - [s5] The one gate this function has NEVER tested is the one the func_800651F0 owner ruling (docs/grind/decisions.md 2026-07-27 23:04) credited: independent BYTE evidence, recovered from sibling target asm, that the original source genuinely had the contested shape. s4's escalation failed the in-hand-precedent gate without ever attempting that forensics sweep.
+
+## s6 findings (synthesis modality) — F1 forensics EXECUTED and RESOLVED; the "no SOTN precedent" gate assertion measured FALSE; floor flat at 4
+
+- [s6] CHASSIS RE-MEASURE (first act of the session, before any probe):
+  candidate.c re-applied to src/text1b.c measures `sandbox --disable all`
+  = **score 4**, build_insns 35, target_insns 38, rules_dropped 0,
+  cheat_asm_stripped 173. The floor is UNCHANGED from s5. Every banked spelling
+  conclusion remains chassis-valid. src/text1b.c was left in exactly this state
+  at end of session.
+
+- [s6] **FRONTIER F1 (forensics sweep) EXECUTED — RESOLVED, and it lands on the
+  branch the frontier itself pre-registered as "closes this line honestly".**
+  Full artifact: tmp/grind/func_80062020/s6/forensics_sweep.md. The table has
+  exactly ONE consumer in the whole program, `func_800620B8` (still INCLUDE_ASM,
+  the immediately following function in text). Six sites classified. The block at
+  800623A4..80062418 reads ALL THREE columns of the SAME row back to back with
+  the same index register `$a2` live, and emits THREE INDEPENDENT symbol-relative
+  (LO_SUM) addresses — `lui at,%hi(col); addu at,at,a2; lw %lo(col)(at)` — never
+  forming a shared row base even with three same-row uses in six instructions.
+  So the flag column is addressed EXACTLY like the two data columns: **no
+  divergent idiom, no object-model evidence for a flag/data split.**
+
+- [s6] **The consumer's ARITHMETIC affirmatively CONTRADICTS an object split.**
+  At 800623A4 col a is read, sign-corrected and `sra`'d by 1, a world origin is
+  subtracted, and the result is stored as the X component of a vector; col b is
+  `sra`'d by 3 (Y); col c is used unshifted (Z). The loop terminator flag is
+  BIT 0 of col a. So col a packs `x*2 | flag` — the flag and the X coordinate
+  are the SAME WORD. Any model that treats "the flag" as an object separate from
+  "the data" is not merely unevidenced, it is refuted by the consumer.
+
+- [s6] **F1's positive by-product: the table's whole-program addressing idiom is
+  per-column symbol + byte-index (LO_SUM), never a shared base.** That is the
+  idiom func_80062020's own LOOP uses (matches target 100%) and the idiom its
+  epilogue uses for col a. It is NOT the idiom the epilogue uses for cols b,c
+  (`la(D_800F1198)` -> v0, `addu v0,v1,v0`, then disp 8 and 4). The epilogue's
+  b,c stores therefore cannot arise from the table's native idiom.
+
+- [s6] **TWO-SHAPE THEOREM (s5's expand law, sharpened into a derivation).**
+  GCC 2.7.2 / MIPS `legitimize_address` at RTL expansion:
+    * `(plus (symbol_ref S) (reg X))` with NO constant IS a legal MIPS address
+      (`sw $0,S($X)`, ASPSX-expanded to lui/addu/sw %lo). Expand emits it
+      directly; the symbol never enters a general register. = target's col-a
+      store, the entire loop, and all six consumer sites.
+    * `(plus (symbol_ref S) (reg X) (const K))`, K != 0, is NOT a legal address.
+      GCC folds K into the symbol (`la(S+K)`) and force_regs THAT — which is
+      exactly why s5 measured the 2D-array shape emitting a separate
+      `la(sym+4K)` per column and never sharing a base.
+    * `base+disp` off a SHARED register (target's `8(v0)`/`4(v0)`) therefore
+      requires the row address `&D_800F1198 + ofs` to exist as a POINTER VALUE
+      in the tree before the constant 4/8 is applied.
+  Target's epilogue applies BOTH treatments to the SAME row address. The
+  treatment is selected by tree shape and is uniform across a shape's accesses,
+  so the original C wrote that one address in TWO different expression shapes.
+  This is a derivation, not an enumeration: it explains every s1-s5 measurement
+  and predicts unmeasured shapes. The "find a uniform spelling" search space is
+  now closed by proof, not by exhaustion.
+
+- [s6] **WHOLE-FUNCTION 2D-ARRAY OBJECT MODEL KILLED (new measurement).**
+  `s32 (*tbl)[3] = (s32 (*)[3])&D_800F1198;` with the LOOP also in that shape
+  (`tbl[i][0..2]`, the count `i` bumped mid-loop via an `i-1` re-index) measures
+  **score 24, build_insns 30** — far worse than the floor. s5 had only ever
+  measured the 2D shape in the epilogue over a three-symbol loop. Root cause is
+  visible in target: `addiu $a1,$a1,1` (count) fires MID-loop at 8006204C while
+  `addiu $v1,$v1,0xC` (byte offset) fires in the loop-end delay slot at
+  80062080 — two INDEPENDENT induction variables updated at different points.
+  A giv derived from `i` would be bumped where `i` is bumped. So the loop's
+  source provably carries an explicit byte-offset variable alongside the count,
+  i.e. three distinct per-column lvalue expressions — the candidate's exact form,
+  and the consumer's idiom. Banked:
+  rejected/epilogue-2d-wholefunction-loop-biv-broken.c.
+
+- [s6] **s4's "no SOTN precedent" GATE ASSERTION IS MEASURED FALSE.** s4's
+  escalation (docs/grind/decisions.md 2026-07-24) rests on "no SOTN/VS/ESA/oot/
+  MGS precedent for a same-lvalue respelling". That was asserted, never scanned.
+  Scanned this session against the sotn-decomp master clone
+  (HEAD db41b28eee52969244a52cc269c8163d1ed8826a), PSX sources only
+  (main_psp/dra_psp/saturn/pc excluded — different compilers):
+    * **830 functions** declare a local pointer alias `p = &GLOBAL;`, dereference
+      `p`, AND access `GLOBAL` directly in the same body (pervasive idiom).
+    * **34 instances** hit the NARROW gate: `p = &GLOBAL[idx];` with BOTH
+      `p->member` AND `GLOBAL[idx].member` — the SAME lvalue, two spellings,
+      one function.
+  Hand-verified exemplar (function boundaries confirmed): SOTN
+  `src/st/cen/e_chamber.c` `EntityPlatform` (lines 70-571) declares
+  `Tilemap* tilemap = &g_Tilemap;` at :72, writes `tilemap->height` at
+  :201/:335/:382/:489/:547, and reads `g_Tilemap.height` DIRECTLY at :240
+  (plus `g_Tilemap.y = 0` at :434). Scripts + full hit lists:
+  tmp/grind/func_80062020/s6/sotn_scan_*.py,
+  sotn_same_member_dual_hits.txt, sotn_alias_plus_direct_hits.txt,
+  sotn_precedent_scan.md.
+
+- [s6] The BB2 sanctioned family `.claude/rules/pointer-alias-fake-exception.md`
+  covers the alias half of that shape VERBATIM: "a local pointer that provides a
+  second C handle to a global — where using the global directly would be
+  semantically identical — is a sanctioned last-resort matching lever under the
+  prerequisites below." Prereqs 1 (documented lever-exhaustion) and 2 (named
+  GCC-pass interaction) are satisfied by this ledger and by the two-shape
+  theorem; prereq 3 (FAKE annotation) is a one-line addition; prereq 4 is the
+  reviewer chain. The two honest gaps that a ruling must close are recorded
+  in the s6 hypotheses entry — this session did NOT self-approve them.
+
+- [s6] **CONTESTED FORM RE-MEASURED ON THE CURRENT CHASSIS (exhibit only).**
+  `v_alias_plus_direct.c` — `row = (s32 *)((u8 *)&D_800F1198 + ofs); row[2]=0;
+  row[1]=0; *(s32 *)((u8 *)&D_800F1198 + ofs) = 0;` — measures
+  **score 0, target_insns 38, build_insns 38, rules_dropped 0** with the s2
+  `ofs`-reuse register lever in place. Zero rules, zero pins, zero dead vars,
+  zero asm. src/text1b.c was restored to the clean floor-4 candidate immediately
+  afterwards and re-measured at score 4 / build 35. The contested form was NOT
+  saved as candidate.c and is NOT in src: the shape sits in this function's
+  rejected bank, and the s5 frontier pre-registered "ruling-request, not
+  submission" as its correct disposition. Exhibit lives at
+  tmp/grind/func_80062020/s6/v_alias_plus_direct.c.
+
+- [s6] Floor flat at 4 this session. Two axes KILLED with measurements
+  (F1 object-model forensics; whole-function 2D-array model), one search space
+  closed by derivation (the two-shape theorem), one gate assertion overturned
+  (SOTN precedent). Outcome: ruling-request.
