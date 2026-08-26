@@ -1,4 +1,4 @@
-/* REJECTED — s12: `const s32 *tbl_125c` = 9/91. THE FOURTH ATTRACTOR and the only NEW
+/* REJECTED â€” s12: `const s32 *tbl_125c` = 9/91. THE FOURTH ATTRACTOR and the only NEW
 positional signature found since session 4: RTX_UNCHANGING_P on arg4's
 statement-emitted load moves the outgoing-arg `sw 16(sp)` BEFORE `lw a3`
 (target's relation, which no prior form had). It costs 2 because the two

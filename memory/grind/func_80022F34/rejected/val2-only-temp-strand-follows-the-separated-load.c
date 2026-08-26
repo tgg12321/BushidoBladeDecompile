@@ -1,6 +1,6 @@
-/* REJECTED (grind s7, 2026-08-26) — name val2 ONLY (leave the first load inline).
+/* REJECTED (grind s7, 2026-08-26) â€” name val2 ONLY (leave the first load inline).
  * WHY DEAD: vars=8, per-access x2, strand=1. Tests whether the strand is a
- * property of val1 specifically (s2/s6 framed it that way). It is not — the
+ * property of val1 specifically (s2/s6 framed it that way). It is not â€” the
  * strand follows whichever D_801027BC load is lifted into its own statement.
  * Together with vO2 (val1 named but defined AFTER the a0 reload: still strands)
  * this retires the "val1 placement / val1 lifetime" framing entirely: the

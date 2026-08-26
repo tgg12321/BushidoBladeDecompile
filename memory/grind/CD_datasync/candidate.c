@@ -355,7 +355,7 @@
  * ===========================================================================
  */
 /* ===========================================================================
- * SESSION 18 (2026-08-25) — CHASSIS RE-MEASURED ON THE MIGRATED/RENAMED TU
+ * SESSION 18 (2026-08-25) â€” CHASSIS RE-MEASURED ON THE MIGRATED/RENAMED TU
  * ===========================================================================
  * src/system.c has been renamed since this file was written: saEft01Init ->
  * CD_datasync, sys_VSync -> VSync, tslTm2LoadImage_2 -> puts, debug_printf ->

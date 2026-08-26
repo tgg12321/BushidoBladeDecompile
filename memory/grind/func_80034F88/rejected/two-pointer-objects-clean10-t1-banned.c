@@ -4,7 +4,7 @@
  * D_80106A73 is banned for this function.  Superseded by candidate.c (r8).
  */
 /*
- * s15 BEST UNAMBIGUOUSLY NON-BANNED FORM — honest sandbox score 10 at 49/49 insns
+ * s15 BEST UNAMBIGUOUSLY NON-BANNED FORM â€” honest sandbox score 10 at 49/49 insns
  * (lbu 175 / sb 164 / lui 456).  TWO function-scope pointer objects (`q` for the
  * mask + bit-1 segment, `q2` re-assigned for the bit-2 and bit-4 blocks) plus the
  * declaration-order lever: the six value locals are declared BEFORE the pointers,
@@ -13,7 +13,7 @@
  * when the pointer allocno and the byte allocnos tie at pri 7500.  Worth 11
  * points: the same body with the pointers declared first (s15/variants/t2.c) is
  * the 21 that s14 banked as r19.
- * This ties s14's one-pointer floor of 10 and has the identical residual — the
+ * This ties s14's one-pointer floor of 10 and has the identical residual â€” the
  * mask + bit-1 segment's base/byte pair is swapped against target (build base $a0
  * byte $v1, target base $v1 byte $a0) and the bit-1 reload is missing.  It is the
  * form the floor of 10 is recorded against.

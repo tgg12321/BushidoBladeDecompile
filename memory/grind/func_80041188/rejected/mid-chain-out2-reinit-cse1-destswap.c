@@ -1,4 +1,4 @@
-/* REJECTED s6 (forensics, 2026-08-23) — sandbox 15, IDENTICAL allocation to the
+/* REJECTED s6 (forensics, 2026-08-23) â€” sandbox 15, IDENTICAL allocation to the
  * plain pa4-read chassis (out2 3 refs / live 42 / pri 714).
  *
  * Form: MID does `out2 = (s32 *)((u8 *)pa4 + 0x20); stptr = (s32) out2;`
@@ -12,7 +12,7 @@
  *   .flow  insn170 GONE, out2 uses 3
  * cse.c's cse_insn rewrites the DESTINATION of the producing insn to the copy's
  * destination when the original dest dies in the copy, turning the chain into
- * `stptr = pa4+0x20; out2 = stptr;` — and out2 is then dead, so flow.c's
+ * `stptr = pa4+0x20; out2 = stptr;` â€” and out2 is then dead, so flow.c's
  * life-analysis dead-store elimination deletes the copy BEFORE reg_n_refs is
  * counted.  The lift is therefore uncounted, not just byte-free.
  * (Same mechanism family as split-staged-reinit-cse-destswap.c, now with the

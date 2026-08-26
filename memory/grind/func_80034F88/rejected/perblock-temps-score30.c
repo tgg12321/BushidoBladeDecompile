@@ -1,4 +1,4 @@
-/* REJECTED — per-block temporaries (va/vb/vc, ra/rb/rc, ca/cb/cc) instead of
+/* REJECTED â€” per-block temporaries (va/vb/vc, ra/rb/rc, ca/cb/cc) instead of
  * three reused locals.  Honest sandbox 30 at 50 insns vs the floor-18 form's
  * 18 at 51.  This was the FIRST item on s3's "untried" list for frontier F1
  * (split the three blocks' temporaries into per-block locals); it is now

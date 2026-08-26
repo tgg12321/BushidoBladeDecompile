@@ -7,7 +7,7 @@
  * site. Everything else in the sentence still holds.
  *
  * ORDINARY C. No register pin, no inline asm, no volatile, no dead code, no
- * unused local, NO /* FAKE *Ã¢â‚¬â€¹/ construct, no variable reuse, no do-while(0)
+ * unused local, NO /* FAKE */ construct, no variable reuse, no do-while(0)
  * wrap. Every local is once-declared, written where a human would write it,
  * and read for its real value. This REPLACES the s3/s5/s6 "merged stptr"
  * chassis (loop2's pointer reusing the dead loop1 walker via an out2 read),

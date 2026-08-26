@@ -1,7 +1,7 @@
-/* func_80045878 — REJECTED (s6). Tail pointer alias `s16 *p = s1;` re-measured
+/* func_80045878 â€” REJECTED (s6). Tail pointer alias `s16 *p = s1;` re-measured
  * on the NEW s6 armsplit+SItemp chassis (not the score-10 HEAD chassis where
  * WIP/s2 first killed it).  Result: sandbox --disable all = 11, build_insns
- * 107 — IDENTICAL to the chassis without the alias.  cse copy-propagates the
+ * 107 â€” IDENTICAL to the chassis without the alias.  cse copy-propagates the
  * single-set `p = s1` regardless of the surrounding tail shape, so no
  * `addu v0,s1,zero` base copy materialises.  The base copy is NOT reachable
  * by a C-level pointer copy on any chassis measured to date.

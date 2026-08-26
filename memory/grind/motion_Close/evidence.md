@@ -837,15 +837,15 @@ anywhere in the function.
 
 - [s8] Floor re-measured this session at 13 with candidate.c applied to src/ings2.c: score 13, target_insns 26, build_insns 25, rules_dropped 9, cheat_asm_stripped 10. The floor did not move; no lower form was found.
 
-- [s8] The TU-level axis (frontier F10) is CODEGEN-INERT for motion_Close. Nine whole-region variants of src/ings2.c (tmp/grind/motion_Close/s8/tusweep.py) replaced BOTH motion_Close and its sibling func_80083794 per variant. Rewriting both functions as one parameterised `static __inline__ ctor_walk(void)` body (v3_shared_inline_both) scores 13; defining motion_Close BEFORE its sibling in the TU (v7_order_swap) scores 13; the control scores 13. They are not merely score-equal � the instrumented cc1 reports the SAME allocno table in all three (p 10 refs / live_length 8 / pri 37500 -> $s0; count 8 refs / 7 / 34285 -> $s1) and the emitted instruction streams are identical.
+- [s8] The TU-level axis (frontier F10) is CODEGEN-INERT for motion_Close. Nine whole-region variants of src/ings2.c (tmp/grind/motion_Close/s8/tusweep.py) replaced BOTH motion_Close and its sibling func_80083794 per variant. Rewriting both functions as one parameterised `static __inline__ ctor_walk(void)` body (v3_shared_inline_both) scores 13; defining motion_Close BEFORE its sibling in the TU (v7_order_swap) scores 13; the control scores 13. They are not merely score-equal — the instrumented cc1 reports the SAME allocno table in all three (p 10 refs / live_length 8 / pri 37500 -> $s0; count 8 refs / 7 / 34285 -> $s1) and the emitted instruction streams are identical.
 
-- [s8] GCC 2.7.2 inlines a `static __inline__` helper BEFORE flow.c counts references, so an inlined body and a written-out body are the same input to every pass that decides this function. Measured by crossing both inlined chassis with do-while(0) wrap depths 0/1/2/3 (tmp/grind/motion_Close/s8/depthsweep.py): depth 0 p 7 refs/8 = 17500 score 20; depth 1 p 8/8 = 30000 score 20; depth 2 p 9/8 = 33750 score 20; depth 3 p 10/8 = 37500 score 13 � value for value the direct-body ladder banked in s5b. F4b (reach 13 with a wrap depth below 3) is therefore NOT reachable via an inlined chassis; depth 3 stays necessary and minimal on every chassis measured.
+- [s8] GCC 2.7.2 inlines a `static __inline__` helper BEFORE flow.c counts references, so an inlined body and a written-out body are the same input to every pass that decides this function. Measured by crossing both inlined chassis with do-while(0) wrap depths 0/1/2/3 (tmp/grind/motion_Close/s8/depthsweep.py): depth 0 p 7 refs/8 = 17500 score 20; depth 1 p 8/8 = 30000 score 20; depth 2 p 9/8 = 33750 score 20; depth 3 p 10/8 = 37500 score 13 — value for value the direct-body ladder banked in s5b. F4b (reach 13 with a wrap depth below 3) is therefore NOT reachable via an inlined chassis; depth 3 stays necessary and minimal on every chassis measured.
 
-- [s8] Passing the walk's state through helper PARAMETERS is strictly worse than letting the helper own it: `static __inline__ ctor_walk(s32 count)` scores 16, `static __inline__ ctor_walk(void (**p)(void), s32 count)` scores 20. A plain non-inlined `static` helper scores 23 and leaves motion_Close at 15 instructions with `.frame $sp,24 args=16` � the call simply moves to the other function and H1's 16-byte arg area moves with it.
+- [s8] Passing the walk's state through helper PARAMETERS is strictly worse than letting the helper own it: `static __inline__ ctor_walk(s32 count)` scores 16, `static __inline__ ctor_walk(void (**p)(void), s32 count)` scores 20. A plain non-inlined `static` helper scores 23 and leaves motion_Close at 15 instructions with `.frame $sp,24 args=16` — the call simply moves to the other function and H1's 16-byte arg area moves with it.
 
-- [s8] F7a is KILLED UNCONDITIONALLY, upgrading session 6's signature-conditional disproof. Giving motion_Close real incoming parameters (tmp/grind/motion_Close/s8/paramsweep.py � an ABI lie, measured only to answer the mechanism question) produces exactly the prologue-block WAR anti-dependence s6 named as the missing ingredient, and the saves STILL come out descending: w4_param_both_used emits `sw s1,20 / move s1,a0 / sw s0,16 / move s0,a1 / beqz / sw ra,24` (score 21) and w5_param_p_used emits `sw s1,20 / move s1,a0 / sw ra,24 / beqz / sw s0,16` (score 19). The anti-dependence changes what the saves are interleaved WITH; it does not change their relative order. Parameters that are dead (w1/w2/w3) are optimised away and score 13, identical to the void(void) control.
+- [s8] F7a is KILLED UNCONDITIONALLY, upgrading session 6's signature-conditional disproof. Giving motion_Close real incoming parameters (tmp/grind/motion_Close/s8/paramsweep.py — an ABI lie, measured only to answer the mechanism question) produces exactly the prologue-block WAR anti-dependence s6 named as the missing ingredient, and the saves STILL come out descending: w4_param_both_used emits `sw s1,20 / move s1,a0 / sw s0,16 / move s0,a1 / beqz / sw ra,24` (score 21) and w5_param_p_used emits `sw s1,20 / move s1,a0 / sw ra,24 / beqz / sw s0,16` (score 19). The anti-dependence changes what the saves are interleaved WITH; it does not change their relative order. Parameters that are dead (w1/w2/w3) are optimised away and score 13, identical to the void(void) control.
 
-- [s8] The backend reason for that: `save_restore_insns` at tools/gcc-2.7.2/config/mips/mips.c:4680 is `for (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)`, with gp_offset initialised to the top of the save area (mips.c:4623) and decremented by UNITS_PER_WORD after each emitted store (mips.c:4710). The loop direction is unconditional � no target flag, no frame-pointer case and no ABI case selects the other direction, and the comment at mips.c:4609-4612 states the high-to-low order is a deliberate debugger/epilogue convention. GP saves are therefore ALWAYS emitted ra, s1, s0; only a block-local scheduling move can reorder them, and the scheduler breaks ties between two structurally symmetric stores by program order, which is that same descending order. The target's `sw $s0,4 / sw $s1,8 / sw $ra,12` is not producible from any C input to this compiler.
+- [s8] The backend reason for that: `save_restore_insns` at tools/gcc-2.7.2/config/mips/mips.c:4680 is `for (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)`, with gp_offset initialised to the top of the save area (mips.c:4623) and decremented by UNITS_PER_WORD after each emitted store (mips.c:4710). The loop direction is unconditional — no target flag, no frame-pointer case and no ABI case selects the other direction, and the comment at mips.c:4609-4612 states the high-to-low order is a deliberate debugger/epilogue convention. GP saves are therefore ALWAYS emitted ra, s1, s0; only a block-local scheduling move can reorder them, and the scheduler breaks ties between two structurally symmetric stores by program order, which is that same descending order. The target's `sw $s0,4 / sw $s1,8 / sw $ra,12` is not producible from any C input to this compiler.
 
 - [s8] Note on the F7a offsets, recorded to stop a future session mis-reading the residual table: the offset-to-register MAPPING is the SAME in target and build (ra highest, then s1, then s0). Only the ORDER of the three store instructions in the stream differs, and the offsets differ solely by the 16-byte H1 shift. F7a is an emission-order fact, not a frame-layout fact.
 
@@ -1172,3 +1172,130 @@ in the new candidate header and its trap variant in
 - [s13] H1 in particular means no member of this C family can reach distance 0 at ANY score, so candidate.c is explicitly not a candidate-ready form - it is the best honest measurement (13, 25 emitted instructions) with a single-level FAKE-annotated do { p++; } while (0) as its only policy device, and wrap depth 0 both measured (20) and derived unreachable in closed form.
 
 - [s13] Terminal entry filed at docs/grind/decisions.md:4801 titled '## 2026-08-12 - motion_Close - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'. It is a record of the standing ruling being applied, not a request: nothing is pending on the owner and the driver may park motion_Close terminally.
+
+---
+
+## SESSION 14 (2026-08-26, modality `escalation`, disposition session) — the owner's provenance-first directive, DISCHARGED
+
+**Chassis re-measured first.** The function has changed representation since the ledger was last
+written: motion_Close now has its own `asm/funcs/motion_Close.s` (split out of the fused
+`func_80083794.s` on 2026-08-24), is committed as `INCLUDE_ASM("asm/funcs", motion_Close)` in
+`src/ings2.c`, and carries **zero regfix rules, zero asmfix rules and zero cheat-asm** — the 9-rule
+stack described in the 2026-08-12 decisions entry is gone, retired with the twin's grant. On that new
+chassis, `sandbox motion_Close --disable all` with `memory/grind/motion_Close/candidate.c` applied
+prints `{"score": 13, "target_insns": 26, "build_insns": 25, "rules_dropped": 0,
+"cheat_asm_stripped": 3}`. **Floor 13 is confirmed on the current chassis**, identical to the ledger
+pin, so every chassis-relative spelling conclusion in this ledger remains valid and needs no
+re-derivation. The 3 stripped cheat-asm blocks are the OTHER `glabel` siblings in ings2.c, not
+motion_Close. `src/ings2.c` was restored to HEAD immediately after the measurement (`git diff` clean);
+`candidate.c` was NOT changed, so FR3 owes no stream re-verification.
+
+### F15 — is motion_Close itself prebuilt / different-flags object code? **CONFIRMED (new axis, new evidence)**
+
+This is the owner's packet-2 directive of 2026-08-24, which no prior session had acknowledged. It is
+now answered with a binary-wide measurement rather than an inference from adjacency.
+
+**Probe.** Census every one of the 1,435 functions in `asm/funcs/` for the defining fingerprint of the
+already-granted twin: a call-making function with an outgoing-argument area smaller than the
+`REG_PARM_STACK_SPACE` minimum of 16, detected as a `$sp`-relative callee-save/`$ra` store below
+offset 16 (GCC MIPS lays the frame out `[args][vars][saves]`, so with a 16-byte arg block no save can
+sit below `$sp+16`). Script `tmp/grind/motion_Close/s14/cfoas_census.py`; results
+`cfoas_census.json`.
+
+**Result.** 840 functions in the executable make a call and allocate a save frame. **Exactly 2 of the
+840 have a sub-16 arg area, and they are `func_80083794` and `motion_Close`** — both frame 16 with
+saves at 4/8/12. Every other call-making function in the game, including all 1,036 pure-C-matched
+ones, carries the mandatory 16-byte block. motion_Close is therefore not merely next door to the
+prebuilt object the owner granted on 2026-08-24; it is one of only two functions in the whole program
+carrying that object's fingerprint, and the other is the granted one.
+
+Supporting facts established the same session:
+* Byte-contiguity across the entire authorized crt0 block, with no gap or padding: `_start`
+  0x800836EC–0x80083790 (canonical 2026-08-06) → `func_80083794` 0x80083794–0x80083800 (canonical
+  2026-08-24) → **motion_Close 0x80083804–0x80083868**.
+* motion_Close is the ctor/dtor twin of the granted function and is byte-identical to it in the walk:
+  the encodings `0000088E 04001026 09F80001 FFFF3126 FBFF2016 00000000` appear at 0x800837D4 and again
+  at 0x8008383C, and all six epilogue words match. Both walk `D_8008D070`, both take the count from the
+  link-time absolute `D_00000000`, both gate on `D_800A2668` (the twin SETS it, motion_Close TESTS it).
+  This is one libgcc object emitting `__main`/`__do_global_ctors` and `__do_global_dtors`.
+* Region corroboration outside this ledger: `memory/closer/psyq-library-census.md:358` and
+  `memory/closer/libsnd-hunt-report.md:69` both place 0x800836C8–0x80083868 in prebuilt library/glue
+  territory, in the gap between the LIBETC and LIBSND blocks.
+
+### F16 — do the other "obviously hand-written" markers in motion_Close carry provenance weight? **KILLED (both)**
+
+Recorded so that no future session or packet re-spends them. Both were censused this session with
+`tmp/grind/motion_Close/s14/prov_census.py` + `xref2.py`.
+
+* **Unfilled conditional-branch delay slots — INERT.** motion_Close nops all three of its conditional
+  branches, which reads as hand-written. Binary-wide, **2,207 of 6,308 conditional-branch delay slots
+  (35.0%) are unfilled**, and 11 call-making functions nop *every* conditional branch they have, most of
+  them ordinary matched game C. This build simply does not fill most branch slots. No signal. (This
+  also independently corroborates session 6's F7b kill from the other direction: the nop is normal, so
+  its presence proves nothing either way.)
+* **Ascending save order, and the guard load emitted before `addiu $sp` — INERT.** 124 call-making
+  functions save `$sX`/`$ra` in ascending offset order, and **112 of them are matched pure C in our own
+  pipeline**. `DrawSync` (`src/display.c:88`) is the worked counterexample: frame 24, ascending saves at
+  0x10/0x14, `lui/lbu` of its guard emitted ahead of the `addiu $sp`, and it byte-matches the oracle.
+  Note this REFINES the ledger's F7a wording: `mips.c:4680` describes the RTL emission direction, but
+  what reaches the final stream after prologue_fix/maspsx is routinely ascending. Save ORDER is not the
+  wall and never was — the frame SIZE (H1) is.
+
+### Gate re-run for the record
+`python3 tools/scan_hand_coded.py --single motion_Close` → **tier=LOW, score 0/8**, reproducing
+sessions 6 and 13 exactly (log `tmp/grind/motion_Close/s14/scan_hand_coded_s14.log`). The scanner's
+eight signals all test instruction idioms; none tests frame layout or outgoing-argument-area size —
+which is precisely the property the owner's 2026-08-24 grant to the twin rested on ("the grant rests on
+the non-existence proof, not scanner tier", borderline.md 2026-08-24). The twin also scored LOW 0/8.
+
+### Disposition
+Packet filed at `docs/grind/decisions.md` 2026-08-26 (line 13618), titled
+`## 2026-08-26 — motion_Close (0x80083804, src/ings2.c) — **OWNER-ESCALATION — ESCALATED WITH DECISION
+PACKET**`. Its single decidable question is whether the 2026-08-24 prebuilt-object canonical routing
+granted to `func_80083794` extends to `motion_Close`. It is a routing/provenance question — it asks for
+no new family, no permanent rule and no evidence-bar override — so it is not the 2026-08-24 auto-reject
+class. Session 14 returns `owner-gated` citing that entry.
+
+### SESSION 14 RE-RUN NOTE (the first s14 attempt was discarded for a repo-wide encoding bug, not on merit)
+The driver discarded the first session-14 run with a `UnicodeDecodeError` from `grindlib.py:549`:
+`docs/grind/decisions.md` carried five raw cp1252 `0x97` em-dash bytes inside the COMMITTED
+`func_80037A20` entry (`docs/grind/decisions.md:13574`), so the validator could not read the file at
+all. That would have discarded ANY session on ANY function. This re-run repaired those five bytes to
+proper UTF-8 (leaving the file's legitimate `0xC3 0x97` `x` multiplication sequences intact) and swept
+`docs/grind/` + `memory/grind/` for the same class: 49 ledger/doc files carried invalid UTF-8 and were
+repaired, and the pre-existing `a-EUR-quote` style double-mangled sequences in them were restored to
+their intended characters. Line endings were preserved per file. Future sessions inherit a validator
+that can read the audit trail.
+
+Everything else in this re-run reproduces the discarded run's measurements independently:
+* `sandbox motion_Close --disable all` with `candidate.c` applied = score 13, target_insns 26,
+  build_insns 25, rules_dropped 0, cheat_asm_stripped 3 (the file's other canonical siblings);
+  `canonical motion_Close` = verdict C, asm_insns 0, distance 13. src restored to HEAD afterwards.
+* `tmp/grind/motion_Close/s14/cfoas_census.py` re-run: 840 call-making functions with a frame + save,
+  and exactly 2 of them save below `$sp+16` - `func_80083794` (frame 16, saves 4/8/12) and
+  `motion_Close` (frame 16, saves 4/8/12).
+* `tools/scan_hand_coded.py --single motion_Close` = tier LOW, score 0/8 (log
+  `tmp/grind/motion_Close/s14/scan_hand_coded_s14b.log`).
+The packet is RE-FILED at `docs/grind/decisions.md:13770`
+(`## 2026-08-26 - motion_Close ... ESCALATED WITH DECISION PACKET (RE-FILED)`); the earlier span at
+13618 is void per the driver's discard marker and is superseded by it.
+
+- [s14] Validator blocker fixed repo-wide: five invalid cp1252 0x97 bytes in the committed func_80037A20 entry (docs/grind/decisions.md:13574) made the whole file undecodable at grindlib.py:549; repaired, plus 49 further ledger/doc files under docs/grind/ and memory/grind/ swept clean of invalid UTF-8 and of pre-existing double-mangled sequences. Line endings preserved per file.
+
+- [s14] Floor re-measured this session at 13 (target 26 / build 25 insns, 0 rules dropped) with candidate.c applied; canonical verdict C, asm_insns 0. src/ings2.c restored to HEAD; motion_Close carries ZERO regfix/asmfix rules and ZERO cheat-asm on main (own asm/funcs/motion_Close.s + INCLUDE_ASM).
+
+- [s14] Binary-wide census re-run: of 840 call-making functions with a frame and callee-save/$ra stores, exactly 2 have an outgoing-argument area below the mandatory 16 — func_80083794 (already canonical-authorized 2026-08-24) and motion_Close. Every other call-making function in the game, including all pure-C-matched ones, carries the 16-byte block.
+
+- [s14] Byte-contiguity across the authorized crt0 block: _start 0x800836EC-0x80083790 (authorized 2026-08-06), func_80083794 0x80083794-0x80083800 (authorized 2026-08-24), motion_Close 0x80083804-0x80083868 — no gap, no padding, no intervening function.
+
+- [s14] Ctor/dtor twinning: both functions walk the same table D_8008D070, take their count from the same link-time-absolute D_00000000 (undefined_syms_auto.txt:1172) and gate on the same flag D_800A2668 (794 SETS, motion_Close TESTS); the walk bodies are identical encodings (0000088E 04001026 09F80001 FFFF3126 FBFF2016 00000000 at 0x800837D4 and again at 0x8008383C), as are all six epilogue words — the libgcc __main/__do_global_ctors + __do_global_dtors pair from one object.
+
+- [s14] Region corroboration independent of this grind: memory/closer/psyq-library-census.md:358 places motion_Open/motion_Close/ang_hosei at 0x800836C8-0x80083868 in the gap between the LIBETC and LIBSND library blocks; memory/closer/libsnd-hunt-report.md:69 flags the same range as prebuilt library/glue territory.
+
+- [s14] Residual fully accounted for at the backend level for motion_Close in its own right (tmp/grind/motion_Close/s7/residual_table.md): ~6.5 points H1 (frame 32 vs 16 — three save offsets, three restore offsets, the addiu sp), 5 points F5 ($v0 where the target uses $t0), ~1.5 points F7 (beqz delay slot + save order). No pure-C body containing a call can reach distance 0 here.
+
+- [s14] Two tempting provenance markers measured INERT and banked so no future session re-spends them: unfilled conditional-branch delay slots (2,207 of 6,308 binary-wide, 35.0%, are unfilled; 11 call-making functions nop every conditional branch, most ordinary matched game C — tmp/grind/motion_Close/s14/prov_census.py) and ascending save order / guard-load-before-addiu-$sp (124 call-making functions save ascending, 112 of them matched pure C in our own pipeline; DrawSync at src/display.c:88 is the worked byte-matching counterexample — tmp/grind/motion_Close/s14/xref2.py).
+
+- [s14] Exhaustion: 14 sessions, 7 distinct modalities (permuter s4-s5, forensics s6-s7, rederive s8-s9, synthesis s10, structural s11-s12, escalation s13-s14), floor FLAT at 13 for ten consecutive sessions, ~15k permuter iterations across 4 campaigns, 21 disproven forms banked in memory/grind/motion_Close/rejected/, and every cc1 input outside the loop walk measured codegen-inert (F10 whole-TU/signature, F11 ten declaration forms, F12 twenty loop constructs, F13 guard/materialisation shape, F14 thirty-five wrap-placement cells, M1 dead-store substitution).
+
+- [s14] Packet RE-FILED at docs/grind/decisions.md:13770 as a ROUTING/PROVENANCE question (does the 2026-08-24 prebuilt-object grant to func_80083794 extend to motion_Close?), explicitly NOT the 2026-08-24 auto-reject class: it asks for no new coercion family, no permanent-rule sanction, no 'accept the debt' wording and no override of the canonical evidence bar. It supersedes the voided span at decisions.md:13618.

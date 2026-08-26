@@ -1,4 +1,4 @@
-/* REJECTED — s12: on the const chassis, naming the D_800A11D5 index byte (g5) or naming it
+/* REJECTED â€” s12: on the const chassis, naming the D_800A11D5 index byte (g5) or naming it
 plus arg5 (g6) = 9/91, byte-identical to c1. The const chassis is as rigid as
 the other three attractors.
  */

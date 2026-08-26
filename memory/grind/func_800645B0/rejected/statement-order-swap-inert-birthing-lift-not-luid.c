@@ -1,8 +1,8 @@
-/* REJECTED (session 13, 2026-08-25) — "WD-SWAP": the WD chassis with the two
+/* REJECTED (session 13, 2026-08-25) â€” "WD-SWAP": the WD chassis with the two
  * inner-loop-top statements written in the opposite source order
  * (`val = 1;` before `idx = i + j;` instead of after).
  *
- * MEASURED 3 / 78 by `sandbox func_800645B0 --disable all` — BYTE-IDENTICAL to
+ * MEASURED 3 / 78 by `sandbox func_800645B0 --disable all` â€” BYTE-IDENTICAL to
  * plain WD (3 / 78), same three differing positions against
  * asm/funcs/func_800645B0.s (objdump-normalised, engine.score):
  *     11  OURS li v1,1          TGT addu s0,s3,a0
@@ -16,23 +16,23 @@
  * block 2 (the inner-loop-top block, 6 insns):
  *     LUIDs   {val=1: 0, idx=i+j: 1, sllv: 2, lw: 3, and: 4, bne: 5}
  * i.e. the LUIDs follow the new source order, and the pass-1/pass-2 pick lists
- * change accordingly — yet the EMITTED order does not, because the pick is not
+ * change accordingly â€” yet the EMITTED order does not, because the pick is not
  * decided by the LUID tie-break at all.  The pass-1 `adjpri` records show
  * `birth: 1` (birthing_insn_p: reg_n_sets == 1 on a live destination) for the
- * `idx = i + j` insn and `birth: 0` for the `val = 1` insn — on this chassis
+ * `idx = i + j` insn and `birth: 0` for the `val = 1` insn â€” on this chassis
  * `idx` is written ONCE (the *3 sum goes to the fresh `wid`) while `val` is
  * written three times.  sched.c's adjust_priority therefore lifts the idx addu
  * to max_priority in EVERY spelling; the backward list scheduler picks it early,
  * which means it is emitted LATE, and `val = 1` lands at the loop top where the
- * target has the addu.  The priorities are never tied, so INSN_LUID — the only
- * thing C statement order controls here — never gets to decide.
+ * target has the addu.  The priorities are never tied, so INSN_LUID â€” the only
+ * thing C statement order controls here â€” never gets to decide.
  *
  * CONSEQUENCE FOR THE SEARCH.  Every "reorder these two statements" spelling of
  * this residual (including the ones this function's judge_constraints already
  * ban) is inert on the WD chassis, for a named reason.  The single real knob is
  * `reg_n_sets[idx]`: > 1 denies the lift and hands back the loop head (that is
  * the SB chassis, 1 / 78, which then loses the *3 operand order to optabs.c's
- * commutative swap — H24 / H58 / H59), == 1 wins the operand order and loses the
+ * commutative swap â€” H24 / H58 / H59), == 1 wins the operand order and loses the
  * head (this chassis).  Do not re-derive a statement-order variant of either.
  */
 s32 func_800645B0(void) {

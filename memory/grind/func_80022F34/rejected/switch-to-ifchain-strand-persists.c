@@ -1,11 +1,11 @@
-/* REJECTED (grind s7, 2026-08-26) — switch -> if/else-if chain.
+/* REJECTED (grind s7, 2026-08-26) â€” switch -> if/else-if chain.
  * WHY DEAD: this was the s6 frontier's headline "novel whole-function reshape"
  * lever ("eliminate the switch-merge label"). Measured: vars=8, per-access x2,
- * strand=1 — IDENTICAL to base. The jump table is gone and the case-merge label
+ * strand=1 â€” IDENTICAL to base. The jump table is gone and the case-merge label
  * is gone, and combine STILL emits the orphaned (use regN); the loop's own
  * CODE_LABEL is enough for distribute_notes to land on. Corroborated by vIF2
  * (reordered chain), vTERN (single store via a conditional expression) and vMIN
- * (the whole switch DELETED — diagnostic, semantics broken): all vars=8,
+ * (the whole switch DELETED â€” diagnostic, semantics broken): all vars=8,
  * strand=1. The strand is NOT switch-dependent. Body is also 5 insns shorter
  * than base's byte-perfect switch, so this is strictly worse besides.
  */

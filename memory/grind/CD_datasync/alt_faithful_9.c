@@ -1,4 +1,4 @@
-/* saEft01Init — session-4 FALLBACK form: distance 9 at 91 insns.
+/* saEft01Init â€” session-4 FALLBACK form: distance 9 at 91 insns.
  * Levers (1) `cnt = k;` mask staging and (2) `ret = *D_800A14C0 & cnt;` only.
  * The argument-block pointer re-base (lever 3, worth a further -2) is
  * deliberately absent here, so this form keeps the argument block in its

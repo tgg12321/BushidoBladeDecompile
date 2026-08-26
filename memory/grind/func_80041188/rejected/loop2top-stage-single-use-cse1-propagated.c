@@ -1,9 +1,9 @@
-/* REJECTED s6 (forensics, 2026-08-23) — sandbox unchanged, allocation IDENTICAL
+/* REJECTED s6 (forensics, 2026-08-23) â€” sandbox unchanged, allocation IDENTICAL
  * to the plain pa4-read chassis (out2 3 refs / live 42 / pri 714).
  *
  * Form: pa4-read MID (target's `addiu s3,s7,32`) + a staged copy at the TOP of
  * loop2 (`out2 = (s32 *) stptr;`) whose SINGLE consumer is the second
- * func_8004A348 — the use-swap degree of freedom that the s5 staging-position
+ * func_8004A348 â€” the use-swap degree of freedom that the s5 staging-position
  * sweep never varied (that sweep always fed the staged pointer to the LAST use,
  * func_800523E0).  Intent: a def->use span of ~25 insns gives out2 5 refs at
  * live ~59-67 = pri 1481-1666, inside the required (1473.7, 1702.1) window,

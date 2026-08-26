@@ -1,4 +1,4 @@
-/* func_80045878 — s6 CHASSIS "armsplit+SItemp".  NOT a match (sandbox
+/* func_80045878 â€” s6 CHASSIS "armsplit+SItemp".  NOT a match (sandbox
  * --disable all = 11, build_insns 107 vs target 108) but the STRUCTURALLY
  * CLOSEST form found so far, and the chassis every future session should
  * start from instead of the score-10 candidate.c body.
@@ -11,7 +11,7 @@
  *   - the SI temp `s32 t = a0 + 3; s1[11] = t;` stops the expander from
  *     truncating a0 to HImode before the add, which is what created the
  *     shared (HI)a0 pseudo that cse then reused for the three `s1[N] = a0`
- *     stores.  With the temp, the tail now stores s2 DIRECTLY — exactly like
+ *     stores.  With the temp, the tail now stores s2 DIRECTLY â€” exactly like
  *     target:
  *         ours    addiu v0,s2,3 / sh v0,22(s1) / li v0,0x8000 /
  *                 sh s2,4(s1) / sh s5,8(s1) / sh s2,20(s1) / sh s2,16(s1) /
@@ -19,8 +19,8 @@
  *         target  move v0,s1 / addiu v1,s2,3 / sh v1,22(v0) / li v1,0x8000 /
  *                 sh s2,4(v0) / sh s5,8(v0) / sh s2,20(v0) / sh s2,16(v0) /
  *                 sw v1,24(v0)
- *     i.e. the ENTIRE remaining tail residual is now ONE missing insn — the
- *     base copy `addu v0,s1,zero` — plus the renames that follow from it.
+ *     i.e. the ENTIRE remaining tail residual is now ONE missing insn â€” the
+ *     base copy `addu v0,s1,zero` â€” plus the renames that follow from it.
  *     (s2 measured the SI temp on the score-10 HEAD chassis, saw 107->106,
  *     and filed it as "wrong direction".  On the arm-split chassis it is the
  *     right direction; that mis-scoping cost sessions s3-s5.)
@@ -31,7 +31,7 @@
  *      evidence.md s6 for the sched.c foreclosure proof.
  *   R2 the missing `addu v0,s1,zero` base copy.  A plain `s16 *p = s1;`
  *      alias over the tail is copy-propagated on THIS chassis too (measured
- *      s6: still 107 / score 11) — banked in
+ *      s6: still 107 / score 11) â€” banked in
  *      rejected/tail-p-alias-on-armsplit-si-chassis.c.
  */
 void func_80045878(s32 a0, s32 a1, s32 a2) {

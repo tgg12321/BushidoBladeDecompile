@@ -1940,10 +1940,10 @@ residual `move $s3,$s6` (E-s23-1). Block 0's deliveries are enumerated and only 
      arithmetically collapsible before combine sees it (cse1 reassociates â€” E-s20-3), and
      anything that is a DEFINITION of a value equal to `a4 + 0x20` (E-s23-1).
 
-2. **out2 must have FOUR references — now proven from BOTH sides — so the live axis is the
+2. **out2 must have FOUR references â€” now proven from BOTH sides â€” so the live axis is the
    ONE all-target-seats form that already exists: s21's Q1 (pa4-free, block-0 do-while(0)
    wrap, target's block-2 spelling, sandbox 7 at 132/132), whose entire residual is seven
-   sched1 EMISSION-ORDER diffs. Point `tools/sched_solver` at it — it has never been run on
+   sched1 EMISSION-ORDER diffs. Point `tools/sched_solver` at it â€” it has never been run on
    this form.**
    - mechanism: the closure argument. a3 is immovable at 808 (E-s23-2), so out2 must exceed
      808; at 3 references that needs live length <= 37 (30000/37 = 810), and the block-0
@@ -1952,9 +1952,9 @@ residual `move $s3,$s6` (E-s23-1). Block 0's deliveries are enumerated and only 
      exceed a4, which the ratio law closes at 3 references on the pa4-free chassis and which
      needs 1263 on the pa4 chassis. So every surviving chassis requires out2 at >= 4
      references, and exactly one measured form delivers that with target's block-2 spelling
-     at 132 insns: Q1. Its cost is not allocation at all — it is sched.c's ordering of block
+     at 132 insns: Q1. Its cost is not allocation at all â€” it is sched.c's ordering of block
      0 (the `sw $s5` / `lui $s5` / `addiu $s5` trio ~7 slots late, `sw $t0,0x18($sp)` 2 slots
-     early — E-s21-4), which is exactly what `tools/sched_solver` models order- and
+     early â€” E-s21-4), which is exactly what `tools/sched_solver` models order- and
      clock-exactly.
    - next probe: apply Q1 (`memory/grind/func_80041188/alt_Q1_pa4free_alltarget_s21.c`),
      dump `red.i.sched`, and run `tools/sched_solver` on block 0 against target's block-0
@@ -1963,7 +1963,7 @@ residual `move $s3,$s6` (E-s23-1). Block 0's deliveries are enumerated and only 
      function reduces to frontier item 1 alone; if REACHABLE, the levers it names are the
      first concrete instructions for closing a form that already holds every target seat.
      (Note the layer-1 constraint: the BANNED do-while(0) is the loop1-half wrap entered by
-     an external goto, NOT a self-contained block-0 wrap around a single statement — but the
+     an external goto, NOT a self-contained block-0 wrap around a single statement â€” but the
      wrap is still a FAKE construct needing its annotation and its family citation.)
 
 3. **Settle the family status of candidate.c's `stptr = base; stptr += 0xFC;` (carried

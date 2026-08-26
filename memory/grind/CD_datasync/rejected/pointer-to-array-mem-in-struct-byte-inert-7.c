@@ -1,4 +1,4 @@
-/* REJECTED — s12: hoisted bases re-typed `s32 (*)[]` so the element access is a real
+/* REJECTED â€” s12: hoisted bases re-typed `s32 (*)[]` so the element access is a real
 ARRAY_REF (expand sets MEM_IN_STRUCT_P) instead of an INDIRECT_REF = 7/91,
 byte-identical to the candidate. m1/m2/m4/m5/m6 (each base separately, the
 index as `u8 (*)[2]`, all three together, arg4-only) are all 7 as well, so

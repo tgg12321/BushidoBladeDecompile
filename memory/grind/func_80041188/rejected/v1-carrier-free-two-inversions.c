@@ -1,4 +1,4 @@
-/* REJECTED s6 (forensics, 2026-08-23) — the carrier-free world (s5 frontier #3)
+/* REJECTED s6 (forensics, 2026-08-23) â€” the carrier-free world (s5 frontier #3)
  * is STRICTLY HARDER than the pa4-carrier world; axis closed.
  *
  * Form: no pa4 local; the a4 parameter is used at all six sites.
@@ -8,7 +8,7 @@
  *   ord8 pseudo 85 (out2)  hardreg 30 (fp)  3 refs / 42  pri 714
  * Target needs out2 -> s6, a4 -> s7, a3 -> fp, i.e. the order out2 > a4 > a3.
  * That is TWO inversions (out2 must pass BOTH, and a4 must additionally pass
- * a3 — a4's 736 is already below a3's 808 here), where the pa4-carrier chassis
+ * a3 â€” a4's 736 is already below a3's 808 here), where the pa4-carrier chassis
  * needs only ONE (out2 above the carrier's 1473.7).  Dropping the carrier
  * therefore adds a constraint instead of removing one. */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)

@@ -1,4 +1,4 @@
-/* REJECTED (session 12, 2026-08-25) — "WD": the fresh-destination sum.
+/* REJECTED (session 12, 2026-08-25) â€” "WD": the fresh-destination sum.
  * Measured 3 / 78 by `sandbox func_800645B0 --disable all` (SB chassis = 1/78).
  *
  * WHAT IT PROVES (this is the reason the file is banked, not merely rejected).
@@ -6,7 +6,7 @@
  * honest spelling ever measured on this function that emits the target's exact
  * operand order at stream index 20: `addu $s0,$s1,$s0` (all previous forms
  * emitted `addu $s0,$s0,$s1`).  No staging, no dead store, no reordered
- * statement — three distinct quantities (slot index k, halfword offset 2k, word
+ * statement â€” three distinct quantities (slot index k, halfword offset 2k, word
  * offset 3k) each carrying their own name, which is ordinary C.
  *
  * WHY IT COSTS 3.  Ground-truth diff (tmp/grind/func_800645B0/s12/diff.py)
@@ -29,7 +29,7 @@
  * `idx = idx2 + idx` has target == op1 so the swap fires and emits (idx, idx2);
  * `idx = idx + idx2` never swaps and emits (idx, idx2) directly.  So ANY C
  * statement whose destination is `idx` emits `addu $s0,$s0,$s1`.  Target's
- * order therefore REQUIRES a destination pseudo distinct from both operands —
+ * order therefore REQUIRES a destination pseudo distinct from both operands â€”
  * which is exactly what removes the second set of `idx`, and the second set of
  * `idx` is what the ledger (session 1/6, H24) attributes the loop-head
  * placement to.  The 1-vs-3 trade is closed-form: you cannot have both halves

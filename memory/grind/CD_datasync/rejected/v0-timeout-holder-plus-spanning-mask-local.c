@@ -1,8 +1,8 @@
-/* REJECTED (s3) — 22 at 94 insns (candidate is 18 at 92).
+/* REJECTED (s3) â€” 22 at 94 insns (candidate is 18 at 92).
  *
  * Motivated by target's register assignment: target holds 0x3C0000 in $v0
  * (idx 41, immediately consumed by the following `slt $v0,$v0,$v1`) and
- * 0x1000000 in $v1 (idx 83) — TWO registers, so the candidate's single
+ * 0x1000000 in $v1 (idx 83) â€” TWO registers, so the candidate's single
  * reused `k` cannot be the original spelling.  $v0 is also target's
  * timeout/success flag, so this variant makes the flag local `v0` carry
  * 0x3C0000 (it already has >1 set, so loop.c:702 blocks its hoist) and
@@ -10,7 +10,7 @@
  * loop.c:695).
  *
  * RESULT: both constants do stay inline, but overloading `v0` costs +2
- * insns in the flag block — the same regression session 2 measured for
+ * insns in the flag block â€” the same regression session 2 measured for
  * v0-carrying-BOTH constants (H8, 22/93).  Confirms the flag local is not
  * usable as a constant holder in any combination.
  * Isolation control: v0-timeout + LITERAL mask is 29/95.

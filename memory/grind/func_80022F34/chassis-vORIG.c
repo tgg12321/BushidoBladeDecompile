@@ -1,14 +1,14 @@
-/* func_80022F34 — SECOND CHASSIS "vORIG" (grind s7, solver, 2026-08-26)
- * sandbox --disable all = 11  (build_insns 69, target 70) — TIES candidate.c's
+/* func_80022F34 â€” SECOND CHASSIS "vORIG" (grind s7, solver, 2026-08-26)
+ * sandbox --disable all = 11  (build_insns 69, target 70) â€” TIES candidate.c's
  * floor, but with an EXACTLY COMPLEMENTARY residual, and is the better handoff
  * chassis for the next modality.
  *
  * WHAT IT FIXES vs candidate.c (`base`): the +8 phantom frame slot is GONE.
  * Measured: .frame vars=0, regs=4/0, `subu $sp,$sp,32` with saves at
- * 16/20/24/28 — BYTE-IDENTICAL to target's prologue and epilogue. The first 39
+ * 16/20/24/28 â€” BYTE-IDENTICAL to target's prologue and epilogue. The first 39
  * normalized instructions (prologue, loop head, guard, the whole switch
  * including its compare chain, the sh store, the loop tail, the epilogue) match
- * target exactly. combine emits NO orphaned (use regN) — strand=0.
+ * target exactly. combine emits NO orphaned (use regN) â€” strand=0.
  *
  * WHAT IT COSTS: cse2 now shares ONE `la $5,D_801027BC` base for both loads,
  * where target re-materialises %hi/%lo per access. The entire 11 is that one
@@ -33,14 +33,14 @@
  *                                                        [this file, vO3, vO5,
  *                                                         vO11, vO12, vO14]
  * Placement is inert (vO2 defines val1 AFTER the a0 reload and still strands).
- * Which load is separated is inert (vO7 separates val2 only — still strands).
+ * Which load is separated is inert (vO7 separates val2 only â€” still strands).
  * Symbol type is inert (vO14/vO16, `extern s32 D_801027BC[];`).
  * Byte-pointer address arithmetic is inert (vO11/vO12).
  *
  * NEXT LEVER on this chassis: a cse.c cost lever that makes cse2 re-materialise
  * the symbol base per load WITHOUT lifting a load into its own statement.
  * Note target's form is one insn MORE expensive than ours (70 vs 69), which is
- * the direction a cost-model lever moves. This is a PRE-RA question only — s7's
+ * the direction a cost-model lever moves. This is a PRE-RA question only â€” s7's
  * solver classify forecloses ra_solver and sched_solver on BOTH chassis.
  */
 void func_80022F34(void) {

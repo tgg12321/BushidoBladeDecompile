@@ -1,4 +1,4 @@
-/* REJECTED — only the THIRD flag block stores through `ptr` (`*ptr = val2;`),
+/* REJECTED â€” only the THIRD flag block stores through `ptr` (`*ptr = val2;`),
  * the other two through the plain symbol; a milder version of the "second use
  * of ptr" probe above.  Honest sandbox 22 at 50 insns vs 18.  Cheaper than the
  * copy-loop variant but still 4 points worse than the floor: the extra use

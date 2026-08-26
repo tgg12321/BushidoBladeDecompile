@@ -1,10 +1,10 @@
-/* REJECTED (s3) — 19 at 93 insns (candidate is 18 at 92).
+/* REJECTED (s3) â€” 19 at 93 insns (candidate is 18 at 92).
  *
  * WHAT IT PROVES (keep this, it is the useful half): replacing the mask
  * exit's compound body (`ret = 0; break;`) with a BARE `goto` makes
  * jump.c:1764 ("Detect a conditional jump jumping over an unconditional
  * jump") fire, because that transform requires
- * `prev_active_insn (reallabelprev) == insn` — i.e. the unconditional jump
+ * `prev_active_insn (reallabelprev) == insn` â€” i.e. the unconditional jump
  * must IMMEDIATELY follow the conditional one, and the `ret = 0;` set sat
  * in between.  With the bare goto the build emits target's exact branch
  * SENSE: `beqz $v0, <exit>` instead of our `bnez $v0,<cont> / nop / j <end>`.
@@ -17,7 +17,7 @@
  * The SAME steal succeeds for the flag exit in the same function: the
  * timed_out block is fully consumed (`li v0,-1` lands in the bnez delay
  * slot and its label becomes NOTE_INSN_DELETED_LABEL).  The asymmetry is
- * the whole remaining problem — see hypotheses.md F7.
+ * the whole remaining problem â€” see hypotheses.md F7.
  *
  * Out-of-loop label ORDER is irrelevant: w4 (aborted before timed_out),
  * w8/w9 (three goto exits with the `return 1` moved out of line too) and

@@ -1,9 +1,9 @@
-/* REJECTED s29 2026-08-20 — the ONLY Judge-ban-compliant form in the bank, and it
+/* REJECTED s29 2026-08-20 â€” the ONLY Judge-ban-compliant form in the bank, and it
  * is STRUCTURALLY short: sandbox --disable all = 30, target_insns 111 vs
  * build_insns 112. One `table` local, loaded once, both ratan2 call sites indexed
  * off it (table[pi*2] / table[ni*2]); no second load, no second pointer local, no
  * reassignment. Because the base stays live across the intervening ratan2 call it
- * is materialized into a callee-save the target does not use — the target instead
+ * is materialized into a callee-save the target does not use â€” the target instead
  * RELOADS the base after the call (asm/funcs/func_80057CC8.s:17 lw $a2,0x4($s2);
  * :50 lw $a0,0x4($s2)). 112 insns cannot become 111 by allocation alone, so this
  * form is not a floor-3 near-miss: it is unmatchable in kind.

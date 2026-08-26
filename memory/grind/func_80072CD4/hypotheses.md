@@ -195,15 +195,15 @@ verify the do-while sanction's NE-invert-peephole prerequisite actually applies 
 - verdict: CONFIRMED
 
 
-## [s5b] SYNTHESIS FRONTIER RESET (2026-08-20, respawn after the s5 owner-gated discard) — the residual is a SEMANTIC-MODEL bug, not a scheduler wall: arg1 is a PSX libgpu POLY_G4 and its offsets are four RGB triples.
+## [s5b] SYNTHESIS FRONTIER RESET (2026-08-20, respawn after the s5 owner-gated discard) â€” the residual is a SEMANTIC-MODEL bug, not a scheduler wall: arg1 is a PSX libgpu POLY_G4 and its offsets are four RGB triples.
 - statement: Every s1-s5 form treated `arg1` as an opaque byte blob and asked which *ordering*
   of independent byte stores GCC would emit. The offsets say otherwise: 0x04/0x05/0x06,
   0x0C/0x0D/0x0E, 0x14/0x15/0x16 and 0x1C/0x1D/0x1E are the canonical libgpu POLY_G4 vertex
   colour triples (rgb0..rgb3, i.e. the four setRGB0..setRGB3 field groups), and the file's own
   COMPLETED-C sibling func_80072BC4 (src/text1b.c:5822) is already written in exactly that
-  field order. Written the natural way — each inner branch assigning its OWN complete rgb0 and
+  field order. Written the natural way â€” each inner branch assigning its OWN complete rgb0 and
   rgb1 triple (whose red component is 0xFC on both branches), then the two unconditional
-  rgb2/rgb3 triples — the function is byte-exact.
+  rgb2/rgb3 triples â€” the function is byte-exact.
 - mechanism: with the arms carrying full triples, GCC's jump2 cross-jump tail-merges the two
   arms' common tail (`sb v1,4 / sb v1,0xC / sb v0,0xE`) at the join label, which is precisely
   how target's merge block begins; the previously-diagnosed sched2 deferral of the `$v1` stores
@@ -215,7 +215,7 @@ verify the do-while sanction's NE-invert-peephole prerequisite actually applies 
   `sandbox func_80072CD4 --disable all`.
 - result: **score 0, build_insns 79 == target_insns 79, rules_dropped 0** (artifact
   tmp/grind/func_80072CD4/s5/sandbox_rgbtriple_noholder.json). The body contains NO local, no
-  holder variable, no volatile, no asm, no barrier, no dead store, no annotation — only live
+  holder variable, no volatile, no asm, no barrier, no dead store, no annotation â€” only live
   field writes. The holder-retaining variant (tmp/grind/func_80072CD4/s5/v_rgbtriple.c, keeps
   the sibling's `int fc_const`) also measures 0.
 - verdict: CONFIRMED (bytes measured this session, twice, reproducibly).
@@ -224,7 +224,7 @@ verify the do-while sanction's NE-invert-peephole prerequisite actually applies 
 - statement: the standing judge constraint of 2026-07-24 16:38 forbids respelling "the @4/@0xC
   common-tail stores (or any unconditional common-tail statement) as a duplicated-into-arms
   store-schedule lever". The byte-matching body above does place `= 0xFC` writes to 0x04 and
-  0x0C inside both arms, so it is textually within reach of that ban — but it is not a lever
+  0x0C inside both arms, so it is textually within reach of that ban â€” but it is not a lever
   bolted onto a hoisted base: there is no construct in the body at all, the writes are live on
   their own paths, and the alternative (hoisting only the red components behind an `int
   fc_const` holder) is the artificial spelling that the ban's own base form uses.
@@ -232,7 +232,7 @@ verify the do-while sanction's NE-invert-peephole prerequisite actually applies 
   engine/queue.json) and carries an identical, hoistable-but-not-hoisted cross-arm duplicate
   store `*(u8 *)((s32)(arg1) + 0x1D) = 0xC3;` at src/text1b.c:5840 and src/text1b.c:5843.
 - result: pending.
-- verdict: OPEN — this is the whole frontier now. If the ruling says the ban does not reach a
+- verdict: OPEN â€” this is the whole frontier now. If the ruling says the ban does not reach a
   construct-free body, the function closes at 0 from memory/grind/func_80072CD4/candidate.c.
   If it says the ban does reach it, fall back to fallback_floor4.c (clean floor 4) and the
   two-attractor exhaustion analysis of s1-s5 stands unchanged.

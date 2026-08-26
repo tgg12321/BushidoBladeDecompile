@@ -1,4 +1,4 @@
-/* REJECTED — decomp-permuter seed-1 find output-1290-4.  It is the ONLY form
+/* REJECTED â€” decomp-permuter seed-1 find output-1290-4.  It is the ONLY form
  * either s4 campaign produced that scored below the honest floor
  * (sandbox 17 at 49 insns vs the floor's 18 at 51) and it is SEMANTICALLY
  * WRONG: the permuter hoisted the third block's `D_80106A73 = val2;` store

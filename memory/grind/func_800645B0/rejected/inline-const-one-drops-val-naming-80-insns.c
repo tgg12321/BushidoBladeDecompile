@@ -1,4 +1,4 @@
-/* REJECTED (session 12, 2026-08-25) — dropping the `val = 1;` naming.
+/* REJECTED (session 12, 2026-08-25) â€” dropping the `val = 1;` naming.
  * `mask = 1 << idx;` in place of `val = 1; mask = val << idx;` measures
  * 12 / 78 at 80 build insns (two insns MORE than target).  The named `val`
  * local is load-bearing for the whole chassis, not cosmetic: giving the

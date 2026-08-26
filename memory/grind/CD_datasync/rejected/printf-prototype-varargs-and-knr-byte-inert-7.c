@@ -1,4 +1,4 @@
-/* REJECTED — s12: the debug_printf PROTOTYPE axis is byte-inert.
+/* REJECTED â€” s12: the debug_printf PROTOTYPE axis is byte-inert.
  * HEAD declares `extern void debug_printf(void *, void *, s32, s32, s32);`.
  * Re-declaring it `(void *, ...)` (a real printf-style varargs prototype, which
  * is almost certainly the original Sony signature) and `()` (K&R, no prototype)

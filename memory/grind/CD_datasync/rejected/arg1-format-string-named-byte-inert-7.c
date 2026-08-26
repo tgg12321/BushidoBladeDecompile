@@ -1,4 +1,4 @@
-/* REJECTED — s12: the debug_printf format-string ADDRESS hoisted into a named local
+/* REJECTED â€” s12: the debug_printf format-string ADDRESS hoisted into a named local
 (inside the wrapper, before the wrapper, and the same for the
 tslTm2LoadImage_2 argument) = 7/91, byte-identical. All 51 prior forms only
 ever touched args 2-5; arg1 is now measured and it is a dead axis.

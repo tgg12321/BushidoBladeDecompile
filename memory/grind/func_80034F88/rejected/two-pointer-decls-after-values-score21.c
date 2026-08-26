@@ -1,7 +1,7 @@
 /*
  * KILLED (s15).  Control for the declaration-order lever: identical body to
  * s15/variants/t1.c (score 10) except the two pointer objects are declared BEFORE
- * the six value locals.  Scores 21 — the same 21 s14 banked as r19.  Declaration
+ * the six value locals.  Scores 21 â€” the same 21 s14 banked as r19.  Declaration
  * order alone is worth 11 points on the two-object chassis because it decides
  * global.c allocno_compare's pri-7500 tie between the mask+bit-1 pointer allocno
  * and the three loaded-byte allocnos.

@@ -1,7 +1,7 @@
 /* KILLED (s4, H17).  Composing the sandbox-11 mask staging with the
  * separately-measured argument-block lever that stages arg4 through the
  * constant holder `k` (`k = tbl_125c[idx_1494[0]]; ... arg4 = k;`, which is
- * 15 / 92 on its own from the session-3 chassis) gives 13 / 92 — WORSE than
+ * 15 / 92 on its own from the session-3 chassis) gives 13 / 92 â€” WORSE than
  * the mask staging alone (11 / 93).  The two levers contend for the same
  * pseudo; the argument block has to be attacked through the table pointer
  * (the re-base form) instead, which composes to 7 / 91.

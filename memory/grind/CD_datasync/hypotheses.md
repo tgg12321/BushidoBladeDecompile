@@ -146,14 +146,14 @@ consumed by `if (v0 != 0)` costs more in the flag block than it saves.
 **Verdict: KILLED.** The reuse holder must be separate from the exit flag.
 Banked: `rejected/v0-as-licm-reuse-holder-regresses.c`.
 
-## Session 3 (structural) — measured
+## Session 3 (structural) â€” measured
 
-### H9 — CONFIRMED (mechanism for the +2 tail branch sense)
+### H9 â€” CONFIRMED (mechanism for the +2 tail branch sense)
 **Statement:** our inverted mask exit (`bnez v0,<cont> / nop / j <end> /
 move v0,zero`, where target has `beqz $v0,.L80081CFC` with the constant in
 the delay slot) is blocked by jump.c's "conditional jump jumping over an
 unconditional jump" transform, which requires the unconditional jump to
-IMMEDIATELY follow the conditional one — and our `ret = 0;` set sits in
+IMMEDIATELY follow the conditional one â€” and our `ret = 0;` set sits in
 between.
 **Mechanism:** `tools/gcc-2.7.2/jump.c:1764-1772` guards `invert_jump` with
 `prev_active_insn (reallabelprev) == insn && no_labels_between_p (...) &&
@@ -164,42 +164,42 @@ expands to `bnez v0,Lskip / set v0,0 / j Lexit / Lskip:` so
 `aborted: return 0;` after the loop (variant `w1_goto_exits`, plus
 `w2_goto_mask_only` isolating that one exit); `sandbox --disable all` +
 `tmp/grind/saEft01Init/s1/grind_diff.py`.
-**Result:** the build now emits `beqz $v0,<exit>` — target's exact branch
-sense — in every goto variant. **Verdict: CONFIRMED.** The bare-goto body
+**Result:** the build now emits `beqz $v0,<exit>` â€” target's exact branch
+sense â€” in every goto variant. **Verdict: CONFIRMED.** The bare-goto body
 is the lever for the branch sense; it is not sufficient on its own (H10).
 
-### H10 — KILLED (source-level exit spelling and label order are exhausted)
+### H10 â€” KILLED (source-level exit spelling and label order are exhausted)
 **Statement:** with the branch sense fixed by H9, some arrangement of the
 exit spellings / out-of-loop label ORDER will also get the stranded
 `return 0;` block folded into that branch's delay slot, reproducing
 target's `beqz $v0,.L80081CFC / addu $v0,$zero,$zero`.
 **Probe:** eight variants, all measured with `sandbox --disable all` and
-diffed with `grind_diff.py` — `w1` (both exits goto, timed_out then
+diffed with `grind_diff.py` â€” `w1` (both exits goto, timed_out then
 aborted), `w4` (aborted then timed_out), `w8`/`w9` (three goto exits, the
 `return 1` also moved out of line, in both orders), `w2` (mask exit only),
 `w3` (flag exit only), `w5` (`if (mask) {ret=1;} else {ret=0;break;}`),
 `w6` (`if (mask) {ret=1; continue;} ret=0; break;`).
-**Result:** every goto-form emits a BYTE-IDENTICAL tail at 19 / 93 insns —
+**Result:** every goto-form emits a BYTE-IDENTICAL tail at 19 / 93 insns â€”
 GCC normalises the out-of-line block order itself, so source label order is
 inert. `w5`/`w6` collapse back to the candidate's exact output (18 / 92):
 GCC re-canonicalises the source-level branch sense too. **Verdict: KILLED.**
 The residual is not reachable from the C's exit spelling; it is one reorg
 decision (F7).
 
-### H11 — CONFIRMED, and it REFRAMES H6 (the `k` reuse is not the original)
+### H11 â€” CONFIRMED, and it REFRAMES H6 (the `k` reuse is not the original)
 **Statement:** the session-2 candidate's single reused scratch local `k` is
 the original spelling of the two loop-invariant compare constants.
 **Probe:** read the two `lui` sites in `asm/funcs/saEft01Init.s`.
-**Result:** **target holds them in TWO DIFFERENT hard registers** —
+**Result:** **target holds them in TWO DIFFERENT hard registers** â€”
 `lui $v0,(0x3C0000>>16)` at idx 41 (immediately consumed by the following
 `slt $v0,$v0,$v1`) and `lui $v1,(0x1000000>>16)` at idx 83. One C variable
 is one pseudo and one hard register; our build puts both in `$a0`.
-**Verdict: the statement is FALSIFIED — `k` cannot be the original.** It
+**Verdict: the statement is FALSIFIED â€” `k` cannot be the original.** It
 remains the best-scoring form (18/92 vs 29/98 for any single-set spelling)
 but it is a synthetic LICM defeat, and cheat-reviewer has still not seen it.
 Any completion claim must either replace it or clear it through review.
 
-### H12 — CONFIRMED (the real loop.c gate) / KILLED (as a full replacement)
+### H12 â€” CONFIRMED (the real loop.c gate) / KILLED (as a full replacement)
 **Statement:** the constants stay inline in the original because of
 loop.c's *user-variable* gate rather than the `n_times_set` gate, so two
 separate branch-spanning locals should keep both inline in two registers,
@@ -215,18 +215,18 @@ one), and `x2`/`x3` (one constant through `k`, the other written as a
 literal), all via `tmp/grind/saEft01Init/s3/score.py`.
 **Result:** `y3` (mask constant set at the `check:` join, spanning the
 `if (v0 != 0)` branch) = 27 / **97** insns vs the 30 / **98** both-hoisted
-baseline — the mask constant escapes the hoist in its own pseudo, no
+baseline â€” the mask constant escapes the hoist in its own pseudo, no
 double-set needed. `y2` (0x3C0000 set at the top of the loop body) = 30/98,
 i.e. still hoisted: `maybe_never` is 0 that early, so branch (A) holds.
 Moving its set later makes it BB-local, so branch (C) holds. `x2`/`x3` both
-30/98 — any single-set constant local is hoisted.
+30/98 â€” any single-set constant local is hoisted.
 **Verdict: the gate is CONFIRMED and now usable; the two-local form is
 KILLED as a replacement** (27/97 is far worse than 18/92) because the
 0x3C0000 constant has no position in this loop that fails all three
 branches. Banked:
 `rejected/two-spanning-const-locals-only-mask-escapes-licm.c`.
 
-### H13 — KILLED
+### H13 â€” KILLED
 **Statement:** target's register choice ($v0 for 0x3C0000, which is also
 its timeout/success flag) means the flag local carries that constant, so
 `v0` as the timeout holder plus a branch-spanning local for the mask
@@ -234,19 +234,19 @@ reproduces the two-register shape without the `k` reuse.
 **Probe:** `z1` (v0 holds 0x3C0000, `k2` spans for the mask), `z3` (v0 for
 the timeout, literal for the mask), `z2` (z1 plus the H9 bare-goto exit).
 **Result:** 22/94, 29/95, 24/95. Both constants do stay inline in z1, but
-overloading `v0` costs +2 in the flag block — the same regression session 2
+overloading `v0` costs +2 in the flag block â€” the same regression session 2
 measured with v0 carrying BOTH constants (H8, 22/93). **Verdict: KILLED.**
 The exit flag is unusable as a constant holder in any combination. Banked:
 `rejected/v0-timeout-holder-plus-spanning-mask-local.c`.
 
-### H14 — KILLED (tooling; saves the next session a detour)
+### H14 â€” KILLED (tooling; saves the next session a detour)
 **Statement:** reorg.c's `BB2_DBR_DEBUG=1` instrumentation
 (`DBRDBG thr/simp/mtlr` traces, reorg.c:133-153) can be used to read why
 `fill_slots_from_thread` refuses the delay-slot steal.
 **Probe:** compiled the spliced tree with `BB2_DBR_DEBUG=1` through
 `tmp/grind/saEft01Init/s3/dbr.sh` and grepped the captured stderr for the
 tail insn UIDs.
-**Result:** ZERO `DBRDBG` lines — the shipped `tools/gcc-2.7.2/build/cc1`
+**Result:** ZERO `DBRDBG` lines â€” the shipped `tools/gcc-2.7.2/build/cc1`
 predates the instrumentation, exactly as session 2 found for
 `BB2_ALLOC_DEBUG`/ALLOCDBG. **Verdict: KILLED.** Use the `-da` `.dbr` RTL
 dump instead; `tmp/grind/saEft01Init/s3/dbrscan.py` extracts the
@@ -255,7 +255,7 @@ question.
 
 ## Live frontier (for session 4)
 
-### F7 — the reorg delay-slot steal that strands `return 0;` (the whole +2)
+### F7 â€” the reorg delay-slot steal that strands `return 0;` (the whole +2)
 **Mechanism:** in the H9 goto form the RTL tail is
 `jump_insn 173: beq v0,0 -> label 205 ("aborted")` /
 `insn 252 = SEQUENCE[ jump_insn 184: beq s2,0 -> loop ; insn 194: v0=1 ]` /
@@ -274,24 +274,24 @@ an ordinary INSN.
 `tools/gcc-2.7.2/reorg.c` (in particular
 `! insn_sets_resource_p (trial, &opposite_needed, 1)` and the
 `mark_target_live_regs` fallback at reorg.c:2500-2510 that force-marks ALL
-registers live when it cannot find the block start — reorg.c also carries a
+registers live when it cannot find the block start â€” reorg.c also carries a
 `BB2_ALLLIVE_LABEL` env hook, which suggests this project has hit that
 fallback before). Then find C that puts an ordinary INSN between the mask
 branch and the loop-condition branch, or that leaves the `return 0;` thread
 ending in a real jump. Regenerate the RTL with
 `bash tmp/grind/saEft01Init/s3/dbr.sh <variant>` (it prints the tail via
 dbrscan.py). Note `w2` (which keeps `ret = 1;` before the loop condition)
-does NOT achieve this — fill_simple_delay_slots consumes that insn into
+does NOT achieve this â€” fill_simple_delay_slots consumes that insn into
 184's slot before fill_eager ever looks at 173.
 
-### F8 — make the 0x3C0000 constant escape LICM in its OWN pseudo
+### F8 â€” make the 0x3C0000 constant escape LICM in its OWN pseudo
 **Mechanism:** H12's gate. The constant needs a set position where
 `maybe_never` is already 1 (i.e. after the loop's first CODE_LABEL or
 JUMP_INSN, loop.c:930) AND a live range crossing a basic-block boundary so
 `reg_in_basic_block_p` is false. In the current shape the only in-loop
 branch before it is the `if (D_800F19B8 < v0)` test, and the compare
 follows in the same block.
-**Next probe:** alternatives that satisfy both — a spelling of the timeout
+**Next probe:** alternatives that satisfy both â€” a spelling of the timeout
 test that puts an extra branch or label between the constant's set and its
 use; a variable that is REFERENCED earlier in the loop than its set
 (branch (A)'s `loop_reg_used_before_p` half, a second way to fail (A) that
@@ -301,21 +301,21 @@ with `$s4`/`$s5` absent from the `.greg` dispositions and `lui $v0,0x3c` /
 `lui $v1,0x100` in two DIFFERENT caller-saved registers. Screen with
 `tmp/grind/saEft01Init/s3/score.py`.
 
-### F9 — cheat-review status of the `k` reuse
+### F9 â€” cheat-review status of the `k` reuse
 **Mechanism:** H11 shows the single reused `k` is not what the original
 compiled from. It is currently load-bearing for the 18/92 floor and is in
 the `[[defeat-licm-hoist-var-reuse]]` family, which is SOTN-sanctioned but
 only as a documented last resort with lever-exhaustion.
 **Next probe:** if F8 lands, `k` disappears on its own and the question is
-moot — do F8 first. If a completion is reached WITH `k` still present, it
+moot â€” do F8 first. If a completion is reached WITH `k` still present, it
 must go through cheat-reviewer with H11's two-register evidence disclosed,
 because "this is what the original wrote" is now known to be false.
 
-### F6 — cluster B, the debug_printf argument block (inherited, still open)
+### F6 â€” cluster B, the debug_printf argument block (inherited, still open)
 Session 3 did not touch it. Session 2's note stands: re-score both
 arg-staging orders against the now-correct callee-save allocation.
 
-## Superseded frontier (session 2 — F4 and F5 resolved by H9/H10/H12/H13 above)
+## Superseded frontier (session 2 â€” F4 and F5 resolved by H9/H10/H12/H13 above)
 
 ### F4 â€” the tail block layout (+2, the larger half of the residual)
 **Mechanism:** GCC emits the mask exit as `bnez v0,<cont> / nop / j <end> /

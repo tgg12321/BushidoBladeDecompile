@@ -275,12 +275,12 @@ forms that reached 11 carry empty `do { } while(0)` scheduler barriers
   (now fallback_floor4.c) applied over the migrated INCLUDE_ASM line still gives
   `sandbox func_80072CD4 --disable all` = 4, build_insns 79, rules_dropped 0. Floor 4 confirmed
   chassis-current before anything was spent on it.
-- [s5b] **BYTE MATCH FOUND — score 0, build_insns 79 == target, rules_dropped 0**, reproduced
+- [s5b] **BYTE MATCH FOUND â€” score 0, build_insns 79 == target, rules_dropped 0**, reproduced
   twice (tmp/grind/func_80072CD4/s5/sandbox_rgbtriple_noholder.json). The merged reading of s1-s5
   that produced it: every prior session modelled `arg1` as an opaque byte blob and searched
   orderings of independent stores. The offsets are actually the canonical PSX libgpu POLY_G4
-  vertex-colour layout — rgb0 = 0x04/0x05/0x06, rgb1 = 0x0C/0x0D/0x0E, rgb2 = 0x14/0x15/0x16,
-  rgb3 = 0x1C/0x1D/0x1E — and the COMPLETED-C sibling func_80072BC4 in the same file
+  vertex-colour layout â€” rgb0 = 0x04/0x05/0x06, rgb1 = 0x0C/0x0D/0x0E, rgb2 = 0x14/0x15/0x16,
+  rgb3 = 0x1C/0x1D/0x1E â€” and the COMPLETED-C sibling func_80072BC4 in the same file
   (src/text1b.c:5822) is already written in that field order. Rewriting 72CD4 the same way (each
   inner branch assigns its own complete rgb0+rgb1 triple; the unconditional rgb2/rgb3 triples
   follow) is byte-exact. Body: tmp/grind/func_80072CD4/s5/v_rgbtriple_noholder.c, banked as
@@ -292,14 +292,14 @@ forms that reached 11 carry empty `do { } while(0)` scheduler barriers
   ALSO measures 0; the holder-free body was preferred as the cleaner of the two.
 - [s5b] MECHANISM (supersedes the s2/s3 "two-attractor lock" as the operative model, without
   contradicting any of its measurements): with full triples in the arms, jump2 cross-jumps the
-  arms' common tail `sb v1,4 / sb v1,0xC / sb v0,0xE` to the join label — exactly target's merge
+  arms' common tail `sb v1,4 / sb v1,0xC / sb v0,0xE` to the join label â€” exactly target's merge
   head. The sched2 deferral that produced the residual 4 never arises, because the `$v1` stores
   are no longer written into the merge block by the source at all. The s1-s5 attractor analysis
   was an artefact of the blob model: BOTH of its attractors lift the two red components out of
   the colour assignments into a shared tail behind `int fc_const`, i.e. both are the ARTIFICIAL
   spelling; the natural one was never in the search space.
 - [s5b] IN-REPO PRECEDENT for the spelling (independent of any SOTN census): func_80072BC4 is
-  COMPLETED-C — absent from engine/queue.json, pure C on main — and itself carries an identical,
+  COMPLETED-C â€” absent from engine/queue.json, pure C on main â€” and itself carries an identical,
   hoistable-but-not-hoisted cross-arm duplicate store `*(u8 *)((s32)(arg1) + 0x1D) = 0xC3;` in
   BOTH arms, at src/text1b.c:5840 and src/text1b.c:5843.
 - [s5b] DISPOSITION: returning **ruling-request**, not candidate-ready. The 2026-07-24 16:38 judge
@@ -311,7 +311,7 @@ forms that reached 11 carry empty `do { } while(0)` scheduler barriers
   `python3 tmp/grind/func_80072CD4/s5/apply.py memory/grind/func_80072CD4/candidate.c` followed by
   `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`.
 - [s5b] The clean floor-4 form previously in candidate.c is preserved unchanged as
-  memory/grind/func_80072CD4/fallback_floor4.c — the fallback if the ruling goes against the
+  memory/grind/func_80072CD4/fallback_floor4.c â€” the fallback if the ruling goes against the
   matching body.
 
 ## [s6] SYNTHESIS â€” the open classification question is CLOSED (PASS) and the match is re-verified

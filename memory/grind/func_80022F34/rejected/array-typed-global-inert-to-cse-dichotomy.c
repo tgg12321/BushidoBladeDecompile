@@ -1,4 +1,4 @@
-/* REJECTED (grind s7, 2026-08-26) — `extern s32 D_801027BC[];` + D_801027BC[idx*5]
+/* REJECTED (grind s7, 2026-08-26) â€” `extern s32 D_801027BC[];` + D_801027BC[idx*5]
  * (header type correction from use sites) instead of `extern s32 D_801027BC;` + &.
  * WHY DEAD: symbol TYPE is inert to the separation dichotomy. Array-typed in the
  * separated class (this file) = vars=8 / per-access x2 / strand=1, exactly base;

@@ -1,9 +1,9 @@
-/* REJECTED (s8, 2026-08-19, forensics) — the DImode/SUBREG exit of birthing_insn_p is
+/* REJECTED (s8, 2026-08-19, forensics) â€” the DImode/SUBREG exit of birthing_insn_p is
  * measured DEAD on BYTES, not merely on rules.
  *
  * MECHANISM UNDER TEST.  tools/gcc-2.7.2/sched.c:2504-2535 (birthing_insn_p) has exactly
  * three ways to return 0 for a load insn: (a) reload_completed == 1 (sched2 only, not the
- * pass that orders this block); (b) GET_CODE (SET_DEST (pat)) != REG — the SUBREG door,
+ * pass that orders this block); (b) GET_CODE (SET_DEST (pat)) != REG â€” the SUBREG door,
  * i.e. the load writes only part of a multi-word pseudo; (c) the dest not being in
  * bb_live_regs (only true for a dead dest, which DCE removes). Every earlier session
  * attacked door (a)'s successor `reg_n_sets[i] == 1` (the multiply-assigned carrier axis,
@@ -20,18 +20,18 @@
  * MEASURED (sandbox func_80060A68 --disable all, 2026-08-19 chassis): score 31,
  * build 70 / target 66.
  *
- * WHAT IT PROVES.  The door FIRES — the disassembly
+ * WHAT IT PROVES.  The door FIRES â€” the disassembly
  * (tmp/grind/func_80060A68/s3/d1_disasm.txt) shows copy 2's `lw a0,12(a2)` hoisted to
  * slot 10, ahead of the stage load `lw a1,16(a2)`, which is exactly the reordering the
  * carrier axis was chasing. But the DImode local costs FOUR instructions that no later
- * pass folds away: `move v0,a0` (low half), `move v1,zero` (high half — flow does NOT
+ * pass folds away: `move v0,a0` (low half), `move v1,zero` (high half â€” flow does NOT
  * delete it even though the high half is never read), `addiu v0,v0,4`, and a reloaded
  * `lw a0,12(a2)`. 70 instructions against a 66-instruction target.
  *
- * CONSEQUENCE.  Door (b) is not a way to close this function at ALL — not "closed by
+ * CONSEQUENCE.  Door (b) is not a way to close this function at ALL â€” not "closed by
  * policy", closed by instruction count. Combined with door (c) being unreachable for a
  * live dest and door (a) being sched2-only, the ONLY exit that can close func_80060A68
- * is `reg_n_sets[i] == 1`, i.e. a multiply-assigned carrier — the axis the Judge has now
+ * is `reg_n_sets[i] == 1`, i.e. a multiply-assigned carrier â€” the axis the Judge has now
  * banned under every spelling. Do not re-propose a wide-typed carrier in any spelling
  * (long long, double, a two-word struct or union): the extra materialisation insns are
  * the point, and they are unconditional.

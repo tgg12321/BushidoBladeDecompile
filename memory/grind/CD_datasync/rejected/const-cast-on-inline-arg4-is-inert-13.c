@@ -1,4 +1,4 @@
-/* REJECTED — s12: a per-access `((const s32 *)tbl_125c)[...]` cast on a FULLY INLINE arg4
+/* REJECTED â€” s12: a per-access `((const s32 *)tbl_125c)[...]` cast on a FULLY INLINE arg4
 = 13/91, byte-identical to the plain inline attractor (e8, with arg5 cast
 too, is also 13). Combined with c1/e1 (the same cast on the NAMED-local arg4
 = 9) this pins the mechanism: RTX_UNCHANGING_P only perturbs the schedule for

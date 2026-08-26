@@ -1,19 +1,19 @@
-/* REJECTED — func_800645B0, session 9.  Sweep29 variant VB: the const-1 split
+/* REJECTED â€” func_800645B0, session 9.  Sweep29 variant VB: the const-1 split
  * into its OWN single-set local (`one`), the D_800A3444 read-modify-write left
  * in `val`.  Measured 12 / 80 against a 78-instruction target.
  *
  * Why it is dead: with only one set of `one` inside the loop, loop.c admits the
  * const-1 SET as a movable (alternative (1) at loop.c:700, reg_in_basic_block_p:
  * its only use is the in-block shift) and move_movables hoists it out of both
- * loops into a fresh callee-save — a save/restore pair, +2 instructions.  This
+ * loops into a fresh callee-save â€” a save/restore pair, +2 instructions.  This
  * is H18's wall, reproduced on the JD chassis.
  *
  * Two more spellings that also stay at 12 / 80 and are dead for a DIFFERENT
  * reason (they never give `one` a second set that loop.c can see):
- *   VF  `one = one;`  — eliminated before loop.c ever runs.
- *   VG  `one = 1;`    — a store of the value already held; cse1 runs BEFORE
+ *   VF  `one = one;`  â€” eliminated before loop.c ever runs.
+ *   VG  `one = 1;`    â€” a store of the value already held; cse1 runs BEFORE
  *                       loop and folds it out.
- * The surviving form needs a DEAD store of a DIFFERENT value — see
+ * The surviving form needs a DEAD store of a DIFFERENT value â€” see
  * ../candidate.c.
  */
 s32 func_800645B0(void) {

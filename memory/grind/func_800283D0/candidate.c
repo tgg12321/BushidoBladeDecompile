@@ -1,4 +1,4 @@
-/* candidate.c — func_800283D0 (saTan2KabutoWareMove), grind s1 2026-08-19
+/* candidate.c â€” func_800283D0 (saTan2KabutoWareMove), grind s1 2026-08-19
  * Honest floor with THIS body: sandbox --disable all = 30 (down from 44).
  * This body is ALREADY APPLIED in src/code6cac_b.c (identical text, lines 512-652).
  * Session-1 changes vs the pre-session tree, all ordinary C (no FAKE constructs):
@@ -13,7 +13,7 @@
  *   4. temp_v0_2 named local removed; `temp_a1_2 * 2` inlined at both use
  *      sites (target recomputes the sll in-arm instead of hoisting)
  * NOTE: statement-order shuffle of the loads (load after ret=1) was measured
- * INERT — sched1 launders source statement order here.
+ * INERT â€” sched1 launders source statement order here.
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
     s32 temp_a1;

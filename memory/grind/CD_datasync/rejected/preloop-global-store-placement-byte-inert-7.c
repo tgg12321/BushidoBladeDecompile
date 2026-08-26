@@ -1,4 +1,4 @@
-/* REJECTED — s12: the two pre-loop global stores (D_800F19BC = 0, D_800F19C0 = &...)
+/* REJECTED â€” s12: the two pre-loop global stores (D_800F19BC = 0, D_800F19C0 = &...)
 moved among the three pointer initialisations = 7/91 in three of four
 placements (g1/g2/g4); only moving the pointer inits ABOVE the sys_VSync
 call regresses (g3 = 17, the already-banked family). Dead axis.

@@ -1,5 +1,5 @@
 /* KILLED (s4, H16).  The 0x1000000 mask staged out of the double-set holder
- * `k` into a FRESH local (`s32 m; k = 0x1000000; m = k;`) measures 18 / 92 —
+ * `k` into a FRESH local (`s32 m; k = 0x1000000; m = k;`) measures 18 / 92 â€”
  * byte-identical to the session-3 candidate, i.e. completely inert.  The
  * identical stage into the ALREADY-LIVE loop counter `cnt` measures 11 / 93.
  * So the effect is not "an extra copy insn"; it is the reuse of a pseudo that

@@ -1,21 +1,21 @@
-/* REJECTED (s3) — 27 at 97 insns (candidate is 18 at 92).
+/* REJECTED (s3) â€” 27 at 97 insns (candidate is 18 at 92).
  *
  * WHAT IT PROVES: the REAL loop.c gate on hoisting a loop-invariant
- * constant is at tools/gcc-2.7.2/loop.c:695 — a movable is skipped only
+ * constant is at tools/gcc-2.7.2/loop.c:695 â€” a movable is skipped only
  * when ALL THREE of these fail:
  *   (A) ! maybe_never && ! loop_reg_used_before_p (...)
  *   (B) ! REG_USERVAR_P (dest) && ! REG_LOOP_TEST_P (dest)
  *   (C) reg_in_basic_block_p (p, dest)
  * so a USER variable (B false) whose live range CROSSES a branch (C false)
  * and whose set sits where maybe_never is already 1 (A false) stays
- * materialised inline, in its own pseudo — with NO double-set required.
+ * materialised inline, in its own pseudo â€” with NO double-set required.
  *
  * MEASURED: `k2 = 0x1000000;` placed at the `check:` join so it spans the
  * `if (v0 != 0)` branch DOES escape the hoist (y3, mask-only, 27/97 vs the
  * 30/98 both-hoisted baseline).  `k1 = 0x3C0000;` placed at the top of the
- * loop body does NOT (y2, 30/98): maybe_never is still 0 that early — it
+ * loop body does NOT (y2, 30/98): maybe_never is still 0 that early â€” it
  * only becomes 1 at the first JUMP_INSN/CODE_LABEL inside the loop
- * (loop.c:930) — so branch (A) still holds and the movable is built.
+ * (loop.c:930) â€” so branch (A) still holds and the movable is built.
  *
  * Both constants inline is therefore still only reachable via the
  * candidate's n_times_set==2 route (loop.c:702), which forces ONE pseudo
