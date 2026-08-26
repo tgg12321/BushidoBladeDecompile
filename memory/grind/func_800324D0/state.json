@@ -1,7 +1,7 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 12,
+ "session_count": 13,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -75,13 +75,29 @@
    "floor": 15,
    "modality": "escalation",
    "headline": "Both endgame-lock gates FAIL (scan LOW 0/8; zero SOTN precedent for any closing construct) - standing-ruling entry filed: REFUSED / OWNER-ACCEPTED INCOMPLETE, terminal park"
+  },
+  {
+   "session": 13,
+   "floor": 15,
+   "modality": "escalation",
+   "headline": "Owner-directed solver modality executed (first time in 13 sessions): residual typed FORECLOSED at depth 3 against an exact 8/8 forward model, and all three unmodelled fallback mechanisms measured iner"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Every honest axis is measured dead and the flat cycle now includes a structural entry on the 15-chassis itself; the ladder's R1 escalation disposition applies (driver's call)",
-   "mechanism": "R1 ladder retune (asm-until-matched.md): one full flat cycle => escalation. Modalities flat since the s4 drop: permuter x2 (R3 exhausted both ways), synthesis, forensics, rederive x3, structural (this session). Evidence spine for the escalating session: H20 citation resolution (s7) + s6 cascade partition + s7/s8/s9 byte-identical-spellings uniformity proof + s9 m2c closure + s10 corpus/sibling closure + s11 index-walk closure + s12 storage-class/scope closure",
-   "next_probe": "none \u2014 disposition rule, not a probe; the escalation-modality session must FILE the docs/grind/decisions.md entry itself (none exists yet) and evaluate the two endgame-lock AND-gates per the standing 2026-07-27 ruling"
+   "hypothesis": "With every modelled RA lever FORECLOSED, the only remaining honest route is a genuinely different 68-instruction SHAPE - a C expression whose pre-RA RTL insn multiset differs from ours - not another allocation-steering spelling of the same shape.",
+   "mechanism": "inverse.py rtl_shape class: the RA and scheduler models permute and rename a FIXED insn set, so reaching a different assignment now requires changing the set the front end and early optimisers build",
+   "next_probe": "Enumerate C expressions for the stream walk whose combine/cse output differs in the insn multiset while still landing exactly 68 insns (the s10 index-walk family all came out at 69); sandbox each and re-classify with inverse_compose to confirm the first divergence moved out of RA."
+  },
+  {
+   "hypothesis": "A pre-RA appearance of $v1 or $a2 - the mechanically missing ingredient (prera_hard=[4]) - is unreachable in any 68-insn form of this leaf function.",
+   "mechanism": "global.c set_preference can only record hard-reg preferences for registers that appear as hard regs in pre-RA RTL; on MIPS those arise from call argument/return conventions, and a leaf has none",
+   "next_probe": "If re-opened: confirm from the .rtl/.combine dumps that no PsyQ-idiom expansion (div/mod, multu, DImode helper) can introduce $v1/$a2 pre-RA without adding instructions - a one-read check that closes the last theoretical crack."
+  },
+  {
+   "hypothesis": "The jtbl_800105A0 routing question, answered YES, lets the four register-asm pins leave main without touching the pure-C standing of the function.",
+   "mechanism": "asm-until-matched migration: INCLUDE_ASM routing needs the currently C-generated jump table supplied from asm/rodata instead, which needs bb2.ld / splat inputs - outside grind-session surface",
+   "next_probe": "Operator: wire asm/rodata/jtbl_800105A0.s into the link (or re-home the table), switch src/code6cac_b.c:1541 to INCLUDE_ASM, full build, SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa, then run tools/check_completion_integrity.py."
   }
  ],
  "judge_constraints": [

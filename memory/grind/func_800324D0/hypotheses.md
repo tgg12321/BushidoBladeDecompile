@@ -572,3 +572,45 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - probe: grep of docs/reference/sotn-construct-index.md (1,365 entries) for register pins / overlapping-live-range pairs / set_preference-find_reg steering families, this session; plus the banked s10 decomp.me corpus sweep (3,754 scratches, best sim 0.090) and the 2026-07-01 community research (zero precedent for register-asm pins)
 - result: ZERO hits - no citable file+line exists for either closing construct; a completed negative search, not an open question
 - verdict: KILLED
+
+## [s13] H29 — the owner-directed solver modality (tools/ra_solver, never run on this function) finds a modelled input perturbation that reaches the target walker/cmd assignment
+- mechanism: global.c allocno-priority + find_reg inverse solve — search minimal perturbations of refs / live length / birth order / conflicts / preferences / calls-crossed that flip pseudo 73 to $v1 and pseudos 75+85 to $a2, each mapped to a C-level lever
+- probe: full solver chain, first ever run on func_800324D0, candidate.c applied to src (chassis re-verified 15, 68/68 first): `extract.py func_800324D0 code6cac_b` -> model.json; `simulate.py` forward check; `mkasm_honest.sh` run TWICE (once with HEAD src to capture the TRUE post-regfix/asmfix target stream, once with candidate src for the honest stream — mkasm_honest builds .tgt.s from whatever src holds, so the naive single run produced a fiction that classified IDENTICAL/PRE-RA; banked TRUE.tgt.s); `goal_from_asm.py` -> goal.json; `inverse.py global --goal {"73":3,"75":6,"85":6} --depth 3 --top 10`
+- result: forward model is EXACT (sort order MATCH, dispositions 8/8). goal_from_asm independently re-derives the ledger's residual from the two asm streams: 15 substituted operands over 11 instructions, $a2->$v1 x12 and $v1->$a2 x3 — the same uniform 2-swap s4–s12 measured by hand. inverse.py returns **NEGATIVE / FORECLOSED**: 199 single perturbation atoms over 7 classes, refs delta +12/-6, live length +/-2,4,8, depth 3 — no vector reaches the goal. 16 preference atoms are not even emitted, on a mechanical ground the hand analysis never stated this crisply: `prera_hard = [4]` — $v1 and $a2 NEVER appear as hard registers in this function's pre-RA RTL (the only pre-RA hard reg is the incoming parameter $a0), so global.c set_preference can never record a preference for either register, for ANY C spelling. The function is a leaf with no calls, so no argument/return hard reg can be introduced without breaking the 68-insn shape.
+- verdict: KILLED (mechanically typed FORECLOSED, replacing s1/s2/s6's hand arithmetic with a tool verdict)
+
+## [s13] H30 — the three mechanisms the solver names as OUTSIDE its global model (local-alloc suggested-register pass, qty_size/DImode mispricing, reload spill-retry) hold the residual and are worth instrumenting
+- mechanism: inverse.py's own escape hatch — a NEGATIVE global result means the flip was forced by an input the global model does not carry; the README names exactly three such mechanisms
+- probe: `local_extract.py code6cac_b --func func_800324D0` + `local_alloc.py code6cac_b --func func_800324D0`; model.json `modes`/`sizes` inspection for DImode; model.json retry-block scan (`grep -c retry` = 0) cross-checked against scan_hand_coded's spill count
+- result: ALL THREE MEASURED INERT for this function. (1) local-alloc: exactly 5 quantities, all in different blocks, and EVERY ONE gets `got=2` ($v0) — no local quantity ever touches $v1 or $a2, so neither the main pass nor the suggested-register pass can seed or exclude the two contested registers (order 4/4 blocks, assign 4/5 qtys; the single unscored miss is a live-hard-reg block, still $v0). (2) DImode: `modes` are SI/QI only and `sizes` is empty — no DImode quantity exists to misprice. (3) reload retry: zero retry blocks in the model, 0 spills per scan_hand_coded — the function never enters reload's spill loop, so retry_global_alloc is never called. The solver's "extend the instrumentation before spending another spelling search" lead is therefore closed by measurement rather than left open.
+- verdict: KILLED
+
+## [s13] H31 — gate (a) re-verified this session: canonical-asm grant path
+- mechanism: endgame-lock-disposition.md gate 1 (STRONG S1/S2/S6 tier required)
+- probe: `python3 tools/scan_hand_coded.py --single func_800324D0` (tmp/grind/func_800324D0/s13/scan_hand_coded.log)
+- result: tier=LOW score=0/8 on all eight signals (80 insns, 0 spills, 7 distinct regs) — unchanged from s12. Ordinary GCC output; asm refused.
+- verdict: KILLED
+
+## [s13] The owner-directed solver modality (tools/ra_solver, never run on this function in 12 sessions) finds a modelled input perturbation that reaches the target walker/cmd assignment.
+- mechanism: global.c allocno-priority + find_reg inverse solve over refs / live length / birth order / conflicts / preferences / calls-crossed, each atom mapped to a C-level lever
+- probe: extract.py func_800324D0 code6cac_b -> model.json; simulate.py forward check; mkasm_honest.sh run twice (HEAD src for the TRUE target stream, candidate src for the honest stream); goal_from_asm.py -> goal.json; inverse.py global --goal {73:3,75:6,85:6} --depth 3 --top 10
+- result: Forward model EXACT (sort order MATCH, dispositions 8/8). goal_from_asm independently re-derives the residual: 15 substituted operands over 11 instructions, $a2->$v1 x12 / $v1->$a2 x3 - identical to the hand-measured 2-swap. inverse.py returns NEGATIVE/FORECLOSED: 199 atoms over 7 input classes, refs delta +12/-6, live length +/-2,4,8, depth 3, no vector reaches the goal. Mechanical reason newly surfaced: prera_hard=[4] - $v1 and $a2 never appear as hard regs in this function pre-RA RTL, so global.c set_preference can never record a preference for either under ANY C spelling (16 preference atoms not emitted). Leaf function, so introducing those hard regs pre-RA via a call site would break the 68-insn shape.
+- verdict: KILLED
+
+## [s13] The three mechanisms inverse.py names as OUTSIDE its global model (local-alloc suggested-register pass, qty_size/DImode mispricing, reload spill-retry) hold the residual and are worth instrumenting.
+- mechanism: the solver escape hatch: a NEGATIVE global result normally means the flip was forced by an unmodelled input, and the README names exactly these three
+- probe: local_extract.py + local_alloc.py --func func_800324D0; model.json modes/sizes inspection for DImode; retry-block scan cross-checked against the scan_hand_coded spill count
+- result: ALL THREE INERT. local-alloc: exactly 5 quantities, EVERY one assigned got=2 ($v0) - neither the main nor the suggested-register pass can seed or exclude $v1/$a2 (order 4/4 blocks, assign 4/5 qtys; the single miss is a live-hard-reg block still landing $v0). DImode: modes are SI/QI only and the sizes map is empty - nothing to misprice. Reload: zero retry blocks, 0 spills - retry_global_alloc is never called. No instrumentation lead remains to buy.
+- verdict: KILLED
+
+## [s13] Gate (a): the function shows hand-coded-asm evidence supporting the canonical-asm grant path.
+- mechanism: endgame-lock-disposition.md gate 1, STRONG S1/S2/S6 tier required
+- probe: python3 tools/scan_hand_coded.py --single func_800324D0
+- result: tier=LOW score=0/8, all eight signals absent (80 insns, 0 spills, 7 distinct regs) - unchanged from s12; ordinary GCC output, asm refused
+- verdict: KILLED
+
+## [s13] The chassis is unchanged: the banked candidate still measures floor 15 on current HEAD.
+- mechanism: chassis re-verification mandated by the dispatch brief (HEAD floor unavailable because main carries the legacy 4-pin body)
+- probe: candidate.c applied to src/code6cac_b.c; sandbox func_800324D0 --disable all; src restored to HEAD afterwards (git status --porcelain src/ clean)
+- result: score 15, build_insns 68 == target_insns 68 - identical to the s4-s12 floor, so every banked axis-kill is current
+- verdict: CONFIRMED

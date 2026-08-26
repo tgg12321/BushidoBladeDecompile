@@ -952,3 +952,114 @@ extra instruction, no moved instruction; 68/68 with score 0.
 - [s12] Residual 15 is one uniform walker<->cmd 2-register swap ($6<->$3); all three honest find_reg routes to it are measured dead (preference: walker defs cannot plant, s2 proof; priority: needs ~5x weighted refs, s1 arithmetic; conflict: liveness-impossible, s3 proof)
 
 - [s12] src/code6cac_b.c restored to HEAD after measurement - working tree carries only the decisions.md entry, ledger update, and scratch artifacts
+
+## [s13] Solver modality (owner directive 2026-08-24) — executed; residual typed FORECLOSED; representation packet filed
+
+**Chassis.** candidate.c applied to src/code6cac_b.c: `sandbox func_800324D0 --disable all`
+= **score 15, build_insns 68 == target_insns 68** (tmp/grind/func_800324D0/s13/sandbox_chassis.log).
+Unchanged since the s4 drop, so every banked axis-kill remains current. src restored to HEAD
+(`git status --porcelain src/` clean) before the session ended.
+
+**The owner directive for this function (2026-08-24, escalation-not-parked) explicitly recommended
+the solver modality before any deep re-grind. It had never been run on func_800324D0 in twelve
+sessions. This session ran the whole chain.** Results in hypotheses.md H29–H31; the load-bearing
+facts:
+
+1. **The forward model is exact.** `extract.py func_800324D0 code6cac_b` +
+   `simulate.py` reproduce global.c on this function with sort order MATCH and
+   **dispositions 8/8** — allocno order 75,76,85,72,74,73,91,86 and assignments
+   75→$v1, 76→$a1, 85→$v1, 72→$a0, 74→$v0, 73→$a2, 91→$a3, 86→$t0. The solver is
+   therefore entitled to a verdict here; its answers are not extrapolation.
+
+2. **The residual re-derives independently from the two asm streams.**
+   `goal_from_asm.py` aligns the honest stream against the true target stream and reports
+   **15 substituted operands over 11 instructions: `$a2->$v1` ×12 and `$v1->$a2` ×3** — bit for bit
+   the walker↔cmd 2-swap that s4–s12 measured by hand off objdump side-by-sides. Two independent
+   derivations of the same residual.
+
+3. **`inverse.py global` returns NEGATIVE / FORECLOSED.** Goal `{73:$v1, 75:$a2, 85:$a2}`,
+   199 single perturbation atoms over 7 input classes (refs, live length, birth order, conflicts,
+   preferences, calls-crossed, class), refs delta +12/−6, live-length ±2/4/8, **depth 3**: no vector
+   reaches the target assignment. The verdict carries a mechanical reason the twelve prior sessions
+   never stated this crisply: **`prera_hard = [4]`** — `$v1` and `$a2` never appear as hard registers
+   anywhere in this function's pre-RA RTL (the incoming parameter `$a0` is the only pre-RA hard reg),
+   so `global.c set_preference` **cannot record a preference for either contested register under ANY
+   C spelling**, and 16 preference atoms are not even emitted into the search space. The function is a
+   leaf with no calls, so the one legitimate way to make `$v1`/`$a2` appear pre-RA — argument or
+   return-value hard regs at a call site — would break the 68-instruction shape outright. This is the
+   tool-typed form of s1/s2/s6's hand arithmetic, and it closes the preference route as a *modelling*
+   fact rather than a *counting* estimate.
+
+4. **The solver's own escape hatch is closed by measurement.** A NEGATIVE global result normally
+   means "the mechanism is outside the model — instrument next", and the README names exactly three
+   candidates. All three are inert here: local-alloc runs **5 quantities, every one assigned `got=2`
+   ($v0)** so neither the main nor the suggested-register pass can seed or exclude $v1/$a2 (order 4/4,
+   assign 4/5, the miss a live-hard-reg block still landing $v0); `modes` are SI/QI only with an empty
+   `sizes` map so there is **no DImode quantity to misprice**; and the model contains **zero retry
+   blocks** (0 spills per scan_hand_coded) so `retry_global_alloc` is never called. There is no
+   instrumentation lead left to buy.
+
+**Tooling trap worth not re-paying (cost ~4 turns).** `tools/ra_solver/mkasm_honest.sh` builds
+`<stem>.tgt.s` by compiling **whatever `src/<stem>.c` currently holds** and then applying
+regfix/asmfix. With the candidate applied to src, the "target" half is a build of the candidate —
+for a 0-rule function that is byte-identical to the honest half, and `inverse_compose.py classify`
+duly reported **`FIRST DIVERGENCE: IDENTICAL`**, pure fiction. Re-running it with the HEAD (4-pin)
+body in src produces the real target stream. Correct recipe: run `mkasm_honest.sh` once with **HEAD**
+src and copy `<stem>.tgt.s` aside, then restore the candidate, run it again, and put the saved
+`.tgt.s` back before calling `goal_from_asm.py` / `classify`. The true target stream is banked at
+tmp/grind/func_800324D0/s13/TRUE.tgt.s. (Second trap: even with the correct pair, `classify`
+reported `PRE-RA` — the honest and target streams reference different **local label numbers**
+(`.L336..339` vs `.L334..341`) because the TU's label counter shifts with the differing body, and
+the classifier's register-blanked multiset comparison treats a renamed label as a different
+instruction. `goal_from_asm.py`'s alignment is immune to this and produced the correct RA answer.
+Do not trust a `PRE-RA` classify verdict on a function whose two streams come from different
+sources without checking the label numbering first.)
+
+**Gates re-verified this session.** Gate (a) canonical-asm: `scan_hand_coded --single func_800324D0`
+= **tier LOW, score 0/8** (tmp/grind/func_800324D0/s13/scan_hand_coded.log), unchanged from s12 —
+asm refused. Gate (b) SOTN precedent for a closing construct: unchanged FAIL — the only measured
+closer remains the driver-BANNED invented overlapping `base`/`ff` pair (layer-1 FAIL,
+docs/grind/decisions.md:9542), and the s12 negative search over the 1,365-entry
+sotn-construct-index found zero citable file+line for it or for the HEAD pins.
+
+**Why this session did NOT re-file the s12 "REFUSED / OWNER-ACCEPTED INCOMPLETE" disposition.**
+The owner's 2026-08-24 rulings retired the parked state (escalation-not-parked) and made a packet
+whose YES would lower a standard — "accept the debt", sanction a no-precedent family, override the
+canonical evidence bar — **PRE-DECIDED NO, not to be filed**. The s12 entry is exactly that shape,
+so re-filing it is now forbidden and the function stays active under standing policy. What IS
+decidable and does not lower any standard is the **representation/routing question**: main still
+carries this function as four `register T x asm("$N")` pins because the 2026-08-19 asm-until-matched
+migration deferred it on a real technical coupling — `asm/funcs/func_800324D0.s` references
+`jtbl_800105A0` (lines 20–21), whose backing `asm/rodata/jtbl_800105A0.s` exists but is wired into
+no linker input (`bb2.ld`, `Makefile`, `regfix.txt`, `asmfix.txt` all have zero references) because
+the 2026-06-09 rodata cleanup retired every `asm/data/*.rodata*` segment. Answering that routing
+question would REMOVE a cheat representation from main; the surfaces it needs (`bb2.ld`, splat
+config) are outside the grind session's allowed surface. That is the packet filed at
+docs/grind/decisions.md this session.
+
+**Artifacts (s13):** sandbox_chassis.log, scan_hand_coded.log, goal.json, ra_solver_inverse.log
+(simulate + inverse + local_alloc), classify.log, TRUE.tgt.s, code6cac_b.HEAD.c, code6cac_b.cand.c.
+
+- [s13] Chassis re-verified this session: sandbox --disable all = 15, build_insns 68 == target_insns 68; src restored to HEAD afterwards, working tree clean.
+
+- [s13] The ra_solver forward model reproduces global.c EXACTLY on this function (sort order MATCH, dispositions 8/8: 75->$v1, 76->$a1, 85->$v1, 72->$a0, 74->$v0, 73->$a2, 91->$a3, 86->$t0), so its verdicts here are entitled, not extrapolated.
+
+- [s13] goal_from_asm.py re-derives the residual independently from the two asm streams: 15 substituted operands over 11 instructions, $a2->$v1 x12 and $v1->$a2 x3 - bit for bit the walker<->cmd 2-swap that s4-s12 measured by hand off objdump side-by-sides.
+
+- [s13] inverse.py global returns NEGATIVE / FORECLOSED at depth 3 over 199 atoms in 7 input classes (refs, live length, birth order, conflicts, preferences, calls-crossed, class): no perturbation reaches the target assignment.
+
+- [s13] NEW mechanical fact: prera_hard = [4]. $v1 and $a2 never appear as hard registers in this function pre-RA RTL (the incoming parameter $a0 is the only one), so global.c set_preference can never record a preference for either contested register under any C spelling - 16 preference atoms are not even emitted into the search space. This is the tool-typed form of the s1/s2/s6 hand arithmetic.
+
+- [s13] The solver own escape hatch is closed by measurement: local-alloc 5 quantities all land in $v0 (never $v1/$a2), there is no DImode quantity to misprice (modes SI/QI, sizes empty), and there are zero reload retry blocks (0 spills). None of the three unmodelled mechanisms can hold this residual.
+
+- [s13] Gate (a) canonical-asm FAILS this session: scan_hand_coded --single func_800324D0 = tier LOW, score 0/8, all eight signals absent.
+
+- [s13] Gate (b) SOTN precedent FAILS (unchanged): the only construct ever measured to close the 15 is the invented overlapping base/ff local pair, layer-1 FAILed as a Test-3 GCC-internals cheat (decisions.md:9542) and driver-BANNED in all spellings; the s12 negative search over the 1,365-entry sotn-construct-index found zero citable file+line for it or for the HEAD pins.
+
+- [s13] TOOLING TRAP (cost ~4 turns, banked in evidence.md): mkasm_honest.sh builds <stem>.tgt.s from whatever src/<stem>.c currently holds, so with the candidate applied the target half is a build of the candidate and inverse_compose.py classify reports FIRST DIVERGENCE: IDENTICAL - pure fiction. Correct recipe: run it once with HEAD src, copy <stem>.tgt.s aside, restore the candidate, run again, then put the saved .tgt.s back before goal_from_asm/classify. TRUE.tgt.s is banked in the s13 scratch.
+
+- [s13] SECOND TOOLING TRAP: even with the correct stream pair, inverse_compose.py classify reports PRE-RA for this function because the honest and target streams reference different LOCAL LABEL NUMBERS (.L336-.L339 vs .L334-.L341) - the TU label counter shifts with the differing body, and the register-blanked multiset comparison treats a renamed label as a different instruction. goal_from_asm.py alignment is immune and yields the correct RA answer. Do not trust a PRE-RA classify verdict on streams built from different sources without checking label numbering first.
+
+- [s13] Representation fact verified this session: asm/funcs/func_800324D0.s:20-21 references jtbl_800105A0; asm/rodata/jtbl_800105A0.s exists but is referenced by NOTHING in bb2.ld, Makefile, regfix.txt or asmfix.txt (the 2026-06-09 rodata cleanup retired all asm/data/*.rodata* segments). That is the real, sweep-3-reconfirmed ground for this function asm-until-matched deferral (borderline.md:154) and the subject of the filed packet.
+
+- [s13] The s12 REFUSED / OWNER-ACCEPTED INCOMPLETE disposition was deliberately NOT re-filed: the owner second 2026-08-24 ruling makes an accept-the-debt packet pre-decided NO and not to be filed, so the function stays ACTIVE under standing policy while the routing question is decided.

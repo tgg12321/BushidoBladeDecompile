@@ -14088,3 +14088,88 @@ fallback if the owner declines the tooling route.
 with zero score-improving finds; 14 disproven forms banked. Full detail:
 `memory/grind/func_80078654/{evidence.md,hypotheses.md,candidate.c,rejected/}`;
 this session's artifacts in `tmp/grind/func_80078654/s10/`.
+
+## 2026-08-26 — func_800324D0 — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Escalation-modality session 13. The owner's 2026-08-24 ruling (escalation-not-parked) retired the
+parked state and returned this function to active grinding, with a standing directive to run the
+**solver modality** before any deep re-grind. That directive had never been executed; this session
+executed it in full, and its result changes the *character* of the residual (from a counted
+argument to a tool-typed FORECLOSED verdict) without changing the floor.
+
+### What is NOT being asked
+The s12 entry (2026-08-20, decisions.md:9553) asked the owner to accept the debt — "REFUSED /
+OWNER-ACCEPTED INCOMPLETE". Under the owner's second 2026-08-24 ruling that shape is **pre-decided
+NO and must not be filed**, so it is not re-filed here and this function stays ACTIVE under standing
+policy. Nothing below asks to lower a standard, sanction a no-precedent family, or override the
+canonical evidence bar.
+
+### (i) The decidable question — representation / routing
+**May `asm/rodata/jtbl_800105A0.s` be wired back into the link (or its table re-homed) so that
+func_800324D0 can be migrated to `INCLUDE_ASM("asm/funcs", func_800324D0)` and the four
+`register T x asm("$N")` pins it currently carries on main can be deleted?**
+
+- `src/code6cac_b.c:1541` still holds the pre-migration cheat representation: four register-asm pins
+  (`v1`/`v0`/`a2`/`a1`) that force target's allocation. Zero regfix/asmfix rules.
+- The 2026-08-19 asm-until-matched migration deliberately left this function behind, and the
+  2026-08-24 sweep-3 re-audit reconfirmed the ground as REAL, not a false-positive deferral
+  (docs/grind/borderline.md:154): "func_800324D0 stays deferred on its REAL ground (asm references
+  C-generated jtbl)".
+- Verified this session: `asm/funcs/func_800324D0.s:20-21` references `jtbl_800105A0`
+  (`lui/addiu $a3, %hi/%lo`). The backing file `asm/rodata/jtbl_800105A0.s` **exists**, but grep of
+  `bb2.ld`, `Makefile`, `regfix.txt` and `asmfix.txt` returns **zero** references to the symbol — the
+  2026-06-09 rodata cleanup retired all twelve `asm/data/*.rodata*` segments, so today the table is
+  emitted only as a by-product of compiling the C `switch`. Routing it back requires editing `bb2.ld`
+  / the splat inputs, which are **outside a grind session's allowed surface** (and `make setup` is
+  forbidden — `bb2.ld` is hand-maintained).
+- This is a fidelity/routing question, and a YES **raises** the standard: it removes four register-asm
+  pins from main and puts the function on the same honest INCLUDE_ASM footing as the other 200+
+  active items, with the C landing only when it matches.
+
+### (ii) Evidence pointers
+- **Chassis (this session):** candidate.c applied to src → `sandbox --disable all` = **15,
+  build_insns 68 == target_insns 68** (tmp/grind/func_800324D0/s13/sandbox_chassis.log). Flat since
+  the s4 drop 27→15. src restored to HEAD, working tree clean.
+- **Solver forward model is EXACT** — `simulate.py` on the extracted model: sort order MATCH,
+  **dispositions 8/8** (tmp/grind/func_800324D0/s13/ra_solver_inverse.log). The solver is entitled to
+  a verdict on this function.
+- **Residual independently re-derived** — `goal_from_asm.py` aligns honest vs true-target streams:
+  **15 substituted operands over 11 instructions, `$a2->$v1` ×12 / `$v1->$a2` ×3**
+  (tmp/grind/func_800324D0/s13/goal.json), identical to the hand-measured walker↔cmd 2-swap.
+- **`inverse.py global` = NEGATIVE / FORECLOSED at depth 3** over 199 atoms in 7 input classes
+  (refs, live length, birth order, conflicts, preferences, calls-crossed, class). Mechanical reason:
+  **`prera_hard = [4]`** — `$v1` and `$a2` never appear as hard regs in this function's pre-RA RTL, so
+  `global.c set_preference` can never record a preference for either under ANY C spelling; 16
+  preference atoms are not emitted at all. The function is a leaf, so introducing those hard regs
+  pre-RA (call argument / return value) would break the 68-insn shape.
+- **The solver's own escape hatch is closed by measurement** (hypotheses.md H30): local-alloc runs
+  5 quantities, **all assigned `$v0`** — neither the main nor the suggested-register pass can touch
+  $v1/$a2; `modes` are SI/QI with an empty `sizes` map — **no DImode to misprice**; **zero retry
+  blocks / 0 spills** — `retry_global_alloc` is never called. There is no instrumentation lead left.
+- **Gate (a) canonical-asm: FAIL (re-verified this session)** — `scan_hand_coded --single
+  func_800324D0`: **tier=LOW, score=0/8**, all eight signals absent (80 insns, 0 spills, 7 distinct
+  regs), tmp/grind/func_800324D0/s13/scan_hand_coded.log.
+- **Gate (b) SOTN precedent: FAIL (unchanged)** — the only construct ever measured to close the 15 is
+  the invented overlapping `base`/`ff` local pair, layer-1 FAILed as a Test-3 GCC-internals cheat
+  (decisions.md:9542) and driver-BANNED in all spellings; the s12 negative search over the
+  1,365-entry `docs/reference/sotn-construct-index.md` found **zero** citable file+line for it or for
+  the HEAD pins.
+- **Exhaustion:** 13 sessions; floor 27 (s1) → 15 (s4) → flat 15 through s13. Post-drop flat cycle
+  covers permuter ×2 (~224k iterations, two distinct basins, zero improving finds), synthesis,
+  forensics ×2, rederive ×3, structural, escalation ×2, and now **solver** — the last ladder modality
+  that had never been run here. Full hypothesis ledger H1–H31 in
+  memory/grind/func_800324D0/hypotheses.md.
+
+### (iii) Consequence of each answer
+- **YES (route the jtbl; migrate to INCLUDE_ASM):** four register-asm pins leave main; the function's
+  main-tree representation becomes honest and consistent with asm-until-matched; the queue item stays
+  active at ledger floor 15 with candidate.c banked, available to any future pure-C lever or tooling.
+  Cost: one operator edit to `bb2.ld` / splat inputs plus a full-build SHA1 re-verify against
+  `62efab4f73f992798c43e8c730aa43baa10bb4fa`.
+- **NO (leave the coupling as-is):** the four pins remain on main as an openly-flagged deferred
+  legacy representation (one of the 16 byte-coupling exceptions recorded 2026-08-24), the function
+  stays active, and grinding continues from floor 15 — with the note that after this session every
+  modelled RA lever is typed FORECLOSED, so the next productive attempt is a genuinely new *shape*
+  (a different 68-insn instruction sequence), not another allocation-steering spelling.
+
+Either answer returns the item to active. Nothing is terminal, and no standard moves.
