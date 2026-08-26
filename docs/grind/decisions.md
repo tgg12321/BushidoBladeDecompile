@@ -13573,3 +13573,44 @@ dead modalities was not exhaustion â€” it was four modalities all attacking the
 same side of a two-sided quotient. The solver named the quotient and made the
 other side visible in one session. Where a ledger's kills all share one lever
 direction, run the solver before believing the wall.
+
+## 2026-08-26 — func_80037A20 (src/code6cac_c.c) — **MATCHED IN PURE C — ESCALATION MOOT**
+
+Grind session s13 (structural modality) closed this function honestly.  The 2026-07-24
+OWNER-ESCALATION (decisions.md:1675) and the 2026-07-27 "REFUSED / OWNER-ACCEPTED
+INCOMPLETE" ruling (decisions.md:1778) rested on the premise that every sanctioned pure-C
+axis was dead at floor 13; s9 already dropped the floor to 8 and withdrew that premise
+(decisions.md:13494), s10/s11 reached 6, and s13 reached **0**.
+
+**Result:** `sandbox func_80037A20 --disable all` = 0 (33/33 insns, 0 rules) and the full
+build links to SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` == the oracle (`MATCH`).
+
+**The body is ordinary C with zero constructs** — no pin, no `__asm__`, no volatile, no
+dead store, no FAKE annotation, nothing from any sanctioned-exception family.  It is the
+plain PsyQ memory-card file-count idiom: sprintf the path, `firstfile`, then a `do/while`
+that increments the counter at the top of the body and advances the DIRENTRY pointer by
+0x28.  Self-vet: `memory/grind/func_80037A20/self_vet.md`; body:
+`memory/grind/func_80037A20/candidate.c`.
+
+**Why twelve sessions missed it:** the s10/s11 floor-6 body deviated from the plain idiom
+in three ways, each individually motivated by an allocation measurement — the zero-init
+hoisted above the sprintf call, an explicit `var_s1++` peel, and an explicit `var_s1 -= 1;`
+tail.  All three are wrong.  With the increment written at the loop top instead, the
+single walking pointer has `reg_n_sets == 2` so sched.c's `birthing_insn_p` boost never
+fires (s12's GATE 1 dissolves); the surviving increment sits after the loop's CODE_LABEL
+so cse1's REG_WAS_0 const-prop cannot reach it (GATE 2 dissolves); and reorg.c supplies
+both the delay-slot `addiu $s1,$s1,1` and the compensating `addiu $s1,$s1,-1` that the
+sessions had been trying to spell in C.
+
+**Standing lesson banked for the pipeline (worth more than this function):** a sandbox
+score of 0 does **not** imply a match.  The sandbox compares objects with relocations
+masked, so callee/global SPELLING is invisible to it.  The first draft of this exact body
+named the callees `func_80079A30` / `bios_firstfile_B` / `bios_nextfile_B`, scored
+sandbox 0 with 33/33 insns, and failed the link with three "undefined reference" errors.
+That is the mechanical explanation of this function's six banked Judge constraints
+("candidate form failed full-build SHA1 on main (masked-0 register diff class)").  Every
+`candidate-ready` should be confirmed with `build` before it is claimed.
+
+## 2026-08-26 10:09 â€” func_80037A20 â€” final call â€” **PASS**
+
+Diff replaces one INCLUDE_ASM with the plain PsyQ memcard file-count idiom: sprintf the path, firstfile, then a do/while nextfile walk with a 0x28 DIRENTRY stride, publish + return the count. No sanctioned-exception family is invoked and none is needed (self_vet.md CONSTRUCTS: none). Decisive fact: every statement is semantically load-bearing and the two cc1 behaviours that make it match (reorg.c stealing the loop-top increment into the bnez delay slot with its own compensating addiu -1; the surviving increment sitting after the loop CODE_LABEL so cse1 cannot const-prop the zero-init into it) are consequences of the ordinary spelling, not levers written into C - the source-level peel/decrement spellings are in rejected/s13-source-level-decrement-duplicates-reorg-compensation.c. Independently verified: git diff touches only src/code6cac_c.c (plus ledger/docs/metrics), adds no declarations - sprintf/firstfile/nextfile/g_str_memcard_fmt/D_80102810/D_800A38C8 all pre-exist at HEAD (include/code6cac.h:501, src/code6cac_c.c:139-170), the (s32) cast is forced by that existing sprintf prototype; no __asm__, pin, volatile, alias rename, dead store or rule anywhere in the diff; re-ran sandbox --disable all = 0, 33/33 insns, rules_dropped 0 (the 4 cheat_asm_stripped are other functions in the TU, untouched here). Banked judge_constraints were all the masked-0 link-spelling class (hypotheses.md [s13]), resolved by spelling the callees with their linker names - the flagged failure mode is gone, not respelled. Full evidence: hypotheses.md [s13], evidence.md, self_vet.md.
