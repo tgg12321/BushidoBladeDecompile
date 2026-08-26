@@ -789,3 +789,38 @@ and every s2/s6/s10 fold-defeat kill is chassis-stale with respect to vJ.
 - probe: Read the cc1 -da assembly output for the floor-6 base body (tmp/grind/func_80037A20/dumps/code6cac_c.s) generated this session.
 - result: KILLED. cc1 itself emits `move $17,$0` BEFORE the sprintf jal on that body (RTL order: move $17,$0; la $16; addu $4,$sp,16; la $5; jal), and the lazy `sw $17,52($sp)` is printed immediately before it. Emptying the delay slot cannot move a pre-jal RTL insn to after the jal, so the premise of the frontier item was self-inconsistent. The zero-init must be RTL-AFTER the sprintf call, which is exactly what the vJ chassis provides.
 - verdict: KILLED
+
+## [s13] The plain one-pointer idiom — zero-init after the sprintf call, counter increment at the TOP of the do/while body, no source-level peel and no source-level decrement — is the byte match.
+- mechanism: With the increment written at the loop top and no explicit peel, (a) the
+  single walking pointer has reg_n_sets == 2 so sched.c's birthing_insn_p/adjust_priority
+  boost never fires and `la $s0` stays at the top of the entry block (s12's GATE 1
+  dissolves); (b) the surviving increment sits after the loop's CODE_LABEL, which
+  terminates cse's extended basic block, so the dominating `var_s1 = 0` is not
+  const-propagated into it and it stays `addiu $s1,$s1,1` instead of folding to
+  `li $s1,1` (s12's GATE 2 dissolves); (c) reorg.c steals the loop-top increment into the
+  `bnez` delay slot and emits its own compensating `addiu $s1,$s1,-1` after the loop,
+  which is exactly target's 0x80037A7C/0x80037A80 pair — so the peel and the decrement
+  must NOT be written in C.
+- probe: Applied the body to src/code6cac_c.c, ran `sandbox func_80037A20 --disable all`
+  and then the full `build`.
+- result: sandbox 0 (33/33 insns, 0 rules) AND full-build link SHA1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (`MATCH`).  Zero constructs: no pin,
+  no `__asm__`, no volatile, no dead store, no FAKE annotation, no sanctioned-exception
+  family.  Self-vet: memory/grind/func_80037A20/self_vet.md.
+- verdict: CONFIRMED
+
+## [s13] A sandbox score of 0 does not imply the function links, because the sandbox compares objects with relocations masked — the callee/global SPELLING is invisible to it.
+- mechanism: engine/score.py compares the built object's instruction stream against the
+  target with relocation targets masked, so `jal <any undefined symbol>` and
+  `jal sprintf` are indistinguishable at score time.  The linker is the first stage that
+  sees the name.
+- probe: The body spelled with `func_80079A30` / `bios_firstfile_B` / `bios_nextfile_B`
+  measured `sandbox --disable all` = 0, 33/33 insns; the immediately following
+  `wteng main build` failed with three `undefined reference` link errors.  Re-spelling the
+  three callees `sprintf` / `firstfile` / `nextfile` kept sandbox at 0 and turned the
+  build into a SHA1 MATCH.
+- result: CONFIRMED, and it is the mechanical explanation of the six banked Judge
+  constraints on this function ("candidate form failed full-build SHA1 on main
+  (masked-0 register diff class)").  Every future candidate-ready on any function should
+  run `build` before claiming the match.
+- verdict: CONFIRMED

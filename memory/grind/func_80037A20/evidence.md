@@ -720,3 +720,44 @@ function is INCOMPLETE. candidate.c is the faithful pin/barrier-free body
 - [s12] Gate-1 spellings measured and killed: g1a (no base variable, address expression passed directly) - cse1 makes one shared address pseudo, still 1 set, sandbox 8; g1d (var_s0 = p after the loop) - dead store, DCE'd before flow, sandbox 8; vK (p = var_s0 hoisted above the if) - cse copy-propagates the split away, only two allocnos remain, sandbox 8.
 
 - [s12] s11's open frontier item (empty sprintf delay slot collapses the residual on the floor-6 body) is KILLED by reading the cc1 -da .s: cc1 emits `move $17,$0` BEFORE the jal on that body, so no delay-slot decision can relocate it.
+
+## [s13] MATCHED — honest pure-C byte match, full-build SHA1 verified
+
+- [s13] `src/code6cac_c.c` func_80037A20 written as the plain one-pointer PsyQ
+  file-count idiom (zero-init AFTER the sprintf call, counter increment at the TOP of
+  the do/while body, no source-level peel and no source-level `-= 1` tail) measures
+  `sandbox --disable all` = **0**, 33/33 insns, rules_dropped 0, AND `wteng main build`
+  prints **MATCH** with link SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == the oracle.
+  Body: memory/grind/func_80037A20/candidate.c (== matched_body_s13.c).
+
+- [s13] LOAD-BEARING LINK CORRECTION (cost the previous, discarded s13 run its outcome):
+  the callees must be spelled `sprintf`, `firstfile`, `nextfile` — the names the linker
+  resolves (declared at src/code6cac_c.c:156-157 and include/code6cac.h:501).  A body
+  spelling them `func_80079A30` / `bios_firstfile_B` / `bios_nextfile_B` still scores
+  `sandbox --disable all` = 0 with 33/33 insns, because the sandbox compares at OBJECT
+  level with relocations masked, but the full build fails the link with three
+  "undefined reference" errors.  GENERAL LESSON for every grind session: a sandbox 0 is
+  necessary, not sufficient — the callee/global SPELLING is invisible to the sandbox and
+  visible only to `build`.  This is the concrete instance of the ledger's
+  "masked-0 register diff class" Judge constraints.
+
+- [s13] The whole s12 GATE-1/GATE-2 frontier DISSOLVES rather than being defeated:
+  * GATE 1 (sched.c birthing_insn_p boost sinking `la $s0` past the sprintf jal) never
+    fires on this body because the single walking pointer has reg_n_sets == 2 (the `la`
+    plus the in-loop `+= 0x28`), so no base/walking split — and no second-set spelling —
+    is needed at all.  The three-pseudo vJ chassis (sandbox 8) is superseded.
+  * GATE 2 (the cse1 REG_WAS_0 fold that produced `li $s1,1` on every earlier chassis)
+    never fires because the surviving increment sits after the loop's CODE_LABEL, which
+    terminates cse's extended basic block, so the dominating `var_s1 = 0` is not
+    const-propagated into it.
+  * The peel + compensating decrement that s1..s12 tried to spell in C are supplied by
+    reorg.c: our matched output (== target) carries `addiu $s1,$s1,1` in the `bnez` delay
+    slot and `addiu $s1,$s1,-1` after the loop, neither of which appears in the C.
+    Writing the decrement at source level duplicates reorg's compensation and over-counts
+    (rejected/s13-source-level-decrement-duplicates-reorg-compensation.c).
+
+- [s13] The long-standing s10/s11 floor-6 body (zero-init HOISTED above the sprintf call,
+  explicit `var_s1++` peel, explicit `var_s1 -= 1;` tail) was the trap: every one of its
+  three deliberate deviations from the plain idiom was individually motivated by an
+  allocation measurement, and together they cost the match.  The winning move was to
+  delete all three and write the ordinary loop.
