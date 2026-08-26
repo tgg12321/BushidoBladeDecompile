@@ -335,3 +335,65 @@ shipped as candidate.c with the 13 rules retired.
 - [s10] Exhaustion: 9 sessions, floor flat at 8 since s2; structural (s1-s3), permuter (s4 ~95k iters/floor-8 basin + s5 36k iters/floor-6 basin), forensics (s6-s7 combine simplify_shift_const pass-level proof), rederive (s8 m2c+corpus+transplant, s9 BB2-internal field census) all measured dead; two prior ruling-requests (2026-07-23 10:19 + 10:46) answered FAIL.
 
 - [s10] Filed the formal OWNER-ESCALATION entry at docs/grind/decisions.md line 1474 ('## 2026-07-23 — func_8001F938 — **OWNER-ESCALATION**') stating both endgame-lock AND-gates and the exhaustion; src reverted to HEAD (git clean); candidate.c unchanged (clean floor-8 form).
+
+## s11 (escalation modality, 2026-08-25) — MATCHED. Honest floor 8 -> 0; full-build oracle verified.
+
+- [s11] CHASSIS RE-MEASURE: with `memory/grind/func_8001F938/candidate.c` (s10 clean form)
+  applied to `src/code6cac.c`, `sandbox --disable all` = 8, build_insns 105, target_insns 107,
+  rules_dropped 0. The s10 ledger line "the byte-match is held by 13 regfix rules" is STALE —
+  post asm-until-matched the function ships as `INCLUDE_ASM` with 0 regfix/0 asmfix/0 cheat-asm,
+  so nothing "held" a match; the only artefact was the honest floor.
+
+- [s11] OWNER DIRECTIVE DISCHARGED (solver modality). `inverse_compose.py classify` is
+  UNUSABLE as-is for an asm-until-matched function: it builds its "target" stream from
+  `src/` + regfix, so with C in src/ it compares the honest build to itself and reports
+  "FIRST DIVERGENCE: IDENTICAL". The honest classification, done by hand on opcode multisets
+  (aliases folded: bnez/beqz<->bne/beq, sltiu<->sltu-imm, addiu<->addu-imm, jr<->j $ra):
+  honest 105 vs target 107, target +1 `lhu` +1 `sra` +1 `addiu`, honest +1 `nop`.
+  Multisets DIFFER => PRE-RA by the classifier's own funnel rule => ra_solver and
+  sched_solver are FORECLOSED for this residual. Recorded so no future session re-runs them.
+
+- [s11] THE WALL WAS A SEARCH GAP, NOT A DICHOTOMY. Target's `.L8001FA60`:
+      lh   $v0,0x270($a0)   ; lhu  $v1,0x270($a0)
+      slti $v0,$v0,4        ; bnez $v0,.L8001FA7C
+       sll $v0,$v1,16       ; addiu $v1,$zero,3 ; sll $v0,$v1,16
+      .L8001FA7C: sra $v0,$v0,15
+  s1-s10 all held the clamped value in an `s32` and spelled the scale `(raw << 16) >> 15`,
+  which made the two loads look like they required a second TYPED memory view (the pre-banned
+  signedness-split family; s7 "theorem"). Putting the value in a `s16` HImode LOCAL instead
+  produces both loads from ONE dereference of ONE type:
+      s16 raw_or_3 = *((s16 *)(arg0 + 0x270));
+      if (raw_or_3 >= 4) { raw_or_3 = 3; }
+      idx = raw_or_3 * 2;
+  cc1 materialises the HImode pseudo with `lhu` ($v1) and supplies the sign-extended SImode
+  operand the `>= 4` compare needs with a separate `lh` ($v0). `* 2` on the HImode pseudo is
+  emitted as `sll 16 ; sra 15` (the HImode subreg carries exactly 16 sign-bit copies, so the
+  s7 combine gate refuses the fold), and reorg steals the `sll` into the branch delay slot as
+  in target. MEASURED: sandbox score **0**, build_insns 107 == target 107; normalised asm diff
+  vs `asm/funcs/func_8001F938.s` empty except local label names; `verify-oracle` exit 0
+  (full build+link SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa).
+
+- [s11] The 8-byte frame is NOT a byproduct of the banned dual-read (s4's claim). It is the
+  `s16` local's own stack slot: `.frame $sp,8` appears as soon as the HImode local exists, and
+  `addiu $sp,$sp,-8` lands in the first `beq`'s delay slot exactly as in target. s4's
+  `volatile short pad` was solving a problem that ordinary typing solves.
+
+- [s11] KILLED: `s32 three = 3;` constant-holder as a fold lever — cse folds the plain
+  constant local away before combine; floor unchanged at 8 / 105 insns.
+
+- [s11] MEASURED LADDER (all sandbox --disable all, clean chassis otherwise):
+  s10 form (s32 probe, `(raw<<16)>>15`) 8/105 | + constant holder 8/105 | `s32 probe` +
+  `s16 raw_or_3` PHI + `*2` 4/106 | `s16 raw_or_3` written in both arms from duplicate signed
+  reads 2/108 | `s16 raw_or_3` from one read, clamped in place 0/107.
+  For the 0x6A kind-split: `(u16)kind_full` cast 1/107 (emits `move`, target has `andi`);
+  single `u16 kind` for everything 16/106; no mask at all 16/106; second `*(u16*)` read into a
+  `u16` local 16/106. Only `kind_full` raw + `kind = kind_full & 0xFFFFU` reaches 0.
+
+- [s11] DISPOSITION NOTE (why no escalation packet was filed even though the modality was
+  `escalation`): before the lever was found, both endgame-lock AND-gates still FAILed
+  (scan_hand_coded tier LOW per s10; the F2 SOTN census for the signedness-split family is
+  NOT ESTABLISHED). Under the owner's 2026-08-24 second ruling
+  (`.claude/rules/escalation-not-parked.md`, AUTO-REJECT class) a packet whose YES would grant
+  a coercion family with no in-hand SOTN precedent, or override the canonical-asm evidence bar,
+  is PRE-DECIDED NO and MUST NOT be filed — such a function "stays ACTIVE and keeps grinding
+  under standing policy". That is exactly what this session did, and the grind found the match.

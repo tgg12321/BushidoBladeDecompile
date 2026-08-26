@@ -1222,3 +1222,4 @@
 - 2026-08-25 22:06 func_80061710 COMPLETED-C after 5 sessions (closer: s5 [synthesis]).
 - 2026-08-25 22:25 CD_datasync s18 [escalation] AUTO-FILED by driver backstop (session did not self-file): 2026-08-25 ΓÇö CD_datasync ΓÇö OWNER-ESCALATION ΓÇö ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)
 - 2026-08-25 22:43 func_80061658 COMPLETED-C after 5 sessions (closer: s5 [permuter]).
+- 2026-08-25 23:08 func_8001F938: LAYER-1 FAILED a sandbox-0 candidate — C2 (the s16 HImode local at +0x270) is a new spelling of the pre-banned signedness-split/dual-typed-view fold-defeat family that two ruling-requests and a formal 2026-07-27 owner ruling already rejected for this exact function; the kind-split (C1) is fine (reviewer-verified PASS, citation checks out) but does not save the commit.

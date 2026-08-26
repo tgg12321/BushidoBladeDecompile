@@ -80,8 +80,13 @@
  ],
  "judge_constraints": [
   "Do NOT commit the dual-typed same-address read (any spelling: guarded, unconditional, union, or two-pointer). It is not SOTN-sanctioned and target-asm 'provably requires it' is not evidence that lowers the bar. If the grinder wants to pursue this construct it must first run a SOTN-master-branch evidence census for the signedness-split CSE-defeat family and bring that census back for an owner ruling; until then keep src/ at the clean floor-8 form and the function stays INCOMPLETE (search continues, not parked).",
-  "Keep src/ at the clean floor-8 form in candidate.c; func_8001F938 stays INCOMPLETE (search continues, not parked). Do NOT commit the signedness-split dual-view read of +0x270 in ANY spelling (guarded ternary, unconditional split, union, two-pointer, or single-u16-read + (s16) cast) and do NOT authorize canonical-asm for .L8001FA60 -- a pure-C form provably exists, so it is not a no-C-form region. Both are pre-banned; re-raising either requires NEW established SOTN-master-branch evidence for the signedness-split family, not a re-argument that the target provably contains it."
+  "Keep src/ at the clean floor-8 form in candidate.c; func_8001F938 stays INCOMPLETE (search continues, not parked). Do NOT commit the signedness-split dual-view read of +0x270 in ANY spelling (guarded ternary, unconditional split, union, two-pointer, or single-u16-read + (s16) cast) and do NOT authorize canonical-asm for .L8001FA60 -- a pure-C form provably exists, so it is not a no-C-form region. Both are pre-banned; re-raising either requires NEW established SOTN-master-branch evidence for the signedness-split family, not a re-argument that the target provably contains it.",
+  "LAYER-1 CHEAT-REVIEWER FAIL: C2 (the s16 HImode local at +0x270) is a new spelling of the pre-banned signedness-split/dual-typed-view fold-defeat family that two ruling-requests and a formal 2026-07-27 owner ruling already rejected for this exact function; the kind-split (C1) is fine (reviewer-verified PASS, citation checks out) but does not save the commit. Next action: This is a re-declared banned construct per state.json's judge_constraints (not a citation error \u2014 C1's split-init citation to tmp/grind/func_8001F938/s2/cheat_reviewer_verdict.txt:4 checks out and needs no correction). Revert "
  ],
  "origin": "queue",
- "created": "2026-07-23T14:45:17.428783+00:00"
+ "created": "2026-07-23T14:45:17.428783+00:00",
+ "banned_constructs": [
+  "`s16 raw_or_3 = *((s16 *)(arg0 + 0x270)); if (raw_or_3 >= 4) { raw_or_3 = 3; } idx = raw_or_3 * 2;` (candidate.c / diff lines under `multpath_start:`)"
+ ],
+ "ladder_skip": 10
 }

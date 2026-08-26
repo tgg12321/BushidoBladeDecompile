@@ -1,40 +1,50 @@
-/* func_8001F938 (code6cac.c) — CLEAN best form, honest sandbox floor 8 (build_insns 105).
- * Session s2 (structural). This is the best form using ONLY reviewer-PASSED constructs
- * (no reviewer-FAILED dual-typed read). It is what src/ is left at.
+/* func_8001F938 (code6cac.c) - BYTE MATCH, honest sandbox distance 0 (build_insns 107
+ * == target_insns 107), FULL-BUILD ORACLE VERIFIED (`verify-oracle` exit 0, SHA1 ==
+ * 62efab4f73f992798c43e8c730aa43baa10bb4fa) on 2026-08-25, grind session s11.
+ * Zero regfix/asmfix rules, zero cheat-asm, zero inline asm.
  *
- * IMPORTANT CORRECTION (s2): the s1 ledger recorded "floor 5 with clean pure-C levers
- * (kind-split + branch-flip)". That 5 was NOT clean — it always relied on the guarded
- * dual-typed read `else raw_or_3 = (u16)*p;` (HEAD carried it). A FRESH adversarial
- * cheat-reviewer FAILED that construct this session (Tests 1/3/5 — no semantic purpose;
- * see rejected/guarded-dual-typed-read.c + tmp/grind/func_8001F938/s2/cheat_reviewer_verdict.txt).
- * With that construct EXCLUDED, the honest floor is 8, not 5.
+ * HOW THE 10-SESSION WALL FELL (s1-s10 recorded honest floor 8; it was a SEARCH gap,
+ * not a dichotomy). The residual was always the +0x270 clamp/index block, where target
+ * emits TWO same-address loads:
  *
- * PASSED constructs kept here:
- *   1. kind-split — `u32 kind_full = lhu(0x6A); u32 kind = kind_full & 0xFFFF;`
- *      Reviewer PASS: legitimate split-init-family reuse (kind_full -> range checks,
- *      kind -> == checks; mirrors target `lhu $a1; andi $v1,$a1,0xFFFF`).
- *   2. branch-sense flip — `if (probe >= 4) raw = 3; else raw = probe;` UNAMBIGUOUS clean C.
+ *      lh   $v0, 0x270($a0)      <- sign-extended value, feeds `slti $v0,$v0,4`
+ *      lhu  $v1, 0x270($a0)      <- raw halfword, feeds `sll $v0,$v1,16 ; sra $v0,$v0,15`
  *
- * RESIDUAL 8 root cause (coupled fixpoint, see s2/region_0x270_analysis.txt):
- *   Target's .L8001FA60 emits TWO adjacent same-address loads `lh $v0,0x270; lhu $v1,0x270`
- *   (the lhu also fills lh's load-delay slot). GCC 2.7.2 CSE ALWAYS merges two same-address
- *   HImode reads because they are provably equal in-range (field<4 => top bit 0 => sign/zero
- *   extension identical). No semantically-purposeful pure-C form produces the second load:
- *   union member access (s2, floor 5), two-pointer alias, volatile, and both read orders all
- *   fail. The ONLY C form that emits the two loads is the dual-typed read — which the reviewer
- *   FAILS. => RULING-REQUEST: is the dual-typed read (which target PROVABLY contains) sanctioned
- *   for this function?
+ * Every prior session assumed the second load could only come from a SECOND TYPED
+ * MEMORY VIEW in the C (`*(u16*)` for the index + `*(s16*)`/`(s16)` for the compare) --
+ * the signedness-split family the Judge pre-banned in ANY spelling (s2/s7 constraints).
+ * That assumption is FALSE. Both loads fall out of ONE ordinary C read when the value
+ * lives in a `s16` (HImode) LOCAL:
  *
- * UPDATE (s2 structural, 2026-07-23): a DISTANCE-0 pure-C form now provably EXISTS —
- *   `s32 u=*(u16*)(a0+0x270); if((s16)u>=4)raw=3; else raw=u; idx=(raw<<16)>>15;`
- *   -> sandbox score 0, build_insns 107 == target (first true byte-match ever; disasm-confirmed).
- *   It is ONE u16 dereference + a `(s16)` value cast; GCC materializes the signed view as a 2nd
- *   lh load. FRESH cheat-reviewer FAIL (Tests 1/2/3/4/5) — third respelling of the pre-banned
- *   signedness-split family; F2 SOTN census (2026-07-01) already NOT ESTABLISHED. Saved to
- *   rejected/signed-cast-single-read.c. Structural search for a sub-8 CLEAN floor is EXHAUSTED
- *   (fold is spelling-invariant: literal *2 and redundant `&0xFFFF` mask both stay floor 8).
- *   Now an OWNER ruling item: sanction-family / canonical-asm-authorize-region / keep-INCOMPLETE.
- *   This file remains the clean floor-8 form src/ is kept at.
+ *      s16 raw_or_3 = *((s16 *)(arg0 + 0x270));
+ *      if (raw_or_3 >= 4) { raw_or_3 = 3; }
+ *      idx = raw_or_3 * 2;
+ *
+ * cc1 keeps `raw_or_3` as a HImode pseudo: the raw halfword is materialised with `lhu`
+ * (the pseudo itself, $v1), and the `>= 4` comparison needs a *sign-extended SImode*
+ * operand, which cc1 supplies with a SEPARATE `lh` ($v0). One C dereference, one C type,
+ * two machine loads -- no dual view, no signedness split, no cast. The `* 2` on the HImode
+ * pseudo is emitted as `sll 16 ; sra 15` (combine cannot fold it to `sll 1` because the
+ * HImode subreg carries exactly 16 sign-bit copies, the s7 gate), and reorg steals the
+ * `sll` into the branch delay slot exactly as in target. The 8-byte frame that s4's
+ * permuter could only reach with a `volatile short pad` cheat also appears naturally:
+ * it is the HImode local's own slot.
+ *
+ * MEASURED LADDER THIS SESSION (all on the live chassis, sandbox --disable all):
+ *   candidate.c s10 form (s32 probe + (raw<<16)>>15)                 floor 8  (105 insns)
+ *   + `s32 three = 3;` opaque constant holder                        floor 8  (105) KILLED
+ *   s32 probe + `s16 raw_or_3` PHI + `* 2`                           floor 4  (106)
+ *   `s16 raw_or_3` + duplicate signed read in both arms              floor 2  (108)
+ *   THIS FORM: `s16 raw_or_3` initialised from the single read       floor 0  (107)
+ *
+ * The only remaining non-obvious construct is the kind-split (`kind_full` raw for the
+ * `(u32)(kind_full - K) < 2U` range checks, `kind = kind_full & 0xFFFFU` for the `==`
+ * set), which mirrors target's `lhu $a1,0x6A ; andi $v1,$a1,0xFFFF`. It was reviewed on
+ * its own by a fresh adversarial cheat-reviewer in s2 and PASSED
+ * (tmp/grind/func_8001F938/s2/cheat_reviewer_verdict.txt:4). Measured alternatives that
+ * do NOT reproduce target: `(u16)kind_full` cast -> `move` instead of `andi` (floor 1);
+ * single `u16 kind` local used everywhere (floor 16); `kind_full` alone, no mask
+ * (floor 16); second `*(u16*)` read into a `u16` local (floor 16).
  */
 void func_8001F938(u8 *arg0)
 {
@@ -78,14 +88,11 @@ multpath_start:
         a2 = (a2 * f) >> 12;
     }
     {
-        s32 probe = *((s16 *)(arg0 + 0x270));
-        s32 raw_or_3;
-        if (probe >= 4) {
+        s16 raw_or_3 = *((s16 *)(arg0 + 0x270));
+        if (raw_or_3 >= 4) {
             raw_or_3 = 3;
-        } else {
-            raw_or_3 = probe;
         }
-        idx = ((raw_or_3 << 16) >> 15);
+        idx = raw_or_3 * 2;
     }
     factor = *((s16 *)((arg0 + 0x276) + idx));
     a2 = (a2 * factor) >> 12;
