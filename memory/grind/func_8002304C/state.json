@@ -1,0 +1,37 @@
+{
+ "func": "func_8002304C",
+ "file": "code6cac",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 1,
+   "modality": "recon",
+   "headline": "Recon s1: floor 29 -> 1 with pure honest C (named 0x2B8 constant, decl/init-order prologue, inline-ternary step arg, wide->narrow mode/m); sole residual is the andi-vs-move fold at 0x232F4"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Label-crossing multi-set shape for the masked value that ALSO fails combine's recording gate (combine.c:724-732), reaching the full-mask fallback at 6920-6923 so the andi survives",
+   "mechanism": "reg_last_set label_tick mismatch + reg_nonzero_bits unrecorded (single-BB-classified or live-at-start pseudo); note a RECORDED multi-set double-read ORs two lhu's to 0xFFFF and still folds",
+   "next_probe": "sweep shapes assigning m in both arms of the vel_y branch / loop-carried, read .greg reg_basic_block per shape, measure each"
+  },
+  {
+   "hypothesis": "Directed permuter over the mode/m block microspace finds a fold-escaping honest spelling",
+   "mechanism": "search space is one expression pair; R3 permits 2 permuter sessions for this function",
+   "next_probe": "permuter campaign seeded from the floor-1 candidate with PERM mutations restricted to the mode/m block; vet any find against the 6-test checklist before proposing"
+  },
+  {
+   "hypothesis": "If frontier items 1-2 measure dead, the residual reduces to the func_800871D4-class endgame (decisions.md:2128 already names this function as a shape-sibling; canonical gate here is tier=LOW)",
+   "mechanism": "both endgame gates previously failed for the sibling shape; driver's ladder decides, not the session",
+   "next_probe": "only in escalation modality: re-run scan_hand_coded --single func_8002304C and the SOTN construct-index grep for the andi shape, then file the decision packet"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-26T20:30:49.008456+00:00"
+}
