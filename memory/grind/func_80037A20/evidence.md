@@ -450,3 +450,97 @@ function is INCOMPLETE. candidate.c is the faithful pin/barrier-free body
 - [s9] s7's objection to defeating the fold - that unfolding adds a counter read-reference and entrenches the counter's $s0 win - NO LONGER APPLIES under the s9 allocation, because the counter no longer competes for $s0. That lever is re-opened.
 
 - [s9] ra_solver inverse_compose classify reports FIRST DIVERGENCE: PRE-RA on the honest-vs-target text streams (instruction multiset differs by exactly the folded entry increment), consistent with the post-s9 picture that only pre-RA residuals remain.
+
+## [s10] rederive modality — floor 8 -> 6
+
+- [s10] CHASSIS: the s9 candidate (base + walking pointer split) re-measures at
+  `sandbox func_80037A20 --disable all` = 8, 33/33 insns, 0 rules — the ledger
+  floor is confirmed against HEAD before anything else was spent.
+- [s10] The s9 split's 8 diffs are ENTIRELY entry-block schedule: the `lui/addiu`
+  pair for D_80102810 is emitted after the sprintf jal, where target emits it
+  before, and the three callee-saved stores + the `addiu a0,sp,0x10` redistribute
+  around it. Register allocation in the s9 body is already target's.
+- [s10] The ordinary ONE-POINTER do/while body (identical to the s1..s8 body but
+  with a do/while loop instead of goto) has the OPPOSITE profile: its entry block
+  matches target instruction-for-instruction, and all 13 diffs are the s0<->s1
+  rename plus the entry-increment fold.
+- [s10] PASS ATTRIBUTION (first-hand, dumps read, not inferred): the `la` moves in
+  **sched1** and nowhere earlier — it is still ahead of the sprintf call in
+  code6cac_c.cse, .loop, .combine and .flow, and appears between insn 32 and insn
+  34 in .lreg. The sched1 dump names the reason:
+    split body:       `;; ready list at T-4: 32 (1) 29 (1) 13 (7f000001), now 13 32 29`
+    one-pointer body: `;; ready list at T-4: 32 (1) 29 (1) 13 (1), now 32 29 13`
+  0x7f000001 is max_priority, applied by adjust_priority() in
+  tools/gcc-2.7.2/sched.c when birthing_insn_p() is true, i.e. when
+  `reg_n_sets[REGNO(dest)] == 1`.
+- [s10] MECHANISM: sched1 schedules BACKWARD, so a max_priority boost emits the
+  insn LATE (the pass's own register-lifetime shortening heuristic). Any pointer
+  spelling that leaves the address-holding pseudo with exactly one set gets its
+  `la` sunk to sit adjacent to its only consumer. A walking pointer has two sets
+  (the la and the `+= 0x28`) and is never boosted.
+- [s10] cse1 DELETES any set whose source is a constant or constant-equivalent
+  (a symbol_ref, or frame-pointer + offset), so "give the base pointer a second
+  set" cannot be spelled byte-free: both attempts (format-string address first,
+  stack-buffer address first) had their first set propagated away and reverted to
+  reg_n_sets == 1 with the la still sunk (sandbox 8 in both cases).
+- [s10] reg_n_refs is LOOP-DEPTH WEIGHTED — flow.c adds loop_depth per reference,
+  so a reference inside the loop body counts TWICE. This reconciles the ALLOCDBG
+  numbers with hand counts and is why every earlier hand estimate in this ledger
+  was low.
+- [s10] MEASURED allocno inputs (tools/ra_solver/extract.py; models saved under
+  tmp/grind/func_80037A20/s10/):
+    one-pointer do/while, zero-init AFTER the call:
+      ptr(74)     nrefs=8  livelen=17  pri=14117   -> $s1   [wrong]
+      counter(75) nrefs=10 livelen=14  pri=21428   -> $s0   [wrong]   sandbox 13
+    same body + s9's counter partition `n = var_s1 + 1`:
+      n(79)  6/7  = 17142 ; ptr(74) 8/17 = 14117 ; var_s1(75) 4/8 = 10000
+      -> counter family still first, sandbox 13
+    one-pointer do/while, zero-init BEFORE the call  [the s10 candidate]:
+      ptr(74)     nrefs=8  livelen=16  pri=15000   -> $s0   [TARGET]
+      counter(75) nrefs=10 livelen=20  pri=15000   -> $s1   [TARGET]
+      EXACT TIE; allocno_compare falls through to pseudo number, and var_s0 is
+      declared before var_s1, so 74 is allocated first and takes $s0.
+      **sandbox --disable all = 6**, 33/33 insns, 0 rules, 0 coercion constructs.
+      objdump confirms $s0 = pointer and $s1 = counter throughout.
+- [s10] The tie is order-sensitive, which is itself evidence the model is right:
+  initialising the pointer before the counter measures 15; the goto loop chassis
+  with the same hoisted init measures 14; splitting the zero-init into its own
+  local measures 13.
+- [s10] s9's counter-side foreclosure is chassis-stale: it was computed against a
+  pointer priority of 5882 (the goto chassis), and the do/while chassis puts the
+  pointer at 14117. The counter family is still foreclosed, but the binding
+  reason is the loop-depth ref weighting (the loop-carried counter pseudo floors
+  at 6 refs / livelen 7 = 17142), not s9's coupling argument.
+- [s10] REMAINING 6 diffs, all one scheduling decision plus the known fold:
+    ours   [sp] a2 a3 | sw s1 | s1=0 | sw s0 | la s0 | la a1 | sw ra | jal | (delay) addiu a0
+    target [sp] a2 a3 | sw s0 | la s0 | addiu a0 | la a1 | sw ra | jal | (delay) sw s1 | s1=0
+  `move s1,zero` has no consumer in the entry block, so rank_for_schedule falls
+  through to a DESCENDING INSN_LUID sort; the hoisted statement has a low LUID and
+  is therefore emitted first, where target emits it last. Plus the long-known
+  `li $s1,1` vs `addiu $s1,$s1,1` cse1 REG_WAS_0 fold.
+- [s10] Artifacts: tmp/grind/func_80037A20/s10/{apply.py,dis.sh,v_*.c,
+  model_onept.json,model_P1.json,model_Q.json,cse_region.txt,loop_region.txt,
+  combine_region.txt,flow_region.txt,lreg_region.txt}; dumps regenerated into
+  tmp/grind/func_80037A20/dumps/.
+
+- [s10] s9 candidate re-verified against HEAD this session before anything was spent: sandbox func_80037A20 --disable all = 8, 33/33 insns, 0 rules.
+
+- [s10] The s9 base+walking pointer split is structurally self-defeating: it buys target's register allocation and pays for it with target's prologue schedule, because a single-set address pseudo triggers sched.c birthing_insn_p()/adjust_priority() and its la is emitted late.
+
+- [s10] PASS ATTRIBUTION (first-hand, dumps read): the la placement divergence happens in sched1 and nowhere earlier - the insn is still ahead of the sprintf call in code6cac_c.cse, .loop, .combine and .flow, and has moved by .lreg.
+
+- [s10] The sched1 ready-list dump names the boost directly: 0x7f000001 = max_priority on insn 13 in the split body, plain 1 in the one-pointer body.
+
+- [s10] cse1 deletes any set whose source is constant or constant-equivalent (symbol_ref, frame-pointer + offset), which forecloses every byte-free way to give an address pseudo a second set.
+
+- [s10] reg_n_refs is LOOP-DEPTH WEIGHTED (flow.c adds loop_depth per reference) - loop-body references count twice. Every earlier hand-count of allocno refs in this ledger was low for this reason.
+
+- [s10] MEASURED: the one-pointer do/while body with the zero-init before the sprintf call gives ptr(74) 8 refs / 16 len / pri 15000 and counter(75) 10 / 20 / 15000 - an exact allocno_compare tie, broken by pseudo number in favour of var_s0 (declared first), which takes $s0. Target's assignment; objdump confirms $s0 = pointer and $s1 = counter throughout.
+
+- [s10] NEW FLOOR: sandbox func_80037A20 --disable all = 6, 33/33 insns, 0 rules, no coercion construct, no FAKE annotation, nothing from any sanctioned-exception family. Down from 8 (s9) and 13 (s1-s8).
+
+- [s10] The tie is order-sensitive and that sensitivity is itself confirmation of the model: pointer-init-before-counter measures 15, the goto loop chassis with the same hoisted init measures 14, a split zero-init measures 13, and a pointer-init-after-the-call variant measures 7.
+
+- [s10] The remaining 6 diffs are entirely one entry-block scheduling decision plus the known cse1 fold. Ours: [sp] a2 a3 | sw s1 | s1=0 | sw s0 | la s0 | la a1 | sw ra | jal | (delay) addiu a0. Target: [sp] a2 a3 | sw s0 | la s0 | addiu a0 | la a1 | sw ra | jal | (delay) sw s1 | s1=0. `move s1,zero` has no consumer in the entry block, so rank_for_schedule falls through to a DESCENDING INSN_LUID sort; the hoisted statement has a low LUID and is emitted first where target emits it last.
+
+- [s10] The candidate body contains no construct from any forbidden or sanctioned-exception family: it is a single walking pointer, a counter, a stack buffer that is actually written by sprintf, and a do/while loop. The only unusual thing about it is the ORDER of two ordinary initialisations.

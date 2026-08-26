@@ -308,3 +308,131 @@ Remaining 8 diffs, both PRE-RA (register allocation is SOLVED):
 - probe: Executed the solver modality that the owner's 2026-08-24 queue directive recommended for exactly this class of residual and that no prior session had run.
 - result: DISPROVEN. An ordinary-C form with no coercion construct of any kind drops the honest floor to 8. The four dead modalities were all attacking the same side of a two-sided quotient; the solver named the quotient and made the other side visible in one session. Escalation withdrawn in docs/grind/decisions.md (2026-08-26 entry); the function stays ACTIVE and grindable.
 - verdict: KILLED
+
+## [s10] REDERIVE MODALITY — FLOOR 8 -> 6. The s9 pointer split is REPLACED by an ordinary single-pointer body.
+
+Re-derivation from the target asm (not a tweak of the s9 body) plus first-hand
+pass attribution from `tmp/grind/func_80037A20/dumps/` and a read of
+`tools/gcc-2.7.2/sched.c`. Two mechanisms were named for the first time; the
+s9 candidate's structural regression was explained and undone.
+
+## [s10] The `la D_80102810` sinks past the sprintf jal in the s9 split body because sched.c's adjust_priority()/birthing_insn_p() boosts any insn whose destination pseudo has reg_n_sets == 1, and sched1 schedules BACKWARD so the boost emits the insn LATE.
+- mechanism: `tools/gcc-2.7.2/sched.c` adjust_priority(): with zero REG_DEAD notes
+  (and the file's own comment says those notes are always gone by then, so the
+  n_deaths==0 arm always runs) it calls birthing_insn_p(), which returns
+  `reg_n_sets[REGNO(dest)] == 1`. If true the insn's INSN_PRIORITY is raised to
+  max_priority. schedule_block() runs backward, so a high priority means "picked
+  early in the backward walk" = "emitted late" — the pass's register-lifetime
+  shortening heuristic. The s9 split gives the BASE pointer exactly one set, so
+  the la is boosted and lands adjacent to its only consumer, after the jal.
+- probe: pwsh tools/grinder/dump.ps1 func_80037A20 on both bodies; read the
+  `;; Function func_80037A20` block-0 ready lists in code6cac_c.sched.
+  SPLIT body: `ready list at T-4: 32 (1) 29 (1) 13 (7f000001), now 13 32 29`
+  ONE-POINTER body: `ready list at T-4: 32 (1) 29 (1) 13 (1), now 32 29 13`
+  and insn 13 then drifts to T-11 (emitted first).
+  The la is still ahead of the call in .cse, .loop, .combine and .flow — the move
+  happens in sched1 and nowhere else (the .lreg chain shows 18,20,22,24,call26,
+  29,32,13,34,36,40).
+- result: CONFIRMED, and it is a hard gate: every attempt to give the base pointer
+  a second set byte-free failed because cse1 deletes any set whose value is a
+  constant/constant-equivalent (rejected/s10-fmtstring-var-reuse-la-still-sinks.c,
+  s10-sp10-buffer-var-reuse-la-still-sinks.c). A single walking pointer is set
+  twice by construction (la + `+= 0x28`), so the ordinary body never triggers the
+  boost. THE s9 POINTER SPLIT IS THEREFORE STRUCTURALLY SELF-DEFEATING: it buys
+  the allocation and pays for it with target's prologue schedule.
+- verdict: CONFIRMED
+
+## [s10] The s0<->s1 allocation is reachable in the ORDINARY one-pointer body — it is an allocno_compare TIE broken by pseudo number, and hoisting `var_s1 = 0;` above the sprintf call produces the tie.
+- mechanism: global.c pri = floor_log2(nrefs)*nrefs*size/live_length*10000, order
+  pri DESC, tie -> lower pseudo number, and the first allocno takes $s0. reg_n_refs
+  is LOOP-DEPTH WEIGHTED (flow.c adds loop_depth per reference), so a loop-body
+  reference counts twice — this is why the ledger's earlier hand counts were low.
+  Moving the zero-init above the call simultaneously LENGTHENS the counter's live
+  range and SHORTENS the pointer's, and the two quotients meet.
+- probe: tools/ra_solver/extract.py on each body (models in
+  tmp/grind/func_80037A20/s10/model_onept.json, model_P1.json, model_Q.json),
+  plus objdump of the sandbox object.
+- result: MEASURED
+    do/while, init AFTER the call : ptr(74) 8 refs/17 len = 14117
+                                    counter(75) 10/14 = 21428  -> counter first,
+                                    counter takes $s0. sandbox 13.
+    do/while, init BEFORE the call: ptr(74) 8/16 = 15000
+                                    counter(75) 10/20 = 15000  ** EXACT TIE **
+                                    -> pseudo 74 (declared first) allocated first,
+                                    takes $s0; counter forced to $s1 = TARGET.
+                                    **sandbox --disable all = 6**, 33/33 insns,
+                                    0 rules, no coercion construct.
+  The tie is delicate and order-sensitive: initialising the POINTER before the
+  counter instead (rejected/s10-zero-init-before-pointer-init-flips-tie.c) breaks
+  it the other way (sandbox 15), and the goto loop chassis loses it too
+  (rejected/s10-goto-chassis-on-hoisted-init.c, 14). The DECLARATION order
+  `s32 *var_s0;` before `s32 var_s1;` is load-bearing — it is the tie-break.
+- verdict: CONFIRMED
+
+## [s10] s9's "counter-side levers are foreclosed" result is CHASSIS-STALE and its numbers do not carry.
+- mechanism: s9 computed the foreclosure against a pointer priority of 5882 (the
+  s1..s8 goto chassis). On the do/while chassis the pointer is at 14117, so the
+  bar the counter family must clear is less than half as high.
+- probe: re-measured s9's own p2 partition (`n = var_s1 + 1`) on the do/while
+  one-pointer chassis with ALLOCDBG.
+- result: still loses, but for a newly-named reason: the loop-carried counter
+  pseudo cannot fall below 6 refs at live_length 7 (1 set + 2 loop refs counted
+  twice by loop-depth weighting + 1 tail read) = pri 17142, and 17142 > 14117.
+  It would need live_length >= 9, which the byte stream does not provide.
+  Counter-side splitting stays dead, but the CORRECT reason is the loop-depth
+  ref weighting, not the s9 "refs and live_length are positively coupled" claim.
+- verdict: CONFIRMED (dead, re-derived reason)
+
+## [s10] The last 6 diffs are one sched1 decision plus the known cse1 fold.
+- mechanism: `move s1,zero` has NO consumer inside the entry basic block (its
+  consumer is the entry increment in the next block), so in the backward pass it
+  is ready from the first cycle and rank_for_schedule falls through to
+  `INSN_LUID (tmp) - INSN_LUID (tmp2)` — a DESCENDING LUID sort, so the largest
+  LUID is picked first in the backward walk and emitted LAST. Hoisting the
+  statement gave the insn a low LUID, so it is emitted FIRST (index 4); target
+  emits it LAST in the block (index 12, right after the jal). The three register
+  saves and the second `addiu a0,sp,0x10` redistribute around it, which also
+  changes which insn reorg puts in the sprintf jal delay slot.
+- probe: side-by-side of the emitted block against asm/funcs/func_80037A20.s
+  (recorded in candidate.c's header) + the sched/sched2 ready-list dumps.
+- result: OPEN. The requirement is contradictory on its face — the insn needs a
+  LOW luid (early source position) for the live range that wins the allocation
+  tie, and a HIGH luid (late source position) for target's emission slot. Two
+  outs exist and neither is measured: (a) give the insn the birthing boost so
+  sched1 sinks it regardless of luid — it needs reg_n_sets == 1 on its
+  destination, and the naive spelling of that (a separate single-set local copied
+  into the counter) costs the tie
+  (rejected/s10-zero-init-split-single-set-pseudo.c, 13); (b) find a different
+  byte-free way to lengthen the counter's live range / shorten the pointer's that
+  does not depend on the zero-init's source position at all.
+- verdict: OPEN — this is the whole remaining frontier.
+
+## [s10] The `la D_80102810` sinks past the sprintf jal in the s9 split body because of a named sched1 heuristic, not because of cse/combine/LICM.
+- mechanism: tools/gcc-2.7.2/sched.c adjust_priority() raises an insn to max_priority (0x7f000001) when birthing_insn_p() is true, i.e. when reg_n_sets[REGNO(dest)] == 1. schedule_block() runs BACKWARD, so the boost emits the insn LATE (the register-lifetime shortening heuristic). The s9 split gives the base pointer exactly one set; a walking pointer has two (the la and the += 0x28).
+- probe: pwsh tools/grinder/dump.ps1 func_80037A20 on both bodies; read the block-0 ready lists in tmp/grind/func_80037A20/dumps/code6cac_c.sched and the insn chain in .cse/.loop/.combine/.flow/.lreg.
+- result: The la is still ahead of the call in .cse, .loop, .combine and .flow, and only moves by .lreg (post-sched1). sched1 dumps: split body `T-4: 32 (1) 29 (1) 13 (7f000001), now 13 32 29`; one-pointer body `T-4: 32 (1) 29 (1) 13 (1), now 32 29 13` with insn 13 then drifting to T-11 (emitted first).
+- verdict: CONFIRMED
+
+## [s10] The base pointer can be given a second set byte-free so that birthing_insn_p stops boosting its la, keeping the s9 allocation AND target's schedule.
+- mechanism: reg_n_sets >= 2 disables the boost; a first assignment whose value is consumed before the la would supply the second set at no byte cost.
+- probe: Two spellings measured: the pointer local first holding the format-string address, and first holding the stack buffer address (tmp/grind/func_80037A20/s10/v_A_fmtreuse.c, v_D_bufreuse.c), plus a walking-pointer-declared-at-top variant (v_K_ptop.c).
+- result: Both address-reuse spellings stay at sandbox 8 with the la still after the jal: cse1 deletes any set whose source is a constant or constant-equivalent (symbol_ref, frame-pointer + offset), so reg_n_sets falls back to 1. The declared-at-top variant collapses to the one-pointer body (13). Byte-free second sets of an address pseudo are not spellable.
+- verdict: KILLED
+
+## [s10] Target's $s0/$s1 allocation is reachable in the ORDINARY one-pointer body by moving `var_s1 = 0;` above the sprintf call, which makes the two allocnos tie on global.c priority so the tie-break by pseudo number hands $s0 to the pointer.
+- mechanism: global.c pri = floor_log2(nrefs)*nrefs*size/live_length*10000, ordered pri DESC with ties broken by lower pseudo number, and the first allocno takes $s0. reg_n_refs is LOOP-DEPTH WEIGHTED (flow.c adds loop_depth per reference, so loop-body references count twice). Hoisting the zero-init lengthens the counter's live range and shortens the pointer's at the same time, and the two quotients meet.
+- probe: tools/ra_solver/extract.py on each body (model_onept.json, model_P1.json, model_Q.json) plus sandbox --disable all and objdump of the sandbox object.
+- result: init AFTER the call: ptr(74) 8 refs/17 len = 14117 -> $s1, counter(75) 10/14 = 21428 -> $s0, sandbox 13. init BEFORE the call: ptr(74) 8/16 = 15000 and counter(75) 10/20 = 15000 - an EXACT TIE - so pseudo 74 (var_s0, declared first) is allocated first and takes $s0, counter forced to $s1. That is target's assignment; sandbox --disable all = 6, 33/33 insns, 0 rules, objdump confirms.
+- verdict: CONFIRMED
+
+## [s10] s9's counter-side foreclosure (every counter partition leaves a counter allocno above the pointer) still holds on the new do/while chassis.
+- mechanism: s9 computed the bar against a pointer priority of 5882 from the s1-s8 goto chassis; the do/while chassis puts the pointer at 14117, less than half as high a bar, so the conclusion had to be re-measured rather than inherited.
+- probe: Re-measured s9's own partition (`n = var_s1 + 1`) on the do/while one-pointer chassis with ALLOCDBG (model_P1.json), plus a tail-split variant (v_P6.c) and an intermediate-copy variant (v_P5.c).
+- result: Still dead, but for a newly-named reason: loop-body references are loop-depth weighted, so the loop-carried counter pseudo floors at 6 refs / live_length 7 = 17142 (1 set + 2 loop refs counted twice + 1 tail read), and 17142 > 14117. It would need live_length >= 9, which the fixed byte stream does not provide. The tail-split variant costs an insn (34, sandbox 17) because jump2 does not cross-jump the duplicated gp store + return move.
+- verdict: CONFIRMED
+
+## [s10] With the allocation solved, the entry-increment fold and the residual entry-block schedule can be closed by re-trying the s2/s6 fold defeats on the new chassis (s9 held that every prior kill was chassis-stale).
+- mechanism: s6 pinned the fold to the FIRST cse.c pass (REG_WAS_0 note on the dominating zero-init); s9 argued the s7 coupling objection no longer applied under the new allocation.
+- probe: do-while(0) wrap of the entry increment, the `var_s1 = var_s1 + 1` spelling, and a single-set zero-init local, all measured on the s10 chassis.
+- result: All fail. do-while(0) measures 14 (it does not defeat the cse1 REG_WAS_0 fold AND it costs the allocation tie); `var_s1 = var_s1 + 1` is byte-identical to `var_s1++` at 6; the single-set zero-init local measures 13 (the extra pseudo perturbs both live lengths and loses the tie). On this chassis the fold is not independently attackable - it is coupled to the same live-range balance that wins the allocation.
+- verdict: KILLED
