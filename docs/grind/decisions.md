@@ -11810,3 +11810,102 @@ both [[staged-value-reused-variable]], the family sanctioned 2026-07-03).
 ## 2026-08-25 19:09 — func_8003800C — final call — **PASS**
 
 Sole codegen-motivated construct is the single s32 j counting both the checksum loop and the 0x16 fixup loop; it sits verbatim in the frozen family 'Variable reuse for codegen control' (.claude/rules/no-new-park-categories.md:170) and is granted for THIS application by the owner ruling of 2026-08-25 (docs/grind/decisions.md:11531) plus the 17:30 sanctioned-family ruling (:11468). Prerequisites hold: mechanism named (global.c allocno_compare / reg_live_length), exhaustion banked (hypotheses.md s1-s16b, 25 rejected/ files), /* FAKE */ present on j's declaration with mechanism + ledger pointer. DECISIVE FACT I re-verified myself: asm/funcs/func_8003800C.s seats BOTH counters in $a1 (addiu $a1,$a1,1 / sltiu 0x24 at the checksum loop; addiu $a1,$a1,1 / slti 0x16 at the fixup loop) -- the target's own bytes say the original source used one counter, so test #2 passes on evidence. Also verified: src body == candidate.c apart from a name comment; zero regfix/asmfix entries and no inline_asm_canonical listing for this func; evidence.md:817-818/891-892 record sandbox --disable all = 0 (79/79, rules_dropped 0) and full-build SHA1 == oracle. No asm, pin, volatile, alias, dead store, or wrapper anywhere in the body; the construct DELETES a declaration rather than adding one. Prior banned_constructs entry #3 (session self-declared supersession) is process-scoped and moot -- superseded by the owner ruling, not by the session.
+
+## 2026-08-25 - CD_sync (src/system.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (owner directive 2026-08-24 executed and measured)
+
+**Why this entry exists.** The owner's 2026-08-24 ruling ([[escalation-not-parked]]) retired the parked
+state and kicked `CD_sync` (formerly `cpu_side_move_dir_4`, 0x80080DB0, PsyQ 4.0 libcd `bios.c` v1.86)
+back to active grinding with a NAMED directive: *"chain-extender family (sanctioned 2026-08-19/20,
+untested here) against the p106/val5 allocno tie; also the psyz PsyQ-4.0 reference axis."* Session 105
+(escalation modality) EXECUTED BOTH named axes rather than re-quoting the 2026-08-20 disposition. Both
+are now measured dead, first-hand, on the current chassis. This entry records the measurements and
+re-applies the standing ruling.
+
+**Chassis (re-measured this session, not inherited).** `memory/grind/CD_sync/candidate.c` spliced over
+`INCLUDE_ASM("asm/funcs", CD_sync);` at `src/system.c:376` -> `sandbox CD_sync --disable all` =
+**score 2, target_insns 160, build_insns 160, rules_dropped 0**. `src/system.c` restored to HEAD;
+working tree clean apart from the ledger, this entry and untracked scratch.
+
+**Directive axis 1 - F1 combine-foldable chain-extender vs the p106/val5 allocno tie: KILLED (10 probes).**
+The sanctioned family (`.claude/rules/dead-store-fake-exception.md:32-46`, owner ruling 2026-07-01)
+carries a hard prerequisite: *"verify the fold actually emits zero bytes (same insn count + no new
+address materialization) - a chain that MATERIALIZES is a real code change, not this lever."* Probes on
+both live bases (h5 = the masked-2 floor form; g3 = the order-perfect masked-6 form whose residual is
+exactly the p106/val5 v1<->a0 exchange the directive names):
+
+| probe | detour | score | build_insns |
+|---|---|---|---|
+| v3 g3 base (control) | - | 6 | 160 |
+| v1 / v4 / v6 | value detour `arg5 += (s32)tbl_125c - (s32)D_800A125C` (x1 on h5, x1 on g3, x2 on h5) | 19 / 11 / 30 | **164 / 164 / 166** |
+| v2 / v5 | address detour `v0 + ((s32)D_800A125C + ((s32)tbl_125c - (s32)D_800A125C))` (h5 / g3) | 20 / 25 | 160 / 160 |
+| v7-v10 | `idx_1494` link-constant delta detour, both associations, both bases | 21-22 | **166** |
+
+**The structural reason, and it generalizes:** a chain-extender is byte-neutral ONLY when the whole
+detour collapses to a **link-time constant** (that is why the existing `idx_1495` extender folds - its
+result `&D_800A1494 + 1` is knowable at link time). Every value the p106/val5 tie is made of - `arg5`'s
+value and `arg5`'s address - is **runtime-dependent** (`v0` is a loaded index), so no cross-symbol
+detour on those pseudos can fold to zero bytes; each one materialises +4/+6 insns and is therefore not
+a legal instance of the family at all. The two byte-neutral shapes (v2/v5) fold by tree-level
+re-association instead, and merely re-order the block for +18/+19. **F1 is structurally inapplicable to
+this residual**, not merely unlucky - which is a stronger kill than an empirical plateau.
+
+**Directive axis 2 - psyz PsyQ-4.0 reference: KILLED (first-hand, this session).** Fetched
+`https://raw.githubusercontent.com/Xeeynamo/psyz/master/decomp/src/libcd/bios.c` (artifact
+`tmp/grind/CD_sync/s105/psyz_bios.c`, 208 lines). Line 94 is
+`INCLUDE_ASM("asm/nonmatchings/libcd/bios", CD_sync);` - psyz, the version-correct PsyQ 4.0 decomp, has
+**no matched C body for CD_sync** (nor for `getintr` / `CD_ready` / `CD_cw` / `CD_datasync` /
+`CD_getsector*` / `callback`). There is no reference source seed at any version. This reproduces the
+2026-08-18 address-keyed sweep's negative by direct inspection rather than by citation. (The fetch is
+not a total loss: psyz's declarations independently confirm the BB2 symbol identities - `D_800A125C` =
+`CD_intstr[8]`, `D_800A1494/95` = the `Result` pair, `D_800A11DC[D_800A11D5]` = `CD_comstr[CD_com]`,
+format string `"%s:(%s) Sync=%s, Ready=%s\n"` - banked in the ledger.)
+
+**New load-bearing fact (s105).** The `idx_1495` cross-symbol construct is NOT cosmetic: all three
+honest respellings - `idx_1494 + 1`, `&idx_1494[1]`, `(u8 *)&D_800A1494 + 1` - measure **masked 15 at
+160 insns** against the candidate's 2. It is what holds the floor at 2. Under the CURRENT rule set that
+construct sits inside a sanctioned family (`dead-store-fake-exception.md:32-46`, whose own worked
+example is literally this function's line), is byte-neutral (160 == 160), and `candidate.c` now carries
+the required `/* FAKE: ... mechanism ... lever-exhaustion ... */` annotation. **This corrects the
+reasoning (not the outcome) of the 2026-08-20 entry**, which recorded "no SOTN precedent for the closing
+construct": the construct that HOLDS the floor is sanctioned and cited; there simply is no *closing*
+construct, because the remaining 2-insn residual is a scheduler tiebreak with no C-level spelling at all.
+
+**Gate (a) canonical-asm - FAILS (re-run this session).** `python3 tools/scan_hand_coded.py --single
+CD_sync` -> `tier=LOW score=2/8 (160 insns)`; only S4 (4 loads in an 8-insn window @ insn 49) and S5
+(approx-sibling `CD_ready`, jaccard 0.64) fire; S1/S2/S6 all absent. Artifact
+`tmp/grind/CD_sync/s105/scan_hand_coded.txt`. Independently barred by the 2026-07-09 Judge constraint
+against re-surfacing canonical-asm for this function or its twins.
+
+**Gate (b) SOTN precedent for the CLOSING construct - FAILS by construction.** The residual is the
+theorem-locked pair `{sll@54 <-> addu@55}`: both LAUNCH in the same cycle with equal `INSN_PRIORITY`, so
+GCC 2.7.2 `sched.c` decides by LUID (source emission order); every source reordering that flips them
+pays the `p106/val5` `[18,24]/[20,26]` L6=L6 allocno birth-tie in `global.c` at cost 6 instead of 2.
+There is no construct to find a precedent FOR - no C spelling of the reordering exists that does not
+pay the tie, across ~40 decompositions and now 122 banked rejected forms.
+
+**Exhaustion (105 sessions, >=6 distinct modalities).** structural (46+ probes, s93 POLL sweep, s101
+pointer-alias 5 shapes, s102 livelen 6 shapes), forensics (s6/s7/s15/s16/s24/s25/s51/s69/s70/s79/s96/s97
+instrumented `.lreg`/`.greg`/`.sched`/`.combine` dumps), rederive (s98/s99), synthesis (s100 analytic
+closure), transplant (s9/s2/s4 marionation; s98 in-repo - idiom unique to this function in the whole
+BB2 tree), permuter (6 chassis, ~81k+ iterations, 0 novel basin closures), m2c (s8), solver-adjacent
+allocno/LUID modelling (s6/s24/s25/s51), and now s105's two directive axes.
+
+**Disposition.** Both AND-gates fail - the owner's pre-decided case under the 2026-07-27 standing ruling
+(`.claude/rules/endgame-lock-disposition.md`): **REFUSED / OWNER-ACCEPTED INCOMPLETE**. No packet is
+filed asking to lower a standard (per the 2026-08-24 auto-reject class, a "sanction the reordering" or
+"grant canonical-asm despite LOW tier" question is pre-decided NO and must not be filed). `src/system.c`
+keeps `INCLUDE_ASM("asm/funcs", CD_sync);`; the annotated masked-2 form stays in
+`memory/grind/CD_sync/candidate.c` for any future re-attempt. Nothing is pending on the owner.
+
+**What a future re-attempt needs (do NOT re-run the closed space):** a pure-C lever that reorders
+`{sll@54, addu@55}` at the `sched.c` LUID tiebreak WITHOUT paying the `p106/val5` allocno tie. As of
+s105 the chain-extender family is structurally excluded from that job (runtime-dependent operands
+cannot fold to zero bytes) and no version-correct reference source exists anywhere.
+
+**References:** ledger `memory/grind/CD_sync/{evidence.md,hypotheses.md,candidate.c,state.json,rejected/}`
+(122 rejected forms, 10 added this session); artifacts `tmp/grind/CD_sync/s105/` (probe blocks,
+`scan_hand_coded.txt`, `psyz_bios.c`, `splice.py`/`splice2.py`); prior disposition
+`docs/grind/decisions.md:8000` (2026-08-20); owner rulings 2026-07-20 (this file, line 948), 2026-07-01
+(chain-extender sanction, `.claude/rules/dead-store-fake-exception.md:32-46`), 2026-07-27
+(`.claude/rules/endgame-lock-disposition.md`), 2026-08-18 (`.claude/rules/judge-sole-gate.md`),
+2026-08-24 (`.claude/rules/escalation-not-parked.md`); provenance `memory/closer/libcd-groundtruth.md`.

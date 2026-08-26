@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 104,
+ "session_count": 105,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -633,13 +633,19 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "s104 escalation: floor re-measured at 2 on the post-migration chassis (160/160, 0 rules); both endgame-lock gates FAIL (scan_hand_coded LOW 2/8, no S1/S2/S6; SOTN construct-index census for the cross-"
+  },
+  {
+   "session": 105,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "s105 executed BOTH axes of the 2026-08-24 owner directive and killed both: the sanctioned F1 chain-extender is STRUCTURALLY inapplicable to the p106/val5 tie (10 probes; byte-neutrality requires a lin"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A pure-C lever reorders {sll@54, addu@55} at the sched.c LUID tiebreak without paying the p106/val5 allocno tie (cost 6). This is the ONLY thing that would justify unparking CD_sync.",
-   "mechanism": "GCC 2.7.2 sched.c list scheduler: both insns launch in the same cycle with equal INSN_PRIORITY, so LUID (source emission order) decides; every in-family source reordering measured so far shifts allocno priorities into the p106/val5 tie in global.c, costing 6 instead of 2.",
-   "next_probe": "Do NOT re-run the closed space (structural / forensics / rederive / synthesis / transplant / permuter are all spent and banked). A re-attempt is only warranted if a NEW sanctioned family lands in .claude/rules/ or a new SOTN-master precedent appears in docs/reference/sotn-construct-index.md for the cross-symbol arithmetic idiom; re-run the two AND-gates first."
+   "hypothesis": "A pure-C lever reorders {sll@54, addu@55} at the sched.c LUID tiebreak without paying the p106/val5 allocno tie (cost 6). This remains the ONLY thing that would re-open CD_sync.",
+   "mechanism": "GCC 2.7.2 sched.c list scheduler: both insns launch in the same cycle with equal INSN_PRIORITY, so LUID (source emission order) decides; every in-family source reordering measured across 105 sessions shifts allocno priorities into the p106/val5 birth-tie in global.c.",
+   "next_probe": "Do NOT re-run the closed space. As of s105 the F1 chain-extender family is STRUCTURALLY excluded (runtime-dependent operands cannot fold to zero bytes) and the psyz PsyQ-4.0 reference axis is closed (no seed at any version). A re-attempt is warranted only if a NEW sanctioned family lands in .claude/rules/ whose mechanism touches allocno birth order without a byte-neutrality requirement, or if a matched libcd bios.c body appears in psyz/sozud psy-q-decomp upstream - re-check both, then re-run the two AND-gates."
   }
  ],
  "judge_constraints": [

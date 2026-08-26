@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "CD_sync",
-      "file": "system",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: chain-extender family (sanctioned 2026-08-19/20, untested here) against the p106/val5 allocno tie; also the psyz PsyQ-4.0 reference axis (ver"
-    },
-    {
       "func": "func_80045294",
       "file": "text1a_c",
       "distance": 2,
@@ -2042,17 +2033,27 @@
       "unpark_reason": "Owner ruling 2026-08-25 (032909be): no decidable question in the backstop packet; return to active. Directive: run SOLVER modality first once the solver-toolkit repair lands (same residual shape the solver cracked on func_8003800C).",
       "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-25 \u0393\u00c7\u00f6 func_8002EA24 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:11688 -- 2026-08-25 func_8002EA24 OWNER-ESCALATION -- ESCALATED WITH DECISION PACKET (tooling-repair authorization; solver-first directive executed)"
+    },
+    {
+      "func": "CD_sync",
+      "file": "system",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: chain-extender family (sanctioned 2026-08-19/20, untested here) against the p106/val5 allocno tie; also the psyz PsyQ-4.0 reference axis (ver",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:11814 - 2026-08-25 - CD_sync (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (owner directive 2026-08-24 executed and measured)"
     }
   ],
   "counts": {
     "total": 234,
-    "active": 230,
+    "active": 229,
     "by_status": {
-      "active": 230,
-      "escalated": 4
+      "active": 229,
+      "escalated": 5
     },
     "by_verdict": {
-      "C": 195,
+      "C": 194,
       "ASM-PARTIAL": 35
     }
   }

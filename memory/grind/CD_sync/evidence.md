@@ -1747,3 +1747,33 @@ across 6 chassis (~81k+ iters, 0 novel basin closures), m2c (s8), in-repo transp
 - [s104] Disposition filed this session at docs/grind/decisions.md:7993 with both gates' evidence, the full exhaustion inventory, and the terminal standing-ruling title. Nothing is pending on the owner.
 
 - [s104] memory/grind/CD_sync/candidate.c updated in place: the banked floor-2 form now carries the CD_sync symbol name so a future re-attempt can apply it directly to src/system.c.
+
+- [s105] Chassis re-measured on the post-migration tree: candidate.c spliced over `INCLUDE_ASM("asm/funcs", CD_sync);` at src/system.c:376 gives score=2, target_insns=160, build_insns=160, rules_dropped=0. Floor unchanged since s97. src/system.c restored to HEAD at end of session.
+- [s105] g3 base (the order-perfect masked-6 form: `v0<<=2; arg5=*(s32*)(v0+(s32)tbl_125c); t0<<=2; debug_printf(..., *(s32*)(t0+(s32)tbl_125c), arg5)`) re-measured this session at score=6, build_insns=160 - the session-4b measurement is chassis-valid and reproducible; use it as the base for any future attack on the p106/val5 v1<->a0 exchange.
+- [s105] MEASURED RULE for the F1 combine-foldable chain-extender family on this function: byte-neutrality requires the ENTIRE detour to collapse to a link-time constant. Detours whose result is runtime-dependent materialize +4 insns (single value detour, 164), +6 insns (double detour or an idx_1494-symbol delta, 166). Only the tree-level-reassociable address detour stayed at 160, and it regresses (+18 h5 / +19 g3). This is why idx_1495's extender folds (result &D_800A1494+1 is link-known) and why nothing aimed at arg5 can.
+- [s105] The idx_1495 cross-symbol extender is load-bearing, measured: honest `idx_1494 + 1`, `&idx_1494[1]` and `(u8 *)&D_800A1494 + 1` all give masked 15 / 160 insns against the candidate's 2.
+- [s105] candidate.c is now FAKE-annotated on the idx_1495 line (family dead-store-fake-exception.md:32-46, mechanism flow.c reg_n_refs before combine.c SYMBOL_REF fold, byte-neutrality 160==160, lever-exhaustion pointer). Re-measured after annotation: score 2, build_insns 160 (the comment is on the existing line, so no line-note shift).
+- [s105] psyz (Xeeynamo/psyz, PsyQ 4.0) decomp/src/libcd/bios.c line 94 = `INCLUDE_ASM("asm/nonmatchings/libcd/bios", CD_sync);` - no reference C exists for CD_sync (nor getintr / CD_ready / CD_cw / CD_datasync / CD_getsector* / callback). Fetched and banked at tmp/grind/CD_sync/s105/psyz_bios.c. The psyz axis named in the 2026-08-24 owner directive is closed.
+- [s105] PROVENANCE (from that psyz fetch, independent confirmation of the BB2 symbol identities used by this function): `D_800A125C` = `char *CD_intstr[8]` = {"NoIntr","DataReady","Complete","Acknowledge","DataEnd","DiskError","?","?"}; `D_800A1494`/`D_800A1495` = the two `Result` bytes; `D_800A11DC[D_800A11D5]` = `CD_comstr[CD_com]` (32-entry command-name table); `D_800161C8` = `"%s:(%s) Sync=%s, Ready=%s\n"`; `D_80016240` = the `"CD_sync"` name string stored into `D_800F19C0`; `D_800161B8` = `"CD timeout: "`. The debug_printf block is therefore literally `printf("%s:(%s) Sync=%s, Ready=%s\n", name, CD_comstr[CD_com], CD_intstr[Result[0]], CD_intstr[Result[1]])` - which is exactly the shape the candidate spells; the residual is codegen reproduction, not a misread of the source.
+- [s105] scan_hand_coded --single CD_sync re-run: tier=LOW score=2/8, only S4 (4 loads in an 8-insn window @ insn 49) and S5 (approx-sibling CD_ready, jaccard 0.64). Artifact tmp/grind/CD_sync/s105/scan_hand_coded.txt.
+- [s105] Disposition filed at docs/grind/decisions.md:11814 (2026-08-25, standing-ruling REFUSED / OWNER-ACCEPTED INCOMPLETE) after executing BOTH axes of the 2026-08-24 owner directive and measuring both dead. 10 new rejected forms banked (s105_chainext_*, s105_honest_idx1495_plus1_regress15.c) -> 122 total.
+
+- [s105] Chassis re-measured this session: candidate.c over src/system.c:376 -> score 2, target_insns 160, build_insns 160, rules_dropped 0. Floor unchanged since s97; src/system.c restored to HEAD (working tree clean apart from ledger + decisions.md + untracked scratch/rejected forms).
+
+- [s105] g3 base (v0<<=2; arg5=*(s32*)(v0+(s32)tbl_125c); t0<<=2; call(..., *(s32*)(t0+(s32)tbl_125c), arg5)) reproduces at score 6 / 160 on this chassis - the session-4b order-perfect form is still the right base for any future attack on the p106/val5 v1<->a0 exchange.
+
+- [s105] MEASURED RULE (new, generalizes beyond this function): an F1 combine-foldable chain-extender is byte-neutral only when the ENTIRE detour collapses to a link-time constant. Runtime-dependent detours materialize +4 insns (single value detour) or +6 (double detour / idx_1494-symbol delta). That is exactly why idx_1495's extender folds (its result &D_800A1494+1 is link-known) and why nothing aimed at arg5 - whose address depends on the loaded index v0 - can.
+
+- [s105] The idx_1495 cross-symbol extender is load-bearing: all three honest respellings measure masked 15 at 160 insns vs the candidate's 2.
+
+- [s105] psyz decomp/src/libcd/bios.c:94 is INCLUDE_ASM for CD_sync - the version-correct PsyQ 4.0 reference has no seed. Banked at tmp/grind/CD_sync/s105/psyz_bios.c.
+
+- [s105] Provenance confirmed from that fetch: the debug_printf block is literally printf("%s:(%s) Sync=%s, Ready=%s\n", name, CD_comstr[CD_com], CD_intstr[Result[0]], CD_intstr[Result[1]]) - the candidate already spells that shape, so the residual is codegen reproduction, not a misread source.
+
+- [s105] Gate (a) re-run this session: scan_hand_coded --single CD_sync = tier=LOW score=2/8; only S4 (4 loads in an 8-insn window @ insn 49) and S5 (approx-sibling CD_ready, jaccard 0.64) fire; S1/S2/S6 absent. Artifact tmp/grind/CD_sync/s105/scan_hand_coded.txt.
+
+- [s105] Gate (b) fails by construction: the residual {sll@54 <-> addu@55} is a sched.c LUID tiebreak with NO C-level construct to find a precedent for; every source reordering pays the p106/val5 [18,24]/[20,26] L6=L6 allocno birth-tie at cost 6.
+
+- [s105] 10 new rejected forms banked (s105_chainext_* x9, s105_honest_idx1495_plus1_regress15.c) -> 122 total in memory/grind/CD_sync/rejected/.
+
+- [s105] Disposition filed by this session at docs/grind/decisions.md:11814 - both AND-gates fail, which is the owner's pre-decided case under the 2026-07-27 standing ruling. No standard-lowering packet was filed (2026-08-24 auto-reject class).
