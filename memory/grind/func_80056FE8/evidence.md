@@ -289,3 +289,74 @@ counter. See `.claude/rules/proven-spelling-class-reconstruction.md` prong 1.
 tmp/grind/func_80056FE8/s7/func_80056FE8.{rtl,combine,lreg,greg,sched2,jump2},
 tmp/grind/func_80056FE8/s7/tempform.greg, tmp/grind/func_80056FE8/s7/tempform.c,
 memory/grind/func_80056FE8/rejected/postjoin-temp-combine-p73-colored-first.c
+
+## s7c (2026-08-26, forensics) — FLOOR 9 -> 0 held; construct re-filed under the family the Judge named; dumps re-derived from scratch
+
+Session task: the 2026-08-26 02:52 Judge ruling on s7b's ruling-request was
+"Wrong door, right construct" — the per-arm body is admissible under
+`duplicated-statement-into-arms`, and the ONLY defects were comment-level (wrong
+family citation, and `ANNOTATION-CONFORMANCE: n/a` where that family makes the
+`/* FAKE: ... */` annotation prerequisite 4). s7c executed exactly that: same body,
+correct family, mandatory annotation, fresh measurements, fresh dumps.
+
+### Measurements (this session, this exact annotated body in src/text1b.c)
+- `sandbox func_80056FE8 --disable all` = **score 0**, `build_insns 43 ==
+  target_insns 43`, `scorable true`, `rules_dropped 0`, `cheat_asm_stripped 171`
+  (file-wide, not this function).
+- `verify-oracle` = `ok true`, `build_sha1 == original_sha1_now ==
+  original_sha1_locked == 62efab4f73f992798c43e8c730aa43baa10bb4fa`.
+- Chassis note for the next session: the driver reported "measurement unavailable"
+  for the HEAD floor at dispatch and the ledger's last recorded floor was 9. HEAD
+  carries `INCLUDE_ASM("asm/funcs", func_80056FE8);` at src/text1b.c:1573, so the
+  honest floor at HEAD is the INCLUDE_ASM floor; the s5/s6 double-reuse chassis is
+  what measured 9. With the s7 per-arm body applied the floor is 0. Comments are
+  codegen-inert here: adding the FAKE annotations to the s7 body changed nothing
+  (score 0 before and after, 43 insns, SHA1 unchanged).
+
+### Forensics re-derived from scratch (independent of s7b's slices and of the solver)
+`pwsh tools/grinder/dump.ps1 func_80056FE8` regenerated the full `-da` set into
+`tmp/grind/func_80056FE8/dumps/text1b.{rtl,combine,lreg,greg,sched2,jump2,dbr,flow,...}`;
+function slices extracted to `tmp/grind/func_80056FE8/s7/s7c_<pass>.txt`.
+
+- **`global.c` allocno order, printed directly.** `text1b.greg` at byte offset
+  422610 (the `func_80056FE8` slice) reads `;; 3 regs to allocate: 77 73 72` with
+  dispositions `72 in 4  73 in 6  77 in 5` and `Hard regs used: 2 3 4 5 6`. That is
+  `arg0 -> $a0`, `base(p77) -> $a1`, `struct pointer(p73) -> $a2` = **target-exact**.
+  Conflict/preference lines in the same slice: all three allocnos conflict pairwise
+  plus `2 3 29`; the ONLY preference recorded is `;; 72 preferences: 4` (the incoming
+  argument). Neither `base` nor the struct pointer has any preference — the s6
+  copy-preference kill reconfirmed a third time, now on the WINNING form.
+- **Reference counts per pass (pseudo 77 = `base`).** `.rtl` 8, `.combine` 9,
+  `.lreg` 9, `.flow` 9, `.greg` 0 (hard regs assigned by then). Eight expand-time
+  references = 1 def (`base = a3*40`) + 3 arm read-modify-writes (2 each) + 1 use in
+  the return add. The post-join spelling gives the same pseudo 4. This is the whole
+  quantity that flips the colour order.
+- **`jump2` is the pass that makes it byte-neutral.** Accumulate `plus` insns in the
+  function slice: `.greg` 4 -> `.sched2` 4 -> **`.jump2` 2** -> `.dbr` 2. The three
+  per-arm `addu`s are tail-merged by post-reload cross-jumping into the single join
+  `addu $a1,$a1,$v0` the target has at `L47874`; the surviving second `plus` is the
+  return add. Nothing dead is emitted and nothing extra survives — prerequisite 2 of
+  the family, shown at pass granularity rather than inferred from the insn count.
+
+### What is now filed
+- `src/text1b.c` holds the per-arm body with the full `/* FAKE: ... */` block above
+  the dispatch (what + named passes + lever-exhaustion pointer) and a short
+  `/* FAKE: duplicated copy (see above) */` on each of the three copies, so every
+  duplicated copy carries the annotation the family's prerequisite 4 asks for.
+- `memory/grind/func_80056FE8/self_vet.md` rewritten: six tests answered per
+  construct, `duplicated-statement-into-arms` claimed with its scope sentence quoted
+  verbatim and two live precedents (`.claude/rules/duplicated-statement-into-arms.md:63`
+  = the motion_SetMotion confirmed closure; `.claude/rules/no-new-park-categories.md:285`
+  = the frozen-list entry), and the annotation reproduced under
+  ANNOTATION-CONFORMANCE. The two previously-FAILed citations
+  (`hoist-shared-arm-computation-defeats-copy-pref`, `proven-spelling-class-reconstruction`)
+  are explicitly NOT made and are named as excluded.
+- `memory/grind/func_80056FE8/candidate.c` = the submitted body verbatim.
+
+### Standing lesson (carried from s7/s7b, reconfirmed)
+Six sessions of "every sanctioned axis is dead" were all measured inside ONE chassis
+(adjustment cached in a temp, combined after the join). The residual was never a
+coercion problem; it was a spelling of ordinary C nobody had written. The `.greg`
+`regs to allocate` line prints GCC's colour order for free — reading it on the
+PLAINEST alternative spelling is a one-command test that would have named the wall in
+s1.

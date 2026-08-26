@@ -225,3 +225,66 @@ C form in the post-join class reaches it. The next honest axis would have to cha
 the function's TYPE/CALLEE surface (e.g. the real struct types behind `arg0`/`a2`
 from a header, which could alter live ranges without touching statement structure) —
 untried, because every session so far has worked from the m2c-style cast spelling.
+
+## s7c (2026-08-26, forensics)
+
+- **H7c-1 — The s7 per-arm body's byte match survives on today's chassis and is
+  unaffected by adding the mandatory FAKE annotations.**
+  Mechanism: comments are consumed by cpp and cannot reach cc1's RTL, so the
+  annotation cannot perturb `flow.c` ref counts, `global.c` colour order, or `jump2`
+  cross-jumping.
+  Probe: apply the annotated body to `src/text1b.c`; `sandbox func_80056FE8
+  --disable all`; then `verify-oracle`.
+  Result: score 0, `build_insns 43 == target 43`, `rules_dropped 0`; verify-oracle
+  `ok true`, `build_sha1 == original_sha1_locked ==
+  62efab4f73f992798c43e8c730aa43baa10bb4fa`.
+  Verdict: **CONFIRMED**.
+
+- **H7c-2 — The colour-order flip is visible in a stock `-da` `.greg` dump of the
+  submitted form, with no solver and no instrumented cc1.**
+  Mechanism: GCC 2.7.2's `global_alloc` prints `;; N regs to allocate: <ids>` in the
+  priority order it will colour them, then the final `Register dispositions:`.
+  Probe: `pwsh tools/grinder/dump.ps1 func_80056FE8`, extract the `func_80056FE8`
+  slice from `tmp/grind/func_80056FE8/dumps/text1b.greg`.
+  Result: `;; 3 regs to allocate: 77 73 72` -> `72 in 4  73 in 6  77 in 5`
+  (= `$a0`/`$a2`/`$a1`), i.e. `base` coloured FIRST and taking `$a1`, exactly the
+  target's disposition; the only preference recorded in the slice is `;; 72
+  preferences: 4`.
+  Verdict: **CONFIRMED** (independent re-derivation of s7's solver prediction and of
+  s7b's slices).
+
+- **H7c-3 — `jump2` post-reload cross-jumping, not the scheduler, is the pass that
+  makes the three duplicated adds byte-neutral.**
+  Mechanism: post-reload cross-jumping tail-merges identical arm tails into one copy
+  reached by branches.
+  Probe: count accumulate `plus` insns in the function slice of each pass dump.
+  Result: `.greg` 4 -> `.sched2` 4 (both scheduling passes leave all four) ->
+  `.jump2` 2 -> `.dbr` 2. The merge happens exactly at `jump2`, after scheduling.
+  Verdict: **CONFIRMED** — the pass attribution is now measured, not inferred.
+
+- **H7c-4 — The construct is classifiable under the frozen SOTN family
+  `duplicated-statement-into-arms`, with all five prerequisites met.**
+  Mechanism: rule-file prerequisite roll-call (real statement / byte-neutral re-merge
+  / documented exhaustion / FAKE annotation / dual review).
+  Probe: prerequisites 1-4 checked against this session's measurements and the
+  s1-s7b ledger; family boundaries checked against the adjacent rows of the
+  family-selection table.
+  Result: 1 real (removing a copy changes the result), 2 byte-neutral (43==43,
+  score 0, SHA1==oracle), 3 exhaustion documented (s1-s7b ladder), 4 annotation
+  emitted on every copy; adjacent families (`dead-store-fake-exception`,
+  `hoist-shared-arm-computation-defeats-copy-pref`, `split-read-defeats-hoist`,
+  `defeat-licm-hoist-var-reuse`, `proven-spelling-class-reconstruction`) each
+  excluded with a stated reason. Prerequisite 5 is the review this submission
+  requests.
+  Verdict: **CONFIRMED** as far as a self-vet can carry it; the layer-1/layer-2
+  reviewers and the Judge are the deciding authority.
+
+- **OPEN (inherited, now narrowed): H7b-3** — whether the per-arm spelling is
+  admissible. The 2026-08-26 02:52 Judge ruling answered the family question ("Wrong
+  door, right construct"; `duplicated-statement-into-arms`, rule-file prereqs 1-3
+  verified independently by the Judge) and narrowed ban entry 1 accordingly. If a
+  reviewer nonetheless FAILs this submission, the next frontier is NOT another
+  spelling of the per-arm form: it is the untried type/callee-surface reshape named
+  in the 2026-08-26 escalation entry (real struct types behind `arg0`/`a2` instead of
+  the m2c cast spelling), since the RA, scheduler, permuter, copy-preference and
+  live-range axes are all measured dead (s2-s6).
