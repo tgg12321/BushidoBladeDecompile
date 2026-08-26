@@ -173,3 +173,121 @@ Cheat reference (diff only): `git show dfb9e9ac` on branch work/orch3a.
 - [s4] OWNER-ESCALATION filed in docs/grind/decisions.md (2026-07-24) naming func_80062020 with both options honestly. Direct sibling func_80048530 (same file, same shape, same dual-spelling-only byte-0) already ruled option (b) REFUSED/OWNER-ACCEPTED INCOMPLETE (decisions.md line 1594).
 
 - [s4] func_80062020 carries NO cheat on main and does not byte-match: the clean floor-4 pure-C candidate (0 rules/pins/dead-vars) is what would be retained under option (b).
+
+## s5 findings (synthesis modality) — pass attribution CORRECTED (expand, not CSE); aggregate/tree-shape axis KILLED; solver directive discharged
+
+- [s5] CHASSIS RE-MEASURE. The 2026-08-24 asm-until-matched migration changed the
+  chassis (`cheat_asm_stripped` 346 -> 173 for text1b), but the function's honest
+  floor is UNCHANGED: candidate.c re-applied to src/text1b.c measures
+  `sandbox --disable all` = **score 4**, build_insns 35, target_insns 38,
+  rules_dropped 0. Every s1-s4 spelling conclusion below is therefore still
+  chassis-valid.
+
+- [s5] **PASS ATTRIBUTION CORRECTED — the col-a fold is an RTL-EXPAND decision,
+  not a CSE decision.** Ran `pwsh tools/grinder/dump.ps1 func_80062020` and read
+  the `.rtl` (post-expand) dump for the function
+  (artifact tmp/grind/func_80062020/s5/rtl_expand_epilogue.txt). The epilogue
+  expands as:
+      (insn 101) (set (reg 88) (symbol_ref "D_800F1198"))
+      (insn 103) (set (reg/v 76) (plus (reg 88) (reg/v 74)))     ; p = &sym + ofs
+      (insn 106) (set (mem (plus (reg 76) (const_int 8))) 0)     ; p[2]
+      (insn 109) (set (mem (plus (reg 76) (const_int 4))) 0)     ; p[1]
+      (insn 112) (set (mem (reg 76)) 0)                          ; p[0]
+  `p[0]`'s address is already `(mem (reg 76))` the instant expand runs — there is
+  no later pass that "folds col a onto the base pointer", so there is nothing for
+  a CSE-defeat lever to defeat. s3's measurements (store-order invariance) were
+  CORRECT; s2/s3's MECHANISM label ("base-pointer CSE") was wrong. The real
+  invariant is: `p[K]` on a pointer variable can only ever expand to
+  `(mem (plus p K))`, and `K == 0` therefore always emits `sw zero,0(p)`.
+
+- [s5] **THE EXPAND-TIME ADDRESSING LAW (new, measurement-backed).** GCC 2.7.2
+  picks ONE addressing treatment per C TREE SHAPE for the whole epilogue:
+    * **Pointer-variable / COMPONENT_REF shapes force_reg the element address.**
+      Once `sym + i*12` lands in a pseudo, EVERY access to that element becomes
+      `base + disp` — including offset 0. Measured: byte-offset pointer
+      `p = (s32*)((u8*)&D_800F1198 + ofs); p[2],p[1],p[0]` = **4** (the floor);
+      struct-array member `((struct S3 *)&D_800F1198)[i].m`, order a,b,c = **11**,
+      order c,b,a = **10** (both build_insns 35, all three stores 0/4/8 off one
+      base); flag-as-1-element-array member
+      `struct S3F { s32 f[1]; s32 b; s32 c; }` with `.c,.b,.f[0]` = **10**
+      (the ARRAY_REF node does NOT re-expose the symbol — `f[0]` still emits
+      `sw zero,0(v0)` off the force_reg'd base).
+    * **2D-array shapes fold the constant column INTO the symbol and never share
+      a base.** Measured: `((s32 (*)[3])&D_800F1198)[i][K]`, order c,b,a = **15**,
+      order a,b,c = **14** (both build_insns 43). Each column emits its own
+      `la(sym+4K)` + `addu`; only the FIRST column in source order stays in the
+      cheap symbol-relative form `lui at,%hi(sym+4K); addu at,at,idx; sw 0(at)`.
+      In the a,b,c ordering, col a's store is **byte-identical to target's col-a
+      store** (`lui at,%hi(D_800F1198); addu at,at,idx; sw %lo(D_800F1198)(at)`)
+      — but cols b,c are then two independent `la` computations, not target's
+      shared `4(v0)/8(v0)`.
+  Target's epilogue needs BOTH treatments in ONE epilogue on ONE object:
+  offset 0 folded into the symbol (2D-array treatment) and offsets 4/8 off a
+  force_reg'd element base (pointer/COMPONENT_REF treatment). No uniform C tree
+  shape produces the mix; the mix requires the element address `&D_800F1198 + ofs`
+  to be written twice in two different shapes — i.e. exactly the banked
+  dual-spelling. This is a strictly stronger statement than s2/s3's "no uniform
+  spelling reproduces the partial CSE": it names the decision point (expand /
+  `legitimize_address`), shows it is keyed on the tree shape, and shows why no
+  optimizer-level lever can perturb it.
+
+- [s5] **AGGREGATE/TREE-SHAPE AXIS KILLED, and the aggregate-merge family is
+  measurably WORSE than the floor.** Declaring the three splat scalars as one
+  struct-array row type and using direct member access costs +6/+7 over the
+  current floor (10/11 vs 4) because the struct shape materializes `la(sym)`
+  BEFORE the index computation (`lui/addiu` then `sll/addu/sll` then `addu`),
+  while target (and the byte-offset pointer form) computes the index FIRST
+  (`sll v1,a1,1; addu v1,v1,a1; sll v1,v1,2; lui v0; addiu v0; addu v0,v1,v0`).
+  So even if the 5-prong aggregate-merge family were granted on the strong
+  base-register/stride evidence this function does have (the epilogue literally
+  materializes one base at `&D_800F1198 + 12*n` and stores at disp 4 and 8),
+  it would not reach the floor, let alone 0. Banked:
+  rejected/epilogue-struct-member-abc-full-cse.c,
+  rejected/epilogue-struct-member-cba-full-cse.c,
+  rejected/epilogue-flag-as-array-member-still-full-cse.c,
+  rejected/epilogue-2d-array-uniform-no-shared-base.c.
+
+- [s5] **OWNER'S SOLVER DIRECTIVE DISCHARGED — solver modality is INAPPLICABLE
+  here, not merely unpromising.** (a) `tools/ra_solver/inverse_compose.py classify
+  text1b func_80062020` (after `mkasm_honest.sh text1b`) reports
+  "func_80062020 is not `replace_with_asmfile`-wired", slices 28 honest vs 28
+  target insns, and returns "FIRST DIVERGENCE: IDENTICAL" — a false negative
+  (the real build is 35 insns vs target 38). Do NOT trust the text-stream
+  classifier for this function; it is mis-slicing the stream. (b) Independently,
+  by the classifier's OWN taxonomy, register-blanked multisets that differ in
+  SIZE (35 vs 38) classify as **PRE-RA**: the residual is an instruction-selection
+  difference upstream of both allocation and scheduling. ra_solver models
+  register assignment over a FIXED multiset and sched_solver orders a FIXED
+  allocated stream — neither can own a residual that is 3 instructions short.
+  This is confirmed from the other direction by s2: the epilogue's register
+  allocation ALREADY matches target exactly (index v1, base v0, addu v0,v1,v0).
+  Recommending solver for this function was a reasonable default; it is now
+  measured dead.
+
+- [s5] **F2 ANSWERED IN-SESSION (positive).** The struct-row declaration is
+  BYTE-FREE when used in the pointer idiom with the explicit split-init index:
+  `struct S3 { s32 a,b,c; }; ... ofs = i+i; ofs += i; ofs <<= 2;
+  q = (struct S3 *)((u8 *)&D_800F1198 + ofs); q->c = 0; q->b = 0; q->a = 0;`
+  measures **score 4, build_insns 35** — identical to the byte-offset
+  `p[2]/p[1]/p[0]` candidate. So the +6/+7 penalty measured for the struct shapes
+  is caused ENTIRELY by the `rows[i]` array-ref index materialization order
+  (`la(sym)` hoisted ahead of the index), NOT by the struct type. Consequence for
+  the frontier: if forensics (F1) ever produces object-model evidence for a
+  3-word row at D_800F1198, that model can be adopted at ZERO byte cost — the
+  aggregate declaration is not itself an obstacle. Variant banked at
+  tmp/grind/func_80062020/s5/v_structptr_ofs.c (NOT moved to rejected/: it is
+  floor-equivalent, not disproven).
+
+- [s5] Chassis re-measured post-migration: candidate.c applied to src/text1b.c gives sandbox --disable all score 4, build_insns 35, target_insns 38, rules_dropped 0. cheat_asm_stripped is now 173 (was 346 pre-migration) - the chassis changed, the floor did not, so all s1-s4 spelling conclusions remain valid.
+
+- [s5] PASS ATTRIBUTION CORRECTED (dump-proven): the col-a residual is decided at RTL EXPANSION by the MIPS legitimize_address path, keyed on the C tree shape. p[0] is (set (mem (reg 76)) 0) at expand; no CSE, combine or loop pass is involved. Every CSE-defeat-style lever is therefore a category error for this function.
+
+- [s5] EXPAND-TIME ADDRESSING LAW (new, 5 shapes measured): tree shapes that force_reg the element address (pointer variable, struct COMPONENT_REF, COMPONENT_REF whose member is a 1-element array) emit ALL THREE stores as base+disp including offset 0; tree shapes that keep the symbol in the address expression (2D array arr[i][K]) fold the constant column into the symbol for ALL THREE columns and never form a shared base. Target's epilogue needs BOTH treatments on ONE element, which requires the element address to be written twice in two different tree shapes.
+
+- [s5] In the 2D-array a,b,c ordering the col-a store is byte-identical to target's col-a store (lui at,%hi(D_800F1198); addu at,at,idx; sw %lo(D_800F1198)(at)) - confirming that the symbol-folding treatment is exactly what target used for the flag column; but the same treatment then forces cols b,c into two independent la computations instead of target's shared 4(v0)/8(v0).
+
+- [s5] A struct-row declaration is BYTE-FREE in the pointer idiom (score 4, build 35, identical to the candidate) - the aggregate object model is not an obstacle to adopting a recovered object model at zero byte cost; only the rows[i] array-ref spelling costs bytes (+6/+7, la(sym) hoisted before the index).
+
+- [s5] Solver modality measured INAPPLICABLE, not merely unpromising: inverse_compose classify is not wired for this function and returns a false IDENTICAL; and the honest-vs-target insn multiset differs in size (35 vs 38), which is PRE-RA by the classifier's own taxonomy. The owner's 2026-08-24 solver recommendation is discharged with measurements.
+
+- [s5] The one gate this function has NEVER tested is the one the func_800651F0 owner ruling (docs/grind/decisions.md 2026-07-27 23:04) credited: independent BYTE evidence, recovered from sibling target asm, that the original source genuinely had the contested shape. s4's escalation failed the in-hand-precedent gate without ever attempting that forensics sweep.

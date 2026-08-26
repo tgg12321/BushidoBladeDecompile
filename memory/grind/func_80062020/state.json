@@ -1,8 +1,8 @@
 {
  "func": "func_80062020",
  "file": "text1b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -33,13 +33,29 @@
    "floor": 4,
    "modality": "permuter",
    "headline": "Permuter axis KILLED (2 fresh-seed basins, ~46k iters): only byte-0 form is the same-lvalue dual-spelling cheat; every sanctioned axis dead; OWNER-ESCALATION filed."
+  },
+  {
+   "session": 5,
+   "floor": 4,
+   "modality": "synthesis",
+   "headline": "Mechanism re-attributed with the RTL dump: the col-a residual is an RTL-EXPAND (legitimize_address) choice keyed on the C tree shape, not a CSE fold - aggregate/tree-shape axis KILLED across 5 measure"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner ruling on the filed endgame-lock OWNER-ESCALATION resolves the disposition.",
-   "mechanism": "All grind-advanceable axes are dead; the remaining decision (option a canonical-asm NOT supportable at LOW 0/8, vs option b REFUSE -> INCOMPLETE-owner-accepted keeping the clean floor-4 pure-C form on main) is an owner policy call, not a grind lever.",
-   "next_probe": "Await owner ruling; sibling func_80048530 precedent points to option (b). If option (b): classify INCOMPLETE-owner-accepted, keep clean floor-4 candidate, park out of active grind, re-attempt only if a genuine non-dual-spelling pure-C lever emerges."
+   "hypothesis": "Sibling asm sites that reference D_800F1198 / D_800F119C / D_800F11A0 reveal the ORIGINAL object model - specifically whether the flag column was addressed through a different idiom than the data columns in code where no codegen steer is possible.",
+   "mechanism": "The func_800651F0 owner ruling PASSed a contested spelling on exactly this basis: register/addressing facts recovered from target bytes across siblings are decompilation evidence, not GCC-steering rationale. If a sibling touches only the flag column, or only cols b,c, its addressing form is steer-free evidence about the source idiom.",
+   "next_probe": "FORENSICS modality: grep every asm/funcs/*.s for D_800F1198 / D_800F119C / D_800F11A0 (s1 recorded the table's consumer as asm-only), classify each site's addressing form (symbol-relative hi/lo+index vs shared base+disp), and record whether flag-column and data-column accesses use consistent or divergent idioms. A uniform result closes this line honestly; a divergent result is the object-model evidence the escalation gate demands."
+  },
+  {
+   "hypothesis": "The candidate's floor-4 epilogue and the target differ only in which of two byte-free vehicles carries the row (byte-offset pointer vs struct-row pointer), so any object model recovered by F1 can be spelled without byte cost.",
+   "mechanism": "Measured this session: the struct-row pointer idiom with the explicit split-init index ties the floor exactly (4 / 35 insns); only the rows[i] array-ref spelling costs bytes because it hoists la(sym) ahead of the index computation.",
+   "next_probe": "If F1 returns positive, adopt the struct-row declaration (header-canonical per the aggregate-merge prongs) and re-measure; the base-register/stride evidence prong (a) is already in hand from the target epilogue itself (one base at &D_800F1198 + 12*n, stores at disp 4 and 8)."
+  },
+  {
+   "hypothesis": "The banked FAIL framing ('wrote the same lvalue two different ways') does not exactly describe the floor-4-adjacent form, in which the flag column is written ONCE in the SAME idiom the loop body uses for it while the row pointer is introduced only for the two data columns.",
+   "mechanism": "Under the s5 expand law the flag idiom appears twice in the function (loop + epilogue) and the row-pointer idiom once; the rejected form the rule cites spelled the flag the long way ONLY in the epilogue. Whether that is one coherent whole-function idiom or a steer is a genuine classification question.",
+   "next_probe": "DO NOT pursue before F1. Without sibling byte evidence this is the same construct s4 already failed the in-hand-precedent gate on, and an escalation packet asking to sanction a no-precedent family is pre-decided NO (owner ruling 2026-08-24). With F1 positive, it becomes a fidelity/provenance question and is then a legitimate ruling-request."
   }
  ],
  "judge_constraints": [],

@@ -188,3 +188,129 @@ sibling func_80048530 already ruled option b).
 - probe: Chassis B campaign from the two-object base (base_score 20), ~20 min / 45,307 iterations, --stop-on-zero.
 - result: Plateaued at score 15, NO byte-0 find. Re-anchoring b,c to &1198+ofs as a pointer makes col a's *(&1198+ofs) the same lvalue as that pointer's [0] -> collapses into the dual-spelling. No legitimate byte-0 form exists from this basin either.
 - verdict: KILLED
+
+## s5 findings (synthesis) — merged attack, corrected mechanism, reset frontier
+
+### What the four prior sessions actually established (merged, de-duplicated)
+1. The LOOP is solved: the fixed-base indexed source read (s1) + the `ofs` biv
+   reuse for the terminator index (s2) reproduce target byte-for-byte through
+   cols b,c of the epilogue. Floor 20 -> 10 -> 4. Nothing below re-opens this.
+2. The residual is exactly 3 instructions in one straight-line basic block: mine
+   `sw zero,0(v0)`; target `lui at,%hi(D_800F1198); addu at,at,v1;
+   sw zero,%lo(D_800F1198)(at)`.
+3. Everything s2/s3/s4 measured is still true on the post-migration chassis
+   (re-confirmed floor 4 this session).
+
+### The one substantive correction (dump-proven, changes the search space)
+s2/s3 attributed the residual to **CSE** ("base-pointer CSE folds col a"). The
+`.rtl` post-expand dump shows that is wrong: `p[0]` is ALREADY
+`(set (mem (reg 76)) 0)` at expand (insn 112), before any optimizer pass runs.
+The decision is made by **RTL expansion / the MIPS `legitimize_address` path**,
+keyed on the C TREE SHAPE. Consequence: every "defeat the CSE" style lever is
+a category error for this function — there is no fold to defeat. s3's KILL was
+right for the wrong reason, and the correct generalization is stronger:
+
+  **EXPAND-TIME ADDRESSING LAW (s5).** For an epilogue that touches one table
+  element at offsets 0/4/8:
+   * any tree shape that force_regs the element address (pointer variable,
+     `struct` COMPONENT_REF, even `COMPONENT_REF` whose member is a 1-element
+     array) makes ALL THREE stores `base + disp` — offset 0 included;
+   * any tree shape that keeps the symbol in the address expression (2D array
+     `arr[i][K]`) folds the constant column INTO the symbol for ALL THREE
+     columns, so no shared base ever forms.
+  Target mixes the two treatments on ONE element. No uniform C tree shape can.
+
+### s5 measurements (all clean pure C, 0 pins/rules, chassis-current)
+| epilogue tree shape | order | score | build_insns | addressing produced |
+|---|---|---|---|---|
+| byte-offset pointer `p[2],p[1],p[0]` (candidate) | c,b,a | **4** | 35 | base+0/4/8 (floor) |
+| `((struct S3 *)&D_800F1198)[i].m` | a,b,c | 11 | 35 | base+0/4/8, `la(sym)` before index |
+| `((struct S3 *)&D_800F1198)[i].m` | c,b,a | 10 | 35 | base+0/4/8, `la(sym)` before index |
+| `struct S3F { s32 f[1]; s32 b; s32 c; }` `.c,.b,.f[0]` | c,b,a | 10 | 35 | base+0/4/8 (ARRAY_REF member does NOT re-expose the symbol) |
+| `((s32 (*)[3])&D_800F1198)[i][K]` | c,b,a | 15 | 43 | per-column `la(sym+4K)`, no shared base |
+| `((s32 (*)[3])&D_800F1198)[i][K]` | a,b,c | 14 | 43 | col a byte-IDENTICAL to target; b,c each own `la` |
+
+### KILLED this session
+- **H-aggregate-tree-shape [KILLED].** Statement: a genuine aggregate declaration
+  (struct row / 2D array) for D_800F1198/119C/11A0 reproduces target's mixed
+  addressing without a dual spelling. Mechanism: the aggregate's member offsets
+  would let expand fold offset 0 into the symbol while force_reg'ing the base for
+  offsets 4/8. Probe: 5 tree shapes measured (table above), each disassembled.
+  Result: every force_reg shape is uniform base+disp (10-11); every symbol-folding
+  shape is uniform per-column `la` (14-15); no shape mixes. Additionally the
+  struct shapes are +6/+7 WORSE than the current floor because they hoist
+  `la(sym)` ahead of the index computation, the reverse of target's order.
+  Verdict: KILLED — and note this also forecloses the 5-prong aggregate-merge
+  family as a *closing* lever here (it cannot even tie the floor), independent of
+  whether its evidence prongs would pass.
+- **H-solver [KILLED / inapplicable].** `inverse_compose classify` is not wired
+  for this function and returns a false "IDENTICAL"; and honest 35 vs target 38
+  insns is PRE-RA by the classifier's own taxonomy, so neither ra_solver (fixed
+  multiset, register assignment) nor sched_solver (fixed allocated stream,
+  ordering) can own a 3-instruction selection deficit. s2 independently showed
+  the epilogue RA already matches target exactly. The owner's 2026-08-24 solver
+  recommendation is hereby measured dead for func_80062020.
+
+### RESET FRONTIER (strongest 1-3, in order)
+1. **F1 — FORENSICS: recover the original object model from SIBLING byte
+   evidence (highest value, never attempted).** The func_800651F0 owner ruling
+   (docs/grind/decisions.md, 2026-07-27 23:04) PASSed a contested spelling
+   specifically because "independent BYTE evidence the original source genuinely
+   had this shape" was recovered from the target bytes of sibling functions —
+   "decompilation evidence recovered from target bytes, not GCC-steering
+   rationale". That is the ONLY gate this function has never tested. Probe:
+   grep every `asm/funcs/*.s` for `D_800F1198` / `D_800F119C` / `D_800F11A0`
+   (and for the consumer of the table, which s1 recorded as asm-only), and
+   classify each reference site's addressing form. Decisive outcomes:
+   (a) a site that touches ONLY the flag column, or only cols b,c, in a context
+   with no possible steer, is direct evidence that the original source addressed
+   the flag column through a different idiom than the data columns — which
+   converts the epilogue's two address expressions from "a steer" into
+   "reconstruction of original variable identity" (the exact reasoning the
+   func_800651F0 ruling credited); (b) uniform addressing at every sibling site
+   is evidence AGAINST, and closes this line honestly.
+2. **F2 — kill the struct-shape operand-order penalty (cheap, enables F1).**
+   The struct/aggregate shapes cost +6 purely because `la(sym)` is emitted before
+   the index. Probe: re-measure the struct shapes with the index materialized
+   first (explicit `ofs = i+i; ofs += i; ofs <<= 2;` split-init already in the
+   candidate, then `((struct S3 *)((u8 *)&D_800F1198 + ofs))->c/.b/.f`), and with
+   `rows + i` pointer arithmetic instead of `rows[i]`. If a struct spelling ties
+   the floor at 4, any object-model finding from F1 becomes expressible at
+   no byte cost; if it cannot tie 4, the aggregate declaration is dead as a
+   vehicle and F1's finding would have to be expressed in the byte-offset idiom.
+3. **F3 — ONLY after F1 returns positive: a precise ruling-request.** The banked
+   FAIL framing is "wrote the same lvalue two different ways"
+   (.claude/rules/walking-pointer-serializes-parallel-loads.md). Strictly, the
+   candidate form never writes `p[0]`: the flag column is written ONCE, in the
+   SAME idiom the loop body uses for it (`*(s32*)((u8*)&D_800F1198 + ofs) = ...`),
+   while the row pointer is introduced only for the two data columns. Whether
+   that is one coherent whole-function idiom or a steer is a genuine
+   classification question — but it is NOT askable without F1's byte evidence,
+   because s4 already failed the "in-hand precedent" gate on exactly this
+   construct. Do NOT re-file it as an escalation packet without F1: a packet
+   whose YES would sanction a no-precedent family is pre-decided NO
+   (owner ruling 2026-08-24).
+
+## [s5] The col-a store folds onto the base pointer v0 because of a CSE/base-pointer fold (the s2/s3 mechanism label), so a CSE-defeat lever could in principle separate it.
+- mechanism: s2/s3 attributed the fold to GCC's CSE unifying col a's address with the b,c base pointer, implying an optimizer-level lever could perturb it.
+- probe: pwsh tools/grinder/dump.ps1 func_80062020, then read the post-expand .rtl dump for the function (tmp/grind/func_80062020/s5/rtl_expand_epilogue.txt).
+- result: The epilogue expands as (insn 101) reg88 = symbol_ref D_800F1198; (insn 103) reg76 = reg88 + ofs; (insn 106/109/112) stores to (mem (plus reg76 8)), (mem (plus reg76 4)), (mem reg76). p[0] is ALREADY (mem (reg 76)) at expand - no optimizer pass ever folds anything. s3's measurements were right; the mechanism label was wrong.
+- verdict: KILLED
+
+## [s5] A genuine aggregate declaration (struct row or 2D array) for D_800F1198/119C/11A0 reproduces target's mixed addressing (offset 0 symbol-relative, offsets 4/8 off a shared force_reg'd base) without any dual spelling.
+- mechanism: Member offsets in an aggregate could let RTL expansion fold the offset-0 access into the symbol constant while force_reg'ing the element address for offsets 4/8, producing target's partial mix from one uniform C spelling.
+- probe: Measured 5 epilogue tree shapes on the current chassis, each disassembled from the sandbox object: struct member abc / cba, struct with the flag as a 1-element array member (.f[0]), 2D array (s32(*)[3]) in orders c,b,a and a,b,c.
+- result: struct abc=11, struct cba=10, struct-with-f[1] cba=10 (all build 35, all three stores base+0/4/8 - the ARRAY_REF member does NOT re-expose the symbol); 2D array cba=15, abc=14 (both build 43, each column gets its own la(sym+4K), never a shared base; in abc order col a's store is byte-identical to target but b,c are two independent la's). Every force_reg shape is uniformly base+disp; every symbol-folding shape is uniformly per-column la. No shape mixes.
+- verdict: KILLED
+
+## [s5] The owner's recommended solver modality (ra_solver / sched_solver) can own this residual.
+- mechanism: RA/scheduler tiebreak residuals are the solvers' territory; the queue directive recommended running them before deep re-grind.
+- probe: bash tools/ra_solver/mkasm_honest.sh text1b; python3 tools/ra_solver/inverse_compose.py classify text1b func_80062020.
+- result: classify reports func_80062020 is not replace_with_asmfile-wired, slices 28 vs 28 insns and returns a FALSE 'FIRST DIVERGENCE: IDENTICAL' (the real build is 35 vs target 38) - the text-stream classifier is mis-slicing and must not be trusted for this function. Independently, by the classifier's own taxonomy a size-differing multiset (35 vs 38) is PRE-RA: ra_solver permutes registers over a FIXED multiset and sched_solver orders a FIXED allocated stream, so neither can own a 3-instruction selection deficit. s2 already showed the epilogue RA matches target exactly.
+- verdict: KILLED
+
+## [s5] A struct-row object model for the table costs bytes relative to the current byte-offset pointer floor, so adopting an aggregate declaration would be a regression.
+- mechanism: The measured struct shapes scored 10-11 vs the floor of 4, which would make any aggregate-merge object model unusable as a vehicle.
+- probe: struct S3 { s32 a,b,c; } used in the POINTER idiom with the explicit split-init index: ofs = i+i; ofs += i; ofs <<= 2; q = (struct S3 *)((u8 *)&D_800F1198 + ofs); q->c = 0; q->b = 0; q->a = 0; then sandbox --disable all.
+- result: score 4, build_insns 35 - exactly ties the byte-offset candidate. The +6/+7 penalty of the earlier struct shapes is caused entirely by the rows[i] array-ref index materialization order (la(sym) hoisted ahead of the index), not by the struct type. An aggregate object model is byte-free here.
+- verdict: CONFIRMED

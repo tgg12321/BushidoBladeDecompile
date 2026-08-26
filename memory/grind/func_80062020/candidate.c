@@ -39,7 +39,24 @@
  * 45,307 iters, no byte-0. Every sanctioned axis dead; OWNER-ESCALATION filed
  * (docs/grind/decisions.md 2026-07-24); returned owner-gated. This IS the best
  * form (clean floor-4 pure C, 0 rules) and stays on main.
+ *
+ * s5 (synthesis): PASS ATTRIBUTION CORRECTED. The `.rtl` post-expand dump shows
+ * `p[0]` is already `(set (mem (reg 76)) 0)` AT EXPAND (insn 112) — the col-a
+ * "fold" is an RTL-expansion / MIPS legitimize_address decision keyed on the C
+ * TREE SHAPE, not a CSE decision. There is no fold to defeat, so every
+ * CSE-defeat-style lever is a category error here. New expand-time law
+ * (5 tree shapes measured, see hypotheses.md s5 table): force_reg shapes
+ * (pointer var, struct COMPONENT_REF, 1-element-array member) make ALL THREE
+ * stores base+disp including offset 0; symbol-folding shapes (2D array
+ * `arr[i][K]`) fold the column into the symbol for ALL THREE and never share a
+ * base. Target mixes both on one element; no uniform tree shape can. Aggregate/
+ * tree-shape axis KILLED; solver axis measured inapplicable (residual is PRE-RA:
+ * 35 insns vs 38). A struct-row declaration IS byte-free in the pointer idiom
+ * (score 4, identical to this form) — so the object model is not the obstacle.
+ * Frontier reset to FORENSICS: recover the original object model from sibling
+ * byte evidence (the func_800651F0 ruling's standard), then re-classify.
  */
+
 void func_80062020(s32 *arg0) {
     s32 i;
     s32 ofs;
