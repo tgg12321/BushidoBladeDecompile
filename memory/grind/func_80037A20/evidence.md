@@ -653,3 +653,70 @@ function is INCOMPLETE. candidate.c is the faithful pin/barrier-free body
 - [s11] Rederived shapes measured and dead: branch-target peel with duplicated tail 34 insns/17; while(1){...break} 34/10; early-exit return-zero 34/17; nextfile inlined into the loop condition 35/9. u8 sp10[32] vs s32 sp10[8] is byte-identical at 33/6.
 
 - [s11] src/code6cac_c.c was reverted to HEAD (INCLUDE_ASM) at end of session; the working body lives in memory/grind/func_80037A20/candidate.c and is unchanged from s10.
+
+## [s12] structural — three-pseudo chassis, gate decomposition
+
+- Target's own 33 insns FIX Rp = 8 and Rc = 11 (10 folded) for ANY two-pseudo
+  decomposition; with the la before the sprintf jal and the zero-init after it,
+  Lp = Lc + 3, so allocno_compare can never sort the pointer first.  A two-pseudo
+  body is arithmetically incapable of matching this function.  The match needs a
+  THIRD pseudo whose copy is deleted as a no-op move.
+- flow.c:2087 confirms "reg_n_refs[regno] += loop_depth" on every set (and the
+  mirror on every use), i.e. each (use, set) occurrence is weighted 1 outside the
+  loop and 2 inside.  global.c allocno_compare truncates pri to int and tie-breaks
+  on allocno index (ascending pseudo number); find_reg's pass-1 loop takes the
+  lowest-numbered non-conflicting hard reg, so the first-sorted allocno gets $s0.
+  (pass 0 only considers regs already in regs_used_so_far, which for a
+  call-crossing allocno always fails, so pass 1 decides.)
+- NEW CHASSIS vJ (memory/grind/func_80037A20/chassis_s12_vJ_basewalk.c), sandbox 8,
+  33/33 insns, ordinary C: base pseudo (la) + walking pointer + counter.  The
+  "p = var_s0" copy is byte-free (deleted as a no-op move); hard_reg_copy_preferences
+  DOES bind the two pointer pseudos to the same hard reg, so the s11 observation
+  that prefs/copy_prefs are always empty does not generalise past two-pseudo bodies.
+- vJ ALLOCDBG (sched1 on): walking 7 refs/len 6 = 23333 -> $s0, counter 10/16 = 18750
+  -> $s1, base 3/12 = 2500 -> $s0.  Target's assignment with a STRICT margin (the
+  s10/s11 floor-6 body only ever reached it as a 15000/15000 tie).
+- vJ built with -fno-schedule-insns (forensic only; NOT a build path) is TARGET LINE
+  FOR LINE, delay slots included, with exactly ONE divergence: peel li $17,1 vs
+  target addiu $s1,$s1,1.  Artifact: tmp/grind/func_80037A20/s12/code6cac_c.nosched.s
+- GATE 1 = sched.c:2504 birthing_insn_p (reg_n_sets[i] == 1) + sched.c:2584
+  adjust_priority's max_priority boost, which sinks the base's la past the sprintf
+  jal (sched1 schedules backward, so a boosted insn is emitted late, landing just
+  before its only in-block consumer addu $a1,$s0,$zero).  n_deaths is always 0
+  (REG_DEAD notes are stripped before adjust_priority runs — its own comment), so
+  reg_n_sets >= 2 on the base pseudo is the ONLY disqualifier.
+- GATE 2 = the cse1 REG_WAS_0 fold of the peel.  On vJ it is DECOUPLED from the
+  allocation for the first time: unfolding (Rc 10 -> 11) leaves the counter at
+  20625 vs the walking pointer's 23333 (sched1 on) and 17368 vs 17500 (sched1 off).
+  Every s2/s6/s10 fold-defeat kill was measured on two-pseudo chassis where
+  unfolding cost the allocation tie; those kills are chassis-stale for vJ.
+- Statement-position facts re-measured this session: one-pointer body with target's
+  statement order = 13; base+walk with target's order (vA) = 8; base+walk with the
+  zero-init before the sprintf call (vB) = 8; base+walk with the walk-init below the
+  peel (vJ) = 8.  vA's allocnos tie at 20000/20000; vJ converts that to a strict win.
+- The session's best form is unchanged at floor 6 (the s10/s11 body), re-verified
+  this session at sandbox --disable all = 6, 33/33 insns, 0 rules.
+
+- [s12] Re-verified this session: the s10/s11 body in src/code6cac_c.c measures sandbox --disable all = 6, 33/33 insns, 0 rules, 4 cheat-asm stripped (chassis-check number, HEAD was reported unavailable at dispatch).
+
+- [s12] flow.c:2087 - reg_n_refs[regno] += loop_depth on every set, with the mirror increment on every use; loop-body references therefore count double. Confirms the (use,set)-weighted model used for all ref arithmetic in this ledger.
+
+- [s12] global.c allocno_compare: pri = floor_log2(nrefs)*nrefs/live_length*10000*size, truncated to int, tie-broken by `*v1 - *v2` (allocno index = ascending pseudo number). find_reg pass 0 only considers hard regs already in regs_used_so_far (always fails for a call-crossing allocno), so pass 1 decides and takes the lowest-numbered non-conflicting reg: the first-sorted allocno gets $s0.
+
+- [s12] Target's 33 insns fix Rp = 8 and Rc = 11 (10 folded) for any two-pseudo decomposition, and target's own emission order forces Lp = Lc + 3, against a requirement of Lc > 1.375*Lp. A two-pseudo body is arithmetically incapable of matching this function.
+
+- [s12] NEW three-pseudo chassis vJ (memory/grind/func_80037A20/chassis_s12_vJ_basewalk.c), ordinary C, 33/33 insns, sandbox 8. ALLOCDBG (sched1 on): 75 walking 7 refs/len 6 = 23333 -> $s0; 76 counter 10/16 = 18750 -> $s1; 74 base 3/12 = 2500 -> $s0. Target's assignment with a STRICT margin (the floor-6 body only ever reached it as a 15000/15000 tie).
+
+- [s12] The `p = var_s0` copy in vJ is byte-free: base and walking pointer do not conflict and hard_reg_copy_preferences binds them to the same hard reg, so the copy is deleted as a no-op move. This disproves the s11 generalisation that prefs/copy_prefs are always empty on this function.
+
+- [s12] vJ compiled with -fno-schedule-insns (forensic only; not a build path) is target LINE FOR LINE including both delay slots, with exactly one divergence: peel li $17,1 vs target addiu $s1,$s1,1. Artifact tmp/grind/func_80037A20/s12/code6cac_c.nosched.s.
+
+- [s12] GATE 1 (the only reason vJ is 8): sched.c:2504 birthing_insn_p (reg_n_sets[i] == 1) + sched.c:2584 adjust_priority's max_priority boost sink the base's la past the sprintf jal, because sched1 schedules backward. n_deaths is always 0 (REG_DEAD notes stripped before adjust_priority runs, per its own comment), so reg_n_sets >= 2 on the base pseudo is the ONLY disqualifier.
+
+- [s12] GATE 2 on vJ is decoupled from the allocation: unfolded, the counter is 33/16 = 20625 vs the walking pointer's 23333 (sched1 on) and 33/19 = 17368 vs 17500 (sched1 off). Every earlier fold-defeat kill was measured on a two-pseudo chassis where unfolding cost the allocation, so those kills are chassis-stale for vJ.
+
+- [s12] Statement-position re-measurements this session: one-pointer body in target's statement order = 13 (ptr 8/17 = 14117, counter 10/14 = 21428); base+walk in target's order (vA) = 8 (20000/20000 tie); base+walk with the zero-init before the sprintf call (vB) = 8; vJ = 8.
+
+- [s12] Gate-1 spellings measured and killed: g1a (no base variable, address expression passed directly) - cse1 makes one shared address pseudo, still 1 set, sandbox 8; g1d (var_s0 = p after the loop) - dead store, DCE'd before flow, sandbox 8; vK (p = var_s0 hoisted above the if) - cse copy-propagates the split away, only two allocnos remain, sandbox 8.
+
+- [s12] s11's open frontier item (empty sprintf delay slot collapses the residual on the floor-6 body) is KILLED by reading the cc1 -da .s: cc1 emits `move $17,$0` BEFORE the jal on that body, so no delay-slot decision can relocate it.

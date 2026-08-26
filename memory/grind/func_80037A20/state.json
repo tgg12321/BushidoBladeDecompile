@@ -1,8 +1,8 @@
 {
  "func": "func_80037A20",
  "file": "code6cac_c",
- "session_count": 11,
- "current_modality": "rederive",
+ "session_count": 12,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -75,23 +75,29 @@
    "floor": 6,
    "modality": "rederive",
    "headline": "rederive: floor holds at 6; the s10 allocation-vs-schedule frontier is now a closed-form inequality (Lc >= 1.25*Lp with Rp=8/Rc=10 fixed) and the statement-position route to target is FORECLOSED - the"
+  },
+  {
+   "session": 12,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "Structural: proved NO two-pseudo body can ever match (target's own 33 insns fix Rp=8/Rc=11 and force Lp=Lc+3 against a 1.375 bar), then found a THREE-pseudo chassis (vJ, sandbox 8) that carries target"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The entire 6-diff residual collapses if reorg leaves the sprintf jal's delay slot EMPTY on the s10/base body - no RTL reordering and no allocation change required.",
-   "mechanism": "The saves are lazy text emitted by mips.c immediately before the first def of each callee-saved register, and sched1 does not reorder block 0. With the delay slot unfilled, cc1 prints jal, then (reorder mode) sw $s1,0x34($sp) and move $s1,$zero, and the assembler pulls the save into the slot - giving target's sw-in-delay-slot / move-after-jal pair - while addiu $a0,$sp,0x10 stays at its RTL position before la $a1, which is also exactly target. Because the RTL order is untouched, Lp stays 16 and Lc stays 20 and the 15000/15000 allocno tie that already gives target's $s0/$s1 assignment survives. reorg currently fills the slot with insn 21 (addiu $a0,$sp,0x10) - the nearest length-4 eligible insn, since both la macros are length 8.",
-   "next_probe": "(a) Read tmp/grind/func_80037A20/dumps/code6cac_c.dbr (generated this session, never read) to confirm first-hand which insn reorg selects for the sprintf jal delay slot and what it rejected. (b) Read fill_simple_delay_slots / eligible_for_delay in tools/gcc-2.7.2/reorg.c and enumerate the byte-free conditions under which insn 21 stops being reachable or eligible in the backward scan (resource conflict with an intervening insn, delay-slot length test, basic-block boundary, scan step limit). (c) Search for a pure-C spelling meeting one of those conditions WITHOUT changing the RTL order of insns 13 and 16 - candidates are the sprintf ARGUMENT expressions (what sits between la $a1 and the call) and making the $a0 setup itself a two-insn sequence. Hard constraint: any spelling that adds an insn is out, the body is already 33/33."
+   "hypothesis": "GATE 1 - the base pseudo in the vJ chassis can be given a byte-free, non-dead, cse1-surviving SECOND SET, which turns off sched.c's birthing_insn_p boost and leaves `la $s0` at the top of the entry block. With that single change vJ should measure at or near 1 (only the peel fold left), since -fno-schedule-insns already proves the rest is target line-for-line.",
+   "mechanism": "adjust_priority (sched.c:2584) boosts an insn to max_priority only when n_deaths == 0 AND birthing_insn_p, and birthing_insn_p (sched.c:2504) is exactly `reg_n_sets[i] == 1` for a live SET-of-REG dest. n_deaths is always 0. So any second SET of pseudo 74 disables the sink. The second set must (a) not be dead (DCE removed g1d), (b) not have a constant/constant-equivalent source (cse1 deletes those - s10), (c) not let cse copy-propagate the split away (vK), and (d) resolve to move $s0,$s0 at reload so it costs no byte.",
+   "next_probe": "Enumerate second-set spellings whose SOURCE is a live REG and whose DEST is genuinely read afterwards: (i) make the base the value the loop reads and the walking pointer the value it writes, i.e. `q = var_s0 + 0x28; var_s0 = q;` inside the loop with nextfile(q) - measure insn count first, it may stay 33 if one of the two copies coalesces; (ii) re-enter the base from the walking pointer at a point where it IS subsequently used, e.g. reuse the base as the nextfile argument on alternate paths; (iii) check whether local_alloc's update_equiv_regs/combine_regs can be made to leave a second set intact by putting the copy in a different basic block from the la. Confirm each with tmp/grind/func_80037A20/s12/allocdbg.sh (reg_n_sets shows up as nrefs/allocno count) and with `pwsh tools/grinder/dump.ps1 func_80037A20` reading the .sched dump for the la's priority (a boosted la prints 7f000001, an unboosted one prints 1)."
   },
   {
-   "hypothesis": "The (ptr after, zero after) body at sandbox 8 is a second usable chassis: it already has target's move $s1,$zero slot, target's sw $s1 delay slot and target's $s0/$s1 assignment with STRICT priority margin (21818 vs 20000), so its only defect is the la $s0 sinking past the sprintf jal.",
-   "mechanism": "On that body the pointer's live length is only 11 (the la is after the call), which is why the pointer wins outright rather than by a tie. The strict margin means there is slack: the pointer could afford Lp up to 12 before losing (24/12 = 20000 == the counter's 30/15). Any lever that pulls the la one insn earlier without lengthening Lp beyond 12 lands target's la position on a body that already has everything else right.",
-   "next_probe": "Measure Lp and Lc for every source position of the pointer-init statement between the two calls on that body (immediately after the sprintf call, after the a0 re-setup, immediately before the firstfile call) with tools/ra_solver/extract.py, and check whether any of them holds Lp <= 12 while moving the la earlier in the emitted stream. Also test whether the la can be pulled into block 0 by an expression form whose address is computed before the call but whose pseudo is only born after it (note: s10 already killed byte-free second-set spellings of an address pseudo, so do NOT re-try the format-string / stack-buffer reuse forms)."
+   "hypothesis": "GATE 2 - on the vJ chassis, defeating the cse1 REG_WAS_0 fold of the peel (`li $s1,1` -> target `addiu $s1,$s1,1`) no longer costs the allocation, so one of the fold-defeat spellings killed in s2/s6/s10 on two-pseudo chassis may now succeed.",
+   "mechanism": "The fold is a FIRST-pass cse const-prop of the dominating var_s1 = 0 into var_s1 + 1 (base.i.cse carries a REG_WAS_0 note - s6). Every previous defeat raised Rc 10 -> 11 and lost a 1.25 tie; vJ's margin is 23333 vs 20625 (sched on) and 17500 vs 17368 (sched off), so the pointer keeps $s0 either way. cse1's path is an extended basic block terminated by a CODE_LABEL, so any spelling that puts a surviving label (or a genuinely unknown value) between the zero-init and the peel blocks the propagation.",
+   "next_probe": "On chassis_s12_vJ_basewalk.c ONLY, re-run the fold-defeat set that s10 killed on the floor-6 body: do-while(0) around the peel, `var_s1 = var_s1 + 1`, the single-set zero-init local, and additionally read tools/gcc-2.7.2/cse.c cse_end_of_basic_block to enumerate what terminates the cse path (CODE_LABEL, JUMP_INSN, follow_jumps/skip_blocks limits) and look for an ordinary-C shape that leaves a label between the zero-init and the peel which jump2 later deletes. Measure each with sandbox AND with -fno-schedule-insns (the forensic build isolates gate 2 from gate 1: on the nosched build the peel is the ONLY remaining diff, so a successful fold-defeat there should print a byte-identical function)."
   },
   {
-   "hypothesis": "Either Rp can be raised or Rc lowered by a spelling that does not change the 33 emitted instructions, which would relax the Lc >= 1.25*Lp bar enough for target's statement order to become reachable.",
-   "mechanism": "The bar comes entirely from floor_log2(Rp)*Rp vs floor_log2(Rc)*Rc. Target's statement order (Lp ~ 17, Lc ~ 14) becomes reachable if floor_log2(Rc)*Rc <= 19, i.e. Rc <= 7 (from 10), or if floor_log2(Rp)*Rp >= 37, i.e. Rp >= 13 (from 8). flow.c weights each reference by loop_depth, so a reference moved into or out of the loop body counts double.",
-   "next_probe": "Enumerate, from the target instruction stream itself, whether any of the counter's ten weighted references can be attributed to a different pseudo without changing a byte - in particular whether the tail pair (sw $s1,gp_rel + addu $v0,$s1,$zero) can be carried by a pseudo that is coalesced onto $s1 in local-alloc rather than being references of the counter allocno. If yes, Rc drops to 8, which is still short of 7; if the tail pair AND the peel can be moved off, Rc = 7 and the bar drops to Lc >= 0.583*Lp, which target's order satisfies easily. Measure any candidate with tools/ra_solver/extract.py and confirm the insn count stays 33."
+   "hypothesis": "If gates 1 and 2 resist separately, the walking pointer's margin on vJ is large enough (23333 vs 18750) to absorb a FOURTH pseudo, so a further partition may exist that satisfies both gates at once.",
+   "mechanism": "The base is allocated last at pri 2500 and still lands in $s0 purely through hard_reg_copy_preferences and the absence of a conflict. That means additional short-lived pointer pseudos joined by no-op copies are essentially free as long as they stay in the same copy-preference class and never conflict with the counter. Each extra pseudo redistributes reg_n_sets and reg_n_refs without changing a byte.",
+   "next_probe": "Enumerate 3- and 4-pseudo pointer chains (base -> mid -> walking) with the copies placed in different basic blocks so cse cannot propagate them away, and for each measure (a) insn count (must stay 33), (b) ALLOCDBG allocno list and hard regs, (c) whether the la's .sched priority is 1 (unboosted) or 7f000001 (boosted). The winning shape is any chain where the la-carrying pseudo has reg_n_sets >= 2 while the loop-carrying pseudo stays at ~7 refs and a live length of 6-8."
   }
  ],
  "judge_constraints": [],

@@ -634,3 +634,158 @@ s9 candidate's structural regression was explained and undone.
 - probe: sandbox func_80037A20 --disable all on tmp/grind/func_80037A20/s11/{v3_branch_target_peel,v4_while_break,v8_early_exit_zero,v15_no_temp,v16_u8buf}.c
 - result: branch-target peel with duplicated tail: 34 insns, sandbox 17 (jump2 does not cross-jump the duplicated gp store + return move, matching the s10 tail-split finding). while(1){...;break}: 34 insns, sandbox 10. early-exit `if (!firstfile) { D_800A38C8 = 0; return 0; }`: 34 insns, sandbox 17. nextfile inlined into the do/while condition instead of a named temp: 35 insns, sandbox 9. `u8 sp10[32]` instead of `s32 sp10[8]`: 33 insns, sandbox 6 - byte-identical, buffer C type is inert. The entry-block residual is not a loop-shape problem.
 - verdict: KILLED
+
+## [s12] STRUCTURAL MODALITY — the residual is NOT one gate but TWO, and a THREE-pseudo chassis (vJ) reaches target's schedule AND target's allocation simultaneously under -fno-schedule-insns.
+
+s11 closed the two-pseudo statement-position search with a closed-form inequality
+and declared target's statement order FORECLOSED.  s12 re-derived that inequality
+FROM TARGET'S OWN 33 INSTRUCTIONS and found it proves something stronger and more
+useful than s11 concluded:
+
+  Target's byte stream fixes the weighted reference counts of any TWO-pseudo
+  decomposition exactly.  flow.c counts each (use, set) occurrence weighted by
+  loop_depth (1 outside the loop, 2 inside — confirmed at flow.c:2087
+  "reg_n_refs[regno] += loop_depth" and the mirror increment in mark_used_regs).
+  Target's pointer insns are la $s0 (1 set), addu $a1,$s0 (1 use),
+  addiu $s0,$s0,0x28 (use+set at depth 1 = 4), addu $a0,$s0 (use at depth 1 = 2)
+  => Rp = 8, ALWAYS.  Target's counter insns are addu $s1,$0,$0 (1),
+  addiu $s1,$s1,1 peel (2), addiu $s1,$s1,1 in-loop (4), addiu $s1,$s1,-1 (2),
+  sw $s1,%gp_rel (1), addu $v0,$s1,$zero (1) => Rc = 11 (10 when our cse1 folds
+  the peel to li $s1,1).  global.c allocno_compare (read this session) is
+  pri = floor_log2(nrefs)*nrefs/live_length*10000 with an int truncation and a
+  tie-break on allocno index (= ascending pseudo number), and find_reg's pass-1
+  loop takes the LOWEST-numbered non-conflicting hard reg, so the first-sorted
+  allocno gets $s0.  Pointer-first therefore requires Lc > 1.375*Lp (1.25 folded).
+  But target emits la $s0 BEFORE the sprintf jal and addu $s1,$0,$0 AFTER it, so
+  the pointer is born ~5 insns earlier and dies ~3 insns earlier => Lp = Lc + 3
+  => ratio 0.82.  CONTRADICTION.
+
+  => A two-pseudo decomposition can NEVER produce target's bytes.  The matching C
+  MUST introduce a THIRD pseudo whose copy insn is byte-free (deleted at reload as
+  a no-op move $s0,$s0).  s11's "foreclosed" is correct AS A STATEMENT ABOUT
+  TWO-PSEUDO BODIES and is exactly the signpost to the three-pseudo family.
+
+### The vJ chassis (NEW — memory/grind/func_80037A20/chassis_s12_vJ_basewalk.c)
+
+    var_s0 = (s32 *)&D_80102810;          /* base    -> pseudo 74 */
+    func_80079A30(sp10, fmt, arg0, arg1);
+    var_s1 = 0;                           /* counter -> pseudo 76 (target order) */
+    if (bios_firstfile_B(sp10, var_s0) != 0) {
+        var_s1++;
+        p = var_s0;                       /* walking -> pseudo 75, copy is FREE */
+        do { p = (s32*)((u8*)p + 0x28); v0_val = bios_nextfile_B(p); var_s1 += 1; }
+        while (v0_val);
+        var_s1 -= 1;
+    }
+
+33/33 insns — the "p = var_s0" copy is deleted as a no-op move because 74 and 75
+do not conflict and hard_reg_copy_preferences aligns them (this contradicts the
+s11 note that copy_prefs are always empty: that was measured only on two-pseudo
+bodies).  Ordinary C throughout; no coercion construct, no FAKE family.
+
+Measured (instrumented cc1, BB2_ALLOC_DEBUG, tmp/grind/func_80037A20/s12/allocdbg.sh):
+
+  vJ, normal build (sched1 ON), sandbox 8:
+      75 walking   7 refs / len  6 = 23333 -> $s0
+      76 counter  10 refs / len 16 = 18750 -> $s1    (TARGET'S ASSIGNMENT, strict)
+      74 base      3 refs / len 12 =  2500 -> $s0    (allocated LAST, wins $s0 by
+                                                      copy preference + no conflict)
+  vJ, -fno-schedule-insns (forensic only, NOT a build path), la stays early:
+      75 walking   7 refs / len  8 = 17500 -> $s0
+      76 counter  10 refs / len 19 = 15789 -> $s1    (STILL target's assignment)
+      74 base      3 refs / len 30 =  1000 -> $s0
+
+The -fno-schedule-insns output of vJ is TARGET LINE FOR LINE — including
+sw $s0,0x30 first, la $s0 before addu $a0,$sp,16, la $a1, sw $ra,0x38,
+sw $s1,0x34 in the sprintf delay slot, move $s1,$zero after the jal, and the
+firstfile delay slot — with EXACTLY ONE divergence left: the peel is li $17,1
+where target has addiu $s1,$s1,1.
+(artifact: tmp/grind/func_80037A20/s12/code6cac_c.nosched.s)
+
+### The two remaining gates, both now named and quantified
+
+GATE 1 (the only reason vJ measures 8 and not ~1): sched1 sinks la $s0 past the
+sprintf jal.  sched.c:2504 birthing_insn_p returns reg_n_sets[i] == 1 for a live
+SET-of-REG dest; sched.c:2584 adjust_priority then raises that insn to
+max_priority (observed 0x7f000001), and sched1 schedules BACKWARD, so the boost
+emits it LATE — it lands immediately before its only in-block consumer
+(addu $a1,$s0,$zero), i.e. between the two calls.  The base pseudo 74 has
+reg_n_sets == 1 by construction: the moment we give the la-carrying pseudo a
+second set it becomes the walking pointer, which makes it long-lived with 8 refs
+and loses the allocation.  n_deaths is always 0 (adjust_priority's own comment:
+REG_DEAD notes are stripped before it runs), so the ONLY disqualifier is
+reg_n_sets >= 2.  REQUIRED: a byte-free, non-dead, cse1-surviving SECOND SET of
+the base pseudo.
+
+GATE 2 (the cse1 REG_WAS_0 fold): li $s1,1 vs target addiu $s1,$s1,1.  NEW AND
+IMPORTANT: on vJ this is no longer coupled to the allocation.  s11 proved the fold
+and the allocation were ONE constraint on the two-pseudo chassis (the tie was
+exactly 1.25, so unfolding lost it).  On vJ the margin is STRICT: unfolding raises
+Rc 10 -> 11, giving the counter 33/16 = 20625 against the walking pointer's 23333
+(sched1 on) and 33/19 = 17368 against 17500 (sched1 off).  Both still favour the
+pointer.  The fold is therefore independently attackable on vJ for the first time,
+and every s2/s6/s10 fold-defeat kill is chassis-stale with respect to vJ.
+
+- probe: built and measured vC (one pointer, target statement order) = 13;
+  vA (base+walk split, target order) = 8; vB (base+walk, zero-init before the
+  sprintf call) = 8; vJ (vA with "p = var_s0" moved BELOW the peel "var_s1++",
+  which shortens the walking pointer's live range 7 -> 6 and converts the vA
+  20000/20000 TIE into a strict 23333/18750 win) = 8; plus ALLOCDBG and
+  -fno-schedule-insns dumps of each.
+- result: CONFIRMED — floor unchanged at 6, but the residual is re-localised from
+  "an unreachable statement order" to two independent, named cc1 gates on a
+  chassis that is one sched1 decision plus one cse1 fold from a byte match.
+- verdict: CONFIRMED
+
+## [s12] Gate-1 attacks measured and KILLED
+- mechanism: gate 1 falls iff reg_n_sets[base] >= 2 with the second set byte-free,
+  non-dead and surviving cse1.
+- probe/result:
+  - g1a — delete the base variable entirely and pass (s32 *)&D_80102810 straight to
+    firstfile, re-loading it for p: cse1 materialises ONE shared address pseudo (78)
+    with 3 refs and still reg_n_sets == 1; sandbox 8, la still sinks.  KILLED.
+  - g1d — second set of the base after the loop (var_s0 = p;): the store is dead,
+    DCE removes it before flow, base still shows nrefs 3 / 1 set; sandbox 8.  (It is
+    also a dead-store FAKE-family construct and would not be candidate material.)
+    KILLED.
+  - vK — hoist "p = var_s0;" above the if: cse copy-propagates the two pointer
+    pseudos back into ONE (ALLOCDBG shows only two allocnos, 8 refs / len 11), i.e.
+    the split collapses; sandbox 8.  The split survives cse ONLY when the copy sits
+    INSIDE the taken branch.  KILLED.
+- verdict: KILLED (three spellings; gate 1 stands)
+
+## [s12] Target's own instruction stream fixes the weighted reference counts of any TWO-pseudo decomposition, and those numbers make global.c sort the counter ahead of the pointer no matter how the source statements are arranged - so a two-pseudo body can never produce target's bytes.
+- mechanism: flow.c:2087 weights each (use, set) occurrence by loop_depth (1 outside the loop, 2 inside). Target's pointer insns (la $s0; addu $a1,$s0; addiu $s0,$s0,0x28; addu $a0,$s0) give Rp = 8 exactly; target's counter insns (addu $s1,$0,$0; addiu $s1,$s1,1 peel; addiu $s1,$s1,1 in-loop; addiu $s1,$s1,-1; sw $s1,%gp_rel; addu $v0,$s1,$zero) give Rc = 11 (10 if cse1 folds the peel). global.c allocno_compare is pri = floor_log2(nrefs)*nrefs/live_length*10000, int-truncated, tie-broken on ascending allocno (= pseudo) index, and find_reg's pass 1 takes the lowest non-conflicting hard reg, so the first-sorted allocno gets $s0. Pointer-first therefore needs Lc > 1.375*Lp. Target emits la $s0 BEFORE the sprintf jal and addu $s1,$0,$0 AFTER it, so the pointer is born ~5 insns earlier and dies ~3 insns earlier: Lp = Lc + 3, ratio 0.82.
+- probe: Read tools/gcc-2.7.2/global.c (allocno_compare + find_reg pass 0/1 selection) and tools/gcc-2.7.2/flow.c (reg_n_refs/reg_live_length accounting) first-hand, enumerated target's 33 insns per pseudo, and re-measured the one-pointer body in target's statement order (vC) at sandbox 8 -> got 13 with ALLOCDBG ptr 8/17 = 14117 vs counter 10/14 = 21428.
+- result: CONFIRMED, and it reframes s11's 'target's statement order is FORECLOSED': the foreclosure is a statement about TWO-pseudo bodies, and it is the signpost to the three-pseudo family. The matching C must introduce a third pseudo whose copy insn is byte-free (deleted at reload as a no-op move $s0,$s0).
+- verdict: CONFIRMED
+
+## [s12] A three-pseudo base/walking/counter decomposition in TARGET's statement order reaches target's $s0/$s1 assignment with a strict priority margin, at 33/33 insns, in ordinary C with no coercion construct.
+- mechanism: The base pseudo carries only the la and the firstfile a1 argument (3 weighted refs); the walking pointer is born inside the taken branch and carries the loop refs (7 refs, live length 6); the counter is unchanged (10 refs, live 16). 14/6 = 23333 beats 30/16 = 18750, so the walking pointer sorts first and takes $s0; the base is allocated LAST at pri 2500 but still lands in $s0 via hard_reg_copy_preferences (it does not conflict with the walking pointer), so the copy `p = var_s0` becomes move $s0,$s0 and is deleted - byte-free. This also disproves the s11 note that prefs/copy_prefs are always empty: that held only on two-pseudo bodies.
+- probe: Built vA (base+walk, target statement order) = sandbox 8; vB (base+walk, zero-init before the sprintf call) = 8; vJ (vA with `p = var_s0` moved BELOW the peel var_s1++, shortening the walking pointer's live range 7 -> 6) = 8. ALLOCDBG via the instrumented cc1 (tmp/grind/func_80037A20/s12/allocdbg.sh) on each.
+- result: CONFIRMED. vA ties at 20000/20000 (tie-broken correctly); vJ converts that into a strict 23333/18750 win. All three are 33/33 insns with 0 rules. Saved as memory/grind/func_80037A20/chassis_s12_vJ_basewalk.c.
+- verdict: CONFIRMED
+
+## [s12] On the vJ chassis the entire remaining residual is ONE sched1 decision plus ONE cse1 fold - i.e. with sched1's insn-sinking removed, vJ is target line-for-line except the peel.
+- mechanism: sched.c:2504 birthing_insn_p returns reg_n_sets[i] == 1 for a live SET-of-REG destination; sched.c:2584 adjust_priority then raises that insn to max_priority (observed 0x7f000001). sched1 schedules BACKWARD, so a boosted insn is emitted LATE - the base's la lands immediately before its only in-block consumer (addu $a1,$s0,$zero), i.e. between the two calls instead of at the top of the block. n_deaths is always 0 (adjust_priority's own comment: REG_DEAD notes are stripped before it runs), so reg_n_sets >= 2 on the base pseudo is the ONLY disqualifier.
+- probe: Compiled vJ with the project's exact cpp|cc1 front half plus -fno-schedule-insns (forensic measurement only, NEVER a build path) and compared the emitted func_80037A20 to asm/funcs/func_80037A20.s line by line, delay slots included.
+- result: CONFIRMED. The -fno-schedule-insns output matches target exactly - sw $s0,0x30 first, la $s0, addu $a0,$sp,16, la $a1, sw $ra,0x38, jal sprintf with sw $s1,0x34 in the delay slot, move $s1,$zero after the jal, addu $a0,$sp,16, jal firstfile with move $a1,$s0 in the delay slot, and the whole loop and tail - with EXACTLY ONE divergence: the peel is li $17,1 where target has addiu $s1,$s1,1. Artifact tmp/grind/func_80037A20/s12/code6cac_c.nosched.s.
+- verdict: CONFIRMED
+
+## [s12] The cse1 REG_WAS_0 peel fold (li $s1,1 vs target addiu $s1,$s1,1) is inseparable from the allocation, so defeating it always costs the $s0/$s1 disposition (the s11 'one constraint, not two levers' result).
+- mechanism: s11 measured the floor-6 two-pseudo body sitting exactly at the 1.25 bar, where unfolding raises Rc 10 -> 11 and flips the tie.
+- probe: Recomputed the same inequality on the vJ chassis with this session's measured ALLOCDBG numbers: unfolded, the counter becomes 33/16 = 20625 against the walking pointer's 23333 (sched1 on) and 33/19 = 17368 against 17500 (sched1 off).
+- result: KILLED as a general claim - it is chassis-specific. On vJ the pointer keeps $s0 in both the folded and unfolded cases, so the fold is independently attackable there for the first time, and every s2/s6/s10 fold-defeat kill is chassis-stale with respect to vJ and must be re-tried on it.
+- verdict: KILLED
+
+## [s12] The base pseudo can be given a byte-free second set (defeating birthing_insn_p and keeping the la at the top of the block) by an ordinary-C spelling.
+- mechanism: reg_n_sets >= 2 is the only disqualifier for the boost, and a copy that becomes move $s0,$s0 is deleted at reload, so a second set need not cost a byte.
+- probe: Three spellings measured with sandbox + ALLOCDBG: g1a (delete the base variable, pass (s32 *)&D_80102810 straight to firstfile and re-load it for p); g1d (second set after the loop, var_s0 = p;); vK (hoist p = var_s0 above the if).
+- result: All KILLED. g1a: cse1 materialises ONE shared address pseudo (78) with 3 refs and reg_n_sets still 1 - sandbox 8, la still sinks. g1d: the store is dead, DCE removes it before flow (base still nrefs 3 / 1 set) - sandbox 8, and it is a dead-store FAKE-family construct that would not be candidate material anyway. vK: cse copy-propagates the two pointer pseudos back into ONE (ALLOCDBG shows only two allocnos, 8 refs / len 11) - the split collapses, sandbox 8. The split survives cse ONLY when the copy sits INSIDE the taken branch.
+- verdict: KILLED
+
+## [s12] s11's open frontier item - the whole 6-diff residual collapses if reorg leaves the sprintf jal's delay slot EMPTY on the floor-6 base body.
+- mechanism: s11 posited that with the slot unfilled cc1 would print jal, then sw $s1,0x34 and move $s1,$zero, giving target's pair.
+- probe: Read the cc1 -da assembly output for the floor-6 base body (tmp/grind/func_80037A20/dumps/code6cac_c.s) generated this session.
+- result: KILLED. cc1 itself emits `move $17,$0` BEFORE the sprintf jal on that body (RTL order: move $17,$0; la $16; addu $4,$sp,16; la $5; jal), and the lazy `sw $17,52($sp)` is printed immediately before it. Emptying the delay slot cannot move a pre-jal RTL insn to after the jal, so the premise of the frontier item was self-inconsistent. The zero-init must be RTL-AFTER the sprintf call, which is exactly what the vJ chassis provides.
+- verdict: KILLED

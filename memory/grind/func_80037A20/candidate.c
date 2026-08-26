@@ -1,3 +1,13 @@
+/* [s12, structural] BODY UNCHANGED; re-verified this session at
+ * sandbox --disable all = 6, 33/33 insns, 0 rules.  READ THIS BEFORE GRINDING:
+ * s12 proved that NO two-pseudo body (this one included) can ever reach target,
+ * and found a THREE-pseudo chassis at sandbox 8 that already carries target's
+ * $s0/$s1 assignment with a STRICT margin and, under -fno-schedule-insns, is
+ * target line-for-line except the peel fold.  See
+ * memory/grind/func_80037A20/chassis_s12_vJ_basewalk.c and hypotheses.md [s12].
+ * This file is retained only because it is the lower SANDBOX number (6 vs 8);
+ * the vJ chassis is the one with a live route to zero.
+ */
 /* candidate [s11, rederive modality] - UNCHANGED body from s10; floor still 6.
  *
  * s11 re-measured this exact body at sandbox --disable all = 6 (33/33 insns,
