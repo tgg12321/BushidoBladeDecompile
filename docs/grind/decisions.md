@@ -12352,3 +12352,104 @@ way):** this function's own 2026-07-22 and 2026-08-20 rulings (decisions.md:1299
 func_80049A2C / InitHiraRmd_80047FBC / gnd_init_80041688 / func_8007DC9C (2026-07-22), func_80041188
 (2026-08-23), CD_sync (2026-08-25, decisions.md:11814 - the direct methodological sibling: same 2026-08-24
 chain-extender directive, same first-hand execution, same kill).
+
+## 2026-08-25 - CD_ready (src/system.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (both endgame gates fail; last frontier item killed this session)
+
+**Function.** `CD_ready` @ `0x80081030` in `src/system.c` (line 379, currently
+`INCLUDE_ASM("asm/funcs", CD_ready);`). Formerly ledgered under the splat-era name
+`marionation_Exec`; identity proven as PsyQ 3.5 libcd `CD_ready(int mode, u_char *result)` -
+179/179-word masked-identical against the library object, name string `"CD_ready"` at `0x80016248`
+(`memory/closer/libcd-identity.md`, `memory/closer/libcd-groundtruth.md:40-52`). Ledger:
+`memory/grind/CD_ready/` (58 sessions). Driver-assigned modality this session: `escalation`
+(honest floor flat at 4 across s1-s57 and >=6 distinct modalities).
+
+**Chassis re-measured first-hand this session (the ledger number was not taken on trust).** The
+driver dispatch reported "measurement unavailable", and the chassis had changed twice since the last
+ledger entry: the asm-until-matched migration replaced the C body with `INCLUDE_ASM`, and the naming
+wave renamed six callees. Re-splicing `memory/grind/CD_ready/candidate.c` (vT40) under the current
+names (`sys_VSync`->`VSync`, `tslTm2LoadImage_2`->`puts`, `debug_printf`->`printf`,
+`cdrom_ClearIrq`->`CD_flush`, `sys_GetVblankCount`->`CheckCallback`, `func_80080828`->`getintr`) and
+running `& tools/wteng.ps1 main sandbox CD_ready --disable all` gives
+**`score=4, build_insns=178, target_insns=179, rules_dropped=0`** - identical to the s1-s57 baseline.
+The floor of 4 is live, the migration and the naming wave are byte-neutral for this function, and all
+115 previously banked rejected forms remain valid evidence on this chassis. Artifacts:
+`tmp/grind/CD_ready/s58/splice.py`, `tmp/grind/CD_ready/s58/measurements.txt`.
+
+**The last untried frontier lever was executed and KILLED this session.** The s51/s52 forensics left
+exactly one un-enumerated member of the F1 "honest delay-slot fill at the region-3 steal site" family:
+an ordinary function call (`sys_GetVblankCount()`, now `CheckCallback()`) inserted between the check2
+branch and the check2 clear, hypothesised to schedule as a non-call-shaped operand rather than as the
+fill itself. Measured: **masked 14, build_insns 181** - a bit-for-bit repeat of the s52
+`cdrom_ClearIrq` result. GCC 2.7.2 `reorg.c fill_simple_delay_slots` consumes *any* inserted CALL_INSN
+as the check2-beqz fill regardless of callee, so no honest call can create the fill region-3 needs.
+With s51's kill of the volatile-load shape, **the F1 family is now formally exhausted - there is no
+third shape.** (It would have been barred anyway: a `CheckCallback()` whose result is discarded at
+that position has no semantic role, i.e. insert-for-effect, the semantic-lie class already ruled out
+for this function on 2026-07-05.) Banked
+`memory/grind/CD_ready/rejected/s58-checkcallback-call-at-check2-fill-site-14.c`.
+
+**The two other frontier items are measured dead ends, not untried levers.**
+1. *Permuter on an unsampled masked-4 chassis.* The ledger records 13 permuter basins, ~50+ CPU-hr,
+   ~10k+ samples across 6 chassis, with **0 novel basin closures** (s4/s5/s40/s41/s49/s50). s50
+   post-filtered 154 finds; the single sub-vT40 result (`perm3/output-80-1`, masked 2) reaches it *via
+   volatile coercion*, forbidden by the prime directive. Re-running is a re-run of a measured-negative
+   axis.
+2. *Cross-function exchange lever developed on the cheaper twin `CD_sync`.* **The bench no longer
+   exists**: `CD_sync` was itself dispositioned REFUSED / OWNER-ACCEPTED INCOMPLETE on 2026-08-25
+   (`docs/grind/decisions.md:11814`) after 105 sessions and >=6 modalities, both gates failing, its
+   residual proven to be a `global.c` allocno birth-tie with no C spelling.
+
+**Gate (a) - canonical-asm - FAILS.** `python3 tools/scan_hand_coded.py --single CD_ready` ->
+**`tier=LOW score=2/8 (179 insns)`**. Only S4 (4 loads in an 8-insn window @ insn 51) and S5 (1
+approx-sibling, `CD_sync`, jaccard 0.64) fire; **S1 multu-pacing, S2 empty-branch and S6
+BIOS-jumptable are all absent**, and those three are the only signals that can carry a STRONG tier.
+Artifact `tmp/grind/CD_ready/s58/scan_hand_coded.txt`. The claim also fails on provenance: this is
+identified Sony PsyQ libcd code - *compiled C*, not hand-written assembly - so a canonical-asm grant
+would be factually wrong even if the scanner had fired.
+
+**Gate (b) - in-hand SOTN-master precedent for the CLOSING construct - FAILS by construction.** There
+is no closing construct to find a precedent for. The 4-point residual is two root-caused items with
+no C-level spelling at all:
+- *pair-swap @ insns 56/57*: a `sched.c` sched2 T-14 tie between two `ashlsi3` insns with equal
+  `INSN_PRIORITY` (mips.md has no arith function-unit, so `insn_cost=1` forces the same rank class on
+  both sides - s43), broken by LUID i.e. source emission order. Every source reordering that flips
+  them pays the `qty_compare` 5.33-vs-5.33 seat trade in `global.c`. Closed across the 140-ordering
+  sweep, the 9-variant topology sweep, all four `qty_compare` axes (s46), and 20 distinct masked-4
+  spellings spanning 5+ structural axes (s2/s3/s8-s12/s45-s57).
+- *region-3 @ insn 149*: a `reorg.c` pass-1 `fill_simple_delay_slots` steal on the check2 beqz. Every
+  honest fill route is now measured dead - label-alive routes cost +1 insn, alias-merge routes bottom
+  out at masked 10, the volatile-coercion route is forbidden, and call-insertion is closed by s52 and
+  s58.
+
+The constructs that *hold* the floor at 4 (the FAKE-annotated do-while(0) wraps, staged-value reuse,
+constant holders, pointer alias in `memory/grind/CD_ready/candidate.c`) each already sit inside a
+sanctioned family and are correctly annotated; they are not the blocker and no new family is being
+requested.
+
+**No decision packet is filed.** Per the owner's 2026-08-24 auto-reject class, a packet whose YES
+would lower a standard - "sanction a new coercion family for the LUID tie", "grant canonical-asm
+despite a LOW scanner tier", or any accept-the-debt wording - is PRE-DECIDED NO and must not be filed.
+No fidelity, routing or provenance question remains open here: the provenance is settled (PsyQ libcd
+`CD_ready`), the routing is settled (C, not canonical-asm), and the only remaining question would be a
+standard-lowering one. This is exactly the pre-decided case the 2026-07-27 standing ruling covers.
+
+**Exhaustion.** 58 sessions; >=6 distinct modalities (structural s2/s3/s8-s12/s45-s49/s56/s57;
+permuter s4/s5/s40/s41/s49/s50, 13 basins ~50+ CPU-hr; forensics s6/s7/s15/s16/s24/s25/s51/s52 with
+instrumented `.sched`/`.lreg`/`.greg`/`.combine` dumps; rederive s53/s54; synthesis s55; escalation
+s58); 165+ hand-written forms; **116 banked rejected forms**; 20 distinct spellings all converging on
+the same masked-4 / 178-insn attractor.
+
+**Disposition.** Both AND-gates fail - the owner's pre-decided case under the 2026-07-27 standing
+ruling (`.claude/rules/endgame-lock-disposition.md`): **REFUSED / OWNER-ACCEPTED INCOMPLETE**.
+`src/system.c` keeps `INCLUDE_ASM("asm/funcs", CD_ready);` (0 regfix/asmfix rules, no cheat-asm - this
+is *not* an integration handoff, nothing is bytes-proven and nothing is blocked by an untouchable
+surface). The annotated masked-4 form stays in `memory/grind/CD_ready/candidate.c` for any future
+re-attempt. Nothing is pending on the owner.
+
+**What a future re-attempt needs (do NOT re-run the closed space).** A pure-C lever that flips the
+sched2 LUID order of the `ashlsi3` pair *without* paying the `qty_compare` seat trade, or an honest
+non-CALL_INSN statement schedulable into the check2 beqz delay slot. Every structural, permuter,
+forensic, rederive and synthesis approach to both is banked as measured-negative in
+`memory/grind/CD_ready/hypotheses.md` and the 116 forms under `memory/grind/CD_ready/rejected/`. Start
+by reading `memory/grind/CD_ready/evidence.md` [s58] for the naming map - the ledger and `candidate.c`
+predate the naming wave and will not compile without it.

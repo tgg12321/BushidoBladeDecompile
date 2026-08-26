@@ -5,12 +5,6 @@
  * zero pins, zero __asm__. do-while(0) wraps are FAKE-annotated per site.
  * Remaining gap (masked 4): the do_timeout sll/addu pair order+seats and the
  * region-3 delay-slot nop - both root-caused, see notes.md. */
-/* s58 (2026-08-25) NAMING MAP - this body predates the naming wave; to splice it
- * into the current src/system.c apply: marionation_Exec->CD_ready, sys_VSync->VSync,
- * tslTm2LoadImage_2->puts, debug_printf->printf, cdrom_ClearIrq->CD_flush,
- * sys_GetVblankCount->CheckCallback, func_80080828->getintr. All needed externs are
- * already present at src/system.c:353-375. Harness: tmp/grind/CD_ready/s58/splice.py.
- * Re-measured on the post-migration chassis s58: masked 4, build 178, target 179. */
 s32 marionation_Exec(s32 a0, u8 *a1)
 {
   s32 v0;
@@ -136,6 +130,7 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     check2:
     check = *(idx_1496 - 1) & new_var3;
     if (!check) goto tail;
+    sys_GetVblankCount();
     do { *(idx_1496 - 1) = 0; } while (0); /* FAKE: do-while(0) loop-note weighting balances the check2 clear against check1's nested wrap */
     dst2 = a1;
     src = (u8 *) (&D_800F19A8);

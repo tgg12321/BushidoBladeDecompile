@@ -960,3 +960,79 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s57] GCC canonicalizes `1 + idx_1494` and `idx_1494 + 2` chain-vs-fork derivations to identical addiu emission — the addr-arithmetic dep chain is codegen-invariant to the split source form (v05 result).
 
 - [s57] sanctioned split-init accumulation on cnt is loop-body-local so its extra global-store folds without cross-BB effect on do_timeout expand context (v07 result). Confirms the split-init lever is scope-local when applied to loop-body variables.
+
+
+## [s58] Disposition session (escalation modality) - chassis re-measured, last frontier item killed, both endgame gates evaluated
+
+- **Chassis re-measure (this session, on HEAD).** `memory/grind/CD_ready/candidate.c` (vT40) spliced
+  into `src/system.c` in place of `INCLUDE_ASM("asm/funcs", CD_ready);` with the naming-wave symbol
+  map applied -> `score=4, build_insns=178, target_insns=179, rules_dropped=0`. The floor of 4 is
+  live, not a stale ledger number. Harness plus log: `tmp/grind/CD_ready/s58/splice.py`,
+  `tmp/grind/CD_ready/s58/measurements.txt`.
+- **Naming map for any future session** (the ledger and `candidate.c` predate the naming wave):
+  `marionation_Exec`->`CD_ready`, `sys_VSync`->`VSync`, `tslTm2LoadImage_2`->`puts`,
+  `debug_printf`->`printf`, `cdrom_ClearIrq`->`CD_flush`, `sys_GetVblankCount`->`CheckCallback`,
+  `func_80080828`->`getintr`. All the externs the body needs are already present in `src/system.c`
+  at lines 353-375; nothing has to be added to splice the candidate.
+- **F1 family formally exhausted.** `CheckCallback()` at the check2 fill site measures masked 14 /
+  build 181 - identical to s52 `cdrom_ClearIrq`. `reorg.c fill_simple_delay_slots` consumes any
+  inserted CALL_INSN as the check2-beqz fill regardless of callee, so no honest call can create the
+  fill the region-3 steal needs. Banked
+  `rejected/s58-checkcallback-call-at-check2-fill-site-14.c`. Combined with the s51 kill of the
+  volatile-load shape, the F1 "honest fill" frontier item is closed; there is no third shape.
+- **Remaining frontier items are both dead ends, not untried levers.**
+  (1) *Permuter on an unsampled masked-4 chassis*: the ledger already records 13 permuter basins /
+  ~50+ CPU-hr / ~10k+ samples across 6 chassis with **0 novel basin closures** (s4/s5/s40/s41/s49/s50);
+  s50 sampled 154 finds and the only sub-vT40 result (`perm3/output-80-1`, masked 2) reached it *via
+  volatile coercion*, which the prime directive forbids. This is a re-run of a measured-negative
+  axis, not a new lever.
+  (2) *Cross-function exchange lever developed on the twin `CD_sync`*: **the twin is gone as a bench** -
+  `CD_sync` was itself dispositioned REFUSED / OWNER-ACCEPTED INCOMPLETE on 2026-08-25
+  (`docs/grind/decisions.md:11814`) after 105 sessions and >=6 modalities, with both endgame gates
+  failing and its own residual proven to be a `global.c` allocno birth-tie with no C spelling. The
+  cheaper development bench does not exist.
+- **Gate (a) canonical-asm - FAILS.** `python3 tools/scan_hand_coded.py --single CD_ready` ->
+  `tier=LOW score=2/8 (179 insns)`; only S4 (4 loads in an 8-insn window @ insn 51) and S5
+  (1 approx-sibling `CD_sync`, jaccard 0.64) fire; **S1 / S2 / S6 all absent**, and S1/S2/S6 are the
+  only signals that can carry a STRONG tier. Artifact `tmp/grind/CD_ready/s58/scan_hand_coded.txt`.
+  Independently, this function is a confirmed PsyQ libcd `CD_ready` (`memory/closer/libcd-identity.md`),
+  i.e. **compiled Sony C**, not hand-written asm - the canonical-asm claim is false on provenance too.
+- **Gate (b) SOTN precedent for the CLOSING construct - FAILS by construction.** The residual is two
+  root-caused items with no C-level spelling at all: (i) the pair-swap, a `sched.c` sched2 T-14 tie
+  between two equal-`INSN_PRIORITY` `ashlsi3` insns broken by LUID (source emission order), where
+  every reordering that flips them pays the `qty_compare` 5.33-vs-5.33 seat trade; and (ii) the
+  region-3 `reorg.c` delay-slot steal, where every honest fill route is now measured dead (s51/s52/s58).
+  There is no construct to find a precedent FOR. (The constructs that HOLD the floor at 4 - the
+  do-while(0) wraps, the staged-value reuse, the constant holders, the pointer alias - are each already
+  inside a sanctioned family and FAKE-annotated in `candidate.c`; they are not the blocker.)
+- **Nothing is bytes-proven and nothing is blocked by an untouchable surface.** `src/system.c` carries
+  `INCLUDE_ASM("asm/funcs", CD_ready);` with **0 regfix/asmfix rules** (`rules_dropped: 0` in every
+  sandbox run this session). This is NOT an integration handoff - there is no byte-match being held
+  back by `regfix.txt`/`asmfix.txt`/`prologue_config.json`; the best honest form is simply 4 away.
+- **Exhaustion tally at disposition:** 58 sessions; >=6 distinct modalities (structural s2/s3/s8-s12/
+  s45-s49/s56/s57, permuter s4/s5/s40/s41/s49/s50, forensics s6/s7/s15/s16/s24/s25/s51/s52,
+  rederive s53/s54, synthesis s55, escalation s58); 165+ hand-written forms; **115 banked rejected
+  forms plus this session 116th**; 20 distinct spellings all converging on the same masked-4/178
+  attractor; ~50+ CPU-hr of permuter across 13 basins with zero novel closures.
+
+- [s58] Chassis re-measured first-hand this session (the driver reported 'measurement unavailable' and the chassis had changed twice since the ledger): vT40 spliced under the current names gives score=4, build_insns=178, target_insns=179, rules_dropped=0 - the ledger's floor of 4 is live.
+
+- [s58] NAMING MAP for future sessions (the ledger and candidate.c predate the naming wave): marionation_Exec->CD_ready, sys_VSync->VSync, tslTm2LoadImage_2->puts, debug_printf->printf, cdrom_ClearIrq->CD_flush, sys_GetVblankCount->CheckCallback, func_80080828->getintr. All required externs already exist at src/system.c:353-375. Harness: tmp/grind/CD_ready/s58/splice.py. Recorded in candidate.c's header and evidence.md [s58].
+
+- [s58] F1 'honest delay-slot fill at the region-3 steal site' family is now FORMALLY EXHAUSTED: the volatile-load member died in s51 (semantic lie), the call member died twice with identical numbers - cdrom_ClearIrq in s52 and CheckCallback in s58, both masked 14 / build 181. reorg.c fill_simple_delay_slots takes any inserted CALL_INSN as the fill; the callee's identity is irrelevant.
+
+- [s58] Frontier item 'permuter on an unsampled masked-4 chassis' is a measured-negative re-run, not an untried lever: 13 basins, ~50+ CPU-hr, ~10k+ samples across 6 chassis, 0 novel basin closures (s4/s5/s40/s41/s49/s50); s50's only sub-vT40 find (perm3/output-80-1, masked 2) got there via volatile coercion, forbidden by the prime directive.
+
+- [s58] Frontier item 'develop the exchange lever on the cheaper twin CD_sync, then mirror' is dead because the bench no longer exists: CD_sync was itself dispositioned REFUSED / OWNER-ACCEPTED INCOMPLETE on 2026-08-25 (docs/grind/decisions.md:11814) after 105 sessions and >=6 modalities, both gates failing, its residual proven a global.c allocno birth-tie with no C spelling.
+
+- [s58] Gate (a) canonical-asm FAILS: scan_hand_coded --single CD_ready -> tier=LOW score=2/8 (179 insns), S4+S5 only, S1/S2/S6 absent. Also false on provenance (identified PsyQ libcd CD_ready = compiled Sony C).
+
+- [s58] Gate (b) SOTN precedent FAILS by construction: the residual is a sched2 LUID tie plus a reorg.c delay-slot steal, neither of which has any C-level spelling, so there is no closing construct to cite.
+
+- [s58] This is NOT an integration handoff: src/system.c carries INCLUDE_ASM("asm/funcs", CD_ready); with 0 regfix/asmfix rules (rules_dropped: 0 in every sandbox run this session). Nothing is bytes-proven and nothing is blocked by a surface this session may not touch - the best honest form is simply 4 away.
+
+- [s58] No decision packet filed, per the owner's 2026-08-24 auto-reject class: the only questions left here ('sanction a new family for the LUID tie', 'grant canonical-asm despite a LOW tier') are standard-lowering and PRE-DECIDED NO. Provenance and routing are both already settled.
+
+- [s58] Exhaustion at disposition: 58 sessions, >=6 distinct modalities (structural, permuter, forensics, rederive, synthesis, escalation), 165+ hand-written forms, 116 banked rejected forms, 20 distinct spellings all converging on the same masked-4 / 178-insn attractor.
+
+- [s58] Disposition entry FILED THIS SESSION at docs/grind/decisions.md:12356 - '2026-08-25 - CD_ready (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'. src/system.c was restored to HEAD (git clean) after measurement.

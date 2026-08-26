@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "CD_ready",
-      "file": "system",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80062020",
       "file": "text1b",
       "distance": 4,
@@ -2047,17 +2039,26 @@
       "status": "escalated",
       "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: chain-extender family as the NEW lever the 2026-08-20 entry requires (F6+F7 seam ground is spent).",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:12231 \u2014 ## 2026-08-25 - func_80033550 (src/code6cac_b.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (owner directive 2026-08-24 executed and measured)"
+    },
+    {
+      "func": "CD_ready",
+      "file": "system",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:12356 - 2026-08-25 - CD_ready (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
     }
   ],
   "counts": {
     "total": 234,
-    "active": 225,
+    "active": 224,
     "by_status": {
-      "active": 225,
-      "escalated": 9
+      "active": 224,
+      "escalated": 10
     },
     "by_verdict": {
-      "C": 190,
+      "C": 189,
       "ASM-PARTIAL": 35
     }
   }
