@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "CD_datasync",
-      "file": "system",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: exploit the banked SOTN LIBCD reference (memory/grind/CD_datasync/ref/sotn_libcd_bios_CD_datasync.c) + frontier F29 (sched1 LUID-order replay"
-    },
-    {
       "func": "func_80061658",
       "file": "text1b",
       "distance": 7,
@@ -2041,17 +2032,27 @@
       "status": "escalated",
       "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals.",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md - '## 2026-08-25 - func_80072CD4 (src/text1b.c) - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (fidelity/routing question: Option A toolchain-fidelity calibration probe vs Option B return to ACTIVE with modality solver/ra_solver; no family grant, no permanent-rule sanction and no canonical evidence-bar override requested)"
+    },
+    {
+      "func": "CD_datasync",
+      "file": "system",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: exploit the banked SOTN LIBCD reference (memory/grind/CD_datasync/ref/sotn_libcd_bios_CD_datasync.c) + frontier F29 (sched1 LUID-order replay",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-25 \u0393\u00c7\u00f6 CD_datasync \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
     }
   ],
   "counts": {
     "total": 233,
-    "active": 221,
+    "active": 220,
     "by_status": {
-      "active": 221,
-      "escalated": 12
+      "active": 220,
+      "escalated": 13
     },
     "by_verdict": {
-      "C": 186,
+      "C": 185,
       "ASM-PARTIAL": 35
     }
   }

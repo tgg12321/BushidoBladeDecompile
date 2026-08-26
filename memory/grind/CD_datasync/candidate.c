@@ -354,14 +354,35 @@
  * four rigid attractors) and do NOT re-probe const / RTX_UNCHANGING_P.
  * ===========================================================================
  */
-s32 saEft01Init(s32 a0) {
+/* ===========================================================================
+ * SESSION 18 (2026-08-25) — CHASSIS RE-MEASURED ON THE MIGRATED/RENAMED TU
+ * ===========================================================================
+ * src/system.c has been renamed since this file was written: saEft01Init ->
+ * CD_datasync, sys_VSync -> VSync, tslTm2LoadImage_2 -> puts, debug_printf ->
+ * printf, cdrom_ClearIrq -> CD_flush (now DEFINED in the same TU at line 403,
+ * no longer extern), &D_800161B8 -> &g_str_cd_timeout.  The body below is the
+ * session-9 form transcribed into those names.  Re-measured this session:
+ *     sandbox CD_datasync --disable all  ->  score 7, target_insns 91,
+ *     build_insns 91, rules_dropped 0
+ * so the floor is chassis-invariant across the asm-until-matched migration and
+ * across CD_flush becoming an intra-TU call.  HEAD itself is INCLUDE_ASM (91).
+ *
+ * Session 18 measured 14 further spellings (all banked in rejected/): the
+ * index-naming family (naming idx_1494[0] / idx_1494[1] as locals is codegen-
+ * IDENTICAL to the fully-inline attractor, 13), the pointer-ADDRESS family
+ * crossed with statement order (rigid at 9 regardless of which of the two
+ * arguments is named or in which order), and arg3 combinations (12-13).  None
+ * beat 7.  See hypotheses.md [s18].
+ * =========================================================================== */
+
+s32 CD_datasync(s32 a0) {
     s32 v0;
     s32 cnt;
     s32 *tbl_11dc;
     u8 *idx_1494;
     s32 *tbl_125c;
 
-    D_800F19B8 = sys_VSync(-1) + 0x3C0;
+    D_800F19B8 = VSync(-1) + 0x3C0;
     tbl_11dc = D_800A11DC;
     idx_1494 = &D_800A1494;
     tbl_125c = D_800A125C;
@@ -369,7 +390,7 @@ s32 saEft01Init(s32 a0) {
     D_800F19C0 = &D_800162C0;
 
 loop:
-    v0 = sys_VSync(-1);
+    v0 = VSync(-1);
     if (D_800F19B8 < v0) {
         goto do_timeout;
     }
@@ -381,14 +402,16 @@ loop:
 
 do_timeout:
     /* FAKE: do{}while(0) â€” loop_depth weighting for the three table pointers
-     * without giving loop.c a loop to hoist the compare constants out of. */
+     * without giving loop.c a loop to hoist the compare constants out of.
+     * mechanism: flow.c loop_depth ref-weighting -> global.c allocno_compare.
+     * lever-exhaustion: memory/grind/CD_datasync/hypotheses.md (s9 H37/H38). */
     do {
         s32 arg4;
-        tslTm2LoadImage_2(&D_800161B8);
+        puts(&g_str_cd_timeout);
         arg4 = tbl_125c[idx_1494[0]];
-        debug_printf(&D_800161C8, D_800F19C0, tbl_11dc[D_800A11D5], arg4,
-                     tbl_125c[idx_1494[1]]);
-        cdrom_ClearIrq();
+        printf(&D_800161C8, D_800F19C0, tbl_11dc[D_800A11D5], arg4,
+               tbl_125c[idx_1494[1]]);
+        CD_flush();
     } while (0);
     v0 = -1;
     goto check;

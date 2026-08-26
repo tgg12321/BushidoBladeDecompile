@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 17,
+ "session_count": 18,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -105,23 +105,29 @@
    "floor": 7,
    "modality": "escalation",
    "headline": "Floor re-measured at 7/91; one genuinely un-tried axis (the INDEX globals) found and killed on both halves \u2014 and its 89-insn variant proves target hoists an index base; both endgame-lock gates FAIL (s"
+  },
+  {
+   "session": 18,
+   "floor": 7,
+   "modality": "escalation",
+   "headline": "Owner directive executed in full: F29's sched1 replay is now an EMPIRICAL model (tie-break is descending-UID, so the pass preserves pre-sched LUID order; target's window mapped to RTL UIDs 93,116,105,"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F29 (carried, still the only live technical avenue if the function is ever un-parked) \u2014 because sched1's in-block priorities are flat and its class tie-break is inert on all measured chassis, sched1's output is a deterministic function of (pre-sched RTL order, dependence edges, latency queue); therefore the set of pre-sched LUID orders that replay to target's 14-insn sequence is COMPUTABLE, and the search collapses from 'which C spelling' to 'which LUID order, and can C emit it'.",
-   "mechanism": "schedule_block picks ready[0] (sched.c:3966) and prepends (3970-3975); rank_for_schedule (2398-2456) resolves flat priorities by INSN_LUID; insns enter the ready list via schedule_insn's queue_insn latency path. A replay needs only the LOG_LINKS already printed in system.i.sched plus MIPS load latency 2 \u2014 on disk for four chassis in tmp/grind/saEft01Init/s16/.",
-   "next_probe": "Write schedsim.py: parse the block and its dependence edges out of system.i.combine/.sched; replay the backward pass with flat LAUNCH priorities + LUID tie-breaks; VALIDATE by reproducing the observed .sched order for all four banked chassis before trusting it; then enumerate the pre-sched orders C can actually emit and report which replay to target's sequence. A universal negative is proof-grade for the whole argument-block axis; a hit names the exact C to write. Do NOT start with another argument-spelling sweep (67 forms banked) or another permuter campaign (measured dead twice, on two objectives)."
+   "hypothesis": "F31 (NEW, and now the top item) - because the residual block is measured fork-SENSITIVE, the C search must be re-run with cc1psx as the calibration ORACLE rather than the open-port cc1: score candidate spellings by how close cc1psx's emission is to target, since cc1psx is the compiler that actually built the target and is already strictly closer than the open port on two counts.",
+   "mechanism": "tools/cc1psx_wrapper.sh runs PsyQ cc1psx.exe (2.7.2.SN.1) as a drop-in cc1 on preprocessed C at ~0.8s/invocation, sanctioned for calibration/self-disproof (never a build path). The sandbox score is computed against the open-port build, so it is the WRONG gradient for a fork-sensitive construct; a cc1psx-scored gradient is a different and better-aligned objective. If some spelling makes cc1psx emit target's block exactly, that spelling is the original source shape, and the remaining question becomes the separate, tractable one of what the open port does with THAT spelling.",
+   "next_probe": "Reuse tmp/grind/CD_datasync/s18/psx.sh (preprocess -> open.s + psx.s) and cmp.py (block extraction + alignment against asm/funcs/CD_datasync.s) to build a small sweep driver that scores a body variant by cc1psx block distance. Start with the 14 forms banked this session plus the four rigid attractors, since their open-port scores are already known and the cc1psx scores are the new information. Report the cc1psx-vs-open-port score correlation - if it is weak, that alone explains 18 sessions of a flat open-port floor."
   },
   {
-   "hypothesis": "F30 (carried) \u2014 the shared block should be attacked on cpu_side_move_dir_4 as well, because that chassis differs in surrounding register pressure and in arg3's spelling while sharing target's block order, so a form that fails here for pressure reasons may separate the variables there.",
-   "mechanism": "Same 14-insn target sequence, same early-lw-a3 failure, different chassis: cpu_side_move_dir_4 names BOTH arg4 and arg5, has no do{}while(0) wrapper, and its arg3 is the inline global D_800A11DC[D_800A11D5] rather than a hoisted-base load. Any mechanism that is really about the block must behave identically on both; anything that behaves differently is chassis pressure, and that difference is itself a measurement.",
-   "next_probe": "Run the s10 idump.sh / blockdump.py forensics on cpu_side_move_dir_4 (same TU, so the dump already covers it \u2014 just point blockdump.py at its function section) and compare its sched1 pick trace with saEft01Init's; specifically whether its decisive pick pair is the same LUID race. NB both functions are parked/queued separately \u2014 use the sibling as EVIDENCE only."
+   "hypothesis": "F29 (carried, now half-executed) - the remaining half is the INVERSION: enumerate the pre-sched LUID orders C can actually emit and replay each through the now-validated sched1 model to see which (if any) produces target's order 93,116,105,119,121,96,123,108,98,111,113,125,131,100.",
+   "mechanism": "The pick rule is established (ready[0]; descending priority, ties by descending UID) and the dependence DAG plus LOG_LINKS are decoded and on disk. What is still needed is a faithful model of the latency queue and the 'greater potential hazard' / 'blocking insn N for k cycles' reorderings, validated by reproducing the observed .sched order for all four banked chassis in tmp/grind/saEft01Init/s16/ before it is trusted.",
+   "next_probe": "Write schedsim.py replaying the backward pass over the decoded DAG; VALIDATE against all four banked chassis traces first; then enumerate C-emittable pre-sched orders (statement boundaries x value/address x inline, which is a small finite set given this session's measurements) and report which replay to target. A universal negative is proof-grade for the whole argument-block axis on the open port - and, crucially, should then be re-run against cc1psx's scheduler per F31, since the fork is now known to matter."
   },
   {
-   "hypothesis": "F23 (carried, unchanged, and now explicitly moot for the disposition) \u2014 the /* FAKE */-annotated do{}while(0) wrapper is the candidate's single match device and has still never been through a fresh adversarial cheat-reviewer.",
-   "mechanism": "Sanctioned by the owner's 2026-07-06 do-while(0) ruling (any body, any codegen effect, mandatory inline FAKE annotation, single level); its only measured effect is flow.c's loop_depth ref-weighting for the three table pointers (18 -> 8 with nothing else changed, .lreg numbers matching the prediction to the integer). It lowers the floor; it does not close the function, and s16 showed it is not implicated in the argument block at all (the identical residual occurs in cpu_side_move_dir_4, which has no wrapper).",
-   "next_probe": "Only relevant if the function is un-parked AND a form reaches distance 0: invoke cheat-reviewer on the candidate before any completion claim, presenting the lever-exhaustion record (67 argument forms over four rigid attractors, s11's wrapper-extent sweep, s12's four dead axes, s13+s14's four exhausted permuter campaigns under two objectives, s15's single-dependence-edge proof, s16's sched1 flat-priority proof, s17's index-global closure)."
+   "hypothesis": "F30 (carried) - the identical block should be attacked on the sibling CD_sync (splat cpu_side_move_dir_4), which shares target's block order but differs in register pressure and in arg3's spelling, so a mechanism that is really about the block must behave identically on both.",
+   "mechanism": "Same 14-insn target sequence, same early-lw-a3 failure, different chassis: the sibling names BOTH arg4 and arg5, has no do{}while(0) wrapper, and spells arg3 as the inline global D_800A11DC[D_800A11D5] rather than a hoisted-base load. Anything that behaves differently there is chassis pressure, and that difference is itself a measurement.",
+   "next_probe": "Point tmp/grind/saEft01Init/s16/blockdump.py at the sibling's function section in the same banked dump and compare its sched1 pick trace with the one decoded this session, specifically whether its decisive pick pair is the same LUID race. Then run the cc1psx calibration (F31) on the sibling too - if cc1psx is closer to target on BOTH, the fork-sensitivity finding generalises to the whole twin family and the family should be searched together. Use the sibling as EVIDENCE only; it is queued separately."
   }
  ],
  "judge_constraints": [],

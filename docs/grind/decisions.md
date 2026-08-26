@@ -12637,3 +12637,22 @@ Either answer returns the item to ACTIVE. Nothing else in the queue waits on it.
 ## 2026-08-25 22:06 — func_80061710 — final call — **PASS**
 
 Exactly one FAKE construct: the local pointer alias `s32 *v1 = (s32 *)&D_800F116C;`. It sits in the sanctioned pointer-alias family (.claude/rules/pointer-alias-fake-exception.md, owner ruling 2026-07-01) with all four prerequisites met -- exhaustion (hypotheses.md s2/s3 structural, s4 native permuter, plus the s5 direct-global form banked at rejected/v9e-no-pointer-alias-direct-global-floor5.c = sandbox 5), mechanism named (base-register allocation / address-materialization caching in local-alloc), annotation present at the declaration, and self_vet.md's six-test walk. Decisive fact: the REFUSED constant-staging-through-a-reused-live-local family that blocked s1-s4 is absent by construction -- I read the body in src/text1b.c and the tail carries no temp at all (`D_800A3464 = 0x10FF10;` inline), and `val` is fresh per arm and dead before func_80060A68(). Everything else (switch selecting val+q into one shared block, `default: goto done;` skipping it to avoid reading uninitialized locals, walking-pointer tail) is ordinary C and is verbatim the house style of the COMPLETED-C sibling func_8006156C at src/text1b.c:3296-3322, whose identical `v1` declaration (line 3297) is the cited in-repo precedent -- verified. Independently re-verified: sandbox --disable all = 0 (46/46, rules_dropped 0), verify-oracle build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa, zero regfix/asmfix entries for the function, not in inline_asm_canonical.txt. judge_constraints is empty (not regression-origin). Full evidence: memory/grind/func_80061710/{hypotheses.md,evidence.md,self_vet.md,rejected/}.
+
+## 2026-08-25 — CD_datasync — OWNER-ESCALATION — ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)
+
+**Auto-filed by the grinder driver (2026-08-25)** after 18 sessions held the honest
+floor flat at 7 across 7 distinct modalities (escalation, forensics, permuter, recon, rederive, structural, synthesis) without a
+session self-filing — the escalation-modality backstop (grind.ps1). This is the endgame-lock
+species per the standing 2026-07-20 endgame-lock-disposition policy: byte-matches on main only
+via a cheat (0 regfix/asmfix rule(s) or cheat-asm), honest pure-C floor 7,
+sanctioned levers exhausted across the full modality ladder (see memory/grind/CD_datasync/
+evidence.md + hypotheses.md for the per-session kill record). Both AND-gates fail on the ledger evidence: canonical-asm — `scan_hand_coded --single
+CD_datasync` = **LOW** (ordinary GCC RA/scheduler artifact, no hand-coded signature);
+coercion family — no SOTN-master precedent recorded for the residual axes. Per the owner's
+2026-08-24 ruling (.claude/rules/escalation-not-parked.md): the item is ESCALATED with a
+decision packet, not parked — the packet must state the DECIDABLE question this function's
+residual poses (the specific grant/family/fidelity/routing choice), the evidence pointers,
+and the consequence of each answer. The two AND-gates remain the unchanged STANDARD; the
+owner rules on packets in batches, and the ruling returns the item to active either way.
+If no decidable question exists, the item stays ACTIVE with a modality change instead
+(difficult-is-not-impossible) — "this is hard" is not a packet.
