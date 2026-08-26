@@ -112,3 +112,72 @@
   stale 3348/3342-3369 citations) is satisfied by NOT reusing those numbers.
 - No new spellings probed — none needed; the C is done, the residual was
   bookkeeping fidelity.
+
+## s3 (2026-08-26, recon; HEAD ecc1e876; dispatched as "session 1" of the post-discard renumbering) — ARRAY spelling measured sandbox 0; recon map for the aggregate question; ruling-request filed
+
+- **Context inherited:** two layer-1 FAILs are banked. FAIL 1 (14:56) was citation-only.
+  FAIL 2 (15:03) is SUBSTANTIVE and now a driver-enforced ban: the pointer-pun spelling
+  `(&D_800F1154)[5]/[6]` (and address-of forms) off a single-byte `extern u8 D_800F1154;`
+  fails T3/T4 (ladder-selected for its CSE base-register anchoring) and, by analogy, the
+  aggregate-merge family's prongs. The reviewer's own prescribed next action: "properly
+  invoke the aggregate-merge family: declare the D_800F1154 flag block as a real
+  header-level aggregate" (docs/grind/decisions.md:14502 + banned-constructs bank).
+- **KEY MEASUREMENT (this session):** the ARRAY spelling — block-scope
+  `extern u8 D_800F1154[];` + `D_800F1154[5]/[6]` reads/writes + `&D_800F1154[5]/[6]`
+  publishes (a real ARRAY_REF over a declared aggregate, not the banned pun over a
+  scalar) — applied over the INCLUDE_ASM at src/text1b.c:3271-3272 scored
+  **sandbox 0, 59/59** (rules_dropped 0, cheat_asm_stripped 169 all from other
+  functions). Same compound-const cse anchor (const (plus D_800F1154 5)) → identical
+  RTL to the s1/s2 form whose full-build SHA1 == oracle was already proven (s1 re-run).
+  Probe copy: tmp/grind/func_80061250/s3/probe_array_spelling_sandbox0.c. The src edit
+  was REVERTED after measurement; src is back to INCLUDE_ASM, tree clean.
+- **Recon map of the 0x800F1152..0x800F115F block (for the aggregate question):**
+  - Splat symbols (undefined_syms_auto.txt:511-518): D_800F1150, 1151, 1152, 1154,
+    1158, 1159, 115B, 115C.
+  - Naming census (named_syms.txt): 0x800F1154 = g_text1b_glyph_buf_b (a BUFFER —
+    aggregate model, line 827); 0x800F1158 = g_text1b_glyph_buf_b_plus_4 (line 2507);
+    0x800F1159 = g_text1b_slot_d_flags "u8[2] busy-flag pair" (line 1913);
+    0x800F115B/115C = g_text1b_glyph_data_b1/b2 (lines 2205-2206);
+    0x800F1152 = g_text1b_slot_b_flags u8[2] (line 1328).
+  - Committed C consumers in src/text1b.c (line numbers at HEAD ecc1e876):
+    func_800618B4 :3507 uses `extern u8 D_800F1152[];` with [0]/[1] flag indexing
+    (the SAME test-and-clear shape as ours, array spelling, committed);
+    func_8006156C :3343 uses the legacy pointer-pun `(&D_800F1154)[1]/[2]` off a
+    scalar extern (Judge PASS 2026-07-22, pre-dates the 15:03 ruling);
+    func_800619A4 :3544 publishes `&D_800F1158` (extern s32, address-only use —
+    the s32 type is decl noise); func_800619F0 :3559 uses
+    `extern u8 D_800F1154[];` + publishes `D_800F1154 + 3` (ARRAY spelling with
+    offset, committed and integrated — the direct precedent for our form);
+    siblings at :3293-:3333 (old numbering) publish &D_800F115B / &D_800F115C+k.
+    text1b_b.c:591-599 carries a mirror extern block incl. the stale
+    `extern volatile u8 D_800F1159;` chassis debt.
+  - Asm references: D_800F1159 appears ONLY in asm/funcs/func_80061250.s (self —
+    deleted at integration) and asm/text1b.s (NOT linked: bb2.ld links only
+    build/src/text1b.o; verified by grep of bb2.ld this session). So at integration
+    the last D_800F1159 reference vanishes and a complete symbol merge
+    (prong (c): remove merged symbols from splat config) is mechanically possible.
+    D_800F1154 is still referenced by INCLUDE_ASM siblings func_8006133C.s (and
+    remains as the merged base symbol — no conflict).
+- **Why this is a ruling-request, not a candidate-ready:** the array spelling closes
+  the bytes, but its classification is genuinely contested between two adjacent
+  positions: (A) ordinary C — it adopts the TU's EXISTING committed object model
+  (func_800619F0's array extern predates this session; census says buffer), no
+  family claim needed; (B) the 15:03 reviewer's prescription + aggregate-merge
+  prong (d) ("spelled at the canonical declaration in the shared header, never
+  TU-local") + prong (c) (complete merge, symbols removed from config) require the
+  FULL 5-prong merge first — which touches sibling bodies (respell 6156C's pun),
+  a shared header, text1b_b.c, and undefined_syms_auto.txt, i.e. surfaces beyond
+  this session's scope (driver scope-widening per integration-handoff-self-serve
+  would be needed). Submitting under (A) risks layer-1 FAIL #3 ("respelled banned
+  construct" — the bytes and mechanism are identical to the banned pun; only the
+  type-level object claim differs); submitting under (B) is impossible in-session
+  (scope) and fails prong (d) if spelled TU-local. Per the role prompt ("torn
+  between two adjacent families → ruling-request; one ruling is cheaper than a
+  FAILed candidate"), s3 files the ruling-request with the measurement in hand.
+- Extent sub-question banked for the ruling: a minimal merge (D_800F1154+D_800F1159
+  → `extern u8 D_800F1154[7or8];`) leaves D_800F1158/115B/115C as separate handles
+  overlapping the census's buffer model (1158 is address-only s32 — 4-byte handle
+  overlapping bytes 4-7); a full-block record (u8[8+] or struct) is census-cleaner
+  but forces respelling MORE committed siblings. The evidence supports "flat u8
+  byte buffer" (every access in the family is byte reads/writes or interior
+  address publishes; no multi-byte load/store of the block exists in target asm).

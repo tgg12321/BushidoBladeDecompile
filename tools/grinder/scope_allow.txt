@@ -29,3 +29,6 @@ func_80038170 include/code6cac.h undefined_syms_auto.txt
 # SioSyncroRead: pipeline scope grant 2026-08-25 (judge ESCALATE integration-handoff,
 # integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
 SioSyncroRead volatile_extern_allowlist.txt
+# func_80061250: pipeline scope grant 2026-08-26 (judge ESCALATE integration-handoff,
+# integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
+func_80061250 src/text1b.c src/text1b_b.c undefined_syms_auto.txt

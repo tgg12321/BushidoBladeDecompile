@@ -63,3 +63,33 @@ nothing remains but driver verification → layer-1 → Judge.)
 
 (empty — sandbox 0 proven s2 with the body in src/text1b.c; self_vet.md carries
 verified citations; nothing remains but driver verification → layer-1 → Judge.)
+
+## s3 (2026-08-26, recon; HEAD ecc1e876)
+
+- H6 "A real aggregate declaration — `extern u8 D_800F1154[];` + `D_800F1154[5]/[6]`
+  ARRAY_REF indexing (the reviewer's prescribed direction, mirroring committed
+  sibling func_800619F0) — produces the same compound-const cse anchor and thus the
+  same 59/59 bytes as the banned pointer-pun" — **CONFIRMED**: sandbox 0 (59/59)
+  measured this session with the body applied; probe banked at
+  tmp/grind/func_80061250/s3/probe_array_spelling_sandbox0.c; src reverted after
+  measurement.
+
+## Frontier
+
+1. (blocked on ruling) Option A — resubmit with the TU-consistent array-extern
+   spelling as ordinary C (committed precedent func_800619F0, census buffer model).
+   Mechanism: identical RTL to the proven form; risk is layer-1 calling it a
+   respelling of the banned pun. Next probe: none — measurement complete; needs the
+   s3 ruling answer.
+2. (blocked on ruling) Option B — full 5-prong aggregate merge: shared-header
+   `extern u8 D_800F1154[N];` (or struct), respell func_8006156C's committed pun +
+   text1b_b.c externs, remove D_800F1159 (+ extent-dependent others) from
+   undefined_syms_auto.txt at integration (mechanically possible: only the self .s
+   and unlinked asm/text1b.s reference it — verified s3). Needs driver
+   scope-widening (sibling TU + header + config are outside one-function scope).
+   Next probe: on a YES, byte-neutrality sweep of every respelled consumer +
+   verify-oracle --rebuild.
+3. If the ruling rejects both A and B: the only remaining honest spellings anchored
+   at D_800F1159 addend-0 are measured dead (H3, s1: 19/25/inert) — re-open the
+   ladder at the flag-access shape level (e.g. struct-typed extern at 0x800F1159
+   with 2 u8 members — untried, but expected to fold absolute per the H3 mechanism).

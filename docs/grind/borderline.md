@@ -286,3 +286,8 @@ disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 �
 category: policy-question
 evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-08-26 — func_8002FC80 — JUDGE ESCALATE on final call (policy-question) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
 disposition taken: REFUSED under the current frozen policy (endgame-lock standing ruling 2026-07-27, extended by judge-sole-gate 2026-08-18); terminal OWNER-ACCEPTED INCOMPLETE park; candidate preserved at memory/grind/func_8002FC80/candidate.c; re-attemptable if a later owner ruling spends this entry.
+
+## 2026-08-26 — func_80061250 — integration-handoff
+category: integration-handoff
+evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-08-26 — func_80061250 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
+disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: func_80061250 src/text1b.c src/text1b_b.c undefined_syms_auto.txt; cleared 1 superseded ban(s); function stays ACTIVE.
