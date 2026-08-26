@@ -54,7 +54,14 @@
    "next_probe": "Owner ruling (escalation filed). If refused (per precedent cluster), classify INCOMPLETE-owner-accepted, retain the $5 pin to hold the byte-match, park; re-attempt only on a novel whole-function insight, not by re-measuring the dead axes."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The per-arm `base +=` restructuring was reverse-engineered from an RA-solver's explicit reg_n_refs target for pseudo 77 (a GCC allocno-priority lever), not derived from program logic; the self-vet's precedent citation is directionally wrong and no sanctioned family's prerequisites (esp. FAKE annotation) are met. Next action: Revert src/text1b.c to INCLUDE_ASM for func_80056FE8 (or the s5/s6 double-reuse candidate held only under the pre-existing $5 pin, per the standing OWNER-ESCALATION). Do not resubmit this exact per-arm-accumulate spelling without first demonstr"
+ ],
  "origin": "queue",
- "created": "2026-07-23T12:12:42.376365+00:00"
+ "created": "2026-07-23T12:12:42.376365+00:00",
+ "banned_constructs": [
+  "Per-arm `base += <table-lookup>*<scale>;` accumulation (three separate statements, one inside each dispatch arm) replacing the earlier single post-join `base += var_v0;` combine",
+  "Self-vet's citation of `hoist-shared-arm-computation-defeats-copy-pref` (owner ruling 2026-07-12) as the controlling precedent"
+ ],
+ "ladder_skip": 1
 }

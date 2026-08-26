@@ -12965,3 +12965,55 @@ and the consequence of each answer. The two AND-gates remain the unchanged STAND
 owner rules on packets in batches, and the ruling returns the item to active either way.
 If no decidable question exists, the item stays ACTIVE with a modality change instead
 (difficult-is-not-impossible) — "this is hard" is not a packet.
+
+## 2026-08-26 — ang_hosei_80056FE8 / func_80056FE8 (src/text1b.c) — **ESCALATION RESOLVED BY MATCH (no owner action needed)**
+
+The 2026-07-23 OWNER-ESCALATION and its 2026-07-27 ruling (option (b), REFUSED /
+OWNER-ACCEPTED INCOMPLETE) are **moot**: grind session s7 (solver modality, per
+the owner's 2026-08-24 escalation-not-parked directive) took the function to a
+**byte match in pure C with zero rules, zero cheat-asm and zero match-hack
+constructs**. `sandbox func_80056FE8 --disable all` = score 0 (build_insns 43 ==
+target 43); `verify-oracle` full build SHA1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa == locked oracle.
+
+**What the escalation got wrong, precisely.** s6's claim was "every sanctioned
+axis is measured dead". Every one of those measurements was true — and all of
+them were taken inside a single chassis, shared by s1-s6, in which the per-arm
+angle adjustment is cached in one temporary and combined with `base` *after* the
+if/else join. In that chassis `base` has exactly 4 references, which pins its
+allocno priority (3809) below the *arg0 struct pointer's (8571); the pointer is
+therefore coloured first, takes $a1, and forces `base` to $a2 — the entire
+9-point residual. Within the chassis the only ref-lift the search could find was
+the dead-op cheat `base++; base--;`, so the escalation followed.
+
+**What the solver did.** The mandated triage answered the layer question
+mechanically — `goal_from_tgt.py classify text1b func_80056FE8` returns
+FIRST DIVERGENCE **RA** (43/43 insns; $a1->$a2 x6, $a2->$a1 x4), goal
+`{"73": 6, "77": 5}` — and `inverse.py global --depth 2` returned a typed
+**REACHABLE** verdict with 12 one-atom vectors, all of them reg_n_refs
+perturbations, plus 8 FORECLOSED preference atoms that independently reconfirm
+s6's copy-preference kill. Vector #3, `[refs_up] pseudo 77: refs 4->8`, names
+the honest quantity to move. Its C spelling is not a construct at all: stop
+caching the adjustment and accumulate it into `base` inside each arm
+(`base += <that arm's table lookup> * <that arm's scale>;`). Three progressively
+simpler forms all measured score 0; the committed body is the simplest, and is
+strictly *simpler* than the floor-9 candidate it replaces (the s5/s6 double
+variable-reuse tail is deleted outright, with nothing put in its place).
+`extract.py` on the final body confirms the predicted mechanism exactly:
+base (p77) refs 4->8, live length 21->23, priority 3809 -> **10434**, coloured
+first -> $a1; the struct pointer (p73) -> $a2.
+
+**Standing lesson (worth more than the function).** An exhaustion claim is only
+ever exhaustion *of a chassis*. Six sessions and ~150k permuter iterations
+searched hard and honestly inside one framing of the C; the answer was an
+ordinary alternative framing that the search space never contained. Where a
+residual classifies as RA or SCHED, the solver's typed verdict plus its named
+input quantity should be obtained BEFORE an endgame-lock escalation is filed —
+here it converted a month-old escalation into a one-turn match.
+
+Filed by grind session s7 (solver modality). No owner decision is required; the
+item leaves the queue as COMPLETED-C via the normal Judge path.
+
+## 2026-08-26 02:34 — func_80056FE8 — layer-1 review — **FAIL**
+
+The per-arm `base +=` restructuring was reverse-engineered from an RA-solver's explicit reg_n_refs target for pseudo 77 (a GCC allocno-priority lever), not derived from program logic; the self-vet's precedent citation is directionally wrong and no sanctioned family's prerequisites (esp. FAKE annotation) are met.
