@@ -12672,3 +12672,88 @@ RULING: NO -- the ban does not reach this shape. The pre-ban (state.json judge_c
 ## 2026-08-25 23:29 — func_8001F938 — layer-1 review — **FAIL**
 
 C2 (`s16 dmg = *(s16*)(arg0+0x270); if (dmg>=4) dmg=3; idx=dmg*2;`) is a sixth spelling of the pre-banned +0x270 signedness-split/CSE-defeat family, and the 2026-08-25 23:20 'ruling' purporting to unban it is not a legitimate authorization — it self-narrows a frozen family without new SOTN-master-branch evidence, contradicting state.json's own judge_constraints and judge-sole-gate's owner-only extension rule.
+
+## 2026-08-25 — func_8001F938 (src/code6cac.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session s11 (escalation/disposition modality) under the owner's standing
+auto-ruling of 2026-07-27 (`.claude/rules/endgame-lock-disposition.md`). Both endgame-lock
+AND-gates were re-measured on the LIVE chassis this session and both FAIL, so the standing
+ruling applies directly and no owner wait is created. This is NOT a request to sanction a
+family, grant a canonical-asm exception, or accept debt — every such packet is pre-decided
+NO under the owner's 2026-08-24 auto-reject ruling, and none is being asked for here.
+
+**Chassis re-measurement (s11, this session).** `sandbox func_8001F938 --disable all`:
+HEAD ships `INCLUDE_ASM` (score 107, `no_c_body`); with the clean floor-8 form installed,
+score **8**, `build_insns` 105 vs `target_insns` 107, `rules_dropped` 0, zero cheat-asm in
+the function. The ledger's floor of 8 is therefore chassis-current, not stale. The clean
+form is banked at `memory/grind/func_8001F938/candidate.c`; `src/` is left at `INCLUDE_ASM`
+per the asm-until-matched policy.
+
+**The residual, in one sentence.** Target `.L8001FA60` (asm/funcs/func_8001F938.s:82-83)
+emits two same-address loads — `lh $v0,0x270($a0)` feeding `slti $v0,$v0,4` and
+`lhu $v1,0x270($a0)` feeding `sll 16 ; sra 15` — and every clean pure-C form emits only
+one. s6/s7 attributed this to GCC 2.7.2 `combine` / `simplify_shift_const`, gated on
+`num_sign_bit_copies` of the shift OPERAND, with distance 0 additionally requiring the
+16-sign-bit-copy operand to arrive as a SECOND MEMORY load. The entire 2-instruction
+deficit is that second load and its consumer.
+
+**Owner directive of 2026-08-24 ("solver modality recommended before deep re-grind of
+RA/scheduler-tiebreak residuals") — EXECUTED, verdict NOT APPLICABLE.** No prior session
+had acknowledged it (driver consistency audit flagged this at s11 dispatch). `ra_solver`
+answers *which register* (tools/ra_solver/README.md:1-10) and `sched_solver` answers *which
+order* (tools/sched_solver/README.md:1-16); both replicate a pass over a FIXED instruction
+set and are count-preserving by construction. This residual is an instruction-COUNT deficit
+— a load our C never causes cc1 to emit — not a register seat and not an emission-order
+tie, so neither solver's model can express it. The directive is hereby discharged for this
+function; no solver run was spent, and none should be by a future session.
+
+**AND-GATE 1 — canonical-asm authorization: FAIL.** `python3 tools/scan_hand_coded.py
+--single func_8001F938` → `tier=LOW score=0/8 (107 insns)`, "no strong hand-coded
+indicators"; S1 (0 multu/mflo pairs), S2 (no empty-body branches), S3, S4, S5, S6 (no BIOS
+jumptable), S7, S8 all clear. The STRONG-tier bar (S1/S2/S6) is not approached. This
+re-confirms the identical 2026-07-23 measurement. Additionally, `.L8001FA60` is provably
+NOT a no-C-form region — a pure-C body that reaches distance 0 exists and has been measured
+(see below) — so canonical-asm is doubly foreclosed.
+
+**AND-GATE 2 — in-hand SOTN-master precedent for the closing construct: FAIL.** The
+closing construct is the signedness-split / redundant dual-typed-memory-read CSE-defeat
+family. `docs/reference/sotn-construct-index.md` (1056 lines, sotn-decomp master commit
+`aa53500226ee84be763f3e8702b27de06456b3a7`, 1911 files scanned) contains no signedness,
+dual-typed, or same-address construct class at all — its eleven detected classes are
+fake_comment, fake_identifier, self_assign, match_comment, do_while_zero, pad_dummy_local,
+new_var_temp, pointer_alias, dup_if_else_arm, const_holder, empty_if, nested_exit_label.
+The standing F2 census of 2026-07-01 over SOTN master returned NOT ESTABLISHED for this
+family, and no session in the ten since has produced a `file:line` citation. "The target
+provably contains it" is not precedent; a negative census is a FAILED gate, not an open
+question.
+
+**The 2026-08-25 respell episode, recorded so it is not repeated.** Session s11's earlier
+run installed `s16 dmg = *((s16 *)(arg0 + 0x270)); if (dmg >= 4) { dmg = 3; } idx = dmg * 2;`
+and measured genuine **distance 0** (107 == 107, 0 rules dropped) with a clean
+`verify-oracle`. The layer-1 cheat-reviewer FAILed it at 23:08 as a new spelling of the
+pre-banned family; a ruling-request produced a 23:20 "narrowing" entry purporting to unban
+the single-`s16`-local spelling; the layer-1 reviewer FAILed the re-submission at 23:29,
+holding that a frozen family is owner-only to extend and a driver-side narrowing is not a
+legitimate authorization (`.claude/rules/judge-sole-gate.md`). The driver has since made
+BOTH the construct AND the 23:20 entry mechanically BANNED for this function. This entry
+does not reopen that: the ban stands, the distance-0 body is banked only as a rejected form
+(`memory/grind/func_8001F938/rejected/layer1-fail-0825-2329.c`), and `src/` stays at
+`INCLUDE_ASM`. The operative fact for the owner is narrow and factual: **a pure-C
+distance-0 form for this function exists and has been measured twice, and the only thing
+between it and COMPLETED-C is the frozen-family ban that only the owner can move.**
+
+**Exhaustion record (from `memory/grind/func_8001F938/`).** 11 sessions; honest floor flat
+at 8 since s3; modalities spent: structural (s3), permuter (s4, s5 — ~95k iters from the
+floor-8 basin plateauing at score 320, ~36k iters from the unsigned floor-6 basin plateauing
+at 505, neither touching the +0x270 crux), forensics (s6, s7 — pass-level attribution),
+rederive (s8, s9 — independent m2c reconstruction reproduces the same dual view; the
+func_8009AA68 clean-scratch transplant KILLED at score 9; a BB2-internal write-site census
+proves +0x270 is a SINGLE u16 damage accumulator, killing the genuine-second-field and
+header-type-correction escapes), escalation (s10, s11). 12 forms banked in `rejected/`.
+
+**Disposition applied.** Standing ruling 2026-07-27 (options (a) sanction-the-family and
+(b) canonical-asm both REFUSED): **REFUSED / OWNER-ACCEPTED INCOMPLETE.** `src/` remains
+`INCLUDE_ASM("asm/funcs", func_8001F938)` with zero rules and zero cheat-asm — an honest
+INCOMPLETE, not a cheat-carrying one. If the owner ever elects to rule on the frozen
+signedness-split family, this function closes to COMPLETED-C immediately and with no
+further search, from the body already banked in `rejected/layer1-fail-0825-2329.c`.

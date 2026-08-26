@@ -305,3 +305,64 @@ dichotomy confirmed at register level. src/ kept at clean floor-8.
     tie; and it is now closed at distance 0.
   - verdict: **KILLED** (moot). Directive acknowledged in the ledger; no ra_solver/sched_solver
     run is owed for this function.
+
+## s11b (2026-08-25) — escalation / disposition (post-layer-1-FAIL rollback)
+
+- H-s11b-1: "The 2026-08-24 owner directive's recommended solver modality (ra_solver /
+  sched_solver) can attack the +0x270 residual."
+  - mechanism: both solvers replicate a GCC pass over a fixed instruction set — ra_solver
+    models `global.c` / `local_alloc` seat assignment, sched_solver models `sched.c`
+    ordering. Both are count-preserving.
+  - probe: read both toolkits' scope statements (tools/ra_solver/README.md:1-10,
+    tools/sched_solver/README.md:1-16) against the measured residual shape
+    (`build_insns` 105 vs `target_insns` 107 — a COUNT deficit: the missing second
+    same-address load at .L8001FA60 plus its consumer).
+  - result: NOT APPLICABLE. Neither model can create an instruction, so neither can express
+    this residual. Directive discharged for this function.
+  - verdict: **KILLED**
+- H-s11b-2: "An endgame-lock AND-gate might have flipped since s10 (chassis drift, a new
+  scanner tier, or a newly-indexed SOTN precedent)."
+  - mechanism: both gates are re-measurable in one command each, and the chassis has changed
+    under this function before.
+  - probe: `python3 tools/scan_hand_coded.py --single func_8001F938`; grep
+    `docs/reference/sotn-construct-index.md` for signedness / dual-typed / same-address.
+  - result: gate (a) still tier LOW 0/8 with all of S1..S8 clear; gate (b) still zero in-hand
+    citations — the index has no detector class for the family at all. Both FAIL exactly as
+    at s10.
+  - verdict: **KILLED**
+- H-s11b-3: "The 2026-08-25 23:20 narrowing ruling reopened a grindable path."
+  - mechanism: the ruling claimed the pre-ban did not reach the single-`s16`-local spelling.
+  - probe: the layer-1 cheat-reviewer's 23:29 re-review, plus the driver's banned-construct
+    list at s11b dispatch.
+  - result: the reviewer held that a frozen family is owner-only to extend
+    (.claude/rules/judge-sole-gate.md) and that a driver-side narrowing is not a legitimate
+    authorization; the driver has since banned both the construct AND the 23:20 entry
+    mechanically. No spelling remains: by the ban's own "in ANY spelling" wording, EVERY C
+    form that causes cc1 to emit a second load of +0x270 sits inside the frozen family.
+  - verdict: **KILLED**
+
+FRONTIER AFTER s11b — exactly one, and it is not a grind modality:
+  An OWNER ruling on the frozen signedness-split / redundant dual-typed-read family. If it
+  ever moves, func_8001F938 closes to COMPLETED-C with zero further search from the body in
+  `rejected/layer1-fail-0825-2329.c` (measured distance 0, full-build oracle verified
+  2026-08-25). Until then the correct state is honest INCOMPLETE at clean floor 8 with src/
+  at INCLUDE_ASM. A future session should NOT re-open structural / permuter / forensics /
+  rederive / solver here — all five are measured dead and the reasons are banked above.
+
+## [s11] The 2026-08-24 owner directive's recommended solver modality (ra_solver / sched_solver) can attack the +0x270 residual.
+- mechanism: Both solvers replicate a GCC pass over a FIXED instruction set - ra_solver models global.c / local_alloc seat assignment ('which register', tools/ra_solver/README.md:1-10), sched_solver models sched.c ordering ('which order', tools/sched_solver/README.md:1-16). Both are count-preserving by construction.
+- probe: Compared both toolkits' scope statements against the measured residual shape: clean form installed gives build_insns 105 vs target_insns 107, and the missing pair is target's second same-address load at .L8001FA60 plus its consumer (asm/funcs/func_8001F938.s:82-83, lh $v0,0x270($a0) then lhu $v1,0x270($a0)).
+- result: NOT APPLICABLE. The residual is an instruction-COUNT deficit - a load our C never causes cc1 to emit. Neither model can create an instruction, so neither can express it. No solver run was spent; the directive is discharged for this function and no future session should spend one here. (Earlier s11 prose called the directive 'moot' because the function was believed closed at distance 0; that closure has since been revoked by two layer-1 FAILs, so the directive needed and now has a real scope answer.)
+- verdict: KILLED
+
+## [s11] An endgame-lock AND-gate might have flipped since s10 (chassis drift, a new scanner tier, or a newly-indexed SOTN precedent).
+- mechanism: Both gates are re-measurable in one command each, and the chassis has changed under this function before, so no gate verdict may be quoted from the ledger.
+- probe: python3 tools/scan_hand_coded.py --single func_8001F938; grep docs/reference/sotn-construct-index.md for signed / signedness / dual-typed / same-address, plus a read of its detected-class table.
+- result: Gate (a) FAIL: tier=LOW score=0/8 (107 insns), 'no strong hand-coded indicators', S1..S8 all clear - identical to the 2026-07-23 reading. Gate (b) FAIL: zero hits, and the index (1056 lines, sotn-decomp master aa53500226ee84be763f3e8702b27de06456b3a7, 1911 files scanned) has no signedness-split / dual-typed / same-address detector class at all, so it offers no citation; the F2 census of 2026-07-01 independently returned NOT ESTABLISHED. Both gates FAIL exactly as at s10.
+- verdict: KILLED
+
+## [s11] The 2026-08-25 23:20 narrowing ruling reopened a grindable path to distance 0.
+- mechanism: That entry claimed the standing +0x270 pre-ban did not reach the single-s16-HImode-local spelling, which measures distance 0 and full-build-verifies.
+- probe: The layer-1 cheat-reviewer's 23:29 re-review of the same body, plus the driver's banned-construct list at s11b dispatch.
+- result: Closed. The reviewer held that a frozen family is owner-only to extend (.claude/rules/judge-sole-gate.md) and that a driver-side narrowing is not a legitimate authorization; the driver has since made BOTH the construct and the 23:20 entry mechanically banned for this function. No spelling remains: by the ban's own 'in ANY spelling' wording, every C form that causes cc1 to emit a second load of +0x270 sits inside the frozen family. The pure-C search space is not merely exhausted, it is fully characterised and gated on an owner ruling.
+- verdict: KILLED

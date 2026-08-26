@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8001F938",
-      "file": "code6cac",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
-    },
-    {
       "func": "special_camera_get_rot_dir",
       "file": "code6cac_b2_post",
       "distance": 9,
@@ -2033,17 +2024,27 @@
       "status": "escalated",
       "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: exploit the banked SOTN LIBCD reference (memory/grind/CD_datasync/ref/sotn_libcd_bios_CD_datasync.c) + frontier F29 (sched1 LUID-order replay",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-25 \u0393\u00c7\u00f6 CD_datasync \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
+    },
+    {
+      "func": "func_8001F938",
+      "file": "code6cac",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals.",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 2026-08-25 entry: \"func_8001F938 (src/code6cac.c) \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**\""
     }
   ],
   "counts": {
     "total": 232,
-    "active": 219,
+    "active": 218,
     "by_status": {
-      "active": 219,
-      "escalated": 13
+      "active": 218,
+      "escalated": 14
     },
     "by_verdict": {
-      "C": 184,
+      "C": 183,
       "ASM-PARTIAL": 35
     }
   }

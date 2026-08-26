@@ -1,7 +1,7 @@
 {
  "func": "func_8001F938",
  "file": "code6cac",
- "session_count": 10,
+ "session_count": 11,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -69,13 +69,19 @@
    "floor": 8,
    "modality": "escalation",
    "headline": "Escalation/disposition: all 4 grindable axes dead over 9 sessions; both endgame-lock AND-gates FAIL (canonical-asm scan tier LOW; signedness-split coercion SOTN NOT ESTABLISHED). Filed the formal OWNE"
+  },
+  {
+   "session": 11,
+   "floor": 8,
+   "modality": "escalation",
+   "headline": "Disposition: both endgame-lock gates re-measured and FAIL (scan tier LOW 0/8; zero in-hand SOTN precedent), the 2026-08-24 solver directive discharged as NOT APPLICABLE (count-deficit residual, not an"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "NEW established SOTN-master-branch evidence for the signedness-split / redundant dual-typed-memory-read CSE-defeat family could relax the ban and permit the known distance-0 form (signed-cast-single-read.c).",
-   "mechanism": "s6/s7 give the pass-level proof (combine num_sign_bit_copies gate; distance-0 needs the 16-copy operand as a 2nd typed MEMORY load); s8 adds independent m2c + gcc2.7.2-corpus corroboration; s9 adds a BB2-internal census proving +0x270 is a single u16 accumulator (no genuine second-field purpose). F2 SOTN census (2026-07-01) returned NOT ESTABLISHED; nothing here overturns it.",
-   "next_probe": "OWNER decision (not a grind modality): rule among (a) sanction the family with NEW SOTN evidence, (b) canonical-asm .L8001FA60 (FAILS scan-tier + inline-asm-injection trap), (c) keep INCOMPLETE at clean floor-8. Parked pending ruling per the filed escalation."
+   "hypothesis": "An OWNER ruling on the frozen signedness-split / redundant dual-typed-read family is the only remaining path to COMPLETED-C for this function. It is not a grind modality and no session can advance it.",
+   "mechanism": "s6/s7 give the pass-level proof that distance 0 requires a second typed MEMORY load of +0x270; s8 corroborates independently via m2c; s9's BB2-internal write-site census proves the field is a single u16 accumulator, so no genuine-second-field or header-type-correction escape exists. Every C form that emits the second load is therefore inside the frozen family by the ban's own 'in ANY spelling' wording.",
+   "next_probe": "None available to a grind session. If the owner ever moves the family, install memory/grind/func_8001F938/rejected/layer1-fail-0825-2329.c verbatim, re-measure (expected 0), and write a FRESH self-vet citing the new ruling. Until then: do NOT re-open structural / permuter / forensics / rederive / solver on this function - all five are measured dead with reasons banked in the ledger."
   }
  ],
  "judge_constraints": [

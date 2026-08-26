@@ -474,3 +474,70 @@ shipped as candidate.c with the 13 rules retired.
   re-grind of RA/scheduler-tiebreak residuals") — ACKNOWLEDGED AND MOOT: the residual was never
   an RA seat or a scheduler tiebreak (s6/s7 named it to `combine`/`simplify_shift_const`), and
   it is now closed at distance 0. No ra_solver/sched_solver run is owed.
+
+## s11b (2026-08-25) — escalation / disposition (post-layer-1-FAIL rollback)
+
+- [s11b] CHASSIS RE-MEASURED. `sandbox func_8001F938 --disable all` at HEAD: score 107,
+  `no_c_body: true` (src ships `INCLUDE_ASM`). With the clean floor-8 form installed:
+  **score 8**, `build_insns` 105, `target_insns` 107, `rules_dropped` 0,
+  `cheat_asm_stripped` 27 (all from other functions in the TU). The ledger floor of 8 is
+  chassis-current; every floor-relative conclusion from s3..s10 still holds.
+- [s11b] OWNER DIRECTIVE 2026-08-24 (solver modality) DISCHARGED WITH A SCOPE PROOF, not
+  merely "moot". Earlier s11 prose called it moot because the function was believed closed
+  at distance 0; that closure has since been revoked by two layer-1 FAILs, so the directive
+  needed a real answer. It has one: **NOT APPLICABLE.** `ra_solver` answers "which register"
+  (tools/ra_solver/README.md:1-10); `sched_solver` answers "which order"
+  (tools/sched_solver/README.md:1-16). Both replicate a GCC pass over a FIXED instruction
+  set and are count-preserving by construction. This residual is an instruction-COUNT
+  deficit: 105 emitted vs 107 target, the missing pair being target's second same-address
+  load at `.L8001FA60` and its consumer (asm/funcs/func_8001F938.s:82-83 —
+  `lh $v0,0x270($a0)` then `lhu $v1,0x270($a0)`). A missing emission is outside both models'
+  expressive range: no register seat and no instruction order can create an instruction.
+  No solver run should be spent on this function by any future session.
+- [s11b] ENDGAME GATE (a) RE-MEASURED, FAIL. `python3 tools/scan_hand_coded.py --single
+  func_8001F938` gives `tier=LOW score=0/8 (107 insns)`, "no strong hand-coded indicators":
+  S1 0 multu/mflo pairs, S2 no empty-body branches, S3 0 spills / 6 distinct regs, S4 max
+  load burst 3, S5 no high-similarity siblings, S6 no BIOS jumptable, S7 all callee-saves
+  saved, S8 no redundant mask-before-shift. Identical to the 2026-07-23 reading.
+- [s11b] ENDGAME GATE (b) RE-CENSUSED, FAIL — with a sharper negative than s10 recorded.
+  `docs/reference/sotn-construct-index.md` (1056 lines, sotn-decomp master commit
+  aa53500226ee84be763f3e8702b27de06456b3a7, 1911 files scanned, index generated 2026-08-19)
+  yields ZERO hits for signed / signedness / dual-typed / same-address, and its detected
+  classes (fake_comment, fake_identifier, self_assign, match_comment, do_while_zero,
+  pad_dummy_local, new_var_temp, pointer_alias, dup_if_else_arm, const_holder, empty_if,
+  nested_exit_label) contain no signedness-split or redundant-typed-read class at all.
+  NUANCE for a future session: because the index has no DETECTOR for this construct, its
+  silence means "no citation available", not "SOTN proves the construct absent". But the
+  gate asks for an IN-HAND citation and there is none, and the F2 census of 2026-07-01
+  independently returned NOT ESTABLISHED. Gate (b) fails on the only terms that matter.
+- [s11b] The distance-0 body (`s16 dmg = *((s16 *)(arg0 + 0x270)); if (dmg >= 4) dmg = 3;
+  idx = dmg * 2;`) is now a DRIVER-ENFORCED BANNED CONSTRUCT for this function, as is the
+  2026-08-25 23:20 decisions.md entry that purported to narrow the ban. A candidate-ready
+  whose self-vet re-declares either is discarded as an invalid session before the Judge
+  ever runs. The body is preserved verbatim at
+  `memory/grind/func_8001F938/rejected/layer1-fail-0825-2329.c` for the day an owner ruling
+  moves the frozen family — it closes the function immediately if that happens. Do not
+  re-install it, do not respell it, do not re-argue it from the target asm.
+- [s11b] `memory/grind/func_8001F938/candidate.c` ROLLED BACK to the clean floor-8 form
+  (the s10 body: `s32 probe = *((s16 *)(arg0 + 0x270)); ... idx = ((raw_or_3 << 16) >> 15);`,
+  recovered from commit 2d1c849b) and re-measured at 8 this session. `src/code6cac.c` is
+  left at `INCLUDE_ASM("asm/funcs", func_8001F938)` per asm-until-matched.
+  `memory/grind/func_8001F938/self_vet.md` was overwritten with a VOID marker: it vetted the
+  now-banned body and must not be reused or cited.
+- [s11b] DISPOSITION FILED: docs/grind/decisions.md, 2026-08-25 entry "func_8001F938 —
+  OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED
+  INCOMPLETE".
+
+- [s11] Chassis re-measured this session: HEAD ships INCLUDE_ASM (sandbox --disable all = score 107, no_c_body true); with the clean floor-8 form installed, score 8, build_insns 105, target_insns 107, rules_dropped 0, cheat_asm_stripped 27 (all from other functions in the TU). The ledger floor of 8 is chassis-current.
+
+- [s11] The entire residual is a 2-instruction deficit at target .L8001FA60, which emits two same-address loads (asm/funcs/func_8001F938.s:82-83: lh $v0,0x270($a0) feeding slti $v0,$v0,4, and lhu $v1,0x270($a0) feeding sll 16 ; sra 15). s6/s7 attributed this to GCC 2.7.2 combine / simplify_shift_const, gated on num_sign_bit_copies of the shift OPERAND, with distance 0 additionally requiring the 16-sign-bit-copy operand to arrive as a SECOND MEMORY load.
+
+- [s11] AND-GATE 1 (canonical-asm) FAILS on the live chassis: scan_hand_coded --single func_8001F938 = tier LOW, score 0/8, 'no strong hand-coded indicators' (S1 0 multu/mflo pairs, S2 no empty-body branches, S3 0 spills / 6 distinct regs, S4 max load burst 3, S5 no high-similarity siblings, S6 no BIOS jumptable, S7 all callee-saves saved, S8 no redundant mask-before-shift). Doubly foreclosed: .L8001FA60 is provably not a no-C-form region, since a pure-C distance-0 body exists and has been measured.
+
+- [s11] AND-GATE 2 (in-hand SOTN-master precedent for the signedness-split / redundant dual-typed-read CSE-defeat family) FAILS: docs/reference/sotn-construct-index.md yields zero hits and has no detector class for the family; the 2026-07-01 F2 census returned NOT ESTABLISHED; no session in ten has produced a file:line citation. Recorded nuance for future sessions: the index's silence means 'no citation available', not 'SOTN proves it absent' - but the gate asks for an in-hand citation and there is none.
+
+- [s11] The operative fact for the owner is narrow and factual: a pure-C distance-0 form for this function EXISTS and was measured twice on 2026-08-25 (107 == 107, 0 rules dropped, clean verify-oracle), and the only thing between it and COMPLETED-C is the frozen-family ban that only the owner can move. That body is banked verbatim at memory/grind/func_8001F938/rejected/layer1-fail-0825-2329.c and is NOT installed anywhere.
+
+- [s11] Repository state left by this session: src/code6cac.c reverted to INCLUDE_ASM("asm/funcs", func_8001F938) (zero rules, zero cheat-asm - an honest INCOMPLETE); memory/grind/func_8001F938/candidate.c rolled back to the clean floor-8 form recovered from commit 2d1c849b and re-measured at 8; memory/grind/func_8001F938/self_vet.md overwritten with a VOID marker because it vetted the now-banned body and cited the now-banned 23:20 entry.
+
+- [s11] Exhaustion record: 11 sessions, honest floor flat at 8 since s3, five distinct modalities measured dead (structural s3; permuter s4/s5 with ~95k iters from the floor-8 basin plateauing at 320 and ~36k iters from the unsigned floor-6 basin plateauing at 505, neither touching the +0x270 crux; forensics s6/s7; rederive s8/s9 including a KILLED func_8009AA68 transplant at score 9 and a BB2-internal write-site census proving +0x270 is a single u16 damage accumulator; solver, scoped out this session). 12 forms banked in rejected/.
