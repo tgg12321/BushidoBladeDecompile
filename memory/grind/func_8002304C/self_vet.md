@@ -8,7 +8,12 @@ zero `volatile`, zero `/* FAKE */` constructs, zero alias declarations, zero
 `(void)` discards, zero dead locals, zero dead stores, zero unused arrays,
 zero `do { } while (0)` wraps.
 
-Measurements backing the submission (this session):
+Measurements backing the submission:
+- s2 annotation/citation fix-up session, 2026-08-26: candidate re-applied to
+  `src/code6cac.c` and re-measured � `sandbox func_8002304C --disable all` ==
+  **0**, target_insns 216, build_insns 216, rules_dropped 0, scorable true.
+  The only edits this session are comment/citation text (the wrong precedent
+  line numbers named by the 2026-08-26 16:11 layer-1 FAIL); no C code changed.
 - `sandbox func_8002304C --disable all` == **0**, 216/216 insns, rules_dropped 0.
 - `verify-oracle` == **build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa**,
   build_matches true, equal to the locked original SHA1.
@@ -30,10 +35,10 @@ constant holder. The one sub-part that is semantically redundant *in isolation*
 is the `& 0xFFFF`: because `mode` was widened from a `u16` load its value is
 already <= 0xFFFF, so masking cannot change the compared values. I am not
 hiding that. My claim is that the mask is **in the original source**, and the
-evidence is in this repo: `func_80023E40` (`src/code6cac.c:2531-2552`) — a
+evidence is in this repo: `func_80023E40` (`src/code6cac.c:2541-2562`) — a
 COMPLETED-C, byte-matched, rule-free function 250 lines below in the SAME
 translation unit — reads the SAME struct field at the SAME offset with the SAME
-two-line idiom (`src/code6cac.c:2535-2536`):
+two-line idiom (`src/code6cac.c:2545-2546`):
     a0 = *(u16 *)(arg0 + 0x6A);
     v1 = a0 & 0xFFFF;
 and then runs the SAME comparison cascade (`v1 == 8`, `v1 == 0x22`,
@@ -61,7 +66,7 @@ the program's meaning.
 
 ## T2 human-programmer: <answer>
 Yes for all five, and for (1) this is not a judgement call — a human programmer
-DID write it, in this codebase, for this exact field: `src/code6cac.c:2536`.
+DID write it, in this codebase, for this exact field: `src/code6cac.c:2546`.
 A reader asking "why mask a value that is already 16-bit?" gets the ordinary
 answer a maintenance programmer gives: the routine treats `obj+0x6A` two ways —
 as a raw number for the range test `(u32)(mode - 0x17) < 2` and as a normalized
@@ -76,7 +81,7 @@ available. (4)/(5) Unremarkable.
 No construct in this diff is justified by a GCC internal. To be explicit about
 the distinction, because it is the test I most need to answer honestly:
 - The **reason the construct is written this way** is source fidelity — the
-  in-TU byte-matched sibling at `src/code6cac.c:2536` spells it this way.
+  in-TU byte-matched sibling at `src/code6cac.c:2546` spells it this way.
 - The **explanation of why the bytes differ** between this spelling and the
   narrow-typed spellings s1 measured is a compiler fact, and I did read it in
   a dump rather than guess it: in
@@ -161,7 +166,7 @@ SANCTIONED-FAMILY-CLAIMS: none.
   rather than on a family grant:
     IN-TREE PRECEDENT (original-author idiom, same TU, same struct field,
     COMPLETED-C with zero rules and zero cheat-asm):
-      src/code6cac.c:2536
+      src/code6cac.c:2546
       commit 6d255e79
   If the reviewer's position is that a semantically-redundant mask requires a
   sanctioned-family grant even when an already-matched sibling in the same

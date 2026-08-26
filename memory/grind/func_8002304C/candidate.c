@@ -7,7 +7,7 @@
  * The s1 residual (target 0x232F4 `andi $v1,$a0,0xffff` vs our
  * `addu $v1,$a0,$zero`) closed by spelling the masked state id the way the
  * ORIGINAL AUTHOR spelled it in the sibling function 250 lines below in this
- * same TU: func_80023E40 (COMPLETED-C since 6d255e79, src/code6cac.c:2535-2536)
+ * same TU: func_80023E40 (COMPLETED-C since 6d255e79, src/code6cac.c:2545-2546)
  * reads the identical field with the identical two-line idiom
  *     s32 a0 = *(u16 *)(arg0 + 0x6A);
  *     s32 v1 = a0 & 0xFFFF;

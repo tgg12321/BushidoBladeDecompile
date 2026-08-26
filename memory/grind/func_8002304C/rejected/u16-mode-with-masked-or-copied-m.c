@@ -38,7 +38,7 @@
  * i.e. BOTH operands wide with an explicit mask — was never measured. It
  * scores **0** (216/216 insns, full verify-oracle SHA1 match) and is the
  * original author's own idiom: func_80023E40 in this same TU
- * (src/code6cac.c:2535-2536, COMPLETED-C at 6d255e79) reads the identical
+ * (src/code6cac.c:2545-2546, COMPLETED-C at 6d255e79) reads the identical
  * field obj+0x6A with exactly that two-line spelling.
  *
  * Mechanism (why the wide/wide quadrant is the one that works): combine

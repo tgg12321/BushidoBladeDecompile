@@ -114,7 +114,7 @@
   While grepping the .combine dump I hit `(set (reg/v:SI 75) (and:SI
   (reg/v:SI 74) (const_int 65535)))` surviving combine in a function whose
   first insn is `reg/v:SI 73 = 528482736` (= 0x1F8001B0). That is
-  **func_80023E40**, src/code6cac.c:2531-2552 â€” a COMPLETED-C function
+  **func_80023E40**, src/code6cac.c:2541-2562 â€” a COMPLETED-C function
   (0 regfix rules, 0 asmfix rules, not in engine/queue.json, not in
   inline_asm_canonical.txt), matched at commit `6d255e79` (2026-03-26). Its
   body reads the SAME struct field with the SAME two-line idiom:
@@ -148,3 +148,31 @@
   survives GCC 2.7.2 exactly when the masked pseudo is still live afterwards
   and both operands are the same (wide) mode** â€” narrowing either side lets an
   earlier pass collapse the pair before liveness can protect it.
+
+## s2 (annotation-fix modality, 2026-08-26) — citation correction
+
+The 2026-08-26 16:11 layer-1 review FAILed the s1 candidate on CITATION ONLY:
+the in-tree sibling precedent for the redundant-mask idiom was accepted as
+legitimate, but every reference to it named the wrong lines (`2531-2552` /
+`2535-2536` / `:2536`). Those line numbers were computed against a stale view
+of `src/code6cac.c`.
+
+Correct, verified locations **with the candidate applied to src/code6cac.c**
+(the state the reviewer sees):
+- `func_80023E40` spans `src/code6cac.c:2541-2562` (`void func_80023E40(u8 *arg0) {`
+  at 2541, closing `done:;` / `}` at 2561-2562).
+- The two-line original-author idiom is at `src/code6cac.c:2545-2546`:
+  `a0 = *(u16 *)(arg0 + 0x6A);` (2545) and `v1 = a0 & 0xFFFF;` (2546).
+- Provenance commit unchanged: `6d255e79` ("code6cac.c: decompile 4 functions
+  (func_8001C820, func_80023E40, func_8001E878, func_8001BC70)").
+
+Note for future sessions: these line numbers are POST-INSERTION. With
+`func_8002304C` still spelled `INCLUDE_ASM("asm/funcs", func_8002304C);` the
+same sibling sits 101 lines earlier (`func_80023E40` at 2440, the idiom at
+2444-2445). Cite the post-insertion numbers — the reviewer reads the diffed
+tree.
+
+Re-measurement this session with the corrected candidate in place:
+`sandbox func_8002304C --disable all` -> score 0, 216/216 insns,
+rules_dropped 0. The floor is unchanged by the comment edits, as expected.
+
