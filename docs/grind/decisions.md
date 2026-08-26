@@ -14472,3 +14472,27 @@ probe_volatile.s}; this session's sandbox prints (28-era pin floor → 19 → 25
 ## 2026-08-26 14:48 — func_80061250 — DISCARDED-SESSION MARKER (driver-stamped)
 
 Text appended above by session s1 of func_80061250, which the driver DISCARDED as invalid (owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md names func_80061250). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
+
+## 2026-08-26 — func_80061250 — CORRECTION: the "same-address symbol-alias scoring artifact" does not exist; candidate-ready through the normal pipeline (filed by grind s1 re-run, recon)
+
+The discarded 2026-08-26 INTEGRATION HANDOFF entry above claimed the sandbox
+floor was artifact-locked at 2 because engine/score.py does not mask
+named-symbol reloc addends (C relocs `D_800F1154+5` vs target's
+`D_800F1159+0`). **That claim is falsified by direct re-measurement:** with
+the identical banked candidate body applied to src/text1b.c at HEAD 351b99be,
+`sandbox func_80061250 --disable all` printed **score 0 (59/59)** and a full
+clean `build` printed **SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa
+(oracle MATCH)** — both measured in the same session. target.s still
+references D_800F1159 and the C still anchors at D_800F1154+5; the scorer
+handles it. No scorer or symbol-file commit landed between the two
+measurements, so the prior "2" was a mis-measurement, not a scorer property.
+None of the three proposed operator remedies (scorer fix / aggregate merge /
+manual integration) is needed. The session returned **candidate-ready**
+(ledger: memory/grind/func_80061250/{evidence.md s1 re-run, hypotheses.md H4
+KILLED, candidate.c, self_vet.md}); the body is a data-substituted mirror of
+Judge-PASSed sibling func_8006156C with no FAKE constructs and no
+sanctioned-family claims.
+
+## 2026-08-26 14:56 — func_80061250 — layer-1 review — **FAIL**
+
+Construct is legitimate (verified against the actual sibling body), but the self-vet's precedent citations do not resolve to the lines quoted -- a resolvable citation error, not a substantive defect.

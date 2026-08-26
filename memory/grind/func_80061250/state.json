@@ -1,0 +1,18 @@
+{
+ "func": "func_80061250",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: Construct is legitimate (verified against the actual sibling body), but the self-vet's precedent citations do not resolve to the lines quoted -- a resolvable citation error, not a substantive defect. Next action: citation_only: true. I independently verified the underlying claim IS true: func_8006156C (src/text1b.c:3369-3396) is the committed, already-integrated sibling with the identical shape -- same s32 *v1 = (s32 *)&D_800F116C; pointer local, same D_800A3468/D_800F1178 packet-handle publish, same nested if/goto flag test-and-clear over (&D_800F1154)[1]/[2] (her"
+ ],
+ "banned_constructs": [
+  "Precedent citation for the block-offset flag-access + goto-state-machine shape: self-vet T2 claims 'func_8006156C does at src/text1b.c:3348 (&D_800F1154)[1]' and T5 claims 'src/text1b.c:3342-3369 (func_8006156C, Judge PASS 2026-07-22)'"
+ ],
+ "ladder_skip": 10,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-26T19:31:01.301008+00:00"
+}
