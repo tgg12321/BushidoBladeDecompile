@@ -1,5 +1,85 @@
 # Hypothesis ledger — func_80061710
 
+## *** RESOLVED 2026-08-25 (grind s5, synthesis) — func_80061710 MATCHES IN PURE C ***
+sandbox --disable all = 0 (46/46, 0 rules, 0 pins, 0 inline asm). The matched
+form is memory/grind/func_80061710/candidate.c and is in place in src/text1b.c.
+H1 (only the refused constant-staging family reaches 0) and H2 (best sanctioned
+floor is 6) are both KILLED. Everything below the s5 section is HISTORICAL — it
+describes a search that was scoped to the wrong tail spelling.
+
+## Live frontier (after grind s5)
+
+### F1 — Re-run the s5 tail transplant on the four unresolved cluster siblings
+- **mechanism:** func_8006156C (COMPLETED-C, src/text1b.c:3296) shares 710's
+  target tail shape; spelling that tail as a walking pointer plus an inline
+  constant written LAST (no temps) puts the loads in $v0 and the constant in
+  $v1 interleaved, which is exactly what the whole t=$2/mask=$3 cluster's
+  v0<->v1 residual needed. All the cluster ledgers wrongly believe `*p++` adds
+  an addiu.
+- **next probe:** apply the s5 final shape (arms select value+pointer -> ONE
+  shared trailing block -> default goto past it -> 6156C tail) to func_80061658,
+  func_800617C8, func_800618B4, func_800611A4, func_8006133C and sandbox each.
+  func_800611A4's OWNER-ACCEPTED INCOMPLETE ruling and func_80061658's
+  escalation both rest on the premise this session disproved for 710.
+
+### F2 — Generalise the lesson, not just the form
+- **mechanism:** the four-session miss had one cause: a claim measured on a
+  SIBLING ("walking pointer adds an addiu", 611A4 s2) was banked as a 710 fact
+  and never re-measured, while the SessionStart near-duplicate hint naming a
+  COMPLETED-C analog in the same file went unopened for four sessions.
+- **next probe:** for any function carrying a near-duplicate COMPLETED-C lead,
+  diff the analog's TARGET tail against the target's before believing any
+  inherited architectural-wall claim.
+
+## [s5] The v0<->v1 tail residual is architectural — no sanctioned pure-C form reaches 0 (the H1/H2 premise).
+- mechanism: an interleaved mask is live across the loads, so GCC 2.7.2
+  local-alloc gives the longer-lived pseudo the lower reg -> mask $v0, loads
+  $v1. Believed to make interleave and mask=$v1 mutually exclusive in pure
+  structure.
+- probe: spelled the tail as the COMPLETED-C sibling func_8006156C spells its
+  byte-shape-identical tail — walking pointer, inline constant written last, NO
+  temp locals — instead of the `t = arg0[N]` + named `mask` form every prior
+  session used. Measured sandbox on five head variants.
+- result: with the 6156C tail the tail is BYTE-EXACT (V8 = 12, all diffs moved
+  into the switch head). Factoring the head into a shared trailing block reaches
+  sandbox 0 (V9a / V9c / V9d).
+- verdict: KILLED
+
+## [s5] The match requires the REFUSED F1 constant-staging-through-a-reused-live-local family.
+- mechanism: s1-s4 found exactly one score-0 basin (`val = 0x10FF10; mask =
+  val;`) and s4's deny-copy-source campaign concluded no other basin existed;
+  the family survey came back WEAK, so 710 was treated as owner-gated.
+- probe: the s5 final form, which contains no temp in the tail at all and whose
+  `val` is fresh per switch arm and dead before func_80060A68().
+- result: sandbox 0 without any staging construct. The permuter never found this
+  basin because its base chassis carried the wrong tail spelling.
+- verdict: KILLED
+
+## [s5] The `s32 *v1` pointer alias to D_800F116C is load-bearing for the match.
+- mechanism: the alias gives GCC one pseudo holding &D_800F116C, allocated to
+  $a0 and live across the switch, rather than re-materialising the address per
+  use (base-register allocation / address-materialisation caching in local-alloc).
+- probe: V9e — direct-global spelling (`D_800A3468 = (s32)&D_800F116C;` and
+  `D_800F116C = val;`), otherwise identical to the matched form.
+- result: sandbox 5. The alias is required; kept with the mandatory FAKE
+  annotation per .claude/rules/pointer-alias-fake-exception.md (the identical
+  declaration is already present in COMPLETED-C func_8006156C, src/text1b.c:3297).
+- verdict: CONFIRMED
+
+## [s5] The switch head must factor `val` and `q` into ONE shared trailing block.
+- mechanism: target shares the `sb $zero,0($v0)` / `sw $v0,%lo(D_800F1180)` /
+  `sw $v1,0($a0)` block at .L8006176C and jumps past it for the default case;
+  writing the constant inline inside each arm makes GCC compute it last and
+  swaps the head's $v0/$v1 roles.
+- probe: V8 (constant inline, per-arm) and V9b (constant stored first, per-arm)
+  vs V9a/V9c/V9d (arms select value+pointer, shared trailing block).
+- result: V8 = 12, V9b = 12; V9a = 0, V9c = 0, V9d = 0.
+- verdict: CONFIRMED
+
+---
+# HISTORICAL (s1-s4) — scoped to the wrong tail spelling; retained for the record
+
+
 ## Live frontier (after grind s1 recon)
 
 ### H1 — Cluster resolution is owner-gated on the constant-staging SOTN census (DOMINANT)

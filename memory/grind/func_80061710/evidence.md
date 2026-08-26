@@ -222,3 +222,84 @@ permuter_score0_constant_staging_cheat.c}; rejected/permuter-constant-staging-ch
 - [s4] func_80061658's OWNER-ESCALATION (docs/grind/decisions.md 2026-07-23) option (a) explicitly names func_80061710 as a cluster member its SOTN-master census resolves in one pass; sibling func_800611A4 (no pure-C-0 form) was ruled option (b) REFUSED/OWNER-ACCEPTED INCOMPLETE.
 
 - [s4] src/text1b.c never modified this session (git clean, oracle intact); all edits were temp preprocessed copies (tmp/perm_710_s4*_*.c). Filed a dedicated OWNER-ESCALATION for func_80061710 this session.
+
+
+## == grind s5 (SYNTHESIS modality), 2026-08-25 — **MATCHED, sandbox 0** ==
+
+Mandate: synthesis (re-read the whole ledger, merge, reset the frontier). The
+merged attack found the match. The v0<->v1 "architectural wall" that s1-s4 all
+concluded was unreachable in sanctioned C is GONE — it was an artifact of the
+TAIL SPELLING every prior session inherited from the WIP note, never a property
+of the function.
+
+**The decisive lead the ledger never used: func_8006156C.** The SessionStart
+near-duplicate hint (similarity 0.644) names it and no session (s1-s4) ever
+opened it. It is a COMPLETED-C sibling living 150 lines above 710 in the same
+file (src/text1b.c:3296-3322) and its TARGET TAIL IS THE SAME SHAPE AS 710's:
+three arg0[] loads in $v0 interleaved with a lui/ori constant in $v1 stored to
+D_800A3464 (0xFF8080 there, 0x10FF10 here). It matches in pure C. Its tail is
+spelled:
+
+    p = arg0;
+    D_800F1140 = *p++;  D_800F1144 = *p++;  D_800F1148 = *p;
+    D_800A3464 = 0xFF8080;
+
+i.e. a WALKING POINTER and an INLINE constant written LAST, with NO temp locals
+at all. Every 710 session instead used `t = arg0[N]; D_800F114X = t;` plus a
+named `mask` local — and THAT is what produced the v0<->v1 rename.
+
+- [s5] **CORRECTION to a load-bearing s1 belief.** evidence.md s1 records
+  "walking-pointer *p++ inverts RA direction but adds an addiu (insn count 44 !=
+  target 43/46) — architecturally blocked (611A4 s2)". That is FALSE on 710's
+  chassis: GCC 2.7.2 folds the three increments into 0/4/8($s0) offsets, exactly
+  as target does, and the insn count stays 46. The claim was inherited from
+  sibling 611A4 and never re-measured on 710 — it is the single assumption that
+  kept the match hidden for four sessions.
+- [s5] **V8 (6156C tail transplant, constant inlined in each switch case) =
+  sandbox 12**, and the residual MOVED: the tail (target insns 30-41) became
+  BYTE-EXACT (loads $v0, mask $v1, interleaved) and all 12 diffs relocated into
+  the switch head, where the 0x21000E/F constant and the D_800F115C byte pointer
+  had their $v0/$v1 roles swapped vs target. First proof the tail wall is not
+  architectural. rejected/v8-walktail-but-inline-const-head-floor12.c.
+- [s5] **V9a (s1 switch head with `val` + 6156C tail) = sandbox 0.**
+- [s5] **V9b (constant stored first inside each case, no `val`) = sandbox 12** —
+  the head's $v0/$v1 roles swap again.
+  rejected/v9b-const-store-first-in-case-floor12.c.
+- [s5] **V9c (arms `goto` a shared block) = sandbox 0.**
+- [s5] **V9d/FINAL (arms select `val`+`q`, `default: goto done;`, ONE shared
+  trailing block `*q = 0; D_800F1180 = (s32)q; *v1 = val;`, then the 6156C tail)
+  = sandbox 0 (46/46, 0 rules, 0 pins, 0 inline asm).** This is the cleanest
+  spelling and it mirrors target's own control flow: target shares that block at
+  .L8006176C and jumps past it for the default case.
+- [s5] **The pointer alias is load-bearing, and measured so.** Removing
+  `s32 *v1 = (s32 *)&D_800F116C;` in favour of the direct-global spelling
+  (`D_800A3468 = (s32)&D_800F116C; ... D_800F116C = val;`) = **sandbox 5**
+  (rejected/v9e-no-pointer-alias-direct-global-floor5.c). The alias keeps
+  &D_800F116C in ONE pseudo, allocated to $a0 and live across the switch,
+  instead of being re-materialised per use. Kept, with the mandatory
+  `/* FAKE: ... */` annotation per .claude/rules/pointer-alias-fake-exception.md;
+  the identical declaration is already in the COMPLETED-C sibling at
+  src/text1b.c:3297.
+- [s5] **NO constant-staging anywhere in the final form.** The REFUSED F1 family
+  ("constant-staging through a REUSED LIVE local", survey WEAK,
+  docs/grind/borderline.md 2026-08-18) is absent by construction: the tail has no
+  temp at all, and `val` is fresh per arm, never reused, and dead before the call
+  to func_80060A68(). H1's entire premise (that the match requires the refused
+  family) is KILLED.
+- [s5] **Policy state corrected in the ledger.** The s1-s4 frontier said 710 was
+  "awaiting the owner SOTN census under func_80061658's escalation". That census
+  RAN and came back WEAK — F1 REMAINS REFUSED (docs/grind/borderline.md
+  2026-08-18) — and owner ruling 2026-08-24 (escalation-not-parked) kicked 710
+  back to active grinding. There was never anything left to wait for; the correct
+  move was exactly this one, a fresh look at the in-repo sibling.
+- [s5] src/text1b.c carries the matched C in place of the INCLUDE_ASM line;
+  self_vet.md written; candidate.c updated to the matched form.
+- [s5] **CROSS-FUNCTION LEAD (high value, untested).** The whole t=$2/mask=$3
+  cluster — func_80061658, func_800617C8, func_800618B4, func_800611A4,
+  func_8006133C — shares this exact tail shape and the same v0<->v1 residual, and
+  their ledgers rest on the SAME false "walking pointer adds an addiu" premise.
+  func_800611A4 was ruled OWNER-ACCEPTED INCOMPLETE (2026-07-22) and
+  func_80061658 escalated (2026-07-23) on the belief that only the refused F1
+  family reaches 0. The 6156C tail transplant should be re-measured on every one
+  of them before any of those dispositions is honoured. This may close five more
+  functions.
