@@ -434,3 +434,43 @@ shipped as candidate.c with the 13 rules retired.
   remains unavailable and irrelevant — a pure-C form provably exists and byte-matches.
 - src/code6cac.c was reverted to `INCLUDE_ASM("asm/funcs", func_8001F938);` before the session
   ended, per asm-until-matched; the score-0 body lives in memory/grind/func_8001F938/candidate.c.
+
+## [s11 / session 11] 2026-08-25 — escalation modality — RULING LANDED PASS; BYTES RE-PROVEN; SUBMITTED
+
+- The s11b ruling request was ANSWERED **PASS** (docs/grind/decisions.md, entry
+  `2026-08-25 23:20 — func_8001F938 — ruling: Does the standing pre-ban on the
+  'signedness-split / dual-typed-view read of +0x…'`). The Judge held the pre-ban does NOT
+  reach the single-`s16`-local shape: the ban enumerates five spellings that ALL carry TWO
+  typed views of +0x270 and states its harm as "the second dereference changes nothing about
+  what the program computes" — a harm with no referent when there is one dereference of one
+  type. The ruling is an explicit NARROWING: the ban stays in force for all five two-view
+  spellings and for any reintroduction of a second C-level read or a width cast at +0x270;
+  `unban_construct` narrowed ONLY the single-s16-local entry banned on 2026-08-25 23:08.
+  `state.json` now carries `"banned_constructs": []` — the driver applied the unban.
+- CONSEQUENCE FOR THE LEDGER: the dispatch digest's third judge_constraint (the 23:08 layer-1
+  FAIL on C2) is SUPERSEDED. The two ORIGINAL constraints (no two-typed-view read; no
+  canonical-asm for .L8001FA60) remain fully in force and this body violates neither.
+- RE-MEASURED LIVE THIS SESSION with the candidate body installed in src/code6cac.c
+  (tmp/grind/func_8001F938/s11/measurements.txt): `sandbox --disable all` = **score 0**,
+  build_insns 107 == target_insns 107, **rules_dropped 0**; full-build `verify-oracle` =
+  **ok true**, build_sha1 == original_sha1_locked == 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+  Re-measured 0 a second time after refreshing the candidate.c/src header comment.
+  (`cheat_asm_stripped: 27` in the sandbox JSON is the FILE-wide count for the other
+  code6cac.c functions still represented as cheat-asm; func_8001F938 contributes zero.)
+- The stale "STATUS: NOT COMMITTABLE PENDING A RULING" header in candidate.c was replaced with
+  the ruling record + the narrowing scope, so no future session mistakes the cleared form for
+  a banned one. `self_vet.md` gained an s11 section superseding the s11b "not being submitted"
+  addendum; the T1–T6 answers, `SANCTIONED-FAMILY-CLAIMS: none` and
+  `ANNOTATION-CONFORMANCE: n/a` lines are unchanged and stand as this session's vet.
+- DISPOSITION: this was dispatched as a DISPOSITION session (floor recorded flat at 8 over 10
+  sessions / >=4 modalities). No escalation packet was filed and none should be: the honest
+  floor is 0, the bytes are proven on main with zero rules, and the owner's 2026-08-24
+  AUTO-REJECT class forbids filing a packet whose YES would lower a standard. The dispatch
+  brief's outcome (1) governs — a lever that drops the floor is used, not disposed of. The
+  10-session "floor 8 wall" was a SEARCH gap, never a dichotomy: both of target's same-address
+  loads fall out of ONE ordinary `s16` local (HImode pseudo materialised with `lhu`; the
+  `>= 4` compare needs a sign-extended SImode operand, supplied by a separate `lh`).
+- OWNER DIRECTIVE (2026-08-24 escalation-not-parked, "solver modality recommended before deep
+  re-grind of RA/scheduler-tiebreak residuals") — ACKNOWLEDGED AND MOOT: the residual was never
+  an RA seat or a scheduler tiebreak (s6/s7 named it to `combine`/`simplify_shift_const`), and
+  it is now closed at distance 0. No ra_solver/sched_solver run is owed.

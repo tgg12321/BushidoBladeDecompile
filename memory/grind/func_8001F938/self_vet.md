@@ -148,3 +148,52 @@ WHY THE FAMILY FINDING IS ARGUED TO BE A SCOPE ERROR (the ruling question):
 If the ruling upholds the family finding, the honest consequence is that no pure-C form of
 this function is permissible, the function stays INCOMPLETE at floor 8, and the endgame-lock
 disposition applies — NOT that another spelling should be hunted.
+
+---
+
+## s11 (SESSION 11, 2026-08-25, escalation modality) — SUPERSEDES THE s11b ADDENDUM: THE RULING LANDED **PASS**; THIS VET IS SUBMITTED
+
+The ruling request filed by s11b was answered. `docs/grind/decisions.md`,
+entry `## 2026-08-25 23:20 — func_8001F938 — ruling: Does the standing pre-ban on the
+'signedness-split / dual-typed-view read of +0x… — **PASS**`:
+
+> "RULING: NO -- the ban does not reach this shape. … NARROWING, not repeal: the standing
+> ban stays fully in force for all five two-typed-view spellings (guarded ternary,
+> unconditional split, union, two-pointer, and single-u16-read + (s16) cast) and for any
+> reintroduction of a second C-level read or a width cast at +0x270; `unban_construct`
+> narrows ONLY the single-s16-local entry the driver banned on 2026-08-25."
+
+`memory/grind/func_8001F938/state.json` now carries `"banned_constructs": []` — the driver
+applied the unban. The third judge_constraint in the dispatch digest (the 2026-08-25 23:08
+layer-1 FAIL on C2) is therefore SUPERSEDED by the 23:20 ruling on the same construct in the
+same session chain, and is quoted here only for the audit trail. The two ORIGINAL
+judge_constraints (the two-typed-view pre-ban and the canonical-asm refusal) remain fully in
+force and this diff violates NEITHER: it contains exactly one dereference of +0x270, of one
+type, with no cast/union/second pointer/guard, and it seeks no inline asm anywhere.
+
+RE-MEASURED LIVE THIS SESSION (s11, body installed in `src/code6cac.c` at the time of
+measurement, nothing else in the build pipeline touched):
+- `sandbox func_8001F938 --disable all` = **score 0**, build_insns 107 == target_insns 107,
+  **rules_dropped 0**. (`cheat_asm_stripped: 27` is the FILE-wide count for the other
+  functions still represented as cheat-asm in `src/code6cac.c`; this function contributes
+  zero — it has no `__asm__` of any kind.)
+- full-build `verify-oracle` = **ok true**, build_sha1
+  `62efab4f73f992798c43e8c730aa43baa10bb4fa` == original_sha1_now == original_sha1_locked.
+- Re-measured a second time after the candidate.c/src header comment was refreshed:
+  score still 0, 107 == 107, 0 rules dropped.
+
+The six-test answers above (T1–T6), the SANCTIONED-FAMILY-CLAIMS line ("none" — every
+construct is claimed as ORDINARY C, no frozen-list exception is invoked, so no scope
+sentence or FAKE annotation is owed) and the ANNOTATION-CONFORMANCE line ("n/a — no
+/* FAKE */ construct in the diff") are unchanged and stand as this session's vet.
+Citation spot-check re-run live: `tmp/grind/func_8001F938/s2/cheat_reviewer_verdict.txt`
+exists; `src/code6cac_b.c:377` = `s16 v40 = *(s16 *)(a0 + 0x40);`; `src/code6cac.c:777` =
+`s16 old = *(s16 *)(s2 + 0x10);`; `src/code6cac.c:792` = `s16 old12 = *(s16 *)(s2 + 0x12);`
+— all three are the exact `s16 <name> = *(s16 *)(<base>+<off>);` shape in zero-rule
+byte-matched COMPLETED-C bodies.
+
+Disposition this session: NOT an endgame-lock escalation. The dispatch brief's
+disposition-session rule is explicit that outcome (1) governs when "a genuinely un-tried
+lever … DROPS the floor": the floor is 0, the bytes are proven on main, and filing an
+exhaustion packet against a byte-matching pure-C form would be false. Result =
+`candidate-ready`.

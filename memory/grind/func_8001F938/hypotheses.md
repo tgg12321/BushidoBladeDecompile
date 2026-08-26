@@ -268,3 +268,40 @@ dichotomy confirmed at register level. src/ kept at clean floor-8.
 - probe: re-read the s11 solver record (classify verdict PRE-RA, tool trap documented) and re-ran gate (a) `scan_hand_coded --single func_8001F938`.
 - result: Solver directive stays DISCHARGED — the residual is PRE-RA (opcode multisets differ), structurally outside both solvers, and in any case the residual is now CLOSED at distance 0 so there is nothing left for a solver to classify. Gate (a) = tier LOW 0/8; gate (b) is moot because the closing construct is claimed as ORDINARY C requiring no family sanction, not as a coercion family needing SOTN precedent. The endgame-lock disposition is therefore NOT the right outcome this session: the floor is not flat (8 -> 0) and the open question is a decidable scope question, not a request to lower a standard (which would be auto-reject class).
 - verdict: CONFIRMED
+
+## [s11 / session 11] 2026-08-25 — escalation modality
+
+- H-s11-1: "The 2026-08-25 23:08 layer-1 FAIL on the single-`s16`-local form is a live
+  binding constraint, so the function must be disposed of via an endgame-lock packet."
+  - mechanism: the dispatch digest lists that FAIL among judge_constraints and the driver
+    banned the exact statement text.
+  - probe: read docs/grind/decisions.md for the answer to s11b's ruling request; read
+    state.json `banned_constructs`.
+  - result: the ruling landed **PASS** at 2026-08-25 23:20 and explicitly narrowed the ban to
+    exclude this shape; `banned_constructs` is now `[]`.
+  - verdict: **KILLED**. The constraint is superseded; disposition is not owed.
+
+- H-s11-2: "With the ruling in hand, the s11 body reaches honest distance 0 and a full-build
+  byte match on the CURRENT chassis (the dispatch chassis check reported the HEAD floor
+  measurement as unavailable, so every banked conclusion had to be re-measured)."
+  - mechanism: one `s16 dmg = *(s16 *)(arg0 + 0x270);` local — cc1 materialises the HImode
+    pseudo with `lhu` while the `>= 4` compare needs a sign-extended SImode operand supplied
+    by a separate `lh`, reproducing target's two same-address loads from ONE C dereference;
+    `* 2` on the HImode pseudo emits `sll 16 ; sra 15` (combine cannot fold to `sll 1`
+    because the HImode subreg carries exactly 16 sign-bit copies — the s7 gate), and reorg
+    steals the `sll` into the branch delay slot as in target.
+  - probe: install candidate.c into src/code6cac.c; `sandbox func_8001F938 --disable all`;
+    full `verify-oracle`; re-measure after the header-comment refresh.
+  - result: score 0, build_insns 107 == target_insns 107, rules_dropped 0; verify-oracle
+    ok=true with build_sha1 == original_sha1_locked; second sandbox run also 0.
+  - verdict: **CONFIRMED**. Floor 8 -> 0. Artifacts: tmp/grind/func_8001F938/s11/measurements.txt.
+
+- H-s11-3: "The owner's 2026-08-24 directive (solver modality before deep re-grind) has
+  un-executed work owed on this function."
+  - mechanism: directive targets RA/scheduler-tiebreak residuals.
+  - probe: compare the directive's scope against the s6/s7 pass attribution for the residual.
+  - result: the residual was attributed to `combine`/`simplify_shift_const` (a fold gate on
+    `num_sign_bit_copies` of the shift operand), not to a register seat or an emission-order
+    tie; and it is now closed at distance 0.
+  - verdict: **KILLED** (moot). Directive acknowledged in the ledger; no ra_solver/sched_solver
+    run is owed for this function.

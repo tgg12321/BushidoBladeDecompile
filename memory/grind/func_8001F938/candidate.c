@@ -4,13 +4,18 @@
  * 62efab4f73f992798c43e8c730aa43baa10bb4fa). Zero regfix/asmfix rules, zero cheat-asm,
  * zero inline asm, zero volatile, zero FAKE constructs.
  *
- * STATUS: NOT COMMITTABLE PENDING A RULING. A layer-1 cheat-reviewer FAILed this body on
- * 2026-08-25 23:08 (docs/grind/decisions.md) on the ground that the `s16` local at +0x270
- * is "a new spelling of the pre-banned signedness-split / dual-typed-view fold-defeat
- * family", and the driver banned the exact statement text. Session s11b re-measured the
- * form (0), re-verified the oracle, and filed a RULING REQUEST arguing the family finding
- * is a scope error. Do NOT re-submit this as candidate-ready until the ruling lands --
- * a re-declared banned construct is an invalid session regardless of the bytes.
+ * STATUS: CLEARED FOR SUBMISSION. The layer-1 cheat-reviewer FAILed this body on
+ * 2026-08-25 23:08 as "a new spelling of the pre-banned signedness-split /
+ * dual-typed-view fold-defeat family"; s11b filed a ruling request arguing scope
+ * error, and the Judge ruled **PASS** on 2026-08-25 23:20 (docs/grind/decisions.md,
+ * entry "func_8001F938 - ruling: Does the standing pre-ban on the 'signedness-split /
+ * dual-typed-view read of +0x...'"). The ruling is a NARROWING, not a repeal: the ban
+ * stays fully in force for all five two-typed-view spellings (guarded ternary,
+ * unconditional split, union, two-pointer, single-u16-read + (s16) cast) and for any
+ * reintroduction of a second C-level read or a width cast at +0x270; it unbans ONLY
+ * the single-s16-local entry. Grind session s11 (2026-08-25) re-installed this body,
+ * re-measured `sandbox --disable all` = 0 (107 == 107, 0 rules dropped) and re-ran a
+ * full `verify-oracle` (ok=true, SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa).
  *
  * HOW THE 10-SESSION WALL FELL (s1-s10 recorded honest floor 8; it was a SEARCH gap,
  * not a dichotomy). The residual was always the +0x270 clamp/index block, where target
