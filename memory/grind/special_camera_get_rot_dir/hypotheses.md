@@ -465,3 +465,57 @@ MIPS `block_move_loop` signature. Do not reconstruct it as a C pointer loop â€” 
 the source performed ONE aggregate assignment of `N` bytes where `N > 32`, `N` is
 constant, and the tail length is `N % 16`. Grepping the queue's remaining functions for
 that instruction shape is a cheap, high-value cross-function probe.
+
+
+## s7 (rederive, 2026-08-26) — the RA residual was NEVER the question. RESOLVED.
+
+The entire s5/s6 frontier (REG_EQUIV x2 at local-alloc.c:1064, optimize_reg_copy_1
+live-length arithmetic at :820-831, and the untried sched_solver route R3) is now
+MOOT and should not be spent. It described the register behaviour of a C form that
+hand-wrote the 4-word copy loop. That loop is compiler-emitted from an aggregate
+assignment; with the correct source shape there is no residual to solve. Floor 0.
+
+KILLED-AS-UNNECESSARY (do not re-open unless the match is somehow lost):
+ - H(s5/s6-a) "a zero-cost C spelling makes reg_n_sets >= 2 for the cam/const
+   pseudos, killing the REG_EQUIV doubling" — never probed, no longer needed.
+ - H(s5/s6-b) "optimize_reg_copy_1 can pull the doubled length back into the
+   window" — never probed, no longer needed.
+ - H(s6-R3) "pre-RA scheduling can move a live length without moving a C
+   statement" — never probed, no longer needed.
+
+CONFIRMED (s7):
+ - H(s7-1) "the target's inner copy loop is emitted by GCC's MIPS block-move
+   expander, not written in C." Probe: write the copy as one 60-byte aggregate
+   struct assignment and measure. Result: 72/72 insns, sandbox score 0. CONFIRMED.
+ - H(s7-2) "`include/code6cac.h`'s 1-argument `CdRead` declaration is simply wrong,
+   and correcting it to agree with this repo's own matched definition at
+   src/system.c:901 makes func_800372F4's real 3-parameter prototype honest —
+   dissolving the 2026-08-26 01:09 layer-1 FAIL without changing any byte."
+   Probe: correct the header, forward both parameters explicitly in
+   func_800372F4's body, re-measure both functions and the full build. Result:
+   special_camera_get_rot_dir 0 (72/72), func_800372F4 0 (21/21), verify-oracle
+   ok:true SHA1 == oracle. CONFIRMED.
+
+NOTE FOR ANY FUTURE SESSION: `mode` must stay a variable. With the literal 0x80 at
+both call sites GCC rematerialises `li $a2,0x80` per call and the function drops to
+69 insns / score 12 (rejected/literal-mode-no-local-score12.c). Taking sp_buf2's
+address into a pre-loop pointer local costs exactly 2 by flipping the LICM hoist
+order (rejected/preloop-buf2ptr-hoist-order-score2.c).
+
+CONFIRMED (s7, this session):
+ - H(s7-3) "the block-scope `extern u8 SpecialCam;` inside the function is not
+   load-bearing and can be deleted." Probe: delete it (include/game.h:9 declares
+   the symbol at file scope) and re-measure. Result: score 0, 72/72 -- byte-neutral.
+   CONFIRMED. Kept deleted: it removes the last construct in the diff whose presence
+   a reviewer could read as declaration-placement steering.
+
+STATUS AFTER s7: floor 0. The residual that s1-s6 modelled (the exact live-length
+chain L(buf2) < L(index) < L(cam) <= L(const) <= L(copy_end), and the local-alloc.c:1064
+REG_EQUIV doubling that s6 reduced it to) was a property of a C shape that does not
+correspond to the original source at all -- it only exists if the 4-word copy loop is
+written by hand in C. It is not. The three s6 frontier routes (reg_n_sets>=2 to kill
+REG_EQUIV; optimize_reg_copy_1 live-length transfer; sched1 reordering) are therefore
+moot for this function and were never probed. They remain untested GENERAL techniques
+and may still be worth something on a different function -- but nothing here depends
+on them.
+

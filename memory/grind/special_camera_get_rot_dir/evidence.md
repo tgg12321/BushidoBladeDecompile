@@ -748,3 +748,95 @@ untouched, so they ARE CdRead's `buf` and `mode`. Widened to
 - The s2/s3 conclusion "copy_end -> $s5 is unreachable via allocno priority" was correct
   FOR THE HAND-WRITTEN COPY LOOP chassis, and is simply not binding once the copy is an
   aggregate assignment.
+
+
+## s7 (rederive) — floor 9 -> **0**. MATCHED. The layer-1 blocker was a header bug.
+
+Chassis at dispatch: HEAD = INCLUDE_ASM, ledger floor 9. This session did NOT
+grind the RA residual at all — the s6/s7-forensics finding had already produced a
+byte-matching form, and both 2026-08-26 layer-1 FAILs were about CONSTRUCTS, not
+about distance. The rederive brief ("produce a structurally different C shape")
+was satisfied by re-deriving what the code MEANS rather than what it allocates.
+
+**The blocker, and the ground truth that dissolved it.** The 01:09 layer-1 FAIL
+was correct: `func_800372F4` had been widened to `(s32 arg0, u32 *buf, s32 mode)`
+while its body still called `CdRead(arg0 >> 11)` — one argument — so `buf` and
+`mode` were genuinely never read, and the self-vet's fall-through justification
+was unfounded. The reviewer's own remedy clause ("unless CdRead's real declaration
+takes 3 args") is satisfiable from ground truth INSIDE this repository:
+
+- `src/system.c:901` — this project already contains a MATCHED, byte-verified
+  decompile of libcd's `CdRead`, and it is defined as
+  `s32 CdRead(s32 sectors, s32 buf, s32 mode)`. It reads all three parameters:
+  `D_800A14DC = mode;` (:903), `D_800A14D4 = buf;` (:919), `*ps = sectors;` (:920).
+- `include/code6cac.h:510` declared `extern void CdRead(s32);`. That is not an
+  under-described external API — it CONTRADICTS a definition in the same repo.
+  A declaration/definition conflict. Correcting it is ordinary C bug-fixing.
+- `include/m2c_context.h:1123` independently carries `s32 CdRead(s32, s32, s32);`.
+- The target corroborates: `jal func_800372F4` at 0x800373A8 is preceded by
+  `addiu $a0,$zero,0x800` / `addiu $a1,$sp,0x10` / `addu $a2,$s4,$zero`, and the
+  second call at 0x80037430 by `lw $a0,0xC($s0)` / `lw $a1,0x8($s0)` /
+  `addu $a2,$s4,$zero`. The caller demonstrably passes three arguments.
+- `func_800372F4`'s own asm never touches $a1/$a2 (it only computes $a0), which is
+  why the 1-arg spelling ALSO byte-matched — the 1-arg form was an accident of the
+  wrong header, not evidence about the original source.
+
+**The fix (three edits, all measured):**
+ 1. `include/code6cac.h:510` -> `extern s32 CdRead(s32, s32, s32);`
+ 2. `func_800372F4(s32 nbytes, s32 buf, s32 mode)` with `CdRead(nbytes >> 11, buf, mode);`
+ 3. call sites pass `(s32)sp_buf` / `dest[2]` and `mode` (the `u32 *` cast is gone —
+    CdRead's real second parameter is `s32` in this repo's own definition).
+
+**MEASURED THIS SESSION (all three, with the edits in src/):**
+ - `sandbox special_camera_get_rot_dir --disable all` = **score 0**, 72/72 insns.
+ - `sandbox func_800372F4 --disable all` = **score 0**, 21/21 insns (unchanged by
+   the widening — GCC emits no instruction to forward an incoming $a1/$a2 into the
+   same outgoing argument slot).
+ - `verify-oracle` = ok:true, build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa,
+   build_matches true. The whole tree still links byte-identical.
+
+**The six-session RA residual is explained, not defeated.** The `copy_end`->$s5
+sub-problem that s1-s6 attacked with allocno-priority / live-length algebra was an
+artifact of writing the 4-word copy loop BY HAND in C. It is not in the source: the
+MIPS backend's block-move expander (`config/mips/mips.c:2362-2368 expand_block_move`
+-> `block_move_loop` at :2222-2288) emits it from ONE 60-byte aggregate assignment,
+`*(CamRot *)dest = *(CamRot *)&sp_buf[0x10];`. `copy_end` is `final_src`, a backend
+pseudo born at RTL expand time; block_move_loop uses `emit_label()` and never emits
+NOTE_INSN_LOOP_BEG/END, so flow.c's loop_depth never rises inside it and its
+reg_n_refs stays unweighted while the four genuine C locals get theirs weighted by
+the enclosing retry loop. That asymmetry — the thing s6 faked with a hand-written
+`goto copyloop;` and was FAILed for — is produced by the compiler for free.
+The whole register assignment (s0 dest, s1 buf2, s2 index, s3 cam, s4 mode,
+s5 copy_end) falls out with no coercion of any kind: no goto, no pins, no volatile,
+no dead locals, no FAKE annotation anywhere in the diff.
+
+Self-vet: `memory/grind/special_camera_get_rot_dir/self_vet.md` (rewritten this
+session; SANCTIONED-FAMILY-CLAIMS: none, ANNOTATION-CONFORMANCE: n/a — there is no
+coercion construct left in the diff to annotate).
+
+## s7 (rederive) -- INDEPENDENT RE-VERIFICATION OF EVERY LOAD-BEARING CLAIM
+Each fact above was re-checked against ground truth in this session before the form was
+submitted, not taken on inheritance:
+ - `CdRead`'s real signature: read at `src/system.c:901` -- `s32 CdRead(s32 sectors, s32 buf,
+   s32 mode)`, with `D_800A14DC = mode;`, `D_800A14D4 = buf;`, `*ps = sectors;` in the body.
+   `include/code6cac.h:510` said `extern void CdRead(s32);` -- a declaration/definition
+   CONTRADICTION inside this one repository. `include/m2c_context.h:1123` independently
+   carries `s32 CdRead(s32, s32, s32)`.
+ - `func_800372F4` really takes three arguments: BOTH call sites in the target set all three
+   argument registers -- `addiu $a0,$zero,0x800` / `addiu $a1,$sp,0x10` / `addu $a2,$s4,$zero`
+   at 0x800373A0-0x800373AC, and `lw $a0,0xC($s0)` / `lw $a1,0x8($s0)` / `addu $a2,$s4,$zero`
+   at 0x80037428-0x80037434 (asm/funcs/special_camera_get_rot_dir.s).
+ - Frame layout confirms both stack buffers are real, with no pad: frame 0x838; `sp_buf` at
+   sp+0x10 (0x800 bytes, the CdRead destination and the block-move source at sp+0x20 =
+   `&sp_buf[0x10]`), `sp_buf2` at sp+0x810 (exactly 0x10+0x800), callee-saved spills at
+   0x818-0x830. There is no unaccounted byte for a coercion array to hide in.
+ - Block-move extent confirms the 60-byte record: `$s5 = sp+0x50` is the loop end, the
+   4-word loop runs sp+0x20..sp+0x50 (48 bytes) and the tail copies 12 more = 60 = 15 words
+   = `CamRot { s32 rot[15]; }`.
+ - Measurements (this session, edits in src/): special_camera_get_rot_dir 0 (72/72),
+   func_800372F4 0 (21/21), `verify-oracle` ok:true, build_sha1 ==
+   62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true.
+ - ONE change to the inherited draft: the redundant block-scope `extern u8 SpecialCam;` was
+   deleted (declared at include/game.h:9 already). Byte-neutral -- re-measured 0, 72/72.
+   Consequence: the diff now contains zero declaration-placement constructs.
+
