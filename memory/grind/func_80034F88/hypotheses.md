@@ -2053,3 +2053,91 @@ evidence - not another sweep.
 - probe: Ledger lookup before spending a measurement — the rejected bank already contains this exact form.
 - result: Already measured dead at 22: memory/grind/func_80034F88/rejected/base70-disp3-loop-shares-object-score22.c. Sharing the loop's D_80106A70 base with block 1 costs 12 points against the floor. No other un-tried lever was derivable from the ledger.
 - verdict: KILLED
+
+==== s23 (escalation / owner-directive: SOLVER) ====
+
+H-s23-1 — "The owner's 2026-08-24 directive is un-executed, and the ra_solver
+suite can type the $a0-vs-$v1 residual that 22 sessions attacked by spelling."
+  Mechanism: `extract.py` reads the instrumented cc1's ALLOCDBG/FINDREGDBG
+  stream and the `-da` .greg/.flow dumps into a model of global.c's inputs;
+  `simulate.py` replays allocno_compare + find_reg; `inverse.py` enumerates the
+  minimal input perturbations that would reach a stated goal assignment.
+  Probe: extract + simulate + `inverse.py global --swap 74,73` and
+  `--goal '{"74": 3}'`, on the floor-10 chassis and on s20's census-exact
+  diagnostic chassis. Output banked at tmp/grind/func_80034F88/s23/.
+  Result: model validates 9/9 dispositions + sort order MATCH; BOTH inverse
+  queries return FORECLOSED with an explicit non-emittable-atom list.
+  Verdict: CONFIRMED (the directive was executable and produced a typed verdict).
+
+H-s23-2 — "The block-1 base/value naming is an RA tie-break reachable by some
+C-level perturbation of refs / live span / birth order / conflicts /
+preferences / calls-crossed."
+  Mechanism: those six input classes are the complete set global.c consumes and
+  the complete set a C spelling can move; if the goal is reachable at all it is
+  reachable by a vector over them.
+  Probe: `inverse.py global` over an atom space of 218 single perturbations,
+  depth 2, on the exact validated model.
+  Result: FORECLOSED both as a swap and as a one-sided goal. Root cause named by
+  the tool: `$v1` and `$a0` never appear as hard registers in this function's
+  pre-RA RTL, so `global.c set_preference` cannot record a preference for either
+  — the preference lever does not exist here.
+  Verdict: KILLED. This retires the residual's description as a "tie-break": it
+  is not a tie the allocator could have broken the other way.
+
+H-s23-3 — "s20's census-exact chassis (`q = q + 3; q = q - 3;`) creates the
+second address pseudo that the target's two base registers require, and only
+the register naming then stands in the way."
+  Mechanism: dead pointer round-trip forces a fresh address materialisation
+  between the mask store and block 1's read; if that fresh rtx survives to
+  lreg/greg as its own pseudo, the model gains a second address allocno and the
+  target's two-base assignment becomes expressible.
+  Probe: install the diagnostic body, `extract.py` it, compare allocno counts.
+  Result: 9 allocnos, unchanged; the address object is still the single pseudo
+  74, with nrefs 10 -> 15 and livelen 29 -> 30. The recovered `lbu` is extra REFS
+  on one allocno, not a second allocno. `--goal '{"74": 3}'` on that model is
+  FORECLOSED too.
+  Verdict: KILLED — and this is the strongest form yet of the ceiling statement,
+  because it is measured in the allocator's own input file rather than inferred
+  from the emitted stream: no admissible single-object body of this function
+  produces two address allocnos, and one allocno is one hard register for its
+  whole live range (tools/gcc-2.7.2/global.c:426, no live-range splitting).
+
+H-s23-4 — "One of the solver's three named unmodelled mechanisms (local-alloc
+suggested-register pass / qty_size DImode / reload spill-retry) is live here and
+would reopen the search."
+  Mechanism: each is a place where the real allocator consults inputs the model
+  does not dump, so a FORECLOSED verdict is conditional on them being inert.
+  Probe: inspect the extracted model + dumps against each mechanism's precondition.
+  Result: qty_size/DImode — no DImode quantity in this function (all 9 allocnos
+  mode=SI); reload spill-retry — the function has one spill (the `$ra` save) and
+  simulate.py matches 9/9 pre-reload, so no retry block governs the address
+  pseudo. The local-alloc SUGGESTED-REGISTER pass is NOT excluded by any
+  measurement: its inputs (`qty_phys_copy_sugg` / `qty_phys_sugg`) are
+  reported-not-scored because `block_alloc`'s hook does not print them.
+  Verdict: two of three KILLED, one OPEN — and the open one is a TOOLING gap in
+  `tools/gcc-2.7.2/local-alloc.c` + `tools/ra_solver/local_extract.py`, a surface
+  a grind session may not edit. It is the function's only live re-attempt route.
+
+## [s23] The owner's 2026-08-24 queue directive ('solver modality recommended before deep re-grind of RA/scheduler-tiebreak residuals') is executable on this function and can type the $a0-vs-$v1 residual that 22 sessions attacked by spelling.
+- mechanism: tools/ra_solver/extract.py reads the instrumented cc1's ALLOCDBG/FINDREGDBG stream plus the -da .greg/.flow dumps into a model of global.c's allocation inputs; simulate.py replays allocno_compare + find_reg; inverse.py enumerates the minimal input perturbations that would reach a stated goal assignment and reports a first-class NEGATIVE when none exists.
+- probe: extract.py func_80034F88 code6cac_b; simulate.py; inverse.py global --swap 74,73 and --goal {"74": 3}, on the floor-10 chassis and on s20's census-exact diagnostic chassis. Full console output banked at tmp/grind/func_80034F88/s23/ra_solver_report.txt.
+- result: Model validates: 9 allocnos, sort order MATCH, dispositions 9/9 against ground truth, allocation {72:$a1, 73:$v1, 74:$a0, 77:$v1, 78:$v0, 81:$v1, 82:$v0, 85:$v1, 86:$v0}, pseudo 74 = the &D_80106A73 address object (nrefs 10, livelen 29, pri 10344).
+- verdict: CONFIRMED
+
+## [s23] Block 1's base/value naming ($v1 base + $a0 value in target, the reverse in our build) is an RA tie-break reachable by some C-level perturbation of refs / live span / birth order / conflicts / preferences / calls-crossed.
+- mechanism: Those input classes are the complete set global.c consumes and the complete set a C spelling can move; if the goal assignment is reachable at all it is reachable by a vector over them.
+- probe: inverse.py global on the validated model, atom space 218 single perturbations over 8 classes, depth 2 — run both as a swap (--swap 74,73) and as a one-sided goal (--goal {"74": 3}).
+- result: FORECLOSED both ways: 'no perturbation of any modelled input, up to depth 2, reaches the target assignment', with 18 (swap) / 8 (goal) preference atoms reported mechanically non-emittable. Root cause named by the tool: $v1 and $a0 never appear as hard registers in this function's pre-RA RTL, so global.c set_preference can never record a preference for either, for any pseudo — this function has no call-argument setup and no hard-reg-returning idiom to put them there.
+- verdict: KILLED
+
+## [s23] s20's census-exact diagnostic chassis (q = q + 3; q = q - 3;, which reproduces the target's exact lbu 176 / sb 164 / lui 456 census at 49 insns) creates the second address pseudo that target's two live base registers require, leaving only the register naming in the way.
+- mechanism: A dead pointer round-trip forces a fresh address materialisation between the mask store and block 1's read; if that rtx survives to lreg/greg as its own pseudo, the model gains a second address allocno and target's two-base assignment becomes expressible as a goal at all.
+- probe: Install the diagnostic body temporarily, extract.py it, compare allocno counts and per-allocno stats against the floor-10 model; then inverse.py global --goal {"74": 3} on the new model.
+- result: It does not. Still exactly 9 allocnos; the address object is still the single pseudo 74, merely nrefs 10 -> 15 and livelen 29 -> 30 — the recovered lbu is extra REFS on one allocno, not a second allocno. The goal is FORECLOSED on that model too. So on the one chassis whose instruction multiset matches the target, the residual is purely RA and RA is closed.
+- verdict: KILLED
+
+## [s23] One of the three mechanisms the solver names as outside its model (local-alloc's suggested-register pass, qty_size for DImode, reload's spill-retry) is live here and would reopen the search.
+- mechanism: Each is a place where the real allocator consults inputs the model does not dump, so a FORECLOSED verdict is conditional on all three being inert for this function.
+- probe: Check each mechanism's precondition against the extracted model and dumps.
+- result: qty_size/DImode is excluded — all 9 allocnos are mode SI. Reload spill-retry is excluded — the function has one spill (the $ra save) and simulate.py matches 9/9 pre-reload, so no retry block governs the address pseudo. The local-alloc SUGGESTED-REGISTER pass (qty_phys_copy_sugg / qty_phys_sugg) is NOT excluded: block_alloc's hook does not print the suggestion sets, so those rows are reported-not-scored. It is the function's only live re-attempt route, and closing it means editing tools/gcc-2.7.2/local-alloc.c + tools/ra_solver/local_extract.py — outside a grind session's surface.
+- verdict: CONFIRMED

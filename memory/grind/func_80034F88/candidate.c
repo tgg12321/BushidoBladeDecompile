@@ -234,6 +234,50 @@
  * oracle stays green), the retained cheat is NOT sanctioned as a technique, and
  * THIS file remains the best admissible pure-C form at floor 10. It is eligible
  * for re-attempt if a genuinely new pure-C lever or new tooling appears.
+ *
+ * s23 (escalation / owner-directive SOLVER) re-measured this body ON THE
+ * MIGRATED TREE and did not change a line of it. Two things it establishes.
+ *
+ * (1) CHASSIS. Since s22 the asm-until-matched sweep-3 migration (commit
+ * 3a5882b2) made src/code6cac_b.c:2389 `INCLUDE_ASM("asm/funcs",
+ * func_80034F88);`: the function now carries ZERO regfix rules, ZERO asmfix
+ * rules and ZERO cheat-asm. s22's "main keeps the 31 regfix rules + three
+ * scheduling barriers" is STALE — there is no retained cheat and no accepted
+ * debt for this function. Installing this body (plus one `extern u8
+ * D_80106A70;`) sandboxes at 10, 49/49 insns, rules_dropped 0, so the floor is
+ * chassis-valid and every banked conclusion carries over.
+ *
+ * (2) THE SOLVER (the owner's 2026-08-24 queue directive, unexecuted through
+ * s22, executed in full this session; report at
+ * tmp/grind/func_80034F88/s23/ra_solver_report.txt). tools/ra_solver's forward
+ * model is EXACT here — 9 allocnos, simulate.py reproduces sort order MATCH and
+ * dispositions 9/9 vs the instrumented-cc1 ALLOCDBG ground truth, allocation
+ * {72:$a1, 73:$v1, 74:$a0, 77:$v1, 78:$v0, 81:$v1, 82:$v0, 85:$v1, 86:$v0} with
+ * pseudo 74 = this file's `q`. Both inverse queries for target's block-1 naming
+ * (`--swap 74,73` and `--goal {"74": 3}`) return FORECLOSED over 218 single
+ * perturbations across all eight modelled input classes. The tool names the
+ * reason: $v1 and $a0 NEVER APPEAR AS HARD REGISTERS in this function's pre-RA
+ * RTL, so global.c set_preference can never record a preference for either —
+ * the preference lever does not exist here, which is why 22 sessions of
+ * live-range / ref-count / declaration-order surgery were inert. The residual
+ * is therefore not an "RA tie-break"; it is not a tie at all.
+ *
+ * And the ceiling is now measured from the ALLOCATOR'S INPUT SIDE: s20's
+ * census-exact diagnostic chassis (rejected/roundtrip-fresh-pseudo-...-
+ * DEAD-ARITH.c) does NOT create a second address pseudo — still 9 allocnos,
+ * still the single pseudo 74, only nrefs 10->15 and livelen 29->30 — and is
+ * FORECLOSED too. So on the one chassis whose instruction multiset matches the
+ * target, the whole residual is RA and RA is closed. Target's two live base
+ * registers need a second address ALLOCNO, i.e. a second pseudo, i.e. a second
+ * C object aliasing D_80106A73: the banned construct.
+ *
+ * The only unmodelled mechanism the measurements do not exclude is local-alloc's
+ * SUGGESTED-REGISTER pass (no DImode quantity here — all 9 allocnos are SI — and
+ * no reload spill-retry, one spill and 9/9 pre-reload). Modelling it needs an
+ * env-gated fprintf in tools/gcc-2.7.2/local-alloc.c block_alloc plus a parse in
+ * tools/ra_solver/local_extract.py, both outside a grind session's surface. That
+ * is the function's only live re-attempt route and the single decidable question
+ * in the 2026-08-26 decisions.md entry.
  */
 void func_80034F88(void) {
     s32 *p;

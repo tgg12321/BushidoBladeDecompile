@@ -13095,3 +13095,145 @@ Wrong door, right construct. proven-spelling-class-reconstruction is NOT on the 
 ## 2026-08-26 03:06 — func_80056FE8 — final call — **PASS**
 
 One construct: `base += <arm value>` written per dispatch arm instead of a post-join temp+combine. Family duplicated-statement-into-arms (.claude/rules/no-new-park-categories.md:285 verified by grep; rule file prereqs 1-5). Decisive fact: the per-arm spelling is the plainest human C for 'each case adds its own correction' -- the post-join temp is the contrived form -- and the target itself reloads *arg0 at 0x80057078 and joins at a single `addu $a1,$a1,$v0` (0x80057074), so the emitted shape is target-faithful, not manufactured. Independently verified: working tree == the presented diff exactly (no hidden constructs, no pins/__asm__/volatile/alias-renames/dead stores); zero hits for func_80056FE8 in regfix.txt/asmfix.txt/inline_asm_canonical.txt; `verify-oracle` re-run by me with this body in src/text1b.c -> ok true, build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa. Banned-construct check: the 2026-07-12 hoist-shared-arm citation and the proven-spelling-class citation are both absent. FAKE annotation present on the block and on each of the three copies, naming jump2 cross-jump / flow.c reg_n_refs / global.c colour order and pointing at the exhaustion ladder. Full evidence: memory/grind/func_80056FE8/hypotheses.md s1-s7c, evidence.md, self_vet.md, rejected/postjoin-temp-combine-p73-colored-first.c.
+
+## 2026-08-26 — func_80034F88 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (re-filed after the 2026-08-24 unpark; owner solver directive EXECUTED)
+
+Filed by grind session s23 (escalation modality). This entry SUPERSEDES the
+2026-08-13 entry of the same title for this function: that one is factually
+stale in its most load-bearing paragraph, and the owner's 2026-08-24 ruling
+([[escalation-not-parked]]) returned the item to active with a specific
+directive that had never been executed. Both of those are addressed here.
+
+**What changed since the 2026-08-13 filing.**
+1. The asm-until-matched sweep-3 migration (commit `3a5882b2`) rewrote this
+   function's representation on main. `src/code6cac_b.c:2389` is now
+   `INCLUDE_ASM("asm/funcs", func_80034F88);` and the function carries **zero
+   regfix rules, zero asmfix rules and zero cheat-asm**. The 2026-08-13 entry's
+   "main keeps the 31 regfix rules + three scheduling barriers that hold the
+   byte-match" is no longer true of the tree. **There is no retained cheat and
+   no accepted debt for this function.** The disposition below therefore costs
+   the project nothing and lowers no standard: it is the ordinary
+   asm-until-matched state of an unmatched function.
+2. The owner directive attached to the queue item — "solver modality
+   (ra_solver/sched_solver) recommended before deep re-grind of RA/
+   scheduler-tiebreak residuals" — had not been acknowledged in the ledger by
+   any of s1..s22 (the driver's consistency audit flagged it). It is executed in
+   full this session and is the substance of this entry.
+
+**Chassis re-measured, ledger floor reproduced.** With
+`memory/grind/func_80034F88/candidate.c` (the single-pointer-object body, the
+best ADMISSIBLE form) installed plus one `extern u8 D_80106A70;`,
+`sandbox func_80034F88 --disable all` = **score 10, 49 target insns / 49 build
+insns, rules_dropped 0**. Floor 10 is chassis-valid on the migrated tree, so the
+banked spelling conclusions carry over unchanged. `src/` is reverted to HEAD.
+
+**THE SOLVER RESULT — the new evidence.** Console output:
+`tmp/grind/func_80034F88/s23/ra_solver_report.txt`; models: `f88.model.json`,
+`f88.diag.model.json`.
+
+- *The forward model is exact for this function*, so its negatives are not
+  extrapolation: `extract.py` yields 9 allocnos and `simulate.py` reproduces
+  **sort order MATCH** and **dispositions 9/9** against the instrumented-cc1
+  ALLOCDBG ground truth. Measured allocation
+  `{72:$a1, 73:$v1, 74:$a0, 77:$v1, 78:$v0, 81:$v1, 82:$v0, 85:$v1, 86:$v0}`,
+  pseudo 74 being the `&D_80106A73` address object.
+- *The RA half of the residual is typed FORECLOSED, twice.*
+  `inverse.py global --swap 74,73` (target's block-1 base-vs-value flip: it
+  holds the base in `$v1` and the flag byte in `$a0`, we hold them the other
+  way) and `inverse.py global --goal {"74": 3}` both return **FORECLOSED — no
+  perturbation of any modelled input, up to depth 2, reaches the target
+  assignment**, over an atom space of 218 single perturbations across the eight
+  input classes (refs / live length / birth order / conflicts / preferences /
+  calls-crossed / ...) — precisely the classes a C spelling can move.
+- *The mechanical reason, new to this function's record:* **`$v1` and `$a0`
+  never appear as hard registers in this function's pre-RA RTL**, so
+  `global.c set_preference` can never record a preference for either, for any
+  pseudo. The preference lever — the strongest dial the allocator exposes to C —
+  is structurally absent here (no call-argument setup, no hard-reg-returning
+  idiom). That is why 22 sessions of live-range, ref-count and declaration-order
+  surgery were uniformly inert, and it retires the residual's long-standing
+  description as an "RA tie-break": it is not a tie the allocator could have
+  broken the other way.
+- *The ceiling is now confirmed from the allocator's INPUT side.* s20's
+  diagnostic chassis (`q = q + 3; q = q - 3;`, banked as
+  `rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c`) is the
+  one form that reproduces the target's EXACT access census (lbu 176 / sb 164 /
+  lui 456 at 49 insns) and the one that might have created a second address
+  pseudo. Modelled this session: it does **not** — still exactly **9 allocnos**,
+  the address object still the single pseudo 74, merely nrefs 10 to 15 and
+  livelen 29 to 30. The recovered `lbu` is extra refs on one allocno, not a
+  second allocno; `--goal {"74": 3}` on that model is FORECLOSED too. So on the
+  only chassis where the instruction multiset matches the target, the residual
+  is purely RA, and RA is foreclosed. The sole remaining producer of the
+  target's two simultaneously live base registers is a SECOND ADDRESS ALLOCNO
+  => a second pseudo => a second C object aliasing `D_80106A73` — the construct
+  the Judge banned on 2026-08-13 16:36 and for which s22's first-hand
+  SOTN-master census returned NEGATIVE.
+
+**GATE 1 — canonical-asm evidence: FAILS (re-run this session).**
+`python3 tools/scan_hand_coded.py --single func_80034F88`
+(`tmp/grind/func_80034F88/s23/scan_hand_coded.txt`): **tier=LOW score=0/8**, all
+eight signals unset — S1 0 multu/mflo pairs, S2 no empty-body branches, S3 49
+insns / 1 spill / 4 distinct regs, S4 max load burst 3, S5 jaccard < 0.5, S6 no
+BIOS jumptable, S7 every callee-save use has its `$sp` save, S8 no redundant
+mask-before-shift. No STRONG (S1/S2/S6) signal => canonical asm refused.
+
+**GATE 2 — SOTN-master precedent for the closing construct: FAILS (unchanged).**
+The closing construct is two or more simultaneously live C pointer objects both
+holding `&D_80106A73` (three were needed to reach sandbox 0; the cheapest
+two-object form reaches only 8, s21). s22's first-hand census against the local
+sotn-decomp master checkout (commit `db41b28eee52969244a52cc269c8163d1ed8826a`,
+1,675 `src/*.c`) came back NEGATIVE: of 21 functions giving two handles the
+identical address expression, every one is a non-matching port, a
+global-to-global store, or two genuinely different walkers starting at the same
+node. Nothing this session changes that census, and a negative census is a
+FAILED gate, not an open question.
+
+**No auto-reject packet is filed.** Per the owner's second ruling of 2026-08-24,
+a packet whose YES would lower a standard — sanctioning the no-precedent
+multi-handle family, overriding the canonical evidence bar, or "accepting the
+debt" — is PRE-DECIDED NO. This entry asks for none of those. It records the
+refusal of both, which is the standing ruling applied, not a request.
+
+**THE ONE DECIDABLE QUESTION (routing / tooling, not a standard).** The solver
+names its own next move and it is instrumentation, not C: *"the mechanism is
+outside the current model — the local-alloc SUGGESTED-REGISTER pass
+(`qty_phys_copy_sugg` / `qty_phys_sugg`, reported-not-scored today), `qty_size`
+for DImode, or reload's spill-retry. Extend the instrumentation before spending
+another spelling search."* Two of the three are excluded by measurement here:
+there is no DImode quantity (all 9 allocnos are mode SI), and there is no reload
+spill-retry governing the address pseudo (one spill — the `$ra` save — and
+`simulate.py` matches 9/9 pre-reload). The **local-alloc suggested-register
+pass** is the single unmodelled mechanism this function's measurements do not
+exclude. Modelling it is a known, bounded, already-specified piece of work: one
+env-gated `fprintf` in `tools/gcc-2.7.2/local-alloc.c` `block_alloc` dumping the
+suggestion sets (the ra_solver README lists it as a "known hook gap for the next
+extension", alongside `qty_size`), plus the matching parse in
+`tools/ra_solver/local_extract.py`. Both files are in `tools/`, a surface a grind
+session may not edit.
+  - *Consequence of YES (build the hook extension):* this function gets one more
+    typed verdict on its only unmodelled mechanism. If that pass turns out to be
+    what seats the address object, a legitimate C lever may exist and the item
+    returns to active grinding at floor 10 with a concrete goal. If it comes back
+    inert, the FORECLOSED verdict becomes unconditional and the refusal below is
+    final on the strongest possible evidence. The extension is generic, not
+    function-specific: every future RA-seat residual in the queue inherits it.
+  - *Consequence of NO (do not build it):* the disposition below stands as
+    written, conditional on that one unmodelled pass, and the item is closed at
+    floor 10.
+
+**Disposition (auto-applied under the 2026-07-27 standing ruling — nothing waits
+on the owner).** Both endgame-lock AND-gates fail. `func_80034F88` is classified
+**INCOMPLETE — OWNER-ACCEPTED**: it stays `INCLUDE_ASM("asm/funcs", ...)` on main
+exactly as it is today (no cheat is retained, no rule is added, the oracle is
+untouched), and it is taken out of active grind so the queue advances. The best
+admissible pure-C form remains `memory/grind/func_80034F88/candidate.c` at honest
+floor 10. Re-attempt is warranted if and only if (a) the local-alloc
+suggested-register instrumentation above is built and reopens the RA question,
+or (b) the owner sanctions a multi-handle family on evidence that does not exist
+in SOTN master today. Exhaustion record: floor FLAT AT 10 for ten consecutive
+sessions (s14..s23) across six distinct modalities (forensics, rederive,
+synthesis, structural, permuter, escalation/solver), on top of thirteen earlier
+sessions, with 128 disproven forms in `memory/grind/func_80034F88/rejected/` and
+~170,000 permuter iterations over five campaigns including two seeded at the
+floor itself.

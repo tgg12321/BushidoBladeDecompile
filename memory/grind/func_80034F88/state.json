@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 22,
+ "session_count": 23,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -135,18 +135,24 @@
    "floor": 10,
    "modality": "escalation",
    "headline": "Disposition reached: both endgame-lock gates FAIL (scan_hand_coded tier LOW 0/8; first-hand SOTN-master census for multiple live C handles on one global comes back NEGATIVE), so the owner's 2026-07-27"
+  },
+  {
+   "session": 23,
+   "floor": 10,
+   "modality": "escalation",
+   "headline": "Owner's 2026-08-24 solver directive executed for the first time in 23 sessions: ra_solver's forward model is EXACT here (9 allocnos, sort order MATCH, dispositions 9/9) and both inverse queries for ta"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_80034F88 is terminally disposed as INCOMPLETE \u2014 OWNER-ACCEPTED; it is NOT a grindable frontier and no further session should be spawned on it unless new tooling or a genuinely new pure-C lever appears.",
-   "mechanism": "Both endgame-lock AND-gates were evaluated with measurements this session and both failed, so the owner's 2026-07-27 standing auto-ruling applies: the 31 regfix rules and three scheduling barriers stay on main so the full-build oracle remains green, the retained cheat is not sanctioned as a technique, and the function is parked out of active grind.",
-   "next_probe": "None. The queue should advance. A future re-attempt is only warranted if (a) new tooling makes a second INDEPENDENTLY MATERIALISED address value reachable from a single C object, or (b) the owner sanctions a multi-handle family on evidence that does not exist in SOTN master today."
+   "hypothesis": "Local-alloc's SUGGESTED-REGISTER pass (qty_phys_copy_sugg / qty_phys_sugg) is what seats the address object, and it is the one mechanism this session's measurements do not exclude.",
+   "mechanism": "block_alloc runs a suggestion pass before the main ascending scan, and its inputs are not printed by the current BB2_QTY_DEBUG hook, so ra_solver reports those rows rather than scoring them. A FORECLOSED verdict from the global model is conditional on that pass being inert here.",
+   "next_probe": "Owner/operator work, not a grind session's surface: add one env-gated fprintf to tools/gcc-2.7.2/local-alloc.c block_alloc dumping the suggestion sets, extend tools/ra_solver/local_extract.py to parse them, then re-run inverse.py local --func func_80034F88 --block <block 1> --sugg <stem>.sugg.json against the goal 'address object in $v1'."
   },
   {
-   "hypothesis": "If the multi-handle family were ever sanctioned, the closing form is still not the cheap one: two objects reach only 8, and three are required for 0.",
-   "mechanism": "A copied second pointer is a DEPENDENT value \u2014 it costs a 'move' plus a fresh 'lui' and leaves block 1's register naming inverted \u2014 where the target materialises its second base from the symbol itself before block 1's store (s18's instruction-ordering proof, s21's pricing).",
-   "next_probe": "Only relevant inside an owner ruling that sanctions the family; then the starting point is rejected/three-pointer-objects-judge-FAIL-score0.c (measures 0) rather than the two-object forms."
+   "hypothesis": "func_80034F88 has no remaining admissible pure-C lever: reaching 0 requires two simultaneously live address allocnos, hence two C objects aliasing D_80106A73, which is the banned construct with no SOTN-master precedent.",
+   "mechanism": "global.c:426 gives one allocno per pseudo with no live-range splitting, so one hard register per address object for its whole live range; both non-object routes to a second pseudo are closed in compiler source (anonymous symbol refs never create a pseudo; reload.c:4128-4137 substitutes the REG_EQUIV constant instead of allocating a reload register), and the census-exact diagnostic chassis is now measured not to create one either.",
+   "next_probe": "None inside the sanctioned space. Only relevant if the owner sanctions a multi-handle family \u2014 and even then the starting point is rejected/three-pointer-objects-judge-FAIL-score0.c (measures 0), not the two-object forms, which reach only 8."
   }
  ],
  "judge_constraints": [
