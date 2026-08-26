@@ -1,40 +1,38 @@
-/* func_80061250 — candidate. STATE BANNER (s3, 2026-08-26, dispatched as
- * "session 1" of the post-discard renumbering; HEAD ecc1e876):
- * main's committed representation is INCLUDE_ASM("asm/funcs", func_80061250)
- * (asm-until-matched); this file is the LEDGER copy of the best form, NOT a
- * claim about the committed tree. The s3 working-tree probe was applied,
- * measured, and REVERTED before session end.
+/* func_80061250 — candidate. STATE BANNER (s4, 2026-08-26, recon; HEAD 2b38d6f6):
+ * main's committed representation at the START of this session was
+ * INCLUDE_ASM("asm/funcs", func_80061250) (asm-until-matched). This file is the
+ * LEDGER copy of the form that is APPLIED IN THE WORKING TREE at s4's end
+ * (src/text1b.c:3271-3298) and left there for the driver to verify and commit —
+ * it is NOT a claim that main already carries it.
  *
- * SPELLING CHANGE vs the layer-1-FAILed s2 form: the banned pointer-pun
- * `(&D_800F1154)[5]/[6]` off a single-byte `extern u8 D_800F1154;` is GONE.
- * This form declares the object as an ARRAY — `extern u8 D_800F1154[];`
- * (block-scope here; final placement pending owner ruling, see below) — and
- * indexes it: `D_800F1154[5]`, `&D_800F1154[5]`. This mirrors the committed,
- * integrated sibling func_800619F0 (src/text1b.c:3557-3566 at HEAD ecc1e876:
- * same `extern u8 D_800F1154[];`, publishes `D_800F1154 + 3`), and the naming
- * census models 0x800F1154 as g_text1b_glyph_buf_b — a buffer/aggregate
- * (named_syms.txt:827).
+ * s4 executed the integration handoff the Judge dispositioned on 2026-08-26
+ * (docs/grind/decisions.md:14520; driver scope grant at
+ * tools/grinder/scope_allow.txt:34 = src/text1b.c, src/text1b_b.c,
+ * undefined_syms_auto.txt). The full staged change is THREE edits, which the
+ * Judge's binding constraint (decisions.md:14543) requires to land together:
+ *   1. this body replaces the INCLUDE_ASM + the dead `extern volatile u8
+ *      D_800F1159;` above it in src/text1b.c;
+ *   2. the dead `extern volatile u8 D_800F1159;` in src/text1b_b.c:591 is deleted;
+ *   3. the splat symbol line `D_800F1159 = 0x800F1159;` is deleted from
+ *      undefined_syms_auto.txt:516,
+ * so exactly ONE C handle survives for bytes 0x800F1159-0x800F115A.
  *
- * MEASURED s3 (2026-08-26): with this exact body applied over the INCLUDE_ASM
- * at src/text1b.c:3271-3272, `sandbox func_80061250 --disable all` == 0
- * (59/59, rules_dropped 0, nothing cheat-stripped from this body). The ARRAY
- * spelling produces the same (const (plus D_800F1154 5)) cse anchor as the
- * banned pun, hence identical bytes; full-build SHA1 == oracle was proven for
- * the identical-RTL pun form in s1-rerun (62efab4f73f992798c43e8c730aa43baa10bb4fa).
+ * SPELLING: the object is declared as what the naming census says it is — a byte
+ * buffer (`extern u8 D_800F1154[];`, census named_syms.txt:827
+ * g_text1b_glyph_buf_b) — and indexed normally. This is the committed house form
+ * of this TU (src/text1b.c:3557+3563 func_800619F0; :3505 func_800618B4 over
+ * D_800F1152; :3589 over D_800F1164). The banned single-byte pointer-pun
+ * `(&D_800F1154)[5]` does not appear anywhere in this body.
  *
- * PENDING: ruling-request filed s3 — whether this TU-consistent array-extern
- * spelling is acceptable as ordinary C (option A), or the full 5-prong
- * per-word-splat aggregate merge (no-new-park-categories.md:215-232) is
- * required first (option B: shared-header canonical decl, sibling respells,
- * splat-config symbol removal at integration). Do NOT submit candidate-ready
- * until the ruling lands; two layer-1 FAILs are already banked on this
- * function.
+ * MEASURED s4 with all three edits in place:
+ *   sandbox func_80061250 --disable all → 0 (59/59, rules_dropped 0)
+ *   full clean build → SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle
  *
- * 0 regfix/asmfix rules, 0 cheat-asm, 0 volatile, 0 FAKE constructs.
- * Body mirrors COMPLETED-C sibling func_8006156C (Match 450f69d1, Judge PASS
- * 2026-07-22): same control shape, same *p++ tail; only data differs
- * (flags [5]/[6] vs [1]/[2], codes 0x210009/A vs 0x210005/6, mask 0xFF0060
- * vs 0xFF8080). */
+ * 0 regfix/asmfix rules, 0 cheat-asm, 0 volatile, 0 FAKE constructs. Body mirrors
+ * COMPLETED-C sibling func_8006156C (src/text1b.c:3370-3397, Match 450f69d1, Judge
+ * PASS 2026-07-22): same control shape, same *p++ tail; only the data differs
+ * (flags [5]/[6] vs [1]/[2], codes 0x210009/A vs 0x210005/6, mask 0xFF0060 vs
+ * 0xFF8080). Self-vet: memory/grind/func_80061250/self_vet.md. */
 void func_80061250(s32 *arg0) {
     extern u8 D_800F1154[];
     s32 *v1 = (s32 *)&D_800F116C;

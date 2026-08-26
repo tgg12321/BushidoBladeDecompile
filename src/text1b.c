@@ -3268,8 +3268,35 @@ void func_800611A4(s32 *arg0, s32 *arg1) {
     D_800F1148 = *p;
     D_800A3464 = 0xFFFFEF;
 }
-extern volatile u8 D_800F1159;
-INCLUDE_ASM("asm/funcs", func_80061250);
+void func_80061250(s32 *arg0) {
+    extern u8 D_800F1154[];
+    s32 *v1 = (s32 *)&D_800F116C;
+    s32 *p;
+    D_800A3468 = (s32)v1;
+    D_800F1178 = (s32)arg0;
+    if (D_800F1154[5] != 0) {
+        if (D_800F1154[6] != 0) {
+            D_800F1154[6] = 0;
+            D_800F1154[5] = 0;
+        }
+        if (D_800F1154[5] != 0) goto check_one_zero;
+    }
+    *(s32 *)((s32)D_800A3468 + 0x14) = (s32)&D_800F1154[5];
+    *(s32 *)D_800A3468 = 0x210009;
+    goto end;
+check_one_zero:
+    if (D_800F1154[6] == 0) {
+        D_800F1180 = (s32)&D_800F1154[6];
+        *v1 = 0x21000A;
+    }
+end:
+    func_80060A68();
+    p = arg0;
+    D_800F1140 = *p++;
+    D_800F1144 = *p++;
+    D_800F1148 = *p;
+    D_800A3464 = 0xFF0060;
+}
 extern u8 D_800F1154;
 extern s32 D_800A3464;
 extern s32 D_800A3468;

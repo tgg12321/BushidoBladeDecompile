@@ -174,10 +174,61 @@
   (scope) and fails prong (d) if spelled TU-local. Per the role prompt ("torn
   between two adjacent families → ruling-request; one ruling is cheaper than a
   FAILed candidate"), s3 files the ruling-request with the measurement in hand.
-- Extent sub-question banked for the ruling: a minimal merge (D_800F1154+D_800F1159
+- (s4 note) Extent sub-question banked for the ruling: a minimal merge (D_800F1154+D_800F1159
   → `extern u8 D_800F1154[7or8];`) leaves D_800F1158/115B/115C as separate handles
   overlapping the census's buffer model (1158 is address-only s32 — 4-byte handle
   overlapping bytes 4-7); a full-block record (u8[8+] or struct) is census-cleaner
   but forces respelling MORE committed siblings. The evidence supports "flat u8
   byte buffer" (every access in the family is byte reads/writes or interior
   address publishes; no multi-byte load/store of the block exists in target asm).
+
+## s4 (2026-08-26, recon; HEAD 2b38d6f6) — INTEGRATION HANDOFF EXECUTED: all three edits staged, sandbox 0 AND full-build SHA1 == oracle measured together
+
+- **What changed vs s3:** nothing about the C. s3 measured the array spelling at
+  sandbox 0 but could not stage the D_800F1159 retirement (out of scope) and so filed
+  a ruling-request. The grinder Judge answered it on 2026-08-26
+  (docs/grind/decisions.md:14504 ruling, :14520 ESCALATE packet): option (A) — the
+  array-extern spelling IS ordinary C and does NOT require the 5-prong aggregate-merge
+  invocation — dispositioned as an integration-handoff, and the DRIVER then wrote the
+  scope grant `func_80061250 src/text1b.c src/text1b_b.c undefined_syms_auto.txt`
+  (tools/grinder/scope_allow.txt:34). s4 inherited that grant and simply executed it.
+- **The three edits staged this session (all inside the grant; the Judge's binding
+  constraint at decisions.md:14543 requires them in ONE commit):**
+  1. `src/text1b.c` — `extern volatile u8 D_800F1159;` + `INCLUDE_ASM("asm/funcs",
+     func_80061250);` (pre-edit lines 3271-3272) replaced by the C body, now at
+     src/text1b.c:3271-3298.
+  2. `src/text1b_b.c:591` — the dead `extern volatile u8 D_800F1159;` deleted (that TU
+     had zero uses of the symbol).
+  3. `undefined_syms_auto.txt:516` — `D_800F1159 = 0x800F1159;` deleted.
+  Exactly one C handle now exists for bytes 0x800F1159-0x800F115A: `D_800F1154[5]/[6]`.
+- **Reference audit re-run at HEAD before editing** (grep over the tree, excluding
+  memory/docs/tmp/metrics): D_800F1159 appeared in exactly five places —
+  undefined_syms_auto.txt:516, the two dead externs, `asm/text1b.s` (NOT linked; bb2.ld
+  links build/src/text1b.o), and `asm/funcs/func_80061250.s` (this function's own
+  INCLUDE_ASM source, which stops being assembled the moment the C lands). The Judge's
+  independent audit is confirmed exactly.
+- **MEASURED THIS SESSION, with all three edits in place:**
+  - `sandbox func_80061250 --disable all` → **score 0, target_insns 59, build_insns 59,
+    rules_dropped 0** (cheat_asm_stripped 169 = other functions' legacy debt; nothing
+    stripped from this body).
+  - `build` (full clean) → **SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle,
+    MATCH**. This is the load-bearing measurement for the RETIREMENT specifically: the
+    oracle still matches with the splat symbol deleted and both externs gone, which is
+    what proves the D_800F1159 handle was genuinely dead.
+- **Citation hygiene (the s1 layer-1 FAIL's root cause) handled:** every file:line in
+  self_vet.md was re-grepped AFTER the edits were applied, against the file a reviewer
+  will actually read. Post-edit anchors: our body src/text1b.c:3271 (array decl :3272,
+  flag test :3277); sibling func_8006156C src/text1b.c:3370-3397 (its `(&D_800F1154)[1]`
+  pun at :3375 — the legacy pre-ruling form, deliberately NOT copied); committed
+  array-extern precedents src/text1b.c:3557 + :3563 (func_800619F0), :3505
+  (func_800618B4 over D_800F1152), :3589 (D_800F1164); census named_syms.txt:827.
+- **Residual bookkeeping, NOT a blocker (banked for whoever runs the naming census
+  next):** `named_syms.txt:1913` still carries `g_text1b_slot_d_flags = 0x800F1159`
+  (a census NAME claim, not a splat symbol definition). It is inert — the full clean
+  build matches the oracle with it present and undefined_syms_auto.txt's line gone —
+  and named_syms.txt is outside this session's scope grant, so it was left untouched.
+  Under the census's own buffer model (0x800F1154 = g_text1b_glyph_buf_b) the two flag
+  bytes are interior bytes of that buffer, so the entry is arguably redundant now.
+- No new spellings were probed this session and none were needed: the C was settled by
+  s3's measurement and the Judge's ruling. s4's work was the surface execution plus the
+  proof that the retirement is oracle-safe.

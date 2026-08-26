@@ -93,3 +93,30 @@ verified citations; nothing remains but driver verification → layer-1 → Judg
    at D_800F1159 addend-0 are measured dead (H3, s1: 19/25/inert) — re-open the
    ladder at the flag-access shape level (e.g. struct-typed extern at 0x800F1159
    with 2 u8 members — untried, but expected to fold absolute per the H3 mechanism).
+
+## s4 (2026-08-26, recon; HEAD 2b38d6f6)
+
+- H7 "The D_800F1159 retirement the Judge made binding (delete
+  undefined_syms_auto.txt:516 + the two dead `extern volatile u8 D_800F1159;`
+  declarations) is oracle-safe — i.e. the symbol is genuinely dead once this
+  function's INCLUDE_ASM is replaced, and deleting it does not perturb the link" —
+  **CONFIRMED**: with all three edits staged, `sandbox func_80061250 --disable all`
+  printed 0 (59/59, rules_dropped 0) and a full clean `build` printed SHA1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle. A pre-edit tree-wide grep had
+  already shown the only other references were asm/text1b.s (unlinked) and this
+  function's own asm/funcs/func_80061250.s.
+- H8 "The array-extern spelling plus the retirement can be staged entirely within
+  the driver's scope grant, so the function closes through the normal pipeline
+  rather than needing another handoff" — **CONFIRMED**: the grant at
+  tools/grinder/scope_allow.txt:34 covers exactly the three files the change needs
+  (src/text1b.c, src/text1b_b.c, undefined_syms_auto.txt); nothing outside it was
+  touched.
+
+## Frontier
+
+(empty — the function is byte-proven and fully staged. Remaining path is mechanical:
+driver sandbox-0 re-verify → scope check → layer-1 cheat-reviewer → Judge →
+retire/verify-oracle → queue done. The one non-blocking loose end banked in
+evidence.md s4 is the now-arguably-redundant census NAME entry
+named_syms.txt:1913 for 0x800F1159, which is outside this function's scope grant and
+is inert against the oracle.)

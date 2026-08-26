@@ -588,7 +588,6 @@ extern s32 *D_800A3468;
 extern s32 D_800A37D4;
 extern u8 D_800F116A;
 extern s32 D_800F116C;
-extern volatile u8 D_800F1159;
 extern u8 D_800F1154;
 extern u8 D_800F115B;
 extern u8 D_800F115C;
