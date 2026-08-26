@@ -427,3 +427,151 @@ before compiling anything.
 - [s5] The 2026-07-23 OWNER-ESCALATION (docs/grind/decisions.md:1579) and the 2026-07-27 REFUSED / OWNER-ACCEPTED INCOMPLETE ruling rest on the claim that every grind-advanceable axis is measured dead. That claim is now false: Route B and the sched_solver axis are both live and unmeasured. No new escalation is filed and none is warranted; the function is grindable and the ladder should continue (consistent with the owner's 2026-08-24 escalation-not-parked ruling that returned it to active).
 
 - [s5] tmp/grind/special_camera_get_rot_dir/s5/flowdbg.py drives the BB2_FLOW_DEBUG per-insn liveness hook but its output is TU-wide (bnum is not function-scoped in the harness as written); it needs per-function segmentation before the per-block breakdown is usable. Banked so s6 does not re-discover that.
+
+## s6 (synthesis) — floor stays 9. THE RESIDUAL IS NOW A SINGLE BINARY CONDITION: the REG_EQUIV x2 live-length doubling on cam(74) and const(76).
+
+**The whole four-register rotation reduces to one GCC mechanism, named and measured this session:**
+`tools/gcc-2.7.2/local-alloc.c:1064` — inside `update_equiv_regs`, a pseudo that carries a
+`REG_EQUIV` note has its live length **DOUBLED**:
+
+    if (note && reg_live_length[regno] >= 0)
+      { ... reg_live_length[regno] *= 2; ... }      /* local-alloc.c:1058-1064 */
+
+`REG_EQUIV` is granted (local-alloc.c ~1015-1030) only to a pseudo that is (a) set EXACTLY ONCE
+(`reg_n_sets[regno] != 1` -> `continue`) and (b) whose set insn carries a `REG_EQUAL` note holding a
+`CONSTANT_P` value. Condition (b) is automatic: `cse.c:6923-6934` attaches a REG_EQUAL note to EVERY
+single-SET insn that sets a REG to a constant, unconditionally. So **every single-set
+constant-valued pseudo in this function is silently doubled**, and only those.
+
+- **DIRECT EVIDENCE.** In the score-10 chassis the `.lreg` RTL dump contains exactly two REG_EQUIV
+  notes inside this function — `(symbol_ref "SpecialCam")` (pseudo 74 = cam) and `(const_int 128)`
+  (pseudo 76 = const). Every other constant in the function carries only REG_EQUAL because its
+  destination is a HARD register (argument registers $4/$5/$6), which `update_equiv_regs` skips
+  (`regno < FIRST_PSEUDO_REGISTER` -> continue).
+  Cross-check with the BB2_FLOW_DEBUG per-insn liveness counter (flow.c:1694, which IS the
+  `reg_live_length++` site): raw flow counts 72:45, 73:39, 74:38, 76:36, 77:38, 78:37 map to final
+  livelens 38, 34, **66**, **62**, 38, 32 — i.e. every pseudo lands at ~0.86x its raw count EXCEPT
+  74 and 76, which land at exactly 2x that same 0.86 factor. The doubling is the only anomaly.
+
+- **THE DEF-ORDER MODEL IS EXACT AND THE CORRECT CHASSIS IS NOW IN HAND.** Undoubled base live
+  length is a strict function of definition order (earliest def = longest). Ordering the five
+  assignments `copy_end, constant_80, cam_base, index=jal, buf2_ptr` (banked as
+  `rejected/routeC-seed-deforder-basewindow-score16.c`, sandbox 16, 72 insns) produces exactly:
+
+      77 copy_end n3 L38 pri789 | 76 const n3 base37 -> DOUBLED 74 pri405
+      74 cam n3 base36 -> DOUBLED 72 pri416 | 73 index n3 L32 pri937 | 78 buf2 n3 L31 pri967
+
+  The five base lengths 38 / 37 / 36 / 32 / 31 are EXACTLY the chain the target needs. The only
+  thing standing between this form and a byte match is that 74 and 76 are doubled to 72 and 74.
+
+- **MACHINE-VERIFIED REACHABILITY (ra_solver, exact model of this chassis).**
+  `tmp/grind/special_camera_get_rot_dir/s6/cecc.model.json` + `sim_undouble.py`:
+    baseline (74=72, 76=74):          {72 s0, 78 s1, 73 s2, 77 s3, 74 s4, 76 s5}  (wrong)
+    undoubled (74=36, 76=37, 77=38):  {72 s0, 78 s1, 73 s2, 74 s3, 76 s4, 77 s5}  = **TARGET**
+  The tolerance is wide, not a knife edge: with copy_end fixed at L38 the target assignment holds
+  for **28 distinct (L(cam), L(const)) pairs** — every L(cam) in [32,38] with L(const) in
+  [L(cam),38]. So s7 does not need to hit a number; it needs to remove a factor of two.
+
+- **ROUTE B (the s5 frontier: shrink cam/const by ~28) IS SUPERSEDED, NOT KILLED — it was the right
+  destination reached by the wrong description.** cam's and const's surplus is NOT program liveness
+  that C statement placement can shorten; it is a post-hoc x2 applied by local-alloc AFTER flow has
+  measured the true liveness. Their true (undoubled) lengths are already inside the target window in
+  the correct-def-order chassis. Chasing "shrink cam from 66 into [34,38]" by moving statements is
+  chasing a number that no C edit can move by more than a few insns, because the C-visible part of
+  it is only 36.
+
+- **ROUTE A / A' STAY KILLED, AND ARE NOW KILLED FOR A SECOND, STRONGER REASON.** The alternative
+  world in which cam and const stay doubled requires L(copy_end) >= 2*base(const) >= ~62. The
+  ceiling on ANY live length in this function is the number of insns visited in the final
+  propagate_block pass (~45 — pseudo 72, live from entry, measures 38). copy_end can only exceed
+  that by being doubled itself, which requires a REG_EQUIV, which requires its set src to be
+  CONSTANT_P — but it is `(plus (reg 30 $fp) (const_int 80))`, sp-relative, never constant; and the
+  alternate MEM route to REG_EQUIV (local-alloc.c:1049-1055) requires `reg_basic_block[regno] >= 0`
+  (single-block use), which copy_end fails. So the all-doubled solution is FORECLOSED by mechanism
+  and the ONLY surviving solution is the all-undoubled one.
+
+- **THE UNDOUBLING LEVER WORKS — MEASURED — but the one spelling tried costs +2 insns.**
+  `rejected/twoset-kills-regequiv-plus2insns.c` re-assigns `cam_base` and `constant_80` a second
+  time just before their final uses (after the copy block, where cse's extended-basic-block table
+  cannot prove the store redundant). Measured effect: pseudo 74 nrefs 3->4 livelen 72->**31**,
+  pseudo 76 nrefs 3 livelen 74->**31** — i.e. BOTH doublings gone, exactly as
+  `reg_n_sets[regno] != 1` predicts. Cost: both re-materialisations survive to the output
+  (`la $16,SpecialCam` + `li $18,0x80` at insns 78-79 of 83), so the form is 74 insns vs the
+  target's 72 and cannot match. This is a knowledge probe, not a candidate — but it converts
+  "kill the doubling" from a theory into a measured, reproducible lever.
+
+- **WHY THE TARGET ITSELF MUST BE UNDOUBLED (proof by elimination, no new assumption).** The
+  target's $s3 = `lui/addiu %hi/%lo(SpecialCam)` and $s4 = `addiu $zero,0x80` are constants, so the
+  original compile faced the identical cse->REG_EQUAL->REG_EQUIV pipeline. Since the all-doubled
+  world is foreclosed above, the original source must have produced `reg_n_sets >= 2` for both
+  pseudos at zero instruction cost. Two zero-cost mechanisms exist in this compiler and are the
+  s7 frontier: (i) `reg_n_sets` is counted at flow time but cross-jumping runs in jump2 AFTER
+  reload, so two identical sets sitting in cross-jumpable tails count as 2 at flow and emit 1 in the
+  output; (ii) a pseudo initialised by a REG-to-REG copy has a non-constant SET_SRC (cse only
+  attaches the constant REG_EQUAL when `src_const` is non-REG, cse.c:6923), and local-alloc's copy
+  handling (`optimize_reg_copy_1/2`, local-alloc.c:1003-1015, which ALSO adjusts reg_live_length
+  directly at local-alloc.c:820-831) can tie the two pseudos so reload deletes the move as a no-op.
+
+- **A REAL `for (;;) { ... continue; ... }` RETRY LOOP IS STRICTLY WORSE (measured, banked).**
+  `tmp/grind/special_camera_get_rot_dir/s6/p2_forloop.c` gives the target's two-back-edges-to-the-
+  header shape in real C, but a front-end loop note raises `loop_depth` for the whole body, so
+  reg_n_refs (loop-depth weighted, flow.c:2081) becomes buf2 5 / index 5 / cam 5 / const 5 /
+  copy_end 4 while the doubling persists (74 L72, 76 L74). Resulting permutation is the same wrong
+  one. The goto-`retry` spelling is the correct chassis; do not re-try the structured loop.
+
+- [s6] NAMED MECHANISM: the entire residual four-register rotation is caused by ONE line — tools/gcc-2.7.2/local-alloc.c:1064, `reg_live_length[regno] *= 2` for any pseudo carrying a REG_EQUIV note inside update_equiv_regs. Pseudos 74 (cam = &SpecialCam) and 76 (const = 0x80) are the only two in this function that carry one.
+
+- [s6] REG_EQUIV is granted (local-alloc.c ~1015-1030) only to a pseudo with reg_n_sets == 1 whose set insn has a REG_EQUAL note holding a CONSTANT_P value; cse.c:6923-6934 attaches that REG_EQUAL to EVERY single-SET constant store to a REG unconditionally, so every single-set constant-valued pseudo in this function is doubled and nothing else is. Argument-register constants escape only because their destination is a hard reg.
+
+- [s6] Direct evidence: the .lreg dump for this function contains exactly two REG_EQUIV notes — (symbol_ref "SpecialCam") and (const_int 128). BB2_FLOW_DEBUG raw per-insn live counts (flow.c:1694 is the reg_live_length++ site) are 72:45 73:39 74:38 76:36 77:38 78:37, and every pseudo maps to its final livelen at ~0.86x EXCEPT 74 and 76, which map at exactly 2x0.86.
+
+- [s6] Undoubled base live length is a strict function of definition order (earliest def = longest). The assignment order copy_end, constant_80, cam_base, index(jal), buf2_ptr yields base lengths 38 / 37 / 36 / 32 / 31 — EXACTLY the chain L(buf2) < L(index) < L(cam) <= L(const) <= L(copy_end) the target requires. Banked as rejected/routeC-seed-deforder-basewindow-score16.c (sandbox 16, 72 insns; that 16 is the doubled-chassis permutation, not a distance from the answer).
+
+- [s6] MACHINE-VERIFIED on an exact ra_solver model of that chassis (tmp/grind/special_camera_get_rot_dir/s6/cecc.model.json + sim_undouble.py): with 74 and 76 undoubled to 36 and 37 the simulator returns {72 s0, 78 s1, 73 s2, 74 s3, 76 s4, 77 s5} = the target assignment exactly. The tolerance is 28 distinct (L(cam), L(const)) pairs — any L(cam) in [32,38] with L(const) in [L(cam),38] at copy_end L38. s7 does not need to hit a number, it needs to remove a factor of two.
+
+- [s6] Route B as worded by s5 ("shrink cam 66->[34,38] and const 62->[L(cam),38] with ordinary C") is SUPERSEDED: cam's and const's surplus is not program liveness at all, it is a post-hoc x2 applied by local-alloc after flow measured the true liveness. Their true lengths are already inside the window; no statement-placement edit can move a number that is 36 by the 28 that route asked for.
+
+- [s6] The all-doubled alternative world is FORECLOSED by mechanism: it needs L(copy_end) >= 2*base(const) >= ~62, but no live length in this function can exceed the ~45 insns visited in the final propagate_block pass unless it is itself doubled, and copy_end can never carry a REG_EQUIV — its set src is (plus (reg 30 $fp) (const_int 80)), never CONSTANT_P, and the MEM route at local-alloc.c:1049-1055 requires reg_basic_block[regno] >= 0 (single-block use), which copy_end fails. So the ONLY surviving solution is all-undoubled.
+
+- [s6] The undoubling lever is MEASURED, not theorised: rejected/twoset-kills-regequiv-plus2insns.c (a second assignment of cam_base and constant_80 placed after the copy block, where cse's EBB table cannot prove it redundant) drives pseudo 74 from nrefs3/L72 to nrefs4/L31 and pseudo 76 from nrefs3/L74 to nrefs3/L31 — both doublings gone. Cost: both re-materialisations survive to the output (74 insns vs the target 72), so this spelling is a knowledge probe, not a candidate.
+
+- [s6] The target's own $s3/$s4 are constants and faced the identical cse->REG_EQUAL->REG_EQUIV pipeline, so by elimination the original source produced reg_n_sets >= 2 for both at ZERO instruction cost. Two zero-cost mechanisms exist in this compiler: (i) reg_n_sets is counted at flow time while cross-jumping runs in jump2 AFTER reload, so two identical sets in cross-jumpable tails count as 2 and emit 1; (ii) a pseudo initialised by a REG-to-REG copy has a non-constant SET_SRC so cse attaches no constant REG_EQUAL (cse.c:6923 requires GET_CODE(src_const) != REG), and local-alloc's optimize_reg_copy_1/2 (local-alloc.c:1003-1015) both ties the pseudos for no-op-move deletion and adjusts reg_live_length directly at local-alloc.c:820-831.
+
+- [s6] A real `for (;;) { ...; continue; ... }` retry loop (p2_forloop.c) is strictly worse: the front-end loop note raises loop_depth so every nrefs rises (buf2/index/cam/const 5, copy_end 4) while the doubling persists, and the permutation is unchanged. The goto-`retry` spelling is the correct chassis.
+
+- [s6] Tooling banked for s7: tmp/grind/special_camera_get_rot_dir/s6/alloc.sh reads src/ DIRECTLY (no sandbox round-trip) and prints the exact allocno table in one call — that table, not the sandbox score, is the correct gradient for this function. isolate.py rewrites a preprocessed TU down to a single function body (all other bodies replaced by {}), which makes the TU-wide BB2_FLOW_DEBUG output usable per-function (the s5 note flagged this as unsolved; it is solved) and reproduces the full allocno table identically.
+
+## s6 artifacts (tmp/grind/special_camera_get_rot_dir/s6/)
+- alloc.sh (instrumented-cc1 allocno table straight off src/ — the real gradient)
+- isolate.py (single-function TU extractor; fixes the s5 TU-wide flowdbg problem), flow.py / flow1.py
+- v_ce_const_cam.c (def-order chassis, = rejected/routeC-seed-deforder-basewindow-score16.c)
+- p2_forloop.c (real for(;;)+continue retry loop — strictly worse, banked above)
+- p3_twoset.c (= rejected/twoset-kills-regequiv-plus2insns.c)
+- cecc.model.json (exact RA model of the def-order chassis), sim_undouble.py (the verification above)
+- allocdbg_*.txt / cc1_*.s / pp_*.i / one_*.i per probe
+
+- [s6] NAMED MECHANISM: the entire residual four-register rotation is caused by one line — tools/gcc-2.7.2/local-alloc.c:1064, reg_live_length[regno] *= 2 inside update_equiv_regs for any pseudo carrying a REG_EQUIV note. Pseudos 74 (cam = &SpecialCam) and 76 (const = 0x80) are the only two in this function that carry one.
+
+- [s6] REG_EQUIV is granted only to a pseudo with reg_n_sets == 1 whose set insn holds a REG_EQUAL note with a CONSTANT_P value (local-alloc.c ~1015-1030); cse.c:6923-6934 attaches that note to EVERY single-SET constant store to a REG unconditionally. Argument-register constants escape only because their destination is a hard reg (regno < FIRST_PSEUDO_REGISTER).
+
+- [s6] Direct evidence: the .lreg RTL dump for this function contains exactly two REG_EQUIV notes — (symbol_ref "SpecialCam") and (const_int 128). BB2_FLOW_DEBUG raw per-insn live counts (flow.c:1694 IS the reg_live_length++ site) are 72:45 73:39 74:38 76:36 77:38 78:37, and every pseudo maps to its final livelen at ~0.86x except 74 and 76, which map at exactly 2x0.86.
+
+- [s6] Undoubled base live length is a strict function of definition order (earliest def = longest). The assignment order copy_end, constant_80, cam_base, index(jal), buf2_ptr yields base lengths 38 / 37 / 36 / 32 / 31 — EXACTLY the chain L(buf2) < L(index) < L(cam) <= L(const) <= L(copy_end). Banked as rejected/routeC-seed-deforder-basewindow-score16.c (sandbox 16, 72 insns; that 16 is the doubled-chassis permutation, not a distance from the answer).
+
+- [s6] MACHINE-VERIFIED on an exact ra_solver model of that chassis (s6/cecc.model.json + s6/sim_undouble.py): undoubling 74 to 36 and 76 to 37 returns {72 s0, 78 s1, 73 s2, 74 s3, 76 s4, 77 s5} = the target assignment. Tolerance is 28 distinct (L(cam), L(const)) pairs — any L(cam) in [32,38] with L(const) in [L(cam),38] at copy_end L38. s7 does not need to hit a number, it needs to remove a factor of two.
+
+- [s6] The s5 Route-B framing is SUPERSEDED (right destination, wrong description): cam's and const's surplus is not program liveness, so no statement-placement edit can move it — their C-visible lengths are only 36 and 37 and are already inside the window.
+
+- [s6] Route A / A' are killed a second time: no live length in this function can exceed the ~45 insns visited in the final propagate_block pass unless doubled, and copy_end can never carry a REG_EQUIV (set src is (plus (reg 30 $fp) (const_int 80)), never CONSTANT_P; the MEM path at local-alloc.c:1049-1055 needs reg_basic_block[regno] >= 0, which copy_end fails).
+
+- [s6] The undoubling lever is measured, not theorised: rejected/twoset-kills-regequiv-plus2insns.c drives 74 from nrefs3/L72 to nrefs4/L31 and 76 from nrefs3/L74 to nrefs3/L31 — both doublings gone — at a cost of +2 emitted insns (74 vs the target 72).
+
+- [s6] By elimination the ORIGINAL source must also have produced reg_n_sets >= 2 for both constant pseudos at zero instruction cost: the target's $s3 (lui/addiu %hi/%lo(SpecialCam)) and $s4 (addiu $zero,0x80) are constants and faced the identical cse -> REG_EQUAL -> REG_EQUIV pipeline, and the all-doubled world is foreclosed.
+
+- [s6] Two zero-cost mechanisms exist in this compiler for a second SET: (i) reg_n_sets is counted by flow, which runs before combine/sched/local-alloc, while cross-jumping (jump2) and reload's no-op-move deletion run after, so two identical sets in cross-jumpable tails count as 2 and may emit 1; (ii) a pseudo initialised by a REG-to-REG copy has a non-constant SET_SRC so cse attaches no constant REG_EQUAL (cse.c:6923 requires GET_CODE (src_const) != REG), and local-alloc's optimize_reg_copy_1/2 (local-alloc.c:1003-1015) ties the pseudos for no-op-move deletion while also editing reg_live_length directly at local-alloc.c:820-831.
+
+- [s6] A real for (;;) + continue retry loop is strictly worse: the front-end loop note raises loop_depth so every nrefs rises (buf2/index/cam/const 5, copy_end 4) while the doubling persists. The goto-retry spelling is the correct chassis.
+
+- [s6] Tooling banked for s7: s6/alloc.sh reads src/ DIRECTLY (no sandbox round-trip) and prints the exact allocno table in one call — that table, not the sandbox score, is the correct gradient for this function. s6/isolate.py rewrites a preprocessed TU down to a single function body, which solves the TU-wide BB2_FLOW_DEBUG segmentation problem the s5 ledger left open and reproduces the full allocno table identically.
+
+- [s6] Floor re-measured this session on the current HEAD chassis: candidate.c (block-local copy_end) = 9 at 70 build insns; the def-order chassis = 16 at 72; src/ was restored to HEAD (INCLUDE_ASM) before finishing.

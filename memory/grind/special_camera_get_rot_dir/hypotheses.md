@@ -288,3 +288,85 @@ solver before a deep re-grind). The function is grindable; the ladder should con
 - probe: Re-measured all three forms on the current HEAD chassis (sandbox --disable all) and swept each model with simulate.py: sweep2.py (const x copy_end), sweep3.py (cam x const x copy_end), sweep_topdef.py (route A/A'/B on the top-def model).
 - result: candidate=9 (70 insns), score-10 form=10 (72), top-def=12 (72) — all chassis-valid. Route B reaches the target from the score-10 chassis for every L(cam) in [34,38] with L(const) in [L(cam),38], copy_end untouched at L38; Route B has ZERO hits from the top-def chassis; Route A needs L(copy_end)>=76 (nrefs 3) or >=51 (nrefs 2) from top-def.
 - verdict: CONFIRMED
+
+# FRONTIER RESET (s6) — supersedes the s5 frontier
+
+The residual is no longer "a live-length chain that C statement placement must satisfy". The
+def-order chassis that satisfies the chain EXISTS and is banked
+(`rejected/routeC-seed-deforder-basewindow-score16.c`, base lengths 38/37/36/32/31). Exactly one
+thing stands between it and a byte match: `local-alloc.c:1064` doubles the live length of pseudos
+74 (cam) and 76 (const) because each carries a REG_EQUIV note. Undoubling them — verified on an
+exact model — yields the target register assignment, with a 28-pair tolerance window.
+Work ONLY that question. Do not re-open Route A, Route A', the statement-shuffle form of Route B,
+the permuter, or the structured-loop retry chassis; all are killed with mechanisms.
+
+## [s6-F1 PRIMARY] A zero-instruction-cost C spelling exists that makes reg_n_sets >= 2 for the cam and const pseudos, removing their REG_EQUIV and therefore the x2 doubling, and it lands the byte match from the def-order chassis.
+- mechanism: `update_equiv_regs` (tools/gcc-2.7.2/local-alloc.c ~1015-1030) bails out with
+  `continue` before granting REG_EQUIV whenever `reg_n_sets[regno] != 1`, and the x2 at
+  local-alloc.c:1064 is gated on that note. `reg_n_sets` is counted by flow's life_analysis, which
+  runs BEFORE combine/sched/local-alloc; cross-jumping (jump2) and reload's no-op-move deletion run
+  AFTER. So a second SET that exists at flow time can still be absent from the emitted stream.
+- next probe: seed src from `rejected/routeC-seed-deforder-basewindow-score16.c` and iterate with
+  `bash tmp/grind/special_camera_get_rot_dir/s6/alloc.sh <tag>` (one call, prints the exact allocno
+  table off src/ — the true gradient; sandbox score is a lagging summary). Success signal, checkable
+  in that one table: 74 and 76 report livelen in [32,38] with L(74) <= L(76) and copy_end 77 at 38,
+  at 72 build insns. Two ranked spellings: (a) two identical assignments placed in
+  cross-jumpable tails (both `if (v0 != 0) goto retry;` sites are candidates — cross-jump merges
+  identical tails after reload, so the flow-time count is 2 and the emitted count may be 1);
+  (b) initialise via a REG-to-REG copy across an EBB boundary so cse attaches no constant REG_EQUAL
+  (cse.c:6923 requires `GET_CODE (src_const) != REG`), letting local-alloc's optimize_reg_copy_1/2
+  tie the pseudos and reload delete the move. Always confirm the insn count is still 72 — the s6
+  probe `rejected/twoset-kills-regequiv-plus2insns.c` proves the doubling dies but cost +2 insns.
+
+## [s6-F2] The doubled length can instead be pulled back INTO the window by local-alloc's direct live-length arithmetic, without removing the REG_EQUIV at all.
+- mechanism: `optimize_reg_copy_1` (called from the same update_equiv_regs insn loop,
+  local-alloc.c:1003-1015) writes `reg_live_length[sregno] -= length` and
+  `reg_live_length[dregno] += d_length` at local-alloc.c:820-831 — the only other site in the whole
+  compiler that edits a live length after flow. cam at 72 needs to land anywhere in [32,38] and
+  const at 74 anywhere in [L(cam),38]; a copy whose source is cam or const and which is coalesced
+  away would subtract exactly this kind of delta.
+- next probe: from the same def-order chassis, introduce a reg-reg copy consuming cam (and const)
+  whose source is not dead at the copy — the precondition for optimize_reg_copy_1 at
+  local-alloc.c:1003-1007 — and read the resulting livelen off `alloc.sh`. This is a pure
+  measurement: it either moves the two numbers into the window at 72 insns or it does not.
+
+## [s6-F3] Route R3 (pre-RA scheduling moves a live length without moving a C statement) survives s6 untouched and is now much better targeted.
+- mechanism: live lengths are measured on the post-sched1 stream while emitted byte order is set by
+  sched2, so two byte-identical C forms can present different pre-RA live lengths.
+  tools/sched_solver models both passes order- and clock-exactly and has still never been pointed at
+  this function.
+- next probe: run sched_solver on the def-order chassis and ask only one question — can any legal
+  sched1 ordering move base(cam)/base(const) or their doubled values into [32,38] while leaving
+  copy_end at 38 and the emitted stream byte-identical? Because the doubling is applied after flow,
+  a scheduling change that shortens the BASE by k shortens the doubled value by 2k, so this axis has
+  twice the leverage here that it would have on an undoubled pseudo.
+
+## [s6] The cam(74) and const(76) live-length surplus (66 and 62 against copy_end's 38) is program liveness that C statement placement can shorten by ~28 insns (the s5 'Route B' frontier).
+- mechanism: s5 modelled the residual as a live-length chain L(buf2) < L(index) < L(cam) <= L(const) <= L(copy_end) and proposed reaching it by shrinking cam and const with ordinary C (recompute rather than hold, re-associate, sink the def past the first call).
+- probe: Segmented the BB2_FLOW_DEBUG per-insn liveness data per function (new tmp/grind/special_camera_get_rot_dir/s6/isolate.py rewrites the preprocessed TU down to a single function body, which the s5 ledger flagged as the unsolved blocker), then compared raw flow counts against the instrumented-cc1 ALLOCDBG livelens.
+- result: Raw flow counts are 72:45 73:39 74:38 76:36 77:38 78:37 and every pseudo maps to its final livelen at ~0.86x EXCEPT 74 and 76, which map at exactly 2x0.86. Their TRUE liveness is 36 and 37 — already inside the target window. The surplus is not liveness at all: it is a x2 applied after flow by tools/gcc-2.7.2/local-alloc.c:1064 to any pseudo carrying a REG_EQUIV note. The .lreg dump confirms exactly two REG_EQUIV notes in this function: (symbol_ref "SpecialCam") and (const_int 128).
+- verdict: KILLED
+
+## [s6] The residual is a single binary condition: with the REG_EQUIV x2 removed from pseudos 74 and 76, the def-order chassis reaches the target register assignment.
+- mechanism: global.c assigns purely by allocno priority (floor_log2(n)*n*10000/L, tie -> lower pseudo number) and find_reg takes the lowest available hard reg, so with all five callee-saved allocnos at nrefs=3 the target permutation is exactly one total order on live lengths. Undoubled base live length is a strict function of definition order (earliest def = longest).
+- probe: Built the assignment order copy_end, constant_80, cam_base, index(jal), buf2_ptr (tmp/grind/.../s6/v_ce_const_cam.c, banked as rejected/routeC-seed-deforder-basewindow-score16.c), read its exact allocno table with the new s6/alloc.sh, extracted an exact ra_solver model (s6/cecc.model.json) and ran s6/sim_undouble.py with the doubling reverted.
+- result: The chassis produces base lengths copy_end 38 / const 37 / cam 36 / index 32 / buf2 31 — EXACTLY the chain the target needs — with 74 and 76 doubled to 72 and 74. The simulator returns {72 s0, 78 s1, 73 s2, 77 s3, 74 s4, 76 s5} as measured for the doubled baseline, and {72 s0, 78 s1, 73 s2, 74 s3, 76 s4, 77 s5} = the TARGET assignment when 74 and 76 are set to 36 and 37. The tolerance is 28 distinct (L(cam), L(const)) pairs: any L(cam) in [32,38] with L(const) in [L(cam),38] at copy_end L38.
+- verdict: CONFIRMED
+
+## [s6] The REG_EQUIV doubling can actually be removed from these two pseudos by C-level means.
+- mechanism: update_equiv_regs (local-alloc.c ~1015-1030) bails out with continue before granting REG_EQUIV whenever reg_n_sets[regno] != 1, and the x2 at local-alloc.c:1064 is gated on that note. cse.c:6923-6934 attaches the enabling REG_EQUAL note to EVERY single-SET constant store to a REG unconditionally, so a second SET is the only C-visible escape.
+- probe: rejected/twoset-kills-regequiv-plus2insns.c — a second assignment of cam_base and constant_80 placed after the copy block, where cse's extended-basic-block table cannot prove the store redundant. Measured with s6/alloc.sh plus an insn count off the emitted cc1 asm.
+- result: Both doublings die exactly as predicted: pseudo 74 goes nrefs 3->4 livelen 72->31 and pseudo 76 stays nrefs 3 with livelen 74->31. Cost: both re-materialisations survive to the output (la $16,SpecialCam and li $18,0x80 at insns 78-79 of 83), so this spelling is 74 insns against the target's 72 and cannot match. The lever is real and reproducible; only this spelling is priced out.
+- verdict: CONFIRMED
+
+## [s6] The alternative world in which cam and const stay doubled is reachable by lifting copy_end above them (any residual form of Route A).
+- mechanism: The chain would then need L(copy_end) >= 2*base(const) >= ~62; copy_end could only get there by being doubled itself.
+- probe: Bounded the maximum achievable live length (pseudo 72 is live from function entry and measures 38; the ceiling is the ~45 insns visited in the final propagate_block pass), then checked both REG_EQUIV grant paths against copy_end's RTL.
+- result: FORECLOSED by mechanism. copy_end's set src is (plus (reg 30 $fp) (const_int 80)) — sp-relative, never CONSTANT_P, so the constant path cannot fire; the alternate MEM path (local-alloc.c:1049-1055) requires reg_basic_block[regno] >= 0, i.e. use confined to one basic block, which copy_end fails. Route A and A' are now killed for a second, stronger reason and the all-undoubled solution is the ONLY surviving one.
+- verdict: KILLED
+
+## [s6] Spelling the retry loop as a real C loop (for (;;) with continue), which reproduces the target's two-back-edges-to-the-header shape, improves the permutation.
+- mechanism: The target's control flow is one loop whose header receives both back edges; a structured C loop was never tried in five sessions.
+- probe: rejected/forloop-continue-loopdepth-worse.c measured with s6/alloc.sh.
+- result: Strictly worse. The front-end loop note raises loop_depth over the whole body and reg_n_refs is loop-depth weighted (flow.c:2081), so every count rises (buf2 5, index 5, cam 5, const 5, copy_end 4) while the doubling persists (74 L72, 76 L74) and the permutation is unchanged. The goto-retry spelling is the correct chassis; do not re-try the structured loop.
+- verdict: KILLED

@@ -1,7 +1,7 @@
 {
  "func": "special_camera_get_rot_dir",
  "file": "code6cac_b2_post",
- "session_count": 5,
+ "session_count": 6,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 9,
    "modality": "synthesis",
    "headline": "Synthesis: the residual is an exact live-length CHAIN (L(buf2)<L(index)<L(cam)<=L(const)<=L(copy_end)), proven with an 8/8-exact ra_solver model; s1-s4 attacked only the 'raise copy_end' route, and th"
+  },
+  {
+   "session": 6,
+   "floor": 9,
+   "modality": "synthesis",
+   "headline": "Residual reduced to ONE named GCC line: local-alloc.c:1064 doubles the live length of the two REG_EQUIV constant pseudos (cam=&SpecialCam, const=0x80); the def-order chassis that satisfies the target "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "ROUTE B (PRIMARY, never attempted): shrink cam's live length from 66 into [34,38] and const's from 62 into [L(cam),38], leaving copy_end alone at L38, closing the chain from the score-10 chassis.",
-   "mechanism": "Assignment is pure priority order and priority is 30000/L at nrefs=3, so the target permutation is reached by lowering the two long-lived invariants under copy_end rather than lifting copy_end over them. cam and const are loop-invariant values held across the retry loop; their surplus is the span from their hoisted defs to their last uses (cam's is the cdrom_BcdToFrames call, const's is the final func_800372F4 call).",
-   "next_probe": "Seed src from memory/grind/special_camera_get_rot_dir/rejected/copyend-first-const-last-score10.c (re-measured at 10 this session). First segment tmp/grind/.../s5/flowdbg.py per function and dump the per-block live-count breakdown for pseudos 73/74/76/77 \u2014 that names which blocks contribute cam's 66 and const's 62 against index's 34. Then attack the dominant block with ordinary C (recompute rather than hold, re-associate index + cam_base so cam's last use moves earlier, sink the def past the first call), re-running tools/ra_solver/extract.py + simulate.py after each edit: the simulator reports chain closure directly, so the sandbox score does not have to move monotonically to show progress."
+   "hypothesis": "A zero-instruction-cost C spelling exists that makes reg_n_sets >= 2 for the cam and const pseudos, removing their REG_EQUIV and therefore the x2 doubling, and it lands the byte match from the def-order chassis.",
+   "mechanism": "update_equiv_regs (local-alloc.c ~1015-1030) bails out with continue before granting REG_EQUIV whenever reg_n_sets[regno] != 1, and the x2 at local-alloc.c:1064 is gated on that note. reg_n_sets is counted by flow's life_analysis, which runs BEFORE combine/sched/local-alloc, while cross-jumping (jump2) and reload's no-op-move deletion run AFTER \u2014 so a second SET that exists at flow time can be absent from the emitted stream.",
+   "next_probe": "Seed src from memory/grind/special_camera_get_rot_dir/rejected/routeC-seed-deforder-basewindow-score16.c and iterate with `bash tmp/grind/special_camera_get_rot_dir/s6/alloc.sh <tag>` (one call, exact allocno table off src/). Success signal readable in that one table: 74 and 76 report livelen in [32,38] with L(74) <= L(76), copy_end 77 at 38, at 72 build insns. Two ranked spellings: (a) two identical assignments placed in cross-jumpable tails \u2014 both `if (v0 != 0) goto retry;` sites are candidates, since cross-jump merges identical tails after reload; (b) initialise via a REG-to-REG copy across an EBB boundary so cse attaches no constant REG_EQUAL (cse.c:6923 requires GET_CODE (src_const) != REG), letting optimize_reg_copy_1/2 tie the pseudos and reload delete the move. ALWAYS confirm the insn count is still 72 \u2014 rejected/twoset-kills-regequiv-plus2insns.c proves the doubling dies but cost +2."
   },
   {
-   "hypothesis": "ROUTE R3: pre-RA scheduling (sched1) moves a live length without moving a C statement.",
-   "mechanism": "Live lengths are measured on the post-sched1 stream while the emitted byte order is set by sched2, so two C forms with byte-identical output can present different pre-RA live lengths. tools/sched_solver models both scheduler passes order- and clock-exactly and has never been pointed at this function.",
-   "next_probe": "Run tools/sched_solver on both chassis and ask whether any legal sched1 ordering moves cam's or const's last use earlier (Route B) or copy_end's def earlier (Route A) relative to the pre-RA stream, then use inverse_compose.py classify to confirm the residual is still RA-owned rather than PRE-RA."
+   "hypothesis": "The doubled length can instead be pulled back INTO the window by local-alloc's direct live-length arithmetic, leaving the REG_EQUIV in place.",
+   "mechanism": "optimize_reg_copy_1, called from the same update_equiv_regs insn loop (local-alloc.c:1003-1015), writes reg_live_length[sregno] -= length and reg_live_length[dregno] += d_length at local-alloc.c:820-831 \u2014 the only site besides the x2 that edits a live length after flow. cam at 72 needs to land anywhere in [32,38] and const at 74 anywhere in [L(cam),38].",
+   "next_probe": "From the same def-order chassis, introduce a reg-reg copy consuming cam (and const) whose source is NOT dead at the copy \u2014 the precondition at local-alloc.c:1003-1007 \u2014 and read the resulting livelen off alloc.sh. Pure measurement: it either moves the two numbers into the window at 72 insns or it does not."
   },
   {
-   "hypothesis": "ROUTE A reopens only if copy_end's L38 cap is a flow-counting artifact rather than a last-use fact.",
-   "mechanism": "reg_live_length counts per-insn live VISITS accumulated over propagate_block iterations, so a value that is loop-carried can score far above its linear span (const reaches 76 in a function whose pre-RA stream is much shorter). If copy_end is being counted in fewer block visits than its loop-carried liveness implies, the cap is soft.",
-   "next_probe": "From the same per-function-segmented flowdbg data, compare copy_end's per-block visit counts against const's block-for-block. If copy_end is absent from blocks where it must be live across the retry back-edge, that absence is the lever; if the counts track its true liveness, Route A is closed for good and the ledger should say so."
+   "hypothesis": "Route R3 (pre-RA scheduling moves a live length without moving a C statement) survives s6 untouched and now has twice the leverage.",
+   "mechanism": "Live lengths are measured on the post-sched1 stream while emitted byte order is set by sched2, so two byte-identical C forms can present different pre-RA live lengths. Because the x2 is applied AFTER flow, a scheduling change that shortens the BASE by k shortens the doubled value by 2k. tools/sched_solver models both passes order- and clock-exactly and has still never been pointed at this function.",
+   "next_probe": "Run tools/sched_solver on the def-order chassis and ask one question only: can any legal sched1 ordering move base(cam)/base(const) (or their doubled values) into [32,38] while leaving copy_end at 38 and the emitted stream byte-identical? Then confirm with inverse_compose.py classify that the residual is still RA-owned rather than PRE-RA."
   }
  ],
  "judge_constraints": [],
