@@ -14496,3 +14496,7 @@ sanctioned-family claims.
 ## 2026-08-26 14:56 — func_80061250 — layer-1 review — **FAIL**
 
 Construct is legitimate (verified against the actual sibling body), but the self-vet's precedent citations do not resolve to the lines quoted -- a resolvable citation error, not a substantive defect.
+
+## 2026-08-26 15:03 — func_80061250 — layer-1 review — **FAIL**
+
+The block-offset flag addressing (&D_800F1154)[5]/[6] is a per-use pointer-pun across splat-invented per-word symbols, selected via a measured spelling ladder specifically for its CSE base-register anchoring effect -- it fails T3/T4 on its own evidence and, by direct analogy, fails every mandatory prong of the project's own 'per-word splat symbol -> aggregate merge' sanctioned family, which explicitly forbids exactly this shape.

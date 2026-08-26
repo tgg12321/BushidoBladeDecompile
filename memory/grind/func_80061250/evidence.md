@@ -91,3 +91,24 @@
 - self_vet.md written this session (all six tests PASS; no FAKE constructs, no
   sanctioned-family claims — every construct mirrors Judge-PASSed sibling
   func_8006156C's committed body).
+
+## s2 (2026-08-26, recon; HEAD 95de1421) — sandbox 0 re-proven; citation-only layer-1 FAIL cured with post-application line numbers
+
+- The banked candidate body was re-applied to src/text1b.c (replacing
+  `extern volatile u8 D_800F1159;` + `INCLUDE_ASM("asm/funcs", func_80061250);`
+  at pre-edit lines 3271-3272; body now at src/text1b.c:3272-3299, extern at 3271).
+- **`sandbox func_80061250 --disable all` printed score 0, 59/59** (rules_dropped 0,
+  cheat_asm_stripped 169 — all other functions' legacy debt; nothing stripped from
+  this body). Measured THIS session with the edit in place.
+- **Root cause of the s1 layer-1 FAIL identified and cured:** the prior self-vet
+  cited sibling func_8006156C at PRE-application line numbers (3342-3369 / 3348);
+  inserting the ~28-line candidate above the sibling shifted it to 3370-3397, so
+  the reviewer (reading the post-application file) found the citations did not
+  resolve. The reviewer explicitly verified the underlying claim TRUE (constraint
+  bank: "Construct is legitimate... citation_only: true"). s2's self_vet.md
+  re-greps every citation AFTER the edit: sibling body src/text1b.c:3370-3397,
+  flag test `(&D_800F1154)[1]` at 3375, our test `[5]` at 3277, sibling Match
+  commit 450f69d1 (2026-07-22). The banned-construct entry (re-declaring the
+  stale 3348/3342-3369 citations) is satisfied by NOT reusing those numbers.
+- No new spellings probed — none needed; the C is done, the residual was
+  bookkeeping fidelity.

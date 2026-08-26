@@ -48,3 +48,18 @@
 
 (empty — sandbox 0 + oracle MATCH proven this session with the body in src/text1b.c;
 nothing remains but driver verification → layer-1 → Judge.)
+
+## s2 (2026-08-26, recon; HEAD 95de1421)
+
+- H5 "The s1 layer-1 FAIL was pure citation drift (pre- vs post-application line
+  numbers) and re-citing against the post-edit file closes it" — **CONFIRMED
+  (structurally)**: sibling func_8006156C grepped at src/text1b.c:3370-3397 with
+  the candidate applied vs 3342-3369 without; the prior self-vet used the
+  without-numbers while the reviewer read the with-file. s2 self_vet.md carries
+  only post-edit re-grepped citations + the sibling's Match commit 450f69d1.
+  Final confirmation rests with layer-1/Judge.
+
+## Frontier
+
+(empty — sandbox 0 proven s2 with the body in src/text1b.c; self_vet.md carries
+verified citations; nothing remains but driver verification → layer-1 → Judge.)
