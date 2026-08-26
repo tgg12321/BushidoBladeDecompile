@@ -1221,3 +1221,4 @@
 - 2026-08-25 21:48 func_80072CD4 s11 [escalation] OWNER-GATED — borderline-logged, terminal park: Solver modality (the owner's never-executed 2026-08-24 directive) kills both named frontier levers with typed sched_solver verdicts; floor holds 4/79; escalated with a fidelity/routing decision packet, no family grant requested.
 - 2026-08-25 22:06 func_80061710 COMPLETED-C after 5 sessions (closer: s5 [synthesis]).
 - 2026-08-25 22:25 CD_datasync s18 [escalation] AUTO-FILED by driver backstop (session did not self-file): 2026-08-25 ΓÇö CD_datasync ΓÇö OWNER-ESCALATION ΓÇö ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)
+- 2026-08-25 22:43 func_80061658 COMPLETED-C after 5 sessions (closer: s5 [permuter]).
