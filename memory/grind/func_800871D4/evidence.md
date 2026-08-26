@@ -166,3 +166,41 @@ Park with confirmed cc1psx divergence. The oracle requires cc1psx-specific behav
 - [s5] `keyoff_lo = keyoff_lo | bitsLower;` and `keyoff_lo |= bitsLower;` are byte-identical (both score 0); the `|=` spelling is the one shipped.
 
 - [s5] The s1/s2 conclusion that this function's shape is a "shared unresolved family" across 5 INCOMPLETE BB2 siblings should be re-tested by those functions' sessions: the shape `lhu $r,GLOBAL; nop; andi $r2,$r,0xFFFF` is now known to be the ordinary codegen of a `u16` LOCAL loaded from a `u16` global, not a compiler-fork divergence and not a coercion. Siblings named in [s1]: func_8002304C, func_8003DE14, saTan4FireDisp_80048864, func_8008C464, func_80023F08.
+
+## [s6] SOLVER SESSION — MATCH (score 0, oracle-verified)
+- Chassis on arrival: src/main.c carried `INCLUDE_ASM("asm/funcs", func_800871D4);`
+  (asm-until-matched). The ledger's "floor 3" was stale; re-measured from
+  rejected/s5-grouped-writeback-score6-a1a2-swap.c the honest floor is 6.
+- `tools/ra_solver/mkasm_honest.sh main` CANNOT build the target half for this
+  function (src carries no target-representing C), so `inverse_compose.py classify`
+  answers "IDENTICAL" from a stale/self-referential .tgt.s. The correct entry point
+  is the object-level `tools/ra_solver/goal_from_tgt.py classify main <func>`.
+  Recorded because the text-path classifier silently returns fiction here.
+- Residual typed RA: 52 vs 52 insns, identical skeleton, pure `$a1 <-> $a2` rename.
+- Model (score-6 chassis): allocnos 79 ($v1, nrefs4/len7/pri11428), 75=voice
+  ($a0, 3/13/2307), 74=bitsLower ($a1, 3/19/1578), 73=bitsUpper ($a2, 3/21/1428).
+  Target wants 73 -> $a1, 74 -> $a2. Since 73 and 74 conflict with each other and
+  with voice, sorting 73 first is sufficient and necessary.
+- inverse.py FORECLOSURE (durable, reusable): all 8 preference atoms are
+  mechanically unreachable — neither $a1 nor $a2 appears as a hard reg anywhere in
+  this function's pre-RA RTL, so global.c's set_preference cannot record a
+  preference for either. Any future attempt to steer these two seats by
+  preference/copy-preference is dead on arrival; only priority (refs / live length)
+  can move them.
+- KEY MECHANISM (generalises beyond this function): the live lengths global.c
+  ranks on are NOT recomputed from the final instruction stream. flow's pre-sched
+  numbers here are 73:16 / 74:17 while global.c's own allocdbg records 73:21 /
+  74:19 — inverted. sched1 applies a delta over the pre-scheduling positions, so
+  two source orderings that converge to the SAME 52-instruction stream can hand
+  global.c different live lengths and therefore different allocations. This is why
+  an instruction-exact chassis is not an allocation-exact chassis, and why
+  statement-order changes remain a live lever after the stream is pinned.
+- Six tail orderings measured, all build_insns=52: v1/v2/v3/v6 score 0,
+  v7/v8 score 6. Adopted v3 = the score-6 chassis with the write-back regrouped
+  into Sony's order (both key-off commits, then both key-on updates); on it the
+  model reads 73 len17/pri1764 -> $a1, 74 len19/pri1578 -> $a2, and
+  goal_from_tgt.py classify reports "NO DIVERGENCE".
+- verify-oracle --rebuild --allow-dirty: ok=true, build_sha1 ==
+  62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches=true.
+- v1/v2/v6 (also 0) were rejected BY THIS SESSION as respellings of the
+  layer-1-banned phase-split construct; only v3 avoids any RMW phase split.

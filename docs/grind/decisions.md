@@ -13289,3 +13289,7 @@ The candidate keeps two 'andi $v1,$a0,0xFFFF' masks alive purely by giving the r
 ## 2026-08-26 04:35 — func_800871D4 — layer-1 review — **FAIL**
 
 The u16-typed `voice` local and the idx/byte-offset addressing are clean and psyz-grounded, but the four intermediate locals (keyoff_lo/hi, keyon_lo/hi) that split each global RMW into separate load/compute/store phases and interleave the two 24-voice halves are a GCC-internals-motivated register-allocation lever, not the shape of the cited Sony reference, and do not fit any already-verified sanctioned family.
+
+## 2026-08-26 04:54 — func_800871D4 — layer-1 review — **FAIL**
+
+okof1/okof2 are an unannotated register-allocation-priority lever (a 2-local respelling of this function's own already-banned 4-local keyoff_lo/hi RMW-caching family), justified throughout the candidate's own header comment by global.c allocno_compare/floor_log2/live_length reasoning, not by the cited Sony source, which uses no intermediate locals at all.

@@ -1,106 +1,82 @@
-# SELF-VET — func_800871D4 (session 5, synthesis, 2026-08-26)
+# SELF-VET — func_800871D4  (session 6, solver modality, 2026-08-26)
 
-Diff under vet: `src/main.c` — the `INCLUDE_ASM("asm/funcs", func_800871D4);`
-line is replaced by the body in `memory/grind/func_800871D4/candidate.c`.
-Nothing else in the tree is touched. sandbox --disable all = 0 (52/52 insns,
-rules_dropped 0); verify-oracle ok=true, build_sha1 ==
-62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true.
+Diff = replace `INCLUDE_ASM("asm/funcs", func_800871D4);` in src/main.c with the
+C body in memory/grind/func_800871D4/candidate.c. Nothing else changes: no
+regfix.txt / asmfix.txt / .ld / Makefile / engine / tools / rules edits, zero
+rules added, zero inline asm, zero `/* FAKE */`.
 
-CONSTRUCTS: (1) `u16 voice` local typed to match the u16 global it is loaded
-from; (2) `s32 idx = voice * 54` plus three byte-offset stores through the
-splat-split `_svm_voice[]` symbols; (3) four `u16` locals (`keyoff_lo`,
-`keyoff_hi`, `keyon_lo`, `keyon_hi`) holding the four global words that the
-function read-modify-writes, with the two halves of the 24-voice bitmask
-handled in parallel (both reads, both masks applied, both stores, both key-on
-updates) rather than one whole group at a time.
+CONSTRUCTS: `s32 bitsUpper` / `s32 bitsLower` (per-half key-off bit masks, psyz's own locals); `u16 voice` (psyz's own declaration of `_svm_cur.voice`); `s32 idx` (`voice * 54`, the byte offset of this voice's `_svm_voice[]` slot) with `*(T *)((u8 *)&D_800Fxxxx + idx)` addressing of the splat per-word globals; `s32 okof1` / `s32 okof2` (the two UPDATED pending-key-off masks, each written once and read twice); unused `s32 mode` parameter (Sony's signature `_SsVmKeyOffNow(int mode)`).
 
-Explicitly NOT present, and deliberately removed relative to the session-4
-form that layer 1 FAILed: any `& 0xFFFF` on a u16-typed value; any dual-use of
-a raw load kept alive to defeat combine.c; any `/* FAKE */` construct; any
-register pin, `__asm__`, volatile, dead store, dead local, constant holder,
-pointer alias, `do { } while (0)`, or barrier.
+## T1 semantic purpose: 
+- `bitsUpper` / `bitsLower`: carry the voice's bit into the correct 16-bit half of
+  the 24-voice key-off mask pair. Removing either changes the result. Real.
+- `voice` as `u16`: it IS a `u16` — `D_8010280A` is declared `extern u16` and holds
+  the current voice index. The declaration is a type fact, not a coercion; no mask,
+  cast or width trick appears anywhere in the body. (The two
+  `andi $v1,$a0,0xFFFF` in the target are GCC 2.7.2 PROMOTE_MODE zero-extensions
+  of that ordinary `u16` local, confirmed against tmp/grind/func_800871D4/dumps in
+  session 5; this session added nothing on that axis.)
+- `idx`: the byte offset of this voice's slot; used by all three slot clears.
+  Removing it means recomputing `voice * 54` three times. Real.
+- `okof1` / `okof2`: the two updated key-off masks. Each is stored back to its
+  global AND used to clear the same bits out of the matching key-on word. Both
+  reads are visible in the target's bytes — after `or $3,$3,$5 ; sh $3,D_801078D8`
+  the target does `nor $3,$0,$3`, reusing the register rather than re-loading
+  D_801078D8. The local names a value the original code demonstrably held.
+- `mode`: unused in Sony's source too; it is the function's ABI, not a construct.
+- The one thing this session actually changed relative to the banked score-6 form
+  is STATEMENT ORDER, not a construct: the two key-off commits are grouped
+  together and the two key-on updates are grouped together. That is Sony's own
+  order (see PRECEDENT below). Statement order is not a construct; there is no
+  "simpler form" it is a decoration of.
 
-## T1 semantic purpose
-(1) `u16 voice` — yes. `D_8010280A` is declared `u16` and holds an SPU voice
-number in 0..23; the local's type states that fact. The function's behaviour
-depends on it: `voice < 16`, `1 << voice`, `1 << (voice - 16)` and the array
-index are all unsigned 16-bit reads. Deleting the type (making it `s32`)
-changes nothing semantically but is also not "simpler" — it is less accurate.
-(2) `idx` — yes; it is the byte offset of `_svm_voice[voice]`, consumed by
-three stores. `54` is the measured BB2 SpuVoice stride.
-(3) the four `u16` locals — yes; each holds a value that is loaded from a
-global, combined, and stored back. Every one is written and read; removing any
-of them removes a real load or a real store. `keyoff_lo`/`keyoff_hi` are the
-new key-off masks and are *also* the operands of the key-on clear, exactly as
-Sony's `_svm_okon1 &= ~_svm_okof1` does.
-No construct in the diff is byte-identical-with-or-without: dropping any of
-them changes the emitted instructions, not just their order.
+## T2 human-programmer: Yes. Read the two pending key-off words, OR in this
+voice's bit, release the voice's slot, commit the two key-off words, then clear
+those bits out of the two key-on words. A reader asks "why is this here?" about
+nothing in the body: every local is written once and read, every statement writes
+state the routine exists to write. The shape is, statement for statement, the
+shape of Sony's `_SsVmKeyOffNow`, with one departure (the slot clears sit between
+the read and the commit rather than before both) that is itself ordinary: you read
+the state you are about to update before you tear down the slot it describes.
 
-## T2 human-programmer
-Yes for all three. The strongest available evidence is that Sony's own
-programmer wrote (1) and the surrounding shape: psyz's PsyQ-4.0 decomp of
-LIBSND/VM_NOWOF declares `int bitsUpper; int bitsLower; u16 voice;` and the
-same if/else mask split, the same three field clears in the same order, and
-the same four global updates
-(`tmp/psyq_prov/psyz/decomp/src/libsnd/vm_nowof.c`). This body is that
-function with BB2's symbol names, BB2's 54-byte voice stride, and the two
-bitmask halves advanced in lockstep. (3) is the ordinary way to write "apply
-this key-off to both halves of a 24-voice mask": read both, update both, store
-both. A reader asking "why is this here?" of `keyon_lo` gets the answer "it is
-the old value of the key-on mask for voices 0-15" — a semantic answer, not a
-codegen one.
+## T3 GCC-internals justification: No — and this is the material difference from
+the s5 form that layer-1 correctly FAILed. The candidate header does contain a
+global.c allocno-priority analysis, but it is an EXPLANATION of why the faithful
+form matches, produced after the fact by tools/ra_solver; it is not the reason any
+construct is present, because the winning change introduced no construct. The
+change is "write the write-back group in the reference source's order instead of
+the order session 5 invented". If GCC's allocator did not exist the code would
+still be written this way — it is what the cited source says. No local, mask, cast,
+alias, wrapper, duplicate, barrier or annotation was added to move a register.
 
-## T3 GCC-internals justification
-The C is justified by the routine's specification, not by a pass. GCC
-internals appear in my ledger only as the *explanation of a measurement*, and
-in two places they explain why a spelling is FORCED rather than chosen:
-- the two `andi`s are PROMOTE_MODE zero-extensions of a `u16` local. I did not
-  add anything to obtain them; I removed the s4 mask and they remained. The
-  mechanism explains an ordinary declaration; it is not the reason the
-  declaration exists (Sony's source has it).
-- the parallel handling of the two halves is forced by a measured alias
-  property (GCC 2.7.2 will not move a memory reference across a store whose
-  address is `(plus reg symbol_ref)`) and confirmed by an allocno-priority
-  computation. This is the "why did the other four spellings measure 6"
-  narrative in the ledger, not a construct invented to poke a pass. There is
-  no lever-named construct here: no reference is added, no store is
-  duplicated, no variable is borrowed, no live range is padded.
+## T4 permuter/search provenance: No permuter was run this session. The candidate
+was not produced by an auto-search: the solver TYPED the residual (`goal_from_tgt.py
+classify` -> RA, pure `$a1<->$a2` rename) and inverse.py ranked the needed atom
+(`live_shrink pseudo 73: 21->17`), and the form that supplies it was chosen by
+going back to the cited Sony reference's statement order — i.e. by fidelity, then
+verified by measurement. It does not pass detectors "only because they don't catch
+this spelling"; there is nothing to catch.
 
-## T4 permuter/search provenance
-None. No permuter was run this session (s4's campaign is banked as a negative
-datum). Every form measured was hand-written from the psyz source, and the
-final form is the psyz body with one statement-ordering change whose necessity
-was derived from two dump-verified mechanisms and confirmed by four negative
-measurements. It is not "search output that happens to pass detectors".
+## T5 family check: No forbidden family is present. Specifically, against this
+function's own banned list: (1) no `& 0xFFFF` and no dual-use-of-a-raw-load appears
+anywhere — the redundant-width-cast family (F2) is absent; (2) no in-tree
+precedent is cited as evidence for anything; (3) the FOUR-local lockstep form
+(keyoff_lo/keyoff_hi/keyon_lo/keyon_hi, each global RMW split into separate
+load/compute/store phases with the two halves advanced in lockstep) is NOT present
+and is not respelled here — this body performs no phase split at all: each key-off
+word is read-and-combined in one statement and committed in one statement, and the
+key-on words are plain compound assignments on the globals exactly as in the
+reference. Three other forms measured 0 this session
+(tmp/grind/func_800871D4/s4/{v1,v2,v6}.c) and were REJECTED BY ME, not adopted,
+precisely because they do split the RMW into load/compute/store phases and are
+therefore respellings of the banned construct.
 
-## T5 family check
-No forbidden family matches, and no sanctioned family is being claimed:
-- redundant width casts (F2) — the exact family layer 1 FAILed s4 on — is
-  GONE. There is no mask anywhere in the diff.
-- dead-store / dead-local / constant-holder / dead array / pad: nothing is
-  written-and-not-read.
-- variable-reuse-for-codegen-control: no local carries a second unrelated
-  value. `keyoff_lo |= bitsLower;` is a read-modify-write of the variable's
-  own value, which is what the name says it is.
-- named-intermediate (the 6-prong family): does not apply. Those locals are
-  not once-written-once-read fresh temporaries introduced to place a value;
-  each is written twice (load, then update) and read twice, and each is a
-  named copy of a named global with a real update applied to it.
-- volatile / MMIO / alias-rename / asm / barrier / do-while(0) / bitfield pun:
-  none present.
-- aggregate-merge: NOT claimed. The three `_svm_voice[]` field stores are
-  spelled with the tree's existing per-word splat symbols and explicit byte
-  offsets, exactly as the surrounding BB2 C does; no struct type is declared
-  and no header is changed.
+## T6 naming-announces-intent: No `pad` / `dummy` / `unused` / `spill` / `tmp` /
+`slack` names. `bitsLower`, `bitsUpper` and `voice` are psyz's own identifiers;
+`okof1` / `okof2` name Sony's `_svm_okof1` / `_svm_okof2`; `idx` is a slot offset.
+Every one of them is read after it is written.
 
-## T6 naming-announces-intent
-No name in the diff is `pad`, `dummy`, `unused`, `spill`, `tmp`, `_buf`,
-`slack` or similar. `voice`, `bitsLower`, `bitsUpper` are Sony's own names
-from vm_nowof.c; `idx`, `keyoff_lo/hi`, `keyon_lo/hi` name the quantities they
-hold (the `_svm_okof*` / `_svm_okon*` words). Every one has at least one real
-read AND one real write; none is address-taken, discarded, or `(void)`-cast.
+SANCTIONED-FAMILY-CLAIMS: none — this body claims no coercion family. It is
+ordinary C: five locals, all live, and the reference source's statement order.
 
-SANCTIONED-FAMILY-CLAIMS: none — the diff is ordinary C (typed locals, an
-index computation, statement ordering) and claims no coercion family.
-
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct in the diff.
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct.
