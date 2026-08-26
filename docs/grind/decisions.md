@@ -13901,3 +13901,72 @@ xref2.py, scan_hand_coded_s14b.log, ings2.c.HEAD2}` · `tmp/grind/motion_Close/s
 ruling 2) · `docs/grind/borderline.md` 2026-08-24 `func_80083794` canonical-asm-grant ·
 `docs/grind/decisions.md:4808` (this function's 2026-08-12 standing-ruling entry) ·
 `memory/closer/psyq-library-census.md:358` · `memory/closer/libsnd-hunt-report.md:69`.
+
+## 2026-08-26 — func_80037B00 — **SUPERSEDED: the 2026-07-28 both-gates-fail escalation rests on a premise measured FALSE**
+
+Session 6 (synthesis modality) lowered the honest floor 15 -> 11, the first
+movement since s2, and dissolved the premise the 2026-07-28
+`OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED /
+OWNER-ACCEPTED INCOMPLETE` entry was built on. No owner action is requested by
+this entry; it exists so the earlier entry is not read as current.
+
+**What the earlier entry claimed.** That func_80037B00's residual was a 5-way
+coupled register rotation plus an 8-byte phantom stack frame, that the frame
+could only be produced by the forbidden dead-vars-local-array family, that the
+structural axis was exhaustively exhausted, and that a fresh-seed permuter
+campaign's only score-lowering finds were in the banned named-holder-local
+family — therefore both endgame-lock gates failed with no grindable lever left.
+
+**What s6 measured.**
+
+1. The residual was typed mechanically for the first time
+   (`tmp/grind/func_80037B00/s6/multiset.py`, register-blanked multiset plus
+   ordered diff of the cheat-stripped sandbox object against
+   `asm/funcs/func_80037B00.s`). On the s0..s5 form the instruction multiset
+   differs from target by exactly two instructions — `addiu $sp,$sp,-0x8` and
+   `addiu $sp,$sp,0x8` — and by nothing else. With those removed the ordered
+   streams align position-for-position across all 34 slots.
+
+2. s1's third axis, "inner-loop scheduling shift near .L80037B30", does not
+   exist. It was an artefact of comparing a 34-instruction stream against a
+   36-instruction one; every instruction after the absent prologue looked
+   displaced by one slot. sched1/sched2/reorg are not implicated anywhere in
+   this function.
+
+3. The 8-byte frame is reachable from ordinary live C. Writing the OUTER loop
+   as a top-tested `while (var_t1 < var_t3)` with the programmer's pre-guard
+   DELETED makes GCC rotate the loop and duplicate its exit test as an entry
+   guard; combine folds that duplicated comparison into a bare `blez` while the
+   compare pseudo keeps a reference, so it reaches reload unallocated and
+   `alter_reg` hands it a stack slot. `get_frame_size()` counts 4,
+   MIPS_STACK_ALIGN rounds to 8, and nothing ever reads or writes the slot.
+   This is producer #1 ("folded loop-guard compare") of
+   `.claude/rules/phantom-slot-frame-lever.md`, reached with live named locals
+   only — no dead declaration, no local array, no coercion construct. cc1's own
+   `.frame $sp,8,$31 # vars= 8` confirms it, and the `.greg` dump shows the
+   orphan directly (pseudo 86 appears in `;; 10 regs to allocate:` and is
+   absent from `;; Register dispositions:`).
+
+4. Merging that outer loop with the s0..s5 goto inner body measures
+   `sandbox --disable all` score=11, target_insns=36, build_insns=35,
+   `vars= 8`. The remaining multiset delta is ONE instruction (target's
+   `addu $t3,$v0,$zero` preheader copy), and the "5-way rotation" is mostly
+   dissolved — $v0, $v1, $a1, $a2, $a3, $t2 and $t3 all land on target's
+   registers; a single 2-swap remains between the outer counter and the inner
+   end pointer.
+
+5. GCC 2.7.2's assignment for this function was reproduced exactly as a
+   sorting problem: priority = floor_log2(n_refs)*n_refs*size/live_length,
+   ties to lower pseudo number, all ten allocnos mutually conflicting, so rank
+   N takes the Nth free hard register. The predicted order matches the greg's
+   own `;; 10 regs to allocate:` line verbatim. The remaining 2-swap is
+   therefore a bounded, forward-checkable question, not an opaque wall.
+
+**Consequence.** func_80037B00 is grindable. The floor is moving on a
+sanctioned ordinary-C axis that no earlier session instrumented (cc1's `vars=`
+frame gradient), the permuter plateau of s5 was measured against the wrong
+base form, and neither endgame-lock gate is reached. The item should stay
+active; the next pass is the frontier recorded in
+`memory/grind/func_80037B00/hypotheses.md` (recover the preheader copy, move
+the `la` inside the guarded region, close the $t0/$t1 swap via the priority
+model). No standard is being lowered and no grant is being requested.

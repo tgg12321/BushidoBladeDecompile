@@ -1,8 +1,8 @@
 {
  "func": "func_80037B00",
  "file": "code6cac_c",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -39,23 +39,29 @@
    "floor": 15,
    "modality": "permuter",
    "headline": "s5 permuter modality executed: workspace built from scratch (mar_perm3 pattern), fresh-seed 20min/29k iters over 4 workers, 66 novel finds; entire low-score tail (70/75/90/95/175) is the banned named-"
+  },
+  {
+   "session": 6,
+   "floor": 11,
+   "modality": "synthesis",
+   "headline": "Floor 15->11: the 8-byte phantom frame is reachable from ordinary live C (GCC's own rotated-while entry guard orphans a compare pseudo); residual now ONE missing copy + one register 2-swap, and the s5"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Debug the compile.sh maspsx crash by minimizing base.c until the crash disappears, localizing which of the 11 pruned functions (or which construct within one) trips maspsx's unpack failure when consumed via bash pipeline.",
-   "mechanism": "maspsx crashes with `too many values to unpack (expected 3)` inside process_lines() but only when invoked as `bash compile.sh` (nested pipe). Standalone `maspsx < file > file` works on the SAME input. The trigger is either an input-content interaction with pipe/stdin buffering, or a state carried across a specific instruction pattern. Bisecting base.c (delete half the pruned functions, retry compile.sh) will isolate.",
-   "next_probe": "Strip base.c down to just `func_80037B00` + its two globals (D_800A38C8 s32, D_80102810 u8) + typedef header. If compile.sh still crashes, the input isn't the trigger \u2014 instrument maspsx.py:224 to re-raise (`raise` instead of `sys.exit(1)`) to get a stack trace. If compile.sh succeeds on the minimal form, incrementally re-add sibling functions until the crash returns; that pinpoints the trigger."
+   "hypothesis": "Target's missing `addu $t3,$v0,$zero` preheader copy appears when the loop bound's load result stays live past the rotation guard \u2014 i.e. the guard consumes one pseudo and the loop-carried bound is a genuinely separate pseudo that copy propagation cannot fold.",
+   "mechanism": "In our form the load destination IS the loop-bound pseudo, so GCC emits `lw $t3` and branches on $t3 directly. In target the load lands in $v0, blez reads $v0, and the preheader copies $v0 into $t3 \u2014 two pseudos surviving into RA. A C-level duplicate (`var_v0 = D_800A38C8; var_t3 = var_v0;`) is folded by copy propagation (KILLED this session), so the second pseudo has to be created by a pass, not by the source: the candidates are LICM hoisting a load whose value the rotation guard also needs, and loop.c's own bound-copy in the preheader.",
+   "next_probe": "Spell the bound as a memory expression read by the loop test itself \u2014 `while (var_t1 < D_800A38C8)` \u2014 with no count local at all, and read both instruments (tmp/grind/func_80037B00/s6/frame_probe.sh for vars, sandbox --disable all for the score) plus the .loop and .combine dumps in tmp/grind/func_80037B00/dumps/. If LICM hoists the load into the preheader while the rotation guard keeps its own copy, the `addu` appears and build_insns should reach 36. If instead a second `lw` appears, read the .loop dump to see whether loop.c created a bound copy at all in this shape, and pivot to making the bound's first use be something other than the guard."
   },
   {
-   "hypothesis": "Bypass import.py entirely and hand-build a minimal permuter workspace using the mar_perm_workspace.sh pattern (compile full src/code6cac_c.c, extract just func_80037B00's region, assemble alone).",
-   "mechanism": "mar_perm_workspace.sh is proven to build workable permuter workspaces for BB2. It uses a full-TU compile so codegen context is preserved, then extracts one function's region via awk between `.ent`/`.end` markers. This sidesteps import.py's prune + macro-preservation artifacts entirely.",
-   "next_probe": "Copy tools/mar_perm_workspace.sh, adapt for func_80037B00 (change function name, output dir), point base.c at src/code6cac_c.c pin-free form or a stripped copy of it. Verify base compiles and diff against target.o. If diff shows ~5-15 weighted insns, launch permuter."
+   "hypothesis": "The `lui/addiu` for D_80102810 moves from stream position 1-2 to target's 6-7 when the base-pointer initialisation is loop-invariant code that LICM places in the preheader, rather than a straight-line statement written before the loop.",
+   "mechanism": "Target emits the `la` after the blez, i.e. inside the guarded preheader \u2014 the classic position for an invariant hoisted OUT of the loop body. Our form assigns `var_a3` before the while, so it is ordinary straight-line code above the guard and sched1 pulls it further up to cover the lw's load delay. Deleting the programmer's pre-guard is what created the orphan (do not re-add it \u2014 KILLED this session), so the placement has to come from LICM instead of from dominance.",
+   "next_probe": "Move the base-pointer initialisation INTO the loop body as a genuine loop-invariant expression the algorithm justifies \u2014 e.g. carry only the byte offset in the loop and write `var_a1 = (s8 *)&D_80102810 + off;` inside, letting LICM hoist the `la` into the preheader while the `addu` stays. Watch build_insns for an added per-iteration add; if it appears, try instead making `var_a3` the induction variable but initialising it from an expression that is only computed once the loop is known non-empty. Measure vars= at every step \u2014 the frame must survive."
   },
   {
-   "hypothesis": "If s5 gets the workspace running and a fresh-seed permuter window closes at \u226530 min with no NOVEL find, both endgame-lock gates fail with no lever remaining. The standing 2026-07-27 ruling then applies terminally: REFUSED / OWNER-ACCEPTED INCOMPLETE.",
-   "mechanism": "s2/s3 exhaustively measured the structural axis; directed permuter is the last grindable lever. Its exhaustion IS the terminal exhaustion. Gate 1/2 status unchanged (both FAIL) \u2014 no canonical-asm-authorization or coercion-family sanction applies.",
-   "next_probe": "In s5, after the permuter run harvests with no novel find, file docs/grind/decisions.md entry titled `## <date> \u2014 func_80037B00 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**`; state both gates' evidence + permuter fresh-seed negative result; return owner-gated with escalation_ref."
+   "hypothesis": "The last register 2-swap (our counter=$t0/end=$t1 vs target's counter=$t1/end=$t0) closes by raising the end-pointer allocno's priority above the counter's, which the validated priority model says needs the end pointer's live_length shortened to 5-6 insns (pri 0.33-0.40) so it sorts between the base pointer (0.417) and the counter (0.286).",
+   "mechanism": "global.c allocno_compare: pri = floor_log2(n_refs)*n_refs*size/live_length, ties to lower pseudo number. The model reproduced this function's rank order exactly, so it is a forward oracle: adding a fourth ref to the end pointer overshoots (2*4/11 = 0.727, jumping above the base pointer and breaking a correct assignment), while shortening its live range from 11 to 5 or 6 lands it exactly in the gap. Birth order is the tiebreak if priorities collide.",
+   "next_probe": "Re-derive the priority table for the s6 form first (rerun pwsh tools/grinder/dump.ps1 func_80037B00 with the candidate applied and read .flow/.greg \u2014 the numbers below are from the s0..s5 form and the ranks have shifted). Then look for a spelling that shortens the end pointer's live range without adding instructions: computing `var_t0` later in the block, or expressing the inner bound so the end pointer's first reference sits closer to its last. Check each candidate against the model on paper before compiling, and confirm with the .greg rank line rather than the score."
   }
  ],
  "judge_constraints": [

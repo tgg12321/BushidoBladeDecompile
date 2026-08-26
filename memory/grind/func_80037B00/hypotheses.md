@@ -83,3 +83,87 @@
 - probe: Filed docs/grind/decisions.md entry titled OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE, stating both gates' evidence + permuter fresh-seed negative result + banned-family score table. Reverted src/code6cac_c.c to HEAD.
 - result: Entry filed at docs/grind/decisions.md (section '2026-07-28 — func_80037B00 — OWNER-ESCALATION — RESOLVED BY STANDING RULING'). No owner action pending; the driver parks func_80037B00 out of active grind.
 - verdict: CONFIRMED
+
+## [s6] The residual is not "5-way register rotation + phantom frame + scheduling shift"; typing it mechanically will show a much smaller, differently-shaped question.
+- mechanism: inverse_compose's funnel taxonomy — register-blanked multisets differing means PRE-RA (a different instruction set, unreachable by RA or scheduler perturbation); multisets matching with different registers means RA; matching texts in a different order means SCHED. No prior session ran this classification, so the "5-way rotation" framing was never validated against the actual streams.
+- probe: tmp/grind/func_80037B00/s6/multiset.py — objdump the cheat-stripped sandbox object, parse asm/funcs/func_80037B00.s, blank register names / immediates / symbols, normalise objdump's `move`/`li` aliases back to `addu`/`addiu`, then compare as a multiset AND position-by-position.
+- result: The multiset delta is EXACTLY `addiu $sp,$sp,-0x8` + `addiu $sp,$sp,0x8` — two instructions, nothing more, all four nops matching. With those two removed the ORDERED streams align position-for-position across all 34 slots. So there is ONE pre-RA question (the frame) and ONE RA question (registers), and ZERO scheduler question.
+- verdict: CONFIRMED
+
+## [s6] s1's third axis — "subtle shift in slt/addiu ordering near .L80037B30, a side-effect of the different RA" — does not exist.
+- mechanism: s1 read the two streams side by side while they had different lengths (34 vs 36), so every instruction after the missing prologue appeared displaced by one slot.
+- probe: the ordered diff above, after accounting for the two sp instructions.
+- result: No ordering difference anywhere in the function. reorg/sched are not implicated. One axis removed from the search space for free.
+- verdict: KILLED
+
+## [s6] GCC 2.7.2's register assignment for this function is a deterministic function of allocno priority rank, so the "rotation" is a sorting problem with exactly two C-visible dials (n_refs, live_length) plus birth order as tiebreak.
+- mechanism: global.c allocno_compare sorts by pri = floor_log2(n_refs)*n_refs*size/live_length descending, ties to the lower pseudo number (= birth order); find_reg then walks the free hard registers ascending. All ten allocnos here mutually conflict (greg conflict lines), so no preference or conflict subtlety can intervene — rank N gets the Nth free register.
+- probe: computed pri from the .flow `used N times across M insns` lines for pseudos 72-81 and compared the predicted ordering against the greg's own `;; 10 regs to allocate:` line.
+- result: Predicted [81 77 78 80 76 73 79 75 74 72]; greg prints [81 77 78 80 76 73 79 75 74 72]. Exact. The model is usable as a forward oracle for candidate spellings without compiling.
+- verdict: CONFIRMED
+
+## [s6] The 8-byte phantom frame can be produced by ordinary live C via the folded-loop-guard-compare orphan, dissolving the s1..s5 conclusion that it required the forbidden dead-vars-local-array family.
+- mechanism: .claude/rules/phantom-slot-frame-lever.md producer #1 + [[phantom-frame-slots-gcc272]]. A top-tested loop makes GCC duplicate the exit test as an entry guard; combine folds the duplicated comparison into a bare branch (`blez`) but the compare pseudo keeps a reference, reaches reload unallocated, and alter_reg assigns it a stack slot. get_frame_size() counts it; no instruction ever touches it; MIPS_STACK_ALIGN rounds 4 up to 8.
+- probe: rewrote the outer loop as `while (var_t1 < var_t3)` with the explicit pre-guard deleted; read cc1's own `.frame` line via tmp/grind/func_80037B00/s6/frame_probe.sh; confirmed the orphan in the .greg dump (pseudo 86 listed in `;; 10 regs to allocate:` but absent from `;; Register dispositions:`).
+- result: `.frame $sp,8,$31 # vars= 8` — target's frame exactly, at zero instruction cost, from live named locals only. Combined with the s0..s5 goto inner loop this measured score=11, build_insns=35 (target 36), lowering the floor from 15 for the first time since s2.
+- verdict: CONFIRMED
+
+## [s6] Re-adding an explicit `if (count <= 0) return 0;` guard in front of the top-tested while keeps the frame while restoring target's post-guard `la` placement.
+- mechanism: the explicit guard would dominate the loop, so the preheader (and any invariant placed in it) sits after the branch, matching target's `lui/addiu $a3` position — while GCC's own rotation guard would still supply the orphan.
+- probe: v_hybrid3.c (= the merged form plus `var_v0 = D_800A38C8; if (var_v0 <= 0) return 0; var_t3 = var_v0;`); read the .frame line.
+- result: `vars= 0`. Jump threading recognises GCC's duplicated guard as redundant against the programmer's and deletes it, taking the block-0 compare pseudo with it. The orphan is only available when the guard duplication is GCC's own. Banked rejected/explicit-guard-kills-rotation-orphan.c.
+- verdict: KILLED
+
+## [s6] Writing the inner loop as natural `do { ... break; ... } while (p < end)` is byte-neutral relative to the goto spelling.
+- mechanism: both should lower to the same bottom-tested loop with two early exits.
+- probe: v_for.c (whole function in natural C: for-loop outer, do-while inner with breaks); sandbox + frame probe.
+- result: `vars= 8` (frame fine) but score 22 / build_insns 38 — GCC rotates and peels the inner loop too, duplicating the first `lbu` above the loop and adding a `beqz`/`bnez` pair. The inner loop must keep the s0..s5 goto spelling; only the OUTER loop may be top-tested. Banked rejected/for-loop-rotates-inner-loop-too.c.
+- verdict: KILLED
+
+## [s6] Splitting the count read into `var_v0 = D_800A38C8; var_t3 = var_v0;` recovers target's `addu $t3,$v0,$zero` preheader copy.
+- mechanism: target's stream loads D_800A38C8 into $v0, branches on it, then copies it into the loop-bound register $t3 — two pseudos where our form has one, so spelling two C locals should reproduce the pair.
+- probe: v_h4.c; sandbox + frame probe.
+- result: Identical to the merged form (score 11, build_insns 35, vars= 8) — copy propagation folds the second local away because the first has no surviving use. The copy must come from a mechanism that keeps both pseudos live, not from a C-level duplicate. Banked rejected/split-count-copy-folded-by-copyprop.c.
+- verdict: KILLED
+
+## [s6] The residual is not '5-way register rotation + phantom frame + scheduling shift'; typing it mechanically shows a much smaller, differently-shaped question.
+- mechanism: inverse_compose's funnel taxonomy: register-blanked multisets differing => PRE-RA (a different instruction set, unreachable by RA or scheduler perturbation); multisets matching with different registers => RA; matching texts in a different order => SCHED. No prior session ran this classification, so the 'five-way rotation' framing was never validated against the actual streams.
+- probe: tmp/grind/func_80037B00/s6/multiset.py — objdump the cheat-stripped sandbox object, parse asm/funcs/func_80037B00.s, blank register names/immediates/symbols, normalise objdump's move/li aliases back to addu/addiu, compare as a multiset AND position-by-position.
+- result: The multiset delta is EXACTLY `addiu $sp,$sp,-0x8` + `addiu $sp,$sp,0x8` — two instructions, nothing else, all four nops matching with identical multiplicity. Removing those two makes the ORDERED streams align position-for-position across all 34 slots. So there is one PRE-RA question (the frame) and one RA question (registers), and zero scheduler question.
+- verdict: CONFIRMED
+
+## [s6] s1's third axis — 'subtle shift in slt/addiu ordering near .L80037B30, a side-effect of the different RA' — does not exist.
+- mechanism: s1 read the two streams side by side while they had different lengths (34 vs 36), so every instruction after the missing prologue appeared displaced by one slot.
+- probe: The ordered diff above, after accounting for the two sp instructions.
+- result: No ordering difference anywhere in the function. sched1/sched2/reorg are not implicated at all. One axis removed from the search space for free.
+- verdict: KILLED
+
+## [s6] GCC 2.7.2's register assignment for this function is a deterministic function of allocno priority rank, so the 'rotation' is a sorting problem with exactly two C-visible dials (n_refs, live_length) plus birth order as tiebreak.
+- mechanism: global.c allocno_compare sorts by pri = floor_log2(n_refs)*n_refs*size/live_length descending, ties to the lower pseudo number (= birth order); find_reg then walks the free hard registers ascending. All ten allocnos here mutually conflict (greg conflict lines), so no preference or conflict subtlety can intervene — rank N gets the Nth free register.
+- probe: Computed pri from the .flow 'used N times across M insns' lines for pseudos 72-81 and compared the predicted ordering against the greg's own ';; 10 regs to allocate:' line.
+- result: Predicted [81 77 78 80 76 73 79 75 74 72]; greg prints [81 77 78 80 76 73 79 75 74 72]. Exact match — the model is usable as a forward oracle for candidate spellings without compiling.
+- verdict: CONFIRMED
+
+## [s6] The 8-byte phantom frame can be produced by ordinary live C via the folded-loop-guard-compare orphan, dissolving the s1..s5 conclusion that it required the forbidden dead-vars-local-array family.
+- mechanism: .claude/rules/phantom-slot-frame-lever.md producer #1 + the phantom-frame-slots-gcc272 memory. A top-tested loop makes GCC duplicate the exit test as an entry guard; combine folds the duplicated comparison into a bare branch (blez) but the compare pseudo keeps a reference, reaches reload unallocated, and alter_reg assigns it a stack slot. get_frame_size() counts it; no instruction ever touches it; MIPS_STACK_ALIGN rounds 4 up to 8.
+- probe: Rewrote the outer loop as `while (var_t1 < var_t3)` with the explicit pre-guard deleted, keeping the s0..s5 goto inner body verbatim; read cc1's own .frame line via tmp/grind/func_80037B00/s6/frame_probe.sh; confirmed the orphan in the .greg dump; ran sandbox --disable all.
+- result: `.frame $sp,8,$31 # vars= 8` — target's frame exactly, at zero instruction cost, from live named locals only. The orphan is visible directly in the dump (pseudo 86 present in ';; 10 regs to allocate:' but absent from ';; Register dispositions:'). sandbox --disable all: score=11, target_insns=36, build_insns=35 — floor lowered from 15 for the first time since s2.
+- verdict: CONFIRMED
+
+## [s6] Re-adding an explicit `if (count <= 0) return 0;` guard in front of the top-tested while keeps the frame while restoring target's post-guard `la` placement.
+- mechanism: The explicit guard would dominate the loop, so the preheader (and any invariant placed in it) sits after the branch, matching target's lui/addiu $a3 position — while GCC's own rotation guard would still supply the orphan.
+- probe: tmp/grind/func_80037B00/s6/v_hybrid3.c (the merged form plus `var_v0 = D_800A38C8; if (var_v0 <= 0) return 0; var_t3 = var_v0;`); read the .frame line.
+- result: `vars= 0`. Jump threading recognises GCC's duplicated guard as redundant against the programmer's and deletes it, taking the block-0 compare pseudo with it. The orphan is only available when the guard duplication is GCC's own. Banked rejected/explicit-guard-kills-rotation-orphan.c.
+- verdict: KILLED
+
+## [s6] Writing the inner loop as natural `do { ... break; ... } while (p < end)` is byte-neutral relative to the goto spelling.
+- mechanism: Both should lower to the same bottom-tested loop with two early exits.
+- probe: tmp/grind/func_80037B00/s6/v_for.c (whole function in natural C: for-loop outer, do-while inner with breaks); sandbox + frame probe.
+- result: `vars= 8` (frame fine) but score 22 / build_insns 38 — GCC rotates and peels the inner loop too, duplicating the first lbu above the loop and adding a beqz/bnez pair. Only the OUTER loop may be top-tested; the inner loop must keep the s0..s5 goto spelling. Banked rejected/for-loop-rotates-inner-loop-too.c.
+- verdict: KILLED
+
+## [s6] Splitting the count read into `var_v0 = D_800A38C8; var_t3 = var_v0;` recovers target's `addu $t3,$v0,$zero` preheader copy.
+- mechanism: Target's stream loads D_800A38C8 into $v0, branches on it, then copies it into the loop-bound register $t3 — two pseudos where our form has one, so spelling two C locals should reproduce the pair.
+- probe: tmp/grind/func_80037B00/s6/v_h4.c; sandbox + frame probe.
+- result: Identical to the merged form (score 11, build_insns 35, vars= 8) — copy propagation folds the second local away because the first has no surviving use. The copy must come from a mechanism that keeps both pseudos live, not from a C-level duplicate. Banked rejected/split-count-copy-folded-by-copyprop.c.
+- verdict: KILLED

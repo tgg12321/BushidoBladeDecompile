@@ -140,3 +140,51 @@ candidate.c: 23 honest insn diff, 15 weighted-masked. NOT lowered this session.
 - [s5] [s5] docs/grind/decisions.md updated with the OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE entry naming func_80037B00 in its title. Driver parks the function; queue advances; no owner action pending.
 
 - [s5] [s5] src/code6cac_c.c reverted to HEAD (pinned form with sp_dummy) at session end. memory/grind/func_80037B00/candidate.c unchanged (pin-free form, floor 15). Four banked permuter-cheat samples added to rejected/.
+
+- [s6] SYNTHESIS. Chassis re-measured with the s0..s5 candidate.c pasted over the INCLUDE_ASM line: `sandbox --disable all` -> score=15, target_insns=36, build_insns=34, cheat_asm_stripped=3, rules_dropped=0. Ledger floor of 15 confirmed on the post-migration chassis.
+
+- [s6] The residual was TYPED for the first time (tmp/grind/func_80037B00/s6/multiset.py — register-blanked multiset + ordered diff of the sandbox .o against asm/funcs/func_80037B00.s). On the s0..s5 form the register-blanked instruction MULTISET differs from target by EXACTLY TWO instructions: `addiu $sp,$sp,-0x8` and `addiu $sp,$sp,0x8`. Nothing else. Every other instruction, including all four `nop`s, is present in both streams with identical multiplicity.
+
+- [s6] KILLED (s1 hypothesis #3, "inner-loop scheduling shift near .L80037B30"): there is NO scheduling residual. Deleting target's two `sp` instructions makes the ORDERED streams line up position-for-position, all 34 slots, modulo register names. The s0..s5 belief that the `slt`/`addiu` ordering was shifted was an artefact of comparing streams of different lengths. sched1/sched2/reorg are NOT implicated in this function at all.
+
+- [s6] GCC 2.7.2 global.c allocation model reproduced EXACTLY for this function from the .greg/.flow dumps. Priority = floor_log2(n_refs)*n_refs*size / live_length. Computed on the s0..s5 form: 81=2.00, 77=0.714, 78=0.615, 80=0.600, 76=0.417, 73=0.286, 79=0.182, 75=0.167, 74=0.083, 72=0.071 -> predicted rank order [81 77 78 80 76 73 79 75 74 72], which is the greg's `;; 10 regs to allocate:` line VERBATIM. All ten allocnos mutually conflict, so assignment is deterministic: rank order maps onto the ascending free-hard-register list [2,3,5,6,7,8,9,10,11] ($4 pre-taken by the incoming arg). The register a value gets is therefore a pure function of its allocno PRIORITY RANK — refs and live_length are the only two C-visible dials, with birth order (= lower pseudo number) as the tiebreak.
+
+- [s6] The frame axis is INDEPENDENTLY INSTRUMENTABLE and was never instrumented in s0..s5. cc1 prints `get_frame_size()` itself: `.frame $sp,N,$31 # vars= N`. Probe script banked at tmp/grind/func_80037B00/s6/frame_probe.sh (cpp | cc1 with the project's -mel flags, awk the `.ent func_80037B00` .. `.frame` line). s0..s5 form measures `vars= 0`; target measures 8.
+
+- [s6] BREAKTHROUGH — the 8-byte phantom frame is REACHABLE FROM ORDINARY LIVE C, with no dead declaration, no local array, and no coercion construct. Writing the OUTER loop as a top-tested `while (var_t1 < var_t3)` with NO explicit pre-guard makes GCC rotate the loop and materialise a duplicated entry guard in basic block 0; combine folds that guard's comparison into a bare `blez`, the compare pseudo survives as an allocno with no hard register left (pseudo 86 in the v_for dump: present in `;; 10 regs to allocate:` but ABSENT from `;; Register dispositions:`), reload's alter_reg gives it a stack slot, and `vars` becomes 8 at ZERO instruction cost. This is producer #1 ("folded loop-guard compare") of .claude/rules/phantom-slot-frame-lever.md, and it dissolves the s0..s5 conclusion that the frame required the forbidden dead-vars-local-array family.
+
+- [s6] FLOOR LOWERED 15 -> 11 (first movement since s2). Form: s0..s5 goto body with the outer `goto loop_outer` loop rewritten as a top-tested `while (var_t1 < var_t3)` and the explicit `if (var_v0 <= 0) goto block_end;` guard DELETED. `sandbox --disable all` -> score=11, target_insns=36, build_insns=35, cheat_asm_stripped=3, rules_dropped=0; `vars= 8`. Banked as memory/grind/func_80037B00/candidate.c and tmp/grind/func_80037B00/s6/v_hybrid2.c.
+
+- [s6] In that form the register-blanked multiset delta collapses from two instructions to ONE: target's `addu $t3,$v0,$zero` preheader copy. The ordered diff shows our stream is target's stream with that one copy removed and two emission-position differences.
+
+- [s6] The "5-way coupled register rotation" that five sessions treated as the core wall is now MOSTLY DISSOLVED. In the new form $v0, $v1, $a1, $a2, $a3, $t2, $t3 all land on target's registers (the 3-cycle {v1,a1,a2} is gone). Exactly ONE 2-swap remains: our outer counter takes $t0 and our inner end-pointer takes $t1; target has counter=$t1, end=$t0.
+
+- [s6] KILLED: re-adding an explicit `if (var_v0 <= 0) return 0;` guard in front of the top-tested `while` collapses the frame back to `vars= 0`. GCC's jump threading deletes the now-redundant rotation guard, the block-0 compare pseudo disappears, and there is no orphan to pay for a slot. The guard duplication MUST be GCC's own, not the programmer's. Banked rejected/explicit-guard-kills-rotation-orphan.c.
+
+- [s6] KILLED: writing the INNER loop as `do { ... break ... } while (p < end)` (natural C, no gotos) makes GCC rotate and peel it as well — the first `lbu` is duplicated above the loop and an extra `beqz`/`bnez` pair appears; build_insns 38, score 22. The inner loop must keep the s0..s5 goto spelling. Banked rejected/for-loop-rotates-inner-loop-too.c.
+
+- [s6] KILLED: splitting the count into `var_v0 = D_800A38C8; var_t3 = var_v0;` to try to recover target's `addu $t3,$v0,$zero` preheader copy is inert — copy propagation folds it. Identical measurement to the merged form (score 11, build_insns 35, vars= 8). Banked rejected/split-count-copy-folded-by-copyprop.c.
+
+- [s6] Endgame-lock gate status is now MOOT and the s5 escalation is SUPERSEDED: the floor is moving again (15 -> 11) on a sanctioned, ordinary-C axis that no prior session had instrumented. func_80037B00 is grindable, not exhausted. The 2026-07-28 decisions.md entry describing it as REFUSED / OWNER-ACCEPTED INCOMPLETE rests on the s1..s5 premise that the frame required a forbidden construct, which s6 measured to be false.
+
+- [s6] Artifacts: tmp/grind/func_80037B00/s6/frame_probe.sh (frame gradient), tmp/grind/func_80037B00/s6/multiset.py (residual typer: register-blanked multiset + ordered diff), tmp/grind/func_80037B00/s6/v_for.c, v_hybrid.c, v_hybrid2.c (the new floor), v_hybrid3.c, v_h4.c, tmp/grind/func_80037B00/s6/func.s + raw.s (cc1 stream), tmp/grind/func_80037B00/dumps/*.greg/.flow (allocation model inputs).
+
+- [s6] Chassis re-measured at s6 start with the s0..s5 candidate.c pasted over the INCLUDE_ASM line: sandbox --disable all -> score=15, target_insns=36, build_insns=34, cheat_asm_stripped=3, rules_dropped=0. The ledger floor of 15 holds on the post-migration chassis.
+
+- [s6] New floor: score=11, target_insns=36, build_insns=35, cheat_asm_stripped=3, rules_dropped=0, cc1 .frame vars=8. Form banked at memory/grind/func_80037B00/candidate.c and tmp/grind/func_80037B00/s6/v_hybrid2.c.
+
+- [s6] On the s0..s5 form the register-blanked instruction multiset differs from target by exactly the two sp-adjust instructions and nothing else; the ordered streams then align across all 34 slots. There is no scheduling residual in this function.
+
+- [s6] cc1's own `.frame $sp,N,$31 # vars= N` is a direct, cheap gradient on the frame and separates 'wrong frame' from 'wrong codegen' in a way the sandbox score cannot. Probe banked at tmp/grind/func_80037B00/s6/frame_probe.sh. Five prior sessions never used it.
+
+- [s6] GCC 2.7.2 global.c allocation reproduced exactly: pri = floor_log2(n_refs)*n_refs*size/live_length, ties to lower pseudo number; all ten allocnos mutually conflict so rank N takes the Nth free hard register from the ascending list [2,3,5,6,7,8,9,10,11] ($4 pre-taken by the incoming arg). Predicted rank order equals the greg's ';; 10 regs to allocate:' line verbatim.
+
+- [s6] In the new form $v0, $v1, $a1, $a2, $a3, $t2 and $t3 all land on target's registers — the 3-cycle {v1,a1,a2} that dominated the s0..s5 framing is gone. Exactly one 2-swap remains: our outer counter takes $t0 and our inner end-pointer takes $t1, where target has counter=$t1 and end=$t0.
+
+- [s6] Remaining residual on the new form, fully characterised: (a) target's `addu $t3,$v0,$zero` preheader copy is absent (we load D_800A38C8 straight into the loop-bound register); (b) `lui/addiu` for D_80102810 is emitted at stream positions 1-2 instead of target's 6-7, i.e. above the lw/blez instead of inside the guarded preheader; (c) the $t0/$t1 2-swap.
+
+- [s6] The construct that produced the frame is ordinary live C — a top-tested while loop over named locals, with the programmer's redundant pre-guard deleted. No dead declaration, no local array, no volatile, no named holder, no wrapper: nothing in the forbidden-family catalog and nothing requiring a FAKE annotation. The frame comes from GCC's own loop rotation, not from anything written in the source.
+
+- [s6] The 2026-07-28 decisions.md entry (OWNER-ESCALATION — RESOLVED BY STANDING RULING: REFUSED / OWNER-ACCEPTED INCOMPLETE) rests on the premise that the frame required the forbidden dead-vars-local-array family and that the structural axis was exhausted. Both are measured false. A superseding entry was filed this session at docs/grind/decisions.md (## 2026-08-26 — func_80037B00 — SUPERSEDED). It requests no owner action and lowers no standard; it exists so the earlier entry is not read as current. func_80037B00 is grindable and should stay active.
+
+- [s6] s5's permuter plateau was measured from the s0..s5 base form (score 15, vars=0), which we now know was two instructions away from target in the multiset. Any future permuter campaign must be re-based on the s6 form; the s5 negative result does not transfer.
