@@ -1,0 +1,37 @@
+{
+ "func": "func_80023648",
+ "file": "code6cac",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 30,
+   "modality": "recon",
+   "headline": "Recon: chassis recovered (floor 30 re-measured), residual solver-classified as pure RA (30 renames, 5 seat classes); root-flip site = table-entry load (target $a2 fresh vs our $v1 reuse); lookup-respe"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "H1: seat the table-entry pseudo in $a2 (target's fresh-seat choice) and the a0/v1/a1 cascade follows",
+   "mechanism": "global.c allocno priority + find_reg used-set; root site 0x800236DC lh $a2,0x0($v1)",
+   "next_probe": "solver modality: disambiguate the table-entry pseudo among the 14 v1-holders in func_80023648.model.json by its lh def insn, then inverse.py goal {pseudo: $a2} for a ranked, typed REACHABLE/FORECLOSED lever vector"
+  },
+  {
+   "hypothesis": "H2: the a2->a3 cluster is a local-alloc quantity that flips to $a3 for free once H1's assignment stands",
+   "mechanism": "local-alloc.c find_free_reg ascending scan; used-set at quantity birth",
+   "next_probe": "local_extract.py code6cac + local_alloc.py: identify the $a2-holding quantity and replay its assignment under H1's global seating"
+  },
+  {
+   "hypothesis": "H3-residue: if the inverse solve marks the table-entry seat FORECLOSED for all honest levers, the priority lever lies in the SURROUNDING intermediates (bits/a0/a1 flag computations), not the lookup",
+   "mechanism": "allocno nrefs/live-length of neighboring pseudos determine allocation order ahead of the table-entry pseudo",
+   "next_probe": "sweep declaration/scope variants of bits/a0/a1/abs_val only AFTER the solver ranks them; do not blind-sweep (three blind lookup respells already measured worse)"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-26T21:19:16.182386+00:00"
+}
