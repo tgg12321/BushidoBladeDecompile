@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80045294",
-      "file": "text1a_c",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
-    },
-    {
       "func": "func_80060A68",
       "file": "text1b",
       "distance": 2,
@@ -2043,17 +2034,27 @@
       "status": "escalated",
       "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals. directive: chain-extender family (sanctioned 2026-08-19/20, untested here) against the p106/val5 allocno tie; also the psyz PsyQ-4.0 reference axis (ver",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:11814 - 2026-08-25 - CD_sync (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (owner directive 2026-08-24 executed and measured)"
+    },
+    {
+      "func": "func_80045294",
+      "file": "text1a_c",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals.",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:11915 \u2014 2026-08-25 \u2014 func_80045294 (saTan0Init, src/text1a_c.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
     }
   ],
   "counts": {
     "total": 234,
-    "active": 229,
+    "active": 228,
     "by_status": {
-      "active": 229,
-      "escalated": 5
+      "active": 228,
+      "escalated": 6
     },
     "by_verdict": {
-      "C": 194,
+      "C": 193,
       "ASM-PARTIAL": 35
     }
   }

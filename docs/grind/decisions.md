@@ -11909,3 +11909,150 @@ cannot fold to zero bytes) and no version-correct reference source exists anywhe
 (chain-extender sanction, `.claude/rules/dead-store-fake-exception.md:32-46`), 2026-07-27
 (`.claude/rules/endgame-lock-disposition.md`), 2026-08-18 (`.claude/rules/judge-sole-gate.md`),
 2026-08-24 (`.claude/rules/escalation-not-parked.md`); provenance `memory/closer/libcd-groundtruth.md`.
+
+---
+
+## 2026-08-25 — func_80045294 (saTan0Init, src/text1a_c.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session 47 (modality: escalation/disposition). This entry SUPERSEDES the
+2026-07-19 OWNER-ESCALATION entry for this function (above, line 820) and closes the loop
+the owner opened on 2026-08-24 when `escalation-not-parked` retired the parked state and
+returned this item to active grinding with the directive *"solver modality
+(ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak
+residuals."* **That directive has now been executed** — no session s1–s46 had run either
+solver on this function — and it produced the first model-level proof of the residual
+rather than another survey of spellings. Nothing here asks for a grant, a new family, a
+rule relaxation, or an evidence-bar override; both endgame-lock gates are re-measured
+FAILING and the standing 2026-07-27 ruling is applied as written.
+
+### Chassis (re-measured this session, not quoted from the ledger)
+HEAD ships `INCLUDE_ASM("asm/funcs", func_80045294);` (asm-until-matched migration).
+With `memory/grind/func_80045294/candidate.c` applied by hand:
+`sandbox func_80045294 --disable all` → **score=2, target_insns=83, build_insns=83,
+rules_dropped=0, cheat_asm_stripped=66**. Re-measured again after the session's probes
+were reverted: score=2. `src/text1a_c.c` restored to HEAD; tree clean. The honest pure-C
+floor has been 2 for 47 sessions across 7 distinct modalities.
+
+### The residual, stated exactly
+Three prologue instructions, ours vs target:
+
+| | ours (candidate.c, score 2) | target |
+|---|---|---|
+| | `sll  $v1,$s2,4` | `sw   $s0,0x10($sp)` |
+| | `sw   $s0,0x10($sp)` | `addu $s0,$s2,$zero` |
+| | `addu $s0,$s2,$zero` | `sll  $v1,$s2,4` |
+
+All 81 other instructions are byte-identical and the register allocation is target-exact.
+
+### Gate (a) — canonical-asm evidence bar: **FAIL**
+`python3 tools/scan_hand_coded.py --single func_80045294` → **tier=LOW, score=0/8**,
+every signal negative (S1 0 multu/mflo pairs · S2 no empty-body branches · S3 83 insns /
+7 spills / 11 distinct regs · S4 max load burst 3 in any 8-insn window · S5 no
+high-similarity siblings, jaccard < 0.5 · S6 no BIOS jumptable pattern · S7 every
+callee-save use has its `$sp` save · S8 no redundant mask-before-shift). This reproduces
+the owner's 2026-07-20 finding on the current chassis. The 2-insn residual is ordinary
+GCC 2.7.2 scheduler output, not hand-written asm.
+
+### Gate (b) — in-hand SOTN-master precedent for a closing construct: **FAIL (vacuously)**
+There is no closing construct to cite a precedent for. The solver evidence below shows
+that no construct of any sanctioned family reaches target's bytes: the blocking condition
+is a *reference count*, and the only C lever classes that could move it are enumerated and
+foreclosed. A precedent search would be a search for a citation supporting a construct
+that does not exist.
+
+### The solver evidence (what the 2026-08-24 directive asked for)
+
+**1. sched_solver — the ordering half is REACHABLE, and its entire solution set is one
+C-level intent.** `tools/sched_solver/extract.py text1a_c` reports `parity=True`
+(152 funcs, 532 blocks); `perturb.py --func func_80045294 --pass 2 --block 0` reports the
+block "18 insns, **baseline exact**" — the model reproduces the compiler's own pick order.
+An **exhaustive enumeration of all 960 single atoms across all five atom classes**
+(`add_dep`, `remove_dep`, `priority`, `luid`, `luid_move`) against target's pick order
+returns **exactly 13 vectors, and all 13 encode the same intent**: the statement generating
+insn 22 (`i = a0`) must precede the statement generating insn 14 (`v1 = a0 << 4`).
+(5 × `luid swap 14 <-> {19,22,25,28,32}`, 5 × `luid_move 14 -> before {19,25,28,31,32}`,
+`luid_move 22 -> before 14`, and `add_dep 14 <- 22` in both true/data and anti-output kinds
+— the `add_dep` pair being the RTL spelling of "the shift reads `i`", i.e. the same C
+intent.) **There is no order-only lever.** That intent is the H1 shape, banked KILLED since
+session 1; re-measured this session it scores **11**.
+
+**2. ra_solver — the allocation half is REACHABLE at one atom, and that atom is a
+reference count.** `tools/ra_solver/extract.py` + `simulate.py` on the H1 source: *sort
+order: MATCH, dispositions 11/11 match* — the global.c model is exact here too. Diffing
+the two chassis isolates the cause to a single number:
+
+| pseudo 72 (= `a0`) | candidate chassis (score 2) | H1 chassis (score 11) |
+|---|---|---|
+| `nrefs_flow` | **4** | **3** |
+| `livelen_flow` | 24 | 24 |
+| `calls_crossed` | 2 | 2 |
+| allocno order | `[92,78,75,86,85,79,74,73,`**`72`**`,76,80]` (pos 8) | `[92,75,76,86,85,79,74,73,77,80,`**`72`**`]` (last) |
+| assignment | 72→`$s2`, 76→`$s4`, 80→`$s5` (**= target**) | 72→`$s5`, 77→`$s2`, 80→`$s4` |
+
+`inverse.py global … --goal {"72": 18, "77": 20, "80": 21} --depth 2` → *"minimal solution
+size: 1 atom(s) — 5 distinct vector(s)"*: four `[refs_up] pseudo 72: refs 3->{4,5,6,7}` and
+one `[live_shrink] pseudo 72: livelen 23->15`. It additionally emits a **FORECLOSED** block
+for all 24 preference atoms: `$s2`/`$s4`/`$s5` are **callee-saved**, so they can never
+appear as hard regs in pre-RA RTL and `global.c set_preference` can never record them —
+in the tool's own words, *"only a forbidden register-asm pin would"* reach them.
+
+**3. Both 1-atom vectors are measured C-unreachable — this is the closure.**
+*refs_up* needs a **fifth** a0 site, but **the original contains exactly four**
+(def `addu $s2,$a0,$zero` @8004529C; uses `addu $s0,$s2,$zero` @800452B4,
+`sll $v1,$s2,4` @800452B8, `addu $s0,$s2,$zero` @8004532C — after which `$s2` is
+*redefined* as the second loop's walking pointer, `addu $s2,$v1,$v0` @80045344). There is
+no honest algorithmic ref-lift to spend, and all four sites lie inside the cse equivalence
+region that condition (A) opens. Probed directly: spelling the second loop's index shift on
+`a0` (`v1 = a0 << 4;` in place of `v1 = i << 4;`) under the H1 chassis — the one site in a
+different basic block — measures **score 11, unchanged**, because `i = a0` immediately
+dominates that shift in its own block too and cse substitutes there as well
+(`memory/grind/func_80045294/rejected/h1-second-loop-shift-on-a0.c`).
+*live_shrink* needs a0 to die at livelen 15; a0's last reference in the original is after
+both calls, so no C form retires it earlier without deleting a reference the target has.
+
+**4. The typed foreclosure.** Target's bytes require BOTH
+**(A)** `i = a0` before `v1 = a0 << 4` in source order (the unique intent of all 13
+enumerated sched2 vectors) and **(B)** `reg_n_refs(a0) == 4` (the single-atom RA inverse,
+with live length and calls-crossed already identical). **(A) is precisely the condition that
+makes cse.c convert one of a0's four references into a reference to `i`, forcing (B) to 3.**
+The two conditions are mutually exclusive in pure C for this function's reference set. Every
+one of the 34 banked rejected forms is an instance of taking (A) without (B) (the score-11/12
+H1 basin) or (B) without (A) (the score-2 candidate basin); the modelled atom space contains
+no third basin. This supersedes the ledger's seven-wall prose (s34/s43) with a proof over an
+exhaustively enumerated lever space.
+
+### Exhaustion of record
+47 sessions · 7 distinct modalities (recon, structural, permuter, forensics, rederive,
+synthesis, solver) · 34 banked rejected forms in `memory/grind/func_80045294/rejected/` ·
+137,872 permuter iterations across 11 chassis/mode combinations, all plateauing at
+score 60 with no sub-60 basin · 18 independent rederive sub-axes killed (m2c across 10
+option axes, four dialects, decomp.me, sibling functions, and a direct Kengo `saTan0Init`
+disassembly which falsified the name+size identity) · PERM_INT shift-constant surface
+measured dead (s46) · and now two exact solver models with exhaustively enumerated
+solution sets (s47).
+
+### Disposition applied
+Both endgame-lock AND-gates FAIL (scan LOW 0/8; no precedent because no closing construct
+exists). Per the owner's standing ruling of 2026-07-27
+(`.claude/rules/endgame-lock-disposition.md`), and consistent with the owner's explicit
+2026-07-20 option-(b) ruling on this same function: **REFUSED / OWNER-ACCEPTED INCOMPLETE.**
+No canonical-asm grant, no coercion, no rule relaxation, no debt accepted into the build —
+`src/text1a_c.c` stays at `INCLUDE_ASM("asm/funcs", func_80045294);` on main, with zero
+regfix/asmfix rules and zero cheat-asm, and the honest candidate preserved at
+`memory/grind/func_80045294/candidate.c` (sandbox 2). Nothing is pending on the owner
+(2026-08-18 `judge-sole-gate`). The function is eligible for re-attempt only on a genuine
+new pure-C lever — and this entry states precisely what such a lever would have to do:
+**supply a fourth reference to `a0`, or shorten its live range, under source order
+`i = a0` before `v1 = a0 << 4`.** Any future proposal that does not do one of those two
+things cannot reach the bytes and should not be measured.
+
+**References:** ledger `memory/grind/func_80045294/{evidence.md,hypotheses.md,candidate.c,rejected/}`
+(session-47 entries); artifacts `tmp/grind/func_80045294/s47/`
+(`baseline.txt`, `baseline_reverted.txt`, `h1_sandbox.txt`, `vA_sandbox.txt`,
+`sched_perturb_p2_order.txt`, `sched_perturb_p2_allatoms_d1.txt`, `ra_inverse_h1.txt`,
+`h1.model.json`, `cand.model.json`); prior escalation this file 2026-07-19 (line 820);
+owner rulings 2026-07-20 (this file, line 942), 2026-07-27
+(`.claude/rules/endgame-lock-disposition.md`), 2026-08-18
+(`.claude/rules/judge-sole-gate.md`), 2026-08-24
+(`.claude/rules/escalation-not-parked.md`); toolkits `tools/sched_solver/README.md`,
+`tools/ra_solver/README.md`.

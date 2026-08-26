@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 46,
- "current_modality": "synthesis",
+ "session_count": 47,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -279,13 +279,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "s46 synthesis: PERM_INT shift-constant surface measured KILLED (shift=3/4/5 all score=2, sandbox does not discriminate the sll immediate); owner-escalation contract precondition (b) satisfied on top o"
+  },
+  {
+   "session": 47,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "s47 solver/escalation: owner's 2026-08-24 solver directive executed \u2014 sched_solver's exhaustive 960-atom search proves target's sched2 order has exactly ONE C intent (i-before-v1), ra_solver's inverse"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner ruling on the s42 escalation (canonical-asm authorization mirroring func_80037540 oversized-locals carve-out, decisions.md 2026-07-13 18:05, GRANTED) vs upholding the pure-C bar (park at INCOMPLETE-owner-accepted at honest floor 2 per no-park-permanently's owner-granted-exception carve-out).",
-   "mechanism": "Every axis reachable by hand-derivation, rederive, and permuter modality is measured dead across s1-s46 (7 pass-level walls, 32-form rejected bank, 137,872-iter permuter across 11 chassis/mode combos, 18 rederive sub-axes, PERM_INT sandbox-scoring-architecture kill). Only owner decision remains as an actionable move.",
-   "next_probe": "Await owner ruling on docs/grind/decisions.md 2026-07-19 entry; driver parks func_80045294 (queue advances) until owner rules between (a) and (b)."
+   "hypothesis": "A pure-C form exists that supplies a FOURTH reference to a0 (reg_n_refs(72) 3 -> 4) while source order keeps 'i = a0' before 'v1 = a0 << 4' \u2014 i.e. that defeats cse.c's BB-scoped substitution of the ashift operand without adding an instruction.",
+   "mechanism": "ra_solver inverse names this as a 1-atom vector that restores target's allocation exactly on the H1 chassis, where sched2 order is already target-exact. It is the ONLY non-foreclosed RA lever (preferences are foreclosed by callee-save unreachability in pre-RA RTL; live_shrink is foreclosed by a0's post-call last use).",
+   "next_probe": "Dump .cse for the H1 chassis (pwsh tools/grinder/dump.ps1) and read WHY cse.c prefers reg 75 over reg 72 as the canonical member of the quantity at insn 17 (qty_first_reg / make_regs_eqv ordering). If the choice is driven by something a C-level type or storage difference can flip WITHOUT emitting an instruction, that is the one remaining lever; if it is driven purely by insertion order into the qty chain, the foreclosure is complete at the pass-source level too. NOTE: forms already banked KILLED for this intent are do-while(0) wrap (s10), stmt-expr, v1-guard-scoped, comma-expr, cse-fold-anon-shift, cse-reuse-shift, and this session's second-loop-shift-on-a0 \u2014 do not re-spell them."
+  },
+  {
+   "hypothesis": "The pass-1 (sched1) block-0 input set \u2014 not just pass 2 \u2014 admits a perturbation that changes WHICH insns reach sched2, invalidating the pass-2 exhaustiveness claim.",
+   "mechanism": "The 960-atom pass-2 enumeration is exhaustive GIVEN the insn set reload hands sched2. A different upstream (different RA, different expand lowering) presents a different insn set, so the enumeration is conditional on the current one. sched_solver models pass 1 too (models are tagged pass=1/pass=2 and validate separately).",
+   "next_probe": "Re-run perturb.py with --pass 1 on func_80045294 block 0 and goal-map it against the same target stream, to see whether any sched1 atom changes the pre-reload stream in a way that alters the pass-2 input set. Cheap (the model is already extracted at tmp/sched_solver_work/text1a_c.sched.json) and it closes the one conditional in this session's foreclosure."
+  },
+  {
+   "hypothesis": "The residual is closable by an upstream change that removes the equivalence entirely \u2014 i.e. a form where 'i' is NOT a value-copy of a0 at the point of the shift, yet still yields target's semantics and instruction count.",
+   "mechanism": "cse.c only substitutes because 'i = a0' registers reg 75 and reg 72 in one quantity. Any lowering where the second variable's value is not provably equal to a0 at the shift leaves the ashift operand as reg 72, satisfying both (A) and (B) simultaneously.",
+   "next_probe": "Enumerate the semantically-equivalent lowerings of the first-loop induction variable (e.g. deriving i from an already-computed quantity rather than from a0) and check each for instruction-count neutrality BEFORE sandboxing; only forms that keep 83 insns are worth a measurement. Nothing in the 34-form bank covers this axis explicitly."
   }
  ],
  "judge_constraints": [
