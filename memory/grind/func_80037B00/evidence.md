@@ -629,3 +629,49 @@ and the bottom `slt`/`bnez`, all mandated by the stream. Reachable cells: (20,18
 - [s11] Reusable instruments left in place: tmp/grind/func_80037B00/s11/probe.sh (variant -> .lreg table + allocation order + seat map + cc1 asm and insn count, ~20 s) and tmp/grind/func_80037B00/s11/flowdbg.sh (same under the instrumented tools/gcc-2.7.2/cc1 with BB2_FLOW_DEBUG=<regno>, one line per flow.c:1685 live_length increment).
 
 - [s11] The priority model that reproduces every measured allocation order in this function: pri = floor_log2(refs) * refs / live_length, ties broken by lower allocno number (global.c:655).
+
+## s12 (structural) - facts banked
+1. Chassis: candidate.c = score 5, 36/36 insns (re-measured this session). v5 (refs-7) = score 8,
+   35 insns; its only defects are the two missing sp adjusts and the counter/flag seats.
+2. THE UNIFIED TARGET: both chassis reduce to `live_length(allocno 73, the counter) >= 28`.
+   refs-8 (frame present) needs L73 in [28,32] with the added insns OUTSIDE the flag's live range;
+   refs-7 (no frame) needs L73 >= 7*(L73-L74), which at the best measured gap (4, form v5) is again
+   L73 >= 28, with the added insns INSIDE the flag's live range. Current values: 23 (refs-8) / 20
+   (refs-7).
+3. The phantom 8-byte frame is paid by the guard's compare pseudo ONLY when the compared register is
+   live past the guard. Measured at RTL level: combine re-sites the counter's `(set 73 0)` into the
+   compare's insn slot and rewrites the branch to `(le (reg B) 0)`, stranding the compare pseudo with
+   flow's stale 2 refs, class `ST_REGS or none`, no hard reg, `alter_reg` slot, `vars= 8`. With a
+   fresh local (wC) or the match flag borrowed as the zero (wA) combine deletes both insns and
+   `vars= 0`. The counter is the only register in this function's logic that qualifies.
+4. Extending the counter's liveness by giving it a use (return arm / epilogue) is self-defeating:
+   refs 8 -> 9 moves the required window to L73 in [31,36] while the extension supplies at most 28.
+5. The s10 foldable-pair +1 is non-stackable across DISTINCT variables too (cse1 folds `+1/-1` on a
+   scalar before flow). At the loop top the pair does give +1 to L73 without touching L74, but its
+   two in-loop occurrences add weighted refs to whatever variable carries it, which re-seats that
+   variable at the head of the allocation order.
+6. func_80037AA4 (same file, same table, MATCHED) carries the same phantom 8-byte frame and uses the
+   counter-naming guard - candidate.c's chassis is the author's idiom. AA4's own RA residual was
+   closed with a Judge-sanctioned `/* FAKE */` constant-holder (2026-07-28); that specific lever does
+   not transfer here (it moves none of L73 / refs(78) / L78).
+7. Artifacts: tmp/grind/func_80037B00/s12/probe.sh (RA table + greg order + `.frame` + cc1 asm for
+   one variant), d_v5_init_inside_last/, d_wA_flag_reuse_guard/, d_wC_invented_zero_guard_PROBE/,
+   d_wD_init_first_bound_guard/, d_wE_counter_live_to_end_PROBE/, d_wF_looptop_foldable_pair_PROBE/,
+   d_wG_preheader_two_pairs_PROBE/.
+
+
+- [s12] Chassis re-measured this session: candidate.c `sandbox --disable all` = score 5, target_insns 36, build_insns 36, rules_dropped 0.
+
+- [s12] v5 (s11's refs-7 form) = score 8, build_insns 35. Its cc1 asm is target's stream position-for-position apart from the two missing sp adjusts, with end pointer -> $8 ($t0) exactly as target wants; counter -> $10 and flag -> $9 where target has $9 and $10.
+
+- [s12] UNIFIED TARGET: both chassis reduce to live_length(allocno 73, the loop counter) >= 28. Current values 23 (refs-8, frame present) and 20 (refs-7, correct end-pointer seat). refs-8 needs the added insns outside the flag's live range (preheader or loop top ahead of `var_t2 = 0`); refs-7 needs them inside it.
+
+- [s12] The frame is paid only by a guard whose compared register is LIVE PAST THE GUARD: combine then re-sites the counter's `(set 73 0)` into the compare's insn slot and rewrites the branch to `(le (reg B) 0)`, stranding the compare pseudo with flow's stale 2 refs in class `ST_REGS or none` for alter_reg. A fresh local or the re-initialised match flag makes combine delete both insns and the frame disappears (`vars= 0`).
+
+- [s12] Any use-based extension of the counter's liveness is self-defeating: refs 8 -> 9 moves the required window to L73 in [31,36] while the return-arm + epilogue extension supplies at most 28 (measured: `return (var_t1 != 0)` gives refs 10 / L73 24 / pri 12500).
+
+- [s12] The s10 foldable-pair +1 does not stack across distinct variables (cse1 folds a scalar `+1 / -1` pair before flow) and, at the loop top, costs the carrying variable +8 weighted refs, which re-seats it at the head of the allocation order (refs(75) 9 -> 17, 75 -> $3).
+
+- [s12] func_80037AA4 (same file, same table, MATCHED) carries the identical phantom 8-byte frame and the counter-naming guard, so candidate.c's chassis is the original author's idiom, not a search artefact.
+
+- [s12] Ledger updated: memory/grind/func_80037B00/hypotheses.md (5 new entries) and evidence.md (s12 section, 7 facts). Six forms banked under memory/grind/func_80037B00/rejected/ (flag-reuse-as-guard-zero-refs74-8-no-frame.c, invented-zero-local-guard-no-orphan-no-frame.c, refs7-init-before-guard-gap7.c, counter-live-to-end-costs-refs9-10.c, looptop-foldable-pair-plus1-refs75-blowup.c, two-preheader-pairs-distinct-vars-still-plus1.c). src/code6cac_c.c restored to its committed INCLUDE_ASM state; candidate.c (score 5) unchanged as the best form.

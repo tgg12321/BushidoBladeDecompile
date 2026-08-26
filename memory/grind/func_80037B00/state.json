@@ -1,8 +1,8 @@
 {
  "func": "func_80037B00",
  "file": "code6cac_c",
- "session_count": 11,
- "current_modality": "rederive",
+ "session_count": 12,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -75,23 +75,29 @@
    "floor": 5,
    "modality": "rederive",
    "headline": "The guard is the pivot: naming the counter in the entry guard is what buys the phantom 8-byte frame AND what pins refs(73)=8; drop it and the $t0/$t1 transposition that walled s7-s10 is SOLVED (end po"
+  },
+  {
+   "session": 12,
+   "floor": 5,
+   "modality": "structural",
+   "headline": "Floor holds at 5; s11's two frontiers are both measured and the residual collapses to ONE number - live_length(counter allocno 73) must reach 28 (it is 23 in the frame-bearing chassis, 20 in the corre"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "There is an orphan-producing construct in this function's own logic that does NOT name the counter, which would combine the refs-7 register order with the 26-instruction stream and close the function.",
-   "mechanism": "The frame slot is paid by any pseudo that flow counts and combine then deletes, not specifically by an ST_REGS compare pseudo. The measured instance is a two-register signed `lt` folded into blez, and the only natural zero-valued register here is the counter - but a GR-class pseudo deleted by combine would do the same job: reload's alter_reg pays a slot to any allocno with refs and no hard register.",
-   "next_probe": "Enumerate GR-class combine-deleted pseudos reachable from statements this function genuinely needs, screening with tmp/grind/func_80037B00/s11/probe.sh for `subu $sp,$sp,8` plus `Register NN used ... GR_REGS or none` with no seat in the greg map. The strongest shapes to try first are address intermediates combine folds into a load's displacement (`p = var_a3 + k; v = *p;` where the target instruction is a single `lbu k($a3)`) and the inner-loop end-pointer computation reached through a second pointer (`var_t0 = var_a1 + 0x15;` after `var_a1 = var_a3;`). Read tmp/grind/func_80037B00/s11/d_v6_dowhile_t1guard/x.flow around insn 16 first for the exact shape that works today. Accept only rows with refs(73)=7, `78 in 8`, 26 cc1 insns and both sp adjusts."
+   "hypothesis": "There is an insn shape that survives cse1 AND flow but is deleted by COMBINE (not by cse1), which can be repeated ~5 times in the loop-top block ahead of `var_t2 = 0` without adding weighted references to any already-seated variable - lifting L73 from 23 to 28 at zero emitted-byte cost and closing the frame-bearing chassis outright.",
+   "mechanism": "s9 proved the only insn-deleting pass AFTER flow's ref/liveness scan is combine, so a flow-visible-but-unemitted insn must be one combine MERGES INTO its consumer rather than one cse1 makes dead. On MIPS the merges combine actually performs in this function are (a) `(plus reg const)` folded into a `mem` address and (b) the QI-load + zero_extend pair folded into a single `lbu` - the second already supplies two free insns inside the inner loop, which is direct proof the shape exists in this function's own logic.",
+   "next_probe": "Enumerate loop-top spellings whose intermediate value is genuinely consumed and whose intermediate INSN combine absorbs, then measure L73/L74/refs(75,76,77,78) with tmp/grind/func_80037B00/s12/probe.sh. Concrete first shapes: route `var_a1 = var_a3;` and `var_t0 = var_a3 + 0x15;` through a consumed address intermediate so the `plus` merges into a later access; and test whether an extra zero_extend-shaped read can be placed ahead of `var_t2 = 0` while still emitting only target's four loop-top instructions. Accept only rows with 26 cc1 insns, both sp adjusts, `73 in 9`, `74 in 10`, `78 in 8`."
   },
   {
-   "hypothesis": "In the refs-7 chassis the counter-vs-flag order (7*L74 >= 6*L73) is reachable without spending an emitted instruction.",
-   "mechanism": "L74 grows only for insns inside the flag's live range (loop top through the flag test); L73 is 3-4 insns longer because of the counter's definition and the bottom `slt`/`bnez`. v8 already reaches (20,17) by moving `var_a3 += 0x28` ahead of the flag test - it fails only because the bottom `bnez` then has no delay-slot filler.",
-   "next_probe": "Look for a spelling that keeps `var_a3 += 0x28` available to reorg as the bottom branch's delay-slot filler while its RTL still sits inside the flag's live range - e.g. duplicating the advance into both arms (the sanctioned duplicated-statement-into-arms family, .claude/rules/duplicated-statement-into-arms.md) so cross-jumping re-merges it, or reaching (21,18) by one extra combine-absorbed insn in the loop-top block placed BEFORE `var_t0 = var_a3 + 0x15` (78 is not live there, so pri(78) is unaffected). An exact tie at 7*L74 == 6*L73 is a WIN, not a loss - global.c:655 gives it to the lower allocno, which is 73. Targets: (20,18), (19,17), (21,18)."
+   "hypothesis": "The refs-7 chassis can reach gap <= 3 (L73 - L74 <= 3) without displacing any target instruction, which at L73 >= 21 flips the counter ahead of the match flag (an exact tie 7*L74 == 6*L73 is a WIN - global.c:655 gives it to the lower allocno, which is 73).",
+   "mechanism": "The four insns where 73 is live and 74 is not are the counter's init, the loop-bottom `var_a3 += 0x28`, the bottom `slt` and the bottom `bnez`. s11's v8 closes one of them by moving the a3 advance ahead of the flag test, reaching gap 3 at (20,17) - one unit short of the L73 >= 21 threshold - and paying one emitted instruction because the advance leaves the bottom branch's basic block and reorg can no longer use it as the delay-slot filler.",
+   "next_probe": "Two sub-probes. (i) Whether the a3 advance can sit inside the flag's live range at flow time yet still be emitted at target's position in the bottom `bnez` delay slot (the duplicated-statement-into-arms re-merge route, .claude/rules/duplicated-statement-into-arms.md, and any spelling that keeps it in the bottom basic block). (ii) Whether ONE loop-body free insn from frontier #1 can be placed inside the flag's live range on the v8 chassis to reach (21,18). Note this chassis still owes the 8-byte frame, which s12 measured is unreachable without a counter-naming guard - so it only pays off if frontier #1 also lands."
   },
   {
-   "hypothesis": "If the refs-7 chassis cannot recover the frame, the refs-8 chassis (candidate.c, floor 5) still needs live(73) in [28,31], which is s10's wall - but the window is now known to be a consequence of the guard, so the honest comparison is which of the two costs less.",
-   "mechanism": "With refs(73)=8, pri(73) = 24/L73 must sit below pri(78) = 8/9 and above pri(74) = 12/16, giving L73 in [28,31] against a measured 22-23. With refs(73)=7 the window is half-open (L73 >= 28 at the current 4-insn 73-only excess, or L73 >= 21 at a 3-insn excess), which is far more forgiving - the whole cost of the refs-7 route is the 2 frame instructions.",
-   "next_probe": "Do NOT file a decision packet before frontier #1 and #2 are measured dead: this session moved the residual from 'one pinned register transposition with no degrees of freedom' (s9/s10) to 'two independent, quantified knobs', so the function is demonstrably still grindable. If both frontiers do die, the decidable question to put to the owner is a FIDELITY/ROUTING one - whether an exact 36-of-36 stream with one adjacent register transposition has a named disposition - and it must carry this session's table showing the guard-vs-frame incompatibility, plus the func_80037AA4 precedent and the measurement that it does not transfer."
+   "hypothesis": "If frontiers #1 and #2 both die, the residual is a FIDELITY/ROUTING question, not a family grant - and it now carries a same-author, same-table precedent.",
+   "mechanism": "candidate.c reproduces target's 36 instructions position-for-position, opcode and operands, with a single adjacent register transposition ($t0/$t1 in the frame-bearing chassis, $t1/$t2 in the refs-7 chassis). The matched sibling func_80037AA4 - same file, same table, same bound, same house idiom, same phantom 8-byte frame - closed an equivalent RA-order residual with a Judge-sanctioned /* FAKE */ constant-holder on 2026-07-28.",
+   "next_probe": "Do NOT file anything until frontier #1 is measured dead: this session moved the residual from two independent unknowns to one quantified number (L73 >= 28) with a named, function-local mechanism (combine-absorbed intermediates) that has not yet been probed. If it does die, the decidable question for a future `escalation`-modality session is whether an exact 36-of-36 stream with one adjacent register transposition has a named disposition, carried with s12's unified-arithmetic table, the AA4 precedent, and the measurement that AA4's constant-holder lever moves none of L73 / refs(78) / L78 here. A family grant or standard-lowering ask would be the pre-decided AUTO-REJECT class and must not be filed."
   }
  ],
  "judge_constraints": [

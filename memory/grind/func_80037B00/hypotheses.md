@@ -678,3 +678,135 @@ chain before flow runs and flow deletes the dead links, leaving a 5-insn residue
 - probe: v19 - candidate/v6 with `var_a3 += 0x28` split into `var_a3 += 0x14; var_a3 += 0x14;` at block_74 (memory/grind/func_80037B00/rejected/block74-foldable-pair-no-live-change.c).
 - result: CONFIRMED. L73 stays 23, L74 stays 16, refs(73) stays 8, the stream stays 26 insns with both frame adjusts. Insns placed at block_74 remain free of charge for the counter.
 - verdict: CONFIRMED
+
+## [s12] CHASSIS RE-MEASURED + the two chassis unified into ONE arithmetic target.
+Session start: `sandbox --disable all` on candidate.c = score 5 / 36 vs 36 (unchanged, chassis
+intact). v5 (the s11 refs-7 form) re-measured at score 8 / build_insns 35: its ONLY defects are
+the two missing `addiu $sp,$sp,+-8` and the counter/flag seats. Its cc1 asm (banked at
+tmp/grind/func_80037B00/s12/d_v5_init_inside_last/x.s) is target's stream position-for-position
+otherwise, with end=$8($t0) as target wants, flag=$9, counter=$10 (target: counter=$9, flag=$10).
+
+**The unified rule (new - supersedes s11's cell list).** Write gap = L73 - L74. global.c's
+`pri = floor_log2(refs)*refs/live_length`, ties to the LOWER allocno (global.c:655).
+  * refs-7 chassis (counter-free guard, NO frame): need pri(73) >= pri(74), i.e. 14/L73 >= 12/L74,
+    i.e. **L73 >= 7*gap**; and pri(73) < pri(78)=8888, i.e. L73 >= 16. Measured gaps: v5 gap 4
+    (20,16) -> needs L73 >= 28; v8 gap 3 (20,17) -> needs L73 >= 21; wD gap 7 (23,16) -> needs 49.
+  * refs-8 chassis (counter-naming guard, frame present): the ONLY wrong inequality is
+    pri(73)=24/L73 < pri(78)=8/9, i.e. **L73 in [28,32]** (74 is already last at 7500).
+  Both chassis therefore reduce to the SAME quantity: **L73 must reach 28** (it is 23 in the
+  refs-8 chassis, 20 in the refs-7 chassis) - refs-8 needs the added insns OUTSIDE the flag's live
+  range (preheader, or loop-top before `var_t2 = 0`), refs-7 needs them INSIDE it. This is the one
+  number the next session should attack; everything else in the priority formula is measured pinned.
+
+## [s12] A guard comparison naming a zero-valued local OTHER than the loop counter also orphans a compare pseudo and pays the phantom 8-byte frame (s11 frontier #1, the "any GR-class combine-deleted pseudo" claim).
+- mechanism: s11 proposed that the frame is paid by any pseudo flow counts and combine then deletes,
+  not specifically by the counter's compare, and nominated address intermediates and a second-pointer
+  end-pointer computation as the shapes to try.
+- probe: two minimal spellings on the refs-7 do-while chassis, dumped with
+  `tmp/grind/func_80037B00/s12/probe.sh` (cpp | cc1 -da, .lreg/.greg/.combine/.flow read):
+  wC (`memory/grind/func_80037B00/rejected/invented-zero-local-guard-no-orphan-no-frame.c`) - a fresh
+  local `var_z = 0; if (var_z < D_800A38C8)`; and wA
+  (`rejected/flag-reuse-as-guard-zero-refs74-8-no-frame.c`) - the EXISTING match flag borrowed as the
+  guard's zero (`var_t2 = 0; if (var_t2 < D_800A38C8)`).
+- result: KILLED, and the pass-level reason is now in hand. At FLOW time all three spellings are
+  structurally identical: `(insn 11 (set (reg X) (const_int 0)))`, `(insn 14 (set (reg B) (mem
+  D_800A38C8)))`, `(insn 16 (set (reg C) (lt (reg X) (reg B))))`, `(jump_insn 17 (if_then_else (eq
+  (reg C) 0) ...))` - the compare pseudo C exists in every case. What differs is what COMBINE does
+  with insn 16. When X is the loop counter (still live after the guard), combine rewrites the branch
+  to `(le (reg B) 0)` and RE-SITES the counter's init INTO insn 16's slot
+  (`(insn 16 (set (reg/v 73) (const_int 0)))`, insn 11 -> NOTE), so pseudo C is left referenced-only
+  in flow's stale tables, reaches local-alloc as `ST_REGS or none`, gets no hard register and
+  `alter_reg` pays it the 4-byte slot MIPS_STACK_ALIGN rounds to 8 (`vars= 8`). When X is a local
+  with no later use (wC) or a local whose value is dead because the loop top re-initialises it (wA),
+  combine deletes insns 11 AND 16 outright, pseudo C never reaches the lreg table at all, and
+  `vars= 0`. wA additionally costs refs(74) 6 -> 8 (both the dead preheader store and the guard
+  occurrence are counted, weight 1 each), which lifts pri(74) to 15000 and moves the flag AHEAD of
+  var_a3 (`79 76 77 74 75 82 78 73`) - strictly worse. CONCLUSION: the frame requires a guard whose
+  compared register is LIVE PAST THE GUARD, and the only such zero-valued register this function's
+  logic contains is the loop counter. s11's residual ("the guard must name the counter to buy the
+  frame and must not name it to buy the register order") is re-confirmed against two more spellings.
+- verdict: KILLED
+
+## [s12] The counter's live range can be extended to 28 by keeping it live across the `return 1` arm and the epilogue (s9's "+4 at zero byte cost" idea).
+- mechanism: flow counts every insn where a reg is live; the counter is dead on the return-1 arm
+  (2 insns) and in the epilogue (3 insns), so making it live there was expected to buy +5 exactly.
+- probe: wE (`rejected/counter-live-to-end-costs-refs9-10.c`) - candidate.c with `return 1;`
+  replaced by `return (var_t1 != 0);`, a use that forces the counter live to the function end.
+- result: KILLED, and the reason is a closed-form trap. Liveness can only be extended by adding a
+  USE, and every use is also a REFERENCE. wE measures refs(73) = 10 / L73 = 24, i.e. floor_log2 3 ->
+  pri 12500, further ABOVE pri(78)=8888 than the baseline's 10434; the greg order is unchanged
+  (`79 76 77 75 73 83 78 74 82 81 72`). Doing the arithmetic for the cheapest possible version (one
+  extra out-of-loop use, refs(73)=9): the window becomes 27/L73 in (7500, 8888) -> L73 in [31,36],
+  while the return-arm + epilogue extension can only supply 23 + 5 = 28. The floor_log2(8)->
+  floor_log2(9) step costs more than the liveness it buys. Any use-based extension of 73 is dead.
+- verdict: KILLED
+
+## [s12] The measured +1 zero-byte-cost live-range extension (s10's foldable `+k / -k` pair) stacks if the pairs are spread over DIFFERENT variables, or if placed at the loop top instead of the preheader.
+- mechanism: s10 proved a 4-link chain on ONE variable is folded by cse1 before flow; distinct
+  variables should not share a cse equivalence class, and the loop top is a region where 73 is live
+  and 74 is not (so refs-8 needs its added insns there).
+- probe: wG (`rejected/two-preheader-pairs-distinct-vars-still-plus1.c`) - a `+1 / -1` pair on
+  var_t3 AND a `+0x14 / -0x14` pair on var_a3, both in the preheader; wF
+  (`rejected/looptop-foldable-pair-plus1-refs75-blowup.c`) - the var_a3 pair moved to the first
+  statement of the loop body, ahead of `var_t2 = 0`.
+- result: BOTH KILLED as a route to L73 = 28, but with two useful sub-facts.
+  (a) wG measures L73 = 24 - +1, NOT +2: cse1 folds `D_800A38C8 + 1` / `- 1` into one another before
+      flow (exactly as it folds a long chain on one variable), so only the pointer pair survives.
+      The +1 is confirmed non-stackable through a second, independent mechanism.
+  (b) wF measures L73 = 24 and L74 = 16 - so the LOOP-TOP REGION DOES RESPOND (+1) and, placed ahead
+      of `var_t2 = 0`, it does NOT lengthen the flag, which is the placement refs-8 needs. But the
+      pair's two occurrences are in-loop (weight 2 each), so refs(75) goes 9 -> 17, pri(75) jumps to
+      3*17/21 = 24285 and var_a3 is allocated FIRST (`75 79 76 77 73 83 78 74 ...`, 75 -> $3),
+      destroying every other seat. An in-loop free insn must therefore name a variable whose refs
+      can absorb +4 without crossing a floor_log2 boundary - and every such variable in this
+      function is already seated.
+  Net: the cost of L73 = 28 is 5 independent foldable pairs (10 pre-combine insns), which s10's and
+  this session's measurements say cse1 will not permit, and which would in any case be the F1
+  chain-extender FAKE family five times over - not an honest form.
+- verdict: KILLED
+
+## [s12] Sibling-precedent re-read (targeted at the frame, which s10's rederive did not check).
+- probe: `asm/funcs/func_80037AA4.s` + its MATCHED C at src/code6cac_c.c:285-316.
+- result: CONFIRMED and it is load-bearing for how this function should be read. func_80037AA4 -
+  same file, same table D_80102810, same bound D_800A38C8, MATCHED - carries the SAME phantom
+  `addiu $sp,$sp,-0x8` / `addiu $sp,$sp,0x8` with no `($sp)` reference, and its accepted C uses
+  exactly the counter-naming guard (`var_a1 = 0; var_a2 = D_800A38C8; if (var_a1 < var_a2)`).
+  So the frame is the house idiom's fingerprint and candidate.c's refs-8 chassis is the ORIGINAL
+  shape, not a search artefact. It is also precedent for the shape of the endgame: AA4's own RA
+  residual was closed with a Judge-sanctioned `/* FAKE */` constant-holder (`s32 sh = 0xD;`, ruling
+  2026-07-28), because reload's update_equiv_regs substitutes the constant and deletes the `li` at
+  zero byte cost. That lever cannot be transplanted here - a constant holder changes neither L73 nor
+  refs(78) nor L78 - but it establishes that a same-author, same-table sibling needed a sanctioned
+  exception for the same class of residual.
+- verdict: CONFIRMED
+
+
+## [s12] s11 frontier #1: a construct other than the counter-naming guard can orphan a pseudo and pay the phantom 8-byte frame, so the refs-7 chassis (which already seats the inner-loop end pointer in $t0) can keep the frame.
+- mechanism: s11 proposed the slot is paid by any pseudo flow counts and combine then deletes, not specifically by an ST_REGS compare pseudo; reload's alter_reg pays a slot to any allocno with refs and no hard register.
+- probe: Two minimal spellings on the refs-7 do-while chassis, each dumped with cpp | cc1 -da and read at .flow / .combine / .lreg / .greg level (tmp/grind/func_80037B00/s12/probe.sh): wC = a fresh local `var_z = 0; if (var_z < D_800A38C8)`; wA = the EXISTING match flag borrowed as the guard's zero, `var_t2 = 0; if (var_t2 < D_800A38C8)`.
+- result: Both measure `vars= 0` (no frame) and no ST_REGS orphan. At FLOW time all three spellings are structurally identical - insn 11 `(set (reg X) (const_int 0))`, insn 14 the bound load, insn 16 `(set (reg C) (lt (reg X) (reg B)))`, jump_insn 17 the branch on C. The difference is what COMBINE does: when X is the loop counter (live past the guard) combine rewrites the branch to `(le (reg B) 0)` and RE-SITES the counter init into insn 16's slot, stranding pseudo C with flow's stale 2 refs, class `ST_REGS or none`, no hard reg, alter_reg slot, `vars= 8`. When X dies at the guard (wC) or is dead because the loop top re-initialises it (wA), combine deletes insns 11 AND 16 outright and pseudo C never reaches the lreg table. wA additionally drives refs(74) 6 -> 8, pri(74) to 15000, and moves the match flag ahead of var_a3 - strictly worse.
+- verdict: KILLED
+
+## [s12] s9/s11 frontier: the counter's live range can be lifted the required ~5 insns at zero byte cost by keeping it live across the `return 1` arm and the epilogue.
+- mechanism: flow counts every insn where a reg is live; the counter is dead on the return-1 arm (2 insns) and in the epilogue (3 insns), which is exactly the +5 the priority window needs.
+- probe: wE = candidate.c with `return 1;` replaced by `return (var_t1 != 0);` (a use that forces the counter live to the function end), RA table read from .lreg/.greg.
+- result: refs(73) = 10 / L73 = 24 -> floor_log2 3, pri 12500, which is FURTHER above pri(78) = 8888 than the baseline's 10434; greg order unchanged. Closed form for the cheapest possible version (one extra out-of-loop use, refs 9): the window moves to L73 in [31,36] while the return-arm + epilogue extension can supply at most 23 + 5 = 28. Liveness can only be extended by a USE and every use is also a REFERENCE, so the floor_log2(8) -> floor_log2(9) step always outruns the liveness it buys.
+- verdict: KILLED
+
+## [s12] s10's measured +1 zero-byte-cost live-range extension (a combine-foldable `+k / -k` pair) stacks to the needed +5 if the pairs are spread over DIFFERENT variables, or if placed at the loop top (where the flag is not yet live, which is the placement the frame-bearing chassis needs).
+- mechanism: s10 proved a 4-link chain on ONE variable is folded by cse1 before flow; distinct variables should not share a cse equivalence class, and the loop-top region lies inside the counter's live range but outside the flag's.
+- probe: wG = a `+1 / -1` pair on var_t3 plus a `+0x14 / -0x14` pair on var_a3, both in the preheader; wF = the var_a3 pair moved to the first statement of the loop body, ahead of `var_t2 = 0`.
+- result: wG measures L73 = 24, i.e. +1 not +2 - cse1 folds the scalar `+1 / -1` pair before flow, so only the pointer pair survives; the +1 is non-stackable through a second independent mechanism. wF measures L73 = 24, L74 = 16, confirming the LOOP-TOP REGION DOES RESPOND and does not lengthen the flag - but the pair's two in-loop occurrences take refs(75) from 9 to 17, pri(75) to 24285, and var_a3 is then allocated FIRST (75 -> $3), destroying every other seat. Any in-loop free insn must name a variable whose refs can absorb +4 without crossing a floor_log2 boundary, and every variable in this function is already seated.
+- verdict: KILLED
+
+## [s12] The refs-7 (correct-register-order) and refs-8 (frame-bearing) chassis pose two independent problems.
+- mechanism: s11 described them as two separate knobs - a frame producer for one, a counter-vs-flag priority tie for the other.
+- probe: Re-derived global.c's inequalities from the measured tables and re-measured both chassis (candidate.c = score 5 / 36 insns; v5 = score 8 / 35 insns; wD = refs-7 with the counter init before the guard).
+- result: They are the SAME problem. With gap = L73 - L74: refs-7 needs 14/L73 >= 12/L74, i.e. L73 >= 7*gap, which at the best measured gap (4, form v5, L73 = 20) is L73 >= 28; refs-8 needs 24/L73 < 8/9, i.e. L73 in [28,32] (L73 = 23). Both reduce to live_length(73) >= 28 - refs-8 with the added insns outside the flag's live range, refs-7 with them inside it. Everything else in the formula is measured pinned: refs(78)=4 and L78=9 (s10), refs(73) in {7,8} by guard spelling (s11), refs(74)=6 and L74=16 across every spelling measured in s11 and s12.
+- verdict: CONFIRMED
+
+## [s12] The phantom 8-byte frame is an artefact of our search rather than of the original author's idiom.
+- mechanism: s10's rederive compared the matched siblings' loop SHAPE but not their frames.
+- probe: Read asm/funcs/func_80037AA4.s against its MATCHED C at src/code6cac_c.c:285-316.
+- result: func_80037AA4 - same file, same table D_80102810, same bound D_800A38C8, MATCHED - carries the SAME phantom `addiu $sp,$sp,-0x8` / `addiu $sp,$sp,0x8` with no `($sp)` reference, and its accepted C uses exactly the counter-naming guard `var_a1 = 0; var_a2 = D_800A38C8; if (var_a1 < var_a2)`. candidate.c's refs-8 chassis IS the author's idiom. The same sibling's own RA residual was closed with a Judge-sanctioned /* FAKE */ constant-holder (ruling 2026-07-28) whose lever (reload's update_equiv_regs deleting the li) moves none of L73 / refs(78) / L78 here, so it still does not transfer.
+- verdict: CONFIRMED
