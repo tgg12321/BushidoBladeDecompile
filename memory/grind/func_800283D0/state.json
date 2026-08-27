@@ -1,8 +1,8 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 17,
- "current_modality": "solver",
+ "session_count": 18,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -105,23 +105,29 @@
    "floor": 10,
    "modality": "solver",
    "headline": "Floor held at 10/216, but the store-pin/cluster-A tension is broken: tC holds BOTH at 12/221, jump.c's XJDBG trace names the cross-jump refusal exactly, a cheaper self-supplied store pin (tD) emits ta"
+  },
+  {
+   "session": 18,
+   "floor": 10,
+   "modality": "forensics",
+   "headline": "Cluster A's second, ref-count-free solution CONFIRMED (livelen(temp_s3)>=20 flips the $s2/$s3 seats) and priced as net-negative; cluster B's dbr refusal NAMED as insn_sets_resource_p(trial,&opposite_n"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Target's body = tD's self-supplied store pin on path1, but with path1's 0x19 edge sharing the 0xB edge's store (no store of its own) so the arm's 0x19 edge stays textually distinguishable and the cross-jump stops at the arm's pin label instead of eating the whole arm. That single body would close the store sink, the arm store AND cluster A together, leaving only cluster B.",
-   "mechanism": "Target's asm proves the asymmetry: path1's 0x19 edge is `bnez $s1,.L8002851C` + `li $v0,0x19` in the delay slot - it BRANCHES to the shared store - while the arm's 0x19 edge carries its own `sh $v0,0x286($s0)` in its `j` delay slot and rejoins at .L80028520 (one insn past that store). tD gets the pin free but gives path1's 0x19 edge a store of its own, which makes it textually identical to the arm's and triggers the full collapse measured at 11/212. E-s17-5's law says the arm's store must ALSO be pinned or the argument setup cannot merge (tC/tE/tH all stall at 12/221), so the wanted body needs a pin for the arm that is not a copy of path1's shape.",
-   "next_probe": "Sweep path1 spellings that keep ONE store while still creating a label immediately after it: (a) `if (var_s1 != 0) goto store_it; var_v0 = 0xB; store_it: *(s16*)(arg0+0x286) = var_v0;` with the arm's 0xB edge entering at the 0xB assignment; (b) path1's 0xB edge storing + `goto do_calls` while its 0x19 edge `goto`s the 0xB edge's store (sharing it). Pair each with tG's arm (0x19-edge-first, `arm_calls:` pin, duplicated call pair). Read the TWO arm branch target ADDRESSES out of `mipsel-linux-gnu-objdump -d tmp/sandbox/func_800283D0/code6cac_b.o` (offsets ~0x7a0-0x7b0) - the normalized diff hides which address each edge lands on - and confirm the seats with tmp/grind/func_800283D0/s17/al.py after every hit. Run `sandbox --disable all` twice before objdumping (E-s13-6)."
+   "hypothesis": "Cluster B closes if $v0 can be made dead in mark_target_live_regs(insn 731) - and the trace already shows that live set is over-approximate ($a3 is marked live there and is provably dead), so the C dial is the SHAPE of the fall-through 0x19/0xB selection block and of the first 0xE test that also branches to its label.",
+   "mechanism": "reorg.c computes basic_block_live_at_start once and mark_target_live_regs returns it verbatim when the target IS the block head. Block 27 begins at code_label 347, whose own first action is to SET $v0, so a correct live-in would exclude $v0. The over-approximation must come either from label 347 having a second predecessor (the `bnez $v0` of the first 0xE test branches there too) or from the block head having moved when sched2 folded `v0 = 0x19` into the `bnez $s1` sequence. Clearing bit 0x4 of oppregs makes insn_sets_resource_p(368, &opposite_needed) return 0, all five predicates pass, and dbr steals `v0 = 1` into the slot exactly as target does - closing cluster B's ~4 points AND the 216-vs-215 insn surplus.",
+   "next_probe": "On the base body run `bash tmp/grind/func_800283D0/s18/dbr.sh <tag>` (it writes the DBRDBG log and the -da dumps together) for two restructurings of the `||`: (a) give the first 0xE test its own branch target so label 347 has exactly ONE predecessor, e.g. `if ((u32)(h0-6) >= 2U) { if ((u32)(h1-6) >= 2U) { D_800A38A8 = 1; D_800A3876 = -1; goto block_49; } } var_v0_2 = 0x19; if (var_s1 == 0) var_v0_2 = 0xB; goto block_48;`; (b) spell the selection so its first insn is not the one sched2 folds into the branch sequence. Locate the branch UID by searching tmp/grind/func_800283D0/s18/code6cac_b.i.dbr for the insn setting `(mem (symbol_ref \"D_800A38A8\"))` and walking back to the preceding jump_insn, then grep the log for `DBRDBG thr insn=<uid>` and read the oppregs word. Bit 0x4 clearing is the win condition; score with `sandbox --disable all` twice."
   },
   {
-   "hypothesis": "tA (17/216, byte-exact at emitted 83-88 AND 144-148, sole residual cluster A) plus ONE byte-free extra `arg1` reference anywhere in the function reaches ~5/216.",
-   "mechanism": "E-s17-4 measured that nrefs(73) = 8 flips the seat (pri 2376 > 2142). tB proved the lift works; its cost was that the duplicated block did not cross-jump. The lift is byte-free wherever jump2 merges the duplicate 100%, which by E-s17-5's law needs the duplicating block and its partner to be scheduled identically. The `<` arm is occupied by tA's pinning goto, so the reference must come from another site: the `>` path's 0x26 / 0x2D calls, or the `==` block's 1 / 0x25 calls.",
-   "next_probe": "On tA, enumerate duplication sites whose TAILS (not heads) can cross-jump: any construct where two control-flow arms both END with the same call. Measure each with `sandbox --disable all` and confirm nrefs with tmp/grind/func_800283D0/s17/al.py. Note that moving a call across the var_v0_2 selection changes emitted order (target emits jal 0x26 at T150 and jal 0x2D at T155 BEFORE the `bnez $s1` at T157), so only tail positions that preserve that order are admissible. If no site exists, that is a clean FORECLOSURE of the nrefs route on a pinned body and the answer is the livelen(143) >= 20 death-end route restored by E-s17-3."
+   "hypothesis": "On a store-pinned body the byte-free nrefs(73) route is FORECLOSED, and one measurement settles it: E-s18-1's ref map proves only three call-pair sites exist, and find_cross_jump merges TAILS, so only the `<` arm can tail-merge with path1 - the same arm the pin occupies.",
+   "mechanism": "jump2 runs after RA (E-s18-6), so a duplicated call pair is free at allocation time and can merge to zero emitted cost - but only if the duplicating block and its partner are scheduled IDENTICALLY (E-s17-5's law, read from BB2_XJUMP_DEBUG). path1's tail is `store; calls; return`; the `==` arm's calls are followed by the `== 5` subtree and the `>` path's by the 0x1A selection, so neither is a tail. That leaves the `<` arm, which on a pinned body is spending its goto on the pin.",
+   "next_probe": "Build tD's self-supplied path1 pin (E-s17-6: each selection edge does its own store and the 0xB edge's `goto do_calls` supplies the label; emitted 80-88 is byte-exact) and give the `<` arm a duplicated call pair whose block BEGINS with its own store, so both blocks are scheduled identically per E-s17-5's law. Confirm the seats with s18/al.sh and the merge with BB2_XJUMP_DEBUG=1 (s17/xj_tC.txt is the template trace). If it still stalls at 12/221 like tC/tE/tH, record the nrefs route as FORECLOSED on every pinned body and hand the function's whole remaining budget to cluster B."
   },
   {
-   "hypothesis": "Cluster B (~4 pts and the whole 216-vs-215 nop surplus) is a reorg.c steal_delay_list_from_target eligibility refusal at the `beqz $v0,.L800285DC` branch, unchanged since s10 and independent of everything above.",
-   "mechanism": "Target fills that delay slot with `addiu $v0,$zero,0x1`, the first insn of the branch TARGET block, and redirects the branch to label+1; our build emits a nop and the `li v0,1` afterwards from an identical target block. dbr only steals from a target block when LABEL_NUSES == 1 and mark_target_live_regs proves the clobbered register dead on the fall-through. Emitted 45-48 (ours `j / nop`, target `nop / j`) is the same pass.",
-   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_800283D0` on whichever body the next session settles on (every dump older than s17 is stale), locate that branch's insn UID in the .dbr dump, and grep the DBRDBG log for its thr/simp lines to settle which refusal fires. If LABEL_NUSES, the C dial is the number of source gotos landing on the D_800A38A8 block; if mark_target_live_regs, the dial is what the fall-through arm does to $v0."
+   "hypothesis": "A livelen(143) displacement that costs fewer than 5 diff points would make cluster A free on a pinned body, but no such site exists in this function's shape - the six insns have to come from code target places after the reload.",
+   "mechanism": "E-s18-4's ladder is linear and E-s18-5 prices the cheapest crossing at ~10. The only computations available to move are the two 0xE boolean chains and the 0x19/0xB selection, and target emits all three after the `== 5` test; moving the selection additionally triggers a jump2 dedupe of target's two identical 4-insn selection blocks.",
+   "next_probe": "Only worth revisiting if frontier item 2 forecloses the nrefs route AND cluster B closes: at that point a body at ~6 with the store pinned would make a 10-point displacement cost worth re-pricing against the unpinned base. Re-measure V6 (tmp/grind/func_800283D0/s18/V6.c, banked at rejected/V6-hoist-e0e1-bools-livelen20-SEATS-FLIP-but-19.c) on whatever chassis exists then rather than re-deriving it."
   }
  ],
  "judge_constraints": [],

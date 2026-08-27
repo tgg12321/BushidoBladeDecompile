@@ -1450,3 +1450,68 @@ arm (11 / 212, three insns short of target).  Identical pinning over-merges.
 - probe: Built tD (path1 and the arm each respelled so every selection edge does its own store and the 0xB edge ends `goto <calls label>`), measured and diffed.
 - result: tD = 11/212. Path1's emitted 80-88 is BYTE-EXACT with target, but jump2 collapses the ENTIRE `<` arm (emitted `bnez $v0` where target has `beqz $v0`; target's four arm insns absent, build 3 insns SHORT). Identical pinning makes the arm's two edges textually identical to path1's two edges, so the merge does not stop at the pin - it eats the whole arm.
 - verdict: KILLED
+
+## s18 (forensics) - hypotheses closed and opened
+
+## [s18] CLOSED-CONFIRMED: E-s15-5's livelen route is real - livelen(143) >= 20 flips the cluster-A seats with nrefs(73) still 7.
+- mechanism: global.c allocno_compare sorts by pri = floor_log2(nrefs)*nrefs/livelen*10000*size. On tA pri(143) = 1*3/14*10000 = 2142 and pri(73) = 2*7/92*10000 = 1521, so 143 is allocated first and takes $s2. Pushing livelen(143) to 20 drops pri(143) to 1500 < 1521, reversing the sort order so 73 takes $s2 and 143 takes $s3 - target's seats.
+- probe: V6 (tA with the two `(u32)(*(u16*)(...+0xE)-6) < 2U` booleans hoisted into `s32 c0, c1` right after the shared call pair). ALLOCDBG: 73 -> $s2 nrefs 7 livelen 92 pri 1521; 143 -> $s3 nrefs 3 livelen 20 pri 1500. Normalized diff has ZERO cluster-A entries.
+- verdict: CONFIRMED. Cluster A has two disjoint solutions, not one.
+
+## [s18] CLOSED-KILLED (on this chassis): the livelen route is affordable.
+- mechanism: reg_live_length counts one per insn inside the def-to-last-use span, so lengthening 143 by 6 requires SIX insns scheduled between the last `jal` and the `== 5` reload. Target places those insns AFTER the reload, so any hoist moves 6 insns across a 4-insn reload/compare group.
+- probe: V6 = 19/214 (cluster A closed, ~14 diff slots at emitted 111-127); V10 = 38/207 (hoisting the shared selection additionally lets jump2 dedupe target's two identical 4-insn selection blocks). Seat-flipped tA is worth ~5; cheapest displacement prices at ~10.
+- verdict: KILLED as a floor-lowering move on a store-pinned body. It stays live only if a displacement can be found whose six insns land in target's own positions - no such site exists in this function's shape.
+
+## [s18] CLOSED-KILLED: nrefs(143) 3 -> 2 by respelling the address (the s14 recompute hypothesis, both directions).
+- mechanism: cse2 re-unifies any recomputed `arg0 + temp_a1_2*2` with the existing pointer pseudo, so the ref lands back on 143.
+- probe: V3 (recompute at the `== 5` test) and V4 (recompute at the FIRST load) are ALLOCDBG-IDENTICAL to tA - 3 refs, livelen 14, pri 2142. V7 (a differently-based `s16 *base288 = (s16*)(arg0+0x288)` with `base288[temp_a1_2]`) DOES split the pseudo (145: 3 refs, 146: 2 refs) but adds an eighth callee-saved allocno, puts arg1 in $s4 and costs a prologue save.
+- verdict: KILLED. Do not re-propose address respellings for nrefs(143).
+
+## [s18] CLOSED-KILLED: lengthening livelen(143) from the BIRTH end (the s15 declaration hoist).
+- mechanism: the def cannot move above the `temp_v1_3 == 0` branch without cse merging it with the `== 0` path's identical address; the merged pseudo has nrefs 4 / livelen 16 / pri 5000, which outranks arg0 (4871) and takes $s0.
+- probe: V1. Every callee-saved seat reshuffles; 143 disappears as an allocno.
+- verdict: KILLED. Birth-end lengthening is structurally impossible here; only the death end is available.
+
+## [s18] CLOSED-CONFIRMED: cluster B's dbr refusal is `insn_sets_resource_p (trial, &opposite_needed)` (mark_target_live_regs), NOT a LABEL_NUSES refusal.
+- mechanism: fill_slots_from_thread will only take a trial insn from the target thread if it does not clobber a register live on the OPPOSITE thread, because the MIPS port has no annulled slots. insn 368 (`v0 = 1`, head of the D_800A38A8 block) writes $v0, and $v0 is in mark_target_live_regs(insn 731) - the fall-through `bnez $s1 -> 632` + delay `v0 = 0x19` selection sequence.
+- probe: BB2_DBR_DEBUG=1 on the base body, `DBRDBG thr insn=344 trial=368 refset=0 setset=0 setneed=0 setsopp=1 trap=0` -> LOSE, with `DBRDBG mtlr target=731 block=27` proving the block was found (no conservative fallback).
+- verdict: CONFIRMED. The s17 frontier's LABEL_NUSES alternative is eliminated; the C dial is what the fall-through 0x19/0xB selection does to $v0.
+
+## [s18] OPEN: the over-approximation in basic_block_live_at_start[27] is itself the lever - $a3 is marked live at insn 731 and is provably dead there, so $v0's liveness there may also be an artifact of a stale block boundary rather than a real dataflow fact.
+- mechanism: reorg.c computes basic_block_live_at_start once and mark_target_live_regs returns it verbatim when the target IS the block head. Block 27 begins at code_label 347, whose block sets $v0 before any use of it, so a correct live-in would exclude $v0. If the over-approximation comes from label 347 having a second predecessor (the `bnez $v0` from the first 0xE test) or from the block head having moved when sched2 formed the sequence, then changing the SHAPE of the first 0xE test - so that label 347 has exactly one predecessor, or so that the fall-through block's first insn is not the one dbr already consumed into a sequence - would make $v0 dead there and let the steal happen.
+- next probe: on the base body, re-run `bash tmp/grind/func_800283D0/s18/dbr.sh <tag>` (it writes both the DBRDBG log and the -da dumps) with the `||` restructured so the first 0xE test branches somewhere other than label 347 (e.g. `if (h0 >= 2U) { if (h1 >= 2U) { D_800A38A8 = 1; ... } } selection...`), and diff the `oppregs` word at `DBRDBG thr insn=<the beqz> trial=<the v0=1>`. If bit 0x4 clears, the steal fires and cluster B's ~4 points plus the 216-vs-215 surplus close. Read the branch's UID out of `tmp/grind/func_800283D0/s18/code6cac_b.i.dbr` (search for the insn that sets `(mem (symbol_ref "D_800A38A8"))` and walk back to the preceding jump_insn).
+
+## [s18] OPEN: on a store-pinned body the byte-free nrefs(73) route needs a TAIL-mergeable duplication site, and E-s18-1's ref map says only three call-pair sites exist.
+- mechanism: jump2 runs after global_alloc/reload, so a duplicated call pair counts toward reg_n_refs at allocation time and can still cross-jump to zero emitted cost (E-s18-6). But find_cross_jump merges TAILS, so the duplicate must be the last thing both arms do. path1's tail is `store; calls; return`; the `==` arm's calls are followed by the `== 5` subtree; the `>` path's calls are followed by the 0x1A selection. Only the `<` arm can tail-merge with path1 - and on a pinned body that arm is spending its goto on the pin (E-s17-5's scheduling law).
+- next probe: this is one measurement away from a clean FORECLOSURE. Take tD's self-supplied path1 pin (E-s17-6, emitted 80-88 byte-exact) and give the `<` arm a duplicated call pair whose block is scheduled IDENTICALLY to path1's - i.e. path1's calls block must also begin with its store, which tD's per-edge-store spelling already guarantees. If that body still stalls at 12/221 like tC/tE/tH, the nrefs route is FORECLOSED on every pinned body and the function's whole remaining budget belongs to cluster B.
+
+## [s18] E-s15-5's route is real: livelen(pseudo 143 / temp_s3) >= 20 flips the cluster-A callee-saved seats without any extra arg1 reference.
+- mechanism: GCC 2.7.2 global.c allocno_compare sorts allocnos by pri = floor_log2(nrefs)*nrefs/livelen*10000*size. On tA pri(143) = 1*3/14*10000 = 2142 and pri(73) = 2*7/92*10000 = 1521, so 143 is allocated first and takes $s2. Raising livelen(143) to 20 drops pri(143) to 1500 < 1521, reversing the sort and giving 73 the $s2 seat and 143 the $s3 seat - exactly target's assignment.
+- probe: Body V6 = tA with the two `(u32)(*(u16*)(...+0xE) - 6) < 2U` sub-expressions hoisted out of the `== 5` block into `s32 c0, c1` evaluated immediately after the shared call pair. ALLOCDBG via the instrumented cc1 (BB2_ALLOC_DEBUG=1).
+- result: ALLOCDBG on V6: ord=23 pseudo=73 $s2 nrefs=7 livelen=92 pri=1521; ord=24 pseudo=143 $s3 nrefs=3 livelen=20 pri=1500. The normalized objdump diff has ZERO cluster-A entries - all twelve `move $a2,$s2` sites and the prologue sw $s2 / sw $s3 pair are byte-exact. First body in 18 sessions to reach target's seats without a duplicated call pair.
+- verdict: CONFIRMED
+
+## [s18] The livelen route is affordable enough to lower the floor on a store-pinned body.
+- mechanism: reg_live_length counts one per insn scheduled inside the def-to-last-use span, so +6 livelen requires SIX insns moved between the last `jal` and the `== 5` reload. Target places all of those insns AFTER the reload, so any hoist drags six insns across a four-insn reload/compare group.
+- probe: Six bodies measured with both sandbox --disable all and ALLOCDBG: tA (nothing hoisted) livelen 14, V8 (selection, 3 insns) 17, V5 (two 0xE loads + subtract, 4 insns) 18, V9 (5 insns) 19, V10 (6 insns) 20 FLIP, V6 (6 insns) 20 FLIP.
+- result: V6 = 19 / 214 and V10 = 38 / 207. The dial is exactly linear (1 displaced insn = +1 livelen) and the threshold is exactly 20 as the closed form predicted, but the cheapest displacement prices at ~10 diff points while a seat-flipped tA is only worth ~5 (tA 17 minus cluster A ~12). V10 is worse still because hoisting the shared 0x19/0xB selection lets jump2 dedupe target's two IDENTICAL 4-insn selection blocks (.L800285CC / .L800285F8), costing 8 insns.
+- verdict: KILLED
+
+## [s18] nrefs(143) can be lowered from 3 to 2 by respelling one of the two 0x288 loads (the s14 recompute hypothesis).
+- mechanism: pri(143) at nrefs 2 would be 1*2/14*10000 = 1428 < pri(73) = 1521, so a single removed reference would flip the seats with no insn displacement at all.
+- probe: V3 (recompute the address at the `== 5` test), V4 (recompute at the FIRST load instead), V7 (a differently-based `s16 *base288 = (s16*)(arg0 + 0x288)` with `base288[temp_a1_2]`). ALLOCDBG on each.
+- result: V3 and V4 are ALLOCDBG-IDENTICAL to tA - nrefs 3, livelen 14, pri 2142 - because cse2 re-unifies the recomputed address with the pointer pseudo in both directions. V7 does split the pseudo (145: 3 refs, 146: 2 refs) but adds an EIGHTH callee-saved allocno, lands arg1 in $s4 and costs an extra prologue save.
+- verdict: KILLED
+
+## [s18] livelen(143) can be lengthened from the BIRTH end by hoisting the `u8 *temp_s3 = arg0 + (temp_a1_2 * 2);` declaration to the head of block_20 (the s15 hypothesis).
+- mechanism: Moving the def above the `temp_v1_3 == 0` branch would let the pointer's live range cover the extra block without adding a reference.
+- probe: Body V1, ALLOCDBG.
+- result: Destructive, not merely inert: cse merges the hoisted def with the `== 0` path's identical `arg0 + temp_a1_2*2` address into ONE pseudo (123) with nrefs 4 / livelen 16 / pri 5000, which outranks arg0 (pri 4871) and takes $s0. Every callee-saved seat reshuffles and 143 ceases to exist as an allocno. The def cannot leave the != 0 block without merging the two paths' addresses.
+- verdict: KILLED
+
+## [s18] Cluster B's delay-slot refusal is one of two candidates - a LABEL_NUSES != 1 refusal, or a mark_target_live_regs refusal (the s17 frontier's open binary question).
+- mechanism: reorg.c's fill_slots_from_thread takes an insn from the target thread only if it passes five predicates; the MIPS port has no annulled slots, so a trial that clobbers a register live on the OPPOSITE thread can never be taken.
+- probe: BB2_DBR_DEBUG=1 on the instrumented tools/gcc-2.7.2/cc1 over the 10-floor base body, cross-referenced against the -da .dbr RTL to identify the branch and the stolen insn by UID.
+- result: The branch is jump_insn 344 (`beqz $v0,<label 365>`, the `(u32)(*(u16*)(temp_s4+0xE)-6) < 2U` test); the insn target steals is insn 368 (`(set (reg:HI 2 v0) (const_int 1))`, head of the D_800A38A8 block). Trace: `DBRDBG thr insn=344 trial=368 refset=0 setset=0 setneed=0 setsopp=1 trap=0` then `LOSE`. FOUR of five predicates pass; the sole failure is insn_sets_resource_p(trial, &opposite_needed) - insn 368 writes $v0 and $v0 (bit 0x4 of oppregs=0x20630084) is live in mark_target_live_regs(opposite_thread = insn 731, the already-filled `bnez $s1 -> 632` + delay `v0 = 0x19` selection sequence). `DBRDBG mtlr target=731 block=27` proves the block was found, so this is a real liveness answer, not the find_basic_block()==-1 conservative fallback.
+- verdict: CONFIRMED

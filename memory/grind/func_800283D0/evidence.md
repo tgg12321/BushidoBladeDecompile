@@ -2461,3 +2461,200 @@ window:
 - [s17] tD (that path1 + the arm pinned the same way) = 11 / 212, THREE INSNS SHORT of target: with both sides pinned identically the arm's two edges become textually identical to path1's and jump2 collapses the entire `<` arm (emitted `bnez $v0` where target has `beqz $v0`). Target's window is narrow - path1 pinned, arm pinned, AND the arm's 0x19 edge textually distinguishable from path1's 0x19 edge; in target's asm path1's 0x19 edge has NO store of its own (it branches to .L8002851C) while the arm's does.
 
 - [s17] Full measurement table this session, all banked under memory/grind/func_800283D0/rejected/: base 10/216, tA 17/216, tB 17/222, tC 12/221, tD 11/212, tE (tD's path1 + the s16 arm) 12/221, tG (arm rewritten 0x19-edge-first with an `arm_calls:` pin) 10/216 and codegen-equivalent to base, tH (tD's path1 + tG's arm) 12/221.
+
+## s18 (forensics, 2026-08-27) - floor HELD at 10 / 216; cluster A's SECOND route (livelen) is CONFIRMED WORKING and priced, and cluster B's dbr refusal is NAMED
+
+**E-s18-0 (chassis).**  The banked s16/s17 candidate body re-measured **10 / 216**
+on HEAD at session start and again at session end (E-s13-6 staleness discipline).
+tA re-measured **17 / 216**.  Every s12-s17 number is chassis-valid.
+
+**E-s18-1 (the complete ref map for the two cluster-A allocnos, read out of the
+.flow dump rather than inferred).**  On tA:
+
+    pseudo 143 (temp_s3) - 3 refs, ALL of them:
+      insn 277  (set (reg/v:SI 143) (plus:SI (reg/v:SI 72) (reg:SI 145)))   <- def, arg0 + temp_a1_2*2
+      insn 280  (set (reg/v:HI 146) (mem:HI (plus 143 648)))                <- temp_v0_3
+      insn 321  (set (reg:HI 158)   (mem:HI (plus 143 648)))                <- the `== 5` reload
+    pseudo 73 (arg1) - 7 refs, ALL of them:
+      insn 6    (set (reg/v:SI 73) (reg:SI 5 a1))                           <- the param copy
+      insn 238 / 253   (set (reg:SI 6 a2) (reg 73))   <- path1's calls 1 / 0x25
+      insn 299 / 314   (same)                         <- the `==` arm's calls
+      insn 443 / 458   (same)                         <- the `>` path's calls 0x26 / 0x2D
+
+There is no fourth site.  Every arg1 reference in this function is a call
+argument, and every temp_s3 reference is the def plus the two `0x288` loads
+target's own asm also performs (`addu $s3,$v0,$s0`, `lh $v0,0x288($s3)`,
+`lh $v1,0x288($s3)`).  Target therefore emits the SAME ref counts we do, which
+means the seat exchange cannot be explained by target having "one more arg1
+use" that is visible in the asm - see E-s18-6.
+
+**E-s18-2 (allocno_compare on tA, digit-exact, and the corrected threshold set).**
+ALLOCDBG on tA:
+
+    ord=11 pseudo=72  $s0 nrefs=19 livelen=156 pri=4871
+    ord=14 pseudo=77  $s1 nrefs=9  livelen=74  pri=3648
+    ord=20 pseudo=143 $s2 nrefs=3  livelen=14  pri=2142     <- target wants $s3 here
+    ord=22 pseudo=73  $s3 nrefs=7  livelen=92  pri=1521     <- target wants $s2 here
+
+pri = floor_log2(nrefs)*nrefs/livelen*10000*size.  On THIS body livelen(73) is
+**92**, not the 98 s15 recorded, so the single-atom threshold set is:
+
+    nrefs(73) >= 8        -> 3*8/92*10000  = 2608 > 2142   (E-s17-4's route)
+    nrefs(143) = 2        -> 1*2/14*10000  = 1428 < 1521   (newly in range)
+    livelen(143) >= 20    -> 30000/20      = 1500 < 1521   (E-s15-5's route)
+    livelen(73) <= 65     -> 14/65*10000   = 2153 > 2142   (never reached; see E-s18-5)
+
+**E-s18-3 (THE FINDING: livelen(143) >= 20 FLIPS THE SEATS - first body ever to
+reach target's callee-saved assignment WITHOUT a duplicated call pair).**
+`tmp/grind/func_800283D0/s18/V6.c` = tA with the two `(u32)(*(u16 *)(... + 0xE)
+- 6) < 2U` sub-expressions hoisted out of the `== 5` block into two `s32 c0, c1`
+locals evaluated immediately after the shared call pair.  ALLOCDBG on V6:
+
+    ord=23 pseudo=73  $s2 nrefs=7 livelen=92 pri=1521      <- TARGET SEAT
+    ord=24 pseudo=143 $s3 nrefs=3 livelen=20 pri=1500      <- TARGET SEAT
+
+and the normalized objdump diff has **NO cluster-A entry at all** - the twelve
+`move $a2,$s2` sites and the prologue `sw $s2`/`sw $s3` pair are byte-exact,
+and emitted 96 becomes `addu s3,s0,v0` vs target's `addu s3,v0,s0` (right
+register, commuted operands).  E-s15-5's livelen route is therefore REAL and
+independent of the ref-count route: cluster A has two disjoint solutions.
+
+**E-s18-4 (the livelen dial is LINEAR in displaced insns, measured over five
+bodies - 1 insn moved between the last `jal` and the `== 5` reload = +1
+livelen).**
+
+    body   what was hoisted above the `== 5` reload            livelen(143)  seats
+    tA     nothing                                              14           no
+    V8     the `!= 5` 0x19/0xB selection (3 insns)               17           no
+    V5     the two `0xE` loads + their `-6` (4 insns)            18           no
+    V9     V8 + the two bare `0xE` loads (5 insns)               19           no
+    V10    V8 + one `0xE` load + one load-and-subtract (6)       20           YES
+    V6     the two full `(x-6) < 2U` booleans (6 insns)          20           YES
+
+The threshold is exactly 20 as predicted, and reg_live_length counts one per
+insn scheduled inside the def-to-last-use span.  This makes the route
+PRICEABLE for the first time.
+
+**E-s18-5 (THE PRICE, and why the livelen route still loses on this chassis).**
+V6 measures **19 / 214** and V10 measures **38 / 207**.  V6's residual is
+cluster B plus ~14 diff slots concentrated in emitted 111-127: target computes
+the two `0xE` booleans AFTER the `== 5` reload, we compute them before, so six
+hoisted insns cross the four-insn reload/compare group and ~10-14 emitted
+positions shift.  V10 is worse still because hoisting the shared 0x19/0xB
+selection lets jump2 dedupe target's two IDENTICAL 4-insn selection blocks
+(.L800285CC and .L800285F8), costing 8 insns (207 vs 215).  The arithmetic:
+tA is 17 of which cluster A is ~12, so a seat-flipped tA is worth ~5 - and the
+cheapest possible displacement (6 insns across a 4-insn group) prices at ~10.
+**On a store-pinned body the livelen route is measured NET-NEGATIVE vs the
+unpinned 10-floor base**, which is why the floor held.
+
+**E-s18-6 (why target's seats cannot be explained by refs or by this livelen
+dial - the jump2-runs-after-RA corollary).**  E-s18-1 shows target's emitted
+ref counts equal ours and E-s18-4 shows target's emitted insn ORDER gives
+livelen(143) = 14, so under our C target's own compile would allocate
+143 -> $s2.  It does not.  The only remaining explanation is that target's
+SOURCE contains refs that no longer exist in target's ASM: **jump2 (cross-jump)
+runs AFTER global_alloc/reload in GCC 2.7.2's rest_of_compilation**, so a
+duplicated call block raises `reg_n_refs` at allocation time and can still be
+merged to zero emitted cost afterwards.  This is the mechanism behind the whole
+s11-s17 duplicated-call family, stated for the first time as a pass-order fact
+rather than an empirical coincidence.
+
+**E-s18-7 (spellings that CANNOT move nrefs(143), measured).**
+  - V3 (`*(s16 *)(arg0 + temp_a1_2*2 + 0x288) == 5`, recomputing the address
+    at the second load) and V4 (recomputing at the FIRST load instead) are both
+    exactly ALLOCDBG-identical to tA: nrefs 3, livelen 14, pri 2142.  cse2
+    re-unifies the recomputed address with the pointer pseudo in both
+    directions.  The s14 "recompute at the == 5 test" hypothesis is now KILLED
+    on this chassis in both of its spellings.
+  - V7 (`s16 *base288 = (s16 *)(arg0 + 0x288); ... base288[temp_a1_2] == 5`)
+    DOES split the pseudo - 145 (3 refs) and 146 (2 refs) - but creates an
+    extra live pointer, pushes the function to EIGHT callee-saved allocnos
+    ($s0..$s7, arg1 landing in $s4) and costs a prologue save.  Splitting the
+    address to lower nrefs is self-defeating.
+  - V1 (declaring `u8 *temp_s3` at the head of block_20, above the
+    `temp_v1_3 == 0` test) is worse than either: cse merges it with the `== 0`
+    path's identical address, producing ONE pseudo (123) with nrefs 4 and
+    livelen 16 -> pri 5000, which outranks arg0 and takes $s0.  The s15
+    "hoist the pointer decl to lengthen its range" hypothesis is KILLED: you
+    cannot hoist the def past the branch without merging the two paths'
+    addresses, and the merged pseudo's priority explodes.
+
+**E-s18-8 (CLUSTER B's dbr refusal is NAMED: `insn_sets_resource_p (trial,
+&opposite_needed)`, i.e. mark_target_live_regs - NOT LABEL_NUSES).**
+`BB2_DBR_DEBUG=1` on the instrumented `tools/gcc-2.7.2/cc1` over the 10-floor
+base body (log `tmp/grind/func_800283D0/s18/dbr_base.txt`, RTL
+`tmp/grind/func_800283D0/s18/code6cac_b.i.dbr`) resolves frontier item 3's
+binary question.  The branch is `jump_insn 344` = `beqz $v0,<label 365>` (the
+`(u32)(*(u16 *)(temp_s4 + 0xE) - 6) < 2U` test), and the insn target steals is
+`insn 368` = `(set (reg:HI 2 v0) (const_int 1))`, the head of label 365's block
+(the `D_800A38A8 = 1` block).  `fill_eager_delay_slots` -> `fill_slots_from_thread`
+reports:
+
+    DBRDBG thr insn=344 thread=368 opp=731 own=1 likely=0 tif=1
+           oppregs=20630084_00000000 oppmem=1
+    DBRDBG thr insn=344 trial=368 refset=0 setset=0 setneed=0 setsopp=1 trap=0
+    DBRDBG thr LOSE insn=344 trial=368
+
+Four of the five eligibility predicates PASS (`insn_references_resource_p
+(trial,&set)` = 0, `insn_sets_resource_p (trial,&set)` = 0,
+`insn_sets_resource_p (trial,&needed)` = 0, `may_trap_p` = 0).  The single
+failing predicate is `insn_sets_resource_p (trial, &opposite_needed, 1)` = 1:
+insn 368 writes `$v0`, and `$v0` (hard reg 2, bit 0x4 of the printed
+`oppregs = 0x20630084`) is in `mark_target_live_regs (opposite_thread)`.  The
+opposite thread is `insn 731`, the already-filled sequence
+`(jump_insn 354: bnez $s1 -> 632)` + delay `(insn 351: v0 = 0x19)` - i.e. the
+fall-through `.L800285CC`-equivalent selection block.  MIPS has no annulled
+slots in this port, so a trial that clobbers an opposite-thread live register
+can never be taken and the slot stays a nop.
+`DBRDBG mtlr target=731 block=27` shows the block WAS found (no
+`find_basic_block () == -1` fallback), so this is a genuine liveness answer, not
+the conservative everything-live path - and the same `oppregs` word also
+carries `$a3` (bit 7), a register that is provably dead there, so
+`basic_block_live_at_start[27]` is over-approximate at this point in reorg.
+**The C dial for cluster B is therefore what the FALL-THROUGH arm of that
+branch does to `$v0` - the 0x19/0xB selection - not the number of gotos landing
+on the D_800A38A8 block.**  The LABEL_NUSES alternative in the s17 frontier is
+eliminated.
+
+- [s18] Chassis: base = 10 / 216 at session start AND at session end; tA = 17 / 216. Floor HELD at 10.
+
+- [s18] COMPLETE REF MAP (from the .flow dump, not inferred): pseudo 143 (temp_s3) has exactly 3 refs - def `(plus 72 145)` at insn 277, `temp_v0_3` load at 280, the `== 5` reload at 321. Pseudo 73 (arg1) has exactly 7 - the param copy at insn 6 plus six `(set (reg 6 a2) (reg 73))` call arguments at 238/253 (path1), 299/314 (the `==` arm), 443/458 (the `>` path). There is no other site for either pseudo anywhere in the function.
+
+- [s18] allocno_compare on tA, digit-exact: 143 -> $s2 nrefs 3 livelen 14 pri 2142; 73 -> $s3 nrefs 7 livelen 92 pri 1521. livelen(73) is 92 on this body, NOT the 98 s15 recorded, so the corrected single-atom threshold set is nrefs(73)>=8, nrefs(143)=2 (pri 1428), livelen(143)>=20 (pri 1500), livelen(73)<=65.
+
+- [s18] CLUSTER A HAS A SECOND, INDEPENDENT SOLUTION AND IT IS NOW MEASURED: V6 (tA with the two `(u32)(*(u16*)(...+0xE)-6) < 2U` booleans hoisted into `s32 c0, c1` evaluated right after the shared call pair) gives livelen(143) = 20, pri 1500 < 1521, and ALLOCDBG shows 73 -> $s2 and 143 -> $s3, i.e. TARGET'S SEATS, with nrefs(73) still 7. Its normalized diff has NO cluster-A entry: all twelve `move $a2,$s2` sites and the prologue sw pair are byte-exact. This is the first body in eighteen sessions to reach the target seats without a duplicated call pair.
+
+- [s18] THE LIVELEN DIAL IS LINEAR AND NOW PRICED: one insn scheduled between the last `jal` and the `== 5` reload = +1 livelen(143). Measured ladder on tA: nothing 14; the `!=5` selection hoisted (3 insns) 17; the two 0xE loads + their -6 (4 insns) 18; selection + two bare loads (5) 19; selection + one load + one load-and-subtract (6) 20 FLIP; the two full booleans (6) 20 FLIP.
+
+- [s18] THE PRICE OF THE LIVELEN ROUTE, AND WHY THE FLOOR HELD: V6 = 19 / 214, V10 = 38 / 207. Target computes the two 0xE booleans AFTER the `== 5` reload; any hoist moves six insns across the four-insn reload/compare group, shifting ~10-14 emitted positions. V10 is worse because hoisting the shared 0x19/0xB selection lets jump2 dedupe target's two IDENTICAL 4-insn selection blocks (.L800285CC / .L800285F8), losing 8 insns. A seat-flipped tA is worth ~5 (tA 17 minus cluster A ~12) and the cheapest displacement prices at ~10, so on a STORE-PINNED body the livelen route is NET-NEGATIVE against the unpinned 10-floor base.
+
+- [s18] PASS-ORDER COROLLARY (explains the entire s11-s17 duplicated-call family as a mechanism, not a coincidence): jump2 runs AFTER global_alloc/reload in GCC 2.7.2's rest_of_compilation, so a duplicated call block raises reg_n_refs at ALLOCATION time and can still be cross-jumped to zero EMITTED cost afterwards. Combined with E-s18-1 (target's emitted ref counts equal ours) and E-s18-4 (target's emitted order gives livelen(143)=14), the only consistent reading of target's seats is that target's SOURCE carries a duplicated call pair that jump2 later merges away.
+
+- [s18] KILLED - nrefs(143) 3 -> 2 is unreachable by respelling the address. V3 (recompute at the `== 5` test) and V4 (recompute at the FIRST load) are both ALLOCDBG-IDENTICAL to tA (3/14/2142): cse2 re-unifies the recomputed address in both directions. V7 (`s16 *base288 = (s16*)(arg0+0x288); base288[temp_a1_2] == 5`) does split the pseudo into 145 (3 refs) + 146 (2 refs) but pushes the function to EIGHT callee-saved allocnos with arg1 in $s4 and an extra prologue save. The s14 recompute hypothesis is dead in both spellings.
+
+- [s18] KILLED - hoisting the temp_s3 declaration to the head of block_20 (the s15 birth-end lengthening) is not merely ineffective, it is destructive: cse merges the hoisted def with the `== 0` path's identical `arg0 + temp_a1_2*2` address into ONE pseudo (123) with nrefs 4 / livelen 16 / pri 5000, which outranks arg0 (pri 4871) and takes $s0, reshuffling every callee-saved seat. You cannot lengthen 143 from the birth end without merging the two paths' addresses.
+
+- [s18] CLUSTER B IS NAMED (frontier item 3's binary question is ANSWERED - it is mark_target_live_regs, NOT LABEL_NUSES). BB2_DBR_DEBUG=1 on the base body: the branch is jump_insn 344 (`beqz $v0,<label 365>`, the `(u32)(*(u16*)(temp_s4+0xE)-6) < 2U` test) and the stolen insn target uses is insn 368 (`v0 = 1`, the head of the D_800A38A8 block). fill_slots_from_thread reports refset=0 setset=0 setneed=0 trap=0 and setsopp=1 -> LOSE: `insn_sets_resource_p (trial, &opposite_needed, 1)` is the SOLE failing predicate, because insn 368 writes $v0 and $v0 (bit 0x4 of oppregs=0x20630084) is live in mark_target_live_regs(opposite_thread=731), the already-filled `bnez $s1 -> 632` + delay `v0 = 0x19` selection sequence. `DBRDBG mtlr target=731 block=27` proves the block was found, so this is a real liveness answer rather than the find_basic_block()==-1 conservative fallback - though the same word also marks $a3 live, which is provably dead there, so basic_block_live_at_start[27] is over-approximate. MIPS has no annulled slots in this port, so the slot can never be filled while $v0 is in that set. The C dial is what the FALL-THROUGH 0x19/0xB selection arm does to $v0.
+
+- [s18] Chassis: the banked s16/s17 candidate body measured 10 / 216 at session start AND at session end (E-s13-6 staleness discipline); tA re-measured 17 / 216. Floor HELD at 10.
+
+- [s18] COMPLETE REF MAP, read out of the .flow dump rather than inferred: pseudo 143 (temp_s3) has exactly 3 refs - the def `(set (reg 143) (plus (reg 72) (reg 145)))` at insn 277, the temp_v0_3 load at 280, the `== 5` reload at 321. Pseudo 73 (arg1) has exactly 7 - the param copy `(set (reg 73) (reg 5 a1))` at insn 6 plus six `(set (reg 6 a2) (reg 73))` call arguments at 238/253 (path1), 299/314 (the `==` arm), 443/458 (the `>` path). No fourth site exists for either pseudo.
+
+- [s18] allocno_compare on tA, digit-exact: 143 -> $s2 nrefs 3 livelen 14 pri 2142; 73 -> $s3 nrefs 7 livelen 92 pri 1521. livelen(73) is 92 on this body, NOT the 98 s15 recorded, so the corrected single-atom threshold set is nrefs(73)>=8, nrefs(143)=2 (pri 1428), livelen(143)>=20 (pri 1500), livelen(73)<=65.
+
+- [s18] CLUSTER A HAS TWO DISJOINT SOLUTIONS. V6 reaches target's seats via livelen(143)=20 with nrefs(73) unchanged at 7, and its diff has no cluster-A entry at all; emitted 96 becomes `addu s3,s0,v0` vs target's `addu s3,v0,s0` (right register, commuted operands only).
+
+- [s18] The livelen dial is LINEAR: one insn scheduled between the last `jal` and the `== 5` reload = +1 livelen(143). Ladder measured on tA: 0 insns -> 14, 3 -> 17, 4 -> 18, 5 -> 19, 6 -> 20 (flip).
+
+- [s18] PRICE OF THE LIVELEN ROUTE: V6 = 19/214, V10 = 38/207. Target computes the two 0xE booleans AFTER the reload, so any hoist shifts ~10-14 emitted positions; a seat-flipped tA is worth only ~5. On a store-pinned body the route is measured NET-NEGATIVE against the unpinned 10-floor base.
+
+- [s18] PASS-ORDER COROLLARY (explains the whole s11-s17 duplicated-call family as a mechanism rather than a coincidence): jump2 runs AFTER global_alloc/reload in GCC 2.7.2's rest_of_compilation, so a duplicated call block raises reg_n_refs at ALLOCATION time and can still be cross-jumped to zero EMITTED cost. Since target's asm shows the same 7/3 ref counts we produce and the same emitted order (livelen 14), the only consistent reading is that target's SOURCE carries a duplicated call pair that jump2 later merges away.
+
+- [s18] KILLED: nrefs(143) 3->2 by address respelling. V3 and V4 are ALLOCDBG-identical to tA (3/14/2142) - cse2 re-unifies the recomputed address in both directions. V7's differently-based pointer does split the pseudo but adds an eighth callee-saved allocno and a prologue save.
+
+- [s18] KILLED: birth-end lengthening of livelen(143). V1's hoisted declaration is cse-merged with the `== 0` path's identical address into one pseudo (nrefs 4, livelen 16, pri 5000) that outranks arg0 and takes $s0.
+
+- [s18] CLUSTER B NAMED: jump_insn 344's empty delay slot is refused solely by insn_sets_resource_p(trial=368, &opposite_needed) - $v0 is live in mark_target_live_regs of the fall-through 0x19/0xB selection sequence (insn 731). The s17 frontier's LABEL_NUSES alternative is ELIMINATED. Note the same oppregs word (0x20630084) also marks $a3 live, a register provably dead there, so basic_block_live_at_start[27] is over-approximate at that point in reorg - which is itself the next lever.
+
+- [s18] TOOLING for the next session: tmp/grind/func_800283D0/s18/apply.py swaps a body into src/code6cac_b.c whether the current state is INCLUDE_ASM or a C body; s18/al.sh <tag> prints the callee-saved ALLOCDBG table; s18/dbr.sh <tag> writes both the BB2_DBR_DEBUG log and the -da pass dumps into s18/; s18/mk.sh + s18/norm.py produce the normalized objdump-vs-target diff (run sandbox twice before objdumping, E-s13-6).

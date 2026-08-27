@@ -55,6 +55,21 @@
  *      `addu a0,a0,s4`).  Re-probed in earlier sessions, score-neutral in
  *      either spelling - consequences of allocation, not levers.
  *
+ * s18 ADDENDUM (forensics, 2026-08-27) - this body is UNCHANGED and still
+ * measures 10 / 216.  What s18 added:
+ *   - Cluster A has a SECOND solution: livelen(temp_s3) >= 20 flips the
+ *     $s2/$s3 seats with nrefs(arg1) still 7 (E-s18-3, body V6).  It is
+ *     measured NET-NEGATIVE on a store-pinned body (V6 = 19/214) because the
+ *     six insns it needs displaced cross target's reload/compare group.
+ *   - The complete ref map is banked (E-s18-1): arg1 has exactly 7 refs (the
+ *     param copy + six call arguments), temp_s3 exactly 3 (def + two 0x288
+ *     loads).  Target's ASM shows the SAME counts, so target's seats are only
+ *     explicable by a source duplicate that jump2 merges AFTER RA (E-s18-6).
+ *   - Cluster B's dbr refusal is NAMED (E-s18-8): jump_insn 344's slot is
+ *     refused solely by insn_sets_resource_p(trial=368, &opposite_needed) -
+ *     $v0 is live in mark_target_live_regs of the fall-through 0x19/0xB
+ *     selection.  NOT a LABEL_NUSES refusal.
+ *
  * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  216i @ floor 10
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
