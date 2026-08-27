@@ -938,3 +938,90 @@ and no single-read placement measured lands on 111.
 - [s30] New regime discovered: the identical single source-level read placed after both index if-blocks compiles to 104 instructions - SEVEN BELOW the 111-insn target - at score 59, versus 112 at score 30 when placed before the branches. The const qualifier is codegen-inert in that regime (formD == formE).
 
 - [s30] src/text1b.c was restored to INCLUDE_ASM("asm/funcs", func_80057CC8); at the end of the session (git diff clean). candidate.c now holds the best BAN-COMPLIANT form (formB, 30/112) instead of the 2026-08-27 layer-1-FAILed helper body, which stays banked at rejected/layer1-fail-0827-0417.c.
+
+## s31 (2026-08-27) — forensics — FLOOR 30 -> 26, and a complete instruction-multiset accounting
+
+**Chassis re-measured first.** HEAD is `INCLUDE_ASM("asm/funcs", func_80057CC8);` at
+src/text1b.c:1665. The inherited candidate (s30b formB, cached base, single source-level
+materialisation) re-measured on this chassis at **score 30, target_insns 111, build_insns 112,
+rules_dropped 0** — the ledger floor is confirmed, not stale.
+
+**[s31-E1] The 7 instructions that separate the 104-insn regime from the target are now named
+individually, with pass attribution.** The s30 frontier probe (diff formD's emitted text against
+asm/funcs/func_80057CC8.s block by block) was executed. Method: `tools/ra_solver/mkasm_honest.sh
+text1b` for the honest stream, function body extracted, both sides normalised to numeric registers /
+canonical opcodes / decimal immediates and unified-diffed (tmp/grind/func_80057CC8/s31/norm2.py).
+Accounting, 111 - 104 = 7:
+  * **4 insns — combine.c extension folding.** The target loads the centre coordinates with
+    `lhu $s4,0($v0)` / `lhu $s5,2($v0)` and materialises their sign-extended twins separately
+    (`sll $17,$20,16; sra $17,$17,16` and the $16/$21 pair). formD emits `lh` twice and no shift
+    pairs. Verified in the dumps, not inferred: tmp/grind/func_80057CC8/s31/dumpsB/text1b.combine
+    keeps two `(sign_extend:SI (reg/v:HI 84))` / `(reg/v:HI 88)` insns after combine, while
+    dumpsD/text1b.combine has folded them into `(sign_extend:SI (mem:HI (reg:SI 105)))`
+    (`extendhisi2_internal`, pattern 125) and the two reg-extension insns are gone. The fold is
+    available only when the load and its extending use sit in the SAME basic block; in the target's
+    (and formB's) shape the two index `if` blocks separate them.
+  * **2 insns — one fewer callee-save.** The target keeps 8 callee-saved registers live across the
+    calls ($s0-$s7 = arg0, next_idx, cx, cy, (s16)cx, (s16)cy, arg2, arg3); formD keeps 7, because
+    folding the extension collapses each coordinate's two live values (raw u16 + extended s16) into
+    one. One fewer register = one fewer `sw`/`lw` pair.
+  * **1 insn — the second base load.** The target loads `0x4($s2)` TWICE (asm/funcs/func_80057CC8.s:17
+    `lw $a2`, :50 `lw $a0`); formD loads it once.
+
+**[s31-E2] The u16-plus-(s16)-cast spelling of the centre reads is NOT what produces the target's
+`lhu` + separate `sll/sra`.** Declaring the coordinates `s16` and reading them through `*(s16 *)`
+(v3) emits text BYTE-IDENTICAL to the u16 form (`diff -q` clean, 112 insns). GCC keeps the raw
+HImode pseudo because the closing `sh` truncates, so the unextended value is the cheaper operand for
+the final add either way. Placement, not type spelling, is the lever — see s31-E1.
+
+**[s31-E3] The live-across-call set cannot be shrunk by MOVING a computation.** Hoisting
+`scale = arg0[2] * 40` above the calls (v1) does exactly what it was aimed at — arg0 lands in the
+call-clobbered $t0 and is never saved — but `scale` takes its place in the live-across set, the
+count stays 9, $fp is still commandeered as the 9th callee-save, and the body is still 112
+instructions. Banked: rejected/s31-scale-hoisted-above-calls-112insns.c.
+
+**[s31-E4] NEW FLOOR 26 / NEW 110-INSN REGIME — forming the next-neighbour ADDRESS above the first
+call replaces TWO live values with one.** `next_vert = &table[ni * 2];` placed before the first
+`ratan2` call makes `table` dead before the call and consumes `next_idx` there too, so the set of
+values live across the call is exactly the target's 8 — no 9th callee-save, no `sw`/`lw` pair.
+Measured: **score 26, build_insns 110** (previous best 30 at 112). This is a single source-level
+materialisation of the base and does not touch the banned duplication family. Spelling-invariance
+measured: `table + ni * 2`, `&table[ni * 2]`, and `(s16 *)((s32)table + ((s32)(s16)next_idx << 2))`
+emit byte-identical text; `table + ni + ni` differs only in one addu's PLUS operand order and scores
+the same 26. Hoisting the prev-neighbour address as well (v5) is also 110 and buys nothing.
+
+**[s31-E5] The instruction-multiset theorem (why 111 is unreachable ban-compliantly).** With the
+address arithmetic hoisted, the ban-compliant form pays its ENTIRE difference from the target in one
+instruction: 110 = 111 - 1, with the target's own callee-save count. The missing instruction is the
+target's second `lw ...,0x4($s2)`. Combined with s30b's mechanism proof (GCC 2.7.2's only
+one-load-to-many-loads path is REG_EQUIV/reg_equiv_mem in local-alloc.c `update_equiv_regs`, whose
+notes are present-but-insufficient because global alloc still succeeds; caller-save excluded by
+`CALLER_SAVE_PROFITABLE` at 1 call / 3-4 refs), the space is closed by counting rather than by
+search: the target's instruction multiset contains two loads of `0x4($s2)`; a form that materialises
+the base once emits one; no GCC 2.7.2 pass manufactures the second. Every measured ban-compliant
+count now falls out of one model — insns = (values live across the call) + (base loads emitted) +
+101 — which predicts 112 (9+1), 110 (8+1), 104 (7+1, with the combine fold) and the target's 111
+(8+2) with no free parameters.
+
+**[s31-E6] src/text1b.c restored to `INCLUDE_ASM("asm/funcs", func_80057CC8);` at end of session
+(git diff clean). candidate.c holds the new 26/110 form; the superseded 30/112 formB remains banked
+at rejected/s29-ban-compliant-single-table-no-reload-score30.c.**
+
+**Artifacts:** tmp/grind/func_80057CC8/s31/{formB,formD,v1,v3,v4,v5,v7,v8,v9}.hon.s, norm2.py,
+gen.sh, apply.py, dumpsB/text1b.combine{,.57CC8}, dumpsD/text1b.combine{,.57CC8}.
+
+- [s31] Chassis re-measured at dispatch: the inherited candidate (s30b formB) scores 30 at build_insns 112 / target_insns 111 with rules_dropped 0 on HEAD, so the ledger floor was current, not stale.
+
+- [s31] NEW FLOOR 26 (was 30): candidate.c now holds a single-base-materialisation form that computes next_vert = &table[ni * 2] above the first ratan2 call; sandbox func_80057CC8 --disable all -> score 26, build_insns 110, target_insns 111, rules_dropped 0.
+
+- [s31] The target keeps 8 values live across the calls ($s0-$s7: arg0, next_idx, cx, cy, (s16)cx, (s16)cy, arg2, arg3) and pays one extra lw for the base; formB kept 9 and commandeered $fp, paying sw+lw; the s31 candidate keeps 8 and pays neither -- which is why it is 110 rather than 111 or 112.
+
+- [s31] Dump-level pass attribution (not inference): tmp/grind/func_80057CC8/s31/dumpsB/text1b.combine retains two (sign_extend:SI (reg/v:HI 84)) / (reg/v:HI 88) insns after combine; dumpsD/text1b.combine has folded them into (sign_extend:SI (mem:HI (reg:SI 105))) via extendhisi2_internal (pattern 125). The fold requires the load and its extending use to share a basic block, which is why the target's early centre reads keep lhu + a separate sll/sra pair.
+
+- [s31] The u16 vs s16 spelling of the centre coordinates is codegen-inert here: the s16 form emits a byte-identical honest stream to the u16-plus-cast form (112 insns, diff -q clean).
+
+- [s31] The address-arithmetic spelling in the 110 regime is codegen-inert: table + ni * 2, &table[ni * 2] and the shifted-cast form are byte-identical; table + ni + ni differs only in one addu's PLUS operand order and measures the same 26.
+
+- [s31] Moving a computation cannot shrink the live-across-call set: hoisting scale above the calls frees arg0 into $t0 but hands its callee-save to scale, leaving 112 insns unchanged.
+
+- [s31] src/text1b.c was restored to INCLUDE_ASM("asm/funcs", func_80057CC8); at end of session (git diff clean). No commits, no rule files touched.

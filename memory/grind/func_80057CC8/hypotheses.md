@@ -709,3 +709,78 @@ entered, not a re-run of the spelling search.
 - probe: Three placements of the SAME single source-level base read, each measured: before the branches (formB/formC), between the two index if-blocks (formF), after both if-blocks (formD/formE).
 - result: 112 insns / score 30 (before), 112 / 44 (middle), 104 / 59 (after). The ban-compliant band is 104..112, not a fixed 112, so the barrier is SHAPE and not instruction budget - though no measured placement lands on 111 and every sub-112 placement scores far worse.
 - verdict: CONFIRMED
+
+## s31 (2026-08-27) — forensics
+
+## [s31] The 104-insn regime's 7-instruction deficit is an unexplained shape difference that some intermediate arrangement could close on 111 (ledger live frontier #1 after s30b).
+- mechanism: proposed by s30b as the live frontier; the deficit had never been itemised.
+- probe: normalised block-by-block diff of formD's honest stream against asm/funcs/func_80057CC8.s (tmp/grind/func_80057CC8/s31/norm2.py), plus cc1 -da dumps of formB and formD compared at .combine.
+- result: the 7 decompose exactly as 4 (combine.c folding the HImode extension into the load once the read shares a basic block with its use — two `(sign_extend:SI (reg/v:HI N))` insns present in dumpsB/.combine, absent in dumpsD/.combine, replaced by `extendhisi2_internal` on a MEM) + 2 (one fewer callee-save, because the fold collapses each coordinate's raw and extended live values into one) + 1 (the target's second `lw 0x4($s2)`). Nothing in the deficit is free-floating shape.
+- verdict: KILLED as an open shape question — the 104 regime is fully explained and contains no path to 111.
+
+## [s31] The centre coordinates' u16-plus-(s16)-cast spelling is what forces the target's lhu + separate sll/sra pair.
+- mechanism: assumed since s1; the u16 local was believed to keep an unextended value alive.
+- probe: v3 — coordinates declared s16 and read via *(s16 *), everything else formB.
+- result: honest stream BYTE-IDENTICAL to formB (diff -q clean), 112 insns. GCC keeps the raw HImode pseudo regardless of the C type because the closing `sh` truncates.
+- verdict: KILLED — the u16 spelling is not a lever; basic-block placement is.
+
+## [s31] Hoisting `scale = arg0[2] * 40` above the calls frees the 9th callee-save the cached base needs (ledger live frontier #2: pay back the +1 by reducing values live across the call).
+- mechanism: arg0's only post-call use is arg0[2]; killing that use should let arg0 die before the call.
+- probe: v1, built and counted.
+- result: the hoist works (arg0 allocated to call-clobbered $t0, never saved) but `scale` inherits its live range; 9 values still cross the call, $fp is still the 9th callee-save, 112 insns unchanged.
+- verdict: KILLED for relocation — but the underlying idea is CONFIRMED in the entry below: a value must be ELIMINATED or two MERGED, not moved.
+
+## [s31] Forming the next-neighbour vertex ADDRESS above the first call (single base materialisation) reduces the live-across-call set to the target's 8 and lowers the floor.
+- mechanism: `next_vert = &table[ni * 2]` consumes both `table` and `next_idx` before the call, so ONE value crosses where formB needed two; global.c then allocates exactly 8 callee-saves and no `sw`/`lw` pair for $fp.
+- probe: v4/v7/v8/v9 (four spellings) + v5 (both addresses hoisted), each built and diffed; the candidate measured with `sandbox func_80057CC8 --disable all`.
+- result: **score 26, build_insns 110, target_insns 111** — floor 30 -> 26, and a 110-insn regime no prior session had reached. All spellings byte-identical except `table + ni + ni`, which flips one addu's PLUS operand order and still scores 26.
+- verdict: CONFIRMED — banked as candidate.c.
+
+## [s31] Some ban-compliant arrangement reaches 111 instructions with a target-shaped body (the ledger's live frontier since s28).
+- mechanism: the count band 104..112 was thought to contain a reachable 111.
+- probe: instruction-multiset accounting of the best ban-compliant form against the target, on top of s30b's mechanism proof.
+- result: the 110-insn candidate pays its whole difference from the target in ONE instruction — the second `lw 0x4($s2)` — while already matching the target's callee-save count. A ban-compliant form emits exactly one base load, and GCC 2.7.2 has no pass that turns one RTL load into two loads at the original address (s30b: REG_EQUIV notes present but insufficient; caller-save excluded by CALLER_SAVE_PROFITABLE). Any ban-compliant form reaching 111 must therefore carry an instruction the target does not have, i.e. cannot be byte-identical. All measured counts fall out of insns = (values live across the call) + (base loads) + 101: 112 = 9+1, 110 = 8+1, 104 = 7+1, target 111 = 8+2.
+- verdict: KILLED — 111-with-target-bytes is unreachable by counting, not merely unfound by search. The residual is the policy question refused 2026-07-20 and standing-ruled 2026-07-27.
+
+### Frontier after s31
+The count model above leaves exactly one arithmetically-open cell: a form with 7 values live across
+the call AND two base loads would be 110, and one with 8 live values and two base loads is the
+target's 111 — but the second load is the banned construct, so the only ban-compliant cells are
+{7,8,9} x {1 load} = {104,110,112}. The honest open work is therefore NOT another spelling search:
+it is (a) checking whether the count model itself has an escape — a value that can be made live
+across the call for free by being needed anyway (which would put a ban-compliant form at 111 with a
+different instruction in the reload's place, still non-zero but a lower floor), and (b) driving the
+26 down within the 110 regime by matching the target's register assignment and the surviving order
+differences around the two calls (our address arithmetic sits before the first call; the target's
+sits between the calls). Both are floor work, not match work; s31's accounting says the match itself
+is gated on the refused duplication family.
+
+## [s31] The 104-insn regime's 7-instruction deficit is an unexplained shape difference that some intermediate arrangement could close on 111 (ledger live frontier #1).
+- mechanism: s30b found placement moves the count 112 -> 104 but never itemised which instructions vanish; the claim was that an intermediate placement could land on 111 with a target-shaped body.
+- probe: Built the honest stream for formB and formD via tools/ra_solver/mkasm_honest.sh, extracted the function, normalised both sides to numeric registers / canonical opcodes / decimal immediates and unified-diffed against asm/funcs/func_80057CC8.s (tmp/grind/func_80057CC8/s31/norm2.py); then captured cc1 -da dumps for both forms (tools/grinder/dump.ps1) and compared .combine.
+- result: The 7 decompose exactly: 4 = combine.c folding the HImode sign-extension into the load (dumpsB/.combine keeps two (sign_extend:SI (reg/v:HI 84|88)) insns; dumpsD/.combine has them folded into (sign_extend:SI (mem:HI (reg 105))) = extendhisi2_internal pattern 125), available only when the load and its extending use share a basic block; 2 = one fewer callee-save because the fold collapses each coordinate's raw+extended live values into one; 1 = the target's second lw 0x4($s2).
+- verdict: KILLED
+
+## [s31] The u16-plus-(s16)-cast spelling of the centre reads is what produces the target's lhu + separate sll/sra pair.
+- mechanism: Assumed since s1 that the u16 local is what keeps an unextended value alive across the calls.
+- probe: v3: coordinates declared s16 and read via *(s16 *), everything else identical to formB; honest streams diffed.
+- result: Byte-identical to formB (diff -q clean), 112 insns. GCC keeps the raw HImode pseudo regardless of C type because the closing sh truncates. Placement, not type spelling, is the lever.
+- verdict: KILLED
+
+## [s31] Hoisting scale = arg0[2] * 40 above the calls frees the 9th callee-save the cached base needs (ledger live frontier #2).
+- mechanism: arg0's only post-call use is arg0[2]; removing that use should let arg0 die before the first call and drop the live-across set from 9 to 8.
+- probe: v1 built and counted; honest stream inspected for arg0's allocation.
+- result: The hoist works at the level aimed at (arg0 lands in call-clobbered $t0 and is never saved) but scale inherits the live range: still 9 values across the call, still $fp as the 9th callee-save, still 112 instructions. Relocating a computation cannot shrink the live-across set.
+- verdict: KILLED
+
+## [s31] Forming the next-neighbour vertex ADDRESS above the first call (base still materialised exactly once) reduces the live-across-call set to the target's 8 and lowers the floor.
+- mechanism: next_vert = &table[ni * 2] consumes both table and next_idx before the call, so ONE value crosses where formB needed two; global.c then allocates exactly 8 callee-saves and no sw/lw pair for $fp.
+- probe: Four spellings (table + ni*2, &table[ni*2], (s16 *)((s32)table + ((s32)(s16)next_idx << 2)), table + ni + ni) plus a both-addresses-hoisted twin, each built and diffed; candidate measured with sandbox func_80057CC8 --disable all.
+- result: score 26, build_insns 110, target_insns 111 (previous best 30 at 112). All spellings emit byte-identical text except table+ni+ni, which only flips one addu's PLUS operand order and also scores 26. Both-addresses-hoisted twin is likewise 110.
+- verdict: CONFIRMED
+
+## [s31] Some ban-compliant arrangement reaches 111 instructions with a target-shaped body (the ledger's live frontier since s28).
+- mechanism: The measured count band 104..112 was believed to contain a reachable 111.
+- probe: Instruction-multiset accounting of the new 110-insn form against asm/funcs/func_80057CC8.s, on top of s30b's mechanism proof that GCC 2.7.2 cannot rematerialise one RTL load as two loads at the original address.
+- result: The 110-insn form already matches the target's callee-save count and pays its entire difference in ONE instruction: the second lw 0x4($s2). A single-materialisation form emits exactly one base load and no GCC 2.7.2 pass manufactures a second, so any ban-compliant 111-insn form must carry an instruction the target lacks and cannot be byte-identical. Model insns = (values live across the call) + (base loads) + 101 predicts every measured count with no free parameters: 112 = 9+1, 110 = 8+1, 104 = 7+1, target 111 = 8+2.
+- verdict: KILLED

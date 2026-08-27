@@ -1,29 +1,37 @@
-/* BEST BAN-COMPLIANT FORM (grind s30b, 2026-08-27, forensics modality).
- * MEASURED THIS SESSION on the current chassis: `sandbox func_80057CC8
- * --disable all` -> score 30, target_insns 111, build_insns 112, rules_dropped 0.
- * This is formB from s29, re-measured from scratch; it is the lowest-scoring form
- * in the bank that materialises the vertex-table base exactly ONCE at source level
- * and therefore does not touch the family the owner refused on 2026-07-20 / that
- * layer-1 FAILed four times (2026-08-20 x3, 2026-08-27 x1).
+/* BEST BAN-COMPLIANT FORM (grind s31, 2026-08-27, forensics modality).
+ * MEASURED THIS SESSION: `sandbox func_80057CC8 --disable all` -> score 26,
+ * target_insns 111, build_insns 110, rules_dropped 0.  Previous candidate
+ * (s29/s30b formB, cached base, 112 insns) measured 30 on the same chassis this
+ * session; it is banked at rejected/s30b-formB-cached-base-9th-callee-save-score30.c.
  *
- * WHY candidate.c NO LONGER HOLDS THE score-0 FORM: the score-0 body that occupied
- * this file (static inline vert_base_57CC8 / vert_angle_57CC8 helpers) was ruled a
- * re-spelling of the banned repeated-materialisation family by the layer-1
- * cheat-reviewer on 2026-08-27 and is banked at
- * rejected/layer1-fail-0827-0417.c. Leaving it here as "the candidate" invites a
- * future session to resubmit a construct the driver rejects before the Judge ever
- * sees it. The honest best submittable form is this one.
+ * WHAT CHANGED: the next-neighbour vertex ADDRESS is formed before the first
+ * ratan2 call instead of after it.  That is not a second materialisation of the
+ * vertex-table base (`table` is still read exactly once, and it is DEAD before the
+ * first call) -- it is the ordinary C of computing both neighbour addresses from
+ * the one base.  Its effect is a register-pressure one, measured and modelled in
+ * evidence.md s31: it removes `next_idx` from the set of values live across the
+ * first call and puts `next_vert` there instead, so the live-across-call set is 8
+ * -- exactly the target's 8 ($s0-$s7) -- instead of formB's 9, which had to
+ * commandeer $fp and pay an extra sw/lw pair.
  *
- * WHAT s30b PROVED ABOUT THIS FORM'S +1 INSTRUCTION (see evidence.md s30b block):
- * the extra instruction is NOT closable by allocation persuasion. The target loads
- * the base twice (asm/funcs/func_80057CC8.s:17 `lw $a2,0x4($s2)`, :50
- * `lw $a0,0x4($s2)`) and the first copy lives in a CALL-CLOBBERED register that is
- * dead before the `jal`, so the two loads are two distinct RTL values, not one
- * pseudo. GCC 2.7.2 has exactly one mechanism that can turn a single RTL load into
- * per-use loads from the original address -- the REG_EQUIV / reg_equiv_mem path in
- * local-alloc.c's update_equiv_regs -- and it is doubly gated (RTX_UNCHANGING_P on
- * the MEM, and every reference to the pseudo confined to one basic block). Both
- * gates were exercised directly this session; see the rejected/s30b-* forms.
+ * WHY IT IS STILL NOT 0 (s31 instruction-multiset theorem, evidence.md):
+ * asm/funcs/func_80057CC8.s contains TWO loads of 0x4($s2) (:17 `lw $a2`, :50
+ * `lw $a0`).  A form that materialises the base once emits exactly one.  This
+ * form pays the whole difference in that single instruction: 110 = 111 - 1, with
+ * the same callee-save count as the target.  The remaining distance is order
+ * (our address arithmetic sits before the call, target's after it), which is the
+ * direct consequence of not having the reload.  s30b proved GCC 2.7.2 has no
+ * mechanism (REG_EQUIV rematerialisation / caller-save) that turns one RTL load
+ * into two loads at the original address, so no ban-compliant form can supply
+ * that instruction.  The residual is the policy question already refused
+ * 2026-07-20 and standing-ruled 2026-07-27, not an unexplored spelling.
+ *
+ * SPELLING-INVARIANCE (measured s31): `table + ni * 2`, `&table[ni * 2]`, and
+ * `(s16 *)((s32)table + ((s32)(s16)next_idx << 2))` emit byte-identical text;
+ * `table + ni + ni` differs only in the PLUS operand order of one addu and
+ * scores the same 26.  The u16-plus-(s16)-cast spelling of the centre reads and
+ * a plain `s16` spelling ALSO emit byte-identical text (v3) -- the u16/s16
+ * question is not a lever in this regime.
  */
 void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     unsigned short prev_idx;
@@ -40,6 +48,7 @@ void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     s32 ni;
     u16 cy;
     s16 *table;
+    s16 *next_vert;
 
     prev_idx = arg1 - 1;
     table = *(s16 **)(arg0 + 4);
@@ -59,9 +68,10 @@ void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     }
 
     pi = (s16) prev_idx;
-    ang_prev = ratan2(table[pi * 2] - (s16) cx, table[pi * 2 + 1] - (s16) cy) & 0xFFF;
     ni = (s16) next_idx;
-    ang_next = ratan2(table[ni * 2] - (s16) cx, table[ni * 2 + 1] - (s16) cy) & 0xFFF;
+    next_vert = &table[ni * 2];
+    ang_prev = ratan2(table[pi * 2] - (s16) cx, table[pi * 2 + 1] - (s16) cy) & 0xFFF;
+    ang_next = ratan2(next_vert[0] - (s16) cx, next_vert[1] - (s16) cy) & 0xFFF;
 
     if (ang_next < ang_prev) {
         base = ang_prev + 0x800;
