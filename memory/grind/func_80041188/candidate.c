@@ -1,3 +1,14 @@
+/* s32 ADDENDUM (synthesis, 2026-08-27). Re-measured this session: THIS BODY IS
+ * STILL THE BEST FORM at sandbox --disable all == 1, 132 build / 132 target insns
+ * (HEAD = 27). s32 foreclosed the only competing chassis family: any loop-note
+ * spelling of loop1 makes loop.c strength-reduce `stptr`, so block 0 emits the giv
+ * base `addiu $s3,$v0,0x134` alone (biv eliminated) or biv + giv one insn over, while
+ * target emits `addiu $s3,$v0,0xFC` alone -- so the goto chassis THIS body uses is the
+ * original's, confirmed from both directions (s30's REG_EQUIV argument and s32's giv
+ * argument). loop2 as a real loop costs +2 insns on this same chassis. See evidence.md
+ * E-s32-1/E-s32-2. The `stptr = base; stptr += 0xFC;` F1 chain-extender annotation
+ * requirement noted in the s11 correction below is UNCHANGED and still blocks shipping.
+ */
 /* func_80041188 / hirahira_w_ctrl - s7 (rederive) candidate. sandbox
  * --disable all == 1, 132/132 insns, frame 72 == target 0x48.
  *

@@ -2747,3 +2747,104 @@ change, not a construct, is what buys stptr's priority.
 - probe: Read stptr's allocno out of the Z1 ALLOCDBG table (Z1's body spells `stptr = base + 0xFC;` as a single statement).
 - result: stptr = 9 refs / live 40 = 6750, comfortably above i (3402) — where candidate.c needs the split to reach 7/41 = 3414 for the same ordering.
 - verdict: CONFIRMED
+
+## s32 (synthesis, 2026-08-27) — verdicts on the s31 frontier, and the frontier RESET
+
+Verdicts on the three inherited frontier items:
+
+- **s31 item 1 (block-0 unweighted reference lift for out2 on the Z1 chassis) — KILLED by
+  chassis foreclosure, not by spelling.** The Z1 chassis itself is disproven: see E-s32-1. Any
+  note-marked loop1 forces block 0 to emit the giv base `addiu $s3,$v0,0x134`, alone or in
+  addition to the biv; target emits `addiu $s3,$v0,0xFC` alone. No block-0 spelling can repair
+  that, so the item's premise (a chassis on which out2 reaches 6 references for free) is gone.
+- **s31 item 2 (defeat loop.c's stptr giv in ordinary C) — KILLED, with a positive control.**
+  Z1a (store ahead of the call) = 14, Z1b (named intermediate for the call argument) = 13, both
+  at 132 insns with block 0 unchanged at 0x134; Z1c (`stptr2 = stptr;` after loop1, keeping the
+  biv live) does stop biv elimination but emits BOTH constants at 130 insns / sandbox 31. Both
+  of loop1's stptr uses are givs in any spelling, so the biv is always eliminated or always
+  duplicated. `.claude/rules/strength-reduce-defeat.md` turns out to be an ARCHIVED/FORBIDDEN
+  rule about inline-asm `negu` and is not applicable to this problem at all — s31's citation of
+  it was a mis-route; do not re-read it for this function.
+- **s31 item 3 (local-alloc `optimize_reg_copy_1/2` aimed at pa4 on the Z1 chassis) — MOOT on
+  Z1 (chassis dead), and re-priced on the goto chassis: it cannot help there either, because
+  the goto chassis needs pa4's priority BELOW out2's 714 (3 references, live 42), i.e. pa4 at 3
+  references, while target's bytes host pa4 at 7. Reference transfer of one or two references
+  moves pa4 from 1473 to 1263/1052, nowhere near 714.**
+
+### s32 frontier (RESET — the strongest three for the next ladder pass)
+
+- **F1 (the strongest, and a modality change): the DECOMPOSITION is wrong, and the next pass
+  should re-derive it from the data layout rather than spell another lever.**
+  - mechanism: with the loop-note family foreclosed (E-s32-1, E-s32-2) and the post-flow
+    surface complete (E-s28-2, E-s30-5, E-s32-3), the assumed eleven-local decomposition
+    admits NO fourth flow-counted reference to out2, while target's seats require one. The only
+    surviving shape is a block-2 statement whose value legitimately takes out2 as an input and
+    which combine folds into one of block 2's six emitted insns. Whether such a statement
+    exists is a data-layout question.
+  - next probe: identify the objects. Read `func_8004A348` and `func_800523E0` (asm/funcs) far
+    enough to type their 2nd argument (is `pa4` a `MATRIX *`, an `SVECTOR` pair, a GTE work
+    area?) and to see whether `pa4 + 0x20` is a sibling member of the same object or a separate
+    one; identify `D_800A9A10[a0]` (a per-character struct base) and name the offsets 0x94,
+    0xFC, 0x38, 6, 0x68, 0x750, 0x4C from their uses in the two loops. Then ask specifically:
+    is there a natural C statement in block 2 — for the `stptr2` value, the `i = 0x12` reset,
+    or the `a1/a2 += 0x6C` advances — that would legitimately read `out2` and fold away? Any
+    hit is measured with `sandbox --disable all` plus the ALLOCDBG table for pseudo 86.
+- **F2: the double-lift seat solution — tbl at FIVE flow-counted references and out2 at FOUR
+  with its definition first in block 0 — is the only surviving seat arithmetic on the goto
+  chassis.**
+  - mechanism: with `out3 = (s32 *)((u8 *)pa4 + 0x20)` (target's block-2 insn), out2 at 4
+    references and live 42-43 is 1904/1860, which OUTRANKS tbl's 1702 and would steal `$s5`.
+    Lifting tbl to 5 references gives 2*5*10000/47 = 2127, which sits above out2 and below i's
+    2474 — reproducing candidate.c's exact working priority ORDER (a1, a2, stptr, stptr2, i,
+    tbl, out2, pa4, a3) while emitting target's block-2 addiu. tbl at SIX references (2553,
+    measured byte-neutral in s4's sym-K form) overshoots and steals i's `$s4`; the target is
+    five, which has not been isolated.
+  - next probe: find a shape-B host (E-s28-2: `(set p (plus R c))` merged into its single use)
+    for tbl — an `X + constant` expression target itself emits — and pair it with a block-0
+    out2 fourth reference. Both halves have been killed individually as cse1-folded
+    (`rejected/useonly-foldback-plus1-tbl-and-out2-both-cse-folded-preflow.c`,
+    `rejected/out2-block0-expr-rooted-split-cse1-reassociates-refs-rigid-3-F1..F3.c`), so the
+    probe is specifically to hunt a combine-deletable (not cse1-visible) siting, and to
+    re-measure the pair together rather than separately.
+- **F3: verify the four-reference requirement itself against a target-hosted allocno dump.**
+  - mechanism: the whole contradiction rests on the derived requirement "out2 at 4 refs, live
+    47..63". That requirement comes from the model, and the model has already been wrong once
+    this grind (allocno != pseudo, E-s32-3). A direct check is available: build a form whose
+    emitted bytes are target's except for one known insn and read ALLOCDBG for pseudo 86 —
+    candidate.c IS that form (132/132, one insn differing), so the check is to enumerate which
+    of its allocno inputs would have to change to keep the same seat order after replacing
+    `out3 = out2;` with `out3 = (s32 *)((u8 *)pa4 + 0x20);`, and confirm by measurement that
+    no OTHER allocno (stptr2 2553, i 2474) can be moved instead of out2/tbl.
+  - next probe: `bash tmp/grind/func_80041188/s30/fr.sh <TAG> 86 79 78 91 77` on the candidate
+    chassis and on the out3-from-pa4 chassis, and diff the two tables entry by entry; require a
+    written statement of every allocno whose priority differs and by how much.
+
+## [s32] s31 frontier item 2: loop.c's strength reduction of stptr on the Z1 real-loop chassis (block 0 emits addiu $s3,$v0,0x134 where target emits addiu $s3,$v0,0xFC) is defeatable in ordinary C.
+- mechanism: loop.c creates general induction variables for stptr's two in-loop uses (stptr + 0x38 as func_800523E0's 4th argument, *(s16 *)(stptr + 6) as a store address) and, since every biv use is a giv, maybe_eliminate_biv deletes the biv and re-bases block 0 at 0xFC + 0x38 = 0x134.
+- probe: Three spellings on the Z1 chassis, each applied to src/text1a_pre.c and measured with sandbox --disable all plus objdump of tmp/sandbox/func_80041188/text1a_pre.o: Z1a = store moved ahead of the call; Z1b = call argument staged through a named intermediate (sarg = stptr + 0x38); plus a positive control Z1c = stptr2 = stptr; after loop1 (semantically identical, since stptr at loop1 exit == base + 0x7E4 == saved + 0x750) to keep the biv live past the loop.
+- result: Z1 baseline 13 at 132/132; Z1a = 14 at 132 insns, block 0 still 0x134; Z1b = 13 at 132 insns, bit-identical to Z1, block 0 still 0x134. Positive control Z1c DOES stop biv elimination but emits BOTH addiu $s7,$v0,0xFC and addiu $s3,$v0,0x134, at 130 build insns / sandbox 31.
+- verdict: KILLED
+
+## [s32] The Z1/Z0/W4 real-loop chassis family (the only chassis on which flow.c's loop_depth weighting gives out2 a free extra reference) can be the original's shape.
+- mechanism: flow.c weights reg_n_refs by loop_depth only for NOTE_INSN_LOOP_BEG-marked loops, and the same note is what makes loop.c run at all.
+- probe: Same measurements as above, read against target's own bytes (asm/funcs/func_80041188.s:26 = addiu $s3,$v0,0xFC, with no second block-0 base constant anywhere in the 132 insns).
+- result: On a note-marked loop1 there are exactly two possible block-0 shapes -- giv base alone (0x134) or biv + giv (0xFC and 0x134, one insn more). Target has neither: it emits 0xFC alone. Both stptr uses are givs under any C spelling of those values.
+- verdict: KILLED
+
+## [s32] s4's 'loop2 as a real do-while costs 3 insns' is stale (measured on the pre-s7 single-local chassis) and loop2-real may be viable on the current two-locals chassis -- especially if out3 is deleted so LICM hoists pa4 + 0x20 into the preheader (= block 2) and produces target's addiu $s3,$s7,0x20 as compiler output.
+- mechanism: loop.c's LICM hoists a loop-invariant address expression into the loop preheader; on the goto chassis nothing hoists (no loop notes), which is why s7 concluded both block-0 and block-2 addius are source statements.
+- probe: Y1 = candidate.c with loop2 spelled do { ... } while (i < 0x14); (out3 kept); Y2 = Y1 with out3 deleted and (s32 *)((u8 *)pa4 + 0x20) written inline at both loop2 argument sites. Both applied to src/text1a_pre.c and measured with sandbox --disable all.
+- result: Y1 = 25 at 134 build insns; Y2 = 31 at 134 build insns (target 132). loop.c costs two insns on this chassis regardless of whether out3 is a source local. s4's number is corrected from 135 to 134, and the conclusion is unchanged.
+- verdict: KILLED
+
+## [s32] The 31-session allocno priority model (pri = floor_log2(nrefs)*nrefs/livelen*10000, one allocno per pseudo) is complete, so the enumeration of ways to add a flow-counted reference is complete.
+- mechanism: global.c builds allocnos from pseudos and sorts them by that formula.
+- probe: Read tools/gcc-2.7.2/global.c:400-460 and 600-660 and grep every writer of regs_may_share in tools/gcc-2.7.2/*.c.
+- result: The model was INCOMPLETE: global.c:442-452 aggregates per ALLOCNO -- allocno_n_refs SUMS reg_n_refs and allocno_live_length takes the MAX -- and global.c:423 maps two pseudos onto one allocno via reg_may_share. That is precisely an extra reference at zero live-length cost. But regs_may_share is written in exactly one place, loop.c:1659 (move_movables, m->partial && m->match), so it needs a loop note -- foreclosed for both loops by this session's measurements. The model is now complete and this last term is dead.
+- verdict: CONFIRMED
+
+## [s32] A matched sibling function in this repo uses the same two-matrix-pointer idiom and could be read to re-derive this function's source decomposition.
+- mechanism: Sibling source shape as evidence for the original's statement set.
+- probe: grep -rl func_800523E0 / func_8004A348 over src/ and asm/funcs/.
+- result: func_80041188 is the ONLY caller of either callee in the whole repo, and both callees are themselves INCLUDE_ASM in src/text1b.c. No sibling precedent exists.
+- verdict: KILLED

@@ -4356,3 +4356,144 @@ carrying the ALLOCDBG table and the FINDREGDBG conflict dump quoted in E-s31-6).
 - [s31] Three of Z1's thirteen scored positions are loop.c strength reduction of stptr: our `addiu $s3,$v0,0x134` + `addu $a3,$s3,$zero` + `sh $t0,-0x32($s3)` versus target's `addiu $s3,$v0,0xFC` + `addiu $a3,$s3,0x38` + `sh $v0,6($s3)`. That giv exists only because loop1 is a real loop, and defeating it is an ordinary-C problem (.claude/rules/strength-reduce-defeat.md) separate from the seat swap.
 
 - [s31] The owner's 2026-08-27 split-increment directive was executed indirectly: V15a (which carries both sanctioned split increments) was re-measured at 15/132 and used as one of the three chassis for the pre-test probe, and the honest out2 lift the directive asks for is now located on a chassis that needs NO split increment at all (Z1's lift comes from loop_depth weighting, not from a construct).
+
+## s32 (synthesis, 2026-08-27) — the ENTIRE loop-note chassis family is foreclosed by target's own block-0 constant, and the last unmodelled term of the allocno priority (allocno != pseudo) is found and closed
+
+Chassis re-measured this session with `sandbox func_80041188 --disable all` and the edit in
+place in `src/text1a_pre.c`: **HEAD = 27**, **candidate.c = 1** (132 build / 132 target insns,
+`rules_dropped: 16`), `alt_Z1_realloop_honest_s26.c` = **13** (132/132). `src/text1a_pre.c` was
+restored to HEAD at the end of the session; no build-pipeline file was touched, nothing was
+committed, and no permuter campaign was launched.
+
+### E-s32-1 — FORECLOSED BY TARGET'S OWN BYTES: loop1 in the original carried NO loop note, because loop.c's strength reduction cannot produce target's block-0 `addiu $s3,$v0,0xFC`
+
+s31's frontier item 2 asked for an ordinary-C defeat of the `stptr` giv on the Z1 real-loop
+chassis (Z1's block 0 emits `addiu $s3,$v0,0x134` = 0xFC + 0x38, where target emits
+`addiu $s3,$v0,0xFC`). Three spellings measured, then a positive control:
+
+  * **Z1a** — `*((s16 *)(stptr + 6)) = 2;` moved AHEAD of the `func_800523E0` call, so that the
+    DEST_ADDR giv would be the dominant one: **sandbox 14 at 132 insns**, block 0 still 0x134.
+  * **Z1b** — the call's 4th argument staged through a named intermediate
+    (`sarg = stptr + 0x38;`): **sandbox 13 at 132 insns**, bit-identical to Z1, block 0 still
+    `addiu $s3,$v0,0x134` (objdump of the sandbox object). loop.c's `general_induction_var`
+    looks straight through the intermediate.
+  * **Z1c (POSITIVE CONTROL)** — `stptr2 = stptr;` after loop1 instead of
+    `stptr2 = saved + 0x750;`. This is semantically identical (loop1 runs 17 iterations from
+    i = 1, so stptr at exit = base + 0xFC + 17*0x68 = base + 0x7E4 = saved + 0x750) and it does
+    stop `maybe_eliminate_biv`: block 0 then emits **BOTH** `addiu $s7,$v0,0xFC` (the surviving
+    biv) **AND** `addiu $s3,$v0,0x134` (the giv) — 130 build insns, sandbox 31.
+
+So on a note-marked loop1 there are exactly two possible block-0 shapes: the giv base 0x134
+alone (biv eliminated — Z1 / Z1a / Z1b) or biv + giv, one insn more (Z1c). **Target emits 0xFC
+alone.** Both of loop1's `stptr` uses (`stptr + 0x38` as a call argument, `*(s16 *)(stptr + 6)`
+as a store address) are general induction variables in any C spelling of those values, and a
+biv all of whose uses are givs is always eliminated. Therefore the original's loop1 carried no
+`NOTE_INSN_LOOP_BEG`, i.e. it was NOT a `for` / `while` / `do-while` — and **the whole
+real-loop chassis family (s19 W4, s26 Z0, s26/s31 Z1) is foreclosed, not merely expensive.**
+With it go s31's frontier items 1 and 2, which were both Z1-chassis items, and with them the
+only mechanism (flow.c's `loop_depth` weighting) that ever gave `out2` a free extra reference.
+Banked `rejected/realloop-loop1-giv-forces-block0-0x134-target-emits-0xFC.c`,
+`rejected/realloop-loop1-named-intermediate-arg-giv-survives.c`,
+`rejected/realloop-loop1-store-before-call-giv-survives-14.c`.
+
+### E-s32-2 — the loop2 half re-measured on the CURRENT chassis (s4's number was stale by twenty sessions)
+
+s4 measured "loop2 as a real do-while = 135 insns" on the pre-s7 single-local chassis. On
+candidate.c's two-locals chassis: **Y1** (loop2 as `do { ... } while (i < 0x14);`, `out3` kept)
+= **sandbox 25 at 134 build insns**; **Y2** (same, but `out3` deleted and
+`(s32 *)((u8 *)pa4 + 0x20)` written inline at both loop2 argument sites so that LICM would
+hoist it into the preheader — i.e. block 2 — and emit target's `addiu $s3,$s7,0x20` as compiler
+output rather than as a source statement) = **sandbox 31 at 134 insns**. loop.c still costs two
+insns. **Neither loop in the original carried a loop note**, so every reference count in this
+function is unweighted and the `loop_depth` dial does not exist for it at all. Banked
+`rejected/loop2-realloop-current-chassis-costs-two-insns-134.c`,
+`rejected/loop2-realloop-inline-pa4plus20-licm-hoist-134.c`.
+
+### E-s32-3 — MODEL COMPLETION: `allocno != pseudo`. `global.c` SUMS `reg_n_refs` and takes the MAX `reg_live_length` over pseudos that share an allocno — the only zero-live-length-cost reference dial in the compiler — and it is reachable only from loop.c
+
+Every session since s5 has used `pri = floor_log2(reg_n_refs) * reg_n_refs / reg_live_length *
+10000` with an implicit allocno-equals-pseudo assumption. `tools/gcc-2.7.2/global.c:442-452`
+shows the aggregation is per ALLOCNO:
+
+    allocno_n_refs[allocno]      += reg_n_refs[i];                 /* SUM */
+    if (allocno_live_length[allocno] < reg_live_length[i])
+      allocno_live_length[allocno] = reg_live_length[i];           /* MAX */
+
+and `global.c:423` maps two pseudos onto one allocno when `reg_may_share[]` says so. That is
+exactly the shape the whole grind has been looking for — an extra reference at NO live-length
+cost. It is closed here from the compiler sources: `regs_may_share` is written in exactly one
+place in GCC 2.7.2, `loop.c:1659` inside `move_movables`' `m->partial && m->match` arm (two
+loop-invariant pseudos set to the same value inside a loop, one of them a partial movable;
+loop.c hoists them, rewrites one as a copy of the other, and marks the pair may-share). It
+therefore requires a `NOTE_INSN_LOOP_BEG` — foreclosed for loop1 by E-s32-1 and for loop2 by
+E-s32-2. `local-alloc`'s quantity merging never writes `regs_may_share`. **The priority model
+is now complete and its last unenumerated term is dead.**
+
+### E-s32-4 — no sibling precedent exists in-repo for this idiom
+
+`func_800523E0` and `func_8004A348` have exactly one caller in the whole repo —
+`func_80041188` itself (`grep -rl` over `src/` and `asm/funcs/`; both callees are themselves
+`INCLUDE_ASM` in `src/text1b.c`). There is no matched sibling whose source shape could be used
+to re-derive this function's decomposition, so the "read a solved sibling" route is not
+available and the re-derivation has to come from the data layout and the callees' semantics.
+
+### E-s32-5 — SYNTHESIS: the residual is now a CLOSED CONTRADICTION, and it indicts the DECOMPOSITION, not the spelling
+
+Collecting the closed results: on the goto chassis (established as the original's by s30's
+REG_EQUIV argument, and now from the other side by E-s32-1 / E-s32-2), target's seats require
+`out2` at FOUR flow-counted references with live length in [47, 63] — `2*4*10000/L` must exceed
+pa4's 1263 and fall at or below tbl's 1702 — while target's bytes emit only THREE `$s6`
+references. The fourth reference must therefore live in an insn that exists at flow time and is
+gone by emission, and the complete surface is now enumerated across s28, s30 and this session:
+
+  * pre-flow siting — folded by cse1 (`canon_reg` for copies, `fold_rtx` reassociation for
+    expressions, E-s28-1), or dropped as a dead store before flow counts it (E-s31-5, measured
+    in both orders);
+  * post-flow deletion — combine's two deletable shapes (E-s28-2), neither of which target's
+    instruction stream can host: target has no `addiu $aN,$s6,c` (shape B) and out2's only
+    single-use consumers are the two argument moves (shape A, net zero);
+  * post-flow transfer — `local-alloc`'s `optimize_reg_copy_1/2`, blocked by the missing
+    REG_DEAD note on out2 and by the CODE_LABEL that ends the forward scan (E-s30-5);
+  * reference addition at zero live-length cost — allocno sharing, reachable only from loop.c
+    (E-s32-3), and loop notes are now foreclosed in both loops.
+
+Every axis is closed against the ASSUMED decomposition (`pa4`, `i`, `tbl`, `saved`, `stptr`,
+`stptr2`, `out2`, `out3`, `offset`, `p`, `buf[3]`, two goto loops, block 2 = six insns). Since
+the match provably exists, the contradiction is evidence that the DECOMPOSITION is wrong, not
+that a spelling lever is missing. The only surviving shape for the fourth reference is a
+block-2 statement whose VALUE legitimately takes `out2` as an input and which combine folds
+into one of block 2's six emitted insns (`addiu $s1,$s1,0x6C`, `addiu $s2,$s2,0x6C`,
+`addiu $s4,$zero,0x12`, `lw $t0,0x18($sp)`, `addiu $s3,$s7,0x20`, `addiu $s0,$t0,0x750`) — and
+whether such a statement exists is a question about what block 2 COMPUTES, i.e. about the data
+layout behind `D_800A9A10[a0]` and the fifth parameter, not about C spelling.
+
+### s32 artifacts
+
+`tmp/grind/func_80041188/s32/` — `run.ps1` (apply-a-variant + sandbox, one call per tag),
+`apply.py`, `ap.sh`, `text1a_pre.HEAD.c`, `ev32.md`, `hyp32.md`, and the variant bodies `Z1.c`
+`Z1a.c` `Z1b.c` `Z1c.c` `CAND.c` `Y1.c` `Y2.c`.
+
+- [s32] Chassis re-measured this session: HEAD = 27, candidate.c = 1 (132/132, rules_dropped 16), Z1 = 13 (132/132). src/text1a_pre.c restored to HEAD at the end; no build-pipeline file touched, nothing committed, no permuter campaign launched.
+- [s32] FORECLOSED (three spellings plus a positive control): the original's loop1 carried NO loop note. On a note-marked loop1, loop.c emits either the giv base `addiu $s3,$v0,0x134` alone (biv eliminated: Z1 = 13, Z1a store-first = 14, Z1b named-intermediate = 13, all at 132 insns) or biv + giv, one insn more (Z1c, `stptr2 = stptr;` after loop1 — semantically identical because stptr at loop1 exit == saved + 0x750 — emits `addiu $s7,$v0,0xFC` AND `addiu $s3,$v0,0x134`, 130 insns, sandbox 31). Target emits `addiu $s3,$v0,0xFC` ALONE, so the whole real-loop chassis family (W4/Z0/Z1) is dead and s31's frontier items 1 and 2 go with it.
+- [s32] loop2 as a real do-while re-measured on the CURRENT two-locals chassis (s4's 135 was pre-s7 and stale): Y1 (out3 kept) = 25 at 134 insns; Y2 (out3 deleted, `pa4 + 0x20` inline at both loop2 sites so LICM hoists it into block 2) = 31 at 134 insns. NEITHER loop in the original carried a loop note, so flow.c's loop_depth weighting does not exist for this function.
+- [s32] MODEL COMPLETION: allocno != pseudo. global.c:442-452 SUMS reg_n_refs and takes the MAX reg_live_length over pseudos sharing an allocno (mapped at global.c:423 via reg_may_share) — the only zero-live-length-cost reference dial in GCC 2.7.2. regs_may_share is written in exactly one place, loop.c:1659 (move_movables, `m->partial && m->match`), so it needs a loop note and is foreclosed by the two items above. The 31-session priority model is now complete and its last unenumerated term is dead.
+- [s32] func_800523E0 and func_8004A348 have exactly one caller in the repo (func_80041188 itself) and are INCLUDE_ASM in src/text1b.c — there is no matched sibling to re-derive this function's decomposition from.
+- [s32] SYNTHESIS: the floor-1 residual is a closed contradiction. out2 needs 4 flow-counted references at live 47..63; target emits 3; and all four surfaces that could host the fourth (pre-flow cse1 folding, combine's two deletable shapes, local-alloc's copy transfers, allocno sharing) are enumerated and closed. The next ladder pass should re-derive the DECOMPOSITION — what block 2's six insns compute, what `pa4` / `pa4 + 0x20` and `D_800A9A10[a0]` are — and look for a block-2 statement whose value legitimately takes out2 as an input and which combine folds into an insn target already emits.
+
+- [s32] Chassis re-measured this session with the edit in place in src/text1a_pre.c and sandbox func_80041188 --disable all: HEAD = 27, candidate.c = 1 (132 build / 132 target insns, rules_dropped 16), alt_Z1_realloop_honest_s26.c = 13 (132/132). src/text1a_pre.c restored to HEAD at the end of the session; no build-pipeline file touched, nothing committed, no permuter campaign launched.
+
+- [s32] FORECLOSED: the original's loop1 carried no loop note. On a note-marked loop1, loop.c emits either the giv base addiu $s3,$v0,0x134 alone (biv eliminated -- Z1 = 13, Z1a store-first = 14, Z1b named-intermediate = 13, all at 132 insns) or biv + giv one insn more (Z1c positive control = 130 insns / sandbox 31, emitting addiu $s7,$v0,0xFC AND addiu $s3,$v0,0x134). Target emits addiu $s3,$v0,0xFC alone (asm/funcs/func_80041188.s:26).
+
+- [s32] The Z1c control is semantically exact, not an approximation: loop1 runs 17 iterations from i = 1, so stptr at exit = base + 0xFC + 17*0x68 = base + 0x7E4 = saved + 0x750 = stptr2's initial value.
+
+- [s32] loop2 as a real do-while re-measured on the current two-locals chassis (s4's 135 was pre-s7): Y1 (out3 kept) = 25 at 134 insns, Y2 (out3 deleted, pa4 + 0x20 inline at both loop2 sites so LICM hoists it into block 2) = 31 at 134 insns. Neither loop in the original carried a loop note, so flow.c's loop_depth weighting does not exist for this function at all.
+
+- [s32] MODEL COMPLETION: allocno != pseudo. global.c:442-452 SUMS reg_n_refs and takes the MAX reg_live_length over pseudos sharing an allocno (mapped at global.c:423 via reg_may_share) -- the only zero-live-length-cost reference dial in GCC 2.7.2. regs_may_share is written only at loop.c:1659 (move_movables, m->partial && m->match), so it requires a loop note and is foreclosed here.
+
+- [s32] .claude/rules/strength-reduce-defeat.md, cited by the s31 frontier, is an ARCHIVED/FORBIDDEN rule about inline-asm negu and has nothing to do with loop.c strength reduction -- do not re-read it for this function.
+
+- [s32] func_800523E0 and func_8004A348 have exactly one caller in the repo (func_80041188 itself) and are INCLUDE_ASM in src/text1b.c: there is no matched sibling to re-derive the decomposition from.
+
+- [s32] SYNTHESIS: the floor-1 residual is now a closed contradiction. Target's seats require out2 at four flow-counted references with live length in [47, 63] (2*4*10000/L above pa4's 1263 and at or below tbl's 1702) while target's bytes emit only three $s6 references; and all four surfaces that could host a fourth (pre-flow cse1 folding, combine's two deletable shapes, local-alloc's copy transfers, allocno sharing) are now enumerated and closed. The contradiction indicts the assumed DECOMPOSITION, not the spelling.
+
+- [s32] Re-priced s31 frontier item 3: local-alloc's optimize_reg_copy_1/2 cannot help on the goto chassis either -- pa4 would have to fall below out2's 714 (3 refs, live 42), i.e. to 3 references, while target's bytes host pa4 at 7; a one- or two-reference transfer only moves pa4 from 1473 to 1263/1052.

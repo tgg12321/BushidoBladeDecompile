@@ -1,8 +1,8 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 31,
- "current_modality": "structural",
+ "session_count": 32,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -195,23 +195,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "s27's D-family seat claim is CORRECTED (D5's block 2 is still `move $s3,$s6`, so the whole D family is strictly worse than candidate.c); the block-2 move/addiu choice is named as a cse_end_of_basic_bl"
+  },
+  {
+   "session": 32,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "The entire loop-note chassis family is FORECLOSED by target's own block-0 constant (loop.c always strength-reduces stptr on a note-marked loop1, emitting 0x134 alone or 0xFC+0x134; target emits 0xFC a"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The function closes on the Z1 real-loop chassis, not on the goto chassis: every seat except out2/pa4 is already target's, and the whole residual is (a) one UNWEIGHTED reference to out2 (block 0 or block 2, byte-free) and (b) loop.c's stptr giv.",
-   "mechanism": "flow.c's loop_depth weighting prices stptr, i and tbl correctly for free on this chassis, so candidate.c's F1 chain-extender is not needed; out2 at 6 refs / live 41 = 2926 beats pa4's 9/94 = 2872 and, per the FINDREGDBG conflict dump for pseudo 86, cannot displace stptr2. The +1 must be unweighted because an in-loop reference is doubled and overshoots (E-s27-6).",
-   "next_probe": "Enumerate BLOCK-0 reference-lift spellings on the Z1 chassis specifically \u2014 the s25/s27/s28 block-0 kills (chain extenders V16/V17/V19/V21/V22, F1/F2/F3, cancel pairs A1..A4) were all measured on the GOTO chassis, where cse's basic block ends at loop1's label; on the real-loop chassis a NOTE_INSN_LOOP_BEG sits between block 0 and loop1's body and cse_end_of_basic_block's NOTE_INSN_LOOP_END break (cse.c:8053) changes which block-0 expressions are still in cse's table. Re-run the F1 chain-extender (`out2 = pa4; out2 = (s32 *)((u8 *)out2 + 0x20);`) and the expression-rooted split on Z1 and read out2's nrefs from `bash tmp/grind/func_80041188/s30/fr.sh <TAG> 86`. Require in ONE measurement: out2 nrefs = 6 at live 41 with 132 build insns."
+   "hypothesis": "The DECOMPOSITION is wrong, not the spelling: the only surviving shape for out2's fourth flow-counted reference is a block-2 statement whose VALUE legitimately takes out2 as an input and which combine folds into one of block 2's six emitted insns, so the next pass must re-derive the source's statement set from the data layout.",
+   "mechanism": "With the loop-note family foreclosed (E-s32-1/E-s32-2) and the post-flow surface complete (E-s28-2, E-s30-5, E-s32-3), the assumed eleven-local decomposition admits no byte-free fourth reference to out2, while target's seat table requires one. Combine's shape-B deletion (a (set p (plus R c)) merged into its single use) is byte-free precisely when target itself emits the folded insn -- so the question is whether any block-2 VALUE can take out2 as an input.",
+   "next_probe": "Type the objects: read asm/funcs/func_8004A348.s and func_800523E0.s far enough to type their second argument (MATRIX *, SVECTOR pair, GTE work area?) and to see whether pa4 + 0x20 is a sibling member of the same object; identify D_800A9A10[a0] and name the offsets 0x94, 0xFC, 0x38, 6, 0x68, 0x750, 0x4C from their uses. Then ask specifically whether any natural C spelling of block 2's six insns (a1/a2 += 0x6C, i = 0x12, the saved reload, out3 = pa4 + 0x20, stptr2 = saved + 0x750) would legitimately read out2. Measure any hit with sandbox --disable all plus the ALLOCDBG table for pseudo 86."
   },
   {
-   "hypothesis": "Z1's three stptr positions are loop.c's basic-induction-variable strength reduction replacing stptr with the giv stptr+0x38, and it is defeatable in ordinary C.",
-   "mechanism": "loop.c runs only because loop1 is a real loop; it sees `stptr + 0x38` used as a call argument every iteration and `stptr + 6` as a store base, and creates a giv whose base is shifted by 0x38, so block 0 emits `addiu $s3,$v0,0x134` and the in-loop uses become `addu $a3,$s3,$zero` / `sh $t0,-0x32($s3)`.",
-   "next_probe": "Read .claude/rules/strength-reduce-defeat.md end to end, then re-spell loop1's two stptr uses on the Z1 body (e.g. compute the call argument through a separate named intermediate, or reorder the `*((s16 *)(stptr + 6)) = 2;` store ahead of the func_800523E0 call so the 0x38 giv is not the dominant one) and measure `sandbox --disable all` plus the `.loop` dump from `pwsh tools/grinder/dump.ps1 func_80041188`. Require: block 0 emits `addiu $s3,$v0,0xFC` at 132 build insns, i.e. Z1's 13 drops to 10 or below."
+   "hypothesis": "The double lift -- tbl at FIVE flow-counted references and out2 at FOUR with its definition first in block 0 -- is the only surviving seat arithmetic on the goto chassis, and reproduces candidate.c's exact working priority ORDER while emitting target's honest block-2 addiu.",
+   "mechanism": "With out3 = (s32 *)((u8 *)pa4 + 0x20), out2 at 4 references and live 42-43 is 1904/1860 and would steal tbl's $s5 at 1702. tbl at 5 references is 2*5*10000/47 = 2127, above out2 and below i's 2474, giving the order a1, a2, stptr, stptr2, i, tbl, out2, pa4, a3 -- candidate.c's own working order. tbl at SIX (2553, byte-neutral in s4's sym-K form) overshoots and steals i's $s4; five has never been isolated.",
+   "next_probe": "Hunt a combine shape-B host for tbl (an X + constant expression target itself emits) rather than a cse1-visible split, pair it with a block-0 fourth reference to out2, and measure the PAIR together (both halves are individually killed as cse1-folded: rejected/useonly-foldback-plus1-tbl-and-out2-both-cse-folded-preflow.c, rejected/out2-block0-expr-rooted-split-cse1-reassociates-refs-rigid-3-F1..F3.c). Read out2 (86) and tbl (79) from bash tmp/grind/func_80041188/s30/fr.sh <TAG> 86 79."
   },
   {
-   "hypothesis": "(carried, re-priced) local-alloc's optimize_reg_copy_1 / optimize_reg_copy_2 remain the only enumerated post-flow reference-TRANSFER dial, and on the Z1 chassis the target of that transfer should be pa4 (to push it BELOW out2) rather than out2 itself.",
-   "mechanism": "local-alloc.c:781/783 and 913/914 move reg_n_refs by loop_depth per replaced use and 820/831 adjust reg_live_length, all after flow and after sched1's recount, i.e. exactly at global_alloc's input. On Z1 the honest defect is pa4 at 9 refs / live 94 = 2872 outranking out2's 2439, and line 831's d_length addition is the only known way to LENGTHEN pa4 without emitting bytes (pa4 at 9 refs needs live >= 105 to fall below 2439).",
-   "next_probe": "Only after frontier items 1 and 2. Build a block-2 copy pair that satisfies optimize_reg_copy_1's gate entirely inside block 2 (a copy X = Y whose SRC dies later in block 2 with no CODE_LABEL between; block 2's five statements a1 += 0x6C / a2 += 0x6C / i = 0x12 / stptr2 = saved + 0x750 / out3 = pa4 + 0x20 are the material), dump with `bash tmp/grind/func_80041188/s30/fr.sh <TAG> 77` on the Z1 chassis and compare ALLOCDBG nrefs/livelen against sched1's own counts in sll_*.err. Require in ONE measurement: a pa4 livelen that sched1 did not produce, at 132 build insns."
+   "hypothesis": "The four-reference requirement itself should be re-verified against a target-hosted allocno dump before another session is spent satisfying it -- the model has already been wrong once this grind (allocno != pseudo, E-s32-3).",
+   "mechanism": "The requirement out2 = 4 refs / live 47..63 is derived from the priority formula plus the assumption that no other allocno can move instead. candidate.c is a form whose bytes are target's except one insn, so its ALLOCDBG table is the closest available ground truth.",
+   "next_probe": "Run bash tmp/grind/func_80041188/s30/fr.sh <TAG> 86 79 78 91 77 on the candidate chassis and on the out3-from-pa4 chassis, diff the two tables entry by entry, and write out every allocno whose priority differs and by how much -- specifically checking whether stptr2 (2553) or i (2474) could be moved instead of out2/tbl to restore target's order."
   }
  ],
  "judge_constraints": [
