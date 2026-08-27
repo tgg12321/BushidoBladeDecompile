@@ -878,3 +878,174 @@ request rather than re-probing spellings.
 - [s6] NEW window for the s2/s3 rotation: target's map is just the sorted allocno order 72,77,73,143,75,90,79, which also holds when pri(73) rises above pri(143)=2142 while staying below pri(77)=3698 - i.e. L73 in [38,65] against its current 92. Unlike the L143 branch this needs liveness removed, not instructions added, so the insn budget does not foreclose it.
 
 - [s6] Body left in src/code6cac_b.c is the unchanged s2/s5 candidate; the only delta against HEAD is the single INCLUDE_ASM line for func_800283D0.
+
+## 2026-08-26 — session 7 (solver)
+
+Body: the s2-s6 candidate, re-applied to src/code6cac_b.c from
+`tmp/grind/func_800283D0/s5/base_body.c`. Chassis re-measured this session:
+**sandbox --disable all = 28, build_insns 215 == target_insns 215**. src was restored to
+exactly this body at session end.
+
+### 1. Layer triage (run FIRST, per the solver playbook)
+
+`goal_from_tgt.py classify code6cac_b func_800283D0` (object-level; the text path via
+`mkasm_honest.sh` cannot be used now that src carries our C body — its "target" half would
+rebuild OUR code). Verdict: **PRE-RA**, with the entire pre-RA delta being a single
+instruction shape:
+
+    ours only  : beqz #,@   x1
+    target only: bnez #,@   x1
+
+Alignment of the two 215-insn streams: equal 187, replace 24, moved 4, delete 0, insert 0.
+So the residual is fully accounted for as **1 branch-sense instruction + 4 scheduler moves +
+21 register renames + 2 pairs whose skeletons differ on an immediate/reloc**. There is no
+hidden instruction-selection difference anywhere else in the function.
+
+The 21 renames, with their emitted slots:
+
+| slots | substitution | cluster |
+|---|---|---|
+| 4, 85, 90, 96, 97, 102, 107, 111, 148, 153 | `$s3<->$s2` (x7 / x3) | A — s2/s3 rotation |
+| 126, 132, 133, 135 | `$v1 -> $v0` (x4) | C — v0/v1 rename |
+| 159, 161, 168, 169, 171, 178, 181 | `$a1<->$a0` (x6 / x2) | E — tail quantity order |
+
+Slot 96 is `ours: addu s2,s0,v0` vs `tgt: addu s3,v0,s0`. The tool reads that as
+`$s2->$s3, $s0->$v0, $v0->$s0`; the last two are an artefact of `addu`'s commutative operand
+ORDER, not a rename (s1 already banked rejected/addu-commutativity-laundered.c for that
+operand order). Do NOT put `72: $v0` in a solver goal — it is fiction, and the honest goal for
+the callee-saved map is the 73/143 exchange with 72,77,75,90,79 held fixed.
+
+### 2. The global cluster (A): a 73<->143 exchange, and NOTHING else can reach it
+
+Model: `extract.py func_800283D0 code6cac_b` -> 25 allocnos.
+Baseline callee-saved map `72:$s0 77:$s1 143:$s2 73:$s3 75:$s4 90:$s5 79:$s6`;
+target's is `72:$s0 77:$s1 73:$s2 143:$s3 75:$s4 90:$s5 79:$s6`.
+Identities: **pseudo 73 = `arg1`** (its 7 references are the prologue `move s3,a1` plus the six
+`move a2,s3` argument set-ups); **pseudo 143 = `temp_s3` = `arg0 + temp_a1_2*2`** (RTL insn 277,
+`(set (reg/v:SI 143) (plus (reg/v:SI 72) (reg:SI 145)))`; its 3 references are that `addu` and
+the two `lh ...,648(...)` loads).
+
+Model inputs: 73 `nrefs=7 livelen_flow=92 reg_live_length=132 calls_crossed=3`;
+143 `nrefs=3 livelen_flow=14 reg_live_length=22 calls_crossed=2`.
+
+An EXHAUSTIVE single-atom sweep of the validated forward model
+(`simulate.Sim`, every allocno x livelen 1..250 x nrefs 1..24 —
+`tmp/grind/func_800283D0/s7/sweep_all.py`) finds vectors on **exactly two** allocnos:
+
+| dial | base | flips at |
+|---|---|---|
+| `livelen(73)` | 92 | **38 .. 65** |
+| `livelen(143)` | 14 | **20 .. 21** (i.e. +6 or +7 — and +8 already overshoots) |
+| `nrefs(73)` | 7 | **8 .. 11** |
+| `nrefs(143)` | 3 | **2** |
+
+Every other allocno is inert at every value. That is a mechanical closure: the callee-saved
+cluster can only be attacked through `arg1`'s liveness/ref count or `temp_s3`'s.
+
+The JOINT map (`tmp/grind/func_800283D0/s7/joint.py`) — the part no prior session had — shows a
+diagonal region, so partial moves compose:
+
+    L143 =  10 11 12 13 14 15 16 17 18 19 20 21
+    L73 upper bound = 46 51 56 60 65 70 74 79 84 88 93 98   (lower bound is a constant 38)
+    R73 = 5/6/7/8/9/10/11/12 -> L73 in [28,46]/[33,56]/[38,65]/[65,112]/[74,126]/[82,140]/[90,154]/[98,168]
+    R143 = 2 -> L143 in {14};  R143 = 3 -> L143 in {20,21};  R143 = 4 -> L143 in [53,58]
+
+Two consequences worth carrying forward:
+* base `L73=92` lies INSIDE the `R73=8` band `[65,112]`, which is why "one more reference to
+  `arg1`" is a single-atom solution at today's live length.
+* the `L143` window is only +6/+7 wide. **`inverse.py global` returns NO livelen vector for this
+  goal — that is a tool artefact**: its search bounds are "live length +/-2,4,8" and the true
+  window sits in the 6/7 hole. Sweep `simulate.Sim` directly before crediting an inverse.py
+  negative on live length.
+
+### 3. The tail cluster (E) is LOCAL alloc — participants named, window measured
+
+Named from the `.lreg` RTL rather than guessed: `(reg/v:SI 184)` is the tail pointer
+`temp_s4 + temp_s5*0x10` (uses: `+276`, `+280`, `+284`), `(reg:SI 186)` its `ashift 4` producer,
+and `(reg:SI 201)` / `(reg:SI 211)` the two `(&Judge)[...]` elements. **None of 184/186/201/211 is
+in the global allocno order**, so this cluster belongs to `local-alloc.c`, confirming s3's
+routing (and refuting the alternative reading that 191/192 were the participants — those are
+different, global, pseudos).
+
+`local_extract.py code6cac_b`, block 41 (`main` pass) baseline:
+
+    ord 0 qty 2 reg198 birth10 death16 refs6 -> $v0      ord 5 qty 3 reg201 birth16 death20 refs2 -> $a0
+    ord 1 qty 0 reg208 birth 4 death26 refs9 -> $v1      ord 6 qty 7 reg211 birth26 death30 refs2 -> $v1
+    ord 2 qty 4 reg203 birth18 death20 refs2 -> $v0      ord 7 qty 0 reg184 birth 2 death32 refs6 -> $a1
+    ord 3 qty 8 reg213 birth28 death30 refs2 -> $v0
+    ord 4 qty11 reg215 birth38 death40 refs2 -> $v0
+
+Target wants qty0 (reg 184) in `$a0` and qty3 (reg 201) in `$a1`.
+`inverse.py local --block 41 --swap 0,3 --depth 2 --top 40` enumerates the COMPLETE
+single-atom vector set:
+
+* `span(qty0)` 30 -> **<= 24**, reachable from either end (birth 2 -> 8..19, or death 32 -> 16..26)
+* `refs(qty0)` 6 -> **8, 9 or 10**
+
+and nothing else. s3's hand-derived `span(qty0) <= 24` is CONFIRMED; s3's alternative
+`span(qty3) >= 6` is **REFUTED** — no qty3-only perturbation reaches the goal.
+(Local-mode caveat, printed by the tool and repeated here: a birth/span vector is a claim about
+ALLOC-TIME order, which is not known to equal emission order — treat it as NECESSARY, not
+sufficient, until re-derived from a QTYDBG dump of the actual candidate. This session did
+exactly that for variant B below.)
+
+### 4. First C lever that moves the local dial (partial, byte-neutral)
+
+Variant **B_ptr_late** — a pure declaration reorder inside the `var_s1 == 0` tail block, putting
+`s32 temp_v1_4 = -*(s16 *)(arg0 + 0x1CA);` BEFORE `u8 *temp_a0 = temp_s4 + (temp_s5 * 0x10);`
+(no new locals, no new statements):
+
+    sandbox --disable all: 28 / 215   (unchanged)
+    block 41 QTYDBG:       the pointer quantity becomes qty1 / first_reg 188,
+                           birth 6 (was 2), death 32, span 26 (was 30), got $a1
+
+So the reorder buys **4 of the 6 insns** the window needs, and the assignment has not flipped.
+This is the first measured, directed movement of cluster E's dial. The remaining 2 insns must
+come from something else that can honestly precede the pointer in block 41. The variant source
+is regenerable from `tmp/grind/func_800283D0/s7/probe.py B_ptr_late`.
+
+The opposite end of the window is now closed: variants **A_abs_first** and **C_both** (hoisting
+the `temp_a0_2` abs above the `temp_v1_5` product, so the pointer's last use dies earlier) both
+measure **44, at 214 insns** — one instruction FEWER than target — banked as
+rejected/tail-abs-hoisted-above-product-loses-insn.c. With s3's
+tail-abs-sunk-below-shift-adds-insn.c (31/216) that pins the abs exactly where it is and kills
+the death-side approach to `span(qty0) <= 24`.
+
+### 5. Reconciliation with the s5/s6 ledger
+
+s5 recorded the global window as "6-10 insns of extra live length inside pseudo 143's range".
+The exhaustive sweep says **+6 or +7 and no more** (L143 14 -> 20/21); +8 already overshoots.
+s5's "the ref-count axis is FORECLOSED" was reasoned from target's asm carrying our reference
+counts. That remains the right reading for what the FINAL asm shows, but the solver's `R73`
+vector (7 -> 8..11) is about `reg_n_refs` as `flow.c` counts it BEFORE combine/sched1/jump2 —
+a reference that a later pass folds or cross-jump-merges away is counted here and invisible
+there. Whether such a reference can be spelled honestly is untested; it is the one live
+reading under which the ref axis is NOT foreclosed.
+
+- [s7] Chassis re-measured this session with the s2-s6 candidate body applied to src/code6cac_b.c: sandbox --disable all = 28, build_insns 215 == target_insns 215. src restored to exactly that body at session end (only delta vs HEAD is func_800283D0's INCLUDE_ASM line).
+
+- [s7] Layer triage verdict PRE-RA, and the whole pre-RA delta is ONE instruction: ours `beqz`, target `bnez`. Stream alignment equal 187 / replace 24 / moved 4 / delete 0 / insert 0 over 215 vs 215.
+
+- [s7] Cluster map with emitted slots: A (s2/s3) at slots 4,85,90,96,97,102,107,111,148,153; C (v1->v0) at 126,132,133,135; E (a1<->a0) at 159,161,168,169,171,178,181.
+
+- [s7] Slot 96 `ours: addu s2,s0,v0` vs `tgt: addu s3,v0,s0` is read by the tool as $s2->$s3 PLUS $s0->$v0/$v0->$s0; the last two are an artefact of addu's commutative operand ORDER, not renames. Do NOT put 72:$v0 into a solver goal - it is fiction. The honest global goal is the 73/143 exchange with 72,77,75,90,79 fixed.
+
+- [s7] Pseudo identities, read from the .lreg RTL: 73 = arg1; 143 = temp_s3 = arg0 + temp_a1_2*2 (insn 277); 184 = the tail pointer temp_s4 + temp_s5*0x10; 186 = its ashift-4 producer; 201/211 = the two (&Judge)[...] elements. 184/186/201/211 are absent from the global allocno order, so cluster E is local-alloc, not global.
+
+- [s7] Global model inputs: 73 nrefs=7 livelen_flow=92 reg_live_length=132 calls_crossed=3; 143 nrefs=3 livelen_flow=14 reg_live_length=22 calls_crossed=2. Baseline map 72:$s0 77:$s1 143:$s2 73:$s3 75:$s4 90:$s5 79:$s6; target 72:$s0 77:$s1 73:$s2 143:$s3 75:$s4 90:$s5 79:$s6.
+
+- [s7] Exhaustive single-atom windows for the global exchange: L73 -> [38,65]; L143 -> [20,21]; R73 -> [8,11]; R143 -> 2. Only allocnos 73 and 143 have any vector; all 23 others are inert at every value.
+
+- [s7] Joint window map: L143 = 10..21 pairs with L73 upper bounds 46,51,56,60,65,70,74,79,84,88,93,98 (lower bound constant at 38); R73 = 5..12 pairs with L73 ranges [28,46],[33,56],[38,65],[65,112],[74,126],[82,140],[90,154],[98,168]; R143 = 2 -> {14}, 3 -> {20,21}, 4 -> [53,58].
+
+- [s7] Tool artefact banked: inverse.py global's search bounds are 'live length +/-2,4,8', so it reports NO livelen vector for this goal even though L143 +6/+7 solves it. Sweep simulate.Sim directly (sweep_all.py) before crediting an inverse.py negative on live length.
+
+- [s7] Local-alloc block 41 baseline (main pass): qty2/reg198 b10 d16 r6 ->$v0; qty0/reg208 b4 d26 r9 ->$v1; qty4/reg203 b18 d20 r2 ->$v0; qty8/reg213 b28 d30 r2 ->$v0; qty11/reg215 b38 d40 r2 ->$v0; qty3/reg201 b16 d20 r2 ->$a0; qty7/reg211 b26 d30 r2 ->$v1; qty0/reg184 b2 d32 r6 ->$a1.
+
+- [s7] Complete single-atom vector set for the E exchange (qty0<->qty3): span(qty0) 30 -> <= 24 (birth 2->8..19 or death 32->16..26), or refs(qty0) 6 -> 8/9/10. Nothing else. s3's 'span(qty3) >= 6' is refuted.
+
+- [s7] B_ptr_late (declare temp_v1_4 before temp_a0; pure declaration reorder) measures 28 / 215 and moves the pointer quantity to birth 6 / span 26 - 4 of the 6 insns the local window needs, verified from a fresh QTYDBG dump rather than from the model's prediction.
+
+- [s7] A_abs_first and C_both (abs hoisted above the temp_v1_5 product) both measure 44 at 214 insns - one insn short of target. With s3's abs-sunk variant (31/216) the abs is pinned and the death-side route to span(qty0) <= 24 is closed.
+
+- [s7] Ledger correction: s5's global window 'L143 +6-10 insns' is really +6 or +7 exactly. s5's 'ref-count axis FORECLOSED' holds for what the FINAL asm shows, but reg_n_refs is counted by flow.c BEFORE combine/sched1/jump2, so a reference later folded or cross-jump-merged away would be counted there and invisible in target's asm - the one reading under which R73 7->8 is not foreclosed.

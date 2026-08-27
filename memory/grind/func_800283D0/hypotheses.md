@@ -417,3 +417,138 @@
 - probe: v4: `block_13: return ret;` respelled `return 1;` (tmp/grind/func_800283D0/s6/v4.c). v5: a single shared `ret_one:` label sited at the rejection chain's fallthrough, reached by `goto ret_one;` from block_13 and from the temp_v0 exits (s6/v5.c). Both measured with sandbox --disable all.
 - result: Both measure 34 / 216 insns. jump2 cross-jumps the two return-1 tails and keeps the LATE copy: the chain's last `beq v1,v0,<block_15>` inverts to `bne v1,v0,<end>` with `li v0,1` in its delay slot, and the shared exit block relocates to the function end, costing one instruction. The content of the hypothesis is correct - target does want a constant-1 exit block - but PLACEMENT is the residual, and it is the same jump_chain-ordering question as diamond 2.
 - verdict: KILLED
+
+## Session 7 (2026-08-26, solver) — measured
+
+Chassis: candidate body applied to src/code6cac_b.c, sandbox --disable all = **28 / 215 insns**
+(build_insns 215 == target 215). Every number below is from the validated solver suite
+(`tools/ra_solver`), ground-truthed against the instrumented cc1's own dumps this session.
+
+## [s7] The residual's FIRST divergence is not RA at all — a triage run settles which layer owns it
+- mechanism: `inverse_compose.classify` / `goal_from_tgt.py classify` compares register-blanked
+  instruction MULTISETS (pre-RA), then exact texts (RA), then order (SCHED). Only the first
+  layer that differs can own the residual.
+- probe: `python3 tools/ra_solver/goal_from_tgt.py classify code6cac_b func_800283D0`
+  (object-level path; the text path is unusable because src now carries our C body, so
+  `<stem>.tgt.s` would be OUR build, not target's).
+- result: **PRE-RA**, and the whole pre-RA delta is ONE instruction shape:
+  `ours only: beqz #,@ x1` / `target only: bnez #,@ x1`. Everything else is a rename or a move.
+  Alignment: |A|=|B|=215, equal 187, replace 24, moved 4, delete 0, insert 0.
+  So the 28-point residual decomposes EXACTLY as: 1 branch-sense insn (cluster D/B),
+  4 scheduler moves, 21 register renames, 2 immediate/reloc-differing pairs.
+- verdict: CONFIRMED
+
+## [s7] The global (callee-saved) cluster is a pure 73<->143 exchange and is reachable ONLY through those two allocnos
+- mechanism: global.c allocno_compare sorts by
+  `pri = floor_log2(n_refs)*n_refs*size/reg_live_length*10000`, ties -> lower allocno number;
+  the sorted order maps 1:1 onto $s0..$s6. Our order puts 143 at slot 18 and 73 at slot 20;
+  target's map is 72,77,73,143,75,90,79 — i.e. 73 and 143 exchanged.
+- probe: extract.py -> model.json (25 allocnos), `goal_from_tgt.py goal --model` -> goal
+  `{73: $s2, 143: $s3, 72: ...}`, then an EXHAUSTIVE single-atom sweep of the validated
+  `simulate.Sim` over every allocno x livelen 1..250 x nrefs 1..24
+  (tmp/grind/func_800283D0/s7/sweep_all.py).
+- result: exactly TWO allocnos have any single-atom vector at all — 73 and 143. Every other
+  allocno in the function is inert for this goal at any live length and any ref count.
+- verdict: CONFIRMED
+
+## [s7] The flip windows for the global cluster, measured exhaustively (this supersedes every hand-derived window)
+- mechanism: as above; the sweep evaluates the real forward model, not the priority formula by hand.
+- probe: sweep_all.py + joint.py (2-D sweeps) against `tmp/ra_solver_work/func_800283D0.model.json`
+  (base: pseudo 73 nrefs=7 livelen_flow=92 reg_live_length=132 calls=3;
+   pseudo 143 nrefs=3 livelen_flow=14 reg_live_length=22 calls=2).
+- result (single-atom):
+    * `L73` 92 -> **[38,65]** flips (confirms s6's derivation exactly)
+    * `L143` 14 -> **[20,21]** flips — i.e. +6 or +7 and NO MORE; +8 overshoots
+    * `R73` 7 -> **[8,11]** flips
+    * `R143` 3 -> **2** flips
+  result (joint, the region no prior session had):
+    * L143=10..21 each admit an L73 range whose LOWER bound is a constant 38 and whose upper
+      bound rises 46,51,56,60,65,70,74,79,84,88,93,98 — so the cluster is a 2-D diagonal
+      region, not two isolated dials, and small partial moves in BOTH variables compose.
+    * R73=8 admits L73 in [65,112] — base L73=92 sits INSIDE it, which is why refs_up 73 is a
+      single-atom solution at the current live length.
+    * R143=4 admits L143 in [53,58]; R143=2 admits only L143=14 (the base).
+- verdict: CONFIRMED
+- NOTE for the next session: `inverse.py global` reports NO livelen vector for this goal. That is
+  a TOOL ARTEFACT, not a fact: its search bounds are "live length +/-2,4,8", and the true L143
+  window is +6/+7 — a hole in the delta set. Sweep `simulate.Sim` directly (sweep_all.py) rather
+  than trusting inverse.py's negative on livelen.
+
+## [s7] The tail a0/a1 cluster (E) is a LOCAL-alloc decision, its two participants are named, and its window is measured
+- mechanism: local-alloc.c `block_alloc`: `qty_compare_1` priority
+  `floor_log2(refs)*refs*size/(death-birth)*10000`, ties -> ascending qty number; then
+  `find_free_reg` scans ascending.
+- probe: (a) read the .lreg RTL to NAME the participants instead of guessing —
+  `(reg/v:SI 184)` is the tail pointer `temp_s4 + temp_s5*0x10` (its uses are the +276/+280/+284
+  loads) and `(reg:SI 201)` / `(reg:SI 211)` are the two `(&Judge)[...]` elements; NEITHER 184 nor
+  201 appears in the global allocno order, so both are block-local quantities.
+  (b) `local_extract.py code6cac_b` + `inverse.py local ... --func func_800283D0 --block 41
+  --swap 0,3 --depth 2 --top 40`.
+- result: block 41 baseline is qty0 = reg 184 (birth 2, death 32, span 30, refs 6) -> `$a1`,
+  qty3 = reg 201 (birth 16, death 20, span 4, refs 2) -> `$a0`; target wants them exchanged.
+  The EXHAUSTIVE single-atom vector set is:
+    * `span(qty0)` 30 -> **<= 24** (any of birth 2->8..19, or death 32->16..26)
+    * `refs(qty0)` 6 -> **8, 9 or 10**
+  and NOTHING else. s3's hand-derived "span(qty0) <= 24" is CONFIRMED; s3's alternative
+  "span(qty3) >= 6" is **REFUTED** — no perturbation of qty3 alone reaches the goal.
+- verdict: CONFIRMED
+
+## [s7] Delaying the pointer's birth by reordering the tail declarations moves the local dial, but only 4 of the needed 6 insns
+- mechanism: the qty's birth is its first reference in the POST-sched1 insn stream; putting an
+  independent computation textually first gives sched1 a reason to emit it first.
+- probe: variant B_ptr_late — `s32 temp_v1_4 = -*(s16 *)(arg0 + 0x1CA);` declared BEFORE
+  `u8 *temp_a0 = temp_s4 + (temp_s5 * 0x10);` (pure declaration reorder, no new locals).
+  Measured with sandbox --disable all AND with a fresh BB2_QTY_DEBUG block-41 dump.
+- result: **28 / 215 — byte-neutral in score**, but the local model MOVED: the pointer quantity
+  becomes qty1 / first_reg 188 with **birth 6 (was 2), death 32, span 26 (was 30)**. That is
+  4 of the 6 insns the window needs; the assignment does not flip yet (`got` still `$a1`=5).
+  This is the first C lever ever shown to move this cluster's dial in the right direction.
+- verdict: CONFIRMED (partial — window not yet reached)
+
+## [s7] Hoisting the temp_a0_2 abs above the temp_v1_5 product is the other span-shrink route
+- mechanism: moving the last use of the pointer earlier would shrink span(qty0) from the death side
+  (window: death 32 -> <= 26).
+- probe: variants A_abs_first and C_both (`s32 temp_v1_5;` declared, assigned after the abs `if`).
+- result: **44 / 214 insns** for BOTH — one instruction FEWER than target and a 16-point
+  regression; C_both scores identically to A_abs_first, so the loss is owned by the abs hoist
+  alone and not by the pointer reorder. Banked as
+  rejected/tail-abs-hoisted-above-product-loses-insn.c. Together with s3's
+  tail-abs-sunk-below-shift-adds-insn.c (31/216) BOTH directions of moving the abs are now dead,
+  so the death side of the qty0 window must be reached some other way (or not at all).
+- verdict: KILLED
+
+## [s7] The 28-point residual's FIRST divergence layer is not RA; a triage run will say which layer owns it and how much of the stream is instruction-selection rather than renaming.
+- mechanism: inverse_compose/goal_from_tgt classify compares register-blanked instruction MULTISETS (pre-RA), then exact texts (RA), then order (SCHED); only the first differing layer can own the residual. The object-level path is required because src now carries our C body, so mkasm_honest's .tgt.s half would rebuild OUR code, not target's.
+- probe: python3 tools/ra_solver/goal_from_tgt.py classify code6cac_b func_800283D0, plus the same tool's `goal --show` alignment report.
+- result: PRE-RA, and the entire pre-RA delta is one instruction shape: ours only `beqz #,@` x1, target only `bnez #,@` x1. Alignment of the two 215-insn streams: equal 187, replace 24, moved 4, delete 0, insert 0 - i.e. 1 branch-sense insn + 4 scheduler moves + 21 register renames + 2 immediate/reloc-differing pairs, with no hidden selection difference anywhere else.
+- verdict: CONFIRMED
+
+## [s7] The callee-saved (s2/s3) cluster is a pure exchange of allocnos 73 and 143, and some third allocno might offer a cheaper lever.
+- mechanism: global.c allocno_compare sorts by pri = floor_log2(n_refs)*n_refs*size/reg_live_length*10000 with ties broken by lower allocno number; the sorted order maps 1:1 onto $s0..$s6, so any flip must come from a priority change on some allocno.
+- probe: extract.py -> model.json (25 allocnos); goal_from_tgt goal --model -> the 73/143 exchange; then an exhaustive single-atom sweep of the validated simulate.Sim over EVERY allocno x livelen 1..250 x nrefs 1..24 (tmp/grind/func_800283D0/s7/sweep_all.py).
+- result: Exactly TWO allocnos have any vector at all - pseudo 73 (= arg1, 7 refs: the prologue `move s3,a1` plus six `move a2,s3`) and pseudo 143 (= temp_s3 = arg0 + temp_a1_2*2, RTL insn 277). Every other allocno in the function is inert for this goal at every live length and every ref count. No third lever exists.
+- verdict: CONFIRMED
+
+## [s7] The flip windows for the global cluster are wider / differently shaped than the hand-derived ones the ledger carries (s5: '6-10 insns of extra live length on 143'; s6: 'L73 in [38,65]').
+- mechanism: Same allocno_compare model, but evaluated by the validated forward simulator rather than by hand, and swept jointly in two variables instead of one at a time.
+- probe: sweep_all.py (single-atom, exhaustive) and joint.py (2-D sweeps) against tmp/ra_solver_work/func_800283D0.model.json (base: 73 nrefs=7 livelen=92 rll=132 calls=3; 143 nrefs=3 livelen=14 rll=22 calls=2).
+- result: Single-atom: L73 92 -> [38,65] (confirms s6 exactly); L143 14 -> [20,21] ONLY (+6 or +7; +8 already overshoots, correcting s5's '6-10'); R73 7 -> [8,11]; R143 3 -> 2. Joint: L143 = 10..21 admits L73 upper bounds 46,51,56,60,65,70,74,79,84,88,93,98 with a constant lower bound of 38, so the region is a diagonal and partial moves in both variables compose; R73=8 admits L73 in [65,112], which contains the base 92 - that is why one extra reference to arg1 is a single-atom solution today. Tool note banked: inverse.py global reports NO livelen vector here purely because its search bounds are +/-2,4,8 and the true window sits in the 6/7 hole - a tool artefact, not a foreclosure.
+- verdict: CONFIRMED
+
+## [s7] The tail a0/a1 cluster (7 diffs, cluster E) is a local-alloc quantity-order decision between the temp_a0 pointer and a Judge[] element, and its flip window has never been measured.
+- mechanism: local-alloc.c block_alloc: qty_compare_1 priority floor_log2(refs)*refs*size/(death-birth)*10000, ties by ascending qty number, then find_free_reg scans ascending.
+- probe: Read the .lreg RTL to NAME the participants instead of guessing (reg/v:SI 184 = temp_s4 + temp_s5*0x10, uses +276/+280/+284; reg:SI 201 / 211 = the two (&Judge)[...] elements; none of 184/186/201/211 appears in the global allocno order, so all are block-local). Then local_extract.py code6cac_b + inverse.py local --func func_800283D0 --block 41 --swap 0,3 --depth 2 --top 40.
+- result: Block 41 baseline: qty0 = reg 184 (birth 2, death 32, span 30, refs 6) -> $a1; qty3 = reg 201 (birth 16, death 20, span 4, refs 2) -> $a0; target wants them exchanged. The COMPLETE single-atom vector set is span(qty0) 30 -> <= 24 (from either end: birth 2 -> 8..19, or death 32 -> 16..26) or refs(qty0) 6 -> 8/9/10, and nothing else. s3's hand-derived span(qty0) <= 24 is CONFIRMED; s3's alternative 'span(qty3) >= 6' is REFUTED - no qty3-only perturbation reaches the goal.
+- verdict: CONFIRMED
+
+## [s7] An ordinary-C declaration reorder that lets an independent computation precede the tail pointer will delay the pointer quantity's birth enough to reach span(qty0) <= 24.
+- mechanism: A quantity's birth is its first reference in the post-sched1 insn stream; giving sched1 an independent, textually-earlier computation moves the pointer's ashift/addu later without adding instructions.
+- probe: Variant B_ptr_late (regenerable via tmp/grind/func_800283D0/s7/probe.py B_ptr_late): declare `s32 temp_v1_4 = -*(s16 *)(arg0 + 0x1CA);` BEFORE `u8 *temp_a0 = temp_s4 + (temp_s5 * 0x10);` - no new locals, no new statements. Measured with sandbox --disable all AND re-derived from a fresh BB2_QTY_DEBUG block-41 dump (the local-mode caveat demands the dump, not the model's claim).
+- result: 28 / 215 - byte-neutral in score - but the local model MOVED: the pointer quantity becomes qty1 / first_reg 188 with birth 6 (was 2), death 32, span 26 (was 30). That is 4 of the 6 insns the window needs; `got` is still $a1, so the assignment has not flipped. First C lever ever shown to move this cluster's dial in the right direction; 2 more insns of birth delay are needed.
+- verdict: CONFIRMED
+
+## [s7] The death side of the qty0 window is reachable by hoisting the temp_a0_2 abs above the temp_v1_5 product, so the pointer's last use dies earlier.
+- mechanism: Same qty_compare_1 span; moving the last reference of the pointer earlier shrinks death from 32 toward the <= 26 the window needs.
+- probe: Variants A_abs_first and C_both (declare `s32 temp_v1_5;` and assign it after the abs `if`), sandbox --disable all.
+- result: BOTH measure 44 at 214 insns - one instruction FEWER than target's 215 and a 16-point regression; C_both scores identically to A_abs_first, so the loss is owned by the abs hoist alone and not by the pointer reorder. Banked as rejected/tail-abs-hoisted-above-product-loses-insn.c. Combined with s3's tail-abs-sunk-below-shift-adds-insn.c (31/216), BOTH directions of moving the abs are now dead and the abs is pinned where it is.
+- verdict: KILLED

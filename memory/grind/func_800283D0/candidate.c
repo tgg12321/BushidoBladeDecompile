@@ -79,6 +79,24 @@
  * foreclosed the L143 route.  The named-intermediate escape hatch under that
  * route is now closed with a measurement (cse/combine delete the copies before
  * life_analysis; every ALLOCDBG row is unmoved).
+ *
+ * s7 (2026-08-26, solver): body UNCHANGED, floor re-measured flat at 28 / 215.
+ * Layer triage (goal_from_tgt classify, object-level) says the FIRST divergence
+ * is PRE-RA and consists of exactly ONE instruction shape - ours emits a beqz
+ * where target emits a bnez.  The remaining residual is 21 register renames +
+ * 4 scheduler moves + 2 immediate/reloc-differing pairs, so the 215-insn stream
+ * has no hidden selection difference anywhere.  Exhaustive single-atom sweeps
+ * of the validated forward models replace every hand-derived window: the
+ * callee-saved cluster is a 73<->143 exchange reachable ONLY through those two
+ * allocnos (L73 92->[38,65], L143 14->[20,21], R73 7->[8,11], R143 3->2, with a
+ * joint diagonal region mapped), and the tail a0/a1 cluster is a LOCAL-alloc
+ * decision in block 41 between qty0 = reg 184 (the temp_a0 pointer) and qty3 =
+ * reg 201 (a Judge[] element), whose complete vector set is span(qty0) 30-><=24
+ * or refs(qty0) 6->8..10 - s3's alternative "span(qty3) >= 6" is REFUTED.  One
+ * ordinary-C declaration reorder (temp_v1_4 declared before temp_a0) moves the
+ * pointer's birth 2 -> 6 (span 30 -> 26) while staying at 28 / 215: 4 of the 6
+ * insns the window needs, the first lever ever shown to move that dial.  The
+ * death-side route is now closed (hoisting the abs measures 44 / 214).
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
     s32 temp_a1;
