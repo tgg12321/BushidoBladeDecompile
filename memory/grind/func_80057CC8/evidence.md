@@ -1522,3 +1522,162 @@ replace_with_asmfile list - tooling work outside a grind session's allowed surfa
 - [s35] Owner directive (2026-08-24, solver-first) acknowledged and discharged by the equivalent-evidence route: `python3 tools/ra_solver/inverse_compose.py classify text1b func_80057CC8` reports that the function is not replace_with_asmfile-wired, falls back to its text-stream path against a stale tmp/inverse_work/text1b.tgt.s, and returns a fictitious `honest 108 insns, target 108 insns / FIRST DIVERGENCE: IDENTICAL` (the real target is 111 insns). The RA question was answered directly from the .lreg/.greg pass dumps instead - the same inputs the solver models, measured rather than simulated.
 
 - [s35] src/text1b.c restored to `INCLUDE_ASM("asm/funcs", func_80057CC8);` at end of session (git checkout). No commits; regfix.txt, asmfix.txt, .claude/rules/, engine/, tools/, Makefile and *.ld untouched.
+
+## s36 (2026-08-27) - synthesis - FLOOR HELD AT 20; THE TARGET'S SECOND `lw 0x4($s2)` IS PROVEN TO BE A SECOND SOURCE-LEVEL READ, AND THE 18-LINE RESIDUAL IS PROVEN TO BE ONE RESIDUAL, NOT TWO
+
+**Chassis re-measured first.** HEAD is `INCLUDE_ASM("asm/funcs", func_80057CC8);` at
+src/text1b.c:1665. The driver's dispatch brief reported the HEAD floor as "measurement
+unavailable"; measured here, the inherited s34/s35 candidate scores **20, target_insns 111,
+build_insns 108, rules_dropped 0**. The ledger floor of 20 is current.
+
+This was a synthesis session: the whole ledger was re-read, the one door s30b left ajar was
+closed with measurements, the last untried spelling on the s35 frontier was killed, and the
+frontier is reset below.
+
+**[s36-E1] The door s30b left open, and why it is now shut.** s30b established that GCC 2.7.2
+has no gcse.c and no rematerialization pass, that reload spills to `N($sp)` and never back to
+the original address *unless* the pseudo carries a REG_EQUIV MEM note, and that the note has two
+gates (local-alloc.c:583 `validate_equiv_mem` - killed by an intervening CALL_INSN unless
+RTX_UNCHANGING_P; and `reg_basic_block[regno] >= 0` - all references in ONE basic block). It
+closed with "the note is necessary but NOT sufficient: rematerialization requires the pseudo to
+FAIL allocation, which needs pressure this function does not have." That left one untested cell:
+**note present AND register pressure present**. s33-E5 had independently measured that the
+target-shaped regime (next-INDEX carried across the call, address formed after it) puts NINE
+values across the call against EIGHT callee-save seats - i.e. exactly the pressure s30b said was
+missing. If those two could be combined, reload would emit the target's second `lw 0x4($s2)`
+from a SINGLE source-level read, and the whole 2026-07-20 policy residual would dissolve. This
+session built both horns and measured them.
+
+  * **r1 (`tmp/grind/func_80057CC8/s36/r1.c`, banked as
+    `rejected/s36-r1-single-block-const-base-regequiv-note-no-remat-score60.c`) - the note DOES
+    appear in the real function, in the target's own post-call-address regime, and
+    rematerialization still does not happen.** Form: both index if-blocks first, then a single
+    block containing the const-qualified base read `*(s16 *const *)(arg0 + 4)`, the centre
+    coordinate reads, and both `ratan2` calls; the next-neighbour address is formed AFTER the
+    first call from the carried index (`sll v1,s3,0x2 / addu v1,v1,s0` at r1.hon.s lines 40-41),
+    which is the target's own shape. Measured **score 60, build_insns 102**. The note is present
+    and unchanging-marked - `tmp/grind/func_80057CC8/s36/r1.lreg:384`
+    `(expr_list:REG_EQUIV (mem/u:SI (plus:SI (reg/v:SI 72) (const_int 4))))` - so BOTH gates pass.
+    Yet the base pseudo is allocated a callee-save (`$s0`) and exactly ONE `lw 4(s4)` is emitted
+    (r1.hon.s line 29). **Why: confining the base's references to one basic block also puts the
+    centre `lhu` in the same block as its `(s16)` sign-extension, and combine folds the pair into
+    a single `lh` (r1.hon.s lines 34/36 `lh s2,0(v1)` / `lh s1,2(v1)`), deleting the raw-u16
+    values from the live set.** Crossing values drop from the nine the pressure argument needs to
+    seven (arg0, arg2, arg3, index, cxs, cys, base) against eight seats, so nothing fails
+    allocation and reload never consults the equivalence.
+
+  * **r4 (`rejected/s36-r4-const-qualified-base-read-no-note-score23.c`) - in the target's own
+    shape the note is unobtainable at all.** Form: the score-20 candidate verbatim with the base
+    read const-qualified (`*(s16 *const *)(arg0 + 4)`). Measured **score 23, build_insns 108** -
+    i.e. the const qualifier is NOT codegen-inert in this regime (contrast s30b's formD, where it
+    was), it costs three points. And the `.lreg` for this form carries **zero** REG_EQUIV notes
+    (`tmp/grind/func_80057CC8/s36/r4.lreg`, count 0), because the base's references straddle the
+    entry block (centre vertex) and the post-wrap block (both neighbours) and gate 2
+    (`reg_basic_block >= 0`) fails.
+
+  **The two horns are mutually exclusive by construction, and the exclusion is the same fact in
+  both directions.** The REG_EQUIV note requires every base reference in one basic block; the
+  register pressure requires the raw `u16` centre values to stay live alongside their
+  sign-extended twins, which requires the centre `lhu` and its `(s16)` cast to sit in DIFFERENT
+  basic blocks (that separation is precisely why the score-20 candidate and the target both emit
+  `lhu` + `sll`/`sra` instead of `lh`). One basic block cannot be two. **Reload
+  rematerialization is therefore closed for this function, not merely unexercised** - which
+  retires the last mechanism by which one C-level read of `arg0+4` could produce the target's two
+  `lw 0x4($s2)` instructions.
+
+  Two independent source-level confirmations of the same conclusion, for the record: the
+  wrap-selected next-neighbour ADDRESS can never carry a REG_EQUIV note either, because
+  `update_equiv_regs` bails at `reg_n_sets[regno] != 1` (tools/gcc-2.7.2/local-alloc.c:1019-1021)
+  and a wrap-selected value has two sets by construction, and because its SET_SRC is a PLUS, not
+  a MEM (local-alloc.c:1051). So the `reg_live_length[regno] *= 2` doubling at local-alloc.c:1063
+  - which would have been the one lever capable of pushing the address allocno's
+  `allocno_compare` priority below arg0's 0.185 and breaking s35-E2's foreclosure from the other
+  side - is not reachable for that pseudo under any spelling.
+
+**[s36-E2] Consequence, and the session's headline: the eighteen-line residual is ONE residual.**
+s35-E1 decomposed the score-20 diff as "twelve register-rename lines + six refused-duplication
+lines" and s35-E3 read those as two separate problems, one foreclosed and one policy-bound. They
+are the same problem. Reading the target's prologue and body directly
+(`asm/funcs/func_80057CC8.s:2-56`): the target seats EIGHT callee-saves, `$s0=cys $s1=cxs
+$s2=arg0 $s3=next-INDEX $s4=cx-raw $s5=cy-raw $s6=arg2 $s7=arg3`, and the vertex-table base is
+NOT among them - it lives in call-clobbered `$a2` (line 17), serves the centre vertex (line 19)
+and the prev-neighbour address (line 39), dies before the `jal`, and is re-created by a fresh
+`lw $a0,0x4($s2)` at line 50. arg0 can only occupy `$s2`/`$18` if the next-neighbour address is
+NOT live across the first call, which requires the address to be formed after the call, which
+requires the base to be available after the call, which - now that rematerialization is closed
+(s36-E1) and caller-saving is arithmetically excluded (s30, `CALLER_SAVE_PROFITABLE` needs
+`4 * calls < refs`) - requires either the base to occupy a NINTH callee-save seat (measured dead
+at 33, s33-E5) or a second source-level materialization (refused by the owner on 2026-07-20).
+**So the twelve rename lines are not an independent foreclosed axis sitting next to a policy
+residual: they are a downstream consequence of the same refused construct.** No future session
+should spend measurements trying to move arg0 into `$18` while remaining ban-compliant; the two
+are the same request.
+
+**[s36-E3] The last untried spelling on the s35 frontier is killed.** s35's frontier item #2 was:
+carry the wrapped next index through the arms as a NARROWER type so that the arm's def is a
+genuine sub-word copy that copy-propagation cannot fold through the sign-extension (s35's d1/d2
+had the copy propagated away at 27/28). Both spellings were built on the score-20 candidate and
+measured: **r2** (`s16 ni = tmp; ... ni = 0; next_vert = (s16 *)(ni * 4 + (s32)table);`) =
+**score 26 at 110 insns**; **r3** (identical with `u16 ni`) = **score 26 at 110 insns**. The
+narrowing does what it was asked to do - r3.hon.s lines 27/34 emit `move s0,v0` and
+`move s0,zero`, the target's `addu $s3,$v0,$zero` / `addu $s3,$zero,$zero` pair at
+asm/funcs/func_80057CC8.s:29/37, and the base even lands in the target's call-clobbered `$a2` -
+but the carrier costs two insns to re-widen before the address add, and the address is still
+formed BEFORE the call, so the form lands at 110 insns and six points worse. Banked as
+`rejected/s36-r2-s16-narrow-index-carrier-110insns-score26.c` and
+`rejected/s36-r3-u16-narrow-index-carrier-110insns-score26.c`.
+
+**[s36-E4] Disposition reasoning, stated once so no session re-derives it.** A packet asking the
+owner to sanction the duplicated base materialization falls squarely in the AUTO-REJECT CLASS of
+the 2026-08-24 second ruling (a YES would be a no-precedent family grant, i.e. it would lower a
+standard), so it must NOT be filed; the residual stays ACTIVE. The 2026-08-20 entry at
+docs/grind/decisions.md:8114 already records the standing REFUSED / OWNER-ACCEPTED-INCOMPLETE
+disposition for exactly this construct, and the owner's 2026-08-24 directive deliberately kicked
+the function back to active grinding. The honest outcome for a session that kills axes without
+reaching 0 is therefore `progress` with the kills banked - which is this session.
+
+- [s36] Chassis re-measured at dispatch (the brief reported it unavailable): the inherited s34/s35 candidate scores 20 at build_insns 108 / target_insns 111 / rules_dropped 0. Floor unchanged; candidate.c unchanged.
+
+- [s36] The last open cell of s30b's rematerialization analysis - REG_EQUIV note present AND register pressure present - is now built and measured, and it is not constructible. r1 (both index if-blocks first, then one block holding the const-qualified base read, the centre reads and both calls, with the next address formed AFTER the first call from the carried index) DOES earn the note (tmp/grind/func_80057CC8/s36/r1.lreg:384 `(expr_list:REG_EQUIV (mem/u:SI (plus:SI (reg/v:SI 72) (const_int 4))))`) but scores 60 at 102 insns and still emits ONE `lw 4(s4)`, with the base in callee-save $s0.
+
+- [s36] Mechanism for r1's failure: confining every base reference to one basic block also puts the centre `lhu` in the same block as its `(s16)` cast, so combine folds the pair to a single `lh` (r1.hon.s lines 34/36). The raw-u16 centre values vanish from the live set, crossing values fall from the nine the pressure argument needs to seven against eight seats, nothing fails allocation, and reload never consults the equivalence.
+
+- [s36] The other horn measured: r4 (the score-20 candidate with only the base read const-qualified) scores 23 at 108 insns - const is NOT codegen-inert in this regime, unlike s30b's formD - and its .lreg carries ZERO REG_EQUIV notes, because the base's references straddle the entry block and the post-wrap block and gate 2 (`reg_basic_block >= 0`) fails.
+
+- [s36] Therefore the REG_EQUIV note and the register pressure are mutually exclusive for this function by construction: the note needs all base refs in one basic block, the pressure needs the centre `lhu` and its `(s16)` cast in different basic blocks. Reload rematerialization is CLOSED, not merely unexercised, and the target's second `lw 0x4($s2)` is a genuine second source-level materialization.
+
+- [s36] The wrap-selected next-neighbour ADDRESS can never carry a REG_EQUIV note either: update_equiv_regs bails at `reg_n_sets[regno] != 1` (tools/gcc-2.7.2/local-alloc.c:1019-1021) and a wrap-selected value has two sets by construction; its SET_SRC is a PLUS, not a MEM (local-alloc.c:1051). So the `reg_live_length[regno] *= 2` doubling at local-alloc.c:1063 - the one lever that could have pushed the address allocno's priority below arg0's 0.185 and broken s35-E2 from the other side - is unreachable.
+
+- [s36] HEADLINE / re-attribution of the s35 decomposition: the eighteen-line residual is ONE residual, not twelve foreclosed renames plus six refused lines. The target keeps EIGHT callee-saves ($s0=cys $s1=cxs $s2=arg0 $s3=next-INDEX $s4=cx-raw $s5=cy-raw $s6=arg2 $s7=arg3) and holds the vertex base in call-clobbered $a2 (asm/funcs/func_80057CC8.s:17), dead before the jal and re-loaded at :50. arg0 can only reach $18 if the next address is formed after the call, which needs the base after the call, which needs either a ninth callee-save seat (measured dead at 33, s33-E5) or the refused second materialization. The register-seat axis and the duplication axis are the same request.
+
+- [s36] s35 frontier item #2 (narrower-typed index carrier so the arm copy survives copy-propagation) KILLED by measurement: r2 `s16 ni` = 26 at 110 insns, r3 `u16 ni` = 26 at 110 insns. The narrowing does reproduce the target's arm pair (`move s0,v0` / `move s0,zero` at r3.hon.s:27/34, matching asm/funcs/func_80057CC8.s:29/37) and even puts the base in the target's $a2, but re-widening before the address add costs two insns and the address is still formed pre-call.
+
+- [s36] Disposition: a packet asking to sanction the duplicated base materialization is in the AUTO-REJECT CLASS of the 2026-08-24 second owner ruling (a YES would be a no-precedent family grant), so it must not be filed; docs/grind/decisions.md:8114 already carries the standing REFUSED / OWNER-ACCEPTED-INCOMPLETE record for this construct, and the 2026-08-24 directive kicked the function back to active. `progress` with kills banked is the honest outcome.
+
+- [s36] Owner directive 2026-08-24 (solver-first) re-checked, not re-run: s35-E5 already established that tools/ra_solver/inverse_compose.py is not replace_with_asmfile-wired for func_80057CC8 and returns a fictitious IDENTICAL verdict against a stale 108-insn target stream. This session answered its RA questions from the .lreg/.greg pass dumps directly (tmp/grind/func_80057CC8/s36/r1.lreg, r1.greg, r4.lreg), which is the same evidence the solver models.
+
+- [s36] src/text1b.c restored to `INCLUDE_ASM("asm/funcs", func_80057CC8);` at end of session. No commits; regfix.txt, asmfix.txt, .claude/rules/, engine/, tools/, Makefile and *.ld untouched.
+
+- [s36] Chassis re-measured at dispatch (the brief reported it unavailable): the inherited s34/s35 candidate scores 20 at build_insns 108 / target_insns 111 / rules_dropped 0, with HEAD at `INCLUDE_ASM("asm/funcs", func_80057CC8);` src/text1b.c:1665. The ledger floor of 20 was current; candidate.c is unchanged and remains the best ban-compliant form.
+
+- [s36] r1 (both index if-blocks first, then one basic block holding the const-qualified base read, the centre reads and both ratan2 calls, next address formed AFTER the first call from the carried index) earns a genuine REG_EQUIV MEM note in the real function - tmp/grind/func_80057CC8/s36/r1.lreg:384 `(expr_list:REG_EQUIV (mem/u:SI (plus:SI (reg/v:SI 72) (const_int 4))))` - and still emits ONE `lw 4(s4)` with the base in callee-save $s0. Score 60 at 102 insns.
+
+- [s36] Mechanism for r1's failure, dump- and disassembly-verified: confining every base reference to one basic block also puts the centre `lhu` in the same block as its (s16) cast, so combine folds the pair to a single `lh` (r1.hon.s lines 34/36 `lh s2,0(v1)` / `lh s1,2(v1)`). The raw-u16 centre values vanish from the live set and crossing values fall from the nine the pressure argument needs to seven against eight seats, so nothing fails allocation and reload never consults the equivalence.
+
+- [s36] r4 (the score-20 candidate with only the base read const-qualified) scores 23 at 108 insns - const is NOT codegen-inert in this regime, unlike s30b's formD - and its .lreg carries ZERO REG_EQUIV notes, because the base's references straddle the entry block and the post-wrap block and gate 2 (reg_basic_block >= 0) fails.
+
+- [s36] Therefore REG_EQUIV note and register pressure are mutually exclusive for this function by construction: the note needs all base refs in one basic block, the pressure needs the centre `lhu` and its (s16) cast in different basic blocks. Reload rematerialization is CLOSED, not merely unexercised, and the target's second `lw 0x4($s2)` is a genuine second source-level materialization.
+
+- [s36] The wrap-selected next-neighbour ADDRESS can never carry a REG_EQUIV note either: update_equiv_regs bails at `reg_n_sets[regno] != 1` (tools/gcc-2.7.2/local-alloc.c:1019-1021) and a wrap-selected value has two sets by construction; its SET_SRC is a PLUS, not a MEM (local-alloc.c:1051). So the `reg_live_length[regno] *= 2` doubling at local-alloc.c:1063 - the one lever that could have pushed the address allocno's allocno_compare priority below arg0's 0.185 and broken s35-E2 from the other side - is unreachable.
+
+- [s36] HEADLINE re-attribution of the s35 decomposition: the eighteen-line residual is ONE residual, not twelve foreclosed renames plus six refused lines. The target keeps eight callee-saves ($s0=cys $s1=cxs $s2=arg0 $s3=next-INDEX $s4=cx-raw $s5=cy-raw $s6=arg2 $s7=arg3) and holds the vertex base in call-clobbered $a2 (asm/funcs/func_80057CC8.s:17), dead before the jal and re-loaded at :50. arg0 can reach $18 only via post-call address formation, which needs the base after the call, which needs either a ninth callee-save seat (33, s33-E5) or the refused second materialization.
+
+- [s36] The score-20 candidate already saves all eight of $s0-$s7 (tmp/grind/func_80057CC8/s36/v0.hon.s), so the frame size and save set already match the target - the twelve register-diff lines are naming only, not a frame-layout divergence.
+
+- [s36] s35 frontier item #2 KILLED by measurement: r2 `s16 ni` = 26 at 110 insns, r3 `u16 ni` = 26 at 110 insns. The narrowing does reproduce the target's arm pair (`move s0,v0` / `move s0,zero`, r3.hon.s:27/34, matching asm/funcs/func_80057CC8.s:29/37) and puts the base in the target's $a2, but re-widening before the address add costs two insns and the address is still formed pre-call.
+
+- [s36] Disposition reasoning banked so it is not re-derived: a packet asking the owner to sanction the duplicated base materialization is in the AUTO-REJECT CLASS of the 2026-08-24 second owner ruling (a YES would be a no-precedent family grant, i.e. it would lower a standard), so it must NOT be filed; docs/grind/decisions.md:8114 already carries the standing REFUSED / OWNER-ACCEPTED-INCOMPLETE record for exactly this construct, and the 2026-08-24 directive deliberately kicked the function back to active grinding. `progress` with kills banked is the honest outcome for this session.
+
+- [s36] Owner directive 2026-08-24 (solver-first) re-checked, not re-run: s35-E5 already established tools/ra_solver/inverse_compose.py is not replace_with_asmfile-wired for func_80057CC8 and returns a fictitious IDENTICAL verdict against a stale 108-insn target stream. This session answered its RA questions from the .lreg/.greg pass dumps directly (s36/r1.lreg, r1.greg, r4.lreg), the same evidence the solver models.
+
+- [s36] src/text1b.c restored to `INCLUDE_ASM("asm/funcs", func_80057CC8);` at end of session (git checkout, verified at line 1665). No commits; regfix.txt, asmfix.txt, .claude/rules/, engine/, tools/, Makefile and *.ld untouched. Four forms banked to memory/grind/func_80057CC8/rejected/s36-*.c.
