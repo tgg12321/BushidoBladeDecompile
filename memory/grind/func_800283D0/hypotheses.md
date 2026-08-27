@@ -208,3 +208,87 @@
 - probe: P_var_a1_ifelse - `s32 var_a1;` declared uninitialised with both arms written explicitly (`if (temp_a0_2 < 0) { var_a1 = -temp_a0_2; } else { var_a1 = temp_a0_2; }`), measured with sandbox and re-traced with BB2_QTY_DEBUG=1.
 - result: 28 / 215 and the block-41 quantity table is BYTE-IDENTICAL to the base body's (qty0 birth 2 death 32 refs 6 -> $5; qty3 birth 16 death 20 refs 2 -> $4). GCC rebuilds the same `move` insn from the two-arm form, so the copy and therefore the fusion survive.
 - verdict: KILLED
+
+## Session 4 (2026-08-27, permuter) — measured
+
+| id | hypothesis | mechanism | probe | result | verdict |
+|---|---|---|---|---|---|
+| H10 | decomp-permuter on the s2/s3 candidate chassis can find an ordinary-C respelling below 28 | random source perturbation over the whole body | 4 campaigns (perm_a canonical chassis, perm_b mirror chassis, perm_c do-while(0) chassis, perm_d chained) — ~20k iterations total, all harvested + stopped | ONE semantically-valid improving find: a `do {} while (0)` wrap, 28 -> 26. Every other find was byte-neutral or semantically invalid | CONFIRMED (with a caveat that makes it unusable — see H11) |
+| H11 | The `do { } while (0)` wrap that scores 26 works through the sanctioned reorg.c / LABEL_OUTSIDE_LOOP_P interaction | `.claude/rules/do-while-zero-exception.md` scope | re-dumped .lreg with the wrapped body and diffed the per-pseudo ref/length report against tmp/grind/func_800283D0/s4/lreg_base28.txt | REFUTED as to mechanism: EVERY live length is byte-identical (72:155, 73:92, 75:88, 77:73, 90:32, 143:14) and only REG_N_REFS moves, by exactly +1 per reference sited inside the wrapped region (72: 19->24, 73: 7->9, 75: 6->7, 77: 9->11, 90: 3->4, 128: 4->5) = flow.c `REG_N_REFS (regno) += loop_depth`. That is a global.c allocno-priority lever, OUT OF SCOPE for the carve-out | KILLED (as a usable construct) |
+| H12 | The 22-scoring permuter find (temp_s3 reused as an `arg0 + 0x286` store pointer) is a legitimate variable-reuse spelling | local-alloc / global.c ref+span effects of an extra pointer def | read the body against the CFG, then checked target's store form | SEMANTICALLY INVALID (block_48 is reached on paths where temp_s3 still holds `arg0 + temp_a1_2*2`, so the store lands at the wrong address) AND directionally wrong (target emits `sh $v0, 0x286($s0)` at all three sites, asm/funcs/func_800283D0.s:92,162,222 — never register-indirect) | KILLED |
+| H13 | The permuter's `if (temp_a0_2 > (var_s1 = 0))` dead-store-in-condition contributes real distance | dead store to a local perturbing liveness | ablation: v_nodeadstore.c (same body, condition restored to `> 0`) | 22 — IDENTICAL. The construct contributes EXACTLY ZERO; it is pure permuter noise | KILLED |
+
+## [s4] decomp-permuter can find a semantically-valid ordinary-C respelling of the candidate body that scores below 28
+- mechanism: random source perturbation (decomp-permuter) over four chassis, scored by its own weighted metric and then RE-MEASURED with `sandbox --disable all`, because the permuter metric and the engine distance disagree freely.
+- probe: Four campaigns, all launched and harvested through tools/permuter_campaign.py with telemetry: perm_a (label s4a-canonical-chassis, the candidate body), perm_b (s4b-mirror-chassis, the if/else spelled on the in-range copy instead of the tail copy), perm_c (s4c-dowhile0-chassis-floor26, seeded from perm_a's find), perm_d (s4d-chain-floor22, seeded from perm_c's find). ~20k iterations total (perm_c 8859, perm_d 7000). Every novel find was re-measured with sandbox --disable all.
+- result: Exactly ONE semantically-valid improving find in ~20k iterations: the `do {} while (0)` wrap (28 -> 26 at 215 insns). Everything else was either byte-neutral against the engine metric despite a lower permuter score (perm_b's `arg0 - -(temp_a1_2*2)` double negation: permuter 468 -> 458, sandbox 28 -> 28) or semantically invalid (perm_c's 22 and perm_d's 400-score find both mis-target the block_48 store). CONCLUSION FOR LATER SESSIONS: this function's residual is NOT permuter-shaped. All of the remaining distance is callee-saved register-assignment permutation, and the permuter's local source edits reach that only through constructs that are out-of-family or semantically wrong. A further permuter session on this chassis is not a good use of a modality slot.
+- verdict: CONFIRMED
+
+## [s4] The `do { ... } while (0)` wrap that scores 26 works through the sanctioned reorg.c / LABEL_OUTSIDE_LOOP_P interaction, so it sits inside the do-while-zero carve-out
+- mechanism: `.claude/rules/do-while-zero-exception.md` sanctions the wrap for the LABEL_OUTSIDE_LOOP_P / reorg.c interaction ONLY.
+- probe: Applied the wrapped body (`do { ... } while (0);` around the region from `if (temp_v1_3 < temp_v0_3)` through `block_48: *(s16*)(arg0+0x286) = var_v0_2;`), ran `pwsh tools/grinder/dump.ps1 func_800283D0`, and diffed the .lreg per-pseudo "used N times across M insns" report against the pre-wrap snapshot tmp/grind/func_800283D0/s4/lreg_base28.txt.
+- result: REFUTED as to mechanism. Every live length is byte-identical (72:155, 73:92, 75:88, 77:73, 90:32, 128:7, 143:14). Only REG_N_REFS moves, and it moves by exactly +1 per reference sited inside the wrapped region: 72 19->24, 73 7->9, 75 6->7, 77 9->11, 90 3->4, 128 4->5. That is flow.c's loop-depth ref weighting (`REG_N_REFS (regno) += loop_depth`, loop_depth 1 -> 2 inside the NOTE_INSN_LOOP_BEG/END pair the do-while leaves behind), feeding global.c's allocno_compare priority — NOT the reorg.c label interaction. So the construct would be a FIRST REACH of an unsanctioned mechanism wearing a sanctioned family's syntax, and the no-new-park-categories non-extension clause forbids generalizing the carve-out to it. It is also not a match (26, not 0) and s4 has no modality-ladder exhaustion, which a FAKE construct independently requires. Banked NOT adopted: memory/grind/func_800283D0/rejected/dowhile0-refweight-out-of-scope.c.
+- verdict: KILLED (as a usable construct); the mechanism measurement itself is CONFIRMED and is the session's main asset.
+
+## [s4] The callee-saved cluster is a single coupled permutation whose lever is REG_N_REFS, not only reg_live_length
+- mechanism: global.c:635-655 allocno_compare pri = floor_log2(n_refs)*n_refs*10000*size/live_length. s2's H9 explored only the live_length denominator; the wrap experiment moves the numerator with live_length pinned, which isolates the n_refs axis cleanly for the first time.
+- probe: pairdiff of the wrapped (26) body vs target, compared hunk-for-hunk against the s3 base pairdiff (tmp/grind/func_800283D0/s3/pd_start.txt vs tmp/grind/func_800283D0/s4/pd_dowhile.txt).
+- result: The prologue hunks ours[3:5] and ours[10:11] — the arg1-home s2/s3 rotation the ledger has chased since s2 — DISAPPEAR entirely: our `sw s3,36(sp)` / `move s3,a1` become target's `sw s2,32(sp)` / `move s2,a1`. But the win is paid for elsewhere: temp_s4's pseudo lands in $s5 (target $s4) and temp_s5's in $s3 (target $s5), creating six NEW hunks at ours[13:14], [20:21], [52:53], [59:60], [69:71], [121:122]. Net 28 -> 26. So the seven callee-saved pseudos are allocated as ONE ordered permutation, and any lever that reorders the priority list trades one cluster for another rather than adding a partial fix. The honest search is therefore NOT "find a live_length window" (s2 and s3 spent that axis) but "find an ordinary-C restructure that changes the REFERENCE COUNT of pseudo 73 (arg1 home, 7 refs, pri 1521) or pseudo 75 (temp_s4, 6 refs, pri 1363)" — the adjacent pair in the priority order — while leaving the other five pseudos' priorities where they are.
+- verdict: CONFIRMED
+
+## [s4] The 22-scoring permuter find (temp_s3 reused as an `arg0 + 0x286` store pointer) is a legitimate lower-floor body
+- mechanism: an extra pointer def inside the tail region changes both the ref count and the span of pseudo 143 and of the arg0 pointer.
+- probe: Read the body against the CFG; ablated the three constructs separately (tmp/grind/func_800283D0/s4/v_nowrap.c = 25, v_nodeadstore.c = 22, v_nos3reuse.c = 26).
+- result: KILLED on SEMANTICS before any family question arises. The find assigns `temp_s3 = arg0 + 0x286;` inside the `temp_v1_3 < temp_v0_3 && var_s1 != 0` arm and then spells the block_48 store as `*(s16 *)temp_s3 = var_v0_2;`, but block_48 is also reached from the `temp_v1_3 >= temp_v0_3` (var_v0_2 = 0x1A) path where temp_s3 still holds `arg0 + temp_a1_2 * 2` — the store would land at the wrong address. decomp-permuter's randomizer does not guarantee semantic equivalence; every find must be read against the CFG before it is measured for meaning. It is ALSO directionally wrong: the target emits `sh $v0, 0x286($s0)` at all three store sites (asm/funcs/func_800283D0.s:92, 162, 222), i.e. base+offset off the arg0 pointer, never register-indirect — so no store-address pointer local can ever be the answer here, whatever it does to the allocator. The ablation is still useful and is banked: the do-while wrap contributes 3 (25 -> 22), the store-pointer reuse contributes 4 (26 -> 22), and the `if (temp_a0_2 > (var_s1 = 0))` dead-store-in-condition contributes EXACTLY 0.
+- verdict: KILLED
+
+## Frontier (for session 5)
+
+1. **REG_N_REFS is the live axis for the callee-saved permutation.** The s2/s3 rotation
+   and the temp_s4/temp_s5 assignment are ONE ordered permutation over seven pseudos, and
+   the wrap experiment proves the order moves on ref counts with live lengths pinned.
+   Adjacent pair in the priority order: pseudo 73 (arg1 home, 7 refs / 92 insns, pri 1521)
+   and pseudo 75 (temp_s4, 6 refs / 88 insns, pri 1363). Probe: enumerate ordinary-C
+   restructures that legitimately change one of those two ref counts by one — e.g. reading
+   `*(u8 **)(arg0)` a second time at a site where target plausibly re-loads it instead of
+   keeping temp_s4 live, or the reverse (hoisting a temp_s4 use so one reference is folded
+   away). Re-dump .lreg after each and check the printed ref count actually moved before
+   reading the score. Mechanism: flow.c REG_N_REFS + global.c:635-655 allocno_compare.
+2. **Do NOT spend another permuter slot on this chassis.** ~20k iterations across four
+   chassis produced exactly one semantically-valid improving find and it is out-of-family.
+   The residual is register-assignment permutation, which the permuter's local source edits
+   cannot address honestly.
+3. **Diamond 2's last 8 diffs** (unchanged from s3): both selection copies must be in
+   target's canonical `v=0x19; if(!s1) v=0xB;` order AND unmerged, which needs the jump2
+   pairing never to be ATTEMPTED. Next probe unchanged: instrument xjump.sh to also print
+   INSN_UID(JUMP_LABEL) and max_uid on the canonical both-copies-identical body.
+
+## [s4] decomp-permuter on the func_800283D0 candidate chassis can find a semantically-valid ordinary-C respelling that scores below the 28 floor.
+- mechanism: Random source perturbation (decomp-permuter) over four chassis, scored by the permuter's own weighted metric and then RE-MEASURED with `sandbox --disable all`, because the two metrics disagree freely.
+- probe: Four campaigns launched and harvested+stopped in-session via tools/permuter_campaign.py: perm_a (s4a-canonical-chassis, the candidate body), perm_b (s4b-mirror-chassis, if/else spelled on the in-range copy instead of the tail copy), perm_c (s4c-dowhile0-chassis-floor26, seeded from perm_a's find, 8859 iterations), perm_d (s4d-chain-floor22, seeded from perm_c's find, 7000 iterations). ~20k iterations total; every novel find re-measured with sandbox and read against the CFG.
+- result: Exactly ONE semantically-valid improving find: a `do { } while (0);` wrap around the block_48 region, 28 -> 26 at 215 insns. perm_b's find (`arg0 - -(temp_a1_2*2)`) improved the permuter score 468->458 but was byte-neutral at sandbox 28. perm_c's 22 and perm_d's find are both semantically INVALID (they mis-target the block_48 store). Conclusion: this function's residual is not permuter-shaped - all remaining distance is callee-saved register-assignment permutation, which the permuter's local source edits reach only through out-of-family or wrong constructs.
+- verdict: CONFIRMED
+
+## [s4] The `do { } while (0)` wrap that scores 26 works through the LABEL_OUTSIDE_LOOP_P / reorg.c interaction, i.e. it sits inside the sanctioned do-while-zero carve-out.
+- mechanism: .claude/rules/do-while-zero-exception.md scopes the wrap to the LABEL_OUTSIDE_LOOP_P / reorg.c interaction ONLY.
+- probe: Applied the wrapped body, ran `pwsh tools/grinder/dump.ps1 func_800283D0`, and diffed the .lreg per-pseudo 'used N times across M insns' report against the pre-wrap snapshot tmp/grind/func_800283D0/s4/lreg_base28.txt.
+- result: REFUTED as to mechanism. Every live length is byte-identical (72:155, 73:92, 75:88, 77:73, 90:32, 128:7, 143:14) and only REG_N_REFS moves, by exactly +1 per reference sited inside the wrapped region: 72 19->24, 73 7->9, 75 6->7, 77 9->11, 90 3->4, 128 4->5. That is flow.c's loop-depth ref weighting (REG_N_REFS (regno) += loop_depth; the do-while leaves a NOTE_INSN_LOOP_BEG/END pair so loop_depth is 2 inside) feeding global.c:635-655 allocno_compare - a global.c allocno-priority lever, NOT the reorg.c label interaction. So adopting it would be a first reach of an unsanctioned mechanism wearing a sanctioned family's syntax, which the no-new-park-categories non-extension clause forbids. It is also not a match (26, not 0) and a FAKE construct independently requires demonstrated modality-ladder exhaustion, which four sessions in does not have. Banked NOT adopted; src restored to the 28 body.
+- verdict: KILLED
+
+## [s4] The 22-scoring permuter find (temp_s3 reused as an `arg0 + 0x286` store pointer) is a legitimate lower-floor body.
+- mechanism: An extra pointer def inside the tail region changes both the ref count and the span of pseudo 143 and of the arg0 pointer.
+- probe: Read the body against the CFG; checked target's store form in asm/funcs/func_800283D0.s; ablated the three constructs separately (tmp/grind/func_800283D0/s4/v_nowrap.c, v_nodeadstore.c, v_nos3reuse.c).
+- result: KILLED on semantics before any family question arises. It assigns `temp_s3 = arg0 + 0x286;` inside the `temp_v1_3 < temp_v0_3 && var_s1 != 0` arm and spells the block_48 store as `*(s16 *)temp_s3 = var_v0_2;`, but block_48 is also reached from the `temp_v1_3 >= temp_v0_3` (var_v0_2 = 0x1A) path where temp_s3 still holds `arg0 + temp_a1_2 * 2` - the store would land at the wrong address. ALSO directionally impossible: target emits `sh $v0, 0x286($s0)` at all three store sites (asm/funcs/func_800283D0.s:92, 162, 222), base+offset off arg0, never register-indirect, so no store-address pointer local can ever be the answer here. Ablation banked: the wrap is worth 3 (25->22), the invalid reuse 4 (26->22).
+- verdict: KILLED
+
+## [s4] The permuter's `if (temp_a0_2 > (var_s1 = 0))` dead-store-in-condition contributes real distance.
+- mechanism: A dead store to a local perturbing liveness / ref counts around the tail comparison.
+- probe: Ablation variant tmp/grind/func_800283D0/s4/v_nodeadstore.c - same body with the condition restored to `temp_a0_2 > 0` - measured with sandbox --disable all.
+- result: 22, IDENTICAL to the body that carries it. The construct contributes EXACTLY ZERO; it is pure permuter noise. Dead-store-in-condition is dead as a lever for this function and should not be re-proposed (it would also have needed the dead-store FAKE family for nothing).
+- verdict: KILLED
+
+## [s4] The callee-saved cluster's assignment is driven by REG_N_REFS as well as reg_live_length, and the seven pseudos are allocated as one coupled permutation rather than independently fixable clusters.
+- mechanism: global.c:635-655 allocno_compare, pri = floor_log2(n_refs)*n_refs*10000*size/live_length. Sessions 2-3 explored only the live_length denominator; the do-while experiment moves the numerator with every live length pinned, isolating the n_refs axis for the first time.
+- probe: pairdiff of the 26 body vs target (tmp/grind/func_800283D0/s4/pd_dowhile.txt) compared hunk-for-hunk against the s3 base pairdiff (tmp/grind/func_800283D0/s3/pd_start.txt).
+- result: The prologue hunks ours[3:5] and ours[10:11] - the arg1-home s2/s3 rotation chased since session 2 - DISAPPEAR (our `sw s3,36(sp)` / `move s3,a1` become target's `sw s2,32(sp)` / `move s2,a1`). But temp_s4's pseudo moves to $s5 (target $s4) and temp_s5's to $s3 (target $s5), creating six new hunks at ours[13:14], [20:21], [52:53], [59:60], [69:71], [121:122]. Net 28 -> 26. The order therefore moved purely on ref counts, and any priority-list reorder trades one cluster for another instead of fixing part of it. Session 2's H9 arithmetic ('n_refs(73) cannot honestly reach 8') is correct but was the wrong search: the adjacent pair in the priority order is pseudo 73 (arg1 home, 7 refs, pri 1521) and pseudo 75 (temp_s4, 6 refs, pri 1363), and a one-reference honest change to either is the live question.
+- verdict: CONFIRMED

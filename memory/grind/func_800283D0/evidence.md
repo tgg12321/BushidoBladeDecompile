@@ -472,3 +472,149 @@ source in the order abs(temp_a0_2) first, abs(temp_v1_5) second, or reorg loses 
 - [s3] The residual at 28 is unchanged in shape and now fully attributed: 11 diffs = the s2/s3 global.c allocno_compare rotation (needs live_length(pseudo 143) in {20,21,22}); 8 diffs = the diamond-2 selection copies (needs the jump2 pairing never to be ATTEMPTED); 7 diffs = the tail a0/a1 local-alloc quantity order (needs pri(qty0) >= 5000); 4 near-neutral j/nop reorg-fill diffs at slots 45-48.
 
 - [s3] LATE PROBE P_var_a1_ifelse (the obvious next move on the tail cluster) is KILLED before the next session spends it: removing the `var_a1 = temp_a0_2;` initialiser in favour of an explicit two-arm write leaves both the score (28/215) and the entire block-41 BB2_QTY_DEBUG quantity table byte-identical.
+
+## 2026-08-27 — session 4 (permuter modality)
+
+Chassis at dispatch: `sandbox func_800283D0 --disable all` = **28 / 215 insns**, identical to
+the s2/s3 ledger floor. The candidate.c body was re-applied to src/code6cac_b.c (which sits at
+`INCLUDE_ASM` on main under asm-until-matched) before any measurement, and src was restored to
+exactly that body at session end (re-verified 28 / 215).
+
+### Permuter workspaces (all four launched AND harvested+stopped inside this session)
+
+A standalone single-function permuter workspace was built for func_800283D0 for the first time
+(`tmp/grind/func_800283D0/s4/mkws.sh`, modelled on the func_80023648 s5c workspace). Two
+deviations from that template were required and are worth reusing:
+
+- the base-object prelude must be **empty**, not `.set noat / .set noreorder`. func_800283D0's
+  `lh $a1, Judge(...)` goes through an assembler macro that needs `$at`, so the SOTN-style
+  `.set noat` prelude fails the build with "macro used $at after .set noat". The real Makefile
+  passes no such prelude for compiled C either (`AS_FLAGS := -Iinclude -march=r3000 -mtune=r3000
+  -no-pad-sections -O1 -G0`), so an empty prelude is also the faithful choice.
+- the workspace validated on first build: base 215 insns vs target 215 insns, with the diff
+  hunks matching the known cluster map, so the standalone TU is a faithful proxy for the
+  in-TU compile.
+
+| workspace | label | chassis | iterations | outcome |
+|---|---|---|---|---|
+| `tmp/grind/func_800283D0/s4/perm_a` | s4a-canonical-chassis | candidate.c body | (stopped early) | 2 finds; best = the do-while(0) wrap, sandbox 26 |
+| `tmp/grind/func_800283D0/s4/perm_b` | s4b-mirror-chassis | if/else on the IN-RANGE copy | (stopped early) | 1 find, `arg0 - -(temp_a1_2*2)`, sandbox 28 (byte-neutral) |
+| `tmp/grind/func_800283D0/s4/perm_c` | s4c-dowhile0-chassis-floor26 | seeded from perm_a's 26 body | 8859 | 2 finds; best sandbox 22 but SEMANTICALLY INVALID |
+| `tmp/grind/func_800283D0/s4/perm_d` | s4d-chain-floor22 | seeded from perm_c's 22 body | 7000 | 1 find, also semantically invalid |
+
+**The permuter's weighted score and the engine distance disagree freely.** perm_b's 468 -> 458
+"improvement" was byte-neutral at 28; perm_a's 468 -> 460 was worth 2 real points. Every find
+must be re-measured with `sandbox --disable all`, and read against the CFG for semantics, before
+it means anything.
+
+### The one semantically-valid find: `do { } while (0)` — 28 -> 26, and why it is not adopted
+
+The only improving, semantics-preserving find in ~20k iterations wraps the region from
+`if (temp_v1_3 < temp_v0_3)` through `block_48: *(s16*)(arg0+0x286) = var_v0_2;` in
+`do { ... } while (0);`. It measures **26 / 215**.
+
+Its mechanism was measured, not guessed, by re-dumping .lreg and diffing the per-pseudo report
+against the pre-wrap snapshot (`tmp/grind/func_800283D0/s4/lreg_base28.txt`):
+
+| pseudo | what it holds | live length 28-body -> 26-body | REG_N_REFS 28-body -> 26-body |
+|---|---|---|---|
+| 72 | arg0 pointer | 155 -> 155 | 19 -> 24 |
+| 73 | arg1 home | 92 -> 92 | 7 -> 9 |
+| 75 | temp_s4 | 88 -> 88 | 6 -> 7 |
+| 77 | (call-crossing) | 73 -> 73 | 9 -> 11 |
+| 90 | (call-crossing) | 32 -> 32 | 3 -> 4 |
+| 128 | (tail) | 7 -> 7 | 4 -> 5 |
+| 143 | temp_s3 | 14 -> 14 | 3 -> 3 (all its refs are OUTSIDE the wrap) |
+
+Every live length is byte-identical; only the ref counts move, by exactly +1 per reference
+sited inside the wrapped region. That is flow.c's loop-depth ref weighting
+(`REG_N_REFS (regno) += loop_depth`; the do-while leaves a NOTE_INSN_LOOP_BEG/END pair behind,
+so loop_depth is 2 inside it), feeding global.c:635-655 allocno_compare.
+
+`.claude/rules/do-while-zero-exception.md` sanctions the do-while(0) wrap for the
+**LABEL_OUTSIDE_LOOP_P / reorg.c interaction ONLY**. The measured mechanism here is a
+global.c allocno-priority lever, which is outside that scope, and the no-new-park-categories
+non-extension clause explicitly forbids generalizing one carve-out to the broader category. So
+this is a first reach of an unsanctioned mechanism wearing a sanctioned family's syntax. It is
+also not a match (26, not 0), and a FAKE construct independently requires demonstrated
+modality-ladder exhaustion, which four sessions in does not have. Banked NOT adopted at
+`memory/grind/func_800283D0/rejected/dowhile0-refweight-out-of-scope.c`; the honest floor
+stays 28 and src carries the 28 body.
+
+### What the wrap experiment PROVES (the session's main asset)
+
+pairdiff of the 26 body against target (`tmp/grind/func_800283D0/s4/pd_dowhile.txt`, compare
+`tmp/grind/func_800283D0/s3/pd_start.txt`):
+
+- the prologue hunks `ours[3:5]` and `ours[10:11]` — the arg1-home s2/s3 rotation the ledger has
+  chased since session 2 — **disappear**. Our `sw s3,36(sp)` / `move s3,a1` become target's
+  `sw s2,32(sp)` / `move s2,a1`.
+- but temp_s4's pseudo moves to `$s5` (target `$s4`) and temp_s5's to `$s3` (target `$s5`),
+  creating six new hunks at `ours[13:14]`, `[20:21]`, `[52:53]`, `[59:60]`, `[69:71]`,
+  `[121:122]`.
+
+So the seven callee-saved pseudos are allocated as **one ordered permutation**: any lever that
+reorders the priority list trades one cluster for another rather than fixing part of it. And
+crucially, the order moved on **REG_N_REFS with every live length pinned** — the first clean
+isolation of that axis. Session 2's H9 spent the live_length denominator and concluded
+"n_refs(73) cannot honestly reach 8"; that arithmetic is right but it was the wrong search.
+The live question for session 5 is whether an ordinary-C restructure can legitimately move the
+reference count of pseudo 73 (arg1 home, 7 refs, pri 1521) or pseudo 75 (temp_s4, 6 refs,
+pri 1363) — the adjacent pair in the priority order — by one, without disturbing the other five.
+
+### The 22 body: semantically invalid, and directionally impossible
+
+perm_c's best find (sandbox 22) reuses `temp_s3` as a store pointer:
+`temp_s3 = arg0 + 0x286;` inside the `temp_v1_3 < temp_v0_3 && var_s1 != 0` arm, then
+`*(s16 *)temp_s3 = var_v0_2;` at block_48. **block_48 is also reached from the
+`temp_v1_3 >= temp_v0_3` (var_v0_2 = 0x1A) path, where temp_s3 still holds
+`arg0 + temp_a1_2 * 2`** — that store would land at the wrong address. decomp-permuter's
+randomizer does not guarantee semantic equivalence.
+
+It is also directionally impossible: the target emits `sh $v0, 0x286($s0)` at **all three**
+store sites (asm/funcs/func_800283D0.s:92, 162, 222) — base+offset off the arg0 pointer, never
+register-indirect. No store-address pointer local can be the answer here, whatever it does to
+the allocator. Banked at
+`memory/grind/func_800283D0/rejected/permuter-temp-s3-store-pointer-reuse-SEMANTICALLY-INVALID.c`.
+
+Three-way ablation of that body (each variant measured with `sandbox --disable all`):
+
+| variant | body | score |
+|---|---|---|
+| `tmp/grind/func_800283D0/s4/perm_c/output-440-1/source.c` | wrap + store-pointer reuse + dead-store-in-condition | 22 |
+| `tmp/grind/func_800283D0/s4/v_nowrap.c` | wrap REMOVED | 25 |
+| `tmp/grind/func_800283D0/s4/v_nodeadstore.c` | `(var_s1 = 0)` restored to `0` | 22 |
+| `tmp/grind/func_800283D0/s4/v_nos3reuse.c` | store-pointer reuse REMOVED | 26 |
+
+So the wrap is worth 3, the (invalid) store-pointer reuse is worth 4, and the
+`if (temp_a0_2 > (var_s1 = 0))` dead-store-in-condition is worth **exactly 0** — pure permuter
+noise, killed as a lever for this function.
+
+### Standing conclusion about the permuter for this function
+
+~20k iterations across four chassis (including two seeded from lower-floor bodies) produced
+exactly one semantically-valid improving find, and it is out-of-family. All remaining distance
+is callee-saved register-assignment permutation, which the permuter's local source edits reach
+only through constructs that are out-of-family or semantically wrong. **A further permuter
+session on this chassis is not a good use of a modality slot** — record this so the ladder does
+not spend one.
+
+- [s4] Chassis re-measured at dispatch and again at session end: sandbox func_800283D0 --disable all = 28, build_insns 215 == target 215. src/code6cac_b.c carries exactly the candidate.c body at session end (git diff shows only the func_800283D0 INCLUDE_ASM -> C body swap; no other tracked file touched except the engine's own metrics/events.jsonl).
+
+- [s4] First standalone single-function permuter workspace for func_800283D0 exists and validates: tmp/grind/func_800283D0/s4/mkws.sh builds base.c/compile.sh/target.o/settings.toml and reports 'base insns: 215  target: 215'. Two reusable deviations from the func_80023648 s5c template: (1) the base-object prelude must be EMPTY - func_800283D0's `lh $a1, Judge(...)` goes through an assembler macro needing $at, so a `.set noat` prelude fails with 'macro used $at after .set noat'; the real Makefile passes no prelude for compiled C either. (2) tools/pairdiff.py takes TWO arguments (stem then func): `python3 tools/pairdiff.py code6cac_b func_800283D0`.
+
+- [s4] The permuter's weighted score and the engine distance disagree freely and in both directions: perm_b's 468 -> 458 find was byte-neutral (sandbox 28 -> 28) while perm_a's 468 -> 460 find was worth 2 real points. Every find must be re-measured with sandbox --disable all AND read against the CFG for semantics before it means anything.
+
+- [s4] decomp-permuter's randomizer does NOT preserve semantics: two of the four improving finds this session (perm_c output-440-1 at sandbox 22, perm_d output-400-1) change the block_48 store target or move a store between branch arms. Reading the find against the CFG must precede scoring it.
+
+- [s4] MECHANISM MEASURED, not guessed: the do-while(0) wrap leaves every live length byte-identical (72:155, 73:92, 75:88, 77:73, 90:32, 128:7, 143:14) and raises REG_N_REFS by exactly +1 per reference sited inside the wrap (72 19->24, 73 7->9, 75 6->7, 77 9->11, 90 3->4, 128 4->5). That is flow.c `REG_N_REFS (regno) += loop_depth` with loop_depth 2 inside the NOTE_INSN_LOOP_BEG/END pair the do-while leaves behind, feeding global.c:635-655 allocno_compare - NOT the LABEL_OUTSIDE_LOOP_P / reorg.c interaction that .claude/rules/do-while-zero-exception.md sanctions.
+
+- [s4] The seven callee-saved pseudos are one ordered permutation, not independent clusters: the 26 body FIXES the arg1-home s2/s3 rotation (hunks ours[3:5], ours[10:11] disappear) and simultaneously BREAKS temp_s4 ($s5 vs target $s4) and temp_s5 ($s3 vs target $s5), adding six new hunks. Partial fixes to this cluster are not additive.
+
+- [s4] The target emits `sh $v0, 0x286($s0)` at ALL THREE store sites (asm/funcs/func_800283D0.s:92, 162, 222) - base+offset off the arg0 pointer, never register-indirect. Any future proposal that names a pointer local for the 0x286 store address is directionally impossible and can be rejected without measurement.
+
+- [s4] Three-way ablation of the 22 body, each measured with sandbox --disable all: full body 22; do-while wrap removed (v_nowrap.c) 25; `(var_s1 = 0)` restored to `0` (v_nodeadstore.c) 22; store-pointer reuse removed (v_nos3reuse.c) 26. So the wrap is worth 3, the (invalid) store-pointer reuse 4, and the dead-store-in-condition exactly 0.
+
+- [s4] STANDING RECOMMENDATION for the modality ladder: do not spend another permuter slot on this chassis. ~20k iterations across four chassis, two of them seeded from lower-floor bodies, produced exactly one semantically-valid improving find and it is out-of-family. The residual is register-assignment permutation, which local source perturbation reaches only through out-of-family or semantically-wrong constructs.
+
+- [s4] All four campaigns were harvested with --stop inside this session; `permuter_campaign.py status` reports alive=false / registered_active=false for every workspace. No orphaned campaign.

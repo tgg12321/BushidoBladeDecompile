@@ -30,6 +30,22 @@
  * local-alloc quantity-order decision, pri(qty0 pointer)=4000 vs
  * pri(qty3 Judge[] element)=5000, ties broken by ascending qty number so a tie
  * suffices - see evidence.md 2026-08-26 session 3.
+ *
+ * s4 (2026-08-27, permuter): body UNCHANGED, floor re-measured flat at 28 /
+ * 215 insns and src restored to exactly this body at session end.  Four
+ * decomp-permuter campaigns (~20k iterations, workspaces under
+ * tmp/grind/func_800283D0/s4/perm_[abcd], all harvested and stopped in
+ * session) produced ONE semantically-valid improving find: a
+ * `do { ... } while (0);` wrap around the block_48 region, 28 -> 26.  It is
+ * banked NOT adopted (rejected/dowhile0-refweight-out-of-scope.c) because its
+ * measured mechanism is flow.c loop-depth REG_N_REFS weighting feeding
+ * global.c allocno_compare, which is OUTSIDE the LABEL_OUTSIDE_LOOP_P /
+ * reorg.c scope that .claude/rules/do-while-zero-exception.md sanctions.  Its
+ * value is the measurement: live lengths pinned, ref counts +1 per in-wrap
+ * reference, and the callee-saved cluster reorders as ONE permutation - so
+ * the live axis for the s2/s3 rotation is REG_N_REFS, not live_length.  The
+ * lower-scoring finds (22) are semantically invalid AND directionally
+ * impossible (target stores `sh $v0, 0x286($s0)` at all three sites).
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
     s32 temp_a1;

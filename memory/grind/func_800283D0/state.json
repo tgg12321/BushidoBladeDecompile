@@ -1,8 +1,8 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 28,
    "modality": "structural",
    "headline": "Floor flat at 28 (215/215 insns): the tail a0/a1 cluster is now modelled exactly with BB2_QTY_DEBUG ground truth (local-alloc qty priority 4000 vs 5000, ties favour the pointer), and nine ordinary-C s"
+  },
+  {
+   "session": 4,
+   "floor": 28,
+   "modality": "permuter",
+   "headline": "Permuter exhausted on this chassis (~20k iters, 4 workspaces): one valid find (do-while(0), 28->26) proven to work via flow.c loop-depth REG_N_REFS weighting - out of the carve-out's scope, banked not"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The tail a0/a1 cluster flips when the temp_a0 quantity's priority reaches a TIE with the Judge[] element's, i.e. qty0's span drops from 30 to <= 24 (3 fewer insns) or qty3's span rises from 4 to >= 6 (one more insn between the `lh Judge` and the `mult`).",
-   "mechanism": "local-alloc.c qty_compare_1 pri = floor_log2(n_refs)*n_refs*size/(death-birth)*10000, ties -> ascending qty number, and qty0 (pointer, combined with the sll producer and var_a1) < qty3 (Judge[] element).",
-   "next_probe": "The declaration-order axis is KILLED and so is the obvious combine_regs attack (P_var_a1_ifelse leaves the quantity table byte-identical), so do not respell where the values are named or how var_a1 is written. qty0 spans block indices 2..32 because it fuses the `sll` producer, the temp_a0 pointer and var_a1; the only remaining honest axes are (a) raise qty3's span from 4 to >=6 by getting one more insn scheduled between the `lh Judge(at)` and its `mult` - a sched1 question, so read the .sched dump for that block's ready-list ordering before writing any C - or (b) shrink qty0's span to <=24 by making the `lw 0x118` (qty0's real last pointer use) land 3 insns earlier at LOCAL-ALLOC time, which is also a sched1 question since the final order is set by sched2. Read tmp/grind/func_800283D0/dumps/code6cac_b.sched for block 41 FIRST."
+   "hypothesis": "The callee-saved permutation (the s2/s3 rotation plus the temp_s4/temp_s5 assignment - together ~13 of the remaining 28 diffs) flips on REG_N_REFS, and the decisive pair is pseudo 73 (arg1 home, 7 refs / 92 insns, pri 1521) against pseudo 75 (temp_s4, 6 refs / 88 insns, pri 1363), which are adjacent in the priority order.",
+   "mechanism": "flow.c weights REG_N_REFS by loop_depth and global.c:635-655 allocno_compare sorts by pri = floor_log2(n_refs)*n_refs*10000*size/live_length with an ascending-allocno tiebreak; MIPS defines no REG_ALLOC_ORDER so find_reg walks hard regs ascending and the first-allocated call-crossing pseudo takes the lowest free callee-saved register. The do-while experiment proved the order moves on n_refs alone with every live length pinned.",
+   "next_probe": "Enumerate ORDINARY-C restructures that legitimately change one of those two reference counts by exactly one, and re-dump .lreg after each to confirm the printed ref count actually moved BEFORE reading the score. Strongest candidates: (a) re-read `*(u8 **)(arg0)` at one of the later temp_s4 use sites instead of keeping the hoisted local live - this drops a reference from pseudo 75 and adds one to pseudo 72, and is exactly the kind of thing the original author may have written; (b) the mirror - fold one existing temp_s4 use into an arg0-relative access. Do NOT chase live_length windows: sessions 2 and 3 spent that axis (H9, H9a, and six byte-neutral declaration-order variants)."
   },
   {
    "hypothesis": "Diamond 2's last 8 diffs need BOTH selection copies in target's canonical `v=0x19; if(!s1) v=0xB;` order AND unmerged, which under the traced mechanism means the jump2 pairing must never be ATTEMPTED rather than fail its comparison.",
-   "mechanism": "jump.c:2012-2021 - the chain-partner loop is guarded by `if (INSN_UID (JUMP_LABEL (insn)) < max_uid)` and walks jump_chain[] stopping at the first WIN; jump_chain itself is only populated for jumps whose UID and label UID are below max_jump_chain, so a jump or label CREATED during jump optimization is invisible to the chain.",
-   "next_probe": "Both 'make the copies structurally different at the jump' routes are now dead (s2 distinct terminator, s3 two-goto labels). Run tmp/grind/func_800283D0/s2/xjump.sh on the CANONICAL both-copies-identical body with the trace instrumented to also print INSN_UID(JUMP_LABEL) and max_uid, and check whether block_48's label UID is below max_uid at all. If it is, enumerate which partners are tried for e1 and in what order, and look for a statement placement earlier in the function that gives e1 an EARLIER chain partner that wins first (a merge elsewhere that is byte-neutral)."
+   "mechanism": "jump.c:2012-2021 - the chain-partner loop is guarded by `if (INSN_UID (JUMP_LABEL (insn)) < max_uid)` and walks jump_chain[] stopping at the first WIN; jump_chain is only populated for jumps whose UID and label UID are below max_jump_chain, so a jump or label CREATED during jump optimization is invisible to the chain.",
+   "next_probe": "Unchanged from s3 and still untried: run tmp/grind/func_800283D0/s2/xjump.sh on the CANONICAL both-copies-identical body with the trace instrumented to also print INSN_UID(JUMP_LABEL) and max_uid, and check whether block_48's label UID is below max_uid at all. If it is, enumerate which partners are tried for e1 and in what order, and look for a statement placement earlier in the function that gives e1 an EARLIER chain partner that wins first (a byte-neutral merge elsewhere). Both 'make the copies structurally different at the jump' routes are dead (s2 distinct terminator, s3 two-goto labels, s3 ternary)."
   },
   {
-   "hypothesis": "The 11-diff s2/s3 rotation flips when live_length(pseudo 143, temp_s3) reaches 20, 21 or 22 without cse merging the `temp_v1_3 == 0` arm's own address computation into it.",
-   "mechanism": "global.c:635-655 allocno_compare - pri(143) = 30000/L must land strictly between pri(75 temp_s4)=1363 and pri(73 arg1)=1521, i.e. L in {20,21,22}; the alternative of raising pri(73) above 2142 needs live_length(73) < 66 (currently 92), which is not reachable because arg1 is genuinely live from the prologue home to the last func_80032854 call.",
-   "next_probe": "Declaration-order moves are KILLED (N_no_s3_local is byte-neutral) and hoisting is KILLED (s2, cse eats the arm's addu), so the only remaining axis is putting real WORK inside temp_s3's live range. Enumerate what is computed before the `temp_v1_3 != 0` block and consumed after the second func_80032854 call (temp_s5's `(d_val >> *(s16*)(temp_s4+4)) & 1` is the strongest candidate, since it is only used in the tail) and test sinking that computation into the range between the two calls and the `*(s16*)(temp_s3 + 0x288) == 5` re-read; re-read .lreg to check L landed in {20,21,22}."
+   "hypothesis": "The tail a0/a1 cluster flips when the temp_a0 quantity's local-alloc priority reaches a TIE with the Judge[] element's, i.e. span(qty0) <= 24 (3 fewer insns, from 30) or span(qty3) >= 6 (one more insn between the `lh Judge` and the `mult`).",
+   "mechanism": "local-alloc.c qty_compare_1 pri = floor_log2(n_refs)*n_refs*size/(death-birth)*10000, ties -> ascending qty number, and qty0 (pointer, combined with the sll producer and var_a1) < qty3 (Judge[] element).",
+   "next_probe": "Unchanged from s3: the declaration-order axis and the combine_regs attack are both KILLED, so the remaining honest axes are (a) raise qty3's span from 4 to >=6 by getting one more insn scheduled between the `lh Judge(at)` and its `mult` - a sched1 question, so read tmp/grind/func_800283D0/dumps/code6cac_b.sched for block 41's ready-list ordering FIRST - or (b) shrink qty0's span to <=24 by making the `lw 0x118` land 3 insns earlier at local-alloc time. Note the s4 finding that the CALLEE-saved permutation is ref-count-driven does not transfer here: this cluster is caller-saved and local-alloc, a different sorter."
   }
  ],
  "judge_constraints": [],
