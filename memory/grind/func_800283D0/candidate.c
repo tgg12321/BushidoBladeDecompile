@@ -46,6 +46,19 @@
  * the live axis for the s2/s3 rotation is REG_N_REFS, not live_length.  The
  * lower-scoring finds (22) are semantically invalid AND directionally
  * impossible (target stores `sh $v0, 0x286($s0)` at all three sites).
+ *
+ * s5 (2026-08-26, synthesis): body UNCHANGED, floor re-measured flat at 28 /
+ * 215 insns.  The global-allocation model behind the s2/s3 cluster is now
+ * ground-truthed with BB2_ALLOC_DEBUG=1 (it confirms every hand-derived
+ * number) and its flip window is MEASURED with a liveness dial: 6-10 insns of
+ * extra live length inside pseudo 143's range (and outside pseudo 73's, since
+ * arg1 dies at the equal-arm's second call) flip the whole callee-saved map to
+ * target's.  The ref-count axis is FORECLOSED - target's own asm has exactly
+ * our reference counts for $s2/$s3/$s4/$s5 - and there is no honest place for
+ * 6-10 instructions, so the cluster is a forensics target now, not a spelling
+ * one.  Diamond 2's last structural route (delete the shared block_48 label,
+ * store+return in each arm) measured 30/211 and is banked as
+ * rejected/diamond2-no-shared-label-remerges.c.
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
     s32 temp_a1;

@@ -1,8 +1,8 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 28,
    "modality": "permuter",
    "headline": "Permuter exhausted on this chassis (~20k iters, 4 workspaces): one valid find (do-while(0), 28->26) proven to work via flow.c loop-depth REG_N_REFS weighting - out of the carve-out's scope, banked not"
+  },
+  {
+   "session": 5,
+   "floor": 28,
+   "modality": "synthesis",
+   "headline": "Floor flat at 28/215; the callee-saved allocation model is ground-truthed with BB2_ALLOC_DEBUG and its flip window MEASURED (6-10 insns of extra liveness on pseudo 143), the ref-count axis is FORECLOS"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The callee-saved permutation (the s2/s3 rotation plus the temp_s4/temp_s5 assignment - together ~13 of the remaining 28 diffs) flips on REG_N_REFS, and the decisive pair is pseudo 73 (arg1 home, 7 refs / 92 insns, pri 1521) against pseudo 75 (temp_s4, 6 refs / 88 insns, pri 1363), which are adjacent in the priority order.",
-   "mechanism": "flow.c weights REG_N_REFS by loop_depth and global.c:635-655 allocno_compare sorts by pri = floor_log2(n_refs)*n_refs*10000*size/live_length with an ascending-allocno tiebreak; MIPS defines no REG_ALLOC_ORDER so find_reg walks hard regs ascending and the first-allocated call-crossing pseudo takes the lowest free callee-saved register. The do-while experiment proved the order moves on n_refs alone with every live length pinned.",
-   "next_probe": "Enumerate ORDINARY-C restructures that legitimately change one of those two reference counts by exactly one, and re-dump .lreg after each to confirm the printed ref count actually moved BEFORE reading the score. Strongest candidates: (a) re-read `*(u8 **)(arg0)` at one of the later temp_s4 use sites instead of keeping the hoisted local live - this drops a reference from pseudo 75 and adds one to pseudo 72, and is exactly the kind of thing the original author may have written; (b) the mirror - fold one existing temp_s4 use into an arg0-relative access. Do NOT chase live_length windows: sessions 2 and 3 spent that axis (H9, H9a, and six byte-neutral declaration-order variants)."
+   "hypothesis": "The s2/s3 callee-saved rotation (11 diffs) is foreclosed under any spelling of the current whole-function RTL, so the residual is evidence that our RTL differs from the original's somewhere we have never questioned - a forensics/rederive target, not another allocation probe.",
+   "mechanism": "allocno_compare is deterministic; target's own asm pins n_refs for all four callee-saved pseudos to ours, the preference axis is empty, and the flip needs 6-10 insns of extra live length inside pseudo 143's range - a region target proves contains no instructions. With identical inputs GCC must produce our map, so at least one input (flow-time insn count inside 143's range, or block/liveness structure) must differ in the original.",
+   "next_probe": "Use s5/dial.sh in reverse as a WINDOW MAP: insert the 2-insn filler at each candidate site across the function and record which pseudos' live lengths move, looking for a site whose signature is '143 only'. If none exists (expected), switch modality to forensics/rederive over the regions never questioned - the rejection chain and the block_15 shift/mask computation - and re-derive them from the target asm rather than from our current C."
   },
   {
-   "hypothesis": "Diamond 2's last 8 diffs need BOTH selection copies in target's canonical `v=0x19; if(!s1) v=0xB;` order AND unmerged, which under the traced mechanism means the jump2 pairing must never be ATTEMPTED rather than fail its comparison.",
-   "mechanism": "jump.c:2012-2021 - the chain-partner loop is guarded by `if (INSN_UID (JUMP_LABEL (insn)) < max_uid)` and walks jump_chain[] stopping at the first WIN; jump_chain is only populated for jumps whose UID and label UID are below max_jump_chain, so a jump or label CREATED during jump optimization is invisible to the chain.",
-   "next_probe": "Unchanged from s3 and still untried: run tmp/grind/func_800283D0/s2/xjump.sh on the CANONICAL both-copies-identical body with the trace instrumented to also print INSN_UID(JUMP_LABEL) and max_uid, and check whether block_48's label UID is below max_uid at all. If it is, enumerate which partners are tried for e1 and in what order, and look for a statement placement earlier in the function that gives e1 an EARLIER chain partner that wins first (a byte-neutral merge elsewhere). Both 'make the copies structurally different at the jump' routes are dead (s2 distinct terminator, s3 two-goto labels, s3 ternary)."
+   "hypothesis": "Diamond 2's remaining 8 diffs hinge on jump_chain ordering (whether block_48's label UID is below max_uid and which partners are offered for e1), not on any source spelling.",
+   "mechanism": "jump.c:2012-2021 - the chain-partner loop is guarded by `INSN_UID (JUMP_LABEL (insn)) < max_uid` and walks jump_chain[] stopping at the first WIN; a jump or label created during jump optimization is invisible to the chain.",
+   "next_probe": "Requires printing INSN_UID(JUMP_LABEL(insn)) and max_uid inside tools/gcc-2.7.2/jump.c, which a grind session may not edit. Route it as an operator instrumentation request (add a BB2_XJUMP_DEBUG line at jump.c:2012 printing the guard operands and the partner list); do NOT spend another session on selection-copy spellings, all four are dead."
   },
   {
-   "hypothesis": "The tail a0/a1 cluster flips when the temp_a0 quantity's local-alloc priority reaches a TIE with the Judge[] element's, i.e. span(qty0) <= 24 (3 fewer insns, from 30) or span(qty3) >= 6 (one more insn between the `lh Judge` and the `mult`).",
-   "mechanism": "local-alloc.c qty_compare_1 pri = floor_log2(n_refs)*n_refs*size/(death-birth)*10000, ties -> ascending qty number, and qty0 (pointer, combined with the sll producer and var_a1) < qty3 (Judge[] element).",
-   "next_probe": "Unchanged from s3: the declaration-order axis and the combine_regs attack are both KILLED, so the remaining honest axes are (a) raise qty3's span from 4 to >=6 by getting one more insn scheduled between the `lh Judge(at)` and its `mult` - a sched1 question, so read tmp/grind/func_800283D0/dumps/code6cac_b.sched for block 41's ready-list ordering FIRST - or (b) shrink qty0's span to <=24 by making the `lw 0x118` land 3 insns earlier at local-alloc time. Note the s4 finding that the CALLEE-saved permutation is ref-count-driven does not transfer here: this cluster is caller-saved and local-alloc, a different sorter."
+   "hypothesis": "The tail a0/a1 cluster (7 diffs) is the only residual whose model has never been dialled, and its hand-derived window may be as wrong as the s2/s3 one was.",
+   "mechanism": "local-alloc.c qty_compare_1 pri = floor_log2(n_refs)*n_refs*size/(death-birth)*10000 with ties to the ascending qty number; pri(qty0 pointer)=4000 vs pri(qty3 Judge[] element)=5000, and qty0 < qty3 so a TIE suffices.",
+   "next_probe": "Build the local-alloc analogue of s5/dial.sh using BB2_QTY_DEBUG=1 (harness tmp/grind/func_800283D0/s3/qty.sh): dial 2-insn filler between the `lh Judge($at)` and the `mult`, and separately inside qty0's span, and record the measured flip window for both directions before proposing any C. Note qty0 is a COMBINED quantity (sll producer + temp_a0 + var_a1), so the co-moving denominators must be read from the trace, not assumed."
   }
  ],
  "judge_constraints": [],

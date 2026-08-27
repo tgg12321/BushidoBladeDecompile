@@ -618,3 +618,180 @@ not spend one.
 - [s4] STANDING RECOMMENDATION for the modality ladder: do not spend another permuter slot on this chassis. ~20k iterations across four chassis, two of them seeded from lower-floor bodies, produced exactly one semantically-valid improving find and it is out-of-family. The residual is register-assignment permutation, which local source perturbation reaches only through out-of-family or semantically-wrong constructs.
 
 - [s4] All four campaigns were harvested with --stop inside this session; `permuter_campaign.py status` reports alive=false / registered_active=false for every workspace. No orphaned campaign.
+
+## 2026-08-26 — session 5 (synthesis) — FLOOR FLAT AT 28; the callee-saved model is now GROUND-TRUTHED, its flip window MEASURED, and the ref-count axis FORECLOSED by target's own asm
+
+Chassis re-measured at session start with candidate.c applied to src/code6cac_b.c:
+`sandbox func_800283D0 --disable all` = **28**, build_insns 215 == target 215.  src was
+restored to HEAD (`INCLUDE_ASM`) at session end; candidate.c is unchanged.
+
+### 1. The global-allocation model is no longer reconstructed by hand — it is dumped
+
+Sessions 2-4 derived allocno_compare arithmetic by hand from the .lreg/.greg summary lines.
+`tools/gcc-2.7.2/cc1` has a dedicated hook that prints the table directly:
+`BB2_ALLOC_DEBUG=1` (global.c:379 seed dump, global.c:605 post-sort table).  Harness banked at
+`tmp/grind/func_800283D0/s5/alloc.sh`, full trace at `s5/alloc_trace.txt`.  The callee-saved
+rows for the candidate body:
+
+    ord=10 pseudo=72  hardreg=16($s0) nrefs=19 livelen=155 pri=4903
+    ord=13 pseudo=77  hardreg=17($s1) nrefs=9  livelen=73  pri=3698
+    ord=18 pseudo=143 hardreg=18($s2) nrefs=3  livelen=14  pri=2142   <- temp_s3 pointer
+    ord=20 pseudo=73  hardreg=19($s3) nrefs=7  livelen=92  pri=1521   <- arg1 home
+    ord=21 pseudo=75  hardreg=20($s4) nrefs=6  livelen=88  pri=1363   <- temp_s4
+    ord=23 pseudo=90  hardreg=21($s5) nrefs=3  livelen=32  pri=937    <- temp_s5
+    ord=24 pseudo=79  hardreg=22($s6) nrefs=6  livelen=322 pri=372
+
+Every number the ledger carried since s2 is confirmed exactly.  Two additions the hand model
+did not have:
+
+* `ALLOCDBG seed_used` = 0-15, 24-29, 31-51, 64-67 — **$s0-$s7 (16-23) are NOT in the seed**, so
+  no callee-saved register is reachable in find_reg's pass 0 (pass 0 masks in
+  `IOR_COMPL_HARD_REG_SET (used, regs_used_so_far)`, i.e. it only considers registers already
+  used).  Every callee-saved assignment happens in pass 1, walking hard regs ascending
+  (global.c:1052-1083; MIPS defines no REG_ALLOC_ORDER).  First-allocated takes the lowest free
+  callee-saved register — the ledger's assumption, now read off the source and the trace.
+* find_reg CAN override that choice from `hard_reg_copy_preferences` /
+  `hard_reg_preferences` (global.c:1096-1163), and pass 0 additionally excludes
+  `regs_someone_prefers`.  Those sets are built from copies involving HARD registers, and no
+  callee-saved hard register appears anywhere in this function's pre-reload RTL, so they are
+  empty for all seven pseudos here.  **The preference axis is inert for this function** — the
+  assignment is a pure function of the priority ORDER.  (Checked because the hook list advertises
+  BB2_FINDREG_DEBUG / BB2_SUGG_DEBUG and no prior session had looked.)
+
+### 2. The REF-COUNT axis is FORECLOSED — target's own asm pins every count to ours
+
+Counting register references directly in `asm/funcs/func_800283D0.s`:
+
+    $s2 (arg1 home) : def line 6, uses 95,100,113,118,164,169                 = 7 refs
+    $s3 (temp_s3)   : def line 107, uses 108,122                              = 3 refs
+    $s4 (temp_s4)   : def line 15, uses 22,57,77,132,177                      = 6 refs
+    $s5 (temp_s5)   : def line 64, uses 76,175                                = 3 refs
+
+Identical to pseudos 73/143/75/90 in the table above.  So the original compile fed
+allocno_compare the SAME numerator for all four.  Any construct that moves a reference count
+moves us AWAY from the original's RTL — which is exactly what the s4 do-while(0) wrap did
+(it raised every in-wrap ref count by 1, fixed the arg1 home and broke temp_s4/temp_s5).
+**Do not propose ref-count levers for this cluster again.**  The only free variable left is
+`reg_live_length`.
+
+### 3. The flip window is WIDER than the ledger recorded — measured with a liveness dial
+
+s2's H9 concluded `live_length(143)` must be exactly 20 or 21.  That was derived holding
+L75 = 88 fixed, which is wrong: real instructions added inside 143's live range also lengthen
+75's (temp_s4 spans nearly the whole function).  Decisively, they do NOT lengthen 73's — arg1
+is **dead after the equal-arm's second `func_80032854` call**, so the window between that call
+and the `lh 0x288($s3)` of the `== 5` test lies inside 143's range and outside 73's.
+
+Harness `tmp/grind/func_800283D0/s5/dial.sh` inserts n throwaway stores
+(`*(s16 *)(arg0 + 0x290 + 2i) = i+1;`, 2 insns each, chosen because they are neither
+DSE-able nor constant-foldable — a same-global store chain folds and a repeated-constant
+chain is dead-stored, both of which silently pinned livelen at +2/+3 in the first two attempts)
+immediately before the `== 5` test and re-dumps the ALLOCDBG table:
+
+    n=1 (k=2)  143 livelen=16 pri=1875  -> $s2   73 -> $s3   (unchanged)
+    n=2 (k=4)  143 livelen=18 pri=1666  -> $s2   73 -> $s3   (unchanged)
+    n=3 (k=6)  143 livelen=20 pri=1500  -> $s3   73 -> $s2   ** FLIPPED to target **
+    n=4 (k=8)  143 livelen=22 pri=1363  -> $s3   73 -> $s2   ** FLIPPED **
+    n=5 (k=10) 143 livelen=24 pri=1250  -> $s3   73 -> $s2   ** FLIPPED **
+    n=6 (k=12) 143 livelen=26 pri=1153  -> $s4   75 -> $s3   BROKEN (temp_s4 overtakes)
+
+So the requirement is the two-sided inequality
+
+    pri(143) < pri(73)  ->  30000/L143 < 140000/92        ->  L143 >= 20
+    pri(143) > pri(75)  ->  30000/L143 > 120000/(88+k)    ->  L143 < (88+k)/4
+
+i.e. **k in [6,10] insns of extra liveness placed strictly inside 143's range and outside 73's**,
+with 5 insns of slack.  The model predicted k in {6,8,10} before the dial was run and the dial
+reproduced it exactly, including the k=12 break.  The narrow {20,21} window in the ledger is
+superseded.
+
+### 4. What that leaves for the s2/s3 cluster — and why it is now a structural question
+
+The dial proves the mechanism but the filler is not adoptable: those are 6 real instructions and
+our build already sits at exactly 215 == target 215.  Target's own asm shows NOTHING between the
+equal-arm's second call and the `== 5` load (lines 113-122).  So there is no honest place to put
+6-10 instructions.
+
+The only mechanism that buys live length at zero instruction cost is making pseudo 143
+**live-out along the not-equal arm** of `bne $v0,$v1,.L80028608` — liveness is accumulated over
+every block where the pseudo is live, so a use reachable from that arm would add the whole `<`
+/ `>=` region for free.  Target has no such use ($s3 is referenced exactly 3 times, all on the
+equal path), so no byte-neutral spelling can create one.
+
+**Conclusion: with the rest of the function's RTL fixed as it is, the s2/s3 rotation is
+foreclosed.**  Since GCC is deterministic and target's ref counts match ours exactly, the
+original's assignment can only come from a whole-function RTL that differs from ours somewhere
+we have not yet located — a flow-time insn count difference inside 143's range that a later pass
+removed, or a different block/liveness structure.  That reframes cluster 1 from "find a spelling
+lever" (spent across four sessions) to "find where our RTL still differs from the original's",
+which is a forensics/rederive question, not a structural one.
+
+### 5. Diamond 2 — target re-read, and the last structural spelling route KILLED
+
+Reading the target selection sites directly (`asm/funcs/func_800283D0.s`) there are FOUR, not two:
+
+    (i)   ==0 arm       .L80028510-.L8002851C : `bnez $s1,.L8002851C / addiu 0x19 / .L80028518: addiu 0xB / .L8002851C: sh 0x286($s0)` then FALLS THROUGH into the call pair
+    (ii)  `<` arm       .L80028608+           : `beqz $s1,.L80028518 / addiu 0x19 / j .L80028520 / sh 0x286($s0)`  -- jumps INTO (i)'s 0xB arm and (i)'s call block
+    (iii) in-range arm  .L800285CC            : `bnez $s1,.L800286F8 / addiu 0x19 / j .L800286F8 / addiu 0xB`
+    (iv)  `!= 5` tail   .L800285F8            : byte-identical to (iii)
+
+(iii) and (iv) are BYTE-IDENTICAL four-insn blocks with the same jump label and jump2 did not
+merge them — which is the s2 conclusion (the pairing was never attempted), now confirmed against
+the emitted target rather than inferred.
+
+NEW PROBE, killed: `v_nolabel` — delete the shared `block_48:` label entirely and write
+`*(s16 *)(arg0 + 0x286) = var_v0_2; return ret;` into (iii) and (iv) with both copies in
+target's canonical `v=0x19; if(!s1) v=0xB;` order (the theory: with no source-level shared
+label, jump2's own cross-jump would CREATE the shared block, and a label created during jump
+optimization has UID >= max_uid so `jump_chain` never offers the selection blocks as chain
+partners).  **MEASURED 30 / 211 insns** — jump2 cross-jumps the store+return tails FIRST,
+rebuilds the shared block, and then merges the selections on the rescan, exactly as s2's H7b
+partial version did.  Banked at
+`memory/grind/func_800283D0/rejected/diamond2-no-shared-label-remerges.c`.
+
+With s2 (distinct terminator), s3 (two goto labels; ternary) and this one spent, EVERY
+source-structural route to defeating the jump2 pairing is now measured dead.  The only remaining
+route is the `jump_chain` / `INSN_UID (JUMP_LABEL (insn)) < max_uid` ordering itself, and
+answering it needs a print of those two values inside jump.c — an edit to `tools/gcc-2.7.2`,
+which is OUTSIDE a grind session's allowed surface.  Route it as an operator instrumentation
+request rather than re-probing spellings.
+
+- [s5] Chassis re-measured at session start (candidate applied) and the body restored to HEAD INCLUDE_ASM at session end: sandbox --disable all = 28, build_insns 215 == target 215. candidate.c unchanged.
+
+- [s5] BB2_ALLOC_DEBUG=1 on tools/gcc-2.7.2/cc1 prints the post-sort global allocno table directly (global.c:605) plus the regs_used_so_far seed (global.c:379). It confirms every hand-derived number in the ledger: 72(19/155/4903) 77(9/73/3698) 143(3/14/2142) 73(7/92/1521) 75(6/88/1363) 90(3/32/937) 79(6/322/372). Use this hook instead of re-deriving from .lreg/.greg summary lines. Harness: tmp/grind/func_800283D0/s5/alloc.sh.
+
+- [s5] $s0-$s7 are absent from ALLOCDBG's regs_used_so_far seed, so every callee-saved assignment happens in find_reg's PASS 1 walking hard regs ascending; and hard_reg_copy_preferences / hard_reg_preferences / regs_someone_prefers (global.c:1096-1163) are all empty here because no callee-saved hard reg appears in pre-reload RTL. The preference axis is INERT for this function - the callee-saved map is a pure function of the priority order.
+
+- [s5] The REF-COUNT axis for the callee-saved cluster is FORECLOSED by target's own asm: $s2 has 7 refs (def line 6; uses 95,100,113,118,164,169), $s3 has 3 (def 107; uses 108,122), $s4 has 6 (def 15; uses 22,57,77,132,177), $s5 has 3 (def 64; uses 76,175) - identical to our pseudos 73/143/75/90. Any ref-count lever moves away from the original's RTL, which is why the s4 do-while(0) wrap traded one cluster for two.
+
+- [s5] The s2 ledger's 'live_length(143) must be 20 or 21' window is SUPERSEDED and was too narrow: it held L75 = 88 fixed, but real insns inside 143's range also lengthen 75's. They do NOT lengthen 73's, because arg1 is dead after the equal-arm's second func_80032854 call. Correct constraint: L143 >= 20 AND L143 < (88+k)/4, i.e. k in [6,10] added insns.
+
+- [s5] MEASURED with a liveness dial (tmp/grind/func_800283D0/s5/dial.sh, filler stores to distinct arg0-relative offsets inserted just before the `== 5` test): k=2 and k=4 leave 143 in $s2; k=6, k=8 and k=10 FLIP the assignment to target's (73 -> $s2, 143 -> $s3, 75 -> $s4); k=12 breaks it the other way (75 overtakes 143). The model predicted the window before the dial ran and the dial reproduced both ends exactly.
+
+- [s5] Dial-harness gotcha worth reusing: filler that is a same-global store chain gets constant-folded (`D = D + 1; D = D + 2;` -> one add) and filler that repeatedly stores constants to one global gets dead-stored, so both silently pin livelen at +2/+3 regardless of n. Use stores to DISTINCT addresses (`*(s16 *)(arg0 + 0x290 + 2i) = i+1;`) to get a linear 2-insn-per-statement dial.
+
+- [s5] With target proving there are no instructions between the equal-arm's second call and the `== 5` load, and with the only zero-insn liveness mechanism (making 143 live-out on the not-equal arm) requiring a use of `arg0 + temp_a1_2*2` that target does not have, the s2/s3 rotation is foreclosed under our current whole-function RTL. It is now a forensics question - where does our RTL still differ from the original's - not a spelling question.
+
+- [s5] Target has FOUR selection sites, not two: (i) the ==0 arm at .L80028510 which stores and falls through into the call pair, (ii) the `<` arm at .L80028608 which jumps INTO (i)'s 0xB label .L80028518 and (i)'s call block .L80028520, and (iii)/.L800285CC + (iv)/.L800285F8 which are BYTE-IDENTICAL four-insn blocks both jumping to .L800286F8 and left unmerged by jump2.
+
+- [s5] KILLED: deleting the shared block_48 label and writing `*(s16 *)(arg0 + 0x286) = var_v0_2; return ret;` into BOTH the in-range arm and the `!= 5` tail, with both copies in target's canonical order (theory: jump2 would create the shared block itself and the new label's UID >= max_uid would keep the selection blocks out of jump_chain). Measured 30 / 211 - jump2 cross-jumps the store+return tails first, rebuilds the shared block, and merges the selections on the rescan. Banked as rejected/diamond2-no-shared-label-remerges.c.
+
+- [s5] Every SOURCE-STRUCTURAL route to defeating the jump2 selection pairing is now spent: distinct terminator (s2 H7b), two goto labels (s3 M), ternary (s3 L), and no-shared-label (s5). The only route left is the jump_chain / `INSN_UID (JUMP_LABEL (insn)) < max_uid` ordering at jump.c:2012-2021, which needs a print inside tools/gcc-2.7.2/jump.c - outside a grind session's allowed surface, so route it as an operator instrumentation request.
+
+- [s5] Chassis re-measured at session start with candidate.c applied: sandbox func_800283D0 --disable all = 28, build_insns 215 == target 215. src/code6cac_b.c restored to HEAD (INCLUDE_ASM) at session end; candidate.c body unchanged (only its header comment gained an s5 note).
+
+- [s5] BB2_ALLOC_DEBUG=1 on tools/gcc-2.7.2/cc1 prints the post-sort global allocno table (global.c:605) and the regs_used_so_far seed (global.c:379). It confirms every number the ledger has carried since s2 and should replace hand-derivation from .lreg/.greg summary lines for this and every future function. Harness: tmp/grind/func_800283D0/s5/alloc.sh.
+
+- [s5] $s0-$s7 are absent from the ALLOCDBG seed, so callee-saved assignment happens entirely in find_reg's pass 1 walking hard regs ascending; hard_reg_copy_preferences / hard_reg_preferences / regs_someone_prefers (global.c:1096-1163) are all empty for this function because no callee-saved hard register appears in pre-reload RTL. The preference axis is inert - the callee-saved map is a pure function of the priority order.
+
+- [s5] The REF-COUNT axis for the callee-saved cluster is foreclosed by target's own asm: $s2 7 refs, $s3 3, $s4 6, $s5 3 - identical to our pseudos 73/143/75/90 (asm/funcs/func_800283D0.s lines 6/95/100/113/118/164/169, 107/108/122, 15/22/57/77/132/177, 64/76/175).
+
+- [s5] The s2 ledger's 'live_length(143) must be 20 or 21' is superseded: it held L75 fixed at 88, but insns inside 143's range also lengthen 75's. They do not lengthen 73's, because arg1 dies at the equal-arm's second func_80032854 call - so the window between that call and the `== 5` load is one-sided and the flip window is k in [6,10], with 5 insns of slack.
+
+- [s5] Liveness dial measured (tmp/grind/func_800283D0/s5/dial.sh): k=6/8/10 added insns each flip the whole callee-saved map to target's (73->$s2, 143->$s3, 75->$s4); k=2/4 too few; k=12 breaks it the other way.
+
+- [s5] Dial-harness gotcha worth reusing on any function: a same-global store chain gets constant-folded and a repeated-constant store chain gets dead-stored, both silently pinning live length regardless of n. Use stores to DISTINCT addresses for a linear 2-insn-per-statement dial.
+
+- [s5] Target has FOUR selection sites, not two: the ==0 arm at .L80028510 (stores and falls through into the call pair), the `<` arm at .L80028608 (jumps INTO the ==0 arm's 0xB label .L80028518 and its call block .L80028520), and .L800285CC + .L800285F8 which are BYTE-IDENTICAL four-insn blocks both jumping to .L800286F8 and left unmerged by jump2 - confirming s2's 'the pairing was never attempted' against emitted target code rather than by inference.
+
+- [s5] Every source-structural route to defeating the jump2 selection pairing is now spent: distinct terminator (s2 H7b), two goto labels (s3 M), ternary (s3 L), no-shared-label (s5 H18). The only remaining route is the jump_chain / INSN_UID(JUMP_LABEL) < max_uid ordering, which needs a print inside tools/gcc-2.7.2/jump.c - outside a grind session's allowed surface.
