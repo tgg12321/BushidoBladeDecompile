@@ -1,3 +1,33 @@
+/* s35 ADDENDUM (solver, 2026-08-27). Re-measured at the START of s35 with this exact
+ * body: STILL sandbox --disable all == 1 at 132 build / 132 target insns (HEAD = 27,
+ * V15a = 15, W4 = 3, Z1 = 13). The body is UNCHANGED. It remains the floor -- but s35
+ * changed what it MEANS: this body is now the proven CEILING of a bounded family, not
+ * a form that is close to the answer.
+ *
+ * THE GOTO CHASSIS IS PERMANENTLY IMPOSSIBLE (s35 frontier note + E-s35-5/E-s35-6).
+ * For out2 to take $s6 it must be allocated before pa4 (find_reg = lowest-numbered
+ * non-conflicting register in descending priority order; target gives pa4 the
+ * higher-numbered $s7), so pri(out2) > pri(pa4) = 1473. Target's bytes host exactly
+ * THREE out2 references (asm/funcs/func_80041188.s:25, 56, 61, re-read first-hand),
+ * at which pri(out2) = 30000/L and the inequality needs L < 20.4 -- against a floor
+ * of 40, because out2 is defined in block 0 and live across the whole of loop1.
+ * Unsatisfiable by a factor of two. So out2's fourth reference is NECESSARY on this
+ * chassis, and s35 closed the last three delivery mechanisms: nothing is deleted
+ * anywhere after local-alloc (E-s35-2, measured across .lreg/.greg/.jump2/.sched2/.dbr
+ * plus a derivation that an in-loop1 copy of a loop-carried value is either
+ * conflicting or dead); no combine cancellation can host it (E-s35-4, two exhaustive
+ * horns); and the CODE_LABEL that stops the cse fold costs 134 insns even with D6's
+ * absorbable nop (E-s35-3). Do not respell this body.
+ *
+ * WHERE THE GRIND GOES INSTEAD (E-s35-8). On the REAL-LOOP chassis loop.c's strength
+ * reduction rewrites every count, and the same inequality has a seven-insn gap rather
+ * than a factor of two: form W4c (alt_W4c_realloop_targetblk2_s35.c = W4 with target's
+ * honest block-2 `out3 = (s32 *)(((u8 *)pa4) + 0x20);`) measures 11 at 132/132 with
+ * out2 at 5 refs / live 41 / 2439 against pa4 at 9 refs / live 94 / 2872. Three
+ * one-step routes close it: L(out2) <= 34; out2 at 6 refs; or pa4 down from 9 to SEVEN
+ * references -- and seven is exactly what target's bytes host. See hypotheses.md's s35
+ * frontier 1.
+ */
 /* s34 ADDENDUM (synthesis, 2026-08-27). Re-measured at the START of s34 with this
  * exact body: STILL sandbox --disable all == 1 at 132 build / 132 target insns
  * (HEAD = 27, D5 = 2 at 133, V15a = 15 at 132). The body is UNCHANGED from s33 --

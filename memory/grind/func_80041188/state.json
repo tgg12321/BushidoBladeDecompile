@@ -1,8 +1,8 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 34,
- "current_modality": "synthesis",
+ "session_count": 35,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 0,
@@ -213,23 +213,29 @@
    "floor": 1,
    "modality": "synthesis",
    "headline": "Ledger correction + two kills: the block-2 cse fold is done by BOTH cse passes (cse1 IS breakable by a loop-end note, cse2 re-folds), killing the whole loop-note escape; the fifth parameter is proven "
+  },
+  {
+   "session": 35,
+   "floor": 1,
+   "modality": "solver",
+   "headline": "All three s34 frontier items closed (post-greg deletions, combine cancellation, CODE_LABEL re-price); the goto chassis is proven permanently impossible in closed form, and the real-loop chassis W4c is"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "PRIMARY. An insn counted by flow, still present through global_alloc, and deleted AFTER it (reload's no-op-move deletion, or jump2's cross-jumping / no-op-move deletion) is simultaneously a counted reference and byte-free \u2014 exactly the shape out2's missing reference needs, and the only surface in this grind no session has probed.",
-   "mechanism": "global_alloc reads reg_n_refs and reg_live_length before reload, sched2, jump2 and reorg run, so every closure in this ledger (which stops at combine and local-alloc) leaves this surface untested. s34's E-s34-3 sharpens the requirement: the deleted insn must mention out2 and must NOT hand that occurrence to a surviving emitted insn \u2014 i.e. a copy that becomes a no-op because both pseudos land on the same hard register, or an insn tail that jump2 cross-jumps away.",
-   "next_probe": "Do the cheapest falsification FIRST: on the already-dumped L1/D5 chassis, diff red.i.greg against red.i.jump2 and red.i.dbr and see whether ANY insn disappears after .greg in this function at all. If none does, the item closes in one read. If some do, spell (a) a loop1-local copy `tmp = out2;` whose consumer forces tmp onto out2's own seat and check red.i.greg for the shared hard register, and (b) two textually identical loop1 statement tails so jump2 cross-jumps one away with out2 mentioned in the deleted copy. Harness: tmp/grind/func_80041188/s34/run.ps1 plus s34/dump.sh <TAG> and s33/fr.sh <TAG> 86 87."
+   "hypothesis": "PRIMARY. On the real-loop chassis, form W4c's only structural defect is pri(out2) = 2439 against pri(pa4) = 2872, and any ONE of three single steps closes it: L(out2) from 41 down to <= 34; out2 from 5 to 6 references at live 41; or pa4 from 9 references down to SEVEN -- which is exactly what target's own bytes host.",
+   "mechanism": "loop.c strength-reduces the record walker into a giv (pseudo 140, 9 refs / live 40 / 6750) on a note-marked loop1, rewriting every other pseudo's reference count and live length, so the goto chassis's closed-form wall does not apply. W4's own table proves the target seat assignment is reachable on this chassis (all-target seats at sandbox 3); the only question is reaching it with target's block-2 insn instead of `out3 = out2;`.",
+   "next_probe": "Route (iii) FIRST, because it is a counting question with a target-hosted answer: dump red.i.flow for W4c (tmp/grind/func_80041188/s35/dump.sh W4c) and enumerate all NINE pa4 occurrences, then compare against target's seven ($s7 at asm/funcs/func_80041188.s lines 23, 39, 60, 87, 113 plus its two loop2 argument copies). The two surplus occurrences are source statements mentioning pa4 where target's source did not -- find and re-express them. Then route (i): sweep out2's definition position relative to the preheader loop.c creates, an insertion point that never existed on the goto chassis. Harness: s35/run.ps1 <TAG>, s35/dump.sh <TAG>, s35/fr.sh <TAG> 86 77."
   },
   {
-   "hypothesis": "A combine deletion whose out2 occurrence SIMPLIFIES AWAY is the one escape from E-s28-2's conservation law, and would give a flow-counted, byte-free reference inside loop1.",
-   "mechanism": "combine.c try_combine -> subst -> simplify_rtx folds `(minus X X)`, `(and X (not X))` and friends to constants at substitution time. flow ran before combine, so the reference is already counted, and the occurrence is gone from the emitted insn.",
-   "next_probe": "The blocking question is SEMANTIC and must be answered before any measurement: enumerate loop1's ten statements against the named data layout (E-s33-2: stptr walks 0x68-byte records, tbl walks a s32 table, p/buf stage six halfwords, the two matrices are &m[0] and &m[1]) and ask whether any of them can honestly consume a difference or cancellation involving &m[1]. If none can, this item closes on exactly the grounds E-s33-3 used for block 2 \u2014 and that closure would leave frontier 1 as the last open surface in the entire grind, which is itself the result worth banking."
+   "hypothesis": "W4's other two diffs are loop.c hoisting the loop-invariant `2` out of loop1 and reload rematerialising it into $t0, where target emits addiu $v0,$zero,0x2 INSIDE loop1. If the primary frontier succeeds this becomes the entire residual, so it should be priced in parallel.",
+   "mechanism": "loop.c's scan_loop moves an insn whose source is a loop-invariant constant into the preheader (loop.c:686-700, loop.c:1631). s19 killed this axis by derivation, but that was when the real-loop chassis was a curiosity; s35 makes it the surviving family, so the axis is load-bearing now and the derivation should be re-tested by measurement.",
+   "next_probe": "Enumerate the honest source shapes in which the stored halfword is NOT a loop invariant -- the 2 shares a value with something already live per iteration, or the store's RHS is a sub-expression of the per-iteration record write -- and measure each on W4, reading the insn count and the $v0/$t0 choice rather than only the score. Ordinary C restructuring; no family claim needed."
   },
   {
-   "hypothesis": "The +2 insns E-s31-3 measured for the pre-test loop1 (the only construct that stops cse2's fold) were priced on a chassis WITHOUT the sanctioned split-increment lifts; on the E-s34-3 ladder those two insns may be recoverable, in which case the CODE_LABEL family reopens.",
-   "mechanism": "H1/H2/H3 emit an unconditional `j` plus its delay slot at loop1's bottom in addition to the exit test. E-s27-2's D6 shows this function has at least one absorbable slot: at one re-store position sched1 hoists `addiu $a0,$sp,0x10` into loop1's load-delay slot and target's own nop at asm/funcs/func_80041188.s:30 disappears, paying for a surplus insn out of a nop and returning the build to 132 insns.",
-   "next_probe": "Measure H1 (D5 + pre-test loop1, previously 135 insns / sandbox 22) with the re-store moved to D6's position and the full E-s34-3 lift set applied, and read the INSN COUNT rather than the score. The item is alive only if the count falls to 133 or below; if it stays at 134+, strike the CODE_LABEL family from the ledger for good."
+   "hypothesis": "TOOLING, and it invalidates any solver-modality citation of classify that did not follow the corrected procedure: inverse_compose.py classify can compare a candidate against itself.",
+   "mechanism": "classify reads tmp/inverse_work/<stem>.{hon,tgt}.s, both built by mkasm_honest.sh from current src/, with only a mutual timestamp guard -- so a candidate applied to src/ poisons the target half, and no regeneration at all yields a month-old verdict.",
+   "next_probe": "Adopt the procedure verbatim: run mkasm_honest.sh with src/ at HEAD, copy tmp/inverse_work/<stem>.tgt.s aside as the true target stream, apply the candidate, re-run mkasm_honest.sh, restore and touch the saved .tgt.s, then classify. tmp/grind/func_80041188/s35/TRUE.tgt.s is the captured true stream for text1a_pre. Worth raising with the owner as a one-line fix in the tool (rebuild .tgt.s from HEAD, or refuse to run on a dirty src/), since it silently produces confident fiction for every function, not just this one."
   }
  ],
  "judge_constraints": [

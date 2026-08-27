@@ -4793,3 +4793,232 @@ call per tag), `apply.py`, `dump.sh` (full `-da` dump of a variant through the r
 - [s34] Independent re-derivation of the 3-reference impossibility (guards the ledger against a future session re-opening it): floor_log2(3) = 1, so out2 at three references and live 42 is pinned at 714, below a3's 808; a3 would need live length > 112 (it measures 99, and its last use is loop2's func_800523E0 near the function's end) or three references (target hosts four: the prologue copy `addu $fp,$a3,$zero` plus three argument moves at asm/funcs/func_80041188.s:62, 79, 115). out2 therefore cannot be seated at three references on any spelling.
 
 - [s34] candidate.c is UNCHANGED this session (the s33 S1 body: honest `stptr = base + 0xFC;` plus the owner-ALLOWED split increment at stptr's own loop1 increment site with its mandatory FAKE annotation), re-measured at 1, and carries a new s34 addendum header recording the two closures and the re-stated residual.
+
+---
+
+## s35 (solver, 2026-08-27) — the three s34 frontier items, all three closed
+
+### E-s35-0 — chassis re-measured first-hand this session
+`memory/grind/func_80041188/candidate.c` applied to `src/text1a_pre.c`:
+`sandbox func_80041188 --disable all` = **score 1, 132 build / 132 target insns,
+rules_dropped 16, cheat_asm_stripped 0**. HEAD's committed body = **27** (cheat_asm_stripped 2).
+`alt_V15a_targetorder_purera_s25.c` = **15** at 132/132. So the floor is unchanged at 1 and
+candidate.c is still the shipping chassis. `src/text1a_pre.c` restored to HEAD at the end of the
+session; no build-pipeline file touched, nothing committed, no permuter campaign launched.
+
+### E-s35-1 — SOLVER TRIAGE: the residual classifies PRE-RA (no backend model applies)
+`python3 tools/ra_solver/inverse_compose.py classify text1a_pre func_80041188` returns
+**FIRST DIVERGENCE: PRE-RA — "no backend — the residual is upstream of every model"**, on the
+grounds that the instruction MULTISETS differ (ours only `addu $#,$#,$#`; target only
+`addu $#,$#,32`). This is the tool's own statement that `tools/ra_solver` and
+`tools/sched_solver` cannot express this residual: they permute and rename a FIXED insn set, and
+this residual is a different insn. It formally licenses the ledger's long-standing framing (the
+residual is an RTL/expression question, not an allocation or schedule question) and it means no
+future session should spend measurements on RA or scheduler inverse search for THIS chassis's
+one-insn residual.
+
+### E-s35-2 — FRONTIER 1 (the post-`global_alloc` deletion surface) is CLOSED, empirically and by derivation
+**Empirically.** Full `-da` dump of the V15a chassis (`tmp/grind/func_80041188/s35/V15a/`),
+insn-uid sets extracted per pass for `func_80041188` only (note for future sessions: uids must be
+matched WITH the mode suffix — GCC prints `(insn:QI 12 ...)` after sched, and a uid regex without
+`(:[A-Z]+)?` silently loses ~20% of the chain; that mistake is what made the first pass of this
+measurement wrong and it manufactured a fake "19 insns deleted at reload" result):
+
+| transition | uids deleted | uids added |
+|---|---|---|
+| `.lreg` -> `.greg` (global_alloc + reload) | **0** | 2 (spill/reload pair 303/306 for `saved`) |
+| `.greg` -> `.jump2` (post-reload jump_optimize, cross_jump=1) | **0** | 11 (prologue callee-saved stores) |
+| `.jump2` -> `.sched2` | **0** | 0 |
+| `.sched2` -> `.dbr` | 18 leave TOP LEVEL, all absorbed into delay-slot `(sequence)`s — none deleted | 0 |
+
+So **nothing in this function is deleted anywhere after local-alloc**. There is no existing
+post-`global_alloc` deletion to piggyback on.
+
+**By derivation, for both of the two shapes the frontier named.**
+(a) *A copy that becomes a no-op because both pseudos land on the same hard register.* For the
+copy `(set q out2)` to be a no-op, `q` and `out2` must be allocated the same hard register, which
+requires that they do NOT conflict. But `out2` is loop-invariant and live across the whole of
+loop1 (it is used on every iteration and is live-out on the back edge — the same fact E-s30 used
+to show it carries no `REG_DEAD` note in loop1). Therefore every pseudo that is live at any point
+inside loop1 conflicts with `out2`, and a `q` that is NOT live anywhere is a dead store, which
+flow deletes before `reg_n_refs` is fixed (E-s21-5). The two horns are exhaustive: an in-loop1
+copy of a loop-carried value is either conflicting (real move, costs a byte) or dead (uncounted).
+(b) *Two identical loop1 statement tails cross-jumped away by jump2.* Cross-jumping requires two
+blocks with identical tails ending at a COMMON target, and it deletes ONE of the two copies. Even
+if loop1's and loop2's tails were made textually identical (they are not — different constants 2
+vs 1, different pointer registers, different fallthroughs), the construct adds two insns and
+deletes one, i.e. **+1** net. A cross-jump can never be byte-free for an insn we introduce.
+
+**Measured confirmation of (a)** — forms F1a / F1b on the V15a chassis
+(`tmp/grind/func_80041188/s35/F1a.c`, `F1b.c`; banked as
+`rejected/loop1-copy-of-out2-conserves-refs-combine-deletes.c`):
+F1a = `q = out2; func_8004A348(buf, out2); func_800523E0(pa4, q, ...)`,
+F1b = `q = out2; func_8004A348(buf, q); func_800523E0(pa4, out2, ...)`.
+BOTH measure **sandbox 15 at 132 build / 132 target insns — bit-identical to V15a itself** — and
+the `BB2_ALLOC_DEBUG` table for F1a is bit-identical to V15a's, with `out2` still at
+**pseudo 86, nrefs 3, livelen 42, pri 714, hardreg 30 (`$fp`)**. The copy is byte-free (combine
+deletes it, E-s28-2 shape A) but it TRANSFERS the reference instead of adding one: `q`'s consumer
+replaces an `out2` use, so `out2`'s count is unchanged. This is E-s28-2's conservation law
+measured directly on the exact construct frontier 1 proposed, and it also shows why the shape can
+never work: `q`'s only honest consumer inside loop1 is one of `out2`'s own two uses; a consumer
+that is NOT one of them is a new statement, i.e. a new byte.
+
+### E-s35-3 — FRONTIER 3 (re-price the CODE_LABEL on the split-increment ladder) is CLOSED by measurement
+Form **H1p** = s31's H1 (D5 + pre-test loop1, which is the only construct that stops cse2 folding
+block 2 into `move $s3,$s6`) with the in-loop1 same-value re-store moved to **D6's position**
+(between `func_8004A348(buf, out2)` and `func_800523E0`), i.e. the one position at which sched1
+absorbs the extra `addiu` into loop1's load-delay slot and target's own `nop` at
+`asm/funcs/func_80041188.s:30` disappears. Measured: **sandbox 23 at 134 build / 132 target
+insns** (`tmp/grind/func_80041188/s35/H1p.c`, banked as
+`rejected/pretest-loop1-plus-D6-restore-134-insns-codelabel-closed.c`).
+D6's absorbable slot is real — it bought exactly one insn back (H1 was 135, H1p is 134) — but the
+frontier's own criterion was "alive only if the count falls to 133 or below". It does not.
+The arithmetic is now closed in both directions: the re-store costs +1 (D5 = 133) and the pre-test
+CODE_LABEL costs +2 (an unconditional `j` plus its delay slot, neither of which reorg fills), for
+a deficit of 3, against exactly ONE absorbable `nop` in the whole function.
+**The CODE_LABEL family is struck from the ledger**, as s34's frontier 3 instructed.
+
+### E-s35-4 — FRONTIER 2 (a combine deletion whose `out2` occurrence simplifies away) is CLOSED
+The frontier asked for the SEMANTIC enumeration of loop1's statements against the named data
+layout before any measurement. Done here, and it closes on the same grounds E-s33-3 used for
+block 2, plus a mechanical argument that is stronger than the semantic one.
+
+*Semantic.* loop1's values are exactly: `tbl` (walks a `s32` table), `offset` (= `*tbl * 6`, a
+byte offset), `p` (`u16 *` into the a1/a2 vertex data), `buf[0..2]` (three staged `s16`), `pa4`
+(`&m[0]`), `out2` (`&m[1]`), `a3` (an opaque `s32` passed through), `stptr` (walks 0x68-byte
+records), `i`. The ONLY pointer arithmetic loop1 performs is on `tbl`, `p` and `stptr`. The two
+matrix pointers are only ever PASSED (`func_8004A348(buf, pa4)`, `func_8004A348(buf, out2)`,
+`func_800523E0(pa4, out2, a3, stptr + 0x38)`) — never differenced, never scaled, never indexed —
+which is exactly what the E-s34-2 layout census independently established for the callees
+(`func_8004A348` writes 0x0..0x10 of its second argument; `func_800523E0` reads 0x0..0xA of both).
+So no loop1 statement can honestly consume a difference or a cancellation involving `&m[1]`.
+
+*Mechanical, and it does not depend on the semantics.* Split the candidate cancellations in two:
+(i) those that cancel WITHOUT knowing `out2`'s value (`out2 - out2`, `out2 ^ out2`,
+`(x + out2) - out2`) are folded by the C front end's `fold()` or by cse1's `fold_rtx`, both of
+which run BEFORE flow, so the reference is never counted — this is E-s28-1's measured mechanism;
+(ii) those that need to know `out2 == pa4 + 0x20` (e.g. `(u8 *)out2 - (u8 *)pa4`) are unavailable
+to combine inside loop1, because combine substitutes a definition into a use only through a
+LOG_LINK, `out2`'s definition is in block 0 with multiple uses (no LOG_LINK), and cse1's extended
+basic block starting in block 0 TERMINATES at loop1's two-predecessor head (E-s23-1), so cse1's
+table does not carry `out2 = (plus pa4 32)` into loop1 either. Such an expression therefore
+survives as a real `subu`/`addu` and costs a byte.
+Both horns closed => frontier 2 is dead.
+
+### E-s35-5 — consequence: the owner directive's target form is measured non-existent on the enumerated surfaces
+The 2026-08-27 continue-directive asked s35+ to "build the V15a + honest out2-lift candidate".
+V15a is exactly the chassis that carries target's block-2 `addiu $s3,$s7,0x20` and needs only
+`out2` lifted from 3 references to 4. This session executed that directive directly and the
+result is NEGATIVE for the three surfaces that remained: the lift cannot come from a
+post-`global_alloc` deletion (E-s35-2, measured + derived), from a combine cancellation
+(E-s35-4, derived on two exhaustive horns), or from a CODE_LABEL-protected in-loop1 re-store
+(E-s35-3, measured at 134 insns). Together with the closures already banked — block-0 splits
+folded pre-flow by `fold_rtx` reassociation (E-s28-1), the chain-extender direction wrong for
+`out2` by s17's canonicalisation law (E-s17-3), in-loop1 DEFINITIONS re-triggering the cse fold in
+BOTH cse passes (E-s23-1 + E-s34-1), dead stores flow-invisible (E-s21-5), and neither
+`optimize_reg_copy_1` nor `optimize_reg_copy_2` able to host the reference (E-s30) — **there is no
+remaining enumerated mechanism by which `out2` gains a byte-free flow-counted reference on this
+pseudo set.**
+
+This is the measured form of E-s29-2's contradiction, and it says the same thing from the other
+side: with target's OWN hosted reference counts fed into the validated priority model, `out2` at
+3 refs / live 42 scores 714 and cannot reach `$s6` on either chassis — on the `pa4`-carrier
+chassis it must clear `pa4`'s 1473 (impossible below 4 refs: at 3 refs the priority is
+`floor_log2(3)*3/L*10000 = 30000/L`, which is <= 789 for any `L >= 38`), and on the `pa4`-free
+chassis `a3`'s 808 unconditionally outranks the REG_EQUIV-doubled `a4`'s 736 (E-s30-3).
+**The two-locals goto chassis is bounded above at floor 1 by derivation and now also by
+exhaustion of the reference-delivery surface; the next chassis question is the pseudo SET, not the
+spelling.**
+
+### E-s35-6 — target's own bytes re-read first-hand (confirms the census, no new degree of freedom)
+`asm/funcs/func_80041188.s` read directly this session: `lw $s7, 0x58($sp)` (line 23, the fifth
+parameter), `addiu $s6, $s7, 0x20` (line 25) and `addiu $s3, $v0, 0xFC` (line 26) all sit in
+block 0, BEFORE `.L800411F0` (line 28); `$s6` is then read only at lines 56 and 61, inside loop1;
+`addiu $s3, $s7, 0x20` (line 74) is block 2 and `$s3` is read at lines 102 and 114 inside loop2.
+So target's `out2` really is a block-0 definition live across all of loop1 with exactly 3
+references, its live length cannot be shortened below the ~42 our chassis produces without moving
+the definition into loop1 (which target's bytes forbid), and E-s29-1's hosted census stands
+unchanged. No new degree of freedom exists in target's own instruction stream.
+
+### E-s35-7 — TOOLING DEFECT (applies to EVERY future solver session, any function): `inverse_compose.py classify` silently classifies a candidate against ITSELF
+`classify` does not build anything. It reads `tmp/inverse_work/<stem>.hon.s` and
+`tmp/inverse_work/<stem>.tgt.s`, both of which `tools/ra_solver/mkasm_honest.sh` produces from
+**whatever is in `src/` at that moment** — `.hon.s` = current src cheat-stripped, `.tgt.s` =
+current src + regfix/asmfix. Its only staleness guard is a timestamp comparison between the two.
+Consequences, both hit this session:
+  * With NOTHING regenerated, `classify` happily reported a verdict off `tmp/inverse_work/*.s`
+    dated **Aug 24** (an s15-era chassis) — it printed the identical PRE-RA verdict for the V15a
+    chassis and for the W4 chassis, because it was reading neither of them.
+  * With `mkasm_honest.sh` re-run while form W4 was applied to `src/`, `classify` reported
+    **"FIRST DIVERGENCE: IDENTICAL — the honest stream already equals target"** for a form that
+    measures sandbox 3. The `.tgt.s` half had been rebuilt FROM W4, so the tool compared W4
+    against W4.
+**Correct procedure (use this verbatim):** run `mkasm_honest.sh <stem>` with `src/` at HEAD, copy
+`tmp/inverse_work/<stem>.tgt.s` aside as the TRUE target stream, then apply the candidate body,
+re-run `mkasm_honest.sh`, restore the saved `.tgt.s`, `touch` it so the staleness guard passes,
+and only then run `classify`. Harness: `tmp/grind/func_80041188/s35/TRUE.tgt.s` is the true target
+stream for `text1a_pre`, captured that way this session.
+
+### E-s35-1 (CORRECTED) — the PRE-RA verdict, re-taken against the TRUE target stream
+Re-run under the E-s35-7 procedure with W4 applied, the classifier reports
+**FIRST DIVERGENCE: PRE-RA**, "ours only `addu $#,$#,$#` / target only `addu $#,$#,32`" (the two
+`bne .L170` vs `.L168` entries are label-numbering noise, not a shape difference). So the verdict
+stands, and it stands for the real-loop chassis as well as the goto chassis: the residual is a
+different INSN, not an allocation or a schedule, and `tools/ra_solver` / `tools/sched_solver`
+inverse search cannot express it. The verdict earlier in this session was taken off stale
+artifacts and should not be cited; this one should.
+
+### E-s35-8 — THE RESULT OF THE SESSION: the real-loop chassis needs the SAME transfer but the arithmetic is an order of magnitude closer
+Re-measured first-hand this session: `alt_W4_realloop_giv_honest_s19.c` = **sandbox 3 at 132/132**
+(reproduces s19 exactly), `alt_Z1_realloop_honest_s26.c` = **13 at 132/132** (reproduces s31).
+W4 was then given target's block-2 statement — `out3 = (s32 *)(((u8 *)pa4) + 0x20);` in place of
+`out3 = out2;`, everything else untouched — as form **W4c**
+(`tmp/grind/func_80041188/s35/W4c.c`): **sandbox 11 at 132/132**, i.e. the same seat permutation
+the goto chassis suffers. So the block-2 transfer is chassis-independent, as expected.
+
+What is NOT chassis-independent is the size of the gap. `BB2_ALLOC_DEBUG` tables, both taken this
+session (`tmp/grind/func_80041188/s35/W4/fr_86.err`, `s35/W4c/fr_86.err`):
+
+| pseudo | W4 (`out3 = out2`, seats CORRECT) | W4c (`out3 = pa4+0x20`, seats WRONG) |
+|---|---|---|
+| 86 `out2` | 6 refs / live 46 / **2608** -> `$s6` | 5 refs / live 41 / **2439** -> `$s7` |
+| 77 `pa4`  | 8 refs / live 94 / **2553** -> `$s7` | 9 refs / live 94 / **2872** -> `$s6` |
+| 75 `a3`   | 5 refs / live 99 / 1010 -> `$fp` | 5 refs / live 99 / 1010 -> `$fp` |
+| 140 (giv) | 9 refs / live 40 / 6750 -> `$s3` | same |
+| 79 `tbl`  | 7 refs / live 47 / 2978 -> `$s5` | same |
+| 78 `i`    | 11 refs / live 97 / 3402 -> `$s4` | same |
+| 90 `stptr2` | 6 refs / live 48 / 2500 -> `$s0` | same |
+
+On the GOTO chassis the same inequality is `pri(out2) > pri(pa4) = 1473` with `out2` at THREE
+target-hosted references, i.e. `30000/L > 1473`, i.e. `L < 20.4` against a floor of 40 — a factor
+of two, unreachable (the closed-form impossibility in the s35 frontier note).
+On the REAL-LOOP chassis loop.c's strength reduction re-writes every count, and the same
+inequality becomes `2*5/L*10000 > 2872`, i.e. **`L(out2) < 34.8` against an actual 41 — seven
+insns, not a factor of two.** Equivalently it is satisfied by `out2` at SIX references and live 41
+(`2*6/41*10000 = 2926 > 2872`), or by `pa4` dropping from NINE references to SEVEN
+(`2*7/94*10000 = 1489`, far below `out2`'s 2439) — and SEVEN is exactly what target's own bytes
+host for `pa4` (E-s29-1). **Three independent one-step routes exist on this chassis where the goto
+chassis had none.** That is the first genuinely open quantified target this grind has had since
+s7, and it is where the next sessions should spend their measurements.
+
+- [s35] Chassis re-measured first-hand this session: memory/grind/func_80041188/candidate.c applied to src/text1a_pre.c = sandbox func_80041188 --disable all score 1, 132 build / 132 target insns, rules_dropped 16, cheat_asm_stripped 0. HEAD = 27. V15a = 15. W4 = 3. Z1 = 13. W4c = 11. H1p = 23 at 134 insns. F1a = F1b = 15 at 132 insns. src/text1a_pre.c restored to HEAD at the end of the session; no build-pipeline file touched, nothing committed, no permuter campaign launched.
+
+- [s35] E-s35-2: no insn is deleted in ANY post-local-alloc transition of this function. Per-pass insn-uid sets for func_80041188 only: .lreg->.greg 0 deleted / +2 (spill-reload pair for `saved`), .greg->.jump2 0 deleted / +11 (prologue callee-saved stores), .jump2->.sched2 0/0, .sched2->.dbr 18 uids leave top level but every one is absorbed into a delay-slot (sequence). The post-global_alloc deletion surface does not exist here.
+
+- [s35] E-s35-2 (method warning worth carrying): GCC prints post-sched insns as '(insn:QI 12 ...)'. A uid regex without an optional mode suffix silently drops ~20% of the chain and manufactures a fake 'reload deleted 19 insns' result -- that is exactly what the first pass of this measurement produced before it was corrected.
+
+- [s35] E-s35-2 (derivation): an in-loop1 copy of a loop-carried value can never be a byte-free counted reference. For the copy to be a no-op move the dest must share out2's hard register, hence must not conflict with it; but out2 is live across the whole of loop1, so every pseudo live anywhere in loop1 conflicts with it, and a dest that is live nowhere is a dead store which flow deletes before reg_n_refs is fixed (E-s21-5). Cross-jumping is closed separately: it adds two insns and deletes one, +1 net.
+
+- [s35] E-s35-2 (measured): F1a and F1b both measure sandbox 15 at 132/132, bit-identical to V15a, and F1a's BB2_ALLOC_DEBUG table is bit-identical too, with out2 still at pseudo 86 / nrefs 3 / livelen 42 / pri 714 / hardreg 30. The copy is byte-free (combine deletes it, E-s28-2 shape A) but TRANSFERS the reference rather than adding one: q's only honest consumer inside loop1 is one of out2's own two uses, and a consumer that is not one of them is a new statement, i.e. a new byte.
+
+- [s35] E-s35-3: H1p (D5 + pre-test loop1 + the re-store moved to D6's absorbable position) = 134 build insns, sandbox 23. D6's slot really does buy one insn back (H1 was 135) but the frontier's own 133-or-below criterion fails. Deficit is 3 (re-store +1, pre-test j + delay slot +2) against exactly one absorbable nop in the function. CODE_LABEL family struck.
+
+- [s35] E-s35-4: frontier 2 closes on two exhaustive horns. Semantically, loop1's only pointer arithmetic is on tbl, p and stptr, and the two matrix pointers are only ever passed to func_8004A348 / func_800523E0, never differenced, scaled or indexed. Mechanically, a cancellation that does not need out2's value is folded pre-flow by the C front end or cse1's fold_rtx, and one that does need out2 == pa4 + 0x20 is unavailable to combine inside loop1 (no LOG_LINK from a block-0 multi-use definition, and cse1's EBB terminates at loop1's two-predecessor head).
+
+- [s35] E-s35-6: target's bytes re-read first-hand. lw $s7,0x58($sp) at line 23, addiu $s6,$s7,0x20 at line 25 and addiu $s3,$v0,0xFC at line 26 all precede .L800411F0 at line 28; $s6 is read only at lines 56 and 61 inside loop1; addiu $s3,$s7,0x20 at line 74 is block 2; addiu $v0,$zero,0x2 sits INSIDE loop1 at line 65, immediately before sh $v0,0x6($s3). So target's loop1 carries no loop notes (nothing hoisted) and out2 really is a block-0 definition live across all of loop1 with exactly three references.
+
+- [s35] E-s35-5 + frontier note: the goto chassis is impossible in closed form. out2 must outrank pa4 (1473) to be allocated before it; at three hosted references pri(out2) = 30000/L needs L < 20.4 against a floor of 40. The fourth reference is necessary, and every byte-free delivery mechanism is now enumerated dead (fold_rtx reassociation pre-flow E-s28-1, s17's canonicalisation law pointing the chain-extender the wrong way for out2 E-s17-3, in-loop1 definitions re-triggering the fold in BOTH cse passes E-s23-1 + E-s34-1, dead stores flow-invisible E-s21-5, optimize_reg_copy_1/2 blocked by the missing REG_DEAD E-s30, and now E-s35-2/3/4).
+
+- [s35] E-s35-8: on the real-loop chassis the same inequality is seven insns wide instead of a factor of two. W4c (W4 + target's honest block-2 addiu) = 11 at 132/132 with out2 5 refs / live 41 / 2439 versus pa4 9 refs / live 94 / 2872; W4 itself holds all-target seats at 3 with out2 6/46/2608 versus pa4 8/94/2553. Three independent one-step closures: L(out2) <= 34 at 5 refs (2941), out2 at 6 refs and live 41 (2926), or pa4 down from 9 to 7 references (1489) -- and 7 is exactly target's hosted pa4 count.
+
+- [s35] E-s35-7 (tooling, applies to every solver session on every function): inverse_compose.py classify does not build anything; it reads tmp/inverse_work/<stem>.{hon,tgt}.s which mkasm_honest.sh derives from whatever is in src/, guarded only by a timestamp comparison between the two files. It reported a verdict off month-old artifacts when nothing was regenerated, and reported 'IDENTICAL' for form W4 (which measures 3) when regenerated with W4 applied, because the target half was rebuilt from W4. Correct procedure and the captured true target stream are banked (tmp/grind/func_80041188/s35/TRUE.tgt.s).
