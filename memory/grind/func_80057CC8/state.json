@@ -1,7 +1,7 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 40,
+ "session_count": 41,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -249,23 +249,29 @@
    "floor": 16,
    "modality": "forensics",
    "headline": "s40c forensics: floor held at 16 (chassis re-measured), the 16-form's register map in candidate.c is corrected from the greg dispositions table, and the s35 closed-form foreclosure 'arg0 cannot reach "
+  },
+  {
+   "session": 41,
+   "floor": 16,
+   "modality": "forensics",
+   "headline": "s41 forensics: the s40c 'missing n=3 cross-block cell' EXISTS and is ban-compliant (d1: the target's complete callee-save map at 106 insns, score 45), and e1 delivers the first arg0->$s2 flip in the T"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A block order exists that keeps the target's prev-test-first instruction order AND gives the third crossing quantity a cross-block n=3 live range, closing the 2% priority gap and flipping $s2/$s3 at a score near the current floor rather than at 42-56.",
-   "mechanism": "The flip needs floor_log2(n_88)*n_88/L_88 < floor_log2(5)*5/L_72. In prev-first, a single-def address has all refs in the final merge block (block-local, so local-alloc pre-seats $s1 - the score-20 regime) and a two-def address has n=4. The missing cell is n=3 cross-block, which needs a real branch between the address's def and its single use while the prev-if still comes first - e.g. duplicating the arg0[3] read into the next-if arms (.claude/rules/split-read-defeats-hoist.md, sanctioned, reads not stores), which is also the exact lever that would restore arg0's 5th ref inside a next-first layout.",
-   "next_probe": "Build two variants, from y2.c and from x1.c: (i) prev-first with the arg0[3] read duplicated into both arms of the next-wrap if; (ii) next-first (x1 layout) with the same duplication, aiming to keep arg0 at 5 refs there. Dump with tmp/grind/func_80057CC8/s40c/batch.sh and check the $s2 row BEFORE spending a sandbox run; a flip at <=108 insns in prev-first order is the first form that could beat 16."
+   "hypothesis": "e1 is one allocno inequality from the target's full seat map: making `off` outrank the carried `table` in global.c allocno_compare would give $s3 to the wrap quantity exactly as the target does, in the target's own block order and with the target's post-call address formation.",
+   "mechanism": "e1.greg gives table = 4 refs / 30 insns (2*4/30 = 0.267) and off = 3 refs / 20 insns (1*3/20 = 0.150). floor_log2 steps at n=4, so raising `off` to 4 cross-block refs doubles its numerator (2*4/L); alternatively lengthening table's live range or shortening off's moves the ratio. Any arrangement with 2*4/L_off > 2*4/L_table, i.e. L_off < L_table, flips it once off reaches n=4.",
+   "next_probe": "Starting from tmp/grind/func_80057CC8/s41/e1.c, build variants that give `off` a fourth cross-block reference without a second base materialization -- e.g. the two-def wrap spelling (default then arm override) combined with a post-call use, or splitting the post-call address formation so `off` is read twice. Census each with tmp/grind/func_80057CC8/s41/batch.sh and look at the $s3 row BEFORE spending a sandbox run; the first form with $s2 = arg0 AND $s3 = off has the target's complete map at 110 insns and should be measured immediately."
   },
   {
-   "hypothesis": "A never-permuted campaign seeded from x1.c - the ONLY banked form whose callee-save map equals the target's - can find a statement order that keeps the seat flip while recovering the ~40 points of instruction-order cost.",
-   "mechanism": "x1's residual is order, not allocation: 106 insns against 111 with every callee-save correct. Permuter mutations move exactly the statement-order and expression-shape inputs that sched1 and cse1 consume, and s37 already proved this function's regimes are permuter-productive (the staged-value lever was a permuter find).",
-   "next_probe": "`python3 tools/permuter_campaign.py` seeded from memory/grind/func_80057CC8/rejected/s40c-nextfirst-scale-after-angnext-SEATFLIP-score56-106insns.c, wait in-turn with `wait --dir <ws>` over two or three fresh-seed windows, harvest, `harvest --stop`, bisect any find, and re-dump each find's $s2 row to confirm the seat survived. Reject on sight anything that materializes *(s16 **)(arg0 + 4) a second time."
+   "hypothesis": "A never-permuted campaign seeded from e1.c (110 insns, target block order, target-shaped post-call address formation, arg0 already in $s2) can recover the ~14 points the `scale` move costs and land below the parent form's 31.",
+   "mechanism": "e1's residual is instruction order plus one seat, not structure: it is the first seed whose block order, address-formation shape AND $s2 all match the target. Permuter mutations move exactly the statement-order and expression-shape inputs sched1 and cse1 consume, and s37 already proved this function's regimes are permuter-productive.",
+   "next_probe": "`python3 tools/permuter_campaign.py` seeded from memory/grind/func_80057CC8/rejected/s41-postcall-address-scale-between-calls-SEATFLIP-score41-110insns.c; wait IN-TURN with `wait --dir <ws>` over two or three fresh-seed windows, harvest, `harvest --stop`, bisect any find, and re-census each find's $s2/$s3 rows with batch.sh to confirm the seats survived. Reject on sight anything that materializes *(s16 **)(arg0 + 4) a second time."
   },
   {
-   "hypothesis": "(inherited, still untried) A never-permuted campaign seeded from vA (110 insns, score 18, multiset = target minus one lw) can find an arrangement below 16.",
-   "mechanism": "vA is a fundamentally closer regime than the 108-insn 16-form every prior campaign explored; its residual is 11 register substitutions plus 2 moved instructions over a 96-instruction exact match.",
-   "next_probe": "Seed from tmp/grind/func_80057CC8/s39/vA.c (NOT candidate.c), same wait/harvest/stop discipline. Note this session's census gives vA's allocno numbers (88 = 6 refs / 4 insns, priority 3.00), so the seat cannot flip in that regime - only the instruction half is in play there."
+   "hypothesis": "d1's 45 points are dominated by the wrap-before-prev block order plus the lost second `lbu 3($s2)`; a hybrid that keeps d1's cross-block n=3 address but restores the prev-if to the front could combine d1's exact seat map with the target's instruction order.",
+   "mechanism": "d1 proves the n=3 cross-block address only needs SOME branch between the address's single def and its two `lh` uses. The prev-if is the branch d1 uses, which forces it after the wrap-if. Any other branch legitimately sitting in that window would do the same job without reordering the two ifs.",
+   "next_probe": "Enumerate branches available between the wrap-merge and the ang_prev call in the prev-first layout (e.g. expressing the prev-index wrap as a second conditional, or splitting the wrap-if into a two-branch form whose second test follows the address def), build each, and census the $s2/$s3 rows. The pass-level target is a form whose .lreg shows the address as '3 times across L insns; crosses 1 call' with NO 'in block N' tag while the two `lbu 3($s2)` loads both survive cse1."
   }
  ],
  "judge_constraints": [

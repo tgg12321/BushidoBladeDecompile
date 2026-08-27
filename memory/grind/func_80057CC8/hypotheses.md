@@ -1393,3 +1393,153 @@ is gated on the refused duplication family.
 - probe: Dumped rejected/s40-no-base-local-per-use-site-reads-score0-RULING-PENDING.c (z0.greg / z0.lreg).
 - result: arg0 (72) = 6 refs / 57 insns -> 2*6/57 = 0.2105 -> $s2; next-INDEX (77) = 3 refs / 20 insns -> 1*3/20 = 0.150 -> $s3. arg0's SIXTH reference IS the post-call `lw $a0,4($s2)` at asm/funcs/func_80057CC8.s:50. Ban-compliant forms cap arg0 at five refs (param def, arg0+4, arg0[3] twice, arg0[2]) AND the same ban forces the third crossing quantity up from an index (2 arm defs + 1 post-call use, n=3, floor_log2 factor 1) to an address (n>=4 whenever it spans blocks, factor 2), because forming the address after the call requires the base after the call.
 - verdict: CONFIRMED
+
+## s41 (2026-08-27, forensics — the missing n=3 cross-block cell EXISTS; two new seat-flipping regimes)
+
+Chassis re-measured at session start via the s40c census tooling; the banked 16-form's
+`.greg` map is unchanged ($s0 = 129 cys, $s1 = 119 cxs, $s2 = 88 next-ADDRESS 6 refs / 4
+insns, $s3 = 72 arg0 5 refs / 54 insns). Floor 16 stands; nothing this session beat it.
+All seat numbers below come from `tmp/grind/func_80057CC8/s41/batch.sh` (the s40c census
+script re-pointed at the s41 dump directory), i.e. from the `.greg` "Register
+dispositions" table plus each pseudo's `.lreg` line — not from inference.
+
+### H-s41-1 — KILLED. "Raising arg0 (pseudo 72) to SIX references by duplicating a real
+arg0 statement into both arms of the ang_mid if/else flips $s2, per the s40c frontier."
+- mechanism: `duplicated-statement-into-arms` is a sanctioned family; arg0 at n=6 has
+  `floor_log2(6)*6/L = 12/L`, which clears the h35 address's `2*4/29 = 0.2759` for any
+  L < 43.5, and y2 already sits at L = 37.
+- probe: `w1.c` = y2 with `scale = arg0[2] * 40;` removed from between the calls and
+  duplicated into both arms of the ang_mid if/else; `w2.c` = the same with the between-calls
+  copy also retained (n = 7).
+- result: arg0 does reach **6 refs**, but its live_length goes **37 -> 52** ("dies in 2
+  places; crosses 2 calls"), because both arms sit AFTER both ratan2 calls. Priority
+  12/52 = **0.2308 < 0.2759** — no flip; `$s2` stays pseudo 88 in both w1 and w2.
+- verdict: **KILLED.** The duplication lever is self-defeating in this function: every
+  placement that can host a duplicated arg0 read is post-call, and the L it buys costs more
+  than the ref it adds. Generalised in H-s41-3.
+
+### H-s41-2 — KILLED. "Entry-block statement motion can widen L_88/L_72 past the required
+0.8 by shrinking the front gap between arg0's def and the address's def."
+- mechanism: the flip needs `8/L_88 < 10/L_72`, i.e. `L_72 - L_88 <= 7`; y2 sits at
+  37 - 29 = 8, one instruction away.
+- probe: `a1.c` (prev_idx computed just before the prev-if), `a2.c` (entry block reduced to
+  the table load + the address def; prev_idx late, cx/cy after both ifs), `a3.c` (cx/cy
+  after both ifs, prev_idx first).
+- result: a1 = 29/37, a2 = 27/35, a3 = 27/35. **The gap is invariantly 8** under every
+  source-order permutation. Reading y2's `.s` shows why: sched1 interleaves six prologue
+  callee-save `sw` stores between `move $19,$4` (arg0's def, insn 3) and `lw $4,4($19)`
+  (the table load, insn 19), and those stores are not reachable by source motion.
+- verdict: **KILLED.** The front gap is a scheduler artefact of the 9-register prologue,
+  not a source-order degree of freedom.
+
+### H-s41-3 — CONFIRMED (closed form). "Any sixth arg0 reference is either post-death (too
+much L) or pre-death and live across a call (a supernumerary crossing quantity)."
+- mechanism: cse1 fuses two identical `arg0[k]` reads unless a non-const CALL_INSN separates
+  them (`tools/gcc-2.7.2/cse.c:7241-7246`, banked in s40b). So a surviving extra read must
+  be on the far side of a ratan2 call from its sibling. Placed after arg0's current death
+  it extends L (H-s41-1, 52); placed before it, the value it produces must survive the call
+  and therefore occupies its own callee-save seat.
+- probe: `c1.c` — arg0[2] read TWICE (once before the ang_prev call, once between the calls),
+  the two products feeding `*arg2` and `*arg3` respectively. Measurement only; this is the
+  duplicate-materialization cheat family and is NOT submittable.
+- result: arg0 reaches **6 refs / 41 insns = 0.293** and **takes $s2**, with the address in
+  $s3 — the arithmetic is exactly as predicted — but a seventh quantity now crosses and
+  arg3 is pushed out of the eight listed callee-saves.
+- verdict: **CONFIRMED.** This is the fourth independent derivation of the same single
+  cause: the target's sixth arg0 reference is the post-call `lw $a0,0x4($s2)`
+  (`asm/funcs/func_80057CC8.s:50`), which is BOTH a sixth arg0 ref AND the value the extra
+  crosser would otherwise have to carry. It costs nothing precisely because it is the
+  banned second materialization.
+
+### H-s41-4 — CONFIRMED (new regime, the s40c frontier's "missing n=3 cross-block cell").
+"A block order exists that gives the third crossing quantity a cross-block n=3 live range
+and flips $s2/$s3."
+- mechanism: a single-def address is block-local (local-alloc pre-seats it, the score-20
+  regime) only because nothing branches between its def and its uses. Hoisting the
+  wrap-if AHEAD of the prev-if puts the address's single def in the wrap-merge block and
+  leaves the prev-if's branch between it and the two `lh` uses, so it becomes a global
+  allocno with n = 3 (`floor_log2(3) = 1`, priority 3/L).
+- probe: `d1.c` — wrap-if first (`off` defaulted then zeroed, `next_vert` defined once from
+  `table + off`), the vertex count hoisted into `cnt` so `arg0[3]` is read once, prev-if
+  second, `scale` between the calls. `d8.c` = d1 with the prev-if reading `arg0[3]`
+  directly (cse1 fuses it against the dominating wrap-test read — identical dumps, so the
+  second `lbu 3($s2)` is unrecoverable in this order).
+- result: **$s0 = cys, $s1 = cxs, $s2 = 72 arg0 (4 refs / 36 = 0.222), $s3 = 90 address
+  (3 refs / 18 = 0.167), $s4/$s5 = raw cx/cy, $s6 = arg2, $s7 = arg3** — the target's
+  COMPLETE callee-save map, from ban-compliant C, at **106 instructions**. Measured
+  `sandbox --disable all` = **score 45**. `d2.c` (same but `scale` after the ang_next call)
+  loses the flip (arg0 4/53 = 0.151 < 0.167), confirming the arithmetic is what drives it.
+- verdict: **CONFIRMED.** The cell exists and is ban-compliant. Its cost is the block
+  order: wrap-before-prev is not the target's order, and it also forces cse1 to fuse the two
+  `lbu 3($s2)` loads the target keeps. Banked as
+  `rejected/s41-wrapif-first-previf-separates-address-SEATFLIP-score45-106insns.c`.
+
+### H-s41-5 — CONFIRMED (second new regime, and the first flip in the TARGET's own block
+order). "The horn-2 post-call-address regime plus the s40c live-range shortening flips
+arg0 into $s2."
+- mechanism: horn 2 (`rejected/s38-postcall-address-*.c`, score 31 @ 110) already has the
+  target's block order (prev-if, wrap-if, call, post-call address formation) and the target's
+  post-call `sll/sra 14/addu` shape; its defect is that the vertex-table base must be CARRIED
+  across the call, which is one supernumerary crossing quantity and displaced arg0 from $s2
+  to $s3. Shortening arg0's live range (`scale` between the calls) raises its priority above
+  the carried base's.
+- probe: `e1.c` = the s38 post-call form with `scale = arg0[2] * 40;` moved between the two
+  ratan2 calls. `e2.c` = e1 with the wrap quantity kept as the INDEX and sign-extended /
+  scaled post-call (`(((s32)(off << 16) >> 16) << 2)`, the target's own two insns).
+- result: **e1: $s2 = 72 arg0 (5 refs / 37), $s3 = 87 table (4 / 30), $s4 = 89 off (3 / 20)**,
+  $s5/$s6 raw cx/cy, $s7 arg2 — arg0 reaches $s2 in the target's block order, with arg3
+  spilled to the ninth callee-save. Measured **score 41 @ 110 insns** (the parent form
+  scores 31, so the flip is worth ~4 points and the `scale` move costs ~14). e2 loses the
+  flip entirely ($s2 = 89, the index).
+- verdict: **CONFIRMED.** Banked as
+  `rejected/s41-postcall-address-scale-between-calls-SEATFLIP-score41-110insns.c`. The
+  residual in e1 is now a single named quantity: `table` occupies $s3 (which the target gives
+  to the next-INDEX) and forces a ninth callee-save. To reach the target's map from here,
+  `off` (3 refs / 20 = 0.150) must outrank `table` (4 refs / 30 = 0.267) — a 1.8x gap, the
+  first time the whole residual has been expressible as ONE inequality between two named
+  allocnos in the target's own block order.
+
+### H-s41-6 — KILLED. "Starting the address pseudo's live range at the table load (first def
+`next_vert = table;`, branch sense inverted) shrinks the front gap enough to flip."
+- probe: `b1.c` / `b2.c`.
+- result: the gap does collapse (L_88 34 vs L_72 37, front gap 3), but GCC coalesces the two
+  pointer pseudos, so pseudo 88 absorbs `table`'s references: **7 refs / 34 = 0.412**, far
+  above arg0. No flip.
+- verdict: **KILLED.** Banked as
+  `rejected/s41-address-first-def-equals-table-coalesces-7refs-noflip.c`.
+
+## [s41] Raising arg0 (pseudo 72) to SIX references by duplicating a real arg0 statement into both arms of the ang_mid if/else (the sanctioned duplicated-statement-into-arms family) flips $s2, as the s40c frontier proposed.
+- mechanism: arg0 at n=6 has floor_log2(6)*6/L = 12/L, which clears the h35 address's 2*4/29 = 0.2759 for any live_length below 43.5, and the y2 extremum already sits at L=37.
+- probe: w1.c = y2 with `scale = arg0[2] * 40;` removed from between the calls and duplicated into both arms of the ang_mid if/else; w2.c = the same with the between-calls copy also retained (n=7). Seats and .lreg lines read from the -da dumps via tmp/grind/func_80057CC8/s41/batch.sh.
+- result: arg0 does reach 6 refs, but its live_length goes 37 -> 52 ('dies in 2 places; crosses 2 calls') because both arms sit after BOTH ratan2 calls: 12/52 = 0.2308 < 0.2759. $s2 stays pseudo 88 in both w1 and w2.
+- verdict: KILLED
+
+## [s41] Entry-block statement motion can widen L_88/L_72 past the required 0.8 by shrinking the front gap between arg0's def and the address pseudo's def (y2 misses the flip by one instruction).
+- mechanism: The flip needs 8/L_88 < 10/L_72, i.e. L_72 - L_88 <= 7; y2 sits at 37 - 29 = 8.
+- probe: a1.c (prev_idx computed just before the prev-if), a2.c (entry block cut to the table load plus the address def; prev_idx late, cx/cy after both ifs), a3.c (cx/cy after both ifs). Also re-read y2.s to locate arg0's def and the table load.
+- result: a1 = 29/37, a2 = 27/35, a3 = 27/35 -- the gap is invariantly 8 under every source-order permutation. y2.s shows why: sched1 interleaves six prologue callee-save `sw` stores between `move $19,$4` (arg0's def, insn 3) and `lw $4,4($19)` (the table load, insn 19). The gap is a scheduler artefact of the nine-register prologue, not a source-order degree of freedom.
+- verdict: KILLED
+
+## [s41] Any sixth arg0 reference is either post-death (extending live_length past the flip threshold) or pre-death and live across a call (adding a supernumerary crossing quantity) -- so no ban-compliant sixth reference is free.
+- mechanism: cse1 fuses two identical arg0[k] reads unless a non-const CALL_INSN separates them (tools/gcc-2.7.2/cse.c:7241-7246, banked in s40b), so a surviving extra read must be on the far side of a ratan2 call from its sibling.
+- probe: c1.c -- arg0[2] read TWICE, once before the ang_prev call and once between the calls, the two products feeding *arg2 and *arg3 respectively. This is the duplicate-materialization cheat family; run as a MEASUREMENT ONLY and banked as not submittable.
+- result: arg0 reaches 6 refs / 41 insns = 0.293 and TAKES $s2 with the address in $s3 -- the arithmetic behaves exactly as predicted -- but a seventh quantity now crosses and arg3 is pushed out of the eight callee-saves. The target pays neither price only because its sixth arg0 reference IS the banned second materialization `lw $a0,0x4($s2)` (asm/funcs/func_80057CC8.s:50), one instruction that is simultaneously the sixth ref and the carrier of the extra crosser.
+- verdict: CONFIRMED
+
+## [s41] A block order exists that gives the third crossing quantity a cross-block n=3 live range and flips $s2/$s3 -- the cell s40c named as missing.
+- mechanism: A single-def address is block-local (so local-alloc pre-seats it, the score-20 regime) only because nothing branches between its def and its uses. Hoisting the wrap-if AHEAD of the prev-if puts the address's single def in the wrap-merge block and leaves the prev-if's branch between it and the two `lh` uses, making it a global allocno with n=3 (floor_log2(3)=1, priority 3/L).
+- probe: d1.c -- wrap-if first (vertex count hoisted into `cnt`, `off` defaulted then zeroed, `next_vert` defined ONCE as table + off), prev-if second, `scale` between the calls. Controls: d2.c (`scale` after the ang_next call) and d8.c (prev-if reading arg0[3] directly instead of `cnt`). Censused with batch.sh, then applied and measured with `sandbox func_80057CC8 --disable all`.
+- result: d1.greg = $s0 cys, $s1 cxs, $s2 = 72 arg0 (4 refs / 36 = 0.222), $s3 = 90 address (3 refs / 18 = 0.167), $s4/$s5 raw cx/cy, $s6 arg2, $s7 arg3 -- the target's COMPLETE callee-save map from ban-compliant C at 106 instructions; measured score 45. d2 loses the flip exactly as the arithmetic predicts (arg0 4/53 = 0.151). d8 produces byte-identical dumps: in this order the wrap-test read dominates, cse1 fuses the two arg0[3] loads, and the target's second `lbu 3($s2)` is structurally unrecoverable here.
+- verdict: CONFIRMED
+
+## [s41] The horn-2 post-call-address regime plus the s40c live-range lever flips arg0 into $s2 -- the first seat flip achieved in the TARGET's own block order.
+- mechanism: Horn 2 (rejected/s38-postcall-address-no-judge-lever-score31-110insns.c) already has the target's block order and the target's post-call `sll / sra 14 / addu` address formation; its defect is that the vertex-table base must be carried across the call, one supernumerary crossing quantity that displaced arg0 from $s2 to $s3. Shortening arg0's live range raises its allocno_compare priority above the carried base's.
+- probe: e1.c = the s38 post-call form with `scale = arg0[2] * 40;` moved between the two ratan2 calls; e2.c = e1 with the wrap quantity kept as a sign-extended INDEX scaled post-call (the target's own two insns). Censused with batch.sh; e1 applied and measured.
+- result: e1.greg = $s2 = 72 arg0 (5 refs / 37), $s3 = 87 table (4 / 30), $s4 = 89 off (3 / 20), $s5/$s6 raw cx/cy, $s7 arg2, arg3 to the ninth callee-save; measured score 41 at 110 insns (parent form 31, so the flip is worth about 4 points and the `scale` move costs about 14). e2 loses the flip entirely ($s2 = 89, the index).
+- verdict: CONFIRMED
+
+## [s41] Starting the address pseudo's live range at the table load (first def `next_vert = table;`, branch sense inverted so the wrap-if arm supplies the offset form) shrinks the front gap enough to flip.
+- mechanism: The gap L_72 - L_88 is what blocks the prev-first flip; defining the address at the table load should collapse it to the distance between arg0's param copy and the `lw`.
+- probe: b1.c and b2.c (b2 additionally computes prev_idx late), censused with batch.sh.
+- result: The gap does collapse (L_88 34 vs L_72 37, front gap 3), but GCC coalesces the two pointer pseudos, so pseudo 88 absorbs table's references: 7 refs / 34 = 0.412, far above arg0's 0.270. No flip; strictly worse.
+- verdict: KILLED

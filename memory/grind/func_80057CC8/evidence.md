@@ -2419,3 +2419,113 @@ and the ban simultaneously forces our third crosser from n=3 up to n=4). Floor s
 - [s40] Third independent confirmation of the single cause: goal_from_tgt.py (multiset misses by one `lw 4(arg0)`), inverse.py (every reachable seat vector needs the next-index to cross the call), and now the allocno priority table itself.
 
 - [s40] Two ruling-requests on the fidelity/scope question were already FAILed today (docs/grind/decisions.md 2026-08-27 07:40 and 07:47); a third must not be filed - the Judge states re-scoping the 2026-07-20 owner refusal is owner-only, not a Judge grant.
+
+## [s41] Forensics — the s40c "missing n=3 cross-block cell" exists, and the residual is now ONE inequality between two named allocnos in the target's own block order
+
+Modality: forensics (instrumented cc1 `-da`, GCC 2.7.2, `tools/gcc-2.7.2/cc1`), using the
+s40c seat-census script re-pointed at `tmp/grind/func_80057CC8/s41/`
+(`tmp/grind/func_80057CC8/s41/batch.sh`, plus `apply.py` for sandbox runs).
+
+- [s41] Chassis: the brief reported the HEAD honest floor as "measurement unavailable" and
+  the ledger floor as 16. Re-censused the banked 16-form (`memory/grind/func_80057CC8/candidate.c`)
+  this session: `$s0 = 129 cys, $s1 = 119 cxs, $s2 = 88 next-ADDRESS (6 refs / 4 insns),
+  $s3 = 72 arg0 (5 refs / 54 insns)` — identical to s40c. Floor 16 stands and no probe this
+  session beat it.
+
+- [s41] **The frontier's duplication lever is dead.** Duplicating `scale = arg0[2] * 40;`
+  into both arms of the ang_mid if/else (the sanctioned `duplicated-statement-into-arms`
+  family) DOES raise arg0 pseudo 72 from 5 to 6 references, but its live_length goes
+  37 -> 52 because both arms are post-call: `12/52 = 0.2308` against the h35 address's
+  `8/29 = 0.2759`. No flip (w1, and w2 with 7 refs). Banked
+  `rejected/s41-scale-duplicated-into-armsraises-arg0-to-6refs-but-L52-noflip.c`.
+
+- [s41] **The prev-first live-range gap `L_72 - L_88` is invariantly 8** — a1 (prev_idx
+  late) 37/29, a2 (entry block cut to table + address def) 35/27, a3 (cx/cy after both ifs)
+  35/27. The flip needs the gap <= 7. Reading `tmp/grind/func_80057CC8/s40c/y2.s` explains
+  the invariance: sched1 interleaves six prologue callee-save `sw` stores between arg0's
+  def (`move $19,$4`, insn 3) and the table load (`lw $4,4($19)`, insn 19); that span is a
+  scheduler artefact of the nine-register prologue and is not a source-order degree of
+  freedom. Banked `rejected/s41-entryblock-motion-gap-invariant-noflip.c`.
+
+- [s41] Making the address pseudo's first def `next_vert = table;` (branch sense inverted so
+  the wrap-if arm supplies the offset form) collapses the front gap to 3 — but GCC coalesces
+  the two pointer pseudos and 88 absorbs `table`'s refs (7 refs / 34 = 0.412). Strictly
+  worse. Banked `rejected/s41-address-first-def-equals-table-coalesces-7refs-noflip.c`.
+
+- [s41] **CLOSED FORM (fourth independent derivation of the single cause).** Any sixth arg0
+  reference must survive cse1, which (per s40b, `tools/gcc-2.7.2/cse.c:7241-7246`) requires a
+  non-const CALL_INSN between it and its sibling read. Post-call placement extends
+  live_length past the flip threshold (w1: 52); pre-call placement means the value it
+  produces crosses the call and takes its own callee-save seat. Measured with `c1.c` (arg0[2]
+  read twice, once before the ang_prev call and once between the calls — the duplicate-
+  materialization CHEAT family, measurement only, NOT submittable): arg0 reaches
+  **6 refs / 41 = 0.293 and takes $s2**, and a seventh quantity crosses, pushing arg3 out of
+  the eight callee-saves. The target pays neither price only because its sixth arg0 reference
+  IS the banned second materialization `lw $a0,0x4($s2)` (`asm/funcs/func_80057CC8.s:50`) —
+  one instruction that is simultaneously the sixth ref and the carrier of the extra crosser.
+  Banked `rejected/s41-CHEATFAMILY-duplicate-arg0-2-read-6refs-flips-not-submittable.c`.
+
+- [s41] **NEW REGIME D1 — the s40c frontier's missing cell exists and is ban-compliant.**
+  Hoisting the wrap-if AHEAD of the prev-if (vertex count hoisted into `cnt`, `off` defaulted
+  then zeroed, `next_vert` defined ONCE as `table + off`) puts the address's single def in the
+  wrap-merge block and leaves the prev-if's branch between that def and its two `lh` uses. The
+  address therefore becomes a cross-block global allocno with **n = 3** — the cell s40c named
+  as missing — at `1*3/18 = 0.167`, against arg0 at `2*4/36 = 0.222`. `d1.greg`:
+  **$s0 cys, $s1 cxs, $s2 = 72 arg0, $s3 = 90 address, $s4/$s5 raw cx/cy, $s6 arg2, $s7 arg3**
+  — the target's COMPLETE callee-save map, from ban-compliant C, at 106 instructions.
+  Measured `sandbox func_80057CC8 --disable all` = **score 45**. Control d2 (`scale` after the
+  ang_next call) loses the flip exactly as the arithmetic predicts (arg0 4/53 = 0.151).
+  Control d8 (prev-if reading `arg0[3]` directly instead of `cnt`) produces byte-identical
+  dumps — in this block order the wrap-test read dominates, so cse1 fuses them and the
+  target's SECOND `lbu 3($s2)` is structurally unrecoverable here. That, plus the non-target
+  block order, is what the 45 points are. Banked
+  `rejected/s41-wrapif-first-previf-separates-address-SEATFLIP-score45-106insns.c`.
+
+- [s41] **NEW REGIME E1 — the first seat flip in the TARGET's own block order.** The s38
+  horn-2 post-call-address form (`rejected/s38-postcall-address-no-judge-lever-score31-110insns.c`)
+  already has the target's block order (prev-if, wrap-if, call, then post-call
+  `sll/sra 14/addu` address formation). Adding the s40c live-range lever — `scale = arg0[2] * 40;`
+  moved to between the two ratan2 calls — lifts arg0 above the carried base:
+  `e1.greg` = **$s2 = 72 arg0 (5 refs / 37), $s3 = 87 table (4 / 30), $s4 = 89 off (3 / 20)**,
+  $s5/$s6 raw cx/cy, $s7 arg2, arg3 to the ninth callee-save. Measured **score 41 @ 110
+  insns** (parent form 31: the flip is worth ~4, the `scale` move costs ~14). e2 (wrap
+  quantity kept as a sign-extended INDEX, the target's own spelling) loses the flip entirely
+  ($s2 = 89). Banked
+  `rejected/s41-postcall-address-scale-between-calls-SEATFLIP-score41-110insns.c` and
+  `rejected/s41-postcall-index-form-noflip.c`.
+
+- [s41] **The residual is now ONE inequality between two named allocnos in the target's own
+  block order.** In e1 the only wrong seat is $s3: ours holds `table` (4 refs / 30 = 0.267),
+  the target's holds the next-INDEX. Our `off` is 3 refs / 20 = 0.150. Reaching the target's
+  map from e1 requires `off` to outrank `table` — a 1.8x priority gap — or requires `table`
+  not to be a callee-save quantity at all, which is the banned post-call rematerialization.
+  This is a sharper, more actionable statement of the residual than any prior session's, and
+  it is stated in the block order the target actually uses.
+
+- [s41] Artifacts: `tmp/grind/func_80057CC8/s41/` — `batch.sh`, `apply.py`, and the full
+  `-da` dump sets (`.rtl .jump .cse .loop .cse2 .flow .combine .sched .lreg .greg .sched2
+  .jump2 .dbr .s`) for tags `y2 w1 w2 d16 a1 a2 a3 b1 b2 c1 d1 d2 d8 e1 e2`.
+
+- [s41] Chassis re-measured this session (the brief said 'measurement unavailable'): the banked 16-form's seat map is unchanged from s40c -- $s0 = 129 cys, $s1 = 119 cxs, $s2 = 88 next-ADDRESS (6 refs / 4 insns), $s3 = 72 arg0 (5 refs / 54 insns). Floor 16 stands; no probe this session beat it.
+
+- [s41] Owner directive acknowledged (first ledger acknowledgement, per the brief's consistency warning): the 2026-08-24 escalation-not-parked ruling kicked this function back to active grinding and recommended the solver modality before deep RA re-grind. The ledger shows s39 already executed the solver modality (goal_from_tgt.py typing every ban-compliant form pre-RA); this session therefore proceeded with its mandated forensics modality, using the s40c allocno-census method the solver work motivated.
+
+- [s41] The s40c frontier hypothesis #1 (duplicate a read/statement to give arg0 a sixth reference in the prev-first regime) is KILLED with numbers: n does reach 6 but live_length goes 37 -> 52 and the priority falls from 0.2703 to 0.2308, further from the address's 0.2759 than before.
+
+- [s41] The prev-first live-range gap L_72 - L_88 is invariantly 8 across every entry-block statement permutation tried (37/29, 35/27, 35/27); y2.s shows the gap is filled by six prologue callee-save `sw` stores that sched1 places between arg0's def and the table load, so it is not a source-order degree of freedom.
+
+- [s41] Closed form, fourth independent derivation of the single cause: a sixth arg0 reference must survive cse1, hence must be separated from its sibling by a non-const call; post-call it costs live_length (w1: 52), pre-call it costs a callee-save seat (c1: seventh crosser, arg3 displaced). The target's sixth reference is the banned `lw $a0,0x4($s2)` at asm/funcs/func_80057CC8.s:50, which is both the sixth reference AND the carrier of the extra crosser -- that dual role is why it is free for the target and unaffordable for us.
+
+- [s41] NEW: the missing n=3 cross-block cell exists and is ban-compliant. d1.c (wrap-if hoisted ahead of the prev-if so the prev-if's branch separates the address's single def from its uses) yields the target's COMPLETE callee-save map -- $s0 cys, $s1 cxs, $s2 arg0, $s3 address, $s4/$s5 raw cx/cy, $s6 arg2, $s7 arg3 -- at 106 instructions, measured score 45.
+
+- [s41] NEW: e1.c (the s38 post-call-address form plus `scale` moved between the calls) is the FIRST form to put arg0 in $s2 while keeping the target's own block order and the target's post-call `sll / sra 14 / addu` address formation. Measured score 41 at 110 instructions.
+
+- [s41] The register residual is now ONE inequality between two named allocnos in the target's own block order: in e1 the only wrong callee-save seat is $s3, which ours gives to `table` (4 refs / 30 insns = 0.267) and the target gives to the next-INDEX; our `off` scores 3 refs / 20 insns = 0.150. Closing e1 requires `off` to outrank `table` (a 1.8x priority gap) or requires `table` not to be a crossing quantity at all -- the latter being the banned post-call rematerialization.
+
+- [s41] d8.c proves the target's second `lbu 3($s2)` is structurally unrecoverable in the wrap-first (d1) block order: with the wrap-test read dominating the prev-arm read, cse1 fuses them and the dumps are byte-identical to d1's.
+
+- [s41] e2.c shows the target's own INDEX spelling (`(((s32)(off << 16) >> 16) << 2)` scaled post-call) is ACTIVELY harmful to the seat map in the post-call regime -- it raises the index allocno to 4 refs / 20 and hands it $s2, undoing the flip.
+
+- [s41] Reusable method: tmp/grind/func_80057CC8/s41/batch.sh (the s40c census script re-pointed at the s41 dump directory) plus tmp/grind/func_80057CC8/s41/apply.py, which applies a candidate to src/text1b.c from the pristine tmp/grind/func_80057CC8/s39/text1b.orig.c so a sandbox run can follow a census without a second edit path.
+
+- [s41] src/text1b.c was restored to its pristine INCLUDE_ASM state at the end of the session (git status clean); memory/grind/func_80057CC8/candidate.c is unchanged (the 16-form remains the best measured form).
