@@ -1275,3 +1275,119 @@ tmp/grind/func_80057CC8/dumps/text1b.greg (the allocation-order / preference evi
 - [s33] Terminal residual unchanged: asm/funcs/func_80057CC8.s loads 0x4($s2) twice (:17 `lw $a2`, :50 `lw $a0`); every ban-compliant form emits one and GCC 2.7.2 has no pass that manufactures the second (s30b). That is the policy question refused 2026-07-20 and standing-ruled 2026-07-27, not a spelling.
 
 - [s33] src/text1b.c restored to `INCLUDE_ASM("asm/funcs", func_80057CC8);` at end of session (git status clean for that file). No commits; no regfix/asmfix/rule/engine/tool/Makefile/ld files touched.
+
+## s34 (2026-08-27) - structural - FLOOR 22 -> 20, and the register residual finally attributed to LOCAL-alloc
+
+**Chassis re-measured first.** HEAD is `INCLUDE_ASM("asm/funcs", func_80057CC8);` at
+src/text1b.c:1665. The inherited s33 candidate re-measured at **score 22, build_insns 108,
+target_insns 111, rules_dropped 0** - the ledger floor was current, not stale. Twenty-six
+structurally distinct forms were derived and measured against it (tmp/grind/func_80057CC8/s34/).
+
+**[s34-E1] NEW FLOOR 20 - drop the redundant `(s16)` narrowing from the byte offset.**
+The entire diff against the s33 candidate is `s32 off = tmp * 4;` instead of
+`s32 off = (s16) tmp * 4;`. Measured **score 20 at build_insns 108** (previous best 22 at the
+same 108 insns; no instruction-count change). Banked as candidate.c. The cast was never
+buying an instruction: the wrap test `(s16) tmp >= (s32)arg0[3]` already forces the
+sll16/sra16 pair, so the narrowed and un-narrowed offsets compile to the same three insns.
+What the cast changed was ORDER inside the block. With it, expand emits sll16, sra16, then
+`sll off,sra,2` - the offset is defined THIRD. Without it the offset is `sll off,tmp,2`,
+defined FIRST, and the sign-extension pair follows. The emitted register assignment is
+byte-for-byte identical either way; the two points come purely from the offset insn landing
+at the same position in the block as the target's `addu $s3,$v0,$zero`
+(asm/funcs/func_80057CC8.s:29). Intermediate spelling `off = (s32)(tmp << 16) >> 14` (the
+target's own sra-14 idiom) puts the def SECOND and measures exactly in between, **21**.
+`off = tmp << 2` re-measures 20 (identical text).
+
+**[s34-E2] The lreg dump prints n_refs and live_length directly - no more estimating.**
+`tmp/grind/func_80057CC8/dumps/text1b.lreg` (line 15488, "Function func_80057CC8") carries one
+line per pseudo, e.g. `Register 72 used 5 times across 54 insns; crosses 2 calls`. For the s33
+form the call-crossing set is: 72 arg0 5/54, 83 cx-raw 3/57, 86 cy-raw 3/67, 74 arg2 2/64,
+75 arg3 2/75, 104 next-offset 3/16 (global), 88 next-address 3/4 **in block 4** (local),
+121/122 cxs 3/11 + 2/3 in block 4, 131/132 cys 3/8 + 2/3 in block 4, 87 base 4/29 (does not
+cross). The printed global allocation order `;; 15 regs to allocate: 78 77 172 73 187 79 87
+104 72 76 ...` is exactly descending `floor_log2(n_refs)*n_refs/live_length`, confirming the
+allocno_compare model (tools/gcc-2.7.2/global.c:635) against measured inputs for the first time.
+**Future sessions must read this dump instead of counting refs by hand off the emitted asm.**
+
+**[s34-E3] The allocation-order swap was BOUGHT and is WORTH NOTHING - arg0 is
+hard-reg-conflict-bound to $19.** Under the s33 form the offset allocno 104 (3 refs / 16 insns
+-> 0.1875) outranked arg0 72 (5 refs / 54 insns -> 0.185) by 0.0025, so 104 was allocated first
+and took $17. The s34 form lengthens 104's live range to **19 insns** (0.158), and the greg dump
+duly flips the order to `... 87 72 104 166 ...` - arg0 is now allocated BEFORE the offset. **The
+dispositions are unchanged: `72 in 19`, `104 in 17`.** The reason is printed one line below the
+order: `;; 72 conflicts: ... 16 17 18 29`. arg0 carries hard-register conflicts on $16, $17 AND
+$18, so $19 is its only legal callee-save seat no matter what rank it holds. This KILLS the
+s33 frontier hypothesis #1 (demote the neighbour allocno by lengthening its live range to reach
+the target's $16..$19 mapping) at the mechanism level: the lever works, the outcome does not
+depend on it.
+
+**[s34-E4] The register residual is a LOCAL-alloc effect, not a global-alloc ranking effect.**
+Ours: $16 cys, $17 next-ADDRESS, $18 cxs, $19 arg0. Target: $16 cys, $17 cxs, $18 arg0,
+$19 next-INDEX. The cause is that our next-neighbour address is a **block-local** quantity that
+crosses a call (`Register 88 used 3 times across 4 insns in block 4; crosses 1 call`), so
+local-alloc gives it a callee-save seat ($17) before the two centre twins are placed; cxs is
+pushed to $18 and arg0 is left with only $19. The target has NO block-local call-crossing
+quantity: its crossing value is the next INDEX, defined in block 2 and block 3 and used in
+block 4, hence a global allocno, so the twins take $16/$17 uncontested and global-alloc then
+seats arg0 ($18) ahead of the index ($19) - and arg0 outranks it there precisely because the
+target's second `lw 0x4($s2)` gives arg0 SIX references instead of our five. This is the same
+refused duplication residual seen from a fourth direction, now with the pass named.
+
+**[s34-E5] Making the address a global allocno DOES reproduce the target's $16/$17 - and costs
+one point elsewhere.** Form z2 (`next_vert = (s16 *)(tmp * 4 + (s32)table);` with the wrap arm
+assigning `next_vert = table;`, no `off` pseudo at all) has no block-local quantity, and emits
+`sll $17,$20,16 / sra $17,$17,16 / subu $4,$4,$17` - the target's cxs register exactly, at
+**no instruction cost** (108 insns; the same construct WITH the `(s16)` cast, form w1, costs two
+insns and measures 25). But the address allocno then carries four references (def, arm-def, two
+uses), outranks arg0 under allocno_compare, and takes $18 while arg0 keeps $19; and the vertex
+table base moves out of $6 (target's $a2) into $4. Net **21** - four diff lines won, three lost.
+The base-first PLUS control z2b is also 21, so s33's flip lever is regime-specific.
+
+**[s34-E6] The PLUS/multiply operand-order lever is exhausted outside the one call-crossing add
+(s33 frontier hypothesis #2, KILLED).** Every other two-operand site was flipped and measured on
+the 22-chassis: `base = 0x800 + ang_prev` 22 (inert), `scale = 40 * arg0[2]` 22 (inert), the two
+final `((...) >> 12) + cx/cy` adds 22 (inert), `ang_mid = ang_prev + ((ang_next-ang_prev)/2)` 23
+(worse), and the two final scale multiplies flipped 24 (worse). No preference tie outside the
+neighbour address is worth anything.
+
+**[s34-E7] Hoisting the offset (or the address) out of its basic block is dead three ways.**
+Computing `tmp`/`off` before the prev-index if-block (x1), before the vertex-table load (x2), or
+forming the address after `pi` in that regime (x3) all measure **38 at 109 insns**: the entry
+block reshuffles, the prev index moves from $4 to $7, and one insn is added. Hoisting the whole
+ADDRESS above the prev block (w2/w3/w4) measures **33 at 109**. Re-ordering the two if-blocks
+(next-index first) re-measures **41 at 106** - CSE fuses the two `lbu 0x3($s2)` reads that the
+target keeps separate (asm/funcs/func_80057CC8.s:24,:31), exactly as s32-E6/s33 recorded. That
+number transfers across chassis; the s27 call-order-swap number still does not.
+
+**[s34-E8] Inert on the 20-chassis (all 20 at 108 insns, banked so no session re-spends them):**
+`off = tmp << 2`; centre coordinates read as `((u16 *)table)[arg1*2]`; a named prev-neighbour
+address local; the prev-neighbour reads spelled as byte-offset pointer arithmetic; `s16 prev_idx`
+instead of `unsigned short`; `next_vert` held as an `s32` integer address instead of a pointer;
+forming the address after `pi`; `tmp`/`off` declared at function scope. Worse: `pi` computed
+before the next block (24 / 109); centre reads moved below the prev block (37 / 109); dropping
+the `(s16)` from the WRAP COMPARE as well (22 at 106 insns - it deletes the sll16/sra16 pair the
+target emits).
+
+- [s34] Chassis re-measured at dispatch: the inherited s33 candidate scores 22 at build_insns 108 / target_insns 111 / rules_dropped 0. HEAD is INCLUDE_ASM at src/text1b.c:1665.
+
+- [s34] NEW FLOOR 20: memory/grind/func_80057CC8/candidate.c, the s33 candidate with 's32 off = (s16) tmp * 4;' changed to 's32 off = tmp * 4;'. 108 insns, no instruction-count change, byte-identical registers to the s33 form.
+
+- [s34] tmp/grind/func_80057CC8/dumps/text1b.lreg (line 15488, ';; Function func_80057CC8') prints n_refs and live_length per pseudo directly - e.g. 'Register 72 used 5 times across 54 insns; crosses 2 calls'. Future sessions must read it instead of counting references off the emitted asm; s32-E4 and s33-E2 were both hand-counted and both mis-attributed.
+
+- [s34] The crossing set measured from that dump (s33 form): 72 arg0 5/54, 83 cx-raw 3/57, 86 cy-raw 3/67, 74 arg2 2/64, 75 arg3 2/75, 104 next-offset 3/16 global, 88 next-address 3/4 block-4 LOCAL, 121/122 cxs and 131/132 cys block-4 local, 87 vertex base 4/29 (does not cross).
+
+- [s34] The printed order ';; 15 regs to allocate: 78 77 172 73 187 79 87 104 72 76 ...' is exactly descending floor_log2(n_refs)*n_refs/live_length - the allocno_compare model is now verified against measured inputs rather than inferred.
+
+- [s34] arg0 (pseudo 72) is hard-reg-conflict-bound: greg prints ';; 72 conflicts: 72 73 74 75 76 77 78 79 83 86 87 104 2 3 4 5 6 7 16 17 18 29'. $16/$17/$18 are all excluded, so arg0 takes $19 whatever rank it holds. Winning the allocation-order race against it (which s34 did) changes nothing.
+
+- [s34] The residual seats are set in LOCAL-alloc, not global-alloc: our block-local call-crossing address quantity (pseudo 88) takes a callee-save seat before the centre twins are placed. The target has no such quantity because its crossing value is the next INDEX, live across three blocks.
+
+- [s34] z2 (address selected in the wrap arm, no off pseudo) reproduces the target's $16 cys / $17 cxs exactly at 108 insns and scores 21; the same construct with the (s16) cast (w1) costs two insns and scores 25. The four-reference global address then takes $18 ahead of arg0 and displaces the vertex base from $6 to $4.
+
+- [s34] Operand-order flips outside the one call-crossing add are exhausted: w6/w7/w8 inert at 22, w5 23, w9 24.
+
+- [s34] Offset/address hoisting out of the basic block is dead: x1/x2/x3 38 at 109, w2/w3/w4 33 at 109, z16 (block swap) 41 at 106.
+
+- [s34] Inert on the new 20-chassis (banked so nobody re-spends them): tmp << 2; ((u16 *)table)[arg1*2] centre reads; a named prev-neighbour address local; byte-offset pointer spelling of the prev reads; s16 prev_idx; next_vert as an s32 integer address; address formed after pi; tmp/off at function scope.
+
+- [s34] Unchanged root cause of the non-zero floor: asm/funcs/func_80057CC8.s loads 0x4($s2) twice (:17 lw $a2, :50 lw $a0), which gives the target's arg0 six references where a ban-compliant form has five. That is the duplication refused 2026-07-20 and standing-ruled 2026-07-27, not a spelling.

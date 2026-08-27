@@ -1,53 +1,56 @@
-/* BEST BAN-COMPLIANT FORM (grind s33, 2026-08-27, rederive modality).
- * MEASURED THIS SESSION: `sandbox func_80057CC8 --disable all` -> score 22,
- * target_insns 111, build_insns 108, rules_dropped 0.  The inherited s32
- * candidate re-measured at 24 on this chassis first, so the floor moved 24 -> 22.
+/* BEST BAN-COMPLIANT FORM (grind s34, 2026-08-27, structural modality).
+ * MEASURED THIS SESSION: `sandbox func_80057CC8 --disable all` -> score 20,
+ * target_insns 111, build_insns 108, rules_dropped 0.  The inherited s33 candidate
+ * re-measured at 22 on this chassis first, so the floor moved 22 -> 20.
  *
- * WHAT CHANGED vs s32: exactly one character-level edit -- the PLUS operand order
- * of the next-neighbour address, `(s16 *)(off + (s32)table)` instead of
- * `(s16 *)((s32)table + off)`.  Everything else is the s32 candidate verbatim.
+ * WHAT CHANGED vs s33: exactly one expression -- the next-neighbour BYTE OFFSET is
+ * now `tmp * 4` instead of `(s16) tmp * 4`.  Everything else is the s33 candidate
+ * verbatim (including s33's PLUS-operand flip `off + (s32)table`, which is still
+ * load-bearing: the base-first control z2b re-measures 21/23).
  *
- * WHY THAT ONE FLIP IS WORTH TWO POINTS (mechanism, dump-verified).  In the s32
- * spelling RTL-expand emits the address as `plus(table_pseudo, off_pseudo)` with
- * the base first, which makes the allocator record a copy PREFERENCE from the base
- * pseudo to the address pseudo (`;; 87 preferences: 17` in the .greg dump under
- * tmp/grind/func_80057CC8/dumps/text1b.greg).  Because the address pseudo crosses
- * the first `ratan2` call it must live in a callee-save register, and the
- * preference drags the BASE pseudo into that same callee-save register too --
- * emitted `lw $17,0x4($19)`.  The target keeps the base in the CALLER-SAVE `$a2`
- * (`lw $a2,0x4($s2)`, asm/funcs/func_80057CC8.s:17), because in the target the
- * base dies before the call.  Writing the offset first breaks the preference: the
- * base is no longer the leading operand, it is left in `$6`, and our
- * `lw $6,0x4($19)` / `addu $2,$2,$6` now agree with the target's `lw $a2,0x4($s2)`
- * / `addu $v0,$v0,$a2` instruction-for-instruction.
+ * WHY DROPPING THE REDUNDANT NARROWING IS WORTH TWO POINTS (dump-verified).  The
+ * wrap test `(s16) tmp >= arg0[3]` already forces the sll16/sra16 pair, so the extra
+ * `(s16)` in the offset expression bought no instruction -- it only changed WHERE in
+ * the block the offset's defining insn sat.  With the cast, RTL-expand emits
+ * sll16, sra16, then `sll off,sra,2` (offset defined 3rd); without it, the offset is
+ * `sll off,tmp,2` defined FIRST and the sign-extension pair follows.  Two consequences,
+ * both measured:
+ *   (1) the offset insn lands at the same position in the block as the target's
+ *       `addu $s3,$v0,$zero` (asm/funcs/func_80057CC8.s:29), which is the whole
+ *       two-point gain -- the emitted registers are IDENTICAL to the s33 form;
+ *   (2) the offset allocno's live range grows from 16 to 19 insns
+ *       (tmp/grind/func_80057CC8/dumps/text1b.lreg: "Register 104 used 3 times across
+ *       19 insns"), which flips the global allocation ORDER from `... 87 104 72 ...`
+ *       to `... 87 72 104 ...` in text1b.greg -- arg0 is now allocated BEFORE the
+ *       offset.  The dispositions do NOT change (72 in 19, 104 in 17), because arg0
+ *       carries hard-reg conflicts on 16/17/18 (text1b.greg "72 conflicts: ... 16 17 18")
+ *       and can only take $19 whatever its rank.  See evidence.md s34-E3.
  *
- * REGISTER-ASSIGNMENT ACCOUNTING (updated -- this CORRECTS s32-E4).  The .greg
- * dump prints the global allocation order directly:
- *   ;; 15 regs to allocate: 78 77 172 73 187 79 87 104 72 76 168 83 86 74 75
- * For the s32 form pseudo 87 is the vertex-table base, disposition `87 in 17`,
- * `88 in 17` -- i.e. the callee-save seat that s32 attributed to "the base pseudo
- * at four references" is actually held by the next-neighbour ADDRESS allocno, and
- * the base merely inherits it through the copy preference.  Under the flip the
- * base drops out of the callee-save competition entirely.  The surviving residual
- * is a single rank swap: we get $16 cys, $17 next-address, $18 cxs, $19 arg0,
- * where the target has $16 cys, $17 cxs, $18 arg0, $19 next-INDEX.  For the
- * next-address allocno to fall below arg0 under allocno_compare
- * (tools/gcc-2.7.2/global.c:635, floor_log2(n_refs)*n_refs/live_length) it needs
- * at most THREE references over a live range longer than ~30 insns; every
- * three-reference spelling measured this session (arm-selected index + sll16/sra14,
- * arm-selected index * 4, ternary offset) lands at 28/28/25 because the index form
- * costs instructions the offset form does not.  See evidence.md s33-E3.
+ * THE REGISTER RESIDUAL IS NOW FULLY ATTRIBUTED (s34-E4, new this session).  Ours is
+ * $16 cys, $17 next-address, $18 cxs, $19 arg0; the target is $16 cys, $17 cxs,
+ * $18 arg0, $19 next-index.  The cause is LOCAL-alloc, not global-alloc: our
+ * next-neighbour address is a block-local call-crossing quantity (text1b.lreg
+ * "Register 88 used 3 times across 4 insns in block 4; crosses 1 call"), so local-alloc
+ * hands it a callee-save seat ($17) BEFORE the two centre twins are placed, pushing
+ * cxs to $18 and blocking arg0 out of 16/17/18.  The target has no such block-local
+ * quantity: its call-crossing value is the next INDEX, defined in two blocks and used
+ * in a third, so it is a GLOBAL allocno and the twins take $16/$17 uncontested.
+ * Making our address global (z2: select the ADDRESS in the wrap arm, no `off` pseudo)
+ * does reproduce the target's $16 cys / $17 cxs exactly at no instruction cost -- but
+ * the address then outranks arg0 under allocno_compare (4 refs, floor_log2(4)=2) and
+ * takes $18, and the vertex-table base moves out of $6 into $4; net 21, one worse.
  *
- * WHY IT IS STILL NOT 0: unchanged from s30b/s31/s32 -- asm/funcs/func_80057CC8.s
- * loads 0x4($s2) TWICE (:17 `lw $a2`, :50 `lw $a0`) and GCC 2.7.2 has no pass that
- * turns one RTL load into two loads at the original address.  That residual is the
- * policy question refused 2026-07-20 and standing-ruled 2026-07-27, not a spelling.
+ * WHY IT IS STILL NOT 0: unchanged from s30b/s31/s32/s33 -- asm/funcs/func_80057CC8.s
+ * loads 0x4($s2) TWICE (:17 `lw $a2`, :50 `lw $a0`), which is what gives the target's
+ * arg0 SIX references and lets it outrank the neighbour allocno.  A ban-compliant form
+ * emits one load and five references.  That residual is the policy question refused
+ * 2026-07-20 and standing-ruled 2026-07-27, not a spelling.
  *
- * MEASURED-INERT THIS SESSION (all still 22 at 108 insns): naming the prev
- * neighbour address in its own local; flipping the PLUS operand order of the centre
- * address as well; forming the next address after `pi` instead of inside the arms;
- * two different local-declaration orders.  The flip's value is specific to the one
- * add whose result crosses the call.
+ * MEASURED-INERT THIS SESSION (all still 20 at 108 insns): `tmp << 2` instead of
+ * `tmp * 4`; centre coordinates read as `((u16 *)table)[arg1*2]`; a named
+ * prev-neighbour address local; the prev reads spelled as byte-offset pointer
+ * arithmetic; `s16 prev_idx` instead of `unsigned short`; forming the address after
+ * `pi`; `tmp`/`off` at function scope.
  */
 void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     unsigned short prev_idx;
@@ -75,7 +78,7 @@ void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
 
     {
         s32 tmp = arg1 + 1;
-        s32 off = (s16) tmp * 4;
+        s32 off = tmp * 4;
         if ((s16) tmp >= (s32)arg0[3]) {
             off = 0;
         }

@@ -922,3 +922,59 @@ is gated on the refused duplication family.
 - probe: vG: re-measure s27's call-order swap (compute ang_next first) in the flipped-PLUS ban-compliant regime. vQ: re-measure s32-E6's if-block swap in the same regime.
 - result: vG scores 54 at 112 insns where s27 recorded 16 - the number does not transfer at all. vQ scores 41 at 106 insns, exactly matching s32-E6's 41, so that one does transfer. Chassis-relativity is real and asymmetric: a banked score must be re-measured before it is spent, and the direction of the error is not predictable.
 - verdict: KILLED
+
+## s34 (2026-08-27) - structural
+
+## [s34] The next-address allocno can be demoted below arg0 by LENGTHENING its live range (s33 frontier hypothesis #1), and that demotion yields the target's $16..$19 mapping.
+- mechanism: allocno_compare (tools/gcc-2.7.2/global.c:635) = floor_log2(n_refs)*n_refs/live_length; s33 varied n_refs and the definition site but never pushed live_length past ~16 insns. Only live_length was left unexploited.
+- probe: x1/x2/x3 hoist the `tmp`/`off` computation out of its basic block (before the prev-index if-block, before the vertex-table load, and with the address formed after `pi`); y1 defines the offset via the target's own `(s32)(tmp << 16) >> 14` pair so its def is the 2nd insn of the block; y5 drops the redundant `(s16)` narrowing so the def is the 1st insn. Each measured with sandbox, and the winning form re-dumped with tmp/grind/func_80057CC8/run_dump.sh to read text1b.lreg / text1b.greg.
+- result: The lever WORKS and is worth NOTHING. y5 lengthens the offset allocno from 16 to 19 insns (text1b.lreg "Register 104 used 3 times across 19 insns"), which flips the printed global allocation order from `... 87 104 72 ...` to `... 87 72 104 ...` - arg0 is now allocated first. The dispositions are unchanged (`72 in 19`, `104 in 17`) because arg0 carries hard-register conflicts on 16, 17 AND 18 (text1b.greg `;; 72 conflicts: ... 16 17 18 29`), so $19 is its only legal seat at any rank. Hoisting out of the block entirely costs an instruction and measures 38/109 (x1/x2/x3) or 33/109 (w2/w3/w4).
+- verdict: KILLED (the ranking axis is closed - rank does not determine this function's seats)
+
+## [s34] Dropping the redundant `(s16)` narrowing from the byte-offset expression is byte-neutral and therefore inert.
+- mechanism: the wrap test `(s16) tmp >= (s32)arg0[3]` already forces the sll16/sra16 pair, so both spellings compile to three insns; only the position of the offset's defining insn inside the block differs.
+- probe: y5 (`off = tmp * 4`), y1 (`off = (s32)(tmp << 16) >> 14`), y6/y7 (both with the base-first PLUS order as controls), z20 (`off = tmp << 2`).
+- result: NOT inert - y5 measures **20 at build_insns 108**, a two-point improvement over the s33 candidate's 22 at the same instruction count, with byte-identical register assignment. The def moves from 3rd to 1st in the block and lands where the target's `addu $s3,$v0,$zero` sits. y1 (def 2nd) measures exactly in between at 21. z20 re-measures 20 (identical text). y6/y7 confirm s33's PLUS flip is still load-bearing (23 / 22).
+- verdict: CONFIRMED - new floor 20
+
+## [s34] The register residual ($17 next-address / $18 cxs / $19 arg0 instead of $17 cxs / $18 arg0 / $19 next-index) is a global-allocno ranking problem.
+- mechanism: s32/s33 attributed the seats to allocno_compare ordering among global allocnos.
+- probe: read text1b.lreg's per-pseudo lines for the whole crossing set, then measure z2 (address selected in the wrap arm, no `off` pseudo, so the address becomes a multi-block/global allocno) and w1 (the same construct with the `(s16)` cast).
+- result: WRONG PASS. The seats are decided in LOCAL-alloc: our next-neighbour address is a block-local call-crossing quantity (`Register 88 used 3 times across 4 insns in block 4; crosses 1 call`), so local-alloc seats it in $17 before the centre twins are placed, pushing cxs to $18 and leaving arg0 only $19. The target has no block-local call-crossing quantity at all (its next INDEX is defined in two blocks and used in a third). z2 removes ours and reproduces the target's $16 cys / $17 cxs EXACTLY at no instruction cost - but the now-global address carries four references, outranks arg0, takes $18, and displaces the vertex-table base from $6 to $4; net 21, one point worse than y5.
+- verdict: KILLED as stated; replaced by the corrected local-alloc attribution (evidence s34-E4/E5)
+
+## [s34] The PLUS/multiply operand-order flip that bought 24 -> 22 in s33 has unexploited twins at the other two-operand sites (s33 frontier hypothesis #2).
+- mechanism: the .greg dump records one copy-preference line per tied pseudo; any tie whose partner is a callee-save allocno is a candidate for the same source-level flip.
+- probe: w6 `base = 0x800 + ang_prev`; w7 `scale = 40 * arg0[2]`; w8 both final adds written `((...) >> 12) + cx/cy`; w5 `ang_mid = ang_prev + ((s32)(ang_next - ang_prev) / 2)`; w9 both final scale multiplies flipped.
+- result: w6/w7/w8 all 22 (byte-inert), w5 23, w9 24. The only preference tie in this function worth anything is the one at the neighbour address whose result crosses the first call - and within the z2 regime even that one is worth nothing (z2b 21 = z2 21).
+- verdict: KILLED
+
+## [s34] The next-address allocno can be demoted below arg0 by LENGTHENING its live range (s33 frontier hypothesis #1), and that demotion yields the target's $16..$19 mapping.
+- mechanism: allocno_compare (tools/gcc-2.7.2/global.c:635) = floor_log2(n_refs)*n_refs/live_length; s33 varied n_refs and the def site but never pushed live_length past ~16 insns, leaving it the one unexploited free variable.
+- probe: x1/x2/x3 hoist the tmp/off computation out of its basic block (before the prev-index if-block, before the vertex-table load, address after pi); y1 defines the offset via the target's own (s32)(tmp<<16)>>14 pair; y5 drops the redundant (s16) so the def is the block's first insn. Winner re-dumped with tmp/grind/func_80057CC8/run_dump.sh and read out of text1b.lreg / text1b.greg.
+- result: The lever works and is worth nothing for the mapping. y5 lengthens the offset allocno from 16 to 19 insns (lreg: 'Register 104 used 3 times across 19 insns') and flips the printed global allocation order from '... 87 104 72 ...' to '... 87 72 104 ...', i.e. arg0 is now allocated FIRST. Dispositions unchanged (72 in 19, 104 in 17) because greg prints ';; 72 conflicts: ... 16 17 18 29' - arg0 has hard-reg conflicts on $16/$17/$18 and $19 is its only legal callee-save seat at any rank. Hoisting out of the block costs an insn: x1/x2/x3 = 38 at 109, w2/w3/w4 = 33 at 109.
+- verdict: KILLED
+
+## [s34] Dropping the redundant (s16) narrowing from the byte-offset expression is byte-neutral and therefore inert.
+- mechanism: The wrap test '(s16) tmp >= (s32)arg0[3]' already forces the sll16/sra16 pair, so both spellings compile to the same three insns; only the position of the offset's defining insn inside the block changes.
+- probe: y5 (off = tmp * 4), y1 (off = (s32)(tmp << 16) >> 14), z20 (off = tmp << 2), and y6/y7 as base-first-PLUS controls; all measured with sandbox --disable all.
+- result: NOT inert. y5 = score 20 at build_insns 108 vs the s33 candidate's 22 at the same 108 insns, with byte-identical register assignment - the offset insn simply moves from 3rd to 1st in the block, landing where the target's 'addu $s3,$v0,$zero' sits (asm/funcs/func_80057CC8.s:29). y1 (def 2nd) measures exactly in between at 21. z20 re-measures 20. y6/y7 (23/22) confirm s33's PLUS flip is still load-bearing.
+- verdict: CONFIRMED
+
+## [s34] The register residual ($17 next-address / $18 cxs / $19 arg0 instead of the target's $17 cxs / $18 arg0 / $19 next-index) is a global-allocno ranking problem, as s32/s33 modelled it.
+- mechanism: s32/s33 attributed all four callee-save seats to allocno_compare ordering among global allocnos.
+- probe: Read text1b.lreg's per-pseudo n_refs/live_length lines for the entire call-crossing set, then measure z2 (address selected in the wrap arm, no off pseudo, so the address becomes a multi-block global allocno) and w1 (same construct with the (s16) cast).
+- result: Wrong pass. The seats are decided in LOCAL-alloc: our next-neighbour address is a block-local call-crossing quantity ('Register 88 used 3 times across 4 insns in block 4; crosses 1 call'), so local-alloc seats it in $17 before the centre twins, pushing cxs to $18 and leaving arg0 only $19. The target has no block-local call-crossing quantity (its next INDEX spans three blocks). z2 removes ours and reproduces the target's $16 cys / $17 cxs EXACTLY at no instruction cost (108 insns; w1, the cast version, costs two insns and measures 25) - but the now-global 4-reference address outranks arg0, takes $18, and displaces the vertex base from $6 to $4. Net 21, one worse than y5.
+- verdict: KILLED
+
+## [s34] The PLUS/multiply operand-order flip that bought 24 -> 22 in s33 has unexploited twins at the other two-operand sites (s33 frontier hypothesis #2).
+- mechanism: The .greg dump records one copy-preference line per tied pseudo; any tie whose partner is a callee-save allocno should be flippable at source level for free.
+- probe: w6 base = 0x800 + ang_prev; w7 scale = 40 * arg0[2]; w8 both final adds as ((...) >> 12) + cx/cy; w5 ang_mid = ang_prev + ((s32)(ang_next - ang_prev) / 2); w9 both final scale multiplies flipped.
+- result: w6/w7/w8 all 22 (byte-inert), w5 23, w9 24. The only tie in this function worth anything is the one at the neighbour address whose result crosses the first call; inside the z2 regime even that one is worth nothing (z2b 21 = z2 21).
+- verdict: KILLED
+
+## [s34] Re-ordering the two index if-blocks (next-index first) behaves differently on the ban-compliant 22-chassis than the 41 recorded by s32-E6/s33.
+- mechanism: Chassis-relativity is asymmetric (s33-H5): some banked scores transfer, some do not.
+- probe: z16 = y5 with the next-index block moved above the prev-index block.
+- result: 41 at 106 insns - identical to the previously banked number. CSE fuses the two 'lbu 0x3($s2)' reads that the target keeps separate (asm/funcs/func_80057CC8.s:24 and :31). This one transfers.
+- verdict: KILLED

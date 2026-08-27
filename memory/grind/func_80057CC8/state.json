@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 33,
- "current_modality": "rederive",
+ "session_count": 34,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -207,23 +207,29 @@
    "floor": 22,
    "modality": "rederive",
    "headline": "s33 rederive: floor 24 -> 22 via a pure PLUS-operand-order flip on the next-neighbour address (108 insns, same count) that breaks the base->address copy preference and leaves the vertex-table base in "
+  },
+  {
+   "session": 34,
+   "floor": 20,
+   "modality": "structural",
+   "headline": "s34 structural: floor 22 -> 20 by dropping the redundant (s16) narrowing from the byte offset (108 insns, identical registers); and the register residual is re-attributed from global-alloc ranking to "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The remaining two points are the one rank swap, and it can be bought without the two-instruction penalty if the next-address allocno is demoted by LENGTHENING its live range rather than by changing its reference count - specifically by defining it early enough that its live_length exceeds ~30 insns while keeping the single-def byte-offset form that costs nothing.",
-   "mechanism": "allocno_compare (tools/gcc-2.7.2/global.c:635) = floor_log2(n_refs)*n_refs/live_length. The winning form's address allocno has ~5 refs over ~25 insns; arg0 has 5 refs over ~100. Only live_length is still an unexploited free variable - s33 varied n_refs (28/28/25) and the definition SITE within the arms (inert), but never successfully pushed the def more than a few insns earlier, because the sched pass sinks it (the emitted `addu $17,$17,$6` lands immediately before the call regardless of source placement).",
-   "next_probe": "Read tmp/grind/func_80057CC8/dumps/text1b.sched for func_80057CC8 and find WHY the address-forming addu is sunk to just before the jal (INSN_PRIORITY / the ready-list order), then look for a source form whose address def is anchored earlier - e.g. making the offset depend on a value the scheduler cannot move past, or forming the address inside the PREV-index if-block's fallthrough where the block boundary pins it. Measure build_insns and the emitted $16..$19 with tmp/grind/func_80057CC8/s31/norm2.py against asm/funcs/func_80057CC8.s."
+   "hypothesis": "The last register residual is reachable only by removing our block-local call-crossing address quantity (which frees $17 for cxs, proven by z2) WITHOUT giving the resulting global address allocno four references (which is what costs z2 the $18 seat and the $6 base). A three-reference multi-block address allocno ranks below arg0 (3/L < 0.185 for L > 16).",
+   "mechanism": "local-alloc seats block-local call-crossing quantities before global-alloc runs (text1b.lreg block-4 quantities); global-alloc then works around them, and greg's ';; 72 conflicts' line shows arg0 already excluded from $16/$17/$18 in the y5 regime.",
+   "next_probe": "Dump text1b.lreg/text1b.greg for the z2 form and read the address allocno's refs/live_length plus arg0's conflict list THERE. If arg0's z2-regime conflicts no longer include $18, the seat competition is genuinely two-way, and a three-reference spelling of the arm-selected ADDRESS (one whose arm-def is shared with the centre-address def, or whose two lh uses fold into the subtractions) would put arg0 in $18 and the address in $19 - the target's exact mapping. Measure any such spelling at 108 insns; anything that adds an insn has already been shown to cost more than the seats are worth (w1 = 25)."
   },
   {
-   "hypothesis": "The PLUS-operand-order lever that bought 24 -> 22 has only been applied to the three vertex addresses; the same copy-preference tie may exist at other two-operand sites whose results cross a call or feed a callee-save, and flipping them is free (no instruction-count change).",
-   "mechanism": "The .greg dump records one preference line per tied pseudo (`;; 87 preferences: 17`). Any other pseudo carrying a `preferences:` line whose partner is a callee-save allocno is a candidate for the same source-level flip.",
-   "next_probe": "Re-run tmp/grind/func_80057CC8/run_dump.sh with the s33 candidate (vM) in place, grep the func_80057CC8 block of text1b.greg for all `preferences:` lines, and for each one identify the source expression that produced the tie and measure its operand-flipped spelling. s33 only checked the three address adds (all 22); the coordinate subtractions, the ang_mid arithmetic and the final scale multiply were never dumped."
+   "hypothesis": "The two-point gain from y5 was purely positional (the offset insn landing at the target's slot in the block), so the remaining ~20 points are mostly positional too, and per-insn slot alignment is a cheaper axis than register chasing.",
+   "mechanism": "The engine metric scores per-instruction text agreement; y5 changed no register and no instruction count yet moved 22 -> 20 by re-ordering one insn within its block.",
+   "next_probe": "Diff tmp/grind/func_80057CC8/s34/y5.hon.s against asm/funcs/func_80057CC8.s with tmp/grind/func_80057CC8/s31/norm2.py and enumerate every insn whose SLOT differs while its text matches (currently the lbu 0x3 / sra16 pair order in block 2, and the addu address-formation slot in block 4). For each, find a source spelling that changes RTL-expand emission order the way y5 did - the lever is which sub-expression is emitted first, not which registers are used."
   },
   {
-   "hypothesis": "Nothing reachable closes the last instruction toward a BYTE MATCH: the residual is the refused duplication policy, now proven four ways (mechanism s30b, instruction-multiset counting s31, allocno-priority arithmetic s32 as corrected by s33-E2, and s33-E5's nine-live-values demonstration from the opposite direction).",
-   "mechanism": "The target's instruction multiset contains two loads of 0x4($s2). A ban-compliant form emits one, which forces the base to stay live across the first ratan2 call; that occupies the eighth callee-save seat the target frees by reloading, so the target's post-call address formation is unaffordable by construction, not by spelling.",
-   "next_probe": "Do NOT re-file an escalation packet - a YES there would lower a standard (pre-decided-NO auto-reject class, owner ruling 2026-08-24). Spend sessions on the two floor axes above."
+   "hypothesis": "Nothing reachable closes the last instructions toward a BYTE match; the residual is the refused duplication policy, now proven five ways (mechanism s30b, instruction-multiset counting s31, allocno-priority arithmetic s32 as corrected by s33-E2, s33-E5's nine-live-values demonstration, and s34-E4's local-alloc/reference-count attribution).",
+   "mechanism": "The target's second lw 0x4($s2) gives arg0 six references and removes any block-local call-crossing quantity; a ban-compliant form has five references and one such quantity, so the target's seat assignment is unaffordable by construction rather than by spelling.",
+   "next_probe": "Do NOT re-file an escalation packet - a YES there would lower a standard (pre-decided-NO auto-reject class, owner ruling 2026-08-24). Spend sessions on the two axes above."
   }
  ],
  "judge_constraints": [
