@@ -97,6 +97,56 @@
  * pointer's birth 2 -> 6 (span 30 -> 26) while staying at 28 / 215: 4 of the 6
  * insns the window needs, the first lever ever shown to move that dial.  The
  * death-side route is now closed (hoisting the abs measures 44 / 214).
+ *
+ * s8 (2026-08-26, forensics): FLOOR 28 -> 25 (215/215 insns), the first floor
+ * movement since s2.  Two forensic products drive it.
+ *
+ * (1) PASS ATTRIBUTION CORRECTION.  The cross-jump pass ("jump2") is NOT an
+ * early/pre-RA pass: toplev.c:3141 calls jump_optimize(insns, 1, 1, 0) AFTER
+ * sched2 and AFTER global/local register allocation and reload, as the last
+ * pass before reorg (.dbr).  So every cross-jump decision on this function
+ * (clusters B and D) is taken on POST-RA, POST-SCHEDULING RTL in which every
+ * pseudo has already been replaced by its hard register.  No RA-level or
+ * scheduling-level lever can influence the merge, and the merge cannot be what
+ * chooses a branch SENSE (the beqz/bnez at slot 138 comes from RTL expansion of
+ * the source's branch shape).
+ *
+ * (2) THE MERGE THAT COSTS FOUR INSNS, MEASURED EXACTLY.  With both var_v0_2
+ * selection copies spelled canonically, instrumented cc1 (BB2_XJUMP_DEBUG)
+ * prints, for the tail copy's `j block_48` (uid 362) against the ==5 copy's
+ * `j block_48` (uid 397, a jump_chain partner, so find_cross_jump starts at
+ * minimum=2):
+ *     MATCH i1=358 i2=393 set(reg<-11)  min->1
+ *     MATCH i1=354 i2=389 set           min->0     (the two bnez insns)
+ *     MATCH i1=351 i2=386 set(reg<-25)  min->-1
+ *     LABEL-BONUS i1=347 (label)        min->-2; break   => WIN
+ * i.e. the block is merged with THREE units of slack.  Defeating it needs the
+ * backward walk to fail on the FIRST compared insn.
+ *
+ * (3) THE LEVER: find_cross_jump compares patterns with rtx_renumbered_equal_p,
+ * which compares GET_MODE.  Because var_v0_2 is `s16`, both copies' constant
+ * loads are `(set (reg/v:HI 2 v0) (const_int 25))` / movhi_internal2.  Routing
+ * the tail copy's selection through an s32 intermediate makes ITS constant
+ * loads `(set (reg:SI 2 v0) ...)` / movsi_internal2 - RTL-DISTINCT but
+ * BYTE-IDENTICAL (`addiu $v0,$zero,0x19` either way), so find_cross_jump
+ * PAT-MISMATCHes on insn 1, both copies survive, and BOTH now carry target's
+ * canonical `bnez $s1 / li 0x19 / j / li 0xB` order.  Cluster D (4 diffs) is
+ * CLOSED; slots 127-130 and 138-141 now match target exactly.
+ *
+ * CLASSIFICATION IS OPEN - DO NOT SUBMIT THIS AS candidate-ready WITHOUT A
+ * RULING.  `s32 sel` is a fresh local that is written twice (init + conditional
+ * re-write) and read once, carrying a real consumed value.  That does NOT fit
+ * the named-intermediate family (its once-written prong excludes multi-write),
+ * and no other frozen SOTN family covers it.  The sanctioned variable-reuse
+ * spelling of the identical lever was measured and FAILS: borrowing the
+ * existing s32 `d_val` measures 33 / 216 (the copy does not coalesce; see
+ * rejected/reuse-dval-selection-holder-no-coalesce.c).  Next session must
+ * either obtain a ruling or find a mode-splitting spelling that is plainly
+ * ordinary C.
+ *
+ * Remaining residual at 25: cluster A (s2/s3 callee-saved rotation, ~10 slots),
+ * cluster B (slots 45-47 nop/li v0,1 exit-block sharing), cluster C (v0/v1 at
+ * slots 126/132/133/135), cluster E (a0/a1 at slots 159/161/168/171).
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
     s32 temp_a1;
@@ -181,10 +231,12 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                                 D_800A3876 = -1;
                                 return ret;
                             }
-                            if (var_s1 != 0) {
-                                var_v0_2 = 0x19;
-                            } else {
-                                var_v0_2 = 0xB;
+                            {
+                                s32 sel = 0x19;
+                                if (var_s1 == 0) {
+                                    sel = 0xB;
+                                }
+                                var_v0_2 = sel;
                             }
                             goto block_48;
                         }

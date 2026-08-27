@@ -552,3 +552,77 @@ Chassis: candidate body applied to src/code6cac_b.c, sandbox --disable all = **2
 - probe: Variants A_abs_first and C_both (declare `s32 temp_v1_5;` and assign it after the abs `if`), sandbox --disable all.
 - result: BOTH measure 44 at 214 insns - one instruction FEWER than target's 215 and a 16-point regression; C_both scores identically to A_abs_first, so the loss is owned by the abs hoist alone and not by the pointer reorder. Banked as rejected/tail-abs-hoisted-above-product-loses-insn.c. Combined with s3's tail-abs-sunk-below-shift-adds-insn.c (31/216), BOTH directions of moving the abs are now dead and the abs is pinned where it is.
 - verdict: KILLED
+
+
+## Session 8 (2026-08-26, forensics) - measured
+
+## [s8] A per-function BB2_XJUMP_DEBUG trace can be obtained despite the hook's whole-TU, uid-restarting output.
+   probe: build iso.c (same TU, all other function bodies emptied), compile with the instrumented cc1, diff the func_800283D0 segment of .jump2 against the full-TU dump.
+   result: segments identical except CODE_LABEL_NUMBER (TU-global .LNN counter).  211 XJDBG lines, all this function's.
+   verdict: CONFIRMED
+
+## [s8] The cross-jump pass that merges the two var_v0_2 selection copies runs before register allocation, so RA and cross-jump levers interact.
+   probe: read toplev.c around the .jump2 dump; read the compared insns in .sched2.
+   result: toplev.c:3141 calls jump_optimize(insns,1,1,0) AFTER sched2 and after local/global alloc + reload, immediately before reorg.  The compared insns already carry hard registers.
+   verdict: KILLED - jump2 is post-RA; clusters B/D are independent of clusters A/E.
+
+## [s8] s7's frontier item 3: one .jump2 read settles clusters B, C and the beqz/bnez insn together, because find_cross_jump's choice of surviving copy inverts the chain's last branch sense.
+   probe: full XJDBG trace of the current body plus the canonical-both body.
+   result: the beqz/bnez at slot 138 is the source's branch shape expanded into RTL long before jump2; the cross-jump decisions logged for the return-1 blocks (uids 84/613/618) are separate decisions with their own arithmetic.
+   verdict: KILLED as stated (cluster B remains open on its own terms).
+
+## [s8] The merge that costs 4 insns is a single find_cross_jump decision whose arithmetic can be read exactly.
+   probe: BB2_XJUMP_DEBUG on the canonical-both body.
+   result: e1=362 vs chain partner e2=397, minimum starts at 2, three MATCHes (both constant loads AND the two conditional branches) plus a LABEL-BONUS take it to -2.  Merge fires with 3 units of slack; only a mismatch on the FIRST compared insn defeats it.
+   verdict: CONFIRMED
+
+## [s8] Because rtx_renumbered_equal_p compares GET_MODE, giving one copy's constant loads a different machine mode defeats the merge while leaving the emitted bytes identical.
+   probe: route the tail copy's selection through an s32 intermediate (both copies otherwise canonical); measure sandbox and re-diff the emitted stream.
+   result: 28 -> 25, build_insns 215 == 215.  Cluster D closed: slots 127-130 and 138-141 both match target, canonical bnez / 0x19-then-0xB order.
+   verdict: CONFIRMED
+
+## [s8] The sanctioned variable-reuse family can express the mode split by borrowing the existing s32 local d_val instead of inventing an intermediate.
+   probe: d_val = 0x19; if (var_s1 == 0) d_val = 0xB; var_v0_2 = d_val;
+   result: 33 / 216 - the copy does not coalesce (d_val's pseudo has real conflicts), so it survives as a 216th instruction.
+   verdict: KILLED
+
+## Frontier (for session 9)
+1. CLASSIFY OR RESPELL THE MODE SPLIT.  The 25-floor body's only new construct is a fresh, multi-write, once-read s32 intermediate whose mechanism is jump.c's mode comparison.  It fits no frozen family (named-intermediate excludes multi-write; variable-reuse measured dead).  Either obtain a ruling, or find an ordinary-C spelling that produces an SImode selection in the tail copy for program reasons - e.g. a tail-copy selection expression that is naturally int-typed and only narrowed at the shared store.
+2. CLUSTER B with the new attribution.  Target's shared, labelled `j / li v0,1` exit block is a POST-RA cross-jump product, not a source-CFG accident: in the trace our return-1 blocks reach uid 618-vs-84 with MATCH set(reg<-1) + LABEL-BONUS = min 0 => WIN, i.e. we merge a pair whose survivor placement differs from target's (the slot 45/47 nop/li swap is what survives).  The same mode lever may apply, and the trace names the exact insns (82, 616) to differentiate.
+3. CLUSTERS A and E are now provably independent of everything jump2 does, so s7's exhaustive RA windows (L73 92->[38,65], L143 14->[20,21]; span(qty0) 30 -> <=24) remain the live model - but re-run them ON THE 25-FLOOR BODY, since the mode split changed the tail block's RTL and may have moved the live lengths.
+
+## [s8] A per-function BB2_XJUMP_DEBUG trace can be obtained even though the hook's output is whole-TU and insn UIDs restart per function.
+- mechanism: Compile an isolated TU (same file, every other function body emptied to '{ }'); if the function's .jump2 RTL segment is unchanged, the stderr trace is attributable in full.
+- probe: tmp/grind/func_800283D0/s8/isolate.py + dumpiso.sh; diff the func_800283D0 segment of iso.jump2 against the full-TU code6cac_b.jump2.
+- result: Segments identical except CODE_LABEL_NUMBER values (the TU-global .LNN counter). 211 XJDBG lines, all belonging to func_800283D0.
+- verdict: CONFIRMED
+
+## [s8] The cross-jump pass that merges the two var_v0_2 selection copies runs before register allocation, so RA/scheduling levers and cross-jump levers interact.
+- mechanism: GCC 2.7.2 pass order in toplev.c decides whether find_cross_jump sees pseudos or hard registers.
+- probe: Read toplev.c around the .jump2 dump block; read the compared insns in the .sched2 dump.
+- result: toplev.c:3141 calls jump_optimize(insns,1,1,0) AFTER sched2 and after local/global allocation + reload, immediately before reorg (.dbr). The compared insns already carry hard registers ((reg/v:HI 2 v0)).
+- verdict: KILLED
+
+## [s8] s7 frontier item 3: one instrumented .jump2 read settles clusters B, C and the beqz-vs-bnez instruction together, because find_cross_jump's choice of surviving copy inverts the rejection chain's last branch sense.
+- mechanism: jump.c find_cross_jump / do_cross_jump redirecting one of two identical tails.
+- probe: Full XJDBG trace of the current body and of the canonical-both body; slot-level normalized diff of the emitted stream against target.
+- result: The beqz/bnez at emitted slot 138 is the source's branch shape expanded into RTL long before jump2 (it flips with the source spelling, not with the merge); the return-1 block decisions (uids 84/613/618) are separate decisions with their own min arithmetic. The three clusters do not share one lever.
+- verdict: KILLED
+
+## [s8] The 4-insn loss on the canonical-both body is a single find_cross_jump decision whose arithmetic can be read exactly.
+- mechanism: find_cross_jump starts at minimum=2 for a jump_chain partner (1 for own-label), subtracts 1 per matching insn and 1 more on reaching a CODE_LABEL in stream 1; the merge fires at <= 0.
+- probe: BB2_XJUMP_DEBUG on the canonical-both body (tmp/grind/func_800283D0/s8/xjump_CANON2.log).
+- result: enter e1=362 e2=397 min=2; MATCH 358/393 set(reg<-11) -> 1; MATCH 354/389 set (the two bnez) -> 0; MATCH 351/386 set(reg<-25) -> -1; LABEL-BONUS i1=347 -> -2; WIN; DO_CROSS_JUMP jump=362 newjpos=351 newlpos=386. Three units of slack: only a mismatch on the FIRST compared insn defeats it.
+- verdict: CONFIRMED
+
+## [s8] Because rtx_renumbered_equal_p compares GET_MODE, giving one copy's constant loads a different machine mode defeats the merge while leaving the emitted bytes identical.
+- mechanism: var_v0_2 is s16, so both copies emit (set (reg/v:HI 2 v0) (const_int 25)) / movhi_internal2; an s32 intermediate emits movsi_internal2 instead, which assembles to the same 'addiu $v0,$zero,0x19' byte but is a distinct RTL pattern, so find_cross_jump PAT-MISMATCHes on insn 1.
+- probe: Tail copy spelled 's32 sel = 0x19; if (var_s1 == 0) sel = 0xB; var_v0_2 = sel;' with BOTH copies otherwise canonical; sandbox --disable all plus a normalized slot diff.
+- result: score 25 (from 28), build_insns 215 == target 215. Cluster D closed: emitted slots 127-130 and 138-141 now match target exactly, including target's bnez sense and canonical 0x19-then-0xB order that the s2 if/else spelling could never produce. First floor movement since session 2.
+- verdict: CONFIRMED
+
+## [s8] The sanctioned variable-reuse family can express the same mode split by borrowing the existing s32 local d_val instead of inventing an intermediate.
+- mechanism: Borrowed local is already SImode, so the same movsi-vs-movhi mismatch should arise with no new declaration.
+- probe: d_val = 0x19; if (var_s1 == 0) d_val = 0xB; var_v0_2 = d_val; measured with sandbox --disable all.
+- result: 33 / 216. d_val's pseudo carries real conflicts from its earlier live range, so reload does not coalesce the copy and it survives as a 216th instruction. Banked as rejected/reuse-dval-selection-holder-no-coalesce.c.
+- verdict: KILLED

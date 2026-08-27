@@ -1049,3 +1049,122 @@ reading under which the ref axis is NOT foreclosed.
 - [s7] A_abs_first and C_both (abs hoisted above the temp_v1_5 product) both measure 44 at 214 insns - one insn short of target. With s3's abs-sunk variant (31/216) the abs is pinned and the death-side route to span(qty0) <= 24 is closed.
 
 - [s7] Ledger correction: s5's global window 'L143 +6-10 insns' is really +6 or +7 exactly. s5's 'ref-count axis FORECLOSED' holds for what the FINAL asm shows, but reg_n_refs is counted by flow.c BEFORE combine/sched1/jump2, so a reference later folded or cross-jump-merged away would be counted there and invisible in target's asm - the one reading under which R73 7->8 is not foreclosed.
+
+
+## Session 8 (2026-08-26, forensics) - measured
+
+Chassis re-measured at session start with the s2..s7 candidate body applied:
+sandbox --disable all = 28, build_insns 215 == target 215.  At session end the
+best measured form is **25 / 215** (see below); src/code6cac_b.c was restored to
+HEAD's INCLUDE_ASM at session end, and the winning body is in candidate.c.
+
+### Method note - a per-function XJDBG log is now obtainable
+The instrumented cc1's BB2_XJUMP_DEBUG output is whole-TU and carries no
+function boundaries, and insn UIDs restart per function, so a whole-TU log
+cannot be attributed.  tmp/grind/func_800283D0/s8/isolate.py builds
+tmp/grind/func_800283D0/s8/iso.c - the same TU with every OTHER function body
+emptied to `{ }` - and s8/dumpiso.sh compiles it with the instrumented cc1.
+VALIDATED: the func_800283D0 segment of the .jump2 RTL dump from iso.c is
+identical to the full-TU dump except for CODE_LABEL_NUMBER values (the TU-global
+.LNN counter).  So the iso log is exactly this function's trace.  Reuse this for
+any env-gated cc1 hook (QTY/ALLOC/XJUMP) that prints to stderr without a
+function tag.
+
+### FACT 1 (pass attribution correction, supersedes the s6/s7 framing)
+The cross-jump pass is the LAST jump pass and runs POST-RA and POST-sched2:
+tools/gcc-2.7.2/toplev.c:3141 `jump_optimize (insns, 1, 1, 0)` sits after the
+sched2 dump block and immediately before the .jump2 dump and reorg (.dbr).
+Consequences, all binding on future sessions:
+  - Cross-jump merges (clusters B and D) are decided on RTL in which every
+    pseudo has already been replaced by its HARD register.  No local-alloc,
+    global-alloc, live-length, ref-count or scheduling lever can change a
+    cross-jump outcome, and no cross-jump lever can change an allocation.
+    Clusters A/E and clusters B/D are therefore INDEPENDENT sub-problems.
+  - s7's frontier item 3 ("one instrumented .jump2 read settles clusters B, C
+    and the beqz/bnez insn together") is REFUTED as stated: the beqz/bnez sense
+    at slot 138 is produced by RTL expansion of the source's branch shape, not
+    by find_cross_jump's choice of surviving copy.
+
+### FACT 2 (the 4-insn merge, with its exact arithmetic)
+With BOTH var_v0_2 selection copies spelled canonically (`v = 0x19;
+if (!var_s1) v = 0xB;` - the pre-s2 body), the trace for the tail copy's
+`j block_48` is:
+    XJDBG: enter e1=362 e2=397 min=2 (chain-partner)
+    XJDBG:   MATCH i1=358 i2=393 set(reg<-11) min->1
+    XJDBG:   MATCH i1=354 i2=389 set          min->0
+    XJDBG:   MATCH i1=351 i2=386 set(reg<-25) min->-1
+    XJDBG:   LABEL-BONUS i1=347 (label) min->-2; break
+    XJDBG: result e1=362 min=-2 last1=351 => WIN
+    XJDBG: DO_CROSS_JUMP jump=362 newjpos=351 newlpos=386
+Reading: find_cross_jump starts at minimum=2 for a jump_chain partner (1 for the
+own-label form), subtracts 1 per matching insn and 1 more if the backward walk
+reaches a CODE_LABEL in stream 1, and the merge fires when the total is <= 0.
+All three insns of the block match - including the two conditional branches,
+whose patterns are equal because they test the same hard register and reference
+the same label.  The merge therefore has THREE units of slack: shortening the
+match by one or two insns is not enough; the walk must fail on the FIRST
+compared insn.
+
+### FACT 3 (the lever, and the 28 -> 25 measurement)
+find_cross_jump compares patterns with rtx_renumbered_equal_p, which compares
+GET_MODE as well as register numbers.  Because var_v0_2 is `s16`, BOTH copies'
+constant loads are `(set (reg/v:HI 2 v0) (const_int 25))`, insn code 163
+movhi_internal2 (verified in the .sched2 dump, uids 351/358 and 386/393).
+Routing the TAIL copy's selection through an s32 intermediate makes its two
+constant loads `(set (reg:SI 2 v0) ...)` / movsi_internal2 - a DIFFERENT RTL
+pattern that assembles to the IDENTICAL byte (`addiu $v0,$zero,0x19`).  Result:
+PAT-MISMATCH on the first compared insn; both copies survive.
+MEASURED: 25 / 215 (from 28 / 215).  Cluster D is CLOSED - emitted slots 127-130
+and 138-141 now match target exactly, including the `bnez $s1` sense and the
+canonical 0x19-then-0xB constant order that the s2 if/else spelling could never
+produce.  This is the first floor movement since session 2.
+
+### FACT 4 (the sanctioned-family spelling of the same lever is dead)
+Borrowing the existing s32 local `d_val` instead of a fresh intermediate
+measures 33 / 216: reload does not coalesce the resulting copy (d_val's pseudo
+carries conflicts from its real earlier live range), so the move survives as a
+216th instruction.  Banked as
+rejected/reuse-dval-selection-holder-no-coalesce.c.  The variable-reuse family
+therefore cannot express this lever on this function; only a fresh,
+conflict-free intermediate coalesces.
+
+### FACT 5 (residual at 25, re-derived from the emitted diff)
+Remaining slot-level differences after the mode split (normalized diff produced
+by tmp/grind/func_800283D0/s8/diffasm.sh + ours.txt / target.txt):
+  - cluster A, s2/s3 callee-saved rotation: slots 3, 4, 10, 85, 90, 96, 102,
+    107, 148, 153 (slot 96 also shows an addu operand order difference).
+  - cluster B, return-1 exit-block sharing: slots 45 and 47 (target `nop` /
+    `addiu $v0,1`, ours `li v0,1` / `nop`).
+  - cluster C, v0/v1 rename in the D_800A38A8 / D_800A3876 block: slots 126,
+    132, 133, 135.
+  - cluster E, tail a0/a1 quantity order: slots 159, 161, 168, 171.
+Cluster D no longer appears.
+
+### OPEN CLASSIFICATION QUESTION (do not spend it silently)
+`s32 sel = 0x19; if (!var_s1) sel = 0xB; var_v0_2 = sel;` is a fresh local,
+written twice, read once, carrying a real consumed value, byte-neutral.  It does
+NOT fit the named-intermediate family (whose once-written / once-read prong
+excludes a multi-write local) and no other frozen SOTN family covers it; the
+variable-reuse spelling is measured dead (FACT 4).  Its mechanism is a named GCC
+pass (jump.c find_cross_jump / rtx_renumbered_equal_p mode comparison), which is
+exactly the T3 signal.  A session that wants to submit this must first obtain a
+ruling, or find a spelling of the same mode split that a human would write for
+program reasons.
+
+- [s8] Chassis at session start with the s2..s7 candidate body applied: sandbox --disable all = 28, build_insns 215 == target 215 (HEAD itself carries INCLUDE_ASM, which is why the driver measured no floor at dispatch).
+
+- [s8] PASS ATTRIBUTION: the cross-jump pass is the LAST jump pass, toplev.c:3141 jump_optimize(insns,1,1,0), running after sched2 and after local/global allocation + reload and immediately before reorg. Cross-jump merges therefore compare POST-RA hard-register RTL: clusters B and D cannot be moved by any allocation, live-length, ref-count or scheduling lever, and no cross-jump lever can move clusters A or E. The two sub-problems are independent.
+
+- [s8] The merge costing 4 insns is exactly one decision: e1=362 vs jump_chain partner e2=397, minimum 2, three MATCHes (both constant loads AND the two conditional branches, whose patterns compare equal because they test the same hard register and reference the same label) plus a LABEL-BONUS, final min -2.
+
+- [s8] The compared RTL, read from the .sched2 dump: (insn 351 (set (reg/v:HI 2 v0) (const_int 25)) 163 {movhi_internal2}) and its twin (insn 386 ...) - HImode because var_v0_2 is declared s16.
+
+- [s8] MEASURED 25 / 215 with the tail copy routed through an s32 intermediate; MEASURED 33 / 216 with the same lever spelled as a borrow of the existing s32 local d_val; MEASURED 28 / 215 for the s2..s7 body and (from the trace) the canonical-both body merges to 211.
+
+- [s8] Residual at 25, by emitted slot: cluster A (s2/s3 rotation) slots 3, 4, 10, 85, 90, 96, 102, 107, 148, 153; cluster B (return-1 exit block) slots 45, 47; cluster C (v0/v1 in the D_800A38A8 / D_800A3876 block) slots 126, 132, 133, 135; cluster E (tail a0/a1) slots 159, 161, 168, 171. Cluster D is gone.
+
+- [s8] CLASSIFICATION IS OPEN on the 25-floor construct: 's32 sel' is a fresh local, written twice, read once, carrying a real consumed value, byte-neutral. It does not fit named-intermediate (that family's once-written / once-read prong excludes a multi-write local), the variable-reuse spelling is measured dead, and its mechanism is a named GCC pass - so it must not be submitted as candidate-ready without a ruling.
+
+- [s8] METHOD: per-function attribution of the whole-TU BB2_XJUMP_DEBUG stream is now reproducible via tmp/grind/func_800283D0/s8/isolate.py (other function bodies emptied), validated by the .jump2 RTL segment being identical to the full-TU dump apart from CODE_LABEL_NUMBER.
+
+- [s8] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) at session end; the 25-floor body lives in memory/grind/func_800283D0/candidate.c.

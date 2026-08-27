@@ -1,8 +1,8 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 7,
- "current_modality": "solver",
+ "session_count": 8,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 28,
    "modality": "solver",
    "headline": "Solver triage: the residual is PRE-RA by exactly ONE insn (beqz vs bnez) + 21 renames + 4 sched moves; exhaustive sweeps close the global cluster to allocnos 73/143 alone with exact windows, name clus"
+  },
+  {
+   "session": 8,
+   "floor": 25,
+   "modality": "forensics",
+   "headline": "Floor 28 -> 25 (215/215): instrumented jump2 forensics show the 4-insn loss is one find_cross_jump merge, and an SImode intermediate in the tail copy defeats it byte-neutrally, closing cluster D - but"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Cluster E (7 diffs) closes if the tail pointer's birth is delayed 2 more insns beyond what B_ptr_late already buys - span(qty0) 26 -> <= 24 - without adding an instruction.",
-   "mechanism": "local-alloc.c qty_compare_1 priority floor_log2(refs)*refs*size/(death-birth)*10000 with ties by ascending qty number; birth is the quantity's first reference in the post-sched1 stream, so anything sched1 can legally emit ahead of the ashift/addu pushes it later. The measured window is span <= 24 and B_ptr_late reached 26.",
-   "next_probe": "Start from B_ptr_late (tmp/grind/func_800283D0/s7/probe.py B_ptr_late) and enumerate what else can honestly precede the pointer in block 41: the two `& 0xFFF` index computations and the `+ 0x400` bias are the only independent work available. Measure each reorder with sandbox AND with tmp/grind/func_800283D0/s7/qty41.py (BB2_QTY_DEBUG block-41 dump) - the dump is the ground truth, since a birth vector is necessary but not sufficient. If no reorder reaches birth >= 8, re-run inverse.py local at depth 3 to see whether a 2-atom vector (birth + refs) opens a cheaper door."
+   "hypothesis": "The mode split that closes cluster D can be spelled as ordinary C that a human would write for program reasons (or is sanctionable as-is), unlocking the 25-floor body for a real candidate.",
+   "mechanism": "jump.c find_cross_jump compares patterns with rtx_renumbered_equal_p, which compares GET_MODE; any tail-copy selection whose value is naturally int-typed and only narrowed at the shared 16-bit store produces movsi where the ==5 copy produces movhi, with identical bytes.",
+   "next_probe": "Enumerate int-typed spellings of the tail selection that need no extra declaration: e.g. select from an int-typed expression already in scope, or make var_v0_2 itself s32 and narrow only the ==5 copy. Measure each with sandbox --disable all AND confirm the PAT-MISMATCH in the XJDBG trace via tmp/grind/func_800283D0/s8/dumpiso.sh. If none is byte-neutral, emit a ruling-request quoting the s8 evidence rather than submitting."
   },
   {
-   "hypothesis": "Cluster A (12 diffs) closes if temp_s3's live length rises from 14 to exactly 20 or 21, or if arg1's falls from 92 into [38,65]; the joint map means a partial move in each can be combined instead of finding one big lever.",
-   "mechanism": "global.c allocno_compare on pri = floor_log2(n_refs)*n_refs*size/reg_live_length*10000 with ties by lower allocno number. Live length is a property of the post-sched1 INSN ORDER, not of the insn COUNT, so both dials are reachable by reordering alone - the 215==215 budget does not foreclose them.",
-   "next_probe": "Build the global analogue of this session's local dial: take the joint table (L143 10..21 x L73 38..98) as the acceptance test, and for each candidate source reordering measure L73/L143 straight out of the model (extract.py then read flow.livelen_flow) rather than out of the score. Cheapest untried lever for L143: sink temp_s3's LAST use (the `== 5` test) later in the equal-arm without moving the abs; cheapest for L73: find a region where arg1 could honestly be dead (e.g. the original re-deriving the third call argument rather than holding the parameter live across the body)."
+   "hypothesis": "Cluster B (slots 45/47) is the same class of decision as cluster D and yields to the same mode lever applied to the constant-1 material.",
+   "mechanism": "The trace shows our return-1 blocks merging at e1=618 vs e2=84 (MATCH set(reg<-1) then LABEL-BONUS, min 0 => WIN, DO_CROSS_JUMP jump=618 newjpos=616 newlpos=82). Target's shared, labelled j / li v0,1 exit block is a post-RA cross-jump product with a different survivor, and reorg then cannot sink the li into the preceding branch's delay slot.",
+   "next_probe": "On the 25-floor body, re-run dumpiso.sh and read the min arithmetic at uids 82/84/613/616/618; then try differentiating the two constant-1 materials by mode (the ret holder is s32 today) so one merge candidate PAT-MISMATCHes, and measure slots 45/47."
   },
   {
-   "hypothesis": "The single PRE-RA instruction (ours beqz, target bnez) is the same jump2/cross-jump question as clusters B and D, and one instrumented .jump2 read can settle all three.",
-   "mechanism": "jump.c find_cross_jump decides which of two identical tails survives and which is redirected; when the surviving copy is the late one the rejection chain's last branch inverts sense, which is exactly a beqz/bnez swap and one relocated block. reorg.c fill_simple_delay_slots then can only leave `li v0,1` in the `j`'s delay slot when the surviving block carries a label with real predecessors.",
-   "next_probe": "Dump .jump2 for the current candidate (pwsh tools/grinder/dump.ps1 func_800283D0 - the dumps land in tmp/grind/func_800283D0/dumps/) and read which block find_cross_jump KEEPS and which it redirects at the beqz site; then look for a source arrangement in which the chain-fallthrough copy is the survivor. Note the s6 result that both constant-1 respellings measure 34/216, so the lever is not another exit-form respelling - it is which copy jump2 elects."
+   "hypothesis": "s7's exhaustive RA windows for clusters A and E still hold on the 25-floor body, and are now provably orthogonal to jump2.",
+   "mechanism": "global.c allocno_compare (L73 92 -> [38,65], L143 14 -> [20,21]) and local-alloc.c qty_compare_1 (span(qty0) 30 -> <= 24) are all decided before jump2 runs, so the mode split cannot have helped or hurt them except through the RTL it changed in the tail block.",
+   "next_probe": "Re-extract the RA models on the 25-floor body (tools/ra_solver/extract.py, then flow.livelen_flow and tmp/grind/func_800283D0/s7/qty41.py) and re-check L73/L143 and span(qty0) against s7's tables before spending any further spelling probes on clusters A and E."
   }
  ],
  "judge_constraints": [],
