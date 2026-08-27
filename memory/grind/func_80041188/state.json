@@ -1,7 +1,7 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 33,
+ "session_count": 34,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -207,23 +207,29 @@
    "floor": 1,
    "modality": "synthesis",
    "headline": "Owner-directive executed: candidate.c's un-shippable F1 chain-extender is REPLACED at zero cost by the owner-sanctioned split increment at stptr's own loop1 increment site (sandbox 1, 132/132, allocno"
+  },
+  {
+   "session": 34,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Ledger correction + two kills: the block-2 cse fold is done by BOTH cse passes (cse1 IS breakable by a loop-end note, cse2 re-folds), killing the whole loop-note escape; the fifth parameter is proven "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The one unexplored deletion surface in the whole grind: an insn counted by flow AND by sched1, present through global_alloc, and deleted AFTER it (reload's no-op-move deletion, jump2 cross-jumping) is simultaneously a counted reference and byte-free -- exactly the shape out2's missing fourth reference needs.",
-   "mechanism": "global_alloc reads reg_n_refs and reg_live_length before reload / sched2 / jump2 / reorg run, so every closure in this ledger (which stops at combine and local-alloc) leaves this surface untested -- E-s29-3 named it and no session probed it. reload deletes a (set p1 p2) that becomes a no-op once both pseudos land on the same hard register; the block-2 `out3 = out2;` copy is already a counted reference to out2 and would be byte-free if out3 were seated on out2's own $s6.",
-   "next_probe": "On the S1 chassis, force out3 off $s3 (which is free in loop2 only because stptr is dead there) by giving loop2 a live carrier that outranks out3, and check with `bash tmp/grind/func_80041188/s33/fr.sh <TAG> 87 86` whether pseudo 87 lands on $s6, whether the `move` disappears from the sandbox object, and what the insn count does. The question this answers is project-wide: can a copy be both flow-counted and unemitted in GCC 2.7.2?"
+   "hypothesis": "PRIMARY. An insn counted by flow, still present through global_alloc, and deleted AFTER it (reload's no-op-move deletion, or jump2's cross-jumping / no-op-move deletion) is simultaneously a counted reference and byte-free \u2014 exactly the shape out2's missing reference needs, and the only surface in this grind no session has probed.",
+   "mechanism": "global_alloc reads reg_n_refs and reg_live_length before reload, sched2, jump2 and reorg run, so every closure in this ledger (which stops at combine and local-alloc) leaves this surface untested. s34's E-s34-3 sharpens the requirement: the deleted insn must mention out2 and must NOT hand that occurrence to a surviving emitted insn \u2014 i.e. a copy that becomes a no-op because both pseudos land on the same hard register, or an insn tail that jump2 cross-jumps away.",
+   "next_probe": "Do the cheapest falsification FIRST: on the already-dumped L1/D5 chassis, diff red.i.greg against red.i.jump2 and red.i.dbr and see whether ANY insn disappears after .greg in this function at all. If none does, the item closes in one read. If some do, spell (a) a loop1-local copy `tmp = out2;` whose consumer forces tmp onto out2's own seat and check red.i.greg for the shared hard register, and (b) two textually identical loop1 statement tails so jump2 cross-jumps one away with out2 mentioned in the deleted copy. Harness: tmp/grind/func_80041188/s34/run.ps1 plus s34/dump.sh <TAG> and s33/fr.sh <TAG> 86 87."
   },
   {
-   "hypothesis": "The block-2 copy can be made combine-deletable (E-s28-2 shape A) by giving out3 a SINGLE use, so flow still counts out2's fourth reference while the move folds into an argument setup target already emits.",
-   "mechanism": "Shape A deletes a reg-reg copy whose destination has one use (verified on insns 4 and 43 of the V15a dump). out3 has three references today (def + two loop2 uses), which is the only reason the copy survives to emission as `move $s3,$s6`. Loop2's two consumers are both argument moves, so a second carrier may fold into moves target already has.",
-   "next_probe": "Spell loop2 with out3 read once and a second local taking the other use (both orders), measure sandbox and the ALLOCDBG references for pseudos 86/87 and the new pseudo; watch for the two carriers conflicting and materialising a real move (+1 insn, the s21-era in-loop detour failure mode). Bank either way -- this is the last untried spelling of E-s29-1's conservation law."
+   "hypothesis": "A combine deletion whose out2 occurrence SIMPLIFIES AWAY is the one escape from E-s28-2's conservation law, and would give a flow-counted, byte-free reference inside loop1.",
+   "mechanism": "combine.c try_combine -> subst -> simplify_rtx folds `(minus X X)`, `(and X (not X))` and friends to constants at substitution time. flow ran before combine, so the reference is already counted, and the occurrence is gone from the emitted insn.",
+   "next_probe": "The blocking question is SEMANTIC and must be answered before any measurement: enumerate loop1's ten statements against the named data layout (E-s33-2: stptr walks 0x68-byte records, tbl walks a s32 table, p/buf stage six halfwords, the two matrices are &m[0] and &m[1]) and ask whether any of them can honestly consume a difference or cancellation involving &m[1]. If none can, this item closes on exactly the grounds E-s33-3 used for block 2 \u2014 and that closure would leave frontier 1 as the last open surface in the entire grind, which is itself the result worth banking."
   },
   {
-   "hypothesis": "The fifth parameter may be a struct whose first two members are the matrix pair followed by fields loop2 or block 2 touches; if so, a natural member access could read &m[1] and deliver out2's fourth reference as ordinary C rather than as a construct.",
-   "mechanism": "E-s33-3's semantic closure of block 2 assumes the parameter is exactly a two-element matrix pair. func_8004A348 / func_800523E0 / func_80044DE4 are INCLUDE_ASM with exactly one caller (this function, E-s32-4), so the type has to come from their bodies rather than from a matched sibling.",
-   "next_probe": "Read asm/funcs/func_8004A348.s, func_800523E0.s and func_80044DE4.s far enough to see which offsets of their matrix arguments are loaded/stored and whether anything touches past +0x40 of the pair. If something does, re-spell block 2's out3 definition as a member access and measure; if nothing does, record the pair type as confirmed and close this frontier, leaving FRONTIER 1 as the last open surface."
+   "hypothesis": "The +2 insns E-s31-3 measured for the pre-test loop1 (the only construct that stops cse2's fold) were priced on a chassis WITHOUT the sanctioned split-increment lifts; on the E-s34-3 ladder those two insns may be recoverable, in which case the CODE_LABEL family reopens.",
+   "mechanism": "H1/H2/H3 emit an unconditional `j` plus its delay slot at loop1's bottom in addition to the exit test. E-s27-2's D6 shows this function has at least one absorbable slot: at one re-store position sched1 hoists `addiu $a0,$sp,0x10` into loop1's load-delay slot and target's own nop at asm/funcs/func_80041188.s:30 disappears, paying for a surplus insn out of a nop and returning the build to 132 insns.",
+   "next_probe": "Measure H1 (D5 + pre-test loop1, previously 135 insns / sandbox 22) with the re-store moved to D6's position and the full E-s34-3 lift set applied, and read the INSN COUNT rather than the score. The item is alive only if the count falls to 133 or below; if it stays at 134+, strike the CODE_LABEL family from the ledger for good."
   }
  ],
  "judge_constraints": [

@@ -1,3 +1,34 @@
+/* s34 ADDENDUM (synthesis, 2026-08-27). Re-measured at the START of s34 with this
+ * exact body: STILL sandbox --disable all == 1 at 132 build / 132 target insns
+ * (HEAD = 27, D5 = 2 at 133, V15a = 15 at 132). The body is UNCHANGED from s33 --
+ * the honest `stptr = base + 0xFC;` initialiser plus the owner-ALLOWED split
+ * increment at stptr's own loop1 increment site, with its mandatory FAKE
+ * annotation. It remains the floor and the shipping chassis.
+ *
+ * s34 did not change the body; it closed two surfaces and re-stated the residual.
+ * (1) LEDGER CORRECTION (E-s34-1): the block-2 `move`/`addiu` fold is done by BOTH
+ * cse passes, not just cse1. cse.c:8055 ends a cse basic block at a
+ * NOTE_INSN_LOOP_END only when `after_loop == 0`, so cse1 IS breakable by a loop
+ * note (measured: form L1's red.i.cse still holds `out3 = pa4 + 0x20`), but cse2
+ * (-frerun-cse-after-loop, on at -O2) has after_loop == 1 and re-folds it to
+ * `out3 = out2` before flow ever counts. The whole loop-note route to preserving
+ * target's block-2 addiu is therefore dead, and E-s31-3's CODE_LABEL price
+ * (+2 insns) is the true and only price.
+ * (2) CLOSED (E-s34-2): the fifth parameter is exactly a two-element MATRIX array.
+ * func_8004A348 writes its second argument only at 0x0..0x10, func_800523E0 reads
+ * both matrix arguments only at 0x0..0xA, func_80044DE4 does not touch the pair --
+ * so there is no hidden struct member for a block-2 or loop2 statement to consume.
+ *
+ * THE RESIDUAL, in its sharpest form (E-s34-3). With the owner's split-increment
+ * lift available at every existing increment site, the whole of target's allocno
+ * order (stptr > stptr2 > i > tbl > out2 > pa4 > a3) is spellable EXCEPT out2's
+ * term: out2 has no increment site, so its reachable reference counts are 3 (714,
+ * below a3), 5 (2380, the in-loop1 same-value re-store -- but that is a DEFINITION,
+ * so it re-triggers the cse fold and costs its own instruction) and 7 (3255,
+ * unplaceable). The entire 34-session residual is one object: a byte-free in-loop1
+ * delivery of +1/+2 flow-counted references to out2 spelled as a USE rather than a
+ * definition. See evidence.md s34 and hypotheses.md's s34 frontier.
+ */
 /* s33 ADDENDUM (synthesis, 2026-08-27) -- THE BODY BELOW CHANGED. The floor is
  * unchanged at sandbox --disable all == 1 (132 build / 132 target insns,
  * re-measured this session; HEAD's committed body = 27), and the allocno table is

@@ -2957,3 +2957,110 @@ open surface in the whole grind.
 - probe: Re-read tools/gcc-2.7.2/cse.c:830-880 and 2555-2575 against the ledger's statement of the law.
 - result: The law is missing one disjunct: the last-uid test is bypassed entirely when the quantity's first register is a HARD register (firstr < FIRST_PSEUDO_REGISTER), so chains rooted in a value still living in a hard register at cse1 time -- the first four parameters and call return values -- survive canon_reg unconditionally regardless of donor lifetime. Not reachable for out2 (its donor is the fifth, stack-passed parameter, whose pseudo is set from a MEM, so the pa4-outlives-out2 test decides, exactly as E-s27-3's dump showed), but it is a general project-wide lever and now belongs in the law's statement.
 - verdict: CONFIRMED
+
+## s34 frontier (synthesis, 2026-08-27) — RESET. Everything below supersedes the s33 frontier.
+
+The s33 frontier's item 3 (a struct fifth parameter) is CLOSED NEGATIVELY by E-s34-2 and must
+not be re-probed. Items 1 and 2 survive, re-priced. The new framing that should govern the
+next ladder pass is E-s34-3: the seat ladder is an ALGEBRA in which every term except `out2`'s
+is now buildable from an owner-sanctioned split increment, and the ENTIRE residual of this
+34-session grind is one precisely-typed object.
+
+### THE RESIDUAL, stated once and exactly
+
+Deliver `+1` or `+2` flow-counted references to `out2`, sited INSIDE loop1, spelled as a USE
+(not a definition), costing zero emitted bytes, with block 2 left as
+`out3 = (s32 *)((u8 *)pa4 + 0x20);` so it emits target's `addiu $s3,$s7,0x20`.
+
+Why each clause is load-bearing:
+  * *in loop1* — a block-0 reference is folded pre-flow by cse1 `fold_rtx` reassociation
+    (E-s28-1) and a block-2 reference IS the residual `move` (E-s29-1's conservation law,
+    E-s31-5 in both orders).
+  * *a USE, not a definition* — an in-loop1 DEFINITION puts `(plus pa4 32)` into the cse table
+    with `out2` in its class, and block 2 is folded to `move $s3,$s6`. s34 proved that fold is
+    performed by BOTH cse passes and that only a CODE_LABEL (+2 insns, E-s31-3) stops cse2.
+  * *zero bytes* — the same-value re-store (the only known in-loop1 delivery) costs its own
+    `addiu $s6,$s7,0x20`, which is why the whole D family sits at 133 insns.
+
+### FRONTIER 1 (carried, now the PRIMARY item) — the post-`global_alloc` deletion surface
+
+**Hypothesis.** An insn counted by flow, still present through `global_alloc`, and deleted
+AFTER it (reload's no-op-move deletion, or jump2 cross-jumping / no-op-move deletion) is
+simultaneously a counted reference and byte-free — the exact shape the residual needs, and the
+only surface in this grind that no session has probed.
+
+**Mechanism.** `global_alloc` reads `reg_n_refs` and `reg_live_length` before reload, sched2,
+jump2 and reorg run, so every closure in this ledger (which stops at combine and local-alloc)
+leaves this surface untested. s34's E-s34-3 sharpens what to look for: the deleted insn must
+mention `out2` and must not hand that occurrence to a surviving emitted insn — i.e. either a
+copy that becomes a no-op because both pseudos land on the SAME hard register, or a pair of
+identical insn tails that jump2 cross-jumps away.
+
+**Next probe.** Two concrete shapes, both measurable on the V15a chassis with
+`tmp/grind/func_80041188/s34/run.ps1` plus `s33/fr.sh <TAG> 86 87` for the allocno table:
+  (a) a loop1-local copy `tmp = out2;` whose consumer forces `tmp` onto `out2`'s own seat —
+      check `red.i.greg` for whether the two pseudos are renumbered to the same hard register
+      and whether `red.i.jump2` still contains the copy;
+  (b) two loop1 statement tails made textually identical so jump2 cross-jumps one away, with
+      `out2` mentioned in the deleted copy. Read `red.i.greg` vs `red.i.jump2` vs `red.i.dbr`
+      to see whether ANY insn disappears after `.greg` in this function at all — that single
+      read is the cheapest possible falsification of the whole item and should be done FIRST.
+
+### FRONTIER 2 (carried, re-priced) — a combine deletion whose `out2` occurrence simplifies away
+
+**Hypothesis.** E-s28-2's conservation observation ("combine's deletions are substitutions, so
+the survivor still mentions `out2`") has one escape: a substitution in which the `out2`
+occurrence CANCELS, so combine's surviving insn does not mention it. Any such shape gives a
+flow-counted, byte-free reference inside loop1.
+
+**Mechanism.** `combine.c` `try_combine` -> `subst` -> `simplify_rtx`: `(minus X X)`,
+`(and X (not X))`, `(plus (plus X c) (minus 0 X))` and friends fold to constants at
+substitution time. The reference is counted by flow (which ran before combine) and the
+occurrence is gone from the emitted insn.
+
+**Next probe.** The blocking question is SEMANTIC, not mechanical, and should be answered
+before any measurement: does loop1 compute anything that legitimately consumes a difference or
+a cancellation involving `&m[1]`? E-s33-3 enumerated block 2's values and found none; the same
+enumeration has NOT been done for loop1's ten statements against the named data layout
+(E-s33-2: `stptr` walks 0x68-byte records, `tbl` walks a s32 table, `p`/`buf` stage six
+halfwords). If nothing in loop1 can honestly take `&m[1]` as an input to a cancelling
+expression, this item closes on the same semantic grounds E-s33-3 used for block 2 — and that
+closure is itself a bankable result that would leave FRONTIER 1 as the last open surface in
+the whole grind.
+
+### FRONTIER 3 (new) — re-price the CODE_LABEL now that the ladder is an algebra
+
+**Hypothesis.** The `+2` insns E-s31-3 measured for a pre-test loop1 (the only construct that
+stops cse2's fold) were priced on a chassis WITHOUT the sanctioned split-increment lifts. On
+the E-s34-3 ladder the re-store family reaches all-target seats with the block-2 `addiu`
+intact, so the question is no longer "does the label work" (it does — H1 emitted the addiu)
+but "can the two insns the pre-test costs be recovered elsewhere".
+
+**Mechanism.** H1/H2/H3 emit an unconditional `j` plus its delay slot at loop1's bottom in
+ADDITION to the exit test. E-s27-2's D6 result shows this function has at least one absorbable
+slot: at one re-store position sched1 hoists `addiu $a0,$sp,0x10` into loop1's load-delay slot
+and the target's own `nop` at `asm/funcs/func_80041188.s:30` disappears, paying for a surplus
+insn out of a nop and returning the build to 132.
+
+**Next probe.** Measure H1 (D5 + pre-test loop1, previously 135 insns / sandbox 22) with the
+re-store moved to D6's position and with the full E-s34-3 lift set applied, and read the insn
+count rather than the score: the item is alive only if the count falls to 133 or below. If it
+stays at 134+, the CODE_LABEL family is closed for good and should be struck from the ledger.
+
+## [s34] A NOTE_INSN_LOOP_END placed between loop1's back-branch and block 2 terminates cse's extended basic block (cse.c:8055) and so preserves target's block-2 `addiu $s3,$s7,0x20` even when loop1 contains a same-value re-store of out2 — a cheaper alternative to the CODE_LABEL that E-s31-3 priced at +2 insns.
+- mechanism: cse_end_of_basic_block's scan carries a second terminator the ledger never recorded: `if (! after_loop && GET_CODE (p) == NOTE && NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END) break;`. cse_main is invoked twice — cse1 with after_loop == 0 and cse2 (-frerun-cse-after-loop, on at -O2) with after_loop == 1.
+- probe: Form L1 = alt_D5_alltargetseats_score2_s27.c with block 2's first statement wrapped in `do { a1 += 0x6C; } while (0);` (pure instrument). Measured through tmp/grind/func_80041188/s34/run.ps1 and dumped with -da through the reduced TU (tmp/grind/func_80041188/s34/L1/).
+- result: sandbox --disable all = 2 at 133 build / 132 target insns, bit-identical to D5; object still emits `move $s3,$s6`. The dumps show the instrument worked at cse1 and was undone at cse2: red.i.jump still carries the wrap's notes (163 LOOP_BEG, 170 LOOP_CONT, 177 LOOP_END); red.i.cse insn 190 is still `(set (reg/v:SI 87) (plus (reg/v:SI 77) (const_int 32)))` — cse1 did NOT fold, the first time in 34 sessions the fold has been switched off without a CODE_LABEL; red.i.loop is unchanged; red.i.cse2 insn 190 is `(set (reg/v:SI 87) (reg/v:SI 86))` — cse2 re-folds, and cse2 runs before flow, so the reference still lands on out2.
+- verdict: KILLED
+
+## [s34] The fifth parameter may be a struct whose first two members are the matrix pair followed by fields that block 2 or loop2 touches; if so a natural member access could read &m[1] and deliver out2's missing fourth reference as ordinary C (s33 frontier item 3).
+- mechanism: E-s33-3's semantic closure of block 2 assumes the parameter is exactly a two-element matrix pair. func_8004A348 / func_800523E0 / func_80044DE4 are INCLUDE_ASM with exactly one caller (this function), so the type has to come from their bodies.
+- probe: Read the three callees' asm for every offset they load or store off the matrix arguments.
+- result: func_8004A348 writes its second argument at 0x0,0x2,0x4,0x6,0x8,0xA,0xC,0xE,0x10 and nowhere else (nine sh — a s16 m[3][3], the PsyQ MATRIX layout, asm/funcs/func_8004A348.s:51-91); func_800523E0 reads BOTH its first and second arguments only at 0x0..0xA (asm/funcs/func_800523E0.s:17-38); func_80044DE4 never touches the pair (its arguments are the two animation cursors plus the record address; it stages six halfwords on its own stack and tail-calls LoadAverage12). Nothing touches past +0x12 of either matrix and nothing addresses the pair beyond +0x20.
+- verdict: KILLED
+
+## [s34] With the owner's 2026-08-27 split-increment lift available at every existing increment site, the whole of target's allocno order is spellable from sanctioned constructs, so the 34-session residual is exactly one missing term — out2's.
+- mechanism: global.c's allocno_compare priority is floor_log2(refs)*refs*10000/live; a split increment at an existing site adds +2 references at ~0 live-length cost (s33 E-s33-1), and s33's S3 showed the lifts stack (stptr reached 9 references). Target's descending order is candidate.c's, since candidate.c holds ALL-TARGET seats: stptr > stptr2 > i > tbl > out2 > pa4 > a3 for $s3,$s0,$s4,$s5,$s6,$s7,$fp.
+- probe: Re-derived the ladder from the ledger's measured ALLOCDBG tables (E-s27-1's D-family table, E-s31-6's Z1 table, E-s33-1's S1 table) with each sanctioned lift priced, and re-measured the three reference chassis this session to confirm the tables still hold.
+- result: Every term closes: stptr 9/42 = 6428 ($s3), stptr2 8/48 = 5000 ($s0), i 10/98 = 3061 ($s4), tbl 6/48 = 2500 ($s5), out2 5/42 = 2380 ($s6), pa4 7/96 = 1458 ($s7), a3 4/100 = 800 ($fp) — target's order exactly, and D5 already MEASURES the middle of that table at all seven target seats. out2 is the only contested local with no increment site: its reachable counts are 3 (714, below a3), 5 (2380, via an in-loop1 same-value re-store — a DEFINITION, which re-triggers the cse fold and costs its own instruction) and 7 (3255, unplaceable per E-s27-4).
+- verdict: CONFIRMED

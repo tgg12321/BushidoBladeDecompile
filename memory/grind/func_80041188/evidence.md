@@ -4640,3 +4640,156 @@ CALL-CLOBBERED argument register, which prune_preferences removes.
 - [s33] BB2_FINDREG_DEBUG on S1 shows own_copy_prefs / own_full_prefs / someone_prefers all empty: the seat order in this function is pure priority order, no global.c preference dial (E-s30-1 confirmed first-hand rather than inherited).
 
 - [s33] src/text1a_pre.c was restored to HEAD at the end of the session; no build-pipeline file was touched, nothing was committed, no permuter campaign was launched.
+
+## s34 (synthesis, 2026-08-27) — the block-2 fold has TWO agents and the loop-note escape is dead (cse2 re-folds); the fifth parameter's type is CLOSED by the callees' own bytes; and the seat ladder is re-stated as an algebra in which every term except one is an owner-sanctioned lift
+
+Chassis measured this session with the edit in place in `src/text1a_pre.c` and
+`sandbox func_80041188 --disable all`, one call per tag
+(`tmp/grind/func_80041188/s34/run.ps1`): **HEAD = 27** (132 build / 132 target insns,
+`rules_dropped: 16`), **candidate.c (the s33 S1 body) = 1** (132/132),
+`alt_D5_alltargetseats_score2_s27.c` = **2** (133 build / 132 target),
+`alt_V15a_targetorder_purera_s25.c` = **15** (132/132). `src/text1a_pre.c` was restored to
+HEAD at the end of the session; no build-pipeline file was touched, nothing was committed,
+and no permuter campaign was launched.
+
+### E-s34-1 — THE LEDGER'S BLOCK-2 FOLD ATTRIBUTION IS INCOMPLETE: cse1 is breakable by a loop-end NOTE, but cse2 re-does the fold and only a CODE_LABEL stops it
+
+`tools/gcc-2.7.2/cse.c:8055` — inside the same `while (p && GET_CODE (p) != CODE_LABEL)`
+scan E-s31-2 quotes — carries a SECOND basic-block terminator the ledger never recorded:
+
+    if (! after_loop && GET_CODE (p) == NOTE
+        && NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)
+      break;
+
+`cse_main` is called twice: cse1 with `after_loop == 0` (so a `NOTE_INSN_LOOP_END`
+terminates the block) and cse2 (`-frerun-cse-after-loop`, on at -O2) with
+`after_loop == 1` (so the same note is INERT and only a CODE_LABEL terminates).
+
+Measured, form **L1** = `alt_D5_alltargetseats_score2_s27.c` with block 2's first statement
+wrapped in `do { a1 += 0x6C; } while (0);` — a pure instrument, placed solely to put a
+`NOTE_INSN_LOOP_END` between loop1's back-branch and block 2's `out3 = (s32 *)((u8 *)pa4 +
+0x20);`. `sandbox` = **2 at 133 insns**, i.e. bit-identical to D5, and the object still emits
+`move $s3,$s6`. The `-da` dumps (`tmp/grind/func_80041188/s34/L1/`) show exactly why, and they
+show the instrument WORKED at the pass it was aimed at:
+
+  * `red.i.jump` (cse1's input) still carries the wrap's notes (163 LOOP_BEG, 170 LOOP_CONT,
+    177 LOOP_END) — jump1 does not delete them.
+  * `red.i.cse` insn 190 is still `(set (reg/v:SI 87) (plus (reg/v:SI 77) (const_int 32)))` —
+    **cse1 did NOT fold block 2**, because the loop-end note ended its basic block. This is
+    the first time the fold has been switched off without paying for a CODE_LABEL.
+  * `red.i.loop` insn 190 is unchanged (loop.c is not the folder).
+  * `red.i.cse2` insn 190 is `(set (reg/v:SI 87) (reg/v:SI 86))` — **cse2 performs the fold**,
+    and cse2 runs BEFORE flow, so the reference still lands on `out2` and the emitted insn is
+    still the `move`.
+
+Consequences. (1) E-s31-2's mechanism is right about the routine and wrong about the pass:
+BOTH cse passes fold, and only the CODE_LABEL terminator is common to both. (2) The entire
+loop-note route to breaking the fold — the last cheap-looking idea in that family — is DEAD
+independently of s32's strength-reduction foreclosure: any construct that emits a loop-end
+note before block 2 is re-folded by cse2. (3) E-s31-3's measured price for the only surviving
+break (a CODE_LABEL: +2 insns for a pre-test loop1) therefore stands as the true price. Banked
+`rejected/loop-note-ebb-break-refolded-by-cse2.c`.
+
+### E-s34-2 — FRONTIER ITEM 3 CLOSED NEGATIVELY FROM THE CALLEES' OWN BYTES: the fifth parameter is exactly a two-element MATRIX array, with no further members
+
+The carried frontier asked whether the fifth parameter might be a struct whose first two
+members are the matrix pair followed by fields block 2 or loop2 touches — which would give
+`out2`'s missing reference an ordinary-C home. Read directly out of the three callees (all
+INCLUDE_ASM, all single-caller, so this is the only available evidence):
+
+  * `func_8004A348` (asm/funcs/func_8004A348.s:51-91) writes its second argument at
+    `0x0, 0x2, 0x4, 0x6, 0x8, 0xA, 0xC, 0xE, 0x10` and nowhere else — nine `sh` stores, i.e.
+    a `s16 m[3][3]` rotation matrix (the PsyQ `MATRIX` layout).
+  * `func_800523E0` (asm/funcs/func_800523E0.s:17-38) reads BOTH its first and second
+    arguments at `0x0, 0x2, 0x4, 0x6, 0x8, 0xA` only.
+  * `func_80044DE4` never touches the pair at all (its arguments are the two animation
+    cursors plus the record address; it stages six halfwords on its own stack and tail-calls
+    `LoadAverage12`).
+
+Nothing anywhere touches past `+0x12` of either matrix, and nothing addresses the pair
+beyond `+0x20`. So the parameter is `MATRIX m[2]` (or `MATRIX *m` used as `m` and `m + 1`),
+E-s33-2's naming is confirmed from a second, independent direction, and there is no hidden
+member for a block-2 or loop2 statement to consume. Together with E-s33-3 (block 2's six
+values enumerated semantically) the DATA-LAYOUT route to out2's missing reference is now
+closed from both the source side and the callee side.
+
+### E-s34-3 — THE SEAT LADDER RE-STATED AS AN ALGEBRA: every term of target's priority order is an owner-sanctioned lift EXCEPT `out2`'s, and the residual is now a single precisely-typed construct
+
+Target's descending allocno order is candidate.c's (candidate.c holds ALL-TARGET seats):
+`stptr > stptr2 > i > tbl > out2 > pa4 > a3` for `$s3, $s0, $s4, $s5, $s6, $s7, $fp`.
+The 2026-08-27 owner ruling makes a `+2`-reference lift available at ANY existing increment
+site (`stptr` in loop1, `stptr2` in loop2, `i` in loop1 and loop2, `tbl` in loop1, `a1`/`a2`
+everywhere), and s33's S3 showed the lifts stack (stptr reached 9 references). `out2` is the
+ONLY contested local with no increment site: its reachable reference counts are
+
+  * **3** (no construct) — `1*3*10000/42 = 714`, below `a3`; this is the V15a spelling that
+    emits target's block-2 `addiu $s3,$s7,0x20` (E-s29-2's contradiction);
+  * **5** — the in-loop1 same-value re-store, `2*5*10000/42 = 2380` (E-s27-1's D-family), but
+    the re-store is a DEFINITION, so cse folds block 2 into `move $s3,$s6` (E-s31-1) and the
+    re-store costs its own instruction (133 insns);
+  * **7** — the cancel pair, `2*7*10000/43 = 3255`, unplaceable (E-s27-4).
+
+With `out2` at 5 references the rest of the ladder is fully spellable from sanctioned lifts,
+and the arithmetic closes exactly on target's order:
+
+| local | construct | refs / live | priority | seat |
+|---|---|---|---|---|
+| stptr | split increment applied twice (s33 S3's 9 refs) | 9 / 42 | 6428 | $s3 |
+| stptr2 | split increment at `stptr2 += 0x68` | 8 / 48 | 5000 | $s0 |
+| i | split increment at loop1's `i++` | 10 / 98 | 3061 | $s4 |
+| tbl | split increment at `tbl++` | 6 / 48 | 2500 | $s5 |
+| **out2** | **the missing construct** | **5 / 42** | **2380** | **$s6** |
+| pa4 | none (block 2 spelled `pa4 + 0x20`) | 7 / 96 | 1458 | $s7 |
+| a3 | none | 4 / 100 | 800 | $fp |
+
+D5 already MEASURES the middle of this table (E-s27-1's ALLOCDBG: all seven target seats), so
+the algebra is not a prediction — it is the observed table with the sanctioned lifts made
+explicit. The whole 34-session residual therefore reduces to one precisely-typed object:
+
+> **a byte-free in-loop1 delivery of `+1` or `+2` flow-counted references to `out2` that is a
+> USE, not a DEFINITION** (a definition re-triggers the cse fold that E-s34-1 has just proved
+> is unavoidable without a CODE_LABEL, and the CODE_LABEL costs +2 insns, E-s31-3).
+
+s23's EBB law already isolated this quadrant ("it is a definition law, not a reference law,
+so an in-loop1 USE is still open"); s34 gives it its price tag and its exact size. The
+counter-argument to beat is E-s28-2's conservation observation: combine's deletions are
+SUBSTITUTIONS, so an insn combine deletes hands its `out2` occurrence to the surviving insn,
+which then emits a byte. A winning use must therefore be one whose `out2` occurrence
+DISAPPEARS in the substitution (an occurrence that simplifies away), or must live in the one
+surface no session has probed — an insn counted by flow and deleted after `global_alloc` by
+reload's no-op-move deletion or by jump2 (the carried frontier item 1).
+
+### s34 artifacts
+
+`tmp/grind/func_80041188/s34/` — `run.ps1` (apply-a-variant + sandbox + save the object, one
+call per tag), `apply.py`, `dump.sh` (full `-da` dump of a variant through the reduced TU),
+`text1a_pre.HEAD.c`, the variant bodies `CAND.c` `V15a.c` `D5.c` `L1.c` `L2.c`, the objects
+`HEAD.o CAND.o D5.o V15a.o L1.o L2.o`, and `L1/` (cpp + reduced TU + the full pass dump chain
+`red.i.rtl .jump .cse .loop .cse2 .flow .combine .sched .lreg .greg .jump2 .dbr`).
+
+- [s34] Chassis re-measured this session with the edit in place in src/text1a_pre.c and `sandbox func_80041188 --disable all`: HEAD = 27, candidate.c (s33 S1 body) = 1 (132 build / 132 target insns, rules_dropped 16), D5 = 2 (133), V15a = 15 (132). src/text1a_pre.c restored to HEAD at the end; no build-pipeline file touched, nothing committed, no permuter campaign launched.
+- [s34] LEDGER CORRECTION: the block-2 `move`/`addiu` fold is performed by BOTH cse passes. cse.c:8055 breaks a cse basic block at NOTE_INSN_LOOP_END only when `after_loop == 0`, i.e. in cse1; cse2 (-frerun-cse-after-loop, on at -O2) has after_loop == 1 and re-folds. Only a CODE_LABEL terminates both.
+- [s34] MEASURED, form L1 (D5 + `do { a1 += 0x6C; } while (0);` as block 2's first statement, a pure instrument): sandbox 2 at 133 insns, bit-identical to D5. The -da dumps show cse1 did NOT fold (red.i.cse insn 190 is still `(set 87 (plus 77 32))`) and cse2 DID (red.i.cse2 insn 190 is `(set 87 (reg 86))`). The instrument worked at cse1 and was undone at cse2.
+- [s34] KILLED: the entire loop-note route to preserving target's block-2 `addiu $s3,$s7,0x20`. Any construct emitting a loop-end note before block 2 is re-folded by cse2, so E-s31-3's CODE_LABEL price (+2 insns) is the true and only price. Banked rejected/loop-note-ebb-break-refolded-by-cse2.c.
+- [s34] CLOSED NEGATIVELY (carried frontier item 3): the fifth parameter is exactly a two-element MATRIX array. func_8004A348 writes its second argument only at 0x0..0x10 (nine sh, a s16 m[3][3]); func_800523E0 reads both matrix arguments only at 0x0..0xA; func_80044DE4 does not touch the pair. Nothing addresses past +0x12 of either matrix, so there is no hidden struct member for a block-2 or loop2 statement to consume, and E-s33-2's layout naming is confirmed from the callee side.
+- [s34] SYNTHESIS: with the owner's split-increment lift available at every existing increment site (stptr, stptr2, i, tbl, a1, a2) the whole target priority ladder is spellable EXCEPT out2's term. out2 has no increment site, so its reachable counts are 3 (714, below a3), 5 (2380, the in-loop1 re-store — a DEFINITION, so it folds block 2 and costs an insn) and 7 (3255, unplaceable). The complete residual is therefore ONE object: a byte-free in-loop1 delivery of +1/+2 flow-counted references to out2 spelled as a USE rather than a definition.
+- [s34] The conservation argument that must be beaten: combine's deletions are substitutions, so a deleted insn hands its out2 occurrence to the survivor, which then emits a byte (E-s28-2). A winning use must either have its out2 occurrence simplify AWAY in the substitution, or live in the unprobed post-global_alloc deletion surface (reload no-op-move deletion / jump2), which remains frontier item 1.
+- [s34] src/text1a_pre.c was restored to HEAD at the end of the session; no build-pipeline file was touched, nothing was committed, no permuter campaign was launched.
+
+- [s34] Chassis re-measured this session with the edit in place in src/text1a_pre.c and `sandbox func_80041188 --disable all`: HEAD = 27 (132 build / 132 target insns, rules_dropped 16), candidate.c (the s33 S1 body) = 1 (132/132), alt_D5_alltargetseats_score2_s27.c = 2 (133 build / 132 target), alt_V15a_targetorder_purera_s25.c = 15 (132/132). src/text1a_pre.c restored to HEAD at the end; no build-pipeline file touched, nothing committed, no permuter campaign launched.
+
+- [s34] LEDGER CORRECTION (E-s34-1): the block-2 move/addiu fold is performed by BOTH cse passes, not by cse1 alone as E-s31-2 recorded. tools/gcc-2.7.2/cse.c:8055 ends a cse basic block at NOTE_INSN_LOOP_END only when after_loop == 0; cse1 has after_loop == 0, cse2 (-frerun-cse-after-loop, on at -O2) has after_loop == 1. Only a CODE_LABEL terminates both.
+
+- [s34] MEASURED AND DUMPED: form L1 (D5 + `do { a1 += 0x6C; } while (0);` as block 2's first statement, a pure instrument) = sandbox 2 at 133 insns, bit-identical to D5. red.i.cse insn 190 is still `(set 87 (plus 77 32))` (cse1 did not fold — the fold switched off for the first time without a CODE_LABEL) and red.i.cse2 insn 190 is `(set 87 (reg 86))` (cse2 re-folded it, before flow counts).
+
+- [s34] KILLED: the entire loop-note route to preserving target's block-2 `addiu $s3,$s7,0x20`, independently of s32's strength-reduction foreclosure. Any construct emitting a loop-end note before block 2 is re-folded by cse2, so E-s31-3's CODE_LABEL price (+2 insns for a pre-test loop1) is the true and only price. Banked memory/grind/func_80041188/rejected/loop-note-ebb-break-refolded-by-cse2.c with the dump citations in its header.
+
+- [s34] CLOSED NEGATIVELY (carried frontier item 3): the fifth parameter is exactly a two-element MATRIX array — func_8004A348 writes its second argument only at 0x0..0x10 (nine sh, s16 m[3][3]); func_800523E0 reads both matrix arguments only at 0x0..0xA; func_80044DE4 does not touch the pair. No hidden struct member exists for a block-2 or loop2 statement to consume, and E-s33-2's data-layout naming is confirmed from a second, independent direction (the callee side).
+
+- [s34] SYNTHESIS (E-s34-3): target's seat ladder is now an algebra whose every term but one is an owner-sanctioned split-increment lift. The complete residual of the grind is a single precisely-typed object — a byte-free in-loop1 delivery of +1/+2 flow-counted references to out2, spelled as a USE rather than a definition, with block 2 left as `out3 = (s32 *)((u8 *)pa4 + 0x20);`.
+
+- [s34] The conservation argument any winning use must beat (E-s28-2, re-stated): combine's deletions are SUBSTITUTIONS, so a deleted insn hands its out2 occurrence to the surviving insn, which then emits a byte. A winning use must either have its out2 occurrence simplify AWAY in the substitution, or live in the one surface no session has probed — an insn counted by flow and deleted after global_alloc by reload's no-op-move deletion or by jump2.
+
+- [s34] Independent re-derivation of the 3-reference impossibility (guards the ledger against a future session re-opening it): floor_log2(3) = 1, so out2 at three references and live 42 is pinned at 714, below a3's 808; a3 would need live length > 112 (it measures 99, and its last use is loop2's func_800523E0 near the function's end) or three references (target hosts four: the prologue copy `addu $fp,$a3,$zero` plus three argument moves at asm/funcs/func_80041188.s:62, 79, 115). out2 therefore cannot be seated at three references on any spelling.
+
+- [s34] candidate.c is UNCHANGED this session (the s33 S1 body: honest `stptr = base + 0xFC;` plus the owner-ALLOWED split increment at stptr's own loop1 increment site with its mandatory FAKE annotation), re-measured at 1, and carries a new s34 addendum header recording the two closures and the re-stated residual.
