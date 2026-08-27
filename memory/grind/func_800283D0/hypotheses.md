@@ -1059,3 +1059,137 @@ byte-neutral - F shows path1's own 0x19 edge is not.
 - probe: Four measured spellings, all banked in memory/grind/func_800283D0/rejected/: A (goto set_0xB + own store + goto do_calls), B (var_v0=0xB + goto do_store_calls; 0x19 edge stores + duplicates the calls), C (0x19 edge stores + goto do_calls; 0xB edge stores + duplicates the calls), F (variant A's arm plus path1's own 0x19 selection edge duplicating the call pair).
 - result: A = 23/216 (pin held, all twelve seats revert to $s3). B = 20/219 (jump2-made label, no pin). C = 20/222 (pin AND $s2 seats both held - the only body so far to do so - but jump2 merges its 0xB edge only down to three insns). F = 27/223 (path1's duplicated 0x19 edge does not merge).
 - verdict: CONFIRMED
+
+
+## s14 (synthesis, 2026-08-26) - measured
+
+## [s14] Cluster E's local-alloc birth window is unreachable by declaration reordering because a NAMED POINTER LOCAL pins its own RTL to the head of its block; deleting the local lets CSE birth the pseudo at first use and reaches the window.
+mechanism: local-alloc.c block_alloc ranks quantities by qty_compare and assigns
+by find_free_reg over regs_live_at[birth..death]; the tail pointer quantity's
+span (30) loses $a0 to the Judge element. inverse.py local --block 42 --swap 0,3
+gives birth in [8,19] as the complete birth-end vector set. A named local's
+initializer is emitted where it is declared, at the block head, so the best any
+reordering achieves is birth 6 (s7's B_ptr_late). Without the local, the pointer
+pseudo is created by CSE at its first USE, which the C can place after the two
+(&Judge)[...] index computations.
+probe: delete `u8 *temp_a0 = temp_s4 + (temp_s5 * 0x10);`, spell the +0x114,
++0x11C and +0x118 reads from `temp_s4 + (temp_s5 * 0x10) + <off>`, and write
+temp_v1_4 and the temp_v1_5 product before the +0x118 read; sandbox twice, then
+local_extract.py + QTYDBG on block 42.
+result: 17 -> 11 / 216. QTYDBG block 42 main pass: pointer quantity birth 2 -> 12,
+span 30 -> 20, got $a0 (target); Judge element got $a1 (target). Cluster E gone
+from the normalized diff.
+verdict: CONFIRMED
+
+## [s14] Cluster A ($s2/$s3) might be reachable through a preference or conflict perturbation rather than the ref-count dial, which no session had tested.
+mechanism: global.c's find_reg consults copy preferences and the conflict graph
+after priority ordering, so a change in either could flip the 73/143 exchange
+without touching reg_n_refs or reg_live_length.
+probe: inverse.py global on variant A's model with --swap 73,143 --depth 3 --top 30.
+result: exactly five vectors returned, all ref-count atoms: refs(73) 7->8/9/10/11
+and refs(143) 3->2. No pref, conflict or birth-order vector at any depth <= 3.
+verdict: KILLED
+
+## [s14] refs(143) 3 -> 2 - the cheapest cluster-A atom - is reachable by recomputing temp_s3's address at the `== 5` test instead of reusing the cached pointer.
+mechanism: dropping one reference to pseudo 143 raises 73 above it in
+allocno_compare's priority order, which is atom #2 of the inverse solver's set.
+probe: spell the `== 5` test as `*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288)` on
+both the 17-floor body and variant A's body; sandbox twice each, then extract.py
+and read flow[143].nrefs_flow.
+result: 17 (neutral) and 23 (neutral); nrefs_flow(143) still 3. CSE re-merges the
+recomputed address into the same pseudo before flow.c counts references.
+verdict: KILLED
+
+## [s14] Closing cluster E changes the balance of the store-pin / cluster-A tension, so variant A's pinning arm may now be worth more than the duplicated call pair.
+mechanism: variant A's `goto do_calls` supplies the pre-sched1 basic-block
+boundary that stops the store sinking (E-s13-1/2) but removes the arm's two
+arg1 references, dropping nrefs_flow(73) 9 -> 7 and losing all twelve $s2 seats.
+probe: t4 = variant A's arm + the no-pointer tail; sandbox twice.
+result: 17 / 216 versus t3's 11 / 216. The pin is still exactly -6 / +6. The
+coupling is unaffected by the tail fix.
+verdict: KILLED (for this chassis; the tension is unchanged, not resolved)
+
+## [s14] The two commutative `addu` operand-order diffs left at 11 (slots 96 and 162) are independent C levers.
+mechanism: the emitted operand order of a commutative addu follows the RTL PLUS
+operand order, which follows the C expression's operand order.
+probe: `(temp_a1_2 * 2) + arg0`, `(temp_s5 * 0x10) + temp_s4`, and both together,
+on the 11-floor body; sandbox twice each.
+result: 11, 11, 11 - all neutral. Extends s11's R2 / s12's Q1 to the tail site.
+verdict: KILLED
+
+## Frontier (for session 15)
+
+## [s14] The store sink is the largest remaining cluster (~4 pts) and its only known C form costs exactly as much in cluster A as it gains; a THIRD incoming edge to the `do_calls` label - one that does not come from the `<` arm - would pay for the pin without spending the arm's duplicated calls.
+mechanism: sched1 sinks `sh $v0,0x286($s0)` past the four argument set-ups
+because store and set-ups share one basic block (E-s13-1, dumps read). A
+pre-sched1 label between them requires a source `goto do_calls` from somewhere.
+Target has exactly one such edge and it is the arm's (E-s14-4), which is also the
+only site that can supply refs(73) 7 -> 9. The two known third sites are already
+dead: path1's own 0x19 selection edge (s13's F, 27/223) and path1's store
+duplicated per edge (s12's P2, 19/222).
+next probe: the untried third site is the `==` block, whose call pair is the SAME
+(a1=1, a1=0x25) pair as the shared block's. Restructure so the `==` block reaches
+the shared calls by a source goto and returns to its continuation - e.g. by
+moving the `== 5` test and everything after it into the path that currently falls
+out of the shared block, so the shared call site has two source predecessors and
+the arm can keep its duplicate. Score every candidate with two sandbox runs then
+tmp/grind/func_800283D0/s12/dif.sh (E-s13-6 staleness note applies).
+
+## [s14] Cluster B (~4 pts) is the whole 216-vs-215 insn surplus and is the only residual with NO measured C dial after fourteen sessions; s10's open sub-question about `opposite_needed` at insn 686 is still the highest-value forensics probe left.
+mechanism: target fills the dispatch chain's last `beq $v0` delay slot with the
+`li $v0,0x1` belonging to the fall-through block - speculating a value into the
+register the branch just read - and leaves the following `j` unfilled; we do the
+reverse at emitted 45-48 and again at 126/131. reorg.c's mark_target_live_regs /
+opposite_needed decides this. s10 proved it does not move under any of the
+sixteen exit-form assignments.
+next probe: locate the dispatch chain's final `beq` insn UID in
+tmp/grind/func_800283D0/s10/iso_dumps/iso.dbr, grep that UID in
+tmp/grind/func_800283D0/s10/iso_dumps/dbr.log for its thr/simp lines, and settle
+whether the steal is granted there for the same reason it is refused at insn 344.
+Re-run the dumps on the NEW 11-floor body first - the tail rewrite changed the
+RTL of every block after the dispatch chain.
+
+## [s14] The named-local-pins-birth-order finding (E-s14-1) is a GENERAL local-alloc lever that has never been applied anywhere else in this function, and cluster A's own participants are locals of exactly the same kind.
+mechanism: pseudo 143 = `temp_s3 = arg0 + temp_a1_2 * 2` is a named pointer local
+whose RTL is emitted at the head of its block. Its global-alloc inputs are
+livelen 14/22 and nrefs 3, and s7's sweep gives a livelen window of [20,21] with
+nrefs held at 3 - a +6/+7 lengthening that no session has reached because every
+attempt to hoist the declaration added a fourth reference
+(rejected/hoist-temp-s3-cses-arm-addu.c, shared-ptr-hoist-adds-4th-ref-59.c).
+next probe: apply the inverse of E-s14-1 - since deleting a named local moves a
+pseudo's birth LATER, adding one where the C currently inlines an expression
+should move a birth EARLIER. The `temp_v1_3 == 0` path already recomputes
+`arg0 + temp_a1_2 * 2` inline; check with extract.py whether that recompute is a
+separate pseudo on the 11-floor body, and if so whether unifying the two under
+one earlier-born pointer reaches livelen(143) 20/21 with nrefs still 3 rather
+than 4. Verify nrefs from extract.py BEFORE spending a sandbox run.
+
+## [s14] Cluster E's local-alloc birth window is unreachable by declaration reordering because a named pointer local pins its own RTL to the head of its block; deleting the local lets CSE birth the pseudo at first use and reaches the window.
+- mechanism: local-alloc.c block_alloc assigns by find_free_reg over regs_live_at[birth..death]; the tail pointer quantity's span 30 loses $a0. inverse.py local --block 42 --swap 0,3 gives birth in [8,19] as the complete birth-end vector set. A named local's initializer is emitted where declared, at the block head (best any reorder achieves is birth 6 = s7's B_ptr_late). Without the local, CSE creates the pointer pseudo at its first USE, which the C can place after both (&Judge)[...] index computations.
+- probe: Delete `u8 *temp_a0 = temp_s4 + (temp_s5 * 0x10);`; spell the +0x114/+0x11C/+0x118 reads from `temp_s4 + (temp_s5 * 0x10) + <off>`; write temp_v1_4 and the temp_v1_5 product before the +0x118 read. sandbox --disable all twice, then local_extract.py QTYDBG on block 42.
+- result: 17 -> 11 / 216. QTYDBG block 42 main pass: pointer quantity birth 2 -> 12, span 30 -> 20, got $a0 (target); Judge element got $a1 (target). Cluster E gone from the normalized diff.
+- verdict: CONFIRMED
+
+## [s14] Cluster A ($s2/$s3) may be reachable through a preference or conflict perturbation rather than the ref-count dial - an axis no session had tested.
+- mechanism: global.c's find_reg consults copy preferences and the conflict graph after priority ordering, so a change in either could flip the 73/143 exchange without touching reg_n_refs or reg_live_length.
+- probe: inverse.py global on variant A's model, --swap 73,143 --depth 3 --top 30.
+- result: Exactly five vectors, all ref-count atoms: refs(73) 7->8/9/10/11 and refs(143) 3->2. No pref, conflict or birth-order vector at any depth <= 3.
+- verdict: KILLED
+
+## [s14] refs(143) 3 -> 2, the cheapest cluster-A atom, is reachable by recomputing temp_s3's address at the `== 5` test instead of reusing the cached pointer.
+- mechanism: Dropping one reference to pseudo 143 raises 73 above it in allocno_compare's priority order (inverse solver atom #2).
+- probe: Spell the `== 5` test as `*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288)` on both the 17-floor body and variant A's body; sandbox twice each; extract.py and read flow[143].nrefs_flow.
+- result: 17 (neutral) and 23 (neutral); nrefs_flow(143) still 3 - CSE re-merges the recomputed address into the same pseudo before flow.c counts references.
+- verdict: KILLED
+
+## [s14] Closing cluster E changes the balance of the store-pin / cluster-A tension, so variant A's pinning arm may now be worth more than the arm's duplicated call pair.
+- mechanism: variant A's `goto do_calls` supplies the pre-sched1 basic-block boundary that stops the store sinking (E-s13-1/2) but removes the arm's two arg1 references, dropping nrefs_flow(73) 9 -> 7 and losing all twelve $s2 seats.
+- probe: t4 = variant A's arm + the no-pointer tail; sandbox twice.
+- result: 17 / 216 versus t3's 11 / 216 - the pin is still exactly -6 (cluster A) / +6 (store region). The coupling is unaffected by the tail fix.
+- verdict: KILLED
+
+## [s14] The two commutative `addu` operand-order diffs left at 11 (emitted slots 96 and 162) are independent C levers.
+- mechanism: The emitted operand order of a commutative addu follows the RTL PLUS operand order, which follows the C expression's operand order.
+- probe: `(temp_a1_2 * 2) + arg0`, `(temp_s5 * 0x10) + temp_s4`, and both together, on the 11-floor body; sandbox twice each.
+- result: 11, 11, 11 - all neutral. Extends s11's R2 / s12's Q1 to the tail site.
+- verdict: KILLED

@@ -1,8 +1,8 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 13,
- "current_modality": "structural",
+ "session_count": 14,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -81,23 +81,29 @@
    "floor": 17,
    "modality": "structural",
    "headline": "Store-sink re-attributed from jump2 walk-back to sched1 and closed byte-exactly by a source-level `goto do_calls` (variant A reproduces target's slots 83-95 and 144-157), but the same goto deletes the"
+  },
+  {
+   "session": 14,
+   "floor": 11,
+   "modality": "synthesis",
+   "headline": "Floor 17 -> 11: cluster E closed exactly as s7's local-alloc solver predicted, by DELETING the tail pointer local (a named local pins its own RTL to the block head, so no declaration reorder can delay"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Variant C (20/222) already holds BOTH the pinned store and cluster A's $s2 seats; the entire remaining gap on that body is that jump2 merges its 0xB edge to three instructions instead of zero. A spelling of that edge that still contributes two C-level arg1 references but collapses to a bare jump into path1's `li v0,0xB` would land at or below 17 with two clusters closed.",
-   "mechanism": "Target's 0xB edge is `beqz $s1,.L80028518` into path1's own selection constant, costing nothing; ours must duplicate `store + both calls` to keep nrefs_flow(pseudo 73) in s7's [8,11] window, and jump2's walk-back stops at the `do_calls` label, leaving `li v0,0xB / sh / j do_calls`. The pin itself must stay a SOURCE goto because sched1 precedes jump2 (E-s13-1/2).",
-   "next_probe": "Start from rejected/arm-0x19-goto-docalls-0xB-dup-calls-pins-store-keeps-s2-plus6-20.c. Two directions, both cheap: (i) re-run tools/ra_solver on THAT body (not the 17-floor body) and ask whether pseudo 73 can be seated by the livelen axis instead of nrefs - s5 measured a 6-10 insn liveness flip window for pseudo 143 and that sweep was never run against a body that already carries the pin; if livelen suffices, the 0xB edge can revert to a zero-cost `goto set_0xB` (variant A) and the function closes. (ii) enumerate byte-neutral third sites for the two arg1 references - the `==` block's existing call pair and the `>` block's 0x26/0x2D pair are the only other call sites; test giving one of them an arm-style duplicated edge that jump2 fully re-merges. Score every form with two sandbox runs then dif.sh (see the staleness note)."
+   "hypothesis": "The store sink (~4 pts) is the largest remaining cluster and its only known C form costs exactly as much in cluster A as it gains; a THIRD incoming edge to the `do_calls` label - one that does not come from the `<` arm - would pay for the pin without spending the arm's duplicated call pair.",
+   "mechanism": "sched1 sinks `sh $v0,0x286($s0)` past the four argument set-ups because store and set-ups share one basic block (E-s13-1, dumps read). A pre-sched1 label between them requires a source `goto do_calls`. Target has exactly one such edge and it is the arm's (E-s14-4), which is also the only site that can supply refs(73) 7 -> 9 (E-s14-2/3). The two known third sites are already dead: path1's own 0x19 selection edge (s13's F, 27/223) and path1's store duplicated per edge (s12's P2, 19/222).",
+   "next_probe": "The untried third site is the `==` block, whose call pair is the SAME (a1=1, a1=0x25) pair as the shared block's. Restructure so the `==` block reaches the shared calls through a source goto and returns to its continuation - e.g. move the `== 5` test and everything after it into the path that currently falls out of the shared block - so the shared call site has two source predecessors and the arm can keep its duplicate. Score with two sandbox runs then tmp/grind/func_800283D0/s12/dif.sh (the E-s13-6 staleness note applies)."
   },
   {
-   "hypothesis": "Cluster E (the $a0/$a1 exchange at emitted slots 159-182 in the tail Judge product) is ~8 of the 17 points and s7's LOCAL-alloc model for it has never been re-derived on a current body.",
-   "mechanism": "s7 measured, in block 41 of the `main` local-alloc pass, that target wants qty0 (`temp_s4 + temp_s5*0x10`) in $a0 and qty3 (the first `(&Judge)[...]` element) in $a1, with single-atom vectors span(qty0) 30 -> <=24 or refs(qty0) 6 -> 8/9/10, and s3's span(qty3) >= 6 REFUTED. That model predates s8, s9, s11 and s12, all of which rewrote the RTL of the preceding blocks. s12's Q4 showed plain tail declaration order does not reach it.",
-   "next_probe": "tools/ra_solver/local_extract.py code6cac_b on the current 17-floor body, locate the tail block, `inverse.py local --block <n> --swap 0,3 --depth 2 --top 40`, and compare against s7's table before spending any spelling probe. Heed s7's caveat that a birth/span vector is a claim about ALLOC-TIME order, which is not known to equal emission order - re-derive from a QTYDBG dump of the actual candidate."
+   "hypothesis": "Cluster B (~4 pts) is the whole 216-vs-215 insn surplus and the only residual with NO measured C dial after fourteen sessions; s10's open sub-question about `opposite_needed` is still the highest-value forensics probe left.",
+   "mechanism": "Target fills the dispatch chain's last `beq $v0` delay slot with the `li $v0,0x1` belonging to the fall-through block - speculating a value into the register the branch just read - and leaves the following `j` unfilled; we do the reverse at emitted 45-48 and again at 126/131. reorg.c's mark_target_live_regs / opposite_needed decides this, and s10 proved it does not move under any of the sixteen exit-form assignments.",
+   "next_probe": "Re-run `pwsh tools/grinder/dump.ps1 func_800283D0` on the NEW 11-floor body first (the tail rewrite changed the RTL of every block after the dispatch chain), then locate the dispatch chain's final `beq` insn UID in tmp/grind/func_800283D0/s10/iso_dumps/iso.dbr, grep that UID in tmp/grind/func_800283D0/s10/iso_dumps/dbr.log for its thr/simp lines, and settle whether the steal is granted there for the same reason it is refused at insn 344."
   },
   {
-   "hypothesis": "Cluster B (the `nop` vs `li v0,1` delay-slot fill at emitted slots 45/47 and 126) and s10's insn-344 reorg residual are ONE mark_target_live_regs / opposite_needed decision, and it is the single instruction by which our 216 exceeds target's 215.",
-   "mechanism": "Target fills the dispatch chain's `beqz $v0,.L800285DC` delay slot with the `li $v0,0x1` that belongs to the fall-through `D_800A38A8 = 1` block, speculating a value into a register the branch has just read; ours refuses and emits a nop plus a later `li v0,1`. s10 proved this does not move under any of the sixteen exit-form assignments, so it has no measured C-level dial.",
-   "next_probe": "Locate the dispatch chain's final `beq` insn UID in tmp/grind/func_800283D0/s10/iso_dumps/iso.dbr, grep that UID in tmp/grind/func_800283D0/s10/iso_dumps/dbr.log for its thr/simp lines, and check whether the steal is granted there for the same reason it is refused at insn 344. If both are opposite_needed decisions, clusters B and the frontier-1 nop collapse into one residual with one mechanism, and s10's open sub-question (why $v0 is in opposite_needed at insn 686 despite the REG_DEAD flush at label 347) becomes the highest-value probe left."
+   "hypothesis": "E-s14-1's named-local-pins-birth-order finding is a GENERAL local-alloc lever that has never been applied elsewhere in this function, and cluster A's own participant pseudo 143 is a named pointer local of exactly the same kind.",
+   "mechanism": "pseudo 143 = `temp_s3 = arg0 + temp_a1_2 * 2` is a named pointer local whose RTL is emitted at the head of its block. Its global-alloc inputs are livelen 14/22 and nrefs 3, and s7's exhaustive sweep gives a livelen window of [20,21] with nrefs held at 3 - a +6/+7 lengthening no session has reached, because every attempt to hoist the declaration added a fourth reference (rejected/hoist-temp-s3-cses-arm-addu.c, shared-ptr-hoist-adds-4th-ref-59.c) and refs(143)=4 needs livelen in [53,58].",
+   "next_probe": "Apply the inverse of E-s14-1: deleting a named local moves a birth LATER, so introducing one where the C currently inlines an expression should move a birth EARLIER. The `temp_v1_3 == 0` path already recomputes `arg0 + temp_a1_2 * 2` inline; run extract.py on the 11-floor body to check whether that recompute is a separate pseudo, and if so whether unifying the two under one earlier-born pointer reaches livelen(143) 20/21 with nrefs still 3 rather than 4. Read nrefs from extract.py BEFORE spending a sandbox run."
   }
  ],
  "judge_constraints": [],

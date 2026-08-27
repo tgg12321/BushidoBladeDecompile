@@ -1797,3 +1797,137 @@ Two of this session's turns were spent resolving a contradiction caused by it.
 - [s13] Variant B = 20/219 and variant F = 27/223 - banked; F specifically rules out path1's own 0x19 selection edge as a byte-neutral third site for the two arg1 references.
 
 - [s13] TOOLING: tmp/grind/func_800283D0/s1x/dif.sh objdumps tmp/sandbox/func_800283D0/code6cac_b.o and was observed reading the object from the PREVIOUS sandbox invocation, yielding diffs whose head and tail came from different builds. Run `sandbox --disable all` twice before dif.sh, or objdump the .o directly.
+
+
+## s14 (synthesis, 2026-08-26) - FLOOR 17 -> 11; CLUSTER E CLOSED
+
+**E-s14-0 (chassis).**  The banked s12/s13 candidate body re-measured **17 /
+216** on HEAD at session start, so every s12/s13 conclusion was chassis-valid
+going in.  New floor this session: **11 / 216**, banked in
+`memory/grind/func_800283D0/candidate.c`.
+
+**E-s14-1 (THE FINDING: a named pointer local pins its own RTL to the head of
+its block, and deleting the local is what moves the local-alloc dial).**
+Cluster E (the $a0/$a1 exchange at emitted slots 159-182) is s7's LOCAL-alloc
+quantity-order decision, and its complete single-atom vector set - re-derived
+this session on the CURRENT body with `inverse.py local --func func_800283D0
+--block 42 --swap 0,3` (the tail block is block **42** on this chassis, was 41
+on s7's) - is `span(qty0) 30 -> <= 24`, reachable from the birth end for any
+birth in **[8,19]** (base 2).  Every declaration-order probe ever run against
+this window is score-neutral: s7's B_ptr_late (birth 2 -> 6, four of the six
+insns needed), s12's Q4, and this session's p3 (`temp_v1_4` declared before the
+pointer, 17) and t2 (`temp_v1_5`'s product computed before the `+0x118` load
+with the pointer local retained, 17).  The reason is now measured: while
+`u8 *temp_a0 = temp_s4 + (temp_s5 * 0x10);` exists as a NAMED LOCAL, its RTL is
+emitted at the head of the block regardless of what statements follow it, so
+the quantity's birth cannot be pushed past ~6.  **Deleting the local and
+spelling the three field reads from the object base**
+(`*(s32 *)(temp_s4 + (temp_s5 * 0x10) + 0x114)` and likewise for `+0x11C` and
+`+0x118`), with `temp_v1_4` and the `temp_v1_5` product written before the
+`+0x118` read, lets CSE form the pointer pseudo at its FIRST USE - now inside
+the product, after both `(&Judge)[...]` index computations.  Fresh QTYDBG dump
+of block 42 (main pass) on the new body:
+
+    before:  qty0 reg192 birth 2  death 32 refs 6 -> $a1   (ours, wrong)
+             qty3 reg209 birth 16 death 20 refs 2 -> $a0
+    after :  qty2 reg208 birth 12 death 32 refs 6 -> $a0   (target)
+             qty3 reg204 birth 16 death 20 refs 2 -> $a1   (target)
+
+birth 2 -> 12, span 30 -> 20, inside the solver's window.  Score **17 -> 11**;
+cluster E disappears from the normalized emitted diff.  This is the first
+solver-PREDICTED flip on this function that a C spelling actually delivered,
+and the generalizable lesson is the one in the first sentence: *a named pointer
+local is a birth-order pin; to delay a quantity's birth you must delete the
+local, not reorder the declarations around it.*
+
+**E-s14-2 (cluster A's dial set is closed at depth 3, not just single-atom).**
+`inverse.py global --swap 73,143 --depth 3 --top 30` on variant A's body
+returns exactly five vectors and all five are ref-count atoms on the same two
+pseudos: `refs(73) 7 -> 8/9/10/11` and `refs(143) 3 -> 2`.  No preference-,
+conflict-, or birth-order vector reaches the goal at any depth up to 3.  This
+closes the "maybe the seat can be won through prefs/conflicts instead" reading
+that s5-s13 never tested, and it means cluster A has exactly two C-level dials.
+
+**E-s14-3 (the `refs(143) 3 -> 2` dial is CSE-foreclosed - measured, killed).**
+The only C spelling that removes a reference to `temp_s3` without deleting a
+load is to recompute the address at the second use, i.e. write the `== 5` test
+as `*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288)` (the spelling path1 already uses).
+Measured on both bodies: on the 17-floor body **17, neutral**; on variant A's
+body **23, neutral**; and `extract.py` on the recompute body reports pseudo 143
+`nrefs_flow = 3` unchanged - CSE re-merges the address into the same pseudo
+before flow.c counts references.  With this, `refs(73) 7 -> 8..11` is the ONLY
+live dial on cluster A, which is exactly the dial the arm's duplicated call
+pair supplies, and exactly the one the store pin destroys.
+
+**E-s14-4 (target's own asm re-read: the arm and the store label).**  Target's
+`<` arm is `beqz $s1,.L80028518 / addiu $v0,0x19 / j .L80028520 / sh
+$v0,0x286($s0)` - the 0x19 edge keeps its OWN store and jumps PAST path1's
+store to `.L80028520`; the 0xB edge jumps INTO path1's `addiu $v0,0xB` at
+`.L80028518`, which falls through path1's own store.  Path1 is `bnez $s1,
+.L8002851C / addiu $v0,0x19 / .L80028518: addiu $v0,0xB / .L8002851C: sh /
+.L80028520: args+calls`.  So target carries THREE labels in this region and the
+one that matters for the store, `.L80028520`, has exactly one incoming edge -
+the arm's `j`.  Target's `$s3` (= `temp_s3`) has three references and its `$s2`
+(= `arg1`) has seven, identical to ours, so target's extra pre-jump2 reference
+is invisible in the final asm (s7's reg_n_refs-is-counted-before-jump2 point)
+and its source is still unlocated.
+
+**E-s14-5 (the store-pin / cluster-A tension survives the tail fix - measured).**
+t4 = variant A's arm (source `goto do_calls`, which reproduces target's slots
+83-88 and 144-147 byte-exactly per E-s13-2) combined with THIS session's
+no-pointer tail: **17 / 216**.  Against t3's 11, the pin is still worth
++6 in the store region and -6 in cluster A, unchanged in magnitude by closing
+cluster E.  The two requirements remain coupled at the arm exactly as E-s13-3
+described.
+
+**E-s14-6 (both commutative `addu` operand orders are inert on this chassis).**
+On the 11-floor body the normalized diff still shows `addu s3,s0,v0` vs target
+`addu s3,v0,s0` (slot 96) and `addu a0,a0,s4` vs target `addu a0,s4,a0`
+(slot 162).  Writing the C operands in the other order - `(temp_a1_2 * 2) +
+arg0`, `(temp_s5 * 0x10) + temp_s4`, and both together - measures **11 in all
+three cases**.  Re-confirms s11's R2 / s12's Q1 on a new chassis and extends it
+to the tail: emitted `addu` operand order is a consequence of allocation, not
+an independent C lever.  Banked as three rejected forms.
+
+**E-s14-7 (the residual at 11, exactly).**  From
+`tmp/grind/func_800283D0/s14/diff11.txt`:
+  1. **Store sink, ~4 pts** - emitted 83-88 (`sh v0,646(s0)` at the block head
+     in target, in the jal delay slot for us) and 146-148 (target's arm keeps
+     its own `sh`).  sched1, per E-s13-1.  Needs a source label between store
+     and args; costs cluster A (E-s14-5).
+  2. **Cluster B, ~4 pts** - emitted 45-48 (ours `j / nop`, target `nop / j`)
+     and 126/131 (ours `nop` plus a later `li v0,1`, target `li v0,1` in the
+     branch delay slot).  This is also the entire 216-vs-215 insn surplus.
+     Unmoved since s10; no measured C dial.
+  3. Two commutative `addu` operand orders (96, 162) - inert per E-s14-6.
+
+- [s14] Chassis: banked s12/s13 body re-measured 17/216 at session start; new floor 11/216.
+- [s14] Cluster E CLOSED by deleting the tail pointer local temp_a0 and spelling the three field reads from `temp_s4 + (temp_s5 * 0x10) + <off>`, with temp_v1_4 and the temp_v1_5 product written before the +0x118 read. QTYDBG block 42: the pointer quantity moves birth 2 -> 12 (span 30 -> 20) and takes $a0, the Judge element takes $a1 - both target's seats.
+- [s14] GENERAL LESSON: a named pointer local pins its own RTL to the head of its basic block, so NO declaration reorder around it can delay the quantity's birth. s7's B_ptr_late, s12's Q4, s14's p3 and t2 are all score-neutral for this one reason. Delete the local; let CSE birth the pseudo at first use.
+- [s14] The tail block is block 42 on this chassis (was 41 on s7's). inverse.py local --swap 0,3 gives birth window [8,19] for the pointer quantity; base 2, B_ptr_late 6, the no-local spelling 12.
+- [s14] inverse.py global --swap 73,143 --depth 3 returns ONLY ref-count atoms: refs(73) 7->8/9/10/11 and refs(143) 3->2. No pref/conflict/birth vector exists at depth <= 3. Cluster A has exactly two C dials.
+- [s14] refs(143) 3->2 is CSE-foreclosed: recomputing the address at the `== 5` site measures neutral on both bodies (17 and 23) and extract.py still reports nrefs_flow(143) = 3.
+- [s14] t4 (variant A's pinning arm + the no-pointer tail) = 17/216: the store pin is still exactly -6 (cluster A) / +6 (store region) after cluster E is closed. The coupling is unchanged.
+- [s14] Both commutative addu operand orders (slots 96 and 162) measure 11 in either spelling - inert, banked.
+
+- [s14] Chassis: the banked s12/s13 candidate body re-measured 17 / 216 on HEAD at session start, so every s12/s13 conclusion was chassis-valid going in. New floor this session: 11 / 216, banked in memory/grind/func_800283D0/candidate.c.
+
+- [s14] CLUSTER E IS CLOSED. Deleting the tail pointer local temp_a0 and spelling the three field reads from `temp_s4 + (temp_s5 * 0x10) + <off>`, with temp_v1_4 and the temp_v1_5 product written before the +0x118 read, moves the pointer quantity from birth 2 / span 30 / $a1 to birth 12 / span 20 / $a0 and gives the Judge element $a1 - both target's seats. Verified from a fresh QTYDBG dump of block 42, not from the model's prediction.
+
+- [s14] GENERAL LEVER (new, and reusable across the project): a named local's initializer RTL is emitted at the head of its basic block, so NO declaration reorder around it can delay the quantity's birth in local-alloc. s7's B_ptr_late (birth 6), s12's Q4, and s14's p3 and t2 are all score-neutral for this single reason. To delay a birth, DELETE the local and let CSE create the pseudo at first use; to advance a birth, introduce one.
+
+- [s14] The tail block is block 42 on this chassis (it was block 41 on s7's). inverse.py local --func func_800283D0 --block 42 --swap 0,3 gives the complete birth-end window [8,19]; base 2, B_ptr_late 6, the no-local spelling 12.
+
+- [s14] inverse.py global --swap 73,143 --depth 3 --top 30 returns ONLY ref-count atoms: refs(73) 7->8/9/10/11 and refs(143) 3->2. No preference, conflict or birth-order vector reaches the goal at depth <= 3, so cluster A has exactly two C-level dials.
+
+- [s14] The refs(143) 3->2 dial is CSE-foreclosed: recomputing temp_s3's address at the `== 5` site measures neutral on both bodies (17 and 23) and extract.py still reports nrefs_flow(143) = 3. refs(73) 7->8..11 is therefore the ONLY live dial on cluster A - the same dial the arm's duplicated call pair supplies and the store pin destroys.
+
+- [s14] Target's asm re-read: the `<` arm is `beqz $s1,.L80028518 / addiu $v0,0x19 / j .L80028520 / sh $v0,0x286($s0)` - the 0x19 edge keeps its OWN store and jumps PAST path1's store; the 0xB edge jumps INTO path1's `addiu $v0,0xB`. Path1 carries three labels (.L80028518, .L8002851C at the store, .L80028520 after it) and .L80028520 has exactly ONE incoming edge, the arm's. Target's $s3 has 3 references and its $s2 has 7, identical to ours, so target's extra pre-jump2 arg1 reference is invisible in the final asm and its source is still unlocated.
+
+- [s14] t4 (variant A's pinning arm + the no-pointer tail) = 17 / 216: after cluster E is closed the store pin is STILL worth exactly -6 in cluster A and +6 in the store region. The E-s13-3 coupling is unchanged, not resolved.
+
+- [s14] Both commutative addu operand orders left in the diff (slots 96 and 162) measure 11 in either spelling - inert, consequences of allocation rather than levers. Three rejected forms banked.
+
+- [s14] Residual at 11, from tmp/grind/func_800283D0/s14/diff11.txt: (1) the store sink, ~4 pts, emitted 83-88 and 146-148, owned by sched1; (2) cluster B, ~4 pts, emitted 45-48 and 126/131, which is also the entire 216-vs-215 insn surplus and still has no measured C dial; (3) the two inert addu operand orders.
+
+- [s14] Eight forms banked to rejected/ this session (59 entries total): s3-refs-recompute-cse-remerges-neutral-17.c, varA-plus-s3-recompute-still-nrefs3-23.c, tail-v14-declared-before-ptr-neutral-17.c, tail-product-before-0x118-load-named-ptr-neutral-17.c, varA-arm-plus-noptr-tail-clusterA-lost-17.c, tail-ptr-operand-order-neutral-11.c, s3-operand-order-neutral-11.c, both-operand-orders-neutral-11.c.
