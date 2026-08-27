@@ -3726,3 +3726,175 @@ E-s27-3 attribution) plus `cc1.err` with the ALLOCDBG tables.
 - [s27] cse1 has already merged the local alias pa4 and the incoming parameter a4 into one pseudo (reg 77, 7 refs / live 95), so 'root the chain in the parameter instead of the alias' is not a distinct experiment.
 
 - [s27] TOOL FINDING: src/text1a_pre.c is a -G8 file (Makefile:118, GP_FILES) while the s24 dump script used by s24-s27 compiles the reduced TU with -G0. Re-measured both flags for V15a and D1: allocno tables and insn counts are identical, so no prior conclusion is invalidated, but the script should be pinned to -G8. A full-TU ALLOCDBG dump is currently impossible: tools/gcc-2.7.2/cc1 (instrumented) segfaults on the whole file and tools/gcc-2.7.2/build/cc1 exits 33 on 'conflicting types for D_80094C68' when fed a preprocessed file instead of the Makefile's stdin pipe.
+
+## s28 (rederive, 2026-08-27) — the byte-free 4th reference to `out2` is CLOSED by a two-sided law: cse1's fold_rtx reassociation kills every same-EBB chain BEFORE flow counts, and combine — the only pass that deletes insns AFTER flow counts — has no deletable shape that target's bytes can host for `out2`
+
+Chassis re-measured at session start (all three numbers measured this session,
+`sandbox func_80041188 --disable all`): **HEAD = score 27**,
+`alt_V15a_targetorder_purera_s25.c` = **score 15**,
+`memory/grind/func_80041188/candidate.c` = **score 1** — all at 132 build / 132 target
+insns, `rules_dropped: 16`. `src/text1a_pre.c` was restored to HEAD at the end of the
+session; no build-pipeline file was touched, nothing was committed, and no permuter
+campaign was launched.
+
+### E-s28-1 — KILLED: the EXPRESSION-ROOTED block-0 split of `out2` (the last unspent horn of the F1 chain-extender class)
+
+s22's E-s22-2 stated the F1 iff-law — "a split-init chain-extender delivers its +1
+flow-counted reference iff the RECIPIENT outlives the DONOR" — and derived it from
+cse.c's `make_regs_eqv` (cse.c:826-882): the copy `out2 = pa4` merges the two pseudos
+into one quantity, `qty_first_reg` becomes whichever register lives longer and beyond the
+current extended basic block, and `canon_reg` then rewrites the second insn's `out2` into
+that canonical register. That law is reached ONLY when the chain's first insn has a bare
+REG source, because `insert_regs` (cse.c:1024-1034) calls `make_regs_eqv` only when it
+finds a REG element in the source's equivalence class.
+
+So this session probed the horn the law does not cover: a chain whose first insn is an
+EXPRESSION, which gives out2 its own fresh quantity (`make_new_qty`) and therefore no
+canonical donor register to be rewritten into.
+
+| form | block-0 spelling of out2's definition | out2 allocno | model insns | sandbox |
+|---|---|---|---|---|
+| V15a | `out2 = (u8*)pa4 + 0x20` | 3 refs / 42 / **714** -> `$fp` | 142 | 15 |
+| F1 | `out2 = (u8*)pa4 + 0x28; out2 = (u8*)out2 - 8;` | 3 refs / 42 / **714** -> `$fp` | 142 | 15 |
+| F2 | `out2 = (u8*)pa4 + 0x30; out2 = (u8*)out2 - 0x10;` | identical to F1 | 142 | 15 |
+| F3 | `out2 = (u8*)pa4 - 0x10; out2 = (u8*)out2 + 0x30;` | identical to F1 | 142 | 15 |
+
+Every allocno in the full ALLOCDBG table is bit-identical to V15a's in all three forms.
+
+**PASS ATTRIBUTION, read from the dumps (`tmp/grind/func_80041188/s28/F1/`), not inferred.**
+`red.i.rtl` insn 40 = `(set (reg/v:SI 86) (plus (reg/v:SI 77) (const_int 40)))`, insn 43 =
+`(set (reg/v:SI 86) (plus (reg/v:SI 86) (const_int -8)))`. In `red.i.cse` insn 43 has
+become `(set (reg/v:SI 86) (plus (reg/v:SI 77) (const_int 32)))` — cse.c's `fold_rtx`
+substituted reg 86's KNOWN VALUE `(plus 77 40)` into the second insn and simplified the
+two constants. This is **REASSOCIATION, a mechanism distinct from the canon_reg
+substitution E-s27-3 attributed to the copy-rooted chain**, and it does not consult
+lifetimes at all. Insn 40 is thereby dead and is absent from `red.i.flow` (flow.c deletes
+it; per E-s21-5 a flow-deleted insn is never counted in `reg_n_refs`). out2 stays at 3
+references.
+
+**The block-0 lift class is now closed on both horns**: copy-rooted chains by the
+make_regs_eqv/canon_reg law (E-s22-2, E-s27-3), expression-rooted chains by this
+reassociation law. Because cse1 is an EBB pass, and block 2 sits inside loop1's EBB while
+block 0 is its own EBB (E-s23-1), the same reassociation also closes a cancel/split chain
+sited in block 2: within a single EBB cse1 always knows the intermediate's value. Banked:
+`rejected/out2-block0-expr-rooted-split-cse1-reassociates-refs-rigid-3-F1.c` (plus the
+`-F2` and `-F3` spellings).
+
+### E-s28-2 — THE COMBINE-DELETION ENUMERATION: what a byte-free flow-counted reference can even look like here, and why `out2` cannot have one
+
+`reg_n_refs` is fixed by flow.c's life analysis and nothing recomputes it (standing ledger
+fact, E-s11-3). GCC 2.7.2's `toplev.c` runs `jump`, `cse1`, `loop` and `cse2` BEFORE flow
+and `combine` immediately after it, so **combine is the only pass that can delete an insn
+whose references flow has already counted.** A byte-free flow-counted reference is
+therefore, by definition, a reference living in an insn that combine deletes.
+
+Measured on the V15a chassis by diffing the insn ids present in `red.i.flow` (102 insns)
+against `red.i.combine` (93 insns): combine deletes exactly nine insns, in exactly two
+shapes.
+
+- **Shape A — a reg-reg copy whose destination has a single use**: insn 4
+  `(set 72 (reg a0))`, the parameter homing copy; and insn 43 `(set 88 (reg 80))`, the
+  `stptr = base; stptr += 0xFC;` F1 chain-extender that candidate.c ships annotated.
+- **Shape B — `(set p (plus R c))` merged into its single use**: insn 130
+  `(set 107 (plus 88 56))` = `stptr + 0x38` folded into `func_800523E0`'s 4th argument;
+  insns 177 `(set 110 (plus 91 76))` and 262 `(set 121 (plus 91 56))`, the same thing for
+  `stptr2` in loop2; insns 88 and 100, V15a's two owner-allowed split increments
+  (`tbl += 2; tbl -= 1;` and `i += 2; i -= 1;`); and insns 27/32, the `D_800A9A10`
+  symbol/address pair.
+
+This is why `stptr` legitimately carries 7 flow references while target emits only 5
+`$s3` body insns, and why `stptr2` carries 6: both variables are used as `X + constant`
+address expressions that TARGET ITSELF EMITS (`addiu $a3,$s3,0x38`, `addiu $a3,$s0,0x4C`,
+`addiu $a3,$s0,0x38`). Their surplus references are not a trick; they are what the
+original source's own call arguments compile to.
+
+**`out2` has no such site.** `$s6` appears in exactly five lines of
+`asm/funcs/func_80041188.s`: the prologue `sw` (asm:17), the epilogue `lw` (asm:126), the
+definition `addiu $s6,$s7,0x20` (asm:25), and two identical argument moves
+`addu $a1,$s6,$zero` (asm:56, asm:61). Target's 132 bytes contain **no `addiu $aN,$s6,c`**
+— no shape-B host — and **no second `$s6`-rooted copy** — no shape-A host, since a
+shape-A copy `X = out2` needs a single-use destination, and out2's only single-use
+consumers are those two argument moves, into which combine merges the copy back to
+exactly one out2 reference (net zero, as the s21-era in-loop1 detour forms measured).
+
+**Statement of the closure.** On the two-locals goto chassis a byte-free fourth
+flow-counted reference to `out2` does not exist: every pre-flow siting is folded by cse1
+(canon_reg for copies, fold_rtx reassociation for expressions — E-s28-1), and every
+post-flow siting needs a combine-deletable shape that target's own bytes cannot host. The
+reference must therefore COST an instruction — which is exactly what s27's D family
+measured (D1/D5/D7 = 133 insns at sandbox 2-3 with all seven target seats; D6 = 132 insns
+at sandbox 8 because sched1 pays for the extra addiu out of loop1's load-delay nop).
+s27's frontier item 2 ("a byte-free version of the reference lift exists — read cse.c and
+name the predicate") is ANSWERED AND CLOSED: the predicate exists and is now named, but
+the class it selects is empty against target's instruction stream.
+
+### E-s28-3 — corollary: target's own emitted code has `out2` at three references, so the original's extra reference was combine-deleted — and both combine-deletable shapes are now enumerated and excluded
+
+Counting target's bytes directly (previous paragraph), `$s6` appears in three body insns.
+Under the s26/s27 priority formula `pri = floor_log2(nrefs) * nrefs * 10000 / live_length`
+that is 3 refs / live 42 = 714, which seats out2 in `$fp`, not `$s6`. So the ORIGINAL
+source cannot have compiled to exactly the reference count we can count in target's bytes:
+it had at least a fourth reference that a post-flow pass removed. E-s28-2 enumerates the
+only two shapes the only such pass removes, and neither can be hosted by an `$s6` value in
+target's instruction stream.
+
+The remaining ways out of that contradiction, in the order a future session should test
+them:
+
+(a) **Our model of some OTHER allocno is wrong**, so out2 at 714 is admissible after all
+and a higher allocno is mis-counted. The least independently verified entries are the
+`a1`/`a2` pair at 16 refs / live 99 and `i` at 10 refs / live 97-98. The test is cheap:
+count `$s1`/`$s2`/`$s4` occurrences in target's bytes the way this session counted `$s6`,
+and check them against the shape-A/shape-B hosting rule — every surplus reference a
+variable carries must be visible in target as either an `X + constant` argument/address
+expression or a single-use copy.
+
+(b) **out2's live length below the 3-reference ceiling.** At 3 references out2 outranks
+pa4 (1473) iff `30000 / live > 1473`, i.e. live <= 20; E-s23-4 called that window "real,
+reachable and structurally unusable" and E-s27-5/E-s12-3 bounded block-0 definitions at
+41-43 and in-loop1 definitions at 21 (with the cse-EBB fold destroying block 2). Now that
+the reference axis is PROVABLY closed, the live-length axis is the only survivor on this
+chassis and deserves one more direct assault — specifically an in-loop1 definition sited
+so that block 2's `out3` is still computed from `pa4` (the fold that killed it in s23 is a
+consequence of the definition being visible in loop1's EBB, so the question is whether any
+in-loop1 definition can be placed AFTER out2's last use in loop1, where the EBB no longer
+reaches block 2's `out3` computation).
+
+(c) **The original is not the two-locals goto chassis at all.** E-s28-2's hosting rule is
+the sharpest structural test the grind has produced: EVERY local's flow reference count
+must be explainable from target's bytes as (emitted `$reg` insns) + (shape-A copies) +
+(shape-B `X + constant` expressions). Applying that test to a candidate chassis before
+measuring it would foreclose whole families in one read.
+
+### s28 artifacts
+
+`tmp/grind/func_80041188/s28/` — `probe.sh`, `dump.sh`, the variant bodies `V15a.c`
+`F1.c` `F2.c` `F3.c` `CAND.c`, `text1a_pre.HEAD.c`, and the per-tag cc1 dump directories
+`V15a/ F1/ F2/ F3/` holding the full `red.i.*` pass dumps plus `cc1.err` with the ALLOCDBG
+tables. The E-s28-1 attribution is in `F1/red.i.rtl` (insns 40/43), `F1/red.i.cse` (insn
+43 rewritten, insn 40 dead) and `F1/red.i.flow` (insn 40 absent); the E-s28-2 enumeration
+is the insn-id set difference between `V15a/red.i.flow` and `V15a/red.i.combine`.
+
+- [s28] Chassis re-measured this session: HEAD = sandbox 27, alt_V15a_targetorder_purera_s25.c = 15, candidate.c = 1 — all at 132 build / 132 target insns, rules_dropped 16. src/text1a_pre.c restored to HEAD at end of session; no build-pipeline file touched, nothing committed, no permuter campaign launched.
+- [s28] KILLED the expression-rooted block-0 split of out2 in three constant spellings (+0x28/-8, +0x30/-0x10, -0x10/+0x30), all bit-identical to V15a at out2 = 3 refs / live 42 / pri 714: cse.c's fold_rtx REASSOCIATES `(plus 86 -8)` into `(plus 77 32)` using reg 86's known value, the first insn dies, and flow deletes it (uncounted). This closes the second and last horn of the F1 chain-extender class for out2; the copy-rooted horn was closed by the make_regs_eqv law in E-s22-2.
+- [s28] Enumerated from the flow->combine insn-id difference on V15a the ONLY two shapes combine deletes in this function: a reg-reg copy whose destination has a single use, and `(set p (plus R c))` merged into its single use. Since flow fixes reg_n_refs and combine is the only later pass that deletes insns, a byte-free flow-counted reference MUST live in one of those two shapes.
+- [s28] target's bytes host neither shape for out2: `$s6` occurs in exactly three body insns (`addiu $s6,$s7,0x20` at asm:25 and `addu $a1,$s6,$zero` at asm:56 and asm:61), with no `addiu $aN,$s6,c` and no second $s6 copy. A byte-free fourth flow-counted reference to out2 therefore does not exist on the two-locals goto chassis, and s27's frontier item 2 is CLOSED rather than open.
+- [s28] New structural test for any future chassis (the hosting rule): every local's flow reference count must be explainable from target's own bytes as emitted-register insns plus shape-A single-use copies plus shape-B `X + constant` argument/address expressions. stptr's 7 and stptr2's 6 pass that test honestly (`addiu $a3,$s3,0x38`, `addiu $a3,$s0,0x4C`, `addiu $a3,$s0,0x38`); out2's required 4-or-5 fails it, which is evidence AGAINST the two-locals goto chassis being the original shape.
+
+- [s28] Chassis re-measured this session with `sandbox func_80041188 --disable all`: HEAD = score 27, alt_V15a_targetorder_purera_s25.c = score 15, memory/grind/func_80041188/candidate.c = score 1 — all at 132 build / 132 target insns, rules_dropped 16. src/text1a_pre.c was restored to HEAD at the end of the session; no build-pipeline file was touched, nothing was committed, and no permuter campaign was launched.
+
+- [s28] The expression-rooted block-0 split of out2 is KILLED in three constant spellings (+0x28/-8, +0x30/-0x10, -0x10/+0x30), all bit-identical to V15a at out2 = 3 refs / live 42 / pri 714 and 142 model insns.
+
+- [s28] PASS ATTRIBUTION from the instrumented-cc1 dumps (tmp/grind/func_80041188/s28/F1/): cse.c's fold_rtx rewrote `(set 86 (plus 86 -8))` into `(set 86 (plus 77 32))` by substituting reg 86's known value `(plus 77 40)` — reassociation, a mechanism distinct from the canon_reg substitution E-s27-3 attributed to the copy-rooted chain, and one that ignores lifetimes entirely. The dead first insn is absent from red.i.flow, i.e. flow.c deleted it and (per E-s21-5) never counted it.
+
+- [s28] Both horns of the F1 chain-extender class are now closed for out2: copy-rooted chains by the make_regs_eqv/canon_reg law (E-s22-2), expression-rooted chains by this reassociation law. Because block 2 lies inside loop1's extended basic block while block 0 is its own (E-s23-1), the same reassociation also closes a cancel/split chain sited in block 2.
+
+- [s28] COMBINE-DELETION ENUMERATION (new): on the V15a chassis combine deletes exactly nine insns in exactly two shapes — (A) a reg-reg copy whose destination has a single use, (B) `(set p (plus R c))` merged into its single use. Since flow fixes reg_n_refs and combine is the only later pass that deletes insns, a byte-free flow-counted reference must live in one of those two shapes.
+
+- [s28] target's bytes host neither shape for out2: `$s6` appears in exactly three body insns (`addiu $s6,$s7,0x20` at asm:25, `addu $a1,$s6,$zero` at asm:56 and asm:61). A byte-free fourth flow-counted reference to out2 therefore does not exist on the two-locals goto chassis, and s27's frontier item 2 ('a byte-free version of the reference lift exists — read cse.c and name the predicate') is ANSWERED AND CLOSED: the predicate is named, and the class it selects is empty against target's instruction stream.
+
+- [s28] THE HOSTING RULE (the reusable result): every flow-counted reference a local carries must be visible in target's own bytes as an emitted insn with that register, a shape-A single-use copy, or a shape-B `X + constant` argument/address expression. stptr's 7 references and stptr2's 6 decompose that way honestly — `addiu $a3,$s3,0x38`, `addiu $a3,$s0,0x4C`, `addiu $a3,$s0,0x38` are target's own call arguments, so those surplus references are what the ORIGINAL source compiled to, not a trick. out2's required 4-or-5 references have no such decomposition, which is the strongest evidence the grind has produced that the two-locals goto chassis is not the original's shape.
+
+- [s28] Corollary for the next session: because target's emitted code has out2 at 3 references / live 42 = pri 714 (which seats it in $fp, not $s6), the original necessarily carried a reference a post-flow pass removed. With both post-flow shapes now enumerated and excluded, either another allocno in our model is mis-counted (a1/a2 at 16 refs, i at 10, tbl at 6 are the least independently verified), or out2's live length must drop below 20 (the 3-reference window), or the chassis is wrong.
+
+- [s28] candidate.c is unchanged as the floor (sandbox 1, 132/132, all-target callee-saved seats) and now carries an s28 addendum recording the two closures and the hosting rule.

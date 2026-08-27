@@ -1,8 +1,8 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 27,
- "current_modality": "forensics",
+ "session_count": 28,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -171,23 +171,29 @@
    "floor": 1,
    "modality": "forensics",
    "headline": "Owner directive executed: the honest out2 reference lift EXISTS \u2014 a same-value re-store of out2 inside loop1 gives ALL SEVEN target callee-saved seats plus target's block-2 addiu at sandbox 2, and the"
+  },
+  {
+   "session": 28,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "The byte-free reference lift for out2 is CLOSED on both sides: cse1's fold_rtx reassociation kills every same-EBB chain before flow counts, and combine \u2014 the only pass that deletes insns after flow co"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The D6 chassis is 132/132 with target's COMPLETE register disposition and its residual is pure sched1 emission order \u2014 the exact shape the scheduler solver exists to close.",
-   "mechanism": "The re-store's addiu is absorbed into loop1's load-delay nop, which costs a re-order of the loop1 block. Target's loop1 pick order is already known and dependence-valid (s25 E-s25-1 hand-built the goal because goalmap --goal-from-target mis-pairs the two identical sh $2,20($sp) texts).",
-   "next_probe": "Sweep the re-store's position over every legal site after out2's first use (and the surrounding statement order) on the D chassis, then run tools/sched_solver perturb.py --pass 1 --block 1 against s25's hand-built goal ON THE D6 CHASSIS \u2014 s25's depth-1 search ran on V8, whose loop notes are gone. Require in ONE measurement: build_insns == 132 AND goalmap.py --model reporting GOAL == OURS for block 1."
+   "hypothesis": "One of the allocnos this grind has never independently verified against target's bytes is mis-counted, and once it is corrected out2 at 3 refs / 714 is admissible without any reference lift at all.",
+   "mechanism": "E-s28-2's hosting rule makes every flow reference count falsifiable from target's own instruction stream: a local's reg_n_refs must decompose into emitted insns with that hard register, shape-A single-use copies, and shape-B `X + constant` argument/address expressions. The model asserts a1/a2 = 16 refs / live 99, i = 10 / 97-98, tbl = 6 / 47 on the V15a chassis; none of those has ever been checked against target the way $s6 was checked this session.",
+   "next_probe": "Count $s1, $s2, $s4 and $s5 occurrences in asm/funcs/func_80041188.s and decompose each count into the three hosting categories. Any allocno whose model count exceeds what target can host is a mis-modelled priority; recompute the seat order with the corrected counts and check whether out2 at 714 lands in $s6 under it. This is a pure read plus arithmetic \u2014 no build \u2014 and it either finds the error or hardens the whole model."
   },
   {
-   "hypothesis": "A byte-free version of the reference lift exists: an insn that cse1 declines to substitute, that survives into flow (counted) and that combine then merges away (byte-free). The stptr = base; stptr += 0xFC chain in this very function is an existing proof that such insns exist here.",
-   "mechanism": "cse1's canon_reg substitutes the donor for out2's chain (donor 77 = pa4, a MEM with a REG_EQUAL note on the incoming 5th argument) but NOT for stptr's chain (donor 80 = base, a MEM with a register address and no note). The predicate that separates the two is the whole question; it is a cse.c property, not a chassis property.",
-   "next_probe": "Read GCC 2.7.2 cse.c (canon_reg, insert_regs, merge_equiv_classes, and the REG_EQUAL handling in cse_insn) against the B1 dumps in tmp/grind/func_80041188/s27/B1/ and name the predicate. Then construct an out2 donor satisfying it. If the predicate is reproducible, form B1 becomes a byte-free +2 and the function closes at 132/132 with target's seats and no scheduler work at all."
+   "hypothesis": "With the reference axis provably closed, out2's LIVE LENGTH is the only surviving dial on this chassis: at 3 references out2 outranks pa4 (1473) iff live <= 20, and the only definition site that reaches live 21 is inside loop1.",
+   "mechanism": "pri = floor_log2(3)*3*10000/live = 30000/live, so live <= 20 clears pa4 while staying under stptr2's 2500 only for live >= 12. s12 measured an in-loop1 definition at 4 refs / live 21 = 3809 and s23 killed the site because loop1's EBB then reaches block 2 and cse1 rewrites `out3 = pa4 + 0x20` into `out3 = out2` (manufacturing the residual move). The unexamined sub-case is a definition placed AFTER out2's last use in loop1, where the value cse1 carries into block 2 may no longer be the one block 2 needs.",
+   "next_probe": "On the V15a chassis, site out2's definition inside loop1 at each position AFTER `func_800523E0(pa4, out2, a3, stptr + 0x38);` (the last use), with block 0 keeping only a declaration; measure ALLOCDBG live length and refs, and check red.i.cse to see whether block 2's `out3 = (u8*)pa4 + 0x20` survives as an addiu or is rewritten to a move. Require in one measurement: out2 live <= 20 AND block 2 still emitting `addiu $s3,$s7,0x20`."
   },
   {
-   "hypothesis": "The re-store construct itself needs a family vet before it can ever be submitted, and that vet should be settled BEFORE more sessions are spent optimising around it.",
-   "mechanism": "The construct is a same-value re-store of a LOCAL, which is the dead-store family (.claude/rules/dead-store-fake-exception.md \u2014 LOCALS/PARAMS only, dropped before final, FAKE required). The D forms also inherit V15a's two split increments, which the owner allowed on 2026-08-27 with a mandatory per-site FAKE annotation.",
-   "next_probe": "Before submitting any D-family candidate, read .claude/rules/dead-store-fake-exception.md end to end, quote its scope sentence, cite a precedent line, and confirm that a re-store which is NOT dropped before the final build (it survives as an emitted addiu unless D6-style absorbed) is still inside that family \u2014 if it is not, emit ruling-request rather than a candidate."
+   "hypothesis": "The D6 chassis (132/132, target's complete callee-saved disposition, residual = pure sched1 emission order) is closable by the scheduler solver, and is now the only route that does not require a new reference.",
+   "mechanism": "s27's D6 places the same-value re-store of out2 immediately after out2's first use; sched1 pays for the extra addiu out of loop1's load-delay nop (target's nop at asm/funcs/func_80041188.s:30), so the build stays at 132 insns with target's seats and the whole residual is loop1's pick order. s25's E-s25-1 already hand-built the dependence-valid target pick order for loop1 because goalmap --goal-from-target mis-pairs the two identical `sh $2,20($sp)` texts.",
+   "next_probe": "Rebuild D6 (its body was not banked in s27 \u2014 only its header note was, so it must be re-derived from alt_V15a plus the re-store after `func_8004A348(buf, out2);`), then run tools/sched_solver perturb.py --pass 1 --block 1 against s25's hand-built goal ON THE D6 CHASSIS. Require in ONE measurement: build_insns == 132 AND goalmap.py --model reporting GOAL == OURS for block 1. Note the standing family caveat: before any D-family candidate is submitted, .claude/rules/dead-store-fake-exception.md must be read end to end and a scope sentence quoted, because a re-store that is NOT dropped before the final build may fall outside that family \u2014 if it does, the correct outcome is ruling-request, not a candidate."
   }
  ],
  "judge_constraints": [

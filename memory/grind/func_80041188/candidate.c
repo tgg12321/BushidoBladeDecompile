@@ -268,6 +268,35 @@
  * proven necessary. The open question is only whether a byte-free spelling of that
  * same reference exists as an in-loop1 use that combine absorbs.
  */
+/* s28 ADDENDUM (rederive, 2026-08-27). Re-measured this session: this body is
+ * STILL sandbox 1 at 132 of 132 insns (HEAD measures 27, alt_V15a measures 15),
+ * so it remains the floor and the shipping chassis. s28 did not change it; s28
+ * closed the last open route AROUND it.
+ *
+ * THE BYTE-FREE REFERENCE IS GONE AS AN IDEA (evidence.md E-s28-1/E-s28-2).
+ * (1) Expression-rooted block-0 splits of out2 (`out2 = pa4 + 0x28; out2 -= 8;`
+ * and two other constant spellings) are folded by cse.c's fold_rtx REASSOCIATION,
+ * not by the canon_reg machinery s22's iff-law describes: red.i.cse rewrites
+ * `(plus 86 -8)` into `(plus 77 32)` using reg 86's known value, the first insn
+ * dies, flow deletes it, and the reference is never counted. Both horns of the F1
+ * chain-extender class are now closed for out2.
+ * (2) Enumerated from the red.i.flow -> red.i.combine insn-id difference, combine
+ * deletes exactly two shapes here: a reg-reg copy with a single-use destination,
+ * and `(set p (plus R c))` merged into its single use. Since flow fixes reg_n_refs
+ * and combine is the only later pass that deletes insns, a byte-free counted
+ * reference must live in one of those two shapes -- and target's bytes contain no
+ * `addiu $aN,$s6,c` and no second $s6 copy to host either one. So out2's fourth
+ * reference must COST an instruction (s27's D family, 133 insns at sandbox 2).
+ *
+ * THE HOSTING RULE, which is the useful thing to carry forward: every flow-counted
+ * reference a local has must be visible in target's bytes as an emitted insn, a
+ * single-use copy, or an `X + constant` argument/address expression. stptr's 7 and
+ * stptr2's 6 decompose that way honestly (`addiu $a3,$s3,0x38`, `addiu $a3,$s0,0x4C`,
+ * `addiu $a3,$s0,0x38`). out2's required 4-or-5 does not -- which is the strongest
+ * evidence yet that the two-locals goto chassis is not the original's shape, and the
+ * next session should apply the same count to a1/a2, i and tbl before assuming the
+ * allocno model is right about them.
+ */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
     s32 *pa4 = a4;
