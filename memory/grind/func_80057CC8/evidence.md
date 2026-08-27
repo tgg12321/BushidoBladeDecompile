@@ -1811,3 +1811,121 @@ reaching 0 is therefore `progress` with the kills banked - which is this session
 - [s37] OWNER DIRECTIVE (2026-08-24 escalation-not-parked, solver modality recommended) ACKNOWLEDGED and its intent discharged by other means: the solver remains tooling-blocked for reasons banked twice (s35-E5, re-checked s36 - inverse_compose.py classify needs func_80057CC8 replace_with_asmfile-wired or it silently degrades to a stale-target text compare reporting IDENTICAL, and wiring it is outside a grind session's allowed surface). The allocno_compare arithmetic the solver would have produced was measured directly from a fresh lreg dump this session, and the local-alloc half of the attribution was confirmed by intervention.
 
 - [s37] src/text1b.c was restored to its INCLUDE_ASM baseline before the session ended; the permuter campaign was harvested with --stop and `permuter_campaign.py status` confirms pid 4144703 alive=false, registered_active=false. No orphaned processes.
+
+
+- [s38] CHASSIS RE-MEASURED AT DISPATCH (the brief again reported it "unavailable"): the
+  inherited s37 candidate (the 16-form) re-applied to src/text1b.c measures
+  `sandbox func_80057CC8 --disable all` -> score 16, target_insns 111, build_insns 108,
+  rules_dropped 0. The ledger's recorded floor of 16 is current; every s31-s37 conclusion is
+  chassis-valid. Harness reused from s37 (apply.py + meas.ps1, copied to
+  tmp/grind/func_80057CC8/s38/ and re-pointed at s38/text1b.orig.c, which is HEAD's
+  `INCLUDE_ASM("asm/funcs", func_80057CC8);` at src/text1b.c:1665).
+
+- [s38] FRONTIER ITEM #1 IS EXHAUSTED AS WRITTEN, and for a reason the frontier could not
+  have known: the two remaining block-local call-crossing pseudos in the 16-form's .lreg are
+  115/119/129 as the frontier listed, but reading their RTL identifies them - 119 is
+  `(ashiftrt (ashift (subreg (reg/v:HI 83))))` carrying `REG_EQUAL (sign_extend (reg/v:HI 83))`,
+  i.e. (s16)cx; 129 is the same shape over reg/v:HI 86, i.e. (s16)cy; 115 is the PREV-neighbour
+  address (`plus 114 + reg/v:SI 87`) and does NOT cross a call at all. So the only two
+  block-local crossing pseudos are the two centre twins, and they are ALREADY seated in the
+  target's $s0/$s1. Promoting them out of local-alloc could only move them off a correct seat.
+  Additionally they are compiler temps (no `reg/v` tag), so there is no C-level variable whose
+  second SET would promote them in the first place. The "promote another block-local pseudo"
+  lever has no remaining subject.
+
+- [s38] STATEMENT-ORDER HOISTS AIMED AT THE allocno_compare ARITHMETIC ARE ALL WORSE. The
+  s37 arithmetic (address pseudo 88 at floor_log2(6)*6/4 = 3.0 vs arg0 at 2*5/54 = 0.185)
+  suggests two source-level attacks: shorten arg0's live_length (raising its priority) or
+  lengthen pseudo 88's (lowering its). Both measured, plus the combination:
+    a_scale_top.c   `scale = arg0[2] * 40;` hoisted to just after `table = ...` .... 47 @108
+    b_nv_top.c      the whole next-vertex address block hoisted to just after
+                    `table = ...` (def far from use, long live range) ............... 39 @106
+    c_both_top.c    both hoists .................................................... 54 @106
+  All three are ordinary C re-orderings with no new construct, and all three are far worse
+  than 16. Banked as rejected/s38-hoist-scale-to-top-score47.c,
+  rejected/s38-hoist-next-vert-block-to-top-score39-106insns.c,
+  rejected/s38-hoist-both-to-top-score54-106insns.c. Note b/c drop to 106 insns - two BELOW
+  the 108-insn regime and five below the target's 111 - so they are a different (worse) regime,
+  not a near miss.
+
+- [s38] WHY THE HOISTS CANNOT WORK, mechanism named from the pass order rather than guessed:
+  pseudo 88's live_length of 4 is not a property of where the C writes the assignment. In the
+  16-form's .lreg the address add is `(insn 86 ...)` - a LOW uid, i.e. emitted early - yet it
+  sits in the instruction stream between insn 124 and the call_insn 126. GCC 2.7.2 runs sched1
+  BEFORE local-alloc, so the first scheduling pass has already SUNK the address add to the
+  slot immediately preceding the jal, which is what compresses its live range to 4 insns and
+  hands it the 3.0 priority. Source-level hoisting feeds the scheduler more slack, not less,
+  so it cannot lengthen that range; the measurements above are the confirmation. The only
+  constructs that would pin the add in place are scheduling barriers, which are a forbidden
+  family.
+
+- [s38] s33-E5's NINTH-CALLEE-SAVE REGIME RE-MEASURED ON THE CURRENT CHASSIS - STILL DEAD,
+  AND BAN-COMPLIANT. d_postcall_addr.c forms the next-neighbour address AFTER the first
+  ratan2 call from the SINGLE `table` local carried across that call (the wrap arms compute
+  only a function-scope `off`; there is NO second read of `*(s16 **)(arg0 + 4)`, so the form
+  is entirely outside the banned duplication family). It measures 31 at 110 insns, against
+  33 at the s33 regime - the axis has not moved and is still 15 points worse than 16. The
+  extra two instructions are the post-call `sll`/`addu` that the pre-call form gets for free
+  in the scheduler's jal-adjacent slot. Banked as
+  rejected/s38-postcall-address-from-carried-table-score31-110insns.c.
+
+- [s38] NEW AND IMPORTANT: THE `next_vert = &Judge;` LEVER IS REGIME-SPECIFIC, WORTH ZERO
+  OUTSIDE THE PRE-CALL-ADDRESS REGIME. e_postcall_addr_nolever.c is d_postcall_addr.c with
+  the lever statement removed and the two sine-table reads spelled `*(&Judge + ...)`; it also
+  measures 31 at 110 insns. Identical score. So the four points the lever buys in the 108-insn
+  pre-call regime come entirely from removing local-alloc's pre-seating of the PRE-CALL address
+  pseudo; once the address is formed after the call there is no block-local crossing pseudo to
+  promote and the statement is inert. Any future session evaluating a structurally different
+  regime must RE-MEASURE the lever there rather than assume it carries. Banked as
+  rejected/s38-postcall-address-no-judge-lever-score31-110insns.c.
+
+- [s38] FAMILY CITATION FOR THE 16-FORM IS WRONG IN THE INHERITED LEDGER, and s38 corrected
+  candidate.c's header. s37 (and the driver brief's family-selection table) cite
+  .claude/rules/defeat-licm-hoist-var-reuse.md for the variable-reuse shape. That rule is
+  explicitly LOOP-SCOPED: staged-value-reused-variable.md's Related section says verbatim
+  "[[defeat-licm-hoist-var-reuse]] - variable reuse inside loops (a different, loop-scoped
+  mechanism; do not cite it for straight-line code)". func_80057CC8 contains no loop, and the
+  measured mechanism here is local-alloc.c block-local pre-seating, not loop.c movable
+  admission. Citing it would be exactly the right-construct/wrong-citation layer-1 FAIL the
+  brief warns about (one third of recent layer-1 FAILs).
+
+- [s38] THE CONSTRUCT SITS BETWEEN TWO SANCTIONED FAMILIES AND MATCHES NEITHER SCOPE SENTENCE,
+  which is why s38 returns `ruling-request` rather than guessing. Read end to end:
+  (i) .claude/rules/staged-value-reused-variable.md - scope is "a real, immediately-used value
+  staged through an existing (currently-dead) local to fix instruction order". Bounds 2/3/5/6
+  are satisfied here: `next_vert` is an EXISTING local with a real job (it holds the
+  next-neighbour vertex pointer and is read by both ratan2 arguments), its previous value is
+  provably dead at the staging point (both calls have returned; nothing reads the vertex
+  pointer again), and the lever-exhaustion ledger is thirty-eight sessions deep. Bound 1 is the
+  open question: the staged value IS read on the next two lines, but it is a compile-time
+  CONSTANT ADDRESS (`&Judge`), not a loaded/computed datum like SOTN's `i = *scriptCur++;`.
+  The rule's own mechanism is sched.c `adjust_priority`/`birthing_insn_p` (`reg_n_sets == 1`);
+  ours is local-alloc.c block-locality. Same "multi-set pseudo" property, different pass.
+  (ii) .claude/rules/pointer-alias-fake-exception.md - scope is "a local pointer that provides
+  a second C handle to a global - where using the global directly would be semantically
+  identical". That describes the VALUE exactly, but the family's canonical shape is a FRESH
+  local declaration (`Type* t = &g_Thing;`), and s37 measured a fresh local at 20, i.e. the
+  alias half is NOT the lever. The load-bearing half is the reuse of an existing local.
+  So the construct is the composite: pointer-alias-to-global carried in a reused existing
+  local. PSX-tagged SOTN precedent for the reuse half exists at
+  docs/reference/sotn-construct-index.md:51 / :81 / :92 / :97 / :109 (`// fake reuse of i?`,
+  src/boss/mar/cutscene.c:172, src/st/cen/cutscene.c:211, src/st/lib/cutscene.c:153,
+  src/st/no3/cutscene.c:360, src/st/top/cutscene.c:143); precedent for the alias half is in
+  pointer-alias-fake-exception.md's own evidence block (SOTN src/dra/cd.c:539
+  `new_var3 = &g_Cd;`). No PSX-tagged precedent was found for the COMPOSITE.
+
+- [s38] DISPOSITION REASONING (recorded so it is not re-derived). The floor did NOT move this
+  session, but the function is not exhausted and s38 is not `escalation` modality, so
+  `owner-gated` is unavailable and would in any case be in the 2026-08-24 auto-reject class
+  (docs/grind/decisions.md:8114 already carries the standing REFUSED / OWNER-ACCEPTED-INCOMPLETE
+  record for the $s2/$s3 duplication residual, and a packet asking to sanction it would be a
+  no-precedent family grant). `ruling-request` is the correct outcome because the 16-form's
+  construct sits under EVERY future candidate for this function: no submission at any floor is
+  possible until its family is settled, and s37 explicitly deferred the question to the next
+  session. Five forms were measured and killed alongside it, so the session also banks real
+  search-space elimination.
+
+- [s38] src/text1b.c restored to `INCLUDE_ASM("asm/funcs", func_80057CC8);` (git checkout,
+  verified at line 1665). No commits; regfix.txt, asmfix.txt, .claude/rules/, engine/, tools/,
+  Makefile and *.ld untouched. No permuter campaign was launched this session, so there is
+  nothing to orphan.

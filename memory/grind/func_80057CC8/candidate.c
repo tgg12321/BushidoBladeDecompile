@@ -13,12 +13,18 @@
  * /* FAKE * / STATUS -- READ BEFORE BUILDING ON THIS FILE.  The added statement is a
  * MATCH-HACK, not program logic: `next_vert` is the next-neighbour vertex pointer and
  * re-pointing it at the sine table has no semantic purpose (the loads are identical
- * either way).  Its family is "variable reuse for codegen control" (an EXISTING local
- * borrowed for a second unrelated value -- .claude/rules/defeat-licm-hoist-var-reuse.md,
- * borrows gated by .claude/rules/staged-value-reused-variable.md), which is on the FROZEN
- * SOTN-accepted list but REQUIRES a /* FAKE * / annotation plus that rule's prerequisites
- * (documented lever-exhaustion + named GCC-pass mechanism) before it may ever be
- * submitted.  s37 did NOT vet those prerequisites -- the floor is 16, not 0, so no
+ * either way).  FAMILY CITATION CORRECTED BY s38 -- do NOT cite
+ * .claude/rules/defeat-licm-hoist-var-reuse.md, as that rule is explicitly loop-scoped
+ * ("variable reuse inside loops (a different, loop-scoped mechanism; do not cite it for
+ * straight-line code)", staged-value-reused-variable.md Related section) and this function
+ * contains no loop.  The two adjacent candidate families are
+ * .claude/rules/staged-value-reused-variable.md (an EXISTING, currently-dead local staged
+ * with a real immediately-consumed value) and .claude/rules/pointer-alias-fake-exception.md
+ * (a C-level local pointer alias to a global).  NEITHER scope sentence squarely covers this
+ * construct, which is the composite of both, and s38 emitted a `ruling-request` on exactly
+ * that question rather than guess.  Whichever family is granted, the construct REQUIRES a
+ * /* FAKE * / annotation plus documented lever-exhaustion and a named GCC-pass mechanism
+ * before it may ever be submitted.  s37 did NOT vet those prerequisites -- the floor is 16, not 0, so no
  * candidate-ready and no self-vet was in scope.  A future session that wants to SUBMIT
  * anything containing this statement must either clear the family prerequisites in a
  * self-vet or emit a ruling-request first.  It is banked here because it is the best
@@ -67,6 +73,19 @@
  * (s30) and a ninth callee-save seat (s33-E5, measures 33) all closed -- requires the
  * second source-level materialization the owner refused on 2026-07-20.  That residual is
  * a policy question, not a spelling.
+ *
+ * s38 ADDITIONS (all measured on this exact chassis, base16 re-measured at score 16 / 108
+ * insns first).  Five new forms KILLED, none better than 16:
+ *   hoist `scale = arg0[2] * 40;` to the top (shortens arg0's live range) ....... 47 @108
+ *   hoist the whole next-vertex address block to the top ......................... 39 @106
+ *   both hoists together .......................................................... 54 @106
+ *   next address formed AFTER the first ratan2 call from the single carried
+ *     `table` local (NO duplicate base read -- ban-compliant) .................... 31 @110
+ *   the same, with the `next_vert = &Judge;` lever removed ..................... 31 @110
+ * The last pair is the important one twice over: it re-measures s33-E5's ninth-callee-save
+ * regime on the CURRENT chassis (was 33 two regimes ago, is 31 now -- still dead, +2 insns),
+ * and it shows the &Judge lever is REGIME-SPECIFIC, worth 0 points once the address is
+ * formed post-call.  The lever only pays while the address is formed before the call.
  */
 void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     unsigned short prev_idx;
