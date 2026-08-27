@@ -838,3 +838,87 @@ is gated on the refused duplication family.
 - probe: vV (explicit if/else) and vE (element offset), both measured.
 - result: 26 at 108 insns and 27 at 109 insns respectively -- both strictly worse than the byte-offset assign-then-override spelling. Not free: the if/else flips the branch sense against the target's bnez, and the element offset costs a separate scale instruction.
 - verdict: KILLED
+
+
+## s33 (2026-08-27) - rederive
+
+- **H-s33-1: The vertex-table base pseudo occupies a callee-save seat because it carries
+  four references (s32-E4's model), so reducing it to three by deriving one vertex address
+  from another will demote it and reproduce the target's $16..$19.**
+  probe: centre pointer `ctr = table + arg1*4`, next derived from `ctr` (vA); both
+  neighbours derived from `ctr` (vC); plus a `-da` dump of the baseline to read the actual
+  allocation order.
+  result: vA 38 / 109 insns, vC 35 / 110 insns - both regressions. The dump
+  (tmp/grind/func_80057CC8/dumps/text1b.greg) shows `;; 87 preferences: 17` and
+  `87 in 17  88 in 17`: the callee-save seat belongs to the next-ADDRESS allocno (88), and
+  the base (87) inherits it through a copy preference, so the premise was wrong.
+  **verdict: KILLED (and the underlying model corrected).**
+
+- **H-s33-2: Breaking the copy preference between the base and the call-crossing address
+  will leave the base in a caller-save register, matching the target's `lw $a2,0x4($s2)`.**
+  probe: write the address as `(s16 *)(off + (s32)table)` - offset as the leading PLUS
+  operand (vM); the same flip at the centre address (vT) and at a named prev address (vR).
+  result: vM scores **22 at 108 insns** (baseline 24 at 108) with the base emitted in `$6`
+  and `lw $6,0x4($19)` / `addu $2,$2,$6` matching the target instruction-for-instruction.
+  vR and vT also 22 - the flip only pays at the add whose result crosses the call.
+  **verdict: CONFIRMED - new floor 22.**
+
+- **H-s33-3: A deliberately 110-111-insn ban-compliant arrangement can beat the 108-insn
+  floor, because the engine metric is dominated by per-instruction text agreement rather
+  than instruction count (s32 frontier axis 2).**
+  probe: the target-shaped form (arm-selected next INDEX live across the first call, address
+  formed after it from the single base) (vE); address selected in the two arms (vH/vN/vU/vW);
+  centre pair read as one 32-bit word (vL); sll16/sra14 pair in the flipped regime (vX/vY).
+  result: vE 33 / 111 insns - structurally the closest ever recorded (115 vs 116 normalised
+  lines) but NINE values cross the call, so arg0 falls to $20 and arg3 into $fp. vH/vN/vU/vW
+  all 25 / 110; vL 38 / 110; vX/vY 28 / 109. Nothing above 108 insns beats 22.
+  **verdict: KILLED.**
+
+- **H-s33-4: The next-address allocno can be demoted below `arg0` by giving it exactly three
+  references over a long live range, which would yield the target's $16/$17/$18 assignment.**
+  probe: arm-select the next INDEX and form the address once with `* 4` (v3/v4) or with the
+  target's sll16/sra14 pair (vX/vY); single-def ternary offset (vZ); address selected
+  directly in the arms (vH, four refs but two defs).
+  result: three-reference spellings 28/28/28/28 and 25; the four-reference
+  address-in-arms form DOES demote it one rank (emitted $16 cys, $17 cxs, $18 next-address,
+  $19 arg0 - the target's $16/$17 exactly) but costs two instructions and measures 25.
+  The rank and the instruction count are coupled; nothing measured buys both.
+  **verdict: KILLED for every spelling tried; the coupling itself is the new frontier.**
+
+- **H-s33-5: Banked spelling scores from the pre-2026-08 (banned-reload) chassis transfer to
+  the current ban-compliant chassis.**
+  probe: re-measure s27's call-order swap and s32-E6's if-block swap in the flipped-PLUS
+  regime (vG, vQ).
+  result: call-order swap 54 at 112 insns (s27 recorded 16); if-block swap 41 at 106 insns
+  (s32 recorded 41 - that one does transfer).
+  **verdict: KILLED - chassis-relativity is real and asymmetric; re-measure before spending.**
+
+## [s33] The vertex-table base pseudo occupies a callee-save seat because it carries four references (s32-E4's model), so reducing it to three by deriving one vertex address from another will demote it below arg0 and reproduce the target's $16..$19 assignment.
+- mechanism: allocno_compare (tools/gcc-2.7.2/global.c:635) ranks call-crossing allocnos by floor_log2(n_refs)*n_refs/live_length; at four references floor_log2 steps to 2 and the base outranks arg0.
+- probe: vA: centre pointer ctr = table + arg1*4, cx/cy read through ctr, next address derived from ctr with a relative arm-selected offset. vC: both neighbours derived from ctr (prev = ctr + (pi - arg1)*4). Plus a cc1 -da dump of the s32 baseline (tmp/grind/func_80057CC8/run_dump.sh) to read the real allocation order instead of inferring it.
+- result: vA scored 38 at build_insns 109; vC scored 35 at build_insns 110 (baseline 24 at 108). The emitted code merely moves the same four-reference merged pointer allocno onto ctr (addu $17,$7,$4 then lhu $20,0($17)), so the reference count never drops, while the relative-offset arithmetic (addu $8,$0,4 / subu $8,$0,$4 and the wrapped-prev (arg0[3]-1-arg1)*4) adds instructions. Decisively, the .greg dump shows ';; 87 preferences: 17' with dispositions '87 in 17  88 in 17': pseudo 88 (the next-neighbour ADDRESS) is the allocno that crosses the call and needs the callee-save seat, and pseudo 87 (the base) only inherits it via the copy preference. The premise attributed the seat to the wrong allocno.
+- verdict: KILLED
+
+## [s33] Breaking the copy preference between the base pseudo and the call-crossing address pseudo will leave the base in a caller-save register, matching the target's lw $a2,0x4($s2).
+- mechanism: RTL-expand emits the address as plus(op0, op1) in source operand order; with the base leading, the allocator records a copy preference from the base to the address pseudo, and since the address crosses ratan2 and must be callee-save, the preference drags the base into the same callee-save register. Reversing the source operands removes the tie.
+- probe: vM: next_vert = (s16 *)(off + (s32)table) instead of (s16 *)((s32)table + off), everything else identical to the s32 candidate. Controls: vT (same flip applied to the centre address instead), vR (named prev-neighbour address written with the flip), v2 (address formed after pi rather than inside the arms), v5/v6 (two local-declaration reorderings).
+- result: vM scores 22 at build_insns 108 / target_insns 111 / rules_dropped 0 - a two-point improvement with NO instruction-count change. The base is emitted in $6 and the pair lw $6,0x4($19) / addu $2,$2,$6 now agrees instruction-for-instruction with the target's lw $a2,0x4($s2) / addu $v0,$v0,$a2 (asm/funcs/func_80057CC8.s:17,:19). vR, vT, v2, v5 and v6 all re-measure 22, so the payoff is specific to the one add whose result crosses the call, not to operand order generally.
+- verdict: CONFIRMED
+
+## [s33] A deliberately 110-111-instruction ban-compliant arrangement can beat the 108-instruction floor, because the engine metric is dominated by per-instruction text agreement rather than by the absolute instruction-count difference (s32 frontier axis 2).
+- mechanism: s32 measured 24 at 108 insns, 25-26 at 110 and 27 at 109 - the score is not monotone in |build_insns - target_insns|.
+- probe: vE: the most target-shaped form - arm-select the next INDEX, keep it live across the first ratan2, and form the next address AFTER that call from the single table value (111 insns). vH/vN/vU/vW: next ADDRESS selected directly in the two arms (110). vL: centre coordinate pair read as one 32-bit word (110). vX/vY: the s31 sll16/sra14 address pair re-introduced on top of the flipped-PLUS regime (109).
+- result: vE 33 at 111 insns - its normalised diff against target is the closest structural match ever recorded for this function (115 target lines vs 116 ours, tail identical from andi $16,$2,4095 onward) but it puts NINE values across the call instead of eight, because table occupies the seat the target frees by reloading; arg0 is pushed to $20 and arg3 spills into $30/$fp. vH/vN/vU/vW all 25 at 110; vL 38 at 110; vX/vY 28 at 109. Nothing above 108 instructions beats 22.
+- verdict: KILLED
+
+## [s33] The next-address allocno can be demoted below arg0 by giving it exactly three references over a live range longer than ~30 insns, yielding the target's $16/$17/$18 assignment (cys / cxs / arg0).
+- mechanism: arg0 carries 5 references over the whole ~100-insn body, priority ~0.10 under allocno_compare; a three-reference allocno needs live_length > ~30 to fall below it, a four-reference one would need live_length > ~57 which the function cannot supply.
+- probe: v3/v4: arm-select the next INDEX then form the address once with (s16)tmp * 4 (both operand orders). vX/vY: same but with the target's sll16/sra14 pair (both orders). vZ: single-def ternary offset. vH: address selected directly in the two arms (four references, two defs).
+- result: Every three-reference spelling regresses: v3 28, v4 28, vX 28, vY 28, vZ 25 - the index form costs the instructions the byte-offset form saves. The four-reference address-in-arms form (vH) DOES demote it one rank and emits $16 cys, $17 cxs, $18 next-address, $19 arg0 - reproducing the target's $16 and $17 exactly - but costs two instructions (arg1 + 1 is sunk into both arms, plus a load-delay nop) and measures 25 at 110 insns in all three spellings tried. The register rank and the instruction count are coupled; nothing measured buys both.
+- verdict: KILLED
+
+## [s33] Banked spelling scores from the pre-2026-08 (banned-reload) chassis transfer to the current ban-compliant chassis, so a form s27 recorded at 16 would now sit below the 22-24 floor.
+- mechanism: The floor-3 baseline those numbers were measured against contained the Judge-banned second base load; the ban-compliant chassis is a different codegen regime.
+- probe: vG: re-measure s27's call-order swap (compute ang_next first) in the flipped-PLUS ban-compliant regime. vQ: re-measure s32-E6's if-block swap in the same regime.
+- result: vG scores 54 at 112 insns where s27 recorded 16 - the number does not transfer at all. vQ scores 41 at 106 insns, exactly matching s32-E6's 41, so that one does transfer. Chassis-relativity is real and asymmetric: a banked score must be re-measured before it is spent, and the direction of the error is not predictable.
+- verdict: KILLED

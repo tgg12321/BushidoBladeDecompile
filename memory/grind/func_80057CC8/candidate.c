@@ -1,45 +1,53 @@
-/* BEST BAN-COMPLIANT FORM (grind s32, 2026-08-27, rederive modality).
- * MEASURED THIS SESSION: `sandbox func_80057CC8 --disable all` -> score 24,
- * target_insns 111, build_insns 108, rules_dropped 0.  The inherited s31
- * candidate (next-neighbour ADDRESS hoisted above the first call, 110 insns)
- * re-measured at 26 on this chassis first, so the floor moved 26 -> 24.
+/* BEST BAN-COMPLIANT FORM (grind s33, 2026-08-27, rederive modality).
+ * MEASURED THIS SESSION: `sandbox func_80057CC8 --disable all` -> score 22,
+ * target_insns 111, build_insns 108, rules_dropped 0.  The inherited s32
+ * candidate re-measured at 24 on this chassis first, so the floor moved 24 -> 22.
  *
- * WHAT CHANGED vs s31: the next-neighbour BYTE OFFSET is selected in the two arms
- * of the next-index test (`off = (s16)tmp * 4;` / `off = 0;`) and the address is
- * formed once from the single `table` value afterwards.  The vertex-table base is
- * still read EXACTLY ONCE (`table = *(s16 **)(arg0 + 4);`); `off` and `next_vert`
- * are ordinary distinct values, not second materialisations of the base.  Two
- * measured consequences: (a) the arm re-uses the sign-extension the range compare
- * already needed, so the offset costs ONE instruction instead of the sll16/sra14
- * pair, and (b) GCC coalesces `next_vert` onto `table`'s hard register (the emitted
- * `addu $17,$17,$6`), which puts the sign-extended centre-Y twin on the target's $16.
+ * WHAT CHANGED vs s32: exactly one character-level edit -- the PLUS operand order
+ * of the next-neighbour address, `(s16 *)(off + (s32)table)` instead of
+ * `(s16 *)((s32)table + off)`.  Everything else is the s32 candidate verbatim.
  *
- * REGISTER-ASSIGNMENT ACCOUNTING (the residual, quantified this session).  The
- * eight values that cross the calls are assigned $16..$23 in descending
- * allocno_compare priority, which GCC 2.7.2 computes at global.c:635 as
- *   floor_log2(n_refs) * n_refs / live_length * 10000 * size.
- * Target ranks: cys, cxs, arg0, next_idx  ->  $16,$17,$18,$19.
- * This form ranks: cys, table/next_vert, cxs, arg0.  The base pseudo is rank 2
- * because it carries FOUR references (def + centre address + prev address + next
- * address); at four references floor_log2 jumps to 2 and its priority (~0.24)
- * beats both twins and arg0.  Dropping it to THREE references would put it at
- * ~0.09 -- below arg0 -- and reproduce the target's $16..$19 assignment exactly.
- * There is no ban-compliant way to do that: the three uses are the three distinct
- * vertex addresses the function must form, and removing one means either a second
- * materialisation of the base (the banned family) or deriving one neighbour
- * address from another, which costs the instructions it saves.  See evidence.md
- * s32-E4.
+ * WHY THAT ONE FLIP IS WORTH TWO POINTS (mechanism, dump-verified).  In the s32
+ * spelling RTL-expand emits the address as `plus(table_pseudo, off_pseudo)` with
+ * the base first, which makes the allocator record a copy PREFERENCE from the base
+ * pseudo to the address pseudo (`;; 87 preferences: 17` in the .greg dump under
+ * tmp/grind/func_80057CC8/dumps/text1b.greg).  Because the address pseudo crosses
+ * the first `ratan2` call it must live in a callee-save register, and the
+ * preference drags the BASE pseudo into that same callee-save register too --
+ * emitted `lw $17,0x4($19)`.  The target keeps the base in the CALLER-SAVE `$a2`
+ * (`lw $a2,0x4($s2)`, asm/funcs/func_80057CC8.s:17), because in the target the
+ * base dies before the call.  Writing the offset first breaks the preference: the
+ * base is no longer the leading operand, it is left in `$6`, and our
+ * `lw $6,0x4($19)` / `addu $2,$2,$6` now agree with the target's `lw $a2,0x4($s2)`
+ * / `addu $v0,$v0,$a2` instruction-for-instruction.
  *
- * WHY IT IS STILL NOT 0: unchanged from s30b/s31 -- asm/funcs/func_80057CC8.s
+ * REGISTER-ASSIGNMENT ACCOUNTING (updated -- this CORRECTS s32-E4).  The .greg
+ * dump prints the global allocation order directly:
+ *   ;; 15 regs to allocate: 78 77 172 73 187 79 87 104 72 76 168 83 86 74 75
+ * For the s32 form pseudo 87 is the vertex-table base, disposition `87 in 17`,
+ * `88 in 17` -- i.e. the callee-save seat that s32 attributed to "the base pseudo
+ * at four references" is actually held by the next-neighbour ADDRESS allocno, and
+ * the base merely inherits it through the copy preference.  Under the flip the
+ * base drops out of the callee-save competition entirely.  The surviving residual
+ * is a single rank swap: we get $16 cys, $17 next-address, $18 cxs, $19 arg0,
+ * where the target has $16 cys, $17 cxs, $18 arg0, $19 next-INDEX.  For the
+ * next-address allocno to fall below arg0 under allocno_compare
+ * (tools/gcc-2.7.2/global.c:635, floor_log2(n_refs)*n_refs/live_length) it needs
+ * at most THREE references over a live range longer than ~30 insns; every
+ * three-reference spelling measured this session (arm-selected index + sll16/sra14,
+ * arm-selected index * 4, ternary offset) lands at 28/28/25 because the index form
+ * costs instructions the offset form does not.  See evidence.md s33-E3.
+ *
+ * WHY IT IS STILL NOT 0: unchanged from s30b/s31/s32 -- asm/funcs/func_80057CC8.s
  * loads 0x4($s2) TWICE (:17 `lw $a2`, :50 `lw $a0`) and GCC 2.7.2 has no pass that
  * turns one RTL load into two loads at the original address.  That residual is the
  * policy question refused 2026-07-20 and standing-ruled 2026-07-27, not a spelling.
  *
- * SPELLING-INVARIANCE MEASURED THIS SESSION (all in the 108-insn regime): declaring
- * the centre coordinates `s16` and reading them through `*(s16 *)` scores the same
- * 24; using the sign-extended twins instead of the raw coordinates in the two final
- * adds emits BYTE-IDENTICAL text; naming the prev-neighbour address in its own local
- * changes only one addu's PLUS operand order and also scores 24.
+ * MEASURED-INERT THIS SESSION (all still 22 at 108 insns): naming the prev
+ * neighbour address in its own local; flipping the PLUS operand order of the centre
+ * address as well; forming the next address after `pi` instead of inside the arms;
+ * two different local-declaration orders.  The flip's value is specific to the one
+ * add whose result crosses the call.
  */
 void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     unsigned short prev_idx;
@@ -71,7 +79,7 @@ void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
         if ((s16) tmp >= (s32)arg0[3]) {
             off = 0;
         }
-        next_vert = (s16 *)((s32)table + off);
+        next_vert = (s16 *)(off + (s32)table);
     }
 
     pi = (s16) prev_idx;

@@ -1,7 +1,7 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 32,
+ "session_count": 33,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -201,23 +201,29 @@
    "floor": 24,
    "modality": "rederive",
    "headline": "s32 rederive: floor 26 -> 24 via an arm-selected next-neighbour BYTE OFFSET (108 insns, single base materialisation); and the target's $16-$19 callee-save mapping is proven arithmetically unreachable "
+  },
+  {
+   "session": 33,
+   "floor": 22,
+   "modality": "rederive",
+   "headline": "s33 rederive: floor 24 -> 22 via a pure PLUS-operand-order flip on the next-neighbour address (108 insns, same count) that breaks the base->address copy preference and leaves the vertex-table base in "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The base pseudo can be brought to THREE references without a second materialisation, by deriving the CENTRE address from one of the neighbour addresses (or vice versa) using a delta computed before the branches -- which would drop its allocno priority below arg0's and reproduce the target's exact $16..$19 assignment.",
-   "mechanism": "allocno_compare (global.c:635) uses floor_log2(n_refs)*n_refs/live_length; at 4 refs the base scores ~0.24 (rank 2), at 3 refs ~0.09 (rank 4, below arg0's ~0.14). The three uses are the centre, prev and next vertex addresses; any one of them expressed relative to another removes a base reference.",
-   "next_probe": "Measure a centre pointer ctr = table + arg1*2 used for cx/cy, with the prev address written as ctr + (pi - arg1)*2 and/or the next address as ctr + (ni - arg1)*2, computing the deltas before the two if-blocks. Check build_insns and the emitted $16..$19 assignment with tmp/grind/func_80057CC8/s31/norm2.py; the delta arithmetic must not cost more than the one instruction it saves."
+   "hypothesis": "The remaining two points are the one rank swap, and it can be bought without the two-instruction penalty if the next-address allocno is demoted by LENGTHENING its live range rather than by changing its reference count - specifically by defining it early enough that its live_length exceeds ~30 insns while keeping the single-def byte-offset form that costs nothing.",
+   "mechanism": "allocno_compare (tools/gcc-2.7.2/global.c:635) = floor_log2(n_refs)*n_refs/live_length. The winning form's address allocno has ~5 refs over ~25 insns; arg0 has 5 refs over ~100. Only live_length is still an unexploited free variable - s33 varied n_refs (28/28/25) and the definition SITE within the arms (inert), but never successfully pushed the def more than a few insns earlier, because the sched pass sinks it (the emitted `addu $17,$17,$6` lands immediately before the call regardless of source placement).",
+   "next_probe": "Read tmp/grind/func_80057CC8/dumps/text1b.sched for func_80057CC8 and find WHY the address-forming addu is sunk to just before the jal (INSN_PRIORITY / the ready-list order), then look for a source form whose address def is anchored earlier - e.g. making the offset depend on a value the scheduler cannot move past, or forming the address inside the PREV-index if-block's fallthrough where the block boundary pins it. Measure build_insns and the emitted $16..$19 with tmp/grind/func_80057CC8/s31/norm2.py against asm/funcs/func_80057CC8.s."
   },
   {
-   "hypothesis": "The engine's distance metric is more sensitive to register naming and block order than to raw instruction count, so a deliberately 111-insn ban-compliant form in the offset-in-arms regime could score below 24 even though the 108-insn form is 3 short.",
-   "mechanism": "s32 measured 24 at 108 insns, 25-26 at 110 insns and 27 at 109 insns -- score is not monotone in the absolute difference between build_insns and target_insns, which means the metric is dominated by per-instruction text agreement.",
-   "next_probe": "Re-introduce the s31 sll16/sra14 address pair on top of the s32 arm-selected offset (keep off in the arms but recompute the shift from the raw index after the blocks) to land at 110-111 insns, and measure whether any 111-insn ban-compliant arrangement beats 24."
+   "hypothesis": "The PLUS-operand-order lever that bought 24 -> 22 has only been applied to the three vertex addresses; the same copy-preference tie may exist at other two-operand sites whose results cross a call or feed a callee-save, and flipping them is free (no instruction-count change).",
+   "mechanism": "The .greg dump records one preference line per tied pseudo (`;; 87 preferences: 17`). Any other pseudo carrying a `preferences:` line whose partner is a callee-save allocno is a candidate for the same source-level flip.",
+   "next_probe": "Re-run tmp/grind/func_80057CC8/run_dump.sh with the s33 candidate (vM) in place, grep the func_80057CC8 block of text1b.greg for all `preferences:` lines, and for each one identify the source expression that produced the tie and measure its operand-flipped spelling. s33 only checked the three address adds (all 22); the coordinate subtractions, the ang_mid arithmetic and the final scale multiply were never dumped."
   },
   {
-   "hypothesis": "Nothing reachable closes the last instruction toward a BYTE MATCH: the residual is the refused duplication policy, now proven three ways (mechanism s30b, instruction-multiset counting s31, allocno-priority arithmetic s32).",
-   "mechanism": "The target's instruction multiset contains two loads of 0x4($s2); every ban-compliant form emits one, and GCC 2.7.2 has no rematerialisation path that supplies the second.",
-   "next_probe": "Do NOT re-file an escalation packet -- a YES there would lower a standard (pre-decided-NO auto-reject class, owner ruling 2026-08-24). Spend sessions on the two floor axes above."
+   "hypothesis": "Nothing reachable closes the last instruction toward a BYTE MATCH: the residual is the refused duplication policy, now proven four ways (mechanism s30b, instruction-multiset counting s31, allocno-priority arithmetic s32 as corrected by s33-E2, and s33-E5's nine-live-values demonstration from the opposite direction).",
+   "mechanism": "The target's instruction multiset contains two loads of 0x4($s2). A ban-compliant form emits one, which forces the base to stay live across the first ratan2 call; that occupies the eighth callee-save seat the target frees by reloading, so the target's post-call address formation is unaffordable by construction, not by spelling.",
+   "next_probe": "Do NOT re-file an escalation packet - a YES there would lower a standard (pre-decided-NO auto-reject class, owner ruling 2026-08-24). Spend sessions on the two floor axes above."
   }
  ],
  "judge_constraints": [

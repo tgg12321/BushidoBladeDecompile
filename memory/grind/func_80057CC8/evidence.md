@@ -1146,3 +1146,132 @@ and the matching .hon.s streams, plus apply.py / gen.sh / run.ps1.
 - [s32] src/text1b.c restored to the INCLUDE_ASM representation at end of session (git diff clean). No commits, no rule/engine/tool files touched.
 
 - [s32] m2c re-derivation was NOT re-run: s18 already banked all three m2c-derived shapes (combined shift byte-neutral, cur-pointer +1 regression, split-p Judge-banned). This session's rederive work was twelve fresh structural forms measured against the current chassis instead.
+
+
+## s33 (2026-08-27) - rederive - FLOOR 24 -> 22, and s32's allocno attribution CORRECTED from the .greg dump
+
+**Chassis re-measured first.** HEAD is `INCLUDE_ASM("asm/funcs", func_80057CC8);` at
+src/text1b.c:1665. The inherited s32 candidate re-measured at **score 24, build_insns 108,
+target_insns 111, rules_dropped 0** - the ledger floor was current, not stale. Nineteen
+structurally distinct forms were then derived and measured against it.
+
+**[s33-E1] NEW FLOOR 22 - flip the PLUS operand order of the next-neighbour address.**
+The entire diff against the s32 candidate is `next_vert = (s16 *)(off + (s32)table);`
+instead of `next_vert = (s16 *)((s32)table + off);`. Measured **score 22 at build_insns 108**
+(previous best 24 at the same 108 insns; no instruction-count change at all). Banked as
+candidate.c. The same flip applied to the CENTRE address (vT) and a named prev-neighbour
+address written with the flip (vR) both re-measure 22 - the value is specific to the one
+add whose result crosses the first `ratan2` call.
+
+**[s33-E2] MECHANISM, dump-verified (this CORRECTS s32-E4's attribution).** A `-da` dump of
+the s32 form (tmp/grind/func_80057CC8/dumps/text1b.greg, produced with the instrumented
+tools/gcc-2.7.2/cc1 via tmp/grind/func_80057CC8/run_dump.sh) prints for func_80057CC8:
+
+    ;; 15 regs to allocate: 78 77 172 73 187 79 87 104 72 76 168 83 86 74 75
+    ;; 87 preferences: 17
+    ;; Register dispositions:  ... 87 in 17  88 in 17 ... 72 in 19 ...
+
+Pseudo 87 is the vertex-table base and pseudo 88 the next-neighbour address; 72 is `arg0`.
+The **copy preference recorded on 87 for hard reg 17** is what drags the base into a
+callee-save seat: the ADDRESS (88) is the allocno that genuinely crosses the call and needs
+a callee-save, and with the base as the leading PLUS operand the allocator ties them.
+s32-E4 attributed that $17 seat to "the base pseudo at four references" and concluded the
+ban-compliant function structurally gives the base four refs; the dump shows the seat is the
+address allocno's and the base merely inherits it. Writing the offset first removes the tie,
+the base stays in the caller-save `$6`, and the emitted `lw $6,0x4($19)` / `addu $2,$2,$6`
+then agree instruction-for-instruction with the target's `lw $a2,0x4($s2)` /
+`addu $v0,$v0,$a2` (asm/funcs/func_80057CC8.s:17, :19) - the target likewise holds the base
+in a caller-save because there it dies before the call.
+
+**[s33-E3] THE SURVIVING REGISTER RESIDUAL IS ONE RANK SWAP, AND EVERY SPELLING THAT
+ACHIEVES IT COSTS MORE THAN IT SAVES.** After the flip the callee-save assignment is
+`$16` cys, `$17` next-ADDRESS, `$18` cxs, `$19` arg0; the target is `$16` cys, `$17` cxs,
+`$18` arg0, `$19` next-INDEX. Under `allocno_compare` (tools/gcc-2.7.2/global.c:635,
+`floor_log2(n_refs)*n_refs/live_length`) the next-address allocno must fall below `arg0`
+(5 refs over the whole body, priority ~0.10), which needs at most THREE references over a
+live range longer than ~30 insns. Measured attempts at a three-reference address allocno:
+arm-select the next INDEX then form the address with the target's sll16/sra14 pair = **28**
+(109 insns, both operand orders); arm-select the index then `* 4` = **28** (109, both
+orders); single-def ternary offset = **25** (109). Selecting the ADDRESS itself in the two
+arms (four refs, two defs) DOES demote it one rank - emitted `$16` cys, `$17` cxs, `$18`
+next-address, `$19` arg0, i.e. the target's `$16`/`$17` exactly - but costs two instructions
+(the `arg1 + 1` computation is sunk into both arms plus a load-delay `nop`) and measures
+**25** at 110 insns, in all three spellings tried (address-in-arms, hoisted sign-extended
+index, flipped operand order). The rank swap and the instruction count are therefore
+coupled: nothing measured buys both.
+
+**[s33-E4] FRONTIER AXIS 1 (s32's "derive one vertex address from another to drop the base
+to three references") IS KILLED IN BOTH SPELLINGS.** Introducing a centre pointer
+`ctr = table + arg1*4`, reading cx/cy through it and deriving the NEXT address from `ctr`
+with a relative arm-selected offset scores **38** at 109 insns; deriving BOTH neighbours
+from `ctr` (`prev = ctr + (pi - arg1)*4`) scores **35** at 110 insns. In both the emitted
+code simply moves the same four-reference merged pointer allocno onto `ctr` (`addu $17,$7,$4`
+then `lhu $20,0($17)`), so the reference count never drops, and the relative-offset
+arithmetic (`addu $8,$0,4` / `subu $8,$0,$4`, and the wrapped-prev case's
+`(arg0[3] - 1 - arg1) * 4`) adds the instructions the axis was supposed to save. s33-E2
+additionally shows the axis was aimed at the wrong allocno.
+
+**[s33-E5] FRONTIER AXIS 2 (a deliberately 110-111-insn ban-compliant arrangement beating
+the 108-insn floor) IS KILLED.** The most target-shaped 111-insn form - arm-select the next
+INDEX, keep it live across the first call, and form the next address AFTER that call from
+the single `table` value - measures **33**. Its normalised diff is the closest structural
+match ever recorded for this function (115 target lines vs 116 ours), but it puts NINE
+values across the call instead of eight: `table` occupies the seat the target frees by
+reloading, so `arg0` is pushed to `$20` and `arg3` spills into `$30`/`$fp`. This is the
+same wall from the other side: the target's post-call address formation is only affordable
+because of the second `lw`, which is the banned construct. Other 110-insn arrangements
+measured: address-selected-in-arms 25, centre pair read as one 32-bit word 38.
+
+**[s33-E6] Re-confirmed dead on the new (flipped-PLUS) chassis:** the if-block swap
+(next-index block first) = **41** at 106 insns, matching s32-E6 and s2 on two earlier
+chassis; the CALL-order swap (compute ang_next first) = **54** at 112 insns, far worse than
+s27's 16 on the old banned-reload chassis - the s27 number does NOT transfer, which is a
+concrete instance of the driver's chassis-relativity warning. Local-declaration order is
+inert (two reorderings, both 22); forming the address after `pi` instead of inside the arms
+is inert (22).
+
+**[s33-E7] src/text1b.c restored to `INCLUDE_ASM("asm/funcs", func_80057CC8);` at end of
+session (git diff clean). No commits, no rule/engine/tool files touched.**
+
+**Artifacts:** tmp/grind/func_80057CC8/s33/{v0,vA,vC,vE,vG,vH,vL,vM,vN,vP,vQ,vR,vT,vU,vW,vX,vY,vZ,v2,v3,v4,v5,v6}.c
+and the matching .hon.s streams, plus apply.py / gen.sh / run.ps1;
+tmp/grind/func_80057CC8/dumps/text1b.greg (the allocation-order / preference evidence).
+
+- [s33] Chassis re-measured at dispatch: the inherited s32 candidate scores 24 at build_insns 108 / target_insns 111 with rules_dropped 0 on HEAD; the ledger floor was current.
+- [s33] NEW FLOOR 22 (was 24): writing the next-neighbour address as `(s16 *)(off + (s32)table)` instead of `(s16 *)((s32)table + off)` scores 22 at the SAME 108 instructions - a pure operand-order edit with no instruction-count change.
+- [s33] Mechanism (from tmp/grind/func_80057CC8/dumps/text1b.greg): with the base as leading PLUS operand the allocator records `;; 87 preferences: 17` and gives the base pseudo the callee-save seat that the call-crossing ADDRESS allocno needs (`87 in 17  88 in 17`); flipping the operands breaks the tie and leaves the base in caller-save `$6`, matching the target's `lw $a2,0x4($s2)`.
+- [s33] CORRECTION to s32-E4: the four-reference callee-save allocno s32 identified as "the base pseudo" is the next-neighbour ADDRESS allocno; the base only inherits its seat via the copy preference. The "reduce the base to three references" frontier probe was therefore aimed at the wrong allocno.
+- [s33] Frontier axis 1 KILLED: deriving the next address from a centre pointer scores 38 (109 insns); deriving both neighbours from the centre pointer scores 35 (110 insns). The merged pointer allocno keeps four references in both, and the relative-offset arithmetic costs more than it saves.
+- [s33] Frontier axis 2 KILLED: the most target-shaped 111-insn form (next INDEX live across the first call, address formed after it from the single base) scores 33 because it puts NINE values across the call - `table` occupies the seat the target frees by reloading, pushing arg0 to $20 and arg3 into $fp.
+- [s33] The surviving register residual is one rank swap ($17/$18/$19 = next-address/cxs/arg0 vs the target's cxs/arg0/next-index). Selecting the ADDRESS in the two arms DOES demote it one rank and reproduces the target's $16/$17 exactly, but costs two instructions and measures 25 at 110 insns in all three spellings tried - the rank and the instruction count are coupled.
+- [s33] Three-reference address spellings all regress: arm-selected index + sll16/sra14 = 28 (both operand orders), arm-selected index * 4 = 28 (both orders), single-def ternary offset = 25.
+- [s33] The CALL-order swap measures 54 at 112 insns on this chassis versus s27's 16 on the old banned-reload chassis - a concrete demonstration that banked spelling scores are chassis-relative and must be re-measured before being spent.
+- [s33] Inert on this chassis (all 22 at 108 insns): naming the prev-neighbour address in its own local, flipping the centre address operand order, forming the next address after `pi` instead of inside the arms, and two different local-declaration orders.
+- [s33] The terminal residual is unchanged: asm/funcs/func_80057CC8.s loads 0x4($s2) twice (:17, :50) and no ban-compliant form supplies the second load.
+- [s33] src/text1b.c restored to the INCLUDE_ASM representation at end of session (git diff clean). No commits, no rule/engine/tool files touched.
+
+- [s33] Chassis re-measured at dispatch: the inherited s32 candidate scores 24 at build_insns 108 / target_insns 111 with rules_dropped 0 on HEAD (src/text1b.c:1665 is INCLUDE_ASM); the ledger floor was current, not stale.
+
+- [s33] NEW FLOOR 22 (was 24): writing the next-neighbour address as `(s16 *)(off + (s32)table)` instead of `(s16 *)((s32)table + off)` scores 22 at the SAME 108 instructions - a pure operand-order edit with no instruction-count change. Banked as memory/grind/func_80057CC8/candidate.c.
+
+- [s33] Mechanism, from tmp/grind/func_80057CC8/dumps/text1b.greg: with the base as leading PLUS operand the allocator records `;; 87 preferences: 17` and dispositions `87 in 17  88 in 17`, so the base pseudo inherits the callee-save seat the call-crossing ADDRESS allocno needs; flipping the operands breaks the tie and leaves the base in caller-save $6, matching the target's `lw $a2,0x4($s2)` and `addu $v0,$v0,$a2`.
+
+- [s33] CORRECTION to s32-E4: the four-reference callee-save allocno s32 identified as 'the base pseudo' is the next-neighbour ADDRESS allocno; the base only inherits its seat via the copy preference. The inherited 'reduce the base to three references' frontier probe was aimed at the wrong allocno, which is why both of its spellings regressed.
+
+- [s33] The .greg dump prints the global allocation order verbatim for this function: `;; 15 regs to allocate: 78 77 172 73 187 79 87 104 72 76 168 83 86 74 75`, with 77 = cys, 87 = base, 72 = arg0 - a reusable handle for future rank reasoning that removes the need to infer ranks from emitted register numbers.
+
+- [s33] Frontier axis 1 KILLED: deriving the next address from a centre pointer scores 38 (109 insns); deriving both neighbours from the centre pointer scores 35 (110 insns).
+
+- [s33] Frontier axis 2 KILLED: the most target-shaped 111-insn form (next INDEX live across the first call, address formed after it from the single base) scores 33 because it puts NINE values across the call - table occupies the seat the target frees by reloading, pushing arg0 to $20 and arg3 into $fp.
+
+- [s33] The surviving register residual after the flip is one rank swap: ours is $16 cys, $17 next-address, $18 cxs, $19 arg0; the target is $16 cys, $17 cxs, $18 arg0, $19 next-INDEX. Selecting the ADDRESS in the two arms demotes it one rank and reproduces the target's $16/$17 exactly, but costs two instructions and measures 25 at 110 insns in all three spellings tried.
+
+- [s33] Three-reference address spellings all regress: arm-selected index + sll16/sra14 = 28 (both operand orders), arm-selected index * 4 = 28 (both orders), single-def ternary offset = 25.
+
+- [s33] The CALL-order swap measures 54 at 112 insns on this chassis versus s27's 16 on the old banned-reload chassis - a concrete instance of the driver's chassis-relativity warning, with the error in the pessimistic direction.
+
+- [s33] Inert on this chassis (all 22 at 108 insns): naming the prev-neighbour address in its own local, flipping the centre-address operand order, forming the next address after `pi` instead of inside the arms, and two different local-declaration orders.
+
+- [s33] Terminal residual unchanged: asm/funcs/func_80057CC8.s loads 0x4($s2) twice (:17 `lw $a2`, :50 `lw $a0`); every ban-compliant form emits one and GCC 2.7.2 has no pass that manufactures the second (s30b). That is the policy question refused 2026-07-20 and standing-ruled 2026-07-27, not a spelling.
+
+- [s33] src/text1b.c restored to `INCLUDE_ASM("asm/funcs", func_80057CC8);` at end of session (git status clean for that file). No commits; no regfix/asmfix/rule/engine/tool/Makefile/ld files touched.
