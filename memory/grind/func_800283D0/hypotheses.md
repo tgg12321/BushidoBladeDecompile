@@ -1515,3 +1515,80 @@ arm (11 / 212, three insns short of target).  Identical pinning over-merges.
 - probe: BB2_DBR_DEBUG=1 on the instrumented tools/gcc-2.7.2/cc1 over the 10-floor base body, cross-referenced against the -da .dbr RTL to identify the branch and the stolen insn by UID.
 - result: The branch is jump_insn 344 (`beqz $v0,<label 365>`, the `(u32)(*(u16*)(temp_s4+0xE)-6) < 2U` test); the insn target steals is insn 368 (`(set (reg:HI 2 v0) (const_int 1))`, head of the D_800A38A8 block). Trace: `DBRDBG thr insn=344 trial=368 refset=0 setset=0 setneed=0 setsopp=1 trap=0` then `LOSE`. FOUR of five predicates pass; the sole failure is insn_sets_resource_p(trial, &opposite_needed) - insn 368 writes $v0 and $v0 (bit 0x4 of oppregs=0x20630084) is live in mark_target_live_regs(opposite_thread = insn 731, the already-filled `bnez $s1 -> 632` + delay `v0 = 0x19` selection sequence). `DBRDBG mtlr target=731 block=27` proves the block was found, so this is a real liveness answer, not the find_basic_block()==-1 conservative fallback.
 - verdict: CONFIRMED
+
+## s19 (forensics, 2026-08-27)
+
+### H-s19-1 CONFIRMED - cluster B's empty delay slot is closable by a pure-C dial
+Statement: the refusal of `jump_insn 344`'s delay slot is not a compiler wall; it
+is caused by the fall-through selection block owning a `$v0` write that
+`fill_simple_delay_slots` steals backward into the block's own branch, and
+removing that write from the block removes `$v0` from `opposite_needed`.
+Mechanism: reorg.c `update_block` leaves `(use (insn N))` at the stolen insn's
+original position; `mark_target_live_regs`'s forward walk dereferences the USE
+and `note_stores`/`update_live_status` re-marks the destination LIVE after
+`code_label 347` has already flushed the REG_DEAD note carried by `jump_insn 344`.
+Probe: body W1 (`var_v0_2 = 0x19;` hoisted above the `||` test), `BB2_DBR_DEBUG=1`.
+Result: `oppregs` 0x20630084 -> 0x20630088 ($v0 bit cleared), opposite thread
+becomes the plain `jump_insn 354` instead of `sequence 731`, `setsopp=0`, no LOSE,
+delay slot filled with `v0 = 1` byte-exactly as target.
+Verdict: CONFIRMED.
+
+### H-s19-2 KILLED - the s18 frontier's reading that block 27's live-in is over-approximate
+Statement (s18): `basic_block_live_at_start[27]` marks `$v0` and `$a3` live even
+though both are provably dead there, so the over-approximation itself is the lever.
+Probe: read `dump_flow_info`'s per-block "Registers live at start" out of the
+`.lreg` dump and renumber through the `.greg` dispositions.
+Result: block 27's live-in is pseudos 29 30 72 73 75 77 79 89 90 128 =
+sp/fp/s0/s2/s4/s1/s6/a1/s5/v1.  Neither `$v0` nor `$a3` is in it.  The two bits
+are introduced by the forward walk in `mark_target_live_regs`, not by flow.
+Verdict: KILLED (the premise was wrong; the real mechanism is H-s19-1).
+
+### H-s19-3 KILLED - the s18 frontier's probe (a): "give the first 0xE test its own branch target so label 347 has exactly ONE predecessor"
+Statement: cluster B is a LABEL_NUSES / predecessor-count question about the
+fall-through label.
+Probe: trace `find_basic_block` (reorg.c:2236) and the walk bounds directly.
+Result: the block resolution ignores label predecessor counts entirely - it
+scans back to the previous BARRIER and forward over the labels that follow it.
+Adding or removing a predecessor of `code_label 347` cannot move the walk's
+start, which is `code_label 270` regardless.  What matters is only which insns
+between the barrier-derived head and the opposite thread write `$v0`.
+Verdict: KILLED.
+
+### H-s19-4 CONFIRMED (as a constraint, not a solution) - slots 344 and 354 are mutually exclusive on this block shape
+Statement: no body whose fall-through selection block owns its own `$v0` write
+can have both `jump_insn 344`'s and `jump_insn 354`'s delay slots filled.
+Mechanism: `fill_simple_delay_slots`'s backward search is bounded by
+`stop_search_p`, which stops at a `CODE_LABEL`, so the insn that fills 354's
+slot is always drawn from between `code_label 347` and the branch - exactly the
+window whose `update_block` marker poisons 344's `opposite_needed`.
+Probe: W1's normalized diff, emitted 120 (`li v1,25` vs target `nop`) and
+emitted 128 (`nop` vs target `li v0,25`).
+Result: W1 filled 344 and lost 354, as predicted.  W1 = 32 / 216.
+Verdict: CONFIRMED.  Target has BOTH slots filled, so target's RTL must satisfy
+one of: (a) 354's slot filled by fill_eager from its TARGET (`INSN_FROM_TARGET_P`
+suppresses the marker entirely), (b) the filling insn writes a register other
+than `$v0`, (c) `code_label 347` absent at reorg time (refuted by target's asm).
+
+## [s19] Cluster B's empty delay slot on jump_insn 344 is closable by a pure-C dial: the fall-through selection block owns a $v0 write that fill_simple_delay_slots steals backward into that block's own branch, and removing that write from the block removes $v0 from opposite_needed.
+- mechanism: reorg.c update_block (reorg.c:2270) leaves a `(use (insn N))` marker at the stolen insn's ORIGINAL position, between code_label 347 and the new opposite thread. mark_target_live_regs' forward walk dereferences that USE to the real insn and applies note_stores/update_live_status (reorg.c:2392), which SETs the destination LIVE - undoing the pending_dead_regs flush that code_label 347 had just performed for the REG_DEAD (reg:SI 2 v0) note carried by jump_insn 344. insn_sets_resource_p(trial=368, &opposite_needed) is then 1 and the slot is refused.
+- probe: Body W1 = the banked candidate with `var_v0_2 = 0x19;` hoisted above the `||` test, so the fall-through block no longer owns a $v0 write. BB2_DBR_DEBUG=1 on the instrumented tools/gcc-2.7.2/cc1 (tmp/grind/func_800283D0/s19/dbr_W1.txt), plus sandbox --disable all.
+- result: dbr_W1.txt lines 603-604: `thr insn=347 thread=368 opp=354 own=1 likely=0 tif=1 oppregs=20630088_00000000` then `trial=368 refset=0 setset=0 setneed=0 setsopp=0 trap=0` with NO LOSE line. oppregs loses bit 0x4 ($v0) and gains bit 0x8 ($v1); the opposite thread is the PLAIN jump_insn 354 instead of the filled sequence 731. The delay slot is filled with `v0 = 1` and the normalized diff has no entry at the `beqz v0 / li v0,1` pair. Score 32 / 216.
+- verdict: CONFIRMED
+
+## [s19] s18's reading that basic_block_live_at_start[27] is over-approximate (marking $v0 and $a3 live although both are provably dead there), making the over-approximation itself the lever.
+- mechanism: s18 inferred the live set from the oppregs word alone, without reading the pre-RA CFG.
+- probe: Read dump_flow_info's per-block 'Registers live at start' out of tmp/grind/func_800283D0/s19/code6cac_b.i.lreg and renumber through the .greg dispositions.
+- result: Block 27 live-in = pseudos 29 30 72 73 75 77 79 89 90 128 = sp/fp/s0/s2/s4/s1/s6/a1/s5/v1. Neither $v0 nor $a3 is present. Blocks 30/31/33 are likewise clean. Both bits are introduced by mark_target_live_regs' forward walk, not by flow.
+- verdict: KILLED
+
+## [s19] s18's frontier probe (a): cluster B is a predecessor-count question - give the first 0xE test its own branch target so code_label 347 has exactly ONE predecessor.
+- mechanism: Assumed find_basic_block/mark_target_live_regs resolve the fall-through block via its label's predecessors.
+- probe: Trace find_basic_block (reorg.c:2236) and the walk bounds in mark_target_live_regs directly against the .sched2/.dbr RTL.
+- result: find_basic_block ignores predecessor counts entirely: it scans BACKWARD to the previous BARRIER, then forward over the run of CODE_LABELs following it, returning the first that is a basic_block_head. Conditional branches emit no barrier, so the fall-through of jump_insn 344 always resolves to block 27 (head code_label 270), never to its own block 31 (head code_label 347). Adding or removing predecessors of label 347 cannot move the walk's start.
+- verdict: KILLED
+
+## [s19] On this block shape, jump_insn 344's and jump_insn 354's delay slots are MUTUALLY EXCLUSIVE - a body cannot have both filled.
+- mechanism: fill_simple_delay_slots' backward search is bounded by stop_search_p, which stops at a CODE_LABEL, so whatever fills 354's slot from before the branch is necessarily drawn from between code_label 347 and the branch - exactly the window whose update_block marker poisons 344's opposite_needed. fill_simple runs before fill_eager, so 354 always wins first.
+- probe: W1's normalized objdump diff vs target at emitted 120 and 128.
+- result: W1 emitted 120 = `li v1,25` where target has `nop`, and emitted 128 = `nop` where target has `li v0,25`: W1 filled slot 344 and lost slot 354, exactly as predicted. Target has BOTH filled, so target's RTL must satisfy (a) 354's slot filled by fill_eager from its TARGET (INSN_FROM_TARGET_P suppresses the marker - update_block returns early), (b) the filling insn writes a register other than $v0, or (c) code_label 347 absent at reorg time (refuted by target's own asm, where .L800285CC is the bnez target of the first 0xE test).
+- verdict: CONFIRMED

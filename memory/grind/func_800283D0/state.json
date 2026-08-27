@@ -1,7 +1,7 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 18,
+ "session_count": 19,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -111,23 +111,29 @@
    "floor": 10,
    "modality": "forensics",
    "headline": "Cluster A's second, ref-count-free solution CONFIRMED (livelen(temp_s3)>=20 flips the $s2/$s3 seats) and priced as net-negative; cluster B's dbr refusal NAMED as insn_sets_resource_p(trial,&opposite_n"
+  },
+  {
+   "session": 19,
+   "floor": 10,
+   "modality": "forensics",
+   "headline": "Cluster B is CLOSABLE in pure C (measured, first time in 19 sessions): the dbr refusal is update_block's (use (insn N)) marker, not an over-approximate live-in; body W1 fills jump_insn 344's slot byte"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Cluster B closes if $v0 can be made dead in mark_target_live_regs(insn 731) - and the trace already shows that live set is over-approximate ($a3 is marked live there and is provably dead), so the C dial is the SHAPE of the fall-through 0x19/0xB selection block and of the first 0xE test that also branches to its label.",
-   "mechanism": "reorg.c computes basic_block_live_at_start once and mark_target_live_regs returns it verbatim when the target IS the block head. Block 27 begins at code_label 347, whose own first action is to SET $v0, so a correct live-in would exclude $v0. The over-approximation must come either from label 347 having a second predecessor (the `bnez $v0` of the first 0xE test branches there too) or from the block head having moved when sched2 folded `v0 = 0x19` into the `bnez $s1` sequence. Clearing bit 0x4 of oppregs makes insn_sets_resource_p(368, &opposite_needed) return 0, all five predicates pass, and dbr steals `v0 = 1` into the slot exactly as target does - closing cluster B's ~4 points AND the 216-vs-215 insn surplus.",
-   "next_probe": "On the base body run `bash tmp/grind/func_800283D0/s18/dbr.sh <tag>` (it writes the DBRDBG log and the -da dumps together) for two restructurings of the `||`: (a) give the first 0xE test its own branch target so label 347 has exactly ONE predecessor, e.g. `if ((u32)(h0-6) >= 2U) { if ((u32)(h1-6) >= 2U) { D_800A38A8 = 1; D_800A3876 = -1; goto block_49; } } var_v0_2 = 0x19; if (var_s1 == 0) var_v0_2 = 0xB; goto block_48;`; (b) spell the selection so its first insn is not the one sched2 folds into the branch sequence. Locate the branch UID by searching tmp/grind/func_800283D0/s18/code6cac_b.i.dbr for the insn setting `(mem (symbol_ref \"D_800A38A8\"))` and walking back to the preceding jump_insn, then grep the log for `DBRDBG thr insn=<uid>` and read the oppregs word. Bit 0x4 clearing is the win condition; score with `sandbox --disable all` twice."
+   "hypothesis": "Cluster B's ~4 points plus the 216-vs-215 insn surplus close for FREE if the incidental cost of W1 is removed - i.e. if the `0x19` initialisation is hoisted into a FRESH local scoped to the `== 5` subtree rather than into var_v0_2, so var_v0_2 keeps $v0 across the `>` path tail.",
+   "mechanism": "W1's 32/216 is ~20 points of pure register renaming in the `>` path (emitted 159-203) caused by var_v0_2 leaving $v0, plus the structural 2-point slot trade at emitted 120/128. A local declared inside the `== 5` block and stored to arg0+0x286 on that path only cannot participate in the `>` path's allocation, so the ~20 points should vanish and the body should land near 12 with cluster B's slot correct.",
+   "next_probe": "Build W2 = the banked candidate with, inside the `if (*(s16 *)(temp_s3 + 0x288) == 5)` block only, `s16 sel5 = 0x19;` declared and assigned BEFORE the `||` test, `if (var_s1 == 0) sel5 = 0xB;` inside the true arm, and `*(s16 *)(arg0 + 0x286) = sel5; goto block_49;` instead of `goto block_48;`. Apply with tmp/grind/func_800283D0/s18/apply.py, score with `sandbox --disable all` twice (E-s13-6), and confirm the slot with `bash tmp/grind/func_800283D0/s19/dbr.sh W2` - the win condition is `setsopp=0` on the `trial=<the v0=1 insn>` line and no LOSE. Then read the normalized diff with s19/mk.sh to price what is left."
   },
   {
-   "hypothesis": "On a store-pinned body the byte-free nrefs(73) route is FORECLOSED, and one measurement settles it: E-s18-1's ref map proves only three call-pair sites exist, and find_cross_jump merges TAILS, so only the `<` arm can tail-merge with path1 - the same arm the pin occupies.",
-   "mechanism": "jump2 runs after RA (E-s18-6), so a duplicated call pair is free at allocation time and can merge to zero emitted cost - but only if the duplicating block and its partner are scheduled IDENTICALLY (E-s17-5's law, read from BB2_XJUMP_DEBUG). path1's tail is `store; calls; return`; the `==` arm's calls are followed by the `== 5` subtree and the `>` path's by the 0x1A selection, so neither is a tail. That leaves the `<` arm, which on a pinned body is spending its goto on the pin.",
-   "next_probe": "Build tD's self-supplied path1 pin (E-s17-6: each selection edge does its own store and the 0xB edge's `goto do_calls` supplies the label; emitted 80-88 is byte-exact) and give the `<` arm a duplicated call pair whose block BEGINS with its own store, so both blocks are scheduled identically per E-s17-5's law. Confirm the seats with s18/al.sh and the merge with BB2_XJUMP_DEBUG=1 (s17/xj_tC.txt is the template trace). If it still stalls at 12/221 like tC/tE/tH, record the nrefs route as FORECLOSED on every pinned body and hand the function's whole remaining budget to cluster B."
+   "hypothesis": "Target fills BOTH delay slots, so target's fall-through selection block does not supply a $v0 write to fill_simple - the discriminator is (a) fill_eager filling 354's slot from its TARGET (INSN_FROM_TARGET_P leaves no update_block marker) versus (b) the filling insn writing a register other than $v0.",
+   "mechanism": "update_block returns early without emitting a `(use (insn N))` marker when INSN_FROM_TARGET_P(insn) is set, so an insn that arrives in a slot via steal_delay_list_from_target cannot poison a preceding branch's opposite_needed. fill_simple's backward steal always can, because stop_search_p confines it to the window after code_label 347.",
+   "next_probe": "On the base body, dump the DBRDBG lines for jump_insn 354 itself (`grep -E 'thr insn=354|simp insn=354' tmp/grind/func_800283D0/s19/dbr_base.txt`) and establish which pass fills it and with which insn. Then test hypothesis (a) by giving the 0x19/0xB selection block a shape in which its branch's slot can only be filled from its target - e.g. make the 0xB edge fall through and the 0x19 edge the branch target, so the insn eligible for the slot sits AFTER the branch. Score twice and re-read oppregs for jump_insn 344."
   },
   {
-   "hypothesis": "A livelen(143) displacement that costs fewer than 5 diff points would make cluster A free on a pinned body, but no such site exists in this function's shape - the six insns have to come from code target places after the reload.",
-   "mechanism": "E-s18-4's ladder is linear and E-s18-5 prices the cheapest crossing at ~10. The only computations available to move are the two 0xE boolean chains and the 0x19/0xB selection, and target emits all three after the `== 5` test; moving the selection additionally triggers a jump2 dedupe of target's two identical 4-insn selection blocks.",
-   "next_probe": "Only worth revisiting if frontier item 2 forecloses the nrefs route AND cluster B closes: at that point a body at ~6 with the store pinned would make a 10-point displacement cost worth re-pricing against the unpinned base. Re-measure V6 (tmp/grind/func_800283D0/s18/V6.c, banked at rejected/V6-hoist-e0e1-bools-livelen20-SEATS-FLIP-but-19.c) on whatever chassis exists then rather than re-deriving it."
+   "hypothesis": "The whole s18 cluster-A frontier (the nrefs vs livelen trade) should be re-priced only AFTER cluster B is banked, because E-s18-5's arithmetic (a seat-flipped tA is worth ~5, the cheapest displacement prices at ~10) was computed against a base that still carried cluster B's 4 points and the insn surplus.",
+   "mechanism": "Cluster A and cluster B are independent residuals (E-s18-3's V6 closes A with no B effect; W1 closes B with no A effect), so their prices compose. A body at ~6 with cluster B closed changes the break-even for the ~10-point livelen displacement measured in E-s18-5.",
+   "next_probe": "Only after frontier item 1 lands a body materially below 10: re-measure V6 (tmp/grind/func_800283D0/s18/V6.c, banked at rejected/V6-hoist-e0e1-bools-livelen20-SEATS-FLIP-but-19.c) and tC (s17, 12/221) on top of the cluster-B-closed body rather than on the current base, and re-run s18/al.sh to confirm the seats. Do not re-derive E-s18-4's linear livelen ladder - it is banked and chassis-valid."
   }
  ],
  "judge_constraints": [],

@@ -70,6 +70,25 @@
  *     $v0 is live in mark_target_live_regs of the fall-through 0x19/0xB
  *     selection.  NOT a LABEL_NUSES refusal.
  *
+ *
+ * s19 ADDENDUM (forensics, 2026-08-27) - this body is UNCHANGED and still
+ * measures 10 / 216.  What s19 added:
+ *   - CLUSTER B IS CLOSABLE IN PURE C (E-s19-5, body s19/W1.c).  Hoisting
+ *     `var_v0_2 = 0x19;` above the `||` test removes the fall-through
+ *     selection block's own $v0 write, oppregs drops the $v0 bit
+ *     (0x20630084 -> 0x20630088), setsopp becomes 0, and dbr fills
+ *     jump_insn 344's slot with `v0 = 1` byte-exactly as target.  Nineteen
+ *     sessions of "no measured C dial for cluster B" is over.
+ *   - The refusal's true cause is update_block's `(use (insn N))` marker
+ *     (E-s19-4), not an over-approximate basic_block_live_at_start: block
+ *     27's pre-RA live-in contains neither $v0 nor $a3 (E-s19-1), and
+ *     find_basic_block resolves the fall-through to block 27 because it
+ *     scans back to the previous BARRIER, not to the nearest label (E-s19-2).
+ *   - W1's price is 32 / 216 and splits in two (E-s19-6): a STRUCTURAL cost
+ *     (filling slot 344 gives up slot 354 - they are mutually exclusive on
+ *     this block shape, E-s19-7) and an INCIDENTAL ~20-point cost from
+ *     var_v0_2 leaving $v0 across the `>` path tail, which a fresh local
+ *     scoped to the `== 5` subtree should avoid.
  * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  216i @ floor 10
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
