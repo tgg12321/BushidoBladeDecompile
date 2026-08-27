@@ -1,201 +1,207 @@
 {
-  "func": "func_80041188",
-  "file": "text1a_pre",
-  "session_count": 26,
-  "current_modality": "escalation",
-  "floor_history": [
-    {
-      "session": 0,
-      "floor": 5,
-      "modality": "wip-import",
-      "headline": "floor imported from memory/wip checkpoint"
-    },
-    {
-      "session": 1,
-      "floor": 5,
-      "modality": "recon",
-      "headline": "recon: chassis re-verified (HEAD 27, candidate 5, residual = same 5-insn loop2 cluster); 3-hypothesis frontier built on the banked ALLOCDBG/RA-solver arithmetic"
-    },
-    {
-      "session": 2,
-      "floor": 5,
-      "modality": "structural",
-      "headline": "Split-model RA vector space CLOSED at depth<=3 with mechanisms: every full-goal solver-sufficient set needs an 86-atom, and 86 refs_up/live-shift are proven unspellable (cse.c:826 make_regs_eqv canoni"
-    },
-    {
-      "session": 3,
-      "floor": 1,
-      "modality": "structural",
-      "headline": "Floor 5 -> 1: loop2 pointer reuses the dead loop1 stptr local via an out2-read re-init (variable-reuse family); split-RA axis proven dead end-to-end; single residual insn move s3,s6 vs addiu s3,s7,32"
-    },
-    {
-      "session": 4,
-      "floor": 1,
-      "modality": "synthesis",
-      "headline": "Corrected the governing allocno-priority arithmetic (floor_log2(3)=1), proved the residual is ONE see-saw statement, and killed four levers (real-loop notes, tbl sym-K +2, i/stptr2 split-init, staging"
-    },
-    {
-      "session": 5,
-      "floor": 1,
-      "modality": "forensics",
-      "headline": "Forensics: allocator instrumented end-to-end (seats = allocno priority order alone); all three s5 frontier items KILLED with named passes (cse1 dest-swap + flow DCE; cse1 copy canonicalisation vs comb"
-    },
-    {
-      "session": 6,
-      "floor": 1,
-      "modality": "forensics",
-      "headline": "Forensics: both s6 frontier items KILLED with named passes (cse.c make_regs_eqv canonicality; local-alloc find_free_reg ascending scan), and a NEW chassis found whose callee-saved seats are ALL target"
-    },
-    {
-      "session": 7,
-      "floor": 1,
-      "modality": "rederive",
-      "headline": "Rederive replaced the single-out2 assumption with a two-separate-locals chassis: floor 1 held with COMPLETELY ORDINARY C (the /* FAKE */ variable-reuse annotation is retired), 132/132 insns, all five "
-    },
-    {
-      "session": 8,
-      "floor": 1,
-      "modality": "rederive",
-      "headline": "s7 frontier #1 closed by structure; a SEPARATED between-loops restore emits target's residual insn `addiu $s3,$s7,0x20` for the first time (sandbox 9), reducing the whole problem to raising pri(tbl) i"
-    },
-    {
-      "session": 9,
-      "floor": 1,
-      "modality": "structural",
-      "headline": "Floor holds at 1; s9 produced the first ALL-TARGET-SEATS form on the two-locals chassis (sandbox 4, residual = preamble emission order only), named the GCC mechanism that makes emission order and tbl'"
-    },
-    {
-      "session": 10,
-      "floor": 1,
-      "modality": "structural",
-      "headline": "i-first + separated-restore chassis proven arithmetically closed for an 8-ref `i` (tbl live ceiling 48 vs the required 50); a 9th flow-counted reference to `i` reaches ALL-TARGET seats at sandbox 3 / "
-    },
-    {
-      "session": 11,
-      "floor": 1,
-      "modality": "escalation",
-      "headline": "Endgame lock confirmed: both gates fail (scan LOW 0/8; no SOTN precedent) - s11 closed the block-0 side of the residual with an empty priority window and killed the last unspent sanctioned family (F1 "
-    },
-    {
-      "session": 12,
-      "floor": 1,
-      "modality": "escalation",
-      "headline": "Both carried frontiers killed by measurement (MATRIX* chassis = the single-local chassis, 125 insns/sandbox 43; out2-def-inside-loop1 = 4 refs/live 21/pri 3809, sandbox 23) -- the out2 priority window"
-    },
-    {
-      "session": 13,
-      "floor": 1,
-      "modality": "permuter",
-      "headline": "Permuter proves the BANNED do-while(0) wrap is the UNIQUE route to distance 0 on the floor-9 chassis (0 in 2.6k iters with it; 22.4k iters and ZERO finds with perm_ins_block=0); the two-locals pa4-out"
-    },
-    {
-      "session": 14,
-      "floor": 1,
-      "modality": "synthesis",
-      "headline": "Synthesis split the residual into TWO independent allocno-priority requirements; (A) stptr>i is now solvable in ORDINARY C (i live 99 via `i = 0x12;` first), producing the ledger's first ALL-TARGET-se"
-    },
-    {
-      "session": 15,
-      "floor": 1,
-      "modality": "solver",
-      "headline": "Solver suite unblocked on this TU (instrumented cc1 segfaults on func_80040CB8; reduced-TU shim restores parity=True) and it reduces the whole honest residual to ONE atom: the FAKE-free P1 chassis rea"
-    },
-    {
-      "session": 16,
-      "floor": 1,
-      "modality": "forensics",
-      "headline": "Forensics: sched1 owns reg_live_length (sched.c:5106), so stptr live 41->40 is structurally dead; and target's own bytes PROVE the original source carried a combine-deleted stptr reference (5 emitted "
-    },
-    {
-      "session": 17,
-      "floor": 1,
-      "modality": "forensics",
-      "headline": "Forensics named the exact cse.c decision that governs F1 chain-extender survival (make_regs_eqv cse.c:844-857 + canon_reg cse.c:2569) and turned it into a predictive live-range law, validated in both "
-    },
-    {
-      "session": 18,
-      "floor": 1,
-      "modality": "rederive",
-      "headline": "The floor-1 lock is broken: do-while(0) loop-note ref weighting (flow.c:2081) is a per-reference +1 dial, and form V7 reaches ALL-TARGET seats together with target's block-2 addiu $s3,$s7,0x20 for the"
-    },
-    {
-      "session": 19,
-      "floor": 1,
-      "modality": "rederive",
-      "headline": "Rederived loop1 as a REAL loop over s18's 0x68-stride array (i as the biv, address inline): loop.c's giv hands the walking pointer 9 refs/live 40 for free, giving a second FAKE-free form at sandbox 3 "
-    },
-    {
-      "session": 20,
-      "floor": 1,
-      "modality": "structural",
-      "headline": "Goto chassis CLOSED for target's block-2 spelling: out2's required 4th flow reference has exactly three sites, all now dead; the parameter-split form (Y2b/Y4) reaches ALL-TARGET seats WITH target's ad"
-    },
-    {
-      "session": 21,
-      "floor": 1,
-      "modality": "structural",
-      "headline": "Deleting the pa4 local REOPENS E-s20-5's block-0 site: a new chassis holds ALL-TARGET seats WITH target's block-2 addiu $s3,$s7,0x20 at 132 insns (sandbox 7), residual now pure sched1 block-0 emission"
-    },
-    {
-      "session": 22,
-      "floor": 1,
-      "modality": "synthesis",
-      "headline": "Synthesis closed a whole chassis and a whole construct family: the real-loop regime is FORECLOSED by exact loop.c arithmetic (threshold 61 >= insn_count 48), and the F1 chain-extender is closed for ou"
-    },
-    {
-      "session": 23,
-      "floor": 1,
-      "modality": "synthesis",
-      "headline": "The cse1 EBB law partitions the residual: out2's missing 4th reference may not be sited in block 2 or as an in-loop1 DEFINITION (cse1 folds both into the residual move), a3 is proven rigid at 4/99 acr"
-    },
-    {
-      "session": 24,
-      "floor": 1,
-      "modality": "synthesis",
-      "headline": "Synthesis proves the residual is a TWO-reference problem, not one: target's own bytes force out2 to 4 refs / live 42 = 1904, which outranks a natural tbl (1702), so the original must also carry a FIFT"
-    },
-    {
-      "session": 25,
-      "floor": 1,
-      "modality": "escalation",
-      "headline": "New byte-free reference-lift class found (split at an increment site of a loop-carried variable): form V15a reaches 132/132 insns with TARGET EMISSION ORDER IN ALL FOUR BLOCKS and no do-while(0) wrap,"
-    },
-    {
-      "session": 26,
-      "floor": 1,
-      "modality": "escalation",
-      "headline": "The banned do-while(0) wrap's reference dial has an HONEST source: flow.c weights REG_N_REFS by loop_depth, which only real loop constructs create \u2014 rewriting loop1 as a plain do{}while gives out2 5 r"
-    }
-  ],
-  "frontier": [
-    {
-      "hypothesis": "loop.c's elimination of the stptr biv \u2014 residual (b), and the thing that makes the honest real-loop chassis cost bytes \u2014 can be blocked by giving stptr a use that loop.c cannot reduce to a giv, and blocking it re-lays the entire priority landscape (stptr returns as an allocno, pseudo 125 stops consuming a seat), which may also dissolve residual (a).",
-      "mechanism": "loop.c's maybe_eliminate_biv only eliminates a biv when every use of it is either the exit comparison or a giv. In loop1, stptr's only uses are `stptr + 0x38` and `*(s16 *)(stptr + 6)` \u2014 both givs \u2014 plus the increment, so it is fully reducible. A use of the RAW value that survives the loop makes bl->all_reduced false and the biv stays.",
-      "next_probe": "Exploit E-s26-11: stptr at loop1 exit and stptr2 at loop2 entry are the same value (base+0x7E4). Measure forms where loop1's stptr is live after the loop \u2014 starting with `stptr2 = stptr;` (which deletes `saved` and its 0x18($sp) spill, so expect an insn shortfall, but read the allocno table and the loop1 body FIRST to see whether the giv dies) and then forms that keep `saved`/the spill for the block-2 bytes while still giving stptr a surviving raw use. Require in ONE measurement: no `addu $19,$2,308`/`sh $8,-50($19)` in the loop1 body AND build_insns == 132."
-    },
-    {
-      "hypothesis": "A real loop construct around loop1 whose CFG loop.c refuses to analyse would deliver the loop_depth references (residual a's fix) without the strength reduction (residual b).",
-      "mechanism": "NOTE_INSN_LOOP_BEG/END are emitted by the front end at parse time; loop.c's scan_loop independently bails on loops it cannot analyse. The two are separable in principle, and the notes are all flow.c needs.",
-      "next_probe": "Enumerate loop spellings that keep the notes but defeat scan_loop WITHOUT reaching for the banned shape (a do-while(0) entered by an external goto into an interior label is FORBIDDEN \u2014 judge_constraints, s24 layer-1 FAIL). Candidates: a `for (;;)` with the test and `break` at the bottom; a loop whose increment is not a simple constant add at RTL; a loop containing a second, inner real loop. Read tmp/grind/func_80041188/dumps/*.loop to see WHY scan_loop accepted or rejected each, rather than inferring it from the emitted asm."
-    },
-    {
-      "hypothesis": "out2 can reach 6 references (pri 2926 > pa4's 2872, still below tbl) on the real-loop chassis via a lift class that is neither a no-op statement (E-s26-5) nor a cse1-foldable constant-offset chain (E-s26-8).",
-      "mechanism": "E-s26-3's exact formula makes 6 refs / live 41 = 2926 admissible: above pa4 2872 and below tbl 2978. The two known byte-free lift mechanisms in this function are a donor cse1 cannot fold (`base`, a memory-load result used again later) and a redefinition of a loop-carried pseudo \u2014 neither of which out2 currently has access to.",
-      "next_probe": "Hunt for a block-0 donor for out2 that cse1 cannot fold. Note that a block-0 reference costs 1 under loop_depth weighting while an in-loop one costs 2, so a single block-0 lift would need to be +1; measure whether any donor gives an odd lift at all. If every donor gives +2, 7 refs / 41 = 3414 overshoots tbl (2978) and the class is closed \u2014 record that as the closure and move the whole attack to frontier item 1."
-    }
-  ],
-  "judge_constraints": [
-    "LAYER-1 CHEAT-REVIEWER FAIL: The do-while(0) wrap is not the SOTN-evidenced self-contained macro idiom the cited rule sanctions -- it wraps only half of loop1's body and is entered on repeat iterations via an external goto that jumps directly to an interior label, bypassing the do{}'s own entry, a CFG shape with no cited (or found) SOTN precedent; both this and the two variable-reuse citations also point at the wrong line numbers in their rule files. Next action: Revert the do-while(0) construct (src/text1a_pre.c:768-776). The stptr-reuse and out2-staging constructs (both under staged-value-re"
-  ],
-  "banned_constructs": [
-    "do { loop1: ...; func_8004A348(buf, out2); } while (0); (src/text1a_pre.c:776) wrapping only loop1's leading half, with the loop1: label positioned INSIDE the do-while and the repeat-iteration entry via `goto loop1;` (src/text1a_pre.c:781) coming from OUTSIDE the wrap, past the do{}'s own entry point",
-    "SANCTIONED-FAMILY-CLAIMS precedent line do-while-zero-exception.md:99",
-    "SANCTIONED-FAMILY-CLAIMS precedent line staged-value-reused-variable.md:46",
-    "SANCTIONED-FAMILY-CLAIMS precedent line docs/reference/sotn-construct-index.md:582"
-  ],
-  "ladder_skip": 2,
-  "pending_fixup": null,
-  "origin": "queue",
-  "created": "2026-08-21T05:03:13.523115+00:00",
-  "owner_continue_until_session": 45
+ "func": "func_80041188",
+ "file": "text1a_pre",
+ "session_count": 27,
+ "current_modality": "forensics",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 5,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 5,
+   "modality": "recon",
+   "headline": "recon: chassis re-verified (HEAD 27, candidate 5, residual = same 5-insn loop2 cluster); 3-hypothesis frontier built on the banked ALLOCDBG/RA-solver arithmetic"
+  },
+  {
+   "session": 2,
+   "floor": 5,
+   "modality": "structural",
+   "headline": "Split-model RA vector space CLOSED at depth<=3 with mechanisms: every full-goal solver-sufficient set needs an 86-atom, and 86 refs_up/live-shift are proven unspellable (cse.c:826 make_regs_eqv canoni"
+  },
+  {
+   "session": 3,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Floor 5 -> 1: loop2 pointer reuses the dead loop1 stptr local via an out2-read re-init (variable-reuse family); split-RA axis proven dead end-to-end; single residual insn move s3,s6 vs addiu s3,s7,32"
+  },
+  {
+   "session": 4,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Corrected the governing allocno-priority arithmetic (floor_log2(3)=1), proved the residual is ONE see-saw statement, and killed four levers (real-loop notes, tbl sym-K +2, i/stptr2 split-init, staging"
+  },
+  {
+   "session": 5,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Forensics: allocator instrumented end-to-end (seats = allocno priority order alone); all three s5 frontier items KILLED with named passes (cse1 dest-swap + flow DCE; cse1 copy canonicalisation vs comb"
+  },
+  {
+   "session": 6,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Forensics: both s6 frontier items KILLED with named passes (cse.c make_regs_eqv canonicality; local-alloc find_free_reg ascending scan), and a NEW chassis found whose callee-saved seats are ALL target"
+  },
+  {
+   "session": 7,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "Rederive replaced the single-out2 assumption with a two-separate-locals chassis: floor 1 held with COMPLETELY ORDINARY C (the /* FAKE */ variable-reuse annotation is retired), 132/132 insns, all five "
+  },
+  {
+   "session": 8,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "s7 frontier #1 closed by structure; a SEPARATED between-loops restore emits target's residual insn `addiu $s3,$s7,0x20` for the first time (sandbox 9), reducing the whole problem to raising pri(tbl) i"
+  },
+  {
+   "session": 9,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Floor holds at 1; s9 produced the first ALL-TARGET-SEATS form on the two-locals chassis (sandbox 4, residual = preamble emission order only), named the GCC mechanism that makes emission order and tbl'"
+  },
+  {
+   "session": 10,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "i-first + separated-restore chassis proven arithmetically closed for an 8-ref `i` (tbl live ceiling 48 vs the required 50); a 9th flow-counted reference to `i` reaches ALL-TARGET seats at sandbox 3 / "
+  },
+  {
+   "session": 11,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "Endgame lock confirmed: both gates fail (scan LOW 0/8; no SOTN precedent) - s11 closed the block-0 side of the residual with an empty priority window and killed the last unspent sanctioned family (F1 "
+  },
+  {
+   "session": 12,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "Both carried frontiers killed by measurement (MATRIX* chassis = the single-local chassis, 125 insns/sandbox 43; out2-def-inside-loop1 = 4 refs/live 21/pri 3809, sandbox 23) -- the out2 priority window"
+  },
+  {
+   "session": 13,
+   "floor": 1,
+   "modality": "permuter",
+   "headline": "Permuter proves the BANNED do-while(0) wrap is the UNIQUE route to distance 0 on the floor-9 chassis (0 in 2.6k iters with it; 22.4k iters and ZERO finds with perm_ins_block=0); the two-locals pa4-out"
+  },
+  {
+   "session": 14,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Synthesis split the residual into TWO independent allocno-priority requirements; (A) stptr>i is now solvable in ORDINARY C (i live 99 via `i = 0x12;` first), producing the ledger's first ALL-TARGET-se"
+  },
+  {
+   "session": 15,
+   "floor": 1,
+   "modality": "solver",
+   "headline": "Solver suite unblocked on this TU (instrumented cc1 segfaults on func_80040CB8; reduced-TU shim restores parity=True) and it reduces the whole honest residual to ONE atom: the FAKE-free P1 chassis rea"
+  },
+  {
+   "session": 16,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Forensics: sched1 owns reg_live_length (sched.c:5106), so stptr live 41->40 is structurally dead; and target's own bytes PROVE the original source carried a combine-deleted stptr reference (5 emitted "
+  },
+  {
+   "session": 17,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Forensics named the exact cse.c decision that governs F1 chain-extender survival (make_regs_eqv cse.c:844-857 + canon_reg cse.c:2569) and turned it into a predictive live-range law, validated in both "
+  },
+  {
+   "session": 18,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "The floor-1 lock is broken: do-while(0) loop-note ref weighting (flow.c:2081) is a per-reference +1 dial, and form V7 reaches ALL-TARGET seats together with target's block-2 addiu $s3,$s7,0x20 for the"
+  },
+  {
+   "session": 19,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "Rederived loop1 as a REAL loop over s18's 0x68-stride array (i as the biv, address inline): loop.c's giv hands the walking pointer 9 refs/live 40 for free, giving a second FAKE-free form at sandbox 3 "
+  },
+  {
+   "session": 20,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Goto chassis CLOSED for target's block-2 spelling: out2's required 4th flow reference has exactly three sites, all now dead; the parameter-split form (Y2b/Y4) reaches ALL-TARGET seats WITH target's ad"
+  },
+  {
+   "session": 21,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Deleting the pa4 local REOPENS E-s20-5's block-0 site: a new chassis holds ALL-TARGET seats WITH target's block-2 addiu $s3,$s7,0x20 at 132 insns (sandbox 7), residual now pure sched1 block-0 emission"
+  },
+  {
+   "session": 22,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Synthesis closed a whole chassis and a whole construct family: the real-loop regime is FORECLOSED by exact loop.c arithmetic (threshold 61 >= insn_count 48), and the F1 chain-extender is closed for ou"
+  },
+  {
+   "session": 23,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "The cse1 EBB law partitions the residual: out2's missing 4th reference may not be sited in block 2 or as an in-loop1 DEFINITION (cse1 folds both into the residual move), a3 is proven rigid at 4/99 acr"
+  },
+  {
+   "session": 24,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Synthesis proves the residual is a TWO-reference problem, not one: target's own bytes force out2 to 4 refs / live 42 = 1904, which outranks a natural tbl (1702), so the original must also carry a FIFT"
+  },
+  {
+   "session": 25,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "New byte-free reference-lift class found (split at an increment site of a loop-carried variable): form V15a reaches 132/132 insns with TARGET EMISSION ORDER IN ALL FOUR BLOCKS and no do-while(0) wrap,"
+  },
+  {
+   "session": 26,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "The banned do-while(0) wrap's reference dial has an HONEST source: flow.c weights REG_N_REFS by loop_depth, which only real loop constructs create \u2014 rewriting loop1 as a plain do{}while gives out2 5 r"
+  },
+  {
+   "session": 27,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Owner directive executed: the honest out2 reference lift EXISTS \u2014 a same-value re-store of out2 inside loop1 gives ALL SEVEN target callee-saved seats plus target's block-2 addiu at sandbox 2, and the"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The D6 chassis is 132/132 with target's COMPLETE register disposition and its residual is pure sched1 emission order \u2014 the exact shape the scheduler solver exists to close.",
+   "mechanism": "The re-store's addiu is absorbed into loop1's load-delay nop, which costs a re-order of the loop1 block. Target's loop1 pick order is already known and dependence-valid (s25 E-s25-1 hand-built the goal because goalmap --goal-from-target mis-pairs the two identical sh $2,20($sp) texts).",
+   "next_probe": "Sweep the re-store's position over every legal site after out2's first use (and the surrounding statement order) on the D chassis, then run tools/sched_solver perturb.py --pass 1 --block 1 against s25's hand-built goal ON THE D6 CHASSIS \u2014 s25's depth-1 search ran on V8, whose loop notes are gone. Require in ONE measurement: build_insns == 132 AND goalmap.py --model reporting GOAL == OURS for block 1."
+  },
+  {
+   "hypothesis": "A byte-free version of the reference lift exists: an insn that cse1 declines to substitute, that survives into flow (counted) and that combine then merges away (byte-free). The stptr = base; stptr += 0xFC chain in this very function is an existing proof that such insns exist here.",
+   "mechanism": "cse1's canon_reg substitutes the donor for out2's chain (donor 77 = pa4, a MEM with a REG_EQUAL note on the incoming 5th argument) but NOT for stptr's chain (donor 80 = base, a MEM with a register address and no note). The predicate that separates the two is the whole question; it is a cse.c property, not a chassis property.",
+   "next_probe": "Read GCC 2.7.2 cse.c (canon_reg, insert_regs, merge_equiv_classes, and the REG_EQUAL handling in cse_insn) against the B1 dumps in tmp/grind/func_80041188/s27/B1/ and name the predicate. Then construct an out2 donor satisfying it. If the predicate is reproducible, form B1 becomes a byte-free +2 and the function closes at 132/132 with target's seats and no scheduler work at all."
+  },
+  {
+   "hypothesis": "The re-store construct itself needs a family vet before it can ever be submitted, and that vet should be settled BEFORE more sessions are spent optimising around it.",
+   "mechanism": "The construct is a same-value re-store of a LOCAL, which is the dead-store family (.claude/rules/dead-store-fake-exception.md \u2014 LOCALS/PARAMS only, dropped before final, FAKE required). The D forms also inherit V15a's two split increments, which the owner allowed on 2026-08-27 with a mandatory per-site FAKE annotation.",
+   "next_probe": "Before submitting any D-family candidate, read .claude/rules/dead-store-fake-exception.md end to end, quote its scope sentence, cite a precedent line, and confirm that a re-store which is NOT dropped before the final build (it survives as an emitted addiu unless D6-style absorbed) is still inside that family \u2014 if it is not, emit ruling-request rather than a candidate."
+  }
+ ],
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The do-while(0) wrap is not the SOTN-evidenced self-contained macro idiom the cited rule sanctions -- it wraps only half of loop1's body and is entered on repeat iterations via an external goto that jumps directly to an interior label, bypassing the do{}'s own entry, a CFG shape with no cited (or found) SOTN precedent; both this and the two variable-reuse citations also point at the wrong line numbers in their rule files. Next action: Revert the do-while(0) construct (src/text1a_pre.c:768-776). The stptr-reuse and out2-staging constructs (both under staged-value-re"
+ ],
+ "banned_constructs": [
+  "do { loop1: ...; func_8004A348(buf, out2); } while (0); (src/text1a_pre.c:776) wrapping only loop1's leading half, with the loop1: label positioned INSIDE the do-while and the repeat-iteration entry via `goto loop1;` (src/text1a_pre.c:781) coming from OUTSIDE the wrap, past the do{}'s own entry point",
+  "SANCTIONED-FAMILY-CLAIMS precedent line do-while-zero-exception.md:99",
+  "SANCTIONED-FAMILY-CLAIMS precedent line staged-value-reused-variable.md:46",
+  "SANCTIONED-FAMILY-CLAIMS precedent line docs/reference/sotn-construct-index.md:582"
+ ],
+ "ladder_skip": 2,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-21T05:03:13.523115+00:00",
+ "owner_continue_until_session": 45
 }

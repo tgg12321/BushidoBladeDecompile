@@ -2361,3 +2361,93 @@ measurement error, and E-s25-7's cse1-foldability law stands.
 - probe: Form Z2 = Z1 with `out2 = pa4; out2 = (s32 *)((u8 *)out2 + 0x20);`. ALLOCDBG.
 - result: out2 rigid at 5 refs / live 41, bit-identical to Z1/Y2. cse1 folds a constant-offset chain rooted in a pseudo already in its table regardless of chassis. E-s25-7's law is chassis-independent. (Control X3 confirms the asymmetry is real: dropping the base-rooted stptr extender on the goto chassis DOES cost stptr 7 refs/41 = 3414 -> 5/41 = 2439 and its $s3 seat.)
 - verdict: KILLED
+
+## s27 (forensics, 2026-08-27)
+
+**Owner directive executed.** The queue item's OWNER RULING 2026-08-27 asked for
+"the V15a + honest out2-lift candidate". V15a was used as the chassis for every probe of
+this session, and an out2 lift that delivers the complete target callee-saved disposition
+was FOUND (E-s27-1) — but it is NOT a split increment. The sanctioned split/redundant
+arithmetic class moves a reference count by +4 on a variable with no existing increment
+site, and +4 is arithmetically unplaceable for out2 (E-s27-4). The lift that works is a
+**same-value re-store of the local `out2` inside loop1** (`out2 = pa4 + 0x20;` repeated),
+which is the dead-store family (`.claude/rules/dead-store-fake-exception.md`), not the
+split family. It is banked as a measurement, not proposed as a candidate: it still costs
+one instruction, and it would need its own FAKE annotation and family vet.
+
+### H-s27-1 — CONFIRMED: out2's missing references are deliverable by a redefinition inside loop1
+The whole seat problem (six of the eight allocnos misplaced on every chassis in this
+grind's history) is solved by a single statement. D1/D5/D7 measure sandbox 2-3 at 133/132
+with EVERY callee-saved seat target's and target's block-2 `addiu $s3,$s7,0x20` present.
+The residual is one surplus instruction, nothing else.
+
+### H-s27-2 — CONFIRMED: the surplus instruction can be paid for out of loop1's load-delay nop
+D6 measures 132 build / 132 target insns. sched1 fills the `nop` at
+asm/funcs/func_80041188.s:30 with `addiu $a0,$sp,0x10`, absorbing the extra addiu. The
+cost is a full re-order of loop1 (sandbox 8). A placement (or statement-order perturbation
+around it) that both absorbs the insn and preserves target's emission order would be a
+match. This is now a scheduler-solver problem with a known-valid goal (s25 E-s25-1).
+
+### H-s27-3 — KILLED: cancel-pair lifts on out2 (+4 quantum, unplaceable)
+See E-s27-4. Every spelling measured (loop1 before the use, loop1 top, byte-cast, block 0).
+
+### H-s27-4 — KILLED: out2's live length as a dial
+See E-s27-5. Rigid at 42-43 regardless of where in block 0 the definition sits.
+
+### H-s27-5 — KILLED: the re-store on the real-loop chassis
+See E-s27-6. loop_depth weighting doubles it to 8 refs / 5714.
+
+### Frontier after s27
+
+1. **The D6 chassis: 132/132 with target's complete register disposition; residual is pure
+   sched1 emission order.** Mechanism: the re-store's addiu is absorbed into loop1's
+   load-delay nop, at the cost of re-ordering the block. Next probe: sweep the re-store's
+   position and the surrounding statement order on the D chassis (there are ~8 legal
+   positions after out2's first use, x the existing statement-order freedom), and run
+   `tools/sched_solver` `perturb.py --pass 1 --block 1` against s25's hand-built loop1
+   goal (E-s25-1) ON THE D6 CHASSIS — s25's depth-1 search was run on V8, a chassis whose
+   loop notes are gone. Require in ONE measurement: build_insns == 132 AND
+   `goalmap.py --model` reporting GOAL == OURS for block 1.
+2. **A byte-free version of the re-store.** The reference lift must survive cse1 and be
+   deleted by combine (counted) rather than emitted or deleted by flow (uncounted). The
+   `stptr = base; stptr += 0xFC` chain in the same function is an existing proof that such
+   insns exist. Next probe: read GCC 2.7.2 `cse.c` (`canon_reg`, `insert_regs`,
+   `merge_equiv_classes`) against the B1 dumps in `tmp/grind/func_80041188/s27/B1/` and
+   name the predicate that makes cse1 substitute donor 77 (pa4, a MEM with a REG_EQUAL
+   note) but not donor 80 (base, a MEM with a register address). If the predicate is
+   reproducible for out2, the B1 shape becomes a byte-free +2 and the function closes.
+3. **Fix the model script before trusting new numbers.** `dump.sh` uses -G0 while the real
+   build uses -G8 (Makefile:118 GP_FILES). Verified equivalent for V15a/D1 this session,
+   but the next session should pin -G8 in the script, and should note that a full-TU
+   ALLOCDBG dump is currently impossible (both cc1 binaries fail on the whole file —
+   E-s27-8), so the reduced TU remains the only model.
+
+## [s27] out2's missing flow-counted references can be delivered by a same-value re-store of out2 inside loop1 (out2 = pa4 + 0x20 repeated), which cse1 cannot fold because loop1 is its own extended basic block.
+- mechanism: The re-store is a REDEFINITION, so cse1's canon_reg has nothing to substitute (the block-0 definition is invisible inside loop1 per the s23 cse-EBB law) and it makes out2 loop-carried. flow.c counts the extra references before combine ever sees the insn, lifting out2 from 3 refs / live 42 = 714 to 5 refs / live 42 = 2380 — inside the admissible band (pa4 1458, stptr2 2500) — so global.c hands out $s6 to out2, $s7 to pa4 and $fp to a3.
+- probe: Form D1 = alt_V15a + the re-store at the bottom of loop1; ALLOCDBG via the instrumented cc1 plus `sandbox func_80041188 --disable all` plus an object diff against the pinned target (tmp/grind/func_80041188/s23/odiff.py).
+- result: ALLOCDBG: stptr 7/42 $s3, i 10/98 $s4, tbl 6/48 $s5, stptr2 6/48 $s0, out2 5/42=2380 $s6, pa4 7/96=1458 $s7, a3 4/100 $fp, out3 $s3 — target's complete disposition. sandbox = score 3 at 133 build / 132 target insns; the object diff is three positions and nothing else (the re-store's addiu took the loop-back branch delay slot and displaced addiu $s3,$s3,0x68). Sibling placements D5 (after the func_800523E0 call) and D7 (after the sh) both measure sandbox 2 at 133 insns.
+- verdict: CONFIRMED
+
+## [s27] The surplus instruction the re-store costs can be paid for out of loop1's load-delay nop, returning the build to 132 instructions.
+- mechanism: sched1 is free to hoist an independent insn into the slot after `lw $v0,0x0($s5)`; target carries a `nop` there (asm/funcs/func_80041188.s:30) because cc1 found nothing to fill it. Giving the block one more independent addiu lets the scheduler fill the slot, so the net instruction count is unchanged.
+- probe: Form D6 = the same re-store placed immediately after out2's first use (func_8004A348(buf, out2)); sandbox + object diff.
+- result: 132 build / 132 target insns, sandbox 8. The nop is gone, replaced by `addiu $a0,$sp,0x10`; the registers stay target's; the residual is a re-ordering of the whole loop1 body. The D-chassis residual is therefore a pure sched1 emission-order problem at 132/132, not an instruction-count problem.
+- verdict: CONFIRMED
+
+## [s27] The owner-sanctioned split/redundant-arithmetic cancel pair can lift out2 into its admissible band.
+- mechanism: The class delivers +2 references at an EXISTING increment site (i++ becomes i += 2; i -= 1;) because the site already carried one set and one use. Applied to a variable with no increment site it adds two whole insns, i.e. +4 references.
+- probe: Forms A1 (pair before the out2 call), A2 (pair at loop1 top), A3 (byte-cast +/-0x20 spelling), A4 (pair in block 0); ALLOCDBG on each.
+- result: A1/A2/A3 all give out2 7 refs / live 43 = 3255, which cannot be ranked 5th: tbl and stptr2 would have to land between 3255 and stptr's 3333, and tbl's own reference quantum (6 refs = 2553, 8 refs = 5106 at live 47/48) contains no value in that interval. Pushing 7 refs down into the band needs live length >= 57, and out2's live length is rigid at 42-43 (form D3, definition hoisted to the first statement of the function, only reaches 43). A4 (block 0) is folded by cse1 and leaves out2 at 3 refs / 714.
+- verdict: KILLED
+
+## [s27] Some block-0 chain-extender spelling on out2 will survive cse1, as the stptr = base; stptr += 0xFC chain does.
+- mechanism: A two-insn chain is byte-free and reference-counted only when cse1 declines to substitute the donor, so the copy survives into flow (counted) and is deleted by combine. If cse1 substitutes, the copy is dead before flow and flow's deletion is uncounted.
+- probe: Form B1 (out2 = pa4; out2 = (u8*)out2 + 0x20) with full instrumented-cc1 -da dumps, read insn by insn across red.i.rtl / red.i.cse / red.i.flow / red.i.combine; plus C1/C2 rooting the chain in the parameter a4 instead of the local alias pa4.
+- result: PASS ATTRIBUTION, exact: red.i.cse insn 43 has become `(set (reg 86) (plus (reg/v:SI 77) (const_int 32)))` — cse1 canon_reg replaced out2 (86) with its quantity's first register, pa4 (77) — and insn 40 (the copy) is absent from red.i.flow, i.e. flow.c deleted it, uncounted. In the SAME dump the control chain (insn 46 `88 = 80`, insn 49 `88 = 88 + 252`) is NOT substituted, survives into red.i.flow and is gone from red.i.combine — combine merged it, byte-free and counted. C1/C2 are not distinct experiments: cse1 has already merged the local alias pa4 and the parameter a4 into ONE pseudo (reg 77).
+- verdict: KILLED
+
+## [s27] The same-value re-store also works on the honest real-loop (Z1) chassis, where it would cost no instruction because LICM would hoist it.
+- mechanism: loop.c would treat the re-store as loop-invariant and hoist it into the preheader, where it would merge with the block-0 definition — a byte-free reference lift.
+- probe: Form E1 = alt_Z1_realloop_honest_s26 + the loop-bottom re-store; ALLOCDBG + model insn count.
+- result: flow.c's loop_depth weighting doubles every in-loop reference, so out2 goes 5/41 = 2439 to 8 refs / 42 = 5714 — far above the band, outranking everything except the two parameter allocnos — and the model build grows to 143 insns. The re-store construct and the real-loop chassis are mutually exclusive.
+- verdict: KILLED

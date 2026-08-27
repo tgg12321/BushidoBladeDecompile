@@ -3557,3 +3557,172 @@ no build-pipeline file was touched.
 - [s26] DISPOSITION: no decision packet was filed, on the owner's own instruction. The queue item carries OWNER RULING 2026-08-27 (docs/grind/decisions.md:14565): the 2026-08-25 exhaustion-backstop escalation is SPENT, func_80041188 returns to ACTIVE, and the owner directs continued honest grinding to COMPLETED-C with the explicit goal of zero regfix + zero asmfix carriers; the canonical-asm LOW-tier override remains DECLINED. Gate (a) is LOW (re-measured s25, E-s25-8) and gate (b) has no in-hand SOTN precedent, so the only packet available would be the debt-accepting 'REFUSED / OWNER-ACCEPTED INCOMPLETE' shape that the 2026-08-24 auto-reject clause forbids filing. Per that clause the residual stays ACTIVE and the honest outcome is progress with the kills banked. This session did not merely decline to dispose: it GREW the search space with a construct class (honest loop notes) that no prior session had.
 
 - [s26] src/text1a_pre.c was restored to HEAD at the end of the session; no build-pipeline file was touched, no commit was made, and no permuter campaign was launched (nothing to orphan).
+
+## s27 (forensics, 2026-08-27) — the out2 reference lift is SOLVED as a construct: a same-value re-store of `out2` in loop1 delivers 5 refs and the COMPLETE target callee-saved disposition; the whole residual collapses to one surplus instruction
+
+Chassis re-measured at session start by applying `alt_V15a_targetorder_purera_s25.c`
+to `src/text1a_pre.c`: `sandbox func_80041188 --disable all` = **score 15, 132 target /
+132 build insns**, `rules_dropped: 16` — reproducing s25's E-s25-4 exactly. Every number
+below was measured this session. `src/text1a_pre.c` was restored to HEAD at the end and
+no build-pipeline file was touched.
+
+### E-s27-1 — THE LOAD-BEARING RESULT: a same-value re-store of `out2` inside loop1 lifts it 3 -> 5 references and buys ALL SEVEN target callee-saved seats
+
+Form **D1** = V15a + `out2 = (s32 *)(((u8 *) pa4) + 0x20);` appended at the bottom of
+loop1 (after `stptr += 0x68;`). The statement is semantically a no-op — out2 already
+holds that value — but it is a REDEFINITION, so cse1 cannot fold it (loop1 is its own
+extended basic block, E-s23-1) and it makes out2 loop-carried. ALLOCDBG:
+
+| allocno | V15a | D1 |
+|---|---|---|
+| stptr | 7/41 = 3414 -> $s3 | 7/42 = 3333 -> $s3 |
+| i | 10/97 = 3092 -> $s4 | 10/98 = 3061 -> $s4 |
+| tbl | 6/47 = 2553 -> $s5 | 6/48 = 2500 -> $s5 |
+| stptr2 | 6/48 = 2500 -> $s0 | 6/48 = 2500 -> $s0 |
+| **out2** | 3/42 = 714 -> **$fp** | **5/42 = 2380 -> $s6** |
+| **pa4** | 7/95 = 1473 -> **$s6** | 7/96 = 1458 -> **$s7** |
+| **a3** | 4/99 = 808 -> **$s7** | 4/100 = 800 -> **$fp** |
+| out3 | 3/47 = 638 -> $s3 | 3/47 = 638 -> $s3 |
+
+`sandbox --disable all` = **score 3 at 133 build / 132 target insns**. The object diff
+against the pinned target (tmp/grind/func_80041188/s23/odiff.py) is **three positions and
+nothing else**: our loop-back branch delay slot holds the re-store's `addiu $s6,$s7,0x20`
+and `addiu $s3,$s3,0x68` has been pushed up before the `slti`. Every other instruction,
+including every register name in every block, is target's. This is the first form in the
+grind's history in which the entire residual is ONE surplus instruction.
+
+### E-s27-2 — position sweep: the surplus instruction is ABSORBABLE, and at one position the build returns to 132 insns
+
+The re-store was swept over four in-loop1 positions (it may not precede out2's first use,
+or the block-0 definition becomes dead and is deleted — that is E-s26-7's X1 at 141 insns):
+
+| form | position | build insns | sandbox |
+|---|---|---|---|
+| D6 | after `func_8004A348(buf, out2);` (first use) | **132** | 8 |
+| D5 | after `func_800523E0(pa4, out2, a3, stptr + 0x38);` | 133 | **2** |
+| D7 | after `*((s16 *) (stptr + 6)) = 2;` | 133 | **2** |
+| D1 | after `stptr += 0x68;` (loop bottom) | 133 | 3 |
+
+**D6 is the structural result**: at that position sched1 hoists `addiu $a0,$sp,0x10` into
+loop1's load-delay slot, so the `nop` target carries at `asm/funcs/func_80041188.s:30`
+disappears and the extra addiu is paid for out of the nop — 132 build insns, seats still
+target's. The price is that the whole loop1 body is re-ordered (score 8). So the residual
+on the D chassis is no longer "one instruction too many"; it is a **sched1 emission-order
+problem at 132/132 with target's complete register disposition** — precisely the shape
+`tools/sched_solver` + s25's hand-built loop1 goal (E-s25-1) exist to attack.
+Banked: `alt_D5_alltargetseats_score2_s27.c`, `alt_D6_132insns_schedresidual_s27.c`.
+
+### E-s27-3 — PASS ATTRIBUTION (forensics): why every block-0 chain extender on out2 folds, named to the insn
+
+Instrumented-cc1 `-da` dumps of form B1 (`out2 = pa4; out2 = (s32 *)((u8 *)out2 + 0x20);`),
+in `tmp/grind/func_80041188/s27/B1/`:
+
+- `red.i.rtl` insn 40 `(set (reg/v:SI 86) (reg/v:SI 77))`, insn 43
+  `(set (reg/v:SI 86) (plus (reg/v:SI 86) (const_int 32)))`.
+- `red.i.cse` insn 43 has become `(set (reg 86) (plus (reg/v:SI 77) (const_int 32)))` —
+  **cse1's canon_reg replaced reg 86 with its quantity's first register, 77 (pa4)**.
+  Insn 40 is thereby dead.
+- `red.i.flow` no longer contains insn 40: **flow.c deleted it**, and per E-s21-5 an insn
+  deleted by flow is never counted in REG_N_REFS. out2 stays at 3 refs.
+
+The control case is in the SAME dump: insn 46 `(set (reg 88) (reg/v:SI 80))` / insn 49
+`(set (reg 88) (plus (reg 88) (const_int 252)))` — the `stptr = base; stptr += 0xFC;`
+chain. cse1 did **not** substitute reg 80 there; insn 46 is still present in `red.i.flow`
+(so both references are counted) and is gone from `red.i.combine` — **combine merged it**,
+which is why that chain is byte-free AND counted. So the s25/s26 empirical asymmetry
+("base-rooted chains survive, pa4-rooted chains fold") is now attributed to a specific
+pass and a specific decision: cse1 canon_reg substitution vs no substitution, with flow
+deletion (uncounted) vs combine deletion (counted) as the consequence. The remaining
+unknown is the cse.c predicate that distinguishes donor 80 from donor 77; the only
+difference visible in the dumps is that 77's definition is a MEM with a REG_EQUAL note
+(the incoming 5th argument, `(mem (plus ($0) 16))`) while 80's is a MEM with a register
+address and no note.
+
+### E-s27-4 — KILLED: the owner-sanctioned cancel-pair (`out2 += 8; out2 -= 8;`) cannot be placed, by arithmetic
+
+The split/redundant-arithmetic class the owner allowed on 2026-08-27 moves a reference
+count in quanta of **+4** when applied to a variable that has no existing increment
+(2 insns x (1 set + 1 use)), not the +2 it delivers at an existing `i++` site. Measured:
+form A1 (pair before the out2 call) and A2 (pair at loop1 top) both give out2
+**7 refs / live 43 = 3255**; A3 (byte-cast spelling, +/-0x20) is identical. 3255 is not
+placeable: to rank 5th, out2 must sit below stptr2 and above pa4, so tbl and stptr2 would
+have to land between 3255 and stptr's 3333, and tbl's own reference quantum (6 -> 8 refs at
+live 47/48 = 2553 -> 5106) contains no value in that interval. Lowering 7 refs into the
+band instead needs live length >= 57 (pri = 2*7*10000/live < 2500), and E-s27-5 shows
+out2's live length cannot be pushed past 43. Banked
+`rejected/out2-cancel-pair-gives-plus4-refs-7-unplaceable.c`. Form A4 (the pair in
+block 0) is worse still: cse1 folds it exactly as it folds B1 and out2 stays at
+**3 refs / 42 / 714** — `rejected/out2-cancel-pair-block0-cse-folds-refs-rigid-3.c`.
+
+### E-s27-5 — KILLED: out2's live length is not a dial (block-0 position is worth at most +1)
+
+Form D3 hoists out2's definition to the FIRST statement of the function (before `saved`,
+`stptr`, `base`) and adds the cancel pair: out2's live length moves 42 -> **43**, not the
+~55 the insn distance suggests. Block-0 position is therefore worth at most one unit of
+live length, which closes both the "3 refs / live 12..20" window from below and the
+"7 refs / live >= 57" window from above. Banked
+`rejected/out2-def-hoisted-to-block0-top-livelen-only-43.c`.
+
+### E-s27-6 — KILLED: the same-value re-store OVERSHOOTS on the real-loop (Z1) chassis
+
+Form E1 = `alt_Z1_realloop_honest_s26.c` + the loop-bottom re-store. flow.c's loop_depth
+weighting counts every in-loop reference twice, so out2 goes 5/41 = 2439 ->
+**8 refs / 42 = 5714**, outranking everything except the two parameter allocnos, and the
+build grows to 143 model insns. The re-store construct and the real-loop chassis are
+mutually exclusive: the construct is a goto-chassis instrument. Banked
+`rejected/out2-redef-on-realloop-chassis-8refs-5714-overshoot.c`.
+
+### E-s27-7 — KILLED: rooting out2's split in the PARAMETER is the same fold
+
+`out2 = a4; out2 = (s32 *)((u8 *)out2 + 0x20);` (C1) and `out2 = (s32 *)((u8 *)a4 + 0x20);`
+(C2) both leave out2 at **3 refs / 42 / 714**. The dumps explain why: cse1/copy propagation
+has already merged the local alias `pa4` and the incoming parameter `a4` into ONE pseudo
+(reg 77 — nrefs 7, live 95), so "root it in the parameter instead of the alias" is not a
+distinct experiment at all. Banked
+`rejected/out2-def-split-rooted-in-param-a4-same-pseudo-folds.c`.
+
+### E-s27-8 — TOOL FINDING: the reduced-TU model is faithful here, but the FULL-TU dump path is broken, and `text1a_pre` is a `-G8` file
+
+`src/text1a_pre.c` is in the Makefile's `GP_FILES` (Makefile:118), so the real build
+compiles it with **-G8**, while `tmp/grind/func_80041188/s24/dump.sh` (used by s24-s26 and
+this session) uses **-G0**. Re-running the reduced TU under -G8 for V15a and D1 gives
+allocno tables and instruction counts **identical to -G0**, so the model's verdicts are
+not affected — but the discrepancy should be fixed in the next session's dump script
+rather than re-derived. Attempting a full-TU ALLOCDBG dump (the honest model) fails on
+both cc1 binaries: `tools/gcc-2.7.2/cc1` (instrumented) segfaults and
+`tools/gcc-2.7.2/build/cc1` exits 33 on `conflicting types for D_80094C68`
+(include/code6cac.h:92 vs src/text1a_pre.c:310) when invoked from a preprocessed FILE
+rather than the Makefile's stdin pipe. Artifacts: `tmp/grind/func_80041188/s27/full_*/`.
+
+### s27 artifacts
+
+`tmp/grind/func_80041188/s27/` — `probe.sh`, `dump.sh`, `g8run.sh`, `fulldump.sh`,
+`fd2.sh`, `text1a_pre.HEAD.c`, the variant bodies `V15a.c` `A1.c` `A2.c` `A3.c` `A4.c`
+`B1.c` `C1.c` `C2.c` `D1.c` `D3.c` `D5.c` `D6.c` `D7.c` `Z1.c` `E1.c`, and the per-tag cc1
+dump directories `V15a/ A1/ A2/ A3/ A4/ B1/ C1/ C2/ D1/ D3/ Z1/ E1/` holding the full
+`red.i.*` pass dumps (`red.i.rtl`, `red.i.cse`, `red.i.flow`, `red.i.combine` carry the
+E-s27-3 attribution) plus `cc1.err` with the ALLOCDBG tables.
+
+- [s27] Chassis re-measured: V15a applied to src/text1a_pre.c = sandbox 15 at 132/132, rules_dropped 16. HEAD restored at end of session; no build-pipeline file touched, no commit, no permuter campaign launched.
+- [s27] The owner's 2026-08-27 split-increment ruling was executed: V15a (which carries both sanctioned split increments) was used as the chassis for every probe, and the honest out2 lift the ruling asked for was FOUND — but it is a different construct (a same-value re-store of a local), not a split increment.
+- [s27] D1/D5/D7 (same-value re-store of out2 inside loop1) = sandbox 2-3 at 133 build / 132 target insns with ALL SEVEN callee-saved seats target's AND target's block-2 `addiu $s3,$s7,0x20`. Residual = one surplus instruction.
+- [s27] D6 (re-store immediately after out2's first use) = 132 build / 132 target insns, sandbox 8: sched1 pays for the extra addiu out of loop1's load-delay nop. The residual there is emission order, not instruction count.
+- [s27] Pass attribution for the block-0 fold, from the instrumented-cc1 dumps: cse1's canon_reg rewrites `out2 = out2 + 32` to `out2 = pa4 + 32` (red.i.cse insn 43), which kills the copy insn 40, which flow.c then deletes (absent from red.i.flow) — and flow-deleted insns are never counted. The `stptr = base; stptr += 0xFC` control in the same dump is NOT substituted by cse1, survives into red.i.flow (counted) and is deleted by combine (byte-free).
+- [s27] The sanctioned cancel-pair moves a reference count by +4, not +2, when the variable has no existing increment site; out2 at 7 refs / 43 = 3255 is arithmetically unplaceable and out2's live length is rigid at 42-43.
+- [s27] src/text1a_pre.c is a -G8 (GP_FILES) file; the s24 dump script uses -G0. Verified this session that -G8 and -G0 give identical allocno tables and insn counts for V15a and D1, so no prior conclusion is invalidated.
+
+- [s27] Chassis re-measured this session: alt_V15a_targetorder_purera_s25.c applied to src/text1a_pre.c gives sandbox func_80041188 --disable all = score 15 at 132 build / 132 target insns, rules_dropped 16 — reproducing s25's E-s25-4 exactly. src/text1a_pre.c was restored to HEAD at the end of the session; no build-pipeline file was touched, no commit was made, and no permuter campaign was launched.
+
+- [s27] D1/D5/D7 (a same-value re-store of the local out2 inside loop1, three different positions) measure sandbox 3/2/2 at 133 build / 132 target insns with ALL SEVEN callee-saved seats target's (stptr $s3, i $s4, tbl $s5, stptr2 $s0, out2 $s6, pa4 $s7, a3 $fp) AND target's block-2 addiu $s3,$s7,0x20 present. The object diff for D1 is three positions and nothing else.
+
+- [s27] D6 (the same re-store placed immediately after out2's first use) measures 132 build / 132 target insns at sandbox 8: sched1 fills loop1's load-delay slot (target's nop at asm/funcs/func_80041188.s:30) with addiu $a0,$sp,0x10 and the extra addiu costs nothing, at the price of re-ordering loop1.
+
+- [s27] The allocno arithmetic that makes it work: out2 5 refs / live 42 = 2380 sits inside the (pa4 1458, stptr2 2500) band; the priority formula pri = floor_log2(nrefs) * nrefs * 10000 / live_length (E-s26-3) predicted it exactly.
+
+- [s27] Pass attribution for the block-0 fold, read from instrumented-cc1 -da dumps rather than inferred: cse1's canon_reg rewrites out2 = out2 + 32 into out2 = pa4 + 32 (red.i.cse insn 43), the copy insn 40 becomes dead, and flow.c deletes it (absent from red.i.flow) — flow-deleted insns are never counted in REG_N_REFS. The stptr = base; stptr += 0xFC control chain in the same dump is NOT substituted by cse1, survives into red.i.flow and is deleted by combine, which is why it is byte-free AND counted.
+
+- [s27] The owner-sanctioned split/redundant-arithmetic cancel pair moves a reference count by +4, not +2, on a variable with no existing increment site; out2 at 7 refs / live 43 = 3255 is arithmetically unplaceable and out2's live length is rigid at 42-43 regardless of where in block 0 its definition sits.
+
+- [s27] cse1 has already merged the local alias pa4 and the incoming parameter a4 into one pseudo (reg 77, 7 refs / live 95), so 'root the chain in the parameter instead of the alias' is not a distinct experiment.
+
+- [s27] TOOL FINDING: src/text1a_pre.c is a -G8 file (Makefile:118, GP_FILES) while the s24 dump script used by s24-s27 compiles the reduced TU with -G0. Re-measured both flags for V15a and D1: allocno tables and insn counts are identical, so no prior conclusion is invalidated, but the script should be pinned to -G8. A full-TU ALLOCDBG dump is currently impossible: tools/gcc-2.7.2/cc1 (instrumented) segfaults on the whole file and tools/gcc-2.7.2/build/cc1 exits 33 on 'conflicting types for D_80094C68' when fed a preprocessed file instead of the Makefile's stdin pipe.
