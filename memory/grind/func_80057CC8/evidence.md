@@ -2529,3 +2529,83 @@ s40c seat-census script re-pointed at `tmp/grind/func_80057CC8/s41/`
 - [s41] Reusable method: tmp/grind/func_80057CC8/s41/batch.sh (the s40c census script re-pointed at the s41 dump directory) plus tmp/grind/func_80057CC8/s41/apply.py, which applies a candidate to src/text1b.c from the pristine tmp/grind/func_80057CC8/s39/text1b.orig.c so a sandbox run can follow a census without a second edit path.
 
 - [s41] src/text1b.c was restored to its pristine INCLUDE_ASM state at the end of the session (git status clean); memory/grind/func_80057CC8/candidate.c is unchanged (the 16-form remains the best measured form).
+
+## [s42] (rederive, 2026-08-27) — chassis 16 confirmed; Regime C ($s8) foreclosed; sibling-idiom equivalence
+
+- **Chassis.** `sandbox func_80057CC8 --disable all` with `memory/grind/func_80057CC8/candidate.c`
+  applied to `src/text1b.c:1665`: **score 16, target_insns 111, build_insns 108,
+  rules_dropped 0, cheat_asm_stripped 168**.  The dispatch brief said "measurement
+  unavailable"; the ledger's floor of 16 is current and was re-derived, not quoted.
+
+- **The target saves exactly eight callee-saved registers.**  `asm/funcs/func_80057CC8.s:3-16`
+  stores `$ra` + `$s0..$s7` at `0x18..0x38($sp)`; the body contains no `$fp`/`$s8`
+  reference anywhere.  Its carried-across-call set is therefore exactly eight quantities:
+  arg0, the next-INDEX, raw cx, raw cy, cxs, cys, arg2, arg3.
+
+- **NEW, load-bearing: every ban-compliant post-call-address form needs NINE.**  Five
+  independent post-call forms (`tmp/grind/func_80057CC8/s42/{e1,g1,h1,h2,h3}.c`) were
+  censused for arg3's (pseudo 75's) hard register in the `.greg` "Register dispositions"
+  table.  **All five place it in hard reg 30 = `$fp`/`$s8`.**  Scores: e1 41 @ 110, g1 50 @
+  111, h1 55 @ 112, h2 54 @ 111, h3 55 @ 112.  The pre-call regimes need only eight
+  (base16/a1 put arg3 in hard reg 23 = `$s7`, no `$s8`).  A `$s8` save/restore pair plus the
+  frame-offset shift it forces are bytes the target does not contain, so **Regime C cannot
+  reach distance 0 at any score**, and s41's frontier items #1 and #2 — both of which live in
+  Regime C — are dead regardless of whether their seat flips succeed.
+
+- **Why the ninth quantity is not removable.**  The target avoids it only by re-deriving the
+  vertex-table base after the call from arg0 (`lw $a0,0x4($s2)`,
+  `asm/funcs/func_80057CC8.s:50`) — the second source-level materialization of
+  `*(s16 **)(arg0 + 4)` refused by the owner on 2026-07-20.  The obvious dodge, letting arg0
+  die before the calls by hoisting `scale = arg0[2] * 40` above the prev-if (h1/h2/h3), does
+  make arg0 caller-save (pseudo 72 -> `$t0`), but `scale` (pseudo 80) then crosses both calls
+  in its place ("used 3 times across 64 insns; crosses 2 calls") and the count is unchanged.
+
+- **NEW: the 108-insn Regime-A register map is shape-invariant.**  `a1.c` — the in-file
+  sibling idiom transplanted from the two COMPLETED neighbours `func_80048530`
+  (`src/text1b.c:312`) and `func_800611A4` (`src/text1b.c:3252`): `s32 vt = *(s32 *)(arg0 + 4)`
+  with a single reused `s16 *` cursor instead of the candidate's asymmetric
+  `table[pi*2]`-plus-`next_vert` pair — measures **score 16 @ 108 insns with a
+  register-IDENTICAL disposition table** to the candidate.  A completely different source
+  shape lands on the identical allocation, so the seat rotation that separates Regime A from
+  the target is not a spelling artefact of the candidate's shape.
+
+- **NEW: `arg1` cannot be used as the priority carrier.**  Reusing the parameter `arg1` as
+  the wrapped-offset carrier (`g1.c`) raises it to 7 refs / 32 insns = 0.4375 and it does
+  take `$s2` — but it overshoots arg0 (0.270) instead of landing between arg0 and the
+  carried `table` (0.267).  That window is 0.003 wide and no integral (n, L) pair available
+  to the carrier lands inside it.
+
+- **NEW (closed form): d1's cross-block n=3 address and the target's prev-first block order
+  are mutually exclusive.**  The function admits exactly two conditionals before the
+  ang_next argument reads (the prev-index wrap and the next-index wrap) plus the ang_mid
+  if/else, which is strictly after both `lh` uses.  A single-def next-address is defined at
+  or after the next-wrap merge, so only the prev-if can separate def from uses — which forces
+  d1's wrap-before-prev order.  s41 frontier item #3 is closed.
+
+- **The resulting partition of the ban-compliant space (all three regimes now foreclosed):**
+  Regime A (pre-call address, prev-first) = 8 saves, 108 insns, **score 16**, seat rotation
+  foreclosed by s41 H-s41-1/2/3 and s42's shape-invariance result.  Regime B (pre-call
+  address, wrap-first, d1) = 8 saves, 106 insns, score 45, the target's complete seat map but
+  an order that s42 proves inseparable from that map.  Regime C (post-call address) = 9 saves,
+  foreclosed above.  The target sits in none of them: it is Regime C with eight saves, which
+  requires the banned second materialization.  **16 is the ban-compliant floor.**
+
+- **Artifacts.** `tmp/grind/func_80057CC8/s42/` — `batch.sh` (seat census, s41 script
+  re-pointed), `splice.py` + `measure.ps1` (apply-and-score harness), the probe sources
+  `a1/a2/e1/g1/h1/h2/h3.c`, and the `-da` dumps `*.greg` / `*.lreg` / `*.s` for each.
+
+- [s42] Chassis re-measured this session (the brief said 'measurement unavailable'): candidate.c applied to src/text1b.c:1665 gives `sandbox func_80057CC8 --disable all` -> score 16, target_insns 111, build_insns 108, rules_dropped 0, cheat_asm_stripped 168.
+
+- [s42] The target saves exactly EIGHT callee-saved registers: asm/funcs/func_80057CC8.s:3-16 stores $ra + $s0..$s7 at 0x18..0x38($sp), and the whole body contains no $fp/$s8 reference.
+
+- [s42] Five independent ban-compliant post-call-address forms (tmp/grind/func_80057CC8/s42/{e1,g1,h1,h2,h3}.c) all place arg3 (pseudo 75) in hard reg 30 = $fp/$s8, i.e. a ninth callee-save; the pre-call forms (base16, a1) place it in hard reg 23 = $s7 and use no $s8.
+
+- [s42] Hoisting `scale = arg0[2] * 40` above the prev-if does make arg0 die pre-call (pseudo 72 lands in $t0, a caller-save) but `scale` (pseudo 80) becomes a crosser in its place ('used 3 times across 64 insns; crosses 2 calls'), so the nine-quantity count is unchanged - h1 55 @ 112, h2 54 @ 111, h3 55 @ 112.
+
+- [s42] The 108-insn pre-call regime's register map is shape-invariant: the sibling-idiom respelling a1.c (s32 base + one reused cursor, transplanted from the COMPLETED func_80048530 / func_800611A4 in the same file) produces a register-IDENTICAL disposition table and the identical score 16 @ 108.
+
+- [s42] Reusing the parameter arg1 as the wrap carrier reaches 7 refs / 32 insns = 0.4375 and does take $s2, but overshoots arg0 (0.270) instead of landing in the 0.003-wide window between table (0.267) and arg0; score 50 @ 111 insns.
+
+- [s42] The ban-compliant space is now fully partitioned: Regime A (pre-call address, prev-first) = 8 saves, 108 insns, score 16, seat rotation foreclosed by s41 H-s41-1/2/3 plus s42's shape-invariance result; Regime B (pre-call address, wrap-first, d1) = 8 saves, 106 insns, score 45, the target's COMPLETE seat map but an order s42 proves inseparable from that map; Regime C (post-call address) = 9 saves, foreclosed. The target is in none of them - it is Regime C with eight saves, reachable only via the second materialization refused on 2026-07-20.
+
+- [s42] src/text1b.c was restored to its committed INCLUDE_ASM state at the end of the session (`git checkout src/text1b.c`); no build-surface file was modified.

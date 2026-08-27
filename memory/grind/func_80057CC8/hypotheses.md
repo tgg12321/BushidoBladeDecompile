@@ -1543,3 +1543,162 @@ arg0 into $s2."
 - probe: b1.c and b2.c (b2 additionally computes prev_idx late), censused with batch.sh.
 - result: The gap does collapse (L_88 34 vs L_72 37, front gap 3), but GCC coalesces the two pointer pseudos, so pseudo 88 absorbs table's references: 7 refs / 34 = 0.412, far above arg0's 0.270. No flip; strictly worse.
 - verdict: KILLED
+
+# ===== s42 (rederive) — chassis re-measured at 16; the post-call-address regime FORECLOSED
+# in closed form, and all three s41 frontier items killed =====
+
+Baseline re-measured this session with candidate.c applied to src/text1b.c:
+`sandbox func_80057CC8 --disable all` -> **score 16, target_insns 111, build_insns 108,
+rules_dropped 0**.  The brief reported the chassis floor as "measurement unavailable"; the
+ledger's 16 is current.  All seat/live-range numbers below are read off the `-da` dumps via
+`tmp/grind/func_80057CC8/s42/batch.sh` (the s41 census script re-pointed at s42), i.e. from
+the `.greg` "Register dispositions" table plus each pseudo's `.lreg` line.
+
+## [s42] The in-file sibling idiom (func_80048530 / func_800611A4, both COMPLETED in
+src/text1b.c) — all address arithmetic carried in an s32 base with ONE reused pointer
+cursor walked to each site — is a structurally different C shape that may move the
+$s2/$s3 seat assignment the candidate cannot reach.
+- mechanism: rederive-modality sibling transplant.  The two solved neighbours in this very
+  file both spell pointer walks as `base = <ptr>; ... p = off + base;` with a single reused
+  cursor and an integer-typed base (func_80048530 even carries an owner-sanctioned FAKE for
+  the `off + base` operand order).  The candidate instead uses an s16* `table` indexed
+  (`table[pi*2]`) for the prev neighbour and a separate `next_vert` pointer for the next one
+  — an asymmetric shape no solved sibling uses.
+- probe: `a1.c` = `s32 vt = *(s32 *)(arg0 + 4);` with a single reused `s16 *p` cursor
+  (`p = (s16 *)(off + vt)` for next, a block-scoped `q = (s16 *)(pi * 4 + vt)` for prev),
+  the &Judge lever staged through `p`.  `a2.c` = a1 with the prev cursor spelled as element
+  indexing `(s16 *)vt + pi * 2` instead of byte arithmetic.
+- result: **a1 = score 16 @ 108 insns — the SAME score as the candidate, with a
+  REGISTER-IDENTICAL disposition table** ($s0 = cys, $s1 = cxs, $s2 = 88 next-address
+  "used 6 times across 4 insns; crosses 1 call", $s3 = 72 arg0 "5 times across 54 insns",
+  $s4/$s5 raw cx/cy, $s6 arg2, $s7 arg3).  a2 = score 17 @ 108.
+- verdict: **KILLED as an improvement, CONFIRMED as an equivalence.**  The 108-insn
+  merge-offset regime's register map is INVARIANT under the whole s32-base/reused-cursor
+  respelling: a completely different source shape lands on the identical allocation.  The
+  sibling idiom is not a lever here.  Banked as
+  `rejected/s42-sibling-idiom-s32-base-reused-cursor-REGEQUIV-score16.c` and
+  `rejected/s42-sibling-idiom-elementindex-cursor-score17.c`.
+
+## [s42] (s41 frontier item #1) Giving the wrap quantity a fourth-and-more cross-block
+reference by REUSING THE PARAMETER `arg1` as the wrapped-offset carrier flips `off` above
+`table` in global.c allocno_compare and completes the target's seat map in the post-call
+regime.
+- mechanism: s41 measured e1's `off` at 3 refs / 20 insns (priority 1*3/20 = 0.150) against
+  the carried `table` at 4 refs / 30 (2*4/30 = 0.267).  Reusing the parameter `arg1` — which
+  is already referenced by `prev_idx = arg1 - 1`, the two centre-coordinate reads and
+  `tmp = arg1 + 1` before it is overwritten with the wrapped offset — raises the carrier to
+  n >= 6 without any second materialization of `*(s16 **)(arg0 + 4)`.
+- probe: `g1.c` = e1.c with the local `off` deleted and `arg1` itself assigned the wrapped
+  byte offset (`arg1 = tmp * 4; if ((s16) tmp >= (s32)arg0[3]) arg1 = 0;`), the address then
+  formed post-call as `(s16 *)(arg1 + (s32)table)`.
+- result: the priority arithmetic works exactly as predicted — pseudo 73 (`arg1`) reaches
+  **7 refs / 32 insns = 2*7/32 = 0.4375** and TAKES `$s2` — but it overshoots: it outranks
+  arg0 too, so the map becomes $s2 = arg1-carrier, $s3 = 72 arg0, $s4 = 87 table, i.e. a
+  three-way rotation, not the target's.  Worse, arg3 (pseudo 75) is still pushed to
+  **hard reg 30 = `$fp`/`$s8`, a NINTH callee-save**.  Measured **score 50 @ 111 insns**.
+- verdict: **KILLED.**  The window the flip needs is arithmetically unreachable: to sit
+  between arg0 (0.270) and `table` (0.267) the carrier's priority must land inside a 0.003
+  interval, and every integral (n, L) pair available to it (n = 3: 0.150; n = 4, L = 30:
+  0.267 — an exact tie with `table`; n = 7: 0.4375) misses it.  Banked as
+  `rejected/s42-postcall-arg1-reused-as-offset-carrier-9th-callee-save-score50.c`.
+
+## [s42] (the generalisation that closes s41 frontier items #1 AND #2) EVERY ban-compliant
+post-call-address form carries one supernumerary live-across-call quantity, takes a NINTH
+callee-save ($fp/$s8), and therefore cannot be byte-identical to a target that saves only
+$s0-$s7.
+- mechanism: the target's carried set has exactly EIGHT members — arg0, the next-INDEX, raw
+  cx, raw cy, cxs, cys, arg2, arg3 (`asm/funcs/func_80057CC8.s:3-16` stores $ra + $s0..$s7
+  at 0x18..0x38, and the body contains no $fp/$s8 reference at all).  It gets away with
+  eight only because the vertex-table base is RE-DERIVED after the call from arg0
+  (`lw $a0,0x4($s2)`, `asm/funcs/func_80057CC8.s:50`) — the second source-level
+  materialization the owner refused on 2026-07-20.  A ban-compliant form must instead CARRY
+  the base, so its carried set is {arg0 or its surrogate} + {base} + {index} + the five
+  others = nine.
+- probe: five independent post-call forms, each attacking the ninth quantity from a
+  different direction, censused for pseudo 75's (arg3's) hard register:
+  `e1.c` (s41's seat-flip form, carried `table` + fresh `off`); `g1.c` (carrier = reused
+  `arg1`); `h1.c` (`scale = arg0[2] * 40` hoisted ABOVE the prev-if so arg0 dies before the
+  first call, index carried in the target's own `sll 16 / sra 14` shape); `h2.c` (same, byte
+  offset instead of index); `h3.c` (h1 + the &Judge staging lever).
+- result: **all five put pseudo 75 in hard reg 30 ($fp/$s8)**.  The h-family shows why the
+  "kill arg0 early" idea cannot help: arg0 does die pre-call (pseudo 72 lands in $t0, a
+  caller-save), but `scale` (pseudo 80) then becomes a crosser in its place — "used 3 times
+  across 64 insns; crosses 2 calls" — so the count is unchanged at nine.  Scores: e1 41 @
+  110, g1 50 @ 111, h1 55 @ 112, h2 54 @ 111, h3 55 @ 112.  Contrast the pre-call regimes,
+  which need only eight: base16/a1 put arg3 in $s7 (hard reg 23) and use no $s8.
+- verdict: **CONFIRMED (closed-form foreclosure).**  The post-call-address regime — the home
+  of BOTH s41 frontier items (#1 "make `off` outrank `table`" and #2 "permuter campaign
+  seeded from e1.c") — can never reach distance 0, because a $s8 save/restore pair and the
+  frame-offset shift it forces are wrong bytes the target does not contain.  Its floor is
+  the 31 already banked at s38.  Both frontier items are therefore dead independently of
+  whether their seat flips succeed.  Banked as
+  `rejected/s42-postcall-scale-hoisted-arg0-dies-early-scale-becomes-9th-crosser-score55.c`
+  and `rejected/s42-postcall-byteoffset-arg0-dies-early-9th-callee-save-score54.c`.
+
+## [s42] (s41 frontier item #3) A branch other than the prev-if can be made to sit between
+the next-address's single def and its two `lh` uses, so d1's cross-block n=3 address can be
+obtained WITHOUT d1's wrap-before-prev block order.
+- mechanism: d1 proved the n=3 cross-block address only needs SOME branch in that window;
+  s41 hypothesised another branch could legitimately occupy it in the prev-first layout.
+- probe: enumeration of the branches this function's semantics actually admit before the
+  ang_next argument reads, cross-checked against the already-banked prev-first controls
+  `rejected/s40c-prevfirst-h35-scale-between-calls-noflip-score42.c` and
+  `rejected/s40c-prevfirst-h35-scale-after-angnext-noflip.c`.
+- result: the function has exactly TWO semantically-required conditionals before the
+  ang_next reads — the prev-index wrap and the next-index wrap — plus the ang_mid if/else,
+  which is strictly AFTER both `lh` uses and so can never separate them from the def.  A
+  single-def next-address is by construction defined at or after the next-wrap merge, so the
+  next-wrap branch is always BEFORE it and cannot separate it.  That leaves the prev-if as
+  the only candidate separator, and putting the prev-if after the address def IS d1's
+  wrap-before-prev order.  Any additional branch would have to be invented (a condition with
+  no semantic purpose), which is the dead-conditional family.
+- verdict: **KILLED by closed form.**  d1's n=3 cross-block address and the target's
+  prev-first block order are mutually exclusive in ban-compliant C.  This is the same
+  dilemma s38b stated for the address-formation horns, now proven one level lower, at the
+  block-structure level.
+
+## [s42] SYNTHESIS — the ban-compliant search space is now fully partitioned (three regimes,
+each foreclosed by a distinct closed-form argument).
+- **Regime A — pre-call address, prev-first (the candidate, base16/a1): 8 callee-saves,
+  108 insns, score 16.**  Correct block order, correct save COUNT, but the seat assignment
+  is rotated ($s2 = next-address, $s3 = arg0 where the target has $s2 = arg0, $s3 =
+  next-index).  The flip is foreclosed by s41 H-s41-2 (the arg0-def-to-address-def gap is
+  invariantly 8 instructions under every source permutation, because sched1 interleaves six
+  prologue callee-save stores that source motion cannot reach) and s41 H-s41-1/3 (no free
+  sixth arg0 reference exists).  s42 adds that the whole register map is invariant under a
+  complete s32-base/reused-cursor respelling.
+- **Regime B — pre-call address, wrap-first (d1): 8 callee-saves, 106 insns, score 45.**
+  The target's COMPLETE seat map from ban-compliant C, but the wrong block order, and cse1
+  fuses the two `arg0[3]` reads so the target's second `lbu 3($s2)` is unrecoverable.  s42
+  proves the order is not separable from the map (frontier item #3 above).
+- **Regime C — post-call address (e1/g1/h1/h2/h3): 9 callee-saves, 110-112 insns, score
+  31-55.**  Target's address-formation shape and (in e1) target's block order, but a $s8
+  save/restore pair the target does not have.  Foreclosed outright by s42.
+- The target itself is in none of these: it is Regime C with only eight saves, which it
+  achieves solely via the second source-level materialization of `*(s16 **)(arg0 + 4)`
+  refused on 2026-07-20.  **Floor 16 is Regime A's floor and, with B and C foreclosed, the
+  ban-compliant floor of the function.**
+
+## [s42] The in-file sibling idiom (func_80048530 at src/text1b.c:312 and func_800611A4 at src/text1b.c:3252, both COMPLETED) - an integer-typed base plus ONE reused pointer cursor walked to each site, instead of the candidate's asymmetric table[pi*2]-indexed prev plus dedicated next_vert - is a structurally different C shape that may move the $s2/$s3 seat assignment the candidate cannot reach.
+- mechanism: rederive-modality sibling transplant. Both solved neighbours in this very file spell pointer walks as `base = <ptr>; ... p = off + base;` with a single reused cursor and an integer-typed base (func_80048530 even carries an owner-sanctioned FAKE for the `off + base` operand order). A different RTL-expansion shape for the address chain could redirect the copy-preference and live-range inputs global.c consumes.
+- probe: a1.c = `s32 vt = *(s32 *)(arg0 + 4);` with a single reused `s16 *p` cursor (`p = (s16 *)(off + vt)` for next, a block-scoped `q = (s16 *)(pi * 4 + vt)` for prev) and the &Judge lever staged through `p`; a2.c = a1 with the prev cursor spelled as element indexing `(s16 *)vt + pi * 2`. Seats censused from the -da dumps via tmp/grind/func_80057CC8/s42/batch.sh, then applied and scored with `sandbox func_80057CC8 --disable all`.
+- result: a1 = score 16 @ 108 insns with a register-IDENTICAL disposition table to the candidate ($s0 = cys, $s1 = cxs, $s2 = pseudo 88 next-address 'used 6 times across 4 insns; crosses 1 call', $s3 = pseudo 72 arg0 '5 times across 54 insns', $s4/$s5 raw cx/cy, $s6 arg2, $s7 arg3). a2 = score 17 @ 108. The 108-insn merge-offset regime's allocation is invariant under a complete s32-base/reused-cursor respelling.
+- verdict: KILLED
+
+## [s42] s41 frontier item #1: giving the wrap quantity a fourth-and-more cross-block reference by REUSING THE PARAMETER arg1 as the wrapped-offset carrier flips `off` above the carried `table` in global.c allocno_compare and completes the target's seat map in the post-call regime.
+- mechanism: s41 measured e1's `off` at 3 refs / 20 insns (priority 1*3/20 = 0.150) against the carried `table` at 4 refs / 30 (2*4/30 = 0.267). Reusing arg1 - already referenced by `prev_idx = arg1 - 1`, both centre-coordinate reads and `tmp = arg1 + 1` before being overwritten - raises the carrier to n >= 6 with NO second materialization of *(s16 **)(arg0 + 4).
+- probe: g1.c = e1.c with the local `off` deleted and arg1 itself assigned the wrapped byte offset (`arg1 = tmp * 4; if ((s16) tmp >= (s32)arg0[3]) arg1 = 0;`), the address formed post-call as `(s16 *)(arg1 + (s32)table)`. Censused with batch.sh, then measured.
+- result: The priority arithmetic works exactly as predicted - pseudo 73 (arg1) reaches 7 refs / 32 insns = 2*7/32 = 0.4375 and TAKES $s2 - but it overshoots arg0 (0.270) too, giving a three-way rotation ($s2 = arg1-carrier, $s3 = arg0, $s4 = table) rather than the target's map, and arg3 is still pushed to hard reg 30 ($fp/$s8). Score 50 @ 111 insns. The window the flip needs is 0.003 wide (between table's 0.267 and arg0's 0.270) and no integral (n, L) pair available to the carrier lands inside it.
+- verdict: KILLED
+
+## [s42] EVERY ban-compliant post-call-address form carries one supernumerary live-across-call quantity, takes a NINTH callee-save ($fp/$s8), and therefore cannot be byte-identical to a target that saves only $s0-$s7 - which forecloses s41 frontier items #1 and #2 outright, independently of whether their seat flips succeed.
+- mechanism: The target's carried set has exactly eight members (arg0, next-INDEX, raw cx, raw cy, cxs, cys, arg2, arg3): asm/funcs/func_80057CC8.s:3-16 stores $ra + $s0..$s7 at 0x18..0x38 and the body contains no $fp/$s8 reference at all. It gets away with eight only because the vertex-table base is re-derived after the call from arg0 (`lw $a0,0x4($s2)`, asm/funcs/func_80057CC8.s:50) - the second source-level materialization refused by the owner on 2026-07-20. A ban-compliant form must instead CARRY the base, making the set nine.
+- probe: Five independent post-call forms censused for arg3's (pseudo 75's) hard register in the .greg 'Register dispositions' table: e1.c (s41's seat-flip form, carried table + fresh off), g1.c (carrier = reused arg1), h1.c (`scale = arg0[2] * 40` hoisted above the prev-if so arg0 dies before the first call, index carried in the target's own sll-16 / sra-14 shape), h2.c (same with a byte offset), h3.c (h1 + the &Judge staging lever). All applied and scored.
+- result: All five place pseudo 75 in hard reg 30 = $fp/$s8. Scores: e1 41 @ 110, g1 50 @ 111, h1 55 @ 112, h2 54 @ 111, h3 55 @ 112. The h-family shows the 'let arg0 die early' dodge cannot work: arg0 does become caller-save (pseudo 72 -> $t0) but `scale` (pseudo 80) crosses both calls in its place ('used 3 times across 64 insns; crosses 2 calls'), so the count is unchanged at nine. The pre-call regimes need only eight (base16/a1 put arg3 in hard reg 23 = $s7, no $s8).
+- verdict: CONFIRMED
+
+## [s42] s41 frontier item #3: a branch other than the prev-if can be made to sit between the next-address's single def and its two `lh` uses, so d1's cross-block n=3 address can be obtained WITHOUT d1's wrap-before-prev block order.
+- mechanism: d1 proved the n=3 cross-block address only needs SOME branch in that window; s41 hypothesised another branch could legitimately occupy it in the target's prev-first layout, which would combine d1's exact seat map with the target's instruction order.
+- probe: Enumeration of the conditionals this function's semantics actually admit before the ang_next argument reads, cross-checked against the already-banked prev-first controls rejected/s40c-prevfirst-h35-scale-between-calls-noflip-score42.c and rejected/s40c-prevfirst-h35-scale-after-angnext-noflip.c.
+- result: Exactly two conditionals exist before the ang_next reads (the prev-index wrap and the next-index wrap), plus the ang_mid if/else, which is strictly AFTER both `lh` uses and can never separate them from the def. A single-def next-address is by construction defined at or after the next-wrap merge, so the next-wrap branch is always before it. Only the prev-if remains, and placing the prev-if after the address def IS d1's wrap-before-prev order. Any additional branch would have to be invented with no semantic purpose (the dead-conditional family).
+- verdict: KILLED

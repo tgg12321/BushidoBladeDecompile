@@ -1,3 +1,23 @@
+/* s42 ADDENDUM (2026-08-27, rederive).  This form is UNCHANGED and was RE-MEASURED on the
+ * live chassis this session: `sandbox func_80057CC8 --disable all` -> score 16,
+ * target_insns 111, build_insns 108, rules_dropped 0.  Two s42 results bear on it:
+ *   (1) Its register map is SHAPE-INVARIANT.  The in-file sibling idiom transplanted from
+ *       the two COMPLETED neighbours func_80048530 (src/text1b.c:312) and func_800611A4
+ *       (src/text1b.c:3252) -- an s32 base `vt = *(s32 *)(arg0 + 4)` with ONE reused s16*
+ *       cursor instead of this form's asymmetric `table[pi*2]` + `next_vert` pair -- lands
+ *       on a register-IDENTICAL disposition table at the same score 16 / 108 insns
+ *       (rejected/s42-sibling-idiom-s32-base-reused-cursor-REGEQUIV-score16.c).  The seat
+ *       rotation that separates this form from the target is therefore not an artefact of
+ *       how this particular source is spelled.
+ *   (2) The rival post-call-address regime is now FORECLOSED, not merely behind.  Five
+ *       independent post-call forms (s42 e1/g1/h1/h2/h3) all take a NINTH callee-save
+ *       ($fp/$s8 for arg3) because the vertex-table base must be carried across the call;
+ *       the target saves only $s0-$s7 (asm/funcs/func_80057CC8.s:3-16) and gets away with
+ *       eight solely via the banned second materialization `lw $a0,0x4($s2)` (line 50).
+ *       So this 108-insn pre-call form is the only ban-compliant regime that even has the
+ *       target's callee-save COUNT, and 16 is the ban-compliant floor.
+ *   Full argument: hypotheses.md / evidence.md, both under the [s42] headings.
+ */
 /* BEST MEASURED FORM (grind s38b, 2026-08-27, synthesis modality).
  * MEASURED THIS SESSION on the live chassis: `sandbox func_80057CC8 --disable all`
  * -> score 16, target_insns 111, build_insns 108, rules_dropped 0.  Re-measured a
