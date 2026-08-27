@@ -3840,3 +3840,112 @@ that does NOT come from an exit edge.  Three shapes have never been measured:
 - [s26] FORECLOSED BY EXIT TOPOLOGY: target has exactly four `addu $v0,$s6,$zero` exits (target.txt 69/96/138/204) plus one literal `li v0,1` exit, and the banked body reproduces all five. Every C-level second inbound edge to the chain fall-through block must convert a `return ret;` into a `goto`, deleting a `move v0,s6` exit and moving the insn count off 215. With s25's Y1/Y2/Y3/Y4 this exhausts every return-carrying site as a donor.
 
 - [s26] POLICY (unchanged, still open before any candidate-ready): the banked body carries the annotated `do { calls } while (0);` wrap (.claude/rules/do-while-zero-exception.md) and the sel19 arm's duplicated `*(s16 *)(arg0 + 0x286) = 0x19;` store (.claude/rules/duplicated-statement-into-arms.md, which mandates a FAKE annotation the body does not yet carry).
+
+## s27 (solver, 2026-08-27) - FLOOR 2 -> 0.  BYTE MATCH.  The reorg fall-through steal is defeated by reading the CODE_LABEL out of TARGET'S OWN BRANCH TARGETS instead of hunting for a goto donor
+
+**E-s27-0 (chassis).**  s25/s26's banked body re-measured **2 / 215** on HEAD at
+session start (the driver's dispatch line again said "measurement unavailable";
+the ledger number was correct).
+
+**E-s27-1 (SOLVER TRIAGE - the whole solver axis is FORECLOSED for this function).**
+`python3 tools/ra_solver/inverse_compose.py classify code6cac_b func_800283D0`
+returns **`FIRST DIVERGENCE: IDENTICAL` - "the honest stream already equals target
+for this function"** (honest 213 insns, target 213 insns after the classifier's
+delay-slot normalisation).  This is a TYPED verdict, not a guess: the residual is
+invisible to all three ra_solver/sched_solver models because it lives BELOW them -
+the insn multiset, the register assignment and the sched.c order were all already
+target-exact, and only the post-sched reorg.c delay-slot arrangement differed.  Any
+future session that reaches for `inverse.py` / `inverse_reload.py` /
+`inverse_sched.py` / `perturb.py` on a residual that classify calls IDENTICAL is
+searching a model that cannot express the difference.
+
+**E-s27-2 (three NEW mechanism kills inside reorg.c, derived from the source, that
+close the axes s26 left implicitly open).**
+  - **The `prediction` axis is dead twice over.**  reorg.c:3784 computes
+    `prediction = mostly_true_jump (insn, condition)` and only `prediction > 0`
+    takes the target-thread-first path at reorg.c:3790.  For our beq it is
+    structurally pinned to 0: `rare_destination` returns 0 IMMEDIATELY for any
+    CODE_LABEL, so `rare_dest` is 0 for every labelled branch target;
+    `rare_fallthrough` is also 0 because the fall-through block ends in a
+    simplejump whose JUMP_LABEL is the epilogue CODE_LABEL; the difference is 0,
+    the switch breaks, and the condition switch then returns 0 for `EQ`.  The
+    branch sense is byte-pinned (target's emitted 44 is itself a `beq`), so the
+    `NE -> 1` arm is unreachable without a divergence.  AND EVEN IF prediction
+    were > 0, reorg.c:3797 still calls `fill_slots_from_thread` on the
+    fall-through when the target thread yields nothing, so the same steal runs.
+  - **The `condition == 0` skip (reorg.c:3764-3765) is unreachable from C.**
+    `get_branch_condition` returns 0 only when the pattern's LABEL_REF does not
+    equal `JUMP_LABEL (insn)` - an RTL bookkeeping inconsistency, not a source
+    property.
+  - **`eligible_for_delay` is not a lever.**  `li v0,1` is `can_delay = yes`
+    (type not in the excluded set, `hazard = none`, `length = 1`), and target
+    itself puts that exact insn in a delay slot, so no C spelling makes it
+    ineligible.
+  So the ONLY reachable gate really was `own_fallthrough` (reorg.c:3817) - s26's
+  conclusion is now closed-form rather than enumerated.
+
+**E-s27-3 (THE ANSWER - the label was in target's asm the whole time).**  s25/s26
+searched for a C-level `goto` that would put a CODE_LABEL in front of the chain
+fall-through `li v0,1`, and foreclosed every donor (Y1-Y4, Z1-Z3) on the grounds
+that each converts one of target's four `move v0,s6` exits into a goto and moves
+the insn count off 215.  That reasoning assumed the three early exits were
+`move v0,s6` exits.  **They are not.**  Reading target's branch operands:
+  - `.L80028488` = 0x80028488 = func + 0xB8 = **emitted index 46**, which is the
+    chain fall-through block's `j .L80028700` (its delay slot at 47 is `li v0,1`).
+  - `beq $v1,$a2,.L80028488` at emitted 15   (`temp_v1 == 4`)
+  - `beq $v0,$a2,.L80028488` at emitted 22   (`temp_v0 == 4`)
+  - `beq $v0,$a0,.L80028488` at emitted 24   (`temp_v0 == 0x14`)
+  So THREE of target's own early exits jump straight into the shared `return 1;`
+  block - the same block the range chain falls through to.  That is where the
+  CODE_LABEL comes from, and it is FREE: those three exits were never
+  `move v0,s6` exits, so nothing is converted and target's four `move v0,s6`
+  exits all survive untouched.
+
+**E-s27-4 (why every previous BB2 body missed it, and why the s26 foreclosure was
+locally right).**  Every body from s1 to s26 spelled those three exits as
+`return ret;` reached through `block_13`.  `ret` lives in $s6, so cse rewrites
+`return ret;` / `return 1;` at those sites into `move v0,s6` and routes them to
+the shared tail block at func + 0x32c - which is why adding a `goto ret_one;`
+edge on top of that body (s25 Y1/Y3/Y4) was byte-inert or (Y2/Z1-Z3) cost an
+exit.  The fix is not to ADD an edge to `block_13`; it is to DELETE `block_13`.
+
+**E-s27-5 (P1 - the shape that fails, measured).**  P1 keeps the s26 nesting
+(`if (temp_v1 != 4) { if (temp_v1 != 0x14) { ... goto ret_one; } return ret; }
+goto ret_one;`) and only adds `ret_one:` + redirects.  Measured **8 / 216**,
+i.e. exactly s25's Y2.  The emitted stream shows why: GCC MOVES the shared
+`return 1;` block out of the chain to the function tail (it lands at func + 0x330
+just before the epilogue), the chain's last test inverts to
+`bne v1,v0,<tail> / li v0,1`, and the old fall-through path needs a new
+`j 0x668` to get back - +1 insn, and the `move v0,s6` tail exit is lost.  The
+trailing `goto ret_one;` (the fall-through of the outer `if`) is what pulls the
+block out.  Banked as
+rejected/flat-goto-ret-one-keeps-block13-tail-move-8-216.c.
+
+**E-s27-6 (P2 - the shape that MATCHES, measured 0 / 215).**  Flatten the two
+outer tests into early guards so no trailing jump exists:
+
+    if (temp_v1 == 4) { goto ret_one; }
+    if (temp_v1 == 0x14) { return ret; }
+    {
+        u16 temp_v0 = *(u16 *)(temp_s4 + 0x6A);
+        if (temp_v0 == 4) { goto ret_one; }
+        if (temp_v0 == 0x14) { goto ret_one; }
+        { ... unchanged s25/s26 body, with `ret_one:` on the range chain's
+          fall-through `return 1;` ... }
+    }
+
+`block_13` disappears entirely.  `sandbox func_800283D0 --disable all` prints
+`"score": 0, "target_insns": 215, "build_insns": 215`.  Emitted 15 is now
+`beq v1,a2,func+0xb8` (target's `.L80028488`), and emitted 44-47 is
+`beq v1,v0,func+0xc4 / nop / j func+0x330 / li v0,1` - byte-identical to target.
+Adding the five `/* FAKE: ... */` annotations and removing the vestigial brace
+pair left it at 0 / 215.
+
+- [s27] FLOOR 2 -> 0.  BYTE MATCH at 215 == 215 insns with the P2 body in src/code6cac_b.c.  candidate.c updated; self_vet.md written.
+- [s27] SOLVER VERDICT (typed, mechanical): `inverse_compose.py classify code6cac_b func_800283D0` = `FIRST DIVERGENCE: IDENTICAL`.  The residual lived below every ra_solver/sched_solver model (post-sched reorg.c), so the entire solver axis was FORECLOSED for this function.  Treat an IDENTICAL classify verdict as "stop searching RA/sched, the difference is in reorg or in emission".
+- [s27] KILLED (reorg.c source, closed form): the `prediction` axis - `mostly_true_jump` is pinned to 0 because `rare_destination` returns 0 immediately for any CODE_LABEL (so rare_dest = 0) and the fall-through block ends in a simplejump to the epilogue label (so rare_fallthrough = 0), leaving the `EQ -> 0` arm; and even prediction > 0 falls back to the same fall-through steal at reorg.c:3797.
+- [s27] KILLED: the `condition == 0` skip at reorg.c:3764 (reachable only via a JUMP_LABEL/pattern inconsistency, not from C) and the `eligible_for_delay` gate (`li v0,1` is can_delay=yes and target itself delay-slots it).
+- [s27] THE ANSWER: target's `.L80028488` is emitted index 46 - the chain fall-through block's own `j` - and target's `temp_v1 == 4`, `temp_v0 == 4` and `temp_v0 == 0x14` exits (emitted 15, 22, 24) all branch to it.  Those three exits are gotos into the shared `return 1;` block, NOT `move v0,s6` exits.  That supplies the CODE_LABEL that makes own_thread_p return 0, own_fallthrough = 0, and steal_delay_list_from_fallthrough never runs - at zero exit cost.
+- [s27] CORRECTION TO THE s26 FORECLOSURE: "every C-level second inbound edge must convert one of target's four `move v0,s6` exits" was true only for bodies that keep `block_13: return ret;`.  The three donors target actually uses were never `move v0,s6` exits.  The move was to DELETE block_13, not to add an edge to it.
+- [s27] KILLED: P1 (keep the nesting, add `ret_one:` + a trailing `goto ret_one;`) = 8 / 216, identical to s25's Y2 - the trailing jump makes GCC relocate the shared block to the function tail, inverting the chain's last branch to `bne` and costing a `j` back.  rejected/flat-goto-ret-one-keeps-block13-tail-move-8-216.c.
+- [s27] METHOD NOTE worth generalising: when a residual is a delay-slot arrangement, read the TARGET's branch operands and resolve every `.L` address to an emitted index before theorising about the pass.  Three of this function's labels resolved to positions that immediately named the missing control-flow edge; twenty-six sessions of pass forensics never asked where `.L80028488` pointed.

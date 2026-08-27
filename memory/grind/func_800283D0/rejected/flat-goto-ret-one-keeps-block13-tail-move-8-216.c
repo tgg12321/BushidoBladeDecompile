@@ -1,55 +1,74 @@
-/* candidate.c - func_800283D0 (saTan2KabutoWareMove), grind s27 2026-08-27 (solver)
+/* candidate.c - func_800283D0 (saTan2KabutoWareMove), grind s25 2026-08-27 (synthesis)
+ * s26 (synthesis, 2026-08-27): body UNCHANGED, re-measured 2 / 215.  s26 re-attributed
+ * the remaining residual: it is `steal_delay_list_from_fallthrough` (reorg.c:1743, called
+ * from reorg.c:3615) pulling `li v0,1` back OUT of the `j`'s ALREADY-FILLED delay slot,
+ * not the plain fall-through steal s25 described (s25's quoted DBRDBG line belonged to a
+ * different function of the TU - UIDs restart per function).  Round-0
+ * fill_simple_delay_slots already produces target's exact arrangement and round-0
+ * fill_eager_delay_slots undoes it.  s26 also FORECLOSED the label route's edge supply:
+ * target has exactly four `move v0,s6` exits + one literal `li v0,1` exit and this body
+ * reproduces all five, so any second `goto` into the chain fall-through block must delete
+ * a `move v0,s6` exit (Z1 20/213, Z2 9/216, Z3 4/213).  Full detail in evidence.md s26.
  *
- * HONEST FLOOR WITH THIS BODY: sandbox --disable all = 0 / 215 insns.  BYTE MATCH.
- * (s26/s25 body was 2 / 215; s24 3 / 215; s23 4 / 215; s22 6 / 216; s16-s21 10 / 216.)
+ * HONEST FLOOR WITH THIS BODY: sandbox --disable all = 2 / 215 insns.
+ * (s24 body was 3 / 215; s23 4 / 215; s22 6 / 216; s16-s21 10 / 216.)
  *
- * WHAT CLOSED THE LAST 2 POINTS.
- * The residual was the reorg.c delay-slot site at emitted 44-47:
- *     ours   44 beq v1,v0,L / 45 li v0,1 / 46 j L / 47 nop
- *     target 44 beq v1,v0,L / 45 nop     / 46 j L / 47 li v0,1
- * s25/s26 proved the mechanism exactly: round-0 fill_simple_delay_slots already
- * produces TARGET'S arrangement (li v0,1 into the `j`'s slot), and round-0
- * fill_eager_delay_slots then calls steal_delay_list_from_fallthrough
- * (reorg.c:1743 via reorg.c:3615) and pulls it back out into the beq's slot.
- * The only cheap gate is `own_fallthrough` (reorg.c:3817), which own_thread_p
- * (reorg.c:2195) sets to 0 iff a CODE_LABEL sits between the beq and the
- * `li v0,1`.  s25/s26 searched for a C-level `goto` that would create that
- * label and FORECLOSED every donor (Y1-Y4, Z1-Z3) because each one converted
- * one of target's four `move v0,s6` exits into a goto and moved the insn count
- * off 215.
+ * WHAT CHANGED FROM THE s24 BODY (one hunk, three ordinary-C locals).
+ * s24 left ONE residual at emitted 161 - ours `addu a0,a0,s4` vs target
+ * `addu a0,s4,a0` - and modelled it in closed form: target needs the VALUE
+ * expansion of `temp_s4 + temp_s5 * 0x10` (the sum assigned to a pointer local,
+ * which comes out in SOURCE order) AND it needs that pointer's local-alloc
+ * quantity to keep the $a0 seat.  s24's body AB supplied the value form and
+ * LOST the seat: introducing `s32 *tail` moved the quantity's birth from luid
+ * 12 to luid 6 (span 20 -> 26), so
+ *     pri = floor_log2(refs) * refs * 10000 / span
+ * fell 6000 -> 4615, under the Judge[]-element quantity's 5000, and the whole
+ * tail renamed a0<->a1 (9 / 215).
  *
- * s27 read the label out of TARGET'S OWN ASM instead of hunting for a donor.
- * Target's `.L80028488` is emitted index 46 - the chain fall-through block's
- * `j .L80028700` - and THREE of target's branches already jump to it:
- *     index 15  beq $v1,$a2,.L80028488     (temp_v1 == 4)
- *     index 22  beq $v0,$a2,.L80028488     (temp_v0 == 4)
- *     index 24  beq $v0,$a0,.L80028488     (temp_v0 == 0x14)
- * i.e. in the original source those three early exits are NOT `return ret;`
- * (which cse turns into `move v0,s6` + a jump to the shared tail block, which
- * is what every previous BB2 body emitted) - they are gotos into the SAME
- * `return 1;` block the range chain falls through to.  That is where the
- * CODE_LABEL comes from, and it costs nothing: no exit is converted, because
- * those three exits were never `move v0,s6` exits in target to begin with.
- * Target's four `move v0,s6` exits are all still present and untouched.
+ * s25 closes it by DELAYING the pointer's RTL birth instead of touching refs:
+ * the two Judge table indices are given their own named locals `idx0` / `idx1`
+ * BEFORE the pointer, so expand emits the negu/addiu/andi index chain first and
+ * the pointer's `plus` is born after it.  The tail quantity keeps birth 12 /
+ * death 32, refs=6, span=20, pri=6000, ord5 -> $a0, exactly as the s24 body's
+ * inline address form did - but the `addu` now carries target's operand order
+ * because the sum is expanded as a VALUE.  Floor 3 -> 2.
  *
- * The s25/s26 foreclosure was correct for the shape it tested (add a goto to a
- * body that keeps `block_13: return ret;`) and wrong as a general foreclosure:
- * the answer was to DELETE `block_13` entirely, not to add an edge to it.
- * s27's P1 (keep the nesting, trailing `goto ret_one;`) is exactly the Y2 shape
- * and re-measures 8 / 216 - GCC moves the shared block to the function tail.
- * P2 flattens the two outer tests into early `if (...) goto ret_one;` /
- * `if (...) return ret;` guards so no trailing jump exists to pull the block
- * out of the chain, and the block stays at index 46 where target has it.
+ * The three locals are ordinary C: `tail` is the pointer to the 0x114/0x118/
+ * 0x11C triple that the three loads all index, and `idx0` / `idx1` are the two
+ * table indices.  V1 (idx0 only) and V3 (the first Judge ELEMENT hoisted
+ * instead of its index) both also measure 2 / 215; V2 (both indices named) is
+ * banked because it is the symmetric spelling.
  *
- * REMAINING CONSTRUCTS AND THEIR SANCTIONED FAMILIES (see self_vet.md):
- *   1. `do { calls } while (0);` wrap                 - do-while-zero-exception
- *   2. two duplicated `*(s16 *)(arg0 + 0x286) = ...`  - duplicated-statement-into-arms
- *   3. `sel`, `idx0`, `idx1` named intermediates      - named-intermediate
- *      (no-new-park-categories.md 2026-08-17 clarification)
- * All carry /* FAKE: ... */ annotations with what + mechanism + lever-exhaustion.
- * `tail` (3 reads), `var_v0_4`, `var_v0_2`, `d_val` and the m2c-shaped temp_*
- * locals are ordinary C and claim no family.
- * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  215i @ floor 0 (MATCH)
+ * REMAINING RESIDUAL (2 points, one cluster, emitted 45-47):
+ *   ours   44 beq v1,v0,L / 45 li v0,1 / 46 j L / 47 nop
+ *   target 44 beq v1,v0,L / 45 nop     / 46 j L / 47 li v0,1
+ * s25 CONFIRMED the mechanism end to end by building the TU with the
+ * instrumented cc1 under BB2_NO_FT_STEAL=1 (reorg.c:3817, the
+ * `if (own_fallthrough && ! BB2_NO_FT ())` guard): with the fall-through steal
+ * disabled this site becomes byte-identical to target.  The whole 2-point
+ * residual is `fill_eager_delay_slots` -> `fill_slots_from_thread` on the range
+ * chain's last `beq` with own_fallthrough = 1.
+ *
+ * FAMILY / POLICY (unchanged from s23/s24, still open before any submission):
+ *   1. the `do { calls } while (0);` wrap (.claude/rules/do-while-zero-exception.md);
+ *   2. the `sel19` arm's duplicated `*(s16 *)(arg0 + 0x286) = 0x19;` store
+ *      (.claude/rules/duplicated-statement-into-arms.md).
+ *
+ * s25 KILLS (do not re-propose - detail in evidence.md):
+ *   - V4: the ARRAY_REF-on-a-cast spelling `((s32 *)(temp_s4 + temp_s5*0x10))[0x45]`
+ *     is still ADDRESS context - 3 / 215, operand order unchanged.  The
+ *     value-vs-address law needs a real pointer LOCAL, not a parenthesised cast.
+ *   - W1 (`return 1;` for the temp_v0 == 4 / == 0x14 exit) 2 / 215 byte-neutral;
+ *     W2 / W3 (`block_13: return 1;`) 8 / 216.
+ *   - Y1 / Y2 / Y3 / Y4: giving the chain fall-through `return 1;` an explicit
+ *     `ret_one:` label plus an inbound `goto` (from the temp_v1 == 0x14 exit,
+ *     from the temp_v0 exits, from block_13, and both) - Y3 and Y4 are
+ *     BYTE-IDENTICAL to this body (only .L label numbering differs), so the
+ *     label does not survive to reorg.  cse rewrites every OTHER `return 1;` as
+ *     `move v0,s6` (ret is live in $s6), so those gotos never reference the
+ *     block, and the one goto that does (the == 0x14 exit) is consumed by
+ *     reorg's own redirect.
+ * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  215i @ floor 2
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
     s32 temp_a1;
@@ -63,21 +82,10 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
     ret = 1;
     temp_a1 = *(u16 *)(arg0 + 0x6A);
     temp_v1 = temp_a1 & 0xFFFF;
-    if (temp_v1 == 4) {
-        goto ret_one;
-    }
-    if (temp_v1 == 0x14) {
-        return ret;
-    }
-    {
-        u16 temp_v0 = *(u16 *)(temp_s4 + 0x6A);
-            if (temp_v0 == 4) {
-                goto ret_one;
-            }
-            if (temp_v0 == 0x14) {
-                goto ret_one;
-            }
-            {
+    if (temp_v1 != 4) {
+        if (temp_v1 != 0x14) {
+            u16 temp_v0 = *(u16 *)(temp_s4 + 0x6A);
+            if ((temp_v0 != 4) && (temp_v0 != 0x14)) {
                 s32 d_val;
                 s32 temp_a1_2;
                 s32 temp_s5;
@@ -143,7 +151,6 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                                     var_v0_2 = 0xB;
                                     goto block_48;
                                 sel19:
-                                    /* FAKE: store duplicated into this arm instead of sharing block_48's copy, mechanism: jump2 cross-jump tail merge (jump.c find_cross_jump) chooses which copy survives inline, lever-exhaustion: memory/grind/func_800283D0/hypotheses.md s13/s21/s22 */
                                     *(s16 *)(arg0 + 0x286) = 0x19;
                                     goto block_49;
                                 }
@@ -152,7 +159,6 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                                 goto block_49;
                             }
                             {
-                                /* FAKE: named intermediate for the selected constant, mechanism: cse.c/expand LUID ordering keeps the two constants materialised in target's order, lever-exhaustion: memory/grind/func_800283D0/hypotheses.md s16 (rejected/tern-no-intermediate-canonical-order-remerges.c) */
                                 s32 sel = (var_s1 == 0) ? 0xB : 0x19;
                                 var_v0_2 = sel;
                             }
@@ -163,7 +169,6 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                             if (var_s1 == 0) {
                                 goto set_0xB;
                             }
-                            /* FAKE: store duplicated into the `<` arm instead of sharing do_store_calls's copy, mechanism: jump2 cross-jump tail merge (jump.c find_cross_jump), lever-exhaustion: memory/grind/func_800283D0/hypotheses.md s13/s16/s21 */
                             *(s16 *)(arg0 + 0x286) = var_v0_4;
                             goto do_calls;
                         }
@@ -172,7 +177,6 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                         var_v0_2 = 0x1A;
                         if (var_s1 == 0) {
                             s32 temp_v1_4 = -*(s16 *)(arg0 + 0x1CA);
-                            /* FAKE: idx0/idx1 named intermediates declared before `tail`, mechanism: local-alloc quantity BIRTH order (local-alloc.c qty_births feeding global.c allocno_compare priority floor_log2(refs)*refs*10000/span), lever-exhaustion: memory/grind/func_800283D0/hypotheses.md s24/s25 */
                             s32 idx0 = (temp_v1_4 + 0x400) & 0xFFF;
                             s32 idx1 = temp_v1_4 & 0xFFF;
                             s32 *tail = (s32 *)(temp_s4 + (temp_s5 * 0x10));
@@ -206,5 +210,9 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
             block_49:
                 return ret;
             }
+            goto ret_one;
+        }
+        return ret;
     }
+    goto ret_one;
 }

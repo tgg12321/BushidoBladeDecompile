@@ -432,7 +432,164 @@ void func_80027A58(s32 *a0) {
 }
 INCLUDE_RODATA("asm/rodata", jtbl_80010548);
 INCLUDE_ASM("asm/funcs", func_80027AD8);
-INCLUDE_ASM("asm/funcs", func_800283D0);
+s32 func_800283D0(u8 *arg0, u8 *arg1) {
+    s32 temp_a1;
+    u8 *temp_s4;
+    s32 temp_v1;
+    s32 var_s1;
+    s16 var_v0;
+    s32 ret;
+
+    temp_s4 = *(u8 **)(arg0);
+    ret = 1;
+    temp_a1 = *(u16 *)(arg0 + 0x6A);
+    temp_v1 = temp_a1 & 0xFFFF;
+    if (temp_v1 == 4) {
+        goto ret_one;
+    }
+    if (temp_v1 == 0x14) {
+        return ret;
+    }
+    {
+        u16 temp_v0 = *(u16 *)(temp_s4 + 0x6A);
+            if (temp_v0 == 4) {
+                goto ret_one;
+            }
+            if (temp_v0 == 0x14) {
+                goto ret_one;
+            }
+            {
+                s32 d_val;
+                s32 temp_a1_2;
+                s32 temp_s5;
+
+                if (temp_v1 != 0x13) {
+                    if (((u32)(temp_a1 - 0x19) >= 2U) && (temp_v1 != 2) && (temp_v1 != 0x26) && (temp_v1 != 0x1B) && (temp_v1 != 0x15) && (temp_v1 != 0x25) && (temp_v1 != 0x2C) && (temp_v1 != 0xC)) {
+                    ret_one:
+                        return 1;
+                    }
+                    var_s1 = 0;
+                    goto block_15;
+                }
+                var_s1 = 0;
+            block_15:
+                d_val = D_800A3824;
+                temp_a1_2 = (d_val >> *(s16 *)(arg0 + 4)) & 1;
+                temp_s5 = (d_val >> *(s16 *)(temp_s4 + 4)) & 1;
+                if (*(s16 *)(arg0 + 0x8C) != 0) {
+                    var_s1 = temp_a1_2 == 0;
+                }
+                if (var_s1 != 0) {
+                    s16 temp_v1_2 = *(s16 *)(arg0 + 0xC);
+                    if (temp_v1_2 != 0x1D) {
+                        if (temp_v1_2 != 0xE) {
+                            goto block_20;
+                        }
+                        return ret;
+                    }
+                    goto block_49;
+                }
+            block_20:
+                {
+                    s16 temp_v1_3 = *(s16 *)(temp_s4 + temp_s5 * 2 + 0x288);
+                    if (temp_v1_3 == 0) {
+                        if (*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288) > 0) {
+                            var_v0 = 0x19;
+                            if (var_s1 == 0) {
+                            set_0xB:
+                                var_v0 = 0xB;
+                            }
+                        do_store_calls:
+                            *(s16 *)(arg0 + 0x286) = var_v0;
+                        do_calls:
+                            func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);
+                            func_80032854(*(s16 *)(arg0 + 4), 0x25, arg1, (s16 *)0);
+                            return ret;
+                        }
+                        goto block_49;
+                    }
+                    {
+                        s16 temp_v0_3 = *(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288);
+                        s16 var_v0_2;
+                        if (temp_v0_3 == temp_v1_3) {
+                            do { /* FAKE: do-while(0) loop-note ref weighting, mechanism: flow.c REG_N_REFS += loop_depth feeding global.c allocno_compare, lever-exhaustion: memory/grind/func_800283D0/hypotheses.md */
+                                func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);
+                                func_80032854(*(s16 *)(arg0 + 4), 0x25, arg1, (s16 *)0);
+                            } while (0);
+                            if (*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288) == 5) {
+                                if (((u32)(*(u16 *)(arg0 + 0xE) - 6) < 2U) || ((u32)(*(u16 *)(temp_s4 + 0xE) - 6) < 2U)) {
+                                    if (var_s1 != 0) {
+                                        goto sel19;
+                                    }
+                                    var_v0_2 = 0xB;
+                                    goto block_48;
+                                sel19:
+                                    /* FAKE: store duplicated into this arm instead of sharing block_48's copy, mechanism: jump2 cross-jump tail merge (jump.c find_cross_jump) chooses which copy survives inline, lever-exhaustion: memory/grind/func_800283D0/hypotheses.md s13/s21/s22 */
+                                    *(s16 *)(arg0 + 0x286) = 0x19;
+                                    goto block_49;
+                                }
+                                D_800A38A8 = 1;
+                                D_800A3876 = -1;
+                                goto block_49;
+                            }
+                            {
+                                /* FAKE: named intermediate for the selected constant, mechanism: cse.c/expand LUID ordering keeps the two constants materialised in target's order, lever-exhaustion: memory/grind/func_800283D0/hypotheses.md s16 (rejected/tern-no-intermediate-canonical-order-remerges.c) */
+                                s32 sel = (var_s1 == 0) ? 0xB : 0x19;
+                                var_v0_2 = sel;
+                            }
+                            goto block_48;
+                        }
+                        if (temp_v1_3 < temp_v0_3) {
+                            s16 var_v0_4 = 0x19;
+                            if (var_s1 == 0) {
+                                goto set_0xB;
+                            }
+                            /* FAKE: store duplicated into the `<` arm instead of sharing do_store_calls's copy, mechanism: jump2 cross-jump tail merge (jump.c find_cross_jump), lever-exhaustion: memory/grind/func_800283D0/hypotheses.md s13/s16/s21 */
+                            *(s16 *)(arg0 + 0x286) = var_v0_4;
+                            goto do_calls;
+                        }
+                        func_80032854(*(s16 *)(arg0 + 4), 0x26, arg1, (s16 *)0);
+                        func_80032854(*(s16 *)(arg0 + 4), 0x2D, arg1, (s16 *)0);
+                        var_v0_2 = 0x1A;
+                        if (var_s1 == 0) {
+                            s32 temp_v1_4 = -*(s16 *)(arg0 + 0x1CA);
+                            /* FAKE: idx0/idx1 named intermediates declared before `tail`, mechanism: local-alloc quantity BIRTH order (local-alloc.c qty_births feeding global.c allocno_compare priority floor_log2(refs)*refs*10000/span), lever-exhaustion: memory/grind/func_800283D0/hypotheses.md s24/s25 */
+                            s32 idx0 = (temp_v1_4 + 0x400) & 0xFFF;
+                            s32 idx1 = temp_v1_4 & 0xFFF;
+                            s32 *tail = (s32 *)(temp_s4 + (temp_s5 * 0x10));
+                            s32 temp_v1_5 = (s32)((&Judge)[idx0] * tail[0x45] + (&Judge)[idx1] * tail[0x47]) >> 0xC;
+                            s32 temp_a0_2 = tail[0x46];
+                            s32 var_a1 = temp_a0_2;
+                            s32 var_v0_3;
+                            if (temp_a0_2 < 0) {
+                                var_a1 = -temp_a0_2;
+                            }
+                            var_v0_3 = temp_v1_5;
+                            if (temp_v1_5 < 0) {
+                                var_v0_3 = -temp_v1_5;
+                            }
+                            if (var_v0_3 < var_a1) {
+                                var_v0_2 = 0x14;
+                                if (temp_a0_2 > 0) {
+                                    var_v0_2 = 0x13;
+                                }
+                            } else {
+                                var_v0_2 = 0x15;
+                                if (temp_v1_5 <= 0) {
+                                    var_v0_2 = 0x16;
+                                }
+                            }
+                        }
+                    block_48:
+                        *(s16 *)(arg0 + 0x286) = var_v0_2;
+                    }
+                }
+            block_49:
+                return ret;
+            }
+    }
+}
+
 /* kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  215i */
 void func_8002872C(void) {
     s32 i = 0;

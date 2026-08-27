@@ -2054,3 +2054,62 @@ annotation the body does not yet carry).  The s25 hunk itself (`idx0`, `idx1`,
 - probe: Read jump_insn 31's label_ref and locate the referenced code_label in the .greg dump of func_800283D0, and check every dump from .rtl to .greg for a code_label between jump_insn 78 and insn 82.
 - result: REFUTED. jump_insn 31 carries (label_ref 640), and code_label 640 is a SECOND, physically separate `li v0,1; j 662` block in the function tail (insn 643 + jump_insn 645, just before code_label 649 = block_13). The chain fall-through block is UNLABELLED from the .rtl dump onward - the slot between jump_insn 78 and insn 82 holds (note 80 78 82 "" NOTE_INSN_DELETED) in .rtl/.jump/.cse/.loop/.combine/.jump2/.lreg/.greg alike. It never had a label for reorg to consume. GCC also never cross-jump-merges the two identical `li v0,1; j 662` blocks: if it did the function would be 213 insns, and both our build and target are 215.
 - verdict: KILLED
+
+## s27 (solver, 2026-08-27) — CLOSED AT 0 / 215
+
+**H-s27-1 (CONFIRMED, closes the function).** The last 2-point residual — the
+reorg.c fall-through delay-slot steal — is defeated by routing the `temp_v1 == 4`,
+`temp_v0 == 4` and `temp_v0 == 0x14` early exits into the range chain's shared
+`return 1;` block (`goto ret_one;`) and DELETING `block_13` entirely, rather than
+by adding an edge to `block_13`.
+- mechanism: the three gotos give the shared `return 1;` block a CODE_LABEL that
+  survives to reorg; `own_thread_p` (reorg.c:2195) returns 0 for any CODE_LABEL
+  between the branch and the first active fall-through insn, so
+  `own_fallthrough` is 0 at reorg.c:3817, `fill_slots_from_thread` is never
+  called on the fall-through thread, and `steal_delay_list_from_fallthrough`
+  (reorg.c:1743 via 3615) never pulls `li v0,1` back out of the `j`'s
+  already-filled delay slot. Round-0 `fill_simple_delay_slots`' arrangement —
+  which is target's — survives untouched.
+- probe: P2 in tmp/grind/func_800283D0/s27/ — flatten the two outer tests into
+  early guards (`if (temp_v1 == 4) goto ret_one;` / `if (temp_v1 == 0x14) return
+  ret;`) so there is no trailing `goto` to make GCC relocate the shared block.
+- result: `sandbox func_800283D0 --disable all` = `"score": 0,
+  "target_insns": 215, "build_insns": 215`. BYTE MATCH.
+- verdict: CONFIRMED.
+
+**H-s27-2 (KILLED).** Keeping the s26 nesting and adding `ret_one:` plus a
+trailing `goto ret_one;` for the `temp_v1 == 4` path (P1, = s25's Y2 shape).
+- mechanism: the trailing jump is the fall-through of the outer `if`, and GCC
+  relocates the now-4-predecessor `return 1;` block to the function tail; the
+  chain's last test inverts to `bne`, the old fall-through needs a `j` back, and
+  the `move v0,s6` tail exit is lost.
+- result: 8 / 216. verdict: KILLED
+  (rejected/flat-goto-ret-one-keeps-block13-tail-move-8-216.c).
+
+**H-s27-3 (KILLED).** reorg's `prediction` axis could be flipped to take the
+target thread first and so avoid the fall-through steal.
+- mechanism: `mostly_true_jump` (reorg.c:1379). `rare_destination` returns 0
+  immediately for any CODE_LABEL so `rare_dest` = 0; the fall-through block ends
+  in a simplejump to the epilogue CODE_LABEL so `rare_fallthrough` = 0; the
+  difference switch breaks; the condition is `EQ` (byte-pinned — target's emitted
+  44 is a `beq`) so the function returns 0.
+- result: structurally pinned at 0; and even `prediction > 0` falls back to the
+  same fall-through call at reorg.c:3797 when the target thread yields nothing.
+- verdict: KILLED (closed form, from reorg.c source).
+
+**H-s27-4 (KILLED).** The `condition == 0` skip (reorg.c:3764) or
+`eligible_for_delay` could be made to fire.
+- mechanism: `get_branch_condition` returns 0 only on a LABEL_REF/JUMP_LABEL
+  inconsistency, which no C spelling produces; `li v0,1` is `can_delay = yes`
+  and target itself places it in a delay slot.
+- verdict: KILLED.
+
+**H-s27-5 (KILLED, tool-scope).** The ra_solver / sched_solver suite could reach
+this residual.
+- probe: `inverse_compose.py classify code6cac_b func_800283D0`.
+- result: `FIRST DIVERGENCE: IDENTICAL` — the honest stream already equals target
+  at the multiset / register / sched-order layers. The residual was post-sched
+  (reorg.c) and is inexpressible in all three models.
+- verdict: KILLED — the solver axis is FORECLOSED for this function, and an
+  IDENTICAL classify verdict should in general be read as "stop searching RA and
+  sched; the difference is in reorg or in final emission".
