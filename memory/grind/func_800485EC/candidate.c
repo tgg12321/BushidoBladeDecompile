@@ -1,28 +1,40 @@
-/* func_800485EC — candidate at sandbox --disable all == 0 (session s1, 2026-08-27).
+/* func_800485EC — candidate at sandbox --disable all == 0 (session s2, 2026-08-27).
  * APPLIED IN src/text1b.c as of this session (replaces the INCLUDE_ASM at the
- * former line 346). Byte-compare vs asm/funcs/func_800485EC.s: 68/68 words
- * identical except the two jal relocations and the internal `j` absolute
- * address (same relative offset 0xAC) — link-resolved.
+ * former line 346). sandbox 0 at 68/68 insns; matched caller func_80048530
+ * re-verified sandbox 0 with the coupled extern edits in place.
  *
- * TIM-header parser: checks the 0x10 magic byte, fills a 0x20-byte sprite
- * header struct (mode/x/y/w/h + clut rect + tpage/clut ids + data pointers),
- * calling GetClut/GetTPage. No FAKE constructs; every statement live.
+ * SUPERSEDES the s1 candidate whose tail `tim += 2; p = tim;` was layer-1
+ * FAILed (decisions.md 2026-08-27 14:00) and is BANNED for this function.
+ * This form uses the natural tail def `p = tim + 2;` (the spelling layer-1
+ * itself named as natural) plus an F6-sanctioned exact cancellation pair
+ * `tim++; tim--;` between the def and the reads.
+ *
+ * WHY the pair is needed (dump-proven, tmp/grind/func_800485EC/s2/):
+ * cse1's fold_rtx PLUS-association (cse.c:5589-5666; applied UNCOSTED to
+ * memory addresses via find_best_addr, cse.c:2663-2665) rewrites the pixel
+ * reads (plus p 2)/(reg p) onto tim whenever p's table equivalent
+ * (plus tim 8) passes exp_equiv_p validity; even the bare-reg lw 0(p) is
+ * hijacked by find_best_addr's equal-ADDRESS_COST / higher-rtx_cost
+ * preference (cse.c:2610-2618, 2719-2721). The pair bumps reg_tick(tim),
+ * invalidating the equivalence at the reads, so the emitted tail is target's
+ * addiu v1,s1,8; lhu 2(v1); lw 0(v1); addiu v1,v1,4. The pair itself is
+ * byte-free: present through cse1/cse2 (insns 126/129 in text1b.cse/.cse2),
+ * deleted by flow.c dead-store elimination (NOTE_INSN_DELETED in .flow)
+ * because tim is dead after the join — nothing reaches RA/emission.
+ * Family: "Semantically-null fabricated statement pairs (cancellation-pair)"
+ * — .claude/rules/no-new-park-categories.md:370-382, owner ruling 2026-08-18,
+ * F6 ESTABLISHED, exact `i++; i--;` shape (`+= 2 / -= 2` also measured 0 but
+ * the exact ++/-- exhibit shape is used; the banned `+= 2 / -= 1` NET-NONZERO
+ * lineage is a different, still-banned construct).
  *
  * COUPLED EDITS the integrator must keep (all in src/text1b.c, all verified
- * codegen-neutral this session):
+ * codegen-neutral):
  *  1. line ~311: `extern void func_800485EC();` (was a (s32 x6) prototype).
- *     The definition is K&R with s16/u16 narrow params; the unprototyped
- *     extern keeps the matched caller func_80048530's default-promotion
- *     codegen byte-identical (re-verified sandbox func_80048530 == 0).
- *     ABI evidence: caller sign-extends all four u16 loads (sll/sra 16) and
- *     stores full words for args 4/5, while the callee reads args 4/5 with
- *     lhu at +0x38/+0x3C — only K&R default-promotion semantics produce both.
- *  2. line ~5947: `extern u32 GetClut(s32, s32);` (was `extern s32
- *     GetClut(u16, u16);`). Zero call sites existed in this TU for the old
- *     decl (grep-verified); mirrors the real definition in src/gpu.c:329.
- *     Required because the u16 prototype would force andi masks at this
- *     function's lh-fed call (target has none) and conflicting decls in one
- *     TU are a cc1 error.
+ *     K&R definition + unprototyped extern keep the matched caller
+ *     func_80048530's default-promotion codegen byte-identical.
+ *  2. former line 5947: `extern u32 GetClut(s32, s32);` (was `extern s32
+ *     GetClut(u16, u16);`, zero call sites). Promoted-arg prototypes for
+ *     GetClut/GetTPage above the function let the lh-fed args pass unmasked.
  */
 typedef struct {
     /* 0x00 */ s16 mode;
@@ -69,8 +81,26 @@ u16 cx, cy;
         } else {
             spr->clut = 0;
         }
-        tim += 2;
-        p = tim;
+        p = tim + 2;
+        /* !FAKE: cancellation pair (sanctioned family: semantically-null
+         * fabricated statement pair, .claude/rules/no-new-park-categories.md:370-382,
+         * owner ruling 2026-08-18, F6 ESTABLISHED — exact `i++; i--;` shape).
+         * What: net-zero adjacent same-variable inc/dec of tim, byte-free
+         * (survives cse1/cse2, then flow.c dead-store elimination deletes both:
+         * NOTE_INSN_DELETED in .flow dump, tmp/grind/func_800485EC/dumps/).
+         * Mechanism: cse.c fold_rtx PLUS-association (cse.c:5589-5666, applied
+         * uncosted to addresses via find_best_addr, cse.c:2663) rewrites the
+         * pixel-block reads onto tim whenever p's recorded equivalent
+         * (plus tim 8) is valid; the pair bumps reg_tick(tim) so exp_equiv_p
+         * invalidates that equivalence and the reads keep p as base, matching
+         * target's addiu v1,s1,8 + lhu 2(v1)/lw 0(v1)/addiu v1,v1,4.
+         * Lever-exhaustion: memory/grind/func_800485EC/hypotheses.md s1-s2 —
+         * natural fresh-def folds (7), tim-walker misallocates to s1 (39),
+         * live tim->pixdata routing cascades (22), def-in-arms leaves two
+         * unmergeable addius (3), full-tail duplication into arms (16); the
+         * cse.c mechanism proof shows every join-local p==tim+K chain folds. */
+        tim++;
+        tim--;
         spr->x = x;
         spr->y = y;
         spr->h = ((u16 *)p)[1];

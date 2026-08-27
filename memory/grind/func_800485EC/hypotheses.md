@@ -21,3 +21,24 @@
    (3 — cross-jump can't reproduce target's join-internal addiu),
    (d) live self-increment + fresh copy `tim += 2; p = tim;` (0).
    **CONFIRMED — (d) closes the function.**
+
+## [s2] 2026-08-27 (recon)
+
+4. **H4 — full-tail duplication into arms reaches target's cross-jump-shaped
+   join.** Statement: duplicating the whole pixel parse into both arms lets
+   jump2 re-merge and place the label at `lh a0`. Probe: measured. Result: 16
+   (72 insns) — copies not re-merged AND per-copy reads still fold onto tim.
+   **KILLED** (two independent grounds; rejected/tail-dup-full-pixel-parse.c).
+5. **H5 — the read-fold is unconditional on any valid tim+K equivalence.**
+   Statement: cse.c's find_best_addr applies fold_rtx uncosted (2663) and
+   prefers higher-rtx_cost equal-ADDRESS_COST addresses (2719-2721), so both
+   `(plus p 2)` and bare `(reg p)` rewrite onto tim unless `(plus tim 8)`
+   fails exp_equiv_p's reg_tick check. Probe: source read of cse.c + s2 dumps.
+   Result: confirmed at RTL level (insn 123 def survives, reads stay
+   p-relative only when tim is reassigned in between). **CONFIRMED.**
+6. **H6 — exact F6 cancellation pair `tim++; tim--;` after `p = tim + 2;`
+   closes the function byte-free.** Mechanism: reg_tick bump invalidates the
+   equivalence at cse1/cse2; flow.c deletes the dead pair pre-RA. Probe:
+   sandbox --disable all. Result: **0 at 68/68**; caller func_80048530 also 0.
+   **CONFIRMED — closes the function** (pending layer-1/Judge on the F6
+   family claim; annotation + exhaustion prerequisites in place).
