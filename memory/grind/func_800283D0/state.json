@@ -1,31 +1,37 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 30,
    "modality": "recon",
    "headline": "Floor 44 -> 30 with four ordinary-C levers: s32 raw holder revives target's lhu+andi (872C sibling spelling), var_s1-store placement flips the a1/a2 allocno tie, inline return-1 mixed exit, and in-arm"
+  },
+  {
+   "session": 2,
+   "floor": 28,
+   "modality": "structural",
+   "headline": "Floor 30 -> 28 and build_insns 211 -> 215 == target EXACTLY: diamond 2 proven (instrumented cc1) to be jump2's cross-jump merge of the two var_v0_2 selection copies, defeated by spelling one copy as a"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The tail a0/a1 swap in the Judge-table math is the same global.c allocno_compare margin as the solved a1/a2 swap and can be flipped by a semantics-clean statement placement",
-   "mechanism": "global.c:635-655 priority = floor_log2(refs)*refs*10000*size/live_length with ascending-allocno tiebreak",
-   "next_probe": "Regenerate dumps at floor 30, identify the two pseudos (sll s5,0x4/addu pointer vs the lh table value), redo the priority arithmetic, find the length-equalizing placement"
+   "hypothesis": "Diamond 2's last 8 diffs need BOTH selection copies in target's canonical `v=0x19; if(!s1) v=0xB;` order AND unmerged, which under the traced mechanism means the jump2 pairing must never be ATTEMPTED rather than fail its comparison",
+   "mechanism": "jump.c:1996-2033 - the chain-partner loop is guarded by `if (INSN_UID (JUMP_LABEL (insn)) < max_uid)` and walks jump_chain[] stopping at the first WIN, so block_48's label UID and the chain order decide whether e1=362 ever meets e2=397",
+   "next_probe": "Re-run tmp/grind/func_800283D0/s2/xjump.sh on the CANONICAL both-copies-identical body, read which partners are tried for e1 and in what order, then look for a statement placement that either pushes block_48's label UID past max_uid or gives e1 an earlier chain partner that wins first"
   },
   {
-   "hypothesis": "Diamond 2 (+4): the second var_v0_2=0x19/0xB selection copy must not cross-jump-merge; target's beqz sense suggests the || range-check inverted with the D_800A38A8 block as fallthrough",
-   "mechanism": "jump2 find_cross_jump merges the identical selection+goto suffixes; distinct per-arm spelling or inverted branch sense defeats it",
-   "next_probe": "Read .claude/rules/cross-jump-store-tail-merge.md (coupled-fixpoint warning), then probe the inverted-|| spelling; expect the v0/v1 rename on the 1/-1 stores to follow"
+   "hypothesis": "The 11-diff s2/s3 rotation flips when live_length(pseudo 143, temp_s3) reaches 20 or 21 without cse merging the `temp_v1_3 == 0` arm's own address computation into it",
+   "mechanism": "global.c:635-655 allocno_compare - pri(143) must land strictly between pri(75 temp_s4)=1363 and pri(73 arg1)=1521",
+   "next_probe": "Keep the temp_s3 def where it is (hoisting is KILLED) and push the LAST use later instead: look for a semantics-clean ordering in which the `*(s16*)(temp_s3 + 0x288) == 5` re-read is consumed a few insns further down, e.g. below one of the two func_80032854 calls, and re-read .lreg to check L landed in the window"
   },
   {
-   "hypothesis": "Part of the s2/s3 rotation is downstream of an addu commutativity spelling (temp_s3 = arg0 + X vs X + arg0), not the prologue arg-home wall",
-   "mechanism": "operand order of the plus feeds which pseudo is the addu destination and its coalescing preference",
-   "next_probe": "One measurement: respell temp_s3 = (u8 *)((temp_a1_2 * 2) + arg0) (X + arg0 order) and pairdiff the addu/lh cluster before treating all 12 diffs as the known-hard wall"
+   "hypothesis": "The 7-diff tail a0/a1 swap is a local-alloc/reload decision, not a global.c one, because both registers are CALLER-saved and live only inside the final block",
+   "mechanism": "local-alloc.c quantity ordering / reload register selection rather than global.c allocno_compare",
+   "next_probe": "Read the .lreg qty report for that block (and BB2_FINDREG_DEBUG on the instrumented cc1) BEFORE hypothesising a C lever - s1 and s2 both assumed the global.c lens for this cluster and it has never been checked"
   }
  ],
  "judge_constraints": [],

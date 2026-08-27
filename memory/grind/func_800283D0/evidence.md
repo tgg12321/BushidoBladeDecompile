@@ -194,3 +194,145 @@ sites is ordinary C. MEASURED: 37 -> 30; also resolved the bne/slt operand-order
 - [s1] Residual at 30: s2/s3 prologue rotation ~12 diffs (known-hard wall, but an addu operand-order commutativity clue is untested), diamond-2 un-merged var_v0_2 selection +4 insns with downstream v0/v1 rename x3, tail a0/a1 swap ~6 diffs (same allocno_compare shape as the solved swap), 4 near-neutral j/nop layout diffs.
 
 - [s1] Artifacts: combine/greg/lreg slices and pairdiff_floor30.txt in tmp/grind/func_800283D0/s1/.
+
+## 2026-08-26 session 2 (grinder, structural) — FLOOR 30 -> 28; insn count now EXACT (215 == 215)
+
+Chassis re-measured at session start with the s1 candidate applied to src/code6cac_b.c:
+sandbox --disable all = 30, ours 211 insns vs target 215. Confirmed the ledger floor.
+
+### Diamond 2 root cause NAMED with the instrumented compiler (not inferred)
+
+The +4-insn gap was the jump2 cross-jump merge of the two `var_v0_2 = 0x19 / 0xB`
+selection copies (the in-range arm at C ~91-94 and the `!= 5` tail at C ~101-104).
+This is now PROVEN, not hypothesised, by two independent instruments:
+
+1. **Constant-count census across every -da dump** (tmp/grind/func_800283D0/s2/):
+   `const_int 25)` occurrences inside the function region go
+   rtl=5 jump=5 cse=8 loop=8 cse2=8 combine=8 sched=8 lreg=8 greg=8 **jump2=6** dbr=6.
+   The two copies are alive through global allocation and disappear exactly at jump2.
+   (`const_int 11)` mirrors it: 3/3/6/6/6/6/6/6/6/**4**/4.)
+2. **`tools/gcc-2.7.2/cc1` with `BB2_XJUMP_DEBUG=1`** (trace banked at
+   tmp/grind/func_800283D0/s2/xjump_trace.txt, harness xjump.sh). The decisive event:
+   ```
+   XJDBG: enter e1=362 e2=397 min=2 (chain-partner)
+   XJDBG:   MATCH i1=358 i2=393 set(reg<-11) min->1
+   XJDBG:   MATCH i1=354 i2=389 set       min->0
+   XJDBG:   MATCH i1=351 i2=386 set(reg<-25) min->-1
+   XJDBG:   LABEL-BONUS i1=347 (label) min->-2; break
+   XJDBG: result e1=362 min=-2 last1=351 => WIN
+   XJDBG: DO_CROSS_JUMP jump=362 newjpos=351 newlpos=386
+   ```
+   Route is the "chain-partner" arm of jump.c:2020 (both jumps have the same
+   JUMP_LABEL = block_48), entered with `minimum = 2`; three backward insn MATCHes
+   drive min to -1 and the merge fires. NOTE the mechanics: WIN needs only TWO
+   matching insns, so a defeat must make the FIRST or SECOND insn before the `j`
+   differ.
+
+### The fix that measured: spell ONE copy as an if/else (30 -> 28, 211 -> 215 insns)
+
+Changing the tail copy from
+    `var_v0_2 = 0x19; if (var_s1 == 0) { var_v0_2 = 0xB; }`
+to
+    `if (var_s1 != 0) { var_v0_2 = 0x19; } else { var_v0_2 = 0xB; }`
+makes the first backward comparison `set(reg<-11)` vs `set(reg<-25)` — a
+PAT-MISMATCH on insn 1 — so find_cross_jump never reaches min<=0 and BOTH copies
+survive. **build_insns 211 -> 215, exactly the target count.** Score 30 -> 28.
+Mirror placement (if/else on the in-range copy instead of the tail) measures
+IDENTICALLY 28/215, so the lever is the asymmetry itself, not which copy carries it.
+
+### KNOWN-IMPERFECT and the open question this leaves
+
+The if/else copy emits `beqz s1 / li v0,11 / j / li v0,25`; target has
+`bnez s1 / li v0,25 / j / li v0,11` in BOTH copies (4 diffs at slots 138-141, plus
+the v0/v1 rename at 126/132/133/135). So the byte-exact original had two IDENTICAL
+copies that jump2 did not merge. Under the traced mechanism identical copies always
+merge, so the original's non-merge must come from the pairing never being ATTEMPTED,
+not from the comparison failing — i.e. from `jump_chain` / `INSN_UID(...) < max_uid`
+ordering at jump.c:2012-2021, or from an earlier WIN in the same chain consuming e1.
+That is the next session's question; it is a layout/UID question, not a spelling one.
+
+### The s2/s3 cluster is INDEPENDENT of diamond 2 — measured, not assumed
+
+Re-dumped .lreg/.greg with the 215-insn body in place: pseudo 73 (the arg1 home) is
+still `7 refs / 92 insns` and pseudo 143 (temp_s3) still `3 refs / 14 insns`, the
+allocation order string is byte-identical to the 211-insn build, and the dispositions
+are unchanged (72->s0, 77->s1, 143->s2, 73->s3, 75->s4, 90->s5, 79->s6). Reason: jump2
+runs AFTER reload, so nothing the cross-jump merge does can feed back into allocation.
+Do not expect the two clusters to interact.
+
+### The exact allocno arithmetic for the s2/s3 flip (global.c:635-655)
+
+pri = floor_log2(n_refs) * n_refs * 10000 * size / live_length, ties -> lower allocno.
+  pseudo 143 (temp_s3): floor_log2(3)=1, 1*3*10000/14  = **2142**
+  pseudo  73 (arg1)   : floor_log2(7)=2, 2*7*10000/92  = **1521**
+  pseudo  75 (temp_s4): floor_log2(6)=2, 2*6*10000/88  = **1363**
+143 sorts first, and since MIPS defines no REG_ALLOC_ORDER (verified: no
+REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips), find_reg walks hard regs ascending,
+so the first-allocated call-crossing pseudo takes the lowest free callee-saved reg.
+s0 goes to 72, s1 to 77, then 143 takes s2 and 73 takes s3. Target needs 73 first.
+The flip therefore requires pri(143) to land strictly BETWEEN pri(75)=1363 and
+pri(73)=1521 — otherwise 75 steals s3 and 143 lands in s4. With n_refs fixed at 3
+that is 30000/L in (1363,1521), i.e. **live_length(143) must become 20 or 21**
+(currently 14). Alternatively n_refs(73) would have to reach 8 (floor_log2 3 =>
+pri 2608), which there is no honest use for — arg1 is genuinely referenced exactly
+7 times. The ONLY honest axis is +6/+7 insns of live length on temp_s3.
+
+### s2 negative results (all banked as rejected/ forms)
+
+- **addu commutativity is laundered.** `temp_s3 = (temp_a1_2 * 2) + arg0` emits the
+  identical `addu s2,s0,v0`; score flat 30. s1 frontier item 3 is KILLED: the
+  operand-order diff at slots 96-97 is downstream of the register assignment, not an
+  independent C lever. (rejected/addu-commutativity-laundered.c)
+- **Distinct terminator on the tail copy is self-defeating.** Replacing the tail's
+  `goto block_48` with an explicit `*(s16*)(arg0+0x286) = var_v0_2; return ret;`
+  measured 29 / 211 insns: jump2 cross-jumps that tail into block_48 FIRST (restoring
+  `j block_48`), sets `next = insn`, and then merges the selections on the re-scan.
+  (rejected/tail-explicit-store-return-remerges.c)
+- **Hoisting temp_s3 above the `temp_v1_3 == 0` branch is catastrophic (28 -> 63).**
+  It was the obvious way to buy live length, but cse then folds the ==0 arm's own
+  `arg0 + temp_a1_2*2 + 0x288` into temp_s3 (target keeps a separate `addu v0,v0,s0`
+  there), pseudo 143 is renumbered out of existence, and the whole callee-saved map
+  re-shuffles (72 s0->s1, 77 s1->s2). (rejected/hoist-temp-s3-cses-arm-addu.c)
+
+### Residual at 28 (tmp/grind/func_800283D0/s2/pd_probeB.txt) — 32 diffs, insn count exact
+
+1. s2/s3 rotation, 11 diffs: prologue pair (3,10), six `move a2,s3`->`s2`
+   (85,90,102,107,148,153), `addu s2,s0,v0`/`lh 648(s2)` x3 (96,97,111). ONE decision:
+   the allocno_compare order above.
+2. Diamond 2 residual, 8 diffs: the if/else copy's reversed order (138-141) plus the
+   v0/v1 rename on the D_800A38A8/D_800A3876 stores (126,132,133,135).
+3. Tail a0/a1 swap, 7 diffs (159,161,168,169,171,178,181): `sll a0,s5,4`/`addu a0,s4,a0`
+   pointer in a0 (target) vs a1 (ours), and the Judge `lh` in a1 vs a0. Caller-saved
+   allocation in the last block; not yet modelled.
+4. Delay-slot/jump wobble at 45-48 (4 diffs, net-zero insns): ours `li v0,1 / j / nop`,
+   target `nop / j / li v0,1`. reorg fill.
+
+### Tooling notes (s2)
+
+- The instrumented cc1 (tools/gcc-2.7.2/cc1, NOT build/cc1) works here and
+  `BB2_XJUMP_DEBUG=1` answers cross-jump questions in one run. Harness:
+  tmp/grind/func_800283D0/s2/xjump.sh (cpp | cc1 with the env var, stderr captured).
+  cc1 exits rc 33 on this TU (a pre-existing "too few arguments" error at
+  src/code6cac_b.c:424 in an unrelated function) but still emits full output — ignore
+  the exit code.
+- The per-pass constant census (`awk` between `;; Function` markers, grep
+  `const_int N)`) is a cheap way to localise a pass that adds/removes copies; grep for
+  `const_int 25 ` with a trailing space finds nothing, the dump prints `25)`.
+
+- [s2] [s2] Chassis re-measured at session start with the s1 candidate applied: sandbox --disable all = 30, ours 211 vs target 215 - the ledger floor confirmed before any edit.
+
+- [s2] [s2] Best form this session measures 28 with build_insns 215 == target 215 EXACTLY; the only edit vs the s1 body is the if/else respelling of the tail var_v0_2 selection. Saved to memory/grind/func_800283D0/candidate.c and live in src/code6cac_b.c.
+
+- [s2] [s2] Pass attribution done with instruments, not inference: a per-pass `const_int 25)` census inside the function region (rtl 5, cse 8, combine 8, greg 8, jump2 6, dbr 6) localises the copy loss to jump2, and BB2_XJUMP_DEBUG=1 on tools/gcc-2.7.2/cc1 names the event `DO_CROSS_JUMP jump=362 newjpos=351 newlpos=386` reached via jump.c:2020's chain-partner arm after three backward MATCHes.
+
+- [s2] [s2] find_cross_jump's WIN condition needs only TWO matching insns walking back from the jump (chain-partner minimum=2), so any defeat must make the FIRST or SECOND insn before the terminating jump differ; the if/else respelling produces `set(reg<-11)` vs `set(reg<-25)` and aborts on insn 1.
+
+- [s2] [s2] KNOWN-IMPERFECT: target has TWO IDENTICAL copies (`bnez s1 / li v0,25 / j / li v0,11`) that jump2 did not merge; our if/else copy is order-reversed (`beqz s1 / li v0,11 / j / li v0,25`), costing 4 diffs at slots 138-141 plus the v0/v1 rename at 126/132/133/135. Since identical copies always merge once paired, the original's non-merge must be a PAIRING failure (jump_chain order / the `INSN_UID(JUMP_LABEL(insn)) < max_uid` guard at jump.c:2012), not a comparison failure.
+
+- [s2] [s2] The s2/s3 rotation is provably independent of diamond 2: with the 215-insn body the .lreg ref/length report, the .greg allocation-order string and every register disposition are byte-identical to the 211-insn build. jump2 is post-reload.
+
+- [s2] [s2] Exact allocno_compare arithmetic for the s2/s3 flip: pri(143 temp_s3)=2142, pri(73 arg1)=1521, pri(75 temp_s4)=1363; MIPS has no REG_ALLOC_ORDER so find_reg assigns ascending. Flipping needs live_length(143) = 20 or 21 (currently 14) - any lower priority than 1363 and temp_s4 steals s3.
+
+- [s2] [s2] Three forms banked as rejected: addu-commutativity respelling (laundered, flat 30), distinct-terminator on the tail copy (29/211, jump2 re-merges after cross-jumping the store+return into block_48), and hoisting temp_s3 above the temp_v1_3 branch (28 -> 63, cse eats the arm's own addu).
+
+- [s2] [s2] Tooling: the instrumented cc1 is tools/gcc-2.7.2/cc1 (NOT build/cc1) and exits rc 33 on this TU because of a pre-existing 'too few arguments' error at src/code6cac_b.c:424 in an unrelated function - it still emits complete output, ignore the exit code. Harness banked at tmp/grind/func_800283D0/s2/xjump.sh.

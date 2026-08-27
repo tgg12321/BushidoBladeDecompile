@@ -1,19 +1,25 @@
-/* candidate.c â€” func_800283D0 (saTan2KabutoWareMove), grind s1 2026-08-19
- * Honest floor with THIS body: sandbox --disable all = 30 (down from 44).
- * This body is ALREADY APPLIED in src/code6cac_b.c (identical text, lines 512-652).
- * Session-1 changes vs the pre-session tree, all ordinary C (no FAKE constructs):
- *   1. u16 temp_a1 -> s32 temp_a1  (the 872C sibling spelling; makes the
- *      `& 0xFFFF` mask reach RTL instead of being tree-folded, giving
- *      target's lhu+andi pair)
- *   2. var_s1 = 0 moved AFTER the range-check if (dead on the return-1 path);
- *      shortens the raw pseudo's live length 15->14, flipping global.c
- *      allocno_compare's a1/a2 assignment to match target
- *   3. `goto block_13` -> `return 1;` at the range-check exit (mixed exit
- *      forms; produces target's inline j + li v0,1 tail)
- *   4. temp_v0_2 named local removed; `temp_a1_2 * 2` inlined at both use
- *      sites (target recomputes the sll in-arm instead of hoisting)
- * NOTE: statement-order shuffle of the loads (load after ret=1) was measured
- * INERT â€” sched1 launders source statement order here.
+/* candidate.c — func_800283D0 (saTan2KabutoWareMove), grind s2 2026-08-26
+ * Honest floor with THIS body: sandbox --disable all = 28 (down from 30);
+ * build_insns 215 == target 215 EXACTLY (was 211).
+ * This body is APPLIED in src/code6cac_b.c.
+ *
+ * s1 changes retained verbatim (s32 raw holder; var_s1=0 placement; inline
+ * `return 1;` mixed exit; in-arm recompute of temp_a1_2*2).
+ *
+ * s2 change (the only edit vs the s1 body): the TAIL (`!= 5`) copy of the
+ * var_v0_2 = 0x19/0xB selection is spelled as an if/else instead of
+ * `var_v0_2 = 0x19; if (var_s1 == 0) var_v0_2 = 0xB;`.  With BOTH copies
+ * spelled identically, GCC's jump2 cross-jump pass merges them
+ * (instrumented cc1 BB2_XJUMP_DEBUG: `DO_CROSS_JUMP jump=362 newjpos=351
+ * newlpos=386`, a 3-insn backward tail match) and we emit 211 insns where
+ * the target emits 215.  Spelling one copy as an if/else makes the first
+ * backward-compared insn `set(reg<-11)` vs `set(reg<-25)`, find_cross_jump
+ * PAT-MISMATCHes on insn 1, and both copies survive.
+ *
+ * KNOWN-IMPERFECT: the if/else copy emits `beqz s1 / li v0,11 / j / li v0,25`
+ * where target has `bnez s1 / li v0,25 / j / li v0,11` (4 diffs).  The
+ * byte-exact answer needs BOTH copies in the canonical `v=0x19; if(!s1) v=0xB;`
+ * order AND unmerged — not yet found.  See hypotheses.md H8.
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
     s32 temp_a1;
@@ -98,8 +104,9 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                                 D_800A3876 = -1;
                                 return ret;
                             }
-                            var_v0_2 = 0x19;
-                            if (var_s1 == 0) {
+                            if (var_s1 != 0) {
+                                var_v0_2 = 0x19;
+                            } else {
                                 var_v0_2 = 0xB;
                             }
                             goto block_48;
