@@ -1193,3 +1193,84 @@ than 4. Verify nrefs from extract.py BEFORE spending a sandbox run.
 - probe: `(temp_a1_2 * 2) + arg0`, `(temp_s5 * 0x10) + temp_s4`, and both together, on the 11-floor body; sandbox twice each.
 - result: 11, 11, 11 - all neutral. Extends s11's R2 / s12's Q1 to the tail site.
 - verdict: KILLED
+
+
+## s15 (synthesis) - frontier reset
+
+**KILLED this session**
+- H-s15-a: "livelen(143) can be lengthened by hoisting temp_s3 to the head of
+  block_20 so its live range covers path1."  KILLED - 53 / 215; CSE unifies the
+  hoisted address with path1's own `arg0 + temp_a1_2*2 + 0x288`, pseudo 143
+  leaves the global allocno set entirely and path1 loses an insn.
+  (rejected/s3-hoist-block20-drops-143-from-global-53.c)
+- H-s15-b (RE-FRAMED, not killed by measurement but by deduction from target's
+  own asm): "the store pin and cluster A are genuinely coupled, so the way
+  forward is a third source edge into `do_calls` that pays for the arm's
+  duplicated call pair" (s14 frontier item 1).  Target's `.L80028520` is a
+  source label and its arm carries no duplicate, so target compiles with
+  nrefs(73) = 7 and wins the seat anyway.  There is no third edge to find; the
+  coupling is an artefact of OUR ref-count workaround.  De-prioritised.
+
+**CONFIRMED this session**
+- H-s15-c: cluster A's decision is `pri(73) > pri(143)` under global.c's
+  `allocno_compare`, with pri = floor_log2(nrefs)*nrefs/livelen*10000*size.
+  Verified digit-for-digit against ALLOCDBG on the store-pinned body.
+
+**Frontier for the next pass (in priority order)**
+
+1. **livelen(143) 14 -> >= 20 from the DEATH end, on variant A's (store-pinned)
+   body.**  This is the only route consistent with target's own asm (E-s15-5)
+   and it closes the store sink and cluster A together, leaving only cluster B.
+   The birth end is CSE-foreclosed (E-s15-6); the death end is untried.
+   Concrete probes: (i) move the post-call `*(s16 *)(temp_s3 + 0x288) == 5`
+   re-read later inside the `==` block - e.g. compute the two `0xE` window
+   tests into named locals FIRST and test `== 5` afterwards where the semantics
+   permit (the `||` is side-effect free, so hoisting both reads above the `== 5`
+   test is a legal reordering; check the emitted order against target lines
+   48-63 before spending a sandbox run); (ii) give temp_s3 a genuinely later
+   REAL use so the range extends - but note nrefs would then be 4, which by the
+   closed form needs livelen >= 53, so (ii) is only viable if the extra use
+   also extends the range that far.  Read ALLOCDBG (extract.py) for
+   nrefs/livelen/pri BEFORE spending a sandbox run: the pass/fail condition is
+   now arithmetic.
+
+2. **Cluster B (~4 pts, and the entire 216-vs-215 surplus).**  Emitted 126/131:
+   target fills the `beqz $v0,.L800285DC` delay slot with `addiu $v0,0x1`, the
+   first insn of the BRANCH TARGET block (`steal_delay_list_from_target`), and
+   we emit a `nop` there and the `li v0,1` afterwards.  The insn order in the
+   target block is identical in both builds, so the refusal is in reorg.c's
+   eligibility test, not in the C statement order: the two candidates are
+   `LABEL_NUSES(.L800285DC) != 1` (dbr must redirect the branch to label+1 and
+   will not if the label has other references) and `mark_target_live_regs`
+   believing `$v0` live on the fall-through path.  Probe: re-run
+   `pwsh tools/grinder/dump.ps1 func_800283D0` on the 11-floor body, find that
+   branch's UID in the `.dbr` dump and grep the DBRDBG log for its thr/simp
+   lines.  Emitted 45-48 (ours `j / nop`, target `nop / j`) is the same pass.
+
+3. **The arm's walk-back stop point (~2 pts), independent of both above.**
+   On the 11-floor body BOTH arm edges land on 0x6a8 because jump2's walk-back
+   swallowed the arm's own store; target's 0x19 edge keeps its store and lands
+   at `.L80028520`.  s12 already proved the walk-back's stopping point is
+   steered by the initialisation order of the arm's selection variable relative
+   to path1's, so this is a live, cheap dial that has been swept only once (at
+   floor 20, before the tail rewrite).  Re-sweep the four init-order
+   combinations on the 11-floor body and read the arm's two branch targets out
+   of the objdump rather than the normalized diff.
+
+## [s15] Cluster A ($s2/$s3) is decided by GCC 2.7.2 global.c allocno_compare, so the seat exchange is exactly the inequality pri(73) > pri(143) with pri = floor_log2(nrefs)*nrefs/livelen*10000*size, and the complete single-input solution set is nrefs(73)>=8, nrefs(143)=2, livelen(143)>=20, livelen(73)<=65.
+- mechanism: global.c:allocno_compare sorts allocnos by descending pri and find_reg assigns in that order; the two participants' pris were read out of the instrumented ALLOCDBG dump of the store-pinned body (t4 = variant A's arm + s14's no-pointer tail) and reproduce the formula exactly: 143 = 1*3/14*10000 = 2142 (ord 19 -> $s2), 73 = 2*7/92*10000 = 1521 (ord 21 -> $s3).
+- probe: Read tools/gcc-2.7.2/global.c allocno_compare verbatim; ran tools/ra_solver/extract.py on the t4 body (tmp/grind/func_800283D0/s15/model_t4.json) and compared the dumped pri values against the formula; cross-checked with inverse.py global --swap 73,143 --depth 2 --top 40 (tmp/grind/func_800283D0/s15/inv_t4.txt).
+- result: Formula matches the dump digit-for-digit for both allocnos. inverse.py returns six single-atom vectors: refs_up 73 -> 8/9/10/11, refs_down 143 -> 2, and live_extend 143 14 -> 22. This supersedes s7's empirical '[8,11] window' framing with the underlying arithmetic and corrects s14's E-s14-2 claim that only ref-count atoms exist (that run predated the tail rewrite).
+- verdict: CONFIRMED
+
+## [s15] Target reaches the $s2 seat with nrefs(arg1) = 7 - i.e. through livelen(temp_s3) >= 20, not through a duplicated call pair - so the store pin and cluster A are NOT coupled in target's source and there is no 'third do_calls edge' to find (s14 frontier item 1 is de-prioritised).
+- mechanism: Direct objdump of the 11-floor body's arm (0x7a0-0x7ac) shows BOTH edges landing on the same address 0x6a8: jump2's cross-jump walk-back swallowed the arm's own `sh $v0,0x286($s0)` together with the duplicated call pair. Target's arm keeps its own store and lands one insn further on, at .L80028520. A walk-back that does not stop in front of an identical store in our build cannot have stopped in front of one in target's, so .L80028520 was already a label before jump2; and a label that also survives sched1 as a block boundary (which is what keeps target's store at the head of the shared block, E-s13-1) can only come from a source goto. Hence target's arm is variant A's arm, which supplies zero duplicated arg1 references, and target's final seven $s2 references are also its pre-jump2 count.
+- probe: mipsel-linux-gnu-objdump of tmp/sandbox/func_800283D0/code6cac_b.o at the 11-floor body vs asm/funcs/func_800283D0.s .L80028608; combined with the closed form of hypothesis 1 and with E-s15-3 (livelen(73)=92 is a structural floor because 73 is the arg1 parameter, live from its prologue home to the last of three call sites).
+- result: Consistent only with livelen(143) >= 20. The correct attack becomes 'lengthen pseudo 143's live range from 14 to >= 20 with nrefs held at 3, on top of variant A's arm', which would close the store sink (~4 pts) and cluster A together and leave only cluster B.
+- verdict: CONFIRMED
+
+## [s15] livelen(143) can be lengthened from the BIRTH end by hoisting `u8 *temp_s3 = arg0 + (temp_a1_2 * 2);` to the head of block_20 so its range covers path1's block (+~7 insns, exactly the required lengthening).
+- mechanism: reg_live_length is summed over the basic blocks in which the pseudo is live; making temp_s3 dominate path1 adds path1's ~7 insns to its range without adding a use.
+- probe: Probe h1 (tmp/grind/func_800283D0/s15/probes/h1_s3_hoist_block20.c) applied to the store-pinned t4 body; two sandbox --disable all runs plus a fresh extract.py ALLOCDBG dump (tmp/grind/func_800283D0/s15/model_h1.json).
+- result: 53 / 215. Pseudo 143 disappears from the global allocno set entirely - CSE unifies the hoisted address with path1's own `arg0 + temp_a1_2*2 + 0x288`, the merged pseudo drops to local-alloc, and path1 loses its own `addu` (215 vs 216). Pseudo 73 stays at ord 21 / $s3. The birth end is CSE-foreclosed for the same reason the refs(143) 3->2 dial is (E-s14-3); the death end remains untried.
+- verdict: KILLED

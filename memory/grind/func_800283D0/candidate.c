@@ -52,6 +52,14 @@
  *      re-probed this session and both score-NEUTRAL in either spelling -
  *      they are consequences of allocation, not levers.
  *
+ * s15 (synthesis) RE-MEASURED THIS BODY AT 11/216 - unchanged, still the best
+ * form.  What changed is the model: cluster A's decision is now the closed-form
+ * inequality pri(73) > pri(143) under global.c's allocno_compare, and target's
+ * own asm shows target reaches the seat with nrefs(arg1) = 7 (i.e. through
+ * livelen(temp_s3) >= 20, NOT through the duplicated call pair this body uses).
+ * The duplication here is a workaround that is incompatible with the store pin;
+ * see evidence.md E-s15-1 / E-s15-5 before spending another ref-count probe.
+ *
  * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  216i @ floor 11
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
