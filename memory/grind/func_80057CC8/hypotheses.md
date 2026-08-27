@@ -1813,3 +1813,70 @@ prior sibling/Kengo/corpus axes) produce no shape that is not already banked.
 - probe: python3 tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax -f func_80057CC8 asm/funcs/func_80057CC8.s on the live chassis, compared against the banked three-regime partition.
 - result: m2c's output is Regime C by construction: it emits temp_a2 = M2C_FIELD(arg0, s32 *, 4) for the centre/prev address AND a second independent M2C_FIELD(arg0, s32 *, 4) for the next address, reproducing the target's lw $a2,0x4($s2) (asm/funcs/func_80057CC8.s:17) / lw $a0,0x4($s2) (:50) pair exactly - the 2026-07-20 owner-refused second source-level materialization and the head of banned_constructs. The machine decompiler thus independently confirms the ORIGINAL source performed that duplication. The only novel spelling it contributes, the prev-wrap test as if (temp_v1 & 0x8000) instead of if ((s16) prev_idx < 0), is byte-equivalent on this chassis (both emit sll 16 + bgez). Sibling transplant was spent register-invariantly at s42; the SOTN/decomp.me corpus axis was spent at s17 (unfindable in the accessible slice).
 - verdict: KILLED
+
+## [s44] (structural, 2026-08-27)
+
+- **H-s44-1 — KILLED.** *Statement:* in the Regime-B (wrap-first) block order, a spelling
+  exists in which the prev-wrap arm's vertex-count read is not dominated by the wrap test,
+  so the target's second `lbu 3($s2)` survives cse1 and Regime B's 45-point residual drops
+  substantially.  *Mechanism:* cse1 fuses two `mem:QI` reads of `arg0+3` when the first
+  dominates the second (s41 d8); reading the count through a different rtx breaks the
+  fusion.  *Probe:* `tmp/grind/func_80057CC8/s44/p1.c` — s41 d1 with the prev arm reading
+  `(u8)(*(u16 *)(arg0 + 2) >> 8)` (same value on little-endian, `mem:HI` at +2, so
+  unfusable).  *Result:* the second read DOES survive; measured **score 44 @ 109 insns**
+  versus d1's 45 @ 106.  *Verdict:* KILLED — the fusion is worth exactly one point, so the
+  29-point Regime-A-to-Regime-B gap is not the missing count read.  Banked as
+  `rejected/s44-regimeB-distinct-count-read-second-lbu-survives-score44.c`.
+
+- **H-s44-2 — CONFIRMED (a foreclosure).** *Statement:* Regime B cannot reach distance 0 at
+  any score, because its block order is inverted relative to the target and s42 proved that
+  inversion is structurally required by Regime B's own defining property.  *Mechanism:* a
+  single-def next-address is defined at or after the next-wrap merge, so only the prev-if
+  can separate def from uses (s42 closed form) — which forces prev-if AFTER wrap-if; the
+  target's order is prev-if FIRST.  *Probe:* read the emitted branch order off
+  `tmp/grind/func_80057CC8/s44/d1.s` (`bne $2,$0,.L277` on the next-wrap test precedes
+  `bgez $2,.L274` on the prev-wrap test) against `asm/funcs/func_80057CC8.s:18-26` vs
+  `:30-36`.  *Result:* inverted, as predicted.  *Verdict:* CONFIRMED — Regime B is
+  foreclosed on block order alone, independently of the lbu and address-formation residuals.
+  s43 frontier item #1 is spent.
+
+- **H-s44-3 — CONFIRMED (closed form, supersedes the partition argument).** *Statement:*
+  distance 0 for `func_80057CC8` requires two source-level materializations of
+  `*(s16 **)(arg0 + 4)`, i.e. the construct refused by the owner on 2026-07-20, so no
+  ban-compliant C form can match at any score.  *Mechanism:* the target forms the
+  next-vertex address post-call from `$s3` (the next index) and a base loaded at
+  `asm/funcs/func_80057CC8.s:50`; its live-across-call set is exactly the eight callee-saves
+  established at `:3-16` (arg0, next-index, raw cx, raw cy, cxs, cys, arg2, arg3), none of
+  which is or can be converted into the vertex-table base; GCC 2.7.2 can emit the second
+  load only from a second unfusable source materialization (cse cannot fuse across the
+  intervening `jal`) or by reload rematerialization, and rematerialization was enumerated and
+  killed in s36.  *Probe:* register-file enumeration against the target listing plus the s36
+  rematerialization result and the s43 m2c re-derivation (which independently emits the
+  banned pair).  *Result:* no ban-compliant source of the post-call base exists.
+  *Verdict:* CONFIRMED — **16 is the complete ban-compliant floor**, and the foreclosure is
+  a property of the target, not of the three-regime partition.
+
+- **Standing note for the next session.** There is no remaining structural axis.  Do NOT
+  re-seed Regime-A permuter campaigns (s43), do NOT re-spell Regime C (s42), do NOT re-open
+  the Regime-B order attack (this session).  Do NOT file an escalation packet asking to
+  re-scope the 2026-07-20 refusal — that is auto-reject class under the owner's 2026-08-24
+  second ruling (its YES would lower a standard).  The characterisation is complete; the
+  disposition is the driver's call.
+
+## [s44] In the Regime-B (wrap-first) block order a spelling exists in which the prev-wrap arm's vertex-count read is not dominated by the wrap test, so the target's second `lbu 3($s2)` survives cse1 and Regime B's 45-point residual drops substantially.
+- mechanism: cse1 fuses two mem:QI reads of arg0+3 when the first dominates the second (s41 d8); reading the count through a different rtx breaks the fusion, restoring the target's two-lbu shape (asm/funcs/func_80057CC8.s:24 and :31).
+- probe: tmp/grind/func_80057CC8/s44/p1.c - the s41 d1 Regime-B chassis with the prev arm reading `(u8)(*(u16 *)(arg0 + 2) >> 8)` (same value on little-endian, mem:HI at +2, unfusable with the mem:QI at +3); measured with sandbox --disable all and censused with s44/batch.sh.
+- result: The second count read DOES survive - the frontier's requested separation is achievable. Measured score 44 @ 109 insns, against d1's 45 @ 106 and the candidate's 16 @ 108. One point.
+- verdict: KILLED
+
+## [s44] Regime B cannot reach distance 0 at any score because its block order is inverted relative to the target, and s42 proved that inversion is required by Regime B's own defining cross-block-address property.
+- mechanism: A single-def next-address is defined at or after the next-wrap merge, so only the prev-if can separate def from uses - forcing prev-if AFTER wrap-if. The target's order is prev-if FIRST.
+- probe: Read the emitted branch order off tmp/grind/func_80057CC8/s44/d1.s (`slt $2,$2,$6 / bne $2,$0,.L277` on the next-wrap test precedes `sll $2,$2,16 / bgez $2,.L274` on the prev-wrap test) against asm/funcs/func_80057CC8.s:18-26 (prev-wrap, with `lbu $v0,0x3($s2)` in the arm) vs :30-36 (next-wrap).
+- result: Inverted exactly as predicted. Regime B's register map and the target's block order are mutually exclusive, so the lbu and 4-vs-1 address-formation residuals are moot.
+- verdict: CONFIRMED
+
+## [s44] Distance 0 for func_80057CC8 requires two source-level materializations of *(s16 **)(arg0 + 4) - the construct the owner refused on 2026-07-20 - so no ban-compliant C form can match, independently of the three-regime partition.
+- mechanism: The target forms its next-vertex address AFTER the first ratan2 call from the next index in $s3 and a base loaded at asm/funcs/func_80057CC8.s:50 (`lw $a0,0x4($s2)`). Its live-across-call set is exactly the eight callee-saves established at :3-16 (arg0, next-index, raw cx, raw cy, cxs, cys, arg2, arg3; no $fp/$s8 anywhere, s42), and $a2 (the pre-call base) is dead across the call. None of those eight is, or can be arithmetically converted into, the vertex-table base, so the post-call base can only come from a fresh load of arg0. GCC 2.7.2 emits a second load of the same location only from (a) a second source materialization cse1/cse2 cannot fuse - and they cannot, an intervening jal invalidates memory refs - or (b) reload rematerialization, enumerated and killed in s36.
+- probe: Register-file enumeration against the target listing (asm/funcs/func_80057CC8.s:3-16, :17, :49-52) combined with the s36 rematerialization kill and s43's independent m2c re-derivation, which emits exactly the banned pair.
+- result: No ban-compliant source of the post-call base exists. 16 is the complete ban-compliant floor and the foreclosure is a property of the target, not of the partition.
+- verdict: CONFIRMED

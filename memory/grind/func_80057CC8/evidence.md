@@ -2693,3 +2693,111 @@ s40c seat-census script re-pointed at `tmp/grind/func_80057CC8/s41/`
 - [s43] Fresh m2c re-derivation independently reproduces the target's two lw 0x4($s2) loads from two separate source-level materializations of *(s16 **)(arg0 + 4), i.e. the machine decompiler confirms the original source itself contained the construct the owner refused on 2026-07-20.
 
 - [s43] Campaign hygiene: both campaigns harvested with --stop inside the session; permuter_campaign.py status reports 0 live campaigns and 0 stale registry entries at session end.
+
+## [s44] (structural, 2026-08-27) — Regime B foreclosed on BLOCK ORDER; the crosser-set proof
+
+- **Chassis re-measured at dispatch** (the brief again reported "measurement unavailable"):
+  `memory/grind/func_80057CC8/candidate.c` spliced into `src/text1b.c` gives
+  `sandbox func_80057CC8 --disable all` -> **score 16, build_insns 108, target_insns 111**.
+  Floor unchanged from s37–s43.  (The queue headline "pure-C distance 30" remains the
+  no-C-body figure for the committed `INCLUDE_ASM` representation, not the honest floor.)
+
+- **s43 frontier item #1 (the Regime-B order attack) is SPENT and KILLED, on two
+  independent grounds.**
+
+  1. *The lbu is recoverable and worth one point.*  `tmp/grind/func_80057CC8/s44/p1.c`
+     (banked as `rejected/s44-regimeB-distinct-count-read-second-lbu-survives-score44.c`)
+     takes the s41 d1 Regime-B chassis and reads the vertex count in the prev-wrap arm
+     through a DISTINCT memory reference — `(u8)(*(u16 *)(arg0 + 2) >> 8)`, the high byte of
+     the halfword at `arg0+2`, identical in value on little-endian but a different rtx
+     (`mem:HI` at +2 vs `mem:QI` at +3) — so cse1 cannot fuse it with the dominating
+     wrap-test read.  This is exactly what the frontier asked for ("derive the prev wrap
+     from a quantity the wrap test does not compute") and it works: the second count read
+     survives.  **Measured: score 44 @ 109 insns**, against d1's 45 @ 106.  One point.  The
+     29-point gap between Regime B (45) and Regime A (16) is not the missing `lbu`.
+
+  2. *Regime B's block ORDER is inverted relative to the target, and s42 already proved that
+     inversion is structurally required.*  Read off `tmp/grind/func_80057CC8/s44/d1.s`:
+     Regime B emits the NEXT-wrap branch first (`slt $2,$2,$6 / bne $2,$0,.L277`) and the
+     PREV-wrap branch second (`sll $2,$2,16 / bgez $2,.L274`).  The target emits the
+     PREV-wrap branch first (`asm/funcs/func_80057CC8.s:18-26`, `sll $v1,$v1,16 / bgez $v1,
+     .L80057D2C / lbu $v0,0x3($s2) / addiu $a0,$v0,-0x1`) and the NEXT-wrap branch second
+     (`:30-36`).  s42's closed form: a single-def next-address is defined at or after the
+     next-wrap merge, so the ONLY branch that can separate its def from its uses is the
+     prev-if, which forces the prev-if to sit AFTER the wrap-if.  Regime B's defining
+     property (a cross-block next-address allocno, which is what buys it the target's
+     callee-save map) is therefore mutually exclusive with the target's own block order.
+     **No order-level or content-level spelling inside Regime B can reach distance 0.**
+     Regime B is foreclosed on block order alone — the lbu and the 4-vs-1 address-formation
+     residuals are moot.
+
+- **Seat census of the three s44 probes** (`tmp/grind/func_80057CC8/s44/*.greg`, script
+  `s44/batch.sh`).  b16: `$s2` = 88 next-ADDRESS ("used 6 times across 4 insns; crosses 1
+  call"), `$s3` = 72 arg0 (5/54).  d1 and p1: `$s2` = 72 arg0, `$s3` = 90 next-ADDRESS,
+  `$s1` shared by 80 `scale` and the block-local cxs pieces.  Note for the record: the s43
+  frontier described d1 as holding "identical seat identities to the target"; that is
+  imprecise — the target's `$s3` holds the next **INDEX** (`addu $s3,$v0,$zero` at
+  `asm/funcs/func_80057CC8.s:29`, `addu $s3,$zero,$zero` at `:36`, consumed post-call at
+  `:49`), whereas d1's `$s3` holds the next **ADDRESS**.  Only the callee-save COUNT (8) and
+  the arg0-in-`$s2` placement coincide.
+
+- **NEW, and the strongest statement this ledger can make: a crosser-set proof that
+  distance 0 requires the banned second materialization.**  It is exhaustive over the
+  target's own live-across-call register file, and it does not depend on the three-regime
+  partition.
+  1. The target's next-vertex address is formed AFTER the first `ratan2` call, from the
+     next INDEX in `$s3` and a base loaded at `asm/funcs/func_80057CC8.s:50`
+     (`lw $a0, 0x4($s2)`), i.e. a load of `*(arg0 + 4)` distinct from the pre-call load at
+     `:17` (`lw $a2, 0x4($s2)`).
+  2. The target's complete set of quantities live across that call is exactly eight — the
+     eight callee-saves it establishes at `:3-16`: `$s2` arg0, `$s3` next-index, `$s4` raw
+     cx, `$s5` raw cy, `$s1` cxs, `$s0` cys, `$s6` arg2, `$s7` arg3.  There is no `$fp`/`$s8`
+     anywhere in the body (s42), and `$a2` (the pre-call base) is dead across the call.
+  3. The post-call base value must therefore be produced either from one of those eight
+     quantities or by a fresh load.  Raw cx / raw cy are 2-byte `lhu` results, cxs / cys
+     their sign-extensions, arg2 / arg3 the output pointers, and the next index a small
+     integer: none of them is, or can be arithmetically converted into, the vertex-table
+     base.  The only source is a fresh load from arg0 — which is what `:50` is.
+  4. GCC 2.7.2 emits two loads of the same memory location in one function only if (a) the
+     source contains two materializations of the expression which cse1/cse2 cannot fuse
+     (here they cannot: an intervening `jal` invalidates memory refs), or (b) reload
+     rematerializes a spilled value — mechanism (b) was enumerated and killed in s36 as
+     "the LAST rematerialization mechanism by which one C-level base read could emit the
+     target's two `lw 0x4($s2)`".
+  5. Therefore distance 0 for `func_80057CC8` **requires** two source-level materializations
+     of `*(s16 **)(arg0 + 4)` — precisely the construct the owner refused on 2026-07-20 and
+     that the function's `judge_constraints` close "in every spelling".  s43's independent
+     m2c re-derivation, which emits exactly that pair, is the corroborating observation.
+
+- **Disposition of the search space after s44.**  Regime A: foreclosed (s42 shape-invariance,
+  s43's 55,693-iteration campaign + the 16.2x allocno-priority bound).  Regime B: foreclosed
+  (this session, block order).  Regime C: foreclosed (s42, ninth callee-save).  And the
+  crosser-set proof above shows the foreclosure is not an artefact of the partition: the
+  target itself is unreachable without the banned construct.  **16 is the complete,
+  ban-compliant floor for this function**, and there is no remaining structural axis to
+  spend.  Per the s43 frontier's own item #3, this session does NOT file an escalation
+  packet (a packet asking to re-scope the 2026-07-20 refusal is auto-reject class under the
+  owner's 2026-08-24 second ruling); the characterisation is recorded and the disposition is
+  the driver's call.
+
+- **Hygiene.** `src/text1b.c` was restored to its committed `INCLUDE_ASM` state at the end of
+  the session (`git checkout src/text1b.c`; `git status` shows no build-surface modification).
+  No permuter campaign was launched.  Artifacts: `tmp/grind/func_80057CC8/s44/`
+  (`splice.py`, `measure.ps1`, `batch.sh`, sources `b16.c` / `d1.c` / `p1.c`, and the `-da`
+  dumps `*.s` / `*.greg` / `*.lreg` / `*.cse` for each).
+
+- [s44] [s44] Chassis re-measured at dispatch (the brief again reported it unavailable): candidate.c spliced into src/text1b.c gives `sandbox func_80057CC8 --disable all` -> score 16, build_insns 108, target_insns 111. Floor unchanged from s37-s43. The queue headline 'pure-C distance 30' remains the no-C-body figure for the committed INCLUDE_ASM representation, not the honest floor.
+
+- [s44] [s44] The target's second vertex-count read is recoverable in Regime B: reading the count in the prev-wrap arm as `(u8)(*(u16 *)(arg0 + 2) >> 8)` is a mem:HI at +2, unfusable by cse1 with the dominating mem:QI at +3, and the second read survives. Measured score 44 @ 109 insns (d1: 45 @ 106). The recovery is worth exactly ONE point, so the 29-point Regime-A-to-Regime-B gap is not the missing lbu.
+
+- [s44] [s44] Regime B's emitted block order is INVERTED relative to the target: tmp/grind/func_80057CC8/s44/d1.s puts the next-wrap branch first (`bne $2,$0,.L277`) and the prev-wrap branch second (`bgez $2,.L274`); the target puts the prev-wrap branch first (asm/funcs/func_80057CC8.s:18-26) and the next-wrap branch second (:30-36). Combined with s42's closed form (only the prev-if can separate the address def from its uses, forcing prev-if after wrap-if), Regime B is foreclosed on block order alone.
+
+- [s44] [s44] Seat census correction for the ledger: the s43 frontier described d1 as holding 'identical seat identities to the target'. It does not. The target's $s3 holds the next INDEX (`addu $s3,$v0,$zero` at :29, `addu $s3,$zero,$zero` at :36, consumed post-call at :49); d1's and p1's $s3 hold the next ADDRESS (pseudo 90). Only the callee-save COUNT (8) and arg0-in-$s2 coincide. d1/p1 also share $s1 between `scale` (pseudo 80) and the block-local cxs pieces.
+
+- [s44] [s44] Crosser-set proof (new, partition-independent): the target's live-across-call set is exactly the eight callee-saves at asm/funcs/func_80057CC8.s:3-16 - arg0, next-index, raw cx, raw cy, cxs, cys, arg2, arg3 - none of which can supply the vertex-table base needed by the post-call address formation at :49-52; the base therefore comes only from the fresh load at :50, which GCC 2.7.2 can emit only from a second unfusable source materialization (cse cannot cross the intervening jal) or by rematerialization (killed in s36). Distance 0 thus REQUIRES the second source-level materialization of *(s16 **)(arg0 + 4) refused by the owner on 2026-07-20.
+
+- [s44] [s44] Search-space disposition after this session: Regime A foreclosed (s42 shape-invariance + s43's 55,693-iteration campaign + the 16.2x allocno-priority bound), Regime B foreclosed (this session, block order), Regime C foreclosed (s42, ninth callee-save), and the crosser-set proof shows the target itself is unreachable ban-compliantly. No structural axis remains unspent.
+
+- [s44] [s44] Per the s43 frontier's own item #3, no escalation packet was filed: a packet asking to re-scope the 2026-07-20 second-materialization refusal is auto-reject class under the owner's 2026-08-24 second ruling (its YES would lower a standard). The characterisation is recorded instead and the disposition is left to the driver.
+
+- [s44] [s44] Hygiene: src/text1b.c was restored to its committed INCLUDE_ASM state at session end (`git checkout src/text1b.c`); no build-surface file was modified, and no permuter campaign was launched (nothing to orphan).

@@ -1,3 +1,24 @@
+/* s44 ADDENDUM (2026-08-27, structural).  UNCHANGED form; RE-MEASURED on the live chassis
+ * this session: `sandbox func_80057CC8 --disable all` -> score 16, target_insns 111,
+ * build_insns 108.  Two s44 results bear on it:
+ *   (1) The s43 frontier's last named axis (the Regime-B order attack) is SPENT.  The
+ *       second `lbu 3($s2)` IS recoverable in wrap-first order by reading the count through
+ *       an unfusable rtx (`(u8)(*(u16 *)(arg0 + 2) >> 8)`) -- and it is worth ONE point
+ *       (44 @ 109 vs d1's 45 @ 106).  More decisively, Regime B emits its two wrap branches
+ *       in the INVERTED order relative to the target (s44/d1.s: next-wrap first; target:
+ *       prev-wrap first, asm/funcs/func_80057CC8.s:18-26 then :30-36), and s42 proved that
+ *       inversion is required by Regime B's own cross-block-address property.  Regime B is
+ *       foreclosed on block order alone.
+ *   (2) The foreclosure now has a form that does not depend on the three-regime partition:
+ *       the target forms its post-call vertex address from a base loaded at :50, its
+ *       live-across-call set is exactly the eight callee-saves at :3-16, none of which can
+ *       supply that base, and GCC 2.7.2 can emit the second load only from a second
+ *       unfusable source materialization (cse cannot cross the intervening jal) or by
+ *       rematerialization, which s36 killed.  Distance 0 therefore REQUIRES the second
+ *       source-level materialization of *(s16 **)(arg0 + 4) refused on 2026-07-20, and 16
+ *       is the complete ban-compliant floor.
+ *   Full argument: evidence.md / hypotheses.md, both under the [s44] headings.
+ */
 /* s43 ADDENDUM (2026-08-27, rederive).  UNCHANGED form; RE-MEASURED on the live chassis
  * this session: `sandbox func_80057CC8 --disable all` -> score 16, target_insns 111,
  * build_insns 108, rules_dropped 0.  Three s43 results bear on it:
