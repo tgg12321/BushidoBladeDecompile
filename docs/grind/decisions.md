@@ -14735,3 +14735,28 @@ closed form and a further session can only re-measure dead axes.
 2026-07-20 owner ruling (line ~956), the 2026-08-20 standing-ruling entry (line ~8114), and
 the 2026-08-27 07:40 / 07:47 Judge FAILs; artifacts `tmp/grind/func_80057CC8/s45/`
 (`floor_measure.txt`, `scan_hand_coded.txt`, `classify_16form.txt`).
+
+## 2026-08-27 — func_80041188 — OWNER RULING — split-increment construct ALLOWED; escalation spent; continue-directive to s45
+
+**Owner ruling (conversation, 2026-08-27, recorded per ruling-record-lands-before-code):**
+the split-increment spelling — rewriting a live induction-variable increment as
+two live arithmetic statements (`i += 2; i -= 1;` for `i++`; likewise
+`tbl += 2; tbl -= 1;`) — is **ALLOWED**, ruled as covered by the existing
+2026-07-06 construct-honesty ALLOWED class ("split/redundant arithmetic — the
+SOTN-wiki `+ 1 - 1` class", .claude/rules/do-while-zero-exception.md). Grounds:
+semantically-TRUE C (each statement is live arithmetic on a live variable; net
+effect identical; no false program facts), byte-free (combine folds the pair to
+one emitted insn — ledger E-s25, memory/grind/func_80041188/hypotheses.md), its
+only effect is flow.c reg_n_refs. **Mandatory inline FAKE annotation at every
+site** (purely-for-matching per the 2026-07-06 convention). This answers the
+s25 frontier item 3 ruling-request precisely; it is a construct-class ruling by
+the owner, not an agent family extension.
+
+**Disposition:** the 2026-08-27 01:23 auto-filed exhaustion escalation is SPENT;
+func_80041188 returns to ACTIVE (queue top via the rules-to-zero campaign sort).
+`owner_continue_until_session` raised 24 → 45 (operator-applied, this ruling) so
+the exhaustion backstop does not re-fire while the sanctioned lever is built out
+(V15a chassis + one honest out2 reference lift = complete target callee-saved
+disposition, ledger E-s25/s26). The canonical LOW-tier override remains DECLINED.
+Goal unchanged: COMPLETED-C, 0 regfix + 0 asmfix rules project-wide. All normal
+gates unchanged (sandbox-0, layer-1, default-FAIL Judge, oracle SHA1).
