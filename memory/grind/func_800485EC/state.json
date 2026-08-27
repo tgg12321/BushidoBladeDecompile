@@ -1,0 +1,18 @@
+{
+ "func": "func_800485EC",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The tail sequence `tim += 2; p = tim;` is a self-increment of an otherwise-dead parameter, chosen specifically to invalidate cse1's address-quantity tracking and block the find_best_addr fold that the worker's own rejected/ notes identify the 'natural' `p = tim + 2;` spelling as suffering from \u2014 a GCC-internals-driven construct with no independent semantic purpose, and not covered by any currently sanctioned family. Next action: Revert the `tim += 2; p = tim;` tail spelling. Either (a) find a lever that defeats the cse1 fold through a construct that has independent"
+ ],
+ "banned_constructs": [
+  "`tim += 2; p = tim;` (src/text1b.c, tail of func_800485EC, after the if/else)"
+ ],
+ "ladder_skip": 10,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-27T18:34:52.500267+00:00"
+}
