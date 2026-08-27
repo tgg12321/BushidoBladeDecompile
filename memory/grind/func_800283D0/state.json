@@ -1,7 +1,7 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 15,
+ "session_count": 16,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -93,23 +93,29 @@
    "floor": 11,
    "modality": "synthesis",
    "headline": "Floor held at 11/216; cluster A reduced to the closed-form inequality pri(73)>pri(143) from global.c's allocno_compare (verified digit-for-digit against ALLOCDBG), and target's own asm re-attributed t"
+  },
+  {
+   "session": 16,
+   "floor": 10,
+   "modality": "synthesis",
+   "headline": "Floor 11 -> 10: target's `<` arm identified bit-for-bit as a DUPLICATED-CALLS arm whose 0xB edge is a source `goto` into path1's selection, which refutes s15's E-s15-5 re-attribution (target compiles "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "livelen(pseudo 143 / temp_s3) can be lifted 14 -> >= 20 from the DEATH end with nrefs held at 3, on top of variant A's store-pinned arm - the only route consistent with target's own asm, and the one that closes the store sink (~4 pts) and cluster A together, leaving only cluster B.",
-   "mechanism": "By E-s15-1 the seat is decided by pri(73) > pri(143); with nrefs fixed at 7/3 the only live dial is livelen(143) >= 20 (1*3/20*10000 = 1500 < 1521). reg_live_length runs birth..last-use, the birth end is CSE-foreclosed (E-s15-6, h1 = 53/215 with 143 leaving the global set), so the lengthening must come from moving temp_s3's last use - the post-call `*(s16 *)(temp_s3 + 0x288) == 5` re-read - later in the `==` block.",
-   "next_probe": "On the t4 (variant A arm + no-pointer tail) body, hoist the two side-effect-free `0xE` window reads into named locals ABOVE the `== 5` test so the re-read of temp_s3 moves later in the statement order, and check the emitted order against target's lines 48-63 before spending a sandbox run. Read nrefs/livelen/pri for 73 and 143 straight out of tools/ra_solver/extract.py first - the pass/fail condition is now arithmetic (need livelen(143) >= 20 with nrefs still 3), so a dump read is cheaper than a build. A second use of temp_s3 is only viable if it also pushes livelen past 53, since nrefs 4 needs 2*4/livelen*10000 < 1521."
+   "hypothesis": "The arm's jump2 walk-back consumes path1's store on BOTH edges while target keeps it on the 0x19 edge; stopping the walk-back one insn earlier closes emitted 148, emitted 83-88 (the store sink), or both - ~3-4 of the remaining 10 points.",
+   "mechanism": "On the 10-floor body the arm emits `beqz s1,T / li v0,25 / j T / li a1,1`: both edges land before path1's `sh $v0,0x286($s0)`, so the arm owns no store and reorg fills its `j` delay slot by stealing `li a1,1` from the branch target block. Target's 0x19 edge stops in front of the store, keeps it, and rejoins one insn later at .L80028520 - which also puts a label immediately after path1's store, ending that basic block so sched1 cannot sink the store into the first jal's delay slot. s12 proved the stopping point is steered by the initialisation order of the arm's selection variable relative to path1's (that finding took the floor 20 -> 17); the dial has never been swept on an arm carrying the `goto set_0xB` shape.",
+   "next_probe": "On candidate.c, sweep the four init-order / branch-sense combinations of the arm's `s16 var_v0_4` against path1's `var_v0` (current = `0x19` first + `if (var_s1 == 0) goto set_0xB`; also `0xB` first + `if (var_s1 != 0)` with a `set_0x19` label in path1, and both with path1's own order inverted). Read the arm's TWO branch target ADDRESSES out of `mipsel-linux-gnu-objdump -d tmp/sandbox/func_800283D0/code6cac_b.o` (offsets ~0x7a0-0x7b0) rather than out of the normalized diff, which hides which address each edge lands on. E-s13-6 staleness trap: run `sandbox --disable all` twice before objdumping. Re-check the seats with tmp/grind/func_800283D0/s16/al.py after every hit."
   },
   {
    "hypothesis": "Cluster B (~4 pts, and the entire 216-vs-215 insn surplus) is a reorg.c steal_delay_list_from_target refusal at the `beqz $v0,.L800285DC` branch, not a C statement-order question.",
-   "mechanism": "Target steals `addiu $v0,$zero,0x1` - the first insn of the branch TARGET block - into that delay slot and redirects the branch past it; our build has the same insn order in the target block yet emits a nop. dbr will only steal from a target block when it can redirect the branch to label+1, which it refuses when LABEL_NUSES != 1, and when mark_target_live_regs proves the clobbered register dead on the fall-through path. Emitted 45-48 (ours `j / nop`, target `nop / j`) is the same pass.",
-   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_800283D0` on the 11-floor body (the tail rewrite changed the RTL of every block after the dispatch chain, so s10's dumps are stale), locate that branch's insn UID in the .dbr dump, and grep the DBRDBG log for its thr/simp lines to settle which of the two refusals fires. If it is LABEL_NUSES, the C dial is the number of source gotos landing on the D_800A38A8 block; if it is mark_target_live_regs, the dial is what the fall-through arm does to $v0."
+   "mechanism": "Target steals `addiu $v0,$zero,0x1` - the first insn of the branch TARGET block - into that delay slot and redirects the branch past it; our build has the same insn order in the target block yet emits a nop and the `li v0,1` afterwards. dbr will only steal from a target block when it can redirect the branch to label+1, which it refuses when LABEL_NUSES != 1, and when mark_target_live_regs proves the clobbered register dead on the fall-through path. Emitted 45-48 (ours `j / nop`, target `nop / j`) is the same pass.",
+   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_800283D0` on the 10-floor body (every dump older than s14 is stale - the tail rewrite and now the arm rewrite changed the RTL of the blocks after the dispatch chain), locate that branch's insn UID in the .dbr dump, and grep the DBRDBG log for its thr/simp lines to settle which of the two refusals fires. If it is LABEL_NUSES, the C dial is the number of source gotos landing on the D_800A38A8 block; if it is mark_target_live_regs, the dial is what the fall-through arm does to $v0."
   },
   {
-   "hypothesis": "The arm's jump2 walk-back stop point is worth ~2 pts on its own and is a live, cheap dial that has only been swept once (at floor 20, before the tail rewrite).",
-   "mechanism": "On the 11-floor body both arm edges land on 0x6a8 because the walk-back consumed the arm's own store; target's 0x19 edge keeps its store and lands at .L80028520. s12 already proved the stopping point is steered by the initialisation order of the arm's selection variable relative to path1's (that finding is what took the floor 20 -> 17), so the dial exists and is byte-legal ordinary C.",
-   "next_probe": "Re-sweep the four init-order combinations of the arm's `var_v0_4` against path1's `var_v0` on the 11-floor body, and read the arm's TWO branch target addresses out of `mipsel-linux-gnu-objdump -d tmp/sandbox/func_800283D0/code6cac_b.o` (offsets ~0x7a0-0x7ac) rather than out of the normalized diff - the diff hides which address each edge lands on, which is the whole signal. Note the E-s13-6 staleness trap: run `sandbox --disable all` twice before objdumping."
+   "hypothesis": "The two commutative `addu` operand orders (emitted 96 `addu s3,s0,v0` vs target `addu s3,v0,s0`, emitted 162 `addu a0,a0,s4` vs target `addu a0,s4,a0`) are the cheapest remaining points, and the emitted-96 site's neutrality measurement is now chassis-stale.",
+   "mechanism": "Earlier sessions measured each C-level operand swap score-neutral (rejected/addu-commutativity-laundered.c, s3-operand-order-neutral-11.c, tail-ptr-operand-order-neutral-11.c) - the C order does not reach the emitted order. But emitted 96 is the BIRTH insn of pseudo 143, whose hard-register seat changed this session, so that site's laundering was measured under a different allocation.",
+   "next_probe": "Re-measure only the emitted-96 site (`u8 *temp_s3 = arg0 + (temp_a1_2 * 2);` vs `(temp_a1_2 * 2) + arg0`) on candidate.c and read emitted 96 out of the objdump. If it is still laundered, record the site as foreclosed on this chassis and stop re-probing commutativity for good."
   }
  ],
  "judge_constraints": [],

@@ -2101,3 +2101,164 @@ last use (the post-call `*(s16 *)(temp_s3 + 0x288) == 5` re-read) later in the
 - [s15] Probe h1 (hoist temp_s3 to the head of block_20) = 53 / 215 and its ALLOCDBG dump shows pseudo 143 gone from the global allocno set - CSE unifies the hoisted address with path1's computation and path1 loses its `addu`. The BIRTH end of the livelen(143) lengthening is CSE-foreclosed exactly like the refs(143) 3->2 dial. Banked as rejected/s3-hoist-block20-drops-143-from-global-53.c.
 
 - [s15] Cluster B detail added from target's asm: at emitted 126 target fills the `beqz $v0,.L800285DC` delay slot with `addiu $v0,$zero,0x1`, the FIRST insn of the branch TARGET block (steal_delay_list_from_target), leaving `lui at / sh` behind; our build emits a nop there and the `li v0,1` afterwards even though the target block's insn order is identical. The refusal is therefore in reorg.c's eligibility test (LABEL_NUSES of .L800285DC, or mark_target_live_regs believing $v0 live on the fall-through), not in the C statement order.
+
+
+## s16 (synthesis, 2026-08-26) - FLOOR 11 -> 10; E-s15-5 REFUTED, target's arm identified bit-for-bit
+
+**E-s16-0 (chassis).**  The banked s15/s14 candidate body re-measured **11 / 216**
+on HEAD at session start; `t4` (variant A's pinning arm + the no-pointer tail)
+re-measured **17 / 216**.  Both identical to the ledger.  Every s12-s15
+conclusion is chassis-valid.
+
+**E-s16-1 (the cluster-A model is now COMPLETE: find_reg contributes nothing).**
+E-s15-1 reduced the seat exchange to `pri(73) > pri(143)` under
+`allocno_compare`, but that only fixes the allocation ORDER; which hard reg
+each allocno then takes is `find_reg`'s call, and find_reg has three further
+inputs (`regs_someone_prefers`, `regs_used_so_far` gating pass 0,
+`hard_reg_copy_preferences`).  Dumped both allocnos with BB2_FINDREG_DEBUG on
+the store-pinned t4 body (`tmp/grind/func_800283D0/s16/findreg_t4_143.txt`,
+`findreg_t4_73.txt`):
+
+    pseudo 143: someone_prefers: (empty)  own_copy_prefs: (empty)  own_full_prefs: (empty)
+                used_so_far: 0..17 24..29 31   (18 and 19 both absent)
+    pseudo  73: someone_prefers: (empty)  own_copy_prefs: (empty)  own_full_prefs: (empty)
+                used_so_far: 0..18 24..29 31   (18 now present, 19 absent)
+
+Every preference set is EMPTY, and neither 18 nor 19 is in `regs_used_so_far`
+when 143 is allocated, so both allocnos fall through find_reg's pass 0 into
+pass 1 and take the first non-conflicting register in `reg_alloc_order`.  The
+seat is therefore a pure function of allocation order, i.e. of pri, with no
+preference dial to steer.  **The "steer it with a copy preference" axis for
+cluster A is KILLED**; E-s15-1's closed form is the whole model.  (Read
+`tools/gcc-2.7.2/global.c:583-599`: one qsort on `allocno_compare`, one
+sequential `find_reg` loop, no second phase.)
+
+**E-s16-2 (new instrument: the whole callee-saved seat table in one command).**
+`tmp/grind/func_800283D0/s16/al.py <tag>` compiles the current `src/` with the
+instrumented cc1 under `BB2_ALLOC_DEBUG=1` and prints every allocno that landed
+in `$s0..$s7` with its ord / pseudo / nrefs / livelen / pri.  This is strictly
+better than tracking two pseudo numbers by hand, because the pseudo numbering
+shifts between bodies.  Baselines measured this session:
+
+    t4   : s0=72(19/156) s1=77(9/73) s2=143(3/14,pri2142) s3=73(7/92,pri1521) s4=75 s5=90 s6=79
+    base : s0=72(21/164) s1=77(9/74) s2=73(9/99,pri2727)  s3=143(3/14,pri2142) s4=75 s5=90 s6=79
+    v2   : s0=72(21/163) s1=77(9/74) s2=73(9/98,pri2755)  s3=143(3/14,pri2142) s4=75 s5=90 s6=79
+
+**E-s16-3 (THE FINDING - E-s15-5's re-attribution is REFUTED, and target's `<`
+arm is now identified bit-for-bit).**  E-s15-5 argued from target's
+`.L80028520` that target's arm must be variant A's arm (no duplicated calls,
+nrefs(73) = 7) and therefore that target must win cluster A through
+`livelen(143) >= 20`.  That deduction is wrong.  Target's arm at `.L80028610`
+is:
+
+    beqz  $s1, .L80028518      <- branches INTO path1's `addiu $v0,0xB`
+     addiu $v0, 0x19
+    j     .L80028520           <- lands AFTER path1's store
+     sh   $v0, 0x286($s0)      <- the arm keeps its own store, in the delay slot
+
+i.e. the 0xB edge is fully merged into path1 (value assignment AND store) while
+the 0x19 edge keeps its own value insn and its own store and rejoins after
+path1's store.  That is precisely what an arm with **duplicated calls** looks
+like after jump2 has cross-jumped the common `calls; return` tail and walked
+one insn further back on the 0xB edge only.  Spelled in C, target's arm is
+
+    s16 var_v0_4 = 0x19;
+    if (var_s1 == 0) { goto set_0xB; }     /* set_0xB is path1's `var_v0 = 0xB;` */
+    *(s16 *)(arg0 + 0x286) = var_v0_4;
+    func_80032854(..., 1, arg1, ...);
+    func_80032854(..., 0x25, arg1, ...);
+    return ret;
+
+**Measured: 10 / 216 - a new floor** (`tmp/grind/func_800283D0/s16/v2.c`, now
+`candidate.c`), with ALLOCDBG confirming target's seats (73 -> $s2 at nrefs 9 /
+pri 2755, 143 -> $s3 at pri 2142).  So target compiles with **nrefs(73) = 9**,
+the duplicated call pair is TARGET'S OWN mechanism for the cluster-A seat
+rather than our workaround, and there is no store-pin / cluster-A tension to
+resolve.  The s15 frontier item 1 (lengthen `livelen(143)` from the death end
+to >= 20) is therefore NOT the route and should not be spent; the four-dial
+closed form of E-s15-1 stands, but target's dial is `nrefs(73) = 9`, which we
+already hold.
+
+**E-s16-4 (what makes the merge happen - the value carrier is load-bearing).**
+Three spellings of the same arm were measured:
+
+  * `v1` - identical control flow, but the 0x19 store written with a literal
+    (`*(s16 *)(arg0 + 0x286) = 0x19;`): **14 / 219**.  jump2 refuses to merge
+    the duplicated call pair AT ALL (+3 insns).  Banked
+    `rejected/arm-goto-set0xB-literal-store-blocks-call-merge-14-219i.c`.
+  * `v2` - the 0x19 value held in a fresh `s16 var_v0_4`: **10 / 216**.
+  * `vA` - as v2 but the 0xB edge spelled `var_v0 = 0xB; goto do_store_calls;`
+    (landing on path1's STORE rather than on path1's value assignment):
+    **10 / 216**, same build_insns.  Codegen-equivalent to v2; kept as a note,
+    not banked as a rejection (`tmp/grind/func_800283D0/s16/vA.c`).
+  * `vD` - as v2 but the 0x19 edge jumps to the shared `do_calls` after its own
+    store (so no duplicated pair): **17 / 216**, seats swap back.  Banked
+    `rejected/arm-goto-docalls-after-own-store-loses-nrefs9-17.c`.  This is a
+    third independent confirmation of the E-s15-1 arithmetic on this chassis.
+
+**E-s16-5 (the residual at 10, read from a fixed normalized objdump diff).**
+`tmp/grind/func_800283D0/s16/mk.sh` regenerates it (the s12 normalizer's
+`ours.txt` extraction was broken by an objdump format change - the s16 copy
+parses the tab-separated columns in Python instead of with `sed`).  Ignoring
+the unlinked-object artefacts (`lui at,0` / `lh v1,0(v1)` / `jal 0` - relocs,
+not diffs), the real residual is:
+
+  1. **Cluster B, ~4 pts** and the entire 216-vs-215 surplus.  Emitted 45-48
+     (ours `j / nop`, target `nop / j`) and 126/131 (ours `nop` in the
+     `beqz $v0,.L800285DC` delay slot plus a later `li v0,1`; target steals the
+     branch TARGET block's `li v0,1` into the slot).  Unmoved since s10.
+  2. **The store sink, ~2 pts.**  Emitted 83-88: target `sh v0,0x286(s0)` at
+     the head of the shared store/calls block, ours in the first jal's delay
+     slot.
+  3. **The arm store, ~1-2 pts.**  Emitted 148: target's arm `j` carries the
+     arm's OWN `sh v0,0x286(s0)` in its delay slot; ours has no store left
+     there - jump2's walk-back consumed it on BOTH edges - so reorg fills the
+     slot by stealing `li a1,1` from the branch target block instead.
+  4. Two commutative `addu` operand orders (96, 162), both previously measured
+     score-neutral in either spelling.
+
+  Items 2 and 3 are ONE question: whether path1's store sits at a basic-block
+  boundary.  If the arm's 0x19 edge stopped its walk-back one insn earlier and
+  landed after path1's store (target's `.L80028520`), path1's store would end a
+  block - sched1 could not sink it into the jal delay slot (item 2) and the arm
+  would still own a store for reorg to put in its own delay slot (item 3).
+  s12 already proved the walk-back stopping point is steered by the
+  initialisation order of the arm's selection variable relative to path1's;
+  that dial has never been swept on a body whose arm carries the `goto set_0xB`
+  shape.
+
+- [s16] Chassis: candidate body (s14/s15) re-measures 11/216, t4 re-measures 17/216 - ledger values confirmed on HEAD.
+
+- [s16] FLOOR 11 -> 10 (216 insns).  The `<` arm's 0xB edge respelled as a source `goto set_0xB` into path1's selection, with the 0x19 value carried in a fresh `s16 var_v0_4` and the duplicated call pair retained.  Reproduces target's `.L80028610` branch structure exactly and keeps nrefs(73) = 9, so cluster A stays won (ALLOCDBG on the new body: 73 ord 17 nrefs 9 livelen 98 pri 2755 -> $s2; 143 ord 20 nrefs 3 livelen 14 pri 2142 -> $s3).
+
+- [s16] E-s15-5 IS REFUTED.  Target's `<` arm is NOT variant A's arm: `beqz $s1,.L80028518 / addiu $v0,0x19 / j .L80028520 / sh $v0,0x286($s0)` is a DUPLICATED-CALLS arm after jump2 cross-jumped the common `calls; return` tail and walked one insn further back on the 0xB edge only.  Target therefore compiles with nrefs(73) = 9, the duplicated pair is target's own cluster-A mechanism, and `livelen(143) >= 20` is NOT required.  Do not spend the s15 frontier item 1.
+
+- [s16] find_reg contributes NOTHING to the cluster-A seat: BB2_FINDREG_DEBUG on both allocnos shows someone_prefers / own_copy_prefs / own_full_prefs all EMPTY and neither $s2 nor $s3 in regs_used_so_far at 143's allocation, so both fall to pass 1 and take the first non-conflicting reg in reg_alloc_order.  The seat is a pure function of allocation order (pri).  The preference-steering axis is KILLED.
+
+- [s16] The 0x19 value carrier is load-bearing: the same arm with the store written as a literal (`= 0x19;`) measures 14/219 - jump2 refuses to merge the duplicated call pair at all.  Banked rejected/arm-goto-set0xB-literal-store-blocks-call-merge-14-219i.c.
+
+- [s16] The same arm jumping to the shared `do_calls` after its own store (no duplicated pair) measures 17/216 and the $s2/$s3 seats swap back - a third independent confirmation of the E-s15-1 pri arithmetic on this chassis.  Banked rejected/arm-goto-docalls-after-own-store-loses-nrefs9-17.c.
+
+- [s16] New instrument: tmp/grind/func_800283D0/s16/al.py prints the full $s0-$s7 seat table (ord / pseudo / nrefs / livelen / pri) for the current src in one command, which survives pseudo renumbering between bodies.  tmp/grind/func_800283D0/s16/mk.sh regenerates the normalized objdump-vs-target diff (the s12 normalizer's ours.txt extraction was broken; the s16 copy parses objdump's columns in Python).
+
+- [s16] Residual at 10: cluster B ~4 (emitted 45-48 `j/nop` vs `nop/j`, and 126/131 the reorg steal of `li v0,1` into the `beqz $v0` delay slot), the store sink ~2 (emitted 83-88), the arm store ~1-2 (emitted 148: target's arm `j` delay slot carries the arm's own `sh`, ours steals `li a1,1` because jump2 merged the arm's store away), plus two score-neutral commutative addu operand orders (96, 162).  Items 2 and 3 are one question - whether path1's store ends a basic block.
+
+- [s16] Chassis re-measured at session start: the s14/s15 candidate body = 11 / 216 and t4 (variant A's arm + the no-pointer tail) = 17 / 216 on HEAD, both identical to the ledger, so every s12-s15 conclusion is chassis-valid.
+
+- [s16] NEW FLOOR 10 / 216: the `<` arm's 0xB edge respelled as a source `goto set_0xB` into path1's selection, with the 0x19 value carried in a fresh `s16 var_v0_4` and the duplicated call pair retained. Saved as memory/grind/func_800283D0/candidate.c.
+
+- [s16] E-s15-5 IS REFUTED. Target's `<` arm (.L80028610: `beqz $s1,.L80028518 / addiu $v0,0x19 / j .L80028520 / sh $v0,0x286($s0)`) is a duplicated-calls arm after jump2 cross-jumped the common tail and walked one insn further back on the 0xB edge only. Target compiles with nrefs(73) = 9. The s15 frontier item 1 (lengthen livelen(143) from the death end to >= 20 on top of a store-pinned arm) is retired and must not be spent.
+
+- [s16] find_reg contributes NOTHING to the cluster-A seat: BB2_FINDREG_DEBUG shows someone_prefers / own_copy_prefs / own_full_prefs all EMPTY for pseudos 73 and 143, and neither $s2 nor $s3 is in regs_used_so_far when 143 is allocated, so both fall to pass 1 and take the first non-conflicting reg in reg_alloc_order. The seat is a pure function of allocation order (pri); E-s15-1's closed form is the complete model.
+
+- [s16] Seat tables measured this session (ord / pseudo / nrefs / livelen / pri): t4 -> $s2=143 (3/14/2142), $s3=73 (7/92/1521); base(11) -> $s2=73 (9/99/2727), $s3=143 (3/14/2142); v2(10) -> $s2=73 (9/98/2755), $s3=143 (3/14/2142).
+
+- [s16] The 0x19 value carrier is load-bearing: the same arm with a literal store measures 14 / 219 because jump2 refuses to merge the duplicated call pair at all. Banked rejected/arm-goto-set0xB-literal-store-blocks-call-merge-14-219i.c.
+
+- [s16] The same arm with `goto do_calls` in place of the duplicated pair measures 17 / 216 and swaps the seats back. Banked rejected/arm-goto-docalls-after-own-store-loses-nrefs9-17.c.
+
+- [s16] Residual at 10, from a repaired normalized objdump-vs-target diff: cluster B ~4 (emitted 45-48 ours `j / nop` vs target `nop / j`, and 126/131 the reorg steal of `li v0,1` into the `beqz $v0,.L800285DC` delay slot, which is also the whole 216-vs-215 insn surplus); the store sink ~2 (emitted 83-88); the arm store ~1-2 (emitted 148: target's arm `j` delay slot carries the arm's own `sh v0,0x286(s0)`, ours steals `li a1,1` from the branch target block because jump2 merged the arm's store away); plus two commutative `addu` operand orders (96, 162) previously measured score-neutral.
+
+- [s16] The store sink and the arm store are ONE question - whether path1's store ends a basic block. If the arm's 0x19 edge stopped its walk-back one insn earlier and landed after path1's store (target's .L80028520), path1's store would end a block, sched1 could not sink it into the jal delay slot, and the arm would still own a store for reorg to place in its own delay slot.
+
+- [s16] New instruments for the next session: tmp/grind/func_800283D0/s16/al.py prints the whole $s0-$s7 seat table for the current src in one command (survives pseudo renumbering); tmp/grind/func_800283D0/s16/mk.sh regenerates the normalized objdump-vs-target diff (the s12 normalizer's ours.txt extraction was broken by an objdump format change and the s16 copy parses the columns in Python); tmp/grind/func_800283D0/s16/fr.py dumps ALLOCDBG plus the FINDREGDBG exclusion sets for named pseudos.

@@ -1,66 +1,61 @@
-/* candidate.c - func_800283D0 (saTan2KabutoWareMove), grind s14 2026-08-26 (synthesis)
+/* candidate.c - func_800283D0 (saTan2KabutoWareMove), grind s16 2026-08-26 (synthesis)
  *
- * HONEST FLOOR WITH THIS BODY: sandbox --disable all = 11  (was 17 at s12/s13).
- * build_insns 216 vs target 215.
+ * HONEST FLOOR WITH THIS BODY: sandbox --disable all = 10 / 216 insns
+ * (s14/s15 body was 11 / 216).
  *
- * THE ONE CHANGE vs the s12/s13 17-floor body: the tail block (the
- * `var_s1 == 0` arm of the `>` case) no longer declares the named pointer
- * local `u8 *temp_a0 = temp_s4 + (temp_s5 * 0x10);`.  The three fields it
- * addressed are now read with the scaled index written out at each site -
- * `*(s32 *)(temp_s4 + (temp_s5 * 0x10) + 0x114)` etc. - and the negation
- * `temp_v1_4` plus the whole `temp_v1_5` product are written BEFORE the
- * `+0x118` load.  Ordinary C: three member reads spelled from the object
- * base instead of through a cached cursor.  No new locals, nothing dead,
- * nothing annotated, no sanctioned-family claim needed.
+ * THE ONE CHANGE vs the s14/s15 11-floor body: the `<` arm (the
+ * `temp_v1_3 < temp_v0_3` case).  It used to be a self-contained selection
  *
- * WHY IT WORKS - CLUSTER E IS CLOSED, EXACTLY AS THE SOLVER PREDICTED.
- * s7 modelled cluster E (the $a0/$a1 exchange across emitted slots
- * 159-182) as a LOCAL-alloc quantity-order decision in the tail block, and
- * `inverse.py local --swap 0,3` gave the complete single-atom vector set:
- * span(qty0) 30 -> <= 24, reachable from the birth end by moving the tail
- * POINTER quantity's birth from index 2 to anywhere in 8..19.  s7's
- * B_ptr_late (declare `temp_v1_4` before the pointer) reached birth 6 - four
- * of the six insns - and every later session's declaration-order probe
- * (s12 Q4, this session's p3/t2) is score-neutral for the same reason: while
- * the pointer is a NAMED LOCAL, its RTL is emitted at the head of the block
- * no matter what follows it.  Deleting the local entirely lets CSE form the
- * pointer pseudo at its FIRST USE, which is now inside the `temp_v1_5`
- * product, after both `(&Judge)[...]` index computations.  Measured from a
- * fresh QTYDBG dump of THIS body (block 42, main pass):
- *     before:  qty0 reg192 birth 2  death 32 refs 6 -> $a1   (wrong)
- *              qty3 reg209 birth 16 death 20 refs 2 -> $a0
- *     after :  qty2 reg208 birth 12 death 32 refs 6 -> $a0   (target)
- *              qty3 reg204 birth 16 death 20 refs 2 -> $a1   (target)
- * birth 2 -> 12 and span 30 -> 20, inside the solver's [8,19] birth window.
- * Cluster E is gone from the emitted diff; the score falls 17 -> 11.
+ *     s16 var_v0_4 = 0xB;
+ *     if (var_s1 != 0) { var_v0_4 = 0x19; }
+ *     store; calls(1); calls(0x25); return ret;
  *
- * WHAT IS LEFT AT 11 (normalized objdump diff, tmp/grind/func_800283D0/s14/):
- *   1. THE STORE SINK, ~4 pts.  Emitted slots 83-88 and 146-148: target puts
- *      `sh v0,0x286(s0)` at the head of the shared store/calls block and
- *      `move a3,zero` in the jal delay slot; ours sinks the store into the
- *      delay slot.  sched1 owns this (s13's E-s13-1, dumps read).  Closing it
- *      needs a SOURCE-level label between the store and the argument set-up,
- *      which costs the arm its two duplicated arg1 references and with them
- *      cluster A.  Re-measured on THIS chassis: t4 (variant A's arm + this
- *      tail) = 17, i.e. the pin is still worth exactly -6 in cluster A and
- *      +6 in the store region.  The tension is unchanged by the tail fix.
- *   2. CLUSTER B, ~4 pts.  Emitted slots 45-48 (ours `j / nop`, target
- *      `nop / j`) and 126/131 (ours `nop` + a later `li v0,1`, target
- *      `li v0,1` in the branch delay slot).  This is also the whole of our
- *      216-vs-215 insn surplus.  Unmoved since s10; no measured C dial.
- *   3. Two commutative `addu` operand orders (slots 96 and 162).  Both
- *      re-probed this session and both score-NEUTRAL in either spelling -
- *      they are consequences of allocation, not levers.
+ * and is now target's own shape - the 0xB edge is a source `goto` into
+ * path1's selection statement, and only the 0x19 value is computed locally:
  *
- * s15 (synthesis) RE-MEASURED THIS BODY AT 11/216 - unchanged, still the best
- * form.  What changed is the model: cluster A's decision is now the closed-form
- * inequality pri(73) > pri(143) under global.c's allocno_compare, and target's
- * own asm shows target reaches the seat with nrefs(arg1) = 7 (i.e. through
- * livelen(temp_s3) >= 20, NOT through the duplicated call pair this body uses).
- * The duplication here is a workaround that is incompatible with the store pin;
- * see evidence.md E-s15-1 / E-s15-5 before spending another ref-count probe.
+ *     s16 var_v0_4 = 0x19;
+ *     if (var_s1 == 0) { goto set_0xB; }
+ *     store; calls(1); calls(0x25); return ret;
  *
- * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  216i @ floor 11
+ * Ordinary C: one arm of a two-way selection reuses the other path's
+ * assignment instead of restating it (mixed exit forms / shared label, the
+ * same idiom this body already uses for block_15 / block_20 / block_49).
+ * No new locals, nothing dead, nothing annotated.
+ *
+ * WHY IT WORKS.  The arm still supplies the two duplicated `arg1` call
+ * references that carry nrefs(pseudo 73) to 9 and win cluster A - measured
+ * from ALLOCDBG on THIS body: 73 (arg1) ord 17, nrefs 9, livelen 98,
+ * pri 2755 -> $s2, and 143 (temp_s3) ord 20, nrefs 3, livelen 14, pri 2142
+ * -> $s3, i.e. exactly target seats.  What the `goto set_0xB` buys on top is
+ * the arm's BRANCH STRUCTURE: our 0xB edge now branches to path1's `addiu
+ * $v0,0xB` (target's .L80028518) instead of keeping a local copy, which is
+ * bit-for-bit what target does at .L80028610.
+ *
+ * NOTE (s16 re-attribution, supersedes E-s15-5): target's `<` arm is NOT
+ * variant A's arm.  Target compiles with nrefs(73) = 9 - the duplicated call
+ * pair IS target's own mechanism for the cluster-A seat, not a workaround -
+ * and the livelen(143) >= 20 route that E-s15-5 deduced is NOT required.
+ * See evidence.md E-s16-3.
+ *
+ * WHAT IS LEFT AT 10 (normalized objdump diff, tmp/grind/func_800283D0/s16/):
+ *   1. CLUSTER B, ~4 pts, and the whole 216-vs-215 insn surplus.  Emitted
+ *      45-48 (ours `j / nop`, target `nop / j`) and 126/131 (ours `nop` in
+ *      the `beqz $v0` delay slot plus a later `li v0,1`; target steals the
+ *      branch target block's `li v0,1` into the slot).  reorg.c
+ *      steal_delay_list_from_target refusal - no measured C dial yet.
+ *   2. THE STORE SINK, ~2 pts.  Emitted 83-88: target puts `sh v0,0x286(s0)`
+ *      at the head of the shared store/calls block; ours sinks it into the
+ *      first jal delay slot (sched1, E-s13-1).
+ *   3. THE ARM STORE, ~1-2 pts.  Emitted 148: target fills the arm's `j`
+ *      delay slot with the arm's OWN `sh v0,0x286(s0)`; ours has no store
+ *      left there (jump2 merged it into path1's) and reorg steals `li a1,1`
+ *      from the branch target block instead.  Items 2 and 3 are the same
+ *      question: whether path1's store sits at a block boundary.
+ *   4. Two commutative `addu` operand orders (96 `addu s3,s0,v0` and 162
+ *      `addu a0,a0,s4`).  Re-probed in earlier sessions, score-neutral in
+ *      either spelling - consequences of allocation, not levers.
+ *
+ * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  216i @ floor 10
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
     s32 temp_a1;
@@ -152,9 +147,9 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                             goto block_48;
                         }
                         if (temp_v1_3 < temp_v0_3) {
-                            s16 var_v0_4 = 0xB;
-                            if (var_s1 != 0) {
-                                var_v0_4 = 0x19;
+                            s16 var_v0_4 = 0x19;
+                            if (var_s1 == 0) {
+                                goto set_0xB;
                             }
                             *(s16 *)(arg0 + 0x286) = var_v0_4;
                             func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);
