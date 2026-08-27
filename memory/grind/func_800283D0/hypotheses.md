@@ -1653,3 +1653,93 @@ than `$v0`, (c) `code_label 347` absent at reorg time (refuted by target's asm).
 - probe: E4 = base with `goto ret_one;` in the range check and a trailing `ret_one: return 1;` after `block_13:`. Scored with `sandbox --disable all`.
 - result: 37 / 215. The insn count reaches target's 215 (the extra label removes the surplus insn) but the score more than triples - the trailing label re-shapes the whole epilogue region. The exit-form dimension is closed on the 10-floor chassis, re-confirming s10's D4/D5 kills on the 23-floor chassis.
 - verdict: KILLED
+
+
+## s21 (rederive, 2026-08-27)
+
+**H-s21-1 - Target's `<` arm is a source-level double-goto (variant A), not a
+duplicated-call arm.**  CONFIRMED (E-s21-1).  Read off target's asm insns
+159-162 plus a whole-body `$s2`/`$s3` ref census.  This REFUTES the s16 note in
+candidate.c's header claiming the duplicated call pair is target's own cluster-A
+mechanism; the s16 body wins cluster A by an accident of ref counting, not by
+reproducing target's structure.
+
+**H-s21-2 - Porting target's arm onto the 10-floor body byte-closes the store
+sink and the arm store.**  CONFIRMED (E-s21-2).  Body V1 = 17 / 216 with no diff
+entry at emitted 83-88 or 148.  The `goto do_calls` label is the pin; sched1
+cannot sink a store out of a block it is alone in.  Two residual clusters open
+since s13 are closed.
+
+**H-s21-3 - Cluster A is the single inequality pri(arg1-carrier) > 2142, with
+pri = floor_log2(n)*n*10000/livelen from global.c:635.**  CONFIRMED (E-s21-3),
+reproduced digit-for-digit on five different bodies this session.
+
+**H-s21-4 - Solution (a), nrefs(carrier) >= 8, flips the seats and leaves only
+cluster B.**  CONFIRMED by probe P2 (E-s21-4): 13 / 222 with seven insns of
+known semantic defect, and a residual diff containing ONLY cluster B and one
+commutative `addu`.  Prices the prize at roughly 4-6 / 215.
+
+**H-s21-5 - Solution (b), a later-defined carrier, flips the seats with
+semantics preserved.**  CONFIRMED but PRICED NEGATIVE by body P4 (E-s21-5):
+16 / 216.  The flip is real (livelen 92 -> 58, pri 2413) and the tail is clean,
+but any assignment point late enough to shorten the range is after the
+range-check chain, so `$a1` is pinned across it and the prologue diverges by
+~10 points.  Family capped at 16; not a route to target.
+
+**H-s21-6 - livelen(temp_s3) can be driven to >= 20 by hoisting its definition
+or by reordering blocks.**  KILLED both ways (E-s21-6).  Hoisting hands path1's
+load to the same pseudo via cse1 (nrefs 4, livelen 16, pri 5000, takes $s0);
+block reordering changes nothing at all because `reg_live_length` is
+path-sensitive, not layout-sensitive (P3's ALLOCDBG is identical to V1's).
+Target's own window is 14 RTL insns wide, so target does not use this solution
+either.
+
+**H-s21-7 - The `>` path's call pair, duplicated into the arms of
+`if (var_s1 == 0)`, can supply solution (a) byte-neutrally.**  KILLED (E-s21-7).
+The allocation half works (nrefs 9, pri 2700, target seats) but the body scores
+81 / 183: `temp_s5` loses its callee-saved seat, `ret` slides $s6 -> $s5, and the
+`>` tail collapses.  The arms diverge immediately after the calls so jump2 has
+no mergeable tail.  The duplicated-statement-into-arms family is closed for this
+residual.
+
+## [s21] Target's `<` arm is a source-level double-goto (s13's variant A), not the duplicated-call arm the s16 header attributes to it.
+- mechanism: Read directly off asm/funcs/func_800283D0.s insns 159-162: `beqz $s1,.L80028518 / addiu $v0,0x19 / j .L80028520 / sh $v0,0x286($s0)` - a goto into path1's selection plus a goto into path1's call block with the arm's own store in the delay slot. Four insns, zero calls. Corroborated by a whole-body register census: $s2 has 1 def + 6 `addu $a2,$s2,$zero` call arguments = 7 refs, $s3 has 1 def + 2 `lh ...,0x288($s3)` = 3 refs, and the 0x38 frame carries no stack argument (no sw below 0x18($sp)), so there is no hidden fifth call pair.
+- probe: grep '$s2' / '$s3' over asm/funcs/func_800283D0.s plus a read of insns 87-94 and 156-172.
+- result: Target's arm is variant A verbatim; nrefs(arg1)=7 and nrefs(temp_s3)=3 in target's shipped bytes. The s16 claim in candidate.c's header ('the duplicated call pair IS target's own mechanism for the cluster-A seat') is refuted.
+- verdict: CONFIRMED
+
+## [s21] Porting target's arm onto the 10-floor chassis byte-closes residual cluster 2 (the store sink) and cluster 3 (the arm store), which have been open since s13.
+- mechanism: `goto do_calls` makes `do_calls` a REFERENCED label sitting between path1's store and path1's call-argument setup, so the store is alone in its basic block and sched1 has nowhere to sink it. Without the goto the label is unreferenced, GCC deletes it, store and setup share one block, and sched1 sinks the store into the first jal's delay slot (E-s13-1).
+- probe: Body V1 = candidate.c with the `<` arm's `store; call(1); call(0x25); return ret;` replaced by `store; goto do_calls;`. Scored, then normalized-objdump diffed against target.
+- result: 17 / 216, and the normalized diff has NO entry at emitted 83-88 and NO entry at emitted 148. Both clusters byte-closed. V1's whole remaining residual is cluster A (the $s2/$s3 seat swap) plus cluster B plus the two known commutative addu operand orders. Rejected at 17 only because dropping the arm's duplicated calls takes nrefs(arg1) 9 -> 7 and loses cluster A.
+- verdict: CONFIRMED
+
+## [s21] Cluster A on the store-pinned chassis is exactly the inequality pri(arg1-carrier) > 2142, with pri = floor_log2(n_refs)*n_refs*10000/live_length.
+- mechanism: tools/gcc-2.7.2/global.c:635-656 allocno_compare sorts allocnos by that quotient descending; of two conflicting allocnos the first-sorted takes $s2 and the second $s3. On V1: pseudo 143 (temp_s3) nrefs=3 livelen=14 pri=2142 -> $s2, pseudo 73 (arg1) nrefs=7 livelen=92 pri=1521 -> $s3, i.e. both seats inverted from target.
+- probe: BB2_ALLOC_DEBUG=1 ALLOCDBG dumps on five distinct bodies (V1, P1, P2, P3, P4, P5) compared against the formula read out of global.c.
+- result: The formula reproduces every measured pri digit-for-digit. Given livelen(temp_s3)=14 is immovable, the inequality has exactly two solutions: (a) nrefs(carrier) >= 8 at livelen 92 (pri 2608), or (b) livelen(carrier) <= 65 at nrefs 7 (pri 2153).
+- verdict: CONFIRMED
+
+## [s21] Solution (a) - one extra arg1 reference - flips both seats on the store-pinned chassis and leaves an otherwise clean diff.
+- mechanism: nrefs 7 -> 8 raises floor_log2(n)*n from 14 to 24, so pri goes 1521 -> 2474 and overtakes temp_s3's 2142; the sort order inverts and the carrier takes $s2 while temp_s3 falls to $s3.
+- probe: Probe P2 = V1 + one extra `func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);` in the `<` arm before the goto. SEMANTICALLY WRONG (calls once too often) - a measurement only, not banked as a form. ALLOCDBG + score + normalized diff.
+- result: Seats become target's exactly (73 pri 2474 -> $s2, 143 pri 2142 -> $s3). Score 13 / 222; after discounting the seven insns the bogus call adds, the residual diff contains ONLY cluster B (emitted 45-48 j/nop inversion, emitted 126 nop vs target's stolen `li v0,1`, and the surplus `li v0,1` at 131) and the single commutative `addu s3,s0,v0` vs `addu s3,v0,s0`. First measurement in 21 sessions showing the store pin and cluster A are simultaneously satisfiable; prices a legitimate solution at roughly 4-6 / 215.
+- verdict: CONFIRMED
+
+## [s21] Solution (b) - a later-defined carrier for arg1 - flips the seats with semantics fully preserved.
+- mechanism: Assigning the carrier after the top range-check chain shortens its live range from 92 to 58 insns while keeping nrefs at 7, so pri = 2*7*10000/58 = 2413 > 2142.
+- probe: Body P4 = V1 + `u8 *p;` declared with the other block locals, assigned `p = arg1;` at block_15, used at all six call sites. ALLOCDBG + score + normalized diff. Banked at rejected/s21-late-arg1-carrier-flips-seats-but-pins-a1-16.c.
+- result: Seats correct (91 pri 2413 -> $s2, 144 pri 2142 -> $s3) and everything from emitted 87 to the end matches target except cluster B and the one operand order. But 16 / 216: the residual moves wholesale into the PROLOGUE, because the carrier's source operand is the incoming $a1, which must stay live from entry to block_15. That pins $a1 across the range-check chain (ours `lhu a3,106(s0)` / `li t0,4` vs target `lhu a1,106(s0)` / `li a2,4`, cascading through the andi/beq/addiu chain) and puts `move s2,a1` at emitted 48 instead of target's 4. Any assignment point late enough to shorten the range is by definition after the chain, so the family is structurally capped near 16 and is NOT a route to target.
+- verdict: CONFIRMED
+
+## [s21] livelen(temp_s3) can be driven to >= 20 (the third route to the inequality) by hoisting its definition or by reordering the blocks.
+- mechanism: Raising livelen(temp_s3) from 14 to 20 would put pri(temp_s3) at 1500, below arg1's 1521, flipping the sort with no change to arg1 at all.
+- probe: Body P1 = V1 with `u8 *temp_s3 = arg0 + temp_a1_2*2;` hoisted above the `temp_v1_3 == 0` test and path1's load routed through it. Body P3 = V1 with the three-way compare inverted so the `!=` case is the if-body and the `==` handling is the tail. ALLOCDBG on both.
+- result: KILLED both ways. P1: cse1 commons path1's load into the hoisted pointer, so nrefs goes 3 -> 4 while the range stays short - nrefs=4 livelen=16 pri=5000, which outranks arg0 itself, takes $s0 and displaces every callee-saved seat in the function. Any spelling that moves the def up necessarily hands path1's load to the same pseudo, so the direction is wrong by construction. P3: ALLOCDBG comes back IDENTICAL to V1 digit-for-digit (72: 19/156/4871, 77: 9/74/3648, 143: 3/14/2142, 73: 7/92/1521) - flow.c's reg_live_length accumulates only over blocks in which the pseudo is actually live, and temp_s3 is dead on the `<` and `>` paths however they are laid out. Block reordering can never move it. Counting target's own window (insns 107-122: def + load + branch + two 5-insn calls + load = 14 RTL insns) shows target does not use this solution either.
+- verdict: KILLED
+
+## [s21] The `>` path's 0x26/0x2D call pair, duplicated into both arms of `if (var_s1 == 0)`, can supply solution (a) byte-neutrally while leaving the `<` arm free to be target's pure double-goto.
+- mechanism: It is the only other call site in the function that could add arg1 references without touching the arm that carries the store pin; jump2 cross-jumping would be expected to re-merge the two copies post-reload the way it merges the s16 body's duplicated arm calls.
+- probe: Body P5, ALLOCDBG + score. Banked at rejected/s21-gt-path-calls-duplicated-into-arms-collapses-81.c.
+- result: KILLED. The allocation half works exactly as the closed form predicts - nrefs(arg1) 7 -> 9, pri = 3*9*10000/100 = 2700 > 2142, seats become target's - but the body scores 81 / 183. The duplication is not byte-neutral: temp_s5 loses its callee-saved seat entirely (only six callee-saved allocnos survive and `ret` slides $s6 -> $s5) and the `>` tail collapses to 183 insns against target's 215. The two arms diverge immediately after the calls, so jump2 never gets a mergeable tail. The duplicated-statement-into-arms family is closed for this residual.
+- verdict: KILLED

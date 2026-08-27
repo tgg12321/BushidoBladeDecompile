@@ -118,6 +118,40 @@
  *     `goto ret_one;` with a trailing `ret_one: return 1;` reaches target's
  *     215 insns but scores 37.
  *
+ *
+ * s21 ADDENDUM (rederive, 2026-08-27) - this body is UNCHANGED and still
+ * measures 10 / 216 (re-measured at session start and at session end).  It is
+ * kept as candidate.c only because it is still the lowest FLOOR; s21's V1 body
+ * (rejected/varA-arm-on-s16-chassis-STORE+ARM-BYTE-CLOSED-clusterA-lost-17.c)
+ * is the better CHASSIS and every future attack should start from it.
+ *   - THE s16 ATTRIBUTION IN THIS HEADER IS REFUTED (E-s21-1).  Target's `<`
+ *     arm is NOT a duplicated-calls arm: target insns 159-162 are
+ *     `beqz $s1,.L80028518 / li 0x19 / j .L80028520 / sh 0x286($s0)`, i.e.
+ *     exactly s13's variant A - a `goto set_0xB` plus a `goto do_calls` with
+ *     the arm's own store in the delay slot, no calls at all.  A whole-body ref
+ *     census confirms target compiles with nrefs(arg1) = 7, nrefs(temp_s3) = 3,
+ *     and there is no fifth call pair and no stack argument.
+ *   - Porting that arm onto this body (V1) is 17 / 216 and BYTE-CLOSES residual
+ *     clusters 2 (the store sink, emitted 83-88) and 3 (the arm store, emitted
+ *     148), both open since s13 (E-s21-2).  The pin is the `goto do_calls`
+ *     label sitting between path1's store and path1's calls: the store is then
+ *     alone in its basic block and sched1 has nowhere to sink it.
+ *   - On that chassis cluster A collapses to ONE inequality, verified
+ *     digit-for-digit against global.c:635 allocno_compare on five bodies:
+ *     pri = floor_log2(n)*n*10000/livelen, and we need
+ *     pri(arg1-carrier) > pri(temp_s3) = 2142 (E-s21-3).
+ *   - Solution (a), nrefs(carrier) >= 8: MEASURED to flip both seats (probe P2,
+ *     pri 2474) and to leave an otherwise CLEAN diff - only cluster B and one
+ *     commutative `addu` (E-s21-4).  A legitimate spelling lands near 4-6 / 215.
+ *   - Solution (b), livelen(carrier) <= 65: MEASURED, semantics preserved, seats
+ *     correct (body P4, pri 2413) but capped at 16 / 216 - a carrier assigned
+ *     late enough to shorten the range is always after the range-check chain,
+ *     which pins `$a1` across it and costs the whole prologue (E-s21-5).
+ *   - Three routes KILLED with measurements: hoisting temp_s3's definition
+ *     (cse1 gives it path1's load, pri 5000, takes $s0); inverting the block
+ *     order (reg_live_length is path-sensitive, ALLOCDBG identical to V1);
+ *     duplicating the `>` path's call pair into the arms of `if (var_s1 == 0)`
+ *     (allocation half works at pri 2700, body collapses to 81 / 183).
  * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  216i @ floor 10
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
