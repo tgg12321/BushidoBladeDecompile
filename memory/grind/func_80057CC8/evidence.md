@@ -2239,3 +2239,58 @@ found yet.
   nothing is orphaned. `memory/grind/func_80057CC8/candidate.c` is UNCHANGED (still the
   s38b annotated ban-compliant 16-form) — vN is banked under `rejected/` because it is
   ruling-pending, not because it is disproven.
+
+- [s40b] **RE-RUN OF s40 (the first s40 wrote its ledger but never wrote an outcome JSON, so
+  the driver discarded it and re-dispatched forensics as session 40).  Every s40 claim below
+  was RE-MEASURED from scratch this session, not inherited.**
+
+- [s40b] **THE SCORE-0 CLAIM IS REAL, RE-MEASURED ON TODAY'S CHASSIS.** Applying
+  `tmp/grind/func_80057CC8/s40/vN.c` (the no-base-local, per-use-site form, banked as
+  `rejected/s40-no-base-local-per-use-site-reads-score0-RULING-PENDING.c`) to
+  `src/text1b.c` and running `sandbox func_80057CC8 --disable all` prints
+  `"score": 0, "target_insns": 111, "build_insns": 111, "rules_dropped": 0,
+  "scorable": true`.  The function byte-matches in honest pure C with zero regfix/asmfix
+  rules today; the ONLY thing between func_80057CC8 and COMPLETED-C is banned_constructs
+  entry 5 / the 2026-07-20 owner refusal.  (src/text1b.c was restored to its HEAD
+  `INCLUDE_ASM` state afterwards; nothing was committed.)
+
+- [s40b] **NEW: CLOSED-FORM IMPOSSIBILITY CENSUS FOR THE BAN-COMPLIANT FAMILY.**  Full
+  `-da` dump sets were produced for BOTH forms with the project's exact
+  `cpp | cc1` flags (`tmp/grind/func_80057CC8/s40b/full.sh`, `fullN.sh`), and the number of
+  base loads `(mem:SI (plus:SI (reg ...) (const_int 4)))` inside the func_80057CC8 section
+  was counted per pass (`tmp/grind/func_80057CC8/s40b/count.py`):
+
+    pass:      rtl jump cse loop cse2 flow combine sched lreg greg sched2 jump2 dbr
+    16-form:     1    1   1    1    1    1       1     1    1    1      1     1   1
+    vN (score0): 5    5   2    2    2    2       2     2    3    3      3     3   3
+
+  Readings:
+    * The ban-compliant 16-form (candidate.c, one source-level materialization) emits
+      **exactly one** base load at EVERY pass from RTL expansion through delay-slot
+      scheduling.  **No GCC 2.7.2 pass ever creates a second load from a single source-level
+      read** — this is the measured, whole-pipeline version of the s36 rematerialization
+      kill, and it is now closed in census form rather than by mechanism enumeration.
+    * vN's five source reads are folded by **cse1** to exactly **two** — the target's own
+      count (`asm/funcs/func_80057CC8.s:17` `lw $a2,0x4($s2)`, `:50` `lw $a0,0x4($s2)`).
+      (The post-`lreg` count of 3 is the RA-introduced frame-slot mem at `sp+4`, which the
+      same regex matches; the pre-RA figures are the ones that answer the question.)
+  **Therefore: emitted-base-load-count is a monotone non-increasing function of
+  source-level-site count under this toolchain.  Two emitted loads require at least two
+  source-level sites.  A form that materializes the base at exactly one source site can
+  never reach distance 0 for this function — the ban and distance 0 are mutually exclusive
+  in closed form, not merely unreached after 40 sessions.**
+
+- [s40b] The s40 four-way isolated probe was re-verified from its own artifact rather than
+  re-derived: `tmp/grind/func_80057CC8/s40/probe.s` contains `lw $2,4($17)` and
+  `lw $3,4($17)` in pA (two loads) and a single `lw` in each of pB / pC / pD, confirming
+  that cse1 folds two identical source reads unless a non-const CALL_INSN separates them
+  (`tools/gcc-2.7.2/cse.c:1948` marks a non-`RTX_UNCHANGING_P` MEM as `hash_arg_in_memory`;
+  `cse.c:7241-7246` invalidates all such elements at the call), and that const-qualifying
+  the pointee (pD) makes the same two reads fold across the same call.
+
+- [s40b] DISPOSITION: `ruling-request`, same question as the discarded s40 but now backed by
+  the impossibility census above, which converts the request from "please re-read the ban"
+  into a decidable either/or: EITHER the no-local per-use-site spelling is outside the
+  2026-07-20 refusal (and the function closes today at 111/111), OR the refusal stands as
+  written and func_80057CC8 is PROVEN unclosable in ban-compliant pure C, with floor 16 its
+  permanent honest floor.  No third branch exists; this session removed it.

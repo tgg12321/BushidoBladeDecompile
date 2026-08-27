@@ -1309,3 +1309,39 @@ is gated on the refused duplication family.
   `table` + `nt` two-local family or the s29 form (inline reload while a live cached copy
   exists) — those genuinely do re-materialize a value that is in scope. It applies only to
   the spelling that declares no base local at all.
+
+## s40b (2026-08-27, forensics — re-run after the first s40 lost its outcome JSON)
+
+- **H-s40b-1: "Some ban-compliant form (one source-level materialization of
+  `*(s16 **)(arg0 + 4)`) can still reach distance 0, given a clever enough arrangement."**
+  mechanism probed: whether any GCC 2.7.2 pass after RTL expansion can turn one source-level
+  base read into the two `lw 0x4($s2)` the target emits (rematerialization, reload, cse2,
+  combine, sched2, jump2, dbr).
+  probe: full `-da` dump set over the ban-compliant 16-form (candidate.c) built with the
+  project's exact flags; per-pass count of `(mem:SI (plus:SI (reg) (const_int 4)))` inside
+  the func_80057CC8 section (`tmp/grind/func_80057CC8/s40b/{full.sh,count.py,t16.*}`).
+  result: the count is **1 at every one of the thirteen passes** (rtl, jump, cse, loop, cse2,
+  flow, combine, sched, lreg, greg, sched2, jump2, dbr).  The comparison build of the
+  score-0 form goes 5 (rtl/jump) -> 2 (cse onward), i.e. passes only ever REMOVE loads.
+  verdict: **KILLED — and killed in closed form, not by exhaustion.**  Emitted base-load
+  count is monotone non-increasing in source-site count under this toolchain, so two emitted
+  loads require >= two source-level sites.  Ban-compliance and distance 0 are mutually
+  exclusive for this function.  No future session should spend a measurement looking for a
+  ban-compliant zero; the honest ban-compliant floor is 16 and it is permanent.
+
+- **H-s40b-2: "The first s40's score-0 claim was a mis-measurement / chassis drift."**
+  probe: applied `tmp/grind/func_80057CC8/s40/vN.c` to src/text1b.c on today's HEAD chassis
+  and ran `sandbox func_80057CC8 --disable all`.
+  result: `score 0, target_insns 111, build_insns 111, rules_dropped 0, scorable true`.
+  verdict: **KILLED (the claim is confirmed, the doubt is dead).**  The form byte-matches in
+  honest pure C with zero rules.  Only the ban stands between this function and COMPLETED-C.
+
+- Open question (NOT a hypothesis a session can measure): scope of banned_constructs entry 5 /
+  the 2026-07-20 owner refusal as applied to the *no-local* spelling.  Carried as the
+  session's `ruling-request`; wording in `tmp/grind/outcome_func_80057CC8.json`.  If the
+  ruling comes back PASS, the closing form is
+  `rejected/s40-no-base-local-per-use-site-reads-score0-RULING-PENDING.c` verbatim (measure
+  once to confirm, write self_vet.md, submit).  If it comes back FAIL, H-s40b-1 above means
+  the correct next disposition is an escalation packet whose decidable question is
+  *routing* (accept floor 16 permanently vs. canonical-asm), NOT a family sanction — and the
+  canonical gate has already answered that (verdict C, scan_hand_coded LOW 1/8).
