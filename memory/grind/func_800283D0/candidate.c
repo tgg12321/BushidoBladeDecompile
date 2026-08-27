@@ -1,97 +1,78 @@
-/* candidate.c - func_800283D0 (saTan2KabutoWareMove), grind s23 2026-08-27 (structural)
+/* candidate.c - func_800283D0 (saTan2KabutoWareMove), grind s24 2026-08-27 (synthesis)
  *
- * HONEST FLOOR WITH THIS BODY: sandbox --disable all = 4 / 215 insns.
- * (s22 body was 6 / 216; s16-s21 body was 10 / 216.)  THE INSTRUCTION COUNT NOW
- * MATCHES TARGET EXACTLY for the first time in 23 sessions, and CLUSTER B - the
- * unfilled `beqz $v0` delay slot that has been the whole 216-vs-215 surplus
- * since s3 - IS CLOSED.
+ * HONEST FLOOR WITH THIS BODY: sandbox --disable all = 3 / 215 insns.
+ * (s23 body was 4 / 215; s22 6 / 216; s16-s21 10 / 216.)  Instruction count
+ * still matches target exactly.
  *
- * WHAT THIS BODY IS.  It is s22's A3 body (s21's V1 chassis + the sanctioned
- * do-while(0) wrap that wins cluster A's $s2/$s3 seat swap) with ONE further
- * change, in the `== 5` selection inside the `==` arm.  s22 spelled it
+ * WHAT CHANGED FROM s23.  Exactly one edit: the `u8 *temp_s3 = arg0 +
+ * (temp_a1_2 * 2);` local is DELETED and both of its uses are spelled as full
+ * address expressions:
  *
- *      var_v0_2 = 0x19;
- *      if (var_s1 == 0) { var_v0_2 = 0xB; }
- *      goto block_48;              // block_48 stores var_v0_2 to arg0+0x286
+ *     s16 temp_v0_3 = *(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288);
+ *     ...
+ *     if (*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288) == 5) { ... }
  *
- * and this body spells the SAME selection with the 0x19 edge as the branch's
- * own target thread, carrying its own copy of the (real, already-existing)
- * store statement:
+ * This is ordinary C - no construct, no annotation - and it closes residual
+ * cluster 2 of s23 (emitted 96 `addu s3,s0,v0` -> `addu s3,v0,s0`).  cse still
+ * builds the shared address pseudo and it still lives in $s3 across the call
+ * pair, so the emitted instruction sequence is unchanged apart from the
+ * operand order.
  *
- *      if (var_s1 != 0) { goto sel19; }
- *      var_v0_2 = 0xB;
- *      goto block_48;
- *  sel19:
- *      *(s16 *)(arg0 + 0x286) = 0x19;
- *      goto block_49;
+ * WHY IT WORKS (measured from the .rtl/.lreg dumps, E-s24-1/2).  BOTH residual
+ * `addu` operand orders are FIXED AT EXPAND - the .rtl dump already carries the
+ * final operand order, so neither combine, regmove nor reload ever touches it,
+ * and no post-expand lever exists.  The order is decided by the EXPANSION
+ * CONTEXT of the `plus`, not by the source operand order:
+ *   - a `plus` expanded as a MEM ADDRESS (EXPAND_SUM) always comes out
+ *     (shift, pointer) in this function - insns 183, 199 and 526 all do, and
+ *     swapping the source order (C1), moving the constant (C2) or spelling it
+ *     as an ARRAY_REF (C5) does NOT change it;
+ *   - a `plus` expanded as a VALUE (an assignment to a pointer local) comes out
+ *     in SOURCE order, i.e. (pointer, shift).
+ * Target wants the ADDRESS form at emitted 96 and the VALUE form at emitted 161.
+ * s23's body had a pointer local at 96 (value form -> wrong) and inline
+ * addresses at 161 (address form -> wrong).  Deleting the local at 96 fixes 96.
  *
- * The two forms are semantically identical (s1 != 0 stores 0x19, s1 == 0 stores
- * 0xB, both then fall into `return ret`), and the duplicated store RE-MERGES in
- * jump2: emitted 128-131 are byte-identical to target (`bnez s1,.L800286F8 /
- * li v0,25 / j .L800286F8 / li v0,11`), i.e. both edges still reach the ONE
- * shared store.  The duplication is invisible in the bytes; what it changes is
- * WHICH reorg.c pass fills a delay slot.
+ * THE REMAINING 3 POINTS - two divergences, both fully attributed:
+ *   1. emitted 45-47: ours `beq / li v0,1 / j / nop`, target `beq / nop / j /
+ *      li v0,1`.  UNCHANGED from s23 and still a LIVENESS question, not a
+ *      spelling one: jump_insn 78 steals the `li v0,1` back out of jump_insn
+ *      84's slot via steal_delay_list_from_fallthrough, permitted only because
+ *      oppregs = 0x20000380 (the flow live-in of the beq's TARGET block) lacks
+ *      $v0.  s24 additionally KILLED the "merge the two `var_s1 = 0;` blocks"
+ *      route (R1a): byte-neutral at 3, GCC had already cross-jumped them.
+ *   2. emitted 161 `addu a0,a0,s4` vs target `addu a0,s4,a0`.  Now MODELLED
+ *      END TO END and it is a two-body problem, which is why it is still open:
+ *      the VALUE form (a `s32 *tail` pointer local, bodies B/AB) DOES produce
+ *      target's operand order, but it stretches the tail-pointer local-alloc
+ *      quantity's live span from 20 to 26 and its priority
+ *      floor_log2(refs)*refs*10000/span from 6000 to 4615, which drops it below
+ *      the Judge[]-element quantity's 5000, so it loses the $a0 seat to $a1 and
+ *      the whole tail renames (9 / 215).  To win, a body needs the VALUE form
+ *      AND pri(tail qty) > 5000, i.e. span <= 23 (currently 26) or refs >= 7
+ *      (currently 6, a COMBINED quantity = sll producer + pointer).
  *
- * WHY IT WORKS (the named mechanism, measured not inferred - see E-s23-1/2).
- * s19/s20 proved the `beqz $v0` slot is refused because
- * `insn_sets_resource_p (trial, &opposite_needed)` is 1: the fall-through
- * selection block owns a `$v0` write which `fill_simple_delay_slots` steals
- * backward into the selection's OWN branch, and `update_block` leaves a
- * `(use (insn N))` marker inside the window `mark_target_live_regs` walks, so
- * `$v0` is live on the opposite thread by the time `fill_eager_delay_slots`
- * reaches the `beqz`.  s19's fix (hoisting the `0x19` out) removed the write but
- * gave up the selection branch's own slot (the +2 the whole W1/W2b/F1 hoist
- * family pays, chassis-independently).  This body instead moves the `0x19`
- * write to the OTHER SIDE of the selection branch: it is now the head of that
- * branch's TARGET thread, so it is taken by `fill_slots_from_thread` with
- * `INSN_FROM_TARGET_P` set, and `update_block` (reorg.c:2270) returns EARLY
- * without emitting any marker.  Both slots are filled, exactly as target does.
- * This is E-s19-7's option (a) - the one route s19 named and no session had yet
- * spelled - and it costs nothing.
+ * s24 KILLS (all measured this session, banked in rejected/):
+ *   - B  = s23 body + `s32 *tail` pointer local for the 0x114/0x118/0x11C loads: 10.
+ *   - AB = A + the same tail pointer local: 9 (right operand order, lost seat).
+ *   - AB1 (0x118 load first) / AB2 (tail decl hoisted above temp_v1_4): 9 - the
+ *     tail quantity's birth/death do not move with source position.
+ *   - A1 (0x118 load first on the A chassis): 9.  A2/A3 (multiply operand swap): 10.
+ *   - C1 (tail address source-order swap), C2 (constant before the shift),
+ *     C5 (ARRAY_REF `((s32 *)temp_s4)[temp_s5*4 + 0x45]`): all byte-neutral at 3
+ *     - the address-context operand order is NOT a source-order axis.
+ *   - C4 (`s32 tail_off = temp_s5 * 0x10;` intermediate): 9.
+ *   - R1a (merge the two `var_s1 = 0;` blocks so the beq targets a block with a
+ *     different live-in): byte-neutral at 3.
  *
- * FAMILY / POLICY.  Two constructs in this body are family-relevant and BOTH
- * need a ruling before any candidate-ready submission:
- *   1. the `do { calls } while (0);` wrap (unchanged from s22, annotated in
- *      place, `.claude/rules/do-while-zero-exception.md`);
- *   2. the `sel19` arm's duplicated `*(s16 *)(arg0 + 0x286) = 0x19;` store.
- *      This is a REAL statement duplicated into a branch arm that re-merges
- *      byte-neutrally (emitted 128-131 == target), which is the shape
- *      `.claude/rules/duplicated-statement-into-arms.md` describes - that rule
- *      mandates a /* FAKE * / annotation, which this body does NOT yet carry
- *      because the store here is not merely a codegen decoy: it is target's own
- *      control flow (the same double-goto shape s21 read off target's `<` arm).
- *      The next session must either annotate it per that rule or ask for a
- *      ruling; do not submit candidate-ready without settling it.
- *
- * RESIDUAL AT 4 (tmp/grind/func_800283D0/s23/diff_X2.txt; `lui at,0` / `jal 0`
- * entries are unresolved-relocation artifacts of objdumping the .o):
- *   1. emitted 45-47 - ours `beq / li v0,1 / j / nop`, target
- *      `beq / nop / j / li v0,1`.  MECHANISM NOW NAMED (E-s23-3): jump_insn 78
- *      (the range chain's last `beq`) STEALS the `li v0,1` back out of
- *      jump_insn 84's already-filled slot via
- *      `steal_delay_list_from_fallthrough`; the steal is allowed only because
- *      $v0 is absent from `opposite_needed` = the exact flow live-in of the
- *      `beq`'s target block (oppregs=0x20000380).  fill_simple ALREADY produces
- *      target's arrangement (`DBRDBG simp insn=84 trial=82 elig=1`); a later
- *      pass undoes it.  This is a LIVENESS question, not a spelling question.
- *   2. emitted 96 `addu s3,s0,v0` vs `addu s3,v0,s0` and emitted 161
- *      `addu a0,a0,s4` vs `addu a0,s4,a0` - commutative operand order.  Both
- *      source-order spellings are banked neutral (s3, s22); the order is decided
- *      after fold, so it is not a source-order axis.
- *
- * s23 KILLS (do not re-propose - detail in evidence.md):
- *   - X1: the same double-goto selection but with the 0x19 arm going to the
- *     SHARED block_48 store (`sel19: var_v0_2 = 0x19; goto block_48;`) = 6, i.e.
- *     byte-identical to s22.  The arm must carry its OWN store; with the shared
- *     store the `0x19` write is still emitted before the branch.
- *   - X3: the mirrored spelling (0xB edge as the branch target) = 9 - GCC
- *     re-inverts the branch sense away from target's `bnez s1`, the same
- *     re-inversion s20's W3 measured.
- *   - Q1/Q2: relocating the range check's `return 1;` to a `ret1:` label at the
- *     end of the function (Q1) or just before block_13 (Q2), to deny
- *     jump_insn 78 a stealable fall-through, = 10 / 215 and 8 / 216.  The
- *     relocation costs more than the two points it could buy.
- * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  215i @ floor 4
+ * POLICY.  Two constructs remain family-relevant and MUST be settled before any
+ * candidate-ready submission (unchanged from s23):
+ *   1. the `do { calls } while (0);` wrap (annotated in place,
+ *      `.claude/rules/do-while-zero-exception.md`);
+ *   2. the `sel19` arm's duplicated `*(s16 *)(arg0 + 0x286) = 0x19;` store -
+ *      the shape `.claude/rules/duplicated-statement-into-arms.md` covers, which
+ *      mandates a FAKE annotation.  Annotate or ruling-request.
+ * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  215i @ floor 3
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
     s32 temp_a1;
@@ -158,15 +139,14 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                         goto block_49;
                     }
                     {
-                        u8 *temp_s3 = arg0 + (temp_a1_2 * 2);
-                        s16 temp_v0_3 = *(s16 *)(temp_s3 + 0x288);
+                        s16 temp_v0_3 = *(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288);
                         s16 var_v0_2;
                         if (temp_v0_3 == temp_v1_3) {
                             do { /* FAKE: do-while(0) loop-note ref weighting, mechanism: flow.c REG_N_REFS += loop_depth feeding global.c allocno_compare, lever-exhaustion: memory/grind/func_800283D0/hypotheses.md */
                                 func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);
                                 func_80032854(*(s16 *)(arg0 + 4), 0x25, arg1, (s16 *)0);
                             } while (0);
-                            if (*(s16 *)(temp_s3 + 0x288) == 5) {
+                            if (*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288) == 5) {
                                 if (((u32)(*(u16 *)(arg0 + 0xE) - 6) < 2U) || ((u32)(*(u16 *)(temp_s4 + 0xE) - 6) < 2U)) {
                                     if (var_s1 != 0) {
                                         goto sel19;

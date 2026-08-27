@@ -1828,3 +1828,77 @@ residual.
 - probe: Q1 = the 4-floor body with the range-check exit spelled `goto ret1;` and `ret1: return 1;` at the very end of the function; Q2 = the same with `ret1: return 1;` immediately before block_13. sandbox --disable all on both.
 - result: KILLED. Q1 = 10 / 215, Q2 = 8 / 216. The relocation costs 4-6 points elsewhere to buy at most the 2 points at emitted 45-47 (the same direction s5's H22 measured on the 34-floor chassis, now re-measured on the 4-floor chassis). The steal is gated by opposite_needed = 0x20000380, the exact flow live-in of the beq's TARGET block (resolved cleanly from barrier 85, not the find_basic_block -1 fallback), which lacks $v0 - so the lever is LIVENESS at that block, not placement.
 - verdict: KILLED
+
+## s24 (synthesis, 2026-08-27)
+
+## [s24] The two residual commutative `addu` operand orders are decided AFTER fold by the allocator/emission choice, so no source-level lever exists (the s22/s23 model).
+- mechanism: assumed canonicalisation of the PLUS before RA, with the emitted order reflecting which pseudo the addend lives in.
+- probe: read `.rtl` / `.combine` / `.lreg` / `.greg` for insns 277 and 518 on the 4-floor chassis.
+- result: the `.rtl` dump (straight out of expand) already carries the final operand order at BOTH sites, and `.combine`/`.greg` are identical modulo register names.
+- verdict: KILLED (refuted).  The order is fixed at expand; no post-expand pass touches it.
+
+## [s24] The expansion CONTEXT of a pointer+scaled-index `plus` decides its operand order: MEM-address context gives (shift, pointer), pointer-value context gives source order (pointer, shift).
+- mechanism: `expand_expr` reaches the address form through the `EXPAND_SUM` / `memory_address` path and the value form through the plain `binop` path; the two paths hand `gen_addsi3` its operands in opposite orders.
+- probe: three address-context sites (insns 183, 199, 518) vs one value-context site (insn 277) on the same chassis; then C1 (source operand swap), C2 (constant before the shift) and C5 (ARRAY_REF spelling) to test whether source order can move the address form.
+- result: all three address sites are (shift, pointer) and all three respellings are byte-neutral at 3; the one value site is in source order.
+- verdict: CONFIRMED.
+
+## [s24] Deleting the `u8 *temp_s3` pointer local moves emitted 96's `plus` into address context and closes it, for free, on the 4-floor chassis.
+- mechanism: E-s24-2's law; cse still forms the shared address pseudo and it still lives in $s3 across the call pair, so only the operand order moves.
+- probe: body A (delete the local, spell both uses as `*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288)`), sandbox --disable all.
+- result: 3 / 215 (from 4 / 215); emitted 96 becomes `addu s3,v0,s0` = target and nothing else changes.
+- verdict: CONFIRMED.  This is ordinary C - no construct, no annotation.
+
+## [s24] The mirror move at emitted 161 (a `s32 *tail` pointer local to force the VALUE form) closes that site's operand order too.
+- mechanism: same law, applied in the opposite direction - target wants (pointer, shift) at a site we currently spell as an inline address.
+- probe: bodies B (on the s23 chassis) and AB (on the A chassis).
+- result: AB emits `addu a1,s4,a1` - target's operand order - but scores 9 / 215.
+- verdict: CONFIRMED for the operand order, but net-negative: the pointer local moves the tail quantity's birth 12 -> 6 (span 20 -> 26), pri 6000 -> 4615, below the Judge[]-element quantity's 5000, so the tail loses the $a0 seat and renames a0<->a1 (7 diffs).
+
+## [s24] The tail pointer quantity's live span can be shortened, or its reference count raised, by reordering the three tail loads or by moving the local's declaration.
+- mechanism: local-alloc priority pri = floor_log2(refs)*refs*10000/span, measured with BB2_QTY_DEBUG on block 43.
+- probe: AB1 (0x118 load first), AB2 (tail declaration hoisted above `temp_v1_4`), A1 (0x118 first without the local), C4 (`s32 tail_off = temp_s5 * 0x10;` intermediate).
+- result: 9, 9, 9, 9 - all unchanged or worse; the quantity's birth and death do not follow source position.
+- verdict: KILLED for the declaration-order / statement-order axis.  The quantity arithmetic itself (span <= 23 or refs >= 7) remains the open target.
+
+## [s24] Merging the two `var_s1 = 0;` blocks makes the range chain's last `beq` target a block with a different flow live-in, putting $v0 into `opposite_needed` and refusing the steal (s23 frontier item 1, attack (i)).
+- mechanism: `steal_delay_list_from_fallthrough` on jump_insn 78 is gated by `insn_sets_resource_p (trial, &opposite_needed)`, and `opposite_needed` is the flow live-in of the beq's target block.
+- probe: body R1a - `if (temp_v1 != 0x13) { if (chain) return 1; } var_s1 = 0; <block_15 body>` (one `var_s1 = 0;` instead of two, no `goto block_15`).
+- result: byte-neutral at 3 / 215.
+- verdict: KILLED.  GCC had already cross-jumped the two blocks, so the source-level merge is invisible to flow; the live-in word is unchanged.
+
+## [s24] The two residual commutative addu operand orders are decided after fold by the allocation/emission choice, so no source-level lever exists (the s22/s23 model).
+- mechanism: Assumed canonicalisation of the PLUS before RA, with the emitted order reflecting which pseudo the addend lives in.
+- probe: Read .rtl / .combine / .lreg / .greg for insns 277 and 518 on the 4-floor chassis (tmp/grind/func_800283D0/s24/code6cac_b.i.*).
+- result: The .rtl dump, straight out of expand, ALREADY carries the final operand order at both sites ((reg/v 72)(reg 145) at 277; (reg 202)(reg/v 75) at 518), and .combine/.greg are identical modulo register names.
+- verdict: KILLED
+
+## [s24] The expansion CONTEXT of a pointer+scaled-index plus decides its operand order: MEM-address context gives (shift, pointer), pointer-value context gives source order (pointer, shift).
+- mechanism: expand_expr reaches the address form through the EXPAND_SUM / memory_address path and the value form through the plain binop path; the two hand gen_addsi3 its operands in opposite orders. Confirmed by three address sites vs one value site in the same function.
+- probe: Compare insns 183, 199, 518 (address context) with 277 (value context); then bodies C1 (source operand swap), C2 (constant before the shift) and C5 (ARRAY_REF ((s32 *)temp_s4)[(temp_s5*4)+0x45]) to test whether source order can move the address form.
+- result: All three address sites are (shift, pointer); the one value site is in source order; C1, C2 and C5 are all byte-neutral at 3.
+- verdict: CONFIRMED
+
+## [s24] Deleting the u8 *temp_s3 pointer local moves emitted 96's plus into address context and closes that divergence for free on the 4-floor chassis.
+- mechanism: The context law above; cse still forms the shared address pseudo and it still lives in $s3 across the intervening call pair, so only the operand order moves.
+- probe: Body A: delete `u8 *temp_s3 = arg0 + (temp_a1_2 * 2);` and spell both uses as `*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288)`; sandbox --disable all.
+- result: 3 / 215 (from 4 / 215), measured twice. Emitted 96 becomes `addu s3,v0,s0` = target; nothing else changes. Ordinary C, no construct, no annotation.
+- verdict: CONFIRMED
+
+## [s24] The mirror move at emitted 161 - a `s32 *tail` pointer local to force the VALUE form - closes that site's operand order too.
+- mechanism: Same law applied in the opposite direction: target wants (pointer, shift) at a site currently spelled as an inline MEM address.
+- probe: Bodies B (on the s23 chassis) and AB (on the A chassis); read the emitted diff and BB2_QTY_DEBUG block 43.
+- result: AB emits `addu a1,s4,a1` - target's operand order - but scores 9 / 215: the pointer local moves the tail quantity's birth 12 -> 6 (span 20 -> 26), dropping pri from 6000 to 4615, below the Judge[]-element quantity's 5000, so the tail loses the $a0 seat and renames a0<->a1 (7 diffs).
+- verdict: CONFIRMED
+
+## [s24] The tail pointer quantity's live span can be shortened, or its reference count raised, by reordering the three tail loads or by moving the local's declaration.
+- mechanism: local-alloc priority pri = floor_log2(refs)*refs*10000/span, read with BB2_QTY_DEBUG on block 43.
+- probe: Bodies AB1 (0x118 load first), AB2 (tail declaration hoisted above temp_v1_4), A1 (0x118 first without the local), C4 (`s32 tail_off = temp_s5 * 0x10;` intermediate).
+- result: 9, 9, 9, 9 - all unchanged or worse. The quantity's birth and death do not follow source position.
+- verdict: KILLED
+
+## [s24] Merging the two `var_s1 = 0;` blocks makes the range chain's last beq target a block with a different flow live-in, putting $v0 into opposite_needed and refusing the delay-slot steal (s23 frontier item 1, attack (i)).
+- mechanism: steal_delay_list_from_fallthrough on jump_insn 78 is gated by insn_sets_resource_p (trial, &opposite_needed), and opposite_needed is the flow live-in of the beq's target block (oppregs = 0x20000380, no $v0).
+- probe: Body R1a: `if (temp_v1 != 0x13) { if (chain) return 1; } var_s1 = 0; <block_15 body>` - one `var_s1 = 0;` instead of two, no `goto block_15`.
+- result: Byte-neutral at 3 / 215. GCC had already cross-jumped the two blocks, so the source-level merge is invisible to flow and the live-in word is unchanged.
+- verdict: KILLED

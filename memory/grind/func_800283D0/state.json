@@ -1,8 +1,8 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 23,
- "current_modality": "structural",
+ "session_count": 24,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -141,23 +141,29 @@
    "floor": 4,
    "modality": "structural",
    "headline": "Floor 6 -> 4 and 216 -> 215 insns: cluster B (the unfilled `beqz $v0` slot, open since s3) CLOSES AT ZERO COST by respelling the `== 5` selection so the 0x19 edge is the branch's own TARGET thread and"
+  },
+  {
+   "session": 24,
+   "floor": 3,
+   "modality": "synthesis",
+   "headline": "Floor 4 -> 3: the commutative-addu axis is resolved as a mechanism (order fixed at EXPAND, decided by MEM-address vs pointer-value context), site 96 closes in ordinary C by deleting the temp_s3 local,"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last delay-slot divergence (emitted 45-47) closes iff $v0 is live at the entry of jump_insn 78's TARGET block (the `var_s1 = 0; goto block_15;` block at code_label 87). Target's compile must have that bit set; ours does not (oppregs = 0x20000380).",
-   "mechanism": "fill_slots_from_thread's steal_delay_list_from_fallthrough on insn 78 is refused only by `insn_sets_resource_p (trial, &opposite_needed)`; opposite_needed here is the EXACT flow live-in of the beq's target block (find_basic_block resolves it cleanly from barrier 85 - not the -1 conservative fallback), so the axis is which registers flow believes are live entering that block, or alternatively making find_basic_block fail to resolve it (which forces the all-live conservative answer and refuses the steal).",
-   "next_probe": "Two cheap, disjoint attacks. (i) LIVENESS: find a semantics-preserving spelling that makes $v0 live-in at the `var_s1 = 0; goto block_15;` block - e.g. merging that block with the `temp_v1 == 0x13` path's own `var_s1 = 0;` (insn 98 at code_label 95) so the beq targets a block with a different live-in, or routing block_15's first computation through a value already resident in $v0. (ii) BLOCK RESOLUTION: make the label after barrier 85 not be a basic_block_head so find_basic_block returns -1 (all-live => steal refused). Instrument with `bash tmp/grind/func_800283D0/s23/dbr.sh <tag>` and read the `thr insn=78 ... oppregs=` word; if bit 0x4 sets, the two points close. Do NOT re-run Q1/Q2-style relocations of the `return 1;` block (10 / 215 and 8 / 216)."
+   "hypothesis": "Site 161 (emitted `addu a0,a0,s4` vs target `addu a0,s4,a0`, 1 point) closes iff a body uses the VALUE form (a `s32 *tail` pointer local for the 0x114/0x118/0x11C loads) AND raises pri(tail qty) above the Judge[]-element quantity's 5000.",
+   "mechanism": "local-alloc allocates quantities in descending pri = floor_log2(refs)*refs*10000/span (BB2_QTY_DEBUG block 43). Body AB has the right operand order but refs=6 span=26 -> 4615 < 5000, so the Judge element takes $a0 first and the whole tail renames. Needed: span <= 23, or refs >= 7 (5384) / 8 (9230), or Judge span >= 5 (drops it to 4000). The tail quantity is COMBINED (the sll producer + the pointer), so one extra genuine reference is worth +1 ref.",
+   "next_probe": "Do NOT re-run declaration-order or statement-order variants (AB1/AB2/A1/C4 all killed - birth/death do not follow source position). Two live routes: (a) find a semantics-preserving spelling that gives the tail pointer a SEVENTH reference without adding an instruction - e.g. routing one of the three loads' address through the pointer twice, or expressing `temp_a0_2` so its consumer re-references the pointer rather than the loaded value; (b) widen the Judge[]-element quantity from span 4 to span 5 by putting one independent instruction between its `lh` and the `mult` that consumes it. Measure with `wsl bash tmp/grind/func_800283D0/s24/qty.sh <tag>` and read the block-43 QTYDBG lines; the model predicts the seat before the sandbox does."
   },
   {
-   "hypothesis": "The two commutative `addu` operand orders (emitted 96 and 161) are decided after fold, by the same allocation/emission choice, and will move together or not at all.",
-   "mechanism": "Both source-order spellings are byte-neutral (s3 `both-operand-orders-neutral-11.c`, s22 `s22-temp-s3-addend-order-swap-neutral-6.c`, F2 on the 6-floor chassis), so GCC canonicalises the PLUS before RA and the emitted order reflects which pseudo the addend lives in, not the source. Both sites have the same shape: ours puts the long-lived register first, target puts the freshly computed one first.",
-   "next_probe": "This is a solver/forensics question, not a structural one: read the .combine and .greg dumps for the two PLUS insns on the 4-floor chassis and determine whether the operand order is fixed at expand (RTL operand slots) or flipped later by regmove/reload. If it is fixed at expand, the only remaining lever is a different TREE (not a different operand order) for `arg0 + temp_a1_2 * 2` - e.g. an intermediate whose pseudo is born later. Cost is one dump."
+   "hypothesis": "The last delay-slot divergence (emitted 45-47, 2 points) closes iff $v0 is live at the entry of jump_insn 78's TARGET block; the source-level route to that liveness is NOT block merging (killed) but putting a real value in $v0 across the branch.",
+   "mechanism": "fill_slots_from_thread's steal_delay_list_from_fallthrough on insn 78 is refused only by insn_sets_resource_p (trial, &opposite_needed); opposite_needed is the exact flow live-in of the beq's target block (oppregs = 0x20000380 = {a3,t0,t1,sp}, cleanly resolved by find_basic_block from barrier 85, not the -1 conservative fallback). Target's compile must have bit 0x4 set in that word.",
+   "next_probe": "s24 killed the block-merge route (R1a byte-neutral) - the live-in word is a flow fact, not a CFG-shape fact, so the remaining attack is to make some value genuinely LIVE in $v0 across the range chain into block_15: e.g. hoisting the `D_800A3824` load (or the `*(s16 *)(arg0 + 4)` read that feeds temp_a1_2) above the range chain so its pseudo is live-in at code_label 87, and checking whether RA seats it in $v0. Instrument with `wsl bash tmp/grind/func_800283D0/s24/dbr.sh <tag>` and read the `thr insn=78 ... oppregs=` word; if bit 0x4 sets, the two points close. Do NOT re-run Q1/Q2-style relocations of the `return 1;` block (10 / 215 and 8 / 216) or R1a."
   },
   {
-   "hypothesis": "The zero-cost target-thread-steal device that closed cluster B may apply to other blocks in this function whose $v0/$v1 writes sit before their own branch.",
-   "mechanism": "The general rule proven this session: a value written BEFORE a branch and stolen backward by fill_simple poisons every earlier branch whose mark_target_live_regs walk passes the update_block marker; the same value written as the head of that branch's TARGET thread is stolen with INSN_FROM_TARGET_P and poisons nothing. Any block with that shape is a candidate.",
-   "next_probe": "Grep the .dbr log of the 4-floor body for remaining `DBRDBG thr ... LOSE` lines whose failing predicate is `setsopp=1`, list the (branch, trial) pairs, and for each check whether the trial's write sits before its own branch in the source. Only spell the ones that do. Cost is one grep over tmp/grind/func_800283D0/s23/dbr_X2.txt plus one body per hit."
+   "hypothesis": "The MEM-address-vs-pointer-value expansion law (E-s24-2) is a general, reusable lever for this codebase, not a one-off for this function.",
+   "mechanism": "Every commutative `addu` of a pointer and a scaled index in a GCC 2.7.2 -mel build has its operand order fixed at expand by whether the plus is expanded via memory_address (EXPAND_SUM -> shift first) or as a plain value (source order). A whole class of one-point `addu operand order` residuals elsewhere in the queue is therefore a one-line respelling, not a search.",
+   "next_probe": "Cheap and out-of-band for this function: when any other grind ledger reports an `addu rd,rA,rB` vs `addu rd,rB,rA` residual on a pointer+index sum, check whether the C spells it as a pointer local or as an inline address and flip that, then verify with the .rtl dump. Worth a line in docs/grind/decisions.md or a technique rule if a second function confirms it."
   }
  ],
  "judge_constraints": [],

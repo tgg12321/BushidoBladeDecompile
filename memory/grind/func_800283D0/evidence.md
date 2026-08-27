@@ -3422,3 +3422,135 @@ at most 2.
 - [s23] Q1 / Q2 (relocating the range check's `return 1;` to a `ret1:` label at the function end / before block_13) = 10 / 215 and 8 / 216. KILLED and banked to rejected/.
 
 - [s23] POLICY FLAG for the next session: the sel19 arm's `*(s16 *)(arg0 + 0x286) = 0x19;` is a real statement duplicated into a branch arm with byte-neutral re-merge - the shape .claude/rules/duplicated-statement-into-arms.md covers, and that rule mandates a FAKE annotation. It is also literally target's own control flow (the same double-goto shape s21 read off target's `<` arm, already in the body un-annotated). Settle it - annotate or ruling-request - BEFORE any candidate-ready submission.
+
+## s24 (synthesis, 2026-08-27) - FLOOR 4 -> 3; the `addu` operand-order axis is RESOLVED AS A MECHANISM and half of it is CLOSED
+
+**E-s24-0 (chassis).**  s23's banked candidate re-measured 4 / 215 on HEAD at
+session start - chassis unchanged.  The new body (tmp/grind/func_800283D0/s24/A.c,
+banked as candidate.c) measures **3 / 215**, twice, with the body in place in
+src/code6cac_b.c.
+
+**E-s24-1 (the two commutative `addu` orders are FIXED AT EXPAND - the s22/s23
+frontier question is answered).**  Read on the 4-floor chassis from
+tmp/grind/func_800283D0/s24/code6cac_b.i.{rtl,combine,lreg,greg}.  The `.rtl`
+dump - i.e. the stream straight out of expand, before cse/combine/regmove/RA -
+ALREADY carries the final operand order at both sites:
+
+    .rtl   insn 277  (set (reg/v 143) (plus:SI (reg/v 72) (reg 145)))   <- (ptr, shift), emitted 96
+    .rtl   insn 518  (set (reg 203)   (plus:SI (reg 202) (reg/v 75)))   <- (shift, ptr), emitted 161
+
+and `.combine` / `.greg` carry the identical order (only the register names
+change).  **No post-expand pass ever touches it**, so there is no combine /
+regmove / reload lever, and the previously-suspected "canonicalised before RA"
+model is WRONG.  The order is decided entirely by the tree and the expansion
+CONTEXT.
+
+**E-s24-2 (the law: expansion context, not source operand order).**  Every
+`plus` of a pointer and a scaled index in this function obeys one rule:
+  - expanded as a **MEM ADDRESS** (`EXPAND_SUM`, i.e. written inline inside a
+    `*(T *)(...)`), it comes out **(shift, pointer)**.  Insns 183
+    (`temp_s4 + temp_s5*2 + 0x288`), 199 (`arg0 + temp_a1_2*2 + 0x288`) and
+    518 (`temp_s4 + temp_s5*0x10 + 0x114`) all do, regardless of how the source
+    is written.
+  - expanded as a **VALUE** (assigned to a pointer local), it comes out in
+    **SOURCE order**, i.e. (pointer, shift).  Insn 277 (`u8 *temp_s3 = arg0 +
+    temp_a1_2 * 2;`) did.
+The address-form order is NOT a source-order axis: C1 (swap the source operands:
+`(temp_s5 * 0x10) + temp_s4 + 0x114`), C2 (constant before the shift:
+`temp_s4 + 0x114 + (temp_s5 * 0x10)`) and C5 (ARRAY_REF spelling
+`((s32 *)temp_s4)[(temp_s5 * 4) + 0x45]`) are ALL byte-neutral at 3.  This
+promotes the s3 / s22 "both source orders neutral" observations from unexplained
+neutrality to a named law.
+
+**E-s24-3 (site 96 CLOSED: delete the `temp_s3` pointer local).**  Target wants
+the ADDRESS form at emitted 96 (`addu s3,v0,s0`).  Deleting
+`u8 *temp_s3 = arg0 + (temp_a1_2 * 2);` and spelling both of its uses as
+`*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288)` moves that `plus` into address
+context: `.lreg` insn 277 becomes `(plus (reg 145) (reg/v 72))` and emitted 96
+becomes `addu s3,v0,s0` = target.  cse still forms the shared address pseudo and
+it still lives in $s3 across the intervening call pair, so nothing else moves.
+**This is ordinary C with no construct and no annotation.**  Floor 4 -> 3.
+(Note this respelling was measured on the s3-era 17-floor chassis as
+`varA-arm-plus-noptr-tail-clusterA-lost-17.c` and rejected because it lost
+cluster A there; cluster A is now closed by s22's do-while(0) wrap, which does
+not depend on livelen(temp_s3), so the respelling is free on this chassis.)
+
+**E-s24-4 (site 161 is a TWO-BODY problem, modelled end to end).**  Target wants
+the VALUE form at emitted 161 (`addu a0,s4,a0`).  Introducing the mirror pointer
+local `s32 *tail = (s32 *)(temp_s4 + (temp_s5 * 0x10));` and spelling the three
+loads `tail[0x45] / tail[0x46] / tail[0x47]` DOES produce target's operand order
+(measured: body AB emits `addu a1,s4,a1`) - but it costs the $a0 seat and the
+whole tail renames a0<->a1 (7 diffs), 9 / 215.  BB2_QTY_DEBUG on block 43 gives
+the exact arithmetic (pri = floor_log2(refs)*refs*10000/span; local-alloc
+allocates in descending pri):
+
+    body A  (no tail local):  qty2 ptr   refs=6 span=20 pri=6000 -> ord5 -> $a0  (correct seat)
+                              qty3 Judge refs=2 span=4  pri=5000 -> ord6 -> $a1
+    body AB (tail local):     qty3 Judge refs=2 span=4  pri=5000 -> ord5 -> $a0  (WRONG)
+                              qty1 ptr   refs=6 span=26 pri=4615 -> ord7 -> $a1
+
+The pointer local moves the quantity's BIRTH from 12 to 6 (span 20 -> 26) and
+that alone flips the order.  A winning body needs the VALUE form AND
+pri(tail qty) > 5000, i.e. **span <= 23** (currently 26) or **refs >= 7**
+(currently 6; it is a COMBINED quantity = the `sll` producer + the pointer, so
+one more genuine reference is enough: refs=7 gives 5384, refs=8 gives 9230).
+Alternatively LOWER the Judge quantity below 4615, which needs span >= 5
+(currently 4, refs 2 -> pri 4000 at span 5).  Source position does NOT move the
+tail quantity's birth/death: AB1 (0x118 load first) and AB2 (tail declaration
+hoisted above `temp_v1_4`) both stay at 9.
+
+**E-s24-5 (emitted 45-47 unchanged; one more route killed).**  R1a - merging the
+two `var_s1 = 0;` blocks so the range chain's last `beq` targets a block with a
+different flow live-in (s23 frontier item 1, attack (i)) - is **byte-neutral at
+3**: GCC had already cross-jumped the two blocks, so the source-level merge
+changes nothing flow sees.  The divergence and its mechanism are exactly as s23
+left them (steal_delay_list_from_fallthrough on jump_insn 78, permitted because
+oppregs = 0x20000380 lacks $v0).
+
+**E-s24-6 (measurement-hygiene incident, worth inheriting).**  `mk.sh` objdumps
+`tmp/sandbox/func_800283D0/code6cac_b.o`, which is whatever the LAST `sandbox`
+run built - not whatever `apply.py` last wrote to src/.  Applying a body and
+then running `mk.sh` without re-running `sandbox` diffs the PREVIOUS body and
+produces a completely wrong residual attribution (it cost this session one
+turn, and briefly manufactured a phantom a0/a1 cluster).  Always
+`run.ps1 -Tags <tag>` immediately before `mk.sh`.  Separately:
+`tools/gcc-2.7.2/cc1` (instrumented) and `tools/gcc-2.7.2/build/cc1` (build)
+were byte-compared this session on this TU and emit IDENTICAL asm, and `-dp -da`
+does not perturb codegen - so dump-based attribution from the instrumented cc1
+is sound.
+
+- [s24] Chassis: s23's candidate re-measured 4 / 215 on HEAD at session start; the s24 candidate measures 3 / 215 twice with the body in place in src/code6cac_b.c.
+- [s24] FLOOR 4 -> 3.  Residual cluster 2 (emitted 96 `addu s3,s0,v0` vs target `addu s3,v0,s0`) is CLOSED by ORDINARY C: delete the `u8 *temp_s3 = arg0 + (temp_a1_2 * 2);` local and spell both of its uses as `*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288)`.  No construct, no annotation, no family claim.
+- [s24] The commutative-`addu` operand order is FIXED AT EXPAND: the `.rtl` dump already carries the final order at both sites (insn 277 and insn 518) and `.combine`/`.greg` are identical.  There is no combine / regmove / reload lever.  The s22/s23 "canonicalised before RA" model is REFUTED.
+- [s24] LAW (measured, 3 sites): a pointer+scaled-index `plus` expanded as a MEM ADDRESS comes out (shift, pointer); expanded as a VALUE assigned to a pointer local it comes out in SOURCE order (pointer, shift).  Source operand order is inert in the address form - C1 (source swap), C2 (constant before the shift) and C5 (ARRAY_REF) are all byte-neutral at 3.
+- [s24] Target uses the ADDRESS form at emitted 96 and the VALUE form at emitted 161.  The two sites therefore need OPPOSITE spellings; s23's body had both backwards.
+- [s24] Site 161 is a two-body problem: the `s32 *tail` pointer local DOES give target's operand order (body AB emits `addu a1,s4,a1`) but moves the tail-pointer local-alloc quantity's birth 12 -> 6 (span 20 -> 26), dropping pri from 6000 to 4615, below the Judge[]-element quantity's 5000, so it loses the $a0 seat and the tail renames (9 / 215).
+- [s24] CLOSED-FORM TARGET for site 161: a body with the VALUE form AND pri(tail qty) > 5000, i.e. span <= 23 or refs >= 7 (pri = floor_log2(refs)*refs*10000/span; the quantity is COMBINED = sll producer + pointer, currently refs=6 span=26).  Equivalent alternative: push the Judge[]-element quantity's span from 4 to >= 5, which drops it to 4000.
+- [s24] KILLED: AB1 (0x118 load first) and AB2 (tail declaration hoisted above temp_v1_4) both 9 - source position does not move the tail quantity's birth/death.  A1 (0x118 first, A chassis) 9; A2/A3 (multiply operand swap) 10; C4 (`s32 tail_off` intermediate) 9; B (tail local on the s23 chassis) 10.
+- [s24] KILLED: R1a - merging the two `var_s1 = 0;` blocks so the range chain's last `beq` targets a block with a different flow live-in (s23 frontier attack (i)) - byte-neutral at 3.  GCC had already cross-jumped the two blocks.
+- [s24] METHOD: a spelling rejected on an OLD chassis because it cost a cluster that a LATER session closed by a different route must be RE-MEASURED, not inherited as dead.  The s24 win is literally `varA-arm-plus-noptr-tail-clusterA-lost-17.c`'s edit - dead at 17 because it lost cluster A, free at 4 because s22 closed cluster A via nrefs(arg1) instead of livelen(temp_s3).
+- [s24] TOOLING: `mk.sh` objdumps the last `sandbox`-built .o, NOT src/ - always re-run `run.ps1 -Tags <tag>` immediately before `mk.sh` or the diff describes the previous body.  `tools/gcc-2.7.2/cc1` (instrumented) and `tools/gcc-2.7.2/build/cc1` emit byte-identical asm on this TU, and `-dp -da` does not perturb codegen.
+
+- [s24] Chassis: s23's banked candidate re-measured 4 / 215 on HEAD at session start; the s24 candidate measures 3 / 215 twice with the body in place in src/code6cac_b.c. Instruction count still matches target exactly (215).
+
+- [s24] FLOOR 4 -> 3. s23 residual cluster 2 (emitted 96 `addu s3,s0,v0` vs target `addu s3,v0,s0`) is CLOSED by ORDINARY C: delete `u8 *temp_s3 = arg0 + (temp_a1_2 * 2);` and spell both uses as `*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288)`. No construct, no annotation, no sanctioned-family claim.
+
+- [s24] The commutative-addu operand order is FIXED AT EXPAND: the .rtl dump already carries the final order at insn 277 and insn 518, and .combine/.greg are identical. There is no combine / regmove / reload lever. The s22/s23 'canonicalised before RA' model is REFUTED.
+
+- [s24] LAW (measured, four sites): a pointer+scaled-index plus expanded as a MEM ADDRESS comes out (shift, pointer); expanded as a VALUE assigned to a pointer local it comes out in SOURCE order (pointer, shift). Source operand order is inert in the address form - C1 (source swap), C2 (constant before the shift) and C5 (ARRAY_REF) are all byte-neutral at 3.
+
+- [s24] Target uses the ADDRESS form at emitted 96 and the VALUE form at emitted 161, so the two sites need OPPOSITE spellings; s23's body had both backwards.
+
+- [s24] Site 161 is a two-body problem: the `s32 *tail` pointer local DOES give target's operand order (AB emits `addu a1,s4,a1`) but moves the tail-pointer local-alloc quantity's birth 12 -> 6 (span 20 -> 26), pri 6000 -> 4615, below the Judge[]-element quantity's 5000, so it loses the $a0 seat (9 / 215).
+
+- [s24] CLOSED-FORM TARGET for site 161 (BB2_QTY_DEBUG block 43, pri = floor_log2(refs)*refs*10000/span): a body with the VALUE form AND pri(tail qty) > 5000, i.e. span <= 23 (currently 26) or refs >= 7 (currently 6 - the quantity is COMBINED = sll producer + pointer; refs=7 gives 5384, refs=8 gives 9230). Equivalent alternative: raise the Judge[]-element quantity's span from 4 to >= 5, dropping it to 4000.
+
+- [s24] KILLED this session: AB1 (0x118 load first) 9, AB2 (tail declaration hoisted above temp_v1_4) 9, A1 (0x118 first, A chassis) 9, A2/A3 (multiply operand swap) 10, C4 (`s32 tail_off` intermediate) 9, B (tail local on the s23 chassis) 10, R1a (merge the two `var_s1 = 0;` blocks) byte-neutral at 3.
+
+- [s24] METHOD (inherit this): a spelling rejected on an OLD chassis because it cost a cluster that a LATER session closed by a different route must be RE-MEASURED, not inherited as dead. The s24 win is literally the edit banked as rejected/varA-arm-plus-noptr-tail-clusterA-lost-17.c - dead at floor 17 because it lost cluster A, free at floor 4 because s22 closed cluster A via nrefs(arg1) instead of livelen(temp_s3).
+
+- [s24] TOOLING: mk.sh objdumps tmp/sandbox/func_800283D0/code6cac_b.o - whatever the LAST sandbox run built, NOT src/. Applying a body and running mk.sh without re-running sandbox diffs the previous body (it manufactured a phantom a0/a1 cluster for one turn this session). Always run.ps1 -Tags <tag> immediately before mk.sh.
+
+- [s24] TOOLING: tools/gcc-2.7.2/cc1 (instrumented) and tools/gcc-2.7.2/build/cc1 (build) were byte-compared on this TU and emit IDENTICAL asm, and -dp -da does not perturb codegen - dump-based attribution from the instrumented cc1 is sound.
+
+- [s24] POLICY (unchanged, still open): the body carries two family-relevant constructs that MUST be settled before any candidate-ready submission - the annotated `do { calls } while (0);` wrap (.claude/rules/do-while-zero-exception.md) and the sel19 arm's duplicated `*(s16 *)(arg0 + 0x286) = 0x19;` store, which is the shape .claude/rules/duplicated-statement-into-arms.md covers and that rule mandates a FAKE annotation.
