@@ -336,3 +336,139 @@ pri 2608), which there is no honest use for — arg1 is genuinely referenced exa
 - [s2] [s2] Three forms banked as rejected: addu-commutativity respelling (laundered, flat 30), distinct-terminator on the tail copy (29/211, jump2 re-merges after cross-jumping the store+return into block_48), and hoisting temp_s3 above the temp_v1_3 branch (28 -> 63, cse eats the arm's own addu).
 
 - [s2] [s2] Tooling: the instrumented cc1 is tools/gcc-2.7.2/cc1 (NOT build/cc1) and exits rc 33 on this TU because of a pre-existing 'too few arguments' error at src/code6cac_b.c:424 in an unrelated function - it still emits complete output, ignore the exit code. Harness banked at tmp/grind/func_800283D0/s2/xjump.sh.
+
+## 2026-08-26 session 3 (grinder, structural) — FLOOR FLAT AT 28; the tail a0/a1 cluster is now MODELLED with ground truth
+
+Chassis re-measured at session start with the s2 candidate applied to src/code6cac_b.c:
+sandbox --disable all = 28, build_insns 215 == target 215. Ledger floor confirmed; no
+regression. The session produced no floor drop — it converted frontier item 3 from
+"not yet modelled" into an exact numeric requirement and killed eight ordinary-C
+structural respellings across all three residual clusters.
+
+### The tail a0/a1 swap (7 diffs) is a local-alloc QUANTITY-ORDER decision — measured
+
+Frontier item 3 said "read the .lreg qty report BEFORE hypothesising". Done, and better:
+`tools/gcc-2.7.2/cc1` carries a `BB2_QTY_DEBUG=1` hook (local-alloc.c:1581-1591) that
+prints the post-sort quantity order with birth/death/refs/assignment. Harness banked at
+tmp/grind/func_800283D0/s3/qty.sh, trace at s3/qty_trace.txt. For the tail block
+(local-alloc block 41) it prints, in allocation order:
+
+    QTYDBG blk=41 ord=0 qty=2  reg1=198 birth=10 death=16 refs=6 got=2
+    QTYDBG blk=41 ord=1 qty=1  reg1=208 birth=4  death=26 refs=9 got=3
+    QTYDBG blk=41 ord=2 qty=4  reg1=203 birth=18 death=20 refs=2 got=2
+    QTYDBG blk=41 ord=3 qty=8  reg1=213 birth=28 death=30 refs=2 got=2
+    QTYDBG blk=41 ord=4 qty=11 reg1=215 birth=38 death=40 refs=2 got=2
+    QTYDBG blk=41 ord=5 qty=3  reg1=201 birth=16 death=20 refs=2 got=4   <- Judge[] element
+    QTYDBG blk=41 ord=6 qty=7  reg1=211 birth=26 death=30 refs=2 got=3
+    QTYDBG blk=41 ord=7 qty=0  reg1=184 birth=2  death=32 refs=6 got=5   <- temp_a0 pointer
+
+`qty_compare_1` (local-alloc.c:1659-1685) is the SAME shape as global.c's allocno_compare
+but over quantities: pri = floor_log2(n_refs) * n_refs * size / (death - birth) * 10000,
+and — decisively — ties are broken by ASCENDING QTY NUMBER (`return *q1 - *q2;`).
+
+    pri(qty0, temp_a0 pointer) = floor_log2(6)*6/30 * 10000 = 4000
+    pri(qty3, Judge[] element) = floor_log2(2)*2/4  * 10000 = 5000
+
+qty3 sorts first, `find_free_reg` walks hard regs ascending (MIPS defines no
+REG_ALLOC_ORDER — re-verified), $2/$3 are already taken by qty2/qty1, so qty3 takes
+$a0 (4) and qty0 takes $a1 (5). Target is the mirror: pointer in $a0, Judge[] element in
+$a1 (asm/funcs/func_800283D0.s:175-199 — `addu $a0,$s4,$a0`, `lh $a1,%lo(Judge)($at)`,
+`lw $v0,0x114($a0)`, `mult $a1,$v0`, `lw $a0,0x118($a0)`).
+
+So the whole 7-diff cluster is ONE decision, and because qty0 < qty3 a TIE IS ENOUGH.
+The requirement is therefore pri(qty0) >= 5000, i.e. one of:
+  * `death - birth` for qty0 drops from 30 to <= 24 (birth/death step by 2 per insn, so
+    that is 3 fewer insns of quantity span), with refs held at 6; or
+  * `death - birth` for qty3 rises from 4 to >= 6 (one more insn scheduled between
+    `lh Judge(at)` and `mult`), which drops pri(qty3) to 3333 < 4000; or
+  * refs(qty0) reaches 8 (floor_log2 3 => 8000) — there is no honest 8th reference.
+
+Note qty0 is NOT just the `temp_a0` pseudo: refs=6 and birth=2 mean local-alloc has
+COMBINED the `sll` result pseudo (temp_a0's producer) and `var_a1`'s pseudo into the same
+quantity, so the span runs from `sll $5,$21,4` at block index 2 all the way to var_a1's
+last use (`slt`) at index 32. That is why the naive "Register 184 used 4 times across 14
+insns" read of the .lreg summary line understates it — use BB2_QTY_DEBUG, not the .lreg
+summary line, for local-alloc questions.
+
+Caveat for the next session: birth/death are indices in the block AT LOCAL-ALLOC TIME,
+i.e. after sched1 but BEFORE sched2/reorg. Our final emitted tail order is instruction-
+for-instruction identical to target's (verified against asm/funcs/func_800283D0.s), so the
+divergence must live in the PRE-reload order or in which pseudos local-alloc combines into
+qty0 — not in anything visible in the final asm.
+
+### Eight ordinary-C structural respellings measured; all laundered or worse
+
+Every variant below was generated from the s2 candidate body and measured with
+`sandbox --disable all`; sources are banked in tmp/grind/func_800283D0/s3/v/.
+
+| probe | change | score / insns | verdict |
+|---|---|---|---|
+| A_s3_int | `temp_s3 = (u8*)((temp_a1_2*2) + (s32)arg0)` — integer-typed plus, to try to flip the `addu` operand order | 28 / 215 | laundered |
+| B_a0_int | same integer-plus trick on the tail `temp_a0` | 28 / 215 | laundered |
+| C_mul_swap | swap both multiply operand orders in `temp_v1_5` | 29 / 215 | WORSE |
+| D_a0_2_late | declare `temp_a0_2` / `var_a1` after `temp_v1_5` | 28 / 215 | laundered |
+| E_a0_decl_late | declare `temp_a0` after `temp_v1_4` (shrink its source-level span) | 28 / 215 | laundered |
+| F_no_a0_local | delete the `temp_a0` local; spell `temp_s4 + temp_s5*0x10 + off` at all three loads | 28 / 215 | laundered (cse rebuilds the identical pseudo) |
+| G_abs_late | move `if (temp_a0_2 < 0) var_a1 = -temp_a0_2;` below `var_v0_3 = temp_v1_5;` | 31 / 216 | WORSE — costs a whole insn |
+| L_ternary_tail | tail selection as `var_v0_2 = (var_s1 != 0) ? 0x19 : 0xB;` | 28 / 215 | laundered (identical RTL to the if/else) |
+| M_tail_two_gotos | tail selection as `if (var_s1==0) goto tail_0B; v=0x19; goto block_48; tail_0B: v=0xB; goto block_48;` | 28 / 215 | laundered — pairdiff hunk set BYTE-IDENTICAL to base |
+| N_no_s3_local | delete the `temp_s3` local; spell `arg0 + temp_a1_2*2 + 0x288` at both sites | 28 / 215 | laundered |
+
+Two conclusions worth banking hard:
+
+1. The declaration-order / local-elimination axis is DEAD for this function. A, B, D, E,
+   F and N all target the birth or death of exactly the pseudos the two allocation
+   clusters hinge on, and all six are byte-neutral. GCC 2.7.2 rebuilds the same pseudo
+   with the same birth from cse + sched1 regardless of where the C names it. This kills
+   the cheap end of frontier items 2 and 3 — the remaining levers must change the amount
+   of WORK inside the live range, not where the C declares the value.
+2. The distinct-label axis for defeating the jump2 pairing is DEAD (M). jump.c threads the
+   extra `goto` before the cross-jump phase and rebuilds exactly the two-simplejump shape,
+   so the pairing is attempted identically. Combined with s2's KILLED distinct-terminator
+   probe, both "make the two copies structurally different at the jump" ideas are now
+   spent; only the UID / jump_chain-order route in frontier item 1 remains.
+
+### Statement-order asymmetry (G) is a real, measured constraint
+
+G is the only probe that changed the instruction COUNT (216). The two absolute-value
+computations (`|temp_a0_2|` into var_a1 and `|temp_v1_5|` into var_v0_3) must appear in
+source in the order abs(temp_a0_2) first, abs(temp_v1_5) second, or reorg loses the shared
+`bgez`/`negu` layout and emits an extra instruction. Do not re-probe that ordering.
+
+- [s3] Chassis re-measured at session start with the s2 candidate applied: sandbox --disable all = 28, build_insns 215 == target 215. Floor flat this session; no regression, no improvement.
+
+- [s3] The tail a0/a1 cluster (7 diffs) is a local-alloc quantity-order decision, measured with BB2_QTY_DEBUG=1 on tools/gcc-2.7.2/cc1: pri(qty0 = temp_a0 pointer, birth 2 death 32 refs 6) = 4000 vs pri(qty3 = Judge[] element, birth 16 death 20 refs 2) = 5000, so qty3 is allocated first and takes $a0.
+
+- [s3] qty_compare_1 (local-alloc.c:1659-1685) breaks priority ties by ASCENDING QTY NUMBER, and the pointer is qty0 while the Judge element is qty3 - so a TIE is sufficient for target's assignment. Requirement: span(qty0) <= 24 (from 30, i.e. 3 fewer insns) OR span(qty3) >= 6 (from 4, i.e. one more insn between the `lh Judge` and the `mult`).
+
+- [s3] qty0 is a COMBINED quantity (the sll producer + temp_a0 + var_a1), which is why the .lreg summary line 'Register 184 used 4 times across 14 insns' understates it (refs 6, span 30). For local-alloc questions read BB2_QTY_DEBUG, not the .lreg summary line.
+
+- [s3] Our emitted tail is instruction-for-instruction identical to target's (asm/funcs/func_800283D0.s:175-199) apart from the a0/a1 rename, so the qty-span divergence lives in the PRE-reload (post-sched1) order or in local-alloc's quantity COMBINING, not in anything visible in the final asm.
+
+- [s3] Eight ordinary-C structural respellings measured, all byte-neutral at 28/215: integer-typed pointer plus on temp_s3 (A) and temp_a0 (B), declaring temp_a0_2/var_a1 late (D), declaring temp_a0 late (E), deleting the temp_a0 local (F), ternary tail selection (L), two-goto-label tail selection (M, pairdiff hunk set byte-identical), deleting the temp_s3 local (N). The declaration-order / local-elimination axis is dead for this function.
+
+- [s3] Two probes are WORSE and banked as rejected: swapping the multiply operand orders in temp_v1_5 (29/215) and sinking the temp_a0_2 abs below the temp_v1_5 abs (31/216 - it costs a whole instruction, so the relative order of the two abs computations is load-bearing).
+
+- [s3] Artifacts: tmp/grind/func_800283D0/s3/qty.sh + qty_trace.txt (local-alloc quantity trace), pd_start.txt and pd_M.txt (pairdiff at 28), v/*.c (all ten probe bodies), lreg.txt/greg.txt (function-sliced allocation dumps).
+
+- [s3] LATE PROBE P_var_a1_ifelse: spelling the tail absolute value as `if (temp_a0_2 < 0) { var_a1 = -temp_a0_2; } else { var_a1 = temp_a0_2; }` (no `var_a1 = temp_a0_2;` initialiser, so no reg-to-reg copy for local-alloc's combine_regs to fuse onto the pointer's quantity) measures 28 / 215 AND leaves the block-41 BB2_QTY_DEBUG table byte-identical (qty0 still birth 2 death 32 refs 6, qty3 still birth 16 death 20 refs 2). GCC rebuilds the same copy insn from the two-arm form, so the 'break the var_a1 copy to shorten qty0' axis is KILLED before it was ever spent. Trace banked at tmp/grind/func_800283D0/s3/qty_trace_P.txt, body at s3/v/P_var_a1_ifelse.c.
+
+- [s3] Chassis re-measured at session start with the s2 candidate applied to src/code6cac_b.c: sandbox --disable all = 28, build_insns 215 == target 215. Floor flat this session; the body in src/ and memory/grind/func_800283D0/candidate.c is unchanged and re-verified at 28 after all probes were reverted.
+
+- [s3] tools/gcc-2.7.2/cc1 carries a BB2_QTY_DEBUG=1 hook (local-alloc.c:1581-1591) that prints the post-sort local-alloc quantity order with blk/ord/qty/reg1/birth/death/refs/got. It answers local-alloc questions in one run, exactly as BB2_XJUMP_DEBUG does for cross-jump questions. Full hook list: BB2_ALLOC_DEBUG, BB2_DBR_DEBUG, BB2_FINDREG_DEBUG, BB2_FLOW_DEBUG, BB2_FRAME_DEBUG, BB2_PRIO_DEBUG, BB2_QTY_DEBUG, BB2_RANK_DEBUG, BB2_RELOAD_DEBUG, BB2_SCHED_DEBUG, BB2_SUGG_DEBUG, BB2_XJUMP_DEBUG.
+
+- [s3] Block-41 quantity order (ours): ord0 qty2 refs6 span6 -> $2; ord1 qty1 refs9 span22 -> $3; ord2 qty4 -> $2; ord3 qty8 -> $2; ord4 qty11 -> $2; ord5 qty3 (Judge[] element) refs2 span4 -> $4; ord6 qty7 -> $3; ord7 qty0 (temp_a0 pointer) refs6 span30 -> $5.
+
+- [s3] qty_compare_1 (local-alloc.c:1659-1685) breaks priority ties by ascending qty number, and the pointer is qty0 while the Judge[] element is qty3 - so a TIE is sufficient for target's assignment. Requirement: span(qty0) <= 24 (from 30, i.e. 3 fewer insns) OR span(qty3) >= 6 (from 4, i.e. one more insn between the `lh Judge` and the `mult`).
+
+- [s3] qty0 is a COMBINED quantity spanning the sll producer, the temp_a0 pointer and var_a1 (refs 6, birth 2, death 32). The .lreg summary line 'Register 184 used 4 times across 14 insns' describes only one member pseudo and is misleading for priority arithmetic - read BB2_QTY_DEBUG for local-alloc questions.
+
+- [s3] Our emitted tail is instruction-for-instruction identical to target's (asm/funcs/func_800283D0.s:175-199) apart from the a0/a1 rename, so the qty-span divergence lives in the PRE-reload (post-sched1) insn order or in which pseudos local-alloc COMBINES into qty0, not in anything visible in the final asm.
+
+- [s3] Eight ordinary-C structural respellings measured byte-neutral at 28/215: A_s3_int, B_a0_int, D_a0_2_late, E_a0_decl_late, F_no_a0_local, L_ternary_tail, M_tail_two_gotos (pairdiff hunk set proven byte-identical), N_no_s3_local. The declaration-order / local-elimination axis is dead for this function.
+
+- [s3] Two probes measured WORSE and are banked as rejected forms: tail-mult-operand-swap-worse.c (29/215) and tail-abs-sunk-below-shift-adds-insn.c (31/216). diamond2-two-goto-labels-laundered.c is banked as the third rejected form (byte-identical, i.e. a proven-inert axis).
+
+- [s3] The residual at 28 is unchanged in shape and now fully attributed: 11 diffs = the s2/s3 global.c allocno_compare rotation (needs live_length(pseudo 143) in {20,21,22}); 8 diffs = the diamond-2 selection copies (needs the jump2 pairing never to be ATTEMPTED); 7 diffs = the tail a0/a1 local-alloc quantity order (needs pri(qty0) >= 5000); 4 near-neutral j/nop reorg-fill diffs at slots 45-48.
+
+- [s3] LATE PROBE P_var_a1_ifelse (the obvious next move on the tail cluster) is KILLED before the next session spends it: removing the `var_a1 = temp_a0_2;` initialiser in favour of an explicit two-arm write leaves both the score (28/215) and the entire block-41 BB2_QTY_DEBUG quantity table byte-identical.

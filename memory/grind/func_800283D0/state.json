@@ -1,7 +1,7 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 28,
    "modality": "structural",
    "headline": "Floor 30 -> 28 and build_insns 211 -> 215 == target EXACTLY: diamond 2 proven (instrumented cc1) to be jump2's cross-jump merge of the two var_v0_2 selection copies, defeated by spelling one copy as a"
+  },
+  {
+   "session": 3,
+   "floor": 28,
+   "modality": "structural",
+   "headline": "Floor flat at 28 (215/215 insns): the tail a0/a1 cluster is now modelled exactly with BB2_QTY_DEBUG ground truth (local-alloc qty priority 4000 vs 5000, ties favour the pointer), and nine ordinary-C s"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Diamond 2's last 8 diffs need BOTH selection copies in target's canonical `v=0x19; if(!s1) v=0xB;` order AND unmerged, which under the traced mechanism means the jump2 pairing must never be ATTEMPTED rather than fail its comparison",
-   "mechanism": "jump.c:1996-2033 - the chain-partner loop is guarded by `if (INSN_UID (JUMP_LABEL (insn)) < max_uid)` and walks jump_chain[] stopping at the first WIN, so block_48's label UID and the chain order decide whether e1=362 ever meets e2=397",
-   "next_probe": "Re-run tmp/grind/func_800283D0/s2/xjump.sh on the CANONICAL both-copies-identical body, read which partners are tried for e1 and in what order, then look for a statement placement that either pushes block_48's label UID past max_uid or gives e1 an earlier chain partner that wins first"
+   "hypothesis": "The tail a0/a1 cluster flips when the temp_a0 quantity's priority reaches a TIE with the Judge[] element's, i.e. qty0's span drops from 30 to <= 24 (3 fewer insns) or qty3's span rises from 4 to >= 6 (one more insn between the `lh Judge` and the `mult`).",
+   "mechanism": "local-alloc.c qty_compare_1 pri = floor_log2(n_refs)*n_refs*size/(death-birth)*10000, ties -> ascending qty number, and qty0 (pointer, combined with the sll producer and var_a1) < qty3 (Judge[] element).",
+   "next_probe": "The declaration-order axis is KILLED and so is the obvious combine_regs attack (P_var_a1_ifelse leaves the quantity table byte-identical), so do not respell where the values are named or how var_a1 is written. qty0 spans block indices 2..32 because it fuses the `sll` producer, the temp_a0 pointer and var_a1; the only remaining honest axes are (a) raise qty3's span from 4 to >=6 by getting one more insn scheduled between the `lh Judge(at)` and its `mult` - a sched1 question, so read the .sched dump for that block's ready-list ordering before writing any C - or (b) shrink qty0's span to <=24 by making the `lw 0x118` (qty0's real last pointer use) land 3 insns earlier at LOCAL-ALLOC time, which is also a sched1 question since the final order is set by sched2. Read tmp/grind/func_800283D0/dumps/code6cac_b.sched for block 41 FIRST."
   },
   {
-   "hypothesis": "The 11-diff s2/s3 rotation flips when live_length(pseudo 143, temp_s3) reaches 20 or 21 without cse merging the `temp_v1_3 == 0` arm's own address computation into it",
-   "mechanism": "global.c:635-655 allocno_compare - pri(143) must land strictly between pri(75 temp_s4)=1363 and pri(73 arg1)=1521",
-   "next_probe": "Keep the temp_s3 def where it is (hoisting is KILLED) and push the LAST use later instead: look for a semantics-clean ordering in which the `*(s16*)(temp_s3 + 0x288) == 5` re-read is consumed a few insns further down, e.g. below one of the two func_80032854 calls, and re-read .lreg to check L landed in the window"
+   "hypothesis": "Diamond 2's last 8 diffs need BOTH selection copies in target's canonical `v=0x19; if(!s1) v=0xB;` order AND unmerged, which under the traced mechanism means the jump2 pairing must never be ATTEMPTED rather than fail its comparison.",
+   "mechanism": "jump.c:2012-2021 - the chain-partner loop is guarded by `if (INSN_UID (JUMP_LABEL (insn)) < max_uid)` and walks jump_chain[] stopping at the first WIN; jump_chain itself is only populated for jumps whose UID and label UID are below max_jump_chain, so a jump or label CREATED during jump optimization is invisible to the chain.",
+   "next_probe": "Both 'make the copies structurally different at the jump' routes are now dead (s2 distinct terminator, s3 two-goto labels). Run tmp/grind/func_800283D0/s2/xjump.sh on the CANONICAL both-copies-identical body with the trace instrumented to also print INSN_UID(JUMP_LABEL) and max_uid, and check whether block_48's label UID is below max_uid at all. If it is, enumerate which partners are tried for e1 and in what order, and look for a statement placement earlier in the function that gives e1 an EARLIER chain partner that wins first (a merge elsewhere that is byte-neutral)."
   },
   {
-   "hypothesis": "The 7-diff tail a0/a1 swap is a local-alloc/reload decision, not a global.c one, because both registers are CALLER-saved and live only inside the final block",
-   "mechanism": "local-alloc.c quantity ordering / reload register selection rather than global.c allocno_compare",
-   "next_probe": "Read the .lreg qty report for that block (and BB2_FINDREG_DEBUG on the instrumented cc1) BEFORE hypothesising a C lever - s1 and s2 both assumed the global.c lens for this cluster and it has never been checked"
+   "hypothesis": "The 11-diff s2/s3 rotation flips when live_length(pseudo 143, temp_s3) reaches 20, 21 or 22 without cse merging the `temp_v1_3 == 0` arm's own address computation into it.",
+   "mechanism": "global.c:635-655 allocno_compare - pri(143) = 30000/L must land strictly between pri(75 temp_s4)=1363 and pri(73 arg1)=1521, i.e. L in {20,21,22}; the alternative of raising pri(73) above 2142 needs live_length(73) < 66 (currently 92), which is not reachable because arg1 is genuinely live from the prologue home to the last func_80032854 call.",
+   "next_probe": "Declaration-order moves are KILLED (N_no_s3_local is byte-neutral) and hoisting is KILLED (s2, cse eats the arm's addu), so the only remaining axis is putting real WORK inside temp_s3's live range. Enumerate what is computed before the `temp_v1_3 != 0` block and consumed after the second func_80032854 call (temp_s5's `(d_val >> *(s16*)(temp_s4+4)) & 1` is the strongest candidate, since it is only used in the tail) and test sinking that computation into the range between the two calls and the `*(s16*)(temp_s3 + 0x288) == 5` re-read; re-read .lreg to check L landed in {20,21,22}."
   }
  ],
  "judge_constraints": [],

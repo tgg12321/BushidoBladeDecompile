@@ -1,4 +1,4 @@
-/* candidate.c — func_800283D0 (saTan2KabutoWareMove), grind s2 2026-08-26
+/* candidate.c ï¿½ func_800283D0 (saTan2KabutoWareMove), grind s2 2026-08-26
  * Honest floor with THIS body: sandbox --disable all = 28 (down from 30);
  * build_insns 215 == target 215 EXACTLY (was 211).
  * This body is APPLIED in src/code6cac_b.c.
@@ -19,7 +19,17 @@
  * KNOWN-IMPERFECT: the if/else copy emits `beqz s1 / li v0,11 / j / li v0,25`
  * where target has `bnez s1 / li v0,25 / j / li v0,11` (4 diffs).  The
  * byte-exact answer needs BOTH copies in the canonical `v=0x19; if(!s1) v=0xB;`
- * order AND unmerged — not yet found.  See hypotheses.md H8.
+ * order AND unmerged ï¿½ not yet found.  See hypotheses.md H8.
+ *
+ * s3 (2026-08-26, structural): body UNCHANGED, floor re-measured flat at 28 /
+ * 215 insns.  Ten ordinary-C structural respellings measured against this body;
+ * eight are byte-neutral (declaration order, deleting the temp_s3 / temp_a0
+ * locals, integer-typed pointer plus, ternary and two-goto-label spellings of
+ * the tail selection) and two are worse (multiply-operand swap 29, sinking the
+ * temp_a0_2 abs 31/216).  The tail a0/a1 cluster is now MODELLED: it is a
+ * local-alloc quantity-order decision, pri(qty0 pointer)=4000 vs
+ * pri(qty3 Judge[] element)=5000, ties broken by ascending qty number so a tie
+ * suffices - see evidence.md 2026-08-26 session 3.
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
     s32 temp_a1;
