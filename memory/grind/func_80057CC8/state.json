@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 31,
- "current_modality": "forensics",
+ "session_count": 32,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -195,23 +195,29 @@
    "floor": 26,
    "modality": "forensics",
    "headline": "s31 forensics: floor 30 -> 26 via a new 110-insn regime (next-neighbour ADDRESS formed above the first call, single base materialisation, target's 8 callee-saves); the 104-regime's 7-insn deficit item"
+  },
+  {
+   "session": 32,
+   "floor": 24,
+   "modality": "rederive",
+   "headline": "s32 rederive: floor 26 -> 24 via an arm-selected next-neighbour BYTE OFFSET (108 insns, single base materialisation); and the target's $16-$19 callee-save mapping is proven arithmetically unreachable "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The floor can be driven below 26 inside the 110-insn regime by matching the target's register assignment and the order around the two calls, without any new construct family.",
-   "mechanism": "The s31 candidate's pre-call block already mirrors the target instruction-for-instruction; the residual 26 is (a) an allocation permutation (ours: arg0=$19, next_vert=$16, twins=$18/$17; target: arg0=$18, next_idx=$19, twins=$17/$16) and (b) the hoisted 3-insn address arithmetic sitting before the first call where the target's sits between the calls. Allocation order in global.c follows allocno priority, which is driven by reference counts and live-range lengths -- both of which the source can shift by where values are first defined.",
-   "next_probe": "Take the s31 candidate and permute declaration/definition ORDER of next_vert vs the twins (and the pi/ni assignments) so the base-order of allocno creation changes; measure each with sandbox --disable all, targeting the register assignment shown in the norm2.py diff of v4.hon.s against asm/funcs/func_80057CC8.s."
+   "hypothesis": "The base pseudo can be brought to THREE references without a second materialisation, by deriving the CENTRE address from one of the neighbour addresses (or vice versa) using a delta computed before the branches -- which would drop its allocno priority below arg0's and reproduce the target's exact $16..$19 assignment.",
+   "mechanism": "allocno_compare (global.c:635) uses floor_log2(n_refs)*n_refs/live_length; at 4 refs the base scores ~0.24 (rank 2), at 3 refs ~0.09 (rank 4, below arg0's ~0.14). The three uses are the centre, prev and next vertex addresses; any one of them expressed relative to another removes a base reference.",
+   "next_probe": "Measure a centre pointer ctr = table + arg1*2 used for cx/cy, with the prev address written as ctr + (pi - arg1)*2 and/or the next address as ctr + (ni - arg1)*2, computing the deltas before the two if-blocks. Check build_insns and the emitted $16..$19 assignment with tmp/grind/func_80057CC8/s31/norm2.py; the delta arithmetic must not cost more than the one instruction it saves."
   },
   {
-   "hypothesis": "The count model insns = (values live across the call) + (base loads) + 101 has an escape cell: some value the target holds could be produced for free by an expression the function already needs, putting a ban-compliant form at 111 with a different instruction where the target's reload sits.",
-   "mechanism": "The model's ban-compliant cells are {7,8,9} live values x {1 base load} = {104,110,112}. A 111 would need a 9th live value whose save/restore cost is only one instruction -- i.e. a value already restored on some path, or one whose def can sit in a delay slot. reorg.c fills delay slots after allocation, so a value defined in the bgez/beq delay slot is a candidate.",
-   "next_probe": "Enumerate the delay slots the target fills (asm/funcs/func_80057CC8.s:21 addu $s7,$a3; :47 subu $a1; :62 addiu $v0,$s0,0x800) and test source arrangements that make one additional value's definition land in a delay slot in the 110 regime, measuring whether the count moves to 111 and the score below 26."
+   "hypothesis": "The engine's distance metric is more sensitive to register naming and block order than to raw instruction count, so a deliberately 111-insn ban-compliant form in the offset-in-arms regime could score below 24 even though the 108-insn form is 3 short.",
+   "mechanism": "s32 measured 24 at 108 insns, 25-26 at 110 insns and 27 at 109 insns -- score is not monotone in the absolute difference between build_insns and target_insns, which means the metric is dominated by per-instruction text agreement.",
+   "next_probe": "Re-introduce the s31 sll16/sra14 address pair on top of the s32 arm-selected offset (keep off in the arms but recompute the shift from the raw index after the blocks) to land at 110-111 insns, and measure whether any 111-insn ban-compliant arrangement beats 24."
   },
   {
-   "hypothesis": "Nothing further is reachable toward a BYTE MATCH: the residual is entirely the refused duplication policy, now proven by counting as well as by mechanism.",
-   "mechanism": "asm/funcs/func_80057CC8.s contains two loads of 0x4($s2); a single source-level materialisation emits one; s30b proved GCC 2.7.2 has no rematerialisation path (REG_EQUIV notes present but insufficient, caller-save excluded by CALLER_SAVE_PROFITABLE at 1 call / 3-4 refs). Therefore every ban-compliant form differs from the target in at least that instruction.",
-   "next_probe": "Do NOT re-file an escalation packet: a YES there would lower a standard (the pre-decided-NO auto-reject class, owner ruling 2026-08-24). Spend sessions on the two floor axes above; they are honest measurable work inside the existing standards."
+   "hypothesis": "Nothing reachable closes the last instruction toward a BYTE MATCH: the residual is the refused duplication policy, now proven three ways (mechanism s30b, instruction-multiset counting s31, allocno-priority arithmetic s32).",
+   "mechanism": "The target's instruction multiset contains two loads of 0x4($s2); every ban-compliant form emits one, and GCC 2.7.2 has no rematerialisation path that supplies the second.",
+   "next_probe": "Do NOT re-file an escalation packet -- a YES there would lower a standard (pre-decided-NO auto-reject class, owner ruling 2026-08-24). Spend sessions on the two floor axes above."
   }
  ],
  "judge_constraints": [

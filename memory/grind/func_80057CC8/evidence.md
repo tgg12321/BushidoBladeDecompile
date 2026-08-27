@@ -1025,3 +1025,124 @@ gen.sh, apply.py, dumpsB/text1b.combine{,.57CC8}, dumpsD/text1b.combine{,.57CC8}
 - [s31] Moving a computation cannot shrink the live-across-call set: hoisting scale above the calls frees arg0 into $t0 but hands its callee-save to scale, leaving 112 insns unchanged.
 
 - [s31] src/text1b.c was restored to INCLUDE_ASM("asm/funcs", func_80057CC8); at end of session (git diff clean). No commits, no rule files touched.
+
+## s32 (2026-08-27) — rederive — FLOOR 26 -> 24, and the callee-save assignment is now arithmetically explained
+
+**Chassis re-measured first.** HEAD is `INCLUDE_ASM("asm/funcs", func_80057CC8);` at
+src/text1b.c:1665. The inherited s31 candidate (next-neighbour ADDRESS hoisted above the
+first call) re-measured at **score 26, build_insns 110, target_insns 111, rules_dropped 0** —
+the ledger floor was current, not stale. Twelve structurally distinct forms were then
+derived and measured against it.
+
+**[s32-E1] NEW FLOOR 24 — select the next-neighbour BYTE OFFSET in the two arms of the
+next-index test and form the address once afterwards.** Source shape:
+`{ s32 tmp = arg1 + 1; s32 off = (s16) tmp * 4; if ((s16) tmp >= (s32)arg0[3]) off = 0;
+next_vert = (s16 *)((s32)table + off); }`. Measured **score 24 at build_insns 108**
+(previous best 26 at 110). The vertex-table base is still read exactly once. Two measured
+consequences: (a) the arm re-uses the sign-extension the range compare already had to
+compute, so the offset costs ONE instruction (`sll $6,$2,2`) instead of s31's sll16/sra14
+pair, and (b) GCC coalesces `next_vert` onto `table`'s hard register — emitted
+`addu $17,$17,$6` — which moves the sign-extended centre-Y twin onto the target's `$16`.
+Banked as candidate.c.
+
+**[s32-E2] The centre-coordinate type spelling and the twin-vs-raw spelling of the two
+final adds are BOTH codegen-inert in the new 108-insn regime.** Declaring `cx`/`cy` as
+`s16` and reading through `*(s16 *)` scores the same 24 at 108 insns; using `(s16) cx` /
+`(s16) cy` (the sign-extended twins) instead of the raw coordinates in `*arg2 = ... ` /
+`*arg3 = ...` emits BYTE-IDENTICAL text (`diff -q` clean). This extends s31-E2 (which
+proved the same for the 112-insn regime) to the current regime.
+
+**[s32-E3] Naming the prev-neighbour address in its own local is near-inert.** Adding
+`s16 *prev_vert = &table[pi * 2];` alongside `next_vert` changes exactly one instruction —
+the PLUS operand order of the prev address `addu` (`addu $2,$17,$2` instead of
+`addu $2,$2,$17`, where the target has `addu $2,$2,$6`) — and scores the same 24. The
+frontier-hypothesis-2 lever "redirect the PLUS operand order at the p2 addu" is therefore
+reachable but worth zero on this metric.
+
+**[s32-E4] THE CALLEE-SAVE ASSIGNMENT IS NOW A CLOSED ARITHMETIC QUESTION, AND THE TARGET'S
+MAPPING IS UNREACHABLE BAN-COMPLIANTLY.** GCC 2.7.2 assigns hard registers to the
+call-crossing allocnos in descending `allocno_compare` priority (tools/gcc-2.7.2/global.c:635):
+`floor_log2(n_refs) * n_refs / live_length * 10000 * size`, first-allocated taking the first
+free callee-save `$16`, and so on. Reading the ranks off the emitted asm:
+  * target ranks: cys, cxs, arg0, next_idx  ->  `$16 $17 $18 $19`
+  * s31 candidate: next_vert, cys, cxs, arg0 ->  `$16 $17 $18 $19`
+  * s32 candidate: cys, table/next_vert, cxs, arg0 -> `$16 $17 $18 $19`
+The s32 form is one swap from the target: its base pseudo must fall BELOW `arg0`. `arg0`
+carries 5 references over ~72 insns (priority ~0.14); the base carries FOUR (def + centre
+address + prev address + next address) over ~34 insns, and at four references
+`floor_log2` steps up to 2, giving ~0.24 — rank 2. At THREE references the same live range
+gives ~0.09, which lands it below `arg0` and reproduces the target's `$16..$19` exactly.
+There is no ban-compliant way to reach three: the three uses ARE the three distinct vertex
+addresses the function must form, so removing one means either a second materialisation of
+`*(s16 **)(arg0 + 4)` (the Judge-banned family) or deriving one neighbour address from
+another (measured: costs more instructions than it saves — see vT). Raising the other three
+above the base is arithmetically impossible: `arg0`'s live range reaches the trailing
+`lbu 2(arg0)` and cannot be shortened without hoisting `scale`, which s31-E3 already
+measured as a regression and which additionally takes `arg0` OUT of the live-across set
+(the target keeps it in).
+
+**[s32-E5] Shrinking the live-across-call set below the target's 8 is counterproductive
+(new measurement).** Computing the next-neighbour dx/dy BEFORE the first `ratan2` call makes
+the two sign-extended centre twins die before the call, leaving seven values across it as
+designed — and scores **42 at 110 insns**, because combine then folds the centre loads into
+`lh` and the whole body drifts. Together with s31-E1 (the 7-live 104-insn regime at score 59)
+this closes the "fewer live values" direction in both spellings.
+
+**[s32-E6] The if-block swap is dead on the current chassis, in both address regimes.**
+Putting the next-index block before the prev-index block scores 41 at 106 insns with the
+offset-in-arms form and 41 at 109 insns with the s31 sll16/sra14 form. This re-confirms
+s2's 2026-07 measurement (then score 31 on a completely different chassis) and closes the
+axis: GCC fuses the two `lbu 3(arg0)` reads once the blocks are adjacent.
+
+**[s32-E7] Statement placement of the address formation, measured across four positions
+in the offset-in-arms regime:** in the arms = 24 (108 insns); immediately after the arms
+= 24; below `pi = (s16) prev_idx` = 29 (110); between the two if-blocks = 41. In the s31
+sll16/sra14 regime: before `pi` = 26, after `pi` = 26. Placement matters only where it
+changes the base pseudo's last-use position.
+
+**[s32-E8] `off` must be a BYTE offset, and the arm selection must be written as
+`off = expr; if (cond) off = 0;`.** Expressing it in elements (`off = (s16)tmp * 2;
+next_vert = table + off;`) scores 27 at 109 insns — GCC emits the scale as its own
+instruction instead of folding it into the arm's shift. Writing the selection as an
+explicit `if/else` scores 26 at the same 108 insns — it flips the branch sense against the
+target's `bnez`.
+
+**[s32-E9] src/text1b.c restored to `INCLUDE_ASM("asm/funcs", func_80057CC8);` at end of
+session (git diff clean). No commits, no rule files touched.**
+
+**Artifacts:** tmp/grind/func_80057CC8/s32/{v0,vA,vB,vC,vD,vE,vG,vH,vI,vJ,vK,vM,vQ,vT,vV,vX}.c
+and the matching .hon.s streams, plus apply.py / gen.sh / run.ps1.
+
+- [s32] Chassis re-measured at dispatch: the inherited s31 candidate scores 26 at build_insns 110 / target_insns 111 with rules_dropped 0 on HEAD; the ledger floor was current.
+- [s32] NEW FLOOR 24 (was 26): selecting the next-neighbour BYTE offset in the arms of the next-index test and forming the address once from the single `table` value scores 24 at build_insns 108.
+- [s32] The target's $16..$19 callee-save mapping is unreachable ban-compliantly: it requires the base pseudo to carry at most THREE references (global.c:635 allocno_compare), and the ban-compliant function structurally gives it FOUR (def + centre + prev + next).
+- [s32] Reducing the live-across-call set to 7 by precomputing the next-neighbour differences scores 42 at 110 insns — the "fewer live values" direction is closed in both spellings (cf. s31's 104-insn 7-live regime at 59).
+- [s32] The if-block swap is dead on the current chassis in both address regimes (41/106 and 41/109), re-confirming s2 on a third chassis.
+- [s32] Centre-coordinate type spelling (u16+cast vs s16) and twin-vs-raw in the two final adds are codegen-inert in the 108-insn regime (24 / byte-identical).
+- [s32] Naming the prev-neighbour address in its own local flips one addu's PLUS operand order and scores the same 24 — frontier hypothesis 2 ("redirect the PLUS operand order") is reachable but worth zero.
+
+- [s32] Chassis re-measured at dispatch: the inherited s31 candidate (next-neighbour ADDRESS hoisted above the first call) scores 26 at build_insns 110 / target_insns 111 with rules_dropped 0 on HEAD -- the ledger floor was current, not stale.
+
+- [s32] NEW FLOOR 24 (was 26): selecting the next-neighbour BYTE offset in the two arms of the next-index test and forming the address once from the single table value scores 24 at build_insns 108. The vertex-table base is still read exactly once; off and next_vert are distinct real values, not second materialisations.
+
+- [s32] The winning form's emitted asm coalesces next_vert onto table's hard register (addu $17,$17,$6) and puts the sign-extended centre-Y twin on the target's $16 and andi $16,$v0,0xFFF in the second jal's delay slot, both matching asm/funcs/func_80057CC8.s.
+
+- [s32] GCC 2.7.2 ranks call-crossing allocnos for hard-register assignment by allocno_compare at tools/gcc-2.7.2/global.c:635 -- floor_log2(n_refs)*n_refs/live_length*10000*size -- and the emitted register numbers of six measured forms are consistent with that ranking, first-ranked taking $16.
+
+- [s32] Target ranks are cys, cxs, arg0, next_idx ($16..$19); the s31 candidate's are next_vert, cys, cxs, arg0; the s32 candidate's are cys, table/next_vert, cxs, arg0. Matching the target requires the base pseudo at <=3 references and the ban-compliant function structurally gives it 4.
+
+- [s32] Reducing the live-across-call set to 7 by precomputing the next-neighbour differences scores 42 at 110 insns, closing the fewer-live-values direction in its second spelling (s31's 104-insn 7-live regime scored 59).
+
+- [s32] The if-block swap is dead on the current chassis in both address regimes (41 at 106 insns, 41 at 109 insns), re-confirming s2's 2026-07 finding on a third chassis.
+
+- [s32] Centre-coordinate type spelling and twin-vs-raw in the two final adds are codegen-inert in the 108-insn regime (24 / byte-identical), extending s31-E2 to this regime.
+
+- [s32] Naming the prev-neighbour address in its own local flips one addu's PLUS operand order and scores the same 24.
+
+- [s32] Statement placement of the address formation inside the offset-in-arms regime: in the arms 24 (108), immediately after the arms 24, below pi 29 (110), between the two if-blocks 41 (106).
+
+- [s32] The unchanged terminal residual: asm/funcs/func_80057CC8.s loads 0x4($s2) twice (:17 lw $a2, :50 lw $a0); a single source-level materialisation emits one, and s30b proved GCC 2.7.2 has no pass that manufactures the second (REG_EQUIV notes present-but-insufficient; caller-save excluded by CALLER_SAVE_PROFITABLE at 1 call / 3-4 refs).
+
+- [s32] src/text1b.c restored to the INCLUDE_ASM representation at end of session (git diff clean). No commits, no rule/engine/tool files touched.
+
+- [s32] m2c re-derivation was NOT re-run: s18 already banked all three m2c-derived shapes (combined shift byte-neutral, cur-pointer +1 regression, split-p Judge-banned). This session's rederive work was twelve fresh structural forms measured against the current chassis instead.

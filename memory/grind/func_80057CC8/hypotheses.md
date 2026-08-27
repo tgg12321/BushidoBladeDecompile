@@ -784,3 +784,57 @@ is gated on the refused duplication family.
 - probe: Instruction-multiset accounting of the new 110-insn form against asm/funcs/func_80057CC8.s, on top of s30b's mechanism proof that GCC 2.7.2 cannot rematerialise one RTL load as two loads at the original address.
 - result: The 110-insn form already matches the target's callee-save count and pays its entire difference in ONE instruction: the second lw 0x4($s2). A single-materialisation form emits exactly one base load and no GCC 2.7.2 pass manufactures a second, so any ban-compliant 111-insn form must carry an instruction the target lacks and cannot be byte-identical. Model insns = (values live across the call) + (base loads) + 101 predicts every measured count with no free parameters: 112 = 9+1, 110 = 8+1, 104 = 7+1, target 111 = 8+2.
 - verdict: KILLED
+
+## s32 (2026-08-27) — rederive
+
+| # | hypothesis | mechanism | probe | result | verdict |
+|---|---|---|---|---|---|
+| s32-H1 | The next-neighbour byte offset can be selected in the arms of the next-index test, re-using the sign-extension the range compare already needs, cutting the address cost to one instruction. | GCC 2.7.2's cse1 keeps the compare's `(sign_extend (subreg tmp))` available inside both arms, so `off = (s16)tmp * 4` folds to a single `sll` there; the later `addu` then coalesces onto the base pseudo's hard register because the base is dead at that point. | Wrote the arm-selected-offset form; `sandbox func_80057CC8 --disable all`. | **score 24, build_insns 108** (previous best 26 at 110). NEW FLOOR. | CONFIRMED |
+| s32-H2 | The target's `$16..$19` callee-save mapping can be reached by re-ranking the call-crossing allocnos from the source side. | `allocno_compare` (tools/gcc-2.7.2/global.c:635) ranks by `floor_log2(n_refs)*n_refs/live_length`, and the first-ranked allocno takes `$16`. Reference counts and live ranges are both source-controllable. | Read the formula out of global.c, computed the ranks for the target and for six measured forms, then tried every source-side re-ranking that keeps a single base materialisation (address in the arms, offset in the arms, address before/after `pi`, explicit twin locals, prev-address local, twins used in the final adds). | Best achievable rank order is `cys, base, cxs, arg0`; the target's is `cys, cxs, arg0, next_idx`. Matching it needs the base pseudo at <=3 references and it structurally has 4 (def + centre + prev + next). Reducing to 3 requires a second base materialisation (banned) or deriving one neighbour address from another (measured worse). | **KILLED** |
+| s32-H3 | Shrinking the live-across-call set below the target's 8 helps, if the values removed are the sign-extended centre twins rather than the base. | Computing the next-neighbour dx/dy before the first call kills the twins early; the target's 8 would become 7 and the sw/lw pair disappears. | vT: dx/dy precomputed before the first `ratan2`. | score 42 at 110 insns — combine folds the centre `lhu` pair into `lh` and the body drifts. Matches s31's 7-live 104-insn result (59). | **KILLED** |
+| s32-H4 | Swapping the two index if-blocks (next first) re-ranks the allocnos favourably on the CURRENT chassis, even though s2 measured it dead in 2026-07 on a different one. | The next address could then be formed between the blocks, lengthening its live range and lowering its priority toward the target's `$19`. | vK (sll16/sra14 form) and vG/vM (offset-in-arms form). | 41 at 109 and 41 at 106 — GCC fuses the two `lbu 3(arg0)` reads once the blocks are adjacent. Dead on a third chassis. | **KILLED** |
+| s32-H5 | The centre-coordinate type spelling or the twin-vs-raw choice in the two final adds is a lever in the new 108-insn regime. | s31 proved both inert at 112 insns; a different regime could expose them. | vX (`s16` centre, `*(s16 *)` reads) and vH (twins used in the final adds). | 24 / 108 and byte-identical text respectively. Inert. | **KILLED** |
+| s32-H6 | Frontier hypothesis 2 (redirect the PLUS operand order at the neighbour-address `addu`) is worth score. | A named prev-address local changes which operand RTL-expand puts first. | vQ: `s16 *prev_vert = &table[pi * 2];`. | The operand order DOES flip (`addu $2,$17,$2` vs `addu $2,$2,$17`); score unchanged at 24. Reachable, worth zero. | **KILLED** |
+| s32-H7 | The arm selection spelling (`off = expr; if (cond) off = 0;` vs explicit `if/else`) and the offset unit (bytes vs elements) are free choices. | Both are semantically identical. | vV (explicit if/else) and vE (element offset). | 26 at 108 and 27 at 109 — both strictly worse than the byte-offset / assign-then-override spelling. Not free. | **KILLED** |
+
+## [s32] The next-neighbour byte offset can be selected in the two arms of the next-index test, re-using the sign-extension the range compare already needs, cutting the address cost to one instruction and coalescing the address onto the base pseudo's register.
+- mechanism: cse1 keeps the compare's sign_extend of tmp available inside both arms, so `off = (s16)tmp * 4` folds to a single sll there; the later addu then reuses the base's hard register because the base is dead at that point.
+- probe: Wrote the arm-selected-offset form (tmp/grind/func_80057CC8/s32/vB.c) and ran `sandbox func_80057CC8 --disable all`.
+- result: score 24, build_insns 108, target_insns 111, rules_dropped 0 -- against the inherited s31 candidate re-measured at 26/110 on the same chassis this session.
+- verdict: CONFIRMED
+
+## [s32] The target's $16..$19 callee-save assignment can be reached by source-side re-ranking of the call-crossing allocnos.
+- mechanism: GCC 2.7.2 assigns hard registers in descending allocno_compare priority (tools/gcc-2.7.2/global.c:635 = floor_log2(n_refs)*n_refs/live_length*10000*size), first-ranked taking the first free callee-save $16. Both n_refs and live_length are source-controllable.
+- probe: Read the formula from global.c, computed ranks for the target and six measured forms from their emitted asm, then measured every re-ranking that keeps a single base materialisation: address selected in the arms (vA/vC), offset selected in the arms (vB), address before/after pi (vD/vJ), explicit centre-twin locals (vI), named prev-address local (vQ), twins used in the final adds (vH).
+- result: The best reachable rank order is cys, base, cxs, arg0 (vB); the target's is cys, cxs, arg0, next_idx. Matching it requires the base pseudo at <=3 references (priority ~0.09, below arg0's ~0.14); the ban-compliant function structurally gives it FOUR (def + centre address + prev address + next address), where floor_log2 steps to 2 and the priority is ~0.24. Reducing to 3 requires either a second materialisation of *(s16 **)(arg0 + 4) (the Judge-banned family) or deriving one neighbour address from another (measured worse, vT).
+- verdict: KILLED
+
+## [s32] Shrinking the live-across-call set below the target's 8 helps if the values removed are the sign-extended centre twins rather than the base.
+- mechanism: Computing the next-neighbour dx/dy before the first call kills both twins early, so 7 values cross the call and one sw/lw pair disappears.
+- probe: vT: two s32 locals dxn/dyn assigned from next_vert[0]/[1] minus the centre twins, placed above the first ratan2 call; sandbox measured.
+- result: score 42 at build_insns 110 -- combine then folds the centre lhu pair into lh and the whole body drifts. Consistent with s31's other 7-live regime (104 insns, score 59).
+- verdict: KILLED
+
+## [s32] Swapping the two index if-blocks (next-index block first) re-ranks the allocnos favourably on the CURRENT chassis, even though s2 measured it dead in 2026-07 on a different chassis.
+- mechanism: With the next-index block first, the next address can be formed between the two blocks, lengthening its live range and lowering its allocno priority toward the target's $19.
+- probe: vK (s31 sll16/sra14 address form) and vG/vM (s32 offset-in-arms form), both measured.
+- result: 41 at 109 insns and 41 at 106 insns. GCC fuses the two `lbu 3(arg0)` reads once the blocks are adjacent and five instructions collapse. Dead on a third chassis.
+- verdict: KILLED
+
+## [s32] The centre-coordinate type spelling (u16 + cast vs s16) or using the sign-extended twins instead of the raw coordinates in the two final adds is a lever in the new 108-insn regime.
+- mechanism: s31 proved both inert in the 112-insn regime; a different regime could expose the choice because combine's extension folding is placement-sensitive.
+- probe: vX (s16 centre reads) and vH (twins in the final adds), both measured and text-diffed.
+- result: vX scores the same 24 at 108 insns; vH emits BYTE-IDENTICAL text to vB. Both inert.
+- verdict: KILLED
+
+## [s32] Frontier hypothesis 2 inherited from s24/s28 -- redirecting the PLUS operand order at the neighbour-address addu -- is worth score.
+- mechanism: A named prev-address local changes which operand RTL-expand emits first in the address addu.
+- probe: vQ: a named prev-neighbour address local alongside next_vert; measured and diffed.
+- result: The operand order does flip (addu $2,$17,$2 instead of addu $2,$2,$17; the target has addu $2,$2,$6) and the score is unchanged at 24. The lever is reachable and worth zero.
+- verdict: KILLED
+
+## [s32] The arm-selection spelling (assign-then-override vs explicit if/else) and the offset unit (bytes vs elements) are free choices within the winning regime.
+- mechanism: Both pairs are semantically identical, so any difference is pure codegen.
+- probe: vV (explicit if/else) and vE (element offset), both measured.
+- result: 26 at 108 insns and 27 at 109 insns respectively -- both strictly worse than the byte-offset assign-then-override spelling. Not free: the if/else flips the branch sense against the target's bnez, and the element offset costs a separate scale instruction.
+- verdict: KILLED
