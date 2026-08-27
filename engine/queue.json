@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80057CC8",
-      "file": "text1b",
-      "distance": 30,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals."
-    },
-    {
       "func": "func_800485EC",
       "file": "text1b",
       "distance": 31,
@@ -1975,17 +1966,27 @@
       "rules": 0,
       "status": "escalated",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (judge ESCALATE policy-question, logged to borderline.md per ruling 2026-08-18): 2026-08-26 \u2014 func_8002FC80 \u2014 JUDGE ESCALATE on final call (policy-question) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
+    },
+    {
+      "func": "func_80057CC8",
+      "file": "text1b",
+      "distance": 30,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-24 (escalation-not-parked): parked state retired \u2014 kicked back to active grinding. Endgame-lock standards unchanged; solver modality (ra_solver/sched_solver) recommended before deep re-grind of RA/scheduler-tiebreak residuals.",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:14627 - '## 2026-08-27 - func_80057CC8 (src/text1b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     }
   ],
   "counts": {
     "total": 224,
-    "active": 201,
+    "active": 200,
     "by_status": {
-      "active": 201,
-      "escalated": 23
+      "active": 200,
+      "escalated": 24
     },
     "by_verdict": {
-      "C": 167,
+      "C": 166,
       "ASM-PARTIAL": 34
     }
   }

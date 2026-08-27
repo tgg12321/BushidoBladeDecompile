@@ -2801,3 +2801,126 @@ s40c seat-census script re-pointed at `tmp/grind/func_80057CC8/s41/`
 - [s44] [s44] Per the s43 frontier's own item #3, no escalation packet was filed: a packet asking to re-scope the 2026-07-20 second-materialization refusal is auto-reject class under the owner's 2026-08-24 second ruling (its YES would lower a standard). The characterisation is recorded instead and the disposition is left to the driver.
 
 - [s44] [s44] Hygiene: src/text1b.c was restored to its committed INCLUDE_ASM state at session end (`git checkout src/text1b.c`); no build-surface file was modified, and no permuter campaign was launched (nothing to orphan).
+
+## Session 45 (2026-08-27, escalation modality) — disposition: both endgame gates FAIL; the last named solver surface is spent
+
+- **[s45] Chassis re-measured at dispatch** (the brief again reported the HEAD floor
+  "measurement unavailable"): `memory/grind/func_80057CC8/candidate.c` spliced into
+  `src/text1b.c` gives `sandbox func_80057CC8 --disable all` -> **score 16, target_insns
+  111, build_insns 108, rules_dropped 0**. Floor unchanged from s37-s44. The SessionStart
+  queue headline "pure-C distance 30" is the no-C-body figure for the committed
+  `INCLUDE_ASM` representation at `src/text1b.c:1665`, not the honest floor.
+  Artifact: `tmp/grind/func_80057CC8/s45/floor_measure.txt`.
+
+- **[s45] THE S44 FRONTIER'S ONE REMAINING NAMED SURFACE IS NOW SPENT — and the solver
+  agrees with the hand proof.** s44's frontier said: "the only untouched surface is a solver
+  run against the crosser-set formulation: ask ra_solver whether any legal C form reproduces
+  the target's exact eight-quantity crossing set without a second base materialization. The
+  s44 proof says no; a solver verdict would make that machine-checked rather than
+  hand-derived." Run this session against the live 16-form, with the correct
+  asm-until-matched backend s39 identified (`goal_from_tgt.py`, never `inverse_compose.py`):
+
+      $ python3 tools/ra_solver/goal_from_tgt.py classify text1b func_80057CC8
+      func_80057CC8 (text1b): ours 108 insns, target 111 insns  [object-level: replace_with_asmfile-safe]
+      FIRST DIVERGENCE: PRE-RA
+        next tool: none — the residual is upstream of every model
+        instruction shapes present in ONE stream only:
+          ours only  : sll #,#,0x2   x1
+          target only: move #,#   x1
+          target only: lw #,4(#)   x1
+          target only: sll #,#,0x10   x1
+          target only: sra #,#,0xe   x1
+
+  Verdict **PRE-RA / "next tool: none"** means, mechanically, that no register-allocation
+  and no scheduler perturbation can carry this form to the target — the residual is an
+  instruction-stream difference, upstream of every model the solver owns. The one-sided
+  target-only set is exactly the target's post-call address formation
+  (`asm/funcs/func_80057CC8.s:49-52`), and it contains the missing `lw #,4(#)`: the second
+  load of `*(arg0 + 4)`. The hand-derived crosser-set proof (s44) and the machine verdict
+  therefore point at the same single cause, from independent directions. Artifact:
+  `tmp/grind/func_80057CC8/s45/classify_16form.txt`.
+
+- **[s45] Endgame gate (a), canonical-asm: FAIL.** `python3 tools/scan_hand_coded.py
+  --single func_80057CC8` -> `HAND_CODED: tier=LOW score=1/8`; the only signal is S4 (4
+  loads in an 8-insn window @ insn 15). None of the STRONG signals S1 (multu pacing) / S2
+  (empty branch) / S6 (BIOS jumptable) fires, and S3 reports 9 spills across 111 insns,
+  which is compiler output. Identical to the 2026-08-20 run; the engine `canonical` verdict
+  for this function remains **C**. Artifact:
+  `tmp/grind/func_80057CC8/s45/scan_hand_coded.txt`.
+
+- **[s45] Endgame gate (b), in-hand SOTN-master precedent: FAIL (negative census, not an
+  open question).** The closing construct is a SECOND source-level materialization of
+  `*(s16 **)(arg0 + 4)`, one per `ratan2` call site. `docs/reference/sotn-construct-index.md`
+  (sotn-decomp master `aa53500226ee84be763f3e8702b27de06456b3a7`, 1,911 source files
+  scanned) carries twelve construct classes — `fake_comment`, `fake_identifier`,
+  `self_assign`, `match_comment`, `do_while_zero`, `pad_dummy_local`, `new_var_temp`,
+  `pointer_alias`, `dup_if_else_arm`, `const_holder`, `empty_if`, `nested_exit_label` — and
+  **none of them is, or contains, duplicate materialization of one pointer expression across
+  a call**. A keyword sweep for duplicate/second-load/re-materialization wording returns
+  zero hits. This is the same answer the owner reached on 2026-07-20
+  (`duplicated-statement-into-arms` covers per-ARM, not per-CALL), now confirmed against the
+  machine-generated index rather than by hand research.
+
+- **[s45] DISPOSITION FILED.** Both AND-gates FAIL, which is the common case the owner's
+  2026-07-27 standing auto-ruling (`.claude/rules/endgame-lock-disposition.md`) governs.
+  Entry appended to `docs/grind/decisions.md:14627`:
+  `## 2026-08-27 — func_80057CC8 (src/text1b.c) — **OWNER-ESCALATION — RESOLVED BY STANDING
+  RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**`. It records both gates'
+  evidence, the three-regime foreclosure with its named mechanisms, the crosser-set proof,
+  this session's solver verdict, and the exhaustion tally (44 prior sessions / 8 distinct
+  grinding modalities / 101,810 permuter iterations across five campaigns / 133 banked
+  rejected forms / floor flat at 16 since s37). Session outcome: `owner-gated` with
+  `escalation_ref` citing that entry.
+
+- **[s45] The entry is NOT in the 2026-08-24 auto-reject class, and s44's reading of that
+  rule is refined rather than contradicted.** s44 correctly declined to file a packet asking
+  to RE-SCOPE the 2026-07-20 refusal — such a packet's YES would grant a no-precedent family
+  and therefore lower a standard. The entry filed this session asks for no such YES: it
+  APPLIES an existing standing ruling and accepts the refusal as written. Alongside it, the
+  entry states the one decidable question that is genuinely of the filable kind
+  (provenance/fidelity): *is the two-materialization construct a coercion at all, or the
+  original source's own shape?* Its evidence is already banked and is not an argument from
+  "we are stuck": (i) s43's fresh m2c re-derivation of the target independently emits the
+  two materializations; (ii) s40's pass census on the real function shows `.jump` = 5
+  base-load rtxes, `.cse` = 2, `.loop`/`.combine` = 2, target = 2 — **cse1** decides the
+  emitted count, from a source that says five, so the count is not an author-controlled
+  knob; (iii) s40's four-function predicate probe isolates the deciding predicate as the
+  intervening non-const call, i.e. ordinary C aliasing semantics. A YES would find the
+  construct outside the coercion families, not create a new one; a NO makes the disposition
+  final. Either answer returns the item from escalation; neither requires a further grind
+  session, because the search space is closed in closed form.
+
+- **[s45] No new C form was written or measured this session, by design.** The mandated
+  modality was `escalation` and the driver had declared exhaustion; the ledger's own frontier
+  named every remaining axis as measured dead with a mechanism (do not re-seed Regime-A
+  campaigns, do not re-spell Regime C, do not re-open the Regime-B order attack).
+  `candidate.c` is unchanged apart from an s45 header addendum recording the re-measurement
+  and the solver verdict. Nothing was added to `rejected/` — no form was disproven this
+  session because no new form was proposed.
+
+- **[s45] Hygiene.** `src/text1b.c` was restored to its committed `INCLUDE_ASM` state
+  immediately after the floor measurement (`git checkout src/text1b.c`); `git status` shows
+  no build-surface modification. No permuter campaign was launched, so nothing could be
+  orphaned. Artifacts: `tmp/grind/func_80057CC8/s45/{floor_measure.txt,scan_hand_coded.txt,classify_16form.txt,entry.md}`.
+
+- [s45] [s45] Chassis re-measured at dispatch (the brief again reported HEAD floor 'measurement unavailable'): memory/grind/func_80057CC8/candidate.c spliced into src/text1b.c gives `sandbox func_80057CC8 --disable all` -> score 16, target_insns 111, build_insns 108, rules_dropped 0. Floor unchanged from s37-s44. The queue headline 'pure-C distance 30' is the no-C-body figure for the committed INCLUDE_ASM representation at src/text1b.c:1665, not the honest floor.
+
+- [s45] [s45] The s44 frontier's one remaining named surface is SPENT and the solver agrees with the hand proof: goal_from_tgt.py classify on the live 16-form returns FIRST DIVERGENCE: PRE-RA with 'next tool: none - the residual is upstream of every model'. No RA and no scheduler perturbation reaches distance 0 from any ban-compliant form; the residual is an instruction-stream property.
+
+- [s45] [s45] The classify one-sided shape sets are ours `sll #,#,0x2` x1 against target `move #,#` / `lw #,4(#)` / `sll #,#,0x10` / `sra #,#,0xe` - precisely the target's post-call address formation at asm/funcs/func_80057CC8.s:49-52, whose base is the second load of *(arg0 + 4) at :50. Machine verdict and the s44 crosser-set proof point at the same single cause from independent directions.
+
+- [s45] [s45] Endgame gate (a) FAILS: scan_hand_coded --single func_80057CC8 gives HAND_CODED tier=LOW score=1/8, sole signal S4 (front loads), no STRONG S1/S2/S6, and S3 reports 9 spills over 111 insns. Unchanged from 2026-08-20; engine canonical verdict remains C. Re-running it in a future session is a repeat measurement.
+
+- [s45] [s45] Endgame gate (b) FAILS on a negative census: docs/reference/sotn-construct-index.md (sotn-decomp master aa53500226ee84be763f3e8702b27de06456b3a7, 1,911 files) has no class and no entry covering a second source-level materialization of one pointer expression across a call. dup_if_else_arm is per-ARM, which the 2026-07-20 owner ruling already distinguished from per-CALL. The index is pinned, so this answer cannot change without the owner re-pinning it.
+
+- [s45] [s45] DISPOSITION FILED at docs/grind/decisions.md:14627 - '## 2026-08-27 - func_80057CC8 (src/text1b.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'. It records both gates, the three-regime foreclosure (A: shape-invariance + 16.2x allocno-priority bound + 55,693 permuter iterations; B: block-order inversion; C: ninth callee-save), the crosser-set proof, this session's solver verdict, and the exhaustion tally.
+
+- [s45] [s45] Exhaustion tally for the record: 44 prior sessions across 8 distinct grinding modalities (forensics x10, rederive x10, structural x9, permuter x6, synthesis x6, solver x1, recon, wip-import), 101,810 permuter iterations across five campaigns (411 + 237 + 199 + 45,270 + 55,693), 133 banked rejected forms, floor flat at 16 since s37.
+
+- [s45] [s45] The filed entry is NOT auto-reject class and s44's reading of that rule is refined, not contradicted: s44 rightly declined a packet asking to RE-SCOPE the 2026-07-20 refusal (its YES would grant a no-precedent family), whereas this entry APPLIES the standing ruling and seeks no YES. The provenance/fidelity question it states - is the two-materialization construct a coercion at all, or the original source's own shape - rests on banked measurements: s43's m2c re-derivation independently emits the two materializations; s40's pass census gives .jump=5 base-load rtxes, .cse=2, .loop/.combine=2, target=2, i.e. cse1 decides the emitted count from a source that says five; s40's four-function probe isolates the deciding predicate as the intervening non-const call.
+
+- [s45] [s45] Nothing unsanctioned is holding a match for this function: the committed representation is INCLUDE_ASM("asm/funcs", func_80057CC8); at src/text1b.c:1665 with zero regfix rules, zero asmfix rules and zero cheat-asm. There is no cleanup debt and no integration handoff to perform - the block is a policy question, not a build-surface one.
+
+- [s45] [s45] No new C form was written or measured, by design: the modality was escalation, the driver had declared exhaustion, and the ledger frontier named every remaining axis measured dead with a mechanism. candidate.c is unchanged apart from an s45 header addendum; nothing was added to rejected/ because no new form was proposed.
+
+- [s45] [s45] Hygiene: src/text1b.c restored to its committed INCLUDE_ASM state immediately after the floor measurement (git checkout src/text1b.c); git status shows only docs/grind/decisions.md, the three ledger files and metrics/events.jsonl modified. No permuter campaign launched, nothing to orphan.

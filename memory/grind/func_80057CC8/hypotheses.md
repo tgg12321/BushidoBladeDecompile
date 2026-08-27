@@ -1880,3 +1880,101 @@ prior sibling/Kengo/corpus axes) produce no shape that is not already banked.
 - probe: Register-file enumeration against the target listing (asm/funcs/func_80057CC8.s:3-16, :17, :49-52) combined with the s36 rematerialization kill and s43's independent m2c re-derivation, which emits exactly the banned pair.
 - result: No ban-compliant source of the post-call base exists. 16 is the complete ban-compliant floor and the foreclosure is a property of the target, not of the partition.
 - verdict: CONFIRMED
+
+## [s45] The s44 crosser-set foreclosure is machine-checkable: ra_solver will type the live 16-form's residual as reachable by some RA/scheduler perturbation, or it will not.
+
+- mechanism: `goal_from_tgt.py classify` compares the OBJECT-level instruction multisets of
+  the honest sandbox build (`tmp/sandbox/func_80057CC8/text1b.o`) and the true target
+  (`build/src/text1b.o`, built from HEAD where the function is `INCLUDE_ASM`), then types
+  the FIRST DIVERGENCE: a register-only difference is RA-reachable, an order-only difference
+  is scheduler-reachable, and a difference in the instruction multiset itself is PRE-RA —
+  upstream of every model, i.e. reachable only by changing the C.
+- probe: with `candidate.c` spliced into `src/text1b.c` (measured 16 @ 108 vs 111 first),
+  `python3 tools/ra_solver/goal_from_tgt.py classify text1b func_80057CC8` (WSL).
+- result: `FIRST DIVERGENCE: PRE-RA / next tool: none — the residual is upstream of every
+  model`. One-sided shapes: ours only `sll #,#,0x2` x1; target only `move #,#`,
+  `lw #,4(#)`, `sll #,#,0x10`, `sra #,#,0xe` (one each) — exactly the target's post-call
+  address formation at `asm/funcs/func_80057CC8.s:49-52`, including the second base load at
+  `:50`. Output banked at `tmp/grind/func_80057CC8/s45/classify_16form.txt`.
+- verdict: CONFIRMED — the s44 hand proof now has a machine-checked counterpart. No RA or
+  scheduler perturbation reaches distance 0 from any ban-compliant form; the residual is an
+  instruction-stream property whose one-sided element is the banned second materialization.
+  The s44 frontier's last named surface is spent. **Do not re-run this probe**: it is a
+  property of the 16-form and the target, and both are fixed.
+
+## [s45] Endgame gate (a): `scan_hand_coded` reaches STRONG tier for func_80057CC8 (would open the canonical-asm grant path).
+
+- mechanism: the canonical-asm grant path requires STRONG scanner evidence — S1 (multu
+  pacing), S2 (empty-body branches) or S6 (BIOS jumptable call pattern) — the signals that
+  distinguish hand-written asm from compiler output.
+- probe: `python3 tools/scan_hand_coded.py --single func_80057CC8`.
+- result: `HAND_CODED: tier=LOW score=1/8`, the sole signal being S4 (4 loads in an 8-insn
+  window @ insn 15). S3 reports 9 spills over 111 instructions — a register allocator's
+  fingerprint, not a human's. Identical to the 2026-08-20 run; engine `canonical` verdict
+  stays **C**. Banked at `tmp/grind/func_80057CC8/s45/scan_hand_coded.txt`.
+- verdict: KILLED — gate (a) FAILS. The canonical-asm grant path is unavailable for this
+  function and re-running the scanner in a future session is a repeat measurement.
+
+## [s45] Endgame gate (b): the machine-generated SOTN construct index contains a precedent for a second source-level materialization of one pointer expression across a call.
+
+- mechanism: `docs/reference/sotn-construct-index.md` is a census of every match-hack
+  construct sotn-decomp master ships at commit `aa53500226ee84be763f3e8702b27de06456b3a7`
+  (1,911 source files scanned). A hit is citable SOTN-master evidence; an absence after a
+  real search is evidence the construct has no precedent. The 2026-07-20 owner ruling found
+  no precedent by hand research; this re-checks it mechanically.
+- probe: read the index's class table and keyword-swept it for duplicate-load /
+  second-materialization / duplicated-base wording.
+- result: zero hits. The index's twelve classes are `fake_comment`, `fake_identifier`,
+  `self_assign`, `match_comment`, `do_while_zero`, `pad_dummy_local`, `new_var_temp`,
+  `pointer_alias`, `dup_if_else_arm`, `const_holder`, `empty_if`, `nested_exit_label` —
+  none covers materializing one pointer expression twice across a call.
+  `dup_if_else_arm` (958 entries) is per-ARM duplication, which the owner already
+  distinguished from per-CALL duplication on 2026-07-20.
+- verdict: KILLED — gate (b) FAILS, on a NEGATIVE census, which the standing ruling treats
+  as a failed gate rather than an open question. Both AND-gates therefore fail and the
+  2026-07-27 standing auto-ruling applies. **Do not re-run this census**: the index is
+  pinned to a fixed SOTN commit and the answer cannot change without the owner re-pinning it.
+
+## [s45] A disposition entry for this function can be filed without entering the 2026-08-24 auto-reject class.
+
+- mechanism: the auto-reject test is whether the packet's YES would LOWER a standard
+  (a no-precedent family grant, a canonical evidence-bar override, an "accept the debt"
+  request). s44 declined to file because a packet asking to RE-SCOPE the 2026-07-20 refusal
+  fails that test. But an entry that APPLIES the standing ruling seeks no YES at all, and a
+  provenance/fidelity question — is the construct a coercion, or the original source's own
+  shape? — is explicitly named as the filable kind.
+- probe: drafted the entry to (i) apply the 2026-07-27 standing ruling with both gates'
+  evidence, (ii) state the exhaustion tally, and (iii) pose the provenance question with
+  pointers to already-banked evidence (s43's m2c re-derivation emitting the two
+  materializations; s40's `.jump`=5 / `.cse`=2 / target=2 pass census showing cse1 decides
+  the emitted count; s40's four-function predicate probe isolating the intervening non-const
+  call as the deciding predicate) and the concrete consequence of each answer.
+- result: entry appended at `docs/grind/decisions.md:14627`.
+- verdict: CONFIRMED — the disposition is filed, no standard is asked to move, and the
+  provenance question stands on measurements rather than on "we are stuck". If the answer is
+  NO, the disposition is final at honest floor 16; if YES, the two banked score-0 forms
+  (re-measured 0 @ 111/111 in s40) close the function after a fresh layer-2 review.
+
+## [s45] The s44 crosser-set foreclosure is machine-checkable: ra_solver will either type the live 16-form's residual as reachable by some RA/scheduler perturbation, or type it upstream of every model.
+- mechanism: goal_from_tgt.py classify compares OBJECT-level instruction multisets (tmp/sandbox/func_80057CC8/text1b.o vs build/src/text1b.o, the latter built from HEAD where the function is INCLUDE_ASM, i.e. the true 111-insn target) and types the FIRST DIVERGENCE: register-only = RA-reachable, order-only = scheduler-reachable, multiset difference = PRE-RA, upstream of every model.
+- probe: With candidate.c spliced into src/text1b.c (measured 16 @ 108 vs 111 first), ran `python3 tools/ra_solver/goal_from_tgt.py classify text1b func_80057CC8` in WSL - the asm-until-matched backend s39 identified, never inverse_compose.py.
+- result: FIRST DIVERGENCE: PRE-RA / 'next tool: none - the residual is upstream of every model'. One-sided shapes: ours only `sll #,#,0x2` x1; target only `move #,#`, `lw #,4(#)`, `sll #,#,0x10`, `sra #,#,0xe`, one each - exactly the target's post-call address formation at asm/funcs/func_80057CC8.s:49-52, including the second base load at :50. Banked at tmp/grind/func_80057CC8/s45/classify_16form.txt.
+- verdict: CONFIRMED
+
+## [s45] Endgame gate (a): scan_hand_coded reaches STRONG tier for func_80057CC8, which would open the canonical-asm grant path.
+- mechanism: The grant path requires STRONG signals S1 (multu pacing), S2 (empty-body branches) or S6 (BIOS jumptable call pattern) - the signals separating hand-written asm from compiler output.
+- probe: python3 tools/scan_hand_coded.py --single func_80057CC8
+- result: HAND_CODED tier=LOW score=1/8; the only signal is S4 (4 loads in an 8-insn window @ insn 15). No S1/S2/S6. S3 reports 9 spills across 111 insns - a register allocator's fingerprint. Identical to the 2026-08-20 run; engine canonical verdict stays C. Banked at tmp/grind/func_80057CC8/s45/scan_hand_coded.txt.
+- verdict: KILLED
+
+## [s45] Endgame gate (b): the pinned SOTN construct index contains a precedent for a second source-level materialization of one pointer expression across a call.
+- mechanism: docs/reference/sotn-construct-index.md censuses every match-hack construct sotn-decomp master ships at commit aa53500226ee84be763f3e8702b27de06456b3a7 (1,911 source files). A hit is citable SOTN-master evidence; an absence after a real search is evidence of no precedent.
+- probe: Read the index's twelve-class table and keyword-swept it for duplicate-load / second-materialization / duplicated-base wording.
+- result: Zero hits. The classes are fake_comment, fake_identifier, self_assign, match_comment, do_while_zero, pad_dummy_local, new_var_temp, pointer_alias, dup_if_else_arm, const_holder, empty_if, nested_exit_label - none covers materializing one pointer expression twice across a call. dup_if_else_arm (958 entries) is per-ARM duplication, which the owner already distinguished from per-CALL duplication on 2026-07-20.
+- verdict: KILLED
+
+## [s45] A disposition entry for this function can be filed without entering the 2026-08-24 auto-reject class (which s44 correctly invoked to decline a re-scoping packet).
+- mechanism: The auto-reject test is whether the packet's YES would LOWER a standard. An entry that APPLIES the 2026-07-27 standing ruling seeks no YES at all; and a provenance/fidelity question - is the construct a coercion, or the original source's own shape? - is explicitly the filable kind.
+- probe: Drafted and appended the entry: both gates' evidence, the three-regime foreclosure with named mechanisms, the crosser-set proof, this session's solver verdict, the exhaustion tally, and one decidable provenance question resting on s43's m2c re-derivation, s40's cse1 pass census and s40's four-function predicate probe.
+- result: Entry appended at docs/grind/decisions.md:14627 under the standing-ruling title. No standard is asked to move.
+- verdict: CONFIRMED

@@ -14623,3 +14623,115 @@ The ruling request's own premise does not hold for the banked file. rejected/s40
 ## 2026-08-27 07:47 — func_80057CC8 — ruling: banned_constructs entry 5 / the 2026-07-20 owner refusal bans the spelling that  — **FAIL**
 
 Same question, same file, already ruled FAIL today (decisions.md 2026-08-27 07:40); judge_constraints entry 8 states verbatim that the ban is 'not re-scoped by pass-level cse1 evidence' -- which is exactly what (a)-(c) are. I re-verified the file myself: the request's premise ('no base local declared anywhere', 'each access at its point of use') is false for rejected/s40-no-base-local-per-use-site-reads-score0-RULING-PENDING.c -- it declares `s16 *p` and `pi`, spells the next address as hand-rolled cast arithmetic while spelling the prev address as an array index off a separate inline base read, and keeps the dead permuter local `new_var` assigned inside an expression. Two spellings of one operation plus a dead local is not what the specification alone produces (T2/T3/T6 fail on the file's own terms). Claim (d) is a 'ban-compliance and distance 0 are mutually exclusive' argument -- i.e. we are stuck -- which the owner's static policy explicitly does not credit as evidence, and which is precisely the state the 2026-07-20 owner ruling already accepted (decisions.md:956, REFUSED / OWNER-ACCEPTED INCOMPLETE, reaffirmed by three layer-1 FAILs 2026-08-20). Re-scoping an owner refusal is owner-only, not a Judge grant. Evidence read: state.json judge_constraints/banned_constructs, the s40/s29/inline-both-call-sites files under rejected/, decisions.md:956 and 14615ff.
+
+## 2026-08-27 — func_80057CC8 (src/text1b.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session 45 (`escalation` modality, driver-declared exhaustion). This entry
+applies the owner's 2026-07-27 standing auto-ruling
+(`.claude/rules/endgame-lock-disposition.md`); it does **not** request a family grant, a
+canonical-asm evidence-bar override, or any re-scoping of the 2026-07-20 refusal — no YES
+is sought that would lower a standard, so it is not in the 2026-08-24 auto-reject class.
+
+**Chassis, re-measured this session (not quoted from the ledger).**
+`memory/grind/func_80057CC8/candidate.c` spliced into `src/text1b.c` →
+`sandbox func_80057CC8 --disable all` = **score 16, target_insns 111, build_insns 108,
+rules_dropped 0** (`tmp/grind/func_80057CC8/s45/floor_measure.txt`). `src/text1b.c` was
+restored to its committed `INCLUDE_ASM("asm/funcs", func_80057CC8);` state at
+`src/text1b.c:1665` afterwards; no build-surface file is modified. The queue headline
+"pure-C distance 30" is the no-C-body figure for that committed representation, not the
+honest floor.
+
+**Gate (a) — canonical-asm: FAIL.** `python3 tools/scan_hand_coded.py --single
+func_80057CC8` → **HAND_CODED tier=LOW, score=1/8** (`s45/scan_hand_coded.txt`). The only
+signal is S4 (front loads); none of the STRONG signals S1/S2/S6 fires, and S3 reports 9
+spills across 111 instructions — compiler output, not hand-written asm. Unchanged from the
+2026-08-20 run. The engine's `canonical` gate has verdict **C** for this function.
+
+**Gate (b) — in-hand SOTN-master precedent for the closing construct: FAIL.** The closing
+construct is *a second source-level materialization of the vertex-table base
+`*(s16 **)(arg0 + 4)`*, one per `ratan2` call site. `docs/reference/sotn-construct-index.md`
+(sotn-decomp master `aa53500226ee84be763f3e8702b27de06456b3a7`, 1,911 files scanned) has
+**no class and no entry** covering duplicate materialization of one pointer expression
+across a call — its twelve classes are FAKE comments/identifiers, self-assign, match
+comments, do-while(0), pad/dummy locals, `new_var` temporaries, pointer aliases, duplicated
+if/else arms, constant holders, empty ifs and shared exit labels. A search that comes back
+negative is a FAILED gate, not an open question. This reconfirms the 2026-07-20 owner
+finding ("no SOTN precedent — duplicated-statement-into-arms covers per-arm, not per-call").
+
+**What the residual is, and why it is not a search question any more.**
+Distance 0 requires the target's post-call address formation at
+`asm/funcs/func_80057CC8.s:49-52`, whose base comes from the fresh load
+`lw $a0,0x4($s2)` at `:50` — a *second* load of `*(arg0 + 4)` distinct from the pre-call
+`lw $a2,0x4($s2)` at `:17`. Three independent lines of evidence say that second load has
+exactly one source-level cause:
+
+  1. **Crosser-set proof (s44, partition-independent).** The target's complete
+     live-across-call set is the eight callee-saves established at `:3-16` (arg0,
+     next-index, raw cx, raw cy, cxs, cys, arg2, arg3); no `$fp`/`$s8` appears anywhere in
+     the body. None of those eight is, or can be arithmetically converted into, the
+     vertex-table base, so the base must be a fresh load. GCC 2.7.2 emits two loads of one
+     location only from two source materializations cse1 cannot fuse (an intervening `jal`
+     invalidates the memory ref) or by reload rematerialization — mechanism killed in s36.
+  2. **Solver verdict, run this session on the live 16-form** (`s45/classify_16form.txt`,
+     `python3 tools/ra_solver/goal_from_tgt.py classify text1b func_80057CC8`):
+     `FIRST DIVERGENCE: PRE-RA / next tool: none — the residual is upstream of every model`,
+     with the target-only shape set `{ lw #,4(#), sll #,#,0x10, sra #,#,0xe, move #,# }`
+     against ours-only `{ sll #,#,0x2 }`. Machine-checked: **no register-allocation or
+     scheduler perturbation can reach the target from any ban-compliant form** — the missing
+     `lw #,4(#)` is an instruction-stream property, i.e. a source-materialization property.
+     This retires the s44 frontier's one remaining named surface (a solver verdict on the
+     crosser-set formulation) and discharges the owner's 2026-08-24 solver-first directive.
+  3. **s39's independent typing** — every ban-compliant form types PRE-RA, and `inverse.py`
+     types the full disposition FORECLOSED at depth 3 with both surviving 2-atom seat
+     vectors containing `pseudo 104 calls_crossed 0->1`, i.e. the register half and the
+     instruction-count half of the residual have the same single cause.
+
+The three regimes that partition the ban-compliant space are each foreclosed with a named
+mechanism: **A** (pre-call address) by shape-invariance (s42) plus a 16.2× allocno-priority
+bound (`global.c:635`, 2·6/4 = 3.00 for the address vs 2·5/54 = 0.185 for arg0; best legal
+stretch 0.218) plus 55,693 permuter iterations whose every improving find is
+partial-definition, i.e. invalid C (s43); **B** (cross-block address) on block order — its
+defining cross-block property forces the next-wrap branch first, the target emits the
+prev-wrap branch first (`:18-26` before `:30-36`), and s42's closed form shows the inversion
+is structurally required (s44); **C** (post-call address) because five independent forms all
+take a ninth callee-save `$fp/$s8` for arg3 while the target saves only `$s0-$s7` (s42).
+
+**Exhaustion.** 44 prior sessions across 8 distinct grinding modalities (forensics ×10,
+rederive ×10, structural ×9, permuter ×6, synthesis ×6, solver ×1, recon, wip-import),
+101,810 permuter iterations across five campaigns (411 + 237 + 199 + 45,270 + 55,693), 133
+banked rejected forms under `memory/grind/func_80057CC8/rejected/`, and a floor flat at 16
+since s37 (it stood at 3 and then 20 on earlier chassis). Both AND-gates FAIL, so the
+standing ruling applies: **REFUSED / OWNER-ACCEPTED INCOMPLETE.** The committed
+representation stays as `INCLUDE_ASM("asm/funcs", func_80057CC8);` with **zero regfix rules,
+zero asmfix rules and zero cheat-asm** — nothing unsanctioned is holding a match, so there
+is no debt to clean up and no integration handoff to perform.
+
+**The one decidable question this residual poses (provenance/fidelity, not a grant).**
+*Is the two-materialization construct a codegen coercion at all, or is it the original
+source's own shape?* This is filed because it is a provenance question whose YES lowers no
+standard — it would not sanction a coercion family, it would find that the construct is not
+a member of one. Evidence pointers: (i) s43 ran a fresh m2c re-derivation of the target,
+which independently emits **two** separate source-level materializations of
+`*(s16 **)(arg0 + 4)` — the machine decompiler's reading of the original source contains the
+construct; (ii) s40's pass census on the real function (`.jump` = 5 base-load rtxes,
+`.cse` = 2, `.loop` = 2, `.combine` = 2, target = 2) shows **cse1 decides the emitted count,
+from a source that says five** — the count is not an author-controlled knob, which is the
+usual definition of a coercion; (iii) s40's isolated four-function predicate probe
+(`tmp/grind/func_80057CC8/s40/probe.c`): two source reads with a call between → 2 loads;
+the same two reads without a call → 1; one cached local with a call between → 1. The
+deciding predicate is the intervening non-const call, i.e. ordinary C aliasing semantics.
+Consequences: **YES** (construct is faithful reconstruction, not coercion) → the banked
+score-0 forms `rejected/s29-asymmetric-prev-indexed-next-pointer-score0-superseded.c` and
+`rejected/s40-no-base-local-per-use-site-reads-score0-RULING-PENDING.c` — both re-measured
+at **score 0, 111/111 on the current chassis in s40** — close the function to COMPLETED-C
+after a fresh layer-2 cheat-reviewer pass, and the sibling functions in the same
+`src/text1b.c` cluster inherit the reading. **NO** (the 2026-07-20 refusal stands as
+written) → the disposition above is final and the function remains INCOMPLETE-owner-accepted
+at honest floor 16; no further grinding is warranted, because the search space is closed in
+closed form and a further session can only re-measure dead axes.
+
+**References.** Ledger `memory/grind/func_80057CC8/{state.json,evidence.md,hypotheses.md,candidate.c}`
+(s39–s45 sections); prior entries in this file — the 2026-07-19 17:09 Judge FAIL, the
+2026-07-20 owner ruling (line ~956), the 2026-08-20 standing-ruling entry (line ~8114), and
+the 2026-08-27 07:40 / 07:47 Judge FAILs; artifacts `tmp/grind/func_80057CC8/s45/`
+(`floor_measure.txt`, `scan_hand_coded.txt`, `classify_16form.txt`).

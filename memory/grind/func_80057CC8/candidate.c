@@ -1,3 +1,25 @@
+/* s45 ADDENDUM (2026-08-27, escalation modality).  UNCHANGED form; RE-MEASURED on the live
+ * chassis this session: `sandbox func_80057CC8 --disable all` -> score 16, target_insns 111,
+ * build_insns 108, rules_dropped 0.  Two s45 results bear on it:
+ *   (1) The s44 frontier's one remaining named surface -- a solver verdict on the
+ *       crosser-set formulation -- is SPENT and AGREES with the hand proof.
+ *       `python3 tools/ra_solver/goal_from_tgt.py classify text1b func_80057CC8` (the
+ *       asm-until-matched backend s39 identified; never inverse_compose.py) returns
+ *       `FIRST DIVERGENCE: PRE-RA / next tool: none -- the residual is upstream of every
+ *       model`, with one-sided shapes ours `sll #,#,0x2` against target `move #,#`,
+ *       `lw #,4(#)`, `sll #,#,0x10`, `sra #,#,0xe` -- exactly the target's post-call address
+ *       formation at asm/funcs/func_80057CC8.s:49-52, including the second base load at :50.
+ *       Machine-checked: no RA and no scheduler perturbation reaches distance 0 from this
+ *       form.  (tmp/grind/func_80057CC8/s45/classify_16form.txt)
+ *   (2) Both endgame-lock AND-gates were evaluated and both FAIL: scan_hand_coded --single
+ *       gives tier=LOW score=1/8 (S4 only; no S1/S2/S6), and the pinned SOTN construct index
+ *       has no class covering a second source-level materialization of one pointer
+ *       expression across a call.  The owner's 2026-07-27 standing auto-ruling therefore
+ *       applies and the disposition is filed at docs/grind/decisions.md:14627 --
+ *       REFUSED / OWNER-ACCEPTED INCOMPLETE, honest floor 16, committed representation
+ *       unchanged as INCLUDE_ASM with zero rules and zero cheat-asm.
+ *   Full argument: evidence.md / hypotheses.md, both under the [s45] headings.
+ */
 /* s44 ADDENDUM (2026-08-27, structural).  UNCHANGED form; RE-MEASURED on the live chassis
  * this session: `sandbox func_80057CC8 --disable all` -> score 16, target_insns 111,
  * build_insns 108.  Two s44 results bear on it:

@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 44,
- "current_modality": "structural",
+ "session_count": 45,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -273,18 +273,24 @@
    "floor": 16,
    "modality": "structural",
    "headline": "s44 structural: floor held at 16 (chassis re-measured); the s43 frontier's last named axis is SPENT - Regime B's missing second lbu IS recoverable (unfusable mem:HI count read, 44 @ 109 vs d1's 45 @ 1"
+  },
+  {
+   "session": 45,
+   "floor": 16,
+   "modality": "escalation",
+   "headline": "s45 escalation: floor re-measured at 16; both endgame gates FAIL (scan_hand_coded LOW 1/8, zero SOTN-index precedent) and the s44 frontier's last named surface is spent - ra_solver types the 16-form's"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ban-compliant search space for func_80057CC8 is now fully characterised and empty: all three regimes are foreclosed and the crosser-set proof shows distance 0 requires the construct refused on 2026-07-20. The remaining question is a DISPOSITION question, not a search question, and it belongs to the driver.",
-   "mechanism": "s42's three-regime partition + s43's quantitative Regime-A bound + s44's Regime-B block-order foreclosure + s44's partition-independent crosser-set proof.",
-   "next_probe": "Do NOT re-seed Regime-A permuter campaigns, re-spell Regime C, or re-open the Regime-B order attack - each is measured dead with a named mechanism. Do NOT file an escalation packet asking to re-scope the 2026-07-20 refusal (auto-reject class). If the driver wants one more modality spent, the only untouched surface is a solver run against the crosser-set formulation: ask ra_solver whether any legal C form reproduces the target's exact eight-quantity crossing set without a second base materialization. The s44 proof says no; a solver verdict would make that machine-checked rather than hand-derived."
+   "hypothesis": "The disposition is filed and the search space is closed in closed form; the item is now waiting on one provenance/fidelity answer, not on further grinding.",
+   "mechanism": "Both endgame AND-gates FAIL (scan LOW 1/8; zero SOTN-index precedent), all three ban-compliant regimes are foreclosed with named mechanisms, the crosser-set proof is partition-independent, and this session's ra_solver verdict types the residual PRE-RA with 'next tool: none'.",
+   "next_probe": "None inside a grind session. Do NOT re-run scan_hand_coded, do NOT re-run the SOTN index census, do NOT re-run goal_from_tgt.py classify on the 16-form, and do NOT re-seed any regime's search - each is a repeat measurement with a banked answer. If the owner answers the provenance question YES, the next session's job is to re-measure rejected/s29-asymmetric-prev-indexed-next-pointer-score0-superseded.c and rejected/s40-no-base-local-per-use-site-reads-score0-RULING-PENDING.c on the live chassis (both were 0 @ 111/111 in s40) and route the winner through a fresh layer-2 cheat-reviewer. If NO, the function is final at honest floor 16."
   },
   {
-   "hypothesis": "If a future session is nonetheless assigned Regime B, its residual is now fully itemised and none of the items is worth spending: the missing lbu is 1 point (s44 p1), the 4-vs-1 address formation is inherent to the pre-call regime, and the block order cannot be corrected without destroying the cross-block address that gives Regime B its map.",
-   "mechanism": "s44 p1 measurement (44 @ 109) plus the d1.s / target branch-order comparison plus s42's def/use-separation closed form.",
-   "next_probe": "None. Bank and move on; re-deriving any of these three items is a repeat measurement."
+   "hypothesis": "If a future session is nonetheless assigned this function in a grinding modality, its residual is fully itemised and none of the items is worth spending.",
+   "mechanism": "Regime A: 16.2x allocno-priority gap (global.c:635, 2*6/4 = 3.00 vs 2*5/54 = 0.185; best legal stretch 0.218) with every improving permuter find being partial definition, i.e. invalid C. Regime B: emitted block order is inverted relative to the target and s42 proved the inversion structurally required; its missing lbu is worth exactly one point (s44 p1: 44 @ 109). Regime C: needs a ninth callee-save the target does not take.",
+   "next_probe": "None. Bank and move on; re-deriving any of these is a repeat measurement. The only untried class of action left is outside a grind session's surface (an owner ruling on the provenance question)."
   }
  ],
  "judge_constraints": [
