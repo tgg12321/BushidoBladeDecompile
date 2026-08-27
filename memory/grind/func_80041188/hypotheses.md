@@ -2647,3 +2647,103 @@ both combine-deletable shapes that could host one.
 - probe: Grepped every assignment to reg_n_refs and reg_live_length across tools/gcc-2.7.2/*.c and read each site in context.
 - result: KILLED as stated. local-alloc.c's optimize_reg_copy_1 (781/783) and optimize_reg_copy_2 (913/914) TRANSFER reg_n_refs between pseudos after flow and before global_alloc, and adjust reg_live_length at 820/831; update_equiv_regs doubles live length at 1064 and zeroes refs at 1110. The conclusion the law was used to support nevertheless survives: neither copy optimisation can be aimed at out2, because both require a REG_DEAD note on the copy's SOURCE at a later insn of the SAME basic block, and out2 (defined in block 0, loop-carried through loop1, live-out on the back edge) has no REG_DEAD note anywhere in loop1, while the forward scan breaks at loop1's CODE_LABEL so a block-0 copy cannot reach out2's uses; an in-loop1 copy would be an in-loop1 DEFINITION, which E-s23-1's cse-EBB law folds into the residual move.
 - verdict: KILLED
+
+## s31 (structural, 2026-08-27) — hypotheses
+
+**H-s31-1 (KILLED, and it corrects a standing belief).** "The D-family (an in-loop1 same-value
+re-store of `out2`) delivers target's block-2 `addiu $s3,$s7,0x20` together with all seven
+callee-saved seats, so its only residual is one surplus instruction." Probe: apply
+`alt_D5_alltargetseats_score2_s27.c`, run `sandbox --disable all`, then objdump the sandbox
+object and diff it against the pinned target with `tmp/grind/func_80041188/s23/odiff.py`.
+Result: sandbox 2 at 133 build / 132 target insns, and the two scored positions are the surplus
+`addiu $s6,$s7,0x20` AND a block-2 `move $s3,$s6` — candidate.c's residual, unchanged. VERDICT
+KILLED; the D family is strictly worse than candidate.c and E-s27-1's seat claim is corrected.
+
+**H-s31-2 (CONFIRMED).** "The block-2 `move` is not an allocation fact at all but a cse1
+substitution, gated by `cse_end_of_basic_block`'s scan terminating only at a CODE_LABEL
+(cse.c:8038): loop1's body and block 2 are ONE cse basic block, so an in-loop1 re-store makes
+`(plus pa4 32)` a live table entry with `out2` in its class and block 2's own `pa4 + 0x20` is
+rewritten to the cheaper register." Probe: force a CODE_LABEL at block 2's start two different
+ways and read the emitted block-2 insn. G2 (extra in-loop early-exit `goto blk2;`) emits
+`addiu $s5,$s4,32`; H1 (loop1 rewritten as a pre-test goto loop, so `blk2:` sits behind a
+BARRIER and jump.c cannot delete it) emits `addiu $s3,$s5,32`. VERDICT CONFIRMED — the fold is
+switchable from C, and the switch is the presence of a CODE_LABEL, nothing else.
+
+**H-s31-3 (KILLED).** "The CODE_LABEL of H-s31-2 can be obtained honestly by spelling loop1 as
+a pre-test (`while`) loop, since a label emits no bytes." Probe: pre-test rewrite applied to
+three chassis. H2 (V15a) = 21 at 134 insns, H3 (candidate.c) = 7 at 134, H1 (D5) = 22 at 135;
+target is 132. jump.c does NOT rotate the pre-test back into a bottom test, so the label
+survives — but the shape emits an unconditional `j` plus its delay slot at the loop bottom in
+addition to the exit test. VERDICT KILLED: the label is free, the loop shape that produces it
+costs two instructions.
+
+**H-s31-4 (KILLED).** "Assigning to the DONOR between the re-store and block 2 (`pa4 = pa4;`)
+makes cse `invalidate` every expression containing pa4, removing the `(plus pa4 32)` entry and
+restoring block 2's addiu." Probe: G1 = D5 + `pa4 = pa4;` as loop1's last statement. Result:
+sandbox 2 at 133, byte-identical to D5, block 2 still `move $s3,$s6`. cse recognises the no-op
+move and neither emits nor invalidates. VERDICT KILLED.
+
+**H-s31-5 (KILLED).** "A block-2 dead store `out3 = out2;` immediately before target's spelling
+gives out2 its missing unweighted reference for free, because the dead store emits nothing."
+Probe: G3 (that order) = 15 at 132 — bit-for-bit V15a's result, i.e. out2 fell back to three
+references, so the dead store was deleted BEFORE flow counted it; G4 (reverse order) = 1 at
+132, i.e. candidate.c exactly. VERDICT KILLED in both orders; the block-2 half of the
+"byte-free extra reference" question is now closed by measurement, not derivation.
+
+**H-s31-6 (CONFIRMED, and it re-opens the real-loop chassis at a much better price).** "The Z1
+real-loop chassis is not merely 'foreclosed by loop.c arithmetic' — measured end to end it puts
+every allocno except `out2` and `pa4` on target's seat, and the gap between those two is a
+single unweighted reference." Probe: apply `alt_Z1_realloop_honest_s26.c`, measure sandbox and
+dump the full ALLOCDBG + FINDREGDBG tables with `tmp/grind/func_80041188/s30/fr.sh Z1 86`.
+Result: sandbox 13 at 132/132; pa4 9 refs / live 94 = 2872 -> $s6 versus out2 5 / 41 = 2439 ->
+$s7, with a1 $s1, a2 $s2, stptr $s3, i $s4, tbl $s5, stptr2 $s0, a3 $fp, out3 $s3 — all
+target's. out2 at SIX references and live 41 gives 2926 > 2872 and flips exactly that pair
+(out2's conflict set already contains $s0, so stptr2 cannot be displaced). VERDICT CONFIRMED.
+
+**H-s31-7 (CONFIRMED as a corollary).** "The real-loop chassis makes candidate.c's only /* FAKE */
+construct unnecessary." Z1 spells `stptr = base + 0xFC;` as ONE statement and still reaches 9
+refs / live 40 = 6750 because flow.c weights in-loop references by loop_depth; candidate.c needs
+the F1 chain-extender split to reach 3414 for the same ordering. VERDICT CONFIRMED — a chassis
+change, not a construct, is what buys stptr's priority.
+
+## [s31] The D-family (an in-loop1 same-value re-store of out2) delivers target's block-2 `addiu $s3,$s7,0x20` together with all seven callee-saved seats, so its only residual is one surplus instruction (s27 E-s27-1).
+- mechanism: The re-store makes out2 loop-carried and lifts it 3 -> 5 flow-counted references, which was measured in s27 to seat out2 in $s6, pa4 in $s7 and a3 in $fp.
+- probe: Applied memory/grind/func_80041188/alt_D5_alltargetseats_score2_s27.c to src/text1a_pre.c, ran `sandbox func_80041188 --disable all`, then objdump'd tmp/sandbox/func_80041188/text1a_pre.o and diffed it against the pinned target with tmp/grind/func_80041188/s23/odiff.py.
+- result: sandbox 2 at 133 build / 132 target insns. The two scored positions are (i) the surplus in-loop1 `addiu $s6,$s7,0x20` of the re-store and (ii) block 2 emitting `move $s3,$s6`, NOT target's `addiu $s3,$s7,0x20`. D7 reproduces this (2 at 133), D1 = 3 at 133, D6 = 8 at 132.
+- verdict: KILLED
+
+## [s31] The block-2 `move` is not an allocation fact but a cse1 substitution, gated solely by cse_end_of_basic_block's scan terminating at a CODE_LABEL: loop1's body and block 2 are ONE cse basic block, so an in-loop1 re-store puts (plus pa4 32) in cse's hash table with out2 in its class and block 2's own pa4+0x20 is rewritten to the cheaper register.
+- mechanism: tools/gcc-2.7.2/cse.c:8038 — `while (p && GET_CODE (p) != CODE_LABEL)`. There is no CODE_LABEL between loop1's conditional back-branch and block 2 (the next label is loop2:), so the two are scanned as one extended block and cse's table survives across them.
+- probe: Forced a CODE_LABEL at block 2's start two independent ways and read the emitted block-2 instruction from objdump: G2 = D5 plus an extra in-loop early-exit `if (i >= 0x12) goto blk2;` with `blk2:` at block 2's start; H1 = D5 with loop1 rewritten as a pre-test goto loop so `blk2:` sits behind a BARRIER and jump.c cannot delete it.
+- result: G2 block 2 emits `addiu $s5,$s4,32` (136 insns, sandbox 60); H1 block 2 emits `addiu $s3,$s5,32` (135 insns, sandbox 22). In both cases the fold is gone and the addiu is back.
+- verdict: CONFIRMED
+
+## [s31] That CODE_LABEL can be obtained honestly by spelling loop1 as a pre-test (`while`) loop, since a label itself emits no bytes.
+- mechanism: `loop1: if (i >= 0x12) goto blk2; <body> goto loop1; blk2:` is ordinary C; the trailing unconditional goto puts a BARRIER before blk2 so jump.c's jump-to-next-label deletion cannot fire.
+- probe: Applied the pre-test rewrite to three chassis and measured `sandbox --disable all`: H2 (V15a), H3 (candidate.c), H1 (D5).
+- result: H2 = 21 at 134 insns, H3 = 7 at 134 insns, H1 = 22 at 135 insns, against 132 target insns. jump.c does NOT rotate the pre-test back into a bottom test (the label survives), but the shape emits an unconditional `j` plus its delay slot at the loop bottom in addition to the exit test.
+- verdict: KILLED
+
+## [s31] Assigning to the DONOR between the re-store and block 2 (`pa4 = pa4;`) makes cse invalidate every expression containing pa4, removing the (plus pa4 32) table entry and restoring block 2's addiu.
+- mechanism: cse_insn calls invalidate() on an insn's destination before recording the new value, and invalidate() removes every hash-table element containing that register.
+- probe: G1 = alt_D5 plus `pa4 = pa4;` as loop1's last statement; sandbox + objdump of the block-2 insn.
+- result: sandbox 2 at 133 insns, byte-identical to D5; block 2 still `move $s3,$s6`. cse recognises the no-op move and neither emits nor invalidates.
+- verdict: KILLED
+
+## [s31] A block-2 dead store `out3 = out2;` placed immediately before target's spelling gives out2 its missing extra flow-counted reference for free, because a dead store emits no byte.
+- mechanism: If flow.c counted the dead store before deleting it (the mechanism that makes the F1 chain-extender work), out2 would gain a reference at zero byte cost.
+- probe: G3 = candidate.c with block 2 written `out3 = out2; out3 = (s32 *)((u8 *)pa4 + 0x20);`; G4 = the same pair in the opposite order. Both measured with `sandbox --disable all`.
+- result: G3 = 15 at 132 insns — bit-for-bit V15a's result, i.e. the dead store was deleted BEFORE flow counted it and out2 fell back to three references and lost $s6. G4 = 1 at 132, i.e. candidate.c exactly (the first assignment is the dead one; the surviving statement is the `move`).
+- verdict: KILLED
+
+## [s31] The Z1 real-loop chassis is not merely 'foreclosed by loop.c arithmetic' — measured end to end it seats every allocno except out2 and pa4 exactly where target does, and the gap between those two is a single UNWEIGHTED reference to out2.
+- mechanism: flow.c weights REG_N_REFS by loop_depth, so making loop1 a real `do { } while` doubles every in-loop reference. That lifts stptr and tbl and i without any construct, and lifts out2 from 3 to 5, leaving pa4 (whose references are spread across both loops and block 0) only 433 priority units ahead.
+- probe: Applied alt_Z1_realloop_honest_s26.c, measured `sandbox --disable all`, and dumped the full ALLOCDBG + FINDREGDBG tables with `bash tmp/grind/func_80041188/s30/fr.sh Z1 86` (artifacts copied to tmp/grind/func_80041188/s31/Z1/).
+- result: sandbox 13 at 132 build / 132 target insns. Table: a1 17/99=6868 $s1, a2 17/99=6868 $s2, stptr 9/40=6750 $s3, i 11/97=3402 $s4, tbl 7/47=2978 $s5, pa4 9/94=2872 $s6, stptr2 6/48=2500 $s0, out2 5/41=2439 $s7, a3 5/99=1010 $fp, out3 3/47=638 $s3 — every seat is target's except out2 and pa4, which are swapped. out2 at SIX references and live 41 gives floor_log2(6)*6*10000/41 = 2926 > 2872 and flips exactly that pair; out2's FINDREGDBG conflict set already contains $s0, so promoting it above stptr2 cannot displace stptr2.
+- verdict: CONFIRMED
+
+## [s31] The real-loop chassis makes candidate.c's only /* FAKE */ construct (the `stptr = base; stptr += 0xFC;` F1 chain-extender) unnecessary.
+- mechanism: loop_depth weighting in flow.c delivers stptr's reference count from the loop itself rather than from a source-level split.
+- probe: Read stptr's allocno out of the Z1 ALLOCDBG table (Z1's body spells `stptr = base + 0xFC;` as a single statement).
+- result: stptr = 9 refs / live 40 = 6750, comfortably above i (3402) — where candidate.c needs the split to reach 7/41 = 3414 for the same ordering.
+- verdict: CONFIRMED
