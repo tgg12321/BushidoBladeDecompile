@@ -367,3 +367,45 @@
 - probe: Two chassis hand-built, measured with sandbox --disable all, then run as full campaigns and harvested with --stop. (A) p14e pointer chassis - a multi-use `s16 *p14e = (s16 *)(arg0 + 0x14E);` carrying all five 0x14E accesses: sandbox 16 at 159/159, permuter base 300, tmp/perm_23648_s5a run to 16,796 iterations. (B) argp/varK chassis (the s4 17-floor body): permuter base 285, tmp/perm_23648_s5b run to 16,641 iterations.
 - result: Net floor movement ZERO. (A) produced nothing below 265 in 16.8k iterations - dead basin. (B) produced 19 finds and reached 85 (below the candidate chassis's own 95), but decomposition shows its only semantic delta is `argp = (s16 *)arg0;` moved INSIDE the then-arm of the D_800A38BA guard, leaving argp UNINITIALISED on the else path - undefined behaviour, not a usable form. All three legal respellings of that idea measure 15 / 22 / 15 in sandbox (neutral, or worse once varL is removed). Pointer-and-argument naming is now five independent measurements deep (varB, varK, varKL, p14e, argp-then-arm) and every one is neutral-or-worse.
 - verdict: KILLED
+
+## [s6] The current 15-line residual can be localised to a small number of named register clusters by an aligned seat diff, and those clusters are the whole remaining problem.
+- mechanism: the residual is a pure rename set at a fixed 159/159 insn multiset, so an aligned mnemonic+register comparison of the sandbox object against asm/funcs/func_80023648.s names every differing seat exactly
+- probe: tmp/grind/func_80023648/s6/diffseats.sh + cmp.py against the s5 candidate body
+- result: exactly three clusters — C1 the element-address add + D_800A38BA cascade (5 lines), C2 the clamped abs $a0-vs-$a2 (7 lines), C3 the >>12 speed $a1-vs-$a2 (3 lines); 5+7+3 = 15 = the sandbox score. Target seats all three of the table entry, the clamped abs and the speed in $a2.
+- verdict: CONFIRMED
+
+## [s6] Target's single-$a2 seating of three unrelated values is reachable from C by staging those values through one existing local (variable reuse), and this closes C2 and C3.
+- mechanism: GCC 2.7.2 global.c — a multiply-set C variable is ONE pseudo and therefore ONE allocno spanning all of its live ranges, so global_alloc must seat every staged value in a single hard register; separate locals form separate allocnos that find_reg seats independently
+- probe: stage the clamped abs through the existing `a2` (var/v2.c), then the >>12 speed through `a2` as well (var/y1.c), each measured with sandbox --disable all
+- result: 15 -> 8 for C2; and with C1 closed, 3 -> 0 for C3. Both at 159/159. Note the same edit as C2 measured 30 (no change) on the s2 chassis — a stale-chassis kill is a hypothesis, not a fact.
+- verdict: CONFIRMED
+
+## [s6] C1 (the element-address add) is an operand-order fact, not a naming or pointer-split fact.
+- mechanism: an `addu $d,$s,$t` emits its RTL PLUS operands in order; GCC 2.7.2's pointer_int_sum canonicalises pointer+integer to pointer-first, so the order is only C-visible once the addition is an integer addition or a reversed subscript
+- probe: four spellings on the 8-floor body plus two on the final body, all at 159 insns
+- result: `&row[a1]` = 8; `a1 + row` = 8 (byte-identical to `&row[a1]`); `(s16 *)((s32)row + a1 * 2)` = 5; `(s16 *)(a1 * 2 + (s32)row)` = 3; on the final body `a1[row]` = 0 and `(s16 *)((a1 << 1) + (s32)row)` = 0. s4's `ent` pointer local was a proxy for this and is worth zero once the order is right.
+- verdict: CONFIRMED
+
+## [s6] s5 frontier item 2 as stated — "splitting an address computation away from its load is the reachable lever" — generalises to the remaining sites.
+- mechanism: s5 inferred the family from varL's 22 -> 15 drop
+- probe: the `ent` split was re-measured on the final body after C1/C2/C3 were closed by other means
+- result: worth 0. The split itself carries nothing; the operand order it happened to change carries everything. Removing `ent` from the candidate is byte-neutral.
+- verdict: KILLED (as stated); superseded by the operand-order statement above
+
+## [s6] Turning a declaration-with-initializer into an assignment to an outer variable is codegen-neutral apart from the intended allocation change.
+- mechanism: assumed C89/C99 equivalence
+- probe: six variants staging the >>12 speed into an outer local while leaving the assignment above the sibling declaration `s16 sin_val = ...`
+- result: FALSE and dangerous — GCC 2.7.2 is C89 and with -w silently miscompiles the mixed declaration: build_insns collapses 159 -> 146 (OFF-MULTISET) for every target variable (a2 21, div16 22, tbl_val 28, mult_res 24, limit 22, sub_result 22). Placing the assignment BELOW the block's declarations restores 159 and scores 0.
+- verdict: KILLED (and banked as a standing trap for any future decl-to-assignment edit)
+
+## Frontier after s6
+
+The function is MATCHED at sandbox --disable all = 0, 159/159, zero rules. There is no
+open matching frontier. What remains is acceptance: the three staged-value constructs are
+claimed under the SOTN-sanctioned variable-reuse family with FAKE annotations and a full
+six-test analysis in memory/grind/func_80023648/self_vet.md, and the layer-1 cheat-reviewer
+plus the Judge rule on them. If a construct is rejected, the specific fallback to try first
+is the alternative index-first address spelling `*(s16 *)((a1 << 1) + (s32)row)` (also 0),
+and for the staging assignments, whether any REORDERING of the surrounding statements seats
+the clamped abs and the speed in $a2 without a shared variable — s6 did not test that
+because the shared-variable form closed the residual outright.

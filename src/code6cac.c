@@ -2481,7 +2481,127 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
         return 1;
     }
 }
-INCLUDE_ASM("asm/funcs", func_80023648);
+void func_80023648(u8 *arg0) {
+    u16 kind = *(u16 *)(arg0 + 0x6A);
+    s16 *new_var;
+
+    if (kind == 0x13 || kind == 0x1B || kind == 0x30) {
+        s32 a2;
+        u32 bits = *(u32 *)(arg0 + 0x2C);
+        if (bits & 0xF000) {
+            s32 a1 = (bits >> 14) & 1;
+            s32 a0;
+            s16 *row;
+
+            if (!(bits & 0x1000)) {
+                a1++;
+            }
+            a0 = (bits >> 15) & 1;
+            if (!(bits & 0x2000)) {
+                a0++;
+            }
+
+            new_var = &D_8008EB40;
+            row = new_var + (a0 * 3);
+            /* FAKE: index-first element address `a1[row]` (identical value to
+             * `row[a1]` - C defines E1[E2] as *(E1+E2), so this is the same load),
+             * mechanism: GCC 2.7.2 RTL expansion emits the operands of the
+             * commutative PLUS in source order, so index-first flips the addu
+             * operand order and the element pointer lands in $a2 as target does -
+             * measured 8 -> 0, lever-exhaustion:
+             * memory/grind/func_80023648/hypotheses.md s6 */
+            a2 = a1[row];
+
+            if (D_800A38BA != 0 && *(s16 *)(arg0 + 6) == 0) {
+                func_8001F860((s16 *)arg0, *(s16 *)(arg0 + 0x1CA) + a2 / 4);
+            } else {
+                func_8001F860((s16 *)arg0, *(s16 *)(arg0 + 0x1D8) + a2);
+            }
+        } else {
+            if (D_800A38BA != 0 && *(s16 *)(arg0 + 6) == 0) {
+                *(s16 *)(arg0 + 0x14C) = 0;
+            }
+        }
+
+        {
+            /* FAKE: the clamped |*(s16*)(arg0+0x150)| is staged through the
+             * existing `a2` (its D_8008EB40 table-entry value is dead here - it
+             * was consumed by the func_8001F860 call above and is never read
+             * again), mechanism: GCC 2.7.2 global.c - a multiply-set pseudo is
+             * ONE allocno spanning all of its live ranges, so global_alloc seats
+             * every staged value in a single hard reg ($a2) exactly as target
+             * does; separate locals form separate allocnos that find_reg seats in
+             * $a2/$a0/$a1, lever-exhaustion: memory/grind/func_80023648/hypotheses.md
+             * (s1-s5: structural axis, named-intermediate axis, two permuter basins) */
+            a2 = *(s16 *)(arg0 + 0x150);
+            if (a2 < 0) {
+                a2 = -a2;
+            }
+            if (a2 >= 0x401) {
+                a2 = 0x400;
+            }
+
+            {
+                s32 sub_result = *(u16 *)(arg0 + 0x14E) - a2;
+                s32 div16 = *(s16 *)(arg0 + 0x1A);
+                s16 new_14e;
+                s32 tbl_val;
+                s32 mult_res;
+                s32 limit;
+
+                *(s16 *)(arg0 + 0x14E) = sub_result;
+                if (div16 < 0) {
+                    div16 += 15;
+                }
+                div16 >>= 4;
+                new_14e = sub_result + div16;
+                *(s16 *)(arg0 + 0x14E) = new_14e;
+
+                tbl_val = (&D_800A310C)[(&D_8008DA08)[*(s16 *)(arg0 + 0xA)]];
+                /* FAKE: the second read of *(s16*)(arg0+0x1A) is staged through
+                 * the existing `sub_result` (its 0x14E difference is dead here -
+                 * consumed by the store above and by new_14e), mechanism: GCC
+                 * 2.7.2 global.c multiply-set pseudo / single allocno as above,
+                 * lever-exhaustion: memory/grind/func_80023648/hypotheses.md */
+                sub_result = *(s16 *)(arg0 + 0x1A);
+                mult_res = sub_result * tbl_val;
+                limit = (mult_res << 4) >> 12;
+
+                if (limit < (s16)new_14e) {
+                    *(s16 *)(arg0 + 0x14E) = limit;
+                } else if ((s16)new_14e < 0) {
+                    *(s16 *)(arg0 + 0x14E) = 0;
+                }
+
+                {
+                    s32 speed_prod = *(s16 *)(arg0 + 0x14E) * *(s16 *)(arg0 + 0x44);
+                    s16 sin_val = (&Judge)[(*(u16 *)(arg0 + 0x1CA) & 0xFFF)];
+
+                    /* FAKE: the >>12 speed is staged through the existing `a2`
+                     * (its clamped-|0x150| value is dead here - consumed by
+                     * sub_result above), mechanism: GCC 2.7.2 global.c
+                     * multiply-set pseudo / single allocno as above,
+                     * lever-exhaustion: memory/grind/func_80023648/hypotheses.md */
+                    a2 = speed_prod >> 12;
+
+                    *(s32 *)(arg0 + 0xD8) += (sin_val * a2) >> 16;
+
+                    {
+                        s16 cos_val = (&Judge)[((*(s16 *)(arg0 + 0x1CA) + 0x400) & 0xFFF)];
+                        *(s32 *)(arg0 + 0xE0) += (cos_val * a2) >> 16;
+                    }
+                }
+            }
+        }
+    } else {
+        if (*(s16 *)(arg0 + 0x14E) > 0) {
+            if (kind != 0x22) {
+                *(s16 *)(arg0 + 0x14C) = 0;
+            }
+            *(s16 *)(arg0 + 0x14E) = 0;
+        }
+    }
+}
 INCLUDE_ASM("asm/funcs", func_800238C4);
 /* kengo:HIGH  |  nm_camera/camera_set_zoom  |  219i */
 void func_80023C30(s32 arg0, s32 arg1, s32 arg2, s16 *arg3) {

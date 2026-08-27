@@ -57,11 +57,7 @@
  ],
  "banned_constructs": [],
  "ladder_skip": 0,
- "pending_fixup": {
-  "kind": "annotation",
-  "detail": "Add an inline /* FAKE: index-first element address `a1[row]` (identical value to `row[a1]`), effect: flips the addu operand order so the element pointer lands in $a2 as target does - measured 8 -> 0, lever-exhaustion: memory/grind/func_80023648/hypotheses.md s6 */ at the a1[row] site in src/code6cac.c, cite .claude/rules/do-while-zero-exception.md's 2026-07-06 ALLOWED list (not compare-operand-order-register.md) as its authority, and change NOTHING else - the body is byte-proven and PASSes on every other ground.",
-  "set": "2026-08-26T23:56:44.220336+00:00"
- },
+ "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-26T21:19:16.182386+00:00"
 }

@@ -531,3 +531,79 @@
 - [s5] All three s5 campaigns were harvested with --stop inside the session; permuter_campaign.py status reports no live campaigns for this function.
 
 - [s5] candidate.c's header was rewritten this session to carry the asm-until-matched MIGRATION BANNER (the consistency audit flagged it as asserting HEAD/main state while the representation on main is INCLUDE_ASM) and to record the s5 kills so the next session does not re-propose naming edits.
+
+## s6 (synthesis, 2026-08-26) — **MATCHED: sandbox --disable all = 0 at 159/159**
+
+- [s6] Chassis re-measured at session start with the s5 candidate body applied to
+  src/code6cac.c: score 15, target_insns 159, build_insns 159. The ledger floor was
+  CURRENT and every s4/s5 chassis-relative conclusion was still valid.
+
+- [s6] THE MISSING MEASUREMENT, and the reason two sessions probed blind: nobody had
+  produced an ALIGNED SEAT DIFF of the CURRENT (15-line) residual. s4 changed the
+  chassis and explicitly marked the s1-s3 allocno ids stale, but s5 spent its whole
+  session on spelling sweeps instead of re-deriving the diff. Producing it took two
+  turns (tmp/grind/func_80023648/s6/diffseats.sh objdumps the sandbox object,
+  tmp/grind/func_80023648/s6/cmp.py normalises both sides to mnemonic+registers and
+  prints the aligned mismatches) and it decomposed the residual EXACTLY:
+    * C1 (5 lines, idx 34-38) the final element-address add. Ours `addu v0,v0,v1`
+      (row first, dest v0); target `addu v1,v1,v0` (scaled index first, dest v1).
+      The D_800A38BA lui/lh/beqz triple that follows only differs because the other
+      register is free.
+    * C2 (7 lines, idx 70-81) the clamped |*(s16 *)(arg0+0x150)|: ours $a0, target $a2.
+    * C3 (3 lines, idx 124/125/139) the >>12 speed: ours $a1, target $a2.
+  5+7+3 = 15 = the sandbox score exactly. The load-bearing observation: TARGET SEATS
+  THREE UNRELATED VALUES IN $a2 (the D_8008EB40 table entry, the clamped abs, the
+  speed) while we spread them over $a2/$a0/$a1. That is ONE C-level fact, not three.
+
+- [s6] FLOOR 15 -> 0, closed by three levers each measured separately at 159/159:
+    * stage the clamped abs through the existing `a2` local  15 -> 8  (var/v2.c)
+    * write the element address index-first                   8 -> 3  (var/w1.c)
+    * stage the >>12 speed through `a2` as well               3 -> 0  (var/y1.c)
+  s2's variant `merge_a2abs` (the same idea as lever 1) measured 30 = no change on the
+  OLD chassis and was banked as KILLED; on the 15-floor chassis the identical edit is
+  worth 7 points. Chassis-relativity is not a formality — a kill from an older chassis
+  is a hypothesis again, not a fact.
+
+- [s6] THE C99 MIXED-DECLARATION TRAP (cost four measurements; do not repeat it).
+  Replacing `s32 speed = speed_prod >> 12;` with an assignment to an outer variable
+  leaves that assignment BEFORE the sibling declaration `s16 sin_val = ...`. GCC 2.7.2
+  is a C89 compiler and, with `-w`, silently miscompiles the block: build_insns drops
+  159 -> 146 (OFF-MULTISET) for every choice of target variable (a2 21, div16 22,
+  tbl_val 28, mult_res 24, limit 22, sub_result 22). Moving the staging assignment
+  BELOW the block's declarations restores 159 and scores 0. Any future edit that turns
+  a declaration-with-initializer into a plain assignment must re-check build_insns.
+
+- [s6] SIMPLIFICATIONS PROVEN FREE once C1-C3 are closed (each re-measured at 0, so the
+  final diff is strictly SMALLER than the inherited s5 candidate):
+    * s4's varA (`div16 = (s16)new_14e;` staged before the compare) is no longer needed:
+      `if (limit < (s16)new_14e)` is byte-identical (var/c1.c).
+    * s4's varL `ent` pointer local is no longer needed: the index-first address
+      expression alone carries C1 (var/d5.c).
+    * `new_14e = sub_result; new_14e = new_14e + div16;` collapses to one statement.
+  Two s4-era permuter constructs therefore came OUT of the candidate this session.
+
+- [s6] LOAD-BEARING AND NOT REMOVABLE (measured): the `new_var` + `row` two-step address
+  split (dropping new_var = 14; folding row into the address expression = 17), and the
+  reuse of `sub_result` for the second `*(s16 *)(arg0 + 0x1A)` read (a fresh named local
+  costs an instruction: 11 at 160; inlining the read costs one too: 4 at 160).
+
+- [s6] THE ADDRESS-ORDER LEVER, characterised. Four spellings of the same element read,
+  all at 159 insns, on the 8-floor body: `ent = &row[a1]; a2 = *ent;` = 8;
+  `ent = a1 + row;` = 8 (byte-identical — GCC 2.7.2's `pointer_int_sum` canonicalises
+  pointer+integer to POINTER FIRST, so writing the integer first at the C level is a
+  no-op); `ent = (s16 *)((s32)row + a1 * 2);` = 5; `ent = (s16 *)(a1 * 2 + (s32)row);`
+  = 3. Two further spellings reach 0 on the final body: `a2 = a1[row];` and
+  `a2 = *(s16 *)((a1 << 1) + (s32)row);`. Conclusion: the lever is the operand order of
+  the PLUS once it is an INTEGER addition (or a reversed subscript, which the front end
+  builds the same way); it is invisible while the addition is pointer arithmetic.
+  The shipped form is `a2 = a1[row];` — no casts, no hand-scaled index.
+
+- [s6] s5's frontier item 2 ("address-computation splitting is the reachable lever") was
+  DIRECTIONALLY RIGHT but mis-stated: splitting the address into a named pointer was
+  worth 7 points on the 22-floor body and is worth ZERO on the final body. What actually
+  carries C1 is operand ORDER inside the address addition. The `ent` local was a proxy
+  for it, not the mechanism.
+
+- [s6] Final form: sandbox --disable all = 0, target_insns 159, build_insns 159,
+  rules_dropped 0, with the three FAKE annotations present in src/code6cac.c. Constructs
+  and family analysis: memory/grind/func_80023648/self_vet.md.

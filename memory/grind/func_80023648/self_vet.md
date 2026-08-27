@@ -2,9 +2,10 @@
 
 Diff under vet: `src/code6cac.c`'s `INCLUDE_ASM("asm/funcs", func_80023648);`
 replaced by the pure-C body in `memory/grind/func_80023648/candidate.c`.
-Measured this session: `sandbox func_80023648 --disable all` → **score 0,
-target_insns 159, build_insns 159, rules_dropped 0**, with the FAKE annotations
-in place in the source.
+Measured (s6, and RE-MEASURED unchanged in the s6b annotation-fix session
+2026-08-26 with the corrected annotation set in place): `sandbox func_80023648
+--disable all` → **score 0, target_insns 159, build_insns 159, rules_dropped 0**,
+with all FOUR FAKE annotations in place in the source.
 
 CONSTRUCTS: (1) staged value through the existing `a2` local — clamped
 `|*(s16 *)(arg0 + 0x150)|`; (2) staged value through the existing `a2` local —
@@ -34,10 +35,14 @@ carry `/* FAKE: ... */` and are claimed under a sanctioned exception rather than
 presented as ordinary code. The exception exists precisely because the original
 1998 authors' compiler bookkeeping, not their intent, is what we are matching;
 SOTN ships the identical shape (see PRECEDENT below).
-4 — YES. `a1[row]` is ordinary C, cast-free, no hand-scaled index, and the
-reversed-subscript spelling is a long-standing idiom. It was chosen over the
-equivalent `*(s16 *)(a1 * 2 + (s32)row)` (also measured 0) precisely because it
-introduces no manual `* 2` scaling and no casts.
+4 — PARTLY. `a1[row]` is ordinary, cast-free, semantically-true C and the
+reversed-subscript spelling is a long-standing idiom (it was chosen over the
+equivalent `*(s16 *)((a1 << 1) + (s32)row)`, also measured 0, precisely because it
+introduces no manual scaling and no casts) — but a programmer writing from the
+spec would have written `row[a1]`, and this spelling is chosen purely for matching
+(`&row[a1]` = 8 vs `a1[row]` = 0, hypotheses.md s6). It therefore carries a
+`/* FAKE: ... */` mark, as the 2026-07-06 construct-honesty line requires of
+purely-for-matching spellings of true C.
 5 — YES; naming a table base and a row pointer is normal.
 
 ## T3 GCC-internals justification
@@ -48,9 +53,11 @@ a single hard register. That is the mechanism named in each annotation and it is
 the reason the exception is claimed under a sanctioned family with a FAKE
 annotation instead of being passed off as ordinary C. Construct 4's mechanism is
 front-end/RTL operand order for a commutative PLUS (`addu $d,$s,$t` emits the RTL
-operands in order); this is a C-source-visible property, not an allocator hack,
-and it is the addition analogue of the project's already-ordinary
-`compare-operand-order-register` technique. Construct 5 needs no internals story.
+operands in order; GCC 2.7.2's `pointer_int_sum` canonicalises pointer+integer to
+pointer-first, so the order is only C-visible via the reversed subscript). That
+mechanism is named in its FAKE annotation; the construct is a C-source-visible
+property of semantically-true C on the ALLOWED side of the 2026-07-06
+construct-honesty line, not an allocator hack. Construct 5 needs no internals story.
 
 ## T4 permuter/search provenance
 No permuter ran this session. Every construct was derived from a measured,
@@ -80,9 +87,13 @@ sessions of measured lever exhaustion in `hypotheses.md`; (vi) adversarial revie
 still applies. No forbidden family is touched: no asm, no register pins, no
 volatile, no alias renames, no dead stores, no dead locals, no scheduling
 barriers, no `if (1)`, no `do{}while(0)`, no rule-file edits.
-4 — ordinary C operand order; the closest catalogued technique is
-`.claude/rules/compare-operand-order-register.md`, which the project treats as
-ordinary C requiring no annotation. Not a member of any forbidden family.
+4 — semantically-true C whose spelling is purely-for-matching: the ALLOWED list
+of the 2026-07-06 construct-honesty ruling (`.claude/rules/do-while-zero-exception.md:46`),
+which sanctions "any spelling of semantically-TRUE C, whatever pass it nudges"
+and requires the FAKE mark when the spelling is purely-for-matching — the mark is
+present. It asserts no false program fact (no cross-symbol address derivation, no
+cast, no volatile/alias handle), so it is not the 2026-07-05 semantic-lie shape,
+and it is a member of no forbidden family.
 5 — ordinary named intermediates over real address values.
 
 ## T6 naming-announces-intent
@@ -99,13 +110,18 @@ SANCTIONED-FAMILY-CLAIMS:
   SCOPE: "SANCTIONED 2026-07-03 — a real, immediately-used value staged through an existing (currently-dead) local to fix instruction order; FAKE-annotated, lever-exhaustion required; zero dead code"
   PRECEDENT: docs/reference/sotn-construct-index.md:51
 
-  FAMILY: operand-order choice (construct 4) — ordinary C, no exception claimed,
-    listed here only for completeness
-  SCOPE: "Reversing a comparison's operand order (write `local > GLOBAL` instead of `GLOBAL < local`) can flip which register cc1 picks for the local; one source edit retires a `$X <-> $Y` regfix rule cluster"
-  PRECEDENT: .claude/rules/compare-operand-order-register.md:3
+  FAMILY: purely-for-matching spelling of semantically-TRUE C — the index-first
+    subscript `a1[row]` (construct 4), FAKE-marked per the 2026-07-06
+    construct-honesty ruling
+  SCOPE: "**ALLOWED — any spelling of semantically-TRUE C**, whatever pass it nudges: do-while(0) wraps, split/redundant arithmetic (the SOTN-wiki `+ 1 - 1` class — note this places the 2026-07-05 double-split rejection's SPELLING half under the allowed side; its cross-symbol half stays forbidden under #5), variable reuse/staging, named intermediates, statement order, mixed exit forms. Marked with the FAKE convention (below) when purely-for-matching."
+  PRECEDENT: .claude/rules/do-while-zero-exception.md:46
 
 ANNOTATION-CONFORMANCE:
   /* FAKE: the clamped |*(s16*)(arg0+0x150)| is staged through the existing `a2` (its D_8008EB40 table-entry value is dead here - it was consumed by the func_8001F860 call above and is never read again), mechanism: GCC 2.7.2 global.c - a multiply-set pseudo is ONE allocno spanning all of its live ranges, so global_alloc seats every staged value in a single hard reg ($a2) exactly as target does; separate locals form separate allocnos that find_reg seats in $a2/$a0/$a1, lever-exhaustion: memory/grind/func_80023648/hypotheses.md (s1-s5: structural axis, named-intermediate axis, two permuter basins) */
   /* FAKE: the second read of *(s16*)(arg0+0x1A) is staged through the existing `sub_result` (its 0x14E difference is dead here - consumed by the store above and by new_14e), mechanism: GCC 2.7.2 global.c multiply-set pseudo / single allocno as above, lever-exhaustion: memory/grind/func_80023648/hypotheses.md */
   /* FAKE: the >>12 speed is staged through the existing `a2` (its clamped-|0x150| value is dead here - consumed by sub_result above), mechanism: GCC 2.7.2 global.c multiply-set pseudo / single allocno as above, lever-exhaustion: memory/grind/func_80023648/hypotheses.md */
-  All three carry what + named GCC pass + lever-exhaustion pointer.
+  /* FAKE: index-first element address `a1[row]` (identical value to `row[a1]` - C defines E1[E2] as *(E1+E2), so this is the same load), mechanism: GCC 2.7.2 RTL expansion emits the operands of the commutative PLUS in source order, so index-first flips the addu operand order and the element pointer lands in $a2 as target does - measured 8 -> 0, lever-exhaustion: memory/grind/func_80023648/hypotheses.md s6 */
+  All four carry what + named GCC pass/mechanism + lever-exhaustion pointer. The
+  fourth was added in the s6b annotation-fix session to cure the 2026-08-26 18:56
+  Judge FAIL (annotation-format ground only); the code is byte-identical to the
+  Judge-verified body and the floor was re-measured at 0 with it in place.
