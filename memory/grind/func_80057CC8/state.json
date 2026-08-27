@@ -1,7 +1,7 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 37,
+ "session_count": 38,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -231,23 +231,29 @@
    "floor": 16,
    "modality": "synthesis",
    "headline": "s37 synthesis: floor 20 -> 16 (108 insns) via a never-permuted 108-insn-regime campaign whose one semantics-preserving find bisects to a single extra SET of the next-neighbour pseudo, which dump-confi"
+  },
+  {
+   "session": 38,
+   "floor": 16,
+   "modality": "synthesis",
+   "headline": "s38b synthesis: floor held at 16 (chassis re-measured; brief said unavailable); the s37 &Judge lever is proven REGIME-SPECIFIC (0 points in the arm-address regime, 21 with = 21 without), the ruling's "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The extra-SET lever generalises: if ONE second def in the final block promoted the next-neighbour pseudo out of local-alloc and bought four points, a different placement or a different promoted pseudo may buy the $s2/$s3 pair as well - specifically, promoting arg0's competitor set so that arg0 is the FIRST global allocno considered rather than the second.",
-   "mechanism": "local-alloc.c seats block-local quantities before global.c runs; the .lreg `in block N` tag is the observable, and s37 proved by intervention that a C-level second SET of a variable in a later basic block removes it. The seat order that follows is global.c:635 allocno_compare over whatever is left. s37 measured only the next_vert pseudo; the other block-local crossing quantities in the .lreg section (e.g. the block-4 pseudos 115/119/129) have never been probed for the same promotion, and each promotion changes which seat is free when arg0 is placed.",
-   "next_probe": "Re-dump with the 16-form (tmp/grind/func_80057CC8/dumps/text1b.lreg, function section from line 15487) and list every pseudo still carrying an `in block N` tag AND `crosses 1 call`. For each, spell a C-level second SET in the final block (the same shape that worked for next_vert - reuse of an existing local, so the family question is identical and already characterised) and measure with `sandbox func_80057CC8 --disable all`. Measure at 108 insns only; anything that adds an instruction has historically cost more than the seat is worth. Bank each as rejected/s38-promote-<pseudo>-score<N>.c."
+   "hypothesis": "The function's honest end state is `floor 16 with one decidable policy question`, and the question is now stated in closed form: the residual is exactly ONE supernumerary live-across-call quantity (the vertex-table base), which the target eliminates by re-deriving the base from arg0 after the call - the second source-level materialization refused on 2026-07-20.",
+   "mechanism": "Two-horn dilemma, both horns measured: pre-call formation gives the target's 6 crossing quantities but sched1 compresses the address pseudo's live_length to 4, so allocno_compare always ranks it above arg0 and it takes $s1; post-call formation gives the target's seat ORDER but needs a 7th crossing quantity, a ninth callee-save ($s8) and +2 instructions. arg0's double duty as scale source AND base source is the only construct that satisfies both, and it requires the refused second read.",
+   "next_probe": "Do NOT re-grind either horn - both are measured dead in closed form. If a future driver assigns `escalation` modality, the packet writes itself from this session's evidence section and needs no new measurement: the decidable question is a FIDELITY one (does the original source's post-call re-read of the vertex-table base, visibly present in the target's own bytes at asm/funcs/func_80057CC8.s:50, constitute source-level duplication at all, or is the ban mis-scoped?), not a request to sanction a no-precedent family. Word it that way; the auto-reject class covers anything that reads as 'lower a standard'."
   },
   {
-   "hypothesis": "The 16-form's variable-reuse construct can clear the frozen SOTN variable-reuse family's prerequisites (documented lever-exhaustion + named GCC-pass mechanism + /* FAKE */ annotation), in which case the ban-compliant story for this function changes from `floor 20, one policy residual` to `floor 16, one policy residual` and the FAKE form becomes the submission baseline for whatever closes the last two seats.",
-   "mechanism": "The three prerequisites are now all in hand except the formal vet: the mechanism is named and dump-verified (local-alloc.c block-local pre-seating; the .lreg block tag disappears), the lever-exhaustion ledger is thirty-seven sessions deep, and s37 measured four distinct annotation-free spellings that do NOT buy the gain (fresh local at two spellings, fresh local initialised at declaration, reuse of a different dead local) - which is exactly the 'no simpler form reaches it' showing the family requires.",
-   "next_probe": "Do NOT submit. Read .claude/rules/defeat-licm-hoist-var-reuse.md and .claude/rules/staged-value-reused-variable.md end to end, check the borrow against bound 2 (next_vert is an EXISTING local, not invented for the purpose, so it is not the excluded quadrant), grep docs/reference/sotn-construct-index.md for a PSX-tagged variable-reuse precedent of the borrow-a-dead-pointer-for-a-table-base shape, and if the family holds, emit `ruling-request` with the exact statement, the four negative control measurements, and the lreg before/after lines. A ruling is cheaper than a FAILed candidate, and this construct will sit under every future candidate for this function."
+   "hypothesis": "A never-permuted campaign seeded from the CURRENT annotated 16-form may find a below-16 arrangement, since every permuter campaign in this ledger predates the 108-insn/16-point regime except s37's, and s37's single novel find was the lever itself.",
+   "mechanism": "The permuter explores statement-order and expression-shape mutations that allocno_compare's inputs are sensitive to; s37 proved this specific regime is permuter-productive (it produced the four-point lever), and the regime has not been re-swept since the lever was folded in.",
+   "next_probe": "Launch `python3 tools/permuter_campaign.py` seeded from memory/grind/func_80057CC8/candidate.c (the annotated 16-form), wait in-turn with `wait --dir <ws>` across two or three fresh-seed windows, harvest, `harvest --stop`, and bisect any find the way s37 bisected its triple mutation. Bank each novel find as rejected/s39-permuter-<n>-score<N>.c. Reject on sight anything that re-reads *(s16 **)(arg0 + 4) a second time - that is the banned family."
   },
   {
-   "hypothesis": "The $s2/$s3 residual is unchanged in kind after s37 and remains the 2026-07-20 refused second source-level materialization - so the function's honest end state is `floor 16 with a decidable policy question`, not a grindable gap.",
-   "mechanism": "Post-call address formation is the only way the next-neighbour value stops crossing the call and stops competing for a callee-save seat; it requires the vertex-table base after the call; rematerialization (s36-E1, both REG_EQUIV gates proven mutually exclusive), caller-saving (s30, CALLER_SAVE_PROFITABLE arithmetic) and a ninth callee-save seat (s33-E5, measures 33) are all closed by measurement.",
-   "next_probe": "This is NOT for a `progress` session to dispose of - the floor moved this session, so the function is grindable and stays active. If a future driver assigns `escalation` modality, the packet writes itself from s35-E1 + s36-E3 + s37: seven of eight callee-save seats now match, the eighth is arithmetically foreclosed on measured allocno inputs, and the only decidable question left is the fidelity one (does the ORIGINAL source's per-call-site vertex-table access constitute duplication, given the target's own bytes reload 0x4($s2) at asm/funcs/func_80057CC8.s:50). Note the auto-reject class: do not word it as a request to sanction a no-precedent family."
+   "hypothesis": "The address pseudo's allocno priority could in principle be lowered below arg0's by a construct that gives it exactly 2 references and a live_length above 12, which is the only arithmetic route left to the target's seat order inside horn 1.",
+   "mechanism": "priority = floor_log2(n_refs)*n_refs/live_length; arg0's is 0.185; with n_refs = 2 the priority is 2/live_length, so live_length >= 11 suffices. The address currently has live_length 4 because sched1 sinks its def next to the jal, and it has 2 uses (lh 0(p), lh 2(p)) plus its def, i.e. 3 refs minimum.",
+   "next_probe": "This is a LONG SHOT and is listed third deliberately: it needs a spelling in which the address is defined far from its uses AND sched1 declines to sink the def, without a scheduling barrier. The only untried lever is making one of the two loads consume the address indirectly (e.g. a single 32-bit read split into two halves) so the pseudo has 2 refs rather than 3 - but that changes lh/lh into lw plus shifts and was never measured. Measure it once; if the instruction count leaves 108 it is dead, and this frontier item should then be struck permanently."
   }
  ],
  "judge_constraints": [

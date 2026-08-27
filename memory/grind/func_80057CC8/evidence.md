@@ -1929,3 +1929,102 @@ reaching 0 is therefore `progress` with the kills banked - which is this session
   verified at line 1665). No commits; regfix.txt, asmfix.txt, .claude/rules/, engine/, tools/,
   Makefile and *.ld untouched. No permuter campaign was launched this session, so there is
   nothing to orphan.
+
+## s38b (2026-08-27) - synthesis - FLOOR HELD AT 16; THE RESIDUAL IS NOW A CLOSED TWO-HORN DILEMMA OVER ONE SUPERNUMERARY CALL-CROSSING QUANTITY
+
+### Chassis re-measurement
+The brief reported the HEAD honest floor as "measurement unavailable". Measured directly:
+the inherited s37 candidate re-measures **16 at 108 insns** (`sandbox func_80057CC8
+--disable all`, target_insns 111, rules_dropped 0). The floor is 16 and the chassis is
+unchanged since s37. Re-measured a second time with the bound-4 `/* FAKE */` annotation
+added to the body: still 16 / 108, i.e. the annotation is codegen-neutral.
+
+### The ruling s38 asked for came back, and it is now baked into candidate.c
+The judge_constraints entry records it verbatim: the `next_vert = &Judge;` statement is
+sanctioned ONLY as `.claude/rules/staged-value-reused-variable.md`; citing
+`defeat-licm-hoist-var-reuse.md` (loop-scoped, no loop here) or
+`pointer-alias-fake-exception.md` (canonical shape is a FRESH local, which s37 measured at
+20 - the alias half is provably not the lever) is the wrong-citation layer-1 FAIL shape.
+The ruling requires the bound-4 annotation to name local-alloc.c block-local pre-seating
+AND to state the liveness argument. `memory/grind/func_80057CC8/candidate.c` now carries
+that annotation inline (liveness: `next_vert`'s previous value is last read as the
+`ang_next` ratan2 argument three statements above and is never read again; the staged
+value is read by the two statements immediately below - bound 1 and bound 3 both satisfied
+in writing). Bounds 5/6 still have to be re-checked at submission time. A future session
+that reaches distance 0 inherits a form whose annotation is already conformant.
+
+### The lever is regime-specific, not a general tool (new kill)
+s38 had already measured the lever at ZERO points in the post-call-address regime (31 with,
+31 without). s38b closes the remaining regime: both of the best pre-lever arm-selected-
+address forms, re-spelled with the lever appended verbatim, measure **21 at 108 insns** -
+identical to their pre-lever scores of 21.
+  rejected/s38b-arm-address-basefirst-plus-lever-score21.c        21 @108 (was 21)
+  rejected/s38b-arm-address-nocast-twins-plus-lever-score21.c     21 @108 (was 21)
+The lever is a one-shot removal of ONE specific local-alloc pre-seating (the merge-block
+offset regime, where the address pseudo carries `in block 4`), not a promotion tool that
+generalises. Any future session applying it to a structurally different regime must
+re-measure it there.
+
+### The exact register map, measured - and a correction to the s37 header
+The s37 candidate header claimed the lever moved cxs "out of $s2 into $s1 and now MATCHES
+the target". On the live chassis it does not. Measured maps:
+  ours (16-form) : $s0 cys, $s1 next-ADDRESS, $s2 cxs, $s3 arg0, $s4/$s5 raw cx/cy,
+                   $s6 arg2, $s7 arg3            -- 8 callee-saves, 6 quantities cross
+  target         : $s0 cys, $s1 cxs, $s2 arg0, $s3 next-INDEX, $s4/$s5 raw cx/cy,
+                   $s6 arg2, $s7 arg3            -- 8 callee-saves, 6 quantities cross
+  post-call form : $s0 cys, $s1 cxs, $s2 table, $s3 arg0, $s4 off, $s5/$s6 raw cx/cy,
+                   $s7 arg2, $s8 arg3            -- 9 callee-saves, 7 quantities cross
+(the post-call map is read from tmp/grind/func_80057CC8/s38b/d31.ins, an objdump of the
+sandbox object; note `sw s8,56(sp)` - GCC takes $fp as a ninth callee-save.)
+The relative order of cys, cxs and arg0 is ALREADY correct in the 16-form. The entire
+register residual is that ONE allocno - the next-neighbour address - is ranked SECOND and
+takes $s1, where the target ranks its next-neighbour quantity FOURTH.
+
+### The full normalised diff contains exactly two things
+`python3 tmp/grind/func_80057CC8/s31/norm2.py asm/funcs/func_80057CC8.s
+tmp/grind/func_80057CC8/s38b/base16.hon.s` (target 115 normalised lines, ours 112) shows
+NOTHING except (a) that one seat rotation applied to ~12 lines, and (b) the address-
+formation block - ours a single pre-call `addu $17,$17,$6`, the target's four post-call
+insns `sll $3,$19,16 / lw $4,4($18) / sra $3,$3,14 / addu $3,$3,$4`. Block (b) IS the
+entire 108-vs-111 instruction gap. There is no third category of divergence left.
+
+### The closed-form dilemma (the session's real product)
+HORN 1 - address formed BEFORE the first call (the 16-form). Exactly 6 quantities cross,
+matching the target, so 8 callee-save seats suffice and the count is 108. But GCC 2.7.2
+runs sched1 BEFORE local-alloc, and sched1 sinks the address add into the slot preceding
+the jal, so the address pseudo's live_length is 4. Its allocno_compare priority
+floor_log2(n_refs)*n_refs/live_length is therefore >= 0.5 for ANY n_refs >= 2, while arg0's
+is 2*5/54 = 0.185 across the whole function. The address always outranks arg0 and takes
+$s1. arg0 cannot be raised: its live_length is the function and shortening it (hoisting
+`scale = arg0[2] * 40`) makes arg0 stop crossing the call altogether and take a caller-save
+- s38 measured 47, s35-c6 measured `addu $8,$4,$zero`. The address cannot be lowered: only
+a scheduling barrier would pin its def, a forbidden family.
+HORN 2 - address formed AFTER the first call. The seat ORDER comes out right for the first
+time ($s0 cys and $s1 cxs both match target), but SEVEN quantities cross, because the
+vertex-table base and the wrapped offset must both survive the call. GCC takes a ninth
+callee-save, costs +2 instructions, and the supernumerary `table` allocno displaces arg0
+from $s2 to $s3. Measured 31 at 110.
+WHY THE TARGET OCCUPIES BOTH HORNS: arg0 does double duty - scale source AND base source -
+because the target re-derives the base after the call with `lw $a0,0x4($s2)`
+(asm/funcs/func_80057CC8.s:50). The base therefore costs the target ZERO extra crossing
+quantities. Every ban-compliant substitute for that double duty has been measured and each
+costs exactly one supernumerary crossing quantity: centre-relative (s33, 38),
+prev-address-plus-delta (s32 next-differences, 42), carried table + offset (s38/s38b, 31).
+The residual is ONE supernumerary live-across-call quantity, and eliminating it is
+precisely the second source-level materialization the owner refused on 2026-07-20. It is a
+policy question with a fully-measured mechanism behind it, not a spelling that has not been
+found yet.
+
+- [s38] Chassis re-measured (the brief reported it unavailable): the inherited s37 candidate measures 16 at 108 insns, target_insns 111, rules_dropped 0. Floor is 16, unchanged since s37.
+
+- [s38] The ruling s38 requested has landed and is now baked into the candidate: the `next_vert = &Judge;` statement is sanctioned ONLY as .claude/rules/staged-value-reused-variable.md; memory/grind/func_80057CC8/candidate.c now carries a conformant bound-4 /* FAKE */ annotation naming local-alloc.c block-local pre-seating as the mechanism and stating the liveness argument in writing (previous value last read as the ang_next ratan2 argument, never read again; staged value read by the two statements immediately below). Re-measured with the annotation in place: still 16 / 108, so the annotation is codegen-neutral.
+
+- [s38] The &Judge lever is REGIME-SPECIFIC and worth 0 points outside the merge-block-offset regime: arm-selected-address forms measure 21 with the lever and 21 without (two spellings, both banked), and the post-call regime measures 31 with and 31 without (s38).
+
+- [s38] CORRECTION to the s37 candidate header: it claimed the lever moved cxs into $s1 'and now MATCHES the target'. On the live chassis it has not. Measured map of the 16-form is $s0 cys, $s1 next-ADDRESS, $s2 cxs, $s3 arg0, $s4/$s5 raw cx/cy, $s6 arg2, $s7 arg3.
+
+- [s38] The relative order of cys, cxs and arg0 is already correct in the 16-form; the entire register residual is that ONE allocno (the next-neighbour address) is ranked second and takes $s1 where the target ranks its next-neighbour quantity fourth.
+
+- [s38] The post-call regime's register map was read for the first time (objdump of the sandbox object): $s0 cys, $s1 cxs (both matching target), $s2 table, $s3 arg0, $s4 off, $s5/$s6 raw cx/cy, $s7 arg2, $s8 arg3 - nine callee-saves, `sw s8,56(sp)` confirming GCC takes $fp as the ninth seat, which is the +2 instructions.
+
+- [s38] Every ban-compliant substitute for the target's arg0-does-double-duty trick has now been measured and each costs exactly one supernumerary crossing quantity: centre-relative (s33, 38), prev-address-plus-delta (s32 next-differences, 42), carried table + offset (s38/s38b, 31).

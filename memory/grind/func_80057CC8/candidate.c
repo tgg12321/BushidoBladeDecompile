@@ -1,91 +1,78 @@
-/* BEST MEASURED FORM (grind s37, 2026-08-27, synthesis modality).
- * MEASURED THIS SESSION: `sandbox func_80057CC8 --disable all` -> score 16,
- * target_insns 111, build_insns 108, rules_dropped 0.  The inherited s34/s35/s36
- * candidate re-measured at 20 on this chassis first, so the floor moved 20 -> 16.
+/* BEST MEASURED FORM (grind s38b, 2026-08-27, synthesis modality).
+ * MEASURED THIS SESSION on the live chassis: `sandbox func_80057CC8 --disable all`
+ * -> score 16, target_insns 111, build_insns 108, rules_dropped 0.  Re-measured a
+ * second time with the /* FAKE * / annotation below in place: still 16 / 108.
  *
- * WHAT CHANGED vs the score-20 predecessor: exactly ONE added statement --
- *     next_vert = &Judge;
- * placed after `scale = arg0[2] * 40;`, with the two sine-table reads then spelled
- * `*(next_vert + ...)` instead of `*(&Judge + ...)`.  Nothing else differs.  The
- * annotation-free score-20 predecessor is preserved verbatim at
- * tmp/grind/func_80057CC8/s37/v20.c (and in git history as the s34 candidate).
+ * WHAT THIS FORM IS.  It is the s34/s35/s36 score-20 form plus exactly ONE added
+ * statement, `next_vert = &Judge;`, placed after `scale = arg0[2] * 40;`, with the two
+ * sine-table reads then spelled `*(next_vert + ...)` instead of `*(&Judge + ...)`.
+ * Nothing else differs.  The annotation-free score-20 predecessor is preserved at
+ * tmp/grind/func_80057CC8/s37/v20.c.
  *
- * /* FAKE * / STATUS -- READ BEFORE BUILDING ON THIS FILE.  The added statement is a
- * MATCH-HACK, not program logic: `next_vert` is the next-neighbour vertex pointer and
- * re-pointing it at the sine table has no semantic purpose (the loads are identical
- * either way).  FAMILY CITATION CORRECTED BY s38 -- do NOT cite
- * .claude/rules/defeat-licm-hoist-var-reuse.md, as that rule is explicitly loop-scoped
- * ("variable reuse inside loops (a different, loop-scoped mechanism; do not cite it for
- * straight-line code)", staged-value-reused-variable.md Related section) and this function
- * contains no loop.  The two adjacent candidate families are
- * .claude/rules/staged-value-reused-variable.md (an EXISTING, currently-dead local staged
- * with a real immediately-consumed value) and .claude/rules/pointer-alias-fake-exception.md
- * (a C-level local pointer alias to a global).  NEITHER scope sentence squarely covers this
- * construct, which is the composite of both, and s38 emitted a `ruling-request` on exactly
- * that question rather than guess.  Whichever family is granted, the construct REQUIRES a
- * /* FAKE * / annotation plus documented lever-exhaustion and a named GCC-pass mechanism
- * before it may ever be submitted.  s37 did NOT vet those prerequisites -- the floor is 16, not 0, so no
- * candidate-ready and no self-vet was in scope.  A future session that wants to SUBMIT
- * anything containing this statement must either clear the family prerequisites in a
- * self-vet or emit a ruling-request first.  It is banked here because it is the best
- * MEASURED form and because its MECHANISM (below) is the session's real product.
+ * FAMILY / RULING STATUS -- SETTLED.  s38 emitted a ruling-request on which sanctioned
+ * family covers the added statement; the ruling came back and is recorded in the
+ * function's judge_constraints:  the construct is sanctioned ONLY as
+ * .claude/rules/staged-value-reused-variable.md.  Do NOT cite
+ * .claude/rules/defeat-licm-hoist-var-reuse.md (loop-scoped; this function has no loop)
+ * and do NOT cite .claude/rules/pointer-alias-fake-exception.md (its canonical shape is a
+ * FRESH local, and s37 measured a fresh local at 20 -- the alias half is provably not the
+ * lever).  The ruling requires the bound-4 annotation to name local-alloc.c block-local
+ * pre-seating AND to state the liveness argument; the annotation in the body below does
+ * both, and bounds 5/6 must still be re-checked at submission time.
  *
- * THE MECHANISM (dump-verified, tmp/grind/func_80057CC8/dumps/text1b.lreg after this
- * form was applied).  The s34/s35 attribution of the register residual was:
- * "our next-neighbour address is a BLOCK-LOCAL call-crossing quantity (lreg: 'Register 88
- * used 3 times across 4 insns IN BLOCK 4; crosses 1 call'), so local-alloc hands it a
- * callee-save seat BEFORE the two centre twins are placed, pushing cxs to $18 and blocking
- * arg0 out of 16/17/18."  Adding a second SET of the same C variable in the FINAL basic
- * block removes the "in block 4" tag entirely -- lreg now prints
- *     Register 88 used 6 times across 4 insns; crosses 1 call; GR_REGS or none; pointer.
- * with no block tag, i.e. pseudo 88 is now a GLOBAL allocno and local-alloc no longer
- * pre-seats it.  Measured consequence, exactly as predicted by that attribution: cxs
- * moves out of $s2 into $s1 and now MATCHES the target ($s0 cys / $s1 cxs, target
- * asm/funcs/func_80057CC8.s:41-44 `sll $s1,$s4,16 / sra / sll $s0,$s5,16 / sra`).
- * That is the whole four-point gain; the instruction count is unchanged at 108.
+ * THE MECHANISM (dump-verified, tmp/grind/func_80057CC8/dumps/text1b.lreg).  The
+ * next-neighbour address is a BLOCK-LOCAL call-crossing quantity ("Register 88 used 3
+ * times across 4 insns IN BLOCK 4; crosses 1 call"), so local-alloc seats it BEFORE
+ * global.c runs.  A second SET of the same C variable in the FINAL basic block removes
+ * the "in block 4" tag entirely (lreg then prints "Register 88 used 6 times across 4
+ * insns; crosses 1 call" with no block tag), i.e. pseudo 88 becomes a global allocno and
+ * local-alloc no longer pre-seats it.  That is the whole four-point gain (20 -> 16) at an
+ * unchanged 108 instructions.
  *
- * ISOLATION (all measured this session, all at 108 insns).  The permuter find that
- * exposed this carried three mutations; they were bisected:
- *   (b) `next_vert = &Judge;` reuse ................................. 16  <- the lever
- *   (c) multiply operand flip `(s32)(*..) * scale` on the *arg2 store  21  (worse)
- *   (a) `ang_prev = 0xFFF; ... & ang_prev;` constant holder .......... 20  (inert)
- *   (b)+(c) together ................................................ 17
- * And the lever was probed for a cheaper spelling:
- *   fresh local `s16 *jt; jt = &Judge;` (NOT a reuse) ................ 20  (no gain)
- *   same, array-index spelling `jt[...]` ............................ 20  (no gain)
- *   fresh local initialised at declaration `s16 *jt = &Judge;` ....... 48 at 110 insns
- *   reuse of `table` instead of `next_vert` ......................... 20  (no gain)
- *   reuse of `next_vert` consumed at only ONE of the two sites ...... 16  (same gain)
- *   reuse placed BEFORE `scale = arg0[2] * 40;` ..................... 16  (same gain)
- * The gain therefore comes from the extra SET of the next_vert pseudo (which promotes it
- * out of local-alloc), not from the pointer alias and not from which site consumes it.
- * A fresh pointer local cannot buy it -- that is precisely why no annotation-free
- * spelling of this lever exists.
+ * THE LEVER IS REGIME-SPECIFIC (measured, do not assume it carries).  It is worth ZERO
+ * points in the post-call-address regime (s38: 31 with and 31 without) and ZERO points in
+ * the arm-selected-address regime (s38b: 21 with and 21 without, both spellings --
+ * rejected/s38b-arm-address-basefirst-plus-lever-score21.c and
+ * rejected/s38b-arm-address-nocast-twins-plus-lever-score21.c).  It pays only where the
+ * address pseudo is genuinely block-local, i.e. the merge-block-offset regime this form
+ * uses.
  *
- * WHY IT IS STILL NOT 0 (unchanged in kind from s30b..s36).  The register map is now
- * $s0 cys, $s1 cxs, $s2 next-ADDRESS, $s3 arg0; the target is $s0 cys, $s1 cxs,
- * $s2 arg0, $s3 next-INDEX.  Only the $s2/$s3 pair is left, and it is the SAME wall:
- * pseudo 88's allocno_compare priority is floor_log2(6)*6/4 = 3.0 against arg0's
- * 2*5/54 = 0.185, so the address is always allocated first and takes the first free
- * callee-save seat.  It can only stop being a callee-save candidate by not crossing the
- * call, which requires post-call address formation, which requires the vertex-table base
- * to be available after the call, which -- with rematerialization (s36-E1), caller-saving
- * (s30) and a ninth callee-save seat (s33-E5, measures 33) all closed -- requires the
- * second source-level materialization the owner refused on 2026-07-20.  That residual is
- * a policy question, not a spelling.
+ * THE EXACT REGISTER MAP (s38b, measured -- this CORRECTS the s37 header, which claimed
+ * cxs had reached $s1; on the live chassis it has not).
+ *   ours   : $s0 = cys, $s1 = next-ADDRESS, $s2 = cxs, $s3 = arg0, $s4/$s5 = raw cx/cy,
+ *            $s6 = arg2, $s7 = arg3   (8 callee-saves, 6 quantities cross the call)
+ *   target : $s0 = cys, $s1 = cxs,          $s2 = arg0, $s3 = next-INDEX, $s4/$s5 = raw
+ *            cx/cy, $s6 = arg2, $s7 = arg3  (8 callee-saves, 6 quantities cross)
+ * The full normalised diff (tmp/grind/func_80057CC8/s38b/base16.hon.s vs
+ * asm/funcs/func_80057CC8.s) contains NOTHING except (a) that one seat rotation applied
+ * to ~12 lines, and (b) the address-formation block: ours is one pre-call `addu $17,$17,$6`
+ * where the target has four post-call insns `sll $3,$19,16 / lw $4,4($18) / sra $3,$3,14 /
+ * addu $3,$3,$4`.  That is the entire 111-vs-108 instruction gap.
  *
- * s38 ADDITIONS (all measured on this exact chassis, base16 re-measured at score 16 / 108
- * insns first).  Five new forms KILLED, none better than 16:
- *   hoist `scale = arg0[2] * 40;` to the top (shortens arg0's live range) ....... 47 @108
- *   hoist the whole next-vertex address block to the top ......................... 39 @106
- *   both hoists together .......................................................... 54 @106
- *   next address formed AFTER the first ratan2 call from the single carried
- *     `table` local (NO duplicate base read -- ban-compliant) .................... 31 @110
- *   the same, with the `next_vert = &Judge;` lever removed ..................... 31 @110
- * The last pair is the important one twice over: it re-measures s33-E5's ninth-callee-save
- * regime on the CURRENT chassis (was 33 two regimes ago, is 31 now -- still dead, +2 insns),
- * and it shows the &Judge lever is REGIME-SPECIFIC, worth 0 points once the address is
- * formed post-call.  The lever only pays while the address is formed before the call.
+ * WHY IT IS NOT 0 -- THE CLOSED-FORM DILEMMA (s38b, both horns now measured).
+ *   Horn 1, PRE-CALL address formation (this form).  Exactly 6 quantities cross the call,
+ *   matching the target, so 8 callee-saves suffice and the count is 108.  But sched1 runs
+ *   BEFORE local-alloc and sinks the address add into the slot preceding the jal, so the
+ *   address pseudo's live_length is 4; its allocno priority floor_log2(n)*n/4 is >= 0.5 for
+ *   any n, while arg0's is 2*5/54 = 0.185 over the whole function.  The address therefore
+ *   ALWAYS outranks arg0 in global.c:635 allocno_compare and takes $s1 -- exactly the seat
+ *   the target gives cxs.  arg0 cannot be raised (its live_length is the whole function and
+ *   shortening it makes it stop crossing the call entirely: measured 47) and the address
+ *   cannot be lowered (only a scheduling barrier would pin its def, a forbidden family).
+ *   Horn 2, POST-CALL address formation (rejected/s38-postcall-address-*.c, 31 @ 110).
+ *   Here the seat ORDER is right -- measured map $s0 cys, $s1 cxs (both matching target),
+ *   then $s2 table, $s3 arg0, $s4 off -- but SEVEN quantities cross instead of six, because
+ *   the vertex-table base and the wrapped offset must both survive the call.  GCC takes a
+ *   ninth callee-save ($s8/$fp, `sw s8,56(sp)`), costing +2 instructions, and the extra
+ *   `table` allocno displaces arg0 from $s2 to $s3.
+ *   The target has it both ways ONLY because it re-derives the base from arg0 after the
+ *   call (`lw $a0,0x4($s2)`, asm/funcs/func_80057CC8.s:50) -- arg0 does double duty as the
+ *   scale source AND the base source, so the base costs zero extra crossing quantities.
+ *   Every ban-compliant substitute for that double duty was measured and costs exactly one
+ *   supernumerary crossing quantity: centre-relative (s33, 38), prev-address + delta
+ *   (s32 next-differences, 42), carried table + offset (s38, 31).  The residual is
+ *   therefore ONE supernumerary live-across-call quantity, and removing it is precisely
+ *   the second source-level materialization the owner refused on 2026-07-20.
  */
 void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     unsigned short prev_idx;
@@ -133,6 +120,17 @@ void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     }
 
     scale = arg0[2] * 40;
+    /* FAKE: stages the sine-table base address &Judge through `next_vert`, the
+     * next-neighbour vertex pointer, whose previous value is dead here (its last
+     * read is the `ang_next` ratan2 argument three statements above, and it is
+     * never read again after this point), and whose staged value is read by the
+     * two statements immediately below; mechanism: local-alloc.c block-local
+     * pre-seating -- the second SET removes pseudo 88's `in block 4` tag so
+     * local-alloc no longer seats it ahead of global.c, worth 4 points (20 -> 16);
+     * lever-exhaustion: memory/grind/func_80057CC8/hypotheses.md (38 sessions) and
+     * the s37 negative controls banked as rejected/s37-fresh-jt-pointer-local-
+     * no-gain-score20.c, s37-jt-initialised-at-declaration-score48-110insns.c,
+     * s37-table-reuse-for-judge-base-no-gain-score20.c */
     next_vert = &Judge;
     *arg2 = cx + ((scale * (s32)(*(next_vert + (ang_mid & 0xFFF)))) >> 12);
     *arg3 = cy + ((scale * (s32)(new_var = *(next_vert + (((s16)ang_mid + 0x400) & 0xFFF)))) >> 12);
