@@ -1599,3 +1599,116 @@ label between the store and the argument set-up, which is what pins the store.
 - [s11] KILLED: hoisting temp_s3 above the `temp_v1_3 == 0` test so both reads share it measures 59/215 - it adds a fourth reference to the pointer, and at nrefs 4 the model needs livelen(143) in [53,58].
 
 - [s11] CLASSIFICATION NOTE for a future candidate-ready session: the arm duplication is byte-neutral by construction (jump2 re-merges it), which is the shape the `duplicated-statement-into-arms` family covers, and that family mandates a /* FAKE */ annotation. This session did not need a self-vet (floor 20, not 0), but the construct must not be submitted without one.
+
+---
+
+## s12 (2026-08-26) — structural — floor 20 -> 17
+
+Chassis at dispatch: the s11 candidate re-measured 20 / 212 insns on HEAD, so
+every s11 conclusion below is chassis-valid.
+
+### 1. A normalized asm diff now exists (tmp/grind/func_800283D0/s12/norm.py)
+
+s11's `mkdiff.py` compared raw objdump text against the target listing, so every
+`li` vs `addiu $rX,$zero,K`, `move` vs `addu $rX,$rY,$zero`, `0x14` vs `20` and
+`%hi()` vs `lui rX,0` pair showed as a "replace" and buried the real residual in
+noise. `s12/norm.py` canonicalises both sides (strip `$`, hex->dec, branch/jump
+targets -> `T`, `addu rX,rY,zero` -> `move`, `addiu rX,zero,K` -> `li`) before
+difflib. On the s11 body the entire residual then reads as SIX clusters, and
+they line up 1:1 with the score of 20. Use it (`bash s12/dif.sh`) for every
+future probe on this function; the unnormalized diff is not readable.
+
+### 2. THE FINDING: jump2's walk-back is steered by the INITIALISATION ORDER of
+### the arm's selection variable, and that single change closes cluster A and
+### the arm shape simultaneously (floor 20 -> 17).
+
+s11 banked the two requirements as independent and unsatisfiable together:
+(a) the `<` arm must DUPLICATE the two `func_80032854` calls, because that is the
+only reachable dial on `nrefs_flow(73 = arg1)` (7 -> 9, into s7's [8,11] window),
+which is what makes `arg1` sort before `temp_s3` in `allocno_compare` and take
+$s2; and (b) the arm must survive `find_cross_jump` as target's four
+instructions. s11 measured that any duplicate spelled the same way as path1
+collapses wholesale (212 insns, arm gone), and that the two half-goto spellings
+(R6/R7) keep the arm but sink the store (219 / 222 insns). All three scored 20.
+
+s12's measurement shows the resolution is not a third requirement but the
+CONTENT of the walk-back. `find_cross_jump` compares insns pairwise from the two
+block ends and stops at the first difference. With the arm's selection variable
+initialised to the OPPOSITE constant from path1's:
+
+    path1 : li v0,0x19 ; bne s1,0,Lsh ; li v0,0xB  ; Lsh: sh ; calls ; j end
+    arm   : li v0,0xB  ; beq s1,0,Lsh ; li v0,0x19 ; Lsh: sh ; calls ; j end
+
+the walk matches `j end`, both calls and the `sh`, then compares `li v0,0x19`
+against `li v0,0xB`, differs, and stops. The arm keeps its two-insn selection and
+its (redirected, hence inverted) branch — target's `beqz $s1,.L80028518 /
+addiu $v0,0x19 / j .L80028520 / sh $v0,0x286($s0)` — while still carrying the
+duplicated calls through global-alloc. With s11's spelling (both blocks
+initialised to 0x19) the walk also matched the branch and the `li`, so the whole
+arm collapsed to a single `bnez` and three instructions were lost.
+
+Measured on the new body: all twelve $s2/$s3 slots (3, 4, 10, 85, 90, 96, 97,
+102, 107, 111, 149, 154) are correct AND the arm's four instructions are
+reproduced. Score 17 / 216 insns. The construct is ordinary C — a branch arm
+that spells its two-way choice from the opposite end than its neighbour.
+
+### 3. The nrefs(73) window is confirmed a second time, independently
+
+`tools/ra_solver/extract.py` + s11's sweep re-run on the V1 (all-goto) body:
+`nrefs_flow(73) = 7`, `livelen_flow(73) = 132`, `base meets goal? False`, and the
+single-atom sweep reproduces s7's table EXACTLY on this chassis — livelen(143)
+14 -> [20,21], nrefs(143) 3 -> 2, livelen(73) 92 -> [38,65], nrefs(73) 7 ->
+[8,9,10,11]. V2/V3 (arm duplicates only the FIRST call, nrefs 8) flip the seats
+correctly, which confirms the window's lower bound behaviourally: 8 is enough.
+
+### 4. Ten structural spellings measured and dead (all banked in rejected/)
+
+| form | score / insns | what it proves |
+|---|---|---|
+| V1 arm all-goto (`goto set_0xB` + `goto do_calls`) | 23 / 216 | arm bytes EXACT, seats all inverted — the two requirements ride the same construct |
+| V2 arm dups first call, re-enters at `do_call2` | 22 / 219 | nrefs 8 flips seats; arm still merges |
+| V3 as V2 with a selection variable | 22 / 212 | same |
+| V4 arm both edges fully duplicated, 0x19 first | 24 / 224 | no merge at all |
+| V5 same, 0xB edge first | 26 / 224 | worse |
+| V7 0xB edge dups, 0x19 edge `goto do_calls` | 20 / 222 | = s11 R7 re-measured, unchanged |
+| V8 0xB edge `goto set_0xB`, 0x19 edge dups | 20 / 219 | = s11 R6 re-measured, unchanged |
+| V9 inverted-init selection + `goto do_calls` | 25 / 216 | the inverted init is worthless WITHOUT the duplicate — it is the walk-back stop, not a dial by itself |
+| P1 path1's store+calls duplicated per selection edge | 29 / 224 | a second, independent route to more arg1 refs is badly regressive |
+| P2 path1's store duplicated per edge, shared `do_calls` | 19 / 222 | close but worse |
+| Q1 `(temp_a1_2 * 2) + arg0` | 17, NEUTRAL | re-confirms s11 R2 on this chassis: `addu $s3,$v0,$s0` operand order is a CONSEQUENCE of allocation |
+| Q4 tail declaration order (product before the 0x118 load) | 17, NEUTRAL | declaration order does not move cluster E |
+
+### 5. The residual at 17, exactly
+
+1. **Store sink (~4 pts).** Ours: `li a1,1 / move a2,s2 / lh a0 / move a3,zero /
+   jal / sh v0,0x286(s0)<delay>`. Target: `sh v0,0x286(s0) / li a1,1 /
+   move a2,s2 / lh a0 / jal / move a3,zero<delay>`. Nothing separates our store
+   from the argument set-up, so sched2 sinks it and reorg takes it as the jal's
+   filler. In target `.L80028520` sits between them, alive because the arm's
+   `j .L80028520` targets it — and that label exists precisely because target's
+   arm merged only from AFTER the store on its 0x19 edge (it keeps its own `sh`
+   in the `j`'s delay slot), while ours merges AT the store. This is the SAME
+   walk-back mechanism s12 exploited, one instruction further along: we need the
+   walk to stop one insn EARLIER on the 0x19 edge only.
+2. **Cluster B (2 pts).** Unmoved since s10: ours fills the dispatch chain's last
+   `beq` delay slot with `li v0,1` and leaves the following `j`'s empty; target
+   does the reverse. Same shape again at emitted slot 126.
+3. **Cluster E (~8 pts).** The $a0/$a1 exchange in the tail Judge product
+   (emitted 159/161/168/169/171/178/181), a LOCAL-alloc seat. s7's window
+   span(qty0) 30 -> <=24 or refs(qty0) 6 -> 8..10. Q4 shows plain declaration
+   order does not reach it; the local half of s7's model has still never been
+   re-derived on a current body.
+
+- [s12] Chassis check: the s11 candidate re-measured 20 / 212 insns on HEAD at session start, so every s11 conclusion was chassis-valid going in.
+
+- [s12] New floor 17 / 216 insns, banked in memory/grind/func_800283D0/candidate.c. The only diff versus the s11 body is the initialisation order of the '<' arm's selection variable (0xB first, overwritten with 0x19 when var_s1 != 0). Ordinary C - a branch arm that spells its two-way choice from the opposite end than its neighbour. No new locals, nothing dead, nothing annotated, no sanctioned-family claim needed.
+
+- [s12] Cluster A (the $s2/$s3 callee-saved rotation) and the over-merged '<' arm are CLOSED together. Both were open in every prior session: s9/s10 had the arm right and the seats wrong (23), s11 had the seats right and the arm wrong (20).
+
+- [s12] s7's single-atom RA windows reproduce EXACTLY on this chassis, re-extracted from the V1 body: livelen(143) 14 -> [20,21], nrefs(143) 3 -> 2, livelen(73) 92 -> [38,65], nrefs(73) 7 -> [8,9,10,11]; base flow for 73 is nrefs 7 / livelen 132 / calls_crossed 3, and 'base meets goal? False'. V2/V3 confirm the window's lower bound behaviourally: nrefs 8 is enough to flip the seats.
+
+- [s12] A normalized asm differ now exists: tmp/grind/func_800283D0/s12/norm.py + dif.sh. s11's mkdiff.py compared raw objdump text against the target listing, so every li/addiu, move/addu, hex/dec and %hi()/lui pair read as a divergence and the real residual was unreadable. Normalized, the residual resolves into clusters that sum to the score. Use dif.sh for every future probe on this function.
+
+- [s12] The residual at 17 is exactly three things. (1) THE STORE SINK, ~4 pts: ours emits 'li a1,1 / move a2,s2 / lh a0,4(s0) / move a3,zero / jal / sh v0,0x286(s0)<delay>' where target emits 'sh v0,0x286(s0) / li a1,1 / move a2,s2 / lh a0,4(s0) / jal / move a3,zero<delay>'. (2) CLUSTER B, 2 pts, unmoved since s10: ours fills the dispatch chain's last 'beq' delay slot with 'li v0,1' and leaves the following 'j' empty, target does the reverse; same shape again at emitted slot 126. (3) CLUSTER E, ~8 pts: the $a0/$a1 exchange in the tail Judge product at emitted 159/161/168/169/171/178/181, a LOCAL-alloc seat.
+
+- [s12] Twelve structural forms measured and banked to memory/grind/func_800283D0/rejected/ this session (47 entries total): arm-goto-both-edges-nrefs7-seats-lost-23.c, arm-dup-first-call-only-22.c, arm-sel-dup-first-call-remerges-22.c, arm-both-edges-full-dup-24.c, arm-both-edges-full-dup-flipped-26.c, arm-0xB-dup-0x19-goto-docalls-20.c, arm-sel-inverted-goto-docalls-nrefs7-25.c, path1-both-edges-full-dup-29.c, path1-store-dup-goto-docalls-19.c, s3-operand-order-neutral-17.c, tail-decl-order-neutral-17.c.

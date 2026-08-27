@@ -1,84 +1,83 @@
-/* candidate.c - func_800283D0 (saTan2KabutoWareMove), grind s11 2026-08-26 (rederive)
+/* candidate.c - func_800283D0 (saTan2KabutoWareMove), grind s12 2026-08-26 (structural)
  *
- * HONEST FLOOR WITH THIS BODY: sandbox --disable all = 20  (was 23 at s9/s10).
- * build_insns 212 vs target 215 - three instructions SHORT, all three in one
- * place (see THE CAVEAT).  Banked anyway because the honest floor is the score.
+ * HONEST FLOOR WITH THIS BODY: sandbox --disable all = 17  (was 20 at s11).
+ * build_insns 216 vs target 215.
  *
- * THE ONE CHANGE vs the s9/s10 body: the `temp_v1_3 < temp_v0_3` arm no longer
- * reaches the shared call pair with `goto do_calls;`.  It writes its own
- * selection, its own store and its OWN COPY of the two func_80032854 calls and
- * returns.  Plain ordinary C - a branch arm spelled out in full instead of
- * jumping into a neighbouring arm's tail.  No new locals beyond the arm-local
- * `s16 var_v0_4`, nothing dead, nothing annotated.
+ * THE ONE CHANGE vs the s11 body: in the `temp_v1_3 < temp_v0_3` arm the
+ * selection variable is now initialised to 0xB and overwritten with 0x19 in the
+ * `var_s1 != 0` case, i.e. the OPPOSITE initialisation order from the
+ * `temp_v1_3 == 0 / > 0` path (path1), which initialises to 0x19 and overwrites
+ * with 0xB.  Everything else is identical to s11.  Ordinary C: two branch arms
+ * that happen to spell the same two-way choice from opposite ends.  No new
+ * locals, nothing dead, nothing annotated.
  *
- * WHY IT WORKS - CLUSTER A (the $s2/$s3 callee-saved rotation) IS NOW CLOSED.
- * This is not a guess; it is the dial s7's RA-solver inverse named, driven to
- * the value the inverse predicted, and confirmed in the model afterwards:
- *   - s7 (re-measured UNCHANGED on the 23-floor body this session, see
- *     evidence.md s11 section 2) proved the callee-saved map can only be
- *     attacked through two allocnos: pseudo 73 = `arg1` and pseudo 143 =
- *     `temp_s3`.  The single-atom windows are livelen(73) 92 -> [38,65],
- *     nrefs(73) 7 -> [8,9,10,11], livelen(143) 14 -> [20,21], nrefs(143) 3 -> 2.
- *   - global.c allocno_compare ranks by
- *       pri = floor_log2(nrefs)*nrefs / allocno_live_length * 10000 * size.
- *     On the 23-floor body that is pri(143) = 3/14 -> 2142 versus
- *     pri(73) = 14/92 -> 1521, so 143 sorted FIRST and took $s2.  It is a clean
- *     ~40% inversion, NOT a tie.
- *   - Duplicating the two calls gives `arg1` two more RTL references at
- *     global-alloc time.  Measured after the change: nrefs_flow(73) 7 -> 9,
- *     which lands inside the [8,11] window; the ra_solver forward model now
- *     reports `base meets goal? True` and the emitted prologue is target's
- *     (`sw $s2,0x20($sp) / addu $s2,$a1,$zero ... sw $s3,0x24($sp)`), with
- *     every one of the ten $s2<->$s3 slots (4, 85, 90, 96, 97, 102, 107, 111,
- *     148, 153) now correct.
- *   - The duplication is legitimate precisely BECAUSE it survives to
- *     global-alloc and is then undone: jump.c cross-jumping runs in jump2,
- *     AFTER reload, so the source-level copy is real RTL while the allocator
- *     sorts and is re-merged before the bytes are emitted.
+ * WHY IT WORKS - CLUSTER A AND THE ARM ARE NOW BOTH CLOSED AT ONCE.
+ * s11 proved the two requirements are independent and could not be satisfied
+ * together: the arm has to DUPLICATE the two func_80032854 calls (that is the
+ * only reachable dial on nrefs_flow(pseudo 73 = arg1), 7 -> 9, into s7's [8,11]
+ * window, which is what wins $s2 for arg1); but any duplicate that is spelled
+ * IDENTICALLY to path1 is merged away wholesale by jump2's find_cross_jump,
+ * taking target's 4-insn arm with it.  s12's measurement shows the resolution:
+ * the walk-back in find_cross_jump is what decides how much of the duplicate
+ * survives, and it stops at the first pair of insns that differ.  With the
+ * inverted initialisation the two blocks are
+ *     path1 : li v0,0x19 ; bne s1,0,Lsh ; li v0,0xB  ; Lsh: sh ; calls ; j end
+ *     arm   : li v0,0xB  ; beq s1,0,Lsh ; li v0,0x19 ; Lsh: sh ; calls ; j end
+ * so the walk matches `j end`, both calls and the `sh`, then compares
+ * `li v0,0x19` against `li v0,0xB`, differs, and STOPS.  The arm therefore
+ * merges only its tail from the store onward and keeps its own two-insn
+ * selection plus the redirected branch - which is exactly target's four
+ * instructions at .L80028610.  With the s11 spelling (both blocks initialised
+ * to 0x19) the walk also matched the branch and the `li`, so the whole arm
+ * collapsed into a single `bnez` and 3 instructions were lost.
+ * Measured: seats now correct at every one of the twelve $s2/$s3 slots
+ * (3, 4, 10, 85, 90, 96, 97, 102, 107, 111, 149, 154) AND the arm's
+ * `beqz s1 / li v0,0x19 / j / sh` shape is reproduced.
  *
- * THE CAVEAT (all three missing instructions, one cause): jump2's
- * find_cross_jump merges the whole `<` arm away, leaving a single
- * `bnez $v0,<shared block>`, where target keeps a FOUR-instruction arm
- * (`beqz $s1,.L80028518 / addiu $v0,0x19 / j .L80028520 / sh $v0,0x286($s0)`)
- * that jumps into the shared block at two different points.  Target's arm
- * survives because its inner branch has the INVERTED sense relative to the
- * shared block's (`beqz $s1` vs `bnez $s1`), which stops the common-tail walk.
- * The s9 body got that shape for free from the `goto set_0xB;` spelling.
- * Two spellings that keep the inverted sense were measured this session and
- * both score the same 20 but with WORSE instruction counts, because the store
- * then sinks into the jal delay slot in the shared block:
- *     R6 `goto set_0xB` + duplicated calls .......... 20 / 219
- *     R7 duplicate in the 0xB path, `goto do_calls`
- *        kept alive for the 0x19 path ............... 20 / 222
- * The score is flat at 20 across all three, so the choice is free; the 212-insn
- * spelling is banked as the compact one.  Closing the last 3 instructions means
- * finding a spelling that duplicates the calls (for the nrefs dial) AND keeps
- * BOTH the inverted inner branch AND a live label between the store and the
- * arg set-up (which is what pins the store in front of `li $a1,1`).
+ * MEASURED AND DEAD THIS SESSION (all on this chassis, all banked in rejected/):
+ *   - V1 arm spelled purely with gotos (`goto set_0xB` + `goto do_calls`,
+ *     no duplicated calls): arm bytes EXACTLY target's, but nrefs_flow(73)
+ *     falls back to 7, `base meets goal? False`, and all twelve $s2/$s3 slots
+ *     inverted.  23 / 216.  This is the clean proof that the arm shape and the
+ *     nrefs dial are carried by the same construct.
+ *   - V2/V3 arm duplicates only the FIRST call and re-enters at a `do_call2`
+ *     label before the second (nrefs 8, inside the window): 22 / 219 and
+ *     22 / 212.  Seats flip correctly at nrefs 8, but the arm still merges.
+ *   - V4/V5 arm with BOTH edges fully duplicated (no selection variable, a
+ *     store+calls+return written out per edge): 24 / 224 and 26 / 224.
+ *   - V7 0xB edge duplicates, 0x19 edge stores then `goto do_calls`: 20 / 222.
+ *   - V8 (= s11's R6 re-measured) 0xB edge `goto set_0xB`, 0x19 edge duplicates:
+ *     20 / 219.
+ *   - V9 inverted-init selection + `goto do_calls` (no duplicated calls):
+ *     25 / 216 - again the nrefs dial lost.
+ *   - P1 path1's OWN store+calls duplicated into its two selection edges (a
+ *     second, independent route to more arg1 refs): 29 / 224.
+ *   - P2 path1's store duplicated per edge with a shared `do_calls`: 19 / 222.
+ *   - Q1 `(temp_a1_2 * 2) + arg0` instead of `arg0 + (temp_a1_2 * 2)`: 17,
+ *     score-NEUTRAL - re-confirms s11's R2 on this chassis; the `addu $s3,$v0,$s0`
+ *     operand order is a consequence of allocation, not an independent lever.
+ *   - Q4 tail declaration order (temp_v1_5's product computed before the
+ *     0x118 load): 17, score-NEUTRAL - does not move cluster E.
  *
- * MEASURED AND DEAD THIS SESSION:
- *   - R1 sibling-idiom dispatch (the eight-way state test respelled as
- *     positive `if (x == K) goto set_s1;` tests with a fall-through
- *     `return 1;`, exactly func_8002798C's idiom - a MATCHED sibling in this
- *     same file): 20/216-equivalent, i.e. score-NEUTRAL at 23 on the s10 body.
- *     Free either way; not a lever, but the author-idiomatic spelling is now
- *     known to cost nothing.  Kept as variants/R1_sibling_dispatch.c.
- *   - R2 `(temp_a1_2 * 2) + arg0` instead of `arg0 + (temp_a1_2 * 2)` to chase
- *     target's `addu $s3,$v0,$s0` operand order: score-neutral, GCC
- *     canonicalises.  The operand order is a CONSEQUENCE of the register
- *     assignment, not an independent diff.
- *   - R3 hoisting `temp_s3` above the `temp_v1_3 == 0` test so both reads share
- *     it (a plausible original shape, and it also targets the livelen(143)
- *     dial): 59 / 215.  Badly regressive - it adds a fourth reference, and the
- *     model needs livelen(143) in [53,58] at nrefs 4.
+ * REMAINING RESIDUAL AT 17 (from the normalized objdump-vs-target diff,
+ * tmp/grind/func_800283D0/s12/):
+ *   1. THE STORE SINK, ~4 pts.  Ours emits `li a1,1 / move a2,s2 / lh a0 /
+ *      move a3,zero / jal / sh v0,0x286(s0)<delay>`; target emits
+ *      `sh v0,0x286(s0) / li a1,1 / move a2,s2 / lh a0 / jal / move a3,zero`.
+ *      The store is sunk into the jal's delay slot by sched2 + reorg because
+ *      nothing separates it from the argument set-up.  In target `.L80028520`
+ *      sits between them, kept alive by the arm's `j .L80028520` - and that
+ *      label exists because target's arm merged only from AFTER the store on
+ *      its 0x19 edge (it keeps its own `sh`), whereas ours merges AT the store.
+ *      Same one-instruction difference in the walk-back that s12 exploited.
+ *   2. CLUSTER B, 2 pts: ours fills the dispatch chain's last `beq` delay slot
+ *      with `li v0,1` and leaves the following `j`'s slot empty; target does the
+ *      reverse.  Plus the same shape at emitted slot 126.  Unmoved since s10.
+ *   3. CLUSTER E, ~8 pts: the $a0/$a1 exchange in the tail Judge product
+ *      (emitted slots 159/161/168/169/171/178/181) - a LOCAL-alloc seat, s7's
+ *      window span(qty0) 30 -> <=24 or refs(qty0) 6 -> 8..10.  Untouched.
  *
- * Remaining residual at 20: cluster B (the nop-vs-`li v0,1` delay-slot fill at
- * emitted slots 45/47), cluster E (the $a0/$a1 exchange in the tail Judge
- * product, a LOCAL-alloc seat - s7 window span(qty0) 30 -> <=24 or refs(qty0)
- * 6 -> 8..10), the store-vs-`move a3,zero` order in the shared call block, and
- * the 3 instructions of the over-merged `<` arm described above.
- *
- * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  212i @ floor 20
+ * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  216i @ floor 17
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
     s32 temp_a1;
@@ -170,9 +169,9 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                             goto block_48;
                         }
                         if (temp_v1_3 < temp_v0_3) {
-                            s16 var_v0_4 = 0x19;
-                            if (var_s1 == 0) {
-                                var_v0_4 = 0xB;
+                            s16 var_v0_4 = 0xB;
+                            if (var_s1 != 0) {
+                                var_v0_4 = 0x19;
                             }
                             *(s16 *)(arg0 + 0x286) = var_v0_4;
                             func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);

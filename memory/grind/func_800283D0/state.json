@@ -1,8 +1,8 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 11,
- "current_modality": "rederive",
+ "session_count": 12,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -69,23 +69,29 @@
    "floor": 20,
    "modality": "rederive",
    "headline": "Floor 23 -> 20: cluster A (the $s2/$s3 callee-saved rotation) CLOSED by duplicating the shared call pair into the `<` arm, which raises nrefs(arg1) 7 -> 9 into s7's [8,11] window; the rederive shape a"
+  },
+  {
+   "session": 12,
+   "floor": 17,
+   "modality": "structural",
+   "headline": "Floor 20 -> 17: inverting the initialisation order of the '<' arm's selection variable relative to path1's stops jump2's cross-jump walk-back one insn earlier, so the arm keeps the duplicated calls (t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A duplication spelling exists that satisfies all three requirements at once - it duplicates the two func_80032854 calls (for the nrefs(arg1) dial), keeps the `<` arm's inner branch inverted (so jump2 merges only the call tail, leaving target's 4-insn arm), and keeps a live label between the `sh $v0,0x286($s0)` store and the `addiu $a1,$zero,1` argument set-up (so the store does not sink into the jal delay slot). That spelling is 215 insns at a floor below 20.",
-   "mechanism": "Measured this session: R4/R5 satisfy (a) but not (b), so the arm fully merges and 3 instructions vanish; R6/R7 satisfy (a) and (b) but not (c), so the store sinks and 4-7 instructions appear. All three score 20, which means the two losses are worth the same and neither has been eliminated - the requirements are independent, not a trade-off. The store is pinned in the s9 body purely because the `<` arm's `goto do_calls;` keeps that label alive; the sink itself is the scheduler moving the store past the argument set-up into the jal's delay slot (the inverse of .claude/rules/defer-store-past-later-compute-into-jal-delay).",
-   "next_probe": "Enumerate spellings that keep a THIRD entry into the shared block so the `do_calls` label survives while the calls are still duplicated - e.g. duplicate the pair into the `temp_v1_3 == 0` / `> 0` path instead of the `<` arm (that path currently owns the shared block, so the `<` arm would keep its `goto do_calls;` and both labels stay live), or split the `<` arm so its 0x19 branch gotos and its 0xB branch duplicates while a fourth site re-enters at `do_calls`. Measure each with `sandbox --disable all` and confirm with tools/ra_solver/extract.py that nrefs_flow(73) stays >= 8; the seat flip is only retained while it does."
+   "hypothesis": "The store sink is the SAME walk-back mechanism s12 exploited, one instruction further along, and it is closable by making find_cross_jump stop one insn EARLIER on the arm's 0x19 edge only - so that edge keeps its own 'sh $v0,0x286($s0)' and re-enters the shared block after the store, creating target's .L80028520 label and pinning path1's store in front of the argument set-up.",
+   "mechanism": "Target's arm ends 'j .L80028520' with 'sh $v0,0x286($s0)' in the delay slot: the 0x19 edge merged only from 'addiu $a1,$zero,1' onward, keeping a duplicate store, while the 0xB edge merged all the way back to path1's 'li v0,0xB' at .L80028518. Our arm merges BOTH edges at the store, so the only live label sits BEFORE the 'sh' and sched2 is free to sink it into the jal's delay slot (the inverse of .claude/rules/defer-store-past-later-compute-into-jal-delay). Note that the five hand-placed do_calls/do_call2 entry points are already measured dead (H-s12-2), so the fix must come from the walk-back, not from label placement.",
+   "next_probe": "Find a spelling in which the arm's 0x19 edge and path1 differ at the STORE insn while the 0xB edge still matches back to 'li v0,0xB'. Candidates to measure in one batch: (i) store the two constants through DIFFERENT C expressions on the two edges so the store's source operand differs pre-reload; (ii) give the arm's 0x19 edge an explicit s16 intermediate while the 0xB edge stores the variable directly; (iii) reverse which of path1's two edges is the fall-through so the merge anchors at the other end. Before spending probes, run 'pwsh tools/grinder/dump.ps1 func_800283D0' on the banked 17-floor body and read the .jump2 dump: the arm's post-cross-jump block will show the exact merge anchor, which turns this from enumeration into one targeted edit. Score every form with 'bash tmp/grind/func_800283D0/s12/dif.sh'."
   },
   {
-   "hypothesis": "Cluster E (the $a0/$a1 exchange across emitted slots 159, 161, 168, 169, 171, 178, 181 in the tail Judge product) is still described by s7's local-alloc window, or it has moved under the s8/s9/s11 changes.",
-   "mechanism": "s7 measured, in block 41 of the `main` local-alloc pass, that target wants qty0 (reg 184, the tail pointer `temp_s4 + temp_s5*0x10`) in $a0 and qty3 (reg 201, the first `(&Judge)[...]` element) in $a1, with the COMPLETE single-atom vector set being span(qty0) 30 -> <=24 (reachable from either end) or refs(qty0) 6 -> 8/9/10 - and s3's alternative span(qty3) >= 6 REFUTED. This session re-measured only the GLOBAL half of s7's model; the local half was not touched, and the s11 arm duplication changed the RTL of the blocks preceding the tail.",
-   "next_probe": "Run tools/ra_solver/local_extract.py code6cac_b on the banked 20-floor body, locate the tail block (s7's block 41), and re-run `inverse.py local --block <n> --swap 0,3 --depth 2 --top 40`. Compare against s7's table before spending any spelling probe. Note s7's own caveat: a birth/span vector is a claim about ALLOC-TIME order, which is not known to equal emission order, so re-derive it from a QTYDBG dump of the actual candidate before crediting it."
+   "hypothesis": "Cluster E (the $a0/$a1 exchange at emitted slots 159, 161, 168, 169, 171, 178, 181 in the tail Judge product) is the largest single remaining block at ~8 of the 17 points, and s7's LOCAL-alloc model for it has never been re-derived on a current body.",
+   "mechanism": "s7 measured, in block 41 of the 'main' local-alloc pass, that target wants qty0 (the tail pointer 'temp_s4 + temp_s5*0x10') in $a0 and qty3 (the first '(&Judge)[...]' element) in $a1, with the complete single-atom vector set being span(qty0) 30 -> <=24 (reachable from either end) or refs(qty0) 6 -> 8/9/10, and s3's alternative span(qty3) >= 6 REFUTED. That model predates the s8, s9, s11 and s12 changes, all of which rewrote the RTL of the blocks preceding the tail. Q4 this session shows plain declaration order in the tail does not reach it.",
+   "next_probe": "Run tools/ra_solver/local_extract.py code6cac_b on the banked 17-floor body, locate the tail block (s7 called it block 41), and re-run 'inverse.py local --block <n> --swap 0,3 --depth 2 --top 40'. Compare against s7's table before spending any spelling probe. Heed s7's own caveat: a birth/span vector is a claim about ALLOC-TIME order, which is not known to equal emission order, so re-derive it from a QTYDBG dump of the actual candidate before crediting it."
   },
   {
-   "hypothesis": "Cluster B (the nop-vs-`li v0,1` divergence at emitted slots 45/47) and the frontier-1 reorg residual are ONE delay-slot-fill mechanism, not two.",
-   "mechanism": "s10 proved cluster B does not move under any of the sixteen exit-form assignments, and this session's diff shows its exact shape: ours fills the last `beq $v1,$v0` of the dispatch chain's delay slot with `li $v0,1` and leaves the following `j`'s slot empty, while target does the reverse (nop in the beq slot, `li $v0,1` in the j's). That is reorg stealing across the .L80028488 label in our build and declining to in target's - the same class of decision as the frontier-1 `mark_target_live_regs` / opposite_needed loss that s10 measured at insn 344.",
-   "next_probe": "Locate the dispatch chain's final `beq` insn UID in tmp/grind/func_800283D0/s10/iso_dumps/iso.dbr, grep that UID in tmp/grind/func_800283D0/s10/iso_dumps/dbr.log for its `thr`/`simp` lines, and check whether the steal is granted there for the same reason it is refused at 344. If both are opposite_needed decisions, clusters B and the frontier-1 nop collapse into one residual with one mechanism, and the s10 open sub-question (why v0 is in opposite_needed at insn 686 despite the REG_DEAD flush at label 347) becomes the single highest-value probe left on this function."
+   "hypothesis": "Cluster B (the nop-vs-'li v0,1' delay-slot fill at emitted slots 45/47 and again at 126) and the frontier-1 reorg residual s10 measured at insn 344 are ONE mark_target_live_regs / opposite_needed decision, not two.",
+   "mechanism": "s10 proved cluster B does not move under any of the sixteen exit-form assignments. Ours fills the dispatch chain's last 'beq $v1,$v0' delay slot with 'li $v0,1' and leaves the following 'j' slot empty; target does the reverse. That is reorg stealing across the .L80028488 label in our build and declining to in target's - the same class of decision as the loss s10 measured at insn 344. This is now the only residual on the function with NO measured C-level dial at all.",
+   "next_probe": "Locate the dispatch chain's final 'beq' insn UID in tmp/grind/func_800283D0/s10/iso_dumps/iso.dbr, grep that UID in tmp/grind/func_800283D0/s10/iso_dumps/dbr.log for its thr/simp lines, and check whether the steal is granted there for the same reason it is refused at 344. If both are opposite_needed decisions, clusters B and the frontier-1 nop collapse into one residual with one mechanism, and s10's open sub-question (why $v0 is in opposite_needed at insn 686 despite the REG_DEAD flush at label 347) becomes the single highest-value probe left on this function."
   }
  ],
  "judge_constraints": [],

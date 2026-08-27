@@ -933,3 +933,72 @@ Chassis: candidate body applied to src/code6cac_b.c, sandbox --disable all = **2
 - probe: Built tmp/grind/func_800283D0/s11/variants/R3_shared_ptr_hoist.c and measured the sandbox.
 - result: KILLED - 59 / 215, a 36-point regression. The hoist gives the pointer a FOURTH reference, and at nrefs 4 the model requires livelen(143) in [53,58], which is unreachable from 14.
 - verdict: KILLED
+
+---
+
+## s12 (2026-08-26) — structural
+
+**CONFIRMED — H-s12-1.** The `<` arm's duplicated call pair and target's 4-insn
+arm are NOT mutually exclusive (s11's framing); which of the two survives is
+decided by where `find_cross_jump`'s pairwise walk-back stops, and that stop
+point is controlled at C level by the INITIALISATION ORDER of the arm's
+selection variable relative to path1's. Initialising the arm's variable to 0xB
+and overwriting with 0x19 (path1 does the reverse) makes the walk differ one
+insn before the branch, so only the tail from the store onward merges.
+Probe: V6 = the s11 body with `s16 var_v0_4 = 0xB; if (var_s1 != 0) var_v0_4 =
+0x19;`. Result: 20 -> **17**, all twelve $s2/$s3 slots correct AND the arm's
+`beqz $s1 / li 0x19 / j / sh` reproduced. Nothing else changed.
+
+**KILLED — H-s12-2.** "A third entry into the shared block that keeps `do_calls`
+alive while the calls are still duplicated" (s11's frontier-1 next probe) is not
+reachable by any of the enumerable placements. Probes: V2/V3 (arm duplicates only
+the first call and re-enters at a `do_call2` label before the second) 22/219 and
+22/212; V7 (0xB edge duplicates, 0x19 edge stores then `goto do_calls`) 20/222;
+V8 (mirror) 20/219; P2 (path1's store duplicated per edge with a shared
+`do_calls`) 19/222. All strictly worse than 17. The label-liveness route to
+pinning the store is dead; the store must be pinned by the walk-back stopping one
+insn earlier on the 0x19 edge, not by a hand-placed extra entry.
+
+**KILLED — H-s12-3.** A second, independent source of `arg1` references (so the
+arm could be spelled with pure gotos and still hold nrefs(73) >= 8) does not
+exist in this function. Probe: P1 duplicates path1's OWN store+calls into its two
+selection edges — the only other site whose emitted bytes could re-merge —
+29/224. V9 confirms the complementary half: the inverted initialisation without
+the duplicate scores 25, i.e. the inverted init is a walk-back stop, not a dial.
+
+**KILLED — H-s12-4.** The `addu $s3,$v0,$s0` operand order and the tail's
+declaration order are not levers on this chassis. Probes: Q1
+`(temp_a1_2 * 2) + arg0` — 17, byte-for-byte neutral (re-confirms s11's R2 after
+the chassis moved); Q4 computing the Judge product before the `+0x118` load — 17,
+neutral, cluster E unmoved.
+
+**CONFIRMED (methodology) — H-s12-5.** The unnormalized objdump-vs-target diff
+used by s11 is unreadable (every `li`/`addiu`, `move`/`addu`, hex/dec and
+`%hi()`/`lui` pair reads as a divergence). `tmp/grind/func_800283D0/s12/norm.py`
+canonicalises both sides first and resolves the residual into named clusters that
+sum to the score. Every future probe on this function should use
+`bash tmp/grind/func_800283D0/s12/dif.sh`.
+
+## [s12] The '<' arm's duplicated func_80032854 pair (needed as the only reachable dial on nrefs_flow(pseudo 73 = arg1), 7 -> 9, into s7's [8,11] window) and target's surviving 4-instruction arm are not mutually exclusive; which of the two survives is decided by where find_cross_jump's pairwise walk-back stops, and that stop point is controlled at C level by the initialisation order of the arm's selection variable relative to path1's.
+- mechanism: jump.c find_cross_jump compares the two blocks' insns pairwise from their ends and stops at the first difference. With path1 spelled 'v0=0x19; if (s1==0) v0=0xB;' and the arm spelled 'v0=0xB; if (s1!=0) v0=0x19;', the post-reload streams are 'li v0,0x19 / bne s1,0,Lsh / li v0,0xB / Lsh: sh / calls / j end' versus 'li v0,0xB / beq s1,0,Lsh / li v0,0x19 / Lsh: sh / calls / j end'. The walk matches 'j end', both calls and the 'sh', then compares 'li v0,0x19' against 'li v0,0xB', differs and stops - so only the tail from the store onward merges and the arm keeps its two-insn selection plus the redirected (hence inverted) branch. With s11's spelling both blocks initialised to 0x19, so the walk also matched the branch and the 'li' and the whole arm collapsed to a single 'bnez', losing 3 instructions. The duplicate still survives to global-alloc, which is where the nrefs dial is read.
+- probe: V6 = the s11 candidate with the arm's 's16 var_v0_4 = 0x19; if (var_s1 == 0) var_v0_4 = 0xB;' replaced by 's16 var_v0_4 = 0xB; if (var_s1 != 0) var_v0_4 = 0x19;'. Nothing else changed. sandbox func_800283D0 --disable all, then the normalized diff (tmp/grind/func_800283D0/s12/dif.sh).
+- result: score 20 -> 17, 216 insns (was 212). All twelve $s2/$s3 slots (emitted 3, 4, 10, 85, 90, 96, 97, 102, 107, 111, 149, 154) now correct, AND the arm reproduces target's 'beqz $s1,.L80028518 / addiu $v0,0x19 / j .L80028520 / sh $v0,0x286($s0)'.
+- verdict: CONFIRMED
+
+## [s12] s11's frontier-1 next probe - keep a THIRD entry into the shared call block so the do_calls label survives while the calls are still duplicated, thereby pinning the 'sh $v0,0x286($s0)' store in front of the argument set-up - is reachable by some placement of the duplicate.
+- mechanism: The store sinks into the jal's delay slot because nothing separates it from 'addiu $a1,$zero,1'; in target .L80028520 sits between them. If a third C-level entry point kept that label alive, sched2 could not move the store past the argument set-up (the inverse of defer-store-past-later-compute-into-jal-delay).
+- probe: Five placements measured on this chassis: V2 (arm duplicates only the FIRST call and re-enters at a do_call2 label placed before the second call) 22/219; V3 (same with a selection variable) 22/212; V7 (0xB edge duplicates store+calls, 0x19 edge stores then 'goto do_calls') 20/222; V8 (mirror: 0xB edge 'goto set_0xB', 0x19 edge duplicates) 20/219; P2 (path1's store duplicated per selection edge with a shared do_calls) 19/222.
+- result: Every placement scores strictly worse than 17 (19-22 vs 17). The hand-placed extra entry either re-merges the arm anyway or blocks the merge entirely and adds 3-7 instructions.
+- verdict: KILLED
+
+## [s12] A second, independent source of arg1 references exists in this function, so the arm could be spelled with pure gotos (target's exact bytes) while nrefs_flow(73) still reaches 8.
+- mechanism: nrefs(73) >= 8 is what inverts allocno_compare's priority ordering (pri = floor_log2(nrefs)*nrefs/live_length) so arg1 sorts before temp_s3 and takes $s2. Any C site whose emitted bytes re-merge in jump2 would add references at global-alloc time without costing instructions.
+- probe: V1 (arm spelled purely with 'goto set_0xB' + 'goto do_calls', no duplicate) - measured, then tools/ra_solver/extract.py + the s11 single-atom sweep re-run on it. P1 duplicates path1's OWN store+calls into its two selection edges, the only other site whose bytes could re-merge. V9 isolates the inverted initialisation without any duplicate.
+- result: V1: 23/216 - the arm's bytes are EXACTLY target's but nrefs_flow(73) falls back to 7, the sim reports 'base meets goal? False', and all twelve $s2/$s3 slots invert. P1: 29/224. V9: 25/216. No second source exists; the inverted initialisation is a walk-back stop, not a dial in its own right.
+- verdict: KILLED
+
+## [s12] The 'addu $s3,$v0,$s0' operand order and the tail block's declaration order are independent levers on the current chassis.
+- mechanism: s11's R2 measured the operand order neutral at floor 23; the chassis has since moved twice, and cluster E (the tail $a0/$a1 exchange) is a local-alloc seat that declaration order plausibly reaches via qty birth/death spans.
+- probe: Q1 'u8 *temp_s3 = (temp_a1_2 * 2) + arg0;' instead of 'arg0 + (temp_a1_2 * 2)'. Q4 moves the temp_v1_5 Judge product above the '*(s32 *)(temp_a0 + 0x118)' load in declaration order.
+- result: Q1: 17, byte-for-byte neutral - the operand order is a consequence of register assignment, re-confirmed on this chassis. Q4: 17, neutral - cluster E unmoved.
+- verdict: KILLED
