@@ -2848,3 +2848,112 @@ Verdicts on the three inherited frontier items:
 - probe: grep -rl func_800523E0 / func_8004A348 over src/ and asm/funcs/.
 - result: func_80041188 is the ONLY caller of either callee in the whole repo, and both callees are themselves INCLUDE_ASM in src/text1b.c. No sibling precedent exists.
 - verdict: KILLED
+
+## s33 (synthesis, 2026-08-27) — FRONTIER RESET
+
+**State of the problem after 33 sessions, in one paragraph.** The chassis is settled and now
+triply confirmed (s30 REG_EQUIV, s32 giv, s33 cse-EBB addressing): two goto loops, locals
+`pa4`(=&m[0]) `out2`(=&m[1], loop1) `out3`(=&m[1], loop2) `base`(object) `saved`(=record array
+base) `stptr`(&arr[1]) `stptr2`(&arr[18]) `i` `tbl` `offset` `p` `buf[3]`. `candidate.c` is at
+sandbox 1 / 132 of 132 insns with ALL-TARGET callee-saved seats and, as of this session, ONE
+matching construct in an owner-ALLOWED class (the split increment `stptr += 0x69; stptr -= 1;`,
+FAKE-annotated) instead of the un-shippable F1 chain-extender. The single residual insn is the
+block-2 dichotomy: `out3 = out2;` emits `move $s3,$s6` and gives `out2` the fourth
+flow-counted reference its $s6 seat requires, while `out3 = &m[1];` emits target's
+`addiu $s3,$s7,0x20` and drops `out2` to three references and out of $s6 (E-s29-1's
+conservation law). Every surface that could host a byte-free fourth reference is enumerated and
+closed: pre-flow siting (cse1 canon_reg + fold_rtx, E-s28-1, and the make_regs_eqv law whose
+last-uid test out2 can never pass because the matrix pointer is used in loop2 — E-s33-4 adds
+the hard-reg disjunct, unreachable here), post-flow deletion (combine's two shapes, E-s28-2),
+post-flow transfer (local-alloc's copy optimisations, E-s30-5), zero-cost reference addition
+(allocno sharing, needs a loop note, E-s32-3), the loop-note chassis family (E-s32-1/2), and now
+the block-2 statement set on SEMANTIC grounds (E-s33-3).
+
+### FRONTIER 1 — the only unexplored deletion surface: an insn counted by flow AND by sched1, present through `global_alloc`, and deleted AFTER it
+
+**Statement.** Every closure in this ledger assumes the last pass that can hide a counted
+reference is `combine` (plus local-alloc's transfers). But `global_alloc` reads `reg_n_refs`
+and `reg_live_length` BEFORE `reload`, `sched2`, `jump2` and `reorg` run, so an insn that
+survives to allocation and is deleted afterwards is BOTH counted and byte-free — the exact
+shape the grind has been unable to find. E-s29-3 named this class ("reload's no-op-move
+deletion, jump2 cross-jumping") and no session has tested it.
+
+**Mechanism.** `reload` deletes a `(set p1 p2)` that becomes a no-op after allocation, i.e.
+whenever the two pseudos receive the SAME hard register; `jump2` cross-jumps identical tails.
+A copy `X = out2;` is worth +1 flow-counted reference to out2 (make_regs_eqv makes X canonical
+when X outlives out2, so cse1 does not fold it — the block-2 `out3 = out2;` is exactly this
+copy and IS counted today), and it is byte-free iff X and out2 land in one register.
+
+**Next probe.** On the S1 chassis, find a spelling in which the block-2 copy's destination is
+forced onto out2's own seat ($s6): out3 currently takes $s3 because `find_reg` scans the
+allocation order and $s3 is free in loop2 (stptr is dead) — so the probe is a form in which
+$s3 is NOT free for out3 (e.g. a loop2-live carrier that outranks out3 and takes $s3, with
+out3 then landing on $s6). Measure with `bash tmp/grind/func_80041188/s33/fr.sh <TAG> 87 86`
+and check (a) the ALLOCDBG seat of pseudo 87, (b) whether the `move` disappears from the
+object, (c) the insn count. If out3 lands on $s6 the copy vanishes and block 2 is one insn
+SHORT — so the same form must additionally spell `out3 = &m[1];` for the addiu; the question
+this probe answers is whether the copy can be both counted and unemitted at all in this
+compiler, which is a project-wide lever, not just this function's.
+
+### FRONTIER 2 — make the block-2 copy combine-deletable by giving `out3` a single use (E-s28-2 shape A), and pay for the second use elsewhere
+
+**Statement.** `out3 = out2;` is not deleted by combine only because `out3` has three
+references (def + two loop2 uses); shape A deletes a copy whose destination has a SINGLE use.
+If loop2 consumed `&m[1]` through two carriers — `out3` used once, and a second local for the
+other call — the copy could be folded away while flow still counts out2's fourth reference.
+
+**Mechanism.** combine.c's shape A (E-s28-2, verified on insn 4 and insn 43 of the V15a dump)
+merges a single-use reg-reg copy into its consumer. The cost is the second carrier's own
+definition, which must itself be free: the natural candidate is that loop2's two consumers are
+`func_8004A348(buf, X)` and `func_800523E0(pa4, X, ...)`, whose argument setup is a `move` in
+both cases, so a carrier chain may fold into the argument moves target already emits.
+
+**Next probe.** Spell loop2 with `out3` read once and a second local (`out4 = out3;` before the
+second call, or the reverse order), measure insn count and the ALLOCDBG references for pseudos
+86/87 and the new pseudo; the failure mode to watch is that the two carriers CONFLICT and
+materialise a real `move` (net +1 insn, the s21-era in-loop detour result). Bank whichever way
+it goes — this is the last untried spelling of the conservation law's right-hand side.
+
+### FRONTIER 3 — verify the fifth parameter's TYPE from the callees, and look for a member access that reads `&m[1]` naturally
+
+**Statement.** E-s33-3 closes the block-2 statement set under the assumption that the fifth
+parameter is exactly a two-element matrix pair. If it is instead a struct whose first two
+members are matrices followed by fields that loop2 or block 2 touches, a natural member access
+could read `&m[1]` (e.g. `p->m1` used to derive a later member address), which would deliver
+out2's fourth reference as ordinary C rather than as a construct.
+
+**Mechanism.** `func_8004A348` and `func_800523E0` are `INCLUDE_ASM` and have exactly one
+caller (this function, E-s32-4), so the type must come from their bodies: read
+`asm/funcs/func_8004A348.s` and `asm/funcs/func_800523E0.s` far enough to see which offsets of
+their second/first arguments are loaded and stored, and whether either writes past +0x20 of the
+pair. `func_80044DE4` (loop2 only, called with the two cursors) will type `a1`/`a2`.
+
+**Next probe.** Type all three callees from their asm; if any of them touches the pair beyond
+0x40 bytes, re-derive the fifth parameter as a struct and re-spell block 2's `out3` definition
+as a member access, then measure. If all three stay inside 0x40 bytes, record that the pair
+type is confirmed and that FRONTIER 3 is closed — which would leave FRONTIER 1 as the last
+open surface in the whole grind.
+
+## [s33] stptr's two extra flow-counted references, which candidate.c has bought since s7 with the un-annotated F1 chain-extender `stptr = base; stptr += 0xFC;` (the ledger's standing shipping blocker), can be bought instead by the owner-ALLOWED split increment at stptr's own loop1 increment site `stptr += 0x69; stptr -= 1;`, with the honest single-statement block-0 initialiser target emits.
+- mechanism: Owner ruling 2026-08-27 (docs/grind/decisions.md:14739) allows the split/redundant-arithmetic spelling at an existing increment of a live loop-carried variable, mandatory FAKE annotation per site. flow.c:2081 counts reg_n_refs before combine; combine folds the +0x69/-1 pair back into the single addiu target emits in the loop-back delay slot (E-s28-2 shape B, the same deletion that makes V15a's tbl and i split increments byte-free), so the reference is counted, spent by global.c's allocno_compare, and costs no byte. No prior session tried an increment-site split for stptr: every stptr lift in the ledger (s2, s9, s10, s16, s18) is a block-0 initialiser chain.
+- probe: tmp/grind/func_80041188/s33/run.ps1 CAND S1 S2 S3, one `sandbox func_80041188 --disable all` per tag with the body applied to src/text1a_pre.c, plus BB2_ALLOC_DEBUG/BB2_FINDREG_DEBUG via tmp/grind/func_80041188/s33/fr.sh S1 88.
+- result: CAND (inherited body) = 1 at 132/132; S1 (honest init + `stptr += 0x69; stptr -= 1;`) = 1 at 132/132; S2 (honest init + `stptr += 0x34; stptr += 0x34;`) = 1 at 132/132; S3 (both constructs together) = 32 at 132 insns (stptr reaches 9 references and overshoots every seat above it). S1's ALLOCDBG table is bit-identical to the inherited candidate's: stptr 7/41=3414 $s3, stptr2 6/48=2500 $s0, i 8/97=2474 $s4, tbl 4/47=1702 $s5, out2 4/47=1702 $s6, pa4 6/95=1263 $s7, a3 4/99=808 $fp, out3 3/47=638 $s3 -- ALL-TARGET seats, same single residual insn (`move $s3,$s6` vs target `addiu $s3,$s7,0x20`). candidate.c rewritten to the S1 body with the FAKE annotation and re-measured through the same harness (CAND33 = 1, annotation comment-inert).
+- verdict: CONFIRMED
+
+## [s33] s32's frontier item 1 -- that some block-2 VALUE could legitimately take out2 as an input, hiding the fourth flow-counted reference in an insn target already emits -- is answerable from the data layout, and the answer is NO.
+- mechanism: Target's own constants type the objects: D_800A9A10[a0] is an object pointer, +0x94 is the base of an array of 0x68-byte records (0x94+0x68 = 0xFC = block 0's `addiu $s3,$v0,0xFC`; 0x750/0x68 = 18 exactly, so block 2's `addiu $s0,$t0,0x750` is &arr[18]), loop1 walks records 1..17 and loop2 records 18..19, per-record fields at +6/+0x38/+0x4C; the fifth parameter is a 0x20-stride matrix pair (PsyQ MATRIX = 32 bytes) with pa4 = &m[0] and out2 = out3 = &m[1]; a1/a2 are 0x6C-per-record animation cursors. Block 2's six insns are therefore two cursor advances, i = 0x12, the arr reload, out3, and stptr2 = &arr[18].
+- probe: Read asm/funcs/func_80041188.s end to end and decompose every constant; cross-check the block-0 vs block-2 addressing asymmetry against cse.c:8038's CODE_LABEL EBB rule.
+- result: None of block 2's six values can take &m[1] as an input in natural C except out3 itself, whose two spellings ARE the known floor-1 dichotomy (out3 = out2 -> move + out2's 4th reference; out3 = &m[1] -> target's addiu and out2 at three references). Additionally the long-unexplained asymmetry (block 0 addresses from the OBJECT pointer, block 2 from the ARRAY base) is explained as ONE source idiom compiled in two cse EBBs -- block 0 reassociates arr+0x68 to obj+0xFC, block 2 cannot because loop1's CODE_LABEL ended that EBB -- which is a third independent confirmation (after s30's REG_EQUIV and s32's giv arguments) that candidate.c's decomposition is the original's.
+- verdict: KILLED
+
+## [s33] The seat order in this function might not be pure allocno-priority order: global.c carries a full register-preference machinery (hard_reg_copy_preferences, expand_preferences, prune_preferences, regs_someone_prefers) that no session has read first-hand, and if it fires it would dissolve E-s29-2's contradiction without any reference lift.
+- mechanism: global.c:151-173 and 824-863 merge hard-register preferences across allocnos connected by copies and make find_reg avoid registers that lower-priority allocnos prefer; if a preference fired for any of the {out2, pa4, a3} triple the priority order would not decide their seats.
+- probe: BB2_FINDREG_DEBUG=88 on the S1 chassis (tmp/grind/func_80041188/s33/S1/fr_88.err).
+- result: own_copy_prefs, own_full_prefs and someone_prefers are ALL EMPTY; the seat is decided purely by used_so_far and the conflict set. Every copy in this function is to or from a call-clobbered argument register, which prune_preferences removes. E-s30-1's inherited claim is now confirmed first-hand and the contradiction stands as stated.
+- verdict: KILLED
+
+## [s33] The ledger's standing make_regs_eqv law (a chain extender survives cse1 iff the recipient outlives the donor, plus the recipient leaving the cse EBB) is complete.
+- mechanism: cse.c:840-857 chooses the quantity's canonical register on each copy; canon_reg (cse.c:2569) then substitutes it, and flow deletes the resulting dead copy uncounted.
+- probe: Re-read tools/gcc-2.7.2/cse.c:830-880 and 2555-2575 against the ledger's statement of the law.
+- result: The law is missing one disjunct: the last-uid test is bypassed entirely when the quantity's first register is a HARD register (firstr < FIRST_PSEUDO_REGISTER), so chains rooted in a value still living in a hard register at cse1 time -- the first four parameters and call return values -- survive canon_reg unconditionally regardless of donor lifetime. Not reachable for out2 (its donor is the fifth, stack-passed parameter, whose pseudo is set from a MEM, so the pa4-outlives-out2 test decides, exactly as E-s27-3's dump showed), but it is a general project-wide lever and now belongs in the law's statement.
+- verdict: CONFIRMED

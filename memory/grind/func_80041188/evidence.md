@@ -4497,3 +4497,146 @@ layout behind `D_800A9A10[a0]` and the fifth parameter, not about C spelling.
 - [s32] SYNTHESIS: the floor-1 residual is now a closed contradiction. Target's seats require out2 at four flow-counted references with live length in [47, 63] (2*4*10000/L above pa4's 1263 and at or below tbl's 1702) while target's bytes emit only three $s6 references; and all four surfaces that could host a fourth (pre-flow cse1 folding, combine's two deletable shapes, local-alloc's copy transfers, allocno sharing) are now enumerated and closed. The contradiction indicts the assumed DECOMPOSITION, not the spelling.
 
 - [s32] Re-priced s31 frontier item 3: local-alloc's optimize_reg_copy_1/2 cannot help on the goto chassis either -- pa4 would have to fall below out2's 714 (3 refs, live 42), i.e. to 3 references, while target's bytes host pa4 at 7; a one- or two-reference transfer only moves pa4 from 1473 to 1263/1052.
+
+## s33 (synthesis, 2026-08-27) — the SHIPPING BLOCKER is removed: candidate.c's un-shippable F1 chain-extender is replaced, at zero cost and with an identical allocno table, by the owner-sanctioned split increment; and the between-loops block is closed SEMANTICALLY by naming the data layout
+
+Chassis measured this session with the edit in place in `src/text1a_pre.c` and
+`sandbox func_80041188 --disable all`: the inherited `candidate.c` body (tag CAND) = **1**
+(132 build / 132 target insns, `rules_dropped: 16`). HEAD was not re-measured (the driver's
+dispatch reported "measurement unavailable"; the ledger's HEAD number is 27 from s31/s32).
+`src/text1a_pre.c` was restored to HEAD at the end of the session; no build-pipeline file was
+touched, nothing was committed, and no permuter campaign was launched.
+
+### E-s33-1 — THE LOAD-BEARING RESULT: `stptr += 0x68;` split at its own increment site delivers exactly what the F1 chain-extender delivered, so candidate.c no longer needs an unsanctioned construct
+
+s11 (E-s11-3) proved candidate.c's block-0 `stptr = base; stptr += 0xFC;` is a load-bearing,
+un-annotated F1 combine-foldable chain-extender worth 14 points of floor, and every session
+since has carried "shipped un-annotated it is a layer-1 FAIL" as the reason the floor-1 body
+could not be submitted. The owner's 2026-08-27 ruling (docs/grind/decisions.md:14739) ALLOWS
+the split-increment spelling — two live arithmetic statements at an existing increment of a
+live variable — under the 2026-07-06 split/redundant-arithmetic class, with a mandatory FAKE
+annotation per site. `stptr` HAS such a site: the loop1-bottom `stptr += 0x68;` that target
+emits in the loop-back branch delay slot (`asm/funcs/func_80041188.s:69`). No previous session
+tried it: every stptr lift in the ledger (s2, s9, s10, s16, s18) is a block-0 INITIALISER
+chain, and the rejected bank contains no increment-site split for stptr.
+
+Measured this session (`tmp/grind/func_80041188/s33/run.ps1`, one sandbox call per tag):
+
+| tag | block-0 spelling | loop1 increment | sandbox | insns |
+|---|---|---|---|---|
+| CAND | `stptr = base; stptr += 0xFC;` (F1) | `stptr += 0x68;` | **1** | 132 |
+| **S1** | `stptr = base + 0xFC;` (honest) | `stptr += 0x69; stptr -= 1;` | **1** | 132 |
+| S2 | `stptr = base + 0xFC;` (honest) | `stptr += 0x34; stptr += 0x34;` | **1** | 132 |
+| S3 | `stptr = base; stptr += 0xFC;` (F1) | `stptr += 0x69; stptr -= 1;` | 32 | 132 |
+
+S1's ALLOCDBG table (`tmp/grind/func_80041188/s33/S1/fr_88.err`) is **bit-identical to the
+inherited candidate's**: stptr 7/41=3414 -> $s3 · stptr2 6/48=2500 -> $s0 · i 8/97=2474 -> $s4 ·
+tbl 4/47=1702 -> $s5 · out2 4/47=1702 -> $s6 · pa4 6/95=1263 -> $s7 · a3 4/99=808 -> $fp ·
+out3 3/47=638 -> $s3 — ALL-TARGET seats, and the residual is unchanged (slot 72, ours
+`move $s3,$s6` from `out3 = out2;` vs target `addiu $s3,$s7,0x20`). S3 shows the two
+constructs are ALTERNATIVES, not additives: applied together stptr reaches 9 references and
+overshoots every seat above it (banked
+`rejected/stptr-f1-chain-plus-split-increment-together-9refs-overshoot-32.c`). S2 shows the
+class is not spelling-sensitive (a two-add split works as well as an add/subtract cancel pair);
+banked as `alt_S2_stptr_twoadd_split_s33.c`. `candidate.c` has been REWRITTEN to the S1 body
+with the mandatory FAKE annotation at the split site and re-measured through the same harness
+after the annotation was inserted (tag CAND33 = **1**, comment-inert).
+
+**Disposition consequence.** The floor is unchanged at 1, but the floor-1 body now carries
+exactly ONE matching construct and that construct is in an owner-ALLOWED class with its
+annotation present, instead of an un-annotated chain-extender the ledger itself flagged as a
+layer-1 FAIL. Every future session on this function should start from the S1 spelling.
+
+### E-s33-2 — the DATA LAYOUT is named, and the block-0 / block-2 addressing asymmetry is explained by the cse EBB boundary (independent confirmation that this decomposition is the original's)
+
+Read off target's own constants: `$v0 = D_800A9A10[a0]` is an object pointer; `$t0 = $v0+0x94`
+(spilled to `0x18($sp)`, reloaded in block 2) is the base of an array of **0x68-byte** records
+(`0x94 + 0x68 = 0xFC` = block 0's `addiu $s3,$v0,0xFC` = `&arr[1]`; `0x94 + 0x750` = `&arr[18]`,
+and `0x750 / 0x68 = 18` exactly). loop1 walks records 1..17 (`i` 1 -> 0x12), loop2 walks records
+18..19 (`i` 0x12 -> 0x14); each record is touched at `+0x38` (arg 4 of `func_800523E0`), `+0x4C`
+(arg 4 of `func_80044DE4`) and `+6` (the `sh` of the per-loop constant 2 / 1). The fifth
+parameter is a **0x20-stride pair** (PsyQ `MATRIX` is 32 bytes): `pa4 = &m[0]`, `out2 = &m[1]`,
+and loop2's `out3` is `&m[1]` again.
+
+The asymmetry that has never been explained — block 0 emits `addiu $s3,$v0,0xFC` (from the
+OBJECT pointer) while block 2 emits `addiu $s0,$t0,0x750` (from the ARRAY base) — falls out of
+one source shape plus cse's EBB rule: with `arr = obj + 0x94` defined in block 0, cse1 folds
+`arr + 0x68` in the SAME extended basic block to `obj + 0xFC` (fold_rtx reassociation), while
+in block 2 the loop1 CODE_LABEL has ended that EBB (`cse.c:8038`, E-s31-2), so `arr + 0x750`
+cannot be reassociated and must be emitted from the reloaded `arr`. Both target insns are
+therefore the SAME source idiom (`&arr[1]` / `&arr[18]`) compiled in two different EBBs — which
+is a third independent confirmation, alongside s30's REG_EQUIV argument and s32's giv argument,
+that the `base` / `saved` / `stptr` / `stptr2` decomposition candidate.c uses is the original's.
+
+### E-s33-3 — s32's frontier item 1 is ANSWERED NEGATIVELY by semantics, not by spelling
+
+s32 left the grind with "re-derive the source's statement set from the data layout, and ask
+whether any block-2 VALUE can legitimately take `out2` as an input". With the layout named
+(E-s33-2), block 2's six insns are: `a1 += 0x6C` and `a2 += 0x6C` (advance both 0x6C-byte
+per-record animation cursors by 18 records of 6 bytes), `i = 0x12` (loop2's induction start),
+the reload of `arr`, `out3 = &m[1]`, and `stptr2 = &arr[18]`. **Not one of those values can take
+`&m[1]` as an input in any natural C spelling** — the two cursors are indices into the caller's
+animation data, `i` is a loop counter, and `arr`/`stptr2` address the object's record array;
+the only block-2 value that is *about* the matrix pair is `out3` itself, whose two spellings
+are exactly the floor-1 dichotomy already banked (`out3 = out2;` -> `move` + out2's 4th
+reference; `out3 = (s32 *)((u8 *)pa4 + 0x20);` -> target's `addiu` and out2 back to 3
+references, E-s29-1's conservation law). The block-2 route is therefore closed on semantic
+grounds and should not be re-probed.
+
+### E-s33-4 — the ledger's make_regs_eqv law is INCOMPLETE in one clause, re-read from the compiler source
+
+The standing statement of the law (s2, s17, s22) is "`X = Y; X += K;` lifts reg_n_refs(X) by 2
+iff `uid_cuid[last_uid[X]] > uid_cuid[last_uid[Y]]`, plus X's range leaving the current cse
+EBB". `tools/gcc-2.7.2/cse.c:840-857` has a THIRD disjunct that the ledger's version drops:
+the last-uid test is **bypassed entirely when the quantity's current first register is a HARD
+register** (`firstr < FIRST_PSEUDO_REGISTER`), in which case the new pseudo becomes canonical
+unconditionally. Chains rooted in a value that still lives in a hard register at cse1 time —
+the first four parameters (`(set pseudo (reg $aN))`) and call return values in `$v0` — therefore
+survive canon_reg no matter how long the donor lives. This is NOT exploitable for `out2` here
+(its donor is the fifth, stack-passed parameter, whose pseudo is set from a MEM, so the hard-reg
+disjunct never fires and the pa4-outlives-out2 test decides — E-s27-3's dump result), but it is
+a general lever for other functions and it should be carried in the law's statement.
+
+### E-s33-5 — FIRST-HAND confirmation of E-s30-1: there is no register-preference dial in this function
+
+`BB2_FINDREG_DEBUG` on S1's stptr allocno prints `someone_prefers:`, `own_copy_prefs:` and
+`own_full_prefs:` all EMPTY, with the seat decided purely by `used_so_far` and the conflict set.
+`global.c` does carry a full preference machinery (`hard_reg_copy_preferences`,
+`expand_preferences`, `prune_preferences`, `regs_someone_prefers`), so the possibility that the
+seat order is not pure priority order was worth checking against the dump rather than the
+ledger; it is pure priority order here because every copy in this function is to or from a
+CALL-CLOBBERED argument register, which prune_preferences removes.
+
+### s33 artifacts
+
+`tmp/grind/func_80041188/s33/` — `run.ps1` (apply-a-variant + sandbox, one call per tag),
+`apply.py`, `fr.sh` (ALLOCDBG/FINDREGDBG dump), `text1a_pre.HEAD.c`, the variant bodies
+`CAND.c` `S1.c` `S2.c` `S3.c` `CAND33.c`, and the dump `S1/fr_88.err`.
+
+- [s33] candidate.c re-measured at 1 (132/132, rules_dropped 16) and then REPLACED: the F1 chain-extender `stptr = base; stptr += 0xFC;` is superseded by the owner-ALLOWED split increment `stptr += 0x69; stptr -= 1;` at stptr's own loop1 increment site, with the mandatory FAKE annotation present. S1 = sandbox 1 at 132/132 with an allocno table bit-identical to the old body (stptr 7/41=3414, ALL-TARGET seats); S2 (`+= 0x34; += 0x34;`) = 1 as well; S3 (both constructs together) = 32 at 9 stptr references.
+- [s33] The two stptr lifts are alternatives, not additives: applied together stptr reaches 9 references and overshoots (rejected/stptr-f1-chain-plus-split-increment-together-9refs-overshoot-32.c).
+- [s33] DATA LAYOUT NAMED: object = D_800A9A10[a0]; record array at +0x94 with 0x68 stride (loop1 walks records 1..17, loop2 records 18..19, 0x750/0x68 = 18); per-record fields at +6, +0x38, +0x4C; the fifth parameter is a 0x20-stride matrix pair (pa4 = &m[0], out2 = out3 = &m[1]); a1/a2 are 0x6C-per-record animation cursors.
+- [s33] The block-0 `addiu $s3,$v0,0xFC` vs block-2 `addiu $s0,$t0,0x750` asymmetry is ONE source idiom (`&arr[1]` / `&arr[18]`) compiled in two cse EBBs: block 0 reassociates arr+0x68 to obj+0xFC, block 2 cannot because loop1's CODE_LABEL ended the EBB (cse.c:8038). Third independent confirmation of the decomposition.
+- [s33] s32's frontier item 1 is answered NEGATIVELY on semantic grounds: none of block 2's six values (two 0x6C cursor advances, i = 0x12, the arr reload, out3, stptr2 = &arr[18]) can take &m[1] as an input in natural C except out3 itself, whose two spellings ARE the floor-1 dichotomy. Do not re-probe the block-2 route.
+- [s33] The ledger's make_regs_eqv law drops a clause: cse.c:840-857 bypasses the last-uid test when the quantity's first register is a HARD register, so chains rooted in the first four parameters or in a call return value survive canon_reg unconditionally. Not reachable for out2 (fifth parameter, set from MEM), but it is a general lever and belongs in the law's statement.
+- [s33] FINDREGDBG on S1 confirms first-hand that own_copy_prefs / own_full_prefs / someone_prefers are empty for the contested allocnos: the seat order in this function is pure priority order, with no global.c preference dial (E-s30-1 validated rather than inherited).
+
+- [s33] Chassis measured this session with the edit in place in src/text1a_pre.c: candidate.c body = sandbox --disable all 1, 132 build / 132 target insns, rules_dropped 16. HEAD was not re-measured (the dispatch reported 'measurement unavailable'); the ledger's HEAD number is 27.
+
+- [s33] S1 (honest `stptr = base + 0xFC;` + owner-sanctioned split increment `stptr += 0x69; stptr -= 1;`) = sandbox 1 at 132/132 with an allocno table bit-identical to the inherited candidate's and ALL-TARGET callee-saved seats. S2 (`stptr += 0x34; stptr += 0x34;`) = 1 as well: the class is not spelling-sensitive.
+
+- [s33] S3 (F1 chain-extender AND split increment applied together) = 32 at 132 insns: stptr reaches 9 flow-counted references and overshoots every seat above it. The two lifts are alternatives, not additives -- banked as rejected/stptr-f1-chain-plus-split-increment-together-9refs-overshoot-32.c.
+
+- [s33] candidate.c has been REWRITTEN to the S1 body with the mandatory FAKE annotation at the split site (what + named GCC pass + lever-exhaustion pointer) and re-measured through the same harness after the annotation was inserted: 1, comment-inert. The floor-1 body now carries exactly ONE matching construct, in an owner-ALLOWED class, annotated -- where before it carried an un-annotated F1 chain-extender the ledger itself flagged as a layer-1 FAIL as shipped.
+
+- [s33] DATA LAYOUT NAMED from target's own constants: object = D_800A9A10[a0]; record array at +0x94 with 0x68 stride (loop1 records 1..17, loop2 records 18..19, 0x750/0x68 = 18); per-record fields at +6, +0x38, +0x4C; the fifth parameter is a 0x20-stride matrix pair (pa4 = &m[0], out2 = out3 = &m[1]); a1/a2 are 0x6C-per-record animation cursors.
+
+- [s33] The block-0 `addiu $s3,$v0,0xFC` vs block-2 `addiu $s0,$t0,0x750` asymmetry is ONE source idiom (&arr[1] / &arr[18]) compiled in two cse extended basic blocks: block 0 reassociates arr+0x68 to obj+0xFC, block 2 cannot because loop1's CODE_LABEL ends that EBB (cse.c:8038). Third independent confirmation of the decomposition.
+
+- [s33] s32's frontier item 1 is answered NEGATIVELY on semantic grounds: none of block 2's six values can take &m[1] as an input in natural C except out3 itself. The block-2 route should not be re-probed.
+
+- [s33] cse.c:840-857 contains a disjunct the ledger's make_regs_eqv law omits: a hard-register firstr makes the new pseudo canonical unconditionally. Unreachable for out2 here, but a general lever.
+
+- [s33] BB2_FINDREG_DEBUG on S1 shows own_copy_prefs / own_full_prefs / someone_prefers all empty: the seat order in this function is pure priority order, no global.c preference dial (E-s30-1 confirmed first-hand rather than inherited).
+
+- [s33] src/text1a_pre.c was restored to HEAD at the end of the session; no build-pipeline file was touched, nothing was committed, no permuter campaign was launched.

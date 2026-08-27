@@ -1,7 +1,7 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 32,
+ "session_count": 33,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -201,23 +201,29 @@
    "floor": 1,
    "modality": "synthesis",
    "headline": "The entire loop-note chassis family is FORECLOSED by target's own block-0 constant (loop.c always strength-reduces stptr on a note-marked loop1, emitting 0x134 alone or 0xFC+0x134; target emits 0xFC a"
+  },
+  {
+   "session": 33,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Owner-directive executed: candidate.c's un-shippable F1 chain-extender is REPLACED at zero cost by the owner-sanctioned split increment at stptr's own loop1 increment site (sandbox 1, 132/132, allocno"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The DECOMPOSITION is wrong, not the spelling: the only surviving shape for out2's fourth flow-counted reference is a block-2 statement whose VALUE legitimately takes out2 as an input and which combine folds into one of block 2's six emitted insns, so the next pass must re-derive the source's statement set from the data layout.",
-   "mechanism": "With the loop-note family foreclosed (E-s32-1/E-s32-2) and the post-flow surface complete (E-s28-2, E-s30-5, E-s32-3), the assumed eleven-local decomposition admits no byte-free fourth reference to out2, while target's seat table requires one. Combine's shape-B deletion (a (set p (plus R c)) merged into its single use) is byte-free precisely when target itself emits the folded insn -- so the question is whether any block-2 VALUE can take out2 as an input.",
-   "next_probe": "Type the objects: read asm/funcs/func_8004A348.s and func_800523E0.s far enough to type their second argument (MATRIX *, SVECTOR pair, GTE work area?) and to see whether pa4 + 0x20 is a sibling member of the same object; identify D_800A9A10[a0] and name the offsets 0x94, 0xFC, 0x38, 6, 0x68, 0x750, 0x4C from their uses. Then ask specifically whether any natural C spelling of block 2's six insns (a1/a2 += 0x6C, i = 0x12, the saved reload, out3 = pa4 + 0x20, stptr2 = saved + 0x750) would legitimately read out2. Measure any hit with sandbox --disable all plus the ALLOCDBG table for pseudo 86."
+   "hypothesis": "The one unexplored deletion surface in the whole grind: an insn counted by flow AND by sched1, present through global_alloc, and deleted AFTER it (reload's no-op-move deletion, jump2 cross-jumping) is simultaneously a counted reference and byte-free -- exactly the shape out2's missing fourth reference needs.",
+   "mechanism": "global_alloc reads reg_n_refs and reg_live_length before reload / sched2 / jump2 / reorg run, so every closure in this ledger (which stops at combine and local-alloc) leaves this surface untested -- E-s29-3 named it and no session probed it. reload deletes a (set p1 p2) that becomes a no-op once both pseudos land on the same hard register; the block-2 `out3 = out2;` copy is already a counted reference to out2 and would be byte-free if out3 were seated on out2's own $s6.",
+   "next_probe": "On the S1 chassis, force out3 off $s3 (which is free in loop2 only because stptr is dead there) by giving loop2 a live carrier that outranks out3, and check with `bash tmp/grind/func_80041188/s33/fr.sh <TAG> 87 86` whether pseudo 87 lands on $s6, whether the `move` disappears from the sandbox object, and what the insn count does. The question this answers is project-wide: can a copy be both flow-counted and unemitted in GCC 2.7.2?"
   },
   {
-   "hypothesis": "The double lift -- tbl at FIVE flow-counted references and out2 at FOUR with its definition first in block 0 -- is the only surviving seat arithmetic on the goto chassis, and reproduces candidate.c's exact working priority ORDER while emitting target's honest block-2 addiu.",
-   "mechanism": "With out3 = (s32 *)((u8 *)pa4 + 0x20), out2 at 4 references and live 42-43 is 1904/1860 and would steal tbl's $s5 at 1702. tbl at 5 references is 2*5*10000/47 = 2127, above out2 and below i's 2474, giving the order a1, a2, stptr, stptr2, i, tbl, out2, pa4, a3 -- candidate.c's own working order. tbl at SIX (2553, byte-neutral in s4's sym-K form) overshoots and steals i's $s4; five has never been isolated.",
-   "next_probe": "Hunt a combine shape-B host for tbl (an X + constant expression target itself emits) rather than a cse1-visible split, pair it with a block-0 fourth reference to out2, and measure the PAIR together (both halves are individually killed as cse1-folded: rejected/useonly-foldback-plus1-tbl-and-out2-both-cse-folded-preflow.c, rejected/out2-block0-expr-rooted-split-cse1-reassociates-refs-rigid-3-F1..F3.c). Read out2 (86) and tbl (79) from bash tmp/grind/func_80041188/s30/fr.sh <TAG> 86 79."
+   "hypothesis": "The block-2 copy can be made combine-deletable (E-s28-2 shape A) by giving out3 a SINGLE use, so flow still counts out2's fourth reference while the move folds into an argument setup target already emits.",
+   "mechanism": "Shape A deletes a reg-reg copy whose destination has one use (verified on insns 4 and 43 of the V15a dump). out3 has three references today (def + two loop2 uses), which is the only reason the copy survives to emission as `move $s3,$s6`. Loop2's two consumers are both argument moves, so a second carrier may fold into moves target already has.",
+   "next_probe": "Spell loop2 with out3 read once and a second local taking the other use (both orders), measure sandbox and the ALLOCDBG references for pseudos 86/87 and the new pseudo; watch for the two carriers conflicting and materialising a real move (+1 insn, the s21-era in-loop detour failure mode). Bank either way -- this is the last untried spelling of E-s29-1's conservation law."
   },
   {
-   "hypothesis": "The four-reference requirement itself should be re-verified against a target-hosted allocno dump before another session is spent satisfying it -- the model has already been wrong once this grind (allocno != pseudo, E-s32-3).",
-   "mechanism": "The requirement out2 = 4 refs / live 47..63 is derived from the priority formula plus the assumption that no other allocno can move instead. candidate.c is a form whose bytes are target's except one insn, so its ALLOCDBG table is the closest available ground truth.",
-   "next_probe": "Run bash tmp/grind/func_80041188/s30/fr.sh <TAG> 86 79 78 91 77 on the candidate chassis and on the out3-from-pa4 chassis, diff the two tables entry by entry, and write out every allocno whose priority differs and by how much -- specifically checking whether stptr2 (2553) or i (2474) could be moved instead of out2/tbl to restore target's order."
+   "hypothesis": "The fifth parameter may be a struct whose first two members are the matrix pair followed by fields loop2 or block 2 touches; if so, a natural member access could read &m[1] and deliver out2's fourth reference as ordinary C rather than as a construct.",
+   "mechanism": "E-s33-3's semantic closure of block 2 assumes the parameter is exactly a two-element matrix pair. func_8004A348 / func_800523E0 / func_80044DE4 are INCLUDE_ASM with exactly one caller (this function, E-s32-4), so the type has to come from their bodies rather than from a matched sibling.",
+   "next_probe": "Read asm/funcs/func_8004A348.s, func_800523E0.s and func_80044DE4.s far enough to see which offsets of their matrix arguments are loaded/stored and whether anything touches past +0x40 of the pair. If something does, re-spell block 2's out3 definition as a member access and measure; if nothing does, record the pair type as confirmed and close this frontier, leaving FRONTIER 1 as the last open surface."
   }
  ],
  "judge_constraints": [

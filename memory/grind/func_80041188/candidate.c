@@ -1,3 +1,24 @@
+/* s33 ADDENDUM (synthesis, 2026-08-27) -- THE BODY BELOW CHANGED. The floor is
+ * unchanged at sandbox --disable all == 1 (132 build / 132 target insns,
+ * re-measured this session; HEAD's committed body = 27), and the allocno table is
+ * bit-identical to the s7..s32 candidate's. What changed is the CONSTRUCT that
+ * buys stptr's two extra flow-counted references: the un-shippable F1
+ * combine-foldable chain-extender `stptr = base; stptr += 0xFC;` (s11's
+ * correction: an un-annotated chain-extender, a layer-1 FAIL as shipped, and the
+ * only reason this body could not be submitted) is REPLACED by an owner-ALLOWED
+ * split increment at stptr's own increment site, `stptr += 0x69; stptr -= 1;`
+ * (owner ruling 2026-08-27, docs/grind/decisions.md:14739 -- the 2026-07-06
+ * split/redundant-arithmetic class, mandatory FAKE annotation per site, which is
+ * present below). The block-0 initialiser is now the honest single statement
+ * `stptr = base + 0xFC;` that target emits. Measured s33: CAND (old body) = 1,
+ * S1 (this body) = 1, S2 (`stptr += 0x34; stptr += 0x34;`, same class) = 1, S3
+ * (both constructs at once, stptr 9 refs) = 32. ALLOCDBG for this body:
+ * stptr 7/41=3414 $s3 - stptr2 6/48=2500 $s0 - i 8/97=2474 $s4 - tbl 4/47=1702
+ * $s5 - out2 4/47=1702 $s6 - pa4 6/95=1263 $s7 - a3 4/99=808 $fp - out3 3/47=638
+ * $s3: ALL-TARGET seats. The residual is unchanged and is the single insn at slot
+ * 72, ours `move $s3,$s6` (from `out3 = out2;`) vs target `addiu $s3,$s7,0x20`.
+ * See evidence.md s33.
+ */
 /* s32 ADDENDUM (synthesis, 2026-08-27). Re-measured this session: THIS BODY IS
  * STILL THE BEST FORM at sandbox --disable all == 1, 132 build / 132 target insns
  * (HEAD = 27). s32 foreclosed the only competing chassis family: any loop-note
@@ -344,30 +365,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     s32 stptr2;
     saved = base + 0x94;
     out2 = (s32 *) (((u8 *) pa4) + 0x20);
-    stptr = base;
-    stptr += 0xFC;
-    /* FAKE: byte-neutral split of the single statement `stptr = base + 0xFC;`
-       into a register copy plus a constant add, whose ONLY effect is lifting
-       stptr's reg_n_refs from 5 to 7 (allocno priority 2439 -> 3414), which is
-       what seats stptr in $s3 above `i`; target emits the single addiu.
-       mechanism: flow.c:2081 counts reg_n_refs BEFORE combine and nothing ever
-       recomputes it (combine.c:55-56 says so in its own header comment), while
-       reg_live_length IS recomputed post-combine by sched1 (sched.c:5106 from
-       sched.c:3165). combine.c then folds the copy+add back into one addiu, so
-       the extra reference is counted by flow, spent by global.c's
-       allocno_compare (global.c:635-656), and costs neither a byte nor a unit
-       of live range. s16 additionally PROVED the original source carried such a
-       reference: target's block-0 and block-2 emissions are insn-for-insn
-       identical in order to ours, so target's own stptr live length is 41 and
-       its i priority is 2474, yet target seats stptr above i -- which at live 41
-       needs >= 6 references while target's bytes show only 5 stptr insns.
-       lever-exhaustion: memory/grind/func_80041188/hypotheses.md, s7..s17 --
-       stptr live 41 -> 40 killed by measurement in s16 (E-s16-2, def already the
-       last insn of scheduled block 0, loop-carried across all 40 loop1 insns);
-       every non-chain reference-lift spelling measured (s16 E-s16-4: use-only
-       fold-back on tbl and out2, copy-then-modify on out2, compare-split on i)
-       folds before flow and lifts nothing; s14 Y1/Y2/Y3 killed every statement
-       -order route to satisfying stptr > i from the other side. */
+    stptr = base + 0xFC;
     loop1:
     offset = (*tbl) * 6;
     p = (u16 *) (offset + (s32) a1);
@@ -385,7 +383,29 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     func_8004A348(buf, out2);
     func_800523E0(pa4, out2, a3, stptr + 0x38);
     *((s16 *) (stptr + 6)) = 2;
-    stptr += 0x68;
+    stptr += 0x69;
+    stptr -= 1;
+    /* FAKE: `stptr += 0x68;` written as the two live arithmetic statements
+       `stptr += 0x69; stptr -= 1;` (owner-ALLOWED split/redundant-arithmetic
+       class, ruling 2026-08-27, docs/grind/decisions.md:14739 -- semantically
+       true C on a live loop-carried variable, net effect identical). Its only
+       effect is lifting stptr's reg_n_refs 5 -> 7, i.e. allocno priority
+       2439 -> 3414, which seats stptr in $s3 ABOVE `i` (2474); target emits the
+       single `addiu $s3,$s3,0x68` in the loop-back delay slot either way
+       (measured s33: 132 build insns, sandbox 1, allocno table identical to the
+       superseded F1 spelling).
+       mechanism: flow.c:2081 fixes reg_n_refs during life analysis, BEFORE
+       combine runs; combine.c then folds the `+0x69 / -1` pair back into the one
+       addiu (E-s28-2 shape B, the same deletion that makes the tbl and i split
+       increments byte-free), so the extra reference is counted by flow, spent by
+       global.c's allocno_compare (global.c:635-656), and costs no byte. sched1's
+       post-combine live-length recount (sched.c:5106) leaves stptr at 41.
+       lever-exhaustion: memory/grind/func_80041188/hypotheses.md s7..s32 --
+       stptr live 41 -> 40 killed in s16 (E-s16-2); every non-chain reference-lift
+       spelling for stptr measured and folded (E-s16-4); s14 Y1/Y2/Y3 killed every
+       statement-order route to stptr > i from the other side; s29's i live-length
+       ladder (E-s29-3) shows the only honest alternative costs two sched1
+       emission-order diffs (the FAKE-free H3 form, sandbox 3). */
     if (i < 0x12) {
         goto loop1;
     }
