@@ -1,7 +1,7 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 10,
+ "session_count": 11,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -63,23 +63,29 @@
    "floor": 23,
    "modality": "rederive",
    "headline": "Fresh m2c re-derivation measured and dead (all 5 structural deltas regressive, 65 combined); the exit-form dimension is now fully enumerated with 23 as its minimum; and frontier item 1 is re-attribute"
+  },
+  {
+   "session": 11,
+   "floor": 20,
+   "modality": "rederive",
+   "headline": "Floor 23 -> 20: cluster A (the $s2/$s3 callee-saved rotation) CLOSED by duplicating the shared call pair into the `<` arm, which raises nrefs(arg1) 7 -> 9 into s7's [8,11] window; the rederive shape a"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "v0 is in opposite_needed at insn 686 for a readable reason inside mark_target_live_regs, and once that reason is named the C question becomes concrete.",
-   "mechanism": "insn 344 carries REG_DEAD (reg:SI 2 v0), which goes into pending_dead_regs, and reorg.c:2709 flushes pending_dead_regs at every CODE_LABEL. Label 347 IS on the forward walk between insn 344 and target 686, so by the letter of the source v0 should be clear at 686 - yet oppregs has bit 2 set. Either the flush is not reached (a next_insn_no_annul / stop_insn subtlety - note stop_insn is recomputed when the target is a SEQUENCE, reorg.c:2612) or v0 is re-introduced by the second phase that steps forward from TARGET (reorg.c:2732 onward).",
-   "next_probe": "Add a DBRDBG print inside mark_target_live_regs' forward loop (insn UID, GET_CODE, and the running current_live_regs word) plus one at the end of the step-forward-from-TARGET phase, rebuild tools/gcc-2.7.2/cc1, and re-run tmp/grind/func_800283D0/s10/isolate.py + dumpiso.sh with BB2_DBR_DEBUG=1. Read where bit 2 gets set. If it comes from basic_block_live_at_start[28] and survives the label flush, the C question is what makes label 347 a basic-block head at life_analysis time; if it is re-introduced by the step-forward phase, the C question is about the shape of the fall-through block's first insn (currently the SEQUENCE `bnez s1` with delay `li v0,25`)."
+   "hypothesis": "A duplication spelling exists that satisfies all three requirements at once - it duplicates the two func_80032854 calls (for the nrefs(arg1) dial), keeps the `<` arm's inner branch inverted (so jump2 merges only the call tail, leaving target's 4-insn arm), and keeps a live label between the `sh $v0,0x286($s0)` store and the `addiu $a1,$zero,1` argument set-up (so the store does not sink into the jal delay slot). That spelling is 215 insns at a floor below 20.",
+   "mechanism": "Measured this session: R4/R5 satisfy (a) but not (b), so the arm fully merges and 3 instructions vanish; R6/R7 satisfy (a) and (b) but not (c), so the store sinks and 4-7 instructions appear. All three score 20, which means the two losses are worth the same and neither has been eliminated - the requirements are independent, not a trade-off. The store is pinned in the s9 body purely because the `<` arm's `goto do_calls;` keeps that label alive; the sink itself is the scheduler moving the store past the argument set-up into the jal's delay slot (the inverse of .claude/rules/defer-store-past-later-compute-into-jal-delay).",
+   "next_probe": "Enumerate spellings that keep a THIRD entry into the shared block so the `do_calls` label survives while the calls are still duplicated - e.g. duplicate the pair into the `temp_v1_3 == 0` / `> 0` path instead of the `<` arm (that path currently owns the shared block, so the `<` arm would keep its `goto do_calls;` and both labels stay live), or split the `<` arm so its 0x19 branch gotos and its 0xB branch duplicates while a fourth site re-enters at `do_calls`. Measure each with `sandbox --disable all` and confirm with tools/ra_solver/extract.py that nrefs_flow(73) stays >= 8; the seat flip is only retained while it does."
   },
   {
-   "hypothesis": "s7's exhaustive RA windows for clusters A and E still describe the 23-floor body, or they have moved (carried forward unchanged from s9 - NOT re-measured this session).",
-   "mechanism": "Both the s8 mode split and the s9 exit-form change altered the RTL of blocks those quantities live in; global.c allocno_compare and local-alloc.c qty_compare_1 both consume live lengths and reference counts computed on that RTL, so the windows (L73 92 -> [38,65], L143 14 -> [20,21]; span(qty0) 30 -> <=24 or refs(qty0) 6 -> 8..10) are chassis-relative.",
-   "next_probe": "Re-run tools/ra_solver/extract.py plus flow.livelen_flow and tmp/grind/func_800283D0/s7/qty41.py on the 23-floor body and diff the tables against s7's before spending any spelling probe on clusters A or E. Then run tools/ra_solver/inverse_compose.py classify on the residual seats to get REACHABLE/FORECLOSED verdicts rather than guessing."
+   "hypothesis": "Cluster E (the $a0/$a1 exchange across emitted slots 159, 161, 168, 169, 171, 178, 181 in the tail Judge product) is still described by s7's local-alloc window, or it has moved under the s8/s9/s11 changes.",
+   "mechanism": "s7 measured, in block 41 of the `main` local-alloc pass, that target wants qty0 (reg 184, the tail pointer `temp_s4 + temp_s5*0x10`) in $a0 and qty3 (reg 201, the first `(&Judge)[...]` element) in $a1, with the COMPLETE single-atom vector set being span(qty0) 30 -> <=24 (reachable from either end) or refs(qty0) 6 -> 8/9/10 - and s3's alternative span(qty3) >= 6 REFUTED. This session re-measured only the GLOBAL half of s7's model; the local half was not touched, and the s11 arm duplication changed the RTL of the blocks preceding the tail.",
+   "next_probe": "Run tools/ra_solver/local_extract.py code6cac_b on the banked 20-floor body, locate the tail block (s7's block 41), and re-run `inverse.py local --block <n> --swap 0,3 --depth 2 --top 40`. Compare against s7's table before spending any spelling probe. Note s7's own caveat: a birth/span vector is a claim about ALLOC-TIME order, which is not known to equal emission order, so re-derive it from a QTYDBG dump of the actual candidate before crediting it."
   },
   {
-   "hypothesis": "Cluster B (the nop-vs-li v0,1 divergence at emitted slots 45/47) is a delay-slot-fill residual of the SAME kind as the slot-126 one, not an exit-form residual.",
-   "mechanism": "s10 proved cluster B does not move under any of the sixteen exit-form assignments, which was the standing explanation for it. A nop at an emitted slot where target has a real instruction is the signature of an unfilled delay slot, and the s10 DBRDBG log already contains every fill decision this function makes.",
-   "next_probe": "Locate emitted slots 45/47 in the objdump of tmp/sandbox/func_800283D0/code6cac_b.o, find the corresponding branch insn UID in tmp/grind/func_800283D0/s10/iso_dumps/iso.dbr, and grep that UID in tmp/grind/func_800283D0/s10/iso_dumps/dbr.log for its `thr`/`simp` lines. If it is another setsopp/oppmem loss, clusters B and the slot-126 nop are ONE residual with one mechanism, which collapses two frontier items into one and raises the value of solving frontier item 1."
+   "hypothesis": "Cluster B (the nop-vs-`li v0,1` divergence at emitted slots 45/47) and the frontier-1 reorg residual are ONE delay-slot-fill mechanism, not two.",
+   "mechanism": "s10 proved cluster B does not move under any of the sixteen exit-form assignments, and this session's diff shows its exact shape: ours fills the last `beq $v1,$v0` of the dispatch chain's delay slot with `li $v0,1` and leaves the following `j`'s slot empty, while target does the reverse (nop in the beq slot, `li $v0,1` in the j's). That is reorg stealing across the .L80028488 label in our build and declining to in target's - the same class of decision as the frontier-1 `mark_target_live_regs` / opposite_needed loss that s10 measured at insn 344.",
+   "next_probe": "Locate the dispatch chain's final `beq` insn UID in tmp/grind/func_800283D0/s10/iso_dumps/iso.dbr, grep that UID in tmp/grind/func_800283D0/s10/iso_dumps/dbr.log for its `thr`/`simp` lines, and check whether the steal is granted there for the same reason it is refused at 344. If both are opposite_needed decisions, clusters B and the frontier-1 nop collapse into one residual with one mechanism, and the s10 open sub-question (why v0 is in opposite_needed at insn 686 despite the REG_DEAD flush at label 347) becomes the single highest-value probe left on this function."
   }
  ],
  "judge_constraints": [],

@@ -1432,3 +1432,170 @@ target's own block is `li v0,1 / lui at / sh v0 / li v0,-1 / lui at / sh v0`.
 - [s10] 'DBRDBG mtlr target=686 block=28' shows find_basic_block(686) walked back to the previous BARRIER and returned the same block as insn 339 - label 347 (the fall-through label, also the target of the earlier bnez v0) is NOT a basic-block head, so mark_target_live_regs does one long forward walk from block 28's live-at-start.
 
 - [s10] No C-level shape can avoid the globals block writing v0: target's own block is `li v0,1 / lui at / sh v0 / li v0,-1 / lui at / sh v0`. The only lever on this residual is getting v0 out of opposite_needed.
+
+## s11 (rederive, 2026-08-26) - FLOOR 23 -> 20; CLUSTER A ($s2/$s3) CLOSED by the s7 nrefs(73) dial
+
+Chassis at dispatch: the s9/s10 candidate body applied to src/code6cac_b.c printed
+`score 23, target_insns 215, build_insns 216`. Every s11 measurement is relative to that.
+
+### 1. The rederive mandate, honestly spent - and the shape axis is CONVERGED
+
+s10 closed the m2c route and the transplant route. This session took the two remaining
+rederive angles and both came back score-NEUTRAL, which is itself the finding:
+
+* **R1 - the matched-sibling idiom.** `func_8002798C` (src/code6cac_b.c:369) is a
+  COMPLETED-C function in the same file by the same author, and it spells multi-way state
+  tests as a run of positive `if (x == K) goto label;` statements with a fall-through
+  `return`, never as a negated `&&` chain. Respelling our eight-way range check that way
+  (`if ((u32)(temp_a1-0x19) < 2U) goto set_s1; if (temp_v1 == 2) goto set_s1; ... return 1;
+  set_s1: var_s1 = 0; goto block_15;`) measures **23 / 216 - identical**. The author-
+  idiomatic spelling is free. Banked at
+  tmp/grind/func_800283D0/s11/variants/R1_sibling_dispatch.c.
+* **R2 - operand order.** Target emits `addu $s3,$v0,$s0` (offset+base) where we emit
+  `addu $s2,$s0,$v0` (base+offset). Writing the C as `(temp_a1_2 * 2) + arg0` measures
+  **23 / 216 - identical**; GCC canonicalises the PLUS. The operand order is a CONSEQUENCE
+  of which register the pointer lands in, not an independent diff. Do not chase it again.
+
+An index-aligned objdump diff of the 23-floor body against target (built this session,
+tmp/grind/func_800283D0/s11/mkdiff.py) confirms the shape conclusion mechanically: the two
+streams agree instruction-for-instruction everywhere; every remaining difference is a
+REGISTER NAME, a delay-slot fill, or the one extra nop. **There is no instruction-selection
+or control-flow divergence left to rederive.** The residual is 100% register seats + reorg.
+
+### 2. s7's cluster-A windows RE-MEASURED on the 23-floor body: UNCHANGED (frontier item 2, half closed)
+
+`tools/ra_solver/extract.py func_800283D0 code6cac_b` on the 23-floor body, then an exhaustive
+single-atom sweep of `simulate.Sim` (tmp/grind/func_800283D0/s11/sweep.py, every allocno x
+livelen 1..250 x nrefs 1..24) reproduces s7's table EXACTLY:
+
+    baseline callee-saved map 72:$s0 77:$s1 143:$s2 73:$s3 75:$s4 90:$s5 79:$s6
+    target's                  72:$s0 77:$s1  73:$s2 143:$s3 75:$s4 90:$s5 79:$s6
+    livelen(143)  14 -> [20,21]      livelen(73)  92 -> [38,65]
+    nrefs(143)     3 -> [2]          nrefs(73)     7 -> [8,9,10,11]
+    every other allocno inert at every value
+
+So the s8 mode split and the s9 exit-form change did NOT move the global allocno model at
+all. s7's windows are live on this chassis and a future session may spend them directly.
+
+New this session - the arithmetic behind the window, which makes it obvious the cluster is
+NOT a tie that could be nudged by luck. global.c allocno_compare ranks by
+`pri = floor_log2(nrefs) * nrefs / allocno_live_length * 10000 * size`:
+
+    pseudo 143 (temp_s3): floor_log2(3)*3 = 3,  / 14 -> 2142
+    pseudo  73 (arg1):    floor_log2(7)*7 = 14, / 92 -> 1521
+
+143 outranks 73 by ~40%, sorts first, and takes $s2. Nothing short of moving one of the four
+dials can change that.
+
+### 3. THE LEVER: duplicating a shared call pair raises nrefs(arg1) past the window
+
+`arg1` has 7 references (the prologue copy plus six `addu $a2,$s2,$zero` argument set-ups).
+The `temp_v1_3 < temp_v0_3` arm in the s9 body reaches the shared pair with `goto do_calls;`,
+so it contributes none. Writing that arm out in full - its own selection, its own store, its
+OWN copy of the two `func_80032854` calls, its own `return ret;` - is plain ordinary C and
+raises the count.
+
+    sandbox --disable all:  20 / 212      (was 23 / 216)
+
+and the model, re-extracted on the new body, reports `nrefs_flow(73) = 9` (inside the [8,11]
+window) and **`base meets goal? True`**. The emitted prologue is now target's
+(`sw $s2,0x20($sp) / addu $s2,$a1,$zero ... sw $s3,0x24($sp)`) and all ten $s2<->$s3 slots
+(4, 85, 90, 96, 97, 102, 107, 111, 148, 153) are correct. **Cluster A is CLOSED.**
+
+Why this is a legitimate C-level lever and not laundering: jump.c cross-jumping runs in
+jump2, which is AFTER reload. A source-level duplicate is therefore real RTL while global.c
+sorts allocnos, and is only re-merged afterwards. That is a genuine ordering fact about the
+pass pipeline, not a spelling trick - and it means "how many times does the source mention
+`arg1`" is a real, reachable dial for any function whose callee-saved seats hinge on it.
+NOTE FOR A FUTURE candidate-ready SESSION: the arm-duplication still has to be CLASSIFIED
+before it can be submitted (it is byte-neutral by construction, which is the shape the
+`duplicated-statement-into-arms` family covers, and that family mandates a `/* FAKE */`
+annotation). This session did not need the vet - the floor is 20, not 0 - but do not submit
+the construct without one.
+
+### 4. The remaining 3-instruction shortfall is ONE cause, and it is measured
+
+jump2's find_cross_jump merges the whole duplicated `<` arm away, leaving a single
+`bnez $v0,<shared block>`; target keeps a four-instruction arm
+(`beqz $s1,.L80028518 / addiu $v0,0x19 / j .L80028520 / sh $v0,0x286($s0)`) that enters the
+shared block at two different points. Target's arm survives the common-tail walk because its
+inner branch has the INVERTED sense relative to the shared block's (`beqz $s1` vs
+`bnez $s1`) - which is exactly what the s9 body's `goto set_0xB;` spelling produced for free.
+
+Two spellings that keep the inverted sense were measured. Both score the SAME 20 but are
+longer, because with the `do_calls` label dead the `sh $v0,0x286($s0)` store sinks out of its
+target position in front of `addiu $a1,$zero,1` and into the following `jal`'s delay slot:
+
+| variant | shape | score / insns |
+|---|---|---|
+| R4/R5 | `<` arm fully written out, same branch sense | **20 / 212** (banked) |
+| R6 | `goto set_0xB;` kept + duplicated calls | 20 / 219 |
+| R7 | duplicate in the `0xB` path, `goto do_calls;` kept alive for the `0x19` path | 20 / 222 |
+
+R5 additionally proved the arm's LAYOUT is not the lever: forcing the duplicated arm to be
+the fall-through (`if (temp_v1_3 >= temp_v0_3) goto ge_block;`) emits a byte-identical 212.
+
+So the score is flat at 20 across every duplication spelling tried, and the open question is
+sharply defined: find a spelling that (a) duplicates the calls, for the nrefs dial,
+(b) keeps the inner branch inverted, so the arm does not fully merge, and (c) keeps a live
+label between the store and the argument set-up, which is what pins the store.
+
+### 5. Killed this session
+
+* **R3** - hoisting `u8 *temp_s3 = arg0 + temp_a1_2*2;` above the `temp_v1_3 == 0` test so
+  both reads share it (a plausible original shape, and an attempt at the livelen(143) dial):
+  **59 / 215**. It adds a FOURTH reference to the pointer, and at nrefs 4 the model needs
+  livelen(143) in [53,58], nowhere near reachable. Banked
+  rejected/shared-ptr-hoist-adds-4th-ref-59.c.
+
+- [s11] Chassis re-measured at dispatch: the s9/s10 body gives score 23 / 216 insns. The rederive shape axis is now CONVERGED - an index-aligned objdump diff shows ours and target agree instruction-for-instruction, with every remaining difference a register name, a delay-slot fill, or one extra nop. No instruction-selection or control-flow divergence remains.
+
+- [s11] The matched sibling func_8002798C (src/code6cac_b.c:369) spells multi-way state tests as positive `if (x == K) goto label;` runs with a fall-through return. Respelling our eight-way range check in that idiom is score-IDENTICAL (23/216). The author-idiomatic spelling is free; it is not a lever.
+
+- [s11] `(temp_a1_2 * 2) + arg0` is score-identical to `arg0 + (temp_a1_2 * 2)`: GCC canonicalises the PLUS, and target's `addu $s3,$v0,$s0` operand order is a consequence of the register assignment, not an independent diff. Do not chase it again.
+
+- [s11] s7's cluster-A single-atom windows re-measure UNCHANGED on the 23-floor body: livelen(73) 92 -> [38,65], nrefs(73) 7 -> [8,9,10,11], livelen(143) 14 -> [20,21], nrefs(143) 3 -> [2], every other allocno inert. The s8 mode split and the s9 exit-form change did not perturb the global allocno model.
+
+- [s11] The cluster-A seat is a ~40% priority inversion, not a tie: global.c allocno_compare gives pri(143) = floor_log2(3)*3/14 = 2142 versus pri(73) = floor_log2(7)*7/92 = 1521.
+
+- [s11] FLOOR 23 -> 20. Writing the `temp_v1_3 < temp_v0_3` arm out in full - own selection, own store, own copy of the two func_80032854 calls, own return - instead of `goto do_calls;` raises nrefs_flow(arg1) from 7 to 9, lands inside the [8,11] window, and CLOSES CLUSTER A: the ra_solver model reports `base meets goal? True` and all ten $s2<->$s3 slots are correct.
+
+- [s11] The mechanism is a pass-ordering fact, not a spelling trick: jump.c cross-jumping runs in jump2, AFTER reload, so a source-level duplicate is real RTL while global.c sorts allocnos and is only re-merged before emission. "How many times the source mentions a param" is therefore a real dial on callee-saved seats.
+
+- [s11] The banked 20-floor body is 212 insns, 3 SHORT of target: jump2 merges the whole duplicated arm away, where target keeps a 4-insn arm that survives because its inner branch has the inverted sense (`beqz $s1` vs the shared block's `bnez $s1`).
+
+- [s11] Two inverted-sense duplication spellings measured: `goto set_0xB;` retained (20/219) and duplicate-in-the-0xB-path (20/222). Both score the same 20 but are LONGER, because with the `do_calls` label dead the `sh $v0,0x286($s0)` store sinks out of its target position into the following jal's delay slot. The score is flat at 20 across every duplication spelling tried.
+
+- [s11] Arm LAYOUT is not a lever: forcing the duplicated arm to be the fall-through with `if (temp_v1_3 >= temp_v0_3) goto ge_block;` emits a byte-identical 212.
+
+- [s11] KILLED: hoisting `temp_s3` above the `temp_v1_3 == 0` test so both reads share it measures 59/215 - it adds a fourth reference to the pointer, and at nrefs 4 the model needs livelen(143) in [53,58].
+
+- [s11] Chassis re-measured at dispatch: the s9/s10 candidate body applied to src/code6cac_b.c gives sandbox --disable all = score 23, target_insns 215, build_insns 216.
+
+- [s11] FLOOR 23 -> 20 (build_insns 212). The single change is that the `temp_v1_3 < temp_v0_3` arm is written out in full - own selection, own store, own copy of the two func_80032854 calls, own `return ret;` - instead of `goto do_calls;`. Plain ordinary C; the only new name is the arm-local `s16 var_v0_4`.
+
+- [s11] Cluster A (the ten-slot $s2/$s3 callee-saved rotation, emitted slots 4, 85, 90, 96, 97, 102, 107, 111, 148, 153) is CLOSED. The prologue now reads target's `sw $s2,0x20($sp) / addu $s2,$a1,$zero ... sw $s3,0x24($sp)`.
+
+- [s11] Mechanism measured, not guessed: ra_solver extract on the new body reports nrefs_flow(pseudo 73 = arg1) = 9 (was 7), inside s7's predicted [8,11] window, and the forward model prints `base meets goal? True`.
+
+- [s11] The lever is a pass-ordering fact: jump.c cross-jumping runs in jump2, AFTER reload, so a source-level duplicate is real RTL while global.c sorts allocnos and is re-merged only before emission. 'How many times the source mentions a param' is therefore a genuine, reachable dial on callee-saved seats for any function in this tree.
+
+- [s11] global.c allocno_compare arithmetic for this function: pri = floor_log2(nrefs)*nrefs/allocno_live_length*10000*size gives pri(143, temp_s3) = 3/14 -> 2142 versus pri(73, arg1) = 14/92 -> 1521. The cluster-A seat is a ~40% priority inversion, not a tie that could be nudged by luck.
+
+- [s11] s7's cluster-A single-atom windows re-measure UNCHANGED on the 23-floor body (livelen(73) 92 -> [38,65]; nrefs(73) 7 -> [8..11]; livelen(143) 14 -> [20,21]; nrefs(143) 3 -> [2]; all other allocnos inert). The s8 mode split and the s9 exit-form change did not perturb the global allocno model. Half of standing frontier item 2 is closed.
+
+- [s11] The rederive shape axis is CONVERGED: an index-aligned objdump diff shows ours and target agree instruction-for-instruction, with every remaining difference a register name, a delay-slot fill, or one extra nop. No instruction-selection or control-flow divergence remains to rederive.
+
+- [s11] The matched sibling func_8002798C (src/code6cac_b.c:369) spells multi-way state tests as positive `if (x == K) goto label;` runs with a fall-through return. Respelling our eight-way range check in that author idiom is score-IDENTICAL (23/216) - free, but not a lever.
+
+- [s11] `(temp_a1_2 * 2) + arg0` is score-identical to `arg0 + (temp_a1_2 * 2)`: GCC canonicalises the PLUS, and target's `addu $s3,$v0,$s0` operand order is a consequence of the register assignment. Do not chase it again.
+
+- [s11] The banked 20-floor body is 3 instructions SHORT (212 vs 215), from ONE cause: jump2 merges the whole duplicated arm away, where target keeps a 4-insn arm (`beqz $s1,.L80028518 / addiu $v0,0x19 / j .L80028520 / sh $v0,0x286($s0)`) that survives because its inner branch has the inverted sense relative to the shared block's `bnez $s1`.
+
+- [s11] Two inverted-sense duplication spellings both score 20 but are LONGER (R6 219, R7 222): keeping the inverted branch kills the `do_calls` label, and the `sh $v0,0x286($s0)` store then sinks into the following jal's delay slot. The score is flat at 20 across every duplication spelling tried, so the 212-insn form is banked as the compact one.
+
+- [s11] Arm LAYOUT is not a lever: forcing the duplicated arm to be the fall-through with `if (temp_v1_3 >= temp_v0_3) goto ge_block;` emits a byte-identical 212.
+
+- [s11] KILLED: hoisting temp_s3 above the `temp_v1_3 == 0` test so both reads share it measures 59/215 - it adds a fourth reference to the pointer, and at nrefs 4 the model needs livelen(143) in [53,58].
+
+- [s11] CLASSIFICATION NOTE for a future candidate-ready session: the arm duplication is byte-neutral by construction (jump2 re-merges it), which is the shape the `duplicated-statement-into-arms` family covers, and that family mandates a /* FAKE */ annotation. This session did not need a self-vet (floor 20, not 0), but the construct must not be submitted without one.

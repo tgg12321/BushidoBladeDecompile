@@ -873,3 +873,63 @@ Chassis: candidate body applied to src/code6cac_b.c, sandbox --disable all = **2
 - probe: Re-ran the s9 isolate.py/dumpiso.sh recipe on the 23-floor body against the instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_DBR_DEBUG=1; read tmp/grind/func_800283D0/s10/iso_dumps/dbr.log.
 - result: s9's stated mechanism is wrong; the true predicate is now measured. Branch = insn 344 (beqz v0 -> label 365, the globals block). Log line: 'DBRDBG thr insn=344 thread=368 opp=686 own=1 likely=0 tif=1 oppregs=20630084_00000000 oppmem=1' - 0x20630084 decodes to {v0, a3, s0, s1, s5, s6, sp}, so v0 is reported LIVE at the FALL-THROUGH insn 686. All four trials in the globals block then lose on setsopp=1 (368 li v0,1; 370 sh v0,D_800A38A8; 373 li v0,-1; 375 sh v0,D_800A3876 - the two stores lose additionally on oppmem=1). There is no 'thr insn=344 thread=686' line at all, so own_fallthrough was 0 and the fall-through thread was never scanned either: the slot is unfillable from both directions while v0 sits in opposite_needed. mostly_true_jump returns 0 here (EQ condition, no rarity difference), so fill_eager_delay_slots takes the prediction<=0 branch.
 - verdict: CONFIRMED
+
+## [s11] The rederive shape axis is exhausted: the ledger body's control flow and instruction selection already equal target's, so no C reshaping can move the floor - only register seats can.
+- mechanism: An index-aligned objdump diff of the 23-floor body against asm/funcs/func_800283D0.s aligns the two streams instruction-for-instruction. Every surviving difference is a register NAME ($s2/$s3, $a0/$a1), a delay-slot fill decision, or the single extra nop. Instruction selection and CFG are identical, so the remaining distance lives entirely in global.c/local-alloc.c seats and reorg.c fills.
+- probe: Built tmp/grind/func_800283D0/s11/mkdiff.py (normalised objdump-vs-target index alignment) and read the full diff; then measured two independent shape rewrites - R1, the eight-way state test respelled in the matched sibling func_8002798C's positive-goto idiom, and R2, `(temp_a1_2 * 2) + arg0` for target's addu operand order.
+- result: Both rewrites measured 23 / 216 - byte-for-byte score-identical to the ledger body. The author-idiomatic dispatch spelling is free, and the addu operand order is a consequence of the register assignment rather than an independent diff.
+- verdict: CONFIRMED
+
+## [s11] s7's cluster-A allocno windows are chassis-relative and have moved under the s8 mode split and the s9 exit-form change (frontier item 2).
+- mechanism: Both changes altered the RTL of blocks the callee-saved quantities live in, and global.c allocno_compare consumes live lengths and reference counts computed on that RTL.
+- probe: Re-ran tools/ra_solver/extract.py on the 23-floor body and swept simulate.Sim exhaustively (every allocno x livelen 1..250 x nrefs 1..24) with tmp/grind/func_800283D0/s11/sweep.py, then diffed the result against s7's table.
+- result: KILLED - the windows are IDENTICAL to s7's. livelen(73) 92 -> [38,65]; nrefs(73) 7 -> [8,9,10,11]; livelen(143) 14 -> [20,21]; nrefs(143) 3 -> [2]; every other allocno inert at every value; baseline map 72:$s0 77:$s1 143:$s2 73:$s3 75:$s4 90:$s5 79:$s6 unchanged. s7's cluster-A model is LIVE on the 23-floor chassis and may be spent directly. (The cluster-E local-alloc half was not re-measured this session.)
+- verdict: KILLED
+
+## [s11] Duplicating a shared call pair into the branch arm that reaches it by goto raises nrefs(arg1) into s7's [8,11] window and flips the $s2/$s3 callee-saved seat.
+- mechanism: global.c allocno_compare ranks allocnos by pri = floor_log2(nrefs)*nrefs/allocno_live_length*10000*size. On the 23-floor body pri(143, temp_s3) = 3/14 -> 2142 beats pri(73, arg1) = 14/92 -> 1521, so temp_s3 sorts first and takes $s2. jump.c cross-jumping runs in jump2, AFTER reload, so a source-level duplicate of the two func_80032854 calls is real RTL while global.c sorts and is only re-merged before emission - it raises arg1's reference count without surviving into the bytes.
+- probe: Rewrote the `temp_v1_3 < temp_v0_3` arm to carry its own selection, store, copy of both calls and `return ret;` instead of `goto do_calls;` (tmp/grind/func_800283D0/s11/variants/R4_dup_calls_lt_arm.c), measured the sandbox, then re-extracted the ra_solver model on the new body.
+- result: CONFIRMED - floor 23 -> 20, build_insns 212. nrefs_flow(73) rose 7 -> 9, the forward model reports `base meets goal? True`, the prologue is now target's (`sw $s2,0x20($sp) / addu $s2,$a1,$zero ... sw $s3,0x24($sp)`), and all ten $s2<->$s3 slots (4, 85, 90, 96, 97, 102, 107, 111, 148, 153) are correct. Cluster A is CLOSED.
+- verdict: CONFIRMED
+
+## [s11] The duplication can be spelled so the arm survives cross-jumping the way target's does, recovering the 3 lost instructions.
+- mechanism: jump2's find_cross_jump walks the common tail; target's arm survives because its inner branch has the inverted sense (`beqz $s1`) relative to the shared block's (`bnez $s1`), which is what the s9 `goto set_0xB;` spelling produced for free.
+- probe: Measured two inverted-sense duplication spellings - R6 (`goto set_0xB;` retained plus duplicated calls) and R7 (duplicate in the 0xB path with `goto do_calls;` kept alive for the 0x19 path) - plus R5, which forces the duplicated arm to be the fall-through via `if (temp_v1_3 >= temp_v0_3) goto ge_block;`.
+- result: PARTIAL/KILLED as spelled. R6 = 20 / 219, R7 = 20 / 222, R5 = byte-identical 212. The score is FLAT at 20 across every duplication spelling: keeping the inverted branch stops the over-merge but kills the `do_calls` label, and the `sh $v0,0x286($s0)` store then sinks out of its target position in front of `addiu $a1,$zero,1` into the following jal's delay slot, costing back what the arm gains. The open requirement is now exact: duplicate the calls AND keep the inner branch inverted AND keep a live label between the store and the argument set-up.
+- verdict: KILLED
+
+## [s11] Hoisting temp_s3 above the `temp_v1_3 == 0` test so both reads share one pointer lengthens its live range toward s7's livelen(143) 20/21 window.
+- mechanism: A single shared pointer local was a plausible original-source shape and would extend the pointer's live range across the branch.
+- probe: Built variants/R3_shared_ptr_hoist.c and measured the sandbox.
+- result: KILLED - 59 / 215, a 36-point regression. The hoist gives the pointer a FOURTH reference, and at nrefs 4 the model requires livelen(143) in [53,58], which is unreachable from 14. Banked rejected/shared-ptr-hoist-adds-4th-ref-59.c.
+- verdict: KILLED
+
+## [s11] The rederive shape axis is exhausted: the ledger body's control flow and instruction selection already equal target's, so no C reshaping can move the floor - only register seats and reorg fills can.
+- mechanism: An index-aligned objdump diff of the 23-floor body against asm/funcs/func_800283D0.s aligns the two streams instruction-for-instruction. Every surviving difference is a register NAME ($s2/$s3, $a0/$a1), a delay-slot fill decision, or the single extra nop. Instruction selection and CFG are identical, so the remaining distance lives entirely in global.c / local-alloc.c seats and reorg.c fills.
+- probe: Built tmp/grind/func_800283D0/s11/mkdiff.py (normalised objdump-vs-target index alignment) and read the full diff; then measured two independent shape rewrites - R1, the eight-way state test respelled in the matched sibling func_8002798C's positive-goto idiom, and R2, `(temp_a1_2 * 2) + arg0` for target's addu operand order.
+- result: Both rewrites measured 23 / 216 - score-identical to the ledger body. The author-idiomatic dispatch spelling is free, and target's `addu $s3,$v0,$s0` operand order is a consequence of the register assignment rather than an independent diff.
+- verdict: CONFIRMED
+
+## [s11] s7's cluster-A allocno windows are chassis-relative and have moved under the s8 mode split and the s9 exit-form change (standing frontier item 2).
+- mechanism: Both changes altered the RTL of blocks the callee-saved quantities live in, and global.c allocno_compare consumes live lengths and reference counts computed on that RTL.
+- probe: Re-ran tools/ra_solver/extract.py func_800283D0 code6cac_b on the 23-floor body and swept simulate.Sim exhaustively (every allocno x livelen 1..250 x nrefs 1..24) with tmp/grind/func_800283D0/s11/sweep.py, then diffed against s7's table.
+- result: KILLED - the windows are IDENTICAL to s7's: livelen(73) 92 -> [38,65]; nrefs(73) 7 -> [8,9,10,11]; livelen(143) 14 -> [20,21]; nrefs(143) 3 -> [2]; every other allocno inert; baseline map 72:$s0 77:$s1 143:$s2 73:$s3 75:$s4 90:$s5 79:$s6 unchanged. s7's cluster-A model is LIVE on this chassis and may be spent directly. The cluster-E local-alloc half was not re-measured.
+- verdict: KILLED
+
+## [s11] Duplicating a shared call pair into the branch arm that currently reaches it by goto raises nrefs(arg1) into s7's [8,11] window and flips the $s2/$s3 callee-saved seat.
+- mechanism: global.c allocno_compare ranks by pri = floor_log2(nrefs)*nrefs/allocno_live_length*10000*size. On the 23-floor body pri(143, temp_s3) = 3/14 -> 2142 beats pri(73, arg1) = 14/92 -> 1521, so temp_s3 sorts first and takes $s2 - a ~40% inversion, not a tie. jump.c cross-jumping runs in jump2, AFTER reload, so a source-level duplicate of the two func_80032854 calls is real RTL while global.c sorts allocnos and is only re-merged before emission: it raises arg1's reference count without surviving into the bytes.
+- probe: Rewrote the `temp_v1_3 < temp_v0_3` arm to carry its own selection, store, copy of both func_80032854 calls and `return ret;` instead of `goto do_calls;` (tmp/grind/func_800283D0/s11/variants/R4_dup_calls_lt_arm.c), measured the sandbox, then re-extracted the ra_solver model on the new body.
+- result: CONFIRMED - floor 23 -> 20, build_insns 212. nrefs_flow(73) rose 7 -> 9, the forward model reports `base meets goal? True`, the prologue is now target's (`sw $s2,0x20($sp) / addu $s2,$a1,$zero ... sw $s3,0x24($sp)`), and all ten $s2<->$s3 slots (4, 85, 90, 96, 97, 102, 107, 111, 148, 153) are correct. Cluster A is CLOSED.
+- verdict: CONFIRMED
+
+## [s11] The duplication can be spelled so the arm survives cross-jumping the way target's does, recovering the 3 instructions the 20-floor body is short.
+- mechanism: jump2's find_cross_jump walks the common tail; target's arm survives because its inner branch has the inverted sense (`beqz $s1`) relative to the shared block's (`bnez $s1`), which is what the s9 `goto set_0xB;` spelling produced for free.
+- probe: Measured two inverted-sense duplication spellings - R6 (`goto set_0xB;` retained plus duplicated calls) and R7 (duplicate in the 0xB path with `goto do_calls;` kept alive for the 0x19 path) - plus R5, which forces the duplicated arm to be the fall-through via `if (temp_v1_3 >= temp_v0_3) goto ge_block;`.
+- result: KILLED as spelled. R6 = 20 / 219, R7 = 20 / 222, R5 = byte-identical 212. The score is FLAT at 20 across every duplication spelling: keeping the inverted branch stops the over-merge but kills the `do_calls` label, and the `sh $v0,0x286($s0)` store then sinks out of its target position in front of `addiu $a1,$zero,1` into the following jal's delay slot, costing back exactly what the arm gains.
+- verdict: KILLED
+
+## [s11] Hoisting temp_s3 above the `temp_v1_3 == 0` test so both reads share one pointer lengthens its live range toward s7's livelen(143) [20,21] window.
+- mechanism: A single shared pointer local is a plausible original-source shape and would extend the pointer's live range across the branch, which is the cheaper of the two cluster-A dials (+6/+7).
+- probe: Built tmp/grind/func_800283D0/s11/variants/R3_shared_ptr_hoist.c and measured the sandbox.
+- result: KILLED - 59 / 215, a 36-point regression. The hoist gives the pointer a FOURTH reference, and at nrefs 4 the model requires livelen(143) in [53,58], which is unreachable from 14.
+- verdict: KILLED
