@@ -1681,3 +1681,133 @@ reaching 0 is therefore `progress` with the kills banked - which is this session
 - [s36] Owner directive 2026-08-24 (solver-first) re-checked, not re-run: s35-E5 already established tools/ra_solver/inverse_compose.py is not replace_with_asmfile-wired for func_80057CC8 and returns a fictitious IDENTICAL verdict against a stale 108-insn target stream. This session answered its RA questions from the .lreg/.greg pass dumps directly (s36/r1.lreg, r1.greg, r4.lreg), the same evidence the solver models.
 
 - [s36] src/text1b.c restored to `INCLUDE_ASM("asm/funcs", func_80057CC8);` at end of session (git checkout, verified at line 1665). No commits; regfix.txt, asmfix.txt, .claude/rules/, engine/, tools/, Makefile and *.ld untouched. Four forms banked to memory/grind/func_80057CC8/rejected/s36-*.c.
+
+
+- [s37] Chassis re-measured at dispatch (the brief reported it "unavailable"): the inherited
+  s34/s35/s36 candidate re-applied to src/text1b.c measures `sandbox func_80057CC8 --disable all`
+  -> score 20, target_insns 111, build_insns 108, rules_dropped 0. The ledger's recorded floor of 20
+  is therefore current, and every s31-s36 conclusion is chassis-valid.
+
+- [s37] The ledger's live frontier item #1 (a permuter campaign against the NEW 108-insn regime,
+  which the four prior campaigns in s4/s5/s13 never saw because they ran on the retired 111-insn /
+  floor-3 chassis) was EXECUTED and it PAID. Workspace rebuilt from the s4 recipe with two required
+  corrections for the current chassis: `-mel` added to the cc1 invocation (mandatory since the
+  2026-08-04 endianness adoption) and the retired `fix_lwl` stage removed; the `.align 3 -> 2` sed
+  was also dropped because text1b is NOT in the Makefile's RODATA_ALIGN2_FILES (text1b_b is).
+  Build script: tmp/grind/func_80057CC8/s37/build_ws.sh. Sanity gate passed: base 108 insns,
+  target 111 insns, i.e. the workspace reproduces the current regime exactly.
+  Campaign `108regime-s37` (pid 4144703, -j 6, --stack-diffs default) ran 45,270 iterations and was
+  harvested with --stop inside the session. permuter base_score 783; eleven novel finds in the
+  545-768 band; no score-0.
+
+- [s37] MOST of the permuter's "better" finds are SEMANTICALLY BROKEN and must not be mined blindly:
+  output-545-1 (the best permuter score of the campaign) moves `next_vert = ...` INSIDE the wrap
+  if-block, leaving next_vert uninitialised on the fall-through path, and output-615-1 inlines the
+  second ratan2 call into the `if` condition while still reading the never-assigned `ang_next` in
+  both arms. Both "gains" are the permuter deleting work the function actually needs. Only the
+  `next_vert = &Judge` family (output-758-2 / 768-1 / 768-2) is semantics-preserving.
+
+- [s37] FLOOR 20 -> 16. output-768-2 measured `sandbox --disable all` -> score 17 as found (three
+  mutations); bisection isolated the single load-bearing statement. Adding exactly
+  `next_vert = &Judge;` after `scale = arg0[2] * 40;` to the score-20 candidate, and spelling the
+  two sine-table reads `*(next_vert + ...)`, measures score 16 at 108 insns. Saved as
+  memory/grind/func_80057CC8/candidate.c; the annotation-free score-20 predecessor is preserved at
+  tmp/grind/func_80057CC8/s37/v20.c.
+
+- [s37] BISECTION of the permuter find (all at 108 insns unless noted): (b) `next_vert = &Judge;`
+  reuse -> 16 (THE lever); (c) multiply-operand flip `(s32)(*..) * scale` on the *arg2 store -> 21;
+  (a) `ang_prev = 0xFFF; ... & ang_prev;` constant holder -> 20 (inert); (b)+(c) -> 17.
+  Rejected copies: rejected/s37-multiply-operand-flip-arg2-score21.c,
+  rejected/s37-ang_prev-constant-holder-inert-score20.c,
+  rejected/s37-permuter-768-2-triple-mutation-score17.c.
+
+- [s37] THE LEVER HAS NO ANNOTATION-FREE SPELLING (four measurements; this is the decisive result
+  for anyone tempted to launder it): a FRESH pointer local `s16 *jt; jt = &Judge;` used at both
+  sites -> 20 (no gain); the same with array-index spelling `jt[...]` -> 20; a fresh local
+  initialised at its declaration `s16 *jt = &Judge;` -> 48 at 110 insns; reusing `table` (also dead
+  by that point) instead of `next_vert` -> 20 (no gain). Conversely, reusing `next_vert` but
+  consuming it at only ONE of the two sine-table sites -> 16, and placing the reuse BEFORE
+  `scale = arg0[2] * 40;` -> 16. The gain therefore comes from the extra SET of the next_vert
+  pseudo, not from the pointer alias, and not from which site consumes it. Rejected copies:
+  rejected/s37-fresh-jt-pointer-local-no-gain-score20.c,
+  rejected/s37-table-reuse-for-judge-base-no-gain-score20.c,
+  rejected/s37-jt-initialised-at-declaration-score48-110insns.c.
+
+- [s37] MECHANISM, dump-verified (`pwsh tools/grinder/dump.ps1 func_80057CC8` with the 16-form in
+  place; tmp/grind/func_80057CC8/dumps/text1b.lreg, function section begins at line 15487). s34/s35
+  attributed the register residual to local-alloc: "our next-neighbour address is a BLOCK-LOCAL
+  call-crossing quantity ('Register 88 used 3 times across 4 insns IN BLOCK 4; crosses 1 call'), so
+  local-alloc hands it a callee-save seat BEFORE the two centre twins are placed." A second SET of
+  the same C variable in the FINAL basic block removes the block tag: lreg now prints
+  `Register 88 used 6 times across 4 insns; crosses 1 call; GR_REGS or none; pointer.` with NO
+  block tag - pseudo 88 is a GLOBAL allocno and local-alloc no longer pre-seats it. The predicted
+  consequence is exactly what is measured: cxs moves out of $s2 into $s1, matching the target's
+  `$s0 cys / $s1 cxs` pair (asm/funcs/func_80057CC8.s:41-44). This CONFIRMS the s34-E4 local-alloc
+  attribution by intervention - the first time that attribution has been tested rather than inferred.
+
+- [s37] NEW REGISTER MAP (tmp/grind/func_80057CC8/s37/b.hon.s): ours is $s0 cys, $s1 cxs,
+  $s2 next-ADDRESS, $s3 arg0; the target is $s0 cys, $s1 cxs, $s2 arg0, $s3 next-INDEX. Seven of the
+  eight callee-save seats now agree ($s0 cys, $s1 cxs, $s4 cx-raw, $s5 cy-raw, $s6 arg2, $s7 arg3,
+  plus the frame/save set, which already matched). ONLY the $s2/$s3 pair is left. The next-neighbour
+  byte offset is now carried in call-clobbered $a3 (`sll $a3,$v0,2` / `move $a3,$zero`) and the
+  address formed as `addu $s2,$a3,$a2` before the call.
+
+- [s37] THE $s2/$s3 SWAP IS THE SAME WALL, RE-CONFIRMED ARITHMETICALLY ON THE NEW NUMBERS. From the
+  fresh lreg: arg0 is `Register 72 used 5 times across 54 insns; crosses 2 calls`, priority
+  floor_log2(5)*5/54 = 0.185; the next-neighbour address is pseudo 88 at 6 refs across 4 insns,
+  priority floor_log2(6)*6/4 = 3.0. Even the one-site reuse (5 refs) gives 2.5. The address is
+  allocated first under global.c:635 allocno_compare in every spelling reachable here and therefore
+  takes the first free callee-save seat. It can only stop being a callee-save candidate by not
+  crossing the call, which requires post-call address formation, which requires the vertex-table
+  base after the call - and rematerialization (s36-E1), caller-saving (s30) and a ninth callee-save
+  seat (s33-E5, measures 33) are all closed. The residual remains the 2026-07-20 refused second
+  source-level materialization, i.e. a policy question, not a spelling.
+
+- [s37] POLICY STATUS OF THE 16-FORM (recorded so no future session mistakes it for clean C).
+  `next_vert = &Judge;` is a match-hack by the 6-test checklist: T1 fails (the loads are identical
+  with or without it), T2 fails (no human re-points a vertex-table pointer at the sine table). Its
+  family is "variable reuse for codegen control" - an EXISTING local borrowed for a second unrelated
+  value, .claude/rules/defeat-licm-hoist-var-reuse.md gated by
+  .claude/rules/staged-value-reused-variable.md - which is on the FROZEN SOTN-accepted list but
+  requires a /* FAKE */ annotation plus documented lever-exhaustion and a named GCC-pass mechanism.
+  s37 did NOT clear those prerequisites: the floor is 16, not 0, so no candidate-ready and no
+  self-vet was in scope. It is banked in candidate.c with a prominent header because it is the best
+  MEASURED form and because its mechanism is the session's real product. Any future session that
+  wants to SUBMIT a form containing it must clear the family prerequisites in a self-vet or emit a
+  ruling-request first. Note the shipping in-repo precedent for the *pointer-alias* half only -
+  src/code6cac.c:2395/2424 `s16 *judge_ptr; ... judge_ptr = &Judge;` indexed at four later sites,
+  un-annotated - which is NOT the same construct: that one is a fresh local, and a fresh local
+  measures 20 here (no gain).
+
+- [s37] OWNER DIRECTIVE ACKNOWLEDGED (the consistency-audit INFO item). The queue item's 2026-08-24
+  escalation-not-parked directive recommends the solver modality (ra_solver/sched_solver) before a
+  deep re-grind of RA/scheduler-tiebreak residuals. It remains BLOCKED for tooling reasons already
+  banked twice (s35-E5, re-checked s36): `inverse_compose.py classify` requires func_80057CC8 to be
+  replace_with_asmfile-wired, and without that wiring it silently degrades to a text-stream
+  comparison against a stale 108-insn target and reports IDENTICAL. Wiring it is an operator/tooling
+  task outside a grind session's allowed surface. s37 discharged the directive's INTENT by other
+  means: the allocno_compare arithmetic the solver would have produced is measured directly from a
+  fresh lreg dump (above), and the local-alloc half of the attribution was confirmed by intervention
+  rather than by inference.
+
+- [s37] Chassis re-measured at dispatch (the brief reported it unavailable): the inherited s34/s35/s36 candidate re-applied to src/text1b.c measures score 20, target_insns 111, build_insns 108, rules_dropped 0. The ledger's recorded floor of 20 was current and every s31-s36 conclusion is chassis-valid.
+
+- [s37] FLOOR 20 -> 16 at 108 insns. The single load-bearing delta is one added statement `next_vert = &Judge;` after `scale = arg0[2] * 40;`, with the two sine-table reads spelled `*(next_vert + ...)`. Saved to memory/grind/func_80057CC8/candidate.c with a prominent policy header; the annotation-free score-20 predecessor is preserved verbatim at tmp/grind/func_80057CC8/s37/v20.c.
+
+- [s37] The permuter workspace recipe banked at evidence.md:130 (s4) is STALE for the current chassis and was corrected: cc1 needs -mel (mandatory since the 2026-08-04 endianness adoption), the fix_lwl stage is retired, and the `.align 3 -> 2` sed must be dropped because text1b is not in the Makefile's RODATA_ALIGN2_FILES (text1b_b is). Corrected script: tmp/grind/func_80057CC8/s37/build_ws.sh; sanity gate base 108 / target 111.
+
+- [s37] Permuter finds must be checked for SEMANTIC validity before mining: the campaign's two best permuter scores (545, 615) are both broken - 545 moves the next_vert def inside the wrap if-block so it is uninitialised on fall-through, and 615 inlines the second ratan2 into the if-condition while both arms still read a never-assigned ang_next.
+
+- [s37] BISECTION of the permuter find (108 insns unless noted): `next_vert = &Judge;` reuse -> 16 (the lever); multiply-operand flip on the *arg2 store -> 21; `ang_prev = 0xFFF; ... & ang_prev;` constant holder -> 20 (inert); lever+flip -> 17.
+
+- [s37] THE LEVER HAS NO ANNOTATION-FREE SPELLING: fresh local `s16 *jt; jt = &Judge;` -> 20; same with array-index spelling -> 20; fresh local initialised at declaration -> 48 at 110 insns; reusing `table` instead of `next_vert` -> 20. Reuse of `next_vert` consumed at only ONE site -> 16; reuse placed before `scale` -> 16. The gain is the extra SET of the pseudo, not the pointer alias.
+
+- [s37] MECHANISM dump-verified: with the 16-form applied, text1b.lreg prints `Register 88 used 6 times across 4 insns; crosses 1 call; GR_REGS or none; pointer.` with NO block tag, where the score-20 form printed `in block 4`. This CONFIRMS the s34-E4 local-alloc attribution by intervention rather than inference - the second def in the final basic block promotes pseudo 88 to a global allocno, local-alloc stops pre-seating it, and cxs reaches the target's $s1.
+
+- [s37] NEW REGISTER MAP (tmp/grind/func_80057CC8/s37/b.hon.s): ours $s0 cys, $s1 cxs, $s2 next-ADDRESS, $s3 arg0; target $s0 cys, $s1 cxs, $s2 arg0, $s3 next-INDEX. Seven of eight callee-save seats now agree - only the $s2/$s3 pair differs. The next-neighbour byte offset is carried in call-clobbered $a3 (`sll $a3,$v0,2` / `move $a3,$zero`) and the address formed as `addu $s2,$a3,$a2` before the call.
+
+- [s37] POLICY STATUS OF THE 16-FORM: `next_vert = &Judge;` fails cheat-checklist T1 (loads identical with or without it) and T2 (no human re-points a vertex pointer at the sine table). Its family is variable-reuse-for-codegen-control (an EXISTING local borrowed for a second unrelated value - .claude/rules/defeat-licm-hoist-var-reuse.md, gated by .claude/rules/staged-value-reused-variable.md), which is SOTN-sanctioned but requires a /* FAKE */ annotation plus documented lever-exhaustion and a named GCC-pass mechanism. s37 did NOT clear those prerequisites (floor 16, not 0, so no candidate-ready and no self-vet in scope). Any future session submitting a form containing it must clear the family prerequisites in a self-vet or emit a ruling-request first.
+
+- [s37] OWNER DIRECTIVE (2026-08-24 escalation-not-parked, solver modality recommended) ACKNOWLEDGED and its intent discharged by other means: the solver remains tooling-blocked for reasons banked twice (s35-E5, re-checked s36 - inverse_compose.py classify needs func_80057CC8 replace_with_asmfile-wired or it silently degrades to a stale-target text compare reporting IDENTICAL, and wiring it is outside a grind session's allowed surface). The allocno_compare arithmetic the solver would have produced was measured directly from a fresh lreg dump this session, and the local-alloc half of the attribution was confirmed by intervention.
+
+- [s37] src/text1b.c was restored to its INCLUDE_ASM baseline before the session ended; the permuter campaign was harvested with --stop and `permuter_campaign.py status` confirms pid 4144703 alive=false, registered_active=false. No orphaned processes.

@@ -1,72 +1,72 @@
-/* BEST BAN-COMPLIANT FORM (grind s34, 2026-08-27, structural modality).
- * MEASURED THIS SESSION: `sandbox func_80057CC8 --disable all` -> score 20,
- * target_insns 111, build_insns 108, rules_dropped 0.  The inherited s33 candidate
- * re-measured at 22 on this chassis first, so the floor moved 22 -> 20.
+/* BEST MEASURED FORM (grind s37, 2026-08-27, synthesis modality).
+ * MEASURED THIS SESSION: `sandbox func_80057CC8 --disable all` -> score 16,
+ * target_insns 111, build_insns 108, rules_dropped 0.  The inherited s34/s35/s36
+ * candidate re-measured at 20 on this chassis first, so the floor moved 20 -> 16.
  *
- * WHAT CHANGED vs s33: exactly one expression -- the next-neighbour BYTE OFFSET is
- * now `tmp * 4` instead of `(s16) tmp * 4`.  Everything else is the s33 candidate
- * verbatim (including s33's PLUS-operand flip `off + (s32)table`, which is still
- * load-bearing: the base-first control z2b re-measures 21/23).
+ * WHAT CHANGED vs the score-20 predecessor: exactly ONE added statement --
+ *     next_vert = &Judge;
+ * placed after `scale = arg0[2] * 40;`, with the two sine-table reads then spelled
+ * `*(next_vert + ...)` instead of `*(&Judge + ...)`.  Nothing else differs.  The
+ * annotation-free score-20 predecessor is preserved verbatim at
+ * tmp/grind/func_80057CC8/s37/v20.c (and in git history as the s34 candidate).
  *
- * WHY DROPPING THE REDUNDANT NARROWING IS WORTH TWO POINTS (dump-verified).  The
- * wrap test `(s16) tmp >= arg0[3]` already forces the sll16/sra16 pair, so the extra
- * `(s16)` in the offset expression bought no instruction -- it only changed WHERE in
- * the block the offset's defining insn sat.  With the cast, RTL-expand emits
- * sll16, sra16, then `sll off,sra,2` (offset defined 3rd); without it, the offset is
- * `sll off,tmp,2` defined FIRST and the sign-extension pair follows.  Two consequences,
- * both measured:
- *   (1) the offset insn lands at the same position in the block as the target's
- *       `addu $s3,$v0,$zero` (asm/funcs/func_80057CC8.s:29), which is the whole
- *       two-point gain -- the emitted registers are IDENTICAL to the s33 form;
- *   (2) the offset allocno's live range grows from 16 to 19 insns
- *       (tmp/grind/func_80057CC8/dumps/text1b.lreg: "Register 104 used 3 times across
- *       19 insns"), which flips the global allocation ORDER from `... 87 104 72 ...`
- *       to `... 87 72 104 ...` in text1b.greg -- arg0 is now allocated BEFORE the
- *       offset.  The dispositions do NOT change (72 in 19, 104 in 17), because arg0
- *       carries hard-reg conflicts on 16/17/18 (text1b.greg "72 conflicts: ... 16 17 18")
- *       and can only take $19 whatever its rank.  See evidence.md s34-E3.
+ * /* FAKE * / STATUS -- READ BEFORE BUILDING ON THIS FILE.  The added statement is a
+ * MATCH-HACK, not program logic: `next_vert` is the next-neighbour vertex pointer and
+ * re-pointing it at the sine table has no semantic purpose (the loads are identical
+ * either way).  Its family is "variable reuse for codegen control" (an EXISTING local
+ * borrowed for a second unrelated value -- .claude/rules/defeat-licm-hoist-var-reuse.md,
+ * borrows gated by .claude/rules/staged-value-reused-variable.md), which is on the FROZEN
+ * SOTN-accepted list but REQUIRES a /* FAKE * / annotation plus that rule's prerequisites
+ * (documented lever-exhaustion + named GCC-pass mechanism) before it may ever be
+ * submitted.  s37 did NOT vet those prerequisites -- the floor is 16, not 0, so no
+ * candidate-ready and no self-vet was in scope.  A future session that wants to SUBMIT
+ * anything containing this statement must either clear the family prerequisites in a
+ * self-vet or emit a ruling-request first.  It is banked here because it is the best
+ * MEASURED form and because its MECHANISM (below) is the session's real product.
  *
- * THE REGISTER RESIDUAL IS NOW FULLY ATTRIBUTED (s34-E4, new this session).  Ours is
- * $16 cys, $17 next-address, $18 cxs, $19 arg0; the target is $16 cys, $17 cxs,
- * $18 arg0, $19 next-index.  The cause is LOCAL-alloc, not global-alloc: our
- * next-neighbour address is a block-local call-crossing quantity (text1b.lreg
- * "Register 88 used 3 times across 4 insns in block 4; crosses 1 call"), so local-alloc
- * hands it a callee-save seat ($17) BEFORE the two centre twins are placed, pushing
- * cxs to $18 and blocking arg0 out of 16/17/18.  The target has no such block-local
- * quantity: its call-crossing value is the next INDEX, defined in two blocks and used
- * in a third, so it is a GLOBAL allocno and the twins take $16/$17 uncontested.
- * Making our address global (z2: select the ADDRESS in the wrap arm, no `off` pseudo)
- * does reproduce the target's $16 cys / $17 cxs exactly at no instruction cost -- but
- * the address then outranks arg0 under allocno_compare (4 refs, floor_log2(4)=2) and
- * takes $18, and the vertex-table base moves out of $6 into $4; net 21, one worse.
+ * THE MECHANISM (dump-verified, tmp/grind/func_80057CC8/dumps/text1b.lreg after this
+ * form was applied).  The s34/s35 attribution of the register residual was:
+ * "our next-neighbour address is a BLOCK-LOCAL call-crossing quantity (lreg: 'Register 88
+ * used 3 times across 4 insns IN BLOCK 4; crosses 1 call'), so local-alloc hands it a
+ * callee-save seat BEFORE the two centre twins are placed, pushing cxs to $18 and blocking
+ * arg0 out of 16/17/18."  Adding a second SET of the same C variable in the FINAL basic
+ * block removes the "in block 4" tag entirely -- lreg now prints
+ *     Register 88 used 6 times across 4 insns; crosses 1 call; GR_REGS or none; pointer.
+ * with no block tag, i.e. pseudo 88 is now a GLOBAL allocno and local-alloc no longer
+ * pre-seats it.  Measured consequence, exactly as predicted by that attribution: cxs
+ * moves out of $s2 into $s1 and now MATCHES the target ($s0 cys / $s1 cxs, target
+ * asm/funcs/func_80057CC8.s:41-44 `sll $s1,$s4,16 / sra / sll $s0,$s5,16 / sra`).
+ * That is the whole four-point gain; the instruction count is unchanged at 108.
  *
- * WHY IT IS STILL NOT 0: unchanged from s30b/s31/s32/s33 -- asm/funcs/func_80057CC8.s
- * loads 0x4($s2) TWICE (:17 `lw $a2`, :50 `lw $a0`), which is what gives the target's
- * arg0 SIX references and lets it outrank the neighbour allocno.  A ban-compliant form
- * emits one load and five references.  That residual is the policy question refused
- * 2026-07-20 and standing-ruled 2026-07-27, not a spelling.
+ * ISOLATION (all measured this session, all at 108 insns).  The permuter find that
+ * exposed this carried three mutations; they were bisected:
+ *   (b) `next_vert = &Judge;` reuse ................................. 16  <- the lever
+ *   (c) multiply operand flip `(s32)(*..) * scale` on the *arg2 store  21  (worse)
+ *   (a) `ang_prev = 0xFFF; ... & ang_prev;` constant holder .......... 20  (inert)
+ *   (b)+(c) together ................................................ 17
+ * And the lever was probed for a cheaper spelling:
+ *   fresh local `s16 *jt; jt = &Judge;` (NOT a reuse) ................ 20  (no gain)
+ *   same, array-index spelling `jt[...]` ............................ 20  (no gain)
+ *   fresh local initialised at declaration `s16 *jt = &Judge;` ....... 48 at 110 insns
+ *   reuse of `table` instead of `next_vert` ......................... 20  (no gain)
+ *   reuse of `next_vert` consumed at only ONE of the two sites ...... 16  (same gain)
+ *   reuse placed BEFORE `scale = arg0[2] * 40;` ..................... 16  (same gain)
+ * The gain therefore comes from the extra SET of the next_vert pseudo (which promotes it
+ * out of local-alloc), not from the pointer alias and not from which site consumes it.
+ * A fresh pointer local cannot buy it -- that is precisely why no annotation-free
+ * spelling of this lever exists.
  *
- * MEASURED-INERT THIS SESSION (all still 20 at 108 insns): `tmp << 2` instead of
- * `tmp * 4`; centre coordinates read as `((u16 *)table)[arg1*2]`; a named
- * prev-neighbour address local; the prev reads spelled as byte-offset pointer
- * arithmetic; `s16 prev_idx` instead of `unsigned short`; forming the address after
- * `pi`; `tmp`/`off` at function scope.
- *
- * S35 (2026-08-27, structural) RE-MEASURED THIS FORM AT 20 AND HELD IT.  Ten further
- * structural forms all measured worse (29/29/25/34/32/42/27/28/22/28 - see evidence.md s35-E4).
- * The session's product is a foreclosure proof for the register residual described above:
- * ban-compliantly the next-neighbour value is either a BLOCK-LOCAL crossing address (this form -
- * local-alloc then seats cys/address/cxs in $16/$17/$18 and arg0 is conflict-bound to $19) or a
- * GLOBAL crossing address (z2 - which does reproduce the target's $16 cys / $17 cxs but
- * necessarily carries FOUR references, two wrap defs plus two vertex uses, and needs live_length
- * > 43.2 to rank below arg0's 0.185 under allocno_compare).  The measured maximum live_length,
- * with the def at the earliest point at which the address can exist, is 29 (form a1, greg still
- * prints '88 in 18 / 72 in 19').  Three references are not spellable and arg0's own priority
- * cannot be raised past 0.276 without the banned second lw.  See evidence.md s35-E2.
- *
- * The normalised diff against target is now fully accounted for: eighteen lines, twelve of them
- * pure register renames caused by that one seat, six of them the refused duplication block.
- * Every other instruction in the function already matches modulo register names.
+ * WHY IT IS STILL NOT 0 (unchanged in kind from s30b..s36).  The register map is now
+ * $s0 cys, $s1 cxs, $s2 next-ADDRESS, $s3 arg0; the target is $s0 cys, $s1 cxs,
+ * $s2 arg0, $s3 next-INDEX.  Only the $s2/$s3 pair is left, and it is the SAME wall:
+ * pseudo 88's allocno_compare priority is floor_log2(6)*6/4 = 3.0 against arg0's
+ * 2*5/54 = 0.185, so the address is always allocated first and takes the first free
+ * callee-save seat.  It can only stop being a callee-save candidate by not crossing the
+ * call, which requires post-call address formation, which requires the vertex-table base
+ * to be available after the call, which -- with rematerialization (s36-E1), caller-saving
+ * (s30) and a ninth callee-save seat (s33-E5, measures 33) all closed -- requires the
+ * second source-level materialization the owner refused on 2026-07-20.  That residual is
+ * a policy question, not a spelling.
  */
 void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     unsigned short prev_idx;
@@ -114,6 +114,7 @@ void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     }
 
     scale = arg0[2] * 40;
-    *arg2 = cx + ((scale * (s32)(*(&Judge + (ang_mid & 0xFFF)))) >> 12);
-    *arg3 = cy + ((scale * (s32)(new_var = *(&Judge + (((s16)ang_mid + 0x400) & 0xFFF)))) >> 12);
+    next_vert = &Judge;
+    *arg2 = cx + ((scale * (s32)(*(next_vert + (ang_mid & 0xFFF)))) >> 12);
+    *arg3 = cy + ((scale * (s32)(new_var = *(next_vert + (((s16)ang_mid + 0x400) & 0xFFF)))) >> 12);
 }

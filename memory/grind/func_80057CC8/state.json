@@ -1,7 +1,7 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 36,
+ "session_count": 37,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -225,23 +225,29 @@
    "floor": 20,
    "modality": "synthesis",
    "headline": "s36 synthesis: floor held at 20 (chassis re-measured; the brief reported it unavailable), the LAST rematerialization mechanism by which one C-level base read could emit the target's two `lw 0x4($s2)` "
+  },
+  {
+   "session": 37,
+   "floor": 16,
+   "modality": "synthesis",
+   "headline": "s37 synthesis: floor 20 -> 16 (108 insns) via a never-permuted 108-insn-regime campaign whose one semantics-preserving find bisects to a single extra SET of the next-neighbour pseudo, which dump-confi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A permuter campaign seeded from the CURRENT 108-insn candidate finds a ban-compliant arrangement scoring below 20 - or, failing to across several fresh-seed windows, supplies the one independent confirmation the ledger still lacks that 20 is the ban-compliant minimum on this chassis.",
-   "mechanism": "The four prior campaigns (s4, s5, s13) all ran against the RETIRED 111-insn / floor-3 chassis and converged on the pointer-alias-holder cheat basin; the 108-insn regime discovered in s31-s34 (single base materialisation, arm-selected byte offset, PLUS-operand flip, unnarrowed offset) is a structurally different search space that has never been permuted. A permuter that cannot beat 20 across several fresh-seed windows is independent evidence for the closed-form foreclosures in s35-E2 and s36-E1; one that does beat it names a lever the structural axis missed.",
-   "next_probe": "Build a fresh per-function workspace on the current candidate using the s4 recipe banked at evidence.md:130 (cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips over src/text1b.c to base_full.c; compile.sh = cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mel | prologue_fix | maspsx | sed align3->2 | multu_pad, awk-extract the .ent/.end block, assemble alone; target.o from asm/funcs/func_80057CC8.s + prelude_r3k). Launch with `python3 tools/permuter_campaign.py launch --func func_80057CC8 --dir tmp/perm_57CC8_s37 --label 108regime`, wait IN-TURN with `wait --dir` windows, harvest with --stop before writing the outcome. Discard on sight any find in the alias-holder / second-materialization families (state.json banned_constructs); only a find OUTSIDE those families is a lever."
+   "hypothesis": "The extra-SET lever generalises: if ONE second def in the final block promoted the next-neighbour pseudo out of local-alloc and bought four points, a different placement or a different promoted pseudo may buy the $s2/$s3 pair as well - specifically, promoting arg0's competitor set so that arg0 is the FIRST global allocno considered rather than the second.",
+   "mechanism": "local-alloc.c seats block-local quantities before global.c runs; the .lreg `in block N` tag is the observable, and s37 proved by intervention that a C-level second SET of a variable in a later basic block removes it. The seat order that follows is global.c:635 allocno_compare over whatever is left. s37 measured only the next_vert pseudo; the other block-local crossing quantities in the .lreg section (e.g. the block-4 pseudos 115/119/129) have never been probed for the same promotion, and each promotion changes which seat is free when arg0 is placed.",
+   "next_probe": "Re-dump with the 16-form (tmp/grind/func_80057CC8/dumps/text1b.lreg, function section from line 15487) and list every pseudo still carrying an `in block N` tag AND `crosses 1 call`. For each, spell a C-level second SET in the final block (the same shape that worked for next_vert - reuse of an existing local, so the family question is identical and already characterised) and measure with `sandbox func_80057CC8 --disable all`. Measure at 108 insns only; anything that adds an instruction has historically cost more than the seat is worth. Bank each as rejected/s38-promote-<pseudo>-score<N>.c."
   },
   {
-   "hypothesis": "The 110-insn narrow-carrier regime (s36 r2/r3) is structurally the closest measured form to the target - it reproduces the arm pair AND puts the vertex base in the target's call-clobbered $a2 - so removing its two-instruction re-widening cost while keeping the arm def would land it at 108-109 insns and could beat 20.",
-   "mechanism": "The carrier's cost is the mode conversion between the narrow arm def and the word-mode address add (`andi`/`sll` for u16, folded sll/sra for s16). If the value carried is already in the shape the address add wants - e.g. a narrow value whose widening is the SAME sign-extension the wrap compare already forces, so combine can merge them - the copy survives at no extra cost, which is exactly the zero-cost slot move s34's y5 exploited.",
-   "next_probe": "Build on r3 (tmp/grind/func_80057CC8/s36/r3.c): (a) order the wrap test so its existing sll16/sra16 pair IS the carrier's widening rather than a second one; (b) carry a narrow PRE-SCALED byte offset instead of the index, so the arm def feeds the address add directly with no shift; (c) both with the s33 PLUS-operand flip retained. Measure at 108-109 insns only - every s35/s36 form that added an insn cost more than the slot was worth - and diff with `python3 tmp/grind/func_80057CC8/s31/norm2.py asm/funcs/func_80057CC8.s <form>.hon.s`."
+   "hypothesis": "The 16-form's variable-reuse construct can clear the frozen SOTN variable-reuse family's prerequisites (documented lever-exhaustion + named GCC-pass mechanism + /* FAKE */ annotation), in which case the ban-compliant story for this function changes from `floor 20, one policy residual` to `floor 16, one policy residual` and the FAKE form becomes the submission baseline for whatever closes the last two seats.",
+   "mechanism": "The three prerequisites are now all in hand except the formal vet: the mechanism is named and dump-verified (local-alloc.c block-local pre-seating; the .lreg block tag disappears), the lever-exhaustion ledger is thirty-seven sessions deep, and s37 measured four distinct annotation-free spellings that do NOT buy the gain (fresh local at two spellings, fresh local initialised at declaration, reuse of a different dead local) - which is exactly the 'no simpler form reaches it' showing the family requires.",
+   "next_probe": "Do NOT submit. Read .claude/rules/defeat-licm-hoist-var-reuse.md and .claude/rules/staged-value-reused-variable.md end to end, check the borrow against bound 2 (next_vert is an EXISTING local, not invented for the purpose, so it is not the excluded quadrant), grep docs/reference/sotn-construct-index.md for a PSX-tagged variable-reuse precedent of the borrow-a-dead-pointer-for-a-table-base shape, and if the family holds, emit `ruling-request` with the exact statement, the four negative control measurements, and the lreg before/after lines. A ruling is cheaper than a FAILed candidate, and this construct will sit under every future candidate for this function."
   },
   {
-   "hypothesis": "The solver's typed REACHABLE/FORECLOSED verdict on this residual remains unavailable purely for tooling reasons, not analytical ones, and would independently confirm or refute s35-E2 + s36-E2.",
-   "mechanism": "tools/ra_solver/inverse_compose.py classify requires func_80057CC8 to be replace_with_asmfile-wired; without it the tool silently degrades to a text-stream comparison against a stale 108-insn target and reports IDENTICAL (measured twice, s35-E5 and re-checked s36).",
-   "next_probe": "Operator/tooling task outside a grind session's allowed surface: wire func_80057CC8 into the solver's replace_with_asmfile list, then run `inverse_compose.py classify text1b func_80057CC8` and `inverse.py`. Do NOT spend grind sessions re-deriving the same arithmetic by hand - it is banked in evidence.md s35-E2 and s36-E1/E2."
+   "hypothesis": "The $s2/$s3 residual is unchanged in kind after s37 and remains the 2026-07-20 refused second source-level materialization - so the function's honest end state is `floor 16 with a decidable policy question`, not a grindable gap.",
+   "mechanism": "Post-call address formation is the only way the next-neighbour value stops crossing the call and stops competing for a callee-save seat; it requires the vertex-table base after the call; rematerialization (s36-E1, both REG_EQUIV gates proven mutually exclusive), caller-saving (s30, CALLER_SAVE_PROFITABLE arithmetic) and a ninth callee-save seat (s33-E5, measures 33) are all closed by measurement.",
+   "next_probe": "This is NOT for a `progress` session to dispose of - the floor moved this session, so the function is grindable and stays active. If a future driver assigns `escalation` modality, the packet writes itself from s35-E1 + s36-E3 + s37: seven of eight callee-save seats now match, the eighth is arithmetically foreclosed on measured allocno inputs, and the only decidable question left is the fidelity one (does the ORIGINAL source's per-call-site vertex-table access constitute duplication, given the target's own bytes reload 0x4($s2) at asm/funcs/func_80057CC8.s:50). Note the auto-reject class: do not word it as a request to sanction a no-precedent family."
   }
  ],
  "judge_constraints": [
