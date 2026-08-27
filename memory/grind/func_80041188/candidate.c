@@ -1,3 +1,38 @@
+/* s36 ADDENDUM (forensics, 2026-08-27). Re-measured at the START of s36 with this exact
+ * body: STILL sandbox --disable all == 1 at 132 build / 132 target insns. The body is
+ * UNCHANGED. It is still the FLOOR, but it is no longer the only interesting form.
+ *
+ * A SECOND, CONSTRUCT-FREE FORM NOW EXISTS AT 2:
+ * memory/grind/func_80041188/alt_P1r_realloop_pa4free_honest_s36.c = s35's W4c (the
+ * REAL-LOOP chassis carrying target's own honest block-2 `addiu $s3,$s7,0x20`) with the
+ * `s32 *pa4 = a4;` param-alias local DELETED. It measures sandbox 2 at 132/132 with
+ * ALL-TARGET callee-saved seats and NOT ONE CONSTRUCT -- no FAKE, no wrap, no dead store,
+ * no alias, no reuse, no split increment. Previous best honest form was W4 = 3.
+ * Deleting the alias merges pa4's references onto the REG_EQUIV stack parameter, whose
+ * live length local-alloc.c:1064 doubles; loop-depth weighting (flow.c:2081) then puts a4
+ * at 9 refs / 188, across floor_log2's 8-step, so out2 2439 > a4 1436 > a3 1010 -- exactly
+ * target's order. s30's kill of the pa4-free family was GOTO-chassis-specific and must not
+ * be cited against the real-loop chassis.
+ *
+ * P1r's ENTIRE residual is two instructions differing in ONE REGISTER NAME:
+ * `addiu $t0,$zero,2` where target has `addiu $v0,$zero,0x2` (asm/funcs/func_80041188.s:65),
+ * same position, same order. loop.c move_movables hoists loop1's const-2 temp to block 0
+ * (red.i.loop: "Insn 152: regno 121 (life 1), move-insn savings 1  moved to 312"); hoisted
+ * it crosses 7 calls with every callee-saved seat already taken, so reload rematerialises
+ * it from its REG_EQUIV at the use -- correct position, but into $t0, the first hard reg
+ * not fixed and not in forbidden_regs (MIPS has no REG_ALLOC_ORDER; $v0/$v1/$a0-$a3 are
+ * all used by the calls). s36 closed that hoist on all four dimensions: threshold
+ * (61 >= 48 always, loop.c:1631 + loop.c:532 + mips.h:1188), spelling (five forms, all 2),
+ * gates (2)+(3) (form J = 37), and gate (1) (target's loop1 has no internal label or
+ * branch, so maybe_never is provably 0). See evidence.md E-s36-2 .. E-s36-7.
+ *
+ * NET: the goto chassis is bounded at 1 (s35, closed form) and the real-loop chassis at 2
+ * (s36, closed form), for UNRELATED reasons. Neither is a respelling of the other, and a
+ * third chassis is excluded by neither proof. The next direction is the pseudo SET, and
+ * specifically the SEMANTICS of the 0x68-byte record's halfword at +6 -- if that value is
+ * derived from something loop1 already computes, it is not loop-invariant and the hoist
+ * never happens. See hypotheses.md's s36 frontier item 1.
+ */
 /* s35 ADDENDUM (solver, 2026-08-27). Re-measured at the START of s35 with this exact
  * body: STILL sandbox --disable all == 1 at 132 build / 132 target insns (HEAD = 27,
  * V15a = 15, W4 = 3, Z1 = 13). The body is UNCHANGED. It remains the floor -- but s35

@@ -5022,3 +5022,165 @@ s7, and it is where the next sessions should spend their measurements.
 - [s35] E-s35-8: on the real-loop chassis the same inequality is seven insns wide instead of a factor of two. W4c (W4 + target's honest block-2 addiu) = 11 at 132/132 with out2 5 refs / live 41 / 2439 versus pa4 9 refs / live 94 / 2872; W4 itself holds all-target seats at 3 with out2 6/46/2608 versus pa4 8/94/2553. Three independent one-step closures: L(out2) <= 34 at 5 refs (2941), out2 at 6 refs and live 41 (2926), or pa4 down from 9 to 7 references (1489) -- and 7 is exactly target's hosted pa4 count.
 
 - [s35] E-s35-7 (tooling, applies to every solver session on every function): inverse_compose.py classify does not build anything; it reads tmp/inverse_work/<stem>.{hon,tgt}.s which mkasm_honest.sh derives from whatever is in src/, guarded only by a timestamp comparison between the two files. It reported a verdict off month-old artifacts when nothing was regenerated, and reported 'IDENTICAL' for form W4 (which measures 3) when regenerated with W4 applied, because the target half was rebuilt from W4. Correct procedure and the captured true target stream are banked (tmp/grind/func_80041188/s35/TRUE.tgt.s).
+
+## s36 (forensics, 2026-08-27) — the real-loop chassis reaches ALL-TARGET SEATS with ZERO constructs at sandbox 2, and its whole residual is one closed-form loop.c hoist
+
+### E-s36-1 — CHASSIS, re-measured first-hand this session
+`memory/grind/func_80041188/candidate.c` (body from its line 413) applied to
+`src/text1a_pre.c`: `sandbox func_80041188 --disable all` = **1 at 132 build / 132 target
+insns**, `rules_dropped 16`, `cheat_asm_stripped 0`. Unchanged from s33/s34/s35. s35's
+`W4c` re-measures **11** at 132/132, reproducing E-s35-8 exactly. `src/text1a_pre.c` was
+restored to HEAD at the end of the session; no build-pipeline file was touched, nothing
+committed, no permuter campaign launched.
+(Method note for the next session: `apply.py` splices from the first line beginning
+`void func_80041188(` — feeding it `candidate.c` WHOLE inserts the 412-line comment
+banner into `src/` and the sandbox returns `"score": null`. Feed it `sed -n '413,$p'`.)
+
+### E-s36-2 — THE RESULT OF THE SESSION: form P1r = W4c with the `pa4` alias DELETED = sandbox **2** at 132/132, ALL-TARGET SEATS, and NOT ONE CONSTRUCT
+`memory/grind/func_80041188/alt_P1r_realloop_pa4free_honest_s36.c`
+(`tmp/grind/func_80041188/s36/P1r.c`). It is s35's W4c — the REAL-LOOP chassis carrying
+target's own honest block-2 `out3 = (s32 *)(((u8 *)a4) + 0x20);` — with the `s32 *pa4 = a4;`
+param-alias local removed and the fifth parameter used directly at every site. W4c is 11;
+P1r is **2**. No FAKE, no wrap, no dead store, no alias, no variable reuse, no split
+increment: **the best HONEST form ever recorded for this function** (previous honest bests:
+W4 = 3 at s19, Q1 = 7 at s21 and Q1 carried a block-0 wrap that is now Judge-banned).
+
+Measured allocation (`tmp/grind/func_80041188/s36/P1r/fr_86.err`), against target's seats:
+
+| pseudo | refs / live / pri | seat | target |
+|---|---|---|---|
+| 85 `out2` | 5 / 41 / **2439** | `$s6` | `$s6` OK |
+| 76 `a4`   | 9 / 188 / **1436** | `$s7` | `$s7` OK |
+| 75 `a3`   | 5 / 99 / 1010 | `$fp` | `$fp` OK |
+| 86 `out3` | 3 / 47 / 638 | `$s3` | `$s3` OK |
+| 78 `tbl`  | 7 / 47 / 2978 | `$s5` | `$s5` OK |
+| 77 `i`    | 11 / 97 / 3402 | `$s4` | `$s4` OK |
+| 89 `stptr2` | 6 / 48 / 2500 | `$s0` | `$s0` OK |
+| 139 (giv) | 9 / 40 / 6750 | `$s3` | `$s3` OK |
+
+**Why deleting `pa4` INVERTS s30's kill instead of repeating it.** s30 proved the pa4-free
+family dead ON THE GOTO CHASSIS: with `local-alloc.c:1064` doubling the stack parameter's
+`reg_live_length` (REG_EQUIV), a4 sits at 7 refs / 188 = 736 and a3 at 4 / 99 = 808, so a3
+outranks a4 unconditionally. On the REAL-LOOP chassis loop-depth weighting
+(`flow.c:2081`, `+= loop_depth`, depth 2 inside note-marked loop1) doubles a4's TWO loop1
+references, taking it from 7 to **9** — which crosses `floor_log2`'s 8-step from 2 to 3 —
+so pri(a4) = 3*9/188*10000 = 1436 and a4 now outranks a3 (1010) by 40%, while out2 keeps
+2439 and outranks both. The two chassis are not variants of one another: the same edit is
+fatal on one and decisive on the other.
+
+### E-s36-3 — the reference-count arithmetic of this function is now CLOSED FORM
+`reg_n_refs` here is EXACTLY: weight **2** for every occurrence inside note-marked loop1,
+weight **1** everywhere else (block 0, block 2, and the `goto loop2` loop, which carries no
+loop notes). Verified against every pseudo in W4/W4c/P1r; e.g. W4c's `pa4` = 9 =
+def(1) + block-0 `out2 = pa4+0x20`(1) + loop1 two uses(2+2) + block-2 `out3 = pa4+0x20`(1)
++ loop2 two uses(1+1), and W4's `pa4` = 8 is the same minus the block-2 use, and W4's `out2`
+= 6 is P1r's 5 plus the block-2 `out3 = out2` use. `flow.c:415-444` initialises `depth = 1`
+and increments on NOTE_INSN_LOOP_BEG. A future session can now COMPUTE any candidate's
+allocation table from its source text before compiling it.
+
+### E-s36-4 — P1r's entire residual is ONE mechanism, named end-to-end from the dumps
+The two diffs are `addiu $t0,$zero,2` / `sh $t0,0x6($s3)` against target's
+`addiu $v0,$zero,0x2` / `sh $v0,0x6($s3)` (`asm/funcs/func_80041188.s:65-66`) — same
+position, same order, ONE register name. The chain, read from the dumps rather than
+guessed:
+1. `*((s16 *)(ents + i * 0x68 + 6)) = 2;` expands to a HImode temp (MIPS cannot store an
+   immediate). At `.cse` it is `(insn 152 (set (reg:HI 121) (const_int 2)))` inside loop1.
+2. `loop.c` `move_movables` hoists it. `red.i.loop` prints it verbatim:
+   `Loop from 39 to 169: 48 real insns.` / `Insn 152: regno 121 (life 1), move-insn
+   savings 1  moved to 312`. At `.loop`/`.flow`/`.cse2` the insn is uid 312, in block 0.
+3. Hoisted, pseudo 121 is live 92 insns across 7 calls, so it needs a callee-saved seat.
+   Every one of `$s0..$s7,$fp` is already held by a target-hosted pseudo (table above), so
+   `global_alloc` leaves it unallocated (`red.i.greg`: `;; Need 1 reg of class GR_REGS
+   (for insn 312).`).
+4. It carries `REG_EQUIV (const_int 2)`, so reload does not spill-and-reload — it
+   REMATERIALISES the constant at the use, which is why the POSITION is still target's.
+   `red.i.jump2` shows `(insn:HI 154 (set (reg:HI 8 t0) (const_int 2)))`.
+5. The register is `$t0` because MIPS defines no `REG_ALLOC_ORDER`, so reload walks hard
+   regs 0,1,2,...; `$zero`/`$at` are fixed and `$v0,$v1,$a0-$a3` are all in
+   `forbidden_regs` (explicitly used by this function's five calls), making `$t0` the
+   first legal reload register. Target's `$v0` is what LOCAL-ALLOC gives an UNHOISTED,
+   block-local, call-free temp — which is exactly what loop2 already produces here
+   (`sh $v0,0x6($s0)`, `asm/funcs/func_80041188.s:119`) and matches byte for byte, because
+   loop2 is a `goto` loop and carries no loop notes for `loop.c` to act on.
+
+### E-s36-5 — the hoist is UNCONDITIONAL, in closed form, for any loop1 this function can have
+`loop.c:1631` moves the movable when
+`already_moved[regno] || (threshold * savings * m->lifetime) >= insn_count || ...`, with
+`threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (`loop.c:532`). loop1 has
+calls, and `mips.h:1188` `FIXED_REGISTERS` marks 8 of the 68 hard registers fixed, so
+**threshold = 1 * (1 + 60) = 61**. `savings = n_times_used >= 1` and `m->lifetime >= 1`
+(the dump prints `life 1`, `savings 1`), and `insn_count` is loop1's **48** real insns
+(printed by the same dump line). `61 * 1 * 1 = 61 >= 48` holds for EVERY spelling, and a
+larger `savings` or `lifetime` only makes it hold harder. The hoist could only be avoided
+by a loop1 of more than 61 real insns; target's loop1 is 48. **The 2-diff residual is
+therefore a structural property of ANY note-marked loop1 on this function, not of P1r's
+spelling** — and note-marked loop1 is exactly what supplies the loop-depth weighting that
+makes the seats correct in the first place. The real-loop chassis is bounded at 2.
+
+### E-s36-6 — the two escape routes out of E-s36-5 are measured dead
+*Spelling (five forms).* The const-2 statement was respelled as (A) a block-0
+`s16 two = 2;` user variable, (C) an `s16 two;` assigned immediately before the store
+inside loop1, (E) a `u16` store, (F) reuse of `offset` (a local already SET TWICE in
+loop1, aimed at `n_times_set != 1`), and (G) an `s32` holder truncated at the store.
+**All five measure sandbox 2 at 132 insns, bit-identical to the base.** The expander
+creates a fresh single-set HImode temp for the `sh` regardless of what the C says, so
+`n_times_set` for the moved pseudo is 1 in every case. Banked
+`rejected/const2-licm-hoist-unconditional-five-spellings-all-2.c`.
+*Breaking loop.c's movable GATE (`loop.c:695-701`) instead of its threshold.* The gate
+admits a movable if ANY of (1) `! maybe_never && ! loop_reg_used_before_p`,
+(2) `! REG_USERVAR_P && ! REG_LOOP_TEST_P`, (3) `reg_in_basic_block_p`. Form J made the
+holder a single `s16 two;` user variable written 2 in loop1 and 1 in loop2, which defeats
+(2) and (3) at once — but (1) still holds for a do-while body, and the now long-lived
+shared holder competes for a callee-saved seat: **sandbox 37** at 132 insns, the whole
+allocation permuted. Banked
+`rejected/shared-const-holder-both-loops-callee-saved-permutation-37.c`. Defeating (1)
+as well requires the holder to be READ before it is written inside loop1, which needs a
+block-0 initialising `addiu` — a 133rd instruction.
+
+- [s36] E-s36-1: chassis re-measured first-hand — candidate.c = sandbox 1 at 132/132 (rules_dropped 16, cheat_asm_stripped 0); W4c = 11; P1r = 2. src/text1a_pre.c restored to HEAD; nothing committed.
+- [s36] E-s36-1 (method): apply.py splices from the first line beginning `void func_80041188(`, so feeding it candidate.c WHOLE injects the 412-line comment banner into src/ and the sandbox returns "score": null. Feed it `sed -n '413,$p' candidate.c`.
+- [s36] E-s36-2: form P1r (= s35's W4c with the `s32 *pa4 = a4;` alias deleted, a4 used directly) measures sandbox 2 at 132 build / 132 target insns with ALL-TARGET callee-saved seats and ZERO constructs — the best honest form ever recorded here (prior honest bests W4 = 3, Q1 = 7-with-a-banned-wrap). out2 5/41/2439 -> $s6, a4 9/188/1436 -> $s7, a3 5/99/1010 -> $fp, out3 3/47/638 -> $s3, tbl 7/47/2978 -> $s5, i 11/97/3402 -> $s4, stptr2 6/48/2500 -> $s0.
+- [s36] E-s36-2 (mechanism): s30's pa4-free kill is chassis-specific, not general. Deleting the alias merges pa4's refs onto the REG_EQUIV stack parameter whose live length local-alloc.c:1064 doubles (188). On the GOTO chassis that leaves a4 at 7 refs = 736 under a3's 808 (s30's kill). On the REAL-LOOP chassis flow.c:2081's loop-depth weighting doubles a4's two loop1 references, taking it to 9 refs, crossing floor_log2's 8-step, and pri(a4) = 1436 clears a3's 1010 while out2's 2439 clears both.
+- [s36] E-s36-3: the reference-count law for this function is closed form — weight 2 for occurrences inside note-marked loop1, weight 1 in block 0, block 2 and the note-free `goto loop2` loop (flow.c:415-444 initialises depth = 1, flow.c:2081 adds loop_depth). Verified against every pseudo of W4, W4c and P1r; any candidate's allocation table can now be computed from source text before compiling.
+- [s36] E-s36-4: P1r's whole residual is `addiu $t0,$zero,2` vs target's `addiu $v0,$zero,0x2` at the SAME position (asm/funcs/func_80041188.s:65-66). Chain read from dumps: expander makes a HImode temp -> loop.c move_movables hoists it (red.i.loop: "Insn 152: regno 121 (life 1), move-insn savings 1  moved to 312") -> hoisted it lives 92 insns across 7 calls and every callee-saved reg is taken, so global_alloc leaves it unallocated -> REG_EQUIV makes reload rematerialise it AT THE USE (correct position) -> the reload register is $t0 because MIPS has no REG_ALLOC_ORDER and $v0/$v1/$a0-$a3 are all in forbidden_regs. Target's $v0 is what local-alloc gives an unhoisted block-local temp, exactly as our note-free loop2 already produces and matches.
+- [s36] E-s36-5: the hoist is unconditional. loop.c:1631 moves when threshold*savings*lifetime >= insn_count; threshold = (loop_has_call ? 1 : 2)*(1 + n_non_fixed_regs) = 1*(1+60) = 61 (mips.h:1188 fixes 8 of 68 regs), savings >= 1, lifetime >= 1, insn_count = 48 real insns in loop1 (both numbers printed by the loop dump line). 61 >= 48 always. Only a loop1 of more than 61 real insns escapes; target's is 48. The real-loop chassis is therefore BOUNDED AT 2 for every spelling.
+- [s36] E-s36-6: both escapes measured dead. Five respellings of the const-2 store (block-0 s16 holder, in-loop1 s16 holder, u16 store, reuse of the twice-set `offset`, s32 holder) all measure 2 at 132 insns bit-identically, because the expander always makes a fresh single-set HImode temp so n_times_set == 1 regardless of the C. Form J (one `s16 two;` shared by both loops, defeating loop.c's gates (2) REG_USERVAR_P and (3) reg_in_basic_block_p simultaneously) measures 37 — the shared holder competes for a callee-saved seat. Defeating gate (1) too needs a read-before-write inside loop1, i.e. a 133rd block-0 insn.
+
+### E-s36-7 — gate (1) closes too: the real-loop chassis is bounded at 2 on ALL FOUR dimensions
+`loop.c:915-930` sets `maybe_never = 1` on ANY `CODE_LABEL` or `JUMP_INSN` inside the loop
+(except the loop-top simplejump). `asm/funcs/func_80041188.s:28-75` — target's whole loop1 —
+contains exactly one label (`.L800411F0`, its own head) and one branch
+(`bnez $v0, .L800411F0`, the back edge at the very end, AFTER the const-2 store). So
+`maybe_never` is provably 0 at the store for any C that reproduces target's loop1, and
+`loop_reg_used_before_p` is false unless the holder is READ before it is WRITTEN inside
+loop1, which needs a block-0 initialising `addiu` (a 133rd instruction). Gate (1) therefore
+admits the movable for every byte-legal shape, and together with E-s36-5 (threshold),
+E-s36-6 (spelling; gates (2)+(3)) the hoist is closed on all four dimensions.
+**BOTH enumerated chassis are now bounded above zero for independent, fully-named reasons:
+the goto chassis at 1 (E-s35-5, closed form) and the real-loop chassis at 2 (E-s36-5/6/7,
+closed form).** They are not respellings of each other; a third chassis is not excluded by
+either proof.
+
+- [s36] E-s36-7: gate (1) closes as well. loop.c:915-930 sets maybe_never only on a CODE_LABEL or JUMP_INSN inside the loop, and target's loop1 (asm/funcs/func_80041188.s:28-75) has exactly one label (its own head) and one branch (the back edge, after the const-2 store) -- no internal control flow at all. The other horn (holder read before written inside loop1) needs a block-0 initialising addiu, a 133rd insn. With E-s36-5 and E-s36-6 this closes the hoist on all four dimensions: the real-loop chassis is bounded at sandbox 2, exactly as the goto chassis is bounded at 1, for unrelated reasons.
+
+- [s36] CHASSIS re-measured first-hand: memory/grind/func_80041188/candidate.c (body from its line 413) = sandbox --disable all 1 at 132 build / 132 target insns, rules_dropped 16, cheat_asm_stripped 0. s35's W4c re-measures 11 at 132/132, reproducing E-s35-8 exactly. src/text1a_pre.c restored to HEAD at the end of the session; no build-pipeline file touched, nothing committed, no permuter campaign launched.
+
+- [s36] METHOD WARNING for the next session: tmp/grind/func_80041188/s3*/apply.py splices from the first line beginning 'void func_80041188(', so feeding it candidate.c WHOLE injects its 412-line comment banner into src/ and the sandbox returns "score": null. Feed it `sed -n '413,$p' candidate.c`.
+
+- [s36] Form P1r = s35's W4c with the `s32 *pa4 = a4;` param-alias local deleted and the fifth parameter used directly = sandbox 2 at 132 build / 132 target insns, ALL-TARGET callee-saved seats, ZERO constructs. Best honest form ever recorded for this function (prior honest bests: W4 = 3 at s19; Q1 = 7 at s21 and Q1 carried a now-banned block-0 wrap). Banked memory/grind/func_80041188/alt_P1r_realloop_pa4free_honest_s36.c.
+
+- [s36] P1r's measured allocation, every seat target's: out2 5 refs/41 live/pri 2439 -> $s6; a4 9/188/1436 -> $s7; a3 5/99/1010 -> $fp; out3 3/47/638 -> $s3; tbl 7/47/2978 -> $s5; i 11/97/3402 -> $s4; stptr2 6/48/2500 -> $s0; loop.c giv 9/40/6750 -> $s3.
+
+- [s36] The reference-count law for this function is now CLOSED FORM: weight 2 for every occurrence inside note-marked loop1, weight 1 in block 0, in block 2, and inside the note-free `goto loop2` loop (flow.c:2081 `reg_n_refs[regno] += loop_depth`, with depth initialised to 1 at flow.c:432 and incremented on NOTE_INSN_LOOP_BEG). Verified against every pseudo of W4, W4c and P1r -- e.g. W4c's pa4 = 9 = def(1) + block-0 out2 def(1) + loop1 two uses(2+2) + block-2 out3 def(1) + loop2 two uses(1+1). Any candidate's allocation table can now be COMPUTED from source text before it is compiled.
+
+- [s36] s30's kill of the pa4-free family is GOTO-chassis-specific: its inequality assumes a4 at SEVEN references. Loop-depth weighting takes a4 to NINE on the real-loop chassis, crossing floor_log2's 7->8 step, and pri(a4) = 1436 then clears a3's 1010 while out2's 2439 clears both. The same edit is fatal on one chassis and decisive on the other.
+
+- [s36] P1r's entire residual is `addiu $t0,$zero,2` / `sh $t0,0x6($s3)` against target's `addiu $v0,$zero,0x2` / `sh $v0,0x6($s3)` (asm/funcs/func_80041188.s:65-66) -- same position, same order, one register name. Chain read from dumps, not guessed: expander makes a HImode temp -> loop.c move_movables hoists it (red.i.loop: 'Insn 152: regno 121 (life 1), move-insn savings 1  moved to 312') -> hoisted it lives 92 insns across 7 calls with every callee-saved seat taken, so global_alloc leaves it unallocated -> REG_EQUIV makes reload rematerialise it AT THE USE (correct position) -> the reload register is $t0 because MIPS defines no REG_ALLOC_ORDER and $v0/$v1/$a0-$a3 are all in forbidden_regs.
+
+- [s36] The hoist is UNCONDITIONAL in closed form: loop.c:1631 moves when threshold*savings*lifetime >= insn_count; threshold = (loop_has_call ? 1 : 2)*(1 + n_non_fixed_regs) = 1*(1+60) = 61 (mips.h:1188 fixes 8 of 68 hard regs), savings >= 1, lifetime >= 1, insn_count = 48 real insns in loop1 (both numbers printed by the loop dump line itself). 61 >= 48 always. Only a loop1 of more than 61 real insns escapes; target's is 48.
+
+- [s36] Escape routes measured/derived dead on all four dimensions: threshold (above); spelling (five forms A/C/E/F/G, all sandbox 2 at 132 insns, bit-identical -- the expander always builds a fresh single-set HImode temp); gates (2)+(3) (form J, one `s16 two;` shared by both loops, = sandbox 37 because the long-lived holder competes for a callee-saved seat); gate (1) (target's loop1 has exactly one label -- its own head -- and one branch -- the back edge after the store -- so maybe_never is provably 0, and the read-before-write horn needs a 133rd block-0 insn).
+
+- [s36] NET STATE: both enumerated chassis are now bounded above zero for INDEPENDENT, fully-named reasons -- the goto chassis at 1 (E-s35-5: pri(out2) > pri(pa4) unsatisfiable by a factor of two at target-hosted reference counts) and the real-loop chassis at 2 (E-s36-5/6/7: loop.c hoists a constant out of a 48-insn loop against a threshold of 61). Neither is a respelling of the other and a third chassis is excluded by neither proof.
+
+- [s36] The owner's 2026-08-27 continue-directive ('build the V15a + honest out2-lift candidate') is now answered from the other side: the honest out2 lift is unreachable on V15a/goto (s35 closed every delivery surface), but the real-loop chassis reaches target's seats WITHOUT any lift at all, because loop-depth weighting supplies the ranking that the lift was meant to buy -- and it does so with no construct, so no FAKE annotation is required anywhere in P1r.

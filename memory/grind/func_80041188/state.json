@@ -1,8 +1,8 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 35,
- "current_modality": "solver",
+ "session_count": 36,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -219,23 +219,29 @@
    "floor": 1,
    "modality": "solver",
    "headline": "All three s34 frontier items closed (post-greg deletions, combine cancellation, CODE_LABEL re-price); the goto chassis is proven permanently impossible in closed form, and the real-loop chassis W4c is"
+  },
+  {
+   "session": 36,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Form P1r (real-loop chassis, pa4 alias deleted) reaches ALL-TARGET seats at sandbox 2 with ZERO constructs -- the best honest form ever recorded here -- and its whole residual is closed in four dimens"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "PRIMARY. On the real-loop chassis, form W4c's only structural defect is pri(out2) = 2439 against pri(pa4) = 2872, and any ONE of three single steps closes it: L(out2) from 41 down to <= 34; out2 from 5 to 6 references at live 41; or pa4 from 9 references down to SEVEN -- which is exactly what target's own bytes host.",
-   "mechanism": "loop.c strength-reduces the record walker into a giv (pseudo 140, 9 refs / live 40 / 6750) on a note-marked loop1, rewriting every other pseudo's reference count and live length, so the goto chassis's closed-form wall does not apply. W4's own table proves the target seat assignment is reachable on this chassis (all-target seats at sandbox 3); the only question is reaching it with target's block-2 insn instead of `out3 = out2;`.",
-   "next_probe": "Route (iii) FIRST, because it is a counting question with a target-hosted answer: dump red.i.flow for W4c (tmp/grind/func_80041188/s35/dump.sh W4c) and enumerate all NINE pa4 occurrences, then compare against target's seven ($s7 at asm/funcs/func_80041188.s lines 23, 39, 60, 87, 113 plus its two loop2 argument copies). The two surplus occurrences are source statements mentioning pa4 where target's source did not -- find and re-express them. Then route (i): sweep out2's definition position relative to the preheader loop.c creates, an insertion point that never existed on the goto chassis. Harness: s35/run.ps1 <TAG>, s35/dump.sh <TAG>, s35/fr.sh <TAG> 86 77."
+   "hypothesis": "The next chassis question is the pseudo SET, and specifically the SEMANTICS of the 0x68-byte record's halfword at +6: if that value is genuinely derived from a quantity loop1 already computes, it is not loop-invariant, loop.c never hoists it, and P1r goes to 0.",
+   "mechanism": "Everything in P1r matches target except two instructions whose only difference is $t0 vs $v0, and that difference exists solely because loop.c moved one insn out of loop1. The hoist is closed on all four of its codegen dimensions, so the only remaining lever is making the stored value non-invariant HONESTLY. E-s34-2's callee-layout census and s35's semantic enumeration both stopped at loop1's POINTER arithmetic; neither enumerated the record's own field semantics.",
+   "next_probe": "Read the CONSUMERS of the 0x68-byte record's halfword at +6 (grep the tree for 0x68 strides paired with a +6 halfword read; note func_800523E0 writes 0x0..0xA of its two MATRIX arguments, so the +6 field belongs to the record, not the matrices) and identify what it holds -- a bone/blend-source count, a type tag, a frame index. loop1 writes 2 there and loop2 writes 1; if that value is a count of something loop1 already computes, write it as that expression and re-measure P1r. This is a SEMANTIC probe, not a codegen probe, and it is the only untried direction on the best honest form."
   },
   {
-   "hypothesis": "W4's other two diffs are loop.c hoisting the loop-invariant `2` out of loop1 and reload rematerialising it into $t0, where target emits addiu $v0,$zero,0x2 INSIDE loop1. If the primary frontier succeeds this becomes the entire residual, so it should be priced in parallel.",
-   "mechanism": "loop.c's scan_loop moves an insn whose source is a loop-invariant constant into the preheader (loop.c:686-700, loop.c:1631). s19 killed this axis by derivation, but that was when the real-loop chassis was a curiosity; s35 makes it the surviving family, so the axis is load-bearing now and the derivation should be re-tested by measurement.",
-   "next_probe": "Enumerate the honest source shapes in which the stored halfword is NOT a loop invariant -- the 2 shares a value with something already live per iteration, or the store's RHS is a sub-expression of the per-iteration record write -- and measure each on W4, reading the insn count and the $v0/$t0 choice rather than only the score. Ordinary C restructuring; no family claim needed."
+   "hypothesis": "Any future escalation packet for this function must be redrafted around P1r; the 'floor 1 with a sanctioned FAKE' framing used by the 2026-08-25 and 2026-08-27 auto-filed packets is now stale.",
+   "mechanism": "The floor is still 1 (candidate.c, goto chassis, one owner-allowed FAKE split increment, residual = block-2 `move $s3,$s6` vs `addiu $s3,$s7,0x20`). But the best CONSTRUCT-FREE form is now 2 with all-target seats and target's block-2 addiu, and its residual is a register name on two instructions caused by a single named compiler decision with a printed threshold. That is a materially different decision surface for the owner.",
+   "next_probe": "Do not file a packet describing this residual as 'floor 1 with a FAKE'. If one is filed, its decidable question is about P1r: a construct-free 132/132 form with all-target seats whose only defect is that GCC hoisted one constant out of a loop that was 13 real instructions too short to keep it. Note this session is NOT in escalation modality and the function remains grindable, so no packet was filed."
   },
   {
-   "hypothesis": "TOOLING, and it invalidates any solver-modality citation of classify that did not follow the corrected procedure: inverse_compose.py classify can compare a candidate against itself.",
-   "mechanism": "classify reads tmp/inverse_work/<stem>.{hon,tgt}.s, both built by mkasm_honest.sh from current src/, with only a mutual timestamp guard -- so a candidate applied to src/ poisons the target half, and no regeneration at all yields a month-old verdict.",
-   "next_probe": "Adopt the procedure verbatim: run mkasm_honest.sh with src/ at HEAD, copy tmp/inverse_work/<stem>.tgt.s aside as the true target stream, apply the candidate, re-run mkasm_honest.sh, restore and touch the saved .tgt.s, then classify. tmp/grind/func_80041188/s35/TRUE.tgt.s is the captured true stream for text1a_pre. Worth raising with the owner as a one-line fix in the tool (rebuild .tgt.s from HEAD, or refuse to run on a dirty src/), since it silently produces confident fiction for every function, not just this one."
+   "hypothesis": "The closed-form reference-count law should be used to PRE-SCREEN chassis proposals rather than to explore them.",
+   "mechanism": "nrefs = 2 x (occurrences inside note-marked loop1) + 1 x (occurrences elsewhere) (flow.c:2081 + flow.c:432); reg_live_length is doubled for REG_EQUIV pseudos, i.e. the stack parameter only (local-alloc.c:1064); pri = floor_log2(nrefs) * nrefs / livelen * 10000. Verified exactly against W4, W4c and P1r.",
+   "next_probe": "Write the predicted allocation table for any new chassis BEFORE compiling it, and do not compile a proposal whose predicted table fails to reproduce out2 > a4 > a3. Harness: tmp/grind/func_80041188/s36/run.ps1 <TAG> (sandbox), dump.sh <TAG> (full cc1 -da dumps), fr.sh <TAG> 85 (ALLOCDBG/FINDREGDBG), odiff.py (objdump diff vs asm/funcs/func_80041188.s)."
   }
  ],
  "judge_constraints": [
