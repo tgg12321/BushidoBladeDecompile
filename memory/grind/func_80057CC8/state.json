@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 29,
- "current_modality": "escalation",
+ "session_count": 30,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -183,13 +183,29 @@
    "floor": 30,
    "modality": "escalation",
    "headline": "s29 escalation: both endgame-lock gates FAIL (scan_hand_coded LOW 1/8; zero SOTN-master precedent for duplicated base-address materialization) AND the decisive new measurement shows the only ban-compl"
+  },
+  {
+   "session": 30,
+   "floor": 30,
+   "modality": "forensics",
+   "headline": "s30b forensics: the ledger's live frontier (a single-source-materialization form emitting the target's two base loads) is KILLED by mechanism - GCC 2.7.2's only rematerialization path (REG_EQUIV/reg_e"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A pure-C form exists that emits exactly 111 instructions WITHOUT any second source-level materialization of the vertex-table base pointer.",
-   "mechanism": "Would require GCC to reload `*(s16 **)(arg0 + 4)` after the first ratan2 call from a source that names the base exactly once \u2014 i.e. some construct that makes the cached value dead across the call without the programmer writing a second read. No such construct has been identified in 29 sessions and the target's own two-load shape argues against one existing.",
-   "next_probe": "Only reopen on a concrete candidate form measured at build_insns == 111 with a single source-level base materialization. Do NOT reopen on a form that merely lowers the score while a second materialization is present \u2014 that is the refused family regardless of spelling (two locals, inline re-dereference, local reassignment, or no-local-with-member-access-at-each-site are all the same construct)."
+   "hypothesis": "Some ban-compliant single-read arrangement inside the newly-found 104-insn regime (base def in the tail block) reaches 111 instructions with a target-shaped body - the whole ledger to date lived in the 112 regime and has never explored this one.",
+   "mechanism": "Placing the base def below the last branch flips reg_basic_block to a single block, which removes the 9th callee-save AND changes how the centre reads are coded, moving the count from 112 to 104. Some intermediate arrangement (sinking only the base read while the centre reads stay early off the SAME pseudo, or reordering the two index if-blocks so the def naturally lands in the tail block) may land the count on 111 with the target's ordering.",
+   "next_probe": "Diff the emitted text of rejected/s30b-sunk-base-single-block-regequiv-score59.c against asm/funcs/func_80057CC8.s block by block to name which 7 instructions the 104-insn regime drops, then re-introduce exactly those while keeping the single-block base def."
+  },
+  {
+   "hypothesis": "The +1 instruction of formB (112 vs 111) can be paid back elsewhere by reducing the set of values live across the first ratan2 call, so the base's 9th callee-save is affordable inside a 111-insn body.",
+   "mechanism": "The target keeps 8 callee-saves live across the calls ($s0-$s7); formB needs a 9th for the cached base, costing sw+move+lw where the target pays lw+lw. If one currently-cached value can be recomputed after the call more cheaply than it is saved (e.g. the centre coordinates or one of their sign-extended twins), the frame drops a register and the count drops with it.",
+   "next_probe": "Enumerate the 8 values the target holds across the calls from asm/funcs/func_80057CC8.s ($s0-$s7 at :40-:43, :17-:21, :23, :29), then measure formB variants that recompute one of them after the call instead of caching it."
+  },
+  {
+   "hypothesis": "Nothing further is reachable in the single-materialization space (already proven), so the residual is purely the policy question already escalated and REFUSED on 2026-07-20 and resolved by standing ruling 2026-07-27.",
+   "mechanism": "Every form measured at score <= 6 requires two or three source-level materializations of the base - the family the owner refused and layer-1 FAILed four times. This session's mechanism proof upgrades that from 'no spelling found in 29 sessions' to 'the compiler has no mechanism'.",
+   "next_probe": "Do NOT re-file an escalation packet: a YES there would lower a standard, which is the pre-decided-NO auto-reject class (owner ruling 2026-08-24). Keep the item active and spend sessions on the two shape axes above."
   }
  ],
  "judge_constraints": [

@@ -843,3 +843,98 @@ Per user 2026-06-22: keep working it; not permanently parked.
   tmp/grind/func_80057CC8/s30/classify_final_rerun.txt). Solver operational rule (1)
   (classify the residual before searching a layer) is satisfied vacuously: there is no
   residual to classify.
+
+
+## s30b (2026-08-27) — forensics — THE SECOND BASE LOAD IS NOT REACHABLE FROM ONE SOURCE READ (mechanism proof)
+
+Chassis re-measured from scratch this session: `sandbox func_80057CC8 --disable all`
+on the s29 ban-compliant baseline (formB, one source-level read of the vertex-table
+base) = **score 30, target_insns 111, build_insns 112, rules_dropped 0**. Matches the
+ledger floor; the chassis has not moved.
+
+### The question this session settled
+The live frontier since s28 was hypothesis #1: "a pure-C form exists that emits exactly
+111 instructions WITHOUT any second source-level materialization of the vertex-table
+base pointer." 29 sessions had searched for such a form by spelling. s30b attacked it
+from the compiler side instead: enumerate the mechanisms by which GCC 2.7.2 can emit a
+SECOND `lw ...,0x4($s2)` from a SINGLE RTL load, then test each one directly.
+
+### What the target's own asm forces
+`asm/funcs/func_80057CC8.s:17` `lw $a2,0x4($s2)` — the base lands in **$a2, a
+call-clobbered register** — is used at :19 (centre vertex address) and again at :39
+(prev-neighbour address), and is dead before the `jal ratan2` at :47. The post-call
+value arrives via a fresh `lw $a0,0x4($s2)` at :50. A single pseudo whose uses straddle
+a call *crosses* that call by definition and can therefore never sit in $a2 without
+caller-saving; so the target's two loads are two distinct RTL values. Caller-saving is
+additionally excluded here by arithmetic: global.c:1179 only retries with
+`accept_call_clobbered` when `CALLER_SAVE_PROFITABLE(refs, calls)` holds, and
+regs.h:165 defines that as `4 * calls < refs` — with 1 call crossed and 3-4 references
+the base pseudo can never qualify.
+
+### The only rematerialization mechanism in this compiler, and its two gates
+GCC 2.7.2 has no gcse.c (verified absent from tools/gcc-2.7.2/), no rematerialization
+pass, and reload spills to `N($sp)` — never back to the original address — unless the
+pseudo carries a **REG_EQUIV MEM** note. That note is produced in exactly one place,
+`local-alloc.c update_equiv_regs`, under two gates:
+  1. `GET_CODE (insn) == CALL_INSN && ! RTX_UNCHANGING_P (memref) && ! CONST_CALL_P` ->
+     `validate_equiv_mem` returns 0 (**local-alloc.c:583**). Any intervening call kills
+     the equivalence unless the MEM is marked unchanging.
+  2. `reg_basic_block[regno] >= 0` — every reference to the pseudo must live in ONE
+     basic block (flow.c:2072-2075 sets REG_BLOCK_GLOBAL otherwise).
+  (A third, incidental gate: the equivalence is also lost if a register mentioned in
+  the memref DIES between the init insn and the pseudo's death — measured in probes
+  f_single_nc / f_single_c, where `a` dies at the init insn itself.)
+
+### Direct measurements (all this session, all in tmp/grind/func_80057CC8/s30/)
+* Gate 1 is a real C-level lever and it works: writing the read as
+  `*(s16 *const *)(arg0 + 4)` makes the dump print `(mem/u:SI (plus:SI (reg/v:SI 72)
+  (const_int 4)))` — RTX_UNCHANGING_P is set. Standalone probe `g_single_nc` (non-const,
+  single block) gets NO note; `g_single_c` (const, single block) DOES.
+* Gate 2 is what blocks THIS function. In the real function the base pseudo is reg 89,
+  set at insn 24 from `(mem:SI (plus:SI (reg/v:SI 72) (const_int 4)))`, referenced in
+  the entry block (centre vertex, insn 30) and again in the tail block (neighbours).
+  With const applied, formC still shows **zero** REG_EQUIV notes in `.lreg` — and it
+  measures 34/112, i.e. worse. Probe `g_multi_c` reproduces the gate in isolation.
+* Sinking the base read (and the centre reads that depend on it) below both index
+  if-blocks confines every reference to one basic block, and the note appears: formD's
+  `.lreg` carries exactly one `REG_EQUIV (mem/u:SI (plus:SI (reg/v:SI 72)
+  (const_int 4)))`.
+* **The note is still not sufficient.** In formD — and in every standalone probe where
+  the note was present — global alloc hands the base pseudo a callee-save ($16) and
+  reload never falls back to the equivalent MEM: one `lw`, not two. Rematerialization
+  requires the pseudo to FAIL allocation, which needs pressure this function does not
+  have (it has spare callee-saves; that is exactly why formB can afford a 9th).
+
+### Second, independent finding — the 112-insn "structural shortfall" claim is false as stated
+s29 closed with "112 insns cannot become 111 by allocation alone, so this form is
+unmatchable in kind." The premise that the ban-compliant regime is pinned at 112 is
+wrong: with the SAME single source-level read, moving only WHERE that read is placed
+moves the instruction count across a 104..112 band.
+  * read before the branches (formB/formC): 112 insns, score 30 / 34
+  * read between the two if-blocks (formF): 112 insns, score 44
+  * read after both if-blocks (formD const / formE non-const): **104 insns**, score 59
+The regime boundary is the LAST branch separating the def from a use, not the source
+line number, and the const qualifier is codegen-inert here (formD == formE exactly).
+So the obstacle in the ban-compliant space is SHAPE, not instruction budget — there is
+slack of seven instructions below the target on one side and one above it on the other,
+and no single-read placement measured lands on 111.
+
+- [s30] Chassis re-measured from scratch this session: formB (s29 ban-compliant baseline, one source-level base read) = score 30, target_insns 111, build_insns 112, rules_dropped 0. Ledger floor unchanged.
+
+- [s30] Target asm forces two distinct RTL values for the base: asm/funcs/func_80057CC8.s:17 lw $a2,0x4($s2) lands the base in a CALL-CLOBBERED register, used at :19 (centre) and :39 (prev) and dead before jal ratan2 at :47; the post-call value arrives via a fresh lw $a0,0x4($s2) at :50. A single pseudo whose uses straddle a call crosses that call and can never live in $a2.
+
+- [s30] GCC 2.7.2 has no gcse.c (verified absent from tools/gcc-2.7.2/) and no rematerialization pass; reload spills to N($sp) unless the pseudo carries a REG_EQUIV MEM note, which is created in exactly one place: local-alloc.c update_equiv_regs.
+
+- [s30] Gate 1 measured: local-alloc.c:583 - `GET_CODE (insn) == CALL_INSN && ! RTX_UNCHANGING_P (memref) && ! CONST_CALL_P (insn)` makes validate_equiv_mem return 0. Standalone probes: g_single_nc (single block, non-const, address reg live) gets NO note; g_single_c (same but const) DOES.
+
+- [s30] Gate 2 measured: reg_basic_block[regno] >= 0 (flow.c:2072-2075). In the real function the base pseudo is reg 89, set at insn 24 from (mem:SI (plus:SI (reg/v:SI 72) (const_int 4))), referenced in the entry block (insn 30, centre vertex) and again in the tail block - so const alone yields zero REG_EQUIV notes (formC). Probe g_multi_c reproduces this in isolation.
+
+- [s30] Third, incidental gate found in the probes: validate_equiv_mem also loses the equivalence when a register mentioned in the memref DIES between the init insn and the pseudo's death (f_single_nc / f_single_c, where the address parameter dies at the init insn itself).
+
+- [s30] The REG_EQUIV note is necessary but NOT sufficient: with all references confined to one block (formD) the note is present in .lreg, yet global alloc still gives the base pseudo callee-save $16 and only one lw is emitted. Same in every probe that earned a note.
+
+- [s30] Caller-saving is arithmetically excluded as an explanation for the target's shape: global.c:1179 retries with accept_call_clobbered only when CALLER_SAVE_PROFITABLE(refs, calls) holds, defined at regs.h:165 as 4 * calls < refs; the base pseudo crosses 1 call with 3-4 references.
+
+- [s30] New regime discovered: the identical single source-level read placed after both index if-blocks compiles to 104 instructions - SEVEN BELOW the 111-insn target - at score 59, versus 112 at score 30 when placed before the branches. The const qualifier is codegen-inert in that regime (formD == formE).
+
+- [s30] src/text1b.c was restored to INCLUDE_ASM("asm/funcs", func_80057CC8); at the end of the session (git diff clean). candidate.c now holds the best BAN-COMPLIANT form (formB, 30/112) instead of the 2026-08-27 layer-1-FAILed helper body, which stays banked at rejected/layer1-fail-0827-0417.c.

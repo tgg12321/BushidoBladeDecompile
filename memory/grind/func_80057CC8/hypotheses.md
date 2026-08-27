@@ -645,3 +645,67 @@ helper called twice — the programmer writing the base expression once and GCC'
 emitting it twice — is the "compound-address duplication across two calls" family the owner
 refused on 2026-07-20. The measurements say the source contains exactly one materialization;
 the refusal is worded about source-level duplication. That is the layer-1 / Judge call.
+
+
+## s30b (2026-08-27) — forensics
+
+**H-s30b-1 (KILLED, with mechanism).** "Some pure-C form materializes the vertex-table
+base exactly once at source level and still emits the target's two `lw ...,0x4($s2)`
+loads" — the ledger's live frontier hypothesis #1 since s28.
+*Mechanism tested:* the only path in GCC 2.7.2 from one RTL load to per-use loads at the
+original address is the REG_EQUIV / reg_equiv_mem path in `local-alloc.c
+update_equiv_regs` (there is no gcse.c in this compiler, and reload spills to `N($sp)`
+otherwise). *Probe:* read the gates in the compiler source, then exercise each one
+directly — const-qualified base to set RTX_UNCHANGING_P (gate at local-alloc.c:583),
+and base-read sinking to make `reg_basic_block[regno] >= 0` (gate in update_equiv_regs,
+flow.c:2072). *Result:* both gates are real and both are reachable in C, but even with
+the note PRESENT (formD, verified in `.lreg`) global alloc still gives the base pseudo a
+callee-save and emits ONE load. Independently, the target's first base copy sits in the
+call-clobbered $a2 and is dead before the `jal`, so its two loads are two distinct RTL
+values; caller-saving cannot explain it either
+(`CALLER_SAVE_PROFITABLE` = `4*calls < refs`, regs.h:165, fails at 1 call / 3-4 refs).
+**Verdict: KILLED.** Do not spend another session searching for a single-materialization
+spelling; the compiler has no mechanism that produces the target's shape from one.
+
+**H-s30b-2 (KILLED).** "`const`-qualifying the base read is a codegen lever here."
+*Probe:* formC (formB + `*(s16 *const *)`) and formE (formD without const).
+*Result:* formC = 34/112 (worse than formB's 30/112); formD (const) and formE
+(non-const) are identical at 59/104. The qualifier reaches RTL (`mem/u`) but changes
+nothing downstream in this function. **KILLED as a lever**; retained only as the gate-1
+key documented in evidence.md.
+
+**H-s30b-3 (CONFIRMED, new).** "The ban-compliant single-read regime is pinned at 112
+instructions" (s29's closing claim) is FALSE. *Probe:* three placements of the same
+single base read. *Result:* 112 (before branches), 112 (between the if-blocks), 104
+(after both). **CONFIRMED that the band is 104..112**, so the ban-compliant obstacle is
+shape, not instruction budget — but no measured placement lands on 111 and every
+placement below 112 scores far worse (59 vs 30).
+
+**Frontier left for the next session.** The single-materialization axis is closed by
+mechanism. What remains genuinely open and ban-compliant: the 104-insn regime is a
+different codegen world (7 instructions BELOW target) that no prior session had ever
+seen — every earlier session lived in the 112 regime. A session should map what those
+7 instructions are (diff formD's emitted text against the target block by block) and ask
+whether some intermediate arrangement — e.g. sinking only the base read while keeping the
+centre reads early through the SAME single pseudo, or reordering the two index if-blocks
+so the base def lands in the tail block without moving the centre reads — reaches 111
+with a target-shaped body. That is a shape search inside a region the ledger has never
+entered, not a re-run of the spelling search.
+
+## [s30] A pure-C form materializes the vertex-table base exactly once at source level and still emits the target's two loads of 0x4($s2) (ledger frontier hypothesis #1, open since s28).
+- mechanism: The only path in GCC 2.7.2 from one RTL load to per-use loads at the ORIGINAL address is the REG_EQUIV / reg_equiv_mem path created in local-alloc.c update_equiv_regs (this compiler has no gcse.c; reload otherwise spills to N($sp), which the target does not show). That note is gated on (1) RTX_UNCHANGING_P on the MEM, else validate_equiv_mem returns 0 at the intervening CALL_INSN (local-alloc.c:583), and (2) reg_basic_block[regno] >= 0, i.e. every reference to the pseudo confined to one basic block (flow.c:2072-2075).
+- probe: Read both gates in tools/gcc-2.7.2/local-alloc.c + flow.c + global.c + regs.h, then exercised each in C and measured: formB baseline (30/112, zero REG_EQUIV notes); formC = formB with *(s16 *const *) so the dump prints mem/u (34/112, still zero notes - gate 2 fails); formD = base read sunk below both if-blocks so all references sit in one block (59/104, exactly one REG_EQUIV (mem/u:SI (plus:SI (reg/v:SI 72) (const_int 4))) note in .lreg); plus 7 standalone gate probes (equivprobe.c) isolating each gate.
+- result: Both gates are real and both are reachable from C, but the note is NOT sufficient: in formD and in every probe where the note was present, global alloc still assigned the base pseudo a callee-save ($16) and reload never fell back to the equivalent MEM - one lw, not two. Rematerialization additionally requires the pseudo to FAIL allocation, which needs register pressure this function does not have. Independently, the target's first base copy sits in $a2 (call-clobbered) and is dead before the jal at :47, so its two loads are two distinct RTL values, and caller-saving cannot produce that either: global.c:1179 only retries with accept_call_clobbered when CALLER_SAVE_PROFITABLE(refs, calls) = 4*calls < refs (regs.h:165), which fails at 1 call crossed / 3-4 refs.
+- verdict: KILLED
+
+## [s30] const-qualifying the base read (*(s16 *const *)(arg0 + 4)) is a codegen lever for this function.
+- mechanism: TREE_READONLY on the pointed-to object sets RTX_UNCHANGING_P on the emitted MEM, which is the gate at local-alloc.c:583 that a call otherwise trips.
+- probe: formC (formB + const) and formE (formD without const), both measured with sandbox --disable all, plus RTL dump inspection for the mem/u flag.
+- result: The qualifier reaches RTL - the load prints as (mem/u:SI (plus:SI (reg/v:SI 72) (const_int 4))) - but changes nothing downstream here: formC measures 34/112, WORSE than formB's 30/112, and formD (const) vs formE (non-const) are identical at 59/104.
+- verdict: KILLED
+
+## [s30] s29's closing claim that the ban-compliant single-read regime is pinned at 112 instructions, so the form is 'structurally short and unmatchable in kind'.
+- mechanism: The instruction count in the single-read regime is set by whether a branch separates the base def from a later use: with a branch in between the pseudo is REG_BLOCK_GLOBAL, gets a 9th callee-save and pays save+move+restore; with all references in the tail block the whole allocation and the centre-read code change regime.
+- probe: Three placements of the SAME single source-level base read, each measured: before the branches (formB/formC), between the two index if-blocks (formF), after both if-blocks (formD/formE).
+- result: 112 insns / score 30 (before), 112 / 44 (middle), 104 / 59 (after). The ban-compliant band is 104..112, not a fixed 112, so the barrier is SHAPE and not instruction budget - though no measured placement lands on 111 and every sub-112 placement scores far worse.
+- verdict: CONFIRMED
