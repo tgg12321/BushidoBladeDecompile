@@ -1902,3 +1902,105 @@ residual.
 - probe: Body R1a: `if (temp_v1 != 0x13) { if (chain) return 1; } var_s1 = 0; <block_15 body>` - one `var_s1 = 0;` instead of two, no `goto block_15`.
 - result: Byte-neutral at 3 / 215. GCC had already cross-jumped the two blocks, so the source-level merge is invisible to flow and the live-in word is unchanged.
 - verdict: KILLED
+
+## s25 frontier (synthesis, 2026-08-27) - floor 2 / 215, ONE residual cluster left
+
+Site 161 is CLOSED (E-s25-1).  Everything below is about the SINGLE remaining
+divergence, emitted 45-47, worth 2 points:
+
+    ours   44 beq v1,v0,L / 45 li v0,1 / 46 j L / 47 nop
+    target 44 beq v1,v0,L / 45 nop     / 46 j L / 47 li v0,1
+
+**H-s25-A (CONFIRMED, not a hypothesis any more).**  The cluster is produced by
+exactly one call - `fill_eager_delay_slots` -> `fill_slots_from_thread` on the
+range chain's last `beq` (jump_insn 78), stealing the fall-through block's
+`li v0,1`.  Proven by ablation: `BB2_NO_FT_STEAL=1` (reorg.c:3817) makes the
+site byte-identical to target.
+
+**H-s25-B (LIVE, the cheapest remaining route).**  The steal is skipped entirely
+when `own_fallthrough == 0`, and `own_thread_p (NEXT_INSN (insn), NULL_RTX, 1)`
+(reorg.c:2195) returns 0 for ANY `CODE_LABEL` between the branch and the first
+active fall-through insn - `LABEL_NUSES == 0` is enough, the label only has to
+still be parked in the insn chain when `fill_eager_delay_slots` reaches
+jump_insn 78.  This is strictly cheaper than the s19-s24 route (making `$v0`
+live at the branch's TARGET), which needs a value genuinely live across the
+range chain and has no zero-instruction supply.
+  *Killed spellings (do not re-propose):* Y1/Y2/Y3/Y4 - a `ret_one:` label on
+  the chain fall-through `return 1;` with an inbound `goto` from the
+  `temp_v0 == 4 / == 0x14` exit, from `block_13`, from the `temp_v1 == 0x14`
+  exit, and from two of them at once.  Y3/Y4 are byte-identical to the banked
+  body; Y1 is 2 / 215 unchanged; Y2 is 8 / 216.
+  *Why they fail (measured):* `ret` is live in `$s6` from the top of the
+  function, so cse rewrites every other `return 1;` as `move v0,s6` and routes
+  it to the shared `.L137` block - those gotos never reference `ret_one` at all.
+  The one goto that does (the `temp_v1 == 0x14` exit) is consumed by reorg
+  itself: `fill_slots_from_thread` copies `li v0,1` into that branch's delay
+  slot with `INSN_FROM_TARGET_P` and `reorg_redirect_jump`s it to the epilogue,
+  which is target's own emitted 18-19 and is already what the banked body emits.
+  *Next probe:* find an inbound edge cse CANNOT rewrite to `move v0,s6`.  Two
+  untried supplies: (a) an edge whose value is 1 but is NOT the function's
+  return value at that point (so `$s6` is not an equivalent) - e.g. routing a
+  path that must materialise the constant for another reason; (b) an edge that
+  reaches the block from AFTER jump_insn 78 in reorg's `unfilled_slots` order,
+  so the redirect that consumes the reference happens after own_fallthrough has
+  already been evaluated as 0.  Verify with
+  `wsl bash tmp/grind/func_800283D0/s25/plain.sh <tag>` and look for a `.L` label
+  immediately before the `li $2,0x00000001` that precedes `j .L138`; if the
+  label is there, confirm with `dbr.sh <tag>` that `thr insn=78` now prints
+  `own=0` (or disappears entirely).
+
+**H-s25-C (the s19-s24 route, still open but now known to be the EXPENSIVE
+one).**  Make `$v0` live at the entry of jump_insn 78's TARGET block so
+`insn_sets_resource_p (trial, &opposite_needed)` refuses the steal
+(`oppregs` currently `0x20000380` = {a3,t0,t1,sp}; bit 0x4 needed).  Every
+source-level supply measured so far costs an instruction, because block_15
+recomputes everything it uses (`D_800A3824`, `*(s16 *)(arg0 + 4)`,
+`*(s16 *)(temp_s4 + 4)`) and every value that DOES cross the range chain
+(`arg0`, `arg1`, `temp_s4`, `ret`) is seated callee-saved in target.  Prefer
+H-s25-B; only come back here if H-s25-B is exhausted.
+
+**H-s25-D (out of band, unchanged from s24).**  The MEM-address-vs-pointer-value
+expansion law is a reusable lever for the whole queue, now sharpened by E-s25-2:
+the VALUE form requires a real pointer LOCAL (an ARRAY_REF on a parenthesised
+cast is still address context), and if introducing that local costs a register
+seat, the fix is to delay its RTL BIRTH with named locals for whatever the
+target computes first - not to hunt for extra references.  Worth a line in
+docs/grind/decisions.md or a technique rule once a second function confirms it.
+
+**POLICY (unchanged, must be settled before any candidate-ready).**  The body
+still carries the annotated `do { calls } while (0);` wrap
+(.claude/rules/do-while-zero-exception.md) and the `sel19` arm's duplicated
+`*(s16 *)(arg0 + 0x286) = 0x19;` store
+(.claude/rules/duplicated-statement-into-arms.md, which mandates a FAKE
+annotation the body does not yet carry).  The s25 hunk itself (`idx0`, `idx1`,
+`tail`) is ordinary C and claims no family.
+
+## [s25] Site 161 (emitted `addu a0,a0,s4` vs target `addu a0,s4,a0`) closes if the tail pointer local supplies the VALUE expansion AND its local-alloc quantity keeps the $a0 seat; s24 proposed reaching pri > 5000 via refs >= 7 or by widening the Judge[]-element quantity's span, but SPAN is also reachable through BIRTH.
+- mechanism: local-alloc allocates quantities in descending pri = floor_log2(refs)*refs*10000/span. Introducing `s32 *tail` moves the combined (sll producer + pointer) quantity's birth from luid 12 to luid 6, span 20 -> 26, pri 6000 -> 4615, under the Judge element's 5000 (BB2_QTY_DEBUG block 43). Declaring the two Judge table indices as their own locals BEFORE the pointer makes expand emit the negu/addiu/andi index chain first, so the pointer's `plus` is born after it again: span back to 20, pri 6000, ord5, $a0 - while the sum is still expanded as a VALUE and therefore carries target's source operand order.
+- probe: Bodies V1 (idx0 only), V2 (idx0 + idx1), V3 (first Judge ELEMENT hoisted into s32 j0) built on s24's AB chassis; sandbox func_800283D0 --disable all.
+- result: V1 = 2/215, V2 = 2/215, V3 = 2/215 (s24 candidate 3/215, AB 9/215). V2 banked as candidate.c and re-verified at 2/215 with the body in place in src/code6cac_b.c.
+- verdict: CONFIRMED
+
+## [s25] The value-vs-address expansion law (E-s24-2) can be satisfied without a pointer local by using an ARRAY_REF on a parenthesised cast: `((s32 *)(temp_s4 + (temp_s5 * 0x10)))[0x45]`.
+- mechanism: If the cast expression were expanded as a value rather than through memory_address/EXPAND_SUM, the plus would come out in source order (pointer, shift) with no new local and no birth shift.
+- probe: Body V4 (all three loads respelled as ARRAY_REF on the cast, no local), sandbox --disable all.
+- result: 3 / 215 with the operand order UNCHANGED - still (shift, pointer). The law is sharper than 'value context': the sum must be the RHS of an assignment to a pointer object.
+- verdict: KILLED
+
+## [s25] The remaining emitted 45-47 divergence is produced by fill_eager_delay_slots stealing the fall-through block's `li v0,1` into the range chain's last beq.
+- mechanism: reorg.c:3817 `if (own_fallthrough && ! BB2_NO_FT ()) delay_list = fill_slots_from_thread (insn, condition, fallthrough_insn, ...)`; the instrumented cc1 carries a BB2_NO_FT_STEAL ablation hook on exactly that guard.
+- probe: Built the TU with the instrumented cc1 under BB2_NO_FT_STEAL=1 (tmp/grind/func_800283D0/s25/noft.sh) and diffed against the unablated build (plain.sh).
+- result: With the fall-through steal disabled, emitted 44-47 become byte-identical to target (`beq` with an empty slot, `j` carrying `li v0,1`). Other sites regress, so the hook is a diagnostic, not a fix - but the residual's pass, insn and call site are now proven rather than inferred (DBRDBG: thr insn=78 thread=84 opp=270 own=1 oppregs=20000380 setsopp=0 WINNER trial=84).
+- verdict: CONFIRMED
+
+## [s25] Because own_thread_p (reorg.c:2195) returns 0 for ANY CODE_LABEL between the branch and the first active fall-through insn (label == NULL_RTX, so even LABEL_NUSES == 0 counts), giving the chain fall-through `return 1;` an explicit `ret_one:` label with an inbound goto sets own_fallthrough = 0 and refuses the steal.
+- mechanism: fill_eager_delay_slots only tries the fall-through thread when own_fallthrough != 0; a surviving label immediately after the beq is sufficient, and is strictly cheaper than making $v0 live at the branch's target (the s19-s24 oppregs route).
+- probe: Bodies Y1 (goto from the temp_v0 == 4 / == 0x14 exit), Y2 (goto from block_13), Y3 (goto from the temp_v1 == 0x14 exit), Y4 (Y3 + Y1); sandbox --disable all plus direct cc1 .s diffs via plain.sh.
+- result: Y1 = 2/215 with the residual unchanged; Y2 = 8/216; Y3 and Y4 are BYTE-IDENTICAL to the banked body (only .L numbering differs). Cause measured: `ret` lives in $s6, so cse rewrites every other `return 1;` as `move v0,s6` and routes it to the shared .L137 block - those gotos never reference ret_one. The one goto that does (the == 0x14 exit) is consumed inside reorg, which copies `li v0,1` into that branch's delay slot with INSN_FROM_TARGET_P and reorg_redirect_jumps it to the epilogue - precisely target's own emitted 18-19, already emitted by the banked body. The MECHANISM survives; these four SPELLINGS are dead.
+- verdict: KILLED
+
+## [s25] Making the function's other exits return the literal 1 instead of `ret` changes how the return-1 block is shared.
+- mechanism: If GCC emitted `li v0,1` at more than one exit, cross-jumping in jump2 would merge them into one labelled block, giving the chain fall-through a CODE_LABEL.
+- probe: Bodies W1 (temp_v0 exit -> `return 1;`), W2 (`block_13: return 1;`), W3 (both).
+- result: W1 = 2/215 byte-neutral; W2 = 8/216; W3 = 8/216. cse substitutes $s6 for the constant at those sites, so no second `li v0,1` block is ever created.
+- verdict: KILLED

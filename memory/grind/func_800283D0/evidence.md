@@ -3554,3 +3554,127 @@ is sound.
 - [s24] TOOLING: tools/gcc-2.7.2/cc1 (instrumented) and tools/gcc-2.7.2/build/cc1 (build) were byte-compared on this TU and emit IDENTICAL asm, and -dp -da does not perturb codegen - dump-based attribution from the instrumented cc1 is sound.
 
 - [s24] POLICY (unchanged, still open): the body carries two family-relevant constructs that MUST be settled before any candidate-ready submission - the annotated `do { calls } while (0);` wrap (.claude/rules/do-while-zero-exception.md) and the sel19 arm's duplicated `*(s16 *)(arg0 + 0x286) = 0x19;` store, which is the shape .claude/rules/duplicated-statement-into-arms.md covers and that rule mandates a FAKE annotation.
+
+## s25 (synthesis, 2026-08-27) - FLOOR 3 -> 2; site 161 CLOSED in ordinary C, and the last residual's mechanism is CONFIRMED BY DIRECT PASS ABLATION
+
+**E-s25-0 (chassis).**  s24's banked candidate re-measured **3 / 215** on HEAD at
+session start (the driver's dispatch line said "measurement unavailable"; the
+ledger number was correct).  The s25 body (tmp/grind/func_800283D0/s25/V2.c,
+banked as candidate.c) measures **2 / 215**, re-verified with the body in place
+in src/code6cac_b.c after banking.
+
+**E-s25-1 (SITE 161 CLOSED - the two-body problem is solved by delaying the
+pointer's RTL BIRTH, not by touching refs).**  s24 left the closed-form target:
+a body needs the VALUE expansion of `temp_s4 + temp_s5 * 0x10` (source order
+(ptr, shift) = target's `addu a0,s4,a0`) AND `pri(tail qty) > 5000`, where
+`pri = floor_log2(refs) * refs * 10000 / span`, and s24's body AB had
+refs=6 span=26 pri=4615.  s24 proposed attacking refs (>= 7) or the Judge
+quantity's span; BOTH are unnecessary.  The winning move is to shrink the tail
+quantity's SPAN back to 20 by pushing its BIRTH from luid 6 back to luid 12 -
+i.e. by making expand emit the Judge index chain BEFORE the pointer's `plus`.
+Concretely, on top of s24's body:
+
+    s32 temp_v1_4 = -*(s16 *)(arg0 + 0x1CA);
+    s32 idx0 = (temp_v1_4 + 0x400) & 0xFFF;      /* NEW */
+    s32 idx1 = temp_v1_4 & 0xFFF;                /* NEW */
+    s32 *tail = (s32 *)(temp_s4 + (temp_s5 * 0x10));
+    s32 temp_v1_5 = (s32)((&Judge)[idx0] * tail[0x45] + (&Judge)[idx1] * tail[0x47]) >> 0xC;
+    s32 temp_a0_2 = tail[0x46];
+
+BB2_QTY_DEBUG block 43 on the 3-floor chassis read
+`qty2 reg208 birth=12 death=32 refs=6 got=4` for the address pseudo and
+`qty3 reg204 birth=16 death=20 refs=2 got=5` for the Judge element; body AB
+moved the pointer to `birth=6 death=32` (pri 4615) and handed $a0 to the Judge
+element.  With the index locals in front, the pointer quantity is born after the
+index chain again, keeps span 20 / pri 6000 / ord5 / $a0, and the `addu` carries
+target's operand order because the sum is expanded as a VALUE.  **2 / 215.**
+Three spellings all measure 2: V1 (`idx0` only), V2 (`idx0` + `idx1`, banked),
+V3 (the first Judge ELEMENT hoisted into `s32 j0` instead of its index).
+
+**E-s25-2 (the value-vs-address law needs a real pointer LOCAL).**  V4 -
+respelling the three loads as `((s32 *)(temp_s4 + (temp_s5 * 0x10)))[0x45]` etc.
+(an ARRAY_REF on a parenthesised cast, no local) - measures **3 / 215** with the
+operand order UNCHANGED.  So s24's law (E-s24-2) is sharper than "value context":
+the sum must be the RHS of an assignment to a pointer object.  A cast expression
+used as the base of an ARRAY_REF is still expanded through `memory_address` /
+EXPAND_SUM and still comes out (shift, pointer).
+
+**E-s25-3 (the last residual's pass is CONFIRMED, not inferred).**  The
+instrumented cc1 already carries a `BB2_NO_FT_STEAL` ablation hook at
+reorg.c:3817 (`if (own_fallthrough && ! BB2_NO_FT ())`).  Building this TU with
+`BB2_NO_FT_STEAL=1` makes emitted 44-47 byte-identical to target
+(`beq v1,v0,L` with an EMPTY slot, then `j L` with `li v0,1` in its slot),
+while perturbing several other sites.  So the entire remaining 2-point residual
+is exactly one call: `fill_eager_delay_slots` -> `fill_slots_from_thread` on the
+range chain's last `beq` (RTL jump_insn 78) with `own_fallthrough = 1`, stealing
+the fall-through block's `li v0,1` (DBRDBG: `thr insn=78 thread=84 opp=270
+own=1 likely=0 tif=0 oppregs=20000380 oppmem=1`, `setsopp=0`, `WINNER
+trial=84 annul=0`).  This is the first time the residual has been reproduced by
+disabling the pass rather than reasoned about.
+
+**E-s25-4 (a SECOND, cheaper C route to the same refusal is now named - and its
+first four spellings are KILLED).**  reorg.c:3817 only tries the fall-through
+thread when `own_fallthrough = own_thread_p (NEXT_INSN (insn), NULL_RTX, 1)` is
+non-zero, and `own_thread_p` (reorg.c:2195) returns 0 as soon as it walks over
+ANY `CODE_LABEL` between the branch and the first active insn - with
+`label == NULL_RTX` even a `LABEL_NUSES == 0` label still parked in the insn
+chain suffices.  So the residual does NOT require making `$v0` live at the
+branch's target (the s19-s24 oppregs route); it only requires a surviving
+CODE_LABEL immediately after the `beq`.  Four spellings were measured and all
+are byte-inert:
+  - Y1: `ret_one:` on the chain fall-through `return 1;` + `goto ret_one;` from
+    the `temp_v0 == 4 / == 0x14` exit -> 2 / 215, same residual.
+  - Y2: the same label + `goto ret_one;` from `block_13` -> 8 / 216.
+  - Y3: the same label + `goto ret_one;` from the `temp_v1 == 0x14` exit ->
+    **byte-IDENTICAL** to the banked body (only `.L` numbering differs).
+  - Y4: Y3 + Y1 together -> byte-identical as well.
+The reason is measured, not guessed: `ret` lives in `$s6` from the top of the
+function, so cse rewrites every OTHER `return 1;` in the function as
+`move v0,s6` and those paths jump to the shared `.L137` (`move v0,s6`) block,
+never referencing `ret_one`.  The single goto that DOES reference it (the
+`temp_v1 == 0x14` exit) is consumed inside reorg itself: `fill_slots_from_thread`
+takes a COPY of `li v0,1` into that branch's delay slot with `INSN_FROM_TARGET_P`
+and `reorg_redirect_jump`s the branch to the epilogue label - which is precisely
+target's own emitted 18-19 (`beq v1,a0,T / li v0,1`), and is what the banked
+body already emits.  A surviving label therefore needs a SECOND inbound edge
+that cse cannot rewrite to `move v0,s6`.
+
+**E-s25-5 (measurement hygiene, inherited from s24 and re-confirmed).**  `mk.sh`
+objdumps `tmp/sandbox/func_800283D0/code6cac_b.o`; always run
+`run.ps1 -Tags <tag>` immediately before it.  New this session: `plain.sh` /
+`noft.sh` (in tmp/grind/func_800283D0/s25/) compile src/code6cac_b.c straight
+through the instrumented cc1 to `.s`, which is far cheaper than a sandbox cycle
+when the question is "did this label/branch survive to reorg" rather than "what
+is the score" - `diff plain_A.s plain_B.s` answers byte-neutrality in one call.
+
+- [s25] Chassis: s24's candidate re-measured 3 / 215 on HEAD at session start; the s25 candidate measures 2 / 215 with the body in place in src/code6cac_b.c.  Instruction count still exactly 215.
+- [s25] FLOOR 3 -> 2.  Site 161 (`addu a0,a0,s4` vs target `addu a0,s4,a0`) is CLOSED by three ordinary-C locals: `s32 idx0` / `s32 idx1` for the two Judge table indices, declared BEFORE `s32 *tail = (s32 *)(temp_s4 + (temp_s5 * 0x10));`, with the three loads spelled `tail[0x45] / tail[0x46] / tail[0x47]`.
+- [s25] MECHANISM: the pointer local supplies the VALUE expansion (target's operand order), and the two index locals push the pointer's local-alloc quantity BIRTH from luid 6 back to luid 12, restoring span 20 / pri 6000 (`pri = floor_log2(refs)*refs*10000/span`) so it keeps the $a0 seat ahead of the Judge[]-element quantity's 5000.  s24's proposed axes (refs >= 7, or widening the Judge quantity's span) are unnecessary - SPAN was reachable through BIRTH all along.
+- [s25] V1 (idx0 only) and V3 (the first Judge ELEMENT hoisted into `s32 j0`) also measure 2 / 215; V2 (both indices named) is banked as the symmetric spelling.
+- [s25] KILLED: V4, the ARRAY_REF-on-a-cast spelling `((s32 *)(temp_s4 + (temp_s5 * 0x10)))[0x45]` - 3 / 215, operand order unchanged.  The value-vs-address law (E-s24-2) requires a real pointer LOCAL; a parenthesised cast used as an ARRAY_REF base is still EXPAND_SUM address context.
+- [s25] CONFIRMED BY ABLATION: building the TU with `BB2_NO_FT_STEAL=1` (the instrumented cc1's hook at reorg.c:3817, `if (own_fallthrough && ! BB2_NO_FT ())`) makes emitted 44-47 byte-identical to target.  The entire remaining 2-point residual is one `fill_slots_from_thread` call on jump_insn 78 with own_fallthrough = 1.
+- [s25] NEW FRONTIER MODEL: the refusal does NOT need `$v0` live at the branch target (the s19-s24 oppregs route).  `own_thread_p` (reorg.c:2195) returns 0 for ANY CODE_LABEL sitting between the branch and the first active fall-through insn, even at LABEL_NUSES == 0.  A surviving label immediately after the `beq` closes the cluster.
+- [s25] KILLED: Y1 (label + goto from the temp_v0 exits) 2 / 215; Y2 (goto from block_13) 8 / 216; Y3 (goto from the temp_v1 == 0x14 exit) and Y4 (Y3+Y1) BYTE-IDENTICAL to the banked body.  `ret` lives in $s6, so cse rewrites every other `return 1;` as `move v0,s6` and those paths jump to the shared `.L137`, never referencing the label; the one goto that does reference it is consumed by reorg's own `reorg_redirect_jump` when it copies `li v0,1` into that branch's delay slot (which is target's own emitted 18-19).
+- [s25] TOOLING: `plain.sh` / `noft.sh` in tmp/grind/func_800283D0/s25/ compile src/code6cac_b.c directly through the instrumented cc1 to `.s`; `diff plain_<A>.s plain_<B>.s` decides byte-neutrality in one call, far cheaper than a sandbox cycle, and is how Y3/Y4 were proven inert.
+
+- [s25] Chassis: s24's banked candidate re-measured 3 / 215 on HEAD at session start (the dispatch line said 'measurement unavailable'; the ledger number was right). The s25 body measures 2 / 215, re-verified with candidate.c applied to src/code6cac_b.c. Instruction count still exactly 215.
+
+- [s25] FLOOR 3 -> 2. Site 161 closes with three ordinary-C locals: `s32 idx0 = (temp_v1_4 + 0x400) & 0xFFF;` and `s32 idx1 = temp_v1_4 & 0xFFF;` declared BEFORE `s32 *tail = (s32 *)(temp_s4 + (temp_s5 * 0x10));`, with the three loads spelled tail[0x45] / tail[0x46] / tail[0x47]. No construct, no annotation, no family claim for this hunk.
+
+- [s25] MECHANISM: the pointer local gives the VALUE expansion (target's operand order); the two index locals push the pointer's local-alloc quantity BIRTH from luid 6 back to luid 12, restoring span 20 / pri 6000 so it keeps $a0 ahead of the Judge[]-element quantity's 5000. s24's proposed axes (refs >= 7, widening the Judge quantity's span) are unnecessary - SPAN was reachable through BIRTH all along.
+
+- [s25] V1 (idx0 only) and V3 (the first Judge ELEMENT hoisted into `s32 j0`) also measure 2 / 215; V2 (both indices named) is banked as the symmetric spelling.
+
+- [s25] KILLED: V4, the ARRAY_REF-on-a-cast spelling, 3 / 215 with unchanged operand order - the value-vs-address law needs a real pointer LOCAL, not a parenthesised cast used as an ARRAY_REF base.
+
+- [s25] CONFIRMED BY ABLATION: BB2_NO_FT_STEAL=1 (instrumented cc1, reorg.c:3817) makes emitted 44-47 byte-identical to target. The whole remaining 2-point residual is one fill_slots_from_thread call on jump_insn 78 with own_fallthrough = 1.
+
+- [s25] NEW FRONTIER MODEL: the refusal does NOT require $v0 live at the branch target (the s19-s24 oppregs route). own_thread_p (reorg.c:2195) returns 0 for ANY CODE_LABEL between the branch and the first active fall-through insn, even at LABEL_NUSES == 0.
+
+- [s25] KILLED: Y1 (2/215), Y2 (8/216), Y3 and Y4 (byte-identical to the banked body) - the label route's first four spellings. `ret` lives in $s6 so cse rewrites every other `return 1;` as `move v0,s6`; the one goto that reaches the block is consumed by reorg's own reorg_redirect_jump (which is target's emitted 18-19 and already matches).
+
+- [s25] KILLED: W1 (2/215 byte-neutral), W2 / W3 (8/216) - spelling other exits as literal `return 1;` does not create a second `li v0,1` block for cross-jumping to merge.
+
+- [s25] TOOLING: tmp/grind/func_800283D0/s25/plain.sh and noft.sh compile src/code6cac_b.c straight through the instrumented cc1 to .s; `diff plain_<A>.s plain_<B>.s` decides byte-neutrality in ONE call and is how Y3/Y4 were proven inert - far cheaper than a sandbox cycle for structural questions.
+
+- [s25] POLICY (unchanged, still open before any candidate-ready): the body carries the annotated `do { calls } while (0);` wrap (.claude/rules/do-while-zero-exception.md) and the sel19 arm's duplicated `*(s16 *)(arg0 + 0x286) = 0x19;` store (.claude/rules/duplicated-statement-into-arms.md, which mandates a FAKE annotation the body does not yet carry).

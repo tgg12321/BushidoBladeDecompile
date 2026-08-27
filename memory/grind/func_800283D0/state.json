@@ -1,7 +1,7 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 24,
+ "session_count": 25,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -147,23 +147,29 @@
    "floor": 3,
    "modality": "synthesis",
    "headline": "Floor 4 -> 3: the commutative-addu axis is resolved as a mechanism (order fixed at EXPAND, decided by MEM-address vs pointer-value context), site 96 closes in ordinary C by deleting the temp_s3 local,"
+  },
+  {
+   "session": 25,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Floor 3 -> 2: site 161's addu operand order closes in ordinary C by delaying the tail pointer's local-alloc BIRTH with two named Judge-index locals, and the last 2-point residual is CONFIRMED by pass "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Site 161 (emitted `addu a0,a0,s4` vs target `addu a0,s4,a0`, 1 point) closes iff a body uses the VALUE form (a `s32 *tail` pointer local for the 0x114/0x118/0x11C loads) AND raises pri(tail qty) above the Judge[]-element quantity's 5000.",
-   "mechanism": "local-alloc allocates quantities in descending pri = floor_log2(refs)*refs*10000/span (BB2_QTY_DEBUG block 43). Body AB has the right operand order but refs=6 span=26 -> 4615 < 5000, so the Judge element takes $a0 first and the whole tail renames. Needed: span <= 23, or refs >= 7 (5384) / 8 (9230), or Judge span >= 5 (drops it to 4000). The tail quantity is COMBINED (the sll producer + the pointer), so one extra genuine reference is worth +1 ref.",
-   "next_probe": "Do NOT re-run declaration-order or statement-order variants (AB1/AB2/A1/C4 all killed - birth/death do not follow source position). Two live routes: (a) find a semantics-preserving spelling that gives the tail pointer a SEVENTH reference without adding an instruction - e.g. routing one of the three loads' address through the pointer twice, or expressing `temp_a0_2` so its consumer re-references the pointer rather than the loaded value; (b) widen the Judge[]-element quantity from span 4 to span 5 by putting one independent instruction between its `lh` and the `mult` that consumes it. Measure with `wsl bash tmp/grind/func_800283D0/s24/qty.sh <tag>` and read the block-43 QTYDBG lines; the model predicts the seat before the sandbox does."
+   "hypothesis": "The last 2 points close if a CODE_LABEL survives to reorg immediately after the range chain's last `beq` (own_fallthrough = 0), and the only thing missing is an inbound edge that cse cannot rewrite to `move v0,s6`.",
+   "mechanism": "reorg.c:3817 skips the fall-through steal entirely when own_fallthrough == 0; own_thread_p (reorg.c:2195) returns 0 for any CODE_LABEL between the branch and the first active fall-through insn, even LABEL_NUSES == 0. Y1-Y4 proved the label itself never survives because `ret` in $s6 makes every other `return 1;` become `move v0,s6` (routed to the shared .L137), and the single surviving reference is consumed by reorg's own reorg_redirect_jump.",
+   "next_probe": "Two untried supplies for a second inbound edge: (a) an edge whose value is 1 for a reason OTHER than being the return value at that point, so $s6 is not a cse equivalent; (b) an edge originating AFTER jump_insn 78 in reorg's unfilled_slots order, so the redirect that consumes the reference happens after own_fallthrough has already been evaluated. Verify cheaply with `wsl bash tmp/grind/func_800283D0/s25/plain.sh <tag>` - look for a `.L` label immediately before the `li $2,0x00000001` that precedes `j .L138` - then confirm with `dbr.sh <tag>` that `thr insn=78` prints own=0 or disappears. Do NOT re-propose Y1/Y2/Y3/Y4 or W1/W2/W3."
   },
   {
-   "hypothesis": "The last delay-slot divergence (emitted 45-47, 2 points) closes iff $v0 is live at the entry of jump_insn 78's TARGET block; the source-level route to that liveness is NOT block merging (killed) but putting a real value in $v0 across the branch.",
-   "mechanism": "fill_slots_from_thread's steal_delay_list_from_fallthrough on insn 78 is refused only by insn_sets_resource_p (trial, &opposite_needed); opposite_needed is the exact flow live-in of the beq's target block (oppregs = 0x20000380 = {a3,t0,t1,sp}, cleanly resolved by find_basic_block from barrier 85, not the -1 conservative fallback). Target's compile must have bit 0x4 set in that word.",
-   "next_probe": "s24 killed the block-merge route (R1a byte-neutral) - the live-in word is a flow fact, not a CFG-shape fact, so the remaining attack is to make some value genuinely LIVE in $v0 across the range chain into block_15: e.g. hoisting the `D_800A3824` load (or the `*(s16 *)(arg0 + 4)` read that feeds temp_a1_2) above the range chain so its pseudo is live-in at code_label 87, and checking whether RA seats it in $v0. Instrument with `wsl bash tmp/grind/func_800283D0/s24/dbr.sh <tag>` and read the `thr insn=78 ... oppregs=` word; if bit 0x4 sets, the two points close. Do NOT re-run Q1/Q2-style relocations of the `return 1;` block (10 / 215 and 8 / 216) or R1a."
+   "hypothesis": "The s19-s24 route (make $v0 live at jump_insn 78's TARGET so insn_sets_resource_p(trial,&opposite_needed) refuses the steal) is still open but is now known to be the EXPENSIVE one.",
+   "mechanism": "oppregs at insn 270 is 0x20000380 = {a3,t0,t1,sp}; bit 0x4 ($v0) is needed. block_15 recomputes everything it uses (D_800A3824, *(s16 *)(arg0 + 4), *(s16 *)(temp_s4 + 4)) and every value that genuinely crosses the range chain (arg0, arg1, temp_s4, ret) is seated callee-saved in target, so no zero-instruction supply exists.",
+   "next_probe": "Only after the label route is exhausted. If attempted, instrument with `wsl bash tmp/grind/func_800283D0/s25/dbr.sh <tag>` and read the `thr insn=78 ... oppregs=` word for bit 0x4. Do NOT re-run Q1/Q2 (relocating the return-1 block), R1a (merging the two var_s1 = 0 blocks), or block-merge variants - all banked dead."
   },
   {
-   "hypothesis": "The MEM-address-vs-pointer-value expansion law (E-s24-2) is a general, reusable lever for this codebase, not a one-off for this function.",
-   "mechanism": "Every commutative `addu` of a pointer and a scaled index in a GCC 2.7.2 -mel build has its operand order fixed at expand by whether the plus is expanded via memory_address (EXPAND_SUM -> shift first) or as a plain value (source order). A whole class of one-point `addu operand order` residuals elsewhere in the queue is therefore a one-line respelling, not a search.",
-   "next_probe": "Cheap and out-of-band for this function: when any other grind ledger reports an `addu rd,rA,rB` vs `addu rd,rB,rA` residual on a pointer+index sum, check whether the C spells it as a pointer local or as an inline address and flip that, then verify with the .rtl dump. Worth a line in docs/grind/decisions.md or a technique rule if a second function confirms it."
+   "hypothesis": "The MEM-address-vs-pointer-value expansion law is a reusable queue-wide lever, now sharpened by two s25 measurements.",
+   "mechanism": "A pointer+scaled-index plus expanded through memory_address/EXPAND_SUM comes out (shift, pointer); expanded as the RHS of an assignment to a pointer LOCAL it comes out in source order. A parenthesised cast used as an ARRAY_REF base is still the address form (V4). If introducing the pointer local costs a register seat, the fix is to delay its RTL birth with named locals for whatever the target computes first, not to hunt for extra references (E-s25-1).",
+   "next_probe": "Out of band for this function: when any other grind ledger reports an `addu rd,rA,rB` vs `addu rd,rB,rA` residual on a pointer+index sum, flip the spelling between inline address and pointer local, and if a seat is lost check the local-alloc quantity's birth with BB2_QTY_DEBUG before touching refs. Worth a docs/grind/decisions.md line or a technique rule once a second function confirms it."
   }
  ],
  "judge_constraints": [],
