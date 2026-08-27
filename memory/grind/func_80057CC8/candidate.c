@@ -51,6 +51,22 @@
  * prev-neighbour address local; the prev reads spelled as byte-offset pointer
  * arithmetic; `s16 prev_idx` instead of `unsigned short`; forming the address after
  * `pi`; `tmp`/`off` at function scope.
+ *
+ * S35 (2026-08-27, structural) RE-MEASURED THIS FORM AT 20 AND HELD IT.  Ten further
+ * structural forms all measured worse (29/29/25/34/32/42/27/28/22/28 - see evidence.md s35-E4).
+ * The session's product is a foreclosure proof for the register residual described above:
+ * ban-compliantly the next-neighbour value is either a BLOCK-LOCAL crossing address (this form -
+ * local-alloc then seats cys/address/cxs in $16/$17/$18 and arg0 is conflict-bound to $19) or a
+ * GLOBAL crossing address (z2 - which does reproduce the target's $16 cys / $17 cxs but
+ * necessarily carries FOUR references, two wrap defs plus two vertex uses, and needs live_length
+ * > 43.2 to rank below arg0's 0.185 under allocno_compare).  The measured maximum live_length,
+ * with the def at the earliest point at which the address can exist, is 29 (form a1, greg still
+ * prints '88 in 18 / 72 in 19').  Three references are not spellable and arg0's own priority
+ * cannot be raised past 0.276 without the banned second lw.  See evidence.md s35-E2.
+ *
+ * The normalised diff against target is now fully accounted for: eighteen lines, twelve of them
+ * pure register renames caused by that one seat, six of them the refused duplication block.
+ * Every other instruction in the function already matches modulo register names.
  */
 void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     unsigned short prev_idx;

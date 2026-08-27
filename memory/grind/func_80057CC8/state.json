@@ -1,7 +1,7 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 34,
+ "session_count": 35,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -213,23 +213,29 @@
    "floor": 20,
    "modality": "structural",
    "headline": "s34 structural: floor 22 -> 20 by dropping the redundant (s16) narrowing from the byte offset (108 insns, identical registers); and the register residual is re-attributed from global-alloc ranking to "
+  },
+  {
+   "session": 35,
+   "floor": 20,
+   "modality": "structural",
+   "headline": "s35 structural: floor held at 20 (s34 candidate re-measured current); the register residual is now FORECLOSED in closed form - arg0 cannot reach $18 in any ban-compliant form - and the s34 'remaining "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last register residual is reachable only by removing our block-local call-crossing address quantity (which frees $17 for cxs, proven by z2) WITHOUT giving the resulting global address allocno four references (which is what costs z2 the $18 seat and the $6 base). A three-reference multi-block address allocno ranks below arg0 (3/L < 0.185 for L > 16).",
-   "mechanism": "local-alloc seats block-local call-crossing quantities before global-alloc runs (text1b.lreg block-4 quantities); global-alloc then works around them, and greg's ';; 72 conflicts' line shows arg0 already excluded from $16/$17/$18 in the y5 regime.",
-   "next_probe": "Dump text1b.lreg/text1b.greg for the z2 form and read the address allocno's refs/live_length plus arg0's conflict list THERE. If arg0's z2-regime conflicts no longer include $18, the seat competition is genuinely two-way, and a three-reference spelling of the arm-selected ADDRESS (one whose arm-def is shared with the centre-address def, or whose two lh uses fold into the subtractions) would put arg0 in $18 and the address in $19 - the target's exact mapping. Measure any such spelling at 108 insns; anything that adds an insn has already been shown to cost more than the seats are worth (w1 = 25)."
+   "hypothesis": "Score 20 is at or very near the ban-compliant minimum for this function on this chassis, and no further source spelling reaches below it: 12 of its 18 diff lines are foreclosed register renames (s35-E2) and the other 6 are the construct refused on 2026-07-20.",
+   "mechanism": "Local-alloc seats block-local call-crossing quantities before global-alloc; the only ban-compliant alternative makes the address a 4-reference global whose allocno_compare priority cannot fall below arg0's, since its maximum attainable live_length is 29 against a 43.2 threshold.",
+   "next_probe": "Test the claim by an independent route rather than by re-spelling: a permuter campaign seeded from candidate.c with the banned families excluded (import the 108-insn form, run fresh-seed windows, harvest in-turn per the orphan-stop gate) and see whether ANY arrangement scores below 20. A permuter that cannot beat 20 across several fresh-seed windows is the last independent confirmation the ledger lacks; one that does beat it names a lever the structural axis missed."
   },
   {
-   "hypothesis": "The two-point gain from y5 was purely positional (the offset insn landing at the target's slot in the block), so the remaining ~20 points are mostly positional too, and per-insn slot alignment is a cheaper axis than register chasing.",
-   "mechanism": "The engine metric scores per-instruction text agreement; y5 changed no register and no instruction count yet moved 22 -> 20 by re-ordering one insn within its block.",
-   "next_probe": "Diff tmp/grind/func_80057CC8/s34/y5.hon.s against asm/funcs/func_80057CC8.s with tmp/grind/func_80057CC8/s31/norm2.py and enumerate every insn whose SLOT differs while its text matches (currently the lbu 0x3 / sra16 pair order in block 2, and the addu address-formation slot in block 4). For each, find a source spelling that changes RTL-expand emission order the way y5 did - the lever is which sub-expression is emitted first, not which registers are used."
+   "hypothesis": "The only slots still theoretically loose are inside the six-line duplication block - specifically whether our block-2 `sll $17,$2,2` can be made to land in the target's `addu $19,$2,$0` slot without adding an instruction, which would recover up to two lines the way s34's y5 did.",
+   "mechanism": "RTL-expand emission order inside a basic block is what s34's y5 moved (dropping a redundant narrowing changed which sub-expression was emitted first and moved one insn into the target's slot at zero instruction cost).",
+   "next_probe": "d1/d2 already show the direct route fails (the arm-carried index copy is propagated away, 27/28). Remaining untried spellings: carry the index as a NARROWER type (s16/u16 local) so the arm def is a genuine sub-word copy that copy-propagation cannot fold through the sign-extension, and measure at 108 insns only - anything that adds an insn has repeatedly cost more than the slot is worth."
   },
   {
-   "hypothesis": "Nothing reachable closes the last instructions toward a BYTE match; the residual is the refused duplication policy, now proven five ways (mechanism s30b, instruction-multiset counting s31, allocno-priority arithmetic s32 as corrected by s33-E2, s33-E5's nine-live-values demonstration, and s34-E4's local-alloc/reference-count attribution).",
-   "mechanism": "The target's second lw 0x4($s2) gives arg0 six references and removes any block-local call-crossing quantity; a ban-compliant form has five references and one such quantity, so the target's seat assignment is unaffordable by construction rather than by spelling.",
-   "next_probe": "Do NOT re-file an escalation packet - a YES there would lower a standard (pre-decided-NO auto-reject class, owner ruling 2026-08-24). Spend sessions on the two axes above."
+   "hypothesis": "The solver's typed REACHABLE/FORECLOSED verdict on this residual is unavailable purely for tooling reasons, not analytical ones.",
+   "mechanism": "tools/ra_solver/inverse_compose.py classify requires func_80057CC8 to be replace_with_asmfile-wired; without it the tool silently degrades to a text-stream comparison against a stale target and reports IDENTICAL.",
+   "next_probe": "Operator/tooling task outside a grind session's allowed surface: wire func_80057CC8 into the solver's replace_with_asmfile list, then run `inverse_compose.py classify text1b func_80057CC8` and `inverse.py` to confirm or refute s35-E2's closed-form foreclosure independently. Do not spend grind sessions re-deriving the same arithmetic by hand - it is banked in evidence.md s35-E2."
   }
  ],
  "judge_constraints": [

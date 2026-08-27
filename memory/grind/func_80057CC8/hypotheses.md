@@ -978,3 +978,88 @@ is gated on the refused duplication family.
 - probe: z16 = y5 with the next-index block moved above the prev-index block.
 - result: 41 at 106 insns - identical to the previously banked number. CSE fuses the two 'lbu 0x3($s2)' reads that the target keeps separate (asm/funcs/func_80057CC8.s:24 and :31). This one transfers.
 - verdict: KILLED
+
+## s35 (2026-08-27) - structural
+
+### H1 - The address allocno can be demoted below arg0 by lengthening its live range (s34 frontier #1)
+- statement: In the z2 regime (global, arm-selected next-neighbour ADDRESS - the only regime that
+  reproduces the target's `$16 cys / $17 cxs` local-alloc result), moving the unconditional def of
+  the address earlier lengthens its live_length, lowering its `allocno_compare` priority
+  `floor_log2(4)*4/L = 8/L` below arg0's fixed `2*5/54 = 0.185`, so global-alloc would seat arg0
+  in $18 and the address in $19 - the target's exact mapping.
+- mechanism: global.c:635 allocno_compare; live_length and n_refs are printed per pseudo in the
+  .lreg dump, and the resulting order + dispositions in .greg.
+- probe: a1 (address def immediately after the single `lw 0x4(arg0)` at the top of block 0, wrap
+  arm unchanged) and a2 (def below the centre reads but above the prev-index if); both dumped with
+  `pwsh tools/grinder/dump.ps1 func_80057CC8` and read at tmp/grind/func_80057CC8/s35/a1.{lreg,greg}.
+- result: The lever works and the outcome does not. live_length goes 21 (z2) -> 29 (a1), priority
+  0.381 -> 0.276, but the threshold is 43.2 and 29 is the MAXIMUM the value can attain: its def is
+  already at the earliest point at which the address can exist (it needs `table`) and its last use
+  is the second `lh`. greg still prints `88 in 18 / 72 in 19`. Scores 29 / 29 (v0 = 20).
+- verdict: KILLED
+
+### H2 - The address allocno can be dropped to three references
+- statement: Three refs would give `floor_log2(3)*3/21 = 0.143 < 0.185` and hand arg0 the $18 seat
+  at the z2 live_length, without any hoisting.
+- mechanism: same allocno_compare ranking; n_refs enters both as the log factor and the numerator.
+- probe: enumeration of the reference sources rather than a measurement - a wrap-selected value has
+  two defs by construction (straight-line def + arm def, or two if/else arms - a3 confirms the
+  if/else spelling merely costs an insn, 25 at 109), and a two-coordinate vertex read has two uses
+  by construction (`next_vert[0]`, `next_vert[1]`). Any copy introduced to absorb one use is
+  propagated away before flow counts refs - d1 demonstrates the propagation directly (`off = tmp`
+  in the arms vanishes; still 108 insns, score 27).
+- result: 2 defs + 2 uses = 4 references with no free variable. Not spellable.
+- verdict: KILLED
+
+### H3 - arg0's own priority can be raised instead
+- statement: Rather than demoting the address, raise arg0 above 8/29 = 0.276 by shortening its live
+  range or adding references.
+- mechanism: allocno_compare again; arg0 is 5 refs / 54 insns.
+- probe: arithmetic on the measured inputs plus c6 (`scale = arg0[2] * 40` hoisted above the calls,
+  the only statement that can shorten arg0's live range).
+- result: Six references give 0.222 and seven give 0.259, both below 0.276, and the sixth reference
+  is the banned second `lw` anyway; eight would be needed for the next log step. Shortening the
+  range past L = 36 requires arg0 to die before the first call, which stops it being a callee-save
+  candidate at all - c6 measures exactly that (arg0 allocated `$8`, score 32).
+- verdict: KILLED
+
+### H4 - Slot alignment inside block 4 is worth points (s34 frontier #2)
+- statement: The remaining ~20 points are mostly positional, so re-ordering statements to move an
+  insn into the target's slot should pay as y5 did in s34.
+- mechanism: the engine metric scores per-instruction text agreement, so a slot move can pay with
+  no register or count change.
+- probe: normalised diff of the 20-form against target (s31/norm2.py), then e1/e2 (`cxs`/`cys` as
+  named locals, so the sign-extension pair is emitted before the address formation), c3 (`scale`
+  inlined at both uses), c9 (next-neighbour coordinate DIFFERENCES computed before the first call),
+  d1/d2 (index carried in the arms, scale performed in the merge block, plain and with the target's
+  own `sll 16 / sra 14` idiom).
+- result: The premise is wrong. The diff has eighteen lines, twelve of which are pure register
+  renames all caused by arg0 sitting in $19, and six of which are the banned-duplication block;
+  no other insn in the function differs. Every re-ordering probe was worse: e1 22, e2 28, c3 34,
+  c9 42, d1 27, d2 28.
+- verdict: KILLED (as stated; the only genuinely loose slots left are inside the six-line
+  duplication block, which is the refused construct)
+
+## [s35] In the z2 regime (global, arm-selected next-neighbour ADDRESS - the only regime that reproduces the target's $16 cys / $17 cxs local-alloc result), moving the unconditional def of the address earlier lengthens its live_length, lowering its allocno_compare priority floor_log2(4)*4/L = 8/L below arg0's fixed 2*5/54 = 0.185, so global-alloc seats arg0 in $18 and the address in $19 - the target's exact mapping. (This is the s34 frontier hypothesis #1 carried into this session.)
+- mechanism: tools/gcc-2.7.2/global.c:635 allocno_compare ranks allocnos by floor_log2(n_refs)*n_refs/live_length; both inputs are printed per pseudo in the .lreg dump and the resulting allocation order plus dispositions in .greg.
+- probe: Forms a1 (address def placed immediately after the single `lw 0x4(arg0)` at the top of block 0, wrap arm unchanged) and a2 (def below the centre reads, above the prev-index if). Built with tmp/grind/func_80057CC8/s35/gen.sh, scored with `sandbox func_80057CC8 --disable all`, and dumped with `pwsh tools/grinder/dump.ps1 func_80057CC8`; dumps copied to tmp/grind/func_80057CC8/s35/a1.lreg and a1.greg.
+- result: The lever works and the outcome does not. The address allocno's live_length goes 21 (z2) -> 29 (a1), priority 0.381 -> 0.276 - but the threshold is 43.2, and 29 is the MAXIMUM the value can attain, because its def already sits at the earliest point at which the address can exist (it needs `table`, i.e. the single lw) and its last use is the second `lh`. a1.greg still prints `88 in 18 / 72 in 19`. Scores: a1 29, a2 29, against v0 = 20 - the hoist buys the ranking input and still loses the seat, at 8 points of positional collateral.
+- verdict: KILLED
+
+## [s35] The next-neighbour address allocno can be dropped to THREE references, which at the z2 live_length gives floor_log2(3)*3/21 = 0.143 < arg0's 0.185 and hands arg0 the $18 seat with no hoisting at all.
+- mechanism: Same allocno_compare ranking; n_refs enters both as the log factor and as the numerator, so 4 -> 3 refs is worth more than any achievable live_length change.
+- probe: Enumeration of the value's reference sources, cross-checked by measurement: a3 spells the wrap selection as if/else instead of straight-line-def-then-arm (does the def count change?), and d1 introduces an `off = tmp` copy in the arms to absorb one of the two uses.
+- result: Not spellable. A wrap-selected value has two defs by construction (a3's if/else merely costs an instruction: 25 at 109 insns) and a two-coordinate vertex read has two uses by construction (`next_vert[0]`, `next_vert[1]`). Any copy introduced to absorb a use is propagated away before flow counts references - d1 demonstrates it directly: the `off = tmp` copy vanishes, the form is still 108 insns and does NOT reproduce the target's `addu $19,$2,$0`, and it scores 27. 2 defs + 2 uses = 4 references with no free variable.
+- verdict: KILLED
+
+## [s35] Rather than demoting the address allocno, raise arg0's own priority above 8/29 = 0.276 - either by adding references or by shortening its live range.
+- mechanism: allocno_compare on arg0's measured inputs (5 refs / 54 insns, from tmp/grind/func_80057CC8/dumps/text1b.lreg).
+- probe: Arithmetic on the measured inputs, plus c6 - hoisting `scale = arg0[2] * 40` above the two ratan2 calls, which is the only statement in the function that can shorten arg0's live range.
+- result: Foreclosed from both sides. Six references give 2*6/54 = 0.222 and seven give 0.259, both below 0.276 (eight would be needed for the next floor_log2 step), and the sixth reference is the banned second `lw 0x4(arg0)` anyway. Shortening the live range below L = 36 requires arg0 to die before the first call, which stops it being a callee-save candidate at all - c6 measures exactly that: arg0 is allocated `$8` (`addu $8,$4,$zero`, tmp/grind/func_80057CC8/s35/c6.hon.s line 6) and the score goes 20 -> 32.
+- verdict: KILLED
+
+## [s35] The remaining ~20 points are mostly positional (s34 frontier hypothesis #2), so statement re-ordering that moves an instruction into the target's slot should pay again the way s34's y5 did.
+- mechanism: The engine metric scores per-instruction text agreement, so a slot move can pay with no register change and no instruction-count change - which is how s34 went 22 -> 20.
+- probe: Full normalised diff of the 20-form against target (`python3 tmp/grind/func_80057CC8/s31/norm2.py asm/funcs/func_80057CC8.s tmp/grind/func_80057CC8/s35/v0.hon.s`), then six re-ordering forms: e1/e2 (`cxs`/`cys` as named locals so the sign-extension pair is emitted before the address formation, at two different positions), c3 (`scale` inlined at both use sites), c9 (next-neighbour coordinate DIFFERENCES computed before the first call so two values cross instead of the address), d1/d2 (index carried in the arms with the scale performed in the merge block, plain and with the target's own `sll 16 / sra 14` idiom).
+- result: The premise is wrong. The diff is 115 target lines vs 113 ours with exactly EIGHTEEN differing lines: twelve are pure register renames, every one of them a consequence of arg0 sitting in $19 instead of $18 (prologue save+copy pair, the save-order slot, `lw $6,4(arg0)`, both `lbu 3(arg0)`, the late `lbu 2(arg0)`, the cxs sll/sra pair, both `subu $4,$4,cxs`, the arm's `addu ...,$0,$0`), and the other six are the banned-duplication block itself. No other instruction in the function differs - entry block, prev-index block, wrap-compare block, both ang_mid arms, both scale multiplies and both stores already match modulo register names. Every re-ordering probe measured worse: e1 22, e2 28, c3 34 at 112 insns, c9 42, d1 27, d2 28 at 109 insns.
+- verdict: KILLED

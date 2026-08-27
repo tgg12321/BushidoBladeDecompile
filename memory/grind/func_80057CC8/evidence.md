@@ -1391,3 +1391,134 @@ target emits).
 - [s34] Inert on the new 20-chassis (banked so nobody re-spends them): tmp << 2; ((u16 *)table)[arg1*2] centre reads; a named prev-neighbour address local; byte-offset pointer spelling of the prev reads; s16 prev_idx; next_vert as an s32 integer address; address formed after pi; tmp/off at function scope.
 
 - [s34] Unchanged root cause of the non-zero floor: asm/funcs/func_80057CC8.s loads 0x4($s2) twice (:17 lw $a2, :50 lw $a0), which gives the target's arg0 six references where a ban-compliant form has five. That is the duplication refused 2026-07-20 and standing-ruled 2026-07-27, not a spelling.
+
+## s35 (2026-08-27) - structural - FLOOR HELD AT 20; THE REGISTER-SEAT AXIS IS NOW ARITHMETICALLY FORECLOSED
+
+**Chassis re-measured first.** HEAD is `INCLUDE_ASM("asm/funcs", func_80057CC8);` at
+src/text1b.c:1665. The inherited s34 candidate re-measures **score 20, build_insns 108,
+target_insns 111, rules_dropped 0** - the ledger floor was current. Ten further structurally
+distinct forms were derived and measured (tmp/grind/func_80057CC8/s35/); none beat 20, and the
+session's product is a closed-form proof that the frontier's register hypothesis cannot be
+spelled at all, plus the measured inputs that prove it.
+
+**[s35-E1] The full seat-by-seat diff of the 20-form, so no session re-derives it.**
+`python3 tmp/grind/func_80057CC8/s31/norm2.py asm/funcs/func_80057CC8.s
+tmp/grind/func_80057CC8/s35/v0.hon.s` gives 115 target lines vs 113 ours and **eighteen**
+differing lines. Twelve of them are pure register renames driven by ONE fact - ours is
+`$16 cys / $17 next-ADDRESS / $18 cxs / $19 arg0`, the target is `$16 cys / $17 cxs /
+$18 arg0 / $19 next-INDEX`: the prologue pair (`sw $18,32` + `addu $18,$4,$0` vs `sw $19,36` +
+`addu $19,$4,$0`), the save-order slot that follows from it, `lw $6,4($18)`, the two
+`lbu $2,3($18)` reads, the late `lbu $2,2($18)`, the cxs `sll`/`sra` pair, the two
+`subu $4,$4,$17`, and the arm's `addu $19,$0,$0`. The remaining six are the banned-duplication
+block itself (target `sll $3,$19,16 / lw $4,4($18) / sra $3,$3,14 / addu $3,$3,$4 /
+lh $4,0($3) / lh $5,2($3)` against our `sll $17,$2,2 ... addu $17,$17,$6 / lh $4,0($17) /
+lh $5,2($17)`). **Everything else in the function - entry block, prev-index block, wrap-compare
+block, the ang_mid arms, the two scale multiplies and both stores - is already byte-identical
+modulo those register names.** So the score-20 residual is not diffuse: it is exactly
+"arg0 is in $19 instead of $18" plus the refused second `lw`.
+
+**[s35-E2] Why arg0 cannot take $18, in closed form (allocno_compare arithmetic on MEASURED
+dump inputs).** Only two arrangements of the next-neighbour value exist ban-compliantly, and
+both are now measured:
+
+  * *Block-local address* (the v0/s34 family): the address pseudo is confined to block 4 and
+    crosses the first call (`Register 88 used 3 times across 4 insns in block 4; crosses 1 call`).
+    Local-alloc runs BEFORE global-alloc and seats all three block-4 call-crossing quantities -
+    cys, the address, cxs - in `$16/$17/$18`; greg then prints `;; 72 conflicts: ... 16 17 18 29`
+    and arg0 has $19 as its only legal callee-save seat regardless of rank (s34-E3).
+  * *Global address* (the z2 family, 21): with the address selected in the two arms there is no
+    block-local crossing quantity, local-alloc gives the twins `$16/$17` - the target's exact
+    pair - and the seat race moves to global-alloc, where `allocno_compare` ranks by
+    `floor_log2(n_refs) * n_refs / live_length` (tools/gcc-2.7.2/global.c:635, model verified
+    against dump inputs in s34-E2). arg0 is `5 refs / 54 insns` -> `2*5/54 = 0.185`, fixed. The
+    address necessarily carries **four** references - two conditional defs (it is wrap-selected)
+    and two uses (a vertex is two `lh`s) - so its priority is `2*4/L = 8/L`, and it outranks
+    arg0 unless **L > 43.2**.
+
+  **L cannot reach 43.** Measured: z2 (def in the wrap block) `Register 88 used 4 times across
+  21 insns` -> 0.381; a1 (def hoisted as early as the value can possibly exist, immediately
+  after the single `lw 0x4(arg0)` at the top of block 0) `Register 88 used 4 times across
+  29 insns` -> 0.276. a1's def sits at the earliest legal point in the function and its last use
+  is the second `lh`, so **29 is the maximum attainable live_length**, 14 short of the 43 needed.
+  Both a1 and a2 duly allocate `88 in 18 / 72 in 19` (tmp/grind/func_80057CC8/s35/a1.greg) and
+  measure **29** - the hoist buys the ranking input and still loses the seat, at 8 points of
+  positional collateral.
+
+  **Dropping the address to three references is not spellable**: three refs would give
+  `1*3/21 = 0.143 < 0.185` and hand arg0 the seat, but a wrap-selected value has two defs by
+  construction and a two-coordinate vertex read has two uses by construction. 2+2 = 4 with no
+  free variable.
+
+  **Raising arg0 instead is foreclosed from the other side**: to beat 8/29 = 0.276 arg0 needs
+  `10/L > 0.276` (L < 36, but arg0 is live from entry to the late `lbu 2(arg0)` at 54) or
+  eight references (`floor_log2(8)=3`); six refs give 0.222 and seven give 0.259, both short,
+  and the sixth reference is the banned second `lw` anyway.
+
+  **Shortening arg0's live range destroys the regime**: c6 (`scale = arg0[2] * 40` hoisted above
+  the calls) does exactly what the arithmetic predicts - arg0 now dies before the first call, so
+  it stops being a callee-save candidate entirely and lands in `$8` (`addu $8,$4,$zero`,
+  tmp/grind/func_80057CC8/s35/c6.hon.s line 6) - and measures **32** at 108 insns.
+
+  The third arrangement (global next-INDEX like the target + post-call address formation) was
+  already killed by s33-E5 at 33: it needs `table` live across the call, which puts nine values
+  across it against eight seats. **The register axis is therefore closed by construction, not by
+  spelling** - which retires frontier hypothesis #1 as carried into this session.
+
+**[s35-E3] Consequence: ~12 of the 18 diff lines are unreachable, and the other 6 are the
+refused duplication.** Combining E1 and E2, score 20 is at or within a couple of points of the
+ban-compliant minimum on this chassis. Sessions should stop treating the residual as "20 points
+of positional drift" (the s34 frontier's reading) - it is one foreclosed seat assignment plus the
+2026-07-20 policy residual, and the only points still theoretically loose are slot placements
+inside the six-line duplication block.
+
+**[s35-E4] Everything measured this session, with why each is dead (all banked in
+memory/grind/func_80057CC8/rejected/s35-*.c):** a1 hoist-address-to-entry **29**;
+a2 hoist-address-above-the-prev-if **29**; a3 wrap select spelled `if/else` instead of
+straight-line-then-arm **25 at 109 insns** (the else arm costs an insn); c3 `scale` inlined at
+both use sites **34 at 112**; c6 `scale` hoisted above the calls **32**; c9 the next-neighbour
+coordinate DIFFERENCES computed before the first call (carry two values instead of the address)
+**42**; d1 index copied in the arms with the scale in the merge block **27** (the `off = tmp`
+copy is propagated away - still 108 insns, so this does NOT reproduce the target's
+`addu $19,$2,$0`); d2 the same with the target's own `sll 16 / sra 14` scale idiom **28 at 109**;
+e1 `cxs`/`cys` as named locals for the twice-used sign-extended centre **22**; e2 the same hoisted
+above the next-neighbour block **28**.
+
+**[s35-E5] Owner directive (2026-08-24, solver-first) acknowledged and discharged by the
+equivalent-evidence route.** `python3 tools/ra_solver/inverse_compose.py classify text1b
+func_80057CC8` is NOT usable for this function: it reports that func_80057CC8 is not
+replace_with_asmfile-wired, falls back to its text-stream path against
+`tmp/inverse_work/text1b.tgt.s`, and returns `honest 108 insns, target 108 insns / FIRST
+DIVERGENCE: IDENTICAL` - a fiction, since the real target is 111 insns. The RA question was
+therefore answered directly from the pass dumps instead (`tmp/grind/func_80057CC8/dumps/text1b.lreg`
+and `.greg`, plus the per-form copies `tmp/grind/func_80057CC8/s35/a1.lreg` and `a1.greg`), which
+is the same evidence the solver would model and is measured rather than simulated. A future
+session wanting the solver's typed verdict must first wire func_80057CC8 into the solver's
+replace_with_asmfile list - tooling work outside a grind session's allowed surface.
+
+- [s35] Chassis re-measured at dispatch: the s34 candidate scores 20 at build_insns 108 / target_insns 111 / rules_dropped 0. Floor unchanged; candidate.c unchanged.
+- [s35] The 20-point residual decomposes as exactly 12 register-rename lines (all consequences of arg0 sitting in $19 instead of $18) plus the 6-line banned-duplication block. Every other insn in the function already matches modulo register names.
+- [s35] arg0 cannot reach $18: with a block-local crossing address, local-alloc takes 16/17/18 first; with a global crossing address, the address necessarily has 4 refs (2 wrap defs + 2 vertex uses) and needs live_length > 43.2 to rank below arg0's 0.185, while the measured maximum live_length with the def at the earliest legal point in the function (form a1) is 29.
+- [s35] Measured live_length ladder for the global address allocno: z2 def-in-wrap-block 21 insns (priority 0.381, score 21); a1 def-at-top-of-block-0 29 insns (priority 0.276, score 29). Both allocate '88 in 18 / 72 in 19'.
+- [s35] c6 confirms the liveness model from the other side: hoisting `scale = arg0[2] * 40` above the calls makes arg0 die before call 1, so it is allocated $8 (caller-saved) instead of a callee-save seat, and the score goes 20 -> 32.
+- [s35] tools/ra_solver/inverse_compose.py classify is not wired for func_80057CC8 and its text-stream fallback returns a bogus 'IDENTICAL / target 108 insns' verdict against a stale tgt stream. Use the lreg/greg dumps directly for this function.
+- [s35] src/text1b.c restored to `INCLUDE_ASM("asm/funcs", func_80057CC8);` at end of session. No commits; no regfix/asmfix/rule/engine/tool/Makefile/ld files touched.
+
+- [s35] Chassis re-measured at dispatch: the inherited s34 candidate scores 20 at build_insns 108 / target_insns 111 / rules_dropped 0. HEAD is `INCLUDE_ASM("asm/funcs", func_80057CC8);` at src/text1b.c:1665. The ledger floor of 20 was current, not stale.
+
+- [s35] The score-20 residual decomposes exactly: 18 differing normalised lines = 12 register renames (all caused by arg0 being seated in $19 rather than $18) + the 6-line banned-duplication block (target `sll $3,$19,16 / lw $4,4($18) / sra $3,$3,14 / addu $3,$3,$4 / lh $4,0($3) / lh $5,2($3)` against our `sll $17,$2,2 ... addu $17,$17,$6 / lh $4,0($17) / lh $5,2($17)`). Everything else already matches modulo register names.
+
+- [s35] Ban-compliantly the next-neighbour value has only two possible shapes and both are now measured. BLOCK-LOCAL crossing address (the v0/s34 family): local-alloc runs first and seats cys, the address and cxs in $16/$17/$18, after which greg prints `;; 72 conflicts: ... 16 17 18 29` and arg0 has $19 as its only legal callee-save seat regardless of rank. GLOBAL crossing address (the z2 family, 21): local-alloc gives the twins the target's $16/$17, but the address necessarily carries four references and outranks arg0 in global-alloc.
+
+- [s35] The global address allocno needs live_length > 43.2 to rank below arg0 (8/L < 2*5/54 = 0.185). Measured ladder: z2 def-in-wrap-block `Register 88 used 4 times across 21 insns` (0.381, score 21); a1 def-at-the-earliest-legal-point-in-block-0 `Register 88 used 4 times across 29 insns` (0.276, score 29). 29 is the ceiling - the def cannot precede the single `lw 0x4(arg0)` and the last use is the second `lh`. Both forms allocate `88 in 18 / 72 in 19` (tmp/grind/func_80057CC8/s35/a1.greg).
+
+- [s35] Three references for that allocno are not spellable: a wrap-selected value has two defs by construction and a two-coordinate vertex read has two uses by construction; an absorbing copy is propagated away before flow counts refs (d1, still 108 insns, score 27).
+
+- [s35] arg0's own priority cannot be raised past 0.276: six refs give 0.222, seven give 0.259, and the sixth reference is the banned second `lw` anyway; shortening its live range below 36 makes it die before the first call and lands it in the caller-saved $8 (c6, score 32).
+
+- [s35] The third possible arrangement - global next-INDEX like the target plus post-call address formation - was already killed by s33-E5 at score 33 because it needs `table` live across the call, putting nine values across it against eight seats. With this session's two kills, all three arrangements are now measured and the register-seat axis is closed by construction rather than by spelling.
+
+- [s35] Ten forms measured and banked to memory/grind/func_80057CC8/rejected/s35-*.c: a1 29, a2 29, a3 25 at 109 insns, c3 34 at 112, c6 32, c9 42, d1 27, d2 28 at 109, e1 22, e2 28. None beat 20.
+
+- [s35] Owner directive (2026-08-24, solver-first) acknowledged and discharged by the equivalent-evidence route: `python3 tools/ra_solver/inverse_compose.py classify text1b func_80057CC8` reports that the function is not replace_with_asmfile-wired, falls back to its text-stream path against a stale tmp/inverse_work/text1b.tgt.s, and returns a fictitious `honest 108 insns, target 108 insns / FIRST DIVERGENCE: IDENTICAL` (the real target is 111 insns). The RA question was answered directly from the .lreg/.greg pass dumps instead - the same inputs the solver models, measured rather than simulated.
+
+- [s35] src/text1b.c restored to `INCLUDE_ASM("asm/funcs", func_80057CC8);` at end of session (git checkout). No commits; regfix.txt, asmfix.txt, .claude/rules/, engine/, tools/, Makefile and *.ld untouched.
