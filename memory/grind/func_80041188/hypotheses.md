@@ -2554,3 +2554,96 @@ both combine-deletable shapes that could host one.
 - probe: Built and ALLOCDBG-dumped four ladder forms on the un-split (zero-FAKE) chassis: H4 (`i = 0x12;` at block-2 position 3, `s32 i = 1;` declared first), the unmodified un-split body (position 3, declared second), H1 (position 2, declared first), H2/H3 (position 1, declared first/second). Sandbox measured on H2 and H3.
 - result: livelen(i) = 97, 97, 98, 99, 99. The declaration position is completely inert -- there is no block-0 dial. L = 98 gives pri 2448 > stptr's 2439 and still loses the seat, so `i = 0x12;` must be the FIRST statement of block 2, which is exactly the source order that costs the two sched1 emission-order diffs s15's sched_solver proved are repairable only by moving it back. H2 == H3 == alt_fakefree_floor3_s14.c: sandbox 3 at 132/132, ALL-TARGET seats, zero FAKE constructs, re-measured this session in both spellings.
 - verdict: KILLED
+
+## [s30] The unexplained "a4 live 190 vs a3 live 99" is a compiler mechanism, not an accounting mystery, and naming it decides whether the pa4-free chassis is reachable.
+- mechanism: every prior session took the pair as a brute fact. Grepping every writer of reg_live_length in tools/gcc-2.7.2 shows exactly one multiplier: local-alloc.c:1058-1064, inside update_equiv_regs, doubles reg_live_length for any pseudo carrying a REG_EQUIV note. The FIFTH parameter a4 is passed on the stack, so expand sets its pseudo from the incoming stack slot with a REG_EQUIV note to that MEM; the FOURTH parameter a3 arrives in a hard register and gets no note. The auto-created-note path additionally requires reg_basic_block >= 0 (single-block use), which no contested allocno here satisfies.
+- probe: instrumented flow.c per-insn counts (BB2_FLOW_DEBUG, s30/A1/flow_75.err, flow_76.err), sched1's per-segment recount (BB2_SLL_DEBUG, s30/A1/sll_*.err), the REG_EQUIV note read directly out of s30/A1/red.i.sched insn 12, and form A1I (form A1 plus one extra real store inside loop2) to measure the exchange rate.
+- result: CONFIRMED exactly. flow gives a3 105 / a4 104; sched1 (sched.c:5106) overwrites with a3 99 / a4 95; ALLOCDBG reports a3 99 / a4 190 = 2 * 95. The note is present on insn 12 and on nothing else contested. A1I moves a4 190 -> 192 (+2, doubled) and a3 99 -> 100 (+1) for one added loop2 insn, with out2 unchanged at 42.
+- verdict: CONFIRMED
+
+## [s30] The pa4-free chassis family can seat out2 in $s6 at target-hosted reference counts (s21 N1/Q1/CANDF, s22/s23 A1) — the "two inversions" left open since s21.
+- mechanism: on that chassis out2 has 3 references and a4 7, and E-s23-3's ratio law said out2 outranks a4 iff L(a4) > 4.667 * L(out2); the block-0 position sweep exhausted at 4.585, but no session had tried to lengthen a4's live range independently of out2's, and no session had explained a4's 190.
+- probe: re-measured A1 (honest block-2 definition, no carrier local) and A1I (A1 + one loop2 insn) with ALLOCDBG, then solved the priority inequalities in closed form using the doubling mechanism from the hypothesis above.
+- result: KILLED, and generally. With the doubling, pri(a4) = 70000/L4raw and pri(a3) = 80000/L3raw, and L4raw <= L3raw always (95 vs 99; a3's range starts one insn earlier in block 0, both die at the same loop2 call, and no region of the function has a3 live and a4 dead). So a3 outranks a4 unconditionally and takes $s6 before out2 is ever considered. Adding y insns in loop2 makes it worse, not better: 140000/(190+2y) > 80000/(99+y) requires y < -67. Measured at y=1: a4 729, a3 800. s21's Q1/N1 inverted the pair only by giving a4 an EIGHTH reference (crossing floor_log2's 7->8 step to 1263), one more reference than target's own bytes host. Banked rejected/pa4-free-chassis-a4-regequiv-doubled-a3-always-outranks.c.
+- verdict: KILLED
+
+## [s30] (s29 frontier item 2) A two-member walking object transfers out2's references to the walker and dissolves E-s29-2's contradiction.
+- mechanism: s29 hoped a different pseudo SET — one walking object addressing both matrices — would attribute out2's references elsewhere.
+- probe: S1 (function-local `typedef struct { s32 a[8]; s32 b[8]; } PAIR; PAIR *pp = (PAIR *)a4;` with all four call sites `pp->a` / `pp->b`, out2 and out3 deleted) and S2 (out2 kept for loop1, only loop2's second argument written `pp->b`), both applied to src/text1a_pre.c and measured with sandbox --disable all plus ALLOCDBG.
+- result: KILLED. S1 = sandbox 55 at 132 build / 132 target insns, with NINE global allocnos instead of eleven — a struct-member address expression forms no pseudo in GCC 2.7.2 and is rematerialised into a call-clobbered temp at each of the four uses. S2 = sandbox 48 at 134 insns: with no block-2 definition and no loop notes on loop2, the address is rematerialised at BOTH loop2 sites where target emits exactly one insn, in block 2. Same family as E-s12's `&m[0]`/`&m[1]` MATRIX spelling.
+- verdict: KILLED
+
+## [s30] reg_n_refs is frozen by flow.c:2081, so combine is the only pass that can host a byte-free reference (the standing law behind E-s28-2, E-s29-1, E-s30-2 and candidate.c's own FAKE annotation).
+- mechanism: the law was asserted from combine.c's header comment, never checked against the other passes that run between flow and global_alloc.
+- probe: grepped every assignment to reg_n_refs and reg_live_length across tools/gcc-2.7.2/*.c and read each site.
+- result: KILLED as stated. local-alloc.c's optimize_reg_copy_1 (781/783) and optimize_reg_copy_2 (913/914) TRANSFER reg_n_refs between pseudos after flow and before global_alloc, and adjust reg_live_length at 820/831; update_equiv_regs doubles live length at 1064 and zeroes refs at 1110. The complete post-flow surface is now enumerated. HOWEVER the conclusion the law was used to support survives: neither copy optimisation can be aimed at out2, because both require a REG_DEAD note on the copy's SOURCE at a later insn of the SAME basic block, and out2 (defined in block 0, loop-carried through loop1) has no REG_DEAD note anywhere in loop1, while the forward scan breaks at loop1's CODE_LABEL so a block-0 copy cannot reach out2's uses. An in-loop1 copy would be an in-loop1 DEFINITION, which E-s23-1's cse-EBB law folds.
+- verdict: KILLED
+
+## s30 frontier
+
+1. **`optimize_reg_copy_1` / `optimize_reg_copy_2` are a byte-free reference-TRANSFER dial for
+   any pseudo pair that lives inside ONE basic block — apply it to the loop2/block-2 allocnos
+   (out3, stptr2, i) rather than to out2, and use it to push a COMPETITOR of out2 down.**
+   *mechanism:* both routines replace uses of one pseudo with another between a copy and the
+   source's death, moving `reg_n_refs` by `loop_depth` per replaced use (local-alloc.c:781/783,
+   913/914) and adjusting `reg_live_length` (820/831), all AFTER flow has counted and AFTER
+   sched1 has recounted, i.e. exactly at the input to `global_alloc`. Nothing in the ledger has
+   ever used this. On the candidate chassis the honest defect is pa4 at 7/95 = 1473 outranking
+   a 3-reference out2 (max 731); a transfer that moved even ONE reference off pa4 (7 -> 6 refs
+   = 1263) does not close it, but a transfer that moved TWO (5 refs = 2*5*10000/95 = 1052) does
+   not either — the gate to check first is whether the transfer can instead LENGTHEN pa4
+   (`reg_live_length[dregno] += d_length`, line 831) by ~96, since pa4 at 7/191 = 732 finally
+   sits below out2's C3-position 731... which is one unit short, so the real question is
+   whether `d_length` and the C3 out2 position can be reached together.
+   *next probe:* write a block-2 copy pair that satisfies optimize_reg_copy_1's gate inside
+   block 2 (a copy `X = Y` whose SRC dies later in block 2, no label between — block 2 is five
+   insns: `a1 += 0x6C; a2 += 0x6C; i = 0x12; stptr2 = saved + 0x750; out3 = ...`), dump with
+   `bash tmp/grind/func_80041188/s30/fr.sh <TAG> 86 77 75` and read whether ALLOCDBG's nrefs
+   for the pair differ from the flow counts in `flow_*.err`. Require in ONE measurement: an
+   ALLOCDBG nrefs that flow.c did NOT produce (proof the dial fires in this function at all),
+   at 132 build insns.
+
+2. **The REG_EQUIV live-length doubling is a 2x dial on ANY pseudo that is set once from a MEM
+   and used in a single basic block — find whether the ORIGINAL used it, i.e. whether some
+   local of this function is a memory load rather than an arithmetic expression.**
+   *mechanism:* local-alloc.c:1051-1064 CREATES the note itself for a single-block pseudo whose
+   source is a MEM that `validate_equiv_mem` proves unchanged for the register's life, then
+   doubles its live length. `base = D_800A9A10[a0]` is exactly such a load (block 0 only). The
+   contested allocnos are all multi-block and cannot get the note, but the doubling changes the
+   local_alloc quantities' priorities, which is what decides which hard registers are already
+   `regs_used_so_far` when `find_reg`'s pass 0 runs.
+   *next probe:* check whether `base`/`saved` carry auto-created REG_EQUIV notes in
+   `s30/CAND/red.i.lreg`, and whether re-spelling `saved = base + 0x94` as a second load
+   `saved = D_800A9A10[a0] + 0x94` (same value, one more MEM-sourced single-block pseudo)
+   changes any global allocno's seat. Cheap, and it is the only untried consumer of the newly
+   found mechanism.
+
+3. **(carried, unchanged) The D-family same-value re-store of out2 plus a `sched_solver` attack
+   on D6's emission order** — still the only measured form that reaches target's complete seat
+   table at 132 insns, still moving away from target's own hosted reference counts (E-s29-1),
+   and still requiring `.claude/rules/dead-store-fake-exception.md` to be read end to end with
+   its scope sentence quoted before any submission.
+
+## [s30] The unexplained pair 'a3 = 4 refs / live 99' versus 'a4 = 7 refs / live 190' — two parameters with nearly identical live ranges — is a compiler mechanism, and naming it decides whether the pa4-free chassis is reachable.
+- mechanism: Exactly one site in GCC 2.7.2 multiplies a live length: local-alloc.c:1058-1064 (update_equiv_regs) executes reg_live_length[regno] *= 2 for any pseudo carrying a REG_EQUIV note. The FIFTH parameter a4 is passed on the stack, so expand sets its pseudo from the incoming stack slot with a REG_EQUIV note to that MEM; the FOURTH parameter a3 arrives in a hard register and gets no note. The auto-created-note path (local-alloc.c:1051-1055) additionally requires reg_basic_block >= 0 (single-basic-block use), which no contested allocno of this function satisfies.
+- probe: Instrumented flow.c per-insn live-length histogram (BB2_FLOW_DEBUG) and sched1's per-segment recount (BB2_SLL_DEBUG) for pseudos 75 (a3) and 76 (a4) on the pa4-free chassis; the REG_EQUIV note read directly from tmp/grind/func_80041188/s30/A1/red.i.sched insn 12; plus form A1I (A1 + one extra real store inside loop2) to measure the exchange rate.
+- result: flow gives a3 105 (b0:11 b1:41 b2:5 b3:48) and a4 104 (b0:10 b1:41 b2:5 b3:48) — no doubling. sched.c:5106 overwrites both with a3 99 and a4 95 — still no doubling. ALLOCDBG reports a3 99 and a4 190 = 2 * 95. insn 12 of red.i.sched is (set (reg/v:SI 76) (mem:SI (plus (reg $0) (const_int 16)))) carrying (expr_list:REG_EQUIV (mem:SI ...)). A1I moves a4 190 -> 192 (+2, doubled) and a3 99 -> 100 (+1) for one added loop2 insn, with out2 unchanged at 42.
+- verdict: CONFIRMED
+
+## [s30] The pa4-free chassis family (s21 N1/CANDF/Q1, s22/s23 A1) can seat out2 in $s6 at target-hosted reference counts — the 'two inversions' left open since s21 and only sweep-exhausted by E-s23-3.
+- mechanism: On that chassis out2 has 3 references and a4 has 7, so E-s23-3's ratio law said out2 outranks a4 iff L(a4) > 4.667 * L(out2). The block-0 position sweep exhausted at 4.585, but no session had tried to lengthen a4's live range independently of out2's, and none had explained a4's 190.
+- probe: Re-measured form A1 (no pa4 carrier, honest block-2 out3 = (s32 *)((u8 *)a4 + 0x20)) and form A1I (A1 + one real store in loop2) with the instrumented cc1's ALLOCDBG table, then solved the priority inequalities in closed form using the REG_EQUIV doubling.
+- result: A1: a3 4/99 = 808 -> $s6, a4 7/190 = 736 -> $s7, out2 3/42 = 714 -> $fp — all three contested seats inverted versus target. With the doubling named, pri(a4) = 70000/L4raw and pri(a3) = 80000/L3raw, and L4raw <= L3raw always (95 vs 99: a3's range starts one insn earlier in block 0, both die at the same loop2 func_800523E0, and no region of the function has a3 live and a4 dead), so a3 outranks a4 unconditionally. Adding loop2 insns makes it worse: 140000/(190+2y) > 80000/(99+y) requires y < -67; measured at y = 1, a4 729 versus a3 800. s21's Q1/N1 inverted the pair only by giving a4 an EIGHTH reference (crossing floor_log2's 7->8 step to 1263), one more reference than target's own bytes host (census E-s29-1).
+- verdict: KILLED
+
+## [s30] (s29 frontier item 2) A two-member walking object gives loop1's two matrices a different pseudo set, so the references this grind attributes to out2 are attributed to the walker and E-s29-2's contradiction dissolves.
+- mechanism: Every shape tried so far keeps out2 an independent s32 * local derived from pa4; a single walking struct would change the pseudo set itself.
+- probe: S1 = function-local typedef struct { s32 a[8]; s32 b[8]; } PAIR; PAIR *pp = (PAIR *)a4; with all four call sites written pp->a / pp->b and out2 / out3 deleted. S2 = out2 kept for loop1, only loop2's second-matrix argument written pp->b. Both applied to src/text1a_pre.c and measured with sandbox --disable all plus ALLOCDBG.
+- result: S1 = sandbox 55 at 132 build / 132 target insns (re-measured first-hand this session), with NINE global allocnos instead of eleven: a struct-member address expression forms no pseudo in GCC 2.7.2 and is rematerialised into a call-clobbered temp at each of the four uses. S2 = sandbox 48 at 134 build insns: with no block-2 definition and no loop notes on loop2, the address is rematerialised at BOTH loop2 sites where target emits exactly one insn, in block 2. Same family as E-s12's &m[0]/&m[1] MATRIX spelling, reached from the other direction.
+- verdict: KILLED
+
+## [s30] reg_n_refs is frozen by flow.c:2081 and nothing recomputes it, so combine is the only pass that can host a byte-free reference (the standing law behind E-s28-2, E-s29-1, E-s30-2 and candidate.c's own FAKE annotation).
+- mechanism: The law was asserted from combine.c's header comment and never checked against the other passes that run between flow and global_alloc.
+- probe: Grepped every assignment to reg_n_refs and reg_live_length across tools/gcc-2.7.2/*.c and read each site in context.
+- result: KILLED as stated. local-alloc.c's optimize_reg_copy_1 (781/783) and optimize_reg_copy_2 (913/914) TRANSFER reg_n_refs between pseudos after flow and before global_alloc, and adjust reg_live_length at 820/831; update_equiv_regs doubles live length at 1064 and zeroes refs at 1110. The conclusion the law was used to support nevertheless survives: neither copy optimisation can be aimed at out2, because both require a REG_DEAD note on the copy's SOURCE at a later insn of the SAME basic block, and out2 (defined in block 0, loop-carried through loop1, live-out on the back edge) has no REG_DEAD note anywhere in loop1, while the forward scan breaks at loop1's CODE_LABEL so a block-0 copy cannot reach out2's uses; an in-loop1 copy would be an in-loop1 DEFINITION, which E-s23-1's cse-EBB law folds into the residual move.
+- verdict: KILLED

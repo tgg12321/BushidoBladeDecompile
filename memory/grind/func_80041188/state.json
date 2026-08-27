@@ -1,8 +1,8 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 29,
- "current_modality": "rederive",
+ "session_count": 30,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -183,23 +183,29 @@
    "floor": 1,
    "modality": "rederive",
    "headline": "Target-hosted reference census completed: the allocno model is exact for every local, which turns the floor-1 residual into a proven contradiction and bounds the two-locals goto chassis above at floor"
+  },
+  {
+   "session": 30,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Named the 30-session-unexplained 'a4 live 190 vs a3 live 99' (local-alloc.c:1064 doubles reg_live_length for REG_EQUIV pseudos, i.e. for the stack parameter only), which FORECLOSES the entire pa4-free"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The only untested byte-free live-length class is an insn deleted AFTER sched1's live-length recount -- reload's no-op-move deletion or jump2 cross-jumping. Two such insns sited anywhere i is live and stptr is not (loop2, or block 2 after `i = 0x12;`) give L_i = 99 with `i = 0x12;` at target's own source position, removing BOTH sched1 emission-order diffs and landing the honest zero-FAKE chassis at floor 1.",
-   "mechanism": "reg_n_refs is frozen by flow.c:2081 pre-combine; reg_live_length is recomputed by sched1 post-combine (sched.c:5106 from sched.c:3165) and then consumed by global.c's allocno_compare. An insn present at that recount but removed by reload (a reg-reg copy whose source and destination receive the same hard register is deleted as a no-op move) or by jump2 tail-merging is live-length-visible and byte-invisible -- the exact dual of the F1 reference lever, and the only remaining member of its family.",
-   "next_probe": "Start from tmp/grind/func_80041188/s29/H4.c (un-split stptr, `i = 0x12;` at block-2 position 3, L_i = 97, seats swapped). Add to loop2 a second pointer local aliasing out3, used at exactly one of loop2's two out3 sites, so the copy `x = out3;` is a reload-coalescing candidate. Dump with `bash tmp/grind/func_80041188/s29/dump.sh <TAG>` under WSL and read livelen for i and out3. Require in ONE measurement: livelen(i) >= 99 AND build insns == 132. Test the single-copy case first to learn the per-insn gain, then site the second."
+   "hypothesis": "local-alloc's optimize_reg_copy_1 / optimize_reg_copy_2 are a byte-free reference-TRANSFER dial for any pseudo pair confined to ONE basic block, and can be aimed at a COMPETITOR of out2 (pa4, or the block-2/loop2 allocnos) rather than at out2 itself.",
+   "mechanism": "Both routines replace uses of one pseudo with another between a copy insn and the source's death, moving reg_n_refs by loop_depth per replaced use (local-alloc.c:781/783 and 913/914) and adjusting reg_live_length (820 subtracts from the source, 831 adds to the destination) \u2014 all AFTER flow has counted and AFTER sched1 has recounted, i.e. exactly at global_alloc's input. No session has ever used this. On the candidate chassis the honest defect is pa4 at 7 refs / live 95 = 1473 outranking a 3-reference out2 (ceiling 731 at live 41), and line 831's d_length addition is the only known way to LENGTHEN pa4 without emitting bytes.",
+   "next_probe": "Build a block-2 copy pair that satisfies optimize_reg_copy_1's gate entirely inside block 2 (five insns: a1 += 0x6C; a2 += 0x6C; i = 0x12; stptr2 = saved + 0x750; out3 = ...), i.e. a copy X = Y whose SRC dies later in block 2 with no label between. Dump with `bash tmp/grind/func_80041188/s30/fr.sh <TAG> 86 77 75` and compare ALLOCDBG's nrefs against flow.c's own counts in flow_*.err. Require in ONE measurement: an ALLOCDBG nrefs value that flow.c did not produce (proof the dial fires in this function at all), at 132 build insns."
   },
   {
-   "hypothesis": "E-s29-2's contradiction is resolved by changing the pseudo SET rather than the statement order: in the original, the second matrix pointer's references are hosted by another pointer, so the out2 allocno as this grind models it does not exist.",
-   "mechanism": "The census proves target hosts pa4 at 7 and out2 at 3, a pair the priority model cannot seat the way target does. Every shape tried so far keeps out2 an independent `s32 *` local derived from pa4. If loop1's two matrices are reached through a single walking object (a two-member struct, or `&p->a` / `&p->b` on a MATRIX[2]-shaped parameter), the references currently attributed to out2 are attributed to the walker and the contradiction need not arise.",
-   "next_probe": "Write the two-member-struct form (`typedef struct { s32 a[8]; s32 b[8]; } X;`, `X *p = (X *)a4;`, calls taking `p->a` / `p->b`), measure `sandbox func_80041188 --disable all` and the ALLOCDBG table. Require: block 2 still emits `addiu $s3,$s7,0x20`, and the $s6-equivalent pseudo carries >= 4 references with no build insn target does not host. Note E-s12 already killed the ONE-pointer `&m[0]`/`&m[1]` spelling (cse1 collapses it to a single pseudo, 125 insns / sandbox 43); the struct and two-parameter spellings are untried."
+   "hypothesis": "The REG_EQUIV live-length doubling is also available to any pseudo set once from a MEM and used in a SINGLE basic block, so the original may have used it \u2014 and the local_alloc quantities it re-prices decide which hard registers are already in regs_used_so_far when find_reg's pass 0 runs.",
+   "mechanism": "local-alloc.c:1051-1055 CREATES the note itself when reg_basic_block[regno] >= 0, the source is a MEM, and validate_equiv_mem proves the MEM unchanged for the register's life; line 1064 then doubles the live length. `base = D_800A9A10[a0]` is exactly such a single-block MEM load in this function.",
+   "next_probe": "Check whether `base` and `saved` carry auto-created REG_EQUIV notes in tmp/grind/func_80041188/s30/CAND/red.i.lreg, then re-spell `saved = base + 0x94` as a second MEM-sourced single-block pseudo (`saved = D_800A9A10[a0] + 0x94`, same value) and re-measure the ALLOCDBG table and sandbox. Require: any change in a GLOBAL allocno's seat, which would prove the local quantities' pricing is reachable from C."
   },
   {
-   "hypothesis": "(carried from s28, re-prioritised DOWNWARD by the census) The D-family same-value re-store of out2 plus a sched_solver attack on D6's emission order closes the function.",
-   "mechanism": "D5/D6 buy ALL SEVEN target seats by giving out2 a fifth reference; D6 pays the surplus insn out of loop1's load-delay nop and returns to 132 insns with a pure sched1 emission-order residual. But E-s29-1 shows that reference is one target's bytes do not host, so a scoring D form is moving AWAY from the original's shape.",
-   "next_probe": "Only after frontier items 1 and 2 are spent. Run tools/sched_solver perturb.py --pass 1 --block 1 against s25's hand-built loop1 goal on the banked alt_D6_132insns_schedresidual_s27.c (it exists; s28's note that it must be re-derived was wrong). Before ANY D-family submission, read .claude/rules/dead-store-fake-exception.md end to end and quote its scope sentence -- a re-store that is NOT dropped before the final build may fall outside that family, in which case the correct outcome is ruling-request, not a candidate."
+   "hypothesis": "(carried, unchanged) The D-family same-value re-store of out2 plus a sched_solver attack on D6's emission order closes the function.",
+   "mechanism": "D5/D6 buy all seven target seats by giving out2 a fifth reference, and D6 pays the surplus insn out of loop1's load-delay nop, leaving a pure sched1 emission-order residual at 132/132. E-s29-1 says target's bytes do not host that reference, so a scoring D form moves away from the original's shape; it remains the only measured form reaching target's complete seat table at 132 insns.",
+   "next_probe": "Only after frontier items 1 and 2. Run tools/sched_solver perturb.py --pass 1 --block 1 against s25's hand-built loop1 goal on memory/grind/func_80041188/alt_D6_132insns_schedresidual_s27.c, and read .claude/rules/dead-store-fake-exception.md end to end (quoting its scope sentence) before any submission \u2014 a re-store that is NOT dropped before the final build may fall outside that family, in which case the correct outcome is ruling-request."
   }
  ],
  "judge_constraints": [
