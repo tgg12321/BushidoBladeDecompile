@@ -3421,3 +3421,139 @@ no build-pipeline file was touched.
 - [s25] No decision packet was filed. Both dispositions available to the escalation modality are foreclosed for this function by the owner's own 2026-08-24 rulings: the canonical-asm LOW-tier override was DECLINED as auto-reject class, and the 2026-08-23 REFUSED / OWNER-ACCEPTED INCOMPLETE entry was SUPERSEDED by the rules-to-zero campaign with the instruction 'keep grinding'. Per the auto-reject clause, a packet whose YES would lower a standard or accept the debt must NOT be filed and the residual stays ACTIVE.
 
 - [s25] src/text1a_pre.c was restored to HEAD at the end of the session; no build-pipeline file was touched and no commit was made.
+
+## Session 26 (2026-08-27) — modality dispatched `escalation`, worked as grind per the owner's 2026-08-27 ruling
+
+- **[s26-DISPOSITION] No decision packet filed, and this is the owner's own instruction, not a
+  dodge.** The driver dispatched s26 in `escalation` modality, but the queue item carries
+  OWNER RULING 2026-08-27 (`docs/grind/decisions.md:14565`): "the 2026-08-25 auto-filed
+  exhaustion-backstop escalation is SPENT … returns to ACTIVE … the owner directs continued honest
+  grinding to COMPLETED-C, with the explicit goal of ZERO regfix + ZERO asmfix rules remaining.
+  The canonical-asm LOW-tier override remains DECLINED (unchanged from the 2026-08-24 ruling)."
+  Both dispositions the escalation modality can file are therefore pre-decided NO: gate (a) is
+  LOW (re-measured s25, E-s25-8, and the owner declined the override twice), and a
+  "REFUSED / OWNER-ACCEPTED INCOMPLETE" entry is exactly the debt-accepting shape the 2026-08-24
+  auto-reject clause forbids. Per the role prompt's own words ("a packet whose YES would LOWER a
+  standard … is PRE-DECIDED NO and must NOT be filed; that residual stays ACTIVE"), the honest
+  outcome is `progress`. This is the second consecutive session to reach that conclusion (s25);
+  the driver's exhaustion counter is the thing that is stale, not the function.
+
+- **[E-s26-1] THE LOAD-BEARING RESULT — the reference-count dial the banned do-while(0) wrap was
+  faking has an HONEST source: a real loop CONSTRUCT.** GCC 2.7.2's flow.c increments
+  `REG_N_REFS` by `loop_depth`, and `loop_depth` is driven by NOTE_INSN_LOOP_BEG/END notes, which
+  `expand_start_loop` emits **only for real loop constructs** (`while` / `for` / `do`). A
+  `goto`-based loop emits none, so every in-loop reference counts exactly once — which is why
+  every allocno in this function has been ref-starved on every goto chassis, and why the
+  do-while(0) wrap moved the needle at all. Rewriting loop1 as a plain
+  `do { … } while (i < 0x12);` doubles the count of every reference inside it. Measured on the
+  V15a chassis (form Y2 = V15a with a real do-while loop1 and the two FAKE increment splits
+  REMOVED): out2 goes **3 refs / live 42 = 714 → 5 refs / live 41 = 2439**, i 10/97 → 11/97,
+  tbl 6/47 → 7/47, pa4 7/95 → 9/94 = 2872, a3 4/99 → 5/99 = 1010, at **132 build insns** and
+  `sandbox --disable all` = **13** (vs V15a's 15 WITH its two FAKE splits). This is the first
+  reference lift in this function's whole history that is an ordinary C loop.
+
+- **[E-s26-2] The F1 stptr chain extender is UNNECESSARY on the real-loop chassis — form Z1 is
+  FAKE-free.** `stptr = base; stptr += 0xFC;` was the one construct in the V15a/candidate lineage
+  that needed a `/* FAKE */` annotation. Replacing it with the plain `stptr = base + 0xFC;`
+  (form Z1) is **bit-identical to Y2** — same allocno table, same 132 insns, same
+  `sandbox --disable all` = **13** — because loop.c strength-reduces the stptr biv away before
+  its ref count matters. Z1 therefore contains **no FAKE construct of any kind**: a real
+  do-while loop1, a goto loop2, the pa4 param alias, the out2/out3 duplicated definition, and
+  ordinary arithmetic. Banked as `memory/grind/func_80041188/alt_Z1_realloop_honest_s26.c`.
+  (Control E-s26-6 shows the chain extender genuinely did work on the goto chassis, so this is a
+  chassis property, not a re-measurement error.)
+
+- **[E-s26-3] The allocno priority formula is now exact and can be used arithmetically:**
+  `pri = floor_log2(nrefs) * nrefs * 10000 / live_length`. Verified against all eleven allocnos
+  of V15a to the unit (16/99→6464, 10/97→3092, 7/41→3414, 6/47→2553, 4/99→808, 3/42→714).
+  Consequence for the seat problem: out2's admissible band is `(pa4_pri, stptr2_pri)`, and at
+  **live 42 both 4 refs (1904) and 5 refs (2380) land inside the goto-chassis band (1473, 2500)**
+  — i.e. the +2 lifts that the increment split delivers are as usable as a +1, which no earlier
+  session's arithmetic showed.
+
+- **[E-s26-4] The Y2/Z1 residual is exactly TWO named things — enumerated by diffing our honest
+  stream against the pinned target stream.** (a) **the out2/pa4 seat swap**: ours gives pa4 $s6
+  and out2 $s7, target the reverse, because out2 2439 < pa4 2872; it accounts for six of the
+  diff hunks. (b) **loop.c's strength reduction of the stptr biv**: loop.c eliminates the biv in
+  favour of the `stptr + 0x38` giv, emitting `addu $19,$2,308` / `addu $7,$19,$zero` /
+  `sh $8,-50($19)` where target has `addu $19,$2,252` / `addu $7,$19,56` / `sh $2,6($19)`
+  (252+56 = 308, 6-56 = -50). Target's loop1 is therefore provably NOT a loop.c-processed loop,
+  which is the exact tension this chassis creates: the loop notes that supply the references also
+  supply loop.c.
+
+- **[E-s26-5] KILLED — no no-op statement lifts a reference. Four spellings, all inert.**
+  On the V15a chassis, `out2 = out2;` before the loop1 use (W1), `out2 += 0;` (W2),
+  `out2 = out2;` in block 0 (W3) and at the top of loop1 (W4) ALL leave out2 at exactly
+  **3 refs / live 42 / pri 714**, 142 insns, and an allocno table identical to V15a's. The law
+  this establishes: a reference-lift statement must produce a genuinely NEW value at RTL
+  expansion (as `i += 2; i -= 1;` and `stptr = base; stptr += 0xFC;` do). A statement whose RHS is
+  the LHS's current value never becomes an insn, so flow.c has nothing to count. Banked at
+  `rejected/out2-self-assign-*.c` and `rejected/out2-plus-zero-in-loop1-inert-refs-rigid-3.c`.
+  This also disposes of the dead-store family as a delivery vehicle for THIS residual.
+
+- **[E-s26-6] Control measurement: the base-rooted chain extender really does survive cse1 on the
+  goto chassis.** Form X3 = V15a with `stptr = base + 0xFC;` in place of the split: stptr falls
+  from **7 refs / 41 = 3414 to 5 refs / 41 = 2439** and loses its $s3 seat. So the s25 asymmetry
+  (base-rooted chains survive, pa4-rooted chains fold) is real and reproducible, and E-s25-7's
+  refinement stands: cse1 foldability, not donor death point, is the governing condition.
+
+- **[E-s26-7] KILLED — moving out2's definition into loop1 is dead on BOTH chassis, for two
+  different reasons.** On the goto chassis (X1/X2, def placed either immediately before out2's
+  first use or at the top of loop1 — identical results) out2 does reach **4 refs**, but its live
+  length collapses to **21**, giving pri **3809**, far above the (1473, 2500) band, and it seizes
+  $s3; worse, the build drops to **141 insns** because target's block-0 `addiu $s6,$s7,0x20`
+  ceases to exist in block 0. On the real-loop chassis (Z3) LICM hoists the definition straight
+  back to the preheader and the result is bit-identical to Y2 — out2's definition POSITION is not
+  a dial there at all. Banked at `rejected/out2-def-into-loop1-pri-3809-and-block0-addiu-lost.c`
+  and `rejected/out2-def-in-realloop-licm-hoists-back-inert.c`.
+
+- **[E-s26-8] KILLED — the block-0 chain extender on out2 is chassis-independent.** Re-measured on
+  the real-loop chassis (Z2): `out2 = pa4; out2 = (s32 *)((u8 *)out2 + 0x20);` leaves out2 at
+  **5 refs / live 41**, bit-identical to Z1/Y2. cse1 folds it exactly as it did on the goto
+  chassis (E-s25-7). Banked at `rejected/out2-chain-extender-folds-on-realloop-chassis.c`.
+
+- **[E-s26-9] KILLED — splitting pa4's loop1 uses into a second local reorders the seats correctly
+  but spills a3.** Form Z4 (`pm = pa4;` in block 0, loop1's two pa4 uses rewritten to pm) drops
+  pa4 to 6 refs / 95 = 1263 and lets out2 (5/41 = 2439) take **$s6** with pm at $s7 — the seat
+  arithmetic works — but a3 loses its hard register (`hardreg=-1`) and the build grows to
+  **143 insns**. Banked at `rejected/pm-split-drops-pa4-but-spills-a3-143-insns.c`.
+
+- **[E-s26-10] The seat swap on the real-loop chassis is an arithmetic dead end in every direction
+  measured.** To take $s6, out2 needs pri > pa4's 2872. Raising out2 to 6 refs would give 2926
+  (admissible), but out2 is rigid at 5 across every spelling tried (E-s26-5/7/8). Shortening
+  out2's live from 41 to <= 34 is impossible: on this chassis LICM pins the definition to the
+  preheader and the last use is the loop's final call, so out2's live range IS the loop body.
+  Lowering pa4 by ref count needs 9 -> 7 (8 refs still gives 2553 > 2439), i.e. deleting BOTH the
+  out2 and out3 definitions' references to pa4, and out2 == out3 == pa4 + 0x20 makes that
+  semantically impossible. Lowering pa4 by live length needs live >= 111 against a function that
+  is only ~99 insns long. The remaining untried direction is the OTHER residual: kill loop.c's
+  biv elimination (E-s26-4b) so that stptr stays an allocno, which re-lays the whole priority
+  landscape.
+
+- **[E-s26-11] Freshly noticed structural fact, unexploited: `stptr` at loop1 exit and `stptr2` at
+  loop2 entry are THE SAME VALUE.** stptr walks base+0xFC in 17 steps of 0x68 to base+0x7E4;
+  stptr2 = saved + 0x750 = (base+0x94) + 0x750 = base+0x7E4. Target nevertheless spills
+  `base+0x94` to 0x18($sp) in block 0 and recomputes (`lw $t0,0x18($sp)` / `addu $s0,$t0,1872`),
+  so the original source did keep them as separate variables — but the coincidence is strong
+  evidence about the original's data layout (a 0x68-stride record array with a second field at
+  +0x94) and it is the one free way to give `stptr` a use that survives loop1, which is exactly
+  what loop.c's biv elimination needs to be blocked. Not measured this session.
+
+- [s26] src/text1a_pre.c was restored to HEAD at the end of the session; no build-pipeline file was
+  touched, no commit was made, and no permuter campaign was launched.
+
+- [s26] The allocno priority formula is now exact and usable as arithmetic: pri = floor_log2(nrefs) * nrefs * 10000 / live_length. Verified to the unit against all eleven V15a allocnos (16/99->6464, 10/97->3092, 7/41->3414, 6/47->2553, 4/99->808, 3/42->714). Consequence: at live 42 BOTH 4 refs (1904) and 5 refs (2380) sit inside the goto-chassis admissible band (1473, 2500), so a +2 reference lift is as usable as a +1 — arithmetic no earlier session had.
+
+- [s26] Form Z1 (real do-while loop1, no increment splits, no stptr chain extender, no wrap) measures sandbox --disable all = 13 at 132 build / 132 target insns, rules_dropped 16. It is the first chassis in this grind's history that obtains loop-depth reference weighting with no coercion construct at all.
+
+- [s26] The Z1 residual, enumerated by diffing our honest stream against the pinned target stream, is exactly TWO things: (a) the out2/pa4 seat swap (ours pa4=$s6 / out2=$s7, target the reverse) because out2 2439 < pa4 2872 — six diff hunks; (b) loop.c eliminating the stptr biv in favour of the stptr+0x38 giv, emitting `addu $19,$2,308` / `addu $7,$19,$zero` / `sh $8,-50($19)` where target has `addu $19,$2,252` / `addu $7,$19,56` / `sh $2,6($19)` (252+56 = 308, 6-56 = -50).
+
+- [s26] Target's loop1 is provably NOT a loop.c-processed loop (it carries no strength-reduced giv), which is the exact tension this chassis creates: the loop notes that supply the references also supply loop.c. Whether the two can be separated is the whole remaining question on this chassis.
+
+- [s26] The out2/pa4 seat swap is an arithmetic dead end in every direction measured on the real-loop chassis: out2 is rigid at 5 refs across self-assign, +=0, definition relocation and chain extension; out2's live length IS the loop body (LICM pins the def to the preheader, the last use is the loop's final call) so it cannot be shortened below 34; pa4 needs 9->7 refs (8 still gives 2553 > 2439), which means deleting BOTH the out2 and out3 definitions' references to pa4, and out2 == out3 == pa4 + 0x20 makes that semantically impossible; and lowering pa4 by live length needs live >= 111 against a ~99-insn function.
+
+- [s26] Newly noticed, unexploited structural fact: stptr at loop1 exit and stptr2 at loop2 entry are THE SAME VALUE (base+0xFC + 17*0x68 = base+0x7E4 = (base+0x94)+0x750). Target nevertheless spills base+0x94 to 0x18($sp) and recomputes, so the original kept them as separate variables — but this is the one free way to give stptr a use that outlives loop1, which is precisely what loop.c's biv elimination needs to be blocked.
+
+- [s26] DISPOSITION: no decision packet was filed, on the owner's own instruction. The queue item carries OWNER RULING 2026-08-27 (docs/grind/decisions.md:14565): the 2026-08-25 exhaustion-backstop escalation is SPENT, func_80041188 returns to ACTIVE, and the owner directs continued honest grinding to COMPLETED-C with the explicit goal of zero regfix + zero asmfix carriers; the canonical-asm LOW-tier override remains DECLINED. Gate (a) is LOW (re-measured s25, E-s25-8) and gate (b) has no in-hand SOTN precedent, so the only packet available would be the debt-accepting 'REFUSED / OWNER-ACCEPTED INCOMPLETE' shape that the 2026-08-24 auto-reject clause forbids filing. Per that clause the residual stays ACTIVE and the honest outcome is progress with the kills banked. This session did not merely decline to dispose: it GREW the search space with a construct class (honest loop notes) that no prior session had.
+
+- [s26] src/text1a_pre.c was restored to HEAD at the end of the session; no build-pipeline file was touched, no commit was made, and no permuter campaign was launched (nothing to orphan).

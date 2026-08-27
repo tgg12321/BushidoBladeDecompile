@@ -2271,3 +2271,93 @@ residual `move $s3,$s6` (E-s23-1). Block 0's deliveries are enumerated and only 
 - probe: Six spellings measured across two chassis: out2 = pa4 then +0x20 (on the V8 and the V15a chassis); out2 = pa4 + 0x21 then -1; tmp = pa4, out2 = tmp, out2 += 0x20; tmp = pa4 + 0x10, out2 = tmp, out2 += 0x10; out2 = pa4 + 0x20 then +0x20 then -0x20.
 - result: KILLED. All six leave out2 at exactly 3 refs / live 42 = 714 (the last only shortens live to 41). The E-s17 condition is NECESSARY BUT NOT SUFFICIENT: cse1 folds any constant-offset chain rooted in a pseudo already in its table at that point, regardless of when the donor dies. The lifts that survive in this function all have a donor that is a memory-load result used again later (base, for stptr) or the loop-carried variable itself (tbl, i).
 - verdict: KILLED
+
+## s26 (2026-08-27) — hypotheses
+
+### H-s26-1 — CONFIRMED. A real loop construct is an honest source of flow.c's loop_depth reference weighting.
+**Statement.** The +1-per-in-loop-reference dial that the layer-1-FAILed `do { } while (0);` wrap
+was exploiting is not a property of that wrap; it is a property of NOTE_INSN_LOOP_BEG/END, which
+the C front end emits for ANY real loop construct. Writing loop1 as an ordinary
+`do { … } while (i < 0x12);` therefore delivers the same dial with no coercion construct at all.
+**Probe.** Form Y2 = V15a with loop1 converted to a real do-while and the two FAKE increment
+splits REMOVED; ALLOCDBG + sandbox.
+**Result.** out2 3 refs/live 42 = 714 → 5 refs/live 41 = 2439; 132 build insns;
+`sandbox --disable all` = 13 (V15a, with its FAKE splits, was 15). Every in-loop reference of
+every allocno doubled, exactly as the loop_depth model predicts.
+**Verdict.** CONFIRMED. See E-s26-1.
+
+### H-s26-2 — CONFIRMED. On the real-loop chassis the F1 stptr chain extender is dead weight, so the chassis is FAKE-free.
+**Statement.** `stptr = base; stptr += 0xFC;` (the one construct in the candidate lineage needing a
+`/* FAKE */` annotation) buys nothing once loop.c strength-reduces the stptr biv.
+**Probe.** Form Z1 = Y2 with `stptr = base + 0xFC;`.
+**Result.** Bit-identical to Y2: same allocno table, 132 insns, sandbox 13.
+**Verdict.** CONFIRMED. See E-s26-2. Banked as `alt_Z1_realloop_honest_s26.c`.
+
+### H-s26-3 — KILLED. A no-op statement can lift a reference count.
+**Statement.** If `i += 2; i -= 1;` lifts i by +2 byte-free, a simpler value-preserving statement
+(`out2 = out2;`, `out2 += 0;`) should lift out2 the same way.
+**Probe.** W1/W2/W3/W4 on the V15a chassis (loop1 body, loop1 top, block 0), ALLOCDBG each.
+**Result.** All four inert — out2 rigid at 3 refs / live 42 / pri 714, 142 insns, allocno table
+identical to V15a.
+**Verdict.** KILLED. The lifting statement must produce a genuinely NEW value at RTL expansion;
+a statement whose RHS is already the LHS's value never becomes an insn. See E-s26-5. This also
+rules the dead-store family out as a delivery vehicle for this particular residual.
+
+### H-s26-4 — KILLED. Relocating out2's definition into loop1 puts its priority in the admissible band.
+**Statement.** Moving the definition shortens out2's live range and (on the goto chassis) adds a
+reference, so some position should land pri inside (1473, 2500).
+**Probe.** X1/X2 (goto chassis, two positions) and Z3 (real-loop chassis).
+**Result.** Goto chassis: out2 → 4 refs / live 21 / pri 3809, seizes $s3, and the build falls to
+141 insns because target's block-0 `addiu $s6,$s7,0x20` no longer exists in block 0. Real-loop
+chassis: LICM hoists the definition back to the preheader; bit-identical to Y2.
+**Verdict.** KILLED on both chassis. See E-s26-7.
+
+### H-s26-5 — KILLED. Splitting pa4's loop1 uses into a second local lowers pa4 under out2 for free.
+**Statement.** pa4 at 9 refs/94 = 2872 outranks out2 at 5/41 = 2439; moving loop1's two pa4 uses
+to a copy `pm` drops pa4 to 6/95 = 1263 and should hand out2 the $s6 seat.
+**Probe.** Form Z4, ALLOCDBG + insn count.
+**Result.** The seat arithmetic works exactly as predicted (out2 → $s6, pm → $s7), but a3 loses
+its hard register entirely (hardreg=-1) and the build grows to 143 insns.
+**Verdict.** KILLED. See E-s26-9.
+
+### H-s26-6 — CONFIRMED (control). The base-rooted chain extender is a real dial on the goto chassis.
+**Probe.** X3 = V15a with `stptr = base + 0xFC;`.
+**Result.** stptr 7 refs/41 = 3414 → 5/41 = 2439 and loses $s3.
+**Verdict.** CONFIRMED — so E-s26-2's null result is a property of the real-loop chassis, not a
+measurement error, and E-s25-7's cse1-foldability law stands.
+
+## [s26] A real loop CONSTRUCT is an honest source of the +1-per-in-loop-reference dial that the layer-1-FAILed do-while(0) wrap was exploiting, because GCC 2.7.2's flow.c increments REG_N_REFS by loop_depth and loop_depth is driven by NOTE_INSN_LOOP_BEG/END, which expand_start_loop emits only for while/for/do — never for a goto loop.
+- mechanism: flow.c ref counting weighted by loop_depth; the notes come from the front end's expand_start_loop, so every allocno in this function has been ref-starved on every goto chassis this grind has ever built.
+- probe: Form Y2 = V15a with loop1 converted to `do { ... } while (i < 0x12);` AND the two FAKE increment splits REMOVED. BB2_ALLOC_DEBUG cc1 dump + sandbox --disable all.
+- result: out2 3 refs / live 42 = 714 -> 5 refs / live 41 = 2439; i 10/97 -> 11/97; tbl 6/47 -> 7/47; pa4 7/95 -> 9/94 = 2872; a3 4/99 -> 5/99. 132 build / 132 target insns, sandbox 13 (V15a WITH its two FAKE splits was 15).
+- verdict: CONFIRMED
+
+## [s26] On the real-loop chassis the F1 stptr chain extender (`stptr = base; stptr += 0xFC;`) — the one construct in the candidate lineage that required a /* FAKE */ annotation — is dead weight, making the whole chassis FAKE-free.
+- mechanism: loop.c strength-reduces the stptr biv away before its reference count can matter to global.c, so the extra references the extender buys are never spent.
+- probe: Form Z1 = Y2 with the plain `stptr = base + 0xFC;`. ALLOCDBG + sandbox.
+- result: Bit-identical to Y2: same allocno table, 132 build insns, sandbox 13. Z1 contains no FAKE construct of any kind. Banked as memory/grind/func_80041188/alt_Z1_realloop_honest_s26.c.
+- verdict: CONFIRMED
+
+## [s26] A value-preserving no-op statement (`out2 = out2;` / `out2 += 0;`) lifts out2's flow-counted reference count the way `i += 2; i -= 1;` lifts i.
+- mechanism: If flow.c counts textual references, any extra statement naming out2 should count, regardless of whether it computes a new value.
+- probe: Four spellings on the V15a chassis — W1 (self-assign immediately before loop1's out2 call), W2 (`out2 += 0;` same site), W3 (self-assign in block 0 after the definition), W4 (self-assign at the top of loop1). ALLOCDBG each.
+- result: All four completely inert: out2 rigid at 3 refs / live 42 / pri 714, 142 insns, allocno table identical to V15a's. The lifting statement must produce a genuinely NEW value at RTL expansion; a statement whose RHS is already the LHS's value never becomes an insn, so flow.c has nothing to count. This also disposes of the dead-store family as a delivery vehicle for THIS residual.
+- verdict: KILLED
+
+## [s26] Relocating out2's definition into loop1 lands its priority inside the admissible (1473, 2500) band.
+- mechanism: Moving the definition shortens out2's live range, and pri = floor_log2(refs)*refs*10000/live, so some position should land in band.
+- probe: X1 and X2 on the goto chassis (definition immediately before out2's first use, and at the top of loop1); Z3 on the real-loop chassis. ALLOCDBG + insn count each.
+- result: Goto chassis: out2 does reach 4 refs but live collapses to 21 -> pri 3809, far above the band, and it seizes $s3; the build also falls to 141 insns because target's block-0 `addiu $s6,$s7,0x20` ceases to exist in block 0. Real-loop chassis: LICM hoists the definition straight back to the preheader, bit-identical to Y2 — out2's definition POSITION is not a dial there at all.
+- verdict: KILLED
+
+## [s26] Splitting pa4's two loop1 uses into a second local (`pm = pa4;`) lowers pa4 under out2 for free and hands out2 the $s6 seat.
+- mechanism: pa4's in-loop1 references cost 2 each under loop_depth weighting; moving them to a copy drops pa4 from 9 refs/94 = 2872 to 6/95 = 1263, below out2's 2439.
+- probe: Form Z4 on the real-loop chassis. ALLOCDBG + insn count.
+- result: The seat arithmetic works exactly as predicted — out2 (5/41 = 2439) takes $s6 and pm takes $s7 — but a3 loses its hard register entirely (hardreg=-1) and the build grows to 143 insns.
+- verdict: KILLED
+
+## [s26] The block-0 chain extender on out2 folds because of a property of the goto chassis rather than a property of cse1.
+- mechanism: E-s25-7 measured six spellings on two goto chassis; the real-loop chassis re-lays cse1's EBB structure, so the fold might not survive it.
+- probe: Form Z2 = Z1 with `out2 = pa4; out2 = (s32 *)((u8 *)out2 + 0x20);`. ALLOCDBG.
+- result: out2 rigid at 5 refs / live 41, bit-identical to Z1/Y2. cse1 folds a constant-offset chain rooted in a pseudo already in its table regardless of chassis. E-s25-7's law is chassis-independent. (Control X3 confirms the asymmetry is real: dropping the base-rooted stptr extender on the goto chassis DOES cost stptr 7 refs/41 = 3414 -> 5/41 = 2439 and its $s3 seat.)
+- verdict: KILLED

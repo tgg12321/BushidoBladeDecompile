@@ -1,7 +1,7 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 25,
+ "session_count": 26,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -159,23 +159,29 @@
    "floor": 1,
    "modality": "escalation",
    "headline": "New byte-free reference-lift class found (split at an increment site of a loop-carried variable): form V15a reaches 132/132 insns with TARGET EMISSION ORDER IN ALL FOUR BLOCKS and no do-while(0) wrap,"
+  },
+  {
+   "session": 26,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "The banned do-while(0) wrap's reference dial has an HONEST source: flow.c weights REG_N_REFS by loop_depth, which only real loop constructs create \u2014 rewriting loop1 as a plain do{}while gives out2 5 r"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "On the V15a chassis the entire function is ONE byte-free flow-counted reference on out2, and the only reference-lift MECHANISM that survives in this function is a donor whose value cse1 cannot fold at that point.",
-   "mechanism": "E-s25-5 proves V15a + one out2 reference = target's complete disposition with target's block-2 spelling and target's emission order in all four blocks; the only cost is the instrument. E-s25-7 shows block-0 constant-offset chains all fold; E-s25-3 shows a redefinition of a loop-carried pseudo does not.",
-   "next_probe": "On the V15a chassis, derive out2 from a donor cse1 cannot fold at that point - the only two candidates in block 0 are 'base' (the D_800A9A10[a0] load result, already spent on stptr) and 'saved', which is load-derived and used again in block 2 as stptr2 = saved + 0x750, i.e. exactly the shape that works for stptr. Measure 'out2 = saved - K;'-style derivations and any formulation that makes out2 loop-carried, requiring ALLOCDBG out2 == 4 refs AND build_insns == 132 in the SAME measurement; anything that materialises an instruction is fatal."
+   "hypothesis": "loop.c's elimination of the stptr biv \u2014 residual (b), and the thing that makes the honest real-loop chassis cost bytes \u2014 can be blocked by giving stptr a use that loop.c cannot reduce to a giv, and blocking it re-lays the entire priority landscape (stptr returns as an allocno, pseudo 125 stops consuming a seat), which may also dissolve residual (a).",
+   "mechanism": "loop.c's maybe_eliminate_biv only eliminates a biv when every use of it is either the exit comparison or a giv. In loop1, stptr's only uses are `stptr + 0x38` and `*(s16 *)(stptr + 6)` \u2014 both givs \u2014 plus the increment, so it is fully reducible. A use of the RAW value that survives the loop makes bl->all_reduced false and the biv stays.",
+   "next_probe": "Exploit E-s26-11: stptr at loop1 exit and stptr2 at loop2 entry are the same value (base+0x7E4). Measure forms where loop1's stptr is live after the loop \u2014 starting with `stptr2 = stptr;` (which deletes `saved` and its 0x18($sp) spill, so expect an insn shortfall, but read the allocno table and the loop1 body FIRST to see whether the giv dies) and then forms that keep `saved`/the spill for the block-2 bytes while still giving stptr a surviving raw use. Require in ONE measurement: no `addu $19,$2,308`/`sh $8,-50($19)` in the loop1 body AND build_insns == 132."
   },
   {
-   "hypothesis": "out2's LIVE LENGTH is a second, newly-usable dial on the V15a chassis, because tbl now sits at 2553 instead of 1702.",
-   "mechanism": "At three references pri = 30000/live, so the widened band (1473, 2553) makes out2 seatable at live 12..20 - a window that did not exist while tbl was pinned at 1702 (s23 computed the 3-reference requirement as live <= 37 against a3 and <= 23 against pa4).",
-   "next_probe": "Enumerate block-0 positions and formulations for out2's definition that shorten its live range below 21 WITHOUT moving the definition into loop1 (E-s23-1's cse-EBB law forbids that: it makes cse1 rewrite block 2's out3 = pa4 + 0x20 into out3 = out2). Read live length directly from ALLOCDBG each time rather than reasoning about it."
+   "hypothesis": "A real loop construct around loop1 whose CFG loop.c refuses to analyse would deliver the loop_depth references (residual a's fix) without the strength reduction (residual b).",
+   "mechanism": "NOTE_INSN_LOOP_BEG/END are emitted by the front end at parse time; loop.c's scan_loop independently bails on loops it cannot analyse. The two are separable in principle, and the notes are all flow.c needs.",
+   "next_probe": "Enumerate loop spellings that keep the notes but defeat scan_loop WITHOUT reaching for the banned shape (a do-while(0) entered by an external goto into an interior label is FORBIDDEN \u2014 judge_constraints, s24 layer-1 FAIL). Candidates: a `for (;;)` with the test and `break` at the bottom; a loop whose increment is not a simple constant add at RTL; a loop containing a second, inner real loop. Read tmp/grind/func_80041188/dumps/*.loop to see WHY scan_loop accepted or rejected each, rather than inferring it from the emitted asm."
   },
   {
-   "hypothesis": "The s25 increment-split construct ('i += 2; i -= 1;') has no established family and needs a ruling before any candidate is built on it.",
-   "mechanism": "It is byte-free and its only effect is reg_n_refs. It is not a dead store (both statements are live arithmetic on a live variable), not a duplicated statement into arms, not a named intermediate, and not the F1 combine-foldable chain-extender as that family is described (a copy plus a constant add on a fresh value, not a split of an existing increment).",
-   "next_probe": "Grep docs/reference/sotn-construct-index.md for split-increment forms on an induction variable and, if absent, emit a ruling-request naming the construct precisely BEFORE spelling a candidate around it. If the ruling is NO, V15a's tbl and i lifts must be re-derived from an honest structure - loop.c's giv on a real loop (s19's W4 chassis) is the only known honest source of extra references in this function."
+   "hypothesis": "out2 can reach 6 references (pri 2926 > pa4's 2872, still below tbl) on the real-loop chassis via a lift class that is neither a no-op statement (E-s26-5) nor a cse1-foldable constant-offset chain (E-s26-8).",
+   "mechanism": "E-s26-3's exact formula makes 6 refs / live 41 = 2926 admissible: above pa4 2872 and below tbl 2978. The two known byte-free lift mechanisms in this function are a donor cse1 cannot fold (`base`, a memory-load result used again later) and a redefinition of a loop-carried pseudo \u2014 neither of which out2 currently has access to.",
+   "next_probe": "Hunt for a block-0 donor for out2 that cse1 cannot fold. Note that a block-0 reference costs 1 under loop_depth weighting while an in-loop one costs 2, so a single block-0 lift would need to be +1; measure whether any donor gives an odd lift at all. If every donor gives +2, 7 refs / 41 = 3414 overshoots tbl (2978) and the class is closed \u2014 record that as the closure and move the whole attack to frontier item 1."
   }
  ],
  "judge_constraints": [

@@ -4,17 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80041188",
-      "file": "text1a_pre",
-      "distance": 27,
-      "verdict": "C",
-      "rules": 16,
-      "status": "active",
-      "prologue_fix": 1,
-      "unpark_reason": "OWNER RULING 2026-08-27: escalation SPENT \u2014 keep grinding to COMPLETED-C under rules-to-zero (goal: 0 regfix + 0 asmfix carriers). Canonical LOW-tier override remains DECLINED (2026-08-24 evidence bar stands). Last rule carrier; campaign sort places it at queue top.",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-25 \u0393\u00c7\u00f6 func_80041188 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
-    },
-    {
       "func": "func_800283D0",
       "file": "code6cac_b",
       "distance": 30,
@@ -1763,6 +1752,18 @@
       "hand_coded_tier": "LOW"
     },
     {
+      "func": "func_80041188",
+      "file": "text1a_pre",
+      "distance": 27,
+      "verdict": "C",
+      "rules": 16,
+      "status": "escalated",
+      "prologue_fix": 1,
+      "unpark_reason": "OWNER RULING 2026-08-27: escalation SPENT \u2014 keep grinding to COMPLETED-C under rules-to-zero (goal: 0 regfix + 0 asmfix carriers). Canonical LOW-tier override remains DECLINED (2026-08-24 evidence bar stands). Last rule carrier; campaign sort places it at queue top.",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-25 \u0393\u00c7\u00f6 func_80041188 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-27 \u0393\u00c7\u00f6 func_80041188 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
+    },
+    {
       "func": "main",
       "file": "ings",
       "distance": 0,
@@ -1986,13 +1987,13 @@
   ],
   "counts": {
     "total": 225,
-    "active": 203,
+    "active": 202,
     "by_status": {
-      "active": 203,
-      "escalated": 22
+      "active": 202,
+      "escalated": 23
     },
     "by_verdict": {
-      "C": 169,
+      "C": 168,
       "ASM-PARTIAL": 34
     }
   }
