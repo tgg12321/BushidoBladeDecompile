@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 38,
- "current_modality": "synthesis",
+ "session_count": 39,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 0,
@@ -237,23 +237,29 @@
    "floor": 16,
    "modality": "synthesis",
    "headline": "s38b synthesis: floor held at 16 (chassis re-measured; brief said unavailable); the s37 &Judge lever is proven REGIME-SPECIFIC (0 points in the arm-address regime, 21 with = 21 without), the ruling's "
+  },
+  {
+   "session": 39,
+   "floor": 16,
+   "modality": "solver",
+   "headline": "s39 solver: floor held at 16, but the solver was never actually blocked (s35-s37 used the wrong backend) - goal_from_tgt.py types every ban-compliant form PRE-RA, proves a banked form's instruction mu"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The function's honest end state is `floor 16 with one decidable policy question`, and the question is now stated in closed form: the residual is exactly ONE supernumerary live-across-call quantity (the vertex-table base), which the target eliminates by re-deriving the base from arg0 after the call - the second source-level materialization refused on 2026-07-20.",
-   "mechanism": "Two-horn dilemma, both horns measured: pre-call formation gives the target's 6 crossing quantities but sched1 compresses the address pseudo's live_length to 4, so allocno_compare always ranks it above arg0 and it takes $s1; post-call formation gives the target's seat ORDER but needs a 7th crossing quantity, a ninth callee-save ($s8) and +2 instructions. arg0's double duty as scale source AND base source is the only construct that satisfies both, and it requires the refused second read.",
-   "next_probe": "Do NOT re-grind either horn - both are measured dead in closed form. If a future driver assigns `escalation` modality, the packet writes itself from this session's evidence section and needs no new measurement: the decidable question is a FIDELITY one (does the original source's post-call re-read of the vertex-table base, visibly present in the target's own bytes at asm/funcs/func_80057CC8.s:50, constitute source-level duplication at all, or is the ban mis-scoped?), not a request to sanction a no-precedent family. Word it that way; the auto-reject class covers anything that reads as 'lower a standard'."
+   "hypothesis": "The honest end state remains 'floor 16 with one decidable FIDELITY question', and this session reduced that question to a single instruction: does the original source's post-call re-read of the vertex-table base - visibly present in the target's own bytes at asm/funcs/func_80057CC8.s:50 as `lw $a0,0x4($s2)` - constitute source-level duplication at all, or is the 2026-07-20 ban mis-scoped?",
+   "mechanism": "Two independent tools now agree the residual has one cause. goal_from_tgt.py classify: a ban-compliant form (rejected/s39-narrow-index-carrier-plus-judge-lever-score18-110insns.c) already emits 96 of the target's 111 instructions exactly and misses the multiset by that one `lw`. inverse.py: the full register disposition is FORECLOSED at depth 3, and every REACHABLE seat-pair vector requires the next-index to cross the call, which requires the base to exist after the call. The only two ban-compliant spellings of that are the refused post-call re-read and carrying `table` (7th crossing quantity -> ninth callee-save $s8 -> +2 insns, measured 31).",
+   "next_probe": "Do NOT re-measure either route; both are typed dead. If a future driver assigns `escalation` modality, the decision packet writes itself from this session's evidence and needs no new measurement - word it as a FIDELITY/scope question about one instruction, never as a request to sanction a family (the auto-reject class covers anything reading as 'lower a standard')."
   },
   {
-   "hypothesis": "A never-permuted campaign seeded from the CURRENT annotated 16-form may find a below-16 arrangement, since every permuter campaign in this ledger predates the 108-insn/16-point regime except s37's, and s37's single novel find was the lever itself.",
-   "mechanism": "The permuter explores statement-order and expression-shape mutations that allocno_compare's inputs are sensitive to; s37 proved this specific regime is permuter-productive (it produced the four-point lever), and the regime has not been re-swept since the lever was folded in.",
-   "next_probe": "Launch `python3 tools/permuter_campaign.py` seeded from memory/grind/func_80057CC8/candidate.c (the annotated 16-form), wait in-turn with `wait --dir <ws>` across two or three fresh-seed windows, harvest, `harvest --stop`, and bisect any find the way s37 bisected its triple mutation. Bank each novel find as rejected/s39-permuter-<n>-score<N>.c. Reject on sight anything that re-reads *(s16 **)(arg0 + 4) a second time - that is the banned family."
+   "hypothesis": "A never-permuted campaign seeded from variant vA (110 insns, score 18, multiset = target minus one lw) can find an arrangement below 16, because vA is a fundamentally different and much closer regime than the 108-insn 16-form every prior campaign explored.",
+   "mechanism": "vA's residual is 11 register substitutions plus 2 moved instructions over a 96-instruction exact match; permuter mutations move exactly the statement-order and expression-shape inputs that allocno_compare and sched1 consume, and s37 proved this function's regimes are permuter-productive (the staged-value lever was a permuter find).",
+   "next_probe": "Launch `python3 tools/permuter_campaign.py` seeded from tmp/grind/func_80057CC8/s39/vA.c (NOT candidate.c), wait in-turn with `wait --dir <ws>` across two or three fresh-seed windows, harvest, `harvest --stop`, and bisect any find. Reject on sight anything that materializes *(s16 **)(arg0 + 4) a second time. Bank novel finds as rejected/s40-permuter-<n>-score<N>.c."
   },
   {
-   "hypothesis": "The address pseudo's allocno priority could in principle be lowered below arg0's by a construct that gives it exactly 2 references and a live_length above 12, which is the only arithmetic route left to the target's seat order inside horn 1.",
-   "mechanism": "priority = floor_log2(n_refs)*n_refs/live_length; arg0's is 0.185; with n_refs = 2 the priority is 2/live_length, so live_length >= 11 suffices. The address currently has live_length 4 because sched1 sinks its def next to the jal, and it has 2 uses (lh 0(p), lh 2(p)) plus its def, i.e. 3 refs minimum.",
-   "next_probe": "This is a LONG SHOT and is listed third deliberately: it needs a spelling in which the address is defined far from its uses AND sched1 declines to sink the def, without a scheduling barrier. The only untried lever is making one of the two loads consume the address indirectly (e.g. a single 32-bit read split into two halves) so the pseudo has 2 refs rather than 3 - but that changes lh/lh into lw plus shifts and was never measured. Measure it once; if the instruction count leaves 108 it is dead, and this frontier item should then be struck permanently."
+   "hypothesis": "A form exists at 110 insns that keeps vA's multiset but reaches inverse.py's seat-pair vector #2 by lowering pseudo 88's reference count from 6 to 1 while the next-index is made to cross the call.",
+   "mechanism": "inverse.py vector #2 is {88 refs 6->1, 104 calls_crossed 0->1} and maps refs_down to two sanctioned levers (hoist-shared-arm-computation-defeats-copy-pref, defeat-licm-hoist-var-reuse). Note pseudo 88's 6 refs are themselves an artefact of the staged-value lever - without it the count is 3 - so the two objectives interact and the combination has never been measured.",
+   "next_probe": "This is a LONG SHOT and is listed third deliberately: the calls_crossed atom in the vector is the same banned structural change as frontier item 1, so at best this lowers the SCORE, never closes the function. Measure it once from vA; if the score does not go below 16, strike this item permanently."
   }
  ],
  "judge_constraints": [

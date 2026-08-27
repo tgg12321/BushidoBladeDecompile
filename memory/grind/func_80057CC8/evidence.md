@@ -2028,3 +2028,129 @@ found yet.
 - [s38] The post-call regime's register map was read for the first time (objdump of the sandbox object): $s0 cys, $s1 cxs (both matching target), $s2 table, $s3 arg0, $s4 off, $s5/$s6 raw cx/cy, $s7 arg2, $s8 arg3 - nine callee-saves, `sw s8,56(sp)` confirming GCC takes $fp as the ninth seat, which is the +2 instructions.
 
 - [s38] Every ban-compliant substitute for the target's arg0-does-double-duty trick has now been measured and each costs exactly one supernumerary crossing quantity: centre-relative (s33, 38), prev-address-plus-delta (s32 next-differences, 42), carried table + offset (s38/s38b, 31).
+
+## Session 39 (2026-08-27, solver modality) — floor held at 16; the residual reduced, mechanically, to ONE instruction
+
+- [s39] **CHASSIS RE-MEASURED.** The brief reported the HEAD floor "unavailable". With
+  memory/grind/func_80057CC8/candidate.c (the s38b annotated 16-form) applied to
+  src/text1b.c:1665, `sandbox func_80057CC8 --disable all` -> **score 16, target_insns 111,
+  build_insns 108, rules_dropped 0**. The ledger's recorded floor of 16 is current.
+
+- [s39] **OWNER DIRECTIVE (2026-08-24 escalation-not-parked, "solver modality recommended")
+  IS NOW EXECUTED FOR REAL, not discharged by an equivalent-evidence route.** s35/s36/s37 all
+  banked "the solver is tooling-blocked because `inverse_compose.py classify` is not
+  `replace_with_asmfile`-wired for this function". That is true of `inverse_compose.py` and
+  was re-confirmed this session (it builds `<stem>.tgt.s` from the CURRENT src plus
+  regfix/asmfix, and with zero rules that stream is our own build, so it reported the
+  fictitious `honest 108 / target 108 / FIRST DIVERGENCE: IDENTICAL`). But s30 had ALREADY
+  banked the correct backend for an asm-until-matched function — **`goal_from_tgt.py`**,
+  which compares OBJECTS (`tmp/sandbox/<func>/text1b.o` vs `build/src/text1b.o`, the latter
+  built from HEAD where the function is `INCLUDE_ASM`, i.e. the real 111-insn target). It
+  works on this function today, needs no wiring, and it is what every future solver session
+  must use. The three "solver is blocked" entries (s35-E5, s36, s37) are superseded: the
+  solver was never blocked, the wrong backend was being invoked.
+  Artifacts: tmp/grind/func_80057CC8/s39/classify_base16.txt, screen.txt, goal_vA.txt,
+  inverse_vA.txt.
+
+- [s39] **TYPED VERDICT ON THE CURRENT 16-FORM: PRE-RA.**
+  `goal_from_tgt.py classify text1b func_80057CC8` -> `ours 108 insns, target 111 insns /
+  FIRST DIVERGENCE: PRE-RA / next tool: none — the residual is upstream of every model`,
+  with the one-sided shapes `ours only: sll #,#,0x2` and `target only: move #,#, lw #,4(#),
+  sll #,#,0x10, sra #,#,0xe`. Mechanically: on the 16-form NO register-allocation or
+  scheduler perturbation can reach the target, because the instruction MULTISETS differ.
+  This FORECLOSES frontier item 3 as inherited (the allocno-priority route that would give
+  the address pseudo 2 refs and live_length >= 11): a perfect seat rotation on this form
+  still leaves a 3-instruction multiset deficit. Strike it as a route to zero.
+
+- [s39] **THE DECISIVE MEASUREMENT — a ban-compliant form whose instruction multiset is the
+  TARGET'S MINUS EXACTLY ONE `lw base,4(arg0)`.** Screening banked forms through
+  `goal_from_tgt.py classify` (tmp/grind/func_80057CC8/s39/screen.txt):
+      form                                              insns  score  one-sided shapes
+      s36-r2 narrow-index-carrier                        110     26    target only: lw #,4(#)  x1
+      s35-index-copy-in-arms-sra14-scale                 109     28    target only: move, lw #,4(#)
+      s38-postcall-address-no-judge-lever                110     31    14 shapes ($s8 traffic)
+      s38b/s34 merge-block-offset (the 16-form)          108     16    5 shapes
+  **s36-r2's multiset is target's multiset minus one single `lw` and nothing else.** No form
+  in 38 prior sessions had been typed this way, and the ledger's prose ("a 3-instruction
+  gap", "one supernumerary crossing quantity") understated how close the multiset half of
+  the problem already is: it is ONE instruction, and that instruction is literally the
+  refused second materialization of `*(s16 **)(arg0 + 4)`.
+
+- [s39] **NEW MEASUREMENT: the s37 `next_vert = &Judge;` staged-value lever is worth EIGHT
+  points in the narrow-index-carrier regime** (26 -> 18 at an unchanged 110 insns;
+  memory/grind/func_80057CC8/rejected/s39-narrow-index-carrier-plus-judge-lever-score18-110insns.c
+  = variant vA). Regime table for that lever, now four regimes deep and all measured:
+  merge-block-offset +4 (20->16, s37), narrow-index-carrier +8 (26->18, s39),
+  arm-selected-address 0 (21/21, s38b), post-call-address 0 (31/31, s38). Spelling the same
+  lever on `table` instead of `next_vert` (variant vC) is worth ZERO here (26/26), matching
+  s37's finding in the other regime: the lever is specific to the pseudo that local-alloc
+  pre-seats, not to the act of staging.
+  Two further vA spellings measured identical at 18/110: PLUS-operand-order flip
+  (`(s16*)((s32)table + ni*4)`, variant vD) and hoisting `next_vert = &Judge;` above
+  `scale = arg0[2]*40;` (variant vF). vA is a stable local optimum of its regime.
+
+- [s39] **THE FULL TARGET DISPOSITION OF vA, DERIVED MECHANICALLY** (`goal_from_tgt.py goal
+  --model`, tmp/grind/func_80057CC8/s39/goal_vA.txt). Alignment: |ours|=110 |tgt|=111,
+  **96 instructions EQUAL**, 11 replace, 1 delete, 2 insert, 2 moved. Substitutions:
+  `$s3->$s2 x5`, `$v0->$v1 x3`, `$a3->$s3 x2`, `$s2->$v1 x1`, `$a2->$a0 x1`. Attribution
+  (three of four unique, one ambiguous but not needed): pseudo 72 = arg0 -> $s2(18);
+  pseudo 104 = the narrow next-index -> $s3(19); pseudo 88 = the next-neighbour address ->
+  $v1(3); pseudo 87 = the vertex-table base -> $a0(4). Goal file:
+  tmp/grind/func_80057CC8/s39/goal_vA.json. In plain terms our form holds arg0 in $s3 and
+  the next ADDRESS in callee-saved $s2 (formed pre-call, insn 44 `addu s2,v0,a2`), where the
+  target holds arg0 in $s2 and the next INDEX in $s3 and forms the address AFTER the call in
+  caller-saved $v1 (insn 48 `addu v1,v1,a0`) from `lw a0,4(s2)`.
+
+- [s39] **INVERSE-SOLVER VERDICTS (`inverse.py global`, depth 3, tmp/.../inverse_vA.txt).**
+  Two questions, two different answers, and the pair is the session's main result:
+  1. **FULL disposition {72:$s2, 104:$s3, 88:$v1, 87:$a0} -> NEGATIVE / FORECLOSED at depth
+     3.** "No perturbation of any modelled input reaches the target assignment... the flip is
+     not produced by refs / live span / birth order / conflicts / preferences / calls-crossed
+     at all, so no C spelling that only moves those will ever close it." (It also reports why
+     the copy-preferences that would have helped are unavailable: pseudos 86 and 88 cross a
+     call and `$a0` is call-used, so `prune_preferences`, global.c:897, strips the preference
+     before `find_reg` ever runs.) This is the typed version of the s35 closed-form
+     foreclosure, now derived from the model rather than by hand, and on a much closer form.
+  2. **The SEAT-PAIR subgoal {72:$s2, 104:$s3} -> REACHABLE**, with exactly two minimal
+     vectors, both 2 atoms:
+        #1  pseudo 88 (address) calls_crossed 1->0  AND  pseudo 104 (index) calls_crossed 0->1
+        #2  pseudo 88 refs 6->1                     AND  pseudo 104 calls_crossed 0->1
+     Every reachable vector contains the SAME atom: **the next-index must become a
+     call-crossing quantity**, which is possible only if the address is formed AFTER the
+     ratan2 call, which requires the vertex-table base to be available after the call.
+  Composing 1 and 2: the register half is reachable only through the structural change that
+  the instruction-count half also demands, and that structural change has exactly two
+  ban-compliant C spellings, both already measured: re-read `*(s16 **)(arg0 + 4)` post-call
+  (the family refused 2026-07-20) or carry `table` across the call (a 7th crossing quantity
+  -> a ninth callee-save `$s8` -> +2 insns and a worse score, rejected/s38-postcall-*, 31).
+
+- [s39] **WHAT THIS SESSION ADDS TO THE ESCALATION PACKET (should `escalation` modality ever
+  be assigned).** The question is unchanged from the s38b frontier — it is a FIDELITY
+  question, not a request to sanction a family — but the evidence is now mechanical and
+  minimal: the entire 39-session residual is ONE instruction, `lw $a0,0x4($s2)` at
+  asm/funcs/func_80057CC8.s:50, which is visibly present in the ORIGINAL's own bytes; a
+  ban-compliant C form (rejected/s39-narrow-index-carrier-plus-judge-lever-score18-110insns.c)
+  already reproduces 96 of the target's 111 instructions exactly and the remaining
+  divergences are all consequences of that one absent load; and `inverse.py` types the
+  register half as reachable ONLY through the structural change that emits it. No new
+  measurement is needed to write the packet.
+
+- [s39] Chassis re-measured (the brief said unavailable): the s38b annotated 16-form applied to src/text1b.c:1665 gives sandbox score 16, target_insns 111, build_insns 108, rules_dropped 0. The ledger's recorded floor of 16 is current. src/text1b.c was restored to its HEAD INCLUDE_ASM state before finishing; the tree is clean apart from metrics/events.jsonl.
+
+- [s39] OWNER DIRECTIVE (2026-08-24 escalation-not-parked, 'solver modality recommended') is now EXECUTED, not discharged by an equivalent-evidence route. s35/s36/s37 each banked 'the solver is tooling-blocked because inverse_compose.py classify is not replace_with_asmfile-wired'. That is true of inverse_compose.py and was reconfirmed, but s30 had already banked the correct backend for an asm-until-matched function: goal_from_tgt.py, which compares OBJECTS (tmp/sandbox/<func>/<stem>.o vs build/src/<stem>.o built from HEAD). It needs no wiring and worked immediately. The three 'solver is blocked' entries are RETRACTED - the wrong backend was being invoked.
+
+- [s39] Every ban-compliant form in the ledger types PRE-RA ('next tool: none - the residual is upstream of every model'), so RA-only and scheduler-only searches on this function are fiction until a C form first reaches the 111-instruction multiset. This mechanically strikes inherited frontier item 3 as a route to zero.
+
+- [s39] s36-r2-s16-narrow-index-carrier (110 insns) has an instruction multiset equal to the target's MINUS EXACTLY ONE `lw #,4(#)` and nothing else one-sided in either direction. That single load is `lw $a0,0x4($s2)` at asm/funcs/func_80057CC8.s:50 - the post-call materialization of *(s16 **)(arg0 + 4) refused on 2026-07-20.
+
+- [s39] Adding the s37 staged-value lever to that form (variant vA, banked as rejected/s39-narrow-index-carrier-plus-judge-lever-score18-110insns.c) measures 18 at 110 insns - an 8-point gain, the lever's largest. Alignment against target: |ours|=110 |tgt|=111 with 96 instructions EQUAL, 11 replace, 1 delete, 2 insert, 2 moved.
+
+- [s39] Mechanically derived target disposition for vA (goal_from_tgt.py goal --model): $s3->$s2 x5 = pseudo 72 (arg0) belongs in $s2; $a3->$s3 x2 = pseudo 104 (the narrow next-index) belongs in $s3; $s2->$v1 x1 = pseudo 88 (the next-neighbour address) belongs in $v1; $a2->$a0 x1 = pseudo 87 (the vertex-table base) belongs in $a0. In plain terms ours holds arg0 in $s3 and the next ADDRESS in callee-saved $s2 formed pre-call (insn 44, `addu s2,v0,a2`); target holds arg0 in $s2 and the next INDEX in $s3 and forms the address AFTER the call in caller-saved $v1 (insn 48, `addu v1,v1,a0`) from `lw a0,4(s2)`.
+
+- [s39] inverse.py types the FULL disposition FORECLOSED at depth 3 and the seat-pair subgoal REACHABLE by exactly two 2-atom vectors, both containing 'pseudo 104 calls_crossed 0->1'. The register half and the instruction-count half of the residual therefore have the SAME single cause, proven twice by independent tooling: the base must be available after the ratan2 call.
+
+- [s39] inverse.py also supplies the missing pass-level reason the obvious copy-preference lever never worked: pseudos 86 and 88 cross a call and $a0 is call-used, so prune_preferences (global.c:897) strips the $a0 preference from those allocnos before find_reg ever sees it.
+
+- [s39] The staged-value lever's regime table is now four regimes deep and fully measured: merge-block-offset +4 (20->16, s37), narrow-index-carrier +8 (26->18, s39), arm-selected-address 0 (21/21, s38b), post-call-address 0 (31/31, s38). Spelled on `table` instead of `next_vert` it is worth 0 (vC, 26/26).
+
+- [s39] Two further vA spellings measure identical at 18/110 and are stable-optimum evidence, not new forms: the PLUS-operand-order flip (vD) and hoisting the staged assignment above `scale = arg0[2]*40;` (vF).
