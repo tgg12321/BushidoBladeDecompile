@@ -569,3 +569,79 @@ regardless of spelling.
 - probe: Grepped docs/reference/sotn-construct-index.md (1,365 entries, sotn-decomp master aa53500226ee84be763f3e8702b27de06456b3a7) for reload / duplicate-load / second-read / repeated-member-deref / redundant-pointer-local shapes, and reviewed the class table for any covering class.
 - result: Zero PSX hits; no indexed class covers duplicated base-address materialization across an intervening call. The nearest family, dup_if_else_arm (958 hits, .claude/rules/duplicated-statement-into-arms.md), is duplication into the two arms of ONE control-flow diamond, not duplication across two independent sequential call argument lists — the exact distinction the owner drew when refusing this family for this function on 2026-07-20. Gate FAILS.
 - verdict: CONFIRMED
+
+## [s30] A pure-C form exists that emits exactly 111 instructions with NO second source-level materialization of the vertex-table base (the s29 frontier hypothesis, re-opened in solver modality).
+- mechanism: the base expression is written ONCE, inside a `static inline` helper that
+  computes the neighbour angle; GCC's inliner emits the helper body twice, and each inlined
+  copy reloads `*(s16 **)(arg0 + 4)` after the intervening `ratan2` call because the call
+  clobbers memory. The duplication is produced by compilation, not by the programmer, and
+  it reproduces the target's own two loads (asm/funcs/func_80057CC8.s:17, :50).
+- probe: wrote `static inline s16 *vert_base_57CC8(u8 *)` + `static inline s32
+  vert_angle_57CC8(u8 *, s32 idx, s16 cx, s16 cy)`, called once per neighbour, centre vertex
+  read through `s16 *ctr = vert_base_57CC8(arg0);`; applied to src/text1b.c:1665 and ran
+  `sandbox func_80057CC8 --disable all`, `goal_from_tgt.py classify`, and a full `build`.
+- result: **score 0, target_insns 111 == build_insns 111, rules_dropped 0**; classify ->
+  "NO DIVERGENCE: the two streams are identical"; full build sha1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH. The base expression occurs
+  exactly once in the whole translation unit.
+- verdict: **CONFIRMED** — the frontier hypothesis is true and the function matches.
+
+## [s30] The s29 ban-compliant single-`table` residual is upstream of every solver model (typed re-measurement of the s29 insn-count argument).
+- mechanism: with the base cached in a local that stays live across `ratan2`, GCC must give
+  it a callee-save register; that is a NINTH callee-save ($s8) with its own save, restore
+  and `move` (3 insns) where the target pays a `move` plus a 1-insn reload.
+- probe: applied rejected/s29-ban-compliant-single-table-no-reload-score30.c and ran
+  `python3 tools/ra_solver/goal_from_tgt.py classify text1b func_80057CC8`.
+- result: ours 112 insns vs target 111; **FIRST DIVERGENCE: PRE-RA**, "next tool: none — the
+  residual is upstream of every model"; ours-only `sw s8,56(#)` / `move s8,#` / `lw s8,56(#)`,
+  target-only `move #,#` / `lw #,4(#)`.
+- verdict: **CONFIRMED (typed FORECLOSURE of the RA and scheduler axes for the cached-base
+  family)** — s29's conclusion was right and is now mechanically typed, not merely counted.
+
+## [s30] `inverse_compose.py classify` is usable on an asm-until-matched (INCLUDE_ASM) function.
+- mechanism: it compares `<stem>.hon.s` against `<stem>.tgt.s`, and `mkasm_honest.sh` builds
+  `.tgt.s` from the CURRENT src/ plus regfix/asmfix rules.
+- probe: ran it with the 112-insn form applied and zero rules on the function.
+- result: reported "honest 112 insns, target 112 insns — FIRST DIVERGENCE: IDENTICAL" while
+  the true target is 111 insns. It compared our stream against itself.
+- verdict: **KILLED** — on an INCLUDE_ASM function the only honest backend is
+  `goal_from_tgt.py` (object-level). Recorded so no future solver session spends a turn on
+  the fictional verdict.
+
+## [s30] The `s32 half` named intermediate (present in every form since s1) is load-bearing.
+- mechanism: it names `(ang_prev - ang_next) / 2` as its own local, which was assumed since
+  s1 to bias where the division result is materialized.
+- probe: dropped `half` while keeping `ang_opp` (formH) and measured.
+- result: score 0, 111 insns — unchanged.
+- verdict: **KILLED** — `half` was never load-bearing; it is deleted from the candidate,
+  reducing the annotated-construct surface to exactly one local.
+
+## [s30] The `s32 base` named intermediate is cosmetic and can be collapsed into the expression.
+- mechanism: `ang_mid = (ang_prev + 0x800) - ((s32)(ang_prev - ang_next) / 2);` should emit
+  the same code as naming the sub-expression.
+- probe: collapsed both intermediates (formG), measured, and ran `goal_from_tgt classify`.
+- result: score 6 at 111 insns; classify -> PRE-RA with exactly one differing instruction
+  shape, `ours addiu #,#,-2048` vs `target addiu #,#,2048`. GCC folded the constant across
+  the subtraction into `ang_prev - (half - 0x800)`; the target instead materializes
+  `addiu $v0,$s0,0x800` in the `beqz` delay slot (asm/funcs/func_80057CC8.s:62).
+- verdict: **KILLED** — `ang_opp` is load-bearing through combine.c/cse.c constant
+  re-association, and is therefore carried as a FAKE-annotated named intermediate under
+  .claude/rules/no-new-park-categories.md:189 (+ the 2026-08-17 clarification at :193).
+
+## [s30] The centre-vertex read spelling is free once the helper is in place.
+- probe: three spellings of the two centre reads, helper held fixed.
+- result: `ctr = base; cx = ctr[arg1*2]; cy = ctr[arg1*2+1]` -> 0;
+  `ctr = base + arg1*2; cx = ctr[0]; cy = ctr[1]` -> 1;
+  centre read through a `base + idx*2` accessor shared with the angle helper -> 6.
+  All 111 insns.
+- verdict: **KILLED** — it is not free; the first spelling is required. Banked at
+  rejected/s30-inline-helper-ctr-plus-idx2-score1.c and
+  rejected/s30-inline-helper-vert-accessor-for-centre-score6.c.
+
+### Frontier after s30
+The function MATCHES and the ledger frontier is closed. The only open question is a policy
+one, stated in full in memory/grind/func_80057CC8/self_vet.md T5: whether a `static inline`
+helper called twice — the programmer writing the base expression once and GCC's inliner
+emitting it twice — is the "compound-address duplication across two calls" family the owner
+refused on 2026-07-20. The measurements say the source contains exactly one materialization;
+the refusal is worded about source-level duplication. That is the layer-1 / Judge call.
