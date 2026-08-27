@@ -1,4 +1,14 @@
 /* candidate.c - func_800283D0 (saTan2KabutoWareMove), grind s25 2026-08-27 (synthesis)
+ * s26 (synthesis, 2026-08-27): body UNCHANGED, re-measured 2 / 215.  s26 re-attributed
+ * the remaining residual: it is `steal_delay_list_from_fallthrough` (reorg.c:1743, called
+ * from reorg.c:3615) pulling `li v0,1` back OUT of the `j`'s ALREADY-FILLED delay slot,
+ * not the plain fall-through steal s25 described (s25's quoted DBRDBG line belonged to a
+ * different function of the TU - UIDs restart per function).  Round-0
+ * fill_simple_delay_slots already produces target's exact arrangement and round-0
+ * fill_eager_delay_slots undoes it.  s26 also FORECLOSED the label route's edge supply:
+ * target has exactly four `move v0,s6` exits + one literal `li v0,1` exit and this body
+ * reproduces all five, so any second `goto` into the chain fall-through block must delete
+ * a `move v0,s6` exit (Z1 20/213, Z2 9/216, Z3 4/213).  Full detail in evidence.md s26.
  *
  * HONEST FLOOR WITH THIS BODY: sandbox --disable all = 2 / 215 insns.
  * (s24 body was 3 / 215; s23 4 / 215; s22 6 / 216; s16-s21 10 / 216.)

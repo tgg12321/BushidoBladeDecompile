@@ -3678,3 +3678,165 @@ is the score" - `diff plain_A.s plain_B.s` answers byte-neutrality in one call.
 - [s25] TOOLING: tmp/grind/func_800283D0/s25/plain.sh and noft.sh compile src/code6cac_b.c straight through the instrumented cc1 to .s; `diff plain_<A>.s plain_<B>.s` decides byte-neutrality in ONE call and is how Y3/Y4 were proven inert - far cheaper than a sandbox cycle for structural questions.
 
 - [s25] POLICY (unchanged, still open before any candidate-ready): the body carries the annotated `do { calls } while (0);` wrap (.claude/rules/do-while-zero-exception.md) and the sel19 arm's duplicated `*(s16 *)(arg0 + 0x286) = 0x19;` store (.claude/rules/duplicated-statement-into-arms.md, which mandates a FAKE annotation the body does not yet carry).
+
+## s26 (synthesis, 2026-08-27) - floor HELD at 2 / 215; the last residual's PASS-INTERNAL mechanism is RE-ATTRIBUTED (it is `steal_delay_list_from_fallthrough`, not a plain thread steal), its full guard list is enumerated against the source, and the label route's remaining C-level supply is FORECLOSED BY EXIT TOPOLOGY
+
+**E-s26-0 (chassis).**  s25's banked candidate re-measured **2 / 215** on HEAD at
+session start and again after this session's probes were reverted (the driver's
+dispatch line said "measurement unavailable"; the ledger number was correct).
+Instruction count still exactly 215 == 215.  Nothing this session changed the
+banked body; candidate.c is unchanged from s25.
+
+**E-s26-1 (NEW TOOLING - single-function DBRDBG isolation).**  `tmp/grind/func_800283D0/s26/iso.py`
+slices the preprocessed TU (`code6cac_b.i`) down to declarations + the single
+definition of func_800283D0 by top-level brace tracking, and `iso.sh` compiles
+that `iso.i` through the instrumented cc1 with `BB2_DBR_DEBUG=1 -dp -da`.  The
+isolated build REPRODUCES THE RESIDUAL EXACTLY (same emitted 44-47 divergence)
+while shrinking the DBRDBG trace from 3763 lines to 260 and removing all UID
+ambiguity - `code6cac_b.i` restarts insn UIDs per function, and s25's quoted
+`thr insn=78 thread=84 opp=270 oppregs=20000380` line belongs to a DIFFERENT
+function of the TU, not to ours.  Any future reorg/dbr forensics on this
+function should use `iso.sh`, not `dbr.sh`.
+
+**E-s26-2 (THE RESIDUAL'S REAL MECHANISM - re-attributed).**  Our function's RTL
+names (stable from .greg through .dbr) are: `jump_insn 78` = the range chain's
+last `beq v1,v0,.L45`; `insn 82` = `li v0,1` (the chain fall-through `return 1;`);
+`jump_insn 84` = `j 662` (the jump to the epilogue label); `code_label 87` = .L45.
+`MAX_REORG_PASSES` is 2, so simple/eager/relax each run twice, but the whole
+residual is decided in round 0:
+
+  1. `fill_simple_delay_slots (first, 0)` reaches jump_insn 84 and fills its slot
+     with insn 82 - DBRDBG `simp insn=84 trial=82 refset=0 setset=0 setneed=0`
+     then `simp insn=84 trial=82 elig=1`.  **After the simple pass the function
+     is byte-identical to target at this site**: beq 78 has an empty slot, `j 84`
+     carries `li v0,1`.  Target's arrangement is produced for free and then lost.
+  2. `fill_eager_delay_slots` then reaches jump_insn 78 with prediction <= 0, so
+     it tries the fall-through thread first (reorg.c:3817).  `fallthrough_insn`
+     is now the SEQUENCE that step 1 created, so the walk loop in
+     `fill_slots_from_thread` immediately stops on it and control reaches
+     reorg.c:3596-3615: "If we stopped on a branch insn that has delay slots, see
+     if we can steal some of the insns in those slots" ->
+     `steal_delay_list_from_fallthrough (reorg.c:1743)`, which **pulls `li v0,1`
+     BACK OUT of the `j`'s delay slot** (`delete_from_delay_slot`) and puts it in
+     the beq's.  That function contains NO DBRDBG print, which is why s25 saw a
+     `thr insn=... thread=...` line with no `trial`/`WINNER` line following it and
+     read the event as a plain fall-through steal.  It is not: it is a
+     delay-slot-to-delay-slot theft from an already-filled unconditional jump.
+
+**E-s26-3 (the guard list, enumerated against reorg.c:1762-1795 - only two knobs
+are C-visible).**  For the steal of `trial = li v0,1` out of `seq = [j 84; li 82]`:
+  - `simplejump_p (XVECEXP (seq,0,0))` must hold - it does (`j 662`), and any
+    spelling that keeps a `return 1;` block ending in a jump to the epilogue keeps
+    it holding.
+  - `insn_references_resource_p (trial, sets, 0)`, `insn_sets_resource_p (trial,
+    needed, 0)`, `insn_sets_resource_p (trial, sets, 0)`: `sets` and `needed` are
+    both EMPTY here, because `fill_slots_from_thread` clears them (reorg.c:3388-3389)
+    and the thread's FIRST element is already the sequence, so no insn is walked
+    over before the steal.  Poisoning `needed` with $v0 would require an extra
+    real instruction between the beq and the `li` -> 216 insns -> dead by
+    construction.
+  - `insn_sets_resource_p (trial, other_needed, 0)`: `other_needed` =
+    `mark_target_live_regs` at .L45.  Isolated build measures
+    `oppregs=0x20750000` = {s0, s2, s4, s5, s6, sp}; $v0 (bit 0x4) absent.  This
+    is the s19-s24 route and it stays FORECLOSED for the reason s21/s24 measured:
+    block_15 recomputes D_800A3824, `*(s16 *)(arg0 + 4)` and `*(s16 *)(temp_s4 + 4)`,
+    and every value that genuinely crosses the chain is seated callee-saved in
+    target, so nothing can be alive in $v0 at .L45 without adding an instruction.
+  - the outer gate `if (own_fallthrough && ! BB2_NO_FT ())` (reorg.c:3817).
+So exactly ONE cheap axis survives: `own_fallthrough == 0`, i.e. a CODE_LABEL
+surviving between jump_insn 78 and insn 82 (`own_thread_p`, reorg.c:2195,
+returns 0 for ANY CODE_LABEL there because `label == NULL_RTX`).
+
+**E-s26-4 (why our label slot is empty - located exactly).**  In our RTL the slot
+between jump_insn 78 and insn 82 holds `(note 80 78 82 "" NOTE_INSN_DELETED)`,
+and it is ALREADY a deleted note in the `.rtl` dump - i.e. the chain
+fall-through `return 1;` block has never had a CODE_LABEL at any point in the
+pipeline, in any of .rtl/.jump/.cse/.loop/.combine/.jump2/.lreg/.greg.  The
+`temp_v1 == 0x14` exit does NOT reference it: `jump_insn 31` carries
+`(label_ref 640)`, and `code_label 640` is a SECOND, physically separate
+`li v0,1; j 662` block in the function tail (insn 643 + jump_insn 645, sitting
+just before `code_label 649` = block_13).  GCC never cross-jump-merges the two
+identical `return 1;` blocks (if it did, the function would be 213 insns, and
+both our build and target are 215).  reorg then
+`steal_delay_list_from_target`s `li 643` into jump_insn 31's slot and
+`reorg_redirect_jump`s it to the epilogue label 662, after which
+`code_label 640`'s block is dead and disappears - that is target's own emitted
+18-19 (`beq v1,a0,.L80028700 / li v0,1`), which our build already reproduces
+bit-for-bit.  So the s25 model ("the single surviving reference is consumed by
+reorg's own reorg_redirect_jump") was pointing at the WRONG block: the reference
+that reorg consumes belongs to the tail duplicate at label 640, and the chain
+fall-through block is simply unlabelled from birth.
+
+**E-s26-5 (the label route's remaining C-level supply is FORECLOSED BY EXIT
+TOPOLOGY - measured).**  For a CODE_LABEL to be born in front of insn 82, some
+C-level `goto` must target the chain fall-through `return 1;`.  Target's exit
+topology is fixed and our body already reproduces it exactly: FOUR
+`addu $v0,$s6,$zero` exits (target.txt lines 69, 96, 138, 204) and ONE literal
+`li v0,1` exit (the chain fall-through), plus the tail duplicate at label 640
+that reorg consumes.  Every C spelling of a second inbound edge converts one of
+those four `return ret;` statements into `goto ret_one;`, which DELETES that
+`move v0,s6` exit and changes the instruction count.  Measured this session on
+the 2-floor chassis, with `ret_one:` on the chain fall-through `return 1;`:
+  - Z1, `goto ret_one;` from the `temp_v1_2 == 0xE` early exit inside block_15:
+    **20 / 213**.
+  - Z2, `goto ret_one;` from `block_49`: **9 / 216**.
+  - Z3, `goto ret_one;` from the `do_calls` exit: **4 / 213**.
+Together with s25's Y1 (temp_v0 exits, 2/215 byte-neutral), Y2 (block_13, 8/216),
+Y3 (temp_v1 == 0x14 exit, byte-IDENTICAL) and Y4 (Y1+Y3, byte-identical), every
+`return`-carrying site in the function has now been tried as the donor of the
+second edge, and every one of them either folds away (the donor was already
+routed to the $s6 block, so the goto is byte-inert) or costs an exit (so the
+instruction count moves off 215).  There is no spare exit to donate: the label
+route is CLOSED for edge-supply spellings.
+
+**E-s26-6 (what is left, stated precisely).**  A CODE_LABEL in front of insn 82
+that does NOT come from an exit edge.  Three shapes have never been measured:
+  (i) making jump_insn 31's `(label_ref 640)` point at the CHAIN fall-through
+      block instead of the tail duplicate, while keeping the tail duplicate alive
+      for an independent reason - reorg's redirect would then drop the chain
+      block's NUSES from 2 to 1 and the label survives;
+  (ii) a spelling in which jump_insn 31's delay slot is filled by the SIMPLE pass
+      (backward scan) instead of by `steal_delay_list_from_target`, so no
+      `reorg_redirect_jump` runs at all in round 0 - DBRDBG currently shows
+      `simp insn=31 trial=30 setneed=1` (the only backward candidate sets a
+      resource the branch needs);
+  (iii) a source form in which the range chain's fall-through `return 1;` is
+      itself a labelled join of two source paths that BOTH already exist in
+      target's 215 insns (i.e. the label is paid for by code target already has,
+      not by a converted exit).
+
+- [s26] Chassis: 2 / 215 confirmed at session start and again at session end with candidate.c applied to src/code6cac_b.c; candidate.c unchanged from s25.
+- [s26] TOOLING: tmp/grind/func_800283D0/s26/iso.py + iso.sh isolate func_800283D0 into its own .i and reproduce the residual with a 260-line (vs 3763-line) DBRDBG trace and unambiguous insn UIDs. s25's quoted `thr insn=78 thread=84 opp=270 oppregs=20000380` line is a DIFFERENT function of the TU - UIDs restart per function in a whole-TU dump.
+- [s26] RE-ATTRIBUTION: the 2-point residual is `steal_delay_list_from_fallthrough` (reorg.c:1743, called from reorg.c:3615), NOT a plain fall-through thread steal. Round-0 `fill_simple_delay_slots(first,0)` already produces TARGET'S EXACT arrangement (`simp insn=84 trial=82 elig=1`: `li v0,1` into the `j`'s slot, beq 78's slot empty); round-0 `fill_eager_delay_slots` then steals it back OUT of the `j`'s delay slot into the beq's. That function has no DBRDBG print, which is why s25 saw a `thr` line with no `trial`/`WINNER` follow-up.
+- [s26] RTL names for this site (stable .greg -> .dbr): jump_insn 78 = chain's last `beq v1,v0,.L45`; insn 82 = `li v0,1`; jump_insn 84 = `j 662`; code_label 87 = .L45; code_label 662 = epilogue.
+- [s26] GUARD ENUMERATION (reorg.c:1762-1795): `sets` and `needed` are EMPTY at the steal because the thread's first element IS the sequence, so the only resource knob is `other_needed` = live-at-.L45 (measured `oppregs=0x20750000` = {s0,s2,s4,s5,s6,sp}; $v0 absent) - the s19-s24 route, still foreclosed. The only cheap axis is the outer `own_fallthrough` gate at reorg.c:3817.
+- [s26] The chain fall-through `return 1;` block has NEVER had a CODE_LABEL: `(note 80 78 82 "" NOTE_INSN_DELETED)` sits there from the `.rtl` dump onward, in every dump through `.greg`.
+- [s26] CORRECTION TO THE s25 MODEL: the `temp_v1 == 0x14` exit does not reference the chain fall-through block. `jump_insn 31` carries `(label_ref 640)`, and `code_label 640` is a SECOND, separate `li v0,1; j 662` block in the function tail (insn 643 + jump_insn 645). reorg steals `li 643` into jump_insn 31's slot and redirects it to label 662 - that is target's emitted 18-19, which our build already matches. The reference reorg consumes belongs to the tail duplicate, not to the block we need labelled.
+- [s26] GCC never cross-jump-merges the two identical `li v0,1; j 662` blocks; if it did the function would be 213 insns, and both our build and target are 215.
+- [s26] KILLED (this session, on the 2-floor chassis, `ret_one:` on the chain fall-through `return 1;`): Z1 `goto ret_one;` from the `temp_v1_2 == 0xE` exit -> 20 / 213; Z2 from `block_49` -> 9 / 216; Z3 from the `do_calls` exit -> 4 / 213. Each deletes one of the four `move v0,s6` exits target has.
+- [s26] FORECLOSED BY EXIT TOPOLOGY: target has exactly four `addu $v0,$s6,$zero` exits (target.txt 69/96/138/204) plus one literal `li v0,1` exit, and our body reproduces all five. Every C-level second inbound edge to the chain fall-through block must convert one `return ret;` into a `goto`, deleting a `move v0,s6` exit. Combined with s25's Y1/Y2/Y3/Y4, every return-carrying site in the function has now been tried as the donor; the label route is closed for edge-supply spellings.
+- [s26] STILL OPEN (never measured): (i) making `jump_insn 31` reference the CHAIN fall-through block while the tail duplicate stays alive independently, so reorg's redirect drops NUSES 2 -> 1 and the label survives; (ii) a form in which jump_insn 31's slot is filled by the SIMPLE backward scan (currently `simp insn=31 trial=30 setneed=1`) so no `reorg_redirect_jump` runs; (iii) a source form where the chain fall-through `return 1;` is a labelled join of two paths target already pays for.
+
+- [s26] Chassis re-measured: the s25 banked body is 2 / 215 on HEAD at session start and again at session end with candidate.c applied to src/code6cac_b.c. Instruction count still exactly 215 == 215. candidate.c body unchanged this session (header note added).
+
+- [s26] NEW TOOLING: tmp/grind/func_800283D0/s26/iso.py slices the preprocessed TU down to declarations + the single definition of func_800283D0 by top-level brace tracking; iso.sh compiles that iso.i through the instrumented cc1 with BB2_DBR_DEBUG=1 -dp -da. It reproduces the residual exactly with a 260-line DBRDBG trace instead of 3763 and with unambiguous insn UIDs. Use iso.sh, not dbr.sh, for any further reorg forensics on this function.
+
+- [s26] UID HAZARD (cost s25 a mis-attribution): a whole-TU cc1 dump restarts insn UIDs per function, so `insn=78` appears in several functions of code6cac_b.i. s25's quoted `thr insn=78 thread=84 opp=270 oppregs=20000380 WINNER trial=84` line is NOT func_800283D0's.
+
+- [s26] RE-ATTRIBUTION: the 2-point residual is steal_delay_list_from_fallthrough (reorg.c:1743, called at reorg.c:3615), not a plain fall-through thread steal. Round-0 fill_simple_delay_slots(first,0) already produces target's exact arrangement (DBRDBG `simp insn=84 trial=82 refset=0 setset=0 setneed=0` / `elig=1`: li v0,1 into the j's delay slot, beq 78's slot empty), and round-0 fill_eager_delay_slots then steals it back OUT of that delay slot into the beq's. MAX_REORG_PASSES is 2 but the whole residual is decided in round 0.
+
+- [s26] RTL names for this site, stable from .greg to .dbr: jump_insn 78 = the range chain's last `beq v1,v0,.L45`; insn 82 = `li v0,1`; jump_insn 84 = `j 662`; code_label 87 = .L45; code_label 662 = the epilogue label; code_label 649 = block_13.
+
+- [s26] GUARD ENUMERATION (reorg.c:1762-1795): at the steal, `sets` and `needed` are both empty (fill_slots_from_thread clears them at reorg.c:3388-3389 and the thread's first element IS the already-filled sequence), so the only resource knob is other_needed = live-at-.L45, measured oppregs=0x20750000 = {s0,s2,s4,s5,s6,sp} with $v0 absent. The only cheap remaining axis is the outer own_fallthrough gate at reorg.c:3817.
+
+- [s26] The chain fall-through `return 1;` block has NEVER carried a CODE_LABEL: (note 80 78 82 "" NOTE_INSN_DELETED) sits between jump_insn 78 and insn 82 in every dump from .rtl through .greg.
+
+- [s26] CORRECTION TO THE s25 MODEL: the temp_v1 == 0x14 exit does not reference the chain fall-through block. jump_insn 31 carries (label_ref 640), and code_label 640 is a separate tail `li v0,1; j 662` block (insn 643 + jump_insn 645). reorg steal_delay_list_from_target()s li 643 into jump_insn 31's slot and reorg_redirect_jump()s it to label 662 - that is target's emitted 18-19 (`beq v1,a0,.L80028700 / li v0,1`), which our build already matches bit-for-bit.
+
+- [s26] GCC never cross-jump-merges the two identical `li v0,1; j 662` blocks; if it did the function would be 213 insns, and both our build and target are 215.
+
+- [s26] KILLED this session on the 2-floor chassis (ret_one: on the chain fall-through `return 1;`): Z1 `goto ret_one;` from the temp_v1_2 == 0xE exit -> 20 / 213; Z2 from block_49 -> 9 / 216; Z3 from the do_calls exit -> 4 / 213.
+
+- [s26] FORECLOSED BY EXIT TOPOLOGY: target has exactly four `addu $v0,$s6,$zero` exits (target.txt 69/96/138/204) plus one literal `li v0,1` exit, and the banked body reproduces all five. Every C-level second inbound edge to the chain fall-through block must convert a `return ret;` into a `goto`, deleting a `move v0,s6` exit and moving the insn count off 215. With s25's Y1/Y2/Y3/Y4 this exhausts every return-carrying site as a donor.
+
+- [s26] POLICY (unchanged, still open before any candidate-ready): the banked body carries the annotated `do { calls } while (0);` wrap (.claude/rules/do-while-zero-exception.md) and the sel19 arm's duplicated `*(s16 *)(arg0 + 0x286) = 0x19;` store (.claude/rules/duplicated-statement-into-arms.md, which mandates a FAKE annotation the body does not yet carry).

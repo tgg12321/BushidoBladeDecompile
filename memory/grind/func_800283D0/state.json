@@ -1,7 +1,7 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 25,
+ "session_count": 26,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -153,23 +153,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "Floor 3 -> 2: site 161's addu operand order closes in ordinary C by delaying the tail pointer's local-alloc BIRTH with two named Judge-index locals, and the last 2-point residual is CONFIRMED by pass "
+  },
+  {
+   "session": 26,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Floor held at 2/215; the last residual is RE-ATTRIBUTED to steal_delay_list_from_fallthrough (reorg.c:1743 via 3615) stealing li v0,1 back out of the j's already-filled delay slot, its guard list is e"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last 2 points close if a CODE_LABEL survives to reorg immediately after the range chain's last `beq` (own_fallthrough = 0), and the only thing missing is an inbound edge that cse cannot rewrite to `move v0,s6`.",
-   "mechanism": "reorg.c:3817 skips the fall-through steal entirely when own_fallthrough == 0; own_thread_p (reorg.c:2195) returns 0 for any CODE_LABEL between the branch and the first active fall-through insn, even LABEL_NUSES == 0. Y1-Y4 proved the label itself never survives because `ret` in $s6 makes every other `return 1;` become `move v0,s6` (routed to the shared .L137), and the single surviving reference is consumed by reorg's own reorg_redirect_jump.",
-   "next_probe": "Two untried supplies for a second inbound edge: (a) an edge whose value is 1 for a reason OTHER than being the return value at that point, so $s6 is not a cse equivalent; (b) an edge originating AFTER jump_insn 78 in reorg's unfilled_slots order, so the redirect that consumes the reference happens after own_fallthrough has already been evaluated. Verify cheaply with `wsl bash tmp/grind/func_800283D0/s25/plain.sh <tag>` - look for a `.L` label immediately before the `li $2,0x00000001` that precedes `j .L138` - then confirm with `dbr.sh <tag>` that `thr insn=78` prints own=0 or disappears. Do NOT re-propose Y1/Y2/Y3/Y4 or W1/W2/W3."
+   "hypothesis": "The CODE_LABEL that sets own_fallthrough = 0 can be born in front of insn 82 without spending an exit, by making jump_insn 31 (the temp_v1 == 0x14 exit) reference the CHAIN fall-through block instead of the tail duplicate at code_label 640, while the tail duplicate stays alive for an independent reason. reorg's redirect then drops that label's NUSES from 2 to 1 and it survives to fill_eager_delay_slots.",
+   "mechanism": "own_thread_p (reorg.c:2195) returns 0 for any CODE_LABEL between the branch and the first active fall-through insn, which makes reorg.c:3817 skip the fall-through thread entirely and leaves the j's simple-pass fill (target's arrangement) intact. Today jump_insn 31 carries (label_ref 640) pointing at the tail duplicate `li v0,1; j 662` (insn 643 + jump_insn 645), and reorg consumes THAT label, not the one we need. The two identical return-1 blocks are never cross-jump-merged (a merge would give 213 insns).",
+   "next_probe": "Reorder the source so the temp_v1 == 0x14 exit's `return ret;` is textually adjacent to / shares a block with the chain fall-through `return 1;` (e.g. hoist the 0x14 test to sit immediately before the chain, or spell the 0x14 exit as `return 1;` written at the same nesting level as the chain fall-through) and check with `wsl bash tmp/grind/func_800283D0/s26/iso.sh <tag>` whether the .greg dump now shows a `code_label` immediately before the `li v0,1` that precedes `j 662` and whether jump_insn 31's label_ref points at it. Confirm the refusal by grepping the isolated DBRDBG for the `thr insn=<beq> ... own=0` line. Do NOT re-propose Y1/Y2/Y3/Y4 (s25) or Z1/Z2/Z3 (s26): every donor-exit spelling is banked dead."
   },
   {
-   "hypothesis": "The s19-s24 route (make $v0 live at jump_insn 78's TARGET so insn_sets_resource_p(trial,&opposite_needed) refuses the steal) is still open but is now known to be the EXPENSIVE one.",
-   "mechanism": "oppregs at insn 270 is 0x20000380 = {a3,t0,t1,sp}; bit 0x4 ($v0) is needed. block_15 recomputes everything it uses (D_800A3824, *(s16 *)(arg0 + 4), *(s16 *)(temp_s4 + 4)) and every value that genuinely crosses the range chain (arg0, arg1, temp_s4, ret) is seated callee-saved in target, so no zero-instruction supply exists.",
-   "next_probe": "Only after the label route is exhausted. If attempted, instrument with `wsl bash tmp/grind/func_800283D0/s25/dbr.sh <tag>` and read the `thr insn=78 ... oppregs=` word for bit 0x4. Do NOT re-run Q1/Q2 (relocating the return-1 block), R1a (merging the two var_s1 = 0 blocks), or block-merge variants - all banked dead."
+   "hypothesis": "The label survives if jump_insn 31 never redirects at all, i.e. if its delay slot is filled by the SIMPLE backward scan instead of by steal_delay_list_from_target.",
+   "mechanism": "In round 0 the simple pass tries jump_insn 31's only backward candidate and refuses it - DBRDBG `simp insn=31 trial=30 setneed=1` (trial 30 sets a resource the branch needs). Because the simple fill fails, the eager pass takes the target thread, copies li 643 with INSN_FROM_TARGET_P and calls reorg_redirect_jump, which is what retires code_label 640. If some insn before jump_insn 31 were eligible, no redirect would run in round 0 at all.",
+   "next_probe": "Read the isolated DBRDBG lines around `simp insn=31` and identify insn 30's set/need conflict from the .greg dump, then try source orderings that place a different, conflict-free computation immediately before the temp_v1 == 0x14 test (candidates: hoisting the `lhu v0,0x6A(s4)` load or the `li a0,0x14` constant materialisation). Byte-neutrality can be decided in one call with `wsl bash tmp/grind/func_800283D0/s26/plain.sh <tag>` + diff before spending a sandbox cycle."
   },
   {
-   "hypothesis": "The MEM-address-vs-pointer-value expansion law is a reusable queue-wide lever, now sharpened by two s25 measurements.",
-   "mechanism": "A pointer+scaled-index plus expanded through memory_address/EXPAND_SUM comes out (shift, pointer); expanded as the RHS of an assignment to a pointer LOCAL it comes out in source order. A parenthesised cast used as an ARRAY_REF base is still the address form (V4). If introducing the pointer local costs a register seat, the fix is to delay its RTL birth with named locals for whatever the target computes first, not to hunt for extra references (E-s25-1).",
-   "next_probe": "Out of band for this function: when any other grind ledger reports an `addu rd,rA,rB` vs `addu rd,rB,rA` residual on a pointer+index sum, flip the spelling between inline address and pointer local, and if a seat is lost check the local-alloc quantity's birth with BB2_QTY_DEBUG before touching refs. Worth a docs/grind/decisions.md line or a technique rule once a second function confirms it."
+   "hypothesis": "The MEM-address-vs-pointer-value expansion law (E-s24-2 / E-s25-1) is a reusable queue-wide lever and is now fully priced; it is out of band for this function but should be spent elsewhere.",
+   "mechanism": "A pointer+scaled-index plus expanded through memory_address/EXPAND_SUM comes out (shift, pointer); expanded as the RHS of an assignment to a pointer LOCAL it comes out in source order. A parenthesised cast used as an ARRAY_REF base is still the address form (s25 V4). If introducing the pointer local costs a register seat, delay its local-alloc BIRTH with named locals for whatever the target computes first (pri = floor_log2(refs) * refs * 10000 / span), rather than hunting for extra references.",
+   "next_probe": "Out of band for func_800283D0. When any other grind ledger reports an `addu rd,rA,rB` vs `addu rd,rB,rA` residual on a pointer+index sum, flip the spelling between inline address and pointer local, and if a seat is lost inspect the local-alloc quantity's birth with BB2_QTY_DEBUG before touching refs. Worth a docs/grind/decisions.md line or a technique rule once a second function confirms it."
   }
  ],
  "judge_constraints": [],

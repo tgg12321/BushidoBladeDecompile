@@ -2004,3 +2004,53 @@ annotation the body does not yet carry).  The s25 hunk itself (`idx0`, `idx1`,
 - probe: Bodies W1 (temp_v0 exit -> `return 1;`), W2 (`block_13: return 1;`), W3 (both).
 - result: W1 = 2/215 byte-neutral; W2 = 8/216; W3 = 8/216. cse substitutes $s6 for the constant at those sites, so no second `li v0,1` block is ever created.
 - verdict: KILLED
+
+## s26 frontier (synthesis, 2026-08-27) - floor 2 / 215, ONE residual cluster left (emitted 45-47)
+
+## [s26] The remaining 2-point residual is a plain fall-through thread steal by `fill_eager_delay_slots` on jump_insn 78 (the s25 model).
+- mechanism: s25 read `thr insn=78 thread=84 ... WINNER trial=84` as a fall-through steal of the fall-through block's first insn.
+- probe: isolate func_800283D0 into its own .i (iso.py/iso.sh) and read the unambiguous 260-line DBRDBG trace.
+- result: REFUTED on both counts. The quoted line belongs to a different function of the TU (UIDs restart per function). In our function, round-0 `fill_simple_delay_slots(first,0)` fills `j 84`'s slot with `li 82` (target's exact arrangement) and round-0 `fill_eager_delay_slots` then calls `steal_delay_list_from_fallthrough` (reorg.c:1743 via 3615) to pull `li v0,1` back OUT of that delay slot.
+- verdict: KILLED (re-attributed; see E-s26-2).
+
+## [s26] The steal has a resource guard that a C-level spelling can trip without adding an instruction.
+- mechanism: reorg.c:1762-1795 checks `insn_references_resource_p(trial,sets)`, `insn_sets_resource_p(trial,needed)`, `insn_sets_resource_p(trial,sets)` and `insn_sets_resource_p(trial,other_needed)`.
+- probe: read `fill_slots_from_thread`'s initialisation (reorg.c:3388-3389) and the isolated DBRDBG `oppregs` word.
+- result: `sets`/`needed` are both empty because the thread's first element IS the already-filled sequence, so nothing is walked over first; `other_needed` = live-at-.L45 = 0x20750000 = {s0,s2,s4,s5,s6,sp}, no $v0. Poisoning `needed` needs a real instruction between the beq and the `li` (216 insns).
+- verdict: KILLED (see E-s26-3).
+
+## [s26] A second C-level inbound edge to the chain fall-through `return 1;` block can supply the CODE_LABEL that sets own_fallthrough = 0.
+- mechanism: `own_thread_p` (reorg.c:2195) returns 0 for any CODE_LABEL between the branch and the first active fall-through insn; a surviving label refuses the steal outright (confirmed by the BB2_NO_FT_STEAL ablation in s25).
+- probe: put `ret_one:` on the chain fall-through `return 1;` and convert each remaining `return ret;` site into `goto ret_one;` - Z1 (the `temp_v1_2 == 0xE` exit), Z2 (block_49), Z3 (do_calls), on the 2-floor chassis.
+- result: Z1 20 / 213, Z2 9 / 216, Z3 4 / 213. Every donor deletes one of the four `move v0,s6` exits that target has, so the instruction count leaves 215. With s25's Y1/Y2/Y3/Y4 this exhausts every return-carrying site in the function.
+- verdict: KILLED (see E-s26-5).
+
+## [s26] The `temp_v1 == 0x14` exit references the chain fall-through block, and reorg's redirect is what consumes the label (the s25 model of WHY no label survives).
+- mechanism: s25 concluded the single surviving reference is consumed by `reorg_redirect_jump` when reorg copies `li v0,1` into that branch's delay slot.
+- probe: read `jump_insn 31`'s `label_ref` and locate the referenced `code_label` in the `.greg` dump.
+- result: REFUTED. `jump_insn 31` carries `(label_ref 640)`, and `code_label 640` is a SECOND `li v0,1; j 662` block in the function tail (insn 643 + jump_insn 645). The chain fall-through block is unlabelled from the `.rtl` dump onward (`(note 80 78 82 "" NOTE_INSN_DELETED)`); it never had a label for reorg to consume.
+- verdict: KILLED (see E-s26-4).
+
+## [s26] The remaining 2-point residual is a plain fall-through thread steal by fill_eager_delay_slots on jump_insn 78 (the s25 model), and s25's DBRDBG line `thr insn=78 thread=84 opp=270 oppregs=20000380` describes it.
+- mechanism: s25 read the thr line as fill_slots_from_thread taking the fall-through block's first insn (li v0,1) into the beq's slot.
+- probe: Built tmp/grind/func_800283D0/s26/iso.py + iso.sh: slice the preprocessed TU down to declarations + the single definition of func_800283D0 and compile that .i through the instrumented cc1 with BB2_DBR_DEBUG=1 -dp -da. The isolated build reproduces the residual exactly with a 260-line trace (vs 3763) and unambiguous UIDs.
+- result: The s25-quoted line belongs to a DIFFERENT function of the TU (code6cac_b.i restarts insn UIDs per function). In func_800283D0 the RTL names are jump_insn 78 = the chain's last beq, insn 82 = li v0,1, jump_insn 84 = j 662. Round-0 fill_simple_delay_slots(first,0) prints `simp insn=84 trial=82 setneed=0` then `elig=1` and fills the j's slot with li v0,1 - i.e. TARGET'S EXACT ARRANGEMENT is produced for free. Round-0 fill_eager_delay_slots then reaches jump_insn 78, finds fallthrough_insn = that SEQUENCE, and reorg.c:3596-3615 calls steal_delay_list_from_fallthrough (reorg.c:1743), which delete_from_delay_slot()s li v0,1 out of the j's slot and puts it in the beq's. That routine has no DBRDBG print, which is why s25 saw a thr line with no trial/WINNER follow-up.
+- verdict: KILLED
+
+## [s26] The steal has a resource guard a C-level spelling can trip without adding an instruction.
+- mechanism: reorg.c:1762-1795 gates the steal on simplejump_p(seq's delay insn), insn_references_resource_p(trial,sets), insn_sets_resource_p(trial,needed), insn_sets_resource_p(trial,sets) and insn_sets_resource_p(trial,other_needed).
+- probe: Read fill_slots_from_thread's initialisation (reorg.c:3388-3389) against the isolated DBRDBG oppregs word for insn 78.
+- result: sets and needed are both EMPTY at the steal, because fill_slots_from_thread clears them and the thread's FIRST element is already the sequence, so no insn is walked over first; poisoning `needed` with $v0 needs a real instruction between the beq and the li (216 insns, dead by construction). other_needed = mark_target_live_regs at .L45 = 0x20750000 = {s0,s2,s4,s5,s6,sp}, no $v0 - the s19-s24 route, still foreclosed because block_15 recomputes everything it uses. Only the outer own_fallthrough gate (reorg.c:3817) remains as a cheap axis.
+- verdict: KILLED
+
+## [s26] A second C-level inbound edge to the chain fall-through `return 1;` block supplies the CODE_LABEL that makes own_thread_p return 0 and refuses the steal.
+- mechanism: own_thread_p (reorg.c:2195) returns 0 for ANY CODE_LABEL between the branch and the first active fall-through insn (label == NULL_RTX, so LABEL_NUSES is irrelevant); s25's BB2_NO_FT_STEAL ablation already proved that refusing this steal makes emitted 44-47 byte-identical to target.
+- probe: On the 2-floor chassis, put `ret_one:` on the chain fall-through `return 1;` and convert each remaining `return ret;` site into `goto ret_one;`: Z1 = the temp_v1_2 == 0xE early exit inside block_15, Z2 = block_49, Z3 = the do_calls exit. Measured with sandbox --disable all.
+- result: Z1 20 / 213, Z2 9 / 216, Z3 4 / 213 - all worse, and all move off 215 insns. Cause is structural: target has exactly FOUR `addu $v0,$s6,$zero` exits (target.txt lines 69, 96, 138, 204) plus ONE literal `li v0,1` exit, and the banked body reproduces all five; every C-level second edge converts one `return ret;` into a goto and therefore DELETES a `move v0,s6` exit. Combined with s25's Y1 (temp_v0 exits, byte-neutral), Y2 (block_13, 8/216), Y3 (temp_v1 == 0x14 exit, byte-identical) and Y4, every return-carrying site in the function has now been tried as the donor. There is no spare exit to donate.
+- verdict: KILLED
+
+## [s26] The `temp_v1 == 0x14` exit references the chain fall-through block, and reorg's own reorg_redirect_jump is what consumes that reference and kills the label (the s25 model of WHY no label survives).
+- mechanism: s25 concluded the single surviving reference is consumed when reorg copies li v0,1 into that branch's delay slot with INSN_FROM_TARGET_P and redirects it to the epilogue.
+- probe: Read jump_insn 31's label_ref and locate the referenced code_label in the .greg dump of func_800283D0, and check every dump from .rtl to .greg for a code_label between jump_insn 78 and insn 82.
+- result: REFUTED. jump_insn 31 carries (label_ref 640), and code_label 640 is a SECOND, physically separate `li v0,1; j 662` block in the function tail (insn 643 + jump_insn 645, just before code_label 649 = block_13). The chain fall-through block is UNLABELLED from the .rtl dump onward - the slot between jump_insn 78 and insn 82 holds (note 80 78 82 "" NOTE_INSN_DELETED) in .rtl/.jump/.cse/.loop/.combine/.jump2/.lreg/.greg alike. It never had a label for reorg to consume. GCC also never cross-jump-merges the two identical `li v0,1; j 662` blocks: if it did the function would be 213 insns, and both our build and target are 215.
+- verdict: KILLED
