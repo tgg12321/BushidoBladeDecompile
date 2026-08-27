@@ -2609,3 +2609,87 @@ s40c seat-census script re-pointed at `tmp/grind/func_80057CC8/s41/`
 - [s42] The ban-compliant space is now fully partitioned: Regime A (pre-call address, prev-first) = 8 saves, 108 insns, score 16, seat rotation foreclosed by s41 H-s41-1/2/3 plus s42's shape-invariance result; Regime B (pre-call address, wrap-first, d1) = 8 saves, 106 insns, score 45, the target's COMPLETE seat map but an order s42 proves inseparable from that map; Regime C (post-call address) = 9 saves, foreclosed. The target is in none of them - it is Regime C with eight saves, reachable only via the second materialization refused on 2026-07-20.
 
 - [s42] src/text1b.c was restored to its committed INCLUDE_ASM state at the end of the session (`git checkout src/text1b.c`); no build-surface file was modified.
+
+- [s43] Chassis re-measured at dispatch (the brief reported it unavailable): with
+  memory/grind/func_80057CC8/candidate.c applied to src/text1b.c,
+  `sandbox func_80057CC8 --disable all` -> **score 16, target_insns 111, build_insns 108,
+  rules_dropped 0**.  Floor unchanged from s37-s42.  The queue item's headline "pure-C
+  distance 30" is the no-C-body figure for the INCLUDE_ASM representation on main and is
+  NOT this function's honest floor.
+- [s43] The s37 permuter-workspace recipe (tmp/grind/func_80057CC8/s37/build_ws.sh) is
+  still correct on the current chassis and was re-run twice unmodified except for the
+  output directory: both s43 workspaces sanity-gate at base 108 insns / target 111.
+  Re-usable copies: tmp/grind/func_80057CC8/s43/build_wsA.sh (seeded from candidate.c) and
+  build_wsB.sh (seeded from tmp/grind/func_80057CC8/s42/a1.c).  NOTE the permuter's own
+  base_score scale on this chassis: **758 == sandbox 16**; s37's score-20 predecessor
+  scored 783.  Permuter score and sandbox score are NOT monotonically related -- s43's
+  B-738 find improved the permuter score (758 -> 738) while the sandbox score got WORSE
+  (16 -> 23).  Always re-measure a find with `sandbox`, never rank finds by permuter score.
+- [s43] Two Regime-A permuter campaigns run to completion IN-TURN and harvested with
+  --stop: `s43-regimeA-candidate` (27,866 iterations, 2 outputs) and
+  `s43-regimeA-siblingidiom` (27,827 iterations, 6 outputs) = **55,693 iterations**.
+  `permuter_campaign.py status` confirms 0 live campaigns, 0 stale registry entries at
+  session end.  Outputs are preserved under tmp/grind/func_80057CC8/s43/perm{A,B}/output-*.
+- [s43] SEVEN of the eight permuter outputs are semantics-breaking and were rejected
+  WITHOUT measurement; the mechanical tell is cheap and worth reusing: parse the function
+  body and record the BRACE DEPTH of every assignment to the next-address local.  Depth 2
+  (inside the `{ s32 tmp; s32 off; ... }` block) is the legal position; **depth 3 means the
+  assignment was sunk inside the next-wrap `if` and the address is undefined on the
+  fall-through path**.  A-593, B-593 and B-583 are all depth 3.  The remaining two breaks
+  are read-before-assign of a different value: B-640 inlines the second ratan2 into the `if`
+  condition so `ang_next` is never assigned though the else arm reads it, and B-676 sinks
+  `new_var3 = (s16) cx;` to the last line while reading `new_var3` as a ratan2 argument near
+  the top.  decomp-permuter does not guarantee semantic equivalence; every find on this
+  function must be read in full before it is applied.
+- [s43] The ONE semantics-preserving find, B-738, is banked at
+  `rejected/s43-permuter-pi-reused-as-cx-carrier-score23-111insns.c`.  It reuses the
+  existing local `pi` to carry `cx` -- `(s16)(pi = cx)` == `(s16) cx` and the later
+  `*arg2 = pi` == `*arg2 = cx`, so it is legal C and a variable-reuse-family shape.
+  **Measured: sandbox 23 @ 111 insns.**  This is the first Regime-A form ever to reach the
+  target's exact instruction count (111), which is why it is banked rather than discarded --
+  but its seats are further from the target than the score-16 candidate's, not closer:
+  greg census (tmp/grind/func_80057CC8/s43/p738.greg) gives $s0 = 77 cys, **$s1 = 88
+  next-ADDRESS**, **$s2 = 85, the reused `pi`/cx carrier ("used 5 times across 44 insns;
+  crosses 2 calls")**, **$s3 = 72 arg0**, $s4 = 83, $s5 = 86, $s6 = 74 arg2, $s7 = 75 arg3.
+  Introducing any extra call-crossing quantity in Regime A does not displace the address
+  downward toward arg0's seat; it displaces the address UPWARD and pushes arg0 further down.
+- [s43] QUANTITATIVE FORM OF THE REGIME-A WALL (new; sharpens s38b Horn 1).  Read straight
+  off the s43 lreg/greg tables: in the score-16 chassis the next-address allocno is pseudo
+  88 at n = 6 references over live_length 4, so its global.c:635 priority
+  floor_log2(n)*n/L = 2*6/4 = **3.00**, against arg0 (pseudo 72) at 2*5/54 = **0.185** --
+  a **16.2x** gap.  In the p738 chassis the address stretches to L = 6 (2.00) and arg0 to
+  L = 57 (0.175): still **11.4x**.  The address's last use is pinned by semantics to the
+  second ratan2's two `lh` argument reads at ~insn 55 of a 108-insn body, and its def cannot
+  precede the next-wrap test (which needs `arg0[3]`), so L <= 55 is the absolute ceiling;
+  even there 2*6/55 = 0.218 still exceeds arg0's 0.185, and n cannot drop below 6 because
+  the two `lh` reads plus the address arithmetic are all semantically required.  Legal C
+  can move this ratio by at most ~1.4x against a required 16x.  This is why the permuter's
+  only improving mutation is PARTIAL DEFINITION: removing the def from the dominant path is
+  the sole operation that changes the address's priority by the needed order of magnitude,
+  and it is not expressible in valid C.
+- [s43] Fresh m2c re-derivation of the target (rederive modality) lands on the BANNED form:
+  m2c emits `temp_a2 = M2C_FIELD(arg0, s32 *, 4)` for the centre/prev address and a second,
+  independent `M2C_FIELD(arg0, s32 *, 4)` for the next address, reproducing the target's
+  `lw $a2,0x4($s2)` (asm/funcs/func_80057CC8.s:17) / `lw $a0,0x4($s2)` (:50) pair exactly --
+  i.e. the machine decompiler independently confirms that the target's own source performed
+  the second source-level materialization the owner refused on 2026-07-20.  The only novel
+  spelling m2c contributes, the prev-wrap test as a bit test `if (temp_v1 & 0x8000)` instead
+  of `if ((s16) prev_idx < 0)`, is byte-equivalent here (both emit `sll 16` + `bgez`).
+  Combined with s42's register-invariant sibling transplant and s17's empty corpus sweep,
+  the rederive ladder has no unspent rung for this function.
+
+- [s43] Chassis re-measured at dispatch (brief said unavailable): candidate.c applied to src/text1b.c gives sandbox score 16, target_insns 111, build_insns 108, rules_dropped 0. Floor unchanged from s37-s42. The queue headline 'pure-C distance 30' is the no-C-body figure for the INCLUDE_ASM representation on main, not the honest floor.
+
+- [s43] Permuter score and sandbox score are NOT monotonically related on this function: base_score 758 == sandbox 16 (s37's score-20 predecessor scored 783), yet the s43 B-738 find improved the permuter score to 738 while its sandbox score got WORSE (16 -> 23). Rank finds only by sandbox, never by permuter score.
+
+- [s43] The s37 permuter-workspace recipe is still valid on the current chassis; re-usable copies banked at tmp/grind/func_80057CC8/s43/build_wsA.sh (seeded from candidate.c) and build_wsB.sh (seeded from s42/a1.c). Both sanity-gate at base 108 / target 111 insns.
+
+- [s43] Cheap mechanical semantic-validity tell for permuter finds on this function: parse the body and record the BRACE DEPTH of every assignment to the next-address local. Depth 2 (inside the { s32 tmp; s32 off; ... } block) is legal; depth 3 means the assignment was sunk inside the next-wrap if and the address is undefined on the fall-through path. Three of s43's eight outputs fail this test outright; two more fail an analogous read-before-assign check on ang_next / a sunk new_var3.
+
+- [s43] B-738 greg census (tmp/grind/func_80057CC8/s43/p738.greg): $s0 = 77 cys, $s1 = 88 next-ADDRESS, $s2 = 85 the reused pi/cx carrier ('used 5 times across 44 insns; crosses 2 calls'), $s3 = 72 arg0, $s4 = 83, $s5 = 86, $s6 = 74 arg2, $s7 = 75 arg3. Introducing an extra call-crossing quantity in Regime A does not displace the address downward toward arg0's seat - it displaces the address UPWARD and pushes arg0 further down. 111 insns is reachable in Regime A but only at a worse seat map.
+
+- [s43] Quantitative Regime-A wall (new, sharpens s38b Horn 1): next-address allocno priority floor_log2(n)*n/L = 2*6/4 = 3.00 vs arg0 2*5/54 = 0.185, a 16.2x gap; best legal stretch of the address (L <= 55, pinned by the second ratan2's lh reads; n >= 6, all semantically required) reaches only 0.218. This is why the permuter's sole improving mutation is partial definition - removing the def from the dominant path is the only operation with the needed order-of-magnitude effect, and it is not expressible in valid C.
+
+- [s43] Fresh m2c re-derivation independently reproduces the target's two lw 0x4($s2) loads from two separate source-level materializations of *(s16 **)(arg0 + 4), i.e. the machine decompiler confirms the original source itself contained the construct the owner refused on 2026-07-20.
+
+- [s43] Campaign hygiene: both campaigns harvested with --stop inside the session; permuter_campaign.py status reports 0 live campaigns and 0 stale registry entries at session end.

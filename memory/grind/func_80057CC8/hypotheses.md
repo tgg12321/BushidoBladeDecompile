@@ -1702,3 +1702,114 @@ each foreclosed by a distinct closed-form argument).
 - probe: Enumeration of the conditionals this function's semantics actually admit before the ang_next argument reads, cross-checked against the already-banked prev-first controls rejected/s40c-prevfirst-h35-scale-between-calls-noflip-score42.c and rejected/s40c-prevfirst-h35-scale-after-angnext-noflip.c.
 - result: Exactly two conditionals exist before the ang_next reads (the prev-index wrap and the next-index wrap), plus the ang_mid if/else, which is strictly AFTER both `lh` uses and can never separate them from the def. A single-def next-address is by construction defined at or after the next-wrap merge, so the next-wrap branch is always before it. Only the prev-if remains, and placing the prev-if after the address def IS d1's wrap-before-prev order. Any additional branch would have to be invented with no semantic purpose (the dead-conditional family).
 - verdict: KILLED
+
+## [s43] (s42 frontier item #2) A never-run permuter campaign inside Regime A -- the
+108-insn merge-offset regime -- seeded from TWO source-distinct but register-equivalent
+chassis can beat 16, because s42 proved the regime admits structurally distinct source
+shapes at identical score and therefore has real unexplored shape freedom.
+- mechanism: s37 already proved this function's 108-insn regime is permuter-productive
+  (the 20 -> 16 find came from it), and permuter mutations move exactly the statement-order
+  and expression-shape inputs that cse1 and sched1 consume.  s42 additionally showed a1.c
+  (s32 base + one reused cursor) and base16.c/candidate.c (s16* table + dedicated
+  next_vert) are wholly different source shapes landing on the SAME 108 instructions and
+  the SAME allocation -- so the two shapes are independent seeds into the same basin, and a
+  campaign from both explores strictly more of it than s37's single-chassis run.
+- probe: two workspaces rebuilt with the s37 recipe (`tmp/grind/func_80057CC8/s43/`
+  build_wsA.sh from memory/grind/func_80057CC8/candidate.c, build_wsB.sh from
+  tmp/grind/func_80057CC8/s42/a1.c; both sanity-gated at base 108 / target 111 insns).
+  Launched as campaigns `s43-regimeA-candidate` and `s43-regimeA-siblingidiom`, -j 4 each,
+  waited IN-TURN over three fresh-seed windows (313 s + 542 s on A, 115 s + 542 s on B),
+  then harvested with --stop.  Totals: 27,866 iterations on A and 27,827 on B = **55,693
+  iterations**, 8 outputs (A: 758, 593; B: 758, 738, 676, 640, 593, 583).  Every output was
+  read in full and hand-checked for semantic equivalence before any measurement.
+- result: **Seven of the eight outputs are SEMANTICS-BREAKING, and six of the seven break
+  in the SAME way** -- a value is read on a path where it was never assigned.  Four of them
+  (A-593, B-593, B-583, and structurally B-676) achieve it by sinking the next-address
+  assignment INSIDE the next-wrap `if` (brace depth 3 instead of the legal depth 2), so the
+  address pseudo is undefined on the fall-through path; B-583 additionally sources it from
+  an uninitialised `new_var2`; B-640 inlines the second `ratan2` into the `if` condition and
+  leaves `ang_next` -- still read in the else arm -- never assigned; B-676 sinks
+  `new_var3 = (s16) cx;` to the very end of the function while reading `new_var3` as a
+  ratan2 argument near the top.  **Exactly ONE output is semantics-preserving: B-738**,
+  which reuses the existing local `pi` to carry `cx` (`(s16)(pi = cx)` == `(s16) cx`, and
+  the later `*arg2 = pi` == `*arg2 = cx`).  Applied and measured: **sandbox 23 @ 111
+  insns** -- the first Regime-A form ever to reach the target's exact instruction count,
+  but strictly worse than 16 in score.  Its greg census
+  (`tmp/grind/func_80057CC8/s43/p738.greg`) says why: the reused `pi` becomes a NEW
+  call-crossing allocno (pseudo 85, "used 5 times across 44 insns; crosses 2 calls") that
+  takes $s2, which pushes the next-address (pseudo 88) UP to $s1 -- the seat the target
+  gives cxs -- and arg0 (pseudo 72) DOWN to $s3.  The rotation moves further from the
+  target, not toward it.
+- verdict: **KILLED.**  s42 frontier item #2 is measured dead: 55,693 iterations across two
+  source-distinct chassis surfaced no legal form below 16.  The finding that matters is the
+  SHAPE of the improving basin -- every single improving find wins by leaving the
+  next-address pseudo (or another crossing value) PARTIALLY DEFINED.  That is not a spelling
+  the permuter happened to pick; it is the only thing that lowers the address allocno's
+  priority, and it is unreachable in legal C by construction.  Banked as
+  `rejected/s43-permuter-partial-def-address-SEMANTICS-BROKEN-perm593.c` and
+  `rejected/s43-permuter-pi-reused-as-cx-carrier-score23-111insns.c`.
+
+## [s43] The Regime-A seat rotation is not merely "the address outranks arg0" (s38b Horn 1)
+but outranks it by more than an order of magnitude, so no live-range or reference-count
+manipulation available to legal C can flip it.
+- mechanism: global.c:635 allocno_compare orders by floor_log2(n) * n / live_length.  s43's
+  two censuses give both operands directly.  In the score-16 chassis (b16 = a1.c) the
+  next-address is pseudo 88, "used 6 times across 4 insns" -> floor_log2(6) * 6 / 4 =
+  2 * 6 / 4 = **3.00**; arg0 is pseudo 72, "used 5 times across 54 insns" -> 2 * 5 / 54 =
+  **0.185**.  The ratio is **16.2x**.  In the p738 chassis the address stretches to "6 times
+  across 6 insns" -> 2.00, and arg0 to 57 insns -> 0.175: still **11.4x**.
+- probe: the two `Register dispositions` + lreg tables produced by
+  tmp/grind/func_80057CC8/s43/batch.sh over p738.c and s42/a1.c (banked as
+  tmp/grind/func_80057CC8/s43/{p738,b16}.greg / .lreg).
+- result: For the address to fall below arg0 it needs 2 * n / L < 0.185.  Its last use is
+  fixed by semantics -- the second ratan2's two `lh` argument reads, which sit at roughly
+  insn 55 of a 108-insn body -- so L <= 55 even if the def were hoisted to the function's
+  first instruction, which it cannot be (the def depends on the next-wrap test, which
+  depends on `arg0[3]`).  At n = 6 the best attainable is 12 / 55 = 0.218, still above
+  arg0's 0.185; only n <= 4 (2 * 4 / 55 = 0.145) would clear it, and n is pinned at 6 by
+  the two `lh` reads plus the address arithmetic.  Every one of those three quantities is
+  semantically required.
+- verdict: **CONFIRMED (closed-form).**  This sharpens s38b Horn 1 from a qualitative
+  "always outranks" into a quantitative bound: the flip needs a >= 16x priority swing and
+  legal C can move it by at most ~1.4x.  It also explains the s43 permuter result exactly --
+  partial definition is the ONLY mutation that changes the address's priority by enough,
+  because it removes the def from the dominant path rather than merely stretching it.
+
+## [s43] The rederive-modality re-derivations (fresh m2c decompile of the target, plus the
+prior sibling/Kengo/corpus axes) produce no shape that is not already banked.
+- mechanism: rederive modality's mandate is a structurally DIFFERENT C shape, not a tweak.
+- probe: fresh `python3 tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax -f
+  func_80057CC8 asm/funcs/func_80057CC8.s` on the current chassis (output in the s43
+  session log); compared against the banked regime partition.
+- result: m2c's output is Regime C by construction -- it emits `temp_a2 =
+  M2C_FIELD(arg0, s32 *, 4)` for the centre/prev address AND a second, independent
+  `M2C_FIELD(arg0, s32 *, 4)` for the next address, exactly reproducing the target's
+  `lw $a2,0x4($s2)` / `lw $a0,0x4($s2)` pair.  That is the 2026-07-20 owner-refused second
+  source-level materialization and the head of this function's banned_constructs list, so
+  the machine re-derivation lands squarely on the banned form and offers no new legal shape.
+  The only genuinely new spelling detail it contributes -- the prev-wrap test written as a
+  bit test `if (temp_v1 & 0x8000)` rather than a signed compare -- is byte-equivalent to the
+  candidate's `if ((s16) prev_idx < 0)` on this chassis (both emit `sll 16` + `bgez`).
+  The sibling-transplant axis was spent at s42 (a1/a2, register-equivalent) and the SOTN /
+  decomp.me corpus axis at s17 (unfindable in the accessible slice).
+- verdict: **KILLED.**  The rederive ladder has no unspent rung for this function: machine
+  re-derivation reproduces the banned form, sibling transplant is register-invariant, and
+  the corpus is empty.
+
+## [s43] (s42 frontier #2) A never-run permuter campaign inside Regime A, seeded from TWO source-distinct but register-equivalent chassis (candidate.c and s42 a1.c), can beat 16, because s42 proved the regime admits structurally distinct source shapes at identical score and therefore has real unexplored shape freedom.
+- mechanism: s37 already proved the 108-insn merge-offset regime is permuter-productive (the 20->16 find came from it); permuter mutations move exactly the statement-order and expression-shape inputs cse1 and sched1 consume. s42 showed a1.c (s32 base + one reused cursor) and candidate.c (s16* table + dedicated next_vert) are wholly different sources landing on the same 108 instructions and the same allocation, so they are independent seeds into the same basin.
+- probe: Rebuilt two workspaces with the s37 recipe (tmp/grind/func_80057CC8/s43/build_wsA.sh, build_wsB.sh), both sanity-gated at base 108 / target 111 insns. Launched campaigns s43-regimeA-candidate and s43-regimeA-siblingidiom at -j 4, waited IN-TURN over three fresh-seed windows (313s + 542s on A, 115s + 542s on B), harvested both with --stop. Every output read in full and hand-checked for semantic equivalence before measurement.
+- result: 27,866 + 27,827 = 55,693 iterations, 8 outputs (A: 758, 593; B: 758, 738, 676, 640, 593, 583). SEVEN are semantics-breaking: A-593, B-593 and B-583 sink the next-address assignment inside the next-wrap if (brace depth 3 instead of the legal depth 2) so the address is undefined on the fall-through path (B-583 additionally sources it from an uninitialised new_var2); B-640 inlines the second ratan2 into the if condition leaving ang_next never assigned though the else arm reads it; B-676 sinks new_var3 = (s16) cx; to the last line while reading new_var3 as a ratan2 argument near the top. The ONE semantics-preserving find, B-738, reuses the existing local pi to carry cx ((s16)(pi = cx) == (s16) cx; *arg2 = pi == cx) and measures sandbox 23 @ 111 insns - the first Regime-A form at the target's exact instruction count, but its greg census puts $s1 = next-address (88), $s2 = the reused pi/cx carrier (85, 5 refs / 44 insns, crosses 2 calls), $s3 = arg0 (72), i.e. the rotation moves FURTHER from the target than the score-16 candidate.
+- verdict: KILLED
+
+## [s43] The Regime-A seat rotation is not merely 'the address outranks arg0' (s38b Horn 1) but outranks it by more than an order of magnitude, so no live-range or reference-count manipulation available to legal C can flip it.
+- mechanism: global.c:635 allocno_compare orders by floor_log2(n) * n / live_length. The s43 lreg/greg censuses give both operands directly for two different chassis.
+- probe: tmp/grind/func_80057CC8/s43/batch.sh over p738.c and s42/a1.c, reading the 'Register dispositions' table plus the lreg 'used N times across L insns' lines (banked as tmp/grind/func_80057CC8/s43/{p738,b16}.greg and .lreg).
+- result: Score-16 chassis: next-address pseudo 88 = 6 refs / 4 insns -> 2*6/4 = 3.00; arg0 pseudo 72 = 5 refs / 54 insns -> 2*5/54 = 0.185; ratio 16.2x. p738 chassis: address 6/6 -> 2.00, arg0 5/57 -> 0.175; ratio 11.4x. The address's last use is pinned by semantics to the second ratan2's two lh argument reads at ~insn 55 of a 108-insn body and its def cannot precede the next-wrap test (which needs arg0[3]), so L <= 55; even there 2*6/55 = 0.218 still exceeds 0.185, and n cannot drop below 6 (two lh reads plus the address arithmetic are all semantically required). Legal C moves the ratio by at most ~1.4x against a required 16x.
+- verdict: CONFIRMED
+
+## [s43] The rederive ladder still has an unspent rung: a fresh m2c decompile of the target on the current chassis yields a structurally different, ban-compliant C shape.
+- mechanism: rederive modality mandates a structurally DIFFERENT shape, not a tweak; m2c re-derives the source from the bytes independently of 42 sessions of ledger bias.
+- probe: python3 tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax -f func_80057CC8 asm/funcs/func_80057CC8.s on the live chassis, compared against the banked three-regime partition.
+- result: m2c's output is Regime C by construction: it emits temp_a2 = M2C_FIELD(arg0, s32 *, 4) for the centre/prev address AND a second independent M2C_FIELD(arg0, s32 *, 4) for the next address, reproducing the target's lw $a2,0x4($s2) (asm/funcs/func_80057CC8.s:17) / lw $a0,0x4($s2) (:50) pair exactly - the 2026-07-20 owner-refused second source-level materialization and the head of banned_constructs. The machine decompiler thus independently confirms the ORIGINAL source performed that duplication. The only novel spelling it contributes, the prev-wrap test as if (temp_v1 & 0x8000) instead of if ((s16) prev_idx < 0), is byte-equivalent on this chassis (both emit sll 16 + bgez). Sibling transplant was spent register-invariantly at s42; the SOTN/decomp.me corpus axis was spent at s17 (unfindable in the accessible slice).
+- verdict: KILLED

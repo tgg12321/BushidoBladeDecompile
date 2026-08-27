@@ -1,3 +1,24 @@
+/* s43 ADDENDUM (2026-08-27, rederive).  UNCHANGED form; RE-MEASURED on the live chassis
+ * this session: `sandbox func_80057CC8 --disable all` -> score 16, target_insns 111,
+ * build_insns 108, rules_dropped 0.  Three s43 results bear on it:
+ *   (1) s42 frontier item #2 (a never-run Regime-A permuter campaign) is KILLED.  Two
+ *       campaigns, seeded from THIS form and from the source-distinct-but-register-
+ *       equivalent s42 a1.c, ran 55,693 iterations and produced 8 outputs.  Seven are
+ *       semantics-breaking; the one legal find (`pi` reused to carry `cx`) measures 23 @
+ *       111 insns and rotates the seats FURTHER from target
+ *       (rejected/s43-permuter-pi-reused-as-cx-carrier-score23-111insns.c).
+ *   (2) Every improving permuter find wins the same illegal way -- it leaves the
+ *       next-address pseudo PARTIALLY DEFINED (assignment sunk inside the next-wrap `if`).
+ *       That is not incidental: see (3).
+ *   (3) The Regime-A wall now has a closed quantitative form.  global.c:635 priority is
+ *       floor_log2(n)*n/live_length; the next-address allocno (pseudo 88) sits at 2*6/4 =
+ *       3.00 against arg0 (pseudo 72) at 2*5/54 = 0.185, a 16.2x gap.  Semantics pin the
+ *       address's last use at ~insn 55 and its reference count at 6, so the best legal
+ *       stretch reaches 2*6/55 = 0.218 -- still above arg0.  Legal C can move the ratio by
+ *       ~1.4x against a required 16x, which is exactly why only partial definition (an
+ *       illegal program) moves it.
+ *   Full argument: hypotheses.md / evidence.md, both under the [s43] headings.
+ */
 /* s42 ADDENDUM (2026-08-27, rederive).  This form is UNCHANGED and was RE-MEASURED on the
  * live chassis this session: `sandbox func_80057CC8 --disable all` -> score 16,
  * target_insns 111, build_insns 108, rules_dropped 0.  Two s42 results bear on it:

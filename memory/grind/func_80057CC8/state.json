@@ -1,7 +1,7 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 42,
+ "session_count": 43,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -261,23 +261,29 @@
    "floor": 16,
    "modality": "rederive",
    "headline": "s42 rederive: floor held at 16 (chassis re-measured), and the ban-compliant space is now fully partitioned into three regimes with the post-call-address regime FORECLOSED in closed form (nine callee-s"
+  },
+  {
+   "session": 43,
+   "floor": 16,
+   "modality": "rederive",
+   "headline": "s43 rederive: floor held at 16 (chassis re-measured); s42 frontier item #2 KILLED by 55,693 permuter iterations across two source-distinct Regime-A chassis - every improving find is semantics-breaking"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Regime B (d1: wrap-if first, prev-if second) is the ONLY ban-compliant regime that holds the target's complete callee-save map, and its entire residual is instruction content/order - 106 insns vs 111, score 45 - so an order-only attack inside Regime B is the last regime with a structurally reachable target map.",
-   "mechanism": "d1.greg gives $s0 cys, $s1 cxs, $s2 = 72 arg0 (4 refs / 36 = 0.222), $s3 = 90 address (3 refs / 18 = 0.167), $s4/$s5 raw cx/cy, $s6 arg2, $s7 arg3 - identical seat identities to the target, at 8 saves. Its 45 points are the wrap-before-prev block order plus the lost second `lbu 3($s2)` (cse1 fuses the two arg0[3] reads because the wrap-test read dominates the prev-if arm in this order, s41 d8) plus the 4-vs-1 address-formation insns.",
-   "next_probe": "Starting from rejected/s41-wrapif-first-previf-separates-address-SEATFLIP-score45-106insns.c, attack ONLY the two order-level defects: (a) find a spelling in wrap-first order where the prev-arm's arg0[3] read is NOT dominated by the wrap test (e.g. reading the count inside a differently-shaped prev condition, or deriving the prev wrap from a quantity the wrap test does not compute) so the second `lbu 3($s2)` survives cse1 - check the .cse dump, not the score, for survival; (b) census the $s2/$s3 rows with tmp/grind/func_80057CC8/s42/batch.sh after every edit to confirm the seat map has not collapsed back. Do NOT spend measurements in Regime C - s42 foreclosed it."
+   "hypothesis": "Regime B (s41 d1: wrap-if first, prev-if second) remains the ONLY ban-compliant regime holding the target's complete callee-save map, and its entire residual is instruction content/order (106 insns vs 111, score 45) - so an order-only attack inside Regime B is the last regime with a structurally reachable target map. s43 did not touch it.",
+   "mechanism": "d1.greg gives $s0 cys, $s1 cxs, $s2 = 72 arg0, $s3 = 90 address, $s4/$s5 raw cx/cy, $s6 arg2, $s7 arg3 - identical seat identities to the target at 8 saves. Its 45 points are the wrap-before-prev block order plus the lost second lbu 3($s2) (cse1 fuses the two arg0[3] reads because the wrap-test read dominates the prev-if arm in this order, s41 d8) plus the 4-vs-1 address-formation insns.",
+   "next_probe": "Starting from rejected/s41-wrapif-first-previf-separates-address-SEATFLIP-score45-106insns.c, attack ONLY the order-level defect: find a spelling in wrap-first order where the prev-arm's arg0[3] read is NOT dominated by the wrap test (e.g. deriving the prev wrap from a quantity the wrap test does not compute) so the second lbu 3($s2) survives cse1 - check the .cse dump for survival, not the score. Census the $s2/$s3 rows with tmp/grind/func_80057CC8/s43/batch.sh after every edit. Do NOT spend measurements in Regime A (s43 killed the permuter axis) or Regime C (s42 foreclosed it)."
   },
   {
-   "hypothesis": "A never-permuted campaign inside Regime A (the 108-insn merge-offset regime) can beat 16, because s42 proved the regime admits structurally distinct source shapes at identical score - meaning the permuter has real, unexplored shape freedom there that s37's campaign did not cover.",
-   "mechanism": "a1.c and base16.c are wholly different source shapes (s32 base + one reused cursor vs s16* table + dedicated next_vert) that land on the SAME allocation and the SAME 108 instructions. The score-16 residual is one seat rotation plus the address-formation block, and permuter mutations move exactly the statement-order and expression-shape inputs cse1 and sched1 consume; s37 already proved this function's 108-insn regime is permuter-productive (it is where the 20 -> 16 find came from).",
-   "next_probe": "`python3 tools/permuter_campaign.py` seeded from memory/grind/func_80057CC8/candidate.c AND from tmp/grind/func_80057CC8/s42/a1.c as a second, register-equivalent but source-distinct chassis; wait IN-TURN with `wait --dir <ws>` over two or three fresh-seed windows, harvest, `harvest --stop`, bisect any find, and re-census each find's $s2/$s3 rows with batch.sh. Reject on sight anything that materializes *(s16 **)(arg0 + 4) a second time."
+   "hypothesis": "Regime A is now closed on BOTH its axes - shape (s42: register-invariant under a complete respelling) and search (s43: 55,693 permuter iterations across two source-distinct chassis) - and the closure now has a quantitative mechanism (the 16.2x allocno-priority gap) rather than an empirical one. No further Regime-A probing is warranted.",
+   "mechanism": "s42 a1/a2 shape-invariance + s43's two campaigns + the closed-form priority bound 2*n/L with L <= 55 and n >= 6 fixed by semantics.",
+   "next_probe": "Do not re-seed a Regime-A permuter campaign or re-spell the Regime-A source. If a future session wants a Regime-A measurement, it must first name a mechanism that changes n or L, and the ledger's bound says none exists in legal C. Spend measurements in Regime B instead."
   },
   {
-   "hypothesis": "Regime A's seat rotation is foreclosed for a reason that is now stated three independent ways (gap-invariance, no-free-sixth-arg0-reference, shape-invariance), so the only remaining un-foreclosed degree of freedom in the whole ban-compliant space is Regime B's instruction ORDER - which means the next escalation-modality packet, if the driver ever assigns one, has a single decidable question rather than an 'accept the debt' request.",
-   "mechanism": "s41 H-s41-2 (front gap invariantly 8, a sched1 prologue artefact), s41 H-s41-1/3 (every sixth arg0 reference is either post-death or a supernumerary crosser), and s42's a1 shape-invariance result are three independent derivations that Regime A cannot reach the target's seats; s42's $s8 argument forecloses Regime C; s42's branch enumeration forecloses combining B's map with A's order.",
-   "next_probe": "Do NOT file an escalation on this - a packet asking to re-scope the 2026-07-20 second-materialization refusal is auto-reject class (its YES would lower a standard). Instead, when Regime B's order attack is exhausted, record the partition as the function's characterisation and let the driver decide exhaustion; the decidable question, if one ever exists, is a fidelity/routing question about Regime B's 106-vs-111 instruction gap, not a family grant."
+   "hypothesis": "With Regimes A and C foreclosed and Regime B reduced to a single order-level defect, the function's characterisation is complete enough that the driver - not a session - should decide exhaustion once the Regime-B order attack is spent.",
+   "mechanism": "s42's three-regime partition plus s43's quantitative Regime-A bound leaves exactly one un-foreclosed degree of freedom in the whole ban-compliant space: Regime B's instruction ORDER.",
+   "next_probe": "Do NOT file an escalation packet on this: a packet asking to re-scope the 2026-07-20 second-materialization refusal is auto-reject class (its YES would lower a standard). Work the Regime-B order attack; if it is exhausted, record the partition as the function's characterisation and let the driver assign the modality."
   }
  ],
  "judge_constraints": [
