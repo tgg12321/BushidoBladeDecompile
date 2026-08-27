@@ -2294,3 +2294,128 @@ found yet.
   2026-07-20 refusal (and the function closes today at 111/111), OR the refusal stands as
   written and func_80057CC8 is PROVEN unclosable in ban-compliant pure C, with floor 16 its
   permanent honest floor.  No third branch exists; this session removed it.
+
+## [s40c] Forensics — the callee-save seat map is decided by ONE `allocno_compare` comparison, and it is REACHABLE (s35's foreclosure is disproved)
+
+Modality: forensics (instrumented cc1 `-da`, GCC 2.7.2, `tools/gcc-2.7.2/cc1`).
+Chassis re-measured at session start: `sandbox func_80057CC8 --disable all` on the
+banked 16-form = **score 16, target_insns 111, build_insns 108, rules_dropped 0** —
+the brief's "measurement unavailable" is resolved, floor 16 stands.
+
+### Method (new, reusable)
+`tmp/grind/func_80057CC8/s40c/batch.sh <tag>=<file> ...` applies each candidate to
+`src/text1b.c`, runs `cpp | cc1 -da`, and prints, for every callee-save hard register
+$s0..$s7, the pseudo(s) seated there (from the `.greg` **"Register dispositions"**
+table) together with that pseudo's `.lreg` line (`used N times across L insns; crosses
+K calls; [in block B]`). That turns the seat question into arithmetic, because GCC
+2.7.2's `global.c` `allocno_compare` orders global allocnos by
+`floor_log2(n_refs) * n_refs / live_length` and `find_reg` then takes the first free
+register in `reg_alloc_order` — for a call-crossing allocno, the lowest-numbered free
+callee-save. Nine forms were censused this way (artifacts: `d16.*`, `vA.*`, `v20.*`,
+`h34.*`, `h35.*`, `a24.*`, `a25.*`, `a26.*`, `a38.*`, `sw41.*`, `arm21.*`, `z0.*`,
+`x1.*`, `x2.*`, `y1.*`, `y2.*` under `tmp/grind/func_80057CC8/s40c/`).
+
+### The 16-form's real seat map (CORRECTS the candidate.c header)
+`d16.greg` gives $s0 = 129 (cys), **$s1 = 119 (cxs)**, **$s2 = 88 (next-ADDRESS)**,
+$s3 = 72 (arg0), $s4 = 83, $s5 = 86 (raw cx/cy), $s6 = 74 (arg2), $s7 = 75 (arg3).
+The s38b header claimed `$s1 = next-ADDRESS, $s2 = cxs` — that is the score-20
+predecessor's map (`v20.greg` confirms it verbatim), not the 16-form's. So the
+`next_vert = &Judge;` staged-value lever's four points are precisely **cxs moving from
+$s2 to its target seat $s1**: without the lever pseudo 88 has all three refs in block 4,
+local-alloc pre-seats it into $s1 ahead of `global.c`, and cxs is pushed down.
+
+### The whole register residual is ONE comparison
+Target (from the score-0 banned form `z0.greg`, which reproduces the target exactly):
+$s2 = arg0, $s3 = the next-INDEX. Ours: $s2 = the next-ADDRESS, $s3 = arg0. Everything
+else already matches. arg0 takes $s2 **iff** it outranks the third crossing quantity in
+`allocno_compare`, i.e. iff `floor_log2(n_a)*n_a/L_a > floor_log2(n_8)*n_8/L_8`.
+
+Ground truth, measured on the score-0 form (`z0.greg` / `z0.lreg`):
+ * arg0 (72): **6 refs / 57 insns** → 2*6/57 = **0.2105** → $s2.
+ * next-INDEX (77): **3 refs / 20 insns** → 1*3/20 = **0.150** → $s3.
+arg0's SIXTH reference is the post-call `lw $a0,4($s2)` at `asm/funcs/func_80057CC8.s:50`
+— the very instruction the 2026-07-20 owner refusal forbids. Ban-compliant forms cap arg0
+at FIVE refs (param def, `arg0+4`, `arg0[3]` ×2, `arg0[2]`), and the same ban forces the
+third crossing quantity to be an ADDRESS (which needs two `lh` uses, so n≥4 whenever it
+spans blocks) instead of an INDEX (2 arm defs + 1 post-call use = n=3). The `floor_log2`
+step between n=3 and n=4 doubles the numerator; that step is the wall.
+
+### Seat census — arg0 is in $s3 in EVERY previously banked regime
+| form | third crosser 88/90 | priority | arg0 | priority | $s2 |
+|---|---|---|---|---|---|
+| 16-form (`d16`) | 6 refs / 4 (Judge lever) | 3.00 | 5 / 54 | 0.185 | 88 |
+| vA score 18 (`vA`) | 6 / 4 | 3.00 | 5 / 56 | 0.179 | 88 |
+| v20 score 20 (`v20`) | 3 / 4 **in block 4** | local-alloc pre-seats $s1 | 5 / 54 | 0.185 | cxs |
+| h35 score 29 (`h35`) | 4 / 29 | 0.276 | 5 / 54 | 0.185 | 88 |
+| h34 score 33 (`h34`) | 4 / 27 | 0.296 | 5 / 54 | 0.185 | 88 |
+| a25 score 25 (`a25`) | 4 / 17 | 0.471 | 5 / 55 | 0.182 | 88 |
+| a24 score 24 / a38 score 38 | 3 / 4 in block | pre-seated | 5 / 54-55 | 0.18 | cxs |
+| a26 score 26 (`a26`) | 3 / 4 in block | pre-seated | 5 / 56 | 0.179 | cxs |
+| sw41 score 41 (`sw41`) | **3 / 18** | **0.167** | **4** / 53 | **0.151** | 88 |
+| arm21 score 21 (`arm21`) | 7 / 21 | 0.667 | 5 / 54 | 0.185 | 88 |
+
+`sw41` is the near miss and explains itself: the next-test-first block order is the ONLY
+layout in which the third crosser reaches `n=3` with a cross-block live range (its single
+use, the address `addu`, sits in a later block than its two arm defs) — but that same
+order makes the next-test's unconditional `arg0[3]` read DOMINATE the prev-arm's, so
+**cse1 fuses the two `lbu 3($s2)` loads** and arg0 drops from 5 refs to 4. The two
+requirements were, until this session, believed mutually exclusive.
+
+### They are NOT mutually exclusive — the seat flip is REACHABLE (s35 disproved)
+`x1.c` = `sw41`'s layout with `scale = arg0[2] * 40;` moved to immediately after the
+ang_next call. That shortens arg0's live_length 53 → 38 without changing its ref count,
+lifting it to 2*4/38 = **0.2105 > 0.1667**. `x1.greg` then reads
+**$s0 cys, $s1 cxs, $s2 arg0 (72), $s3 next-address (88), $s4/$s5 raw cx/cy, $s6 arg2,
+$s7 arg3 — the target's complete callee-save map, from ban-compliant C.**
+The s35 finding "arg0 cannot reach $18 in any ban-compliant form … FORECLOSED in closed
+form" is therefore **retracted**: it was a true statement about the regimes then measured,
+not about the language. Banked as
+`rejected/s40c-nextfirst-scale-after-angnext-SEATFLIP-score56-106insns.c`.
+
+Measured cost, however: **score 56 at 106 insns** (vs 16 at 108 for the current floor).
+The seats are worth ~4 points; the next-test-first order plus the early `scale` costs ~40.
+The flip is reachable but not affordable in that block order.
+
+### The prev-first regime misses the flip by TWO PERCENT
+The affordable regime is prev-test-first (the target's own order, arg0 keeps 5 refs).
+There the third crosser cannot reach n=3 with a cross-block range — a single-def address
+has all its refs in the final merge block (block-local ⇒ local-alloc pre-seats it and
+costs cxs its $s1 seat, the score-20 regime), so the only cross-block spelling is the
+h35 two-def form with n=4. Pushing arg0 as far as it will go:
+ * `y1.c` (`scale` after ang_next): arg0 5 / 39 = 0.256 vs address 4 / 29 = 0.2759 — no flip.
+ * `y2.c` (`scale` BETWEEN the two calls — the earliest placement that still leaves arg0
+   crossing a call at all): arg0 5 / **37** = **0.2703** vs address 4 / 29 = **0.2759** —
+   **no flip, by 2%.** Measured score 42 at 108 insns.
+`y2` is the extremum: arg0's live range strictly CONTAINS the address's (arg0 is set at the
+prologue param copy ~4 insns before `table` is even loaded, and dies at `arg0[2]` a few
+insns after the address's last `lh`), so every statement move that shortens one shortens the
+other and the ratio `L_88 / L_72` cannot be pushed past the required 0.8 (it is 29/37 =
+0.784). Moving `scale` any earlier makes arg0 stop crossing a call entirely and it leaves
+the callee-save pool (the s35 score-32/47 regime).
+
+### Consequence
+Three independent tools now agree on the same single cause, and this session supplies the
+arithmetic: `goal_from_tgt.py` (multiset misses by one `lw 4(arg0)`), `inverse.py` (every
+reachable seat vector needs the next-index to cross the call), and now the allocno table
+itself (the target's arg0 owes its winning priority to a SIXTH reference that IS that `lw`,
+and the ban simultaneously forces our third crosser from n=3 up to n=4). Floor stays 16.
+
+- [s40] Chassis re-measured this session: the banked 16-form scores 16 / target_insns 111 / build_insns 108 / rules_dropped 0 under `sandbox func_80057CC8 --disable all`. The brief's 'measurement unavailable' is resolved; floor 16 stands.
+
+- [s40] New reusable tool: tmp/grind/func_80057CC8/s40c/batch.sh applies each candidate to src/text1b.c, runs cpp piped into cc1 -da, and prints for every callee-save $s0..$s7 the pseudo seated there (from the .greg 'Register dispositions' table) plus that pseudo's .lreg line. It turns the seat question into arithmetic over global.c's floor_log2(n_refs)*n_refs/live_length priority.
+
+- [s40] 16-form true seat map (d16.greg): $s0=129 cys, $s1=119 cxs, $s2=88 next-ADDRESS, $s3=72 arg0, $s4=83 / $s5=86 raw cx/cy, $s6=74 arg2, $s7=75 arg3. candidate.c's header has been corrected in place.
+
+- [s40] Seat census - arg0 sits in $s3 in EVERY previously banked regime: 16-form 88=6refs/4 (3.00); vA(18) 88=6/4 (3.00); v20(20) 88=3/4 block-local (local-alloc pre-seats it into $s1); h35(29) 88=4/29 (0.276); h34(33) 88=4/27 (0.296); a25(25) 88=4/17 (0.471); a24/a26/a38 88 block-local; arm21(21) 88=7/21 (0.667); sw41(41) 88=3/18 (0.167) but arg0 only 4 refs/53 (0.151).
+
+- [s40] The sw41 near-miss is explained: next-test-first block order is the ONLY layout in which the third crosser reaches n=3 with a cross-block live range, but that same order makes the next-test's unconditional arg0[3] read DOMINATE the prev-arm's, so cse1 fuses the two `lbu 3($s2)` loads and arg0 drops from 5 refs to 4.
+
+- [s40] x1.c (sw41 layout plus `scale` moved to just after the ang_next call) produces the TARGET'S COMPLETE callee-save map from ban-compliant C - the first time in 40 sessions - at score 56 / 106 insns. The s35 'FORECLOSED in closed form' finding is retracted: reachable, but not affordable in that block order.
+
+- [s40] The prev-first (target-order) regime misses the same flip by 2%: y2 gives arg0 5 refs / 37 insns = 0.2703 against the address's 4 refs / 29 insns = 0.2759; score 42 at 108 insns. arg0's live range strictly contains the address's, so the ratio cannot be widened by statement motion.
+
+- [s40] Ground truth from the score-0 banned form (z0.greg): the target's arg0 has SIX refs / 57 insns (0.2105) and its third crosser is an INDEX with three refs / 20 insns (0.150). arg0's sixth ref is the banned post-call `lw $a0,4($s2)`.
+
+- [s40] Third independent confirmation of the single cause: goal_from_tgt.py (multiset misses by one `lw 4(arg0)`), inverse.py (every reachable seat vector needs the next-index to cross the call), and now the allocno priority table itself.
+
+- [s40] Two ruling-requests on the fidelity/scope question were already FAILed today (docs/grind/decisions.md 2026-08-27 07:40 and 07:47); a third must not be filed - the Judge states re-scoping the 2026-07-20 owner refusal is owner-only, not a Judge grant.

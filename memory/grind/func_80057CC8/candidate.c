@@ -37,10 +37,13 @@
  * address pseudo is genuinely block-local, i.e. the merge-block-offset regime this form
  * uses.
  *
- * THE EXACT REGISTER MAP (s38b, measured -- this CORRECTS the s37 header, which claimed
- * cxs had reached $s1; on the live chassis it has not).
- *   ours   : $s0 = cys, $s1 = next-ADDRESS, $s2 = cxs, $s3 = arg0, $s4/$s5 = raw cx/cy,
- *            $s6 = arg2, $s7 = arg3   (8 callee-saves, 6 quantities cross the call)
+ * THE EXACT REGISTER MAP (s40c, read straight off the greg dump's "Register
+ * dispositions" table, tmp/grind/func_80057CC8/s40c/d16.greg -- this CORRECTS the s38b
+ * header above it, which reported the score-20 predecessor's map by mistake.  On the live
+ * chassis cxs HAS reached $s1; the lever's four points are exactly that).
+ *   ours   : $s0 = cys (pseudo 129), $s1 = cxs (119), $s2 = next-ADDRESS (88),
+ *            $s3 = arg0 (72), $s4/$s5 = raw cx/cy (83/86), $s6 = arg2 (74),
+ *            $s7 = arg3 (75)   (8 callee-saves, 6 quantities cross the call)
  *   target : $s0 = cys, $s1 = cxs,          $s2 = arg0, $s3 = next-INDEX, $s4/$s5 = raw
  *            cx/cy, $s6 = arg2, $s7 = arg3  (8 callee-saves, 6 quantities cross)
  * The full normalised diff (tmp/grind/func_80057CC8/s38b/base16.hon.s vs

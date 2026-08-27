@@ -1345,3 +1345,51 @@ is gated on the refused duplication family.
   the correct next disposition is an escalation packet whose decidable question is
   *routing* (accept floor 16 permanently vs. canonical-asm), NOT a family sanction — and the
   canonical gate has already answered that (verdict C, scan_hand_coded LOW 1/8).
+
+## [s40c] The candidate.c header's register map for the 16-form is correct.
+- mechanism: the header (written by s38b) states ours = "$s0 cys, $s1 next-ADDRESS, $s2 cxs, $s3 arg0" and derives the whole closed-form dilemma from it.
+- probe: read the `.greg` "Register dispositions" table for the applied 16-form (tmp/grind/func_80057CC8/s40c/d16.greg) and cross-referenced each pseudo against its `.lreg` line.
+- result: the 16-form is $s0=129 cys, **$s1=119 cxs**, **$s2=88 next-ADDRESS**, $s3=72 arg0. The header's map is the score-20 predecessor's (v20.greg reproduces it exactly).
+- verdict: KILLED. Header corrected in candidate.c. Corollary CONFIRMED: the `next_vert = &Judge;` lever's four points ARE "cxs moves from $s2 to its target seat $s1" — without it pseudo 88 is block-local and local-alloc pre-seats it into $s1 ahead of global.c.
+
+## [s40c] (inherited s35) arg0 cannot reach $s2 ($18) in any ban-compliant form — FORECLOSED in closed form.
+- mechanism: s35 argued the next-address allocno's `floor_log2(n)*n/live_length` priority always exceeds arg0's in global.c:635 allocno_compare, so find_reg always hands it the first free callee-save.
+- probe: censused the seat map + allocno inputs of nine banked regimes, derived the exact inequality, then CONSTRUCTED a form satisfying it — `x1.c` = the s32 next-test-first layout with `scale = arg0[2] * 40;` moved to just after the ang_next call (arg0 live_length 53 -> 38, priority 2*4/38 = 0.2105 > the address's 1*3/18 = 0.1667).
+- result: `x1.greg` shows **$s2 = 72 (arg0), $s3 = 88 (next-address)**, with $s0/$s1 = cys/cxs and $s4-$s7 unchanged — the target's COMPLETE callee-save map from ban-compliant C, a first in 40 sessions. Measured score 56 at 106 insns.
+- verdict: **KILLED (the foreclosure is retracted).** The seat map is reachable; it is only unaffordable in that block order, where the instruction-order cost (~40 points) swamps the seats (~4 points). Banked: rejected/s40c-nextfirst-scale-after-angnext-SEATFLIP-score56-106insns.c.
+
+## [s40c] The seat flip can be carried into the affordable prev-test-first regime by shortening arg0's live range.
+- mechanism: prev-first keeps arg0 at 5 refs (cse1 cannot fuse the two `lbu 3($s2)` loads because the prev-arm read is conditional and does not dominate). The only cross-block third-crosser spelling there is the h35 two-def address, n=4 / L=29 -> 0.2759, so arg0 needs 2*5/L > 0.2759, i.e. L < 36.2.
+- probe: built and dumped `y1.c` (`scale` after the ang_next call) and `y2.c` (`scale` between the two ratan2 calls, the earliest placement that still leaves arg0 crossing a call); measured y2 in the sandbox.
+- result: y1 arg0 = 5 refs / 39 insns = 0.256 (no flip); y2 arg0 = 5 refs / **37** insns = **0.2703** vs 0.2759 — **no flip, short by 2%**; y2 scores 42 at 108 insns. y2 is the extremum: arg0's live range strictly contains the address's (arg0 is set at the prologue param copy before `table` is loaded and dies at `arg0[2]` after the address's last `lh`), so every move that shortens arg0 shortens the address too and the required ratio L_88/L_72 > 0.8 cannot be reached (29/37 = 0.784).
+- verdict: KILLED for the h35 family. Banked: rejected/s40c-prevfirst-h35-scale-after-angnext-noflip.c, rejected/s40c-prevfirst-h35-scale-between-calls-noflip-score42.c.
+
+## [s40c] The target's own allocation numbers explain why the ban is what costs the seats.
+- mechanism: dump the score-0 banned form (rejected/s40-no-base-local-per-use-site-reads-score0-RULING-PENDING.c), which reproduces the target byte-for-byte, and read its allocno inputs.
+- probe: `z0.greg` + `z0.lreg`.
+- result: arg0 (72) = **6 refs / 57 insns** -> 2*6/57 = 0.2105 -> $s2; next-INDEX (77) = **3 refs / 20 insns** -> 1*3/20 = 0.150 -> $s3. arg0's SIXTH reference is the post-call `lw $a0,4($s2)` (asm/funcs/func_80057CC8.s:50). Ban-compliant forms cap arg0 at five refs, AND the ban forces the third crosser from an index (2 arm defs + 1 post-call use, n=3) up to an address (n>=4 whenever it spans blocks), because forming the address after the call needs the base after the call.
+- verdict: CONFIRMED — a third independent confirmation (after goal_from_tgt.py's one-`lw` multiset miss and inverse.py's calls_crossed atom) that the register half and the instruction half of the residual have the SAME single cause, now with the compiler's own priority arithmetic.
+
+## [s40] The candidate.c header's register map for the 16-form ($s0 cys, $s1 next-ADDRESS, $s2 cxs, $s3 arg0) is correct.
+- mechanism: s38b derived the whole closed-form dilemma from that map, and every later session quoted it without re-reading a dump.
+- probe: Read the .greg 'Register dispositions' table for the applied 16-form (tmp/grind/func_80057CC8/s40c/d16.greg) and cross-referenced each pseudo with its .lreg line.
+- result: The 16-form is $s0=129 cys, $s1=119 cxs, $s2=88 next-ADDRESS, $s3=72 arg0. The header's map is the SCORE-20 predecessor's (v20.greg reproduces it verbatim). Corollary: the `next_vert = &Judge;` lever's four points are exactly 'cxs moves from $s2 to its target seat $s1' - without the lever pseudo 88 has all three refs in block 4, local-alloc pre-seats it into $s1 ahead of global.c, and cxs is pushed down.
+- verdict: KILLED
+
+## [s40] (inherited from s35) arg0 cannot reach $s2 ($18) in any ban-compliant form - the next-address allocno always outranks it in global.c allocno_compare; FORECLOSED in closed form.
+- mechanism: GCC 2.7.2 global.c orders global allocnos by floor_log2(n_refs)*n_refs/live_length and find_reg then takes the first free callee-save; s35 argued the address's priority is unconditionally the larger.
+- probe: Censused seats plus allocno inputs for nine banked regimes with a new batch dumper (tmp/grind/func_80057CC8/s40c/batch.sh), derived the exact inequality, then CONSTRUCTED a form satisfying it: x1.c = the s32 next-test-first layout with `scale = arg0[2] * 40;` moved to immediately after the ang_next call, shortening arg0's live_length 53 -> 38 (priority 2*4/38 = 0.2105) against the address's 1*3/18 = 0.1667.
+- result: x1.greg reads $s0 cys, $s1 cxs, $s2 arg0 (72), $s3 next-address (88), $s4/$s5 raw cx/cy, $s6 arg2, $s7 arg3 - the target's COMPLETE callee-save map, from ban-compliant C, a first in 40 sessions. Measured score 56 at 106 insns: the seats are worth about 4 points and the next-test-first order plus the early `scale` costs about 40.
+- verdict: KILLED
+
+## [s40] The seat flip can be carried into the AFFORDABLE prev-test-first regime (the target's own block order) by shortening arg0's live range.
+- mechanism: Prev-first keeps arg0 at 5 refs because cse1 cannot fuse the two `lbu 3($s2)` loads (the prev-arm read is conditional and does not dominate the next-test read). The only cross-block third-crosser spelling available there is the h35 two-def address, n=4 / L=29 -> 0.2759, so arg0 needs 2*5/L > 0.2759, i.e. live_length < 36.2.
+- probe: Built and dumped y1.c (`scale` after the ang_next call) and y2.c (`scale` BETWEEN the two ratan2 calls - the earliest placement that still leaves arg0 crossing a call at all); sandbox-measured y2.
+- result: y1: arg0 5 refs / 39 insns = 0.256, no flip. y2: arg0 5 refs / 37 insns = 0.2703 against 0.2759 - NO FLIP, short by 2%; score 42 at 108 insns. y2 is the extremum: arg0's live range strictly contains the address's (arg0 is set at the prologue param copy before `table` is even loaded and dies at `arg0[2]` a few insns after the address's last `lh`), so every statement move that shortens one shortens the other; the required ratio L_88/L_72 > 0.8 cannot be reached (29/37 = 0.784), and moving `scale` any earlier makes arg0 stop crossing a call and leave the callee-save pool entirely (the s35 score-32/47 regime).
+- verdict: KILLED
+
+## [s40] The target's own allocation numbers can be read directly, and they will show WHY the 2026-07-20 ban costs the seats.
+- mechanism: The score-0 banned form reproduces the target byte-for-byte, so its allocno table IS the original's.
+- probe: Dumped rejected/s40-no-base-local-per-use-site-reads-score0-RULING-PENDING.c (z0.greg / z0.lreg).
+- result: arg0 (72) = 6 refs / 57 insns -> 2*6/57 = 0.2105 -> $s2; next-INDEX (77) = 3 refs / 20 insns -> 1*3/20 = 0.150 -> $s3. arg0's SIXTH reference IS the post-call `lw $a0,4($s2)` at asm/funcs/func_80057CC8.s:50. Ban-compliant forms cap arg0 at five refs (param def, arg0+4, arg0[3] twice, arg0[2]) AND the same ban forces the third crossing quantity up from an index (2 arm defs + 1 post-call use, n=3, floor_log2 factor 1) to an address (n>=4 whenever it spans blocks, factor 2), because forming the address after the call requires the base after the call.
+- verdict: CONFIRMED

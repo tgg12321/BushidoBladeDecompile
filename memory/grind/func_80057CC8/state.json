@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 39,
- "current_modality": "solver",
+ "session_count": 40,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -243,23 +243,29 @@
    "floor": 16,
    "modality": "solver",
    "headline": "s39 solver: floor held at 16, but the solver was never actually blocked (s35-s37 used the wrong backend) - goal_from_tgt.py types every ban-compliant form PRE-RA, proves a banked form's instruction mu"
+  },
+  {
+   "session": 40,
+   "floor": 16,
+   "modality": "forensics",
+   "headline": "s40c forensics: floor held at 16 (chassis re-measured), the 16-form's register map in candidate.c is corrected from the greg dispositions table, and the s35 closed-form foreclosure 'arg0 cannot reach "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The honest end state remains 'floor 16 with one decidable FIDELITY question', and this session reduced that question to a single instruction: does the original source's post-call re-read of the vertex-table base - visibly present in the target's own bytes at asm/funcs/func_80057CC8.s:50 as `lw $a0,0x4($s2)` - constitute source-level duplication at all, or is the 2026-07-20 ban mis-scoped?",
-   "mechanism": "Two independent tools now agree the residual has one cause. goal_from_tgt.py classify: a ban-compliant form (rejected/s39-narrow-index-carrier-plus-judge-lever-score18-110insns.c) already emits 96 of the target's 111 instructions exactly and misses the multiset by that one `lw`. inverse.py: the full register disposition is FORECLOSED at depth 3, and every REACHABLE seat-pair vector requires the next-index to cross the call, which requires the base to exist after the call. The only two ban-compliant spellings of that are the refused post-call re-read and carrying `table` (7th crossing quantity -> ninth callee-save $s8 -> +2 insns, measured 31).",
-   "next_probe": "Do NOT re-measure either route; both are typed dead. If a future driver assigns `escalation` modality, the decision packet writes itself from this session's evidence and needs no new measurement - word it as a FIDELITY/scope question about one instruction, never as a request to sanction a family (the auto-reject class covers anything reading as 'lower a standard')."
+   "hypothesis": "A block order exists that keeps the target's prev-test-first instruction order AND gives the third crossing quantity a cross-block n=3 live range, closing the 2% priority gap and flipping $s2/$s3 at a score near the current floor rather than at 42-56.",
+   "mechanism": "The flip needs floor_log2(n_88)*n_88/L_88 < floor_log2(5)*5/L_72. In prev-first, a single-def address has all refs in the final merge block (block-local, so local-alloc pre-seats $s1 - the score-20 regime) and a two-def address has n=4. The missing cell is n=3 cross-block, which needs a real branch between the address's def and its single use while the prev-if still comes first - e.g. duplicating the arg0[3] read into the next-if arms (.claude/rules/split-read-defeats-hoist.md, sanctioned, reads not stores), which is also the exact lever that would restore arg0's 5th ref inside a next-first layout.",
+   "next_probe": "Build two variants, from y2.c and from x1.c: (i) prev-first with the arg0[3] read duplicated into both arms of the next-wrap if; (ii) next-first (x1 layout) with the same duplication, aiming to keep arg0 at 5 refs there. Dump with tmp/grind/func_80057CC8/s40c/batch.sh and check the $s2 row BEFORE spending a sandbox run; a flip at <=108 insns in prev-first order is the first form that could beat 16."
   },
   {
-   "hypothesis": "A never-permuted campaign seeded from variant vA (110 insns, score 18, multiset = target minus one lw) can find an arrangement below 16, because vA is a fundamentally different and much closer regime than the 108-insn 16-form every prior campaign explored.",
-   "mechanism": "vA's residual is 11 register substitutions plus 2 moved instructions over a 96-instruction exact match; permuter mutations move exactly the statement-order and expression-shape inputs that allocno_compare and sched1 consume, and s37 proved this function's regimes are permuter-productive (the staged-value lever was a permuter find).",
-   "next_probe": "Launch `python3 tools/permuter_campaign.py` seeded from tmp/grind/func_80057CC8/s39/vA.c (NOT candidate.c), wait in-turn with `wait --dir <ws>` across two or three fresh-seed windows, harvest, `harvest --stop`, and bisect any find. Reject on sight anything that materializes *(s16 **)(arg0 + 4) a second time. Bank novel finds as rejected/s40-permuter-<n>-score<N>.c."
+   "hypothesis": "A never-permuted campaign seeded from x1.c - the ONLY banked form whose callee-save map equals the target's - can find a statement order that keeps the seat flip while recovering the ~40 points of instruction-order cost.",
+   "mechanism": "x1's residual is order, not allocation: 106 insns against 111 with every callee-save correct. Permuter mutations move exactly the statement-order and expression-shape inputs that sched1 and cse1 consume, and s37 already proved this function's regimes are permuter-productive (the staged-value lever was a permuter find).",
+   "next_probe": "`python3 tools/permuter_campaign.py` seeded from memory/grind/func_80057CC8/rejected/s40c-nextfirst-scale-after-angnext-SEATFLIP-score56-106insns.c, wait in-turn with `wait --dir <ws>` over two or three fresh-seed windows, harvest, `harvest --stop`, bisect any find, and re-dump each find's $s2 row to confirm the seat survived. Reject on sight anything that materializes *(s16 **)(arg0 + 4) a second time."
   },
   {
-   "hypothesis": "A form exists at 110 insns that keeps vA's multiset but reaches inverse.py's seat-pair vector #2 by lowering pseudo 88's reference count from 6 to 1 while the next-index is made to cross the call.",
-   "mechanism": "inverse.py vector #2 is {88 refs 6->1, 104 calls_crossed 0->1} and maps refs_down to two sanctioned levers (hoist-shared-arm-computation-defeats-copy-pref, defeat-licm-hoist-var-reuse). Note pseudo 88's 6 refs are themselves an artefact of the staged-value lever - without it the count is 3 - so the two objectives interact and the combination has never been measured.",
-   "next_probe": "This is a LONG SHOT and is listed third deliberately: the calls_crossed atom in the vector is the same banned structural change as frontier item 1, so at best this lowers the SCORE, never closes the function. Measure it once from vA; if the score does not go below 16, strike this item permanently."
+   "hypothesis": "(inherited, still untried) A never-permuted campaign seeded from vA (110 insns, score 18, multiset = target minus one lw) can find an arrangement below 16.",
+   "mechanism": "vA is a fundamentally closer regime than the 108-insn 16-form every prior campaign explored; its residual is 11 register substitutions plus 2 moved instructions over a 96-instruction exact match.",
+   "next_probe": "Seed from tmp/grind/func_80057CC8/s39/vA.c (NOT candidate.c), same wait/harvest/stop discipline. Note this session's census gives vA's allocno numbers (88 = 6 refs / 4 insns, priority 3.00), so the seat cannot flip in that regime - only the instruction half is in play there."
   }
  ],
  "judge_constraints": [
