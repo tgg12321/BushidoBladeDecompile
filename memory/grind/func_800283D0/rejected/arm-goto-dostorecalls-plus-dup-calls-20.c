@@ -77,52 +77,6 @@
  *      (emitted slots 159/161/168/169/171/178/181) - a LOCAL-alloc seat, s7's
  *      window span(qty0) 30 -> <=24 or refs(qty0) 6 -> 8..10.  Untouched.
  *
- * ===== s13 (structural, 2026-08-26) ADDENDUM - floor unchanged at 17 =====
- * The header note above attributes the store sink to jump2's cross-jump
- * walk-back.  THAT ATTRIBUTION IS WRONG and is superseded: the sink is
- * sched1 (schedule_insns, pre-reload).  Proof, from
- * tmp/grind/func_800283D0/dumps/ built on THIS body: in .combine and .flow the
- * store `(insn 226 223 227 ...)` has prev = 223, i.e. it is the FIRST insn of
- * the block that the `do_store_calls` label opens; in .sched it has become
- * `(insn 226 240 242 ...)`, i.e. sched1 moved it below all four argument
- * set-up insns, immediately in front of the call.  By the time jump2 runs, its
- * merge anchor (label 223) already precedes the argument set-up, so jump2 is
- * merely inheriting the sunk store, not creating it.
- *
- * The pin is a SOURCE-LEVEL label immediately after the store, because it has
- * to exist before sched1 runs.  Variant A (rejected/
- * arm-goto-docalls-pins-store-but-loses-arg1-refs-23.c) spells the `<` arm as
- * `if (var_s1 == 0) goto set_0xB; *(s16*)(arg0+0x286) = 0x19; goto do_calls;`
- * and reproduces TARGET EXACTLY across both affected regions: emitted slots
- * 83-95 (`sh v0,0x286(s0)` at the head of the shared block, `move a3,zero` in
- * the jal delay slot) and slots 144-157 (`beqz s1,.L80028518 / li v0,0x19 /
- * j .L80028520 / sh v0,0x286(s0)`).  Two clusters closed at once.
- *
- * It nevertheless scores 23, because `goto do_calls` is precisely what removes
- * the arm's two C-level references to arg1: nrefs_flow(pseudo 73) falls 9 -> 7,
- * out of s7's [8,11] window, and all twelve $s2 seats revert to $s3.  THE
- * TENSION IS NOW MECHANISTICALLY EXACT, NOT A SPELLING PROBLEM: the pinning
- * label must predate sched1, hence must be a source `goto`; a label that jump2
- * manufactures by cross-jumping a duplicated call pair (variant B / s12's V8)
- * arrives too late to pin anything, which is why that family measures 20.
- *
- * Variant C (rejected/arm-0x19-goto-docalls-0xB-dup-calls-pins-store-keeps-s2-
- * plus6-20.c) is the most interesting near miss: 0x19 edge stores + `goto
- * do_calls`, 0xB edge stores + duplicates the calls.  It holds BOTH the pinned
- * store AND the correct $s2 seats simultaneously (verified in the objdump), and
- * its entire residual is the +6 insns of the 0xB edge, which jump2 only merges
- * down to three (`li v0,0xB / sh / j do_calls`).  20 / 222.
- *
- * Also measured dead this session: B (arm 0xB edge `var_v0 = 0xB; goto
- * do_store_calls`, 0x19 edge stores + duplicates the calls) 20 / 219;
- * F (variant A's arm PLUS path1's own 0x19 selection edge duplicating the call
- * pair to restore the arg1 refs) 27 / 223.
- *
- * TOOLING GOTCHA: tmp/grind/func_800283D0/s1x/dif.sh objdumps
- * tmp/sandbox/func_800283D0/code6cac_b.o and was observed reading the object
- * from the PREVIOUS sandbox invocation.  Run the sandbox TWICE (or objdump the
- * .o directly) before trusting a diff, or you will compare the wrong build.
- *
  * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  216i @ floor 17
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
@@ -215,11 +169,11 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                             goto block_48;
                         }
                         if (temp_v1_3 < temp_v0_3) {
-                            s16 var_v0_4 = 0xB;
-                            if (var_s1 != 0) {
-                                var_v0_4 = 0x19;
+                            if (var_s1 == 0) {
+                                var_v0 = 0xB;
+                                goto do_store_calls;
                             }
-                            *(s16 *)(arg0 + 0x286) = var_v0_4;
+                            *(s16 *)(arg0 + 0x286) = 0x19;
                             func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);
                             func_80032854(*(s16 *)(arg0 + 4), 0x25, arg1, (s16 *)0);
                             return ret;

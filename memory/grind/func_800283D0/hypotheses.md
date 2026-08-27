@@ -1002,3 +1002,60 @@ sum to the score. Every future probe on this function should use
 - probe: Q1 'u8 *temp_s3 = (temp_a1_2 * 2) + arg0;' instead of 'arg0 + (temp_a1_2 * 2)'. Q4 moves the temp_v1_5 Judge product above the '*(s32 *)(temp_a0 + 0x118)' load in declaration order.
 - result: Q1: 17, byte-for-byte neutral - the operand order is a consequence of register assignment, re-confirmed on this chassis. Q4: 17, neutral - cluster E unmoved.
 - verdict: KILLED
+
+
+## s13 (structural, 2026-08-26)
+
+**H-s13-1 - KILLED (as stated).**  "The store sink is the same jump2
+find_cross_jump walk-back mechanism s12 exploited, one instruction further
+along."  Probe: `pwsh tools/grinder/dump.ps1 func_800283D0` on the banked
+17-floor body, then track the store insn's chain position across `.combine`,
+`.flow`, `.sched`, `.jump2`.  Result: the store is block-head in `.combine` and
+`.flow` and already below all four argument set-ups in `.sched`; jump2's anchor
+(label 223 = `do_store_calls`) inherits that position.  Verdict: KILLED - the
+pass is sched1, not jump2.  See E-s13-1.
+
+**H-s13-2 - CONFIRMED.**  "A source-level label immediately after the store
+pins it, because sched1 cannot move an insn across a basic-block boundary and
+jump2 (which could manufacture such a label) runs after sched1."  Probe:
+variant A, `<` arm = `if (var_s1 == 0) goto set_0xB; store 0x19; goto
+do_calls;`.  Result: emitted slots 83-88 and 144-147 become byte-identical to
+target - the store sits at the head of the shared block, `move a3,zero` fills
+the jal delay slot, and the arm is target's exact four instructions.  Verdict:
+CONFIRMED.  See E-s13-2.
+
+**H-s13-3 - CONFIRMED (as a negative coupling).**  "The pinning `goto` and the
+arm's duplicated call pair are mutually exclusive in one edge, so the store pin
+and cluster A's nrefs dial cannot both be paid by the `<` arm's 0x19 edge."
+Probe: A (23/216, pin held / seats lost), B (20/219), C (20/222, pin AND seats
+held but +6 insns), F (27/223, refs restored from path1's 0x19 edge).  Verdict:
+CONFIRMED.  See E-s13-3..5.
+
+**Open sub-question created by C (highest-value probe left on the store
+cluster).**  Variant C proves the two requirements are simultaneously
+satisfiable; the whole remaining cost is that jump2 merges its 0xB edge down to
+three instructions instead of zero.  Target pays zero for that edge because it
+jumps INTO path1's `li v0,0xB` (`.L80028518`).  So the question is no longer
+"can we have both" but "can the arm's 0xB edge supply two C-level `arg1`
+references while still merging to a bare jump into path1's selection".  A
+`goto set_0xB` merges to zero but supplies no refs; a duplicated call pair
+supplies the refs but costs three.  Any third site for the two refs must be
+byte-neutral - F shows path1's own 0x19 edge is not.
+
+## [s13] The store sink into the jal delay slot is the same jump2 find_cross_jump walk-back mechanism s12 exploited, one instruction further along.
+- mechanism: s12 frontier item 1 claimed the arm's 0x19 edge merging AT the store (rather than after it) leaves the only live label before the `sh`, letting sched2/reorg sink it.
+- probe: pwsh tools/grinder/dump.ps1 func_800283D0 on the banked 17-floor body; tracked the store insn's RTL chain position (prev-insn field) across .combine, .flow, .sched and .jump2 in tmp/grind/func_800283D0/dumps/.
+- result: In .combine and .flow the store is `(insn 226 223 227 ...)` - prev is code_label 223 (`do_store_calls`), i.e. block head. In .sched it is `(insn 226 240 242 ...)` - prev is the `a3=0` argument set-up. jump2's merge anchor is label 223, which by then already precedes the argument set-up.
+- verdict: KILLED
+
+## [s13] A label that already exists when sched1 runs - i.e. a SOURCE-level goto, since jump2 is downstream of sched1 - placed immediately after the store pins it at the head of the shared block and reproduces target's ordering.
+- mechanism: sched1 (schedule_insns, pre-reload) schedules per basic block; a code_label ends the block, so the store cannot be moved below the argument set-up. In target the pin is .L80028520, the re-entry point of the `<` arm's 0x19 edge.
+- probe: Variant A: `<` arm spelled `if (var_s1 == 0) goto set_0xB; *(s16*)(arg0+0x286) = 0x19; goto do_calls;`. Applied to src/code6cac_b.c, scored with sandbox --disable all, verified by direct objdump of tmp/sandbox/func_800283D0/code6cac_b.o.
+- result: Emitted slots 83-95 and 144-157 become byte-identical to target: `sh v0,0x286(s0)` at the head of the shared block, `move a3,zero` in the jal delay slot, and the arm emits target's exact four instructions `beqz s1,.L80028518 / li v0,0x19 / j .L80028520 / sh v0,0x286(s0)`. Two clusters closed at once. Total 23/216 - see the next hypothesis for why it is not lower.
+- verdict: CONFIRMED
+
+## [s13] The pinning goto and the arm's duplicated func_80032854 pair are mutually exclusive on the same edge, so the store pin and cluster A's nrefs dial cannot both be paid by the `<` arm's 0x19 edge.
+- mechanism: `goto do_calls` is exactly the construct that removes the arm's two C-level references to arg1, dropping nrefs_flow(pseudo 73) from 9 to 7 and out of s7's [8,11] window; a label manufactured by jump2 cross-jumping a duplicated call pair arrives after sched1 and pins nothing.
+- probe: Four measured spellings, all banked in memory/grind/func_800283D0/rejected/: A (goto set_0xB + own store + goto do_calls), B (var_v0=0xB + goto do_store_calls; 0x19 edge stores + duplicates the calls), C (0x19 edge stores + goto do_calls; 0xB edge stores + duplicates the calls), F (variant A's arm plus path1's own 0x19 selection edge duplicating the call pair).
+- result: A = 23/216 (pin held, all twelve seats revert to $s3). B = 20/219 (jump2-made label, no pin). C = 20/222 (pin AND $s2 seats both held - the only body so far to do so - but jump2 merges its 0xB edge only down to three insns). F = 27/223 (path1's duplicated 0x19 edge does not merge).
+- verdict: CONFIRMED

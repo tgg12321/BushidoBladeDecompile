@@ -1712,3 +1712,88 @@ correctly, which confirms the window's lower bound behaviourally: 8 is enough.
 - [s12] The residual at 17 is exactly three things. (1) THE STORE SINK, ~4 pts: ours emits 'li a1,1 / move a2,s2 / lh a0,4(s0) / move a3,zero / jal / sh v0,0x286(s0)<delay>' where target emits 'sh v0,0x286(s0) / li a1,1 / move a2,s2 / lh a0,4(s0) / jal / move a3,zero<delay>'. (2) CLUSTER B, 2 pts, unmoved since s10: ours fills the dispatch chain's last 'beq' delay slot with 'li v0,1' and leaves the following 'j' empty, target does the reverse; same shape again at emitted slot 126. (3) CLUSTER E, ~8 pts: the $a0/$a1 exchange in the tail Judge product at emitted 159/161/168/169/171/178/181, a LOCAL-alloc seat.
 
 - [s12] Twelve structural forms measured and banked to memory/grind/func_800283D0/rejected/ this session (47 entries total): arm-goto-both-edges-nrefs7-seats-lost-23.c, arm-dup-first-call-only-22.c, arm-sel-dup-first-call-remerges-22.c, arm-both-edges-full-dup-24.c, arm-both-edges-full-dup-flipped-26.c, arm-0xB-dup-0x19-goto-docalls-20.c, arm-sel-inverted-goto-docalls-nrefs7-25.c, path1-both-edges-full-dup-29.c, path1-store-dup-goto-docalls-19.c, s3-operand-order-neutral-17.c, tail-decl-order-neutral-17.c.
+
+
+## s13 (structural, 2026-08-26) - chassis floor 17 / 216 insns, unchanged
+
+**E-s13-1 (PASS RE-ATTRIBUTION, supersedes the s12 frontier-1 mechanism).**
+The sink of `sh $v0,0x286($s0)` out of the head of the shared store/calls block
+and into the `jal` delay slot is produced by **sched1** (`schedule_insns`,
+pre-reload), not by jump2's `find_cross_jump` walk-back and not by `reorg.c`.
+Measured on the banked 17-floor body with `pwsh tools/grinder/dump.ps1
+func_800283D0` (dumps in `tmp/grind/func_800283D0/dumps/`):
+  - `.combine` and `.flow`: `(insn 226 223 227 (set (mem:HI (plus:SI (reg 72)
+    (const_int 646))) ...))` - prev insn is 223, the `do_store_calls`
+    `code_label`.  The store is the FIRST insn of the block.
+  - `.sched`: the same insn is now `(insn 226 240 242 ...)` - prev is 240, the
+    `a3 = 0` argument set-up.  sched1 moved it below all four argument set-ups.
+  - `.jump2`: rows 115-128 of `tmp/grind/func_800283D0/s13/j2rows.txt` show the
+    merged block as `code_label 223 ("do_store_calls") / a1=1 / a2=s2 / a0=lh /
+    a3=0 / store 226 / call 242`.  jump2's anchor is label 223, which by then
+    already precedes the argument set-up; jump2 inherits the sunk store.
+This kills the s12 frontier-1 mechanism ("the store sink is the SAME walk-back
+mechanism s12 exploited, one instruction further along") as stated.  The
+walk-back is not involved; the C-level dial is whatever stops sched1.
+
+**E-s13-2 (the pin, and it is exact).**  What stops sched1 is a basic-block
+boundary between the store and the argument set-up, i.e. a **label that already
+exists when sched1 runs**.  Because jump2 is downstream of sched1, only a
+SOURCE-level `goto` can supply it.  Variant A -
+`rejected/arm-goto-docalls-pins-store-but-loses-arg1-refs-23.c`, whose `<` arm
+reads `if (var_s1 == 0) goto set_0xB; *(s16*)(arg0+0x286) = 0x19; goto
+do_calls;` - reproduces TARGET BYTE-FOR-BYTE across both affected regions.
+Verified by direct objdump of `tmp/sandbox/func_800283D0/code6cac_b.o`:
+`6a4 li v0,11 / 6a8 sh v0,646(s0) / 6ac li a1,1 / 6b0 move a2,_ / 6b4 lh a0,4(s0)
+/ 6b8 jal / 6bc move a3,zero` - the store at the head, the `a3` set-up in the
+jal delay slot, exactly target's slots 83-88; and the arm itself emits target's
+four instructions `beqz s1,.L80028518 / li v0,0x19 / j .L80028520 /
+sh v0,0x286(s0)` at slots 144-147.
+
+**E-s13-3 (the cost, and why the two requirements are now provably coupled).**
+Variant A scores **23 / 216**.  The `goto do_calls` is exactly what deletes the
+arm's two C-level references to `arg1`, so `nrefs_flow(pseudo 73)` falls 9 -> 7,
+outside s7's [8,11] window, and all twelve $s2 seats revert to $s3 (`move
+a2,s3` in the objdump above).  The coupling is now mechanistic rather than
+empirical: the pinning label must predate sched1 => it must be a source `goto`
+=> that edge cannot also carry the duplicated call pair.  A label manufactured
+by jump2 cross-jumping a duplicated call pair arrives after sched1 and pins
+nothing - which is the measured explanation for why that whole family
+(s12's V8, and s13's B) sits at 20.
+
+**E-s13-4 (variant C: both requirements held simultaneously, +6 insns).**
+`rejected/arm-0x19-goto-docalls-0xB-dup-calls-pins-store-keeps-s2-plus6-20.c`:
+`if (var_s1 != 0) { store 0x19; goto do_calls; } store 0xB; <both calls>;
+return;`.  Measured **20 / 222**.  Objdump confirms BOTH the pinned store
+(`6a8 sh` at the head of the shared block) AND `move a2,s2` at every seat - the
+only body so far that holds cluster A and the store pin at the same time.  Its
+entire residual is the 0xB edge: jump2 merges it only down to three insns
+(`li v0,0xB / sh / j do_calls`) plus an unfilled `jal` delay slot.
+
+**E-s13-5 (other measurements).**  B (arm 0xB edge `var_v0 = 0xB; goto
+do_store_calls`; 0x19 edge stores + duplicates the calls) = **20 / 219**.
+F (variant A's arm plus path1's own 0x19 selection edge duplicating the call
+pair, to restore the arg1 refs from a different site) = **27 / 223**; the
+duplicated path1 edge does not merge and costs more than the seats are worth.
+
+**E-s13-6 (tooling).**  `tmp/grind/func_800283D0/s1x/dif.sh` objdumps
+`tmp/sandbox/func_800283D0/code6cac_b.o` and was repeatedly observed reading the
+object left by the PREVIOUS sandbox invocation, producing internally
+inconsistent diffs (a head section from one build, a tail from another).  Run
+`sandbox --disable all` TWICE before `dif.sh`, or objdump the `.o` directly.
+Two of this session's turns were spent resolving a contradiction caused by it.
+
+- [s13] Chassis re-measured at dispatch: the banked candidate.c body scores 17 with build_insns 216 vs target 215 - identical to the s12 ledger entry, so every s12 conclusion is still chassis-valid.
+
+- [s13] PASS ATTRIBUTION (dumps read, not guessed): the store `sh $v0,0x286($s0)` is block-head in .combine and .flow (`(insn 226 223 227 ...)`, prev = code_label 223 = the C label `do_store_calls`) and is already below all four argument set-ups in .sched (`(insn 226 240 242 ...)`). sched1 sinks it; jump2 and reorg only inherit the result. This supersedes the s12 frontier-1 mechanism.
+
+- [s13] tmp/grind/func_800283D0/s13/j2rows.txt rows 115-128 show jump2's merged block as `code_label 223 ("do_store_calls") / a1=1 / a2=s2 / a0=lh(s0+4) / a3=0 / store 226 / call 242` - the anchor label already precedes the argument set-up at jump2 time.
+
+- [s13] Variant A (arm 0xB edge `goto set_0xB`, 0x19 edge own store + `goto do_calls`) reproduces target's slots 83-88 exactly - direct objdump: `6a4 li v0,11 / 6a8 sh v0,646(s0) / 6ac li a1,1 / 6b0 move a2,_ / 6b4 lh a0,4(s0) / 6b8 jal / 6bc move a3,zero` - and target's four-instruction arm at 144-147. Score 23/216; the sole regression is cluster A ($s3 at all twelve seats).
+
+- [s13] Variant C (0x19 edge stores + `goto do_calls`, 0xB edge stores + duplicates both calls) is the first measured body to hold the pinned store AND the correct $s2 seats simultaneously: 20/222. Its whole residual is the 0xB edge, which jump2 merges only to `li v0,0xB / sh / j do_calls` (+3) plus an unfilled jal delay slot.
+
+- [s13] Target pays ZERO for its arm's 0xB edge because that edge jumps into path1's own `li v0,0xB` at .L80028518; the only C construct that reproduces that (a bare `goto set_0xB`) supplies no arg1 reference at all.
+
+- [s13] Variant B = 20/219 and variant F = 27/223 - banked; F specifically rules out path1's own 0x19 selection edge as a byte-neutral third site for the two arg1 references.
+
+- [s13] TOOLING: tmp/grind/func_800283D0/s1x/dif.sh objdumps tmp/sandbox/func_800283D0/code6cac_b.o and was observed reading the object from the PREVIOUS sandbox invocation, yielding diffs whose head and tail came from different builds. Run `sandbox --disable all` twice before dif.sh, or objdump the .o directly.
