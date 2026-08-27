@@ -297,6 +297,26 @@
  * next session should apply the same count to a1/a2, i and tbl before assuming the
  * allocno model is right about them.
  */
+/* s29 ADDENDUM (rederive, 2026-08-27). Re-measured at the START of s29: this body is
+ * STILL sandbox 1 at 132 of 132 insns, and it remains the floor. s29 changed nothing in it.
+ * What s29 changed is the STATUS of the chassis it sits on. The target-hosted reference
+ * census (evidence.md E-s29-1) decomposed every one of target's callee-saved registers into
+ * flow-countable references straight out of asm/funcs/func_80041188.s, and the model is exact
+ * everywhere: a1 16, a2 16, stptr 5, i 8, tbl 4, stptr2 6, a3 4, pa4 7, out2 3, out3 3. So
+ * s28's frontier item 1 -- "some allocno is mis-counted" -- is KILLED, and this body's residual
+ * gets a sharper name: it is a TRANSFER, not a shortfall. Target spends its 7th pa4 reference on
+ * `out3 = pa4 + 0x20` (asm line 74); we spend it on `out3 = out2`, which moves the reference to
+ * out2 and emits `move $s3,$s6`.
+ *
+ * The load-bearing consequence is E-s29-2. Feed target's OWN hosted counts into the validated
+ * priority model on the only chassis whose pseudo set matches target's (V15a): pa4 7/95 = 1473,
+ * a3 4/99 = 808, out2 3/42 = 714 -- which seats pa4 in $s6, a3 in $s7 and out2 in $fp, the
+ * opposite of target's bytes. Since E-s28-2 already excluded both combine-deletable shapes that
+ * could host a hidden fourth out2 reference, the original's source is NOT this pseudo set. The
+ * two-locals goto chassis is therefore bounded above at floor 1 by derivation, and the next
+ * sessions should spend their measurements on a different pseudo set (hypotheses.md s29 item 2)
+ * or on the one untested byte-free live-length class (item 1), not on respelling this one.
+ */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
     s32 *pa4 = a4;

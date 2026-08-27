@@ -2480,3 +2480,77 @@ See E-s27-6. loop_depth weighting doubles it to 8 refs / 5714.
 - probe: Diffed the insn ids present in V15a's red.i.flow (102 insns) against red.i.combine (93 insns) to enumerate every combine deletion and classify the shapes; then counted every $s6 occurrence in asm/funcs/func_80041188.s and tested each shape for a host.
 - result: Combine deletes exactly nine insns in exactly two shapes. Shape A = a reg-reg copy whose destination has a single use (insn 4, the parameter homing copy; insn 43, the `stptr = base; stptr += 0xFC` chain-extender candidate.c ships annotated). Shape B = `(set p (plus R c))` merged into its single use (insns 130/177/262 = `stptr + 0x38`, `stptr2 + 0x4C`, `stptr2 + 0x38` folded into call arguments; insns 88/100 = V15a's two owner-allowed split increments; insns 27/32 = the D_800A9A10 symbol/address pair). target's bytes contain exactly five $s6 lines — prologue sw (asm:17), epilogue lw (asm:126), `addiu $s6,$s7,0x20` (asm:25) and two `addu $a1,$s6,$zero` (asm:56, asm:61) — so there is no `addiu $aN,$s6,c` to host shape B and no second $s6-rooted copy to host shape A (a shape-A copy needs a single-use destination, and out2's only single-use consumers are those two argument moves, into which combine merges the copy back to one reference, net zero). The reference must cost an instruction, which is exactly what s27's D family measured.
 - verdict: KILLED
+
+## s29 (rederive, 2026-08-27) — frontier
+
+**KILLED this session.** (1) s28 frontier item 1 (an allocno is mis-counted): the full
+target-hosted census (E-s29-1) shows every model count is exactly target's on the honest chassis
+except the single out2/pa4 transfer. (2) The block-0 dial on `reg_live_length(i)` (E-s29-3): the
+declaration position of `i` is inert. (3) L_i = 98 as a route to requirement (A) (E-s29-3).
+
+**PROVEN this session.** The two-locals goto chassis is bounded above at floor 1 by derivation,
+not by sampling (E-s29-2): target's own hosted reference counts, fed into the validated priority
+model, seat pa4 in $s6 and out2 in $fp — the opposite of target's bytes. The original's `out2`
+pseudo carries a reference its own emitted code does not host, and E-s28-2 has already excluded
+both combine-deletable shapes that could host one.
+
+1. **The only untested byte-free live-length class is an insn deleted AFTER sched1's live-length
+   recount — reload's no-op-move deletion or jump2 cross-jumping.** If two such insns can be sited
+   anywhere `i` is live and `stptr` is not (loop2, or block 2 after `i = 0x12;`), then L_i = 99 is
+   reachable with `i = 0x12;` at target's own source position 3, which removes BOTH sched1
+   emission-order diffs and lands the honest, zero-FAKE chassis at floor 1 — matching candidate.c
+   without its F1 chain-extender.
+   *mechanism:* `reg_n_refs` is frozen by flow.c:2081 pre-combine; `reg_live_length` is recomputed
+   by sched1 post-combine (sched.c:5106 from sched.c:3165) and then consumed by global.c's
+   `allocno_compare`. An insn present at that recount but removed by reload (a reg-reg copy whose
+   source and destination receive the same hard register is deleted as a no-op move) or by jump2
+   is therefore live-length-visible and byte-invisible — the exact dual of the F1 reference lever.
+   *next probe:* start from `tmp/grind/func_80041188/s29/H4.c` (un-split stptr, `i = 0x12;` at
+   block-2 position 3, L_i = 97, seats swapped). Add to loop2 a second pointer local that aliases
+   `out3` and is used at exactly one of loop2's two `out3` sites (`func_8004A348(buf, x);` or
+   `func_800523E0(pa4, x, ...)`), so the copy `x = out3;` is a candidate for reload coalescing.
+   Read `livelen` for `i` and `out3` from `BB2_ALLOC_DEBUG=1` (recipe: `s29/dump.sh <TAG>` run
+   under WSL) and the build insn count. Require in one measurement: livelen(i) ≥ 99 AND build
+   insns == 132. Two such insns are needed; test the single case first to learn the per-insn gain.
+
+2. **Resolve E-s29-2's contradiction by changing the pseudo SET, not the statement order: look for
+   a shape in which the second matrix pointer's references are hosted by another pointer.**
+   *mechanism:* the census shows target hosts pa4 at 7 and out2 at 3, which the model cannot seat
+   as target does. Every shape this grind has tried keeps `out2` as an independent `s32 *` local
+   derived from `pa4`. If instead loop1's two matrices are reached through a single walking object
+   (a `MATRIX *` pair, a struct with two matrix members, or an array element `&m[i]`), the pseudo
+   set changes and the contradiction may simply not arise — the references currently attributed to
+   out2 would be attributed to the walker. E-s12 killed ONE spelling of this (a single `MATRIX *`
+   addressing `&m[0]`/`&m[1]`, which cse1 collapses to one pseudo, 125 insns / sandbox 43); the
+   untried spellings are a two-member struct and a `MATRIX m[2]`-typed parameter where the two
+   members are passed as `&p->a` / `&p->b`.
+   *next probe:* write the two-member-struct form (`typedef struct { s32 a[8]; s32 b[8]; } X;` with
+   `X *p = (X *)a4;` and calls taking `p->a` / `p->b`), measure `sandbox --disable all` and the
+   ALLOCDBG table, and check specifically whether block 2 still emits `addiu $s3,$s7,0x20` and how
+   many references the walker carries. Require: the $s6-equivalent pseudo at ≥ 4 references with no
+   insn in the build that target does not host.
+
+3. (carried from s28, re-prioritised DOWNWARD by E-s29-1) The D-family same-value re-store and the
+   D6 sched_solver attack. The census says the D construct adds a reference target's bytes do not
+   host, so even a scoring D form is moving away from the original's shape; it is a fallback, not
+   the lead. Its family standing is also unresolved — `.claude/rules/dead-store-fake-exception.md`
+   must be read end to end and a scope sentence quoted before any D-family submission, because a
+   re-store that is NOT dropped before the final build may fall outside that family.
+
+## [s29] One of the allocnos this grind never independently verified against target's bytes (a1, a2, i, tbl, stptr, stptr2) is mis-counted, and correcting it makes out2 at 3 refs / 714 admissible without any reference lift (s28 frontier item 1).
+- mechanism: E-s28-2's hosting rule makes every flow reference count falsifiable from target's own instruction stream: a local's reg_n_refs must decompose into emitted insns touching that hard register (a set = 1, a set-that-also-reads = 2), single-use copies combine deleted, or `X + constant` expressions folded into their use.
+- probe: Decomposed every callee-saved register's occurrences in asm/funcs/func_80041188.s into that three-category hosting, with line numbers, and compared against ALLOCDBG tables measured this session on the honest (un-split) chassis plus the banked V15a table. Artifact: tmp/grind/func_80041188/s29/census.md.
+- result: Target hosts a1 16, a2 16, stptr 5, i 8, tbl 4, stptr2 6, a3 4, pa4 7, out2 3, out3 3. The honest-chassis model matches every one of those except a single transfer: our out2 carries 4 and our pa4 6, because we write `out3 = out2` where target writes `out3 = pa4 + 0x20`. V15a's three surplus counts (stptr 7, i 10, tbl 6) are exactly its three FAKE split/chain lifts. No allocno is mis-modelled.
+- verdict: KILLED
+
+## [s29] Target's own emitted reference/live profile, fed into the validated allocno-priority model, reproduces target's own register assignment.
+- mechanism: pri = floor_log2(nrefs) * nrefs * 10000 / live_length (E-s26-3), with the six contested allocnos taking $s3,$s4,$s5,$s6,$s7,$fp in descending priority (E-s14-1, validated in both directions on this function).
+- probe: Substituted the census counts into the formula using the live lengths measured for the V15a chassis, the only chassis whose pseudo set matches target's (it derives out3 from pa4, so pa4 carries 7 references there and out2 carries 3).
+- result: pa4 7/95 = 1473, a3 4/99 = 808, out2 3/42 = 714 -> pa4 takes $s6, a3 takes $s7, out2 takes $fp. Target's bytes show out2 -> $s6, pa4 -> $s7, a3 -> $fp: the exact inverse. Target's source therefore carries a reference or live-length effect on out2 that its own emitted bytes do not host, and E-s28-2 has already excluded both shapes combine can delete here.
+- verdict: KILLED
+
+## [s29] Requirement (A) (stptr > i) can be satisfied with `i = 0x12;` left at target's own source position in the between-loops block, by lengthening reg_live_length(i) from some other site.
+- mechanism: With target's hosted counts stptr = 5/41 = 2439 and i = 8/L, (A) needs 240000/L < 2439, i.e. L >= 99. Candidate sites for the missing +2 were i's declaration position in block 0 and the intermediate positions for `i = 0x12;` in block 2.
+- probe: Built and ALLOCDBG-dumped four ladder forms on the un-split (zero-FAKE) chassis: H4 (`i = 0x12;` at block-2 position 3, `s32 i = 1;` declared first), the unmodified un-split body (position 3, declared second), H1 (position 2, declared first), H2/H3 (position 1, declared first/second). Sandbox measured on H2 and H3.
+- result: livelen(i) = 97, 97, 98, 99, 99. The declaration position is completely inert -- there is no block-0 dial. L = 98 gives pri 2448 > stptr's 2439 and still loses the seat, so `i = 0x12;` must be the FIRST statement of block 2, which is exactly the source order that costs the two sched1 emission-order diffs s15's sched_solver proved are repairable only by moving it back. H2 == H3 == alt_fakefree_floor3_s14.c: sandbox 3 at 132/132, ALL-TARGET seats, zero FAKE constructs, re-measured this session in both spellings.
+- verdict: KILLED

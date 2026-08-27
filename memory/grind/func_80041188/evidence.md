@@ -3898,3 +3898,129 @@ is the insn-id set difference between `V15a/red.i.flow` and `V15a/red.i.combine`
 - [s28] Corollary for the next session: because target's emitted code has out2 at 3 references / live 42 = pri 714 (which seats it in $fp, not $s6), the original necessarily carried a reference a post-flow pass removed. With both post-flow shapes now enumerated and excluded, either another allocno in our model is mis-counted (a1/a2 at 16 refs, i at 10, tbl at 6 are the least independently verified), or out2's live length must drop below 20 (the 3-reference window), or the chassis is wrong.
 
 - [s28] candidate.c is unchanged as the floor (sandbox 1, 132/132, all-target callee-saved seats) and now carries an s28 addendum recording the two closures and the hosting rule.
+
+## s29 (rederive, 2026-08-27)
+
+Chassis re-measured at the START of s29: `memory/grind/func_80041188/candidate.c` applied to
+`src/text1a_pre.c` gives `sandbox func_80041188 --disable all` = **score 1 at 132 build / 132
+target insns**, `rules_dropped: 16`, `cheat_asm_stripped: 0`. HEAD itself measures 27. So the
+ledger floor is intact and candidate.c is still the shipping chassis. `src/text1a_pre.c` was
+restored to HEAD at the end of the session; no build-pipeline file was touched, no commit was
+made, no permuter campaign was launched.
+
+### E-s29-1 — FRONTIER ITEM 1 EXECUTED AND KILLED: no allocno is mis-counted. The target-hosted reference census is complete and the model is exact.
+
+s28's frontier item 1 asked whether one of the allocnos this grind never independently checked
+against target's bytes (a1, a2, i, tbl, stptr, stptr2) is mis-counted, which would re-lay the
+whole priority order. It is not. Every count was decomposed from `asm/funcs/func_80041188.s`
+under E-s28-2's hosting rule (a set = 1 reference, a set-that-also-reads = 2, prologue `sw` /
+epilogue `lw` of callee-saved registers are save/restore and not pseudo references). Full
+decomposition with asm line numbers: `tmp/grind/func_80041188/s29/census.md`.
+
+| hard reg | local | target hosts | honest chassis (H3) model | V15a model |
+|---|---|---|---|---|
+| $s1 | a1 | **16** | 16 ✓ | 16 ✓ |
+| $s2 | a2 | **16** | 16 ✓ | 16 ✓ |
+| $s3 | stptr | **5** | 5 ✓ | 7 (F1 chain-extender, +2 FAKE) |
+| $s4 | i | **8** | 8 ✓ | 10 (split increment, +2 FAKE) |
+| $s5 | tbl | **4** | 4 ✓ | 6 (split increment, +2 FAKE) |
+| $s0 | stptr2 | **6** | 6 ✓ | 6 ✓ |
+| $fp | a3 | **4** | 4 ✓ | 4 ✓ |
+| $s7 | pa4 | **7** | 6 ✗ (−1) | 7 ✓ |
+| $s6 | out2 | **3** | 4 ✗ (+1) | 3 ✓ |
+| $s3 | out3 | **3** | 3 ✓ | 3 ✓ |
+
+The census kills the mis-count hypothesis outright and replaces it with a sharper statement of
+the residual. On the honest chassis **exactly one pair disagrees with target's bytes, and it is a
+transfer, not an excess**: we spend on `out2` (4 refs) the reference target spends on `pa4`
+(7 refs). Target's 7th `pa4` reference is `addiu $s3,$s7,0x20` at line 74 — `out3 = pa4 + 0x20`.
+Ours is `out3 = out2`, which moves that reference from pa4 to out2 and emits `move $s3,$s6`.
+That single transfer IS the floor-1 residual, now expressed as a conservation law rather than as
+a missing instruction.
+
+### E-s29-2 — THE HARD CONTRADICTION: target's own emitted reference/live profile does not produce target's own register assignment under the validated model.
+
+Plug target's hosted counts into the exact priority formula (E-s26-3,
+`pri = floor_log2(nrefs) * nrefs * 10000 / live_length`) with the live lengths this grind has
+measured for the V15a chassis (the only chassis that emits target's block-2 `addiu $s3,$s7,0x20`,
+hence the only chassis whose pseudo set matches target's):
+
+    pa4  7 refs / live 95 = 1473
+    a3   4 refs / live 99 =  808
+    out2 3 refs / live 42 =  714
+
+Descending priority seats those three in `$s6, $s7, $fp` **in that order**, i.e.
+pa4 → $s6, a3 → $s7, out2 → $fp. Target's bytes show **out2 → $s6, pa4 → $s7, a3 → $fp**.
+The seat-order rule itself has been validated in both directions on this function (E-s14-1), and
+E-s29-1 now shows the reference counts fed into it are target's own. Therefore **target's source
+contains at least one reference (or live-length effect) on `out2` that target's own emitted bytes
+do not host.** E-s28-2 already enumerated the only two shapes combine can delete here (a reg-reg
+copy with a single-use destination; `(set p (plus R c))` merged into its single use) and showed
+target's bytes host neither for `$s6`. Together these two results promote E-s28-3(c) from a
+suspicion to a derivation: **the two-locals goto chassis is not the original's shape, and no
+spelling of it can be, because the contradiction is a property of the pseudo set rather than of
+the statement order.** Any further work on this chassis is bounded above by floor 1.
+
+### E-s29-3 — the `i` live-length ladder is fully enumerated, and requirement (A) has exactly one honest delivery
+
+Requirement (A) (E-s14-1) is `stptr > i`. With target's hosted counts, stptr = 5 / 41 = 2439 and
+i = 8 / L, so (A) needs `240000 / L < 2439`, i.e. **L ≥ 99**. Measured this session on the
+un-split (honest, no F1 chain-extender) chassis with `BB2_ALLOC_DEBUG=1`:
+
+| form | `i = 0x12;` source position in block 2 | `s32 i = 1;` decl position | livelen(i) | pri(i) | seats |
+|---|---|---|---|---|---|
+| H4 | 3 (target's own emission order) | 1st | **97** | 2474 | i → $s3, stptr → $s4 ✗ |
+| candidate-unsplit | 3 | 2nd | **97** | 2474 | ✗ |
+| H1 | 2 | 1st | **98** | 2448 | ✗ |
+| H2 | 1 | 1st | **99** | 2424 | **ALL-TARGET** |
+| H3 | 1 | 2nd | **99** | 2424 | **ALL-TARGET** |
+
+Two closures. (1) **The declaration position of `i` in block 0 is completely inert** — H4 and the
+unmodified un-split body both give livelen 97, so there is no block-0 dial and the only dial is
+the source position of `i = 0x12;` in the between-loops block, worth +1 per statement it is moved
+ahead of. (2) **L = 98 is not enough** (2448 > 2439), so `i = 0x12;` must be the FIRST statement
+of block 2 — which is precisely the source order that costs the two sched1 emission-order diffs
+(`li $s4,0x12` at slot 67 instead of 69), the cost s15's sched_solver already proved is repairable
+only by moving `i = 0x12;` back (30 single atoms + all pairs, one vector, E-s15-1). Emission order
+and requirement (A) are the same variable, now bounded from both sides by arithmetic instead of by
+sampling. H2 ≡ H3 ≡ `alt_fakefree_floor3_s14.c`: **sandbox 3 at 132/132, re-measured this session
+in both spellings**, ALL-TARGET seats, zero FAKE constructs.
+
+Corollary, from E-s25-3 read together with this ladder: **there is no byte-free live-length lever
+in the F1 / split-increment class.** A split increment lifts `reg_n_refs` (+2) but leaves
+`reg_live_length` unchanged (i stayed 97, tbl stayed 47 in E-s25-3), because `reg_n_refs` is fixed
+by flow.c before combine while live lengths are recomputed by sched1 *after* combine has folded the
+split back. Any insn that lengthens a live range must therefore survive combine — i.e. it must be
+emitted — unless it is removed by a pass that runs *after* sched1's recount (reload's no-op-move
+deletion, jump2 cross-jumping). That is the one live-length class this grind has never tested.
+
+### s29 disposition and artifacts
+
+- Artifacts: `tmp/grind/func_80041188/s29/census.md` (the reference census with asm line numbers),
+  `H1.c` / `H2.c` / `H3.c` / `H4.c` (the four ladder forms), `H1/`, `H2/`, `H3/`, `H4/`
+  (`red.i`, `red.s`, `cc1.err` with the ALLOCDBG tables for each), `apply.py`, `dump.sh`,
+  `text1a_pre.HEAD.c`.
+- Rejected forms banked: `rejected/i-declaration-position-inert-for-live-length.c`,
+  `rejected/i-live-98-insufficient-needs-99.c`.
+- `candidate.c` is UNCHANGED and remains the floor (sandbox 1). No new candidate was produced;
+  s29's product is a derivation that bounds the current chassis above at floor 1.
+
+- [s29] Chassis re-measured at the start of s29: memory/grind/func_80041188/candidate.c applied to src/text1a_pre.c gives sandbox func_80041188 --disable all = score 1 at 132 build / 132 target insns, rules_dropped 16, cheat_asm_stripped 0. HEAD itself measures 27. The ledger floor is intact and candidate.c remains the shipping chassis.
+
+- [s29] TARGET-HOSTED REFERENCE CENSUS (new, complete; artifact tmp/grind/func_80041188/s29/census.md): $s1 a1 = 16, $s2 a2 = 16, $s3 stptr = 5, $s3 out3 = 3, $s4 i = 8, $s5 tbl = 4, $s6 out2 = 3, $s7 pa4 = 7, $fp a3 = 4, $s0 stptr2 = 6. Every count decomposed to asm/funcs/func_80041188.s line numbers under E-s28-2's hosting rule (prologue sw / epilogue lw of callee-saved registers are save/restore, not pseudo references).
+
+- [s29] The census matches the honest-chassis ALLOCDBG model on eight of nine allocnos. The one disagreement is a TRANSFER, not an excess: our out2 carries 4 references and our pa4 6, where target carries 3 and 7. Target's seventh pa4 reference is `addiu $s3,$s7,0x20` (asm/funcs/func_80041188.s:74) = `out3 = pa4 + 0x20`; ours is `out3 = out2`, which relocates that reference onto out2 and emits `move $s3,$s6`. That transfer IS the floor-1 residual, now stated as a conservation law rather than as a missing instruction.
+
+- [s29] V15a's three surplus counts over target (stptr 7 vs 5, i 10 vs 8, tbl 6 vs 4) are exactly its three FAKE lifts (the F1 chain-extender plus the two owner-sanctioned split increments), so V15a requires four references target's bytes cannot host while the honest chassis requires exactly one.
+
+- [s29] HARD CONTRADICTION (E-s29-2): target's own hosted counts with the V15a live lengths give pa4 7/95 = 1473, a3 4/99 = 808, out2 3/42 = 714, which the validated descending-priority seat rule assigns as pa4 -> $s6, a3 -> $s7, out2 -> $fp. Target's bytes are out2 -> $s6, pa4 -> $s7, a3 -> $fp. Since E-s28-2 excluded both combine-deletable shapes for a hidden $s6 reference, the original's source is not this pseudo set, and no spelling of the two-locals goto chassis can reach distance 0. E-s28-3(c) is promoted from suspicion to derivation.
+
+- [s29] reg_live_length ladder for i on the zero-FAKE chassis, measured with BB2_ALLOC_DEBUG=1: `i = 0x12;` at block-2 source position 3 -> 97, position 2 -> 98, position 1 -> 99; i's DECLARATION position in block 0 is inert (97 either way). Requirement (A) needs L >= 99 exactly, so emission order and requirement (A) are the same variable, bounded arithmetically from both sides rather than by sampling.
+
+- [s29] Corollary drawn from E-s25-3 together with this ladder: there is NO byte-free live-length lever in the F1 / split-increment class. A split increment lifts reg_n_refs by 2 but leaves reg_live_length unchanged, because reg_n_refs is frozen by flow.c:2081 pre-combine while live lengths are recomputed by sched1 post-combine, after combine has folded the split away. A live-range extender must survive combine -- i.e. be emitted -- unless it is removed by a pass running after sched1's recount (reload's no-op-move deletion, jump2 cross-jumping). That class has never been tested here.
+
+- [s29] alt_fakefree_floor3_s14.c re-measured this session in two spellings (H2, H3): sandbox 3 at 132 build / 132 target insns, ALL-TARGET callee-saved seats, zero FAKE constructs. Its three diffs are the two `li $s4,0x12` emission-order slots plus the out2/pa4 transfer.
+
+- [s29] Correction for the next session: s28's frontier item 3 stated that D6's body was not banked in s27. It was -- memory/grind/func_80041188/alt_D6_132insns_schedresidual_s27.c exists alongside alt_D5_alltargetseats_score2_s27.c. It does not need re-deriving.
+
+- [s29] src/text1a_pre.c was restored to HEAD at the end of the session; no build-pipeline file was touched, no commit was made, no permuter campaign was launched, and no background process is running.

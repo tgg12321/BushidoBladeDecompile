@@ -1,7 +1,7 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 28,
+ "session_count": 29,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -177,23 +177,29 @@
    "floor": 1,
    "modality": "rederive",
    "headline": "The byte-free reference lift for out2 is CLOSED on both sides: cse1's fold_rtx reassociation kills every same-EBB chain before flow counts, and combine \u2014 the only pass that deletes insns after flow co"
+  },
+  {
+   "session": 29,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "Target-hosted reference census completed: the allocno model is exact for every local, which turns the floor-1 residual into a proven contradiction and bounds the two-locals goto chassis above at floor"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "One of the allocnos this grind has never independently verified against target's bytes is mis-counted, and once it is corrected out2 at 3 refs / 714 is admissible without any reference lift at all.",
-   "mechanism": "E-s28-2's hosting rule makes every flow reference count falsifiable from target's own instruction stream: a local's reg_n_refs must decompose into emitted insns with that hard register, shape-A single-use copies, and shape-B `X + constant` argument/address expressions. The model asserts a1/a2 = 16 refs / live 99, i = 10 / 97-98, tbl = 6 / 47 on the V15a chassis; none of those has ever been checked against target the way $s6 was checked this session.",
-   "next_probe": "Count $s1, $s2, $s4 and $s5 occurrences in asm/funcs/func_80041188.s and decompose each count into the three hosting categories. Any allocno whose model count exceeds what target can host is a mis-modelled priority; recompute the seat order with the corrected counts and check whether out2 at 714 lands in $s6 under it. This is a pure read plus arithmetic \u2014 no build \u2014 and it either finds the error or hardens the whole model."
+   "hypothesis": "The only untested byte-free live-length class is an insn deleted AFTER sched1's live-length recount -- reload's no-op-move deletion or jump2 cross-jumping. Two such insns sited anywhere i is live and stptr is not (loop2, or block 2 after `i = 0x12;`) give L_i = 99 with `i = 0x12;` at target's own source position, removing BOTH sched1 emission-order diffs and landing the honest zero-FAKE chassis at floor 1.",
+   "mechanism": "reg_n_refs is frozen by flow.c:2081 pre-combine; reg_live_length is recomputed by sched1 post-combine (sched.c:5106 from sched.c:3165) and then consumed by global.c's allocno_compare. An insn present at that recount but removed by reload (a reg-reg copy whose source and destination receive the same hard register is deleted as a no-op move) or by jump2 tail-merging is live-length-visible and byte-invisible -- the exact dual of the F1 reference lever, and the only remaining member of its family.",
+   "next_probe": "Start from tmp/grind/func_80041188/s29/H4.c (un-split stptr, `i = 0x12;` at block-2 position 3, L_i = 97, seats swapped). Add to loop2 a second pointer local aliasing out3, used at exactly one of loop2's two out3 sites, so the copy `x = out3;` is a reload-coalescing candidate. Dump with `bash tmp/grind/func_80041188/s29/dump.sh <TAG>` under WSL and read livelen for i and out3. Require in ONE measurement: livelen(i) >= 99 AND build insns == 132. Test the single-copy case first to learn the per-insn gain, then site the second."
   },
   {
-   "hypothesis": "With the reference axis provably closed, out2's LIVE LENGTH is the only surviving dial on this chassis: at 3 references out2 outranks pa4 (1473) iff live <= 20, and the only definition site that reaches live 21 is inside loop1.",
-   "mechanism": "pri = floor_log2(3)*3*10000/live = 30000/live, so live <= 20 clears pa4 while staying under stptr2's 2500 only for live >= 12. s12 measured an in-loop1 definition at 4 refs / live 21 = 3809 and s23 killed the site because loop1's EBB then reaches block 2 and cse1 rewrites `out3 = pa4 + 0x20` into `out3 = out2` (manufacturing the residual move). The unexamined sub-case is a definition placed AFTER out2's last use in loop1, where the value cse1 carries into block 2 may no longer be the one block 2 needs.",
-   "next_probe": "On the V15a chassis, site out2's definition inside loop1 at each position AFTER `func_800523E0(pa4, out2, a3, stptr + 0x38);` (the last use), with block 0 keeping only a declaration; measure ALLOCDBG live length and refs, and check red.i.cse to see whether block 2's `out3 = (u8*)pa4 + 0x20` survives as an addiu or is rewritten to a move. Require in one measurement: out2 live <= 20 AND block 2 still emitting `addiu $s3,$s7,0x20`."
+   "hypothesis": "E-s29-2's contradiction is resolved by changing the pseudo SET rather than the statement order: in the original, the second matrix pointer's references are hosted by another pointer, so the out2 allocno as this grind models it does not exist.",
+   "mechanism": "The census proves target hosts pa4 at 7 and out2 at 3, a pair the priority model cannot seat the way target does. Every shape tried so far keeps out2 an independent `s32 *` local derived from pa4. If loop1's two matrices are reached through a single walking object (a two-member struct, or `&p->a` / `&p->b` on a MATRIX[2]-shaped parameter), the references currently attributed to out2 are attributed to the walker and the contradiction need not arise.",
+   "next_probe": "Write the two-member-struct form (`typedef struct { s32 a[8]; s32 b[8]; } X;`, `X *p = (X *)a4;`, calls taking `p->a` / `p->b`), measure `sandbox func_80041188 --disable all` and the ALLOCDBG table. Require: block 2 still emits `addiu $s3,$s7,0x20`, and the $s6-equivalent pseudo carries >= 4 references with no build insn target does not host. Note E-s12 already killed the ONE-pointer `&m[0]`/`&m[1]` spelling (cse1 collapses it to a single pseudo, 125 insns / sandbox 43); the struct and two-parameter spellings are untried."
   },
   {
-   "hypothesis": "The D6 chassis (132/132, target's complete callee-saved disposition, residual = pure sched1 emission order) is closable by the scheduler solver, and is now the only route that does not require a new reference.",
-   "mechanism": "s27's D6 places the same-value re-store of out2 immediately after out2's first use; sched1 pays for the extra addiu out of loop1's load-delay nop (target's nop at asm/funcs/func_80041188.s:30), so the build stays at 132 insns with target's seats and the whole residual is loop1's pick order. s25's E-s25-1 already hand-built the dependence-valid target pick order for loop1 because goalmap --goal-from-target mis-pairs the two identical `sh $2,20($sp)` texts.",
-   "next_probe": "Rebuild D6 (its body was not banked in s27 \u2014 only its header note was, so it must be re-derived from alt_V15a plus the re-store after `func_8004A348(buf, out2);`), then run tools/sched_solver perturb.py --pass 1 --block 1 against s25's hand-built goal ON THE D6 CHASSIS. Require in ONE measurement: build_insns == 132 AND goalmap.py --model reporting GOAL == OURS for block 1. Note the standing family caveat: before any D-family candidate is submitted, .claude/rules/dead-store-fake-exception.md must be read end to end and a scope sentence quoted, because a re-store that is NOT dropped before the final build may fall outside that family \u2014 if it does, the correct outcome is ruling-request, not a candidate."
+   "hypothesis": "(carried from s28, re-prioritised DOWNWARD by the census) The D-family same-value re-store of out2 plus a sched_solver attack on D6's emission order closes the function.",
+   "mechanism": "D5/D6 buy ALL SEVEN target seats by giving out2 a fifth reference; D6 pays the surplus insn out of loop1's load-delay nop and returns to 132 insns with a pure sched1 emission-order residual. But E-s29-1 shows that reference is one target's bytes do not host, so a scoring D form is moving AWAY from the original's shape.",
+   "next_probe": "Only after frontier items 1 and 2 are spent. Run tools/sched_solver perturb.py --pass 1 --block 1 against s25's hand-built loop1 goal on the banked alt_D6_132insns_schedresidual_s27.c (it exists; s28's note that it must be re-derived was wrong). Before ANY D-family submission, read .claude/rules/dead-store-fake-exception.md end to end and quote its scope sentence -- a re-store that is NOT dropped before the final build may fall outside that family, in which case the correct outcome is ruling-request, not a candidate."
   }
  ],
  "judge_constraints": [
