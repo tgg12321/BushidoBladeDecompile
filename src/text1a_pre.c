@@ -742,46 +742,46 @@ extern void func_800523E0(s32 *, s32 *, s32, s32);
 extern void func_80044DE4(s16 *, s16 *, s32, s32);
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
-    register s32 *s7_a4 asm("s7") = a4;
-    s32 *tbl = D_80094CFC;
     s32 i = 1;
+    s32 *tbl = D_80094CFC;
     s32 base = D_800A9A10[a0];
     s16 buf[3];
-    s32 saved;
+    s32 ents;
     s32 *out2;
-    s32 stptr;
+    s32 *out3;
     s32 offset;
     u16 *p;
-    saved = base + 0x94;
-    out2 = (s32 *) (((u8 *) s7_a4) + 0x20);
-    stptr = base + 0xFC;
-    loop1:
-    offset = (*tbl) * 6;
-    p = (u16 *) (a1 + offset);
-    buf[0] = p[0];
-    buf[1] = -p[1];
-    tbl++;
-    buf[2] = -p[2];
-    func_8004A348(buf, s7_a4);
-    p = (u16 *) (a2 + offset);
-    i++;
-    buf[0] = p[0];
-    buf[1] = -p[1];
-    buf[2] = -p[2];
-    func_8004A348(buf, out2);
-    func_800523E0(s7_a4, out2, a3, stptr + 0x38);
-    *((s16 *) (stptr + 6)) = 2;
-    stptr += 0x68;
-    if (i < 0x12) {
-        goto loop1;
-    }
+    s32 stptr2;
+    s16 two;   /* FAKE: constant-holder carrying loop1's record-flag value; mechanism: gives loop.c's scan_loop a user pseudo it can count sets on. lever-exhaustion: memory/grind/func_80041188/hypotheses.md s36 (five literal/holder spellings A,C,E,F,G all measure 2) */
+    ents = base + 0x94;
+    out2 = (s32 *) (((u8 *) a4) + 0x20);
+    do {
+        offset = (*tbl) * 6;
+        p = (u16 *) (offset + (s32) a1);
+        buf[0] = p[0];
+        buf[1] = -p[1];
+        buf[2] = -p[2];
+        func_8004A348(buf, a4);
+        tbl++;
+        offset = offset + (s32) a2;
+        p = (u16 *) offset;
+        buf[0] = p[0];
+        buf[1] = -p[1];
+        buf[2] = -p[2];
+        func_8004A348(buf, out2);
+        func_800523E0(a4, out2, a3, ents + i * 0x68 + 0x38);
+        two = 2;
+        *((s16 *) (ents + i * 0x68 + 6)) = two;
+        two = 3; /* FAKE: dead store, never read; mechanism: loop.c count_loop_regs_set sees n_times_set == 2 so scan_loop builds no movable and move_movables cannot hoist the constant out of loop1 (flow.c propagate_block then deletes this store, zero emitted bytes). lever-exhaustion: memory/grind/func_80041188/hypotheses.md s32-s36 */
+        i++;
+    } while (i < 0x12);
     a1 += 0x6C;
     a2 += 0x6C;
     i = 0x12;
-    out2 = (s32 *) (((u8 *) s7_a4) + 0x20);
-    stptr = saved + 0x750;
+    stptr2 = ents + 0x750;
+    out3 = (s32 *) (((u8 *) a4) + 0x20);
     loop2:
-    func_80044DE4((s16 *) a1, (s16 *) a2, a3, stptr + 0x4C);
+    func_80044DE4((s16 *) a1, (s16 *) a2, a3, stptr2 + 0x4C);
     a1 += 6;
     a2 += 6;
     buf[0] = *((u16 *) a1);
@@ -790,17 +790,17 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     a1 += 2;
     buf[2] = -(*((u16 *) a1));
     a1 += 2;
-    func_8004A348(buf, s7_a4);
+    func_8004A348(buf, a4);
     buf[0] = *((u16 *) a2);
     a2 += 2;
     buf[1] = -(*((u16 *) a2));
     a2 += 2;
     buf[2] = -(*((u16 *) a2));
     a2 += 2;
-    func_8004A348(buf, out2);
-    func_800523E0(s7_a4, out2, a3, stptr + 0x38);
-    *((s16 *) (stptr + 6)) = 1;
-    stptr += 0x68;
+    func_8004A348(buf, out3);
+    func_800523E0(a4, out3, a3, stptr2 + 0x38);
+    *((s16 *) (stptr2 + 6)) = 1;
+    stptr2 += 0x68;
     i++;
     if (i < 0x14) {
         goto loop2;

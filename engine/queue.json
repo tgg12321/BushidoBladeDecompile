@@ -4,17 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80041188",
-      "file": "text1a_pre",
-      "distance": 27,
-      "verdict": "C",
-      "rules": 16,
-      "status": "active",
-      "prologue_fix": 1,
-      "unpark_reason": "OWNER RULING 2026-08-27: split-increment construct ALLOWED under the 2026-07-06 split/redundant-arithmetic class (mandatory FAKE annotation per site) \u2014 answers the s25 frontier ruling-request. Escalation spent; continue-directive to s45; build the V15a + honest out2-lift candidate. Canonical override remains DECLINED. Goal: COMPLETED-C, 0 rule carriers.",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-27 \u0393\u00c7\u00f6 func_80041188 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
-    },
-    {
       "func": "func_800485EC",
       "file": "text1b",
       "distance": 31,
@@ -1978,14 +1967,14 @@
     }
   ],
   "counts": {
-    "total": 224,
-    "active": 201,
+    "total": 223,
+    "active": 200,
     "by_status": {
-      "active": 201,
+      "active": 200,
       "escalated": 23
     },
     "by_verdict": {
-      "C": 167,
+      "C": 166,
       "ASM-PARTIAL": 34
     }
   }

@@ -1,130 +1,41 @@
 # SELF-VET — func_80041188
 
-CONSTRUCTS: (1) `do { loop1: ... } while (0);` single-level wrap around loop1's
-leading half, with the `loop1:` label inside the wrap and the back-`goto loop1`
-entering from outside; (2) reuse of the (dead-after-loop1) `stptr` local as
-loop2's output pointer, re-initialized `stptr = (s32)(((u8 *) pa4) + 0x20);`;
-(3) staging of loop2's out-pointer through the (dead-after-loop1) `out2` local,
-`out2 = (s32 *) stptr;` immediately before `func_800523E0(pa4, out2, ...)`.
+CONSTRUCTS: (1) `s16 two;` constant-holder local plus its live assignment `two = 2;` feeding loop1's halfword store; (2) `two = 3;` — a dead store to that local, never read, deleted by flow.c before any bytes are emitted.
+
+Everything else in the diff is construct-free: the body is s36's form P1r (real-loop chassis, `pa4` param-alias deleted, target's honest block-2 `out3 = (s32 *)(((u8 *)a4) + 0x20);`), which measures sandbox 2 with ALL-TARGET callee-saved seats and zero constructs. No wrap, no alias, no variable reuse, no split increment, no volatile, no asm, no pin. The previously owner-sanctioned split-increment FAKE that the old candidate carried is GONE — this form does not need it.
 
 ## T1 semantic purpose
-(1) The wrap has no observable effect on the function's output — the body
-executes exactly once per entry either way; it is present purely as a codegen
-device and is FAKE-annotated as such. It is the sanctioned `do{}while(0)`
-family, which by owner ruling 2026-07-06 is allowed for ANY codegen effect
-provided it is annotated. (2) Real: `stptr` carries the loop2 output pointer
-and is read by `func_8004A348(buf, (s32 *) stptr)` every iteration; the only
-question the construct answers is WHICH local carries it, and reusing an
-existing one is ordinary C. (3) Real: the assigned value is consumed by the
-very next statement's argument list; the construct is one honest assignment
-split out of a cast-in-the-argument, with the destination being an existing
-local rather than a fresh one. No construct in the diff is dead, unused, or
-write-only; there is no `(void)`, no address-of-a-dead-object, no volatile,
-no pin, no `__asm__`, no declaration-only object.
+- Construct 1 (`s16 two;` + `two = 2;`): no semantic purpose beyond the literal. Byte-identical program behaviour to `*(s16 *)(...) = 2;`. Measured: s36 form C (same holder, no dead store) produces bit-identical output to the bare literal (both sandbox 2). It is a codegen carrier, and it is annotated as such.
+- Construct 2 (`two = 3;`): no semantic purpose whatsoever. The value is never read; `flow.c` `propagate_block` deletes the insn (measured: pseudo 90 appears 3x in red.i.cse2 and 2x in red.i.flow, tmp/grind/func_80041188/s37/K/). Zero emitted bytes; build_insns stays 132.
+Both FAIL T1 by design — which is precisely why each is declared, annotated `/* FAKE: ... */`, and claimed under a frozen sanctioned family below rather than presented as ordinary C.
 
 ## T2 human-programmer
-(2) and (3) read as ordinary C to someone who has never seen the target bytes:
-a function with two phases that reuses its two scratch pointers across both
-phases, and an explicit local for a call argument. A reader would not ask "why
-is this here?" of either. (1) is the one construct a reader WOULD ask about,
-which is exactly why the project requires it to be FAKE-annotated in place
-rather than silently merged; it is annotated, greppable, and the annotation
-states the measured effect (9 -> 0). It is also the canonical PsyQ-era macro
-body idiom, so its presence in original 1998 source would be unremarkable.
+No. A programmer writing this function from its specification would write `*(s16 *)(ents + i * 0x68 + 6) = 2;` and stop. A reader will ask "why is `two = 3;` here?" — that is the cheat smell, and the answer is the FAKE annotation, not a semantic story. I am not claiming otherwise.
 
 ## T3 GCC-internals justification
-Yes for all three, and the annotations say so explicitly (the family rules
-REQUIRE a named mechanism in the annotation, so naming one here is compliance,
-not a smell): (1) the loop note the wrap emits changes flow.c's loop-depth ref
-weighting, which feeds global.c allocno priority and reseats the callee-saved
-set (out2 s6 / carrier s7 / a3 fp); (2) global.c allocno priority — the merged
-multi-ref `stptr` pseudo (pri 3409, banked in evidence.md s3) allocates 3rd and
-lands s3, where a fresh low-ref local loses the ordering race; (3) flow.c's
-loop-weighted ref count for `out2`, lifting its global.c priority above the
-pa4-carrier's. This is disclosure of the mechanism inside sanctioned families,
-which each require it — none of the three is an attempt to impose bytes or a
-register outcome from OUTSIDE compiled C (no regfix, no pin, no asm, no
-volatile, no cross-symbol address derivation, no semantic-lie C). Every byte
-comes from the pristine compiler consuming legal C, and the committed source is
-a true compilable origin of those bytes.
+Yes, explicitly, and the internals are named end-to-end from dumps rather than guessed:
+`loop.c` `count_loop_regs_set` records `n_times_set` per pseudo inside the loop; `scan_loop` builds a movable only when the destination's `n_times_set == 1` (the consecutive-invariant-sets special case does not apply — the two sets are separated by the store). With a second, non-consecutive set present, no movable exists, so `move_movables` cannot hoist loop1's `(set (reg:HI 90) (const_int 2))` to block 0. Left in loop1 the temp is block-local and call-free, and `local_alloc` seats it in `$v0` — target's register. Without it, the hoisted pseudo is live 92 insns across 7 calls, `global_alloc` has no free callee-saved seat, and reload rematerialises the REG_EQUIV constant into `$t0` (MIPS defines no `REG_ALLOC_ORDER`). Measured: red.i.loop for the accepted form has ZERO `moved to` lines; P1r's has exactly one (`Insn 152: regno 121 (life 1), move-insn savings 1  moved to 312`).
+This is the cheat SIGNAL, acknowledged as such. It is admissible only because the construct sits inside a frozen sanctioned family whose whole premise is a named GCC-pass mechanism, with the annotation and the exhaustion ledger both present.
 
 ## T4 permuter/search provenance
-Constructs (1) and (3) were PROPOSED by this session's permuter campaign
-(tmp/grind/func_80041188/s4/perm2, outputs output-50-1 and output-63-1) on the
-pa4-read chassis. They are not accepted because the permuter found them: each
-was re-measured by hand in the honest sandbox (15 -> 9 -> 0), each was matched
-to a pre-existing sanctioned family whose rule file was read end-to-end, and
-each survives that family's stated bounds (below). The permuter also produced
-two proposals that were REJECTED here rather than submitted: a
-loop-invariant hoist of `stptr2 + 6` out of loop2 (semantically WRONG — it
-would write the same address every iteration) and a `(new_var = i) < 0x12`
-dead-store, neither of which is in the diff. Construct (2) is inherited from
-s3's hand-derived floor-1 form, not from search.
+No permuter, no auto-search, no campaign was run this session. Both constructs were derived by reading `loop.c`'s movable preconditions after s36 closed the other four dimensions (threshold, spelling, gates (1)(2)(3)), and were then confirmed against cc1 `-da` dumps. The spelling was not chosen to slip past detectors: three neighbouring spellings were measured and REJECTED this session with their mechanisms named (`two = two;` -> 2, expander elides the self-move; `two = 2;` re-store -> 2, cse1 deletes it before loop.c; `two = (s16)(i+1);` -> 77 at 135 insns, computed source materialises).
 
 ## T5 family check
-(1) `do { ... } while (0);` — sanctioned family, `.claude/rules/
-do-while-zero-exception.md`. Single level, so prerequisite 3 (nested-wrap
-justification) does not apply; prerequisite 1 (inline FAKE naming the observed
-effect) is satisfied; prerequisite 2 (prefer natural geometry) is satisfied
-with receipts — three prior sessions of natural statement-placement,
-declaration-order, split-init and re-init spellings are banked in
-hypotheses.md/evidence.md and the split-RA axis was proven dead end-to-end in
-s3. (2) and (3) are the variable-reuse / staged-value family,
-`.claude/rules/staged-value-reused-variable.md`, whose six bounds all hold:
-the values are real and consumed (bound 1); both locals already exist for real
-jobs in loop1 (bound 2 — nothing was INVENTED to be borrowed); both borrows are
-provably safe, the loop1 values being dead at the staging point and the staged
-values not needed after (bound 3, liveness stated in each annotation); both are
-FAKE-annotated with what/mechanism/lever-exhaustion (bound 4); both are last
-resort with receipts in the ledger (bound 5). No construct matches any entry in
-the forbidden-family catalog: not a register pin, not hardcoded-$N asm, not a
-regfix/asmfix rule, not a scheduling barrier, not volatile coercion in any
-spelling, not an alias rename, not a dead local/array/pad, not a dead-param
-assign, not an empty-body `if`, not an `if (1)` wrapper, not a dead goto label,
-not a DImode chain, not an opaque constant holder, not a redundant width cast,
-not a linker-script reorder.
+Construct 2 is a dead store to a LOCAL — the literal first-listed shape of the frozen `dead-store` family, not an analogy to it. Construct 1 is a constant-holder scalar local — the literal first-listed shape of the frozen `constant-holder / dead scalar local` family. Neither is a respelling of a family forbidden for this function. Checked against this function's BANNED list: the banned construct is the `do { ... } while (0);` half-loop1 wrap entered by an external `goto` to an interior label — absent here (there is no `do { } while (0)` anywhere in the diff; loop1's `do { } while (i < 0x12)` is a REAL loop with a real condition, which is the chassis, not a wrap). The three banned precedent lines (do-while-zero-exception.md:99, staged-value-reused-variable.md:46, docs/reference/sotn-construct-index.md:582) are not cited here. Neither construct is a register pin, hardcoded-`$N` asm, scheduling barrier, volatile coercion, alias rename, dead local ARRAY, frame coercion, width cast, or a chain-extender.
 
 ## T6 naming-announces-intent
-No name in the diff announces coercion intent. The three identifiers involved
-are `stptr`, `out2` and `loop1`, all pre-existing and all named for their real
-program roles (a walking structure pointer, the second output buffer, the first
-loop's head). There is no `pad`, `dummy`, `unused`, `spill`, `tmp`, `slack`,
-`new_var` or `_buf` anywhere — the permuter's own `new_var`/`new_var2` names
-were not carried into the diff. Every one of these identifiers has real reads.
+The local is named `two`. It is not in the announce-intent set (`pad`, `_pad`, `dummy`, `unused`, `spill`, `sp_*`, `_buf`, `tail`, `slack`, `_frame_pad`) and its use is a real store, not a discard, an unused declaration, or an address-of. `two` is a value-descriptive constant-carrier name of exactly the kind the constant-holder rule's own SOTN evidence ships (`s16 three = 3;`, `s16 one = 1;` — .claude/rules/named-local-fake-exception.md:38). The record field's semantics are not established in this repo, so an invented semantic name would be an unevidenced claim ([[names-require-evidence]]); a value-descriptive name is the honest choice.
 
 SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: do-while(0) wrap
-  SCOPE: "**`do { <any body> } while (0);` — including empty bodies — is a sanctioned pure-C match device for ANY codegen effect, including register allocation.**"
-  PRECEDENT: .claude/rules/do-while-zero-exception.md:99
-  FAMILY: staged value through a reused variable (variable reuse for codegen control)
-  SCOPE: "Sometimes the only way to make our compiler produce the exact same machine code as the original game is to write one line of C as two"
-  PRECEDENT: .claude/rules/staged-value-reused-variable.md:46
-  FAMILY: do-while(0) wrap — SOTN-master corroboration
-  SCOPE: "`do { ... } while (0)` wraps"
-  PRECEDENT: docs/reference/sotn-construct-index.md:582
+  FAMILY: dead store / self-assignment to a LOCAL (construct 2, `two = 3;`)
+  SCOPE: "Ordinary-C assignment statements inside a function body whose stored value is never read (GCC DCEs the store; its existence influences RA / scheduling / flow analysis upstream of DCE)"
+  PRECEDENT: docs/reference/sotn-construct-index.md:65
+
+  FAMILY: constant-holder / dead scalar local (construct 1, `s16 two;` + `two = 2;`)
+  SCOPE: "a local variable whose only purpose is codegen influence — holding a constant in a register across calls/statements, or existing as a declaration that biases register allocation — is a sanctioned last-resort matching lever under the prerequisites below."
+  PRECEDENT: .claude/rules/named-local-fake-exception.md:38
 
 ANNOTATION-CONFORMANCE:
-  /* FAKE: do-while(0) wrap of loop1's leading half (the `loop1:` label sits
-     inside it; the back-goto enters from outside), mechanism: the loop note
-     the wrap emits re-weights flow.c's ref counts feeding global.c allocno
-     priority, which seats the callee-saved set exactly as target (out2 s6,
-     pa4-carrier s7, a3 fp); measured effect: identical form without the wrap
-     scores 9, with it 0. lever-exhaustion: memory/grind/func_80041188/
-     hypotheses.md + evidence.md (s1-s4 lever ladder; s4 permuter campaign
-     tmp/grind/func_80041188/s4/perm2/output-50-1) */
-  /* FAKE: loop2's output pointer reuses the (dead-after-loop1) `stptr`
-     walker local instead of a fresh local, mechanism: GCC 2.7.2 global.c
-     gives the merged multi-ref pseudo priority 3409 so it allocates 3rd and
-     lands s3 == target (a fresh low-ref local loses the s3 ordering race).
-     Liveness: stptr's loop1 value is dead here - it is overwritten before any
-     later read. lever-exhaustion: memory/grind/func_80041188/evidence.md s3 */
-  /* FAKE: the loop2 out-pointer is staged through the (dead-after-loop1)
-     `out2` local, whose value is real and consumed by the very next call,
-     mechanism: GCC 2.7.2 flow.c counts the extra loop-weighted ref so out2's
-     global.c allocno priority clears the pa4-carrier's and out2 keeps s6 ==
-     target. Liveness: out2's loop1 value is dead here; the staged value is
-     not needed after. lever-exhaustion: memory/grind/func_80041188/
-     evidence.md s3-s4 (pa4-read re-init alone scores 15, +this ref 9,
-     +the loop1 wrap 0) */
-All three carry what + mechanism + lever-exhaustion. Each construct in the
-diff is annotated; there is no un-annotated FAKE-family construct.
+  /* FAKE: constant-holder carrying loop1's record-flag value; mechanism: gives loop.c's scan_loop a user pseudo it can count sets on. lever-exhaustion: memory/grind/func_80041188/hypotheses.md s36 (five literal/holder spellings A,C,E,F,G all measure 2) */
+  /* FAKE: dead store, never read; mechanism: loop.c count_loop_regs_set sees n_times_set == 2 so scan_loop builds no movable and move_movables cannot hoist the constant out of loop1 (flow.c propagate_block then deletes this store, zero emitted bytes). lever-exhaustion: memory/grind/func_80041188/hypotheses.md s32-s36 */
+Both carry what + named GCC pass + a lever-exhaustion pointer. Lever exhaustion for this function is 36 prior sessions of ledger: memory/grind/func_80041188/hypotheses.md (s36 closes four of the five movable dimensions by measurement; this construct is the fifth), memory/grind/func_80041188/evidence.md E-s36-4/5/6/7, and 132 banked rejected forms in memory/grind/func_80041188/rejected/.

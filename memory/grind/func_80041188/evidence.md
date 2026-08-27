@@ -5184,3 +5184,94 @@ either proof.
 - [s36] NET STATE: both enumerated chassis are now bounded above zero for INDEPENDENT, fully-named reasons -- the goto chassis at 1 (E-s35-5: pri(out2) > pri(pa4) unsatisfiable by a factor of two at target-hosted reference counts) and the real-loop chassis at 2 (E-s36-5/6/7: loop.c hoists a constant out of a 48-insn loop against a threshold of 61). Neither is a respelling of the other and a third chassis is excluded by neither proof.
 
 - [s36] The owner's 2026-08-27 continue-directive ('build the V15a + honest out2-lift candidate') is now answered from the other side: the honest out2 lift is unreachable on V15a/goto (s35 closed every delivery surface), but the real-loop chassis reaches target's seats WITHOUT any lift at all, because loop-depth weighting supplies the ranking that the lift was meant to buy -- and it does so with no construct, so no FAKE annotation is required anywhere in P1r.
+
+### E-s37-1 — **SANDBOX 0. func_80041188 byte-matches the honest, cheat-invisible build.**
+`sandbox func_80041188 --disable all` = **score 0, 132 build / 132 target insns,
+rules_dropped 16, cheat_asm_stripped 0**, with the form in `src/text1a_pre.c` and in
+`memory/grind/func_80041188/candidate.c`. The form is s36's construct-free P1r plus ONE
+lever: a second, dead, non-consecutive set of the constant-holder pseudo inside loop1.
+Two FAKE-annotated constructs, both in frozen sanctioned families (dead store to a local;
+constant-holder scalar local). The previous candidate (goto chassis, floor 1, the
+owner-sanctioned split increment) is superseded and banked under
+`rejected/prior-candidate-goto-chassis-floor1-superseded-by-s37-match.c`; the split
+increment is NOT part of this form.
+
+### E-s37-2 — the FIFTH dimension of loop.c's movable test, which s36 did not enumerate
+s36 closed four dimensions of the const-2 hoist (threshold `61 >= 48`; five respellings;
+gates (2)+(3); gate (1) `maybe_never`). It did not test the movable's other precondition:
+`scan_loop` builds a movable only when `count_loop_regs_set` reports `n_times_set == 1`
+for the destination pseudo (the "consecutive invariant sets" special case needs the sets
+adjacent, which they are not here). A SECOND set of the same `s16` local inside loop1,
+separated from the first by the store, makes `n_times_set == 2`, so **no movable is ever
+constructed** and `move_movables` has nothing to hoist. Measured in
+`tmp/grind/func_80041188/s37/K/red.i.loop`: `Loop from 39 to 173: 49 real insns.` and
+**zero `moved to` lines** (P1r's dump has exactly one, `Insn 152: regno 121 (life 1),
+move-insn savings 1  moved to 312`). Left inside loop1 the temp is block-local and
+call-free, so `local_alloc` seats it in `$v0` — target's register — and the residual
+`addiu $t0,$zero,2` / `sh $t0,0x6($s3)` becomes target's `addiu $v0,$zero,0x2` /
+`sh $v0,0x6($s3)` (`asm/funcs/func_80041188.s:65-66`).
+
+### E-s37-3 — the dead set is deleted by flow.c, so the lever costs zero bytes
+`red.i.loop` and `red.i.cse2` both carry all three insns:
+`(insn 139 (set (reg/v:HI 90) (const_int 2)))`,
+`(insn 155 (set (mem:HI (plus (reg:SI 139) (const_int 6))) (reg/v:HI 90)))`,
+`(insn 158 (set (reg/v:HI 90) (const_int 3)))`. Pseudo 90 has three occurrences in
+`red.i.cse2` and only TWO in `red.i.flow` (the live set plus the store, the latter
+carrying `REG_DEAD (reg/v:HI 90)`): `flow.c` `propagate_block` deleted insn 158.
+`build_insns` is 132 — unchanged from P1r — so the construct materialises nothing.
+
+### E-s37-4 — the spelling boundary is sharp, and three neighbours are measured dead
+On the P1r chassis, with the same `s16 two;` holder:
+- `two = two;` (self-assign) after the store -> **sandbox 2**. The RTL expander elides a
+  same-pseudo move, so a second SET never exists and `n_times_set` stays 1. Banked
+  `rejected/selfassign-elided-by-expander-no-second-set-2.c`.
+- `two = 2;` (same-value re-store) after the store -> **sandbox 2**. `cse1` runs BEFORE
+  `loop`, sees the pseudo already equal to 2, and deletes the redundant set, so loop.c
+  still sees `n_times_set == 1`. Banked
+  `rejected/samevalue-restore-deleted-by-cse1-before-loop-2.c`.
+- `two = (s16)(i + 1);` -> **sandbox 77 at 135 insns**. `flow.c` can delete a dead SET
+  but not the arithmetic feeding it once the addend is materialised; three real
+  instructions survive and the whole schedule shifts. Banked
+  `rejected/deadstore-computed-source-materialises-three-insns-77.c`.
+- `two = (s16) i;` -> **sandbox 0 at 132** (works; equivalent to the accepted form —
+  flow deletes the truncation along with the dead set).
+
+**The lever therefore requires a dead store whose source is a COMPILE-TIME CONSTANT
+DIFFERENT from the live one** — a same-value re-store dies in cse1, a self-assign dies in
+the expander, and a computed source materialises. That boundary is also the reason s36's
+form F (reusing `offset`, a local set twice in loop1) failed: `offset` is SImode, so the
+`sh` still needed a fresh single-set HImode temp of its own.
+
+### E-s37-5 — forensic confirmation that target's loop1 also never hoisted this constant
+Target spends `$t0` on a spill of `ents` (`sw $t0,0x18($sp)` at block 0,
+`lw $t0,0x18($sp)` at block 2), so target's reload also picks `$t0` as its first spill
+register. Had target's compilation hoisted the const-2 movable, reload would have
+rematerialised it into `$t0` exactly as P1r does. Target has `$v0`. Combined with
+E-s36-5 (the threshold test passes unconditionally for any note-marked loop1 this
+function can have), the only consistent reading is that **the original source presented
+the const-2 store's pseudo with more than one set inside loop1** — which is what this
+form reproduces.
+
+### E-s37-6 — two chassis configurations pre-screened DEAD by the closed-form law, not compiled
+Using E-s36-3 (`refs = 2*L1 + L2 + O` for loop1-marked; `pri = floor_log2(n)*n/live*10000`)
+the two untried note configurations were computed before compiling, per the s36 directive:
+- **(loop1 note-free, loop2 note-marked)**: `refs' = refs - L1 + L2` gives out2 3/41/731,
+  a4 9/188/1436, a3 5/99/1010, out3 5/47/2127, tbl 4/47/1702, i 11/97/3402,
+  stptr2 11/48/6875. out2 falls to LAST place, below a3 — it cannot take `$s6`. Predicted
+  fail; not compiled.
+- **(both note-marked)**: out2 5/41/2439, a4 11/188/1755, a3 6/99/1212, out3 5/47/2127,
+  tbl 7/47/2978, i 14/97/4329, stptr2 11/48/6875. The `out2 > a4 > a3` order survives but
+  `out3` overtakes `a4` and `stptr2` overtakes `i`, permuting the assignment order — and
+  independently loop2's const-1 store would then be hoisted too, adding its own two diffs.
+  Predicted fail; not compiled.
+
+`(loop1 marked, loop2 free)` — P1r's configuration, and the accepted form's — remains the
+unique good one.
+
+- [s37] E-s37-1: SANDBOX 0 at 132/132 (rules_dropped 16, cheat_asm_stripped 0). The form is s36's P1r plus one lever: a dead, non-consecutive second set of loop1's constant-holder. Two FAKE constructs, both frozen sanctioned families (dead-store-to-local; constant-holder scalar). The old floor-1 goto-chassis candidate and its owner-sanctioned split increment are superseded and banked in rejected/.
+- [s37] E-s37-2: the fifth (unenumerated) dimension of loop.c's movable test is n_times_set == 1 from count_loop_regs_set. A second non-consecutive set of the same s16 local inside loop1 means scan_loop never builds the movable, so move_movables cannot hoist the const-2 temp. red.i.loop for the accepted form has ZERO "moved to" lines against P1r's one. Left in loop1 the temp is block-local and call-free, so local_alloc seats it in $v0 -- target's register.
+- [s37] E-s37-3: the dead set costs zero bytes. Pseudo 90 has 3 occurrences in red.i.cse2 and 2 in red.i.flow (live set + store with REG_DEAD); flow.c propagate_block deleted insn 158. build_insns unchanged at 132.
+- [s37] E-s37-4: the spelling boundary is sharp -- "two = two;" self-assign = 2 (expander elides the move, no second set); "two = 2;" same-value re-store = 2 (cse1 runs before loop and deletes it); "two = (s16)(i+1);" = 77 at 135 insns (computed source materialises; flow can delete the SET but not the arithmetic); "two = (s16) i;" = 0 at 132 (works). The lever needs a dead store whose source is a compile-time constant DIFFERENT from the live one. This also explains s36 form F: offset is SImode, so the sh still needed its own fresh single-set HImode temp.
+- [s37] E-s37-5: target spends $t0 on the ents spill (sw/lw 0x18($sp)), so target's reload also picks $t0 first; a hoisted const-2 would have been rematerialised into $t0 there too. Target has $v0, so target's compilation never built the movable either -- consistent with the original source presenting more than one set of that pseudo inside loop1.
+- [s37] E-s37-6: the two untried note configurations were PRE-SCREENED dead by the E-s36-3 closed-form law and never compiled. (loop1 free, loop2 marked): out2 drops to 3 refs / pri 731, last place, below a3 -- cannot take $s6. (both marked): out3 overtakes a4 and stptr2 overtakes i, permuting the order, and loop2's const-1 would hoist as well. (loop1 marked, loop2 free) is the unique good configuration.
+- [s37] INTEGRATION: the honest sandbox is 0 with all 16 regfix/asmfix rules DISABLED and zero cheat-asm. Retiring those 16 rules plus the prologue_config entry is an operator step on surfaces this session may not touch.
