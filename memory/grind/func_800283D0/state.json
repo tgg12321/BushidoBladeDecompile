@@ -1,7 +1,7 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 5,
+ "session_count": 6,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -33,23 +33,29 @@
    "floor": 28,
    "modality": "synthesis",
    "headline": "Floor flat at 28/215; the callee-saved allocation model is ground-truthed with BB2_ALLOC_DEBUG and its flip window MEASURED (6-10 insns of extra liveness on pseudo 143), the ref-count axis is FORECLOS"
+  },
+  {
+   "session": 6,
+   "floor": 28,
+   "modality": "synthesis",
+   "headline": "Floor flat at 28/215; the residual is FIVE clusters not three, the 4-diff 'reorg wobble' is re-attributed to a real CFG/source fact (target's shared labelled constant-1 exit block), and a second, wide"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The s2/s3 callee-saved rotation (11 diffs) is foreclosed under any spelling of the current whole-function RTL, so the residual is evidence that our RTL differs from the original's somewhere we have never questioned - a forensics/rederive target, not another allocation probe.",
-   "mechanism": "allocno_compare is deterministic; target's own asm pins n_refs for all four callee-saved pseudos to ours, the preference axis is empty, and the flip needs 6-10 insns of extra live length inside pseudo 143's range - a region target proves contains no instructions. With identical inputs GCC must produce our map, so at least one input (flow-time insn count inside 143's range, or block/liveness structure) must differ in the original.",
-   "next_probe": "Use s5/dial.sh in reverse as a WINDOW MAP: insert the 2-insn filler at each candidate site across the function and record which pseudos' live lengths move, looking for a site whose signature is '143 only'. If none exists (expected), switch modality to forensics/rederive over the regions never questioned - the rejection chain and the block_15 shift/mask computation - and re-derive them from the target asm rather than from our current C."
+   "hypothesis": "Cluster B (4 diffs) is closable by giving the three early exits a constant-1 return, provided jump2 can be made to keep the MID-function copy of the shared `li v0,1 / j` block instead of relocating it to the function end.",
+   "mechanism": "jump.c find_cross_jump decides which of two identical tails survives and redirects the other; when the surviving copy is the late one the rejection chain's last `beq` inverts to a `bne` and one instruction is added. Downstream, reorg.c fill_simple_delay_slots can only leave `li v0,1` in the `j`'s slot when the block carries a label with real predecessors.",
+   "next_probe": "Dump .jump2 for tmp/grind/func_800283D0/s6/v5.c (pwsh tools/grinder/dump.ps1 func_800283D0 with that body in place) and read which block find_cross_jump keeps and which is redirected, then look for a source arrangement in which the chain-fallthrough copy is the survivor. This is the same jump_chain-ordering question as diamond 2, so one instrumented read may settle both clusters at once."
   },
   {
-   "hypothesis": "Diamond 2's remaining 8 diffs hinge on jump_chain ordering (whether block_48's label UID is below max_uid and which partners are offered for e1), not on any source spelling.",
-   "mechanism": "jump.c:2012-2021 - the chain-partner loop is guarded by `INSN_UID (JUMP_LABEL (insn)) < max_uid` and walks jump_chain[] stopping at the first WIN; a jump or label created during jump optimization is invisible to the chain.",
-   "next_probe": "Requires printing INSN_UID(JUMP_LABEL(insn)) and max_uid inside tools/gcc-2.7.2/jump.c, which a grind session may not edit. Route it as an operator instrumentation request (add a BB2_XJUMP_DEBUG line at jump.c:2012 printing the guard operands and the partner list); do NOT spend another session on selection-copy spellings, all four are dead."
+   "hypothesis": "The s2/s3 rotation (12 diffs) flips if arg1's home pseudo 73 has live_length in [38,65] instead of 92 - the second solution branch of the allocno window, never tried.",
+   "mechanism": "global.c:635-655 allocno_compare with flow.c-computed reg_live_length; target's callee-saved map is exactly the sorted order 72,77,73,143,75,90,79, satisfied whenever 2142 < 140000/L73 < 3698. Unlike the L143 branch this requires liveness to be REMOVED, so the 215==215 instruction budget does not foreclose it.",
+   "next_probe": "Reverse the s5 liveness dial (tmp/grind/func_800283D0/s5/dial.sh): measure how many insns each region of arg1's live range contributes to L73 by probing at each of the six func_80032854 call sites and reading the ALLOCDBG livelen for pseudo 73, then look for a region where arg1 could honestly be dead in the original's shape (for example if the original re-derived the third argument rather than holding the parameter live across the whole body)."
   },
   {
-   "hypothesis": "The tail a0/a1 cluster (7 diffs) is the only residual whose model has never been dialled, and its hand-derived window may be as wrong as the s2/s3 one was.",
-   "mechanism": "local-alloc.c qty_compare_1 pri = floor_log2(n_refs)*n_refs*size/(death-birth)*10000 with ties to the ascending qty number; pri(qty0 pointer)=4000 vs pri(qty3 Judge[] element)=5000, and qty0 < qty3 so a TIE suffices.",
-   "next_probe": "Build the local-alloc analogue of s5/dial.sh using BB2_QTY_DEBUG=1 (harness tmp/grind/func_800283D0/s3/qty.sh): dial 2-insn filler between the `lh Judge($at)` and the `mult`, and separately inside qty0's span, and record the measured flip window for both directions before proposing any C. Note qty0 is a COMBINED quantity (sll producer + temp_a0 + var_a1), so the co-moving denominators must be read from the trace, not assumed."
+   "hypothesis": "The tail a0/a1 quantity cluster (7 diffs, cluster E) is a local-alloc quantity-order decision whose window has never been measured - the only cluster on the function with an entirely unvalidated model.",
+   "mechanism": "local-alloc.c qty_compare_1: pri = floor_log2(n_refs)*n_refs*size/(death-birth)*10000, ties broken by ascending quantity number. Hand-derived at s3 as pri(qty0 pointer)=4000 vs pri(qty3 Judge[] element)=5000, so a tie suffices; requirement is span(qty0) <= 24 (from 30) or span(qty3) >= 6 (from 4).",
+   "next_probe": "Build the local-alloc analogue of s5/dial.sh using BB2_QTY_DEBUG=1 (harness at tmp/grind/func_800283D0/s3/qty.sh), dial 2-insn filler between the `lh Judge($at)` and the `mult` and separately inside qty0's span, and record the measured flip window in both directions BEFORE proposing any C. qty0 is a COMBINED quantity (sll producer + temp_a0 + var_a1), so the co-moving denominators must be read from the trace, not assumed - the s5 experience is that a hand-derived window can be wrong by a factor of two."
   }
  ],
  "judge_constraints": [],

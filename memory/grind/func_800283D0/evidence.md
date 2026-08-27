@@ -795,3 +795,86 @@ request rather than re-probing spellings.
 - [s5] Target has FOUR selection sites, not two: the ==0 arm at .L80028510 (stores and falls through into the call pair), the `<` arm at .L80028608 (jumps INTO the ==0 arm's 0xB label .L80028518 and its call block .L80028520), and .L800285CC + .L800285F8 which are BYTE-IDENTICAL four-insn blocks both jumping to .L800286F8 and left unmerged by jump2 - confirming s2's 'the pairing was never attempted' against emitted target code rather than by inference.
 
 - [s5] Every source-structural route to defeating the jump2 selection pairing is now spent: distinct terminator (s2 H7b), two goto labels (s3 M), ternary (s3 L), no-shared-label (s5 H18). The only remaining route is the jump_chain / INSN_UID(JUMP_LABEL) < max_uid ordering, which needs a print inside tools/gcc-2.7.2/jump.c - outside a grind session's allowed surface.
+
+## Session 6 (2026-08-26, synthesis) — merged attack
+
+- [s6] CHASSIS re-verified at dispatch: the s2/s5 candidate body applied to src/code6cac_b.c
+  measures `sandbox --disable all` = **28**, build_insns 215 == target_insns 215. The
+  ALLOCDBG table is byte-identical to s5's (72: 19 refs/155/pri 4903 -> $s0; 77: 9/73/3698 ->
+  $s1; 143: 3/14/2142 -> $s2; 73: 7/92/1521 -> $s3; 75: 6/88/1363 -> $s4; 90: 3/32/937 -> $s5;
+  79: 6/322/372 -> $s6). Trace banked at tmp/grind/func_800283D0/s6/alloc_trace.txt.
+
+- [s6] FULL CLUSTER MAP re-derived from a fresh pairdiff (tmp/grind/func_800283D0/s6/pd_base.txt,
+  32 differing instructions). The ledger has carried a three-cluster picture since s3; the
+  correct decomposition at the current chassis is FIVE clusters:
+  | cluster | diffs | emitted slots | pass |
+  |---|---|---|---|
+  | A  s2/s3 callee-saved rotation | 12 | 3,4,10,85,90,96,97,102,107,111,148,153 | global.c allocno_compare |
+  | B  return-1 exit-block sharing | 4 | 45,46,47 (insert+delete) | jump2 block placement -> reorg.c fill |
+  | C  v0/v1 rename, D_800A38A8 block | 4 | 126,132,133,135 | downstream of D |
+  | D  diamond-2 selection order | 4 | 138,139,140,141 | jump2 find_cross_jump |
+  | E  tail a0/a1 quantity order | 7 | 159,161,168,169,171,178,181 | local-alloc.c qty_compare_1 |
+  Cluster B has been logged since s1 as "4 near-neutral j/nop reorg-fill diffs, possibly
+  downstream of diamond 2" and never probed. It is neither near-neutral nor downstream of
+  diamond 2 (see below), and it is now the cheapest live axis on the function.
+
+- [s6] CLUSTER B ATTRIBUTED (H21). Target's `.L80028488` (asm/funcs/func_800283D0.s:48-50) is a
+  two-instruction block `j .L80028700` / `addiu $v0,$zero,0x1` carrying a LABEL with three
+  branch predecessors (lines 17, 24, 26 — the `temp_v1 == 4`, `temp_v0 == 4` and
+  `temp_v0 == 0x14` early exits) plus fallthrough from the last rejection-chain `beq`. Because
+  the block is labelled and multiply-reached, reorg cannot sink its `addiu $v0,1` into the
+  preceding `beq`'s delay slot, so target emits `beq / nop` then `j / li v0,1`. OUR build emits
+  the identical two instructions at the identical position but UNLABELLED (only the chain
+  fallthrough reaches them), so reorg's eager fill legally sinks `li v0,1` into the beq slot and
+  leaves the `j` a `nop`. Target ALSO keeps the `move v0,s6` convergence block
+  (`.L800286FC`, s.213-225) for the block_48/block_49 tails — exactly as we do. The divergence
+  is therefore a SOURCE fact: the original's three early exits return the literal 1, ours
+  return `ret`, so ours cross-jump into the `move v0,s6` block instead of forming a second,
+  constant-1 exit block.
+
+- [s6] CLUSTER B, both constant-1 spellings measured and KILLED (H22). v4 (`block_13:
+  return ret;` -> `return 1;`) and v5 (one shared `ret_one:` label sited at the chain
+  fallthrough, reached by `goto ret_one;` from block_13 and from the temp_v0 exits) BOTH
+  measure 34 / **216** insns. In each case jump2 cross-jumps the two return-1 tails and keeps
+  the LATE copy: the chain's last `beq v1,v0,<block_15>` inverts to `bne v1,v0,<end>` with
+  `li v0,1` in its delay slot and the shared exit block relocates to the function end, costing
+  one instruction. The content of the hypothesis is right (target does want a constant-1 block);
+  the open question is PLACEMENT, and it is the same jump_chain-ordering question as diamond 2.
+  Banked: rejected/early-exit-return-const1-relocates-shared-block.c and
+  rejected/shared-ret-one-label-relocates-shared-block.c.
+
+- [s6] H19 KILLED — the last escape hatch under s5's H17 is closed with a mechanism.
+  s5 refuted "some ordinary-C spelling can supply the 6-10 insns of liveness the s2/s3 flip
+  needs" by counting EMITTED instructions between the equal arm's second call and the `== 5`
+  load. That comparison is formally invalid: `reg_live_length` is computed by flow.c BEFORE
+  reload, and `final` silently drops any set whose SRC == DEST after allocation, so insns could
+  in principle exist at flow time and be byte-invisible. Measured: two byte-neutral
+  named-intermediate spellings inside pseudo 143's live range (`s16 id1/id2` carrying the two
+  calls' first argument; `u8 *p1 = arg1` carrying the third) leave EVERY ALLOCDBG row
+  byte-identical — cse/combine delete the copies before life_analysis ever runs. Under GCC
+  2.7.2 there is no coalescing pass that could preserve them that far, so in OUR RTL any insn
+  that raises live_length is also an emitted insn, and adding 6 of them breaks 215 == 215.
+  s5's H17 verdict stands, now on a mechanism rather than an instruction count.
+
+- [s6] NEW: the s2/s3 window has a SECOND solution branch (H20) that five sessions have missed.
+  Every prior derivation (s2 H9, s5 H16) solved `pri(143) < pri(73)` for L143, giving the narrow
+  and now-foreclosed "raise L143 from 14 to 20-24" route. But target's map only requires the
+  SORTED ORDER 72, 77, 73, 143, 75, 90, 79, and that order also holds if pri(73) rises ABOVE
+  pri(143) while staying below pri(77): 2142 < 140000/L73 < 3698, i.e. **L73 in [38, 65]**
+  (currently 92). That is a 28-value window instead of a 3-value one, and — decisively — it is
+  satisfied by REMOVING arg1 liveness rather than by adding instructions, so it is not blocked
+  by the 215 == 215 budget that killed the L143 route. Untried; it is frontier item 2 for s7.
+
+- [s6] Chassis re-verified at dispatch: the s2/s5 candidate body applied to src/code6cac_b.c measures sandbox --disable all = 28 with build_insns 215 == target_insns 215; ALLOCDBG table byte-identical to s5's.
+
+- [s6] The residual is FIVE clusters, not the three the ledger has carried since s3. Fresh masked pairdiff = 32 differing instructions: A s2/s3 callee-saved rotation 12 diffs (slots 3,4,10,85,90,96,97,102,107,111,148,153, global.c allocno_compare); B return-1 exit-block sharing 4 diffs (slots 45-47, jump2 block placement then reorg fill); C v0/v1 rename in the D_800A38A8 block 4 diffs (126,132,133,135); D diamond-2 selection order 4 diffs (138-141, jump2 find_cross_jump); E tail a0/a1 quantity order 7 diffs (159,161,168,169,171,178,181, local-alloc qty_compare_1).
+
+- [s6] Cluster B is a SOURCE fact, not a compiler wobble: the original's three early exits (temp_v1 == 4, temp_v0 == 4, temp_v0 == 0x14) return the literal 1 into a shared labelled block at the rejection chain's fallthrough; ours return `ret` and cross-jump into the `move v0,s6` block, leaving the constant-1 tail unlabelled and letting reorg sink its `li v0,1` into the preceding beq's delay slot.
+
+- [s6] Both constant-1 respellings of the early exits measure 34/216 - jump2 keeps the late copy of the merged block and inverts the chain's last beq. Banked at memory/grind/func_800283D0/rejected/early-exit-return-const1-relocates-shared-block.c and rejected/shared-ret-one-label-relocates-shared-block.c.
+
+- [s6] The named-intermediate route to extra flow-time liveness is closed by measurement: cse/combine delete the copies before life_analysis, so every ALLOCDBG row is unmoved. In our RTL any insn that raises live_length is also an emitted insn, and the 215==215 budget therefore genuinely forecloses the 'raise L143 to 20-24' branch of the s2/s3 window (s5 H17 stands, now with a mechanism).
+
+- [s6] NEW window for the s2/s3 rotation: target's map is just the sorted allocno order 72,77,73,143,75,90,79, which also holds when pri(73) rises above pri(143)=2142 while staying below pri(77)=3698 - i.e. L73 in [38,65] against its current 92. Unlike the L143 branch this needs liveness removed, not instructions added, so the insn budget does not foreclose it.
+
+- [s6] Body left in src/code6cac_b.c is the unchanged s2/s5 candidate; the only delta against HEAD is the single INCLUDE_ASM line for func_800283D0.

@@ -357,3 +357,63 @@
 - probe: Both copies respelled `var_v0_2 = 0x19; if (var_s1 == 0) var_v0_2 = 0xB; *(s16 *)(arg0 + 0x286) = var_v0_2; return ret;` with no label anywhere (tmp/grind/func_800283D0/s5/v_nolabel.c), measured with sandbox --disable all.
 - result: 30 / 211 insns. jump2 cross-jumps the store+return TAILS first, rebuilds the shared block, and merges the two selections on the rescan - the same failure mode as s2's H7b. Banked at memory/grind/func_800283D0/rejected/diamond2-no-shared-label-remerges.c.
 - verdict: KILLED
+
+## Session 6 (2026-08-26, synthesis) — measured
+
+| id | hypothesis | mechanism | probe | result | verdict |
+|---|---|---|---|---|---|
+| H19 | The s5 H17 refutation is invalid because `reg_live_length` is a FLOW-TIME count while H17 argued from EMITTED asm; named-intermediate copies inside pseudo 143's range could raise live_length and then vanish at `final` as no-op moves | flow.c life_analysis increments REG_LIVE_LENGTH per insn where the pseudo is live; final.c never emits a set whose SRC == DEST after allocation, so a coalesced copy is byte-invisible | two byte-neutral named-intermediate spellings inside the equal arm (`s16 id1/id2` for the two call first-args; `u8 *p1 = arg1`), ALLOCDBG table read for pseudos 72/77/143/73/75/90/79 | Every row byte-identical to base (143: 3 refs/14/2142; 73: 7/92/1521; 75: 6/88/1363). cse/combine delete the copies BEFORE life_analysis runs, so they never reach the counter | KILLED — and this CLOSES the escape hatch: any insn that raises live_length in our RTL is also an emitted insn, which breaks 215==215. s5's H17 now rests on a mechanism, not an asm-line count |
+| H20 | The s2/s3 flip has a SECOND solution branch nobody derived: lower pri(73) above pri(143) instead of lowering pri(143) below pri(73) | allocno_compare pri = floor_log2(n_refs)*n_refs*10000*size/live_length; target's map needs the sorted order 72,77,73,143,75,90,79. That holds iff pri(77)=3698 > pri(73) > pri(143)=2142, i.e. 140000/L73 in (2142,3698) | closed-form re-derivation against the measured ALLOCDBG table (s6/alloc_trace.txt) | **L73 in [38,65] flips the whole callee-saved map to target's** (currently 92). A 28-value window vs H16's 3-value one, and it needs liveness REMOVED, not 6-10 instructions added — so it is not blocked by the 215==215 constraint that killed H17 | CONFIRMED (model); untried |
+| H21 | The 4-diff "reorg j/nop wobble" at slots 45-48, dismissed since s1 as near-neutral, is really a CFG difference: target's return-1 exit block is SHARED and LABELLED, ours is unlabelled | target `.L80028488` is a 2-insn block (`j .L80028700` / `addiu $v0,1`) with THREE branch predecessors (asm/funcs/func_800283D0.s:17,24,26) plus fallthrough; a label forbids reorg from sinking the `li` into the preceding beq's delay slot. Ours emits the same two insns unlabelled, so reorg's eager fill takes `li v0,1` into the beq slot and leaves the `j` a nop | read of asm/funcs/func_800283D0.s:12-53 + 213-226 against the sandbox objdump of the base body | CONFIRMED. Target keeps BOTH exit blocks: `.L80028488` (constant 1, 3 early exits + chain fallthrough) and `.L800286FC` (`addu $v0,$s6,$zero`, the block_48/block_49 tails). Ours cross-jumps the three early exits into the `move v0,s6` block instead, because our C returns `ret` there where the original returned the literal 1 | CONFIRMED |
+| H22 | Spelling the three early exits as constant-1 returns reproduces target's shared `.L80028488` block | jump2 cross-jump merges identical return-1 tails into one block | v4: `block_13: return ret;` -> `return 1;`. v5: single shared `ret_one:` label at the chain fallthrough, `goto ret_one;` from block_13 and from the temp_v0 exits | BOTH measure 34 / **216** insns. The content hypothesis is right but jump2 keeps the LATE copy: the chain's last `beq v1,v0` inverts to `bne v1,v0,<end>` with `li v0,1` in its slot and the shared block relocates to the function end. Banked rejected/early-exit-return-const1-relocates-shared-block.c and rejected/shared-ret-one-label-relocates-shared-block.c | KILLED (these two spellings); the CLUSTER is now a placement question, not an attribution one |
+
+## Frontier (for session 7)
+
+1. **Cluster B (4 diffs) — newly attributed and newly actionable.** The residual is no longer
+   "a reorg fill wobble"; it is that our three early exits (`temp_v1 == 4`, `temp_v0 == 4`,
+   `temp_v0 == 0x14`) return `ret` and therefore cross-jump into the shared `move v0,s6`
+   block, while the original returned the literal 1 into a shared `li v0,1 / j` block placed
+   at the rejection chain's fallthrough. Both constant-1 spellings tried this session relocate
+   that block to the function end (+1 insn, 216). Next probe: dump `.jump2` for v5
+   (`tmp/grind/func_800283D0/s6/v5.c`) and read WHICH of the two candidate blocks
+   find_cross_jump keeps and why the chain's `beq` inverts — the mechanism is the same
+   `jump_chain` ordering question as diamond 2, so one instrumented read may settle both.
+   Mechanism: jump.c find_cross_jump / block placement, then reorg.c fill_simple_delay_slots.
+2. **s2/s3 (12 diffs) — the L73 branch of the window (H20), never tried.** L73 in [38,65]
+   flips the whole map; L73 is currently 92 and needs liveness REMOVED, so unlike H17's route
+   it is not blocked by the 215==215 insn budget. Next probe: reverse the s5 dial — measure
+   which regions of arg1's live range contribute how many insns to L73 (insert/delete probes
+   at each of the six `func_80032854` call sites and read ALLOCDBG livelen for 73), and look
+   for a region where arg1 could honestly be dead. Mechanism: global.c:635-655 allocno_compare
+   with flow.c-computed reg_live_length.
+3. **Tail a0/a1 qty cluster (7 diffs, cluster E) — still never dialled** (carried unspent from
+   the s5 frontier). Requirement: pri(qty0 pointer) >= pri(qty3 Judge[] element) = 5000, i.e.
+   span(qty0) <= 24 (from 30) or span(qty3) >= 6 (from 4). Build the local-alloc analogue of
+   s5/dial.sh with `BB2_QTY_DEBUG=1` (harness tmp/grind/func_800283D0/s3/qty.sh) and dial
+   filler between the `lh Judge($at)` and the `mult` BEFORE proposing any C — qty0 is a
+   COMBINED quantity (sll producer + temp_a0 + var_a1) so the co-moving denominators must be
+   read from the trace, not assumed. Mechanism: local-alloc.c qty_compare_1.
+
+## [s6] s5's H17 refutation is unsound because reg_live_length is a FLOW-TIME count while H17 argued from emitted asm; named-intermediate copies inside pseudo 143's live range could raise live_length and then vanish at final as no-op moves, buying the s2/s3 flip for free.
+- mechanism: flow.c life_analysis increments REG_LIVE_LENGTH once per insn in every block where the pseudo is live; final.c never emits a SET whose SRC == DEST after hard-register assignment, so a copy that coalesces is byte-invisible in the object.
+- probe: Two byte-neutral named-intermediate spellings applied inside the equal arm on the s5 base body and read back through the instrumented cc1 with BB2_ALLOC_DEBUG=1: (a) s16 id1/id2 carrying the two func_80032854 calls' first argument, (b) u8 *p1 = arg1 carrying the third. ALLOCDBG rows for pseudos 72/77/143/73/75/90/79 compared against base.
+- result: Every row byte-identical to base (143: 3 refs / livelen 14 / pri 2142; 73: 7/92/1521; 75: 6/88/1363; 72: 19/155/4903; 77: 9/73/3698; 90: 3/32/937; 79: 6/322/372). cse/combine delete the copies before life_analysis runs, and GCC 2.7.2 has no later coalescing pass that could preserve them, so they never reach the counter.
+- verdict: KILLED
+
+## [s6] The s2/s3 callee-saved flip has a second solution branch nobody has derived: raise pri(pseudo 73, arg1's home) above pri(143) instead of lowering pri(143) below pri(73).
+- mechanism: global.c:635-655 allocno_compare, pri = floor_log2(n_refs)*n_refs*10000*size/live_length with ties to the lower allocno; MIPS defines no REG_ALLOC_ORDER so find_reg walks hard registers ascending and the sorted allocno order alone determines the callee-saved map. Target's map is the sorted order 72, 77, 73, 143, 75, 90, 79, which holds iff pri(77)=3698 > pri(73) > pri(143)=2142.
+- probe: Closed-form re-derivation against the ALLOCDBG table measured this session (tmp/grind/func_800283D0/s6/alloc_trace.txt), solving 2142 < 140000/L73 < 3698.
+- result: L73 in [38,65] flips the entire callee-saved map to target's (73->$s2, 143->$s3, 75->$s4). L73 is currently 92. This is a 28-value window against H16's 3-value one, and it is satisfied by REMOVING arg1 liveness rather than by adding 6-10 instructions, so it is not blocked by the 215==215 instruction budget that foreclosed the L143 route.
+- verdict: CONFIRMED
+
+## [s6] The 4-diff 'near-neutral reorg j/nop wobble' at emitted slots 45-48, logged since s1 and never probed, is really a CFG difference: target's return-1 exit block is shared and labelled where ours is unlabelled.
+- mechanism: reorg.c fill_simple/fill_eager_delay_slots may sink a fallthrough insn into a preceding conditional branch's delay slot only when that insn is not the body of a multiply-reached labelled block. Target's .L80028488 (asm/funcs/func_800283D0.s:48-50) is `j .L80028700` / `addiu $v0,$zero,0x1` with three branch predecessors (s.17, 24, 26 - the temp_v1==4, temp_v0==4 and temp_v0==0x14 early exits) plus fallthrough from the last rejection-chain beq, so the label forbids the sink and target emits `beq / nop` then `j / li v0,1`.
+- probe: Read asm/funcs/func_800283D0.s:12-53 and 213-226 against an objdump of the cheat-invisible sandbox object for the base body, plus a fresh masked pairdiff (tmp/grind/func_800283D0/s6/pd_base.txt).
+- result: Confirmed. We emit the same two instructions at the same position but unlabelled, so reorg sinks `li v0,1` into the beq slot and leaves the `j` a nop. Target keeps BOTH exit blocks - .L80028488 (constant 1) and .L800286FC (addu $v0,$s6,$zero, for the block_48/block_49 tails) - whereas our three early exits return `ret` and therefore cross-jump into the `move v0,s6` block, so no constant-1 block ever forms. The cluster is neither near-neutral nor downstream of diamond 2.
+- verdict: CONFIRMED
+
+## [s6] Spelling the three early exits as constant-1 returns reproduces target's shared .L80028488 block and closes cluster B.
+- mechanism: jump2 find_cross_jump merges identical return-1 tails into one shared block; with the tails constant-1 rather than `return ret` they can no longer merge into the `move v0,s6` convergence block.
+- probe: v4: `block_13: return ret;` respelled `return 1;` (tmp/grind/func_800283D0/s6/v4.c). v5: a single shared `ret_one:` label sited at the rejection chain's fallthrough, reached by `goto ret_one;` from block_13 and from the temp_v0 exits (s6/v5.c). Both measured with sandbox --disable all.
+- result: Both measure 34 / 216 insns. jump2 cross-jumps the two return-1 tails and keeps the LATE copy: the chain's last `beq v1,v0,<block_15>` inverts to `bne v1,v0,<end>` with `li v0,1` in its delay slot, and the shared exit block relocates to the function end, costing one instruction. The content of the hypothesis is correct - target does want a constant-1 exit block - but PLACEMENT is the residual, and it is the same jump_chain-ordering question as diamond 2.
+- verdict: KILLED

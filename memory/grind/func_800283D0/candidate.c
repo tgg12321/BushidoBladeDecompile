@@ -59,6 +59,26 @@
  * one.  Diamond 2's last structural route (delete the shared block_48 label,
  * store+return in each arm) measured 30/211 and is banked as
  * rejected/diamond2-no-shared-label-remerges.c.
+ *
+ * s6 (2026-08-26, synthesis): body UNCHANGED, floor re-measured flat at 28 /
+ * 215 insns and the ALLOCDBG table re-verified byte-identical to s5's.  Three
+ * products.  (1) The residual is FIVE clusters, not three: A s2/s3 rotation
+ * (12), B return-1 exit-block sharing (4, slots 45-47), C v0/v1 rename (4),
+ * D diamond-2 selection order (4), E tail a0/a1 quantity order (7).  (2) Cluster
+ * B, dismissed since s1 as a near-neutral reorg wobble, is really a CFG fact:
+ * target's `.L80028488` is a LABELLED shared `j / li v0,1` block with three
+ * early-exit predecessors, which is why reorg cannot sink the `li` into the
+ * preceding beq's delay slot; ours is unlabelled because our three early exits
+ * return `ret` and cross-jump into the `move v0,s6` block.  Both constant-1
+ * respellings measure 34/216 (jump2 keeps the late copy and inverts the chain's
+ * last beq) - banked as rejected/early-exit-return-const1-relocates-shared-block.c
+ * and rejected/shared-ret-one-label-relocates-shared-block.c.  (3) The s2/s3
+ * window has a second solution branch never derived before: L73 (arg1's home) in
+ * [38,65] flips the whole callee-saved map, needs liveness REMOVED rather than
+ * 6-10 instructions added, and so is not blocked by the 215==215 budget that
+ * foreclosed the L143 route.  The named-intermediate escape hatch under that
+ * route is now closed with a measurement (cse/combine delete the copies before
+ * life_analysis; every ALLOCDBG row is unmoved).
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
     s32 temp_a1;
