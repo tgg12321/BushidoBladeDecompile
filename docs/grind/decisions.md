@@ -14561,3 +14561,26 @@ Constructs verified individually. (1) The three staged-value reuses (a2 x2, sub_
 ## 2026-08-26 19:07 — func_80023648 — final call — **PASS**
 
 Four FAKE-annotated constructs, all inside sanctioned families with prerequisites verified: three staged values through the pre-existing `a2`/`sub_result` locals (staged-value-reused-variable, SANCTIONED 2026-07-03 - each staged value real and read on the next statement, each borrowed local provably dead at the borrow per self_vet T5(iii), six sessions of lever exhaustion in hypotheses.md/floor_history plus 30+ banked variants in rejected/, precedent sotn-construct-index.md:51 = src/boss/mar/cutscene.c:172 'fake reuse of i?', untagged PSX), and the index-first `a1[row]` spelling under the 2026-07-06 construct-honesty ALLOWED list (.claude/rules/do-while-zero-exception.md:46, semantically identical by C's E1[E2] == *(E1+E2), FAKE-marked as purely-for-matching). Decisive fact: the s5 judge_constraint required exactly one thing - that fourth inline annotation, changing nothing else; I extracted both function bodies and confirmed rejected/judge-fail-0826-1856.c and the shipped src/code6cac.c body are token-identical with comments stripped. Independently verified: sandbox --disable all = 0 (159/159, rules_dropped 0), verify-oracle build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa, zero regfix/asmfix rules for the function (regfix.txt:329 is a stale comment only), zero inline asm in the body. Evidence lives in memory/grind/func_80023648/{self_vet.md,evidence.md,hypotheses.md,rejected/}.
+
+## 2026-08-27 — func_80041188 — OWNER RULING — ESCALATION SPENT — RETURN TO ACTIVE (keep grinding; rules-to-zero to 0 carriers)
+
+**Owner ruling (conversation, 2026-08-27), recorded per ruling-record-lands-before-code:**
+the 2026-08-25 auto-filed exhaustion-backstop escalation is SPENT. func_80041188 —
+the LAST regfix carrier (16 rules, regfix.txt; asmfix.txt already empty since
+2026-08-25) — returns to ACTIVE. The rules-to-zero campaign sort (queue.py
+`_sort_key`, campaign membership derived live from the rule files) places it at
+the queue top; the grinder takes it as its next target after the in-flight
+func_800283D0 completes.
+
+**The decidable question answered:** the owner directs continued honest grinding
+to COMPLETED-C, with the explicit goal of ZERO regfix + ZERO asmfix rules
+remaining. The canonical-asm LOW-tier override remains DECLINED (unchanged from
+the 2026-08-24 ruling — evidence bar stands; `scan_hand_coded` = LOW, ordinary
+GCC RA/scheduler artifact, no hand-coded signature). The two AND-gates remain
+the unchanged standard.
+
+**Standing context for the grind:** honest floor 1 after 25 sessions / 9
+modalities (ledger: memory/grind/func_80041188/). The residual is the out2
+4th-reference insn (enumeration-complete per the 2026-08-24 packet). Candidate's
+stptr chain-extender still needs FAKE annotation or replacement on land (carried
+forward from the 2026-08-24 unpark reason).
