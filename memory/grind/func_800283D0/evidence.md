@@ -1297,3 +1297,138 @@ D4_goto49.txt, ...).  Regenerated pass dumps in tmp/grind/func_800283D0/dumps/ (
 - [s9] Placing the s32 intermediate in the ==5 copy instead of the tail copy emits a byte-identical stream; either placement works.
 
 - [s9] candidate.c (23 / 216) and candidate_alt_215insn.c (25 / 215, the 215==215 fallback base) are both banked, with nine new rejected forms under memory/grind/func_800283D0/rejected/.
+
+## s10 (rederive, 2026-08-26) - chassis 23 confirmed; m2c re-derivation and the exit-form dimension both closed
+
+Chassis at dispatch: applying `memory/grind/func_800283D0/candidate.c` (the s9 body) to
+src/code6cac_b.c and running `sandbox func_800283D0 --disable all` printed
+`score 23, target_insns 215, build_insns 216`. The ledger floor of 23 is live and
+unchanged; every s10 measurement below is relative to that body.
+
+### 1. Fresh m2c re-derivation (the mandated modality) - the ledger body is a strict local optimum
+
+`tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax -f func_800283D0 asm/funcs/func_800283D0.s`
+(output banked at tmp/grind/func_800283D0/s10/m2c_fresh.c, 150 lines) reproduces the same
+control-flow skeleton the ledger body already has, differing in exactly FIVE structural
+choices. Transcribing the whole fresh shape to real typed field accesses - while keeping the
+two levers s8/s9 proved load-bearing (the SImode `sel` intermediate in the tail selection and
+`goto block_49;` out of the globals block) - gave variant R1 at **65 / 214**, a 42-point
+regression. Each delta was then measured in isolation on the 23-floor body:
+
+| variant | m2c structural choice | score / insns |
+|---|---|---|
+| BASE | the s9 ledger body | **23 / 216** |
+| D1 | hoist `temp_v0_2 = temp_a1_2 * 2;` above the `temp_v1_3 == 0` test and reuse it for `temp_s3` | 30 / 217 |
+| D2 | `var_s1 = 0;` written ABOVE the eight-way range check instead of below it | 29 / 216 |
+| D3 | the shared store+calls tail owned by the `temp_v1_3 < temp_v0_3` arm (m2c's block_23/block_24), with the `== 0` arm jumping in - i.e. our set_0xB/do_store_calls/do_calls ownership inverted | 49 / 216 |
+| D4 | range-check exit spelled `goto block_13;` (shares the outer `temp_v1 != 4` return) | 25 / 214 |
+| D5 | no `ret` carrier at all - literal `return 1;` at every exit site | 33 / 211 |
+| R1 | all five at once | 65 / 214 |
+
+Conclusion: m2c's canonical shape is not closer to target on ANY axis. The rederive modality
+is spent for the m2c route - a tenth session should not re-run m2c expecting a different
+skeleton. (Sibling/transplant route also checked and empty: the only other functions touching
+D_800A38A8 / D_800A3876 are func_8002006C, func_80026DA4, func_800288C8, func_8002AB08,
+func_8002C61C, and all five are still `INCLUDE_ASM` - there is no matched sibling body in the
+tree to transplant a shape from.)
+
+Note D5's 211 insns: dropping the `ret` carrier makes GCC fold four returns into constants and
+lose four instructions outright, which is why it scores 33 despite being shorter. The `ret`
+carrier is what forces target's `addu $v0,$s6,$zero` tail (target holds the return value in the
+callee-saved $s6 for the whole function), and it is confirmed load-bearing.
+
+### 2. Exit-form enumeration (frontier item 2) - COMPLETE, and 23 is the floor of that dimension
+
+Four early-exit sites, measured on the 23-floor body (s10 measurements marked *):
+
+| site | inline `return` | `goto block_49` | `goto block_13` |
+|---|---|---|---|
+| 1 range-check exit | **23** (BASE) | 25 * (E5) | 25 * (D4) |
+| 2 `temp_v1_2 == 0xE` exit | **23** | 38 (s9 E1) | - |
+| 3 do_calls exit | **23** (BASE) | 23 * (E3, byte-identical) | - |
+| 4 globals block | 25 (s8) | **23** (s9 D4) | - |
+
+Crossed: site 1 `goto block_13` + site 3 `goto block_49` = 25 / 214 (E4) - the two axes are
+additive-free, they do not interact. **No assignment over the four sites scores below 23**, and
+in particular cluster B (the nop-vs-`li v0,1` divergence at emitted slots 45/47) does NOT move
+under any exit-form assignment. Frontier item 2 is closed; do not re-open it.
+
+Both goto spellings at site 1 buy exactly 2 instructions (216 -> 214) and cost exactly 2 points.
+That is worth remembering if a future body ever needs to shed instructions rather than points.
+
+### 3. The `||` guard spelling is pinned (new axis, killed)
+
+De Morgan on the `== 5` guard - `if (!A && !B) { globals } else { selection }` instead of
+`if (A || B) { selection } else { globals }` - inverts both branch senses and swaps which block
+is the beqz's fall-through, which is exactly the geometry that decides reorg's steal. Measured
+R2 (selection inline in the else arm) = 31 / 216 and R3 (selection reached by `goto block_sel;`
+so the two selection copies stay merged) = 27 / 212. Both regress. Target's
+`bnez v0,.L800285CC` / `beqz v0,.L800285DC` pair only comes out of the short-circuit `||`
+spelling with the selection in the TRUE arm.
+
+### 4. Frontier item 1 re-attributed with measurements (s9's stated mechanism was wrong)
+
+s9 guessed reorg declines the delay-slot steal because `li v0,1` writes the register the
+`beqz v0` itself reads. That is NOT the predicate. The gate in GCC 2.7.2 reorg.c:3466-3468 is
+
+    if (condition == const_true_rtx
+        || (! insn_sets_resource_p (trial, &opposite_needed, 1) && ! may_trap_p (pat)))
+
+where `opposite_needed = mark_target_live_regs (opposite_thread)` and `opposite_thread` is the
+FALL-THROUGH insn, not the branch. Re-running the s9 isolate/dump recipe on the 23-floor body
+with `BB2_DBR_DEBUG=1` (the instrumented cc1 at tools/gcc-2.7.2/cc1 already carries DBRDBG
+hooks in fill_slots_from_thread and mark_target_live_regs) produced, in
+tmp/grind/func_800283D0/s10/iso_dumps/dbr.log:
+
+    DBRDBG thr insn=344 thread=368 opp=686 own=1 likely=0 tif=1 oppregs=20630084_00000000 oppmem=1
+    DBRDBG thr insn=344 trial=368 refset=0 setset=0 setneed=0 setsopp=1 trap=0
+    DBRDBG thr LOSE insn=344 trial=368
+    ... same LOSE for trials 370, 373, 375
+
+insn 344 is `beqz v0 -> label 365` (the globals block); insn 368 is the `li v0,1` we want in the
+slot. `oppregs = 0x20630084` decodes to {v0, a3, s0, s1, s5, s6, sp}: **v0 is reported LIVE at
+the fall-through**, so `setsopp=1` and every insn in the globals block loses (the two `sh`
+stores lose additionally on `oppmem=1`). There is no `DBRDBG thr insn=344 thread=686` line at
+all, so `own_fallthrough` was 0 and the fall-through thread was never scanned either - the slot
+is unfillable from both directions while v0 sits in opposite_needed.
+
+Also measured: `mostly_true_jump` returns 0 here (an EQ condition with no rarity difference),
+so fill_eager_delay_slots takes the `prediction <= 0` branch and tries fall-through first.
+
+OPEN SUB-QUESTION for the next session (this is the whole of frontier item 1 now): WHY is v0 in
+that live set? `DBRDBG mtlr target=686 block=28` shows find_basic_block(686) walked back to the
+previous BARRIER and returned block 28 - the same block as insn 339, i.e. label 347 (the
+fall-through label, also the target of the earlier `bnez v0`) is NOT a basic-block head and the
+scan is one long forward walk from block 28's live-at-start. On that walk, insn 344 carries
+`REG_DEAD (reg:SI 2 v0)` which goes into `pending_dead_regs`, and reorg.c:2709 flushes
+pending_dead_regs at every CODE_LABEL - and label 347 IS on the walk between 344 and 686. By the
+letter of the source v0 should therefore be clear. It is not. Either the flush is not reached
+(a `next_insn_no_annul` / stop_insn subtlety) or v0 is re-introduced by the second phase that
+steps forward from TARGET. The decisive next probe is to add a DBRDBG print inside
+mark_target_live_regs' forward loop (insn UID + the running current_live_regs) and read where
+bit 2 gets set; the instrumented cc1 and the isolate recipe are both in place
+(tmp/grind/func_800283D0/s10/isolate.py + dumpiso.sh). Until that is known, no C-level shape can
+be aimed at this residual - and note that no C shape can avoid the block writing v0, because
+target's own block is `li v0,1 / lui at / sh v0 / li v0,-1 / lui at / sh v0`.
+
+- [s10] Chassis re-measured at dispatch: the s9 candidate body applied to src/code6cac_b.c gives sandbox --disable all = score 23, target_insns 215, build_insns 216. The ledger floor of 23 is live and unchanged; every s10 measurement is relative to that body.
+
+- [s10] Fresh m2c output (tmp/grind/func_800283D0/s10/m2c_fresh.c, 150 lines) reproduces the same control-flow skeleton the ledger body already has, differing in exactly five structural choices - all five measured regressive on the 23-floor chassis. The rederive/m2c route is spent; a later session should not re-run m2c expecting a different skeleton.
+
+- [s10] The `ret` carrier local is CONFIRMED load-bearing: dropping it for a literal `return 1;` at every exit lets GCC fold four returns into constants and lose four instructions outright (211 insns) while scoring 33. Target holds the return value in the callee-saved $s6 for the whole function and ends with `addu $v0,$s6,$zero`.
+
+- [s10] The exit-form dimension over all four early-exit sites is fully enumerated on the 23-floor body and 23 is its minimum. Cluster B (nop-vs-li v0,1 at emitted slots 45/47) does not move under any assignment. Frontier item 2 is CLOSED - do not re-open it.
+
+- [s10] Both goto spellings at the range-check exit site (goto block_13 and goto block_49) are score-identical at 25/214: they buy exactly 2 instructions and cost exactly 2 points. Useful if a future body ever needs to shed instructions rather than points.
+
+- [s10] `goto block_49;` at the do_calls exit is BYTE-IDENTICAL to the inline `return ret;` (both 23/216) - jump2 re-merges it, confirming s9's G2 finding on this chassis.
+
+- [s10] The short-circuit `||` spelling of the ==5 guard is pinned; de Morgan regresses to 31 (selection inline in the else arm) and 27 (selection behind a shared goto label).
+
+- [s10] No transplant source exists: the only other functions referencing D_800A38A8 / D_800A3876 are func_8002006C, func_80026DA4, func_800288C8, func_8002AB08 and func_8002C61C, and all five are still committed as INCLUDE_ASM.
+
+- [s10] reorg.c gate measured exactly: 'DBRDBG thr insn=344 ... oppregs=20630084_00000000 oppmem=1' followed by setsopp=1 LOSE for trials 368, 370, 373 and 375. v0 is in opposite_needed, so nothing in the globals block is stealable, and own_fallthrough=0 means the fall-through thread was not scanned either.
+
+- [s10] 'DBRDBG mtlr target=686 block=28' shows find_basic_block(686) walked back to the previous BARRIER and returned the same block as insn 339 - label 347 (the fall-through label, also the target of the earlier bnez v0) is NOT a basic-block head, so mark_target_live_regs does one long forward walk from block 28's live-at-start.
+
+- [s10] No C-level shape can avoid the globals block writing v0: target's own block is `li v0,1 / lui at / sh v0 / li v0,-1 / lui at / sh v0`. The only lever on this residual is getting v0 out of opposite_needed.

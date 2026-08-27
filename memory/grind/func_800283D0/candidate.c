@@ -86,6 +86,19 @@
  * 159/161/168/171, s7 window span(qty0) 30 -> <=24), plus the one unfilled
  * delay slot described above.
  *
+ * S10 (rederive) RE-CONFIRMED THIS BODY AT 23 / 216 AND CLOSED TWO AXES:
+ *   - A fresh m2c re-derivation differs from this body in exactly five structural
+ *     choices and ALL FIVE are regressive on the 23-floor chassis (30 / 29 / 49 /
+ *     25 / 33; all five at once = 65).  There is no matched sibling body in the
+ *     tree to transplant from either.  The m2c/transplant route is spent.
+ *   - The exit-form dimension over the four early-exit sites is now fully
+ *     enumerated and 23 is its minimum; cluster B does not move under it.
+ *   - The `||` guard spelling is pinned: de Morgan regresses (31 and 27).
+ *   - Frontier item 1 re-attributed with BB2_DBR_DEBUG measurements: reorg
+ *     declines the steal because `mark_target_live_regs` reports v0 LIVE at the
+ *     FALL-THROUGH (oppregs=0x20630084), not because the branch reads v0.  See
+ *     evidence.md s10 section 4 for the exact log lines and the open sub-question.
+ *
  * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  216i @ floor 23
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {

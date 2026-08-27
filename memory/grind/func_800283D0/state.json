@@ -1,8 +1,8 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 9,
- "current_modality": "forensics",
+ "session_count": 10,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -57,23 +57,29 @@
    "floor": 23,
    "modality": "forensics",
    "headline": "Floor 25 -> 23: cluster C attributed to sched1 hoisting the block-local return-value copy and CLOSED by exiting the globals block with `goto block_49;`, and s8's unclassifiable multi-write mode-split "
+  },
+  {
+   "session": 10,
+   "floor": 23,
+   "modality": "rederive",
+   "headline": "Fresh m2c re-derivation measured and dead (all 5 structural deltas regressive, 65 combined); the exit-form dimension is now fully enumerated with 23 as its minimum; and frontier item 1 is re-attribute"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The `nop` at slot 126 is the whole 216-vs-215 delta, and it is a reorg delay-slot-fill decision that target makes and we decline; making it puts the 23-floor body at 215 insns with cluster C already closed.",
-   "mechanism": "reorg's steal-from-branch-target fill. On the 25-floor body reorg stole `li v1,1` into the delay slot of `beqz v0,<globals block>`; on the 23-floor body the candidate is `li v0,1`, a write of the register the branch itself reads, and reorg refuses - probably a conservative resource conflict in resource.c. Target performs the identical steal (`beqz v0,.L800285DC` + `addiu v0,zero,1`), so it is reachable in this compiler.",
-   "next_probe": "Read reorg.c / resource.c in tools/gcc-2.7.2 around fill_simple_delay_slots and steal_delay_list_from_target, and if the refusal is not obvious from the source, instrument the fill the way s8 instrumented find_cross_jump (the isolate.py / dumpiso.sh recipe in tmp/grind/func_800283D0/s9/ is ready to reuse). If it is a conflict with the branch's own condition register, the C question becomes: what source shape makes the globals block's first insn something other than a write of that register - e.g. leading with the `lui`/store of a global whose value is not in v0."
+   "hypothesis": "v0 is in opposite_needed at insn 686 for a readable reason inside mark_target_live_regs, and once that reason is named the C question becomes concrete.",
+   "mechanism": "insn 344 carries REG_DEAD (reg:SI 2 v0), which goes into pending_dead_regs, and reorg.c:2709 flushes pending_dead_regs at every CODE_LABEL. Label 347 IS on the forward walk between insn 344 and target 686, so by the letter of the source v0 should be clear at 686 - yet oppregs has bit 2 set. Either the flush is not reached (a next_insn_no_annul / stop_insn subtlety - note stop_insn is recomputed when the target is a SEQUENCE, reorg.c:2612) or v0 is re-introduced by the second phase that steps forward from TARGET (reorg.c:2732 onward).",
+   "next_probe": "Add a DBRDBG print inside mark_target_live_regs' forward loop (insn UID, GET_CODE, and the running current_live_regs word) plus one at the end of the step-forward-from-TARGET phase, rebuild tools/gcc-2.7.2/cc1, and re-run tmp/grind/func_800283D0/s10/isolate.py + dumpiso.sh with BB2_DBR_DEBUG=1. Read where bit 2 gets set. If it comes from basic_block_live_at_start[28] and survives the label flush, the C question is what makes label 347 a basic-block head at life_analysis time; if it is re-introduced by the step-forward phase, the C question is about the shape of the fall-through block's first insn (currently the SEQUENCE `bnez s1` with delay `li v0,25`)."
   },
   {
-   "hypothesis": "Cluster B (slots 45/47) yields to the exit-form dimension that s9 just proved is worth several slots and is decided independently per exit site.",
-   "mechanism": "Each inline `return ret;` creates a block-local (set (reg/i:SI 2 v0) ...) that sched1 places and that later passes may or may not cross-jump into a shared exit block; a `goto` to a shared labelled return does not. Target's `.L80028488` is a LABELLED shared `j / li v0,1` block with three early-exit predecessors (s6), which is exactly what a particular assignment of goto-vs-return over our four early-exit sites would produce.",
-   "next_probe": "Enumerate the exit-form assignments over the four early-exit sites (range-check exit, temp_v1_2 == 0xE, do_calls, globals block) - s9 measured only two of the sixteen - and measure each with sandbox --disable all, recording build_insns alongside the score. s1 pinned the range-check exit to an INLINE return and s9 pinned the globals block to a goto, so the live search is over the remaining two sites crossed with re-testing those two pins on the 23-floor body."
-  },
-  {
-   "hypothesis": "s7's exhaustive RA windows for clusters A and E still describe the 23-floor body, or they have moved.",
+   "hypothesis": "s7's exhaustive RA windows for clusters A and E still describe the 23-floor body, or they have moved (carried forward unchanged from s9 - NOT re-measured this session).",
    "mechanism": "Both the s8 mode split and the s9 exit-form change altered the RTL of blocks those quantities live in; global.c allocno_compare and local-alloc.c qty_compare_1 both consume live lengths and reference counts computed on that RTL, so the windows (L73 92 -> [38,65], L143 14 -> [20,21]; span(qty0) 30 -> <=24 or refs(qty0) 6 -> 8..10) are chassis-relative.",
-   "next_probe": "Re-run tools/ra_solver/extract.py plus flow.livelen_flow and tmp/grind/func_800283D0/s7/qty41.py on the 23-floor body and diff the tables against s7's before spending any spelling probe on clusters A or E."
+   "next_probe": "Re-run tools/ra_solver/extract.py plus flow.livelen_flow and tmp/grind/func_800283D0/s7/qty41.py on the 23-floor body and diff the tables against s7's before spending any spelling probe on clusters A or E. Then run tools/ra_solver/inverse_compose.py classify on the residual seats to get REACHABLE/FORECLOSED verdicts rather than guessing."
+  },
+  {
+   "hypothesis": "Cluster B (the nop-vs-li v0,1 divergence at emitted slots 45/47) is a delay-slot-fill residual of the SAME kind as the slot-126 one, not an exit-form residual.",
+   "mechanism": "s10 proved cluster B does not move under any of the sixteen exit-form assignments, which was the standing explanation for it. A nop at an emitted slot where target has a real instruction is the signature of an unfilled delay slot, and the s10 DBRDBG log already contains every fill decision this function makes.",
+   "next_probe": "Locate emitted slots 45/47 in the objdump of tmp/sandbox/func_800283D0/code6cac_b.o, find the corresponding branch insn UID in tmp/grind/func_800283D0/s10/iso_dumps/iso.dbr, and grep that UID in tmp/grind/func_800283D0/s10/iso_dumps/dbr.log for its `thr`/`simp` lines. If it is another setsopp/oppmem loss, clusters B and the slot-126 nop are ONE residual with one mechanism, which collapses two frontier items into one and raises the value of solving frontier item 1."
   }
  ],
  "judge_constraints": [],
