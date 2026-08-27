@@ -2154,3 +2154,88 @@ found yet.
 - [s39] The staged-value lever's regime table is now four regimes deep and fully measured: merge-block-offset +4 (20->16, s37), narrow-index-carrier +8 (26->18, s39), arm-selected-address 0 (21/21, s38b), post-call-address 0 (31/31, s38). Spelled on `table` instead of `next_vert` it is worth 0 (vC, 26/26).
 
 - [s39] Two further vA spellings measure identical at 18/110 and are stable-optimum evidence, not new forms: the PLUS-operand-order flip (vD) and hoisting the staged assignment above `scale = arg0[2]*40;` (vF).
+
+## Session 40 (2026-08-27, forensics modality) — the "duplication" is cse1's output, not the author's; and the banned form still byte-matches TODAY
+
+- [s40] **CHASSIS RE-MEASURED** (the brief again reported it "unavailable"). With
+  `memory/grind/func_80057CC8/candidate.c` (the s38b annotated 16-form) applied to
+  `src/text1b.c`, `sandbox func_80057CC8 --disable all` -> **score 16, target_insns 111,
+  build_insns 108, rules_dropped 0**. The ledger's floor of 16 is current and unchanged.
+
+- [s40] **THE BANNED MATCH IS STILL A MATCH ON THIS CHASSIS.** Two forms were re-measured
+  (as MEASUREMENTS for the ruling question, not as submissions; `src/text1b.c` was restored
+  to HEAD afterwards):
+    `rejected/s29-asymmetric-prev-indexed-next-pointer-score0-superseded.c` (ratan2 rename
+      applied) -> **score 0, 111/111**
+    NEW `tmp/grind/func_80057CC8/s40/vN.c` — **no cached base local of any kind**, every
+      vertex-table access spelled at its point of use -> **score 0, 111/111**
+  banked as `rejected/s40-no-base-local-per-use-site-reads-score0-RULING-PENDING.c`.
+  Prior sessions' score-0 findings date from older chassis; this confirms nothing about the
+  match decayed across the -mel adoption or any later change. The function is ONE POLICY
+  DECISION from COMPLETED-C, not one spelling.
+
+- [s40] **PASS ATTRIBUTION, ON THE REAL FUNCTION.** With vN in `src/text1b.c`,
+  `pwsh tools/grinder/dump.ps1 func_80057CC8`, counting
+  `(mem:SI (plus:SI (reg ...) (const_int 4)))` inside the `func_80057CC8` section of each dump:
+    `.jump` (pre-cse RTL)  = **5**      <- one per source-level read; the C really does say it 5x
+    `.cse`  (after cse1)   = **2**
+    `.loop`                = 2
+    `.combine`             = 2
+  The target has 2 (`asm/funcs/func_80057CC8.s:17` `lw $a2,0x4($s2)` and `:50`
+  `lw $a0,0x4($s2)`). **cse1 is the pass that decides how many base loads exist, and it
+  decides 2 from a source that says 5.** The count in the emitted code is therefore not a
+  property the author controls by "materializing" the expression N times; it is cse1's
+  answer to an aliasing question.
+
+- [s40] **THE DECIDING PREDICATE, ISOLATED** (`tmp/grind/func_80057CC8/s40/probe.c`, built
+  with the project's exact `cpp | cc1` flags via `engine.buildconfig`; output
+  `probe.s` + full `-da` dump set in the same directory). Four one-screen functions over the
+  same expression `*(s16 **)(a0 + 4)`:
+      pA  two source-level reads, extern call BETWEEN them        -> **2** `lw 4($17)`  (target's shape)
+      pB  the SAME two source-level reads, NO call between        -> **1** `lw`
+      pC  one read cached in a local, call between the two uses   -> **1** `lw` ($17 across the call) = our 16-form
+      pD  two source-level reads, call between, `s16 *const *`    -> **1** `lw`
+  Per-function base-load counts by dump: `.jump` pA=2 pB=2 pC=1 pD=2; `.cse` pA=2 pB=1 pC=1
+  pD=1. The fold happens in **cse1** and nowhere else, and the ONLY thing that prevents it in
+  pA is the intervening non-const call:
+    - `tools/gcc-2.7.2/cse.c:1948` — `canon_hash`: a MEM **without** `RTX_UNCHANGING_P` sets
+      `hash_arg_in_memory`, so its table element is marked in-memory.
+    - `tools/gcc-2.7.2/cse.c:7241-7246` — `cse_insn`: at a `CALL_INSN`,
+      `if (! CONST_CALL_P (insn)) invalidate_memory (&everything);` purges every in-memory
+      element from the hash table.
+  pD is the control that closes it: const-qualify the pointee so `RTX_UNCHANGING_P` is set,
+  and the very same two source-level reads collapse to one load across the very same call.
+
+- [s40] **WHAT THAT DOES TO CHEAT-CHECKLIST T1 FOR THIS FUNCTION.** T1 asks whether the
+  construct has any observable effect beyond what a simpler form produces. The 16-form
+  (`table` cached in a callee-save register across the `ratan2` call) and the per-use-site
+  form are **not the same program**: the cached form asserts that `ratan2` — an extern
+  function, opaque to this TU — cannot write `((s16 **)arg0)[1]`. C does not guarantee that,
+  GCC 2.7.2 does not assume it (cse.c:7246), and pD shows the compiler folds the reads the
+  instant it IS told so. The 39-session framing of the residual as "a second, semantically
+  pointless materialization of a value already in scope" is, for the *no-local* form,
+  factually wrong at the pass level: nothing is in scope, because no local exists, and the
+  two surviving loads are cse1's decision. (The framing remains accurate for the
+  `table` + `nt` two-local family and for the s29 form, which reloads while a live cached
+  copy exists — those are NOT what s40 re-opens.)
+
+- [s40] **T2 (human-programmer test) cuts the same way.** Given only the specification
+  ("read the ring's vertex table"), the natural C is `ring->verts[i]` at each point of use.
+  It is the cached-base local — introduced in this ledger purely to avoid a second load —
+  that a reader would ask "why is this here?" about. The optimization is on our side of the
+  diff, not the original's.
+
+- [s40] DISPOSITION. `candidate-ready` is unavailable and was not attempted: vN is
+  banned_constructs entry 5 in a different spelling, and the driver rejects a self-vet that
+  re-declares a banned construct. `owner-gated` is unavailable (forensics modality, and a
+  packet asking to relax a ban is in the 2026-08-24 auto-reject class). The brief's own
+  instruction — "If you believe a ban is wrong, emit `ruling-request`" — is the fit, and the
+  ban in question rests on a factual premise this session measured to be false for the
+  no-local spelling. Question wording is in the outcome JSON.
+
+- [s40] Housekeeping: `src/text1b.c` restored to its HEAD `INCLUDE_ASM("asm/funcs",
+  func_80057CC8);` state. No commits. `regfix.txt`, `asmfix.txt`, `.claude/rules/`,
+  `engine/`, `tools/`, `Makefile`, `*.ld` untouched. No permuter campaign was launched, so
+  nothing is orphaned. `memory/grind/func_80057CC8/candidate.c` is UNCHANGED (still the
+  s38b annotated ban-compliant 16-form) — vN is banked under `rejected/` because it is
+  ruling-pending, not because it is disproven.

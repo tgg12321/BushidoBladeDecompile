@@ -1257,3 +1257,55 @@ is gated on the refused duplication family.
 - probe: extract.py func_80057CC8 text1b on vA -> model.json (16 allocnos, 65 dispositions); goal_from_tgt.py goal --model -> the FULL disposition {72(arg0):$s2, 104(next-index):$s3, 88(next-address):$v1, 87(base):$a0}; then inverse.py global --goal <full> --depth 3, and separately the seat-pair subgoal {72:$s2, 104:$s3} --depth 3.
 - result: FULL disposition: NEGATIVE at depth 3 - 'no perturbation of any modelled input reaches the target assignment ... the flip is not produced by refs / live span / birth order / conflicts / preferences / calls-crossed at all'. It also names why the helpful copy-preference is unavailable: pseudos 86 and 88 cross a call and $a0 is call-used, so prune_preferences (global.c:897) strips the preference before find_reg runs. Seat-pair subgoal: REACHABLE, two minimal 2-atom vectors - #1 {88 calls_crossed 1->0, 104 calls_crossed 0->1} and #2 {88 refs 6->1, 104 calls_crossed 0->1}. EVERY reachable vector contains the same atom: the next-index must become a call-crossing quantity, which is possible only if the address is formed after the call, which requires the vertex-table base to exist after the call - i.e. the banned post-call re-read, or carrying `table` (a 7th crossing quantity, a ninth callee-save $s8, +2 insns, already measured at 31).
 - verdict: KILLED
+
+## s40 (2026-08-27, forensics)
+
+### H-s40-1 — CONFIRMED
+- statement: The two `lw 0x4($s2)` loads in the target are not authored duplication; the
+  number of base loads is decided by cse1, and cse1 keeps the second one only because a
+  non-const call sits between the two reads.
+- mechanism: `canon_hash` (tools/gcc-2.7.2/cse.c:1948) marks a MEM lacking
+  `RTX_UNCHANGING_P` as `hash_arg_in_memory`; `cse_insn` (cse.c:7241-7246) calls
+  `invalidate_memory (&everything)` at every non-`CONST_CALL_P` CALL_INSN, destroying that
+  element's equivalence class. Reads on the same side of the call stay in one class and are
+  folded; a read on the far side hashes into a fresh class and emits its own load.
+- probe: isolated 4-function probe compiled with the project's exact cpp|cc1 flags
+  (tmp/grind/func_80057CC8/s40/probe.c, probe.sh, probe.s + full -da set): pA two reads with
+  a call between; pB the same two reads with no call; pC one read cached in a local with a
+  call between the uses; pD two reads with a call between through `s16 *const *`. Plus the
+  same count taken on the real function with vN in src (dump.ps1).
+- result: pA=2 lw, pB=1, pC=1, pD=1. Per-dump: `.jump` pA=2 pB=2 pD=2 -> `.cse` pA=2 pB=1
+  pD=1, so the fold is cse1's. On the real function vN's source contains FIVE base reads;
+  `.jump`=5, `.cse`=2, `.loop`=2, `.combine`=2 — exactly the target's two.
+- verdict: CONFIRMED.
+
+### H-s40-2 — CONFIRMED
+- statement: A form with NO cached vertex-table base local at all — every access spelled at
+  its point of use — byte-matches on the CURRENT chassis.
+- mechanism: with no local, cse1 folds the four pre-call reads into one load and lets the
+  post-call read emit its own, reproducing the target's `lw $a2,0x4($s2)` (pre-call, into a
+  call-clobbered register, dead before the jal) and `lw $a0,0x4($s2)` (post-call).
+- probe: tmp/grind/func_80057CC8/s40/vN.c applied to src/text1b.c ->
+  `sandbox func_80057CC8 --disable all`. Also re-measured the archived
+  rejected/s29-asymmetric-...-score0-superseded.c on the same chassis.
+- result: vN score **0**, target_insns 111, build_insns 111, rules_dropped 0. s29 form
+  likewise score **0**, 111/111. Banked as
+  rejected/s40-no-base-local-per-use-site-reads-score0-RULING-PENDING.c.
+- verdict: CONFIRMED. The match has not decayed across any chassis change; the only thing
+  between this function and COMPLETED-C is the 2026-07-20 ruling / banned_constructs entry 5.
+
+### H-s40-3 — CONFIRMED (consequence, not a new measurement)
+- statement: Cheat-checklist T1 ("any observable effect beyond what a simpler form
+  produces") is answered YES for the no-local form, so the premise the ban rests on is false
+  for that spelling.
+- mechanism: the cached-base form is a strictly stronger assertion about the program — that
+  `ratan2` cannot write `((s16 **)arg0)[1]`. C does not license it and GCC does not assume
+  it; pD demonstrates that when the assertion IS made explicit (`const`), the compiler folds
+  the loads and the byte match is lost.
+- probe: pC vs pA/pD above; plus the framing check that in the no-local form nothing is "in
+  scope" to be re-materialized, since no base local exists.
+- result: the two forms are different programs, not two spellings of one program.
+- verdict: CONFIRMED. NOTE the scope limit: this argument does NOT rehabilitate the
+  `table` + `nt` two-local family or the s29 form (inline reload while a live cached copy
+  exists) — those genuinely do re-materialize a value that is in scope. It applies only to
+  the spelling that declares no base local at all.
