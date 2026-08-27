@@ -1,7 +1,7 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 22,
+ "session_count": 23,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -135,23 +135,29 @@
    "floor": 6,
    "modality": "structural",
    "headline": "Floor 10 -> 6: cluster A, the store sink and the arm store all close together on s21's V1 chassis once ONE sanctioned do-while(0) wrap around an existing arg1 call pair raises nrefs(arg1) 7 -> 9 (pri "
+  },
+  {
+   "session": 23,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "Floor 6 -> 4 and 216 -> 215 insns: cluster B (the unfilled `beqz $v0` slot, open since s3) CLOSES AT ZERO COST by respelling the `== 5` selection so the 0x19 edge is the branch's own TARGET thread and"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Cluster B - the last ~4 points and the entire 216-vs-215 insn surplus - is a resource question, not a prediction or hoist question: dbr refuses to steal the D_800A38A8 block's `li v0,1` into the `beqz v0` delay slot solely because $v0 sits in opposite_needed, put there by update_block's `(use (insn N))` marker (E-s19-4/E-s18-8). Target fills that slot WITH the marker present, so something makes the marker harmless in target's RTL rather than absent.",
-   "mechanism": "reorg.c steal_delay_list_from_target calls insn_sets_resource_p(trial, &opposite_needed) before accepting a target-thread insn; opposite_needed is built by mark_target_live_regs on the fall-through thread, whose live-in is cached in target_hash_table and invalidated by bb_ticks. E-s19-1 measured block 27's pre-RA live-in as containing neither $v0 nor $a3, and E-s19-2 showed find_basic_block resolves the fall-through to block 27 by scanning back to the previous BARRIER rather than to the nearest label - so a source change that inserts or removes a BARRIER between the branch and the fall-through selection would re-resolve the marker's basic block without touching the selection's own $v0 writes (which target also has).",
-   "next_probe": "On the new 6-floor candidate, enumerate source shapes that change where the BARRIER before the 0x19/0xB selection block falls - e.g. giving the `== 5` subtree's fall-through an explicit `goto` to a label placed after the selection instead of falling through, or moving the D_800A38A8/D_800A3876 block textually before the selection with a `goto` back - and for each dump reorg's decision with the instrumented cc1 before scoring. The dumps to read are .dbr/.jump2; do NOT re-run the hoist family (F1 = 8, chassis-independent) or the prediction family (G1/G2/G3/G5/H4 all byte-neutral, H5/H6 regressive)."
+   "hypothesis": "The last delay-slot divergence (emitted 45-47) closes iff $v0 is live at the entry of jump_insn 78's TARGET block (the `var_s1 = 0; goto block_15;` block at code_label 87). Target's compile must have that bit set; ours does not (oppregs = 0x20000380).",
+   "mechanism": "fill_slots_from_thread's steal_delay_list_from_fallthrough on insn 78 is refused only by `insn_sets_resource_p (trial, &opposite_needed)`; opposite_needed here is the EXACT flow live-in of the beq's target block (find_basic_block resolves it cleanly from barrier 85 - not the -1 conservative fallback), so the axis is which registers flow believes are live entering that block, or alternatively making find_basic_block fail to resolve it (which forces the all-live conservative answer and refuses the steal).",
+   "next_probe": "Two cheap, disjoint attacks. (i) LIVENESS: find a semantics-preserving spelling that makes $v0 live-in at the `var_s1 = 0; goto block_15;` block - e.g. merging that block with the `temp_v1 == 0x13` path's own `var_s1 = 0;` (insn 98 at code_label 95) so the beq targets a block with a different live-in, or routing block_15's first computation through a value already resident in $v0. (ii) BLOCK RESOLUTION: make the label after barrier 85 not be a basic_block_head so find_basic_block returns -1 (all-live => steal refused). Instrument with `bash tmp/grind/func_800283D0/s23/dbr.sh <tag>` and read the `thr insn=78 ... oppregs=` word; if bit 0x4 sets, the two points close. Do NOT re-run Q1/Q2-style relocations of the `return 1;` block (10 / 215 and 8 / 216)."
   },
   {
-   "hypothesis": "Emitted 45-48 (which branch owns the range-check's `li v0,1`) and emitted 126 are the SAME dbr decision seen twice, so a single construct that fixes one will fix both - and the fix is worth the last 6 points at once.",
-   "mechanism": "In both places ours fills a conditional branch's slot from the fall-through thread and leaves the following unconditional `j` empty, while target leaves the conditional branch's slot empty and fills the `j` from a backward steal inside its own block. That is the same fill_eager_delay_slots thread choice with the same opposite_needed resource test, applied to two different branches.",
-   "next_probe": "Instrument the two decisions side by side: build the 6-floor candidate with BB2 dbr debug enabled, capture the trial/needed/opposite_needed bitmasks for BOTH the range-check `beq` and the `beqz v0`, and check whether the refused resource is $v0 in both cases. If yes, a single $v0-lifetime construct fixes both; if the two refusals name different resources, they are separate residuals and should be attacked separately. Cost is one dump, not a search."
+   "hypothesis": "The two commutative `addu` operand orders (emitted 96 and 161) are decided after fold, by the same allocation/emission choice, and will move together or not at all.",
+   "mechanism": "Both source-order spellings are byte-neutral (s3 `both-operand-orders-neutral-11.c`, s22 `s22-temp-s3-addend-order-swap-neutral-6.c`, F2 on the 6-floor chassis), so GCC canonicalises the PLUS before RA and the emitted order reflects which pseudo the addend lives in, not the source. Both sites have the same shape: ours puts the long-lived register first, target puts the freshly computed one first.",
+   "next_probe": "This is a solver/forensics question, not a structural one: read the .combine and .greg dumps for the two PLUS insns on the 4-floor chassis and determine whether the operand order is fixed at expand (RTL operand slots) or flipped later by regmove/reload. If it is fixed at expand, the only remaining lever is a different TREE (not a different operand order) for `arg0 + temp_a1_2 * 2` - e.g. an intermediate whose pseudo is born later. Cost is one dump."
   },
   {
-   "hypothesis": "Now that the do-while(0) RA-weighting lever is measured live on this function, other sanctioned single-level wraps may reach residuals earlier sessions closed off on the assumption that reference counts were immovable.",
-   "mechanism": "s5's H15 and its successors declared the REF-COUNT axis FORECLOSED because target's emitted counts equal ours - a conclusion that only holds if no construct can raise nrefs without emitting an instruction. The wrap does exactly that, so every kill whose stated reason was 'moves nrefs away from target's own counts' was reasoning about the wrong invariant.",
-   "next_probe": "Re-read the s5-s8 kill list in hypotheses.md for entries whose ONLY stated reason is a reference-count argument (H15 and the entries citing it), and re-price the two or three whose other properties were favourable. This is a cheap ledger pass first - only spell and measure the ones whose non-ref-count objections were already answered by a later session."
+   "hypothesis": "The zero-cost target-thread-steal device that closed cluster B may apply to other blocks in this function whose $v0/$v1 writes sit before their own branch.",
+   "mechanism": "The general rule proven this session: a value written BEFORE a branch and stolen backward by fill_simple poisons every earlier branch whose mark_target_live_regs walk passes the update_block marker; the same value written as the head of that branch's TARGET thread is stolen with INSN_FROM_TARGET_P and poisons nothing. Any block with that shape is a candidate.",
+   "next_probe": "Grep the .dbr log of the 4-floor body for remaining `DBRDBG thr ... LOSE` lines whose failing predicate is `setsopp=1`, list the (branch, trial) pairs, and for each check whether the trial's write sits before its own branch in the source. Only spell the ones that do. Cost is one grep over tmp/grind/func_800283D0/s23/dbr_X2.txt plus one body per hit."
   }
  ],
  "judge_constraints": [],

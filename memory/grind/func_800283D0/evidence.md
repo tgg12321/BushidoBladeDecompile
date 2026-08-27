@@ -3314,3 +3314,111 @@ conclusion earlier sessions reached; now re-confirmed on the 6-floor chassis.
 - [s22] Cluster B is NOT a branch-prediction problem. reorg.c:1379 mostly_true_jump returns 2 when a NOTE_INSN_LOOP_BEG immediately precedes the branch's target label, which steers fill_eager_delay_slots to the target thread. Six probes measured: bare wraps at the D_800A38A8 store pair (G1), the 0x19/0xB selection (G2/G3) and the range-check return (G5) are byte-neutral at 6; G6 = 14 / 213; the purpose-built H4, which actually places the note before the branch's own target label via `if (!(A||B)) goto rare5;` + `do { rare5: ... } while (0);`, is ALSO neutral at 6; H5/H6 (same shape on the range-check chain) = 10 / 213 because the `return 1` cross-jumps into the shared epilogue.
 
 - [s22] G1's neutrality has a named cause worth carrying forward: expand_end_cond emits an if-false LABEL before the following statement expands, so a `do {` written after the `if` puts NOTE_INSN_LOOP_BEG on the far side of mostly_true_jump's backward scan. Only an explicit source `goto` into a label written INSIDE the wrap places the note correctly - and H4 proves that placing it correctly is still not sufficient.
+
+## s23 (structural) - CLUSTER B CLOSED; floor 6 -> 4 and 216 -> 215 insns
+
+**E-s23-1 (the body, and exactly what changed).**  Start of session the banked
+s22 candidate re-measured 6 / 216 on HEAD (chassis unchanged).  The only edit
+this session is inside the `== 5` selection of the `==` arm.  s22 spelled it
+`var_v0_2 = 0x19; if (var_s1 == 0) { var_v0_2 = 0xB; } goto block_48;`.  The new
+body (tmp/grind/func_800283D0/s23/X2.c, banked as candidate.c) spells the SAME
+selection with the 0x19 edge as the branch's own target thread, carrying its own
+copy of the already-existing store:
+
+    if (var_s1 != 0) { goto sel19; }
+    var_v0_2 = 0xB;
+    goto block_48;
+  sel19:
+    *(s16 *)(arg0 + 0x286) = 0x19;
+    goto block_49;
+
+Semantically identical (s1 != 0 stores 0x19, s1 == 0 stores 0xB, both fall into
+`return ret`).  **Measured 4 / 215.**  The duplicated store re-merges in jump2:
+emitted 128-131 are byte-identical to target (`bnez s1,.L800286F8 / li v0,25 /
+j .L800286F8 / li v0,11`), i.e. both edges still reach the ONE shared store at
+block_48.  The duplication is invisible in the emitted bytes; what it changes is
+which reorg.c pass fills a delay slot.
+
+**E-s23-2 (why: E-s19-7 option (a), spelled).**  s19 named three possible ways
+target could have BOTH `jump_insn 344`'s and `jump_insn 354`'s slots filled, and
+option (a) was "354's slot is filled by fill_EAGER from its TARGET
+(INSN_FROM_TARGET_P, so update_block emits no marker at all)".  Moving the
+`var_v0_2 = 0x19` write from BEFORE the selection branch to the head of that
+branch's TARGET thread is precisely that spelling: `fill_simple_delay_slots` has
+nothing to steal backward (the block between `code_label 347` and the branch is
+now empty), so no `(use (insn N))` marker is emitted into the window
+`mark_target_live_regs` walks; `$v0` therefore stays cleared by the label flush
+and `insn_sets_resource_p (trial, &opposite_needed)` is 0 for the `li v0,1`
+trial.  Ordering reinforces it: `fill_eager_delay_slots` walks insns in order,
+so the `beqz` is processed while the selection branch is still unfilled and
+cannot poison it; the selection branch is then filled afterwards out of its own
+target thread, where `update_block` (reorg.c:2270) returns early on
+`INSN_FROM_TARGET_P`.  This closes cluster B at ZERO cost, where the entire
+hoist family (s19 W1 = 32, s20 W2b/W2a/W2c = 12, s22 F1 = 8) pays a
+chassis-independent +2 because it buys slot 344 by giving up slot 354.
+
+**E-s23-3 (the shared-store variant is NOT equivalent - X1 = 6).**  X1 is X2
+with the `sel19` arm going to the shared block_48 store
+(`sel19: var_v0_2 = 0x19; goto block_48;`) instead of storing itself.  It
+measures 6 / 216, byte-identical to s22's A3.  Reason: with both edges assigning
+the same variable and jumping to the same store, jump2 re-merges the arm back
+into `li v0,25` BEFORE the branch, so fill_simple's backward steal - and its
+marker - come back.  The arm must own its store for the write to stay on the
+far side of the branch.  X3 (the mirrored sense, 0xB edge as branch target)
+measures 9: GCC re-inverts the branch sense away from target's `bnez s1`, the
+same re-inversion s20's W3 and W2a exhibited.
+
+**E-s23-4 (the remaining 4 points, and the mechanism of the last delay slot).**
+Normalized diff (tmp/grind/func_800283D0/s23/diff_X2.txt; `lui at,0` / `jal 0`
+entries are unresolved-relocation artifacts of objdumping the .o):
+  - emitted 45-47: ours `beq / li v0,1 / j / nop`, target `beq / nop / j /
+    li v0,1`.
+  - emitted 96 `addu s3,s0,v0` vs `addu s3,v0,s0`, emitted 161 `addu a0,a0,s4`
+    vs `addu a0,s4,a0`: commutative operand order, both source spellings banked
+    neutral (s3, s22).
+DBRDBG + the .sched2/.dbr dumps name the first one exactly.  The pre-reorg
+stream is `jump_insn 78` (the range chain's last `beq v1,v0 -> label 87`),
+`insn 82 (set (reg/i:SI 2 v0) (const_int 1))`, `jump_insn 84 (j -> label 667)`,
+`barrier 85`, `code_label 87`.  `DBRDBG simp insn=84 trial=82 refset=0 setset=0
+setneed=0` + `elig=1` shows **fill_simple already builds target's arrangement**:
+insn 82 goes into the `j`'s slot.  A later pass then runs
+`fill_slots_from_thread` on insn 78 - `DBRDBG thr insn=78 thread=84 opp=270
+own=1 likely=0 tif=0 oppregs=20000380_00000000` followed by `WINNER insn=78
+trial=84` - and steals the delay insn back OUT of the fall-through sequence
+(`steal_delay_list_from_fallthrough`).  The steal is permitted because
+`oppregs = 0x20000380` (= {a3, t0, t1, sp}) does not contain `$v0`; that word is
+the exact flow live-in of the `beq`'s TARGET block (`code_label 87`, found
+cleanly by find_basic_block from `barrier 85`, so it is not the -1 conservative
+fallback).  Target's compile must have `$v0` in that word.  **The lever is
+therefore liveness at the `beq`'s target block, not placement and not spelling
+of the exit** - which is why Q1/Q2 (relocating `return 1;` to a `ret1:` label at
+the function end / before block_13) measure 10 / 215 and 8 / 216 respectively:
+they deny insn 78 its stealable fall-through but pay 4-6 points elsewhere to buy
+at most 2.
+
+- [s23] Chassis: the s22 candidate re-measured 6 / 216 at session start; the new candidate measures 4 / 215 twice, with the body in place in src/code6cac_b.c.
+- [s23] FLOOR 6 -> 4 AND THE INSTRUCTION COUNT NOW MATCHES TARGET (215).  Cluster B - the unfilled `beqz $v0` delay slot plus the surplus `li v0,1`, open since s3, named since s18, first closed-at-a-price by s19's W1 - is CLOSED AT ZERO COST by respelling the `== 5` selection so the `0x19` edge is the branch's TARGET thread and carries its own copy of the `*(s16 *)(arg0 + 0x286)` store (body X2 = candidate.c).
+- [s23] MECHANISM: reorg.c:2270 `update_block` returns early on `INSN_FROM_TARGET_P`, so a target-thread steal leaves no `(use (insn N))` marker; fill_simple's backward steal always leaves one, and that marker is the sole reason `$v0` is live on the opposite thread when fill_eager reaches the `beqz` (E-s19-4).  Moving the `$v0` write across its own branch removes the marker without giving up either slot.  This is E-s19-7's option (a), which s19 named and no session had spelled.
+- [s23] X1 (same double-goto but the 0x19 arm goes to the SHARED block_48 store) = 6, byte-identical to s22: jump2 re-merges the arm and the `li v0,25` returns to before the branch.  The arm must own its store.  X3 (0xB edge as branch target) = 9: GCC re-inverts the branch sense away from target's `bnez s1`.
+- [s23] The last delay-slot divergence (emitted 45-47) is a `steal_delay_list_from_fallthrough` on `jump_insn 78`: fill_simple already produces target's arrangement (`simp insn=84 trial=82 elig=1`) and insn 78 steals it back because `oppregs=0x20000380` - the exact flow live-in of the `beq`'s target block - lacks `$v0`.  Q1/Q2 (relocating the `return 1;` exit) = 10 / 215 and 8 / 216: KILLED.
+- [s23] POLICY NOTE for the next session: the `sel19` arm's `*(s16 *)(arg0 + 0x286) = 0x19;` is a REAL statement duplicated into a branch arm that re-merges byte-neutrally, which is the shape `.claude/rules/duplicated-statement-into-arms.md` covers and that rule mandates a FAKE annotation.  It is also literally target's own control flow (the same double-goto shape s21 read off target's `<` arm, already in the body un-annotated).  Settle that - annotate or ruling-request - BEFORE any candidate-ready submission.
+
+- [s23] Chassis re-measured at session start: the s22 candidate scores 6 / 216 on HEAD, matching the ledger. The new candidate measures 4 / 215, twice, with the body in place in src/code6cac_b.c.
+
+- [s23] FLOOR 6 -> 4 AND build_insns 216 -> 215: the instruction count matches target exactly for the first time in 23 sessions. Cluster B (unfilled `beqz $v0` delay slot + surplus `li v0,1`) is CLOSED, at ZERO cost, where the entire hoist family pays a chassis-independent +2 (s19 W1 = 32, s20 W2b/W2a/W2c = 12, s22 F1 = 8).
+
+- [s23] The winning edit is confined to the `== 5` selection: `if (var_s1 != 0) goto sel19; var_v0_2 = 0xB; goto block_48; sel19: *(s16 *)(arg0 + 0x286) = 0x19; goto block_49;` - semantically identical to s22's form, and emitted 128-131 are byte-identical to target (`bnez s1 / li v0,25 / j / li v0,11`), i.e. the duplicated store re-merges to the one shared store in jump2.
+
+- [s23] MECHANISM (named, from reorg.c source + DBRDBG): update_block (reorg.c:2270) returns early on INSN_FROM_TARGET_P, so a target-thread steal leaves no `(use (insn N))` marker; fill_simple's backward steal always leaves one, and that marker is the sole reason $v0 is live on the opposite thread when fill_eager reaches the beqz (E-s19-4). Putting the $v0 write on the far side of its own branch removes the marker without giving up either slot. This is E-s19-7's option (a).
+
+- [s23] X1 (same double-goto but the 0x19 arm goes to the SHARED block_48 store) = 6 / 216, byte-identical to s22: jump2 re-merges the arm and `li v0,25` returns to before the branch. The arm MUST own its store.
+
+- [s23] X3 (mirrored sense: 0xB edge as the branch target) = 9 / 216 - GCC re-inverts the branch sense away from target's `bnez s1`, the same re-inversion s20's W3 and W2a exhibited.
+
+- [s23] Residual at 4 is exactly three divergences: emitted 45-47 (ours `beq / li v0,1 / j / nop` vs target `beq / nop / j / li v0,1`), emitted 96 `addu s3,s0,v0` vs `addu s3,v0,s0`, emitted 161 `addu a0,a0,s4` vs `addu a0,s4,a0`. The two addu orders are a banked-dead source-order axis (s3, s22: both spellings byte-neutral).
+
+- [s23] Emitted 45-47 fully attributed: the pre-reorg stream is jump_insn 78 (`beq v1,v0 -> label 87`), insn 82 `(set (reg/i:SI 2 v0) (const_int 1))`, jump_insn 84 (`j -> label 667`), barrier 85, code_label 87. fill_simple puts insn 82 in the `j`'s slot (target's arrangement); insn 78 then steals it back out of the fall-through sequence, allowed because oppregs = 0x20000380 = {a3,t0,t1,sp} has no $v0.
+
+- [s23] Q1 / Q2 (relocating the range check's `return 1;` to a `ret1:` label at the function end / before block_13) = 10 / 215 and 8 / 216. KILLED and banked to rejected/.
+
+- [s23] POLICY FLAG for the next session: the sel19 arm's `*(s16 *)(arg0 + 0x286) = 0x19;` is a real statement duplicated into a branch arm with byte-neutral re-merge - the shape .claude/rules/duplicated-statement-into-arms.md covers, and that rule mandates a FAKE annotation. It is also literally target's own control flow (the same double-goto shape s21 read off target's `<` arm, already in the body un-annotated). Settle it - annotate or ruling-request - BEFORE any candidate-ready submission.

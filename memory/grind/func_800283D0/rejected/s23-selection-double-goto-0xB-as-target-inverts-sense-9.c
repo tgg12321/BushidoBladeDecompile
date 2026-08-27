@@ -1,97 +1,85 @@
-/* candidate.c - func_800283D0 (saTan2KabutoWareMove), grind s23 2026-08-27 (structural)
+/* candidate.c - func_800283D0 (saTan2KabutoWareMove), grind s22 2026-08-27 (structural)
  *
- * HONEST FLOOR WITH THIS BODY: sandbox --disable all = 4 / 215 insns.
- * (s22 body was 6 / 216; s16-s21 body was 10 / 216.)  THE INSTRUCTION COUNT NOW
- * MATCHES TARGET EXACTLY for the first time in 23 sessions, and CLUSTER B - the
- * unfilled `beqz $v0` delay slot that has been the whole 216-vs-215 surplus
- * since s3 - IS CLOSED.
+ * HONEST FLOOR WITH THIS BODY: sandbox --disable all = 6 / 216 insns
+ * (s16-s21 body was 10 / 216).  FIRST FLOOR MOVE SINCE s16.
  *
- * WHAT THIS BODY IS.  It is s22's A3 body (s21's V1 chassis + the sanctioned
- * do-while(0) wrap that wins cluster A's $s2/$s3 seat swap) with ONE further
- * change, in the `== 5` selection inside the `==` arm.  s22 spelled it
+ * WHAT THIS BODY IS.  It is s21's V1 chassis - i.e. the s16 body with target's
+ * own `<` arm (`var_v0_4 = 0x19; if (var_s1 == 0) goto set_0xB; store;
+ * goto do_calls;`), which E-s21-2 proved byte-closes the store sink (emitted
+ * 83-88) and the arm store (emitted 148) - PLUS one `do { ... } while (0);`
+ * wrap around the `==` arm's existing call pair.  Nothing else changed.
  *
- *      var_v0_2 = 0x19;
- *      if (var_s1 == 0) { var_v0_2 = 0xB; }
- *      goto block_48;              // block_48 stores var_v0_2 to arg0+0x286
+ * WHY THE WRAP.  s21 reduced the whole $s2/$s3 seat swap (cluster A) to the
+ * closed-form inequality pri(arg1-carrier) > pri(temp_s3) = 2142 under
+ * global.c:635-656 allocno_compare, with exactly two solutions: raise
+ * nrefs(carrier) to >= 8, or shorten livelen(carrier) to <= 65.  s21 measured
+ * solution (b) (body P4) at a hard cap of 16 and killed every semantics-
+ * preserving route to (a) it could find (P5, the duplicated `>` call pair,
+ * collapses the tail to 81 / 183).  The do-while(0) wrap reaches solution (a)
+ * directly and at zero emitted cost: flow.c increments REG_N_REFS by
+ * `loop_depth`, which is 2 inside the NOTE_INSN_LOOP_BEG/END pair the wrap
+ * leaves behind, so every reference sited inside the wrap counts twice.
  *
- * and this body spells the SAME selection with the 0x19 edge as the branch's
- * own target thread, carrying its own copy of the (real, already-existing)
- * store statement:
+ * MEASURED, not inferred (tmp/grind/func_800283D0/s22/alloc_V1.txt vs
+ * alloc_A3.txt, instrumented cc1 ALLOCDBG):
+ *      V1 (no wrap):  73 arg1    nrefs=7 livelen=92  pri=1521 -> $s3  WRONG
+ *                    143 temp_s3 nrefs=3 livelen=14  pri=2142 -> $s2  WRONG
+ *      A3 (wrapped):  73 arg1    nrefs=9 livelen=92  pri=2934 -> $s2  TARGET
+ *                    143 temp_s3 nrefs=3 livelen=14  pri=2142 -> $s3  TARGET
+ * Every live length is unchanged and every other callee-saved seat
+ * ($s0/$s1/$s4/$s5/$s6) is unchanged; only nrefs(arg0) 19->21 and
+ * nrefs(arg1) 7->9 move, i.e. exactly the two pseudos referenced inside the
+ * wrap, +1 per reference.  This is the same mechanism s4 measured in 2026-07
+ * and (wrongly, see below) discarded.
  *
- *      if (var_s1 != 0) { goto sel19; }
- *      var_v0_2 = 0xB;
- *      goto block_48;
- *  sel19:
- *      *(s16 *)(arg0 + 0x286) = 0x19;
- *      goto block_49;
+ * FAMILY / POLICY.  `do { <any body> } while (0);` is a SANCTIONED pure-C
+ * match device for ANY codegen effect INCLUDING register allocation, with a
+ * mandatory inline FAKE annotation - owner ruling 2026-07-06, recorded in
+ * `.claude/rules/do-while-zero-exception.md` ("the former scoping to the
+ * reorg.c label-note mechanism is abolished").  s4 killed this construct on
+ * the ground that RA weighting was out of the carve-out's scope; that ground
+ * was superseded by the 2026-07-06 ruling and s4's kill is hereby RETRACTED
+ * as to policy (its measurements stand).  The wrap here is single-level (no
+ * nesting justification needed), annotated at the construct site, and wraps
+ * two REAL statements that are executed exactly once either way - it asserts
+ * nothing false.
  *
- * The two forms are semantically identical (s1 != 0 stores 0x19, s1 == 0 stores
- * 0xB, both then fall into `return ret`), and the duplicated store RE-MERGES in
- * jump2: emitted 128-131 are byte-identical to target (`bnez s1,.L800286F8 /
- * li v0,25 / j .L800286F8 / li v0,11`), i.e. both edges still reach the ONE
- * shared store.  The duplication is invisible in the bytes; what it changes is
- * WHICH reorg.c pass fills a delay slot.
+ * RESIDUAL AT 6 (tmp/grind/func_800283D0/s22/diff_A3.txt; `lui at,0` entries
+ * are unresolved-relocation artifacts of objdumping the .o, not diffs):
+ *   1. emitted 45-48 - ours `beq / li v0,1 / j / nop`, target
+ *      `beq / nop / j / li v0,1`.  Same insn count; reorg.c filled our
+ *      conditional branch's slot from the fall-through thread and target
+ *      filled the unconditional `j`'s slot instead.
+ *   2. emitted 126 + 131 - ours `nop` in the `beqz v0` delay slot plus a
+ *      standalone `li v0,1`; target steals the branch TARGET block's
+ *      `li v0,1` (the value stored to D_800A38A8) into the slot.  This is
+ *      cluster B and it is the WHOLE 216-vs-215 insn surplus.
+ *   3. emitted 96 `addu s3,s0,v0` vs `addu s3,v0,s0` and emitted 162
+ *      `addu a0,a0,s4` vs `addu a0,s4,a0` - commutative operand orders,
+ *      re-confirmed score-neutral in either spelling this session (F2).
+ * Cluster A, the store sink and the arm store are all CLOSED in this body.
  *
- * WHY IT WORKS (the named mechanism, measured not inferred - see E-s23-1/2).
- * s19/s20 proved the `beqz $v0` slot is refused because
- * `insn_sets_resource_p (trial, &opposite_needed)` is 1: the fall-through
- * selection block owns a `$v0` write which `fill_simple_delay_slots` steals
- * backward into the selection's OWN branch, and `update_block` leaves a
- * `(use (insn N))` marker inside the window `mark_target_live_regs` walks, so
- * `$v0` is live on the opposite thread by the time `fill_eager_delay_slots`
- * reaches the `beqz`.  s19's fix (hoisting the `0x19` out) removed the write but
- * gave up the selection branch's own slot (the +2 the whole W1/W2b/F1 hoist
- * family pays, chassis-independently).  This body instead moves the `0x19`
- * write to the OTHER SIDE of the selection branch: it is now the head of that
- * branch's TARGET thread, so it is taken by `fill_slots_from_thread` with
- * `INSN_FROM_TARGET_P` set, and `update_block` (reorg.c:2270) returns EARLY
- * without emitting any marker.  Both slots are filled, exactly as target does.
- * This is E-s19-7's option (a) - the one route s19 named and no session had yet
- * spelled - and it costs nothing.
- *
- * FAMILY / POLICY.  Two constructs in this body are family-relevant and BOTH
- * need a ruling before any candidate-ready submission:
- *   1. the `do { calls } while (0);` wrap (unchanged from s22, annotated in
- *      place, `.claude/rules/do-while-zero-exception.md`);
- *   2. the `sel19` arm's duplicated `*(s16 *)(arg0 + 0x286) = 0x19;` store.
- *      This is a REAL statement duplicated into a branch arm that re-merges
- *      byte-neutrally (emitted 128-131 == target), which is the shape
- *      `.claude/rules/duplicated-statement-into-arms.md` describes - that rule
- *      mandates a /* FAKE * / annotation, which this body does NOT yet carry
- *      because the store here is not merely a codegen decoy: it is target's own
- *      control flow (the same double-goto shape s21 read off target's `<` arm).
- *      The next session must either annotate it per that rule or ask for a
- *      ruling; do not submit candidate-ready without settling it.
- *
- * RESIDUAL AT 4 (tmp/grind/func_800283D0/s23/diff_X2.txt; `lui at,0` / `jal 0`
- * entries are unresolved-relocation artifacts of objdumping the .o):
- *   1. emitted 45-47 - ours `beq / li v0,1 / j / nop`, target
- *      `beq / nop / j / li v0,1`.  MECHANISM NOW NAMED (E-s23-3): jump_insn 78
- *      (the range chain's last `beq`) STEALS the `li v0,1` back out of
- *      jump_insn 84's already-filled slot via
- *      `steal_delay_list_from_fallthrough`; the steal is allowed only because
- *      $v0 is absent from `opposite_needed` = the exact flow live-in of the
- *      `beq`'s target block (oppregs=0x20000380).  fill_simple ALREADY produces
- *      target's arrangement (`DBRDBG simp insn=84 trial=82 elig=1`); a later
- *      pass undoes it.  This is a LIVENESS question, not a spelling question.
- *   2. emitted 96 `addu s3,s0,v0` vs `addu s3,v0,s0` and emitted 161
- *      `addu a0,a0,s4` vs `addu a0,s4,a0` - commutative operand order.  Both
- *      source-order spellings are banked neutral (s3, s22); the order is decided
- *      after fold, so it is not a source-order axis.
- *
- * s23 KILLS (do not re-propose - detail in evidence.md):
- *   - X1: the same double-goto selection but with the 0x19 arm going to the
- *     SHARED block_48 store (`sel19: var_v0_2 = 0x19; goto block_48;`) = 6, i.e.
- *     byte-identical to s22.  The arm must carry its OWN store; with the shared
- *     store the `0x19` write is still emitted before the branch.
- *   - X3: the mirrored spelling (0xB edge as the branch target) = 9 - GCC
- *     re-inverts the branch sense away from target's `bnez s1`, the same
- *     re-inversion s20's W3 measured.
- *   - Q1/Q2: relocating the range check's `return 1;` to a `ret1:` label at the
- *     end of the function (Q1) or just before block_13 (Q2), to deny
- *     jump_insn 78 a stealable fall-through, = 10 / 215 and 8 / 216.  The
- *     relocation costs more than the two points it could buy.
- * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  215i @ floor 4
+ * s22 KILLS (do not re-propose - full detail in evidence.md):
+ *   - s20's W2b cluster-B hoist re-applied on THIS chassis (F1) = 8, i.e.
+ *     the hoist family's +2 price is chassis-independent, exactly as s20's
+ *     frontier item 3 asked.
+ *   - Bare do-while(0) wraps placed to bend reorg.c (G1 around the
+ *     D_800A38A8 store pair, G2/G3 around the 0x19/0xB selection, G5 around
+ *     the range-check `return 1;`) are all byte-NEUTRAL: 6 / 216.
+ *   - Re-spelling a branch's false edge as an explicit source `goto` into a
+ *     label placed immediately AFTER a NOTE_INSN_LOOP_BEG - the shape that
+ *     would make reorg.c's mostly_true_jump return 2 and fill from the
+ *     target thread - is neutral for the `||` test (H4 = 6) and regressive
+ *     for the range-check chain (H5 = 10 / 213, the `return 1` cross-jumps
+ *     away).  Prediction is therefore NOT cluster B's lever; E-s18-8's
+ *     resource refusal stands.
+ *   - Wrapping only ONE of the pair (A1/A2/B1/C1) also flips the seats
+ *     (nrefs 8, pri 2553) but scores 10: the loop note landing BETWEEN the
+ *     two calls lengthens livelen(arg1) 92 -> 94 and perturbs the call
+ *     block.  The wrap must contain BOTH calls.
+ *   - Wrapping all three call pairs at once (D4) = 24; wrapping any two
+ *     (D1/D2/D3) = 6, i.e. no better than the single minimal wrap.
+ * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  216i @ floor 6
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {
     s32 temp_a1;
@@ -168,14 +156,14 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                             } while (0);
                             if (*(s16 *)(temp_s3 + 0x288) == 5) {
                                 if (((u32)(*(u16 *)(arg0 + 0xE) - 6) < 2U) || ((u32)(*(u16 *)(temp_s4 + 0xE) - 6) < 2U)) {
-                                    if (var_s1 != 0) {
-                                        goto sel19;
+                                    if (var_s1 == 0) {
+                                        goto sel0B;
                                     }
+                                    var_v0_2 = 0x19;
+                                    goto block_48;
+                                sel0B:
                                     var_v0_2 = 0xB;
                                     goto block_48;
-                                sel19:
-                                    *(s16 *)(arg0 + 0x286) = 0x19;
-                                    goto block_49;
                                 }
                                 D_800A38A8 = 1;
                                 D_800A3876 = -1;
