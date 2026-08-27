@@ -89,6 +89,35 @@
  *     this block shape, E-s19-7) and an INCIDENTAL ~20-point cost from
  *     var_v0_2 leaving $v0 across the `>` path tail, which a fresh local
  *     scoped to the `== 5` subtree should avoid.
+ *
+ * s20 ADDENDUM (rederive, 2026-08-27) - this body is UNCHANGED and still
+ * measures 10 / 216 (re-measured at session start and twice at session end).
+ * What s20 added:
+ *   - s19's frontier item 1 is MEASURED AND PRICED.  A fresh local scoped to
+ *     the `== 5` subtree (`s16 sel5 = 0x19;` above the `||`, then
+ *     `var_v0_2 = sel5; goto block_48;`) removes the WHOLE ~20-point
+ *     incidental cost of W1: 32 / 216 -> 12 / 216 (body W2b, banked at
+ *     rejected/clusterB-freshlocal-sel5-copy-to-varv02-CLOSES-B-but-12.c).
+ *     Cluster B is byte-CLOSED there - the normalized diff has no entry at
+ *     emitted 126.  But 12 > 10, so cluster B does NOT close for free: it
+ *     costs a net +2 (two `move v0,v1` copies at emitted 128/131, because
+ *     `sel5` gets `$v1` - its range spans the `||` test, which computes in
+ *     `$v0` - plus E-s19-7's structural slot trade at emitted 120, which
+ *     survives every respelling).  `s32 sel5` does not change the seat (12).
+ *   - TARGET DOES NOT USE THE HOIST (E-s20-3).  Target's asm carries no
+ *     materialisation of 0x19 before the `||` test at all: its `li v0,25`
+ *     sits in `jump_insn 354`'s slot as a BACKWARD steal from inside the
+ *     block, i.e. WITH the `update_block` marker E-s19-4 proved poisons
+ *     `jump_insn 344` - and target fills 344 anyway.  The hoist family can
+ *     close cluster B but can never reproduce target's bytes here.
+ *   - Three further shapes KILLED: the disjoint-path variable split is a
+ *     no-op that jump2 re-merges (V5 = 10 / 216, byte-identical to base;
+ *     V4 = split + hoist = 15 / 218); inverting the `== 5` selection so the
+ *     0x19 edge is the branch target flips the emitted branch sense away
+ *     from target (W3 = 13 / 216); respelling the range-check exit as a
+ *     `goto ret_one;` with a trailing `ret_one: return 1;` reaches target's
+ *     215 insns but scores 37.
+ *
  * kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  216i @ floor 10
  */
 s32 func_800283D0(u8 *arg0, u8 *arg1) {

@@ -1592,3 +1592,64 @@ than `$v0`, (c) `code_label 347` absent at reorg time (refuted by target's asm).
 - probe: W1's normalized objdump diff vs target at emitted 120 and 128.
 - result: W1 emitted 120 = `li v1,25` where target has `nop`, and emitted 128 = `nop` where target has `li v0,25`: W1 filled slot 344 and lost slot 354, exactly as predicted. Target has BOTH filled, so target's RTL must satisfy (a) 354's slot filled by fill_eager from its TARGET (INSN_FROM_TARGET_P suppresses the marker - update_block returns early), (b) the filling insn writes a register other than $v0, or (c) code_label 347 absent at reorg time (refuted by target's own asm, where .L800285CC is the bnez target of the first 0xE test).
 - verdict: CONFIRMED
+
+
+## [s20] Cluster B's ~4 points and the 216-vs-215 insn surplus close for FREE once W1's incidental cost is removed by a fresh local scoped to the `== 5` subtree.
+- mechanism: W1's 32/216 = ~20 points of pure register renaming in the `>` path caused by var_v0_2 leaving `$v0`, plus a structural 2-point slot trade at emitted 120/128. A local declared inside the `== 5` block cannot participate in the `>` path's allocation, so the ~20 points should vanish and the body should land near 12 with cluster B's slot correct.
+- probe: four spellings of the fresh local, each applied with tmp/grind/func_800283D0/s20/apply.py and scored with `sandbox --disable all` (base re-measured twice per E-s13-6): W2a (arm stores `sel5` itself, `goto block_49`), W2b (`var_v0_2 = sel5; goto block_48`), W2c (W2b with `s32 sel5`), W2d (`var_v0_2 = sel5` written before the `var_s1` test). Normalized objdump diffs read with s19/mk.sh.
+- result: HALF CONFIRMED, HALF KILLED. The incidental cost is real and fully removable - W1 = 32/216, W2b = W2a = W2c = 12/216. But 12 is WORSE than the base 10, so cluster B does NOT close for free: it costs a net +2. W2b's diff has no entry at emitted 126 (`li v0,1` is in the `beqz` delay slot exactly as target), so cluster B IS byte-closed; the price is two `move v0,v1` copies (emitted 128, 131) because `sel5` is allocated `$v1` - its live range spans the `||` test, which computes in `$v0` - plus the structural slot trade at emitted 120 that E-s19-7 predicted and that survives every respelling. W2d folds the fresh local away entirely (byte-identical to base, 10/216).
+- verdict: KILLED (as a floor-lowering route); CONFIRMED (as the mechanism prediction)
+
+## [s20] Target closes both delay slots by removing the fall-through block's own `$v0` write, i.e. target's source hoists the 0x19 the way W1/W2b do.
+- mechanism: E-s19-4 named `update_block`'s `(use (insn N))` marker as the poisoner of `jump_insn 344`'s slot; removing the block's `$v0` write removes the marker. If target had both slots filled, target's source would have to avoid that write.
+- probe: read target's own emitted asm at the region (asm/funcs/func_800283D0.s, normalized lines 126-131 in tmp/grind/func_800283D0/s19/target.txt) and check whether any `0x19` materialisation exists before the `||` test.
+- result: REFUTED. Target emits `beqz v0,.L800285DC` / `li v0,1` (slot) / `bnez s1,.L800286F8` / `li v0,25` (slot) / `j .L800286F8` / `li v0,11` (slot). The `li v0,25` in `jump_insn 354`'s slot is a BACKWARD steal from inside the fall-through block - the marker IS present in target - and target still fills `jump_insn 344`. Target has no insn before the `||` test to hoist. The entire hoist family can close cluster B but can never reproduce target's emitted code here.
+- verdict: KILLED
+
+## [s20] A disjoint-path variable split isolates var_v0_2's live range, so the `>` path keeps `$v0` while the `== 5` path carries the hoisted 0x19.
+- mechanism: the `== 5` subtree and the `>` path are on mutually exclusive control-flow paths, so two distinct pseudos with two distinct `*(s16*)(arg0+0x286)` stores should get two distinct seats and the hoist's renaming cost should not reach the `>` path.
+- probe: V5 = base with the whole `>` path tail rewritten onto a fresh `s16 var_v0_5` plus its own store and `goto block_49`; V4 = V5 plus W1's hoist. Scored with `sandbox --disable all`.
+- result: KILLED. V5 = 10 / 216, byte-identical to base - jump2 cross-jumps the two stores back together and the pseudos coalesce, so the split is a source-level no-op. V4 = 15 / 218 (better than W1's 32, but two insns longer and 5 worse than base). A source-level variable split is not a live-range lever on this body.
+- verdict: KILLED
+
+## [s20] Inverting the `== 5` selection so the 0x19 edge is the branch TARGET makes the branch's slot fillable only from its target (INSN_FROM_TARGET_P leaves no `update_block` marker), closing cluster B without the hoist.
+- mechanism: s19 frontier item 2 / E-s19-7 option (a): `update_block` returns early without emitting a marker when `INSN_FROM_TARGET_P(insn)` is set, so an insn that arrives in a slot via `steal_delay_list_from_target` cannot poison a preceding branch.
+- probe: W3 = the `== 5` selection spelled `if (var_s1 != 0) { var_v0_2 = 0x19; goto block_48; } var_v0_2 = 0xB; goto block_48;`. Scored, and the normalized diff read.
+- result: KILLED. 13 / 216. GCC does not lay the arms out in source order here: it re-inverts the branch sense, so the emitted `beqz s1` diverges from target's `bnez s1` and the region gains divergences rather than losing them. W2a exhibits the same inversion. Any respelling that moves the 0x19 initialisation out of the fall-through position flips the emitted branch sense away from target.
+- verdict: KILLED
+
+## [s20] The emitted-45-47 slot swap (ours `li v0,1` in the last `beq`'s slot, target `li v0,1` in the `j`'s slot) is an exit-FORM question that a distinct trailing `return 1;` label fixes.
+- mechanism: the range check currently spells its exit as an inline `return 1;`. If the `li v0,1` were owned by a separate labelled exit block, fill_simple's forward steal into the `beq`'s slot could not reach it and the `j`'s backward steal would take it instead - which is target's placement.
+- probe: E4 = base with `goto ret_one;` in the range check and a trailing `ret_one: return 1;` after `block_13:`. Scored with `sandbox --disable all`.
+- result: KILLED. 37 / 215. The insn count reaches target's 215 (the extra label removes the surplus insn) but the score more than triples - the trailing label re-shapes the whole epilogue region. The exit-form dimension is closed on the 10-floor chassis, re-confirming s10's D4/D5 kills on the 23-floor chassis.
+- verdict: KILLED
+
+## [s20] Cluster B's ~4 points and the 216-vs-215 insn surplus close for FREE once W1's incidental cost is removed by a fresh local scoped to the `== 5` subtree.
+- mechanism: W1's 32/216 = ~20 points of pure register renaming in the `>` path caused by var_v0_2 leaving $v0, plus a structural 2-point slot trade at emitted 120/128. A local declared inside the `== 5` block cannot participate in the `>` path's allocation, so the ~20 points should vanish and the body should land near 12 with cluster B's slot correct.
+- probe: Four spellings of the fresh local, each applied with tmp/grind/func_800283D0/s20/apply.py and scored with `sandbox --disable all` (base re-measured twice per E-s13-6): W2a (arm stores sel5 itself, goto block_49), W2b (var_v0_2 = sel5; goto block_48), W2c (W2b with s32 sel5), W2d (var_v0_2 = sel5 written before the var_s1 test). Normalized objdump diffs read with s19/mk.sh.
+- result: W1 = 32/216; W2a = W2b = W2c = 12/216; W2d = 10/216 (the fresh local const-folds away, byte-identical to base). W2b's normalized diff has NO entry at emitted 126 - `li v0,1` sits in the beqz delay slot byte-exactly as target - so cluster B IS closed. Its price: two `move v0,v1` copies at emitted 128/131 (sel5 is allocated $v1 because its live range spans the `||` test, which itself computes in $v0, so the sel5 -> var_v0_2 copy does not coalesce) plus the structural slot trade at emitted 120 that E-s19-7 predicted and that survives every respelling.
+- verdict: KILLED
+
+## [s20] Target closes both delay slots by removing the fall-through block's own $v0 write - i.e. target's source hoists the 0x19 the way W1/W2b do.
+- mechanism: E-s19-4 named update_block's `(use (insn N))` marker as the poisoner of jump_insn 344's slot; removing the block's $v0 write removes the marker, so a target with both slots filled would have to avoid that write.
+- probe: Read target's own emitted asm for the region (asm/funcs/func_800283D0.s, normalized as tmp/grind/func_800283D0/s19/target.txt lines 126-131) and check for any 0x19 materialisation before the `||` test.
+- result: REFUTED. Target emits `beqz v0,.L800285DC` / `li v0,1` (slot) / `bnez s1,.L800286F8` / `li v0,25` (slot) / `j .L800286F8` / `li v0,11` (slot). The `li v0,25` in jump_insn 354's slot is a BACKWARD steal from inside the fall-through block, so the update_block marker IS present in target - and target still fills jump_insn 344. Target has no insn before the `||` test to hoist. The whole hoist family can close cluster B but can never reproduce target's emitted code in this region.
+- verdict: KILLED
+
+## [s20] A disjoint-path variable split isolates var_v0_2's live range, so the `>` path keeps $v0 while the `== 5` path carries the hoisted 0x19.
+- mechanism: The `== 5` subtree and the `>` path are mutually exclusive control-flow paths, so two distinct pseudos with two distinct *(s16*)(arg0+0x286) stores should get two distinct seats and the hoist's renaming cost should not reach the `>` path.
+- probe: V5 = base with the whole `>` path tail rewritten onto a fresh `s16 var_v0_5` plus its own store and `goto block_49`; V4 = V5 plus W1's hoist. Both scored with `sandbox --disable all`.
+- result: V5 = 10 / 216, byte-identical to base - jump2 cross-jumps the two stores back together and the pseudos coalesce, so the split is a source-level no-op. V4 = 15 / 218 (better than W1's 32 but two insns longer and 5 worse than base). A source-level variable split is not a live-range lever on this body.
+- verdict: KILLED
+
+## [s20] Inverting the `== 5` selection so the 0x19 edge is the branch TARGET makes the branch's slot fillable only from its target (INSN_FROM_TARGET_P leaves no update_block marker), closing cluster B without the hoist.
+- mechanism: s19 frontier item 2 / E-s19-7 option (a): update_block returns early without emitting a marker when INSN_FROM_TARGET_P(insn) is set, so an insn that arrives in a slot via steal_delay_list_from_target cannot poison a preceding branch.
+- probe: W3 = the `== 5` selection spelled `if (var_s1 != 0) { var_v0_2 = 0x19; goto block_48; } var_v0_2 = 0xB; goto block_48;`. Scored, normalized diff read.
+- result: 13 / 216. GCC does not lay the arms out in source order here - it re-inverts the branch sense, so the emitted `beqz s1` diverges from target's `bnez s1` and the region gains divergences. W2a shows the same inversion. Any respelling that moves the 0x19 initialisation out of the fall-through position flips the emitted branch sense away from target.
+- verdict: KILLED
+
+## [s20] The emitted-45-47 slot swap (ours `li v0,1` in the last `beq`'s slot, target `li v0,1` in the `j`'s slot) is an exit-FORM question that a distinct trailing `return 1;` label fixes.
+- mechanism: The range check currently spells its exit as an inline `return 1;`. If the `li v0,1` were owned by a separate labelled exit block, fill_simple's forward steal into the beq's slot could not reach it and the j's backward steal would take it instead - which is target's placement.
+- probe: E4 = base with `goto ret_one;` in the range check and a trailing `ret_one: return 1;` after `block_13:`. Scored with `sandbox --disable all`.
+- result: 37 / 215. The insn count reaches target's 215 (the extra label removes the surplus insn) but the score more than triples - the trailing label re-shapes the whole epilogue region. The exit-form dimension is closed on the 10-floor chassis, re-confirming s10's D4/D5 kills on the 23-floor chassis.
+- verdict: KILLED

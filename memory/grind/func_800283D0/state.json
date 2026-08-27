@@ -1,8 +1,8 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 19,
- "current_modality": "forensics",
+ "session_count": 20,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -117,23 +117,29 @@
    "floor": 10,
    "modality": "forensics",
    "headline": "Cluster B is CLOSABLE in pure C (measured, first time in 19 sessions): the dbr refusal is update_block's (use (insn N)) marker, not an over-approximate live-in; body W1 fills jump_insn 344's slot byte"
+  },
+  {
+   "session": 20,
+   "floor": 10,
+   "modality": "rederive",
+   "headline": "Floor held at 10/216; s19's cluster-B frontier is measured and priced - the fresh scoped local removes W1's whole ~20-point incidental cost (32 -> 12, cluster B byte-closed) but closure is still net -"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Cluster B's ~4 points plus the 216-vs-215 insn surplus close for FREE if the incidental cost of W1 is removed - i.e. if the `0x19` initialisation is hoisted into a FRESH local scoped to the `== 5` subtree rather than into var_v0_2, so var_v0_2 keeps $v0 across the `>` path tail.",
-   "mechanism": "W1's 32/216 is ~20 points of pure register renaming in the `>` path (emitted 159-203) caused by var_v0_2 leaving $v0, plus the structural 2-point slot trade at emitted 120/128. A local declared inside the `== 5` block and stored to arg0+0x286 on that path only cannot participate in the `>` path's allocation, so the ~20 points should vanish and the body should land near 12 with cluster B's slot correct.",
-   "next_probe": "Build W2 = the banked candidate with, inside the `if (*(s16 *)(temp_s3 + 0x288) == 5)` block only, `s16 sel5 = 0x19;` declared and assigned BEFORE the `||` test, `if (var_s1 == 0) sel5 = 0xB;` inside the true arm, and `*(s16 *)(arg0 + 0x286) = sel5; goto block_49;` instead of `goto block_48;`. Apply with tmp/grind/func_800283D0/s18/apply.py, score with `sandbox --disable all` twice (E-s13-6), and confirm the slot with `bash tmp/grind/func_800283D0/s19/dbr.sh W2` - the win condition is `setsopp=0` on the `trial=<the v0=1 insn>` line and no LOSE. Then read the normalized diff with s19/mk.sh to price what is left."
+   "hypothesis": "Target fills jump_insn 344's slot DESPITE the update_block marker, so the marker is harmless in target for a reason that is not 'no marker' - most likely mark_target_live_regs' target_hash_table cache: the entry for the opposite thread is reused when tinfo->bb_tick == bb_ticks[b], and update_block bumps bb_ticks only for find_basic_block(the moved insn), which need not be the opposite thread's block.",
+   "mechanism": "mark_target_live_regs (reorg.c:2520-2560) hashes on INSN_UID(target) and returns the cached live set unchanged when the block tick matches. update_block (reorg.c:2276) bumps bb_ticks[find_basic_block(insn)] only. If in target the moved insn (li v0,0x19) and the opposite thread resolve to different blocks - which depends on where the previous BARRIER sits, i.e. on whether an unconditional jump precedes the `||` test - the poisoned recomputation never happens and the clean cached set is used.",
+   "next_probe": "On the BASE body, dump `DBRDBG mtlr target=<uid> block=<n>` lines from tmp/grind/func_800283D0/s19/dbr_base.txt for the opposite thread of jump_insn 344 and note whether mark_target_live_regs recomputed or hit the cache. Then test the BARRIER hypothesis in C: make the block immediately before code_label 347 end in an unconditional jump (e.g. spell the first disjunct of the `||` as `if (cond1) goto sel_block;` with the D_800A38A8 block written between the two tests so it ends with `goto block_49;`), which inserts a BARRIER and moves find_basic_block's resolution for the marker's insn to a different block than the opposite thread's. Score twice and re-read oppregs/setsopp for jump_insn 344."
   },
   {
-   "hypothesis": "Target fills BOTH delay slots, so target's fall-through selection block does not supply a $v0 write to fill_simple - the discriminator is (a) fill_eager filling 354's slot from its TARGET (INSN_FROM_TARGET_P leaves no update_block marker) versus (b) the filling insn writing a register other than $v0.",
-   "mechanism": "update_block returns early without emitting a `(use (insn N))` marker when INSN_FROM_TARGET_P(insn) is set, so an insn that arrives in a slot via steal_delay_list_from_target cannot poison a preceding branch's opposite_needed. fill_simple's backward steal always can, because stop_search_p confines it to the window after code_label 347.",
-   "next_probe": "On the base body, dump the DBRDBG lines for jump_insn 354 itself (`grep -E 'thr insn=354|simp insn=354' tmp/grind/func_800283D0/s19/dbr_base.txt`) and establish which pass fills it and with which insn. Then test hypothesis (a) by giving the 0x19/0xB selection block a shape in which its branch's slot can only be filled from its target - e.g. make the 0xB edge fall through and the 0x19 edge the branch target, so the insn eligible for the slot sits AFTER the branch. Score twice and re-read oppregs for jump_insn 344."
+   "hypothesis": "The store sink (emitted 83-88, ~2 pts) and the arm store (emitted 148, ~1 pt) are the cheapest remaining cluster and have never been attacked on the 10-floor chassis - s13 closed them byte-exactly with a `goto do_calls` but that same goto cost cluster A on the 17-floor body, which no longer applies since s16 re-attributed cluster A to the duplicated-call pair.",
+   "mechanism": "sched1 sinks `sh v0,0x286(s0)` into the first jal delay slot (E-s13-1); target keeps it at the head of the shared store/calls block. s13's variant A reproduced target's slots 83-95 and 144-157 exactly via a source-level `goto do_calls`, and was rejected only because it lost cluster A on a body whose cluster A came from a different mechanism. The s16 body wins cluster A from nrefs(arg1)=9 supplied by the `<` arm's duplicated calls, which variant A's goto does not disturb in the same way.",
+   "next_probe": "Re-measure s13's variant A construction on TOP of the current 10-floor body (memory/grind/func_800283D0/rejected/variant-A-arm-goto-docalls-store-and-arm-byte-exact-clusterA-lost-17.c is the 17-floor version; port only its `goto do_calls` store placement onto candidate.c, keeping the s16 `<` arm intact). Score twice, then run tmp/grind/func_800283D0/s18/al.sh to confirm the $s2/$s3 seats survived."
   },
   {
-   "hypothesis": "The whole s18 cluster-A frontier (the nrefs vs livelen trade) should be re-priced only AFTER cluster B is banked, because E-s18-5's arithmetic (a seat-flipped tA is worth ~5, the cheapest displacement prices at ~10) was computed against a base that still carried cluster B's 4 points and the insn surplus.",
-   "mechanism": "Cluster A and cluster B are independent residuals (E-s18-3's V6 closes A with no B effect; W1 closes B with no A effect), so their prices compose. A body at ~6 with cluster B closed changes the break-even for the ~10-point livelen displacement measured in E-s18-5.",
-   "next_probe": "Only after frontier item 1 lands a body materially below 10: re-measure V6 (tmp/grind/func_800283D0/s18/V6.c, banked at rejected/V6-hoist-e0e1-bools-livelen20-SEATS-FLIP-but-19.c) and tC (s17, 12/221) on top of the cluster-B-closed body rather than on the current base, and re-run s18/al.sh to confirm the seats. Do not re-derive E-s18-4's linear livelen ladder - it is banked and chassis-valid."
+   "hypothesis": "Cluster B closure and the store-sink closure compose: a body that closes the store sink first may pay the W2b copies more cheaply, because the two `move v0,v1` copies land in different scheduling positions once the store is not sunk into the jal delay slot.",
+   "mechanism": "W2b's +2 is two `move v0,v1` copies materialised at emitted 128/131. Both sit in the region the store sink also touches; s17 already measured that the store pin and cluster A interact (tC held both at 12/221). If the store is pinned at the block head, the copies may coalesce or land in slots that already differ from target.",
+   "next_probe": "Only after frontier item 2 lands a body materially below 10: re-apply W2b's `s16 sel5` change on top of the store-pinned body and score twice. If the result is below the store-pinned body's own floor, cluster B becomes free and the frontier reopens; if it is +2 again, the copies are independent of the store and the hoist family is finally closed."
   }
  ],
  "judge_constraints": [],

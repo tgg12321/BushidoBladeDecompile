@@ -2816,3 +2816,125 @@ target (`INSN_FROM_TARGET_P`, so `update_block` emits no marker at all), or
 - [s19] fill_simple_delay_slots' backward search is bounded by stop_search_p, which stops at a CODE_LABEL - so the filler of jump_insn 354's slot can only come from between code_label 347 and the branch, and its update_block marker always lands in the poisoning window. Slots 344 and 354 are mutually exclusive for any body whose fall-through selection block owns its own $v0 write.
 
 - [s19] src/code6cac_b.c was restored to the banked candidate body before the session ended and re-measured 10 / 216 twice.
+
+
+## s20 (rederive, 2026-08-27) - floor HELD at 10 / 216; the s19 cluster-B frontier is MEASURED AND PRICED: the incidental cost is real and removable (32 -> 12), the structural cost is NOT, so closing cluster B remains net-negative at -2
+
+**E-s20-0 (chassis).**  The banked s16-s19 candidate body measured **10 / 216** on
+HEAD at session start and twice again at session end (E-s13-6 staleness
+discipline).  The normalized objdump diff reproduces the s19 residual map
+exactly (tmp/grind/func_800283D0/s20/diff_base.txt): emitted 45-47 (the
+`li v0,1` / `j` / `nop` vs target's `nop` / `j` / `li v0,1` slot swap, ~2 pts),
+83-88 (the store sink, ~2 pts), 126 + 131-133 (cluster B, ~3 pts AND the entire
+216-vs-215 insn surplus - the surplus is ONE insn, the un-stolen `li v0,1`),
+148 (the arm store, ~1 pt), 96 and 162 (two commutative `addu` operand orders,
+~1 pt each).  Every s12-s19 conclusion remains chassis-valid.
+
+**E-s20-1 (THE HEADLINE: s19's frontier item 1 is CONFIRMED on its incidental
+half and KILLED on its structural half).**  s19 predicted that W1's 32 / 216
+splits into a ~20-point INCIDENTAL cost (var_v0_2 leaving `$v0` across the `>`
+path tail) plus a structural slot trade, and that "a fresh local scoped to the
+`== 5` subtree" would remove the incidental part.  Measured, four spellings:
+
+| body | shape of the `== 5` subtree | score / insns |
+|---|---|---|
+| base | `var_v0_2 = 0x19;` INSIDE the `\|\|`-true block | 10 / 216 |
+| s19 W1 | `var_v0_2 = 0x19;` hoisted above the `\|\|` | 32 / 216 |
+| **W2b** | **`s16 sel5 = 0x19;` above the `\|\|`; `if (var_s1==0) sel5=0xB;` then `var_v0_2 = sel5; goto block_48;`** | **12 / 216** |
+| W2a | same, but the arm stores `*(s16*)(arg0+0x286)=sel5` itself and `goto block_49` | 12 / 216 |
+| W2c | W2b with `s32 sel5` instead of `s16` | 12 / 216 |
+| W2d | W2b with `var_v0_2 = sel5;` written BEFORE the `var_s1` test | 10 / 216 (sel5 const-folds away; byte-identical to base) |
+
+The prediction is CONFIRMED: the fresh scoped local removes the whole ~20-point
+`>` path renaming (32 -> 12).  The prediction that the remainder closes "for
+FREE" is REFUTED: **W2b is 12, base is 10, so closing cluster B costs a net +2.**
+
+**E-s20-2 (what W2b actually buys and what it pays - the normalized diff).**
+W2b's diff has NO entry at emitted 126: `li v0,1` sits in the `beqz`'s delay
+slot exactly as target, i.e. **cluster B is CLOSED byte-exactly in a body that
+is otherwise the banked candidate.**  What W2b pays instead:
+  - emitted 120 ours `li v1,25` vs target `nop` - the structural slot trade
+    E-s19-7 named (buying `jump_insn 344`'s slot gives up `jump_insn 354`'s).
+    This survives the fresh-local respelling, confirming it is a property of
+    fill_simple's `stop_search_p` window, not of the variable.
+  - emitted 128-129 ours `move v0,v1` / `li v1,11` vs target `li v0,25`, and
+    emitted 131 ours `move v0,v1` - `sel5` is allocated `$v1` (its live range
+    now spans the `||` test, which itself computes in `$v0`), so the
+    `sel5 -> var_v0_2` copy does not coalesce and materializes twice.
+So the +2 is: one lost delay slot (+1 vs the +3 cluster B refunds is a net -3
+... measured net is +2, i.e. the two `move v0,v1` copies cost more than the
+cluster-B refund).
+
+**E-s20-3 (why `sel5` cannot be made to live in `$v0`, and why target's
+mechanism must therefore be DIFFERENT from the hoist).**  Target's own asm
+carries NO materialization of `0x19` before the `||` test at all: target
+emitted 126-130 is `li v0,1` (in the `beqz` slot) / `bnez s1,.L800286F8` /
+`li v0,25` (in the `bnez` slot) / `j .L800286F8` / `li v0,11` (in the `j`
+slot).  The `li v0,25` in `jump_insn 354`'s slot is a BACKWARD steal from
+inside the block - which is exactly the steal whose `update_block` marker
+E-s19-4 proved poisons `jump_insn 344`.  Target therefore closes BOTH slots
+with the marker present, so target's route is NOT "remove the block's own `$v0`
+write" (W1/W2b's route).  The hoist family can reach cluster B but can never
+reach target's emitted code, because target has no insn to hoist.
+
+**E-s20-4 (the disjoint-path variable split is score-NEUTRAL: jump2 re-merges
+it, so it cannot isolate a live range).**  Hypothesis: the `== 5` subtree and
+the `>` path are on disjoint control-flow paths, so giving the `>` path its own
+local (`s16 var_v0_5` + its own `*(s16*)(arg0+0x286)` store + `goto block_49`)
+should stop var_v0_2's extended live range from renaming the `>` path.
+Measured: **V5 (split alone, no hoist) = 10 / 216 - byte-identical to base**,
+because jump2 cross-jumps the two stores back together and the two pseudos
+coalesce.  **V4 (split + W1's hoist) = 15 / 218** - better than W1's 32 but two
+insns LONGER and still 5 worse than base.  The split is not a live-range lever
+on this body; it is a no-op that the tail-merge undoes.
+
+**E-s20-5 (inverting the `== 5` selection so the `0x19` edge is the branch
+target is regressive).**  s19's frontier item 2 asked for a shape whose branch
+slot can only be filled from its target.  Body W3 spells the selection as
+`if (var_s1 != 0) { var_v0_2 = 0x19; goto block_48; } var_v0_2 = 0xB; goto
+block_48;`.  Measured **13 / 216**: GCC does not lay the arms out in source
+order here - it re-inverts the branch sense and the emitted block gains an
+extra divergence at the `bnez`/`beqz` pair.  W2a shows the same effect (its
+`beqz s1` / `li v0,11` pair is inverted relative to target's `bnez s1` /
+`li v0,25`), i.e. **any respelling of this selection that moves the `0x19`
+initialisation out of the fall-through position flips the emitted branch sense
+away from target.**
+
+**E-s20-6 (the emitted-45-47 slot swap is NOT an exit-form question).**  The
+range-check's `return 1;` is emitted as `beq v1,v0,T` / `li v0,1` (slot) /
+`j T` / `nop`; target is `beq v1,v0,T` / `nop` / `j T` / `li v0,1` (slot) -
+same insn count, different branch owns the `li`.  Body E4 respells the exit as
+`goto ret_one;` with a trailing `ret_one: return 1;` label after `block_13`.
+Measured **37 / 215**.  The insn count drops to target's 215, but the score
+triples: the trailing label re-shapes the whole epilogue region.  The exit-form
+dimension is closed for this residual (consistent with s10's D4/D5 kills on the
+23-floor chassis, now re-confirmed on the 10-floor chassis).
+
+- [s20] Chassis: the banked candidate measured 10 / 216 at session start and twice at session end. Floor HELD at 10. The 216-vs-215 insn surplus is exactly ONE insn - the `li v0,1` that target steals into `jump_insn 344`'s delay slot and we emit standalone.
+- [s20] s19's frontier item 1 is MEASURED. The ~20-point incidental cost of W1 IS removable by a fresh local scoped to the `== 5` subtree (W1 = 32/216 -> W2b = 12/216), exactly as predicted. The claim that cluster B then closes "for FREE" is REFUTED: W2b is 12 against a base of 10, so closing cluster B is net -2.
+- [s20] W2b (tmp/grind/func_800283D0/s20/W2b.c, banked at rejected/clusterB-freshlocal-sel5-copy-to-varv02-CLOSES-B-but-12.c) is the FIRST body that closes cluster B at a survivable price: its normalized diff has no entry at emitted 126, i.e. `li v0,1` is in the `beqz` delay slot byte-exactly as target. It is the reference body for any future cluster-B work.
+- [s20] W2b's residual cost is two `move v0,v1` copies (emitted 128 and 131) plus the structural slot trade at emitted 120. `sel5` is allocated `$v1` because its live range spans the `||` test, which itself computes in `$v0`; the `sel5 -> var_v0_2` copy therefore does not coalesce. Spelling `sel5` as `s32` (W2c) does not change the seat: 12 / 216.
+- [s20] TARGET DOES NOT USE THE HOIST. Target's asm has NO materialisation of 0x19 before the `||` test - its `li v0,25` sits in `jump_insn 354`'s delay slot as a backward steal from inside the block, i.e. WITH the `update_block` marker that E-s19-4 proved poisons `jump_insn 344`. Target closes both slots with the marker present. The whole hoist family (W1/W2a/W2b/W2c) can therefore close cluster B but can NEVER reproduce target's emitted code in this region; the next session must look for the reason the marker is harmless in target (cache staleness in `target_hash_table`/`bb_ticks`, or a different `find_basic_block` resolution for the marker's insn), not for a better hoist.
+- [s20] The disjoint-path variable split is a NO-OP: giving the `>` path its own `s16 var_v0_5` plus its own `*(s16*)(arg0+0x286)` store and `goto block_49` measures 10 / 216, byte-identical to base (V5), because jump2 cross-jumps the two stores and the pseudos coalesce. Under W1's hoist the same split measures 15 / 218 (V4). A source-level variable split cannot isolate a live range on this body.
+- [s20] Inverting the `== 5` selection so the 0x19 edge is the branch target (W3) = 13 / 216: GCC re-inverts the branch sense and diverges from target's `bnez s1`. Any respelling that moves the 0x19 initialisation out of the fall-through position flips the emitted branch sense away from target (also visible in W2a).
+- [s20] Respelling the range-check exit as `goto ret_one;` with a trailing `ret_one: return 1;` after `block_13` = 37 / 215. The insn count reaches target's 215 but the epilogue region re-shapes and the score triples. The exit-form dimension is closed on the 10-floor chassis, re-confirming s10's D4/D5 kills.
+
+- [s20] Chassis: the banked s16-s19 candidate measured 10 / 216 on HEAD at session start and twice again at session end (E-s13-6 staleness discipline). Floor HELD at 10. Every s12-s19 conclusion remains chassis-valid.
+
+- [s20] The 216-vs-215 insn surplus is exactly ONE insn: the `li v0,1` that target steals into jump_insn 344's delay slot and that we emit standalone. Closing cluster B closes the surplus.
+
+- [s20] s19's frontier item 1 is MEASURED. The ~20-point incidental cost of W1 IS fully removable by a fresh local scoped to the `== 5` subtree (W1 = 32/216 -> W2b = 12/216), exactly as s19 predicted. The claim that cluster B then closes 'for FREE' is REFUTED: W2b is 12 against a base of 10, so closing cluster B is net -2.
+
+- [s20] W2b (tmp/grind/func_800283D0/s20/W2b.c, banked at memory/grind/func_800283D0/rejected/clusterB-freshlocal-sel5-copy-to-varv02-CLOSES-B-but-12.c) is the FIRST body that closes cluster B at a survivable price: its normalized diff has no entry at emitted 126, i.e. `li v0,1` is in the beqz delay slot byte-exactly as target. It is the reference body for any future cluster-B work.
+
+- [s20] W2b's residual cost is two `move v0,v1` copies (emitted 128 and 131) plus the structural slot trade at emitted 120. sel5 is allocated $v1 because its live range spans the `||` test, which itself computes in $v0, so the sel5 -> var_v0_2 copy does not coalesce. Spelling sel5 as s32 (W2c) does not change the seat: 12 / 216.
+
+- [s20] TARGET DOES NOT USE THE HOIST. Target's asm has NO materialisation of 0x19 before the `||` test - its `li v0,25` sits in jump_insn 354's delay slot as a backward steal from inside the block, i.e. WITH the update_block marker that E-s19-4 proved poisons jump_insn 344. Target closes both slots with the marker present. The next session must look for the reason the marker is harmless in target (mark_target_live_regs' target_hash_table / bb_ticks cache staleness, or a different find_basic_block resolution for the marker's insn), not for a better hoist.
+
+- [s20] The disjoint-path variable split is a NO-OP: giving the `>` path its own s16 var_v0_5 plus its own *(s16*)(arg0+0x286) store and `goto block_49` measures 10 / 216, byte-identical to base (V5), because jump2 cross-jumps the two stores and the pseudos coalesce. Under W1's hoist the same split measures 15 / 218 (V4).
+
+- [s20] Inverting the `== 5` selection so the 0x19 edge is the branch target (W3) = 13 / 216: GCC re-inverts the branch sense and diverges from target's `bnez s1`. Any respelling that moves the 0x19 initialisation out of the fall-through position flips the emitted branch sense away from target (also visible in W2a, 12 / 216).
+
+- [s20] Respelling the range-check exit as `goto ret_one;` with a trailing `ret_one: return 1;` after block_13 = 37 / 215. Insn count reaches target's 215 but the epilogue region re-shapes. Exit-form dimension closed on the 10-floor chassis.
+
+- [s20] The base residual map is unchanged and re-confirmed (tmp/grind/func_800283D0/s20/diff_base.txt): emitted 45-47 slot swap (~2), 83-88 store sink (~2), 126 + 131-133 cluster B (~3 plus the whole insn surplus), 148 arm store (~1), 96 and 162 commutative addu operand orders (~1 each).
