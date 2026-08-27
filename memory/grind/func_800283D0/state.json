@@ -1,8 +1,8 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 21,
- "current_modality": "rederive",
+ "session_count": 22,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -129,23 +129,29 @@
    "floor": 10,
    "modality": "rederive",
    "headline": "Target's `<` arm read off the asm as s13's variant A (double-goto, no calls): porting it byte-CLOSES the store sink and the arm store (open since s13) and reduces cluster A to one measured inequality,"
+  },
+  {
+   "session": 22,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "Floor 10 -> 6: cluster A, the store sink and the arm store all close together on s21's V1 chassis once ONE sanctioned do-while(0) wrap around an existing arg1 call pair raises nrefs(arg1) 7 -> 9 (pri "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Target's source carries an EIGHTH arg1 reference that post-reload jump2 cross-jumping deletes, at a site other than the `<` arm (which is spoken for by the store pin) and other than the `>` path (killed as P5). Finding that site closes cluster A, the store sink and the arm store simultaneously and lands near 4-6 / 215.",
-   "mechanism": "reg_n_refs is computed by regclass before local_alloc; jump_optimize with cross-jumping runs AFTER reload, so a duplicated call pair is visible to allocno_compare but absent from the final asm. The s16 body demonstrates the mechanism end-to-end: its duplicated `<`-arm call pair raises nrefs(arg1) to 9, wins cluster A, and is merged away post-RA leaving 216 insns. The requirement is a duplicate whose two copies CONVERGE on a common successor (so find_cross_jump has a mergeable tail) - P5 failed precisely because its two arms diverge immediately after the calls.",
-   "next_probe": "Work on the V1 chassis (rejected/varA-arm-on-s16-chassis-STORE+ARM-BYTE-CLOSED-clusterA-lost-17.c, 17/216). Enumerate every site where a call pair using arg1 can be duplicated into two paths that RECONVERGE: the `== 5` true/false split inside the `==` arm, and the `temp_v1_3 == 0` split at the head of block_20 (path1's calls duplicated into the `> 0` false edge that currently does `goto block_49`, if a semantics-preserving spelling exists). For each, dump ALLOCDBG first (cheap, ~5 s via tmp/grind/func_800283D0/s21/al.sh) and only score the ones that reach pri(arg1) > 2142; then check the insn count is still 216, which is the signature that jump2 re-merged. Confirm with tmp/grind/func_800283D0/s21/mk.sh + norm.py that emitted 83-88 and 148 stay closed."
+   "hypothesis": "Cluster B - the last ~4 points and the entire 216-vs-215 insn surplus - is a resource question, not a prediction or hoist question: dbr refuses to steal the D_800A38A8 block's `li v0,1` into the `beqz v0` delay slot solely because $v0 sits in opposite_needed, put there by update_block's `(use (insn N))` marker (E-s19-4/E-s18-8). Target fills that slot WITH the marker present, so something makes the marker harmless in target's RTL rather than absent.",
+   "mechanism": "reorg.c steal_delay_list_from_target calls insn_sets_resource_p(trial, &opposite_needed) before accepting a target-thread insn; opposite_needed is built by mark_target_live_regs on the fall-through thread, whose live-in is cached in target_hash_table and invalidated by bb_ticks. E-s19-1 measured block 27's pre-RA live-in as containing neither $v0 nor $a3, and E-s19-2 showed find_basic_block resolves the fall-through to block 27 by scanning back to the previous BARRIER rather than to the nearest label - so a source change that inserts or removes a BARRIER between the branch and the fall-through selection would re-resolve the marker's basic block without touching the selection's own $v0 writes (which target also has).",
+   "next_probe": "On the new 6-floor candidate, enumerate source shapes that change where the BARRIER before the 0x19/0xB selection block falls - e.g. giving the `== 5` subtree's fall-through an explicit `goto` to a label placed after the selection instead of falling through, or moving the D_800A38A8/D_800A3876 block textually before the selection with a `goto` back - and for each dump reorg's decision with the instrumented cc1 before scoring. The dumps to read are .dbr/.jump2; do NOT re-run the hoist family (F1 = 8, chassis-independent) or the prediction family (G1/G2/G3/G5/H4 all byte-neutral, H5/H6 regressive)."
   },
   {
-   "hypothesis": "Body P4's 16-point residual is entirely prologue register displacement caused by the live incoming $a1, and part of it may be recoverable without touching the carrier - which would make solution (b) competitive with solution (a) after all.",
-   "mechanism": "The carrier's source operand is $a1, live from entry to block_15, so the range-check chain is pushed off $a1 and $a2 onto $a3 and $t0. If the chain's two scratch values can be made to prefer registers that are free anyway - e.g. by respelling `temp_a1 = *(u16 *)(arg0 + 0x6A)` and the 4/0x14 comparison constants so their pseudos get different preferred classes - the rename cascade may collapse even with $a1 pinned, leaving only the `move s2,a1` position (~2 pts).",
-   "next_probe": "On P4 (rejected/s21-late-arg1-carrier-flips-seats-but-pins-a1-16.c), diff emitted 3-50 against target insn by insn and count how many of the 10 points are the a1->a3 / a2->t0 renames versus the `move s2,a1` position. Then try moving `p = arg1;` to the earliest point that still keeps livelen(p) <= 65 (the threshold is 2*7*10000/L > 2142, i.e. L <= 65; P4 measures 58, so there is slack) and re-read ALLOCDBG - an earlier assignment shortens $a1's pinned span and may free the chain's registers back."
+   "hypothesis": "Emitted 45-48 (which branch owns the range-check's `li v0,1`) and emitted 126 are the SAME dbr decision seen twice, so a single construct that fixes one will fix both - and the fix is worth the last 6 points at once.",
+   "mechanism": "In both places ours fills a conditional branch's slot from the fall-through thread and leaves the following unconditional `j` empty, while target leaves the conditional branch's slot empty and fills the `j` from a backward steal inside its own block. That is the same fill_eager_delay_slots thread choice with the same opposite_needed resource test, applied to two different branches.",
+   "next_probe": "Instrument the two decisions side by side: build the 6-floor candidate with BB2 dbr debug enabled, capture the trial/needed/opposite_needed bitmasks for BOTH the range-check `beq` and the `beqz v0`, and check whether the refused resource is $v0 in both cases. If yes, a single $v0-lifetime construct fixes both; if the two refusals name different resources, they are separate residuals and should be attacked separately. Cost is one dump, not a search."
   },
   {
-   "hypothesis": "Cluster B closure composes additively with the V1 chassis, so once cluster A is solved the last ~4 points fall to s20's already-measured W2b construction.",
-   "mechanism": "s20 measured W2b (a fresh local `s16 sel5 = 0x19;` scoped to the `== 5` subtree, copied into var_v0_2) as byte-closing cluster B on the s16 chassis at a net cost of +2 - two `move v0,v1` copies at emitted 128/131 plus E-s19-7's structural slot trade at emitted 120. On the V1 chassis the store is no longer sunk into the first jal delay slot, so the two copies land in different scheduling positions and may coalesce.",
-   "next_probe": "Only after frontier item 1 lands a body materially below 10: re-apply s20's W2b change (rejected/clusterB-freshlocal-sel5-copy-to-varv02-CLOSES-B-but-12.c) on top of it and score twice. If the result is below the store-pinned body's own floor, cluster B is free on this chassis; if it is +2 again, the hoist family's price is chassis-independent and cluster B needs a different attack entirely."
+   "hypothesis": "Now that the do-while(0) RA-weighting lever is measured live on this function, other sanctioned single-level wraps may reach residuals earlier sessions closed off on the assumption that reference counts were immovable.",
+   "mechanism": "s5's H15 and its successors declared the REF-COUNT axis FORECLOSED because target's emitted counts equal ours - a conclusion that only holds if no construct can raise nrefs without emitting an instruction. The wrap does exactly that, so every kill whose stated reason was 'moves nrefs away from target's own counts' was reasoning about the wrong invariant.",
+   "next_probe": "Re-read the s5-s8 kill list in hypotheses.md for entries whose ONLY stated reason is a reference-count argument (H15 and the entries citing it), and re-price the two or three whose other properties were favourable. This is a cheap ledger pass first - only spell and measure the ones whose non-ref-count objections were already answered by a later session."
   }
  ],
  "judge_constraints": [],

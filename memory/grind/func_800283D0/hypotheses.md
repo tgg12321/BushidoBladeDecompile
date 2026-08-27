@@ -1743,3 +1743,64 @@ residual.
 - probe: Body P5, ALLOCDBG + score. Banked at rejected/s21-gt-path-calls-duplicated-into-arms-collapses-81.c.
 - result: KILLED. The allocation half works exactly as the closed form predicts - nrefs(arg1) 7 -> 9, pri = 3*9*10000/100 = 2700 > 2142, seats become target's - but the body scores 81 / 183. The duplication is not byte-neutral: temp_s5 loses its callee-saved seat entirely (only six callee-saved allocnos survive and `ret` slides $s6 -> $s5) and the `>` tail collapses to 183 insns against target's 215. The two arms diverge immediately after the calls, so jump2 never gets a mergeable tail. The duplicated-statement-into-arms family is closed for this residual.
 - verdict: KILLED
+
+
+## [s22] The `do { } while (0)` RA-weighting construct s4 discarded is SANCTIONED policy of record, and it solves cluster A's inequality directly
+- mechanism: flow.c increments `REG_N_REFS (regno)` by `loop_depth`, which is 2 inside the NOTE_INSN_LOOP_BEG/END pair a `do { } while (0);` leaves behind. That numerator feeds global.c:635-656 `allocno_compare`'s `pri = floor_log2(n_refs)*n_refs*10000*size/live_length`. s21 reduced the whole $s2/$s3 seat swap to `pri(arg1-carrier) > 2142`, solvable by `nrefs(carrier) >= 8` at livelen 92. A wrap around an existing arg1-referencing call pair supplies exactly that, and supplies it at ZERO emitted cost because loop notes are not instructions.
+- probe: re-read `.claude/rules/do-while-zero-exception.md` end-to-end (owner ruling 2026-07-06 abolishes the pre-existing scoping to the reorg.c label-note mechanism and sanctions the wrap for ANY codegen effect incl. register allocation, subject to an inline FAKE annotation); then wrapped each of the three existing `func_80032854(..., arg1, ...)` call pairs on s21's V1 chassis and read ALLOCDBG from the instrumented cc1 for each.
+- result: CONFIRMED. Wrapping the `==` arm's pair (body A3) moves nrefs(arg1) 7 -> 9 and nrefs(arg0) 19 -> 21, leaves EVERY live length byte-identical, and flips exactly the two cluster-A seats (arg1 pri 1521 -> 2934 -> $s2; temp_s3 2142 -> $s3, i.e. target's). Score 17 / 216 -> **6 / 216**, closing cluster A, the store sink and the arm store together. Any one of the three pairs gives the identical 6 (A3 = B2 = C2); any two give 6; all three give 24. s4's kill of this construct was a POLICY conclusion under the superseded pre-2026-07-06 scoping and is retracted; its measurements stand.
+- verdict: CONFIRMED
+
+## [s22] Wrapping only ONE call of a pair is enough for the seats but not for the score
+- mechanism: the loop note then lands BETWEEN the two calls, inside arg1's live range, instead of bracketing both.
+- probe: A1/A2 (`==` arm), B1 (`>` path), C1 (shared `do_calls`) - one call each; ALLOCDBG + sandbox.
+- result: seats are already target's at nrefs 8 (pri 2553), but livelen(arg1) grows 92 -> 94 and the call block's scheduling is perturbed: all four score 10 / 216 against A3's 6.
+- verdict: KILLED (as a form; the measurement localises the extra 4 points to the note's placement, not to allocation)
+
+## [s22] s20's W2b cluster-B hoist becomes free once the store is no longer sunk into the first jal delay slot
+- mechanism: s20 attributed W2b's +2 to two non-coalescing `move v0,v1` copies caused by `sel5` getting `$v1`, and hypothesised that on a store-pinned chassis the copies would land in different scheduling positions and coalesce.
+- probe: F1 = A3 + s20's W2b construction verbatim; sandbox.
+- result: REFUTED. F1 = 8 / 216 against A3's 6 - exactly the same +2 W2b paid on the s16 chassis (10 -> 12). The hoist family's price is chassis-independent.
+- verdict: KILLED
+
+## [s22] Cluster B's delay-slot refusal can be flipped by making the branch predicted-taken, via a NOTE_INSN_LOOP_BEG immediately before its target label
+- mechanism: reorg.c:1379 `mostly_true_jump` scans back from the branch's target label through NOTEs and returns 2 (strongly predicted taken) on a NOTE_INSN_LOOP_BEG; `fill_eager_delay_slots` (reorg.c:3784) uses that prediction to choose the TARGET thread, which is exactly where target's stolen `li v0,1` comes from at emitted 126, and symmetrically at emitted 45-48.
+- probe: six bodies. G1 (wrap the `D_800A38A8 = 1; D_800A3876 = -1;` target block), G2/G3 (wrap the 0x19/0xB selection), G5 (wrap the range-check `return 1;`), G6 (wrap the whole range-check `if`); then the purpose-built H4, which respells the `||` test as `if (!(A || B)) goto rare5;` with `do { rare5: D_800A38A8 = 1; D_800A3876 = -1; } while (0);` so the branch's OWN target label sits immediately after the loop note; and H5/H6, the same shape on the range-check chain.
+- result: REFUTED. G1/G2/G3/G5 are byte-neutral at 6 / 216 (G1's neutrality has a named cause: `expand_end_cond` emits the if-false label before the following statement expands, so the note lands on the wrong side of the backward scan). G6 = 14 / 213. H4 - the shape that DOES place the note correctly - is also byte-neutral at 6 / 216. H5/H6 = 10 / 213, regressive: the `return 1` cross-jumps into the shared epilogue and the insn count falls below target's 215. Prediction is not the dial; E-s18-8's `insn_sets_resource_p (trial, &opposite_needed)` attribution stands, and that test runs whichever way the branch is predicted.
+- verdict: KILLED
+
+## [s22] The two residual commutative `addu` operand orders are a source-order lever on the 6-floor chassis
+- mechanism: emitted 96 `addu s3,s0,v0` vs target `addu s3,v0,s0` mirrors the source's `arg0 + (temp_a1_2 * 2)`.
+- probe: F2 = A3 with the addends written `(temp_a1_2 * 2) + arg0`; sandbox + normalized objdump diff.
+- result: REFUTED, byte-identical at 6 / 216. GCC canonicalises PLUS operands before RA; the emitted order is a consequence of allocation, not of source order. Re-confirms the same conclusion earlier sessions reached on the 10-floor and 23-floor chassis.
+- verdict: KILLED
+
+## [s22] The do { } while (0) RA-weighting construct s4 measured and discarded in 2026-07 is sanctioned policy of record, and it solves s21's cluster-A inequality pri(arg1-carrier) > 2142 directly and at zero emitted cost.
+- mechanism: flow.c increments REG_N_REFS(regno) by loop_depth, which is 2 inside the NOTE_INSN_LOOP_BEG/END pair a do-while(0) leaves behind; that numerator feeds global.c:635-656 allocno_compare's pri = floor_log2(n_refs)*n_refs*10000*size/live_length. Wrapping an EXISTING arg1-referencing call pair supplies s21's solution (a) (nrefs >= 8 at livelen 92) without adding an instruction, which is exactly the property s21's P5 duplicated-call route could not have.
+- probe: Re-read .claude/rules/do-while-zero-exception.md end-to-end (owner ruling 2026-07-06 abolishes the pre-existing scoping to the reorg.c label-note mechanism and sanctions the wrap for ANY codegen effect incl. register allocation, with a mandatory inline FAKE annotation and no exhaustion gate for single-level wraps). Then wrapped each of the three existing func_80032854(..., arg1, ...) call pairs on s21's V1 chassis (bodies A1/A2/A3/B1/B2/C1/C2/D1-D4), read ALLOCDBG from the instrumented cc1 for each, and scored every body with sandbox --disable all.
+- result: Body A3 (V1 + one wrap around the `temp_v0_3 == temp_v1_3` arm's two calls) = 6 / 216 against V1's 17 and the inherited candidate's 10. ALLOCDBG: nrefs(arg1) 7 -> 9 and nrefs(arg0) 19 -> 21, EVERY live length byte-identical, arg1 pri 1521 -> 2934 takes $s2 and temp_s3 stays 2142 and takes $s3 - target's seats - with every other callee-saved seat ($s0/$s1/$s4/$s5/$s6) unchanged. The normalized objdump diff has no entry at emitted 83-88 or 148, so cluster A, the store sink and the arm store are closed simultaneously. Any one of the three call pairs gives the identical 6 (A3 = B2 = C2); any two give 6; all three give 24.
+- verdict: CONFIRMED
+
+## [s22] Wrapping only ONE call of a pair is enough, since nrefs 8 already satisfies the inequality.
+- mechanism: pri at nrefs 8 / livelen 92 is 2608 > 2142, so the seats should flip with half the wrap.
+- probe: A1/A2 (== arm), B1 (> path), C1 (shared do_calls); ALLOCDBG + sandbox on each.
+- result: The seats DO flip (nrefs 8, livelen 94, pri 2553 -> $s2), but all four bodies score 10 / 216 against A3's 6. The loop note lands BETWEEN the two calls, inside arg1's live range: livelen(arg1) grows 92 -> 94 and the call block's scheduling is perturbed. The wrap must bracket both calls.
+- verdict: KILLED
+
+## [s22] s20's W2b cluster-B hoist becomes free once the store is no longer sunk into the first jal delay slot (s20's frontier item 3).
+- mechanism: s20 attributed W2b's +2 to two non-coalescing `move v0,v1` copies caused by sel5 getting $v1, and predicted they would land in different scheduling positions - and coalesce - on a store-pinned chassis.
+- probe: F1 = A3 + s20's W2b construction verbatim (s16 sel5 = 0x19 scoped to the == 5 subtree, sel5 = 0xB in the var_s1 == 0 arm, var_v0_2 = sel5 before goto block_48); sandbox.
+- result: F1 = 8 / 216 against A3's 6 - exactly the same +2 W2b paid on the s16 chassis (10 -> 12). The hoist family's price is a property of the family, not of the chassis.
+- verdict: KILLED
+
+## [s22] Cluster B's delay-slot refusal can be flipped by making the branch predicted-taken, via a NOTE_INSN_LOOP_BEG immediately preceding its target label.
+- mechanism: reorg.c:1379 mostly_true_jump scans back from the branch's target label through NOTEs and returns 2 (strongly predicted taken) on a NOTE_INSN_LOOP_BEG; fill_eager_delay_slots (reorg.c:3784) uses that prediction to fill from the TARGET thread, which is exactly where target's stolen `li v0,1` comes from at emitted 126 and, symmetrically, at emitted 45-48.
+- probe: Six bodies. G1 (wrap the D_800A38A8 = 1 / D_800A3876 = -1 target block), G2/G3 (wrap the 0x19/0xB selection), G5 (wrap the range-check `return 1;`), G6 (wrap the whole range-check `if`); then H4, built specifically to place the note on the correct side - the `||` test respelled `if (!(A || B)) goto rare5;` with `do { rare5: D_800A38A8 = 1; D_800A3876 = -1; } while (0);` so the branch's own target label sits immediately after the loop note; and H5/H6, the same shape applied to the range-check chain.
+- result: G1/G2/G3/G5 are byte-neutral at 6 / 216. G1's neutrality has a named cause: expand_end_cond emits the if-false label BEFORE the following statement expands, so a `do {` written after the `if` puts the note on the far side of the backward scan. G6 = 14 / 213. H4, which DOES place the note correctly, is also byte-neutral at 6 / 216. H5/H6 = 10 / 213, regressive - the `return 1` cross-jumps into the shared epilogue and the insn count falls below target's 215. Prediction is therefore not cluster B's dial, and E-s18-8's insn_sets_resource_p(trial, &opposite_needed) attribution stands unchallenged (that test runs whichever way the branch is predicted).
+- verdict: KILLED
+
+## [s22] The two residual commutative addu operand orders are a source-order lever on the 6-floor chassis.
+- mechanism: emitted 96 `addu s3,s0,v0` vs target `addu s3,v0,s0` mirrors the source's `arg0 + (temp_a1_2 * 2)`.
+- probe: F2 = A3 with the addends written `(temp_a1_2 * 2) + arg0`; sandbox + normalized objdump diff.
+- result: Byte-identical at 6 / 216. GCC canonicalises PLUS operands before RA; the emitted order is a consequence of allocation, not of source order. Re-confirms the same conclusion earlier sessions reached on the 23- and 10-floor chassis.
+- verdict: KILLED
