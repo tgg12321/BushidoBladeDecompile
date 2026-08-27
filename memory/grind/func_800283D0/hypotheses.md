@@ -626,3 +626,202 @@ Chassis: candidate body applied to src/code6cac_b.c, sandbox --disable all = **2
 - probe: d_val = 0x19; if (var_s1 == 0) d_val = 0xB; var_v0_2 = d_val; measured with sandbox --disable all.
 - result: 33 / 216. d_val's pseudo carries real conflicts from its earlier live range, so reload does not coalesce the copy and it survives as a 216th instruction. Banked as rejected/reuse-dval-selection-holder-no-coalesce.c.
 - verdict: KILLED
+
+
+## Session 9 (2026-08-26, forensics) - measured
+
+## [s9] The s8 mode split can be spelled with a ONCE-WRITTEN, once-read, int-typed intermediate, which removes the classification blocker without costing a byte.
+- mechanism: find_cross_jump compares patterns with rtx_renumbered_equal_p, which compares
+  GET_MODE.  The tail copy needs SImode constant loads while the ==5 copy keeps HImode ones.
+  s8 achieved that with `s32 sel = 0x19; if (var_s1 == 0) sel = 0xB; var_v0_2 = sel;` - a
+  multi-write local, which fits no frozen SOTN family.  A single-assignment ternary
+  initialiser produces the same SImode pseudo in one write.
+- probe: `{ s32 sel = (var_s1 == 0) ? 0xB : 0x19; var_v0_2 = sel; }` (variant Q1), sandbox
+  --disable all plus a slot-for-slot comparison of the emitted stream against s8's body.
+- result: 25 / 215, and the emitted instruction stream is BYTE-IDENTICAL to s8's `sel` body
+  (215/215 lines equal).  The intermediate is now fresh, once-written, once-read, int-typed,
+  and carries a real consumed value - the named-intermediate SHAPE.
+- verdict: CONFIRMED
+
+## [s9] The ternary's arm order, not the ternary itself, decides the emitted branch sense.
+- mechanism: expand_expr lowers COND_EXPR by branching on the negated condition with the
+  ':' arm in the fallthrough/delay position, so the C arm order maps directly onto which
+  constant lands in the branch's delay slot.
+- probe: three arm orders measured on the 25-floor body -
+  `(var_s1 != 0) ? 0x19 : 0xB`, `var_s1 ? 0x19 : 0xB`, `(var_s1 == 0) ? 0xB : 0x19`.
+- result: the first two measure 28 / 215 - the merge IS defeated but the block emits
+  `beqz $s1 / li 0xB / j / li 0x19` against target's `bnez $s1 / li 0x19 / j / li 0xB`
+  (3 diffs at slots 138-141).  Only `(var_s1 == 0) ? 0xB : 0x19` reproduces target's sense
+  and reaches 25.  Banked as rejected/tern-no-intermediate-inverts-branch-sense.c.
+- verdict: CONFIRMED
+
+## [s9] The intermediate is load-bearing: an int-typed ternary written straight into the s16 var_v0_2 would carry the same mode split.
+- mechanism: if the RHS is int-typed, the constant loads might stay SImode even when the
+  destination is HImode.
+- probe: `var_v0_2 = (var_s1 == 0) ? 0xB : 0x19;` with no intermediate; and separately
+  declaring var_v0_2 itself as `s32` with both copies canonical.
+- result: BOTH measure 30 / 211 - i.e. the 4-insn cross-jump merge is back.  The C-level
+  conversion to short is folded into the selection, so the constant loads are HImode and
+  match the ==5 copy; and making var_v0_2 SImode moves BOTH copies to SImode, so they still
+  match each other.  The lever is a mode SPLIT between the two copies, not SImode per se.
+  Banked as rejected/tern-no-intermediate-canonical-order-remerges.c and
+  rejected/var-v0-2-declared-s32-both-copies-remerge.c.
+- verdict: KILLED
+
+## [s9] The cross-jump merge can be defeated STRUCTURALLY - by giving one selection copy its own store and return so the two blocks no longer share the block_48 tail - which would need no mode trick at all.
+- mechanism: find_cross_jump walks backward from two jumps; if the insn immediately before
+  one jump is a store and before the other is a constant load, it should PAT-MISMATCH on the
+  first compared insn exactly as the mode split does.
+- probe: four spellings measured - ==5 copy stores directly through a fresh s16 local
+  (P2_eq5_direct), ==5 copy stores through the existing outer s16 var_v0 (P2b), tail copy
+  stores directly (P3), and ==5-direct combined with the tail mode split (P4).  P2 was then
+  re-compiled with the instrumented cc1 and BB2_XJUMP_DEBUG via the s8 isolate/dumpiso
+  recipe (tmp/grind/func_800283D0/s9/xjump_P2.log, 289 XJDBG lines).
+- result: P2 = 30 / 211, P2b = 30 / 211, P3 = 29 / 211 - the merge STILL fires.  The trace
+  names the decision: `enter e1=372 e2=407 min=2 (chain-partner)`, then
+  `MATCH i1=360 i2=403 set(reg<-11)`, `MATCH i1=356 i2=399 set`,
+  `MATCH i1=353 i2=396 set(reg<-25)`, `LABEL-BONUS i1=347`, `min=-2 => WIN`,
+  `DO_CROSS_JUMP jump=372 newjpos=353 newlpos=396`.  The duplicated store+return tail has
+  ALREADY been merged back into block_48 by an earlier jump pass before jump2 runs, so the
+  two blocks are identical again by the time find_cross_jump looks at them.  P4 emits a
+  stream byte-identical to Q1's, confirming the same re-merge.  The structural route is
+  CLOSED; the mode split is the only known lever for cluster D.
+- verdict: KILLED
+
+## [s9] Cluster C (the 4-diff v0-vs-v1 rename at emitted slots 126/132/133/135) is a register-allocation consequence of sched1 hoisting the block's return-value copy to the head of the block.
+- mechanism: local-alloc cannot assign a hard register that is already live across the
+  quantity's range.  If `(set (reg/i:SI 2 v0) <ret>)` is scheduled FIRST in the block, v0 is
+  live from the top and the two HImode constant pseudos must take v1.
+- probe: read the D_800A38A8 block in the pre-sched1 dumps (.combine, .flow), in the
+  post-sched1 dump (.sched) and in .lreg / .greg, all regenerated for this body with
+  `pwsh tools/grinder/dump.ps1 func_800283D0`.
+- result: pre-sched1 the block is 368 (li HI 1) -> 370 (sh D_800A38A8) -> 373 (li HI -1) ->
+  375 (sh D_800A3876) -> 378 (set (reg/i:SI 2 v0) (reg/v:SI 79)); .sched shows sched1 hoists
+  378 to the FRONT (378, 368, 370, 373, 375); .greg then shows
+  `(set (reg:HI 3 v1) (const_int 1))` and `(set (reg:HI 3 v1) (const_int -1))`.  Target has
+  no such copy at the head of that block and its constants take v0.  The pass is sched1, the
+  decision is the hoist, and the RA outcome is downstream of it.
+- verdict: CONFIRMED
+
+## [s9] Deleting the block-local return-value copy - exiting the globals block with `goto block_49;` instead of an inline `return ret;` - frees v0 and closes cluster C.
+- mechanism: with no `(set (reg/i:SI 2 v0) ...)` in the block there is nothing for sched1 to
+  hoist and nothing holding v0 live, so local-alloc gives v0 to the two constant pseudos.
+  `goto block_49;` is ordinary C - block_49 is an already-existing shared `return ret;` label
+  in this body.
+- probe: variant D4_goto49 on top of Q1; sandbox --disable all plus a difflib alignment of
+  the emitted stream against target.
+- result: FLOOR 25 -> 23.  Slots 131-136 now read `li v0,1 / lui at / sh v0 / li v0,-1 /
+  lui at / sh v0` - target's registers exactly.  Cluster C is CLOSED.
+- verdict: CONFIRMED
+
+## [s9] The 23-floor body's only new cost is one unfilled delay slot, and it is a reorg decision, not an extra computation.
+- mechanism: reorg's steal-from-branch-target fill.  On the 25-floor body reorg steals the
+  branch target's `li v1,1` into the delay slot of `beqz v0,<globals block>` (slot 125).  On
+  the 23-floor body the same candidate insn is `li v0,1` - and v0 is the register the branch
+  itself reads - and reorg declines, emitting `nop` at slot 126 and leaving the `li v0,1` in
+  the block at slot 131.  That is the entire 216-vs-215 delta.
+- probe: difflib alignment of the D4 stream against target: the ONLY insert is the nop at
+  slot 126; everything from 131 onward re-aligns one slot late against target 126..135.
+- result: target performs exactly the steal ours declines - `beqz v0,.L800285DC` with
+  `addiu v0,zero,1` in its delay slot - so the fill is reachable in this compiler; the
+  reason ours declines has not been read out of reorg.c/resource.c yet.
+- verdict: CONFIRMED (as a measurement; the reorg reason is OPEN)
+
+## [s9] The inline-return -> shared-goto change is a general policy that will help at the other early-exit sites too.
+- mechanism: same argument as the globals block: fewer block-local return-value copies.
+- probe: apply `goto block_49;` to the `temp_v1_2 == 0xE` early return (E1_goto49b) and to
+  the do_calls return (G2_docalls).
+- result: E1 = 38 / 216, a 15-point REGRESSION; G2 = 23 / 216, byte-identical to D4 (jump2
+  re-merges it).  The goto-vs-inline-return choice is PER SITE and must be measured per
+  site.  s1's finding that the range-check exit wants an INLINE return still stands.  Banked
+  as rejected/shared-goto-for-0xE-early-return.c.
+- verdict: KILLED
+
+## [s9] Cheap source-level reorderings inside the globals block can reach cluster C without changing the exit form.
+- mechanism: swapping the two independent global stores, or returning the literal 1, changes
+  what sched1 sees.
+- probe: C1/G1 (store order swapped) and C2 (`return 1;`), measured on both the 25- and
+  23-floor bodies.
+- result: the store swap is byte-neutral at 25 (it only swaps which constant reaches v1
+  first) and is 24 - i.e. WORSE - on the 23-floor body, because target stores 1 to
+  D_800A38A8 before -1 to D_800A3876 and the source order is the emitted order.
+  `return 1;` measures 26 and leaves 126/132/133/135 unchanged: the return-value set is
+  still hoisted by sched1 and still holds v0.  Deleting the copy is the only lever.  Banked
+  as rejected/globals-block-store-order-swapped.c and rejected/globals-block-return-const1.c.
+- verdict: KILLED
+
+## Frontier (for session 10)
+1. THE NOP AT SLOT 126 IS THE WHOLE 216-vs-215 DELTA.  Read reorg.c /
+   resource.c in tools/gcc-2.7.2 and, if needed, instrument the delay-slot fill the way s8
+   instrumented find_cross_jump, to learn why the steal of `li v0,1` into the delay slot of
+   `beqz v0,...` is declined for us when target performs it.  If it is a conservative
+   resource conflict with the branch's own source register, the C question becomes: what
+   source shape lets the globals block's first insn be something other than a write of the
+   branch's condition register?  Killing the nop puts the body at 215 insns with cluster C
+   already closed.
+2. CLUSTER B (slots 45/47) with the s9 exit-form result in hand.  s9 showed that the
+   goto-vs-inline-return choice at a given exit is worth up to 4 slots and is decided per
+   site; cluster B is exactly an exit-form/exit-block-sharing residual and the two respellings
+   the ledger banked (s6) both moved the shared block wholesale.  The untried axis is the
+   THIRD exit-form dimension: which of the several `return ret;` / `goto block_49;` sites
+   feeds target's labelled `.L80028488` block.  Enumerate the 2^N exit-form assignments over
+   the four early-exit sites (s9 measured only two of them) and measure.
+3. CLUSTERS A and E on the 23-floor body.  s7's exhaustive RA windows (global.c: L73 92 ->
+   [38,65], L143 14 -> [20,21]; local-alloc: span(qty0) 30 -> <=24 or refs(qty0) 6 -> 8..10)
+   have NOT been re-extracted since the s8 mode split or the s9 exit-form change, both of
+   which changed the RTL of blocks those quantities live in.  Re-run tools/ra_solver/extract.py
+   plus tmp/grind/func_800283D0/s7/qty41.py before spending any spelling probe on them.
+
+## [s9] The s8 mode split (which closes cluster D) can be spelled with a fresh, ONCE-WRITTEN, once-read, int-typed intermediate instead of s8's multi-write local, removing the classification blocker without costing a byte.
+- mechanism: jump.c find_cross_jump compares patterns with rtx_renumbered_equal_p, which compares GET_MODE; the tail copy needs SImode constant loads while the ==5 copy keeps HImode ones. A single-assignment ternary initialiser produces the same SImode pseudo in one write.
+- probe: { s32 sel = (var_s1 == 0) ? 0xB : 0x19; var_v0_2 = sel; } (variant Q1); sandbox --disable all plus a slot-for-slot comparison of the emitted stream against s8's body.
+- result: 25 / 215 and the emitted stream is BYTE-IDENTICAL to s8's (all 215 lines equal). The intermediate is now fresh, once-written, once-read, int-typed and carries a real consumed value - the named-intermediate shape.
+- verdict: CONFIRMED
+
+## [s9] The ternary's ARM ORDER, not the ternary itself, decides the emitted branch sense.
+- mechanism: expand_expr lowers COND_EXPR by branching on the negated condition with the ':' arm in the fallthrough/delay position, so the C arm order maps onto which constant lands in the branch's delay slot.
+- probe: Three arm orders on the 25-floor body: (var_s1 != 0) ? 0x19 : 0xB, var_s1 ? 0x19 : 0xB, (var_s1 == 0) ? 0xB : 0x19.
+- result: The first two measure 28 / 215 - the merge IS defeated but the block emits `beqz $s1 / li 0xB / j / li 0x19` against target's `bnez $s1 / li 0x19 / j / li 0xB` (3 diffs at slots 138-141). Only (var_s1 == 0) ? 0xB : 0x19 reproduces target and reaches 25.
+- verdict: CONFIRMED
+
+## [s9] An int-typed ternary written straight into the s16 var_v0_2, or declaring var_v0_2 itself s32, carries the same mode split without needing an intermediate.
+- mechanism: If the RHS is int-typed the constant loads might stay SImode even with an HImode destination; and SImode everywhere would be the natural int spelling.
+- probe: var_v0_2 = (var_s1 == 0) ? 0xB : 0x19; with no intermediate; and separately `s32 var_v0_2;` with both copies canonical.
+- result: BOTH measure 30 / 211 - the 4-insn cross-jump merge is back. The C conversion to short is folded into the selection so the loads are HImode again; and s32 var_v0_2 moves BOTH copies to SImode so they still match each other. The lever is a mode SPLIT between the copies, not SImode per se.
+- verdict: KILLED
+
+## [s9] The cross-jump merge can be defeated STRUCTURALLY - by giving one selection copy its own store and return so the blocks no longer share the block_48 tail - needing no mode trick at all.
+- mechanism: find_cross_jump walks backward from two jumps; a store before one jump and a constant load before the other should PAT-MISMATCH on the first compared insn.
+- probe: Four spellings (==5 copy direct-store via a fresh s16 local; via the existing outer var_v0; tail copy direct-store; ==5-direct combined with the tail mode split), then the ==5-direct variant re-compiled with the instrumented cc1 under BB2_XJUMP_DEBUG via the s8 isolate/dumpiso recipe.
+- result: 29-30 at 211 insns in every spelling - the merge still fires. The trace (tmp/grind/func_800283D0/s9/xjump_P2.log) names the decision: enter e1=372 e2=407 min=2 (chain-partner); MATCH 360/403 set(reg<-11); MATCH 356/399 set; MATCH 353/396 set(reg<-25); LABEL-BONUS 347; DO_CROSS_JUMP jump=372 newjpos=353 newlpos=396. The duplicated store+return tail is already tail-merged back into block_48 by an EARLIER jump pass, so the blocks are identical again by the time jump2 looks. Structural route CLOSED; the mode split is the only known lever for cluster D.
+- verdict: KILLED
+
+## [s9] Cluster C (the 4-diff v0-vs-v1 rename at emitted slots 126/132/133/135) is a register-allocation consequence of sched1 hoisting the block's return-value copy to the head of the block.
+- mechanism: local-alloc cannot assign a hard register already live across a quantity's range; if (set (reg/i:SI 2 v0) <ret>) is scheduled FIRST, v0 is live from the top of the block and the two HImode constant pseudos must take v1.
+- probe: Read the D_800A38A8 block in .combine / .flow (pre-sched1), .sched (post-sched1) and .lreg / .greg, all regenerated with `pwsh tools/grinder/dump.ps1 func_800283D0`.
+- result: Pre-sched1 the order is 368 (li HI 1) -> 370 (sh D_800A38A8) -> 373 (li HI -1) -> 375 (sh D_800A3876) -> 378 (set (reg/i:SI 2 v0) (reg/v:SI 79)); .sched:4853 shows sched1 hoists 378 to the FRONT; .greg:3150 then shows (set (reg:HI 3 v1) (const_int 1)). Target has no such copy at the head of that block and its constants take v0.
+- verdict: CONFIRMED
+
+## [s9] Deleting the block-local return-value copy - exiting the globals block with `goto block_49;` instead of an inline `return ret;` - frees v0 and closes cluster C.
+- mechanism: With no (set (reg/i:SI 2 v0) ...) in the block there is nothing for sched1 to hoist and nothing holding v0 live, so local-alloc gives v0 to the two constant pseudos. block_49 is an already-existing shared `return ret;` label in this body, so the change is plain ordinary C.
+- probe: Variant D4_goto49 on top of Q1; sandbox --disable all plus a difflib alignment of the emitted stream against target.
+- result: FLOOR 25 -> 23. Slots 131-136 now read `li v0,1 / lui at / sh v0 / li v0,-1 / lui at / sh v0` - target's registers exactly. Cluster C is CLOSED. Cost: build_insns 216 vs target 215 (see the next hypothesis).
+- verdict: CONFIRMED
+
+## [s9] The 23-floor body's entire 216-vs-215 delta is one unfilled delay slot, and it is a reorg decision rather than an extra computation.
+- mechanism: reorg's steal-from-branch-target delay-slot fill. On the 25-floor body reorg steals the branch target's `li v1,1` into the delay slot of `beqz v0,<globals block>` at slot 125; on the 23-floor body the same candidate is `li v0,1`, a write of the register the branch itself reads, and reorg declines.
+- probe: difflib alignment of the D4 stream against target.
+- result: The ONLY insertion is a `nop` at slot 126; from 131 onward our stream re-aligns one slot late against target 126..135. Target performs exactly the steal ours declines (`beqz v0,.L800285DC` with `addiu v0,zero,1` in the delay slot), so the fill is reachable in this compiler. The reorg.c/resource.c reason has not been read out yet.
+- verdict: CONFIRMED
+
+## [s9] The inline-return -> shared-goto change is a general policy that helps at the other early-exit sites too.
+- mechanism: Same argument as the globals block: fewer block-local return-value copies for sched1 to hoist.
+- probe: Apply `goto block_49;` to the temp_v1_2 == 0xE early return (E1_goto49b) and to the do_calls return (G2_docalls).
+- result: E1 = 38 / 216, a 15-point REGRESSION; G2 = 23 / 216, byte-identical to D4 (jump2 re-merges it). The goto-vs-inline-return choice is PER SITE and must be measured per site; s1's finding that the range-check exit wants an INLINE return still stands.
+- verdict: KILLED
+
+## [s9] Cheap source-level reorderings inside the globals block can reach cluster C without changing the exit form.
+- mechanism: Swapping the two independent global stores, or returning the literal 1, changes what sched1 sees in the block.
+- probe: Store order swapped, and `return 1;`, measured on both the 25- and 23-floor bodies.
+- result: The store swap is byte-neutral at 25 (it only swaps which constant reaches v1 first) and WORSE (24) on the 23-floor body, because target stores 1 to D_800A38A8 before -1 to D_800A3876 and source order is emitted order. `return 1;` measures 26 and leaves 126/132/133/135 unchanged - the return-value set is still hoisted by sched1 and still holds v0. Deleting the copy is the only lever.
+- verdict: KILLED

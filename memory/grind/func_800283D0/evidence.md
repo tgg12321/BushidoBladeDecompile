@@ -1168,3 +1168,132 @@ program reasons.
 - [s8] METHOD: per-function attribution of the whole-TU BB2_XJUMP_DEBUG stream is now reproducible via tmp/grind/func_800283D0/s8/isolate.py (other function bodies emptied), validated by the .jump2 RTL segment being identical to the full-TU dump apart from CODE_LABEL_NUMBER.
 
 - [s8] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) at session end; the 25-floor body lives in memory/grind/func_800283D0/candidate.c.
+
+
+## Session 9 (2026-08-26, forensics) - floor 25 -> 23
+
+Chassis re-measured at session start with the s8 body installed: 25 / 215, matching the
+ledger, so every s8 conclusion is chassis-current.
+
+### 1. The s8 classification blocker is gone, at zero byte cost
+s8 closed cluster D with `{ s32 sel = 0x19; if (var_s1 == 0) sel = 0xB; var_v0_2 = sel; }`
+and left the session flagged DO-NOT-SUBMIT because a fresh, MULTI-WRITE local fits no frozen
+SOTN family.  s9 re-spelled it as a single assignment:
+
+    { s32 sel = (var_s1 == 0) ? 0xB : 0x19; var_v0_2 = sel; }
+
+25 / 215, and the emitted stream is byte-identical to s8's (all 215 lines equal).  The
+intermediate is now fresh, once-written, once-read, int-typed, and carries a real consumed
+value - the shape the family-selection table calls named-intermediate.  s9 did not write a
+self-vet (the floor is not 0), but the form a future session must vet is this one.
+
+Three neighbouring spellings were measured and are dead:
+  * `(var_s1 != 0) ? 0x19 : 0xB` and `var_s1 ? 0x19 : 0xB` DO defeat the merge (215 insns)
+    but invert the branch sense: `beqz $s1 / li 0xB / j / li 0x19` vs target's
+    `bnez $s1 / li 0x19 / j / li 0xB`.  28.  The C arm order maps onto the emitted sense.
+  * The same ternary written straight into the s16 `var_v0_2`, with no intermediate:
+    30 / 211 - the conversion to short is folded into the selection, the constant loads are
+    HImode again, and find_cross_jump merges the copies.
+  * Declaring `var_v0_2` itself as `s32`: 30 / 211 - both copies become SImode and match
+    each other again.  The lever is the mode SPLIT between the copies, not SImode.
+
+### 2. The structural route to defeating the cross-jump is closed (instrumented)
+The obvious no-mode-trick alternative is to stop the two selection copies from sharing the
+block_48 tail: give one of them its own `*(s16 *)(arg0 + 0x286) = ...; return ret;`.  Four
+spellings measured 29-30 at 211 insns - the 4-insn merge is back in every one.  Re-compiling
+the ==5-direct variant with the instrumented cc1 (BB2_XJUMP_DEBUG, via the s8
+isolate.py/dumpiso.sh recipe; log at tmp/grind/func_800283D0/s9/xjump_P2.log) shows why:
+
+    XJDBG: enter e1=372 e2=407 min=2 (chain-partner)
+    XJDBG:   MATCH i1=360 i2=403 set(reg<-11) min->1
+    XJDBG:   MATCH i1=356 i2=399 set          min->0
+    XJDBG:   MATCH i1=353 i2=396 set(reg<-25) min->-1
+    XJDBG:   LABEL-BONUS i1=347 (label)       min->-2; break
+    XJDBG: DO_CROSS_JUMP jump=372 newjpos=353 newlpos=396
+
+The duplicated store+return tail has already been tail-merged back into block_48 by an
+earlier jump pass, so by the time jump2's find_cross_jump looks, the two blocks are identical
+again.  This closes the axis the ledger has speculated about since s2: the RTL-mode split is
+the ONLY known lever for cluster D.
+
+### 3. Cluster C attributed to sched1, then closed
+Cluster C is the 4-diff v0-vs-v1 rename at emitted slots 126/132/133/135 (the
+`D_800A38A8 = 1; D_800A3876 = -1;` stores).  Dumps regenerated for the 25-floor body with
+`pwsh tools/grinder/dump.ps1 func_800283D0`:
+
+  * .combine:2894-2918 and .flow:4370-4394 - the block, PRE-sched1, is
+        368 (set (reg:HI 170) (const_int 1))
+        370 (set (mem:HI D_800A38A8) (reg:HI 170))
+        373 (set (reg:HI 171) (const_int -1))
+        375 (set (mem:HI D_800A3876) (reg:HI 171))
+        378 (set (reg/i:SI 2 v0) (reg/v:SI 79))     <- the `return ret;` value copy, LAST
+  * .sched:4853 - sched1 HOISTS 378 to the FRONT: 378, 368, 370, 373, 375.
+  * .greg:3150 - consequently `(set (reg:HI 3 v1) (const_int 1))`: v0 is live across the
+    whole block, so local-alloc gives the constants v1.  Target's block has no such copy at
+    its head and its constants take v0.
+
+That names the pass (sched1) and the decision (the hoist of the return-value copy).  Two
+in-block levers were measured and are dead: swapping the two stores is byte-neutral at 25
+(and WORSE, 24, on the 23-floor body - target stores 1 first, and source order is emitted
+order), and `return 1;` instead of `return ret;` measures 26 while leaving 126/132/133/135
+completely unchanged (the copy is still there, still hoisted, still holds v0).
+
+The lever that works is DELETING the copy: exit the globals block with `goto block_49;`
+instead of an inline `return ret;`.  block_49 is an already-existing shared `return ret;`
+label in this body, so this is plain ordinary C.  **25 -> 23**, and slots 131-136 now read
+`li v0,1 / lui at / sh v0 / li v0,-1 / lui at / sh v0` - target's registers exactly.
+Cluster C is CLOSED.
+
+### 4. The cost: one unfilled delay slot (216 vs 215)
+This is the first body in the ledger that is not at build_insns == 215.  A difflib alignment
+against target shows the ONLY insertion is a `nop` at slot 126; from 131 onward our stream
+re-aligns one slot late against target's 126..135.  On the 25-floor body reorg steals the
+branch target's `li v1,1` into the delay slot of `beqz v0,<globals block>` at slot 125.  On
+the 23-floor body the same candidate is `li v0,1` - a write of the very register the branch
+reads - and reorg declines.  Target performs exactly that steal
+(`beqz v0,.L800285DC` + `addiu v0,zero,1` in the delay slot), so it is reachable in this
+compiler.  Why ours declines has not been read out of reorg.c / resource.c; that is frontier
+item 1.
+
+### 5. Exit-form changes are per-site, not a policy
+Applying the same `inline return -> goto block_49` change to the `temp_v1_2 == 0xE` early
+return measures 38 (a 15-point regression); applying it to the do_calls return measures 23,
+byte-identical to the 23-floor body (jump2 re-merges it).  Together with s1's finding that
+the range-check exit wants an INLINE `return 1;`, the exit-form dimension is now known to be
+worth several slots per site and to be decided independently per site - which makes the
+untried 2^N enumeration over the four early-exit sites a concrete lever for cluster B.
+
+### 6. Symmetry note
+Putting the s32 intermediate in the ==5 copy rather than the tail copy emits a byte-identical
+stream.  Either placement works; the tail placement is kept in candidate.c.
+
+### Artifacts
+tmp/grind/func_800283D0/s9/ - install.py, probe.py, probe2.py, probe3.py, probe4.py,
+extract.sh, cmp.py, bank.py, isolate.py, dumpiso.sh, xjump_P2.log (289 XJDBG lines), the
+per-variant .c bodies and their extracted instruction streams (sel.txt, Q1.txt, tern_ne.txt,
+D4_goto49.txt, ...).  Regenerated pass dumps in tmp/grind/func_800283D0/dumps/ (.combine,
+.flow, .sched, .lreg, .greg, .jump2, .dbr).
+
+- [s9] Chassis re-measured at session start with the s8 body installed: 25 / 215, matching the ledger - every s8 conclusion is chassis-current.
+
+- [s9] New honest floor 23 (build_insns 216, target 215), re-verified with the banked candidate.c installed in src/code6cac_b.c at session end.
+
+- [s9] s8's DO-NOT-SUBMIT classification blocker is retired: the mode-split intermediate is now `s32 sel = (var_s1 == 0) ? 0xB : 0x19;` - fresh, once-written, once-read, int-typed, carrying a real consumed value - and emits a stream byte-identical to s8's multi-write spelling (all 215 lines equal). No self-vet was written because the floor is not 0; the form a future session must vet is this one, not s8's.
+
+- [s9] The ternary arm order is load-bearing: `(var_s1 != 0) ? 0x19 : 0xB` and `var_s1 ? 0x19 : 0xB` defeat the merge but invert the branch sense (28 / 215); only `(var_s1 == 0) ? 0xB : 0x19` reproduces target's `bnez $s1 / li 0x19 / j / li 0xB`.
+
+- [s9] Without an intermediate the mode split evaporates: the same ternary assigned straight to the s16 var_v0_2 measures 30 / 211, and declaring var_v0_2 as s32 measures 30 / 211 (both copies SImode, still matching each other).
+
+- [s9] The STRUCTURAL route to defeating the cluster-D cross-jump is closed by instrumented evidence: four direct-store spellings all measure 29-30 at 211 insns, and BB2_XJUMP_DEBUG on the ==5-direct body shows DO_CROSS_JUMP jump=372 newjpos=353 newlpos=396 still firing - an earlier jump pass has already tail-merged the duplicated store+return back into block_48.
+
+- [s9] Cluster C's pass is NAMED from dumps, not guessed: pre-sched1 (.combine:2894-2918, .flow:4370-4394) the globals block ends with insn 378 (set (reg/i:SI 2 v0) (reg/v:SI 79)); .sched:4853 shows sched1 hoisting 378 to the front of the block; .greg:3150 shows the consequence, (set (reg:HI 3 v1) (const_int 1)).
+
+- [s9] Cluster C is CLOSED on the 23-floor body: slots 131-136 emit `li v0,1 / lui at / sh v0 / li v0,-1 / lui at / sh v0`, target's registers exactly.
+
+- [s9] The 216-vs-215 delta is exactly one `nop` at slot 126 - an unfilled delay slot on the `beqz v0,<globals block>` at slot 125. Target fills that slot by stealing `addiu v0,zero,1` from the branch target; reorg declines the equivalent steal for us.
+
+- [s9] Exit-form choice is per-site and worth several slots: the same goto-for-return change measures 38 at the temp_v1_2 == 0xE site and 23 at the do_calls site - which makes an enumeration over the four early-exit sites a concrete, untried lever for cluster B.
+
+- [s9] Placing the s32 intermediate in the ==5 copy instead of the tail copy emits a byte-identical stream; either placement works.
+
+- [s9] candidate.c (23 / 216) and candidate_alt_215insn.c (25 / 215, the 215==215 fallback base) are both banked, with nine new rejected forms under memory/grind/func_800283D0/rejected/.

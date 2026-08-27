@@ -1,7 +1,7 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -51,23 +51,29 @@
    "floor": 25,
    "modality": "forensics",
    "headline": "Floor 28 -> 25 (215/215): instrumented jump2 forensics show the 4-insn loss is one find_cross_jump merge, and an SImode intermediate in the tail copy defeats it byte-neutrally, closing cluster D - but"
+  },
+  {
+   "session": 9,
+   "floor": 23,
+   "modality": "forensics",
+   "headline": "Floor 25 -> 23: cluster C attributed to sched1 hoisting the block-local return-value copy and CLOSED by exiting the globals block with `goto block_49;`, and s8's unclassifiable multi-write mode-split "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The mode split that closes cluster D can be spelled as ordinary C that a human would write for program reasons (or is sanctionable as-is), unlocking the 25-floor body for a real candidate.",
-   "mechanism": "jump.c find_cross_jump compares patterns with rtx_renumbered_equal_p, which compares GET_MODE; any tail-copy selection whose value is naturally int-typed and only narrowed at the shared 16-bit store produces movsi where the ==5 copy produces movhi, with identical bytes.",
-   "next_probe": "Enumerate int-typed spellings of the tail selection that need no extra declaration: e.g. select from an int-typed expression already in scope, or make var_v0_2 itself s32 and narrow only the ==5 copy. Measure each with sandbox --disable all AND confirm the PAT-MISMATCH in the XJDBG trace via tmp/grind/func_800283D0/s8/dumpiso.sh. If none is byte-neutral, emit a ruling-request quoting the s8 evidence rather than submitting."
+   "hypothesis": "The `nop` at slot 126 is the whole 216-vs-215 delta, and it is a reorg delay-slot-fill decision that target makes and we decline; making it puts the 23-floor body at 215 insns with cluster C already closed.",
+   "mechanism": "reorg's steal-from-branch-target fill. On the 25-floor body reorg stole `li v1,1` into the delay slot of `beqz v0,<globals block>`; on the 23-floor body the candidate is `li v0,1`, a write of the register the branch itself reads, and reorg refuses - probably a conservative resource conflict in resource.c. Target performs the identical steal (`beqz v0,.L800285DC` + `addiu v0,zero,1`), so it is reachable in this compiler.",
+   "next_probe": "Read reorg.c / resource.c in tools/gcc-2.7.2 around fill_simple_delay_slots and steal_delay_list_from_target, and if the refusal is not obvious from the source, instrument the fill the way s8 instrumented find_cross_jump (the isolate.py / dumpiso.sh recipe in tmp/grind/func_800283D0/s9/ is ready to reuse). If it is a conflict with the branch's own condition register, the C question becomes: what source shape makes the globals block's first insn something other than a write of that register - e.g. leading with the `lui`/store of a global whose value is not in v0."
   },
   {
-   "hypothesis": "Cluster B (slots 45/47) is the same class of decision as cluster D and yields to the same mode lever applied to the constant-1 material.",
-   "mechanism": "The trace shows our return-1 blocks merging at e1=618 vs e2=84 (MATCH set(reg<-1) then LABEL-BONUS, min 0 => WIN, DO_CROSS_JUMP jump=618 newjpos=616 newlpos=82). Target's shared, labelled j / li v0,1 exit block is a post-RA cross-jump product with a different survivor, and reorg then cannot sink the li into the preceding branch's delay slot.",
-   "next_probe": "On the 25-floor body, re-run dumpiso.sh and read the min arithmetic at uids 82/84/613/616/618; then try differentiating the two constant-1 materials by mode (the ret holder is s32 today) so one merge candidate PAT-MISMATCHes, and measure slots 45/47."
+   "hypothesis": "Cluster B (slots 45/47) yields to the exit-form dimension that s9 just proved is worth several slots and is decided independently per exit site.",
+   "mechanism": "Each inline `return ret;` creates a block-local (set (reg/i:SI 2 v0) ...) that sched1 places and that later passes may or may not cross-jump into a shared exit block; a `goto` to a shared labelled return does not. Target's `.L80028488` is a LABELLED shared `j / li v0,1` block with three early-exit predecessors (s6), which is exactly what a particular assignment of goto-vs-return over our four early-exit sites would produce.",
+   "next_probe": "Enumerate the exit-form assignments over the four early-exit sites (range-check exit, temp_v1_2 == 0xE, do_calls, globals block) - s9 measured only two of the sixteen - and measure each with sandbox --disable all, recording build_insns alongside the score. s1 pinned the range-check exit to an INLINE return and s9 pinned the globals block to a goto, so the live search is over the remaining two sites crossed with re-testing those two pins on the 23-floor body."
   },
   {
-   "hypothesis": "s7's exhaustive RA windows for clusters A and E still hold on the 25-floor body, and are now provably orthogonal to jump2.",
-   "mechanism": "global.c allocno_compare (L73 92 -> [38,65], L143 14 -> [20,21]) and local-alloc.c qty_compare_1 (span(qty0) 30 -> <= 24) are all decided before jump2 runs, so the mode split cannot have helped or hurt them except through the RTL it changed in the tail block.",
-   "next_probe": "Re-extract the RA models on the 25-floor body (tools/ra_solver/extract.py, then flow.livelen_flow and tmp/grind/func_800283D0/s7/qty41.py) and re-check L73/L143 and span(qty0) against s7's tables before spending any further spelling probes on clusters A and E."
+   "hypothesis": "s7's exhaustive RA windows for clusters A and E still describe the 23-floor body, or they have moved.",
+   "mechanism": "Both the s8 mode split and the s9 exit-form change altered the RTL of blocks those quantities live in; global.c allocno_compare and local-alloc.c qty_compare_1 both consume live lengths and reference counts computed on that RTL, so the windows (L73 92 -> [38,65], L143 14 -> [20,21]; span(qty0) 30 -> <=24 or refs(qty0) 6 -> 8..10) are chassis-relative.",
+   "next_probe": "Re-run tools/ra_solver/extract.py plus flow.livelen_flow and tmp/grind/func_800283D0/s7/qty41.py on the 23-floor body and diff the tables against s7's before spending any spelling probe on clusters A or E."
   }
  ],
  "judge_constraints": [],
