@@ -2262,3 +2262,202 @@ not diffs), the real residual is:
 - [s16] The store sink and the arm store are ONE question - whether path1's store ends a basic block. If the arm's 0x19 edge stopped its walk-back one insn earlier and landed after path1's store (target's .L80028520), path1's store would end a block, sched1 could not sink it into the jal delay slot, and the arm would still own a store for reorg to place in its own delay slot.
 
 - [s16] New instruments for the next session: tmp/grind/func_800283D0/s16/al.py prints the whole $s0-$s7 seat table for the current src in one command (survives pseudo renumbering); tmp/grind/func_800283D0/s16/mk.sh regenerates the normalized objdump-vs-target diff (the s12 normalizer's ours.txt extraction was broken by an objdump format change and the s16 copy parses the columns in Python); tmp/grind/func_800283D0/s16/fr.py dumps ALLOCDBG plus the FINDREGDBG exclusion sets for named pseudos.
+
+
+## s17 (solver, 2026-08-27) - floor HELD at 10 / 216; the cross-jump law behind the store pin is now MECHANISTIC, and E-s16-3 is refuted
+
+**E-s17-0 (chassis).**  The banked s16 candidate body re-measured **10 / 216**
+on HEAD at session start (twice, per the E-s13-6 staleness trap).  Ledger value
+confirmed; every s12-s16 measurement is chassis-valid.
+
+**E-s17-1 (TRIAGE - `inverse_compose.py classify` is BLIND on an
+asm-until-matched function; `goal_from_tgt.py classify` is the correct entry
+point).**  `tools/ra_solver/inverse_compose.py classify code6cac_b
+func_800283D0` reports **IDENTICAL, 213 vs 213 insns**.  That verdict is
+fiction: `mkasm_honest.sh` builds `<stem>.tgt.s` as "current src + regfix +
+asmfix", and under asm-until-matched func_800283D0 carries ZERO rules, so the
+"target" stream is our own build.  The object-level classifier
+`tools/ra_solver/goal_from_tgt.py classify code6cac_b func_800283D0` compares
+`tmp/sandbox/func_800283D0/code6cac_b.o` against `build/src/code6cac_b.o` (the
+canonical build, where the function IS the split asm file) and gives the honest
+verdict:
+
+    func_800283D0 (code6cac_b): ours 216 insns, target 215   [replace_with_asmfile-safe]
+    FIRST DIVERGENCE: PRE-RA
+      ours only  : li #,1   x1
+      ours only  : nop      x1
+      target only: sh #,646(#)   x1
+
+This is a reusable tooling fact for the whole pipeline: for any
+asm-until-matched function, `inverse_compose classify` must not be used - it
+will report IDENTICAL (or PRE-RA fiction) because its target stream is
+self-referential.  Use `goal_from_tgt.py classify`.
+
+**E-s17-2 (variant A re-measured on THIS chassis: it is byte-exact at BOTH
+disputed regions).**  `tmp/grind/func_800283D0/s17/tA.c` = the s16 candidate
+with the arm's 0x19 edge changed to `store; goto do_calls;`.  Measured
+**17 / 216**.  Its normalized objdump-vs-target diff has **NO entry at emitted
+83-88 and NO entry at 144-148** - path1's `sh $v0,0x286($s0)` sits at the head
+of the shared block with `move $a3,$zero` in the `jal` delay slot, and the arm
+emits target's four insns with its own store in the `j` delay slot.  tA's whole
+residual is cluster A (the twelve `move $a2,$s2` seats plus the prologue
+`sw $s2` / `sw $s3` pair), cluster B, and the `addu $a0,$s4,$a0` operand order.
+
+**E-s17-3 (E-s16-3 IS REFUTED - the emitted arm does NOT discriminate).**
+E-s16-3 argued that target's `.L80028610` arm must be a DUPLICATED-CALLS arm
+because of its emitted shape.  E-s17-2 shows variant A's arm emits the identical
+four instructions (this was already recorded in E-s13-2 and was overlooked in
+s16).  The emitted arm is therefore evidence for NEITHER spelling.  What DOES
+discriminate is emitted 83-88 together with 148: the s16 candidate (duplicated
+calls) gets them WRONG, variant A gets them RIGHT.  Consequently s16's
+instruction "do not spend the livelen(143) route" is WITHDRAWN, and s15's
+E-s15-5 is restored as a live hypothesis - though E-s17-5 shows it is not the
+only route.
+
+**E-s17-4 (the closed form's cheapest dial is +1 REFERENCE, not +2 - measured).**
+`inverse.py global model_tA.json --swap 73,143 --depth 3` re-derives exactly
+E-s15-1's four dials on this chassis (minimal solution size 1 atom, 6 vectors:
+`refs 73: 7->8/9/10/11`, `refs 143: 3->2`, `live_extend 143: 14->22`; 36
+preference atoms reported FORECLOSED because callee-saved regs never appear in
+pre-RA RTL, so `global.c set_preference` can never record them).
+`tmp/grind/func_800283D0/s17/tB.c` supplies exactly ONE extra `arg1` reference
+(the arm's 0xB edge duplicates the FIRST call only and jumps to a `do_call2:`
+label placed between path1's two calls).  ALLOCDBG on tB:
+
+    ord=18 pseudo=73  $s2  nrefs=8 livelen=101 pri=2376
+    ord=21 pseudo=143 $s3  nrefs=3 livelen=14  pri=2142
+
+i.e. **the seats flip at nrefs(73) = 8**, exactly as `3*8/92*10000 = 2608 >
+2142` predicted.  Every previous body reached the seat with nrefs 9; half that
+lift is enough.  tB itself scored 17 / 222 (its duplicated call block did not
+merge).
+
+**E-s17-5 (THE FINDING: cluster A and the store pin ARE simultaneously
+satisfiable - `tC` = 12 / 221 - and what is left is a CROSS-JUMP SCHEDULING law,
+read from the instrumented jump.c rather than guessed).**
+`tmp/grind/func_800283D0/s17/tC.c` spells the arm as
+
+    s16 var_v0_4 = 0x19;
+    if (var_s1 == 0) {                    /* the 0xB edge supplies the pin */
+        var_v0_4 = 0xB;
+        *(s16 *)(arg0 + 0x286) = var_v0_4;
+        goto do_calls;
+    }
+    *(s16 *)(arg0 + 0x286) = var_v0_4;    /* the 0x19 edge supplies the refs */
+    func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);
+    func_80032854(*(s16 *)(arg0 + 4), 0x25, arg1, (s16 *)0);
+    return ret;
+
+Measured **12 / 221**.  Its diff has NO cluster-A entry (all seats correct) AND
+path1's store at the head of the shared block (emitted 83 correct).  This is the
+first competitive body to hold both; s13's variant C held both at 20 / 222.
+tC's ENTIRE residual over target is that the arm's four argument-setup insns
+fail to cross-jump (+5 insns), plus cluster B and the two `addu` orders.
+
+`BB2_XJUMP_DEBUG=1` on tC (the env-gated trace already built into
+`tools/gcc-2.7.2/jump.c`; log at `tmp/grind/func_800283D0/s17/xj_tC.txt`) names
+the refusal exactly:
+
+    XJDBG: enter e1=467 e2=262 min=2 (chain-partner)
+    XJDBG:   MATCH i1=462 i2=257 parallel     min->1     <- call 0x25
+    XJDBG:   MATCH i1=460 i2=255 set(reg<-0)  min->0
+    XJDBG:   MATCH i1=454 i2=249 set          min->-1
+    XJDBG:   MATCH i1=458 i2=253 set          min->-2
+    XJDBG:   MATCH i1=456 i2=251 set(reg<-37) min->-3
+    XJDBG:   MATCH i1=447 i2=242 parallel     min->-4    <- call 1 (the jal)
+    XJDBG:   PAT-MISMATCH i1=432 set vs i2=240 set(reg<-0) lose=0
+    XJDBG: result e1=467 min=-4 last1=447 => WIN
+    XJDBG: DO_CROSS_JUMP jump=467 newjpos=447 newlpos=242
+
+i1=432 is the ARM's own `sh $v0,0x286($s0)`; i2=240 is path1's
+`move $a3,$zero`.  THE LAW: `find_cross_jump` walks the two streams backwards
+and stops at the first pattern mismatch.  path1's store is PINNED by the
+`do_calls` label so it stays at its block head, while the arm's store is
+UNPINNED (its block runs store -> args -> call), so sched1 sinks the arm's store
+to just before its `jal`.  The two blocks are then scheduled differently and the
+walk-back dies one insn past the `jal`.  A duplicated call pair merges 100% ONLY
+when the two blocks are scheduled IDENTICALLY - both stores pinned, or both
+sunk.  This supersedes E-s13-3's empirical statement of the tension with a
+mechanism, and it explains every measurement from s11 onward.
+
+**E-s17-6 (a NEW, cheaper pin for path1's store that costs no arm goto: `tD`).**
+Path1 respelled so each selection edge does its own store -
+
+    var_v0 = 0x19;
+    if (var_s1 == 0) {
+        var_v0 = 0xB;
+        *(s16 *)(arg0 + 0x286) = var_v0;
+        goto do_calls;
+    }
+    *(s16 *)(arg0 + 0x286) = var_v0;
+    do_calls: ...
+
+- makes path1's own 0xB edge supply the `do_calls` label, so path1's store is
+pinned WITHOUT spending the arm's goto.  With the arm pinned the same way
+(`tmp/grind/func_800283D0/s17/tD.c`) the build measures **11 / 212** and its
+emitted 80-88 is BYTE-EXACT with target (`bnez $s1 / li 0x19 / li 0xB / sh /
+a1 / a2 / a0 / jal / a3` - jump2 cross-jumps the two per-edge stores back into
+one).  This is a strictly better store-pin primitive than E-s13-2's arm-side
+`goto do_calls` and should be the starting point for every future pinned body.
+
+**E-s17-7 (why tD is 3 insns SHORT: the over-merge, and the narrow window target
+occupies).**  In tD the arm's two edges become textually IDENTICAL to path1's two
+edges once the calls block is merged, so jump2 collapses the entire `<` arm and
+the `<` test branches straight into path1 (emitted `bnez $v0` where target has
+`beqz $v0`; target's four arm insns are absent).  Target therefore sits in a
+narrow window: path1's store pinned, the arm's store pinned, AND the arm's 0x19
+edge textually DISTINGUISHABLE from path1's 0x19 edge.  In target's asm path1's
+0x19 edge has NO store of its own (it branches to `.L8002851C`) while the arm's
+0x19 edge does.  Eight bodies were measured this session and none lands in the
+window:
+
+    base (s16 candidate)  both stores sunk, arm merges 100%             10 / 216
+    tA   variant A arm (store; goto do_calls)                           17 / 216
+    tB   +1 ref via duplicated call1 + a `do_call2:` label              17 / 222
+    tC   path1 pinned by the arm's 0xB edge; 0x19 edge duplicates calls 12 / 221
+    tD   path1 AND arm both split-store self-pinned                     11 / 212
+    tE   tD's path1 + the s16 arm (arm store unpinned)                  12 / 221
+    tG   arm rewritten 0x19-edge-first with an `arm_calls:` pin         10 / 216
+    tH   tD's path1 + tG's arm                                          12 / 221
+
+- [s17] Chassis re-measured at dispatch: the banked s16 candidate body = 10 / 216 on HEAD, identical to the ledger, so every s12-s16 conclusion is chassis-valid. Floor HELD at 10 this session.
+
+- [s17] TOOLING (pipeline-wide): tools/ra_solver/inverse_compose.py classify is BLIND on asm-until-matched functions - its <stem>.tgt.s is "current src + regfix", and with zero rules that is our own build, so it reported IDENTICAL / 213-vs-213 for func_800283D0. Use tools/ra_solver/goal_from_tgt.py classify <stem> <func>, which compares tmp/sandbox/<func>/<stem>.o against build/src/<stem>.o at the object level. Its verdict here: PRE-RA, ours 216 vs target 215, "ours only: li #,1 x1 + nop x1; target only: sh #,646(#) x1".
+
+- [s17] E-s16-3 IS REFUTED. Variant A's arm (store 0x19; goto do_calls) emits target's four instructions at 144-148 EXACTLY (already recorded in E-s13-2), so the emitted arm discriminates nothing. tA = 17 / 216 and its diff has NO entry at emitted 83-88 or 144-148: variant A reproduces BOTH disputed regions byte-exactly, and its sole residual is cluster A + cluster B + the addu $a0 operand order. s16's "do not spend the livelen(143) route" instruction is WITHDRAWN.
+
+- [s17] The cluster-A seat flips at nrefs(73) = 8, not 9: tB (the arm's 0xB edge duplicates the FIRST call only, jumping to a do_call2: label between path1's two calls) gives ALLOCDBG 73 -> $s2 nrefs 8 livelen 101 pri 2376 and 143 -> $s3 pri 2142. Exactly ONE extra byte-free arg1 reference is required, half what every prior body spent. tB itself scored 17 / 222 (its duplicated call block did not merge).
+
+- [s17] inverse.py global on model_tA.json (--swap 73,143 --depth 3) reproduces E-s15-1's four dials on this chassis: minimal solution size 1 atom, 6 vectors (refs 73: 7->8..11, refs 143: 3->2, live_extend 143: 14->22), plus 36 FORECLOSED preference atoms (callee-saved regs never appear in pre-RA RTL, so global.c set_preference can never record them).
+
+- [s17] NEW BEST COMBINATION MEASURED: tC (arm's 0xB edge = own store + goto do_calls, 0x19 edge = own store + duplicated calls + return) = 12 / 221 - the first competitive body to hold cluster A (seats correct) AND path1's pinned store (emitted 83 correct) at once. Its entire residual over target is that the arm's four argument-setup insns fail to cross-jump (+5 insns).
+
+- [s17] THE CROSS-JUMP LAW (read from BB2_XJUMP_DEBUG on the instrumented jump.c, not guessed): on tC, find_cross_jump matched 6 insns (call 0x25's block and call 1's jal) then PAT-MISMATCH i1=432 (the ARM's own sh $v0,0x286($s0)) vs i2=240 (path1's move $a3,$zero), and do_cross_jump merged only from the jal (newjpos=447 newlpos=242). path1's store is pinned by the do_calls label; the arm's store is unpinned so sched1 sinks it to just before the arm's jal. A duplicated call pair merges 100% ONLY when the two blocks are scheduled IDENTICALLY - both stores pinned or both sunk. This supersedes E-s13-3's empirical coupling with a mechanism.
+
+- [s17] NEW CHEAPER PIN: path1 respelled so EACH selection edge does its own store and the 0xB edge ends with `goto do_calls` supplies the do_calls label itself - path1's store is pinned WITHOUT spending the arm's goto, and emitted 80-88 comes out BYTE-EXACT with target (jump2 cross-jumps the two per-edge stores back into one). Use this as the store-pin primitive from now on instead of E-s13-2's arm-side goto do_calls.
+
+- [s17] tD (that path1 + the arm pinned the same way) = 11 / 212, THREE INSNS SHORT of target: with both sides pinned identically the arm's two edges become textually identical to path1's and jump2 collapses the entire `<` arm (emitted bnez $v0 where target has beqz $v0; target's four arm insns absent). Target's window is narrow: path1 pinned, arm pinned, AND the arm's 0x19 edge textually distinguishable from path1's 0x19 edge - in target path1's 0x19 edge has NO store of its own (it branches to .L8002851C) while the arm's does.
+
+- [s17] Full measurement table this session: base 10/216, tA 17/216, tB 17/222, tC 12/221, tD 11/212, tE 12/221, tG 10/216 (codegen-equivalent to base), tH 12/221. All banked under memory/grind/func_800283D0/rejected/.
+
+- [s17] Chassis re-measured at dispatch: the banked s16 candidate body = 10 / 216 on HEAD (twice, per the E-s13-6 staleness trap), identical to the ledger, so every s12-s16 conclusion is chassis-valid. Floor HELD at 10 this session.
+
+- [s17] PIPELINE-WIDE TOOLING FACT: tools/ra_solver/inverse_compose.py classify is BLIND on any asm-until-matched function - its <stem>.tgt.s is 'current src + regfix/asmfix', and with zero rules that is our own build, so it reported FIRST DIVERGENCE: IDENTICAL / 213-vs-213 here. The correct triage tool is tools/ra_solver/goal_from_tgt.py classify <stem> <func>, which compares tmp/sandbox/<func>/<stem>.o against build/src/<stem>.o at the object level; its verdict here is PRE-RA, ours 216 vs target 215, 'ours only: li #,1 x1 + nop x1; target only: sh #,646(#) x1'.
+
+- [s17] E-s16-3 IS REFUTED. tA (variant A's arm: `store 0x19; goto do_calls;`) = 17 / 216 and its normalized diff has NO entry at emitted 83-88 and NO entry at 144-148 - it reproduces target's store block AND target's four arm instructions byte-exactly. The emitted arm discriminates nothing between variant A and a duplicated-calls arm (E-s13-2 already said so); emitted 83-88 discriminates against the duplicated-calls arm. s16's instruction 'do not spend the livelen(143) route' is WITHDRAWN and s15's E-s15-5 is restored as a live hypothesis.
+
+- [s17] tA's entire residual is cluster A (twelve `move $a2,$s2` seats plus the prologue `sw $s2` / `sw $s3` pair), cluster B, and the `addu $a0,$s4,$a0` operand order - nothing else.
+
+- [s17] inverse.py global on model_tA.json (--swap 73,143 --depth 3) reproduces E-s15-1's four dials on this chassis: minimal solution size 1 atom, 6 vectors (refs 73: 7->8/9/10/11, refs 143: 3->2, live_extend 143: 14->22), plus 36 FORECLOSED preference atoms because callee-saved regs never appear in pre-RA RTL, so global.c set_preference can never record a preference for $s2 or $s3.
+
+- [s17] THE SEAT FLIPS AT nrefs(73) = 8, NOT 9. tB (the arm's 0xB edge duplicates the FIRST call only and jumps to a `do_call2:` label between path1's two calls) gives ALLOCDBG 73 -> $s2 nrefs 8 livelen 101 pri 2376 and 143 -> $s3 nrefs 3 livelen 14 pri 2142. Exactly ONE extra byte-free arg1 reference is required - half what every prior body spent. tB itself scored 17 / 222 because its duplicated call block did not merge.
+
+- [s17] NEW BEST COMBINATION: tC (arm's 0xB edge = own store + `goto do_calls`, 0x19 edge = own store + duplicated call pair + return) = 12 / 221, the first competitive body to hold cluster A (all seats correct) AND path1's pinned store (emitted 83 correct) at the same time. Its whole residual over target is the arm's four argument-setup insns failing to cross-jump (+5 insns), plus cluster B and the two addu orders.
+
+- [s17] THE CROSS-JUMP LAW, read from BB2_XJUMP_DEBUG on the instrumented tools/gcc-2.7.2/jump.c rather than guessed: on tC find_cross_jump matched 6 insns then PAT-MISMATCH i1=432 (the ARM's own `sh $v0,0x286($s0)`) vs i2=240 (path1's `move $a3,$zero`), and do_cross_jump merged only from the jal (newjpos=447 newlpos=242). path1's store is pinned by the do_calls label; the arm's store is unpinned so sched1 sinks it to just before the arm's jal. A duplicated call pair merges 100% ONLY when the two blocks are scheduled IDENTICALLY - both stores pinned or both sunk. This supersedes E-s13-3's empirical coupling with a mechanism and explains every measurement from s11 onward.
+
+- [s17] NEW, CHEAPER STORE-PIN PRIMITIVE: respelling path1 so EACH selection edge does its own store and the 0xB edge ends with `goto do_calls` makes path1 supply its own pin label - the arm's goto is no longer spent on it - and emitted 80-88 comes out BYTE-EXACT with target (jump2 cross-jumps the two per-edge stores back into one). Use this instead of E-s13-2's arm-side `goto do_calls` from now on.
+
+- [s17] tD (that path1 + the arm pinned the same way) = 11 / 212, THREE INSNS SHORT of target: with both sides pinned identically the arm's two edges become textually identical to path1's and jump2 collapses the entire `<` arm (emitted `bnez $v0` where target has `beqz $v0`). Target's window is narrow - path1 pinned, arm pinned, AND the arm's 0x19 edge textually distinguishable from path1's 0x19 edge; in target's asm path1's 0x19 edge has NO store of its own (it branches to .L8002851C) while the arm's does.
+
+- [s17] Full measurement table this session, all banked under memory/grind/func_800283D0/rejected/: base 10/216, tA 17/216, tB 17/222, tC 12/221, tD 11/212, tE (tD's path1 + the s16 arm) 12/221, tG (arm rewritten 0x19-edge-first with an `arm_calls:` pin) 10/216 and codegen-equivalent to base, tH (tD's path1 + tG's arm) 12/221.

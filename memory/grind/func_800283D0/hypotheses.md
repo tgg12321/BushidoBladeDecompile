@@ -1376,3 +1376,77 @@ stop point) both survive and are re-stated below against the new body.
 - probe: vD - candidate's arm with `*(s16 *)(arg0 + 0x286) = var_v0_4; goto do_calls;` replacing the duplicated call pair. Measured sandbox, then re-read the seat table.
 - result: 17 / 216 and the $s2/$s3 seats swap back (nrefs(73) 9 -> 7, pri 2755 -> ~1521 < 2142). Third independent confirmation of the E-s15-1 pri arithmetic on this chassis: the duplicated pair is worth exactly the seat, so it cannot be traded for the store pin this way.
 - verdict: KILLED
+
+
+## s17 (solver) - hypotheses closed and opened
+
+**H-s17-A (CONFIRMED).**  The cluster-A seat exchange and path1's store pin are
+NOT mutually exclusive.  tC holds both at 12 / 221; only the arm's four
+argument-setup insns fail to cross-jump.  E-s13-3's "provably coupled" statement
+is superseded.
+
+**H-s17-B (CONFIRMED, mechanism).**  A duplicated call pair merges 100% under
+jump2 only when the arm's block and path1's block are SCHEDULED IDENTICALLY,
+i.e. their stores are both pinned or both sunk.  Traced with BB2_XJUMP_DEBUG:
+find_cross_jump PAT-MISMATCH at the arm's own `sh` against path1's
+`move $a3,$zero`.
+
+**H-s17-C (CONFIRMED).**  nrefs(73) = 8 is sufficient for the seat (pri 2376 >
+2142).  Only ONE extra byte-free arg1 reference is needed, not two.
+
+**H-s17-D (KILLED).**  E-s16-3's identification of target's arm as a
+duplicated-calls arm, deduced from the emitted arm shape.  Variant A's arm emits
+the identical four instructions, so the emitted arm discriminates nothing; and
+variant A additionally reproduces emitted 83-88, which the duplicated-calls arm
+does not.
+
+**H-s17-E (KILLED).**  "Pin both sides identically and the duplicated pair will
+merge into target's shape."  tD pins both and jump2 then collapses the WHOLE
+arm (11 / 212, three insns short of target).  Identical pinning over-merges.
+
+**OPEN (frontier).**
+1. Find a path1 spelling whose 0x19 edge has NO store of its own (so it is
+   textually distinct from the arm's 0x19 edge) while path1's single store is
+   still pinned - target's asm says that is exactly target's shape.  tD's
+   split-store pin gets the pin for free but gives the 0x19 edge a store.
+2. On tA (variant A arm, byte-exact at 83-88 and 144-148), find ONE byte-free
+   extra `arg1` reference outside the arm.  Sites whose tails can cross-jump
+   100% are the only candidates; the arm is occupied by the pin.
+3. Cluster B (emitted 45-48 and 126/131) is untouched since s10 and is still a
+   reorg.c `steal_delay_list_from_target` eligibility question.
+
+## [s17] inverse_compose.py classify is the correct solver triage entry point for this function.
+- mechanism: classify compares <stem>.hon.s against <stem>.tgt.s, where .tgt.s is 'current src + regfix + asmfix'. Under asm-until-matched func_800283D0 carries ZERO rules, so the 'target' stream is our own build and the comparison is self-referential.
+- probe: Ran `inverse_compose.py classify code6cac_b func_800283D0` after mkasm_honest.sh; then ran the object-level `goal_from_tgt.py classify code6cac_b func_800283D0`.
+- result: inverse_compose reported FIRST DIVERGENCE: IDENTICAL, 213 vs 213 insns. goal_from_tgt reported ours 216 / target 215, FIRST DIVERGENCE: PRE-RA, with 'ours only: li #,1 x1 + nop x1' and 'target only: sh #,646(#) x1'.
+- verdict: KILLED
+
+## [s17] E-s16-3: target's `<` arm is identified bit-for-bit as a DUPLICATED-CALLS arm, therefore target compiles with nrefs(73)=9 and the livelen(143) route must not be spent.
+- mechanism: s16 read target's four arm insns (beqz/li 0x19/j/sh) and asserted only a duplicated-calls arm plus a jump2 walk-back can produce them.
+- probe: Built tA (the s16 candidate with the arm's 0x19 edge changed to `store; goto do_calls;` = variant A) and diffed its normalized objdump against asm/funcs/func_800283D0.s.
+- result: tA = 17/216 and its diff has NO entry at emitted 83-88 and NO entry at 144-148 - variant A's arm emits target's four instructions EXACTLY (as E-s13-2 already recorded) AND reproduces target's store block. The emitted arm discriminates nothing; emitted 83-88 discriminates AGAINST the duplicated-calls arm.
+- verdict: KILLED
+
+## [s17] The cluster-A seat exchange requires nrefs(73) >= 9 (two extra arg1 references).
+- mechanism: global.c allocno_compare pri = floor_log2(nrefs)*nrefs/livelen*10000*size; every prior body that won the seat carried a duplicated CALL PAIR.
+- probe: Built tB, whose arm's 0xB edge duplicates only the FIRST call and jumps to a `do_call2:` label between path1's two calls, then dumped ALLOCDBG.
+- result: tB: pseudo 73 nrefs 8 livelen 101 pri 2376 -> $s2; pseudo 143 nrefs 3 livelen 14 pri 2142 -> $s3. The seats FLIP at nrefs 8. One extra reference is sufficient; the assumed requirement was double the real one.
+- verdict: KILLED
+
+## [s17] E-s13-3: the store pin and cluster A are provably coupled - the pinning `goto` must sit on the same arm edge that would carry the duplicated call pair, so the two cannot be held together.
+- mechanism: The pin needs a label predating sched1, hence a source goto; that goto deletes the edge's call duplicates.
+- probe: Built tC: the arm's 0xB edge does its own store then `goto do_calls` (supplying the pin), while the 0x19 edge keeps its own store and BOTH duplicated calls.
+- result: tC = 12/221 with NO cluster-A entry in the diff (all twelve $s2 seats and the prologue sw pair correct) AND path1's store at the head of the shared block (emitted 83 correct). Both held simultaneously at a competitive score; the coupling is not a law, it is a consequence of which edge carries the goto.
+- verdict: KILLED
+
+## [s17] On a body where path1's store is pinned, an arm carrying a duplicated call pair will cross-jump back to zero cost, exactly as it does on the unpinned 10-floor body.
+- mechanism: jump2's find_cross_jump walks two streams backwards and merges while patterns match.
+- probe: Ran the instrumented cc1 with BB2_XJUMP_DEBUG=1 on tC and read the trace for the arm's return.
+- result: The walk matched 6 insns (call 0x25's block and call 1's jal) then PAT-MISMATCH i1=432 (the ARM's own `sh $v0,0x286($s0)`) vs i2=240 (path1's `move $a3,$zero`); do_cross_jump merged only from the jal (newjpos=447 newlpos=242). path1's store is pinned at its block head while the arm's is unpinned and sched1 sinks it before the arm's jal, so the two blocks are scheduled differently and the argument setup cannot merge. THE LAW: the duplicate merges 100% only when both blocks are scheduled identically - both stores pinned or both sunk.
+- verdict: CONFIRMED
+
+## [s17] If BOTH path1's store and the arm's store are pinned the same way, the duplicated call pair will merge and the arm will emit target's four insns.
+- mechanism: Identical scheduling on both sides should let find_cross_jump walk back to the arm's own pin label and stop there, leaving the arm [li 0x19, sh] plus a jump to path1's a1 setup - exactly target's .L80028520 shape.
+- probe: Built tD (path1 and the arm each respelled so every selection edge does its own store and the 0xB edge ends `goto <calls label>`), measured and diffed.
+- result: tD = 11/212. Path1's emitted 80-88 is BYTE-EXACT with target, but jump2 collapses the ENTIRE `<` arm (emitted `bnez $v0` where target has `beqz $v0`; target's four arm insns absent, build 3 insns SHORT). Identical pinning makes the arm's two edges textually identical to path1's two edges, so the merge does not stop at the pin - it eats the whole arm.
+- verdict: KILLED

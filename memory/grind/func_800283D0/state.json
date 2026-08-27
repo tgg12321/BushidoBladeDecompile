@@ -1,8 +1,8 @@
 {
  "func": "func_800283D0",
  "file": "code6cac_b",
- "session_count": 16,
- "current_modality": "synthesis",
+ "session_count": 17,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -99,23 +99,29 @@
    "floor": 10,
    "modality": "synthesis",
    "headline": "Floor 11 -> 10: target's `<` arm identified bit-for-bit as a DUPLICATED-CALLS arm whose 0xB edge is a source `goto` into path1's selection, which refutes s15's E-s15-5 re-attribution (target compiles "
+  },
+  {
+   "session": 17,
+   "floor": 10,
+   "modality": "solver",
+   "headline": "Floor held at 10/216, but the store-pin/cluster-A tension is broken: tC holds BOTH at 12/221, jump.c's XJDBG trace names the cross-jump refusal exactly, a cheaper self-supplied store pin (tD) emits ta"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The arm's jump2 walk-back consumes path1's store on BOTH edges while target keeps it on the 0x19 edge; stopping the walk-back one insn earlier closes emitted 148, emitted 83-88 (the store sink), or both - ~3-4 of the remaining 10 points.",
-   "mechanism": "On the 10-floor body the arm emits `beqz s1,T / li v0,25 / j T / li a1,1`: both edges land before path1's `sh $v0,0x286($s0)`, so the arm owns no store and reorg fills its `j` delay slot by stealing `li a1,1` from the branch target block. Target's 0x19 edge stops in front of the store, keeps it, and rejoins one insn later at .L80028520 - which also puts a label immediately after path1's store, ending that basic block so sched1 cannot sink the store into the first jal's delay slot. s12 proved the stopping point is steered by the initialisation order of the arm's selection variable relative to path1's (that finding took the floor 20 -> 17); the dial has never been swept on an arm carrying the `goto set_0xB` shape.",
-   "next_probe": "On candidate.c, sweep the four init-order / branch-sense combinations of the arm's `s16 var_v0_4` against path1's `var_v0` (current = `0x19` first + `if (var_s1 == 0) goto set_0xB`; also `0xB` first + `if (var_s1 != 0)` with a `set_0x19` label in path1, and both with path1's own order inverted). Read the arm's TWO branch target ADDRESSES out of `mipsel-linux-gnu-objdump -d tmp/sandbox/func_800283D0/code6cac_b.o` (offsets ~0x7a0-0x7b0) rather than out of the normalized diff, which hides which address each edge lands on. E-s13-6 staleness trap: run `sandbox --disable all` twice before objdumping. Re-check the seats with tmp/grind/func_800283D0/s16/al.py after every hit."
+   "hypothesis": "Target's body = tD's self-supplied store pin on path1, but with path1's 0x19 edge sharing the 0xB edge's store (no store of its own) so the arm's 0x19 edge stays textually distinguishable and the cross-jump stops at the arm's pin label instead of eating the whole arm. That single body would close the store sink, the arm store AND cluster A together, leaving only cluster B.",
+   "mechanism": "Target's asm proves the asymmetry: path1's 0x19 edge is `bnez $s1,.L8002851C` + `li $v0,0x19` in the delay slot - it BRANCHES to the shared store - while the arm's 0x19 edge carries its own `sh $v0,0x286($s0)` in its `j` delay slot and rejoins at .L80028520 (one insn past that store). tD gets the pin free but gives path1's 0x19 edge a store of its own, which makes it textually identical to the arm's and triggers the full collapse measured at 11/212. E-s17-5's law says the arm's store must ALSO be pinned or the argument setup cannot merge (tC/tE/tH all stall at 12/221), so the wanted body needs a pin for the arm that is not a copy of path1's shape.",
+   "next_probe": "Sweep path1 spellings that keep ONE store while still creating a label immediately after it: (a) `if (var_s1 != 0) goto store_it; var_v0 = 0xB; store_it: *(s16*)(arg0+0x286) = var_v0;` with the arm's 0xB edge entering at the 0xB assignment; (b) path1's 0xB edge storing + `goto do_calls` while its 0x19 edge `goto`s the 0xB edge's store (sharing it). Pair each with tG's arm (0x19-edge-first, `arm_calls:` pin, duplicated call pair). Read the TWO arm branch target ADDRESSES out of `mipsel-linux-gnu-objdump -d tmp/sandbox/func_800283D0/code6cac_b.o` (offsets ~0x7a0-0x7b0) - the normalized diff hides which address each edge lands on - and confirm the seats with tmp/grind/func_800283D0/s17/al.py after every hit. Run `sandbox --disable all` twice before objdumping (E-s13-6)."
   },
   {
-   "hypothesis": "Cluster B (~4 pts, and the entire 216-vs-215 insn surplus) is a reorg.c steal_delay_list_from_target refusal at the `beqz $v0,.L800285DC` branch, not a C statement-order question.",
-   "mechanism": "Target steals `addiu $v0,$zero,0x1` - the first insn of the branch TARGET block - into that delay slot and redirects the branch past it; our build has the same insn order in the target block yet emits a nop and the `li v0,1` afterwards. dbr will only steal from a target block when it can redirect the branch to label+1, which it refuses when LABEL_NUSES != 1, and when mark_target_live_regs proves the clobbered register dead on the fall-through path. Emitted 45-48 (ours `j / nop`, target `nop / j`) is the same pass.",
-   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_800283D0` on the 10-floor body (every dump older than s14 is stale - the tail rewrite and now the arm rewrite changed the RTL of the blocks after the dispatch chain), locate that branch's insn UID in the .dbr dump, and grep the DBRDBG log for its thr/simp lines to settle which of the two refusals fires. If it is LABEL_NUSES, the C dial is the number of source gotos landing on the D_800A38A8 block; if it is mark_target_live_regs, the dial is what the fall-through arm does to $v0."
+   "hypothesis": "tA (17/216, byte-exact at emitted 83-88 AND 144-148, sole residual cluster A) plus ONE byte-free extra `arg1` reference anywhere in the function reaches ~5/216.",
+   "mechanism": "E-s17-4 measured that nrefs(73) = 8 flips the seat (pri 2376 > 2142). tB proved the lift works; its cost was that the duplicated block did not cross-jump. The lift is byte-free wherever jump2 merges the duplicate 100%, which by E-s17-5's law needs the duplicating block and its partner to be scheduled identically. The `<` arm is occupied by tA's pinning goto, so the reference must come from another site: the `>` path's 0x26 / 0x2D calls, or the `==` block's 1 / 0x25 calls.",
+   "next_probe": "On tA, enumerate duplication sites whose TAILS (not heads) can cross-jump: any construct where two control-flow arms both END with the same call. Measure each with `sandbox --disable all` and confirm nrefs with tmp/grind/func_800283D0/s17/al.py. Note that moving a call across the var_v0_2 selection changes emitted order (target emits jal 0x26 at T150 and jal 0x2D at T155 BEFORE the `bnez $s1` at T157), so only tail positions that preserve that order are admissible. If no site exists, that is a clean FORECLOSURE of the nrefs route on a pinned body and the answer is the livelen(143) >= 20 death-end route restored by E-s17-3."
   },
   {
-   "hypothesis": "The two commutative `addu` operand orders (emitted 96 `addu s3,s0,v0` vs target `addu s3,v0,s0`, emitted 162 `addu a0,a0,s4` vs target `addu a0,s4,a0`) are the cheapest remaining points, and the emitted-96 site's neutrality measurement is now chassis-stale.",
-   "mechanism": "Earlier sessions measured each C-level operand swap score-neutral (rejected/addu-commutativity-laundered.c, s3-operand-order-neutral-11.c, tail-ptr-operand-order-neutral-11.c) - the C order does not reach the emitted order. But emitted 96 is the BIRTH insn of pseudo 143, whose hard-register seat changed this session, so that site's laundering was measured under a different allocation.",
-   "next_probe": "Re-measure only the emitted-96 site (`u8 *temp_s3 = arg0 + (temp_a1_2 * 2);` vs `(temp_a1_2 * 2) + arg0`) on candidate.c and read emitted 96 out of the objdump. If it is still laundered, record the site as foreclosed on this chassis and stop re-probing commutativity for good."
+   "hypothesis": "Cluster B (~4 pts and the whole 216-vs-215 nop surplus) is a reorg.c steal_delay_list_from_target eligibility refusal at the `beqz $v0,.L800285DC` branch, unchanged since s10 and independent of everything above.",
+   "mechanism": "Target fills that delay slot with `addiu $v0,$zero,0x1`, the first insn of the branch TARGET block, and redirects the branch to label+1; our build emits a nop and the `li v0,1` afterwards from an identical target block. dbr only steals from a target block when LABEL_NUSES == 1 and mark_target_live_regs proves the clobbered register dead on the fall-through. Emitted 45-48 (ours `j / nop`, target `nop / j`) is the same pass.",
+   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_800283D0` on whichever body the next session settles on (every dump older than s17 is stale), locate that branch's insn UID in the .dbr dump, and grep the DBRDBG log for its thr/simp lines to settle which refusal fires. If LABEL_NUSES, the C dial is the number of source gotos landing on the D_800A38A8 block; if mark_target_live_regs, the dial is what the fall-through arm does to $v0."
   }
  ],
  "judge_constraints": [],
