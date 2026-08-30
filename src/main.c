@@ -70,12 +70,12 @@ extern s32 D_800A2D00;
 extern s32 D_800A2D08;
 extern s32 D_800A2D0C;
 extern volatile u32 *D_800A2CEC;
-extern volatile s32 D_800A2D14;
+extern volatile s32 _spu_transferCallback;
 extern s32 D_800A2CDC;
 extern volatile u16 D_800F7298[];
 extern s32 D_800A2CFC;
 extern u16 D_800A2CF4;
-extern s32 D_800A2D10;
+extern s32 _spu_inTransfer;
 extern s32 D_800A2D18;
 extern s32 D_800A2D1C;
 extern s32 D_800163D8;
@@ -1674,9 +1674,9 @@ s32 _spu_init(s32 a0) {
         _spu_Fw1ts();
     }
 
-    D_800A2D10 = 1;
+    _spu_inTransfer = 1;
     *(volatile u16 *)(D_800A2CDC + 0x1AA) = 0xC000;
-    D_800A2D14 = 0;
+    _spu_transferCallback = 0;
     D_800A2D18 = 0;
     return 0;
 }
@@ -2380,9 +2380,9 @@ s32 SpuClearReverbWorkArea(u32 rev_mode) {
         transmodeCleared = 1;
     }
     var_s3 = 1;
-    if (D_800A2D14 != 0) {
-        callback = D_800A2D14;
-        D_800A2D14 = 0;
+    if (_spu_transferCallback != 0) {
+        callback = _spu_transferCallback;
+        _spu_transferCallback = 0;
     }
     while (var_s3 != 0) {
         var_s0 = var_s1;
@@ -2403,7 +2403,7 @@ s32 SpuClearReverbWorkArea(u32 rev_mode) {
         D_800A2CF8 = oldTransmode;
     }
     if (callback != 0) {
-        D_800A2D14 = callback;
+        _spu_transferCallback = callback;
     }
     return 0;
 }

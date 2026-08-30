@@ -6,7 +6,8 @@
 > were then **APPLIED later the same day** (`113abc0e` note2pitch, `b6c73b0f`
 > _spu_FiDMA + _spu_Fr_, `4ffc63aa` _spu_2pitch; host func_800889D4 renamed
 > _spu_FwriteByIO). Remaining: the 2 owner-gated authorization re-derivations
-> (`longjmp`/`setjmp`, `_SendPAD`/`FlushCache`) and Part C.
+> (`longjmp`/`setjmp`, `_SendPAD`/`FlushCache`). Part C's two data names
+> **APPLIED 2026-08-30** (oracle byte-identical; evidence docs updated).
 
 Prepared 2026-08-07 in an isolated worktree (branch `worktree-agent-a6952f8c8c9d2f4eb`);
 **nothing here has touched main**. This document is the exact ordered procedure for the

@@ -33191,17 +33191,17 @@ dlabel D_800A2D0C
     /* 9350C 800A2D0C 07000000 */ .word 0x00000007
 enddlabel D_800A2D0C
 
-nonmatching D_800A2D10
+nonmatching _spu_inTransfer
 
-dlabel D_800A2D10
+dlabel _spu_inTransfer
     /* 93510 800A2D10 01000000 */ .word 0x00000001
-enddlabel D_800A2D10
+enddlabel _spu_inTransfer
 
-nonmatching D_800A2D14
+nonmatching _spu_transferCallback
 
-dlabel D_800A2D14
+dlabel _spu_transferCallback
     /* 93514 800A2D14 00000000 */ .word 0x00000000
-enddlabel D_800A2D14
+enddlabel _spu_transferCallback
 
 nonmatching D_800A2D18
 

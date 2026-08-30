@@ -10,8 +10,8 @@ glabel SpuQuit
     /* 79B18 80089318 6EE2010C */  jal        EnterCriticalSection
     /* 79B1C 8008931C 00000000 */   nop
     /* 79B20 80089320 21200000 */  addu       $a0, $zero, $zero
-    /* 79B24 80089324 0A80013C */  lui        $at, %hi(D_800A2D14)
-    /* 79B28 80089328 142D20AC */  sw         $zero, %lo(D_800A2D14)($at)
+    /* 79B24 80089324 0A80013C */  lui        $at, %hi(_spu_transferCallback)
+    /* 79B28 80089328 142D20AC */  sw         $zero, %lo(_spu_transferCallback)($at)
     /* 79B2C 8008932C 0A80013C */  lui        $at, %hi(D_800A2D18)
     /* 79B30 80089330 182D20AC */  sw         $zero, %lo(D_800A2D18)($at)
     /* 79B34 80089334 B524020C */  jal        _SpuDataCallback

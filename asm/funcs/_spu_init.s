@@ -157,12 +157,12 @@ glabel _spu_init
     /* 79190 80088990 0A80043C */  lui        $a0, %hi(D_800A2CDC)
     /* 79194 80088994 DC2C848C */  lw         $a0, %lo(D_800A2CDC)($a0)
     /* 79198 80088998 01000324 */  addiu      $v1, $zero, 0x1
-    /* 7919C 8008899C 0A80013C */  lui        $at, %hi(D_800A2D10)
-    /* 791A0 800889A0 102D23AC */  sw         $v1, %lo(D_800A2D10)($at)
+    /* 7919C 8008899C 0A80013C */  lui        $at, %hi(_spu_inTransfer)
+    /* 791A0 800889A0 102D23AC */  sw         $v1, %lo(_spu_inTransfer)($at)
     /* 791A4 800889A4 00C00334 */  ori        $v1, $zero, 0xC000
     /* 791A8 800889A8 AA0183A4 */  sh         $v1, 0x1AA($a0)
-    /* 791AC 800889AC 0A80013C */  lui        $at, %hi(D_800A2D14)
-    /* 791B0 800889B0 142D20AC */  sw         $zero, %lo(D_800A2D14)($at)
+    /* 791AC 800889AC 0A80013C */  lui        $at, %hi(_spu_transferCallback)
+    /* 791B0 800889B0 142D20AC */  sw         $zero, %lo(_spu_transferCallback)($at)
     /* 791B4 800889B4 0A80013C */  lui        $at, %hi(D_800A2D18)
     /* 791B8 800889B8 182D20AC */  sw         $zero, %lo(D_800A2D18)($at)
     /* 791BC 800889BC 1800BF8F */  lw         $ra, 0x18($sp)

@@ -32,13 +32,13 @@ glabel _spu_FiDMA
     /* 7940C 80088C0C 01006324 */   addiu     $v1, $v1, 0x1
     /* 79410 80088C10 FFFF6324 */  addiu      $v1, $v1, -0x1
   .L80088C14:
-    /* 79414 80088C14 0A80023C */  lui        $v0, %hi(D_800A2D14)
-    /* 79418 80088C18 142D428C */  lw         $v0, %lo(D_800A2D14)($v0)
+    /* 79414 80088C14 0A80023C */  lui        $v0, %hi(_spu_transferCallback)
+    /* 79418 80088C18 142D428C */  lw         $v0, %lo(_spu_transferCallback)($v0)
     /* 7941C 80088C1C 00000000 */  nop
     /* 79420 80088C20 08004010 */  beqz       $v0, .L80088C44
     /* 79424 80088C24 00F0043C */   lui       $a0, (0xF0000009 >> 16)
-    /* 79428 80088C28 0A80023C */  lui        $v0, %hi(D_800A2D14)
-    /* 7942C 80088C2C 142D428C */  lw         $v0, %lo(D_800A2D14)($v0)
+    /* 79428 80088C28 0A80023C */  lui        $v0, %hi(_spu_transferCallback)
+    /* 7942C 80088C2C 142D428C */  lw         $v0, %lo(_spu_transferCallback)($v0)
     /* 79430 80088C30 00000000 */  nop
     /* 79434 80088C34 09F84000 */  jalr       $v0
     /* 79438 80088C38 00000000 */   nop

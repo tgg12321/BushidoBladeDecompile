@@ -51,17 +51,17 @@ glabel SpuClearReverbWorkArea
     /* 7B1DC 8008A9DC F82C20AC */  sw         $zero, %lo(D_800A2CF8)($at)
     /* 7B1E0 8008A9E0 01001524 */  addiu      $s5, $zero, 0x1
   .L8008A9E4:
-    /* 7B1E4 8008A9E4 0A80023C */  lui        $v0, %hi(D_800A2D14)
-    /* 7B1E8 8008A9E8 142D428C */  lw         $v0, %lo(D_800A2D14)($v0)
+    /* 7B1E4 8008A9E4 0A80023C */  lui        $v0, %hi(_spu_transferCallback)
+    /* 7B1E8 8008A9E8 142D428C */  lw         $v0, %lo(_spu_transferCallback)($v0)
     /* 7B1EC 8008A9EC 00000000 */  nop
     /* 7B1F0 8008A9F0 07004010 */  beqz       $v0, .L8008AA10
     /* 7B1F4 8008A9F4 01001324 */   addiu     $s3, $zero, 0x1
-    /* 7B1F8 8008A9F8 0A80023C */  lui        $v0, %hi(D_800A2D14)
-    /* 7B1FC 8008A9FC 142D428C */  lw         $v0, %lo(D_800A2D14)($v0)
+    /* 7B1F8 8008A9F8 0A80023C */  lui        $v0, %hi(_spu_transferCallback)
+    /* 7B1FC 8008A9FC 142D428C */  lw         $v0, %lo(_spu_transferCallback)($v0)
     /* 7B200 8008AA00 00000000 */  nop
     /* 7B204 8008AA04 1000A2AF */  sw         $v0, 0x10($sp)
-    /* 7B208 8008AA08 0A80013C */  lui        $at, %hi(D_800A2D14)
-    /* 7B20C 8008AA0C 142D20AC */  sw         $zero, %lo(D_800A2D14)($at)
+    /* 7B208 8008AA08 0A80013C */  lui        $at, %hi(_spu_transferCallback)
+    /* 7B20C 8008AA0C 142D20AC */  sw         $zero, %lo(_spu_transferCallback)($at)
   .L8008AA10:
     /* 7B210 8008AA10 0104222E */  sltiu      $v0, $s1, 0x401
   .L8008AA14:
@@ -99,8 +99,8 @@ glabel SpuClearReverbWorkArea
     /* 7B284 8008AA84 05004010 */  beqz       $v0, .L8008AA9C
     /* 7B288 8008AA88 21100000 */   addu      $v0, $zero, $zero
     /* 7B28C 8008AA8C 1000A28F */  lw         $v0, 0x10($sp)
-    /* 7B290 8008AA90 0A80013C */  lui        $at, %hi(D_800A2D14)
-    /* 7B294 8008AA94 142D22AC */  sw         $v0, %lo(D_800A2D14)($at)
+    /* 7B290 8008AA90 0A80013C */  lui        $at, %hi(_spu_transferCallback)
+    /* 7B294 8008AA94 142D22AC */  sw         $v0, %lo(_spu_transferCallback)($at)
     /* 7B298 8008AA98 21100000 */  addu       $v0, $zero, $zero
   .L8008AA9C:
     /* 7B29C 8008AA9C 3000BF8F */  lw         $ra, 0x30($sp)

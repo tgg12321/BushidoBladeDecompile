@@ -12,13 +12,13 @@ glabel SpuRead
   .L8008AD8C:
     /* 7B58C 8008AD8C 0924020C */  jal        _spu_Fr
     /* 7B590 8008AD90 21280002 */   addu      $a1, $s0, $zero
-    /* 7B594 8008AD94 0A80023C */  lui        $v0, %hi(D_800A2D14)
-    /* 7B598 8008AD98 142D428C */  lw         $v0, %lo(D_800A2D14)($v0)
+    /* 7B594 8008AD94 0A80023C */  lui        $v0, %hi(_spu_transferCallback)
+    /* 7B598 8008AD98 142D428C */  lw         $v0, %lo(_spu_transferCallback)($v0)
     /* 7B59C 8008AD9C 00000000 */  nop
     /* 7B5A0 8008ADA0 03004014 */  bnez       $v0, .L8008ADB0
     /* 7B5A4 8008ADA4 21100002 */   addu      $v0, $s0, $zero
-    /* 7B5A8 8008ADA8 0A80013C */  lui        $at, %hi(D_800A2D10)
-    /* 7B5AC 8008ADAC 102D20AC */  sw         $zero, %lo(D_800A2D10)($at)
+    /* 7B5A8 8008ADA8 0A80013C */  lui        $at, %hi(_spu_inTransfer)
+    /* 7B5AC 8008ADAC 102D20AC */  sw         $zero, %lo(_spu_inTransfer)($at)
   .L8008ADB0:
     /* 7B5B0 8008ADB0 1400BF8F */  lw         $ra, 0x14($sp)
     /* 7B5B4 8008ADB4 1000B08F */  lw         $s0, 0x10($sp)
