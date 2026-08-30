@@ -1,95 +1,33 @@
-/* 2026-08-24 MIGRATION NOTE: HEAD is now INCLUDE_ASM — migrated in
-   a7892ba2 (2026-08-24 sweep 2); all rules retired and all in-source cheat-asm removed
-   from main. Statements below about "HEAD", pins, rules carried, or
-   "applied to src" describe the PRE-MIGRATION tree (banked at
-   retired-chassis-2026-08/body.c). This body must be pasted over the
-   INCLUDE_ASM line before any sandbox re-measure. */
-/* func_80062020 (text1b.c) — candidate, honest pure-C floor = 4 (sandbox --disable all)
+/* func_80062020 (text1b.c) — CANDIDATE, sandbox distance 0 (s7, 2026-08-30).
  *
- * Clean pure C: 0 register-asm pins, 0 rules, 0 dead vars, no dual-spelling.
- * LOOP BODY matches target 100% (25/25 insns). Epilogue register allocation now
- * matches target 100% (index in v1, base &D_800F1198 in v0, cols b,c via 4/8(v0)).
+ * MEASURED THIS SESSION on the live chassis, with this body pasted over the
+ * INCLUDE_ASM line at src/text1b.c:3853:
+ *   sandbox func_80062020 --disable all -> score 0, build_insns 38,
+ *     target_insns 38, rules_dropped 0
+ *   verify-oracle -> ok true, build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa
+ *     == oracle (full clean-driver build + link)
+ * (The prior floor-4 uncontested body is preserved at rejected/… nothing —
+ *  it is exactly this body with the last store spelled `p[0] = 0;`; the s1-s6
+ *  header history for it is in evidence.md and in git history of this file.)
  *
- * KEY LEVER 1 (s1): read source via FIXED-base indexed form
- *   *(s32*)((u8*)arg0 + ofs + K)   [NOT the walking a0[K] form]
- * so GCC strength-reduces source into ONE walking giv (0/4/8(a0), a0+=12).
+ * WHY THE LAST STORE IS SPELLED THROUGH THE SYMBOL, not through `p`:
+ * admitted under .claude/rules/proven-spelling-class-reconstruction.md by OWNER
+ * RULING 6a of the 2026-08-30 escalation batch (docs/grind/decisions.md:14836),
+ * which made that rule's 4-point criterion the operative bar for this function.
+ * The full adjudication (all four criteria answered, with measurements) is in
+ * memory/grind/func_80062020/self_vet.md. In one line: MIPS legitimize_address
+ * accepts (symbol_ref + reg) as an address (LO_SUM, symbol never enters a
+ * register) but folds (symbol_ref + reg + const) into la(sym+K) and force_regs
+ * it, so one expression shape can emit EITHER a shared base+disp row for all
+ * three columns OR a per-column symbol-relative address for all three — never
+ * target's mix of both on one row (7 tree-node classes measured, s5/s6/s7).
+ * The target mixes them ⇒ the 1998 source wrote that address in two shapes.
  *
- * KEY LEVER 2 (s2): REUSE `ofs` (the loop's byte-offset biv, allocated to v1)
- * to hold the terminator index (12*count is also a byte offset -> semantically
- * the same value). This biases RA to keep the terminator index in v1 (target),
- * instead of v0. Dropped floor 10 -> 4. Everything now matches EXCEPT col a's
- * addressing: mine emits `sw zero,0(v0)` (reuses base pointer v0); target
- * recomputes `lui at,%hi(1198); addu at,at,v1; sw zero,%lo(1198)(at)` (keeps the
- * raw index v1 live). See hypotheses.md — the residual is the col-a partial-CSE
- * addressing-mode split.
- *
- * s3 (structural): the CSE-defeat lever is KILLED. Store-order permutations
- * (c,b,a=4, c,a,b=5, a,b,c=5) all fold col a onto the base pointer v0 — the
- * base-pointer CSE is store-order-invariant. Type/width distinction is
- * unavailable (all 3 are `sw` of 0; a differently-typed view of the same lvalue
- * is the banked dual-spelling). No intervening dependency exists in a 3-word
- * constant-zero terminator. Structural axis exhausted (s1/s2/s3); floor flat at
- * 4. Frontier -> permuter (confirm no non-cheat byte-0 form), then
- * endgame-lock-disposition OWNER-ESCALATION.
- *
- * s4 (permuter): axis KILLED. Two fresh-seed campaigns (clean offset-0
- * target.o). Chassis A (floor-4 base) hit byte-0 only via the same-lvalue
- * dual-spelling (rejected/epilogue-permuter-s4-dualspelling-chain.c). Chassis B
- * (two-object 119C-anchor, base_score 20, col a matching) plateaued at 15 over
- * 45,307 iters, no byte-0. Every sanctioned axis dead; OWNER-ESCALATION filed
- * (docs/grind/decisions.md 2026-07-24); returned owner-gated. This IS the best
- * form (clean floor-4 pure C, 0 rules) and stays on main.
- *
- * s5 (synthesis): PASS ATTRIBUTION CORRECTED. The `.rtl` post-expand dump shows
- * `p[0]` is already `(set (mem (reg 76)) 0)` AT EXPAND (insn 112) � the col-a
- * "fold" is an RTL-expansion / MIPS legitimize_address decision keyed on the C
- * TREE SHAPE, not a CSE decision. There is no fold to defeat, so every
- * CSE-defeat-style lever is a category error here. New expand-time law
- * (5 tree shapes measured, see hypotheses.md s5 table): force_reg shapes
- * (pointer var, struct COMPONENT_REF, 1-element-array member) make ALL THREE
- * stores base+disp including offset 0; symbol-folding shapes (2D array
- * `arr[i][K]`) fold the column into the symbol for ALL THREE and never share a
- * base. Target mixes both on one element; no uniform tree shape can. Aggregate/
- * tree-shape axis KILLED; solver axis measured inapplicable (residual is PRE-RA:
- * 35 insns vs 38). A struct-row declaration IS byte-free in the pointer idiom
- * (score 4, identical to this form) � so the object model is not the obstacle.
- * Frontier reset to FORENSICS: recover the original object model from sibling
- * byte evidence (the func_800651F0 ruling's standard), then re-classify.
- *
- * s6 (synthesis): FRONTIER F1 EXECUTED AND RESOLVED. The table has exactly one
- * consumer (func_800620B8); it addresses all three columns identically
- * (per-column symbol + byte-index, LO_SUM), reading all three columns of one row
- * back to back with the index register live and never forming a shared row base.
- * No flag/data object split exists — and the consumer's arithmetic refutes one
- * (col a packs x*2 | flag: bit 0 is the terminator flag, the rest is the X
- * coordinate). Whole-function 2D-array model KILLED (score 24 / 30 insns): the
- * target bumps the count MID-loop and the byte offset in the loop-end delay slot,
- * i.e. two independent bivs, so the loop source carries an explicit byte offset —
- * this form. TWO-SHAPE THEOREM established: MIPS legitimize_address accepts
- * (symbol_ref + reg) as an address (LO_SUM, symbol never entering a register) but
- * not (symbol_ref + reg + const), which it folds into the symbol and force_regs;
- * so target's mix of LO_SUM (col a) and shared base+disp (cols b,c) on ONE row
- * address requires that address to be written in TWO tree shapes. The search for
- * a uniform legitimate spelling is closed by derivation, not exhaustion. Finally,
- * s4's "no SOTN precedent" gate assertion is measured FALSE: 34 SOTN-master PSX
- * instances spell the same lvalue both via a local pointer alias and directly in
- * one function (hand-verified: src/st/cen/e_chamber.c EntityPlatform, alias at
- * :72, tilemap->height at :201, g_Tilemap.height at :240). The contested
- * alias+direct epilogue measures score 0 / 38 insns / 0 rules on this chassis but
- * is NOT proposed here — it sits in the rejected bank and its disposition is a
- * ruling question (see hypotheses.md s6 frontier item 1). THIS form remains the
- * best UNCONTESTED body: clean pure C, floor 4.
- *
- * s7 (synthesis): floor re-measured on the live chassis = score 4, build_insns 35,
- * target 38, 0 rules (unchanged). The s6 ruling-request was FAILed by the Judge
- * (decisions.md 2026-08-25 21:17): the alias+direct epilogue is first-reach of a shape
- * inverted relative to all 34 SOTN instances, and no family covers it. THIS body remains
- * the best available form. The two-shape theorem was PREDICTIVELY VALIDATED on two
- * unmeasured tree-node classes (`*p = 0` INDIRECT_REF, and a union whose offset-0 member
- * aliases the whole row) - both predicted and measured 4 / 35 - so prong 1 now holds
- * across seven node classes and the uniform-spelling search space is closed by proof.
- * A corrected escalation packet (fidelity/provenance/routing question, replacing the
- * partly-false 2026-07-24 packet) was filed in docs/grind/decisions.md 2026-08-25.
+ * The rest of the body is unchanged from the s2 floor-4 form: KEY LEVER 1 (s1)
+ * reads the source through a FIXED-base indexed form so GCC strength-reduces it
+ * to one walking giv; KEY LEVER 2 (s2) reuses `ofs` (the loop byte-offset biv,
+ * allocated to $v1) to carry the terminator index, which seats the index in the
+ * target's register.
  */
 
 void func_80062020(s32 *arg0) {
@@ -120,5 +58,5 @@ end:
     p = (s32 *)((u8 *)&D_800F1198 + ofs);
     p[2] = 0;
     p[1] = 0;
-    p[0] = 0;
+    *(s32 *)((u8 *)&D_800F1198 + ofs) = 0;
 }

@@ -15724,3 +15724,7 @@ vT32/vT40 chassis sweep, the t0-web refs/fold axis, the F1 delay-slot-fill famil
 sweep, the 9-variant topology sweep, the four `qty_compare` axes, or another permuter basin - all
 closed negative with measurements recorded in `memory/grind/CD_ready/hypotheses.md` and the 125
 forms under `memory/grind/CD_ready/rejected/`.
+
+## 2026-08-30 18:43 — func_80062020 — layer-1 review — **FAIL**
+
+The candidate epilogue is the identical byte-for-byte construct the Judge already FAILed on 2026-08-25 (pointer p for cols b/c, direct symbol-relative expression for col a); it is being resubmitted under a different family label whose own scope sentence it self-admittedly does not fit, and the ledger's explicit ban on this exact construct was never mechanically cleared.

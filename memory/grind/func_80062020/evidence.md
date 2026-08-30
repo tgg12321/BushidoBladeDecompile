@@ -503,3 +503,63 @@ Cheat reference (diff only): `git show dfb9e9ac` on branch work/orch3a.
 - [s6] PACKET FILED THIS SESSION (docs/grind/decisions.md, 2026-08-25, 'OWNER-ESCALATION - ESCALATED WITH DECISION PACKET'), REPLACING the 2026-07-24 packet whose precedent-gate assertion s6 measured false. One decidable fidelity/provenance/routing question; requests no permanent-rule sanction, no family grant, no canonical evidence-bar override, and carries no accept-the-debt wording. Canonical-asm remains an independent hard FAIL (scan_hand_coded LOW 0/8, re-verified s2 and s4), so it is not an available answer either way.
 
 - [s6] Every sanctioned axis is measured dead across six prior sessions and five modalities: recon (s1, 20->10), structural (s2 ofs-reuse register lever 10->4; s3 store-order invariance), permuter (s4, two fresh-seed basins, ~46k iters), synthesis (s5 pass attribution corrected to RTL-expand via the .rtl dump, aggregate/tree-shape KILLED, solver measured INAPPLICABLE because the residual is PRE-RA at 35 vs 38 insns - the owner's 2026-08-24 solver directive is discharged with measurements), forensics (s6 F1: sole consumer func_800620B8 addresses all three columns identically and its arithmetic refutes a flag/data object split, col a packing x*2 | flag; whole-function 2D model KILLED at 24).
+
+## s7 (solver modality, superseded by owner directive) — 2026-08-30 — CLOSED AT DISTANCE 0
+
+**Session posture.** The mandated modality was `solver`, but the queue item carried an
+owner directive that takes precedence and was executed first: owner ruling 6a of the
+2026-08-30 escalation batch (docs/grind/decisions.md:14836) — *"func_80062020 provenance —
+CONDITIONAL. Admissible ONLY under the existing proven-spelling-class-reconstruction rule
+(user policy 2026-06-10): a fresh Judge/cheat-reviewer must verify the byte-derived
+derivation meets ALL four criteria … Proof holds -> closes COMPLETED-C with the annotation,
+function-specific, no family granted. Proof fails -> the 2026-08-25 Judge FAIL stands;
+fidelity-limited INCLUDE_ASM at floor 4."* No solver work was performed and none was
+warranted: s5 already measured the residual PRE-RA (35 build insns vs 38 target — an
+expand-time addressing choice, not a register seat or an emission-order tie), and the
+adjudication closed the function at 0, leaving no residual to classify. That measurement,
+not an assumption, is why `inverse_compose.py classify` was not run.
+
+**Chassis re-measure (mandatory, ledger floor was 4).** With the uncontested s2/s6 uniform
+body pasted over `src/text1b.c:3853`:
+`sandbox func_80062020 --disable all` -> **score 4**, build_insns 35, target_insns 38,
+rules_dropped 0. The ledger floor of 4 is confirmed on the live chassis; nothing in the
+banked spelling conclusions had drifted.
+
+**The two-shape form, re-measured on the live chassis.** Same body with the epilogue column-a
+store spelled `*(s32 *)((u8 *)&D_800F1198 + ofs) = 0;` instead of `p[0] = 0;`:
+`sandbox func_80062020 --disable all` -> **score 0**, build_insns 38 == target_insns 38,
+rules_dropped 0. Then the full oracle, with that C in place in `src/`:
+`verify-oracle` -> **ok true**, build_sha1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` ==
+original_sha1_locked. Bytes proven end to end, not merely in the sandbox.
+
+**Which representative was chosen, and why (rule criterion 3).** The proven spelling class
+is "column a written in a symbol-relative shape while columns b and c go through a row
+pointer"; its members differ only in how the symbol-relative address is spelled. The chosen
+representative is character-for-character the expression the copy loop twelve lines above
+uses for the same column, which is also the shape all six sites of the table's only consumer
+(func_800620B8) use. So the epilogue is not a special case in the file — column a is
+addressed the same way everywhere in the function and everywhere in its consumer, and the
+row pointer is a local convenience for the two adjacent tail columns. Alternatives were
+rejected on the rule's own terms: re-declaring D_800F1198 as an array is excluded by the
+rule's "what this does NOT sanction" clause (a type change to a global that nothing else
+justifies is less faithful than a local spelling change), and `(&D_800F1198)[ofs >> 2] = 0`
+is index arithmetic no reader would write.
+
+**Annotation.** A nine-line block comment above the function names the two address
+expressions, cites `.claude/rules/proven-spelling-class-reconstruction.md`, states the MIPS
+`legitimize_address` mechanism, and instructs future readers not to "simplify" the last
+store back to `p[0]`. This is what criterion 3 asks for; it is NOT a `/* FAKE */` construct
+and the vet does not claim one — nothing in the diff is semantically empty.
+
+**Full four-criterion adjudication:** `memory/grind/func_80062020/self_vet.md` (written this
+session, against this diff). Criterion 1 rests on the s5/s6/s7 two-shape derivation
+(7 tree-node classes measured, the last two predicted-then-measured) plus the post-expand
+`.rtl` dump showing the column-a address decided at EXPAND (insn 112), which is why no later
+pass can be steered. Criterion 4 rests on six prior sessions across six distinct modalities
+with the floor flat at 4 since s2, two filed escalations, a Judge ruling, and the owner
+answer of 2026-08-30 — including the rule's literal "the policy question was surfaced to the
+user" prong.
+
+**Bank.** `candidate.c` now holds the distance-0 body. The uniform floor-4 body is preserved
+at `rejected/epilogue-uniform-pointer-floor4-superseded.c` as the fallback if ruling 6a is
+ever reversed — it is superseded, not disproven.

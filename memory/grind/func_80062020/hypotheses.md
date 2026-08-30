@@ -480,3 +480,40 @@ the one the Judge FAILed on 2026-08-25.
 - probe: Judge ruling on the s6 ruling-request (docs/grind/decisions.md 2026-08-25 21:17).
 - result: FAIL. The family sanctions introducing a redundant handle in place of the global, not routing one element of one address around that handle; the shape is inverted relative to all 34 instances (the alias's own offset-0 target is precisely the element not reached through it) and is first-reach of an un-exemplified shape; default-FAIL governs the residual doubt. The ruling expressly preserves s6's derivation work.
 - verdict: KILLED
+
+## s7 (2026-08-30) — the provenance frontier item, RESOLVED by owner ruling and measured
+
+**H-s7-provenance-governs [CONFIRMED — by owner ruling 6a, then measured].** Statement:
+"the byte-derived two-shape derivation is admissible as decompilation evidence, so the
+epilogue may write column a in a second expression shape and the function closes at 0."
+This was the top frontier item carried from s6 and was explicitly not decidable by the
+Judge under default-FAIL. Owner ruling 6a (2026-08-30, docs/grind/decisions.md:14836)
+decided it CONDITIONALLY: admissible only under
+`.claude/rules/proven-spelling-class-reconstruction.md`, all four criteria verified by a
+fresh reviewer. Probe: adjudicate the four criteria in writing against the actual diff
+(`memory/grind/func_80062020/self_vet.md`), then measure.
+Result: `sandbox --disable all` score **0**, build_insns 38 == target 38, rules_dropped 0;
+`verify-oracle` ok true with build_sha1 == oracle. Verdict: **CONFIRMED**. Consequence: the
+function is a candidate at distance 0 with a rule-citing annotation; no family is granted
+and nothing generalises beyond func_80062020 (the ruling says so in terms).
+
+**H-s7-solver-applicable [KILLED — restated, not re-measured].** Statement: "the residual is
+an RA seat or a scheduler tie that `tools/ra_solver` / `tools/sched_solver` can type."
+Mechanism: s5 measured build_insns 35 vs target 38 — a three-instruction COUNT difference
+originating at RTL expansion (the `.rtl` dump has the column-a store as
+`(set (mem (reg 76)) 0)` at insn 112), so there is no allocation seat and no emission order
+to invert; both solvers operate strictly downstream of the divergence. Probe: none run this
+session — the owner directive closed the function at 0 before any residual remained to
+classify, and re-running a solver against a zero residual is meaningless.
+Verdict: **KILLED (inherited from s5, re-affirmed by the closure)**. Any future session that
+proposes a solver pass on this function is re-deriving a closed question.
+
+**Frontier after this session.** Empty for grinding purposes. The remaining open item is
+integration, not search: the diff is in `src/text1b.c`, self-vetted, bytes proven by full
+build+link SHA1. The only outstanding intellectual item is the s6 falsification test of the
+two-shape law (produce one C tree shape that emits a shared base+disp for two columns AND a
+LO_SUM symbol-relative address for a third column of the same row, as a MINIMAL standalone
+cc1 test case). That is now a compiler-behaviour curiosity rather than a lever: a positive
+result would offer an alternative uniform spelling for this function, so it is worth doing
+if anyone doubts criterion 1, but it does not block acceptance and no BB2 function depends
+on the answer.

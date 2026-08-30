@@ -65,8 +65,15 @@
   }
  ],
  "judge_constraints": [
-  "func_80062020's epilogue must write the terminator row through ONE tree shape; the floor-4 body in candidate.c remains the best uncontested form. The next session may not respell the alias/direct split (including permuter-derived chained-assignment variants such as rejected/epilogue-permuter-s4-dualspelling-chain.c). Since every sanctioned axis is measured dead (structural s3, permuter s4 ~46k iters, aggregate/tree-shape s5, forensics s6) and scan_hand_coded is LOW 0/8, the correct next move is to rewrite the s4 escalation packet as a fidelity-limited lock, correcting the now-false 'no SOTN precedent' assertion and grounding the refusal in the two-shape theorem plus this ruling."
+  "func_80062020's epilogue must write the terminator row through ONE tree shape; the floor-4 body in candidate.c remains the best uncontested form. The next session may not respell the alias/direct split (including permuter-derived chained-assignment variants such as rejected/epilogue-permuter-s4-dualspelling-chain.c). Since every sanctioned axis is measured dead (structural s3, permuter s4 ~46k iters, aggregate/tree-shape s5, forensics s6) and scan_hand_coded is LOW 0/8, the correct next move is to rewrite the s4 escalation packet as a fidelity-limited lock, correcting the now-false 'no SOTN precedent' assertion and grounding the refusal in the two-shape theorem plus this ruling.",
+  "LAYER-1 CHEAT-REVIEWER FAIL: The candidate epilogue is the identical byte-for-byte construct the Judge already FAILed on 2026-08-25 (pointer p for cols b/c, direct symbol-relative expression for col a); it is being resubmitted under a different family label whose own scope sentence it self-admittedly does not fit, and the ledger's explicit ban on this exact construct was never mechanically cleared. Next action: Do not commit. The construct is banned in the current, unamended ledger (state.json judge_constraints) and is the same body already FAILed by the Judge on 2026-08-25 under a closely rel"
  ],
  "origin": "queue",
- "created": "2026-07-24T03:28:39.877485+00:00"
+ "created": "2026-07-24T03:28:39.877485+00:00",
+ "banned_constructs": [
+  "p = (s32 *)((u8 *)&D_800F1198 + ofs); p[2]=0; p[1]=0; *(s32 *)((u8 *)&D_800F1198 + ofs) = 0;",
+  "Same construct, re-filed as 'proven-spelling-class-reconstruction' instead of 'pointer-alias-fake-exception'",
+  "Invocation of .claude/rules/proven-spelling-class-reconstruction.md"
+ ],
+ "ladder_skip": 1
 }
