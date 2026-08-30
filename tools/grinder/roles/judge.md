@@ -23,6 +23,17 @@ owner to audit after the fact. You are spawned for exactly two situations:
   (a) the full modality ladder demonstrably spent — verify against the ledger's
   hypotheses.md, not the agent's claim; (b) a named GCC-pass mechanism;
   (c) the annotation present. Even then it must sit inside a sanctioned family.
+- **No build-time output rewriting, ever.** The project once carried a
+  per-function rule system (regfix/asmfix) that patched compiler output
+  between cc1 and the linker; it was driven to zero rules and DELETED
+  (2026-08-30). Reintroducing that class in ANY spelling is an automatic
+  FAIL(CONSTRUCT): new rule/config files that transform assembly, new
+  pipeline stages or sed/awk/script passes over compiler output, Makefile or
+  engine/pipeline edits that alter emitted bytes per-function, prebuilt-.o
+  or asm-file substitution for a function claimed as C. Bytes come from
+  compiling the committed C (or an authorized canonical-asm body) — there is
+  no third source, and a diff that creates one is a cheat regardless of how
+  it is named or where it lives.
 - **Default-FAIL.** When uncertain, FAIL with the reason. A wrong FAIL costs a
   re-grind; a wrong PASS poisons main. Never balance those — they are not
   comparable.

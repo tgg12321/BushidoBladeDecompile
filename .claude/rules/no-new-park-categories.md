@@ -67,6 +67,16 @@ project-accepted auto-park / canonical-infrastructure categories:
   + user sign-off, but it is NOT a new infrastructure category.
 - **Anything labeled "X infrastructure"** as a justification to retire N
   similar functions en masse with their cheats intact.
+- **Build-time assembly rewriting in ANY form.** The retired regfix/asmfix
+  rule system (driven to zero rules 2026-08-25, machinery deleted
+  2026-08-30) may never come back in any spelling: no rule/config files
+  that transform compiler output, no new pipeline stages or
+  sed/awk/script passes between cc1 and the linker, no Makefile or
+  engine/pipeline edits that alter emitted bytes per-function, no
+  prebuilt-.o or asm-file substitution for a function claimed as C.
+  Bytes come from compiling the committed C (or an authorized
+  canonical-asm body) — there is no third source. The Judge and the
+  cheat-reviewer both treat reintroduction as an automatic FAIL.
 - **Speculative system-wide rodata reorders to force a SHA1 match.**
   Globally reordering `bb2.ld` rodata placement without evidence that
   the original source had that layout is a structural cheat — same

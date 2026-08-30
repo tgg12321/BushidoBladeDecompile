@@ -35,7 +35,13 @@ The "cheats by any spelling" policy (codified in
 `.claude/rules/no-new-park-categories.md`, 2026-06-01, reinforced
 2026-06-02 after the techniques audit found two NEW rules I had added
 that very day were themselves cheats): the catalog is OPEN. Forbidden
-families include — but are not limited to — register-asm pins,
+families include — but are not limited to — **build-time assembly rewriting
+in ANY form** (the retired regfix/asmfix class, deleted 2026-08-30: rule or
+config files that transform compiler output, new pipeline stages or
+sed/awk/script passes between cc1 and the linker, Makefile/engine-pipeline
+edits that alter emitted bytes per-function, prebuilt-.o or asm-file
+substitution for a function claimed as C — auto-FAIL, no exhaustion or
+annotation can sanction it), register-asm pins,
 hardcoded-`$N` `__asm__` injection, scheduling
 barriers, INLINE_MOVE_ALIASING, volatile-coercion (alias-rename / cast /
 plain extern / `(void)volatile` discard), unused-local-array frame
