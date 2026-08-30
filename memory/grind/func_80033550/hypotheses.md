@@ -667,3 +667,51 @@ upward-exposed uses and whether any VALID construct reaches the same channel.
 - probe: python3 tools/scan_hand_coded.py --single func_80033550 re-run this session; s9's census of docs/reference/sotn-construct-index.md (1,365 PSX-master entries) re-affirmed against this session's measurement.
 - result: Gate #1 tier=LOW score=0/8, S1-S8 all negative (0 multu/mflo pairs, no empty-body branch, S3/S4 N/A at 34 < 40 insns, no sibling cluster, no BIOS jumptable, no unsaved $sN, no redundant mask). Gate #2 no precedent for a byte-free register occupant; the adjacent pad_dummy_local family is frame-slot-based and target func_80033550 has no stack frame at all — and mode (C) measures that a surviving second occupant is not byte-free in this 34-insn shape.
 - verdict: KILLED
+
+## [s11] The honest floor has moved on the current chassis (post-ruling-10 re-measure).
+- mechanism: chassis re-measurement — every banked spelling conclusion is chassis-relative and must be re-verified before it is spent; the owner's 2026-08-30 escalation-batch ruling 10 returned this item to ACTIVE on a bookkeeping ground ("the queue lagged the ledger") without naming a new lever, so the first duty of this session was to re-measure rather than re-quote.
+- probe: memory/grind/func_80033550/candidate.c spliced over `INCLUDE_ASM("asm/funcs", func_80033550);` at src/code6cac_b.c:2012 (CRLF normalised to LF), then `& tools/wteng.ps1 main sandbox func_80033550 --disable all`; src reverted afterwards.
+- result: score 4, target_insns 34, build_insns 34, rules_dropped 0, cheat_asm_stripped 46 (file-wide, none in this function). Identical to s1-s10.
+- verdict: KILLED
+
+## [s11] A byte-free register occupant can exist somewhere in this 34-instruction shape (the last standing precondition of the whole $a3 program).
+- mechanism: instruction-budget counting. `find_reg` seats pseudo 72 in $a3 only if its hard-conflict set grows to superset-of {2,3,4,5,6}; that needs two extra register carriers alive across the pointer's range, and a carrier exists only if some instruction defines it.
+- probe: first 1:1 position-aligned disassembly correspondence ever banked for this function — `mipsel-linux-gnu-objdump -d tmp/sandbox/func_80033550/code6cac_b.o` aligned against asm/funcs/func_80033550.s (tmp/grind/func_80033550/s11/insn_correspondence.txt, build_disasm.txt).
+- result: 34 vs 34 with a total 1:1 correspondence — THIRTY instructions identical, and the four that differ (stream indices 0, 20, 21, 22) differ in exactly ONE register field (target `addu $a3,$a0,$zero` / `lw ...($a3)` vs build `move $a1,$a0` / `lw ...($a1)`). No ordering divergence, no frame divergence, no extra/missing instruction. Every one of the 34 target slots is already spoken for by a semantically-required operation we reproduce byte-for-byte, so an added carrier must either take a 35th slot (distance +1 minimum) or substitute for one of the 34 — the exact price s10 measured three times (the surviving F1 detour always eats the entry-copy slot). Also pins WHY $a1 is free for w2: w2 is born at index 22, exactly where the pointer dies, so it never conflicts with 72; the whole carrier population is $v0 (loop/index temp), pseudo 74 (i) and the three loaded words, and {2,3,4} is all the conflict they can produce.
+- verdict: KILLED (upgrades s6's source-level closure theorem and s9's arithmetic restatement from "none found" to "none can exist at 34/34 with this correspondence")
+
+## [s11] The set_preference route to $a3 could be opened legitimately by a wider (4-parameter) signature, since a 4th parm makes `expand_function_start` emit an $a3 parm copy that global.c set_preference can see.
+- mechanism: s10 typed the preference route FORECLOSED only because "$a3 never appears as a hard reg in this function's pre-RA RTL" — a 4th declared parameter is the one construct that would put it there, which is a fidelity question (is the original 4-ary?) rather than a codegen question.
+- probe: caller-side arity audit re-run against the only caller — `jal func_80033550` at asm/funcs/func_800290B8.s:203.
+- result: the caller sets ONLY $a0 (`addu $a0,$s4,$zero` in the jal delay slot); $a1 holds a stale return value from the immediately preceding `jal func_80044B30` and $a2/$a3 are untouched garbage. The function is genuinely one-parameter, so a 4-ary signature would be a false claim about the original as well as inert (rejected/wider-signature-unused-params-census-identical-4.c already measured the census-identical outcome). Route (ii) is therefore closed by EVIDENCE as well as by mechanism. Re-confirms s1/s2's caller inspection with the new purpose of closing the preference route specifically.
+- verdict: KILLED
+
+## [s11] An endgame-lock AND-gate passes for func_80033550.
+- mechanism: gate #1 = STRONG scan_hand_coded signals (S1/S2/S6) authorise a canonical-asm grant; gate #2 = an in-hand SOTN-master precedent authorises a coercion/spelling family.
+- probe: `python3 tools/scan_hand_coded.py --single func_80033550` re-run this session (tmp/grind/func_80033550/s11/scan_hand_coded.txt); s9's census of docs/reference/sotn-construct-index.md re-affirmed against this session's instruction-budget measurement.
+- result: Gate #1 tier=LOW score=0/8, S1-S8 all negative. Gate #2 negative — the closing construct is still a byte-free REGISTER occupant, the adjacent `pad_dummy_local` family (index line 29) is frame-slot-based and the target has no stack frame at all, and this session's instruction-budget result independently proves no such occupant is byte-free here.
+- verdict: KILLED — both gates fail, so the owner's standing 2026-07-27 auto-ruling applies; disposition filed at docs/grind/decisions.md:15517 and returned as `owner-gated`.
+
+## [s11] The honest floor has moved on the current chassis (post-ruling-10 re-measure) — owner ruling 10 of the 2026-08-30 escalation batch returned this item to ACTIVE on the bookkeeping ground that 'the queue lagged the ledger', naming no new lever, so the first duty was to re-measure rather than re-quote.
+- mechanism: Chassis re-measurement — every banked spelling conclusion is chassis-relative and must be re-verified before it is spent.
+- probe: memory/grind/func_80033550/candidate.c spliced over INCLUDE_ASM("asm/funcs", func_80033550); at src/code6cac_b.c:2012 (CRLF normalised to LF), then `& tools/wteng.ps1 main sandbox func_80033550 --disable all`; src reverted afterwards.
+- result: score 4, target_insns 34, build_insns 34, rules_dropped 0, zero regfix/asmfix rules, zero cheat-asm in this function. Identical to s1-s10.
+- verdict: KILLED
+
+## [s11] A byte-free register occupant can exist somewhere in this 34-instruction shape — the last standing precondition of the whole $a3 program (two occupants in $a1 and $a2 are required to grow pseudo 72's hard-conflict set to a superset of {2,3,4,5,6}).
+- mechanism: Instruction-budget counting against global.c find_reg's ascending scan: a register carrier exists only if some instruction defines it, so the target's own 34-instruction budget bounds how many carriers the shape can hold.
+- probe: First 1:1 position-aligned disassembly correspondence ever banked for this function — mipsel-linux-gnu-objdump -d tmp/sandbox/func_80033550/code6cac_b.o aligned against asm/funcs/func_80033550.s (tmp/grind/func_80033550/s11/insn_correspondence.txt, build_disasm.txt).
+- result: 34 vs 34 with total 1:1 correspondence: THIRTY instructions identical; the four that differ (stream indices 0, 20, 21, 22) differ in exactly one register field (target `addu $a3,$a0,$zero` / `lw ...($a3)` vs build `move $a1,$a0` / `lw ...($a1)`). No ordering, frame, or count divergence anywhere. Every target slot is already spoken for by a semantically-required operation we reproduce byte-for-byte, so an added carrier must take a 35th slot (distance +1 minimum) or substitute for one of the 34 — the exact price s10 measured three times (the surviving F1 detour always eats the entry-copy slot). Also pins WHY $a1 is free for w2: w2 is born at index 22, exactly where the pointer dies, so it never conflicts with pseudo 72; the whole carrier population is $v0, pseudo 74 (i) and the three loaded words, and {2,3,4} is the largest conflict set they can produce — exactly what .greg shows.
+- verdict: KILLED
+
+## [s11] The set_preference route to $a3 could be opened legitimately by a wider (4-parameter) signature, since a 4th parm makes expand_function_start emit an $a3 parm copy that global.c set_preference can see.
+- mechanism: s10 typed the preference route FORECLOSED only because '$a3 never appears as a hard reg in this function's pre-RA RTL'; a 4th declared parameter is the one construct that would put it there, making this a fidelity question rather than a codegen question.
+- probe: Caller-side arity audit against the only caller — `jal func_80033550` at asm/funcs/func_800290B8.s:203.
+- result: The caller sets ONLY $a0 (`addu $a0,$s4,$zero` in the jal delay slot); $a1 holds a stale return value from the immediately preceding `jal func_80044B30`, $a2/$a3 are untouched. The function is genuinely one-parameter, so a 4-ary signature would be a false claim about the original as well as inert (rejected/wider-signature-unused-params-census-identical-4.c). Route (ii) is closed by EVIDENCE as well as by mechanism.
+- verdict: KILLED
+
+## [s11] An endgame-lock AND-gate passes for func_80033550.
+- mechanism: Gate #1 = STRONG scan_hand_coded signals (S1/S2/S6) authorise a canonical-asm grant; gate #2 = an in-hand SOTN-master precedent authorises a coercion/spelling family.
+- probe: python3 tools/scan_hand_coded.py --single func_80033550 re-run this session; s9's census of docs/reference/sotn-construct-index.md (1,365 PSX-master entries) re-affirmed against this session's instruction-budget measurement.
+- result: Gate #1 tier=LOW score=0/8, S1-S8 all negative (0 multu/mflo pairs, no empty-body branch, S3/S4 N/A at 34 < 40 insns, no sibling cluster, no BIOS jumptable, no unsaved $sN, no redundant mask). Gate #2 negative — the closing construct is still a byte-free REGISTER occupant; the only adjacent family, pad_dummy_local (index line 29), is frame-slot-based and target func_80033550 has no stack frame at all (no addiu $sp, no save/restore, jr $ra + nop epilogue).
+- verdict: KILLED

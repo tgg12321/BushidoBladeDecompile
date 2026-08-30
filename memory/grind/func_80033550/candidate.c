@@ -79,6 +79,18 @@
  * appears as a hard reg in the pre-RA RTL, so set_preference cannot name it).
  * Both endgame-lock gates re-measured failing (scan LOW 0/8; no SOTN
  * precedent). Standing 2026-07-27 ruling re-applied; see docs/grind/decisions.md.
+ * s11 (2026-08-30, ESCALATION modality, post-ruling-10): floor re-measured
+ * 4 on this chassis (34/34, 0 rules). NEW: first 1:1 position-aligned
+ * disassembly correspondence banked (s11/insn_correspondence.txt) - 30 of 34
+ * instructions identical, the 4 that differ (idx 0,20,21,22) differ in ONE
+ * register field only ($a3 vs $a1). Instruction-budget closure: every target
+ * slot is already spoken for, so an added register carrier must take a 35th
+ * slot or substitute for one of the 34 -> no byte-free occupant CAN exist in
+ * this shape. Preference route also closed by fidelity: the sole caller
+ * (func_800290B8.s:203) sets only $a0, so a 4-ary signature (the one
+ * construct that would put $a3 in the pre-RA RTL) is a false claim. Both
+ * endgame-lock gates re-measured failing (scan LOW 0/8; no SOTN precedent).
+ * Standing 2026-07-27 ruling re-applied: docs/grind/decisions.md:15517.
  * NOTE: this file is CRLF - normalise to LF after pasting into src/*.c.
  * Residual 4 = arg0's pointer pseudo homed in $a1 (build) vs $a3 (target):
  * move + 3 lw base regs. See evidence.md for the RTL conflict analysis. */

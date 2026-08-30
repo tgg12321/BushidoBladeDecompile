@@ -1,7 +1,7 @@
 {
  "func": "func_80033550",
  "file": "code6cac_b",
- "session_count": 10,
+ "session_count": 11,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -63,23 +63,29 @@
    "floor": 4,
    "modality": "escalation",
    "headline": "s10 executed the owner's 2026-08-24 chain-extender directive first-hand and killed it in all three available modes, then gave the residual its first TYPED RA verdict (ra_solver inverse: NEGATIVE at de"
+  },
+  {
+   "session": 11,
+   "floor": 4,
+   "modality": "escalation",
+   "headline": "s11 escalation: floor re-measured 4 on this chassis; NEW instruction-budget closure (first 1:1 disasm correspondence \u2014 30/34 identical, 4 differ in one register field) proves no byte-free register occ"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A future owner-sanctioned family can keep a value alive in a register across another value's live range WITHOUT emitting an instruction, making pseudo 72's hard-conflict set contain {2,3,4,5,6} while the entry copy stays non-coalescable.",
-   "mechanism": "global.c find_reg scans hard registers in numeric-ascending order (no REG_ALLOC_ORDER on MIPS here) over the complement of the hard-conflict set; only added conflicts on $a1 and $a2 can push the pointer to $a3, and priority/refs levers provably cannot add conflicts.",
-   "next_probe": "Do NOT spend a session on spellings. Evaluate any newly sanctioned family DIRECTLY against that arithmetic requirement first; s10 measured that the first surviving occupant already costs the entry-copy slot (rejected/s10-f1-chain-partial-detour-eats-entry-copy-slot-4.c), so a candidate family must beat that price before it is worth compiling."
+   "hypothesis": "A tools/ra_solver inverse.py with a HARD_CONFLICT_ADD atom class returns REACHABLE for --goal {\"72\": 7}, settling the single unsearched RA axis mechanically instead of by hand.",
+   "mechanism": "inverse.py's CONFLICT_ADD atoms are pseudo-pseudo only over the focus set {72,74}; there is no hard-conflict-add atom, so 'give 72 hard conflicts 5 and 6' has never been searched by the solver \u2014 it has only been argued closed by hand (s5/s7/s8/s9) and now by this session's instruction budget.",
+   "next_probe": "OPERATOR/INFRA ITEM \u2014 tools/ is a forbidden surface for a grind session. If the atom class is ever added, re-run the s10 model (tmp/ra_solver_work/func_80033550.model.json) and compare the verdict against this session's instruction-budget closure; a REACHABLE verdict would be a genuine re-open trigger for this function and every sibling seat residual."
   },
   {
-   "hypothesis": "The ra_solver could settle the remaining axis mechanically instead of by hand.",
-   "mechanism": "inverse.py's atom space has REFS_UP/DOWN, LIVE_EXTEND/SHRINK, CALLS_CROSSED, PREF_*, and a CONFLICT_ADD class that is pseudo-pseudo only over the focus set; there is no HARD-conflict-add atom, so 'give 72 hard conflicts 5 and 6' is unsearched.",
-   "next_probe": "A tools/ra_solver change is OUT OF SCOPE for a grind session (tools/ is a forbidden surface), so this is an operator/infra item: adding a HARD_CONFLICT_ADD atom class would let inverse.py return a typed REACHABLE/FORECLOSED verdict on the one remaining axis for this and every sibling seat residual."
+   "hypothesis": "A future owner-landed sanctioned family can keep a value alive in a register across another value's live range WITHOUT emitting an instruction.",
+   "mechanism": "global.c find_reg scans hard registers in numeric-ascending order over the complement of the hard-conflict set; only added conflicts on $a1 AND $a2 can push the pointer to $a3, and priority/refs levers provably cannot add conflicts (s10 ra_solver NEGATIVE at depth 2 and 3).",
+   "next_probe": "Do NOT spend a session on spellings. Evaluate any newly sanctioned family DIRECTLY against two prices first: (a) s10 measured that the first surviving occupant already costs the entry-copy slot (rejected/s10-f1-chain-partial-detour-eats-entry-copy-slot-4.c), and (b) s11's instruction-budget closure says every one of the 34 target slots is already spoken for, so the family must be byte-free by construction, not merely 'usually cheap'."
   },
   {
    "hypothesis": "A rederive-modality reconstruction (a different overall shape) reaches the target seating.",
-   "mechanism": "the s6 closure theorem is scoped to THIS 34-insn shape; a different source shape yields a different allocno set and entry-copy topology.",
-   "next_probe": "Carried forward from s9 unchanged and now further constrained: the target body carries only FOUR register-carrying values across the pointer's range, everything except the pointer is LOCAL-allocated and already matches target byte-for-byte, and any insn-count change is itself distance. A rederive would have to break that arithmetic, not merely try new shapes."
+   "mechanism": "The s6 closure theorem is scoped to THIS 34-insn shape; a different source shape yields a different allocno set and entry-copy topology.",
+   "next_probe": "Now much more tightly constrained than when s9 wrote it: s11's 1:1 correspondence shows the build already reproduces 30 of 34 target instructions exactly and the remaining 4 differ only in a register field, so a 'different shape' would have to give up an already-perfect instruction stream to buy conflicts it can only get by adding instructions. Any rederive attempt must state up front which of the 34 matched instructions it is willing to lose and why the trade nets below 4."
   }
  ],
  "judge_constraints": [

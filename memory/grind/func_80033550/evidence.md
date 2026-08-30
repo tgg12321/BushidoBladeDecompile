@@ -762,3 +762,62 @@ measurement that the occupant is not byte-free).
 - [s10] Exhaustion: floor FLAT at 4 across ten sessions and five distinct modalities (recon, structural, permuter, forensics, escalation); ~138k cumulative permuter iterations over 6 basins all converging to the score-20 ptr=$a1 attractor; 20 rejected forms banked in memory/grind/func_80033550/rejected/.
 
 - [s10] Disposition filed by this session at docs/grind/decisions.md:12231 — OWNER-ESCALATION RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE. No standard-lowering packet was filed: the only YES that would close this function is a no-precedent family grant for a byte-free register occupant, which is the pre-decided-NO auto-reject class under the owner's second 2026-08-24 ruling.
+
+## s11 (2026-08-30, ESCALATION modality — disposition re-affirmed after owner ruling 10)
+
+- **Chassis re-measured, not quoted.** candidate.c over the INCLUDE_ASM line at src/code6cac_b.c:2012
+  → `sandbox func_80033550 --disable all` = score 4, target_insns 34, build_insns 34, rules_dropped 0.
+  src reverted to INCLUDE_ASM before the session ended; tree clean.
+- **The residual, exactly (new artifact — first 1:1 correspondence banked here).**
+  tmp/grind/func_80033550/s11/insn_correspondence.txt. 34 vs 34, THIRTY identical instructions; the
+  four differing ones are stream indices 0, 20, 21, 22 and differ in one register field only:
+
+        idx  target                      build
+         0   addu $a3, $a0, $zero        move a1,a0
+        20   lw   $v1, 0x0($a3)          lw v1,0(a1)
+        21   lw   $a0, 0x4($a3)          lw a0,4(a1)
+        22   lw   $a1, 0x8($a3)          lw a1,8(a1)
+
+  Both builds seat the three loaded words identically ($v1, $a0, $a1) — the ONLY divergence in the
+  whole function is the pointer's home. No ordering, frame, or count divergence.
+- **Why $a1 is free for w2 (mechanism, previously unstated):** w2 is born at index 22, exactly where
+  the pointer's live range ends, so it never conflicts with pseudo 72. The function's entire
+  register-carrying population is $v0 (loop/index temp), pseudo 74 (`i`) and the three loaded words;
+  {2,3,4} is the largest hard-conflict set they can produce, which is precisely what `.greg` shows.
+- **Instruction-budget closure.** Because all 34 target slots are already occupied by
+  semantically-required operations that our C reproduces byte-for-byte, any additional register
+  carrier must take a 35th slot or substitute for one of the 34. s10 already priced the substitution
+  three ways (the surviving F1 detour always eats the entry-copy slot). Therefore a byte-free
+  occupant cannot exist in this shape — the s6 source-level closure theorem now has a counting
+  proof at the byte level.
+- **Preference route closed by fidelity too.** s10 typed route (ii) FORECLOSED because $a3 never
+  appears as a hard reg pre-RA; the one legitimate way to introduce it is a 4th declared parameter
+  (`expand_function_start` parm copy). The sole caller `func_800290B8` (asm/funcs/func_800290B8.s:203)
+  sets ONLY $a0 in the jal delay slot, so the function is genuinely one-parameter and a wider
+  signature would be a false fidelity claim in addition to being inert.
+- **Both endgame-lock AND-gates re-measured FAILING.** scan_hand_coded tier=LOW score=0/8, S1-S8 all
+  negative (tmp/grind/func_80033550/s11/scan_hand_coded.txt); no in-hand SOTN-master precedent for a
+  byte-free register occupant (the adjacent pad_dummy_local family is frame-slot-based and the target
+  has no stack frame at all).
+- **Disposition filed:** docs/grind/decisions.md:15517 — OWNER-ESCALATION RESOLVED BY STANDING RULING
+  (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE. Nothing pends the owner. Ruling 10's bookkeeping
+  ground is discharged. Re-open only on (1) an `inverse.py` HARD_CONFLICT_ADD atom class returning
+  REACHABLE for `--goal {"72": 7}` (operator/infra; `tools/` is out of scope for grind sessions), or
+  (2) an owner-landed family that keeps a value alive in a register across another value's live range
+  without emitting an instruction — and it must beat the entry-copy-slot price s10 measured.
+
+- [s11] Chassis floor re-measured THIS session: sandbox func_80033550 --disable all = score 4, target_insns 34, build_insns 34, rules_dropped 0, zero cheat-asm. src/code6cac_b.c was reverted to INCLUDE_ASM before the session ended; the tree is clean apart from ledger/docs files.
+
+- [s11] First 1:1 position-aligned disassembly correspondence banked for this function: 34 vs 34, thirty instructions identical, four differing (idx 0, 20, 21, 22) in exactly one register field — target $a3 vs build $a1. No ordering, frame or count divergence.
+
+- [s11] Instruction-budget closure: because all 34 target slots are already occupied by semantically-required operations our C reproduces byte-for-byte, any additional register carrier must take a 35th slot or substitute for one of the 34 — so no byte-free occupant CAN exist in this shape. This upgrades s6's source-level closure theorem and s9's arithmetic restatement from 'none found' to 'none can exist'.
+
+- [s11] Mechanism for the free $a1 seat, previously unstated in the ledger: w2 is born at stream index 22, exactly where the pointer's live range ends, so it never conflicts with pseudo 72; the entire carrier population ($v0, pseudo 74 = i, three loaded words) can only produce the hard-conflict set {2,3,4} that .greg reports.
+
+- [s11] Preference route to $a3 is now closed by fidelity as well as mechanism: the sole caller func_800290B8 (asm/funcs/func_800290B8.s:203) sets only $a0 in the jal delay slot, so the 4-ary signature that would put $a3 in the pre-RA RTL is a false claim about the original.
+
+- [s11] scan_hand_coded --single func_80033550 re-run this session: tier=LOW score=0/8, S1-S8 all negative (tmp/grind/func_80033550/s11/scan_hand_coded.txt).
+
+- [s11] Disposition FILED this session at docs/grind/decisions.md:15517 as OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE. It asks for no standard to be lowered (no family grant, no canonical evidence-bar override, no 'accept the debt' wording), so it is not auto-reject class; nothing pends the owner.
+
+- [s11] Owner ruling 10 of the 2026-08-30 escalation batch (decisions.md:14870) returned this item to ACTIVE on a bookkeeping ground only ('the queue lagged the ledger'), naming no new lever; that ground is discharged by this session's fresh measurements and the new entry.

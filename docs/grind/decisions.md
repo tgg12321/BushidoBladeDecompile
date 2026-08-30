@@ -15513,3 +15513,115 @@ and the consequence of each answer. The two AND-gates remain the unchanged STAND
 owner rules on packets in batches, and the ruling returns the item to active either way.
 If no decidable question exists, the item stays ACTIVE with a modality change instead
 (difficult-is-not-impossible) — "this is hard" is not a packet.
+
+## 2026-08-30 — func_80033550 (src/code6cac_b.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Grind session 11, `escalation` modality (driver-declared exhaustion: honest floor FLAT at 4 across 10
+prior sessions and 5 distinct modalities — recon, structural x2, permuter x2, forensics x4, escalation
+x2 — with ~138k cumulative permuter iterations over 6 basins and one typed `ra_solver` NEGATIVE
+verdict). This entry APPLIES the owner's standing auto-ruling
+(2026-07-27, `.claude/rules/endgame-lock-disposition.md`). Nothing pends the owner, and per the
+2026-08-18 judge-sole-gate ruling no sign-off is waited on. It does **not** re-cite the spent
+2026-08-19 F6+F7 unpark ground and it asks for **no** standard to be lowered (no family grant, no
+canonical evidence-bar override, no "accept the debt" request — that class is pre-decided NO under the
+owner's 2026-08-24 second ruling and is deliberately not filed here).
+
+**Why re-filed rather than cited.** The owner's 2026-08-30 escalation-batch **ruling 10** (this file,
+line 14870) returned this item to ACTIVE with a modality change on the bookkeeping ground that "each
+item's own latest ledger entry states nothing pends the owner … the queue lagged the ledger." Ruling 10
+named no new lever. This session re-measured the chassis first-hand rather than quoting the 2026-08-20
+entry (decisions.md:8223), and added one genuinely new closure measurement (below) before re-applying
+the standing ruling.
+
+**Floor re-measured this session (quote these numbers, not the ledger's older ones).**
+`memory/grind/func_80033550/candidate.c` spliced over `INCLUDE_ASM("asm/funcs", func_80033550);` at
+src/code6cac_b.c:2012 (CRLF normalised to LF) → `sandbox func_80033550 --disable all` = **score 4,
+target_insns 34, build_insns 34, rules_dropped 0, zero regfix/asmfix rules, zero cheat-asm**. src was
+reverted to the `INCLUDE_ASM` line before this entry was written; the tree is clean.
+
+**NEW THIS SESSION — instruction-budget closure (the first 1:1 disassembly correspondence banked for
+this function).** `tmp/grind/func_80033550/s11/insn_correspondence.txt` aligns the build's objdump
+against `asm/funcs/func_80033550.s` position-by-position: **34 vs 34, thirty instructions identical,
+and the four that differ (stream indices 0, 20, 21, 22) differ in exactly one register field** —
+target `addu $a3,$a0,$zero` / `lw ...($a3)` versus build `move $a1,$a0` / `lw ...($a1)`. No ordering
+divergence, no frame divergence, no extra or missing instruction anywhere in the body. Every one of
+the 34 target instructions is therefore already spoken for by a semantically-required operation that
+our C reproduces byte-for-byte. Consequence: **an added register occupant cannot be byte-free in this
+shape by counting** — it must either occupy a 35th slot (distance +1 at minimum) or substitute for one
+of the 34 (s10 measured exactly that price three times: the surviving F1 detour always consumes the
+entry-copy slot, `rejected/s10-f1-chain-partial-detour-eats-entry-copy-slot-4.c`). This upgrades s6's
+source-level closure theorem and s9's arithmetic restatement from "no byte-free occupant has been
+found" to "**no byte-free occupant can exist at 34/34 with this correspondence**".
+
+**The seat requirement, and both routes to it, now closed.** `.greg` (s9, dumps/code6cac_b.greg:22914)
+gives pseudo 72 (the pointer) hard conflicts `{2,3,4,29}` and an EMPTY preference set, so `global.c
+find_reg`'s ascending scan `$v0,$v1,$a0,$a1,$a2,$a3` returns **$a1**. Only two routes reach `$a3`:
+
+- *(i) conflicts superset-of {2,3,4,5,6}* — needs occupants alive across the pointer's range in **both**
+  `$a1` and `$a2`. The function's entire register-carrying population is `$v0` (loop/index temp),
+  pseudo 74 (`i`), and the three loaded words; `w2` is born at index 22 exactly where the pointer dies,
+  which is precisely why `$a1` is free for it. Adding a fifth carrier is foreclosed by the
+  instruction-budget measurement above. `ra_solver` independently returned **NEGATIVE at depth 2 and
+  depth 3** over 48 perturbations in 5 atom classes for `--goal {"72": 7}` (s10,
+  tmp/grind/func_80033550/s10/inverse_d2.txt, inverse_d3.txt).
+- *(ii) a hard-reg preference for `$a3`* — `global.c set_preference` can only record it if `$a3`
+  appears as a hard reg in the pre-RA RTL, which s10 typed **FORECLOSED** for this shape. The only
+  legitimate way to introduce it (a fourth declared parameter, so `expand_function_start` emits an
+  `$a3` parm copy) is refuted on **fidelity** grounds by the callee's sole caller: `func_800290B8`
+  (asm/funcs/func_800290B8.s:203) sets **only `$a0`** in the `jal` delay slot — the function is
+  genuinely one-parameter, and a wider signature would be a false claim about the original as well as
+  inert (rejected/wider-signature-unused-params-census-identical-4.c). Both routes closed, one by
+  measurement and one by evidence.
+
+**AND-gate #1 (canonical-asm) — FAILS.** `python3 tools/scan_hand_coded.py --single func_80033550`
+re-run this session: **tier=LOW score=0/8** (tmp/grind/func_80033550/s11/scan_hand_coded.txt); S1-S8 all
+negative (0 multu/mflo pairs, no empty-body branch, S3/S4 N/A at 34 < 40 insns, no high-similarity
+sibling cluster, no BIOS jumptable, no unsaved `$sN`, no redundant mask-before-shift). Corroborated by
+s6: cc1psx (GCC 2.7.2.SN.1, the original PsyQ compiler) compiles this C to **instruction-identical**
+bytes, so the target's `$a3` seating came from different *source*, not a different compiler and not
+hand-written asm.
+
+**AND-gate #2 (in-hand SOTN-master precedent for the closing construct) — FAILS.** The closing
+construct would still be a byte-free **register** occupant (two of them). The s9 census of
+docs/reference/sotn-construct-index.md (1,365 PSX-master entries) is negative; the only adjacent family
+is `pad_dummy_local` (line 29), a **frame-slot** family whose prerequisite fails outright here —
+target func_80033550 has **no stack frame at all** (no `addiu $sp,$sp,-N`, no save/restore, `jr $ra` +
+`nop` epilogue across all 34 instructions), so a pad local would ADD a frame, i.e. add bytes. No "same
+spirit" citation is offered in place of a real one. The one construct that ever homed 72 in `$a3` —
+an invented identical-arms branch cross-jump-merged by `jump2` — was ruled a **cheat-by-spelling** by
+the Judge on 2026-07-21 00:19 (decisions.md:1102) and is moot anyway: both banked seam forms re-measure
+at honest distance 11 versus the floor of 4.
+
+**Exhaustion record (memory/grind/func_80033550/).** s1 recon (floor 5->4 cheat-free, pin removed);
+s2 structural (24 variants, tail geometry closed); s3 structural (14 variants, loop-region
+census-invariance proven over 6 spellings with identical `.greg`); s4 permuter (4 campaigns, ~104k
+iters, 4 basins); s5 permuter (2 fresh basins, ~34k iters — all 6 basins converge to the score-20
+ptr=$a1 attractor, zero sub-20 finds); s6 forensics (cc1psx fork-divergence KILLED; source-level
+closure theorem); s7 forensics (FAKE-family sweep — dead-store / named-local INERT, deleted by
+jump_optimize pass 1); s8 forensics (Judge FAIL closed channel (f); scan LOW 0/8); s10 forensics
+(F6+F7 seam dead in both halves with the deleting pass named for each); s9/s10 escalation (phantom-pad
+frontier killed on prerequisite; the owner's 2026-08-24 F1 chain-extender directive executed and killed
+in all three available modes; first typed `ra_solver` NEGATIVE); **s11 this session** (chassis
+re-measured 4; instruction-budget closure; both `$a3` routes closed). 20 rejected forms banked in
+`memory/grind/func_80033550/rejected/`.
+
+**Both AND-gates fail → the owner's standing 2026-07-27 auto-ruling applies and this disposition is
+TERMINAL. Nothing is pending on the owner.**
+
+**Disposition:** no cheat is retained — the function is cheat-free at honest floor 4 (four register
+fields at 34/34) and stays committed as `INCLUDE_ASM("asm/funcs", func_80033550);`. **REFUSED /
+OWNER-ACCEPTED INCOMPLETE**, parked out of active grind, classified NOT COMPLETED-C and NOT
+canonical-asm. Re-open triggers, both of which must be NEW (the F6+F7 seam ground is spent and must
+not be re-cited, and ruling 10's bookkeeping ground is discharged by this entry): (1) a
+`tools/ra_solver` `inverse.py` gaining a **HARD_CONFLICT_ADD** atom class and returning REACHABLE for
+`--goal {"72": 7}` — an operator/infra item, `tools/` is out of scope for a grind session; (2) an
+owner-landed sanctioned family that can keep a value alive in a register across another value's live
+range **without emitting an instruction**, which must beat the price s10 measured (the first surviving
+occupant costs the entry-copy slot).
+
+**Precedent (same RA-locked, hand-coded-LOW, no-SOTN-precedent species, all ruled option (b)):**
+motion_SetMotion (2026-07-19 FAMILY REFUSED), saTan0Init / cpu_side_move_dir_4 / func_80057CC8
+(2026-07-20), func_80049A2C / InitHiraRmd_80047FBC / gnd_init_80041688 / AddTbpOfst_80047EE8 /
+cpu_check_tubazeri_2 / damage_DebugDisp / func_8007DC9C (2026-07-22), func_800645B0 (2026-08-30
+re-affirmation after ruling 10, same shape as this entry), and func_80033550's own 2026-07-22
+(decisions.md:1292) and 2026-08-20 (decisions.md:8223) rulings.
