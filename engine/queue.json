@@ -184,16 +184,6 @@
       "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-26 \u2014 func_80022F34 (src/code6cac.c) \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     },
     {
-      "func": "motion_Close",
-      "file": "ings2",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 3 \u2014 prebuilt-object canonical routing granted; auth lands via operator lane",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:13770 \u2014 ## 2026-08-26 \u2014 motion_Close (0x80083804, src/ings2.c) \u2014 **OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET (RE-FILED)**"
-    },
-    {
       "func": "func_80078654",
       "file": "text1b_b",
       "distance": 19,
@@ -1958,13 +1948,13 @@
     }
   ],
   "counts": {
-    "total": 222,
-    "active": 222,
+    "total": 221,
+    "active": 221,
     "by_status": {
-      "active": 222
+      "active": 221
     },
     "by_verdict": {
-      "C": 186,
+      "C": 185,
       "ASM-PARTIAL": 36
     }
   }

@@ -614,7 +614,9 @@ INCLUDE_ASM("asm/funcs", _start);
    (owner routing ruling 2026-08-24: provably prebuilt PsyQ object; our cc1 cannot
    produce the 16-byte frame from any C — REG_PARM_STACK_SPACE proof, decisions.md
    2026-08-13; entry in inline_asm_canonical.txt). Split from the fused splat file
-   that also carried motion_Close @0x80083804 (below, INCOMPLETE). */
+   that also carried motion_Close @0x80083804 (below — its dtor-side twin,
+   COMPLETED-INLINE-ASM-CANONICAL per owner ruling 2026-08-30, same prebuilt
+   crt0/libgcc object; entry in inline_asm_canonical.txt). */
 INCLUDE_ASM("asm/funcs", func_80083794);
 INCLUDE_ASM("asm/funcs", motion_Close);
 /* kengo:HIGH  |  is_motion/motion_Open  |  54i */
