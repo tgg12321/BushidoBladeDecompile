@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "main",
-      "file": "ings",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unparked_from": "DECLINED 2026-08-24 (decisions.md escalation-packet rulings, packet 3): maspsx ASPSX-parity branch-target fill refused \u2014 self-healing transform, full fill-algorithm reimplementation required, ~120 already-correct census sites at risk. Residual (2-byte reorg branch-target gap) provably unreachable under the frozen pipeline. Re-decision triggers: census candidates regrow, or ASPSX fill semantics become documented.",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 9 \u2014 returns to active; 2026-08-24 maspsx branch-fill DECLINE stands"
-    },
-    {
       "func": "func_800645B0",
       "file": "text1b",
       "distance": 1,
@@ -1945,16 +1935,28 @@
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
       "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
       "hand_coded_tier": "LOW"
+    },
+    {
+      "func": "main",
+      "file": "ings",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unparked_from": "DECLINED 2026-08-24 (decisions.md escalation-packet rulings, packet 3): maspsx ASPSX-parity branch-target fill refused \u2014 self-healing transform, full fill-algorithm reimplementation required, ~120 already-correct census sites at risk. Residual (2-byte reorg branch-target gap) provably unreachable under the frozen pipeline. Re-decision triggers: census candidates regrow, or ASPSX fill semantics become documented.",
+      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 9 \u2014 returns to active; 2026-08-24 maspsx branch-fill DECLINE stands",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:14884 - 2026-08-30 - main (src/ings.c) - OWNER-ESCALATION - ESCALATED WITH DECISION PACKET (queue-routing question only; explicitly does NOT re-open the 2026-08-24 maspsx branch-fill DECLINE and lowers no standard)"
     }
   ],
   "counts": {
     "total": 221,
-    "active": 221,
+    "active": 220,
     "by_status": {
-      "active": 221
+      "active": 220,
+      "escalated": 1
     },
     "by_verdict": {
-      "C": 185,
+      "C": 184,
       "ASM-PARTIAL": 36
     }
   }

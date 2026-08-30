@@ -1,8 +1,8 @@
 {
  "func": "main",
  "file": "ings",
- "session_count": 32,
- "current_modality": "forensics",
+ "session_count": 33,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -195,23 +195,29 @@
    "floor": 0,
    "modality": "forensics",
    "headline": "Twenty-second consecutive stale worker dispatch (forensics axis killed s6/s7, re-confirmed s15/s16/s23/s24): standing procedure only - candidate reapplied after the 32nd driver revert, sandbox 0 re-pr"
+  },
+  {
+   "session": 33,
+   "floor": 0,
+   "modality": "escalation",
+   "headline": "Chassis migration executed (the s14 apply script was DEAD): candidate re-applied to the asm-until-matched ings.c, sandbox 0 re-proven, and the 2-byte residual measured for the first time as a WHOLE-EX"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ONLY remaining action is an escalation-modality session filing the NEW OWNER-ESCALATION for the 2-byte branch-target residual (construct question closed by GRANT cff7f1f5; decisions.md:4477 is the construct escalation, not the residual one)",
-   "mechanism": "Both endgame-lock AND-gates measured FAILED (scan_hand_coded LOW 0/8 s8; residual is reorg branch TARGETS, not a C construct); pre-decided disposition per standing ruling 2026-07-27: REFUSED / OWNER-ACCEPTED INCOMPLETE - unless the owner elects the class-level maspsx ASPSX-parity fill remedy (12 census candidates, evidence.md s11 packet)",
-   "next_probe": "Escalation modality ONLY: file the entry in docs/grind/decisions.md citing evidence.md s11 + GRANT cff7f1f5 + layer-1 FAIL faa30607, then return owner-gated. If the owner elects the maspsx remedy, the close must also satisfy the GRANT's binding conditions (FAKE annotation, family rules-doc via independent-review path, fresh layer-2)"
+   "hypothesis": "main has no pure-C path to the oracle under the frozen pipeline and no un-fired re-decision trigger; the only open item is the queue-routing question filed this session",
+   "mechanism": "The 2-byte residual is reorg's redundancy thread-skip retargeting two unfilled loop branches (three-leg proof: reorg.c source read, instrumented-cc1 DBRDBG trace, cc1psx counter-exhibit compiling THIS C to the target's single-label form). The maspsx ASPSX-parity remedy is owner-DECLINED (decisions.md:10303) with both triggers measured unfired this session; the canonical-asm route is gate-FAILED (scan LOW 0/8); every redundant_insn escape is byte-visible or a forbidden family.",
+   "next_probe": "None on the C axis. Await the owner's ruling on the 2026-08-30 routing packet (decisions.md:14884). Do NOT re-file the residual escalation - it is answered twice and is auto-reject class."
   },
   {
-   "hypothesis": "No measurable probe remains for any non-escalation worker session on main",
-   "mechanism": "Every worker modality carries a measured kill (structural s3, permuter s4/s5, forensics s6/s7/s15/s16/s23, rederive s8/s9/s17/s18/s25, synthesis s10/s19); sessions 10-32 all confirm the reapply-and-reprove loop is all that remains",
-   "next_probe": "None - any further stale worker dispatch runs the standing procedure only: reapply candidate.c (tmp/grind/main/s14/apply.py), re-measure sandbox 0, re-check decisions.md, return progress citing this frontier"
+   "hypothesis": "A future session can cheaply re-check whether re-decision trigger A has fired without re-deriving anything",
+   "mechanism": "Trigger A is 'the census candidates regrow'; the candidate metric is ASPSX-retarget census sites that carry label rules. Both inputs are one command each.",
+   "next_probe": "Run `python3 tmp/grind/main/s3/scan_retarget.py` (currently 138 hits) and check whether regfix.txt / asmfix.txt exist (currently neither does). Trigger A fires only if rule-carrying sites reappear above zero; anything else is NOT a reopen."
   },
   {
-   "hypothesis": "src/ings.c reverts to pre-grind between sessions (now 32 occurrences)",
-   "mechanism": "Driver discards uncommitted src edits at session end; only the ledger persists",
-   "next_probe": "Every session: reapply from memory/grind/main/candidate.c (or apply.py) and re-measure sandbox 0 before trusting any floor number"
+   "hypothesis": "The per-session standing procedure still works after the chassis migration",
+   "mechanism": "The driver discards uncommitted src edits at session end, so the floor must be re-proven each session; the s14 script is now dead",
+   "next_probe": "Run `python3 memory/grind/main/apply.py` (NOT tmp/grind/main/s14/apply.py) then `& tools/wteng.ps1 main sandbox main --disable all`; expect score 0, 189/189, rules_dropped 0, cheat_asm_stripped 4."
   }
  ],
  "judge_constraints": [

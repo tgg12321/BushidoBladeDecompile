@@ -1,3 +1,20 @@
+/* [s33 CHASSIS NOTE — 2026-08-30] src/ings.c was migrated to asm-until-matched.
+ * `main` is now committed as INCLUDE_ASM("asm/funcs", main); (line 447) and
+ * func_80016E60 is ALSO INCLUDE_ASM — so only ONE signature widen remains
+ * (func_80016A8C, 1-arg -> 3-arg). The s14 apply script is DEAD (StopIteration);
+ * use memory/grind/main/apply.py. Re-measured on the new chassis this session:
+ * sandbox 0 (189/189, rules_dropped 0, cheat_asm_stripped 4) and a FULL build
+ * sha1 4c958a00c1c2b97034f048451de9f3b155100df7 whose whole-EXE diff vs
+ * disc/SLUS_006.63 is EXACTLY 2 bytes — 0x80017494 (1462FF79 vs 1462FF78) and
+ * 0x800174B4 (1440FF71 vs 1440FF70), the same .L8001727C-vs-.L80017278 retarget
+ * pair. Every other byte of the 606,208-byte executable matches: with this
+ * candidate applied, main is the ONLY residual in the entire project build, and
+ * the residual is proven chassis-INDEPENDENT (it survived rules-to-zero and the
+ * removal of every neighbouring C body from the TU).
+ * POLICY (2026-08-30): the maspsx ASPSX-parity fill remedy is DECLINED
+ * (decisions.md:10303) and ruling 9 (decisions.md:14864) keeps main ACTIVE under
+ * standing policy. Do NOT re-file the residual escalation — auto-reject class.
+ */
 /* candidate — main (src/ings.c) — session 2 end state, SANDBOX DISTANCE 0
  * (189/189 insns, all 25 regfix rules dropped, measured 2026-08-11 s2).
  * APPLIED to src/ings.c. Four coordinated edits vs the pre-grind tree:

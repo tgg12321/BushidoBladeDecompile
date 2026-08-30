@@ -1463,3 +1463,123 @@ Structural axis killed s3; standing procedure only. Reapplied candidate via tmp/
 
 - [s32] Therefore the ledger frontier is unchanged: the ONLY remaining action is an escalation-modality session filing the NEW OWNER-ESCALATION for the 2-byte residual, with the pre-decided disposition REFUSED / OWNER-ACCEPTED INCOMPLETE per the 2026-07-27 standing ruling (both endgame-lock AND-gates measured FAILED: scan_hand_coded LOW 0/8 in s8; residual is reorg branch targets, not a C construct), unless the owner elects the class-level maspsx ASPSX-parity fill remedy (12 census candidates, evidence.md s11 packet)
 - [s33 operator] DISPOSITION: standing ruling 2026-07-27 applied — REFUSED / OWNER-ACCEPTED INCOMPLETE, parked terminal (decisions.md 2026-08-11 entry). Both gates FAILED (scan LOW 0/8; residual not a C construct). Candidate.c (sandbox 0, GRANT cff7f1f5 construct) preserved for any future re-attempt.
+
+## [s33] CHASSIS MIGRATION + first whole-EXE residual measurement on the clean tree
+
+**The ledger's standing apply script was DEAD.** `tmp/grind/main/s14/apply.py`
+(used verbatim by every session s14-s32) searches for `void main(void)` in
+src/ings.c and raised `StopIteration` this session. Cause: the asm-until-matched
+migration (owner ruling 2026-08-19) rewrote src/ings.c. The file is now 628
+lines; `main` is committed as `INCLUDE_ASM("asm/funcs", main);` at line 447, and
+`func_80016E60` is ALSO INCLUDE_ASM (line 436) — so the ledger's "widen BOTH
+callee signatures" step is obsolete: only `func_80016A8C` (still C, line 306)
+needs the 1-arg -> 3-arg widen. A replacement script is banked at
+`memory/grind/main/apply.py` (copy in tmp/grind/main/s33/apply33.py). EVERY
+future session must use the new script; the s14 one can no longer run.
+
+**Chassis-relative numbers all changed.** `sandbox main --disable all` with the
+candidate applied: score 0, 189/189 insns, scorable — but `rules_dropped` is now
+**0** (was 25 in s2-s32) and `cheat_asm_stripped` is **4** (was 68). Reason:
+regfix.txt and asmfix.txt no longer exist in the tree at all (rules-to-zero
+milestone, 2026-08-25), and the other ings.c functions that carried the 68
+stripped cheat-asm insns are now INCLUDE_ASM. The floor number 0 survives the
+migration; the surrounding numbers in s2-s32 headlines are stale and must not be
+quoted again. (log: tmp/grind/main/s33/sandbox33.log)
+
+**The 2-byte residual was re-measured for the first time as a WHOLE-EXE diff,
+and it is chassis-INDEPENDENT.** Ran `wteng main build` with the candidate in
+place (first full-build measurement of this candidate since the migration):
+  build/bb2.exe sha1 = 4c958a00c1c2b97034f048451de9f3b155100df7
+  oracle             = 62efab4f73f992798c43e8c730aa43baa10bb4fa
+Byte-for-byte diff against disc/SLUS_006.63 (both 606,208 bytes):
+  **EXACTLY 2 differing bytes, in exactly 2 words, both inside `main`:**
+    file 0x7C94  vaddr 0x80017494  build 1462FF79  target 1462FF78   (bne)
+    file 0x7CB4  vaddr 0x800174B4  build 1440FF71  target 1440FF70   (bnez)
+  Decoding the offsets: build -135/-143 words -> 0x8001727C; target -136/-144
+  words -> 0x80017278. These are the SAME two branch targets s2/s3 identified
+  (.L8001727C, past the loop-head `li a1,0x1008`, vs .L80017278, at it).
+  (artifacts: tmp/grind/main/s33/build33.log, tmp/grind/main/s33/bytediff.txt)
+
+Two conclusions no prior session could state:
+ 1. **The entire remaining 606,206 bytes of the executable are byte-identical.**
+    With this candidate applied, `main` is the ONLY residual in the whole
+    project build. Prior sessions measured the "2 bytes off" claim on a chassis
+    that still carried 25 regfix rules and 68 cheat-asm insns in neighbouring
+    ings.c functions; the claim is now proven on a clean, rules-to-zero,
+    asm-until-matched tree with nothing else in the diff.
+ 2. **The residual is intrinsic to main's own C -> cc1-reorg path, not a TU-context
+    artifact.** It survived the removal of every regfix rule, the removal of
+    every neighbouring C body from the TU, and the resulting change in
+    `label_num` / rodata context — reproducing bit-for-bit at the same two
+    words. Any future hypothesis of the form "the residual is an artifact of
+    the old ings.c compilation context" is KILLED by this measurement.
+
+## [s33] The ledger's standing frontier (s10-s32) is STALE: the prescribed escalation was filed AND RULED
+
+Sessions s10 through s32 unanimously recorded "the ONLY remaining action is an
+escalation-modality session filing the NEW OWNER-ESCALATION for the 2-byte
+branch-target residual." **That action has already happened and has already been
+answered.** Verified in docs/grind/decisions.md this session:
+ - **decisions.md:10270 / :10303 — 2026-08-24, escalation-packet rulings, packet 3:
+   "main — maspsx ASPSX-parity branch-target fill: DECLINED."** Owner's stated
+   basis: the one-clause version is self-healing (reorg refills by a different
+   route); a real remedy is a from-scratch reimplementation of ASPSX's
+   undocumented fill algorithm plus `-fno-delayed-branch` on the frozen flags;
+   ~120 of the 138 census sites are already byte-correct and would be re-decided;
+   the beneficiary set had decayed to ~5-6 functions. Named re-decision triggers:
+   *the census candidates regrowing*, or *ASPSX fill semantics becoming documented*.
+ - **decisions.md:14864 — 2026-08-30, escalation-batch ruling 9: "main — returns
+   to ACTIVE; the 2026-08-24 maspsx branch-fill DECLINE stands unchanged. The
+   owner directs zero escalated items; main grinds under standing policy."**
+   This is the owner directive carried on the queue item (`unpark_reason`), which
+   the driver's consistency audit flagged as unacknowledged by any session. It is
+   acknowledged and executed HERE.
+Therefore: re-filing the residual escalation is **AUTO-REJECT class** (re-asking a
+question the owner answered twice, most recently the same day as this session).
+No future session should file it. The frontier below replaces the s10-s32 text.
+
+## [s33] Re-decision trigger A measured: the census beneficiary set has SHRUNK TO ZERO, not regrown
+
+The DECLINE's first named re-decision trigger is "the census candidates regrowing."
+Measured directly this session:
+ - Geometry census re-run on the current asm/funcs (tmp/grind/main/s3/scan_retarget.py,
+   output tmp/grind/main/s33/census33.txt): **138 signature hits — numerically
+   identical to the s3/s4 census.** The raw geometry is unchanged.
+ - But the metric that made 12 of those sites *candidates* was the regfix/asmfix
+   label rules they carried. **regfix.txt and asmfix.txt no longer exist in the
+   tree** (rules-to-zero, 2026-08-25); the 12 rule-carrying functions are now
+   committed as byte-exact `INCLUDE_ASM`. The remedy's beneficiary set is
+   therefore **0 functions other than main itself** — down from ~5-6 at the time
+   of the DECLINE and 12 at the time of the s3/s4 census.
+ - Trigger A is definitively **NOT FIRED**; the measurement strengthens the
+   DECLINE rather than reopening it. Trigger B (ASPSX fill semantics becoming
+   documented) is external — no worker action can fire it.
+
+## [s33] No un-tried C lever exists; the s2 escape enumeration re-affirmed on the new chassis
+
+The s2 analytic kill (evidence.md "Why no pure-C spelling can close these 2 bytes",
+7 enumerated `redundant_insn` escape hatches plus the fill-order escapes, each
+DEAD and each byte-visible-or-forbidden-family) is unaffected by the migration:
+every escape it enumerates is a property of main's own instruction stream around
+0x7C68-0x7C90, and this session's whole-EXE diff proves that stream is byte-identical
+to target except at the two branch-target words. Escape 1 (a CODE_LABEL between
+jumps 363 and 391) remains the only one with any C spelling, and every such
+spelling is the forbidden dead-goto label-pad family. No new probe was fabricated.
+
+- [s33] CHASSIS MIGRATED: src/ings.c is now 628 lines with `INCLUDE_ASM("asm/funcs", main);` at line 447 and func_80016E60 INCLUDE_ASM at line 436. The ledger's standing tmp/grind/main/s14/apply.py raises StopIteration and is DEAD; a replacement is banked at memory/grind/main/apply.py. Only ONE signature widen remains (func_80016A8C, src/ings.c:306, 1-arg -> 3-arg); the ledger's 'widen BOTH callees' step is obsolete.
+
+- [s33] Sandbox on the new chassis with the candidate applied: score 0, target_insns 189, build_insns 189, scorable true, rules_dropped 0 (was 25 in s2-s32), cheat_asm_stripped 4 (was 68). The floor 0 survives the migration; the surrounding numbers quoted in every s2-s32 headline are stale and must not be re-quoted.
+
+- [s33] FIRST WHOLE-EXE RESIDUAL MEASUREMENT: full `wteng main build` -> sha1 4c958a00c1c2b97034f048451de9f3b155100df7 (oracle 62efab4f73f992798c43e8c730aa43baa10bb4fa). Byte-diff vs disc/SLUS_006.63 (both 606,208 bytes) = EXACTLY 2 differing bytes in 2 words, both in main: 0x80017494 build 1462FF79 / target 1462FF78; 0x800174B4 build 1440FF71 / target 1440FF70.
+
+- [s33] With this candidate applied, main is the ONLY residual in the entire project build - all 606,206 other bytes match. No prior session could state this: they measured on a tree still carrying 25 regfix rules and 68 cheat-asm insns in neighbouring ings.c functions.
+
+- [s33] The residual is CHASSIS-INDEPENDENT: it reproduced bit-for-bit at the same two words after rules-to-zero deleted regfix.txt/asmfix.txt entirely and after every neighbouring C body left the translation unit. It is intrinsic to main's own C -> cc1-reorg path, not a TU-context artifact.
+
+- [s33] OWNER RULINGS LOCATED (the s10-s32 ledger frontier was stale): decisions.md:10270/:10303, 2026-08-24 packet 3 - 'main - maspsx ASPSX-parity branch-target fill: DECLINED', re-decision triggers = census candidates regrowing, or ASPSX fill semantics becoming documented. decisions.md:14864, 2026-08-30 escalation-batch ruling 9 - 'returns to ACTIVE; the DECLINE stands unchanged; the owner directs zero escalated items; main grinds under standing policy.' Re-filing the residual escalation is AUTO-REJECT class.
+
+- [s33] RE-DECISION TRIGGER A MEASURED NOT FIRED: census scanner re-run returns 138 signature hits (identical to s3/s4), but regfix.txt and asmfix.txt no longer exist and the 12 formerly rule-carrying census functions are byte-exact INCLUDE_ASM, so the remedy's beneficiary set is now ZERO functions besides main (was ~5-6 at DECLINE, 12 at census). The measurement strengthens the DECLINE. Trigger B is external and unreachable from any worker action.
+
+- [s33] Both endgame-lock AND-gates remain measured FAILED: scan_hand_coded --single main = tier LOW 0/8 (banked s8), and the residual is pass-emitted branch targets rather than a C construct, so no coercion-family precedent question exists.
+
+- [s33] Dispatch cost on record: 25 consecutive grind sessions (s8-s32) whose entire content was reapply-candidate + re-prove sandbox 0 + re-read decisions.md. main is the queue top (distance 0, verdict C, 221 active remaining), so it is dispatched on every queue pass.

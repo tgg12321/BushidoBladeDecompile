@@ -14880,3 +14880,126 @@ Standards unchanged throughout: COMPLETED-C bar, cheats-by-any-spelling, the
 frozen family list, default-FAIL Judge, oracle SHA1. No ruling above lowers a
 standard; ruling 5 removes the last cheat-class constructs from main and
 ruling 4 is registry-bound to owner-landed enumerations only.
+
+## 2026-08-30 — main (src/ings.c) — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Filed by grind session 33 (escalation modality) under
+`.claude/rules/escalation-not-parked.md` (owner ruling 2026-08-24). This packet
+does **NOT** re-open the 2026-08-24 maspsx branch-fill DECLINE (this file, line
+10303) and does **NOT** ask for any standard to be lowered. The DECLINE is
+accepted as final by this session, and this session independently measured its
+first named re-decision trigger and found it **NOT fired**. The question below
+is a **queue-routing / dispatch-economics** question that neither the 2026-08-24
+packet nor the 2026-08-30 escalation-batch ruling 9 (line 14864) addressed.
+
+### What this session measured (all new; none of it re-derived)
+
+1. **The ledger's standing apply script was dead.** src/ings.c was migrated to
+   asm-until-matched: `main` is `INCLUDE_ASM("asm/funcs", main);` at line 447 and
+   `func_80016E60` is INCLUDE_ASM at line 436, so only `func_80016A8C` still needs
+   the 1-arg -> 3-arg widen. Sessions s14-s32 all ran `tmp/grind/main/s14/apply.py`,
+   which now raises `StopIteration`. Replacement banked at
+   `memory/grind/main/apply.py`.
+
+2. **Floor re-proven on the migrated chassis.** `sandbox main --disable all` with
+   the candidate applied: score **0**, 189/189 insns, scorable. The surrounding
+   numbers every prior headline quoted are now stale: `rules_dropped` is **0**
+   (was 25 — regfix.txt/asmfix.txt no longer exist after the 2026-08-25
+   rules-to-zero milestone) and `cheat_asm_stripped` is **4** (was 68).
+   Log: `tmp/grind/main/s33/sandbox33.log`.
+
+3. **First whole-EXE measurement of the residual, and it is chassis-independent.**
+   Full `wteng main build` with the candidate in place produced
+   `sha1 4c958a00c1c2b97034f048451de9f3b155100df7` (oracle
+   `62efab4f73f992798c43e8c730aa43baa10bb4fa`). Byte-diff of build/bb2.exe against
+   disc/SLUS_006.63 (both 606,208 bytes) is **exactly 2 bytes in exactly 2 words,
+   both inside main**:
+   - file 0x7C94, vaddr 0x80017494: build `1462FF79` vs target `1462FF78`
+   - file 0x7CB4, vaddr 0x800174B4: build `1440FF71` vs target `1440FF70`
+
+   Decoded, those are branch displacements of -135/-143 words (-> `.L8001727C`,
+   past the loop-head `li a1,0x1008`) where target has -136/-144 (-> `.L80017278`,
+   at it) — the exact reorg redundancy-thread-skip retarget pair proven in ledger
+   s2/s3. **Every other one of the 606,206 remaining bytes is identical**, so with
+   this candidate applied main is the ONLY residual in the entire project build,
+   and the residual survived rules-to-zero plus the removal of every neighbouring
+   C body from the translation unit. Any hypothesis that the residual was an
+   artifact of the old ings.c compilation context is measured dead.
+   Artifacts: `tmp/grind/main/s33/build33.log`, `tmp/grind/main/s33/bytediff.txt`.
+
+4. **Re-decision trigger A ("the census candidates regrowing") is NOT fired — it
+   moved the other way.** The s3/s4 ASPSX-retarget census scanner re-run on the
+   current `asm/funcs` returns **138 signature hits, numerically identical to the
+   original census** (`tmp/grind/main/s33/census33.txt`) — the raw geometry has not
+   changed. But the property that made 12 of those sites *candidates* was the
+   regfix/asmfix label rules they carried, and **regfix.txt and asmfix.txt no
+   longer exist in the tree**; those 12 functions are now byte-exact INCLUDE_ASM.
+   The remedy's beneficiary set is therefore **zero functions other than main
+   itself**, down from the ~5-6 cited in the DECLINE and the 12 at census time.
+   This measurement strengthens the DECLINE. Trigger B (ASPSX fill semantics
+   becoming documented) is external and cannot be fired by any worker action.
+
+5. **No un-tried C lever exists.** The s2 analytic kill enumerates all seven
+   `redundant_insn` escape hatches plus the fill-order escapes; each is either
+   byte-visible (and the whole-EXE diff above proves main's stream is byte-identical
+   to target everywhere except the two branch-target words, so none of them is
+   available) or is the forbidden dead-goto label-pad family. Both endgame-lock
+   AND-gates remain measured FAILED: `scan_hand_coded --single main` = tier **LOW,
+   0/8** (ledger s8), so the canonical-asm route is closed; and the residual is
+   branch TARGETS emitted by a pass, not a C construct, so no coercion-family
+   SOTN precedent question exists to satisfy the second gate.
+
+### The single decidable question
+
+**Should `main` continue to occupy the ACTIVE queue's top slot (distance 0,
+verdict C) while both of the DECLINE's named re-decision triggers are unfired, or
+should it hold at the back of the active list — still INCOMPLETE, still
+INCLUDE_ASM, still at the COMPLETED-C bar, auto-returning to normal priority the
+moment either named trigger fires?**
+
+This is a dispatch-ordering question only. It asks for no grant, no family
+sanction, no evidence-bar override, and no acceptance of debt; nothing about
+main's completion standard changes under either answer.
+
+### Evidence pointers
+
+- 2026-08-24 packet 3 DECLINE with its two re-decision triggers: this file, lines
+  10270 and 10303.
+- 2026-08-30 escalation-batch ruling 9 ("returns to ACTIVE; the DECLINE stands
+  unchanged; the owner directs zero escalated items; main grinds under standing
+  policy"): this file, line 14864. Carried verbatim as the queue item's
+  `unpark_reason`; this session is the first to acknowledge and execute it.
+- Mechanism proof (three legs — reorg.c source read, instrumented-cc1 DBRDBG
+  fill/redundancy trace, cc1psx counter-exhibit compiling THIS C to the target's
+  single-label form): `memory/grind/main/evidence.md` s2/s3 and the s11 synthesis
+  packet.
+- This session's measurements: `memory/grind/main/evidence.md` and
+  `hypotheses.md`, entries tagged `[s33]`.
+- Dispatch cost on record: 25 consecutive grind sessions (s8 through s32) whose
+  entire content was reapply-candidate + re-prove sandbox 0 + re-read this file.
+  main is the queue top, so it is dispatched on every queue pass.
+
+### Consequence of each answer
+
+- **"Keep main at the top" (status quo).** Nothing changes for the standards. The
+  driver dispatches main every queue pass; each dispatch can only reproduce the
+  standing procedure this session just re-ran, at roughly one no-op session per
+  pass, indefinitely, because the only two paths to completion are owner-declined
+  (maspsx parity fill) or gate-failed (canonical-asm, LOW 0/8). The 220 other
+  active items advance one slot slower per pass.
+- **"Hold main behind the other active items until a trigger fires."** main stays
+  INCOMPLETE and active with its full ledger intact; the single grind lane spends
+  its passes on the 220 items that still have live levers. Re-entry is mechanical
+  and needs no further ruling: either the census beneficiary set regrows above
+  zero (re-measurable by `tmp/grind/main/s3/scan_retarget.py` plus a rules-file
+  check, exactly as done in item 4 above) or ASPSX fill semantics become
+  documented. Both triggers are the owner's own words from the DECLINE.
+
+### Ledger correction filed with this packet
+
+Sessions s10 through s32 recorded, unanimously and incorrectly, that "the ONLY
+remaining action is an escalation-modality session filing the NEW OWNER-ESCALATION
+for the 2-byte branch-target residual." That escalation was filed and ruled on
+twice (2026-08-24 DECLINE, 2026-08-30 ruling 9). Re-filing it is auto-reject
+class, and `memory/grind/main/hypotheses.md` [s33] now records the frontier
+retirement so no future session repeats it.
