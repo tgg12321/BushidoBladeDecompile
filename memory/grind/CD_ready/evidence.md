@@ -1036,3 +1036,37 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s58] Exhaustion at disposition: 58 sessions, >=6 distinct modalities (structural, permuter, forensics, rederive, synthesis, escalation), 165+ hand-written forms, 116 banked rejected forms, 20 distinct spellings all converging on the same masked-4 / 178-insn attractor.
 
 - [s58] Disposition entry FILED THIS SESSION at docs/grind/decisions.md:12356 - '2026-08-25 - CD_ready (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'. src/system.c was restored to HEAD (git clean) after measurement.
+
+- [campaign-sweep 2026-08-30] FIRST actual solver-chain run on this function
+  (sched-tie endgame campaign, docs/superpowers/specs/2026-08-30-sched-tie-endgame-campaign.md;
+  no sched_solver/ra_solver artifact existed in this ledger before today).
+  Executes the solver-modality directive from the 2026-08-30 ruling-10
+  return-to-active. Artifacts: tmp/grind/CD_ready/s59_campaign/.
+  **TWIN CONFIRMATION:** CD_ready's divergent sched block is byte-for-byte the
+  same WINDOW and the same TWO-INTENT structure as CD_sync's (banked same day in
+  memory/grind/CD_sync/evidence.md) — the debug_printf argument block, 20 insns,
+  39 depth-1 vectors: (i) source-order flip (addu-statement uid120
+  `addu $2,$2,$21` ahead of sll uid106 `sll $4,$4,2`) and (ii) `cost 120 := 2`
+  (C-unreachable; the insn is an addu in target's own bytes). Even the register
+  substitution pattern matches the twin exactly (6x $v1->$a0 + 2x $a0->$v1).
+  A lever found on either twin transfers.
+  **Sched half (vT40 candidate, sandbox 4, 178/179):** perturb.py depth-1
+  exhaustive (1034 atoms): only pass2 block 3 diverges in-model; block 23
+  (5 insns, the region-3 reorg steal area) is OUTSIDE the sched model (post-
+  sched2, reorg.c) and was skipped — consistent with s51/s58's F1-family
+  exhaustion being the right tool for that half.
+  **RA half (vT32 pair-order chassis, sandbox 8):** the exchange is
+  GLOBAL-vs-LOCAL here: p87 (idx chain, global, $v1) <-> p97 (arg5 value,
+  local qty 2, $a0). inverse.py local --block 3 --goal qty2->$v1 --depth 2:
+  25 single-atom vectors, minimal size 1. Dominant family: DEMOTE qty 1
+  = pseudo 104 (birth 18 death 24 refs 4, currently $v1 — the L6=L6 birth-tie
+  competitor named in the twin's prose): refs_down 4->3/2, live_extend
+  die-later 24->25/26 or born-earlier 18->17 (span 7 loses the tie).
+  Printed caveat applies: local birth/span vectors are NECESSARY not
+  SUFFICIENT (alloc-time vs emission order, camera_set_zoom 2026-08-05) —
+  re-derive from a QTYDBG dump before believing any single spelling.
+  **Candidate-unprobed axis for the next session:** a byte-neutral one-insn
+  extension or ref-demotion of p104's variable specifically (the bank's wrap /
+  fresh-temp / mask-fold families all reweighted MULTIPLE qtys at once; the
+  single-qty p104 demotion was never isolated). Map p104 to its C variable
+  first (QTYDBG blk=3), then check the rejected/ bank before spelling.
