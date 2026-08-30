@@ -1,5 +1,10 @@
 # Naming addendum wave — apply plan (task #23)
 
+> **STATUS (anchored 2026-08-30):** Part A **APPLIED** as `ef3919bd` (2026-08-10;
+> census regen `d2188916`, prep merge `a942d896`) — do NOT re-run it. Part B was
+> re-verified at HEAD the same day (`6df437b6`, section below): 5/9 obsolete, 4/9
+> blocked on a grinder-quiet + queue-regen window, 2 owner-gated. Part C unapplied.
+
 Prepared 2026-08-07 in an isolated worktree (branch `worktree-agent-a6952f8c8c9d2f4eb`);
 **nothing here has touched main**. This document is the exact ordered procedure for the
 future MAIN-tree session that applies it. Evidence base:
