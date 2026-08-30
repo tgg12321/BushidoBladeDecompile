@@ -14772,3 +14772,111 @@ The tail sequence `tim += 2; p = tim;` is a self-increment of an otherwise-dead 
 ## 2026-08-27 14:27 — func_800485EC — final call — **PASS**
 
 Sole FAKE construct is `tim++; tim--;` (src/text1b.c:409-410) — the exact `i++; i--;` shape of the ESTABLISHED F6 cancellation-pair family, verified at .claude/rules/no-new-park-categories.md:370-382 (line 372 carries the literal exhibit shape); net-zero, so it is NOT the banned net-nonzero `+= 2 / -= 1` lineage. Decisive fact: it is distinct from this function's banned construct — I grepped the body and `tim += 2; p = tim;` is absent in every spelling (the only `p = tim;` at :378 is the clut-arm copy, and p's tail def is the natural `p = tim + 2;` layer-1 itself called natural); tim's net change is zero and the increment's value is consumed by nothing. Prerequisites verified independently: !FAKE annotation present with named GCC pass (cse.c fold_rtx/find_best_addr, flow.c deletion) and lever-exhaustion citing hypotheses.md s1-s2 (7/39/22/3/16 + the cse.c closed-form fold proof, rejected/tail-dup-full-pixel-parse.c banked). Remaining diff is ordinary period C: K&R definition + unprototyped extern (ABI-evidenced, evidence.md s1) and GetClut/GetTPage promoted-arg prototypes — the retyped decl at :6019 has zero call sites in the TU (grep-verified), so codegen-neutral. No asm, pins, volatiles, or rules in the body. Full evidence: memory/grind/func_800485EC/{hypotheses.md,evidence.md,self_vet.md}.
+
+## 2026-08-30 — OWNER RULINGS — escalation batch resolved (all 23 escalated items dispositioned)
+
+Owner (Trenton), 2026-08-30, on the full escalated set: "Ok i approve these
+all, go ahead and update everything to make sure we are up to date with no
+remaining escalated items." Rulings below follow the recommendations reviewed
+and approved in-session; every item returns to ACTIVE (or completes) — the
+escalated count goes to zero.
+
+**1. Local-alloc instrumentation — GRANTED (func_8002EA24, func_80034F88;
+sibling grant for func_80078654).** The operator/tooling lane may (a) extend
+the instrumented diagnostic cc1's local-alloc.c `block_alloc` hook to dump the
+suggested-register sets (`qty_phys_copy_sugg`/`qty_phys_sugg`, `qty_size`) with
+a matching `tools/ra_solver/local_extract.py` parse; (b) repair
+`inverse_compose.py`'s routing predicate so the text path is refused for any
+zero-rule function; (c) for func_80078654, build the env-gated
+flow_analysis→global_alloc deletion-window dump + matching ra_solver atom class
+(its option (a) — instrument-first). Diagnostic-only: the BUILD toolchain, its
+flags, and every gate are untouched (no-compiler-divergence unchanged). All
+three functions return to ACTIVE; sessions on them route via the solver
+modality once the instruments exist.
+
+**2. special_camera_get_rot_dir header prototype fix — GRANTED.** The stale
+1-arg CdRead prototype at include/code6cac.h:510 contradicts the callee's own
+byte-matched definition; correcting it at the canonical location is a
+source-honesty fix. `include/code6cac.h` is added to
+tools/grinder/scope_allow.txt for this function. Bytes already proven (sandbox
+0 at 72/72; full-build SHA1 == oracle). Closes this function and
+func_800372F4 through the normal full gates.
+
+**3. motion_Close prebuilt-object routing — GRANTED.** The 2026-08-24
+func_80083794 prebuilt crt0/libgcc routing extends to motion_Close: the s14
+provenance census shows exactly 2 of 1,435 asm functions carry the
+below-$sp+16 callee-save fingerprint — motion_Close and its granted
+byte-contiguous ctor/dtor twin. Routed COMPLETED-INLINE-ASM-CANONICAL
+(prebuilt object, never our-pipeline C); inline_asm_canonical.txt entry +
+borderline record land with this ruling; INCLUDE_ASM body is the accepted
+form, mirroring func_80083794.
+
+**4. Owner-cluster canonical-grant door — GRANTED, with the constraint as
+recommended.** `grant_canonical_asm` accepts a second evidence door:
+membership, BY NAME, in a LANDED owner cluster ruling, with the Judge
+verifying the packet's mechanical conditions. The door is registry-bound
+(tools/grinder/owner_cluster_grants.txt, operator-maintained, outside session
+scope) — agents can never nominate a cluster; only functions enumerated in a
+landed owner ruling qualify. First registry entries: the 2026-08-17 COP2
+addressing-preamble cluster (.claude/rules/cop2-addressing-preamble-cluster.md)
+members with proven-or-near floors: func_8002FC80, func_80032314,
+func_8002D320, func_8002D518, func_8002E838, func_800300B4, func_800325E0.
+func_8002FC80 returns to ACTIVE and integrates through the full normal gates
+using the door (bytes re-proven on main, layer-1, Judge, oracle SHA1 — no gate
+is waived; only the scanner-tier evidence requirement gains the
+owner-enumerated alternative).
+
+**5. func_800324D0 jtbl re-wiring — GRANTED.** The operator lane may wire
+asm/rodata/jtbl_800105A0.s back into the link (bb2.ld edit + full-build SHA1
+re-verify) so the function migrates to plain INCLUDE_ASM and its four
+`register asm("$N")` pins — the last cheat-class constructs on main — are
+deleted. This strictly raises the standard. Returns to ACTIVE; the migration
+executes as an operator/integration task gated by verify-oracle.
+
+**6a. func_80062020 provenance — CONDITIONAL.** Admissible ONLY under the
+existing proven-spelling-class-reconstruction rule (user policy 2026-06-10):
+a fresh Judge/cheat-reviewer must verify the byte-derived derivation meets ALL
+four criteria (mechanism-level proof the target bytes are unreachable from a
+uniform spelling; plain natural C; most-plausible variant, annotated;
+demonstrated last lever). Proof holds → closes COMPLETED-C with the
+annotation, function-specific, no family granted. Proof fails → the 2026-08-25
+Judge FAIL stands; fidelity-limited INCLUDE_ASM at floor 4. Returns to ACTIVE
+for that adjudication.
+
+**6b. func_80057CC8 — GRANTED for re-adjudication under F3.** The
+two-materialization construct (compound address expression written per call
+site) is the F3 compound-address-duplication family sanctioned 2026-08-18;
+the 2026-07-20 refusal predates that grant. Returns to ACTIVE; the banked
+score-0 forms integrate through a fresh layer-2 review under F3's
+prerequisites (value real + consumed at each site, annotation).
+
+**7. func_80072CD4 — Option A, bounded.** One calibration-only cc1/ASPSX
+configuration-fidelity probe (per cc1psx-calibration-only) is funded. EITHER
+outcome changes nothing about the frozen build toolchain or flags — a
+confirmed divergence is diagnostic information about the C shape to seek,
+never a license to touch the build. After the probe (or its disproof) the item
+continues ACTIVE under the solver modality at floor 4.
+
+**8. func_80060A68 — escalation SPENT.** The s10 packet's option (b) was
+already ruled and executed 2026-08-25 (last 2 asmfix rules retired,
+0bef2aa3). Returns to ACTIVE as an ordinary INCLUDE_ASM item at floor 2.
+
+**9. main — returns to ACTIVE; the 2026-08-24 maspsx branch-fill DECLINE
+stands unchanged.** The owner directs zero escalated items; main grinds under
+standing policy. The declined packet's re-decision triggers (census candidate
+regrowth; ASPSX fill semantics documented) remain on record.
+
+**10. The 11 no-question items return to ACTIVE (queue state corrected).**
+func_800645B0, CD_sync, CD_ready, CD_datasync, func_80045294, func_80017848,
+func_80033550, func_8001F938, func_80045878, func_80022F34, get_alarm — each
+item's own latest ledger entry states nothing pends the owner (completed
+solver/exhaustion dispositions with named re-open triggers, or driver
+auto-filed backstop templates containing no question). Per
+escalation-not-parked these are ACTIVE-with-modality-change; the queue lagged
+the ledger. get_alarm's flagged tooling gap (`inverse_compose.py classify`
+lacking a --target-object escape) is covered by ruling 1's repair grant.
+
+Standards unchanged throughout: COMPLETED-C bar, cheats-by-any-spelling, the
+frozen family list, default-FAIL Judge, oracle SHA1. No ruling above lowers a
+standard; ruling 5 removes the last cheat-class constructs from main and
+ruling 4 is registry-bound to owner-landed enumerations only.

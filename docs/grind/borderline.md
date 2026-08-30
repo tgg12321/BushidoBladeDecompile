@@ -291,3 +291,13 @@ disposition taken: REFUSED under the current frozen policy (endgame-lock standin
 category: integration-handoff
 evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-08-26 — func_80061250 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
 disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: func_80061250 src/text1b.c src/text1b_b.c undefined_syms_auto.txt; cleared 1 superseded ban(s); function stays ACTIVE.
+
+## 2026-08-30 — escalation batch — owner rulings landed (all packets dispositioned)
+category: policy-question
+evidence: docs/grind/decisions.md '2026-08-30 — OWNER RULINGS — escalation batch resolved' (10 rulings covering all 23 escalated items; recommendations reviewed and approved verbatim in-session)
+disposition taken: rulings recorded before code (ruling-record-lands-before-code); all items return to ACTIVE (motion_Close routes COMPLETED-INLINE-ASM-CANONICAL per ruling 3); owner-cluster canonical-grant door added registry-bound (ruling 4); scope grant include/code6cac.h for special_camera_get_rot_dir (ruling 2); instrumentation grants diagnostic-only (ruling 1); no standard lowered.
+
+## 2026-08-30 — motion_Close — canonical-asm-grant
+category: canonical-asm-grant
+evidence: owner ruling 2026-08-30 (decisions.md, ruling 3) extending the 2026-08-24 func_80083794 prebuilt-object routing; s14 provenance census — 2/1,435 asm functions carry the below-$sp+16 callee-save fingerprint (motion_Close + granted twin, byte-contiguous crt0/libgcc ctor/dtor pair)
+disposition taken: inline_asm_canonical.txt entry written (INCLUDE_ASM body is the accepted form, mirroring func_80083794); queue done after layer-2 review; COMPLETED-INLINE-ASM-CANONICAL.
