@@ -15625,3 +15625,102 @@ motion_SetMotion (2026-07-19 FAMILY REFUSED), saTan0Init / cpu_side_move_dir_4 /
 cpu_check_tubazeri_2 / damage_DebugDisp / func_8007DC9C (2026-07-22), func_800645B0 (2026-08-30
 re-affirmation after ruling 10, same shape as this entry), and func_80033550's own 2026-07-22
 (decisions.md:1292) and 2026-08-20 (decisions.md:8223) rulings.
+
+## 2026-08-30 - CD_ready (src/system.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (both endgame gates re-measured failing; the last solver-flagged unprobed axis killed this session)
+
+**Function.** `CD_ready` @ `0x80081030` in `src/system.c` (currently
+`INCLUDE_ASM("asm/funcs", CD_ready);`). Formerly ledgered under the splat-era name
+`marionation_Exec`; identity proven as PsyQ 3.5 libcd `CD_ready(int mode, u_char *result)` -
+179/179-word masked-identical against the library object, name string `"CD_ready"` at
+`0x80016248` (`memory/closer/libcd-identity.md:7-8`, `memory/closer/libcd-groundtruth.md:40-52`).
+Ledger: `memory/grind/CD_ready/` (59 sessions). Driver-assigned modality this session:
+`escalation`.
+
+**Why this entry exists on top of the 2026-08-25 one (`docs/grind/decisions.md:12356`).**
+The owner's 2026-08-30 batch ruling (ruling 10, escalation-batch entry) returned CD_ready to
+active with a modality change rather than accepting the 2026-08-25 disposition. That directive
+has now been executed in full: the 2026-08-30 sched-tie endgame campaign
+(`docs/superpowers/specs/2026-08-30-sched-tie-endgame-campaign.md`) ran the solver chain on this
+function for the first time and left exactly ONE candidate-unprobed axis; this session spelled
+that axis in C and measured it. It is dead. Nothing that the return-to-active was issued to test
+remains untested.
+
+**Live floor (re-measured this session, third independent confirmation on the post-migration,
+post-naming-wave chassis).** `memory/grind/CD_ready/candidate.c` (vT40) spliced into
+`src/system.c` and scored with `& tools/wteng.ps1 main sandbox CD_ready --disable all`:
+**score 4, build_insns 178, target_insns 179, rules_dropped 0**. `src/system.c` restored to HEAD
+(tree clean) after all measurement. Harness + logs: `tmp/grind/CD_ready/s59/splice.py`,
+`sweep.ps1`, `sweep1.txt`, `sweep2.txt`.
+
+**The axis killed this session.** `tools/ra_solver/inverse.py local --block 3` (campaign artifact
+`tmp/grind/CD_ready/s59_campaign/inverse_local_goal_d2.txt`) returned 25 single-atom vectors for
+the goal `qty 2: $a0 -> $v1`, dominated by "demote qty 1 (= pseudo 104)" - refs 4->3/4->2, or a
+born-earlier/dies-later live extension. p104 is the `t0` address web in the `do_timeout`
+printf-argument block. The ledger's QTYDBG reading (`memory/grind/CD_ready/evidence.md:31-36`)
+already pins the arithmetic: local-alloc.c `qty_compare` priority = floor_log2(refs)*refs*size/life;
+addr-temp qty 102 {r4 l4} = 8.0 seats `$v0` correctly, while t0-web qty 104 {r4 l6} = 5.33 and
+arg5val qty 97 {r4 l6} = 5.33 are an EXACT TIE broken by qty birth order, which is why the
+order-correct (arg5-first / "vT32") chassis emits the target's insn order but trades the two seats.
+Ten variants measured across both chassis. vT40 chassis: base **4** (control), t0-refs-3
+mul-in-add **5**, t0-refs-3 mul-in-load **11**, t0-refs-2 fully folded **11**. vT32 chassis: base
+**9**, t0-load hoisted (born-earlier) **8**, refs-3 mul-in-add **9**, refs-3 mul-in-load **11**,
+refs-2 folded **11**, refs-2 folded pp-first **11**, load-hoisted+refs-3 **8**. Every build stayed
+at 178 insns - pure seat/order relandscaping, no insn-count effect. **Nothing reached below 4, and
+the vT32 chassis stayed at its historical floor of 8.** Mechanism: folding the `t0` arithmetic to
+demote qty 104 also collapses the neighbouring addr-temp qty 102 - the tight {r4 l4} = 8.0 temp
+that currently seats `$v0` correctly - so the whole three-qty cascade re-seats and costs more than
+the tie it wins; the mul-in-load spelling is uniformly worst (11 on BOTH chassis), pinning the
+cause to the load and multiply needing to stay in separate statements. This is a tenth
+confirmation of the ra_solver local-mode printed caveat (camera_set_zoom 2026-08-05): single-qty
+demotion vectors are NECESSARY, not SUFFICIENT. Forms banked as
+`memory/grind/CD_ready/rejected/s59-*` (9 files; bank now 125).
+
+**Gate (a) - canonical-asm - FAILS (re-measured this session).**
+`python3 tools/scan_hand_coded.py --single CD_ready` -> **tier=LOW, score=2/8** (179 insns). Only
+S4 (4 loads in an 8-insn window @ insn 51) and S5 (1 approx-sibling `CD_sync`, jaccard 0.64) fire;
+S1 (multu pacing), S2 (empty branch) and S6 (BIOS jumptable) - the only STRONG-tier carriers - are
+all absent, as are S3/S7/S8. Artifact `tmp/grind/CD_ready/s59/scan_hand_coded.txt`. The claim also
+fails independently on provenance: this body is identified PsyQ 3.5 libcd `CD_ready`, i.e. compiled
+Sony C, not hand-written assembly.
+
+**Gate (b) - in-hand SOTN-master precedent - FAILS by construction.** The two residuals are (1) a
+`sched.c` sched2 T-14 tie at insns 56/57 between two equal-`INSN_PRIORITY` `ashlsi3` insns broken by
+LUID i.e. source emission order, coupled to the `local-alloc.c`/`global.c` 5.33-vs-5.33 seat trade
+above, and (2) a `reorg.c` `fill_simple_delay_slots` steal on the check2 `beqz` at insn 149.
+Neither has any C-level spelling, so there is no closing CONSTRUCT for which a precedent could be
+cited - 20 distinct masked-4 spellings across 7+ structural axes, the 140-ordering sweep, the
+9-variant topology sweep and all four `qty_compare` axes all land on the same masked-4/178
+attractor. The constructs that HOLD the floor at 4 (FAKE-annotated `do { } while (0)` wraps,
+staged-value reuse, constant holders, a pointer alias) are already inside sanctioned families and
+are not the blocker.
+
+**No decision packet filed (owner ruling 2026-08-24, auto-reject class).** The only questions this
+residual could pose - "sanction a new family for a LUID tie that has no C spelling" or "grant
+canonical-asm despite a LOW scan tier" - are standard-lowering and PRE-DECIDED NO. Provenance is
+settled (PsyQ libcd `CD_ready`), routing is settled (C, not canonical-asm), and no
+fidelity/routing/provenance question remains open. This is therefore the standing-ruling
+application, not a new ask, and nothing waits on the owner.
+
+**Not an integration handoff.** Nothing is bytes-proven and nothing is blocked by a surface this
+session may not touch: `src/system.c` carries `INCLUDE_ASM("asm/funcs", CD_ready);` with 0
+regfix/asmfix rules (`rules_dropped: 0` in every sandbox run this session). The best honest form is
+simply 4 masked points away.
+
+**Exhaustion.** 59 sessions; >=7 distinct modalities (structural, permuter, forensics, rederive,
+synthesis, escalation, solver); 175+ hand-written forms; 125 banked rejected forms; 20 distinct
+spellings converging on the same masked-4/178 attractor; ~50+ CPU-hr of permuter across 13 basins
+with zero novel closures; plus the full 2026-08-30 solver-chain run (perturb.py depth-1 exhaustive
+over 1034 atoms; inverse.py local depth-2 over 118 atoms), whose single unprobed vector is the one
+killed above.
+
+**Disposition.** REFUSED / OWNER-ACCEPTED INCOMPLETE per the 2026-07-27 standing ruling.
+`src/system.c` keeps `INCLUDE_ASM("asm/funcs", CD_ready);` (0 rules, no cheat-asm - the honest
+committed state). The annotated masked-4 form stays in `memory/grind/CD_ready/candidate.c` for any
+future re-activation. **Re-activation trigger:** a toolchain-model advance that can search the
+JOINT sched2-LUID x local-alloc-birth space. The two residuals are a coupled fixed point - every C
+change that fixes the order breaks the seats and vice versa, proven across 59 sessions - so no
+single-axis search (which is all the current solver suite offers) can close it. Do NOT re-run the
+vT32/vT40 chassis sweep, the t0-web refs/fold axis, the F1 delay-slot-fill family, the 140-ordering
+sweep, the 9-variant topology sweep, the four `qty_compare` axes, or another permuter basin - all
+closed negative with measurements recorded in `memory/grind/CD_ready/hypotheses.md` and the 125
+forms under `memory/grind/CD_ready/rejected/`.

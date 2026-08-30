@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 58,
+ "session_count": 59,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -357,18 +357,19 @@
    "floor": 4,
    "modality": "escalation",
    "headline": "s58 disposition: floor 4 re-measured live on the post-migration chassis (178/179, 0 rules); last F1 frontier lever (honest call at the check2 fill site) KILLED at masked 14/181 - reorg.c takes any CAL"
+  },
+  {
+   "session": 59,
+   "floor": 4,
+   "modality": "escalation",
+   "headline": "s59 disposition: the 2026-08-30 solver campaign's last candidate-unprobed axis (single-qty demotion of pseudo 104 = the t0 address web) spelled in C and KILLED across 10 variants on both chassis (noth"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A pure-C lever flips the sched2 LUID order of the ashlsi3 pair at insns 56/57 WITHOUT paying the global.c qty_compare 5.33-vs-5.33 seat trade.",
-   "mechanism": "The pair-swap is a sched.c T-14 tie between two insns of equal INSN_PRIORITY (mips.md has no arith function-unit, so insn_cost=1 forces the same rank class), decided by LUID i.e. source emission order. Every reordering measured across 58 sessions pays the seat trade instead.",
-   "next_probe": "Only worth re-opening if the toolchain model changes (e.g. a solver-suite advance that can search the joint LUID x allocno-birth space directly). 140-ordering sweep, 9-variant topology sweep and all four qty_compare axes are closed negative - do not re-run them."
-  },
-  {
-   "hypothesis": "An honest NON-CALL_INSN statement exists that is schedulable into the check2 beqz delay slot at region-3.",
-   "mechanism": "reorg.c pass-1 fill_simple_delay_slots steals the slot because a1 is caller-saved and the target label's live-set holds only callee-saved qtys. Volatile-load fills are semantic lies (s51), CALL_INSN fills are consumed as the fill itself (s52, s58), label-alive routes cost +1 insn, alias-merge routes bottom out at masked 10.",
-   "next_probe": "No shape is currently known that is simultaneously honest, non-call, and live at the fill site. Any future attempt must name the shape BEFORE measuring - the enumerated space is closed."
+   "hypothesis": "A toolchain-model advance that searches the JOINT sched2-LUID x local-alloc-birth space finds a C form that fixes the insn order WITHOUT paying the qty_compare seat trade.",
+   "mechanism": "The two residuals are a coupled fixed point: statement order controls BOTH the sched2 T-14 LUID tie AND the qty lives feeding local-alloc's 5.33-vs-5.33 comparison. vT40 (t0 first) gets the seats right and the order wrong (4); vT32 (arg5 first) gets the order right and the seats wrong (8). Every single-axis search - which is all the current solver suite offers - fixes one and breaks the other, now confirmed 59 sessions running and re-confirmed on 10 fresh variants this session.",
+   "next_probe": "Do NOT re-open on the existing tooling. Re-activate only if ra_solver/sched_solver gain a joint search. Explicitly closed negative and not to be re-run: the vT32/vT40 chassis sweep, the t0-web refs/fold axis (this session), the F1 delay-slot-fill family (s51/s52/s58), the 140-ordering sweep, the 9-variant topology sweep, the four qty_compare axes, and further permuter basins."
   }
  ],
  "judge_constraints": [

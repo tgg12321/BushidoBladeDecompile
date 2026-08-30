@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "CD_ready",
-      "file": "system",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:12356 - 2026-08-25 - CD_ready (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked"
-    },
-    {
       "func": "func_80062020",
       "file": "text1b",
       "distance": 4,
@@ -1953,17 +1943,28 @@
       "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
       "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:12231 \u2014 ## 2026-08-25 - func_80033550 (src/code6cac_b.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (owner directive 2026-08-24 executed and measured)",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15517 \u2014 2026-08-30 \u2014 func_80033550 (src/code6cac_b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
+    },
+    {
+      "func": "CD_ready",
+      "file": "system",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:12356 - 2026-08-25 - CD_ready (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
+      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15629 - '## 2026-08-30 - CD_ready (src/system.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     }
   ],
   "counts": {
     "total": 221,
-    "active": 213,
+    "active": 212,
     "by_status": {
-      "active": 213,
-      "escalated": 8
+      "active": 212,
+      "escalated": 9
     },
     "by_verdict": {
-      "C": 178,
+      "C": 177,
       "ASM-PARTIAL": 35
     }
   }

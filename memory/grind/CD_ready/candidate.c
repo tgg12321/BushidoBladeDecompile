@@ -11,6 +11,12 @@
  * sys_GetVblankCount->CheckCallback, func_80080828->getintr. All needed externs are
  * already present at src/system.c:353-375. Harness: tmp/grind/CD_ready/s58/splice.py.
  * Re-measured on the post-migration chassis s58: masked 4, build 178, target 179. */
+/* s59 (2026-08-30): re-measured AGAIN on the current HEAD chassis - masked 4, build 178,
+ * target 179, 0 rules. Still the best known honest form after 59 sessions. The 2026-08-30
+ * solver campaign's last unprobed axis (single-qty demotion of pseudo 104 = the `t0` address
+ * web, refs 4->3/4->2 or born-earlier) was spelled and measured this session: 10 variants,
+ * nothing below 4 on either chassis (vT40 base 4; vT32/order-correct base 9, best 8).
+ * Dispositioned REFUSED / OWNER-ACCEPTED INCOMPLETE - docs/grind/decisions.md:15629. */
 s32 marionation_Exec(s32 a0, u8 *a1)
 {
   s32 v0;
