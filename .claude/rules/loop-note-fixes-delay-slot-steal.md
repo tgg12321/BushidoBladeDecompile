@@ -2,12 +2,18 @@
 name: loop-note-fixes-delay-slot-steal
 paths: [".claude/rules/loop-note-fixes-delay-slot-steal.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "A `__asm__ volatile(\"\" ::: \"memory\")` barrier that only stops a delay-slot steal retires by writing the polling loop as a real while/do loop (front-end NOTE_INSN_LOOP_BEG flips reorg's branch prediction)."
 metadata:
   type: reference
 ---
 
 # A scheduling barrier that only blocks a delay-slot STEAL → write the loop as a real `while`/`do`
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

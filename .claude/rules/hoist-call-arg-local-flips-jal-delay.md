@@ -1,11 +1,17 @@
 ---
 name: hoist-call-arg-local-flips-jal-delay
 description: Hoisting a call's late-loaded global arg into a local declared FIRST in a block before the last pre-call store flips cc1's jal delay-slot fill choice — retires fill_delay + delete-nop + reorder regfix clusters around the call.
-paths: ["regfix.txt"]
+paths: []
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 ---
 
 # Hoist a call's late-loaded arg into a local declared FIRST in a block to flip cc1's jal delay-slot fill
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

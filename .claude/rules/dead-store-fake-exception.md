@@ -2,12 +2,18 @@
 name: dead-store-fake-exception
 paths: [".claude/rules/dead-store-fake-exception.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "NARROW SANCTIONED EXCEPTION (owner ruling 2026-07-01): a dead store / self-assignment to a LOCAL or PARAMETER, annotated `/* FAKE: ... */`, is allowed as a LAST-RESORT codegen lever after documented lever-exhaustion. SOTN ships `dest = val1; // fake`, `idxSub = idxSub;`; oot ships `rtile = rtile; // Fake match?`. Un-annotated dead stores remain forbidden; register pins remain forbidden."
 metadata:
   type: rule
 ---
 
 # Dead stores / self-assignments — the FAKE-annotated exception (Lever D unsealed, narrowly)
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 **Owner ruling 2026-07-01** (evidence base:
 [[sotn-family-research-2026-07-01]]): a dead store or self-assignment

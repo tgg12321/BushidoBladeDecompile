@@ -3,9 +3,15 @@ name: exit-path-return-set-cse-join
 description: Set the return value in EACH exit path (not at the shared label) so cse can't canonicalize the join's op back to the callee-save — the join op then reads $v0 and cross-jump re-merges the copies
 paths: [".claude/rules/exit-path-return-set-cse-join.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 ---
 
 # Set the return value in EACH exit path (not at the shared label) so the join's op reads $v0
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

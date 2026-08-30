@@ -36,7 +36,7 @@ The "cheats by any spelling" policy (codified in
 2026-06-02 after the techniques audit found two NEW rules I had added
 that very day were themselves cheats): the catalog is OPEN. Forbidden
 families include — but are not limited to — register-asm pins,
-hardcoded-`$N` `__asm__` injection, lost-codegen-insert regfix, scheduling
+hardcoded-`$N` `__asm__` injection, scheduling
 barriers, INLINE_MOVE_ALIASING, volatile-coercion (alias-rename / cast /
 plain extern / `(void)volatile` discard), unused-local-array frame
 coercion (with `&`, with `(void)`, with volatile-typed scalar),

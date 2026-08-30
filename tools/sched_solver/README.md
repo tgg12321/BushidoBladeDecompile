@@ -59,7 +59,7 @@ every `BLOCKAGE` hook observation: **15497/15497 exact**
 | `extract.py <stem>` | run cpp + the instrumented `tools/gcc-2.7.2/cc1` (`BB2_SCHED_DEBUG=1`, `-da`), parse the SCHEDDBG stream into `tmp/sched_solver_work/<stem>.sched.json`. Byte-parity-checks instrumented cc1 vs `build/cc1` on the TU first and records the verdict |
 | `simulate.py <model.json>` | replay `schedule_block` per basic block; score order-exact / clock-exact |
 | `validate.py [stems...]` | batch ground-truth table (above). `--blockage` runs the independent machine-model check; `--funcs a,b` details named functions |
-| `mkasm.sh <stem>` | emit the three aligned asm texts the goal mapper needs: `<stem>.cc1.s` (raw cc1), `.hon.s` (+ prologue_fix\|maspsx\|multu_pad — OURS, honest), `.tgt.s` (+ regfix\|asmfix — TARGET bytes) into `tmp/sched_map/` |
+| `mkasm.sh <stem>` | emit the aligned asm texts the goal mapper needs: `<stem>.cc1.s` (raw cc1), `.hon.s` (+ prologue_fix\|maspsx\|multu_pad — OURS, honest), `.tgt.s` (same stream; for INCLUDE_ASM functions pin the target from `asm/funcs/<func>.s` via `--target`) into `tmp/sched_map/` |
 | `goalmap.py <root> <stem> <func>` | express TARGET's instruction order in our RTL insn UIDs; `--model` prints per-block goal-vs-ours, `--target` pins the target stream |
 | `perturb.py <model.json>` | the search. `--goal-from-target <stem>` derives goals automatically; `--atoms`, `--target`, `--self-check`, `--verify-resort` |
 
@@ -238,10 +238,10 @@ binary itself, per block, for every block of a function at once. The chain:
 target .s  --difflib+move-pairing-->  honest .s  --difflib-->  cc1 .s  --index-->  .dbr UIDs
 ```
 
-* **`.tgt.s` really is target.** The tree builds SHA1-identical to the original
-  EXE, so running the honest stream through `regfix | regfix_stage2 | asmfix`
-  produces target's byte order *as text*, at the same granularity as our own
-  output. That removes the objdump/macro-expansion hop entirely — no collapsing
+* **`.tgt.s` really is target** only for functions whose committed C already
+  byte-matches (the tree builds SHA1-identical to the original EXE). For
+  INCLUDE_ASM functions, pin the target stream from `asm/funcs/<func>.s`
+  (`--target`). That removes the objdump/macro-expansion hop entirely — no collapsing
   of `lui`/`addiu` pairs, no nop bookkeeping.
 * **`.dbr` index-aligns 1:1 with the cc1 `.s` body.** The post-reorg RTL dump
   lists exactly the body instructions in emission order; the epilogue is a
@@ -269,8 +269,8 @@ target .s  --difflib+move-pairing-->  honest .s  --difflib-->  cc1 .s  --index--
   distance from 8 to 999 changed nothing.)
 
 Caveat: regenerate `mkasm.sh` output whenever `src/` changes, and treat
-`.tgt.s` as valid **only at HEAD** — regfix rules are calibrated to HEAD's
-instruction indices, so after a source edit the "target" stream is fiction.
+`.tgt.s` as valid **only at HEAD** — after a source edit the derived stream
+no longer reflects the target.
 
 ### `ready0` was not being re-sorted — fixed 2026-08-05
 
@@ -330,9 +330,8 @@ Always compile the TU and measure. The model proposes, the compiler disposes.
 
 ### Iterating: PIN THE TARGET (`--target`)
 
-regfix rules are indexed to HEAD's instruction positions, so regenerating
-`<stem>.tgt.s` from an EDITED source produces fiction — and it looks like
-progress, because the rules land on whatever now sits at those indices. Capture
+Regenerating `<stem>.tgt.s` from an EDITED source produces fiction — it no
+longer reflects the target's byte order. Capture
 target once from clean HEAD:
 
 ```

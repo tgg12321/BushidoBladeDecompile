@@ -2,6 +2,7 @@
 name: maspsx-noreorder-stripping
 paths: ["tools/maspsx/**"]
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 description: "Maspsx silently strips TAB-form `.set noreorder`/`noat`/`reorder`/`at` directives from file-scope `__asm__()` blocks. SPACE-form duplicates are required to reach `as`. Without them the block's own delay slots get nop-filled AND subsequent functions inherit the wrong reorder mode — symptom is cascade drift in later functions in the same .c file after a newly-added canonical-asm block."
 metadata:
   type: reference
@@ -9,6 +10,11 @@ metadata:
 
 
 # maspsx silently strips TAB-form `.set` directives
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## The rule
 

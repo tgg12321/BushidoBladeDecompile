@@ -2,6 +2,7 @@
 name: inline-asm-injection
 paths: [".claude/rules/inline-asm-injection.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "`__asm__ volatile(\\"addu $X, $Y, $0\\")` with hardcoded $N and no %N is the lost-codegen regfix cheat moved into C — same bytes, no GCC tracking. Score-inert under the sandbox; the audit flags it."
 metadata:
   type: audit
@@ -9,6 +10,11 @@ metadata:
 
 
 ## The trap
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 When retiring a lost_codegen regfix cheat like:
 

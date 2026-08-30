@@ -8,6 +8,11 @@ metadata:
 
 # Verify file-line claims against MAIN, not worktree-stale state
 
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
+
 > **Codified 2026-06-03** after a round-3 worker confidently reported a
 > CBB0 meta-blocker (CE0C splice rules referencing absolute labels
 > `.L152/.L154/.L158/.L174` at `regfix.txt:4208/4210/4212`) that turned

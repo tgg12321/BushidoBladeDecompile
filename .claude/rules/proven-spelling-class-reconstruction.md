@@ -1,11 +1,17 @@
 ---
 name: proven-spelling-class-reconstruction
 description: Narrow same-bytes respelling exception — sanctioned only with mechanism-level proof the original source used a different spelling class, plain-C form, most natural variant, last lever (user policy 2026-06-10)
-paths: ["regfix.txt", "asmfix.txt"]
+paths: []
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 ---
 
 # Proven-spelling-class reconstruction — the narrow same-bytes respelling exception
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 **User policy 2026-06-10 (InitHiraRmd_80041AC8 escalation).** A same-bytes
 respelling — a C form that emits byte-identical instructions to the current

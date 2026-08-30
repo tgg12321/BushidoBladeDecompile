@@ -19,8 +19,7 @@ This directory holds the contributor-facing documentation for the *Bushido Blade
 
 | File | When to read it |
 |---|---|
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | You want to understand the build pipeline, the PS1 memory map, the splat split, what regfix/asmfix actually do, or why the project has so many post-passes. |
-| [`TOOLS.md`](TOOLS.md) | You need to find a standalone Python tool for a specific task. Catalog of ~100 Python tools grouped by workflow phase (plus the retired `dc.sh` subcommand catalog, kept for archaeology). |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | You want to understand the build pipeline, the PS1 memory map, the splat split, and the helper post-passes. |
 | [`MATCHING.md`](MATCHING.md) | You're stuck on matching a function. Symptom-indexed playbook: penalty-profile routing, C-side techniques, regfix syntax and recipes, named recipes (LICM unhoist, call-loop, early-exit alias, GTE 3x3, etc.), common gotchas, dead ends, decision trees. |
 | [`GLOSSARY.md`](GLOSSARY.md) | You encounter an unfamiliar term (PsyQ, MIPS, decomp jargon, or BB2-specific Japanese romanizations from the Marionation engine). |
 | [`STATUS.md`](STATUS.md) | You want function counts and health indicators (a hand-refreshed, dated snapshot). For the live worklist run `& tools/wteng.ps1 main queue status`. |
@@ -51,7 +50,6 @@ This directory holds the contributor-facing documentation for the *Bushido Blade
 2. [`../BUILD.md`](../BUILD.md) — get to `OK: bb2 matches!`.
 3. [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — work-queue model + per-function lifecycle.
 4. [`ARCHITECTURE.md`](ARCHITECTURE.md) — what the build is actually doing.
-5. [`TOOLS.md`](TOOLS.md) — skim to know what exists; reference later.
 6. [`MATCHING.md`](MATCHING.md) — read in depth when you start your first match.
 7. [`GLOSSARY.md`](GLOSSARY.md) — keep open in a tab.
 

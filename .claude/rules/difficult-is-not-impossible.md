@@ -1,10 +1,15 @@
 ---
 name: difficult-is-not-impossible
 description: A hard register-allocation/scheduling diff is NEVER a "fork wall" or "impossible" — the fork provably matches the original, so matching C exists. Difficult is not an excuse to give up.
-paths: ["src/*.c", "regfix.txt", "asmfix.txt"]
+paths: ["src/*.c"]
 ---
 
 # "Difficult" ≠ "impossible." A stubborn diff is unfinished work, not a wall.
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## The rule
 

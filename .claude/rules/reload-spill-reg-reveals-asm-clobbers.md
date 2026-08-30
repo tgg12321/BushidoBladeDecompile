@@ -3,11 +3,17 @@ name: reload-spill-reg-reveals-asm-clobbers
 description: "A reload-emitted scratch register at an unexpected regno (target `mfhi $t8` where our build emits `mfhi $13`) is EVIDENCE, not a diff: reload1.c puts every explicitly-mentioned hard reg into bad_spill_regs and then picks spill regs ascending among unused call-clobbered regs. The skipped regs prove the original TU mentioned them at asm level — reconstruct them as an inline-asm clobber list, never as a regfix subst."
 paths: [".claude/rules/reload-spill-reg-reveals-asm-clobbers.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 metadata:
   type: reference
 ---
 
 # The reload spill register is a fingerprint of the original source's asm clobbers
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

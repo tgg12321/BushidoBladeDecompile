@@ -3,9 +3,15 @@ name: defeat-licm-hoist-var-reuse
 description: When GCC hoists a loop-invariant (e.g. limit-1) that the target recomputes INLINE, reuse one C variable for a used loop-variant AND the invariant — multi-set pseudo isn't a loop.c movable, so it's not hoisted. Pure C, no asm.
 paths: [".claude/rules/defeat-licm-hoist-var-reuse.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 ---
 
 # Defeat loop.c invariant-hoisting in pure C by reusing a scratch variable
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

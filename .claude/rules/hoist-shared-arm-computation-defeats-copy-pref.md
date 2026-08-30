@@ -6,6 +6,11 @@ paths: [".claude/rules/hoist-shared-arm-computation-defeats-copy-pref.md"]
 
 # Hoist a shared computation out of two branches — single-pseudo RA breaks copy-preference propagation
 
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
+
 ## Symptom
 
 An `if/else` pair computes the SAME expression in each branch, feeding a common

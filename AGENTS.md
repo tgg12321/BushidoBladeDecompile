@@ -123,9 +123,8 @@ mipsel-linux-gnu-cpp | cc1 (GCC 2.7.2) | maspsx (--aspsx-version=2.34) | mipsel-
 Since 2026-08-04 cc1 runs with `-mel` in `CC_FLAGS`: the prebuilt cc1's
 `mips-mips-gnu` target triple defaults to BIG-endian, and `-mel` flips the
 runtime `BYTES_BIG_ENDIAN` to match the little-endian PS1 (spill-slot layout,
-bitfield direction, lwl/lwr offsets). The former `fix_lwl` pipeline stage is
-retired (empty `FIX_LWL_FILES`); do not re-enable it and do not remove `-mel`
-— both are load-bearing for the oracle match.
+bitfield direction, lwl/lwr offsets). `-mel` is load-bearing for the oracle
+match — do not remove it.
 
 All objects linked with `mipsel-linux-gnu-ld`, stripped to binary via `objcopy`, then `make_psexe.py` prepends the original 0x800-byte PS-EXE header. Final SHA1 compared against original.
 
@@ -143,7 +142,7 @@ Required local deps (gitignored):
 
 ## File-edit conventions (cross-tool)
 
-- **Build files** (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, the project `*.txt` files like `regfix.txt`, `asmfix.txt`, `named_syms.txt`, `sdata*.txt`, `expand_lb_funcs.txt`) **MUST be saved with Unix LF line endings**. Editing from Windows-side editors that default to CRLF silently breaks the GNU toolchain. Edit via WSL or configure your editor to enforce LF on these paths.
+- **Build files** (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, the project `*.txt` files like `named_syms.txt`, `sdata*.txt`, `expand_lb_funcs.txt`) **MUST be saved with Unix LF line endings**. Editing from Windows-side editors that default to CRLF silently breaks the GNU toolchain. Edit via WSL or configure your editor to enforce LF on these paths.
 - The `tmp/` directory is for scratch — fully gitignored. (An old carve-out for `tmp/batch_attempt.csv` described the retired dc.sh-era queue; the live worklist is `engine/queue.json`.)
 - `permuter/` directories are gitignored (per-function permuter workspaces).
 - `auto_matches/` and `codex_lab/` are gitignored (workspace artifacts).
@@ -184,11 +183,9 @@ Asset catalog data: `docs/formats/ndata_filemap.csv` (763 entries with semantic 
 - Struct padding and alignment must match the PsyQ compiler's behavior
 - GTE (cop2) ops have no C analog — inline `__asm__` for those is canonical
 - **Not-yet-decompiled functions are committed as `INCLUDE_ASM("asm/funcs", <func>);`**
-  (owner ruling 2026-08-19): no regfix/asmfix rules, no cheat constructs, no draft C
+  (owner ruling 2026-08-19): no cheat constructs, no draft C
   on `main` — C lands once, when the function byte-matches honestly. In-progress
-  candidates live in `memory/grind/<func>/`. (The migration completed 2026-08-25 — the
-  rules-to-zero campaign retired the last deferred legacy representations; `regfix.txt` and
-  `asmfix.txt` are empty project-wide.)
+  candidates live in `memory/grind/<func>/`.
 - When adding known symbol names, add them to `symbol_addrs.txt` and re-run splat
 
 ## Project history

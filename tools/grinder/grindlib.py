@@ -791,7 +791,7 @@ If no decidable question exists, the item stays ACTIVE with a modality change in
 floor flat at {floor} across {len(mods)} distinct modalities ({', '.join(mods)}) without a
 session self-filing — the escalation-modality backstop (grind.ps1). This is the endgame-lock
 species per the standing 2026-07-20 endgame-lock-disposition policy: byte-matches on main only
-via a cheat ({rule_count} regfix/asmfix rule(s) or cheat-asm), honest pure-C floor {floor},
+via a cheat (cheat-asm), honest pure-C floor {floor},
 sanctioned levers exhausted across the full modality ladder (see memory/grind/{func}/
 evidence.md + hypotheses.md for the per-session kill record). {tail}
 """
@@ -882,7 +882,7 @@ MODALITY_PLAYBOOK = {
                "(3) State the FULL target register disposition as the goal — a subset goal "
                "voids the vectors (func_80041188 s2 lesson). (4) Scheduler searches: "
                "`perturb.py --atoms luid,luid_move` first, and pin the target with "
-               "`--target <stem>.tgt.head.s` (regfix indexes against HEAD). (5) A typed "
+               "`--target <stem>.tgt.head.s`. (5) A typed "
                "UNREACHABLE/FORECLOSED verdict is PROGRESS — bank the kill with the vector "
                "space and depth; it closes an axis mechanically. (6) inverse.py lacks "
                "atom-masking; a working reference fork is tmp/grind/func_80041188/s3/"
@@ -928,7 +928,7 @@ MODALITY_PLAYBOOK = {
                    "resets the exhaustion counter). (2) Otherwise evaluate the two "
                    "endgame-lock AND-gates: (a) run `python3 tools/scan_hand_coded.py "
                    "--single <func>` and note the tier; (b) confirm what holds the "
-                   "byte-match (regfix/asmfix rule count, or cheat-asm); (c) state whether "
+                   "byte-match (cheat-asm); (c) state whether "
                    "an in-hand SOTN-master precedent EXISTS for the closing construct "
                    "(file+line citation — 'same spirit' does not count). If BOTH gates FAIL "
                    "(scan LOW + no precedent — the common case), APPLY THE OWNER'S STANDING "
@@ -1053,7 +1053,7 @@ def psyq_identity(root, func):
                     "(read before probing — this work is already done):"]
         out += [f"  - {r}" for r in refs]
     out += ["",
-            "Do NOT rename the symbol (queue keys, regfix anchors and this ledger all "
+            "Do NOT rename the symbol (queue keys and this ledger all "
             "reference the current name). The completion bar is unchanged: pure C, zero "
             "rules, byte-identical.", ""]
     return "\n".join(out)
@@ -1185,30 +1185,6 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
                f"If these differ, the chassis has changed since the ledger entry: every banked\n"
                f"spelling conclusion is chassis-relative and MUST be re-measured before it is\n"
                f"spent. Do not quote the ledger floor to the Judge; quote this one.\n")
-    # asm-until-matched (owner ruling 2026-08-19): a target still carrying
-    # regfix/asmfix rules is one of the 68 byte-coupling deferred functions —
-    # its committed C body predates the migration and was CALIBRATED TO ITS
-    # RULES, not to honesty. Warn the session before it inherits that shape
-    # (CD_datasync burned s1-s6 on rule-era constructs the reference later
-    # indicted).
-    nrules = 0
-    for _rf in ("regfix.txt", "regfix_stage2.txt", "asmfix.txt"):
-        _p = os.path.join(root, _rf)
-        if os.path.isfile(_p):
-            with open(_p, encoding="utf-8", errors="replace") as _f:
-                nrules += sum(1 for _ln in _f
-                              if re.match(r"^" + re.escape(func) + r"\s*:", _ln.strip()))
-    if nrules:
-        chassis += (
-            f"\n## RULE-ERA CHASSIS WARNING (asm-until-matched deferred function)\n"
-            f"This function still carries {nrules} regfix/asmfix rule(s) — it is one of the\n"
-            f"68 byte-coupling deferred functions (its body emits jtbl/rodata or is\n"
-            f"position-coupled, so it could not be converted to INCLUDE_ASM). The committed\n"
-            f"C body's SHAPE was calibrated to those rules, not to honesty: named\n"
-            f"intermediates, split statements, and declaration order in it may be rule-era\n"
-            f"inventions the original never had. Weigh the ledger candidate and a fresh\n"
-            f"derivation (m2c + target asm + sibling idioms) over the committed shape; do\n"
-            f"not treat the committed body as evidence of original structure.\n")
     return f"""# GRIND SESSION — {func} (src/{st['file']}.c)
 
 You are session {st['session_count'] + 1} of a cumulative grind. Your mandated
@@ -1234,7 +1210,7 @@ READ before working: memory/grind/{func}/evidence.md, memory/grind/{func}/hypoth
 memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting point).
 
 ## Your contract
-- Work ONLY {func} in src/{st['file']}.c. Engine commands: `& tools/wteng.ps1 main sandbox {func} --disable all` (your gradient), canonical, diagnose. NEVER edit regfix.txt/asmfix.txt/.claude/rules/engine/tools/Makefile/*.ld; NEVER run queue done/retire; NEVER commit.
+- Work ONLY {func} in src/{st['file']}.c. Engine commands: `& tools/wteng.ps1 main sandbox {func} --disable all` (your gradient), canonical, diagnose. NEVER edit .claude/rules/engine/tools/Makefile/*.ld; NEVER run queue done/retire; NEVER commit.
 - Save your best form to memory/grind/{func}/candidate.c before finishing (even if it did not improve the floor). Save disproven forms to memory/grind/{func}/rejected/<slug>.c.
 - Scratch space: tmp/grind/{func}/s{st['session_count'] + 1}/ — put permuter logs / cc1 dumps there and list them in artifacts.
 - PASS ATTRIBUTION: before hypothesizing WHICH GCC pass produced a divergence, run
@@ -1258,7 +1234,7 @@ memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting
 - OWNER'S STANDING AUTO-RULING (2026-07-27) — this governs HOW you word an escalation, and it NEVER authorizes ending a function early. Two separate questions, do not conflate them:
   (A) IS THE FUNCTION EXHAUSTED? This is the DRIVER's call, not yours. The driver assigns `escalation` modality only after the honest floor has been FLAT across many sessions AND >=4 DISTINCT modalities. If your mandated modality is NOT `escalation`, the answer is NO — you may not dispose of the function, however dead your own axis looks. A killed axis is a `progress` outcome with the kills banked; the ladder still has untried modalities (forensics / rederive / synthesis) and the owner's standing directive is to work the top item to completion however many sessions it takes ([[no-deferral-work-to-completion]], [[difficult-is-not-impossible]]). Judge FAILs do NOT make a function exhausted — a FAILed construct is one dead lever, and a FAIL on annotation FORMAT is a one-comment fix, not a wall.
   (B) ONCE THE DRIVER HAS DECLARED EXHAUSTION (you are in `escalation` modality), evaluate the two endgame-lock AND-gates: (1) canonical-asm needs STRONG `scan_hand_coded` signals (S1/S2/S6); (2) a coercion/spelling family needs an in-hand SOTN-master precedent you can CITE (file+line or commit). "Same spirit", "genre-adjacent", "only lever left", "measured to work", and a partition/elimination argument do NOT qualify — and a census you ran that came back NEGATIVE is a FAILED gate, not an open question. Whatever the gate outcome, your entry is a DECISION PACKET (owner ruling 2026-08-24, .claude/rules/escalation-not-parked.md): title it `## <date> — {func} — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**` and state (i) the single DECIDABLE question this residual poses (the specific grant / family / fidelity / routing choice — with the gate evidence), (ii) evidence POINTERS (ledger lines, measurements, scan output), (iii) the concrete consequence of each answer (what closes at what floor / what resumes). The driver escalates the item; the owner rules on packets in batches and the item returns to active either way — nothing is terminal. "This is hard" is NOT a packet: if no decidable question exists, the honest outcome is `progress` with the kills banked, and the item stays active for the next modality. AUTO-REJECT CLASS (owner ruling 2026-08-24, second): a packet whose YES would LOWER a standard — permanent-rule sanction, a no-precedent family grant, a canonical evidence-bar override, any "accept the debt" wording — is PRE-DECIDED NO and must NOT be filed; that residual stays ACTIVE under standing policy. File packets only for fidelity/routing/provenance questions or genuinely gate-PASSING evidence.
-- Bytes proven but blocked ONLY by a surface you may not touch (regfix.txt/asmfix.txt/prologue_config.json/inline_asm_canonical.txt) is an INTEGRATION HANDOFF, not an endgame lock: say so plainly in the entry, list the exact operator steps, and return owner-gated. Do not dress it up as exhaustion — and note the operator still runs a fresh layer-2 cheat-reviewer on your C before it is accepted, so a Judge PASS on a construct is not a guarantee of acceptance.
+- Bytes proven but blocked ONLY by a surface you may not touch (prologue_config.json/inline_asm_canonical.txt) is an INTEGRATION HANDOFF, not an endgame lock: say so plainly in the entry, list the exact operator steps, and return owner-gated. Do not dress it up as exhaustion — and note the operator still runs a fresh layer-2 cheat-reviewer on your C before it is accepted, so a Judge PASS on a construct is not a guarantee of acceptance.
 - A hypothesis KILLED with measurements is a fully successful session. Eliminating search space IS the job. There is no such thing as a failed session — only an unproven one, and unproven sessions are discarded by the driver as if they never ran.
 """
 

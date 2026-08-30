@@ -2,12 +2,18 @@
 name: walking-pointer-serializes-parallel-loads
 paths: [".claude/rules/walking-pointer-serializes-parallel-loads.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "Memory-clobber barriers between independent parallel-array element stores (G0=r[0]+a[0]; barrier; G1=r[1]+a[1]; ...) retire by walking both arrays with post-increment pointers (*rp++ + *ap++) — the pointer dependence serializes the loads so GCC keeps the target's per-element lw/lw/nop/addu/sw and stops stealing later loads into the load-delay slots."
 metadata:
   type: reference
 ---
 
 # Walking pointers serialize parallel-array loads (retire a delay-slot memory barrier)
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

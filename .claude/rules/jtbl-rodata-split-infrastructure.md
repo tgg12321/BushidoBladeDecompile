@@ -1,13 +1,19 @@
 ---
 name: jtbl-rodata-split-infrastructure
-paths: ["asmfix.txt"]
+paths: []
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 description: "jtbl-rename + delete_between asmfix rules are canonical jump-table infra, not cheats: a switch whose table splat put in asm/data rodata can't reach zero-asmfix without a global rodata reorder — park it."
 metadata:
   type: reference
 ---
 
 # Jump-table rename/delete asmfix rules — historical (resolved 2026-06-09)
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 > **UPDATE 2026-06-09 — RESOLVED for the canonical case.**
 >

@@ -107,11 +107,11 @@ function Get-AuditDigest($sid) {
 
 $PROMPT = @'
 You are running the Bushido Blade 2 decomp engine loop HEADLESS. Work the TOP
-queue item to COMPLETED-C (100% pure C, zero regfix/asmfix/pins/cheat-asm)
+queue item to COMPLETED-C (100% pure C, zero pins/cheat-asm)
 following the loop in CLAUDE.md, then STOP. Run every engine command through the
 PowerShell wrapper: `& tools/wteng.ps1 main <subcommand>` (queue next | canonical <f> |
-sandbox <f> --disable all | retire <f> | queue done <f> |
-queue park <f> --reason "...").
+sandbox <f> --disable all | verify-oracle --rebuild | queue done <f> |
+queue escalate <f> --reason "...").
 
 Steps for the single top function:
   0. If `queue next` returns a `wip` block, READ memory/wip/<func>/meta.json +
@@ -163,7 +163,7 @@ uncommitted tree that forces an escalation):
     NOT a license to grab a second function. The orchestrator will
     spawn a fresh agent for the next item.
   - **SCOPE DISCIPLINE.** Edits MUST be confined to your function (its body in
-    src/<file>.c, its rules in regfix.txt / asmfix.txt, its entry in
+    src/<file>.c, its entry in
     inline_asm_canonical.txt). Do NOT edit other functions' bodies, even
     "while you're in the file." Do NOT touch sibling functions whose pins
     look removable to you. Do NOT touch tools/ or engine/. The next agent
@@ -248,7 +248,7 @@ candidate first; record the verdict in meta.json. Revert src/ to HEAD (oracle
 stays green), commit under `wip: <func>`, stop. The next agent resumes from
 your floor, not from scratch.
 
-NEVER commit a cheat (regfix, asmfix, cheat-asm, register pin, scheduling
+NEVER commit a cheat (cheat-asm, register pin, scheduling
 barrier, dead-store coercion, volatile-on-game-state-global, OR-tree
 reorder, do-while-zero outside its narrow LABEL_OUTSIDE_LOOP_P sanctioned
 use, etc.) to "finish" the function — those make the bytes match but the

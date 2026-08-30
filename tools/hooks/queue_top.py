@@ -37,9 +37,9 @@ def main() -> int:
         print(
             f"[queue] WORK THE TOP — {top['func']} ({top['file']}.c) | verdict "
             f"{top['verdict']} | pure-C distance {top['distance']} | "
-            f"{top.get('rules', 0)} regfix/asmfix rule(s) | {active} active remaining.\n"
+            f"{active} active remaining.\n"
             f"        Loop: canonical {top['func']} -> sandbox {top['func']} --disable all "
-            f"(edit src toward 0) -> retire/verify-oracle -> queue done {top['func']} -> "
+            f"(edit src toward 0) -> verify-oracle -> queue done {top['func']} -> "
             f"commit. Finish THIS to COMPLETED-C before taking another. "
             f"(`engine queue next` for the full record.)")
         # Surface a WIP checkpoint if one exists for the top function. The WIP

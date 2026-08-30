@@ -1,11 +1,17 @@
 ---
 name: switch-break-shared-return-sched-hoist
 description: Per-case `return 0;` in a switch makes sched1 hoist the v0-set into a load-delay slot (RA conflict → wrong RMW register) and flips a case's branch polarity; write `break;` + one shared trailing `return 0;` instead
-paths: ["regfix.txt"]
+paths: []
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 ---
 
 # Per-case `return 0;` in a switch — sched1 hoists the v0-set into a load-delay slot; write `break;` + shared trailing `return 0;`
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

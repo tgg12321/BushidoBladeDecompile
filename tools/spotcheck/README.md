@@ -282,9 +282,8 @@ independently of this directory.
    the detector *as it was* at another revision. `path=None` is a no-op. Without
    it, roster mode is structurally blind to the channel it exists for (§2).
 
-Still unmemoized and worth a follow-up: `cheats.func_rule_lines` re-reads and
-re-splits `regfix.txt` (3.5k lines) per call, which is the bulk of the remaining
-43 s in `check_completion_integrity.py`. Out of scope here.
+(A former hotspot — rule-file re-parsing — is gone with the rule system's
+removal, 2026-08-30.)
 
 ---
 

@@ -83,7 +83,7 @@ the owner) ONLY when one of these genuinely holds:
       the fork is recorded as a `policy-question` entry in
       `docs/grind/borderline.md` and the worker takes the disposition the
       CURRENT frozen policy dictates (usually: keep grinding, or terminal
-      park). "Accept regfix debt" is not an available fork at all —
+      park). "Accept cheat debt" is not an available fork at all —
       [[asm-until-matched]] removed committed cheats as an option.
 
 CRITICAL — the owner's standing directive: **do NOT escalate just to table work

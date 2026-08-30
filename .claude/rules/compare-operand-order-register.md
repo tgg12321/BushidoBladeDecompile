@@ -3,9 +3,15 @@ name: compare-operand-order-register
 description: Reversing a comparison's operand order (write `local > GLOBAL` instead of `GLOBAL < local`) can flip which register cc1 picks for the local; one source edit retires a `$X <-> $Y` regfix rule cluster
 paths: [".claude/rules/compare-operand-order-register.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 ---
 
 # Reversing a comparison's operand order can flip which register a value gets
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

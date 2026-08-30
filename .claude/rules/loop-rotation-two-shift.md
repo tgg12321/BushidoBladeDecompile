@@ -2,12 +2,18 @@
 name: loop-rotation-two-shift
 paths: [".claude/rules/loop-rotation-two-shift.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "A bit-search/shift loop with an inline-asm initial `sllv` + register pins: target has the shift twice (peeled before the loop + recomputed in the bottom delay slot), a GCC loop-rotation artifact you can't hand-write. Use a natural for-loop (peeled shift is NOT folded), an opaque `one` var to defeat the `(x>>i)&1` bit-test transform, and the original explicit-goto post-loop order + mask-var reuse for branch sense/register."
 metadata:
   type: recipe
 ---
 
 # Two `sllv` from loop rotation — retire the inline-asm "initial mask" cheat
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

@@ -18,7 +18,6 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$REPO_ROOT"
 
 python3 tools/hooks/park_src_guard.py "$@" || exit 1
-python3 tools/hooks/no_new_regfix_guard.py "$@" || exit 1
 python3 tools/hooks/wip_compaction_guard.py "$@" || exit 1
 python3 tools/hooks/detector_config_guard.py "$@" || exit 1
 

@@ -2,6 +2,7 @@
 name: shared-end-label
 paths: [".claude/rules/shared-end-label.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "When a switch has multiple cases each ending with `return s2;` where s2 is a different constant per case, GCC constant-folds case 1's `return s2;` to `return 0;` and drops the `s2 = 0;` instruction. Restructure with `goto end; ... end: return s2;` — GCC sees s2 as potentially varying at end and keeps every `s2 = N;` assignment alive."
 metadata:
   type: recipe
@@ -9,6 +10,11 @@ metadata:
 
 
 ## Symptom
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 A switch-with-return function where each case sets a return variable and explicitly returns:
 

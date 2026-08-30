@@ -8,6 +8,11 @@ metadata:
 
 # Standing policy: no new cheat-tolerant park categories
 
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
+
 > **User policy, codified 2026-06-01:** *"We won't be sanctioning any kind of
 > new policy or methodology that is akin to a cheat. ... We can discuss more
 > on what to do with register rotation infrastructure but it will never be

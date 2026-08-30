@@ -1,13 +1,19 @@
 ---
 name: store-const-reload-cse
-paths: ["regfix.txt"]
+paths: []
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 description: "A single regfix `subst` swapping a load-immediate back to a global memory load (e.g. `addiu $3,$zero,2`→`lbu $3,D_800A36FA`). Cause: source saves a reload into a local (`G=N; v=G;`) after storing constant N, so GCC forward-props N into a `li`. Fix: drop the saved-local reload and re-read the GLOBAL directly at the later test — the store kills GCC's CSE entry so it reloads only in the store path. Do NOT use `volatile` (adds addiu+nop+andi)."
 metadata:
   type: reference
 ---
 
 # `subst "addiu $r,$zero,N" "lbu/lw $r,GLOBAL"` — store-then-reload folded to `li`; reload the GLOBAL, don't save a local
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

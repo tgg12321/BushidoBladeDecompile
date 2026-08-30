@@ -1,6 +1,6 @@
 ---
 name: asm-until-matched
-paths: ["src/*.c", "regfix.txt", "asmfix.txt", "tools/grinder/**", "engine/queue.py"]
+paths: ["src/*.c", "tools/grinder/**", "engine/queue.py"]
 description: "Owner ruling 2026-08-19 — NO cheat is committed on main in any form; a not-yet-decompiled function is committed as INCLUDE_ASM(\"asm/funcs\", <func>); C lands exactly once, at COMPLETED-C; candidates live in memory/grind/<func>/ only. Plus the modality-ladder retune (R1/R2/R3/R5)."
 metadata:
   type: rule
@@ -15,7 +15,7 @@ metadata:
 ## The rule
 
 1. **Main carries no cheats, in any spelling, for any INCOMPLETE function.**
-   No regfix/asmfix rules, no register pins, no cheat-asm, no coercion
+   No register pins, no cheat-asm, no coercion
    constructs. The committed representation of "not yet decompiled" is
    exactly:
 
@@ -23,17 +23,17 @@ metadata:
 
    — the original bytes, honestly labeled, oracle-green by construction.
 2. **C lands on main exactly once per function: at COMPLETED-C**, through the
-   unchanged gates (sandbox 0 → layer-1 → Judge default-FAIL → retire →
+   unchanged gates (sandbox 0 → layer-1 → Judge default-FAIL →
    verify-oracle → queue done). There is no intermediate committed state.
-3. **In-progress candidates, retired chassis, and rule stacks live in the
+3. **In-progress candidates and retired chassis live in the
    function's ledger** (`memory/grind/<func>/`): `candidate.c` is the working
    frontier; `retired-chassis-2026-08/` banks the pre-migration body + rules;
    `migration_pin.json` records the honest floor at migration for queue
    ordering (engine/queue.py reads it when the body is INCLUDE_ASM).
-4. **`no_new_regfix_guard` is unchanged and CONVERGED 2026-08-25**: the
-   rules-to-zero campaign (owner campaign 2026-08-24) retired the last
-   carriers — `regfix.txt` and `asmfix.txt` are EMPTY project-wide, the
-   permanent end state. Rule counts can only stay at zero.
+4. **The rule system is GONE.** The historical regfix/asmfix build-time rule
+   machinery reached zero rules on 2026-08-25 and was removed entirely
+   (files, pipeline stages, guard) on 2026-08-30. There is no mechanism to
+   patch assembly at build time, and none may be reintroduced.
 5. This supersedes the 2026-08-19 chassis-refresh proposal (never
    implemented) — the owner refused committing any cheat-class artifact,
    including honest whole-body splices paired with draft C.

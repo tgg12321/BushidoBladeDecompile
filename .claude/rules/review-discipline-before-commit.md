@@ -1,12 +1,17 @@
 ---
 name: review-discipline-before-commit
-paths: ["src/*.c", ".claude/rules/*.md", "CLAUDE.md", "AGENTS.md", "engine/queue.py", "engine/cheats.py", "regfix.txt", "asmfix.txt"]
+paths: ["src/*.c", ".claude/rules/*.md", "CLAUDE.md", "AGENTS.md", "engine/queue.py", "engine/cheats.py"]
 description: "Standing policy 2026-06-02: every COMPLETED-C / cheat-cleanup / canonical-asm-authorization commit MUST pass an independent adversarial review by the cheat-reviewer agent BEFORE it lands. The orchestrator does not perform this review — it is a separately-defined agent (.claude/agents/cheat-reviewer.md) designed to be critical and adversarial by default. The mechanical gates (sandbox==0, SHA1==oracle, retire succeeded) are necessary but NOT sufficient."
 metadata:
   type: rules
 ---
 
 # Independent adversarial review BEFORE commit
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 > **Standing policy (user, 2026-06-02):** *"Before an item can be considered
 > complete it needs to pass an independent audit from a review agent

@@ -1,13 +1,19 @@
 ---
 name: narrow-byte-args-packed-call
-paths: ["regfix.txt"]
+paths: []
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 description: "GPU/SPU command-wrapper function with 4+ s32 args where 3 are byte-truncated (`arg & 0xFF`) and packed into one 32-bit slot for a function-pointer call, carrying a pin+regfix cluster (4 register-asm pins + 4 `$a3→$s0` regfix substs on the packing accumulator). Fix: declare the 3 byte-packed params as `u8` and drop the `& 0xFF` masks — the pins, regfix, AND masks all retire."
 metadata:
   type: reference
 ---
 
 # Narrow `u8` parameters retire pin+regfix cluster on byte-packed-arg call wrappers
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

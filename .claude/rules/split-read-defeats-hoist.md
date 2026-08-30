@@ -2,12 +2,18 @@
 name: split-read-defeats-hoist
 paths: [".claude/rules/split-read-defeats-hoist.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "Duplicate a post-branch read into each flag arm (direct symbol in the known arm) to stop GCC hoisting per-arg offsets across a switch; regs fall out pin-free. Meta: register-rename plateau = restructure, not pins."
 metadata:
   type: reference
 ---
 
 ## Symptom
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 A function selects a base (a runtime pointer, or one of two globals) from a flag,
 does a shared read, then dispatches on a `mode` switch. The natural C computes the

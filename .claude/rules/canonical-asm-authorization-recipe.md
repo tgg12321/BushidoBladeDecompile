@@ -1,11 +1,17 @@
 ---
 name: canonical-asm-authorization-recipe
 description: How to author a whole-body __asm__("glabel ...") block for canonical-asm authorization — three lessons from the 2026-06-07 A-category pass (commit 6e0476f0 documents the retry after a failed first attempt at 8719adea)
-paths: ["inline_asm_canonical.txt", "regfix.txt", "asmfix.txt"]
+paths: ["inline_asm_canonical.txt"]
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 ---
 
 # Writing a whole-body `__asm__("glabel ...")` block
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 This rule captures three concrete failures-and-fixes from the 2026-06-07
 A-category authorization pass (5 functions: `func_8004DDB4`, `func_8006BD28`,

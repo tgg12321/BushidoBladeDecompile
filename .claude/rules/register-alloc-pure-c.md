@@ -2,12 +2,18 @@
 name: register-alloc-pure-c
 paths: [".claude/rules/register-alloc-pure-c.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "Retire a register pin in PURE C. gcc-2.7.2 prefers low regs; if target uses a lower reg than you, YOU are the anomaly (cc1 -da greg dump). Levers: block-local split, narrow type, loop precompute; dead stores are LAST-RESORT, FAKE-annotated per [[dead-store-fake-exception]] (2026-07-01). Full session logs: [[register-alloc-deep-dive]]."
 metadata:
   type: reference
 ---
 
 # Retiring a register pin in pure C (no regfix, no inline asm)
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 When a function matches ONLY via `register T x asm("$N")` pins (or you are
 tempted to add one), the pin is almost always papering over a **global

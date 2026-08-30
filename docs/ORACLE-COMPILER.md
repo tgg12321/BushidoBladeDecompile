@@ -106,9 +106,8 @@ Evidence that the original compiler did **not** perform it:
 
 Evidence that it **did**:
 - At site C (`main` in `ings`) the original matches stock's codegen, and the
-  patched compiler over-folds — which is why two regfix rules exist there. That
-  function carries 25 rules and its C is admittedly unfaithful, so the signal
-  is muddy.
+  patched compiler over-folds (at the time this was worked around by build-time
+  rules; the function's C was admittedly unfaithful, so the signal is muddy).
 - The forensics' isolated probes had `cc1psx` performing the conversion on
   every reachable shape.
 

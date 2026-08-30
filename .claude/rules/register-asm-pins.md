@@ -2,6 +2,7 @@
 name: register-asm-pins
 paths: [".claude/rules/register-asm-pins.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "GCC 2.7.2 `register asm` pins are HINTS, not hard bindings. DIAGNOSTIC-ONLY: a pin/regfix is never a committed match -- strip it and find the C structure that makes GCC pick the register (see completion-standard)."
 metadata:
   type: reference
@@ -9,6 +10,11 @@ metadata:
 
 
 # Register-asm pin reliability — GCC 2.7.2
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 > **Pins are DIAGNOSTIC-ONLY, never a committed match ([[completion-standard]]).**
 > A `register T x asm("$N")` pin left in the committed source is cheat-asm, same

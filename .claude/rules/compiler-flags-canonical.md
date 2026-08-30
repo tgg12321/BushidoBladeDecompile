@@ -1,13 +1,19 @@
 ---
 name: compiler-flags-canonical
-paths: ["regfix.txt", "asmfix.txt"]
+paths: []
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 description: "Compiler FLAGS are a dead avenue for unmatched functions. -O2 (+ per-file GP_FILES and NO_SR_FILES exceptions) is PROVEN canonical for every file with remaining work. Don't flag-hunt; the walls are source-structure."
 metadata:
   type: reference
 ---
 
 # Compiler flags are canonical — do not flag-hunt
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 When a function won't match, it is tempting to wonder "did the original build use
 different compiler flags than ours?" **It did not.** This was settled with a

@@ -1,12 +1,17 @@
 ---
 name: no-compiler-divergence
-paths: ["src/*.c", "tools/gcc-2.7.2/**", "tools/maspsx/**", "regfix.txt", "asmfix.txt"]
+paths: ["src/*.c", "tools/gcc-2.7.2/**", "tools/maspsx/**"]
 description: "HARD RULE: do NOT patch cc1, do NOT switch to cc1psx, do NOT consider 'maybe the compiler is the variable'. The compiler is FROZEN. Every unmatched function closes in pure C source structure, full stop."
 metadata:
   type: rule
 ---
 
 # The compiler is frozen — pure-C source structure is the ONLY lever
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 User policy, made explicit 2026-05-30 after a worker spiraled toward
 "the residual gap requires a compiler-level fix" on cpu_side_move_dir_4:

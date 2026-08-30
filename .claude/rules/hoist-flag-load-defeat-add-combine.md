@@ -3,9 +3,15 @@ name: hoist-flag-load-defeat-add-combine
 description: Hoist the if-test's pointer-deref into a named local BEFORE the gated `p += K` so combine sees a use of p between two unconditional adds and doesn't merge them.
 paths: [".claude/rules/hoist-flag-load-defeat-add-combine.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 ---
 
 # Hoist a flag-word load BEFORE its `+=` to split a combine-folded address add
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

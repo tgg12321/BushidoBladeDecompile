@@ -493,14 +493,11 @@ def test_cheats() -> None:
             (cheats.REGFIX, cheats.REGFIX2, cheats.ASMFIX,
              cheats.canonical_asm_funcs, _q.QUEUE_PATH) = saved
 
-    # Campaign 4 end state (Wave 7): the tree carries NO canonical-extraction
-    # wiring. Every remaining replace_with_asmfile belongs to a NON-canonical,
-    # queue-active function (the four deliberately-retained near-matches), so
-    # none of them may be routed CANON-EXTRACT / dropped as canonical.
-    live_wirings = [ln for ln in Path(cheats.ASMFIX).read_text(encoding="utf-8").splitlines()
-                    if "replace_with_asmfile" in ln and not ln.lstrip().startswith("#")]
-    check("canon-extract: no canonical-extraction wiring remains in asmfix.txt",
-          not any(cheats.is_canonical_extraction_rule(ln) for ln in live_wirings))
+    # Rules-to-zero end state (2026-08-25; files deleted 2026-08-30): the tree
+    # carries NO rule files at all. Their absence IS the invariant now.
+    check("rules-to-zero: no live regfix/asmfix rule files exist",
+          not any(Path(f).exists()
+                  for f in (cheats.REGFIX, cheats.REGFIX2, cheats.ASMFIX)))
 
     with tempfile.TemporaryDirectory() as td:
         cfg = Path(td) / "regfix.txt"

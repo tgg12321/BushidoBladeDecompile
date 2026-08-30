@@ -4,7 +4,7 @@ description: >-
   MANUAL-FALLBACK path (the Grinder via the decomp-grind skill is the default
   autonomous pipeline since 2026-07-06). Drive ONE Bushido Blade 2 function by
   hand on main: the per-function engine loop (canonical -> sandbox -> edit ->
-  retire -> queue done) with layer-2 cheat-reviewer acceptance. Use when the
+  verify-oracle -> queue done) with layer-2 cheat-reviewer acceptance. Use when the
   user names a specific function to work manually or asks for a hands-on
   deep-dive session.
 ---
@@ -38,25 +38,24 @@ Every function is in exactly ONE state. No gradations, no "almost done."
 
   - **INCOMPLETE** — in `engine/queue.json`. Since 2026-08-19
     ([[asm-until-matched]]) committed as `INCLUDE_ASM("asm/funcs", <f>);` —
-    zero rules, zero cheat-asm on main; candidate C + banked chassis live in
+    zero cheat-asm on main; candidate C + banked chassis live in
     `memory/grind/<f>/` and the queue distance is the pinned/ledger honest
-    floor. (Rules-to-zero complete 2026-08-25: `regfix.txt` and `asmfix.txt`
-    are empty project-wide; no deferred set remains.) Never commit an
+    floor. Never commit an
     intermediate C body — C lands on main exactly once, at COMPLETED-C.
-  - **COMPLETED-C** — zero rules, zero cheat-asm in source, byte-matches.
+  - **COMPLETED-C** — pure C, zero cheat-asm in source, byte-matches.
     Not in the queue. Not in `inline_asm_canonical.txt`. The SOTN bar; the
     default goal for every function.
-  - **COMPLETED-INLINE-ASM-CANONICAL** — zero rules, canonical inline asm
+  - **COMPLETED-INLINE-ASM-CANONICAL** — canonical inline asm
     (GTE/cop2/BIOS/HW) or whole-body `__asm__("glabel ...")` that is its
     accepted finished form. Listed in `inline_asm_canonical.txt`. Reserved
     for functions whose ORIGINAL CODE was hand-written assembly — the
     `canonical` gate decides what qualifies, **not** the agent.
 
 **Only the two COMPLETED states may ever be committed as DONE.** A function
-that needs a regfix rule, a register pin, hardcoded-`$N` `__asm__`, or a
+that needs a register pin, hardcoded-`$N` `__asm__`, or a
 scheduling barrier to byte-match is INCOMPLETE — those are cheats, not a
 finish. **Enforced, not honor-system:** `queue done` and `queue regen` refuse
-to record a function as done if it carries rules or non-canonical cheat-asm
+to record a function as done if it carries non-canonical cheat-asm
 (SHA1 can't catch cheat-asm — it emits the right bytes — so the gate audits
 the source). `tools/check_completion_integrity.py` is the standing audit;
 `headless_review` flags any cheated committed match. **Never** harden /
@@ -71,7 +70,7 @@ engine.cli…'`** — that nests three shells and the quoting eats awk/sed/hered
 - **Engine commands → the PowerShell tool + `tools/eng.ps1`** (zero quoting):
   ```
   & tools/wteng.ps1 main queue next | queue status | canonical <f> | sandbox <f> --disable all
-                 | retire <f> | queue done <f> | queue park <f> --reason "…" | verify-oracle --rebuild | test
+                 | queue done <f> | queue escalate <f> --reason "…" | verify-oracle --rebuild | test
   ```
 - **Anything beyond ONE simple command** (awk/sed, multi-statement, shell funcs,
   heredocs) → **write a `.py`/`.sh`/`.ps1` to `tmp/` and run that file.**
@@ -92,12 +91,13 @@ engine.cli…'`** — that nests three shells and the quoting eats awk/sed/hered
    `C` ⇒ continue.
 3. `sandbox <func> --disable all` — honest pure-C distance (`0` = matchable).
    - **Masked-0 caveat:** a `0` can hide a register diff OR a source cheat-asm
-     barrier the rules compensate for. If `sandbox`=0 but `retire` fails, look for
+     barrier. If `sandbox`=0 but the full build mismatches, look for
      a cheat-asm `__asm__` in the source and strip it ([[sandbox-zero-retire-fails]]).
 4. Edit `src/<file>.c` toward 0 in **pure C**; re-run step 3 as the gradient.
-5. `retire <func>` (drops rules + full SHA1 gate, auto-rollback) → `queue done`
-   (re-checks 0 rules + 0 non-canonical cheat-asm + SHA1; on success the function
-   is REMOVED from the queue). If not pure-C-closable, `queue park --reason "…"`.
+5. `verify-oracle --rebuild` (full SHA1 gate) → `queue done`
+   (re-checks 0 non-canonical cheat-asm + SHA1; on success the function
+   is REMOVED from the queue). If genuinely stuck on a decidable policy
+   question, `queue escalate <f> --reason "…"` with a decision packet.
 6. **Register findings** — reusable pattern ⇒ `.claude/rules/<slug>.md` (with a
    `paths:` glob); function fact ⇒ `memory/`.
 7. **Commit** (`Match:` / `cheat-cleanup:` / `engine:` per docs/COMMIT_CONVENTIONS.md;
@@ -138,13 +138,13 @@ engine.cli…'`** — that nests three shells and the quoting eats awk/sed/hered
 **(user directive 2026-06-10, after the fable-5 batch audit.)** The runner's
 mechanical review + the worker's in-session cheat-reviewer are PROVISIONAL.
 For every completion-class commit (`Match:` / `cheat-cleanup:` / `auth:` /
-any commit retiring rules or adding a `.claude/rules/` technique doc), the
+any commit adding a `.claude/rules/` technique doc), the
 orchestrator MUST, before treating the item as accepted:
 
 1. Run `python3 tools/reviewer_precheck.py --func <f> [--commit <sha>|--staged]
    [--msg-file tmp/msg.txt]` FIRST and paste its output into the reviewer
-   brief — it mechanically settles the procedural facts (residual rules,
-   body cheat-asm constructs, allowlist coverage of new extern volatiles,
+   brief — it mechanically settles the procedural facts (body cheat-asm
+   constructs, allowlist coverage of new extern volatiles,
    rule-docs riding along, carve-out commit fields) so reviewer tokens go
    to the SEMANTIC 6-test judgment, not re-derivation (a layer-1 review
    burned ~117k tokens re-deriving these before the tool existed).
@@ -159,8 +159,7 @@ orchestrator MUST, before treating the item as accepted:
    Audits of independent commits run concurrently — use one reviewer agent
    per commit (or per tight pair).
 4. Verdict handling: PASS → accepted. FAIL → revert workflow (restore the
-   prior bridged state byte-identical; rules restorations use the
-   `[infra-rule: reviewer-fail-revert]` guard category; preserve clean
+   prior state byte-identical; preserve clean
    levers in a WIP checkpoint). NEEDS_USER → treat as FAIL + log the
    reviewer's question to `docs/grind/borderline.md` (owner ruling
    2026-08-18, [[judge-sole-gate]] — no live owner wait, no
@@ -217,12 +216,10 @@ what closed sys_VSync after 7 cold-start worker sessions), bulk variant sweeps
   asm (custom ABI / trapping ops) — that takes the pipeline canonical-asm grant
   path: STRONG scanner evidence + adversarial review, grant logged to
   `docs/grind/borderline.md` ([[judge-sole-gate]]).*
-- **jtbl-infra** (a `switch` whose jump table splat carved into asm/data rodata;
-  asmfix-only rename/replace_first/delete_between referencing `jtbl_*`): the queue
-  auto-routes to `authorize`; `headless_review` auto-confirms the park. The global
-  rodata reorder to truly pure-C them is an architecture decision — log it as a
-  `policy-question` borderline entry; it executes only on a landed owner ruling.
-  [[jtbl-rodata-split-infrastructure]]
+- **jtbl-coupled** (a `switch` whose jump table splat carved into asm/data
+  rodata): the pure-C path needs a rodata re-attribution — an architecture
+  decision. Log it as a `policy-question` borderline entry; it executes only
+  on a landed owner ruling.
 - **maspsx `.L`-label load-delay nop** (sole cheat-asm is one `__asm__("nop")` for a
   load-consumer-across-`.L`-label): now a **pure-C retirement path** — add the
   function to `maspsx_label_nop_funcs.txt`, delete the source nop, verify, done.

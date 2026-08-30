@@ -11,12 +11,12 @@ Your task brief (the ledger digest) is the single source of truth for what has
 already been tried — do not re-derive rejected forms or re-run banked evidence.
 
 ## The prime directive
-Never produce a cheat, workaround, or reward-hack — regfix/asmfix rules,
+Never produce a cheat, workaround, or reward-hack —
 register pins, hardcoded-$N asm, scheduling barriers, volatile coercion, dead
 locals/constant-holders, alias renames, and every other spelling of the same
 intent. Understand why it is pointless here, not just forbidden: the sandbox
 strips cheats before scoring (they cannot move your floor), the driver diffs
-your session and auto-discards any touch of regfix.txt / asmfix.txt /
+your session and auto-discards any touch of
 .claude/rules/ / engine/ / tools/ / Makefile / *.ld, and a bytes-proven
 candidate still faces a default-FAIL Judge. The narrow SOTN-sanctioned
 exceptions require documented lever-exhaustion + a named GCC-pass mechanism +
@@ -63,8 +63,8 @@ SUBMISSION.**
    declaration.
 
 ### The forbidden-family catalog (open class — one line each)
-register-asm pins · hardcoded-`$N` `__asm__` injection · lost-codegen-insert
-regfix · scheduling barriers · INLINE_MOVE_ALIASING · volatile-coercion by
+register-asm pins · hardcoded-`$N` `__asm__` injection ·
+scheduling barriers · INLINE_MOVE_ALIASING · volatile-coercion by
 alias-rename · by cast · by plain extern · by `(void)volatile` discard ·
 unused-local-array frame coercion with `&` · with `(void)` · with volatile-typed
 scalar · dead-param-assign (Lever D) · dead-conditional-store · empty-body
@@ -72,7 +72,7 @@ scalar · dead-param-assign (Lever D) · dead-conditional-store · empty-body
 label-pad · DImode chain for scheduling · goto-end-with-ret-val accumulator +
 shared label · param-local-alias declaration-order trick · `s32 one = 1;` opaque
 variable to defeat single-bit transform · lowercase `asm(...)` cheat blocks
-bypassing detector regex · regfix/asmfix-style build-time rewriting · `asm("sym")`
+bypassing detector regex · any build-time assembly rewriting · `asm("sym")`
 alias renames · redundant width casts (F2) · speculative system-wide `bb2.ld`
 rodata reorders to force a SHA1 match. (The combine-foldable chain-extender to
 bump `reg_n_refs` was moved to the sanctioned F1 family by owner ruling

@@ -38,8 +38,8 @@ makes every "match" a false positive.
 ## The worklist is the queue
 
 There is exactly one ordered worklist: [`engine/queue.json`](engine/queue.json).
-Every function still carrying a cheat (a regfix/asmfix rule, a load-bearing
-cheat-asm pin/`__asm__`, or a non-zero honest pure-C distance) is in it; reaching
+Every function still carrying a cheat (a load-bearing
+cheat-asm pin/`__asm__`) or a non-zero honest pure-C distance is in it; reaching
 a completed state drops it off.
 
 ```powershell
@@ -99,8 +99,8 @@ function categories".)
 
 | State | Meaning |
 |---|---|
-| **INCOMPLETE** | In `engine/queue.json`. Carries a cheat (regfix/asmfix rule, cheat-asm pin/`__asm__`, or non-zero honest pure-C distance). |
-| **COMPLETED-C** | Zero rules, zero cheat-asm, byte-identical. The SOTN community bar and the **default goal for every function**. |
+| **INCOMPLETE** | In `engine/queue.json`. Committed as `INCLUDE_ASM("asm/funcs", <func>);` — a non-zero honest pure-C distance remains. |
+| **COMPLETED-C** | Pure C, zero cheat-asm, byte-identical. The SOTN community bar and the **default goal for every function**. |
 | **COMPLETED-INLINE-ASM-CANONICAL** | Zero rules, canonical inline asm (GTE/cop2 ops, BIOS/syscall trampolines) or a whole-body `__asm__` glabel that is the accepted finished form. Listed in [`inline_asm_canonical.txt`](inline_asm_canonical.txt). Reserved for functions whose ORIGINAL code was hand-written assembly — the `canonical` gate decides what qualifies, and it needs owner authorization. |
 
 Cheat catalog and the "cheats by any spelling" posture:
@@ -114,8 +114,8 @@ Cheat catalog and the "cheats by any spelling" posture:
    rule or unauthorized cheat-asm.
 2. **The oracle is the only truth** — "done" = full build+link SHA1 ==
    `62efab4f73f992798c43e8c730aa43baa10bb4fa`. Isolated scores are hints.
-3. **Cheating can't help** — the sandbox scores with regfix/asmfix disabled and
-   cheat-asm stripped, so adding a rule/pin/`__asm__` injection is score-inert.
+3. **Cheating can't help** — the sandbox scores with
+   cheat-asm stripped, so adding a pin/`__asm__` injection is score-inert.
    Don't reach for cheats; they're mechanically inert here.
 4. **Canonical-asm is the gate's call** — if `canonical` says ASM-region or
    ASM-STRUCTURAL, do NOT grind it in pure C and never recreate target bytes via
@@ -156,11 +156,11 @@ oracle stands on — don't casually alter their schema or contents:
   cheat-stripping are pinned by `engine test`; keep it green when you touch
   engine code.
 - The oracle SHA1 (`62efab4f73f992798c43e8c730aa43baa10bb4fa`).
-- The stage tools: cc1, maspsx, `regfix.py`/`asmfix.py`, `prologue_fix`,
+- The stage tools: cc1, maspsx, `prologue_fix`,
   `as`/`ld`/`objcopy`, `make_psexe`, splat, decomp-permuter.
 - `bb2.ld` is **HAND-MAINTAINED** — do NOT run `make setup` (it re-adds dead
   rodata lines that conflict with const decls now in `src/*.c`).
-- The `regfix.txt` / `asmfix.txt` rule schemas and `inline_asm_canonical.txt`.
+- `inline_asm_canonical.txt` (the authorized canonical-asm list).
 - The `asm/data/*.rodata*.s` segments are deliberately DELETED — don't recreate
   them.
 
@@ -187,7 +187,7 @@ oracle stands on — don't casually alter their schema or contents:
 | [`docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md`](docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md) | Full Grinder design. |
 | [`.claude/rules/decomp-loop.md`](.claude/rules/decomp-loop.md) | The manual per-function loop in full detail. |
 | [`docs/MATCHING.md`](docs/MATCHING.md) | The matching playbook (GCC 2.7.2 codegen techniques, gotchas). |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Build pipeline, splat split, regfix/asmfix model. |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Build pipeline, splat split, memory map. |
 | [`docs/GLOSSARY.md`](docs/GLOSSARY.md) | Terminology: PsyQ, MIPS, decomp, BB2-specific. |
 | [`docs/STATUS.md`](docs/STATUS.md) | Live progress counts. |
 

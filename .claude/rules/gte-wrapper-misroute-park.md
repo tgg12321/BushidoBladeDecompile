@@ -8,6 +8,11 @@ metadata:
 
 # GTE leaf wrappers misroute to `active` with distance 1 — park as canonical-asm, don't grind
 
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
+
 ## Symptom
 
 A `queue next` top item is a tiny GTE leaf function: verdict **ASM-PARTIAL**,

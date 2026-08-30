@@ -1,6 +1,6 @@
 # Project Status
 
-**Live snapshot.** Refreshed 2026-08-30 (post rules-to-zero completion). For
+**Live snapshot.** Refreshed 2026-08-30 (post rule-system removal). For
 the live worklist run `& tools/wteng.ps1 main queue next` (and `queue status`
 for counters); for build health run `verify-oracle`. The workflow itself lives
 in [`../CLAUDE.md`](../CLAUDE.md).
@@ -17,20 +17,16 @@ in [`../CLAUDE.md`](../CLAUDE.md).
 
 **Representation (owner ruling 2026-08-19, [[asm-until-matched]]):** an
 INCOMPLETE function is committed as `INCLUDE_ASM("asm/funcs", <func>);` — no
-rules, no cheat-asm, no draft C on `main`. Candidates live in
+cheat-asm, no draft C on `main`. Candidates live in
 `memory/grind/<func>/`; queue distance comes from the pinned/ledger honest
 floor.
 
-**RULES-TO-ZERO COMPLETE (2026-08-25).** The rules-to-zero campaign (owner
-campaign 2026-08-24) retired every remaining regfix/asmfix rule: the last 2
-asmfix rules left with func_80060A68's INCLUDE_ASM migration (owner ruling (b)
-2026-08-25, commit `0bef2aa3`), and regfix.txt reached zero carriers the same
-day. **Both files are EMPTY project-wide** — the end state of the 2026-08-06 /
-2026-08-19 owner rulings ([[asmfix-all-debt-end-state]], [[asm-until-matched]])
-is reached and permanent. The former "byte-coupling deferred" set (16 functions
-as of sweep 3) no longer exists as a rule-carrying population; those functions
-are ordinary `INCLUDE_ASM` queue items. Both files were trimmed to header-only
-on 2026-08-30 (historical rule text lives in git history).
+**No post-processing rule machinery exists.** The build pipeline is
+`cpp | cc1 | prologue_fix | maspsx | multu_pad | as` — every completed function
+compiles to its bytes directly from C (or authorized canonical asm). The
+historical regfix/asmfix rule system reached zero rules on 2026-08-25 and was
+removed entirely (files, pipeline stages, tooling) on 2026-08-30; see git
+history if archaeology is ever needed.
 
 ## Function inventory (2026-08-30)
 
@@ -58,13 +54,6 @@ The 23 escalated items carry decision packets in `docs/grind/decisions.md` /
 (jtbl re-wiring question), `special_camera_get_rot_dir`, `func_8002FC80`).
 They are non-blocking for the grind but each needs an owner ruling to return
 to active.
-
-Debt indicators:
-
-| | Count | Was 2026-08-24 | Was 2026-08-19 |
-|---|------:|------:|------:|
-| Rule-carrying functions | **0** | ~10 | 41 |
-| Total regfix+asmfix rules outstanding | **0** | 89 | 708 |
 
 ## Source-file distribution (2026-08-30)
 
@@ -128,16 +117,13 @@ agent on `main` driving the engine as a toolkit). Layer-2 fresh
 [[review-discipline-before-commit]].
 
 ### Retired
-- **Rules-to-zero campaign** — COMPLETE 2026-08-25 (zero regfix/asmfix rules
-  project-wide; see Build section).
-- **Closer Phase 3** (PsyQ psxsdk adoption) — retired 2026-07-13.
-- **Multi-agent fleet** (`tools/fleet/`) — retired 2026-07-06.
+Retired initiatives (fleet, closer, the rule system) are recorded in
+`docs/HISTORY.md` + git history; their docs and tooling are deleted.
 
 ## Health / debt
 
 | Item | State |
 |---|---|
-| regfix.txt / asmfix.txt | ✅ **EMPTY** (rules-to-zero complete 2026-08-25; header-only files) |
 | Root cleanliness | ✅ (last verified 2026-08-24, `tools/check_root_cleanliness.py`) |
 | Completion integrity | ✅ all completed functions satisfy their category's invariants (verified 2026-08-30) |
 | CLAUDE.md / memory hygiene | Guards active (root-write, LF, CRLF-tooling-error, memory-write) |
@@ -156,9 +142,6 @@ wsl bash -lc "cd '<repo>' && source .venv/bin/activate && python3 tools/check_co
 
 # Queue counts + verdict breakdown
 & tools/wteng.ps1 main queue status
-
-# Rule counts (should stay 0)
-grep -cE '^[a-zA-Z_][a-zA-Z_0-9]*:' regfix.txt asmfix.txt
 
 # File inventory (WSL side)
 ls asm/funcs/*.s | wc -l

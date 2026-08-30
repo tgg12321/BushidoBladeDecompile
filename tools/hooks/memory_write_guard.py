@@ -141,7 +141,7 @@ def validate_content(file_path: str, content: str) -> list[str]:
             # Should look like ["..."]
             stripped = paths_field.strip()
             if not (stripped.startswith("[") and stripped.endswith("]")):
-                errors.append(f"`paths:` must be a JSON-style list like [\"regfix.txt\", \"src/*.c\"] (got {paths_field!r})")
+                errors.append(f"`paths:` must be a JSON-style list like [\"src/*.c\", \"include/*.h\"] (got {paths_field!r})")
             elif "[]" == stripped:
                 errors.append("`paths:` is empty — rule would never auto-load")
 

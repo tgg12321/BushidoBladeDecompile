@@ -10,14 +10,14 @@ metadata:
 
 The technique rules in `.claude/rules/` do NOT auto-load anymore (they cost
 ~200k tokens/session; re-scoped 2026-06-11). This index is what auto-loads.
-**Contract:** when a symptom below matches the diff shape, regfix cluster, or
+**Contract:** when a symptom below matches the diff shape or
 construct you're facing, `Read .claude/rules/<slug>.md` FIRST — these rules
 encode measured, often multi-session findings; re-deriving them wastes a
 session. Never use a sanctioned-exception or forbidden-family construct
 without reading its rule. (Policy rules — no-new-park-categories,
 review-discipline-before-commit, inline-asm-policy, no-compiler-divergence,
 difficult-is-not-impossible, asm-until-matched, decomp-loop,
-no-new-regfix-rules, verify-claims-against-main — auto-load on their own
+verify-claims-against-main — auto-load on their own
 globs and are not listed here. Two 2026-08-18/19 escalation-policy rules
 have NO auto-load glob and must be read directly when relevant:
 **judge-sole-gate** and **integration-handoff-self-serve**.)
@@ -36,7 +36,7 @@ have NO auto-load glob and must be read directly when relevant:
 - **staged-value-reused-variable** — SANCTIONED 2026-07-03: a load places too LATE (fresh single-set dest gets the scheduler's load-late LAUNCH priority) → stage the value through an EXISTING currently-dead local (`v0 = idx[1]; arg5 = tbl[v0];`), FAKE-annotated + lever-exhaustion; live code only (zero dead stores); SOTN ships the shape ("fake reuse of i", 6 files).
 
 - **local-alloc-death-count-class-wall** — a clean `$v0`<->`$v1` swap between a variable reused across several loads and a short constant/mask beside it; every reorder / decl-order / split measured flat or worse. NOT a priority tie: `local-alloc.c:472` gates local allocation on `reg_n_deaths == 1`, so the multi-death temp is unconditionally punted to global and the single-death constant takes `$v0` by ascending first-free. Read the `.lreg` "dies in D places" line BEFORE applying any lever from register-alloc-pure-c. Three exits, all measured dead; the only flip is an invented staging local (a cheat).
-- **reload-spill-reg-reveals-asm-clobbers** — target emits a compiler-generated scratch at an unexpected regno near an asm island (`mfhi $t8` where you get `mfhi $13`) → `reload1.c` puts explicitly-mentioned hard regs into `bad_spill_regs` and picks spill regs ascending, so the skipped registers PROVE the original source named them in an asm block. Reconstruct as a clobber list on the already-authorized island; never as a regfix `subst`. Carries the UNSPENT 2026-07-28 grant for `func_8002BEA0`.
+- **reload-spill-reg-reveals-asm-clobbers** — target emits a compiler-generated scratch at an unexpected regno near an asm island (`mfhi $t8` where you get `mfhi $13`) → `reload1.c` puts explicitly-mentioned hard regs into `bad_spill_regs` and picks spill regs ascending, so the skipped registers PROVE the original source named them in an asm block. Reconstruct as a clobber list on the already-authorized island. Carries the UNSPENT 2026-07-28 grant for `func_8002BEA0`.
 ## Cross-jump / merged-tail diffs (target has MORE instructions than you)
 
 - **cross-jump-call-merge** — target has more call sites than your build (jump2 merged identical CALL suffixes) → vary the arg counts.
@@ -51,7 +51,7 @@ have NO auto-load glob and must be read directly when relevant:
 - **loop-note-fixes-delay-slot-steal** — a memory-clobber barrier that only blocks a delay-slot steal → write the loop as a real `while`/`do`.
 - **loop-counter-fills-load-delay** (INLINE — no rule file; full recipe here) (func_80045294, 2026-06-14) — accumulator loop `sum += *(p+off); i++; off+=0x10;` leaves a maspsx nop in the `lw` load-delay slot (your build hoists `i++` to the loop top) → split the load into a named temp and reorder so the address-advance comes BETWEEN load and use, `i++` just before the consume: `s32 val = *(p+off); off+=0x10; i++; sum+=val;`. cc1's first-pass scheduler then drops `i++` into the lw delay slot (no nop). NB: `i++` BEFORE `sum+=` matters — the 4 forms keeping `i++` ahead of the load all failed; the `off+=` between load and use is the lever. Pure C, no dead store.
 - **walking-pointer-serializes-parallel-loads** — memory-clobber barriers OR per-load `register asm("$N")` pins between independent parallel-array element stores (`G0=r[0]+a[0]; ...` or `Gi=a0[i]`) → walk the array(s) with post-increment pointers (`*ap++`); the pointer dependence serializes the loads so GCC keeps the per-element lw/sw and stops stealing later loads into delay slots. An interleaved independent constant/global store whose `lui` GCC hoists too early: move that store PAST the loads so it schedules into the freed delay slots.
-- **hoist-call-arg-local-flips-jal-delay** — fill_delay regfix cluster around a call → hoist the late-loaded arg into a local declared FIRST in the block.
+- **hoist-call-arg-local-flips-jal-delay** — pre-call store belongs in the jal delay slot but the arg-setup load schedules late → hoist the late-loaded arg into a local declared FIRST in the block.
 - **store-before-jal** — arg saved into a callee-save between a table load and its call; ordering recipe.
 - **defer-store-past-later-compute-into-jal-delay** — a `reorder` rule over a pre-call store cluster + the lone diff is a `sw` (global/field) emitted EARLY where target defers it into a following jal's delay slot → hoist the stored value into a local and move the `GLOBAL = val;` store statement AFTER a later independent compute; GCC then schedules the sw into the delay slot.
 - **legitimate-volatile-interrupt-touched** (§Confirmed cases, sys_VSync 2026-06-12) — target block looks UNSCHEDULED (strictly source-ordered, genuine load-delay nop) around reads of an IRQ-touched counter while your build interleaves the chains → sched.c `read_dependence` needs BOTH reads volatile; check whether the second read's symbol qualifies for (or already has, under another C handle) a carve-out grant.
@@ -93,7 +93,6 @@ have NO auto-load glob and must be read directly when relevant:
 ## Forbidden families & narrow sanctions (READ THE RULE before using or judging)
 
 - **dead-vars-local-array** — FORBIDDEN: frame coercion via unused arrays/scalars. **CARVE-OUT 2026-07-01:** a WRITTEN-never-read local array IS sanctioned (SOTN dra/62DEC.c sp70[4] ×2) when the target bytes contain the dead stores — last-resort, FAKE-annotated, dual-reviewed. Symptom: target has dead `sw` stores into a frame the clean C never allocates.
-- **lost-codegen-insert-cheat** — FORBIDDEN: `insert_after "addu $rN,$0,$zero"` regfix (restore what const-prop ate) → fix via shared-end-label.
 - **inline-asm-injection** — FORBIDDEN: hardcoded-`$N` single-instruction `__asm__`; also `asm("Sym")` alias renames.
 - **inline-move-aliasing** — ARCHIVED/FORBIDDEN tombstone (placeholder-move recipe).
 - **param-local-alias-prologue-pair-flip** — ARCHIVED/FORBIDDEN tombstone.
@@ -111,7 +110,6 @@ have NO auto-load glob and must be read directly when relevant:
 ## Engine / pipeline gotchas (also fire on their own narrow paths)
 
 - **sandbox-zero-retire-fails** — sandbox 0 but `retire` rolls back: masked-0 hides a real register diff; keep editing.
-- **prologue-fix-redundant-reorder** — a single prologue `reorder` regfix may just be undoing prologue_fix.
 - **global-label-drift-sibling-cheat** — a pure-C retire that changes the `.L` label count can break a LATER sibling's hardcoded-label rule.
 - **canonical-asm-authorization-recipe** — writing whole-body `__asm__("glabel ...")` (user-authorized only).
 - **canonical-gate-distance-not-evidence** — a big distance is NOT evidence for ASM routing.

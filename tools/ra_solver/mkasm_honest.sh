@@ -3,9 +3,9 @@
 # derivation needs, for ONE TU, WITHOUT touching src/.
 #
 #   <stem>.cc1.s   raw cc1 output from the CHEAT-STRIPPED source
-#   <stem>.hon.s   + prologue_fix | maspsx | multu_pad, NO regfix/asmfix
+#   <stem>.hon.s   + prologue_fix | maspsx | multu_pad
 #                  = OURS, the honest pure-C stream
-#   <stem>.tgt.s   original source + regfix | regfix_stage2 | asmfix
+#   <stem>.tgt.s   original source through the same pipeline
 #                  = TARGET bytes (the tree builds SHA1-identical, so this
 #                    stream IS the original executable's instruction order)
 #
@@ -58,9 +58,7 @@ $CC1 $CC1F "$OUT/$STEM.tgt.i" -o "$OUT/$STEM.tcc1.s" 2>/dev/null
 python3 tools/prologue_fix.py < "$OUT/$STEM.tcc1.s" > "$OUT/$STEM.tp.s" 2>/dev/null
 python3 tools/maspsx/maspsx.py $MASPSX_FLAGS < "$OUT/$STEM.tp.s" > "$OUT/$STEM.tm.s" 2>/dev/null
 python3 tools/multu_pad.py --funcs multu_pad_funcs.txt < "$OUT/$STEM.tm.s" > "$OUT/$STEM.th.s" 2>/dev/null
-python3 tools/regfix.py < "$OUT/$STEM.th.s" 2>/dev/null > "$OUT/$STEM.r1.s"
-REGFIX_CONFIG=regfix_stage2.txt python3 tools/regfix.py < "$OUT/$STEM.r1.s" 2>/dev/null > "$OUT/$STEM.r2.s"
-python3 tools/asmfix.py < "$OUT/$STEM.r2.s" 2>/dev/null > "$OUT/$STEM.tgt.s"
+cp "$OUT/$STEM.th.s" "$OUT/$STEM.tgt.s"
 echo "  target     rc=$? lines=$(wc -l < "$OUT/$STEM.tgt.s")"
 if [ ! -s "$OUT/$STEM.tgt.s" ]; then
     rm -f "$OUT/$STEM.tgt.s"

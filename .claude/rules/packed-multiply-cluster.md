@@ -8,6 +8,11 @@ metadata:
 
 # Packed fixed-point multiply functions (8007Exxx display.c cluster)
 
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
+
 Leaf functions that load packed s16 values, multiply by Q12/Q16 coefficients,
 shift, and repack. Two outcomes depending on whether the original was
 hand-coded asm or compiled C. **Run `python3 tools/scan_hand_coded.py --single <func>`

@@ -8,6 +8,11 @@ metadata:
 
 # The five per-function maspsx gate lists — adjudicated 2026-07-13
 
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
+
 The 2026-07-13 sanctioned-mechanism audit found that the per-function maspsx
 gate lists were the ONE mechanism outside the cheat taxonomy: part of the
 canonical build (`engine/buildconfig.py`), never sandbox-stripped, invisible

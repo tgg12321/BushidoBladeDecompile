@@ -12,20 +12,17 @@ COMPLETED-C (or COMPLETED-INLINE-ASM-CANONICAL) before they touch main —
 partial progress lives in .bb2_attempts/ or memory/ notes, never in src/.
 
 The specific failure mode this guard prevents (commit 82997aa, 2026-05-31):
-a worker drove `func_8007BC08` from sandbox 296 → 132 via a partial pure-C
-reconstruction and committed the partial C body as a `park:` commit, with
-the asmfix `replace_with_asmfile` bridge still active to keep oracle SHA1
-green. The partial C body allocated a different cc1 .L label count, which
-broke the splice rules on sibling `func_8007CE0C` (which references hardcoded
-.L<N> labels) — the cascade only became visible on a later worker's
-`verify-oracle --rebuild`, halfway through a multi-iteration workflow.
+a worker committed a partial pure-C reconstruction as a `park:` commit while
+a build-time bridge kept the oracle SHA1 green; the partial body shifted
+cc1's .L label count and silently broke a sibling — the cascade only became
+visible on a later worker's `verify-oracle --rebuild`, halfway through a
+multi-iteration workflow.
 
 Build files in scope
 --------------------
 Per CLAUDE.md / AGENTS.md (the same set that requires LF line endings):
 
   src/*.c, src/*.h, include/*, *.s, *.h
-  regfix.txt, regfix_stage2.txt, asmfix.txt
   sdata*.txt, named_syms.txt, undefined_syms_auto.txt, undefined_funcs_auto.txt,
   expand_lb_funcs.txt, maspsx_label_nop_funcs.txt
   *.ld, splat.yaml, Makefile
@@ -56,8 +53,6 @@ BUILD_FILE_PATTERNS = [
     re.compile(r"^src/.+\.(c|h)$"),
     re.compile(r"^include/.+$"),
     re.compile(r"^.+\.s$"),
-    re.compile(r"^regfix(_stage2)?\.txt$"),
-    re.compile(r"^asmfix\.txt$"),
     re.compile(r"^sdata.*\.txt$"),
     re.compile(r"^named_syms\.txt$"),
     re.compile(r"^undefined_(syms|funcs)_auto\.txt$"),
@@ -137,17 +132,10 @@ def main(msg_path: str) -> int:
     print("Why this is blocked:", file=sys.stderr)
     print("  A `park:` commit means 'function not yet COMPLETED-C, queue the", file=sys.stderr)
     print("  wall, advance.' Partial progress on src/*.c does NOT belong in a", file=sys.stderr)
-    print("  park commit — it can mask oracle breakage via active asmfix", file=sys.stderr)
-    print("  `replace_with_asmfile` bridges (the bytes look right at SHA1", file=sys.stderr)
-    print("  time but the source change drifts cc1's .L counter, breaking", file=sys.stderr)
-    print("  sibling functions' hardcoded-label splice rules — the cascade", file=sys.stderr)
-    print("  only surfaces on later workers' `verify-oracle --rebuild`).", file=sys.stderr)
-    print("", file=sys.stderr)
-    print("  This is the exact failure mode commit 82997aa caused on", file=sys.stderr)
-    print("  2026-05-31 (reverted by d3576c3 mid-workflow). See the bad", file=sys.stderr)
-    print("  commit's message — the worker even acknowledged the masking", file=sys.stderr)
-    print("  (\"Oracle SHA1 stays green because the asmfix", file=sys.stderr)
-    print("  replace_with_asmfile rule continues to inject target bytes\").", file=sys.stderr)
+    print("  park commit — a source change can drift cc1's .L counter or", file=sys.stderr)
+    print("  shift sibling codegen in ways that only surface on later", file=sys.stderr)
+    print("  workers' `verify-oracle --rebuild` (the 82997aa failure mode,", file=sys.stderr)
+    print("  2026-05-31, reverted by d3576c3 mid-workflow).", file=sys.stderr)
     print("", file=sys.stderr)
     print("What to do:", file=sys.stderr)
     print("  - If your src/*.c changes were partial-progress toward the C", file=sys.stderr)

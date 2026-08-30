@@ -1,13 +1,19 @@
 ---
 name: sandbox-zero-retire-fails
-paths: ["regfix.txt"]
+paths: []
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 description: "Engine gotcha: sandbox --disable all == 0 but retire FAILS the SHA1. Cause = a cheat-asm barrier still in the C source that the regfix rules compensated for. Strip the barrier AND the rules."
 metadata:
   type: reference
 ---
 
 # `sandbox --disable all` says 0, but `retire` rolls back
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## The symptom (engine workflow)
 

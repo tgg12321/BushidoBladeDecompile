@@ -1,9 +1,0 @@
-# Per-function asm text post-fixes (post-cc1 pipeline stage, tools/asmfix.py).
-#
-# EMPTY since 2026-08-25 — the last 2 rules retired with func_80060A68's
-# INCLUDE_ASM migration (owner ruling (b) 2026-08-25, commit 0bef2aa3). Zero
-# asmfix rules project-wide is the permanent end state (owner ruling
-# 2026-08-06, asmfix-all-debt-end-state). Net rule additions are forbidden
-# (no_new_regfix_guard; .claude/rules/no-new-regfix-rules.md).
-#
-# Historical rules and their retirement notes live in this file's git history.

@@ -36,9 +36,9 @@ exactly as the main EXE matches `62efab4f…`.
      `cpp | cc1 (-mel) | maspsx --aspsx-version=2.34 | as` pipeline —
      same SDK snapshot (CVS tags identical to main), so the same toolchain
      settings are the right default. Note: main-EXE per-function pipeline
-     gates (`regfix.txt`, `maspsx_label_nop_funcs.txt`, `expand_lb_funcs.txt`
-     etc.) are main-EXE state; the overlay starts with NO rule files, and per
-     the completion standard none should ever be added — pure C or asm only.
+     gates (`maspsx_label_nop_funcs.txt`, `expand_lb_funcs.txt`
+     etc.) are main-EXE state; the overlay starts with NO per-function gates,
+     and per the completion standard — pure C or authorized asm only.
    - Link with `mipsel-linux-gnu-ld -T movovl/movovl.ld` (splat-generated;
      regenerate or hand-adjust as sections move from asm to C — the main
      project's bb2.ld hand-maintenance lesson applies once C sub-TUs exist).

@@ -2,12 +2,18 @@
 name: cross-jump-call-merge
 paths: [".claude/rules/cross-jump-call-merge.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "target.s has more jalr call-sites than your build: GCC cross-jumping merged calls with equal CALL_INSN_FUNCTION_USAGE. FIX: give each fn-ptr its REAL arg COUNT (count differentiates the calls; arg modes do NOT)."
 metadata:
   type: reference
 ---
 
 # The cross-jump call-merge wall — SOLVED (arg count is the lever)
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

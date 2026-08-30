@@ -2,21 +2,16 @@
 
 This document distills the project's accumulated knowledge about how to coax GCC 2.7.2 (the PsyQ-era cross-compiler) into producing byte-identical assembly for a given target. Most of this material is symptom-indexed: you see something in your build's diff, you look it up, you apply a recipe.
 
-> **Invocation note (2026-07):** the `dc.sh <subcommand>` commands quoted
-> throughout this doc are from the **retired** `dc.sh` workflow (archived
-> under `archive/dcsh_workflow_2026-05-26/`). The **matching techniques,
-> penalty routing, regfix patterns, and recipes below are still valid** —
-> only the invocation layer changed. The current driver is the engine CLI
-> (`python3 -m engine.cli …` / `& tools/wteng.ps1 main …`). The load-bearing
-> mappings: diff/penalty diagnosis → **`diagnose <func>`**; isolated
-> cheat-free score → **`sandbox <func> --disable all`**; authoritative
-> full-build match → **`verify-oracle --rebuild`** (SHA1 == oracle); rule
-> retirement → **`retire <func>`**. Many one-off `dc.sh` helpers
-> (`add-regfix`, `regfix-suggest`, `frame-shift`, `asmfix-slice`,
-> `fix-label-drift`, `diagnose-hoist`, `verify-c`, `dump-text`, …) have **no
-> engine port** — the diagnosis they automated still applies, but you
-> now hand-write the regfix/asmfix edit and confirm it with `verify-oracle`.
-> See `CLAUDE.md` for the full engine loop.
+> **Historical-framing note (2026-08-30):** this doc predates two retirements —
+> the `dc.sh` workflow (2026-05-26) and the regfix/asmfix rule system (driven
+> to zero rules 2026-08-25 and removed entirely). The **C-side matching
+> techniques and penalty diagnosis below are still valid**; ignore any
+> instruction to write a regfix/asmfix rule — the pure-C technique catalog in
+> `.claude/rules/` is the current playbook. Current driver: the engine CLI
+> (`& tools/wteng.ps1 main …`): diff/penalty diagnosis → **`diagnose <func>`**;
+> isolated cheat-free score → **`sandbox <func> --disable all`**; authoritative
+> full-build match → **`verify-oracle --rebuild`** (SHA1 == oracle). See
+> `CLAUDE.md` for the full engine loop.
 
 Companion docs:
 

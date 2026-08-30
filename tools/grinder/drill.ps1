@@ -5,7 +5,7 @@
   Preflight: REFUSES to run on a dirty tree (see the guard below) — the drills
   spawn real grind.ps1 sessions and exercise the worktree-wide discard path.
   Drill A: a give-up session (prose, no measurements) MUST be discarded.
-  Drill B: a scope-violating session (touches regfix.txt) MUST be discarded and reverted.
+  Drill B: a scope-violating session (touches the Makefile) MUST be discarded and reverted.
   Drill C (live, -WithJudge): the judge MUST FAIL a known-cheat candidate.
 .NOTES
   NOT read-only, and not safe to run alongside other work. Exit codes:
@@ -72,7 +72,7 @@ else { Write-Host "DRILL A FAIL:`n$log" -ForegroundColor Red; $fail++ }
 # ── Drill B: scope violation ─────────────────────────────────────────────────
 $mockB = 'tmp/grind/mock_scope.ps1'
 @'
-Add-Content -Path 'regfix.txt' -Value '# drill-injected line'
+Add-Content -Path 'Makefile' -Value '# drill-injected line'
 @{ result='progress'; floor=10; headline='sneaky'
    hypotheses=@(@{statement='s';mechanism='m';probe='p';result='12 -> 10';verdict='KILLED'})
    evidence=@('e'); frontier=@(@{hypothesis='h';mechanism='m';next_probe='n'})
@@ -80,9 +80,9 @@ Add-Content -Path 'regfix.txt' -Value '# drill-injected line'
    Set-Content $env:GRIND_OUTCOME_PATH -Encoding utf8
 '@ | Set-Content $mockB -Encoding utf8
 $log = pwsh tools/grinder/grind.ps1 -Once -MockSessionScript $mockB 2>&1 | Out-String
-$regfixClean = -not (git status --porcelain regfix.txt)
-if ($log -match 'SCOPE VIOLATION' -and $regfixClean) { Write-Host "DRILL B PASS — regfix edit rejected + reverted." -ForegroundColor Green }
-else { Write-Host "DRILL B FAIL (regfixClean=$regfixClean):`n$log" -ForegroundColor Red; $fail++ }
+$makefileClean = -not (git status --porcelain Makefile)
+if ($log -match 'SCOPE VIOLATION' -and $makefileClean) { Write-Host "DRILL B PASS — Makefile edit rejected + reverted." -ForegroundColor Green }
+else { Write-Host "DRILL B FAIL (makefileClean=$makefileClean):`n$log" -ForegroundColor Red; $fail++ }
 if ((git rev-parse HEAD) -ne $preHead) { Write-Host "DRILL A/B FAIL — HEAD moved during drills!" -ForegroundColor Red; $fail++ }
 git checkout -- memory/grind docs/grind 2>$null   # discard any drill ledger noise
 

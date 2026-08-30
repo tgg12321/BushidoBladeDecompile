@@ -1,13 +1,19 @@
 ---
 name: narrow-stack-param-subword-offset
-paths: ["regfix.txt"]
+paths: []
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 description: "A single regfix `subst` correcting a sub-word stack-parameter load offset by ±2 (e.g. `lhu $18,1090($sp)`→`1088`). Cause: this GCC-2.7.2 fork right-justifies a narrow (u16/s16) 5th+ stack parameter (lhu reads slot+2); cc1psx used slot+0. Fix: declare the param as a 4-byte type (home at offset 0) and read its low half explicitly — `u16 lo = *(u16*)&arg;` — emitting lhu from slot+0 with no ABI change."
 metadata:
   type: reference
 ---
 
 # Narrow stack parameter loaded at the wrong sub-word offset — read the low half explicitly
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

@@ -3,9 +3,15 @@ name: call-return-if-result-reuse-v0
 description: Initialize an if/else-result variable from the call return to keep it in `$v0` through GCC's bnez+delay-slot+overwrite merge form — retires the "branch-sense + 2 constant-load + downstream-subu" rename cluster
 paths: [".claude/rules/call-return-if-result-reuse-v0.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 ---
 
 # Initialize the if-else result var from the call return to land it in `$v0`
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

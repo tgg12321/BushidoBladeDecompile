@@ -2,7 +2,7 @@
 
 Subject-line prefixes and body structure used across this project. **These are conventions, not enforced rules** — but the commit-msg guard chain (`tools/hooks/commit_msg_chain.sh`) and `git log` searches parse commit subjects and bodies for structured information, so consistency improves searchability and audit reliability. _(The former `dc.sh lessons` / `tools/commit_lessons.py` "CommitAtlas" query tool is retired — archived under `archive/dcsh_workflow_2026-05-26/`.)_
 
-The LIVE enforcement layer (2026-08-24) is the installed `commit-msg` chain — `tools/hooks/commit_msg_chain.sh` running `park_src_guard` → `no_new_regfix_guard` → `wip_compaction_guard` → `detector_config_guard`. The programmatic cheat audit (`tools/audit_asm_cheats.py --check-new`) is a MANUAL detector, not a wired hook; semantic review is the layer-2 `cheat-reviewer` agent / the Grinder's Judge. _(The former `commit_audit_guard.sh` / `llm_audit.sh` audit hooks and the `active_func_guard.sh` blocker are retired.)_
+The LIVE enforcement layer is the installed `commit-msg` chain — `tools/hooks/commit_msg_chain.sh` running `park_src_guard` → `wip_compaction_guard` → `detector_config_guard`. The programmatic cheat audit (`tools/audit_asm_cheats.py --check-new`) is a MANUAL detector, not a wired hook; semantic review is the layer-2 `cheat-reviewer` agent / the Grinder's Judge. _(The former `commit_audit_guard.sh` / `llm_audit.sh` audit hooks and the `active_func_guard.sh` blocker are retired.)_
 
 ## Subject line format
 
@@ -36,7 +36,6 @@ These prefixes are what `git log --grep '^<prefix>'` matches on. Keep them recog
 |---|---|
 | `Match: func_XXXXXXXX` | New pure-C match of a function. Body should describe the technique. |
 | `cheat-cleanup: <name>` | Retiring a cheat (lost_codegen, wildcard subst, splice, etc.). Body documents what was retired and how. |
-| `cleanup: <name>` | Stripping stale regfix rules from already-bridged functions (lighter than full cheat retirement). |
 | `auth: <func>` / `inline_asm_canonical: <func>` | Canonical-asm authorization (function declared as hand-coded asm with documented evidence). Body MUST include evidence tags per [evidence-driven-authorization rule](../memory/rules/evidence-driven-authorization.md). |
 | `wip: <func>` | Save / update a checkpoint in `memory/wip/<func>/` — candidate C body + measured floor + technique + remaining gap. NOT a Match; the build is unchanged. Body should describe the lever and the new floor. See [memory/wip/README.md](../memory/wip/README.md). |
 | `park: <func>` | Terminal disposition only (judge-sole-gate 2026-08-18 — no pending-owner states). Touches `engine/queue.json` + `memory/project/` or `memory/wip/`; the build is unchanged. The `park_src_guard` hook BLOCKS `park:` commits that modify build-pipeline files (override: `[skip-park-src-guard]` + justification). |
@@ -99,15 +98,6 @@ Pure-C attempts:
   [2] technique=<name>  score=<diff_count>  outcome=<one-line>
   ...
 
-Coercion technique (if §6.1 barriers or specific regfix rules used):
-  - Reason for each barrier (single-instruction asm) with citation to the
-    cc1 gap it closes
-  - Reason for each regfix rule
-
-Regfix changes:
-  - Added/removed N rules
-  - Net delta vs HEAD
-
 Verification:
   - verify-oracle --rebuild result (full-build SHA1 == oracle)
   - cascade check on sibling functions
@@ -146,7 +136,7 @@ Renames applied:
 SHA1 verification: PASS / NO CHANGE / N functions affected
 ```
 
-Atomic renames per [`tools/rename_funcs.py --apply`](../tools/rename_funcs.py). If the rename cascade requires regfix updates, list them.
+Atomic renames per [`tools/rename_funcs.py --apply`](../tools/rename_funcs.py).
 
 #### For `tools:` / `hooks:` / `docs:`
 
@@ -175,7 +165,6 @@ _(The `dc.sh lessons` / `tools/commit_lessons.py` "CommitAtlas" query tool that 
 ## What POLICY requires on completion-class commits (no longer hook-enforced — the layer-2 `cheat-reviewer` / Judge are the gates)
 
 - Canonical-asm authorizations (`inline_asm_canonical.txt` additions) require a documented evidence tag — usually in both the commit message body AND the `inline_asm_canonical.txt` line comment
-- New cheat patterns (regfix `subst ".*"`, `splice` over thresholds, `insert "addu $sN, $0, $zero"` patterns) are blocked at commit time
 - `minimize-asm-when-blocked` work without a `Pure-C attempts:` block of ≥10 enumerated entries is blocked
 
 See [`memory/rules/evidence-driven-authorization.md`](../memory/rules/evidence-driven-authorization.md), [`memory/rules/minimize-asm-when-blocked.md`](../memory/rules/minimize-asm-when-blocked.md), and `tools/audit_asm_cheats.py` for the formal gates.

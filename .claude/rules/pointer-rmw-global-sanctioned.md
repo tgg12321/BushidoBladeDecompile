@@ -3,9 +3,15 @@ name: pointer-rmw-global-sanctioned
 description: User-sanctioned 2026-06-10 — the zero-displacement pointer-local RMW spelling (s32 *p = &G; cur = *p; ...; *p = cur;) in func_80077894; narrow precedent, retro-audit FAIL overridden by user decision
 paths: [".claude/rules/pointer-rmw-global-sanctioned.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 ---
 
 # The zero-displacement pointer-RMW spelling — user-sanctioned (narrow)
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 **Status:** the retroactive adversarial audit (2026-06-10) FAILED the closing
 form of `func_80077894` (commit `7b9ddcea`) on the construct:

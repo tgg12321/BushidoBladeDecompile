@@ -2,7 +2,7 @@
 
 This document describes the engineering structure of the BB2 matching decompilation: the target binary's memory map, the build pipeline that reproduces it, the role of each post-pass tool, and the conventions used to keep the build byte-identical to the 1998 release.
 
-If you want the matching techniques themselves (penalty profiles, C-side tricks, regfix recipes), read [`MATCHING.md`](MATCHING.md). If you want the catalog of standalone tools, read [`TOOLS.md`](TOOLS.md).
+If you want the matching techniques themselves (penalty profiles, C-side tricks), read [`MATCHING.md`](MATCHING.md) and the `.claude/rules/` technique catalog.
 
 ## Target binary
 
@@ -121,23 +121,6 @@ src/<name>.c
     |                  Per-function injection of nops after `multu` for
     |                  hand-coded-asm functions that have specific multu pacing.
     v
-[regfix]               python3 tools/regfix.py  (reads regfix.txt)
-    |                  Per-function assembly stream rewrites: register swaps,
-    |                  substs, reorders, delete/insert, fill_delay, drain_delay.
-    |                  The main lever for closing the last register-allocation
-    |                  and scheduling diffs that source-level changes can't.
-    v
-[regfix_stage2]        regfix_stage2.txt
-    |                  Second pass — needed for label-aware substitutions that
-    |                  reference labels created during the first regfix pass.
-    v
-[asmfix]               tools/asmfix.py  (reads asmfix.txt)
-    |                  Pre-final-assembly source patches: label renames,
-    |                  replace_first regex substs, delete_between / insert_before
-    |                  for split-rodata / shared-jtbl cases, and the
-    |                  replace_with_asmfile bridge for functions still being
-    |                  retired to pure C.
-    v
 [as]                   mipsel-linux-gnu-as -march=r3000 -mtune=r3000 -O1 -G0
     |
     v
@@ -212,55 +195,14 @@ This sandwich-and-interleave layout is the price of partial decomp. As more `.c`
 
 ## The post-pass tools
 
-The pipeline runs three custom post-passes on every C file's assembly between `cc1` and `as`: **regfix**, **asmfix**, and **maspsx-helpers** (`prologue_fix`, `fix_lwl`, `multu_pad`, sed). They exist because GCC 2.7.2 and ASPSX 2.34 are not literally identical to GCC + GNU as in all respects, and because closing the last few percent of byte-matches requires per-function surgery that can't be expressed in C.
+The pipeline runs a small set of deterministic helper passes on every C file's assembly between `cc1` and `as`: **prologue_fix**, **maspsx**, the sed rodata-align fix, and **multu_pad**. They exist because GCC 2.7.2 and ASPSX 2.34 are not literally identical to GCC + GNU as in all respects.
 
-### regfix.txt — per-function assembly rewrites
-
-[`regfix.txt`](../regfix.txt) is a line-based config (one rule per line, `func: op args [@ idx]`) that drives `tools/regfix.py`. The tool re-parses maspsx output and applies the rules in a fixed phase order:
-
-```
-1. swap (bidirectional register rename)
-2. subst (regex replace)
-3. fill_delay (move source insn into a nop delay slot)
-4. drain_delay (move delay-slot insn before its branch)
-5. delete (remove instruction at idx)
-6. insert (add before idx, post-delete numbering)
-7. insert_after (add after idx, post-insert numbering)
-8. reorder (rearrange a range of instructions)
-9. insert_label (add a label without an instruction)
-```
-
-Each rule targets one function. The indices are 0-based per-function, counting only TEXT instructions (not directives, labels, comments, or `.word` data). Phase ordering matters: substs use original indices, deletes use original indices, inserts use post-delete indices, reorders use post-insert indices.
-
-Example:
-```
-# cdrom_FramesToBcd: GCC picks t2 ($10) for mfhi temp, target uses t3 ($11)
-cdrom_FramesToBcd: $10 <-> $11
-
-# PutShadowRmd: v0/v1 swapped in two regions
-PutShadowRmd: $2 <-> $3 @ 1-5
-PutShadowRmd: $2 <-> $3 @ 14-21
-```
-
-`regfix.txt` currently has ~5,500 rules across the project. The file is large because matching is hard; every commit that adds a function typically adds 0–30 rules.
-
-A second pass (`regfix_stage2.txt`) runs immediately after `regfix.txt`. It's needed because some rules need labels created by the first pass.
-
-### asmfix.txt — pre-final-assembly source patches
-
-[`asmfix.txt`](../asmfix.txt) is the next post-pass after regfix, applied by `tools/asmfix.py`. It handles operations that work on the assembly text as a whole rather than instruction-by-instruction:
-
-| Operation | Purpose |
-|---|---|
-| `rename "old" "new"` | Replace one label name with another (word-boundary-safe regex). |
-| `replace_first "regex" "replacement"` | One-shot regex substitution. |
-| `delete_between "start_regex" "end_regex"` | Remove a range of text. |
-| `insert_before "match_regex" "new_text"` | Insert text before a matching line. |
-| `replace_with_asmfile "path/to/.s"` | **Bridge:** replace the entire function body with raw asm from a file. The escape hatch for functions not yet retired to C. |
-
-The `replace_with_asmfile` form is the project's bridge mechanism. While ~148 functions remain bridged, those entries substitute hand-disassembled asm at build time and the C body in `src/*.c` is dead code. They count as work-in-progress, not matched — see the retirement workflow in [`CONTRIBUTING.md`](../CONTRIBUTING.md).
-
-Bridged functions never reach the assembler with their C body. The substitution happens at the asmfix stage, so `make` succeeds and SHA1 matches — the bridge is invisible to the build outputs.
+(Historical note: until 2026-08-30 the pipeline also carried a per-function
+rule system — `regfix` / `regfix_stage2` / `asmfix` post-passes driven by
+root-level rule files — used to paper over register-allocation and scheduling
+diffs while functions were being matched. The project drove that system to
+zero rules on 2026-08-25 and removed it entirely; every matched function now
+compiles to its bytes directly from C. See git history for the machinery.)
 
 ### inline_asm_canonical.txt — authorized inline asm
 
@@ -282,11 +224,10 @@ Smaller per-function or per-file post-passes:
 | Tool | Purpose | Driven by |
 |---|---|---|
 | `tools/prologue_fix.py` | Swaps `sw $ra` into delay slots of first conditional branch in certain functions. | `tools/delay_slot_ra_funcs.txt` |
-| `tools/fix_lwl.py` | XORs `lwl/lwr/swl/swr` offsets with 3 to convert from GCC's big-endian byte ordering to PS1's little-endian. | Per-file `FIX_LWL_FILES` in `Makefile` |
 | `tools/multu_pad.py` | Injects fixed-position nops after `multu` for hand-coded-asm functions that have specific multu pacing. | `multu_pad_funcs.txt` |
 | sed rodata-align fix | Downgrades `.align 3` (8-byte) to `.align 2` (4-byte) for switch tables in split rodata files. | Per-file `RODATA_ALIGN2_FILES` in `Makefile` |
 
-These are all conceptually similar to regfix and asmfix: per-function deterministic transformations applied at fixed points in the pipeline to coax the GNU toolchain into emitting the same bytes ASPSX 2.34 originally did.
+These are deterministic transformations applied at fixed points in the pipeline to coax the GNU toolchain into emitting the same bytes ASPSX 2.34 originally did.
 
 ## The C/asm interleaving model
 
@@ -308,19 +249,15 @@ The full map of "what lives in each `.c` file" is in [`SUBSYSTEM_MAP_2026-05-12.
 - **GP register** is `0x800A30CC`. Loads addressed `gp + signed_offset` can reach `0x800A2CCC`–`0x800A48CC` in one instruction instead of two (`lui + addiu`). The `sdata_*` config files control which symbols use GP-relative addressing.
 - **Stack** grows down from `0x801FFFF0` toward `0x80100000`. BB2's stack usage is bounded (no deep recursion).
 
-## Why so many post-passes?
+## Why the helper passes?
 
-A reasonable question: why all the regfix/asmfix/prologue_fix/fix_lwl/multu_pad machinery? Why not just rely on a faithful PsyQ-era toolchain?
+A reasonable question: why the prologue_fix/maspsx/multu_pad machinery? Why not just rely on a faithful PsyQ-era toolchain?
 
-Three reasons:
+1. **The original `cc1psx` and `aspsx` are not freely redistributable in source form.** The project uses `decompals/mips-gcc-2.7.2`, which is the same GCC 2.7.2 SN Systems fork built from publicly-released sources, and `mkst/maspsx`, which emulates ASPSX 2.34's behavior on top of GNU `as`. Both are byte-identical to PsyQ for most inputs but diverge on edge cases; the helper passes close those edge cases deterministically.
 
-1. **The original `cc1psx` and `aspsx` are not freely redistributable in source form.** The project uses `decompals/mips-gcc-2.7.2`, which is the same GCC 2.7.2 SN Systems fork built from publicly-released sources, and `mkst/maspsx`, which emulates ASPSX 2.34's behavior on top of GNU `as`. Both are byte-identical to PsyQ for most inputs but diverge on edge cases.
+2. **Some original functions were hand-written assembly, not C.** The `inline_asm_canonical.txt` mechanism authorizes them as whole-body `__asm__("glabel …")` blocks.
 
-2. **Even with a perfect toolchain, GCC 2.7.2's register allocator and scheduler are sensitive to source-level details that the original developer could observe and tune.** When you can't see the developer's exact source, you have to reverse-engineer it from the output. The C variants you'd need to write to match every quirk are sometimes ugly, sometimes impossible. The regfix layer lets you write reasonable C and patch the differences in assembly — a tradeoff between source-code quality and tooling complexity.
-
-3. **Some original functions were hand-written assembly, not C.** The `inline_asm_canonical.txt` mechanism authorizes them; the alternative would be writing C with embedded inline asm that GCC mangles. The asmfix `replace_with_asmfile` bridge serves the in-progress retirement of those (and other) functions.
-
-The end state is: every function in `src/*.c` is real C, regfix.txt is mostly small register-naming fixups, asmfix.txt has zero `replace_with_asmfile` lines, and `inline_asm_canonical.txt` is a small list of well-justified exceptions.
+The standard for every function is: real C that compiles to byte-identical output with no per-function patching, or an authorized canonical-asm body. There is no middle layer.
 
 ## Further reading
 

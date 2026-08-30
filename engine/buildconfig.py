@@ -33,14 +33,11 @@ HEADER_SIZE = 0x800
 # Python pipeline stages (invoked exactly as the Makefile invokes them)
 MASPSX = "python3 tools/maspsx/maspsx.py"
 PROLOGUE_FIX = "python3 tools/prologue_fix.py"
-FIX_LWL = "python3 tools/fix_lwl.py"
 MULTU_PAD = "python3 tools/multu_pad.py --funcs multu_pad_funcs.txt"
-REGFIX = "python3 tools/regfix.py"
-REGFIX_STAGE2 = "REGFIX_CONFIG=regfix_stage2.txt python3 tools/regfix.py"
-ASMFIX = "python3 tools/asmfix.py"
-
-# The three "cheat" stages, named so the Phase 1 sandbox can target them.
-CHEAT_STAGES = ("regfix", "regfix_stage2", "asmfix")
+# NOTE: the regfix / regfix_stage2 / asmfix rule stages were REMOVED 2026-08-30
+# after the rules-to-zero campaign (2026-08-25) reached 0 rules project-wide.
+# The sandbox's cheat neutralization now covers source-level cheat-asm and the
+# tracked prologue_fix config only.
 
 # -- Flags ------------------------------------------------------------------
 CC_FLAGS = "-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel"
@@ -73,13 +70,12 @@ MASPSX_FLAGS_GP = (
 )
 
 # -- Per-file opt-ins (C file stem, no path/extension) ----------------------
-# Mirrors the Makefile GP_FILES / EXPAND_LB_FILES / FIX_LWL_FILES /
+# Mirrors the Makefile GP_FILES / EXPAND_LB_FILES /
 # RODATA_ALIGN2_FILES / NO_SR_FILES lists. Byte-parity (task 4) is the proof
 # these are correct; do not edit without re-running `engine parity`.
 GP_FILES = {"text1a_pre", "text1a_post"}
 EXPAND_LB_FILES = {"code6cac_b"}
 EXPAND_LH_FILES = set()
-FIX_LWL_FILES = set()  # obsolete since -mel adoption 2026-08-04
 RODATA_ALIGN2_FILES = {
     "code6cac", "code6cac_b", "code6cac_c", "code6cac_c0", "code6cac_c_ab",
     "code6cac_c2", "text1a_pre", "text1a_post", "text1a_b", "text1a_c",

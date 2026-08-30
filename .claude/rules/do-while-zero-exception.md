@@ -2,12 +2,18 @@
 name: do-while-zero-exception
 paths: [".claude/rules/do-while-zero-exception.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "SANCTIONED (owner ruling 2026-07-06, supersedes the 2026-06-04 mechanism-scoping): `do { ... } while (0);` (any body, incl. empty) is an allowed pure-C match device for ANY codegen effect incl. register allocation, with mandatory inline FAKE annotation; nested wraps need a single-level-insufficient justification. Hard line unchanged: no regfix/pins/inline-asm/semantic-lie C."
 metadata:
   type: rule
 ---
 
 # do-while(0) as a match device — the construct-honesty line
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Owner ruling 2026-07-06 (final; supersedes the 2026-06-04 mechanism-scoping
 ## and the same-day "Declined extension" interim ruling)

@@ -152,9 +152,8 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 The project reached zero-stub completion on 2026-04-27: essentially every
 function is decompiled to C (only a handful of canonical-asm bodies remain as
 `INCLUDE_ASM`). The remaining work is not "asm-only" functions but
-**byte-matching** them without cheats — ~422 functions still carry a
-regfix/asmfix rule or cheat-asm and are tracked in `engine/queue.json` (the
-single worklist). Some subsystem docs still cite bare `func_8XXXXXXX` names
+**byte-matching** them without cheats — the outstanding functions are tracked
+in `engine/queue.json` (the single worklist). Some subsystem docs still cite bare `func_8XXXXXXX` names
 where `named_syms.txt` has since assigned a semantic name — trust
 `named_syms.txt` when they disagree.
 

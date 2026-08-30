@@ -2,12 +2,18 @@
 name: cross-jump-store-tail-merge
 paths: [".claude/rules/cross-jump-store-tail-merge.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "target has more `sw GLOBAL` stores (or more `j SAME_LABEL` error tails) than your build: GCC 2.7.2 jump2 cross_jump merged N identical `[sw GLOBAL; j END]` tails into one block. FIX: give the error paths a MIX of exit forms (distinct `goto endK; ... endK: return G;` labels + one inline `return G;`) so the block ENDINGS differ -> suffixes not rtx_equal -> no merge."
 metadata:
   type: reference
 ---
 
 # The cross-jump STORE-tail merge wall — SOLVED (mix the exit forms)
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 The store-tail analogue of [[cross-jump-call-merge]] (which uses arg COUNT to keep
 CALL suffixes distinct). Here the merged suffix is a global STORE + jump, and the

@@ -1,13 +1,19 @@
 ---
 name: halfword-index-srl-sra
-paths: ["regfix.txt"]
+paths: []
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 description: "A `subst \"srl\" \"sra\"` regfix on a halfword (s16[]) array index where GCC made the index shift logical but target has arithmetic. Cause: m2c's shift-mask-shift reconstruction `arr[((var>>1)&0x1FFE)>>1]` lets GCC's combine fold the redundant >>1/*2 round-trip and canonicalize the sign-masked arithmetic shift to srl. Fix: index a byte pointer so the byte offset is written directly — `*(s16*)((u8*)&arr + ((var>>1)&0x1FFE))` — which keeps sra and retires the rule."
 metadata:
   type: reference
 ---
 
 # `subst "srl" "sra"` on a halfword array index — fix with a direct byte-offset cast
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

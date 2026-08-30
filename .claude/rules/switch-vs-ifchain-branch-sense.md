@@ -1,7 +1,8 @@
 ---
 name: switch-vs-ifchain-branch-sense
-paths: ["regfix.txt", "asmfix.txt"]
+paths: []
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 description: "A multi-way dispatch carrying branch-sense-swap rules (bne<->beq + swapped j targets) on ONE case was hand-decompiled as an if-goto chain. GCC emits the inverted branch sense for the case nearest default and won't cross-jump its body into the shared merge label. Rewrite the if-goto chain as a real `switch` statement — GCC's switch decision-tree codegen picks the positive branch sense and cross-jumps the sibling case bodies on its own, retiring the rules."
 metadata:
   type: recipe
@@ -9,6 +10,11 @@ metadata:
 
 
 # Branch-sense-swap rules on a dispatch func → rewrite the if-goto chain as a real `switch`
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

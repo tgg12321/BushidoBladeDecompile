@@ -137,7 +137,7 @@ def main() -> int:
 
     # --- build-file detection ---
     check("src/foo.c is build-critical", g.is_build_critical("src/foo.c", SIGS))
-    check("regfix.txt is build-critical", g.is_build_critical("regfix.txt", SIGS))
+    check("Makefile is build-critical", g.is_build_critical("Makefile", SIGS))
     check("sdata_funcs.txt is build-critical (glob)", g.is_build_critical("sdata_funcs.txt", SIGS))
     check("tools/x.sh is build-critical", g.is_build_critical("tools/x.sh", SIGS))
     check("docs/STATUS.md is NOT build-critical", not g.is_build_critical("docs/STATUS.md", SIGS))

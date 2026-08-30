@@ -2,12 +2,18 @@
 name: fork-divergence-inline-asm
 paths: [".claude/rules/fork-divergence-inline-asm.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "OWNER RULING 2026-07-13 (Ruling-2) — narrow authorized-inline-asm sub-class for regions where our decompals GCC 2.7.2 fork provably CANNOT emit the target's bytes from the faithful C source that cc1psx did emit them from (cc1 SIGSEGVs on the intended source). Four-item evidence gate; disposition is region-scoped inline asm, NOT whole-function canonical. First confirmed case: _spu_FiDMA (DispUpdateStatusMessage splice)."
 metadata:
   type: rule
 ---
 
 # Fork-divergence inline-asm (Ruling-2, 2026-07-13)
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 **Owner ruling 2026-07-13** (first confirmed case: `_spu_FiDMA` in the
 `DispUpdateStatusMessage` splice, `src/code6cac.c`; escalation:

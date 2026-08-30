@@ -12,11 +12,7 @@ SPLAT_YAML   := splat.yaml
 CC1          := tools/gcc-2.7.2/build/cc1
 # maspsx ASPSX compatibility layer
 PROLOGUE_FIX := python3 tools/prologue_fix.py
-FIX_LWL      := python3 tools/fix_lwl.py
 MULTU_PAD    := python3 tools/multu_pad.py --funcs multu_pad_funcs.txt
-REGFIX       := python3 tools/regfix.py
-REGFIX_STAGE2:= REGFIX_CONFIG=regfix_stage2.txt python3 tools/regfix.py
-ASMFIX       := python3 tools/asmfix.py
 MASPSX       := python3 tools/maspsx/maspsx.py
 MASPSX_FLAGS := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --label-nop-funcs=maspsx_label_nop_funcs.txt
 MASPSX_FLAGS_GP := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --label-nop-funcs=maspsx_label_nop_funcs.txt
@@ -35,8 +31,7 @@ CPP          := mipsel-linux-gnu-cpp
 # -mcpu=3000: target R3000A
 # -mel: MANDATORY. The prebuilt cc1's mips-mips-gnu triple defaults BIG-endian;
 # -mel flips BYTES_BIG_ENDIAN (spill-slot layout, bitfield direction, lwl/lwr).
-# Load-bearing for the oracle match — do not remove (see AGENTS.md + the
-# FIX_LWL retirement note below).
+# Load-bearing for the oracle match — do not remove (see AGENTS.md).
 CC_FLAGS     := -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel
 CC_FLAGS_GP  := -O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel
 AS_FLAGS     := -Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0
@@ -83,7 +78,7 @@ ASM_FUNC_O_FILES := $(patsubst %,$(BUILD_DIR)/$(ASM_DIR)/funcs/%.o,$(LINKED_ASM_
 ALL_O_FILES  := $(S_O_FILES) $(DATA_O_FILES) $(C_O_FILES) $(ASM_FUNC_O_FILES)
 
 # -- Top-level targets --
-.PHONY: all clean setup check clean-check validate
+.PHONY: all clean setup check clean-check
 
 all: check
 
@@ -123,12 +118,6 @@ GP_FILES := text1a_pre text1a_post
 EXPAND_LB_FILES := code6cac_b
 EXPAND_LH_FILES :=
 
-# -- Per-file fix_lwl opt-in --
-# OBSOLETE since the 2026-08-04 -mel adoption: cc1 now emits little-endian
-# lwl/lwr/swl/swr offsets natively (the stage existed only to XOR-correct the
-# big-endian artifact). List kept empty; tools/fix_lwl.py retained for history.
-FIX_LWL_FILES :=
-
 # -- Per-file rodata alignment fix --
 # GCC 2.7.2 emits .align 3 (8-byte) for switch tables in .rodata.
 # When rodata is split across objects, this creates unwanted padding.
@@ -143,24 +132,22 @@ NO_SR_FILES :=
 # Helper: resolve CC/MASPSX flags based on whether file needs GP-relative
 cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))$(if $(filter $1,$(NO_SR_FILES)), -fno-strength-reduce)
 maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))$(if $(filter $1,$(EXPAND_LB_FILES)), --expand-lb)$(if $(filter $1,$(EXPAND_LH_FILES)), --expand-lh)
-fix_lwl_for = $(if $(filter $1,$(FIX_LWL_FILES)),$(FIX_LWL) |,)
 rodata_align_fix = $(if $(filter $1,$(RODATA_ALIGN2_FILES)),sed "s/\.align\t3/.align\t2/" |,)
 
 # Shared pipeline dependencies for every C object. Without these, changing
-# regfix/asmfix/toolchain config can leave stale objects in place because
+# pipeline/toolchain config can leave stale objects in place because
 # make only notices src/*.c timestamps.
 PIPELINE_DEPS := Makefile \
 	tools/prologue_config.json \
-	regfix.txt regfix_stage2.txt asmfix.txt \
 	sdata_syms.txt sdata_funcs.txt sdata_exclude.txt expand_lb_funcs.txt multu_funcs.txt multu_pad_funcs.txt expand_dest_funcs.txt \
-	tools/prologue_fix.py tools/fix_lwl.py tools/regfix.py tools/asmfix.py tools/multu_pad.py \
+	tools/prologue_fix.py tools/multu_pad.py \
 	tools/maspsx/maspsx.py tools/maspsx/maspsx/__init__.py
 
 # -- Compile C source (decompiled functions) --
-# Pipeline: cpp | cc1 | prologue_fix | maspsx | [fix_lwl] | [sed align fix] | multu_pad | regfix | regfix_stage2 | asmfix | as -> .o
+# Pipeline: cpp | cc1 | prologue_fix | maspsx | [sed align fix] | multu_pad | as -> .o
 $(BUILD_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c $(PIPELINE_DEPS)
 	@mkdir -p $(dir $@)
-	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(PROLOGUE_FIX) | $(MASPSX) $(call maspsx_flags_for,$*) | $(call fix_lwl_for,$*) $(call rodata_align_fix,$*) $(MULTU_PAD) | $(REGFIX) | $(REGFIX_STAGE2) | $(ASMFIX) | $(AS) $(AS_FLAGS) -o $@
+	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(PROLOGUE_FIX) | $(MASPSX) $(call maspsx_flags_for,$*) | $(call rodata_align_fix,$*) $(MULTU_PAD) | $(AS) $(AS_FLAGS) -o $@
 
 # -- Assemble .s files (non-decompiled asm) --
 $(BUILD_DIR)/$(ASM_DIR)/%.o: $(ASM_DIR)/%.s
@@ -174,12 +161,6 @@ $(BUILD_DIR)/$(ASM_DIR)/data/%.o: $(ASM_DIR)/data/%.s
 # -- Splat: re-split the binary --
 setup:
 	python3 -m splat split $(SPLAT_YAML)
-
-# -- Validate regfix.txt rules against current pipeline output --
-# Catches label-renumber drift, stale indices, post-swap pattern mismatches.
-# See feedback_label_renumber_breaks_regfix.md.
-validate:
-	python3 tools/validate_regfix.py --live
 
 # -- Clean --
 clean:

@@ -8,6 +8,11 @@ metadata:
 
 # Split scalars hide an aggregate (and manufacture a false alias edge)
 
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
+
 ## Symptom
 
 A body that writes 2+ CONSECUTIVE `D_8000xxxx` scalars and passes an address

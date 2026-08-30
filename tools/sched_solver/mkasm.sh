@@ -1,8 +1,8 @@
 #!/bin/bash
 # Produce, for one TU, the three aligned asm texts the goal-mapper needs:
 #   <stem>.cc1.s   raw cc1 output              (index-aligns 1:1 with .dbr UIDs)
-#   <stem>.hon.s   + prologue_fix|maspsx|multu_pad, NO regfix/asmfix  (= OURS, honest)
-#   <stem>.tgt.s   + regfix|regfix_stage2|asmfix                      (= TARGET bytes)
+#   <stem>.hon.s   + prologue_fix|maspsx|multu_pad  (= OURS, honest)
+#   <stem>.tgt.s   same pipeline (rule stages retired 2026-08-30)     (= TARGET bytes)
 # Run from a snapshot root.  Usage: bash mkasm.sh <stem>
 set -u
 STEM=$1
@@ -32,9 +32,7 @@ echo "  multu_pad  rc=$? lines=$(wc -l < $OUT/$STEM.hon.s)"
 # INCLUDE_ASM-routed functions this stream cannot carry the target; use the
 # object-level goal path (--target-object build/src/<stem>.o).
 rm -f "$OUT/$STEM.tgt.s"
-python3 tools/regfix.py < "$OUT/$STEM.hon.s" 2>/dev/null > "$OUT/$STEM.r1.s"
-REGFIX_CONFIG=regfix_stage2.txt python3 tools/regfix.py < "$OUT/$STEM.r1.s" 2>/dev/null > "$OUT/$STEM.r2.s"
-python3 tools/asmfix.py < "$OUT/$STEM.r2.s" 2>/dev/null > "$OUT/$STEM.tgt.s"
+cp "$OUT/$STEM.hon.s" "$OUT/$STEM.tgt.s"
 echo "  cheats     rc=$? lines=$(wc -l < $OUT/$STEM.tgt.s)"
 if [ ! -s "$OUT/$STEM.tgt.s" ]; then
     rm -f "$OUT/$STEM.tgt.s"

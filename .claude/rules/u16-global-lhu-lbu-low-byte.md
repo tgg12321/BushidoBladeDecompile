@@ -1,13 +1,19 @@
 ---
 name: u16-global-lhu-lbu-low-byte
-paths: ["regfix.txt"]
+paths: []
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 description: "A single regfix `subst` downgrading a gp-rel u16 global read from `lhu` to `lbu` (e.g. `lhu $3,%gp_rel(D_800A3578)`→`lbu`). Cause: the function's entry/dispatch read only consumes the low byte but a sibling read needs the full halfword (word>>8 + write-back), so the global can't be retyped u8. Fix: leave it u16 and read the low byte at the dispatch site via `*(u8*)&G` — emits lbu with the wide reads intact."
 metadata:
   type: reference
 ---
 
 # `subst "lhu" "lbu"` on a u16 global dispatch read — read the low byte explicitly
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

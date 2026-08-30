@@ -75,11 +75,9 @@ def queue_item(func: str) -> dict | None:
 def confirm_park(func: str, item: dict | None) -> tuple[str, str]:
     """(verdict, detail) — can the orchestrator mechanically confirm this park?"""
     if cheats.is_jtbl_infra(func):
-        nfix = len(cheats.func_rule_lines(func, cheats.ASMFIX))
         return ("AUTO-CONFIRMED",
-                f"jtbl-infra: all {nfix} rules are jump-table asmfix (rename/"
-                f"replace_first/delete_between, references jtbl_*), zero regfix. "
-                f"Canonical rodata-split infra; needs a global rodata reorder.")
+                "jtbl-coupled: canonical rodata-split infra; needs a global "
+                "rodata reorder.")
     reason = (item or {}).get("park_reason", "")
     return ("NEEDS-REVIEW",
             f"park reason not mechanically confirmable — orchestrator judgment "

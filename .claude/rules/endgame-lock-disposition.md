@@ -2,6 +2,7 @@
 name: endgame-lock-disposition
 paths: [".claude/rules/endgame-lock-disposition.md"]
 # on-demand: surfaced via codegen-technique-index; read when an escalation
+
 # proposes canonical-asm OR a new coercion family for an RA/scheduler-locked fn.
 description: "OWNER POLICY 2026-07-20 + AUTO-RULING 2026-07-27 + judge-sole-gate 2026-08-18 for RA/scheduler-locked endgame functions: canonical-asm ONLY with STRONG scan_hand_coded evidence (pipeline-executed grant, no owner wait); coercion families ONLY with in-hand SOTN precedent (borderline-logged, refused under the current frozen list); absent both, REFUSED / OWNER-ACCEPTED INCOMPLETE applies AUTOMATICALLY. NOTHING escalates to a waiting owner."
 metadata:
@@ -9,6 +10,11 @@ metadata:
 ---
 
 # Endgame RA/scheduler-lock disposition (OWNER POLICY, 2026-07-20)
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 Standing owner ruling (Trenton, 2026-07-20), issued while disposing three
 escalations at once (func_80045294, cpu_side_move_dir_4, func_80057CC8 — all

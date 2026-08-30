@@ -1,11 +1,17 @@
 ---
 name: loop-exit-work-inside-loop-sched-fence
 description: Post-loop inits hoisted above a tail store region — move the loop's one-time exit work inside the loop (if (cond) continue; tail; break;) so the LOOP_END note lands mid-block and fences sched
-paths: ["regfix.txt"]
+paths: []
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
+
 ---
 
 # Post-loop inits hoisted above a tail store region — move the loop's exit work INSIDE the loop (`if (cond) continue; tail; break;`)
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

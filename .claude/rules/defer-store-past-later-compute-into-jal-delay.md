@@ -2,12 +2,18 @@
 name: defer-store-past-later-compute-into-jal-delay
 paths: [".claude/rules/defer-store-past-later-compute-into-jal-delay.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "A regfix `reorder` over a pre-call store cluster retires by HOISTING the stored value into a local and moving the `GLOBAL = val;` store statement AFTER a later-computed value — GCC then schedules the sw into the following jal's delay slot, matching target. Retired the AllocRobRmd reorder @88-102."
 metadata:
   type: reference
 ---
 
 # Defer a global store past a later compute → GCC drops it into the jal delay slot
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 ## Symptom
 

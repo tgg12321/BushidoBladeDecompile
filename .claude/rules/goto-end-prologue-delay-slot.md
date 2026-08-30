@@ -2,6 +2,7 @@
 name: goto-end-prologue-delay-slot
 paths: [".claude/rules/goto-end-prologue-delay-slot.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+
 description: "ARCHIVED FORBIDDEN — the `s32 ret_val; if (arg==NULL) {ret_val=0; goto end;} ... end: return ret_val;` accumulator+shared-label has zero semantic purpose; exists solely to make reorg.c fill the bnez/j delay slots with the prologue and zero-assignment. Same intent as the dead-goto label-pad / DImode chain / inline-asm-injection family."
 metadata:
   type: archived
@@ -9,6 +10,11 @@ metadata:
 ---
 
 # ARCHIVED — goto-end-prologue-delay-slot is forbidden
+
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
 
 This file used to document a "lever" for the 4-insn entry pattern
 (`bnez/sp-adjust-delay/j/zero-delay`) target asm sometimes has. The

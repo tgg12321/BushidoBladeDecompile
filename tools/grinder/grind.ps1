@@ -565,8 +565,8 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
     # Single-stem gate: the ONLY build-input change allowed in a candidate is the
     # target file itself. A load-bearing edit to another src/include file would be
     # byte-verified now but DROPPED by the fixed Match commit below — producing a
-    # committed Match that fails a fresh rebuild. Reject before retire (retire
-    # legitimately mutates regfix/asmfix afterwards). Keys on the PATH under any
+    # committed Match that fails a fresh rebuild. Reject before retire. Keys on
+    # the PATH under any
     # git status (M/A/MM/rename/?? untracked header) — not modifications alone.
     # NB: porcelain format is exactly "XY path"; extract by fixed offset. (The
     # previous `-replace '^[\sA-Z?]+'` was case-INSENSITIVE per PowerShell default
@@ -756,7 +756,7 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         # tree has to be exactly the tree that passed the full-build SHA1 gate, or a
         # Match lands missing a load-bearing edit and the next rebuild breaks.
         $extraScope = @(Get-ExtraScope $func)
-        git -C $Root add -- "src/$stem.c" $extraScope engine/queue.json regfix.txt regfix_stage2.txt asmfix.txt tools/prologue_config.json tools/frame_fix_funcs.txt tools/delay_slot_ra_funcs.txt "memory/grind/$func" 2>$null
+        git -C $Root add -- "src/$stem.c" $extraScope engine/queue.json tools/prologue_config.json tools/frame_fix_funcs.txt tools/delay_slot_ra_funcs.txt "memory/grind/$func" 2>$null
         git -C $Root commit -m "Match: $func — COMPLETED-C (grinder, $sessionsTaken sessions)" | Out-Null
         Add-Decision $func 'final call' 'PASS' $v.justification
         # R5 (modality-effectiveness 2026-08-19): record the CLOSING modality —
@@ -1178,7 +1178,6 @@ while ($true) {
                 try { $sc = (python tools/scan_hand_coded.py --single $func 2>$null | Out-String)
                       if ($sc -match 'tier=(\w+)') { $tier = $Matches[1] } } catch { }
                 $rc = 0
-                try { $rc = @(Select-String -Path (Join-Path $Root 'regfix.txt'),(Join-Path $Root 'asmfix.txt') -Pattern "^$([regex]::Escape($func)):" -ErrorAction SilentlyContinue).Count } catch { }
                 $ref = (python tools/grinder/grindlib.py autoescalate . $func $stem $tier $rc (Get-Date -Format 'yyyy-MM-dd')).Trim()
                 if ($ref -match 'CANONICAL-ASM GRANT PATH') {
                     # Owner ruling 2026-08-18: STRONG tier routes to the pipeline

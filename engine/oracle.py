@@ -9,7 +9,7 @@ builds the original binary. `oracle/manifest.json` freezes:
   * the git commit it was locked at
   * toolchain identity (cc1 hash, maspsx rev, as/python versions)
   * per-file hashes of the matched C corpus
-  * per-file hashes of the pipeline config (regfix/asmfix/sdata/... )
+  * per-file hashes of the pipeline config (sdata/gate lists/... )
   * the golden fixtures (pure-C, zero-cheat functions a tool-health gate
     re-derives in seconds)
 
@@ -32,7 +32,6 @@ MANIFEST = ORACLE_DIR / "manifest.json"
 # Pipeline-config files whose contents affect codegen. Drift here means the
 # build inputs changed since the oracle was locked.
 CONFIG_FILES = [
-    "regfix.txt", "regfix_stage2.txt", "asmfix.txt",
     "sdata_syms.txt", "sdata_funcs.txt", "sdata_exclude.txt",
     "expand_lb_funcs.txt", "multu_funcs.txt", "multu_pad_funcs.txt",
     "expand_dest_funcs.txt", "named_syms.txt",

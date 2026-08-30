@@ -105,14 +105,12 @@ Other handy `make` targets:
 | `make clean-check` | `make clean` then `make check`. Always reproducible; the safest verification. |
 | `make clean` | Wipes `build/` so the next build is from scratch. |
 | `make setup` | Re-runs splat. Use after edits to `splat.yaml` or when `asm/funcs/` looks stale. |
-| `make validate` | Runs `tools/validate_regfix.py --live` to flag broken regfix rules without rebuilding. |
 
 The full per-C-file pipeline, as defined in the [`Makefile`](Makefile):
 
 ```
 cpp | cc1 (GCC 2.7.2) | prologue_fix | maspsx (aspsx 2.34) |
-  [fix_lwl] | [rodata align fix] | multu_pad |
-  regfix.txt | regfix_stage2.txt | asmfix.txt |
+  [rodata align fix] | multu_pad |
   mipsel-linux-gnu-as -> .o
 ```
 
@@ -170,7 +168,7 @@ ls -l tools/gcc-2.7.2/build/cc1   # should exist
 
 ### Build produces wrong bytes after editing a `.c` file from Windows
 
-The PsyQ toolchain (specifically GNU `as`) refuses CRLF line endings silently — it doesn't error, it just emits broken assembly. **All edits to `src/*.c`, `*.h`, `Makefile`, `*.ld`, `regfix.txt`, `asmfix.txt`, `*.s`, and other build files must be made through WSL** (e.g., `vim`, `python3 -c '... open(...).write(...)'`, or VS Code with `files.eol: "\n"` enabled for the WSL remote).
+The PsyQ toolchain (specifically GNU `as`) refuses CRLF line endings silently — it doesn't error, it just emits broken assembly. **All edits to `src/*.c`, `*.h`, `Makefile`, `*.ld`, `*.s`, and other build files must be made through WSL** (e.g., `vim`, `python3 -c '... open(...).write(...)'`, or VS Code with `files.eol: "\n"` enabled for the WSL remote).
 
 Native Windows editors (Notepad, default VS Code on Windows, etc.) write CRLF and will silently corrupt the build. If you suspect CRLF contamination:
 

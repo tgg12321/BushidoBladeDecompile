@@ -8,6 +8,11 @@ metadata:
 
 # Inline-asm policy
 
+> **Historical framing note (2026-08-30):** this rule predates the removal of the
+> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
+> symptom text says a function "carries a rule", read it as "the honest build shows
+> this diff shape vs target". The technique itself is unchanged.
+
 > **Policy ([[completion-standard]], 2026-05-21; expanded 2026-05-31):** a
 > function is in exactly one of three categories:
 >

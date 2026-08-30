@@ -1,7 +1,7 @@
 ---
 name: decomp-loop
 paths: [".claude/rules/decomp-loop.md"]
-description: "The manual-path per-function decomp loop (queue → canonical → sandbox → edit → retire → done), WIP checkpoints (memory/wip/<func>/), the near-duplicate-lead shortcut, and the sandbox-vs-build/ reference gotcha. Condensed spine lives in CLAUDE.md; full detail here."
+description: "The manual-path per-function decomp loop (queue → canonical → sandbox → edit → verify → done), WIP checkpoints (memory/wip/<func>/), the near-duplicate-lead shortcut, and the sandbox-vs-build/ reference gotcha. Condensed spine lives in CLAUDE.md; full detail here."
 metadata:
   type: rule
 ---
@@ -51,16 +51,15 @@ path (the `decomp-orchestrate` skill, one focused agent on `main`).
    asm/funcs/<func>.s` queries the downloaded decomp.me corpus (the BB2 toolchain class:
    gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5) for scratches whose target asm overlaps yours. Coarse
    pre-filter; manual inspect the top hits for an analogous C shape.
-5. **Score 0 ⇒ finish.** `retire <func>` deletes the function's now-unneeded regfix/asmfix rules,
-   rebuilds, and SHA1-gates (auto-rollback on mismatch). A pure-C function with no rules to remove
-   just needs `verify-oracle --rebuild` to confirm the byte+link match. **Note (masked-0 caveat):**
-   the sandbox distance is masked (register names normalised out), so a `0` can hide a real register
-   diff — `retire`/`verify-oracle` (full SHA1) is the only proof. If `retire` rolls back, the gap is
-   genuine reg-alloc work; keep editing.
-   Then `queue done <func>` records completion (it re-verifies ZERO rules + SHA1 == oracle), AND
+5. **Score 0 ⇒ finish.** `verify-oracle --rebuild` confirms the byte+link match.
+   **Note (masked-0 caveat):** the sandbox distance is masked (register names normalised out), so a
+   `0` can hide a real register diff — `verify-oracle` (full SHA1) is the only proof. If the full
+   build mismatches, the gap is genuine reg-alloc work (or a source cheat-asm barrier —
+   [[sandbox-zero-retire-fails]]); keep editing.
+   Then `queue done <func>` records completion (it re-verifies zero cheat-asm + SHA1 == oracle), AND
    delete `memory/wip/<func>/` if one existed (the checkpoint's purpose is served on close-out). If
-   the item is genuinely not pure-C-closable (canonical-asm needing user auth, or a documented
-   plateau), `queue park <func> --reason "…"` instead so the queue advances.
+   the item is genuinely stuck on a decidable policy question,
+   `queue escalate <func> --reason "…"` with a decision packet so the queue advances.
 5b. **Score lowered but not 0 ⇒ checkpoint.** If you measurably lowered the floor below HEAD's but
    couldn't close, do NOT modify `src/` (oracle stays green). Save the progress as a WIP entry under
    `memory/wip/<func>/`: candidate.c + meta.json (append to `sessions[]`, update
