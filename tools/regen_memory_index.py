@@ -266,7 +266,10 @@ def main() -> int:
             paths_str = ", ".join(f"`{p}`" for p in paths) if paths else "(no paths)"
             out_lines.append(f"- **{stem}** — {paths_str}")
         if on_demand:
-            out_lines.append(f"- _on-demand (via codegen-technique-index):_ {', '.join(on_demand)}")
+            # Don't enumerate the on-demand technique slugs — the
+            # codegen-technique-index rule already carries the symptom→slug
+            # map, and the full list cost ~1.4KB of every session's baseline.
+            out_lines.append(f"- _plus {len(on_demand)} on-demand technique rules — symptom→slug map in **codegen-technique-index** (auto-loads on `src/*.c`)_")
         out_lines.append("")
 
     content = "\n".join(out_lines).rstrip() + "\n"
