@@ -1814,3 +1814,37 @@ across 6 chassis (~81k+ iters, 0 novel basin closures), m2c (s8), in-repo transp
   goalmap object mode assumed 1:1 text/object length, false for macro-bearing
   streams (`la`, bare-symbol mem ops -> lui+op). Fixed in
   tools/sched_solver/goalmap.py (_macro_expand_counts + checksum) same day.
+
+- [s106] Executed the two axes the 2026-08-30 solver campaign-sweep flagged as genuinely UNPROBED, on the chassis it named. 11 sandbox measurements, all byte-neutral (build_insns 160 == target 160, rules_dropped 0). **Axis (a) t0-side demotion (g3 chassis, control re-measured 6):** 14 / 14 / 9 / 9 / 14 across refs_down-by-inline, refs_down-by-single-def, refs_down-by-pointer-local, live_extend-by-base-accumulator, live_extend-by-split-shift. **Axis (b) p82 live-split (g3):** 6 / 6 / 6 INERT for own-local, address/value split, and late deref; 14 for the maximal shrink (no local at all). **Axis (b) on h5 (floor chassis):** 2 / 2 INERT. Both axes KILLED - nothing at or below either chassis' control. Artifacts tmp/grind/CD_sync/s106/b_*.c + rejected/s106_*.c (13 forms banked -> 135 total).
+
+- [s106] STRUCTURAL FINDING: the g3 basin admits only the discrete score set {6, 9, 14} under EVERY allocno-priority perturbation of the t0/arg5 pair, independent of whether the perturbation is by reference count or by live length, and independent of rtx class (int vs pointer local). That is why the solver's ranked vectors are model-REACHABLE yet C-unreachable: local-alloc.c coalesces split locals back into one quantity before global.c sees the shortened range, so `live_shrink` has no C realization, and any `refs_down` big enough to register also perturbs emission order and re-enters the g3-basin order trap. This closes the RA half of the residual the same way s105 closed the ORDER half.
+
+- [s106] CANDIDATE IMPROVED (not in score - in honesty): the `v0` staged-value borrow was measured NOT load-bearing (fresh honest local `ix` scores 2 / 160, bit-identical to the borrow). memory/grind/CD_sync/candidate.c now spells `s32 ix; ix = idx_1494[1]; ... ix <<= 2;` and the staged-value /* FAKE */ annotation is GONE. Re-measured after the edit: score 2, target_insns 160, build_insns 160, rules_dropped 0. The floor-2 form now carries two FAKE constructs, down from three.
+
+- [s106] The remaining scaffold is irreducible: dropping the `pp` pointer-alias regresses 2 -> 8; additionally collapsing the two-step `t0 *= 4; t0 = base + t0` addressing regresses to 10; and s105 measured all three honest respellings of the idx_1495 cross-symbol extender at 15. Every remaining annotated construct in candidate.c is load-bearing, and the idx_1495 one is from the family the owner REFUSED on 2026-07-20.
+
+- [s106] Gate (a) re-run on this chassis: `python3 tools/scan_hand_coded.py --single CD_sync` = `tier=LOW score=2/8 (160 insns) - no strong hand-coded indicators`. Only S4 (4 loads in an 8-insn window @ insn 49) and S5 (approx-sibling CD_ready, jaccard 0.64) fire; S1/S2/S6 all absent, S3 negative (9 spills), S7/S8 negative. Artifact tmp/grind/CD_sync/s106/scan_hand_coded.txt. Third consecutive identical result (s104, s105, s106).
+
+- [s106] Gate (b) re-run: `docs/reference/sotn-construct-index.md` searched for cross-symbol / symbol-difference / `(s32)&D_` shapes and for live-split shapes - ZERO hits on both (artifact tmp/grind/CD_sync/s106/gate_b_sotn_census.txt). Reproduces the s104 census negative. No in-hand SOTN-master precedent exists for the closing construct.
+
+- [s106] Disposition filed this session at docs/grind/decisions.md (2026-08-30 entry) under the 2026-07-27 standing ruling: BOTH endgame-lock AND-gates FAIL, which is the owner's pre-decided case. No standard-lowering packet filed (2026-08-24 auto-reject class).
+
+- [s106] 11 sandbox measurements this session, ALL byte-neutral (build_insns 160 == target_insns 160, rules_dropped 0). g3 control re-measured at 6/160; h5 control re-measured at 2/160. Floor unchanged at 2.
+
+- [s106] STRUCTURAL: the g3 basin admits only the discrete score set {6, 9, 14} under EVERY allocno-priority perturbation of the t0/arg5 pair - independent of refs vs livelen, independent of rtx class (int vs pointer local). The solver's ranked vectors are model-REACHABLE but C-unreachable: local-alloc.c coalesces split locals into one quantity before global.c sees the shortened range (kills live_shrink), and any refs_down large enough to register also perturbs emission order and re-enters the g3-basin order trap.
+
+- [s106] This closes the RA half of the {sll@54 <-> addu@55} residual the same way s105 closed the ORDER half. Both halves are now independently, typed-exhaustively closed.
+
+- [s106] CANDIDATE IMPROVED: the v0 staged-value /* FAKE */ is gone - an ordinary fresh local ix measures 2/160, bit-identical. memory/grind/CD_sync/candidate.c now carries two annotated constructs instead of three.
+
+- [s106] The remaining scaffold is irreducible: pp pointer-alias 2 -> 8 when dropped; t0 two-step addressing -> 10 when additionally collapsed; idx_1495 honest respellings all 15 (s105).
+
+- [s106] The one construct holding the 13-point gap is the cross-symbol arithmetic idiom the owner REFUSED on 2026-07-20. It is not resurrected and not proposed for sanction.
+
+- [s106] Gate (a) FAILS: scan_hand_coded tier=LOW 2/8, no S1/S2/S6. Gate (b) FAILS: zero SOTN-construct-index hits. Both AND-gates fail = the owner's pre-decided case under the 2026-07-27 standing ruling.
+
+- [s106] No standard-lowering packet filed (2026-08-24 auto-reject class): a 'grant the cross-symbol family' or 'override the canonical evidence bar' question is pre-decided NO.
+
+- [s106] 13 rejected forms banked -> 135 total in memory/grind/CD_sync/rejected/.
+
+- [s106] src/system.c restored to HEAD (INCLUDE_ASM); working tree carries only ledger + decisions.md + metrics/events.jsonl + untracked scratch.

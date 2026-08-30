@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "CD_sync",
-      "file": "system",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:11814 - 2026-08-25 - CD_sync (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (owner directive 2026-08-24 executed and measured)"
-    },
-    {
       "func": "func_80045294",
       "file": "text1a_c",
       "distance": 2,
@@ -1948,17 +1938,28 @@
       "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 1 \u2014 local-alloc suggestion instrumentation granted; solver modality once built",
       "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:11688 -- 2026-08-25 func_8002EA24 OWNER-ESCALATION -- ESCALATED WITH DECISION PACKET (tooling-repair authorization; solver-first directive executed)",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15099 -- 2026-08-30 -- func_8002EA24 (src/code6cac_b.c) -- OWNER-ESCALATION -- RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
+    },
+    {
+      "func": "CD_sync",
+      "file": "system",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:11814 - 2026-08-25 - CD_sync (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (owner directive 2026-08-24 executed and measured)",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15206 (## 2026-08-30 - CD_sync (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE)"
     }
   ],
   "counts": {
     "total": 221,
-    "active": 218,
+    "active": 217,
     "by_status": {
-      "active": 218,
-      "escalated": 3
+      "active": 217,
+      "escalated": 4
     },
     "by_verdict": {
-      "C": 183,
+      "C": 182,
       "ASM-PARTIAL": 35
     }
   }

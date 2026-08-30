@@ -1640,3 +1640,63 @@ across 6 chassis (~81k+ iters, 0 novel basin closures), m2c (s8), in-repo transp
 - probe: Three honest respellings measured on the otherwise-unchanged candidate: idx_1495 = idx_1494 + 1; idx_1495 = &idx_1494[1]; idx_1495 = (u8 *)&D_800A1494 + 1.
 - result: 15 / 15 / 15, all at build_insns 160, against the candidate's 2. The extender is load-bearing for the whole 13-point gap. candidate.c now carries the mandatory /* FAKE: what + mechanism + lever-exhaustion */ annotation naming the family; re-measured after annotating: still score 2 / 160.
 - verdict: KILLED
+
+## [s106] Campaign-sweep axis (a): a MILD t0-side demotion (inverse.py vectors `refs_down p84 7->{6,5}` / `live_extend p84 9->{11,13,17}`) breaks the p106/val5 birth-tie on the g3 order-perfect chassis without collapsing t0 into the refs-2 equiv-sink the bank already measured at 14.
+- mechanism: global.c allocno priority is refs-weighted and livelen-normalized; lowering p84 (the t0/idx chain) below p82 (the arg5 value) should hand $a0 to the arg5 pseudo and produce the 6x $v1->$a0 / 2x $a0->$v1 exchange the solver's goal_from_tgt enumerated at normalized sites 49/55/56/59/61/65. The 2026-08-30 solver sweep flagged this as UNPROBED because the 105-session bank only ever measured the FULL refs-2 collapse of t0, never a one-step demotion.
+- probe: 5 sandbox measurements on the g3 base (control re-measured 6/160 this session), all with the block spliced into memory/grind/CD_sync/candidate.c over `INCLUDE_ASM("asm/funcs", CD_sync);` at src/system.c. (a1) t0 chain fully inlined at the call site, no named local -> refs_down maximal; (a2) `t0 = idx_1494[0] << 2;` single def, removing the read-modify-write -> refs_down 7->6; (a3) t0 as a `s32 *tp` pointer local carrying base+index -> refs_down with a different rtx class; (a4) `t0 = (s32)tbl_125c; ... t0 += idx_1494[0] << 2;` base-accumulator -> live_extend of the t0 range across the arg5 load; (a5) `t0b = t0 << 2;` split shift into a second local -> live_extend + refs redistribution.
+- result: 14 / 14 / 9 / 9 / 14, every one at build_insns 160 == target 160 (all byte-neutral, so all are legal instances of the axis; none is disqualified on materialization). Zero probes at or below the g3 control of 6, and nothing anywhere near the h5 floor of 2. The g3 basin is rigid: every t0-side demotion lands on the discrete set {9, 14} regardless of whether the demotion is by refs or by livelen, and regardless of rtx class (int vs pointer).
+- verdict: KILLED. Axis (a) is exhausted at depth 1: a one-step demotion is NOT qualitatively different from the refs-2 collapse the bank already measured - both fall into the same two attractor scores. The solver's ranked vectors are reachable in the MODEL but every C spelling that realizes them also perturbs the emission order, which re-enters the g3-basin trap.
+
+## [s106] Campaign-sweep axis (b): a p82 live-SPLIT (giving the short-lived arg5 value its own local so its range stops at its last real use) raises arg5's allocno above the t0 chain and wins the $a0 seat.
+- mechanism: global.c prioritizes by refs/livelen; shrinking p82's live range raises its priority without touching its refs. The solver enumerated `live_shrink p82 10->{8,6,2}` as a valid single-atom vector. The sweep flagged this as distinct from the probed staged-value forms, which SHARE v0 rather than splitting.
+- probe: 6 sandbox measurements. On the g3 chassis: (b1) arg5's index gets its OWN fresh local `ix` instead of borrowing the staged `v0`; (b2) `ap = (s32 *)(ix + (s32)tbl_125c); arg5 = *ap;` address/value split; (b3) no arg5 local at all, `*ap` passed directly as the 5th argument -> maximal shrink (range 0); (b4) ap split with the deref moved after `t0 <<= 2` -> minimal range. On the h5 (floor-2) chassis: the ap split, and the ap split combined with the fresh `ix`.
+- result: g3: b1=6, b2=6, b4=6 (all INERT - identical to the control), b3=14 (maximal shrink REGRESSES into the same attractor as axis (a)). h5: both variants = 2, build_insns 160 - INERT at the floor. Zero improvement anywhere.
+- verdict: KILLED. Live-splitting p82 is byte-invisible on both chassis. GCC 2.7.2's local-alloc.c coalesces the split locals back into a single quantity before global.c ever sees the shortened range, so the modelled `live_shrink` atom has no C-level realization here; only the DESTRUCTIVE spelling (b3, no local at all) changes anything, and it changes it the wrong way.
+
+## [s106] The `v0` staged-value borrow in the floor-2 candidate (a /* FAKE */ construct under staged-value-reused-variable) is load-bearing for the masked-2 score.
+- mechanism: the annotation claims sched.c adjust_priority/birthing_insn_p depends on the arg5 index being staged through the already-live `v0` local rather than a fresh one; if true, the honest spelling would regress.
+- probe: replaced `v0 = idx_1494[1]; ... v0 <<= 2; arg5 = *(s32 *)(v0 + (s32)tbl_125c);` with a fresh honest local `ix` (b_h5_ix_own_local.c), and again in combination with the ap split (b_h5_ix_ap_split.c).
+- result: 2 / 2, both at build_insns 160 == target 160. Bit-identical to the h5 control (2/160). The borrow is NOT load-bearing.
+- verdict: KILLED (the load-bearing claim). CONSEQUENCE - candidate.c updated this session: the staged-value FAKE is REMOVED and replaced with an ordinary fresh local, re-measured at score 2 / 160 / rules_dropped 0. The floor-2 form now carries TWO FAKE constructs instead of three: the sanctioned pointer-alias `pp` and the owner-REFUSED cross-symbol idx_1495 chain-extender.
+
+## [s106] The remaining two FAKE constructs in the floor-2 candidate are also cosmetic and can be dropped like the v0 borrow was.
+- mechanism: if the s106 v0-borrow result generalizes, the whole annotated scaffold might be removable and the floor-2 form would be honest C.
+- probe: (h5_ix_nopp) removed the `pp` pointer-alias, passing `D_800F19C0` directly at the call; (h5_ix_nopp_simple_t0) additionally collapsed the two-step `t0 *= 4; t0 = (s32)((u8 *)tbl_125c + t0);` into `t0 <<= 2;` + in-call add.
+- result: 8 and 10 respectively, both at build_insns 160. Sharp regressions from 2.
+- verdict: KILLED. The `pp` pointer-alias AND the t0 two-step addressing are BOTH load-bearing; combined with s105's measurement that all three honest respellings of idx_1495 score 15, the floor-2 form's remaining scaffold is irreducible. The generalization does not hold - only the v0 borrow was free.
+
+## [s106] A MILD t0-side allocno demotion (inverse.py vectors refs_down p84 7->{6,5} / live_extend p84 9->{11,13,17}) breaks the p106/val5 birth-tie on the g3 order-perfect chassis without collapsing t0 into the refs-2 equiv-sink the bank already measured at 14.
+- mechanism: global.c allocno priority is refs-weighted and livelen-normalized; lowering p84 (the t0/idx chain) below p82 (the arg5 value) should hand $a0 to the arg5 pseudo and produce the 6x $v1->$a0 / 2x $a0->$v1 exchange goal_from_tgt enumerated at normalized sites 49/55/56/59/61/65.
+- probe: 5 sandbox measurements on the g3 base (control re-measured 6/160 this session): t0 inlined at the call site; t0 = idx_1494[0] << 2 single-def; t0 as a s32* pointer local; base-accumulator t0 = (s32)tbl_125c; t0 += idx_1494[0] << 2; split shift into a second local t0b.
+- result: 14 / 14 / 9 / 9 / 14, every one at build_insns 160 == target_insns 160 (all byte-neutral, none disqualified on materialization). Zero probes at or below the g3 control of 6.
+- verdict: KILLED
+
+## [s106] A p82 live-SPLIT (giving the short-lived arg5 value its own local so its range stops at its last real use) raises arg5's allocno above the t0 chain and wins the $a0 seat.
+- mechanism: global.c prioritizes by refs/livelen; shrinking p82's live range raises its priority without touching its refs. The solver enumerated live_shrink p82 10->{8,6,2} as a valid single-atom vector, distinct from the probed staged-value forms which SHARE v0 rather than splitting.
+- probe: 6 sandbox measurements. g3: arg5's index given its own fresh local ix; ap = (s32*)(ix + (s32)tbl_125c) address/value split; no arg5 local at all (maximal shrink, *ap passed directly); ap split with the deref moved after t0 <<= 2. h5 (floor chassis): the ap split, and ap split combined with the fresh ix.
+- result: g3: 6 / 6 / 6 INERT (identical to control) and 14 for the maximal shrink. h5: 2 / 2 INERT at the floor. All at build_insns 160. Zero improvement anywhere.
+- verdict: KILLED
+
+## [s106] The v0 staged-value borrow in the floor-2 candidate (a /* FAKE */ construct under staged-value-reused-variable) is load-bearing for the masked-2 score.
+- mechanism: The annotation claims sched.c adjust_priority/birthing_insn_p depends on the arg5 index being staged through the already-live v0 local rather than a fresh one.
+- probe: Replaced v0 = idx_1494[1]; ... v0 <<= 2; arg5 = *(s32*)(v0 + (s32)tbl_125c) with a fresh honest local ix, alone and in combination with the ap split.
+- result: 2 / 2, both at build_insns 160 == target 160 - bit-identical to the h5 control. The borrow is NOT load-bearing. candidate.c updated: the staged-value FAKE removed, re-measured at score 2 / 160 / rules_dropped 0.
+- verdict: KILLED
+
+## [s106] The remaining two annotated constructs in the floor-2 candidate are likewise cosmetic and can be dropped like the v0 borrow was.
+- mechanism: If the v0-borrow result generalizes, the whole annotated scaffold is removable and the floor-2 form would be honest C.
+- probe: Removed the pp pointer-alias (D_800F19C0 passed directly at the call); then additionally collapsed the two-step t0 *= 4; t0 = (s32)((u8*)tbl_125c + t0) into t0 <<= 2 plus an in-call add.
+- result: 8 and 10 respectively, both at build_insns 160 - sharp regressions from 2. Combined with s105's measurement of all three honest idx_1495 respellings at 15, the remaining scaffold is irreducible.
+- verdict: KILLED
+
+## [s106] Gate (a): CD_sync qualifies for the canonical-asm grant path (STRONG scan_hand_coded tier).
+- mechanism: endgame-lock-disposition AND-gate 1 requires STRONG hand-coded signals S1/S2/S6.
+- probe: python3 tools/scan_hand_coded.py --single CD_sync (artifact tmp/grind/CD_sync/s106/scan_hand_coded.txt).
+- result: tier=LOW score=2/8 (160 insns). Only S4 (4 loads in an 8-insn window @ insn 49) and S5 (approx-sibling CD_ready, jaccard 0.64) fire; S1/S2/S6 absent, S3/S7/S8 negative. Third consecutive identical result (s104, s105, s106).
+- verdict: KILLED
+
+## [s106] Gate (b): an in-hand SOTN-master precedent exists for the closing construct (the cross-symbol arithmetic idiom idx_1495).
+- mechanism: endgame-lock-disposition AND-gate 2 requires a citable file:line precedent; docs/reference/sotn-construct-index.md is the machine-generated census of every match-hack construct SOTN master ships.
+- probe: Searched the index for cross-symbol / symbol-difference / (s32)&D_xxxx shapes AND for live-split shapes (artifact tmp/grind/CD_sync/s106/gate_b_sotn_census.txt).
+- result: Zero hits on both. Reproduces the s104 census negative, the s98 manual SOTN/Vagrant Story/ESA survey negative, and the s98 in-repo transplant kill. The owner already REFUSED this exact family on 2026-07-20.
+- verdict: KILLED

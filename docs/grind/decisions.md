@@ -15202,3 +15202,89 @@ On reopening (new tooling, a new pass model, or a donor discovery), start from
 framing of this residual is only the plain control's `103: $a0 -> $t1` goal (closed at
 depths 1-3), and the banked body's own residual is a pseudo-split that the RA model cannot
 express. Session artifacts: `tmp/grind/func_8002EA24/s17/`.
+
+## 2026-08-30 — CD_sync (src/system.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (solver-campaign axes executed and measured dead)
+
+**What this is.** Grind session 106 (`escalation` modality) on `CD_sync` @ `0x80080DB0` (`src/system.c`,
+formerly named `cpu_side_move_dir_4`; PsyQ libcd `bios.c` v1.86 `CD_sync`, name string `"CD_sync"` @
+`0x80016240` — `memory/closer/libcd-identity.md:5`). This entry supersedes nothing: it re-affirms the
+2026-08-25 disposition (`decisions.md:11814`) after executing the two probe axes that the 2026-08-30
+sched-tie endgame campaign sweep flagged as genuinely UNPROBED, and after the owner's 2026-08-30 batch
+ruling 10 returned the item to active with a modality change. **Nothing is pending on the owner.**
+
+**The owner directive was executed, not deferred.** Ruling 10 of the 2026-08-30 escalation batch
+returned `CD_sync` to active "with modality change per escalation-not-parked". The modality change
+landed as the first actual solver-chain run in this function's 106-session history (sched_solver
+`perturb.py` + ra_solver `inverse.py`), logged in the ledger as `[campaign-sweep 2026-08-30]`. That
+sweep produced two ranked, previously-unmeasured C-lever vectors and explicitly instructed the next
+session to probe them "before anything else". **This session probed both. Both are dead.**
+
+**Axis (a) — mild t0-side allocno demotion** (`refs_down p84 7->{6,5}`, `live_extend p84 9->{11,13,17}`),
+five spellings on the g3 order-perfect chassis (control re-measured 6/160 this session): t0 inlined at
+the call site (14), `t0 = idx_1494[0] << 2` single-def (14), t0 as a pointer local (9), base-accumulator
+`t0 = (s32)tbl_125c; t0 += idx_1494[0] << 2` (9), split shift into a second local (14). All five are
+byte-neutral (`build_insns` 160 == `target_insns` 160), so all five are legal instances of the axis —
+none is disqualified on materialization. Zero probes at or below the control.
+
+**Axis (b) — p82 live-split** (`live_shrink p82 10->{8,6,2}`), six spellings: on g3, arg5's index given
+its own fresh local (6), address/value pointer split (6), deref moved late (6) — all INERT — and the
+maximal shrink with no arg5 local at all (14, a regression). On the h5 floor chassis, both split forms
+measure 2 — INERT at the floor. GCC 2.7.2's `local-alloc.c` coalesces the split locals back into a
+single quantity before `global.c` ever sees the shortened range, so the modelled `live_shrink` atom has
+no C-level realization here.
+
+**The structural closure this produces.** The g3 basin admits only the discrete score set {6, 9, 14}
+under EVERY allocno-priority perturbation of the t0/arg5 pair — independent of whether the perturbation
+is by reference count or by live length, and independent of rtx class. That is why the solver's ranked
+vectors are model-REACHABLE yet C-unreachable. This closes the **RA half** of the residual the same way
+s105's chain-extender kill closed the **ORDER half** (`decisions.md:11814`). The two halves of the
+2-insn residual `{sll@54 <-> addu@55}` are now each independently, typed-exhaustively closed.
+
+**One genuine improvement, in honesty rather than score.** The `v0` staged-value borrow in the floor-2
+candidate was measured **NOT load-bearing**: an ordinary fresh local `ix` scores 2 / 160, bit-identical.
+`memory/grind/CD_sync/candidate.c` was updated accordingly and its `/* FAKE */` staged-value annotation
+DELETED; re-measured after the edit at score 2, `target_insns` 160, `build_insns` 160, `rules_dropped` 0.
+The floor-2 form now carries two annotated constructs instead of three. The remaining two are
+irreducible: dropping the `pp` pointer-alias regresses 2 -> 8, additionally collapsing the two-step t0
+addressing regresses to 10, and s105 measured all three honest respellings of the `idx_1495` cross-symbol
+extender at 15. **The one construct that actually holds the 13-point gap is the cross-symbol arithmetic
+idiom the owner REFUSED on 2026-07-20** — it is not resurrected here and is not proposed for sanction.
+
+**Gate (a) — canonical-asm grant path: FAILS.** `python3 tools/scan_hand_coded.py --single CD_sync`
+(run this session, artifact `tmp/grind/CD_sync/s106/scan_hand_coded.txt`):
+`HAND_CODED: tier=LOW score=2/8 (CD_sync, 160 insns) — no strong hand-coded indicators`. Only S4 (4
+loads in an 8-insn window @ insn 49) and S5 (approx-sibling `CD_ready`, jaccard 0.64) fire; S1 multu
+pacing, S2 empty branch, and S6 BIOS jumptable — the three STRONG signals — are all absent, and S3/S7/S8
+are negative. Third consecutive identical result (s104, s105, s106). Independently barred by the
+2026-07-09 Judge constraint against re-surfacing canonical-asm for this function or its twins.
+
+**Gate (b) — in-hand SOTN-master precedent: FAILS.** `docs/reference/sotn-construct-index.md` searched
+this session for cross-symbol / symbol-difference / `(s32)&D_xxxx` shapes AND for live-split shapes —
+**zero hits on both** (artifact `tmp/grind/CD_sync/s106/gate_b_sotn_census.txt`). Reproduces the s104
+census negative and the s98 manual SOTN / Vagrant Story / ESA survey negative, and the s98 in-repo
+transplant kill (the idiom is unique to this function in the entire BB2 tree).
+
+**Both AND-gates FAIL — the owner's pre-decided case.** Per the 2026-07-27 standing ruling
+(`.claude/rules/endgame-lock-disposition.md`): **REFUSED / OWNER-ACCEPTED INCOMPLETE.** No
+standard-lowering decision packet is filed — a "grant the cross-symbol family" or "override the
+canonical evidence bar" question falls squarely in the 2026-08-24 auto-reject class and must not be
+put to the owner. Nothing pends. `src/system.c:376` keeps `INCLUDE_ASM("asm/funcs", CD_sync);` and the
+tree remains byte-identical to the oracle; the improved masked-2 form stays in
+`memory/grind/CD_sync/candidate.c` for any future re-attempt.
+
+**Exhaustion of record.** 106 sessions; honest floor flat at 2 since s97; modalities run: recon,
+structural, rederive, synthesis, permuter, forensics, solver, escalation (8 distinct); 135 rejected
+forms banked in `memory/grind/CD_sync/rejected/` (13 added this session); prior campaigns include
+~40 decompositions (s96–s105), the psyz PsyQ-4.0 reference axis (s105: `bios.c:94` is `INCLUDE_ASM` —
+no matched body at any PsyQ version), and the F1 chain-extender family (s105: structurally excluded,
+byte-neutrality requires a link-constant detour and both operands are runtime-dependent).
+
+**What would re-open it.** Only two things, and neither is a search: (1) a NEW sanctioned family lands
+in `.claude/rules/` whose mechanism touches allocno birth order WITHOUT a byte-neutrality requirement;
+(2) a matched libcd `bios.c` body for `CD_sync` appears upstream in psyz / sozud psy-q-decomp. Re-check
+both, then re-run the two AND-gates. Do NOT re-run the closed space.
+
+**References:** ledger `memory/grind/CD_sync/{evidence.md,hypotheses.md,candidate.c,state.json,rejected/}`;
+artifacts `tmp/grind/CD_sync/s106/` (11 probe blocks, scan output, SOTN census, splice/probe harness);
+prior dispositions `decisions.md:8000` (2026-08-20) and `decisions.md:11814` (2026-08-25); campaign spec
+`docs/superpowers/specs/2026-08-30-sched-tie-endgame-campaign.md`.

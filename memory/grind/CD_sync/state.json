@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 105,
+ "session_count": 106,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -639,13 +639,24 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "s105 executed BOTH axes of the 2026-08-24 owner directive and killed both: the sanctioned F1 chain-extender is STRUCTURALLY inapplicable to the p106/val5 tie (10 probes; byte-neutrality requires a lin"
+  },
+  {
+   "session": 106,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "s106 executed BOTH solver-campaign axes flagged unprobed on 2026-08-30 and KILLED both (11 byte-neutral measurements; g3 basin admits only {6,9,14} under every allocno perturbation, h5 split forms ine"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A pure-C lever reorders {sll@54, addu@55} at the sched.c LUID tiebreak without paying the p106/val5 allocno tie (cost 6). This remains the ONLY thing that would re-open CD_sync.",
-   "mechanism": "GCC 2.7.2 sched.c list scheduler: both insns launch in the same cycle with equal INSN_PRIORITY, so LUID (source emission order) decides; every in-family source reordering measured across 105 sessions shifts allocno priorities into the p106/val5 birth-tie in global.c.",
-   "next_probe": "Do NOT re-run the closed space. As of s105 the F1 chain-extender family is STRUCTURALLY excluded (runtime-dependent operands cannot fold to zero bytes) and the psyz PsyQ-4.0 reference axis is closed (no seed at any version). A re-attempt is warranted only if a NEW sanctioned family lands in .claude/rules/ whose mechanism touches allocno birth order without a byte-neutrality requirement, or if a matched libcd bios.c body appears in psyz/sozud psy-q-decomp upstream - re-check both, then re-run the two AND-gates."
+   "hypothesis": "A NEW sanctioned family lands in .claude/rules/ whose mechanism touches allocno birth order WITHOUT a byte-neutrality requirement, re-opening the p106/val5 tie.",
+   "mechanism": "Every measured lever on this residual is byte-neutral-or-nothing: the F1 chain-extender is structurally excluded (s105) because both tie operands are runtime-dependent through the loaded index, and every allocno perturbation that does register also moves emission order into the g3 basin (s106).",
+   "next_probe": "Do NOT re-run the closed space. Re-check .claude/rules/ for a new family, then re-run the two AND-gates."
+  },
+  {
+   "hypothesis": "A matched libcd bios.c body for CD_sync appears upstream in psyz / sozud psy-q-decomp, closing the function by provenance instead of by search.",
+   "mechanism": "BB2 links Sony's prebuilt PsyQ BIOS.OBJ verbatim (memory/closer/libcd-groundtruth.md: all 1,526 .text words masked-identical), so a matched upstream body IS the original source shape.",
+   "next_probe": "Re-fetch Xeeynamo/psyz decomp/src/libcd/bios.c and check whether line ~94 is still INCLUDE_ASM for CD_sync (it was, as of s105 2026-08-25)."
   }
  ],
  "judge_constraints": [
