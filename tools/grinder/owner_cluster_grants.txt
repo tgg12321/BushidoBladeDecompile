@@ -1,0 +1,24 @@
+# Owner-cluster canonical-grant registry (owner ruling 2026-08-30, decisions.md
+# escalation-batch entry, ruling 4).
+#
+# The alternative evidence door for grant_canonical_asm: a function listed here
+# is enumerated BY NAME in a LANDED owner cluster ruling, so the STRONG
+# scan_hand_coded tier requirement is satisfied by owner enumeration instead.
+# OPERATOR-MAINTAINED ONLY — grind sessions may never edit this file (it lives
+# under tools/, outside session scope by construction). Every entry must cite
+# the landed ruling it comes from. All other gates (bytes re-proven on main,
+# layer-1, default-FAIL Judge, full-build SHA1) apply unchanged.
+#
+# Format: <func> <citation>
+#
+# 2026-08-17 COP2 addressing-preamble cluster
+# (.claude/rules/cop2-addressing-preamble-cluster.md; members enumerated in the
+# rule's census table; registry rows limited to the proven-or-near-floor set
+# named in the 2026-08-30 ruling):
+func_8002FC80 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
+func_80032314 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
+func_8002D320 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
+func_8002D518 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
+func_8002E838 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
+func_800300B4 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
+func_800325E0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)

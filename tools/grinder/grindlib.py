@@ -824,17 +824,42 @@ def grant_canonical_asm(root, func, tier, date):
     with escalate_kind=canonical-asm-grant AFTER independently re-running
     scan_hand_coded and confirming the STRONG tier — the grant is mechanical
     and evidence-bound, never judgment-bound. Refuses (returns None) if the
-    tier is not STRONG-class or the function is already listed."""
-    if "STRONG" not in str(tier).upper():
-        return None
+    tier is not STRONG-class or the function is already listed.
+
+    Second evidence door (owner ruling 2026-08-30, decisions.md
+    escalation-batch entry, ruling 4): a function enumerated BY NAME in
+    tools/grinder/owner_cluster_grants.txt — the operator-maintained registry
+    of landed owner cluster rulings — qualifies with tier
+    "OWNER-CLUSTER". Sessions can never add registry rows (tools/ is outside
+    session scope); every other gate applies unchanged."""
+    tier_s = str(tier).upper()
+    if "STRONG" not in tier_s:
+        reg = os.path.join(root, "tools", "grinder", "owner_cluster_grants.txt")
+        cluster_cite = None
+        if os.path.isfile(reg):
+            with open(reg, encoding="utf-8") as f:
+                for ln in f:
+                    ln = ln.strip()
+                    if ln and not ln.startswith("#") and ln.split()[0] == func:
+                        cluster_cite = ln.split(None, 1)[1] if " " in ln else ""
+                        break
+        if cluster_cite is None:
+            return None
+        tier = f"OWNER-CLUSTER ({cluster_cite})"
     allow = os.path.join(root, "inline_asm_canonical.txt")
     with open(allow, encoding="utf-8") as f:
         existing = {ln.strip().split()[0] for ln in f
                     if ln.strip() and not ln.strip().startswith("#")}
-    line = (f"{func}  # pipeline grant {date}: scan_hand_coded tier={tier} "
-            f"(STRONG class, driver-verified), judge ESCALATE canonical-asm-grant — "
-            f"owner ruling 2026-08-18 (.claude/rules/judge-sole-gate.md, b9d91163). "
-            f"Packet in docs/grind/decisions.md {date} entry.")
+    if str(tier).startswith("OWNER-CLUSTER"):
+        line = (f"{func}  # pipeline grant {date}: {tier} — owner-enumerated "
+                f"cluster member (registry tools/grinder/owner_cluster_grants.txt; "
+                f"door per owner ruling 2026-08-30), judge-verified. "
+                f"Packet in docs/grind/decisions.md {date} entry.")
+    else:
+        line = (f"{func}  # pipeline grant {date}: scan_hand_coded tier={tier} "
+                f"(STRONG class, driver-verified), judge ESCALATE canonical-asm-grant — "
+                f"owner ruling 2026-08-18 (.claude/rules/judge-sole-gate.md, b9d91163). "
+                f"Packet in docs/grind/decisions.md {date} entry.")
     if func not in existing:
         with open(allow, "a", encoding="utf-8", newline="\n") as f:
             f.write(line + "\n")
@@ -1347,7 +1372,7 @@ if __name__ == "__main__":
         # grant-canonical-asm <root> <func> <tier> <date>
         line = grant_canonical_asm(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
         if line is None:
-            print("grant REFUSED (tier not STRONG-class — evidence gate failed)")
+            print("grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated — evidence gate failed)")
             sys.exit(1)
         print(line)
     elif cmd == "log-borderline":

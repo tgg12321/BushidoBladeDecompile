@@ -422,7 +422,7 @@ $(if ($v.constraint) { "**Constraint recorded for any future session:** $($v.con
             return
         }
         # Tier not STRONG — the grant claim fails on evidence; log-and-refuse below.
-        $ekind = 'canonical-asm-grant (REFUSED: tier ' + $tier + ', not STRONG-class)'
+        $ekind = 'canonical-asm-grant (REFUSED: tier ' + $tier + ', not STRONG-class and not owner-cluster-enumerated)'
     }
     if ($ekind -eq 'integration-handoff') {
         # integration-handoff-self-serve (owner ruling 2026-08-19): a bytes-proven
