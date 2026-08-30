@@ -1777,3 +1777,40 @@ across 6 chassis (~81k+ iters, 0 novel basin closures), m2c (s8), in-repo transp
 - [s105] 10 new rejected forms banked (s105_chainext_* x9, s105_honest_idx1495_plus1_regress15.c) -> 122 total in memory/grind/CD_sync/rejected/.
 
 - [s105] Disposition filed by this session at docs/grind/decisions.md:11814 - both AND-gates fail, which is the owner's pre-decided case under the 2026-07-27 standing ruling. No standard-lowering packet was filed (2026-08-24 auto-reject class).
+
+- [campaign-sweep 2026-08-30] FIRST actual solver-chain run on this function
+  (sched-tie endgame campaign, docs/superpowers/specs/2026-08-30-sched-tie-endgame-campaign.md;
+  no sched_solver/ra_solver artifact existed in this ledger before today — prior
+  "solver-adjacent" work was hand modelling). Executes the solver-modality
+  directive from the 2026-08-30 ruling-10 return-to-active. Artifacts:
+  tmp/grind/CD_sync/s106/{perturb_d1.txt,inverse_swap84_82_d2.txt,diff_sites.py}.
+  **Sched half (h5 candidate chassis, sandbox 2, 160/160):** perturb.py depth-1
+  EXHAUSTIVE (1044 single atoms, pass2 block 3 = the debug_printf window, the only
+  divergent block) -> 39 vectors reach target order and they encode exactly TWO
+  intents: (i) source-order flip — the addu5 statement (uid121 `addu $2,$2,$19`)
+  ahead of sll4 (uid111 `sll $4,$4,2`) in luid/add_dep spellings — i.e. the known
+  g3-basin trap; (ii) `cost 121 := 2` — C-unreachable (the insn is fixed as an
+  addu by target's own bytes; cost is the machine model's, not the source's).
+  No third intent exists at depth 1. This upgrades the s105 prose closure of the
+  ORDER half to a typed enumeration.
+  **RA half (g3 order-perfect chassis, sandbox 6):** goal_from_tgt goal = 6x
+  $v1->$a0 + 2x $a0->$v1 at normalized sites 49/55/56/59/61/65 = pseudo 84 (the
+  t0/idx chain) <-> pseudo 82 (the arg5 value). inverse.py global --swap 84,82
+  --depth 2: FORECLOSED — all preference atoms for $v1 ($v1 never appears in
+  pre-RA RTL, set_preference can never record it); 22 single-atom vectors
+  otherwise: refs_up p82 7->8 (cheapest), live_shrink p82 10->{8,6,2},
+  refs_down p84 7->{6,5}, live_extend p84 9->{11,13,17}, pref_add p84
+  copy-preference for $a0.
+  **Cross-check vs the 105-session bank — two axes look genuinely UNPROBED:**
+  (a) mild t0-side DEMOTION: the bank only measured the refs-2 collapse of t0
+  (h8* forms, equiv-sink at 14); refs_down 7->6 or live_extend of the t0 chain
+  (lengthening its span to lower pri = refs/livelen) was never spelled;
+  (b) p82 live-SPLIT: giving the short-lived arg5 use its own local so the range
+  stops at the last real use — distinct from the probed staged-value forms.
+  The sanctioned refs_up route via cross-arm duplication stays blocked per s10
+  (v0 set inside the do_timeout block makes it byte-non-neutral). Next session:
+  probe (a) then (b) on the g3 chassis before anything else.
+  **Tool note:** perturb's object-goal path initially refused this function —
+  goalmap object mode assumed 1:1 text/object length, false for macro-bearing
+  streams (`la`, bare-symbol mem ops -> lui+op). Fixed in
+  tools/sched_solver/goalmap.py (_macro_expand_counts + checksum) same day.

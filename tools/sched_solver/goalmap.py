@@ -206,6 +206,37 @@ def align(a, b, label="", verbose=False):
 
 
 # --------------------------------------------------------------------------
+_MACRO_MEM_OPS = {"lw", "sw", "lh", "lhu", "sh", "lb", "lbu", "sb",
+                  "lwl", "lwr", "swl", "swr", "ulw", "usw"}
+
+
+def _macro_expand_counts(lines):
+    """Per honest-text line, how many object insns GNU as assembles it to.
+
+    The maspsx output still contains assembler macros; under this project's
+    flags (-G0, explicit sdata lists) the two forms that reach the honest
+    stream both expand via $at/lui to exactly 2 insns:
+      * `la  $r,SYM[+off]`      -> lui + addiu
+      * `<mem> $r,SYM[+off]`    -> lui + <mem>   (bare symbol, no `(base)`)
+    Everything else (including `<mem> $r,off($base)` and la of a small
+    constant already spelled addiu by cc1) is 1:1.  A gp-relative symbol
+    would assemble to ONE insn and break this estimate -- the caller's
+    checksum against the real object count catches that honestly."""
+    counts = []
+    for t in lines:
+        parts = t.split(None, 1)
+        op = parts[0] if parts else ""
+        rest = parts[1] if len(parts) > 1 else ""
+        last = rest.split(",")[-1].split("#")[0].strip()
+        symbolic = ("(" not in last
+                    and (last[:1].isalpha() or last[:1] in "._"))
+        if (op == "la" or op in _MACRO_MEM_OPS) and symbolic:
+            counts.append(2)
+        else:
+            counts.append(1)
+    return counts
+
+
 def build_map(root: Path, stem: str, func: str, verbose=False, target=None,
               target_object=None, ours_object=None):
     """-> dict with uid->target-position and the intermediate streams.
@@ -238,12 +269,27 @@ def build_map(root: Path, stem: str, func: str, verbose=False, target=None,
         from engine import score as _score
         tgt = _score.normalized_insns(str(target_object), func, mask=True)
         hon_obj = _score.normalized_insns(str(ours_object), func, mask=True)
-        if len(hon_obj) != len(hon):
+        # The honest TEXT stream still carries assembler macros (`la`,
+        # bare-symbol memory ops) that GNU as expands to lui+op pairs, so a
+        # macro-bearing function's text is SHORTER than its object and a bare
+        # 1:1 length check falsely reports a different source state (first hit:
+        # CD_sync 2026-08-30, 140 text lines vs 160 object insns).  Model the
+        # expansion per line; the summed count is the same-source check.
+        t2o_counts = _macro_expand_counts(hon)
+        if sum(t2o_counts) != len(hon_obj):
             raise RuntimeError(
                 f"{func}: honest object has {len(hon_obj)} insns but "
-                f"{stem}.hon.s body has {len(hon)} lines -- the sandbox object "
-                f"was built from a DIFFERENT source state than the sched_map "
-                f"streams. Re-run mkasm.sh and the sandbox on the same tree.")
+                f"{stem}.hon.s body has {len(hon)} lines "
+                f"(macro-expanded estimate {sum(t2o_counts)}) -- either the "
+                f"sandbox object was built from a DIFFERENT source state than "
+                f"the sched_map streams (re-run mkasm.sh and the sandbox on "
+                f"the same tree), or a macro form is missing from "
+                f"_macro_expand_counts (e.g. a gp-relative symbol assembling "
+                f"to ONE insn).")
+        hon_t2o, _pos = [], 0
+        for _n in t2o_counts:
+            hon_t2o.append(_pos)
+            _pos += _n
         if verbose:
             print(f"  target from object {target_object} "
                   f"(ours: {ours_object})")
@@ -270,7 +316,8 @@ def build_map(root: Path, stem: str, func: str, verbose=False, target=None,
     # hop 2: cc1 -> honest
     c2h, _ = align(cc1, hon, "cc1->hon", verbose)
     # hop 3: honest -> target (object mode aligns the objdump renderings, which
-    # share a language; hon text index == hon object index by the length check)
+    # share a language; hon text index -> object index via hon_t2o, the
+    # macro-expansion prefix map checksummed against the real object above)
     if target_object:
         h2t, ops = align(hon_obj, tgt, "honobj->tgtobj", verbose)
     else:
@@ -285,6 +332,8 @@ def build_map(root: Path, stem: str, func: str, verbose=False, target=None,
     tpos_raw = {}
     for i in range(len(cc1)):
         j = c2h[i]
+        if target_object and j is not None:
+            j = hon_t2o[j]        # text index -> first expanded object index
         k = h2t[j] if j is not None else None
         tpos_raw[i] = float(k) if k is not None else None
     mapped = sorted(i for i, v in tpos_raw.items() if v is not None)
