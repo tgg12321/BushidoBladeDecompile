@@ -1,9 +1,7 @@
 ---
 name: hoist-call-arg-local-flips-jal-delay
 description: Hoisting a call's late-loaded global arg into a local declared FIRST in a block before the last pre-call store flips cc1's jal delay-slot fill choice — retires fill_delay + delete-nop + reorder regfix clusters around the call.
-paths: []
-# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
-
+paths: [".claude/rules/hoist-call-arg-local-flips-jal-delay.md"]
 ---
 
 # Hoist a call's late-loaded arg into a local declared FIRST in a block to flip cc1's jal delay-slot fill

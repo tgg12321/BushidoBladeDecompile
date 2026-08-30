@@ -1,8 +1,6 @@
 ---
 name: halfword-index-srl-sra
-paths: []
-# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
-
+paths: [".claude/rules/halfword-index-srl-sra.md"]
 description: "A `subst \"srl\" \"sra\"` regfix on a halfword (s16[]) array index where GCC made the index shift logical but target has arithmetic. Cause: m2c's shift-mask-shift reconstruction `arr[((var>>1)&0x1FFE)>>1]` lets GCC's combine fold the redundant >>1/*2 round-trip and canonicalize the sign-masked arithmetic shift to srl. Fix: index a byte pointer so the byte offset is written directly — `*(s16*)((u8*)&arr + ((var>>1)&0x1FFE))` — which keeps sra and retires the rule."
 metadata:
   type: reference

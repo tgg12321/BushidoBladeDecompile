@@ -1,8 +1,6 @@
 ---
 name: u16-global-lhu-lbu-low-byte
-paths: []
-# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
-
+paths: [".claude/rules/u16-global-lhu-lbu-low-byte.md"]
 description: "A single regfix `subst` downgrading a gp-rel u16 global read from `lhu` to `lbu` (e.g. `lhu $3,%gp_rel(D_800A3578)`→`lbu`). Cause: the function's entry/dispatch read only consumes the low byte but a sibling read needs the full halfword (word>>8 + write-back), so the global can't be retyped u8. Fix: leave it u16 and read the low byte at the dispatch site via `*(u8*)&G` — emits lbu with the wide reads intact."
 metadata:
   type: reference

@@ -1,9 +1,7 @@
 ---
 name: proven-spelling-class-reconstruction
 description: Narrow same-bytes respelling exception — sanctioned only with mechanism-level proof the original source used a different spelling class, plain-C form, most natural variant, last lever (user policy 2026-06-10)
-paths: []
-# broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
-
+paths: [".claude/rules/proven-spelling-class-reconstruction.md"]
 ---
 
 # Proven-spelling-class reconstruction — the narrow same-bytes respelling exception
