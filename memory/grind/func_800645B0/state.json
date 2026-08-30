@@ -1,7 +1,7 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 13,
+ "session_count": 14,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -81,18 +81,24 @@
    "floor": 1,
    "modality": "escalation",
    "headline": "Owner-authorised solver repair executed: the last untried axis (the WD chassis' inner-loop-head placement) is now typed FORECLOSED \u2014 the only reachable lever class is source statement order, and state"
+  },
+  {
+   "session": 14,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "Last live frontier item KILLED with measurements (induction-variable index costs 5-11 insns; the target recomputes i+j with a register-register addu twice); both endgame-lock gates re-run and FAILED, "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A chassis exists in which the slot index is written twice for a genuine semantic reason, restoring the loop-head placement on top of the WD chassis' exact operand order. This is now the ONLY theoretical escape and it is precisely characterised: the second write must raise reg_n_sets[idx] above 1 without adding an instruction and without being dead, staged or self-assigning.",
-   "mechanism": "H61/H62 reduce the whole residual to a single compiler-visible quantity, reg_n_sets[idx]: >1 denies sched.c's birthing lift and hands back the inner-loop head; ==1 is what lets optabs.c emit the target's *3 operand order. Both halves are pass-attributed from instrumented-cc1 dumps. A different DATA MODEL (a walking pointer over the slot array, or the session-7 JD struct-array re-derivation) could give the index a second real write as part of ordinary iteration.",
-   "next_probe": "Re-derive the inner loop with the slot index as a real induction variable that is both initialised and updated inside the loop body (not `idx = i + j` recomputed from two counters), apply the WD fresh-destination sum on top, and measure. Any spelling whose second write is dead, self-assigning or staged is a BANNED construct and must not be proposed. Note the three already-banked failures: recomputed-i-plus-j-costs-an-extra-addu.c, second-set-of-idx-outside-if-body-folds-or-costs-prologue.c, sum-addend-rederived-from-idx2-costs-an-instruction.c."
+   "hypothesis": "A future sanctioned family (or an independently discovered SOTN-master precedent) covering an INVENTED staging copy - `wid = i + j; idx = wid;` - would immediately close this function at distance 0; the body is already measured and banked.",
+   "mechanism": "That single construct raises reg_n_sets[idx] above 1 (denying sched.c's birthing_insn_p lift, restoring the target's loop-head placement) while leaving the *3 sum a destination distinct from both operands (satisfying optabs.c:398-421 for the target's operand order). It is the only shape measured at score 0 in 14 sessions, and it is currently a banned construct for this function.",
+   "next_probe": "Do NOT re-propose it as a candidate. Re-open only on an owner-landed family grant, or on a PSX-tagged SOTN-master precedent for the construct class appearing in docs/reference/sotn-construct-index.md."
   },
   {
    "hypothesis": "tools/sched_solver/goalmap.py's object mode is unusable for any function whose body contains assembler-expanded macros, which will silently block the same axis on other functions.",
-   "mechanism": "build_map gates object mode on len(hon_obj) == len(hon), comparing an OBJECT instruction count to an asm TEXT line count. Absolute-address memory forms (sw/sh/lw against a bare symbol) expand 1 text line into a lui/%lo pair in the object, so the counts legitimately differ on the same tree \u2014 for func_800645B0, 78 vs 69.",
-   "next_probe": "OPERATOR-SIDE (outside a grind session's surface): replace the 1:1 length assertion with an expansion-aware mapping from hon text lines to object insn positions (or align cc1 -> object directly), keeping a guard that still refuses a genuinely mismatched source state. Not needed for func_800645B0 \u2014 this session obtained the verdict by hand-supplying the goal with --goal-before."
+   "mechanism": "build_map gates object mode on len(hon_obj) == len(hon), comparing an OBJECT instruction count to an asm TEXT line count; absolute-address memory forms (sw/sh/lw against a bare symbol) expand one text line into a lui/%lo pair, so the counts legitimately differ on the same tree (78 vs 69 here).",
+   "next_probe": "OPERATOR-SIDE, outside a grind session's surface: replace the 1:1 length assertion with an expansion-aware mapping from honest text lines to object insn positions, keeping a guard that still refuses a genuinely mismatched source state. Not needed for func_800645B0 - session 13 obtained the verdict with an explicit --goal-before."
   }
  ],
  "judge_constraints": [

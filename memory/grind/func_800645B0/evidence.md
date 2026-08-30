@@ -1424,3 +1424,52 @@ costs an instruction or is a banned construct.
 - [s13] Nothing holds a byte-match: zero regfix/asmfix rules, zero cheat-asm, main carries INCLUDE_ASM("asm/funcs", func_800645B0); per asm-until-matched. src/text1b.c was restored to HEAD before this outcome was written.
 
 - [s13] Disposition filed this session at docs/grind/decisions.md (## 2026-08-25 — func_800645B0 — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (solver axis discharged)).
+
+## Session 14 (escalation / disposition, 2026-08-30)
+
+- Floor re-measured on today's tree with the SB chassis pasted over the
+  `INCLUDE_ASM` line: `sandbox func_800645B0 --disable all` = **score 1,
+  target_insns 78, build_insns 78, rules_dropped 0** (rules are project-wide
+  zero since 2026-08-25). The chassis check's "measurement unavailable" is
+  resolved: the honest floor is unchanged at 1.
+- H63 (above) KILLS the last live frontier item with measurements: the
+  induction-variable data model costs 5 (IV1) or 11 (IV2) instructions because
+  the target recomputes `i + j` with a register-register `addu` twice — peeled
+  above the inner-loop label (0x800645DC) and in the back-edge delay slot
+  (0x800646B4). This is target-stream evidence about the ORIGINAL data model,
+  not a search result, and it forecloses the whole "second real write to idx as
+  ordinary iteration" class.
+- Endgame-lock gate (a), re-run this session:
+  `python3 tools/scan_hand_coded.py --single func_800645B0` →
+  **tier=LOW score=0/8**, "no strong hand-coded indicators" (S1..S8 all clear;
+  78 insns, 5 spills, 7 distinct regs). Canonical-asm gate FAILS.
+- Endgame-lock gate (b), re-run this session: `docs/reference/sotn-construct-index.md`
+  (1,365 entries, PSX-tagged) contains NO instance of the closing construct
+  class — a copy of a loop index staged through the local that later receives a
+  derived sum (`wid = i + j; idx = wid;`) or its mirror (`val = idx;
+  idx = idx2 + val;`). The six "stag*" hits are the word "stage" in SOTN stage
+  filenames/comments; the reuse hits are the frozen variable-reuse family, which
+  covers borrowing an EXISTING local for a second unrelated value, not inventing
+  a staging copy (bound 2 of `.claude/rules/staged-value-reused-variable.md`).
+  Precedent gate FAILS.
+- Nothing holds a byte match on main: `src/text1b.c:3981` is
+  `INCLUDE_ASM("asm/funcs", func_800645B0);` with zero cheat constructs, and the
+  session's src edits were reverted before finishing.
+- Artifacts: `tmp/grind/func_800645B0/s14/` (apply.py, body_SB.c, body_IV1.c,
+  body_IV2.c).
+
+- [s14] Honest floor RE-MEASURED this session on today's tree with the SB chassis pasted over the INCLUDE_ASM line: score 1, target_insns 78, build_insns 78, rules_dropped 0. The chassis check's 'measurement unavailable' is resolved; the floor is unchanged at 1.
+
+- [s14] The entire residual remains one instruction's operand order at stream index 20: target `addu $s0,$s1,$s0`, ours `addu $s0,$s0,$s1`.
+
+- [s14] Target-stream fact newly extracted this session: the slot index is materialised by a register-register `addu $s0,$s3,$a0` at TWO positions (0x800645DC, peeled above the inner-loop label; 0x800646B4, the back-edge delay slot). That falsifies the induction-variable data model outright rather than merely scoring it worse - the original C recomputes i+j from the two counters inside the inner loop.
+
+- [s14] Every member of the 'second real set of idx' family is now measured dead: recomputed i+j (extra addu), the byte offset (12/78 across FA/FB/FD/DA, local-alloc $s0/$s1 flip), a pre-loop constant (prologue cost), the maintained recompute (IA 1/78, OA 3/79), and the induction variable (16/78 and 25/78, this session).
+
+- [s14] python3 tools/scan_hand_coded.py --single func_800645B0 = tier=LOW score=0/8, re-run 2026-08-30 (S1-S8 all clear).
+
+- [s14] No SOTN-master precedent for the closing staging construct exists in docs/reference/sotn-construct-index.md (searched this session).
+
+- [s14] Nothing holds a byte match on main: src/text1b.c:3981 is INCLUDE_ASM("asm/funcs", func_800645B0); zero cheat-asm, zero rules, zero pins. This session's src edits were reverted with git checkout before finishing; the working tree carries only ledger/docs changes plus the pre-existing metrics/events.jsonl.
+
+- [s14] Disposition FILED this session: docs/grind/decisions.md, '## 2026-08-30 - func_800645B0 - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE', carrying both gates' evidence, the exhaustion record (14 sessions, 6 distinct modalities - structural, forensics, rederive, permuter, solver, escalation - and 100k+ permuter iterations across five chassis), and named re-open triggers. No question pends the owner; the owner's 2026-08-30 escalation-batch ruling 10 returned this item to ACTIVE for a modality change, that modality (solver, s13) returned FORECLOSED, and its single surviving frontier item is killed above.

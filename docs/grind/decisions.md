@@ -15003,3 +15003,95 @@ for the 2-byte branch-target residual." That escalation was filed and ruled on
 twice (2026-08-24 DECLINE, 2026-08-30 ruling 9). Re-filing it is auto-reject
 class, and `memory/grind/main/hypotheses.md` [s33] now records the frontier
 retirement so no future session repeats it.
+
+## 2026-08-30 — func_800645B0 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Grind session 14, escalation modality (driver-declared exhaustion: honest floor
+FLAT at 1 across 14 sessions and 6 distinct modalities — structural, forensics,
+rederive, permuter, solver, escalation). This entry APPLIES the owner's standing
+auto-ruling (2026-07-27, `.claude/rules/endgame-lock-disposition.md`); nothing
+pends the owner, and per the 2026-08-18 judge-sole-gate ruling no sign-off is
+waited on. It supersedes nothing: it re-affirms the 2026-08-13 and 2026-08-20
+entries of the same shape after the owner's 2026-08-30 escalation-batch ruling 10
+returned the item to ACTIVE with a modality change, and after that modality
+(solver, session 13) and its single surviving frontier item (this session) both
+returned measured-dead verdicts.
+
+**Floor re-measured this session (do not quote the ledger's older numbers):**
+the SB chassis (`memory/grind/func_800645B0/candidate.c`) pasted over the
+`INCLUDE_ASM` line gives `sandbox func_800645B0 --disable all` = **score 1,
+target_insns 78, build_insns 78, rules_dropped 0**. The entire residual is ONE
+instruction's operand order at stream index 20: target `addu $s0,$s1,$s0`, ours
+`addu $s0,$s0,$s1`.
+
+**What closed this session (the last live frontier item).** H63: re-derive the
+inner loop with the slot index as a REAL induction variable — initialised per
+group and updated in the loop body, so `reg_n_sets[idx] >= 2` with no dead,
+staged or self-assigning store, while the *3 sum keeps the fresh destination that
+optabs.c:398-421 requires for the target's operand order. Measured:
+IV1 (`idx = i;` + `idx += 1;`, `j` retained) = **16 / 78 at 83 insns**;
+IV2 (index-only inner loop, `j` deleted) = **25 / 78 at 89 insns**; SB control
+= 1 / 78 at 78. The kill is structural and comes from the TARGET's own stream:
+`asm/funcs/func_800645B0.s` emits the index as a register-register
+`addu $s0,$s3,$a0` TWICE (peeled above the inner-loop label at 0x800645DC and in
+the back-edge delay slot at 0x800646B4), so the original C recomputes `i + j`
+inside the inner loop; a maintained index emits `addiu` there and must still
+carry `j` or an `i + 4` bound, costing 5 and 11 instructions. Banked at
+`rejected/induction-variable-index-costs-five-insns.c` and
+`rejected/index-only-inner-loop-drops-j-89-insns.c`.
+
+**The lock, named at both ends (sessions 12-13, unchanged).**
+(1) Operand order is CLOSED-FORM from `tools/gcc-2.7.2/optabs.c:398-421`: with the
+sum's expansion target equal to `idx`'s pseudo, BOTH `idx = idx2 + idx` (swaps,
+target == op1) and `idx = idx + idx2` (never swaps) emit `(idx, idx2)`; the
+target's order requires a destination distinct from both operands (the WD
+chassis, which achieves index 20 EXACTLY, at 3/78).
+(2) A fresh destination drops `reg_n_sets[idx]` to 1, which hands the loop-top
+`addu` sched.c's `birthing_insn_p` max-priority lift (instrumented-cc1 dump:
+`birth: 1, maxpri: 0x7F000001`) and relocates the residual to the inner-loop head
+(indices 11/12 plus the reorg.c delay-slot copy at 65). Session 13's inverse
+scheduler typed that half **FORECLOSED**: the minimal solution is 1 atom, all 8
+vectors class `luid_order` (source statement order), and statement order is
+measured byte-inert on this chassis; the non-LUID vectors all require an
+instruction the target does not contain. The two halves share ONE variable,
+`reg_n_sets[idx]`, and every member of the "second real set of idx" family is now
+measured: recomputed `i + j` (extra addu), the byte offset (12/78, local-alloc
+flip), a pre-loop constant (prologue cost), the maintained recompute (IA 1/78,
+OA 3/79), and the induction variable (16/78, 25/78, this session).
+
+**Endgame-lock AND-gates — BOTH FAIL.**
+- Gate (a) canonical-asm: `python3 tools/scan_hand_coded.py --single func_800645B0`
+  → **tier=LOW score=0/8**, "no strong hand-coded indicators" (S1-S8 all clear;
+  78 insns, 5 spills, 7 distinct regs). Re-run this session. No STRONG signal.
+- Gate (b) in-hand SOTN-master precedent for the closing construct: **none**.
+  Every measured distance-0 form for this function stages the loop index through
+  the local that later receives the derived sum (`wid = i + j; idx = wid;`, or its
+  mirror `val = idx; idx = idx2 + val;`) — both already ruled cheats for this
+  function by layer-1 (2026-08-12 20:03 and the session-9 FAIL) and both on the
+  driver's banned list. `docs/reference/sotn-construct-index.md` (1,365 PSX-tagged
+  entries) contains no instance of that construct class; the frozen variable-reuse
+  family covers borrowing an EXISTING local for a second unrelated value, which
+  bound 2 of `.claude/rules/staged-value-reused-variable.md` explicitly
+  distinguishes from inventing a staging copy.
+
+**What holds the byte match:** nothing — there is no match. `src/text1b.c:3981`
+carries `INCLUDE_ASM("asm/funcs", func_800645B0);` per asm-until-matched, with
+zero cheat-asm, zero rules, zero pins on main. Session 14's src edits were
+reverted before the session ended.
+
+**Disposition.** Under the 2026-07-27 standing ruling: REFUSED /
+OWNER-ACCEPTED INCOMPLETE. The function ships as `INCLUDE_ASM`; the honest floor
+form is preserved at `memory/grind/func_800645B0/candidate.c` (SB chassis,
+ordinary C, zero cheat constructs, 1/78). **Re-open triggers** (any one, no owner
+action required): a new sanctioned family that covers an invented staging copy;
+a GCC 2.7.2 finding that changes `birthing_insn_p`'s or `expand_binop`'s
+attribution for this block; or an independent SOTN-master precedent for the
+staging construct appearing in the construct index. No question pends the owner —
+per the packet template, "this is hard" is not a packet, and no answer here would
+avoid lowering a standard.
+
+**Evidence pointers:** `memory/grind/func_800645B0/{evidence.md,hypotheses.md}`
+(H24, H26, H58-H63), `memory/grind/func_800645B0/rejected/` (37 banked forms),
+`tmp/grind/func_800645B0/s14/`, prior entries at decisions.md 2026-08-13,
+2026-08-20, 2026-08-25 (packet + owner YES on the toolkit repair), 2026-08-30
+escalation-batch ruling 10.

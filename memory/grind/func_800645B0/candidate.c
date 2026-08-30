@@ -59,6 +59,21 @@
  * back.  See hypotheses H58/H59.  Also killed: `mask = 1 << idx;` (dropping the
  * `val = 1;` naming) = 12/78 at 80 insns -- the named local is load-bearing.
  *
+ *
+ * s14 (2026-08-30, escalation/disposition): floor RE-MEASURED on that day's tree
+ * with this exact body -- score 1, target_insns 78, build_insns 78,
+ * rules_dropped 0.  The last live frontier item was killed with measurements
+ * (H63): the slot index cannot be a real induction variable, because the TARGET
+ * recomputes `i + j` with a register-register `addu $s0,$s3,$a0` twice (peeled
+ * above the inner-loop label at 0x800645DC and in the back-edge delay slot at
+ * 0x800646B4).  IV1 (`idx = i;` + `idx += 1;`, j retained, WD fresh-destination
+ * sum) = 16 / 78 at 83 insns; IV2 (index-only inner loop, j deleted) = 25 / 78
+ * at 89 insns.  Banked at rejected/induction-variable-index-costs-five-insns.c
+ * and rejected/index-only-inner-loop-drops-j-89-insns.c.  Both endgame-lock
+ * gates re-run and FAILED (scan_hand_coded tier=LOW 0/8; no SOTN-master
+ * precedent for the staging construct in docs/reference/sotn-construct-index.md),
+ * so the 2026-07-27 standing ruling was applied -- see the 2026-08-30
+ * REFUSED / OWNER-ACCEPTED INCOMPLETE entry in docs/grind/decisions.md.
  * SIBLING CHASSIS (both banked, both 3 away, both structurally distinct):
  *   chassis_jd_inline_index_arith.c — 3 / 78, index arithmetic written inline
  *     with no idx2/wid locals; residual is the three loop-top points only.

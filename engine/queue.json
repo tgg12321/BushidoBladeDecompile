@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800645B0",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 ## 2026-08-25 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (solver axis discharged)**"
-    },
-    {
       "func": "func_8002EA24",
       "file": "code6cac_b",
       "distance": 2,
@@ -1946,18 +1936,29 @@
       "unparked_from": "DECLINED 2026-08-24 (decisions.md escalation-packet rulings, packet 3): maspsx ASPSX-parity branch-target fill refused \u2014 self-healing transform, full fill-algorithm reimplementation required, ~120 already-correct census sites at risk. Residual (2-byte reorg branch-target gap) provably unreachable under the frozen pipeline. Re-decision triggers: census candidates regrow, or ASPSX fill semantics become documented.",
       "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 9 \u2014 returns to active; 2026-08-24 maspsx branch-fill DECLINE stands",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:14884 - 2026-08-30 - main (src/ings.c) - OWNER-ESCALATION - ESCALATED WITH DECISION PACKET (queue-routing question only; explicitly does NOT re-open the 2026-08-24 maspsx branch-fill DECLINE and lowers no standard)"
+    },
+    {
+      "func": "func_800645B0",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 ## 2026-08-25 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (solver axis discharged)**",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-30 - func_800645B0 - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     }
   ],
   "counts": {
     "total": 221,
-    "active": 220,
+    "active": 219,
     "by_status": {
-      "active": 220,
-      "escalated": 1
+      "active": 219,
+      "escalated": 2
     },
     "by_verdict": {
-      "C": 184,
-      "ASM-PARTIAL": 36
+      "ASM-PARTIAL": 36,
+      "C": 183
     }
   }
 }

@@ -1780,3 +1780,57 @@ another session looking for a spelling that gets both.
 - probe: Ran `perturb.py ... --goal-from-target text1b --target-object build/src/text1b.o --ours-object tmp/sandbox/func_800645B0/text1b.o` on the WD chassis, and separately verified build/src/text1b.o against asm/funcs/func_800645B0.s with engine.score.normalized_insns.
 - result: build/src/text1b.o is CONFIRMED to carry the target bytes (78 insns; the only positions differing from our object are the three the residual already names), so the authorised object-level derivation is sound. But goalmap raised: 'honest object has 78 insns but text1b.hon.s body has 69 lines'. Both come from the SAME tree — the body contains five absolute-address memory macros (sw $2,D_800F10EC; three sw $3,<sym>($16); sh $2,D_800F0BCC($17)) that `as` expands into lui/%lo pairs. Worked around without touching tools/: the goal for the single differing block is knowable by hand from asm/funcs/func_800645B0.s, so the block was inverted with an explicit --goal-before instead of --goal-from-target; a repaired goalmap would return the same vectors.
 - verdict: CONFIRMED
+
+## H63 (session 14, 2026-08-30) — KILLED. The slot index cannot be a real induction variable: the target's own stream recomputes `i + j` with a register-register add
+
+- **statement.** The s13 frontier's sole remaining escape — "give `idx` a second,
+  semantically real write as part of ordinary iteration (a maintained /
+  strength-reduced induction variable) so reg_n_sets[idx] >= 2 while the *3 sum
+  keeps its fresh destination" — reaches the target's operand order AND its
+  loop-head placement at no instruction cost.
+- **mechanism.** H58/H59 fix the operand-order half (the sum's expansion target
+  must be neither operand) and H61/H62 fix the loop-head half
+  (reg_n_sets[idx] > 1 denies sched.c's birthing_insn_p lift). An induction
+  variable satisfies both without any dead, staged or self-assigning store, so
+  it is the one shape the ban list does not already cover.
+- **probe.** Two bodies, honest `sandbox func_800645B0 --disable all` on this
+  session's tree: IV1 = `idx = i;` at the group top, `idx += 1;` at the inner
+  loop's bottom, `j` retained as the trip counter, WD fresh-destination sum;
+  IV2 = the index-only inner loop `for (idx = i; idx < i + 4; idx++)` with `j`
+  deleted. SB control re-measured the same session.
+- **result.** IV1 = **16 / 78 at 83 build insns**; IV2 = **25 / 78 at 89 build
+  insns**; SB control = **1 / 78 at 78**. The failure is structural, not a
+  scheduling tie: `asm/funcs/func_800645B0.s` emits the index as a
+  REGISTER-REGISTER `addu $s0,$s3,$a0` twice (peeled above the inner-loop label
+  at 0x800645DC, and in the back-edge delay slot at 0x800646B4). A maintained
+  index emits `addiu $s0,$s0,0x1` there and must still carry `j` (IV1) or a
+  computed `i + 4` bound (IV2), so the group prologue and the loop latch grow by
+  5 and 11 instructions respectively. The target's instruction stream therefore
+  FALSIFIES the induction-variable data model outright: the original C computes
+  `i + j` inside the inner loop.
+- **verdict: KILLED.** Banked at
+  `rejected/induction-variable-index-costs-five-insns.c` and
+  `rejected/index-only-inner-loop-drops-j-89-insns.c`. With this, every member of
+  the "second real set of idx" family is measured: recomputed `i + j` (extra
+  addu), the byte offset (12/78, local-alloc flip, DA/FA/FB/FD), a pre-loop
+  constant (prologue cost), the maintained recompute (IA 1/78, OA 3/79), and now
+  the induction variable (16/78, 25/78). The 1-vs-3 lock is closed on both ends
+  and on the only escape the ledger had left.
+
+## [s14] The slot index can be a REAL induction variable (initialised per group, updated in the loop body) so reg_n_sets[idx] >= 2 with no dead/staged/self-assigning store, while the *3 sum keeps the fresh destination optabs.c requires for the target's operand order - closing both halves of the 1-vs-3 lock at no instruction cost.
+- mechanism: H58/H59 fix the operand-order half (the sum's expansion target must be neither operand, tools/gcc-2.7.2/optabs.c:398-421); H61/H62 fix the loop-head half (reg_n_sets[idx] > 1 denies sched.c birthing_insn_p's max-priority lift, instrumented-cc1 dump: birth: 1, maxpri: 0x7F000001). An induction variable satisfies both without any construct on this function's ban list - the one shape the bans did not already cover, and the s13 ledger's sole remaining frontier item.
+- probe: Two bodies measured with honest `sandbox func_800645B0 --disable all` on this session's tree, against an SB control re-measured the same session: IV1 = `idx = i;` at the group top plus `idx += 1;` at the inner loop's bottom with `j` retained as the trip counter and the WD fresh-destination sum; IV2 = the index-only inner loop `for (idx = i; idx < i + 4; idx++)` with `j` deleted.
+- result: IV1 = 16/78 at 83 build insns; IV2 = 25/78 at 89 build insns; SB control = 1/78 at 78. The failure is structural, not a scheduling tie: asm/funcs/func_800645B0.s emits the index as a register-register `addu $s0,$s3,$a0` TWICE (peeled above the inner-loop label at 0x800645DC, and in the back-edge delay slot at 0x800646B4), so the original C recomputes i+j inside the inner loop; a maintained index emits `addiu $s0,$s0,0x1` there and must still carry j (IV1) or a computed i+4 bound (IV2), growing the group prologue and the loop latch by 5 and 11 instructions respectively.
+- verdict: KILLED
+
+## [s14] Endgame-lock gate (a): scan_hand_coded gives func_800645B0 a STRONG hand-coded-asm tier, opening the canonical-asm grant path.
+- mechanism: The canonical-asm door requires STRONG scanner signals (S1 multu pacing / S2 empty branch / S6 BIOS jumptable) per the driver's gate.
+- probe: python3 tools/scan_hand_coded.py --single func_800645B0 (re-run this session).
+- result: tier=LOW score=0/8, 'no strong hand-coded indicators' - S1..S8 all clear (78 insns, 5 spills, 7 distinct regs).
+- verdict: KILLED
+
+## [s14] Endgame-lock gate (b): an in-hand SOTN-master precedent exists for the closing construct (a loop index staged through the local that later receives the derived sum).
+- mechanism: Every measured distance-0 form for this function is `wid = i + j; idx = wid;` or its mirror `val = idx; idx = idx2 + val;` - both already layer-1 FAILed and on the driver's banned list for this function. A citable PSX-tagged SOTN-master precedent would be the only route to a family grant.
+- probe: Searched docs/reference/sotn-construct-index.md (1,365 entries, PSX/PSP provenance tagged) for staging / copy-through-a-derived-sum-destination constructs and for reuse entries.
+- result: No instance of the construct class. The six 'stag*' hits are the word 'stage' in SOTN stage filenames/comments; the reuse hits are the frozen variable-reuse family, which covers borrowing an EXISTING local for a second unrelated value - bound 2 of .claude/rules/staged-value-reused-variable.md explicitly distinguishes that from inventing a staging copy.
+- verdict: KILLED
