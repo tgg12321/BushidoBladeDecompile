@@ -563,3 +563,108 @@ user" prong.
 **Bank.** `candidate.c` now holds the distance-0 body. The uniform floor-4 body is preserved
 at `rejected/epilogue-uniform-pointer-floor4-superseded.c` as the fallback if ruling 6a is
 ever reversed — it is superseded, not disproven.
+
+## s8 findings (forensics modality, 2026-08-30) — PASS RE-ATTRIBUTION + prong 2 of the two-shape law FALSIFIED
+
+- [s8] CHASSIS FLOOR RE-MEASURED: with the uncontested uniform body (candidate.c, `p[0] = 0;`
+  for column a) applied over `INCLUDE_ASM` at src/text1b.c:3853,
+  `sandbox func_80062020 --disable all` -> **score 4, build_insns 35, target_insns 38,
+  rules_dropped 0**. The dispatch brief reported "measurement unavailable"; the live number
+  is 4, matching the ledger. src/text1b.c was reverted to HEAD afterwards (no draft C on main).
+
+- [s8] LEDGER HOUSEKEEPING: `memory/grind/func_80062020/candidate.c` had been left holding the
+  s7 dual-spelling epilogue, which is the construct the Judge FAILed 2026-08-25 21:17 and the
+  layer-1 cheat-reviewer FAILed 2026-08-30 18:43, and which state.json now lists as a BANNED
+  construct. candidate.c is restored to the best UNCONTESTED body (uniform `p[2]/p[1]/p[0]`,
+  floor 4). The banned body remains banked at rejected/layer1-fail-0830-1843.c.
+
+- [s8] **METHOD CHANGE — standalone cc1 falsification harness (the probe s7's frontier asked
+  for).** `tmp/grind/func_80062020/s7/falsify.py` (+ falsify2.py, falsify3.py) compiles a
+  minimal 3-line TU per candidate tree shape with the ORACLE cc1
+  (`tools/gcc-2.7.2/build/cc1`) and the verbatim Makefile CC_FLAGS, then classifies each
+  `sw $0,...` store's address operand as LOSUM (`sym[+K]($reg)` — rtx `(mem (plus REG
+  CONSTANT_ADDRESS))`) or DISP (`K($reg)` — rtx `(mem (plus REG CONST_INT))`). 53 shapes
+  measured in three sweeps at a fraction of the cost of a sandbox round-trip. Results:
+  falsif_results.txt, falsif2_results.txt, falsif3_results.txt.
+
+- [s8] **PRONG 2 OF THE TWO-SHAPE LAW IS FALSIFIED.** The law asserted that any shape which
+  keeps the symbol in the address expression folds the column constant into the symbol for
+  ALL THREE columns and "never forms a shared base". Counterexample family, measured:
+  `(*(Tbl2 + n))[2] = 0; (*(Tbl2 + n))[1] = 0; (*(Tbl2 + n))[0] = 0;` emits
+  **LOSUM[Tbl2+8] | DISP0 | DISP0** — a symbol-keeping, uniformly-spelled shape that mixes
+  both address forms on one row. The same mix appears for `*(*(A+n)+K)`, `*((s32 *)(A+n)+K)`,
+  `*(s32 *)((u8 *)(A+n)+4K)` and for the flat `Flat[n*3+K]` shape. Note that plain
+  `Tbl2[n][K]` does NOT mix (all LOSUM): the mix is decided by the exact tree, not by the
+  presence of the symbol. Artifacts: falsif2_results.txt (all six column orders x five
+  spellings), rejected/epilogue-rowptr-deref-losum-first-wrong-order.c.
+
+- [s8] **BUT THE MIX IS ALWAYS ORDER-INVERTED RELATIVE TO THE TARGET.** In every mixing shape,
+  across all six column orders, the LO_SUM store is the FIRST-emitted column and the remaining
+  two get their own bases derived from it (`la sym+K; addu $r,$sym,-4; addu $r,$ofs,$r; sw 0($r)`).
+  The target is the opposite: shared base + disp 8 and 4 FIRST, plain `%lo(sym)` LO_SUM LAST.
+  No shape in 53 produced the target arrangement.
+
+- [s8] **PASS ATTRIBUTION CORRECTED (dump-proven, supersedes the s5 attribution).** s5 recorded
+  the residual as "an RTL-EXPAND (legitimize_address) choice keyed on the C tree shape". The
+  dumps show that is only half of it, and `LEGITIMIZE_ADDRESS` is not involved at all:
+    * `config/mips/mips.h:2286` `GO_IF_LEGITIMATE_ADDRESS` accepts FOUR forms: REG;
+      CONSTANT_ADDRESS; REG+small CONST_INT; and **REG + CONSTANT_ADDRESS** (the comment there
+      says this is a deliberate pretence that MIPS has constant+register addressing because
+      "the assembler can use $r1 to load just the high 16 bits ... On the other hand, CSE is
+      not as effective"). That fourth form IS the LO_SUM `lui/addu/sw %lo` triple.
+    * `config/mips/mips.h:2433` `LEGITIMIZE_ADDRESS` only rewrites REG + large CONST_INT. It
+      never touches symbol+register addresses, so it cannot be the mechanism.
+    * In `tmp/grind/func_80062020/s7/dumps_new_2d_rowptr_inline/in.i.rtl` and `.cse` and
+      `.loop`, ALL THREE stores are `(set (mem (reg N)) (const_int 0))` — plain pseudos, no
+      symbol in any address. The LO_SUM appears for the first time in `in.i.combine`, where
+      insn 20 has become `(set (mem (plus (reg 77) (const (plus (symbol_ref "Tbl2")
+      (const_int 8))))) (const_int 0))`. **COMBINE is the pass that produces the LO_SUM form**,
+      by folding the address pseudo's def chain into the MEM.
+    * Combine can only do that when the address pseudo is SINGLE-USE — LOG_LINKS are only built
+      for a def with one use. In `dumps_new_struct_inline_addr/in.i.combine` the shared base
+      `reg 78` is used three times; insns 33 and 46 carry `(nil)` log links and are left as
+      `(mem (plus (reg 78) 4))` / `(mem (reg 78))`. That is exactly why every pointer-value
+      shape lands at DISP8|DISP4|**DISP0** instead of the target's DISP8|DISP4|**LOSUM**.
+
+- [s8] **THE RESIDUAL, RESTATED AS A MECHANICAL NECESSARY CONDITION (this is the useful form).**
+  For the target epilogue, RTL immediately before combine must contain TWO distinct address
+  pseudos over the same `ofs`: one MULTI-USE (feeding the disp-8 and disp-4 stores, so combine
+  refuses to fold it and it survives as `la sym; addu; sw 8/4($v0)`), and one SINGLE-USE whose
+  def chain ends in the symbolic constant (so combine folds it to `sw $0,sym($v1)`). Expand
+  emits a separate address pseudo AND a separate `reg = symbol_ref` per access
+  (`dumps_new_struct_inline_addr/in.i.rtl` has three of each); CSE then unifies them. So the
+  question "can one uniform spelling reach the target?" is now precisely: **can a uniform
+  spelling leave CSE with two un-unified address chains, one of them single-use?** Every
+  uniform spelling measured leaves CSE with either one chain (all DISP) or a first-chain-plus-
+  derived-chains cascade (LOSUM first). This is a sharper, falsifiable statement than the s5/s6
+  law and it is where the next forensics session should attack.
+
+- [s8] **SUB-PROBE (b) KILLED IN THE SAME SESSION — a basic-block boundary does NOT defeat the
+  address-chain unification.** Measured on the array-decay struct-cast shape, the one
+  configuration where expand really does emit three separate address pseudos that CSE has to
+  unify (`((struct Row *)((u8 *)Rows + n*12))->c/->b/->a`): with no split, with an `if (c) c=1;`
+  between the b-store and the a-store, with the a-store duplicated into both arms of an
+  if/else, and with a `while` loop ahead of the row — **all four measure DISP8 | DISP4 | DISP0**
+  (falsif5_results.txt). The unification survives every control-flow boundary tried, so the
+  offset-0 access never becomes a single-use chain and combine never gets to fold it. Sub-probes
+  (a) mode/type-mixed access and (c) different-biv derivation remain untested.
+  Incidental finding worth keeping: the same struct-cast spelling written over the ADDR_EXPR of
+  a scalar symbol (`(u8 *)&D_800F1198 + ofs`) folds the member offset into the symbol and gives
+  LOSUM|LOSUM|LOSUM, while written over an array's decayed base (`(u8 *)Rows + n*12`) it gives
+  DISP|DISP|DISP — the same COMPONENT_REF spelling lands on opposite sides of the dichotomy
+  depending only on whether the base is an ADDR_EXPR of a scalar or a decayed array
+  (falsif4_results.txt vs falsif5_results.txt). Any future shape search must control for this.
+
+- [s7] Live-chassis floor re-measured this session (the dispatch brief said 'measurement unavailable'): with the uncontested uniform body applied over INCLUDE_ASM at src/text1b.c:3853, sandbox func_80062020 --disable all -> score 4, build_insns 35, target_insns 38, rules_dropped 0. src/text1b.c was reverted to HEAD afterwards; the session leaves no draft C on main.
+
+- [s7] LEDGER HOUSEKEEPING: memory/grind/func_80062020/candidate.c had been left holding the s7 dual-spelling epilogue - the construct the Judge FAILed 2026-08-25 21:17, the layer-1 cheat-reviewer FAILed 2026-08-30 18:43, and state.json now lists as BANNED. candidate.c is restored to the best UNCONTESTED body (uniform p[2]/p[1]/p[0], floor 4); the banned body stays banked at rejected/layer1-fail-0830-1843.c. No session should be able to inherit a banned construct as its starting point.
+
+- [s7] NEW TOOL (reusable, cheap): tmp/grind/func_80062020/s7/falsify.py compiles a 3-line standalone TU per tree shape with the ORACLE cc1 and verbatim CC_FLAGS and classifies every 'sw $0' store address as LOSUM vs DISP. About a second per shape versus a full sandbox round-trip; 53 shapes measured across five sweeps this session. This is the right instrument for any future addressing-shape question in this project.
+
+- [s7] THE MIX EXISTS BUT IS ALWAYS ORDER-INVERTED: in every mixing shape, across all six column orders and five spellings, the LO_SUM store is the FIRST-emitted column and the other two get bases derived from it by 'la sym+K; addu $r,$sym,-4; addu $r,$ofs,$r; sw 0($r)'. The target needs the opposite (shared base+disp 8 and 4 first, plain %lo(sym) LO_SUM last). No shape of 53 produced the target arrangement, and every mixing shape costs more insns than the floor-4 uniform pointer body.
+
+- [s7] mips.h:2286 GO_IF_LEGITIMATE_ADDRESS accepts four forms - REG; CONSTANT_ADDRESS; REG + small CONST_INT; and REG + CONSTANT_ADDRESS. The in-tree comment on the fourth says it is a deliberate pretence that MIPS has constant+register addressing because 'the assembler can use $r1 to load just the high 16 bits ... On the other hand, CSE is not as effective.' That fourth form IS the lui/addu/sw %lo triple this residual is about, and the comment names CSE - not legitimize_address - as the pass it trades against.
+
+- [s7] SHARPENED NECESSARY CONDITION (supersedes 'the uniform-spelling space is closed by proof'): for the target epilogue, RTL immediately before combine must hold TWO distinct address pseudos over the same ofs - one MULTI-USE (feeding disp 8 and disp 4, so combine refuses to fold it) and one SINGLE-USE whose def chain ends in the symbolic constant (so combine folds it to sw $0,sym($v1)). Expand emits one address pseudo AND one 'reg = symbol_ref' per access (three of each in dumps_new_struct_inline_addr/in.i.rtl); CSE then unifies them. The open question is therefore precisely: what will make CSE leave two un-unified chains, one of them single-use?
+
+- [s7] CONTROL-FOR-THIS finding: the same COMPONENT_REF spelling lands on opposite sides of the dichotomy depending only on its base - written over the ADDR_EXPR of a scalar symbol ((u8 *)&D_800F1198 + ofs) it folds the member offset into the symbol and gives LOSUM|LOSUM|LOSUM, written over an array decayed base ((u8 *)Rows + n*12) it gives DISP|DISP|DISP. Any future shape search must control for base kind or it will draw false conclusions from 'the same' spelling.

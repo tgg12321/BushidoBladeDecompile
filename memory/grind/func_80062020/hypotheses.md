@@ -517,3 +517,50 @@ cc1 test case). That is now a compiler-behaviour curiosity rather than a lever: 
 result would offer an alternative uniform spelling for this function, so it is worth doing
 if anyone doubts criterion 1, but it does not block acceptance and no BB2 function depends
 on the answer.
+
+## [s8] The two-shape law's prong 2 is true: no symbol-keeping C tree shape can emit a shared base+disp for two columns of a row while emitting a LO_SUM symbol-relative address for a third.
+- mechanism: claimed by s5/s6 to follow from MIPS `legitimize_address` folding the column constant K into the symbol whenever the symbol is present in the address expression, so a symbol-keeping shape can only ever produce per-column `la(sym+K)`.
+- probe: the falsification test the s7 frontier prescribed, run as a MINIMAL standalone cc1 harness outside BB2 (tmp/grind/func_80062020/s7/falsify.py + falsify2.py + falsify3.py): 53 tree shapes, oracle cc1 + verbatim CC_FLAGS, each `sw $0` store's address operand classified LOSUM vs DISP.
+- result: **FALSIFIED.** `(*(A + n))[2] = 0; (*(A + n))[1] = 0; (*(A + n))[0] = 0;` — one uniform template, symbol kept, no pointer variable — emits `LOSUM[A+8] | DISP0 | DISP0`. Four further spellings of the same family and the flat `A[n*3+K]` shape mix as well, in all six column orders (falsif2_results.txt). Plain `A[n][K]` does not mix, so the mix is a property of the exact tree, not of "symbol present".
+- verdict: **KILLED** (as a general law). Its CONCLUSION for this function survives on the narrower ground below.
+
+## [s8] The LO_SUM-vs-base+disp choice for a store is made by RTL EXPAND / legitimize_address, keyed on the C tree shape (s5 attribution).
+- mechanism: s5 read the residual as expand choosing `(mem (plus REG CONSTANT_ADDRESS))` vs force_reg'ing the element address.
+- probe: read the machine description (`tools/gcc-2.7.2/config/mips/mips.h:2286` GO_IF_LEGITIMATE_ADDRESS, `:2433` LEGITIMIZE_ADDRESS) and diff the `-da` dumps of a mixing shape across passes (dumps_new_2d_rowptr_inline/in.i.{rtl,cse,loop,combine}).
+- result: `LEGITIMIZE_ADDRESS` only rewrites REG + large CONST_INT and never sees symbol+register addresses. In the mixing shape, `.rtl`, `.cse` and `.loop` all carry three plain `(set (mem (reg N)) 0)` stores with NO symbol in any address; the LO_SUM first appears in `.combine`, where the single-use address pseudo's def chain (`reg = const(sym+8)`, `reg' = ofs + reg`) is folded into the MEM. Combine builds LOG_LINKS only for single-use defs, so a multi-use base pseudo (the shared `reg 78` in dumps_new_struct_inline_addr) can never be folded and stays base+disp — including at disp 0.
+- verdict: **KILLED / RE-ATTRIBUTED.** The deciding pass is **combine**, gated on single-use of the address pseudo. Expand only decides how many address pseudos exist; CSE decides how many survive.
+
+## [s8, OPEN — the sharpened residual] A uniform C spelling can leave CSE with two un-unified address chains over the same `ofs`, one multi-use (feeding disp 8 and 4) and one single-use ending in the symbolic constant (folded by combine to `sw $0,sym($v1)`).
+- mechanism: expand emits one address pseudo AND one `reg = symbol_ref` per access (three of each in dumps_new_struct_inline_addr/in.i.rtl); CSE unifies them into one base, after which combine's single-use rule forbids the LO_SUM. The target proves the 1998 compilation reached combine with two chains. Everything now hinges on what CSE will and will not unify.
+- probe (for the next forensics session, cheap — the standalone harness makes each shape ~1s):
+  (a) instrument or dump `.cse` for shapes whose two accesses use the row base in different
+      *modes/types* (e.g. a `u8`/`u16` access at offset 0 alongside `s32` accesses at 4/8 — MEM
+      mode participates in CSE hashing);
+  (b) [KILLED in s8 — measured, falsif5_results.txt] shapes that put the offset-0 access in a
+      different extended basic block from the 4/8 accesses. Four control-flow splits tried on
+      the array-decay struct-cast shape; all four still measure DISP8|DISP4|DISP0. A BB boundary
+      does not defeat the unification.
+  (c) shapes where the offset-0 address is derived from a *different* biv/giv that the loop
+      already materialises, so the two chains are not syntactically equal at CSE time.
+  Each is ordinary C, not a coercion family; (b) in particular is a control-flow question, and
+  the target's epilogue does sit immediately after the loop-exit label `.L80062084`.
+- verdict: UNTESTED. This replaces "the uniform-spelling space is closed by proof" — that claim
+  rested on the now-falsified prong 2 and on the superseded expand attribution.
+
+## [s7] Prong 2 of the s5/s6 two-shape law holds: no symbol-keeping C tree shape can emit a shared base+disp for two columns of a row while emitting a LO_SUM symbol-relative address for a third.
+- mechanism: Claimed to follow from MIPS legitimize_address folding the column constant K into the symbol whenever the symbol appears in the address expression, so symbol-keeping shapes can only produce per-column la(sym+K).
+- probe: The falsification test the s7 frontier prescribed, run as a minimal standalone cc1 harness OUTSIDE BB2 (tmp/grind/func_80062020/s7/falsify.py + falsify2.py + falsify3.py): 53 tree shapes, oracle cc1 tools/gcc-2.7.2/build/cc1 with the verbatim Makefile CC_FLAGS, each 'sw $0' store address operand classified LOSUM (sym[+K]($reg)) vs DISP (K($reg)).
+- result: FALSIFIED. (*(A + n))[2]=0; (*(A + n))[1]=0; (*(A + n))[0]=0; - one uniform template, symbol kept, no pointer variable - emits LOSUM[A+8] | DISP0 | DISP0. Four further spellings of the family and the flat A[n*3+K] shape mix as well, in all six column orders. Plain A[n][K] does NOT mix, so the mix is a property of the exact tree, not of 'symbol present'.
+- verdict: KILLED
+
+## [s7] The LO_SUM-vs-base+disp choice is made at RTL expansion by the MIPS legitimize_address path, keyed on the C tree shape (the s5 attribution the whole ledger has run on since).
+- mechanism: s5 read the residual as expand choosing (mem (plus REG CONSTANT_ADDRESS)) versus force_reg'ing the element address.
+- probe: Read the machine description (tools/gcc-2.7.2/config/mips/mips.h:2286 GO_IF_LEGITIMATE_ADDRESS, :2433 LEGITIMIZE_ADDRESS) and diffed -da dumps of a mixing shape across passes (tmp/grind/func_80062020/s7/dumps_new_2d_rowptr_inline/in.i.rtl, .cse, .loop, .combine) and of a shared-base shape (dumps_new_struct_inline_addr).
+- result: LEGITIMIZE_ADDRESS only rewrites REG + large CONST_INT and never touches symbol+register addresses, so it cannot be the mechanism. In the mixing shape .rtl/.cse/.loop all carry three plain (set (mem (reg N)) 0) stores with NO symbol in any address; the LO_SUM first appears in .combine, where the single-use address pseudo def chain (reg = const(sym+8); reg2 = ofs + reg) is folded into the MEM. Combine builds LOG_LINKS only for single-use defs, so the multi-use shared base (reg 78 in dumps_new_struct_inline_addr, log links (nil) on its 2nd and 3rd uses) can never be folded and stays base+disp even at disp 0.
+- verdict: KILLED
+
+## [s7] A basic-block boundary between the offset-4 store and the offset-0 store defeats CSE unification of the address chains, leaving the offset-0 chain single-use so combine folds it to the target's LO_SUM.
+- mechanism: GCC 2.7.2 cse_main works over extended basic blocks; a control-flow join between the accesses should make the earlier base register unavailable, so expand's third address pseudo would survive as single-use into combine.
+- probe: Measured on the array-decay struct-cast shape ((struct Row *)((u8 *)Rows + n*12))->c/->b/->a, the one configuration where expand really does emit three separate address pseudos for CSE to unify: no split; 'if (c) c=1;' between the b- and a-stores; the a-store duplicated into both arms of an if/else; a while loop ahead of the row. tmp/grind/func_80062020/s7/falsify5.py.
+- result: All four measure DISP8 | DISP4 | DISP0. The unification survives every control-flow boundary tried; the offset-0 access never becomes a single-use chain.
+- verdict: KILLED
