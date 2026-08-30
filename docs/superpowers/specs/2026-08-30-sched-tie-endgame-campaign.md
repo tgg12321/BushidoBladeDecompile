@@ -54,18 +54,25 @@ materialisations and LICM-hoisted constants are inert levers.
      local_alloc.py's 4–5% order misses).
    - **(c)** flow-analysis→global_alloc deletion-window dump + matching
      ra_solver atom class (func_80078654's gap).
-2. **Validation target: func_80045294.** Smallest gap in the cluster (distance
-   2, one sched2 pair, ledger has the full chain analysis). Run the full chain
-   — `goal_from_tgt.py classify` → `inverse_sched.py --target-object` →
-   `levers.py` tiers — and either land the lever or bank a FORECLOSED verdict
-   with the atom named.
+2. **Methodology exemplar (already done): func_80045294.** Session 47
+   (2026-08-25, decisions.md:11915) ran the full inverse chain: sched model
+   baseline-exact, all 960 single atoms enumerated (13 vectors, one shared C
+   intent), RA inverse isolated to one atom (`reg_n_refs(a0) 3→4`), and BOTH
+   proven mutually exclusive in pure C — a typed foreclosure over an
+   exhaustively enumerated lever space, replacing 46 sessions of spelling
+   surveys. This is what the campaign buys per function; no further work here.
 3. **Cluster diagnostic sweep** (extends `sweep.py`; evidence-prep only, does
    NOT touch queue order — no cherry-picking, no out-of-order completions).
-   For each cluster member, bank the classify verdict + ranked lever report
-   into `memory/grind/<func>/evidence.md`, so the session that receives the
-   item at queue-top starts warm instead of paying the rediscovery tax.
-   Order: func_80045294, get_alarm, CD_datasync, func_80057CC8, CD_ready,
-   CD_sync. Solve the debug_printf arg-block sub-pattern once, apply across.
+   Measured 2026-08-30: the heaviest session-sinks have ZERO solver artifacts
+   in their ledgers — CD_sync (105 sessions), CD_ready (58), CD_datasync (18),
+   motion_Close (14), func_80060A68 (13) — while func_80057CC8 / get_alarm /
+   func_8002EA24 / func_80034F88 / func_80017848 / func_80072CD4 already carry
+   partial solver evidence. Sweep the zero-artifact members first, in that
+   order; bank the classify verdict + enumerated lever/FORECLOSED report into
+   `memory/grind/<func>/evidence.md`, so the session that receives the item at
+   queue-top starts warm. Solve the debug_printf arg-block sub-pattern once
+   (shared by CD_sync, CD_ready, CD_datasync, get_alarm, sprintf), apply
+   across.
 4. **Feedback loop.** Sweep results land in the ledgers + `docs/grind/`
    report; mechanically-FORECLOSED residuals become escalation packets per
    standing policy (escalation-not-parked). Judge gates every completion as
