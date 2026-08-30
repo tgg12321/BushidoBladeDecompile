@@ -73,7 +73,16 @@ materialisations and LICM-hoisted constants are inert levers.
    queue-top starts warm. Solve the debug_printf arg-block sub-pattern once
    (shared by CD_sync, CD_ready, CD_datasync, get_alarm, sprintf), apply
    across.
-4. **Feedback loop.** Sweep results land in the ledgers + `docs/grind/`
+4. **Tooling items surfaced by the sweep (2026-08-30 runs):**
+   - `goalmap.py` hop-3 difflib alignment mis-pairs duplicate instruction
+     text (two slls / repeated lw skeletons in the debug_printf window) —
+     CD_datasync's sched goal was SKIPPED for this. Needs anchor-based
+     alignment or per-block hand-verified `--goal-order`.
+   - `inverse.py local` is superlinear on large blocks: >20 min at depth 1
+     on text1b blk 0 (23 qtys, func_80060A68). Profile the per-atom replay.
+   - (fixed same day) `goalmap.py` object mode refused macro-bearing
+     functions; `_macro_expand_counts` landed in 3b771635.
+5. **Feedback loop.** Sweep results land in the ledgers + `docs/grind/`
    report; mechanically-FORECLOSED residuals become escalation packets per
    standing policy (escalation-not-parked). Judge gates every completion as
    usual — the campaign changes evidence quality, not standards.

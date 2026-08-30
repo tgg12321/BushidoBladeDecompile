@@ -1922,3 +1922,30 @@ packet. The honest outcome is `progress` with the kills banked and the item ACTI
 - [s11] ENDGAME GATE 1 RE-CHECKED AND STILL FAILS: python3 tools/scan_hand_coded.py --single func_80060A68 gives tier LOW, score 1/8, S4 only ('6 loads in 8-insn window @ insn 9'). ENDGAME GATE 2 IS NOT APPLICABLE: candidate.c carries no coercion construct at all, so there is no family for which a SOTN-master precedent could be cited.
 
 - [s11] NO DECISION PACKET WAS FILED THIS SESSION, deliberately. The 2026-08-25 packet (the representation question) was filed, ruled (b) and executed as commit 0bef2aa3; docs/grind/decisions.md:11122 records the ruling. What remains poses no owner-decidable question: it is a grind question whose mechanism this session corrected and whose replacement axis this session opened. A packet asking to relax a standard is pre-decided NO (owner ruling 2026-08-24, second), and 'this is hard' is not a packet, so the honest outcome is progress with the kills banked and the item ACTIVE.
+
+- [campaign-sweep 2026-08-30] First ra_solver run on this function (sched-tie
+  endgame campaign spec, docs/superpowers/specs/). Chassis: candidate.c (s11
+  d8 body) spliced -> sandbox 2, 66/66 confirmed live. Artifacts:
+  tmp/grind/func_80060A68/s12_campaign/.
+  **Residual localized on THIS chassis (normalized object diff):** exactly
+  sites 21/22 — ours `lhu v0,0(a1); nop` vs target `lhu v0,0(a0); lw a0,16(v1)`
+  — i.e. the +16 address pseudo should sit in $a0 (not $a1) AND its load fills
+  the lhu's delay slot. One coupled alloc+placement pair, consistent with the
+  s11 banner's "hold p10 off $v0" reframed to the current d8 body as "get the
+  address value INTO $a0".
+  **Model facts extracted:** global.c backend is EMPTY for this function
+  (order=1 allocno — everything relevant is local-allocated), so every
+  global-side lever family is out of scope here. reload retry is NOT the
+  mechanism either (reload_extract: 0 retry_global_alloc events for this
+  function). The deciding pass is local-alloc block_alloc, blk 0: qty 8
+  (first_reg=75, birth 26 death 44, refs 3) got $a1; qty 11 (first_reg=74,
+  birth 36 death 42, refs 2) got $a0. GOAL: qty 8 -> $a0 (hard reg 4).
+  **Tool wall (campaign item):** inverse.py local on blk 0 (23 allocated
+  qtys) did not finish depth 1 in >20 min of 100% CPU (two runs killed) —
+  per-atom forward replay appears superlinear on large blocks. Fix or bound
+  the local backend before re-running; until then the enumerated escape set
+  for the qty8/qty11 first-fit decision remains underived.
+  **Next session:** (1) profile/fix inverse.py local, then depth-1 the goal
+  above; (2) note the suggestion-pass dumps granted by ruling 1(a)
+  (qty_phys_copy_sugg / qty_phys_sugg scored) bear directly on this block —
+  implementing that grant may explain the $a1 pick outright.
