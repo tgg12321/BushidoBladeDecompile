@@ -148,6 +148,23 @@ def _include_asm_routed(stem, func):
         txt, re.M) is not None
 
 
+def _rule_carrying(func):
+    """True only if FUNC still carries a regfix/asmfix rule — the ONLY state in
+    which a src-derived <stem>.tgt.s can reproduce target's stream (the rules
+    were what closed the gap). Since rules-to-zero (2026-08-25) both files are
+    retired, so this is False for every function and the text path is refused
+    project-wide (owner ruling 1(b), 2026-08-30, decisions.md escalation-batch
+    entry)."""
+    for name in ("regfix.txt", "asmfix.txt"):
+        try:
+            txt = (ROOT / name).read_text(errors="replace")
+        except OSError:
+            continue
+        if re.search(rf"^{re.escape(func)}\b", txt, re.M):
+            return True
+    return False
+
+
 def cmd_classify(a):
     # GUARD (2026-08-06): for a `replace_with_asmfile` function this classifier
     # returns a FICTITIOUS verdict rather than no verdict, which is worse — it
@@ -165,12 +182,24 @@ def cmd_classify(a):
     # stale .tgt.s (ground truth on func_800645B0 was 78/78 with ONE
     # operand-order diff; the classifier reported a 71-vs-69 multiset gap from
     # a 19-day-old file). Route to the object-level classifier.
+    # GUARD (2026-08-30, owner ruling 1(b), decisions.md escalation-batch
+    # entry): the text path is refused for ANY zero-rule function, not just the
+    # asmfix-wired / INCLUDE_ASM-routed cases above. The old predicate keyed on
+    # the literal INCLUDE_ASM line in src/<stem>.c, so it stopped matching the
+    # moment a session applied a candidate body — exactly the state a solver
+    # session works in — and the stale .tgt.s then produced confident fiction
+    # again. Post rules-to-zero (2026-08-25) every function is zero-rule, so
+    # this effectively retires the text path; the object-level classifier
+    # (goal_from_tgt.py) reads target correctly in every state.
     asmfile_wired = _replace_with_asmfile(a.func)
     inc_routed = _include_asm_routed(a.stem, a.func)
-    wired = asmfile_wired or inc_routed
+    zero_rule = not _rule_carrying(a.func)
+    wired = asmfile_wired or inc_routed or zero_rule
     why = ("wired `replace_with_asmfile` in asmfix.txt" if asmfile_wired
            else f"committed as INCLUDE_ASM in src/{a.stem}.c "
-                f"(asm-until-matched)")
+                f"(asm-until-matched)" if inc_routed
+           else "zero-rule (rules-to-zero 2026-08-25): with no regfix/asmfix "
+                "rules the src-derived tgt.s cannot carry target's stream")
     if wired and a.force_text:
         print("PATH: text-stream classifier, GUARD OVERRIDDEN (--force-text) — "
               f"{a.func} is {why}, so the verdict below "
