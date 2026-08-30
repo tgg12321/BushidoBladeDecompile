@@ -771,3 +771,101 @@
 - [s47] Exhaustion of record: 47 sessions, 7 distinct modalities (recon, structural, permuter, forensics, rederive, synthesis, solver), 34 banked rejected forms, 137,872 permuter iterations across 11 chassis/mode combinations all plateauing at score 60, 18 independent rederive sub-axes killed (m2c across 10 option axes and 4 dialects, decomp.me, siblings, direct Kengo saTan0Init disassembly falsifying the name+size identity), PERM_INT shift-constant surface measured dead (s46), and now two exact solver models with exhaustively enumerated solution sets.
 
 - [s47] Disposition FILED this session at docs/grind/decisions.md:11915 — '## 2026-08-25 — func_80045294 (saTan0Init, src/text1a_c.c) — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'. It asks for no grant, no new family, no rule relaxation and accepts no debt into the build: main stays at INCLUDE_ASM with zero rules and zero cheat-asm, and the honest candidate stays at memory/grind/func_80045294/candidate.c (sandbox 2). Nothing pends on the owner (2026-08-18 judge-sole-gate).
+
+## s48 — escalation modality (owner ruling 10, 2026-08-30 batch: active with modality change)
+
+- [s48] CHASSIS RE-MEASURED. `memory/grind/func_80045294/candidate.c` pasted over the
+  `INCLUDE_ASM("asm/funcs", func_80045294);` line at src/text1a_c.c:1478 gives
+  `sandbox func_80045294 --disable all` = **score 2, target_insns 83, build_insns 83,
+  rules_dropped 0, cheat_asm_stripped 66 (other functions in the TU)**. The ledger's
+  floor of 2 is confirmed against the current chassis; nothing drifted.
+
+- [s48] RESIDUAL LOCALISED EXACTLY, from the sched_solver pass-2 model
+  (`tmp/sched_solver_work/text1a_c.sched.json`, func_80045294 pass 2 block 0, 18 insns,
+  simulator order-exact: sim == truth). Emission order (reverse of the backward-list-sched
+  output) is `197 207 4 205 6 209 12 [14] 211 22 199 201 203 19 25 28 31 32`, where
+  uid 14 = `sll $v1,$s2,4`, uid 211 = `sw $s0,0x10($sp)` and uid 22 = `addu $s0,$s2,$zero`.
+  The target's order (asm/funcs/func_80045294.s, 0x800452B0..0x800452B8) is
+  `211 22 14` — i.e. the ENTIRE residual is that the shift is picked one slot too early.
+  uids 197..211 (LUIDs 0..7) are reload-emitted prologue insns; uids 4..32 (LUIDs 9..21)
+  are real pre-reload insns.
+
+- [s48] FRONTIER ITEM 2 CLOSED (the pass-1 conditional on s47's exhaustive 960-atom
+  pass-2 proof). Exhaustive single-atom enumeration over sched_solver's PASS-1 block 0
+  (8 insns, 192 atoms, baseline order-exact) — `tmp/grind/func_80045294/s48/pass1_probe.py`
+  — yields 28 orders distinct from baseline, so pass 1 is NOT frozen. Of those, exactly
+  ONE is the order that flips the pass-2 LUIDs of uid 14 (sll) and uid 22 (`i = a0`):
+  pre-reload emission `[12, 22, 14, 19, 25, 28, 31, 32]` instead of
+  `[12, 14, 22, 19, 25, 28, 31, 32]`. `tmp/grind/func_80045294/s48/pass1_goal.py` enumerates
+  every atom that reaches it: 11 atoms, and ALL 11 are one of
+  (a) `add_dep 14 <- 22` (the shift consumes `i` — i.e. cse's own substitution), or
+  (b) a `luid`/`luid_move` atom that moves the shift statement after `i = a0` in the SOURCE.
+  Both spell the same single C intent: **i-before-v1**. The pass-1 axis therefore adds NO
+  new route; it is a second mechanism for the intent s47 already identified as the unique
+  one at pass 2. The foreclosure is now unconditional across both scheduling passes.
+
+- [s48] WHY i-before-v1 cannot pay: read from the compiler's own source, not inferred.
+  `tools/gcc-2.7.2/cse.c:826-882` (`make_regs_eqv`, called from `insert_regs` when the copy
+  `i = a0` is recorded) decides which register of the merged quantity becomes
+  `qty_first_reg`, and `canon_reg` substitutes THAT register into every later reference.
+  For two pseudos the destination (`i`, reg 75) displaces the source (`a0`, reg 72) iff
+  BOTH (cse.c:851-857):
+    (1) `uid_cuid[regno_last_uid[new]] > cse_basic_block_end` OR
+        `uid_cuid[regno_first_uid[new]] < cse_basic_block_start`  — i.e. `i` outlives the EBB;
+    (2) `uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]]` — i.e. `i`'s last
+        use is later than `a0`'s last use.
+  In candidate.c both hold (i is the induction variable of BOTH loops; a0's last reference
+  is the second loop's `i = a0` init), so on the H1 chassis the ashift operand is
+  canonicalised to reg 75 and the whole callee-save allocation rotates
+  (banked: rejected/i-before-v1-init.c, score 11). (1) is unfalsifiable in C — `i` is a loop
+  counter and must leave block 0. (2) is the only C-reachable prong.
+
+- [s48] FRONTIER ITEMS 1 AND 3 KILLED WITH MEASUREMENTS (new axis, not in the 34-form bank).
+  The one instruction-free way to falsify cse.c prong (2) is to stop reusing `i` as the
+  SECOND loop's counter, so that `i`'s last use falls back to the end of loop 1 while a0's
+  stays at the loop-2 init. Two forms measured:
+    * `rejected/h1-separate-second-loop-counter.c` (H1 chassis + distinct `j`): **score 37,
+      build_insns 80** (target 83).
+    * `rejected/base-separate-second-loop-counter.c` (current chassis + distinct `j`, the
+      control): **score 37, build_insns 80** — identical, isolating the damage to the counter
+      split itself rather than to the i/v1 declaration order.
+  Disassembly of the sandbox object shows the shortened live range re-rotates the entire
+  callee-save allocation (a0 lands in `$s1`, the counter in `$s2`) and lets loop 2's
+  `lw D_800A33AC` hoist out of the loop, DELETING 3 instructions the target has
+  (target keeps the reload inside the loop at 0x8004538C). The 83-instruction target shape
+  is therefore CONTINGENT on the single reused counter variable — which is exactly the
+  thing that makes cse.c prong (2) true. The two requirements are mutually exclusive at
+  the source level: any edit that falsifies prong (2) without emitting an instruction also
+  shortens `i`'s range, and shortening `i`'s range is what deletes the 3 instructions.
+
+- [s48] GATE (a) RE-RUN: `python3 tools/scan_hand_coded.py --single func_80045294` →
+  **tier=LOW score=0/8** (S1 0 multu pairs, S2 no empty-body branches, S3 83 insns/7 spills/
+  11 regs, S4 max load burst 3, S5 jaccard < 0.5, S6 no BIOS jumptable, S7 all callee-saves
+  saved, S8 no redundant mask). No hand-coded-asm evidence; canonical-asm grant path FAILS.
+
+- [s48] GATE (b) RE-CHECKED, AND THE 2026-07-20 RULING'S FACTUAL PREMISE IS NOW STALE.
+  That ruling said "prologue_fix retained to hold the byte-match". `tools/prologue_config.json`
+  is now **empty (0 entries)** and contains no `func_80045294` key, consistent with the
+  2026-08-25 rules-to-zero milestone. NOTHING holds a byte-match for this function: HEAD
+  ships `INCLUDE_ASM("asm/funcs", func_80045294);`. This is therefore NOT an integration
+  handoff — there is no bytes-proven form blocked behind a surface the session may not touch.
+
+- [s48] Chassis re-measured this session: memory/grind/func_80045294/candidate.c pasted over the INCLUDE_ASM line at src/text1a_c.c:1478 gives sandbox func_80045294 --disable all = score 2, target_insns 83, build_insns 83, rules_dropped 0, cheat_asm_stripped 66 (other functions in the TU). The ledger floor of 2 is confirmed; nothing drifted.
+
+- [s48] Residual localised exactly from the sched_solver pass-2 model (tmp/sched_solver_work/text1a_c.sched.json, func_80045294 pass 2 block 0, 18 insns, sim == truth): emission order is 197 207 4 205 6 209 12 [14] 211 22 199 201 203 19 25 28 31 32, where uid 14 = sll $v1,$s2,4, uid 211 = sw $s0,0x10($sp), uid 22 = addu $s0,$s2,$zero. The target order (asm/funcs/func_80045294.s, 0x800452B0..0x800452B8) is 211 22 14. uids 197..211 (LUIDs 0..7) are reload-emitted prologue insns; uids 4..32 (LUIDs 9..21) are real pre-reload insns.
+
+- [s48] Pass-1 block 0 (8 insns) admits 28 distinct non-baseline schedules under exhaustive single-atom perturbation (192 atoms), so sched1 is NOT frozen — but exactly one of those orders (pre-reload emission [12, 22, 14, 19, 25, 28, 31, 32] instead of [12, 14, 22, 19, 25, 28, 31, 32]) flips the pass-2 LUIDs of the residual pair, and all 11 atoms that reach it spell the single intent i-before-v1. The scheduling foreclosure is therefore unconditional across both passes, not conditional on reload's output as s47 had to concede.
+
+- [s48] tools/gcc-2.7.2/cse.c:826-882 (make_regs_eqv) is the mechanism for the RA leg, read from compiler source rather than inferred: for two pseudos the copy destination displaces the source as qty_first_reg — and thus as canon_reg's substitution target — iff (1) uid_cuid[regno_last_uid[new]] > cse_basic_block_end or uid_cuid[regno_first_uid[new]] < cse_basic_block_start, AND (2) uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]] (cse.c:851-857).
+
+- [s48] The only instruction-free falsification of cse prong (2) — a distinct second-loop counter — measures score 37 / build_insns 80 on BOTH chassis (memory/grind/func_80045294/rejected/h1-separate-second-loop-counter.c and .../base-separate-second-loop-counter.c). Sandbox disassembly shows the callee-save allocation rotates (a0 to $s1, counter to $s2) and loop 2's lw D_800A33AC hoists out of the loop, deleting 3 instructions the target keeps.
+
+- [s48] Gate (a) FAILS: python3 tools/scan_hand_coded.py --single func_80045294 -> tier=LOW, score=0/8, all eight signals negative (S1 0 multu/mflo pairs; S2 no empty-body branches; S3 83 insns / 7 spills / 11 distinct regs; S4 max load burst 3; S5 jaccard < 0.5; S6 no BIOS jumptable; S7 all callee-save uses have an $sp save; S8 no redundant mask-before-shift).
+
+- [s48] Gate (b) FAILS vacuously: there is no closing CONSTRUCT to grant. The residual is a pass-2 list-scheduler pick order over reload-emitted prologue insns plus one real insn; no SOTN-master construct under any family changes a LUID assignment, so no precedent could apply.
+
+- [s48] The 2026-07-20 owner ruling's premise that prologue_fix is 'retained to hold the byte-match' is now factually STALE: tools/prologue_config.json is empty (0 entries) and carries no func_80045294 key, consistent with the 2026-08-25 rules-to-zero milestone. HEAD ships INCLUDE_ASM("asm/funcs", func_80045294); with zero cheat constructs. This is NOT an integration handoff — no bytes-proven form is blocked behind an untouchable surface.
+
+- [s48] Owner directive from the queue item (2026-08-30 escalation-batch ruling 10, decisions.md:14870) EXECUTED, not deferred: the item was returned to ACTIVE with a modality change, this session ran that modality, closed all three surviving frontier items with measurements, and re-affirmed the standing-ruling disposition on fresh evidence. The directive is now acknowledged in the ledger (the consistency warning is cleared).
+
+- [s48] src/text1a_c.c was restored to HEAD (git checkout) after measurement; the working tree carries only ledger, decisions.md and rejected-form additions.

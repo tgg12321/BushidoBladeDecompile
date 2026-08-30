@@ -778,3 +778,61 @@
 - probe: Composition of the two exhaustive solver searches plus the direct H1 + second-loop-shift-on-a0 measurement, all this session.
 - result: Every one of the 34 banked rejected forms is an instance of taking (A) without (B) (the score-11/12 H1 basin) or (B) without (A) (the score-2 candidate basin); the modelled atom space contains no third basin. This supersedes the ledger's seven-wall prose (s34/s43) with a proof over an enumerated lever space, and it states exactly what any future lever must do: supply a fourth reference to a0, or shorten its live range, under source order i-before-v1.
 - verdict: CONFIRMED
+
+## s48 (escalation modality — owner ruling 10 of the 2026-08-30 batch)
+
+- [s48] **H-s48-1 — KILLED.** *Statement:* the pass-1 (sched1) block-0 input set admits a
+  perturbation that changes which insns reach sched2, invalidating s47's claim that the
+  pass-2 960-atom enumeration is exhaustive. *Probe:* exhaustive single-atom enumeration
+  over sched_solver's pass-1 model for func_80045294 block 0
+  (`tmp/grind/func_80045294/s48/pass1_probe.py`, 192 atoms) plus a goal-directed re-run
+  (`pass1_goal.py`). *Result:* pass 1 is genuinely perturbable (28 distinct non-baseline
+  orders), so the conditional was real — but exactly one of those orders flips the pass-2
+  LUIDs of the two residual insns, and all 11 atoms reaching it spell the single C intent
+  **i-before-v1** (either "the shift consumes i" or "the shift statement moves after
+  `i = a0`"). *Verdict:* the pass-1 axis is a second MECHANISM for the intent s47 already
+  named, not a new axis. The scheduling foreclosure is now unconditional across both passes.
+
+- [s48] **H-s48-2 — KILLED (new axis).** *Statement:* the residual is closable by making
+  `i` not be the value whose cse quantity displaces a0's — specifically by using a DISTINCT
+  counter variable for the second loop, so that cse.c's `make_regs_eqv` prong (2)
+  (`uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]]`, cse.c:856-857) is
+  false and `qty_first_reg` stays reg 72 (a0), leaving the ashift operand as a0 on the
+  H1 chassis where sched2 is already target-exact. *Mechanism:* read directly out of
+  `tools/gcc-2.7.2/cse.c:826-882`, not inferred — this is the pass-source answer the s47
+  frontier asked for. *Probe:* two spelled forms measured with `sandbox --disable all`:
+  H1 + distinct `j` and base chassis + distinct `j`. *Result:* both **score 37,
+  build_insns 80** against target 83. Shortening `i`'s live range re-rotates the whole
+  callee-save allocation AND lets loop 2's `lw D_800A33AC` hoist out of the loop, deleting
+  3 instructions the target keeps. *Verdict:* KILLED, and it kills the FAMILY, not just the
+  spelling: the 83-insn target shape is contingent on the single reused counter, and the
+  single reused counter is precisely what makes cse prong (2) true. Requirements (A) the
+  shift's operand stays a0 and (B) the instruction count stays 83 are mutually exclusive
+  at the source level.
+
+- [s48] **Frontier retired.** All three s47 frontier items are now measured dead: item 1
+  (fourth reference to a0 / cse operand choice) and item 3 (a lowering where `i` is not a
+  value-copy of a0) by H-s48-2 plus the cse.c source reading; item 2 (the pass-1
+  conditional) by H-s48-1. No successor frontier item is proposed, because the two
+  foreclosures are now at the COMPILER-SOURCE level (cse.c:844-857 for the RA leg,
+  the pass-1+pass-2 exhaustive atom enumerations for the scheduling leg) rather than at
+  the "we tried N spellings" level. Future sessions must NOT re-open this by spelling
+  another variant of i/v1 declaration order or another second-counter identity.
+
+## [s48] The pass-1 (sched1) block-0 input set admits a perturbation that changes which insns reach sched2, invalidating s47's claim that the pass-2 960-atom enumeration is exhaustive.
+- mechanism: sched.c reassigns INSN_LUID at the start of each scheduling pass, so the pre-reload emission order produced by sched1 sets the pass-2 LUIDs of every real insn. The 960-atom pass-2 proof is exhaustive only GIVEN the insn set/order reload hands sched2; a different sched1 output is a different pass-2 input.
+- probe: Exhaustive single-atom enumeration over sched_solver's pass-1 model for func_80045294 block 0 (tmp/grind/func_80045294/s48/pass1_probe.py, 192 atoms, 8 insns, baseline simulator order-exact), then a goal-directed re-run listing every atom that reaches the one order which flips the pass-2 LUIDs of uid 14 (sll $v1,$s2,4) and uid 22 (addu $s0,$s2,$zero) (pass1_goal.py).
+- result: Pass 1 is genuinely perturbable: 28 distinct non-baseline orders, so the conditional was real rather than a formality. But exactly ONE of those orders is the LUID-flipping one, and all 11 atoms reaching it are either add_dep 14 <- 22 (the shift consumes i) or a luid/luid_move atom placing the shift statement after `i = a0` in the source. All 11 spell the single C intent i-before-v1 that the pass-2 search already named.
+- verdict: KILLED
+
+## [s48] The residual is closable by using a DISTINCT counter variable for the second loop so that cse.c's make_regs_eqv prong (2) is false, leaving reg 72 (a0) as qty_first_reg and therefore keeping a0 as the ashift operand on the H1 chassis where sched2 is already target-exact.
+- mechanism: Read directly from tools/gcc-2.7.2/cse.c:826-882. make_regs_eqv makes the copy destination (i, reg 75) displace the source (a0, reg 72) as qty_first_reg — and hence as canon_reg's substitution target — iff (1) the destination outlives the current cse EBB AND (2) uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]] (cse.c:851-857). Prong (1) is unfalsifiable in C because i is a loop induction variable; prong (2) is falsified with zero extra instructions by ending i's live range at the close of loop 1.
+- probe: Two forms spelled and measured with `sandbox func_80045294 --disable all`: H1 chassis (i = a0 before v1 = a0 << 4) plus a distinct second-loop counter j, and the current chassis plus the same distinct j as a control. Sandbox object disassembled to attribute the delta.
+- result: Both forms score 37 with build_insns 80 against target_insns 83. The shortened live range re-rotates the entire callee-save allocation (a0 lands in $s1, the counter in $s2) and lets loop 2's `lw D_800A33AC` hoist out of the loop, deleting 3 instructions the target keeps inside it at 0x8004538C. Identical score on both chassis isolates the damage to the counter split itself, not to the i/v1 declaration order.
+- verdict: KILLED
+
+## [s48] A pure-C form exists that keeps the ashift operand as a0 (satisfying the RA leg) while keeping the 83-instruction target shape (satisfying the count leg).
+- mechanism: The two legs are coupled through the same source fact. cse prong (2) is true precisely because one variable serves as the counter of both loops, and that same reuse is what forces GCC to keep loop 2's global reload inside the loop and to keep the extra copies that make up the 83-instruction shape.
+- probe: Composite of the two probes above: cse.c source reading to enumerate the falsification routes for prong (2), then measuring the only instruction-free route.
+- result: Every edit that falsifies prong (2) without emitting an instruction also shortens i's live range, and shortening i's live range is exactly what deletes the 3 instructions. The requirements are mutually exclusive at the source level.
+- verdict: KILLED

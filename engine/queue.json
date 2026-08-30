@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80045294",
-      "file": "text1a_c",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:11915 \u2014 2026-08-25 \u2014 func_80045294 (saTan0Init, src/text1a_c.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
-    },
-    {
       "func": "func_80060A68",
       "file": "text1b",
       "distance": 2,
@@ -1949,17 +1939,28 @@
       "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
       "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:11814 - 2026-08-25 - CD_sync (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (owner directive 2026-08-24 executed and measured)",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15206 (## 2026-08-30 - CD_sync (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE)"
+    },
+    {
+      "func": "func_80045294",
+      "file": "text1a_c",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:11915 \u2014 2026-08-25 \u2014 func_80045294 (saTan0Init, src/text1a_c.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15292 \u2014 2026-08-30 \u2014 func_80045294 (saTan0Init, src/text1a_c.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
     }
   ],
   "counts": {
     "total": 221,
-    "active": 217,
+    "active": 216,
     "by_status": {
-      "active": 217,
-      "escalated": 4
+      "active": 216,
+      "escalated": 5
     },
     "by_verdict": {
-      "C": 182,
+      "C": 181,
       "ASM-PARTIAL": 35
     }
   }
