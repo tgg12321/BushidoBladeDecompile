@@ -102,7 +102,7 @@ sandbox, then full SHA1.
 Queue top, verdict C, distance 6, 4 regfix rules, plus a dead `ret++; ret--;`
 coercion in HEAD (removed). Three independent levers closed it:
 - prologue cluster: deleted a mangling `tools/prologue_config.json` entry per
-  [[prologue-fix-redundant-reorder]] (cc1 raw was already target-ordered).
+  `prologue-fix-redundant-reorder` (retired rule, deleted 2026-08-30) (cc1 raw was already target-ordered).
 - `s0 = ((u32)s0 >> 2) << 2;` → two statements (`s0 = (u32)s0 >> 2;
   s0 = s0 << 2;`) so the srl/sll pair stays in-place in $s0 instead of
   routing through $v0. (`s0 &= ~3;` measured WORSE: GCC materializes the
@@ -130,7 +130,7 @@ COMPLETED-C. Cheat-reviewer PASS (2026-06-10).
 - [[goto-end-prologue-delay-slot]] — the FORBIDDEN sibling shape (shared
   label with no real work + synthetic accumulator); read it to keep the
   line straight.
-- [[prologue-fix-redundant-reorder]] — companion lever used in the same
+- `prologue-fix-redundant-reorder` (retired rule, deleted 2026-08-30) — companion lever used in the same
   confirmed case (config-stage circular debt).
 - [[shared-end-label]] — the inverse constant-fold problem (you ADD a shared
   end so per-case values can't fold); this rule MOVES an assignment out of

@@ -74,5 +74,5 @@ it remains the right approach for the genuinely-C members of the cluster.
 - [[inline-asm-injection]] — do NOT re-spell the redundant mask as a hardcoded
   `$N` asm template; that is the same bytes from rule text, and the audit blocks it
 - gte-3x3 (sibling rule, same display.c cluster — the GTE mvmva wrappers)
-- [[no-new-regfix-rules]] — canonical-asm retirement removes ALL the function's
+- `no-new-regfix-rules` (retired rule, deleted 2026-08-30) — canonical-asm retirement removes ALL the function's
   regfix rules (func_8007EDBC dropped 70, including a lost_codegen cheat)

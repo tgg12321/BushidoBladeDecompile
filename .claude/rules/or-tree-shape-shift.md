@@ -74,7 +74,7 @@ cheat ordering scrambles them to a non-semantic sequence.
 | 2. Human-programmer | **FAIL** — natural orderings are by bit-position (descending or ascending) or by source-offset (struct field order). Neither cheat ordering matches. |
 | 3. GCC-internals justification | **FAIL** — when asked WHY the cheat ordering works, the only honest answer is "it shifts cc1's RTL OR-tree shape so the scheduler picks a different emission order." That's the cheat signal. |
 | 4. Permuter-derived | **FAIL** — both instances were FOUND by directed permuter. The permuter's `PERM_GENERAL{alt1, alt2, alt3}` over operand permutations specifically enumerates this space. |
-| 5. Family check | **FAIL** — same intent as the forbidden DImode chain ([[global-label-drift-sibling-cheat]]) and the combine-foldable chain-extender ([[register-alloc-pure-c]] §6 forbidden marker): shift RTL pseudo / tree structure to change scheduling without changing emitted semantics. |
+| 5. Family check | **FAIL** — same intent as the forbidden DImode chain (`global-label-drift-sibling-cheat` (retired rule, deleted 2026-08-30)) and the combine-foldable chain-extender ([[register-alloc-pure-c]] §6 forbidden marker): shift RTL pseudo / tree structure to change scheduling without changing emitted semantics. |
 | 6. Naming-announces-intent | N/A — the operands keep their original names; the cheat is in the order, not the spelling. |
 
 ## Why the catalog needs THIS family explicitly
@@ -202,7 +202,7 @@ each re-enters the active queue on its own ledger.
 - [[register-alloc-pure-c]] §6 — forbidden chain-extender family
   (different mechanism, same intent: shift RTL state to alter
   allocation/scheduling without semantic content).
-- [[global-label-drift-sibling-cheat]] § DImode chain — sibling
+- `global-label-drift-sibling-cheat` (retired rule, deleted 2026-08-30) § DImode chain — sibling
   forbidden technique with same "shift pseudo structure to bend
   scheduling" intent.
 - [[review-discipline-before-commit]] — the cheat-reviewer architecture

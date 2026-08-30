@@ -85,4 +85,4 @@ branch form.
 ## Related
 - [[strength-reduce-defeat]] — the inverse (forcing a sign-split GCC folds away);
   different lever (asm `negu`), this one is pure-C structural
-- [[lost-codegen-insert-cheat]] — other single-rule opcode/instruction cheats
+- `lost-codegen-insert-cheat` (retired rule, deleted 2026-08-30) — other single-rule opcode/instruction cheats

@@ -96,4 +96,4 @@ it verbatim as `switch (D_800A38DC) { case 4 / case 1 / case 6 / default }` →
   gotos and restore the `switch`.
 - [[cross-jump-call-merge]] — GCC's cross-jumping (jump.c) is what merges the sibling
   `var = C; break;` bodies the if-goto chain kept separate.
-- [[dead-branch-scheduling]] — another control-flow-shape codegen artifact.
+- `dead-branch-scheduling` (retired rule, deleted 2026-08-30) — another control-flow-shape codegen artifact.

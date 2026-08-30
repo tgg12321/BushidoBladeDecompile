@@ -89,5 +89,5 @@ multu (vestigial): func_8007F87C, func_8007FA1C — canonical-asm; entries dead.
   new GLOBAL maspsx behavior changes still need user sign-off
 - [[no-new-park-categories]] — cheats-by-any-spelling; the multu/multu-pad
   classification is that policy applied to build config
-- [[lost-codegen-insert-cheat]] — the regfix sibling of multu_pad-style
+- `lost-codegen-insert-cheat` (retired rule, deleted 2026-08-30) — the regfix sibling of multu_pad-style
   nop injection

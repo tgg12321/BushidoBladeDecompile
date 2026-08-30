@@ -93,7 +93,7 @@ scheduling / flow analysis upstream of DCE):
   still FAILs on the pin.
 - **Hardcoded-`$N` `__asm__` injection, scheduling barriers, regfix
   inserts** — unchanged ([[inline-asm-injection]],
-  [[lost-codegen-insert-cheat]]).
+  `lost-codegen-insert-cheat` (retired rule, deleted 2026-08-30)).
 - **Unused-array / oversized-array frame coercion** —
   [[dead-vars-local-array]] unchanged; this rule covers STORES, not
   declarations (see [[named-local-fake-exception]] for the scalar-local

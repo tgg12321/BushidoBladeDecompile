@@ -131,7 +131,7 @@ coercion, never as a recipe.
 ## Related
 
 - [[no-new-park-categories]] — the policy this technique fails
-- [[global-label-drift-sibling-cheat]] — sibling forbidden technique
+- `global-label-drift-sibling-cheat` (retired rule, deleted 2026-08-30) — sibling forbidden technique
   (dead-goto label-pad)
 - [[goto-end-prologue-delay-slot]] — sibling forbidden technique
   (return-value accumulator + shared label)

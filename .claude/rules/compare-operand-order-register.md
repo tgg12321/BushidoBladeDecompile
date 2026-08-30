@@ -77,7 +77,7 @@ allowing the `sw v0, 16(sp)` to fill the jalr delay slot, matching target's
 
 A trailing `goto label_pad; label_pad: goto end;` dead-pad was added to
 restore the global `.L` label count to HEAD's value (the cross-jump merge
-shaved off one label number) — see [[global-label-drift-sibling-cheat]].
+shaved off one label number) — see `global-label-drift-sibling-cheat` (retired rule, deleted 2026-08-30).
 
 ## When this does NOT apply
 
@@ -94,7 +94,7 @@ shaved off one label number) — see [[global-label-drift-sibling-cheat]].
   another lever in that family.
 - [[register-asm-pins]] — pins are diagnostic; finding the C structure that
   makes the pin's target register the natural choice IS the work.
-- [[global-label-drift-sibling-cheat]] — the dead-label-pad technique for
+- `global-label-drift-sibling-cheat` (retired rule, deleted 2026-08-30) — the dead-label-pad technique for
   restoring HEAD's `.L` count when restructuring a function shifts it.
 - [[store-before-jal]] — the related "delay-slot fill for stack arg" pattern
   this fix also enables (by keeping `$v0` busy through the fn ptr load).

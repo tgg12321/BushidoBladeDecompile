@@ -73,4 +73,4 @@ If you see the lost-codegen audit (`audit_asm_cheats.py`) flagging a function wi
 - Cases that all return DIFFERENT non-zero constants — no constant-fold trigger, vanilla per-case `return N;` already works.
 - Functions where the cases return through different paths (some return early, some fall through) — the shape doesn't unify into a shared end-label.
 
-See [[lost-codegen-insert-cheat]] for the cheat pattern this recipe replaces.
+See `lost-codegen-insert-cheat` (retired rule, deleted 2026-08-30) for the cheat pattern this recipe replaces.

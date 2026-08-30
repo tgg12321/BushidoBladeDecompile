@@ -66,7 +66,7 @@ metadata:
 
 ## Related
 
-[[completion-standard]] · [[community-standard]] · [[no-new-regfix-rules]] ·
+[[completion-standard]] · [[community-standard]] · `no-new-regfix-rules` (retired rule, deleted 2026-08-30) ·
 [[judge-sole-gate]] · [[integration-handoff-self-serve]] ·
 [[no-deferral-work-to-completion]] — unchanged by this ruling: the queue is
 still the only worklist and the top item is still worked to completion.

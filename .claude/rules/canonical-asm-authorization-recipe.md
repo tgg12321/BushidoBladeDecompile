@@ -105,7 +105,7 @@ literal will BREAK** when the labels shift. Confirmed examples from the A-pass:
    `.L<N>` mapping vs the old.
 4. Update affected sibling asmfix/regfix rules with new label numbers
    (or migrate to `{lbl#N}` function-local slots per
-   `[[global-label-drift-sibling-cheat]]` — drift-robust solution).
+   ``global-label-drift-sibling-cheat` (retired rule, deleted 2026-08-30)` — drift-robust solution).
 5. Re-verify oracle until SHA1 matches.
 
 **Do NOT commit a broken oracle.** If you cannot get SHA1 to match within
@@ -182,7 +182,7 @@ git commit -F tmp/msg.txt  # subject: auth: <func> (<file>.c) — COMPLETED-INLI
 - `[[hand-coded-asm-recognition]]` — the signals that qualify a function
   for canonical-asm authorization in the first place
 - `[[maspsx-noreorder-stripping]]` — the TAB+SPACE `.set` directive pattern
-- `[[global-label-drift-sibling-cheat]]` — `{lbl#N}` migration path for
+- ``global-label-drift-sibling-cheat` (retired rule, deleted 2026-08-30)` — `{lbl#N}` migration path for
   drift-robust sibling rules (preferable to manual `.L<N>` updates)
 - `[[inline-asm-allowed]]` — categorization of what counts as canonical
   vs cheat-asm

@@ -129,5 +129,5 @@ refutation + the standing-policy update in this rule).
 - [[review-discipline-before-commit]] — the cheat-reviewer architecture
   for vetting candidate bodies; this rule extends "verify before commit"
   to citations of project state
-- [[global-label-drift-sibling-cheat]] — the rule about the `{lbl#N}`
+- `global-label-drift-sibling-cheat` (retired rule, deleted 2026-08-30) — the rule about the `{lbl#N}`
   mechanism the round-3 worker's stale state was unaware of

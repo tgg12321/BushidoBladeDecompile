@@ -75,7 +75,7 @@ b/c are read/stored for the callee, not the signature arity.
 
 ## Related
 
-- [[lost-codegen-insert-cheat]] — the rule family these regfix bridges
+- `lost-codegen-insert-cheat` (retired rule, deleted 2026-08-30) — the rule family these regfix bridges
   fell under before retirement
 - [[narrow-stack-param-subword-offset]] — sibling "read params through
   their home slots" SOTN-sanctioned pattern

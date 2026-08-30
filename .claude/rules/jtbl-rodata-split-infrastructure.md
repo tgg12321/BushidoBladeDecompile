@@ -177,4 +177,4 @@ errored `KeyError: replay_camera_rob_back_loose2 not found` (sibling
 ## Related
 - [[inline-asm-policy]] — canonical inline / canonical-body asm; this is the rodata analogue
 - [[canonical-asm-retirement]] — when asm/infra is the legitimate end state
-- [[lost-codegen-insert-cheat]] — the asmfix rules that ARE cheats (contrast)
+- `lost-codegen-insert-cheat` (retired rule, deleted 2026-08-30) — the asmfix rules that ARE cheats (contrast)

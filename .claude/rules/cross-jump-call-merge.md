@@ -119,4 +119,4 @@ m2c (which over-infers trailing args) and never from blind diff-minimising.
 - [[shared-end-label]] — a different convergence-merge (per-case return folding)
 - [[store-before-jal]] — delay-slot scheduling from C structure
 - [[compiler-flags-canonical]] — flags are not the lever; arg count is
-- [[no-new-regfix-rules]] — this closes in pure C, no regfix needed for the structure
+- `no-new-regfix-rules` (retired rule, deleted 2026-08-30) — this closes in pure C, no regfix needed for the structure

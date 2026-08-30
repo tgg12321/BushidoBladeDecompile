@@ -36,7 +36,7 @@ into PS1 scratchpad (`0x1F800xxx`) then run a GTE op on the result
   volatile-coercion catalog entry
 - Multi-rule regfix `delete`/`reorder`/`subst` cluster around a jal —
   the index-anchored rules are exactly the brittle rule shape that
-  [[lost-codegen-insert-cheat]] and [[global-label-drift-sibling-cheat]]
+  `lost-codegen-insert-cheat` (retired rule, deleted 2026-08-30) and `global-label-drift-sibling-cheat` (retired rule, deleted 2026-08-30)
   warn against
 
 All are **score-inert under the cheat-invisible sandbox** — stripping
@@ -72,6 +72,6 @@ The original recipe text is preserved in git history:
 - [[register-alloc-pure-c]] — pure-C levers for register-allocation gaps
 - [[canonical-asm-retirement]] — the legitimate canonical-asm path for
   genuinely hand-coded constructs
-- [[lost-codegen-insert-cheat]] — the cheat family of single-rule
+- `lost-codegen-insert-cheat` (retired rule, deleted 2026-08-30) — the cheat family of single-rule
   manufactured-instruction `insert_after`s; the scratchpad recipe's
   `delete`/`reorder`/`subst` cluster is the multi-rule analogue

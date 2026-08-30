@@ -148,7 +148,7 @@ expanded catalog for the full set of coercion patterns the detector covers.
 
 ## Related memories
 
-- [[lost-codegen-insert-cheat]] — the regfix form of this cheat
+- `lost-codegen-insert-cheat` (retired rule, deleted 2026-08-30) — the regfix form of this cheat
 - [[inline-move-aliasing]] — the LEGITIMATE pattern (placeholders,
   not hardcoded registers); make sure you read it for what it actually says
 - [[register-asm-pins]] — why pins sometimes don't stick
