@@ -479,3 +479,33 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
  * zero reaching vectors at depths 1 and 2. See hypotheses.md H10/H10a/H10b/H10c
  * and evidence.md "SESSION 16".
  */
+
+/* ---------------------------------------------------------------------------
+ * SESSION 17 (escalation, 2026-08-30) -- BODY UNCHANGED; FLOOR RE-MEASURED AND
+ * THE LAST UNOBSERVED ALLOCATOR MECHANISM MEASURED INERT.
+ *
+ * Chassis: this body applied over src/code6cac_b.c's INCLUDE_ASM line gives
+ * `sandbox func_8002EA24 --disable all` = score 2, 104/104 insns, 0 rules,
+ * cheat_asm_stripped 46 -- unchanged since session 4.
+ *
+ * The owner's 2026-08-30 escalation-batch ruling 1 granted the local-alloc
+ * suggested-register instrumentation and the inverse_compose classify repair.
+ * Both were executed this session.  (a) The instrumentation was ALREADY BUILT
+ * (BB2_SUGG_DEBUG in tools/gcc-2.7.2/local-alloc.c, landed 70d6c905); the
+ * measurement shows func_8002EA24 has 26 local-alloc quantities and exactly ONE
+ * suggestion in the whole function (blk 0 qty 0 = pseudo 73, copysugg=[$a1]),
+ * that pseudos 102 (`y`) and 103 (`neg_threshold`) are cross-block and so never
+ * become quantities at all, and that local-alloc never occupies $a0 or $t1 here.
+ * The suggested-register pass is INERT on this residual.  (b) The repaired
+ * classifier routes to goal_from_tgt.py and reports FIRST DIVERGENCE: RA with
+ * residual `$a0 -> $v0 x2`, AMBIGUOUS attribution (three pseudos hold $a0) and
+ * an EMPTY goal -- confirming from tooling what s16 found by hand: the residual
+ * is a pseudo SPLIT (target has one more pseudo), not a seat swap, and is
+ * therefore foreclosed to the RA model by construction.
+ *
+ * Both endgame-lock gates re-evaluated and both FAIL (scan_hand_coded TIGHT_C
+ * 3/8; construct-index census for the newly-touched mechanism = 0 hits).
+ * Disposition filed: REFUSED / OWNER-ACCEPTED INCOMPLETE under the owner's
+ * standing ruling of 2026-07-27 -- docs/grind/decisions.md, entry dated
+ * 2026-08-30.  This body remains the best honest form.
+ */

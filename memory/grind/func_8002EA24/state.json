@@ -1,7 +1,7 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 16,
+ "session_count": 17,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -99,23 +99,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "Solver-first directive executed: the depth-2 sweep found a route 15 sessions never named (new conflict edge 102 y <-> 103 neg_threshold, present in ALL 142 reaching pairs) and it is measured dead (10/"
+  },
+  {
+   "session": 17,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Owner ruling 1 (2026-08-30) executed: the local-alloc suggested-register pass -- the last unobserved mechanism in the allocation stack -- is measured INERT on this residual; both endgame-lock gates re"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "local-alloc's SUGGESTED-REGISTER pass (qty_phys_copy_sugg / qty_phys_sugg) decides the $a0/$t1 split upstream of global_alloc, which is why 16 sessions of global-alloc-level search found nothing.",
-   "mechanism": "local_alloc.py reports but cannot SCORE `sugg` rows because the BB2_QTY_DEBUG hook in tools/gcc-2.7.2/local-alloc.c block_alloc does not dump the suggestion sets (a known gap stated in tools/ra_solver/README.md). It is the last mechanism in the allocation stack never observed for this function, and local-alloc renumberings also seed regs_used_so_far for global_alloc's pass 0 -- the exact set that excludes $a0 from pseudo 103.",
-   "next_probe": "GATED ON THE PACKET (docs/grind/decisions.md:11688). On YES: extend the BB2_QTY_DEBUG fprintf, rebuild the instrumented cc1 (TMPDIR=/dev/shm make cc1), re-run local_extract.py + local_alloc.py on code6cac_b, and ask whether any quantity in the range-test window carries a suggestion for $a0 or $t1. This is an engine/tools change, outside a grind session's writable surface."
+   "hypothesis": "A depth-2 solver combination reaches the plain control's goal on a banked score-2 body OTHER than the plain control, where the pseudo set and live-range geometry differ.",
+   "mechanism": "s16's depth-2 sweep ran against ONE baseline. The seven banked score-2 bodies have different pseudo sets, so an atom pair geometrically unspellable on the plain control (Route C's +4 overlap across a 25-instruction gap) may be spellable on a body whose y load already sits closer to the range chain. s17 caveat: the banked candidate's own residual yields an EMPTY goal (pseudo split), so only bodies whose residual is a genuine seat swap can be swept at all.",
+   "next_probe": "For each banked score-2 body: extract.py -> goal_from_tgt.py goal --model; DISCARD any body whose attribution returns AMBIGUOUS / goal {} (not RA-expressible); for the rest run tmp/grind/func_8002EA24/s16/depth2_sweep.py with the body-specific model and goal passed as argv, and report only vectors whose atoms are individually spellable in C."
   },
   {
-   "hypothesis": "inverse_compose.py's INCLUDE_ASM refusal predicate is the wrong key, so the first diagnostic every grind session runs is still unsound on every zero-rule function in the queue.",
-   "mechanism": "_is_include_asm_routed (inverse_compose.py:137-190) reads src/<stem>.c, but a session pastes its candidate body there before classifying. The invariant that actually matters is 'this function has zero regfix/asmfix rules', in which case <stem>.tgt.s is our own build modulo cheat-asm stripping and the text path can only report the stripping artifact.",
-   "next_probe": "A tooling session: re-key the predicate on the rule count (or on engine's canonical routing) and refuse the text path for any zero-rule function, routing to goal_from_tgt.py. Then re-run any banked classify verdict that was produced on a zero-rule function -- several may be fiction of the same species."
+   "hypothesis": "The residual is a pseudo SPLIT: the original C had one more local than the banked body -- a short-lived boolean temp for the first range test, with a0_var's $a0 value supplied by some other value live across the chain.",
+   "mechanism": "goal_from_tgt attributes the whole residual to `$a0 -> $v0 x2` with three $a0-holding pseudos and an empty goal; target's `negu $t1,$a2` / `slt $v0,$a1,$t1` / `bnez $v0` at 8002EAA4-8002EAAC shows the boolean in $v0 while 103 already sits in $t1. The forward enumeration of a0_var carriers (s9/s11: sum-of-squares 19, delta temps 16-28, vin/vout 6/5, y hoisted 11, x folded 19/6/19/24, -threshold IS 103) is complete and empty, so the missing $a0 occupant is not any value the current body computes.",
+   "next_probe": "Source archaeology rather than RA search: look for a value the ORIGINAL routine plausibly computed and this decompilation elides entirely (a cached member re-read, an early-computed tail value). func_8002D320 -- the leading-flag-parameter twin, jaccard 0.60, ledger at memory/grind/func_8002D320/ -- is the only donor with the same skeleton; diff its shape against this body's chain for a local we do not have."
   },
   {
-   "hypothesis": "A depth-2 combination reaches the target disposition on a score-2 body OTHER than the plain control, where the pseudo set differs.",
-   "mechanism": "This session's depth-2 sweep was run against ONE baseline (the plain control). The seven banked score-2 bodies have different pseudo sets and different live-range geometries, so an atom pair that is geometrically unspellable on the plain control (Route C's +4 overlap across a 25-instruction gap) may be spellable on a body whose y load already sits closer to the range chain.",
-   "next_probe": "For each banked score-2 body: extract.py -> goal_from_tgt.py goal --model (body-specific goal) -> depth2_sweep.py with the model path and goal passed as argv (the script already takes them). Report only vectors whose atoms are individually spellable in C; drop anything needing a preference for a register absent from the pre-RA RTL (foreclosed by H9a)."
+   "hypothesis": "The BB2_SUGG_DEBUG measurement generalizes: for any zero-rule function whose residual is a CROSS-BLOCK allocno seat, local-alloc is provably not the mechanism, so every other ledger frontier line naming the suggested-register pass is stale in the same way.",
+   "mechanism": "local-alloc forms quantities only for block-local pseudos, so a cross-block residual can never be reached by qty_phys_copy_sugg / qty_phys_sugg; and global.c's kick-out is gated on a failed placement.",
+   "next_probe": "Grep memory/grind/*/ hypotheses and frontier files for 'suggested-register' / 'qty_phys' / 'local-alloc' and re-check each against the pseudo's block span (local_extract.py --suggest is one cheap run per TU). Retire the stale ones before a session spends a whole modality on them."
   }
  ],
  "judge_constraints": [

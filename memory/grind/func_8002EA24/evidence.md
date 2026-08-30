@@ -1933,3 +1933,75 @@ That is an engine/tools change, outside a grind session's writable surface.
 - [s16] Gate (a) re-run first-hand THIS session, not quoted from the ledger: `python3 tools/scan_hand_coded.py --single func_8002EA24` -> `HAND_CODED: tier=TIGHT_C score=3/8 (func_8002EA24, 110 insns)`; S3/S4/S5 set, S1/S2/S6/S7/S8 clear.
 
 - [s16] The candidate body already allocates pseudo 103 to $t1 (target's choice); its score-2 residual is a pseudo COUNT difference (target splits the range-test boolean into its own $v0 temp), which the RA model cannot express at all -- so the plain control's 103 -> $t1 goal is the only RA-expressible framing, and it is now closed to depth 2 in full and depth 3 outside the foreclosed families.
+
+## [s17] 2026-08-30 — escalation modality; owner ruling 1 (2026-08-30) executed
+
+- CHASSIS: banked `candidate.c` body pasted over `src/code6cac_b.c:1062`
+  (`INCLUDE_ASM("asm/funcs", func_8002EA24);`) → `sandbox func_8002EA24 --disable all` =
+  **score 2, target_insns 104, build_insns 104, rules_dropped 0, cheat_asm_stripped 46**.
+  Identical to the ledger floor; src restored to INCLUDE_ASM before the session ended.
+- OWNER RULING 1(a) IS ALREADY BUILT. The 2026-08-30 escalation-batch ruling granted the
+  local-alloc suggested-register cc1 instrumentation "awaiting execution". It does not
+  await anything: `tools/gcc-2.7.2/local-alloc.c` carries the `BB2_SUGG_DEBUG` block
+  (dumping `qty_size`, `qty_min_class`, `qty_alternate_class`, `ncopysugg`, `nsugg`,
+  `copysugg[]`, `sugg[]` per qty, printed before the suggested pass so find_free_reg's
+  retry cannot clear `qty_phys_num_copy_sugg` first), the built cc1 honours it, and
+  `local_extract.py --suggest` / `inverse.py --sugg` already consume it (landed
+  `70d6c905`, "ra_solver — the suggested-register pass, modelled EXACTLY (Phase 7)").
+  The ledger's standing frontier line ("local_alloc.py reports but cannot SCORE `sugg`
+  rows because the hook does not dump the suggestion sets") is STALE and is retired here.
+- MEASUREMENT: `local_extract.py code6cac_b --suggest` → 53 functions / 977 qty rows;
+  suggestion table 49 functions / 970 qtys / 33 carrying a suggestion. For func_8002EA24:
+  26 quantities over blocks 0,1,3,4,6,8,9,12,16,18; **exactly one suggestion in the entire
+  function** — blk 0 qty 0 (pseudo 73, birth 4 death 32, refs 4) `ncopysugg=1
+  copysugg=[5] nsugg=0`, i.e. a copy suggestion for $a1 on a vector/GTE-prologue value.
+  Main pass assignments for the whole function are only $v0, $v1 and $a1.
+- CONSEQUENCE: pseudos 102 (`y`) and 103 (`neg_threshold`) are cross-block and therefore
+  never become local-alloc quantities; no suggestion set for either can exist, and
+  local-alloc never occupies $a0 or $t1 anywhere in the function. The one remaining
+  local→global coupling, global.c's `local_reg_n_refs` kick-out (global.c:1198-1250), is
+  gated on `best_reg < 0 && !retrying` and so cannot fire for an allocno that is placed —
+  103 is placed in every measured build. The suggested-register mechanism is INERT here.
+- REPAIRED CLASSIFY (ruling 1(b), commit `1ce408a4`): `inverse_compose.py classify` now
+  refuses the text path for this zero-rule function and redirects to `goal_from_tgt.py`.
+  Object-level verdict: `ours 104 / target 104`, `FIRST DIVERGENCE: RA`, residual
+  `$a0 -> $v0 x2`. With the freshly extracted model the attribution is **AMBIGUOUS** (three
+  pseudos hold $a0: 97, 122, 126) and the emitted goal is **empty** — there is no
+  well-formed target assignment to invert, because the difference is a pseudo SPLIT
+  (target has one more pseudo than we do), not a seat swap. This reproduces s16's hand
+  reading from the repaired tooling.
+- GATES (both re-evaluated on today's facts, both FAIL):
+  (a) `python3 tools/scan_hand_coded.py --single func_8002EA24` → `tier=TIGHT_C score=3/8`;
+      only the weak signals S3/S4/S5 fire; all three STRONG signals (S1 multu pacing,
+      S2 empty branch, S6 BIOS jumptable) clear. Same reading as 2026-07-30, 2026-08-20,
+      s13, s14 and s16. **FAIL.**
+  (b) SOTN-master precedent: there is no closing construct to cite a precedent FOR (the
+      banked body is ordinary C plus the two authorized GTE islands). The construct-index
+      census run this session for the newly-touched mechanism —
+      `sugg`, `local_alloc`, `qty_phys`, `local-alloc`, `suggested` against
+      `docs/reference/sotn-construct-index.md` — returns **0 hits each**, joining the
+      negative censuses of s9 (decomp.me ×2) and s13/s14 (conflict / allocno / find_reg /
+      global_alloc). A negative census is a failed gate, not an open question. **FAIL.**
+- ARTIFACTS: `tmp/grind/func_8002EA24/s17/scan.txt`, `classify.txt`, `classify_obj.txt`,
+  `cur.model.json`, `apply.py`; `tmp/ra_solver_work/code6cac_b.sugg.json`,
+  `tmp/ra_solver_work/code6cac_b.local.json`.
+
+- [s17] CHASSIS (this session): banked memory/grind/func_8002EA24/candidate.c body applied over src/code6cac_b.c:1062 -> `sandbox func_8002EA24 --disable all` = score 2, target_insns 104, build_insns 104, rules_dropped 0, cheat_asm_stripped 46. src restored to INCLUDE_ASM before the session ended; working tree left clean apart from the ledger/docs appends.
+
+- [s17] Owner ruling 1(a) (2026-08-30 escalation-batch) is ALREADY BUILT, not awaiting execution: tools/gcc-2.7.2/local-alloc.c carries the BB2_SUGG_DEBUG block (per-qty qty_size / minclass / altclass / ncopysugg / nsugg / copysugg[] / sugg[], printed BEFORE the suggested pass so find_free_reg's retry cannot clear qty_phys_num_copy_sugg first); the built cc1 honours it; local_extract.py --suggest and inverse.py --sugg already consume it (landed 70d6c905). The ledger's standing frontier line claiming the hook 'does not dump the suggestion sets' is STALE and is retired here.
+
+- [s17] func_8002EA24 has 26 local-alloc quantities and exactly ONE suggestion in the whole function (blk 0 qty 0, pseudo 73, copysugg=[$a1]). Neither residual pseudo (102 y, 103 neg_threshold) is a local-alloc quantity -- both are cross-block. Local-alloc's main pass assigns only $v0, $v1 and $a1 here, so it never occupies either contested register.
+
+- [s17] global.c's local_reg_n_refs kick-out (tools/gcc-2.7.2/global.c:1198-1250) is gated on `best_reg < 0 && !retrying` and therefore cannot fire for an allocno that is successfully placed; 103 is placed in every measured build. The local->global coupling is closed by reading the pass, not by search.
+
+- [s17] The allocation stack is now observed END TO END for this function: local-alloc's suggested pass (s17, inert), local-alloc's main pass (s17, three registers, neither of them the contested pair), global.c's allocno ordering + first-fit + prune_preferences (s3-s11, s15 depth 1, s16 depths 2 and 3 -- 15,525,735 vectors, zero reaching), and reload (0 spills, S3 in scan_hand_coded). No un-instrumented mechanism remains.
+
+- [s17] Repaired classify (ruling 1(b), commit 1ce408a4): FIRST DIVERGENCE: RA at 104/104 with residual `$a0 -> $v0 x2`; model attribution AMBIGUOUS (pseudos 97/122/126 hold $a0) and goal EMPTY. The banked body's residual is a pseudo split (target has one more pseudo), so the only RA-expressible framing this function has is the plain control's `103: $a0 -> $t1` goal -- closed by s15/s16 at depths 1, 2 and 3.
+
+- [s17] GATE (a) canonical-asm: `python3 tools/scan_hand_coded.py --single func_8002EA24` -> tier=TIGHT_C score=3/8; only the weak signals fire (S3 no spills 110 insns/0 spills/16 distinct regs, S4 front loads 5-in-8 @ insn 1, S5 cluster -- one approx-sibling func_8002D320 jaccard 0.60); all three STRONG signals clear (S1 multu pacing, S2 empty branch, S6 BIOS jumptable). Identical reading to 2026-07-30, 2026-08-20, s13, s14 and s16. FAIL.
+
+- [s17] GATE (b) SOTN-master precedent: there is no closing construct to cite a precedent FOR (the banked body is ordinary C plus the two already-authorized GTE islands). The census run this session over docs/reference/sotn-construct-index.md for the newly-touched mechanism (sugg / local_alloc / qty_phys / local-alloc / suggested) returns 0 hits each, joining s9's two decomp.me censuses and s13/s14's conflict / allocno / find_reg / global_alloc census. A negative census is a failed gate, not an open question. FAIL.
+
+- [s17] EXHAUSTION of record: 17 sessions; honest floor flat at 2 since session 4; 8 distinct modalities (escalation, forensics, permuter, recon, rederive, structural, synthesis, solver); ~118k + ~84k fresh-seed permuter iterations; 47 disproven bodies banked in memory/grind/func_8002EA24/rejected/. All three model-reaching routes are RTL-foreclosed with measurements: A (own $t1 preference on 103 -- unrepresentable in the pre-RA RTL, s15); B (edge 97<->103 -- 15/21, s15); C (edge 102<->103 -- 25-instruction gap, 10/11, s16). The forward enumeration of a0_var carriers is complete and empty (s9/s11).
+
+- [s17] There is NO cheat on main for this function: 0 regfix/asmfix rules, and src/code6cac_b.c carries INCLUDE_ASM("asm/funcs", func_8002EA24); per asm-until-matched. This is an honest floor-2 residual, not a cheat-held byte match; the retired chassis is preserved at memory/grind/func_8002EA24/retired-chassis-2026-08/rules.txt.

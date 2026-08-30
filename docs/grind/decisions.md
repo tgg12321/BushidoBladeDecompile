@@ -15095,3 +15095,110 @@ avoid lowering a standard.
 `tmp/grind/func_800645B0/s14/`, prior entries at decisions.md 2026-08-13,
 2026-08-20, 2026-08-25 (packet + owner YES on the toolkit repair), 2026-08-30
 escalation-batch ruling 10.
+
+## 2026-08-30 — func_8002EA24 (src/code6cac_b.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Grind session 17 (escalation modality). **This entry supersedes the 2026-08-25 decision
+packet at decisions.md:11688.** That packet asked one decidable question — may the operator
+extend the instrumented cc1's suggested-register dump and repair `inverse_compose classify`
+— and the owner's 2026-08-30 escalation-batch ruling 1 answered **YES** on both halves.
+Session 17 executed both. Nothing is pending, nothing waits on an owner, and no rule,
+family, grant, standard or debt acceptance is requested by this entry.
+
+### The granted lane, executed — and the result is a clean negative
+
+**Ruling 1(a) was already built.** `tools/gcc-2.7.2/local-alloc.c` carries the
+`BB2_SUGG_DEBUG` block (per-qty `qty_size` / `qty_min_class` / `qty_alternate_class` /
+`ncopysugg` / `nsugg` / `copysugg[]` / `sugg[]`, printed *before* the suggested pass so
+`find_free_reg`'s retry cannot clear `qty_phys_num_copy_sugg` first), the built cc1 honours
+it, and `local_extract.py --suggest` / `inverse.py --sugg` already consume it — landed
+`70d6c905` ("ra_solver — the suggested-register pass, modelled EXACTLY (Phase 7)"). The
+ledger's standing frontier line, carried since s15, asserted the hook "does not dump the
+suggestion sets". That premise was stale; it is retired.
+
+Chassis re-measured first, banked `candidate.c` body applied to `src/code6cac_b.c`:
+`sandbox func_8002EA24 --disable all` → **score 2, 104/104 insns, 0 rules,
+cheat_asm_stripped 46**. src restored to `INCLUDE_ASM("asm/funcs", func_8002EA24);`.
+
+`python3 tools/ra_solver/local_extract.py code6cac_b --suggest` → 53 functions / 977 qty
+rows; suggestion table 49 functions / 970 qtys / 33 carrying a suggestion. For
+func_8002EA24: **26 quantities across 10 basic blocks, and exactly ONE carries any
+suggestion at all** — blk 0 qty 0 (pseudo 73, birth 4, death 32, refs 4),
+`ncopysugg=1 copysugg=[5]` ($a1), `nsugg=0`, a value in the vector/GTE prologue with no
+relation to the range-test chain. The main pass hands out only three hard registers in the
+whole function: $v0, $v1 and $a1.
+
+Why that closes the mechanism, not merely fails to find it:
+* Both residual pseudos — 102 (`y`) and 103 (`neg_threshold`) — are **cross-block**, so
+  local-alloc never forms a quantity for either (the function's block-local pseudo numbers
+  are 73-95 in blk 0 and 105-133 in blocks 1-18). No suggestion set for them can exist.
+* Local-alloc **never occupies $a0 (4) or $t1 (9)** anywhere in this function, so the
+  "local-alloc consumed the register first" escape is empty.
+* The one surviving local→global coupling, global.c's `local_reg_n_refs` kick-out
+  (`tools/gcc-2.7.2/global.c:1198-1250`), is gated on `best_reg < 0 && !retrying` — it runs
+  only after `find_reg` has already FAILED to place the allocno. 103 is placed in every
+  measured build, so that path never executes for it.
+
+**Ruling 1(b), landed `1ce408a4`, was re-run.** `inverse_compose.py classify code6cac_b
+func_8002EA24` now correctly refuses the text path for this zero-rule function and
+redirects. The object-level classifier gives `ours 104 / target 104`,
+`FIRST DIVERGENCE: RA`, residual `$a0 -> $v0 x2`. Against a freshly extracted model
+(order=13 pseudos, dispositions=48) the attribution is **AMBIGUOUS** — three pseudos hold
+$a0 (97, 122, 126) — and the emitted goal is **empty**. There is no well-formed target
+assignment to invert: target carries one MORE pseudo than we do (it computes the first
+range test's boolean into a separate short-lived $v0 temp while still holding a0_var's
+value in $a0; the banked L3 body computes that boolean INTO a0_var). The residual is a
+pseudo SPLIT, not a seat swap, so it is foreclosed to the RA model by construction. This
+reproduces s16's hand reading (`memory/grind/func_8002EA24/hypotheses.md:1834`) from the
+repaired tooling.
+
+The allocation stack is now observed **end to end** for this function: local-alloc's
+suggested pass (s17 — inert), local-alloc's main pass (s17 — three registers, neither of
+them the contested pair), global.c's allocno ordering + first-fit + preference pruning
+(s3-s11, s15 depth 1, s16 depths 2 and 3 — 15,525,735 vectors, zero reaching), and reload
+(0 spills). There is no un-instrumented mechanism left.
+
+### Exhaustion of record
+
+17 sessions; honest floor flat at **2** since session 4; 8 distinct modalities (escalation,
+forensics, permuter, recon, rederive, structural, synthesis, solver); ~118k + ~84k
+fresh-seed permuter iterations; **47 disproven bodies** banked in
+`memory/grind/func_8002EA24/rejected/`, each named for its cause; `hypotheses.md` and
+`evidence.md` carry the per-session kill record. All three model-reaching routes are
+RTL-foreclosed with measurements: A (own $t1 preference on 103 — unrepresentable in the
+pre-RA RTL, s15); B (edge 97↔103 — 15/21, s15); C (edge 102↔103 — 25-instruction gap,
+10/11, s16). The forward enumeration of a0_var carriers is complete and empty (s9, s11:
+sum-of-squares 19, delta temps 16-28, vin/vout 6/5, y hoisted 11, x folded 19/6/19/24,
+`-threshold` *is* 103).
+
+### The two endgame-lock AND-gates — BOTH FAIL
+
+* **(a) canonical-asm.** `python3 tools/scan_hand_coded.py --single func_8002EA24` →
+  `tier=TIGHT_C score=3/8`. Only the weak signals fire (S3 no spills, S4 front loads,
+  S5 cluster — one approx-sibling, func_8002D320, jaccard 0.60); all three STRONG signals
+  clear (S1 multu pacing, S2 empty branch, S6 BIOS jumptable). Identical reading to
+  2026-07-30, 2026-08-20, s13, s14 and s16. **FAIL.**
+* **(b) SOTN-master precedent.** There is no closing construct to cite a precedent *for* —
+  the banked body is ordinary C plus the two already-authorized GTE islands. The census run
+  this session over `docs/reference/sotn-construct-index.md` for the newly-touched mechanism
+  (`sugg`, `local_alloc`, `qty_phys`, `local-alloc`, `suggested`) returns **0 hits each**,
+  joining the negative censuses of s9 (decomp.me ×2) and s13/s14 (conflict / allocno /
+  find_reg / global_alloc). A negative census is a failed gate, not an open question.
+  **FAIL.**
+
+### Disposition
+
+Both gates FAIL and the last unobserved mechanism in the allocation stack is now measured
+INERT with the granted instrumentation. Per the owner's standing ruling of 2026-07-27
+(`.claude/rules/endgame-lock-disposition.md`), func_8002EA24 is **REFUSED /
+OWNER-ACCEPTED INCOMPLETE**. `src/code6cac_b.c` stays as
+`INCLUDE_ASM("asm/funcs", func_8002EA24);` per asm-until-matched — **there is no cheat on
+main for this function** (0 regfix/asmfix rules; the retired chassis is preserved at
+`memory/grind/func_8002EA24/retired-chassis-2026-08/rules.txt`). Best honest form preserved
+at `memory/grind/func_8002EA24/candidate.c` (score 2, 104/104 insns, 0 rules, 0 cheat-asm).
+
+On reopening (new tooling, a new pass model, or a donor discovery), start from
+`candidate.c`, and note the two facts that bound any future search: the RA-expressible
+framing of this residual is only the plain control's `103: $a0 -> $t1` goal (closed at
+depths 1-3), and the banked body's own residual is a pseudo-split that the RA model cannot
+express. Session artifacts: `tmp/grind/func_8002EA24/s17/`.

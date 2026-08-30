@@ -1869,3 +1869,84 @@ outside a grind session writable surface, and is the concrete next step.
 - probe: Simulate tmp/grind/func_8002EA24/s15/cand.model.json and read off 103's assignment (tmp/grind/func_8002EA24/s16/candmodel.py).
 - result: KILLED. The candidate already allocates 103 to hard reg 9 = $t1, i.e. target's choice -- that is exactly what L3 buys. The remaining 2 points are that our body computes the first range test's boolean INTO a0_var (97, $a0) while target computes it into a separate short-lived $v0 temp and STILL has a0_var in $a0: target has one MORE pseudo than we do, at the same 104 instructions. That is a pseudo-identity (split) difference, not an assignment difference, so it is foreclosed to the RA model by construction. The only RA-expressible framing of this function's residual is the plain control's 103 -> $t1 goal, which s15 (depth 1) and s16 (depths 2 and 3) have now closed.
 - verdict: KILLED
+
+## [s17] The local-alloc SUGGESTED-REGISTER pass — the last unobserved mechanism in the allocation stack — is MEASURED INERT on this function's residual (owner ruling 1, 2026-08-30, executed).
+
+- statement: The frontier hypothesis carried since s15 ("local-alloc's suggested-register
+  pass, qty_phys_copy_sugg / qty_phys_sugg, decides the $a0/$t1 split upstream of
+  global_alloc, which is why 16 sessions of global-alloc-level search found nothing") is
+  FALSE, and its premise ("the BB2_QTY_DEBUG hook does not dump the suggestion sets") is
+  STALE — the instrumentation the owner granted on 2026-08-30 already exists in
+  `tools/gcc-2.7.2/local-alloc.c` (the `BB2_SUGG_DEBUG` block printed BEFORE the suggested
+  pass runs, so find_free_reg's retry cannot under-report copy suggestions) and the built
+  cc1 carries it.
+- mechanism: local-alloc only forms quantities for BLOCK-LOCAL pseudos; a pseudo live
+  across basic blocks is left to global_alloc. Both residual pseudos — 102 (`y`) and 103
+  (`neg_threshold`) — are cross-block, so no quantity is ever created for them and no
+  suggestion set can exist for them. The only way local-alloc's output could still reach
+  103 is (i) hard registers local-alloc consumed being unavailable to global_alloc's
+  first-fit, or (ii) global.c's `local_reg_n_refs` kick-out path (global.c:1198-1250).
+- probe: `python3 tools/ra_solver/local_extract.py code6cac_b --suggest` (WSL, venv) on the
+  banked candidate body applied to `src/code6cac_b.c`, then read every qty row and every
+  `pass:"sugg"` row for func_8002EA24 out of `tmp/ra_solver_work/code6cac_b.sugg.json` and
+  `.local.json`. Chassis re-measured first: `sandbox func_8002EA24 --disable all` =
+  **score 2, 104/104 insns, 0 rules, cheat_asm_stripped 46**.
+- result: KILLED, on a complete table. The extractor produced 53 functions / 977 qty rows
+  for the TU (49 functions, 970 qtys, 33 carrying a suggestion). func_8002EA24 has **26
+  quantities across 10 basic blocks and exactly ONE of them carries any suggestion at
+  all**: blk 0 qty 0 (pseudo 73, birth 4, death 32) with `ncopysugg=1 copysugg=[5]`
+  ($a1), `nsugg=0`. That quantity is in the vector/GTE prologue block and is unrelated to
+  the range-test chain. **Neither 102 nor 103 appears as a local-alloc quantity anywhere in
+  the function** (the block-local pseudo numbers are 73-95 in blk 0 and 105-133 in the
+  later blocks), confirming both are pure global allocnos. The main pass hands out only
+  three hard registers in this whole function — $v0 (2), $v1 (3) and $a1 (5, the suggested
+  seat for pseudo 73) — so **local-alloc never touches $a0 (4) or $t1 (9)**, and escape (i)
+  is empty: the split is not decided by local-alloc consuming either register. Escape (ii)
+  is closed by reading the pass: global.c:1198 gates the `local_reg_n_refs` kick-out on
+  `best_reg < 0 && !retrying`, i.e. it only runs when find_reg has ALREADY FAILED to place
+  the allocno; 103 is placed successfully in every measured build, so that code never
+  executes for it. Artifacts: `tmp/ra_solver_work/code6cac_b.sugg.json`,
+  `tmp/ra_solver_work/code6cac_b.local.json`.
+- consequence: the allocation stack is now observed end-to-end for this function —
+  local-alloc's suggested pass (s17, inert), local-alloc's main pass (s17, three registers,
+  neither of them the contested pair), global.c's allocno ordering + first-fit + preference
+  pruning (s3-s11, s15, s16 — depths 1, 2 and 3), and reload (no spills, S3 in
+  `scan_hand_coded`). There is no un-observed mechanism left to instrument.
+
+## [s17] The two repaired solver entry points agree with the ledger's own reading of the residual: the banked candidate's remaining 2 points are a pseudo-SPLIT difference, not an assignment the RA model can express.
+
+- statement: With ruling 1(b) landed (commit `1ce408a4`, `inverse_compose.py` now refuses
+  the text path for every zero-rule function), the first diagnostic a grind session runs on
+  this function is sound for the first time. It should be re-run before any disposition, in
+  case the honest stream names a different pass than the ledger assumed.
+- mechanism: `_include_asm_routed` was replaced by a zero-rule predicate, so the classifier
+  routes to the object-level `goal_from_tgt.py` instead of reporting the fictitious
+  `FIRST DIVERGENCE: PRE-RA` off a stale `<stem>.tgt.s`.
+- probe: `inverse_compose.py classify code6cac_b func_8002EA24` (now refuses and redirects —
+  `tmp/grind/func_8002EA24/s17/classify.txt`), then `goal_from_tgt.py classify` and
+  `goal_from_tgt.py goal ... --model` against a freshly extracted model of the banked body
+  (`tmp/grind/func_8002EA24/s17/cur.model.json`, order=13 pseudos, dispositions=48).
+- result: CONFIRMED and unchanged. Object-level: `ours 104 insns, target 104 insns`,
+  `FIRST DIVERGENCE: RA`, `2 renamed pair(s), 0 skipped`, the entire residual being
+  `$a0 -> $v0 x2`. Attribution against the model returns **AMBIGUOUS** — three pseudos hold
+  $a0 (97, 122, 126) — and therefore `goal: {}`, an EMPTY goal. The inverse solver cannot be
+  pointed at this residual at all: there is no well-formed goal assignment to invert,
+  because the difference is that target carries one MORE pseudo than we do (target computes
+  the first range test's boolean into a separate short-lived $v0 temp and still has
+  a0_var's value in $a0; our L3 body computes it INTO a0_var). This independently
+  reproduces s16's finding (hypotheses.md:1834/1870) from the repaired tooling rather than
+  from hand analysis, and it explains why s15/s16's sweeps had to be run against the PLAIN
+  control's `103: $a0 -> $t1` goal — that is the only RA-expressible framing this function
+  has, and it is closed at depths 1, 2 and 3 (15,525,735 vectors, zero reaching).
+
+## [s17] local-alloc's SUGGESTED-REGISTER pass (qty_phys_copy_sugg / qty_phys_sugg) decides the $a0/$t1 split upstream of global_alloc, which is why 16 sessions of global-alloc-level search found nothing; and the BB2_QTY_DEBUG hook cannot report it.
+- mechanism: local-alloc forms quantities only for BLOCK-LOCAL pseudos and runs before global_alloc; its suggested pass seats copy-suggested quantities first, and the hard registers it consumes are unavailable to global_alloc's first-fit. Second coupling: global.c:1198-1250's local_reg_n_refs kick-out can evict local-alloc's seats.
+- probe: The hook premise was stale -- BB2_SUGG_DEBUG already exists in tools/gcc-2.7.2/local-alloc.c and the built cc1 honours it (landed 70d6c905, ra_solver Phase 7). Ran `python3 tools/ra_solver/local_extract.py code6cac_b --suggest` (WSL, venv) with the banked candidate applied to src, then read every qty row plus every pass=='sugg' row for func_8002EA24 out of code6cac_b.sugg.json / code6cac_b.local.json. Chassis re-measured first: sandbox --disable all = score 2, 104/104, 0 rules, cheat_asm_stripped 46.
+- result: 53 functions / 977 qty rows for the TU (suggestion table: 49 funcs, 970 qtys, 33 carrying a suggestion). func_8002EA24 has 26 quantities over blocks 0,1,3,4,6,8,9,12,16,18 and EXACTLY ONE suggestion in the entire function: blk 0 qty 0 (pseudo 73, birth 4, death 32, refs 4) ncopysugg=1 copysugg=[5] ($a1), nsugg=0 -- a vector/GTE-prologue value unrelated to the range-test chain. Pseudos 102 (y) and 103 (neg_threshold) are cross-block and never become quantities at all (block-local pseudo numbers are 73-95 in blk 0 and 105-133 in the later blocks). The main pass hands out only $v0, $v1 and $a1, so local-alloc never occupies $a0 (4) or $t1 (9). The remaining local->global escape is closed by reading the pass: global.c:1198 gates the local_reg_n_refs kick-out on `best_reg < 0 && !retrying`, i.e. it runs only after find_reg has already FAILED to place the allocno, and 103 is placed in every measured build.
+- verdict: KILLED
+
+## [s17] With ruling 1(b) landed (inverse_compose classify now refuses the text path for zero-rule functions), the repaired first diagnostic may name a different pass or a different residual than the ledger assumed.
+- mechanism: _include_asm_routed was replaced by a zero-rule predicate (commit 1ce408a4), so classify routes to the object-level goal_from_tgt.py instead of reporting a fictitious PRE-RA verdict off a stale <stem>.tgt.s.
+- probe: inverse_compose.py classify code6cac_b func_8002EA24 (now refuses and redirects), then goal_from_tgt.py classify and goal_from_tgt.py goal --model against a freshly extracted model (extract.py func_8002EA24 code6cac_b; order=13 pseudos, dispositions=48).
+- result: Object-level: ours 104 / target 104 insns, FIRST DIVERGENCE: RA, 2 renamed pairs / 0 skipped, entire residual `$a0 -> $v0 x2`. Attribution against the model is AMBIGUOUS (three pseudos hold $a0: 97, 122, 126) and the emitted goal is EMPTY -- there is no well-formed target assignment to invert, because target carries one MORE pseudo than we do (it computes the first range test's boolean into a separate short-lived $v0 temp while still holding a0_var's value in $a0; the banked L3 body computes that boolean INTO a0_var). The residual is a pseudo SPLIT, not a seat swap, and is foreclosed to the RA model by construction. This independently reproduces s16's hand reading (hypotheses.md:1834) from the repaired tooling.
+- verdict: CONFIRMED
