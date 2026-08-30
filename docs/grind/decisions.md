@@ -15399,3 +15399,98 @@ rejected/}` (s48 entries); artifacts `tmp/grind/func_80045294/s48/`; compiler so
 `tools/gcc-2.7.2/cse.c:826-882`; target `asm/funcs/func_80045294.s`; prior entries in this
 file at lines 820 (2026-07-19 escalation), 942 (2026-07-20 owner ruling), 11915
 (2026-08-25 standing-ruling entry) and 14870 (2026-08-30 escalation-batch ruling 10).
+
+## 2026-08-30 — func_80060A68 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session s12 (modality `escalation`, driver-assigned after the honest pure-C
+floor stayed FLAT at 2 across twelve consecutive sessions and six distinct modalities:
+recon, structural, permuter, forensics, rederive, synthesis, escalation). **Nothing pends on
+the owner.** This entry re-affirms and completes, on today's chassis, the driver-filed
+escalation of 2026-08-25 (this file, "func_80060A68 — OWNER-ESCALATION — ESCALATED WITH
+DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)")
+and is consistent with the owner's 2026-08-30 batch ruling 8 ("escalation SPENT … returns to
+ACTIVE as an ordinary INCLUDE_ASM item at floor 2"). No new question is asked and no standard
+is asked to be relaxed; per the 2026-08-24 auto-reject class, a packet asking for a family
+grant, a canonical evidence-bar override or an "accept the debt" sanction is pre-decided NO
+and is deliberately NOT filed.
+
+**What holds the byte-match today: NOTHING.** `src/text1b.c:3063` is
+`INCLUDE_ASM("asm/funcs", func_80060A68);` (since commit 0bef2aa3, the executed option (b) of
+the 2026-08-25 representation packet); `grep -n func_80060A68 asmfix.txt regfix.txt` returns
+nothing. The function is honest INCLUDE_ASM and is INCOMPLETE purely because its best pure-C
+form is two instructions short.
+
+**The residual, re-measured this session.** `memory/grind/func_80060A68/candidate.c` spliced
+over that line measures `sandbox func_80060A68 --disable all` = **score 2 / build 66 /
+target 66**, carrying no rule, no register pin, no volatile, no inline asm, no dead local and
+no FAKE annotation. A fresh side-by-side disassembly
+(`tmp/grind/func_80060A68/s12/base.dis` vs `asm/funcs/func_80060A68.s`) localises the whole
+residual to two adjacent slots: our line 22 `lhu v0,0(a1)` where target has `lhu v0,0(a0)`,
+and our line 23 `nop` where target has a third `lw a0,0x10(v1)`. All 64 other instructions,
+every register assignment and the whole frame already match.
+
+**Mechanism (named passes, read out of the compiler source this session, not guessed).**
+Target performs THREE separate `lw ?,0x10($v1)` loads (slots 12, 20, 23); every 66-instruction
+pure-C body performs two, because `cse` folds a repeated `*(s32 *)(outer + 0x10)` onto the
+most recent live equivalent unless an aliasing store intervenes. s12 establishes the governing
+law and shows it is a C-level law, not a pass artifact: **a `lw ?,0x10($v1)` is emitted at
+slot 12 and allocated `$a1` if and only if it has an early consumer; a load with no early
+consumer is emitted late and allocated `$v0`.** Four independent bodies exhibit both halves —
+candidate.c/y6 and s10's w1/w2 (shared load, early, `$a1`, 2/66) and s12's c1 and s9's d8
+(unshared load, late, `$v0`, 4/66). Target requires a load that is simultaneously unshared
+(three loads) and early-in-`$a1`, which is the single combination the law excludes at 66
+instructions. The register half of the law is now derived analytically:
+`tools/gcc-2.7.2/local-alloc.c:1649-1685` computes
+`pri = floor_log2(refs) * refs * size / (death - birth) * 10000` and `block_alloc`
+(local-alloc.c:1563, 1571-1580) allocates first-fit in decreasing-pri order; on the measured
+qty table `pri(p10) = 1666 < pri(the +2 pointer) = 3333`, so the +2 pointer takes `$a0` first
+and `p10` takes `$a1` — exactly what is observed. Raising `p10` above 3333 needs either a
+fourth reference to the `+0x10` pointer (a fabricated second consumer — the axis s10 closed
+and the frozen family list bans) or a live range under 9 insns (which is "move the +4 read
+early", measured as d8 and c1, both 4/66 with the load in `$v0`).
+
+**Gate 1 — canonical-asm: FAILS.** `python3 tools/scan_hand_coded.py --single func_80060A68`,
+re-run this session on today's chassis: `tier=LOW score=1/8`, with S4 ("6 loads in an 8-insn
+window @ insn 9") the only signal; S1, S2, S3, S5, S6, S7 and S8 are all clear. Per
+`.claude/rules/endgame-lock-disposition.md` a LOW tier is dispositive against canonical-asm
+for a pure RA/scheduling artifact, and that is exactly what this is.
+
+**Gate 2 — a cited SOTN-master precedent for a closing construct: NOT APPLICABLE, therefore
+FAILS.** candidate.c contains no coercion construct of any kind, so there is no family for
+which a precedent could be cited. Every construct that WOULD close the function has already
+been ruled a cheat for this function (Judge, 2026-08-19 10:21, and the two layer-1 FAILs of
+2026-08-19 08:56 / 10:01): a fresh multiply-assigned carrier for copy 2's source pointer is
+the excluded "fresh AND multi-write" quadrant of the frozen list, and scarcity of carriers is
+not a licensing condition.
+
+**Axes closed this session (so no future session re-spends them).**
+- The PARTITION axis is now COMPLETE. The three halfword reads group three ways onto two
+  loads and all three are measured: `{+0,+4}` = candidate.c 2/66; `{+2,+4}` = s10 w1/w2 2/66;
+  `{+0,+2}` = s12 body c1 **4/66** (first measurement in twelve sessions), whose disassembly
+  shows the separate +4 address load at slot 27 in `$v0` rather than slot 12 in `$a1`.
+- The FREE-SEPARATOR axis is dead. Breaking the cse fold requires an aliasing store between
+  `p10`'s def and the 0x18 read, and every store the function already performs costs
+  instructions there: `D_800A3478` → 11/68, `D_800A347C` → 8/68, both → 14/69 (either order),
+  copy 3's store → 5/67 (and 7/67, 8/68 for the two later +4-read seats).
+- The local-alloc seat question raised by the 2026-08-30 ra_solver campaign sweep
+  ("profile `inverse.py local`, then depth-1 the qty8/qty11 first-fit decision") is answered
+  analytically above and needs no tool fix for this function.
+
+**Prior closed axes (unchanged):** frontier item 1 (a second early consumer of the `+0x10`
+pointer) closed by s10's conservation argument; frontier item 2 (an outside pressure source
+ready at sched2 T-30) closed by s11's dump-attributed `REG_DEP_OUTPUT` finding plus the
+priority-table arithmetic; all seven named value/base local shapes at 5/67 (s11); 65,445
+permuter iterations across two structurally different chassis with zero finds (s3/s3b).
+
+**Disposition.** Both AND-gates fail, which is the owner's pre-decided case, so the standing
+auto-ruling of 2026-07-27 applies immediately and with no owner wait: **REFUSED /
+OWNER-ACCEPTED INCOMPLETE.** func_80060A68 stays as honest `INCLUDE_ASM("asm/funcs",
+func_80060A68);` on main with zero rules and zero cheat-asm. **Re-open trigger:** the frozen
+family list being extended by the owner to admit a purpose-introduced multiply-assigned
+carrier, or a new modality producing a body that is simultaneously three-load, 66-instruction
+and `$a1`-seated (the combination the s12 law excludes).
+
+**Evidence banked:** `memory/grind/func_80060A68/evidence.md` (s12 section),
+`hypotheses.md` (H-s12-1/2/3 and the general law), `candidate.c` (s12 header; ban-free
+floor-2 body re-measured this session), `rejected/` (74 forms, 5 added by s12),
+`tmp/grind/func_80060A68/s12/` (bodies, disassemblies, harness).

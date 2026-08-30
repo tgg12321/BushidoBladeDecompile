@@ -1949,3 +1949,86 @@ packet. The honest outcome is `progress` with the kills banked and the item ACTI
   above; (2) note the suggestion-pass dumps granted by ruling 1(a)
   (qty_phys_copy_sugg / qty_phys_sugg scored) bear directly on this block —
   implementing that grant may explain the $a1 pick outright.
+
+## s12 (2026-08-30, escalation/disposition modality)
+
+- [s12] CHASSIS RE-MEASURED on today's HEAD. `memory/grind/func_80060A68/candidate.c`
+  spliced over `INCLUDE_ASM("asm/funcs", func_80060A68);` at src/text1b.c:3063 measures
+  **score 2 / build 66 / target 66**. The residual is EXACTLY two adjacent slots, confirmed
+  by a fresh side-by-side disassembly (tmp/grind/func_80060A68/s12/base.dis vs
+  asm/funcs/func_80060A68.s): our line 22 `lhu v0,0(a1)` where target has `lhu v0,0(a0)`,
+  and our line 23 `nop` where target has the third `lw a0,0x10(v1)`. All 64 other
+  instructions, every register and the whole frame are identical. src/text1b.c was restored
+  to HEAD before this session finished; no rules, no commits.
+
+- [s12] THE LOCAL-ALLOC PRIORITY FORMULA IS NOW READ OUT OF THE SOURCE, not guessed.
+  `tools/gcc-2.7.2/local-alloc.c:1649-1685` (`qty_compare` / `qty_compare_1`):
+  `pri = (floor_log2(qty_n_refs[q]) * qty_n_refs[q] * qty_size[q]) / (qty_death[q] - qty_birth[q]) * 10000`,
+  ties broken by qty number, and `block_alloc` then allocates first-fit in that order
+  (local-alloc.c:1563 qsort, 1571-1580 the allocation loop). On the campaign's measured
+  numbers for the base body (qty 8 = pseudo 75, refs 3, birth 26, death 44 -> pri 1666;
+  qty 11 = pseudo 74, refs 2, birth 36, death 42 -> pri 3333) qty 11 is allocated FIRST and
+  takes $a0, and qty 8 then takes $a1. This exactly reproduces the observed assignment, so
+  the campaign's "GOAL: qty 8 -> $a0" is now understood: it would require raising qty 8's
+  priority above 3333, i.e. refs 4 (a fourth reference to the +0x10 pointer = the banned
+  fabricated-consumer axis) or a live range shorter than 9 insns (which is the same thing as
+  moving the +4 read early, measured below). NO NEW LEVER LIVES HERE.
+
+- [s12] THE FREE-SEPARATOR AXIS IS DEAD. Breaking the cse fold of the 0x18 read onto p10
+  requires an aliasing store between p10's def and that read. Every store the function
+  already contains was tried as that separator and every one of them costs instructions:
+  `D_800A3478 = outer + 0x18` -> 11 / 68; `D_800A347C = outer + 0x20` -> 8 / 68; both -> 14 / 69
+  (either order); copy 3's store (i.e. p10's def hoisted above it) -> 5 / 67. The gp stores
+  cost two instructions each because hoisting the store also hoists its `addiu $v0,$v1,k`
+  and forces an extra load-delay nop. Banked at rejected/s12-gp3478-*, s12-gp347C-*,
+  s12-both-gp-stores-*, s12-p10-def-above-copy3-store-*.
+
+- [s12] THE PARTITION AXIS IS CLOSED - the third and last partition was measured for the
+  first time this session. The three halfword reads of `*(s32 *)(outer + 0x10)` can be
+  grouped three ways onto two loads. {+0,+4} shared = candidate.c = 2 / 66. {+2,+4} shared =
+  s10 w1/w2 = 2 / 66. {+0,+2} shared (body c1: `*(u16 *)(p10 + 0)` and `*(u16 *)(p10 + 2)`
+  spelled directly off p10, so no cse fold is involved, and the +4 read reloads the pointer
+  because the 0x18/0x1A stores separate it) = **4 / 66**, with the disassembly
+  (tmp/grind/func_80060A68/s12/c1.dis) showing the +4 address load emitted at slot 27 in $v0
+  instead of slot 12 in $a1 - the SAME pathology as the three-load body d8. Variants c2 (no
+  temp2 named local) 7 / 66 and c3 (idx read hoisted above the +4 read) 5 / 66.
+
+- [s12] THE CONSERVATION LAW IS NOW GENERAL, and it is a C-level law, not a pass artifact:
+  **a `lw ?,0x10($v1)` is emitted early (slot 12) and allocated $a1 if and only if it has an
+  early consumer; the load that has no early consumer is emitted late and allocated $v0.**
+  Four independent bodies exhibit it - base/y6 ({+0,+4}: shared load early in $a1, 2/66),
+  w1/w2 ({+2,+4}: same, 2/66), c1 ({+0,+2}: the unshared +4 load late in $v0, 4/66) and d8
+  (three loads: the +4 load late in $v0, 4/66). Target needs a load that is BOTH unshared
+  (three loads) AND early in $a1, which is the one combination the law forbids at 66
+  instructions. Every way of buying the early consumer honestly (a separator store) costs an
+  instruction; every way of buying it for free (a fabricated second consumer, a dead read, an
+  address-of, a discard) is a banned family.
+
+- [s12] ENDGAME GATE 1 RE-RUN ON TODAY'S CHASSIS AND STILL FAILS:
+  `python3 tools/scan_hand_coded.py --single func_80060A68` -> `tier=LOW score=1/8`, S4 only
+  ("6 loads in 8-insn window @ insn 9"); S1, S2, S3, S5, S6, S7, S8 all clear.
+  ENDGAME GATE 2 REMAINS NOT APPLICABLE: candidate.c contains no coercion construct of any
+  kind (no volatile, no pin, no dead local, no FAKE annotation), so there is no family for
+  which a SOTN-master precedent could be cited.
+
+- [s12] Chassis re-measured on today's HEAD: memory/grind/func_80060A68/candidate.c spliced over INCLUDE_ASM("asm/funcs", func_80060A68) at src/text1b.c:3063 = score 2 / build 66 / target 66, carrying no rule, no pin, no volatile, no inline asm, no dead local and no FAKE annotation. src/text1b.c restored to HEAD before finishing; no rules touched, no commits.
+
+- [s12] The residual is exactly two adjacent slots (fresh disassembly tmp/grind/func_80060A68/s12/base.dis vs asm/funcs/func_80060A68.s): our line 22 'lhu v0,0(a1)' vs target 'lhu v0,0(a0)', and our line 23 'nop' vs target 'lw a0,0x10(v1)'. All 64 other instructions, every register and the whole frame match.
+
+- [s12] THE PARTITION AXIS IS NOW COMPLETE. The three halfword reads of *(s32 *)(outer + 0x10) group three ways onto two loads and all three are measured: {+0,+4} = candidate.c 2/66; {+2,+4} = s10 w1/w2 2/66; {+0,+2} = s12 body c1 4/66 (first measurement in twelve sessions).
+
+- [s12] THE FREE-SEPARATOR AXIS IS DEAD: D_800A3478 as separator 11/68, D_800A347C 8/68, both 14/69 (either order), copy 3's store 5/67, later +4-read seats 7/67 and 8/68.
+
+- [s12] GENERAL LAW (supersedes s10's conservation statement, and it is a C-level law rather than a pass artifact): a lw ?,0x10($v1) is emitted at slot 12 and allocated $a1 IFF it has an early consumer; a load with no early consumer is emitted late and allocated $v0. Four independent bodies exhibit both halves -- base/y6 and w1/w2 (shared, early, $a1, 2/66), c1 and d8 (unshared, late, $v0, 4/66). Target needs a load that is simultaneously unshared (three loads) and early-in-$a1, the one combination the law excludes at 66 instructions.
+
+- [s12] The register half of that law is derived from compiler source, not guessed: local-alloc.c:1649-1685 priority formula + local-alloc.c:1563/1571-1580 first-fit order give pri(p10)=1666 < pri(+2 pointer)=3333, which is exactly the observed $a1/$a0 split.
+
+- [s12] The 2026-08-30 ra_solver campaign's open tool item ('profile/fix inverse.py local, then depth-1 the qty8/qty11 first-fit decision') is ANSWERED ANALYTICALLY for this function and needs no tool fix here.
+
+- [s12] ENDGAME GATE 1 FAILS on today's chassis: scan_hand_coded --single func_80060A68 = tier LOW, score 1/8, S4 only.
+
+- [s12] ENDGAME GATE 2 FAILS/NOT APPLICABLE: candidate.c contains no coercion construct at all, so no SOTN-master precedent is even citable; every construct that WOULD close the function was already ruled a cheat for this function (Judge 2026-08-19 10:21; layer-1 FAILs 2026-08-19 08:56 and 10:01).
+
+- [s12] What holds the byte-match on main today: NOTHING. src/text1b.c:3063 is INCLUDE_ASM("asm/funcs", func_80060A68) since commit 0bef2aa3 and grep of asmfix.txt/regfix.txt returns nothing -- the function is honest INCLUDE_ASM, INCOMPLETE only because its best pure-C form is two instructions short.
+
+- [s12] Disposition entry filed this session at docs/grind/decisions.md:15403; consistent with the owner's 2026-08-30 batch ruling 8 ('escalation SPENT ... returns to ACTIVE as an ordinary INCLUDE_ASM item at floor 2') and with the driver-filed 2026-08-25 packet at docs/grind/decisions.md:12060. No new question is asked and no standard-lowering ask is made (2026-08-24 auto-reject class respected).

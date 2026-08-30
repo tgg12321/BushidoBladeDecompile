@@ -1290,3 +1290,81 @@ yet hold it at 66 instructions.
 - probe: Seven bodies (x1 x2 x4 x6 x7 x8 x9) putting a named s32 local on copy 1's value, copy 2's value, copy 3's value, copy 1's base and copy 2's base, with p10 at each seat inside the copy triple; plus a nine-seat sweep of p10 on the c2-local frame (y2..y10). Measured via tmp/grind/func_80060A68/s11/run.ps1 (apply + sandbox --disable all); x2 and y6 disassembled.
 - result: The register lever works; the instruction count does not. All seven x-bodies measure exactly 5 / 67. x2's disassembly (tmp/grind/func_80060A68/s11/x2.dis) confirms the mechanism directly: THREE lw ?,0x10($v1) loads, the +4 address load in $a1 (target's register, not $v0), and slots 0-11 byte-identical to target including target's adjacent lw $v0,0xC($v1); lw $a0,0xC($v1) pair at slots 10/11 -- but the $a1 load lands at slot 24 instead of 12 and one extra nop is emitted. Every p10 seat inside the copy triple costs that instruction regardless of which value or base carries the local, so the only 66-instruction three-load body is still the bare d8 seat where p10 is in $v0. On the after-the-copy-triple seats the local is codegen-inert: y6 / y7 / y8 = 2 / 66, candidate.c's exact byte class (slot 12 lw a1,0x10(v1) correct, slot 22 lhu v0,0(a1) vs target's lhu v0,0(a0), slot 23 nop vs target's third lw a0,0x10(v1)).
 - verdict: CONFIRMED
+
+## s12 (2026-08-30) — escalation / disposition modality
+
+### H-s12-1 — KILLED. "A store the function already performs can act as the cse separator between p10's def and the 0x18 read for free."
+Mechanism: cse folds a repeated `*(s32 *)(outer + 0x10)` onto the most recent equivalent
+unless an aliasing store intervenes; the two gp stores (`D_800A3478 = outer + 0x18`,
+`D_800A347C = outer + 0x20`) and copy 3's store are the only stores available in that region,
+and moving one of them there would produce the third load without inventing anything.
+Probe: bodies a1/a2/a3/a4/b1 (tmp/grind/func_80060A68/s12/bodies/), applied and measured with
+`sandbox func_80060A68 --disable all`.
+Result: a1 (3478) 11 / 68; a2 (347C) 8 / 68; a3, a4 (both, either order) 14 / 69; b1 (p10's
+def hoisted above copy 3's store) 5 / 67; b4 8 / 68; b5 7 / 67. Every separator costs at
+least one instruction and the gp separators cost two, because hoisting the store also hoists
+its `addiu $v0,$v1,k` and forces a load-delay nop.
+Verdict: KILLED. There is no free separator. Banked at rejected/s12-gp3478-*,
+rejected/s12-gp347C-*, rejected/s12-both-gp-stores-*, rejected/s12-p10-def-above-copy3-store-*.
+
+### H-s12-2 — KILLED. "The untried {+0,+2} partition puts the +4 load on its own while leaving p10 with an early consumer, so it reaches target's three-register layout at 66 instructions."
+Mechanism: if the +0 and +2 reads are both spelled directly off the local `p10`
+(`*(u16 *)(p10 + 0)`, `*(u16 *)(p10 + 2)`) then no cse fold is involved for them at all —
+p10 is a variable, and intervening stores do not kill it — while the +4 read, written as
+`*(u16 *)(*(s32 *)(outer + 0x10) + 4)` after the 0x18 and 0x1A stores, is forced to reload
+the pointer. That yields a body with p10 consumed early AND a separate +4 load, which is the
+combination s10's two partitions could not produce.
+Probe: bodies c1 / c2 / c3, measured and c1 disassembled (tmp/grind/func_80060A68/s12/c1.dis).
+Result: c1 = 4 / 66, c2 = 7 / 66, c3 = 5 / 66. c1's disassembly shows the separate +4 address
+load emitted at slot 27 in `$v0` (`lw v0,16(v1)` / `lhu a1,4(v0)`), never at slot 12 in `$a1`.
+Verdict: KILLED, and with it the whole PARTITION AXIS — all three groupings of the three
+halfword reads onto two loads are now measured ({+0,+4} 2/66, {+2,+4} 2/66, {+0,+2} 4/66).
+Banked at rejected/s12-partition-0-and-2-share-a-load-plus4-separate-score4-66insns.c.
+
+### H-s12-3 — KILLED (as a lever; CONFIRMED as an explanation). "local-alloc's first-fit order is the steerable quantity: raising p10's qty priority would hand it $a0."
+Mechanism: `tools/gcc-2.7.2/local-alloc.c:1649-1685` computes
+`pri = floor_log2(refs) * refs * size / (death - birth) * 10000` and `block_alloc`
+(local-alloc.c:1563, 1571-1580) allocates first-fit in decreasing-pri order.
+Probe: read the formula out of the compiler source and evaluate it on the campaign's measured
+qty table for the base body (qty 8 = pseudo 75, refs 3, birth 26, death 44; qty 11 = pseudo 74,
+refs 2, birth 36, death 42).
+Result: pri(qty 8) = 1666, pri(qty 11) = 3333 — qty 11 allocates first and takes $a0, qty 8
+then takes $a1. This reproduces the observed assignment exactly, so the model is right, but
+the only two ways to raise qty 8 above 3333 are (a) a fourth reference to the +0x10 pointer,
+which is the fabricated-second-consumer axis closed by s10 and banned by the frozen family
+list, or (b) a live range shorter than 9 insns, which is literally "move the +4 read early" —
+measured as d8 (4/66) and c1 (4/66), both of which then put the load in $v0.
+Verdict: KILLED as a lever. The campaign's open item ("profile inverse.py local, then depth-1
+the qty8/qty11 decision") is answered analytically and needs no tool fix for THIS function.
+
+### The general law s12 establishes (supersedes the s10 conservation statement)
+A `lw ?,0x10($v1)` is emitted at slot 12 and allocated `$a1` **iff** it has an early
+consumer; a load with no early consumer is emitted late and allocated `$v0`. Four
+independent bodies exhibit both halves (base/y6, w1/w2, c1, d8). Target requires a load that
+is simultaneously unshared (three loads) and early-in-$a1, which is exactly the combination
+the law excludes at 66 instructions. Buying the early consumer with a separator store costs
+an instruction (H-s12-1); buying it with a fabricated consumer is a banned family.
+
+## [s12] A store the function already performs can act as the cse separator between p10's def and the 0x18 read for free, producing target's third lw ?,0x10($v1) at no instruction cost.
+- mechanism: cse folds a repeated *(s32 *)(outer + 0x10) onto the most recent live equivalent unless an aliasing store intervenes; the only stores available in that region are D_800A3478 = outer + 0x18, D_800A347C = outer + 0x20 and copy 3's store.
+- probe: bodies a1/a2/a3/a4/b1/b4/b5 in tmp/grind/func_80060A68/s12/bodies/, each spliced over src/text1b.c:3063 and measured with sandbox func_80060A68 --disable all
+- result: a1 (3478) 11/68; a2 (347C) 8/68; a3 and a4 (both stores, either order) 14/69; b1 (p10's def above copy 3's store) 5/67; b4 8/68; b5 7/67. Every separator costs at least one instruction; the gp separators cost two because hoisting the store also hoists its addiu $v0,$v1,k and forces a load-delay nop.
+- verdict: KILLED
+
+## [s12] The never-measured {+0,+2} partition gives p10 an early consumer AND leaves the +4 read with its own load, reaching target's three-register layout at 66 instructions.
+- mechanism: Spelling the +0 and +2 reads directly off the local p10 (*(u16 *)(p10 + 0), *(u16 *)(p10 + 2)) involves no cse fold at all -- p10 is a variable and intervening stores do not kill it -- while the +4 read written as *(u16 *)(*(s32 *)(outer + 0x10) + 4) after the 0x18/0x1A stores is forced to reload the pointer.
+- probe: bodies c1/c2/c3 measured; c1 disassembled to tmp/grind/func_80060A68/s12/c1.dis and compared slot-by-slot with asm/funcs/func_80060A68.s
+- result: c1 = 4/66, c2 = 7/66, c3 = 5/66. c1's separate +4 address load is emitted at slot 27 in $v0 (lw v0,16(v1) / lhu a1,4(v0)), never at slot 12 in $a1 -- the same pathology as the three-load body d8.
+- verdict: KILLED
+
+## [s12] local-alloc's first-fit order is a steerable quantity: raising p10's qty priority would hand it $a0 and fix our line 22.
+- mechanism: tools/gcc-2.7.2/local-alloc.c:1649-1685 computes pri = floor_log2(refs)*refs*size/(death-birth)*10000 and block_alloc (local-alloc.c:1563, 1571-1580) allocates first-fit in decreasing-pri order.
+- probe: read the formula out of the compiler source and evaluated it on the 2026-08-30 ra_solver campaign's measured qty table for the base body (qty 8 = pseudo 75, refs 3, birth 26, death 44; qty 11 = pseudo 74, refs 2, birth 36, death 42)
+- result: pri(qty 8) = 1666 < pri(qty 11) = 3333, so qty 11 allocates first and takes $a0 and qty 8 then takes $a1 -- reproducing the observed assignment exactly. The only two ways above 3333 are a fourth reference to the +0x10 pointer (the fabricated-second-consumer axis, closed by s10 and a banned family) or a live range under 9 insns (= move the +4 read early, measured as d8 and c1, both 4/66 with the load in $v0).
+- verdict: KILLED
+
+## [s12] Endgame gate 1 (canonical-asm) might pass on today's post-migration chassis.
+- mechanism: scan_hand_coded scores eight hand-written-asm signatures; a STRONG tier (S1/S2/S6) would put the function on the canonical-asm grant path instead of a refusal.
+- probe: python3 tools/scan_hand_coded.py --single func_80060A68, re-run this session
+- result: tier=LOW score=1/8, S4 only ('6 loads in 8-insn window @ insn 9'); S1, S2, S3, S5, S6, S7, S8 all clear.
+- verdict: KILLED

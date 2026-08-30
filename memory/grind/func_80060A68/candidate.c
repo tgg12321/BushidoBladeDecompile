@@ -1,3 +1,43 @@
+/* [s12 2026-08-30 - escalation/disposition modality.  BODY UNCHANGED.  Re-measured
+ * 2 / 66 / 66 on today's HEAD (HEAD carries INCLUDE_ASM since commit 0bef2aa3).]
+ *
+ * THE RESIDUAL, RE-CONFIRMED BY FRESH DISASSEMBLY (tmp/grind/func_80060A68/s12/base.dis):
+ * exactly two adjacent slots.  Our line 22 `lhu v0,0(a1)` vs target `lhu v0,0(a0)`, and our
+ * line 23 `nop` vs target `lw a0,0x10(v1)`.  Nothing else differs.
+ *
+ * WHAT s12 CLOSED.
+ *  1. THE PARTITION AXIS IS COMPLETE.  The three halfword reads of *(s32 *)(outer + 0x10)
+ *     can be grouped three ways onto two loads and all three are now measured:
+ *     {+0,+4} shared = this body, 2 / 66;  {+2,+4} shared = s10 w1/w2, 2 / 66;
+ *     {+0,+2} shared = s12 body c1, 4 / 66 (rejected/s12-partition-0-and-2-share-a-load-*).
+ *  2. THE FREE-SEPARATOR AXIS IS DEAD.  Breaking the cse fold of the 0x18 read onto p10
+ *     needs an aliasing store between them, and every store this function already performs
+ *     costs instructions in that position: D_800A3478 -> 11 / 68, D_800A347C -> 8 / 68,
+ *     both -> 14 / 69, copy 3's store -> 5 / 67.
+ *  3. THE local-alloc SEAT QUESTION IS ANSWERED ANALYTICALLY, not by more search.  The
+ *     priority formula at tools/gcc-2.7.2/local-alloc.c:1649-1685 is
+ *     floor_log2(refs)*refs*size/(death-birth)*10000, allocated first-fit at
+ *     local-alloc.c:1563-1580.  On the measured qty table pri(p10)=1666 < pri(the +2
+ *     pointer)=3333, so the +2 pointer takes $a0 first and p10 takes $a1 - exactly what is
+ *     observed.  Raising p10 above 3333 requires either a 4th reference to the +0x10
+ *     pointer (the fabricated-consumer axis, closed by s10 and a banned family) or a live
+ *     range under 9 insns (= move the +4 read early, which is d8 and c1, both 4 / 66 with
+ *     the load in $v0).  No lever lives here.
+ *
+ * THE LAW THIS BODY SITS AGAINST.  A `lw ?,0x10($v1)` is emitted at slot 12 and allocated
+ * $a1 IFF it has an early consumer; a load with no early consumer is emitted late and
+ * allocated $v0.  Four independent bodies exhibit both halves (base/y6, w1/w2, c1, d8).
+ * Target needs a load that is BOTH unshared (three loads) AND early-in-$a1 - the one
+ * combination the law excludes at 66 instructions.
+ *
+ * DISPOSITION s12.  Endgame gate 1 re-run on today's chassis: scan_hand_coded --single =
+ * tier LOW 1/8 (S4 only) - FAILS.  Gate 2 is not applicable: this body carries no coercion
+ * construct at all, so no SOTN-master precedent is even citable.  Both gates fail, which is
+ * the owner's pre-decided case, so the 2026-07-27 standing auto-ruling applies and the
+ * entry filed this session in docs/grind/decisions.md records REFUSED / OWNER-ACCEPTED
+ * INCOMPLETE with nothing pending on the owner.  src/text1b.c was restored to HEAD; no
+ * rules touched, no commits.
+ */
 /* [s11 2026-08-25 - escalation modality.  BODY UNCHANGED.  Re-measured 2 / 66 / 66 on today's
  * HEAD (HEAD carries INCLUDE_ASM since commit 0bef2aa3).]
  *
