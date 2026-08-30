@@ -1993,3 +1993,28 @@ sweep and not the permuter.
 - [s18] DISPOSITION REASONING: both endgame-lock gates still FAIL exactly as s17 measured them (scan_hand_coded --single tier LOW score 1/8, S4 only, no S1/S2/S6; no closing construct exists at floor 7 so no SOTN-master precedent is citable even in principle). No accept-the-debt entry was re-filed: the s17 entry docs/grind/decisions.md:2796 already carries that disposition, the owner REVERSED it for this exact function on 2026-08-24 (escalation-not-parked: parked state retired, CD_datasync kicked back to active with the SOTN-reference + F29 directive), and under that same ruling an accept-the-debt packet is in the AUTO-REJECT class and must NOT be filed. This session found a live un-tried axis (cc1psx as a calibration SEARCH ORACLE, which needs no ruling because calibration is already sanctioned), so the item is still grindable and progress is the honest outcome.
 
 - [s18] The working tree was restored to HEAD (git checkout -- src/system.c) before finishing; only memory/grind/CD_datasync/ files were written.
+
+- [campaign-sweep 2026-08-30] First solver-chain run on this function
+  (sched-tie endgame campaign spec, docs/superpowers/specs/). Chassis: candidate.c
+  (session-9 zero-constant-lever form) spliced under current callee names —
+  sandbox 7, 91/91, floor confirmed live. Artifacts: tmp/grind/CD_datasync/s19_campaign/.
+  **FAMILY CONFIRMATION (third sibling):** the entire residual sits in the SAME
+  debug_printf window as CD_sync and CD_ready (both enumerated same day, see
+  their evidence banks): normalized diff sites 46-62 = lbu/lbu + sll/addu/lw
+  cluster, with the idx-chain pseudo in $v1 where target wants $a0 — the exact
+  exchange the twins enumerate — PLUS a second rotation ($v1->$v0 on the other
+  lbu) and a 2-slot order component (addu/lw swap vs sites 53/57). Any lever
+  proven on CD_sync/CD_ready transfers here first.
+  **Tool-limit finding (recorded for the campaign):** perturb.py --goal-from-target
+  SKIPPED the divergent block ("goal is not a topological order, 2 violations")
+  — the hop-3 difflib alignment mis-pairs duplicate instruction text in this
+  window (two slls, repeated lw skeletons). CD_datasync needs either a
+  hand-verified --goal-order for that block or an alignment upgrade
+  (anchor-based, not similarity-based) before its sched half can be typed.
+  **RA goal (goal_from_tgt on this chassis):** 4 renamed pairs + 2
+  skeleton-differ (= the order component): $v0->$a0 x2, $v1->$a0 x2, $v1->$v0
+  x1 — a 3-register rotation, attribution ambiguous (15/8 candidate pseudos).
+  Next session: resolve attribution via QTYDBG blk dump (the window is local-
+  alloc territory per the twins), then run inverse.py local with the resolved
+  goal; check the twins' p104-demotion/live-split axes for direct transfer
+  before any new spelling.
