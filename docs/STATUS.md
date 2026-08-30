@@ -12,7 +12,7 @@ in [`../CLAUDE.md`](../CLAUDE.md).
 | Branch | `main` |
 | Oracle SHA1 | `62efab4f73f992798c43e8c730aa43baa10bb4fa` |
 | Build match | ✅ green — full `verify-oracle --rebuild` re-verified 2026-08-30 |
-| Grinder | stopped since closing func_800485EC (2026-08-27); next target func_8002D320, no ledger yet — relaunch starts it fresh |
+| Grinder | stopped since 2026-08-27; queue top is now `main` (returned to active by the 2026-08-30 escalation-batch rulings) — relaunch resumes there |
 | Current worklist top | via `& tools/wteng.ps1 main queue next` |
 
 **Representation (owner ruling 2026-08-19, [[asm-until-matched]]):** an
@@ -37,23 +37,27 @@ counts do not).
 | | Count |
 |---|------:|
 | **COMPLETED-C** | **1,072** |
-| **COMPLETED-INLINE-ASM-CANONICAL** (`inline_asm_canonical.txt`) | 180 |
-| **INCOMPLETE** (queue items) | 222 |
-| — active (grinder-eligible) | 199 |
-| — escalated (decision packets awaiting owner rulings — [[escalation-not-parked]]) | 23 |
+| **COMPLETED-INLINE-ASM-CANONICAL** (`inline_asm_canonical.txt`) | 181 |
+| **INCOMPLETE** (queue items) | 221 |
+| — active (grinder-eligible) | 221 |
+| — escalated | **0** |
 | Data-as-code symbols (excluded by ruling) | 12 |
 
 ≈ 85% of the 1,474 in-scope functions are in a COMPLETED state.
 
-Queue verdict breakdown (2026-08-30, active items): 165 `C` (pure-C
-reachable) + 34 `ASM-PARTIAL` (contain canonical GTE/BIOS/HW asm).
+Queue verdict breakdown (2026-08-30): 185 `C` (pure-C reachable) + 36
+`ASM-PARTIAL` (contain canonical GTE/BIOS/HW asm).
 
-The 23 escalated items carry decision packets in `docs/grind/decisions.md` /
-`docs/grind/borderline.md` (notable members: `main`, the CD_* cluster
-(CD_sync / CD_ready / CD_datasync), `motion_Close`, `func_800324D0`
-(jtbl re-wiring question), `special_camera_get_rot_dir`, `func_8002FC80`).
-They are non-blocking for the grind but each needs an owner ruling to return
-to active.
+**Escalation backlog: CLEARED 2026-08-30.** The owner ruled on the full
+23-item escalated set in one batch (decisions.md "2026-08-30 — OWNER
+RULINGS — escalation batch resolved", 10 rulings): instrumentation grants,
+the special_camera_get_rot_dir header-fix scope grant, the motion_Close
+prebuilt-object canonical grant (landed — COMPLETED-INLINE-ASM-CANONICAL),
+the registry-bound owner-cluster canonical-grant door
+(`tools/grinder/owner_cluster_grants.txt` — unblocks the COP2 cluster incl.
+func_8002FC80 and func_8002D320), the func_800324D0 jtbl re-wiring lane,
+two provenance adjudications, one bounded calibration probe, and the return
+of every no-question item to active. No standard was lowered.
 
 ## Source-file distribution (2026-08-30)
 
@@ -97,9 +101,8 @@ and gates every completion through a default-FAIL Judge. Spec:
 ### Escalation model (owner ruling 2026-08-24, [[escalation-not-parked]])
 The parked state is retired: every INCOMPLETE item is ACTIVE or ESCALATED
 (a concrete decision packet awaiting an owner ruling; batched, non-blocking,
-never indefinite). 23 items are currently escalated — the largest owner-facing
-backlog; reviewing their packets is the biggest single lever for unblocking
-queue breadth.
+never indefinite). Currently ZERO items are escalated (batch resolved
+2026-08-30).
 
 ### Solver tooling (2026-08-04/05)
 Two models of GCC 2.7.2's back end back the hard cases: `tools/ra_solver`
