@@ -42,8 +42,9 @@ Every function is in exactly ONE state — no gradations, no "almost done." Chea
 rules, register pins, cheat-asm `__asm__` blocks, scheduling barriers) are NEVER an end state.
 Full policy: [[completion-standard]].
   - **INCOMPLETE** — in `engine/queue.json`; non-zero honest pure-C distance. Committed as
-    `INCLUDE_ASM("asm/funcs", <func>);` since 2026-08-19 ([[asm-until-matched]]) — no cheats on main
-    (16 byte-coupling deferred functions still carry a legacy rule/cheat-asm representation — every reason proven per-function, sweep 3 2026-08-24).
+    `INCLUDE_ASM("asm/funcs", <func>);` since 2026-08-19 ([[asm-until-matched]]) — no cheats on main.
+    The migration is COMPLETE: since 2026-08-25 (rules-to-zero campaign) `regfix.txt` and
+    `asmfix.txt` are EMPTY and no deferred legacy representations remain.
     Stays queued until it reaches a COMPLETED state.
   - **COMPLETED-C** — zero rules, zero cheat-asm, byte-matches. Not in the queue, not in
     `inline_asm_canonical.txt`. The SOTN community bar; the default goal for every function.
@@ -105,11 +106,10 @@ history). Two load-bearing warnings persist:
 All outstanding work lives in ONE ordered list — `engine/queue.json`. **Since the asm-until-matched
 migration (owner ruling 2026-08-19, [[asm-until-matched]]) an INCOMPLETE function is committed as
 `INCLUDE_ASM("asm/funcs", <func>);`** — no rules, no cheat-asm on main; candidates live in
-`memory/grind/<func>/` and queue distance comes from the pinned/ledger honest floor. 16 deferred
-functions as of 2026-08-24 (sweep 3) (jtbl-coupled, rodata-emitting, position-coupled — see `docs/grind/borderline.md`
-2026-08-19 migration record + the 2026-08-24 sweep-2 entry, which migrated 9 false-positive
-deferrals) still carry the legacy representation (a regfix/asmfix rule stack OR
-cheat-asm) until solved. Every queue item is
+`memory/grind/<func>/` and queue distance comes from the pinned/ledger honest floor. The migration
+COMPLETED 2026-08-25: the rules-to-zero campaign (owner campaign 2026-08-24) retired every deferred
+legacy representation — `regfix.txt` and `asmfix.txt` are EMPTY project-wide (record:
+`docs/grind/borderline.md` 2026-08-19 migration entry + the 2026-08-24/25 sweep entries). Every queue item is
 INCOMPLETE by definition; reaching a COMPLETED state drops it off. The queue is **pre-ordered
 easiest-first** by honest pure-C distance: **no triage, no cherry-picking, NO DEFERRAL (user directive
 2026-06-12)** — work the **top active item** to COMPLETED, however many sessions it takes; a stuck item

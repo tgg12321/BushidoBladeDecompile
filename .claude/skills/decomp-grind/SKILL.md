@@ -97,9 +97,9 @@ queue top continuously; completions land as `Match: <func> — COMPLETED-C
 6. **INCOMPLETE = `INCLUDE_ASM` on main** (owner ruling 2026-08-19,
    [[asm-until-matched]]): sessions never commit intermediate C; candidates,
    banked chassis (`retired-chassis-2026-08/`), and the queue-ordering floor
-   (`migration_pin.json`) live in `memory/grind/<func>/`. 16 byte-coupling
-   deferred functions still carry legacy rules/cheat-asm until solved (every
-   membership proven per-function, sweep 3 2026-08-24).
+   (`migration_pin.json`) live in `memory/grind/<func>/`. The deferred set is
+   RETIRED — rules-to-zero completed 2026-08-25; `regfix.txt` and `asmfix.txt`
+   are empty project-wide.
 
 ## Failure modes the driver already handles (don't intervene)
 - Session crash / usage-limit / timeout → invalid session, discarded,

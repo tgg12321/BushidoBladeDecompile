@@ -119,7 +119,7 @@ def staged_diff_unified0(paths: list[str]) -> str:
         return ""
     r = subprocess.run(
         ["git", "diff", "--cached", "--unified=0", "--", *paths],
-        capture_output=True, text=True,
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
     )
     if r.returncode != 0:
         return ""
@@ -129,7 +129,7 @@ def staged_diff_unified0(paths: list[str]) -> str:
 def staged_files() -> list[str]:
     r = subprocess.run(
         ["git", "diff", "--cached", "--name-only"],
-        capture_output=True, text=True,
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
     )
     if r.returncode != 0:
         return []
@@ -273,7 +273,8 @@ def main(msg_path: str) -> int:
         try:
             auth_txt = subprocess.run(
                 ["git", "show", ":inline_asm_canonical.txt"],
-                capture_output=True, text=True).stdout
+                capture_output=True, text=True,
+                encoding="utf-8", errors="replace").stdout
         except OSError:
             auth_txt = ""
         if not auth_txt:

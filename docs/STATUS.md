@@ -1,10 +1,9 @@
 # Project Status
 
-**Live snapshot.** Refreshed 2026-08-24 (post parked-set review + migration
-sweep 2). For the live worklist run
-`& tools/wteng.ps1 main queue next` (and `queue status` for counters); for
-build health run `verify-oracle`. The workflow itself lives in
-[`../CLAUDE.md`](../CLAUDE.md).
+**Live snapshot.** Refreshed 2026-08-30 (post rules-to-zero completion). For
+the live worklist run `& tools/wteng.ps1 main queue next` (and `queue status`
+for counters); for build health run `verify-oracle`. The workflow itself lives
+in [`../CLAUDE.md`](../CLAUDE.md).
 
 ## Build
 
@@ -12,21 +11,28 @@ build health run `verify-oracle`. The workflow itself lives in
 |---|---|
 | Branch | `main` |
 | Oracle SHA1 | `62efab4f73f992798c43e8c730aa43baa10bb4fa` |
-| Build match | ✅ green — every `Match:` commit re-verifies full-build SHA1; last full verify 2026-08-24 |
-| Grinder | stopped 2026-08-23 on a usage-limit stall (not a fault); relaunch resumes func_8002FC80 s1 exactly |
+| Build match | ✅ green — full `verify-oracle --rebuild` re-verified 2026-08-30 |
+| Grinder | stopped since closing func_800485EC (2026-08-27); next target func_8002D320, no ledger yet — relaunch starts it fresh |
 | Current worklist top | via `& tools/wteng.ps1 main queue next` |
 
 **Representation (owner ruling 2026-08-19, [[asm-until-matched]]):** an
 INCOMPLETE function is committed as `INCLUDE_ASM("asm/funcs", <func>);` — no
 rules, no cheat-asm, no draft C on `main`. Candidates live in
 `memory/grind/<func>/`; queue distance comes from the pinned/ledger honest
-floor. **16** functions are byte-coupling deferred and keep the legacy representation
-until solved — and as of sweep 3 (2026-08-24) every membership is PROVEN
-per-function: 6 jtbl-coupled, 6 genuine rodata emitters, 4 measured
-byte-coupled (real mismatch SHA1s recorded on rollback). Sweeps 2+3 migrated
-36 false-positive deferrals (~607 rules retired) after the heuristic fix.
+floor.
 
-## Function inventory (2026-08-24)
+**RULES-TO-ZERO COMPLETE (2026-08-25).** The rules-to-zero campaign (owner
+campaign 2026-08-24) retired every remaining regfix/asmfix rule: the last 2
+asmfix rules left with func_80060A68's INCLUDE_ASM migration (owner ruling (b)
+2026-08-25, commit `0bef2aa3`), and regfix.txt reached zero carriers the same
+day. **Both files are EMPTY project-wide** — the end state of the 2026-08-06 /
+2026-08-19 owner rulings ([[asmfix-all-debt-end-state]], [[asm-until-matched]])
+is reached and permanent. The former "byte-coupling deferred" set (16 functions
+as of sweep 3) no longer exists as a rule-carrying population; those functions
+are ordinary `INCLUDE_ASM` queue items. Both files were trimmed to header-only
+on 2026-08-30 (historical rule text lives in git history).
+
+## Function inventory (2026-08-30)
 
 Counts from `python3 tools/check_completion_integrity.py` (the authority — it
 applies the 2026-08-07 data-as-code structural filter; raw `asm/funcs/*.s` file
@@ -34,48 +40,45 @@ counts do not).
 
 | | Count |
 |---|------:|
-| **COMPLETED-C** | **1,051** |
-| **COMPLETED-INLINE-ASM-CANONICAL** (`inline_asm_canonical.txt`) | 179 |
-| **INCOMPLETE** (queue items) | 244 |
-| — active (grinder-eligible) | 240 |
-| — escalated (decision packets awaiting owner rulings — [[escalation-not-parked]] 2026-08-24) | 4 |
+| **COMPLETED-C** | **1,072** |
+| **COMPLETED-INLINE-ASM-CANONICAL** (`inline_asm_canonical.txt`) | 180 |
+| **INCOMPLETE** (queue items) | 222 |
+| — active (grinder-eligible) | 199 |
+| — escalated (decision packets awaiting owner rulings — [[escalation-not-parked]]) | 23 |
 | Data-as-code symbols (excluded by ruling) | 12 |
 
-Queue verdict breakdown (2026-08-24):
+≈ 85% of the 1,474 in-scope functions are in a COMPLETED state.
 
-| Verdict | Active | Parked | Meaning |
-|---|---:|---:|---|
-| C | 176 | 32 | Pure-C reachable |
-| ASM-PARTIAL | 35 | 1 | Contains canonical GTE/BIOS/HW asm |
+Queue verdict breakdown (2026-08-30, active items): 165 `C` (pure-C
+reachable) + 34 `ASM-PARTIAL` (contain canonical GTE/BIOS/HW asm).
 
-Debt indicators — the 2026-08-19 asm-until-matched migration (191 functions)
-plus the 2026-08-24 sweeps 2+3 (36 more) converted 227 INCOMPLETE functions to
-`INCLUDE_ASM` and retired their rules wholesale:
+The 23 escalated items carry decision packets in `docs/grind/decisions.md` /
+`docs/grind/borderline.md` (notable members: `main`, the CD_* cluster
+(CD_sync / CD_ready / CD_datasync), `motion_Close`, `func_800324D0`
+(jtbl re-wiring question), `special_camera_get_rot_dir`, `func_8002FC80`).
+They are non-blocking for the grind but each needs an owner ruling to return
+to active.
 
-| | Count | Was 2026-08-19 | Was 2026-08-17 |
+Debt indicators:
+
+| | Count | Was 2026-08-24 | Was 2026-08-19 |
 |---|------:|------:|------:|
-| Rule-carrying functions (all in the 16 deferred) | ~10 | 41 | 96 |
-| Total regfix+asmfix rules outstanding | 89 | 708 | 1,573 |
+| Rule-carrying functions | **0** | ~10 | 41 |
+| Total regfix+asmfix rules outstanding | **0** | 89 | 708 |
 
-Owner rulings 2026-08-06/2026-08-19: **all** rules are debt; the end state is
-zero regfix + zero asmfix ([[asmfix-all-debt-end-state]], [[asm-until-matched]]).
-The remaining 89 retire per function at COMPLETED-C (their bodies are
-byte-coupled to the build; the wave-2 mechanical retirement was measured a
-dead end — borderline.md 2026-08-19).
-
-## Source-file distribution (2026-08-24)
+## Source-file distribution (2026-08-30)
 
 | File | Lines |
 |---|---:|
-| `text1b.c` | 6,938 |
-| `display.c` | 3,601 |
-| `code6cac_b.c` | 3,457 |
-| `main.c` | 3,338 |
-| `code6cac.c` | 2,957 |
-| `text1a_c.c` | 1,856 |
-| `text1b_b.c` | 1,915 |
-| Other 25 files | < 1,900 each |
-| **Total** | **37,606** |
+| `text1b.c` | 6,484 |
+| `display.c` | 3,520 |
+| `main.c` | 3,263 |
+| `code6cac.c` | 2,771 |
+| `code6cac_b.c` | 2,642 |
+| `text1b_b.c` | 1,914 |
+| `text1a_c.c` | 1,748 |
+| Other 25 files | < 1,700 each |
+| **Total** | **35,194** |
 
 32 C source files total. Line counts SHRINK during migration waves (bodies
 move to `asm/funcs/`) and grow again as functions reach COMPLETED-C —
@@ -85,11 +88,13 @@ neither direction is a health signal by itself.
 
 | Window | Commits |
 |---|---:|
-| Last 2 weeks | 532 |
-| Last month | 1,071 |
-| Total since project start (2026-03-23) | 5,113 |
+| Last 2 weeks | 540 |
+| Last month | 1,216 |
+| Total since project start (2026-03-23) | 5,373 |
 
-186 `Match:` completions landed since 2026-07-12.
+208 `Match:` completions landed since 2026-07-12 (21 since 2026-08-24).
+Recent grinder closes ran 1–37 sessions each — the easiest-first queue's
+remaining tail is genuinely hard.
 
 ## Standing initiatives
 
@@ -103,20 +108,18 @@ and gates every completion through a default-FAIL Judge. Spec:
 ### Escalation model (owner ruling 2026-08-24, [[escalation-not-parked]])
 The parked state is retired: every INCOMPLETE item is ACTIVE or ESCALATED
 (a concrete decision packet awaiting an owner ruling; batched, non-blocking,
-never indefinite). All 33 former parks converted: 29 returned to active
-(with per-item directives; the RA/scheduler endgame class gets the new
-`solver` grinder modality), 4 escalated with packets (main — maspsx
-branch-fill fidelity; func_80048AD0 — prototype correction;
-func_80083794 + motion_Close — prebuilt-object routing).
+never indefinite). 23 items are currently escalated — the largest owner-facing
+backlog; reviewing their packets is the biggest single lever for unblocking
+queue breadth.
 
 ### Solver tooling (2026-08-04/05)
-Two models of GCC 2.7.2's back end now back the hard cases: `tools/ra_solver`
+Two models of GCC 2.7.2's back end back the hard cases: `tools/ra_solver`
 (the whole allocation stack — global.c, local-alloc, reload/retry, suggested
 registers) and `tools/sched_solver` (sched.c's list scheduler, exact on
 6,978/6,978 blocks, both passes). The engine's inverse solver composes them into
-minimal-perturbation lever hypotheses — concretely `tools/ra_solver/inverse_compose.py`
-(classify / hypothesis) and `tools/ra_solver/sweep.py` (batch driver); the Grinder
-dispatches them via the `solver` modality (added 2026-08-24).
+minimal-perturbation lever hypotheses — `tools/ra_solver/inverse_compose.py`
+(classify / hypothesis) and `tools/ra_solver/sweep.py` (batch driver); the
+Grinder dispatches them via the `solver` modality (added 2026-08-24).
 
 ### Manual close-out path
 Manual per-function work uses the `decomp-orchestrate` skill (single focused
@@ -125,23 +128,24 @@ agent on `main` driving the engine as a toolkit). Layer-2 fresh
 [[review-discipline-before-commit]].
 
 ### Retired
-- **Closer Phase 3** (PsyQ psxsdk adoption) — retired 2026-07-13. All 7 banked
-  candidates map to functions still in `engine/queue.json`, so the Grinder
-  inherits them by construction; no dedicated-session work remained.
+- **Rules-to-zero campaign** — COMPLETE 2026-08-25 (zero regfix/asmfix rules
+  project-wide; see Build section).
+- **Closer Phase 3** (PsyQ psxsdk adoption) — retired 2026-07-13.
 - **Multi-agent fleet** (`tools/fleet/`) — retired 2026-07-06.
 
 ## Health / debt
 
 | Item | State |
 |---|---|
-| Root cleanliness | ✅ (verified 2026-08-24, `tools/check_root_cleanliness.py`) |
-| Completion integrity | ✅ all completed functions satisfy their category's invariants (verified 2026-08-24) |
+| regfix.txt / asmfix.txt | ✅ **EMPTY** (rules-to-zero complete 2026-08-25; header-only files) |
+| Root cleanliness | ✅ (last verified 2026-08-24, `tools/check_root_cleanliness.py`) |
+| Completion integrity | ✅ all completed functions satisfy their category's invariants (verified 2026-08-30) |
 | CLAUDE.md / memory hygiene | Guards active (root-write, LF, CRLF-tooling-error, memory-write) |
-| Oracle | Green (`build/bb2.exe` == `disc/SLUS_006.63`) |
+| Oracle | Green (`build/bb2.exe` == `disc/SLUS_006.63`, full rebuild 2026-08-30) |
 | Function naming | Census + phase-2 reset wave complete (2026-08-07/10); 334 Sony names applied byte-neutral. `docs/naming/README.md` |
 | Rodata cleanup | Phase A + B COMPLETE (2026-06-09; `bb2.ld` hand-maintained since) |
 | maspsx gate-dependent completions | 6, tracked for transparency (fidelity-class assembler gates, not cheats) |
-| Owner escalation shelf | retired 2026-08-24 — the `_spu_FiDMA` fork-crash question is a borderline.md policy-question entry |
+| Metrics Postgres | local instance unreachable (query staleness only; `metrics/events.jsonl` remains source of truth — run `python tools/metrics/sync.py` when back) |
 | WSL nonpaged-pool leak | Known host issue (~1 Job object per `wsl.exe` call) — surfaced only when it actually breaks something ([[wsl-kernel-object-leak-audio]]) |
 
 ## Regenerating this snapshot
@@ -153,10 +157,12 @@ wsl bash -lc "cd '<repo>' && source .venv/bin/activate && python3 tools/check_co
 # Queue counts + verdict breakdown
 & tools/wteng.ps1 main queue status
 
+# Rule counts (should stay 0)
+grep -cE '^[a-zA-Z_][a-zA-Z_0-9]*:' regfix.txt asmfix.txt
+
 # File inventory (WSL side)
 ls asm/funcs/*.s | wc -l
 grep -cE '^[a-zA-Z_]' inline_asm_canonical.txt
-grep -oE '^[A-Za-z_][A-Za-z0-9_]*:' regfix.txt | sort -u | wc -l
 wc -l src/*.c
 
 # Velocity

@@ -30,10 +30,10 @@ metadata:
    frontier; `retired-chassis-2026-08/` banks the pre-migration body + rules;
    `migration_pin.json` records the honest floor at migration for queue
    ordering (engine/queue.py reads it when the body is INCLUDE_ASM).
-4. **`no_new_regfix_guard` is unchanged and now converges to empty**: rule
-   counts only go down. The only sanctioned rule shapes remaining after the
-   2026-08 migration are jtbl-infra and canonical-extraction wirings (their
-   own campaigns retire them).
+4. **`no_new_regfix_guard` is unchanged and CONVERGED 2026-08-25**: the
+   rules-to-zero campaign (owner campaign 2026-08-24) retired the last
+   carriers — `regfix.txt` and `asmfix.txt` are EMPTY project-wide, the
+   permanent end state. Rule counts can only stay at zero.
 5. This supersedes the 2026-08-19 chassis-refresh proposal (never
    implemented) — the owner refused committing any cheat-class artifact,
    including honest whole-body splices paired with draft C.
