@@ -1,9 +1,12 @@
 # Naming addendum wave — apply plan (task #23)
 
 > **STATUS (anchored 2026-08-30):** Part A **APPLIED** as `ef3919bd` (2026-08-10;
-> census regen `d2188916`, prep merge `a942d896`) — do NOT re-run it. Part B was
-> re-verified at HEAD the same day (`6df437b6`, section below): 5/9 obsolete, 4/9
-> blocked on a grinder-quiet + queue-regen window, 2 owner-gated. Part C unapplied.
+> census regen `d2188916`, prep merge `a942d896`) — do NOT re-run it. Part B: the
+> re-verification below (`6df437b6`) struck 5/9 as obsolete; the 4 genuine splits
+> were then **APPLIED later the same day** (`113abc0e` note2pitch, `b6c73b0f`
+> _spu_FiDMA + _spu_Fr_, `4ffc63aa` _spu_2pitch; host func_800889D4 renamed
+> _spu_FwriteByIO). Remaining: the 2 owner-gated authorization re-derivations
+> (`longjmp`/`setjmp`, `_SendPAD`/`FlushCache`) and Part C.
 
 Prepared 2026-08-07 in an isolated worktree (branch `worktree-agent-a6952f8c8c9d2f4eb`);
 **nothing here has touched main**. This document is the exact ordered procedure for the

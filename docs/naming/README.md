@@ -49,7 +49,7 @@ a key, oracle-verified per batch, never hand-applied. Applied so far:
 |---|---|---|
 | phase-2 reset wave | `2651e2e5` (2026-08-07) | **300 RESET + 2 RENAME** (`main`, `gpu_EnableDisplay`/`gpu_DisableDisplay` family) — the SUSPECT/Kengo purge, byte-neutral |
 | libscan wave | `fe40a52b` (2026-08-07) | **334 evidence-backed renames** from the PsyQ bit-verbatim library scan: 51 hard misnames corrected, 182 alias fixes, 73 fills, 28 style rows to bare Sony names (owner ruling). Census gained the `libscan-verbatim` -> VERIFIED tier |
-| addendum wave | `ef3919bd` (2026-08-10) | **12 RENAMEs + 1 RESET** from the ambiguous-tie resolutions + reloc-chain bonus IDs (`docs/naming/libscan/addendum_addresses.txt`). Part B re-verified at HEAD same day (`6df437b6`): 5/9 XDEF splits obsolete, 4/9 blocked, 2 owner-gated — see `docs/naming/ADDENDUM-APPLY-PLAN.md` |
+| addendum wave | `ef3919bd` (2026-08-10) | **12 RENAMEs + 1 RESET** from the ambiguous-tie resolutions + reloc-chain bonus IDs (`docs/naming/libscan/addendum_addresses.txt`). Part B: 5/9 XDEF splits obsolete (`6df437b6`), 4 genuine splits applied same day (`113abc0e`/`b6c73b0f`/`4ffc63aa`); only the 2 owner-gated re-derivations remain — see `docs/naming/ADDENDUM-APPLY-PLAN.md` |
 
 ---
 
