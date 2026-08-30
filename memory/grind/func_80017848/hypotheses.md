@@ -2250,3 +2250,96 @@ C" refusal, not a debt or an integration handoff.
 - probe: grep -n func_80017848 asmfix.txt; read src/ings.c:590; splice candidate.c:325-403 over the INCLUDE_ASM line and run sandbox func_80017848 --disable all.
 - result: asmfix.txt has no entry for this function; src/ings.c:590 is INCLUDE_ASM("asm/funcs", func_80017848);. Sandbox with the candidate body: score 3, target_insns 127, build_insns 127, scorable true, rules_dropped 0, cheat_asm_stripped 4 (all four belong to other functions in ings.c). The premise is FALSE - the floor is unchanged but the function now carries zero rules and zero cheat-asm of its own.
 - verdict: KILLED
+
+## s26 (2026-08-30, structural)
+
+### H-s26-A - CONFIRMED (structure), KILLED (score)
+**Statement.** Target's loop-1 exit tail is literally `p = *(u8 **)(ctx + 0xC);
+sh = slot_a << 6;` (its `lw $a0,0xC($s2)` / `sll $a1,$s4,6` sit on loop 1's TAKEN
+edge, before the join label), and writing exactly that - with loop 2's guard and
+base both reading the recomputed `sh` and `sh2` deleted - reproduces target's join
+region instruction-for-instruction.
+**Mechanism.** The join .L8001791C has two predecessors; on the skip path $a0/$a1
+survive from loop 1's guard block, on the taken path loop 1 clobbers $a0 so both
+must be re-materialised. That is a C-level re-assignment on the taken path only,
+which is what a tail inside the `if (i < t) { ... }` block compiles to.
+**Probe.** Cell A, plus its order-swapped control cell C.
+**Result.** Cell A = **4** at 127 target / 126 build - the join region is byte-exact,
+and the entire residual is the two missing preheader copies. Cell C (shift before
+reload) = **6**, so the order is load-bearing.
+**Verdict. CONFIRMED as the structural reading, KILLED as a score improvement.**
+Chassis A is the sharpest DESCRIPTION of the wall to date (it isolates the residual
+to "the two copies, nothing else") but is one point worse than the candidate, which
+buys loop 1's copy with the `p = q` second-use lever.
+
+### H-s26-B - KILLED
+**Statement.** Loop 2's base addend can avoid the cse merge with the guard's address
+add (s15(4), priced 8) by living in a DEDICATED carrier that is already set on both
+predecessor edges of the join, so cse - whose extended basic block begins at the
+join - has no equivalence between it and `p`.
+**Mechanism (predicted).** cse cannot equate two pseudos whose defining insns lie
+outside the current EBB, so `base = sh + r` would not be folded onto the guard's
+`sh + p`, and `r` being already in a register would emit no load.
+**Probe.** Cells E (`r = p;`) and F (`r = *(u8 **)(ctx + 0xC);`), each assigned at
+BOTH of `p`'s assignment sites, on chassis A.
+**Result.** Both **12** at 127/127. The carrier must be materialised separately on
+each predecessor path, and those two instructions are exactly what target does not
+spend. The predicted cse behaviour may well hold; it is unbuyable regardless.
+**Verdict. KILLED** - the pre-join-carrier family is 9 points worse than chassis A
+and 9 worse than the candidate.
+
+### H-s26-C - KILLED
+**Statement.** The out-of-block second use that loop 2's addend needs (to orphan its
+copy from combine, the way loop 1's `p = q` tail does) can be placed inside loop 2's
+own BODY - a different basic block from the preheader - instead of in the post-loop
+tail, where every site is priced 19-22 by register pressure.
+**Mechanism (predicted).** s16's trichotomy: a preheader copy survives combine iff
+its destination's only use is out of block. The loop body is out of block and is
+reached only when the loop runs, so it should cost nothing on the skip path.
+**Probe.** Cell H on chassis A: loop 2's do-while condition rewritten from
+`*(s32 *)(base + 0x20)` to `*(s32 *)(sh + (s32)q + 0x20)`, giving the named addend
+`q` a body use.
+**Result.** **6** at the correct 127/127. loop.c's move_movables hoists the DERIVED
+invariant `sh + q` rather than the addend itself, so the copy that survives is
+`move a1,a0` - a copy of the BASE landing one slot AFTER the base add - which is
+cell C1's (s15) failure mode reproduced on a new chassis. The addend stays a `lw`.
+**Verdict. KILLED.** An in-body second use cannot produce an addend copy; loop.c
+always hoists the derived address, never its operand. Together with s10/s11's 19-22
+pricing of every post-loop site and s26's 12 for a pre-join carrier, loop 2 has NO
+free out-of-block use site anywhere.
+
+## [s26] Target's loop-1 exit tail is literally `p = *(u8**)(ctx+0xC); sh = slot_a<<6;`, and writing exactly that (loop 2's guard and base both reading the recomputed sh, sh2 deleted) reproduces target's join region instruction-for-instruction.
+- mechanism: The join .L8001791C has two predecessors; on the loop-1 skip path $a0/$a1 survive from loop 1's guard block, on the taken path loop 1 clobbers $a0 so both are re-materialised. That is a C-level re-assignment on the taken path only.
+- probe: Cell A on the candidate chassis, plus the order-swapped control cell C.
+- result: Cell A = 4 (127 target / 126 build); the join region is byte-exact including the taken-edge lw/sll pair, and the entire residual is the two missing preheader copies. Cell C (shift before reload) = 6.
+- verdict: CONFIRMED as structure, KILLED as a score improvement (4 > the candidate's 3)
+
+## [s26] Loop 2's base addend can dodge the cse merge with the guard's address add by living in a dedicated carrier already set on both predecessor edges of the join.
+- mechanism: cse's extended basic block begins at the join, so it has no equivalence between the carrier and p and cannot fold base = sh + r onto the guard's sh + p; the carrier being in a register would emit no load.
+- probe: Cells E (r = p) and F (r = fresh read), each assigned at both of p's assignment sites, on chassis A.
+- result: Both 12 at 127/127 - the carrier must be materialised separately on each predecessor path, which is exactly the instruction per path target does not spend.
+- verdict: KILLED
+
+## [s26] The out-of-block second use loop 2's addend needs can be placed inside loop 2's own BODY instead of in the post-loop tail, where every site is priced 19-22.
+- mechanism: s16's trichotomy - a preheader copy survives combine iff its destination's only use is out of block; the loop body is a different basic block and is reached only when the loop runs.
+- probe: Cell H on chassis A - loop 2's do-while condition rewritten from *(s32*)(base + 0x20) to *(s32*)(sh + (s32)q + 0x20).
+- result: 6 at 127/127. loop.c's move_movables hoists the DERIVED invariant sh+q, not the addend, so the surviving copy is `move a1,a0` - a copy of the BASE one slot after the base add (cell C1's failure mode on a new chassis); the addend stays a lw.
+- verdict: KILLED
+
+## [s26] Target's loop-1 exit tail is literally `p = *(u8 **)(ctx + 0xC); sh = slot_a << 6;` - its `lw $a0,0xC($s2)` / `sll $a1,$s4,6` sit on loop 1's TAKEN edge, before the join label - and writing exactly that, with loop 2's guard and base both reading the recomputed `sh` and `sh2` deleted, reproduces target's whole join region instruction-for-instruction.
+- mechanism: The join .L8001791C has two predecessors: on the loop-1 skip path $a0/$a1 survive from loop 1's guard block, on the taken path loop 1 clobbers $a0 so both must be re-materialised. That is a C-level re-assignment on the taken path only, i.e. a tail inside the `if (i < t) { ... }` block.
+- probe: Cell A on the candidate chassis (tmp/grind/func_80017848/s26/body_A.c), plus the order-swapped control cell C; both scored with `sandbox func_80017848 --disable all`, cell A disassembled and diffed against asm/funcs/func_80017848.s.
+- result: Cell A = 4 at 127 target / 126 build. The join region is byte-exact, including the taken-edge lw/sll pair before the label - the first chassis in 26 sessions to reproduce it - and the ENTIRE residual on chassis A is the two missing preheader copies (loop 1 short one insn; loop 2 emitting `lw v0,12(s2)` in the copy's slot). Cell C (shift before reload) = 6, so the statement order is load-bearing. Cell D (named q2/lnk2 locals mirroring loop 1) = 4, so loop 2's preheader naming stays inert on the new chassis too.
+- verdict: CONFIRMED
+
+## [s26] Loop 2's base addend can dodge the cse merge with the guard's address add (s15(4), priced 8) by living in a DEDICATED carrier that is already set on both predecessor edges of the join, so cse - whose extended basic block begins at the join - has no equivalence between it and `p`.
+- mechanism: cse cannot equate two pseudos whose defining insns lie outside the current extended basic block, so `base = sh + r` would not be folded onto the guard's `sh + p`, and `r` being already in a register would emit no load where target has its copy.
+- probe: Cells E (`r = p;`) and F (`r = *(u8 **)(ctx + 0xC);`) on chassis A, with `r` assigned at BOTH of `p`'s assignment sites (the pre-loop-1 read and loop 1's exit tail) so it is live on both predecessor edges.
+- result: Both cells = 12 at 127/127, i.e. 9 points worse than chassis A and 9 worse than the candidate. The carrier must be materialised separately on each predecessor path, and those two instructions are exactly the ones target does not spend. The predicted cse behaviour may well hold; the family is unbuyable regardless.
+- verdict: KILLED
+
+## [s26] The out-of-block second use that loop 2's addend needs - to orphan its copy from combine the way loop 1's `p = q` tail does - can be placed inside loop 2's own BODY, a different basic block from the preheader, instead of in the post-loop tail where every site is priced 19-22 by register pressure.
+- mechanism: s16's survival trichotomy: a preheader reg-reg copy survives combine iff its destination's only use is out of block. Loop 2's body is out of block and is reached only when the loop runs, so it should cost nothing on the skip path.
+- probe: Cell H on chassis A: loop 2's do-while condition rewritten from `*(s32 *)(base + 0x20)` to `*(s32 *)(sh + (s32)q + 0x20)`, giving the named addend `q` a body use; result disassembled (tmp/grind/func_80017848/s26/build_H.txt).
+- result: 6 at the correct 127/127. loop.c's move_movables hoists the DERIVED loop-invariant address `sh + q`, not the addend itself, so the copy that survives is `move a1,a0` - a copy of the BASE landing one slot AFTER the base add, which is s15's cell C1 failure mode reproduced on a new chassis - while the addend stays a `lw`. An in-body second use cannot produce an addend copy.
+- verdict: KILLED

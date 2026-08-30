@@ -3068,3 +3068,159 @@ ruling 2026-07-27 applies) is unchanged and terminal.
 - [s25] TARGET'S TWO LOOP PREHEADERS ARE THE SAME NINE-INSTRUCTION SHAPE (verified instruction by instruction from asm/funcs/func_80017848.s): loop 1 at 0x800178B4 and loop 2 at 0x80017914 both read lw $a0,0xC($s2) / sll $a1,$s4,6 / addu $v0,$a1,$a0 / lw $v0,<0x1C|0x20>($v0) / blez / addu $v1,$zero,$zero / addu $a3,$a0,$zero / lw $a2,0x10($s2) / addu $a0,$a1,$a3. Loop 1's skip branch lands at 0x8001791C, PAST loop 2's re-read/re-shift pair, so those two instructions run only on the loop-1-taken path - a guard-skipped re-read, not a cross-jump merge, re-confirming that loop 2's guard block is a two-predecessor join. Both of target's copies exist with NO second use anywhere; the candidate buys loop 1's copy with `p = q` and pays for it in loop 1's exit tail. That asymmetry is the remaining 3.
 
 - [s25] DISPOSITION FILED: docs/grind/decisions.md now carries the 2026-08-25 entry '## 2026-08-25 - func_80017848 (src/ings.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (re-filed on the post-migration chassis)'. It asks for no standard to be lowered: no family sanction, no canonical evidence-bar override, no debt acceptance. The file re-reads as valid UTF-8 after the append (the s24 grindlib.py:388 decode hazard was checked).
+
+## s26 (2026-08-30, structural — executes the owner's 2026-08-30 escalation-batch ruling 10 "ACTIVE with modality change")
+
+### E-s26-0 — chassis re-measured
+`sandbox func_80017848 --disable all` with `memory/grind/func_80017848/candidate.c`
+spliced over `src/ings.c:590` (`INCLUDE_ASM("asm/funcs", func_80017848);`):
+**score 3, target_insns 127, build_insns 127, scorable true, rules_dropped 0,
+cheat_asm_stripped 4** (all four belong to other functions in ings.c). Identical
+to s25. Every banked spelling conclusion still transfers.
+
+### E-s26-1 — the residual, restated exactly: target's two preheaders are the SAME 10-instruction block
+Read directly off `asm/funcs/func_80017848.s`. Loop 1 (lines 31-41) and loop 2
+(lines 56-67) are register-identical:
+
+    lw   $a0,0xC($s2)        <- loop 1: at .L800178B4 (block entry)
+    sll  $a1,$s4,6              loop 2: on loop 1's TAKEN edge, BEFORE the join label
+    [.L8001791C:]            <- loop 2 only: the join (loop-1 guard's blez lands here)
+    addu $v0,$a1,$a0            guard address   (0x1C / 0x20)
+    lw   $v0,0x1C($v0)
+    blez $v0,<skip>
+     addu $v1,$zero,$zero       i = 0 in the delay slot
+    addu $a3,$a0,$zero       <- THE COPY (both loops, same registers)
+    lw   $a2,0x10($s2)          links
+    addu $a0,$a1,$a3            base = sh + copy
+    addu $v0,$a0,$v1            element address
+
+`$a3` appears exactly 5 times in the whole listing: the prologue's `addu $s3,$a3,$zero`
+(param 4) and the two copy/use pairs. So in both loops the copy's dest is used
+once, in the same block, and dies there.
+
+On the candidate chassis the 3-point residual is a POSITION SWAP of one `lw` and
+one `move` between loop 1's exit tail and loop 2's preheader — the two builds
+carry the SAME instruction multiset:
+
+    loop-1 exit tail:  target `lw a0,12(s2)`     ours `addu a0,a3,zero`
+    loop-2 preheader:  target `addu a3,a0,zero`  ours `lw v0,12(s2)`
+                       target `addu a0,a1,a3`    ours `addu a0,a1,v0`
+
+### E-s26-2 — CELL A: target's join shape reproduced instruction-for-instruction (score 4, 126 insns)
+Replace the candidate's `p = q;` loop-1 exit tail with target's own two
+statements, in target's order, and delete `sh2` (loop 2's guard AND base then
+read the re-computed `sh`):
+
+        } while (i < *(s32 *)(base + 0x1C));
+        p = *(u8 **)(ctx + 0xC);
+        sh = slot_a << 6;
+    }
+    i = 0;
+    if (i < *(s32 *)(sh + (s32)p + 0x20)) {
+        base = (u8 *)(sh + (s32) * (u8 **)(ctx + 0xC));
+
+Result: **score 4, 127 target / 126 build**. The build's join region is byte-exact
+against target through the whole guard, including `lw a0,12(s2)` / `sll a1,s4,6`
+sitting on loop 1's TAKEN edge before the join label — the first time any chassis
+has reproduced that. The ENTIRE residual on chassis A is the two missing copies:
+
+    loop 1 preheader (ours):  blez / move v1,zero / lw a2,16(s2) / addu a0,a1,a0 / addu v0,a0,v1
+    loop 2 preheader (ours):  blez / move v1,zero / lw v0,12(s2) / lw a2,16(s2) / addu a0,a1,v0 / addu v0,a0,v1
+
+i.e. loop 1's redundant `q` read is cse-folded to a copy and then DELETED by
+combine (dest used in-block — the s16 trichotomy), leaving 126; loop 2's redundant
+read is not folded at all (cse's extended basic block begins at the join, so the
+load of `p` is outside cse's window) and stays a real `lw`. Chassis A is a strictly
+better DESCRIPTION of the wall than s12's symmetric chassis (which also scored 4
+but did not reproduce the taken-edge shift placement); it is not a better score.
+Banked as `rejected/s26_target_join_shape_reload_tail_costs_4.c`.
+Dumps: `tmp/grind/func_80017848/s26/build_A.txt`, `tmp/grind/func_80017848/s26/target.txt`.
+
+### E-s26-3 — the reload/shift ORDER in loop 1's exit tail is load-bearing (cell C = 6)
+Chassis A with the two tail statements swapped (`sh = slot_a << 6;` before
+`p = *(u8 **)(ctx + 0xC);`) scores **6** (127/126). Target's order is
+load-then-shift and nothing else ties it. Banked as
+`rejected/s26_join_shape_shift_before_reload_costs_6.c`.
+
+### E-s26-4 — loop 2's preheader naming is inert on chassis A too (cell D = 4)
+Mirroring loop 1 exactly — a named `q2 = *(u8 **)(ctx + 0xC);` addend local plus a
+named `lnk2 = *(u8 **)(ctx + 0x10);` links local, read in loop-1's order — scores
+**4**, identical to chassis A's inline spelling. s11's 47-cell "loop 2's preheader
+is C-INERT" result reproduces on the new chassis. Banked as
+`rejected/s26_join_shape_named_l2_addend_links_costs_4.c`.
+
+### E-s26-5 — KILL: a dedicated PRE-JOIN carrier for loop 2's addend costs 9 over chassis A (cells E/F = 12)
+Rationale probed: cse cannot equate two pseudos across the join, so a variable `r`
+that already holds ctx+0xC when loop 2's guard block is entered would let the base
+add read a register cse never merges with the guard's add (the s15(4) merge that
+prices the reuse-`p` family at 8). Two spellings, `r` assigned at BOTH of `p`'s
+assignment sites (the pre-loop-1 read and loop 1's exit tail) so it is live on both
+predecessor edges:
+  - cell E, `r = p;` (a source-level copy) — **12** (127/127)
+  - cell F, `r = *(u8 **)(ctx + 0xC);` (a fresh read) — **12** (127/127)
+Both materialise `r` separately on each predecessor path, which is exactly the one
+instruction per path target does not spend. **KILLED.** Banked as
+`rejected/s26_prejoin_carrier_copy_for_l2_addend_costs_12.c` and
+`rejected/s26_prejoin_carrier_fresh_read_for_l2_addend_costs_12.c`.
+
+### E-s26-6 — KILL: an in-BODY second use of loop 2's addend hoists a BASE copy, not an ADDEND copy (cell H = 6)
+The s16 trichotomy says a copy survives combine iff its dest's only use is
+out-of-block; loop 2's only out-of-block sites after the loop are priced 19-22
+(s10/s11, register pressure — target already burns s0-s5). The one out-of-block
+site NEVER tried is loop 2's own BODY, which is a different basic block from the
+preheader. Cell H gives the named addend `q` a second use in loop 2's do-while
+CONDITION (`while (i < *(s32 *)(sh + (s32)q + 0x20))` instead of
+`*(s32 *)(base + 0x20)`), on chassis A. Result **6** at the correct 127/127.
+The dump shows why:
+
+    lw   v0,12(s2)      <- the addend is STILL a load
+    lw   a2,16(s2)
+    addu a0,a1,v0       <- base
+    move a1,a0          <- the surviving copy: a copy of the BASE, one slot LATE
+    addu v0,a0,v1
+
+loop.c's `move_movables` hoists the DERIVED invariant address `sh + q`, not the
+addend, so the copy that survives is a copy of the base — reproducing cell C1's
+(s15) failure mode on a new chassis. **KILLED**: an in-body second use cannot
+produce an addend copy. Banked as
+`rejected/s26_l2_addend_second_use_in_body_hoists_base_copy_costs_6.c`.
+Dump: `tmp/grind/func_80017848/s26/build_H.txt`.
+
+Consequence, stated once for every future session: loop 2 has NO free out-of-block
+use site anywhere. Post-loop sites are 19-22 (s10/s11), the loop body is 6 (E-s26-6),
+and a pre-join carrier is 12 (E-s26-5). The second-use lever that buys loop 1's copy
+is therefore unbuyable for loop 2 on every chassis measured to date.
+
+### E-s26-7 — the owner's 2026-08-30 escalation-batch ruling 10 is now EXECUTED
+The queue item's directive (`docs/grind/decisions.md`, the 2026-08-30
+escalation-batch entry, ruling 10) returns func_80017848 to ACTIVE "with modality
+change per escalation-not-parked" because its own latest ledger entry (the
+2026-08-25 disposition, `docs/grind/decisions.md:12080`) states nothing pends the
+owner. This session executed that directive: a structural modality, six new cells,
+two kills, no re-measurement of any dead axis, and NO fourth escalation packet —
+the owner has already ruled three times on this residual and a packet restating
+"both endgame-lock gates fail" carries no decidable question, which
+`.claude/rules/escalation-not-parked.md` (owner ruling 2026-08-24, second)
+classifies as not-a-packet and directs to be returned as `progress` instead.
+
+- [s26] Chassis re-measured this session: `sandbox func_80017848 --disable all` with memory/grind/func_80017848/candidate.c spliced over src/ings.c:590 = score 3, target_insns 127, build_insns 127, scorable true, rules_dropped 0, cheat_asm_stripped 4 (all four belong to other functions in ings.c). Identical to s25; every banked spelling conclusion still transfers.
+
+- [s26] Target's TWO preheaders are the SAME register-identical 10-instruction block (asm/funcs/func_80017848.s lines 31-41 and 56-67): lw $a0,0xC($s2) / sll $a1,$s4,6 / addu $v0,$a1,$a0 / lw guard(0x1C or 0x20) / blez / addu $v1,$zero,$zero / addu $a3,$a0,$zero / lw $a2,0x10($s2) / addu $a0,$a1,$a3 / addu $v0,$a0,$v1. $a3 appears exactly 5 times in the whole listing (the prologue's param-4 save plus the two copy/use pairs), so in both loops the copy's dest is used once, in the same block, and dies there.
+
+- [s26] On the candidate chassis the 3-point residual is a POSITION SWAP of one `lw` and one `move` between loop 1's exit tail and loop 2's preheader - both builds carry the SAME instruction multiset (target: lw in the tail, move in the preheader; ours: move in the tail, lw in the preheader).
+
+- [s26] Cell A (loop-1 exit tail = `p = *(u8 **)(ctx + 0xC); sh = slot_a << 6;`, sh2 deleted, loop 2's guard and base both reading sh) = 4 at 127/126, with target's join region byte-exact including the taken-edge lw/sll placement. It is a strictly better DESCRIPTION of the wall than s12's symmetric chassis and not a better score. Banked as rejected/s26_target_join_shape_reload_tail_costs_4.c.
+
+- [s26] Cell C (the same two tail statements in the reverse order) = 6 - the load-then-shift order is load-bearing, and nothing else ties it.
+
+- [s26] Cell D (loop 2's preheader mirroring loop 1 exactly, with named q2 addend and lnk2 links locals) = 4 - s11's 47-cell 'loop 2's preheader is C-INERT' result reproduces on chassis A.
+
+- [s26] Cells E and F (a dedicated pre-join carrier `r` for loop 2's addend, assigned on both predecessor edges as a source copy and as a fresh read respectively) = 12 and 12 at 127/127.
+
+- [s26] Cell H (an in-body second use of loop 2's addend, via the do-while condition) = 6 at 127/127; the disassembly shows loop.c hoisting the derived invariant and emitting `move a1,a0` - a copy of the BASE one slot after the base add - while the addend stays a `lw`.
+
+- [s26] CONSEQUENCE for every future session: loop 2 has NO free out-of-block use site anywhere. Post-loop sites are 19-22 (s10/s11, register pressure - target already burns s0-s5 and a seventh callee-save would grow the prologue), the loop body is 6 (this session), and a pre-join carrier is 12 (this session). The second-use lever that buys loop 1's copy is therefore unbuyable for loop 2 on every chassis measured to date.
+
+- [s26] The owner's 2026-08-30 escalation-batch ruling 10 (docs/grind/decisions.md, the 2026-08-30 escalation-batch entry) returns func_80017848 to ACTIVE 'with modality change per escalation-not-parked' on the ground that its own latest ledger entry states nothing pends the owner. This session executed that directive as a structural modality and deliberately did NOT file a fourth escalation packet: three dispositions already exist (docs/grind/decisions.md:5752, :5988, :12080), both endgame-lock gates were re-run and FAILED as recently as s25 (scan_hand_coded tier=LOW 0/8; no SOTN-master file:line precedent), and a packet restating 'both gates fail' carries no decidable question - which .claude/rules/escalation-not-parked.md (owner ruling 2026-08-24, second) classifies as not-a-packet and directs to be returned as `progress` with the kills banked.
+
+- [s26] src/ings.c was restored to its committed INCLUDE_ASM state at the end of the session (git status clean for src/); the only tree changes are the ledger files under memory/grind/func_80017848/.

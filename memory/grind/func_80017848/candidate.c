@@ -790,3 +790,40 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  * while this candidate buys loop 1's copy with `p = q` and pays for it in loop
  * 1's exit tail.  That asymmetry IS the remaining 3.
  */
+/* [s26 STRUCTURAL ADDENDUM - body unchanged, still 3, re-measured on a clean tree
+ * (127/127, rules_dropped 0, cheat_asm_stripped 4).  Executes the owner's
+ * 2026-08-30 escalation-batch ruling 10 ("ACTIVE with modality change").
+ *
+ *  (1) THE RESIDUAL RESTATED FROM THE TARGET LISTING.  Target's TWO preheaders
+ *      are the SAME register-identical 10-instruction block (asm/funcs lines
+ *      31-41 and 56-67): lw $a0,0xC($s2) / sll $a1,$s4,6 / addu $v0,$a1,$a0 /
+ *      lw guard / blez / addu $v1,$zero,$zero / addu $a3,$a0,$zero /
+ *      lw $a2,0x10($s2) / addu $a0,$a1,$a3 / addu $v0,$a0,$v1.  Loop 2's lw/sll
+ *      pair sits on loop 1's TAKEN edge, BEFORE the join label, so on the skip
+ *      path $a0/$a1 are simply carried.  On this chassis the 3-point residual is
+ *      a POSITION SWAP of one `lw` and one `move` between loop 1's exit tail and
+ *      loop 2's preheader - the two builds carry the SAME instruction multiset.
+ *
+ *  (2) CELL A - target's join shape, reproduced instruction-for-instruction, at
+ *      4.  Replace the `p = q;` tail below with `p = *(u8 **)(ctx + 0xC);
+ *      sh = slot_a << 6;` (that order; reversed = 6) and delete `sh2`, letting
+ *      loop 2's guard and base both read the recomputed `sh`: 127 target / 126
+ *      build, and the join region is byte-exact for the first time.  The whole
+ *      residual on chassis A is the two missing copies - loop 1's redundant read
+ *      is cse-folded to a copy and then deleted by combine (dest used in-block),
+ *      loop 2's is not folded at all because cse's EBB begins at the join.  It is
+ *      a better DESCRIPTION of the wall than s12's symmetric chassis and a worse
+ *      score than this body, which buys loop 1's copy with the second-use lever.
+ *
+ *  (3) TWO KILLS.  A dedicated PRE-JOIN carrier for loop 2's addend (set on both
+ *      predecessor edges so cse can never equate it with `p`, dodging the s15(4)
+ *      guard/base merge) is 12 as a source copy AND as a fresh read - it costs one
+ *      materialisation per predecessor path.  And an in-BODY second use of loop
+ *      2's addend - the one out-of-block site never tried, loop 2's own do-while
+ *      condition - is 6: loop.c's move_movables hoists the DERIVED invariant
+ *      `sh + q`, not the addend, so the surviving copy is `move a1,a0`, a copy of
+ *      the BASE one slot after the base add (s15's cell C1 failure mode again).
+ *      CONSEQUENCE: loop 2 has NO free out-of-block use site anywhere.  Post-loop
+ *      sites are 19-22 (s10/s11), the loop body is 6, a pre-join carrier is 12.
+ *      The second-use lever that buys loop 1's copy is unbuyable for loop 2.
+ */
