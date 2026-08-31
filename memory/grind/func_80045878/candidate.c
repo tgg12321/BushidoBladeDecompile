@@ -60,6 +60,18 @@
  * are the two third-if condition reads, and target seats the s1[4] temp in
  * $v0, so the carrier must be the s1[3] temp -- which is what `c` is.
  *
+ * s10b (2026-08-30, rederive) NOTE: callee names in this file were updated to
+ * the names src/text1a_c.c actually declares today (func_80045600 /
+ * func_80045230 / func_80045694); the earlier spelling in this file
+ * (saSeMain_*/saTan5TakeGetPos_*) no longer compiles.  Re-measured verbatim
+ * this session: score 0, 108/108 insns, rules_dropped 0.
+ *
+ * s10b also found a SECOND byte-exact form, memory/grind/func_80045878/
+ * alt_anchor_e1.c, which anchors the carrier on the first-if else arm's
+ * `0x1A88 + (s32)s1` call argument and leaves the third `if` condition as
+ * ordinary C.  It carries the same (Judge-FAILed) multi-write fresh local, so
+ * neither form is submittable until that family question is ruled.
+ *
  * Apply verbatim over the INCLUDE_ASM line in src/text1a_c.c.
  */
 void func_80045878(s32 a0, s32 a1, s32 a2) {
@@ -73,9 +85,9 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
         s1 = (s16 *) ((s32 *) v0)[1];
     } else {
         s1 = (s16 *) func_800455AC(a0);
-        saSeMain_80045600(a0, 0x1A88 + ((s32) s1));
-        saTan5TakeGetPos_80045230(0);
-        saTan5TakeGetPos_80045694(a0, (s32) (&func_80045AA4));
+        func_80045600(a0, 0x1A88 + ((s32) s1));
+        func_80045230(0);
+        func_80045694(a0, (s32) (&func_80045AA4));
         s1[4] = -1;
         s1[3] = 0;
     }
@@ -94,10 +106,10 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
         } else {
             func_80044ED8(a1, s0);
             s0 = s0 + ((((u32) ((s32 *) s0)[*((s32 *) s0)]) >> 2) << 2);
-            saTan5TakeGetPos_80045230(s0);
+            func_80045230(s0);
         }
-        saSeMain_80045600(s3, s0);
-        saTan5TakeGetPos_80045694(s3, (s32) (&func_80045AA4));
+        func_80045600(s3, s0);
+        func_80045694(s3, (s32) (&func_80045AA4));
         s1[3] = 1;
         *((s32 *) (((s32) s1) + 0x24)) = 0;
         *((s32 *) s1) = 0;

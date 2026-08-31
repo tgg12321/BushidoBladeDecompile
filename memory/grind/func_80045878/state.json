@@ -1,8 +1,8 @@
 {
  "func": "func_80045878",
  "file": "text1a_c",
- "session_count": 9,
- "current_modality": "escalation",
+ "session_count": 10,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -63,23 +63,29 @@
    "floor": 4,
    "modality": "escalation",
    "headline": "s8's closed-form foreclosure DISPROVEN: making both tail scratches non-block-local via a call-free condition-temp carrier seats base=$v0/scratch=$v1 exactly as target; floor 10 -> 4, residual is 4 wor"
+  },
+  {
+   "session": 10,
+   "floor": 0,
+   "modality": "rederive",
+   "headline": "Rederive: a SECOND byte-exact pure-C form found (score 0, 108/108) anchoring the carrier on a call argument instead of the if-condition; mechanism pinned to flow.c-frozen reg_basic_block; plus a struc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The idx 89<->90 swap closes if the tail base copy loses its birthing_insn_p LAUNCH_PRIORITY bump, i.e. if the base pseudo stops being single-set WITHOUT costing an instruction.",
-   "mechanism": "birthing_insn_p (tools/gcc-2.7.2/sched.c:2570) requires reg_n_sets[dest] == 1; adjust_priority (sched.c:2543) bumps only birthing predecessors to max_priority, and in the backward walk a higher-priority insn is scheduled earlier and therefore EMITTED LATER. Denying the bump makes the base copy tie with the carrier at priority 1 and fall to the schedule_select hazard tie-break.",
-   "next_probe": "V11 (routing the else arm's three record stores through p) is dead - it costs an insn and scores 20. Try instead spellings whose extra set of the base is free: (i) set p in the third-if THEN arm only, so the join copy is the second set (the then-arm copy is already propagated away today, so check reg_n_sets in the .greg/.lreg dump BEFORE trusting the source form); (ii) use an EXISTING multi-set local as the tail base instead of the invented p - 'v0' is the obvious one and rejected/tail-base-reuse-v0-hard-conflicts-with-v0.c was measured on the OLD chassis where the block-local scratches still owned $v0, so it must be re-measured on the s9 carrier chassis."
+   "hypothesis": "The residual is no longer a search problem: two independent byte-exact pure-C forms exist and the elimination is complete, so the next escalation-modality session should file a DECISION PACKET on the single decidable question - which sanctioned family, if any, covers a multi-write fresh local whose earlier reference is a real call argument (alt_anchor_e1.c) or a real condition read (candidate.c).",
+   "mechanism": "The 2026-08-30 21:30 Judge ruling FAILed the construct as a first reach with no covering family, while explicitly not objecting to constructs (1) v0-as-tail-base and (3) the s3 join-block placement; the [s10b] theorem shows no single-write or existing-variable alternative exists.",
+   "next_probe": "Do NOT re-search anchor sites. Carry the [s10b] theorem plus the two 0-scoring forms into the packet, and keep it a fidelity/routing question - a request to sanction a new family is in the auto-reject class."
   },
   {
-   "hypothesis": "The idx 29<->32 swap in the first-if else arm is the same birthing/LAUNCH_PRIORITY phenomenon and may fall to the same lever, since s3 is a two-set pseudo (assigned in both arms) and the 'li v0,-1' beside it is single-set.",
-   "mechanism": "Same adjust_priority/birthing_insn_p gate (sched.c:2543/2570). In block 2 of the -dS trace the bump lands on insn 67 ('67 (7f000001)' at T-3) and not on the addiu, which is why the addiu is emitted at the head of the block instead of at its tail.",
-   "next_probe": "Map the block-2 insn UIDs to source statements from the .combine dump first (do NOT guess the mapping), then test whether making s3 single-set on the else path - or giving the -1 store a second set - flips the pair. Note both residuals are the SAME shape ('addiu rX,s2,3' at the wrong end of its block), so one correct lever may close both and reach 0."
+   "hypothesis": "Splitting the carrier into TWO variables, each written exactly twice (one anchored on the 0x1A88 argument carrying a0+3, one anchored elsewhere carrying 0x8000), probably also scores 0.",
+   "mechanism": "Each tail scratch independently needs its own flow-time second-block reference; splitting does not reduce the write count below two per variable, so the family verdict is unchanged.",
+   "next_probe": "Measure only if a future ruling distinguishes 2-write from 3-write carriers; otherwise skip, it cannot change the verdict."
   },
   {
-   "hypothesis": "tools/sched_solver can decide both swaps in one pass rather than by C-spelling enumeration.",
-   "mechanism": "sched_solver models both GCC 2.7.2 scheduler passes order- and clock-exact, which is precisely the residual class left here; the RA question that consumed s2-s8 is now fully closed (no register differs anywhere in the function).",
-   "next_probe": "Feed the candidate.c body to sched_solver, ask it for the ready-list state at the idx 89/90 and idx 29/32 decision points, and have it rank the C-level levers that change INSN_PRIORITY or reg_n_sets for those two producers. Verdicts are hypotheses until a spelled C form measures."
+   "hypothesis": "A 'static inline' tail helper could make the base copy and the scratches multi-block through integrate.c's parameter pseudos, with no source-level variable reuse at all.",
+   "mechanism": "integrate.c copies the callee body into the caller and creates fresh pseudos for the parameters; the parameter copy is set in the caller's block and read in the inlined body's blocks, which is a flow-time second-block reference.",
+   "next_probe": "Spell the six tail stores as 'static inline void helper(s16 *p, s32 a0, s32 a1)' called once, and measure. Expect cse to fold the parameter copy (a plain 'p = s1' base copy is already known to be folded away, 107 insns), but it is the one untried structural shape left on the rederive ladder."
   }
  ],
  "judge_constraints": [

@@ -798,3 +798,83 @@ Two constructs are in the diff.
    the five `// fake reuse of i?` cutscene sites, which are borrows of an
    EXISTING loop counter). First reach of an unsanctioned family is a cheat
    regardless of spelling, so this session does not submit.
+
+## [s10b] 2026-08-30 - rederive modality (session 10 of the grind)
+
+Chassis re-measured at session start: candidate.c (with the naming drift fixed -
+`saSeMain_80045600`/`saTan5TakeGetPos_8004523.`/`saTan5TakeGetPos_80045694` in the
+banked file are `func_80045600`/`func_80045230`/`func_80045694` in today's
+src/text1a_c.c) reproduces **score 0, 108/108 insns, rules_dropped 0**. The s10
+chassis is intact; every conclusion below is relative to it.
+
+Measurement table (all `sandbox func_80045878 --disable all`, src restored to
+INCLUDE_ASM afterwards; variant sources in tmp/grind/func_80045878/s10/):
+
+| id | form | insns | score |
+|----|------|-------|-------|
+| base | banked candidate.c (carrier anchored on the `s1[3]` condition read) | 108 | **0** |
+| E1 | carrier anchored on the first-if else arm's argument `c = 0x1A88 + (s32)s1` , third `if` left plain | 108 | **0** |
+| E2 | carrier anchored on the else arm's `-1` constant (`c = -1; s1[4] = c;`) | 108 | 2 |
+| E3 | carrier anchored on the else arm's shift arithmetic named intermediate | 108 | 2 |
+| D1 | NO carrier; both tail scratch STORES duplicated into both arms of the third `if` | 109 | 11 |
+
+Three findings, in order of value to the next session:
+
+1. **A second byte-exact form exists (E1), banked as
+   `memory/grind/func_80045878/alt_anchor_e1.c`.** It leaves the third `if`
+   condition as ordinary untouched C and takes the carrier's non-block-local
+   mention from a call argument instead. Same family problem as candidate.c
+   (fresh local, three writes), so it is NOT submitted - but it proves the
+   anchor site is fungible and that the condition-read spelling the Judge
+   quoted (`(c = s1[3]) != -2`) is not load-bearing.
+
+2. **Mechanism (compiler source, not inference): the carrier's second-block
+   reference only has to exist at flow.c time.** `reg_basic_block[]` is written
+   exclusively by flow.c's `life_analysis` (flow.c:2072 / flow.c:2508 promote a
+   pseudo to `REG_BLOCK_GLOBAL` on its first reference from a second block) and
+   is never recomputed; toplev.c runs `combine_instructions` at 3004,
+   `schedule_insns` at 3033, and `regclass()` + `local_alloc()` only at
+   3051-3052. `local-alloc.c:472` (comment at local-alloc.c:194) skips any
+   pseudo with `reg_basic_block[i] < 0`. Consequence, confirmed by E1's byte
+   equality: combine may fold the anchor reference away entirely, so the anchor
+   costs nothing AND does not leak its site's register seat into the tail. E2
+   and E3 score 2 precisely because at those two sites the value survives to RA
+   (target computes both in $v0) and the carrier drags $v0 into the tail.
+
+3. **Structural theorem (the elimination result this session was for).** Any
+   byte-exact form needs a fresh local written more than once. Chain:
+   both tail scratches must be non-block-local (s9 V2/V4 score 13, s10 T1/T3
+   score 10) -> a non-block-local pseudo needs a live second-block reference at
+   flow time -> that reference must not be live across a call or global.c seats
+   it callee-save (s9 V5, s10 U6: `addiu s0,s2,3`) -> a SINGLE-write carrier
+   would have to want the same value at both references, but the tail wants
+   `a0 + 3` and `0x8000`, `0x8000` appears nowhere else in the function, and
+   `a0 + 3` already exists as `s3` whose live range provably crosses calls
+   (target seats it $s3) -> so the carrier is multi-write -> and every
+   pre-existing variable is independently disqualified: s0/s3/a0/a2 cross calls,
+   s1 and a1 are still live in the tail with different target seats ($s1/$s5 vs
+   the scratch's $v1), and v0 is the hard-$v0 call return already spent on the
+   accepted tail base. The sanctioned duplicated-statement-into-arms family was
+   measured as the one remaining carrier-free route and costs an instruction
+   (D1: 109 insns / score 11), because jump.c's cross-jumping runs post-reload
+   and the two copies are not an identical tail.
+
+Net: the function is byte-exact in pure C by two independent spellings, and the
+ONLY thing between it and COMPLETED-C is the family classification of a
+multi-write fresh local. That is a decidable question, not a search problem -
+the next escalation-modality session should carry the theorem above into a
+decision packet rather than re-searching the space.
+
+- [s10] Chassis re-measured at session start: the banked candidate.c (after fixing its stale callee names to func_80045600/func_80045230/func_80045694, which is what src/text1a_c.c declares today) still scores 0 at 108/108 insns with rules_dropped 0.
+
+- [s10] A second, structurally different byte-exact form exists (memory/grind/func_80045878/alt_anchor_e1.c, score 0 at 108 insns): it leaves the third if condition as ordinary untouched C and takes the carrier's non-block-local mention from the first-if else arm's call argument 0x1A88 + (s32)s1. The condition-read spelling the Judge quoted ('(c = s1[3]) != -2') is therefore NOT load-bearing.
+
+- [s10] reg_basic_block[] is frozen at flow.c time (flow.c:2072, flow.c:2508) and consumed by local-alloc.c:472 long after combine (toplev.c:3004) and sched1 (toplev.c:3033) run - so a carrier's anchor reference is free after flow and does not inherit that site's register seat.
+
+- [s10] Anchor sites whose value survives to RA cost points: the -1 constant and the else-arm shift temp both score 2, because target computes both of those in $v0.
+
+- [s10] The carrier-free route through the sanctioned duplicated-statement-into-arms family measures 109 insns / score 11.
+
+- [s10] STRUCTURAL THEOREM (banked in hypotheses.md [s10b]): every byte-exact form of func_80045878 requires a fresh local written more than once - precisely the construct FAILed by the 2026-08-30 21:30 ruling. The bytes are solved twice over; the only open question is family classification.
+
+- [s10] src/text1a_c.c was restored to its HEAD INCLUDE_ASM state at end of session; no build-pipeline file was modified.

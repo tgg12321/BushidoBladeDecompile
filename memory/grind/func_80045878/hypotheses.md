@@ -604,3 +604,53 @@ multisets identical; `goal_from_tgt.py classify` = "FIRST DIVERGENCE: RA",
 - probe: U4/U5 (carrier dropped entirely, tail scratch values written inline), U6 (`s0` borrowed as the carrier), T1/T3 (one scratch carried, the other block-local).
 - result: U4/U5 110 insns score 14; U6 108 insns score 6 with the tail rendered `addiu s0,s2,3` (callee-save); T1/T3 108 insns score 10
 - verdict: CONFIRMED
+
+## [s10b] 2026-08-30 (rederive modality - floor 0-with-banned-construct / 4 legal)
+
+## [s10b] The carrier's non-block-local status only has to exist at flow.c time, so its earlier reference may be combine-folded away for free and does NOT have to inherit that site's register seat.
+- mechanism: reg_basic_block[] is written only by flow.c's life_analysis (flow.c:2072 and flow.c:2508 promote a pseudo to REG_BLOCK_GLOBAL the first time it is referenced from a second block) and is never recomputed; toplev.c calls combine_instructions at 3004, schedule_insns at 3033, and regclass()/local_alloc() only at 3051-3052. local-alloc.c:472 (and its comment at local-alloc.c:194) gate on reg_basic_block[i] >= 0, so a pseudo that WAS multi-block at flow time is skipped by local_alloc even if combine has since deleted the second reference.
+- probe: E1 (tmp/grind/func_80045878/s10/e1.c, banked as memory/grind/func_80045878/alt_anchor_e1.c) - carrier `c` anchored on the first-if else arm's call argument `c = 0x1A88 + (s32)s1; func_80045600(a0, c);`, with the third `if` restored to plain `... && (s1[3] != -2)`.
+- result: score 0 at 108 insns, rules_dropped 0 - byte-exact, and the anchor site still emits target's single `addiu $a1, $s1, 0x1A88` (no $a1 seat leaked into the tail, no extra copy insn)
+- verdict: CONFIRMED
+
+## [s10b] The anchor SITE is not unique - any earlier, call-free, live reference works - but a site whose value survives to RA propagates its seat and costs points.
+- mechanism: if combine cannot fold the earlier reference away, the carrier is one allocno spanning both sites and gets ONE hard register; target's earlier value at that site then dictates the tail seat.
+- probe: E2 (anchor = `c = -1; s1[4] = c;` in the first-if else arm) and E3 (anchor = the natural named intermediate for the else arm's shift arithmetic, `c = (((u32)((s32*)s0)[*(s32*)s0]) >> 2) << 2; s0 = s0 + c;`), both with the third-if condition left plain.
+- result: E2 score 2 at 108 insns; E3 score 2 at 108 insns (target computes both of those values in $v0, and the carrier drags $v0 into the tail). Working anchors so far: the s1[3] condition read (candidate.c, score 0) and the 0x1A88 argument (E1, score 0). Failing anchors: s1[4] condition read (s9 V7, score 6), -1 constant (E2, 2), shift temp (E3, 2), existing local s0 (s9 V5 / s10 U6, score 6-7, callee-save), existing local v0 (s9 V6, 109 insns).
+- verdict: CONFIRMED
+
+## [s10b] The sanctioned duplicated-statement-into-arms family cannot supply the non-block-local scratches: duplicating the two tail scratch STORES (not their values) into both arms of the third `if` is not re-merged and costs an instruction.
+- mechanism: cross-jumping runs in the post-reload jump pass, and the two copies do not form an identical tail (the then-arm copy is followed by a jump, the else-arm copy by fall-through, and both address through $s1 while target's tail addresses through the $v0 base copy), so jump.c never merges them.
+- probe: D1 (rejected/s10b-dupstores-into-arms-109-score11.c) - `s1[11] = a0 + 3; *(s32*)((s32)s1 + 0x18) = 0x8000;` appended to BOTH arms, join keeps `v0 = s1;` plus the other four stores, no carrier local at all.
+- result: score 11 at 109 insns
+- verdict: KILLED
+
+## [s10b] STRUCTURAL THEOREM (rederive): every byte-exact form of this function needs a fresh local written MORE THAN ONCE; no existing variable and no single-write variable can serve.
+- mechanism: (1) both tail scratch values must sit in non-block-local pseudos or local_alloc hands one of them $v0 ahead of the base (s9 V2/V4, s10 T1/T3); (2) a non-block-local pseudo needs a live reference in a second basic block at flow time; (3) that reference must not be live across a call or global.c seats it callee-save (s9 V5); (4) a SINGLE-write carrier holds one value from its birth to its last use, so its earlier reference and its tail reference must want the SAME value - the tail wants `a0 + 3` and `0x8000`, `0x8000` occurs nowhere else in the function, and `a0 + 3` already exists as `s3`, whose live range provably crosses calls (it is target's $s3); (5) the complete list of pre-existing variables is s0/s1/s3/v0/a0/a1/a2 and each is disqualified by a measured or structural property - s0/s3/a0/a2 cross calls (callee-save seats), s1 and a1 are still live in the tail (target seats them $s1/$s5, different registers from the tail scratch's $v1), v0 is the hard-$v0 call return and is already spent on the accepted tail base.
+- probe: the s9 + s10 + s10b measurement table in evidence.md; this session added E1/E2/E3/D1 and the flow.c/toplev.c source reads that pin the reg_basic_block lifetime.
+- result: no legal (single-write, or existing-variable) spelling exists in the searched space; the two byte-exact forms found so far (candidate.c and alt_anchor_e1.c) both carry a 3-write fresh local, which the Judge FAILed on 2026-08-30 21:30
+- verdict: CONFIRMED (as an elimination result; it is what the next escalation-modality session should carry into a decision packet)
+
+## [s10] The carrier's non-block-local status only has to exist at flow.c time, so its earlier reference may be combine-folded away for free and does not leak that site's register seat into the tail.
+- mechanism: reg_basic_block[] is written only by flow.c life_analysis (flow.c:2072 / flow.c:2508 promote a pseudo to REG_BLOCK_GLOBAL on its first second-block reference) and is never recomputed; toplev.c calls combine_instructions at 3004, schedule_insns at 3033, and regclass()+local_alloc() only at 3051-3052, while local-alloc.c:472 skips any pseudo with reg_basic_block[i] < 0.
+- probe: E1 (tmp/grind/func_80045878/s10/e1.c): carrier anchored on the first-if else arm's argument 'c = 0x1A88 + (s32)s1; func_80045600(a0, c);', third if restored to plain '... && (s1[3] != -2)'; sandbox func_80045878 --disable all.
+- result: score 0 at 108 insns, rules_dropped 0 - byte-exact; the anchor site still emits target's single 'addiu $a1,$s1,0x1A88', with no extra copy and no $a1 seat in the tail. Banked as memory/grind/func_80045878/alt_anchor_e1.c.
+- verdict: CONFIRMED
+
+## [s10] The anchor site is fungible, but a site whose value survives to RA propagates its own register seat into the tail and costs points.
+- mechanism: If combine cannot fold the earlier reference away, the carrier is one allocno spanning both sites and receives one hard register, so target's value at that site dictates the tail seat.
+- probe: E2 (anchor = the else arm's -1 constant, 'c = -1; s1[4] = c;') and E3 (anchor = a natural named intermediate for the else arm's >>2<<2 arithmetic), both with the third-if condition left plain.
+- result: E2 score 2 at 108 insns; E3 score 2 at 108 insns - target computes both of those values in $v0 and the carrier drags $v0 into the tail. Working anchors: the s1[3] condition read (score 0) and the 0x1A88 argument (score 0); failing anchors: s1[4] read (6), -1 (2), shift temp (2), existing local s0 (6-7), existing local v0 (109 insns).
+- verdict: CONFIRMED
+
+## [s10] The sanctioned duplicated-statement-into-arms family can supply the non-block-local tail scratches with no carrier local at all.
+- mechanism: Duplicating a real statement into both arms makes its pseudo multi-block at flow time; post-reload cross-jumping was expected to re-merge the two copies byte-neutrally.
+- probe: D1 (memory/grind/func_80045878/rejected/s10b-dupstores-into-arms-109-score11.c): both tail scratch STORES appended to both arms of the third if, no carrier local, join keeps 'v0 = s1' plus the other four stores.
+- result: score 11 at 109 insns - jump.c never merges them: the then-arm copy is followed by a jump, the else-arm copy falls through, and both address through $s1 while target's tail addresses through the $v0 base copy.
+- verdict: KILLED
+
+## [s10] Some legal spelling exists - either an existing variable or a single-write fresh local can serve as the tail carrier (the Judge's suggested remedy).
+- mechanism: Both tail scratches must be non-block-local or local_alloc hands one of them $v0 ahead of the base; a non-block-local pseudo needs a live second-block reference at flow time that is not itself live across a call.
+- probe: Complete enumeration of the function's variables against those requirements, plus this session's E1/E2/E3/D1 measurements on top of s9/s10's V2/V4/V5/V6/V7 and T1/T3/U4/U5/U6 table.
+- result: No such spelling exists. A single-write carrier would have to want the same value at both of its references, but the tail wants 'a0 + 3' and '0x8000'; 0x8000 occurs nowhere else in the function, and a0+3 already exists as s3, whose live range crosses calls (target seats it $s3). Every pre-existing variable is independently disqualified: s0/s3/a0/a2 cross calls (callee-save seats, measured score 6-7); s1 and a1 are still live in the tail with different target seats ($s1/$s5 vs the scratch's $v1); v0 is the hard-$v0 call return and is already spent on the accepted tail base.
+- verdict: KILLED
