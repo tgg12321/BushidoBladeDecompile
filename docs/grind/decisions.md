@@ -16047,3 +16047,110 @@ Do NOT re-run: the cc1psx-oracle axis (killed above), the argument-spelling swee
 basins, or the index-globals axis. The remaining ledger frontier items F29 (sched1 order inversion)
 and F30 (sibling `CD_sync` cross-check) are single-axis searches inside the space this entry
 declares closed, and are retained as documentation only.
+
+## 2026-08-30 — func_8001F938 (src/code6cac.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (ruling-10 return-to-active executed in full; the last un-tried axis — PsyQ cc1psx as calibration oracle — measured and KILLED)
+
+Filed by grind session s12 (escalation/disposition modality). This entry asks the owner for
+NOTHING and pends NOTHING. It does not request a family sanction, a canonical-asm grant, an
+evidence-bar override, or acceptance of debt — every such packet is pre-decided NO under the
+owner's 2026-08-24 auto-reject ruling, and none is being filed here. It records the discharge of
+owner ruling 10 and re-applies the standing auto-ruling of 2026-07-27
+(`.claude/rules/endgame-lock-disposition.md`), whose two AND-gates were re-measured live this
+session and both FAIL.
+
+**Why re-filed rather than merely cited.** The owner's 2026-08-30 escalation-batch **ruling 10**
+(this file, line 14870) returned func_8001F938 to ACTIVE-with-modality-change together with ten
+sibling items, on the ground that each item's latest ledger entry stated nothing pending the owner.
+The prior disposition (2026-08-25 entry, this file) was therefore superseded as a *queue state*,
+and the return-to-active obliged this session to find and execute whatever genuinely un-tried lever
+remained rather than re-cite the old entry. One existed. It has now been executed and killed, so
+the same disposition returns — but on strictly more evidence than before.
+
+**Live floor (re-measured this session on the current chassis).**
+`memory/grind/func_8001F938/candidate.c` (the clean floor-8 form: kind-split + branch-flip, zero
+rules, zero cheat-asm, zero inline asm, zero volatile, zero FAKE constructs) spliced into
+`src/code6cac.c` and scored with `& tools/wteng.ps1 main sandbox func_8001F938 --disable all`:
+**score 8, build_insns 105, target_insns 107, rules_dropped 0**. The ledger's floor of 8 is
+chassis-current. `src/code6cac.c` was restored to `INCLUDE_ASM("asm/funcs", func_8001F938)` after
+measurement and the tree left clean.
+
+**The residual, unchanged and fully characterised.** Target `.L8001FA60`
+(`asm/funcs/func_8001F938.s:82-83`) emits two same-address loads — `lh $v0,0x270($a0)` feeding
+`slti $v0,$v0,4`, and `lhu $v1,0x270($a0)` feeding `sll $v0,$v1,16 ; sra $v0,$v0,15` — and every
+clean pure-C form emits only one. s6/s7 attributed this to GCC 2.7.2 `combine` /
+`simplify_shift_const`, gated on `num_sign_bit_copies` of the shift OPERAND: with a signed
+(`lh`) operand the `(x<<16)>>15` pair folds to `sll x,1`, and distance 0 additionally requires the
+16-sign-bit-copy operand to arrive as a SECOND MEMORY load. The whole 2-instruction deficit is that
+load and its consumer.
+
+**The axis executed and KILLED this session (ruling-10 discharge): PsyQ cc1psx as the calibration
+oracle.** Before this session the string "cc1psx" appeared NOWHERE in
+`memory/grind/func_8001F938/` — across eleven sessions nobody had asked whether the +0x270 fold is
+an artifact of the open-source port (`decompals/mips-gcc-2.7.2`, kmc-tailored) rather than of the
+compiler that actually built the game (`cc1psx.exe`, GCC 2.7.2.SN.1). The question is material: if
+SN's `combine` declined the fold, the target's two-load shape would be ordinary codegen for our
+clean C, the entire "signedness-split family" premise would be void, and the residual would become
+a compiler-fidelity/routing question — exactly the packet class the owner does entertain. It is
+also the same axis that discharged ruling 10 on the sibling items CD_datasync and func_80072CD4.
+
+Harness: `tmp/grind/func_8001F938/s12/dualfork.sh` — ONE `mipsel-linux-gnu-cpp` pass over
+`src/code6cac.c` (exact Makefile `CPP_FLAGS`/`CPP_DEFS`) with the clean floor-8 body installed, the
+resulting `code6cac.i` fed to BOTH `tools/gcc-2.7.2/build/cc1` (open port, exact `CC_FLAGS`
+including `-mel`) and `tools/cc1psx_wrapper.sh` (PsyQ cc1psx under dosemu2 — calibration-only per
+`.claude/rules/no-compiler-divergence.md`, never a build path). func_8001F938's body extracted from
+each and diffed after label normalisation.
+
+Result — three negatives:
+
+1. **cc1psx takes the SAME fold.** Its +0x270 block is character-identical to the open port's:
+   `lh $2,624($4)` / `move $3,$2` / `slt $2,$3,4` / `bne … ; sll $2,$3,1` / `li $3,3 ; sll $2,$3,1`
+   / `addu $2,$2,$4`. ONE load of 0x270, folded `sll 1` — exactly unlike the target's
+   `lh` + `lhu` + `sll 16 ; sra 15`.
+2. **Whole-function agreement.** Normalised, the two forks' bodies are 192 vs 192 lines and differ
+   by exactly ONE line: a `li $2,0x00000011` scheduled two positions earlier in the open port's
+   prologue. Same instruction count, same registers, same branch structure. There is no
+   fork-shaped search space on this function.
+3. **The open port is validated as a faithful oracle here**, which strengthens rather than
+   undermines every s1-s11 measurement taken on it.
+
+Consequence: the target's second load is a property of the ORIGINAL SOURCE's C form, not of our
+toolchain — which places it squarely back inside the frozen signedness-split family that only the
+owner can move. Artifacts: `tmp/grind/func_8001F938/s12/` (`dualfork.sh`, `code6cac.i`,
+`openport.s`, `cc1psx.s`, `openport.fn.s`, `cc1psx.fn.s`, `a.norm`, `b.norm`).
+
+**AND-GATE 1 — canonical-asm authorization: FAIL (re-measured live).**
+`python3 tools/scan_hand_coded.py --single func_8001F938` → `tier=LOW score=0/8 (107 insns)`,
+"no strong hand-coded indicators"; S1 (0 multu/mflo pairs), S2 (no empty-body branches), S3 (0
+spills, 6 distinct regs), S4 (max load burst 3), S5 (no high-similarity siblings), S6 (no BIOS
+jumptable), S7, S8 — all clear. The STRONG-tier bar (S1/S2/S6) is not approached. Identical to the
+2026-07-23, s10 and s11 readings. Independently, `.L8001FA60` is provably NOT a no-C-form region: a
+pure-C body reaching distance 0 exists and has been measured twice, so canonical-asm is doubly
+foreclosed.
+
+**AND-GATE 2 — in-hand SOTN-master precedent: FAIL (re-measured live).** The closing construct is
+the signedness-split / redundant dual-typed-memory-read CSE-defeat family.
+`docs/reference/sotn-construct-index.md` returns ZERO hits for signed / signedness / dual-typed /
+same-address / sign_bit; the index has no such detector class at all, so it cannot yield a
+`file:line`. The standing F2 census of 2026-07-01 over SOTN master returned NOT ESTABLISHED and no
+session in the twelve since has produced a citation. A negative census is a FAILED gate, not an
+open question.
+
+**Exhaustion record.** 12 sessions; honest floor flat at 8 since s3; SIX distinct axes measured
+dead: structural (s2, s3), permuter (s4, s5 — ~95k iters from the floor-8 basin plateauing at 320,
+~36k from the unsigned floor-6 basin plateauing at 505, neither touching the crux), forensics
+(s6, s7 — pass-level attribution), rederive (s8, s9 — independent m2c reconstruction reproduces the
+same dual view; the func_8009AA68 clean-scratch transplant KILLED at score 9; a BB2-internal
+write-site census proves +0x270 is a SINGLE u16 damage accumulator, killing the genuine-second-field
+and header-type-correction escapes), solver (s11 — NOT APPLICABLE: an instruction-COUNT deficit is
+neither a register seat nor an emission-order tie), compiler-fork calibration (s12, this session).
+12 forms banked in `memory/grind/func_8001F938/rejected/`.
+
+**Disposition applied.** Standing ruling 2026-07-27 (options (a) sanction-the-family and (b)
+canonical-asm both REFUSED): **REFUSED / OWNER-ACCEPTED INCOMPLETE.** `src/` remains
+`INCLUDE_ASM("asm/funcs", func_8001F938)` with zero rules and zero cheat-asm — an honest INCOMPLETE,
+not a cheat-carrying one. Named re-open trigger, and the only one: if the owner ever elects to rule
+on the frozen signedness-split / redundant dual-typed-read family, this function closes to
+COMPLETED-C immediately and with no further search, from the distance-0 body already banked at
+`memory/grind/func_8001F938/rejected/layer1-fail-0825-2329.c` (measured 0, full-build oracle
+verified 2026-08-25). Nothing else pends. No future session should re-open structural, permuter,
+forensics, rederive, solver, or compiler-fork on this function.

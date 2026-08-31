@@ -541,3 +541,43 @@ shipped as candidate.c with the 13 rules retired.
 - [s11] Repository state left by this session: src/code6cac.c reverted to INCLUDE_ASM("asm/funcs", func_8001F938) (zero rules, zero cheat-asm - an honest INCOMPLETE); memory/grind/func_8001F938/candidate.c rolled back to the clean floor-8 form recovered from commit 2d1c849b and re-measured at 8; memory/grind/func_8001F938/self_vet.md overwritten with a VOID marker because it vetted the now-banned body and cited the now-banned 23:20 entry.
 
 - [s11] Exhaustion record: 11 sessions, honest floor flat at 8 since s3, five distinct modalities measured dead (structural s3; permuter s4/s5 with ~95k iters from the floor-8 basin plateauing at 320 and ~36k iters from the unsigned floor-6 basin plateauing at 505, neither touching the +0x270 crux; forensics s6/s7; rederive s8/s9 including a KILLED func_8009AA68 transplant at score 9 and a BB2-internal write-site census proving +0x270 is a single u16 damage accumulator; solver, scoped out this session). 12 forms banked in rejected/.
+
+## [s12] Compiler-fork calibration (cc1psx) — the last un-tried axis, KILLED
+- Live chassis re-measured 2026-08-30 with `memory/grind/func_8001F938/candidate.c` spliced into
+  `src/code6cac.c`: `sandbox func_8001F938 --disable all` => **score 8, build_insns 105,
+  target_insns 107, rules_dropped 0**. Floor 8 is chassis-current, not stale. `src/` restored to
+  `INCLUDE_ASM` afterwards; tree left clean.
+- Owner ruling 10 of the 2026-08-30 escalation batch (docs/grind/decisions.md:14870) returned this
+  item to ACTIVE-with-modality-change on the ground that its latest ledger entry pended nothing.
+  DISCHARGED THIS SESSION by executing the single genuinely un-tried lever: PsyQ's own cc1psx
+  (GCC 2.7.2.SN.1) as a calibration oracle. Before s12 the string "cc1psx" appeared nowhere in this
+  function's ledger.
+- Result: cc1psx reproduces the open port's codegen for func_8001F938 essentially exactly — 192 vs
+  192 normalised lines differing only in the scheduling position of one `li $2,0x11` in the prologue —
+  and, critically, takes the SAME `combine`/`simplify_shift_const` fold at +0x270 (single
+  `lh $2,624($4)` + `sll $2,$3,1`; no second `lhu`). The two-load target shape is therefore a
+  property of the ORIGINAL C, not of the open-port fork. The open port is a faithful oracle here.
+- Both endgame-lock gates re-measured live and both FAIL: (a) scan_hand_coded tier=LOW score=0/8,
+  S1..S8 all clear; (b) zero in-hand SOTN-master precedent — the construct index has no signedness /
+  dual-typed / same-address class at all.
+- Modalities now measured dead for this function: structural (s2,s3), permuter (s4,s5 — ~131k iters
+  across both basins), forensics (s6,s7 — pass-level attribution), rederive (s8,s9), solver (s11 —
+  NOT APPLICABLE, count deficit not a seat/order tie), compiler-fork calibration (s12). Six axes.
+
+- [s12] Live chassis re-measured 2026-08-30 with memory/grind/func_8001F938/candidate.c spliced into src/code6cac.c: sandbox func_8001F938 --disable all => score 8, build_insns 105, target_insns 107, rules_dropped 0. Floor 8 is chassis-current, not stale. src/ restored to INCLUDE_ASM afterwards; working tree left clean apart from the ledger/decisions edits.
+
+- [s12] Owner ruling 10 of the 2026-08-30 escalation batch (docs/grind/decisions.md:14870) returned func_8001F938 to ACTIVE-with-modality-change on the ground that its latest ledger entry pended nothing. That directive is now DISCHARGED: this session found and executed the single genuinely un-tried lever (cc1psx calibration) and killed it by measurement.
+
+- [s12] cc1psx (PsyQ GCC 2.7.2.SN.1) and the open-source port compile the clean floor-8 body of func_8001F938 to essentially the identical function: 192 vs 192 normalised lines differing only in the scheduling position of one li $2,0x11 in the prologue. Same instruction count, same register assignment, same branch structure.
+
+- [s12] cc1psx performs the SAME combine/simplify_shift_const fold at +0x270 as the open port: a single lh $2,624($4) feeding slt, and sll $2,$3,1 -- no second lhu, no sll 16 ; sra 15 pair. The target's two same-address loads at .L8001FA60 (asm/funcs/func_8001F938.s:82-83) are therefore NOT reachable from the clean C under either 2.7.2 build; they are a property of the original source's C form.
+
+- [s12] Corollary of value beyond this function: the open-source port is a faithful oracle for func_8001F938, so no s1-s11 conclusion is fork-contaminated.
+
+- [s12] Endgame-lock gate (a) canonical-asm: FAIL -- scan_hand_coded --single func_8001F938 = tier=LOW score=0/8 (107 insns), S1..S8 all clear. Independently, .L8001FA60 is provably not a no-C-form region (a pure-C distance-0 body exists and has been measured twice), so canonical-asm is doubly foreclosed.
+
+- [s12] Endgame-lock gate (b) SOTN-master precedent for the signedness-split / redundant dual-typed-read CSE-defeat family: FAIL -- zero in-hand citations; docs/reference/sotn-construct-index.md has no such detector class at all; the 2026-07-01 F2 census returned NOT ESTABLISHED.
+
+- [s12] Exhaustion: 12 sessions, floor flat at 8 since s3, SIX distinct axes measured dead -- structural (s2,s3), permuter (s4,s5, ~131k iters across both basins, neither touching the crux), forensics (s6,s7, pass-level attribution), rederive (s8,s9), solver (s11, NOT APPLICABLE since an instruction-COUNT deficit is neither a register seat nor an emission-order tie), compiler-fork calibration (s12). 12 forms banked in rejected/.
+
+- [s12] No packet asking the owner to lower a standard was filed: a family sanction, canonical-asm grant, evidence-bar override or debt acceptance are all pre-decided NO under the 2026-08-24 auto-reject ruling. The filed entry pends nothing and states its single named re-open trigger.

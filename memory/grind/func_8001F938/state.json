@@ -1,7 +1,7 @@
 {
  "func": "func_8001F938",
  "file": "code6cac",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -75,13 +75,19 @@
    "floor": 8,
    "modality": "escalation",
    "headline": "Disposition: both endgame-lock gates re-measured and FAIL (scan tier LOW 0/8; zero in-hand SOTN precedent), the 2026-08-24 solver directive discharged as NOT APPLICABLE (count-deficit residual, not an"
+  },
+  {
+   "session": 12,
+   "floor": 8,
+   "modality": "escalation",
+   "headline": "Ruling-10 return-to-active DISCHARGED: the one un-tried axis (PsyQ cc1psx as calibration oracle) executed and KILLED -- cc1psx takes the identical +0x270 combine fold and compiles the clean body to an"
   }
  ],
  "frontier": [
   {
    "hypothesis": "An OWNER ruling on the frozen signedness-split / redundant dual-typed-read family is the only remaining path to COMPLETED-C for this function. It is not a grind modality and no session can advance it.",
-   "mechanism": "s6/s7 give the pass-level proof that distance 0 requires a second typed MEMORY load of +0x270; s8 corroborates independently via m2c; s9's BB2-internal write-site census proves the field is a single u16 accumulator, so no genuine-second-field or header-type-correction escape exists. Every C form that emits the second load is therefore inside the frozen family by the ban's own 'in ANY spelling' wording.",
-   "next_probe": "None available to a grind session. If the owner ever moves the family, install memory/grind/func_8001F938/rejected/layer1-fail-0825-2329.c verbatim, re-measure (expected 0), and write a FRESH self-vet citing the new ruling. Until then: do NOT re-open structural / permuter / forensics / rederive / solver on this function - all five are measured dead with reasons banked in the ledger."
+   "mechanism": "s6/s7 give the pass-level proof that distance 0 requires a second typed MEMORY load of +0x270; s8 corroborates independently via m2c; s9's BB2-internal write-site census proves the field is a single u16 damage accumulator (no genuine-second-field or header-type-correction escape); s12 proves the fold is not a compiler-fork artifact (PsyQ's own cc1psx folds identically). Every C form that emits the second load therefore sits inside the frozen family by the ban's own 'in ANY spelling' wording.",
+   "next_probe": "None available to a grind session. If the owner ever moves the family, install memory/grind/func_8001F938/rejected/layer1-fail-0825-2329.c verbatim, re-measure (expected 0), and write a FRESH self-vet citing the new ruling. Until then do NOT re-open structural / permuter / forensics / rederive / solver / compiler-fork -- all six are measured dead with reasons banked in the ledger."
   }
  ],
  "judge_constraints": [

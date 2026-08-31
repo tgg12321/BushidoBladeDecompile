@@ -1,3 +1,25 @@
+/* s12 UPDATE (2026-08-30, escalation modality). Floor RE-MEASURED on the live chassis with
+ * this exact body installed: sandbox func_8001F938 --disable all => score 8, build_insns 105,
+ * target_insns 107, rules_dropped 0. Unchanged.
+ *
+ * Owner ruling 10 of the 2026-08-30 escalation batch (docs/grind/decisions.md:14870) returned
+ * this item to ACTIVE-with-modality-change. DISCHARGED this session by executing the one
+ * genuinely un-tried axis: PsyQ's own cc1psx (GCC 2.7.2.SN.1) as a calibration oracle, asking
+ * whether the +0x270 combine/simplify_shift_const fold is an artifact of the open-source port
+ * rather than of the compiler that built the game. ANSWER: NO. cc1psx compiles this body to
+ * essentially the identical function (192 vs 192 normalised lines, differing only in the
+ * scheduling position of one `li $2,0x11` in the prologue) and takes the SAME fold at +0x270 --
+ * one `lh $2,624($4)` and a folded `sll $2,$3,1`, no second `lhu`. The target's two-load shape
+ * is a property of the ORIGINAL C, not of our toolchain; the open port is a faithful oracle for
+ * this function. Harness + artifacts: tmp/grind/func_8001F938/s12/dualfork.sh.
+ *
+ * Both endgame-lock gates re-measured live and both still FAIL (scan_hand_coded tier=LOW 0/8,
+ * S1..S8 clear; zero in-hand SOTN-master precedent -- the construct index has no signedness /
+ * dual-typed / same-address class at all). Disposition re-filed: docs/grind/decisions.md,
+ * 2026-08-30 entry "func_8001F938 -- OWNER-ESCALATION -- RESOLVED BY STANDING RULING (2026-07-27)".
+ * Six axes are now measured dead (structural, permuter, forensics, rederive, solver,
+ * compiler-fork). Do NOT re-open any of them.
+ */
 /* func_8001F938 (src/code6cac.c) - CLEAN FLOOR-8 FORM. Honest sandbox distance 8
  * (build_insns 105 vs target_insns 107, rules_dropped 0), RE-MEASURED ON THE LIVE
  * CHASSIS in grind session s11 (escalation/disposition, 2026-08-25). Zero regfix/asmfix

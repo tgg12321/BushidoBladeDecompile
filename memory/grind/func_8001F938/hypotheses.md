@@ -366,3 +366,64 @@ FRONTIER AFTER s11b — exactly one, and it is not a grind modality:
 - probe: The layer-1 cheat-reviewer's 23:29 re-review of the same body, plus the driver's banned-construct list at s11b dispatch.
 - result: Closed. The reviewer held that a frozen family is owner-only to extend (.claude/rules/judge-sole-gate.md) and that a driver-side narrowing is not a legitimate authorization; the driver has since made BOTH the construct and the 23:20 entry mechanically banned for this function. No spelling remains: by the ban's own 'in ANY spelling' wording, every C form that causes cc1 to emit a second load of +0x270 sits inside the frozen family. The pure-C search space is not merely exhausted, it is fully characterised and gated on an owner ruling.
 - verdict: KILLED
+
+## [s12] The +0x270 fold is an open-port compiler-fork artifact — PsyQ's own cc1psx (GCC 2.7.2.SN.1), the compiler that actually built the target, would emit the second `lhu 0x270` load from the CLEAN floor-8 C.
+- mechanism: s6/s7 attributed the missing second load to GCC 2.7.2 `combine` / `simplify_shift_const`
+  folding `(x << 16) >> 15` to `x << 1` when `num_sign_bit_copies(op) == 16`. That gate lives in
+  combine.c, and the SN Systems fork (cc1psx 2.7.2.SN.1) is a DIFFERENT build of 2.7.2 from
+  decompals/mips-gcc-2.7.2 (which is kmc-tailored). If SN's combine did not take the fold, the
+  target's two-load shape would be ordinary codegen for the clean C, the whole "signedness-split
+  family" premise would be void, and the residual would be a compiler-fidelity/routing question
+  rather than a C-form question. This axis had NEVER been probed on this function (zero occurrences
+  of "cc1psx" anywhere in memory/grind/func_8001F938/ before this session), and it is the direct
+  analogue of the axis the owner's ruling-10 return-to-active was discharged with on CD_datasync
+  (docs/grind/decisions.md 2026-08-30 CD_datasync entry) and func_80072CD4.
+- probe: dual-fork harness `tmp/grind/func_8001F938/s12/dualfork.sh` — ONE `mipsel-linux-gnu-cpp`
+  pass over `src/code6cac.c` with the clean floor-8 body installed (exact Makefile CPP_FLAGS/CPP_DEFS),
+  the resulting `code6cac.i` fed to BOTH `tools/gcc-2.7.2/build/cc1` (open port, exact CC_FLAGS
+  incl. `-mel`) and `tools/cc1psx_wrapper.sh` (PsyQ cc1psx via dosemu2; calibration-only per
+  `.claude/rules/no-compiler-divergence.md`, never a build path). func_8001F938's body extracted from
+  each (`openport.fn.s`, `cc1psx.fn.s`), labels normalised, diffed.
+- result: **KILLED, three ways.**
+  (1) cc1psx TAKES THE SAME FOLD. Its +0x270 block is character-identical to the open port's:
+      `lh $2,624($4)` / `move $3,$2` / `slt $2,$3,4` / `bne ... ; sll $2,$3,1` / `li $3,3 ; sll $2,$3,1`
+      / `addu $2,$2,$4` — ONE load of 0x270 and the folded `sll 1`, exactly like the open port, and
+      exactly unlike the target's `lh 0x270` + `lhu 0x270` + `sll 16 ; sra 15`.
+  (2) WHOLE-FUNCTION AGREEMENT. After label normalisation the two forks' bodies are 192/192 lines
+      and differ by exactly ONE line: a `li $2,0x00000011` scheduled two positions earlier in the
+      open port's prologue. Same instruction count, same register assignment, same branch structure,
+      same everything else. There is no fork-shaped search space here.
+  (3) The open port is therefore VALIDATED as a faithful oracle for this function, which independently
+      strengthens (not weakens) every s1-s11 measurement made on it.
+  Consequence: the target's second load is NOT reachable from the clean C under EITHER 2.7.2 build,
+  so it is a property of the ORIGINAL SOURCE's C form, not of our toolchain — which puts it right back
+  inside the frozen signedness-split family that only the owner can move. Artifacts:
+  tmp/grind/func_8001F938/s12/{dualfork.sh,openport.fn.s,cc1psx.fn.s,a.norm,b.norm}.
+- verdict: KILLED
+
+## [s12] An endgame-lock AND-gate flipped since s11.
+- mechanism: both gates are one command each and must never be quoted from the ledger.
+- probe: `python3 tools/scan_hand_coded.py --single func_8001F938`; grep of
+  `docs/reference/sotn-construct-index.md` for signed / dual / same-address / sign_bit.
+- result: gate (a) FAIL — `tier=LOW score=0/8 (107 insns)`, "no strong hand-coded indicators",
+  S1..S8 every one clear (identical to s10/s11 and to the 2026-07-23 reading). gate (b) FAIL —
+  ZERO hits in the construct index for any signedness / dual-typed / same-address class; the index
+  still has no such detector class at all, so it cannot yield a file:line citation.
+- verdict: KILLED
+
+FRONTIER AFTER s12 — unchanged and still not a grind modality: an OWNER ruling on the frozen
+signedness-split / redundant dual-typed-read family. Every grindable axis (structural, permuter,
+forensics, rederive, solver, compiler-fork) is now measured dead with reasons banked. A future
+session should open NONE of them.
+
+## [s12] The missing second lhu of +0x270 is an open-port compiler-fork artifact: PsyQ's own cc1psx (GCC 2.7.2.SN.1), the compiler that actually built the target, would emit it from the CLEAN floor-8 C, voiding the whole signedness-split-family premise and converting the residual into a compiler-fidelity/routing question.
+- mechanism: s6/s7 attributed the divergence to GCC 2.7.2 combine / simplify_shift_const folding (x<<16)>>15 to x<<1 when num_sign_bit_copies(shift operand) == 16. That gate lives in combine.c, and cc1psx is a DIFFERENT 2.7.2 build (SN Systems fork) from decompals/mips-gcc-2.7.2 (kmc-tailored). If SN's combine declined the fold, the target's two-load shape would be ordinary codegen for our clean C. The axis had never been probed here (zero occurrences of 'cc1psx' anywhere in memory/grind/func_8001F938/ before s12), and it is the same axis that discharged owner ruling 10 on the sibling items CD_datasync and func_80072CD4.
+- probe: tmp/grind/func_8001F938/s12/dualfork.sh -- ONE mipsel-linux-gnu-cpp pass over src/code6cac.c (exact Makefile CPP_FLAGS/CPP_DEFS) with the clean floor-8 body installed, feeding the resulting code6cac.i to BOTH tools/gcc-2.7.2/build/cc1 (open port, exact CC_FLAGS incl. -mel) and tools/cc1psx_wrapper.sh (PsyQ cc1psx under dosemu2; calibration-only per .claude/rules/no-compiler-divergence.md, never a build path); func_8001F938's body extracted from each, labels normalised, diffed.
+- result: KILLED three ways. (1) cc1psx TAKES THE SAME FOLD: its +0x270 block is character-identical to the open port's -- lh $2,624($4) / move $3,$2 / slt $2,$3,4 / bne .. ; sll $2,$3,1 / li $3,3 ; sll $2,$3,1 / addu $2,$2,$4 -- ONE load of 0x270 and the folded sll 1, exactly unlike the target's lh + lhu + sll 16 ; sra 15. (2) WHOLE-FUNCTION AGREEMENT: normalised, the two forks' bodies are 192 vs 192 lines and differ by exactly ONE line, a li $2,0x00000011 scheduled two positions earlier in the open port's prologue -- same instruction count, same registers, same branch structure. (3) The open port is therefore VALIDATED as a faithful oracle for this function, strengthening every s1-s11 measurement taken on it. Consequence: the target's second load is a property of the ORIGINAL SOURCE's C form, not of our toolchain, which places it back inside the frozen signedness-split family that only the owner can move.
+- verdict: KILLED
+
+## [s12] An endgame-lock AND-gate has flipped since s11 (chassis drift, new scanner tier, or a newly-indexed SOTN precedent).
+- mechanism: Both gates are one command each and must never be quoted from the ledger; the chassis has changed under this function before.
+- probe: python3 tools/scan_hand_coded.py --single func_8001F938 ; grep docs/reference/sotn-construct-index.md for signed / signedness / dual / same-address / sign_bit.
+- result: Gate (a) FAIL: tier=LOW score=0/8 (107 insns), 'no strong hand-coded indicators', S1..S8 every one clear -- identical to the 2026-07-23, s10 and s11 readings; the STRONG-tier bar (S1/S2/S6) is not approached. Gate (b) FAIL: ZERO hits; the construct index still has no signedness / dual-typed / same-address detector class at all, so it cannot yield a file:line citation, and the 2026-07-01 F2 census over SOTN master independently returned NOT ESTABLISHED.
+- verdict: KILLED
