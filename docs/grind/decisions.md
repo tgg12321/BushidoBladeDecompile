@@ -16476,3 +16476,82 @@ The fresh local `c` (candidate.c:70, written at :86 `(c = s1[3])`, :106 `c = a0 
 ## 2026-08-31 18:09 — func_80045878 — ruling: func_80045878 now has a byte-exact pure-C form (sandbox --disable all = score 0, — **FAIL**
 
 (a) YES — the 2026-08-30 constraint reaches this form. `p` is a fresh local written twice (candidate.c `s16 *p = 0;` then `p = s1;`) and BOTH writes are allocator-steering: the file's own mechanism note says the dead write fixes regno_first_uid so the copy survives cse, and the second write makes it the block-local base that wins $v0 in qty_compare. That is a fresh multi-write allocation carrier by another spelling — the exact class of the `c` FAIL and of the y1 ruling (decisions.md:1833). The form also drops the v0 tail-base reuse the constraint told the session to keep. (b) No frozen family covers `p = s1;` — pointer-alias-fake-exception scopes to a GLOBAL; the named-intermediate 2026-08-17 clarification prong (1) requires once-written/once-read and routes no-op copies away; dead-store requires the value never be read (p is read 7 times); staged-value bound 2 excludes inventing a variable to borrow. Verified myself: rule texts as cited, p's 2 writes / 7 reads by reading candidate.c, and self_vet.md:31,105 concedes T2 fails and 'FAMILY: none claimed for construct 2'. First reach with no family = cheat under default-FAIL; not ESCALATE (no SOTN-master precedent is exhibited, so family-extension does not apply). Constructs (1) the dead store and (3) the named intermediate `t` are not independently objected to — they fail only as parts of `p`. Correct disposition of part (b): no compliant byte-exact form exists; the honest Judge-compliant floor stands at 13 (s11 static-inline tail helper, 109 insns) per state.json frontier[1], and the function stays INCLUDE_ASM.
+
+## 2026-08-31 (s13b) — func_80045878 (src/text1a_c.c) — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Filed by grind session s13b (structural modality), the session after the 18:09 Judge FAIL of
+the s13 form. This packet is NOT a request to lower a standard, to sanction a new permanent
+rule, or to accept debt: it is a ROUTING question about which existing disposition this
+residual belongs in, and it is filed because s13b produced two facts no previous packet had.
+
+### (i) The single decidable question
+
+func_80045878 has, since s10, a byte-exact pure-C form (`sandbox --disable all` = score 0,
+108/108 insns, rules_dropped 0 — re-measured twice this session). Every such form contains
+one construct: a fresh pointer local `p` that holds the tail's base address, plus a
+semantically DEAD mention of `p` in the entry block. Two Judge rulings (2026-08-30 21:30 for
+the value carrier `c`; 2026-08-31 18:09 for `p`) FAILed it as a fresh multi-write allocation
+carrier with no covering family, and the standing constraint reads "no fresh local may be
+written MORE THAN ONCE to serve as a register/allocation carrier, by any spelling, write-count
+or name".
+
+**The question: does the fresh, WRITTEN-ONCE RA temporary of `memory/grind/func_80045878/candidate.c`
+(as of s13b) route to a sanctioned disposition, or does it stay a cheat?** Concretely, three
+sub-questions, answerable independently:
+
+  (a) Is the SOTN-master PSX `new_var_temp` class — fresh locals declared expressly to hold
+      register allocation in place — precedent for a fresh RA-purposed local in this project?
+      (16 PSX declarations, `docs/reference/sotn-construct-index.md:649`.) Prior self-vets for
+      this function asserted "no SOTN precedent exists"; that assertion was made from grepping
+      the index for variable-REUSE shapes and missed this class. If (a) is YES, the fresh local
+      itself is not the objection.
+  (b) Does `s0 = (s32) p;` — a dead store to an EXISTING local whose stored value is never read
+      and which flow.c deletes — sit inside `.claude/rules/dead-store-fake-exception.md`? Its
+      scope sentence is "Ordinary-C assignment statements inside a function body whose stored
+      value is never read (GCC DCEs the store; its existence influences RA / scheduling / flow
+      analysis upstream of DCE)" and its itemised bullet is "dead store to a local: `dest =
+      val1;` where `dest` is never read". Here `dest` (s0) is re-assigned in the else arm before
+      every use, so the STORE is dead in the rule's stated sense, but `s0` is later read. The two
+      formulations differ on exactly this case; the packet asks which one governs.
+  (c) If (a) and (b) are both YES, does the standing per-function constraint still bar the form?
+      Its wording ("written more than once") is now satisfiable: `p` is written exactly once.
+
+### (ii) Evidence pointers
+
+- Measurements (all this session, one form per sandbox invocation):
+  `memory/grind/func_80045878/evidence.md` [s13b] table — candidate.c (fresh local written
+  ONCE, dead store to existing local s0) = **score 0 / 108 insns**; the fresh-dead-local
+  spelling (P1) = score 0 / 108; the s13 `p = 0;` spelling = score 0 / 108 (chassis unchanged);
+  the real-value dead init `p = (s16*)v0;` = 109 / score 13 (KILLED, banked in `rejected/`).
+- Proof that the dead statement is unavoidable, not a spelling choice:
+  `memory/grind/func_80045878/hypotheses.md` [s13b] H13b.3 — no mention → cse.c:836-864 folds
+  the base copy away (107/score 9); a LIVE mention → flow.c marks the pseudo REG_BLOCK_GLOBAL,
+  the base loses $v0 to a block-local tail scratch (108/score 10, s13 H13.4); no base variable
+  at all → 110/score 14 (s12's fully compliant plain tail). Legs 1 and 2 are properties of
+  cse.c and flow.c, so no source text escapes them.
+- Precedent for (a): `docs/reference/sotn-construct-index.md:649` (`new_var_temp`, PSX entries
+  `src/dra/cd.c:520-522`, `src/dra/42398.c:254-259`, `src/dra/menu.c:1956`,
+  `src/dra/5087C.c:213`, `src/st/rnz0/e_fire_demon.c:494`,
+  `src/main/psxsdk/libsnd/vmanager.c:352,381,566,567,1174,1179`).
+  **Stated caveat, not hidden:** the index carries declaration lines only. Whether those
+  temporaries are written once or several times is NOT verifiable from this repo, so this is
+  precedent for the existence of fresh RA-purposed locals in SOTN PSX master, not a
+  demonstration that their shape matches ours line-for-line.
+- Rule text for (b): `.claude/rules/dead-store-fake-exception.md:30` (scope sentence) and
+  `.claude/rules/dead-store-fake-exception.md:35` (the `dest is never read` bullet).
+- Prior rulings: this file, 2026-07-27 (standing REFUSED / OWNER-ACCEPTED INCOMPLETE),
+  2026-08-30 (retraction of the 2026-08-26 exhaustion finding, s9), 2026-08-30 21:30 and
+  2026-08-31 18:09 (the two Judge FAILs).
+
+### (iii) Concrete consequence of each answer
+
+- **All of (a)(b)(c) YES** → `memory/grind/func_80045878/candidate.c` is applied verbatim over
+  the `INCLUDE_ASM` line, the function closes at score 0 / 108 insns TODAY, and it leaves the
+  queue as COMPLETED-C (subject to the usual fresh layer-2 cheat-reviewer pass on the C).
+- **Any of them NO** → nothing changes mechanically: the honest Judge-COMPLIANT floor for this
+  function is **13** (s11's static-inline tail helper, 109 insns; the plain compliant tail is
+  14/110), the function stays `INCLUDE_ASM("asm/funcs", func_80045878)` on main with zero
+  cheat constructs, and the structural axis is closed with proofs rather than a plateau (s12's
+  five-step foreclosure for the carrier topology, s13b's H13b.3 for the dead-mention topology).
+  In that case the correct standing disposition is the 2026-07-27 ruling, unchanged, and future
+  sessions should quote 13 — not 0 — as this function's floor.

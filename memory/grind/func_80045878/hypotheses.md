@@ -904,3 +904,102 @@ unmeasured is whether a dead store can be placed so that it reads as ordinary de
 without changing the mechanism -- e.g. an early `p = 0;` paired with a later real NULL test on
 some other object -- but that is cosmetics on an already-answered mechanism, and it does not
 change the family question.
+
+## [s13b] 2026-08-31 - structural modality (second structural session of the day, after the 18:09 Judge FAIL)
+
+Chassis re-measured first: `alt_deadzero_s13.c` (the FAILed s13 form) still scores 0 / 108
+insns / rules_dropped 0 on today's tree, so every conclusion below is on the same chassis
+the Judge ruled against.
+
+### H13b.1 - CONFIRMED. The Judge's WRITE-COUNT clause is satisfiable: a fresh local written EXACTLY ONCE reproduces the bytes.
+Statement: the 2026-08-31 constraint ("no fresh local written more than once as an
+allocation carrier, by any spelling, write-count or name") was authored around `p = 0; ...
+p = s1;`.  If the operative property is really the write count, then moving the early dead
+mention OFF `p` -- so that `p` is written once, in the tail -- should either break the bytes
+or produce a form the constraint does not reach.
+Probe: three spellings of an entry-block DEAD MENTION of `p` that is not a write to `p`:
+  (P3, now candidate.c)  `s0 = (s32) p;`  - dead store to the EXISTING local `s0`
+                           (s0 is re-assigned in the else arm before any use)
+  (P1)                   `s16 *q; q = p;` - same, via a fresh never-read local `q`
+  (P2)                   `p = (s16 *) v0;` - dead store to `p` carrying a REAL value
+Result: P3 **score 0 / 108 insns** (verified twice, independently), P1 **score 0 / 108**,
+P2 **score 13 / 109**.  In P3 and P1, `p` is written exactly once in the entire function
+(`p = s1;` in the tail block) and the bytes are exact.  Banked:
+alt_singlewrite_deadstore_s0_s13b.c, alt_singlewrite_freshq_s13b.c.
+Verdict: CONFIRMED - write count is NOT the load-bearing property.
+
+### H13b.2 - KILLED. The early dead mention cannot carry a REAL pointer value of the function.
+Statement: `p = (s16 *) v0;` (the object func_8004574C just returned) is a dead store whose
+STORED VALUE is never read, and it reads as ordinary defensive C ("point at the header, then
+at the sub-object"), so it should be the most human-plausible spelling of the s13 mechanism.
+Probe: P2 above.
+Result: 109 insns / score 13.  cse records the p==v0 equivalence at the early site; v0 is a
+live pointer in the then-arm (`s1 = ((s32*)v0)[1]`), so the equivalence survives into the
+region and perturbs the tail seating.  This is the same failure mode as s13's H13.3
+(`p = s1;` re-store, 107/score 9): the early value must create NO equivalence with any live
+pointer.  `p = 0` and a bare dead READ of `p` both qualify; a real pointer value does not.
+Banked rejected/s13b-deadinit-real-v0-value-109-score13.c.
+Verdict: KILLED.
+
+### H13b.3 - CONFIRMED (composition of s13 + s13b). Every byte-exact form of this function contains a semantically DEAD statement.
+Statement: not "every form we found", but every form that can exist.
+Mechanism, in three measured legs:
+  (a) with NO mention of the tail-base pseudo before the tail block, cse.c:836-864 folds the
+      copy away and the base disappears - 107 insns / score 9 (s13 H13.5), or, with no base
+      variable at all, 110 insns / score 14 (s12's fully compliant plain tail);
+  (b) with a LIVE (real, non-deleted) mention, flow.c life_analysis marks the pseudo
+      REG_BLOCK_GLOBAL, the base is routed to global_alloc, and the block-local tail scratch
+      takes $v0 ahead of it - 108 insns / score 10 (s13 H13.4, a real call argument);
+  (c) with a DEAD mention - in any of the four spellings measured across s13/s13b - 108 insns
+      / score 0.
+Legs (a) and (b) are properties of cse.c and flow.c, not of the source text, so the dead
+statement is not a spelling choice: it is a property of this residual.
+Verdict: CONFIRMED.
+
+### What s13b did NOT do
+Did not submit.  All four byte-exact forms sit inside the class the 2026-08-31 Judge ruling
+bans by name, and the driver rejects a candidate-ready whose self-vet declares a banned
+construct.  s13b filed a decision packet instead (docs/grind/decisions.md, 2026-08-31 s13b)
+and returned owner-gated.
+
+### NEW EVIDENCE for the packet that no previous session had
+`docs/reference/sotn-construct-index.md:649` documents a PSX (untagged, i.e. GCC-2.7.2
+provenance) SOTN-master class `new_var_temp` - "RA / scheduling temporaries ... the
+decompiler-era temporaries SOTN keeps to hold register allocation in place", 20 hits, 16 of
+them PSX: `src/dra/cd.c:520-522` (three in one function, incl. `CdThing* new_var3;`),
+`src/dra/42398.c:254-259`, `src/dra/menu.c:1956`, `src/dra/5087C.c:213` (`RoomBossTeleport*
+phi_s1;`), `src/st/rnz0/e_fire_demon.c:494` (`u16* new_var;`), `src/main/psxsdk/libsnd/
+vmanager.c:352,381,566,567,1174,1179`.  Previous self-vets recorded "no SOTN precedent
+exists" for a fresh RA-purposed local; that claim came from grepping the index for
+variable-reuse shapes and missed this class.  CAVEAT, stated plainly: the index gives the
+declaration line only.  It is not verifiable from this repo whether those temporaries are
+written once or more, so they are precedent for the EXISTENCE of fresh RA-purposed locals in
+SOTN PSX master, not (yet) for the multi-write shape.  A `phi_*` temporary is by construction
+a merge of values from two arms, which implies more than one write, but that is an inference
+from the naming convention, not a read of the source.
+
+### NEXT PROBE for the following session
+None on the structural axis: it is closed twice over (s12's five-step foreclosure for the
+carrier topology, s13b's H13b.3 for the dead-mention topology).  If the packet comes back
+permissive, apply memory/grind/func_80045878/candidate.c verbatim -- it is byte-exact today
+and its fresh local is written once.  If it comes back restrictive, the number to quote for
+this function is 13 (s11's static-inline tail helper, 109 insns) and the function stays
+INCLUDE_ASM.
+
+## [s13] The Judge's standing constraint for this function ('no fresh local written more than once as an allocation carrier') is unsatisfiable, i.e. every byte-exact form needs a multi-write fresh local.
+- mechanism: s13's mechanism needs (i) an early mention so cse.c:836-864 make_regs_eqv keeps `p` canonical and the tail base copy survives, and (ii) that mention to be dead so flow.c life_analysis leaves reg_basic_block[p] block-local and local-alloc.c:1641 qty_compare seats p in $v0. s13 spelled (i) as a second write to p (`s16 *p = 0;`), which the Judge FAILed. But the mention need not be a WRITE to p: a dead store to some other local that READS p fixes regno_first_uid identically.
+- probe: P3 `s0 = (s32) p;` (dead store to the EXISTING local s0, which is re-assigned in the else arm before any use) and P1 `s16 *q; q = p;` (dead store to a fresh never-read local), each measured on its own with `sandbox func_80045878 --disable all`.
+- result: P3 score 0 / 108 insns / rules_dropped 0 (verified twice independently, including with the FAKE annotation in place); P1 score 0 / 108. In both, `p` is written exactly once in the whole function (`p = s1;` in the tail). Banked as memory/grind/func_80045878/candidate.c and alt_singlewrite_freshq_s13b.c.
+- verdict: KILLED
+
+## [s13] The early dead mention can carry a REAL pointer value of the function (`p = (s16 *) v0;`), making the construct read as ordinary defensive C while keeping the mechanism.
+- mechanism: The store is still dead (p is overwritten by `p = s1;` before any read), so flow deletes it and block-locality is preserved; the stored value ought to be irrelevant to reg_scan.
+- probe: P2: `p = (s16 *) v0;` in the entry block, everything else identical to candidate.c; measured alone (a first measurement taken inside a batched loop reported 0 and did not reproduce - see the reproducibility note in evidence.md).
+- result: 109 insns / score 13, reproduced three times. cse records the p==v0 equivalence at the early site and v0 is a live pointer in the then-arm (`s1 = ((s32*)v0)[1]`), so the equivalence survives into the region and perturbs the tail seating - the same failure mode as s13's H13.3 (`p = s1;` same-value re-store, 107 insns / score 9). The early value must create NO equivalence with any live pointer. Banked rejected/s13b-deadinit-real-v0-value-109-score13.c.
+- verdict: KILLED
+
+## [s13] Every byte-exact form of func_80045878 - not merely every form found so far - contains a semantically DEAD statement.
+- mechanism: Three legs: (a) with no early mention of the tail-base pseudo, cse.c:836-864 folds the base copy away; (b) with a LIVE early mention, flow.c life_analysis marks the pseudo REG_BLOCK_GLOBAL, the base is routed to global_alloc and a block-local tail scratch takes $v0 first; (c) with a DEAD early mention the seats are target's. Legs (a) and (b) are properties of cse.c and flow.c, not of the source text.
+- probe: Compose s13's H13.4/H13.5 with s13b's P1/P2/P3 measurements and the s12 carrier-free baseline.
+- result: no mention 107 insns / score 9; live mention (a real call argument) 108 / score 10; no base variable at all 110 / score 14; dead mention (four distinct spellings) 108 / score 0. The dead statement is a property of the residual, not a spelling choice.
+- verdict: CONFIRMED

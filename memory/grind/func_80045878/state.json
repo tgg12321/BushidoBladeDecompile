@@ -1,7 +1,7 @@
 {
  "func": "func_80045878",
  "file": "text1a_c",
- "session_count": 12,
+ "session_count": 13,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -81,23 +81,29 @@
    "floor": 0,
    "modality": "structural",
    "headline": "Structural modality closed with a PROOF, not a plateau: cse.c make_regs_eqv plus the .lreg call-crossing census show the Judge's no-multi-write-fresh-carrier constraint is unsatisfiable for this resid"
+  },
+  {
+   "session": 13,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "Structural s13b: a fresh local written EXACTLY ONCE reproduces the bytes (score 0, 108/108, verified twice), so the Judge's write-count clause is satisfiable; the unavoidable property is a semanticall"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The only remaining decidable question is the family/routing one the s11 frontier named, and it is now a much stronger packet: no longer 'we could not find another spelling' but 'no other spelling exists'. The next escalation-modality session should file the DECISION PACKET asking which sanctioned family, if any, covers a fresh local whose earlier reference is a real call argument (alt_anchor_e1.c) or a real condition read (candidate.c) and whose two later writes carry the two tail values.",
-   "mechanism": "s12's five-step foreclosure: cse.c:836-864 forces the base multi-block; local_alloc running before global_alloc forces the scratches non-block-local; the .lreg census exhausts existing variables; s10 measurements exhaust early production of both tail values. Steps 1-2 are compiler properties, so the constraint cannot be satisfied by any source text.",
-   "next_probe": "Do NOT re-search anchor sites, re-run sibling/transplant searches, retry the inline-helper shape, or retry existing-variable carriers - all four are now closed by enumeration or by compiler-source argument. Carry the five-step foreclosure, the cse.c citation and the lreg census into the packet. Keep it a fidelity/routing question; a request to sanction a new family is in the auto-reject class."
+   "hypothesis": "The routing question in the s13b decision packet is the only open item: (a) is SOTN's PSX `new_var_temp` class precedent for a fresh RA-purposed local, (b) does a dead store to an existing local whose stored value is never read but whose dest is later read sit inside dead-store-fake-exception, (c) does the standing per-function constraint still bar a WRITTEN-ONCE `p`?",
+   "mechanism": "All three are questions about which existing disposition covers the construct, not about whether more search space exists; the structural axis is closed twice over (s12's five-step foreclosure for the carrier topology, s13b's H13b.3 for the dead-mention topology).",
+   "next_probe": "No measurement. If the ruling is permissive, apply memory/grind/func_80045878/candidate.c verbatim - it is byte-exact today. If restrictive, quote 13 as this function's floor and keep it INCLUDE_ASM."
   },
   {
-   "hypothesis": "The best fully Judge-COMPLIANT form measured to date scores 13 (s11's static-inline tail helper, 109 insns); the plain compliant tail scores 14 at 110 insns. If the pipeline ever needs a compliant-but-imperfect floor for this function, 13 is the number - not 0 and not 4.",
-   "mechanism": "Every measured form scoring below 13 carries the multi-write fresh carrier in some spelling; s9's floor-4 form and s10/s11's floor-0 forms all do.",
-   "next_probe": "No probe. Recorded so a future session does not quote floor 0 as a compliant number, and so the packet can state the concrete consequence of each answer: sanction means the function closes at 0 today; refusal means the honest compliant floor is 13 and the function stays INCLUDE_ASM."
+   "hypothesis": "Do NOT re-search spellings of the early mention: the four that work and the three that fail are enumerated, and the cse.c/flow.c legs explain both classes.",
+   "mechanism": "s13b H13b.3 - the dead statement is forced by cse.c:836-864 plus flow.c life_analysis, which are compiler properties rather than source-text choices.",
+   "next_probe": "None. Any new spelling proposal must first explain how it avoids leg (a) or leg (b)."
   },
   {
-   "hypothesis": "Splitting the carrier into TWO variables, each written exactly twice, probably also scores 0 but cannot change the verdict (carried forward unchanged from s11).",
-   "mechanism": "Each tail scratch independently needs its own out-of-tail-block reference; splitting does not reduce the write count below two per variable.",
-   "next_probe": "Measure only if a future ruling distinguishes 2-write from 3-write carriers; otherwise skip."
+   "hypothesis": "Splitting the tail values across two variables (carried forward from s11/s12) still cannot change the verdict.",
+   "mechanism": "Each tail scratch independently needs its own out-of-tail-block reference; splitting does not remove the dead-mention requirement.",
+   "next_probe": "Measure only if a ruling distinguishes 2-write from 3-write carriers; otherwise skip."
   }
  ],
  "judge_constraints": [
