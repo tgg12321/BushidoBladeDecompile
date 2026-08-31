@@ -1,9 +1,11 @@
 /* func_80062020 (text1b.c) — CANDIDATE, honest pure-C floor 4 (NOT a match).
  *
- * RE-MEASURED THIS SESSION (grind s8, forensics modality, 2026-08-30) on the live
- * chassis, with this body pasted over the INCLUDE_ASM line at src/text1b.c:3853:
+ * RE-MEASURED (grind s8, forensics modality, 2026-08-30) on the live chassis, with
+ * this body pasted over the INCLUDE_ASM line at src/text1b.c:3853:
  *   sandbox func_80062020 --disable all -> score 4, build_insns 35,
- *     target_insns 38, rules_dropped 0
+ *     target_insns 38, rules_dropped 0, cheat_asm_stripped 167
+ * (the chassis drifted — cheat_asm_stripped 173 -> 167 — the floor did not.)
+ * src/text1b.c was reverted to HEAD afterwards; no draft C is left on main.
  *
  * WHY THIS BODY AND NOT THE s7 ONE: the s7 candidate spelled the last store as
  * `*(s32 *)((u8 *)&D_800F1198 + ofs) = 0;` while cols b/c went through `p`. That

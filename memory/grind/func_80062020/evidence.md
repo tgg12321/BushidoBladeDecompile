@@ -668,3 +668,131 @@ ever reversed — it is superseded, not disproven.
 - [s7] SHARPENED NECESSARY CONDITION (supersedes 'the uniform-spelling space is closed by proof'): for the target epilogue, RTL immediately before combine must hold TWO distinct address pseudos over the same ofs - one MULTI-USE (feeding disp 8 and disp 4, so combine refuses to fold it) and one SINGLE-USE whose def chain ends in the symbolic constant (so combine folds it to sw $0,sym($v1)). Expand emits one address pseudo AND one 'reg = symbol_ref' per access (three of each in dumps_new_struct_inline_addr/in.i.rtl); CSE then unifies them. The open question is therefore precisely: what will make CSE leave two un-unified chains, one of them single-use?
 
 - [s7] CONTROL-FOR-THIS finding: the same COMPONENT_REF spelling lands on opposite sides of the dichotomy depending only on its base - written over the ADDR_EXPR of a scalar symbol ((u8 *)&D_800F1198 + ofs) it folds the member offset into the symbol and gives LOSUM|LOSUM|LOSUM, written over an array decayed base ((u8 *)Rows + n*12) it gives DISP|DISP|DISP. Any future shape search must control for base kind or it will draw false conclusions from 'the same' spelling.
+
+## s8 findings (forensics modality, 2026-08-30) — the s7 minimal harness is not predictive in-function; the residual re-attributed to a two-property law (P1 address materialisation × P2 CSE path break)
+
+- [s8] CHASSIS re-measured (the dispatch brief again reported "measurement unavailable").
+  `memory/grind/func_80062020/candidate.c` (the uncontested uniform `p[2]/p[1]/p[0]` body)
+  applied over the INCLUDE_ASM line at src/text1b.c:3853 →
+  `sandbox func_80062020 --disable all` = **score 4, target_insns 38, build_insns 35,
+  rules_dropped 0, cheat_asm_stripped 167**. The floor is unchanged from s2–s7; the chassis
+  itself drifted (cheat_asm_stripped 173 → 167), so the floor conclusion is re-validated, not
+  inherited. src/text1b.c was reverted to HEAD immediately afterwards — this session leaves no
+  draft C on main.
+
+- [s8] **METHODOLOGY KILL — the s7 minimal 3-line harness does NOT predict this function.**
+  s7's whole 53-shape table (falsify.py … falsify5.py) was compiled as a standalone
+  `void f(s32 n){ three stores }` TU. Re-asking the same shapes inside the real
+  func_80062020 body (loop + `ofs = i*12` epilogue index; new instrument
+  `tmp/grind/func_80062020/s8/fullsweep.py`, 30 shapes) flips categories:
+  * `((struct Row *)((u8 *)Rows + n*12))->c/->b/->a` = **DISP8|DISP4|DISP0 standalone**,
+    but **LOSUM|LOSUM|LOSUM in-function** when the index is the `ofs` variable
+    (`fs_inl_ofs_rows.s`).
+  * the two-armed-join control that produces the target arrangement standalone
+    (`s6_dec_join2arm.s`) produces **LOSUM|LOSUM|LOSUM** on the same shape in-function
+    (`fs_JOINctl_ofsrow.s`).
+  Conclusion: every inherited "shape X does Y" statement sourced from the s7 sweep is
+  evidence about a 3-line TU, not about func_80062020. Ask shape questions with the loop in
+  place; `fullsweep.py` is now the correct instrument (~1 s per shape, same oracle cc1 +
+  verbatim CC_FLAGS).
+
+- [s8] **s7's control-flow kill was measured on nullified probes.** s7 concluded "a BB
+  boundary does not defeat the unification" from `if(c) c=1;` and from duplicating the store
+  into both arms of an `if`. Dump `tmp/grind/func_80062020/s8/dump_splitif/` shows the
+  emitted function contains **no branch at all**: jump1 deletes the dead assignment and the
+  join with it, before cse ever runs. Identical-arm duplication is likewise cross-jumped away
+  by jump1. Neither probe ever presented CSE with a join, so the axis was never tested.
+  The control that keeps a real side effect in both arms (`if(c) G=1; else G=2;`) **does**
+  defeat the unification (`dump_splitreal/out.s`: `sw $0,8($2); sw $0,4($2); … ; addu $2,$2,$4;
+  sw $0,Rows($2)`).
+
+- [s8] **THE LAW, re-derived in-function over 30 measured shapes** (`s8/fullsweep_results.txt`).
+  The epilogue's addressing category is decided by two INDEPENDENT properties:
+  * **P1 — is the row address materialised as a register value?**
+    YES when the address is written through a pointer variable (`p = …; p[2]`), or when the
+    index is an INLINE expression (`… + i*12`) that CSE commons into one base → the **DISP
+    family** (`la sym; addu; sw 8($v0); sw 4($v0); sw 0($v0)`).
+    NO when the index is a *variable* (`ofs`) and the address stays a symbol+reg legitimate
+    address that is never force_reg'd → the **LOSUM family** (three `lui/addu/sw %lo` groups,
+    which is exactly what the target's LOOP body does).
+  * **P2 — is CSE's extended-basic-block path broken between the b-store and the a-store?**
+    Only then does the a-store's address chain remain single-use, so combine (LOG_LINKS exist
+    only for single-use defs) folds `reg = symbol; reg' = ofs + reg; (mem reg')` into
+    `sw $0,sym($reg)`.
+  The target epilogue is **P1-YES ∧ P2-YES**: `sw $0,8($v0); sw $0,4($v0)` off a
+  register-materialised row base, then `lui $at,%hi(D_800F1198); addu $at,$at,$v1;
+  sw $0,%lo(D_800F1198)($at)`.
+
+- [s8] **The ledger's standing "no uniform spelling can produce the target arrangement" claim
+  is FALSIFIED in-function.** `JOINctl_i12` —
+  `((struct Row *)((u8 *)Rows + i*12))->c=0; ->b=0; if(i) G=1; else G=2; ->a=0;` — one uniform
+  tree shape, one index spelling, no pointer alias, no dual spelling — measures
+  **DISP8 | DISP4 | LOSUM[Rows]** inside the real function (`fs_JOINctl_i12.s`). The target
+  arrangement is reachable from uniform C. What it is not reachable from is uniform C *with no
+  extra code*: the P2 break costs a surviving branch plus arm bodies (35 insns vs the target's
+  38 total / 11-insn straight-line epilogue).
+
+- [s8] **All seven code-free P2 candidates are dead** (measured in-function on the inline-`i*12`
+  chassis, i.e. the configuration that is exactly one CSE break away from the target — every
+  one measures DISP8|DISP4|**DISP0**): `do { c; b; } while (0);` wrap · `if (i) { }` empty body ·
+  `goto L; L:` · `for(;;){ c; b; break; }` · `i = i;` self-assign · a possibly-aliasing store
+  through the parameter (`arg0[0]=0;`) · the a-store duplicated into both arms of an `if`.
+  jump1 removes each of them before cse. A branch that survives to cse necessarily survives to
+  the assembler, and the target's epilogue contains no branch.
+
+- [s8] `inl_i12_sym` (`((struct Row *)((u8 *)&D_800F1198 + i*12))->c/->b/->a`, i.e. the floor-4
+  body with the `ofs` variable eliminated) is category-identical to the floor: DISP8|DISP4|DISP0,
+  27 in-function insns, but it hoists `la $3,D_800F1198` *ahead* of the `sll/addu/sll` index
+  chain where the target emits it after. Recorded so no future session re-tries it as new.
+
+- [s8] **PASS ATTRIBUTION, settled from the dumps: the unifier is cse2 (`-frerun-cse-after-loop`),
+  not cse1, not combine, not expand.** `tools/gcc-2.7.2/cse.c:8054` — `cse_end_of_basic_block`
+  ends the block at a `NOTE_INSN_LOOP_END` **only when `after_loop` is 0**, i.e. only in cse1:
+  ```
+  /* Don't cse out the end of a loop. ...
+     If we are running after loop.c has finished, we can ignore the NOTE_INSN_LOOP_END.  */
+  if (! after_loop && GET_CODE (p) == NOTE
+      && NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)  break;
+  ```
+  Measured directly on `brk_dowhile0` (the `do { c-store; b-store; } while (0);` wrap), dumps
+  `tmp/grind/func_80062020/s8/fdump_brk_dowhile0/`:
+  * **in.i.cse (cse1): THE BREAK WORKS.** `(note 132 … NOTE_INSN_LOOP_END)` sits between the
+    b-store (insn 124, `(mem (plus (reg 94) (const_int 4)))`) and the a-store, and the a-store
+    arrives at cse1's *next* block with a completely fresh chain — insn 135
+    `(set (reg 101) (symbol_ref "Rows"))`, insns 138/140/141 recompute the index, insn 143
+    `(set (reg 106) (plus (reg 105) (reg 101)))`, insn 145 `(set (mem (reg 106)) 0)`. That is
+    precisely the single-use symbolic chain combine folds into `sw $0,sym($reg)`.
+  * **in.i.cse2: THE BREAK IS UNDONE.** With `after_loop = 1` the LOOP_END note is ignored, the
+    block spans all three stores, and cse2 rewrites insn 135/138/140/141/143 into plain copies
+    of the already-live pseudos and the store into `(set (mem (reg 94)) 0)` — the DISP0 form.
+  So a **code-free cse1 break already exists** (any construct leaving a NOTE_INSN_LOOP_END
+  between the b- and a-stores); the residual is entirely that **cse2 re-unifies it**. This
+  supersedes the s7 attribution ("combine's single-use rule decides") — combine's rule is the
+  consumer, cse2 is the decider.
+
+- [s8] **What the escalation packet must now say.** The 2026-08-25 packet argues from the
+  expand/`legitimize_address` attribution (refuted in s7) and from two-shape prong 2 (falsified
+  in s7). The correct, currently-measured statement is: *the target epilogue simultaneously
+  requires the row address to be register-materialised (P1-YES, for the disp-8/disp-4 stores)
+  and CSE-un-unified at the third store (P2-YES, for the `%lo` LO_SUM); P2 survives cse1 for
+  free (a NOTE_INSN_LOOP_END breaks cse1's block, cse.c:8054) and is destroyed by **cse2**,
+  whose block is ended only by a real CODE_LABEL — which in a straight-line epilogue means a
+  surviving branch, and the target's epilogue has none.* That is a sharper and still-OPEN
+  statement — it names the exact missing ingredient (something that ends cse2's basic block, or
+  that survives cse2, without emitting a branch) rather than asserting the space is closed.
+  **The function should not be re-escalated on "the space is closed" wording until the cse2
+  question below has been ground.**
+
+- [s8] CHASSIS re-measured (the brief again said 'measurement unavailable'): candidate.c applied over the INCLUDE_ASM line at src/text1b.c:3853 -> sandbox func_80062020 --disable all = score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 167. The chassis drifted (173 -> 167 stripped), the floor did not. src/text1b.c reverted to HEAD; no draft C left on main.
+
+- [s8] The target epilogue needs P1-YES (row address materialised in a register, for `sw $0,8($v0)` / `sw $0,4($v0)`) AND P2-YES (a-store's chain un-unified, for `lui $at,%hi; addu $at,$at,$v1; sw $0,%lo(D_800F1198)($at)`). P1 is satisfied by a pointer variable or by an INLINE `i*12` index; a variable index (`ofs`) puts all three stores in the LO_SUM family instead.
+
+- [s8] PASS ATTRIBUTION (dumps, not inference): cse.c:8054 breaks a cse1 block at NOTE_INSN_LOOP_END only when after_loop==0, so cse1 is defeated for free; cse2 (-frerun-cse-after-loop) is the pass that re-unifies. fdump_brk_dowhile0/in.i.cse shows the surviving single-use symbolic chain, in.i.cse2 shows it collapsed to `(set (mem (reg 94)) 0)`.
+
+- [s8] The first uniform spelling that emits the target arrangement in-function is banked at memory/grind/func_80062020/rejected/epilogue-uniform-i12-needs-cfg-join-s8.c — rejected because the CFG join needs distinct surviving side effects in both arms (inventing a global write the function does not perform), 35 in-function insns vs the target's 38 total.
+
+- [s8] s7's minimal 3-line harness is NOT predictive for this function (4 shapes flip category in-context). Any inherited 'shape X does Y' claim sourced from the s7 53-shape table is evidence about a 3-line TU only. tmp/grind/func_80062020/s8/fullsweep.py (30 shapes, ~1s each, full function context) replaces it as the instrument.
+
+- [s8] `inl_i12_sym` — the floor-4 body with the `ofs` variable eliminated — is category-identical to the floor (DISP8|DISP4|DISP0) but hoists `la $3,D_800F1198` ahead of the sll/addu/sll index chain where the target emits it after. Recorded so it is not re-tried as new.
+
+- [s8] ESCALATION HYGIENE: the 2026-08-25 packet argues from the refuted expand/legitimize_address attribution and from the falsified prong 2. Any future packet must argue from the P1/P2 law and name cse2 as the decider — and the residual is now OPEN (a named cse2 question), not closed, so 'the space is closed' wording is currently unsupportable.

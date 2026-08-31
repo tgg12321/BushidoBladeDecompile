@@ -1,7 +1,7 @@
 {
  "func": "func_80062020",
  "file": "text1b",
- "session_count": 7,
+ "session_count": 8,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -51,23 +51,29 @@
    "floor": 4,
    "modality": "forensics",
    "headline": "Forensics: prong 2 of the two-shape law FALSIFIED by a uniform symbol-keeping shape that mixes both address forms, and the deciding pass re-attributed from RTL-expand/legitimize_address to COMBINE's s"
+  },
+  {
+   "session": 8,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "Forensics: the deciding pass is cse2 (-frerun-cse-after-loop), not combine/expand \u2014 cse1 is already broken for free by a NOTE_INSN_LOOP_END \u2014 and the first UNIFORM spelling ever measured to emit the t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A uniform C spelling can leave CSE with two un-unified address chains over the same ofs - one multi-use feeding disp 8 and 4, one single-use ending in the symbolic constant that combine folds to sw $0,sym($v1).",
-   "mechanism": "Combine, not expand, decides the LO_SUM form, and it can only fold an address pseudo that is single-use (LOG_LINKS exist only for single-use defs). Expand already emits three separate address pseudos and three separate 'reg = symbol_ref' insns per row; everything now hinges on which of those CSE unifies.",
-   "next_probe": "Two sub-probes remain untested after (b) was killed this session. (a) MODE/TYPE-MIXED ACCESS: CSE hashes MEM by mode, so a shape whose offset-0 access has a different machine mode or type from the offset-4/8 accesses may not unify - measure with the standalone harness before touching src. (c) DIFFERENT-BIV DERIVATION: derive the offset-0 address from a giv/biv the loop already materialises rather than from the epilogue's recomputed ofs, so the two chains are not syntactically equal at CSE time. Both are ordinary C questions, not coercion families."
+   "hypothesis": "A branch that survives jump1/cse1/loop/cse2 and combine but is deleted at jump2 would give the target's exact straight-line epilogue: the LO_SUM is folded in combine, so a post-combine branch deletion leaves the folded store with no branch behind it.",
+   "mechanism": "jump_optimize runs again after reload (dump in.i.jump2) doing cross-jumping and jump-to-next-insn deletion; combine (which does the LO_SUM fold) runs before it, and cse2's block is ended by any real CODE_LABEL.",
+   "next_probe": "Search for two `if` arms that become identical only after combine/reload (so jump1's cross-jumping fails but jump2's succeeds), measured on the inline-`i*12` chassis in tmp/grind/func_80062020/s8/fullsweep.py; check in.i.combine for the folded LO_SUM and in.i.jump2 for the branch's disappearance."
   },
   {
-   "hypothesis": "The two-shape CONCLUSION for this function survives its falsified premise: the 1998 source wrote the terminator row address in two shapes.",
-   "mechanism": "The general law is dead (uniform symbol-keeping shapes DO mix), but every mix reachable from a uniform spelling puts LO_SUM first and the target puts it last. The conclusion now rests on the combine single-use rule plus 53 measured shapes, not on the refuted legitimize_address claim.",
-   "next_probe": "Anyone re-filing an escalation packet for this function MUST restate its provenance argument on the new mechanism - the packet filed 2026-08-25 argues from the now-refuted expand/legitimize_address attribution and from prong 2, and would be quoting a falsified premise to the owner."
+   "hypothesis": "cse2 can be made to skip the epilogue block outright, with no control flow at all.",
+   "mechanism": "cse.c:8330 skips a block when `val.nsets == 0 || GET_MODE (insn) == QImode`; cse.c:8550 abandons a path when `val.nsets * 2 + next_qty > max_qty`. Those are size/marking conditions, not control-flow conditions.",
+   "next_probe": "Instrument cse.c's block-processing trace (cc1 -da already prints ';; Processing block from N to M, K sets.') for the floor-4 body and for progressively larger epilogues, and check whether any legitimate epilogue shape lands on a skip. Read the trace before hypothesising."
   },
   {
-   "hypothesis": "The 53-shape sweep is not the whole space: shapes were enumerated by hand, and the harness makes each one cost about a second.",
-   "mechanism": "Systematic enumeration (base kind x access node x column order x offset spelling) is now cheap enough to be exhaustive rather than anecdotal, which is what the ledger 'closed by proof' claim actually needs in order to be true.",
-   "next_probe": "Extend tmp/grind/func_80062020/s7/falsify.py into a combinatorial generator over {ADDR_EXPR-of-scalar, decayed array, 2D array, pointer-to-array, struct/union} x {ARRAY_REF, INDIRECT_REF, COMPONENT_REF, byte-offset cast} x {6 column orders} and report every shape whose store forms are DISP,DISP,LOSUM in that order. A negative result over the full grid is a much stronger claim than the current one; a positive result closes the function."
+   "hypothesis": "Declaring the destination at 0x800F1198 as an ARRAY of 3-word rows (rather than splat's three per-word scalars) is byte-neutral for the LOOP while enabling the P1-YES inline-index epilogue.",
+   "mechanism": "In-function `arrloop_arrepi_cast` keeps the loop's three `%lo` stores intact (tmp/grind/func_80062020/s8/full_arrloop_arrepi_cast.s), so the array declaration does not by itself break the 100%-matching loop; P1 then only needs the index written inline.",
+   "next_probe": "Score the array-declared whole-function variants with the sandbox (not just the standalone harness), and check the aggregate-merge 5-prong bar in .claude/rules/no-new-park-categories.md (2026-08-17 entry) before proposing any declaration change \u2014 prong (a) needs base-register or stride evidence, which the loop's shared `$v1` stride-12 addressing may supply."
   }
  ],
  "judge_constraints": [

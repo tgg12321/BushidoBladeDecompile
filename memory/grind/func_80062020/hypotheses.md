@@ -564,3 +564,75 @@ on the answer.
 - probe: Measured on the array-decay struct-cast shape ((struct Row *)((u8 *)Rows + n*12))->c/->b/->a, the one configuration where expand really does emit three separate address pseudos for CSE to unify: no split; 'if (c) c=1;' between the b- and a-stores; the a-store duplicated into both arms of an if/else; a while loop ahead of the row. tmp/grind/func_80062020/s7/falsify5.py.
 - result: All four measure DISP8 | DISP4 | DISP0. The unification survives every control-flow boundary tried; the offset-0 access never becomes a single-use chain.
 - verdict: KILLED
+
+## [s8] The s7 minimal 3-line harness (falsify*.py, 53 shapes) predicts the in-function addressing category of an epilogue spelling.
+- mechanism: assumed by s7 — the LO_SUM-vs-base+disp choice was taken to be a local property of the C tree shape, so a standalone TU with the same three stores was treated as an oracle for func_80062020.
+- probe: re-ask the same shapes with the real loop and the real `ofs = i*12` epilogue index in place (new instrument tmp/grind/func_80062020/s8/fullsweep.py, 30 shapes, same oracle cc1 + verbatim CC_FLAGS).
+- result: categories flip. `((struct Row*)((u8*)Rows + n*12))->c/b/a` = DISP8|DISP4|DISP0 standalone, LOSUM|LOSUM|LOSUM in-function (index carried in the `ofs` variable). The two-armed-join control that yields the target arrangement standalone yields LOSUM|LOSUM|LOSUM in-function on that shape.
+- verdict: **KILLED.** Inherited shape conclusions sourced from the s7 sweep are statements about a 3-line TU. fullsweep.py replaces it.
+
+## [s8] s7's kill of the control-flow axis ("a BB boundary does not defeat the CSE unification") rests on probes that actually reached cse.
+- mechanism: s7 inserted `if(c) c=1;` between the b- and a-stores, and separately duplicated the a-store into both arms of an `if`, and read DISP0 in both.
+- probe: dump the emitted asm and the -da passes for those exact probes (tmp/grind/func_80062020/s8/dump_splitif/).
+- result: the emitted function contains no branch at all — jump1 deletes the dead assignment (and the join) and cross-jumps identical arms, both BEFORE cse runs. CSE was never presented with a join. The control with distinct surviving side effects in both arms (`if(c) G=1; else G=2;`) does break the unification and yields the LO_SUM.
+- verdict: **KILLED (the kill was invalid).** The control-flow axis is re-opened as the live mechanism, and immediately re-narrowed by the next entry.
+
+## [s8] The epilogue's addressing category is decided by ONE property of the C tree shape.
+- mechanism: the s5/s6/s7 framing — a single "two-shape" dichotomy (symbol-keeping vs pointer-value) chosen at expand or at combine.
+- probe: 30 in-function shapes classified by store-address form (s8/fullsweep_results.txt).
+- result: TWO independent properties, not one. **P1** — is the row address materialised as a register value? YES for a pointer variable *or* an inline index expression (`+ i*12`) → DISP family; NO for a variable index (`+ ofs`) whose symbol+reg address is never force_reg'd → LOSUM family. **P2** — is CSE's extended-basic-block path broken between the b-store and the a-store? Only then is the a-store's chain single-use and combine folds it to `sw $0,sym($reg)`. The target is P1-YES ∧ P2-YES.
+- verdict: **KILLED / REPLACED** by the two-property law.
+
+## [s8] No uniform C spelling can produce the target's DISP8 | DISP4 | LO_SUM arrangement (the ledger's standing conclusion since s5).
+- mechanism: claimed successively from legitimize_address (refuted s7), from prong 2 of the two-shape law (falsified s7), and from the combine single-use rule plus 53 minimal shapes.
+- probe: `JOINctl_i12` in the full function — `((struct Row *)((u8 *)Rows + i*12))->c=0; ->b=0; if(i) G=1; else G=2; ->a=0;` (one uniform tree shape, one index spelling, no pointer alias, no dual spelling).
+- result: **DISP8 | DISP4 | LOSUM[Rows]** — the exact target arrangement, from uniform C (fs_JOINctl_i12.s).
+- verdict: **KILLED.** The claim is false as stated. What survives is the weaker, measured statement: no uniform spelling *that emits no extra code* has produced it — the P2 break costs a surviving branch (35 in-function insns vs the target's 38 total, 11-insn straight-line epilogue).
+
+## [s8] The pass that unifies the a-store's address chain with the row base is combine's single-use rule / cse1 (the s7 attribution).
+- mechanism: s7 concluded that combine decides the LO_SUM by folding only single-use address pseudos, so the question was "what does CSE unify".
+- probe: -da dumps of the `do { c; b; } while (0);` variant compiled in the FULL function (tmp/grind/func_80062020/s8/fdump_brk_dowhile0/in.i.cse vs in.i.cse2), read against tools/gcc-2.7.2/cse.c:8054.
+- result: cse1 does NOT unify — `cse_end_of_basic_block` ends its block at the `NOTE_INSN_LOOP_END` (that break is guarded by `! after_loop`, i.e. cse1 only), and the a-store leaves cse1 as a fresh single-use chain (insn 135 `reg 101 = symbol_ref("Rows")` … insn 145 `(set (mem (reg 106)) 0)`) — exactly what combine needs. **cse2** (the -frerun-cse-after-loop pass, `after_loop = 1`, which therefore ignores the LOOP_END note) is what rewrites that chain into copies of the live pseudos and the store into `(set (mem (reg 94)) 0)`.
+- verdict: **KILLED / RE-ATTRIBUTED for the second time.** The decider is **cse2**; combine is only the consumer, and cse1 is already defeated for free.
+
+## [s8, OPEN — the sharpened residual] The whole remaining residual is a cse2 basic-block break between the b-store and the a-store that emits no branch.
+- mechanism: `cse_end_of_basic_block` (cse.c:8038) scans `while (p && GET_CODE (p) != CODE_LABEL)`; each block is processed with a fresh hash table. In cse1 a `NOTE_INSN_LOOP_END` also ends it (cse.c:8054, `! after_loop`) — free, no code. In cse2 that guard is off, so only a real CODE_LABEL ends the block, and a CODE_LABEL that survives jump1 needs a live reference, i.e. a branch — which the target's 11-insn straight-line epilogue does not contain.
+- probe (measured this session, all on the inline-`i*12` chassis that is exactly one break away from the target): `do { c; b; } while (0);` · `if (i) { }` · `goto L; L:` · `for(;;){ c; b; break; }` · `i = i;` · `arg0[0]=0;` (possibly-aliasing store) · a-store duplicated into both arms. **All seven measure DISP8|DISP4|DISP0.** The first four break cse1 (or are deleted by jump1) and are all undone by cse2.
+- next probe for the next session, in priority order: **(i) a branch that survives jump1/cse1/loop/cse2 and combine but is deleted at jump2** — the LO_SUM is folded in combine, so a post-combine branch deletion would leave exactly the target's straight-line epilogue; jump2 runs after reload (dump `in.i.jump2`) and does cross-jumping / jump-to-next-insn deletion, so look for two arms that only become identical after reload. **(ii) cse2's own skip conditions** — cse.c:8330 skips a block outright when `val.nsets == 0 || GET_MODE (insn) == QImode`, and cse.c:8550 (`val.nsets * 2 + next_qty > max_qty`) abandons a path; measure whether an epilogue with enough sets makes cse2 skip the block with no control flow at all. **(iii)** whether declaring the destination as an ARRAY (P1-YES via `(u8 *)Arr + i*12`) rather than as splat's three scalars changes the LOOP's codegen — the loop matches 100% today in the symbol form, so any array-declaration proposal must re-measure the loop, not just the epilogue (in-function `arrloop_arrepi_cast` keeps the loop's three `%lo` stores, `full_arrloop_arrepi_cast.s`, so this is live).
+- verdict: UNTESTED (i–iii). This is the live frontier and it is ordinary-C / compiler-behaviour work, not a coercion family.
+
+## [s8] The s7 minimal 3-line harness (falsify*.py, 53 shapes) predicts the in-function addressing category of an epilogue spelling for func_80062020.
+- mechanism: s7 assumed the LO_SUM-vs-base+disp choice is a local property of the C tree shape, so a standalone TU with the same three stores was treated as an oracle.
+- probe: Re-asked the same shapes with the real loop and the real `ofs = i*12` epilogue index in place — new instrument tmp/grind/func_80062020/s8/fullsweep.py, 30 shapes, same oracle cc1 + verbatim CC_FLAGS.
+- result: Categories flip. `((struct Row*)((u8*)Rows + n*12))->c/b/a` = DISP8|DISP4|DISP0 standalone but LOSUM|LOSUM|LOSUM in-function; the two-armed-join control that yields the target arrangement standalone yields LOSUM|LOSUM|LOSUM in-function on that same shape.
+- verdict: KILLED
+
+## [s8] s7's kill of the control-flow axis ('a BB boundary does not defeat the CSE unification') was measured on probes that actually reached CSE.
+- mechanism: s7 inserted `if(c) c=1;` between the b- and a-stores, and separately duplicated the a-store into both arms of an `if`, reading DISP0 in both.
+- probe: Dumped the emitted asm and -da passes for those exact probes (tmp/grind/func_80062020/s8/dump_splitif/).
+- result: The emitted function contains NO branch at all — jump1 deletes the dead assignment (and the join) and cross-jumps identical arms, both before cse runs. CSE was never presented with a join. A join with distinct surviving side effects in both arms DOES defeat the unification (dump_splitreal/out.s).
+- verdict: KILLED
+
+## [s8] No uniform C spelling can produce the target's DISP8 | DISP4 | LO_SUM epilogue arrangement (the ledger's standing conclusion since s5, re-grounded in s7).
+- mechanism: Claimed successively from expand/legitimize_address (refuted s7), from two-shape prong 2 (falsified s7), and from combine's single-use rule plus 53 minimal shapes.
+- probe: `JOINctl_i12` in the FULL function: `((struct Row *)((u8 *)Rows + i*12))->c=0; ->b=0; if(i) G=1; else G=2; ->a=0;` — one uniform tree shape, one index spelling, no pointer alias, no dual spelling.
+- result: Measures DISP8 | DISP4 | LOSUM[Rows] — the exact target arrangement (tmp/grind/func_80062020/s8/fs_JOINctl_i12.s). What survives is only the weaker statement: no uniform spelling that emits NO EXTRA CODE has produced it; the break costs a surviving branch plus arm bodies.
+- verdict: KILLED
+
+## [s8] The epilogue's addressing category is decided by ONE property of the C tree shape (the s5/s6/s7 'two-shape' framing).
+- mechanism: A single dichotomy — symbol-keeping vs pointer-value — chosen at expand or at combine.
+- probe: 30 in-function shapes classified by store-address form (tmp/grind/func_80062020/s8/fullsweep_results.txt).
+- result: TWO independent properties. P1: is the row address materialised as a register value? YES for a pointer variable OR an inline index expression (`+ i*12`) -> DISP family; NO for a variable index (`+ ofs`), whose symbol+reg legitimate address is never force_reg'd -> LOSUM family (which is what the target's LOOP body does). P2: is CSE's basic-block path broken between the b-store and the a-store? Only then is the a-store's chain single-use and folded to `sw $0,sym($reg)`. Target = P1-YES AND P2-YES.
+- verdict: KILLED
+
+## [s8] The pass that unifies the a-store's address chain with the row base is combine's single-use rule / cse1 (the s7 attribution the ledger has run on since).
+- mechanism: s7 concluded combine decides the LO_SUM by folding only single-use address pseudos, so the open question was 'what does CSE unify'.
+- probe: -da dumps of the `do { c; b; } while (0);` variant compiled in the FULL function (tmp/grind/func_80062020/s8/fdump_brk_dowhile0/in.i.cse vs in.i.cse2), read against tools/gcc-2.7.2/cse.c:8054.
+- result: cse1 does NOT unify: cse_end_of_basic_block ends its block at the NOTE_INSN_LOOP_END (a break guarded by `! after_loop`, i.e. cse1 only), and the a-store leaves cse1 as a fresh single-use chain (insn 135 `reg 101 = symbol_ref("Rows")` ... insn 145 `(set (mem (reg 106)) 0)`) — exactly what combine needs. cse2 (-frerun-cse-after-loop, after_loop=1, so it ignores the note) is what rewrites that chain into copies of the live pseudos and the store into `(set (mem (reg 94)) 0)`.
+- verdict: KILLED
+
+## [s8] Some code-free construct breaks CSE's path between the b-store and the a-store, giving the target arrangement without a branch.
+- mechanism: cse_end_of_basic_block scans `while (p && GET_CODE (p) != CODE_LABEL)`; a break there leaves the a-store's `reg = symbol_ref` / `reg' = idx + reg` chain single-use for combine to fold into the LO_SUM.
+- probe: Seven candidates measured in-function on the inline-`i*12` chassis (one break away from the target): `do { c; b; } while (0);` wrap, `if (i) { }`, `goto L; L:`, `for(;;){ c; b; break; }`, `i = i;` self-assign, a possibly-aliasing store through the parameter (`arg0[0]=0;`), and the a-store duplicated into both arms of an `if`.
+- result: All seven measure DISP8|DISP4|DISP0. Those that survive jump1 break cse1 only, and cse2 undoes the break; the rest are deleted by jump1 before cse.
+- verdict: KILLED
