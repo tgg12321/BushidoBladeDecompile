@@ -15939,3 +15939,111 @@ instruction — the one residual mechanism, stated precisely in s11 E4; (2) a ge
 exhibit of an unconditional common-tail statement duplicated into both arms purely for merge-block
 store scheduling; (3) a `scan_hand_coded` tier change; (4) a sched_solver depth-3 search over the
 restricted `luid`/`luid_move` atom sets confirming the depth-2 zero-vector result survives.
+
+## 2026-08-30 — CD_datasync (src/system.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (owner ruling-10 return-to-active executed in full; the last un-tried axis — the cc1psx calibration oracle — measured and killed)
+
+**Function.** `CD_datasync` @ `0x80081BB0` in `src/system.c` (currently
+`INCLUDE_ASM("asm/funcs", CD_datasync);`). Ledgered for its first sessions under the splat-era
+misnomer `saEft01Init`; identity proven as Sony PsyQ LIBCD `CD_datasync` — 91 words = exactly
+`0x14F4-0x1388` in the library object (`memory/closer/libcd-groundtruth.md:59-67`,
+`memory/closer/phase2-closeout.md:24`). Ledger: `memory/grind/CD_datasync/` (19 sessions).
+Driver-assigned modality this session: `escalation` (disposition).
+
+**Why this entry exists on top of the 2026-08-25 driver backstop (`docs/grind/decisions.md:12641`).**
+The owner's 2026-08-30 escalation-batch **ruling 10** (this file, line 14870) returned CD_datasync
+to ACTIVE-with-modality-change on the ground that its latest ledger entry — the driver auto-filed
+exhaustion backstop — contained no question pending the owner. That directive has now been executed
+in full: the ledger's top live frontier item **F31** (raised by s18, never executed) proposed that
+the residual might be *compiler-fork-sensitive* and that PsyQ's own `cc1psx` — the compiler that
+actually built the target — should replace the open-port `cc1` as the search oracle. That axis is
+the single genuinely un-tried lever this function had. This session built the dual-fork harness,
+ran it, and **killed the axis by measurement**. Nothing the return-to-active was issued to test
+remains untested.
+
+**Live floor (re-measured this session on the current chassis).**
+`memory/grind/CD_datasync/candidate.c` spliced into `src/system.c` and scored with
+`& tools/wteng.ps1 main sandbox CD_datasync --disable all`: **score 7, build_insns 91,
+target_insns 91, rules_dropped 0**. The instruction COUNT is exact; the entire residual is 7 masked
+points inside the `debug_printf` argument block. `src/system.c` restored to HEAD (tree clean) after
+all measurement.
+
+**The axis killed this session (F31 — cc1psx as the calibration oracle).** Harness:
+`tmp/grind/CD_datasync/s19/{psx.sh,sweep.sh,score.py,expand.py}` — one `cpp` pass feeding BOTH
+`tools/gcc-2.7.2/build/cc1` (open port, `-mel`) and `tools/cc1psx_wrapper.sh` (PsyQ cc1psx
+2.7.2.SN.1, calibration-only per `.claude/rules/no-compiler-divergence.md`; never a build path),
+then a canonicalizer that expands the assembler macros both compilers emit (`la`, symbol-form
+`lw`/`sw`/`lbu`, `li` of a `lui`-able constant, `j $ra`) so that pre-`maspsx` output is comparable
+instruction-for-instruction against `asm/funcs/CD_datasync.s`. Validation: on the banked candidate
+the canonicalizer yields **82 insns vs target's 82** for BOTH forks, and its LCS distance of 6
+tracks the sandbox's masked 7 — i.e. the metric is calibrated, not invented.
+
+**Result — three independent negatives.**
+1. **Same distance.** On the banked candidate, open-port and cc1psx are *equally* far from target:
+   `dist=6` each. The s18 claim that cc1psx is "strictly closer on two counts" does not survive
+   macro-expansion normalisation; it was an artifact of comparing macro-form output against
+   expanded target bytes.
+2. **Same residual in KIND.** Both forks fail the same way: target's `$a0` idx-0 address chain
+   (`lbu $a0,0($s1)` … `sll $a0,$a0,2` … `addu $a0,$a0,$s0` … `lw $a3,0($a0)` as the block's LAST
+   memory reference) is allocated to `$v0`/`$v1` and its `lw $a3` is issued EARLY in both. Neither
+   compiler ever emits `lw $a3,0($a0)` last. The residual is therefore not a fork artifact — it is
+   the same scheduling/allocation attractor s9-s18 mapped on the open port.
+3. **Near-perfect score correlation, same floor.** 23 body spellings scored on both forks — the 15
+   banked s18/s9 forms plus 8 fresh ones written this session (`arg3`-named, `arg5`-named-with-
+   `arg4`-inline, `arg5`-named-then-`p4`-address, a second base pointer for `arg4`, `arg5`-named
+   with the idx-0 byte named, `arg5`-then-`arg3` named, `arg4` staged before the `puts`, idx-1 byte
+   named only). 19/23 scored **identically** on the two forks; 3 had cc1psx exactly 1 lower; 1
+   (`arg4` staged before `puts`, which costs 3 insns on both) had it 5 lower. **On no form did
+   cc1psx go below the shared minimum of 6**, and the ranking of forms is the same on both. The
+   flat open-port floor is therefore NOT explained by the fork, and a cc1psx-scored gradient is not
+   a different search space. Forms banked as `memory/grind/CD_datasync/rejected/s19-dualfork-*.c`
+   (8 files; bank now 84). Raw sweep artifacts under `tmp/grind/CD_datasync/s19/`.
+
+**Gate (a) — canonical-asm — FAILS (re-measured this session).**
+`python3 tools/scan_hand_coded.py --single CD_datasync` → **tier=LOW, score=1/8** (91 insns). Only
+S4 (4 loads in an 8-insn window @ insn 46 — which is the printf argument block itself, i.e. exactly
+the compiled-C construct under study) fires. S1 (multu pacing), S2 (empty branch) and S6 (BIOS
+jumptable) — the only STRONG-tier carriers — are all absent, as are S3/S5/S7/S8. The claim also
+fails independently on provenance: this body is identified Sony PsyQ LIBCD `CD_datasync`, i.e.
+compiled Sony C, not hand-written assembly. The twin-family canonical-asm request covering this
+exact function was already DENIED on three independently dispositive grounds
+(`docs/grind/decisions.md:15`, 2026-07-09).
+
+**Gate (b) — in-hand SOTN-master precedent — FAILS by construction.** The residual is a scheduling
+seat/order outcome inside a call's argument block: `sched.c` issues the idx-0 load early because its
+address chain is ready early, and `global.c`/`local-alloc.c` seat that chain in `$v0`/`$v1` rather
+than `$a0`. There is no C-level CONSTRUCT that closes it, hence no construct for which a precedent
+could be cited — 23 argument spellings across the named/inline/pointer/byte-named/base-pointer/
+statement-order axes all land on the same attractor, on BOTH compiler forks. The constructs that
+HOLD the floor at 7 (the single FAKE-annotated `do { } while (0)` wrap, plus three plain pointer
+locals) are already inside sanctioned families and are not the blocker.
+
+**No decision packet filed (owner ruling 2026-08-24, auto-reject class).** The only questions this
+residual could pose — "sanction a new family for a scheduler tie that has no C spelling" or "grant
+canonical-asm despite a LOW scan tier and a settled compiled-Sony-C provenance" — are
+standard-lowering and PRE-DECIDED NO. Provenance is settled (PsyQ LIBCD `CD_datasync`), routing is
+settled (C, not canonical-asm), and no fidelity/routing/provenance question remains open. This is
+the standing-ruling application, not a new ask; nothing waits on the owner.
+
+**Not an integration handoff.** Nothing is bytes-proven and nothing is blocked by a surface this
+session may not touch: `src/system.c` carries `INCLUDE_ASM("asm/funcs", CD_datasync);` with 0
+regfix/asmfix rules (`rules_dropped: 0` in the sandbox run this session). The best honest form is
+simply 7 masked points away.
+
+**Exhaustion.** 19 sessions; >=7 distinct modalities (structural, permuter, forensics, rederive,
+synthesis, recon, escalation); 76 previously-banked rejected forms plus 8 this session; the s9
+twelve-spelling argument sweep, the s13/s14 permuter basins, the s15/s16 RANKDBG sched1 forensics
+(0 of 103 in-block tie-break decisions class-resolved), the s17 index-globals axis, the s18
+empirical descending-UID sched1 model, and now the s19 dual-fork calibration sweep — all closed
+negative with measurements recorded in `memory/grind/CD_datasync/hypotheses.md` and
+`memory/grind/CD_datasync/evidence.md`.
+
+**Disposition.** REFUSED / OWNER-ACCEPTED INCOMPLETE per the 2026-07-27 standing ruling.
+`src/system.c` keeps `INCLUDE_ASM("asm/funcs", CD_datasync);` (0 rules, no cheat-asm — the honest
+committed state). The annotated masked-7 form stays in `memory/grind/CD_datasync/candidate.c`.
+**Re-activation trigger:** a toolchain-model advance that can search the JOINT `sched.c`
+emission-order x `global.c` allocno-seat space (the same trigger recorded for the twin `CD_ready`
+on 2026-08-30) — the two residuals are a coupled fixed point and no single-axis search closes it.
+Do NOT re-run: the cc1psx-oracle axis (killed above), the argument-spelling sweeps, the permuter
+basins, or the index-globals axis. The remaining ledger frontier items F29 (sched1 order inversion)
+and F30 (sibling `CD_sync` cross-check) are single-axis searches inside the space this entry
+declares closed, and are retained as documentation only.

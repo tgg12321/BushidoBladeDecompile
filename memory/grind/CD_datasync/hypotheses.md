@@ -2453,3 +2453,61 @@ sweep and not the permuter.
 - probe: Preprocessed src/system.c (candidate body in place) with the project's exact CPP flags and defines to tmp/grind/CD_datasync/s18/system.i, then compiled that one file twice: `tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel` -> open.s and `tools/cc1psx_wrapper.sh -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -w` -> psx.s. Compared both CD_datasync argument blocks against asm/funcs/CD_datasync.s (tmp/grind/CD_datasync/s18/cmp.py).
 - result: FALSIFIED. The two compilers emit DIFFERENT schedules for this block from byte-identical C. open-port: `lbu $3,1($17) / lw $5 / sll $2 / addu $2,$16 / sll $3 / addu $3,$16 / lw $7,0($2) / lbu $2 / lw $3,0($3) / sll $2 / addu $2,$19 / sw $3,16($sp) / lw $6,0($2)`. cc1psx: `lbu $3,0($17) / lbu $2,1($17) / lw $5 / sll $3 / sll $2 / addu $2,$16 / lw $4,0($2) / lbu $2 / addu $3,$16 / lw $7,0($3) / sll $2 / addu $2,$19 / sw $4,16($sp) / lw $6,0($2)`. target: `lbu $4,0($17) / lbu $2,1($17) / lw $5 / sll $2 / addu $2,$16 / sll $4 / lw $3,0($2) / lbu $2 / addu $4,$16 / sll $2 / addu $2,$19 / sw $3,16($sp) / lw $6,0($2) / lw $7,0($4)`. cc1psx is strictly closer to target than the open port on two counts the open port gets wrong (it emits the two lbu in target's order, idx0 first, and issues arg5's value load before arg4's) but still commits lw $7 at slot 10 instead of slot 14 and puts the idx0 chain in $3 where target uses $4. So the block is fork-SENSITIVE and NEITHER compiler reproduces target from the current C: the fork is not a free match, but the entire ~81-spelling search to date was scored against a compiler that provably diverges from the target's own on exactly this construct.
 - verdict: KILLED
+
+## [s19] F31 — cc1psx (the compiler that actually built the target) is a better-aligned search oracle than the open-port cc1, because the residual argument block is compiler-fork-sensitive — **KILLED**
+
+- mechanism (as proposed by s18): the sandbox scores against the open-port `cc1` build, so if the
+  residual is fork-sensitive the open-port gradient is the WRONG objective; scoring candidate
+  spellings by how close PsyQ `cc1psx` (2.7.2.SN.1, calibration-only) comes to target should
+  either find the original source shape outright or explain 18 sessions of a flat floor.
+- probe: built `tmp/grind/CD_datasync/s19/{psx.sh,score.py,expand.py,sweep.sh}` — one cpp pass into
+  BOTH compilers, plus a canonicalizer that expands cc1's assembler macros so pre-maspsx output is
+  comparable instruction-for-instruction with `asm/funcs/CD_datasync.s`. Calibrated on the banked
+  candidate (82 insns both forks vs target 82; LCS dist 6 vs the sandbox's masked 7). Then scored
+  23 body spellings on both forks: the 15 banked s9/s18 forms plus 8 written this session.
+- result: (1) equal distance on the candidate (6 vs 6) — s18's "cc1psx is strictly closer on two
+  counts" was a macro-form artifact; (2) the residual is IDENTICAL IN KIND on both forks — neither
+  ever emits target's `lw $a3,0($a0)` as the block's last memory reference, and both seat the idx-0
+  address chain in `$v0`/`$v1` instead of `$a0`; (3) 19/23 forms score identically, 3 differ by 1,
+  1 by 5, and NO form on either fork goes below the shared minimum of 6, with identical ranking.
+- verdict: **KILLED.** The fork is not the discriminator; a cc1psx-scored gradient is the same
+  search space, not a different one. This removes the last un-tried axis and is the measured basis
+  for the 2026-08-30 standing-ruling disposition.
+
+## [s19] The 8 fresh argument spellings (arg3-named, arg5-named-with-inline-arg4, arg5-then-p4-address, second base pointer for arg4, arg5+idx0-byte-named, arg5-then-arg3-named, arg4-staged-before-puts, idx1-byte-named-only) reach the target's late `lw $a3,0($a0)` — **KILLED**
+
+- mechanism: target computes arg5's load first (stored to 16(sp)), then arg3, and issues arg4's
+  load LAST out of `$a0`; every measured build issues arg4's load early out of `$v0`/`$v1`. If the
+  order were driven by source statement order or by which value is named, one of these eight
+  re-orderings/namings should move it.
+- probe: dual-fork sweep above (`tmp/grind/CD_datasync/s19/sweep.sh`), scores open/psx: n1 11/10,
+  n2 10/10, n3 6/6, n4 10/10, n5 10/10, n6 11/10, n7 28/23 (+3 insns), n8 10/10.
+- result: none beat the base attractor of 6; n3 ties it, the rest regress. Staging arg4 before the
+  `puts` (n7) is catastrophic on both forks — it forces a callee-save carry across the call.
+- verdict: **KILLED.** Banked as `memory/grind/CD_datasync/rejected/s19-dualfork-*.c`. Together with
+  the s9 twelve-spelling sweep and the s18 fourteen-form sweep this closes the
+  named/inline/pointer/byte-named/base-pointer/statement-order axes of the argument block on BOTH
+  compiler forks.
+
+## [s19] STATUS OF THE REMAINING FRONTIER (documentation only after the 2026-08-30 disposition)
+
+F29 (invert the now-empirical descending-UID sched1 model: enumerate C-emittable pre-sched LUID
+orders and replay each) and F30 (cross-check the identical block on the sibling `CD_sync`) are both
+SINGLE-AXIS searches over exactly the space this session's dual-fork sweep just showed is a single
+attractor on two independent compilers. They are retained in the ledger as documentation. The
+recorded re-activation trigger is a toolchain model that searches the JOINT `sched.c`
+emission-order x `global.c` allocno-seat space — the same trigger the twin `CD_ready` recorded on
+2026-08-30, and for the same coupled-fixed-point reason (every C change that fixes the order breaks
+the seats and vice versa).
+
+## [s19] F31: PsyQ cc1psx (the compiler that actually built the target) is a better-aligned search oracle than the open-port cc1, because the residual debug_printf argument block is compiler-fork-sensitive.
+- mechanism: The sandbox scores against the open-port cc1 build, so a fork-sensitive residual would make the sandbox gradient the wrong objective; tools/cc1psx_wrapper.sh runs cc1psx 2.7.2.SN.1 as a drop-in cc1 on preprocessed C at ~0.8s/invocation (calibration/self-disproof only, never a build path, per .claude/rules/no-compiler-divergence.md).
+- probe: Built tmp/grind/CD_datasync/s19/{psx.sh,score.py,expand.py,sweep.sh}: ONE mipsel-linux-gnu-cpp pass feeding BOTH tools/gcc-2.7.2/build/cc1 (-mel) and cc1psx, plus a canonicalizer that expands cc1's assembler macros (la, symbol-form lw/sw/lbu, li of a lui-able constant, j $ra) so pre-maspsx output is comparable instruction-for-instruction with asm/funcs/CD_datasync.s. Calibrated on the banked candidate: 82 insns for BOTH forks vs target's 82, LCS distance 6 tracking the sandbox's masked 7. Then scored 23 body spellings on both forks (the 15 banked s9/s18 forms plus 8 written this session).
+- result: Three independent negatives. (1) Equal distance on the candidate: open 6, psx 6 - s18's 'cc1psx is strictly closer on two counts' was an artifact of diffing macro-form cc1 output against already-expanded target bytes. (2) Same residual in KIND: both forks seat target's $a0 idx-0 address chain in $v0/$v1 and issue its lw $a3 EARLY; NEITHER ever emits target's 'lw $a3,0($a0)' as the block's last memory reference (open also misses target's second lbu register, psx matches it but then mis-seats sw 16(sp)). (3) Ranking correlation is near-perfect: 19/23 forms score identically on the two forks, 3 have cc1psx exactly 1 lower, 1 has it 5 lower, and NO form on either fork goes below the shared minimum of 6.
+- verdict: KILLED
+
+## [s19] One of eight fresh argument spellings (arg3-named; arg5-named with arg4 inline; arg5-named then p4-address; a second base pointer for arg4; arg5-named with the idx-0 byte named; arg5-then-arg3 named; arg4 staged before the puts; idx-1 byte named only) makes either compiler issue target's arg4 load LAST.
+- mechanism: Target computes arg5's load first (stored to 16(sp)), then arg3 via lbu D_800A11D5, and issues arg4's lw out of $a0 as the block's final memory reference. If that order were driven by source statement order or by which value is named/pointered, one of these eight re-orderings should move it.
+- probe: tmp/grind/CD_datasync/s19/sweep.sh over the 8 generated bodies, scored on both forks (open/psx): n1 11/10, n2 10/10, n3 6/6, n4 10/10, n5 10/10, n6 11/10, n7 28/23 (+3 insns), n8 10/10.
+- result: None beat the base attractor of 6; n3 ties it, the rest regress. n7 (staging arg4 before the puts) is catastrophic on both forks because it forces a callee-save carry across the call. Banked as memory/grind/CD_datasync/rejected/s19-dualfork-*.c (bank now 84).
+- verdict: KILLED

@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 18,
+ "session_count": 19,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -111,23 +111,29 @@
    "floor": 7,
    "modality": "escalation",
    "headline": "Owner directive executed in full: F29's sched1 replay is now an EMPIRICAL model (tie-break is descending-UID, so the pass preserves pre-sched LUID order; target's window mapped to RTL UIDs 93,116,105,"
+  },
+  {
+   "session": 19,
+   "floor": 7,
+   "modality": "escalation",
+   "headline": "Owner ruling-10 return-to-active executed: the last un-tried axis (cc1psx as the calibration oracle, F31) is KILLED by a 23-form dual-fork sweep - both compilers share the same floor, the same ranking"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F31 (NEW, and now the top item) - because the residual block is measured fork-SENSITIVE, the C search must be re-run with cc1psx as the calibration ORACLE rather than the open-port cc1: score candidate spellings by how close cc1psx's emission is to target, since cc1psx is the compiler that actually built the target and is already strictly closer than the open port on two counts.",
-   "mechanism": "tools/cc1psx_wrapper.sh runs PsyQ cc1psx.exe (2.7.2.SN.1) as a drop-in cc1 on preprocessed C at ~0.8s/invocation, sanctioned for calibration/self-disproof (never a build path). The sandbox score is computed against the open-port build, so it is the WRONG gradient for a fork-sensitive construct; a cc1psx-scored gradient is a different and better-aligned objective. If some spelling makes cc1psx emit target's block exactly, that spelling is the original source shape, and the remaining question becomes the separate, tractable one of what the open port does with THAT spelling.",
-   "next_probe": "Reuse tmp/grind/CD_datasync/s18/psx.sh (preprocess -> open.s + psx.s) and cmp.py (block extraction + alignment against asm/funcs/CD_datasync.s) to build a small sweep driver that scores a body variant by cc1psx block distance. Start with the 14 forms banked this session plus the four rigid attractors, since their open-port scores are already known and the cc1psx scores are the new information. Report the cc1psx-vs-open-port score correlation - if it is weak, that alone explains 18 sessions of a flat open-port floor."
+   "hypothesis": "RETAINED AS DOCUMENTATION ONLY (the 2026-08-30 disposition declares this space closed). F29: inverting the now-empirical descending-UID sched1 model - enumerate the pre-sched LUID orders C can actually emit and replay each - identifies a C-emittable order that produces target's block order.",
+   "mechanism": "The sched1 pick rule is established (ready[0]; descending priority, ties by descending UID) and the dependence DAG plus LOG_LINKS are decoded and on disk from s18. What is missing is a faithful latency-queue / hazard-reordering model validated against the banked chassis traces.",
+   "next_probe": "Do NOT re-run as a single-axis search: s19 showed the whole argument-spelling space is one attractor on TWO independent compilers, so an order-only enumeration cannot escape it. Only worth reviving as part of a JOINT sched.c-order x global.c-seat solver (the recorded re-activation trigger)."
   },
   {
-   "hypothesis": "F29 (carried, now half-executed) - the remaining half is the INVERSION: enumerate the pre-sched LUID orders C can actually emit and replay each through the now-validated sched1 model to see which (if any) produces target's order 93,116,105,119,121,96,123,108,98,111,113,125,131,100.",
-   "mechanism": "The pick rule is established (ready[0]; descending priority, ties by descending UID) and the dependence DAG plus LOG_LINKS are decoded and on disk. What is still needed is a faithful model of the latency queue and the 'greater potential hazard' / 'blocking insn N for k cycles' reorderings, validated by reproducing the observed .sched order for all four banked chassis in tmp/grind/saEft01Init/s16/ before it is trusted.",
-   "next_probe": "Write schedsim.py replaying the backward pass over the decoded DAG; VALIDATE against all four banked chassis traces first; then enumerate C-emittable pre-sched orders (statement boundaries x value/address x inline, which is a small finite set given this session's measurements) and report which replay to target. A universal negative is proof-grade for the whole argument-block axis on the open port - and, crucially, should then be re-run against cc1psx's scheduler per F31, since the fork is now known to matter."
+   "hypothesis": "RETAINED AS DOCUMENTATION ONLY. F30: the identical block on the sibling CD_sync (splat cpu_side_move_dir_4) behaves differently under the same lever, isolating chassis pressure from block mechanism.",
+   "mechanism": "Same 14-insn target sequence, same early-lw-a3 failure, different register pressure and a different spelling of arg3. CD_ready, the third twin, reached the same standing-ruling disposition on 2026-08-30 with the same coupled-fixed-point re-activation trigger, which is evidence the family shares one residual.",
+   "next_probe": "If ever revived, run the s19 dual-fork harness (which is function-agnostic apart from the hardcoded name) on CD_sync FIRST - it costs ~1.5s/form and would settle the family question before any sandbox time is spent."
   },
   {
-   "hypothesis": "F30 (carried) - the identical block should be attacked on the sibling CD_sync (splat cpu_side_move_dir_4), which shares target's block order but differs in register pressure and in arg3's spelling, so a mechanism that is really about the block must behave identically on both.",
-   "mechanism": "Same 14-insn target sequence, same early-lw-a3 failure, different chassis: the sibling names BOTH arg4 and arg5, has no do{}while(0) wrapper, and spells arg3 as the inline global D_800A11DC[D_800A11D5] rather than a hoisted-base load. Anything that behaves differently there is chassis pressure, and that difference is itself a measurement.",
-   "next_probe": "Point tmp/grind/saEft01Init/s16/blockdump.py at the sibling's function section in the same banked dump and compare its sched1 pick trace with the one decoded this session, specifically whether its decisive pick pair is the same LUID race. Then run the cc1psx calibration (F31) on the sibling too - if cc1psx is closer to target on BOTH, the fork-sensitivity finding generalises to the whole twin family and the family should be searched together. Use the sibling as EVIDENCE only; it is queued separately."
+   "hypothesis": "RE-ACTIVATION TRIGGER (the only live one): a toolchain-model advance that can search the JOINT sched.c emission-order x global.c allocno-seat space closes CD_datasync and its two twins together.",
+   "mechanism": "Every C change that fixes the emission order breaks the register seats and vice versa - proven across 19 sessions here and 59 on the twin CD_ready. The current solver suite (ra_solver, sched_solver) is single-axis, which is why both functions land on the same disposition.",
+   "next_probe": "When a joint solver exists, re-open CD_datasync, CD_sync and CD_ready as one basin; the s19 dual-fork harness gives that campaign a 15x-cheaper scoring loop than the sandbox."
   }
  ],
  "judge_constraints": [],
