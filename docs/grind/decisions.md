@@ -16422,3 +16422,49 @@ synthesis, structural, permuter, escalation/solver), on top of thirteen earlier
 sessions, with 128 disproven forms in `memory/grind/func_80034F88/rejected/` and
 ~170,000 permuter iterations over five campaigns including two seeded at the
 floor itself.
+
+
+## 2026-08-30 - func_80045878 (src/text1a_c.c) - **RETRACTION OF THE 2026-08-26 EXHAUSTION FINDING** (grind s9, escalation modality)
+
+The 2026-08-26 entry for this function (this file, "func_80045878 - OWNER-ESCALATION -
+RESOLVED BY STANDING RULING (2026-07-27)") applied the standing terminal refusal on the
+strength of a claimed closed-form proof: "the tail base pseudo is cse-canonical iff
+multi-block and can win $v0 iff single-block. No C spelling can satisfy both." That proof
+had an unmeasured step, and s9 measured it. **It is false, and the disposition it
+supported is void.** No owner action is requested by this note; the item is ACTIVE with a
+lower floor under the 2026-08-30 escalation-batch ruling 10 and simply continues to grind.
+
+**What was wrong.** The 2026-08-26 entry's own frontier recorded the untried input -
+"making the two tail scratch values non-block-local would stop local_alloc from taking
+$v0" - and then dismissed it in prose ("recorded for completeness, NOT as a live hope"),
+reasoning that pseudo 78's hard-reg preferences [4,5] would still send it to $a0. That
+reasoning was never measured. When it IS measured, global.c seats the tail base in $v0 and
+the tail scratch in $v1 - target's exact assignment - so the base does NOT have to be
+block-local to win $v0, and the alleged contradiction dissolves.
+
+**What s9 measured (honest sandbox, `sandbox func_80045878 --disable all`, rules_dropped
+0, 108/108 insns):** floor **10 -> 4**, the first movement since s0. The lever is ordinary
+C: read the third `if`'s last condition operand into a named local
+(`... && ((c = s1[3]) != (-2))`) and carry the tail's two scratch values in that same
+local (`c = a0 + 3; p[11] = c; ... c = 0x8000; *(p+0x18) = c;`). Three properties of the
+carrier are each independently necessary and each was measured: multi-block (V2/V4, score
+13 each, prove one block-local scratch is enough to re-take $v0), never live across a call
+(V5 via `s0`, score 7, comes out callee-save $s0), and not the hard-$v0 call-return value
+(V6 via `v0`, score 7 at 109 insns, pays a `move v1,v0`). Full table and dump citations:
+memory/grind/func_80045878/evidence.md [s9]; forms banked in
+memory/grind/func_80045878/rejected/ and candidate.c.
+
+**What is left.** Four words, both pure adjacent-pair ORDERING swaps, zero register or
+shape differences remaining in the whole function. Named pass, read from
+tools/gcc-2.7.2/sched.c and confirmed in the -dS trace: `adjust_priority` (sched.c:2543)
+grants the temporary `LAUNCH_PRIORITY` (sched.c:187, assigned sched.c:4049) only to a
+newly-ready predecessor for which `birthing_insn_p` (sched.c:2570) is true, i.e. whose
+destination is live AND has `reg_n_sets == 1`. The single-set base copy gets the bump and
+the multi-set carrier does not, which inverts the emission order of the pair. Trace line:
+`;; ready list at T-8: 222 (1) 225 (7f000001), now 225 222`.
+
+**Consequence for the pipeline.** The exhaustion counter for this function is reset by the
+floor drop; the endgame-lock AND-gates were NOT evaluated this session because the
+disposition-session contract only reaches them when no lever drops the floor. The next
+session is a scheduler problem, not an RA problem, and `tools/sched_solver` (order- and
+clock-exact for both scheduler passes) is the matched instrument.

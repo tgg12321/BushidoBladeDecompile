@@ -493,3 +493,78 @@ multisets identical; `goal_from_tgt.py classify` = "FIRST DIVERGENCE: RA",
 - probe: Dumped with P4 in place, edited exactly one statement (`p[3] = 0;` -> `s1[3] = 0;`), re-dumped, then measured both variants with the sandbox and disassembled the sandbox objects.
 - result: The two dumps were byte-identical (.greg 468146 bytes both times; identical .s function body including the `move $4,$17` join copy) while the sandbox objects differed by a whole instruction (108 vs 107) and by the presence of that very copy. The dump taken immediately after the P4 measurement is valid and is what every P4 dump citation rests on; the one taken after the edit is stale.
 - verdict: KILLED
+
+
+## [s9] 2026-08-30 (escalation modality - floor 10 -> 4)
+
+- H-s9-1 (CONFIRMED, and it kills the s8 foreclosure). Making BOTH tail scratch
+  values non-block-local removes pseudo 78's hard conflict with hard reg 2 and
+  global.c then seats the tail base in $v0 and the scratch in $v1, exactly as
+  target has them. Mechanism: local-alloc.c:472 gates on
+  reg_basic_block[i] >= 0; local_alloc runs before global_alloc and takes the
+  lowest free GR for any tail-block-local pseudo. Probe: V3 (hoist both into
+  the arms) -> the tail renders "move v0,s1 / sh v1,22(v0) / ...". The s8 claim
+  that hard-reg preferences [4,5] would still force $a0 is FALSE - it was never
+  measured.
+- H-s9-2 (CONFIRMED). One scratch is not enough. V2 (only 0x8000 hoisted,
+  score 13) and V4 (only a0+3 hoisted, score 13) both leave a block-local
+  scratch that takes $v0 and pushes the base back to $a0.
+- H-s9-3 (CONFIRMED). A single reused local can carry BOTH tail scratches and
+  that is what target's single $v1 seat wants. The carrier must be (a)
+  mentioned in an earlier basic block, (b) never live across a call, and (c)
+  not the hard-$v0 call-return value. Violating (b) gives $s0 (V5, score 7);
+  violating (c) costs a "move v1,v0" (V6, 109 insns, score 7).
+- H-s9-4 (CONFIRMED). Which condition temp is used matters, because the
+  carrier's earlier use fixes its seat. s1[4]'s temp must be $v0 in target, so
+  carrying through it scores 6 (V7); s1[3]'s temp is $v1 in target, and
+  carrying through it scores 4 (V8 = candidate.c).
+- H-s9-5 (KILLED). "Source statement order in the tail selects which of
+  p = s1 / c = a0+3 is emitted first." Probe V9 swapped them; output
+  byte-identical. sched.c re-derives the order from priority, not RTL order.
+- H-s9-6 (KILLED). "Give the base pseudo a second set so birthing_insn_p's
+  reg_n_sets == 1 test fails and the LAUNCH_PRIORITY bump is denied", spelled
+  as routing the third-if else arm's three record stores through p. Probe V11:
+  score 20 / 109 insns - the else arm gains an instruction and the block is
+  wrecked. A cheaper spelling of the same idea is still open (see frontier).
+- H-s9-7 (CONFIRMED, mechanism only). Both remaining residuals are the same
+  scheduler phenomenon: an "addiu rX,s2,3" emitted at the wrong end of its
+  block because its producer lost the adjust_priority (sched.c:2543)
+  LAUNCH_PRIORITY bump that birthing_insn_p (sched.c:2570) grants only to live
+  single-set destinations. Trace line:
+  ";; ready list at T-8: 222 (1) 225 (7f000001), now 225 222".
+
+## [s9] Making BOTH tail scratch values non-block-local removes pseudo 78's hard conflict with hard reg 2, and global.c then seats the tail base in $v0 and the scratch in $v1 (target's assignment), contradicting s8's claim that hard-reg preferences [4,5] would still force $a0.
+- mechanism: local-alloc.c:472 only claims pseudos with reg_basic_block[i] >= 0; local_alloc runs before global_alloc (toplev.c 3049 vs 3077) and hands the lowest free GR ($v0) to any tail-block-local scratch, which is the sole origin of pseudo 78's hard_conf=[2,29]. Remove the block-local scratches and global.c is free to seat the base in $v0.
+- probe: V3 (tmp/grind/func_80045878/s9/v3.c): both scratches assigned in the third-if arms. objdump of the tail renders 'move v0,s1 / addiu v1,s2,3 / sh v1,22(v0)' - target's registers.
+- result: score 10 at 109 insns; tail base = $v0, scratch = $v1 for the first time in nine sessions
+- verdict: CONFIRMED
+
+## [s9] One scratch is not enough - if EITHER tail scratch stays block-local it takes $v0 and pushes the base back to $a0.
+- mechanism: local_alloc claims each block-local pseudo independently and find_free_reg takes the lowest free GR, so a single surviving tail-local quantity re-creates the hard conflict with reg 2.
+- probe: V2 (only the 0x8000 constant hoisted) and V4 (only the a0+3 value hoisted), both measured with sandbox --disable all and objdump.
+- result: V2 score 13/108 (li stays, base $a0); V4 score 13/108 (addiu stays, base $a0)
+- verdict: CONFIRMED
+
+## [s9] A single reused local can carry both tail scratches (matching target's single $v1 seat), but it must be multi-block, never live across a call, and not the hard-$v0 call-return value.
+- mechanism: The carrier's earlier live range merges into one allocno: calls_crossed > 0 forces a callee-save seat in global.c, and reusing the call-return local forces the return value out of hard $v0 and costs an extra copy insn.
+- probe: V5 (carrier = existing s0, whose else-arm range crosses func_800455AC/func_80044ED8) and V6 (carrier = existing v0 call-return local).
+- result: V5 score 7/108 with the tail rendered 'addiu s0,s2,3 / li s0,0x8000' (callee-save); V6 score 7 at 109 insns with an added 'move v1,v0' at the top
+- verdict: CONFIRMED
+
+## [s9] Which of the two condition temps is reused as the carrier decides the seat, because the earlier use pins it: target seats the s1[4] temp in $v0 and the s1[3] temp in $v1, and the tail scratch must be $v1.
+- mechanism: One pseudo gets one hard register for its whole (merged) live range, so the carrier's condition-site register and its tail-site register are the same seat.
+- probe: V7 (carrier = the s1[4] condition temp) vs V8 (carrier = the s1[3] condition temp), both sandbox-measured and word-aligned against asm/funcs/func_80045878.s.
+- result: V7 score 6/108 (carrier lands in $v1 at the condition where target has $v0); V8 score 4/108 with every register in the function matching target
+- verdict: CONFIRMED
+
+## [s9] Source statement order in the tail selects which of 'p = s1' and 'c = a0 + 3' is emitted first.
+- mechanism: If the scheduler were order-preserving for a priority tie, swapping the two statements would swap the emitted pair and close residual idx 89/90.
+- probe: V9: 'c = a0 + 3;' written before 'p = s1;' in the tail; RTL order confirmed swapped in the .flow/.combine dumps.
+- result: output byte-identical to V8 (score 4, 108 insns) - sched.c re-derives the order from INSN_PRIORITY, not from RTL order
+- verdict: KILLED
+
+## [s9] Giving the tail base pseudo a second set defeats birthing_insn_p's reg_n_sets == 1 test, denies it the LAUNCH_PRIORITY bump, and flips the idx 89/90 pair - spelled as routing the third-if else arm's record stores through p.
+- mechanism: birthing_insn_p (sched.c:2570) returns true only when the destination is live AND reg_n_sets[dest] == 1; adjust_priority (sched.c:2543) raises only birthing predecessors to max_priority (LAUNCH_PRIORITY, sched.c:187/4049).
+- probe: V11: 's1[3] = 1; *(s1+0x24) = 0; *(s1) = 0;' rewritten as 'p = s1; p[3] = 1; *(p+0x24) = 0; *(p) = 0;' in the else arm.
+- result: score 20 at 109 insns - the else arm gains an instruction and its schedule is wrecked; this spelling is dead, the underlying idea is not
+- verdict: KILLED

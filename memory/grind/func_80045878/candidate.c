@@ -1,52 +1,71 @@
-/* !! s7 (2026-08-26) READ FIRST !!  This body is the lowest-SANDBOX-SCORE form
-   (10, re-verified s7) but it is NOT the closest form and it is NOT the
-   chassis to work from -- it is one instruction SHORT of target (107 vs 108).
-   The chassis to start from is now
-     rejected/chassis-p4-thenarm-p-tail-pure-rename.c
-   which scores 12 at build_insns 108 == target 108 and aligns with target
-   INDEX-FOR-INDEX, leaving exactly two divergences in the whole function:
-     * idx 89-97: the nine tail instructions in target's exact order and
-       shapes, differing ONLY by the register rename $a0 -> $v0 and
-       $v0 -> $v1;
-     * idx 50: ours fills the `beq v1,v0` delay slot with `move a0,s3`
-       (duplicated from idx 53) where target leaves a `nop` (reorg.c).
-   The s6 chassis (rejected/chassis-armsplit-si-temp-tail-matches-except-
-   basecopy.c) is superseded: P4 is that body plus the cse.c:826 early-mention
-   lever that materialises target's join base copy.  See evidence.md +
-   hypotheses.md [s7]. */
-/* 2026-08-24 MIGRATION NOTE: HEAD is now INCLUDE_ASM — migrated in
-   4faaa384 (2026-08-19 batch 2); all rules retired and all in-source cheat-asm removed
-   from main. Statements below about "HEAD", pins, rules carried, or
-   "applied to src" describe the PRE-MIGRATION tree (banked at
-   retired-chassis-2026-08/body.c). This body must be pasted over the
-   INCLUDE_ASM line before any sandbox re-measure. */
-/* func_80045878 (text1a_c.c) — best pure-C form, sandbox --disable all = 10
- * (build_insns 107 vs target 108). This IS the HEAD body; apply verbatim to
- * src/text1a_c.c to resume at the floor. Two coupled residual gaps remain:
+/* func_80045878 (src/text1a_c.c) -- BEST FORM, s9 (2026-08-30).
+ * sandbox --disable all = 4, build_insns 108 == target 108.
+ * This SUPERSEDES the s7 "P4" chassis (score 12) and the old floor-10 body:
+ * the honest floor moved 10 -> 4 this session, the first movement since s0.
  *
- *   Gap A (1 insn): target recomputes `addiu s3,s2,3` (=a0+3) in the else arm
- *     (0x800458F8, last insn before .L800458FC). Our build folds it away via
- *     cse.c (pre-if `s3=a0+3` dominates; a0/s3 unchanged across else calls)
- *     => 107. Arm-split (set s3 in both arms) MATERIALIZES it (107->108) but
- *     sched1 hoists it 3 slots early => score 11. See rejected/
- *     armsplit-s3-materializes-but-sched-early.c.
+ * WHAT CHANGED vs the s7 P4 chassis (two edits, both ordinary C):
+ *   (1) the third if's last condition operand is read into a named local:
+ *         ... && ((c = s1[3]) != (-2))
+ *   (2) the tail's two scratch values are carried in that SAME local c:
+ *         c = a0 + 3;  p[11] = c;   ...   c = 0x8000;  *(p+0x18) = c;
  *
- *   Gap B (~9 insns): target's final store block copies s1 into a caller-save
- *     base (`addu v0,s1,zero`), stores through v0, uses s2 (=a0) DIRECTLY for
- *     the a0 stores, and holds scratch (a0+3, 0x8000) in v1. Our build stores
- *     directly through s1 with an extra `move v0,s2`. Single-set `s16 *p = s1`
- *     alias is copy-propagated away (WIP-ruled). Mechanism: local-alloc gives
- *     a short-lived tail-base pseudo a caller-save; need s1 kept as the long-
- *     lived record pseudo while a separate tail base materializes.
+ * WHY IT WORKS (measured, not guessed -- cc1 -dS trace in
+ * tmp/grind/func_80045878/s9/, sched.c line numbers from tools/gcc-2.7.2):
+ *   The s8 entry in docs/grind/decisions.md claimed a closed-form
+ *   contradiction: "the tail base pseudo is cse-canonical iff multi-block and
+ *   can win $v0 iff single-block".  That claim is now DISPROVEN.  The base can
+ *   also win $v0 from global.c -- but only if NO tail-block-local pseudo has
+ *   already taken $v0 in local_alloc.  local-alloc.c:472 only claims pseudos
+ *   with reg_basic_block[i] >= 0, so giving the two tail scratches a mention
+ *   in an EARLIER basic block (here: the condition read) makes them
+ *   REG_BLOCK_GLOBAL, local_alloc claims nothing in the tail, pseudo 78 loses
+ *   its hard conflict with hard reg 2, and global.c hands the base $v0 and the
+ *   scratch $v1 -- target's exact assignment.
+ *   The carrier must additionally NEVER BE LIVE ACROSS A CALL, or the merged
+ *   allocno is callee-save: reusing `s0` (whose else-arm range crosses calls)
+ *   gives $s0 and scores 7 (rejected/tail-carrier-s0-callee-save-score7.c);
+ *   reusing `v0` (the call-return local) costs an extra `move v1,v0` at the
+ *   top, 109 insns, score 7 (rejected/tail-carrier-v0-return-copy-109.c).
+ *   The two condition temps are the only call-free multi-block anchors in the
+ *   function; s1[4]'s temp is $v0 in target, so the carrier must be s1[3]'s
+ *   (target: `lh v1,0x6(s1)` -- already $v1).  Using s1[4]'s scores 6
+ *   (rejected/tail-carrier-cond-s1x4-wrong-seat-score6.c).
+ *
+ * RESIDUAL (4 words, both pure ORDERING, no register or shape diffs left):
+ *   idx 29<->32  ours `addiu s3,s2,3` first, target last, in the first-if
+ *                else-arm block (the long-standing "Gap A" placement).
+ *   idx 89<->90  ours `addiu v1,s2,3 ; move v0,s1`, target `addu v0,s1,zero ;
+ *                addiu v1,s2,0x3`.
+ *   MECHANISM NAMED THIS SESSION (sched.c:2543 adjust_priority ->
+ *   sched.c:2570 birthing_insn_p): the scheduler runs BACKWARD; when insn 228
+ *   (`sh v1,22(v0)`) is scheduled it is temporarily given LAUNCH_PRIORITY
+ *   (sched.c:187 = 0x7f000001, assigned at sched.c:4049), and adjust_priority
+ *   propagates that maximum to any newly-ready predecessor that is a
+ *   "birthing" insn.  birthing_insn_p returns true only when the destination
+ *   is live AND `reg_n_sets[dest] == 1`.  The base copy `p = s1` is a
+ *   single-set pseudo -> bumped to 0x7f000001 -> scheduled at T-8; the scratch
+ *   `c = a0+3` is a multi-set pseudo (that is the price of the carrier) ->
+ *   priority 1 -> scheduled at T-9 -> EMITTED FIRST.  The dump line is
+ *   `;; ready list at T-8: 222 (1) 225 (7f000001), now 225 222`.
+ *   To flip it, either the base must stop being single-set (measured:
+ *   routing the else arm's record stores through p costs an insn and scores
+ *   20 -- rejected/p-set-in-else-arm-score20.c) or the scratch must become
+ *   single-set (which re-blocks it as tail-block-local).  This is the next
+ *   session's target and it is a SCHEDULER question, not an RA question.
+ *
+ * Apply verbatim over the INCLUDE_ASM line in src/text1a_c.c.
  */
 void func_80045878(s32 a0, s32 a1, s32 a2) {
-    s32 s3 = a0 + 3;
+    s32 s3;
     s32 *v0;
     s16 *s1;
+    s16 *p;
     s32 s0;
+    s32 c;
     v0 = func_8004574C(a0);
     if (v0 != 0) {
         s1 = (s16 *) v0[1];
+        s3 = a0 + 3;
     } else {
         s1 = (s16 *) func_800455AC(a0);
         saSeMain_80045600(a0, 0x1A88 + ((s32) s1));
@@ -59,8 +78,9 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
     if (func_8004574C(s3) != 0) {
         func_800400F8((s32) s1);
     }
-    if (((func_8004574C(s3) != 0) && (s1[4] == a1)) && (s1[3] != (-2))) {
-        s1[3] = 0;
+    if (((func_8004574C(s3) != 0) && (s1[4] == a1)) && ((c = s1[3]) != (-2))) {
+        p = s1;
+        p[3] = 0;
     } else {
         *((s32 *) (((s32) s1) + 0x20)) = a2;
         s0 = (s32) func_800455AC(s3);
@@ -78,10 +98,13 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
         *((s32 *) (((s32) s1) + 0x24)) = 0;
         *((s32 *) s1) = 0;
     }
-    s1[11] = a0 + 3;
-    s1[2] = a0;
-    s1[4] = a1;
-    s1[10] = a0;
-    s1[8] = a0;
-    *((s32 *) (((s32) s1) + 0x18)) = 0x8000;
+    p = s1;
+    c = a0 + 3;
+    p[11] = c;
+    p[2] = a0;
+    p[4] = a1;
+    p[10] = a0;
+    p[8] = a0;
+    c = 0x8000;
+    *((s32 *) (((s32) p) + 0x18)) = c;
 }

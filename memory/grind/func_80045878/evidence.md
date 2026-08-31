@@ -620,3 +620,106 @@ to HEAD (INCLUDE_ASM) at end of session.
 - [s8] src/text1a_c.c restored to HEAD (INCLUDE_ASM) at end of session; no rules/pipeline/engine files touched; no permuter campaigns launched, none left alive.
 
 - [s8] Disposition filed by this session at docs/grind/decisions.md, entry '## 2026-08-26 - func_80045878 (src/text1a_c.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'.
+
+
+## [s9] 2026-08-30 - escalation modality - FLOOR MOVED 10 -> 4 (first movement since s0)
+
+The disposition mandate was to reach a disposition UNLESS a genuinely un-tried
+lever DROPS the floor. The s8 frontier's last unexplored input ("make the two
+tail scratch values non-block-local so local_alloc cannot take $v0") was
+probed rather than assumed, and it is REAL. The s8 closed-form foreclosure in
+docs/grind/decisions.md (2026-08-26) is therefore WRONG and must not be quoted
+again: it assumed, without measuring, that pseudo 78's hard-reg preferences
+[4,5] would still send it to $a0 once the conflict with hard reg 2 was gone.
+They do not.
+
+### Measurement chain (all this session, all on the s7 P4 chassis)
+| form | change | score | insns |
+|---|---|---|---|
+| P4 (s7 chassis) | baseline, re-measured | 12 | 108 |
+| V2 | only 0x8000 made multi-block | 13 | 108 |
+| V4 | only a0+3 made multi-block | 13 | 108 |
+| V3 | BOTH hoisted into the arms | 10 | 109 |
+| V5 | both carried in the existing s0 local | 7 | 108 |
+| V6 | both carried in the existing v0 local | 7 | 109 |
+| V7 | both carried in the s1[4] condition temp | 6 | 108 |
+| V8 | both carried in the s1[3] condition temp (= candidate.c) | 4 | 108 |
+| V9 | V8 with the two tail producers source-swapped | 4 | 108 |
+| V11 | V8 + p also set in the else arm | 20 | 109 |
+
+### What the mechanism actually is (three necessary properties of the carrier)
+1. Multi-block. local-alloc.c:472 only claims a pseudo when
+   reg_basic_block[i] >= 0. A scratch born and dead inside the tail block is
+   claimed by local_alloc, which hands it the lowest free GR ($v0) BEFORE
+   global_alloc runs; that is the entire origin of pseudo 78's
+   hard_conf=[2,29]. Give the scratch a mention in any earlier block and
+   local_alloc claims nothing in the tail; global.c then seats the base in $v0
+   and the scratch in $v1 - target's exact assignment. V2/V4 prove BOTH
+   scratches must move: leaving either one block-local re-takes $v0.
+2. Never live across a call. The carrier's earlier live range is merged into
+   one allocno. s0 (V5) is live across func_800455AC/func_80044ED8 in the else
+   arm, so calls_crossed > 0 and the allocno is callee-save: the tail comes out
+   addiu s0,s2,3 / li s0,0x8000 instead of $v1. Score 7.
+3. Not the call-return value. v0 (V6) satisfies (1) and (2) and produces
+   target's registers exactly, but forcing the func_8004574C return out of the
+   hard $v0 costs a "move v1,v0" at the top: 109 insns.
+   The only anchors in this function satisfying all three are the two condition
+   temps of the third if. s1[4]'s temp is $v0 in target (lh v0,0x8(s1)), so
+   using it mis-seats the carrier (V7, score 6). s1[3]'s temp is $v1 in target
+   (lh v1,0x6(s1)) - that is V8.
+
+### The remaining residual is 4 words and is PURELY ORDERING
+Word-for-word alignment (tmp/grind/func_80045878/s9/align.py, 108 vs 108):
+every non-relocation word matches except two adjacent-pair swaps.
+  * idx 29<->32, first-if else arm: ours "addiu s3,s2,3 ; li v0,-1 ;
+    sh v0,8(s1) ; sh zero,6(s1)"; target has the addiu s3 LAST.
+  * idx 89<->90, tail: ours "addiu v1,s2,3 ; move v0,s1"; target
+    "addu v0,s1,zero ; addiu v1,s2,0x3".
+No register differs anywhere in the function any more.
+
+### The named pass for the swap (read from source + the -dS trace, not guessed)
+sched.c schedules each block BACKWARD. At sched.c:4049 the insn being scheduled
+is temporarily given LAUNCH_PRIORITY (sched.c:187 = 0x7f000001) so that "at
+least one reg-killing insn can be launched ahead of all others";
+schedule_insn (sched.c:2602) then calls adjust_priority (sched.c:2543) on every
+predecessor that has just become ready, and adjust_priority raises a
+predecessor to max_priority ONLY IF birthing_insn_p (sched.c:2570) returns
+true, which requires the destination to be live AND reg_n_sets[dest] == 1.
+In the tail block both "c = a0+3" (insn 222) and "p = s1" (insn 225) become
+ready when the "sh v1,22(v0)" store is scheduled. p is a single-set pseudo so
+it is bumped; c is multi-set (three sets: the condition read plus the two tail
+values) so it keeps priority 1. The dump line is verbatim:
+    ;; ready list at T-8: 222 (1) 225 (7f000001), now 225 222
+Higher priority is scheduled EARLIER in the backward walk, i.e. emitted LATER -
+so the base copy is emitted second and the addiu first, which is the swap.
+V9 proves source statement order is not a lever here (byte-identical output).
+V11 proves the obvious counter-lever (make the base multi-set by routing the
+else arm's stores through p) costs an instruction and scores 20.
+
+### Dump-freshness discipline (s8 frontier item) was honoured
+pwsh tools/grinder/dump.ps1 func_80045878 was taken immediately after the
+sandbox run it explains, and tmp/grind/func_80045878/dumps/text1a_c.s was
+confirmed to carry the same tail (addu $3,$18,3 ; move $2,$17) as the objdump
+of tmp/sandbox/func_80045878/text1a_c.o before any dump line was cited.
+
+- [s9] HONEST FLOOR MOVED 10 -> 4 (sandbox func_80045878 --disable all, rules_dropped 0, cheat_asm_stripped 66, build_insns 108 == target_insns 108). First floor movement since s0; the exhaustion counter is reset.
+
+- [s9] The s7 P4 chassis was re-measured this session and still scores 12/108, so the chassis is unchanged and every s7/s8 spelling conclusion taken on it remains chassis-valid.
+
+- [s9] s8's closed-form foreclosure ('the tail base pseudo is cse-canonical iff multi-block and can win $v0 iff single-block; no C spelling can satisfy both', docs/grind/decisions.md 2026-08-26) is DISPROVEN. There is a third regime it never measured: base multi-block AND scratches multi-block, in which global.c - not local_alloc - seats the base in $v0.
+
+- [s9] The closing lever is ordinary C on the s7 P4 chassis: read the third if's last condition operand into a named local ('... && ((c = s1[3]) != (-2))') and carry both tail scratch values in that same local ('c = a0 + 3; p[11] = c;' ... 'c = 0x8000; *(p+0x18) = c;').
+
+- [s9] Carrier requirements, each independently measured: (a) multi-block - V2/V4 both score 13 because a single surviving block-local scratch re-takes $v0; (b) never live across a call - V5 via 's0' scores 7 and comes out callee-save $s0; (c) not the call-return local - V6 via 'v0' scores 7 at 109 insns because the func_8004574C return must be copied out of hard $v0.
+
+- [s9] Seat selection is fixed by the carrier's earlier use: target has 'lh v0,0x8(s1)' for the s1[4] temp and 'lh v1,0x6(s1)' for the s1[3] temp, so only the s1[3] temp can be the $v1 tail carrier. V7 (s1[4]) scores 6, V8 (s1[3]) scores 4.
+
+- [s9] At score 4 there are ZERO register differences and ZERO shape differences left in the whole 108-instruction function. Word-for-word alignment (tmp/grind/func_80045878/s9/align.py) shows exactly two adjacent-pair ORDERING swaps: idx 29<->32 ('addiu s3,s2,3' first in ours, last in target, first-if else arm) and idx 89<->90 ('addiu v1,s2,3 ; move v0,s1' in ours vs 'addu v0,s1,zero ; addiu v1,s2,0x3' in target).
+
+- [s9] Pass attribution for both swaps was READ, not guessed: sched.c schedules each block backward; the insn being scheduled is temporarily given LAUNCH_PRIORITY (tools/gcc-2.7.2/sched.c:187 = 0x7f000001, assigned at sched.c:4049), and schedule_insn (sched.c:2602) calls adjust_priority (sched.c:2543) on each newly-ready predecessor, which raises it to max_priority only when birthing_insn_p (sched.c:2570) is true - i.e. destination live AND reg_n_sets[dest] == 1. Verbatim trace line from the -dS dump: ';; ready list at T-8: 222 (1) 225 (7f000001), now 225 222'.
+
+- [s9] Dump freshness was verified before any dump line was cited (the s8 frontier item): tmp/grind/func_80045878/dumps/text1a_c.s carries the same tail ('addu $3,$18,3 ; move $2,$17') as the objdump of tmp/sandbox/func_80045878/text1a_c.o.
+
+- [s9] src/text1a_c.c was restored to INCLUDE_ASM("asm/funcs", func_80045878); at the end of the session per asm-until-matched; the score-4 body is banked at memory/grind/func_80045878/candidate.c.
+
+- [s9] A retraction note for the 2026-08-26 terminal-refusal entry was appended to docs/grind/decisions.md; it requests no owner action and asks no question - the item simply continues ACTIVE at the lower floor under the 2026-08-30 escalation-batch ruling 10.

@@ -1,7 +1,7 @@
 {
  "func": "func_80045878",
  "file": "text1a_c",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -57,23 +57,29 @@
    "floor": 10,
    "modality": "escalation",
    "headline": "R2 proven closed-form dead: the tail base pseudo is cse-canonical iff multi-block and can win $v0 iff single-block; both endgame-lock gates fail, standing 2026-07-27 ruling applied."
+  },
+  {
+   "session": 9,
+   "floor": 4,
+   "modality": "escalation",
+   "headline": "s8's closed-form foreclosure DISPROVEN: making both tail scratches non-block-local via a call-free condition-temp carrier seats base=$v0/scratch=$v1 exactly as target; floor 10 -> 4, residual is 4 wor"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Making the two tail scratch values non-block-local would stop local_alloc from taking $v0 and remove pseudo 78's hard conflict with hard reg 2 - the last mechanically-unexplored input.",
-   "mechanism": "local_alloc runs before global_alloc and only claims pseudos whose live range is inside one basic block (local-alloc.c:472 gates on reg_basic_block[i] >= 0). If the a0+3 value and the 0x8000 constant were live across a block boundary they would fall to global.c instead, and pseudo 78 (priority 30000, allocated first) would face no hard conflict with reg 2.",
-   "next_probe": "Recorded for completeness, NOT as a live hope: even with the conflict gone, pseudo 78 carries hard-reg preferences [4,5] and global.c find_reg tries preferred regs first, so it still lands on $a0; and hoisting a0+3 out of the tail re-folds it with s3 (s2/s3 measured this) while hoisting the 0x8000 constant lengthens a live range across calls. Before spending a session on it, measure whether removing the conflict alone changes anything on a throwaway body, and read where the [4,5] preference is actually recorded (global.c set_preference / expand_preferences) rather than assuming."
+   "hypothesis": "The idx 89<->90 swap closes if the tail base copy loses its birthing_insn_p LAUNCH_PRIORITY bump, i.e. if the base pseudo stops being single-set WITHOUT costing an instruction.",
+   "mechanism": "birthing_insn_p (tools/gcc-2.7.2/sched.c:2570) requires reg_n_sets[dest] == 1; adjust_priority (sched.c:2543) bumps only birthing predecessors to max_priority, and in the backward walk a higher-priority insn is scheduled earlier and therefore EMITTED LATER. Denying the bump makes the base copy tie with the carrier at priority 1 and fall to the schedule_select hazard tie-break.",
+   "next_probe": "V11 (routing the else arm's three record stores through p) is dead - it costs an insn and scores 20. Try instead spellings whose extra set of the base is free: (i) set p in the third-if THEN arm only, so the join copy is the second set (the then-arm copy is already propagated away today, so check reg_n_sets in the .greg/.lreg dump BEFORE trusting the source form); (ii) use an EXISTING multi-set local as the tail base instead of the invented p - 'v0' is the obvious one and rejected/tail-base-reuse-v0-hard-conflicts-with-v0.c was measured on the OLD chassis where the block-local scratches still owned $v0, so it must be re-measured on the s9 carrier chassis."
   },
   {
-   "hypothesis": "The residual is reachable at all from pure C.",
-   "mechanism": "Closed-form contradiction: cse.c:826 canonicality requires the tail base pseudo to be multi-block; local_alloc winning $v0 for it requires it to be single-block; flow.c:2074 fixes REG_BASIC_BLOCK before combine can undo the earlier mention.",
-   "next_probe": "Do NOT re-spell the pointer copy - all six placements are measured and banked in memory/grind/func_80045878/rejected/. Any future attempt must change the CFG itself (so the tail is not the function's last basic block, or so the tail block's scratch values are not born there), which is a whole-function reshape, not a spelling."
+   "hypothesis": "The idx 29<->32 swap in the first-if else arm is the same birthing/LAUNCH_PRIORITY phenomenon and may fall to the same lever, since s3 is a two-set pseudo (assigned in both arms) and the 'li v0,-1' beside it is single-set.",
+   "mechanism": "Same adjust_priority/birthing_insn_p gate (sched.c:2543/2570). In block 2 of the -dS trace the bump lands on insn 67 ('67 (7f000001)' at T-3) and not on the addiu, which is why the addiu is emitted at the head of the block instead of at its tail.",
+   "next_probe": "Map the block-2 insn UIDs to source statements from the .combine dump first (do NOT guess the mapping), then test whether making s3 single-set on the else path - or giving the -1 store a second set - flips the pair. Note both residuals are the SAME shape ('addiu rX,s2,3' at the wrong end of its block), so one correct lever may close both and reach 0."
   },
   {
-   "hypothesis": "Pass attribution for this function can be taken from tools/grinder/dump.ps1 without cross-checking.",
-   "mechanism": "The dump tool did not pick up a source edit this session and emitted stale, byte-identical dumps.",
-   "next_probe": "Always take the dump immediately after the sandbox measurement it is meant to explain, and confirm the dumped .s function body matches the disassembly of tmp/sandbox/<func>/<stem>.o before citing it (helper: tmp/grind/func_80045878/s8/dis.sh)."
+   "hypothesis": "tools/sched_solver can decide both swaps in one pass rather than by C-spelling enumeration.",
+   "mechanism": "sched_solver models both GCC 2.7.2 scheduler passes order- and clock-exact, which is precisely the residual class left here; the RA question that consumed s2-s8 is now fully closed (no register differs anywhere in the function).",
+   "next_probe": "Feed the candidate.c body to sched_solver, ask it for the ready-list state at the idx 89/90 and idx 29/32 decision points, and have it rank the C-level levers that change INSN_PRIORITY or reg_n_sets for those two producers. Verdicts are hypotheses until a spelled C form measures."
   }
  ],
  "judge_constraints": [],
