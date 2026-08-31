@@ -1112,3 +1112,89 @@ input left is source order, which E4/E5 measure as contributing nothing.
 - [s11] Search limits stated for the next session: perturb.py pairs at depth 2 (there is no depth 3) and its atom vocabulary is luid / luid_move / add_dep / cost over a single block's inputs. What makes the foreclosure bite is that target's instruction SET is pinned (79 insns, each identified), so the dependence graph is pinned too and source order is the only free input left - which the luid searches measure as contributing nothing.
 
 - [s11] tools/ra_solver has never been run on this function; the one surviving in-model vector's blocking half is a register-identity question, which is ra_solver's axis rather than sched_solver's.
+
+## [s12-escalation] 2026-08-30 — the owner-funded calibration probe (ruling 7) EXECUTED and NEGATIVE
+
+**E1 — chassis re-measured.** `candidate.c` applied over the INCLUDE_ASM line →
+`sandbox func_80072CD4 --disable all` = **4**, target_insns 79 == build_insns 79, rules_dropped 0
+(`tmp/grind/func_80072CD4/s12/sandbox_candidate.json`). `src/text1b.c` reverted to
+`INCLUDE_ASM("asm/funcs", func_80072CD4);` immediately after; `git status --porcelain src/` clean
+at session end. The floor is unmoved since s2.
+
+**E2 — THE HEADLINE: cc1psx and the frozen build cc1 are BYTE-IDENTICAL on this function, for
+BOTH chassis.** This is the owner's ruling-7 probe (decisions.md 2026-08-30 escalation batch,
+line 14870), executed for the first time. Design: the FULL text1b TU was preprocessed once per
+body with the exact Makefile `CPP_FLAGS`+`CPP_DEFS`, then compiled by (a)
+`tools/gcc-2.7.2/build/cc1` at the exact Makefile `CC_FLAGS`
+(`-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel`) and (b)
+the ORIGINAL PsyQ `cc1psx.exe` (GCC 2.7.2.SN.1) via `tools/cc1psx_wrapper.sh` under dosemu2 at its
+supported flag subset (`-O2 -G0 -mcpu=3000 -mips1 -funsigned-char -w`). Driver:
+`tmp/grind/func_80072CD4/s12/probe.sh <body> <tag>`. After normalising ONLY the local-label
+spelling (`.L837` vs `$L834`), the extracted `func_80072CD4` bodies are identical line-for-line:
+118 lines for the xblock chassis, 119 for the floor-4 chassis. Same instruction set, same register
+assignment, same schedule, same delay-slot fills, same cross-jump merge point. Artifacts:
+`cc1_xblock.s`/`psx_xblock.s`, `cc1_cand.s`/`psx_cand.s`, `probe_diff.txt`, `tu_*.i`.
+DIAGNOSTIC ONLY — no build path, Makefile, or flag was touched.
+
+**E3 — what E2 KILLS.** The s11 frontier hypothesis "the unreachability is a toolchain-fidelity
+signal rather than a C-search failure" (the owner packet's Option A) is DISPROVEN by measurement,
+not by argument. The original compiler, on the same C, produces our schedule — so the divergence
+from target is a property of the C we are writing, exactly as
+`.claude/rules/no-compiler-divergence.md` asserts. Permanent kill; "maybe the compiler is the
+variable" is off this function's board for good, and the probe design (`probe.sh`) is reusable
+verbatim for any other BB2 function that reaches this argument (change the body path and TU name).
+
+**E4 — target's arm/merge shape re-read directly this session (asm/funcs/func_80072CD4.s:21-42),
+confirming s11 E3 and sharpening the residual.** Target's inner arms each keep `sb $v0,0xD` INSIDE
+the arm and end with the constant `addiu $v0,$zero,0x32` / `0x46` (the then-arm's in the `j` delay
+slot); the merge label `.L80072D64` is then `sb $v1,0x4 / sb $v1,0xC / sb $v0,0xE`. Critically,
+target reuses **$v0** for the cross-block value — the SAME register the arm just used as its
+constant scratch — which is only possible because that `li` is emitted LAST in the arm. Our xblock
+build hoists that `li` to the arm TOP (sched1), which (a) forces RA to give it a distinct seat
+($3, with fc_const at $4) and (b) makes the arm tails identical so jump2 cross-jumps `sb $v0,0xD`
+out into the merge block (78 insns, one short). So the register difference is DOWNSTREAM of the
+sched1 hoist, not an independent RA axis: `tools/ra_solver` cannot help here, because with the
+hoisted order there is no legal assignment that puts the cross-block pseudo in $v0 (the arm's own
+constants need it). The single residual mechanism for this function is exactly one thing: prevent
+sched1's hoist of the arm-tail `li` WITHOUT demanding a different instruction — and s11 E4
+measured zero C-spellable vectors for that at depth 2.
+
+**E5 — gate (i) re-measured.** `python3 tools/scan_hand_coded.py --single func_80072CD4` = tier
+**LOW, score 0/8**, S1-S8 all negative, 79 insns / 3 spills / 6 distinct regs
+(`tmp/grind/func_80072CD4/s12/scan_hand_coded.txt`). Unchanged from s10/s11. No canonical-asm path.
+
+**E6 — gate (ii) re-checked.** Re-grep of `docs/reference/sotn-construct-index.md` (pinned SOTN
+master `aa53500226ee84be763f3e8702b27de06456b3a7`) returns the same 2 untagged-PSX
+`dup_if_else_arm` hits s10 scored; the closest, index line 899 → `src/boss/bo4/unk_46E7C.c:2865`
+(`prim->x2 = prim->x3 =`), is a single-line textual heuristic match exhibiting none of the
+operative property (unconditional common-tail statement lifted into BOTH arms, second copy
+cross-jump-dead, sole effect the merge block's store schedule). Gate FAILED; citation carried to
+the borderline log.
+
+**E7 — disposition filed.** `## 2026-08-30 — func_80072CD4 (src/text1b.c) — OWNER-ESCALATION —
+RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE` appended at
+docs/grind/decisions.md:15851. No packet question is posed: ruling 7's question is now answered,
+and a family grant for the banned duplication construct is the pre-decided-NO auto-reject class.
+Re-open triggers restated there; the fidelity trigger is deleted from the list as dead.
+
+- [s12] CALIBRATION (owner ruling 7, first execution): the original PsyQ cc1psx.exe (GCC 2.7.2.SN.1, via tools/cc1psx_wrapper.sh under dosemu2) and the frozen build cc1 (tools/gcc-2.7.2/build/cc1 at exact Makefile CC_FLAGS) emit a BYTE-IDENTICAL func_80072CD4 from the same preprocessed full text1b TU, for BOTH the floor-4 per-arm chassis and the cross-block chassis. Only normalisation applied was the .L/$L local-label spelling. 118 lines (xblock) and 119 lines (floor-4), identical line-for-line.
+
+- [s12] Consequence: the toolchain-fidelity explanation for this function's residual is DISPROVEN by measurement, not argued away. The divergence from target is a property of the C, exactly as .claude/rules/no-compiler-divergence.md asserts. This axis is permanently closed for func_80072CD4.
+
+- [s12] The probe design is reusable: tmp/grind/func_80072CD4/s12/probe.sh takes <body-file> <tag> and runs both compilers over the same preprocessed TU. Any other BB2 function that reaches the 'maybe the compiler is the variable' argument can be settled the same way in one turn (change the body path and TU name).
+
+- [s12] Target's shape, re-read directly from asm/funcs/func_80072CD4.s:21-42: each inner arm keeps `sb $v0,0xD` INSIDE the arm and ends with `addiu $v0,$zero,0x32`/`0x46` (the then-arm's in the `j` delay slot); the merge label .L80072D64 is then `sb $v1,0x4 / sb $v1,0xC / sb $v0,0xE`. Target reuses $v0 — the arm's own constant scratch — for the cross-block value.
+
+- [s12] That $v0 reuse is only possible because the arm-tail li is emitted LAST in the arm. Our build's sched1 hoists it to the arm TOP, which (a) forces RA to give it a distinct seat ($3, with fc_const at $4) and (b) makes the arm tails identical so jump2 cross-jumps `sb $v0,0xD` out into the merge block (78 insns, one short of 79). The register difference is therefore DOWNSTREAM of the sched1 hoist, not an independent RA axis — which is why ra_solver has nothing to search here.
+
+- [s12] Floor re-measured this session on the current chassis: sandbox func_80072CD4 --disable all = 4, build_insns 79 == target_insns 79, rules_dropped 0. src/text1b.c carried INCLUDE_ASM("asm/funcs", func_80072CD4); before and after; git status --porcelain src/ clean at session end. Zero cheat-asm, zero rules.
+
+- [s12] Endgame-lock gate (i) FAILS: scan_hand_coded --single func_80072CD4 = tier LOW, score 0/8, S1-S8 all negative.
+
+- [s12] Endgame-lock gate (ii) FAILS: no exhibited SOTN-master precedent for the closing construct; the only index hits are heuristic single-line dup_if_else_arm textual matches (closest: index:899 -> src/boss/bo4/unk_46E7C.c:2865).
+
+- [s12] Exhaustion of record: floor FLAT at 4 from s2 through s12 — eleven sessions across six distinct modalities (recon, structural x3, permuter, synthesis x2, forensics, escalation x3, solver), including a directed PERM_LINESWAP campaign of 15,825 iterations over the full 8-store merge permutation space with zero finds below base-4, 35 disproven bodies in memory/grind/func_80072CD4/rejected/, and the s11 sched_solver campaign (model parity=True, 2068/2068 blocks order- and clock-exact on this TU) returning ZERO C-spellable vectors at depth 2 for both sched1 arms and FORECLOSED for the cross-block merge block under any atom class.
+
+- [s12] Disposition FILED this session at docs/grind/decisions.md:15851 — '## 2026-08-30 — func_80072CD4 (src/text1b.c) — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'. No packet question is posed: ruling 7's question is now answered negative by measurement, and a family grant for the banned duplication construct is the pre-decided-NO auto-reject class under .claude/rules/escalation-not-parked.md.
+
+- [s12] candidate.c is unchanged and remains the clean, reviewer-passable floor-4 body (one `int fc_const` local; no pins, __asm__, volatile, barrier, do-while(0), dead store or duplication). The banned per-arm duplication forms stay in rejected/ and in state.json's banned_constructs.

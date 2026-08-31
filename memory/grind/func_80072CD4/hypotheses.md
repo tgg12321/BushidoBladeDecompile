@@ -1208,3 +1208,74 @@ tail off the merge-block head" — from analytic arguments into typed solver ver
 - probe: python3 tools/scan_hand_coded.py --single func_80072CD4 re-run this session (tmp/grind/func_80072CD4/s11/scan_hand_coded.txt); gate (ii) carried from s10's census over docs/reference/sotn-construct-index.md.
 - result: Gate (i) tier=LOW, score 0/8, S1-S8 all negative. Gate (ii) still FAILED - only a heuristic single-line textual dup_if_else_arm hit that exhibits none of the operative property. Both gates fail, so the only known closer is AUTO-REJECT class under .claude/rules/escalation-not-parked.md and is deliberately NOT the subject of the filed packet.
 - verdict: KILLED
+
+## [s12] 2026-08-30 — escalation modality (owner ruling 7 executed)
+
+### H-s12-1 — KILLED. "The residual is a toolchain-fidelity signal: the original PsyQ cc1psx schedules these blocks differently from decompals cc1 2.7.2 at the same flags."
+- **Mechanism claimed (s11 frontier item 2):** with target's instruction set pinned, sched.c's
+  inputs are pinned; an exact-validated model that cannot produce target's order from those inputs
+  is evidence about the compiler CONFIGURATION rather than about the C.
+- **Probe:** owner-funded calibration-only run (`tmp/grind/func_80072CD4/s12/probe.sh`). Same
+  preprocessed full text1b TU (exact Makefile CPP flags) → both `tools/gcc-2.7.2/build/cc1` at
+  exact `CC_FLAGS` and `tools/cc1psx_wrapper.sh` (original `cc1psx.exe`, GCC 2.7.2.SN.1, dosemu2)
+  at its supported flag subset. Repeated for BOTH chassis (candidate.c and
+  rejected/xblock_sched1_hoist.c).
+- **Result:** the extracted `func_80072CD4` bodies are IDENTICAL between the two compilers after
+  normalising only the `$L`/`.L` local-label spelling — 118 lines (xblock), 119 lines (floor-4).
+  Identical instructions, registers, schedule, delay slots, cross-jump point.
+- **Verdict: KILLED.** Not a fidelity artefact. The variable is the C, as
+  `.claude/rules/no-compiler-divergence.md` has always asserted. Do NOT re-open this axis; do NOT
+  re-run the probe for this function.
+
+### H-s12-2 — KILLED (by reasoning grounded in a fresh direct reading of target, evidence E4). "tools/ra_solver can supply the register-identity half the s11 E6 vector needs, or can seat the cross-block pseudo in $v0 the way target does."
+- **Mechanism:** s11 E6 left the merge li's destination-register identity as a
+  global_alloc/reload question, i.e. ra_solver's axis rather than sched_solver's, and noted
+  ra_solver had never been run on this function.
+- **Probe:** direct re-read of asm/funcs/func_80072CD4.s:21-42 against the s12 cc1/cc1psx dumps of
+  the xblock chassis (`tmp/grind/func_80072CD4/s12/cc1_xblock.s`).
+- **Result:** target reuses **$v0** for the cross-block value, which is available only because the
+  arm-tail `li` is emitted LAST in the arm; our sched1 hoist puts it FIRST, and with that order the
+  arm's own constant scratch needs $v0, so no legal allocation can seat the pseudo there. RA is
+  fully DOWNSTREAM of the hoist. Separately, the s11 E6 vector belongs to the floor-4 chassis,
+  which s11 E3 already showed cannot reach target's merge head at all.
+- **Verdict: KILLED.** ra_solver has no free variable to search here; the register difference is a
+  consequence of the sched1 hoist, not an independent cause.
+
+### Frontier after s12 (one item, honestly stated)
+The single residual mechanism is: a C form that stops sched1 hoisting the arms' tail `li` (the
+0x32/0x46 constant) to the arm TOP, WITHOUT demanding a different instruction. s11 E4 measured
+zero C-spellable vectors for this at depth 2 over `luid`/`luid_move`; the only in-model vectors
+demand a true data dependence of a constant materialisation on a store plus that store acquiring a
+LOAD's icost — neither is a C spelling of the same instruction. The one un-run search is depth 3
+over the restricted atom sets; `perturb.py` has no depth-3 mode, so that is tooling-lane work
+(extend the search), not session work.
+
+## [s12] The residual is a toolchain-fidelity signal rather than a C-search failure: the original PsyQ cc1psx schedules these blocks differently from decompals cc1 2.7.2 at the same flags (s11 frontier item 2 / the owner packet's Option A).
+- mechanism: With target's instruction set pinned (79 insns, each identified), sched.c's inputs are pinned; an exact-validated scheduler model that cannot produce target's order from those inputs would be evidence about the compiler CONFIGURATION rather than about the C.
+- probe: Owner-funded calibration-only probe per .claude/rules/cc1psx-calibration-only.md (tmp/grind/func_80072CD4/s12/probe.sh). The FULL text1b TU was preprocessed once per body with the exact Makefile CPP_FLAGS+CPP_DEFS, then compiled by (a) tools/gcc-2.7.2/build/cc1 at the exact Makefile CC_FLAGS (-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel) and (b) the original cc1psx.exe (GCC 2.7.2.SN.1) via tools/cc1psx_wrapper.sh under dosemu2 at its supported flag subset (-O2 -G0 -mcpu=3000 -mips1 -funsigned-char -w). Repeated for BOTH chassis: memory/grind/func_80072CD4/candidate.c (floor-4 per-arm) and rejected/xblock_sched1_hoist.c (the cross-block chassis whose structure is target's).
+- result: After normalising ONLY the local-label spelling (.L837 vs $L834), the extracted func_80072CD4 bodies are identical line-for-line between the two compilers: 118 lines for the xblock chassis, 119 lines for the floor-4 chassis. Same instruction set, same register assignment, same schedule, same delay-slot fills, same cross-jump merge point. No build path, Makefile, or flag was touched; git status --porcelain src/ clean at session end.
+- verdict: KILLED
+
+## [s12] tools/ra_solver can supply the register-identity half the s11 E6 vector needs, or can seat the cross-block pseudo in $v0 the way target does (the s11 frontier's first item; ra_solver had never been run on this function).
+- mechanism: s11 E6 left the merge li's destination-register identity as a global_alloc/reload decision, i.e. ra_solver's axis rather than sched_solver's.
+- probe: Direct re-read of asm/funcs/func_80072CD4.s:21-42 against this session's cc1/cc1psx dumps of the xblock chassis (tmp/grind/func_80072CD4/s12/cc1_xblock.s).
+- result: Target reuses $v0 for the cross-block value — the SAME register the arm just used as its constant scratch — which is available only because the arm-tail li is emitted LAST in the arm. Our sched1 hoist puts that li FIRST, and with that order the arm's own constants need $v0, so no legal allocation can seat the pseudo there. RA is fully DOWNSTREAM of the hoist and has no free variable to search. Separately, the s11 E6 vector belongs to the floor-4 chassis, which s11 E3 already showed cannot reach target's merge head at all.
+- verdict: KILLED
+
+## [s12] Endgame-lock AND-gate (i): tools/scan_hand_coded.py gives func_80072CD4 a STRONG tier, opening the canonical-asm grant path.
+- mechanism: The canonical-asm grant path requires STRONG scanner signals (S1/S2/S6) as evidence the original code was hand-written asm.
+- probe: python3 tools/scan_hand_coded.py --single func_80072CD4 (tmp/grind/func_80072CD4/s12/scan_hand_coded.txt).
+- result: tier=LOW, score=0/8, S1-S8 all negative, 79 insns / 3 spills / 6 distinct regs. Unchanged from s10 and s11. Ordinary compiled C.
+- verdict: KILLED
+
+## [s12] Endgame-lock AND-gate (ii): an in-hand SOTN-master precedent exists for the closing construct (the per-arm duplication of the @0x04/@0x0C = 0xFC common-tail stores).
+- mechanism: A coercion/spelling family needs a citable SOTN-master exhibit; 'same spirit' does not qualify.
+- probe: Re-grep of docs/reference/sotn-construct-index.md (pinned SOTN master aa53500226ee84be763f3e8702b27de06456b3a7) for dup_if_else_arm, PSX/untagged entries only.
+- result: Same 2 untagged-PSX hits s10 scored. The closest, index line 899 -> src/boss/bo4/unk_46E7C.c:2865 ('prim->x2 = prim->x3 ='), is a single-line textual heuristic match exhibiting none of the operative property (an unconditional common-tail statement lifted into BOTH arms, second copy cross-jump-dead, sole effect the merge block's store schedule). Gate scored FAILED, citation carried to the borderline log.
+- verdict: KILLED
+
+## [s12] The honest floor has moved off 4 on the current chassis.
+- mechanism: Chassis check — every banked spelling conclusion is chassis-relative and must be re-measured before it is spent.
+- probe: python3 tmp/grind/func_80072CD4/s5/apply.py memory/grind/func_80072CD4/candidate.c, then `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`; src/text1b.c reverted immediately after.
+- result: score 4, target_insns 79 == build_insns 79, rules_dropped 0 (tmp/grind/func_80072CD4/s12/sandbox_candidate.json). Unmoved since s2.
+- verdict: KILLED

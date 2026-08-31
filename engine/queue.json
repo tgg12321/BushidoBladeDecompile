@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80072CD4",
-      "file": "text1b",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 7 \u2014 one bounded calibration-only probe, then solver modality; build/flags frozen",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md - '## 2026-08-25 - func_80072CD4 (src/text1b.c) - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (fidelity/routing question: Option A toolchain-fidelity calibration probe vs Option B return to ACTIVE with modality solver/ra_solver; no family grant, no permanent-rule sanction and no canonical evidence-bar override requested)"
-    },
-    {
       "func": "CD_datasync",
       "file": "system",
       "distance": 7,
@@ -1955,17 +1945,28 @@
       "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 6a \u2014 conditional: adjudicate under proven-spelling-class-reconstruction 4-point bar",
       "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md - '## 2026-08-25 - func_80062020 (src/text1b.c) - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (filed by this session under the binding judge_constraint of the 2026-08-25 21:17 ruling; replaces the partly-false 2026-07-24 packet)",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:15732 \u2014 ## 2026-08-30 (s10) \u2014 func_80062020 (src/text1b.c) \u2014 **OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET**"
+    },
+    {
+      "func": "func_80072CD4",
+      "file": "text1b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 7 \u2014 one bounded calibration-only probe, then solver modality; build/flags frozen",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md - '## 2026-08-25 - func_80072CD4 (src/text1b.c) - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (fidelity/routing question: Option A toolchain-fidelity calibration probe vs Option B return to ACTIVE with modality solver/ra_solver; no family grant, no permanent-rule sanction and no canonical evidence-bar override requested)",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15851 \u2014 '## 2026-08-30 \u2014 func_80072CD4 (src/text1b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE' (owner-funded ruling-7 calibration probe executed and negative; both endgame-lock AND-gates re-measured FAIL)"
     }
   ],
   "counts": {
     "total": 221,
-    "active": 211,
+    "active": 210,
     "by_status": {
-      "active": 211,
-      "escalated": 10
+      "active": 210,
+      "escalated": 11
     },
     "by_verdict": {
-      "C": 176,
+      "C": 175,
       "ASM-PARTIAL": 35
     }
   }

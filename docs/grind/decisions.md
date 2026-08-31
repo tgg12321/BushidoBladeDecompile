@@ -15847,3 +15847,95 @@ frozen SOTN list, no canonical-asm evidence-bar override, no "accept the debt". 
 in the question (`.claude/rules/proven-spelling-class-reconstruction.md`) is an ALREADY-LANDED
 owner policy (2026-06-10) that ruling 6a itself invoked; the only thing asked is whether the
 ledger ban added AFTER that ruling blocks executing it.
+
+## 2026-08-30 — func_80072CD4 (src/text1b.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (owner-funded calibration probe executed; the last open question is answered NEGATIVE by measurement)
+
+**What this entry does.** It records the outcome of the one calibration-only probe the owner
+funded in the 2026-08-30 escalation-batch (**ruling 7**, this file, line 14870: "func_80072CD4 —
+Option A, bounded. One calibration-only cc1/ASPSX configuration-fidelity probe (per
+cc1psx-calibration-only) is funded. EITHER outcome changes nothing about the frozen build
+toolchain or flags"), and then applies the owner's standing 2026-07-27 disposition for this
+function, because the probe closes the ONLY decidable question the s11 packet still carried.
+Nothing here waits on the owner (judge-sole-gate, 2026-08-18). No standard is lowered, no family
+is granted, no evidence bar is overridden.
+
+### The probe (owner ruling 7, executed s12, 2026-08-30)
+
+**Design.** The FULL text1b translation unit was preprocessed once per body with the exact
+Makefile `CPP_FLAGS` + `CPP_DEFS`, then handed to BOTH compilers:
+- the frozen build compiler `tools/gcc-2.7.2/build/cc1` at the exact Makefile `CC_FLAGS`
+  (`-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel`), and
+- the ORIGINAL PsyQ `cc1psx.exe` (GCC 2.7.2.SN.1) via `tools/cc1psx_wrapper.sh` under dosemu2,
+  at the supported subset (`-O2 -G0 -mcpu=3000 -mips1 -funsigned-char -w`).
+
+Both chassis were probed: `memory/grind/func_80072CD4/candidate.c` (the floor-4 per-arm body) and
+`memory/grind/func_80072CD4/rejected/xblock_sched1_hoist.c` (the cross-block body whose STRUCTURE
+is target's, per s11 E3). Driver: `tmp/grind/func_80072CD4/s12/probe.sh`. Diagnostic only — the
+build path, the Makefile, and every flag are untouched; `git status --porcelain src/` is clean.
+
+**Result — NEGATIVE, and unambiguous.** After normalising only the local-label spelling
+(`.L837` vs `$L834` — a label-numbering convention difference, not codegen), the emitted body of
+`func_80072CD4` is **byte-for-byte identical between cc1psx and the frozen build cc1, for BOTH
+chassis**: same instruction set, same register assignment, same scheduling order, same delay-slot
+fills, same cross-jump merge point. Artifacts: `tmp/grind/func_80072CD4/s12/cc1_xblock.s`,
+`psx_xblock.s`, `cc1_cand.s`, `psx_cand.s`, `probe_diff.txt`.
+
+**What that KILLS.** The s11 packet's frontier hypothesis — and the owner packet's Option A — was:
+"an exact-validated scheduler model that cannot produce target's order from target's pinned
+instruction set is evidence about the COMPILER CONFIGURATION rather than about the C." That
+hypothesis is now **disproven by direct measurement**. The original PsyQ compiler, given the same
+C, schedules these exact blocks the same way ours does. The divergence from target is therefore
+**not** a toolchain-fidelity artefact of the decompals port; per the standing rule
+(`.claude/rules/no-compiler-divergence.md`) the variable is, and remains, the C — which is the
+disposition this function has already been given. This is a permanent kill: it removes
+"maybe the compiler is the variable" from this function's search space for good, and the same
+probe design is reusable for any other function that reaches this argument.
+
+### The two endgame-lock AND-gates (re-measured this session)
+
+**Gate (i) — canonical asm: FAILS.** `python3 tools/scan_hand_coded.py --single func_80072CD4` =
+tier **LOW, score 0/8**, S1–S8 all negative, 79 insns, 3 spills, 6 distinct regs
+(`tmp/grind/func_80072CD4/s12/scan_hand_coded.txt`). Unchanged from s10 and s11. This is ordinary
+compiled C; there is no canonical-asm grant path.
+
+**Gate (ii) — in-hand SOTN-master precedent for the closing construct: FAILS.** The only body that
+has ever measured sandbox 0 is the per-arm duplication of the `@0x04 / @0x0C = 0xFC` stores — a
+construct Judge-FAILed 2026-07-24, owner-REFUSED 2026-07-27, and FAILed by five successive fresh
+layer-1 cheat-reviewers on 2026-08-20 across every respelling attempted (it is in this function's
+`banned_constructs`). A re-grep of `docs/reference/sotn-construct-index.md` (pinned SOTN master
+`aa53500226ee84be763f3e8702b27de06456b3a7`) returns the same 2 untagged-PSX `dup_if_else_arm`
+hits s10 scored, the closest being index line 899 → `src/boss/bo4/unk_46E7C.c:2865`
+(`prim->x2 = prim->x3 =`). That hit is a single-line textual heuristic match: it exhibits none of
+the operative property (an unconditional common-tail statement lifted into BOTH arms, whose second
+copy is cross-jump-dead, and whose ONLY effect is the merge block's store schedule). Scored
+FAILED, with the citation carried here for the borderline log.
+
+### Exhaustion of record (ledger-sourced, not re-argued)
+
+Honest floor **FLAT at 4 (build_insns 79 == target_insns 79, rules_dropped 0)** from s2 through
+s12 — eleven sessions across **six distinct modalities**: recon, structural (×3), permuter,
+synthesis (×2), forensics, escalation (×3), solver. Includes a directed PERM_LINESWAP campaign of
+**15,825 iterations** over the full 8-store merge permutation space with zero finds below base-4;
+**35 disproven bodies** banked in `memory/grind/func_80072CD4/rejected/`; and the s11 sched_solver
+campaign, whose model is `parity=True` and 2068/2068 blocks order- AND clock-exact on this exact
+TU, returning ZERO C-spellable vectors at depth 2 for both sched1 arms and FORECLOSED for the
+cross-block merge block under any atom class. Re-measured this session: **4**
+(`tmp/grind/func_80072CD4/s12/sandbox_candidate.json`).
+
+### Disposition
+
+Both gates FAIL and the last decidable question is answered negative, so the owner's **standing
+2026-07-27 ruling** applies unchanged: **REFUSED / OWNER-ACCEPTED INCOMPLETE.** `src/text1b.c`
+carries `INCLUDE_ASM("asm/funcs", func_80072CD4);` per asm-until-matched; zero cheat-asm, zero
+rules, nothing on main to clean up. The clean reviewer-passable floor-4 body stays banked at
+`memory/grind/func_80072CD4/candidate.c`. No packet question is filed: the fidelity/routing
+question the s11 packet posed has been ANSWERED by this session's measurement, and the only other
+door — a family grant for the banned duplication construct — is the pre-decided-NO auto-reject
+class under `.claude/rules/escalation-not-parked.md`.
+
+**Re-open triggers (unchanged from s10, minus the now-dead fidelity trigger):** (1) a C form that
+prevents sched1 from hoisting the arm-tail `li` to the arm TOP without demanding a different
+instruction — the one residual mechanism, stated precisely in s11 E4; (2) a genuine SOTN-master
+exhibit of an unconditional common-tail statement duplicated into both arms purely for merge-block
+store scheduling; (3) a `scan_hand_coded` tier change; (4) a sched_solver depth-3 search over the
+restricted `luid`/`luid_move` atom sets confirming the depth-2 zero-vector result survives.
