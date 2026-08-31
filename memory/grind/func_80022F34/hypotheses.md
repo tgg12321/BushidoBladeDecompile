@@ -298,3 +298,48 @@ spellings or temp-ordering variants (s6/s8).
 - probe: Deduced from the confirmed mechanism above and cross-checked against the vORIG combine dump: the anchor would have to be a SECOND reference to the address pseudo, and combine only folds a definition it can delete - vORIG shows exactly what happens when a second use exists (insn 100 survives, no fold, mems stay `(mem (reg))`, vars=0 but the body is wrong).
 - result: Fold and clean note placement are mutually exclusive by construction, not by accident of spelling. A loop always supplies the preceding CODE_LABEL (vDIAG2). Target's form - per-access fold AND vars=0, inside a loop - is unreachable in this fork for every C spelling, not merely for the 19 measured.
 - verdict: KILLED
+
+## [s9] A C spelling exists in which expand_expr builds the D_801027BC access address directly as `(mem (plus (reg) (symbol_ref)))`, bypassing the address pseudo and therefore the whole combine fold / orphaned-note / phantom-slot chain (s8's last live frontier).
+- mechanism (as banked by s8): GO_IF_LEGITIMATE_ADDRESS (tools/gcc-2.7.2/config/mips/mips.h:2325-2349) accepts CONSTANT_ADDRESS + REG under the "pretend that the MIPS supports an address mode of a constant address + a register" clause, so such a mem is valid at expand time; it is only because expand forces `(set (reg) (symbol_ref))` that combine has to fold the constant back in later, and that fold is what deletes the pseudo's definition and orphans the REG_DEAD note.
+- probe: Read the expand output itself instead of guessing — `pwsh tools/grinder/dump.ps1 func_80022F34` on the candidate chassis (floor re-measured 11 this session), then the `.rtl` (post-expand) slice for func_80022F34, banked at tmp/grind/func_80022F34/s9/rtl-expand-addr-slice.txt (dump lines 23315-23420). Then traced the three source paths that decide the shape: expr.c:4563 (INDIRECT_REF -> EXPAND_SUM -> memory_address), expr.c:5286-5291 + 6323-6332 (PLUS_EXPR both_summands / ADDR_EXPR under EXPAND_SUM), and explow.c:385-470 (memory_address) + explow.c:274-291 (break_out_memory_refs).
+- result: KILLED, at compiler-source level and spelling-invariantly. The frontier's premise about expand_expr is actually CORRECT — ADDR_EXPR under EXPAND_SUM returns the bare symbol_ref (expr.c:6323-6332) and both_summands returns an UNFORCED `(plus (reg) (symbol_ref))` (expr.c:5286-5291). The kill is one level below, inside memory_address: explow.c:414-416 runs `if (! cse_not_expected && GET_CODE (x) != REG) x = break_out_memory_refs (x);` BEFORE it ever consults GO_IF_LEGITIMATE_ADDRESS, and break_out_memory_refs (explow.c:274-291) recurses through PLUS and unconditionally `force_reg`s any operand that is `CONSTANT_P && CONSTANT_ADDRESS_P && GET_MODE != VOIDmode`. A SYMBOL_REF satisfies all three (it always carries Pmode), so the symbol is materialised into a pseudo before the legitimacy test; the residual `(plus (reg) (reg))` is not a legitimate MIPS address, so the tail of memory_address force_operand()s it into the second pseudo. The .rtl confirms exactly this: insn 94 `(set (reg 95) (symbol_ref "D_801027BC"))`, insn 102 `(set (reg 100) (plus (reg 99) (reg 95)))`, insn 104 `(set (reg 92) (mem (reg 100)))` — both pseudos present at EXPAND, before any optimisation pass, and the mem is `(mem (reg))`, never `(mem (plus reg symbol_ref))`. The mips.h "pretend" clause is unreachable at expand for every symbol+runtime-variable address in this fork; it is only reachable when a later pass hands rtl to recog, i.e. precisely the combine fold we already have. The only gate is `cse_not_expected`, a compiler-internal flag that is 0 during expand for every function here and that no C source can flip.
+- verdict: KILLED
+
+## Frontier after s9 — EMPTY
+
+s9 removes the last item from the frontier. The chain is now pinned to compiler
+source at every link, and its FIRST link is spelling-invariant:
+  symbol + runtime-variable address
+    => address pseudo, forced at expand, unconditionally (explow.c:274-291)
+  per-access lui/%lo bytes (target's form)
+    => combine must fold that pseudo away and delete its only definition
+  deleting the only definition
+    => the pseudo's REG_DEAD note has no home (combine.c:10829-10846)
+  homeless note + any preceding CODE_LABEL (a loop always supplies one; vDIAG2)
+    => `(use (reg N))` after the label => no hard reg => reload homes it
+    => vars=8 => sp -40 vs target's -32 => the 10 frame-offset diffs
+  + 1 maspsx load-delay nop = the honest floor of 11.
+An anchor for the note requires a second reference to the pseudo, and a second
+reference is exactly what blocks the fold (vORIG, s8). Mutually exclusive.
+Do NOT re-open with: ra_solver/sched_solver (s7, PRE-RA FORECLOSED), permuter
+(s4/s5, three chassis, ~48k iters), structural placement or control boundaries
+(s2/s3), switch-label elimination (s7), fold-anchor / temp-ordering / naming
+variants (s6/s8), or the expand-path lever (s9, this entry).
+
+## [s9] A C spelling exists in which expand_expr builds the D_801027BC access address directly as (mem (plus (reg) (symbol_ref))) rather than forcing the symbol into a pseudo, giving per-access bytes with no combine fold, no orphaned REG_DEAD note and no phantom frame slot (s8's last live frontier).
+- mechanism: GO_IF_LEGITIMATE_ADDRESS (tools/gcc-2.7.2/config/mips/mips.h:2325-2349) accepts CONSTANT_ADDRESS + REG under the 'pretend that the MIPS supports an address mode of a constant address + a register' clause, so such a mem is valid at expand time; it is only because expand forces (set (reg) (symbol_ref)) that combine has to fold the constant back in later, and that fold is what deletes the pseudo's definition and orphans the REG_DEAD note.
+- probe: pwsh tools/grinder/dump.ps1 func_80022F34 on the candidate chassis, then READ the post-expand .rtl slice for func_80022F34 (tmp/grind/func_80022F34/s9/rtl-expand-addr-slice.txt, dump lines 23315-23420) instead of guessing pass attribution; then traced the three deciding source paths: expr.c:4563 (INDIRECT_REF -> EXPAND_SUM -> memory_address), expr.c:5286-5291 + 6323-6332 (PLUS_EXPR both_summands / ADDR_EXPR under EXPAND_SUM), explow.c:385-470 (memory_address) and explow.c:274-291 (break_out_memory_refs).
+- result: KILLED spelling-invariantly. The frontier's premise about expand_expr is correct as far as it goes: ADDR_EXPR under EXPAND_SUM returns the bare symbol_ref, and both_summands returns an UNFORCED (plus (reg) (symbol_ref)). The kill is one level down. memory_address runs break_out_memory_refs at explow.c:414-416 BEFORE it consults GO_IF_LEGITIMATE_ADDRESS, and break_out_memory_refs (explow.c:274-291) recurses through the PLUS and unconditionally force_regs any operand that is CONSTANT_P && CONSTANT_ADDRESS_P && GET_MODE != VOIDmode, which every SYMBOL_REF is (it always carries Pmode). The residual (plus (reg) (reg)) is not a legitimate MIPS address, so the tail of memory_address force_operands it into a second pseudo. The .rtl confirms both pseudos exist at EXPAND, before any optimisation pass: insn 94 (set (reg 95) (symbol_ref "D_801027BC")), insn 102 (set (reg 100) (plus (reg 99) (reg 95))), insn 104 (set (reg 92) (mem (reg 100))). The mips.h const+reg 'pretend' clause is therefore unreachable at expand for ANY symbol+runtime-variable address in this fork; its only gate is the compiler-internal cse_not_expected flag, which no C source can flip.
+- verdict: KILLED
+
+## [s9] The endgame-lock canonical-asm gate (a) is open for func_80022F34 on the current chassis.
+- mechanism: scan_hand_coded's STRONG signals (S1 multu pacing / S2 empty branch / S6 BIOS jumptable) would route the function to the canonical-asm grant path instead of a terminal refusal.
+- probe: python3 tools/scan_hand_coded.py --single func_80022F34
+- result: tier=LOW, score 1/8. Only S4 (front loads: 4 loads in an 8-insn window at insn 35) fires; S1, S2, S3, S5, S6, S7, S8 all negative. Identical to the s6 and s8 measurements. Gate FAILS - the canonical-asm grant path is not open.
+- verdict: KILLED
+
+## [s9] An in-hand SOTN-master (PSX / GCC 2.7.2) precedent exists for the closing construct, i.e. endgame-lock gate (b) is open.
+- mechanism: A citable file:line precedent for a construct that removes a compiler-added frame slot would let the closing spelling be argued under an existing sanctioned family.
+- probe: Census of docs/reference/sotn-construct-index.md for /frame/ and for /phantom|frame slot|frame size/.
+- result: 2 lines match /frame/; zero PSX entries match the frame-slot patterns (the single hit, src/dra/8C600.c:180, is a PSP-tagged comment). There is also no closing construct to cite a precedent FOR: the slot is created by reload downstream of combine, so nothing expressible in C removes it. Gate FAILS - a negative census is a failed gate, not an open question.
+- verdict: KILLED

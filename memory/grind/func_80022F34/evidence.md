@@ -404,3 +404,57 @@ callee-saved over-promotion is a register-allocation plateau.
 - [s8] src/code6cac.c was never modified this session - all probing ran out-of-tree through the s8 cc1 harness, so the tree is exactly as the driver handed it over (git status shows only docs/grind/decisions.md, the two ledger files, metrics/events.jsonl and the four new rejected/ forms).
 
 - [s8] The 1 remaining non-frame instruction on the closing chassis is target's maspsx label-delay nop, retirable on the DONE path via maspsx_label_nop_funcs.txt (operator surface, outside the grind scope).
+
+## s9 (escalation / disposition, 2026-08-31)
+
+- [s9] Floor re-measured on the CURRENT HEAD chassis with memory/grind/func_80022F34/candidate.c
+  pasted over the `INCLUDE_ASM("asm/funcs", func_80022F34);` line: `sandbox func_80022F34
+  --disable all` = **11** (build_insns 69, target_insns 70, rules_dropped 0,
+  cheat_asm_stripped 25 — that count is other functions in code6cac.c, this function carries
+  none). Unchanged from s1-s8. src/code6cac.c was restored to INCLUDE_ASM before the session
+  ended; no tracked file is left modified.
+- [s9] `python3 tools/scan_hand_coded.py --single func_80022F34` -> **tier=LOW, score 1/8**
+  (only S4 "front loads": 4 loads in an 8-insn window at insn 35; S1/S2/S3/S5/S6/S7/S8 all
+  negative). Identical to the s6 and s8 measurements. Endgame-lock gate (a) FAILS.
+- [s9] SOTN-master precedent census for the closing construct: `docs/reference/sotn-construct-index.md`
+  contains 2 lines matching /frame/ and 0 matching /phantom|frame slot|frame size/ other than a
+  PSP-tagged comment at src/dra/8C600.c:180. There is no PSX/GCC-2.7.2 SOTN construct for
+  REMOVING a compiler-added frame slot — and by the mechanism below there cannot be a C
+  construct for it at all, since the slot is created by reload after combine, downstream of
+  anything the source can express. Endgame-lock gate (b) FAILS.
+- [s9] THE LAST LIVE FRONTIER IS KILLED AT COMPILER-SOURCE LEVEL. s8 left exactly one open lead:
+  get expand_expr to emit `(mem (plus (reg) (symbol_ref)))` and so never create the address
+  pseudo. The post-expand `.rtl` dump (tmp/grind/func_80022F34/s9/rtl-expand-addr-slice.txt,
+  from tmp/grind/func_80022F34/dumps/code6cac.rtl) shows insn 94 `(set (reg 95) (symbol_ref
+  "D_801027BC"))` and insn 102 `(set (reg 100) (plus (reg 99) (reg 95)))` already present AT
+  EXPAND, with insn 104 `(set (reg 92) (mem (reg 100)))`. Cause: memory_address
+  (tools/gcc-2.7.2/explow.c:414-416) calls break_out_memory_refs BEFORE
+  GO_IF_LEGITIMATE_ADDRESS, and break_out_memory_refs (explow.c:274-291) unconditionally
+  force_reg's any `CONSTANT_P && CONSTANT_ADDRESS_P && GET_MODE != VOIDmode` operand of a PLUS
+  — which every SYMBOL_REF is. The mips.h:2325-2349 const+reg "pretend" clause is therefore
+  unreachable at expand for ANY symbol+runtime-variable address in this fork, in any function,
+  for any spelling. Full write-up: tmp/grind/func_80022F34/s9/expand-path-kill.md.
+- [s9] Net effect: the s8 chain (fold => deleted def => homeless REG_DEAD note =>
+  combine.c:10829-10846 USE-after-CODE_LABEL => unallocated pseudo => reload frame slot => +8)
+  now has a spelling-invariant FIRST link. There is no C-level entry point anywhere along it,
+  and the ledger frontier is empty for the first time in nine sessions.
+
+- [s9] Floor re-measured on the CURRENT HEAD chassis with memory/grind/func_80022F34/candidate.c pasted over the INCLUDE_ASM line: sandbox func_80022F34 --disable all = 11 (build_insns 69, target_insns 70, rules_dropped 0). Unchanged across all nine sessions. src/code6cac.c was restored to INCLUDE_ASM before the session ended; no tracked build file is left modified.
+
+- [s9] The address pseudo is created at EXPAND, unconditionally, for every symbol+runtime-variable address in this compiler fork: memory_address (tools/gcc-2.7.2/explow.c:414-416) calls break_out_memory_refs before GO_IF_LEGITIMATE_ADDRESS, and break_out_memory_refs (explow.c:274-291) force_regs any CONSTANT_P && CONSTANT_ADDRESS_P && non-VOIDmode operand of a PLUS. This makes the FIRST link of the s8 defect chain spelling-invariant - it is not a property of func_80022F34's C at all.
+
+- [s9] Post-expand .rtl evidence banked at tmp/grind/func_80022F34/s9/rtl-expand-addr-slice.txt: insn 94 (set (reg 95) (symbol_ref "D_801027BC")), insns 97/99/100 the idx*5 then *4 scaling, insn 102 (set (reg 100) (plus (reg 99) (reg 95))), insn 104 (set (reg 92) (mem (reg 100))). The mem is (mem (reg)), never (mem (plus reg symbol_ref)).
+
+- [s9] Full defect chain, now pinned to compiler source at every link: symbol+variable address => forced address pseudo (explow.c:274-291) => target's per-access lui/%lo requires combine to fold and delete that pseudo's only definition => the REG_DEAD note is homeless => distribute_notes (combine.c:10829-10846) emits (use (reg N)) after the preceding CODE_LABEL => regclass records no class, greg gives no hard reg => reload/alter_reg homes it to a stack slot => vars=8 => subu $sp,$sp,40 vs the target's -32 => 10 frame-offset diffs; plus 1 maspsx load-delay nop = the honest floor of 11.
+
+- [s9] A loop always supplies the CODE_LABEL of that step (s8's vDIAG2: loop label only -> strand=1, sp -40; vDIAG: no label anywhere -> strand=0, sp -32). An anchor giving the note a home requires a second reference to the pseudo, and a second reference is exactly what blocks the fold (s8's vORIG: insn 100 survives, no fold, vars=0, wrong body). Fold and clean note placement are mutually exclusive by construction.
+
+- [s9] Endgame-lock gate (a) FAILS: scan_hand_coded --single func_80022F34 = tier=LOW, score 1/8 (only S4 front-loads).
+
+- [s9] Endgame-lock gate (b) FAILS: no PSX SOTN-master precedent in docs/reference/sotn-construct-index.md for a frame-slot-removal construct, and no closing construct exists to cite one for.
+
+- [s9] Exhaustion: 9 sessions, 7 distinct modalities (recon s1; structural s2, s3; permuter s4, s5; forensics s6; solver s7; escalation s8, s9); ~48k permuter iterations across three chassis (base 30,640 iters with zero sub-174 finds; vH best 224; vPRESW plateau 590); 25 C forms measured with zero exceptions to s7's separation law; solver axis FORECLOSED (s7 goal_from_tgt classify = FIRST DIVERGENCE PRE-RA on both chassis, 'next tool: none'); 17 disproven forms banked in memory/grind/func_80022F34/rejected/.
+
+- [s9] The ledger frontier for func_80022F34 is EMPTY for the first time in nine sessions. There is no decidable question left for the owner, which is why this is a standing-ruling disposition (2026-07-27) and not a decision packet - and why it supersedes the 2026-08-26 entry that the owner's 2026-08-30 batch ruling 10 returned to active (that entry still carried the expand-path frontier as a live lead).
+
+- [s9] HEAD carries func_80022F34 as INCLUDE_ASM("asm/funcs", func_80022F34) (asm-until-matched, 2026-08-19), so the byte-match on main is held by the assembly include and the function carries zero cheat constructs. The best pure-C form has a byte-perfect BODY; the entire residual is the phantom slot plus one maspsx nop that is retirable via maspsx_label_nop_funcs.txt.

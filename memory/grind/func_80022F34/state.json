@@ -1,7 +1,7 @@
 {
  "func": "func_80022F34",
  "file": "code6cac",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -57,6 +57,12 @@
    "floor": 11,
    "modality": "escalation",
    "headline": "s8 closes func_80022F34 at mechanism level: the +8 phantom slot is combine.c distribute_notes' CODE_LABEL fallback, provably unavoidable for any loop-containing spelling in the per-access fold class; "
+  },
+  {
+   "session": 9,
+   "floor": 11,
+   "modality": "escalation",
+   "headline": "s9 killed the last live frontier at compiler-source level (break_out_memory_refs force_regs every SYMBOL_REF into a pseudo at expand); frontier now empty, both endgame-lock gates FAIL, disposition fil"
   }
  ],
  "frontier": [

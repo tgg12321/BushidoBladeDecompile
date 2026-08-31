@@ -110,6 +110,29 @@
  * no PSX SOTN precedent for removing a compiler-added frame slot). Disposition
  * filed in docs/grind/decisions.md (2026-08-26) under the owner's 2026-07-27
  * standing ruling: REFUSED / OWNER-ACCEPTED INCOMPLETE.
+ *
+ * s9 (escalation/disposition, 2026-08-31): THIS FILE IS STILL THE BEST FORM
+ * (floor re-measured 11 on the current HEAD chassis, rules_dropped 0). s9
+ * KILLED s8's last live frontier - the "get expand_expr to emit
+ * (mem (plus (reg) (symbol_ref))) and skip the address pseudo" lever - at
+ * compiler-source level, not by another spelling. The post-expand .rtl shows
+ * both pseudos already present before any optimisation pass (insn 94
+ * (set (reg 95) (symbol_ref "D_801027BC")), insn 102 (set (reg 100)
+ * (plus (reg 99) (reg 95))), insn 104 (set (reg 92) (mem (reg 100)))).
+ * Cause: memory_address (tools/gcc-2.7.2/explow.c:414-416) runs
+ * break_out_memory_refs BEFORE GO_IF_LEGITIMATE_ADDRESS, and
+ * break_out_memory_refs (explow.c:274-291) unconditionally force_reg's any
+ * CONSTANT_P && CONSTANT_ADDRESS_P && GET_MODE != VOIDmode operand of a PLUS -
+ * which every SYMBOL_REF is. The mips.h:2325-2349 const+reg "pretend" clause is
+ * unreachable at expand for ANY symbol+runtime-variable address in this fork.
+ * The s8 chain therefore has a spelling-invariant FIRST link and no C-level
+ * entry point anywhere along it; the ledger frontier is EMPTY.
+ * Both endgame-lock gates re-measured and both FAIL again (scan_hand_coded
+ * tier=LOW 1/8; sotn-construct-index census for a frame-slot-removal construct
+ * = zero PSX hits). Disposition re-filed in docs/grind/decisions.md
+ * (2026-08-31, superseding the 2026-08-26 entry): REFUSED / OWNER-ACCEPTED
+ * INCOMPLETE under the 2026-07-27 standing ruling. Nothing pends on the owner.
+ * Full s9 write-up: tmp/grind/func_80022F34/s9/expand-path-kill.md.
  */
 void func_80022F34(void) {
     s32 i;

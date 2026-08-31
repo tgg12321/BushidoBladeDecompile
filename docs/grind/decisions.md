@@ -16555,3 +16555,95 @@ sub-questions, answerable independently:
   five-step foreclosure for the carrier topology, s13b's H13b.3 for the dead-mention topology).
   In that case the correct standing disposition is the 2026-07-27 ruling, unchanged, and future
   sessions should quote 13 — not 0 — as this function's floor.
+
+## 2026-08-31 — func_80022F34 (src/code6cac.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session s9 (escalation / disposition modality) under the owner's standing
+auto-ruling of 2026-07-27 (`.claude/rules/endgame-lock-disposition.md`). This supersedes and
+closes the 2026-08-26 entry for the same function: that entry left ONE live frontier on the
+ledger (the expand-path lever), which is why the owner's 2026-08-30 escalation-batch ruling 10
+returned the item to active with a modality change rather than terminating it. **s9 killed that
+frontier at compiler-source level.** The ledger frontier for func_80022F34 is now EMPTY, and no
+decidable question remains for the owner — hence a standing-ruling disposition and not a
+decision packet.
+
+**Honest floor (re-measured this session, current HEAD chassis):** `sandbox func_80022F34
+--disable all` = **11** (build_insns 69, target_insns 70, `rules_dropped` 0,
+`cheat_asm_stripped` 25 — that strip count is other functions in code6cac.c; func_80022F34
+itself carries no cheat construct). HEAD ships the function as
+`INCLUDE_ASM("asm/funcs", func_80022F34);` since the 2026-08-19 asm-until-matched migration, so
+the byte-match on main is held by the assembly include, not by a cheat. The best pure-C form
+(`memory/grind/func_80022F34/candidate.c`) has a BYTE-PERFECT body: all 11 residual diffs are
+10 frame-offset deltas from a single phantom +8 stack slot, plus 1 maspsx load-delay nop that
+is retirable via `maspsx_label_nop_funcs.txt`.
+
+**What the residual is, now closed end-to-end against GCC 2.7.2 source.** Every link is pinned
+to a file and line in `tools/gcc-2.7.2/`, and the FIRST link is spelling-invariant:
+
+1. A `symbol + runtime-variable` address — `(&D_801027BC)[idx * 5]` — is expanded by
+   `memory_address` (`explow.c:385-470`). At `explow.c:414-416` it runs
+   `break_out_memory_refs` **before** it ever consults `GO_IF_LEGITIMATE_ADDRESS`, and
+   `break_out_memory_refs` (`explow.c:274-291`) recurses through the PLUS and unconditionally
+   `force_reg`s any operand that is `CONSTANT_P && CONSTANT_ADDRESS_P && GET_MODE != VOIDmode`.
+   Every `SYMBOL_REF` satisfies all three. So the symbol is materialised into a pseudo, the
+   residual `(plus (reg) (reg))` is not a legitimate MIPS address, and the tail of
+   `memory_address` `force_operand`s it into a second pseudo. Confirmed in the post-expand
+   `.rtl` dump (`tmp/grind/func_80022F34/s9/rtl-expand-addr-slice.txt`): insn 94
+   `(set (reg 95) (symbol_ref "D_801027BC"))`, insn 102 `(set (reg 100) (plus (reg 99)
+   (reg 95)))`, insn 104 `(set (reg 92) (mem (reg 100)))` — all present at EXPAND, before any
+   optimisation pass. The `mips.h:2325-2349` "pretend that the MIPS supports a constant address
+   + a register" clause that s8's frontier depended on is therefore unreachable at expand for
+   ANY symbol+variable address, in any function, for any spelling; its only gate is the
+   compiler-internal `cse_not_expected` flag, which no C source can flip.
+2. Target's per-access `lui`/`%lo(D_801027BC)` bytes therefore require `combine` to fold that
+   address pseudo away, which deletes the pseudo's only definition.
+3. With the definition deleted, the pseudo's `REG_DEAD` note has no home, so
+   `distribute_notes` (`combine.c:10829-10846`) walks back from i3 and, on hitting a
+   `CODE_LABEL`, emits `(use (reg N))` after that label.
+4. The pseudo then appears only inside a bare USE: `regclass` records no real class
+   (`lreg`: "ST_REGS or none"), `greg` allocates it with an empty conflict set and omits it
+   from Register dispositions, and reload/`alter_reg` homes it to a stack slot -> `vars=8` ->
+   `subu $sp,$sp,40` against the target's `-32`. That is the 10 frame-offset diffs.
+5. A loop always supplies the preceding `CODE_LABEL` (s8's vDIAG2 diagnostic: identical body,
+   loop label only -> strand=1, sp -40; vDIAG, no label anywhere -> strand=0, sp -32).
+6. An anchor that would give the note a legitimate home requires a SECOND reference to the
+   address pseudo — and a second reference is exactly what blocks the fold in step 2 (s8's
+   vORIG chassis: insn 100 survives, no fold, mems stay `(mem (reg))`, `vars=0`, wrong body).
+   Fold and clean note placement are mutually exclusive by construction.
+
+Target's shape — per-access fold AND `vars=0`, inside a loop — is unreachable in this
+compiler fork for every C spelling, not merely for the 25 spellings measured.
+
+**Endgame-lock AND-gates — BOTH FAIL (re-measured this session):**
+
+- **Gate (a), canonical-asm / hand-coded evidence: FAIL.**
+  `python3 tools/scan_hand_coded.py --single func_80022F34` -> **tier=LOW, score 1/8**.
+  Only S4 (front loads: 4 loads in an 8-insn window at insn 35) fires; S1 multu pacing,
+  S2 empty branch, S3 no spills, S5 cluster, S6 BIOS jumptable, S7 unsaved $sN, S8 redundant
+  mask are all negative. No STRONG signal (S1/S2/S6), so the canonical-asm grant path is not
+  open. Identical to the s6 and s8 measurements.
+- **Gate (b), in-hand SOTN-master precedent for the closing construct: FAIL.**
+  There is no closing construct to cite a precedent FOR. The defect is a stack slot created by
+  reload, downstream of combine — nothing expressible in C removes it, and the census confirms
+  the absence: `docs/reference/sotn-construct-index.md` has 2 lines matching /frame/ and zero
+  PSX entries matching /phantom|frame slot|frame size/ (the one hit, `src/dra/8C600.c:180`, is
+  a PSP-tagged comment). A negative census is a FAILED gate, not an open question.
+
+**Exhaustion record (ledger `memory/grind/func_80022F34/`):** 9 sessions across 7 distinct
+modalities — recon (s1), structural (s2, s3), permuter (s4, s5), forensics (s6), solver (s7),
+escalation (s8, s9). ~48k permuter iterations across three separate chassis (base weighted 174
+byte-perfect body: 30,640 iters, zero sub-174 finds; vH: best 224; vPRESW: plateau 590) —
+random codegen mutation never approaches the target. 25 C forms measured against the
+`.frame vars=`, per-access-fold-count and combine-strand-count gradient, with zero exceptions
+to s7's separation law. Solver axis FORECLOSED (s7: `goal_from_tgt classify` = FIRST DIVERGENCE
+PRE-RA on both chassis, "next tool: none" — the streams never differ by a register seat or an
+emission order, so `ra_solver` and `sched_solver` have nothing to invert). 17 disproven forms
+banked in `memory/grind/func_80022F34/rejected/`. Two complementary 11-scoring chassis banked
+(`candidate.c`, byte-perfect body; `chassis-vORIG.c`, target-exact frame/prologue/epilogue/
+loop/switch). The ledger frontier is now empty.
+
+**Disposition:** REFUSED / OWNER-ACCEPTED INCOMPLETE, per the 2026-07-27 standing ruling.
+func_80022F34 stays on main as `INCLUDE_ASM("asm/funcs", func_80022F34);` — zero cheat
+constructs, oracle intact. Nothing pends on the owner; nothing is awaiting a ruling.
+Same reachability-wall species as ang_hosei_80056FE8, func_80045878, func_8001F938,
+func_80048530, func_80062020.
