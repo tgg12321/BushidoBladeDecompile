@@ -723,3 +723,78 @@ of tmp/sandbox/func_80045878/text1a_c.o before any dump line was cited.
 - [s9] src/text1a_c.c was restored to INCLUDE_ASM("asm/funcs", func_80045878); at the end of the session per asm-until-matched; the score-4 body is banked at memory/grind/func_80045878/candidate.c.
 
 - [s9] A retraction note for the 2026-08-26 terminal-refusal entry was appended to docs/grind/decisions.md; it requests no owner action and asks no question - the item simply continues ACTIVE at the lower floor under the 2026-08-30 escalation-batch ruling 10.
+
+## [s10] 2026-08-30 - rederive modality - FLOOR 4 -> 0 (byte-exact), outcome ruling-request
+
+**The function now compiles byte-exact.** `sandbox func_80045878 --disable all`
+prints `"score": 0, "build_insns": 108, "target_insns": 108, "rules_dropped": 0`
+with the form banked as `memory/grind/func_80045878/candidate.c` applied to
+`src/text1a_c.c`. The session nevertheless returns `ruling-request`, not
+`candidate-ready`, because one of the two constructs in that form has no
+citable sanctioned family (see `self_vet.md` and the ruling question below).
+
+### The re-derivation that broke Gap A (the nine-session residual)
+Reading the TARGET's branch arithmetic rather than the ledger's model:
+`asm/funcs/func_80045878.s` idx 15 is `j func+0x84`, and func+0x84 is idx 33 -
+so the then-arm jump SKIPS idx 32, the second `addiu s3,s2,3`. That is the
+signature of `reorg.c` `fill_slots_from_thread`: the first insn of the join
+block is COPIED into the `beqz` delay slot at idx 13 and the jump label is
+advanced past the original, so ONE source statement materialises TWICE.
+Sessions s1-s9 modelled those two insns as two source assignments (one per arm
+of the first `if`) and spent structural, permuter, synthesis and solver
+modalities trying to move the else-arm copy with scheduler levers. It cannot be
+moved: `schedule_select`'s potential-hazard rule (sched.c, ";; insn 72 has a
+greater potential hazard") always prefers the two `sh` stores over the `addiu`
+in that equal-priority group, independent of source order (measured three ways
+this session, all byte-identical). Writing the statement ONCE, in the JOIN
+block, reproduces both insns in target order: score 4 -> 2 at 108 insns.
+Placement matters: the same single statement hoisted ABOVE the first `if`
+gives 107 insns / score 3 (nothing left for reorg to duplicate-and-skip).
+[[reorg-peel-is-not-a-source-statement]] is the general form of this trap.
+
+### The lever that broke Gap B
+`sched.c:2543 adjust_priority` promotes a newly-ready predecessor to
+`max_priority` (0x7f000001, sched.c:187/4049) iff `sched.c:2570
+birthing_insn_p` holds: destination live AND `reg_n_sets[dest] == 1`. The
+`n_deaths` arm of adjust_priority is dead code in 2.7.2 (REG_DEAD notes are
+already stripped), so birthing is the ONLY discriminator, and `max_priority`
+is always >= LAUNCH_PRIORITY, so there is no third path. Dump trace before the
+fix (block 13): `;; ready list at T-8: 219 (7f000001) 222 (1), now 219 222`,
+where 219 is the base copy and 222 is `c = a0 + 3`. Denying 219 the bump puts
+both at priority 1; `rank_for_schedule` then falls through to `INSN_LUID`
+("sort by INSN_LUID (original insn order), so that we make the sort stable"),
+222 has the higher LUID, `schedule_select` finds no hazard difference between
+two ALU insns so `best_insn` stays 0, and 222 is picked at T-8 and emitted at
+idx 90 - target order. The bump is denied by giving the base a second set;
+the ONLY zero-cost spelling is reusing the existing local `v0` (the
+`func_8004574C` result pointer, provably dead after the first `if`, and the
+only existing local whose merged allocno does not cross a call). Four other
+second-set spellings measured 109-110 insns.
+
+### Re-measured on the new chassis (all s9 conclusions re-verified, not quoted)
+- carrier dropped entirely: 110 insns / score 14
+- carrier = existing `s0`: 108 insns / score 6, tail rendered `addiu s0,s2,3`
+  (callee-save seat - `s0`'s else-arm range crosses two calls)
+- only one scratch carried, the other block-local: 108 insns / score 10 either way
+So the fresh call-free carrier `c` (first mention: the third-`if` condition
+read `(c = s1[3]) != -2`) remains mandatory: every existing local and parameter
+in this function (`s0`, `s1`, `s3`, `a1`, `a2`) crosses a call, and the only
+call-free multi-block anchors are the two condition reads.
+
+### The open family question (why this is a ruling-request)
+Two constructs are in the diff.
+1. `v0` reused as the tail base pointer. This is a clean fit for
+   `.claude/rules/staged-value-reused-variable.md`: existing local with a real
+   job, previous value provably dead at the borrow, staged value real and read
+   on the following lines, mechanism named (the rule's own Origin section
+   names `adjust_priority` -> `birthing_insn_p` / `reg_n_sets[regno] == 1`).
+2. `c`, a FRESH local written three times (condition read, `a0 + 3`, `0x8000`).
+   Bound 2 of that same rule excludes it verbatim: "Inventing a new variable
+   just to have something to borrow is NOT this rule". It is not the
+   named-intermediate family either (that family requires once-written /
+   once-read). It carries only real, immediately-consumed values and adds no
+   dead code, but it has no citable SOTN-master precedent in
+   `docs/reference/sotn-construct-index.md` (the only reuse entries there are
+   the five `// fake reuse of i?` cutscene sites, which are borrows of an
+   EXISTING loop counter). First reach of an unsanctioned family is a cheat
+   regardless of spelling, so this session does not submit.

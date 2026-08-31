@@ -568,3 +568,39 @@ multisets identical; `goal_from_tgt.py classify` = "FIRST DIVERGENCE: RA",
 - probe: V11: 's1[3] = 1; *(s1+0x24) = 0; *(s1) = 0;' rewritten as 'p = s1; p[3] = 1; *(p+0x24) = 0; *(p) = 0;' in the else arm.
 - result: score 20 at 109 insns - the else arm gains an instruction and its schedule is wrecked; this spelling is dead, the underlying idea is not
 - verdict: KILLED
+
+## [s10] The else-arm `addiu s3,s2,3` at idx 32 is NOT a second source assignment: it is the single join-block statement, with reorg.c having duplicated it into the `beqz` delay slot at idx 13 and advanced the then-arm `j` past the original.
+- mechanism: reorg.c fill_slots_from_thread copies the first insn of the branch target block into the delay slot and redirects the jump label past the copied insn. Direct evidence in asm/funcs/func_80045878.s: the `j` at idx 15 targets func+0x84 == idx 33, skipping idx 32. Nine prior sessions read the two emitted addiu as two source statements (one per arm of the first if) and spent the whole structural/permuter/solver ladder trying to fix the resulting block order with scheduler levers.
+- probe: R7 (tmp/grind/func_80045878/s10/r7.c) - delete both arm assignments, write ONE `s3 = a0 + 3;` immediately after the first if/else and before `if (func_8004574C(s3))`.
+- result: score 4 -> 2 at 108 insns; Gap A gone, only the idx 89/90 pair left
+- verdict: CONFIRMED
+
+## [s10] The join-block placement is load-bearing: hoisting the single `s3 = a0 + 3;` ABOVE the first if leaves only the delay-slot materialisation and loses an instruction.
+- mechanism: with the statement in the entry block there is nothing for reorg.c to duplicate-and-skip; the addiu is emitted once, in the entry block, and reorg then fills the beqz slot from it.
+- probe: R2 (r2.c) - `s3 = a0 + 3;` before `v0 = func_8004574C(a0);`
+- result: score 3 at 107 insns (target 108) - one insn short, the idx-32 addiu is simply absent
+- verdict: CONFIRMED
+
+## [s10] Source-statement order inside the first-if else arm is byte-neutral for the Gap A pair; the block order is decided by schedule_select's potential-hazard rule, not by LUID.
+- mechanism: sched.c schedule_select works down the ready list in equal-priority groups and moves the insn with the largest potential_hazard to the front; the two `sh` stores beat the `addiu` on that test regardless of LUID, so the addiu is picked last (T-4) and emitted first. Trace: ";; insn 72 has a greater potential hazard, now 72 75 69" (block 2, this session's dump).
+- probe: R3 (s3 assignment first in the arm), R5 (s3 between the two stores), R6 (`a0 + 3` instead of `a0 - -3`)
+- result: all three score 4 at 108 insns - byte-identical to the s9 baseline
+- verdict: KILLED (this axis is dead; Gap A was never a scheduler problem)
+
+## [s10] Residual B (idx 89/90) closes by denying the tail base pointer the birthing_insn_p LAUNCH_PRIORITY bump, spelled as reusing the EXISTING local `v0` (the func_8004574C result pointer, dead after the first if) as the tail base.
+- mechanism: sched.c:2543 adjust_priority raises a newly-ready predecessor to max_priority (0x7f000001, sched.c:187/4049) iff sched.c:2570 birthing_insn_p holds - dest live AND reg_n_sets[dest] == 1. Two sets of the base kill the test; both insns then sit at priority 1, rank_for_schedule falls through to INSN_LUID, the addiu has the higher LUID and schedule_select finds no hazard difference between two ALU insns, so the addiu is picked at T-8 and emitted second. Trace before the fix: ";; ready list at T-8: 219 (7f000001) 222 (1), now 219 222".
+- probe: U2/U3 (u2.c raw, u3.c cleaned spelling) - `s16 *v0;` reused, tail writes `v0 = s1; ... v0[11] = c; ...`
+- result: score 0 at 108 insns, rules_dropped 0 - THE FUNCTION IS BYTE-EXACT
+- verdict: CONFIRMED
+
+## [s10] Every OTHER way of giving the tail base a second set costs at least one instruction.
+- mechanism: a second `p = s1` copy that cse cannot fold is a real `move` insn; one that cse CAN fold leaves reg_n_sets at 1 and the bump intact.
+- probe: S1 (p set before the third if, condition read through p), S4 (p set before the third if, then-arm store through p), S3 (p set in the third-if else arm), S2 (p carried through both arms with no tail set), U1 (p reused for the existing 0x1A88 address computation).
+- result: 109 / 109 / 110 / 109 / 108 insns at scores 12 / 12 / 57 / 49 / 2 - only the `v0` borrow is free, and U1 (the 0x1A88 borrow) leaves the pair unswapped at score 2
+- verdict: KILLED (as alternatives)
+
+## [s10] The fresh call-free carrier `c` is still mandatory on the new chassis - no existing local can replace it, because every existing local and parameter in this function crosses a call.
+- mechanism: global.c seats an allocno with calls_crossed > 0 in a callee-save register, and local-alloc.c:472 hands $v0 to any pseudo that is block-local to the tail.
+- probe: U4/U5 (carrier dropped entirely, tail scratch values written inline), U6 (`s0` borrowed as the carrier), T1/T3 (one scratch carried, the other block-local).
+- result: U4/U5 110 insns score 14; U6 108 insns score 6 with the tail rendered `addiu s0,s2,3` (callee-save); T1/T3 108 insns score 10
+- verdict: CONFIRMED

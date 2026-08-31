@@ -82,7 +82,9 @@
    "next_probe": "Feed the candidate.c body to sched_solver, ask it for the ready-list state at the idx 89/90 and idx 29/32 decision points, and have it rank the C-level levers that change INSN_PRIORITY or reg_n_sets for those two producers. Verdicts are hypotheses until a spelled C form measures."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "No fresh (newly invented) local may be written more than once to serve as a register/allocation carrier, by any spelling or name; keep the s3 join-block placement and the v0 tail-base reuse and find the remaining anchor via an existing variable or a structural respelling."
+ ],
  "origin": "queue",
  "created": "2026-07-23T09:09:52.873291+00:00"
 }
