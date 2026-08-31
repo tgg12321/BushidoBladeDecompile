@@ -1018,3 +1018,150 @@ changes the disposition question s10 left on the frontier; it strengthens the pa
 - [s12] RE-MEASURED score 14 at 110 insns with the emitted tail disassembled: the fully Judge-compliant carrier-free tail seats BOTH block-local scratches at $v0 and pushes the base to $a0, plus an extra 'move v0,s2'. This is the allocation mechanism observed end-to-end in emitted code rather than inferred from dumps.
 
 - [s12] NET: the Judge's 2026-08-30 constraint is unsatisfiable for this residual, by a five-step argument in which every step is either a measurement or a rule read out of the compiler source. The function still has two independent byte-exact pure-C forms (candidate.c, alt_anchor_e1.c), both blocked solely by the family status of the multi-write fresh carrier.
+
+## s13 (2026-08-31, structural)
+
+CHASSIS RE-MEASURED FIRST. `memory/grind/func_80045878/candidate.c` as banked by s10-s12
+(now preserved as `candidate_s10_multiwrite_carrier.c`) applied over the
+`INCLUDE_ASM("asm/funcs", func_80045878);` line reproduces **score 0, build_insns 108 ==
+target_insns 108, rules_dropped 0** on today's tree. The dispatch brief again reported the
+HEAD floor as "measurement unavailable"; the measured floor with the banked best form is 0.
+src/text1a_c.c was restored to the INCLUDE_ASM line before this session ended.
+
+MECHANICAL NOTE FOR FUTURE SESSIONS (cost a turn here): the banked candidate.c header comment
+contained the literal sequence `saSeMain_*` followed immediately by `/saTan5TakeGetPos_*`,
+whose embedded `*` + `/` TERMINATES the C comment. Applying candidate.c *including its header*
+therefore does not compile. Apply from the `void func_80045878` line onward, or keep that
+sequence out of ledger header comments. The rewritten candidate.c banked this session is free
+of it and was verified to compile and score 0 with its header intact.
+
+### THE HEADLINE: s12's five-step "unsatisfiable" proof is DISPROVEN, and a THIRD byte-exact
+### pure-C form exists that contains NO multi-write fresh value carrier.
+
+s12 concluded (evidence.md [s12], and it was about to be carried into a decision packet) that
+the Judge's 2026-08-30 constraint is unsatisfiable for this residual, on a five-step argument
+whose step (1) was: *the tail base copy `addu $v0,$s1,$zero` survives cse only for a pseudo
+mentioned outside the tail block, and such a mention makes flow.c mark the pseudo
+REG_BLOCK_GLOBAL, routing it to global_alloc, which runs after local_alloc, so any block-local
+tail quantity takes $v0 first.* Step (1) welds together two properties that are in fact
+separable, and s13 separated them:
+
+  (a) `make_regs_eqv` (cse.c:836-864) decides canonicality from `regno_first_uid` /
+      `regno_last_uid`, and those arrays are computed by `reg_scan` (regclass.c) over the RTL
+      **as it stands before cse runs**. A mention that a LATER pass deletes still counts.
+  (b) `reg_basic_block[]` is written by flow.c's `life_analysis`, which **deletes dead stores
+      as it walks**. A mention that is dead therefore never promotes the pseudo to
+      REG_BLOCK_GLOBAL.
+
+So a single DEAD store to a fresh pointer local, placed in the entry block, makes the base
+pseudo simultaneously (i) canonical at cse time -- so the base copy insn SURVIVES -- and
+(ii) block-local at flow time -- so `local_alloc`, not `global_alloc`, allocates it. Then
+local-alloc.c:1641 `qty_compare` ranks the block-13 quantities by
+`floor_log2(n_refs) * n_refs * size / (death - birth)`: the base (7 refs / 9-10 insns) outranks
+both tail scratches (2 refs each), and since mips.h defines no REG_ALLOC_ORDER `find_free_reg`
+scans ascending and hands the base $v0 and the scratches $v1. That is target's exact seating,
+produced with no carrier local anywhere in the function.
+
+DUMP EVIDENCE (not inference) -- `tmp/grind/func_80045878/s13/lreg_final.txt`, regenerated from
+the new candidate.c: `Register 79 used 7 times across 9 insns **in block 13**; pointer` (the
+base `p`, block-local), alongside `Register 80` and `Register 102`, 2 refs each, also block 13
+(the two tail scratches). Compare the s10/s12 carrier form, whose base was
+`Register 76 used 10 times across 12 insns` with NO block tag, i.e. multi-block. Emitted tail
+(`tmp/grind/func_80045878/s13/tail_final_objdump.txt` and the sandbox disassembly) is target's,
+instruction for instruction.
+
+### MEASUREMENT TABLE (all `sandbox func_80045878 --disable all`, rules_dropped 0 throughout)
+
+| id | form | insns | score |
+|----|------|-------|-------|
+| C0 | s10 carrier form (chassis check) | 108 | **0** |
+| P2 | fresh `s16 *p;` + statement `p = 0;` + named intermediate `t = a0+3` | 108 | **0** |
+| P4 | same, spelled as the declaration initialiser `s16 *p = 0;` -- THE NEW candidate.c | 108 | **0** |
+| P1 | P2 without the named intermediate (`p[11] = a0 + 3;` inline) | 109 | 10 |
+| P3 | P2 without the dead initialiser | 107 | 9 |
+| P5 | dead init replaced by a same-value `p = s1;` re-store in the join block | 109 | 16 |
+| P6 | same-value `p = s1;` re-store at the end of the third-if ELSE arm | 107 | 9 |
+| P7 | same-value `p = s1;` re-store at the end of the third-if THEN arm | 107 | 9 |
+| P8 | dead init replaced by a REAL once-read use of `p` (the else-arm `0x1A88 + (s32)s1` call argument) | 108 | 10 |
+
+Four findings fall out of that table, in order of value:
+
+1. **The dead store must carry a DIFFERENT value from the base (P5/P6/P7 vs P2).** A same-value
+   `p = s1;` re-store looks like the better family fit (it is literally the "self-assign /
+   same-value re-store to a LOCAL" shape) but it does not work: cse records the p==s1
+   equivalence at the EARLY site, propagates `s1` into the tail, and the tail copy dies anyway
+   (107 insns, the same score-9 outcome as having no early mention at all). Only a constant
+   store -- which creates no equivalence -- gives `p` an early uid without pre-canonicalising
+   `s1`. This is a sharp, non-obvious constraint on the construct, measured three placements
+   deep.
+
+2. **The early mention must be DEAD; a real one does not work (P8).** Anchoring `p` on a real
+   once-read value in the else arm (the `0x1A88 + (s32)s1` call argument, i.e. the same anchor
+   site alt_anchor_e1.c uses) leaves the insn alive through flow, `p` becomes multi-block, the
+   block-local tail scratch takes $v0 and the base is pushed out -- 108 insns / score 10. So the
+   deadness is not incidental to the spelling; it IS the mechanism. There is no "real value"
+   respelling of this construct, and future sessions should not go looking for one.
+
+3. **The named intermediate `t = a0 + 3;` is load-bearing for a second, independent reason
+   (P1).** Written inline, cse builds a HImode common-subexpression temp for the three `a0`
+   half-word stores -- `Register 101 used 4 times across 5 insns in block 13; 2 bytes` in the P1
+   dump -- whose `qty_compare` priority (floor_log2(4)*4*1/5 = 16000) OUTRANKS the base's
+   (floor_log2(7)*7*1/10 = 14000). The temp takes $v0, the base is pushed to $v1, and an extra
+   `move v0,s2` appears: 109 insns / score 10. Naming `a0 + 3` suppresses that temp; in the
+   final dump `Register 72` (a0) carries 10 refs and there is no HImode block-13 temp at all,
+   exactly as in target, which stores `$s2` directly.
+
+4. **The `v0` tail-base reuse -- the one construct the Judge explicitly told the next session to
+   KEEP -- is now unnecessary and is GONE.** In the new form `v0` is used only for its real job
+   (the `func_8004574C(a0)` result and the `v0 != 0` test), the third `if` condition is
+   completely ordinary C (`s1[3] != -2`, no embedded assignment), and there is no multi-write
+   local of any kind. The whole diff versus a plain compliant body is: one dead pointer
+   initialiser, one pointer alias, one named intermediate.
+
+### WHY THIS IS A ruling-request AND NOT A SUBMISSION
+
+Three constructs, and the family status is genuinely mixed (full six-test vet in
+`memory/grind/func_80045878/self_vet.md`):
+
+  1. `s16 *p = 0;` -- verbatim the scope of `.claude/rules/dead-store-fake-exception.md:35`
+     ("dead store to a local: `dest = val1;` where `dest` is never read"). FAKE-annotated in
+     candidate.c with what + mechanism + lever-exhaustion.
+  2. `s32 t; t = a0 + 3; p[11] = t;` -- clears all six prongs of the 2026-08-17
+     named-intermediate clarification (`.claude/rules/no-new-park-categories.md:208`):
+     once-written, once-read, a real value that appears in target's bytes as
+     `addiu $v1, $s2, 0x3`, byte-neutral at 108 == 108, fresh not borrowed, destination not
+     live-pre-initialised. FAKE-annotated.
+  3. `p = s1;` -- the pointer alias itself. NO sanctioned family covers it: the pointer-alias
+     rule scopes a pointer local to a GLOBAL (`s1` is a local); prong (2) of the
+     named-intermediate clarification explicitly routes "pure no-op copies" away to the
+     dead-store family, and prong (3) requires the compiler to FOLD the copy, whereas here it
+     is deliberately kept (target emits it as `addu $v0, $s1, $zero`); and bound 2 of
+     `.claude/rules/staged-value-reused-variable.md` excludes inventing a local to borrow.
+
+And, taken together, `p` is a fresh local WRITTEN TWICE (the dead 0, then the real base) that
+determines a register seat, which is the literal shape the Judge's 2026-08-30 constraint for
+this function bans "by any spelling or name" -- a constraint written against the three-write
+value carrier `c`, not against this. The same constraint also directs the next session to
+"keep ... the v0 tail-base reuse", which this form necessarily drops, because the mechanism
+requires a BLOCK-LOCAL base and `v0` is inherently multi-block. Submitting against the letter
+of a binding constraint would bounce at layer 1 without a Judge cycle, so s13 asks instead.
+
+- [s13] CHASSIS: the s10-s12 carrier form re-measures score 0 / 108 == 108 / rules_dropped 0 on today's tree. Preserved as memory/grind/func_80045878/candidate_s10_multiwrite_carrier.c.
+
+- [s13] **s12's five-step "the Judge's constraint is unsatisfiable" proof is DISPROVEN at step (1).** cse.c:836-864 make_regs_eqv reads regno_first_uid/regno_last_uid, which reg_scan (regclass.c) computes over the RTL BEFORE cse; flow.c life_analysis, which writes reg_basic_block[], DELETES dead stores as it walks. So a dead store gives a pseudo an early first-uid (copy survives cse) WITHOUT making it REG_BLOCK_GLOBAL (stays block-local for local_alloc). "The base copy survives" and "the base pseudo is block-local" are NOT mutually exclusive.
+
+- [s13] **A THIRD byte-exact pure-C form exists (score 0, 108 == 108, rules_dropped 0), banked as the new memory/grind/func_80045878/candidate.c**, containing NO multi-write value carrier, NO embedded assignment in the third if condition, and NOT using the v0 tail-base reuse. Its whole diff versus a plain compliant body is: `s16 *p = 0;` (dead initialiser), `p = s1;` (pointer alias used for the seven tail stores), and `s32 t; t = a0 + 3; p[11] = t;` (named intermediate).
+
+- [s13] MECHANISM, dump-confirmed (tmp/grind/func_80045878/s13/lreg_final.txt): the base pseudo is `Register 79 used 7 times across 9 insns in block 13` -- BLOCK-LOCAL -- so local_alloc allocates it, and local-alloc.c:1641 qty_compare (floor_log2(n_refs)*n_refs*size/(death-birth)) ranks it 14000 against the two tail scratches' 10000/5000, giving it $v0 and them $v1. Target's exact seating.
+
+- [s13] KILLED (109/107/107 insns, score 16/9/9): replacing the dead constant initialiser with a same-value `p = s1;` re-store in the join block / the third-if else arm / the third-if then arm. cse records the p==s1 equivalence at the early site and propagates s1 into the tail, so the base copy dies anyway. The dead store MUST carry a value different from the base.
+
+- [s13] KILLED (108 insns, score 10): anchoring `p` on a REAL once-read value (the else-arm `0x1A88 + (s32)s1` call argument). The insn survives to flow, `p` becomes multi-block, the block-local scratch takes $v0. The deadness of the early store is the mechanism, not a spelling choice -- there is no "real value" respelling.
+
+- [s13] KILLED (109 insns, score 10): the same form without the named intermediate `t`. Written inline, cse builds a HImode CSE temp for the three `a0` half-word stores (`Register 101 used 4 times across 5 insns in block 13; 2 bytes`) whose qty_compare priority 16000 outranks the base's 14000 and steals $v0. Naming `a0 + 3` suppresses the temp; target likewise stores `$s2` directly.
+
+- [s13] KILLED (107 insns, score 9): the same form without the dead initialiser -- cse folds and deletes the base copy exactly as s12 predicted. Both new constructs are independently load-bearing.
+
+- [s13] OUTCOME: `ruling-request`, not candidate-ready. Constructs 1 and 3 sit in named sanctioned families with quoted scopes and file:line precedents; construct 2 (`p = s1;`) has none, and `p` as a whole is a fresh local written twice, which the Judge's 2026-08-30 constraint bans by its letter. Full six-test vet in memory/grind/func_80045878/self_vet.md.
+
+- [s13] src/text1a_c.c was restored to the INCLUDE_ASM line before the session ended; the only tracked dirt is the ledger files and metrics/events.jsonl.

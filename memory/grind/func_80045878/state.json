@@ -101,7 +101,8 @@
   }
  ],
  "judge_constraints": [
-  "No fresh (newly invented) local may be written more than once to serve as a register/allocation carrier, by any spelling or name; keep the s3 join-block placement and the v0 tail-base reuse and find the remaining anchor via an existing variable or a structural respelling."
+  "No fresh (newly invented) local may be written more than once to serve as a register/allocation carrier, by any spelling or name; keep the s3 join-block placement and the v0 tail-base reuse and find the remaining anchor via an existing variable or a structural respelling.",
+  "No fresh (newly invented) local may serve as a register/allocation carrier or as a duplicate handle/base for existing locals, by any spelling, write-count or name \u2014 this covers p = s1; with or without a dead initialiser; keep the v0 tail-base reuse and the s3 join-block placement."
  ],
  "origin": "queue",
  "created": "2026-07-23T09:09:52.873291+00:00"

@@ -825,3 +825,82 @@ exists".
 - probe: Compose the four results above into a foreclosure argument and test each step against a measurement or against the compiler source.
 - result: Unsatisfiable, in five steps: (1) the tail base copy survives cse only if its pseudo is mentioned outside the tail block, hence it is multi-block, hence global_alloc; (2) any block-local tail scratch is taken by local_alloc, which runs first and takes $v0, so the base cannot then hold $v0 - measured, score 14 this session and score 10 in s10; (3) therefore both tail scratches must be non-block-local; (4) both tail values must be produced IN the tail, because the tail is a join block where cse's table is reset and target recomputes addiu $v1,$s2,3 there - producing either earlier folds a0+3 into s3 or relocates the 0x8000 insn out of the tail, both measured in s10; (5) no existing call-free variable remains per the census. So the carrier must be a fresh local written once per tail value plus mentioned once outside the tail - more than one write. Steps (1) and (2) are properties of cse.c and local-alloc.c, not of the source text, so no spelling, ordering, typing, or block-structuring change escapes them.
 - verdict: CONFIRMED
+
+## [s13] 2026-08-31 - structural modality (session 13 of the grind)
+
+### H13.1 - CONFIRMED. A DEAD store separates "copy survives cse" from "pseudo is multi-block".
+Statement: s12's step (1) claimed the tail base copy survives cse ONLY for a pseudo that flow.c
+also marks REG_BLOCK_GLOBAL, so the base can never be allocated by local_alloc. That is false:
+`regno_first_uid` / `regno_last_uid`, the inputs to cse.c:836-864 `make_regs_eqv`, are computed
+by `reg_scan` (regclass.c) over the RTL BEFORE cse, while `reg_basic_block[]` is written by
+flow.c `life_analysis`, which deletes dead stores as it walks. An entry-block dead store to a
+fresh pointer local therefore buys the early first-uid (copy survives) at zero cost in
+block-locality (flow never sees it).
+Probe: `s16 *p = 0;` in the entry block, `p = s1;` at the top of the tail, tail stores through
+`p`, plus a named intermediate for `a0 + 3`.
+Result: **score 0, build_insns 108 == target_insns 108, rules_dropped 0** -- a THIRD byte-exact
+pure-C form, and the first one with no multi-write value carrier. Dump confirmation:
+`Register 79 used 7 times across 9 insns in block 13; pointer`
+(tmp/grind/func_80045878/s13/lreg_final.txt).
+Verdict: CONFIRMED.
+
+### H13.2 - CONFIRMED. The base wins $v0 by local-alloc.c:1641 qty priority, not by luck.
+Statement: once the base is block-local, `qty_compare`'s
+`floor_log2(n_refs) * n_refs * size / (death - birth)` decides the tail seats. The base
+(7 refs / ~10 insns -> 14000) must outrank every other block-13 quantity.
+Probe: drop the named intermediate so `a0 + 3` is written inline.
+Result: cse then builds a HImode CSE temp for the three `a0` half-word stores
+(`Register 101 used 4 times across 5 insns in block 13; 2 bytes` -> 16000), which outranks the
+base, takes $v0, pushes the base to $v1 and adds a `move v0,s2`: 109 insns / score 10.
+Verdict: CONFIRMED (and it is why the named intermediate is load-bearing).
+
+### H13.3 - KILLED. A same-value `p = s1;` re-store cannot replace the dead constant store.
+Statement: the sanctioned dead-store family's cleanest shape (a same-value re-store of a LOCAL)
+should serve as the early mention just as well as `p = 0;`.
+Probe: `p = s1;` placed (a) in the join block after the first if, (b) at the end of the
+third-if ELSE arm, (c) at the end of the third-if THEN arm.
+Result: 109/107/107 insns, score 16/9/9. cse records the p==s1 equivalence at the EARLY site,
+`s1` stays canonical, `p`'s tail uses are rewritten to `s1` and the tail copy dies -- the same
+outcome as having no early mention at all. The early store must carry a value that creates NO
+equivalence with the base.
+Verdict: KILLED.
+
+### H13.4 - KILLED. The early mention cannot be a REAL value.
+Statement: if `p` were anchored on a genuine once-read value earlier in the function, the
+construct would be ordinary C and no dead store would be needed.
+Probe: `p = (s16 *)(0x1A88 + (s32) s1); func_80045600(a0, (s32) p);` in the first-if else arm
+(the alt_anchor_e1.c anchor site), no dead initialiser.
+Result: 108 insns / score 10. The insn is real, survives to flow, `p` becomes multi-block and
+goes to global_alloc, the block-local tail scratch takes $v0.
+Verdict: KILLED. The DEADNESS is the mechanism; there is no real-value respelling. Do not
+re-search anchor sites for this construct.
+
+### H13.5 - CONFIRMED (negative control). Without the dead initialiser the copy folds.
+Probe: the same form with `s16 *p;` uninitialised.
+Result: 107 insns / score 9 -- cse propagates `s1` and deletes the copy, exactly as s12
+predicted for a block-local base. Both new constructs are independently load-bearing.
+Verdict: CONFIRMED.
+
+### The open question s13 hands forward (this is a routing/family question, not a search)
+The bytes are solved THREE independent ways now. What is undecided is family status for the
+new form's three constructs:
+  * `s16 *p = 0;` -- squarely inside `.claude/rules/dead-store-fake-exception.md:35`.
+  * `s32 t; t = a0 + 3; p[11] = t;` -- clears all six 2026-08-17 named-intermediate prongs
+    (`.claude/rules/no-new-park-categories.md:208`).
+  * `p = s1;` -- no sanctioned family (pointer-alias scopes GLOBALs; named-intermediate prong
+    (2) routes pure no-op copies away and prong (3) requires the copy to be folded, but here it
+    is target's own `addu $v0, $s1, $zero`; staged-value-reuse bound 2 excludes inventing a
+    local to borrow).
+And `p` as a whole is a fresh local written twice, which the Judge's 2026-08-30 constraint for
+this function bans by its letter -- a constraint authored against the three-write value carrier
+`c`, whose harm (an invented variable ferrying unrelated values) is a different harm from a
+base pointer with one dead initialiser.
+
+NEXT PROBE FOR THE FOLLOWING SESSION: none of the above needs re-measuring. If the ruling comes
+back permissive, apply memory/grind/func_80045878/candidate.c verbatim and submit -- it is
+byte-exact today. If it comes back restrictive, the compliant floor to quote is 13 (s11's
+static-inline tail helper, 109 insns), NOT 0 and NOT 4. The one thing that is still genuinely
+unmeasured is whether a dead store can be placed so that it reads as ordinary defensive C
+without changing the mechanism -- e.g. an early `p = 0;` paired with a later real NULL test on
+some other object -- but that is cosmetics on an already-answered mechanism, and it does not
+change the family question.
