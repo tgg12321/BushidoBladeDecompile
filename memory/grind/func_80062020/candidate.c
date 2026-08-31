@@ -1,5 +1,20 @@
 /* func_80062020 (text1b.c) — CANDIDATE, honest pure-C floor 4 (NOT a match).
  *
+ * MIGRATION BANNER (asm-until-matched, owner ruling 2026-08-19): the representation
+ * of func_80062020 ON MAIN is `INCLUDE_ASM("asm/funcs", func_80062020);` at
+ * src/text1b.c:3853. This file is NOT on main and never has been; every score quoted
+ * below was produced by pasting this body over that INCLUDE_ASM line in a scratch
+ * working tree and reverting immediately afterwards.
+ *
+ * RE-MEASURED AGAIN (grind s9, rederive modality, 2026-08-30): same body, same live
+ * chassis -> sandbox func_80062020 --disable all = score 4, build_insns 35,
+ * target_insns 38, rules_dropped 0, cheat_asm_stripped 167 — unchanged from s8, so the
+ * chassis has not drifted. s9 additionally measured both UNIFORM poles for the first
+ * time: this all-register-base body scores 4 at 35 insns, while the two all-LO_SUM
+ * spellings score 6 at 39 insns (rejected/epilogue-uniform-allosum-score6-s9.c and
+ * rejected/epilogue-single-anchor-byteofs-allosum-score6-s9.c). The target's 38 insns
+ * sit strictly between the two uniform poles.
+ *
  * RE-MEASURED (grind s8, forensics modality, 2026-08-30) on the live chassis, with
  * this body pasted over the INCLUDE_ASM line at src/text1b.c:3853:
  *   sandbox func_80062020 --disable all -> score 4, build_insns 35,

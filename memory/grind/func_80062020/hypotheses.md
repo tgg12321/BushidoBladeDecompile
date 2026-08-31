@@ -636,3 +636,117 @@ on the answer.
 - probe: Seven candidates measured in-function on the inline-`i*12` chassis (one break away from the target): `do { c; b; } while (0);` wrap, `if (i) { }`, `goto L; L:`, `for(;;){ c; b; break; }`, `i = i;` self-assign, a possibly-aliasing store through the parameter (`arg0[0]=0;`), and the a-store duplicated into both arms of an `if`.
 - result: All seven measure DISP8|DISP4|DISP0. Those that survive jump1 break cse1 only, and cse2 undoes the break; the rest are deleted by jump1 before cse.
 - verdict: KILLED
+
+## s9 — rederive modality (2026-08-30)
+
+### H-s9-1 — KILLED
+**Statement.** A structurally different WHOLE-FUNCTION C shape — natural struct-array /
+2-D-array / flat-array C for the loop as well as the terminator, rather than the s1/s2
+byte-offset-cast body every prior session held fixed — reaches the target's mixed
+`DISP8 | DISP4 | LOSUM` terminator arrangement.
+**Mechanism.** Prior sweeps only ever perturbed the epilogue; if the loop's spelling is what
+seeds cse2's value table with the row-base quantity, changing the loop's spelling could change
+what is available to the third terminator store.
+**Probe.** `tmp/grind/func_80062020/s9/wholesweep.py` — 10 whole-function shapes through
+cc1 with the canonical CC_FLAGS, classifying the three `sw $0` terminator stores.
+**Result.** 8/10 all-LO_SUM, 1/10 all-register-base (`(Rows + n)->c` form), 1/10 the
+flat-array degenerate `LOSUM | DISP0 | DISP0`. Zero hits on the target arrangement. The
+natural struct-array loop reproduces the target loop exactly (3 LO_SUM stride-12 stores), so
+the loop's spelling is NOT the discriminator — the terminator's tree shape alone is.
+**Verdict.** KILLED. The rederive axis does not reach the arrangement; the uniform-spelling
+law is a whole-function law, not an epilogue-local one.
+
+### H-s9-2 — KILLED (as an improvement) / CONFIRMED (as a bracket)
+**Statement.** The all-LO_SUM uniform pole, never scored in the sandbox by any session, might
+be closer to the target than the all-register-base pole (floor 4), because its final store is
+literally the target's `sw $0,%lo(D_800F1198)($at)`.
+**Mechanism.** The target's epilogue ends with a LO_SUM store; an all-LO_SUM epilogue matches
+that last store exactly and might align better overall.
+**Probe.** Two spellings measured with `sandbox func_80062020 --disable all` on the live
+chassis: three-symbol (`&D_800F11A0/&D_800F119C/&D_800F1198 + ofs`) and single-anchor
+(`&D_800F1198 + ofs + 8/4/0`).
+**Result.** Both **score 6, build_insns 39**. The all-register-base pole is score 4,
+build_insns 35. Target is 38.
+**Verdict.** KILLED as an improvement; CONFIRMED as a measured bracket. The uniform space is
+now bounded by measurement on both sides (35 insns / score 4 and 39 insns / score 6), with the
+target's 38 strictly between them — an insn-count argument that no uniform form can hit it.
+Banked: `rejected/epilogue-uniform-allosum-score6-s9.c`,
+`rejected/epilogue-single-anchor-byteofs-allosum-score6-s9.c`.
+
+### H-s9-3 — KILLED
+**Statement.** A dead CONDITIONAL register store (`if (i) { d = 1; }`, `d` unused) survives
+jump1 and cse2 — breaking cse2's basic block and yielding P2-YES — and is then erased by
+flow's dead-code elimination (toplev.c:2983) plus jump2 (toplev.c:3142), leaving the target's
+branch-free epilogue.
+**Mechanism.** s8 established that cse2 is the unifier and that its block is ended only by a
+real CODE_LABEL; flow_analysis and jump2 both run after cse2, so a construct erased there
+would be invisible in the final bytes while still breaking cse2.
+**Probe.** MECHANISM CONTROL ONLY (the construct is the forbidden `dead-conditional-store`
+family and was never a proposal): `rejected/epilogue-deadcondstore-erased-by-jump1-s9.c`
+applied over the INCLUDE_ASM line and scored with the sandbox.
+**Result.** **score 4, build_insns 35 — byte-identical to the baseline.** The branch does not
+even reach cse2: `jump_optimize` runs at toplev.c:2827 with `after_regscan = 1`, deletes the
+set of a register with no other references, the arm becomes empty and the branch is deleted
+with it — one pass earlier than the hypothesis assumed.
+**Verdict.** KILLED. Together with s8's seven code-free candidates this closes the class:
+every construct that leaves no real code behind is erased before cse2, and every construct
+that does break cse2 leaves real code — a surviving branch plus arm bodies — which the
+target's branch-free 11-insn epilogue cannot contain.
+
+### H-s9-4 — CONFIRMED (source read, not inference)
+**Statement.** cse2's basic-block boundary is not simply "a CODE_LABEL"; an UNREFERENCED
+label does not break it, because cse extends across such a label carrying the whole value
+table.
+**Mechanism.** `tools/gcc-2.7.2/cse.c:8517` gates the extension on
+`--LABEL_NUSES (to) == to_usage`, and LABEL_NUSES was pre-incremented at cse.c:8433, so the
+test means "the label had zero real references". Only `new_basic_block ()` resets the qty
+tables.
+**Probe.** Direct read of cse.c:8430-8560 plus the pass order in toplev.c:2827-3142.
+**Result / Verdict.** CONFIRMED. P2 requires a label with a LIVE jump reference between the
+b-store and the a-store at cse2 time, and that jump must additionally survive the SECOND full
+jump pass at toplev.c:2923 (post-loop, pre-cse2) that s8's frontier did not account for.
+
+### H-s9-5 — CONFIRMED (census)
+**Statement.** The target's same-symbol dual-address-form arrangement is a shared species
+across the binary rather than a quirk of func_80062020, and the project has no matched pure-C
+precedent for it.
+**Probe.** `tmp/grind/func_80062020/s9/scan4.py` over an objdump of build/bb2.elf: intersect,
+per function, the symbol addresses reached by a register-materialised `lui/addiu` base with
+those reached by a `lui at; addu at,at,rY; d(at)` LO_SUM access.
+**Result.** 32 functions have a non-empty intersection; every one of them is still an
+unmatched `INCLUDE_ASM` item (the two apparent matched hits are internal labels inside
+func_80065800's asm body). Neighbours include func_80061064 (D_800F1150), func_80045294,
+func_80057CC8, CD_cw, SpuSetReverbModeParam.
+**Verdict.** CONFIRMED. Zero in-repo pure-C precedent; a solution here generalises to 31
+other queue items, which raises the value of an owner ruling on this residual well above one
+function.
+
+## [s9] A structurally different WHOLE-FUNCTION C shape (natural struct-array / 2-D-array / flat-array C for the loop as well as the terminator, instead of the s1/s2 byte-offset-cast body every prior session held fixed) reaches the target's mixed DISP8 | DISP4 | LOSUM terminator arrangement.
+- mechanism: Every prior sweep (s7 3-line harness, s8 fullsweep) perturbed only the epilogue. If the loop's spelling is what seeds cse2's value table with the row-base quantity, a different loop spelling could change what is available to the third terminator store.
+- probe: tmp/grind/func_80062020/s9/wholesweep.py — 10 whole-function shapes compiled through cc1 with the canonical CC_FLAGS (-O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -mel), classifying the three `sw $0` terminator stores; per-shape .c/.s banked as ws_*.c / ws_*.s.
+- result: 8/10 all-LO_SUM (LOSUM[Rows+8] | LOSUM[Rows+4] | LOSUM[Rows]); 1/10 all-register-base ((Rows + n)->c form, DISP8 | DISP4 | DISP0); 1/10 the flat-array degenerate LOSUM | DISP0 | DISP0. Zero hits on the target arrangement. The natural struct-array loop reproduces the target loop exactly (3 LO_SUM stride-12 stores), so the loop spelling is not the discriminator.
+- verdict: KILLED
+
+## [s9] The all-LO_SUM uniform pole — never scored in the sandbox by any prior session, only classified by cc1 — might be closer to the target than the all-register-base pole (floor 4), because its final store is literally the target's sw $0,%lo(D_800F1198)($at).
+- mechanism: The target epilogue ends with a LO_SUM store; an all-LO_SUM epilogue matches that last store exactly and could align better across the whole epilogue.
+- probe: Two spellings applied over the INCLUDE_ASM line at src/text1b.c:3853 and scored with `sandbox func_80062020 --disable all`: three-symbol (&D_800F11A0/&D_800F119C/&D_800F1198 + ofs) and single-anchor (&D_800F1198 + ofs + 8/4/0).
+- result: Both score 6 at build_insns 39. Baseline all-register-base body re-measured the same session: score 4 at build_insns 35. Target is 38 insns. The uniform space is therefore bracketed by measurement, with the target strictly between the two poles.
+- verdict: KILLED
+
+## [s9] A dead CONDITIONAL register store (`if (i) { d = 1; }` with d an unused local) survives jump1 and cse2 — breaking cse2's basic block, giving P2-YES — and is then erased by flow's DCE (toplev.c:2983) plus jump2 (toplev.c:3142), leaving the target's branch-free epilogue.
+- mechanism: s8 established cse2 as the unifier and that its block is ended only by a real CODE_LABEL; flow_analysis and jump2 both run after cse2, so a construct erased there would break cse2 yet be invisible in the final bytes. NOTE: this is the forbidden dead-conditional-store family and was compiled as a MECHANISM CONTROL only, never as a proposal.
+- probe: memory/grind/func_80062020/rejected/epilogue-deadcondstore-erased-by-jump1-s9.c applied over the INCLUDE_ASM line and scored with the sandbox on the live chassis.
+- result: score 4, build_insns 35 — byte-identical to the baseline. The branch never reaches cse2: jump_optimize at toplev.c:2827 runs with after_regscan = 1 and deletes the set of a register with no other references, emptying the arm and deleting the branch with it, one pass earlier than the hypothesis assumed.
+- verdict: KILLED
+
+## [s9] cse2's basic-block boundary is not simply 'a CODE_LABEL' — an UNREFERENCED label does not break it, because cse extends across such a label carrying the whole value table; only a label with a live jump reference resets the qty tables.
+- mechanism: tools/gcc-2.7.2/cse.c:8517 gates block extension on `--LABEL_NUSES (to) == to_usage`, and LABEL_NUSES was pre-incremented at cse.c:8433, so the test means 'the label had zero real references'. Only new_basic_block() resets the qty tables.
+- probe: Direct read of tools/gcc-2.7.2/cse.c:8430-8560 and of the pass order in tools/gcc-2.7.2/toplev.c:2827-3142.
+- result: Confirmed in source. It also surfaces a pass s8's frontier did not account for: a SECOND full jump_optimize runs at toplev.c:2923, post-loop and pre-cse2, so any jump/label intended to break cse2 must survive jump1 AND that pass.
+- verdict: CONFIRMED
+
+## [s9] The target's same-symbol dual-address-form arrangement is a shared species across SLUS-00663 rather than a quirk of func_80062020, and the project has no matched pure-C precedent for it anywhere.
+- mechanism: If the arrangement had a pure-C spelling reachable under this toolchain, at least one of the project's already-matched functions would exhibit it.
+- probe: tmp/grind/func_80062020/s9/scan4.py over tmp/grind/func_80062020/s9/all.dis (objdump -d of build/bb2.elf): per function, intersect the symbol addresses reached by a register-materialised `lui rX,H; addiu rX,rX,L` base with those reached by a `lui at,H; addu at,at,rY; <ld/st> d(at)` LO_SUM access.
+- result: 32 functions have a non-empty intersection and every one of them is still an unmatched INCLUDE_ASM item — neighbours include func_80061064 (D_800F1150), func_80045294, func_80057CC8, CD_cw, SpuSetReverbModeParam. The two apparent matched hits (.L80065D1C, .L80066968) are internal labels inside func_80065800's unmatched asm body, not C functions.
+- verdict: CONFIRMED

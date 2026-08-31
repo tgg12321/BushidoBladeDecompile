@@ -796,3 +796,131 @@ ever reversed — it is superseded, not disproven.
 - [s8] `inl_i12_sym` — the floor-4 body with the `ofs` variable eliminated — is category-identical to the floor (DISP8|DISP4|DISP0) but hoists `la $3,D_800F1198` ahead of the sll/addu/sll index chain where the target emits it after. Recorded so it is not re-tried as new.
 
 - [s8] ESCALATION HYGIENE: the 2026-08-25 packet argues from the refuted expand/legitimize_address attribution and from the falsified prong 2. Any future packet must argue from the P1/P2 law and name cse2 as the decider — and the residual is now OPEN (a named cse2 question), not closed, so 'the space is closed' wording is currently unsupportable.
+
+## s9 — rederive modality (2026-08-30)
+
+- [s9] CHASSIS re-measured (the brief again said "measurement unavailable"): the
+  candidate.c body applied over the `INCLUDE_ASM("asm/funcs", func_80062020);` line at
+  src/text1b.c:3853 -> `sandbox func_80062020 --disable all` = **score 4**, target_insns 38,
+  build_insns 35, rules_dropped 0, cheat_asm_stripped 167. Identical to the s8 measurement,
+  so the chassis has not drifted since s8. src/text1b.c restored to HEAD afterwards
+  (`git status` clean apart from metrics/events.jsonl); no draft C left on main.
+
+- [s9] **WHOLE-FUNCTION rederive sweep — the uniform-spelling law survives at the
+  whole-function level, not just the epilogue.** Every prior sweep (s7 3-line harness, s8
+  fullsweep) held the s1/s2 byte-offset-cast LOOP fixed and varied only the epilogue. s9
+  varied the ENTIRE body: 10 structurally different whole-function shapes (natural
+  `while (src[0] & 1) { Rows[n].a = src[0]; ... }` struct-array C; `for` form; `do/while`
+  form; 2-D `Arr[n][k]`; flat `Flat[n*3+k]`; source-indexed `src[n*3]`; walking `struct Row *d`;
+  ascending a,b,c terminator order; `(Rows + n)->c` pointer-arithmetic terminator).
+  Script + per-shape .c/.s: `tmp/grind/func_80062020/s9/wholesweep.py`,
+  `tmp/grind/func_80062020/s9/wholesweep_results.txt`, `ws_*.c` / `ws_*.s`.
+  RESULT: **not one of the ten produces the target's mixed arrangement.** Nine of ten give a
+  uniform epilogue — eight all-LO_SUM (`LOSUM[Rows+8] | LOSUM[Rows+4] | LOSUM[Rows]`) and
+  `(Rows + n)->c` gives all-register-base (`DISP8 | DISP4 | DISP0`). The natural struct-array
+  loop DOES reproduce the target's loop (3 LO_SUM stride-12 stores), so the loop is not what
+  distinguishes them: the terminator's tree shape alone decides, exactly as the s5-s8 two-shape
+  law says. The rederive axis (fresh natural C shape for the whole function) is KILLED as a
+  route to the mixed arrangement.
+
+- [s9] **The two uniform poles are now both MEASURED on the live chassis, and all-LO_SUM is
+  WORSE.** Nobody had ever scored an all-LO_SUM epilogue in the sandbox; the ledger only had
+  its cc1 classification.
+  * all-register-base (candidate.c, `p[2]/p[1]/p[0]`): **score 4**, build_insns 35.
+  * all-LO_SUM, three-symbol spelling (`*(s32 *)((u8 *)&D_800F11A0 + ofs) = 0;` then
+    `…&D_800F119C…` then `…&D_800F1198…`): **score 6**, build_insns **39**
+    (banked `rejected/epilogue-uniform-allosum-score6-s9.c`).
+  * all-LO_SUM, single-anchor spelling (`*(s32 *)((u8 *)&D_800F1198 + ofs + 8/4/0) = 0;`):
+    **score 6**, build_insns 39 (banked
+    `rejected/epilogue-single-anchor-byteofs-allosum-score6-s9.c`).
+  So the uniform space is bracketed by measurement, not by inference: 4 below the target's
+  insn count (35 vs 38) and 6 above it (39 vs 38). The target's 38 sits between the two poles
+  because it spends 11 epilogue insns = 8 (shared `la`+`addu` base with disp-8/disp-4 stores)
+  + 3 (one LO_SUM), which is arithmetically unreachable from any single form.
+
+- [s9] **PASS ORDER pinned from tools/gcc-2.7.2/toplev.c (read, not inferred)** — this is the
+  full list of passes a CFG break must survive, and it adds one pass s8 did not account for:
+  ```
+  2827  jump_optimize (insns, 0, 0, 1)     <- jump1, after_regscan = 1
+  2865  cse_main (... after_loop = 0)      <- cse1  (broken for free by NOTE_INSN_LOOP_END)
+  2870  jump_optimize (only if cse1 altered jumps)
+  2895  loop_optimize
+  2923  jump_optimize (insns, 0, 0, 1)     <- SECOND full jump pass, post-loop, PRE-cse2
+  2926  cse_main (... after_loop = 1)      <- cse2  (the unifier; ledger s8)
+  2929  jump_optimize (only if cse2 altered jumps)
+  2983  flow_analysis                      <- DCE lives here
+  3004  combine_instructions               <- folds the surviving chain into sw $0,%lo(sym)($at)
+  3142  jump_optimize (insns, 1, 1, 0)     <- jump2, cross_jump = 1, noop_moves = 1
+  ```
+  Any label/branch intended to break cse2 must survive BOTH jump1 and the post-loop jump pass
+  at 2923; s8's frontier only named jump1.
+
+- [s9] **cse2's block-EXTENSION rule read from source (cse.c:8517) — an unreferenced label does
+  NOT break cse2; only a REFERENCED one does.** After finishing a block that ends at label
+  `to`, `cse_basic_block` continues into the following block, carrying the whole value table,
+  when `--LABEL_NUSES (to) == to_usage` — and LABEL_NUSES was pre-incremented at cse.c:8433,
+  so the test is "the label had ZERO real references". Only `new_basic_block ()` resets the
+  qty tables. Consequence: the ingredient P2 needs is a CODE_LABEL with a LIVE jump reference
+  sitting between the b-store and the a-store at cse2 time. A bare `goto L; L:` (s8:
+  `brk_gotolab`) cannot serve, because the label it creates is reference-free the moment its
+  jump is deleted.
+
+- [s9] **The last free CFG-break idea — a dead CONDITIONAL register store, erased later by
+  flow's DCE — is DEAD, and it was dead one pass earlier than predicted.** MECHANISM CONTROL
+  ONLY (the construct is the forbidden `dead-conditional-store` family; it was compiled to
+  decide a mechanism question and is banked, never proposed):
+  `p[2]=0; p[1]=0; if (i) { d = 1; } p[0]=0;` with `d` an otherwise-unused local, measured
+  in-function on the live chassis -> **score 4, build_insns 35 — byte-identical to the
+  baseline**, i.e. the branch never reaches cse2 at all. `jump_optimize` runs with
+  `after_regscan = 1` at toplev.c:2827 and deletes the set of a register with no other refs;
+  the arm then becomes empty and the branch goes with it, long before flow_analysis (2983)
+  could have done the DCE. Banked `rejected/epilogue-deadcondstore-erased-by-jump1-s9.c`.
+  Combined with s8's seven code-free candidates, the statement is now:
+  **every construct that leaves no real code behind is erased before cse2, and every construct
+  that does break cse2 (s8 `JOINctl_*`) leaves real code — a surviving branch plus arm bodies —
+  which the target's branch-free 11-insn epilogue cannot contain.** That is the mechanism-level
+  closure statement criterion (1) of owner ruling 6a asks for.
+
+- [s9] **Binary-wide census: the target's same-symbol dual-address-form arrangement occurs in
+  32 functions of SLUS-00663, and NOT ONE of them is a matched pure-C function in this
+  project.** Method (`tmp/grind/func_80062020/s9/scan4.py` over
+  `tmp/grind/func_80062020/s9/all.dis`, an objdump of build/bb2.elf): for every function,
+  collect the symbol address of each register-materialised `lui rX,H; addiu rX,rX,L` base and
+  of each `lui at,H; addu at,at,rY; <ld/st> d(at)` LO_SUM access, and intersect. 32 functions
+  have a non-empty intersection — func_80062020 (D_800F1198) among them, plus e.g.
+  func_80061064 (D_800F1150, the immediate neighbour in the same data region), func_80045294,
+  func_80057CC8, CD_cw, SpuSetReverbModeParam. The only apparent "matched" hits
+  (`.L80065D1C`, `.L80066968`) are internal labels inside the *unmatched* asm body of
+  func_80065800, not separate C functions. So the project has ZERO in-repo pure-C precedent
+  for the arrangement, and the residual is a shared species rather than a quirk of this
+  function — a solution found here would generalise to 31 other queue items.
+
+- [s9] GOVERNANCE DEADLOCK, recorded so the next session does not walk into it: owner ruling
+  6a (docs/grind/decisions.md:14836, 2026-08-30) makes the byte-derived dual-spelling epilogue
+  admissible *conditionally*, to be adjudicated against the four-point
+  proven-spelling-class-reconstruction bar. The layer-1 cheat-reviewer FAIL later the same day
+  (docs/grind/decisions.md:15728) refused the resubmission specifically because
+  "the ledger's explicit ban on this exact construct was never mechanically cleared", and the
+  driver now rejects any `candidate-ready` whose self-vet re-declares it. The ban and the
+  ruling cannot both be honoured by a grind session: the construct is simultaneously
+  owner-admissible-if-proven and mechanically un-submittable. That is a routing question for
+  the owner, not a standard-lowering request, and it is the one thing that actually gates
+  closing this function.
+
+- [s9] CHASSIS: the brief again reported 'measurement unavailable'; re-measured this session. candidate.c pasted over `INCLUDE_ASM("asm/funcs", func_80062020);` at src/text1b.c:3853 -> sandbox func_80062020 --disable all = score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 167. Identical to s8, so the chassis has NOT drifted. src/text1b.c restored to HEAD; `git status --porcelain` shows only the pre-existing metrics/events.jsonl modification.
+
+- [s9] The uniform-spelling law is a WHOLE-FUNCTION law, not an epilogue-local one: rewriting the loop as natural struct-array C (`while (src[0] & 1) { Rows[n].a = src[0]; Rows[n].b = src[1]; Rows[n].c = src[2]; src += 3; n++; }`) still reproduces the target's 3 LO_SUM stride-12 loop stores, and the terminator's tree shape alone decides the epilogue's address form.
+
+- [s9] Both uniform poles are now MEASURED in the sandbox for the first time: all-register-base = score 4 / 35 insns; all-LO_SUM (three-symbol spelling) = score 6 / 39 insns; all-LO_SUM (single-anchor `&D_800F1198 + ofs + 8/4/0`) = score 6 / 39 insns. Target = 38 insns. The target's epilogue costs 11 insns = 8 (shared la+addu base with disp-8/disp-4 stores) + 3 (one LO_SUM), which is arithmetically unreachable from either pole.
+
+- [s9] PASS ORDER pinned by reading tools/gcc-2.7.2/toplev.c: 2827 jump1 (after_regscan=1) -> 2865 cse1 (after_loop=0) -> 2870 conditional jump -> 2895 loop -> 2923 SECOND full jump pass (post-loop, pre-cse2) -> 2926 cse2 (after_loop=1) -> 2929 conditional jump -> 2983 flow (DCE) -> 3004 combine (folds the surviving chain into sw $0,%lo(sym)($at)) -> 3142 jump2 (cross_jump=1, noop_moves=1). s8's frontier omitted the 2923 pass.
+
+- [s9] cse.c:8517 — cse2 EXTENDS across a label whose original LABEL_NUSES is 0, carrying the value table; only a label with a live jump reference forces new_basic_block() and a fresh table. So `goto L; L:` can never serve as the P2 break, independently of jump1 deleting it.
+
+- [s9] MECHANISM CONTROL (forbidden family, banked not proposed): `p[2]=0; p[1]=0; if (i) { d = 1; } p[0]=0;` with d unused measures score 4 / 35 insns — byte-identical to baseline. jump_optimize with after_regscan=1 (toplev.c:2827) deletes the unused-register set, empties the arm and deletes the branch, so the construct never reaches cse2. This kills the last 'free CFG break' idea AND shows the forbidden spelling would not even have worked.
+
+- [s9] CLOSURE STATEMENT now supported by measurement rather than inference: every construct that leaves no real code behind is erased before cse2 (s8's seven code-free candidates plus s9's dead conditional store), and every construct that does break cse2 (s8's JOINctl_* family) leaves real code — a surviving branch plus arm bodies — which the target's branch-free 11-insn epilogue cannot contain. This is exactly criterion (1) of owner ruling 6a ('mechanism-level proof the target bytes are unreachable from a uniform spelling').
+
+- [s9] BINARY-WIDE CENSUS: 32 functions in SLUS-00663 exhibit the same-symbol dual-address-form arrangement and not one is a matched pure-C function in this project — zero in-repo pure-C precedent, and a solution here would generalise to 31 other queue items.
+
+- [s9] GOVERNANCE DEADLOCK (recorded, not acted on): owner ruling 6a (docs/grind/decisions.md:14836) makes the dual-spelling epilogue conditionally admissible pending a four-point adjudication, while the layer-1 FAIL of the same day (docs/grind/decisions.md:15728) refused it specifically because 'the ledger's explicit ban on this exact construct was never mechanically cleared', and the driver now rejects any candidate-ready whose self-vet re-declares it. No grind session can honour both. This session therefore did NOT resubmit the banned construct; it banked the criterion-(1) evidence the adjudication needs.
