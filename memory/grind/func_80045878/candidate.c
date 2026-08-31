@@ -82,6 +82,22 @@
  * ONLY for two register seats, never for the instruction order.  See
  * evidence.md [s11].
  *
+ * s12 (2026-08-30, structural) NOTE: re-measured verbatim on today's tree --
+ * score 0, 108/108 insns, rules_dropped 0; the chassis has not moved since
+ * s10.  s12 closed the structural modality with a PROOF rather than a
+ * plateau: the carrier `c` cannot be replaced by any compliant construct.
+ * (a) cse.c:836-864 `make_regs_eqv` makes a copy's destination canonical --
+ * and therefore keeps the copy insn alive -- only when that pseudo is
+ * mentioned outside the current extended basic block; a mention outside the
+ * block is exactly what makes flow.c mark it REG_BLOCK_GLOBAL and route it to
+ * global_alloc.  So "the base copy survives" and "the base pseudo is
+ * block-local" are mutually exclusive, and s11's empirical "unconstructible"
+ * is now a theorem.  (b) The `.lreg` census shows exactly two call-free user
+ * pseudos in this function, reg 76 (`v0`) and reg 79 (`c`); a0/a1/a2/s0/s1/s3
+ * cross 3-14 calls and are seated callee-save, so no existing variable can
+ * carry the tail scratches and `v0` is already spent on the base.  Full
+ * five-step argument in evidence.md [s12]; two more forms banked dead.
+ *
  * Apply verbatim over the INCLUDE_ASM line in src/text1a_c.c.
  */
 void func_80045878(s32 a0, s32 a1, s32 a2) {

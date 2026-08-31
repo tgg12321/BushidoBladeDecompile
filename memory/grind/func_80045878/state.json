@@ -1,8 +1,8 @@
 {
  "func": "func_80045878",
  "file": "text1a_c",
- "session_count": 11,
- "current_modality": "rederive",
+ "session_count": 12,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -75,23 +75,29 @@
    "floor": 0,
    "modality": "rederive",
    "headline": "Rederive: the last untried structural shape (static inline tail helper) is KILLED, but it proves the carrier was only ever needed for two register seats - it reproduces target's tail instruction order"
+  },
+  {
+   "session": 12,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "Structural modality closed with a PROOF, not a plateau: cse.c make_regs_eqv plus the .lreg call-crossing census show the Judge's no-multi-write-fresh-carrier constraint is unsatisfiable for this resid"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is still not a search problem: two independent byte-exact pure-C forms exist (candidate.c, alt_anchor_e1.c) and the elimination now rests on three independent mechanisms, so the next escalation-modality session should file a DECISION PACKET on the single decidable question - which sanctioned family, if any, covers a multi-write fresh local whose earlier reference is a real call argument (alt_anchor_e1.c) or a real condition read (candidate.c).",
-   "mechanism": "The 2026-08-30 21:30 Judge ruling FAILed the construct as a first reach with no covering family while explicitly not objecting to the v0-as-tail-base reuse or the s3 join-block placement; s10b's theorem plus s11's REG_ALLOC_ORDER argument and P4 loophole-closure show no single-write, existing-variable, or block-local-base alternative exists.",
-   "next_probe": "Do NOT re-search anchor sites, do not re-run sibling/transplant searches, and do not retry the inline-helper shape. Carry the theorem, the three mechanisms and the two 0-scoring forms into the packet, and keep it a fidelity/routing question - a request to sanction a new family is in the auto-reject class."
+   "hypothesis": "The only remaining decidable question is the family/routing one the s11 frontier named, and it is now a much stronger packet: no longer 'we could not find another spelling' but 'no other spelling exists'. The next escalation-modality session should file the DECISION PACKET asking which sanctioned family, if any, covers a fresh local whose earlier reference is a real call argument (alt_anchor_e1.c) or a real condition read (candidate.c) and whose two later writes carry the two tail values.",
+   "mechanism": "s12's five-step foreclosure: cse.c:836-864 forces the base multi-block; local_alloc running before global_alloc forces the scratches non-block-local; the .lreg census exhausts existing variables; s10 measurements exhaust early production of both tail values. Steps 1-2 are compiler properties, so the constraint cannot be satisfied by any source text.",
+   "next_probe": "Do NOT re-search anchor sites, re-run sibling/transplant searches, retry the inline-helper shape, or retry existing-variable carriers - all four are now closed by enumeration or by compiler-source argument. Carry the five-step foreclosure, the cse.c citation and the lreg census into the packet. Keep it a fidelity/routing question; a request to sanction a new family is in the auto-reject class."
   },
   {
-   "hypothesis": "The s11 inline-helper form (I1) is one register-seat decision away from byte-exact with NO carrier local anywhere, so any lever that moves the base allocno onto $v0 while a block-local scratch exists would close the function legally in one step.",
-   "mechanism": "In I1 the base is the accepted multi-block `v0 = s1` reuse and both scratches are block-local integrate.c pseudos; local_alloc takes $v0 for the first scratch before global_alloc ever sees the base. Only a hard-register conflict on $v0 across the scratch's range, or a copy-suggestion (local-alloc.c qty_phys_copy_sugg) pulling the scratch toward another register, could flip it.",
-   "next_probe": "Look for a SEMANTICALLY REAL construct that makes a hard $v0 value live across the tail block, or that copy-relates a tail scratch to a non-$v0 hard register. Both are long shots, and neither may be manufactured artificially - a dead read or write invented to create the conflict is a cheat, not a lever."
+   "hypothesis": "The best fully Judge-COMPLIANT form measured to date scores 13 (s11's static-inline tail helper, 109 insns); the plain compliant tail scores 14 at 110 insns. If the pipeline ever needs a compliant-but-imperfect floor for this function, 13 is the number - not 0 and not 4.",
+   "mechanism": "Every measured form scoring below 13 carries the multi-write fresh carrier in some spelling; s9's floor-4 form and s10/s11's floor-0 forms all do.",
+   "next_probe": "No probe. Recorded so a future session does not quote floor 0 as a compliant number, and so the packet can state the concrete consequence of each answer: sanction means the function closes at 0 today; refusal means the honest compliant floor is 13 and the function stays INCLUDE_ASM."
   },
   {
-   "hypothesis": "Splitting the carrier into TWO variables, each written exactly twice (one anchored on the 0x1A88 argument carrying a0+3, one anchored elsewhere carrying 0x8000), probably also scores 0.",
-   "mechanism": "Each tail scratch independently needs its own flow-time second-block reference; splitting does not reduce the write count below two per variable, so the family verdict is unchanged.",
-   "next_probe": "Measure only if a future ruling distinguishes 2-write from 3-write carriers; otherwise skip - it cannot change the verdict."
+   "hypothesis": "Splitting the carrier into TWO variables, each written exactly twice, probably also scores 0 but cannot change the verdict (carried forward unchanged from s11).",
+   "mechanism": "Each tail scratch independently needs its own out-of-tail-block reference; splitting does not reduce the write count below two per variable.",
+   "next_probe": "Measure only if a future ruling distinguishes 2-write from 3-write carriers; otherwise skip."
   }
  ],
  "judge_constraints": [

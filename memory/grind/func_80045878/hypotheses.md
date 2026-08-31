@@ -716,3 +716,112 @@ multisets identical; `goal_from_tgt.py classify` = "FIRST DIVERGENCE: RA",
 - probe: `grep -rl func_80045694 asm/funcs src` plus an idiom search over asm/funcs for a 0x8000 store at +0x18 next to a +3 half-word store at +0x16.
 - result: func_80045694 has exactly six callers (func_80045878, func_80045B68, func_800460E4, func_800467B8, func_8004695C, func_800469C4) and every one of them is still INCLUDE_ASM; no other asm/funcs body contains the tail idiom. The sibling/transplant arm is empty for this function - no future session should re-run that search.
 - verdict: KILLED
+
+## s12 (2026-08-30, structural modality)
+
+Mandated modality: structural (block-local var splits, declaration order, type
+narrowing, statement re-association). Owner directive from the queue item
+(escalation-batch ruling 10, "ledger states nothing pends; active with modality
+change") was already discharged by s11 and is discharged again here: the
+function was worked, not re-escalated.
+
+### H-S12-A — "an EXISTING local can carry a tail scratch if it is RE-SET in the tail"
+Statement: re-setting `s3` in the tail (`s3 = a0 + 3; v0[11] = s3;`) supplies the
+a0+3 scratch with a variable that is already multi-block, is ordinary compliant C
+(a real value that is really read), and would cut the fresh carrier `c` from three
+writes to two.
+Mechanism predicted: s3 is already mentioned in several blocks, so it never reaches
+local_alloc; global_alloc would rank it against the base and might seat it $v1.
+Probe: candidate.c with only that substitution; sandbox --disable all.
+Result: score 20 at 108 insns (chassis = 0).
+Verdict: **KILLED.** s3 crosses 3 calls, and GCC 2.7.2 keeps one allocno per pseudo
+for the whole function (no live-range splitting), so the tail set lengthens s3's
+range to the last insn rather than creating a short caller-save range. The
+re-ranking is global, not local: the regression is 20 points spread over the body.
+Banked: rejected/s12-s3-reset-in-tail-perturbs-whole-fn-score20.c.
+
+### H-S12-B — "the compliant plain tail's residual is purely register seating"
+Statement: with the carrier deleted (the fully Judge-compliant tail), the residual
+should be register seats only, so a seating lever alone would close it.
+Probe: re-measure + objdump the emitted tail.
+Result: score 14 at 110 insns; emitted tail seats the base at $a0 and BOTH scratches
+at $v0, and carries an extra `move v0,s2`. Not seats only — two extra instructions.
+Verdict: **KILLED** as stated, but CONFIRMED as the mechanism demonstration: it is the
+first direct observation, in emitted code rather than by inference, of local_alloc
+claiming $v0 for every block-local tail quantity and pushing the multi-block base
+allocno out to $a0. Banked: rejected/s12-compliant-plain-tail-110-score14.c,
+tmp/grind/func_80045878/s12/m2_tail_objdump.txt.
+
+### H-S12-C — "a block-local base copy is constructible after all" (the s11 frontier's own escape)
+Statement: s11 left open that a surviving block-local base copy would dissolve the
+whole problem (its qty_compare priority, 7 refs over ~9 insns, outranks a 2-ref
+scratch, so it would take $v0 and leave $v1 for the scratches) and recorded only that
+it was empirically "unconstructible".
+Probe: read the pass that decides it — cse.c `make_regs_eqv` (cse.c:836-864), plus the
+`.cse` dump for the live candidate (insn 213 survives).
+Result: the canonicalization test is
+`(uid_cuid[regno_last_uid[new]] > cse_basic_block_end
+  || uid_cuid[regno_first_uid[new]] < cse_basic_block_start)
+ && uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]]`,
+with the uids computed by reg_scan over the WHOLE function before cse runs. A copy's
+destination survives only if it is mentioned outside the current extended basic block;
+a mention outside the block is exactly what makes flow.c mark the pseudo
+REG_BLOCK_GLOBAL and route it to global_alloc.
+Verdict: **KILLED — and upgraded from empirical to closed-form.** "Base copy survives"
+and "base pseudo is block-local" are mutually exclusive by construction. No source-level
+spelling can hold both. This retires the s11 frontier item that asked for a lever moving
+the base allocno onto $v0 while a block-local scratch exists: with a block-local scratch
+present, local_alloc has already taken $v0 before global_alloc sees the base, and the only
+way to deny it is a hard-$v0 conflict across the tail, which this void, call-free tail
+block cannot produce without inventing a dead read or write (a cheat, not a lever).
+
+### H-S12-D — "some existing variable other than v0 is a legal carrier"
+Statement: the search for a compliant carrier has been spelling-driven; a census would
+say whether any candidate exists at all.
+Probe: read the `.lreg` register table for the function.
+Result: reg 72 (a0) crosses 14 calls, reg 73 (a1) 14, reg 74 (a2) 9, reg 75 (s0) 8,
+reg 77 (s1) 12, reg 78 (s3) 3. Exactly two user pseudos are call-free and multi-block:
+reg 76 (`v0`) and reg 79 (the fresh carrier `c`). `v0` is consumed by the base.
+Verdict: **KILLED, exhaustively.** There is no existing local or parameter left. This is
+a complete enumeration, not a sample, so it closes the axis rather than narrowing it.
+
+### Net position after s12
+The five-step foreclosure in evidence.md [s12] shows the Judge's 2026-08-30 constraint
+("no fresh local written more than once as a carrier") admits NO satisfying form for this
+residual: steps (1) and (2) are properties of cse.c and local-alloc.c, step (5) is a
+complete variable census, and step (4) is measured twice. The structural modality is
+therefore closed with a proof rather than a plateau. The function still has two
+independent byte-exact pure-C forms (candidate.c, alt_anchor_e1.c); the only open item is
+the family/routing question the s11 frontier already named, now with a much stronger
+packet: it is no longer "we could not find another spelling", it is "no other spelling
+exists".
+
+## [s12] An EXISTING local can carry the tail's a0+3 scratch if it is RE-SET in the tail (s3 = a0 + 3; v0[11] = s3;), which is ordinary compliant C and would cut the fresh carrier from three writes to two.
+- mechanism: s3 is already multi-block so it never reaches local_alloc; global_alloc would rank it against the base allocno and might seat it $v1, which is target's seat for that value.
+- probe: candidate.c with only that substitution applied over the INCLUDE_ASM line; sandbox func_80045878 --disable all.
+- result: score 20 at 108 insns (chassis with candidate.c = score 0 at 108/108). s3 crosses 3 calls per the .lreg table; GCC 2.7.2 keeps one allocno per pseudo for the whole function with no live-range splitting, so the tail set lengthens s3's range to the last insn instead of creating a short caller-save range, and the re-ranking perturbs seats across the whole body rather than just the two tail insns. Banked rejected/s12-s3-reset-in-tail-perturbs-whole-fn-score20.c.
+- verdict: KILLED
+
+## [s12] With the fresh carrier deleted (the fully Judge-compliant plain tail) the residual is purely register seating, so a seating lever alone would close the function.
+- mechanism: If the only damage were which hard register each tail value lands in, the instruction count would stay at 108 and only register fields would differ.
+- probe: Re-measure the carrier-free form on today's chassis and objdump the emitted tail out of tmp/sandbox/func_80045878/text1a_c.o.
+- result: score 14 at 110 insns, so not seats only. Emitted tail: move a0,s1 / addiu v0,s2,3 / sh v0,22(a0) / move v0,s2 / sh v0,4(a0) / sh v0,20(a0) / sh v0,16(a0) / li v0,0x8000 / sh s5,8(a0) / sw v0,24(a0). BOTH block-local scratches take $v0 and the multi-block base is pushed out to $a0 - the first direct observation in emitted code, rather than by inference, of local_alloc claiming $v0 ahead of global_alloc. Banked rejected/s12-compliant-plain-tail-110-score14.c.
+- verdict: KILLED
+
+## [s12] A surviving BLOCK-LOCAL tail base copy is constructible after all (s11 left this open as the one lever that would dissolve the problem, since local-alloc.c qty_compare ranks a 7-ref base above a 2-ref scratch and it would take $v0 first).
+- mechanism: s11 recorded only an empirical 'unconstructible'; the deciding pass had never been read.
+- probe: Read cse.c make_regs_eqv (tools/gcc-2.7.2/cse.c:836-864) and check the .cse dump of the live candidate for the surviving copy insn.
+- result: The canonicalization test is (uid_cuid[regno_last_uid[new]] > cse_basic_block_end || uid_cuid[regno_first_uid[new]] < cse_basic_block_start) && uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]], with the uids computed by reg_scan over the whole function before cse runs. A copy's destination stays canonical - and the copy insn therefore survives - only if the pseudo is mentioned outside the current extended basic block. That same outside mention is exactly what makes flow.c mark the pseudo REG_BLOCK_GLOBAL and route it to global_alloc. Confirmed in the dump: .cse insn 213 (set (reg/v:SI 76) (reg/v:SI 77)) survives for the existing variable v0, while every prior fresh tail-only p was folded away. 'Base copy survives' and 'base pseudo is block-local' are mutually exclusive by construction.
+- verdict: KILLED
+
+## [s12] Some existing variable other than v0 is a legal (call-free, multi-block) carrier for the tail scratches - the search so far has been spelling-driven rather than exhaustive.
+- mechanism: global_alloc seats any allocno that crosses a call in the callee-save class, so a carrier must be call-free; a complete census of the function's pseudos answers the question outright.
+- probe: Read the .lreg register table for func_80045878 (pwsh tools/grinder/dump.ps1, tmp/grind/func_80045878/s12/f.lreg).
+- result: reg 72 (a0) crosses 14 calls, reg 73 (a1) 14, reg 74 (a2) 9, reg 75 (s0) 8, reg 77 (s1) 12, reg 78 (s3) 3. Exactly two user pseudos are call-free and multi-block: reg 76 (v0) and reg 79 (the fresh carrier c). v0 is already consumed by the tail base copy. This is a complete enumeration, not a sample, so the axis is closed rather than narrowed.
+- verdict: KILLED
+
+## [s12] The Judge's 2026-08-30 constraint (no fresh local may be written more than once to serve as a carrier) admits at least one satisfying byte-exact form, findable by structural respelling.
+- mechanism: The constraint explicitly directed the next session to find the remaining anchor via an existing variable or a structural respelling, which presumes such a form exists.
+- probe: Compose the four results above into a foreclosure argument and test each step against a measurement or against the compiler source.
+- result: Unsatisfiable, in five steps: (1) the tail base copy survives cse only if its pseudo is mentioned outside the tail block, hence it is multi-block, hence global_alloc; (2) any block-local tail scratch is taken by local_alloc, which runs first and takes $v0, so the base cannot then hold $v0 - measured, score 14 this session and score 10 in s10; (3) therefore both tail scratches must be non-block-local; (4) both tail values must be produced IN the tail, because the tail is a join block where cse's table is reset and target recomputes addiu $v1,$s2,3 there - producing either earlier folds a0+3 into s3 or relocates the 0x8000 insn out of the tail, both measured in s10; (5) no existing call-free variable remains per the census. So the carrier must be a fresh local written once per tail value plus mentioned once outside the tail - more than one write. Steps (1) and (2) are properties of cse.c and local-alloc.c, not of the source text, so no spelling, ordering, typing, or block-structuring change escapes them.
+- verdict: CONFIRMED
