@@ -932,3 +932,87 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s42] DISPOSITION DELIBERATELY NOT RE-FILED. The existing 2026-08-20 entry (docs/grind/decisions.md:8628, 'REFUSED / OWNER-ACCEPTED INCOMPLETE') is AUTO-REJECT CLASS under the owner's second 2026-08-24 ruling (.claude/rules/escalation-not-parked.md: 'any "accept the debt" disposition in new wording' is pre-decided NO and MUST NOT be filed), and the same ruling retired the parked state and returned get_alarm to ACTIVE. Re-emitting owner-gated against that entry would file a pre-decided-NO packet. Independently, the exhaustion premise is falsified by the s42 re-attribution above. A STATUS CORRECTION note (explicitly not an escalation, no owner decision requested) was appended at docs/grind/decisions.md:12888 so the owner audit trail does not still read 'no further grind sessions should be dispatched'.
 
 - [s42] This session touched only src/display.c (reverted, clean), memory/grind/get_alarm/**, docs/grind/decisions.md and tmp/. No regfix.txt, asmfix.txt, .claude/rules/, engine/, tools/, Makefile or *.ld edits; no queue done / retire / commit; the one background solver job was stopped in-turn, nothing orphaned.
+
+## [s43] escalation modality — axis B re-attributed a second step upstream (sched1 delay-slot filler), statement-order surface closed at depth 1 in BOTH scheduler passes
+
+- [s43] CHASSIS: floor re-measured chassis-current with `memory/grind/get_alarm/candidate.c`
+  spliced into src/display.c: `sandbox get_alarm --disable all` = **9**
+  (target_insns 91, build_insns 90, rules_dropped 0, cheat_asm_stripped 147). Identical to
+  s41/s42. src/display.c restored to HEAD afterwards; tree clean.
+
+- [s43] OWNER DIRECTIVE EXECUTED (2026-08-30 escalation-batch ruling 10, "active with modality
+  change; nothing pends"). This session ran the ra_solver/sched_solver chain that ruling 10 left
+  open, on BOTH scheduler passes and on local-alloc, for the first time.
+
+- [s43] **The full causal chain for axis B, now named end to end** (this supersedes the s42
+  stopping point, which named only the last link). Read off `tmp/grind/get_alarm/dumps/display.lreg`
+  (post-sched1 RTL, function banner at line 11141) plus the sched_solver pass-1 node table:
+  1. `insn 36` = `lw <stat_ptr>` (pseudo 80, `D_8009BF48`), icost 2 — a load whose result is not
+     available for two cycles.
+  2. `insn 38` = `(set (reg:SI 81) (mem/v:SI (reg:SI 80)))` — the DEAD volatile read, carrying
+     `REG_UNUSED (reg:SI 81)`. It depends on 36 and therefore cannot issue adjacent to it.
+  3. sched1 fills the gap with `insn 54` = `lw <madr_ptr>` (pseudo 89, `D_8009BF4C`), whose result
+     is consumed by `insn 56` (`lw (mem (reg 89))`). Our sched1 emitted order for the first printf
+     region is `36, 54, 38, 56, 60, 58, 45, 64, 52, 43, 66, 47, 62, 68`.
+  4. Because 54 was hoisted between 36 and 38, pseudo 89's live range is **[6,10)** and the dead
+     read's is **[8,9)** — they OVERLAP. `tools/ra_solver/local_extract.py display` +
+     `local_alloc.py display --func get_alarm` (order 4/4 blocks, assign 15/19 qtys, 1 `sugg` row
+     out of model) gives block 2's quantity table; the dead read is **qty 2 / pseudo 81, life
+     [8,9), refs 1, got $4 ($a0)** and it is allocated **LAST (ord 15)** because refs=1 makes
+     `qty_compare`'s `floor_log2(refs)*refs*size/life` zero. By then qty 1 (pseudo 89, [6,10)) holds
+     `$v0` and qty 0 (pseudo 80, stat_ptr, [4,18)) holds `$v1`, so the only free low reg is `$a0`.
+  5. That `$a0` seat is exactly the pass-2 OUTPUT DEPENDENCE `60 <- 38` the s42 solver isolated as
+     the unique reaching atom: the fmt `la` also writes `$a0`, so sched2 cannot lift it to slot 1.
+  So axis B is **not** an RA free choice and **not** a sched2 tie: it is a sched1 delay-slot-filler
+  choice that forecloses the RA seat that would in turn free the sched2 lift. Target's own order
+  (`asm/funcs/get_alarm.s` 0x8007DCEC-0x8007DD38) fills that same slot with the fmt `la`
+  (`lui $a0` / `addiu $a0`) and reads the dead value into `$v0` (`lw $v0,0($v1)` @ 0x8007DCFC) —
+  consistent with, and only with, a compile where 54 is NOT hoisted above 38.
+
+- [s43] **KILL 1 — pass-1 statement-order surface, goal "38 before 54", depth 1: NEGATIVE.**
+  `perturb.py … --pass 1 --block 2 --goal-before 54:38 --atoms luid,luid_move --depth 1` over
+  **2583** single atoms: *"NO perturbation reaches the goal at this depth."* Artifact:
+  `tmp/grind/get_alarm/s43/perturb_pass1_38before54_luid.txt`.
+- [s43] **KILL 2 — the complementary decoupling, goal "56 before 38", depth 1: NEGATIVE.**
+  (If the dead read lands after 56 instead of before 54, pseudo 89 is dead by then and the seat is
+  equally freed.) Same 2583 atoms, same verdict. Artifact:
+  `tmp/grind/get_alarm/s43/perturb_pass1_56before38_luid.txt`.
+- [s43] CONTRAST (the goal is reachable, just not by anything C can spell): the SAME pass-1 goal
+  with the FULL atom set returns many reaching vectors, all of them `add_dep` / `del_dep` /
+  `cost` atoms — dependence-graph and instruction-cost edits, i.e. properties of the machine
+  description and of the RTL memory-alias graph, not of the C source.
+  Artifact: `tmp/grind/get_alarm/s43/perturb_pass1_38before54_all.txt`.
+
+- [s43] **KILL 3 (measured in C, not just modelled).** The one C spelling the chain implicates —
+  staging the `*g_gpu_dma_madr` read into a local *before* the dead volatile read, so the source
+  order of 54 and 38 is inverted at the statement level — builds and measures **score 9**, i.e. it
+  ties the floor and does not close axis B. This is the predicted result (a source-order edit is a
+  luid perturbation, and kills 1/2 say no luid perturbation reaches the goal), so it also
+  **validates the solver-to-C mapping** on this function. Banked:
+  `memory/grind/get_alarm/rejected/s43-madr-staged-before-deadread-score9-nofingerprint-change.c`.
+
+- [s43] TOOLING NOTE (banked for the pipeline). The s42 report's `inverse_compose.py classify`
+  blocker is real but **routable around**: `local_extract.py` + `local_alloc.py` + `inverse.py local`
+  need only OUR model plus a goal the analyst supplies, so the local-alloc surface of an
+  INCLUDE_ASM-routed function IS reachable today without the missing `--target-object` path. Only
+  the *automatic* goal derivation needs the repair granted by ruling 1.
+
+- [s43] Chassis-current floor re-measured this session: memory/grind/get_alarm/candidate.c spliced into src/display.c gives sandbox get_alarm --disable all = score 9, target_insns 91, build_insns 90, rules_dropped 0, cheat_asm_stripped 147 (all from unrelated functions in the TU). src/display.c restored to HEAD; tree clean apart from ledger/docs edits.
+
+- [s43] Owner directive 2026-08-30 (escalation-batch ruling 10) is now EXECUTED and recorded in the ledger for the first time: get_alarm was returned to active 'with modality change', and this session ran the solver chain on the surfaces s42 left open - sched1 (pass 1), local-alloc, and a real C build of the spelling they implicate.
+
+- [s43] Axis B's causal chain is now named end to end: sched1 hoists uid 54 (lw madr_ptr) into uid 36's two-cycle load shadow -> pseudo 89 live [6,10) overlaps the dead read's [8,9) -> local-alloc seats the dead read (qty 2 / pseudo 81, refs 1, allocated ord 15 because qty_compare prices refs=1 at zero) in $a0 -> that is the pass-2 output dependence 60 <- 38 which s42 proved is the unique atom of 4391 reaching target's order.
+
+- [s43] ra_solver's local-alloc surface IS reachable today for an INCLUDE_ASM-routed function: local_extract.py + local_alloc.py + inverse.py local need only OUR model plus an analyst-supplied goal. The s42-flagged inverse_compose.py --target-object gap blocks only AUTOMATIC goal derivation, not the analysis. local_alloc.py display --func get_alarm scores order 4/4 blocks, assign 15/19 qtys (1 sugg row out of model).
+
+- [s43] Two independent depth-1 pass-1 solver runs over 2583 luid/luid_move atoms each (goals '38 before 54' and '56 before 38') return NO reaching perturbation; the same goal with the full atom set returns dozens, all add_dep/del_dep/cost. The C-expressible scheduler surface is therefore closed in pass 1, as s42 already closed it in pass 2.
+
+- [s43] The one C spelling the chain implicates - staging *g_gpu_dma_madr into a local before the dead volatile read, inverting 54/38 at statement level - builds at score 9 (ties floor). Banked at memory/grind/get_alarm/rejected/s43-madr-staged-before-deadread-score9-nofingerprint-change.c. This is the solver's predicted outcome and validates the solver-to-C mapping on this function.
+
+- [s43] AND-gate #1 re-measured FAILING: scan_hand_coded --single get_alarm = tier LOW, 1/8, 'no strong hand-coded indicators'; only S4 fires; S1/S2/S6 absent (tmp/grind/get_alarm/s43/scan_hand_coded.txt).
+
+- [s43] AND-gate #2 re-measured FAILING: docs/reference/sotn-construct-index.md returns zero hits for a dead second address use (axis A) or a seat-changing coercion of a zero-use pseudo (axis B). A negative census is a failed gate, not an open question.
+
+- [s43] No decision packet was filed: with both gates failing, the only decidable question this residual could pose is a no-precedent family grant, which the 2026-08-24 auto-reject class pre-decides NO. The standing 2026-07-27 auto-ruling was applied instead and the disposition entry is self-resolving (docs/grind/decisions.md:16162).
+
+- [s43] Two depth-2 solver runs were launched and did NOT finish inside the session (pass-2 luid depth 2 over ~4391^2 pairs, ~70 min elapsed; ra_solver inverse.py local --goal {"2": 2} depth 2, ~55 min elapsed). Both were stopped before the turn ended - no orphaned processes remain - and their empty logs are banked as *_UNFINISHED.txt. Neither is load-bearing for this disposition: depth 1 already shows the C-expressible partition is empty in both passes.

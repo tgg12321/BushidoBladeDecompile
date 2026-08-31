@@ -19,24 +19,14 @@
  *     (also writes $4). Target seats that dead read in $v0 (lw $v0,0($v1) @ 0x8007DCFC), so
  *     the edge does not exist there. NO luid/statement-order atom reaches the goal. Axis B is
  *     therefore an RA SEAT question, not a scheduler tie — see tmp/grind/get_alarm/s42/solver_report.md.
- *
- * s43 (escalation modality) adds the two links UPSTREAM of s42's output dependence, so axis B's
- * chain is now named end to end: insn 36 (lw stat_ptr, icost 2) shadows insn 38 (the dead read),
- * so sched1 hoists insn 54 (lw madr_ptr) between them; that gives pseudo 89 the live range [6,10)
- * overlapping the dead read's [8,9); local-alloc allocates the dead read LAST (qty 2, refs 1 ->
- * qty_compare priority 0) and the only free low reg across its life is $a0 — which is the register
- * the fmt `la` must write. s43 then closed the C-expressible surface in BOTH scheduler passes:
- * pass-1 goals "38 before 54" and "56 before 38" are each unreachable by any of 2583 luid/luid_move
- * atoms, while the SAME goals ARE reachable by add_dep/del_dep/cost atoms (dependence-graph and
- * machine-description edits with no C spelling). The one implicated C form (stage *g_gpu_dma_madr
- * before the dead read) builds at score 9 — ties, closes nothing. This body is unchanged from s42.
  */
 s32 get_alarm(void) {
     s32 temp_v0;
     s32 temp_v1;
     if ((g_gpu_vcount < VSync(-1)) || (temp_v1 = g_gpu_draw_count, g_gpu_draw_count = temp_v1 + 1, ((temp_v1 > 0xF0000) != 0))) {
-        (void)*g_gpu_stat_reg;
-        printf(&g_str_gpu_timeout, (D_8009BF78 - D_8009BF7C) & 0x3F, *g_gpu_stat_reg, *g_gpu_dma_chcr, *g_gpu_dma_madr);
+        { s32 madr_v = *g_gpu_dma_madr;
+    (void)*g_gpu_stat_reg;
+        printf(&g_str_gpu_timeout, (D_8009BF78 - D_8009BF7C) & 0x3F, *g_gpu_stat_reg, *g_gpu_dma_chcr, madr_v); }
         printf(&D_80016044, D_8009BF68[0], D_8009BF6C, D_8009BF70);
         temp_v0 = SetIntrMask(0);
         D_8009BF7C = 0;

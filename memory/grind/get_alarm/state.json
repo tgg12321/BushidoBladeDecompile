@@ -1,7 +1,7 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 42,
+ "session_count": 43,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -261,23 +261,29 @@
    "floor": 9,
    "modality": "escalation",
    "headline": "Owner's 2026-08-24 solver directive executed for the first time: sched_solver RE-ATTRIBUTES axis B from a frozen sched1 priority tie to a pass-2 $a0 OUTPUT DEPENDENCE (exactly 1 of 4391 atoms reaches "
+  },
+  {
+   "session": 43,
+   "floor": 9,
+   "modality": "escalation",
+   "headline": "Owner ruling-10 return-to-active executed: axis B's chain named end to end (sched1 delay-slot hoist of uid 54 -> local-alloc $a0 seat -> pass-2 output dep on the fmt la), and the C-expressible surface"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A pure-C form exists that makes local-alloc/greg seat the dead volatile *g_gpu_stat_reg read in $v0 instead of $a0; with that output dependence gone, sched2 lifts the fmt `la` to emit slot 1 and axis B (8 of the 9 residual ops) closes.",
-   "mechanism": "The solver's unique reaching atom is `del_dep 60 <- 38`, a pass-2 OUTPUT DEPENDENCE on hard register $a0. It exists only because greg gave the dead read's zero-use pseudo the same hard register the fmt `la` must write. Target seats the identical dead read in $v0 (lw $v0,0($v1) @ 0x8007DCFC), so the edge is absent there and the `la` floats freely.",
-   "next_probe": "Run the RA solver at the dead pseudo: tools/ra_solver local_alloc/global.c models -> the C-lever vector that changes its seat from $4 to $2. FIRST fix the tooling blocker: inverse_compose.py classify needs target bytes, so either build build/src/display.o from the INCLUDE_ASM state and derive the goal from that object, or extend inverse_compose with the --target-object path sched_solver already has (owner ruling 2026-08-25). Cheap ordinary-C spellings of the discarded read (bare (void) read, comma-in-arg, staged temp) are already measured 9/12/12 and banked - do not repeat them."
+   "hypothesis": "A PAIR of statement-order moves reaches the goal in a pass where no single move does (pass 1 goal '38 before 54' / '56 before 38'; pass 2 goal 'fmt la to slot 1').",
+   "mechanism": "Depth 1 is exhaustively negative in both passes, but a pair of luid moves can produce an order no single move can. This is the last C-expressible surface that has not been searched to exhaustion; if it is also empty, the scheduler axis is closed by exhaustion rather than by depth-1 sampling.",
+   "next_probe": "Run BOTH depth-2 runs detached and harvest in the SAME turn (they are pure-Python replays with no build in the loop, but each is >70 min): (a) python3 tools/sched_solver/perturb.py tmp/grind/get_alarm/s43/display.sched.json --func get_alarm --pass 1 --block 2 --goal-before 54:38 --atoms luid,luid_move --depth 2; (b) the same with --pass 2 --goal-before 38:60 --goal-before 43:60 --goal-before 54:60. Launch as the FIRST action of the session, write the outcome JSON before the 90-minute wall."
   },
   {
-   "hypothesis": "A PAIR of statement-order (luid) moves reaches target's pass-2 order even though no single one does.",
-   "mechanism": "Depth 1 proved no single luid atom lifts the fmt `la` past 38/43/54; the goal needs it to jump three slots, which a pair of moves could conceivably do without touching the $a0 output dependence.",
-   "next_probe": "Finish the run this session started and stopped: `python3 tools/sched_solver/perturb.py tmp/sched_solver_work/display.sched.json --func get_alarm --pass 2 --block 2 --goal-before 38:60 --goal-before 43:60 --goal-before 54:60 --atoms luid,luid_move --depth 2`. It is a pure-Python replay with no build in the loop (~4391^2 pairs, minutes-to-hours) - launch it FIRST in the session and harvest in the same turn. A positive result is a spellable statement-order lever; a negative result closes the statement-order surface at depth 2 and hardens the RA-seat conclusion."
+   "hypothesis": "local-alloc can be pushed to seat the dead read in $v0 by changing some OTHER quantity's shape rather than by reordering statements.",
+   "mechanism": "The dead read is allocated last (refs 1 -> qty_compare priority 0), so its seat is decided entirely by what is already live across [8,9). Reordering is dead; the untested alternative is changing WHICH pseudos exist or how long they live, e.g. a form in which the madr pointer is not a separate pseudo at all.",
+   "next_probe": "Finish the interrupted run: python3 tools/ra_solver/inverse.py local tmp/ra_solver_work/display.local.json --func get_alarm --block 2 --goal '{\"2\": 2}' --depth 2 --top 12 (goal = qty 2 into hardreg 2 = $v0). Then classify each returned vector as C-expressible or not, exactly as this session did for the scheduler atoms. Note the model is OURS plus an analyst-supplied goal, so the inverse_compose --target-object gap does not block it."
   },
   {
-   "hypothesis": "Axis A (the remaining 1 insn, the &D_8009BF68 materialization) may be reachable once axis B is closed, because the register pressure and pass-2 dependence graph both change.",
-   "mechanism": "Every axis-A probe in s1-s41 was run against a chassis where the dead read occupies $a0 and the fmt `la` is late. combine.c:1458 added_sets_2 is a pre-RA decision so it should be unaffected, but the two axes were only ever proven orthogonal against the CURRENT seat assignment - that orthogonality has not been re-tested under the $v0 seat.",
-   "next_probe": "Deferred until a $v0-seat form exists. If one is found and the floor drops to 1, re-run the s2/s3 axis-A declaration/access-shape enumeration against the NEW chassis before concluding axis A is still dead - a chassis-relative conclusion must be re-measured on the chassis it is quoted against."
+   "hypothesis": "Axis A (the remaining 1 insn, the &D_8009BF68 materialization) may behave differently under a $v0-seat chassis.",
+   "mechanism": "combine.c:1458 added_sets_2 is a pre-RA decision so it should be seat-independent, but every axis-A probe in s1-s43 ran against a chassis where the dead read occupies $a0; the two axes were only ever proven orthogonal against THAT seat.",
+   "next_probe": "Deferred and conditional: only if a $v0-seat form is ever found. Then re-run the s2/s3 axis-A declaration/access-shape enumeration against the NEW chassis before quoting any banked axis-A conclusion, since every one of them is chassis-relative."
   }
  ],
  "judge_constraints": [],

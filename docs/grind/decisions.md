@@ -16158,3 +16158,128 @@ forensics, rederive, solver, or compiler-fork on this function.
 ## 2026-08-30 20:13 — special_camera_get_rot_dir — final call — **PASS**
 
 Ordinary C, no coercion construct and no carve-out claimed. Constructs: a 60-byte CamRot aggregate assignment (the function's payload), a for(;;) retry loop, locals index/cam_base/mode/v0, and func_800372F4's widened (nbytes,buf,mode) signature. Decisive fact: the widening is now HONEST -- buf/mode are read and forwarded, and the arity is the byte-matched Sony definition s32 CdRead(s32,s32,s32) at src/system.c:901, so the include/code6cac.h:510 prototype correction fixes a real defect at its canonical location under the owner's 2026-08-30 scope grant (tools/grinder/scope_allow.txt). Independently verified: sandbox --disable all = 0 at 72/72 and 0 at 21/21, rules_dropped 0; git diff touches only include/code6cac.h, src/code6cac_b2_post.c and the ledger -- no Makefile/pipeline/rule/config or prebuilt-.o surface; asm/funcs/special_camera_get_rot_dir.s confirms the 4-word loop + 3-word tail block move and the dest[3]/dest[2] argument loads, i.e. a backend block_move_loop from one struct assignment, not a hand-shaped copy. Banned entries 1-3 (asymmetric loop spelling) do not apply -- there is no inner C loop; entries 4/6 (unread params) and 7 (block-scope extern CdRead) are not present in this form. Full evidence: memory/grind/special_camera_get_rot_dir/{self_vet.md,evidence.md,hypotheses.md,rejected/}.
+
+## 2026-08-30 — get_alarm / func_8007DC9C (src/display.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (ruling 10's return-to-active executed in full; axis B re-attributed one step further upstream and the statement-order surface closed in BOTH scheduler passes)
+
+**Function.** `get_alarm` @ `0x8007DC9C` in `src/display.c`, currently committed as
+`INCLUDE_ASM("asm/funcs", get_alarm);`. Ledger: `memory/grind/get_alarm/` (43 sessions).
+Driver-assigned modality this session: `escalation` (floor flat at 9 across six modalities).
+
+**Why this entry exists on top of the 2026-08-20 one (`docs/grind/decisions.md:8628`) and the
+driver's 2026-08-26 backstop packet (`docs/grind/decisions.md:12950`).** The owner's 2026-08-30
+escalation-batch ruling 10 returned get_alarm to ACTIVE "with modality change", noting that its
+own ledger states nothing pends and flagging its tooling gap (`inverse_compose.py classify`
+lacking a `--target-object` escape) as covered by ruling 1's repair grant. That directive has now
+been executed: this session ran the solver chain on the surfaces s42 left open — **sched1 (pass 1),
+local-alloc, and a real C build of the spelling they implicate** — and found the C-expressible
+surface empty in both scheduler passes. Nothing the return-to-active was issued to test remains
+untested.
+
+**Live floor (re-measured this session, chassis-current).** `memory/grind/get_alarm/candidate.c`
+spliced into `src/display.c`: `& tools/wteng.ps1 main sandbox get_alarm --disable all` = **score 9,
+target_insns 91, build_insns 90, rules_dropped 0, cheat_asm_stripped 147** (all stripped cheats
+belong to unrelated functions in the TU). `src/display.c` restored to HEAD; tree clean.
+
+**The finding this session adds (axis B's causal chain, now named end to end).** s42 named the last
+link — a pass-2 output dependence on `$a0` between the dead `*g_gpu_stat_reg` read (uid 38) and the
+format-string `la` (uid 60), the unique atom of 4391 that reaches target's emitted order. This
+session names the two links upstream of it, from `tmp/grind/get_alarm/dumps/display.lreg` and the
+ra_solver local-alloc model:
+
+1. `insn 36` (`lw stat_ptr`, icost 2) shadows `insn 38` (the dead read, carrying `REG_UNUSED`), so
+   sched1 fills the gap by hoisting `insn 54` (`lw madr_ptr`) between them. Our sched1 order for the
+   first printf region is `36, 54, 38, 56, 60, 58, 45, 64, 52, 43, 66, 47, 62, 68`.
+2. That hoist gives pseudo 89 the live range `[6,10)`, overlapping the dead read's `[8,9)`. The dead
+   read is `qty 2 / pseudo 81, refs 1`, so `qty_compare` (`floor_log2(refs)*refs*size/life`) prices
+   it at zero and local-alloc allocates it **last (ord 15)**, by which time `$v0` (pseudo 89) and
+   `$v1` (pseudo 80, the stat pointer) are taken across its life — it lands in `$a0`.
+3. `$a0` is the register the fmt `la` must write, hence s42's output dependence, hence the `la`
+   cannot reach emit slot 1, hence 8 of the 9 residual ops.
+
+Target's own body is consistent with — and only with — a compile where 54 was not hoisted: it fills
+that same slot with the `la` (`lui/addiu $a0`) and reads the dead value into `$v0`
+(`lw $v0,0($v1)` @ `0x8007DCFC`).
+
+**What that buys, and why it still closes nothing (the kills).**
+
+- Pass-1 goal "38 before 54", `--atoms luid,luid_move --depth 1`, **2583** atoms: NEGATIVE
+  (`tmp/grind/get_alarm/s43/perturb_pass1_38before54_luid.txt`).
+- Pass-1 complementary goal "56 before 38" — which frees the seat equally, by putting the dead read
+  after pseudo 89 dies — same 2583 atoms: NEGATIVE
+  (`tmp/grind/get_alarm/s43/perturb_pass1_56before38_luid.txt`).
+- The SAME pass-1 goal with the FULL atom set returns dozens of reaching vectors — every one an
+  `add_dep` / `del_dep` / `cost` atom, i.e. an edit to sched.c's dependence graph or to the machine
+  description's insn latency (`tmp/grind/get_alarm/s43/perturb_pass1_38before54_all.txt`). Neither
+  class is a function of C source order, declaration shape or type spelling.
+- s42 established the identical split in pass 2 (unique reaching atom `del_dep 60 <- 38`, likewise
+  not C-expressible).
+- The one C spelling the chain implicates — staging `*g_gpu_dma_madr` into a local *before* the dead
+  volatile read, inverting 54/38 at the statement level — **builds and measures score 9**: ties the
+  floor, closes nothing. That is precisely what the solver predicts, so the measurement doubles as a
+  validation of the solver-to-C mapping on this function. Banked as
+  `memory/grind/get_alarm/rejected/s43-madr-staged-before-deadread-score9-nofingerprint-change.c`.
+
+**Conclusion: the residual order is reachable, but every reaching perturbation lies outside the set
+of things C can express.** That is a stronger statement than "no spelling was found", and it is now
+proven independently in both scheduler passes.
+
+**AND-gate #1 (canonical-asm) — FAILS.** `python3 tools/scan_hand_coded.py --single get_alarm`
+re-run this session: **tier=LOW, score=1/8**, 91 insns, "no strong hand-coded indicators". Only S4
+fires (5 loads in an 8-insn window @ insn 24); **S1 / S2 / S6 — the STRONG signals the gate
+requires — are all absent**, as are S3/S5/S7/S8. Artifact:
+`tmp/grind/get_alarm/s43/scan_hand_coded.txt`.
+
+**AND-gate #2 (SOTN-master precedent for the closing construct) — FAILS.** The closing construct
+would have to be a *dead second use of an address* (axis A) or a coercion that changes a zero-use
+pseudo's register seat (axis B). `docs/reference/sotn-construct-index.md` (1,365 entries, PSX vs
+PSP/Saturn provenance tagged) returns **zero** hits for either shape. A negative census is a FAILED
+gate, not an open question (owner restatement 2026-07-27).
+
+**No decision packet is filed, by design.** Per the owner's 2026-08-24 second ruling, a packet whose
+YES would lower a standard — a no-precedent family grant, a canonical evidence-bar override, any
+"accept the debt" wording — is PRE-DECIDED NO and must not be filed. Both gates fail on measured
+evidence, so the only decidable question this residual could pose is exactly such a grant. The
+standing 2026-07-27 auto-ruling therefore applies directly and this disposition is self-resolving.
+
+**Sanctioned-axis exhaustion ledger (43 sessions, six distinct modalities, floor flat at 9 since
+s1).** recon (s1) · structural (s2, s3, s11, s12, s20, s21, s29, s30, s38, s39) · permuter (s4, s5,
+s13, s14, s22, s23, s31, s32, s40 — ten structurally-distinct chassis, ~258k cumulative iterations;
+every sub-floor find is a coercion cheat and axis B never once legitimately reordered) · forensics
+(s6, s7, s15, s16, s24, s25, s33, s34 — s16 proved the 4 pre-migration regfix rules map 1:1 onto
+exactly these two axes, so no hidden third divergence exists) · rederive (s8, s9, s17, s18, s26,
+s27, s35, s36 — plus a 3,754-scratch decomp.me GCC-2.7.2 PSX corpus sweep and a Kengo donor search,
+both negative) · synthesis (s10, s19, s28, s37) · solver/escalation (s41, s42, **s43 this session**).
+28 disproven forms are banked under `memory/grind/get_alarm/rejected/`; 70+ hypotheses killed with
+measurements.
+
+**Disposition.** No cheat is retained: the function stays committed as
+`INCLUDE_ASM("asm/funcs", get_alarm);` with zero regfix/asmfix rules and zero cheat-asm.
+**REFUSED / OWNER-ACCEPTED INCOMPLETE**, parked out of active grind, classified NOT COMPLETED-C and
+NOT canonical-asm. The floor-9 candidate remains banked at `memory/grind/get_alarm/candidate.c`.
+Re-open triggers, all of which must be NEW (ruling 10's bookkeeping ground is discharged by this
+entry, and the statement-order ground is now spent in both passes and must not be re-cited):
+
+1. a `tools/sched_solver` atom class that is BOTH C-expressible AND able to remove a dependence edge
+   or change an insn cost — none exists today, and adding one is an operator/infra item (`tools/` is
+   out of scope for a grind session);
+2. an owner-landed sanctioned family covering a dead second address use (axis A) or a seat-changing
+   coercion of a zero-use pseudo (axis B), neither of which has SOTN-master precedent today;
+3. a genuinely new whole-function idiom outside the GPU-timeout-reporter topology that all 43
+   sessions assume.
+
+**Nothing is pending on the owner** — per [[judge-sole-gate]] (2026-08-18) this entry is
+self-resolving and the driver disposes so the queue advances.
+
+**Precedent (same RA/scheduler-locked, hand-coded-LOW, no-SOTN-precedent species, all ruled option
+(b)):** motion_SetMotion (2026-07-19 FAMILY REFUSED), saTan0Init / cpu_side_move_dir_4 /
+func_80057CC8 (2026-07-20), func_80049A2C / InitHiraRmd_80047FBC / gnd_init_80041688 /
+AddTbpOfst_80047EE8 / cpu_check_tubazeri_2 / damage_DebugDisp / func_8007DC9C (2026-07-22),
+func_800645B0 / func_80033550 / CD_ready (2026-08-30 re-affirmations after ruling 10, the same shape
+as this entry), and get_alarm's own 2026-07-22 (decisions.md:1316) and 2026-08-20
+(decisions.md:8628) rulings. This entry names get_alarm / func_8007DC9C directly.
+
+**Filed under authority of:** the task-brief contract (grind session s43, **escalation** modality —
+driver-declared exhaustion); the owner's standing auto-ruling (2026-07-27, both-gates-fail is
+pre-decided REFUSED / OWNER-ACCEPTED INCOMPLETE); `.claude/rules/endgame-lock-disposition.md`;
+`.claude/rules/escalation-not-parked.md` (2026-08-24, including its auto-reject class);
+[[judge-sole-gate]] (2026-08-18 — no owner sign-off wait).
