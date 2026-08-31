@@ -878,3 +878,114 @@ decision packet rather than re-searching the space.
 - [s10] STRUCTURAL THEOREM (banked in hypotheses.md [s10b]): every byte-exact form of func_80045878 requires a fresh local written more than once - precisely the construct FAILed by the 2026-08-30 21:30 ruling. The bytes are solved twice over; the only open question is family classification.
 
 - [s10] src/text1a_c.c was restored to its HEAD INCLUDE_ASM state at end of session; no build-pipeline file was modified.
+
+## s11 (2026-08-30, rederive)
+
+CHASSIS RE-MEASURED FIRST. `memory/grind/func_80045878/candidate.c` applied verbatim over the
+`INCLUDE_ASM("asm/funcs", func_80045878);` line in src/text1a_c.c: `sandbox func_80045878
+--disable all` -> **score 0, build_insns 108 == target_insns 108, rules_dropped 0**. The s10
+result reproduces exactly on today's tree; the chassis has not moved. The form is still
+unshippable for the reason s10 recorded (the fresh multi-write carrier `c`, Judge FAIL
+2026-08-30 21:30), so src/text1a_c.c was restored to the INCLUDE_ASM line before this session
+ended and the tree is clean.
+
+OWNER DIRECTIVE EXECUTED. Queue ruling 10 of the 2026-08-30 escalation batch ("ledger states
+nothing pends; active with modality change per escalation-not-parked") is discharged by this
+session: the function was worked in the `rederive` modality, not re-escalated.
+
+MEASUREMENT TABLE (this session, all `sandbox --disable all`, rules_dropped 0 throughout):
+
+| id | form | insns | score |
+|----|------|-------|-------|
+| C0 | candidate.c verbatim (chassis check) | 108 | **0** |
+| I1 | `static inline` tail helper, base = accepted `v0 = s1` reuse, NO carrier local | 109 | 13 |
+| I2 | same helper, base passed as `s1` directly (no `v0` reuse) | 107 | 9 |
+| P4 | fresh block-local base written twice from the same source, no carrier | 108 | 9 |
+
+THE FRONTIER-3 HYPOTHESIS (inline helper) IS DEAD, AND IT DIED INFORMATIVELY.
+s10 left "a `static inline` tail helper could make the base copy and the scratches multi-block
+through integrate.c's parameter pseudos, with no source-level variable reuse at all" as the one
+untried structural shape on the rederive ladder. Measured (I1/I2): the premise is false.
+integrate.c emits the argument copies in the CALLER's block and splices the branch-free helper
+body into that same block, so every parameter pseudo is still block-local; nothing becomes
+multi-block. I1 therefore lands in the known failing configuration - the first scratch takes
+$v0 from local_alloc, the multi-block base allocno `v0` is pushed to $a0 by global_alloc, and an
+extra `move a0,v0` copy of the first call's return value appears at the top of the function.
+
+BUT I1 IS THE CLEANEST STATEMENT YET OF WHAT IS ACTUALLY LEFT. Its tail is target's tail
+instruction-for-instruction, with NO carrier local anywhere in the function:
+
+      ours (I1)                      target (asm/funcs/func_80045878.s)
+      move  a0, s1                   addu  $v0, $s1, $zero
+      addiu v0, s2, 3                addiu $v1, $s2, 0x3
+      sh    v0, 22(a0)               sh    $v1, 0x16($v0)
+      li    v0, 0x8000               ori   $v1, $zero, 0x8000
+      sh    s2, 4(a0)                sh    $s2, 0x4($v0)
+      sh    s5, 8(a0)                sh    $s5, 0x8($v0)
+      sh    s2, 20(a0)               sh    $s2, 0x14($v0)
+      sh    s2, 16(a0)               sh    $s2, 0x10($v0)
+      sw    v0, 24(a0)               sw    $v1, 0x18($v0)
+
+Same insns, same order, including the `li 0x8000` sitting four insns ahead of its own use.
+The whole function differs from target in exactly three places, and all three are downstream of
+one decision: (a) the extra top-of-function `move a0,v0`, (b) the two-register rename
+base $a0<->$v0 / scratch $v0<->$v1, (c) the delay slot of the third `if`'s last branch (ours
+fills it by duplicating the else arm's `move a0,s3` and retargeting the branch past it; target
+leaves a nop). This retires a belief that was implicit in nine sessions of work: the carrier
+`c` was never needed to produce target's tail ORDER - source order in an inlined helper body
+gives that for free. The carrier is needed ONLY to move two register seats.
+
+PRONG (1) OF THE s10b STRUCTURAL THEOREM RE-PROVED FROM AN INDEPENDENT MECHANISM.
+s10b argued the scratches must be non-block-local from local-alloc.c:472's reg_basic_block gate.
+There is a second, simpler and stronger argument: **config/mips/mips.h does not define
+REG_ALLOC_ORDER at all** (verified: no REG_ALLOC_ORDER anywhere under
+tools/gcc-2.7.2/config/mips/), so local-alloc.c:2249-2272 takes the `#ifndef REG_ALLOC_ORDER`
+arm and scans hard registers in ascending regno order, where $2 == $v0 is the first allocatable
+GP register. Since toplev.c runs local_alloc before global_alloc, ANY block-local quantity live
+in the tail takes $v0 before the multi-block base allocno is even considered - regardless of
+qty priorities, regardless of spelling. This is now a two-mechanism result.
+
+AND THE OBVIOUS WAY AROUND IT IS UNCONSTRUCTIBLE (new this session).
+local-alloc.c:1641 `qty_compare` ranks quantities by
+`log2(n_refs) * n_refs * qty_size / (qty_death - qty_birth)`. The tail base has 7 refs over ~9
+insns (priority ~15555); a tail scratch has 2 refs over ~2 insns (priority ~10000). So if the
+BASE were block-local it would be allocated first, take $v0, and leave $v1 for the scratches -
+the non-block-local requirement on the scratches would evaporate. P4 tested whether a
+block-local base copy can be made to survive: the property that keeps the accepted `v0 = s1`
+copy alive is that `v0` is multi-SET, so P4 gave a fresh block-local base two sets from the same
+source (`p = s1; p[11] = a0 + 3; p = s1; ...`). Result: cse folds both copies, the second set is
+deleted as a dead store, all six stores address through $s1, and an unrelated `move v0,s2`
+appears - 108 insns, score 9. A surviving base copy requires its two sets to carry DIFFERENT
+values in DIFFERENT blocks, which is precisely the multi-block `v0` reuse, which is precisely
+the configuration that loses $v0 to a block-local scratch. The reframing has no back door.
+(P4 is a mechanism probe only - it carries a fresh multi-write local and is not shippable.)
+
+TRANSPLANT ARM OF THE REDERIVE LADDER IS EMPTY. `func_80045694` (the registration callee) has
+exactly six callers in the whole game: func_80045878, func_80045B68, func_800460E4,
+func_800467B8, func_8004695C, func_800469C4. Every one of them is still `INCLUDE_ASM` - there is
+no matched sibling whose C could show the original tail idiom. Nor does any other asm/funcs body
+contain the idiom itself (a `0x8000` stored at +0x18 next to a `+3` half-word at +0x16). Sibling
+and Kengo transplant are therefore not available re-derivation sources for this residual, and no
+future session should re-run that search.
+
+NET FOR THE LEDGER. The floor is unchanged: 0 with the Judge-FAILed construct, 4 without it.
+Three more forms are dead, the last untried structural shape on the rederive ladder is closed,
+and the elimination that s10b called a theorem now rests on two independent compiler mechanisms
+plus a measured demonstration that its only apparent loophole cannot be built. Nothing here
+changes the disposition question s10 left on the frontier; it strengthens the packet.
+
+- [s11] CHASSIS: candidate.c applied verbatim over the INCLUDE_ASM line reproduces s10 exactly on today's tree - sandbox --disable all = score 0, build_insns 108 == target_insns 108, rules_dropped 0. src/text1a_c.c was restored to the INCLUDE_ASM line before the session ended; the only tracked dirt is the three ledger files and metrics/events.jsonl.
+
+- [s11] OWNER DIRECTIVE DISCHARGED: queue ruling 10 of the 2026-08-30 escalation batch ('ledger states nothing pends; active with modality change per escalation-not-parked') is executed - the function was worked in rederive modality this session, not re-escalated.
+
+- [s11] The `static inline` tail helper (s10's last untried structural shape) reproduces target's ENTIRE tail instruction sequence and order with NO carrier local: same nine insns, same order, including the `li 0x8000` sitting four insns ahead of its own use. Nine sessions implicitly believed the carrier produced that order; it does not - source order inside an inlined helper body gives it for free. The carrier moves two register seats and nothing else.
+
+- [s11] Inlining does not manufacture non-block-local pseudos in this function: integrate.c emits argument copies in the caller's block and splices a branch-free body into that same block, so parameter pseudos stay block-local.
+
+- [s11] mips.h defines no REG_ALLOC_ORDER, so local-alloc.c:2249-2272 scans hard registers in ascending regno order ($v0 first) and local_alloc runs before global_alloc - a second, mechanism-level proof that a block-local tail scratch always takes $v0 ahead of the multi-block base allocno.
+
+- [s11] local-alloc.c:1641 qty_compare would rank a block-local base (7 refs / ~9 insns) above a block-local scratch (2 refs / 2 insns), so a surviving block-local base copy would dissolve the whole problem - but it is unconstructible: a fresh base with two same-source sets is folded by cse and its second set deleted as a dead store (P4, 108 insns / score 9).
+
+- [s11] Sibling/Kengo transplant is not an available re-derivation source: all six callers of func_80045694 are still INCLUDE_ASM and the tail idiom appears in no other asm/funcs body.
+
+- [s11] Floor unchanged: 0 with the Judge-FAILed multi-write fresh carrier, 4 without it. Three more forms banked dead (38 total in memory/grind/func_80045878/rejected/).

@@ -72,6 +72,16 @@
  * ordinary C.  It carries the same (Judge-FAILed) multi-write fresh local, so
  * neither form is submittable until that family question is ruled.
  *
+ * s11 (2026-08-30, rederive) NOTE: re-measured verbatim on today's tree --
+ * score 0, 108/108 insns, rules_dropped 0; the chassis has not moved.  s11
+ * also closed the last untried structural shape (the `static inline` tail
+ * helper): it reproduces target's tail instruction sequence and ORDER exactly
+ * with no carrier local at all, but every integrate.c parameter pseudo stays
+ * block-local, so the scratch takes $v0 and the base is pushed to $a0
+ * (109 insns / score 13).  The carrier `c` in this file is therefore needed
+ * ONLY for two register seats, never for the instruction order.  See
+ * evidence.md [s11].
+ *
  * Apply verbatim over the INCLUDE_ASM line in src/text1a_c.c.
  */
 void func_80045878(s32 a0, s32 a1, s32 a2) {

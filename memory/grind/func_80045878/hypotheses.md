@@ -654,3 +654,65 @@ multisets identical; `goal_from_tgt.py classify` = "FIRST DIVERGENCE: RA",
 - probe: Complete enumeration of the function's variables against those requirements, plus this session's E1/E2/E3/D1 measurements on top of s9/s10's V2/V4/V5/V6/V7 and T1/T3/U4/U5/U6 table.
 - result: No such spelling exists. A single-write carrier would have to want the same value at both of its references, but the tail wants 'a0 + 3' and '0x8000'; 0x8000 occurs nowhere else in the function, and a0+3 already exists as s3, whose live range crosses calls (target seats it $s3). Every pre-existing variable is independently disqualified: s0/s3/a0/a2 cross calls (callee-save seats, measured score 6-7); s1 and a1 are still live in the tail with different target seats ($s1/$s5 vs the scratch's $v1); v0 is the hard-$v0 call return and is already spent on the accepted tail base.
 - verdict: KILLED
+
+## [s11] 2026-08-30 (rederive modality - chassis re-measured, floor 0-with-banned-construct / 4 legal)
+
+## [s11] A `static inline` tail helper can make the base copy and the two tail scratches non-block-local through integrate.c's parameter pseudos, with no source-level variable reuse at all. (frontier item 3, inherited from s10)
+- mechanism: integrate.c copies the callee body into the caller and creates fresh pseudos for the parameters; the parameter copy is set in the caller's block and read in the inlined body's blocks, which would be a flow-time second-block reference.
+- probe: I1 (tmp/grind/func_80045878/s11/i1.c, banked rejected/s11-inline-tail-helper-basecopy-seated-a0-109-score13.c) - the six tail stores moved into `static inline void func_80045878_set(s16 *p, s32 hi, s32 id, s32 kind, s32 flags)`, called once as `v0 = s1; func_80045878_set(v0, a0 + 3, a0, a1, 0x8000);`, NO carrier local anywhere. I2 (rejected/s11-inline-tail-helper-param-copy-cse-folded-107-score9.c) - same helper called with `s1` directly.
+- result: I1 = 109 insns / score 13; I2 = 107 insns / score 9. The premise is FALSE: the argument copies are emitted in the CALLER's block and the branch-free inlined body is spliced into that same block, so every parameter pseudo is still block-local. In I1 the first scratch therefore takes $v0 from local_alloc, the multi-block base allocno `v0` is pushed to $a0 by global_alloc, and an extra `move a0,v0` appears at the top for the first call's return value. In I2 cse folds the parameter copy away and the base copy insn vanishes (107).
+- verdict: KILLED (frontier item 3 closed)
+
+## [s11] The inline-helper form nevertheless reproduces target's tail INSTRUCTION SEQUENCE exactly, with no carrier local: the residual is a pure 2-register rename plus one insn.
+- mechanism: integrate.c splices the helper body verbatim, so the sched1 ordering that the `c` carrier was needed to produce (the `li 0x8000` sitting four insns ahead of its use, between `sh ...,0x16` and `sh ...,0x4`) falls out of the source order of the helper body by itself.
+- probe: I1's disassembly (tmp/grind/func_80045878/s11/ diff vs asm/funcs/func_80045878.s).
+- result: ours `move a0,s1 / addiu v0,s2,3 / sh v0,22(a0) / li v0,0x8000 / sh s2,4(a0) / sh s5,8(a0) / sh s2,20(a0) / sh s2,16(a0) / sw v0,24(a0)` vs target's byte-identical stream in $v0/$v1. Everything else in the function matches except the extra top-of-function `move a0,v0` and the delay slot of the third if's last branch (ours fills it with the else arm's `move a0,s3` and retargets, target leaves a nop) - both downstream of the same seat decision.
+- verdict: CONFIRMED (the carrier is needed ONLY for the register seats, never for the instruction order)
+
+## [s11] Prong (1) of the s10b structural theorem re-proved from a second, independent mechanism: any block-local pseudo in the tail takes $v0 ahead of the base, unconditionally.
+- mechanism: config/mips/mips.h does NOT define REG_ALLOC_ORDER, so local-alloc.c:2249-2272 falls into the `#ifndef REG_ALLOC_ORDER` arm and scans hard regs in ASCENDING regno order; $2 ($v0) is the first allocatable GP register. toplev.c runs local_alloc BEFORE global_alloc, so a block-local tail quantity always wins $v0 from a multi-block base allocno, whatever their relative qty priorities.
+- probe: source read of tools/gcc-2.7.2/local-alloc.c:2249-2272 + the absence of REG_ALLOC_ORDER anywhere under tools/gcc-2.7.2/config/mips/; corroborated by I1 (block-local scratch = $v0, base = $a0) and by s9/s10's T1/T3/U4/U5.
+- result: independent confirmation of the s10b theorem's prong (1) - the scratches MUST be non-block-local.
+- verdict: CONFIRMED
+
+## [s11] The theorem could be side-stepped from the other end: if the BASE copy were block-local it would outrank the scratches on local-alloc.c's qty_compare priority and take $v0 first, leaving $v1 for the scratches and removing the non-block-local requirement entirely.
+- mechanism: local-alloc.c:1641 qty_compare ranks by log2(n_refs)*n_refs*qty_size/(qty_death-qty_birth); the tail base has 7 refs over ~9 insns (pri ~15555) against the scratch's 2 refs over 2 insns (pri ~10000), so the base would be allocated first.
+- probe: P4 (rejected/s11-block-local-multiset-base-copy-folded-108-score9.c) - a fresh block-local base local written twice from the same source (`p = s1; p[11] = a0+3; p = s1; ...`) to make it multi-set (the property that keeps the accepted `v0 = s1` copy alive) while staying inside one block. Mechanism probe only; it carries a fresh multi-write local and is not shippable.
+- result: 108 insns / score 9 - BOTH copies are folded by cse and the second set is deleted as a dead store; all six stores address through $s1 and an unrelated `move v0,s2` appears. A surviving base copy needs its two sets to carry DIFFERENT values in DIFFERENT blocks, which is exactly the multi-block `v0` reuse - and multi-block means global_alloc, the configuration that loses $v0 to a block-local scratch.
+- verdict: KILLED (the reframing is unconstructible; the theorem's prong (1) has no back door)
+
+## [s11] Sibling/transplant re-derivation: another BB2 function registers an entity through the same func_80045600/func_80045230/func_80045694 trio and would show the original tail idiom in already-matched C.
+- mechanism: rederive modality - a matched sibling's C is direct evidence of the original source shape.
+- probe: `grep -rl func_80045694 asm/funcs src` gives exactly six callers (func_80045878, func_80045B68, func_800460E4, func_800467B8, func_8004695C, func_800469C4) - every one of them is still INCLUDE_ASM, i.e. none is matched. None of the five siblings contains the tail idiom either (`0x8000` stored at +0x18 with a `+3` half-word at +0x16 appears in no other asm/funcs body).
+- result: no sibling evidence exists; the transplant arm of the rederive ladder is empty for this function.
+- verdict: KILLED
+
+## [s11] A `static inline` tail helper makes the base copy and the two tail scratches non-block-local through integrate.c's parameter pseudos, with no source-level variable reuse at all (s10 frontier item 3, the last untried shape on the rederive ladder).
+- mechanism: integrate.c copies the callee body into the caller and creates fresh pseudos for the parameters; a parameter copy set in the caller's block and read in the inlined body was expected to be a flow-time second-block reference, satisfying local-alloc.c:472's reg_basic_block gate without any multi-write local.
+- probe: I1 (rejected/s11-inline-tail-helper-basecopy-seated-a0-109-score13.c): the six tail stores moved into `static inline void func_80045878_set(s16 *p, s32 hi, s32 id, s32 kind, s32 flags)`, called once as `v0 = s1; func_80045878_set(v0, a0+3, a0, a1, 0x8000);`, no carrier local anywhere. I2 (rejected/s11-inline-tail-helper-param-copy-cse-folded-107-score9.c): same helper called with `s1` directly. Both measured with `sandbox func_80045878 --disable all`.
+- result: I1 = 109 insns / score 13; I2 = 107 insns / score 9. The premise is false: integrate.c emits the argument copies in the CALLER's block and splices the branch-free helper body into that same block, so every parameter pseudo stays block-local. I1 lands in the known failing configuration (first scratch takes $v0 from local_alloc, multi-block base allocno `v0` pushed to $a0 by global_alloc, extra `move a0,v0` at function top). In I2 cse folds the parameter copy and the base copy insn disappears entirely.
+- verdict: KILLED
+
+## [s11] The inline-helper form nevertheless reproduces target's tail INSTRUCTION SEQUENCE and ORDER exactly with no carrier local, so the carrier is needed only for register seats.
+- mechanism: integrate.c splices the helper body verbatim, so the sched1 ordering the `c` carrier was believed to produce (the `li 0x8000` sitting four insns ahead of its use, between the 0x16 and 0x4 stores) falls out of the helper's source order by itself.
+- probe: Normalized disassembly diff of I1's text1a_c.o against asm/funcs/func_80045878.s (tmp/grind/func_80045878/s11/).
+- result: Ours `move a0,s1 / addiu v0,s2,3 / sh v0,22(a0) / li v0,0x8000 / sh s2,4(a0) / sh s5,8(a0) / sh s2,20(a0) / sh s2,16(a0) / sw v0,24(a0)` vs target's identical stream in $v0/$v1. The whole function differs in exactly three places, all downstream of one seat decision: the extra top-of-function `move a0,v0`, the base/scratch two-register rename, and the third if's last-branch delay slot (ours fills it with the else arm's `move a0,s3` and retargets the branch past it; target leaves a nop).
+- verdict: CONFIRMED
+
+## [s11] Prong (1) of the s10b structural theorem (both tail scratches must be non-block-local) holds for a second, independent reason: any block-local pseudo in the tail takes $v0 ahead of the base, unconditionally and regardless of qty priority.
+- mechanism: config/mips/mips.h does not define REG_ALLOC_ORDER anywhere, so local-alloc.c:2249-2272 takes the `#ifndef REG_ALLOC_ORDER` arm and scans hard registers in ascending regno order, where $2 ($v0) is the first allocatable GP register; toplev.c runs local_alloc before global_alloc.
+- probe: Source read of tools/gcc-2.7.2/local-alloc.c:2249-2272 plus a REG_ALLOC_ORDER grep over tools/gcc-2.7.2/config/mips/ (no hits); corroborated by I1's seats and by s9/s10's T1/T3/U4/U5 measurements.
+- result: Independent confirmation. The theorem's prong (1) no longer rests only on the local-alloc.c:472 reg_basic_block gate.
+- verdict: CONFIRMED
+
+## [s11] The theorem can be side-stepped from the other end: if the BASE copy were block-local it would outrank the scratches on local-alloc.c's qty_compare priority, take $v0 first, and leave $v1 for the scratches - removing the non-block-local requirement on the scratches entirely.
+- mechanism: local-alloc.c:1641 qty_compare ranks by log2(n_refs)*n_refs*qty_size/(qty_death-qty_birth); the tail base has 7 refs over ~9 insns (priority ~15555) against a scratch's 2 refs over 2 insns (priority ~10000).
+- probe: P4 (rejected/s11-block-local-multiset-base-copy-folded-108-score9.c), a MECHANISM PROBE ONLY (it carries a fresh multi-write local and is not shippable): a fresh block-local base given two sets from the same source (`p = s1; p[11] = a0+3; p = s1; ...`) to reproduce the multi-SET property that keeps the accepted `v0 = s1` copy alive while staying inside one block.
+- result: 108 insns / score 9. cse folds both copies and the second set is deleted as a dead store; all six stores address through $s1 and an unrelated `move v0,s2` appears. A surviving base copy requires its two sets to carry DIFFERENT values in DIFFERENT blocks - which is exactly the multi-block `v0` reuse, which is exactly the configuration that loses $v0 to a block-local scratch. The loophole has no back door.
+- verdict: KILLED
+
+## [s11] A matched sibling function registering an entity through the same func_80045600/func_80045230/func_80045694 trio would show the original tail idiom in already-matched C (the transplant arm of the rederive ladder).
+- mechanism: Rederive modality: a matched sibling's C is direct evidence of the original source shape.
+- probe: `grep -rl func_80045694 asm/funcs src` plus an idiom search over asm/funcs for a 0x8000 store at +0x18 next to a +3 half-word store at +0x16.
+- result: func_80045694 has exactly six callers (func_80045878, func_80045B68, func_800460E4, func_800467B8, func_8004695C, func_800469C4) and every one of them is still INCLUDE_ASM; no other asm/funcs body contains the tail idiom. The sibling/transplant arm is empty for this function - no future session should re-run that search.
+- verdict: KILLED
