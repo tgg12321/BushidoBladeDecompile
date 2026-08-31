@@ -1,126 +1,117 @@
-# SELF-VET — special_camera_get_rot_dir
+# SELF-VET — special_camera_get_rot_dir (grind s8, 2026-08-30)
 
-Session s7 (rederive modality, 2026-08-26). Diff = src/code6cac_b2_post.c ONLY
-(verified with `git status --short`: the sole modified build input). No header
-edit, no regfix/asmfix rule, no inline asm, no pin, no volatile, no goto, no
-dead local, no /* FAKE */ construct anywhere in the diff.
+Diff under vet (three files, all in this function's granted scope):
+  - `include/code6cac.h:510` — `extern void CdRead(s32);` → `extern s32 CdRead(s32, s32, s32);`
+    (scope granted: `tools/grinder/scope_allow.txt`, entry
+    `special_camera_get_rot_dir include/code6cac.h`, owner ruling 2026-08-30,
+    decisions.md escalation-batch entry, ruling 2)
+  - `src/code6cac_b2_post.c` — `func_800372F4` widened from `(s32 arg0)` to
+    `(s32 nbytes, s32 buf, s32 mode)`, forwarding all three to `CdRead`
+  - `src/code6cac_b2_post.c` — `INCLUDE_ASM("asm/funcs", special_camera_get_rot_dir);`
+    replaced by the pure-C body; the two stale unused `Quad`/`Triple` typedefs
+    (leftovers from an abandoned s2-era word-splat copy form) deleted; a `CamRot`
+    typedef added for the 60-byte aggregate copy.
 
-Measured THIS session, on THIS chassis, with these edits in place in src/:
-  - `sandbox special_camera_get_rot_dir --disable all` -> score 0, 72/72 insns
-  - `sandbox func_800372F4 --disable all`              -> score 0, 21/21 insns
-  - `verify-oracle`                                    -> "ok": true, "build_matches": true
-    (full clean-driver build+link, SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa)
+Measured THIS session with the diff in place in src/ and include/:
+  sandbox special_camera_get_rot_dir --disable all -> score 0, 72/72 insns
+  sandbox func_800372F4              --disable all -> score 0, 21/21 insns
+  verify-oracle --rebuild --allow-dirty -> ok:true, build_matches:true,
+      build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle
+  rules_dropped 0 for both functions (zero regfix/asmfix carriers).
 
-CONSTRUCTS: (1) block-scope `extern s32 CdRead(s32, s32, s32);` inside
-func_800372F4, correcting a stale 1-argument prototype in include/code6cac.h that
-contradicts this repo's own matched definition of CdRead; (2) func_800372F4's
-signature widened to (s32 nbytes, s32 buf, s32 mode), with both new parameters
-READ and forwarded in the body; (3) a `CamRot` struct typedef + one aggregate
-assignment `*(CamRot *)dest = *(CamRot *)&sp_buf[0x10];`; (4) local `mode` holding
-the CD mode 0x80, read at both func_800372F4 call sites; (5) locals `index` and
-`cam_base`, each read twice; (6) an ordinary `for (;;) { ... continue; ... break; }`
-retry loop.
+CONSTRUCTS: (1) `CamRot` struct typedef + the aggregate assignment
+`*(CamRot *)dest = *(CamRot *)&sp_buf[0x10];`; (2) `s32 mode = 0x80;` local read
+at both `func_800372F4` call sites; (3) `for (;;) { ... continue; ... break; }`
+retry loop; (4) `func_800372F4`'s widened 3-parameter signature, all three
+parameters read in the body; (5) the `include/code6cac.h:510` prototype
+correction; (6) plain locals `index`, `cam_base`, `v0` and the stack buffers
+`sp_buf[0x800]` / `sp_buf2[8]`.
 
-## T1 semantic purpose: does each construct change observable behaviour?
-(1) YES. Without the corrected prototype the call `CdRead(sectors, buf, mode)` does
-not compile at all, and the 1-argument form leaves CdRead's buffer address and CD
-mode unset. CdRead's matched definition (src/system.c:901) reads all three
-parameters: `D_800A14DC = mode; D_800A14D4 = buf; *ps = sectors;`. Dropping buf and
-mode is a semantic bug, not a simplification.
-(2) YES. func_800372F4's whole job is "issue a blocking CdRead of N bytes into buf
-with mode M". Its two call sites pass the destination buffer (sp_buf / dest[2]) and
-the mode; those values reach CdRead only through this wrapper. This is the point
-that the 2026-08-26 01:09 layer-1 FAIL correctly attacked in the PREVIOUS form,
-where the parameters were declared but never read while the body still called the
-1-argument CdRead. That defect is fixed here: both parameters appear in the body,
-in the CdRead call, and there is no claim anywhere that they "fall through
-untouched".
-(3) YES. It performs the 60-byte copy of the rotation record out of the sector
-buffer into the caller's array — the function's entire output.
-(4) YES. It is the third argument of both CD reads; deleting it deletes the mode.
-(5) YES. `index + cam_base` is the CD directory entry address; both are read.
-(6) YES. It is the retry semantics: any failed read restarts from the seek.
+## T1 semantic purpose
+(1) The aggregate assignment IS the function's payload: it moves the 60-byte
+rotation record out of the sector buffer into the caller's `dest[]`. Remove it
+and the function returns nothing to its caller. Real semantics.
+(2) `mode` is the CD transfer mode (0x80 = double-speed) passed to both reads.
+Remove it and `CdRead` receives no mode. Real semantics — and it is a *read*
+value at two sites, not a dead scalar.
+(3) The retry loop is the function's error handling: a failed read (`v0 != 0`)
+restarts the whole seek/read sequence. Removing it changes behaviour on read
+failure. Real semantics.
+(4) `buf` and `mode` are loaded into `$a1`/`$a2` and consumed by `CdRead`
+(`src/system.c:901` stores them to `D_800A14D4` / `D_800A14DC`). Removing them
+leaves `CdRead` reading indeterminate registers. Real semantics.
+(5) The header correction makes every TU that includes `code6cac.h` call
+`CdRead` with the argument count its byte-matched definition actually reads.
+Real semantics, and correct independently of this grind.
+(6) Every local is written and read; both buffers are filled by the CD driver
+through the addresses passed to it and then read back (`sp_buf[0x10..0x4B]` by
+the aggregate copy, `sp_buf2` by the `CdControl(2, (s32)sp_buf2, 0)` seek).
+No construct in this diff is behaviour-neutral.
 
-## T2 human-programmer: would a human write this from the spec?
-Yes, for (2)-(6). The spec is "seek to this stage's entry, read a sector, copy the
-60-byte rotation record out of it, seek to the next sector, read the block described
-by dest[2]/dest[3], and retry the whole sequence on any failure". A human writes a
-struct copy for a fixed-size record, a named `mode` for a CD mode constant, a
-`for(;;)` retry loop with `continue`/`break`, and a wrapper that forwards its buffer
-and mode to CdRead. Construct (1) is the one a human would NOT normally write — a
-human would have the right prototype in their libcd header. It exists here only
-because our copy of that header (include/code6cac.h:510) is factually wrong and is
-OUT OF SCOPE for this candidate per the standing driver constraint. The clean
-placement of this declaration is that header; see the handoff note at the bottom.
-The build prints `conflicting types for CdRead` at the declaration — the correction
-is deliberately visible, not hidden, and this same file already ships an analogous
-pre-existing prototype diagnostic at src/code6cac_b2_post.c:387.
+## T2 human-programmer
+Yes for all six. A programmer writing "seek, read a sector, copy the 60-byte
+record out of it, seek to the next sector, read the variable-length block,
+retry the whole thing on failure" writes exactly this: a struct copy for the
+fixed-size record, a named `mode` constant for the CD mode argument, a `for (;;)`
+retry with `continue` on failure and `break` on success, and a wrapper that
+forwards its arguments to the library call it wraps. Nothing here reads as
+"why is this here?" — the diff is strictly SIMPLER than the code it replaces
+(one aggregate assignment where s2-s6 had 15 word stores; two dead typedefs
+deleted; no pre-loop pointer local).
 
-## T3 GCC-internals justification: is any construct justified by a GCC pass?
-No. Every construct above is argued from program semantics and from the target's
-own argument setup, not from allocator/scheduler/DCE behaviour. Specifically:
- - The copy is one aggregate assignment because the record IS one 60-byte record;
-   the fact that GCC's MIPS block-move expander turns that into the target's 4-word
-   loop + 3-word tail is an OBSERVATION about how the natural C compiles (pass
-   attribution), not the reason the C is written that way.
- - `mode` is a named constant because it is a CD mode; the target keeping 0x80 in
-   callee-saved $s4 across the whole loop is corroborating evidence that the
-   original source held it in a variable, not the justification for holding it.
- - There is no pre-loop pointer local for sp_buf2 because none is needed: the
-   address is simply taken at its two use sites. The construct here is the ABSENCE
-   of an extra local, i.e. the simpler spelling.
-No construct in this diff was chosen to move a live length, a reg_n_refs count, an
-allocno priority, a REG_EQUIV note, or an instruction's schedule slot.
+## T3 GCC-internals justification
+No construct is justified by a GCC internal. The mechanism note in the ledger
+(that GCC's MIPS backend `expand_block_move`/`block_move_loop` lowers the
+aggregate assignment into the target's 4-word loop plus 3-word tail) is a
+POST-HOC EXPLANATION of why the honest source form produces the target bytes —
+it is not the reason the construct was chosen, and no construct was shaped to
+manipulate an allocator, scheduler, or reference-count heuristic. The s1-s6
+sessions that DID reason from allocno priority and `reg_n_refs` produced nothing
+and their forms are all banked as rejected; this form was reached by asking what
+the source said, not what the passes would do with it.
 
-## T4 permuter/search provenance: was anything found by auto-search?
-No. The permuter modality for this function was measured DEAD in s4 (~46k iters,
-two chassis, zero score-0 finds) and none of its output is used here. This form was
-re-derived from the target's own semantics: the wrapper's argument setup in the
-target (the caller loads $a1/$a2 before `jal func_800372F4`), the matched CdRead
-definition already in this repo, and the 60-byte record shape.
+## T4 permuter/search provenance
+None. Zero permuter output in this diff. The s4 permuter campaign (~46k iters)
+found nothing and is banked as dead. The form was derived by reading
+`asm/funcs/special_camera_get_rot_dir.s` against the MIPS backend's block-move
+expansion shape and against `src/system.c:901`. No directed enumeration over
+candidate spellings was run this session.
 
-## T5 family check: does anything match a forbidden family, even by analogy?
-No.
- - NOT the banned asymmetric loop-spelling pair (banned 2026-08-26 00:52): there is
-   no hand-written copy loop in this form at all and no `goto` anywhere in the diff.
-   The only loop written by hand is the retry loop, spelled structurally.
- - NOT the banned unread-parameter widening (banned 2026-08-26 01:09): buf and mode
-   are read in func_800372F4's body and forwarded to CdRead.
- - NOT an alias rename: `CdRead` keeps its own name; no `asm("Sym")` anywhere. An
-   alias rename supplies a SECOND handle for one object under a different
-   identifier; this supplies the CORRECT type for the one identifier that already
-   exists, matching its definition.
- - NOT volatile coercion, NOT a register pin, NOT hardcoded-$N asm, NOT a
-   scheduling barrier, NOT a dead store / dead local / constant holder (every local
-   in the diff is read), NOT a redundant width cast (the `(s32)` casts convert
-   pointers to the `s32` buffer parameter that CdRead's matched definition declares),
-   NOT a pointer alias to a global, NOT a do/while(0) wrap, NOT a declaration-order
-   trick (moving the CdRead declaration between block scope and the header does not
-   change any byte — it changes only whether the 3-argument call is legal C).
- - Block-scope `extern` declarations are ordinary C and pre-exist in this very file
-   at src/code6cac_b2_post.c:242 and src/code6cac_b2_post.c:313 (`extern u8
-   SpecialCam;`) and in src/system.c:903 (`extern volatile s32 D_800A14D0;`).
+## T5 family check
+No forbidden family, by analogy or otherwise.
+- Not the BANNED asymmetric loop-spelling pair: there is no inner loop in this
+  source at all. The target's copy loop is emitted by the backend from one
+  aggregate assignment, so there is no structured-vs-goto choice to make. The
+  single `for (;;)` is the function's only C loop and it is the natural spelling
+  of an unconditional retry.
+- Not the BANNED unread-parameter widening: the earlier `(s32 arg0, u32 *buf,
+  s32 mode)` form was FAILed because `buf`/`mode` appeared nowhere in the body
+  and the call was still `CdRead(arg0 >> 11);`. Here both are read and forwarded,
+  and the arity is backed by the byte-matched definition at `src/system.c:901`.
+- Not the BANNED block-scope `extern s32 CdRead(s32, s32, s32);` scope-gate
+  workaround: no redeclaration of `CdRead` appears anywhere in
+  `src/code6cac_b2_post.c`. The prototype is corrected once, at its canonical
+  location in `include/code6cac.h`, under the owner's scope grant — which is the
+  exact remedy the layer-1 reviewer named on 2026-08-26 01:42.
+- `mode` is not a constant-holder / dead scalar local: dead-scalar forms are
+  never read; this one is read at two call sites and its absence costs 3
+  instructions and 12 score points (banked:
+  `rejected/literal-mode-no-local-score12.c`).
+- The `CamRot` typedef is an ordinary local aggregate type for a fixed-size
+  record, not an aggregate-merge of splat `D_80xxxxxx` scalars — it types stack
+  and caller memory, touches no global symbol, and makes no claim about the
+  original object model.
 
-## T6 naming-announces-intent: do any names announce coercion?
-No. Names used: nbytes, buf, mode, v, dest, sp_buf, sp_buf2, index, cam_base, v0,
-CamRot, rot. None is pad/dummy/unused/spill/slack/tail/_buf-style, and every one has
-a live read. `sp_buf`/`sp_buf2` follow this repo's existing stack-buffer naming
-(src/code6cac_b2_post.c already uses `sp`-prefixed stack arrays) and are the actual
-CD destination buffers, not frame padding.
+## T6 naming-announces-intent
+No name in the diff announces coercion intent. `nbytes`, `buf`, `mode`, `index`,
+`cam_base`, `v0`, `sp_buf`, `sp_buf2`, `dest`, `CamRot`, `rot` — every one names
+what the value IS, and every one is read. No `pad`, `dummy`, `unused`, `spill`,
+`slack`, `tail`, or `_frame_pad`. `sp_buf`/`sp_buf2` follow this file's existing
+stack-buffer naming convention (cf. `sp` at `src/code6cac_b2_post.c:212, 440`)
+and are genuine live buffers, not frame coercion.
 
-SANCTIONED-FAMILY-CLAIMS: none — this diff contains no coercion construct, so no
-sanctioned-family carve-out is claimed or needed.
+SANCTIONED-FAMILY-CLAIMS: none — this diff contains no coercion construct and
+claims no carve-out. Every construct is ordinary C that a programmer would write
+from the specification alone.
 
 ANNOTATION-CONFORMANCE: n/a — no FAKE construct.
-
----
-HANDOFF NOTE (not part of the vet): the canonical home for construct (1) is
-include/code6cac.h:510, replacing `extern void CdRead(s32);` with
-`extern s32 CdRead(s32, s32, s32);` to agree with the matched definition at
-src/system.c:901 (and with include/m2c_context.h:1123, which already carries the
-3-argument form). That path is out of candidate scope for this function, so the
-declaration is placed at block scope instead; both placements measure byte-identical
-(score 0, 72/72 — the header-edit placement was the 2026-08-26 out-of-scope form).
-If the operator prefers the header, the precedent mechanism is a
-tools/grinder/scope_allow.txt grant, as already granted for
-`replay_camera_Init include/code6cac.h` and `func_80038170 include/code6cac.h`.

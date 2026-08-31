@@ -1082,3 +1082,83 @@ and return `owner-gated`. That is what s7 did — see `docs/grind/decisions.md`,
 - [s7] src/ was reverted to its committed state before this session ended; `git diff --stat src/` is empty. The only modified tracked files are docs/grind/decisions.md, the ledger under memory/grind/special_camera_get_rot_dir/, and metrics/events.jsonl.
 
 - [s7] This is an INTEGRATION HANDOFF, not an endgame lock: the bytes are proven and the blocker is a single one-line edit to a surface this function's candidates may not touch. The operator still runs a fresh layer-2 cheat-reviewer on the C before acceptance.
+
+---
+
+## s8 (2026-08-30, structural modality) — FLOOR 0, CLOSED. Owner directive executed.
+
+The session had exactly one job and it was not a search: the owner's 2026-08-30
+batch ruling (docs/grind/decisions.md, escalation-batch entry, **ruling 2**)
+granted `include/code6cac.h` scope for this function, which was the sole blocker
+the s7 escalation packet named. The grant is already materialised in
+`tools/grinder/scope_allow.txt` as the line
+`special_camera_get_rot_dir include/code6cac.h`. s8 executed the directive,
+re-measured end to end, and banked the result. No RA/scheduler search was
+re-opened (the frontier explicitly forbade it, correctly).
+
+**FACT s8-1 — the chassis had NOT drifted.** The dispatch brief reported
+"HEAD honest floor: measurement unavailable" and the ledger's last recorded
+floor as 0. s7's banked form applied cleanly to HEAD's
+`src/code6cac_b2_post.c` (the 1-arg `func_800372F4` at line 413, the
+`Quad`/`Triple` typedefs and the `INCLUDE_ASM` line at 428-432 were all exactly
+as s7 described) and reproduced s7's numbers on the first measurement. Every
+chassis-relative conclusion in the s7 section stands re-verified.
+
+**FACT s8-2 — the three edits, and nothing else.** The complete diff:
+  1. `include/code6cac.h:510` — `extern void CdRead(s32);` becomes
+     `extern s32 CdRead(s32, s32, s32);`.
+  2. `src/code6cac_b2_post.c:413` — `func_800372F4` widened from `(s32 arg0)`
+     to `(s32 nbytes, s32 buf, s32 mode)`; body forwards all three
+     (`CdRead(nbytes >> 11, buf, mode);`).
+  3. `src/code6cac_b2_post.c:428-432` — the two unused `Quad`/`Triple` typedefs
+     and the `INCLUDE_ASM("asm/funcs", special_camera_get_rot_dir);` line
+     replaced by the `CamRot` typedef and the pure-C body.
+`git diff --stat` confirms the tree touches only `include/code6cac.h`,
+`src/code6cac_b2_post.c` (and the engine's own `metrics/events.jsonl`), i.e.
+exactly the granted scope and nothing more.
+
+**FACT s8-3 — the measurements (this session, diff in place).**
+```
+sandbox special_camera_get_rot_dir --disable all
+    -> score 0, target_insns 72, build_insns 72, rules_dropped 0
+sandbox func_800372F4 --disable all
+    -> score 0, target_insns 21, build_insns 21, rules_dropped 0
+verify-oracle --rebuild --allow-dirty
+    -> ok true, build_matches true,
+       build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle,
+       golden fixtures all present
+```
+(The first `verify-oracle --rebuild` refused with `dirty-build-inputs` because
+the candidate edits are uncommitted; `--allow-dirty` is the documented form for
+verifying a candidate tree and is what produced the SHA1 above. The
+`cheat_asm_stripped: 6` in both sandbox results is pre-existing cheat-asm
+belonging to OTHER functions in `code6cac_b2_post.c`, not to these two —
+`rules_dropped` is 0 and neither body contains inline asm.)
+
+**FACT s8-4 — the block-scope/file-scope `CdRead` redeclaration is GONE, not
+relocated.** The three layer-1 FAILs of 2026-08-26 all turned on the prototype
+being supplied somewhere other than its canonical location. With the scope grant
+the prototype is corrected once, in `include/code6cac.h`, and
+`src/code6cac_b2_post.c` contains no declaration of `CdRead` at any scope
+(`grep -rn "CdRead(" src/ include/` shows only the header, `src/system.c:901`,
+and the m2c context file). The remedy the reviewer itself prescribed
+("escalate for a scope_allow.txt grant to fix include/code6cac.h:510 at its
+canonical location") is the one that was taken.
+
+**FACT s8-5 — the header correction is TU-wide-safe.** The only other
+declaration/definition of `CdRead` in the build tree is the byte-matched
+`s32 CdRead(s32 sectors, s32 buf, s32 mode)` at `src/system.c:901`; there are no
+other call sites in `src/` outside `code6cac_b2_post.c`. So the corrected
+prototype cannot break any existing caller — and the full-build SHA1 in
+FACT s8-3 proves it empirically for every TU that includes `code6cac.h`. This
+also RETIRES the s7 frontier item about auditing other `CdRead` call sites:
+the audit was run this session and found none.
+
+**FACT s8-6 — self-vet written, no family claimed.**
+`memory/grind/special_camera_get_rot_dir/self_vet.md` answers all six checklist
+tests per construct and declares `SANCTIONED-FAMILY-CLAIMS: none` /
+`ANNOTATION-CONFORMANCE: n/a — no FAKE construct`. That is the honest position:
+the closing form contains no coercion construct at all. It is strictly simpler
+than every rejected form in the bank (one aggregate assignment where s2-s6 had
+fifteen word stores; two dead typedefs deleted; no pre-loop pointer local),
+which is the tell that it is the original source rather than a coercion of it.

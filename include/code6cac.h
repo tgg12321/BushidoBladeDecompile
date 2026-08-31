@@ -507,7 +507,7 @@ extern void CdFlush(void);
 extern void CdSetDebug(s32);
 extern void CdReadyCallback(s32);
 extern void CdControlF(s32, s32);
-extern void CdRead(s32);
+extern s32 CdRead(s32, s32, s32);
 extern s32 CdReadSync(s32, s32);
 extern void SsSetSerialVol(s32, s32, s32);
 extern s32 _comb_control(s32, s32, s32);

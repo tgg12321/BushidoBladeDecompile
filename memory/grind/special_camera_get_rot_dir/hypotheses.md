@@ -682,3 +682,50 @@ C-level levers.
 - probe: Structural re-derivation of what copy_end actually is, cross-checked against the MIPS backend block-move expander and confirmed by the byte match in H-s7-1.
 - result: MOOT, not disproven. copy_end is block_move_loop's final_src — a backend pseudo created during RTL expansion of an aggregate assignment the correct source writes as a single statement. It has no C-level definition site, and in the matching form the live-length chain never forms at all. The GCC mechanisms cited by R1/R2/R3 are real and were accurately characterised by s5/s6; they were aimed at a pseudo the original source does not create. Do not spend sessions on them.
 - verdict: KILLED
+
+---
+
+## s8 (2026-08-30, structural modality)
+
+### H-s8-1 — CONFIRMED (and the function closes on it)
+**Statement.** With `include/code6cac.h` inside this function's candidate scope,
+s7's banked form closes BOTH `special_camera_get_rot_dir` and `func_800372F4`
+at floor 0 with no further search and with no coercion construct of any kind —
+the only outstanding edit being the one-line correction of the stale 1-argument
+`CdRead` prototype at `include/code6cac.h:510` to the 3-argument form its own
+byte-matched definition at `src/system.c:901` implements.
+
+**Mechanism.** Two independent facts, both banked by s7 and re-verified by s8:
+(a) the target's `.L800373C0` copy loop is GCC's MIPS backend `block_move_loop`
+expansion (mips.c:2222-2288) of a single 60-byte aggregate assignment, so the
+`copy_end`/`final_src` pseudo that s1-s6 modelled as a C local has no C-level
+existence and needs no allocation lever; (b) `func_800372F4` never writes
+`$a1`/`$a2`, so `buf` and `mode` reach `CdRead` through the wrapper's second and
+third parameters, which is only expressible honestly once a correct `CdRead`
+prototype is visible at the wrapper — and correcting it at its canonical header
+location (rather than shadowing it at block or file scope, the three 2026-08-26
+layer-1 FAILs) requires exactly the scope grant the owner issued.
+
+**Probe.** Applied the header one-liner plus the two `src/code6cac_b2_post.c`
+bodies to HEAD; ran `sandbox special_camera_get_rot_dir --disable all`,
+`sandbox func_800372F4 --disable all`, and
+`verify-oracle --rebuild --allow-dirty`; audited the tree for any other
+`CdRead` declaration or call site; wrote the six-test self-vet.
+
+**Result.** score 0 / 72-of-72 insns and score 0 / 21-of-21 insns, both with
+`rules_dropped: 0`; full-build SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa`
+== oracle; no other `CdRead` caller exists to be affected; diff confined to
+`include/code6cac.h` + `src/code6cac_b2_post.c`, i.e. exactly the granted scope.
+
+**Verdict: CONFIRMED.** The function is bytes-proven pure C at floor 0 with the
+owner directive executed as written. Outcome: candidate-ready.
+
+### Note on the s1-s6 search (no new hypothesis needed)
+No RA/scheduler hypothesis was opened, re-opened, or re-measured this session,
+per the s7 frontier. The s5/s6 live-length chain model and the s2 allocno-priority
+wall remain KILLED-AS-UNACTIONABLE for the reason FINDING 1 gives: they were
+exact models of a pseudo that the MIPS backend creates at RTL expand time, not a
+C object. That generalised lesson is already banked as a standing frontier item
+(exact model + flat floor across sessions => check the expand dump for a
+backend-generated pseudo before spending another session on C-level levers) and
+is worth keeping visible to other functions even though this one is now closed.

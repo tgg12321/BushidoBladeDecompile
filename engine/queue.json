@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "special_camera_get_rot_dir",
-      "file": "code6cac_b2_post",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 2 \u2014 include/code6cac.h scope granted; land header fix + proven bytes through full gates",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md \u2014 '2026-08-26 \u2014 special_camera_get_rot_dir (src/code6cac_b2_post.c) \u2014 OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET': may include/code6cac.h be added to tools/grinder/scope_allow.txt for this function so the stale 1-arg CdRead prototype at include/code6cac.h:510 can be corrected at its canonical location? Bytes are proven at floor 0 (verify-oracle SHA1 match); all four placements of the corrected prototype are enumerated and only the header one is honest."
-    },
-    {
       "func": "get_alarm",
       "file": "display",
       "distance": 9,
@@ -1961,14 +1951,14 @@
     }
   ],
   "counts": {
-    "total": 221,
-    "active": 208,
+    "total": 220,
+    "active": 207,
     "by_status": {
-      "active": 208,
+      "active": 207,
       "escalated": 13
     },
     "by_verdict": {
-      "C": 173,
+      "C": 172,
       "ASM-PARTIAL": 35
     }
   }

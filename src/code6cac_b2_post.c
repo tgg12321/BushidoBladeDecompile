@@ -410,13 +410,13 @@ void func_800372C0(void) {
     }
     game_FrameLoop();
 }
-s32 func_800372F4(s32 arg0) {
-    s32 v = arg0;
-    arg0 += 0x7FF;
-    if (arg0 < 0) {
-        arg0 = v + 0xFFE;
+s32 func_800372F4(s32 nbytes, s32 buf, s32 mode) {
+    s32 v = nbytes;
+    nbytes += 0x7FF;
+    if (nbytes < 0) {
+        nbytes = v + 0xFFE;
     }
-    CdRead(arg0 >> 11);
+    CdRead(nbytes >> 11, buf, mode);
     do {
         v = CdReadSync(1, 0);
         if (v > 0) {
@@ -425,11 +425,43 @@ s32 func_800372F4(s32 arg0) {
     } while (v > 0);
     return v;
 }
-typedef struct { s32 w_q[4]; } Quad;
-typedef struct { s32 w_t[3]; } Triple;
+/* The 60-byte camera-rotation record the game reads out of the CD sector: the
+ * 0x3C bytes starting 0x10 into the sector buffer. */
+typedef struct { s32 rot[15]; } CamRot;
 extern void CdControl(s32, s32, s32);
 extern void CdIntToPos(s32, s32);
-INCLUDE_ASM("asm/funcs", special_camera_get_rot_dir);
+/* Reads the special-camera rotation table for the current stage off the CD.
+ * Seeks to the stage's entry in the SpecialCam directory, reads one 2048-byte
+ * sector into a stack buffer, copies the 60-byte rotation record out of it into
+ * the caller's dest[], then seeks to the following sector and reads the
+ * variable-length block described by dest[2] (address) / dest[3] (length).
+ * Any failed read restarts the whole sequence from the seek. */
+void special_camera_get_rot_dir(s32 *dest) {
+    u8 sp_buf[0x800];
+    u8 sp_buf2[8];
+    s32 index;
+    s32 cam_base;
+    s32 v0;
+    s32 mode;
+
+    mode = 0x80; /* CdlModeSpeed - double-speed transfer */
+    index = func_80036EA8(6, 0) << 3;
+    cam_base = (s32)&SpecialCam;
+
+    for (;;) {
+        CdControl(2, index + cam_base, 0);
+        v0 = func_800372F4(0x800, (s32)sp_buf, mode);
+        if (v0 != 0) continue;
+
+        *(CamRot *)dest = *(CamRot *)&sp_buf[0x10];
+
+        v0 = CdPosToInt(index + cam_base);
+        CdIntToPos(v0 + 1, (s32)sp_buf2);
+        CdControl(2, (s32)sp_buf2, 0);
+        v0 = func_800372F4(dest[3], dest[2], mode);
+        if (v0 == 0) break;
+    }
+}
 /* kengo:MED  |  nm_special_cam/special_camera_get_rot_dir  |  66i  |  +6 9.1% */
 void func_80037468(s32 a0, s32 *a1, s32 a2) {
     s32 sp[16];
