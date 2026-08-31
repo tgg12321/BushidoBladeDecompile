@@ -306,3 +306,8 @@ disposition taken: inline_asm_canonical.txt entry written (INCLUDE_ASM body is t
 category: policy-question
 evidence: session-filed escalation: docs/grind/decisions.md:14884 - 2026-08-30 - main (src/ings.c) - OWNER-ESCALATION - ESCALATED WITH DECISION PACKET (queue-routing question only; explicitly does NOT re-open the 2026-08-24 maspsx branch-fill DECLINE and lowers no standard)
 disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.
+
+## 2026-08-30 — func_80062020 — policy-question
+category: policy-question
+evidence: session-filed escalation: docs/grind/decisions.md:15732 — ## 2026-08-30 (s10) — func_80062020 (src/text1b.c) — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.

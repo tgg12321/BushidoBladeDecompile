@@ -6,6 +6,14 @@
  * below was produced by pasting this body over that INCLUDE_ASM line in a scratch
  * working tree and reverting immediately afterwards.
  *
+ * RE-MEASURED AGAIN (grind s10, escalation modality, 2026-08-30): unchanged body, live
+ * chassis -> sandbox func_80062020 --disable all = score 4, build_insns 35, target_insns 38,
+ * rules_dropped 0, cheat_asm_stripped 167 - identical to s8 and s9, so the chassis has not
+ * drifted across three sessions. s10 compiled no new C: it filed the routing decision packet
+ * at docs/grind/decisions.md:15732 (the ban on the dual-spelling epilogue post-dates owner
+ * ruling 6a, which names that route as the sole admissibility path - git log -S proves the ban
+ * was introduced by the layer-1-FAIL commit d1bf57c9). Best UNCONTESTED form, unchanged.
+ *
  * RE-MEASURED AGAIN (grind s9, rederive modality, 2026-08-30): same body, same live
  * chassis -> sandbox func_80062020 --disable all = score 4, build_insns 35,
  * target_insns 38, rules_dropped 0, cheat_asm_stripped 167 — unchanged from s8, so the

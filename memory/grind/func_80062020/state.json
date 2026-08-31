@@ -1,8 +1,8 @@
 {
  "func": "func_80062020",
  "file": "text1b",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -63,23 +63,29 @@
    "floor": 4,
    "modality": "rederive",
    "headline": "Rederive: 10 structurally different WHOLE-FUNCTION shapes all land on a uniform epilogue, both uniform poles are now scored (4 @35 insns vs 6 @39 insns, target 38), and the last free CFG-break idea (d"
+  },
+  {
+   "session": 10,
+   "floor": 4,
+   "modality": "escalation",
+   "headline": "Escalation disposition: floor re-measured 4 (no drift, 3rd session running); gate (a) canonical-asm FAILS (scan LOW 0/8, re-run), gate (b) SOTN precedent PASSES with exact PSX file:line citations; git"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The only thing now gating func_80062020 is a routing decision, not a search: owner ruling 6a's four-point adjudication cannot be executed while the state.json ban on the identical construct stands, and criterion (1) of that bar is the piece s9 has now supplied with measurements.",
-   "mechanism": "Ruling 6a (docs/grind/decisions.md:14836) grants conditional admissibility; the 2026-08-30 18:43 layer-1 FAIL (docs/grind/decisions.md:15728) rejects the construct on the ground that the ledger ban was never cleared; the driver mechanically discards a candidate-ready re-declaring a banned construct. The two are mutually exclusive.",
-   "next_probe": "Do NOT respell or resubmit the construct. Either (a) file a fidelity/routing decision packet in docs/grind/decisions.md asking whether ruling 6a clears the state.json ban for adjudication purposes, citing the s9 criterion-(1) closure measurements, or (b) if the driver assigns escalation modality, make that the packet's single decidable question."
+   "hypothesis": "func_80062020 is gated solely by the routing question now on the owner's desk; whichever way it is answered, the item terminates within one further session.",
+   "mechanism": "ANSWER A clears the ban for adjudication only \u2014 a fresh layer-1 and a fresh default-FAIL Judge rule on the merits against the four-point proven-spelling-class-reconstruction bar, with oracle SHA1 still deciding; proof holds closes COMPLETED-C at distance 0, proof fails collapses to ANSWER B. ANSWER B executes ruling 6a's own 'proof fails' branch: fidelity-limited INCLUDE_ASM at floor 4, terminal.",
+   "next_probe": "Read the owner's answer on docs/grind/decisions.md:15732. Do NOT resubmit or respell the construct before that answer exists \u2014 the driver discards such a session as invalid."
   },
   {
-   "hypothesis": "A jump+label pair that survives jump1 (toplev.c:2827) AND the second full jump pass (toplev.c:2923) AND cse2 (2926), and is then removed without a trace by flow (2983), combine (3004) or jump2 (3142), would give the target's exact branch-free epilogue. s9 killed the dead-register-set spelling of this; the class itself is not yet exhausted.",
-   "mechanism": "cse2 resets its value table only at a label with a live jump reference (cse.c:8517 + 8433). Combine folds the surviving single-use symbolic chain into sw $0,%lo(sym)($at) at 3004, i.e. AFTER cse2 and BEFORE jump2, so a branch deleted at jump2 leaves the folded store behind with no branch.",
-   "next_probe": "Search specifically for two arms that become identical only after reload/combine (so jump1 and the 2923 pass both fail to cross-jump them but jump2 at cross_jump=1 succeeds). Measure on the inline-i*12 chassis in tmp/grind/func_80062020/s8/fullsweep.py; verify in in.i.combine that the LO_SUM is folded and in in.i.jump2 that the branch disappears. Note any arm body must be REAL program logic \u2014 s9 proved dead register arms are erased at 2827."
+   "hypothesis": "A jump+label pair that survives jump1 (toplev.c:2827), the second full jump pass (2923) and cse2 (2926), and is then removed without a trace by flow (2983), combine (3004) or jump2 (3142), would give the target's exact branch-free epilogue. s9 killed the dead-register-set spelling; the class itself is not exhausted.",
+   "mechanism": "cse2 resets its value table only at a label with a live jump reference (cse.c:8517 + 8433). Combine folds the surviving single-use symbolic chain into sw $0,%lo(sym)($at) at 3004 \u2014 after cse2 and before jump2 \u2014 so a branch deleted at jump2 leaves the folded store behind with no branch.",
+   "next_probe": "Search for two arms that become identical only after reload/combine, so jump1 and the 2923 pass both fail to cross-jump them but jump2 (cross_jump=1) succeeds. Measure on the inline-i*12 chassis in tmp/grind/func_80062020/s8/fullsweep.py; verify the LO_SUM fold in in.i.combine and the branch's disappearance in in.i.jump2. Any arm body must be REAL program logic \u2014 s9 proved dead register arms are erased at 2827."
   },
   {
-   "hypothesis": "The residual is a 32-function species, so an answer found on a SIMPLER member of the census generalises back to func_80062020 at zero extra cost.",
-   "mechanism": "tmp/grind/func_80062020/s9/scan4.py identified 32 functions in the binary with the same same-symbol dual-address-form arrangement, all still INCLUDE_ASM. func_80061064 (D_800F1150) is the immediate neighbour in the same data region and plausibly a smaller body.",
-   "next_probe": "Read asm/funcs/func_80061064.s (and the shorter census members, e.g. CD_cw, SpuSetReverbModeParam) for a body where the arrangement appears WITHOUT the surrounding loop; a minimal instance is far cheaper to solve, and any spelling that closes it transfers directly here."
+   "hypothesis": "The residual is a 32-function species, so an answer found on a SIMPLER census member generalises back to func_80062020 at zero extra cost.",
+   "mechanism": "tmp/grind/func_80062020/s9/scan4.py identified 32 functions with the same same-symbol dual-address-form arrangement, all still INCLUDE_ASM. func_80061064 (D_800F1150) is the immediate neighbour in the same data region and plausibly a smaller body.",
+   "next_probe": "Read asm/funcs/func_80061064.s (and the shorter census members CD_cw, SpuSetReverbModeParam) for a body where the arrangement appears WITHOUT the surrounding loop; a minimal instance is far cheaper to solve and any spelling that closes it transfers directly here."
   }
  ],
  "judge_constraints": [

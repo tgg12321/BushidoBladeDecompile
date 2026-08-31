@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80062020",
-      "file": "text1b",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 6a \u2014 conditional: adjudicate under proven-spelling-class-reconstruction 4-point bar",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md - '## 2026-08-25 - func_80062020 (src/text1b.c) - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (filed by this session under the binding judge_constraint of the 2026-08-25 21:17 ruling; replaces the partly-false 2026-07-24 packet)"
-    },
-    {
       "func": "func_80072CD4",
       "file": "text1b",
       "distance": 4,
@@ -1954,17 +1944,28 @@
       "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:12356 - 2026-08-25 - CD_ready (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
       "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15629 - '## 2026-08-30 - CD_ready (src/system.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
+    },
+    {
+      "func": "func_80062020",
+      "file": "text1b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 6a \u2014 conditional: adjudicate under proven-spelling-class-reconstruction 4-point bar",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md - '## 2026-08-25 - func_80062020 (src/text1b.c) - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (filed by this session under the binding judge_constraint of the 2026-08-25 21:17 ruling; replaces the partly-false 2026-07-24 packet)",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:15732 \u2014 ## 2026-08-30 (s10) \u2014 func_80062020 (src/text1b.c) \u2014 **OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET**"
     }
   ],
   "counts": {
     "total": 221,
-    "active": 212,
+    "active": 211,
     "by_status": {
-      "active": 212,
-      "escalated": 9
+      "active": 211,
+      "escalated": 10
     },
     "by_verdict": {
-      "C": 177,
+      "C": 176,
       "ASM-PARTIAL": 35
     }
   }

@@ -750,3 +750,74 @@ function.
 - probe: tmp/grind/func_80062020/s9/scan4.py over tmp/grind/func_80062020/s9/all.dis (objdump -d of build/bb2.elf): per function, intersect the symbol addresses reached by a register-materialised `lui rX,H; addiu rX,rX,L` base with those reached by a `lui at,H; addu at,at,rY; <ld/st> d(at)` LO_SUM access.
 - result: 32 functions have a non-empty intersection and every one of them is still an unmatched INCLUDE_ASM item — neighbours include func_80061064 (D_800F1150), func_80045294, func_80057CC8, CD_cw, SpuSetReverbModeParam. The two apparent matched hits (.L80065D1C, .L80066968) are internal labels inside func_80065800's unmatched asm body, not C functions.
 - verdict: CONFIRMED
+
+## s10 — escalation modality (2026-08-30)
+
+- **H-s10-1 — "The governance deadlock recorded by s9 is real and chronologically established:
+  the state.json ban on the proven-spelling-class-reconstruction route was created AFTER owner
+  ruling 6a named that route as the function's sole admissibility path."**
+  Mechanism: ruling 6a (docs/grind/decisions.md:14836) returns the item to ACTIVE for a
+  four-point adjudication under `.claude/rules/proven-spelling-class-reconstruction.md`; the
+  layer-1 FAIL (line 15728) refuses the resubmission on the procedural ground that the ledger
+  ban "was never mechanically cleared"; the driver discards any candidate-ready whose self-vet
+  re-declares a banned construct before a reviewer sees it.
+  Probe: `git log -S"proven-spelling-class-reconstruction" -- memory/grind/func_80062020/state.json`.
+  Result: exactly one commit, `d1bf57c9` = the layer-1-FAIL commit. The bans post-date the
+  ruling. **VERDICT: CONFIRMED.** Consequence: no grind session can honour both instructions,
+  so the residual is gated by a routing decision, not by a search.
+
+- **H-s10-2 — "Endgame gate (a) (canonical-asm) still fails on the live scanner."**
+  Probe: `python3 tools/scan_hand_coded.py --single func_80062020`.
+  Result: tier LOW, 0/8, 38 insns, zero S1-S8 signals. **VERDICT: CONFIRMED (gate FAILS).**
+  Third independent re-run agreeing with s2 and s4; canonical-asm is not the disposition here.
+
+- **H-s10-3 — "Endgame gate (b) (an in-hand, CITABLE SOTN-master precedent for the closing
+  construct's shape) PASSES."** s3 asserted the gate empty; s6 falsified the assertion but
+  banked only file names, which is not a citation under the escalation contract.
+  Probe: pin exact line numbers in the SOTN master clone (HEAD `db41b28`) and version-check
+  membership in `config/splat.us.*.yaml` (PSX/GCC 2.7.2) rather than only `splat.pspeu.*`.
+  Result: `src/st/lib/e_lock_camera.c:20` (alias decl) + lines 50-51 (direct writes to
+  `g_Tilemap.x` / `.width`) + lines 75, 91 (aliased writes to the SAME members); second
+  instance `src/st/cen/e_chamber.c:56` + 240 + 201; both in `splat.us.*` configs.
+  **VERDICT: CONFIRMED (gate PASSES).** Note the honest limit of this evidence: it establishes
+  that same-lvalue dual-spelling is ordinary shipped PSX idiom, NOT that the owner's frozen
+  family list covers it — extending that list is owner-only, which is precisely why this is a
+  packet and not a submission.
+
+- **H-s10-4 — "The honest floor has drifted since s9."**
+  Probe: re-measure on the live chassis with candidate.c pasted at src/text1b.c:3853.
+  Result: score 4 / build_insns 35 / target_insns 38 / cheat_asm_stripped 167 — identical to s8
+  and s9 to the digit. **VERDICT: KILLED (no drift).** The chassis is stable across three
+  sessions; every banked chassis-relative conclusion in this ledger remains spendable.
+
+### What s10 deliberately did NOT do
+No new C was compiled and the banned dual-spelling construct was neither respelled nor
+resubmitted. s9's frontier prescribed exactly this packet as option (b) for an escalation
+session, and respelling a banned construct is the same construct. The two live frontier items
+that are genuine SEARCH hypotheses (the jump2-survivable real-code arm pair; the 32-function
+species census, e.g. the smaller neighbour func_80061064 / CD_cw / SpuSetReverbModeParam) are
+untouched and remain available if the owner answers ANSWER B and a sibling function surfaces.
+
+## [s10] The governance deadlock s9 recorded is real and chronologically established: the state.json ban on the proven-spelling-class-reconstruction route was created AFTER owner ruling 6a named that route as this function's sole admissibility path.
+- mechanism: Ruling 6a (docs/grind/decisions.md:14836) returns func_80062020 to ACTIVE for a four-point adjudication under .claude/rules/proven-spelling-class-reconstruction.md. The layer-1 FAIL the same day (line 15728) refused the resubmission on the procedural ground that 'the ledger's explicit ban on this exact construct was never mechanically cleared'. The driver discards any candidate-ready whose self-vet re-declares a banned construct before any reviewer or Judge sees it, so the ordered adjudication is mechanically unperformable.
+- probe: git log -S"proven-spelling-class-reconstruction" -- memory/grind/func_80062020/state.json
+- result: Exactly ONE commit introduced the two bans: d1bf57c9 'grind: func_80062020 layer-1 FAIL banked' — i.e. the bans were created by, and in reaction to, the layer-1 FAIL that itself post-dates ruling 6a. The two owner instructions are mutually unsatisfiable by any grind session.
+- verdict: CONFIRMED
+
+## [s10] Endgame gate (a) — canonical-asm — still fails on the live scanner, so canonical-asm is not the disposition for this function.
+- mechanism: tools/scan_hand_coded.py scores S1-S8 hand-written-asm signals; a STRONG tier (S1/S2/S6) is the evidence bar for the canonical-asm grant path.
+- probe: python3 tools/scan_hand_coded.py --single func_80062020
+- result: tier=LOW score=0/8, 38 insns, zero signals (S3/S4 report 'too short (38 < 40 insns)'). Third independent re-run agreeing with s2 and s4.
+- verdict: CONFIRMED
+
+## [s10] Endgame gate (b) — an in-hand, CITABLE SOTN-master precedent for the closing construct's shape (same lvalue written through a local alias AND through the direct global spelling in one function) — PASSES.
+- mechanism: s3's ledger asserted the gate empty; s6 falsified the assertion by scan but banked only file names, which is not a citation under the escalation contract (file+line or commit hash required). A PSX/GCC-2.7.2 provenance check is also required per sotn-citation-requires-version-check, since a src/ path alone does not establish the compiler.
+- probe: Pin exact line numbers in the SOTN master clone (C:/Users/Trenton/Desktop/sotn-decomp, HEAD db41b28) and grep -rl over config/ for splat.us.* membership.
+- result: src/st/lib/e_lock_camera.c:20 declares `Tilemap* tilemap = &g_Tilemap;`, writes g_Tilemap.x / g_Tilemap.width DIRECTLY at lines 50-51, and writes the SAME members tilemap->x (line 75) and tilemap->width (line 91) through the alias. Second instance: src/st/cen/e_chamber.c:56 with direct g_Tilemap.height at 240 and aliased tilemap->height at 201. Both files are members of config/splat.us.*.yaml (PSX US build, GCC 2.7.2), not only splat.pspeu.*. The s4 escalation's 'no SOTN precedent' assertion is formally false and is corrected on the record in the packet. Honest limit: this shows the shape is ordinary shipped PSX idiom, NOT that the frozen family list covers it — extending that list is owner-only, which is why this is a packet and not a submission.
+- verdict: CONFIRMED
+
+## [s10] The honest floor has drifted since s9 (the brief again reported 'measurement unavailable').
+- mechanism: Chassis drift would make every banked chassis-relative conclusion in this ledger unspendable and would reopen killed axes.
+- probe: candidate.c pasted over INCLUDE_ASM("asm/funcs", func_80062020); at src/text1b.c:3853 -> `& tools/wteng.ps1 main sandbox func_80062020 --disable all`; src restored to HEAD immediately afterwards.
+- result: score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 167 — identical to the digit to both s8 and s9. No drift; git status clean apart from the pre-existing metrics/events.jsonl and this session's docs/grind/decisions.md packet.
+- verdict: KILLED

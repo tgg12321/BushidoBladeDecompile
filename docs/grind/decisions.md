@@ -15728,3 +15728,122 @@ forms under `memory/grind/CD_ready/rejected/`.
 ## 2026-08-30 18:43 — func_80062020 — layer-1 review — **FAIL**
 
 The candidate epilogue is the identical byte-for-byte construct the Judge already FAILed on 2026-08-25 (pointer p for cols b/c, direct symbol-relative expression for col a); it is being resubmitted under a different family label whose own scope sentence it self-admittedly does not fit, and the ledger's explicit ban on this exact construct was never mechanically cleared.
+
+## 2026-08-30 (s10) — func_80062020 (src/text1b.c) — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Filed by grind session s10 (escalation modality, driver-declared exhaustion: honest floor
+FLAT at 4 across s2–s9, five distinct modalities — structural, permuter, synthesis, forensics,
+rederive — and ~46k permuter iterations across two fresh-seed basins). This packet does NOT
+ask for a standard to be lowered, a family to be granted, or a debt to be accepted. It asks
+the owner to resolve a **mechanical contradiction between two of the owner's own instructions**
+that currently makes the function unclosable by any grind session in either direction.
+
+### (i) The single decidable question — a ROUTING question
+
+> **Does owner ruling 6a (this file, line 14836, 2026-08-30) supersede the
+> `banned_constructs` entries in `memory/grind/func_80062020/state.json`, so that a fresh
+> layer-1 cheat-reviewer and a fresh default-FAIL Judge may adjudicate the dual-spelling
+> epilogue ON ITS MERITS against the four-point proven-spelling-class-reconstruction bar —
+> or does the ban stand, in which case ruling 6a's own "proof fails" branch takes effect by
+> default and func_80062020 closes NOW as fidelity-limited INCLUDE_ASM at floor 4?**
+
+**Why this is a real deadlock and not an agent's preference.** Ruling 6a returned this item to
+ACTIVE "for that adjudication": the construct is *conditionally admissible*, to be verified by a
+fresh Judge/cheat-reviewer against all four criteria (mechanism-level proof the target bytes are
+unreachable from a uniform spelling; plain natural C; most-plausible variant, annotated;
+demonstrated last lever). Later the SAME DAY, the layer-1 review at this file line 15728 FAILed
+the resubmission, and its stated ground was procedural, not substantive: *"the ledger's explicit
+ban on this exact construct was never mechanically cleared."* That review's commit
+(`d1bf57c9` — `git log -S` on state.json confirms it is the ONLY commit that introduced them)
+added two further bans:
+
+- `"Same construct, re-filed as 'proven-spelling-class-reconstruction' instead of
+  'pointer-alias-fake-exception'"`
+- `"Invocation of .claude/rules/proven-spelling-class-reconstruction.md"`
+
+The second ban forbids invoking the exact rule ruling 6a named as the sole admissibility path.
+The driver mechanically discards any `candidate-ready` whose self-vet re-declares a banned
+construct, *before* a reviewer or Judge sees it. So the adjudication the owner ordered cannot be
+performed, and the ban cannot be honoured while performing it. **No grind session can satisfy
+both.** s9 recorded this and correctly declined to resubmit; s10 re-verifies it and escalates it
+rather than respelling around it.
+
+### (ii) Evidence pointers (all re-verified or re-measured THIS session)
+
+- **Honest floor, re-measured on the live chassis this session.** candidate.c pasted over
+  `INCLUDE_ASM("asm/funcs", func_80062020);` at `src/text1b.c:3853` →
+  `sandbox func_80062020 --disable all` = **score 4**, target_insns 38, build_insns 35,
+  rules_dropped 0, cheat_asm_stripped 167. Identical to s8 and s9: the chassis has not drifted.
+  `src/text1b.c` restored to HEAD immediately; `git status --porcelain` shows only the
+  pre-existing `metrics/events.jsonl` modification. The floor-4 body carries 0 rules, 0 pins,
+  0 volatile, 0 dead vars, one uniform tree shape for all three terminator stores.
+- **Endgame gate (a) — canonical-asm: FAILS.** `python3 tools/scan_hand_coded.py --single
+  func_80062020` re-run this session → **tier LOW, score 0/8** (38 insns; no S1–S8 signal).
+  Canonical-asm is refused on the scanner evidence bar; this packet does not request an
+  override of it.
+- **Endgame gate (b) — SOTN-master precedent: PASSES, with an exhibited citation.** The
+  closing construct's shape is *the same lvalue written through a local alias AND through the
+  direct global spelling in one function body*. SOTN master
+  (`C:/Users/Trenton/Desktop/sotn-decomp`, HEAD `db41b28`) ships it in PSX/GCC-2.7.2 code:
+  **`src/st/lib/e_lock_camera.c:20`** declares `Tilemap* tilemap = &g_Tilemap;`, writes
+  `g_Tilemap.x` / `g_Tilemap.width` directly at **lines 50–51**, and writes the SAME members
+  `tilemap->x` / `tilemap->width` through the alias at **lines 75 and 91**. Version check per
+  the sotn-citation-requires-version-check rule: the file is a member of `config/splat.us.*.yaml`
+  (PSX US build), not only `splat.pspeu.*`. A second PSX instance:
+  **`src/st/cen/e_chamber.c:56`** (`tilemap = &g_Tilemap;`) with direct `g_Tilemap.height` at
+  line 240 and aliased `tilemap->height` at line 201; membership `config/splat.us.stcen.yaml`.
+  The s6 scan (`tmp/grind/func_80062020/s6/sotn_precedent_scan.md`) found **34** same-member
+  dual-spelling instances and 830 alias+direct functions. **The s4 escalation's assertion that
+  no such precedent exists is FALSE and is hereby corrected on the record.**
+- **Criterion (1) of ruling 6a — the piece that was missing — is now supplied by measurement,
+  not inference (s9, re-read and relied on here).** Both UNIFORM poles are scored on the live
+  chassis for the first time: all-register-base = **score 4 / 35 insns**; all-LO_SUM
+  (three-symbol) = **score 6 / 39 insns**; all-LO_SUM (single-anchor `&D_800F1198 + ofs +
+  8/4/0`) = **score 6 / 39 insns**. Target = **38 insns**. The target epilogue costs 11 insns
+  = 8 (shared `la`+`addu` base with disp-8/disp-4 stores) + 3 (one LO_SUM), i.e. it sits
+  strictly BETWEEN the two uniform poles and is arithmetically unreachable from either.
+  Pass order pinned by reading `tools/gcc-2.7.2/toplev.c` (2827 jump1 with after_regscan=1 →
+  2865 cse1 → 2895 loop → 2923 second full jump pass → 2926 cse2 → 2983 flow → 3004 combine →
+  3142 jump2); `cse.c:8517` read at source shows cse2 EXTENDS across a label whose
+  LABEL_NUSES is 0, so `goto L; L:` can never serve as the cse2 break. Every construct that
+  leaves no real code behind is erased before cse2 (s8's seven code-free candidates plus s9's
+  dead conditional store, which measured byte-identical to baseline at score 4 / 35); every
+  construct that DOES break cse2 (s8 `JOINctl_*`) leaves real code — a surviving branch plus
+  arm bodies — which the target's branch-free 11-insn epilogue cannot contain.
+  Ledger: `memory/grind/func_80062020/evidence.md` (s7–s9 blocks),
+  `tmp/grind/func_80062020/s9/wholesweep_results.txt`.
+- **Exhaustion.** s1 recon (floor 10, residual isolated), s2 structural (10 → 4), s3 structural
+  (CSE-defeat KILLED), s4 permuter (2 fresh-seed basins, ~46k iters, KILLED), s5 synthesis
+  (aggregate/tree-shape KILLED across 5 measured classes), s6 synthesis (uniform-spelling
+  space closed by proof), s7 forensics (two-shape prong 2 FALSIFIED; pass re-attributed),
+  s8 forensics (deciding pass pinned to cse2), s9 rederive (10 whole-function shapes, both
+  uniform poles scored, last free CFG-break idea killed). 18 rejected forms banked under
+  `memory/grind/func_80062020/rejected/`.
+- **Species scope.** `tmp/grind/func_80062020/s9/scan4.py` over an objdump of the whole
+  binary: **32** functions in SLUS-00663 exhibit the same same-symbol dual-address-form
+  arrangement (func_80061064, func_80045294, func_80057CC8, CD_cw, SpuSetReverbModeParam,
+  …), and NOT ONE is a matched pure-C function in this project. The answer here is worth 31
+  other queue items, in either direction.
+
+### (iii) Consequence of each answer
+
+- **ANSWER A — ruling 6a supersedes the ban (ban cleared for adjudication purposes only).**
+  The next session resubmits the distance-0 dual-spelling body with a self-vet that argues the
+  four points explicitly, and a fresh layer-1 + a fresh default-FAIL Judge rule on the merits.
+  **No gate is waived**: layer-1 still runs, the Judge still defaults to FAIL, oracle SHA1
+  still decides. Proof holds → func_80062020 closes **COMPLETED-C at distance 0** with the
+  rule-citing annotation, function-specific, **no family granted** (ruling 6a's own words).
+  Proof fails → the 2026-08-25 Judge FAIL stands and the item closes as ANSWER B. Either way
+  the item terminates within one session, and the adjudication becomes the template for the
+  31 sibling functions of the same species.
+- **ANSWER B — the ban stands.** Ruling 6a's "proof fails" branch takes effect by default
+  without an adjudication: func_80062020 is **fidelity-limited INCLUDE_ASM at floor 4**,
+  terminal, no further grind sessions. The queue advances immediately. The clean uncontested
+  floor-4 body is preserved at `memory/grind/func_80062020/candidate.c`; the 31 sibling
+  functions inherit the same disposition when they surface.
+
+**Explicitly NOT requested:** no permanent-rule sanction, no new family, no extension of the
+frozen SOTN list, no canonical-asm evidence-bar override, no "accept the debt". The rule named
+in the question (`.claude/rules/proven-spelling-class-reconstruction.md`) is an ALREADY-LANDED
+owner policy (2026-06-10) that ruling 6a itself invoked; the only thing asked is whether the
+ledger ban added AFTER that ruling blocks executing it.
