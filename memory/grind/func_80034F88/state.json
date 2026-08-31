@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 23,
+ "session_count": 24,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -141,18 +141,19 @@
    "floor": 10,
    "modality": "escalation",
    "headline": "Owner's 2026-08-24 solver directive executed for the first time in 23 sessions: ra_solver's forward model is EXACT here (9 allocnos, sort order MATCH, dispositions 9/9) and both inverse queries for ta"
+  },
+  {
+   "session": 24,
+   "floor": 10,
+   "modality": "escalation",
+   "headline": "Owner ruling-1 instrument (BB2_SUGG_DEBUG / local_extract --suggest, built at 70d6c905) run here for the first time: the local-alloc suggested-register pass is INERT (0 suggestions on all 7 qtys, used"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Local-alloc's SUGGESTED-REGISTER pass (qty_phys_copy_sugg / qty_phys_sugg) is what seats the address object, and it is the one mechanism this session's measurements do not exclude.",
-   "mechanism": "block_alloc runs a suggestion pass before the main ascending scan, and its inputs are not printed by the current BB2_QTY_DEBUG hook, so ra_solver reports those rows rather than scoring them. A FORECLOSED verdict from the global model is conditional on that pass being inert here.",
-   "next_probe": "Owner/operator work, not a grind session's surface: add one env-gated fprintf to tools/gcc-2.7.2/local-alloc.c block_alloc dumping the suggestion sets, extend tools/ra_solver/local_extract.py to parse them, then re-run inverse.py local --func func_80034F88 --block <block 1> --sugg <stem>.sugg.json against the goal 'address object in $v1'."
-  },
-  {
-   "hypothesis": "func_80034F88 has no remaining admissible pure-C lever: reaching 0 requires two simultaneously live address allocnos, hence two C objects aliasing D_80106A73, which is the banned construct with no SOTN-master precedent.",
-   "mechanism": "global.c:426 gives one allocno per pseudo with no live-range splitting, so one hard register per address object for its whole live range; both non-object routes to a second pseudo are closed in compiler source (anonymous symbol refs never create a pseudo; reload.c:4128-4137 substitutes the REG_EQUIV constant instead of allocating a reload register), and the census-exact diagnostic chassis is now measured not to create one either.",
-   "next_probe": "None inside the sanctioned space. Only relevant if the owner sanctions a multi-handle family \u2014 and even then the starting point is rejected/three-pointer-objects-judge-FAIL-score0.c (measures 0), not the two-object forms, which reach only 8."
+   "hypothesis": "func_80034F88 has no remaining admissible pure-C lever, and the tooling escape hatch left open by the 2026-08-26 entry is now closed by measurement. Reaching 0 requires two simultaneously live address allocnos, hence two C objects aliasing D_80106A73 -- the banned construct, with no SOTN-master precedent in either of two independent censuses.",
+   "mechanism": "global.c:426 gives one allocno per pseudo with no live-range splitting, so one hard register per address object for its whole live range. Both non-object routes to a second pseudo are closed in compiler source (anonymous symbol refs never create a pseudo; reload.c:4128-4137 substitutes the REG_EQUIV constant instead of allocating a reload register), the census-exact diagnostic chassis creates no second allocno (s23), every modelled allocator input is FORECLOSED to depth 2 (s23), and the last unmodelled pass -- local-alloc's suggested-register pass -- is measured inert three ways (s24).",
+   "next_probe": "None inside the sanctioned space. Only relevant if the owner sanctions a multi-handle family on evidence that does not exist in SOTN master today -- and even then the starting point is rejected/three-pointer-objects-judge-FAIL-score0.c (measures 0), not the two-object forms, which reach only 8."
   }
  ],
  "judge_constraints": [

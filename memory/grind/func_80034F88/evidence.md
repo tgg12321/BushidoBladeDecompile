@@ -2993,3 +2993,145 @@ the disposition itself, filed in docs/grind/decisions.md as the entry
 - [s23] EXHAUSTION RECORD: floor FLAT AT 10 for ten consecutive sessions (s14..s23) across six distinct modalities (forensics, rederive, synthesis, structural, permuter, escalation/solver), on top of thirteen earlier sessions, 128 disproven forms banked in memory/grind/func_80034F88/rejected/, ~170,000 permuter iterations over five campaigns including two seeded at the floor itself.
 
 - [s23] SESSION SCOPE: src/code6cac_b.c was edited only to install the banked candidate and (temporarily) the s20 diagnostic body for model extraction, and is reverted to HEAD. git diff shows only docs/grind/decisions.md, the two ledger files, memory/grind/func_80034F88/candidate.c's header and metrics/events.jsonl. No commit, no queue/retire command, no touch of regfix.txt / asmfix.txt / .claude/rules/ / engine/ / tools/ / Makefile / *.ld.
+
+==== s24 (escalation — owner ruling 1 EXECUTED: the local-alloc SUGGESTED-REGISTER pass) ====
+
+CHASSIS. candidate.c installed at src/code6cac_b.c:2546 (replacing the
+INCLUDE_ASM line); both `extern u8 D_80106A70;` (include/code6cac.h:469) and
+`extern u8 D_80106A73;` (src/code6cac_b.c:127) already exist on main, so no
+declaration was added this session. `sandbox func_80034F88 --disable all` =
+**score 10, 49 target insns / 49 build insns, rules_dropped 0**. The floor is
+reproduced on today's tree; src/ was reverted to HEAD before the session ended.
+
+WHAT THIS SESSION COULD DO THAT s23 COULD NOT. s23's entire frontier was one
+item: the local-alloc SUGGESTED-REGISTER pass (`qty_phys_copy_sugg` /
+`qty_phys_sugg`), "reported-not-scored" by ra_solver, the single mechanism its
+FORECLOSED verdicts were conditional on. It named the work — one env-gated
+fprintf in tools/gcc-2.7.2/local-alloc.c block_alloc plus a parse in
+tools/ra_solver/local_extract.py — and correctly noted that both files are
+outside a grind session's surface. The owner GRANTED exactly that work on
+2026-08-30 (decisions.md, "OWNER RULINGS — escalation batch resolved", ruling 1:
+"Local-alloc instrumentation — GRANTED (func_8002EA24, func_80034F88 ...);
+sessions on them route via the solver modality once the instruments exist").
+**The instruments now exist**: commit 70d6c905 ("engine: ra_solver — the
+suggested-register pass, modelled EXACTLY (Phase 7)") added BB2_SUGG_DEBUG
+(SUGGDBG-QTY in block_alloc, SUGGDBG-FFR in find_free_reg) and
+`local_extract.py --suggest`, with the model validated corpus-wide at
+preference 1578/1578 and assignment 947/947 across all 32 TUs. Phase 7 ran the
+probe for camera_set_zoom and DispPracticeMenuTex_A but NOT for this function.
+This session is the first that could run it here, and it is therefore the first
+session since s14 with a genuinely un-tried lever rather than another spelling.
+
+THE MEASUREMENT (full console record: tmp/grind/func_80034F88/s24/sugg_report.txt;
+raw tables tmp/grind/func_80034F88/s24/sugg_summary.txt; models
+tmp/ra_solver_work/code6cac_b.{local,sugg}.json).
+
+  python3 tools/ra_solver/local_extract.py code6cac_b --func func_80034F88 --suggest
+
+(1) THE PASS IS INERT HERE — MEASURED, NOT ASSUMED. func_80034F88 has seven
+local-alloc quantities and they are ALL "main"-pass rows; the stream contains
+not one QTYDBG-SUGG line. The complete SUGGDBG-QTY input table reads
+ncopysugg=0, nsugg=0, copysugg=[], sugg=[] on all seven:
+
+  blk=0  qty=0 reg1=76 size=1 mode=1      blk=0  qty=1 reg1=79 size=1 mode=4
+  blk=3  qty=0 reg1=83 size=1 mode=4      blk=6  qty=0 reg1=87 size=1 mode=4
+  blk=10 qty=0 reg1=91 size=1 mode=4      blk=10 qty=1 reg1=93 size=1 mode=1
+  blk=10 qty=2 reg1=89 size=1 mode=4
+
+Stronger, from the SUGGDBG-FFR side: all seven find_free_reg calls have
+`used == first_used`. local-alloc.c:2205-2213 is the only place the suggestion
+sets enter allocation — `if (just_try_suggested) IOR_COMPL_HARD_REG_SET
+(first_used, qty_phys_{copy_,}sugg[qty])`. With the sets empty that restriction
+is the identity map, so the pass CANNOT change a seat in this function. Not
+"did not on this chassis" — cannot, for any chassis with these inputs.
+
+(2) THE MECHANISM, READ IN COMPILER SOURCE. tools/gcc-2.7.2/local-alloc.c:1859-
+1899 (combine_regs) sets qty_phys_copy_sugg / qty_phys_sugg on exactly two
+branches, guarded by `ureg < FIRST_PSEUDO_REGISTER` and
+`sreg < FIRST_PSEUDO_REGISTER`: a suggestion exists only where one side of a
+tieable copy is a HARD register. s23 established that $v1 and $a0 never appear
+as hard registers in this function's pre-RA RTL (no call-argument setup — the
+sole call `func_80077D00()` takes none — and no hard-reg-returning idiom
+besides $v0). So the suggestion pass is dead for precisely the same structural
+reason global.c set_preference is dead: it was never an independent second
+chance at the seat, it is the same missing hard register seen from another pass.
+
+(3) THE CONTESTED PSEUDO IS NOT A LOCAL-ALLOC OBJECT AT ALL. Local-alloc's
+pseudo set here is {76,79,83,87,89,91,93}; s23's global allocno set is
+{72,73,74,77,78,81,82,85,86}. They are DISJOINT. Pseudo 74 — the `&D_80106A73`
+address object whose seat IS the residual — is a global allocno, so local_alloc
+never assigned it and no local-alloc pass sits in its causal chain. This is the
+same structural refutation Phase 7 recorded for DispPracticeMenuTex_A, and it
+is a stronger statement than "no suggestion on the contested pseudo".
+
+(4) THE OTHER NAMED HOOK GAP IS ALSO MEASURED ABSENT. qty_size is 1 for every
+one of the seven quantities, so the DImode mispricing gap cannot be operating
+here either — independently reconfirming s23's "all 9 allocnos are mode SI".
+
+(5) THE SOLVER'S OWN VERDICT. `inverse.py local ... --sugg ... --goal {"74": 3}`
+run for all four blocks (0, 3, 6, 10) returns NEGATIVE RESULT / FORECLOSED over
+55, 24, 24 and 55 single perturbations, each reporting the goal unit as absent
+from the block (`qty 74: - -> $v1`), which is (3) restated by the tool.
+
+CONSEQUENCE FOR THE FUNCTION'S RECORD. s23's FORECLOSED verdict carried an
+explicit condition — "conditional on that one unmodelled pass". That condition
+is now discharged. The RA residual of func_80034F88 is FORECLOSED
+UNCONDITIONALLY: every modelled input class (refs / live length / birth order /
+conflicts / preferences / calls-crossed) was searched to depth 2 by s23 and the
+one unmodelled mechanism is now measured inert three independent ways. There is
+no remaining pass through which a C spelling could reach the target's block-1
+base-vs-value naming, and the target's two simultaneously live base registers
+still require a second address allocno = a second pseudo = a second C object
+aliasing D_80106A73, the construct banned on 2026-08-13 for this function.
+
+GATE RE-RUNS (both fail, both re-measured this session).
+  Gate 1 — `python3 tools/scan_hand_coded.py --single func_80034F88`
+  (tmp/grind/func_80034F88/s24/scan_hand_coded.txt): tier=LOW score=0/8, all
+  eight signals unset. No STRONG (S1/S2/S6) signal => canonical asm refused.
+  Gate 2 — SOTN-master precedent for two simultaneously live C handles on ONE
+  global address. s22 censused this first-hand (sotn-decomp master
+  db41b28eee52969244a52cc269c8163d1ed8826a) and got NEGATIVE. Reconfirmed this
+  session from a SECOND, INDEPENDENT source: the machine-generated
+  docs/reference/sotn-construct-index.md (commit aa53500226ee84be763f3e8702b27de06456b3a7)
+  carries 206 `pointer_alias` rows, 163 of them PSX/GCC-2.7.2. Grouping them by
+  (file, identical RHS address expression) yields 33 groups with more than one
+  alias — and every one is one alias per FUNCTION repeated across sibling
+  functions in the same file (line spans 12 to 3373). The two tightest were read
+  first-hand in the checkout and both are ordinary logic in DIFFERENT functions:
+  src/dra/4DA70.c:30 and :42 are `func_800EDAE4` and `func_800EDB08`, and
+  src/st/rare/e_azaghal.c:475-477 / :489-491 are `InitPositionLerp` and
+  `ApplyPositionLerp`, each taking three aliases to three DIFFERENT members
+  (base / pos / offset). Zero PSX functions in SOTN master hold two live handles
+  on one address. (Script: tmp/grind/func_80034F88/s24/sotn_index_gate2.txt.)
+
+NO NEW SPELLING WAS TRIED THIS SESSION and nothing was added to rejected/ — the
+mandated modality was disposition, the un-tried lever was the granted instrument,
+and it measured inert. The floor is unchanged at 10 and candidate.c is unchanged.
+
+- [s24] CHASSIS: candidate.c installed at src/code6cac_b.c:2546 (both extern decls already on main); `sandbox func_80034F88 --disable all` = score 10, 49 target insns / 49 build insns, rules_dropped 0. Ledger floor reproduced on today's tree; src/ reverted to HEAD before session end (git status shows no src change).
+
+- [s24] The owner's 2026-08-30 ruling 1 granted exactly the instrumentation s23's frontier named, and it EXISTS on main as of commit 70d6c905 ('engine: ra_solver -- the suggested-register pass, modelled EXACTLY (Phase 7)'). s23 could not run this probe; s24 is the first session that could. Phase 7 itself ran it only for camera_set_zoom and DispPracticeMenuTex_A.
+
+- [s24] MEASURED INERT (1): all 7 local-alloc quantities carry ncopysugg=0 / nsugg=0 / empty copysugg and sugg sets; the stream contains zero QTYDBG-SUGG rows.
+
+- [s24] MEASURED INERT (2): all 7 find_free_reg calls have used == first_used. local-alloc.c:2205-2213 is the sole consumer of the suggestion sets (`if (just_try_suggested) IOR_COMPL_HARD_REG_SET (first_used, ...)`), so with empty sets the suggestion preference is the identity map -- the pass cannot change a seat here, as opposed to merely not having done so.
+
+- [s24] MECHANISM (source-read, not inferred): tools/gcc-2.7.2/local-alloc.c:1859-1899 (combine_regs) sets qty_phys_copy_sugg / qty_phys_sugg only on the two branches guarded by `ureg < FIRST_PSEUDO_REGISTER` / `sreg < FIRST_PSEUDO_REGISTER` -- a suggestion exists only where one side of a tieable copy is a HARD register. $v1 and $a0 never appear as hard regs in this function's pre-RA RTL (s23), and the sole call func_80077D00() takes no arguments, so the suggestion pass is dead for the same structural reason global.c set_preference is dead. It was never an independent second chance.
+
+- [s24] STRUCTURAL: local-alloc pseudo set {76,79,83,87,89,91,93} is DISJOINT from the global allocno set {72,73,74,77,78,81,82,85,86}; the contested address pseudo 74 is a GLOBAL allocno that local_alloc never assigned.
+
+- [s24] qty_size == 1 on all seven quantities: the other named Phase-5 hook gap (DImode mispricing) is measured absent too.
+
+- [s24] inverse.py local --sugg --goal {"74": 3} returns NEGATIVE RESULT / FORECLOSED on all four blocks (0, 3, 6, 10) over 55/24/24/55 single perturbations.
+
+- [s24] CONSEQUENCE: s23's FORECLOSED verdict was explicitly conditional on this one unmodelled pass. The condition is discharged; the RA residual of func_80034F88 is now FORECLOSED UNCONDITIONALLY. Reaching the target's two simultaneously live base registers still requires a second address allocno = a second pseudo = a second C object aliasing D_80106A73, banned for this function on 2026-08-13.
+
+- [s24] GATE 1 (re-run this session): `python3 tools/scan_hand_coded.py --single func_80034F88` = tier=LOW score=0/8, all eight signals unset. No STRONG (S1/S2/S6) signal => canonical asm refused.
+
+- [s24] GATE 2 (re-confirmed from a second independent source this session): NEGATIVE. See hypothesis 4.
+
+- [s24] No packet is filed and none is available: the 2026-08-26 entry's single decidable question was the routing/tooling question 'build the hook extension?', the owner answered YES, it was built, and it measures inert. The only conceivable remaining ask (sanction a no-precedent multi-handle family) is the AUTO-REJECT class under the owner's second ruling of 2026-08-24.
+
+- [s24] DISPOSITION FILED: docs/grind/decisions.md, entry '## 2026-08-30 - func_80034F88 - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (final: the owner's 2026-08-30 ruling-1 instrument was BUILT, RUN, and measures INERT)'. It supersedes the 2026-08-26 entry, whose refusal was conditional on exactly the pass measured here.
+
+- [s24] No new spelling was tried and nothing was added to rejected/ this session -- the mandated modality was disposition, the un-tried lever was the granted instrument, and it measured inert. Floor unchanged at 10; candidate.c body unchanged (header updated with the s24 record).

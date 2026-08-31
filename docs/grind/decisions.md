@@ -16283,3 +16283,142 @@ driver-declared exhaustion); the owner's standing auto-ruling (2026-07-27, both-
 pre-decided REFUSED / OWNER-ACCEPTED INCOMPLETE); `.claude/rules/endgame-lock-disposition.md`;
 `.claude/rules/escalation-not-parked.md` (2026-08-24, including its auto-reject class);
 [[judge-sole-gate]] (2026-08-18 — no owner sign-off wait).
+
+## 2026-08-30 — func_80034F88 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (final: the owner's 2026-08-30 ruling-1 instrument was BUILT, RUN, and measures INERT)
+
+Filed by grind session s24 (escalation modality). This entry SUPERSEDES the
+2026-08-26 entry of the same title for this function. That entry was explicit
+that its refusal was **conditional on one unmodelled compiler pass**, and it
+named the one decidable question that would discharge the condition. The owner
+answered that question YES on 2026-08-30, the tooling was built, and this
+session ran it. The condition is now discharged — in the negative. Nothing about
+this function is open any more.
+
+**The instrument the owner granted exists, and this is the first session that
+could use it.** Ruling 1 of the 2026-08-30 escalation batch: *"Local-alloc
+instrumentation — GRANTED (func_8002EA24, func_80034F88 ...). The
+operator/tooling lane may extend the instrumented diagnostic cc1's local-alloc.c
+`block_alloc` hook to dump the suggested-register sets
+(`qty_phys_copy_sugg`/`qty_phys_sugg`, `qty_size`) with a matching
+`tools/ra_solver/local_extract.py` parse ... sessions on them route via the
+solver modality once the instruments exist."* They now do, as of commit
+`70d6c905` ("engine: ra_solver — the suggested-register pass, modelled EXACTLY
+(Phase 7)"): `BB2_SUGG_DEBUG` in `tools/gcc-2.7.2/local-alloc.c` (SUGGDBG-QTY in
+`block_alloc`, SUGGDBG-FFR in `find_free_reg`) plus `local_extract.py
+--suggest`, with the model validated corpus-wide at preference **1578/1578** and
+assignment **947/947** across all 32 TUs. Phase 7 ran the probe for
+`camera_set_zoom` and `DispPracticeMenuTex_A`; it did NOT run it here. s23 could
+not (both files are outside a grind session's surface). s24 could, and did. This
+is a genuinely un-tried lever, not a re-measured dead axis.
+
+**Chassis.** `memory/grind/func_80034F88/candidate.c` installed at
+`src/code6cac_b.c:2546`; both `extern` declarations already exist on main, so no
+declaration was added. `sandbox func_80034F88 --disable all` = **score 10,
+49 target insns / 49 build insns, rules_dropped 0** — the ledger floor
+reproduced on today's tree. `src/` reverted to HEAD before the session ended.
+The function remains `INCLUDE_ASM("asm/funcs", func_80034F88);` on main with
+**zero regfix rules, zero asmfix rules, zero cheat-asm**: there is no retained
+cheat and no accepted debt here, so this disposition costs the project nothing
+and lowers no standard.
+
+**THE MEASUREMENT — the suggested-register pass is INERT in this function.**
+Console record `tmp/grind/func_80034F88/s24/sugg_report.txt`; tables
+`tmp/grind/func_80034F88/s24/sugg_summary.txt`; models
+`tmp/ra_solver_work/code6cac_b.local.json` and `...code6cac_b.sugg.json`.
+
+- `python3 tools/ra_solver/local_extract.py code6cac_b --func func_80034F88
+  --suggest` → func_80034F88 has **seven** local-alloc quantities, ALL of them
+  main-pass rows; the stream contains **not one** `QTYDBG-SUGG` line. The
+  complete `SUGGDBG-QTY` input table reads `ncopysugg=0 nsugg=0 copysugg=[]
+  sugg=[]` on all seven (blk 0 qty 0/1, blk 3 qty 0, blk 6 qty 0, blk 10 qty
+  0/1/2).
+- Stronger, from the `SUGGDBG-FFR` side: **all seven `find_free_reg` calls have
+  `used == first_used`**. `local-alloc.c:2205-2213` is the ONLY place the
+  suggestion sets enter allocation (`if (just_try_suggested)
+  IOR_COMPL_HARD_REG_SET (first_used, qty_phys_copy_sugg[qty])`, else the plain
+  `qty_phys_sugg[qty]`). With empty sets that restriction is the identity map, so
+  the pass **cannot** change a seat here — not "did not on this chassis", cannot.
+- **Mechanism, read in compiler source:** `local-alloc.c:1859-1899`
+  (`combine_regs`) sets `qty_phys_copy_sugg` / `qty_phys_sugg` on exactly the two
+  branches guarded by `ureg < FIRST_PSEUDO_REGISTER` / `sreg <
+  FIRST_PSEUDO_REGISTER` — a suggestion exists only where one side of a tieable
+  copy is a HARD register. s23 measured that `$v1` and `$a0` never appear as hard
+  registers in this function's pre-RA RTL (the sole call, `func_80077D00()`,
+  takes no arguments). So the suggestion pass is dead for **exactly the same
+  structural reason** `global.c set_preference` is dead: it was never an
+  independent second chance at the seat, it is the same missing hard register
+  observed from a different pass.
+- **Decisive, structural:** the local-alloc pseudo set `{76,79,83,87,89,91,93}`
+  is **DISJOINT** from s23's global allocno set `{72,73,74,77,78,81,82,85,86}`.
+  Pseudo 74 — the `&D_80106A73` address object whose seat IS the entire residual
+  — is a GLOBAL allocno, so `local_alloc` never assigned it and no local-alloc
+  pass sits in its causal chain at all. (Same refutation shape Phase 7 recorded
+  for `DispPracticeMenuTex_A`.)
+- The **other** named Phase-5 hook gap is also measured absent: `qty_size` is 1
+  on every one of the seven quantities, so no DImode mispricing is operating —
+  independently reconfirming s23's "all 9 allocnos are mode SI".
+- `python3 tools/ra_solver/inverse.py local ... --sugg ... --goal (pseudo 74 →
+  $v1)` on all four blocks (0, 3, 6, 10) returns **NEGATIVE RESULT / FORECLOSED**
+  over 55/24/24/55 single perturbations, each reporting the goal unit as absent
+  from the block — the tool restating the disjointness above.
+
+**Consequence: s23's verdict becomes UNCONDITIONAL.** Every modelled allocator
+input class (refs / live length / birth order / conflicts / preferences /
+calls-crossed) was searched to depth 2 by s23 and returned FORECLOSED; the one
+unmodelled mechanism is now measured inert three independent ways. There is no
+remaining compiler pass through which a C spelling could reach the target's
+block-1 base-vs-value naming. The target's two simultaneously live base
+registers still require a second address allocno = a second pseudo = a second C
+object aliasing `D_80106A73` — the construct the Judge banned for this function
+on 2026-08-13 16:36.
+
+**GATE 1 — canonical-asm evidence: FAILS (re-run this session).**
+`python3 tools/scan_hand_coded.py --single func_80034F88`
+(`tmp/grind/func_80034F88/s24/scan_hand_coded.txt`): **tier=LOW score=0/8**, all
+eight signals unset (S1 0 multu/mflo pairs; S2 no empty-body branches; S3 49
+insns / 1 spill / 4 distinct regs; S4 max load burst 3; S5 jaccard < 0.5; S6 no
+BIOS jumptable; S7 every callee-save use has its `$sp` save; S8 no redundant
+mask-before-shift). No STRONG (S1/S2/S6) signal ⇒ canonical asm refused.
+
+**GATE 2 — SOTN-master precedent for the closing construct: FAILS, now from two
+independent sources.** The closing construct is two or more simultaneously live
+C pointer objects both holding `&D_80106A73`. s22's first-hand census against
+the local sotn-decomp master checkout (`db41b28eee52969244a52cc269c8163d1ed8826a`,
+1,675 `src/*.c`) was NEGATIVE. Reconfirmed this session against the
+machine-generated `docs/reference/sotn-construct-index.md` (commit
+`aa53500226ee84be763f3e8702b27de06456b3a7`): of its 206 `pointer_alias` rows,
+163 are PSX/GCC-2.7.2; grouping them by (file, identical RHS address expression)
+gives 33 multi-alias groups, and **every one is one alias per FUNCTION repeated
+across sibling functions in the same file** (line spans 12 → 3373). The two
+tightest were read first-hand in the checkout and are ordinary logic in
+different functions: `src/dra/4DA70.c:30` / `:42` are `func_800EDAE4` and
+`func_800EDB08`; `src/st/rare/e_azaghal.c:475-477` / `:489-491` are
+`InitPositionLerp` and `ApplyPositionLerp`, each taking three aliases to three
+DIFFERENT members (`base` / `pos` / `offset`). Zero PSX functions in SOTN master
+hold two live handles on one address. Script output:
+`tmp/grind/func_80034F88/s24/sotn_index_gate2.txt`.
+
+**No packet is filed, and none is available.** The 2026-08-26 entry's single
+decidable question was a ROUTING/TOOLING question ("build the hook extension?").
+The owner answered YES, the extension was built, and the answer it returns is
+"inert". No decidable question remains. The only conceivable remaining ask —
+sanction a multi-handle family with no SOTN-master precedent — is the
+AUTO-REJECT class under the owner's second ruling of 2026-08-24 (a packet whose
+YES would lower a standard is PRE-DECIDED NO), so it must not be filed. This
+entry asks for nothing; it records the standing ruling applied.
+
+**Disposition (auto-applied under the 2026-07-27 standing ruling — nothing waits
+on the owner).** Both endgame-lock AND-gates fail. `func_80034F88` is classified
+**INCOMPLETE — OWNER-ACCEPTED**: it stays `INCLUDE_ASM("asm/funcs", ...)` on
+main exactly as it is today (no cheat retained, no rule added, the oracle
+untouched) and is taken out of active grind so the queue advances. The best
+admissible pure-C form remains `memory/grind/func_80034F88/candidate.c` at
+honest floor 10. Re-attempt is warranted if and only if the owner sanctions a
+multi-handle family on evidence that does not exist in SOTN master today — the
+tooling escape hatch the 2026-08-26 entry left open is now closed by
+measurement. Exhaustion record: floor **FLAT AT 10 for eleven consecutive
+sessions (s14..s24)** across six distinct modalities (forensics, rederive,
+synthesis, structural, permuter, escalation/solver), on top of thirteen earlier
+sessions, with 128 disproven forms in `memory/grind/func_80034F88/rejected/` and
+~170,000 permuter iterations over five campaigns including two seeded at the
+floor itself.

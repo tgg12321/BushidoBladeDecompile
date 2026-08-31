@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80034F88",
-      "file": "code6cac_b",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 1 \u2014 local-alloc suggestion instrumentation granted; solver modality once built",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:13099 \u2014 '## 2026-08-26 \u2014 func_80034F88 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (re-filed after the 2026-08-24 unpark; owner solver directive EXECUTED)'"
-    },
-    {
       "func": "func_80045878",
       "file": "text1a_c",
       "distance": 10,
@@ -1949,17 +1939,28 @@
       "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
       "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-26 \u0393\u00c7\u00f6 get_alarm \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:16162 \u2014 ## 2026-08-30 \u2014 get_alarm / func_8007DC9C (src/display.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
+    },
+    {
+      "func": "func_80034F88",
+      "file": "code6cac_b",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 1 \u2014 local-alloc suggestion instrumentation granted; solver modality once built",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:13099 \u2014 '## 2026-08-26 \u2014 func_80034F88 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (re-filed after the 2026-08-24 unpark; owner solver directive EXECUTED)'",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-30 \u2014 func_80034F88 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (final: the owner's 2026-08-30 ruling-1 instrument was BUILT, RUN, and measures INERT)'"
     }
   ],
   "counts": {
     "total": 220,
-    "active": 206,
+    "active": 205,
     "by_status": {
-      "active": 206,
-      "escalated": 14
+      "active": 205,
+      "escalated": 15
     },
     "by_verdict": {
-      "C": 171,
+      "C": 170,
       "ASM-PARTIAL": 35
     }
   }

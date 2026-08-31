@@ -278,6 +278,39 @@
  * tools/ra_solver/local_extract.py, both outside a grind session's surface. That
  * is the function's only live re-attempt route and the single decidable question
  * in the 2026-08-26 decisions.md entry.
+ *
+ * s24 (escalation — the owner's 2026-08-30 ruling 1 EXECUTED) re-measured this
+ * body — still 10 at 49/49 insns, rules_dropped 0 — and did not change a line of
+ * it. It closed the function's LAST open question. s23's frontier was one item:
+ * local-alloc's SUGGESTED-REGISTER pass, the sole mechanism its FORECLOSED
+ * verdicts were conditional on, needing instrumentation outside a grind
+ * session's surface. The owner granted that work on 2026-08-30 and it now exists
+ * on main (commit 70d6c905, BB2_SUGG_DEBUG + `local_extract.py --suggest`, model
+ * validated 1578/1578 preference / 947/947 assignment over all 32 TUs). Run here
+ * for the first time, it comes back INERT three independent ways:
+ *   (a) all seven local-alloc quantities carry ncopysugg=0 / nsugg=0 / empty
+ *       suggestion sets, and all seven find_free_reg calls have
+ *       `used == first_used` — the identity restriction, so the pass cannot
+ *       change a seat (local-alloc.c:2205-2213 is its only consumer);
+ *   (b) the mechanism: combine_regs (local-alloc.c:1859-1899) records a
+ *       suggestion ONLY when one side of a tieable copy is a HARD register, and
+ *       $v1/$a0 never appear as hard regs in this function's pre-RA RTL — the
+ *       same structural fact that kills global.c set_preference, so this was
+ *       never an independent second chance;
+ *   (c) decisively, the local-alloc pseudo set {76,79,83,87,89,91,93} is DISJOINT
+ *       from s23's global allocno set {72,73,74,77,78,81,82,85,86}: pseudo 74,
+ *       the `&D_80106A73` address object whose seat is the whole residual, is a
+ *       GLOBAL allocno that local_alloc never touches.
+ * qty_size measures 1 on every quantity, so the other named hook gap (DImode
+ * mispricing) is absent too. `inverse.py local --sugg --goal {"74": 3}` returns
+ * FORECLOSED on all four blocks. Report: tmp/grind/func_80034F88/s24/sugg_report.txt.
+ *
+ * The RA residual is therefore FORECLOSED UNCONDITIONALLY, not conditionally.
+ * Both endgame-lock gates were re-run and both still FAIL (scan_hand_coded tier
+ * LOW 0/8; the SOTN-master precedent census is NEGATIVE from a second independent
+ * source this session — docs/reference/sotn-construct-index.md's 163 PSX
+ * pointer_alias rows contain ZERO functions holding two live handles on one
+ * address). This file remains the best ADMISSIBLE pure-C form at floor 10.
  */
 void func_80034F88(void) {
     s32 *p;

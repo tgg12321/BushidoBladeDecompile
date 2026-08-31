@@ -2141,3 +2141,73 @@ would reopen the search."
 - probe: Check each mechanism's precondition against the extracted model and dumps.
 - result: qty_size/DImode is excluded — all 9 allocnos are mode SI. Reload spill-retry is excluded — the function has one spill (the $ra save) and simulate.py matches 9/9 pre-reload, so no retry block governs the address pseudo. The local-alloc SUGGESTED-REGISTER pass (qty_phys_copy_sugg / qty_phys_sugg) is NOT excluded: block_alloc's hook does not print the suggestion sets, so those rows are reported-not-scored. It is the function's only live re-attempt route, and closing it means editing tools/gcc-2.7.2/local-alloc.c + tools/ra_solver/local_extract.py — outside a grind session's surface.
 - verdict: CONFIRMED
+
+## s24 (escalation — owner ruling 1 executed)
+
+### H-s24.1 — KILLED. "Local-alloc's suggested-register pass is what seats the
+`&D_80106A73` address object, so a C form that creates a hard-reg copy could
+move it."
+This was the function's ONLY live frontier item after s23 and the subject of the
+owner's 2026-08-30 ruling 1 (instrumentation GRANTED). The instrument exists on
+main since commit 70d6c905 (BB2_SUGG_DEBUG + `local_extract.py --suggest`,
+model validated 1578/1578 preference and 947/947 assignment across all 32 TUs).
+PROBE: `python3 tools/ra_solver/local_extract.py code6cac_b --func func_80034F88
+--suggest`, then `inverse.py local --sugg --goal {"74": 3}` on all four blocks.
+RESULT: all seven local-alloc quantities carry ncopysugg=0 / nsugg=0 / empty
+suggestion sets; zero QTYDBG-SUGG rows exist; all seven find_free_reg calls have
+`used == first_used`, which is the identity restriction (local-alloc.c:2205-2213
+is the only place the sets are consumed). MECHANISM: combine_regs
+(local-alloc.c:1859-1899) records a suggestion only when one side of a tieable
+copy is a HARD register, and s23 measured that $v1/$a0 never appear as hard regs
+in this function's pre-RA RTL — so the suggestion pass is dead for exactly the
+same structural reason global.c set_preference is dead. It was never an
+independent second chance. VERDICT: KILLED.
+
+### H-s24.2 — CONFIRMED (structural, stronger than H-s24.1). "The contested
+address object is not a local-alloc object at all."
+Local-alloc's pseudo set for this function is {76,79,83,87,89,91,93}; s23's
+global allocno set is {72,73,74,77,78,81,82,85,86}. DISJOINT. Pseudo 74 (the
+`&D_80106A73` address object) is a GLOBAL allocno, so local_alloc never assigned
+it and no local-alloc pass — suggested-register or main — is in its causal
+chain. This is the same shape Phase 7 found for DispPracticeMenuTex_A. VERDICT:
+CONFIRMED; it makes H-s24.1's kill unconditional rather than chassis-relative.
+
+### H-s24.3 — KILLED. "qty_size (the other named Phase-5 hook gap) mis-prices a
+DImode quantity here and hides an order lever."
+The now-dumped `size` column is 1 for all seven quantities. No DImode quantity
+exists, independently reconfirming s23's "all 9 allocnos are mode SI". KILLED.
+
+### Net effect on the function's status
+s23's FORECLOSED verdict was explicitly conditional on the suggested-register
+pass. That condition is DISCHARGED: the RA residual is now FORECLOSED
+UNCONDITIONALLY, and the single decidable question raised by the 2026-08-26
+decisions.md entry is answered in the negative. Both endgame-lock gates were
+re-run and both still FAIL (scan_hand_coded tier LOW 0/8; SOTN precedent census
+NEGATIVE, now from two independent sources). No frontier item remains inside the
+sanctioned space: the only route to the target's two simultaneously live base
+registers is a second C object aliasing D_80106A73, banned for this function on
+2026-08-13, with no SOTN-master precedent.
+
+## [s24] Local-alloc's SUGGESTED-REGISTER pass (qty_phys_copy_sugg / qty_phys_sugg) is what seats the &D_80106A73 address object, so a C form creating a hard-reg copy could move it. This was the function's only live frontier item and the subject of the owner's 2026-08-30 ruling 1 (instrumentation GRANTED).
+- mechanism: block_alloc runs a suggested-register pass before the main ascending scan; its inputs were not printed by the old BB2_QTY_DEBUG hook, so ra_solver reported those rows rather than scoring them, and every FORECLOSED verdict was conditional on that pass being inert.
+- probe: The granted instrument now exists on main (commit 70d6c905, Phase 7: BB2_SUGG_DEBUG in tools/gcc-2.7.2/local-alloc.c + local_extract.py --suggest, model validated 1578/1578 preference and 947/947 assignment over all 32 TUs; run for camera_set_zoom and DispPracticeMenuTex_A but never for this function). With candidate.c installed (sandbox re-measured at 10, 49/49, rules_dropped 0), ran `python3 tools/ra_solver/local_extract.py code6cac_b --func func_80034F88 --suggest` and `inverse.py local --sugg --goal {"74": 3}` on all four blocks.
+- result: func_80034F88 has 7 local-alloc quantities, ALL main-pass rows; zero QTYDBG-SUGG lines exist; the complete SUGGDBG-QTY table reads ncopysugg=0 nsugg=0 copysugg=[] sugg=[] on all seven. All 7 find_free_reg calls have used == first_used, and local-alloc.c:2205-2213 is the only consumer of the suggestion sets, so with empty sets the restriction is the identity map and the pass CANNOT change a seat. Mechanism read in source: combine_regs (local-alloc.c:1859-1899) records a suggestion only when one side of a tieable copy is a HARD register, and s23 measured that $v1/$a0 never appear as hard regs in this function's pre-RA RTL -- the same structural fact that kills global.c set_preference. inverse.py local returns FORECLOSED on all four blocks (55/24/24/55 perturbations).
+- verdict: KILLED
+
+## [s24] The contested address object is not a local-alloc object at all, so no local-alloc pass (suggested-register or main) is in its causal chain.
+- mechanism: local_alloc assigns quantities that live within one basic block and sets reg_renumber; global_alloc builds allocnos only for pseudos local-alloc left unassigned. If pseudo 74 is a global allocno then local-alloc never touched it.
+- probe: Compared the local-alloc pseudo set from the new .local.json/.sugg.json against s23's measured global allocno set.
+- result: Local set {76,79,83,87,89,91,93} is DISJOINT from the global allocno set {72,73,74,77,78,81,82,85,86}. Pseudo 74 -- the &D_80106A73 address object whose seat is the whole residual -- is a GLOBAL allocno. Same structural refutation shape Phase 7 recorded for DispPracticeMenuTex_A. This makes the H1 kill unconditional rather than chassis-relative.
+- verdict: CONFIRMED
+
+## [s24] qty_size (the other named Phase-5 hook gap) mis-prices a DImode quantity here and hides an order lever.
+- mechanism: qty_compare's priority is floor_log2(refs)*refs*size/(death-birth)*10000; the Python model hardcoded size=1, so a DImode (size 2) quantity would be mispriced and could reorder allocation.
+- probe: Read the now-dumped `size` column from SUGGDBG-QTY for all seven quantities.
+- result: size == 1 on every quantity. No DImode quantity exists, independently reconfirming s23's 'all 9 allocnos are mode SI'. The gap cannot be operating here.
+- verdict: KILLED
+
+## [s24] GATE 2: SOTN master ships a PSX/GCC-2.7.2 function holding two simultaneously live C pointer handles on ONE global address (the closing construct for this function).
+- mechanism: The frozen sanctioned-family list requires an in-hand SOTN-master precedent (file+line) for a coercion/spelling family; s22's first-hand census was NEGATIVE, and a second independent source was available this session.
+- probe: Grouped the 163 PSX (untagged) `pointer_alias` rows of docs/reference/sotn-construct-index.md (commit aa53500226ee84be763f3e8702b27de06456b3a7) by (file, identical RHS address expression), then read the two tightest groups first-hand in the sotn-decomp checkout.
+- result: 33 multi-alias groups, every one being one alias per FUNCTION repeated across sibling functions in the same file (line spans 12 to 3373). src/dra/4DA70.c:30/:42 are func_800EDAE4 and func_800EDB08; src/st/rare/e_azaghal.c:475-477/:489-491 are InitPositionLerp and ApplyPositionLerp, each taking three aliases to three DIFFERENT members. Zero PSX functions hold two live handles on one address. Gate 2 FAILS from a second independent source.
+- verdict: KILLED
