@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80078654",
-      "file": "text1b_b",
-      "distance": 19,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 1 \u2014 deletion-window instrument granted (instrument-first); no body grinding until it exists",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md - '## 2026-08-26 - func_80078654 - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (routing/investment question: instrument the [flow_analysis, global_alloc) deletion window and keep the function active, or leave it active under standing policy with no further body-level grinding; both endgame gates re-measured FAIL, no standard is asked to be lowered)"
-    },
-    {
       "func": "func_800324D0",
       "file": "code6cac_b",
       "distance": 27,
@@ -1955,14 +1945,14 @@
     }
   ],
   "counts": {
-    "total": 220,
-    "active": 203,
+    "total": 219,
+    "active": 202,
     "by_status": {
-      "active": 203,
+      "active": 202,
       "escalated": 17
     },
     "by_verdict": {
-      "C": 168,
+      "C": 167,
       "ASM-PARTIAL": 35
     }
   }

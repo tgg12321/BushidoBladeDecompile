@@ -833,3 +833,138 @@ to HEAD at end of session.
 - [s10] GATE 1 re-run fresh: scan_hand_coded.py --single func_80078654 = tier LOW, score 0/8, all eight signals absent. Canonical-asm grant path refused.
 
 - [s10] GATE 2 still fails: no SOTN-master precedent is in hand and there is still no closing CONSTRUCT to seek one for; every family that raises the walk pointer's EMITTED reference count materialises instructions and breaks the exact 116-insn match (duplication +2/+39, double-read +2 per ref, index-walk +4, alias split +3 plus a fourth callee-save).
+
+## SESSION 11 (2026-08-31, modality: escalation/disposition) — **MATCHED, honest floor 19 -> 0**
+
+**Result.** `sandbox func_80078654 --disable all` = **score 0, target_insns 116
+== build_insns 116, rules_dropped 0**, with the body applied over the
+`INCLUDE_ASM` line at src/text1b_b.c:1008. Zero inline asm, zero pins, zero
+rules. Two annotated constructs (see self_vet.md); everything else is the
+inherited re-derived body.
+
+**Chassis re-measure first (mandatory, driver reported "measurement
+unavailable").** candidate.c as inherited, pasted over the INCLUDE_ASM line:
+score 19, 116 == 116, rules_dropped 0 — the ledger floor reproduces exactly on
+the current chassis. Gate 1 re-run fresh: `python3 tools/scan_hand_coded.py
+--single func_80078654` = tier=LOW score=0/8, all eight signals absent
+(tmp/grind/func_80078654/s11/scan_hand_coded.txt).
+
+**Owner directive check.** Ruling 1 of the 2026-08-30 escalation batch granted
+the flow_analysis->global_alloc deletion-window instrument (instrument-first,
+no body grinding until it exists). The instrument DOES NOT EXIST: no BB2_*
+deletion-window hook is present in the instrumented cc1 (the hooks that exist
+are BB2_ALLLIVE_LABEL, ALLOC, DBR, DUMP_HRS, FINDREG, FLOW, FRAME, NO_FT,
+PRIO, QTY, RANK, RELOAD, SCHED, SLL, SUGG, XJUMP), and no ra_solver deletion
+atom class exists. Building it is operator/tooling-lane work (tools/ is outside
+a grind session's writable surface). So this session did what a grind session
+CAN do in its place: it read the compiler source for the window itself
+(tools/gcc-2.7.2/local-alloc.c, tools/gcc-2.7.2/flow.c) — and that read
+produced the answer directly, making the instrument unnecessary for THIS
+function.
+
+### THE FINDING — the ledger's central premise was false
+
+Sessions 6, 7, 8 and 10 all rest on the identity **`reg_n_refs` == emitted
+mentions**, measured for this function and generalised into a theorem: since
+the target's own emitted census ($s1/arg0 13 references, $s0/walk 5) predicts
+the OPPOSITE allocation under the validated forward model, the original compile
+"must have carried >= 8 walk references in insns deleted between
+flow_analysis and global_alloc" — a window with only two possible deleters,
+both measured non-firing.
+
+That identity is **not an identity**. It is an artifact of this body having no
+loop notes. `flow.c` counts each register mention as **`loop_depth`
+references**, not one:
+
+  - flow.c:2081, :2329, :2515, :2725 — `reg_n_refs[regno] += loop_depth;`
+  - flow.c:434 — the scan initialises `depth = 1`
+  - flow.c:440-443 — `depth++` on NOTE_INSN_LOOP_BEG, `depth--` on
+    NOTE_INSN_LOOP_END; flow.c:456/471 store it per basic block; flow.c:1385
+    loads it back for the counting pass.
+
+**NOTE_INSN_LOOP_BEG/END are notes, not instructions.** So enclosing a
+statement in `do { ... } while (0)` multiplies the reg_n_refs of every pseudo
+mentioned inside it, at ZERO byte cost. The "free reference window" the ledger
+was hunting between flow_analysis and global_alloc does not need to exist: the
+references are counted more than once *at* flow_analysis. (The ledger's
+inherited body is a `goto` loop and emits no loop notes at all — s7 recorded
+that fact but read it as "loop.c never runs", not as "every reference here is
+weighted 1, uniquely".)
+
+Two secondary source facts recorded while closing this, both un-banked before:
+  - `reg_n_refs` is NOT read-only after flow: local-alloc.c:781/783 and
+    :913/:914 TRANSFER `loop_depth` references between the src and dest of a
+    reg-reg copy inside optimize_reg_copy_1/2, and local-alloc.c:1110 ZEROES a
+    pseudo's refs in update_equiv_regs. (s7's kill of the transfer route stands
+    — it is killed by the target's move census, not by immutability.)
+  - optimize_reg_copy_1 does not delete the copy insn at all; it rewrites uses
+    of SRC to DEST in the window and moves the counts. So the "insn-deleting
+    code in the window" framing in the 2026-08-26 packet was doubly wrong.
+
+### The closing arithmetic (all measured with the inherited s5/eval.sh rig)
+
+Base: pseudo 72 (arg0) nrefs 13 / livelen 98 / **pri 3979** -> $s0;
+pseudo 73 (walk) nrefs 5 / livelen 91 / **pri 1098** -> $s1. 38 differing insns.
+
+The walk pointer's 5 mentions are: 1 at the init (outside the loop), 1 at
+`s.a = var_s0[0]`, 2 at `var_s0++`, 1 at the `var_s0[1] != -1` test. At
+livelen 91 it needs **nrefs >= 13** to outrank 3979 (13 -> 4285; 12 -> 3956,
+which loses). Wrapping the loop-top read at depth d gives nrefs = 4 + (1 + d),
+so **d = 8 is the minimum** (d = 1 gives 6, d = 4 gives 9).
+
+### The second half of the problem: a loop note costs one delay slot
+
+A NOTE_INSN_LOOP_BEG/END pair is a hard scheduling boundary for sched2, so the
+wrapped statement loses whatever neighbour insn would have filled an adjacent
+delay slot, and the build comes out at 117 insns with a load-delay `#nop`.
+Measured at every site (banked as
+rejected/loop-note-wrap-non-self-filling-site-costs-one-delay-slot.c):
+
+| variant | wrap | insns | difflines |
+|---|---|---|---|
+| w2  | `var_s0++`, d4 | 117 | 5 (sandbox **2**) |
+| w13 | `var_s0++` moved last, d4 | 117 | 5 |
+| w18 | `var_s0++` + loop test, d3 | 117 | 5 |
+| w6  | loop-top read alone, d8 | 117 | 7 |
+| w8  | read d4 + test d4 | 117 | 7 |
+| w7  | walk init, d8 | 117 | 33 |
+| w17 | `var_s0++`, d1 (no flip) | 117 | 41 |
+| w10, w22-w24 | increment hoisted into the read region | 117-118 | 5-20 |
+
+The cost is intrinsic to the note pair (w17 shows a single level already pays
+it), so the fix is not fewer notes but a **self-filling region**: extend the
+wrap to `s.a = var_s0[0]; s.b = s.a + 0xC; s.h = -D_800A3608;`, so the `s.h`
+global load sits inside the region and fills the walk read's load-delay slot
+from within.
+
+| **w20** | **read + s.b + s.h, d8** | **116** | **0** | walk 13 refs / pri 4285 -> $s0 |
+| w21 | same, d9 | 116 | 0 | walk 14 refs / pri 4615 -> $s0 |
+
+w20 is the minimum-depth member of the matching pair and is the committed form.
+
+### One further construct measured, not assumed
+
+The inherited body's `s32 zero;` constant-holder is **load-bearing**: replacing
+it with the literal `0` builds 113 insns against the target's 116
+(tmp/grind/func_80078654/s11/w25_nozero.c, eval in s5/s11_w25/). It is
+FAKE-annotated at its declaration under the constant-holder family.
+
+### Disposition of the standing escalation
+
+The 2026-08-13 terminal-refusal entry and the 2026-08-26 decision packet are
+both **superseded by this match** and should be read as historical: their
+shared premise (refs == mentions, therefore the original needed deleted insns)
+is disproved above. The granted deletion-window instrument is no longer needed
+for this function; it may still be worth building for OTHER RA residuals, but
+any session that inherits an "refs == mentions" argument should check for loop
+notes first — this is a cheap, general screen.
+
+### Frontier for the rest of the queue (not for this function)
+
+`loop_depth` reference weighting is a general, byte-free RA lever wherever a
+residual is an allocno-priority inversion: the ratio a wrap can move is
+(1 + d) on the wrapped mentions only, so it wins whenever the losing pseudo's
+mentions can be isolated from the winning pseudo's. The two costs to plan for
+are (a) the one delay-slot fill per note pair, which is avoidable by choosing a
+self-filling region, and (b) that loop.c starts running on a body that
+previously had no loop notes.

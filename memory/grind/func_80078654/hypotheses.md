@@ -543,3 +543,30 @@ permuter iterations, 14 banked rejected forms.
 - probe: tmp/grind/func_80078654/s10/target_census.txt: $s1 (arg0) 15 mentions = save + restore + 13 references; $s0 (walk) 7 mentions = save + restore + 5 references (def :23, uses :80, :108 x2, :112).
 - result: The target's census is IDENTICAL to ours (13 refs / 5 refs). The validated model fed the target's own numbers predicts arg0 -> $s0, the opposite of the target bytes. So no compile whose RA inputs match its own output can emit these bytes. Since reg_n_refs is frozen at flow_analysis (s6), the original must have counted >= 8 walk-pointer references in insns deleted before global_alloc. Enumerating toplev.c:2983-3080, the only code in that window is schedule_insns (deletes nothing) and regclass + local_alloc, so the only insn-deleting code is local-alloc.c's update_equiv_regs and optimize_reg_copy_1/2 - both measured non-firing for this function in s7.
 - verdict: CONFIRMED
+
+## SESSION 11 (2026-08-31, escalation/disposition) — hypothesis outcomes
+
+- **H-s11-1 (CONFIRMED, and it closed the function).** `reg_n_refs` is NOT the
+  emitted-mention count: flow.c:2081 weights every mention by `loop_depth`
+  (flow.c:434 seeds depth 1; :440-443 counts NOTE_INSN_LOOP_BEG/END). Loop
+  notes are not instructions, so a `do { } while (0)` wrap multiplies a
+  pseudo`s reference count at zero byte cost. Probe: 8-deep wrap of the
+  loop-top walk-read block -> walk pseudo 73 nrefs 5 -> 13, pri 1098 -> 4285,
+  seats $s0; sandbox 19 -> 0, 116 == 116, rules 0.
+- **H-s11-2 (KILLED).** "Any loop-note wrap that lifts the references closes
+  the function." A note pair is a sched2 boundary and costs exactly one
+  neighbour-supplied delay-slot fill: seven distinct non-self-filling sites all
+  build 117 insns (a load-delay `#nop`). Banked at
+  rejected/loop-note-wrap-non-self-filling-site-costs-one-delay-slot.c.
+- **H-s11-3 (KILLED).** "The wrap depth can be reduced by moving `var_s0++`
+  into the wrapped region (3 mentions instead of 1, so depth 3 suffices)."
+  It lifts the references as predicted but takes the increment out of the
+  loop-tail load-delay slot: 117 insns (w22-w24).
+- **H-s11-4 (KILLED, from the 2026-08-26 packet).** "The original compile
+  carried >= 8 walk references in insns deleted between flow_analysis and
+  global_alloc." No deletion is required at all — see H-s11-1. Also corrected:
+  optimize_reg_copy_1 does not delete its copy insn (it rewrites uses and
+  transfers `loop_depth` counts, local-alloc.c:781/783), and update_equiv_regs
+  zeroes counts at local-alloc.c:1110, so `reg_n_refs` is mutable after flow.
+- **H-s11-5 (CONFIRMED).** The inherited `s32 zero;` constant-holder is
+  load-bearing: the literal-0 spelling builds 113 insns vs 116 (w25_nozero).

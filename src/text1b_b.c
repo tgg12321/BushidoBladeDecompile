@@ -1005,7 +1005,76 @@ typedef struct {
     u8 b_;       /* sp43 - 0x2B */
 } S78654;
 
-INCLUDE_ASM("asm/funcs", func_80078654);
+void func_80078654(s32 *arg0) {
+    S78654 s;
+    s32 *var_s0;
+    /* FAKE: constant-holder local, kept live across the SetDrawMode /
+       func_8006E480 / AddPrim call sequence so the 0 argument comes out of a
+       register instead of being re-materialized at each use.  Mechanism:
+       local-alloc/global-alloc seat the constant in a call-saved quantity;
+       replacing it with the literal 0 was measured this session at 113 insns
+       vs the target's 116 (tmp/grind/func_80078654/s5/s11_w25/, chassis
+       tmp/grind/func_80078654/s11/w25_nozero.c), so the holder is
+       load-bearing.  Lever-exhaustion: memory/grind/func_80078654/hypotheses.md
+       s1-s11. */
+    s32 zero;
+
+    zero = 0;
+    s.f = 2;
+    s.cd_flag = 0;
+    s.e = 0;
+    s.g = 0;
+    s.a = D_800A3610[0xF];
+    s.h = 0;
+    s.b = s.a + 0xC;
+    var_s0 = D_800A3610 + 5;
+    if (D_800A3608 >= 0xAAA) {
+        if (D_800A3608 >= 0xB04) {
+            s16 sv;
+            s.cd_flag = 1;
+            sv = 0x80 - (((D_800A3608 - 0xB04) << 7) / 15);
+            if (sv < 0) {
+                sv = 0;
+            }
+            s.r = (s.g_ = (s.b_ = (u8) sv));
+        }
+        s.c = arg0[3];
+        arg0[3] = func_8007352C(&s.a);
+        SetDrawMode(arg0[5], 1, 0, func_8006E480(s.a, zero), 0);
+        AddPrim(D_800A374C + (s.f * 4), arg0[5]);
+        arg0[5] = arg0[5] + 0xC;
+    }
+    s.cd_flag = 0;
+    goto check;
+loop:
+    /* FAKE: 8-deep do-while(0) wrap around the walk-pointer read block.
+       Effect: seats the table-walk pointer var_s0 in $s0 and the parameter
+       arg0 in $s1 (loop-note reference weighting -> allocno priority).
+       Mechanism: flow.c:2081 counts each register mention as loop_depth
+       references, so the wrap multiplies var_s0's reg_n_refs without
+       emitting an instruction; global.c's allocno priority then ranks
+       var_s0 (13 refs / 91 live, pri 4285) above arg0 (13 / 98, pri 3979).
+       Single level measured INSUFFICIENT (prerequisite 3 of
+       .claude/rules/do-while-zero-exception.md): depth 1 yields 6 of the 13
+       references the priority inversion requires; depth 8 is the minimum
+       that reaches 13 at the only wrap site that costs no delay slot.
+       Lever-exhaustion: memory/grind/func_80078654/hypotheses.md s1-s11
+       (11 sessions, 8 modalities, 129k permuter iterations, 14 banked
+       rejected forms). */
+    do { do { do { do { do { do { do { do {
+    s.a = var_s0[0];
+    s.b = s.a + 0xC;
+    s.h = -D_800A3608;
+    } while (0); } while (0); } while (0); } while (0); } while (0); } while (0); } while (0); } while (0);
+    s.c = arg0[3];
+    arg0[3] = func_8007352C(&s.a);
+    SetDrawMode(arg0[5], 1, 0, func_8006E480(s.a, zero), 0);
+    AddPrim(D_800A374C + (s.f * 4), arg0[5]);
+    var_s0++;
+    arg0[5] = arg0[5] + 0xC;
+check:
+    if (var_s0[1] != -1) goto loop;
+}
 extern s32 D_800A3610;
 extern s32 D_800A3614;
 extern s32 D_800A3304;
