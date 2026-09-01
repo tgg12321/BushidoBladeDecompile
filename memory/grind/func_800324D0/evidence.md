@@ -1417,3 +1417,143 @@ again and must NOT be disposed of on that record.
 - [s18] Unchanged from s17 and still true: both endgame-lock gates FAIL (scan_hand_coded tier=LOW 0/8; zero SOTN precedent for any closing construct), and the owner-ruling-5 INCLUDE_ASM migration remains banked and oracle-green at tmp/grind/func_800324D0/s17/migration.diff as the fallback representation. Those are disposition inputs, not reasons to stop grinding a channel that is measurably open.
 
 - [s18] No src edit survives this session: src/code6cac_b.c was restored with `git checkout --` after the last measurement.
+
+## [s19] FORENSICS - the ledger's pseudo identity was WRONG, and the priority channel is measured, not argued
+
+Chassis re-measured this session by the s15 standing procedure (pristine `git checkout --` ->
+`& tools/wteng.ps1 main build`, SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH,
+s19/build_head_reference.log -> apply candidate.c -> sandbox): **score 15, target_insns 68 ==
+build_insns 68, rules_dropped 0** (s19/sandbox_base.log). Fifteenth consecutive flat session.
+A fresh `tools/ra_solver/extract.py` reproduces the banked model exactly (s19/model_base.json).
+
+**1. PSEUDO IDENTITY CORRECTED (three of five were wrong since s5).** Every session from s5 to s18
+has carried this line: "72 = pad, 73 = walker ptr, 74 = val, 76 = stream byte c, 75 = cmd HEAD web
+(the staged loop-tail `cmd = *ptr`), 85 = cmd ARM web". The `.lreg` RTL for the function
+(tmp/grind/func_800324D0/dumps/code6cac_b.lreg, segment `;; Function func_800324D0`) says
+otherwise, insn by insn:
+
+| pseudo | what it actually is | RTL evidence (lreg insn numbers) |
+|---|---|---|
+| 72 | `pad` (SI, pointer) | insn 4 def from `$a0`; 11 preheader stores; 12 arm stores |
+| 73 | walker `ptr` (SI, pointer) | insn 11 def from `mem(pad+88)`; 64/83/95/110/220 increments |
+| 74 | stream byte `c` (QI) | insn 61 `c = mem(ptr+4)`; insn 217 tail `c = mem(ptr)`; insn 70 loop test |
+| 75 | `cmd`, the biased command | insn 104 `75 = 85 + (-128)`; used at 189 (`ltu 12`) and 195 (`ashift 2`) |
+| 76 | `val` (QI), the operand byte | insn 107 `val = mem(ptr)`; the TWELVE arm stores 117..183 ("dies in 12 places") |
+| 85 | `zero_extend(c)` - a COMPILER TEMP, not a source variable | insn 76 `85 = zero_extend(74)`; used at 79 (`!= 0xFF`), 90 (`ltu 128`), 104 |
+| 86, 91 | the 0xFF constant holder and the jump-table `label_ref` | insns 241, 243 |
+
+There is **no "cmd head web" pseudo at all**: the candidate's staged tail (`cmd = *ptr; c = cmd;`)
+is fully collapsed by the time of `.lreg` - insn 217 loads straight into 74. The FAKE construct that
+bought the 27 -> 15 drop leaves no allocno of its own.
+
+This matters because the s18 frontier ("move the staged `cmd = *ptr` read earlier to lengthen 75",
+"lengthen the stream byte 76") was aimed at the wrong pseudos. Read against the corrected identity,
+the s18 relief curve says: lengthen the BIASED COMMAND (75) from 4 to >= 20, lengthen the OPERAND
+BYTE `val` (76) from 22 to >= 68, and lengthen the COMPILER'S ZERO-EXTEND TEMP (85) from 7 to >= 16.
+
+**2. nrefs is a weighted reference count, and the weights are now known.** `reg_n_refs` adds 1 per
+reference outside the loop and 2 per reference inside it (flow.c `REG_N_REFS (regno) += loop_depth`).
+Verified exactly on two allocnos: 72 = 13 refs outside (param copy + 11 stores + the `*(pad+0x58)`
+read) + 12 arm refs x2 = 37; 76 = 13 refs x2 = 26. **Consequence:** every extra reference of the
+walker inside the loop is worth +2 nrefs, and in this function every `ptr` reference sits in an insn
+that exists only because of that reference, so +1 walker ref = +1 instruction. The walker's priority
+ceiling is pinned by the 68-instruction budget, not by an argument.
+
+**3. Joint (nrefs, livelen) sweep - the unswept third channel (s18 frontier item 3) - is now swept.**
+s19/joint_sweep.py enumerates n in [2,64] x L in [2,130] for each of the four constrained allocnos and
+finds the cheapest assignment satisfying pri(73) > pri(76) > {pri(75), pri(85)}. Cheapest total
+|dnrefs| + |dlivelen| = **25** (76 nrefs 26->11, 75 nrefs 10->3, 85 nrefs 8->5, walker untouched),
+versus 71 for the pure-live-length route s18 costed. The nrefs channel is ~3x cheaper IN THE ABSTRACT
+- and unusable in practice, because by finding 2 above each unit of nrefs is an instruction.
+
+**4. Eight source-side levers measured against the curve (extract first, sandbox only where it could
+matter).**
+
+| probe | edit | livelen / pri movement | sandbox |
+|---|---|---|---|
+| A | `cmd = c - 0x80` hoisted to the loop head | 75: 4 -> 9 (75000 -> 33333); **85 SHORTENS 7 -> 4** (34285 -> 60000) | 28, 68/68 |
+| B | `val = *ptr` hoisted to the loop head | 76: 22 -> 26 (47272 -> 40000) | not run (dominated) |
+| C | A + B | 75: 4 -> 9; 76: 22 -> 24; 85 -> 5 | not run (dominated) |
+| D | `val` staged across the back edge | 76: 22 -> 31 (47272 -> 34838); **73: 62 -> 63** | 19, 68/68 |
+| F | head tests swapped | model BIT-IDENTICAL to baseline (jump.c normalises) | not run |
+| H | `cmd = c - 0x80` staged across the back edge | **75: pri 75000 -> 9333, BELOW the walker's 14769**; 85 disappears | 30, **69**/68 |
+| I | H + D | 75 -> 10000, 76 -> 31764, walker 15151 | 37, **70**/68 |
+| K | H with `u32 c` | - | 28, **66**/68 |
+| L | H + head tests re-expressed on `cmd` | 75 back up to 23571 (nrefs 10 -> 11); 7 allocnos | 33, **68/68** |
+
+**5. THE HEADLINE: the priority inversion is NOT arithmetically dead.** Since s1 the ledger has said
+that lifting the walker above the cmd web needs a ~4.84x priority lift and is therefore impossible.
+Probe H measures the opposite: making the biased command loop-carried (computed in the preheader and
+at the loop tail) drops pseudo 75 from pri 75000 to pri **9333** - an 8x demotion, *below* the
+walker's 14769 - and hands 75 its TARGET seat `$a2`. The allocation order becomes
+[76,86,72,74,73,75,...]: the first spelling in 19 sessions in which the walker is allocated before
+the cmd web. The cost is exactly one preheader instruction (69 vs 68), and the budget has no slack.
+
+**6. Two structural laws that explain the stiffness (both newly measured, both reusable).**
+(a) *Back-edge damping.* The walker is live over the whole loop, so any edit that lengthens another
+allocno's live range also lengthens the loop and therefore the walker: probe D moved 76 from 22 to 31
+and moved 73 from 62 to 63 and 72 from 62 to 63 in the same breath. Every demotion lever demotes the
+walker in lockstep with its target, which is why the pairwise ratios barely move.
+(b) *Anti-correlated short webs.* 75 (the biased command) and 85 (the zero-extend of c) are chained
+(insn 76 -> insn 104), so shortening the distance between them lengthens one and shortens the other.
+Probe A lengthens 75 by 5 and shortens 85 by 3, pushing 85 to the head of the order. No in-body
+hoist can demote both.
+
+**7. Why L (the 68-insn loop-carried spelling) still misses.** L pays for H's extra instruction by
+re-expressing the head tests on the biased value (`cmd == 0x7F`, `cmd > 0x7F` - exact unsigned
+algebra). Shape holds at 68/68, but the two head tests add two in-loop references to `cmd`
+(nrefs 7 -> 11), which is exactly the property that bought H its demotion: pri(75) goes back up to
+23571, above the walker's 15000. The instruction H spends and the reference count H saves are the
+same resource - and that is the precise statement of the remaining gap.
+
+**Disposition:** `progress`. The function is grindable and the channel is open; s18's warning against
+disposing of it on the retracted foreclosure record stands, now with a corrected pseudo map and a
+measured statement of what is missing.
+
+- [s19] Chassis THIS session: reference build from pristine HEAD SHA1 == oracle (s19/build_head_reference.log), candidate applied, sandbox --disable all = score 15, target_insns 68 == build_insns 68, rules_dropped 0 (s19/sandbox_base.log). Fresh extract reproduces the banked model (s19/model_base.json).
+
+- [s19] LEDGER CORRECTION (load-bearing): the pseudo identity carried since s5 is wrong on three of five entries. From the .lreg RTL: 74 = stream byte c (NOT val), 76 = operand byte val (NOT c), 75 = the biased command `c - 0x80` (NOT a "cmd head web"), 85 = the compiler's zero_extend(c) temp (NOT the "cmd arm web"). 72 = pad and 73 = walker ptr are correct. There is no allocno for the staged tail read at all - combine collapses `cmd = *ptr; c = cmd;` into a single load into 74 before .lreg.
+
+- [s19] nrefs weighting decoded and verified: reg_n_refs adds 1 per reference outside the loop and 2 per reference inside it. 72 = 13 + 12x2 = 37 exactly; 76 = 13x2 = 26 exactly. Consequence: raising the walker's nrefs requires more in-loop ptr references, and every ptr reference in this function occupies an insn of its own, so the walker's priority ceiling is pinned by the 68-instruction budget.
+
+- [s19] The unswept nrefs channel (s18 frontier item 3) is swept: s19/joint_sweep.py, cheapest joint (nrefs, livelen) solution costs 25 units vs 71 for the pure-live-length route, and it is a pure-nrefs solution (76 nrefs 26->11, 75 10->3, 85 8->5, walker untouched). Cheaper in the abstract, unusable in practice by the nrefs/instruction identity above.
+
+- [s19] Probe H (`cmd = c - 0x80` computed in the preheader and at the loop tail, i.e. loop-carried) is the first spelling in 19 sessions to invert the walker/cmd priority race: pseudo 75 nrefs 10->7, livelen 4->15, pri 75000 -> 9333 vs the walker's 14769; allocno 85 disappears entirely; 75 lands in its target seat $a2. Cost: build_insns 69 != 68 (s19/sandbox_H_cmd_staged.log, s19/model_H_cmd_staged.json). The s1 claim that the inversion needs an impossible 4.84x lift is FALSIFIED.
+
+- [s19] Probe L proves a 68-insn spelling of the loop-carried cmd EXISTS (`cmd == 0x7F` / `cmd > 0x7F` head tests replace `c == 0xFF` / `c < 0x80`): sandbox 33, build_insns 68 == target 68, 7 allocnos, order [76,72,75,74,73,89,86] (s19/sandbox_L_staged_tests_on_cmd.log, s19/model_L_staged_tests_on_cmd.json). It misses because the head tests add 2 in-loop references to cmd (nrefs 7 -> 11), restoring pri(75) to 23571 above the walker's 15000.
+
+- [s19] Back-edge damping law (measured): the walker is live over the entire loop, so any lengthening edit lengthens it too. Probe D moved 76 from livelen 22 to 31 and simultaneously moved 73 from 62 to 63 and 72 from 62 to 63 (s19/model_D_val_staged.json); probe I moved the walker to 66.
+
+- [s19] Anti-correlation law (measured): pseudos 75 and 85 are chained (insn 76 zero_extend -> insn 104 subtract), so hoisting the subtraction lengthens 75 by 5 and SHORTENS 85 by 3, promoting 85 to the head of the allocation order (s19/model_A_cmd_early.json). No in-body hoist demotes both.
+
+- [s19] Head-test ORDER is not a lever: swapping `c < 0x80` and `c != 0xFF` produces a bit-identical ra_solver model (s19/model_F_test_reorder.json vs s19/model_base.json) because jump.c normalises the comparison order before flow computes liveness.
+
+- [s19] val (pseudo 76) has a hard live-length ceiling of ~31 against the required 68: it dies in 12 places (one per switch arm), so back-edge staging can only add the head+dispatch prefix to its live range, never the arm bodies (s19/model_D_val_staged.json, s19/model_I_cmd_val_staged.json).
+
+- [s19] Insn-count ledger for the staged-subtraction family: u8 c = 69, u32 c = 66, u8 c + head tests on cmd = 68. The u8->u32 promotion is worth -3 instructions on this chassis, not the -1 that s3's merged-c-cmd measured on the unstaged chassis.
+
+- [s19] Seven forms banked as rejected this session: cmd-arm-web-hoisted-to-loop-head.c (28, 68/68), val-staged-across-back-edge.c (19, 68/68), cmd-subtraction-staged-across-back-edge-69insns.c (30, 69), cmd-and-val-both-staged-70insns.c (37, 70), cmd-staged-u32-c-66insns.c (28, 66), staged-cmd-head-tests-on-cmd-68insns.c (33, 68/68), head-test-order-swap-ra-identical.c (RA-identical, not sandboxed).
+
+- [s19] No src edit survives this session: src/code6cac_b.c restored with `git checkout --` after the last measurement; the reference object in build/ is the pristine-HEAD build made at the top of the session.
+
+- [s19] Chassis re-measured this session by the s15 standing procedure: pristine git checkout -- src/code6cac_b.c, full build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want MATCH (s19/build_head_reference.log), candidate applied, sandbox --disable all = score 15, target_insns 68 == build_insns 68, rules_dropped 0 (s19/sandbox_base.log). Fifteenth consecutive flat session.
+
+- [s19] A fresh tools/ra_solver/extract.py on the candidate body reproduces the banked model exactly (s19/model_base.json): order [75,76,85,72,74,73,91,86], ALLOCDBG (nrefs,livelen,pri) 75(10,4,75000) 76(26,22,47272) 85(8,7,34285) 72(37,62,29838) 74(8,9,26666) 73(24,62,15483) 91(3,90,333) 86(3,92,326).
+
+- [s19] LEDGER CORRECTION from the .lreg RTL: 74 = stream byte c, 76 = operand byte val, 75 = the biased command c-0x80, 85 = the compiler's zero_extend(c) temp. The map used from s5 to s18 (74=val, 76=c, 75=cmd head web, 85=cmd arm web) is wrong on three of five, and there is no 'cmd head web' allocno at all - the staged tail read is collapsed into insn 217 before .lreg.
+
+- [s19] GCC 2.7.2 reg_n_refs weighting decoded and verified: +1 per reference outside the loop, +2 per reference inside it (flow.c REG_N_REFS += loop_depth). 72 = 13 outside + 12 arm refs x2 = 37 exactly; 76 = 13 refs x2 = 26 exactly. Consequence: the walker's priority ceiling is pinned by the 68-instruction budget, because every in-loop ptr reference occupies an insn of its own.
+
+- [s19] Probe H (cmd = c - 0x80 computed in the preheader and at the loop latch) is the first spelling in 19 sessions to invert the walker/cmd priority race: 75 nrefs 10->7, livelen 4->15, pri 75000 -> 9333 vs walker 14769; allocno 85 vanishes; 75 seats in its TARGET register $a2; order [76,86,72,74,73,75,91,87]. Cost build_insns 69 != 68 (s19/sandbox_H_cmd_staged.log, s19/model_H_cmd_staged.json).
+
+- [s19] Probe L proves a 68-insn spelling of the loop-carried cmd exists (head tests re-expressed as cmd == 0x7F / cmd > 0x7F): sandbox 33, build_insns 68 == target 68, rules_dropped 0, seven allocnos, order [76,72,75,74,73,89,86] (s19/sandbox_L_staged_tests_on_cmd.log, s19/model_L_staged_tests_on_cmd.json). It misses because the head tests hand cmd back four weighted references (nrefs 7 -> 11, pri 23571).
+
+- [s19] val (pseudo 76) has a hard live-length ceiling near 31 against the required 68: it dies in 12 places (one per switch arm), so back-edge staging can only add the head+dispatch prefix to its live range, never the arm bodies (s19/model_D_val_staged.json, s19/model_I_cmd_val_staged.json).
+
+- [s19] Insn-count ledger for the staged-subtraction family: u8 c = 69, u32 c = 66, u8 c with head tests on cmd = 68. The u8->u32 promotion is worth -3 instructions on this chassis, not the -1 that s3's merged-c-cmd measured on the unstaged chassis.
+
+- [s19] Head-test ORDER is not a lever at all: swapping the two comparisons yields a bit-identical ra_solver model (s19/model_F_test_reorder.json vs s19/model_base.json) because jump.c normalises comparison order before flow computes liveness.
+
+- [s19] Sandbox results for every shaped probe this session: A 28 (68/68), D 19 (68/68), E 20 (69), H 30 (69), I 37 (70), K 28 (66), L 33 (68/68). None improves on the 15 floor; all seven forms are banked under memory/grind/func_800324D0/rejected/ with their measurements and RA models in the header.
+
+- [s19] No src edit survives: src/code6cac_b.c was restored with git checkout -- after the last measurement, and the reference object in build/ is the pristine-HEAD build made at the top of the session. Working tree carries only ledger and rejected-form files.

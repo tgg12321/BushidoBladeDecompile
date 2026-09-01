@@ -1,8 +1,8 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 18,
- "current_modality": "solver",
+ "session_count": 19,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -111,23 +111,29 @@
    "floor": 15,
    "modality": "solver",
    "headline": "Solver falsified the filed foreclosure's priority leg: 336 of all 40320 allocation orders reach the FULL 8/8 target disposition, the walker needs NO priority lift, and a quantified live-length relief "
+  },
+  {
+   "session": 19,
+   "floor": 15,
+   "modality": "forensics",
+   "headline": "Forensics corrected the pseudo map three sessions of frontier work were aimed at (74=c, 76=val, 75=biased cmd, 85=a compiler zero-extend temp) and FALSIFIED the s1 'arithmetically dead' priority claim"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual closes by DEMOTING the three short-lived allocnos (75 = cmd head web, 76 = stream byte c, 85 = cmd arm web) rather than promoting the loop-carried walker \u2014 the walker's live length may stay exactly where it is.",
-   "mechanism": "336 of 40320 allocation orders reach the full 8/8 target; the necessary relation is pri(73) > pri(76) > {pri(75), pri(85)} with 72/74 free, and priority = floor_log2(nrefs)*nrefs/livelen*10000*size, so lengthening a live range demotes an allocno. Quantified in s18/relief_curve.json.",
-   "next_probe": "Spell C that lengthens the live ranges of pseudos 75/76/85 without changing the 68-instruction shape (compute the value earlier / consume it later \u2014 e.g. move the staged `cmd = *ptr` read earlier in the loop tail, or widen the cmd arm web's span), then run ONE `tools/ra_solver/extract.py func_800324D0 code6cac_b` and read the ALLOCDBG livelens against the curve BEFORE spending a sandbox measurement. Target at the measured walker livelen 62: l75 >= 20, l76 >= 68, l85 >= 16."
+   "hypothesis": "A 68-instruction spelling exists that makes the biased command loop-carried WITHOUT adding in-loop references to it - which would reproduce probe H's measured 8x demotion of pseudo 75 (pri 75000 -> 9333, below the walker) on a legal shape.",
+   "mechanism": "H's demotion comes from two things at once: the latch definition lengthens 75's live range (4 -> 15) and removes in-loop uses (nrefs 10 -> 7). It costs one preheader instruction. Probe L paid that instruction with head tests on cmd and gave the references straight back. The payment must therefore come from somewhere that does not touch cmd: the preheader (11 pad stores + the ptr load + the guard test), pseudo 72 (pad), or the operand-byte path. Probe K shows the u8->u32 promotion on c is worth -3 insns, so a partial widening (one narrowed use, not all three) may be worth exactly -1.",
+   "next_probe": "Enumerate -1-instruction edits that leave cmd's reference set alone and pair each with the H tail: (a) narrow/widen exactly one of c's three uses (the loop test, the 0xFF test, the <0x80 test) to shed one andi/zero-extend without disturbing the head-test operands; (b) fold the preheader guard `if (c != 0)` into the first tail read by rotating the loop; (c) express one preheader pad store through the walker's base register. Measure each with sandbox for build_insns FIRST (the gate is 68), and only extract.py the ones that land on 68."
   },
   {
-   "hypothesis": "A much smaller total perturbation exists if the walker's live length can be reduced at all, because every unit off the walker relaxes all three demotions simultaneously.",
-   "mechanism": "Pareto curve s18/relief_curve.json: walker livelen 55 needs (75,76,85) >= (18,60,14); walker livelen 20 needs (7,22,7) \u2014 a single +3 lengthening of pseudo 75 with 76 and 85 untouched. s16 showed the walker's livelen is invariant to moving its LOAD, but nothing has tested restructuring the loop tail so the walker's last use precedes the back-edge test.",
-   "next_probe": "Extract-only sweep: three or four loop-tail restructurings that shorten the walker's span (increment before the switch; a separate tail pointer that dies early; hoisting the back-edge test's operand), each measured with extract.py and read for allocdbg livelen(73). Report the achievable minimum before any sandbox run."
+   "hypothesis": "The operand byte val (pseudo 76) can be demoted below the walker only by breaking its 12-way death pattern, and the aggregate-store shape that would do so is the one axis of the switch that no session has measured.",
+   "mechanism": "76 needs livelen >= 68 (pri < 15483) and staging caps it at 31, because it dies once per switch arm and reg_live_length only accumulates the blocks in which it is live. If the twelve arm stores were replaced by one store through a dispatch-selected destination, val would die once and its live range would span the whole dispatch. That changes the switch shape, so it is only worth measuring if the insn count can hold at 68.",
+   "next_probe": "Measure the two shapes that keep a jump table but a single store: (a) each arm assigns only a destination offset and a single `pad[off] = val;` follows the switch; (b) each arm assigns a `u8 *dst` and a single `*dst = val;` follows. Check build_insns before anything else - the target's twelve separate sb instructions make 68 unlikely, and a fast negative here permanently closes the 76 leg of the s18 relief curve."
   },
   {
-   "hypothesis": "The 336-order hit set may also be reachable through the nrefs term, which no session has swept.",
-   "mechanism": "priority = floor_log2(nrefs)*nrefs/livelen makes the reference count a step function \u2014 crossing a power of two moves priority discontinuously, so a small change in reference count may satisfy pri(76) > pri(75) far more cheaply than a 46-unit live-length change.",
-   "next_probe": "Extend s18/livelen_feasibility.py to sweep (nrefs, livelen) jointly per allocno over plausible ranges, re-rank the solutions by total source-side edit distance, and spell the cheapest."
+   "hypothesis": "The s18 336-order constraint set (pri(73) > pri(76) > {pri(75), pri(85)}) is specific to the eight-allocno base configuration and does NOT describe what probes H and L need, because both drop allocno 85 entirely.",
+   "mechanism": "s18 enumerated 8! orders over the base allocno set. H has 8 allocnos with a different membership (85 gone, 86 promoted to a 6-reference holder); L has 7. The reachable-order analysis, and therefore the relief curve, has never been recomputed for either configuration - so the real requirement for the staged family is unknown, and H may be much closer to (or further from) a target-reaching order than the base-set curve suggests.",
+   "next_probe": "Re-run the s18 pipeline (order_closure.py then order_constraints.py then relief_curve.py) against s19/model_H_cmd_staged.json and s19/model_L_staged_tests_on_cmd.json, using goal_from_tgt to re-derive the target disposition for each allocno set. Report the new necessary precedences and the new relief curve BEFORE spelling any more C - if the staged configuration needs less than the base one, the 68-insn payment above is the whole remaining problem."
   }
  ],
  "judge_constraints": [

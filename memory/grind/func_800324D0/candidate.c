@@ -1,3 +1,48 @@
+/* [s19 2026-08-31] FORENSICS. Body UNCHANGED and re-measured this session on a
+ * pristine-HEAD reference (build SHA1 == oracle, s19/build_head_reference.log):
+ * score 15, 68 == 68, rules_dropped 0 (s19/sandbox_base.log).
+ *
+ * TWO THINGS IN THIS HEADER SUPERSEDE THE s18/s17 HEADERS BELOW.
+ *
+ * (1) THE PSEUDO MAP EVERY SESSION SINCE s5 HAS QUOTED IS WRONG. Read from the
+ *     instrumented-cc1 .lreg RTL (tmp/grind/func_800324D0/dumps/code6cac_b.lreg,
+ *     segment ";; Function func_800324D0"), insn by insn:
+ *         72 = pad                       (insn 4, the 11 preheader stores)
+ *         73 = walker ptr                (insn 11, increments 64/83/95/110/220)
+ *         74 = stream byte c             (insn 61, tail insn 217, loop test 70)
+ *         76 = operand byte val          (insn 107 + the TWELVE arm stores)
+ *         75 = the biased command c-0x80 (insn 104, uses at 189 and 195)
+ *         85 = zero_extend(c), a COMPILER TEMP (insn 76), no source variable
+ *     The old map said 74 = val, 76 = c, 75 = "cmd head web", 85 = "cmd arm
+ *     web". There is NO head-web allocno: combine collapses the staged tail
+ *     (cmd = *ptr; c = cmd;) into one load into 74 before .lreg, so the FAKE
+ *     construct below buys its 27->15 drop without owning an allocno.
+ *     Re-read the s18 relief curve against this map: it asks for
+ *     livelen(biased cmd) >= 20, livelen(val) >= 68, livelen(zext temp) >= 16.
+ *
+ * (2) THE s1 "ARITHMETICALLY DEAD" PRIORITY CLAIM IS FALSIFIED BY MEASUREMENT.
+ *     Making the biased command LOOP-CARRIED (computed in the preheader and
+ *     again at the loop latch) drops pseudo 75 from pri 75000 to pri 9333 -
+ *     an 8x demotion, below the walker's 14769 - and seats 75 in its target
+ *     register $a2, with allocno 85 vanishing entirely. That is the first
+ *     spelling in 19 sessions where the walker is allocated before the cmd web
+ *     (s19/model_H_cmd_staged.json). It costs exactly ONE preheader
+ *     instruction: 69 vs the 68-insn target, so it is banked as rejected
+ *     (rejected/cmd-subtraction-staged-across-back-edge-69insns.c).
+ *     A 68-insn spelling of the loop-carried cmd DOES exist - re-express the
+ *     head tests on the biased value - but it hands the saved references
+ *     straight back (nrefs 7 -> 11, pri 23571) and scores 33
+ *     (rejected/staged-cmd-head-tests-on-cmd-68insns.c).
+ *     THE WHOLE REMAINING QUESTION for s20: pay for H's one instruction WITHOUT
+ *     adding in-loop references to cmd. Attack val (76) or pad (72) or the
+ *     preheader, not the tests.
+ *
+ * Also measured dead this session: in-body hoisting (2x too weak AND the two
+ * short webs are anti-correlated), head-test order (jump.c normalises it to a
+ * bit-identical model), the nrefs channel (cheapest abstract solution costs 25
+ * units but nrefs converts 1:2 into instruction count), and val's live length
+ * (ceiling ~31 against the required 68, because it dies in 12 places). Full
+ * write-up: evidence.md [s19], hypotheses.md [s19]. */
 /* [s18 2026-08-31] READ THIS BEFORE THE s17 HEADER BELOW: THE FUNCTION IS NOT
  * FORECLOSED. The s17 note "Do not grind this body" is withdrawn. s18 (solver)
  * enumerated ALL 40320 allocation orders against the exact ra_solver find_reg

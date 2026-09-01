@@ -995,3 +995,87 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - probe: Applied memory/grind/func_800324D0/candidate.c to src/code6cac_b.c and ran `& tools/wteng.ps1 main sandbox func_800324D0 --disable all` (s18/sandbox_candidate.log).
 - result: score 15, target_insns 68 == build_insns 68, rules_dropped 0.
 - verdict: CONFIRMED
+
+## [s19] The pseudo identity carried since s5 (74 = val, 76 = stream byte c, 75 = cmd head web, 85 = cmd arm web) is correct, so the s18 relief curve names the right source objects.
+- mechanism: Every probe design since s5 has been aimed by that map; if it is wrong, the s18 frontier ("move the staged `cmd = *ptr` read earlier", "lengthen the stream byte 76 to livelen 68") aims at the wrong variables.
+- probe: Generated the instrumented-cc1 dumps (`pwsh tools/grinder/dump.ps1 func_800324D0`) with the candidate body applied and read the `.lreg` segment `;; Function func_800324D0` insn by insn, attributing every pseudo to its defining and using RTL insns.
+- result: THREE OF FIVE ARE WRONG. 74 = stream byte c (insn 61 `c = mem(ptr+4)`, insn 217 tail load, insn 70 loop test); 76 = operand byte val (insn 107 load, the twelve arm stores 117..183, "dies in 12 places"); 75 = the biased command (insn 104 `75 = 85 - 128`); 85 = the compiler's `zero_extend(c)` temp (insn 76), not any source variable. The staged tail read has NO allocno - it is collapsed into insn 217 before .lreg.
+- verdict: KILLED
+
+## [s19] The nrefs term (s18 frontier item 3, never swept) offers a cheaper route into the 336-order hit set than the live-length term.
+- mechanism: priority = floor_log2(nrefs)*nrefs/livelen*10000*size makes nrefs a step function, so crossing a power of two moves priority discontinuously and might satisfy the constraint set far more cheaply than a 46-unit live-length change.
+- probe: s19/joint_sweep.py - enumerate nrefs in [2,64] x livelen in [2,130] for each of 73/75/76/85, find the minimum total |dnrefs| + |dlivelen| satisfying pri(73) > pri(76) > {pri(75), pri(85)}; plus a pure-nrefs variant with all live lengths frozen.
+- result: CONFIRMED in the abstract and USELESS in practice. Cheapest joint solution costs 25 units (76 nrefs 26->11, 75 nrefs 10->3, 85 nrefs 8->5, walker untouched) against 71 for the pure-live-length route. But this session also decoded the nrefs weighting (1 per out-of-loop reference, 2 per in-loop reference, verified exactly on 72 = 13 + 12x2 = 37 and 76 = 13x2 = 26), and in this function every reference of the constrained pseudos occupies an instruction of its own, so |dnrefs| converts 1:2 into instruction count and the 68-insn budget has zero slack.
+- verdict: KILLED
+
+## [s19] In-body hoisting (computing cmd and/or val earlier in the loop body) can deliver the live-length increases the s18 relief curve requires.
+- mechanism: The relief curve at the measured walker live length of 62 needs livelen(75) >= 20 (from 4), livelen(76) >= 68 (from 22), livelen(85) >= 16 (from 7); moving a definition earlier in the body lengthens its live range without changing the instruction count.
+- probe: Probes A (`cmd = c - 0x80` at the loop head), B (`val = *ptr` at the loop head) and C (both), each swapped into src/code6cac_b.c and measured with a fresh `tools/ra_solver/extract.py` (s19/model_A_cmd_early.json, model_B_val_early.json, model_C_both_early.json); A also sandboxed.
+- result: The lever is real but roughly 2x too weak, and it is ANTI-CORRELATED across the two short webs. A: livelen(75) 4 -> 9 only (pri 75000 -> 33333, needs < 15483) while livelen(85) SHORTENS 7 -> 4, so pri(85) rises 34285 -> 60000 and 85 becomes the new head of the allocation order. B: livelen(76) 22 -> 26 (needs 68). C: both, same ceilings. A sandboxes 28 with build_insns 68 == 68.
+- verdict: KILLED
+
+## [s19] Head-test ORDER (`c < 0x80` before `c != 0xFF`) is a live-range lever on the zero-extend temp 85.
+- mechanism: 85's live range runs from its definition (insn 76) to its last comparison use, so moving the last comparison later should lengthen it.
+- probe: Probe F - the two head tests swapped, fresh extract (s19/model_F_test_reorder.json).
+- result: The model is BIT-IDENTICAL to the baseline in every field (order, nrefs, livelen, pri for all eight allocnos). jump.c normalises the comparison order before flow computes liveness.
+- verdict: KILLED
+
+## [s19] Staging a value across the loop back edge is a strong enough lever to invert the walker-vs-cmd priority race that s1 called arithmetically dead.
+- mechanism: A value computed in the preheader and re-computed at the loop latch is live over the whole loop body, which lengthens its live range and (because the in-loop definition replaces several in-loop uses) can lower its weighted reference count; priority falls on both terms at once.
+- probe: Probe D (val staged), probe H (`cmd = c - 0x80` staged), probe I (both), each extracted and sandboxed (s19/model_*.json, s19/sandbox_*.log).
+- result: CONFIRMED for the biased command and REFUTED for the operand byte. H: pseudo 75 nrefs 10 -> 7, livelen 4 -> 15, pri 75000 -> 9333, i.e. BELOW the walker's 14769 - the first measured spelling in which the walker is allocated before the cmd web, and 75 lands in its target seat $a2; allocno 85 disappears entirely. D: pseudo 76 reaches only livelen 31 (pri 34838) against the required 68, because val dies in 12 places (one per switch arm) so staging can only add the head+dispatch prefix, never the arm bodies. Cost: H is 69 insns, I is 70, both off-shape.
+- verdict: CONFIRMED
+
+## [s19] The instruction that back-edge staging costs can be paid for elsewhere in the body, giving a 68-insn spelling of the loop-carried cmd that keeps H's demotion.
+- mechanism: H is exactly one instruction over budget (69 vs 68). Two candidate payments: widen `c` to u32 (s3's merged-c-cmd measured the u8->u32 promotion at -1 insn), or re-express the two head tests on the biased value so the zero-extend and one compare disappear.
+- probe: Probe K (H with `u32 c`) and probe L (H with `cmd == 0x7F` / `cmd > 0x7F` head tests - exact unsigned algebra), both sandboxed; L also extracted (s19/sandbox_K_cmd_staged_u32c.log, s19/sandbox_L_staged_tests_on_cmd.log, s19/model_L_staged_tests_on_cmd.json).
+- result: The 68-insn spelling EXISTS - L is build_insns 68 == target_insns 68, rules_dropped 0, score 33 - but it does not keep H's win. The two head tests add two in-loop references to cmd (nrefs 7 -> 11), and pri(75) goes back up to 23571, above the walker's 15000; the allocno set drops to seven and the order is [76,72,75,74,73,89,86]. K overshoots the other way: `u32 c` removes THREE instructions from the H shape (66 != 68), not the one s3 measured on the unstaged chassis.
+- verdict: KILLED for these two payments; the underlying claim stays open - see the s20 frontier.
+
+## [s19] Back-edge damping: any source edit that lengthens a non-walker allocno's live range also lengthens the walker's, so pairwise priority ratios move far less than single-allocno arithmetic suggests.
+- mechanism: The walker is live over the entire loop body, so it accumulates every instruction added to or stretched inside that body.
+- probe: Compare s19/model_D_val_staged.json and s19/model_I_cmd_val_staged.json against s19/model_base.json.
+- result: CONFIRMED. Staging val moved 76 from livelen 22 to 31 (+9) and simultaneously moved 73 from 62 to 63 and 72 from 62 to 63. Probe I (two staging edits) moved the walker to livelen 66. Every demotion lever partially demotes the walker with it.
+- verdict: CONFIRMED
+
+## [s19] The pseudo identity carried since s5 (74 = val, 76 = stream byte c, 75 = cmd head web, 85 = cmd arm web) is correct, so the s18 relief curve names the right source objects.
+- mechanism: Every probe design since s5 has been aimed by that map; if it is wrong, the s18 frontier ('move the staged cmd = *ptr read earlier', 'lengthen the stream byte 76') aims at the wrong variables.
+- probe: pwsh tools/grinder/dump.ps1 func_800324D0 with the candidate body applied, then read the .lreg segment ';; Function func_800324D0' insn by insn and attribute every pseudo to its defining and using RTL insns.
+- result: THREE OF FIVE WRONG. 74 = stream byte c (insn 61 c = mem(ptr+4), tail insn 217, loop test insn 70); 76 = operand byte val (insn 107 load + the twelve arm stores 117..183, 'dies in 12 places'); 75 = the biased command (insn 104, 75 = 85 - 128); 85 = the compiler's zero_extend(c) temp (insn 76), not a source variable at all. 72 = pad and 73 = walker are correct. The staged tail read owns NO allocno - combine collapses it into insn 217 before .lreg.
+- verdict: KILLED
+
+## [s19] The nrefs term (s18 frontier item 3, never swept) offers a cheaper route into the 336-order hit set than the live-length term.
+- mechanism: priority = floor_log2(nrefs)*nrefs/livelen*10000*size makes nrefs a step function, so crossing a power of two moves priority discontinuously.
+- probe: tmp/grind/func_800324D0/s19/joint_sweep.py - nrefs in [2,64] x livelen in [2,130] for each of 73/75/76/85, minimising total |dnrefs|+|dlivelen| subject to pri(73) > pri(76) > {pri(75), pri(85)}; plus a pure-nrefs variant with live lengths frozen.
+- result: Cheapest joint solution costs 25 units (76 nrefs 26->11, 75 nrefs 10->3, 85 nrefs 8->5, walker untouched) vs 71 for the pure-live-length route - ~3x cheaper in the abstract. Unusable in practice: the same session decoded the nrefs weighting (1 per out-of-loop reference, 2 per in-loop reference, verified exactly on 72 = 13 + 12x2 = 37 and 76 = 13x2 = 26), and every reference of these pseudos occupies an instruction of its own, so |dnrefs| converts 1:2 into instruction count against a budget with zero slack.
+- verdict: KILLED
+
+## [s19] In-body hoisting (computing cmd and/or val earlier in the loop body) can deliver the live-length increases the s18 relief curve requires.
+- mechanism: Moving a definition earlier lengthens its live range without changing the instruction count; the curve needs livelen(75) >= 20, livelen(76) >= 68, livelen(85) >= 16 at the measured walker live length of 62.
+- probe: Probes A (cmd at loop head), B (val at loop head), C (both), each swapped into src/code6cac_b.c and measured with a fresh tools/ra_solver/extract.py; A also sandboxed.
+- result: Roughly 2x too weak AND anti-correlated. A: livelen(75) 4 -> 9 only (pri 75000 -> 33333) while livelen(85) SHORTENS 7 -> 4, so pri(85) rises 34285 -> 60000 and 85 becomes the new order head. B: livelen(76) 22 -> 26. C: same ceilings. A sandboxes 28 at 68 == 68. No in-body hoist demotes both short webs, because 75 and 85 are chained (insn 76 zero_extend -> insn 104 subtract).
+- verdict: KILLED
+
+## [s19] Head-test ORDER (c < 0x80 before c != 0xFF) is a live-range lever on the zero-extend temp 85.
+- mechanism: 85 lives from its definition to its last comparison use, so moving that use later should lengthen it.
+- probe: Probe F - the two head tests swapped, fresh extract (s19/model_F_test_reorder.json vs s19/model_base.json).
+- result: The model is BIT-IDENTICAL in every field - order [75,76,85,72,74,73,...], nrefs/livelen/pri 75(10,4,75000) 76(26,22,47272) 85(8,7,34285) 73(24,62,15483). jump.c normalises comparison order before flow computes liveness. Not sandboxed: an RA-identical, insn-identical form cannot move the score.
+- verdict: KILLED
+
+## [s19] Staging a value across the loop back edge is a strong enough lever to invert the walker-vs-cmd priority race that s1 called arithmetically dead (a 4.84x lift).
+- mechanism: A value computed in the preheader and re-computed at the latch is live over the whole loop body, lengthening its live range while its in-loop definition replaces in-loop uses - priority falls on both terms of floor_log2(nrefs)*nrefs/livelen at once.
+- probe: Probe D (val staged), probe H (cmd = c - 0x80 staged), probe I (both) - each extracted with tools/ra_solver/extract.py and sandboxed.
+- result: CONFIRMED for the biased command, refuted for the operand byte. H: pseudo 75 nrefs 10 -> 7, livelen 4 -> 15, pri 75000 -> 9333, BELOW the walker's 14769 - the first spelling in 19 sessions where the walker is allocated before the cmd web, with 75 landing in its target seat $a2 and allocno 85 disappearing entirely. D: pseudo 76 reaches only livelen 31 (pri 34838) against the required 68, because val dies in 12 places so staging can only add the head+dispatch prefix, never the arm bodies. Shape cost: H = 69 insns, I = 70, D = 68 (score 19).
+- verdict: CONFIRMED
+
+## [s19] H's one-instruction cost can be paid elsewhere in the body, giving a 68-insn spelling of the loop-carried cmd that keeps the demotion.
+- mechanism: Two candidate payments: widen c to u32 (s3 measured the u8->u32 promotion at -1 insn), or re-express the head tests on the biased value so the zero-extend and a compare disappear.
+- probe: Probe K (H with u32 c) and probe L (H with cmd == 0x7F / cmd > 0x7F head tests, exact unsigned algebra), both sandboxed; L also extracted.
+- result: The 68-insn spelling EXISTS - L is build_insns 68 == target_insns 68, rules_dropped 0, score 33 - but does not keep the win: the head tests add two in-loop references to cmd (nrefs 7 -> 11), pri(75) returns to 23571 above the walker's 15000, and the allocno set drops to seven (order [76,72,75,74,73,89,86]). K overshoots the other way: u32 c removes THREE instructions from the H shape (66 != 68). The instruction H spends and the references H saves are the same resource.
+- verdict: KILLED
+
+## [s19] Back-edge damping: any source edit that lengthens a non-walker allocno's live range also lengthens the walker's, so pairwise priority ratios move far less than single-allocno arithmetic predicts.
+- mechanism: The walker is live over the entire loop body, so it accumulates every instruction added to or stretched inside that body.
+- probe: Compare s19/model_D_val_staged.json and s19/model_I_cmd_val_staged.json against s19/model_base.json.
+- result: CONFIRMED. Staging val moved 76 from livelen 22 to 31 and simultaneously moved 73 from 62 to 63 and 72 from 62 to 63; probe I moved the walker to livelen 66. Every demotion lever partially demotes the walker with it - this is why 18 sessions of pairwise arithmetic looked flat.
+- verdict: CONFIRMED
