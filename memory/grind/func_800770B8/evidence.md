@@ -510,3 +510,206 @@ candidate.c therefore remains the s3 form at floor 9.
 - [s4] Every s4 form that beats the honest floor is banked under memory/grind/func_800770B8/rejected/ with a name that states why it is dead; candidate.c is byte-identical to the s3 body and still measures 9. src/text1b.c was reverted to HEAD (INCLUDE_ASM) at session end.
 
 - [s4] Both campaigns were harvested with --stop before the session ended; pgrep confirms no surviving permuter process.
+
+## [s5] synthesis modality — the loop-note anchor is killed, and the residual is re-attributed to RA
+
+Chassis re-measured at session start with candidate.c applied to src/text1b.c:
+**9** (175 ours / 175 target). Unchanged from s3 and s4; nothing drifted. The
+dispatch brief's "measurement unavailable" was a driver-side gap, not drift.
+
+### 1. The s4 frontier's #1 hypothesis (an ORDINARY-C loop-note anchor) is KILLED
+s4 proved that only NOTE_INSN_LOOP_BEG/END notes stay anchored mid-block at
+sched2 (block notes all migrate to the top of the function), so an honest fence
+had to be a REAL loop placed as the function's first statement. Four spellings
+were built and measured (all kept in tmp/grind/func_800770B8/s5/v/):
+
+| form | sandbox | insns |
+|---|---|---|
+| candidate.c (baseline) | 9 | 175 |
+| P1 `for (t0=0;t0<2;t0++) sp[t0]=0;` first, then p_old, then ClearOTagR | 42 | 186 |
+| P2 same loop first, ClearOTagR, then p_old (the V10 pairing) | 41 | 186 |
+| P3 p_old first, then the loop | 42 | 186 |
+| P4 `while` spelling of the same loop | 42 | 186 |
+
+MECHANISM HALF CONFIRMED — a real first-statement loop DOES anchor its note pair
+at exactly the V1 fence position. tmp/grind/func_800770B8/s5/dumps/p1/in.i.sched2:
+
+    (note 599 611 16 "" NOTE_INSN_PROLOGUE_END)
+    (note  16 599 25 "" NOTE_INSN_LOOP_BEG)
+
+versus the baseline dump (tmp/grind/func_800770B8/s5/dumps/cand/in.i.sched2),
+where the first LOOP_BEG is at line 682, far past the prologue. Ordinary C CAN
+reach the anchor.
+
+COST HALF FATAL — it cannot pay for it. A genuine loop over `sp[]` forces the two
+`sh $zero` stores onto a computed stack address (`addu $3,$sp,16` plus a sll/sra
+of the index) and adds loop control: **+11 insns, 175 -> 186**. Our insn count
+has EQUALLED the target's 175 since s3, so any construct that adds instructions
+is off the path to 0 by construction. The only zero-insn loop is an empty one,
+which is precisely the s4 cheat.
+Banked: rejected/s5-real-loop-note-anchor-insn-cost.c
+
+### 2. THE DECISIVE COROLLARY — the target has no fence, so the fence is a red herring
+asm/funcs/func_800770B8.s rows 1-14 are straight-line: five saves interleaved
+with three arg copies, then `addiu $a1,$zero,0x1008`, `lui/lw $a0`,
+`addiu $s1,$s0,0x58`, two `sh $zero`, then the ClearOTagR jal. There is no
+branch, no label, and therefore NO LOOP anywhere near the prologue in the
+original. The target's contiguous save emission is consequently NOT produced by
+a loop-note fence. The `do { } while (0);` of s4 is a COINCIDENTAL route to the
+same emission order, not the original mechanism — a second, independent reason
+(beyond the cheat ruling) not to spend further sessions respelling it. It also
+retires the s4 frontier item that proposed a ruling-request on extending the
+do-while(0) carve-out from reorg.c to sched2: there is nothing to extend the
+carve-out TO, because the construct does not reconstruct what the original
+source did. That ruling-request is withdrawn before it was ever filed.
+
+### 3. Frame layout is identical, which narrows class A to pure emission order
+Target `addiu $sp,$sp,-0x40` with saves at 0x28/0x2C/0x30/0x34/0x38
+(s0/s1/s2/s3/ra). Ours `.frame $sp,64,$31 # vars=24, regs=5/0, args=16` with
+`sw $16,40 / $17,44 / $18,48 / $19,52 / $31,56`. Byte-for-byte the same frame,
+save set and slots. Class A has no frame-shape component at all:
+  target: sw $ra | sw $s1 | addiu $a1 | lui/lw $a0 | addiu $s1,$s0,0x58
+  ours:   sw $s1 | addiu $s1,$s0,0x58 | lw $a0 | li $a1 | sw $ra
+
+### 4. THE RE-ATTRIBUTION — the object-level classifier says the residual is RA
+`tools/ra_solver/goal_from_tgt.py classify text1b func_800770B8`:
+
+    func_800770B8 (text1b): ours 175 insns, target 175 insns
+      [object-level: replace_with_asmfile-safe]
+    FIRST DIVERGENCE: RA
+      $v0 -> $v1   x4
+      $s1 -> $v0   x2
+      $v1 -> $v0   x1
+
+5 renamed pairs, 2 pairs skipped as "skeleton differs — reloc/immediate, not a
+rename" (those two are the class-A ordering rows). SEVEN of the residual
+half-rows are register naming, not scheduling. Three sessions of sched2 work
+were aimed at the smaller half of the residual.
+
+Corroborating, from the other solver: `tools/sched_solver/perturb.py --pass 2
+--goal-from-target text1b --target-object build/src/text1b.o --ours-object
+tmp/sandbox/func_800770B8/text1b.o --atoms luid,luid_move --depth 2` prints
+NOTHING for func_800770B8 — i.e. no block in pass 2 has a goal that differs from
+our emission order — while `--self-check` reports "priority recomputation:
+14250/14250 exact (100.00%)", so the model is live and the silence is a real
+verdict, not a crash. CAVEAT to inherit honestly: goalmap could not align the
+two "skeleton differs" rows as renames and holds them at OUR positions, so this
+is evidence that the ordering residual is not independently expressible as a
+sched2 goal, NOT a proof that the emission order is identical.
+
+### 5. CLASS B IS MECHANICALLY FORECLOSED AT THE C LEVEL (the session's hard result)
+Attribution onto pseudos (`goal_from_tgt.py goal ... --model
+tmp/ra_solver_work/func_800770B8.model.json`) resolves the `$s1 -> $v0 x2`
+substitution UNIQUELY to pseudo 75 — p_old — giving `goal: {"75": 2}`. Fed to
+the inverse solver:
+
+    python3 tools/ra_solver/inverse.py global \
+        tmp/ra_solver_work/func_800770B8.model.json --goal '{"75": 2}' \
+        --depth 2 --top 8
+
+    FORECLOSED — 3 preference atom(s) NOT emitted (mechanically unreachable from C):
+      pseudo 75: preference for $v0
+          pseudo 75 crosses 4 call(s) and $v0 is call-used, so
+          prune_preferences (global.c:897) strips it from this allocno's
+          preferences before find_reg ever sees it.
+    NEGATIVE RESULT: no perturbation of any modelled input, up to depth 2,
+    reaches the target assignment.
+    (161 single perturbations over 6 classes; refs delta +12/-6, live length +/-2,4,8.)
+
+Read semantically: the target's 0x30/0x34 stores are based on a pseudo whose life
+ENDS before the next call, so it is eligible for the call-clobbered $v0. Our
+`p_old` is one C variable spanning the whole function and crossing four calls, so
+global.c's `prune_preferences` deletes $v0 from its preference list before
+`find_reg` runs. No amount of refs / live-span / birth-order / conflict /
+preference / calls-crossed perturbation can give it $v0. This is not a spelling
+that has not been found yet; it is a spelling that cannot exist for THIS pseudo.
+
+The only route to the target's bytes is a SECOND pseudo holding the raw
+`func_8006E49C` result across the two stores and dying before the loop — exactly
+the "second handle" family, now SIX measured spellings deep and dead every time
+(s1 K1 = 28 with an insn collapse, s2 K4, s3 B1 = 12, B2/B3/B4 byte-neutral):
+cse forwards the handle and deletes the D_800A35D0 loop-preheader reload.
+
+Note precisely what the solver did and did not say. It classified the seat as
+unreachable BY PERTURBING THE MODELLED INPUTS OF PSEUDO 75'S ALLOCATION. It
+explicitly names the mechanisms still outside the model — the local-alloc
+SUGGESTED-REGISTER pass (`qty_phys_copy_sugg` / `qty_phys_sugg`, reported but not
+scored today), `qty_size` for DImode, and reload's spill-retry — and says the
+next move there is INSTRUMENTATION, not another spelling search. That is the
+honest boundary of this result.
+
+### 6. What this leaves
+- Class A (2 half-rows, sched2 emission order): the only honest fence would be a
+  real loop; real loops cost >= 11 insns here; the target has no loop; and the
+  sched solver reports no differing pass-2 goal. No ordinary-C lever is left
+  unmeasured on this axis.
+- Class B (2 half-rows, pseudo 75 / $v0): FORECLOSED by prune_preferences on the
+  rename reading; the second-pseudo reading is six measured C spellings dead.
+- Class C (the $v0 <-> $v1 substitutions, rows 62-64): still a local-alloc
+  dest-coalesce question and the ONE typed-verdict axis still unspent. It was NOT
+  run this session: `inverse.py local` needs `<stem>.local.json` from
+  `tools/ra_solver/local_extract.py`, which was not built here. This is the
+  correct first move for s6, and its inputs are now all in place.
+
+### Artifacts
+- tmp/grind/func_800770B8/s5/v/P1..P4.c — the four real-loop forms
+- tmp/grind/func_800770B8/s5/dumps/{cand,p1}/ — full cc1 -da dump sets
+- tmp/grind/func_800770B8/s5/{hdr.c,mkdump.py,dump.sh} — standalone-TU dump
+  harness rebuilt this session. NOTE: s4/dump.sh no longer works — it depends on
+  the s4 permuter workspaces (gone; permuter dirs are gitignored) and must be run
+  under WSL, not Git Bash. Use
+  `bash tools/wsl.sh 'bash tmp/grind/func_800770B8/s5/dump.sh <cand.c> <tag>'`.
+- tmp/grind/func_800770B8/s5/sched_solver/ — scratch COPY of tools/sched_solver
+  carrying a one-function patch (below). tools/ is not an editable surface for a
+  grind session, so the fix lives in scratch.
+- tmp/ra_solver_work/func_800770B8.model.json — the RA model (21 pseudos, 78
+  dispositions)
+
+### REUSABLE TOOLING GOTCHA (worth a permanent fix by the operator)
+`tools/sched_solver/goalmap.py::_macro_expand_counts` under-counts the honest text
+stream for any function containing `<mem> $r,SYM($base)` — a bare symbol WITH an
+index register. GNU as assembles that to THREE insns (lui $at,%hi /
+addu $at,$at,$base / <mem> $r,%lo($at)); the helper scores it 1 because the last
+operand contains a `(`. func_800770B8 has two such lines (`sb $4,D_8009BCE4($3)`
+and `sb $2,D_8009BCE4($3)`), so the same-source checksum failed with "honest
+object has 175 insns but text1b.hon.s body has 169 lines (macro-expanded estimate
+171)" — a message that blames the user for a stale build when the tree is in fact
+consistent. The scratch copy in tmp/grind/func_800770B8/s5/sched_solver/goalmap.py
+carries the three-insn case and makes the object-level goal path work.
+
+- [s5] Chassis check: candidate.c re-measures 9 (175/175) on today's chassis; no drift from s3/s4.
+- [s5] KILLED the s4 frontier's #1 hypothesis: four real first-statement loops (P1-P4) measure 41-42 at 186 insns. A real loop DOES anchor NOTE_INSN_LOOP_BEG at the V1 fence position (dumped and read), but costs +11 insns, and our count already equals the target's 175, so no real loop is on the path to 0.
+- [s5] DECISIVE: the TARGET has no loop, label or branch anywhere in its prologue (asm/funcs/func_800770B8.s rows 1-14 are straight-line), so its contiguous save emission is NOT produced by a loop-note fence. The s4 do-while(0) is a coincidental route to the same order, not the original mechanism — which independently retires the proposed ruling-request on extending the do-while(0) carve-out to sched2.
+- [s5] Target and ours have byte-identical frames (0x40; saves s0/s1/s2/s3/ra at 0x28/0x2C/0x30/0x34/0x38), so class A has no frame-shape component; it is purely the emission order of five insns.
+- [s5] RE-ATTRIBUTION: goal_from_tgt.py classify reports FIRST DIVERGENCE = RA with $v0->$v1 x4, $s1->$v0 x2, $v1->$v0 x1 — 5 renamed pairs plus 2 skipped as non-renames (the class-A order rows). Seven of the residual half-rows are register naming, not scheduling.
+- [s5] CLASS B IS FORECLOSED at the C level: the $s1->$v0 x2 substitution attributes uniquely to pseudo 75 (p_old), and inverse.py global returns FORECLOSED — pseudo 75 crosses 4 calls and $v0 is call-used, so prune_preferences (global.c:897) strips the $v0 preference before find_reg runs. 161 single perturbations over 6 classes, depth 2, NEGATIVE.
+- [s5] The solver names what is still OUTSIDE its model for that seat — the local-alloc suggested-register pass (qty_phys_copy_sugg / qty_phys_sugg, reported-not-scored), qty_size for DImode, and reload's spill-retry — and says the next move there is instrumentation, not another spelling search.
+- [s5] sched_solver perturb (pass 2, object-level goal) prints NO differing block for this function while --self-check reports 14250/14250 exact priority recomputation. Caveat: goalmap holds the two non-alignable rows at OUR positions, so this is evidence the ordering residual is not independently expressible as a sched2 goal, not proof the emission order matches.
+- [s5] `inverse_compose.py classify` REFUSES on this function (zero-rule: the src-derived tgt.s cannot carry the target stream) and names `goal_from_tgt.py classify` as the object-level replacement. Future sessions should skip straight to goal_from_tgt.
+- [s5] TOOLING BUG (scratch-patched; tools/ is not editable in a grind session): goalmap.py::_macro_expand_counts scores `<mem> $r,SYM($base)` as 1 insn where GNU as emits 3 (lui/addu/mem), so the same-source checksum falsely reports a stale build. func_800770B8 hits it twice via `sb $r,D_8009BCE4($3)`. Patched copy: tmp/grind/func_800770B8/s5/sched_solver/goalmap.py.
+
+- [s5] Chassis check: candidate.c re-measures sandbox --disable all = 9 (175 ours / 175 target) on today's chassis, identical to s3 and s4. The dispatch brief's 'measurement unavailable' was a driver-side gap, not drift.
+
+- [s5] Four real first-statement loops (P1-P4) measure 41/42 at 186 insns against the 9 / 175 baseline: a genuine loop over sp[] costs +11 insns here.
+
+- [s5] A real first-statement loop DOES anchor its note pair at the V1 fence position - tmp/grind/func_800770B8/s5/dumps/p1/in.i.sched2 has NOTE_INSN_PROLOGUE_END immediately followed by NOTE_INSN_LOOP_BEG, where the baseline dump's first LOOP_BEG is 137 lines further on.
+
+- [s5] DECISIVE: asm/funcs/func_800770B8.s rows 1-14 (the target's own prologue) are straight-line with no branch, no label and no loop, so the target's contiguous save emission is not produced by a loop-note fence. The s4 do-while(0) is a coincidental route to the same order, not the original mechanism.
+
+- [s5] Target and ours have byte-identical frames (0x40; saves s0/s1/s2/s3/ra at 0x28/0x2C/0x30/0x34/0x38), so class A has no frame-shape component - it is purely the emission order of five insns.
+
+- [s5] goal_from_tgt.py classify reports FIRST DIVERGENCE = RA with $v0->$v1 x4, $s1->$v0 x2, $v1->$v0 x1 (5 renamed pairs, 2 skipped as non-renames). Seven of the nine residual half-rows are register naming, not scheduling - three sessions of sched2 work were aimed at the smaller half.
+
+- [s5] CLASS B FORECLOSED: the $s1->$v0 x2 substitution attributes uniquely to pseudo 75 (p_old); inverse.py global returns NEGATIVE over 161 single perturbations in 6 classes at depth 2, because pseudo 75 crosses 4 calls and $v0 is call-used, so prune_preferences (global.c:897) strips the $v0 preference before find_reg runs.
+
+- [s5] The mechanisms still outside the RA model for that seat are named by the solver itself: the local-alloc suggested-register pass (qty_phys_copy_sugg / qty_phys_sugg, reported but not scored), qty_size for DImode, and reload's spill-retry. Its stated next move is instrumentation, not another spelling search.
+
+- [s5] sched_solver perturb (pass 2, object-level goal) prints no differing block for func_800770B8 while --self-check reports 14250/14250 exact priority recomputation. Caveat: goalmap holds the two non-alignable rows at our positions, so this is evidence rather than proof.
+
+- [s5] TOOLING: inverse_compose.py classify REFUSES on this function (zero-rule, so the src-derived tgt.s cannot carry the target stream) and names goal_from_tgt.py classify as the object-level replacement - future sessions should skip straight to goal_from_tgt.
+
+- [s5] TOOLING BUG (scratch-patched; tools/ is not an editable surface here): goalmap.py::_macro_expand_counts scores `<mem> $r,SYM($base)` as 1 insn where GNU as emits 3 (lui $at,%hi / addu $at,$at,$base / mem $r,%lo($at)), so the same-source checksum falsely reports a stale build. func_800770B8 hits it twice via `sb $r,D_8009BCE4($3)` (169 text lines, estimate 171, object 175). Patched copy at tmp/grind/func_800770B8/s5/sched_solver/goalmap.py; the operator may want the fix upstream.
+
+- [s5] TOOLING: tmp/grind/func_800770B8/s4/dump.sh no longer works - it depends on the s4 permuter workspaces (gone; permuter dirs are gitignored) and must run under WSL, not Git Bash. Replacement harness: tmp/grind/func_800770B8/s5/{hdr.c,mkdump.py,dump.sh}, invoked as `bash tools/wsl.sh 'bash tmp/grind/func_800770B8/s5/dump.sh <cand.c> <tag>'`.
+
+- [s5] src/text1b.c was reverted to HEAD (INCLUDE_ASM) at session end; the tree carries only ledger edits plus metrics/events.jsonl. No permuter or solver process survives the session.

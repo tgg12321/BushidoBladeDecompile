@@ -450,3 +450,98 @@ KILLED (measured, forms banked in rejected/):
 - probe: V2 (wrap the first three statements, unmoved chassis), V3 (wrap only the p_old assign), V11 (wrap the entire remaining body, moved chassis), V12 (wrap sp[0]/sp[1]/ClearOTagR on the p_old-moved chassis) - all sandbox-measured.
 - result: KILLED as written. V2 = 11, V3 = 9, V11 = 39 at 176 insns. V12 = 8 is the only one that beats the honest floor and it is 174 insns, one SHORT of the target's 175, so it is not on the path to 0. Every real-bodied wrap necessarily moves at least one insn inside the notes, which is the thing that breaks the fence.
 - verdict: KILLED
+
+## [s5] There is an ORDINARY-C construct that anchors a NOTE_INSN_LOOP_BEG/END pair between the reload-emitted save stores and the first body insn (the s4 frontier's #1 hypothesis).
+- mechanism: only LOOP notes survive to sched2 anchored mid-block (sched.c reemit_notes reattaches them via REG_NOTES); BLOCK notes all migrate to the top of the function and were measured byte-neutral in s4 (V7/V8). So the honest fence had to be a REAL loop construct placed as the function's first statement, not a scope.
+- probe: four spellings built and sandbox-measured — P1 `for (t0=0;t0<2;t0=(s16)(t0+1)) sp[t0]=0;` as the first statement then p_old then ClearOTagR; P2 the same loop with p_old moved after ClearOTagR (the V10 pairing); P3 p_old first then the loop; P4 a `while` spelling. Plus a full cc1 `-da` dump set for P1 and for the baseline, with the sched2 note anchor read directly.
+- result: KILLED, and the kill is two-sided. The MECHANISM half is CONFIRMED — P1's `.sched2` shows `(note 599 611 16 "" NOTE_INSN_PROLOGUE_END)` immediately followed by `(note 16 599 25 "" NOTE_INSN_LOOP_BEG)`, i.e. a real first-statement loop anchors its note pair at exactly the V1 fence position, so ordinary C CAN reach the anchor. The COST half is fatal: all four forms measure 41-42 at **186 insns** (+11 over the baseline 175). A real loop over `sp[]` forces the two `sh $zero` stores onto a computed stack address and adds loop control. Our insn count has equalled the target's 175 since s3, so any construct that adds instructions is off the path to 0 by construction; the only zero-insn loop is an empty one, which is the s4 cheat.
+- verdict: KILLED. rejected/s5-real-loop-note-anchor-insn-cost.c
+
+## [s5] The target's contiguous prologue save emission is produced by a note fence of some kind, so finding an honest fence is the route to class A.
+- mechanism: s4 proved a mid-block loop-note pair reproduces the target's emission order (V1 = 7, V10 = 5), which made "find an honest fence" look like the whole game.
+- probe: read the TARGET's own prologue out of asm/funcs/func_800770B8.s (rows 1-14) and compare the frame directive against ours.
+- result: KILLED. The target's prologue is straight-line — five saves interleaved with three arg copies, then `addiu $a1,$zero,0x1008`, `lui/lw $a0`, `addiu $s1,$s0,0x58`, two `sh $zero`, then the jal. No branch, no label, no loop anywhere near it. Whatever produced the target's order, it was NOT a loop-note fence, because the original source had no loop there. The s4 `do { } while (0);` is a coincidental route to the same emission order. Frames are byte-identical on both sides (0x40; s0/s1/s2/s3/ra at 0x28/0x2C/0x30/0x34/0x38), so class A has no frame-shape component either — it is purely the emission order of five insns.
+- verdict: KILLED — and this also RETIRES the s4 frontier item that proposed a ruling-request on extending the `do-while(0)` carve-out from reorg.c to sched2. That request is withdrawn before filing: there is nothing to extend the carve-out TO, since the construct does not reconstruct what the original source did. Do not re-open it.
+
+## [s5] The residual at floor 9 is dominated by sched2 emission order (the working assumption of s2/s3/s4).
+- mechanism: s3 corrected the pass attribution from sched1 to sched2 and every session since has attacked ordering. Nobody had ever run the object-level RA classifier on this function.
+- probe: `tools/ra_solver/goal_from_tgt.py classify text1b func_800770B8` (object-level; `inverse_compose.py classify` refuses on a zero-rule function and names goal_from_tgt as the replacement). Corroborated with `tools/sched_solver/perturb.py --pass 2 --goal-from-target text1b --target-object build/src/text1b.o --ours-object tmp/sandbox/func_800770B8/text1b.o --atoms luid,luid_move --depth 2`, plus `--self-check`.
+- result: KILLED as stated. FIRST DIVERGENCE = **RA**: `$v0->$v1 x4`, `$s1->$v0 x2`, `$v1->$v0 x1` — 5 renamed pairs, 2 pairs skipped as "skeleton differs — reloc/immediate, not a rename" (those two are the class-A order rows). Seven of the residual half-rows are register NAMING. The sched solver prints no differing pass-2 block for this function while its self-check reports 14250/14250 exact priority recomputation, so the model is live and the silence is a verdict. CAVEAT recorded honestly: goalmap could not align the two non-rename rows and holds them at OUR positions, so the sched silence is evidence that the ordering residual is not independently expressible as a sched2 goal, not proof the emission order matches.
+- verdict: KILLED (re-attribution: the residual is majority-RA, and three sessions of ordering work were aimed at the smaller half)
+
+## [s5] Class B (the 0x30/0x34 stores through $v0 rather than $s1) is reachable by some C spelling not yet found.
+- mechanism: the target keeps the raw `func_8006E49C` result live for two stores after copying it into `$s1`; ours attaches the stores to `p_old`. Five C spellings had been measured dead across s1/s2/s3 with no model-level verdict on the seat.
+- probe: `goal_from_tgt.py goal text1b func_800770B8 --model tmp/ra_solver_work/func_800770B8.model.json` to attribute the substitution onto a pseudo, then `tools/ra_solver/inverse.py global tmp/ra_solver_work/func_800770B8.model.json --goal '{"75": 2}' --depth 2 --top 8`.
+- result: **FORECLOSED**, with a named mechanism. The `$s1->$v0 x2` substitution attributes UNIQUELY to pseudo 75 (`p_old`). The inverse solver returns a NEGATIVE result over 161 single perturbations in 6 classes at depth 2, and explains why the key atom cannot even be emitted: *"pseudo 75 crosses 4 call(s) and $v0 is call-used, so prune_preferences (global.c:897) strips it from this allocno's preferences before find_reg ever sees it."* No C spelling that only moves refs / live span / birth order / conflicts / preferences / calls-crossed can give `p_old` $v0. Semantically the target's store base is a pseudo whose life ENDS before the next call — i.e. a second handle on the raw call result — which is the family that is now six measured spellings dead (s1 K1 = 28, s2 K4, s3 B1 = 12, B2/B3/B4 byte-neutral), every one lost to cse forwarding the handle and deleting the D_800A35D0 loop-preheader reload.
+- verdict: CONFIRMED as FORECLOSED for the rename reading. The solver explicitly names what remains outside its model for this seat — the local-alloc suggested-register pass (`qty_phys_copy_sugg` / `qty_phys_sugg`, reported but not scored today), `qty_size` for DImode, and reload's spill-retry — and says the next move there is INSTRUMENTATION, not another spelling search. That boundary is the honest scope of the foreclosure.
+
+## Live frontier (for s6) — reset by the s5 synthesis
+
+1. **Class C is the ONLY unspent typed-verdict axis, and its inputs are now all in place.**
+   The remaining `$v0 <-> $v1` substitutions (rows 62-64, the p_6a/p_7e base addu's
+   dest coalesce) are a local-alloc question, and local-alloc has never been run on
+   this function. Eight address shapes are already measured dead (s1 K3, s2 K5,
+   s3 C1/C2/C3/C4/C6/C7), so do NOT spell more addresses first.
+   - mechanism: `tools/ra_solver/inverse.py local` models local-alloc's
+     `block_alloc` and returns REACHABLE-with-lever-vectors or FORECLOSED for a
+     dest-coalesce seat between two dying input pseudos, exactly the shape here.
+   - next probe: `python3 tools/ra_solver/local_extract.py text1b` to build
+     `tmp/ra_solver_work/text1b.local.json`, find the block holding the row-62
+     `addu`, then `inverse.py local tmp/ra_solver_work/text1b.local.json --func
+     func_800770B8 --block <N> --swap <A>,<B> --depth 2`. Attribute the seat first
+     with `goal_from_tgt.py goal ... --model` (it reported the $v0/$v1 pairs as
+     AMBIGUOUS across 38 and 13 pseudos, so the block-level view is what
+     disambiguates). Spell any returned vector in C and re-measure — a vector is a
+     hypothesis, not a result.
+
+2. **The suggested-register pass is the named gap in the model for class B, and it is an INSTRUMENTATION job, not a spelling job.**
+   - mechanism: `inverse.py`'s own negative report names `qty_phys_copy_sugg` /
+     `qty_phys_sugg` (local-alloc's suggested registers, currently reported but not
+     scored), `qty_size` for DImode, and reload's spill-retry as the mechanisms
+     outside the model. The instrumented cc1 is `tools/gcc-2.7.2/cc1` and already
+     carries BB2_* debug hooks (BB2_NO_FT_STEAL was used in s3), so adding a
+     read-only observation of the suggested-register state for pseudo 75's quantity
+     is in-family with what the toolchain already supports.
+   - next probe: dump the local-alloc quantity state around the
+     `addu $s1,$v0,$zero` copy and check whether target's assignment is explicable
+     as a copy-suggestion that our RTL does not offer. If it is, the C question
+     becomes "what makes the copy's SOURCE the suggested register", which is a
+     different and much narrower search than the six dead second-handle spellings.
+     If it is not, class B is fully foreclosed and the residual is a two-class
+     problem.
+
+3. **Do NOT re-open: the fence, the ordering set, and the do-while(0) ruling.**
+   - mechanism: s5 killed the honest-fence hypothesis on insn cost AND showed the
+     target has no loop in its prologue, so the fence is not the original mechanism.
+     The s4 frontier's item 2 (re-run the A2-A12 ordering set on a fenced chassis)
+     is DIAGNOSTIC-ONLY by its own terms — every fenced chassis carries the cheat —
+     and with the fence now known not to be the target's mechanism the diagnostic
+     no longer points anywhere. The s4 frontier's item 3 (a ruling-request on
+     extending the do-while(0) carve-out from reorg.c to sched2) is withdrawn for
+     the same reason.
+   - next probe: none. Any session that finds itself respelling a prologue fence
+     should stop and go to frontier item 1 or 2 instead.
+
+## [s5] There is an ORDINARY-C construct that anchors a NOTE_INSN_LOOP_BEG/END pair between the reload-emitted save stores and the first body insn (the s4 frontier's #1 hypothesis, worth floor 5 if it existed).
+- mechanism: Only LOOP notes survive to sched2 anchored mid-block (sched.c reemit_notes reattaches them via REG_NOTES); BLOCK notes migrate to the top of the function and measured byte-neutral in s4 (V7/V8). So the honest fence had to be a REAL loop placed as the function's first statement.
+- probe: Four spellings sandbox-measured against candidate.c: P1 `for (t0=0;t0<2;t0=(s16)(t0+1)) sp[t0]=0;` first then p_old then ClearOTagR; P2 same loop with p_old moved after ClearOTagR (the V10 pairing); P3 p_old first then the loop; P4 a `while` spelling. Plus a full cc1 -da dump set for P1 and for the baseline, with the sched2 note anchor read directly out of in.i.sched2.
+- result: Two-sided kill. MECHANISM CONFIRMED: P1's .sched2 shows (note 599 611 16 "" NOTE_INSN_PROLOGUE_END) immediately followed by (note 16 599 25 "" NOTE_INSN_LOOP_BEG) - a real first-statement loop anchors its note pair at exactly the V1 fence position, so ordinary C CAN reach the anchor. COST FATAL: all four forms measure 41-42 at 186 insns (+11 over the 175 baseline); a real loop over sp[] forces the two sh $zero stores onto a computed stack address and adds loop control. Our insn count has equalled the target's 175 since s3, so any construct that adds instructions is off the path to 0 by construction; the only zero-insn loop is an empty one, which is the s4 cheat.
+- verdict: KILLED
+
+## [s5] The target's contiguous prologue save emission is produced by a note fence of some kind, so finding an honest fence is the route to class A.
+- mechanism: s4 proved a mid-block loop-note pair reproduces the target's emission order (V1 = 7, V10 = 5), which made 'find an honest fence' look like the whole game.
+- probe: Read the TARGET's own prologue out of asm/funcs/func_800770B8.s rows 1-14 and compared its frame directive against ours.
+- result: The target's prologue is straight-line: five saves interleaved with three arg copies, then addiu $a1,$zero,0x1008, lui/lw $a0, addiu $s1,$s0,0x58, two sh $zero, then the ClearOTagR jal. No branch, no label, no loop anywhere near it - so whatever produced the target's order, it was NOT a loop-note fence, because the original source had no loop there. The s4 do-while(0) is a coincidental route to the same emission order. Frames are byte-identical on both sides (0x40; s0/s1/s2/s3/ra at 0x28/0x2C/0x30/0x34/0x38), so class A has no frame-shape component either. This also RETIRES the s4 frontier item proposing a ruling-request on extending the do-while(0) carve-out from reorg.c to sched2 - withdrawn before filing, because there is nothing to extend the carve-out TO.
+- verdict: KILLED
+
+## [s5] The residual at floor 9 is dominated by sched2 emission order (the working assumption of s2, s3 and s4).
+- mechanism: s3 corrected the pass attribution from sched1 to sched2 and every session since attacked ordering; nobody had ever run the object-level RA classifier on this function.
+- probe: tools/ra_solver/goal_from_tgt.py classify text1b func_800770B8 (object-level path; inverse_compose.py classify refuses on a zero-rule function and names goal_from_tgt as the replacement). Corroborated with tools/sched_solver/perturb.py --pass 2 --goal-from-target text1b --target-object build/src/text1b.o --ours-object tmp/sandbox/func_800770B8/text1b.o --atoms luid,luid_move --depth 2, plus --self-check.
+- result: FIRST DIVERGENCE = RA: $v0->$v1 x4, $s1->$v0 x2, $v1->$v0 x1 - 5 renamed pairs, 2 pairs skipped as 'skeleton differs - reloc/immediate, not a rename' (those two are the class-A order rows). Seven of the residual half-rows are register NAMING, not scheduling. The sched solver prints no differing pass-2 block for this function while its self-check reports 'priority recomputation: 14250/14250 exact (100.00%)', so the model is live and the silence is a real verdict. CAVEAT banked honestly: goalmap could not align the two non-rename rows and holds them at OUR positions, so the sched silence is evidence the ordering residual is not independently expressible as a sched2 goal, not proof the emission order matches.
+- verdict: KILLED
+
+## [s5] Class B (the 0x30/0x34 stores based on $v0 rather than $s1) is reachable by some C spelling not yet found.
+- mechanism: The target keeps the raw func_8006E49C result live for two stores after copying it into $s1; ours attaches the stores to p_old. Five C spellings were already measured dead across s1/s2/s3 with no model-level verdict on the seat.
+- probe: goal_from_tgt.py goal text1b func_800770B8 --model tmp/ra_solver_work/func_800770B8.model.json to attribute the substitution onto a pseudo, then tools/ra_solver/inverse.py global tmp/ra_solver_work/func_800770B8.model.json --goal '{"75": 2}' --depth 2 --top 8.
+- result: FORECLOSED with a named mechanism. The $s1->$v0 x2 substitution attributes UNIQUELY to pseudo 75 (p_old), giving goal {"75": 2}. The inverse solver returns a NEGATIVE result over 161 single perturbations in 6 classes at depth 2 and explains why the key atom cannot even be emitted: 'pseudo 75 crosses 4 call(s) and $v0 is call-used, so prune_preferences (global.c:897) strips it from this allocno's preferences before find_reg ever sees it.' No C spelling that only moves refs / live span / birth order / conflicts / preferences / calls-crossed can give p_old $v0. Semantically the target's store base is a pseudo whose life ENDS before the next call - a second handle on the raw call result - which is the family now six measured spellings dead (s1 K1 = 28, s2 K4, s3 B1 = 12, B2/B3/B4 byte-neutral), every one lost to cse forwarding the handle and deleting the D_800A35D0 loop-preheader reload. The solver explicitly names what remains outside its model for this seat - the local-alloc suggested-register pass (qty_phys_copy_sugg / qty_phys_sugg, reported but not scored today), qty_size for DImode, and reload's spill-retry - and says the next move there is INSTRUMENTATION, not another spelling search; that is the honest scope of the foreclosure.
+- verdict: CONFIRMED

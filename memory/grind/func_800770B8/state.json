@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 9,
    "modality": "permuter",
    "headline": "First permuter campaigns ever run on this function: class A's sched2 residual is REACHABLE (fence + statement reorder measures 5) but every found fence is a scheduling barrier; the honest floor stays "
+  },
+  {
+   "session": 5,
+   "floor": 9,
+   "modality": "synthesis",
+   "headline": "Honest-fence hunt CLOSED (real loops cost +11 insns and the target has no prologue loop at all); residual re-attributed to RA, and class B is FORECLOSED by prune_preferences (global.c:897) with a name"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "There is an ORDINARY-C construct that anchors a NOTE_INSN_LOOP_BEG/END pair between the reload-emitted save stores and the first body insn - i.e. a genuine loop whose notes land at the prologue boundary. If one exists, floor 5 is immediately available (V10 measured it) and the remaining residual is only classes B and C.",
-   "mechanism": "Only LOOP notes survive to sched2 anchored mid-block (reemit_notes reattaches them via REG_NOTES); BLOCK notes all migrate to the top of the function and are measured byte-neutral (V7/V8). So the honest form must be a real loop construct, not a scope. Candidates not yet measured: rewriting the two sp[] initialisers as a genuine 2-iteration loop placed first; hoisting an existing loop earlier; or a loop-carrying form of the ClearOTagR argument setup.",
-   "next_probe": "Measure a small set of REAL loops placed as the function's first statement (e.g. `for (t0 = 0; t0 < 2; t0++) sp[t0] = 0;` plus variants that keep the two sh $zero stores straight-line). Judge each by comparing its .sched2 note anchor position against tmp/grind/func_800770B8/s4/dumps/v1/in.i.sched2 (the exact anchor that must be reproduced), not by score alone."
+   "hypothesis": "Class C (the $v0 <-> $v1 substitutions at rows 62-64, the p_6a/p_7e base addu dest coalesce) is the ONLY unspent typed-verdict axis, and its inputs are now all in place.",
+   "mechanism": "local-alloc's block_alloc decides which of two dying input pseudos the addu's output coalesces onto; tools/ra_solver/inverse.py local models exactly that and returns REACHABLE-with-ranked-lever-vectors or FORECLOSED. Eight address shapes are already measured dead (s1 K3, s2 K5, s3 C1/C2/C3/C4/C6/C7), so address spelling is not the axis.",
+   "next_probe": "python3 tools/ra_solver/local_extract.py text1b to build tmp/ra_solver_work/text1b.local.json; locate the block holding the row-62 addu; then inverse.py local tmp/ra_solver_work/text1b.local.json --func func_800770B8 --block <N> --swap <A>,<B> --depth 2. Disambiguate the seat first with goal_from_tgt.py goal ... --model (it reported the $v0/$v1 pairs as AMBIGUOUS across 38 and 13 pseudos, so the block-level view is what resolves them). Spell any returned vector in C and re-measure - a vector is a hypothesis, not a result."
   },
   {
-   "hypothesis": "With a fence in place the FULL A2-A12 statement-ordering set from s3 re-opens and may take class A below the 5 that V10 measured. DIAGNOSTIC ONLY - any form carrying the fence is unsubmittable.",
-   "mechanism": "s3 measured all twelve orderings on an unfenced chassis, where sched2 re-sorts the boundary and flattens the axis. V9 vs V10 proves the coupling: the same edit is -1 unfenced and +4 fenced. Only one of the twelve orderings has been re-tested on a fenced chassis.",
-   "next_probe": "Re-run the whole A2-A12 ordering set on the fenced chassis (rejected/s4-empty-do-while-zero-sched2-fence-CHEAT.c is the harness base) and record the fenced floor for each. That maps how much of the residual is ordering versus fence and tells the next session what an honest fence would actually be worth."
+   "hypothesis": "Class B's remaining hope is the local-alloc SUGGESTED-REGISTER pass, and reaching it is an instrumentation job, not a spelling job.",
+   "mechanism": "inverse.py's own negative report names qty_phys_copy_sugg / qty_phys_sugg (reported but not scored today), qty_size for DImode, and reload's spill-retry as the mechanisms outside the model. The instrumented cc1 is tools/gcc-2.7.2/cc1 and already carries BB2_* debug hooks (BB2_NO_FT_STEAL was used in s3), so a read-only observation of the suggested-register state is in-family with what the toolchain supports.",
+   "next_probe": "Dump local-alloc's quantity state around the `addu $s1,$v0,$zero` copy and check whether the target's assignment is explicable as a copy-suggestion our RTL does not offer. If it is, the C question narrows to 'what makes the copy's SOURCE the suggested register' - a much smaller search than the six dead second-handle spellings. If it is not, class B is fully foreclosed and the residual is a two-class problem."
   },
   {
-   "hypothesis": "If no ordinary-C loop-note anchor exists, the correct disposition for class A is a ruling request on whether the do-while(0) carve-out extends from reorg.c to sched2 - not another spelling grind.",
-   "mechanism": ".claude/rules/do-while-zero-exception.md is scoped verbatim to the LABEL_OUTSIDE_LOOP_P / reorg.c interaction. The s4 mechanism is sched2's ready-list ordering in block 0, a different pass, and the non-extension clause in no-new-park-categories.md forbids generalising the carve-out. A bare do { } while (0) also fails T1/T2/T3/T6 outright, so only a real-bodied wrap could ever be in scope - and the only real-bodied wrap that helps (V12) is one insn short of the target.",
-   "next_probe": "Only after the loop-note-anchor probe above comes back negative: emit a ruling-request quoting the reorg.c scope sentence, the sched2 dump evidence, and a docs/reference/sotn-construct-index.md census for a sched2-motivated do-while(0) in SOTN master. Do not spend further sessions respelling the fence."
+   "hypothesis": "Do NOT re-open the prologue fence, the A2-A12 ordering set, or the do-while(0) ruling-request - all three are closed by s5.",
+   "mechanism": "s5 killed the honest-fence hypothesis on insn cost AND showed the target has no loop in its prologue, so the fence is not the original mechanism. The s4 frontier's item 2 (re-run A2-A12 on a fenced chassis) was diagnostic-only by its own terms (every fenced chassis carries the cheat) and now points nowhere. The s4 frontier's item 3 (a ruling-request on extending the do-while(0) carve-out from reorg.c to sched2) is withdrawn for the same reason: the construct does not reconstruct what the original source did.",
+   "next_probe": "None. Any session that finds itself respelling a prologue fence should stop and go to frontier item 1 or 2 instead."
   }
  ],
  "judge_constraints": [],

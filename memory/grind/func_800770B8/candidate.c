@@ -46,6 +46,25 @@
  *     top of the function); measured byte-neutral.
  *   - IMPORTANT for the next session: `p_old` moved after ClearOTagR measures 10
  *     UNFENCED but 5 FENCED. s3's "twelve orderings dead" is chassis-conditional.
+ *
+ * s5 (synthesis modality) — candidate BODY UNCHANGED, re-measured 9 (175/175) on
+ * today's chassis. Two results reset the picture; full detail in evidence.md s5.
+ *   - The honest-fence hunt is CLOSED. A real first-statement loop DOES anchor a
+ *     NOTE_INSN_LOOP_BEG at the V1 fence position (dumped and read), but costs
+ *     +11 insns (175 -> 186, score 41-42), and our count already equals the
+ *     target's — so no real loop is on the path to 0. Decisively, the TARGET has
+ *     no loop, label or branch in its prologue at all, so its contiguous save
+ *     emission is NOT a note fence; the s4 do-while(0) is a coincidental route to
+ *     the same order, not the original mechanism.
+ *   - The residual is majority-RA, not scheduling: goal_from_tgt.py classify
+ *     reports FIRST DIVERGENCE = RA ($v0->$v1 x4, $s1->$v0 x2, $v1->$v0 x1).
+ *     Class B ($s1->$v0, i.e. residual B above) attributes uniquely to pseudo 75
+ *     (p_old) and inverse.py global returns FORECLOSED: p_old crosses 4 calls and
+ *     $v0 is call-used, so prune_preferences (global.c:897) strips the $v0
+ *     preference before find_reg runs. No C spelling moving refs / live span /
+ *     birth order / conflicts / preferences / calls-crossed can close it.
+ *   - Class C (residual C above) is the one unspent typed-verdict axis:
+ *     local_extract.py + inverse.py local. That is s6's first move.
  */
 s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     u16 sp[2];
