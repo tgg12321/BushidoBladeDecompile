@@ -505,3 +505,83 @@
 - [s7] fact 49: tooling/hygiene - memory/grind/func_800203B4/rejected/pure-c-no-islands-floor-26.c carried CP1252/UTF-8-mixed bytes (0x97, 0x94, 0x80, 0xe2) in its header comment, which made engine/inlineasm.py:write_stripped (strict read_text(encoding='utf-8')) raise UnicodeDecodeError as soon as the form was applied to src - the banked pure-C form was UNBUILDABLE as saved. Sanitized to pure ASCII this session; the C body is byte-unchanged. Future sessions re-spending a banked rejected/*.c should expect the same trap in other ledgers.
 
 - [s7] no docs/grind/decisions.md entry was filed and no cluster-membership argument was made this session, per the binding Judge constraint and the s1 discard marker (docs/grind/decisions.md:17591): the proof-of-foreclosure record at docs/grind/decisions.md:17550 stands filed and untouched.
+
+- [s8] fact 50: **the cop2 residual is now a COMPILER-SOURCE PROOF, not an inference.** GCC 2.7.2's
+  MIPS backend cannot name, let alone emit, a coprocessor-2 object. Measured directly against the
+  toolchain's own sources (tools/gcc-2.7.2/config/mips/):
+  `grep -cE 'ctc2|mtc2|cfc2|mfc2|lwc2|swc2|cop2'` = **0 in mips.md, 0 in mips.c, 0 in mips.h**
+  (contrast: the same grep for the cop1/FPU equivalents `mtc1|ctc1|lwc1|swc1` returns 4 hits in
+  mips.md - the backend does support coprocessor 1, so a zero here is an absence, not a grep
+  artifact). The RTL register file is closed and cop2-free: `FIRST_PSEUDO_REGISTER 68`
+  (mips.h:1181) with the comment "32 integer registers, 32 floating point registers and the
+  special registers hi, lo, hilo, and fp status", and the name table `char mips_reg_names[][8]`
+  (mips.c:240-251) enumerates exactly `$0..$31, $f0..$f31, hi, lo, accum, $fcr31`. The class
+  enum `enum reg_class` (mips.h:1377-1389) is NO_REGS / GR_REGS / FP_REGS / HI_REG / LO_REG /
+  HILO_REG / MD_REGS / ST_REGS / ALL_REGS - there is no COP2 class. Consequence: there exists no
+  RTL expression that can reference a cop2 register and no insn pattern that can emit a cop2
+  opcode, so the 11 cop2 instructions of fact 34 (ctc2 x5, mtc2, lwc2, swc2 x3, the MVMVA
+  `.word 0x4A486012`) are unreachable from ANY C source under this compiler **by construction**.
+  This is the same conclusion facts 33/34/41/45 reached by disassembly, partition and the solver
+  stack's PRE-RA verdict - now established from the compiler's own machine description, which no
+  future search can overturn. Do not spend another session looking for a C form of these 11
+  instructions.
+- [s8] fact 51: **the SDK-macro register seats $12-$15 are foreclosed at the ALLOCATOR level, with
+  the pass named.** `tools/gcc-2.7.2/config/mips/mips.h` defines **no REG_ALLOC_ORDER**, so both
+  allocators fall through to their `#else` branch and scan hard registers in ASCENDING regno order,
+  taking the first free one: local-alloc's `find_free_reg` (local-alloc.c:2249-2273,
+  `#ifdef REG_ALLOC_ORDER ... #else int regno = i;`) and global-alloc's `find_reg`
+  (global.c:1058-1082, same shape). With FIXED_REGISTERS marking only $0,$1,$26-$29,$31 fixed, the
+  first allocatable GPR is $2. Measured on the varJ (thin gte_ldv0) chassis this session:
+  `.lreg` seats **all 19 pseudos in $2 or $3** except the two call-crossing pointers, which take the
+  first free CALL_USED=0 registers $16/$17; `.greg`'s "Register dispositions" line is byte-identical
+  to `.lreg`'s, i.e. global-alloc revises nothing. `.greg`'s "Hard regs used: 2 3 4 5 6 12 13 14 15
+  16 17 31" lists $12-$15 **only because the asm island bodies hardcode and clobber them** - no
+  pseudo was ever seated there. Reaching $13/$14 by allocation would require $2..$12 to be
+  simultaneously live, which this function's C-side pressure (max 2 short temps) can never produce.
+  Therefore no C spelling of the 12 SDK-macro integer instructions can land in the target's
+  registers: fact 41's three measured partition failures are the surface symptom of a structural
+  allocation-order fact. Artifacts: tmp/grind/func_800203B4/s8/lreg_func.txt, greg_func.txt.
+- [s8] fact 52: **correction to fact 41's varJ wording.** Fact 41 attributed the varJ failure to
+  "different registers and a different order". The dumped assembly (tmp/grind/func_800203B4/dumps/
+  code6cac.s, func_800203B4 body) shows the ORDER IS IDENTICAL to the target's macro body -
+  `lhu` (high half) then `lhu` (low half) then `sll ,,16` then `or`. The 8 mismatches are entirely
+  (a) register seats - GCC uses $2/$3 where the macro uses $13/$14 - and (b) the addressing base:
+  GCC folds the vec[] accesses to direct `$sp+48/$sp+52` displacements and materializes the pointer
+  (`addu $3,$sp,48`) only for the `lwc2` operand, where the target bases both halfword loads and
+  the `lwc2` off the single `move $12,%0` pointer. There is no scheduling divergence in this
+  partition, so no ordering lever exists to hunt for - consistent with the s7 solver verdict that
+  the residual is PRE-RA/expressiveness, never a sched or RA seat problem that a C reordering could
+  reach.
+- [s8] fact 53: **floor re-confirmed a FOURTEENTH time on the 2026-09-01 chassis** (this dispatch's
+  chassis-check again read "measurement unavailable"): candidate.c applied to src/code6cac.c ->
+  `sandbox func_800203B4 --disable all` = **0, build_insns 65 == target_insns 65, rules_dropped 0,
+  cheat_asm_stripped 25** (artifact tmp/grind/func_800203B4/s8/code6cac_sandbox0_s8.o). The varJ
+  chassis re-measured **8, build_insns 64** exactly as fact 41 recorded (artifact
+  code6cac_varJ_score8_s8.o). src/code6cac.c reverted to INCLUDE_ASM after both builds per
+  [[asm-until-matched]]; working tree clean apart from metrics/events.jsonl, the ledger and scratch.
+- [s8] fact 54: **tooling caveat for anyone dumping this TU** - `pwsh tools/grinder/dump.ps1
+  func_800203B4` prints "src/code6cac.c:680: parse error before `GameObj'" and the same at :996.
+  Those are two forward prototypes of OTHER functions (func_8001A820, func_8001BE20) whose
+  `GameObj` typedef the dump's cpp flags do not supply; func_800203B4 is at line 1813 and its
+  dumps are complete and consistent with the sandbox build (same island bodies, same $2/$3 seats).
+  Expect the noise; do not chase it as a chassis problem.
+- [s8] fact 55: **re-activation triggers re-checked (fact 48 repeat) - NONE has landed.** No
+  func_800203B4 line in inline_asm_canonical.txt; zero occurrences in
+  .claude/rules/cop2-addressing-preamble-cluster.md; docs/grind/decisions.md tail is unchanged from
+  the 2026-09-01 09:05 discarded-session marker. Presence check only - no membership argument was
+  made or re-derived, per the binding Judge constraint. No decisions.md entry was filed this
+  session: the mandated modality is forensics, not escalation.
+
+- [s8] fact 50: cop2 is absent from GCC 2.7.2's MIPS backend entirely - grep -cE 'ctc2|mtc2|cfc2|mfc2|lwc2|swc2|cop2' = 0 in mips.md, mips.c AND mips.h (cop1 equivalents = 4 in mips.md), FIRST_PSEUDO_REGISTER 68 with mips_reg_names = $0-$31/$f0-$f31/hi/lo/accum/$fcr31, and enum reg_class carries no COP2 class. No RTL object can name a cop2 register and no pattern can emit a cop2 opcode, so the 11 cop2 instructions of fact 34 are unreachable from ANY C source by construction. The ledger's central inference (facts 33/34/45) is now a compiler-source proof.
+
+- [s8] fact 51: the SDK-macro seats $12-$15 are foreclosed at the allocator level with the pass named - mips.h defines no REG_ALLOC_ORDER so local-alloc.c:2249 find_free_reg and global.c:1058 find_reg both scan hard regs ascending and take the first free one; measured on the varJ chassis, .lreg seats all 19 pseudos in $2/$3 (call-crossing pointers in $16/$17), .greg is identical (global-alloc revises nothing), and $12-$15 appear only as asm clobbers. Artifacts tmp/grind/func_800203B4/s8/lreg_func.txt and greg_func.txt.
+
+- [s8] fact 52: correction to fact 41's varJ wording - the emitted ORDER is identical to the target's macro body (lhu high, lhu low, sll 16, or). The 8 mismatches are purely register seats ($2/$3 vs $13/$14) and addressing base ($sp+48/$sp+52 displacements plus one 'addu $3,$sp,48' for the lwc2, versus the target's single 'move $12,%0' pointer serving all three). No scheduling divergence exists in this partition, consistent with s7's PRE-RA verdict.
+
+- [s8] fact 53: floor re-confirmed a FOURTEENTH time on the 2026-09-01 chassis (dispatch chassis-check again read 'measurement unavailable') - candidate.c applied -> sandbox --disable all = 0, build_insns 65 == target_insns 65, rules_dropped 0, cheat_asm_stripped 25 (tmp/grind/func_800203B4/s8/code6cac_sandbox0_s8.o); varJ chassis re-measured 8 / build 64 (code6cac_varJ_score8_s8.o). src/code6cac.c reverted to INCLUDE_ASM after both builds; tree clean apart from metrics/events.jsonl, ledger and scratch.
+
+- [s8] fact 54: tooling caveat - 'pwsh tools/grinder/dump.ps1 func_800203B4' prints a parse error before GameObj at src/code6cac.c:680 and :996; those are forward prototypes of OTHER functions whose GameObj typedef the dump's cpp flags do not supply. func_800203B4 is at line 1813 and its dumps are complete and consistent with the sandbox build. Expect the noise; do not chase it as a chassis problem.
+
+- [s8] fact 55: re-activation triggers re-checked this session and NONE has landed - grep -c func_800203B4 inline_asm_canonical.txt = 0, grep -c func_800203B4 .claude/rules/cop2-addressing-preamble-cluster.md = 0, docs/grind/decisions.md tail still the 2026-09-01 09:05 discarded-session marker. Presence check only; no membership argument made or re-derived, per the binding Judge constraint. No decisions.md entry was filed: the mandated modality is forensics, not escalation.
+
+- [s8] explicit non-lever recorded in hypotheses.md H15: raising register pressure to push a pseudo into $13/$14 would mean inventing live values with no semantic purpose - a register pin by another spelling, forbidden by cheat-checklist T1/T2/T6. Named so no future session mistakes it for an idea.

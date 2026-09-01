@@ -1,8 +1,8 @@
 {
  "func": "func_800203B4",
  "file": "code6cac",
- "session_count": 7,
- "current_modality": "solver",
+ "session_count": 8,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 0,
    "modality": "solver",
    "headline": "Solver axis KILLED by the solver stack's own typed verdict: object-level classify returns NO DIVERGENCE on the candidate chassis and FIRST DIVERGENCE: PRE-RA ('next tool: none - upstream of every mode"
+  },
+  {
+   "session": 8,
+   "floor": 0,
+   "modality": "forensics",
+   "headline": "Forensics: the residual is proven unreachable from the compiler's own sources - GCC 2.7.2's MIPS backend has ZERO cop2 mnemonics and no cop2 RTL register (11 cop2 insns unemittable by construction), a"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 (terminal, modality-gated): the standing-ruling disposition is the only remaining action and it is valid only from a driver-dispatched escalation session.",
-   "mechanism": "The driver validator accepts owner-gated only from escalation modality (discard marker docs/grind/decisions.md:17591). Everything the disposition needs is already on disk: the Judge FAIL (decisions.md:17546), the proof-of-foreclosure record (decisions.md:17550), the byte-final candidate, the 25-instruction residual anatomy (fact 34), its measured minimality (fact 41) and now the solver stack's own PRE-RA foreclosure (fact 45). It is a cite-and-return, not new work.",
-   "next_probe": "In escalation modality: run the fact-48 three-grep trigger presence check, then ONE confirming 'sandbox func_800203B4 --disable all' on candidate.c, then return owner-gated with escalation_ref docs/grind/decisions.md:17550. Do not re-file the record and do not re-argue cluster membership in any spelling."
+   "hypothesis": "F1 (terminal, modality-gated): the standing-ruling foreclosure disposition is the only remaining action and it is valid only from a driver-dispatched escalation session.",
+   "mechanism": "The driver validator accepts owner-gated only from escalation modality (discard marker docs/grind/decisions.md:17591). Everything the disposition needs is already on disk: the Judge FAIL (decisions.md:17546), the proof-of-foreclosure record (decisions.md:17550), the byte-final candidate, the 25-instruction residual anatomy (fact 34), its measured minimality (fact 41), the solver stack's PRE-RA verdict (fact 45), and now two compiler-source proofs that the residual is unreachable from C at all (facts 50-51). It is a cite-and-return, not new work.",
+   "next_probe": "In escalation modality: run the fact-55 three-grep trigger presence check, then ONE confirming 'sandbox func_800203B4 --disable all' on candidate.c, then return owner-gated with escalation_ref docs/grind/decisions.md:17550. Do not re-file the record and do not re-argue cluster membership in any spelling."
   },
   {
    "hypothesis": "F2 (standing, one turn): an owner class grant covering non-$aN-source cop2 addressing-preamble sites would make this function a PURE INTEGRATION HANDOFF, not a codegen task.",
-   "mechanism": "Such a grant admits this function's three 'addu $t4,$v0/$s0,$zero' sites into the sanctioned family. candidate.c then applies unchanged: its review surface is four literal PsyQ SDK gte_* macro bodies with no hand-invented instruction (fact 21) and no reducible instruction (fact 41), plus a pure-C head needing no sanctioned-family claim at all (fact 18).",
-   "next_probe": "One turn: the three greps of fact 48. If a trigger has landed, apply memory/grind/func_800203B4/candidate.c, confirm sandbox 0, and hand off per evidence.md fact 11 (driver writes the inline_asm_canonical.txt grant line + docs/grind/borderline.md entry; then layer-2 cheat-reviewer, verify-oracle --rebuild, queue done)."
+   "mechanism": "Such a grant admits this function's three 'addu $t4,$v0/$s0,$zero' sites into the sanctioned family. candidate.c then applies unchanged: four literal PsyQ SDK gte_* macro bodies with no hand-invented instruction (fact 21), no reducible instruction (fact 41), and now no C-expressible instruction either (facts 50-51), plus a pure-C head needing no sanctioned-family claim (fact 18).",
+   "next_probe": "One turn: the three greps of fact 55. If a trigger has landed, apply memory/grind/func_800203B4/candidate.c, confirm sandbox 0, and hand off per evidence.md fact 11 (driver writes the inline_asm_canonical.txt grant line + docs/grind/borderline.md entry; then layer-2 cheat-reviewer, verify-oracle --rebuild, queue done)."
   },
   {
-   "hypothesis": "F3: the solver, permuter, structural, synthesis and island-partition axes are ALL measured dead; a session dispatched into any of them should confirm and return in under five turns, never search.",
-   "mechanism": "Solver is now typed-foreclosed by the classifier itself (fact 45: PRE-RA, 'next tool: none'); permuter is spent (facts 28/32); structural/decl-order/statement-order are banked in rejected/ (H6/H7/H8/H10/H11); island partition is measured non-zero in three variants (fact 41). The gap is expressiveness - cop2 opcodes GCC 2.7.2 cannot emit - which no C-side lever and no model addresses.",
-   "next_probe": "One confirming pair of runs (candidate.c -> 0, 65/65; rejected/pure-c-no-islands-floor-26.c -> 26, build_insns 39), re-state facts 33/34/41/45, return progress. Do NOT re-run the permuter, re-order locals or statements, re-probe the delay nops / named intermediate / 'arg0 += 0x354' spelling, re-partition the islands, or run any ra_solver/sched_solver vector search."
+   "hypothesis": "F3: every codegen axis is closed and the closure is now structural, not empirical - solver, permuter, structural, synthesis, island-partition AND forensics all measured dead.",
+   "mechanism": "Facts 50-51 removed the last empirical uncertainty: the 11 cop2 instructions have no emitter in the compiler at all, and the 12 SDK-macro integer instructions have no reachable register seat under ascending-scan allocation. Earlier axes were dead by measurement; these two are dead by compiler construction, which no search can overturn. Prior axes: permuter spent (facts 28/32), structural/decl-order/statement-order banked in rejected/ (H6/H7/H8/H10/H11), partition non-zero in three variants (fact 41), solver typed PRE-RA (fact 45).",
+   "next_probe": "A session dispatched into any codegen modality should confirm and return in under five turns, never search: one pair of runs (candidate.c -> 0, 65/65; rejected/pure-c-no-islands-floor-26.c -> 26, build_insns 39), re-state facts 33/34/41/45/50/51, return progress. Do NOT re-run the permuter, re-order locals or statements, re-partition the islands, run any ra_solver/sched_solver vector search, or attempt to manufacture register pressure to reach $12-$15 (named as a cheat, not a lever, in H15)."
   }
  ],
  "judge_constraints": [

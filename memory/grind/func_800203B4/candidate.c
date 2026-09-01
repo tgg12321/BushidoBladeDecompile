@@ -51,7 +51,21 @@
  * chassis (ours 39 vs target 65). PRE-RA means an instruction-MULTISET difference, which
  * neither ra_solver (renames a fixed multiset) nor sched_solver (reorders a fixed stream) can
  * reach - so no RA/scheduler vector search exists for this function. evidence.md facts 45-46,
- * hypotheses.md H13. Floor re-confirmed 0 (65/65) a twelfth and thirteenth time. */
+ * hypotheses.md H13. Floor re-confirmed 0 (65/65) a twelfth and thirteenth time.
+ *
+ * s8 (forensics, 2026-09-01) changed NOTHING in this body and converted the ledger's central
+ * inference into two compiler-source PROOFS. (1) GCC 2.7.2's MIPS backend contains zero cop2
+ * mnemonics (grep ctc2|mtc2|cfc2|mfc2|lwc2|swc2|cop2 = 0 in mips.md, mips.c and mips.h; the cop1
+ * equivalents return 4) and no cop2 register exists in its RTL register file (FIRST_PSEUDO_REGISTER
+ * 68 = $0-$31, $f0-$f31, hi, lo, accum, $fcr31; enum reg_class has no COP2 class) - so the 11 cop2
+ * instructions are unreachable from ANY C source by construction. (2) mips.h defines no
+ * REG_ALLOC_ORDER, so local-alloc (local-alloc.c:2249) and global-alloc (global.c:1058) both scan
+ * hard regs in ascending regno order and take the first free one; the .lreg/.greg dumps of the varJ
+ * chassis seat every pseudo in $2/$3 (call-crossing pointers in $16/$17) and never touch $12-$15,
+ * which appear only as asm clobbers - so no C spelling of the SDK macro bodies can reach the
+ * target's registers. evidence.md facts 50-52, hypotheses.md H14/H15. Floor re-confirmed 0 (65/65)
+ * a fourteenth time.
+*/
 void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
     s32 mat[8];
     s32 vec[3];

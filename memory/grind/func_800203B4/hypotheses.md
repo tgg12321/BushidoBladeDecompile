@@ -464,3 +464,51 @@ change to the instruction multiset, which is the expressiveness question (cop2 o
 - probe: memory/grind/func_800203B4/candidate.c applied to src/code6cac.c, `sandbox func_800203B4 --disable all`, run twice this session (once before and once after the header-comment update).
 - result: 0, build_insns 65 == target_insns 65, rules_dropped 0, cheat_asm_stripped 25 - both times. Twelfth and thirteenth confirmation overall. Artifact tmp/grind/func_800203B4/s7/code6cac_sandbox0_s7.o. src reverted to INCLUDE_ASM after every build per asm-until-matched.
 - verdict: CONFIRMED
+
+## H14 [s8, forensics] — CONFIRMED
+**Statement.** The 11 cop2 instructions in this function's residual are not "an unfound C
+spelling" but a hard expressiveness limit of GCC 2.7.2's MIPS backend, provable from the
+compiler's own machine description rather than from search.
+**Mechanism.** An insn can only be emitted if some pattern in `config/mips/mips.md` produces the
+mnemonic and some RTL register object can name the operand. Both are absent for coprocessor 2.
+**Probe.** Grep the toolchain sources at tools/gcc-2.7.2/config/mips/ for every cop2 mnemonic;
+contrast with cop1; read FIRST_PSEUDO_REGISTER, `mips_reg_names`, and `enum reg_class`.
+**Result.** 0 hits for `ctc2|mtc2|cfc2|mfc2|lwc2|swc2|cop2` in mips.md, mips.c AND mips.h; 4 hits
+for the cop1 equivalents in mips.md. FIRST_PSEUDO_REGISTER 68 (mips.h:1181) = 32 GPR + 32 FPR +
+hi + lo + accum + $fcr31 (mips.c:240-251); `enum reg_class` (mips.h:1377) has no COP2 class.
+**Verdict.** CONFIRMED. Evidence fact 50. The cop2 half of the residual is closed permanently -
+no future session should search for a C form of it.
+
+## H15 [s8, forensics] — CONFIRMED
+**Statement.** The 12 ordinary-integer SDK-macro-body instructions cannot be written in C because
+their target register seats ($12-$15) are unreachable by GCC 2.7.2's allocator at this function's
+register pressure — a structural allocation-order fact, not a spelling problem.
+**Mechanism.** mips.h defines no REG_ALLOC_ORDER, so local-alloc's `find_free_reg`
+(local-alloc.c:2249-2273) and global-alloc's `find_reg` (global.c:1058-1082) both take the
+`#else int regno = i;` branch: ascending regno scan, first free register wins. With $2 the first
+allocatable GPR, a pseudo reaches $13/$14 only when $2..$12 are all simultaneously live.
+**Probe.** Apply the s6 varJ (thin gte_ldv0) form — the one partition where the C-expressible work
+is genuinely ordinary C — run `pwsh tools/grinder/dump.ps1 func_800203B4`, and read the .lreg/.greg
+register dispositions plus the emitted .s.
+**Result.** `.lreg` seats all 19 pseudos in $2 or $3 except the two call-crossing pointers ($16/$17,
+the first free callee-saved regs); `.greg` dispositions are identical, so global-alloc revises
+nothing; $12-$15 appear in "Hard regs used" solely as asm clobbers. The emitted body uses $2/$3
+where the target uses $13/$14, and folds vec[] to $sp displacements instead of basing off one
+pointer register. sandbox re-measured 8 / build 64, matching fact 41.
+**Verdict.** CONFIRMED. Evidence facts 51-52. Note the corollary in fact 52: the ORDER matches the
+target exactly, so this was never a scheduling divergence — consistent with s7's PRE-RA verdict.
+**Explicitly NOT a lever:** raising register pressure to push a pseudo into $13/$14 would require
+inventing live values with no semantic purpose — a register-pin by another spelling, forbidden by
+the cheat checklist (T1/T2/T6). It is named here so no future session mistakes it for an idea.
+
+## [s8] The 11 cop2 instructions in the residual are a hard expressiveness limit of GCC 2.7.2's MIPS backend, provable from the compiler's own machine description rather than from search.
+- mechanism: An insn is emittable only if some mips.md pattern produces the mnemonic and some RTL register object can name the operand; both are absent for coprocessor 2, so no C expression can ever expand to one.
+- probe: grep -cE 'ctc2|mtc2|cfc2|mfc2|lwc2|swc2|cop2' over tools/gcc-2.7.2/config/mips/{mips.md,mips.c,mips.h}; contrast with the cop1 mnemonics; read FIRST_PSEUDO_REGISTER, mips_reg_names and enum reg_class.
+- result: 0 hits in all three files (cop1 equivalents mtc1|ctc1|lwc1|swc1: 4 hits in mips.md, so the backend does support coprocessor 1 and the zero is a real absence). FIRST_PSEUDO_REGISTER 68 (mips.h:1181); mips_reg_names (mips.c:240-251) = $0-$31, $f0-$f31, hi, lo, accum, $fcr31; enum reg_class (mips.h:1377-1389) = NO_REGS/GR_REGS/FP_REGS/HI_REG/LO_REG/HILO_REG/MD_REGS/ST_REGS/ALL_REGS with no COP2 class.
+- verdict: CONFIRMED
+
+## [s8] The 12 ordinary-integer SDK-macro-body instructions cannot be written in C because their target register seats ($12-$15) are unreachable by GCC 2.7.2's allocator at this function's register pressure.
+- mechanism: mips.h defines no REG_ALLOC_ORDER, so local-alloc's find_free_reg (local-alloc.c:2249-2273) and global-alloc's find_reg (global.c:1058-1082) both take the '#else int regno = i;' branch - ascending regno scan, first free register wins. $2 is the first allocatable GPR under FIXED_REGISTERS, so a pseudo reaches $13/$14 only when $2..$12 are simultaneously live.
+- probe: Apply the s6 varJ thin-gte_ldv0 form (the one partition whose C-expressible work is genuinely ordinary C), run 'pwsh tools/grinder/dump.ps1 func_800203B4', read the .lreg/.greg register dispositions and the emitted .s, and re-measure the sandbox score.
+- result: '.lreg' seats all 19 pseudos in $2 or $3 except the two call-crossing pointers ($16/$17, the first free callee-saved regs); '.greg' dispositions are identical so global-alloc revises nothing; $12-$15 appear in 'Hard regs used' only as asm clobbers. The emitted body uses $2/$3 where the target uses $13/$14 and folds vec[] to $sp displacements instead of basing off one pointer register. sandbox re-measured 8 / build_insns 64, matching fact 41.
+- verdict: CONFIRMED
