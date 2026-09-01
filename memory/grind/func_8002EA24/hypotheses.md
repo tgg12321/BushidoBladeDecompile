@@ -2076,3 +2076,111 @@ Returned to active under Ruling A. Ground: the depth-2 atom sweep ran against ON
 - probe: s19/v6_threshold_holds_zsq.c (`threshold = z*z; a0_var = max_y*max_y + threshold;`) and s19/v7_operand_flip.c (`a0_var = z*z + threshold;`), each applied and measured.
 - result: v6 = 4 (the residual mirrors onto the other product and costs two more); v7 = 2, identical to v5 -- source-level operand order of the sum is inert. Banked rejected/s19-threshold-holds-zsq-mirror-residual-score4.c and rejected/s19-sum-operand-flip-inert-score2.c.
 - verdict: KILLED
+
+## [s20] H20a (DECISIVE) -- the s18/s19 preference-donation family cannot reach 0, because the donation carrier is structurally barred from the register the target uses.
+- mechanism: The donation only fires when allocno 74 (`threshold`) dies on an
+  insn whose SET_DEST is 97 (s19 H19b, exhaustive), which forces 74 to CARRY a
+  real value into the sum-of-squares statement.  The RA model extracted from the
+  v5 chassis this session names two independent barriers to seating that value
+  in target's $v0: (i) `hard_conflicts["74"] = [2, 3, 5, 7, 12, 29, 64, 66]` --
+  hard register 2 is $v0, and 74 conflicts with it because `threshold` is live
+  across the four early-return points where $v0 is the function's return value;
+  (ii) `copy_prefs["74"] = [6]` -- the incoming-parameter copy `(set (reg 74)
+  (reg $a2))` gives 74 a COPY preference for its own argument register, and
+  GCC 2.7.2 `find_reg` consults hard_reg_copy_preferences before the general
+  preference set, which is why 74 takes $a2 even though the donated $a0 (4)
+  sits in `prefs["74"] = [4, 6]` and is free.  Nothing in this function is ever
+  seated in $a2 before 74 is allocated (the pre-74 seat vector is
+  101:$v0 96:$v1 97:$a0 100:$a1 108:unassigned 72:$t0 102:$v1 116:$v1 103:$t1),
+  so $a2 can never be denied to it either.
+- probe: `tmp/grind/func_8002EA24/s20/harvest.sh` over four bodies (b0 v5
+  control, b8 separate-x, b6 zsq-own-local, b3 threshold-carries-x): sandbox
+  score + `tools/ra_solver/extract.py` model + `goal_from_tgt.py --show`.
+  Model dump `s20/b0_v5_control.model.json`, attribution `s20/*.goal.txt`.
+- result: CONFIRMED.  Every donation-family body measures exactly 2 at 104/104
+  with the byte-identical residual `ours[46] mflo a2` / `ours[49] addu a0,a2,v1`
+  against target's `mflo v0` / `addu a0,v0,v1`, attributed $a2->$v0 with the two
+  $a2 holders [74, 99].  The value 74 carries is irrelevant: x*x = 2 (v5), the
+  whole sum = 3 (v3), z*z = 4 (v6), the tail sum = 6 (v1), the second product
+  = 6 (s20 b10).  The complementary half is also measured: b3
+  (`threshold = max_y; a0_var = threshold*threshold + z*z;`) puts the product
+  back in target's $v0 AND reproduces target's `mult a1,a1` exactly -- but the
+  REG_DEAD(74) note then lands on the mult insn (dest = the product pseudo, not
+  97), the donation never fires, and 103 falls back to $a0: score 3 with the
+  residual back at insns 30/31/39.  The two halves are mutually exclusive by
+  construction.
+- verdict: CONFIRMED (the family is closed; the 2-insn residual is irreducible
+  inside it, so s18's frontier item "spell any reaching pair that does not touch
+  allocno 74" is answered NEGATIVELY at the source of the requirement rather
+  than by another sweep)
+
+## [s20] H20b -- the complete enumeration of ways hard register 4 ($a0) can enter `used` for allocno 103, on this function's allocno set.
+- mechanism: `find_reg` pass 0 (global.c:1001) computes
+  `used = hard_conflicts[103] | regs-of-already-assigned-conflicting-allocnos |
+  regs_someone_prefers[103]` and first-fits.  In every body measured in 20
+  sessions `hard_conflicts["103"] = [2, 29]` and the assigned conflicting
+  allocnos give {72:$t0, 96:$v1, 100:$a1}, so 103 lands on $t1 (target) exactly
+  when 4 is added, and on $a0 otherwise.  There are only three generators.
+- probe: read off `s20/b0_v5_control.model.json` (conflicts, hard_conflicts,
+  prefs, full_prefs, copy_prefs, allocdbg with per-allocno nrefs/livelen/pri)
+  plus the banked measurements of all three routes.
+- result: (i) HARD CONFLICT -- needs neg_threshold live at function entry where
+  $a0 is the incoming `obj` parameter; measured s5, 108 insns.  (ii) CONFLICT
+  WITH THE $a0 HOLDER (97, a0_var) -- the L3 family; reaches $t1 but leaves the
+  first range test's boolean in $a0, the score-2 residual of candidate.c.
+  (iii) `regs_someone_prefers` -- requires a LOWER-priority allocno that
+  conflicts with 103 and carries 4 in its preferences.  The complete candidate
+  list is readable from the model: allocnos conflicting with 103 are
+  {72, 74, 75, 96, 100}; of those, lower priority than 103 (pri 4285) are only
+  74 (3750) and 75 (833); 96/100 outrank it.  75's preferences are [7] and it
+  can never receive 4, because expand_preferences is gated on !CONFLICTP and
+  `conflicts["75"]` contains 97 (both `r_sq < a0_var` and `a0_var = r_sq -
+  a0_var` keep them simultaneously live).  74 is the donation family, closed by
+  H20a.  72 (`obj`) prefers $a0 naturally but its preference is pruned by its
+  own hard conflict with 4 (`hard_conflicts["72"] = [2,3,4,5,6,7,...]`, the
+  parameter pseudo is live at entry alongside all four argument hard regs), and
+  it outranks 103 anyway (pri 6093).  102 (`y`) is the only other allocno in the
+  function with 4 in its preferences (`full_prefs["102"] = [4]`), but it does
+  NOT conflict with 103 and it OUTRANKS it (pri 6000); the single edit that
+  creates the conflict -- hoisting y's load above the range tests -- also
+  lengthens 102's live range enough to demote it, and is measured at 10/11
+  (s16 `yhoist-route-c-edge-never-created`, s19 v9).
+- verdict: CONFIRMED -- with H20a this closes routes (ii)+(iii) as
+  score-2-or-worse by construction, on this function's allocno set.
+
+## [s20] H20c -- the score-2 plateau is source-shape-invariant on the DONATION chassis too, and the L2 variable-reuse construct is not load-bearing there.
+- mechanism: s8 proved shape-invariance on the plain chassis; the v5 donation
+  chassis is new (s18) and had never been rederived.
+- probe: eight structurally distinct bodies spliced and scored via
+  `s20/sweep.sh` (log `s20/sweep1.txt`), generated by `s20/gen.py` from
+  `s20/b0_v5_control.c`.
+- result: b8 (a separate `s32 x` local -- the L2 variable-reuse DELETED) = 2 at
+  104/104; b6 (`z*z` hoisted into its own local `zsq`) = 2 at 104/104; both
+  produce the byte-identical v5 residual.  Negative arms: b1 (L1 removed,
+  plain `return 0;`) = 5 at 102 insns -- L1 is still load-bearing on this
+  chassis; b4 (`min_y = 0;` hoisted above the range tests, to deny $a2 to 74
+  by conflict) = 9 at 105 insns -- it costs an instruction and never gets the
+  chance; b5 (split accumulation `a0_var = z*z; a0_var += threshold;`) = 18;
+  b9 (`threshold` reused as the tail's min_y) = 5; b10 (`threshold` carries the
+  SECOND product) = 6.  Banked in rejected/ as `s20-*.c`.
+- verdict: CONFIRMED.  Consequence for whoever writes the eventual self-vet:
+  the best score-2 body (`candidate_alt_s20_v5_no_L2_reuse.c`) carries exactly
+  ONE FAKE-class construct (L1), down from three.
+
+## [s20] The s18/s19 preference-donation family (v5) cannot reach 0: its 2-instruction residual is irreducible for every possible carried value.
+- mechanism: s19 H19b proved the donation only fires when allocno 74 (the `threshold` parameter) dies on an insn whose SET_DEST is 97, which forces 74 to CARRY a real value into the sum-of-squares statement. The RA model extracted this session gives two independent barriers to seating that value in target's $v0: hard_conflicts["74"] = [2,3,5,7,12,29,64,66] - hard reg 2 is $v0, and 74 conflicts with it because `threshold` is live across the four early-return points where $v0 carries the return value; and copy_prefs["74"] = [6] - the incoming-parameter copy gives 74 a COPY preference for its own argument register $a2, which GCC 2.7.2 find_reg consults before the general preference set (this is why 74 takes $a2 even though the donated $a0 in prefs["74"]=[4,6] is free, 97 holding $a0 without conflicting with 74). No allocno in this function is ever seated in $a2 before 74 is allocated (pre-74 seats: 101:$v0 96:$v1 97:$a0 100:$a1 108:unassigned 72:$t0 102:$v1 116:$v1 103:$t1), so $a2 cannot be denied to it either.
+- probe: tmp/grind/func_8002EA24/s20/harvest.sh over four bodies (b0 v5 control, b8 separate-x, b6 zsq-own-local, b3 threshold-carries-x): splice -> `sandbox func_8002EA24 --disable all` -> tools/ra_solver/extract.py -> goal_from_tgt.py goal --show. Model dump s20/b0_v5_control.model.json (allocdbg is instrumented-cc1 truth: per-allocno hardreg/nrefs/livelen/pri).
+- result: CONFIRMED. Every donation-family body measures exactly 2 at 104/104 with the byte-identical residual ours[46] `mflo a2` / ours[49] `addu a0,a2,v1` against target's `mflo v0` / `addu a0,v0,v1` ($a2->$v0, the two $a2 holders being [74, 99]). The carrier ladder is complete and monotone-bad: x*x = 2 (v5), whole sum = 3 (v3), z*z = 4 (v6), tail sum = 6 (v1), second product = 6 (s20 b10). The complementary half is measured too: b3 (`threshold = max_y; a0_var = threshold*threshold + z*z;`) reproduces target's `mult a1,a1` / `mflo v0` / `addu a0,v0,v1` EXACTLY - the seat problem disappears - but the REG_DEAD(74) note then lands on the multiply insn whose SET_DEST is the product pseudo, not 97, so the donation never fires and 103 falls back to $a0: score 3 with the residual back at insns 30/31/39. The two halves are mutually exclusive by construction.
+- verdict: CONFIRMED
+
+## [s20] Hard register 4 ($a0) can enter find_reg's `used` set for allocno 103 in exactly three ways on this function's allocno set, and all three are now measured at score >= 2.
+- mechanism: find_reg pass 0 (global.c:1001) computes used = hard_conflicts[103] | regs-of-already-assigned-conflicting-allocnos | regs_someone_prefers[103] and first-fits. In every body in 20 sessions hard_conflicts["103"] = [2,29] and the assigned conflicting allocnos give {72:$t0, 96:$v1, 100:$a1}, so 103 lands on target's $t1 exactly when 4 is added and on $a0 otherwise.
+- probe: Read straight off s20/b0_v5_control.model.json (conflicts, hard_conflicts, prefs, full_prefs, copy_prefs, allocdbg priorities) and cross-checked against the banked measurements of each route.
+- result: (i) hard conflict - needs neg_threshold live at function entry, measured s5 at 108 insns. (ii) conflict with the $a0 holder 97 - the L3 family; reaches $t1 but strands the first range test's boolean in $a0 (candidate.c's score-2 residual). (iii) regs_someone_prefers - needs a LOWER-priority allocno conflicting with 103 and carrying 4 in its preferences; the model shows the conflicting set is {72,74,75,96,100}, of which only 74 (pri 3750) and 75 (pri 833) rank below 103 (pri 4285). 75 can never receive $a0: expand_preferences is gated on !CONFLICTP and conflicts["75"] contains 97 (both `r_sq < a0_var` and `a0_var = r_sq - a0_var` keep them simultaneously live). 74 is the donation family, closed above. 72 (`obj`) prefers $a0 naturally but the preference is pruned by its own hard conflict (hard_conflicts["72"] = [2,3,4,5,6,7,...], the parameter pseudo being live at entry alongside all four argument hard regs) and it outranks 103 at pri 6093. 102 (`y`) is the only other allocno with 4 in its preferences (full_prefs["102"] = [4]) but does not conflict with 103 and outranks it (pri 6000); the single edit that creates the conflict - hoisting y's load - also demotes 102, and is measured at 10/11 (s16 yhoist, s19 v9).
+- verdict: CONFIRMED
+
+## [s20] The score-2 plateau is source-shape-invariant on the DONATION chassis as well (s8 proved it only for the plain chassis), and in particular the L2 variable-reuse construct is not load-bearing there.
+- mechanism: The v5 chassis is new (s18) and had never been rederived; if the plateau is an allocator bit rather than a source-shape effect, structurally distinct bodies should all land on 2 with the identical residual.
+- probe: Eight structurally distinct bodies generated by tmp/grind/func_8002EA24/s20/gen.py from the v5 control and measured with s20/sweep.sh (log s20/sweep1.txt), each spliced into src/code6cac_b.c and scored with `sandbox func_8002EA24 --disable all`.
+- result: b8 (separate `s32 x` local - the L2 'one local, two jobs' reuse DELETED) = 2 at 104/104 with the byte-identical residual; b6 (`z*z` hoisted into its own local) = 2 at 104/104. Negative arms, all banked in rejected/ as s20-*.c: b1 (L1 removed, plain `return 0;`) = 5 at 102 insns, so L1 is still load-bearing here; b4 (`min_y = 0;` hoisted above the range tests, the attempt to deny $a2 to 74 by conflict) = 9 at 105 insns; b5 (split accumulation) = 18; b9 (`threshold` reused as the tail's min_y) = 5; b10 (`threshold` carries the second product) = 6. Consequence: the fewest-construct score-2 body in 20 sessions is now memory/grind/func_8002EA24/candidate_alt_s20_v5_no_L2_reuse.c, carrying ONLY L1 (L3 deleted by s18, L2 deleted here).
+- verdict: CONFIRMED

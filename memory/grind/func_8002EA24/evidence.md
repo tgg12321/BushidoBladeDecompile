@@ -2207,3 +2207,99 @@ cause.  Four new rejected forms banked (54 total).
 - [s19] v5 preserved as memory/grind/func_8002EA24/candidate_alt_s19_v5_threshold_holds_xsq.c. NOT promoted over candidate.c (both measure 2): it deletes the L3 staged boolean but adds a `threshold` parameter reuse, so it trades one annotated construct for another. Its value is diagnostic -- first body in 19 sessions whose range-test chain (target insns 30/31/39) matches.
 
 - [s19] src/code6cac_b.c was restored to HEAD at end of session; the working tree carries only memory/ ledger additions and the untracked tmp/ scratch.
+
+## Session 20 (rederive) -- 2026-09-01
+
+Chassis re-measured first: the s18/s19 v5 body (`threshold = max_y*max_y;
+a0_var = threshold + z*z;`) applied to `src/code6cac_b.c` measures
+`sandbox func_8002EA24 --disable all` = **2 at 104/104 insns**, so the whole
+post-s18 ledger carries over unchanged.  The owner's 2026-09-01 Ruling-A named
+probe for this function (re-run s16's depth-2 sweep over the other seven banked
+score-2 bodies, AMBIGUOUS-filtered) was already executed and KILLED in s18; this
+session did not repeat it.
+
+**Rederive sweep on the DONATION chassis (new -- every earlier rederive, s8/s9,
+ran on the plain chassis).**  Eight structurally distinct bodies were generated
+from the v5 control by `tmp/grind/func_8002EA24/s20/gen.py` and measured with
+`s20/sweep.sh` (log `s20/sweep1.txt`):
+
+| body | what changed | score | insns |
+|---|---|---|---|
+| b0 v5 control | -- | 2 | 104/104 |
+| b6 zsq own local | `z*z` hoisted into `s32 zsq` | **2** | 104/104 |
+| b8 separate x local | the L2 variable-reuse DELETED (`s32 x`) | **2** | 104/104 |
+| b3 threshold carries x | `threshold = max_y; a0_var = threshold*threshold + z*z;` | 3 | 104/104 |
+| b1 no L1 | last reject arm back to plain `return 0;` | 5 | 102/104 |
+| b9 threshold reused as min_y | tail's min_y carried by the parameter | 5 | 104/104 |
+| b10 second product carrier | `threshold = z*z` written after `a0_var = x*x` | 6 | 104/104 |
+| b4 min_y born early | `min_y = 0;` hoisted above the range tests | 9 | 105/104 |
+| b5 split accumulation | `a0_var = z*z; a0_var += threshold;` | 18 | 104/104 |
+
+Two results matter.
+
+**(1) The donation family is CLOSED, with the mechanism read out of the RA model
+rather than inferred.**  `s20/b0_v5_control.model.json` (from
+`tools/ra_solver/extract.py`, instrumented-cc1 backed -- `allocdbg` carries the
+real per-allocno hardreg/nrefs/livelen/pri) gives, for the carrier allocno 74
+(`threshold`):
+
+    hard_conflicts["74"] = [2, 3, 5, 7, 12, 29, 64, 66]      <- 2 is $v0
+    copy_prefs["74"]     = [6]                               <- $a2, its own arg reg
+    prefs["74"]          = [4, 6]                            <- 4 = the donated $a0
+    allocdbg 74: hardreg 6, nrefs 6, livelen 32, pri 3750
+
+Hard register 2 is $v0 and 74 conflicts with it because `threshold` is live
+across the four early-return points where $v0 carries the return value; and the
+incoming-parameter copy gives 74 a COPY preference for $a2, which GCC 2.7.2's
+`find_reg` consults before the general preference set (this is why 74 takes $a2
+even though the donated $a0 is free -- 97 holds $a0 but does not conflict with
+74).  Since s19 H19b proved the donation only fires when 74 CARRIES a value into
+the sum statement, and the target seats that value in $v0 (`mflo v0` /
+`addu a0,v0,v1`), the 2-instruction residual is irreducible inside the family
+for every possible carried value.  The measured carrier ladder confirms it:
+x*x = 2, whole sum = 3, z*z = 4, tail sum = 6, second product = 6.
+
+The complementary half was measured too.  b3 (`threshold = max_y;
+a0_var = threshold*threshold + z*z;`) reproduces target's `mult a1,a1`,
+`mflo v0` and `addu a0,v0,v1` EXACTLY -- the product seat problem disappears --
+but the REG_DEAD(74) note then lands on the multiply insn, whose SET_DEST is the
+product pseudo and not 97, so the donation never fires and allocno 103 falls
+back to $a0: score 3, residual back at insns 30/31/39 (`negu a0,a2` /
+`slt v0,a1,a0` / `slt v0,v1,a0`).  The two halves are mutually exclusive by
+construction, not by search.
+
+**(2) The L2 variable-reuse construct is NOT load-bearing on this chassis.**
+b8 declares a separate `s32 x` for the rotated-X test value -- deleting the
+"one local, two jobs" reuse that every candidate since session 4 carried -- and
+still measures 2 at 104/104 with the byte-identical residual.  Banked as
+`memory/grind/func_8002EA24/candidate_alt_s20_v5_no_L2_reuse.c`; it is the
+score-2 body with the fewest non-ordinary constructs found in 20 sessions
+(L3 deleted by s18, L2 deleted here, leaving only L1 -- which b1 re-confirms is
+still load-bearing at 5/102 insns without it).
+
+**Complete enumeration of the remaining generators of the one bit that
+separates every build from the target** (hard reg 4 entering `used` for allocno
+103) is recorded as hypotheses.md [s20] H20b: (i) a hard conflict -- needs
+neg_threshold live at function entry, measured s5 at 108 insns; (ii) a conflict
+with the $a0 holder 97 -- the L3 family, score 2 with the boolean stranded in
+$a0; (iii) `regs_someone_prefers` -- and the model's own conflict/priority
+tables show the candidate set is exactly {74, 75} (the only conflicting allocnos
+ranked below 103), with 75 permanently unable to receive $a0 because it
+conflicts with 97, and 74 closed by (1) above.  Allocno 72 (`obj`) prefers $a0
+naturally but has it pruned by its own hard conflict (its pseudo is live at
+entry alongside all four argument registers) and outranks 103; allocno 102
+(`y`) is the only other allocno carrying 4 in its preferences, does not conflict
+with 103, outranks it, and the single edit that fixes both costs instructions
+(measured 10/11 in s16/s19).
+
+- [s20] Chassis re-measured at session start: the s18/s19 v5 body applied to src/code6cac_b.c measures `sandbox func_8002EA24 --disable all` = 2 at 104/104 insns, 0 rules - the ledger floor of 2 is current, not stale.
+
+- [s20] The owner's 2026-09-01 Ruling-A named probe for this function (re-run s16's depth-2 sweep over the other seven banked score-2 bodies, AMBIGUOUS-filtered first) was executed and KILLED in session 18; it was not repeated. Session 20 answers the surviving requirement behind it - s18's frontier 'spell any reaching pair that does not touch allocno 74' - NEGATIVELY at the source rather than by another sweep: allocno 74 is the only allocno that can supply the missing bit at zero instruction cost, and it is barred from the target's seat.
+
+- [s20] Model facts (tmp/grind/func_8002EA24/s20/b0_v5_control.model.json, instrumented-cc1 backed): order = [101,96,97,100,108,72,102,116,103,74,99,75]; hard_conflicts[74] = [2,3,5,7,12,29,64,66]; copy_prefs[74] = [6]; prefs[74] = [4,6]; conflicts[75] contains 97; hard_conflicts[72] = [2,3,4,5,6,7,12,29,64,66]; full_prefs[102] = [4]; allocdbg priorities 72:6093, 102:6000, 103:4285, 74:3750, 99:2727, 75:833.
+
+- [s20] s20 sweep scores on the v5 chassis: b0 control 2, b6 zsq-own-local 2, b8 separate-x 2, b3 threshold-carries-x 3, b1 no-L1 5 (102 insns), b9 threshold-as-min_y 5, b10 second-product-carrier 6, b4 min_y-born-early 9 (105 insns), b5 split-accumulation 18.
+
+- [s20] b3 is the first body in 20 sessions to reproduce target's product block exactly (`mult a1,a1` / `mflo v0` / `addu a0,v0,v1`) - it proves the seat is reachable in ordinary C, and that reaching it costs the donation.
+
+- [s20] Six new disproven bodies banked in memory/grind/func_8002EA24/rejected/ (s20-*.c, now 60 files); the fewest-construct score-2 body banked as candidate_alt_s20_v5_no_L2_reuse.c; candidate.c carries a SESSION-20 NOTE pointing at it.

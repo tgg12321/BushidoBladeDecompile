@@ -1,3 +1,13 @@
+/* SESSION-20 NOTE (rederive, 2026-09-01) -- THIS FILE IS NO LONGER THE BEST
+ * SCORE-2 BODY.  It still measures 2, but it carries three FAKE-class /
+ * sanctioned-family constructs (L1 staged return, L2 variable reuse, L3 staged
+ * boolean).  The v5 donation chassis (s18) deleted L3 and session 20 measured
+ * L2 inert on that chassis, so the fewest-construct score-2 body is now
+ * `candidate_alt_s20_v5_no_L2_reuse.c` (L1 only).  Session 20 also CLOSED the
+ * v5 family: allocno 74 hard-conflicts with $v0 and copy-prefers $a2, so the
+ * donated carrier can never sit where the target seats it -- see evidence.md
+ * "Session 20" and hypotheses.md [s20] H20a/H20b/H20c.
+ */
 /* func_8002EA24 -- grind session 4 candidate (permuter modality).
  *
  * Honest sandbox floor of THIS form: 2   (HEAD = 18; s1 honest respelling = 20;
