@@ -1,0 +1,37 @@
+{
+ "func": "func_8003C714",
+ "file": "code6cac_c2",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 15,
+   "modality": "recon",
+   "headline": "Recon: honest floor 33 -> 15 pure-C (no cheats); entire residual is one loop.c decision (0x91A2B3C5 magic hoisted vs target's in-loop split lui/ori) plus its downstream mfhi-temp seat"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "do{}while(0) wrapped around the /1800 statement moves the const to the INNER preheader (inside the real loop, split 2-insn form) and moved_once doubling (insn_count*2 > 122 for body >= 62) blocks the outer re-hoist -> target shape",
+   "mechanism": "loop.c inner-first processing + moved_once[regno] insn_count doubling at loop.c:1611",
+   "next_probe": "measure it; if it reaches d0, outcome is ruling-request (do-while-zero-exception's scope sentence covers only the LABEL_OUTSIDE_LOOP_P/reorg.c interaction, not loop.c count doubling)"
+  },
+  {
+   "hypothesis": "SN cc1psx does not hoist this movable (loop.c divergence) - a toolchain-fidelity question, not a spelling question",
+   "mechanism": "SN fork loop.c differences",
+   "next_probe": "cc1psx wrapper self-disproof run on candidate.c (calibration only, per cc1psx-calibration-only); if confirmed route via no-compiler-divergence/systemic research"
+  },
+  {
+   "hypothesis": "A C shape exists that gives the magic pseudo n_times_used>1 or defeats REG_EQUAL move_insn re-emission, changing movable admission",
+   "mechanism": "loop.c scan_loop admission (reg_single_usage substitution, m->consec, move_insn=REG_EQUAL path)",
+   "next_probe": "read move_movables/scan_loop re-emission paths end-to-end and enumerate admission escapes before spending measurements"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-01T15:28:08.586662+00:00"
+}
