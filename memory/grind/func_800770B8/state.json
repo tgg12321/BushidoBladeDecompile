@@ -1,0 +1,37 @@
+{
+ "func": "func_800770B8",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 14,
+   "modality": "recon",
+   "headline": "Recon: first C body landed (175->14 in one session); return-1 signature, mask intermediate, multi-set ptr LICM defeat, int-domain address order all confirmed; 4 residual classes mapped with dumps bank"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "reorg's beqz fill can be steered to the branch-target thread steal (target's duplicated addiu) by an ordinary C shape in inner loop 2",
+   "mechanism": "reorg.c fill_slots_from_thread eligibility/ordering vs the fall-through ori steal",
+   "next_probe": "read tmp/grind/func_800770B8/dumps/text1b.dbr for the beqz candidate list; then try for-loop respelling / if-arm leading-statement changes; sanctioned duplicated-statement family only as measured last resort"
+  },
+  {
+   "hypothesis": "target's 0x30/0x34 stores through $v0 are reachable without a cse-visible second handle",
+   "mechanism": "call-result pseudo stays live for two stores; K1 shows a named alias folds",
+   "next_probe": "read .lreg/.greg for the call-result pseudo; try statement reorder (0x30/0x34 before D_800A36A0=) and address-shape variants"
+  },
+  {
+   "hypothesis": "p_6a base addu dest-coalesce (rows 62-64) is a local-alloc death-count decision, not a spelling issue",
+   "mechanism": "local-alloc.c reg_n_deaths==1 gate; association-order measured byte-neutral",
+   "next_probe": "read .lreg 'dies in N places' for the base and offset pseudos at the row-62 addu before burning spellings"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-01T07:44:32.913912+00:00"
+}
