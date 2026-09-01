@@ -933,3 +933,57 @@ Banked forms: memory/grind/func_80033550/rejected/s12-*.c (9 files).
 - [s12] Consequently the residual is now a fully specified shopping list rather than an unexplained register seat: (i) a byte-free fifth block-local allocno whose defining insn is deleted AFTER local-alloc (post-RA deletion channels only: cross_jump, delay-slot fill in reorg.c, final.c), and (ii) a byte-free use of the pointer after that allocno's last use. s7 + s12 together close the only known post-RA-deletion channel (arm duplication + cross_jump) at both of this function's real branch sites.
 
 - [s12] 9 forms banked to memory/grind/func_80033550/rejected/s12-*.c, each named for the mechanism that killed it; two of them (dS4, dZ) are positive-result diagnostics kept for their disassembly, not proposals.
+
+## s13 (2026-09-01) — ESCALATION modality — DISPOSITION
+
+- [s13] Chassis re-measured this session: `memory/grind/func_80033550/candidate.c` pasted over the
+  `INCLUDE_ASM` at src/code6cac_b.c:2276 (plus the three `extern u8 D_80107850/54/58;` decls, which
+  live only in undefined_syms_auto.txt:994-996) gives **score 4, target_insns 34, build_insns 34,
+  rules_dropped 0**. src/ restored to HEAD at session end; tree clean apart from metrics/events.jsonl.
+
+- [s13] The owner's 2026-09-01 Ruling-A directive is SPENT: s12 executed the named probe
+  (duplicated-statement-into-arms at the search loop's real two-exit tail) in full over 7 variants
+  and killed it at both real branch sites. Nothing in the reopen note remains unexecuted except the
+  "Ruling C lane" fallback (adding a HARD_CONFLICT_ADD atom to tools/ra_solver/inverse.py), which is
+  a TOOL edit and therefore outside a grind session's allowed surface — it is an operator task, and
+  it is recorded as a re-activation trigger in the decisions entry rather than attempted here.
+
+- [s13] NEW MEASUREMENT — the target's own register census (tmp/grind/func_80033550/s13/
+  target_register_census.txt): the TARGET seats $a3=arg0, $v1=i then w0, $v0=probe byte / const 6 /
+  const 1 / idx, $a0=w1, $a1=w2, $at=fixed scratch — and **$a2 never appears in any of the 34
+  instructions**. So the target has exactly FOUR block-local values live with the pointer, the same
+  four our build has, in the same four registers.
+
+- [s13] CONSEQUENCE: s12's "five block-locals" seating law is **sufficient but not necessary**.
+  Under an ascending find_reg scan (confirmed this session: `REG_ALLOC_ORDER` is undefined in
+  tools/gcc-2.7.2/config/mips/mips.h, so global.c scans 0..FIRST_PSEUDO_REGISTER in plain numeric
+  order), four conflicts {$v0,$v1,$a0,$a1} = {2,3,4,5} seat a pointer at **$a2**, not $a3. The
+  original therefore carried a fifth conflict, at $a2, that **emits no instruction**. The byte-free
+  occupant is thus PROVEN to have existed in the original's pre-RA RTL — it is not a hypothetical
+  device — and the residual is exactly our inability to spell one, not a proof that none can exist.
+
+- [s13] Endgame-lock AND-gates re-measured on this chassis, both FAIL. Gate (a) canonical-asm:
+  `scan_hand_coded --single func_80033550` = **tier=LOW score=0/8**, S1-S8 all negative
+  (s13/scan_hand_coded.txt). Gate (b) SOTN precedent: fresh census of
+  docs/reference/sotn-construct-index.md (2,746 lines) returns **zero** PSX-master entries for a
+  byte-free register occupant / conflict injection; the only adjacent family, `pad_dummy_local`
+  (index line 29), is frame-slot-based and this target has no stack frame at all.
+
+- [s13] Standing 2026-07-27 ruling applied (.claude/rules/endgame-lock-disposition.md) with the
+  2026-08-31 silent-foreclosure shape: proof-of-foreclosure record appended to docs/grind/decisions.md.
+
+- [s13] Chassis re-measured this session: candidate.c applied over the INCLUDE_ASM at src/code6cac_b.c:2276 (plus the three extern u8 D_80107850/54/58 decls from undefined_syms_auto.txt:994-996) gives score 4, target_insns 34, build_insns 34, rules_dropped 0. src/ restored to HEAD; tree clean apart from ledger/docs edits and metrics/events.jsonl.
+
+- [s13] TARGET register census (new, tmp/grind/func_80033550/s13/target_register_census.txt): $a3=arg0, $v1=i then w0, $v0=probe byte / const 6 / const 1 / idx, $a0=w1, $a1=w2, $at=fixed scratch, and $a2 NEVER appears in any of the 34 instructions.
+
+- [s13] REG_ALLOC_ORDER is undefined in tools/gcc-2.7.2/config/mips/mips.h (grep-verified), so global.c find_reg scans hard registers in plain ascending numeric order - confirming the scan model the ledger has assumed since s9.
+
+- [s13] Consequence: four conflicts {$v0,$v1,$a0,$a1}={2,3,4,5} seat a pointer at $a2; the original reached $a3 with only four block-locals, so its pre-RA RTL carried a fifth conflict at $a2 that emits NO instruction. The byte-free occupant is PROVEN to have existed - the residual is our inability to spell one, not a proof that none can exist.
+
+- [s13] scan_hand_coded --single func_80033550 = tier LOW score 0/8, S1-S8 all negative (s13/scan_hand_coded.txt).
+
+- [s13] SOTN-master census over docs/reference/sotn-construct-index.md returns zero PSX entries for a byte-free register occupant / conflict injection; pad_dummy_local is frame-slot-based and this target has no stack frame.
+
+- [s13] Exhaustion: 13 sessions, 6 modalities (recon, structural, permuter, forensics, escalation, disposition), floor flat at 4 throughout, ~138k cumulative permuter iterations across 6 basins, 31 rejected forms banked in memory/grind/func_80033550/rejected/.
+
+- [s13] Foreclosure record filed this session at docs/grind/decisions.md:18726.

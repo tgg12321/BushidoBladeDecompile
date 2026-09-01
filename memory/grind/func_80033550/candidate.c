@@ -105,6 +105,16 @@
  * `move a3,a0` + all three `lw ...(a3)` with FIVE block-locals live. Residual is
  * now a specified shopping list: a byte-free fifth block-local deleted after
  * local-alloc PLUS a byte-free pointer use after it. See evidence.md s12.
+ * s13 (2026-09-01, ESCALATION modality, DISPOSITION): floor re-measured 4
+ * (34/34, 0 rules). Owner Ruling A is SPENT (executed+killed by s12). NEW
+ * measurement: the TARGET's own register census (s13/target_register_census.txt)
+ * shows only FOUR block-locals live with the pointer (idx=$v0, w0=$v1, w1=$a0,
+ * w2=$a1) and $a2 NEVER USED anywhere in the 34 insns - so s12's five-locals law
+ * is sufficient, not necessary, and the original carried a conflict at $a2 that
+ * emits no instruction. REG_ALLOC_ORDER is undefined in mips.h (grep-verified),
+ * so find_reg's scan really is plain ascending. Both endgame gates re-measured
+ * failing (scan_hand_coded LOW 0/8; SOTN census negative). FORECLOSED under the
+ * standing 2026-07-27 ruling; see docs/grind/decisions.md s13 entry.
  * NOTE: this file is CRLF - normalise to LF after pasting into src/*.c.
  * Residual 4 = arg0's pointer pseudo homed in $a1 (build) vs $a3 (target):
  * move + 3 lw base regs. See evidence.md for the RTL conflict analysis. */

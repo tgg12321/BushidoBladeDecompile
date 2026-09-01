@@ -18722,3 +18722,100 @@ copy (item 3 above).
    local-alloc's `optimize_reg_copy_1`/`_2`, global-alloc, reload) accounts for.
 3. Any candidate that reaches distance 0; it faces layer-1 + the default-FAIL Judge
    afresh, with all standing bans in force.
+
+## 2026-09-01 — func_80033550 (src/code6cac_b.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Filed by grind session 13 (escalation modality, disposition). This is a proof-of-foreclosure
+record, not a question: per the owner's 2026-08-31 ruling
+(.claude/rules/ordinary-c-judge-decidable.md) nothing is surfaced and no packet is filed.
+
+**Chassis (re-measured this session).** HEAD carries `INCLUDE_ASM("asm/funcs", func_80033550);`
+at src/code6cac_b.c:2276. Applying memory/grind/func_80033550/candidate.c verbatim (plus the three
+`extern u8 D_80107850/54/58;` decls that live only in undefined_syms_auto.txt:994-996):
+`sandbox func_80033550 --disable all` = **score 4, target_insns 34, build_insns 34,
+rules_dropped 0**. src/ restored to HEAD at session end.
+
+**Residual (unchanged in nature, sharpened in evidence).** 34-of-34 instruction correspondence
+with the target (s11, tmp/grind/func_80033550/s11/insn_correspondence.txt): 30 instructions are
+byte-identical and the 4 that differ (stream indices 0, 20, 21, 22) differ in exactly one register
+field — target `addu $a3,$a0,$zero` + `lw ...($a3)` vs build `move $a1,$a0` + `lw ...($a1)`. No
+ordering, frame or count divergence anywhere. The whole residual is one register seat for arg0's
+pointer pseudo.
+
+**Owner directive of 2026-09-01 (Ruling A) is SPENT.** The named probe — re-test
+duplicated-statement-into-arms against the search loop's REAL two-exit tail rather than the
+straight-line `i==6` tail — was executed in full by session 12 over 7 variants at both real branch
+sites and **killed by three distinct measured mechanisms**: (1) the loop's two exits merge upstream
+of the `i==6` test, so cross_jump hoists the duplicate out of the tail entirely and coalesces the
+pointer into $a0 (dR4, honest 18); (2) the `i==6` arm's duplicable statements are all DCE-able and
+die before conflict construction, leaving the `.greg` seating unchanged (dR5/dR6, RA-inert, +1 pure
+sched1 artefact); (3) the only non-DCE-able statements at that site are the four stores, which write
+`D_80107850[6*12]` on the not-found path and are therefore semantically invalid C — measured anyway
+as a diagnostic, they do not even cross-jump merge (dX, 44 insns). The reopen note's ground (that
+s11's counting theorem is contradicted by s7's `dupU`) is answered on the merits: `dupU`'s
+byte-freeness required *symmetric* arms whose only asymmetry was a merged-away invented condition —
+the exact shape the Judge ruled a cheat on 2026-07-21 — and both of this function's real branches are
+asymmetric (one returns, one falls through), so cross_jump can never erase them. `dupU` never reached
+distance <= 4 in any case (honest 11). The reopen note's fallback "Ruling C lane" (adding a
+HARD_CONFLICT_ADD atom to tools/ra_solver/inverse.py) is a TOOL edit, outside a grind session's
+allowed surface; it is recorded below as a re-activation trigger, not attempted.
+
+**New evidence this session (a correction to the ledger's own law).** A full register census of the
+TARGET, read insn-by-insn off asm/funcs/func_80033550.s
+(tmp/grind/func_80033550/s13/target_register_census.txt): the target seats $a3=arg0, $v1=i then w0,
+$v0=probe byte / const 6 / const 1 / idx, $a0=w1, $a1=w2, $at=fixed scratch — and **$a2 never appears
+in any of the 34 instructions**. The target therefore has exactly FOUR block-local values live with
+the pointer, the same four our build has, in the same four registers. `REG_ALLOC_ORDER` is undefined
+in tools/gcc-2.7.2/config/mips/mips.h (grep-verified this session), so global.c's find_reg really does
+scan 0..FIRST_PSEUDO_REGISTER in plain ascending order — and four conflicts {2,3,4,5} seat a pointer
+at **$a2**, not $a3. Conclusion: **the original's pre-RA RTL carried a fifth conflict, at $a2, that
+emits no instruction.** s12's "five block-locals" law (dZ, which does reach `move a3,a0` + all three
+`lw ...(a3)`) is a *sufficient* route priced at three instruction slots, not the route the original
+took. The byte-free occupant is thus proven to have existed; what 13 sessions have proven is that no C
+spelling available to us reproduces it.
+
+**AND-gate #1 (canonical-asm) — FAILS.** `python3 tools/scan_hand_coded.py --single func_80033550`
+re-run this session: **tier=LOW score=0/8** (tmp/grind/func_80033550/s13/scan_hand_coded.txt). S1-S8
+all negative: 0 multu/mflo pairs, no empty-body branches, S3/S4 N/A at 34 < 40 insns, no
+high-similarity sibling cluster, no BIOS jumptable pattern, no unsaved $sN, no redundant
+mask-before-shift.
+
+**AND-gate #2 (SOTN-master precedent) — FAILS.** Fresh census of
+docs/reference/sotn-construct-index.md (2,746 lines, PSX entries only) for the closing construct — a
+byte-free register occupant / RA conflict injection — returns **zero** hits. The only adjacent family
+is `pad_dummy_local` (index line 29, 816 hits), which is frame-slot-based; this target has **no stack
+frame at all** (no `addiu $sp`, no save/restore, `jr $ra` + `nop` epilogue), so its prerequisite fails
+outright. A negative census is a failed gate, not an open question.
+
+**Exhaustion record (memory/grind/func_80033550/, 13 sessions, 6 modalities, floor flat at 4
+throughout).** s1 recon (floor 5 -> 4 cheat-free, pin removed); s2/s3 structural (38 variants,
+loop-region census-invariance proven, REG_EQUIV pseudos die pre-RA); s4/s5 permuter (6 basins, ~138k
+cumulative iterations, every basin converging to the score-20 ptr=$a1 attractor, zero sub-20 finds);
+s6 forensics (cc1psx instruction-identical — compiler-fork divergence killed; source-level closure
+theorem); s7/s8 forensics (FAKE-family sweep; channel (f) opened then closed by the 2026-07-21 Judge
+FAIL); s9 escalation (both gates measured failing; phantom-pad family killed on its no-stack-frame
+prerequisite); s10 escalation (owner's 2026-08-24 F1 chain-extender directive executed and killed in
+all three available modes; first ra_solver model + first typed verdict — `inverse.py --goal {"72": 7}`
+NEGATIVE at depth 2 and 3 over 48 atoms in 5 classes, preference route FORECLOSED because $a3 never
+appears as a hard reg in the pre-RA RTL); s11 escalation (1:1 disassembly correspondence; caller-arity
+audit at asm/funcs/func_800290B8.s:203 shows only $a0 is set, so a wider signature is a false claim as
+well as inert); s12 structural (owner Ruling A executed and killed; three new measured RA laws); s13
+(this session). **31 rejected forms banked** in memory/grind/func_80033550/rejected/.
+
+**Disposition.** Both AND-gates fail. The standing owner ruling of 2026-07-27
+(.claude/rules/endgame-lock-disposition.md) applies: **FORECLOSED**. The function stays committed as
+`INCLUDE_ASM("asm/funcs", func_80033550);` — no cheat lands on main, the oracle is untouched, and the
+item is classified NOT-COMPLETED (it is not COMPLETED-C and it is not canonical-asm-authorized).
+
+**Re-activation triggers** — any one of these makes the residual attackable again and warrants an
+owner unpark: (1) a class grant covering a byte-free RA-conflict occupant (owner-only to extend; the
+frozen family list does not cover it today); (2) an operator-side extension of tools/ra_solver's
+inverse.py with a HARD_CONFLICT_ADD atom class, followed by `--goal {"72": 7}` — the "Ruling C lane" of
+the 2026-09-01 reopen note, which a grind session may not perform because it is a tools/ edit; (3) any
+toolchain finding that changes local-alloc/global.c seating or opens a post-local-alloc deletion
+channel other than cross_jump; (4) a rederive-modality shape that puts a conflict at $a2 without
+spending one of the 34 instruction slots already accounted for.
+
+**Precedent (same RA/scheduler-locked, hand-coded-LOW, no-SOTN-precedent species):** this function's own
+2026-07-22 and 2026-08-20 dispositions, plus motion_SetMotion, saTan0Init, cpu_side_move_dir_4,
+func_80057CC8, func_800611A4, func_80049A2C, InitHiraRmd_80047FBC, gnd_init_80041688, func_8007DC9C.

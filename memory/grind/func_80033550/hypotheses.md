@@ -810,3 +810,65 @@ at both of this function's real branch sites.
 - probe: dZ (DIAGNOSTIC, semantics-extending: adds a fourth load w3=arg0[3] plus two trailing stores; 37 insns, score 10), disassembled to tmp/grind/func_80033550/s12/dZ.dis.txt
 - result: CONFIRMED: `move a3,a0`, `lw a2,0(a3)`, `lw v1,4(a3)`, `lw a0,8(a3)` - the first ordinary valid C in this function's 12-session history to reproduce the target's entry copy AND all three target base registers at once. Price: three extra instruction slots (the fifth local's load plus the two uses that keep it and the pointer alive). This converts s11's counting argument into a constructed one and names exactly what is missing.
 - verdict: CONFIRMED
+
+## [s13] 2026-09-01 — ESCALATION modality — DISPOSITION session (owner Ruling A already spent by s12)
+
+- **H-s13-1 — "s12's seating law (the pointer reaches $a3 iff FIVE block-local values are live
+  with it) is the necessary condition, so the residual is a five-allocno shortfall."**
+  - mechanism: local-alloc seats block-locals ascending v0,v1,a0,a1,a2 before global.c allocates
+    the pointer; with five taken, find_reg's ascending scan lands on $a3.
+  - probe: full register census of the TARGET itself, read insn-by-insn off
+    asm/funcs/func_80033550.s and banked at tmp/grind/func_80033550/s13/target_register_census.txt;
+    plus `grep -n REG_ALLOC_ORDER tools/gcc-2.7.2/config/mips/mips.h` (no match -> find_reg really
+    does scan 0..FIRST_PSEUDO_REGISTER in plain ascending order, confirming the scan model).
+  - result: **KILLED as a necessary condition.** The target has exactly FOUR block-local values
+    live with the pointer — idx=$v0, w0=$v1, w1=$a0, w2=$a1 — the same four our build has, seated
+    in the same four registers (s11: 30/34 insns identical). **$a2 never appears anywhere in the
+    target's 34 instructions.** Four conflicts {2,3,4,5} under an ascending scan seat a pointer at
+    $a2, not $a3. Therefore the original's pre-RA RTL carried a fifth conflict, at $a2, that emits
+    NO INSTRUCTION. s12's five-locals construction (dZ) is one *sufficient* route to $a3, priced at
+    three instruction slots; it is not the route the original took.
+  - verdict: **KILLED** (the law is sufficient-not-necessary; the frontier is re-pointed)
+
+- **H-s13-2 — "an endgame-lock AND-gate passes for func_80033550 on this chassis."**
+  - mechanism: gate (a) = STRONG scan_hand_coded signals authorise a canonical-asm grant;
+    gate (b) = an in-hand SOTN-master precedent authorises a coercion/spelling family.
+  - probe: `python3 tools/scan_hand_coded.py --single func_80033550` re-run this session
+    (tmp/grind/func_80033550/s13/scan_hand_coded.txt); fresh grep census of
+    docs/reference/sotn-construct-index.md (2,746 lines) for conflict/occupant/allocno/dead-local
+    constructs, PSX entries only.
+  - result: **BOTH FAIL.** Gate (a): tier=LOW score=0/8, S1-S8 all negative (0 multu/mflo pairs,
+    no empty-body branch, S3/S4 N/A at 34 < 40 insns, no sibling cluster, no BIOS jumptable, no
+    unsaved $sN, no redundant mask). Gate (b): the census returns **zero** PSX-master entries for a
+    byte-free register occupant / conflict injection; the only adjacent family, `pad_dummy_local`
+    (index line 29, 816 hits), is frame-slot-based and this target has no stack frame at all
+    (no `addiu $sp`, no save/restore, `jr $ra` + `nop` epilogue).
+  - verdict: **KILLED**
+
+**Net frontier restatement after s13.** The byte-free occupant is no longer a speculative device:
+the target's own register census PROVES one existed in the original's pre-RA RTL (a conflict at
+$a2 costing zero instructions). What 13 sessions have established is that no C spelling available
+to us reproduces it — every honest construct that creates the conflict also creates an instruction
+(dS4 +1, dZ +3), and every construct that creates none is deleted before conflict construction
+(dead stores / named locals in jump1; aliases in cse; empty ifs in jump1; DCE-able duplicates in
+flow.c), while the one post-local-alloc deletion channel that does survive to conflict
+construction (cross_jump merging of identical arms) is structurally closed at both real branch
+sites (s12) and is a cheat when the arms are invented (Judge FAIL 2026-07-21).
+
+## [s13] s12's seating law (the pointer reaches $a3 iff FIVE block-local values are live with it) is the NECESSARY condition, so the residual is a five-allocno shortfall.
+- mechanism: local-alloc seats block-local quantities ascending (v0,v1,a0,a1,a2) before global.c allocates the pointer; with five taken, find_reg's ascending scan lands on $a3.
+- probe: Full insn-by-insn register census of the TARGET off asm/funcs/func_80033550.s (banked at tmp/grind/func_80033550/s13/target_register_census.txt), plus grep for REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h (no match, so find_reg's scan is plain ascending 0..FIRST_PSEUDO_REGISTER).
+- result: The TARGET has exactly FOUR block-local values live with the pointer - idx=$v0, w0=$v1, w1=$a0, w2=$a1 - the same four our build has, in the same four registers (s11: 30/34 insns identical). $a2 never appears anywhere in the target's 34 instructions. Four conflicts {2,3,4,5} under an ascending scan seat a pointer at $a2, not $a3, so the original's pre-RA RTL must have carried a fifth conflict AT $a2 that emits no instruction. s12's dZ construction (five block-locals -> $a3, priced at three instruction slots) is one sufficient route, not the route the original took.
+- verdict: KILLED
+
+## [s13] An endgame-lock AND-gate passes for func_80033550 on this chassis.
+- mechanism: Gate (a) = STRONG scan_hand_coded signals (S1/S2/S6) authorise a canonical-asm grant; gate (b) = an in-hand SOTN-master precedent authorises a coercion/spelling family.
+- probe: python3 tools/scan_hand_coded.py --single func_80033550 (tmp/grind/func_80033550/s13/scan_hand_coded.txt); fresh grep census of docs/reference/sotn-construct-index.md (2,746 lines, PSX entries only) for conflict/occupant/allocno/dead-local constructs.
+- result: Gate (a) FAILS: tier=LOW score=0/8, S1-S8 all negative (0 multu/mflo pairs, no empty-body branch, S3/S4 N/A at 34 < 40 insns, no sibling cluster, no BIOS jumptable, no unsaved $sN, no redundant mask). Gate (b) FAILS: zero PSX-master entries for a byte-free register occupant / RA conflict injection; the only adjacent family, pad_dummy_local (index line 29, 816 hits), is frame-slot-based and this target has no stack frame at all (no addiu $sp, no save/restore, jr $ra + nop epilogue).
+- verdict: KILLED
+
+## [s13] The owner's 2026-09-01 Ruling-A directive still has unexecuted content this session could spend.
+- mechanism: The reopen note named two lanes: Ruling A (duplicated-statement-into-arms at the search loop's real two-exit tail) and a Ruling C fallback (HARD_CONFLICT_ADD atom extension to tools/ra_solver/inverse.py, then --goal {"72": 7}).
+- probe: Ledger audit of memory/grind/func_80033550/hypotheses.md [s12] against the reopen note at hypotheses.md:719; surface check of the Ruling C lane against the grind session contract.
+- result: Ruling A is SPENT: s12 executed it over 7 variants at both real branch sites and killed it by three distinct measured mechanisms (upstream cross_jump merge at site 1; DCE-able duplicates at site 2; semantically-invalid stores as the only non-DCE-able statements). The Ruling C lane is a tools/ edit, explicitly outside a grind session's allowed surface - recorded as re-activation trigger (2) in the decisions entry rather than attempted.
+- verdict: CONFIRMED

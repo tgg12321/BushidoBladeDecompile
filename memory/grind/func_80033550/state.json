@@ -1,8 +1,8 @@
 {
  "func": "func_80033550",
  "file": "code6cac_b",
- "session_count": 12,
- "current_modality": "structural",
+ "session_count": 13,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -75,23 +75,29 @@
    "floor": 4,
    "modality": "structural",
    "headline": "Owner Ruling-A named probe (duplicated-arms at the search loop's REAL branches) KILLED at both real branch sites; the residual's RA arithmetic converted from argument to measurement - dS4 moves the po"
+  },
+  {
+   "session": 13,
+   "floor": 4,
+   "modality": "escalation",
+   "headline": "s13 escalation/disposition: floor re-measured 4 (34/34, 0 rules); owner Ruling A confirmed SPENT (s12 killed it at both real branch sites); NEW target register census proves the original carried a zer"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A byte-free fifth block-local allocno exists - a pseudo that receives a hard register at local-alloc and whose defining insn is deleted afterwards - and can be combined with a byte-free pointer use after it.",
-   "mechanism": "local-alloc assigns block-local quantities ascending (v0,v1,a0,a1,a2) BEFORE global.c allocates the pointer, so only deletions that happen after local-alloc (reload, jump2/cross_jump, delay-slot fill in reorg.c, final.c) can leave the seat occupied at allocation time and empty in the emitted bytes.",
-   "next_probe": "Do NOT re-probe arm duplication: s7 (invented branch, Judge-FAILed) and s12 (both real branches, structurally killed) have exhausted that channel. The unexamined post-RA deletion channels are delay-slot fill (reorg.c) and final.c no-op deletion. Concretely: are the two `li v0,6` delay-slot materializations, or the `li v0,1` in the beq's delay slot, distinct local pseudos at local-alloc time that reorg.c later duplicates/folds - and if so can one be forced to seat at $a2 while the pointer is still live? Read tmp/grind/func_80033550/dumps/*.greg (pwsh tools/grinder/dump.ps1 func_80033550) and the reorg output BEFORE spelling anything."
+   "hypothesis": "A construct exists that injects an RA conflict at $a2 across the pointer's live range at ZERO instruction cost - the exact thing the original's RTL provably contained.",
+   "mechanism": "The target reaches $a3 with only four block-locals, so under find_reg's ascending scan a fifth conflict at $a2 existed pre-RA and emitted nothing. Every honest construct measured so far either creates an instruction (dS4 +1, dZ +3) or is deleted before conflict construction (dead stores / named locals in jump1, aliases in cse, empty ifs in jump1, DCE-able duplicates in flow.c); the one post-local-alloc deletion channel that survives to conflict construction (cross_jump merging of identical arms) is structurally closed at both real branch sites (s12) and is a cheat when the arms are invented (Judge FAIL 2026-07-21).",
+   "next_probe": "Do not re-probe arm duplication or five-local constructions. The productive lane is the operator-side Ruling C extension: add a HARD_CONFLICT_ADD atom class to tools/ra_solver/inverse.py and re-run --goal {\"72\": 7} to enumerate, typed, which single conflict additions reach $a3 and what RTL shape each requires. That is a tools/ edit, so it needs an operator or a session with tools/ in scope."
   },
   {
-   "hypothesis": "A byte-free pointer use after the last load exists (the (ii) half alone), which would move the pointer $a1 -> $a2 at zero cost and halve the remaining requirement.",
-   "mechanism": "confirmed this session (dS4) as a conflict lever; the only open question is whether any use of arg0 after the third load emits no instruction. Address-of, casts and discards produce no RTL and therefore no conflict, so the use must be a real RTL reference that is deleted after local-alloc.",
-   "next_probe": "Same deletion-channel question as frontier item 1 applied to a USE rather than a DEF, with the same answer space. Measure it only in combination with item 1 - item 2 alone still lands the pointer on $a2, i.e. distance 4, which is the current floor and buys nothing on its own."
+   "hypothesis": "A rederive-modality reconstruction puts a conflict at $a2 without spending one of the 34 accounted-for instruction slots.",
+   "mechanism": "s6's closure theorem is scoped to THIS 34-insn shape; a different source shape yields a different allocno set and entry-copy topology. s11's 1:1 correspondence and s13's target census together give the acceptance test.",
+   "next_probe": "Acceptance test up front, before building anything: does the proposed shape produce a conflict at $a2 across the pointer's live range while still emitting exactly the target's 34 instructions (30 of which are already byte-identical)? If it adds or substitutes a slot, it cannot reach $a3 and should not be built."
   },
   {
-   "hypothesis": "A rederive-modality reconstruction (a different overall shape) affords a fifth block-local naturally.",
-   "mechanism": "s6's closure theorem is scoped to THIS 34-insn shape; a different source shape yields a different allocno set and entry-copy topology. s12 now supplies the exact acceptance test such a shape must pass.",
-   "next_probe": "Any rederive attempt must be checked against the s12 seating law up front: does the proposed shape put FIVE block-local values live across the three loads, and does it keep the pointer live past the last of them, WITHOUT adding an instruction to the 34 already spoken for (s11's 1:1 correspondence, 30/34 identical)? If either half is no, the shape cannot reach $a3 and should not be built."
+   "hypothesis": "A class grant covering byte-free RA-conflict occupants would close this function immediately.",
+   "mechanism": "The residual is a single register field in 4 of 34 instructions; s12's dS4 and dZ show the seat is reachable from ordinary C at a known instruction price, and the only missing ingredient is a sanctioned way to spend a conflict without spending a slot.",
+   "next_probe": "Owner-only. The frozen family list does not cover this construct today and the SOTN census is negative, so no session may self-authorize it; an owner class grant or unpark re-activates the item."
   }
  ],
  "judge_constraints": [
