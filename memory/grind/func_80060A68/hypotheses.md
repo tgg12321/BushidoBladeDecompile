@@ -1368,3 +1368,7 @@ an instruction (H-s12-1); buying it with a fabricated consumer is a banned famil
 - probe: python3 tools/scan_hand_coded.py --single func_80060A68, re-run this session
 - result: tier=LOW score=1/8, S4 only ('6 loads in 8-insn window @ insn 9'); S1, S2, S3, S5, S6, S7, S8 all clear.
 - verdict: KILLED
+
+## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
+
+Returned to active under Ruling A. Ground: the qty8/qty11 pairwise priority comparison replaced an inverse.py-local search that was killed at 100% CPU before finishing depth 1 (evidence.md:1926-1950) — first-fit over 23 quantities is a whole-order property. Named probes: (1) bounded/profiled inverse.py local --block 0 (or an 800324D0-style order-closure replay over block_alloc's sorted order) enumerating which orderings seat p10 in $a0; (2) local_extract.py func_80060A68 --suggest (instrument postdates the record) to confirm the suggestion sets are empty rather than assumed.

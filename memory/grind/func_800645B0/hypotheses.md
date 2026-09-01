@@ -1834,3 +1834,7 @@ another session looking for a spelling that gets both.
 - probe: Searched docs/reference/sotn-construct-index.md (1,365 entries, PSX/PSP provenance tagged) for staging / copy-through-a-derived-sum-destination constructs and for reuse entries.
 - result: No instance of the construct class. The six 'stag*' hits are the word 'stage' in SOTN stage filenames/comments; the reuse hits are the frozen variable-reuse family, which covers borrowing an EXISTING local for a second unrelated value - bound 2 of .claude/rules/staged-value-reused-variable.md explicitly distinguishes that from inventing a staging copy.
 - verdict: KILLED
+
+## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
+
+Returned to active under Ruling A. Ground: the 2026-08-31 amended named-intermediate family (once-written) is this ledger's own frontier trigger. ALL banned_constructs entries STAND untouched (layer-2 review confirmed the wid multi-write and val/idx shapes are substantive multi-write-carrier bans, not motive-class). Named probe: build and measure the two-distinct-once-written-locals spelling — each fresh local written exactly once, textually and semantically distinct from every banned entry; if any reviewer judges it covered by a standing ban, the ban wins and the probe FAILs. Also: re-census gate (b) against the amended class definition, not the 2026-08-30 hyper-specific phrasing.

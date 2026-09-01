@@ -1700,3 +1700,7 @@ across 6 chassis (~81k+ iters, 0 novel basin closures), m2c (s8), in-repo transp
 - probe: Searched the index for cross-symbol / symbol-difference / (s32)&D_xxxx shapes AND for live-split shapes (artifact tmp/grind/CD_sync/s106/gate_b_sotn_census.txt).
 - result: Zero hits on both. Reproduces the s104 census negative, the s98 manual SOTN/Vagrant Story/ESA survey negative, and the s98 in-repo transplant kill. The owner already REFUSED this exact family on 2026-07-20.
 - verdict: KILLED
+
+## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
+
+Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-merge session (sanctioned family 2026-08-17; prong-(c) asm-consumer check mandatory first). This ledger's own gap: no hypothesis for split-scalars-hide-aggregate exists despite closer Ruling 1 (2026-07-09) naming the merge as the honest replacement and W4 answering YES for 0x800A1494/95/96. The 'idx_1494 is not IRQ-mutated' volatile-rejection premise is FALSE (cdrom_IrqHandler + CD_flush, same TU, matched, declare these bytes volatile). Falsifiable claim: the volatile CD_intr aggregate declaration scores below 2/160 and retires the refused cross-symbol idiom.

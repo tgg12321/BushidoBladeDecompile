@@ -715,3 +715,7 @@ upward-exposed uses and whether any VALID construct reaches the same channel.
 - probe: python3 tools/scan_hand_coded.py --single func_80033550 re-run this session; s9's census of docs/reference/sotn-construct-index.md (1,365 PSX-master entries) re-affirmed against this session's instruction-budget measurement.
 - result: Gate #1 tier=LOW score=0/8, S1-S8 all negative (0 multu/mflo pairs, no empty-body branch, S3/S4 N/A at 34 < 40 insns, no sibling cluster, no BIOS jumptable, no unsaved $sN, no redundant mask). Gate #2 negative — the closing construct is still a byte-free REGISTER occupant; the only adjacent family, pad_dummy_local (index line 29), is frame-slot-based and target func_80033550 has no stack frame at all (no addiu $sp, no save/restore, jr $ra + nop epilogue).
 - verdict: KILLED
+
+## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
+
+Returned to active under Ruling A. Ground: the s11 counting theorem ('no byte-free occupant can exist at 34/34') is contradicted by this ledger's own s7 dupU measurement (byte-free arm duplication, jump2-merged, ptr homed in $a3); the s8 rejection only examined the straight-line i==6 tail, never the search loop's two-exit tail, which the 2026-08-06 control-transfer-tail extension covers. Named probe: re-test duplicated-statement-into-arms against the search-loop tail (a REAL pre-existing branch — the invented-branch ground of the s7 kill does not apply). Fallback (Ruling C lane): HARD_CONFLICT_ADD atom extension to inverse.py, then --goal {"72": 7}.

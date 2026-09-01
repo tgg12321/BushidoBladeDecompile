@@ -2511,3 +2511,7 @@ the seats and vice versa).
 - probe: tmp/grind/CD_datasync/s19/sweep.sh over the 8 generated bodies, scored on both forks (open/psx): n1 11/10, n2 10/10, n3 6/6, n4 10/10, n5 10/10, n6 11/10, n7 28/23 (+3 insns), n8 10/10.
 - result: None beat the base attractor of 6; n3 ties it, the rest regress. n7 (staging arg4 before the puts) is catastrophic on both forks because it forces a callee-save carry across the call. Banked as memory/grind/CD_datasync/rejected/s19-dualfork-*.c (bank now 84).
 - verdict: KILLED
+
+## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
+
+Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-merge session — which is this ledger's OWN open frontier item F14 (hypotheses.md:976-991), deferred for scope and never killed. H28 killed the volatile QUALIFIER on the split extern u8 declarations; F14's struct SHAPE is explicitly a separate, untested question. Falsifiable claim (F14 verbatim): extern volatile CD_intr Intr indexed as members reproduces the target's shared-base lbu 0/1($s1) addressing and scores below 7/91.

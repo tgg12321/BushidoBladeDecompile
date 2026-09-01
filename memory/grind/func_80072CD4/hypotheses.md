@@ -1279,3 +1279,7 @@ over the restricted atom sets; `perturb.py` has no depth-3 mode, so that is tool
 - probe: python3 tmp/grind/func_80072CD4/s5/apply.py memory/grind/func_80072CD4/candidate.c, then `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`; src/text1b.c reverted immediately after.
 - result: score 4, target_insns 79 == build_insns 79, rules_dropped 0 (tmp/grind/func_80072CD4/s12/sandbox_candidate.json). Unmoved since s2.
 - verdict: KILLED
+
+## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
+
+Returned to active under Ruling A. Ground: gate (ii) was decided on 40 of 958 dup_if_else_arm index entries (cap-truncated, annotated-first). Named probe: the operator-lane uncapped index rebuild re-runs the census over the full population; a qualifying PSX exhibit (unconditional common-tail statement duplicated into both arms, second copy cross-jump-dead, sole effect the merge-block schedule) flips the gate and the floor-4 candidate.c proceeds to normal adjudication; a full-population negative re-forecloses as SOLID.

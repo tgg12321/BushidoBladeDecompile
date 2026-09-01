@@ -2343,3 +2343,7 @@ free out-of-block use site anywhere.
 - probe: Cell H on chassis A: loop 2's do-while condition rewritten from `*(s32 *)(base + 0x20)` to `*(s32 *)(sh + (s32)q + 0x20)`, giving the named addend `q` a body use; result disassembled (tmp/grind/func_80017848/s26/build_H.txt).
 - result: 6 at the correct 127/127. loop.c's move_movables hoists the DERIVED loop-invariant address `sh + q`, not the addend itself, so the copy that survives is `move a1,a0` - a copy of the BASE landing one slot AFTER the base add, which is s15's cell C1 failure mode reproduced on a new chassis - while the addend stays a `lw`. An in-body second use cannot produce an addend copy.
 - verdict: KILLED
+
+## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
+
+Returned to active under Ruling A. Ground: guard-only duplication was never measured (only whole-loop duplication was priced at 35), and the load-bearing cse EBB-boundary attribution is behavioural inference, never dump-confirmed. The 2026-08-30 record's 'byte-matches only via a cheat' sentence is RETRACTED by the ruling (zero rules/cheat-asm since 2026-08-19). Named probes: (1) duplicate loop 2's 4-instruction GUARD (not body) into the loop-1 skip path, score on chassis A and the candidate chassis; (2) run dump.ps1 .cse/.combine on chassis A to convert the EBB account from inference to attribution.

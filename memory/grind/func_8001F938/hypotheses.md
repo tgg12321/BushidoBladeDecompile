@@ -427,3 +427,7 @@ session should open NONE of them.
 - probe: python3 tools/scan_hand_coded.py --single func_8001F938 ; grep docs/reference/sotn-construct-index.md for signed / signedness / dual / same-address / sign_bit.
 - result: Gate (a) FAIL: tier=LOW score=0/8 (107 insns), 'no strong hand-coded indicators', S1..S8 every one clear -- identical to the 2026-07-23, s10 and s11 readings; the STRONG-tier bar (S1/S2/S6) is not approached. Gate (b) FAIL: ZERO hits; the construct index still has no signedness / dual-typed / same-address detector class at all, so it cannot yield a file:line citation, and the 2026-07-01 F2 census over SOTN master independently returned NOT ESTABLISHED.
 - verdict: KILLED
+
+## 2026-09-01 — operator census-of-record note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
+
+STAYS FORECLOSED — Ruling E executed: a first-hand five-stage sweep of sotn-decomp master (HEAD db41b28e, PSX-config membership verified per hit) found ZERO opposite-signedness same-address 16-bit read pairs; closest exhibits (servant/tt_002/faerie.c:1362 'needed for match' cast respelling; weapon/w_017.c:142 / w_032.c:16 union-view slot reuse) are all SAME-signedness. This supersedes the 2026-08-30 index census (which was a detector-coverage artifact — the index has no class for this shape) as the gate-(b) census of record. The F2 refusal stands; the banked distance-0 body (rejected/layer1-fail-0825-2329.c) stays rejected. Re-activation now requires an actual SOTN-master exhibit appearing in a future checkout or an owner family ruling.

@@ -836,3 +836,7 @@
 - probe: Composite of the two probes above: cse.c source reading to enumerate the falsification routes for prong (2), then measuring the only instruction-free route.
 - result: Every edit that falsifies prong (2) without emitting an instruction also shortens i's live range, and shortening i's live range is exactly what deletes the 3 instructions. The requirements are mutually exclusive at the source level.
 - verdict: KILLED
+
+## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
+
+Returned to active under Ruling A. Ground: ra_solver inverse names the goal REACHABLE at one atom (refs_up 72: 3->4); the sanctioned duplicated-statement-into-arms ref-lift (which closed func_800324D0 on 2026-09-01) was never tried — the 'no fifth a0 reference site' theorem assumes a reference must occupy a target instruction slot, which byte-free cross-jump-remerged duplication defeats by design. Named probe: under the H1 (i-before-v1) chassis, duplicate a real a0-referencing statement per the family (2026-08-06 loop-tail extension), verify nrefs_flow(72)==4 via extract.py BEFORE spending a sandbox run.
