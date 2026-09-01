@@ -1,0 +1,20 @@
+{
+ "func": "func_8002D320",
+ "file": "code6cac_b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The GTE cop2 islands are legitimate (cluster-listed, mechanically clean), but the tail construct `if (y + x < min_y) { z = 0; return z; }` is a return-value-through-dead-variable coercion misfiled under staged-value-reused-variable -- it stages a hardcoded constant (not a real computed value) purely to defeat jump.c's store-flag if-conversion single-set fold, functionally identical to the brief's own forbidden 'goto-end-with-ret-val accumulator' family and to the canonical FAIL example in test #1 of the checklist. Next action: Revert the tail construct. Do not resu"
+ ],
+ "banned_constructs": [
+  "`{ z = 0; return z; }` in place of `return 0;`",
+  "Citation of [[staged-value-reused-variable]] to sanction the tail",
+  "state.json ledger vs hypotheses.md/evidence.md mismatch"
+ ],
+ "ladder_skip": 10,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-01T01:54:43.404700+00:00"
+}
