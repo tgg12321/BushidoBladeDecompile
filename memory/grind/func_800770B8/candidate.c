@@ -122,6 +122,41 @@
  *     function against ITSELF and prints "GOAL == OURS (identity)" for every block.
  *     cmp the two files before trusting any sched goal here.
  *
+ * s18-forensics NEGATIVE RESULTS (3 fresh builds + two instrumented-cc1 dumps;
+ *   detail in evidence.md [s18-forensics]):
+ *   - CLASS C IS ATTRIBUTED TO A NAMED DECISION AT LAST.  The divergent insn is
+ *     RTL 185 `(set (reg 110) (plus (reg 109) (reg 108)))` (109 = the second
+ *     D_800A36A0 reload, 108 = the t0*10 shift).  Its hard register is chosen by
+ *     local-alloc.c block_alloc's operand-tying loop (tools/gcc-2.7.2/
+ *     local-alloc.c:1240-1298), which walks operands 1..n IN ORDER, calls
+ *     combine_regs(operand_i, operand_0) and BREAKS AT THE FIRST SUCCESS.
+ *     Operand 1 dies here, so 110 merges into the reload's quantity and inherits
+ *     its seat (`;; Register 109 in 2.` / `;; Register 110 in 2.`) -> our
+ *     `addu $2,$2,$3`.  The target merges 110 with operand 2 -> `addu
+ *     $v1,$v1,$v0`.  This is NOT the find_free_reg seat-priority story s17's
+ *     local-alloc solver run modelled.
+ *   - ALL TEN combine_regs GATES ARE TYPED (local-alloc.c:1784-1946).  Six are
+ *     structurally impossible for two SImode pseudos in a plain addsi3, one is
+ *     unreachable on MIPS (all GR_REGS), one detaches the dest from BOTH
+ *     operands.  The only two C-reachable gates - reg_qty[ureg] < 0 (not
+ *     block-local / multi-death) and "no REG_DEAD note here" - BOTH require the
+ *     reload to stay live past the add, i.e. an extra use.  The target reloads
+ *     D_800A36A0 fresh at every later use and rows 38-64 are one basic block, so
+ *     any such use deletes or adds an instruction, and this body has zero slack
+ *     (175 == 175).
+ *   - GATE 1 DEMONSTRATED AND PRICED: hoisting the reload into a local reused
+ *     after the inner loop reaches the target's tie topology WITHOUT the flip
+ *     (`addu $2,$8,$2`, dump-proven at insn 186 with the reload's pseudo lacking
+ *     a block marker) but deletes the third reload: 174 insns, score 49.
+ *     rejected/s18fx-classC-blocklocal-reload-defeats-op1-tie-174insn-score49.c.
+ *   - THE FLIP IS NOT "CLASS C PLUS COLLATERAL".  Re-measured plain flip = 29/175
+ *     and prints `lw $3 / sll $2 / addu $2,$2,$3`: right tie, WRONG SEATS - the
+ *     reload and the shift swap hard registers.  THIS body already has the
+ *     target's seats ($2 = reload, $3 = shift) and differs only in the tie.  Any
+ *     future class-C attack should start here and attack the tie, not start from
+ *     the flip and attack the collateral.  rejected/s18fx-classC-flip-fixes-tie-
+ *     but-swaps-seats-175insn-score29.c.
+ *
  * INHERITED, STILL BINDING (do not re-derive): s6 (19 address spellings),
  *   s9 (3234-atom sched_solver sweep, 0 hits), s10 (full struct rewrite 178 insns),
  *   s11 (63-position single-wrap sweep + 18 nested), s12 (24/24 store-group orders,

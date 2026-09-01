@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 17,
- "current_modality": "solver",
+ "session_count": 18,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -105,23 +105,29 @@
    "floor": 5,
    "modality": "solver",
    "headline": "Solver suite spent with FULL-disposition goals: sched1+sched2 foreclosed (moved:0 vs a real target object), global-alloc NEGATIVE at depth 3, and local-alloc's only reachable family (live_shrink qty3)"
+  },
+  {
+   "session": 18,
+   "floor": 5,
+   "modality": "forensics",
+   "headline": "Forensics names class C's decision for the first time in 18 sessions: local-alloc block_alloc's ordered operand-tying loop (combine_regs), not seat priority - all ten gates typed, the only two C-reach"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The honest floor stays 5 and every residual class now carries a POSITIVE forecloser at the compiler-model level, not merely an exhaustion argument: class B is demonstrated-and-priced (s17, cse2 honours only CODE_LABEL/NOTE_INSN_SETJMP and this function has zero insn slack), class C is NEGATIVE at global-alloc depth 3 and its only local-alloc family is measured dead (s18), and scheduling is foreclosed in BOTH passes with moved:0 against a real target object (s18).",
-   "mechanism": "18 sessions across 9 distinct modalities; floor flat at 5 since s11. The solver suite - the last modality with an untried axis - is now spent with full-disposition goals, which is the strongest form of negative the toolkit can produce. The residual is five in-place register names arising pre-RA (cse2 pseudo identity for class B, fold operand order for class C), a layer no solver in the suite models.",
-   "next_probe": "When the driver assigns escalation modality, file `## <date> - func_800770B8 - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**` in docs/grind/decisions.md. Gate evidence unchanged and still measured FAIL on both prongs: (i) canonical-asm is NOT the disposition - `canonical func_800770B8` returns verdict C / asm_insns 0 / total 175 / distance 5 (s15) and tools/scan_hand_coded.py --single returned tier=LOW score=0/8 with S1-S8 unset (s11), so the STRONG-scanner AND-gate fails; (ii) the coercion-family prong fails with a negative census - docs/reference/sotn-construct-index.md carries no SOTN-master precedent for an arithmetic-identity dependence edge. Re-activation triggers: a class grant covering dependence-edge constructs, or a toolchain finding that lets a CODE_LABEL exist without a live reference."
+   "hypothesis": "Class C is reachable from the FLOOR-5 SEATS (not from the flip) if some C shape makes combine_regs fail on operand 1 of RTL insn 185 without adding or deleting an instruction. This session proves the only two C-reachable gates both need an extra live use of the reload, so the remaining question is narrow and concrete: is there a spelling in which an ALREADY-PRESENT instruction consumes the reload after the add?",
+   "mechanism": "local-alloc.c:1240-1298 block_alloc operand-tying loop + combine_regs gates 1 and 2 (local-alloc.c:470-478 for reg_qty, :1917 for the REG_DEAD requirement). Rows 38-64 are one basic block; the target's later uses of D_800A36A0 are all fresh reloads in later blocks.",
+   "next_probe": "Enumerate the instructions the target emits between rows 62 and the inner-loop head (63 addiu, 64 addiu, 65 sll, 66 addiu, 67 move, 68 sra) and ask whether any of them can be spelled to consume the reload pseudo instead of a fresh value - e.g. a form in which p_7e is derived from the reload rather than from the sum. If none can, class C is closed for the unflipped order and the residual reduces to the flip's seat swap."
   },
   {
-   "hypothesis": "If any solver work is ever revisited here, the ONLY unmodelled layer left is reload (tools/ra_solver/inverse_reload.py), and it is a priori a poor fit: reload's retry only matters when a pseudo failed to get a hard register, and all five contested values are allocated.",
-   "mechanism": "The suite covers global.c (NEGATIVE depth 3, full goal), local-alloc block_alloc (REACHABLE, one family, C-dead) and both sched.c passes (no differing block, moved:0). reload_sim/inverse_reload models the spill-retry path only.",
-   "next_probe": "Do NOT re-run: global inverse at any goal subset, either sched pass on the floor-5 body, local inverse --swap 3,4 on either model, or perturb.py on the flipped basin (block 1's goal is not topologically valid - 19/22 violations - so the tool cannot answer). If a session insists on closing the suite formally, the only remaining call is inverse_reload.py on func_800770B8, and it should be treated as a completeness record rather than a lead."
+   "hypothesis": "The plain flip's loop-head collateral (t0*4 sinking 42 -> 50, reload rising 41 -> 40) is a sched_solver-searchable ordering residual, because unlike s17's Q00 basin its alignment is moves-only.",
+   "mechanism": "sched.c list scheduler; sched_solver models both passes order- and clock-exactly. perturb.py refused Q00 only because delete 8 / insert 8 made the goal non-topological; a multiset-identical loop head does not have that defect.",
+   "next_probe": "SOLVER modality: apply tmp/grind/func_800770B8/s18/fx/v/p2_flip.c, re-extract the sched model, classify object-level with --target-object build/src/text1b.o --ours-object tmp/sandbox/func_800770B8/text1b.o (NOT the mkasm --target path, which is broken - see the s18 tooling trap), and run perturb.py on block 1 for both passes. A vector here would be the first constructive lead on the flip basin in 12 sessions; a 'not topological' refusal again would close it for good. Note the flip also needs its seat swap explained, so a scheduling win alone is not sufficient."
   },
   {
-   "hypothesis": "Nothing else is open. This entry exists to stop the next session re-spending measured axes.",
-   "mechanism": "Every degree of freedom in this body has been swept to exhaustion across s6-s18, each sweep banked with its generator and log under tmp/grind/func_800770B8/.",
-   "next_probe": "Explicitly do NOT re-probe: flip spellings (11 collapse onto one build, s6/s13/s15), store-group order (24/24, s12), loop shape (315 builds, s13), inner-block position (240 orders, s13), wrap position or count (63 + 18 + 79 + 79 + 79 positions, s11/s12/s14), loop-head demand order (33 builds, s14), dependence direction (13 builds, s14), reference count without a dependence (8 builds, s14), pointer-cursor derivation (8 builds, s15), partial array typing (20 builds, s15), the whole-body struct rewrite (s10, 178 insns), procedural factoring / static inline helpers (8 builds, s16), local declaration order (120 builds, s16), dead/join label fences (s17), or the identity detour in any spelling (Judge FAIL, 2026-09-01). New this session: qty3-birth-delay spellings (5 builds, s18)."
+   "hypothesis": "Everything else in the ledger remains measured dead; do not re-spend it.",
+   "mechanism": "s6-s18 swept every degree of freedom with generators and logs banked under tmp/grind/func_800770B8/.",
+   "next_probe": "Explicitly do NOT re-probe: flip spellings (11 collapse onto one build), store-group order (24/24), loop shape (315 builds), inner-block position (240 orders), wrap position/count (63+18+79+79+79), loop-head demand order (33), dependence direction (13), reference count (8), pointer-cursor derivation (8), partial array typing (20), whole-body struct rewrite, procedural factoring (8), local declaration order (120), dead/join label fences, qty3 birth delay (5), the identity detour in any spelling (Judge FAIL 2026-09-01), global-alloc inverse at any goal subset, or either sched pass on the floor-5 body (moved:0 against a real target object)."
   }
  ],
  "judge_constraints": [
