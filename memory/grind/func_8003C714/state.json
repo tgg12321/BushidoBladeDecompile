@@ -1,34 +1,42 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 15,
    "modality": "recon",
    "headline": "Recon: honest floor 33 -> 15 pure-C (no cheats); entire residual is one loop.c decision (0x91A2B3C5 magic hoisted vs target's in-loop split lui/ori) plus its downstream mfhi-temp seat"
+  },
+  {
+   "session": 2,
+   "floor": 15,
+   "modality": "structural",
+   "headline": "Structural axis closed with two measured kills (do-while(0) inner loop is PHONY; +1 RTL insn costs ~6.5 score) \u2014 re-filed the bytes-proven INTEGRATION HANDOFF under a header the driver's regex accepts"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "do{}while(0) wrapped around the /1800 statement moves the const to the INNER preheader (inside the real loop, split 2-insn form) and moved_once doubling (insn_count*2 > 122 for body >= 62) blocks the outer re-hoist -> target shape",
-   "mechanism": "loop.c inner-first processing + moved_once[regno] insn_count doubling at loop.c:1611",
-   "next_probe": "measure it; if it reaches d0, outcome is ruling-request (do-while-zero-exception's scope sentence covers only the LABEL_OUTSIDE_LOOP_P/reorg.c interaction, not loop.c count doubling)"
+   "hypothesis": "The chassis, not the C, is the residual: our generic mips-mips-gnu cc1 has a live FP register file the PS1 R3000A does not have, giving loop.c a threshold of 122 where the original toolchain saw 58.",
+   "mechanism": "loop.c:532 threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs); regclass.c:380-387 counts hard regs with !fixed_regs[i]; -msoft-float fixes the 32 FP regs via mips.h CONDITIONAL_REGISTER_USAGE",
+   "next_probe": "Operator-only: elect the flag variant per docs/grind/decisions.md:19622, mirror it into engine/buildconfig.py, verify-oracle --rebuild, then apply candidate.c and expect sandbox 0."
   },
   {
-   "hypothesis": "SN cc1psx does not hoist this movable (loop.c divergence) - a toolchain-fidelity question, not a spelling question",
-   "mechanism": "SN fork loop.c differences",
-   "next_probe": "cc1psx wrapper self-disproof run on candidate.c (calibration only, per cc1psx-calibration-only); if confirmed route via no-compiler-divergence/systemic research"
+   "hypothesis": "If the global -msoft-float variant is elected, func_800324D0 (code6cac_b) regresses 0 -> 3 and needs an ordinary structural re-grind \u2014 its loop must be spelled at <= 58 RTL insns (currently 72) for its `li 255` hoist to survive at threshold 58.",
+   "mechanism": "the same loop.c:1631 desirability test in reverse: 122 >= 72 hoists, 58 < 72 does not",
+   "next_probe": "After any chassis change, queue reopen func_800324D0 and grind its loop body down to <= 58 RTL insns (read `Loop from ...: N real insns.` in the .loop dump as the gradient)."
   },
   {
-   "hypothesis": "A C shape exists that gives the magic pseudo n_times_used>1 or defeats REG_EQUAL move_insn re-emission, changing movable admission",
-   "mechanism": "loop.c scan_loop admission (reg_single_usage substitution, m->consec, move_insn=REG_EQUAL path)",
-   "next_probe": "read move_movables/scan_loop re-emission paths end-to-end and enumerate admission escapes before spending measurements"
+   "hypothesis": "No further C search on func_8003C714 is warranted on the shipped chassis; all three inputs to loop.c:1631 plus every movable-admission escape are now enumerated from source and measured closed.",
+   "mechanism": "loop.c:1594 (safe-to-move), 1609-1611 (moved_once doubling), 1621-1633 (desirability), 1719/1904 (threshold decay), 735-768 (reg_single_usage)",
+   "next_probe": "None on the C axis. If a future session is dispatched here anyway, spend it on the chassis question (cc1 configuration fidelity), not on spelling."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Grind func_8003C714 in ordinary C on the SHIPPED chassis only; CC_FLAGS / cc1 configuration / buildconfig are not a lever and may not be re-filed as an integration handoff or exhaustion claim."
+ ],
  "banned_constructs": [],
  "ladder_skip": 0,
  "pending_fixup": null,

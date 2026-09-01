@@ -82,3 +82,130 @@ by frozen policy, recorded here so no session re-tries it).
 - probe: instruction-order analysis of asm/funcs/func_8003C714.s lines 19-22 + our dumps showing the split form (movsi-hi + iorsi3 0xB3C5) exists in this cc1 but only appears post-loop-move in the preheader
 - result: inference solid; the C-level trigger for split-form-in-loop is the open question
 - verdict: CONFIRMED
+
+## s2 (2026-09-01, structural)
+
+### CONFIRMED
+- H4: the entire d15 is `loop.c`'s movable-desirability threshold, a build-config
+  scalar, not a C spelling. `threshold = (loop_has_call?1:2)*(1+n_non_fixed_regs)`
+  (loop.c:532) is 122 on the shipped hard-float chassis and 58 when the 32 FP
+  hard regs are fixed. With `threshold -= 3` applied after the first movable
+  moves (loop.c:1719/1904) the /1800 magic faces 55 vs the loop's insn_count 56
+  and is "not desirable" — landing in-loop in the split lui/ori form the target
+  has. MEASURED: candidate.c scores **0** with `-msoft-float` and **0** with
+  32 `-ffixed-$fN` (byte-identical objects), **15** without.
+- H5: the flag is essentially byte-neutral project-wide — 30/32 C stems
+  byte-identical, the only regression being func_800324D0 (0 -> 3) by the same
+  rule in reverse (its 72-insn loop loses the `li 255` hoist at threshold 58).
+
+### KILLED
+- K5: **any C-level attack on the hoist, on the shipped chassis.** reg 84 meets
+  threshold 119 with savings 1 and lifetime 1 (both already minimal), so the
+  loop would need >119 RTL insns; the whole target function is 104 machine
+  instructions. Loop-size, admission (compiler-generated pseudo is admitted
+  unconditionally at loop.c:697-700), and `reg_single_usage` substitution (needs
+  a loop containing a call) are all closed. s1's frontier items 1 and 3 die with
+  it: no movable-admission escape exists to find, and the `do{}while(0)`
+  moved_once doubling would need insn_count>61 AND an inner loop that jump
+  optimization does not delete — and is unnecessary now that the true knob is
+  known.
+- K6: the s1 guess that this is an SN-cc1psx `loop.c` divergence (frontier 2).
+  It is not a fork difference: our own cc1 reproduces the target exactly once
+  `n_non_fixed_regs` matches a no-FPU register file. A cc1psx probe would only
+  re-observe the same threshold.
+
+### FRONTIER (next session / operator)
+1. **This is an INTEGRATION HANDOFF, not a grindable residual.** The fix is one
+   flag in `CC_FLAGS` (Makefile + engine/buildconfig.py) — a surface no grind
+   session may touch. See the docs/grind/decisions.md entry of 2026-09-01.
+2. If the owner elects the global flag, `func_800324D0` needs a re-grind: its
+   loop must be spelled at <=58 RTL insns (currently 72) for the `li 255` hoist
+   to survive at threshold 58. That is an ordinary structural grind, not a lock.
+3. Do NOT re-open the C search for func_8003C714 on the shipped chassis. The
+   arithmetic in H4/K5 forecloses it; only the chassis question is live.
+
+## s2b (2026-09-01, structural modality — re-run after the s2 session was
+## driver-discarded on an entry-title technicality; s2's findings themselves were
+## independently RE-VERIFIED here, not inherited on trust)
+
+- **VERIFIED (not assumed):** with `candidate.c` in place of the `INCLUDE_ASM`
+  line, `sandbox func_8003C714 --disable all` prints **score 15, target_insns
+  104, build_insns 105** on the HEAD chassis, and `tools/grinder/dump.ps1`'s
+  `.loop` dump reproduces s2's movable table verbatim:
+  `Loop from 25 to 146: 56 real insns.` / `Insn 33: regno 78 (life 1),
+  move-insn savings 1  moved to 203` / `Insn 46: regno 84 (life 1), move-insn
+  savings 1  moved to 205` / `Insn 60: regno 91 (life 31), move-insn savings 1
+  moved to 207`. s2's account of the residual is correct.
+
+- **K7 — KILLED BY MEASUREMENT: the `do{}while(0)` -> `moved_once` doubling
+  frontier item (s1 frontier #1) does not exist.** Probe:
+  `rejected/dowhile0-inner-loop-is-phony.c` (the /1800 store wrapped in
+  `do { ... } while (0);`). Measured score **15** — unchanged. The `.loop` dump
+  explains why: the wrap emits `Loop from 43 to 68 is phony.` (loop.c:573). A
+  degenerate loop has no back edge, so `loop_optimize` marks it PHONY and never
+  calls `scan_loop` on it; the 0x91A2B3C5 movable is therefore never hoisted to
+  an inner preheader, `moved_once[regno]` (loop.c:1912) is never set, and the
+  `insn_count *= 2` / "halved since already moved" branch (loop.c:1609-1611)
+  never fires. The outer movable table is bit-identical to the unwrapped form
+  (`Loop from 25 to 160: 56 real insns.`, all three movables moved). This kills
+  the ENTIRE degenerate-loop family (do/while/for with a constant-false test),
+  not just this spelling — and it means **no ruling-request is owed** for the
+  `do-while-zero-exception` scope question s1 flagged: the construct is inert
+  here, so its sanctioning status is moot.
+
+- **K8 — KILLED BY MEASUREMENT: the `insn_count` axis is quantitatively dead.**
+  The desirability test is `threshold * savings * m->lifetime >= insn_count`
+  (loop.c:1631); for regno 84 `savings == 1` and `lifetime == 1` are both at
+  their structural floor (lifetime is `uid_luid[last_uid] - uid_luid[first_uid]`
+  = 1 because the const's set and its single `mult` use are adjacent, and it
+  cannot be 0), so the ONLY term left is `insn_count` against a threshold of
+  119 (122 after loop.c:532, minus the one `threshold -= 3` at loop.c:1719 that
+  the regno-78 hoist costs). The movable therefore stays in-loop only at
+  `insn_count >= 120`. Probe: `rejected/inline-index-addr-insn-count-costs-bytes.c`
+  inflates the loop by ordinary C (drop the `src` local, respell each read as
+  `*(s32 *)((u8 *)&D_80106A58 + i * 8 + 4)`). Measured: insn_count 56 -> **58**,
+  score 15 -> **28** (105 -> 108 insns). That is ~6.5 score points per +1 RTL
+  insn; the remaining +62 RTL insns would cost hundreds of points inside a
+  104-instruction target. Not "argued dead" — measured dead.
+
+- **K9 — the move_movables decision inputs are now ENUMERATED from source, and
+  every one is closed on the shipped chassis.** `threshold` (loop.c:532) is
+  `(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`; the target's loop contains
+  no call (asm/funcs/func_8003C714.s: the loop body 8003C754..8003C840 has no
+  `jal`), so the `loop_has_call` branch that would give 61 is unreachable
+  without changing the emitted bytes. Reducing `threshold` further needs 23 more
+  hoists before regno 84 (each `-= 3`), and the target preheader is fully
+  accounted for (`addu t0,zero,zero` biv init, `lui/ori a3` = 0x88888889,
+  `lui/addiu a2` + `addu a1,s0,zero` = strength-reduction giv inits) — there is
+  room for zero additional hoisted movables. The remaining `if` guards all push
+  the WRONG way: `force_movables` (loop.c:1221) only ADDS lifetime and DOUBLES
+  savings; `combine_movables` matching only adds savings; `m->cond` is satisfied
+  because `invariant_p` of a `const_int` is 1; and the `reg_single_usage`
+  substitution path (loop.c:735-768) requires both `loop_has_call` and a
+  successful `validate_replace_rtx` of a 32-bit constant into a MIPS `mult`,
+  which has no immediate form. There is no admission escape and no desirability
+  escape.
+
+## [s2] Wrapping the `dst[0x21] = v/1800;` statement in do{}while(0) creates an inner loop whose preheader is inside the real loop; the 0x91A2B3C5 movable is hoisted there, setting moved_once[regno], and the outer loop's move_movables then doubles insn_count (56 -> 112) so the movable is no longer desirable at threshold 119 — reproducing the target's in-loop split lui/ori.
+- mechanism: loop.c inner-first loop processing + moved_once[regno] (loop.c:1912) driving the `insn_count *= 2` / "halved since already moved" branch at loop.c:1609-1611, against the desirability test at loop.c:1631
+- probe: Spliced memory/grind/func_8003C714/rejected/dowhile0-inner-loop-is-phony.c over the INCLUDE_ASM line in src/code6cac_c2.c; `& tools/wteng.ps1 main sandbox func_8003C714 --disable all`; then `pwsh tools/grinder/dump.ps1 func_8003C714` and read tmp/grind/func_8003C714/dumps/code6cac_c2.loop.
+- result: score 15 (105 insns) — IDENTICAL to the unwrapped candidate. The dump prints `Loop from 43 to 68 is phony.` (loop.c:573) for the wrap, and the outer table is bit-identical: `Loop from 25 to 160: 56 real insns.` with Insn 33/regno 78, Insn 50/regno 84 and Insn 74/regno 91 all `moved to`. A degenerate loop has no back edge, so loop_optimize marks it PHONY and never calls scan_loop on it; nothing is hoisted out of it and moved_once is never set, so the doubling branch cannot fire.
+- verdict: KILLED
+
+## [s2] An ordinary-C respelling can raise the loop's RTL insn_count to the 120 required for the 0x91A2B3C5 movable to fail loop.c:1631's desirability test (threshold 119 after the first hoist's `threshold -= 3`) while keeping the emitted bytes on the target.
+- mechanism: loop.c:1631 `threshold * savings * m->lifetime >= insn_count`, with savings and lifetime both pinned at 1 (loop.c:791) and threshold pinned at 122 by loop.c:532 with n_non_fixed_regs == 60
+- probe: Spliced memory/grind/func_8003C714/rejected/inline-index-addr-insn-count-costs-bytes.c (drop the `src` local; respell each read as `*(s32 *)((u8 *)&D_80106A58 + i * 8 + 4)`) and measured sandbox score plus the `Loop from ...: N real insns.` line in the regenerated .loop dump.
+- result: insn_count 56 -> 58 (+2) but score 15 -> 28 (105 -> 108 insns): ~6.5 score points per +1 RTL insn. Reaching insn_count 120 needs +62 more RTL insns inside a target whose entire body is 104 instructions — hundreds of score points. The axis is measured dead, not merely argued dead.
+- verdict: KILLED
+
+## [s2] s2's account of the residual (floor 15, one loop.c movable decision, three movables in a 56-insn loop) is accurate and can be spent rather than re-derived.
+- mechanism: loop.c scan_loop / move_movables movable table as printed by cc1 -da
+- probe: Applied memory/grind/func_8003C714/candidate.c to src/code6cac_c2.c, ran `sandbox func_8003C714 --disable all` and `pwsh tools/grinder/dump.ps1 func_8003C714` fresh this session.
+- result: Reproduced exactly: score 15, target_insns 104, build_insns 105; `Loop from 25 to 146: 56 real insns.` with `Insn 33: regno 78 (life 1), move-insn savings 1  moved to 203`, `Insn 46: regno 84 (life 1), move-insn savings 1  moved to 205`, `Insn 60: regno 91 (life 31), move-insn savings 1  moved to 207`.
+- verdict: CONFIRMED
+
+## [s2] Some other input to move_movables' accept/reject decision (movable admission, m->cond, m->forces, m->match, loop_has_call, reg_single_usage substitution) can be steered from C to keep the 0x91A2B3C5 constant in the loop on the shipped chassis.
+- mechanism: loop.c:1594 safe-to-move guard, loop.c:1221 force_movables, combine_movables, loop.c:532 loop_has_call branch, loop.c:735-768 reg_single_usage substitution
+- probe: Read every decision input end-to-end in tools/gcc-2.7.2/loop.c and checked each against the target asm (asm/funcs/func_8003C714.s) and the measured dump.
+- result: All closed. force_movables and combine_movables only ADD lifetime / DOUBLE savings (they make hoisting MORE likely). m->cond is satisfied because invariant_p of a const_int returns 1. The loop_has_call branch (threshold 61 instead of 122) is unreachable because the target loop 8003C754..8003C840 contains no jal. reg_single_usage substitution needs BOTH loop_has_call AND a successful validate_replace_rtx of a 32-bit constant into a MIPS `mult`, which has no immediate form. Lowering threshold by `threshold -= 3` needs 23 further hoists and the target preheader has room for zero extra hoisted movables (addu t0,zero,zero biv init; lui/ori a3 = 0x88888889; lui/addiu a2 + addu a1,s0,zero = strength-reduction giv inits).
+- verdict: KILLED
