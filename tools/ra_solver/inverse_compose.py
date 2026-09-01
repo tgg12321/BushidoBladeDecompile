@@ -29,6 +29,14 @@ So comparing our honest stream against target's answers the question directly:
 This is cheap, needs only the two asm streams, and is the check that should run
 BEFORE any backend search.
 
+Since asm-until-matched (owner ruling 2026-08-19) the src-derived `<stem>.tgt.s`
+cannot carry the target stream for a zero-rule function, so the TEXT path is
+refused project-wide (owner ruling 1(b), 2026-08-30).  The escape is
+`--target-object` / `--ours-object` — the same escape sched_solver's goalmap
+received on 2026-08-25 (func_800645B0 packet): source BOTH streams from object
+files via `engine.score.normalized_insns`, so the two sides are objdump
+renderings in the SAME language and none of the text-path failure modes apply.
+
 ## 2. `hypothesis` — replay the downstream models under an upstream change
 
 An upstream (CSE-level) change cannot be spelled directly into the model files;
@@ -52,6 +60,9 @@ pathway (see the honest-limits section of the Phase 6 report).
 Usage (WSL, repo root, venv active):
   python3 tools/ra_solver/inverse_compose.py classify <stem> <func>
         [--work tmp/inverse_work]
+  python3 tools/ra_solver/inverse_compose.py classify <stem> <func>
+        --target-object build/src/<stem>.o
+        --ours-object tmp/sandbox/<func>/<stem>.o
   python3 tools/ra_solver/inverse_compose.py hypothesis <model.json>
         --merge P,Q [--goal '{"pseudo": reg}']
 """
@@ -87,10 +98,14 @@ STAGE_TOOL = {
 }
 
 
-def classify(hon, tgt):
-    """-> (stage, evidence dict)."""
-    hs = Counter(G.blank_regs(x) for x in hon)
-    ts = Counter(G.blank_regs(x) for x in tgt)
+def classify(hon, tgt, blank=G.blank_regs):
+    """-> (stage, evidence dict).  BLANK is the register-blanking function for
+    the streams' spelling: the default reads maspsx text (`$`-prefixed
+    registers); object mode passes goal_from_tgt.blank_regs, because objdump
+    prints bare register names with no `$` prefix and the default would blank
+    nothing there — silently misreporting every RA residual as SCHED."""
+    hs = Counter(blank(x) for x in hon)
+    ts = Counter(blank(x) for x in tgt)
     ev = {"honest_insns": len(hon), "target_insns": len(tgt)}
     if hs != ts:
         only_h = sorted((hs - ts).elements())
@@ -165,87 +180,143 @@ def _rule_carrying(func):
     return False
 
 
-def cmd_classify(a):
-    # GUARD (2026-08-06): for a `replace_with_asmfile` function this classifier
-    # returns a FICTITIOUS verdict rather than no verdict, which is worse — it
-    # reports PRE-RA / rtl_shape, the one answer meaning "stop, no model can
-    # reach this". Two compounding causes: <stem>.tgt.s carries the target as a
-    # glabel/endlabel block of `/* off addr bytes */` disassembly that
-    # goalmap.asm_body skips, and the two streams are assembler SOURCE vs
-    # DISASSEMBLY, so identical instructions compare unequal (`subu $sp,$sp,144`
-    # vs `addiu $sp, $sp, -0x90`). Measured on func_80089F3C: PRE-RA with a
-    # 287-vs-318 gap when the real codegen residual was ZERO.
-    # GUARD (2026-08-25, owner ruling on the func_800645B0 packet): an
-    # INCLUDE_ASM-routed function has the same unreadable/absent target in
-    # <stem>.tgt.s (src carries no C body since asm-until-matched), and the
-    # measured failure mode is identical — a FICTITIOUS PRE-RA verdict off a
-    # stale .tgt.s (ground truth on func_800645B0 was 78/78 with ONE
-    # operand-order diff; the classifier reported a 71-vs-69 multiset gap from
-    # a 19-day-old file). Route to the object-level classifier.
-    # GUARD (2026-08-30, owner ruling 1(b), decisions.md escalation-batch
-    # entry): the text path is refused for ANY zero-rule function, not just the
-    # asmfix-wired / INCLUDE_ASM-routed cases above. The old predicate keyed on
-    # the literal INCLUDE_ASM line in src/<stem>.c, so it stopped matching the
-    # moment a session applied a candidate body — exactly the state a solver
-    # session works in — and the stale .tgt.s then produced confident fiction
-    # again. Post rules-to-zero (2026-08-25) every function is zero-rule, so
-    # this effectively retires the text path; the object-level classifier
-    # (goal_from_tgt.py) reads target correctly in every state.
-    asmfile_wired = _replace_with_asmfile(a.func)
-    inc_routed = _include_asm_routed(a.stem, a.func)
-    zero_rule = not _rule_carrying(a.func)
-    wired = asmfile_wired or inc_routed or zero_rule
-    why = ("wired `replace_with_asmfile` in asmfix.txt" if asmfile_wired
-           else f"committed as INCLUDE_ASM in src/{a.stem}.c "
-                f"(asm-until-matched)" if inc_routed
-           else "zero-rule (rules-to-zero 2026-08-25): with no regfix/asmfix "
-                "rules the src-derived tgt.s cannot carry target's stream")
-    if wired and a.force_text:
-        print("PATH: text-stream classifier, GUARD OVERRIDDEN (--force-text) — "
-              f"{a.func} is {why}, so the verdict below "
-              "is FICTION. Do not act on it.\n")
-    elif wired:
-        sys.exit(
-            f"{a.func} is {why}, so its "
-            f"target in {a.stem}.tgt.s is absent or unreadable to this "
-            f"text-stream classifier; it would report a FICTITIOUS PRE-RA "
-            f"verdict.\n"
-            f"Use the object-level classifier instead:\n"
-            f"  python3 tools/ra_solver/goal_from_tgt.py classify {a.stem} {a.func}\n"
-            f"(--force-text bypasses this guard for debugging the guard itself.)\n"
-            f"See docs/grind/inverse-compose-2026-08-06.md.")
-    else:
-        print(f"PATH: text-stream classifier ({a.stem}.hon.s vs {a.stem}.tgt.s); "
-              f"{a.func} is not `replace_with_asmfile`-wired.\n")
-    work = ROOT / a.work
-    hon_p, tgt_p = work / f"{a.stem}.hon.s", work / f"{a.stem}.tgt.s"
-    for p in (hon_p, tgt_p):
-        if not p.exists():
-            sys.exit(f"missing {p} — run: bash tools/ra_solver/mkasm_honest.sh "
-                     f"{a.stem}")
-    # Staleness guard (2026-08-25): a .tgt.s older than its .hon.s means the
-    # target half failed on a later run and a previous run's file survived —
-    # comparing fresh honest against stale target produces confident fiction.
-    if tgt_p.stat().st_mtime + 5 < hon_p.stat().st_mtime:
-        sys.exit(f"{tgt_p.name} is STALE (older than {hon_p.name}) — the last "
-                 f"mkasm_honest.sh run did not regenerate the target half. "
-                 f"Re-run it and check for 'TARGET HALF FAILED'; for an "
-                 f"INCLUDE_ASM-routed function use goal_from_tgt.py instead.")
+def _obj_stream(path, func):
+    """FUNC's instruction stream from an object file — objdump-rendered and
+    control-flow-masked via `engine.score.normalized_insns(..., mask=True)`,
+    the same target source sched_solver's goalmap TARGET_OBJECT uses (owner
+    ruling 2026-08-25, func_800645B0 packet).  The path is relativized to the
+    repo root on purpose: engine.score builds its objdump command by string
+    interpolation without quoting, so an absolute path containing spaces (this
+    repo lives under "Bushido Blade 2 Decompile") yields an empty symbol table
+    and a bogus "not found" — the gotcha documented at goal_from_tgt.obj_insns.
+    Run from the repo root, like every other ra_solver entry point."""
+    p = Path(path)
+    if p.is_absolute():
+        try:
+            p = p.relative_to(ROOT)
+        except ValueError:
+            sys.exit(f"{path}: not under the repo root — engine.score needs a "
+                     f"repo-root-relative path (see goal_from_tgt.obj_insns)")
+    if not (ROOT / p).exists():
+        sys.exit(f"missing {p} — for the canonical target object run "
+                 f"`engine build` (build/src/<stem>.o); for the honest ours "
+                 f"object run `engine sandbox <func> --disable all` "
+                 f"(tmp/sandbox/<func>/<stem>.o)")
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from engine import score
     try:
-        hon = [t for t, _ in G.asm_body(hon_p, a.func)]
-        tgt = [t for t, _ in G.asm_body(tgt_p, a.func)]
+        return score.normalized_insns(p.as_posix(), func, mask=True)
     except KeyError as e:
-        if wired:
+        sys.exit(str(e))
+
+
+def cmd_classify(a):
+    # OBJECT MODE (2026-09-01, mirroring sched_solver's --target-object escape,
+    # owner ruling 2026-08-25): both streams come from object files, so the two
+    # sides are objdump renderings in the SAME language and every text-path
+    # failure mode below (absent/unreadable/stale <stem>.tgt.s, source-vs-
+    # disassembly spelling) is out of the picture by construction.  This is the
+    # supported classify path for zero-rule / INCLUDE_ASM-routed functions.
+    if a.target_object:
+        if not a.ours_object:
+            sys.exit("--target-object requires --ours-object (the "
+                     "cheat-stripped sandbox .o built from the same source "
+                     "state, tmp/sandbox/<func>/<stem>.o)")
+        import goal_from_tgt as T
+        print(f"PATH: object-level classifier ({a.ours_object} vs "
+              f"{a.target_object}) — objdump renderings share a language; "
+              f"safe for zero-rule / INCLUDE_ASM-routed functions.\n")
+        hon = _obj_stream(a.ours_object, a.func)
+        tgt = _obj_stream(a.target_object, a.func)
+        stage, ev = classify(hon, tgt, blank=T.blank_regs)
+    else:
+        # GUARD (2026-08-06): for a `replace_with_asmfile` function this
+        # classifier returns a FICTITIOUS verdict rather than no verdict, which
+        # is worse — it reports PRE-RA / rtl_shape, the one answer meaning
+        # "stop, no model can reach this". Two compounding causes: <stem>.tgt.s
+        # carries the target as a glabel/endlabel block of
+        # `/* off addr bytes */` disassembly that goalmap.asm_body skips, and
+        # the two streams are assembler SOURCE vs DISASSEMBLY, so identical
+        # instructions compare unequal (`subu $sp,$sp,144` vs
+        # `addiu $sp, $sp, -0x90`). Measured on func_80089F3C: PRE-RA with a
+        # 287-vs-318 gap when the real codegen residual was ZERO.
+        # GUARD (2026-08-25, owner ruling on the func_800645B0 packet): an
+        # INCLUDE_ASM-routed function has the same unreadable/absent target in
+        # <stem>.tgt.s (src carries no C body since asm-until-matched), and the
+        # measured failure mode is identical — a FICTITIOUS PRE-RA verdict off
+        # a stale .tgt.s (ground truth on func_800645B0 was 78/78 with ONE
+        # operand-order diff; the classifier reported a 71-vs-69 multiset gap
+        # from a 19-day-old file). Route to the object-level classifier.
+        # GUARD (2026-08-30, owner ruling 1(b), decisions.md escalation-batch
+        # entry): the text path is refused for ANY zero-rule function, not just
+        # the asmfix-wired / INCLUDE_ASM-routed cases above. The old predicate
+        # keyed on the literal INCLUDE_ASM line in src/<stem>.c, so it stopped
+        # matching the moment a session applied a candidate body — exactly the
+        # state a solver session works in — and the stale .tgt.s then produced
+        # confident fiction again. Post rules-to-zero (2026-08-25) every
+        # function is zero-rule, so this effectively retires the text path; the
+        # object-level classifiers (--target-object above, goal_from_tgt.py)
+        # read target correctly in every state.
+        asmfile_wired = _replace_with_asmfile(a.func)
+        inc_routed = _include_asm_routed(a.stem, a.func)
+        zero_rule = not _rule_carrying(a.func)
+        wired = asmfile_wired or inc_routed or zero_rule
+        why = ("wired `replace_with_asmfile` in asmfix.txt" if asmfile_wired
+               else f"committed as INCLUDE_ASM in src/{a.stem}.c "
+                    f"(asm-until-matched)" if inc_routed
+               else "zero-rule (rules-to-zero 2026-08-25): with no regfix/asmfix "
+                    "rules the src-derived tgt.s cannot carry target's stream")
+        if wired and a.force_text:
+            print("PATH: text-stream classifier, GUARD OVERRIDDEN (--force-text) — "
+                  f"{a.func} is {why}, so the verdict below "
+                  "is FICTION. Do not act on it.\n")
+        elif wired:
             sys.exit(
-                f"{e}\n\nThis is cause #1 of the guard's rationale, reproduced: "
-                f"the target block is a glabel/endlabel section of "
-                f"`/* off addr bytes */` disassembly, which asm_body skips.\n"
-                f"(Cause #2, the source-vs-disassembly spelling mismatch, only "
-                f"shows once a stream is parseable at all.)\n"
-                f"Use: python3 tools/ra_solver/goal_from_tgt.py classify "
-                f"{a.stem} {a.func}")
-        raise
-    stage, ev = classify(hon, tgt)
+                f"{a.func} is {why}, so its "
+                f"target in {a.stem}.tgt.s is absent or unreadable to this "
+                f"text-stream classifier; it would report a FICTITIOUS PRE-RA "
+                f"verdict.\n"
+                f"Classify from the OBJECTS instead (either spelling):\n"
+                f"  python3 tools/ra_solver/inverse_compose.py classify "
+                f"{a.stem} {a.func} \\\n"
+                f"      --target-object build/src/{a.stem}.o "
+                f"--ours-object tmp/sandbox/{a.func}/{a.stem}.o\n"
+                f"  python3 tools/ra_solver/goal_from_tgt.py classify {a.stem} {a.func}\n"
+                f"(--force-text bypasses this guard for debugging the guard itself.)\n"
+                f"See docs/grind/inverse-compose-2026-08-06.md.")
+        else:
+            print(f"PATH: text-stream classifier ({a.stem}.hon.s vs {a.stem}.tgt.s); "
+                  f"{a.func} is not `replace_with_asmfile`-wired.\n")
+        work = ROOT / a.work
+        hon_p, tgt_p = work / f"{a.stem}.hon.s", work / f"{a.stem}.tgt.s"
+        for p in (hon_p, tgt_p):
+            if not p.exists():
+                sys.exit(f"missing {p} — run: bash tools/ra_solver/mkasm_honest.sh "
+                         f"{a.stem}")
+        # Staleness guard (2026-08-25): a .tgt.s older than its .hon.s means the
+        # target half failed on a later run and a previous run's file survived —
+        # comparing fresh honest against stale target produces confident fiction.
+        if tgt_p.stat().st_mtime + 5 < hon_p.stat().st_mtime:
+            sys.exit(f"{tgt_p.name} is STALE (older than {hon_p.name}) — the last "
+                     f"mkasm_honest.sh run did not regenerate the target half. "
+                     f"Re-run it and check for 'TARGET HALF FAILED'; for an "
+                     f"INCLUDE_ASM-routed function use goal_from_tgt.py instead.")
+        try:
+            hon = [t for t, _ in G.asm_body(hon_p, a.func)]
+            tgt = [t for t, _ in G.asm_body(tgt_p, a.func)]
+        except KeyError as e:
+            if wired:
+                sys.exit(
+                    f"{e}\n\nThis is cause #1 of the guard's rationale, reproduced: "
+                    f"the target block is a glabel/endlabel section of "
+                    f"`/* off addr bytes */` disassembly, which asm_body skips.\n"
+                    f"(Cause #2, the source-vs-disassembly spelling mismatch, only "
+                    f"shows once a stream is parseable at all.)\n"
+                    f"Use: python3 tools/ra_solver/goal_from_tgt.py classify "
+                    f"{a.stem} {a.func}")
+            raise
+        stage, ev = classify(hon, tgt)
 
     print(f"{a.func} ({a.stem}): honest {ev['honest_insns']} insns, "
           f"target {ev['target_insns']} insns")
@@ -421,6 +492,17 @@ def main():
     c.add_argument("stem")
     c.add_argument("func")
     c.add_argument("--work", default="tmp/inverse_work")
+    c.add_argument("--target-object",
+                   help="source the TARGET stream from this .o instead of "
+                        "<stem>.tgt.s (build/src/<stem>.o) — the supported "
+                        "path for zero-rule / INCLUDE_ASM-routed functions, "
+                        "whose src-derived .tgt.s cannot carry the target "
+                        "(mirrors sched_solver's --target-object, owner "
+                        "ruling 2026-08-25). Needs --ours-object; paths are "
+                        "repo-root-relative.")
+    c.add_argument("--ours-object",
+                   help="the cheat-stripped sandbox .o built from the same "
+                        "source state (tmp/sandbox/<func>/<stem>.o)")
     c.add_argument("--force-text", action="store_true",
                    help="bypass the replace_with_asmfile guard and classify "
                         "from the TEXT streams anyway. The verdict is known to "
