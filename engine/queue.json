@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800324D0",
-      "file": "code6cac_b",
-      "distance": 27,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8): returned to active \u2014 the packet's question is mechanical (how the granted ruling-5 migration lands); routes via the driver's integration-handoff path (Judge ESCALATE integration-handoff, driver-executed).",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:16729"
-    },
-    {
       "func": "func_8002FC80",
       "file": "code6cac_b",
       "distance": 28,
@@ -1931,15 +1921,15 @@
     }
   ],
   "counts": {
-    "total": 216,
-    "active": 200,
+    "total": 215,
+    "active": 199,
     "by_status": {
-      "active": 200,
+      "active": 199,
       "foreclosed": 16
     },
     "by_verdict": {
-      "C": 166,
-      "ASM-PARTIAL": 34
+      "ASM-PARTIAL": 34,
+      "C": 165
     }
   }
 }

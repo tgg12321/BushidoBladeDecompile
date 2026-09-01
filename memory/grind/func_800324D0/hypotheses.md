@@ -1225,3 +1225,47 @@ single open question a future session would have to answer:
 - probe: Checked the repo record for Kengo C availability; ran m2c on asm/funcs/func_800324D0.s.
 - result: docs/grind/decisions.md:5937-5939 records that `Kengo/` holds names + sizes + source paths ONLY - 'There is no Kengo C ... never a source shape to transplant' - so the tag is a naming attribution and carries no shape. m2c refuses the function without the jump table ('Found jr instruction ... but the corresponding jump table is not provided') and would in any case only reproduce the shape already read insn-by-insn from the target asm and already built at 68/68. The decomp.me corpus leg is non-applicable: the residual is a register-seat swap inside a body that already matches instruction-for-instruction.
 - verdict: KILLED
+
+## [s22] H55: the walker's allocno priority can be lifted to the target-reaching rank at ZERO instruction cost, because cross-jump-remerged references are free
+- mechanism: flow.c's reg_n_refs census counts references on the pre-RA RTL; jump2's cross-jump pass runs AFTER reload. Duplicating the loop tail (`c = *ptr; ptr++;` + back-transfer) into all twelve command arms therefore multiplies the walker pseudo's reference count without emitting a single instruction. s20's foreclosure leg (b) — "promoting the walker needs nrefs ~50, which costs >= +6 instructions" — assumed refs cost instructions and is thereby falsified.
+- probe: three bodies measured against a pristine-HEAD reference object. P1 = 12-arm duplication WITH the s5 staged tail; P2 = same without staging; P3 = same, `u32 cmd` local dropped, `switch (c - 0x80)`.
+- result: P1 = 27 (68/68), P2 = **0** (68/68), P3 = **0** (68/68, rules_dropped 0), full build SHA1 == oracle. Walker pseudo 73's reg_n_refs is 96 in the winning body vs 24 in the base body, while the operand carrier stays at 26 in both (s22/lreg_seg.txt, s22/lreg_seg_p3.txt) — so the walker overtakes the carrier in allocno_compare and allocation lands 8/8 on target.
+- verdict: CONFIRMED — **the function is MATCHED in pure C.**
+
+## [s22] H56: the s5 staged-value-reused-variable FAKE is antagonistic with the walker reference lift
+- mechanism: staging the tail read through the existing `cmd` variable moves the duplicated references onto the command web instead of the stream walker, so the walker still loses the $v1 seat.
+- probe: P1 vs P2 above — identical bodies except for the staged tail.
+- result: 27 with staging, 0 without. The staged read (load-bearing since s5, worth 27 -> 15 on the shared-tail chassis) must be DELETED for the duplication to work.
+- verdict: CONFIRMED. Banked as rejected/tail-dup-12arms-with-staged-read-27.c.
+
+## [s22] H57: nrefs(operand carrier) cannot be reduced below twelve (s21 frontier axis 2)
+- mechanism: reg_n_refs counts references to a C variable; the target mandates twelve `sb $a1` arms, each of which is a reference to the operand byte.
+- probe: reference census on the s21 body's .lreg RTL segment (s22/lreg_seg.txt).
+- result: pseudo 76 has exactly 13 references — 1 def (insn 107) + the twelve arm stores at 0xA1,0xA3,0xA7,0xA8,0xA9,0xA5,0xA6,0xA2,0xA4,0xAA,0xAB,0xAC. No spelling reaches fewer.
+- verdict: KILLED (axis closed in closed form; moot now that H55 closed the function from the other side).
+
+## [s22] H58: the original had extra incoming parameters whose entry live ranges reshuffled allocation
+- mechanism: params in $a1/$a2/$a3 carry hard-reg preferences and are live at function entry, which would change find_reg's conflict and preference sets without changing the body's instruction stream.
+- probe: read the only caller's bytes, asm/funcs/func_80021A98.s:96-99.
+- result: the caller sets `$a0` alone before `jal func_800324D0` (`addu $a0, $s0, $zero` in the delay slot); no $a1/$a2/$a3 setup exists. The signature is one pointer parameter.
+- verdict: KILLED.
+
+## [s22] H59: a fresh m2c derivation of the target yields a shape not yet tried
+- mechanism: rederive modality's first leg — decompile asm/funcs/func_800324D0.s together with asm/rodata/jtbl_800105A0.s and read the shape m2c reconstructs.
+- probe: `python3 tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax -f func_800324D0 asm/funcs/func_800324D0.s asm/rodata/jtbl_800105A0.s`.
+- result: same control flow as the existing candidate, with the -0x80 bias folded into `case 0x80..0x8B` and the walker rendered as two variables (`var_v1`/`var_v1_2`). Both already banked kills (switch-folded-subtract-0x80-cases.c; q-alias-copy.c — cse1 canon_reg coalesces the copy pre-RA). m2c cannot express the winning shape: it never duplicates a shared tail into arms.
+- verdict: KILLED as a source of new shape (the leg is closed, not the function).
+
+### [s22 re-run] H43 — the s22 match survives a cold re-application to a pristine src
+- statement: the 12-arm tail-duplication body is a genuine byte match, not an artifact of the discarded session's tree state.
+- mechanism: the driver reverted the discarded session's src edits, so the body could be re-applied to the pre-migration pin-carrying src and measured from cold.
+- probe: `s22/apply.py` onto pristine `src/code6cac_b.c`, then `sandbox func_800324D0 --disable all`, then full `build`.
+- result: score 0, 68/68, rules_dropped 0 (`s22/sandbox_verify.log`); full build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa (`s22/build_sha1_verify.log`). Repeated after the annotation correction: `s22/sandbox_final_s22b.log`, `s22/build_sha1_final_s22b.log`.
+- verdict: CONFIRMED.
+
+### [s22 re-run] H44 — the reference lift is carrier-neutral
+- statement: the duplication promotes the walker WITHOUT perturbing the operand carrier, so allocno_compare's flip is attributable to one term only.
+- mechanism: flow.c's reg_n_refs census is per-pseudo; duplicating the tail touches only the walker's and command byte's references, not the operand byte's.
+- probe: compare the `.lreg` register census lines between `s22/lreg_seg.txt` (base) and `s22/lreg_seg_p3.txt` (winning body).
+- result: walker pseudo 73 goes 24 -> 96; the operand carrier is 26 in BOTH (pseudo 76 base, renumbered 75 in the winning body). The s20 "demote the carrier" channel is untouched and remains closed — the match came entirely from the promote leg s20 had priced out.
+- verdict: CONFIRMED.

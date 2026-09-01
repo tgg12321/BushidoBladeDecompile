@@ -1791,3 +1791,149 @@ also produces a bit-identical RA model, and costs +1 instruction for nothing.
 - [s21] for-form vs while-form is BIT-IDENTICAL in the RA model at the same 15/68; head-branch re-nesting is bit-identical and costs +1 instruction.
 
 - [s21] No Kengo C source exists anywhere in the project (docs/grind/decisions.md:5937-5939); the `kengo:HIGH | is_pad/Pad_Prs` tag is a naming attribution only.
+
+## [s22] 2026-09-01 — REDERIVE — **MATCHED, floor 15 -> 0**
+
+**The function is closed in pure C.** `sandbox func_800324D0 --disable all` = 0,
+`build_insns` 68 == `target_insns` 68, `rules_dropped` 0, measured against a
+reference object rebuilt from pristine HEAD in this session
+(`tmp/grind/func_800324D0/s22/build_head_reference2.log` -> `s22/sandbox_final.log`),
+and the full driver build is SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` ==
+oracle (`s22/build_sha1_final.log`). The body carries zero register pins, zero
+inline asm, zero volatile, and one FAKE-annotated construct. Four
+`register ... asm("...")` pins that main was still carrying for this function are
+deleted by the same edit.
+
+### What closed it, and why twenty-one sessions missed it
+
+The residual was always the same 2-register swap (walker wants $v1, command web
+wants $a2). s18 proved with the exact `find_reg` model that the target
+disposition is reached iff the walker's allocno outranks the operand carrier's
+in global.c's `allocno_compare`, whose key is
+`floor_log2(nrefs) * nrefs * size / reg_live_length`. s20 then filed a
+closed-form foreclosure with two legs: (a) demoting the carrier needs
+`livelen(val) >= 68`, unreachable; (b) promoting the walker needs `nrefs ~50`,
+which "costs >= +6 instructions on a budget that is exact at 68".
+
+**Leg (b) was false, and that is this session's finding.** References are only
+expensive when they MATERIALIZE. Duplicating the loop tail — `c = *ptr; ptr++;`
+plus its back-transfer — into each of the twelve command arms adds ~37 raw
+walker references at ZERO instruction cost, because jump2's cross-jump pass runs
+AFTER register allocation and re-merges the thirteen identical tails back into
+the single shared tail at `.L800325C8`, while flow.c has already counted every
+duplicated reference into `reg_n_refs`. Measured on the winning body's own .lreg
+RTL (`s22/lreg_seg_p3.txt`, pseudo 73 = the walker: `lw` from `pad+0x58`, the
++5/+6/+1 increments): **reg_n_refs 96 against 24 in the base body**, while the
+operand carrier is unchanged at 26 in both,
+and the allocation lands 8/8 on target.
+
+s6 had measured the 3-arm version of exactly this duplication and recorded it
+FLAT at 15 with byte-neutral re-merge, then filed the whole "reg_n_refs lift
+lever class" as measured dead. That inference was the error: the 3-arm lift is
+about a quarter of the 12-arm lift and lands nowhere near the threshold, and s20
+converted the shortfall into a closed form by assuming refs cost instructions.
+The lever class was never dead; only its weakest instance had been measured.
+
+### The staged read was actively in the way
+
+The s5 `staged-value-reused-variable` FAKE (`cmd = *ptr; c = cmd;`), which bought
+the 27 -> 15 drop and had been load-bearing since session 5, is **antagonistic**
+with the walker lift. The identical 12-arm duplication WITH the staging measures
+**27**, not 0 (`s22/sandbox_p1.log`, banked as
+`rejected/tail-dup-12arms-with-staged-read-27.c`): staging hands the duplicated
+reference lift to the command web instead of the walker. Dropping the staged read
+AND the `u32 cmd` local it borrowed gives 0 (`s22/sandbox_p2.log`); dropping the
+`cmd` local entirely and switching on `c - 0x80` directly also gives 0 and is the
+final form (`s22/sandbox_p3.log`). The matching body therefore has FEWER
+constructs than any candidate since s5: no staged read, no borrowed variable, no
+constant holder, no pins.
+
+### Two frontier axes closed on the way (both now moot, recorded for the record)
+
+- **nrefs(operand carrier) cannot be lowered below twelve.** Mechanically
+  confirmed on the s21 body's .lreg segment (`s22/lreg_seg.txt`): pseudo 76 has
+  exactly 13 references — one def (insn 107, the operand `lbu`) and twelve stores
+  at offsets 0xA1,0xA3,0xA7,0xA8,0xA9,0xA5,0xA6,0xA2,0xA4,0xAA,0xAB,0xAC — i.e.
+  every one of the twelve `sb $a1` arms the target mandates is a reference to the
+  operand variable. The s21 frontier's "lower nrefs instead of raising livelen"
+  axis is closed in closed form.
+- **The extra-parameter hypothesis is dead on the caller's bytes.** A second or
+  third incoming argument would put hard-reg preferences and entry live ranges on
+  $a1/$a2 and reshuffle allocation, but the only caller
+  (`asm/funcs/func_80021A98.s:96-99`) sets `$a0` alone before the `jal` — the
+  signature is one pointer parameter, confirmed.
+
+### Fresh-derivation legs run this session (rederive modality)
+
+- **m2c on the target + its jump table** (`asm/funcs/func_800324D0.s` +
+  `asm/rodata/jtbl_800105A0.s`, `--target mipsel-gcc-c`): renders the same
+  control flow the candidate already had, with the biasing folded into
+  `case 0x80..0x8B` labels and the walker split into `var_v1`/`var_v1_2`. Both of
+  those are already-banked kills (`rejected/switch-folded-subtract-0x80-cases.c`,
+  `rejected/q-alias-copy.c` — cse1's `canon_reg` coalesces a bare pointer copy
+  before local-alloc). m2c contributed no new shape; the winning shape is not
+  something m2c can express, because m2c never duplicates a shared tail.
+- Corpus/sibling legs stay closed by s9's record (no transplantable sibling; the
+  Kengo banner is misattributed legacy residue).
+
+### Artifacts
+
+`s22/build_head_reference.log`, `s22/sandbox_base.log` (s21 body re-measured at
+15/68/68 this session), `s22/sandbox_p1.log` (27), `s22/sandbox_p2.log` (0),
+`s22/sandbox_p3.log` (0), `s22/build_sha1_p3.log`, `s22/build_head_reference2.log`,
+`s22/sandbox_final.log` (0), `s22/build_sha1_final.log` (SHA1 == oracle),
+`s22/lreg_seg.txt` (s21 body, operand-carrier reference census),
+`s22/lreg_seg_p3.txt` (winning body, walker `Register 73 used 96 times`,
+carrier `Register 75 used 26 times`; base: walker 24, carrier 26),
+`s22/p1_tail_dup_12arms.c`, `s22/p2_tail_dup_12arms_nostage.c`,
+`s22/p3_nocmdvar.c`, `s22/apply.py`.
+
+## [s22, re-run 2026-09-01] — the match RE-VERIFIED from a pristine tree, and the paperwork repaired
+
+The first s22 attempt reached the matching body but was DISCARDED by the driver's
+mechanical self-vet validator, not on merit: `tools/grinder/grindlib.py`'s
+`_FAMILY_BLOCK` regex is `(?im)^\s*FAMILY\s*:` and the vet's T5 section opened a
+line with the prose word "Family:", so the validator counted THREE family claims
+against TWO quoted SCOPE sentences and rejected the session. The C was never
+looked at. **Lesson for every future vet on any function: no line in self_vet.md
+may begin with the token `FAMILY:` except a real claim block, because the
+validator cannot tell prose from a claim.**
+
+This session re-established the result from scratch rather than trusting it:
+
+1. `src/code6cac_b.c` was found back at the pre-migration form (four
+   `register ... asm("v1"/"v0"/"a2"/"a1")` pins, shared tail) — the driver had
+   reverted the discarded session's src edits. Backed up to
+   `s22/code6cac_b.orig.c`.
+2. The banked candidate was re-applied to that pristine src (`s22/apply.py`) and
+   re-measured cold: **score 0, target_insns 68 == build_insns 68,
+   rules_dropped 0** (`s22/sandbox_verify.log`), then **full build SHA1 ==
+   62efab4f73f992798c43e8c730aa43baa10bb4fa / MATCH** (`s22/build_sha1_verify.log`).
+3. The FAKE annotation's mechanism numbers were checked against the dumps and
+   found to be WRONG AS WRITTEN ("walker 12 -> 50 raw refs"). The `.lreg` census
+   actually reads:
+     - base body (`s22/lreg_seg.txt`): `Register 73 used 24 times` (walker),
+       `Register 76 used 26 times` (operand carrier) — carrier outranks, takes $v1.
+     - winning body (`s22/lreg_seg_p3.txt`): `Register 73 used 96 times` (walker),
+       `Register 75 used 26 times` (carrier) — walker outranks, takes $v1.
+   The annotation, the candidate header, this file and hypotheses.md were all
+   corrected to the measured values. The correction STRENGTHENS the claim: the
+   carrier's count is identical (26) in both bodies, so the flip is purely the
+   promote-the-walker leg, with no collateral change to the carrier at all.
+4. Re-measured after the comment correction: **0, 68/68**
+   (`s22/sandbox_final_s22b.log`) and **SHA1 == oracle**
+   (`s22/build_sha1_final_s22b.log`).
+
+Two collateral facts worth banking:
+
+- **The long-standing jtbl deferral is moot.** The 2026-08-24 disposition
+  ("REFUSED: asm references a C-generated jtbl_ symbol") described the INCLUDE_ASM
+  migration path. In the matching pure-C body the twelve-arm `switch` emits its own
+  jump table and the whole-image SHA1 still matches, so no `INCLUDE_RODATA` and no
+  `bb2.ld` touch is involved. The owner's ruling-5 migration is superseded outright:
+  the function does not need INCLUDE_ASM, it needs C.
+- **The claimed family already ships in this very file.** `src/code6cac_b.c`
+  carries an accepted duplicated-statement-into-arms FAKE for func_800283D0
+  ("store duplicated into this arm instead of sharing block_48's copy,
+  mechanism: jump2 cross-jump tail merge (jump.c find_cross_jump) ...") — same
+  family, same file, same pass, already through review.

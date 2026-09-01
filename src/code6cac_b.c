@@ -1799,60 +1799,66 @@ next:
     if (t1 < 4) goto loop;
 }
 /* kengo:HIGH  |  is_pad/Pad_Prs  |  111i */
-void func_800324D0(u8 *a0) {
-    register u8 *v1 asm("v1");
-    register u8 v0 asm("v0");
-    register u32 a2 asm("a2");
-    register u8 a1 asm("a1");
+void func_800324D0(u8 *pad) {
+    u8 *ptr;
+    u8 c;
+    u8 val;
 
-    v1 = *(u8 **)(a0 + 0x58);
-    v0 = 0xFF;
-    a0[0xA1] = v0;
-    a0[0xA3] = v0;
-    a0[0xA2] = v0;
-    a0[0xA4] = v0;
-    a0[0xAA] = 0;
-    a0[0xA7] = 0;
-    a0[0xA8] = 0;
-    a0[0xA5] = 0;
-    a0[0xA6] = v0;
-    a0[0xAB] = v0;
-    a0[0xAC] = v0;
+    ptr = *(u8 **)(pad + 0x58);
+    pad[0xA1] = 0xFF;
+    pad[0xA3] = 0xFF;
+    pad[0xA2] = 0xFF;
+    pad[0xA4] = 0xFF;
+    pad[0xAA] = 0;
+    pad[0xA7] = 0;
+    pad[0xA8] = 0;
+    pad[0xA5] = 0;
+    pad[0xA6] = 0xFF;
+    pad[0xAB] = 0xFF;
+    pad[0xAC] = 0xFF;
 
-    v0 = v1[4];
-    v1 += 5;
-    if (v0 == 0) return;
-
-    do {
-        a2 = v0;
-        if (a2 == 0xFF) {
-            v1 += 6;
-        } else if (a2 < 0x80) {
-            v1++;
+    c = ptr[4];
+    ptr += 5;
+    while (c != 0) {
+        if (c == 0xFF) {
+            ptr += 6;
+        } else if (c < 0x80) {
+            ptr++;
         } else {
-            a2 -= 0x80;
-            a1 = *v1;
-            v1++;
-            if (a2 < 12) {
-                switch (a2) {
-                    case 0: a0[0xA1] = a1; break;
-                    case 1: a0[0xA3] = a1; break;
-                    case 2: a0[0xA7] = a1; break;
-                    case 3: a0[0xA8] = a1; break;
-                    case 4: a0[0xA9] = a1; break;
-                    case 5: a0[0xA5] = a1; break;
-                    case 6: a0[0xA6] = a1; break;
-                    case 7: a0[0xA2] = a1; break;
-                    case 8: a0[0xA4] = a1; break;
-                    case 9: a0[0xAA] = a1; break;
-                    case 10: a0[0xAB] = a1; break;
-                    case 11: a0[0xAC] = a1; break;
-                }
+            val = *ptr;
+            ptr++;
+            /* FAKE: the loop tail (`c = *ptr; ptr++;` + its back-transfer) is
+             * duplicated into all twelve command arms instead of being reached
+             * by falling out of the switch, mechanism: flow.c's reg_n_refs
+             * census counts the duplicated walker references before global.c's
+             * allocno_compare ranks the allocnos: the walker pseudo's
+             * reg_n_refs goes 24 -> 96 while the operand carrier stays at 26
+             * (measured, .lreg dumps), so the walker now outranks it and takes
+             * $v1 instead of $a2, while jump2's
+             * cross-jump pass runs after reload and re-merges the thirteen
+             * identical tails, so not one duplicated reference materializes
+             * (68 == 68, byte-identical, full SHA1 == oracle),
+             * lever-exhaustion: memory/grind/func_800324D0/hypotheses.md s1-s21
+             * (the whole demote-the-carrier channel, the RA-seat channel, four
+             * permuter campaigns) and evidence.md [s22] */
+            switch (c - 0x80) {
+                case 0: pad[0xA1] = val; c = *ptr; ptr++; continue;
+                case 1: pad[0xA3] = val; c = *ptr; ptr++; continue;
+                case 2: pad[0xA7] = val; c = *ptr; ptr++; continue;
+                case 3: pad[0xA8] = val; c = *ptr; ptr++; continue;
+                case 4: pad[0xA9] = val; c = *ptr; ptr++; continue;
+                case 5: pad[0xA5] = val; c = *ptr; ptr++; continue;
+                case 6: pad[0xA6] = val; c = *ptr; ptr++; continue;
+                case 7: pad[0xA2] = val; c = *ptr; ptr++; continue;
+                case 8: pad[0xA4] = val; c = *ptr; ptr++; continue;
+                case 9: pad[0xAA] = val; c = *ptr; ptr++; continue;
+                case 10: pad[0xAB] = val; c = *ptr; ptr++; continue;
+                case 11: pad[0xAC] = val; c = *ptr; ptr++; continue;
             }
         }
-        v0 = *v1;
-        v1++;
-    } while (v0 != 0);
+        c = *ptr;
+        ptr++;
+    }
 }
 INCLUDE_ASM("asm/funcs", func_800325E0);
 void func_80032854(s32 arg0, s32 arg1, u8 *arg2, s16 *arg3) {
