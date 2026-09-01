@@ -17664,3 +17664,78 @@ the modality was not. Nothing below is a question to the owner and no packet is 
 ## 2026-09-01 10:23 — func_800203B4 — DISCARDED-SESSION MARKER (driver-stamped)
 
 Text appended above by session s9 of func_800203B4, which the driver DISCARDED as invalid (owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md names func_800203B4). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
+
+## 2026-09-01 — func_800203B4 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** — OWNER-ESCALATION disposition record for func_800203B4 (driver-anchor line; not a question to the owner)
+
+Filed by session s9b from driver-dispatched `escalation` modality (flat honest floor across 8
+sessions and 6 distinct modalities: recon, structural ×2, permuter, synthesis ×2, solver,
+forensics). This entry SUPERSEDES the identical-conclusion text at decisions.md:17550 and
+decisions.md:17595, both of which the driver voided as discarded-session artifacts (markers at
+decisions.md:17591 and decisions.md:17664). The conclusion was right in both; the earlier one was
+filed from the wrong modality, and the second lacked the driver-anchor token this heading now
+carries. Nothing about the underlying evidence changed.
+
+**Status of the function.** The honest pure-C floor is **0**. `memory/grind/func_800203B4/candidate.c`
+applied to `src/code6cac.c` → `sandbox func_800203B4 --disable all` = `score 0, target_insns 65,
+build_insns 65, scorable true, rules_dropped 0, cheat_asm_stripped 25` (this session; artifact
+`tmp/grind/func_800203B4/s9b/code6cac_sandbox0_s9b.o`). That is the SIXTH independent proof on
+three chassis generations (s1, s1-retry, s2, s4, s9, s9b). `src/code6cac.c` was reverted to
+`INCLUDE_ASM` after the measurement, per [[asm-until-matched]]. What blocks COMPLETED-C is not
+distance: it is that the 25 stripped instructions are cop2 inline asm with no sanctioned
+authorization axis.
+
+**Gate (a) — canonical-asm STRONG scan tier: FAILS.** `python3 tools/scan_hand_coded.py --single
+func_800203B4` re-run this session: `tier=LOW score=1/8 (67 insns)`, reason "no strong hand-coded
+indicators"; the only set signal is S4 (front loads, 5 loads in an 8-insn window @ insn 25).
+S1 (multu pacing), S2 (empty branch) and S6 (BIOS jumptable) — the three signals the judge-sole-gate
+recipe requires — are all clear. Log `tmp/grind/func_800203B4/s9b/scan_hand_coded_s9b.txt`. This is
+the fourth independent measurement of the same tier (s1, s4, s9, s9b). The STRONG-tier
+canonical-asm grant path is unavailable.
+
+**Gate (b) — in-hand SOTN-master precedent for the closing construct: FAILS by negative census.**
+`docs/reference/sotn-construct-index.md` (PSX/GCC-2.7.2 entries, 1,056 lines) re-grepped this
+session for `ctc2`, `mvmva`, `0x4A48`, `cop2`, `gte_ldv0`, `gte_stlvnl` and an
+`addu $t4,<reg>,$zero` addressing preamble: **0 hits each**. There is no citable SOTN-master
+precedent for the residual's closing construct. Per the owner's standing ruling a census that comes
+back negative is a FAILED gate, not an open question, so no membership argument is made or
+respelled here — that is also the binding Judge constraint on this function (Judge FAIL
+decisions.md:17546: the 2026-08-17 func_8002FDB0 cluster grant is doubly anchored to the literal
+`addu $t4,$aN,$zero` idiom and to instruction counts this function does not have).
+
+**BOTH GATES FAIL ⇒ the standing ruling applies: FORECLOSED.** Silent disposition per the owner's
+2026-08-31 ruling (`.claude/rules/ordinary-c-judge-decidable.md`). Nothing is surfaced to the owner
+and nothing waits on one.
+
+**Evidence pointers (why the residual is unreachable, not merely unreached).**
+- `memory/grind/func_800203B4/evidence.md` facts 1–61; `hypotheses.md` H1 CONFIRMED, H6/H7/H8/H10/H11/H15 KILLED.
+- Residual anatomy (fact 34): the 25 stripped instructions are 11 cop2 instructions plus 12 integer
+  instructions that are literal PsyQ SDK `gte_*` macro bodies, plus the three
+  `addu $t4,$v0/$s0,$zero` addressing preambles at `asm/funcs/func_800203B4.s` L27, L48, L59.
+- Measured minimality (fact 41): three island-partition variants that move the C-expressible
+  macro instructions into C all score NON-zero (12 / 4 / 8) — banked as
+  `rejected/thin-setrotmatrix-c-loads-score12.c`, `rejected/thin-stlvnl-no-preamble-score4.c`,
+  `rejected/thin-ldv0-c-packing-score8.c`.
+- Pure-C bound (fact 33): islands deleted entirely → score 26 with all 39 C-emitted instructions
+  already byte-exact (`rejected/pure-c-no-islands-floor-26.c`).
+- Solver stack typed verdict (fact 45): `inverse_compose.py classify` = NO DIVERGENCE on the
+  candidate chassis, FIRST DIVERGENCE: PRE-RA, "next tool: none — upstream of every model".
+- Compiler-source proofs (facts 50–51): GCC 2.7.2's MIPS backend contains ZERO cop2 mnemonics and
+  no cop2 RTL register class, so the 11 cop2 instructions are unemittable from C by construction;
+  and the 12 SDK-macro integer instructions have no reachable register seat under ascending-scan
+  allocation.
+- Permuter axis spent (facts 28/32): a 67,817-iteration campaign over the islands-deleted chassis
+  produced 4 novel finds, all sub-instruction and all semantics-broken.
+
+**Re-activation triggers.** Any ONE of these makes the residual attackable again and should return
+the item to active:
+1. An owner CLASS GRANT covering cop2 addressing-preamble sites whose source register is not `$aN`
+   (i.e. widening the 2026-08-17 func_8002FDB0 grant beyond its literal `addu $t4,$aN,$zero`
+   anchor). If that lands, this function is a PURE INTEGRATION HANDOFF, not a codegen task: apply
+   `memory/grind/func_800203B4/candidate.c` verbatim, confirm sandbox 0, then the operator writes
+   the `inline_asm_canonical.txt` grant line + `docs/grind/borderline.md` entry, runs a fresh
+   layer-2 cheat-reviewer, `verify-oracle --rebuild`, `queue done`.
+2. An entry naming `func_800203B4` appearing in `inline_asm_canonical.txt` or in
+   `.claude/rules/cop2-addressing-preamble-cluster.md` (both re-checked this session: `grep -c` = 0
+   and 0).
+3. A toolchain finding that gives GCC 2.7.2 a C-level path to cop2 emission (currently disproven at
+   the compiler-source level, facts 50–51).

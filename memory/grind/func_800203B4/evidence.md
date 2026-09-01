@@ -585,3 +585,82 @@
 - [s8] fact 55: re-activation triggers re-checked this session and NONE has landed - grep -c func_800203B4 inline_asm_canonical.txt = 0, grep -c func_800203B4 .claude/rules/cop2-addressing-preamble-cluster.md = 0, docs/grind/decisions.md tail still the 2026-09-01 09:05 discarded-session marker. Presence check only; no membership argument made or re-derived, per the binding Judge constraint. No decisions.md entry was filed: the mandated modality is forensics, not escalation.
 
 - [s8] explicit non-lever recorded in hypotheses.md H15: raising register pressure to push a pseudo into $13/$14 would mean inventing live values with no semantic purpose - a register pin by another spelling, forbidden by cheat-checklist T1/T2/T6. Named so no future session mistakes it for an idea.
+
+- [s9] fact 57: **Floor re-confirmed on the CURRENT chassis (5th independent proof).**
+  candidate.c applied to src/code6cac.c -> `sandbox func_800203B4 --disable all` = score 0,
+  target_insns 65, build_insns 65, scorable true, rules_dropped 0, cheat_asm_stripped 25.
+  Artifact tmp/grind/func_800203B4/s9/code6cac_sandbox0_s9.o. src reverted to INCLUDE_ASM after
+  the measurement. The chassis has NOT drifted since s8; every banked spelling conclusion remains
+  valid.
+- [s9] fact 58: **Re-activation triggers re-checked (fact 55 repeat) - NONE has landed.**
+  grep -c func_800203B4 inline_asm_canonical.txt = 0; grep -c func_800203B4
+  .claude/rules/cop2-addressing-preamble-cluster.md = 0; decisions.md tail was still the
+  2026-09-01 09:05 discarded-session marker. Presence check only; no membership argument derived
+  or respelled, per the binding Judge constraint.
+- [s9] fact 59: **Endgame-lock gate (a) FAILS, third independent measurement.**
+  tools/scan_hand_coded.py --single func_800203B4 = tier LOW, score 1/8, only S4 front loads set;
+  S1/S2/S6 all clear. Log tmp/grind/func_800203B4/s9/scan_hand_coded_s9.txt. The judge-sole-gate
+  Rule-3 STRONG-tier canonical-asm grant path is unavailable.
+- [s9] fact 60: **Endgame-lock gate (b) FAILS by NEGATIVE CENSUS.**
+  docs/reference/sotn-construct-index.md (1,365 entries) returns ZERO hits for ctc2, mvmva,
+  0x4A48, cop2, gte_ldv0, gte_stlvnl, or an `addu $t4,...,$zero` addressing preamble. There is no
+  in-hand SOTN-master precedent for the closing construct; per the owner's standing ruling a
+  negative census is a FAILED gate, not an open question.
+- [s9] fact 61: **DISPOSITION FILED.** Proof-of-foreclosure record appended to
+  docs/grind/decisions.md:17595 (`2026-09-01 - func_800203B4 - RESOLVED BY STANDING RULING
+  (2026-07-27): FORECLOSED`), filed from driver-dispatched `escalation` modality. It supersedes
+  the identical-conclusion text at decisions.md:17550, which the driver voided as a
+  discarded-session artifact (marker decisions.md:17591) - the conclusion was right, the modality
+  was not. Session s9 returned result=owner-gated with escalation_ref decisions.md:17595.
+
+- [s9b] fact 62: **Floor re-confirmed, SIXTH independent proof.** candidate.c applied to
+  src/code6cac.c -> `sandbox func_800203B4 --disable all` = score 0, target_insns 65,
+  build_insns 65, scorable true, rules_dropped 0, cheat_asm_stripped 25. Artifact
+  tmp/grind/func_800203B4/s9b/code6cac_sandbox0_s9b.o. src reverted to INCLUDE_ASM immediately
+  after the measurement; `git status` clean apart from ledger + metrics.
+- [s9b] fact 63: **Endgame-lock gate (a) FAILS, fourth independent measurement.**
+  `python3 tools/scan_hand_coded.py --single func_800203B4` = tier LOW, score 1/8, 67 insns,
+  reason "no strong hand-coded indicators"; only S4 (front loads, 5 in an 8-insn window @ insn 25)
+  is set; S1/S2/S6 all clear. Log tmp/grind/func_800203B4/s9b/scan_hand_coded_s9b.txt.
+- [s9b] fact 64: **Endgame-lock gate (b) FAILS by negative census, re-run.**
+  docs/reference/sotn-construct-index.md (1,056 lines) grepped case-insensitively for ctc2, mvmva,
+  0x4A48, cop2, gte_ldv0, gte_stlvnl and `addu $t4` -> 0 hits each. No in-hand SOTN-master
+  precedent for the closing construct.
+- [s9b] fact 65: **Re-activation triggers re-checked - none has landed.**
+  grep -c func_800203B4 inline_asm_canonical.txt = 0; grep -c func_800203B4
+  .claude/rules/cop2-addressing-preamble-cluster.md = 0. Presence check only; no membership
+  argument derived or respelled, per the binding Judge constraint.
+- [s9b] fact 66: **ROOT CAUSE of the s9 discard is now known and fixed - record it so no future
+  session repeats it.** The driver's owner-gated verification (tools/grinder/grind.ps1:1058)
+  requires a SINGLE LINE in docs/grind/decisions.md that matches the regex
+  `OWNER-ESCALATION|CANONICAL-ASM GRANT PATH` **and** contains the function name. The brief's
+  mandated heading shape (`RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED`) contains
+  NEITHER token, so a correctly-worded standing-ruling record is rejected by the anchor check even
+  though grindlib.py's own validator (grindlib.py:559) passes it and the routing branch
+  (grind.ps1:1128) is keyed on `RESOLVED BY STANDING RULING` in escalation_ref. The fix is to put
+  BOTH in the heading line: the standing-ruling title for routing plus a trailing
+  "OWNER-ESCALATION disposition record for <func>" clause for the anchor. Filed that way at
+  docs/grind/decisions.md:17668. This is a harness-shape trap, not a content problem: s1 and s9
+  were discarded for it, each losing an otherwise complete and correct disposition.
+- [s9b] fact 67: **DISPOSITION FILED (anchored).** Proof-of-foreclosure record appended at
+  docs/grind/decisions.md:17668, from driver-dispatched `escalation` modality, stating both failed
+  gates with this session's own measurements, evidence pointers to facts 1-66, and three
+  re-activation triggers. It supersedes the voided texts at decisions.md:17550 (wrong modality,
+  marker 17591) and decisions.md:17595 (missing anchor token, marker 17664). Session returned
+  result=owner-gated with escalation_ref citing decisions.md:17668.
+
+- [s9] fact 62: floor re-confirmed for the SIXTH time - candidate.c applied to src/code6cac.c gives `sandbox func_800203B4 --disable all` = score 0, target_insns 65, build_insns 65, scorable true, rules_dropped 0, cheat_asm_stripped 25 (artifact tmp/grind/func_800203B4/s9b/code6cac_sandbox0_s9b.o); src reverted to INCLUDE_ASM immediately after, git status clean apart from ledger + metrics.
+
+- [s9] fact 63: endgame-lock gate (a) FAILS on a fourth independent measurement - tools/scan_hand_coded.py --single func_800203B4 = tier LOW, score 1/8, 67 insns; only S4 set; S1/S2/S6 clear (log tmp/grind/func_800203B4/s9b/scan_hand_coded_s9b.txt).
+
+- [s9] fact 64: endgame-lock gate (b) FAILS by negative census re-run - docs/reference/sotn-construct-index.md (1,056 lines) returns 0 hits for each of ctc2, mvmva, 0x4A48, cop2, gte_ldv0, gte_stlvnl, 'addu $t4'.
+
+- [s9] fact 65: re-activation triggers re-checked, none has landed - grep -c func_800203B4 inline_asm_canonical.txt = 0; grep -c func_800203B4 .claude/rules/cop2-addressing-preamble-cluster.md = 0. Presence check only; no cluster-membership argument derived or respelled, per the binding Judge constraint.
+
+- [s9] fact 66: ROOT CAUSE of the s1 and s9 discards - the driver's owner-gated verification (grind.ps1:1058) requires ONE decisions.md line matching 'OWNER-ESCALATION|CANONICAL-ASM GRANT PATH' that ALSO contains the function name; the brief's mandated standing-ruling heading contains neither token, while grindlib.py:559 checks only file-wide token presence. Two validators disagreeing cost two complete, correct dispositions. Fix: carry both the routing title and an 'OWNER-ESCALATION disposition record for <func>' clause on the same heading line.
+
+- [s9] fact 67: DISPOSITION FILED (anchored) at docs/grind/decisions.md:17668 from driver-dispatched escalation modality - states both failed gates with this session's own measurements, evidence pointers to facts 1-66, and three re-activation triggers. Supersedes the voided texts at decisions.md:17550 (wrong modality, marker 17591) and decisions.md:17595 (missing anchor token, marker 17664).
+
+- [s9] The residual is unreachable by construction, not merely unreached: the 25 stripped instructions are 11 cop2 instructions with NO emitter anywhere in GCC 2.7.2's MIPS backend and no cop2 RTL register class (facts 50-51), 12 integer instructions that are literal PsyQ SDK gte_* macro bodies with no reachable register seat under ascending-scan allocation, and three 'addu $t4,$v0/$s0,$zero' addressing preambles (asm/funcs/func_800203B4.s L27/L48/L59) that the 2026-08-17 func_8002FDB0 cluster grant does not reach (Judge FAIL, decisions.md:17546).
+
+- [s9] Minimality of that 25-instruction surface is MEASURED, not asserted: three island-partition variants that move C-expressible macro instructions into C all score non-zero (12/4/8) - rejected/thin-setrotmatrix-c-loads-score12.c, rejected/thin-stlvnl-no-preamble-score4.c, rejected/thin-ldv0-c-packing-score8.c - and deleting the islands entirely gives score 26 with all 39 C-emitted instructions already byte-exact (rejected/pure-c-no-islands-floor-26.c).

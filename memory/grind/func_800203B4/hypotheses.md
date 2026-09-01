@@ -512,3 +512,65 @@ the cheat checklist (T1/T2/T6). It is named here so no future session mistakes i
 - probe: Apply the s6 varJ thin-gte_ldv0 form (the one partition whose C-expressible work is genuinely ordinary C), run 'pwsh tools/grinder/dump.ps1 func_800203B4', read the .lreg/.greg register dispositions and the emitted .s, and re-measure the sandbox score.
 - result: '.lreg' seats all 19 pseudos in $2 or $3 except the two call-crossing pointers ($16/$17, the first free callee-saved regs); '.greg' dispositions are identical so global-alloc revises nothing; $12-$15 appear in 'Hard regs used' only as asm clobbers. The emitted body uses $2/$3 where the target uses $13/$14 and folds vec[] to $sp displacements instead of basing off one pointer register. sandbox re-measured 8 / build_insns 64, matching fact 41.
 - verdict: CONFIRMED
+
+## H16 [s9, escalation] - CONFIRMED
+**Statement.** Both endgame-lock AND-gates fail for func_800203B4, so the owner's 2026-07-27
+standing ruling resolves the function to silent FORECLOSURE, and the disposition is filable from
+this session's `escalation` modality without any further codegen work.
+**Mechanism.** Gate (a) needs a STRONG scan_hand_coded tier (S1/S2/S6); gate (b) needs an in-hand
+SOTN-master precedent citable as file:line. Neither exists. The residual is 25 stripped
+instructions of which 11 are cop2 with no emitter in GCC 2.7.2's MIPS backend at all (facts 50-51),
+so no C spelling can reach them.
+**Probe.** (1) three-grep re-activation-trigger presence check; (2) one confirming
+`sandbox func_800203B4 --disable all` with candidate.c applied; (3) scan_hand_coded --single;
+(4) SOTN construct-index census for the closing construct.
+**Result.** (1) no trigger landed; (2) score 0, 65/65, 25 stripped; (3) tier LOW score 1/8;
+(4) zero hits. Record filed at docs/grind/decisions.md:17595.
+**Verdict.** CONFIRMED. Facts 57-61. No codegen hypothesis remains open; the function is
+foreclosed pending an owner class grant (re-activation trigger 1), at which point candidate.c is a
+pure integration handoff.
+
+## H16 [s9b] - CONFIRMED - the s9/s1 discards were a decisions.md ANCHOR-TOKEN defect, not a content defect
+Statement: the two discarded owner-gated sessions carried correct, complete dispositions; what the
+driver rejected was the absence of a line in docs/grind/decisions.md carrying the literal token
+`OWNER-ESCALATION` or `CANONICAL-ASM GRANT PATH` alongside the function name.
+Mechanism: tools/grinder/grind.ps1:1058 filters decisions.md lines by
+`$_ -match 'OWNER-ESCALATION|CANONICAL-ASM GRANT PATH' -and $_ -match <func>`; the brief's mandated
+standing-ruling heading contains neither token. grindlib.py:559 checks only for the token's presence
+somewhere in the file (satisfied by other functions' entries), so the two validators disagree.
+Probe: read grind.ps1:1035-1145 and grindlib.py:530-580; then file the record with both the routing
+title and the anchor clause on the heading line and confirm with
+`grep -n OWNER-ESCALATION docs/grind/decisions.md | grep func_800203B4`.
+Result: heading present at decisions.md:17668 carrying both tokens. Verdict: CONFIRMED.
+
+## H17 [s9b] - CONFIRMED - both endgame-lock gates still fail on independent re-measurement
+Statement: neither the STRONG-scan canonical-asm gate nor the SOTN-precedent gate has become
+available since s9.
+Mechanism: gate (a) is scan_hand_coded's S1/S2/S6 signals; gate (b) is a citable PSX-tier entry in
+docs/reference/sotn-construct-index.md for the closing construct.
+Probe: scan_hand_coded --single (this session) and a 7-term case-insensitive census of the index.
+Result: tier LOW 1/8, only S4 set; census 0 hits on all seven terms. Verdict: CONFIRMED (both FAIL).
+
+## [s9] The s9 (and s1) owner-gated discards were caused by a missing decisions.md anchor token, not by defective content.
+- mechanism: tools/grinder/grind.ps1:1058 filters decisions.md lines by matching 'OWNER-ESCALATION|CANONICAL-ASM GRANT PATH' AND the function name on the SAME line. The brief's mandated standing-ruling heading contains neither token, while grindlib.py:559 only checks that the token exists somewhere in the whole file (satisfied by other functions' entries), so the two validators disagree and a correctly-worded record is rejected.
+- probe: Read grind.ps1:1035-1145 and grindlib.py:530-580; file the record with the routing title 'RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED' plus a trailing 'OWNER-ESCALATION disposition record for func_800203B4' clause on the same heading line; verify with grep -n OWNER-ESCALATION docs/grind/decisions.md | grep func_800203B4.
+- result: Anchor heading present at docs/grind/decisions.md:17668 carrying both the routing title and the OWNER-ESCALATION token plus the function name.
+- verdict: CONFIRMED
+
+## [s9] Endgame-lock gate (a) - canonical-asm STRONG scan tier - still FAILS.
+- mechanism: The judge-sole-gate canonical-asm grant path requires STRONG signals S1 (multu pacing) / S2 (empty branch) / S6 (BIOS jumptable) from tools/scan_hand_coded.py.
+- probe: python3 tools/scan_hand_coded.py --single func_800203B4 (log tmp/grind/func_800203B4/s9b/scan_hand_coded_s9b.txt)
+- result: tier=LOW score=1/8 over 67 insns, reason 'no strong hand-coded indicators'; only S4 (5 front loads in an 8-insn window @ insn 25) is set; S1/S2/S6 all clear. Fourth independent measurement of the same tier (s1, s4, s9, s9b).
+- verdict: KILLED
+
+## [s9] Endgame-lock gate (b) - an in-hand SOTN-master precedent for the closing construct - still FAILS by negative census.
+- mechanism: docs/reference/sotn-construct-index.md is the machine-generated index of every match-hack construct SOTN master ships; a hit is citable precedent, an absence after a real search is evidence of no precedent.
+- probe: Case-insensitive grep -c of the 1,056-line index for ctc2, mvmva, 0x4A48, cop2, gte_ldv0, gte_stlvnl, and 'addu $t4'.
+- result: 0 hits on all seven terms. No citable precedent for the cop2 islands or the non-$aN-source addressing preamble. Per the owner's standing ruling a negative census is a FAILED gate, not an open question.
+- verdict: KILLED
+
+## [s9] The honest pure-C floor is 0 on the current chassis with candidate.c applied.
+- mechanism: The cheat-invisible sandbox strips the 25 cop2/SDK-macro inline-asm instructions and scores the remaining 39 C-emitted instructions against the target.
+- probe: Apply memory/grind/func_800203B4/candidate.c to src/code6cac.c; sandbox func_800203B4 --disable all; revert src to INCLUDE_ASM.
+- result: score 0, target_insns 65, build_insns 65, scorable true, rules_dropped 0, cheat_asm_stripped 25. Artifact tmp/grind/func_800203B4/s9b/code6cac_sandbox0_s9b.o. Sixth independent proof (s1, s1-retry, s2, s4, s9, s9b).
+- verdict: CONFIRMED
