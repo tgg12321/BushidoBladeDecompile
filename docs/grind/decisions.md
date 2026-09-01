@@ -18511,3 +18511,102 @@ compiler source `tools/gcc-2.7.2/cse.c:842-857`; target `asm/funcs/func_80045294
 directive `docs/grind/decisions.md:17743` (FORECLOSED-BUCKET REVIEW, Ruling A row
 `func_80045294 (d2)`); prior entries for this function in this file at lines 820, 942, 11915,
 15292.
+
+## 2026-09-01 — func_80060A68 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+**Function:** func_80060A68 (src/text1b.c:3142, committed as `INCLUDE_ASM("asm/funcs",
+func_80060A68);`). Honest pure-C floor **2 / build 66 / target 66**, re-measured this
+session with `memory/grind/func_80060A68/candidate.c` spliced in. 13 grind sessions,
+6 distinct modalities (rederive, synthesis, structural, permuter, solver/campaign,
+escalation). The residual is two adjacent slots: ours `lhu v0,0(a1)` + `nop` where target
+has `lhu v0,0(a0)` + `lw a0,0x10(v1)`.
+
+**This entry is a proof-of-foreclosure RECORD, not a question and not a decision packet**
+(owner ruling 2026-08-31, [[ordinary-c-judge-decidable]]). Nothing waits on the owner.
+
+**Provenance: this function was reopened by the owner on 2026-09-01** (FORECLOSED-BUCKET
+REVIEW, Ruling A row `func_80060A68 (d2)`, decisions.md:17743). The reopen ground was that
+"an unfinished search (inverse.py local killed at 100% CPU before depth 1) was rebranded as
+an analytic closure over 2 of 23 quantities", with two named probes. **Both probes were
+executed this session and the reopen ground is now discharged on its own terms.**
+
+**Probe (2) — suggestion sets.** `local_extract.py text1b --func func_80060A68 --suggest`
+(instrument postdates the 2026-08-30 record). The sets are NOT empty as assumed: blk 0
+carries qty13 (copysugg=[$a1], got $a1) and qty14 (copysugg=[$a0], got $a0). Both live at
+[44,68] / [46,64] — outside the contested span [26,44] — so the suggested pass does not
+touch the seat. Assumption replaced by measurement.
+
+**Probe (1) — the unfinished order enumeration is now FINISHED, and the tool wall was a
+one-line bug, not superlinearity.** `LocalBackend.atoms()` (tools/ra_solver/inverse.py:484)
+builds its ALLOC_ORDER class as `for perm in itertools.permutations(base): if
+list(perm) != base and len(base) <= 6:` — the guard is INSIDE the loop, so 23 quantities
+means 23! iterations before atoms() returns. The forward replay was never reached. Re-run
+through the identical backend with that atom class omitted
+(tmp/grind/func_80060A68/s13/bounded_local.py): depth 1 completes in 0.0 s, depth 2 over
+the non-qty8 atoms in 3.9 s. **tools/ is outside a grind session's edit surface, so the
+guard hoist is REPORTED here for the operator/tooling lane, not applied.**
+
+**What the finished search found — the escape set, enumerated for the first time.**
+From the QTYDBG + SUGGDBG-FFR ground truth (artifact s13/qtydbg_baseline.txt): qty8 (the
+`*(s32 *)(outer + 0x10)` pointer, reg1=75, birth 26, death 44, refs 3) is allocation call
+#24 of 25 with `used = {$zero,$at,$v0,$v1,$a0}`, hence $a1. $v0/$v1 are blocked
+structurally; **$a0 is blocked by TWO overlapping quantities — qty10 (32-36) and qty11
+(36-42) — where the 2026-08-30/s12 record named only qty11.** local-alloc's priority
+(local-alloc.c:1649-1685) is floor_log2(refs)*refs*size*10000/span, first-fit ascending,
+ties on ascending qty number. Measured: qty8=1666, qty11=3333, qty10=5000. qty8 takes $a0
+iff pri(qty8) >= 5000, i.e. **refs=3 & span<=6, or refs=4 & span<=16, or refs=5 & span<=20,
+or refs=6 & span<=24.** That set is complete.
+
+**Why every member is dead (measured, not argued).**
+1. refs=3 & span<=6 is the "+4 read early" shape — bodies d8 and c1, already measured
+   4 / 66 with the load in $v0 (s9, s12).
+2. refs>=4 requires added references to p10, and a reference is an instruction, and an
+   instruction inflates the same span the priority divides by. Measured twice this session
+   on the real compiler: PROBE A (two extra reads after temp_a1) gives refs 5 but span 24,
+   pri 4166 < 5000, seat $a2; PROBE B (the same reads placed early to protect the death
+   point) gives refs 4, span 28, pri 2857, seat $a1, and **sandbox 6 / build 72 / target 66**.
+   Banked at memory/grind/func_80060A68/rejected/s13-refs-lift-late-p10-refs5-span24-pri4166-below-5000.c
+   and .../s13-refs-lift-early-p10-refs4-span28-score6-72insns.c.
+3. The arithmetic generalises: the build already sits at target's exact 66 instructions, so
+   every added reference is a guaranteed +1 residual slot even in a branch where the seat
+   flips. The refs axis cannot pay for itself.
+4. The one SANCTIONED honest ref-lift — [[duplicated-statement-into-arms]], the family that
+   closed func_800324D0 and the owner's own named probe for func_80045294's
+   `refs_up 72: 3->4` — is structurally unavailable: the contested span [26,44] is
+   straight-line code, and this function's only conditional is the trailing
+   `if (*(s32 *)D_800A3468 & 0x200000) { D_800A32BC = 0xA; }`, which references neither p10
+   nor $a0. The family requires a REAL pre-existing arm; there is none in range.
+
+**Gate (a) — canonical-asm: FAILS.** `python3 tools/scan_hand_coded.py --single
+func_80060A68` on today's HEAD: **tier=LOW, score 1/8**, S4 only ("6 loads in 8-insn window
+@ insn 9"). Artifact: tmp/grind/func_80060A68/s13/scan_hand_coded.txt.
+
+**Gate (b) — SOTN-master precedent: FAILS.** candidate.c carries no coercion construct at
+all, so there is no family for which a precedent could be cited. The only family that could
+have lifted refs honestly is duplicated-statement-into-arms, and it is foreclosed
+structurally (point 4 above) rather than by census — a failed gate, not an open question.
+
+**What holds the byte-match: nothing does.** This function does NOT byte-match via a cheat.
+It is committed as INCLUDE_ASM per [[asm-until-matched]]; asmfix.txt is empty project-wide
+since 2026-08-25. There is no cheat to retire and no integration handoff pending.
+
+**Model-fidelity caveat recorded for any future session.** inverse.py local's forward model
+reproduces only 14 of 23 QTYDBG seats on this block (interval-overlap conflicts vs
+local-alloc's qty_conflict bitmaps; e.g. model qty8=$a2 vs measured $a1). Its depth-1
+suggestions corroborate but do not carry the conclusion; the QTYDBG/FFR dump plus
+local-alloc.c:1649-1685 does, and PROBE A / PROBE B measure the decisive branch on the real
+compiler.
+
+**Evidence pointers.** memory/grind/func_80060A68/evidence.md (s13 section) and
+hypotheses.md (H-s13-1..5); tmp/grind/func_80060A68/s13/{qtydbg_baseline.txt,
+inverse_local_depth1.txt, inverse_local_no_qty8_depth2.txt, scan_hand_coded.txt,
+bounded_local.py, no_qty8_depth2.py}; 76 banked rejected forms.
+
+**Re-activation triggers.** (i) an owner class grant covering an added-reference /
+fabricated-consumer construct for this function (currently banned, and it would still cost
+instructions on a 66/66 body); (ii) a toolchain finding that changes local-alloc's priority
+inputs or the emission indices that set qty8's span; (iii) an honest early consumer of
+`*(s32 *)(outer + 0x10)` derived from the CALL side of the halfword-copy block (the live
+frontier's fidelity item — the sibling cluster func_80060B70 / func_80061250 /
+func_80061658 / func_80061710, the last now COMPLETED-C, is the place to look);
+(iv) an owner unpark. Until then: FORECLOSED, silently, queue advances.

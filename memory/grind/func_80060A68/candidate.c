@@ -1,3 +1,9 @@
+/* [s13 2026-09-01 - escalation/disposition, owner Ruling A reopen.  BODY UNCHANGED,
+ * re-measured 2 / 66 / 66 on today's HEAD.  s13 finished the local-alloc order search
+ * that s12 could not run (inverse.py atoms() hangs on itertools.permutations over 23
+ * quantities), enumerated the complete seat-escape set from the QTYDBG/FFR ground truth
+ * (pri(qty8) >= 5000: refs3/span<=6, refs4/span<=16, refs5/span<=20, refs6/span<=24) and
+ * measured every member dead - see evidence.md s13 and decisions.md 2026-09-01.] */
 /* [s12 2026-08-30 - escalation/disposition modality.  BODY UNCHANGED.  Re-measured
  * 2 / 66 / 66 on today's HEAD (HEAD carries INCLUDE_ASM since commit 0bef2aa3).]
  *

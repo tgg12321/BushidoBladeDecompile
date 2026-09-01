@@ -1,7 +1,7 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 12,
+ "session_count": 13,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -75,18 +75,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "s12 closes the last two open axes (all three read-partitions measured; every existing store priced as a cse separator) and derives the local-alloc seat analytically; both endgame gates fail, dispositi"
+  },
+  {
+   "session": 13,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Owner Ruling A probes executed: the inverse.py hang is a one-line permutations bug (not superlinearity), the finished search enumerates the complete local-alloc seat-escape set for the first time, and"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A body that is simultaneously three-load, 66 instructions and $a1-seated for the +4 address load exists, i.e. the s12 law has an exception this campaign has not exhibited.",
-   "mechanism": "The law was established by exhibition over four bodies plus the local-alloc priority derivation, not by a completeness proof. Any counterexample must give the +4 address load an early consumer WITHOUT a separator store and WITHOUT a fabricated reference -- no such consumer exists in the function's semantics (s10), which is why the law reads as closed.",
-   "next_probe": "None inside the sanctioned family list. A future session must first exhibit an honest early consumer of the +0x10 pointer that is not one of the three halfword reads; if it cannot, the law is final and this is the terminal result."
+   "hypothesis": "An honest early consumer of *(s32 *)(outer + 0x10) exists on the CALL side of the halfword-copy block \u2014 i.e. the original TU spelled the +4 read together with the call's second argument, which would give p10 a fourth reference for free and satisfy refs=4 without adding an instruction.",
+   "mechanism": "temp_a1 is the call's second argument and lands in $a1; target's early lw sits 17 slots above its consumer and in the argument register. A call-side derivation would place the reference inside the existing argument setup rather than adding one, which is the only shape that escapes the s13 self-cancellation arithmetic.",
+   "next_probe": "Rederive the halfword-copy block from the call-argument side and read the matched C of the sibling cluster (func_80060B70, func_80061250, func_80061658, func_80061710 \u2014 the last now COMPLETED-C) for the same lw/lhu 17-slot geometry. Only a reference that costs zero instructions can move this seat."
   },
   {
-   "hypothesis": "The residual is a FIDELITY signal: the original TU spelled the +4 read together with the call's second argument, which is why target's lw a1,0x10(v1) sits 17 slots above its consumer AND in the argument register.",
-   "mechanism": "temp_a1 is the call's second argument and lands in $a1; target's early load is in the same register. s11 added that x2 reproduces target's slots 0-11 exactly (including the adjacent lw $v0,0xC($v1); lw $a0,0xC($v1) pair) from a staged-value spelling. No reconstruction so far derives the block from the CALL side.",
-   "next_probe": "A rederive-modality pass that derives the halfword-copy block from the call-argument side, and checks the matched C of the sibling cluster (func_80060B70, func_80061250, func_80061658, func_80061710) for the same lw/lhu 17-slot geometry. func_80061710 is now COMPLETED-C and is the closest in-repo sibling to read."
+   "hypothesis": "Hoisting the `len(base) <= 6` guard out of the permutations loop in tools/ra_solver/inverse.py:484 unblocks the ALLOC_ORDER atom class project-wide, and other functions' 'inverse.py local hung' records are the same bug rather than genuine model limits.",
+   "mechanism": "The generator is evaluated before the guard, so every block with more than ~10 quantities is unanalysable in local mode today. The ledgers of any function whose RA residual was declared underived by a killed inverse.py run inherit a false negative.",
+   "next_probe": "Operator/tooling lane: hoist the guard (or cap the permutation class by priority-adjacent swaps), keep `engine test` green, then re-run the local backend for every function whose ledger records a killed inverse.py local run."
+  },
+  {
+   "hypothesis": "inverse.py local's forward model is not faithful on blocks with non-contiguous live ranges, so its verdicts elsewhere may be systematically off by one register seat.",
+   "mechanism": "_alloc builds `used` from plain interval overlap over [birth, death), while local-alloc uses qty_conflict bitmaps that admit holes; the model therefore over-approximates conflicts and allocates too high (measured here: 9 of 23 seats wrong, always upward for the contested quantities).",
+   "next_probe": "Add a baseline-vs-QTYDBG fidelity check to the local backend's report header (operator lane) so a mismatched model announces itself instead of being spent as evidence; re-audit any ledger conclusion that rests on an unvalidated local-mode verdict."
   }
  ],
  "judge_constraints": [

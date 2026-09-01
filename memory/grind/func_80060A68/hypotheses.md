@@ -1372,3 +1372,83 @@ an instruction (H-s12-1); buying it with a fabricated consumer is a banned famil
 ## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
 
 Returned to active under Ruling A. Ground: the qty8/qty11 pairwise priority comparison replaced an inverse.py-local search that was killed at 100% CPU before finishing depth 1 (evidence.md:1926-1950) — first-fit over 23 quantities is a whole-order property. Named probes: (1) bounded/profiled inverse.py local --block 0 (or an 800324D0-style order-closure replay over block_alloc's sorted order) enumerating which orderings seat p10 in $a0; (2) local_extract.py func_80060A68 --suggest (instrument postdates the record) to confirm the suggestion sets are empty rather than assumed.
+
+## s13 (2026-09-01) — the owner's Ruling A probes, executed and closed
+
+**H-s13-1 (KILLED — as a tooling claim).** "inverse.py local's forward replay is
+superlinear on 23-quantity blocks, so the escape set cannot be enumerated."
+Mechanism claimed by the 2026-08-30 campaign note. FALSE: the hang is
+`itertools.permutations(base)` over 23 quantities in `LocalBackend.atoms()`
+(tools/ra_solver/inverse.py:484-489, the `len(base) <= 6` guard sits inside the loop).
+With that atom class omitted the identical backend finishes depth 1 in 0.0 s and
+depth 2 in 3.9 s (tmp/grind/func_80060A68/s13/bounded_local.py). The search that was
+"killed at 100% CPU before depth 1" is now FINISHED. tools/ is outside a grind
+session's edit surface — the guard hoist is reported for the operator lane, not applied.
+
+**H-s13-2 (CONFIRMED).** "The $a1 seat is decided by first-fit over a `used` set in
+which $a0 is contributed by TWO overlapping quantities, not one." QTYDBG/FFR ground
+truth: qty8 is allocation call #24 of 25 with used={$zero,$at,$v0,$v1,$a0}; the only
+allocated $a0 holders overlapping [26,44] are qty10 (32-36) and qty11 (36-42).
+s12's qty8-vs-qty11 pairwise comparison was therefore necessary but not sufficient —
+exactly the depth limitation the owner's 2026-09-01 review named.
+
+**H-s13-3 (CONFIRMED, and it is the closure).** "qty8 takes $a0 iff its local-alloc
+priority reaches 5000." pri = floor_log2(refs)*refs*size*10000/span, ties broken on
+ascending qty number (8 < 10). Complete escape set: refs=3 & span<=6; refs=4 & span<=16;
+refs=5 & span<=20; refs=6 & span<=24. Baseline refs=3 span=18 -> 1666.
+
+**H-s13-4 (KILLED, measured twice on the real compiler).** "A reference lift can move
+qty8 over 5000." It cannot, because a reference is an instruction and an instruction
+inflates the span in the same units the priority divides by. PROBE A (refs 5, span 24,
+pri 4166, got $a2) and PROBE B (refs 4, span 28, pri 2857, got $a1, sandbox 6/72/66)
+bracket the axis; and since the build already sits at target's exact 66 instructions,
+every added reference is a guaranteed +1 residual even in a branch where the seat flips.
+The refs axis cannot pay for itself. Banked in rejected/s13-refs-lift-*.c.
+
+**H-s13-5 (KILLED, structural).** "The sanctioned duplicated-statement-into-arms
+ref-lift — the family that closed func_800324D0 and the owner's named probe for
+func_80045294's refs_up — closes this seat too." It has no attachment point: the
+contested span [26,44] is straight-line, and the function's only conditional is the
+trailing `if (*(s32 *)D_800A3468 & 0x200000)` guard, which references neither p10 nor
+$a0. The family requires a REAL pre-existing arm; this function has none in range.
+
+**Standing caveat for any future session.** inverse.py local's forward model reproduces
+only 14 of 23 QTYDBG seats on this block (interval-overlap conflicts vs local-alloc's
+qty_conflict bitmaps). Treat its verdicts here as corroboration only; the QTYDBG/FFR
+dump plus local-alloc.c:1649-1685 is the load-bearing evidence.
+
+## [s13] inverse.py local's forward replay is superlinear on 23-quantity blocks, so the qty8/qty11 escape set cannot be enumerated (the 2026-08-30 campaign note's tool-wall diagnosis).
+- mechanism: Claimed per-atom forward replay cost. Actual cause: LocalBackend.atoms() (tools/ra_solver/inverse.py:484-489) builds its ALLOC_ORDER class as `for perm in itertools.permutations(base): if list(perm) != base and len(base) <= 6:` — the size guard sits INSIDE the loop, so with 23 allocated quantities atoms() walks 23! permutations and never returns. The forward replay was never reached.
+- probe: Reused the identical LocalBackend (same _alloc, same _pri, same model file) from tmp/grind/func_80060A68/s13/bounded_local.py with the atom list rebuilt minus the ALLOC_ORDER class; ran depth 1 over 510 atoms and depth 2 over the 464 non-qty8 atoms.
+- result: Depth 1 completes in 0.0 s; depth 2 in 3.9 s. The block was never expensive — the search was never started. tools/ is outside a grind session's edit surface, so the guard hoist is reported for the operator lane, not applied.
+- verdict: KILLED
+
+## [s13] The $a1 seat is decided by a pairwise qty8-vs-qty11 priority comparison (the s12 analytic closure the owner's 2026-09-01 review flagged as depth-limited).
+- mechanism: local-alloc block_alloc allocates first-fit ascending over a priority-sorted order; a quantity's `used` set accumulates the hard registers of every ALREADY-ALLOCATED conflicting quantity.
+- probe: local_extract.py text1b --func func_80060A68 --suggest; read the QTYDBG order table and the SUGGDBG-FFR per-call `used`/`first_used` sets for blk 0 (artifact s13/qtydbg_baseline.txt).
+- result: qty8 (reg1=75, birth 26, death 44, refs 3) is allocation call #24 of 25 with used = {$zero,$at,$v0,$v1,$a0} -> first free 5 = $a1. $v0/$v1 are blocked structurally (qty0 spans 2-52 plus the block's hard base pointer). $a0 is blocked by TWO overlapping quantities, qty10 (32-36, call #20) and qty11 (36-42, call #23) — s12 named only qty11, so both must be displaced, not one.
+- verdict: KILLED
+
+## [s13] qty8 takes $a0 iff its local-alloc priority reaches 5000, and that condition has a complete, finite solution set in (refs, span).
+- mechanism: qty_compare priority = floor_log2(refs)*refs*size*10000/(death-birth) (tools/gcc-2.7.2/local-alloc.c:1649-1685), ties broken on ascending qty number, and 8 < 10.
+- probe: Computed the measured priority table from the QTYDBG dump (qty8=1666, qty11=3333, qty10=5000 alongside eight further 5000s) and solved the inequality at size 1.
+- result: Escape set: refs=3 & span<=6; refs=4 & span<=16; refs=5 & span<=20; refs=6 & span<=24. Baseline is refs=3, span=18. This is the set the 2026-08-30 campaign note recorded as 'underived'.
+- verdict: CONFIRMED
+
+## [s13] A reference lift on p10 can move qty8 over the 5000 threshold and reseat it in $a0.
+- mechanism: Raising refs raises floor_log2(refs)*refs, but every added reference is an added instruction and an added instruction inflates the span the priority divides by — so the lift partly or wholly cancels itself, and on a body already at target's exact instruction count it also costs residual slots outright.
+- probe: Two real builds. PROBE A: two extra p10 reads placed AFTER the temp_a1 read. PROBE B: the same two reads placed immediately after `p10 = *(s32 *)(outer + 0x10);` to protect the death point. QTYDBG re-extracted for each; sandbox scored for B.
+- result: PROBE A: refs 3->5 but span 18->24, pri = 2*5*10000/24 = 4166 < 5000, still allocated after qty10, seat $a2. PROBE B: span 18->28 and only refs=4 (cse collapsed one base reference), pri 2857, seat $a1, sandbox 6 / build 72 / target 66 — six extra instructions on a body that already matches target's 66. Banked as rejected/s13-refs-lift-late-* and rejected/s13-refs-lift-early-*.
+- verdict: KILLED
+
+## [s13] The sanctioned duplicated-statement-into-arms ref-lift — the family that closed func_800324D0 and the owner's named probe for func_80045294's refs_up 72: 3->4 — supplies the honest reference this seat needs.
+- mechanism: The family duplicates a REAL pre-existing statement into two or more arms of a REAL pre-existing branch, lifting the reference count of the registers it touches without inventing a construct.
+- probe: Structural read of candidate.c's body against the contested span [26,44] identified by the QTYDBG table.
+- result: No attachment point exists. The contested span is straight-line code; func_80060A68's only conditional is the trailing `if (*(s32 *)D_800A3468 & 0x200000) { D_800A32BC = 0xA; }`, far outside the span, and it references neither p10 nor $a0. The family is unavailable here for want of an arm, not for want of a census.
+- verdict: KILLED
+
+## [s13] The endgame-lock AND-gates have changed since the 2026-08-30 record.
+- mechanism: Gate (a) needs STRONG scan_hand_coded signals (S1/S2/S6); gate (b) needs an in-hand SOTN-master precedent for the closing construct.
+- probe: python3 tools/scan_hand_coded.py --single func_80060A68 on today's HEAD (artifact s13/scan_hand_coded.txt); family review of candidate.c.
+- result: Gate (a) FAILS: tier=LOW, score 1/8, S4 only ('6 loads in 8-insn window @ insn 9'). Gate (b) FAILS: candidate.c carries no coercion construct, so no family exists for which a precedent could be cited, and the one family that could have lifted refs honestly is foreclosed structurally.
+- verdict: CONFIRMED

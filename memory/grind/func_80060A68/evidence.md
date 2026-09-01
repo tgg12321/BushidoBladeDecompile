@@ -2032,3 +2032,123 @@ packet. The honest outcome is `progress` with the kills banked and the item ACTI
 - [s12] What holds the byte-match on main today: NOTHING. src/text1b.c:3063 is INCLUDE_ASM("asm/funcs", func_80060A68) since commit 0bef2aa3 and grep of asmfix.txt/regfix.txt returns nothing -- the function is honest INCLUDE_ASM, INCOMPLETE only because its best pure-C form is two instructions short.
 
 - [s12] Disposition entry filed this session at docs/grind/decisions.md:15403; consistent with the owner's 2026-08-30 batch ruling 8 ('escalation SPENT ... returns to ACTIVE as an ordinary INCLUDE_ASM item at floor 2') and with the driver-filed 2026-08-25 packet at docs/grind/decisions.md:12060. No new question is asked and no standard-lowering ask is made (2026-08-24 auto-reject class respected).
+
+## s13 (2026-09-01, escalation/disposition modality — owner Ruling A reopen probes)
+
+- [s13] CHASSIS RE-MEASURED FIRST. `memory/grind/func_80060A68/candidate.c` spliced over
+  `INCLUDE_ASM("asm/funcs", func_80060A68);` (src/text1b.c:3142 on today's HEAD) measures
+  **score 2 / build 66 / target 66** — unchanged from s12. src/text1b.c was restored to HEAD
+  at end of session; the tree is clean.
+
+- [s13] **THE TOOL WALL IS ROOT-CAUSED AND IT IS A ONE-LINE BUG, NOT SUPERLINEARITY.**
+  The 2026-08-30 campaign note recorded `inverse.py local` on blk 0 "did not finish depth 1
+  in >20 min of 100% CPU (two runs killed) — per-atom forward replay appears superlinear on
+  large blocks". That diagnosis is WRONG. `LocalBackend.atoms()`
+  (tools/ra_solver/inverse.py:484-489) builds its ALLOC_ORDER class with
+  `for perm in itertools.permutations(base): if list(perm) != base and len(base) <= 6:` —
+  the `len(base) <= 6` guard is INSIDE the loop, so with 23 allocated quantities in this
+  block the generator walks 23! permutations before atoms() ever returns. The forward
+  replay was never reached. NOTE: tools/ is outside a grind session's allowed edit surface,
+  so this is REPORTED, not patched; the operator/tooling lane should hoist that guard.
+
+- [s13] **PROBE (1) OF THE OWNER'S REOPEN NOTE IS EXECUTED AND THE SEARCH FINISHED.**
+  tmp/grind/func_80060A68/s13/bounded_local.py reuses the SAME LocalBackend (same `_alloc`,
+  same `_pri`, same model file) with the atom list rebuilt minus the ALLOC_ORDER class.
+  Depth 1 over 510 atoms completes in **0.0 s**. Depth 2 over the 464 non-qty8 atoms
+  completes in **3.9 s**. The block was never expensive; it was never started.
+
+- [s13] **PROBE (2) EXECUTED: THE SUGGESTION SETS ARE NOT EMPTY.** `local_extract.py text1b
+  --func func_80060A68 --suggest` (artifact s13/qtydbg_baseline.txt, table in
+  tmp/ra_solver_work/text1b.sugg.json) shows blk 0 carries TWO suggested-pass quantities:
+  qty13 (reg1=76, b=44 d=68, refs=3, copysugg=[5]) got $a1 and qty14 (reg1=73, b=46 d=64,
+  refs=4, copysugg=[4]) got $a0. Both are OUTSIDE the contested span [26,44] and neither
+  contributes a register to qty8's find_free_reg `used` set, so the suggestion pass does not
+  explain the $a1 pick — but the s12-era assumption that the sets were empty was untested
+  and is now replaced by measurement.
+
+- [s13] **THE $a1 PICK IS FULLY EXPLAINED BY GROUND TRUTH, NOT BY A PAIRWISE ARGUMENT.**
+  The SUGGDBG-FFR records (s13/qtydbg_baseline.txt; `_ffr` in text1b.sugg.json) give the
+  exact hard-register set each find_free_reg call scanned. Allocation sequence for blk 0 is
+  25 calls; qty8 is call #24 (LAST) and its `used` set is {0,1,2,3,4} = {$zero,$at,$v0,$v1,$a0}
+  → first free is 5 = $a1. $v0 and $v1 are blocked structurally (qty0 spans 2-52 and the
+  block's hard-register base pointer). **$a0 is blocked by exactly two allocated quantities
+  that overlap [26,44]: qty10 (b=32 d=36, refs=2, got $a0, call #20) and qty11 (b=36 d=42,
+  refs=2, got $a0, call #23).** s12's record named only qty11 — the depth-limit the owner's
+  2026-09-01 review flagged. Both must be displaced, not one.
+
+- [s13] **THE ESCAPE SET IS NOW ENUMERATED (it was "underived" in the campaign note).**
+  local-alloc's qty_compare priority is `floor_log2(refs)*refs*size*10000/(death-birth)`
+  (tools/gcc-2.7.2/local-alloc.c:1649-1685), allocated first-fit ascending. Measured
+  priorities for blk 0: qty8=1666, qty11=3333, qty10=5000 (and eight further qtys at 5000).
+  Ties break on ascending qty number, and 8 < 10, so qty8 takes $a0 IFF
+  **pri(qty8) >= 5000**. Solving fl(refs)*refs*10000/span >= 5000 at size 1:
+    refs=3 -> span <= 6;  refs=4 -> span <= 16;  refs=5 -> span <= 20;  refs=6 -> span <= 24.
+  Baseline is refs=3, span=18. That is the complete escape set for the seat.
+
+- [s13] **EVERY MEMBER OF THE ESCAPE SET IS MEASURED DEAD OR STRUCTURALLY UNAVAILABLE.**
+  (a) refs=3 & span<=6 is "move the +4 read early" — bodies d8 and c1, already measured
+      4 / 66 with the load in $v0 (s9, s12).
+  (b) refs>=4 requires added references to p10, and **an added reference is an added
+      instruction that inflates the very span it must outrun** — measured twice this session:
+      PROBE A (two extra p10 reads placed after temp_a1): refs 3->5 but span 18->24,
+      pri = 2*5*10000/24 = 4166 < 5000, qty8 still allocated after qty10, got $a2.
+      PROBE B (the same two reads placed immediately after `p10 = ...`, to protect the death
+      point): span 18->28 and only refs=4 (cse collapsed one base reference),
+      pri = 2857, got $a1, and **sandbox 6 / build 72 / target 66**.
+      Banked at rejected/s13-refs-lift-late-p10-refs5-span24-pri4166-below-5000.c and
+      rejected/s13-refs-lift-early-p10-refs4-span28-score6-72insns.c.
+  (c) The arithmetic of (b) is general, not an artifact of these two probes: the build
+      already sits at EXACTLY target's 66 instructions, so every added reference is a
+      guaranteed +1 residual slot even in the branch where the seat flips. The refs axis
+      cannot pay for itself.
+  (d) The one SANCTIONED honest ref-lift — [[duplicated-statement-into-arms]], the family
+      that closed func_800324D0 and is the owner's named probe for func_80045294's
+      `refs_up 72: 3->4` — is **structurally unavailable here**: the contested span [26,44]
+      is straight-line code. func_80060A68's ONLY conditional is the trailing
+      `if (*(s32 *)D_800A3468 & 0x200000) { D_800A32BC = 0xA; }`, far outside the span, and
+      it references neither p10 nor $a0. There is no arm to duplicate a real statement into.
+
+- [s13] **MODEL-FIDELITY CAVEAT, RECORDED SO NO FUTURE SESSION OVER-TRUSTS IT.**
+  `inverse.py local`'s forward model reproduces only 14 of 23 QTYDBG seats on this block
+  (9 disagree: qtys 3,4,5,6,7,8,11,19,20; e.g. model qty8=$a2 vs dump $a1, model qty11=$a1
+  vs dump $a0). Its conflict model is plain interval overlap while local-alloc uses
+  qty_conflict bitmaps, so it over-approximates conflicts here. Its depth-1 answer for
+  goal {qty8: $a0} — {refs 3->5/6/7} or {born later 26->37..40} — is therefore corroborating,
+  not load-bearing: the conclusions above are derived from the QTYDBG/FFR ground truth and
+  the local-alloc.c priority formula directly, and PROBE A / PROBE B measure the refs branch
+  on the real compiler. The no-qty8 depth-2 run's 1224 "hits" (all requiring impossible
+  edits to qty0's 16-reference span or to qty11's refs) are model-coordinate artifacts and
+  are NOT claimed as C-reachable.
+
+- [s13] ENDGAME GATE 1 RE-RUN ON TODAY'S HEAD: `python3 tools/scan_hand_coded.py --single
+  func_80060A68` -> **tier=LOW score=1/8**, S4 only ("6 loads in 8-insn window @ insn 9").
+  FAILS. ENDGAME GATE 2: candidate.c carries no coercion construct, so there is no family
+  for which a SOTN-master precedent could be cited; and the one family that could have
+  lifted refs honestly (duplicated-statement-into-arms) has no arm to attach to in this
+  function's straight-line contested span. FAILS.
+
+- [s13] Chassis re-measured this session: candidate.c spliced over src/text1b.c:3142 gives sandbox score 2 / build 66 / target 66. src/text1b.c was restored to HEAD before finishing; the working tree carries no src edit.
+
+- [s13] TOOLING BUG REPORTED, NOT PATCHED (tools/ is outside the grind edit surface): tools/ra_solver/inverse.py:484-489 places the `len(base) <= 6` guard inside `for perm in itertools.permutations(base)`, so LocalBackend.atoms() never returns for a block with more than ~10 quantities. This — not superlinear replay — is the '100% CPU, killed before depth 1' wall recorded on 2026-08-30. Hoisting the guard fixes it for every function, not just this one.
+
+- [s13] Owner Ruling A probe (2) executed: the suggestion sets are NOT empty. blk 0 carries qty13 (copysugg=[$a1], got $a1, live [44,68]) and qty14 (copysugg=[$a0], got $a0, live [46,64]); both sit outside the contested span [26,44] and neither contributes to qty8's used set, so the suggested pass does not decide the seat.
+
+- [s13] Owner Ruling A probe (1) executed and finished: depth 1 in 0.0 s, depth 2 (non-qty8 atoms) in 3.9 s through the same backend with the ALLOC_ORDER class omitted.
+
+- [s13] GROUND TRUTH for the seat: qty8 is allocation call #24 of 25 in blk 0 with used = {$zero,$at,$v0,$v1,$a0}; $a0 is contributed by qty10 (32-36) and qty11 (36-42), BOTH of which must be displaced. The s12 record named only qty11.
+
+- [s13] COMPLETE ESCAPE SET (first enumeration): pri(qty8) must reach 5000 (tie broken by qty 8 < qty 10), i.e. refs=3 & span<=6, refs=4 & span<=16, refs=5 & span<=20, or refs=6 & span<=24, against a baseline of refs=3, span=18, pri=1666.
+
+- [s13] refs=3 & span<=6 is the '+4 read early' shape already measured at 4/66 with the load in $v0 (bodies d8, c1 — s9, s12).
+
+- [s13] refs>=4 is self-cancelling and was measured twice: PROBE A refs 5 / span 24 / pri 4166 / seat $a2; PROBE B refs 4 / span 28 / pri 2857 / seat $a1 / sandbox 6 / build 72 / target 66. Since the build already matches target's 66-instruction count exactly, every added reference is a guaranteed +1 residual even in a branch where the seat flips.
+
+- [s13] The sanctioned duplicated-statement-into-arms ref-lift has no attachment point: [26,44] is straight-line and the function's only conditional is the trailing D_800A3468 & 0x200000 guard, which touches neither p10 nor $a0.
+
+- [s13] MODEL FIDELITY CAVEAT for future sessions: inverse.py local reproduces only 14 of 23 QTYDBG seats on this block (interval-overlap conflicts vs local-alloc's qty_conflict bitmaps; model qty8=$a2 vs measured $a1, model qty11=$a1 vs measured $a0). Its depth-1 answer corroborates but does not carry the conclusion; the QTYDBG/FFR dump plus local-alloc.c:1649-1685 and the two real builds do.
+
+- [s13] Endgame gate (a) FAILS on today's HEAD: scan_hand_coded --single func_80060A68 = tier LOW, 1/8, S4 only. Endgame gate (b) FAILS: no coercion construct in candidate.c, hence no family and no citable precedent.
+
+- [s13] Nothing holds a byte-match here: the function is committed as INCLUDE_ASM per asm-until-matched, asmfix.txt is empty project-wide, so there is no cheat to retire and no integration handoff pending.
+
+- [s13] Foreclosure record filed this session at docs/grind/decisions.md:18515 with both gates' evidence, the enumerated escape set, the exhaustion count (13 sessions, 6 modalities, 76 banked rejected forms) and four named re-activation triggers.
