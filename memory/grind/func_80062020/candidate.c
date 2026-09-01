@@ -1,3 +1,8 @@
+/* MIGRATION NOTE (operator, 2026-09-01): main carries INCLUDE_ASM for this
+ * function (asm-until-matched, owner ruling 2026-08-19). Any "HEAD"/"main"
+ * state claims in the comments below predate that migration and describe the
+ * chassis they were measured on, not the committed tree - verify against the
+ * dated evidence.md facts before relying on them. */
 /* func_80062020 (src/text1b.c) - CANDIDATE (best UNCONTESTED form), honest floor 4.
  *
  * MIGRATION BANNER (asm-until-matched, owner ruling 2026-08-19): func_80062020 is
