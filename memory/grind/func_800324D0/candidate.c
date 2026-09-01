@@ -1,3 +1,44 @@
+/* [s20 2026-09-01] FORENSICS. Body UNCHANGED and re-measured this session on a
+ * pristine-HEAD reference (build SHA1 == oracle, s20/build_head_reference.log):
+ * score 15, 68 == 68, rules_dropped 0. THE FLOOR IS 15.
+ *
+ * THE FIND_REG PRIORITY CHANNEL IS NOW CLOSED IN CLOSED FORM. GCC 2.7.2
+ * global.c sorts allocnos by
+ *     pri = floor_log2(nrefs) * nrefs * size / reg_live_length * 10000
+ * (tools/ra_solver/simulate.py:43) and hands each the first free hard register;
+ * $v0 is local-alloc scratch and $a0 is the pad parameter's preference, so the
+ * FIRST non-pad global allocno takes $v1. The target needs that to be the
+ * walker. Over all thirteen instrumented-cc1 models measured to date
+ * (s19 A,B,C,D,E,F,G,H,I,L,base + s20 M,N; tables in s20/priority_bound.log and
+ * s20/simultaneity.log):
+ *     walker  73: nrefs 24-25, livelen 62-66, pri 14769-15873  in EVERY body
+ *     arm carrier: nrefs 26-28, livelen 21-34, pri 31764-49523 in EVERY body
+ * The carrier would need livelen 67-76 to fall below the walker; its measured
+ * ceiling is 34. Lifting the walker instead needs nrefs 50 (+13 RTL refs, >= +6
+ * instructions) on a budget that is exact at 68. The twelve switch arms
+ * concentrate 24 weighted references (in-loop refs count x2) into ONE pseudo by
+ * the shape of the jump table, and that pseudo is born in the payload arm and
+ * dead at the last arm store - respelling MOVES the references, it cannot
+ * reduce or stretch them. Measured: the single-store shapes (M: arms set an
+ * offset; N: arms set a destination pointer) demote val 47272 -> 2222 and change
+ * the walker's register by nothing, because a new pseudo 77 inherits the seat at
+ * pri 40000 (and they cost 71 / 70 insns).
+ *
+ * This bounds s18's 40320-order enumeration: its 336 target-reaching orders are
+ * abstract permutations, but the order is the descending sort of a function of
+ * (nrefs, livelen) whose reachable domain, measured here, excludes them all.
+ *
+ * Also killed this session: H's +1 cannot be paid by either banked -1 lever
+ * (hoist + H = 69 insns; base + u32 c = 67 but the widening is worth -3 on the
+ * H chassis, s19 probe K = 66). The levers interact; nothing lands on 68 with
+ * H's allocation.
+ *
+ * ONLY UNMEASURED AXIS LEFT: splitting the twelve arm references across TWO
+ * carriers of <= 15 weighted refs each (each would then need livelen > 28.4,
+ * which IS inside the measured envelope) while keeping one 12-entry jump table
+ * and 68 instructions. Evidence says a single jump table forces a single
+ * carrier; nobody has measured it. Full write-up: evidence.md [s20],
+ * hypotheses.md [s20]. */
 /* [s19 2026-08-31] FORENSICS. Body UNCHANGED and re-measured this session on a
  * pristine-HEAD reference (build SHA1 == oracle, s19/build_head_reference.log):
  * score 15, 68 == 68, rules_dropped 0 (s19/sandbox_base.log).

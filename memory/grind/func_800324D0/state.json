@@ -1,7 +1,7 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 19,
+ "session_count": 20,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -117,23 +117,29 @@
    "floor": 15,
    "modality": "forensics",
    "headline": "Forensics corrected the pseudo map three sessions of frontier work were aimed at (74=c, 76=val, 75=biased cmd, 85=a compiler zero-extend temp) and FALSIFIED the s1 'arithmetically dead' priority claim"
+  },
+  {
+   "session": 20,
+   "floor": 15,
+   "modality": "forensics",
+   "headline": "Forensics: the find_reg priority channel is closed in closed form - a 12-arm jump table always concentrates >=26 weighted refs into one short-lived pseudo whose priority is >=2.5x the walker's structu"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A 68-instruction spelling exists that makes the biased command loop-carried WITHOUT adding in-loop references to it - which would reproduce probe H's measured 8x demotion of pseudo 75 (pri 75000 -> 9333, below the walker) on a legal shape.",
-   "mechanism": "H's demotion comes from two things at once: the latch definition lengthens 75's live range (4 -> 15) and removes in-loop uses (nrefs 10 -> 7). It costs one preheader instruction. Probe L paid that instruction with head tests on cmd and gave the references straight back. The payment must therefore come from somewhere that does not touch cmd: the preheader (11 pad stores + the ptr load + the guard test), pseudo 72 (pad), or the operand-byte path. Probe K shows the u8->u32 promotion on c is worth -3 insns, so a partial widening (one narrowed use, not all three) may be worth exactly -1.",
-   "next_probe": "Enumerate -1-instruction edits that leave cmd's reference set alone and pair each with the H tail: (a) narrow/widen exactly one of c's three uses (the loop test, the 0xFF test, the <0x80 test) to shed one andi/zero-extend without disturbing the head-test operands; (b) fold the preheader guard `if (c != 0)` into the first tail read by rotating the loop; (c) express one preheader pad store through the walker's base register. Measure each with sandbox for build_insns FIRST (the gate is 68), and only extract.py the ones that land on 68."
+   "hypothesis": "A spelling exists that splits the twelve arm references across TWO carriers of <= 15 weighted refs each - each would then need only live_length > 28.4, which IS inside the measured 21-34 envelope - while preserving a single 12-entry jump table and 68 instructions.",
+   "mechanism": "The conservation law bites because floor_log2(26)*26 = 104 forces live_length > 65.5. At nrefs 15 the tier drops to floor_log2(15) = 3, so the requirement collapses to live_length > 28.4, which probe I already reached (34). Two carriers of 7 in-loop refs each (14 weighted) plus a definition would each sit at nrefs 15-16. The open question is whether any C shape gives two distinct pseudos across the twelve arms without a second jump table or extra instructions.",
+   "next_probe": "Build and sandbox the two shapes that could split the carrier while keeping one dispatch: (a) six arms store the loaded byte and six store a second value that is genuinely different in the source (e.g. the arms are split by whether the destination is one of the 0xFF-initialised bytes), (b) a nested dispatch where the outer switch selects a half and the inner one the arm. Measure build_insns FIRST (gate is 68) and only extract.py the ones that land on 68; then check whether either carrier's pri falls below 15483 in the model."
   },
   {
-   "hypothesis": "The operand byte val (pseudo 76) can be demoted below the walker only by breaking its 12-way death pattern, and the aggregate-store shape that would do so is the one axis of the switch that no session has measured.",
-   "mechanism": "76 needs livelen >= 68 (pri < 15483) and staging caps it at 31, because it dies once per switch arm and reg_live_length only accumulates the blocks in which it is live. If the twelve arm stores were replaced by one store through a dispatch-selected destination, val would die once and its live range would span the whole dispatch. That changes the switch shape, so it is only worth measuring if the insn count can hold at 68.",
-   "next_probe": "Measure the two shapes that keep a jump table but a single store: (a) each arm assigns only a destination offset and a single `pad[off] = val;` follows the switch; (b) each arm assigns a `u8 *dst` and a single `*dst = val;` follows. Check build_insns before anything else - the target's twelve separate sb instructions make 68 unlikely, and a fast negative here permanently closes the 76 leg of the s18 relief curve."
+   "hypothesis": "The walker's live length of 62-66 is not actually structural and can be cut below ~40, which would raise its priority above 24000 and relax the carrier requirement from live_length 67 to 43.",
+   "mechanism": "reg_live_length counts the insns in which the pseudo is live. The walker is currently live across the whole loop because it is both the stream cursor and the operand-load base. If the operand load went through a second pointer derived once per iteration, the walker's range could in principle be broken into segments - though every s19 lever that lengthened another allocno also lengthened the walker (the back-edge damping result), so the reverse coupling must be measured, not assumed.",
+   "next_probe": "Extract models for two shapes that reduce the walker's span: (a) the arm reads the operand through a local copy of the cursor taken at arm entry, (b) the head test reads through a separate cursor. Report reg_live_length(73) and nrefs(73) for each; the lever only matters if livelen(73) drops below 45 at unchanged nrefs, and the shapes must be checked against the banned-construct list before any candidate is spelled."
   },
   {
-   "hypothesis": "The s18 336-order constraint set (pri(73) > pri(76) > {pri(75), pri(85)}) is specific to the eight-allocno base configuration and does NOT describe what probes H and L need, because both drop allocno 85 entirely.",
-   "mechanism": "s18 enumerated 8! orders over the base allocno set. H has 8 allocnos with a different membership (85 gone, 86 promoted to a 6-reference holder); L has 7. The reachable-order analysis, and therefore the relief curve, has never been recomputed for either configuration - so the real requirement for the staged family is unknown, and H may be much closer to (or further from) a target-reaching order than the base-set curve suggests.",
-   "next_probe": "Re-run the s18 pipeline (order_closure.py then order_constraints.py then relief_curve.py) against s19/model_H_cmd_staged.json and s19/model_L_staged_tests_on_cmd.json, using goal_from_tgt to re-derive the target disposition for each allocno set. Report the new necessary precedences and the new relief curve BEFORE spelling any more C - if the staged configuration needs less than the base one, the 68-insn payment above is the whole remaining problem."
+   "hypothesis": "The s18 336-order relief analysis, recomputed for H's and L's allocno sets, is answered a priori by the s20 conservation law and needs no further solver work.",
+   "mechanism": "H's own extracted model already shows its carrier (pseudo 76) at pri 49523 against a walker at 14769, and L's at 49523 against 15000. Since the carrier is the first allocno in both orders, no permutation of either allocno set is reachable from the priority function, whatever the abstract order enumeration says.",
+   "next_probe": "If a future session wants the enumeration anyway, run s18/order_closure.py -> order_constraints.py -> relief_curve.py against s19/model_H_cmd_staged.json and s19/model_L_staged_tests_on_cmd.json with goal_from_tgt re-derived per allocno set, and check the resulting necessary precedences against the measured (nrefs, livelen) envelope in s20/priority_bound.json rather than treating the order as free."
   }
  ],
  "judge_constraints": [

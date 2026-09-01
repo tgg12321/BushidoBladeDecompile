@@ -1557,3 +1557,114 @@ measured statement of what is missing.
 - [s19] Sandbox results for every shaped probe this session: A 28 (68/68), D 19 (68/68), E 20 (69), H 30 (69), I 37 (70), K 28 (66), L 33 (68/68). None improves on the 15 floor; all seven forms are banked under memory/grind/func_800324D0/rejected/ with their measurements and RA models in the header.
 
 - [s19] No src edit survives: src/code6cac_b.c was restored with git checkout -- after the last measurement, and the reference object in build/ is the pristine-HEAD build made at the top of the session. Working tree carries only ledger and rejected-form files.
+
+## [s20] FORENSICS - the find_reg PRIORITY channel is closed in closed form (the last channel s15/s16 left open)
+
+Chassis re-measured on a pristine-HEAD reference this session: `& tools/wteng.ps1
+main build` -> SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle
+(s20/build_head_reference.log); the candidate.c body -> `sandbox --disable all`
+= score 15, build_insns 68 == target_insns 68, rules_dropped 0. Floor is 15,
+unchanged from s15-s19.
+
+### The residual, read off the target asm directly (new this session)
+`asm/funcs/func_800324D0.s` and our 68-instruction build are instruction-for-
+instruction identical (s20/disasm_base.txt vs s20/disasm_TARGET.txt) under a
+single two-register substitution: the stream walker is $a2 in ours and $v1
+(hard reg 3) in the target, while the zero-extended stream byte / biased command
+web is $v1 in ours and $a2 (hard reg 6) in the target. The target register map
+is $a0 pad, $v1 walker, $v0 raw stream byte + scratch, $a2 zext(c) then c-0x80,
+$a1 operand byte, $a3 jump-table base, $t0 the constant 0xFF. The target
+computes the subtraction in the DELAY SLOT of the `c < 0x80` branch
+(`beqz $v0, .L80032544` / `addiu $a2, $a2, -0x80`) and so does our build, so
+reorg.c is not part of the divergence.
+
+### The allocation arithmetic, exactly
+GCC 2.7.2 global.c orders allocnos by
+    pri = floor_log2(nrefs) * nrefs * size / reg_live_length * 10000
+(mirrored verbatim at tools/ra_solver/simulate.py:43, and confirmed against the
+instrumented-cc1 ALLOCDBG output of every model in this ledger), and find_reg
+gives each allocno in turn the first non-conflicting hard register in register
+order. $v0 (2) is consumed by local-alloc scratch and $a0 (4) is held by the pad
+parameter's hard-register preference, so the first global allocno that is not
+the pad takes $v1. Reaching the target therefore requires the walker to be
+FIRST - not merely above one competitor, but above every other global allocno.
+
+### The conservation law (the finding)
+Across all thirteen instrumented-cc1 models measured to date (s19 A,B,C,D,E,F,G,
+H,I,L,base + s20 M,N; tabulated by s20/priority_bound.py and s20/simultaneity.py):
+
+* walker (pseudo 73): nrefs 24 or 25 in EVERY body, reg_live_length 62-66 in
+  EVERY body - it is live-in and live-out of every block of the loop. Priority
+  range 14769-15873; ceiling 15873.
+* the switch-arm carrier: nrefs 26-28, live_length 21-34, priority 31764-49523
+  in EVERY body. It is pseudo 76 (the operand byte `val`) in eleven bodies and
+  the newly created pseudo 77 (the destination offset / pointer) in the two
+  single-store bodies M and N measured this session.
+* to fall below the walker's ceiling the carrier would need live_length 67.2 (at
+  nrefs 26) to 75.8 (at nrefs 28). The largest live_length ever achieved is 34
+  (probe I, bought with two extra instructions) - short by a factor of two.
+* the opposite direction: lifting the walker above the lowest carrier priority
+  ever measured (40000) at live_length 62 needs nrefs 50, i.e. +26 weighted
+  references. In-loop references carry loop-depth weight 2, so that is +13 RTL
+  references, at best +6 instructions - on a budget that is exact at 68.
+
+The law is structural, not incidental: twelve switch arms each reference the
+stored value once inside the loop, so 24 weighted references are concentrated in
+one pseudo by the shape of the jump table itself, and that pseudo is necessarily
+born in the payload arm and dead at the last arm store. Respelling moves the
+references between pseudos; it cannot reduce their count or stretch their live
+range past the arm region. That is exactly what M and N demonstrate
+experimentally: they demote `val` from pri 47272 to pri 2222 - the largest
+single-allocno demotion ever measured on this function - and the walker's
+disposition does not move one register, because pseudo 77 inherits the seat at
+pri 40000.
+
+### What this does to the s18 result
+s18 enumerated all 40320 orderings of the eight base allocnos and found 336 that
+reach the full 8/8 target disposition, concluding that the s17 foreclosure's
+priority leg was answering the wrong question. That enumeration is correct and
+remains correct - but it is an enumeration over ABSTRACT orders. The order is not
+a free variable: it is the descending sort of a fixed function of (nrefs,
+live_length), and both arguments are bounded by the 68-instruction budget and by
+the shape of the 12-arm jump table. The measured envelope shows the required
+region of that function's domain is empty. s18 asked the right question with the
+wrong pseudo labels (corrected in s19) and without a reachability bound on
+live_length; s20 supplies the bound.
+
+### Also measured dead this session
+* P1 (c-load hoisted above the pad stores + H's loop-carried biased command):
+  69 insns, score 31. The hoist's -1 does not survive contact with H - both edits
+  compete for the same preheader slot - so neither banked -1 lever can pay for
+  H's +1. (s20/sandbox_P1_hoist_plus_H.log)
+* Q (base + `u32 c`): 67 insns, score 29 - the widening is worth -1 on the base
+  chassis but -3 on the H chassis (s19 probe K, 66 insns). The levers interact
+  and no combination lands on 68 while keeping H's allocation.
+  (s20/sandbox_Q_base_u32c.log)
+
+### Frontier after s20
+Two of the three s19 frontier items are closed (the val/76 leg by M+N, the
+-1-payment leg by P1+Q). The third - recomputing the s18 order analysis for the
+H and L allocno configurations - is answered a priori by the conservation law:
+H's own model already shows its carrier at pri 49523 against a walker at 14769,
+so no reordering of H's allocno set reaches the target either. What is NOT closed
+is whether any spelling exists in which the twelve arm references are split
+across two carriers of <= 15 weighted refs each (each would then need
+live_length > 28.4, which IS inside the measured envelope) while preserving a
+single 12-entry jump table and 68 instructions. On the evidence a single jump
+table forces a single carrier, but that has not been measured.
+
+- [s20] Chassis re-measured this session on a pristine-HEAD reference: build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (s20/build_head_reference.log); candidate.c body -> sandbox --disable all = score 15, build_insns 68 == target_insns 68, rules_dropped 0. Floor 15, unchanged.
+
+- [s20] The target asm and our 68-instruction build are instruction-for-instruction identical under a single two-register substitution (s20/disasm_TARGET.txt vs s20/disasm_base.txt). Target register map: $a0 pad, $v1 walker, $v0 raw stream byte + scratch, $a2 zext(c) then c-0x80, $a1 operand byte, $a3 jump-table base, $t0 the 0xFF constant. Ours swaps $v1 and $a2 only.
+
+- [s20] The target computes the biased command in the DELAY SLOT of the c<0x80 branch (beqz $v0 / addiu $a2,$a2,-0x80) and so does our build - reorg.c is not part of the divergence.
+
+- [s20] GCC 2.7.2 priority formula confirmed against instrumented-cc1 ALLOCDBG on every model: pri = floor_log2(nrefs)*nrefs*size/reg_live_length*10000 (tools/ra_solver/simulate.py:43). In-loop references are weighted x2 by loop depth - verified on pad (72): 11 preheader stores at weight 1 plus 13 in-loop refs at weight 2 = 37, the measured nrefs.
+
+- [s20] $v0 is consumed by local-alloc scratch and $a0 is held by the pad parameter's hard-register preference, so the FIRST non-pad global allocno takes $v1. Reaching the target requires the walker to be allocated first overall, not merely ahead of one competitor.
+
+- [s20] In thirteen of thirteen measured bodies the walker is never first. Walker: nrefs 24-25, livelen 62-66, pri 14769-15873. Arm carrier: nrefs 26-28, livelen 21-34, pri 31764-49523.
+
+- [s20] Probe M and N prove the references are conserved, not eliminated: val demoted 47272 -> 2222 while a fresh pseudo 77 takes the seat at pri 40000 and the walker's register does not move.
+
+- [s20] New measurements this session: P1 (hoist + H) 69 insns score 31; Q (base + u32 c) 67 insns score 29; M 71 insns score 34; N 70 insns score 33; base re-verified 68 insns score 15.
