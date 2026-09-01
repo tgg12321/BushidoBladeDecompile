@@ -1,43 +1,42 @@
-/* func_8002D320 -- grind session 1 (recon, 2026-08-31) -- DISTANCE 0.
+/* func_8002D320 -- CLOSING FORM -- DISTANCE 0 (re-proven 2026-08-31,
+ * post-reset session 1; first proven 2026-09-01 pre-reset).
  *
- * sandbox func_8002D320 --disable all  ->  {"score": 0, "target_insns": 120,
- * "build_insns": 120, "rules_dropped": 0}  measured THIS session with this
- * exact body applied over the INCLUDE_ASM line at src/code6cac_b.c:860.
- * Tail diamond verified by disassembly (bnez; move v0,zero delay; li v0,1).
+ * sandbox func_8002D320 --disable all -> {"score": 0, "target_insns": 120,
+ * "build_insns": 120, "rules_dropped": 0, "cheat_asm_stripped": 46} with this
+ * exact body applied over the INCLUDE_ASM line at src/code6cac_b.c:860
+ * (artifact tmp/grind/func_8002D320/s1/sandbox_0.json).
  *
- * DERIVATION (one session, riding the twin func_8002EA24's 17-session ledger):
- *   - Body = the retired-chassis body (retired-chassis-2026-08/body.c) minus
- *     ALL cheats (1 memory barrier, 5 register pins, 3 hardcoded-$N templates,
- *     placeholder moves, stripped .word swc2 spellings), with:
- *   - the brief's LEVER 1: `else if (min_y < y_low) max_y = y_low;` (target's
- *     slt $v0,$a2,$v1 -- NOT a compare against 0);
- *   - the brief's LEVER 2: straight early-return tail (no result carrier);
- *   - both GTE islands in the Judge-endorsed NARROW form (2026-07-30 twin
- *     ruling): addresses computed in C, bound "r"(ptr), template = addu $t4
- *     preamble + cop2 ops only, "$12" clobber; vector island as TWO blocks
- *     (twin [s3]: the two-statement split is required); LZCS island verbatim
- *     from the authorized sibling func_800274BC (src/code6cac_b.c:292);
- *   - ONE variable chain x -> dist_sq -> disc -> sqrt (target's $a0 does
- *     exactly that);
- *   - ONE FAKE construct: the tail 0/1 diamond staged-z closure (twin's L1,
- *     [[staged-value-reused-variable]]) -- see annotation in the body.
- *     Without it the build folds the final pair to slt+xori (score 3, 118
- *     insns; measured v1). Honest tail shapes measured dead this session:
- *     result-carrier nest (4/119), goto-reject (3/118, byte-identical to v1),
- *     inverted sense (3/118).
+ * PROVENANCE: this is the Judge-passed form from the 2026-08-31 ESCALATE
+ * packet (docs/grind/decisions.md:16948), reconstructed and re-measured at 0.
+ * It is the session-1 candidate with ONE change: the tail construct.
+ *   - The session-1 tail (a hardcoded constant routed through the dead
+ *     borrowed local z into the exit value) was layer-1 FAILED and is on
+ *     this function's ban list under both its spelling and its misfiled
+ *     family citation. It is banked at rejected/layer1-fail-0831-2106.c
+ *     and MUST NOT come back in any spelling.
+ *   - The passing tail is the func_80078EC0 confirmed-closure shape under
+ *     dead-store-fake-exception: a dedicated result variable `ret` set in
+ *     BOTH arms, with a dead `ret = 1;` inside the zero arm (two-set arm
+ *     breaks jump.c store-flag if-conversion's single-set precondition,
+ *     keeping target's unfolded diamond: bnez; move v0,zero delay; addiu
+ *     v0,zero,1). FAKE-annotated in the body per the Judge's constraint
+ *     (decisions.md:16969: "the FAKE-annotated dead store must remain
+ *     annotated verbatim").
  *
- * The unlike-the-twin register geometry is WHY this fell in one session: the
- * extra leading `flag` arg shifts obj->$a1/pos->$a2, so every register seat
- * target uses (x/dist/disc/sqrt $a0, neg+min_y $a2, max_y $a3, y $a1) is a
- * naturally-freed argument register -- no allocator fight exists.
+ * Tail exhaustion (why the FAKE store is last-resort): five pure-C shapes
+ * measured — plain early-return 3/118, result-carrier nest 4/119 (banked),
+ * goto-reject 3/118 byte-identical, inverted sense 3/118 byte-identical,
+ * combined-&& 8/119 (banked) — plus the twin func_8002EA24's six-shape
+ * census on the identical diamond.
  *
- * END-STATE NOTE: contains canonical cop2 islands => the function completes as
- * COMPLETED-INLINE-ASM-CANONICAL via the pipeline grant path (judge-sole-gate
- * rule 3; cluster membership .claude/rules/cop2-addressing-preamble-cluster.md:73;
- * the func_8002FDB0 grant inline_asm_canonical.txt:268 extends to this sibling
- * subject to the mechanical check -- all four conditions hold here: sandbox 0,
- * zero pins/barriers/aliasing, in-island GPR = addressing preamble only,
- * layer-2 + verify-oracle --rebuild still owed at integration).
+ * END STATE: COMPLETED-INLINE-ASM-CANONICAL. The OWNER-CLUSTER canonical-asm
+ * grant is EXECUTED (inline_asm_canonical.txt:366, pipeline 2026-08-31; door:
+ * tools/grinder/owner_cluster_grants.txt + cop2-addressing-preamble-cluster.md:73).
+ * The grant covers ONLY the three cop2 islands; no GPR asm outside them.
+ * Islands in the Judge-endorsed narrow form (2026-07-30 twin ruling):
+ * addresses computed in C, bound "r"; template = addu $t4 preamble + cop2
+ * ops only; "$12" clobber; vector island as TWO blocks (twin [s3]); LZCS
+ * island verbatim from authorized sibling func_800274BC.
  */
 s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
@@ -72,6 +71,7 @@ s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         s32 y_low;
         s32 y_high;
         s32 y;
+        s32 ret;
         s32 neg_threshold = -threshold;
 
         x = *(s32 *)(obj + 0x100);
@@ -121,18 +121,25 @@ s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         }
         y = *(s32 *)(obj + 0x108);
         if (max_y < y - x) return 0;
-        /* FAKE: stages the returned 0 through z -- a real value, read by the
-         * return on the next statement -- whose own value (the rotated Z) was
-         * last read at the `z * z` above and is dead here.  Mechanism: jump.c's
-         * store-flag if-conversion requires a SINGLE-SET arm; the two-statement
-         * arm keeps target's unfolded 0/1 diamond (bnez; move v0,zero delay;
-         * addiu v0,1) instead of folding it to `slt` + `xori v0,v0,1`.
-         * Family: [[staged-value-reused-variable]].  Lever-exhaustion:
-         * memory/grind/func_8002D320/hypotheses.md session 1 (four pure-C tail
-         * shapes measured: plain early-return, result-carrier nest, goto-reject,
-         * inverted sense) + the twin func_8002EA24's session-2 six-shape tail
-         * census on the identical diamond. */
-        if (y + x < min_y) { z = 0; return z; }
-        return 1;
+        if (y + x < min_y) {
+            ret = 1; /* FAKE: dead store -- overwritten by `ret = 0;` on the
+                      * next statement, never read.  Mechanism: jump.c's
+                      * store-flag if-conversion requires SINGLE-SET 0/1 arms;
+                      * the two-set arm keeps target's unfolded diamond (bnez;
+                      * move v0,zero delay; addiu v0,1) instead of folding the
+                      * pair to `slt` + `xori v0,v0,1`.  Family:
+                      * dead-store-fake-exception (confirmed closure
+                      * func_80078EC0, .claude/rules/dead-store-fake-exception.md:107-128).
+                      * Lever-exhaustion: memory/grind/func_8002D320/hypotheses.md
+                      * sessions 1-2 (five pure-C tail shapes measured: plain
+                      * early-return 3/118, result-carrier nest 4/119,
+                      * goto-reject 3/118, inverted sense 3/118, combined-&&
+                      * 8/119) + the twin func_8002EA24's six-shape tail census
+                      * on the identical diamond. */
+            ret = 0;
+        } else {
+            ret = 1;
+        }
+        return ret;
     }
 }

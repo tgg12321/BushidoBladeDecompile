@@ -857,7 +857,111 @@ INCLUDE_ASM("asm/funcs", func_8002C61C);
 INCLUDE_ASM("asm/funcs", func_8002CA8C);
 INCLUDE_ASM("asm/funcs", func_8002CD58);
 /* kengo:HIGH  |  nm_special_cam/special_camera_Init  |  370i */
-INCLUDE_ASM("asm/funcs", func_8002D320);
+s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
+    if (flag == 0) {
+        s32 *vin;
+        s32 *vout;
+        *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
+        *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
+        *(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
+        vin = (s32 *)(obj + 0xF8);
+        __asm__ volatile(
+            "addu $t4, %0, $zero\n"
+            "lwc2 $0, 0($t4)\n"
+            "lwc2 $1, 4($t4)\n"
+            "nop\n"
+            "nop\n"
+            ".word 0x4A486012"
+            : : "r"(vin) : "$12", "memory");
+        vout = (s32 *)(obj + 0x100);
+        __asm__ volatile(
+            "addu $t4, %0, $zero\n"
+            "swc2 $25, 0($t4)\n"
+            "swc2 $26, 4($t4)\n"
+            "swc2 $27, 8($t4)"
+            : : "r"(vout) : "$12", "memory");
+    }
+    {
+        s32 x;
+        s32 z;
+        s32 sp_var;
+        s32 min_y;
+        s32 max_y;
+        s32 y_low;
+        s32 y_high;
+        s32 y;
+        s32 ret;
+        s32 neg_threshold = -threshold;
+
+        x = *(s32 *)(obj + 0x100);
+        if (x < neg_threshold || threshold < x) return 0;
+        z = *(s32 *)(obj + 0x104);
+        if (z < neg_threshold || threshold < z) return 0;
+
+        x = x * x + z * z;
+        if (r_sq < x) return 0;
+        x = r_sq - x;
+
+        if ((u32)x < 0x400) {
+            x = (u32)*(((u8 *)&D_8008D118) + x) >> 3;
+        } else {
+            s32 lzcr = 0;
+            if (x >= 0) {
+                __asm__ volatile(
+                    "addu $t4, %1, $zero\n"
+                    "mtc2 $t4, $30\n"
+                    "nop\n"
+                    "nop\n"
+                    "addu $t4, $sp, $zero\n"
+                    "swc2 $31, 0($t4)"
+                    : "=m"(sp_var) : "r"(x) : "$12");
+                lzcr = sp_var;
+            }
+            {
+                s32 shift = 0x16 - (lzcr & ~1);
+                s32 tbl = *(((u8 *)&D_8008D118) + ((u32)x >> shift));
+                x = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
+            }
+        }
+
+        max_y = 0;
+        min_y = 0;
+        y_low = *(s32 *)(obj + 0xB0);
+        if (y_low < 0) {
+            min_y = y_low;
+        } else if (min_y < y_low) {
+            max_y = y_low;
+        }
+        y_high = *(s32 *)(obj + 0xC0);
+        if (y_high < min_y) {
+            min_y = y_high;
+        } else if (max_y < y_high) {
+            max_y = y_high;
+        }
+        y = *(s32 *)(obj + 0x108);
+        if (max_y < y - x) return 0;
+        if (y + x < min_y) {
+            ret = 1; /* FAKE: dead store -- overwritten by `ret = 0;` on the
+                      * next statement, never read.  Mechanism: jump.c's
+                      * store-flag if-conversion requires SINGLE-SET 0/1 arms;
+                      * the two-set arm keeps target's unfolded diamond (bnez;
+                      * move v0,zero delay; addiu v0,1) instead of folding the
+                      * pair to `slt` + `xori v0,v0,1`.  Family:
+                      * dead-store-fake-exception (confirmed closure
+                      * func_80078EC0, .claude/rules/dead-store-fake-exception.md:107-128).
+                      * Lever-exhaustion: memory/grind/func_8002D320/hypotheses.md
+                      * sessions 1-2 (five pure-C tail shapes measured: plain
+                      * early-return 3/118, result-carrier nest 4/119,
+                      * goto-reject 3/118, inverted sense 3/118, combined-&&
+                      * 8/119) + the twin func_8002EA24's six-shape tail census
+                      * on the identical diamond. */
+            ret = 0;
+        } else {
+            ret = 1;
+        }
+        return ret;
+    }
+}
 /* func_8002D518 - MATCHED FORM (s8 synthesis, 2026-08-19). Honest sandbox
  * distance 0 with all 33 regfix/asmfix rules dropped and cheat-asm stripped;
  * build_insns 144 == target_insns 144. Re-measured on the s8 chassis with this
