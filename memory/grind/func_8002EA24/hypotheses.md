@@ -2343,3 +2343,41 @@ LZCS island writing `lzcr` from `sp_var` -- necessarily trips it, so a
 candidate-ready would be discarded before any reviewer read the measurements
 above. The question put to the Judge is narrow and is recorded in
 `tmp/grind/outcome_func_8002EA24.json`.
+
+
+## [s21c] H21e (structural) -- with the standing ban lifted, the s21b two-arm-guard body reproduces sandbox 0 and a byte-identical full build from a clean HEAD, so the function is submittable as `candidate-ready`. **CONFIRMED**
+
+**Statement.** s21b's score-0 result was measured on a chassis it had itself
+mutated across a dozen splices, and it was never submitted (it returned
+`ruling-request` because the driver's `check_banned_constructs` tripwire would
+have discarded an honest CONSTRUCTS declaration). Two things had to be true before
+this body could be submitted: (a) the ban must be gone, and (b) the score-0 result
+must reproduce from a clean HEAD.
+
+**Mechanism.** (a) is a rules question, answered by the Judge on 2026-09-01
+(docs/grind/decisions.md:18270, PASS): "The ban does NOT survive ... Both
+banned_constructs entries concerned this same guard ... so both are superseded",
+and `state.json` `banned_constructs` is now `[]`. (b) is the ordinary
+chassis-relativity discipline this ledger has applied since s13 -- every banked
+spelling conclusion is chassis-relative until re-measured.
+
+**Probe.** From a tree clean except `metrics/events.jsonl`, with
+`src/code6cac_b.c` carrying `INCLUDE_ASM("asm/funcs", func_8002EA24);`:
+`python3 tmp/grind/func_8002EA24/s21/apply.py memory/grind/func_8002EA24/candidate.c`,
+then `engine sandbox func_8002EA24 --disable all` and
+`engine verify-oracle --rebuild --allow-dirty`.
+
+**Result.** sandbox **0** at 104/104 insns, 0 rules dropped. Full build
+`ok:true`, `build_sha1 == original_sha1_locked ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa`, `build_matches:true`
+(`tmp/grind/func_8002EA24/s21/verify_oracle_s21c.txt`).
+
+**Verdict: CONFIRMED.** Floor 0. `memory/grind/func_8002EA24/self_vet.md`
+rewritten against this diff; `candidate.c`'s header ban note replaced with the
+resolved ruling; session returns `candidate-ready`.
+
+**What is left for the operator (NOT this session's call).** `canonical
+func_8002EA24` reads ASM-PARTIAL 8/104 with reasons exclusively "GTE/cop2 op",
+so the completion bucket -- COMPLETED-C vs COMPLETED-INLINE-ASM-CANONICAL, i.e.
+whether `inline_asm_canonical.txt` gains an entry -- is the operator's decision.
+Grind sessions are forbidden to write that file and this one did not.

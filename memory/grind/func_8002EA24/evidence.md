@@ -2509,3 +2509,67 @@ LZCS island writing `lzcr` from `sp_var` -- necessarily trips it, so a
 candidate-ready would be discarded before any reviewer read the measurements
 above. The question put to the Judge is narrow and is recorded in
 `tmp/grind/outcome_func_8002EA24.json`.
+
+
+## [s21c] Session 21, third run (structural) -- 2026-09-01 -- **CANDIDATE SUBMITTED: sandbox 0, full build == oracle SHA1**
+
+**What this run was for.** Session 21's first run reached sandbox 0 and was
+layer-1 FAILed on the LZC guard (docs/grind/decisions.md:18266). Its second run
+(s21b) measured both halves of that objection, re-spelled the guard as an
+ordinary two-arm conditional at zero cost, and returned `ruling-request` rather
+than `candidate-ready` because the driver's `check_banned_constructs` tripwire
+would have discarded an honest declaration of the construct. **The Judge answered
+PASS on 2026-09-01 (docs/grind/decisions.md:18270)**: the ban does not survive,
+both `banned_constructs` entries concerned the same guard and both are
+superseded, and the two-arm form is ordinary C, not a coercion family. This third
+run is the mechanical follow-through: re-apply, re-measure, self-vet, submit.
+
+**Chassis re-measured from a clean HEAD, not inherited.** `src/code6cac_b.c` was
+at `INCLUDE_ASM("asm/funcs", func_8002EA24);` at session start (git status clean
+apart from `metrics/events.jsonl`). Applying
+`memory/grind/func_8002EA24/candidate.c` (== `candidate_alt_s21b_two_arm_lzc_guard.c`,
+the g5 body) via `tmp/grind/func_8002EA24/s21/apply.py`:
+
+- `engine sandbox func_8002EA24 --disable all` -> **score 0**, `build_insns` 104,
+  `target_insns` 104, `rules_dropped` 0, `cheat_asm_stripped` 36 (the three
+  canonical GTE islands), `scorable` true.
+- `engine verify-oracle --rebuild --allow-dirty` -> `ok: true`,
+  `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa`,
+  `original_sha1_locked = 62efab4f73f992798c43e8c730aa43baa10bb4fa`,
+  `build_matches: true`. Log:
+  `tmp/grind/func_8002EA24/s21/verify_oracle_s21c.txt`.
+  (The first `verify-oracle --rebuild` was REFUSED with `dirty-build-inputs`;
+  that refusal is by design during the edit loop, and `--allow-dirty` is the
+  documented flag for the case where the dirty state IS the intended new
+  reference. Recorded here so the next session does not mistake it for a
+  failure.)
+
+**Both s21b measurements reproduce on a fresh chassis**, so the s21b conclusions
+are not chassis-relative artifacts: the score-0 body is the two-arm guard body,
+and the ledger's floor for this function is now **0**.
+
+**Self-vet.** `memory/grind/func_8002EA24/self_vet.md` rewritten for this diff:
+CONSTRUCTS enumerated (three canonical GTE/cop2 islands with their `vin`/`vout`
+operand-address locals; the two-arm LZCS domain guard; the `sq`/`a0_var` split;
+`neg_threshold`; the merged `||` vertical bound test; `min_y`/`max_y`), all six
+cheat tests answered per construct, two SANCTIONED-FAMILY-CLAIMS blocks (canonical
+GTE/cop2 inline asm, scope quoted from `.claude/rules/inline-asm-policy.md`,
+precedent `src/code6cac_b.c:869`; the two-arm guard, scope quoted from the Judge's
+own ruling text, precedent `docs/grind/decisions.md:18270`), and
+ANNOTATION-CONFORMANCE `n/a` on the ground that neither claimed family mandates a
+`/* FAKE */` annotation and no coercion-class construct is present.
+
+**T3 disclosure carried forward explicitly** (the thing layer-1 will look for):
+the sum-of-squares split was *discovered* by reading `tools/gcc-2.7.2/global.c`
+(`expand_preferences` 828-871, `prune_preferences` 876-935, `find_reg` 1001), but
+it is not *justified* by that mechanism -- `sq` and `a0_var` are two different
+quantities and would be two locals in any straightforward writing of the
+algorithm. The allocator account explains why the OLD spelling
+(`a0_var = r_sq - a0_var;`, one local for both values) was worse, not why this
+one is present.
+
+- [s21c] Floor is **0**. `sandbox func_8002EA24 --disable all` = 0 at 104/104 insns, 0 rules, measured this session from a clean HEAD with the candidate applied to `src/code6cac_b.c`.
+- [s21c] Full build verifies byte-identical with the body in place: `verify-oracle --rebuild --allow-dirty` -> ok:true, build_sha1 == original_sha1_locked == 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches:true.
+- [s21c] The 2026-09-01 Judge ruling (docs/grind/decisions.md:18270) LIFTED both `banned_constructs` entries for this function; `state.json` `banned_constructs` is `[]`, so an honest CONSTRUCTS declaration of the two-arm guard no longer trips the driver tripwire that forced s21b to return `ruling-request`.
+- [s21c] `verify-oracle --rebuild` refuses with `dirty-build-inputs` whenever a build-input edit is uncommitted; `--allow-dirty` is the documented escape when the dirty tree IS the intended reference. A grind session that needs a full-build proof must pass it.
+- [s21c] Both s21b measurements reproduce on a freshly-applied chassis, so the score-0 result is not chassis-relative.

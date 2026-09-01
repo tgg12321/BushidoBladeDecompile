@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002EA24",
-      "file": "code6cac_b",
-      "distance": 2,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15099 -- 2026-08-30 -- func_8002EA24 (src/code6cac_b.c) -- OWNER-ESCALATION -- RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
-    },
-    {
       "func": "CD_sync",
       "file": "system",
       "distance": 2,
@@ -1877,15 +1867,15 @@
     }
   ],
   "counts": {
-    "total": 212,
-    "active": 206,
+    "total": 211,
+    "active": 205,
     "by_status": {
-      "active": 206,
+      "active": 205,
       "foreclosed": 6
     },
     "by_verdict": {
-      "ASM-PARTIAL": 33,
-      "C": 173
+      "C": 173,
+      "ASM-PARTIAL": 32
     }
   }
 }

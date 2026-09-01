@@ -61,12 +61,16 @@
  *       -- because GCC emits the tested arm as the fall-through and the target
  *       falls through into the island.
  *
- * STANDING BAN NOTE.  `banned_constructs` for this function currently carries
- * the previous body's exact shape (zero-init + `if (a0_var >= 0)`).  Because
- * the construct is target-materialised rather than byte-neutral, session 21's
- * second run returns `ruling-request` rather than `candidate-ready`: the
- * question is whether the ban survives the measurement in (1)+(2).  Nothing in
- * this body is a coercion construct.
+ * BAN STATUS -- RESOLVED.  The ruling request raised by session 21's second run
+ * was answered on 2026-09-01 (docs/grind/decisions.md:18270, PASS): "The ban does
+ * NOT survive ... The two-arm form (`if (a0_var<0) lzcr=0; else {island;
+ * lzcr=sp_var;}`) is ordinary C with a live value on both arms, is a truthful
+ * LZCS domain check ... this is not a coercion family.  Both banned_constructs
+ * entries concerned this same guard ... so both are superseded."  `state.json`
+ * `banned_constructs` is now `[]`.  Session 21's THIRD run therefore re-applied
+ * this body, re-measured it (sandbox 0 at 104/104, 0 rules; verify-oracle
+ * build_sha1 == oracle, log s21/verify_oracle_s21c.txt) and submits it as
+ * `candidate-ready`.  Nothing in this body is a coercion construct.
  *
  * THE REST OF THE BODY (unchanged from the first session-21 run, both edits
  * ordinary C, both re-measured at 0 this session):
