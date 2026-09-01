@@ -1,31 +1,37 @@
 {
  "func": "func_8003D888",
  "file": "code6cac_c2",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 13,
    "modality": "recon",
    "headline": "Recon: cheat chassis replaced with natural C; floor 32->13 via param-reuse-as-ptr discovery; seat-rotation mechanism greg-proven (n's $a1 copy-preference vs prune purge); endgame lever identified (ent"
+  },
+  {
+   "session": 2,
+   "floor": 13,
+   "modality": "structural",
+   "headline": "Floor holds at 13; the seat rotation is now named exactly (find_reg pass-0 someone_prefers + allocno_compare order) and s1's H5 delay-slot lever is killed as a scheduling misattribution."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H5: reproducing the copy-above-lw entry schedule (unfilled load-delay nop) cascades the whole seating to target (avail shares $a1 with ptr/word, cnt->$a3, s->$a2)",
-   "mechanism": "sched1 tie between the n-copy and the avail lw; conflict analysis shows avail can only take $a1 when h5 dies before the lw",
-   "next_probe": "read the .sched dump priorities/dependence classes for the {n-copy, avail-lw} pair (sched-rank-class-tie-wall lens); run tools/sched_solver on the entry block; then spell the C that wins the tie"
+   "hypothesis": "H7a: the count allocno's live length can be pushed to >= 26 (tie with s at 9 refs, which hands $a2 to the lower allocno number 72=s) by changing the DEPENDENCE GRAPH so the r<<=count shift cannot be scheduled early.",
+   "mechanism": "allocno_compare priority = floor_log2(refs)*refs/live_length; sched1 places r<<=count right after the `and` because nothing forces it below the word load, where the target places it",
+   "next_probe": "spell the if-arm so the shifted value depends on the word load (e.g. build r from the word-derived term first, or make the count's last use the or/store), re-measure, and read lreg's 'Register NN used X times across Y insns' for the count after each spelling; success = count live length >= s's with refs unchanged at 9"
   },
   {
-   "hypothesis": "H2b: in-place subu (target subu a3,a3,a1) without the delay-slot copy regression \u2014 cse-equivalence defeat that does not reorder the ptr store above the subtract",
-   "mechanism": "cse substitutes n for cnt while the copy equivalence is live; needs invalidation that leaves the entry schedule intact",
-   "next_probe": "sweep small spellings (cnt written via expression, else-arm use mix) with sandbox; if none, classify with ra_solver inverse_compose.py classify"
+   "hypothesis": "H7b: the carrier can keep its own $a1 preference if the carrier IS the param variable and the param's incoming value retains a use that cse cannot rewrite to hard $a1 (which is what deletes the carrier's entry copy in variant E).",
+   "mechanism": "set_preference records the $a1 copy-pref from the surviving entry copy (set 73 (reg a1)); in E, cse propagates hard $a1 into the count copy, the entry copy becomes dead and is deleted, and the preference goes to the count instead",
+   "next_probe": "enumerate spellings where the param's incoming value has a second, non-substitutable use before it is overwritten (e.g. the compare reading the param rather than the count, or the count copy placed where the hard-reg equivalence has been invalidated); verify with the greg header that the carrier gets a 'preferences: 5' line and the count does not"
   },
   {
-   "hypothesis": "H6: the two if-arm slot diffs (sllv r after and vs after word load; li 32/lw order) resolve once seating is fixed",
-   "mechanism": "downstream of register seats (dependence classes change with seats)",
-   "next_probe": "re-diff only after H5/H2b close; do not chase these slots at current seating"
+   "hypothesis": "H7c: the two gates may be separable -- fixing only the priority order (H7a) may already move the floor below 22 even with the count still holding $a1.",
+   "mechanism": "with the count in $a1 and s allocated first, the rotation becomes s->$a2 (correct) with carrier/count swapped, i.e. 2 wrong seats instead of 3",
+   "next_probe": "apply the H7a spelling to variant A and measure; a score below 22 confirms the gates are independent and gives the next session a monotone gradient"
   }
  ],
  "judge_constraints": [],

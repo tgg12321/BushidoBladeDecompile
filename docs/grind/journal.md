@@ -1385,3 +1385,4 @@
 - 2026-09-01 00:52 func_800324D0 COMPLETED-C after 22 sessions (closer: s22 [rederive]).
 - 2026-09-01 01:00 func_8002FC80: LAYER-1 FAILED a sandbox-0 candidate — The u8* parameter signature + cast-widened loads is the ledger's own documented Class-B scheduling-manipulation respelling (chosen specifically to keep MEM_IN_STRUCT_P clear so sched.c:817's true_dependence exemption never fires) dressed up in this session's self-vet as an ordinary 'record base of unproven layout' choice; it has no truthful semantic reading independent of that compiler mechanism, so it stays FAIL under ordinary-c-judge-decidable's own carve-out.
 - 2026-09-01 01:38 func_8002FC80 COMPLETED-C after 2 sessions (closer: s2 [permuter]).
+- 2026-09-01 01:58 func_8003D888 s2 [structural] floor=13: Floor holds at 13; the seat rotation is now named exactly (find_reg pass-0 someone_prefers + allocno_compare order) and s1's H5 delay-slot lever is killed as a scheduling misattribution.

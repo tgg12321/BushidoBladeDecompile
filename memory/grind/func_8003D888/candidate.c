@@ -1,3 +1,8 @@
+/* s2 (structural, 2026-09-01): body unchanged, floor re-measured 13 on the current chassis.
+   s2 named the exact gate: find_reg pass 0 excludes regs_someone_prefers, and the COUNT allocno's
+   $a1 copy-preference is what keeps the avail/ptr/word carrier out of $a1 in every merged-carrier
+   spelling (A/E/B measured 22/22/20). Second, independent gate: allocno_compare orders the count
+   (9 refs / 24 insns) ahead of s (9 / 26), so s cannot take $a2 first. See evidence.md s2. */
 /* func_8003D888 — s1 best form (recon 2026-08-31), honest floor 13 (sandbox --disable all, 37/37 insns).
    THIS EXACT BODY IS IN src/code6cac_c2.c in the s1 working tree.
    Bitstream reader: s[0]=word ptr, s[1]=current word, s[2]=bits available; returns next n bits.
