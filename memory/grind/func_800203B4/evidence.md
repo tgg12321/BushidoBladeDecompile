@@ -76,3 +76,53 @@
    remaining sanctioned axis; the honest disposition would then be foreclosure per
    [[ordinary-c-judge-decidable]] Ruling 3 (re-activation trigger: a class grant covering
    non-$aN-source idiom sites).
+
+## s2 (2026-09-01, recon — post-FAIL disposition session)
+
+12. **The H4 ruling came back NO (Judge FAIL, docs/grind/decisions.md:17546, 2026-09-01
+    09:01).** The FDB0 cluster grant is doubly anchored ($aN idiom text + 28/26 counts); the
+    Judge's own band re-scan showed admitting the $v0/$s0-source spelling enlarges the grant
+    by ~7 members — family extension, FAIL(CONSTRUCT). The Judge also independently re-ran
+    scan_hand_coded: LOW, confirming fact 10. The dispatch brief's Judge constraint bound this
+    session to take foreclosure per [[ordinary-c-judge-decidable]] Ruling 3, and explicitly
+    forbade re-deriving/re-filing cluster membership in any spelling.
+13. **RE-MEASURED ON THE CURRENT CHASSIS THIS SESSION (the dispatch chassis-check had "floor
+    measurement unavailable"):** candidate.c applied to src/code6cac.c → `sandbox
+    func_800203B4 --disable all` = **0, 65/65, rules_dropped 0, cheat_asm_stripped 25**
+    (the four islands; identical to s1). Artifact:
+    tmp/grind/func_800203B4/s1/code6cac_sandbox0_chassis_recheck_20260901.o. src reverted to
+    INCLUDE_ASM after measurement per [[asm-until-matched]]. Every banked conclusion is
+    therefore chassis-current as of 2026-09-01.
+14. **FORECLOSURE RECORD FILED** at the tail of docs/grind/decisions.md ("2026-09-01 —
+    func_800203B4 — RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED"): both endgame-lock
+    gates fail (scanner LOW; cluster/family NO with no other family applicable to 11 cop2
+    insns). Re-activation triggers recorded there: an owner class grant covering non-$aN-source
+    cop2 preamble sites (would admit ~7 functions incl. this one — then this function is a pure
+    integration handoff, candidate.c byte-final), a toolchain-fidelity finding, or owner
+    unpark. Session outcome: owner-gated citing that entry. **Do not re-grind this function**:
+    the C body is final, the residual has no C form, and the authorization axes are measured
+    dead — any future session should only check the re-activation triggers.
+
+## s3 (2026-09-01, recon — modality-corrected re-baseline after the s2 discard)
+
+15. **The s2 owner-gated outcome was DISCARDED by the driver validator** (marker at
+    docs/grind/decisions.md:17591): the standing-ruling terminal disposition requires
+    `escalation` modality (driver-declared exhaustion); in `recon` a dead axis is a
+    `progress` outcome with kills banked. The foreclosure RECORD itself (decisions.md:17550)
+    and the Judge FAIL (decisions.md:17546) remain filed and valid — only the session
+    outcome shape was wrong. NOTE FOR FUTURE SESSIONS: do not emit owner-gated for this
+    function unless your dispatched modality is `escalation`; until then the correct outcome
+    is `progress` re-citing these facts.
+16. **RE-MEASURED ON THE 2026-09-01 CHASSIS THIS SESSION (s3 dispatch chassis-check again
+    "measurement unavailable"):** dossier CONSISTENCY OK; candidate.c applied to
+    src/code6cac.c → `sandbox func_800203B4 --disable all` = **0, 65/65, rules_dropped 0,
+    cheat_asm_stripped 25** — identical to facts 6/8/13. Artifact:
+    tmp/grind/func_800203B4/s1/code6cac_sandbox0_s3_20260901.o. src reverted to INCLUDE_ASM
+    after measurement per [[asm-until-matched]] (git diff clean). Queue distance 33 remains
+    the stale pre-migration figure (fact 1); the measured floor is 0 with candidate.c.
+
+- [s1] fact 15: s2's owner-gated was discarded ONLY for modality shape (recon vs escalation) — the Judge FAIL (decisions.md:17546) and the filed foreclosure record (decisions.md:17550) remain valid; future recon/other-modality sessions must return progress, never owner-gated, until the driver dispatches escalation
+
+- [s1] fact 16: floor re-measured 0 on the 2026-09-01 chassis this session (dispatch chassis-check was 'measurement unavailable'); queue distance 33 is the stale pre-migration figure per fact 1; src reverted clean per asm-until-matched
+
+- [s1] no codegen work remains: H1 CONFIRMED x4, H2/H3 KILLED, H4 resolved NO by Judge FAIL; residual = 11 cop2 insns with no C form; scanner tier LOW and cluster membership denied, so both authorization gates are measured dead

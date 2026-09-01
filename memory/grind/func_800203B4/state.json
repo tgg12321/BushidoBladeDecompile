@@ -1,10 +1,23 @@
 {
  "func": "func_800203B4",
  "file": "code6cac",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "Floor 0 re-confirmed on current chassis (4th measurement); all axes closed; terminal disposition awaits driver-dispatched escalation modality"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The standing-ruling terminal disposition (owner-gated citing decisions.md:17550) is valid once emitted from a driver-dispatched escalation-modality session",
+   "mechanism": "driver validator gates owner-gated on escalation modality (s2 discard marker, decisions.md:17591); the record and Judge FAIL are already filed, so escalation is a cite-and-return, not new work",
+   "next_probe": "in escalation modality: check re-activation triggers (cop2-addressing-preamble-cluster.md scan widened? inline_asm_canonical.txt grant? owner class grant in decisions.md tail?); if none landed, one confirming sandbox run then owner-gated with escalation_ref docs/grind/decisions.md:17550"
+  }
+ ],
  "judge_constraints": [
   "func_800203B4 has no sanctioned authorization axis: do not re-derive, re-file, or respell cluster membership under the 2026-08-17 FDB0 ruling or any neighbouring GTE family \u2014 take foreclosure per ordinary-c-judge-decidable Ruling 3, with the re-activation trigger being an owner class grant covering non-$aN-source idiom sites."
  ],

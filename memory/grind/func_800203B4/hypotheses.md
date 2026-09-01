@@ -35,3 +35,44 @@ the C body is final in candidate.c. Next session: check whether the ruling lande
 (docs/grind/decisions.md / an updated cluster-membership file / a grant line in
 inline_asm_canonical.txt); if YES follow evidence.md fact 11's integration steps via
 candidate-ready; if NO, foreclosure per fact 11.
+
+## s2 (2026-09-01, recon — disposition)
+
+- **H4 RESOLVED NO** by Judge FAIL ruling docs/grind/decisions.md:17546 (2026-09-01 09:01):
+  cluster grant is count- and idiom-anchored; the $v0/$s0-source spelling is a family
+  extension. Binding Judge constraint in the s2 brief mandated foreclosure per
+  [[ordinary-c-judge-decidable]] Ruling 3.
+- **H1 re-CONFIRMED on the current chassis** (dispatch chassis-check was "unavailable"):
+  sandbox --disable all == 0, 65/65. Artifact:
+  tmp/grind/func_800203B4/s1/code6cac_sandbox0_chassis_recheck_20260901.o.
+- Foreclosure record filed at decisions.md tail; outcome owner-gated.
+
+Frontier: EMPTY — foreclosed. Only the re-activation triggers matter (owner class grant for
+non-$aN-source cop2 preamble sites / toolchain finding / unpark). On re-activation, apply
+candidate.c and follow evidence.md fact 11's integration steps.
+
+## s3 (2026-09-01, recon — modality-corrected re-baseline)
+
+- **H1 re-CONFIRMED on the 2026-09-01 chassis (fourth independent measurement):**
+  candidate.c applied → sandbox --disable all == 0, 65/65, rules_dropped 0. Artifact:
+  tmp/grind/func_800203B4/s1/code6cac_sandbox0_s3_20260901.o. src reverted.
+- No new hypotheses: every codegen question is closed (H1 CONFIRMED ×4, H2/H3 KILLED,
+  H4 resolved NO by Judge FAIL decisions.md:17546). The residual is 11 cop2 insns with no
+  C form and both authorization gates measured dead.
+
+Frontier (for the driver's ladder, not for codegen work): the ONLY remaining action is the
+standing-ruling terminal disposition, which is modality-gated — it must be emitted from a
+driver-dispatched `escalation` session (s2's owner-gated from `recon` was discarded for
+exactly this). An escalation-modality session should: verify no re-activation trigger has
+landed (grep .claude/rules/cop2-addressing-preamble-cluster.md for a widened scan /
+inline_asm_canonical.txt for a grant / decisions.md tail for an owner class grant), then
+return owner-gated with escalation_ref = the already-filed record at
+docs/grind/decisions.md:17550. Do NOT re-measure the floor beyond one confirming sandbox
+run, do NOT re-file the record (it exists), do NOT re-argue cluster membership (Judge
+constraint forbids it in any spelling).
+
+## [s1] H1 (re-run): candidate.c (FDB0-authorized single-block island spelling on the pre-migration pure-C head) reproduces all 65 target instructions on the 2026-09-01 chassis
+- mechanism: SDK-macro islands hardcode $12-$15 internally (no pins, no move-aliasing); GCC materializes operand addresses (addiu $v0,$sp,0x10/0x30; arg0+=0x354 into $s0) exactly as target; sandbox strips the 4 islands (25 insns) and scores the C chassis 0
+- probe: dossier func_800203B4 (CONSISTENCY OK) -> applied memory/grind/func_800203B4/candidate.c to src/code6cac.c -> sandbox func_800203B4 --disable all -> reverted src to INCLUDE_ASM
+- result: score 0, 65/65 insns, rules_dropped 0, cheat_asm_stripped 25 — identical to the three prior measurements (evidence.md facts 6, 8, 13)
+- verdict: CONFIRMED
