@@ -18819,3 +18819,182 @@ spending one of the 34 instruction slots already accounted for.
 **Precedent (same RA/scheduler-locked, hand-coded-LOW, no-SOTN-precedent species):** this function's own
 2026-07-22 and 2026-08-20 dispositions, plus motion_SetMotion, saTan0Init, cpu_side_move_dir_4,
 func_80057CC8, func_800611A4, func_80049A2C, InitHiraRmd_80047FBC, gnd_init_80041688, func_8007DC9C.
+
+## 2026-09-01 — CD_ready (src/system.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (owner Ruling A discharged in full; both live frontier axes killed with dump-level mechanism, both endgame gates fail)
+
+**What this is.** Grind session 68 (`escalation` modality) on `CD_ready` @ `0x80081030`
+(`src/system.c:379`, currently `INCLUDE_ASM("asm/funcs", CD_ready);`). Formerly ledgered under the
+splat-era name `marionation_Exec`; identity proven as PsyQ 3.5 libcd `CD_ready(int mode,
+u_char *result)` — 179/179-word masked-identical against the library object, name string
+`"CD_ready"` @ `0x80016248` (`memory/closer/libcd-groundtruth.md:40-52`,
+`memory/closer/libcd-identity.md:7-8`). This is a proof-of-foreclosure RECORD under the owner's
+standing auto-ruling of 2026-07-27 ([[endgame-lock-disposition]]) as amended by the 2026-08-31
+ruling [[ordinary-c-judge-decidable]]: it asks the owner nothing and nothing pends on it — it
+records what was measured.
+
+**Chassis (re-measured this session, not inherited).** `memory/grind/CD_ready/candidate.c` (the
+s60 vAT1 body) spliced over the INCLUDE_ASM marker via `tmp/grind/CD_ready/s63/splice.py` ->
+`& tools/wteng.ps1 main sandbox CD_ready --disable all` = **score 2, target_insns 179,
+build_insns 179, rules_dropped 0, scorable true**. `src/system.c` restored and verified clean
+(`git diff` empty) after all measurement. The ledger floor is chassis-current.
+
+### The owner's 2026-09-01 Ruling A row for this function is now discharged in full
+
+The FORECLOSED-BUCKET REVIEW (decisions.md:17795, Ruling A row `CD_ready (d4)`) named two things.
+
+1. **"re-score the banked vAT1 form post-`-mel`"** — EXECUTED in session 60, and it WORKED: the
+   Closer-phase form `marionation_vAT1_notailwrap.c`, recovered with
+   `git show 043e4b80^:memory/closer/candidates/marionation_vAT1_notailwrap.c`, re-scored at
+   masked 2 on the post-`-mel`, post-naming-wave chassis, moving a 59-session floor from 4 to 2
+   and from 178 to 179 build instructions. The review's premise-correction is ACCEPTED and is
+   load-bearing in the banked body: the s50 volatile disqualification did rest on a false premise
+   (matched in-TU `cdrom_IrqHandler` / `CD_flush` declare these very bytes volatile —
+   `src/system.c:549-551`, `:748-749`, `:770-771`), and candidate.c's `volatile u8 *idx_1496`
+   is measured load-bearing (strip the qualifier alone: 2 -> 4, 179 -> 178 insns).
+2. **"Ruling D session"** (the `CD_intr` aggregate merge) — EXECUTED IN FULL THIS SESSION. Both
+   of its components fail, one structurally and one on measurement (next section).
+
+Sessions 60-67 spent the floor-2 chassis on the residual and reduced it to a fully characterised
+two-instruction problem; s68 killed the last two named axes. Nothing in the Ruling A row remains
+unexecuted.
+
+### Ruling D — mandatory prong (c): FAILS structurally, re-derived first-hand here
+
+The sanctioned per-word-splat-symbol -> aggregate merge family
+(`.claude/rules/no-new-park-categories.md`, owner ruling 2026-08-17) requires at prong (c) that the
+merge be COMPLETE — every merged per-word symbol removed from C *and* from the splat symbol
+config, leaving exactly one C handle per storage location. The 0x800A1494/95/96 storage is
+**defined in assembly**: `asm/data/7D920.data.s:31050` / `:31056` / `:31062` carry
+`dlabel D_800A1494` / `D_800A1495` / `D_800A1496`, and `:31069` carries `dlabel D_800A1498` whose
+first word is `.word D_800A1494`. Nine assembly files reference those names
+(`grep -rlE 'D_800A149[456]' asm/`): the three INCLUDE_ASM bodies `CD_sync.s` / `CD_ready.s` /
+`CD_datasync.s` (2 sites each), the data file, and **five asm-only consumers** — `getintr.s`
+(22 sites), `CD_cw.s` (8), `func_800817A0.s` = CD_flush (8), `func_800819C4.s` (8),
+`func_80081E1C.s` (2). The per-word symbols must therefore survive in the splat symbol config, so
+any `CD_intr` declaration is necessarily a SECOND handle on the same storage. That is verbatim the
+failure that killed the g_stage_id merge (decisions.md:10722) and that killed Ruling D on the
+sibling CD_sync (decisions.md:18305-18317). Ruling D named this check mandatory and first
+precisely because it is the prong g_stage_id died on; it dies here the same way, and the finding
+is symbol-level rather than function-level.
+
+### Ruling D — the aggregate measured on this function: 18x-20x worse than the floor
+
+Two probes on the candidate base, the aggregate reached through a cast pointer at the existing
+symbol so no splat-config change was needed (`tmp/grind/CD_ready/s68/rd1.c`, `rd2.c`):
+
+| probe | spelling | score | build_insns |
+|---|---|---|---|
+| baseline | candidate.c | **2** | 179 |
+| rd1 | `volatile CD_intr *ip = (volatile CD_intr *)&D_800A1494;` + `ip->sync/ready/c` | 41 | 173 |
+| rd2 | same, non-volatile | 37 | 172 |
+
+Both also LOSE 6-7 instructions off the 179-instruction target. This reproduces CD_sync's s107
+result (18-34 for every prong-conformant spelling) on a second member of the set, and it agrees
+with the s60 measurements already banked in this ledger (all three Intr pointers volatile = 8/179;
+type-level `extern volatile u8 g_cd_status_c` with the pointer taken directly = 4/180, the
+separate `lui`/`%lo` materialisation destroying the single-base addressing the merge was meant to
+create).
+
+### The two live frontier axes: KILLED, with dump-level mechanism
+
+**F1 — `a1v` out of local-alloc (the seat half).** Six spellings on the s67 `d01` order-perfect
+base: function scope (f1a), carried by the existing `v0` (f1b), `s32`-typed (f1c), loaded last
+(f1d), `pp` local deleted (f1e), fold+scope (f1f). Scores 7 / 16 / 7 / 10 / 7 / 7 — nothing below
+the base. The decisive measurement is the instrumented-cc1 local-alloc dump
+(`bash tmp/grind/CD_ready/s63/qty.sh`, BB2_QTY_DEBUG/BB2_SUGG_DEBUG): block 3 of f1a is
+line-for-line identical to d01 — same quantities, same births/deaths/refs, same `used` sets, same
+allocation order, same hard registers; only the pseudo numbers shift (100->76, 98->99, 97->98,
+96->97). Declaring `a1v` at function scope does NOT remove it from local-alloc. The mechanism
+forecloses the axis rather than merely disappointing it: `local_alloc`/`block_alloc` decides
+quantity membership from `REG_BASIC_BLOCK` — a pseudo is local iff all its references lie in one
+basic block — and C declaration scope has no bearing on that. Moving `a1v` out requires a
+reference in a second basic block, i.e. at least one extra instruction, barred by 179-instruction
+parity. And hard reg 4 sits in reg98's `used` because $a0 is the printf call's first argument
+conflicting with the 10-34 range directly, not because of `a1v` (which takes $a1 = 5) — so the
+premise of the s67 frontier item is itself false.
+
+**F2 — shortening the arg5 dependence path (the ordering half).** f2a (`a5a =
+(idx_1494[1] << 2) + (s32)tbl_125c;`) and f2c (same fold keeping `v0`) are BYTE-IDENTICAL to the
+base at 7 / 179 and leave the transposed `lbu` pair at 51/52 exactly where it was; f2b (fully
+inline `arg5 = tbl_125c[idx_1494[1]];`) reaches 180 insns; f2d = 9. Source-level folding is free
+but cannot shorten an RTL dependence chain — the chain length is set by the RTL ops GCC must emit
+(`lbu` -> `sll` -> `addu` -> `lw` -> `sw`), not by C statement count — and removing a link costs
+an instruction the 179-parity basin cannot spend.
+
+### Gate (a) — canonical-asm grant path: FAILS
+
+`python3 tools/scan_hand_coded.py --single CD_ready` (run this session, artifact
+`tmp/grind/CD_ready/s68/scan_hand_coded.txt`): `HAND_CODED: tier=LOW score=2/8 (CD_ready, 179
+insns) — no strong hand-coded indicators`. Only S4 (4 loads in an 8-insn window @ insn 51) and S5
+(1 approx-sibling, `CD_sync`, jaccard 0.64) fire; **S1 multu-pacing, S2 empty-branch and S6
+BIOS-jumptable are all negative**, as are S3/S7/S8. Fourth independent reproduction. The claim
+also fails on provenance independently of the scanner: this body is identified PsyQ 3.5 libcd
+`CD_ready`, i.e. compiler output from a known compiler, not hand-written assembly — routing is
+settled as C.
+
+### Gate (b) — SOTN-master precedent for the closing construct: FAILS
+
+There is **no closing construct in hand to cite**. At floor 2 the entire residual is a
+transposition of two independent ALU instructions in the do_timeout printf-argument block (build:
+`sll $v0,$v0,2` / `sll $a0,$a0,2` / `addu $v0,$v0,$s5`; target: `sll $v0,$v0,2` / `addu $v0,$v0,$s5`
+/ `sll $a0,$a0,2`), attributed by dump reading (`tmp/grind/CD_ready/dumps/system.sched2`) to a
+sched2 `INSN_PRIORITY` tie falling through to `INSN_LUID`, coupled to a `qty_compare_1` tie in
+local-alloc — and every C lever measured across 68 sessions moves the two halves in opposite
+directions. A census of `docs/reference/sotn-construct-index.md` for the shapes at play returns
+nothing usable (artifact `tmp/grind/CD_ready/s68/gate_b_census.txt`): all 23 `volatile` hits are
+throwaway-pad locals (`pad`/`sp10`-style, e.g. `src/st/sel/stream.c:80`), none an IRQ-status poll
+qualifier, and the index carries no class for statement-order-for-scheduling at all. A negative
+census is a failed gate, not an open question (AUTO-REJECT class, owner ruling 2026-08-24
+reaffirmed 2026-08-31).
+
+### Exhaustion
+
+68 sessions on this ledger (plus the pre-Grinder `memory/wip/marionation_Exec/` and Closer-phase
+work). Floor flat at 2 since s60 and flat at 4 for the 59 sessions before it. Modalities spent:
+recon, structural, permuter, forensics, rederive, synthesis, solver, escalation. **187 disproven
+forms banked** in `memory/grind/CD_ready/rejected/` (12 added this session). Prior campaign
+closures recorded in the ledger: the 140-ordering sweep, the 9-variant topology sweep, the cc1psx
+parity test, the decoupled-addu family, the alias-merge family, the s53-s59 t0-web/arg5 axes, the
+s61 natural-C/source-position/decl-order/pseudo-split/variable-reuse re-runs against the vAT1
+base, the s63 sched.c tie-breaker read (`rank_for_schedule`'s class rung collapses to class 3 on
+this target, leaving `INSN_LUID` = C statement order as the only ordering lever), the s65
+instrumented-cc1 correction of the `.lreg` window proxy, the s66 closed-form reduction of the seat
+residual to the loop-depth-weighted `reg_n_refs` alone, and the s67 loop-note characterisation in
+both directions (an empty `do{}while(0)` is byte-neutral NOWHERE in this block — the note is a
+sched1 region boundary here, so a reference count can never be bought for free on this function).
+
+### Disposition
+
+FORECLOSED, silently, per the standing ruling. Nothing is put to the owner and nothing pends.
+`src/system.c:379` keeps `INCLUDE_ASM("asm/funcs", CD_ready);` (verified clean against HEAD at
+session end, 0 rules, no cheat-asm — the honest committed state) and the annotated masked-2 form
+stays in `memory/grind/CD_ready/candidate.c` for any future re-attempt.
+
+### Re-activation triggers
+
+1. **The asm-only consumers of D_800A1494/95/96 are decompiled to C** (`CD_cw`, `getintr`,
+   `func_800819C4`, `func_800817A0`, `func_80081E1C`). At that point prong (c) of the sanctioned
+   aggregate family becomes satisfiable and Ruling D can be spent for real across the whole libcd
+   cluster — for CD_sync, CD_ready and CD_datasync together.
+2. **A sanctioned family lands whose mechanism reaches `INSN_LUID`-tie ordering or allocno birth
+   order WITHOUT a byte-neutrality requirement**, re-opening the coupled sched2/`qty_compare_1`
+   fixed point that is this function's entire residual.
+3. **A matched libcd `bios.c` body for `CD_ready` appears upstream** in psyz / sozud
+   psy-q-decomp, closing the function by provenance instead of by search (re-check
+   `decomp/src/libcd/bios.c`; `CD_sync` there was still `INCLUDE_ASM` as of the CD_sync s105
+   check).
+4. **A ruling on F3** — the one genuinely open question on this body, moot while the floor is 2:
+   does prong 2 of `.claude/rules/legitimate-volatile-interrupt-touched.md` admit a poll loop with
+   body work (this site reads `*idx_1496` across `VSync()` and `getintr()` calls, i.e. closest to
+   double-read-across-sequence-point but not verbatim one of the three listed shapes), and do the
+   already-shipped matched in-TU declarations at `src/system.c:549-551`, `:748-749` plus the
+   matched pointer-arithmetic shape at `:770-771` constitute the `volatile_extern_allowlist.txt`
+   grant for D_800A1494/95/96? This would need answering before any candidate-ready on this body
+   even if the two-instruction residual were solved.
+
+**References:** ledger `memory/grind/CD_ready/{evidence.md,hypotheses.md,candidate.c,state.json,rejected/}`
+(s68 sections appended this session); artifacts `tmp/grind/CD_ready/s68/` (gen.py, the ten frontier
+probes f1a-f1f / f2a-f2d, the two Ruling-D probes rd1/rd2, f1a.qty.txt, scan_hand_coded.txt,
+gate_b_census.txt); prior records decisions.md:15629 (2026-08-30 CD_ready), decisions.md:18279
+(2026-09-01 CD_sync, the sibling Ruling-D execution), decisions.md:10722 (the g_stage_id prong-(c)
+precedent), Ruling A at decisions.md:17795 and Ruling D at decisions.md:17843.

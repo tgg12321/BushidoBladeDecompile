@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 67,
- "current_modality": "solver",
+ "session_count": 68,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -411,23 +411,29 @@
    "floor": 2,
    "modality": "solver",
    "headline": "Loop-note lever characterised in BOTH directions: empty wraps are byte-neutral NOWHERE (the note is a sched1 region boundary, so refs can never be bought free) - but splitting the existing wrap LOWERS"
+  },
+  {
+   "session": 68,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "s68 escalation: owner Ruling A discharged in full (Ruling D executed first-hand - prong (c) structurally unsatisfiable via five asm-only consumers, aggregate measures 41/37 vs floor 2), both live fron"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The t0 seat can be recovered on the a1v-carrying bases by removing hard reg 4 ($a0) from reg98's find_free_reg `used` set. The used set is the only thing separating d01/e02 from the target, and it differs from y02's purely because the a1v quantity exists - so either a spelling of a1v that keeps it out of local-alloc's quantity list (making it a global-alloc allocno like reg/v 74), or one that shortens its 14-36 live range, should restore $a0 to t0.",
-   "mechanism": "local-alloc's find_free_reg builds `used` from the hard registers conflicting with the quantity's live range plus the regs already assigned to earlier-allocated quantities. a1v (reg100) is allocated FIRST via the copy-suggestion path (QTYDBG-SUGG, got=5=$a1) and spans 14-36, which is longer than every other quantity in the block; reg98 spans 10-34 and overlaps it almost entirely. If a1v were cross-block (hence excluded from local_alloc, exactly as reg/v 74 is) or died at the call rather than after it, reg98's used set should lose hard reg 4.",
-   "next_probe": "On the d01 base, respell a1v so it leaves local-alloc: (a) declare it at FUNCTION scope beside `v0` rather than inside the printf block, so it becomes cross-block like `v0`; (b) reuse the EXISTING function-scope `v0` variable to carry it (the sanctioned variable-reuse family, already used in this body for the arg5 index); (c) type it `void **` / `s32` variants to change its mode. For each, score with `sandbox CD_ready --disable all` (harness tmp/grind/CD_ready/s63/sweep.ps1) and read back the SUGGDBG-FFR `used=` line for the reg98 quantity with tmp/grind/CD_ready/s63/qty.sh - the used set, not the score, is the measurement that decides the hypothesis. Compare directly against y02.qty.txt, where reg98's used set lacks 4."
+   "hypothesis": "F3 (unchanged, and now the ONLY open question on this body): the `volatile u8 *idx_1496;` in candidate.c is covered by .claude/rules/legitimate-volatile-interrupt-touched.md rather than by the volatile-coercion ban. This is a completion blocker, not a floor lever - it is moot while the floor is 2 and only becomes live at score 0.",
+   "mechanism": "Prong 1 is satisfied with citations at every link (IRQ writer getintr at asm/funcs/getintr.s:304; handler installed by InterruptCallback(2, &D_80081F1C) at src/system.c:609 and :630). Prong 2's harm is shown by controlled measurement - removing the qualifier alone moves 179 insns to 178 and score 2 to 4. What is open is that prong 2's shape list is exact (spin-wait / double-read-across-sequence-point / IRQ-mutated-loop-bound) and this poll loop has body work (VSync() and getintr() calls between successive reads of *idx_1496), plus the absent volatile_extern_allowlist.txt entry for D_800A1494/95/96.",
+   "next_probe": "This is a ruling-request, not a measurement. Question: does prong 2 admit a poll loop with body work when the double-read harm is shown by controlled measurement, and do the already-shipped matched in-TU declarations at src/system.c:549-551 and :748-749 plus the matched pointer-arithmetic shape at :770-771 constitute the allowlist grant for D_800A1496? Raise it only if a re-activation trigger makes the two-instruction residual attackable again."
   },
   {
-   "hypothesis": "d01's last two ordering defects - the transposed lbu pair at 51/52 - are NOT a statement-order problem (s67 proved head permutation inert) but a consequence of which byte load feeds the higher-priority chain, and they can be moved by changing the DEPENDENCE structure of the two byte loads rather than their position.",
-   "mechanism": "sched.c's rank_for_schedule separates the two lbu's by INSN_PRIORITY = longest path to the block end. In d01 the arg5 byte feeds sll -> addu -> lw -> sw (path 4) while the t0 byte feeds sll -> addu -> lw (path 3), so the arg5 byte is issued first; the target issues the t0 byte first, which means on the target the t0 chain must carry the equal-or-longer path. Lengthening the t0 chain by one dependent insn is forbidden (179-instruction parity), so the lever is to SHORTEN the arg5 chain's path - e.g. by making the arg5 stack store not depend on the load through a register (it must), or by folding the arg5 address addu so the chain is one link shorter.",
-   "next_probe": "On the d01 base, respell the arg5 address chain to shorten its dependence path without changing the instruction count: fold `v0 <<= 2; a5a = v0 + tbl_125c;` back into a single `a5a = (idx_1494[1] << 2) + (s32)tbl_125c;` (s66's s04 measured the analogous t0 fold byte-identical, so the fold itself is free), and separately try `arg5 = tbl_125c[idx_1494[1]];` fully inline. Score each, and for any that fixes 51/52 read the sched dump (pwsh tools/grinder/dump.ps1 CD_ready, then the .sched file) to confirm the priority change rather than inferring it."
+   "hypothesis": "Re-activation trigger 1 (the strongest one, and it is a WHOLE-CLUSTER unlock): once the asm-only consumers of D_800A1494/95/96 are decompiled to C, prong (c) of the sanctioned aggregate family becomes satisfiable and Ruling D can be spent for real across CD_sync, CD_ready and CD_datasync together.",
+   "mechanism": "Prong (c) requires the merge be COMPLETE - every per-word symbol removed from C AND from the splat symbol config, one C handle per storage location. Today five asm bodies (getintr, CD_cw, func_800817A0, func_800819C4, func_80081E1C) plus the asm data definition force the per-word symbols to survive, making any CD_intr declaration a second handle.",
+   "next_probe": "Not a probe for this function: it is a dependency on those five functions reaching C. When they do, re-run Ruling D's two components here (the prong-(c) check, then the aggregate scoring) from tmp/grind/CD_ready/s68/rd1.c / rd2.c."
   },
   {
-   "hypothesis": "F3 (carried unchanged from s60-s67, blocking for COMPLETION only, not for progress): the `volatile u8 *idx_1496;` in this body is covered by legitimate-volatile-interrupt-touched rather than by the volatile-coercion ban.",
-   "mechanism": "Prong 1 is satisfied with citations at every link (IRQ writer getintr at asm/funcs/getintr.s:304; handler installed by InterruptCallback(2, &D_80081F1C) at src/system.c:609 and :630). Prong 2's harm is shown by controlled measurement - removing the qualifier alone moves 179 insns to 178 and score 2 to 4. What is open is that prong 2's shape list is exact (spin-wait / double-read-across-sequence-point / IRQ-mutated-loop-bound) and this poll loop has body work, plus the absent volatile_extern_allowlist.txt entry for D_800A1494/95/96.",
-   "next_probe": "This is a ruling-request, not a measurement, and it should be raised the moment the score reaches 0 - not before, because it costs a session either way and the allocation branch above is still live. Question to ask: does prong 2 admit a poll loop with body work when the double-read harm is shown by controlled measurement, and do the already-shipped matched in-TU declarations at src/system.c:549-551 and :748-749 plus the matched pointer-arithmetic shape at :770-771 constitute the allowlist grant for D_800A1496?"
+   "hypothesis": "Re-activation trigger 2: a sanctioned family whose mechanism reaches INSN_LUID-tie ordering or allocno birth order WITHOUT a byte-neutrality requirement would re-open the coupled sched2 / qty_compare_1 fixed point that is this function's entire residual.",
+   "mechanism": "s63 read the tie-breaker out of sched.c (rank_for_schedule's class rung collapses to class 3 on this target, leaving INSN_LUID = C statement order as the only ordering lever) and s66 reduced the seat half to closed form (with the target's instruction sequence held, every qty_compare_1 input except the loop-depth-weighted reg_n_refs is FORCED). s67 then showed an empty do{}while(0) is byte-neutral NOWHERE in this block - the loop note is a sched1 region boundary here - so a reference count can never be bought for free on this function. Order and seat are each independently reachable and anti-correlated through that one lever.",
+   "next_probe": "None available under current rule text; this is a rules-side trigger, not a measurement. Also worth a periodic cheap re-check: a matched libcd bios.c body for CD_ready appearing upstream in psyz / sozud psy-q-decomp would close the function by provenance instead of by search."
   }
  ],
  "judge_constraints": [

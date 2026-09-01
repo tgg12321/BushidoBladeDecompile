@@ -1,3 +1,24 @@
+/* s68 UPDATE (2026-09-01, escalation). This body is UNCHANGED and remains the floor at masked 2
+ * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0).
+ * s68 killed BOTH of the s67 frontier axes with dump-level mechanism and discharged the owner's
+ * 2026-09-01 Ruling A row for this function in full, so the item was FORECLOSED under the standing
+ * ruling (docs/grind/decisions.md, 2026-09-01 CD_ready entry). What a future session must know:
+ *   1. KILLED: `a1v` cannot be moved out of local-alloc by any C respelling. Declaring it at
+ *      FUNCTION scope produces a local-alloc dump line-for-line identical to d01's (same
+ *      quantities, refs, `used` sets, seats; only pseudo numbers shift) - block_alloc decides
+ *      membership from REG_BASIC_BLOCK, not C scope. Hard reg 4 is in reg98's `used` because $a0
+ *      is the printf call's first argument, NOT because of a1v (which takes $a1). The s67 frontier
+ *      item's premise was false.
+ *   2. KILLED: folding the arg5 address chain is byte-identical to d01 (7/179) and does not move
+ *      the 51/52 lbu pair. Source-level folding cannot shorten an RTL dependence chain; removing a
+ *      link costs an instruction (fully-inline = 180 insns), off the 179-parity basin.
+ *   3. KILLED: the Ruling D CD_intr aggregate. Prong (c) is structurally unsatisfiable (five
+ *      asm-only consumers of D_800A1494/95/96: getintr, CD_cw, func_800817A0, func_800819C4,
+ *      func_80081E1C, plus the asm data definition), and the aggregate measures 41/173 (volatile)
+ *      and 37/172 (plain) against the floor of 2/179.
+ * The ONE open question on this body is still F3 (the volatile prong-2 / allowlist ruling for
+ * idx_1496) - documented below and moot while the floor is 2.
+ */
 /* s67 UPDATE (2026-09-01, solver). This body is UNCHANGED and remains the floor at masked 2
  * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). It holds the
  * SEATS with a single adjacent ALU transposition left.

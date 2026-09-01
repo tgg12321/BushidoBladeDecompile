@@ -2023,3 +2023,84 @@ this function's residual has moved out of the priority sort and into find_free_r
 - probe: The numbers were derived from d01's QTYDBG table and the required refs value written down BEFORE measuring. Then e01/e02/e03 (one, two, three extra nesting levels on the arg5 load), e04 (nest on the call), e05 (both), e07 (t0 addu ahead of the nest); e02 read back with QTYDBG and disassembled.
 - result: e02 measured refs(reg96) = 6 exactly as predicted; reg96 moved from ord 3 to ord 2 and got=3 = $v1, THE TARGET'S SEAT, confirmed in the disassembly as `58 lw $v1,0($v0)` and `62 sw $v1,16($sp)`. e01 (one level, refs 5) scores 9 and does NOT flip the seat - precisely the predicted tie. e03 8, e04 8 (180 insns), e05 6 (180 insns), e07 6 (180 insns). The local-alloc model of this function is now fully predictive. e02 stops at 8 rather than 0 because reg98 falls to ord 3 and takes $a3 instead of $a0, and because the two extra notes re-perturb the instruction order.
 - verdict: CONFIRMED
+
+## s68 (2026-09-01, escalation) — hypotheses resolved
+
+**H-s68-1 (KILLED).** *Statement:* respelling `a1v` so that its pseudo leaves local-alloc's
+quantity list — declaring it at function scope so it becomes "cross-block" like `reg/v 74`, or
+retyping it, or deleting the `pp` local — removes hard reg 4 ($a0) from reg98's `find_free_reg`
+`used` set and restores the target's `t0` seat.
+*Mechanism tested:* `local_alloc`'s `find_free_reg` builds `used` from hard registers conflicting
+with the quantity's live range plus the registers already given to earlier-allocated quantities;
+`a1v` (reg100 on d01) is allocated first via the copy-suggestion path and spans 14-36.
+*Probe:* six spellings on the d01 order-perfect base (f1a function scope, f1b carried by `v0`,
+f1c `s32`-typed, f1d loaded last, f1e no `pp` local, f1f fold+scope), each scored with
+`sweep.ps1`, plus the decisive instrumented-cc1 local-alloc dump on f1a
+(`tmp/grind/CD_ready/s68/f1a.qty.txt`) compared against `s67/d01.qty.txt`.
+*Result:* f1a/f1c/f1e/f1f = 7 (byte-identical to the base), f1d = 10, f1b = 16. The f1a dump is
+line-for-line identical to d01's — same quantities, same births/deaths/refs, same `used` sets,
+same allocation order, same hard registers; only the pseudo NUMBERS shift.
+*Verdict:* KILLED, and the axis is foreclosed structurally, not merely unmeasured: quantity
+membership in `local_alloc`/`block_alloc` is decided by `REG_BASIC_BLOCK` (all references in one
+basic block), which C declaration scope cannot influence. Moving `a1v` out requires a reference
+in a second basic block, i.e. at least one extra instruction, which 179-instruction parity bars.
+Hard reg 4 is in reg98's `used` because $a0 is the printf call's first argument and conflicts
+with the 10-34 range directly — not because of `a1v`, which takes $a1 (5).
+
+**H-s68-2 (KILLED).** *Statement:* d01's transposed `lbu` pair at 51/52 can be flipped by
+SHORTENING the arg5 chain's `INSN_PRIORITY` path (folding the address computation) without
+changing the instruction count.
+*Mechanism tested:* `sched.c`'s `rank_for_schedule` orders the two byte loads by `INSN_PRIORITY`
+= longest path to block end; the arg5 byte's path is 4 links, the t0 byte's 3.
+*Probe:* f2a (fold to `a5a = (idx_1494[1] << 2) + (s32)tbl_125c;`), f2c (fold keeping `v0`),
+f2b (fully inline `arg5 = tbl_125c[idx_1494[1]];`), f2d (arg5 value loaded inside wrap 1).
+*Result:* f2a and f2c are BYTE-IDENTICAL to d01 (7 / 179 insns) and leave 51/52 exactly where
+they were; f2b reaches 180 insns (8); f2d = 9.
+*Verdict:* KILLED. Source-level folding is byte-free (consistent with s66's s04) but cannot
+shorten an RTL dependence chain — the chain length is set by the RTL ops GCC must emit
+(`lbu` -> `sll` -> `addu` -> `lw` -> `sw`), not by C statement count. Removing a link means
+removing an instruction, and f2b prices that at +1 insn, off the 179-parity the basin needs.
+
+**H-s68-3 (KILLED).** *Statement:* the owner-authorised Ruling D `CD_intr` aggregate merge
+(`typedef struct { u8 sync, ready, c; } CD_intr;` over 0x800A1494/95/96) is a lever on CD_ready.
+*Probe:* (i) the mandatory prong-(c) asm-consumer check, re-derived first-hand:
+`asm/data/7D920.data.s:31050/31056/31062` DEFINE the three bytes in assembly and five asm-only
+consumers reference them (`getintr.s` 22 sites, `CD_cw.s` 8, `func_800817A0.s` 8,
+`func_800819C4.s` 8, `func_80081E1C.s` 2); (ii) two aggregate-access spellings on the candidate
+base (rd1 volatile, rd2 plain).
+*Result:* prong (c) is UNSATISFIABLE — the per-word symbols must stay in the splat config, so any
+`CD_intr` declaration is a second handle on the same storage (the g_stage_id failure verbatim,
+decisions.md:10722). And the aggregate LOSES on measurement anyway: rd1 = 41 / 173 insns,
+rd2 = 37 / 172 insns, against the floor of 2 / 179.
+*Verdict:* KILLED both ways. Ruling D is discharged for CD_ready; the grant cannot be spent by
+any of the three CD_* members while CD_cw / getintr / func_800819C4 / func_800817A0 /
+func_80081E1C remain assembly-only consumers of D_800A1494/95/96.
+
+### Frontier after s68
+
+The two allocation/ordering frontier items are gone. What remains recorded is F3, which is a
+COMPLETION blocker rather than a floor lever and only becomes live at score 0: whether prong 2 of
+`.claude/rules/legitimate-volatile-interrupt-touched.md` admits this poll loop (body work between
+successive reads of `*idx_1496`, i.e. closest to double-read-across-sequence-point but not
+verbatim one of the three listed shapes), and whether the already-shipped matched in-TU
+declarations at `src/system.c:549-551`, `:748-749` and the matched pointer-arithmetic shape at
+`:770-771` constitute the `volatile_extern_allowlist.txt` grant for D_800A1494/95/96. That is a
+ruling-request, not a measurement, and it is moot while the floor is 2.
+
+## [s68] Respelling `a1v` so its pseudo leaves local-alloc's quantity list (function-scope declaration making it 'cross-block' like reg/v 74, retyping, deleting the `pp` local) or shortening its 14-36 live range removes hard reg 4 ($a0) from reg98's find_free_reg `used` set and restores the target's t0 seat.
+- mechanism: local_alloc's find_free_reg builds `used` from hard registers conflicting with the quantity's live range plus registers already assigned to earlier-allocated quantities; a1v (reg100 on the d01 base) is allocated first via the copy-suggestion path (got=5=$a1) and spans 14-36, overlapping reg98's 10-34 almost entirely.
+- probe: Six spellings on the s67 d01 order-perfect base scored with tmp/grind/CD_ready/s63/sweep.ps1 - f1a function scope, f1b carried by the existing function-scope v0, f1c s32-typed, f1d loaded last before the call, f1e no `pp` local, f1f fold+scope - plus the decisive instrumented-cc1 local-alloc dump on f1a (bash tmp/grind/CD_ready/s63/qty.sh, BB2_QTY_DEBUG/BB2_SUGG_DEBUG) compared line-for-line against tmp/grind/CD_ready/s67/d01.qty.txt.
+- result: Scores 7 / 16 / 7 / 10 / 7 / 7 - nothing below the base's 7, and f1a/f1c/f1e/f1f are byte-identical to it. The f1a dump's block 3 is line-for-line identical to d01's: same quantities, same births/deaths/refs, same `used` sets (reg98 still used=0,1,2,4,5,6 -> got 3), same allocation order, same hard registers; only the pseudo NUMBERS shift (100->76, 98->99, 97->98, 96->97).
+- verdict: KILLED
+
+## [s68] d01's transposed lbu pair at 51/52 can be flipped by SHORTENING the arg5 chain's INSN_PRIORITY path - folding the address computation - without changing the instruction count.
+- mechanism: sched.c's rank_for_schedule orders the two byte loads by INSN_PRIORITY = longest path to block end; in d01 the arg5 byte feeds sll->addu->lw->sw (4) while the t0 byte feeds sll->addu->lw (3), so the arg5 byte issues first, the reverse of the target.
+- probe: f2a (`a5a = (idx_1494[1] << 2) + (s32)tbl_125c;`), f2c (same fold keeping v0 as a named intermediate), f2b (fully inline `arg5 = tbl_125c[idx_1494[1]];`), f2d (arg5 value loaded inside wrap 1), each scored with sandbox CD_ready --disable all.
+- result: f2a and f2c are BYTE-IDENTICAL to the base (7 / 179 insns) and leave the 51/52 pair exactly where it was; f2b reaches 180 insns (8); f2d = 9. The fold is free but inert on the ordering.
+- verdict: KILLED
+
+## [s68] The owner-authorised Ruling D CD_intr aggregate merge (typedef struct { u8 sync, ready, c; } CD_intr over 0x800A1494/95/96) is a lever on CD_ready.
+- mechanism: Ruling D (decisions.md:17843) authorises the sanctioned per-word-splat-symbol -> aggregate merge family for the libcd Intr object, with a MANDATORY first-step prong-(c) asm-consumer check; the expectation recorded in the reopen note was that the volatile aggregate creates single-base addressing and scores below the floor.
+- probe: (i) prong (c) re-derived first-hand: grep -rlE 'D_800A149[456]' asm/ plus the dlabel definitions in asm/data/7D920.data.s; (ii) two aggregate-access spellings on the candidate base reached through a cast pointer at the existing symbol (rd1 volatile, rd2 plain), scored with sandbox.
+- result: Prong (c) is UNSATISFIABLE: the bytes are DEFINED in assembly (asm/data/7D920.data.s:31050/31056/31062, plus :31069 D_800A1498 whose first word is .word D_800A1494) and five asm-only consumers reference them - getintr.s (22 sites), CD_cw.s (8), func_800817A0.s = CD_flush (8), func_800819C4.s (8), func_80081E1C.s (2) - so the per-word symbols must stay in the splat config and any CD_intr declaration is a second handle on the same storage (the g_stage_id failure verbatim, decisions.md:10722). And the aggregate loses on measurement anyway: rd1 = 41 score / 173 insns, rd2 = 37 / 172, against the floor of 2 / 179.
+- verdict: KILLED
