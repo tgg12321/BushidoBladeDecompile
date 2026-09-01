@@ -82,30 +82,11 @@
  *      SCORING ARTIFACT: the object carries R_MIPS_HI16/LO16 against D_800A35D0
  *      with a zero addend and the scorer masks HI16 but not LO16. The honest
  *      residual is 8 real rows, not 9.
- *
- * s7 (solver) - candidate BODY UNCHANGED, re-measured 9 / 175 insns on today's
- * chassis. Two durable corrections to the residual description above:
- *   1. Class B is NOT a register-allocation question. The last unspent RA-layer
- *      mechanism (local-alloc's suggested-register pass, qty_phys_copy_sugg /
- *      qty_phys_sugg) is dead: pseudo 75 (p_old) forms no local-alloc quantity at
- *      all, and the whole function carries exactly one suggestion anywhere
- *      (blk0 qty0, copysugg=[$a0]). Class B is cse PSEUDO IDENTITY: cse.c
- *      make_regs_eqv makes the first pseudo the call result is copied into the
- *      quantity's qty_first_reg, and canon_reg never substitutes a hard reg, so
- *      all four post-call stores canonicalise onto ONE register. The target's
- *      2+2 $s1/$v0 split is REACHABLE - hoisting a `u8 *pp` to function scope,
- *      assigning it after the global + 0x4 stores and reusing it in the tail
- *      makes pp's regno_last_uid fall past the cse block end, pp becomes
- *      canonical, and text1b.cse then shows insns 68/71 on pseudo 75 and 77/80
- *      on pseudo 76 - but the copy that makes pp join the quantity is a real
- *      insn: 176 / score 12. Store-base SPELLING is byte-neutral (9/175 for every
- *      p_old-vs-global permutation).
- *   2. s6's D3 address form is 175 insns on this chassis, not 174. There is no
- *      insn credit anywhere on record to pay for the class-B split copy.
  */
 s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     u16 sp[2];
     s32 *p_old;
+    u8 *pp;
     s32 r;
     s16 t0;
     s16 a2;
@@ -123,8 +104,9 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
         p_old = (s32 *)func_8006E49C(r, D_800A35D8);
         D_800A36A0 = (u8 *)p_old;
         *(s32 *)((u8 *)p_old + 4) = (s32)prev;
-        *(s32 *)(D_800A36A0 + 0x30) = 0;
-        *(s16 *)(D_800A36A0 + 0x34) = 0;
+        pp = (u8 *)p_old;
+        *(s32 *)(pp + 0x30) = 0;
+        *(s16 *)(pp + 0x34) = 0;
     }
     t0 = 0;
     do {
@@ -146,8 +128,12 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
         *(s16 *)(ptr + 0x40) = 0;
         *(u8 *)(base + t0 + 0x68) = (u8)t0;
         {
-            s16 *p_6a = (s16 *)(D_800A36A0 + (t0 * 10) + 0x6A);
-            s16 *p_7e = (s16 *)(D_800A36A0 + (t0 * 10) + 0x7E);
+            s16 *p_6a;
+            s16 *p_7e;
+            p_6a = (s16 *)(s32)(t0 * 10);
+            p_6a = (s16 *)((s32)p_6a + (s32)D_800A36A0);
+            p_7e = (s16 *)((s32)p_6a + 0x7E);
+            p_6a = (s16 *)((s32)p_6a + 0x6A);
             do {
                 p_6a[a2] = -1;
                 p_7e[a2] = 0;
@@ -169,13 +155,13 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
         t0 = (s16)(t0 + 1);
     } while (t0 < 2);
     {
-        u8 *p = D_800A36A0;
-        *(s32 *)(p + 0x20) = 0;
-        *(s32 *)(p + 0x1C) = 0;
+        pp = D_800A36A0;
+        *(s32 *)(pp + 0x20) = 0;
+        *(s32 *)(pp + 0x1C) = 0;
         if ((s16)sp[0] < (s16)sp[1]) {
-            *(s8 *)(p + 0x64) = (s8)((s16)sp[0] - 3);
+            *(s8 *)(pp + 0x64) = (s8)((s16)sp[0] - 3);
         } else {
-            *(s8 *)(p + 0x64) = (s8)((s16)sp[1] - 3);
+            *(s8 *)(pp + 0x64) = (s8)((s16)sp[1] - 3);
         }
     }
     if (*(u8 *)(D_800A36A0 + 0x64) >= 3) {

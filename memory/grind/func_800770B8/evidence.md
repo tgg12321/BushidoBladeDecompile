@@ -880,3 +880,125 @@ scored, 8 real, one unrelocated-LO16 artifact".
 - [s6] Residual row 50 is a scoring artifact: R_MIPS_HI16/R_MIPS_LO16 against D_800A35D0 at 0x8bc8/0x8bcc with zero addend; the scorer masks HI16 but not LO16. Honest residual = 8 real rows (class A 4, class B 2, class C 3, minus the artifact), and any future exhaustion record must state the floor as '9 as scored, 8 real'.
 
 - [s6] Four disproven forms banked to memory/grind/func_800770B8/rejected/: s6-int-domain-flips-plus-order-but-collapses-double-read.c (D2), s6-shift-as-pointer-const-folds-wrong-side-176insn.c (E4), s6-named-global-handle-breaks-a2-init-slot.c (F5), s6-base-local-removed-costs-an-insn.c (G0). The rejected bank now holds 24 forms.
+
+## s7 (solver) — 2026-09-01
+
+Chassis re-measured at session start with the committed candidate applied:
+**score 9, build_insns 175, target_insns 175** — unchanged.
+
+`inverse_compose.py classify` refuses this function (zero-rule / rules-to-zero
+guard, it would report a fictitious PRE-RA verdict). The sanctioned substitute
+`goal_from_tgt.py classify text1b func_800770B8` reports
+`FIRST DIVERGENCE: RA` with the register deltas `$v0 -> $v1 x4`,
+`$s1 -> $v0 x2`, `$v1 -> $v0 x1` — i.e. class C (4 rows incl. the two addiu
+consumers), class B (2 rows), and one more. Note the classifier's "RA" label is
+a heuristic on the object streams; s6 already re-attributed class C to RTL
+operand order and s7 re-attributes class B to cse pseudo identity, so the label
+should not be taken as a pass attribution.
+
+### Frontier item 2 (the SUGGDBG read) — ANSWERED, class B closed at the RA layer
+`tmp/ra_solver_work/text1b.sugg.json` sliced for func_800770B8: 34 local-alloc
+quantities across 14 blocks. Pseudo 75 (p_old) is **not among them** — local-alloc
+never forms a quantity for it, which is exactly what s5's global-alloc
+attribution implies. The whole function carries exactly ONE suggestion of any
+kind: blk0 qty0 (reg1=72, birth 2, death 20, refs 3, calls 1) with
+`ncopysugg=1, copysugg=[4]` ($a0). qty_phys_copy_sugg / qty_phys_sugg — the two
+mechanisms s5's negative report named as reported-but-not-scored — therefore
+have nothing to say about the $s1-vs-$v0 residual. **Every RA-layer mechanism
+for class B is now spent.**
+
+### Class B re-attributed to cse pseudo identity (pre-RA), and MEASURED
+Residual rows 35/36 are `sw $0,48($17)` / `sh $0,52($17)` against the target's
+`sw $zero,0x30($v0)` / `sh $zero,0x34($v0)`. The four consecutive stores after
+the `func_8006E49C` call divide 2+2 in the target ($s1, $s1, $v0, $v0) and 4+0
+in ours ($s1 x4).
+
+Reading `tools/gcc-2.7.2/cse.c`:
+* `canon_reg()` — *"Never replace a hard reg, because hard regs can appear in
+  more than one machine mode…"* — returns hard regs untouched, so `$v0` can never
+  be substituted INTO a use. The target's `0x30($v0)` cannot be hard-reg
+  forwarding; it must be a second pseudo seated in $v0 by the allocator.
+* `make_regs_eqv()` — *"Prefer fixed hard registers to anything. Prefer pseudo
+  regs to other hard regs. Among pseudos, if NEW will live longer than any other
+  reg of the same qty, and that is beyond the current basic block, make it the
+  new canonical replacement for this qty."* $v0 is not fixed, so the pseudo the
+  call result is copied into becomes `qty_first_reg` and every later reference in
+  the extended basic block canonicalises onto it. A later-joining pseudo takes
+  over as canonical only when
+  `uid_cuid[regno_last_uid[new]] > cse_basic_block_end` or
+  `uid_cuid[regno_first_uid[new]] < cse_basic_block_start`.
+
+Twelve spellings measured on the floor-9 chassis (all ordinary C, all in
+`tmp/grind/func_800770B8/s7/v/`):
+
+| id  | shape | score / insns |
+|-----|-------|---------------|
+| H1  | raw call result gets its own local `pn`; `p_old = pn`; 0x30/0x34 via `pn` | 23 / 170 |
+| H2  | mirror: `p_old` takes the call, `pn = p_old`, long-lived uses via `pn`     | 9 / 175 |
+| H3  | H1 with the 0x30/0x34 stores still spelled through the global             | 23 / 170 |
+| H4  | H1 with a `u8 *` short-lived handle                                       | 23 / 170 |
+| H5  | 0x4 store via the global re-read, 0x30/0x34 via `p_old` (spelling swap)   | 9 / 175 |
+| H6  | all four stores spelled through `p_old`                                   | 9 / 175 |
+| H7  | all four stores spelled through the `D_800A36A0` re-read                  | 9 / 175 |
+| H8  | the existing `r` local reused to hold the raw result                      | 23 / 170 |
+| H10 | `u8 *pp` hoisted to fn scope, set from `p_old` AFTER the global+0x4 stores, used for 0x30/0x34, REUSED in the tail block | 12 / 176 |
+| H11 | H10 but `pp` is block-local (control for the canonicality test)           | 9 / 175 |
+| H12 | H10 with `pp` fed from the global re-read instead of from `p_old`         | 12 / 176 |
+| H15 | H10 composed with s6's D3 address form                                    | 15 / 176 |
+| H16 | s6's D3 address form alone, re-measured                                   | 12 / **175** |
+| H17 | H10 composed with s6's E4 address form                                    | 16 / 177 |
+
+Four durable facts fall out:
+
+1. **Store-base spelling is byte-neutral.** H5/H6/H7 are all 9 / 175: whichever
+   of `p_old` / the global re-read each store names, cse collapses all four onto
+   one canonical pseudo. Nineteen-plus spellings of this seat are now dead.
+2. **Naming the raw result first is strictly wrong.** H1/H3/H4/H8 make that pseudo
+   canonical, route ALL FOUR stores through it, delete the `move $s1,$v0` copy
+   and free a whole callee-saved register (the frame shrinks 0x40 → 0x38 and
+   `p_old` shares $s0 with arg0): 170 insns, score 23.
+3. **The target's split IS reachable, and the mechanism is exactly the
+   make_regs_eqv canonicality test.** H10's `text1b.cse` reads:
+   `(insn 68 (set (mem:SI (symbol_ref "D_800A36A0")) (reg/v:SI 75)))`,
+   `(insn 71 (set (mem:SI (plus:SI (reg/v:SI 75) (const_int 4))) (reg/v:SI 81)))`,
+   `(insn 74 (set (reg/v:SI 76) (reg/v:SI 75)))`,
+   `(insn 77 (set (mem:SI (plus:SI (reg/v:SI 76) (const_int 48))) (const_int 0)))`,
+   `(insn 80 (set (mem:HI (plus:SI (reg/v:SI 76) (const_int 52))) (const_int 0)))`
+   — two stores on pseudo 75 and two on pseudo 76, structurally the target's
+   $s1/$s1/$v0/$v0. H11 (identical but with `pp` block-local, so its
+   `regno_last_uid` stays inside the cse block) measures 9 / 175, confirming the
+   uid-vs-block-boundary test is what turns the split on.
+4. **The split costs exactly one instruction and the cost is structural.** insn 74,
+   the copy that makes pseudo 76 join the quantity, is a real insn (176 total).
+   It disappears only if 75 and 76 get the same hard register — which destroys the
+   split. The alternative, having 76 born free from `(set 76 (reg:SI 2 v0))` so
+   that seating it in $v0 deletes the copy, is unavailable: C offers exactly one
+   assignment of a call result and whichever pseudo takes it becomes canonical for
+   the entire block (fact 2).
+
+### The 174-insn credit does not exist
+s6 recorded D3 at 12 / 174 — one insn under target — which would have paid for
+the class-B split copy. Re-measured against the committed candidate on this
+chassis, D3 is 12 / **175** (H16); s6's 174 came from its own working base, not
+the ledger form. Composites confirm there is no credit: H15 (split + D3) is
+176 and H17 (split + E4) is 177. **No form on record is under 175 insns while
+keeping the floor-9 structure**, so the class-B split currently has nothing to
+pay with.
+
+- [s7] Chassis re-measured at session start with the committed candidate applied: score 9, build_insns 175, target_insns 175 - unchanged from the ledger.
+
+- [s7] inverse_compose.py classify refuses func_800770B8 (rules-to-zero guard: with no regfix/asmfix rules the src-derived tgt.s cannot carry the target's stream and it would report a fictitious PRE-RA verdict). The sanctioned substitute is goal_from_tgt.py classify, which reports FIRST DIVERGENCE: RA with deltas $v0->$v1 x4, $s1->$v0 x2, $v1->$v0 x1. That label is an object-stream heuristic, not a pass attribution: s6 re-attributed class C to RTL operand order and s7 re-attributes class B to cse pseudo identity.
+
+- [s7] func_800770B8 has 34 local-alloc quantities across 14 blocks and pseudo 75 (p_old) is not one of them; the only suggestion in the entire function is blk0 qty0 copysugg=[$a0]. Every RA-layer mechanism for class B is now spent (global: s5 prune_preferences; local: s7 suggested registers).
+
+- [s7] GCC 2.7.2 cse.c canon_reg() returns hard registers untouched ('Never replace a hard reg'), so a non-fixed hard reg such as $v0 can never be canonicalized INTO a use - the target's 0x30($v0)/0x34($v0) stores are a second pseudo, not $v0 forwarding.
+
+- [s7] GCC 2.7.2 cse.c make_regs_eqv() prefers a pseudo to a non-fixed hard reg as qty_first_reg, and promotes a later-joining pseudo to canonical only when uid_cuid[regno_last_uid[new]] > cse_basic_block_end || uid_cuid[regno_first_uid[new]] < cse_basic_block_start. That single test is what turns the 2+2 store split on and off: H10 (pp reused in the tail, uid past the block end) splits; H11 (identical but block-local) does not.
+
+- [s7] Measured on the floor-9 chassis: H1 23/170, H2 9/175, H3 23/170, H4 23/170, H5 9/175, H6 9/175, H7 9/175, H8 23/170, H10 12/176, H11 9/175, H12 12/176, H15 15/176, H16 12/175, H17 16/177.
+
+- [s7] Store-base SPELLING (p_old vs the D_800A36A0 re-read, in every permutation across the four post-call stores) is completely byte-neutral - cse collapses all four bases onto one canonical pseudo. This seat's naive spelling axis is exhausted.
+
+- [s7] Giving the raw call result its own C name FIRST is strictly wrong, not merely neutral: it makes that pseudo canonical, sends all four stores through it, deletes the move $s1,$v0 copy and drops a callee-saved register (frame 0x40 -> 0x38, p_old shares $s0 with arg0), landing at 170 insns / score 23.
+
+- [s7] s6's D3 address form is 175 insns on the committed chassis, not the 174 s6 recorded; no form on record is under 175 insns while keeping the floor-9 structure, so there is no insn credit available to pay for the class-B split copy.

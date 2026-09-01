@@ -712,3 +712,72 @@ scored, 8 real, one unrelocated-LO16 artifact".
 - probe: mipsel-linux-gnu-objdump -dr -Mreg-names=numeric tmp/sandbox/func_800770B8/text1b.o, grepping for D_800A35D0 (output banked at tmp/grind/func_800770B8/s6/dis.txt).
 - result: The object carries R_MIPS_HI16 and R_MIPS_LO16 relocations against D_800A35D0 at 0x8bc8 / 0x8bcc with a zero in-place addend. The engine's scorer masks the HI16 immediate (row 49 is correctly NOT flagged) but does not mask the LO16 addend, so an unlinked-relocation row is counted as a difference that the linker resolves to exactly the target's bytes. This matches the auto-memory note sandbox-lo16-text-addend-false-distance. The honest residual is 8 real rows, not 9.
 - verdict: KILLED
+
+## [s7] Class B's residual is explicable by local-alloc's suggested-register pass (the s6 frontier's item 2).
+- mechanism: s5's inverse.py global foreclosure of pseudo 75 (p_old) rested on prune_preferences (global.c:897) and explicitly listed qty_phys_copy_sugg / qty_phys_sugg as reported-but-not-scored. s6 banked the instrumented-cc1 extraction (tmp/ra_solver_work/text1b.sugg.json, 2.7 MB) but nobody had read it.
+- probe: sliced text1b.sugg.json for func_800770B8 and printed every local-alloc quantity in the function (blk / qty / reg1 / birth / death / refs / calls / ncopysugg / copysugg / nsugg / sugg). 34 quantities across 14 blocks.
+- result: KILLED. Pseudo 75 does NOT appear as a local-alloc quantity ANYWHERE in the function - local-alloc never sees it, exactly as s5's global-alloc attribution implies. Moreover the ENTIRE function carries exactly one suggestion of any kind: blk0 qty0 (reg1=72, the arg0 pseudo) with ncopysugg=1, copysugg=[4] ($a0). qty_phys_copy_sugg/qty_phys_sugg therefore cannot explain the $s1-vs-$v0 residual, and the last unspent RA-layer mechanism for class B is spent. Class B is fully foreclosed at the REGISTER-ALLOCATION layer.
+- verdict: KILLED
+
+## [s7] Class B is not an allocation question at all: it is cse pseudo IDENTITY, and the target's 2+2 register split is reachable but costs exactly one insn.
+- mechanism: GCC 2.7.2 cse.c make_regs_eqv() ("Prefer fixed hard registers to anything. Prefer pseudo regs to other hard regs") makes a PSEUDO the qty_first_reg of the quantity a call result joins, and canon_reg() refuses to substitute a hard reg ("Never replace a hard reg") - so a non-fixed hard reg such as $v0 can NEVER be canonicalized into a use. The target's `sw $zero,0x30($v0)` / `sh $zero,0x34($v0)` therefore cannot be hard-reg forwarding of the $s1 pseudo; they must be a SECOND pseudo that the allocator seated in $v0. make_regs_eqv promotes a later-joining pseudo to canonical only when `uid_cuid[regno_last_uid[new]] > cse_basic_block_end || uid_cuid[regno_first_uid[new]] < cse_basic_block_start`, i.e. only when that pseudo is referenced somewhere outside the current cse extended basic block.
+- probe: twelve spellings built and sandbox-measured on the floor-9 chassis (H1-H8, H10-H12, H15-H17), plus a cc1 -da re-dump of the winning shape and a read of tools/gcc-2.7.2/cse.c canon_reg/make_regs_eqv. H5/H6/H7 vary only WHICH base (p_old vs the D_800A36A0 re-read) each of the four stores is spelled through. H1/H3/H4/H8 give the raw call result its own C name. H10/H12 hoist a `u8 *pp` to function scope, assign it AFTER the global + 0x4 stores, use it for 0x30/0x34, and REUSE it in the tail block so its regno_last_uid lies past the cse block end. H11 is the same but block-local (control).
+- result: HALF-CONFIRMED / HALF-KILLED, with the mechanism proven at RTL level. (a) Store-base SPELLING is completely byte-neutral: H5, H6, H7 all measure 9 / 175 - cse collapses all four bases onto one canonical pseudo regardless of how the C names them. (b) Naming the raw call result FIRST (H1/H3/H4/H8) makes that pseudo canonical, sends ALL FOUR stores through it, deletes the `move $s1,$v0` copy and drops a whole callee-saved register: 170 insns, score 23 - strictly worse and structurally wrong. (c) H11 (block-local second name) measures 9 / 175, confirming the canonicality test is exactly the uid-vs-block-boundary one. (d) H10/H12 DO produce the target's split: text1b.cse for H10 reads insn 68 `(set (mem (symbol_ref D_800A36A0)) (reg 75))`, insn 71 `(set (mem (plus (reg 75) 4)) (reg 81))`, insn 74 `(set (reg 76) (reg 75))`, insn 77 `(set (mem (plus (reg 76) 48)) 0)`, insn 80 `(set (mem (plus (reg 76) 52)) 0)` - two stores on pseudo 75 and two on pseudo 76, structurally identical to the target's $s1/$v0 division. The sole defect is insn 74: the copy that makes pseudo 76 join the quantity is a real instruction (176 insns, score 12). (e) The copy is not removable by construction: it vanishes only if 75 and 76 receive the same hard register, which destroys the split; and 76 cannot instead be born free from `(set 76 (reg:SI 2 v0))` because C provides exactly one assignment of a call result, and whichever pseudo takes it becomes canonical for the whole block (case b). (f) Composing the split with s6's D3 address form (H15) is 176 / 15, and with E4 (H17) 177 / 16 - the +1 does not cancel against the class-C forms.
+- verdict: KILLED as a spelling search / CONFIRMED as a mechanism: the split is real, cse-controlled, and costs exactly one insn.
+
+## [s7] s6's D3 address form is a 174-insn form.
+- mechanism: s6 recorded D3 (multi-set int row base, written-order pointer chain) at score 12 / 174 insns, one insn UNDER the target, which made it a candidate donor of an insn to pay for any +1 construct elsewhere.
+- probe: re-generated D3 against the committed candidate.c on today's chassis and measured (H16).
+- result: KILLED. D3 measures 12 / **175** insns here, not 174. s6's 174 was measured against s6's own working base, not the committed floor-9 candidate; the insn-count saving does not exist on the ledger chassis. No form measured to date is under 175 insns while keeping the floor-9 structure, so there is no insn "credit" available to pay for the class-B split copy.
+- verdict: KILLED
+
+## Live frontier (for s8) - reset by the s7 solver session
+
+1. **Class B: pay for the split copy, or find a second pseudo whose definition is free.**
+   - mechanism: the split needs TWO pseudos over the call result; whichever pseudo
+     is defined first becomes cse's canonical for the whole extended basic block
+     (make_regs_eqv), so the second one must be introduced by a later copy, and
+     that copy is a real instruction. The target is 175 insns and our floor-9 form
+     is already 175, so the +1 must be repaid somewhere else in the body.
+   - next probe: hunt for a byte-neutral 174-insn variant of the floor-9 body
+     (any region), then compose it with H10. s6's D3 was the only 174 ever
+     recorded and s7 disproved it. Alternatively look for a shape in which the
+     second pseudo is born from a value that is NOT in the call result's cse
+     quantity yet is provably equal - e.g. a member/element access whose address
+     GCC recomputes rather than forwards. Both are ordinary-C questions.
+
+2. **Class C (rows 62-64) - unchanged from s6, still the best-understood axis.**
+   - mechanism: flip insn 173's plus to (shift, load) while keeping the row-60 lw
+     of D_800A36A0 a distinct in-place memory read. E4 gets both but folds
+     0x6A/0x7E onto the shift operand, costing one insn.
+   - next probe: attack the CONSTANT FOLD. Index the row through a struct/array
+     element type so +0x6A is a member offset rather than a folded addend. Read
+     text1b.rtl for E4 and for the baseline side by side (dumps already banked).
+
+3. **Do NOT re-open: any RA-layer attack on class B, the prologue fence, the
+   A2-A12 ordering set, the do-while(0) ruling-request, or an RA solver run on
+   the row-62 seat.**
+   - mechanism: s5 foreclosed class B at global-alloc (prune_preferences), s7
+     foreclosed the last RA-layer mechanism (local-alloc suggested registers: pseudo
+     75 is not a local quantity at all and the function carries exactly one
+     suggestion anywhere). Class B is now a PRE-RA question. The other three were
+     closed by s5/s6.
+   - next probe: none.
+
+## [s7] Class B's residual is explicable by local-alloc's suggested-register pass (qty_phys_copy_sugg / qty_phys_sugg), the mechanism s5's inverse.py global foreclosure named as reported-but-not-scored.
+- mechanism: s5 foreclosed pseudo 75 (p_old) at global.c prune_preferences (line 897) because p_old crosses 4 calls and $v0 is call-used; the solver's own negative report listed local-alloc's copy/plain suggestion arrays as outside its model. s6 banked the instrumented-cc1 SUGGDBG extraction (tmp/ra_solver_work/text1b.sugg.json) but never read it.
+- probe: Sliced text1b.sugg.json for func_800770B8 and printed every local-alloc quantity in the function (blk / qty / reg1 / birth / death / refs / calls / ncopysugg / copysugg / nsugg / sugg): 34 quantities across 14 blocks.
+- result: Pseudo 75 forms NO local-alloc quantity anywhere in the function - local-alloc never sees it, exactly as the global-alloc attribution implies. The entire function carries exactly one suggestion of any kind: blk0 qty0 (reg1=72, birth 2, death 20, refs 3, calls 1) with ncopysugg=1, copysugg=[4] ($a0). The suggested-register pass therefore cannot explain the $s1-vs-$v0 residual.
+- verdict: KILLED
+
+## [s7] Class B is not an allocation question at all but cse pseudo identity, and the target's 2+2 register split over the four post-call stores is reachable from ordinary C.
+- mechanism: GCC 2.7.2 cse.c canon_reg() never substitutes a hard register into a use ('Never replace a hard reg'), so the target's sw $zero,0x30($v0) cannot be $v0 forwarding - it must be a SECOND pseudo the allocator seated in $v0. make_regs_eqv() prefers a pseudo over a non-fixed hard reg as qty_first_reg, so the first pseudo the call result is copied into becomes canonical for the whole extended basic block; a later-joining pseudo takes over as canonical only when uid_cuid[regno_last_uid[new]] > cse_basic_block_end or uid_cuid[regno_first_uid[new]] < cse_basic_block_start.
+- probe: Twelve spellings built and sandbox-measured on the floor-9 chassis (H1-H8, H10-H12, H15-H17), plus a cc1 -da re-dump of the winning shape and a source read of tools/gcc-2.7.2/cse.c. H5/H6/H7 vary only which base each store is spelled through; H1/H3/H4/H8 give the raw call result its own C name; H10/H12 hoist a u8 *pp to function scope, assign it AFTER the global + 0x4 stores, use it for the 0x30/0x34 stores and reuse it in the tail so its regno_last_uid lies past the cse block end; H11 is the same but block-local (control).
+- result: (a) Store-base spelling is byte-neutral - H5/H6/H7 all measure 9 / 175. (b) Naming the raw result first (H1/H3/H4/H8) makes THAT pseudo canonical, routes all four stores through it, deletes the move $s1,$v0 copy and frees a callee-saved register: 170 insns, score 23. (c) H11 measures 9 / 175, confirming the uid-vs-block-boundary canonicality test. (d) H10 DOES produce the split - text1b.cse shows insn 68 (set (mem (symbol_ref D_800A36A0)) (reg 75)), insn 71 (set (mem (plus (reg 75) 4)) (reg 81)), insn 74 (set (reg 76) (reg 75)), insn 77 (set (mem (plus (reg 76) 48)) 0), insn 80 (set (mem (plus (reg 76) 52)) 0) - two stores on pseudo 75 and two on pseudo 76, structurally the target's $s1/$s1/$v0/$v0. Its only defect is insn 74: 176 insns, score 12. (e) The copy is structural - it vanishes only if 75 and 76 share a hard register, which destroys the split, and pseudo 76 cannot instead be born free from (set 76 (reg 2)) because C offers exactly one assignment of a call result and whichever pseudo takes it becomes canonical for the whole block.
+- verdict: CONFIRMED
+
+## [s7] s6's D3 address form is 174 insns, one under the target, and can therefore donate the insn that the class-B split copy costs.
+- mechanism: s6 recorded D3 (multi-set int row base, written-order pointer chain) at score 12 / 174 insns against its own working base.
+- probe: Re-generated D3 against the committed candidate.c on today's chassis and measured (H16); also measured the composites H15 (split + D3) and H17 (split + E4).
+- result: D3 measures 12 / 175 here, not 174 - the insn saving does not exist on the ledger chassis. H15 is 15 / 176 and H17 is 16 / 177, confirming there is no cancellation. No form on record is under 175 insns while keeping the floor-9 structure, so the class-B split currently has nothing to pay with.
+- verdict: KILLED
