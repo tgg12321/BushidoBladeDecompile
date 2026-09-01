@@ -118,6 +118,31 @@
  *   - The make_regs_eqv promotion IS a free C-controllable lever (reusing p_old for
  *     the tail's D_800A36A0 re-read: 175 insns, not 170) but it collapses onto $s1
  *     and damages the tail.
+ *
+ * s9 (forensics) - candidate BODY UNCHANGED, re-measured 9 (175/175) at session
+ * start and again at session end. s9 typed two of the three residual classes:
+ *   - CLASS A IS FORECLOSED TO STATEMENT ORDER. The sched2 dump was finally read
+ *     out (tmp/grind/func_800770B8/s9/d/text1b.sched2, block 0) and the 15
+ *     prologue insns mapped 1:1 to both asm streams: rows 1-7 and 13-15 already
+ *     match, so class A is exactly the 5-insn permutation ours 566,15,26,28,560
+ *     vs target 560,566,28,26,15. `sw $ra` (UID 560) is released in the backward
+ *     pass by the first jal and `sw $s1` (566) by `addu $s1,$s0,88`; the jal is
+ *     emitted after that addu, so 560 is ALWAYS released first, and as the only
+ *     function-unit insn in its priority-1 group it is promoted by
+ *     schedule_select's potential-hazard rule (sched.c:2708-2721). tools/sched_solver
+ *     reproduces block 0 exactly and an EXHAUSTIVE depth-1 sweep of all 3234 input
+ *     atoms finds 0 that reach the target order; no luid / luid_move (statement
+ *     move) atom even flips the 560/566 pair. Hoisting p_old past the ClearOTagR
+ *     setup - the s4 lead - is simulated dead (gives 26,28,566,15,560).
+ *   - CLASS B HAS NO UNTESTED MECHANISM LEFT. The reserved probe (a real branch
+ *     between the copy and the 0x30/0x34 stores) measures 176 insns / score 16.
+ *   - CLASS C's operand flip is now FREE in instructions (175, was 176): making the
+ *     shift the pointer operand and the global the integer operand -
+ *     `(s16 *)((u8 *)(t0 * 10) + (s32)D_800A36A0 + 0x6A)` - flips insn 173 because
+ *     c-typeck.c:1988/2695 put the POINTER-typed side at operand 0 unconditionally.
+ *     Rows 62-64 then reduce to a register-seat question (target: lw in $v0, sll in
+ *     $v1; ours reversed). Whole-function score is 33, so it is not yet a win - the
+ *     inner loop's addressing chain re-allocates around the new tree shape.
  *   - A hard-reg address is unreachable from C (calls.c:2039 / calls.c:2114).
  *   Full detail in evidence.md s8; s9 should work class C or class A.
  */

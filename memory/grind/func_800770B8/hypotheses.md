@@ -887,3 +887,51 @@ scored, 8 real, one unrelocated-LO16 artifact".
 - probe: Read calls.c expand_call's return path.
 - result: When the call feeds an assignment, expand passes a TARGET and emits emit_move_insn (target, valreg), returning the pseudo (calls.c:2039); otherwise the tail is 'else target = copy_to_reg (valreg);' (calls.c:2114). The hard return register never escapes into a later address rtx, and C offers exactly one assignment of a call result.
 - verdict: KILLED
+
+## [s9] Class A (prologue rows 8-12) is a 5-insn intra-block permutation that some source-statement order can reach.
+- mechanism: sched2's backward list scheduler decides the interleave of the reload-emitted frame saves with the parameter moves and the ClearOTagR setup; the ledger had never read the .sched2 ready lists, so statement order was still an open lever.
+- probe: instrumented cc1 -da dumps (tmp/grind/func_800770B8/s9/d/), then tools/sched_solver: extract.py text1b (parity=True), simulate block 0 (base match True), then an EXHAUSTIVE depth-1 sweep of all 3234 input atoms against the exact target emission order (tmp/grind/func_800770B8/s9/probe2.py, probe3.py, probe4.py, probe5.py).
+- result: 0/3234 atoms reach the target order. The only sub-goal that is individually reachable ("sw $ra emitted before sw $s1") is reached ONLY by add_dep atoms onto a reload-emitted save store, by one del_dep that removes p_old from $s1, and by cost atoms that turn a register parameter move into a load. No luid / luid_move atom - the spellable statement-move classes - flips it. Root cause: 560 (`sw $ra`) is released by the first `jal` and 566 (`sw $s1`) by `addu $s1,$s0,88`; the jal is emitted after that addu, so in the BACKWARD pass 560 is always released first, and being the only function-unit insn in its priority-1 group it is promoted by schedule_select's potential-hazard rule (sched.c:2708-2721) and taken at once.
+- verdict: KILLED
+
+## [s9] Hoisting `p_old = arg0 + 0x58` past the ClearOTagR argument setup fixes the class-A window (the s4 "10 unfenced / 5 fenced" lead).
+- mechanism: raising insn 15's LUID above 26/28 would change the rank_for_schedule tie order in the priority-1 group.
+- probe: sched_solver simulation of `luid_move 15 -> before 18 / 21 / 30` and `luid swap 15 <-> 28` on the exact block-0 model.
+- result: all four give emission 558,568,4,562,6,564,8,26,28,566,15,560,18,21,30 - a different wrong permutation with `sw $s1` still before `sw $ra`. Matches s4's measured 10.
+- verdict: KILLED
+
+## [s9] Class B closes if a REAL control-flow boundary (a label/jump that survives to cse pass 2), not a note fence, separates the D_800A36A0 copy from the 0x30/0x34 stores.
+- mechanism: cse pass 2 respects CODE_LABEL / JUMP_INSN block boundaries but ignores LOOP_END notes, so a genuine boundary would keep the two pseudos in different quantities through RA and give the target's 2+2 $s1/$v0 store split.
+- probe: `if (p_old != 0) { *(s32 *)(D_800A36A0 + 0x30) = 0; *(s16 *)(D_800A36A0 + 0x34) = 0; }` - measured with sandbox --disable all.
+- result: 176 insns, score 16 (baseline 175 / 9). The boundary is not free in instructions, exactly as the target's straight-line asm predicts, and the branch also perturbs the surrounding allocation.
+- verdict: KILLED
+
+## [s9] Class C's plus-operand order can be flipped without spending an instruction by making the SHIFT the pointer operand and the global the integer operand.
+- mechanism: c-typeck.c:1988 rewrites `int + pointer` to `pointer_int_sum(PLUS_EXPR, ptr, int)` and c-typeck.c:2695 builds the PLUS with ptrop as operand 0 unconditionally, so the operand order is decided by WHICH SIDE IS POINTER-TYPED, not by written order; and the c-typeck.c:2654-2678 distributive law only moves a constant off intop when intop is a non-constant PLUS/MINUS, so keeping `+ 0x6A` as a separate outer pointer_int_sum with a CONSTANT intop leaves the shift clean.
+- probe: `(s16 *)((u8 *)(t0 * 10) + (s32)D_800A36A0 + 0x6A)` (and a named-`row`-local variant), measured with sandbox --disable all and read back from a fresh cc1 dump.
+- result: CONFIRMED for the flip itself - 175 insns (s6/s7 had this at 176) and the emitted `lw $3,D_800A36A0; sll $2,$2,1; addu $2,$2,$3; addu $7,$2,106; addu $5,$2,126` has the target's operand order with the dest tied to the shift pseudo. But the whole-function score is 33, not 9: the inner loop's addressing chain re-schedules and re-allocates around the new tree shape. Rows 62-64 become a REGISTER SEAT question (target: lw in $v0, sll in $v1; ours: reversed).
+- verdict: CONFIRMED (mechanism) / KILLED (as a spelling that lowers the floor)
+
+## [s9] Class A (prologue rows 8-12) is a 5-insn intra-block permutation that some source-statement order can reach.
+- mechanism: sched2's backward list scheduler decides the interleave of the reload-emitted frame saves with the parameter moves and the ClearOTagR setup. Each save is released only by the insn that clobbers its register: 568<-4, 562<-6, 564<-8, 566<-insn 15 (addu $s1,$s0,88), 560<-insn 30 (the first jal, which sets $ra). The jal is emitted AFTER that addu so it is PICKED BEFORE it in the backward pass, hence sw $ra (UID 560) is always released strictly earlier than sw $s1 (566); being the only function-unit insn in its priority-1 group it is then promoted by schedule_select's potential-hazard rule (sched.c:2708-2721, printed as ';; insn 560 has a greater potential hazard') and taken at once.
+- probe: Instrumented cc1 -da dumps (tmp/grind/func_800770B8/s9/d/, text1b.sched2 block 0 at line 75962) mapped 1:1 onto both asm streams; then tools/sched_solver extract.py text1b (parity=True, 486 funcs / 1752 blocks / 14250 picks), simulate block 0 (base match True), then an EXHAUSTIVE depth-1 sweep of all 3234 input atoms (add_dep / del_dep / luid / luid_move / cost) against the exact target emission order.
+- result: 0/3234 atoms reach the target order. Only the sub-goal 'sw $ra emitted before sw $s1' is individually reachable, by 32 atoms: 26 x add_dep onto a reload-emitted save store (not expressible in C), 1 x del_dep 15<-566 (p_old not living in $s1, an RA outcome, and it still does not give the target order), 5 x cost atoms turning the register-parameter move into a multi-cycle load (instruction selection). NO luid or luid_move atom - the toolkit's spellable statement-move classes - flips the pair.
+- verdict: KILLED
+
+## [s9] Hoisting `p_old = arg0 + 0x58` past the ClearOTagR argument setup fixes the class-A window (the s4 '10 unfenced / 5 fenced' lead).
+- mechanism: Raising insn 15's LUID above insns 26/28 would change the rank_for_schedule LUID-descending tie order inside the priority-1 group.
+- probe: sched_solver simulation of luid_move 15 -> before 18 / 21 / 30 and luid swap 15 <-> 28 on the exact block-0 model (tmp/grind/func_800770B8/s9/probe5.py).
+- result: All four give emission 558,568,4,562,6,564,8,26,28,566,15,560,18,21,30 - a different wrong permutation with sw $s1 still before sw $ra. This is the model's explanation of s4's measured 10 for that move.
+- verdict: KILLED
+
+## [s9] Class B closes if a REAL control-flow boundary (a label/jump surviving to cse pass 2), not a note fence, separates the D_800A36A0 copy from the 0x30/0x34 stores.
+- mechanism: cse pass 2 (after_loop=1) respects CODE_LABEL / JUMP_INSN block boundaries but ignores LOOP_END notes, so a genuine boundary would keep the two pseudos in different quantities through RA and give the target's 2+2 $s1/$v0 store split.
+- probe: if (p_old != 0) { *(s32 *)(D_800A36A0 + 0x30) = 0; *(s16 *)(D_800A36A0 + 0x34) = 0; } measured with `sandbox func_800770B8 --disable all`.
+- result: 176 insns, score 16 (baseline 175 / 9). The boundary is not free in instructions - exactly as the target's straight-line asm predicts - and the branch also perturbs the surrounding allocation. Banked as rejected/s9-classB-real-branch-boundary-176insn-score16.c. Class B now has no untested mechanism on record.
+- verdict: KILLED
+
+## [s9] Class C's plus-operand order at insn 173 can be flipped without spending an instruction by making the SHIFT the pointer operand and the global the integer operand.
+- mechanism: build_binary_op's PLUS_EXPR case rewrites `int + pointer` to pointer_int_sum(PLUS_EXPR, op1, op0) (c-typeck.c:1988) and pointer_int_sum ends `result = build (resultcode, result_type, ptrop, intop);` (c-typeck.c:2695) - the POINTER-typed side is unconditionally operand 0, so the operand order is decided by which side is pointer-typed, not by written order. Separately c-typeck.c:2654-2678 applies a distributive law that moves a constant term off intop onto ptrop only when intop is a NON-CONSTANT PLUS/MINUS, so keeping `+ 0x6A` as its own outer pointer_int_sum with a constant intop leaves the shift clean (this is the s6 '0x6A folds onto the shift' hazard, now named).
+- probe: (s16 *)((u8 *)(t0 * 10) + (s32)D_800A36A0 + 0x6A) and a named-`row`-local variant, measured with sandbox --disable all and read back from a fresh instrumented-cc1 dump (tmp/grind/func_800770B8/s9/dC2/).
+- result: CONFIRMED for the flip: 175 insns (s6/s7 had this shape at 176) emitting `lw $3,D_800A36A0; sll $2,$2,1; addu $2,$2,$3; addu $7,$2,106; addu $5,$2,126` - the target's operand order, dest tied to the shift pseudo, constants off the shift. Rows 62-64 therefore reduce from an operand-order question to a two-register SEAT question (target: lw in $v0, sll in $v1; ours reversed). NOT a win as a spelling: whole-function score 33 (vs 9) because the inner loop's addressing chain re-schedules and re-allocates around the new tree shape. Banked as rejected/s9-classC-shift-as-ptrop-flips-order-free-but-score33.c and s9-classC-shift-as-ptrop-named-row-local-score33.c.
+- verdict: CONFIRMED
