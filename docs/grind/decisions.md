@@ -18401,3 +18401,113 @@ artifacts `tmp/grind/CD_sync/s107/` (mkprobe.py, mkprobe5.py, finish.py, append.
 probe bodies, scan_hand_coded.txt); prior records decisions.md:11814 (2026-08-25),
 decisions.md:15206 (2026-08-30), decisions.md:10722 (the g_stage_id prong-(c) precedent),
 Ruling D at decisions.md:17843.
+
+## 2026-09-01 - func_80045294 (saTan0Init, src/text1a_c.c) - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (owner Ruling A named probe executed in full; the duplication ref-lift is not available at this site, and the residual is now attributed to a single cse.c canonical-register decision)
+
+**This is a proof-of-foreclosure RECORD, not a question and not a decision packet.**
+Nothing is pending on the owner. Session 49 (escalation modality) was dispatched with the
+owner's 2026-09-01 FORECLOSED-BUCKET REVIEW **Ruling A** directive for this function:
+*"duplicate a real a0-referencing statement per the family (loop-tail extension 2026-08-06);
+verify `nrefs_flow(72)==4` via extract.py before spending a sandbox run."* That probe was
+executed, measured, and is dead - but it produced a genuine correction to the s48 record and
+a sharper attribution of the residual, both banked.
+
+**Chassis re-check.** `memory/grind/func_80045294/candidate.c` over the `INCLUDE_ASM` line at
+src/text1a_c.c:1478 -> `sandbox func_80045294 --disable all` = **score 2, target_insns 83,
+build_insns 83, rules_dropped 0**. Floor unchanged from the ledger; every prior conclusion is
+chassis-valid. Objdump attribution: the build schedules `sll $v1,$s2,4` one slot ahead of
+`sw $s0,0x10($sp) ; addu $s0,$s2,$zero`; registers already match on this chassis.
+
+**What was measured this session** (all four forms on the H1 `i = a0` before `v1 = a0 << 4`
+chassis - the only source order that reaches target's sched2 prologue-cluster order, per the
+s47 pass-2 and s48 pass-1 exhaustive atom enumerations):
+
+| form | nrefs_flow(72) | sandbox | insns | banked |
+|---|---|---|---|---|
+| second-loop guard spelled on a0, `i = a0` inside the arm | **4** | **5** | 84 | rejected/h1-second-loop-guard-on-a0.c |
+| same, `i = a0` kept in front of the guard (control) | 3 | not spent | - | rejected/h1-i-then-guard-on-a0.c |
+| **Ruling A probe**: `i = a0` duplicated into both `if (sum != 0)` arms | 7 | 27 | 84 | rejected/dup-i-eq-a0-into-sum-arms.c |
+| guard on a0 + distinct loop-2 counter j | 6 | 38 | 81 | rejected/h1-guard-on-a0-distinct-j.c |
+
+**Correction to the s48 record (the reopen ground was well taken).** s48 recorded the
+ra_solver inverse atom `[refs_up] pseudo 72: 3 -> 4` as dead. It is not. The guard-on-a0 form
+supplies that fourth reference honestly (the a0 read at the second loop's guard is not
+dominated by a live `i = a0` copy, so cse cannot substitute it), and it **works**: block 0 is
+emitted as `sw $s0,0x10($sp) ; move $s0,$s2 ; sll $v1,$s0,0x4` - target's instruction ORDER
+*and* target's REGISTER ALLOCATION (a0 -> $s2, i -> $s0) simultaneously, for the first time in
+49 sessions. The score-11 H1 callee-save rotation is gone. The RA leg of this function is
+closed.
+
+**Why it still does not close, stated as one compiler decision.** After the RA leg is solved,
+the only block-0 difference is *which of two registers holding the identical value the shift
+reads*: build `sll $v1,$s0,4` (i) vs target `sll $v1,$s2,4` (a0). `reg_n_refs` is a global.c
+input and has no bearing on that; the choice is made much earlier, in `make_regs_eqv`
+(`tools/gcc-2.7.2/cse.c:842-857`), where reg 75 (i) displaces reg 72 (a0) as `qty_first_reg` -
+and therefore as `canon_reg`'s substitution target - iff
+`uid_cuid[regno_last_uid[75]] > uid_cuid[regno_last_uid[72]]`. Under the H1 order that
+inequality is true, and the three routes to invert it are each measured dead:
+
+1. **Extend a0's last reference past loop 2.** No byte-free site exists. The target's 83
+   instructions contain exactly three a0 uses, all ahead of loop 2, and $s2 is reused as the
+   walking pointer at 0x80045344, so a0 is dead inside and after loop 2. The Ruling A
+   duplication is precisely this route, and it fails on the family's own prerequisites BY
+   MEASUREMENT: the duplicate survives into the final bytes (84 insns, score 27) because
+   cross-jump can only merge tails of two paths converging on an identical continuation, and
+   this function's only convergence points are the epilogue (no a0 reference, cannot acquire
+   one byte-free) and the loop-2 body tail (a0 dead there). The else-arm copy is additionally
+   a dead store, failing prerequisite 1 and routing the shape to
+   [[dead-store-fake-exception]] rather than to [[duplicated-statement-into-arms]]. Any
+   larger duplication would duplicate the two CALLS, which the family's Non-extension clause
+   excludes by name.
+2. **Shorten i's last reference** (distinct loop-2 counter). 81 instructions: the
+   `lw %gp_rel(D_800A33AC)` the target keeps INSIDE loop 2 at 0x8004538C hoists out of the
+   loop. Reproduced this session independently of the guard spelling (s48 measured the same
+   3-instruction deletion without it), so the coupling is a property of the counter split.
+3. **Lift a0's reference count.** Measured above: fixes the allocation, leaves the canonical
+   register untouched, and costs one instruction (84 vs 83) because `i = a0` must move into
+   the guard's arm. The control form recovers 83 instructions but drops nrefs_flow(72) back
+   to 3 - cse substitutes that a0 as well.
+
+**Gate (a) - canonical-asm: FAILS.** `python3 tools/scan_hand_coded.py --single func_80045294`
+-> **tier=LOW, score=0/8**. All eight signals negative: S1 0 multu/mflo pairs, S2 no
+empty-body branches, S3 83 insns with 7 spills over 11 distinct regs, S4 max load burst 3 in
+any 8-insn window, S5 no high-similarity siblings (jaccard < 0.5), S6 no BIOS jumptable call
+pattern, S7 every callee-save use has its $sp save, S8 no redundant mask-before-shift. This
+matches the owner's own 2026-07-20 refusal of canonical asm for this function.
+
+**Gate (b) - in-hand SOTN-master precedent for the closing construct: FAILS.** There is no
+closing construct to cite: no spelling reaches distance 0. The single sanctioned family
+reached this session ([[duplicated-statement-into-arms]]) was refused by MEASUREMENT against
+its own prerequisites (byte-neutrality and real-on-path), not by a precedent question, so no
+precedent could sanction it. Per the AUTO-REJECT clause a negative gate is an answer, not an
+open question.
+
+**Exhaustion pointers.** 49 sessions across permuter, forensics, rederive, synthesis, solver
+and escalation modalities; 137,872 permuter iterations over 11 chassis/mode combinations;
+40 banked rejected forms in `memory/grind/func_80045294/rejected/` (36 inherited + 4 filed
+this session); exhaustive single-atom enumerations over BOTH scheduler passes (s47 pass-2,
+960 atoms; s48 pass-1, 192 atoms) with all 13 + 11 goal-reaching atoms spelling the single C
+intent `i = a0` before `v1 = a0 << 4`; ra_solver global/local/reload models with `inverse.py`
+naming the RA goal reachable at one atom, now confirmed reachable and confirmed insufficient;
+pass-source attribution pinned at `tools/gcc-2.7.2/cse.c:842-857`.
+
+**Disposition.** `src/text1a_c.c` stays at `INCLUDE_ASM("asm/funcs", func_80045294);` on main,
+with zero cheat constructs anywhere in the tree; the honest pure-C floor of record remains 2,
+carried by `memory/grind/func_80045294/candidate.c`. The driver forecloses the item silently
+(owner ruling 2026-08-31, [[ordinary-c-judge-decidable]]); nothing is surfaced to the owner.
+
+**Re-activation triggers.** (i) A toolchain or pass-source finding that lets a C-level
+distinction change `make_regs_eqv`'s `qty_first_reg` choice without moving either register's
+last-use uid - this is now the ONLY open question for the function, and it is a two-register
+same-value operand choice, not an allocation or a schedule. (ii) An owner class grant that
+covers a byte-materializing reference lift (none exists today). (iii) Any chassis change that
+alters the instruction set reload hands sched2 for block 0, which would re-open both
+exhaustive scheduler enumerations. (iv) An owner `queue unpark`.
+
+**References:** ledger `memory/grind/func_80045294/{evidence.md,hypotheses.md,candidate.c,
+rejected/}` (s49 entries); artifacts `tmp/grind/func_80045294/s49/` (`v1.model.json`,
+`v1d.model.json`, `v2.model.json`, `v3.model.json`, `v1_disasm.txt`, the four form sources);
+compiler source `tools/gcc-2.7.2/cse.c:842-857`; target `asm/funcs/func_80045294.s`; owner
+directive `docs/grind/decisions.md:17743` (FORECLOSED-BUCKET REVIEW, Ruling A row
+`func_80045294 (d2)`); prior entries for this function in this file at lines 820, 942, 11915,
+15292.

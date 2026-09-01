@@ -869,3 +869,93 @@
 - [s48] Owner directive from the queue item (2026-08-30 escalation-batch ruling 10, decisions.md:14870) EXECUTED, not deferred: the item was returned to ACTIVE with a modality change, this session ran that modality, closed all three surviving frontier items with measurements, and re-affirmed the standing-ruling disposition on fresh evidence. The directive is now acknowledged in the ledger (the consistency warning is cleared).
 
 - [s48] src/text1a_c.c was restored to HEAD (git checkout) after measurement; the working tree carries only ledger, decisions.md and rejected-form additions.
+
+## [s49] Owner Ruling A named probe executed — measurements
+
+Chassis re-check at dispatch: `memory/grind/func_80045294/candidate.c` pasted over the
+`INCLUDE_ASM` line at src/text1a_c.c:1478 -> `sandbox func_80045294 --disable all` =
+**score 2, target_insns 83, build_insns 83, rules_dropped 0**. Floor unchanged; every
+s47/s48 conclusion is chassis-valid.
+
+Objdump attribution of the 2-instruction residual on the candidate chassis
+(tmp/sandbox/func_80045294/text1a_c.o):
+    build : sw $s1,0x14 ; move $s1,zero ; sll $v1,$s2,4 ; sw $s0,0x10 ; move $s0,$s2
+    target: sw $s1,0x14 ; move $s1,zero ; sw $s0,0x10 ; move $s0,$s2 ; sll $v1,$s2,4
+i.e. the shift is scheduled one slot early. Registers already match on this chassis.
+
+Four forms measured this session (all under the H1 `i = a0` before `v1 = a0 << 4` chassis,
+which is the only source order that reaches target's sched2 order):
+
+| form | nrefs_flow(72) | sandbox | build_insns | banked as |
+|---|---|---|---|---|
+| guard on a0, `i = a0` inside the arm | **4** | **5** | 84 | rejected/h1-second-loop-guard-on-a0.c |
+| guard on a0, `i = a0` before the guard (control) | 3 | not spent | — | rejected/h1-i-then-guard-on-a0.c |
+| `i = a0` duplicated into both `if (sum != 0)` arms (Ruling A probe) | 7 | 27 | 84 | rejected/dup-i-eq-a0-into-sum-arms.c |
+| guard on a0 + distinct loop-2 counter j | 6 | 38 | 81 | rejected/h1-guard-on-a0-distinct-j.c |
+
+**The headline finding (and a correction to the s48 record).** The guard-on-a0 form is the
+first spelling in 49 sessions to reach target's prologue-cluster ORDER and target's REGISTER
+ALLOCATION at the same time. Its block 0 (tmp/grind/func_80045294/s49/v1_disasm.txt):
+
+    sw $s0,0x10($sp) ; move $s0,$s2 ; sll $v1,$s0,0x4        (build, s49 v1)
+    sw $s0,0x10($sp) ; move $s0,$s2 ; sll $v1,$s2,0x4        (target)
+
+a0 -> $s2 and i -> $s0 exactly as the target allocates them; the score-11 H1 callee-save
+rotation is gone. s48 recorded the `refs_up 72: 3->4` route as dead; it is not — the route
+exists, ra_solver's inverse was right, and it does close the RA leg. What it does NOT do is
+change which register of the 72/75 equivalence quantity cse.c uses as the ashift operand:
+reg_n_refs is a global.c input, and the canonical-register choice is made much earlier in
+`make_regs_eqv` (tools/gcc-2.7.2/cse.c:842-857), where reg 75 displaces reg 72 iff
+`uid_cuid[regno_last_uid[75]] > uid_cuid[regno_last_uid[72]]`.
+
+**The three routes to invert that inequality are each now measured dead:**
+1. *Extend a0's last reference past loop 2.* No byte-free site exists. The target's 83
+   instructions contain exactly three a0 uses, all before loop 2, and $s2 is reused as the
+   walking pointer at 0x80045344, so a0 is dead inside and after loop 2. A duplicated
+   reference (the Ruling A family probe) requires two paths converging on an identical
+   continuation; this function's only convergence points are the epilogue (no a0 reference,
+   cannot acquire one byte-free) and the loop-2 body tail (a0 dead). Measured: the duplicate
+   survives into the bytes at 84 instructions, score 27 — prerequisite 2 of
+   [[duplicated-statement-into-arms]] fails, and the else-arm copy is a dead store, which
+   fails prerequisite 1 as well.
+2. *Shorten i's last reference* (distinct loop-2 counter). Measured 81 instructions: the
+   `lw %gp_rel(D_800A33AC)` the target keeps inside loop 2 at 0x8004538C hoists out.
+   Reproduced independently of the guard spelling (s48 got the same 3-instruction deletion
+   without it).
+3. *Lift a0's reference count.* Measured: fixes the allocation, does not touch the canonical
+   register, and costs one instruction (84 vs 83) because `i = a0` has to move into the arm.
+
+**Endgame-lock gates (owner standing ruling 2026-07-27).**
+- Gate (a) canonical-asm: `python3 tools/scan_hand_coded.py --single func_80045294` ->
+  **tier=LOW, score=0/8**, all eight signals negative (0 multu/mflo pairs, no empty-body
+  branches, 7 spills over 83 insns / 11 distinct regs, max load burst 3 in any 8-insn window,
+  no high-similarity siblings, no BIOS jumptable pattern, every callee-save use has its $sp
+  save, no redundant mask-before-shift). FAILS.
+- Gate (b) SOTN-master precedent for the closing construct: there is no closing construct to
+  cite — no spelling reaches distance 0. The one sanctioned family reached this session
+  ([[duplicated-statement-into-arms]]) failed its own prerequisites BY MEASUREMENT rather
+  than by a precedent question, so no precedent could sanction it. FAILS.
+
+HEAD ships `INCLUDE_ASM("asm/funcs", func_80045294);`; `src/text1a_c.c` was restored to HEAD
+at the end of the session (`git checkout -- src/text1a_c.c`), tree clean apart from
+`metrics/events.jsonl`.
+
+- [s49] Chassis re-check: candidate.c over the INCLUDE_ASM line at src/text1a_c.c:1478 -> sandbox --disable all = score 2, target_insns 83, build_insns 83, rules_dropped 0. Floor unchanged; all s47/s48 conclusions are chassis-valid.
+
+- [s49] Objdump attribution of the 2-insn residual on the candidate chassis: build emits `sw $s1,0x14 ; move $s1,zero ; sll $v1,$s2,4 ; sw $s0,0x10 ; move $s0,$s2` where target emits `sw $s1,0x14 ; move $s1,zero ; sw $s0,0x10 ; move $s0,$s2 ; sll $v1,$s2,4` -- the shift is scheduled one slot early; registers already match on this chassis.
+
+- [s49] Four forms measured this session with nrefs_flow(72) checked via extract.py BEFORE each sandbox run, as owner Ruling A directs: guard-on-a0 (nrefs 4, score 5, 84 insns), guard-on-a0 control with i=a0 first (nrefs 3, no sandbox spent), Ruling A duplication into arms (nrefs 7, score 27, 84 insns), guard-on-a0 + distinct counter j (nrefs 6, score 38, 81 insns).
+
+- [s49] NEW: the guard-on-a0 form reaches target's block-0 instruction ORDER and target's REGISTER ALLOCATION at once (sw $s0,0x10($sp) ; move $s0,$s2 ; sll $v1,$s0,0x4; a0 -> $s2, i -> $s0). The RA leg of this function is closed; the s48 record that the refs_up atom was dead is corrected.
+
+- [s49] The residual is now ONE compiler decision: which of two registers holding the identical value the block-0 shift reads. It is settled in make_regs_eqv (tools/gcc-2.7.2/cse.c:842-857) by uid_cuid[regno_last_uid[75]] > uid_cuid[regno_last_uid[72]], not by anything global.c sees.
+
+- [s49] The three routes to invert that inequality are each measured dead this session: extend a0's last reference past loop 2 (no byte-free site -- the duplication probe materializes bytes), shorten i's last reference (deletes 3 instructions the target keeps), lift a0's reference count (fixes allocation only, costs one instruction).
+
+- [s49] Endgame gate (a) canonical-asm: tools/scan_hand_coded.py --single func_80045294 -> tier=LOW, score=0/8, all eight signals negative. FAILS. Consistent with the owner's own 2026-07-20 refusal of canonical asm for this function.
+
+- [s49] Endgame gate (b) SOTN-master precedent: no closing construct exists to cite (no spelling reaches distance 0), and the one sanctioned family reached this session was refused by MEASUREMENT against its own prerequisites, not by a precedent question. FAILS.
+
+- [s49] Exhaustion: 49 sessions over permuter/forensics/rederive/synthesis/solver/escalation; 137,872 permuter iterations over 11 chassis/mode combos; 40 banked rejected forms (4 filed this session); exhaustive single-atom enumerations over both scheduler passes (s47 pass-2 960 atoms, s48 pass-1 192 atoms) with every goal-reaching atom spelling the single intent i-before-v1.
+
+- [s49] src/text1a_c.c restored to HEAD (git checkout --) at the end of the session; working tree clean apart from metrics/events.jsonl. HEAD ships INCLUDE_ASM("asm/funcs", func_80045294);.

@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 48,
+ "session_count": 49,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -291,23 +291,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "s48 escalation: all three s47 frontier items closed with measurements \u2014 pass-1 exhaustive atom enumeration makes the scheduling foreclosure unconditional, cse.c:826-882 gives the RA foreclosure at com"
+  },
+  {
+   "session": 49,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Owner Ruling A named probe executed: the duplicated-statement ref-lift is unavailable at this site (duplicate survives to bytes, 84 insns, score 27), but a new guard-on-a0 form CORRECTS s48 by proving"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A pure-C form exists that supplies a FOURTH reference to a0 (reg_n_refs(72) 3 -> 4) while source order keeps 'i = a0' before 'v1 = a0 << 4' \u2014 i.e. that defeats cse.c's BB-scoped substitution of the ashift operand without adding an instruction.",
-   "mechanism": "ra_solver inverse names this as a 1-atom vector that restores target's allocation exactly on the H1 chassis, where sched2 order is already target-exact. It is the ONLY non-foreclosed RA lever (preferences are foreclosed by callee-save unreachability in pre-RA RTL; live_shrink is foreclosed by a0's post-call last use).",
-   "next_probe": "Dump .cse for the H1 chassis (pwsh tools/grinder/dump.ps1) and read WHY cse.c prefers reg 75 over reg 72 as the canonical member of the quantity at insn 17 (qty_first_reg / make_regs_eqv ordering). If the choice is driven by something a C-level type or storage difference can flip WITHOUT emitting an instruction, that is the one remaining lever; if it is driven purely by insertion order into the qty chain, the foreclosure is complete at the pass-source level too. NOTE: forms already banked KILLED for this intent are do-while(0) wrap (s10), stmt-expr, v1-guard-scoped, comma-expr, cse-fold-anon-shift, cse-reuse-shift, and this session's second-loop-shift-on-a0 \u2014 do not re-spell them."
+   "hypothesis": "A C-level distinction exists that changes make_regs_eqv's qty_first_reg choice for the 72/75 quantity without moving either register's last-use uid -- e.g. a mode/class difference that makes REGNO_REG_CLASS(new) == NO_REGS or otherwise fails the guard at cse.c:844-857 while leaving the emitted instruction set at 83.",
+   "mechanism": "cse.c:842-857 gates the displacement on three clauses, only two of which the ledger has attacked (the EBB-outliving clause and the last-uid inequality). The class/mode clauses `new >= FIRST_PSEUDO_REGISTER || REGNO_REG_CLASS(new) != NO_REGS` have never been examined for this function; a pseudo of a different register class or machine mode for i would take a different branch. On the s49 guard-on-a0 chassis the allocation is already target-exact, so only this operand choice remains.",
+   "next_probe": "On the s49 guard-on-a0 chassis (rejected/h1-second-loop-guard-on-a0.c), dump .cse via `pwsh tools/grinder/dump.ps1 func_80045294` and read which clause of cse.c:844-857 actually decides the 72/75 displacement; then enumerate ONLY mode/class-changing spellings of i (short/char/pointer-typed induction variable, bitfield-backed counter) that keep build_insns at 83, checking nrefs and the emitted sll operand. Every declaration-order and second-counter-identity spelling is already banked KILLED -- do not re-spell those."
   },
   {
-   "hypothesis": "The pass-1 (sched1) block-0 input set \u2014 not just pass 2 \u2014 admits a perturbation that changes WHICH insns reach sched2, invalidating the pass-2 exhaustiveness claim.",
-   "mechanism": "The 960-atom pass-2 enumeration is exhaustive GIVEN the insn set reload hands sched2. A different upstream (different RA, different expand lowering) presents a different insn set, so the enumeration is conditional on the current one. sched_solver models pass 1 too (models are tagged pass=1/pass=2 and validate separately).",
-   "next_probe": "Re-run perturb.py with --pass 1 on func_80045294 block 0 and goal-map it against the same target stream, to see whether any sched1 atom changes the pre-reload stream in a way that alters the pass-2 input set. Cheap (the model is already extracted at tmp/sched_solver_work/text1a_c.sched.json) and it closes the one conditional in this session's foreclosure."
+   "hypothesis": "The one-instruction cost of the guard-on-a0 ref-lift is removable, which would leave a 1-instruction residual (the sll operand) instead of the current 5-score / 84-insn form and give a strictly better fallback chassis than candidate.c's score 2 for future work.",
+   "mechanism": "The extra instruction appears because `i = a0` must sit inside the guard's arm to keep the guard's a0 read outside cse's equivalence region; target emits `move $s0,$s2` before the slt and `sll $v1,$s0,4` in the delay slot. If the arm's copy can be made to cross-jump-merge with the loop-2 preamble, or if the guard can read a0 through an expression cse cannot canonicalize while `i = a0` stays in front of it, the count returns to 83 with nrefs 4.",
+   "next_probe": "Disassemble the s49 v1 object block by block (tmp/grind/func_80045294/s49/v1_disasm.txt is the head only) and attribute all five score points; then test whether the loop-2 preamble can absorb the arm copy (e.g. `i = a0` folded into the loop's first iteration) at 83 instructions with nrefs_flow(72) still 4, checking extract.py before each sandbox run."
   },
   {
-   "hypothesis": "The residual is closable by an upstream change that removes the equivalence entirely \u2014 i.e. a form where 'i' is NOT a value-copy of a0 at the point of the shift, yet still yields target's semantics and instruction count.",
-   "mechanism": "cse.c only substitutes because 'i = a0' registers reg 75 and reg 72 in one quantity. Any lowering where the second variable's value is not provably equal to a0 at the shift leaves the ashift operand as reg 72, satisfying both (A) and (B) simultaneously.",
-   "next_probe": "Enumerate the semantically-equivalent lowerings of the first-loop induction variable (e.g. deriving i from an already-computed quantity rather than from a0) and check each for instruction-count neutrality BEFORE sandboxing; only forms that keep 83 insns are worth a measurement. Nothing in the 34-form bank covers this axis explicitly."
+   "hypothesis": "The Ruling A duplication family is available at a DIFFERENT site than the one probed -- specifically inside loop 2, where the `if (fn != 0)` arms converge on the loop tail, if some real a0-referencing statement genuinely belongs on both arms.",
+   "mechanism": "The 2026-08-06 control-transfer-tail extension covers duplicating a loop tail with its conditional branch, and the loop-2 tail IS a genuine convergence point with two predecessors, which is exactly what the s49 probe site lacked. It would also place an a0 reference after i's last reference, inverting the make_regs_eqv inequality.",
+   "next_probe": "Enumerate whether any statement in loop 2's tail (`ptr += 0x10`, `idx += 0x10`, `i += 1`, the bound reload) admits an a0-referencing spelling that is byte-identical to the current one at 83 instructions; if none does, that closes the duplication family for this function definitively rather than by the s49 site-specific argument. NOTE: $s2 is reused as the walking pointer at 0x80045344, so a0 is architecturally dead inside loop 2 in the target -- expect this to be negative, and record it as such."
   }
  ],
  "judge_constraints": [
