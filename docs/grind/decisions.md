@@ -17143,3 +17143,7 @@ toolchain-fidelity finding that changes cse2/combine behaviour on the LO_SUM cha
 spelling discovered on a SIMPLER census member (the immediate neighbour `func_80061064` on
 `D_800F1150`, or the shorter members `CD_cw` / `SpuSetReverbModeParam`) that transfers back
 here at zero extra cost; (iv) an owner unpark.
+
+## 2026-08-31 22:45 — func_80045878 — layer-1 review — **FAIL**
+
+Candidate re-submits the exact construct standing judge_constraints in state.json bans by name (`p = s1;` as a duplicate carrier, with or without a dead initialiser) plus a new uninitialized-pointer dead-read wrapped around it; not a citation error, a real re-ban violation.

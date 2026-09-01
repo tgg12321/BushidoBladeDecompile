@@ -108,8 +108,14 @@
  ],
  "judge_constraints": [
   "No fresh (newly invented) local may be written more than once to serve as a register/allocation carrier, by any spelling or name; keep the s3 join-block placement and the v0 tail-base reuse and find the remaining anchor via an existing variable or a structural respelling.",
-  "No fresh (newly invented) local may serve as a register/allocation carrier or as a duplicate handle/base for existing locals, by any spelling, write-count or name \u2014 this covers p = s1; with or without a dead initialiser; keep the v0 tail-base reuse and the s3 join-block placement."
+  "No fresh (newly invented) local may serve as a register/allocation carrier or as a duplicate handle/base for existing locals, by any spelling, write-count or name \u2014 this covers p = s1; with or without a dead initialiser; keep the v0 tail-base reuse and the s3 join-block placement.",
+  "LAYER-1 CHEAT-REVIEWER FAIL: Candidate re-submits the exact construct standing judge_constraints in state.json bans by name (`p = s1;` as a duplicate carrier, with or without a dead initialiser) plus a new uninitialized-pointer dead-read wrapped around it; not a citation error, a real re-ban violation. Next action: Do not commit. This function carries a live, specifically-worded judge_constraint banning exactly this construct (p = s1; as duplicate carrier, any spelling/write-count/name, dead-initialiser variants included). Nothing in the 2026-08-31 rulings clears that constraint for this funct"
  ],
  "origin": "queue",
- "created": "2026-07-23T09:09:52.873291+00:00"
+ "created": "2026-07-23T09:09:52.873291+00:00",
+ "banned_constructs": [
+  "s16 *p; ... p = s1; (fresh local written once, read 7x as a duplicate base/handle for the existing local s1, used purely to steer local-alloc.c qty_compare)",
+  "s0 = (s32) p;  (the 'FAKE dead store', where p is READ before p has ever been assigned anywhere in the function -- the assignment p = s1; happens ~15 lines later)"
+ ],
+ "ladder_skip": 3
 }

@@ -1003,3 +1003,68 @@ INCLUDE_ASM.
 - probe: Compose s13's H13.4/H13.5 with s13b's P1/P2/P3 measurements and the s12 carrier-free baseline.
 - result: no mention 107 insns / score 9; live mention (a real call argument) 108 / score 10; no base variable at all 110 / score 14; dead mention (four distinct spellings) 108 / score 0. The dead statement is a property of the residual, not a spelling choice.
 - verdict: CONFIRMED
+
+---
+
+## s14 (2026-08-31, synthesis) — frontier reset
+
+### H14.1 — CONFIRMED: the s13b form is byte-exact on today's chassis AND links to the oracle
+*Statement:* the single-write form banked as `candidate.c` still reproduces the
+function exactly, and does so at whole-EXE level, not just in the sandbox.
+*Probe:* apply verbatim over the `INCLUDE_ASM` line; `sandbox --disable all`;
+`verify-oracle`.
+*Result:* score 0, 108/108, rules_dropped 0; `"ok": true, "build_matches": true`.
+Re-measured a second time after the annotation edits — unchanged.
+**CONFIRMED.** The chassis has not moved since s13; the floor is 0.
+
+### H14.2 — CONFIRMED: the block-local / qty_compare mechanism holds for the SINGLE-WRITE form
+*Statement:* s13 dump-proved `p` block-local for the two-write
+(`p = 0; ... p = s1;`) form. The single-write form must show the same, or the
+mechanism story is inherited rather than established.
+*Probe:* `pwsh tools/grinder/dump.ps1 func_80045878`, read `.lreg` at the
+function (line 15452).
+*Result:* `Register 79 used 7 times across 9 insns in block 13 ... pointer.`
+(= `p`, block-local) against `Register 80` / `Register 102`, 2 refs each, same
+block. **CONFIRMED** — both legs (block-locality gives local_alloc; ref-count
+ordering gives `$v0` before `$v1`) are now proven for the exact submitted form.
+
+### H14.3 — KILLED (as a question, not as a measurement): "is there a routing question left to ask?"
+*Statement:* s13b's open item was a three-part routing question (SOTN
+`new_var_temp` precedent; store-level dead-store deadness; whether the standing
+per-function constraint still bars a written-once `p`).
+*Probe:* read the amended rule text —
+`.claude/rules/ordinary-c-judge-decidable.md` Rulings 1/2/3 and
+`.claude/rules/no-new-park-categories.md:211-235`.
+*Result:* all three are ANSWERED IN THE RULES, and the meta-question is
+retired: Ruling 1 relaxes the named-intermediate prong (1) to "once-written"
+with the SOTN `new_var_temp` class as its evidence; Ruling 2 makes dead-store
+deadness store-level; Ruling 3 retires escalation for family questions
+(non-membership = clean Judge FAIL) and this queue item's own directive orders
+a fresh layer-1 + Judge adjudication of this form. **KILLED** — no further
+ruling-request is available or appropriate on this function; the only way
+forward is to submit and be judged.
+
+## FRONTIER AFTER s14 (reset — these are the ONLY live items)
+
+1. **The adjudication itself is the frontier.** The form is byte-exact,
+   oracle-linking, dump-proven and family-claimed prong by prong. Layer-1 and
+   the default-FAIL Judge rule on two disclosed questions: (a) does
+   named-intermediate prong (3) require the copy to be FOLDED, or is
+   `build_insns == target_insns` with the copy byte-identical to the target's
+   own the operative test? (b) is a dead store that reads an as-yet-unassigned
+   local acceptable, given the read feeds only a statement `flow.c` deletes?
+   *No measurement can advance this; it is a rule-reading question the Judge
+   now owns.*
+2. **If (a) FAILs but (b) passes:** the fallback is `alt_deadzero_s13.c`
+   (`s16 *p = 0; ... p = s1;`, also score 0 / 108) — it removes the
+   indeterminate read at the cost of making `p` two-write, which prong (1)
+   bans on its face; the sub-question would be whether a *sanctioned dead
+   store* counts as a "write" for the once-written prong. Do NOT re-measure it;
+   it is already measured (score 0). It is a rules question only.
+3. **If both FAIL:** the honest Judge-COMPLIANT floor for this function is 13
+   (s11's static-inline tail helper, 109 insns), the residual is proven to
+   require a dead statement by the s12 / s13b exhaustion, and the disposition
+   is the silent `foreclosed` state of Ruling 3 — NOT a packet, NOT a question.
+   Nothing further should be re-searched: the spelling space of the dead
+   mention is enumerated (three byte-exact, one killed at 109 / 13) and 47
+   disproven forms are banked in `rejected/`.

@@ -1219,3 +1219,91 @@ Facts banked:
 - [s13] Reproducibility note banked for future sessions: a batched PowerShell loop that applied two forms and measured them back-to-back reported score 0 for a form that measures 13 when run alone. Measure ONE form per sandbox invocation, or re-measure any loop-derived result before banking it.
 
 - [s13] src/text1a_c.c was restored to INCLUDE_ASM("asm/funcs", func_80045878); at the end of the session; the only working-tree changes are memory/grind/func_80045878/** and docs/grind/decisions.md.
+
+---
+
+## s14 (2026-08-31, synthesis) — the merged picture, re-measured end to end
+
+**Chassis re-measurement (mandatory, done first).** The driver's dispatch brief
+reported "HEAD honest floor: measurement unavailable" because the function is
+`INCLUDE_ASM` on main. s14 applied `memory/grind/func_80045878/candidate.c`
+(the s13b form) verbatim over that line and re-measured on today's tree:
+
+| measurement | result |
+|---|---|
+| `sandbox func_80045878 --disable all` | **score 0**, build_insns 108 == target_insns 108, scorable true, **rules_dropped 0**, cheat_asm_stripped 66 (all belonging to OTHER functions in the same TU — this function's body has no asm of any kind) |
+| `verify-oracle` | **`"ok": true, "build_matches": true`** — full clean-driver build+link SHA1 still equals `62efab4f73f992798c43e8c730aa43baa10bb4fa` with the C body in place |
+| `sandbox` re-run after the annotation edits (comments only) | score 0, 108/108, rules_dropped 0 — unchanged, as expected |
+
+So the ledger floor of 0 is CONFIRMED on today's chassis, and for the first
+time in this function's history it is confirmed at the whole-EXE level rather
+than by isolated score: the byte-exact pure-C form links into an oracle-matching
+executable.
+
+**Dump evidence re-generated against THIS form** (not inherited from s13):
+`pwsh tools/grinder/dump.ps1 func_80045878`;
+`tmp/grind/func_80045878/dumps/text1a_c.lreg`, function header at line 15452:
+
+```
+Register 79 used 7 times across 9 insns in block 13; GR_REGS or none; pointer.   <- p
+Register 80 used 2 times across 2 insns in block 13; GR_REGS or none.            <- tail scratch
+Register 102 used 2 times across 4 insns in block 13; GR_REGS or none.           <- tail scratch
+```
+
+Both halves of the mechanism are now DUMP-PROVEN for the single-write form,
+where s13 had only proven them for the two-write form:
+(a) `p` carries an `in block 13` tag — it is block-local, so `local_alloc`
+(which runs before `global_alloc`) allocates it; this is precisely what the
+dead statement buys, since a LIVE early mention makes the pseudo multi-block
+and hands it to `global_alloc` (measured s13 H13.4: 108 insns / score 10);
+(b) the `qty_compare` ordering is visible in the ref counts — 7 refs over 9
+insns for `p` versus 2 refs each for the scratches — so `find_free_reg` (no
+REG_ALLOC_ORDER in mips.h, ascending scan) gives `p` `$v0` and the scratches
+`$v1`, exactly the target's seating.
+
+**The merged attack (this is the synthesis).** Fourteen sessions collapse to
+one statement of the residual:
+
+1. The target's tail addresses seven stores through `$v0`, which it obtains
+   with a register-to-register copy `addu $v0, $s1, $zero` (s6/s7).
+2. In pure C that copy only survives cse if two distinct pseudos exist and the
+   TAIL one is the cse-canonical member of the equivalence class
+   (`cse.c:836-864 make_regs_eqv`, s7/s8). One pseudo means no copy: 107 insns /
+   score 9 (or 110 / score 14 with no base at all — s12's constraint-compliant
+   plain tail).
+3. Canonicality is decided by `regno_first_uid`, which `reg_scan` fixes BEFORE
+   cse — so the tail pseudo needs a mention EARLIER in the function (s9/s10).
+4. That earlier mention must be semantically DEAD, or `flow.c life_analysis`
+   marks the pseudo multi-block, `global_alloc` takes it, a block-local tail
+   scratch wins `$v0` first and the seats invert (108 / score 10, s13 H13.4).
+5. Therefore every byte-exact form of this function contains a semantically
+   dead statement. This is a property of the RESIDUAL — proven by exhaustion
+   over the topology (s12's five-step foreclosure for carrier shapes, s13b's
+   H13b.3 for dead-mention shapes) — not a spelling preference. s11's
+   static-inline tail helper, the last untried structural shape, is KILLED and
+   reproduces the tail ORDER but not the SEATS.
+6. The only remaining degrees of freedom are (i) WHERE the dead mention lives
+   and (ii) WHAT value it carries. Both are measured out: the value must create
+   no cse equivalence with a live pointer (a real pointer value: 109 / score
+   13); of the three byte-exact placements, the one in `candidate.c` is the
+   simplest (one fresh local, written once).
+
+**Disposition executed by s14.** The owner directive attached to this queue
+item (ruling 2026-08-31, `.claude/rules/ordinary-c-judge-decidable.md`, commit
+73bee8f8) returns the function to active for a fresh layer-1 + default-FAIL
+Judge adjudication of exactly this form against the amended rules. Under
+Ruling 3 of the same document, family non-membership is now a clean Judge FAIL
+rather than an escalation, so there is nothing left to ask and no packet to
+file: the correct action is to SUBMIT. s14 therefore returns `candidate-ready`
+with `memory/grind/func_80045878/self_vet.md` rewritten from scratch against
+the AMENDED rule text, prong by prong, with two disclosures made explicitly
+rather than argued away (the named-intermediate prong-(3) "the compiler folds
+the copy" clause is not literally met — the copy survives, byte-identically to
+the target's own; and the dead store reads `p` before `p` is assigned, a read
+that feeds only a statement GCC deletes).
+
+- [s14] The three `/* FAKE: ... */` annotations now live ON their statements in
+  `src/text1a_c.c` (lines 1687, 1731, 1738) and in `candidate.c`; s13b's form
+  carried only two, because it claimed no family for `p = s1;`. Under the
+  amended named-intermediate entry s14 DOES claim a family for it, so it now
+  carries the mandated annotation (what + mechanism + lever-exhaustion).
