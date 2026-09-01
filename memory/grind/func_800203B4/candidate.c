@@ -41,7 +41,17 @@
  * thin gte_SetRotMatrix (C-loaded matrix words) = 12, thin gte_stlvnl (no `move $12` preamble)
  * = 4, thin gte_ldv0 (VX0/VY0 packing in C) = 8; forms banked in rejected/thin-*.c, evidence.md
  * fact 41. The 25 instructions inside these four islands are byte-forced to be there; do not
- * try to "shrink the asm". Floor re-confirmed 0 (65/65) an eleventh time. */
+ * try to "shrink the asm". Floor re-confirmed 0 (65/65) an eleventh time.
+ *
+ * s7 (solver, 2026-09-01) changed NOTHING in this body and closed the solver axis with the
+ * solver stack's OWN typed verdict: tools/ra_solver/goal_from_tgt.py classify (the object-level
+ * classifier inverse_compose.py redirects to on zero-rule functions) reports NO DIVERGENCE on
+ * this chassis (ours 65 == target 65, identical streams) and FIRST DIVERGENCE: PRE-RA with
+ * "next tool: none - the residual is upstream of every model" on the islands-deleted pure-C
+ * chassis (ours 39 vs target 65). PRE-RA means an instruction-MULTISET difference, which
+ * neither ra_solver (renames a fixed multiset) nor sched_solver (reorders a fixed stream) can
+ * reach - so no RA/scheduler vector search exists for this function. evidence.md facts 45-46,
+ * hypotheses.md H13. Floor re-confirmed 0 (65/65) a twelfth and thirteenth time. */
 void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
     s32 mat[8];
     s32 vec[3];

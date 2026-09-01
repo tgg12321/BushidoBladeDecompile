@@ -442,3 +442,66 @@
 - [s6] merged attack (written into hypotheses.md): 39 C-emitted instructions are byte-exact by disassembly (fact 33) + 3 operand-address materializations that return for free once an island consumes them (fact 34d) + 25 byte-forced asm instructions (11 cop2 opcodes GCC 2.7.2 cannot emit, 12 SDK-macro integer instructions proven irreducible by fact 41, 2 assembler-supplied cop2 load-delay nops) = the whole 65-instruction function. The codegen question is closed in BOTH directions; what remains is purely authorization, and both gates are measured shut (scan_hand_coded LOW, cluster membership denied by Judge FAIL decisions.md:17546).
 
 - [s6] modality note: this session returns 'progress' and not 'owner-gated' solely because the mandated modality is synthesis, not escalation - s2's owner-gated from recon was discarded for exactly that reason (marker docs/grind/decisions.md:17591). The proof-of-foreclosure record at docs/grind/decisions.md:17550 stands filed and untouched; nothing was re-filed or re-argued this session.
+
+- [s7] fact 45: **the SOLVER axis is now mechanically FORECLOSED by a typed verdict, not by
+  inference.** The mandated first solver step (`inverse_compose.py classify code6cac
+  func_800203B4`) refuses on this function by design - it is zero-rule since rules-to-zero
+  2026-08-25, so the src-derived `code6cac.tgt.s` cannot carry target's stream and the text
+  classifier would emit a FICTITIOUS PRE-RA verdict; the tool itself redirects to the
+  object-level classifier `tools/ra_solver/goal_from_tgt.py classify` (guard text quoted in
+  tmp/grind/func_800203B4/s7/classify_purec.txt provenance). Run object-level against the
+  pure-C (islands-deleted) chassis - the only chassis on which a residual exists at all -
+  the verdict is: **FIRST DIVERGENCE: PRE-RA / "next tool: none - the residual is upstream of
+  every model"**, ours 39 insns vs target 65. The shapes present in ONE stream only are all
+  target-only and all island instructions (3x `move #,#`, the five `lw #,N(#)` matrix loads,
+  `lhu #,0(#)`, `addiu #,#,16`, and the `ctc2 #,$0..$3` cop2 writes). Artifacts:
+  tmp/grind/func_800203B4/s7/classify_purec.txt, object
+  tmp/grind/func_800203B4/s7/code6cac_purec39_s7.o (sandbox = 26, build_insns 39). This is the
+  same conclusion facts 33/34/41 reached by disassembly and by partition, but it is now the
+  solver stack's OWN typed answer: a PRE-RA residual is an instruction-MULTISET difference,
+  and neither ra_solver (which renames a fixed multiset) nor sched_solver (which reorders a
+  fixed, already-allocated stream) can reach it. No RA seat exists to re-assign and no
+  emission order exists to permute, so no vector search was run and none should ever be run
+  on this function.
+- [s7] fact 46: **the candidate chassis classifies as NO DIVERGENCE** - with
+  memory/grind/func_800203B4/candidate.c applied to src/code6cac.c, `goal_from_tgt.py classify
+  code6cac func_800203B4` reports "ours 65 insns, target 65 insns ... NO DIVERGENCE: the two
+  streams are identical" (tmp/grind/func_800203B4/s7/classify_candidate.txt). Two independent
+  tools now agree the body is byte-final: the engine sandbox (score 0) and the solver stack's
+  object-level stream comparator. There is no residual for a solver to own on the candidate
+  chassis and a PRE-RA (expressiveness) residual on the pure-C chassis - the two ends of the
+  same fact.
+- [s7] fact 47: **floor re-confirmed a TWELFTH and THIRTEENTH time on the 2026-09-01 chassis**
+  (this dispatch's chassis-check again read "measurement unavailable"): candidate.c applied ->
+  `sandbox func_800203B4 --disable all` = **0, build_insns 65 == target_insns 65,
+  rules_dropped 0, cheat_asm_stripped 25**, measured twice this session (artifact
+  tmp/grind/func_800203B4/s7/code6cac_sandbox0_s7.o). src/code6cac.c reverted to INCLUDE_ASM
+  after every build per [[asm-until-matched]]; working tree clean apart from
+  metrics/events.jsonl and the ledger.
+- [s7] fact 48: **re-activation triggers re-checked (fact 43 repeat) - NONE has landed.**
+  `grep -c func_800203B4 inline_asm_canonical.txt` = 0;
+  `grep -c func_800203B4 .claude/rules/cop2-addressing-preamble-cluster.md` = 0;
+  `tail -3 docs/grind/decisions.md` is still the 2026-09-01 09:05 discarded-session marker,
+  i.e. no owner class grant for non-$aN-source cop2 addressing-preamble sites has been filed.
+  Presence check only - no membership argument was made or re-derived, per the binding Judge
+  constraint.
+- [s7] fact 49: **tooling note (repo hygiene, not codegen)** -
+  memory/grind/func_800203B4/rejected/pure-c-no-islands-floor-26.c carried CP1252/UTF-8-mixed
+  bytes (0x97, 0x94, 0x80, 0xe2) in its header comment, which made
+  `engine/inlineasm.py:write_stripped` (a strict `read_text(encoding="utf-8")`) raise
+  UnicodeDecodeError the moment the form was applied to src - i.e. the banked pure-C form was
+  UNBUILDABLE as saved. Sanitized to pure ASCII this session; the C body is byte-unchanged.
+  Any future session re-spending a banked rejected/*.c should expect the same trap in other
+  ledgers.
+
+- [s7] fact 45: the SOLVER axis is mechanically FORECLOSED by a typed verdict. inverse_compose.py classify refuses on this zero-rule function by design and redirects to the object-level classifier; goal_from_tgt.py classify on the islands-deleted pure-C chassis returns FIRST DIVERGENCE: PRE-RA with 'next tool: none - the residual is upstream of every model' (ours 39 insns vs target 65). All one-stream-only shapes are target-only island instructions. Neither ra_solver nor sched_solver can reach a multiset difference, so no RA seat exists to re-assign and no emission order exists to permute. This is the same conclusion facts 33/34/41 reached by disassembly and by partition, now stated by the solver stack itself.
+
+- [s7] fact 46: the candidate chassis classifies as NO DIVERGENCE - ours 65 insns, target 65 insns, streams identical. Two independent tools now agree the body is byte-final (engine sandbox score 0 and the solver stack's object-level stream comparator). No residual for a solver to own on the candidate chassis; a PRE-RA expressiveness residual on the pure-C chassis. Two ends of the same fact.
+
+- [s7] fact 47: floor re-confirmed a twelfth and thirteenth time on the 2026-09-01 chassis (dispatch chassis-check again read 'measurement unavailable') - candidate.c -> sandbox --disable all = 0, build_insns 65 == target_insns 65, rules_dropped 0, cheat_asm_stripped 25. src/code6cac.c reverted to INCLUDE_ASM after every build; tree clean apart from metrics/events.jsonl and the ledger.
+
+- [s7] fact 48: re-activation triggers re-checked and NONE has landed - grep -c func_800203B4 inline_asm_canonical.txt = 0; grep -c func_800203B4 .claude/rules/cop2-addressing-preamble-cluster.md = 0; docs/grind/decisions.md tail is still the 2026-09-01 09:05 discarded-session marker, i.e. no owner class grant for non-$aN-source cop2 addressing-preamble sites has been filed. Presence check only - no membership argument made or re-derived, per the binding Judge constraint.
+
+- [s7] fact 49: tooling/hygiene - memory/grind/func_800203B4/rejected/pure-c-no-islands-floor-26.c carried CP1252/UTF-8-mixed bytes (0x97, 0x94, 0x80, 0xe2) in its header comment, which made engine/inlineasm.py:write_stripped (strict read_text(encoding='utf-8')) raise UnicodeDecodeError as soon as the form was applied to src - the banked pure-C form was UNBUILDABLE as saved. Sanitized to pure ASCII this session; the C body is byte-unchanged. Future sessions re-spending a banked rejected/*.c should expect the same trap in other ledgers.
+
+- [s7] no docs/grind/decisions.md entry was filed and no cluster-membership argument was made this session, per the binding Judge constraint and the s1 discard marker (docs/grind/decisions.md:17591): the proof-of-foreclosure record at docs/grind/decisions.md:17550 stands filed and untouched.

@@ -428,3 +428,39 @@ Frontier reset (strongest 1-3, in order):
 - probe: Presence check only (no membership argument re-derived, per the binding Judge constraint): grep func_800203B4 in inline_asm_canonical.txt; grep func_800203B4 in .claude/rules/cop2-addressing-preamble-cluster.md; tail docs/grind/decisions.md.
 - result: No match in inline_asm_canonical.txt; zero occurrences in the cluster enumeration (unchanged); decisions.md tail is still the 2026-09-01 09:05 discarded-session marker. No trigger has landed.
 - verdict: KILLED
+
+## [s7 / solver] H13 - KILLED (typed verdict, not inference)
+**Statement:** the residual on this function is a register-allocation seat assignment or a
+scheduler emission-order tie that tools/ra_solver or tools/sched_solver can type as REACHABLE
+and convert into a ranked C-lever vector.
+**Mechanism tested:** the solver stack's own triage. `inverse_compose.py classify` guards
+itself off on zero-rule functions (it would report a fictitious PRE-RA verdict from an absent
+src-derived tgt stream) and redirects to `goal_from_tgt.py classify`, which compares the two
+OBJECT streams directly.
+**Probe:** object-level classify on both chassis. (a) candidate.c applied: ours 65 / target 65,
+**NO DIVERGENCE - the two streams are identical**. (b) the pure-C islands-deleted chassis
+(rejected/pure-c-no-islands-floor-26.c, sandbox 26, build_insns 39): ours 39 / target 65,
+**FIRST DIVERGENCE: PRE-RA**, with the tool's own next-step field reading
+*"none - the residual is upstream of every model"*. Every one-stream-only shape is target-only
+and belongs to an island (3x `move #,#`, five matrix `lw`, `lhu`, `addiu #,#,16`, `ctc2 $0..$3`).
+**Verdict: KILLED.** A PRE-RA classification means the two streams differ in the instruction
+MULTISET, which is built by the front end + cse/combine/loop. ra_solver permutes register
+assignments over a FIXED multiset and sched_solver reorders a FIXED, already-allocated stream;
+neither model can add or remove an instruction, so both are searching a space that provably
+cannot contain the answer. No vector search was run - running one would have produced fiction
+(the exact func_80072CD4 defect the classifier exists to prevent). Do not re-open the solver
+axis on this function under any spelling: the only thing that could change the verdict is a
+change to the instruction multiset, which is the expressiveness question (cop2 opcodes GCC
+2.7.2 cannot emit) that facts 33/34/41 already measured shut in both directions.
+
+## [s7] The residual on func_800203B4 is a register-allocation seat assignment or a scheduler emission-order tie that tools/ra_solver or tools/sched_solver can type as REACHABLE and convert into a ranked C-lever vector.
+- mechanism: The solver stack's mandated triage. inverse_compose.py classify guards itself off on zero-rule functions (since rules-to-zero 2026-08-25 the src-derived code6cac.tgt.s cannot carry target's stream, so the text classifier would emit a FICTITIOUS PRE-RA verdict) and redirects to the object-level classifier tools/ra_solver/goal_from_tgt.py classify, which compares the two object streams directly.
+- probe: goal_from_tgt.py classify code6cac func_800203B4 on BOTH chassis. (a) candidate.c applied (sandbox 0, 65/65): ours 65 insns / target 65 insns, 'NO DIVERGENCE: the two streams are identical' (tmp/grind/func_800203B4/s7/classify_candidate.txt). (b) the islands-deleted pure-C chassis rejected/pure-c-no-islands-floor-26.c (sandbox 26, build_insns 39): ours 39 / target 65, 'FIRST DIVERGENCE: PRE-RA', tool's own next-step field 'none - the residual is upstream of every model'; every one-stream-only shape is target-only and belongs to an island (3x move #,#, five matrix lw, lhu #,0(#), addiu #,#,16, ctc2 #,$0..$3) (tmp/grind/func_800203B4/s7/classify_purec.txt, object code6cac_purec39_s7.o).
+- result: PRE-RA on the only chassis that has a residual at all; identical streams on the candidate chassis. A PRE-RA classification is an instruction-MULTISET difference, built by the front end + cse/combine/loop. ra_solver permutes register assignments over a FIXED multiset; sched_solver reorders a FIXED, already-allocated stream. Neither model can add or remove an instruction, so both would be searching a space that provably cannot contain the answer. No vector search was run - running one would have produced fiction (the func_80072CD4 baseline-routing defect this classifier exists to prevent).
+- verdict: KILLED
+
+## [s7] The candidate body is byte-final on the current chassis (floor 0) and the chassis has not drifted since s6.
+- mechanism: Direct measurement, not inference - the dispatch chassis-check again read 'measurement unavailable', so the ledger floor had to be re-measured before anything could be spent on it.
+- probe: memory/grind/func_800203B4/candidate.c applied to src/code6cac.c, `sandbox func_800203B4 --disable all`, run twice this session (once before and once after the header-comment update).
+- result: 0, build_insns 65 == target_insns 65, rules_dropped 0, cheat_asm_stripped 25 - both times. Twelfth and thirteenth confirmation overall. Artifact tmp/grind/func_800203B4/s7/code6cac_sandbox0_s7.o. src reverted to INCLUDE_ASM after every build per asm-until-matched.
+- verdict: CONFIRMED
