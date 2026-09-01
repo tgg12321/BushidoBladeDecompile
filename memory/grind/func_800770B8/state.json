@@ -1,31 +1,37 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 14,
    "modality": "recon",
    "headline": "Recon: first C body landed (175->14 in one session); return-1 signature, mask intermediate, multi-set ptr LICM defeat, int-domain address order all confirmed; 4 residual classes mapped with dumps bank"
+  },
+  {
+   "session": 2,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Structural: floor 14 -> 10 (tail {+0,+0x65} store grouping = -2; a2 initialiser moved into the outer loop body = -2), and the reorg delay-slot residual's mechanism PROVEN with the instrumented cc1's B"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "reorg's beqz fill can be steered to the branch-target thread steal (target's duplicated addiu) by an ordinary C shape in inner loop 2",
-   "mechanism": "reorg.c fill_slots_from_thread eligibility/ordering vs the fall-through ori steal",
-   "next_probe": "read tmp/grind/func_800770B8/dumps/text1b.dbr for the beqz candidate list; then try for-loop respelling / if-arm leading-statement changes; sanctioned duplicated-statement family only as measured last resort"
+   "hypothesis": "Class D closes if a CODE_LABEL is materialised at the head of the inner-loop-2 if-body, making own_fallthrough==0 so reorg skips the fall-through steal and fills from the branch-target thread by copy+redirect (the target's shape, and the last insn of the count gap).",
+   "mechanism": "reorg.c own_thread_p returns 0 on ANY CODE_LABEL between the branch and the thread's first active insn when label==NULL_RTX; with own_fallthrough==0 fill_eager_delay_slots' else-arm skips straight to the target-thread call. Option (b), an all-live mark_target_live_regs answer, needs find_basic_block()==-1 and is NOT C-reachable - do not spend probes on it.",
+   "next_probe": "Try C shapes that put a label at the then-arm head: short-circuit `if (A || B)` respellings of the existing single bit test, and goto-into-the-arm shapes. Verify each BEFORE scoring by re-running tmp/grind/func_800770B8/s2/run_idump.sh with BB2_DBR_DEBUG=1 and reading the `own=` field of the `DBRDBG thr insn=<uid>` line for the inner-loop-2 beqz."
   },
   {
-   "hypothesis": "target's 0x30/0x34 stores through $v0 are reachable without a cse-visible second handle",
-   "mechanism": "call-result pseudo stays live for two stores; K1 shows a named alias folds",
-   "next_probe": "read .lreg/.greg for the call-result pseudo; try statement reorder (0x30/0x34 before D_800A36A0=) and address-shape variants"
+   "hypothesis": "Class A(ii) - the ~3-row prologue cluster - is the ClearOTagR argument evaluation order: target emits the constant a1=0x1008 before the two-insn a0 global load, ours emits the a0 chain first because sched1 ranks its longer path to the jal higher.",
+   "mechanism": "sched1 priority (longest path to the block end) beats LUID order in block 0; s2's H7 proved statement order DOES move block-0 insns, so the axis is live rather than a wall.",
+   "next_probe": "Read tmp/grind/func_800770B8/s2/idumps/text1b.sched for block 0's computed priorities and ready-list order, then try argument-expression shapes that shorten the a0 chain or lengthen the a1 one (a named local read of the OT pointer before the call, a differently-typed OT argument). Re-measure the prologue register-save rows together with it - H7's regression came entirely from the save order, not from the addiu."
   },
   {
-   "hypothesis": "p_6a base addu dest-coalesce (rows 62-64) is a local-alloc death-count decision, not a spelling issue",
-   "mechanism": "local-alloc.c reg_n_deaths==1 gate; association-order measured byte-neutral",
-   "next_probe": "read .lreg 'dies in N places' for the base and offset pseudos at the row-62 addu before burning spellings"
+   "hypothesis": "Classes B and C are register-allocator decisions with no remaining C spelling; they should be classified with the solver suite rather than probed with more source variants.",
+   "mechanism": "B: our call-result temp dies at the copy into p_old (.lreg `Register 80 used 2 times`), and both directions of a second C handle collapse the build. C: rows 62-64 are a local-alloc dest-coalesce / reg_n_deaths decision - the row-pointer restructure (K3) and the int-domain address form (K5) both fail badly.",
+   "next_probe": "Run tools/ra_solver inverse_compose.py classify on the p_old-vs-call-result seat (class B) and read .lreg's `dies in N places` for the row-62 base and offset pseudos behind the local-alloc-death-count gate (class C). Do NOT let this consume a session before frontier items 1 and 2 are spent."
   }
  ],
  "judge_constraints": [],

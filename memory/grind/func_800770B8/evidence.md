@@ -96,3 +96,136 @@
 - [s1] caller-side byte-neutral edits landed: prototype s32(s32,s32,s32) + (s32)&D_8009BD24 cast
 
 - [s1] full ledger: memory/grind/func_800770B8/evidence.md + hypotheses.md; candidate at memory/grind/func_800770B8/candidate.c; 3 rejected forms banked
+
+## Session 2 (structural, 2026-09-01) - floor 14 -> 12 -> 10
+
+### Chassis re-measurement
+- The s1 candidate was NOT in src/text1b.c at dispatch (HEAD carried
+  INCLUDE_ASM("asm/funcs", func_800770B8); and the ORIGINAL caller prototype
+  `void func_800770B8(s32, s32 *, s32);` + `(s32 *)&D_8009BD24` call arg). s2
+  re-applied the s1 body AND both caller-side edits (tmp/grind/func_800770B8/s2/apply.py)
+  and re-measured **14** - the s1 floor is chassis-valid on today's HEAD.
+
+### Positional-differ upgrade (tooling)
+- tmp/grind/func_800770B8/s1/posdiff.py now aligns with difflib (SequenceMatcher over
+  normalized insns) instead of index-by-index, so it survives an insn-count mismatch
+  and prints insert/delete/replace hunks. This immediately exposed a residual class
+  s1's index-by-index census had folded into "everything else is clean" (see below).
+- tmp/grind/func_800770B8/s2/side.py - raw side-by-side listing over an index range
+  (`side.py <lo> <hi>`), for reading a region without normalization.
+- GOTCHA banked: side.py/posdiff.py read tmp/sandbox/func_800770B8/text1b.o, which is
+  only refreshed by a `sandbox` run. After editing src/ you MUST re-run sandbox before
+  diffing, or you will analyse the PREVIOUS probe's object (cost s2 one wrong analysis).
+- FALSE DIFF: row 50 `addiu $2,$2,0` vs `addiu $v0,$v0,%lo(D_800A35D0)` is a normalizer
+  gap (posdiff only rewrites `lui $N,0` into the reloc form, not `addiu`). Rows 49-51 are
+  byte-clean. Do not chase it.
+
+### Floor moves THIS session (all sandbox func_800770B8 --disable all)
+- **14 -> 12: tail store grouping.** Target reads D_800A36A0 once for the `+0` (arg1)
+  and `+0x65` stores; our per-statement global derefs reloaded it between them (a
+  pointer store may alias the global), costing `lw` + a load-delay `nop`. The fix is
+  ordinary C - one local holding the global's value for that pair:
+  `{ u8 *q = D_800A36A0; *(s32 *)q = arg1; *(s8 *)(q + 0x65) = 0; }`.
+  Target's tail grouping is exactly {+0, +0x65} | {+0x67} | {lbu +0x67, sb +0x66} -
+  ONLY that pair groups, which is why s1's K2 (group the whole tail) measured 29.
+- **12 -> 10: `a2 = 0;` relocated into the outer loop body.** Was: one `a2 = 0;` in the
+  outer-loop preheader plus a duplicate at the outer-loop tail. Now: a single
+  `a2 = 0;` as the FIRST statement of the do-body. This sinks `addu $a2,$zero,$zero`
+  from sched1 slot 30 to slot 37 (after the 0x30/0x34 store cluster) exactly as
+  target, and rows 30-34 + 37 become byte-clean. Pure statement-placement lever.
+
+### Residual census at floor 10 (174 ours / 175 target)
+A. **Prologue rows 7-12 (~3 rows).** ours: `sw $s1`@7, `addiu $s1,$s0,0x58`@8,
+   `lui/lw a0`@9-10, `li a1`@11, `sw $ra`@12. target: `sw $ra`@7, `sw $s1`@8,
+   `addiu a1,0x1008`@9, `lui/lw a0`@10-11, `addiu $s1,$s0,0x58`@12. Two sub-parts:
+   (i) the addiu-$s1 slot follows C statement order (PROVEN - see
+   rejected/s2-p_old-computed-after-clearotagr.c: moving the statement moves the insn
+   from slot 8 to slot 11), and (ii) target evaluates the CONSTANT arg a1 BEFORE the
+   a0 global load, ours does a0 first because its lui->lw chain carries the higher
+   sched1 priority. (ii) is the real wall and is untouched.
+B. **Rows 35-36 (2 rows).** ours stores 0x30/0x34 through $17/$s1 (p_old); target
+   through $v0, the raw call-result pseudo, while $s1 (the copy) carries the
+   D_800A36A0 gp store and the +4 store. .lreg confirms our call-result temp is
+   "Register 80 used 2 times across 9 insns in block 0" - set + the copy into p_old,
+   i.e. it dies at the copy; target needs it used 4 times. TWO independent spellings
+   of a second C handle are now KILLED (K1 s1, K4 s2) - both collapse the build to
+   169-171 insns because cse forwards the handle and deletes the D_800A35D0
+   loop-preheader reload. Also measured byte-NEUTRAL: writing the last two stores as
+   `*(s32 *)(D_800A36A0 + 0x30) = 0;` (a CSE'd load of the global) - cse resolves the
+   load to p_old's pseudo, not to the call-result temp.
+C. **Rows 62-64 (3 rows).** `addu` dest for the p_6a/p_7e base: ours `addu $2,$2,$3`,
+   target `addu $v1,$v1,$v0` (dest = the offset pseudo, which absorbs the base).
+   s1's K3 killed the row-pointer restructure (38) and measured association order
+   byte-neutral; s2 additionally killed the int-domain address form (34, see
+   rejected/s2-p6a-int-domain-address.c - the +0x6A/+0x7E constants fold into the int
+   expression and destroy the shared (t0*10) CSE). Both directions dead => this is the
+   local-alloc dest-coalesce / reg_n_deaths decision s1 flagged, NOT a spelling
+   question. Next probe stays: .lreg "dies in N places" for the two pseudos.
+D. **Row 104 (1 row + the entire 174-vs-175 count gap). MECHANISM PROVEN - below.**
+
+### Class D: reorg delay-slot fill - mechanism nailed with the instrumented cc1
+The instrumented cc1 (tools/gcc-2.7.2/cc1, NOT build/cc1) carries env-gated reorg
+hooks: BB2_DBR_DEBUG=1 (decision trace), BB2_NO_FT_STEAL (skip fill_eager's
+fall-through fill entirely) and BB2_ALLLIVE_LABEL=<uid[,uid...]> (force
+mark_target_live_regs to its conservative everything-live answer for those target
+uids, i.e. simulate find_basic_block()==-1). Driver scripts:
+tmp/grind/func_800770B8/s2/run_idump.sh (instrumented -> s2/idumps/) and
+s2/run_wdump.sh (what-if -> s2/wdumps/); trace in s2/dbr.err.
+
+- The inner-loop-2 beqz is **jump_insn 314** (`eq (reg:SI 2 v0) 0`, label_ref 352) in
+  s2/idumps/text1b.sched2. Its trace:
+    DBRDBG thr insn=314 thread=327 opp=355 own=1 likely=0 tif=0 oppregs=200c0fe0_00000000 oppmem=1
+    DBRDBG thr insn=314 trial=327 refset=0 setset=0 setneed=0 setsopp=0 trap=0
+    DBRDBG thr WINNER insn=314 trial=327 annul=0
+  Reading: likely=0 => mostly_true_jump returned 0 (reorg.c: an EQ test with equal
+  rare_destination on both sides hits `case EQ: return 0`), so fill_eager_delay_slots
+  takes its ELSE arm and tries the FALL-THROUGH thread FIRST. own=1 (own_fallthrough:
+  no CODE_LABEL between the branch and the if-body). trial 327 is the if-body's first
+  insn `ori $2,$4,1`; setsopp=0 means its dest $v0 is NOT in opposite_needed (bit 2
+  clear in oppregs=0x200c0fe0) because the join's first insn `addu $2,$6,1` SETS $v0
+  without reading it. So our steal is legal and wins.
+- **What-if (decisive):** BB2_ALLLIVE_LABEL=355 reproduces the TARGET's shape exactly:
+    ours   (normal) : beq $2,$0,.L901 / delay `ori $2,$4,0x0001`
+    ours (all-live) : beq $2,$0,.L908 / delay `addu $2,$6,1` / then `ori $2,$4,0x0001`
+    target          : beqz $v0,.L80077280 / delay `addiu $v0,$a2,0x1` / then `ori`
+  and the insn count goes 174 -> 175, closing the count gap. See s2/wdumps/text1b.s.
+- **Conclusion:** the target build's fall-through steal was BLOCKED. Per reorg.c only
+  two things can block it for this shape:
+    (a) own_fallthrough == 0 - a CODE_LABEL sits between the beqz and the if-body's
+        first active insn (own_thread_p returns 0 on ANY code label when label==0).
+        The target .s shows no surviving label there, but an `if (A || B)` C shape is
+        the canonical way GCC materialises a label at a then-arm head; or
+    (b) setsopp == 1 - the trial's dest is live at the branch target, which for this
+        shape means mark_target_live_regs answering conservatively
+        (find_basic_block()==-1: scan back from the join to the previous BARRIER, then
+        fail to find a basic_block_head among the labels that follow it).
+  Ordinary re-spellings cannot reach (b) directly; (a) is the C-reachable half and is
+  NOT yet tried. This is the rule-era insert_label device residual.
+
+- [s2] sandbox func_800770B8 --disable all = 10 (174/175) with the s2 candidate in place in src/text1b.c THIS session (14 at session start with the s1 body re-applied)
+
+- [s2] the s1 candidate was NOT on HEAD at dispatch - re-applying it (body + BOTH caller-side edits) is required before any measurement; apply script tmp/grind/func_800770B8/s2/apply.py
+
+- [s2] tail: target reads D_800A36A0 ONCE for the {+0, +0x65} store pair only; grouping exactly that pair through a local u8 *q is worth 2 insns (14 -> 12) and does not re-trigger s1's K2
+
+- [s2] a2's initialiser belongs at the TOP of the outer loop body, not in the preheader plus a duplicate at the tail: 12 -> 10, sched1 slot 30 -> 37, rows 30-34/37 byte-clean
+
+- [s2] class D mechanism PROVEN: BB2_ALLLIVE_LABEL=355 on the instrumented cc1 reproduces the target's beqz/delay-slot shape and closes the 174->175 count gap; ours wins the fall-through steal with likely=0 own=1 setsopp=0 (DBRDBG thr insn=314)
+
+- [s2] second-handle spellings for the call result are dead in BOTH directions (K1 s1, K4 s2, both collapse to 169-171 insns); a CSE'd `D_800A36A0 + 0x30` load is byte-neutral
+
+- [s2] int-domain address form KILLS rows 55-70 (34) - the s1 H4 int-domain trick does NOT generalise from row 43 to rows 62-64
+
+- [s2] [s2] sandbox func_800770B8 --disable all = 10 (174 ours / 175 target) with the s2 candidate in place in src/text1b.c THIS session; the session opened at 14 after re-applying the s1 body.
+
+- [s2] [s2] CHASSIS NOTE: the s1 candidate was NOT on HEAD at dispatch - src/text1b.c carried INCLUDE_ASM plus the ORIGINAL caller prototype `void func_800770B8(s32, s32 *, s32);` and a `(s32 *)&D_8009BD24` call arg. Re-applying the body AND both caller-side edits is a prerequisite for any measurement; script at tmp/grind/func_800770B8/s2/apply.py.
+
+- [s2] [s2] Residual census at floor 10, four classes: (A) prologue rows 7-12, of which the addiu-$s1 slot is statement-order-controlled but the ClearOTagR a1-first argument evaluation is untouched; (B) rows 35-36, the 0x30/0x34 stores through $s1 (ours) vs $v0, the raw call-result pseudo (target); (C) rows 62-64, the p_6a/p_7e base addu destination register; (D) row 104, reorg's delay-slot fill choice, which is also the entire 174-vs-175 insn-count gap.
+
+- [s2] [s2] .lreg says our call-result temp is `Register 80 used 2 times across 9 insns in block 0` - set plus the copy into p_old, so it dies at the copy. The target needs that pseudo used four times. Both second-handle spellings (K1 s1, K4 s2) collapse the build to 169-171 insns, so class B is an allocator question now, not a spelling question.
+
+- [s2] [s2] Class D mechanism PROVEN, not inferred: BB2_ALLLIVE_LABEL=355 on the instrumented cc1 reproduces the target's beqz/delay-slot shape byte-for-byte in that region and closes the count gap; the DBRDBG trace shows our build wins the fall-through steal with likely=0, own=1, setsopp=0 on trial 327 (the `ori`).
+
+- [s2] [s2] TOOLING: posdiff.py now aligns with difflib so it survives an insn-count mismatch (it previously crashed and mis-reported); s2/side.py gives a raw side-by-side over an index range. GOTCHA: both read tmp/sandbox/func_800770B8/text1b.o, which only a `sandbox` run refreshes - diffing after a src edit without re-running sandbox analyses the previous probe's object (this cost s2 one wrong analysis). FALSE DIFF: row 50 `addiu $2,$2,0` vs `addiu $v0,$v0,%lo(D_800A35D0)` is a posdiff normalizer gap; rows 49-51 are byte-clean.
+
+- [s2] [s2] The instrumented cc1's reorg hooks are BB2_DBR_DEBUG (decision trace), BB2_NO_FT_STEAL (skip fill_eager's fall-through fill) and BB2_ALLLIVE_LABEL=<uid,...> (force mark_target_live_regs conservative). Runner scripts: tmp/grind/func_800770B8/s2/run_idump.sh and run_wdump.sh.
