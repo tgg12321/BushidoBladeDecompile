@@ -19393,3 +19393,107 @@ Nothing is bytes-proven and nothing is blocked by an untouchable surface. `src/s
 `INCLUDE_ASM("asm/funcs", CD_datasync);` with 0 regfix / 0 asmfix rules; the best honest form is
 7 masked points away and lives in `memory/grind/CD_datasync/candidate.c`. The working tree was
 restored to HEAD before this record was filed.
+
+## 2026-09-01 — func_800770B8 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Proof-of-foreclosure record for `func_800770B8` (src/text1b.c), re-filed after the owner's
+2026-09-01 FORECLOSED-BUCKET REVIEW returned the function to the active lane under Ruling A
+with a NAMED PROBE. This session (s20, escalation modality) EXECUTED that probe in full — 36
+fresh builds — and it did not drop the floor. Filed under the standing auto-ruling of
+2026-07-27 (`.claude/rules/endgame-lock-disposition.md`) and RECORDED, not asked, per the
+2026-08-31 ruling (`.claude/rules/ordinary-c-judge-decidable.md`): nothing here is addressed
+to the owner and nothing waits on a reply.
+
+**Chassis, re-measured this session on a pristine reference.** `engine build-c text1b` from
+untouched main source regenerated `build/src/text1b.o` (sha1
+55a39c6dbcf00ec4feda82df16f9325319e1e5a8) BEFORE any probe, so no candidate object could
+contaminate the scorer. `memory/grind/func_800770B8/candidate.c` applied to src/text1b.c with
+the two byte-neutral caller-side edits it documents (prototype `s32 func_800770B8(s32, s32,
+s32);`, call site `(s32)&D_8009BD24`): `sandbox func_800770B8 --disable all` = **score 5,
+build_insns 175, target_insns 175, rules_dropped 0**. Flat at 5 since s11 — ten consecutive
+sessions across the modalities escalation, structural, synthesis, solver and forensics.
+
+**The residual.** Five in-place register names, no skeleton difference (s18: goal_from_tgt.py
+classify = 5 renamed pairs, 0 skeleton-differing; sched_solver align honobj->tgtobj = {equal
+170, replace 5, delete 0, insert 0, moved 0}). Rows 35-36 (class B: two stores go through the
+`p_old` copy `$s1` instead of the raw `func_8006E49C` result `$v0`) and rows 62-64 (class C:
+`addu $v0,$v0,$v1` / `addiu $a3,$v0,0x6A` / `addiu $a1,$v0,0x7E` against the target's
+`addu $v1,$v1,$v0` / ...).
+
+**Ruling A's reopen ground, answered by measurement.** The review reopened this item because
+both class closures were PRICE arguments resting on "zero insn slack (175 == 175)" while the
+ledger held measured 173/174-insn spellings, and the fence-device x slack-spelling
+cross-product had never been built. It is built now
+(`tmp/grind/func_800770B8/s20/gen.py`, runner `s20/run.sh`, log `s20/sweep.log`): bases {F =
+floor candidate, C = s12 flipped-CABD `perm/Q12.c`} x devices {none, s17 C1 duplicated-arm
+join label, s17 B1 post-copy branch} x slack {none, D = s13 do-while third loop (-1 insn),
+G = s18fx gate-1 block-local reload (-1), E = D+G (-2), P = s13 pointer walk (-2), Q = P+D
+(-3)} = 36 builds.
+
+1. **The "zero slack" sentence is FALSE as a constructibility claim, and the closure survives
+   anyway.** Insn counts compose exactly additively, so eight builds this session are 175-insn
+   bodies carrying a surviving CODE_LABEL — the object s17 said could not exist: FPb 175/43,
+   FPc 175/51, FEb 175/56, FEc 175/65, CPb 175/52, CPc 175/60, CEb 175/47, CEc 175/56.
+2. **SCORE is additive on the same axes, and that is the real lock.** Measured deltas on the
+   floor base: device B1 = +18 rows, device C1 = +25; slack D = +1, P = +21, G = +36, E = +37,
+   Q = +22. Combinations land within 2 of the sum of their parts (FDc = 31 = 5+25+1; FPc = 51
+   = 5+25+21; FPb = 43 = 5+18+21). The cheapest -1-insn slack costs +1 row but the cheapest
+   -2-insn slack costs +21, and the DEVICE's own collateral (+18 minimum) already exceeds by
+   nine times the TWO rows class B is worth. Best 175-insn label build = 43 vs a floor of 5;
+   even a hypothetically free -2 slack leaves it at 23. Class B is foreclosed by the device's
+   price, independently of the instruction budget — the correction the review asked for
+   strengthens the closure instead of reopening it.
+3. **The flip ceiling recomputed over the CABD basin is 10, worse than the 7 the review
+   suspected was mis-basined.** All twelve C-base builds are >= 12 (C00 12, CD0 13, CG0 32,
+   CE0 33, CP0 35, CQ0 36, device builds 30..61); with s12's exhaustive 79-position
+   second-wrap sweep on that same base (minimum 10 at W039/W040, at the price of a SECOND
+   FAKE-annotated wrap) the basin bottoms out at 10 — five worse than the floor. The only
+   sub-5 number ever recorded on any flipped basin is s14's P8 = 4/175, which IS the
+   `(t0 * 4) >> 1` arithmetic-identity detour the Judge FAILED on 2026-09-01 (decisions.md
+   07:23 entry) and which remains banned; no build in this sweep uses it or any respelling of
+   it.
+
+**Gate (a) — canonical-asm evidence: FAILED (re-run this session).**
+`python3 tools/scan_hand_coded.py --single func_800770B8`
+(`tmp/grind/func_800770B8/s20/scan.log`) returns `tier=LOW score=0/8`, "no strong hand-coded
+indicators", every one of S1-S8 unset: 0 multu/mflo pairs, no empty-body branches, 175 insns
+with 5 spills over 14 distinct registers, max load burst 3 in any 8-insn window, no
+high-similarity sibling, no BIOS jumptable call pattern, all callee-save uses paired with an
+`$sp` save, no redundant mask-before-shift. Ordinary GCC 2.7.2 output; the canonical-asm grant
+path is not available.
+
+**Gate (b) — in-hand SOTN-master precedent: FAILED, against the UNCAPPED index.** The review's
+Correction 2 (precedent censuses ran against a cap-truncated derived artifact) is answered
+directly: `docs/reference/sotn-construct-index.md` has since been rebuilt uncapped — 2,746
+lines, commit `aa53500226ee84be763f3e8702b27de06456b3a7`, generated 2026-09-01, against the
+1,056-line artifact s19 used. Re-censused on the new index: ZERO hits for
+`combine_regs|local-alloc|reg_qty|operand[ -]order|register seat|swap operand`. The gate is
+additionally vacuous, because after this session's sweep there is still no closing construct
+in hand to seek precedent FOR: the only constructs ever measured to emit either target row
+group are the two label devices (>= +18 rows of collateral, measured above) and the banned
+identity detour. The 958-hit `dup_if_else_arm` class in the rebuilt index does not rescue this
+residual — the C1 device IS a duplicated-arm form and it is dead on PRICE (+25 rows), not on
+precedent.
+
+**Exhaustion.** Twenty sessions; modalities escalation, structural, synthesis, solver,
+forensics, permuter (two telemetered campaigns totalling 33,926 iterations, both fresh-seed
+exhausted); 93 banked rejected forms in `memory/grind/func_800770B8/rejected/`; the mechanism
+of each residual class named at compiler-source level (class B: cse.c:8038-8063 EBB
+termination + jump.c label demotion; class C: local-alloc.c:1240-1298 block_alloc operand
+tying, all ten combine_regs gates at local-alloc.c:1784-1946 typed in s18); global allocation
+NEGATIVE at depth 3 on the full goal; sched1 and sched2 report no differing block against the
+target object.
+
+**Evidence pointers.** `memory/grind/func_800770B8/evidence.md` and `hypotheses.md` (s1-s20,
+[s20] sections appended this session), `candidate.c` (the floor-5 form), `rejected/` (93
+forms, four added this session including the first 175-insn surviving-label builds),
+`tmp/grind/func_800770B8/s20/` (gen.py, run.sh, apply.py, v/ = the 36 bodies, sweep.log,
+scan.log), `tmp/grind/func_800770B8/s19b/`, `s19/`, `s18/`.
+
+**Re-activation triggers.** (i) an owner class grant covering an arithmetic-identity /
+dependence-edge construct on a live computation (the banned P8 shape measures 4/175 today);
+(ii) an owner grant covering a label device whose collateral is not paid down — i.e. accepting
+a 43-row-worse body is not the question; the question would be a grant for a construct that
+splits a cse extended basic block WITHOUT a CODE_LABEL, which GCC 2.7.2 does not offer today;
+(iii) a toolchain finding that alters block_alloc's operand tying or cse2's EBB termination;
+(iv) an owner unpark.

@@ -1,7 +1,7 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 19,
+ "session_count": 20,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -117,13 +117,19 @@
    "floor": 5,
    "modality": "escalation",
    "headline": "Floor re-verified at 5 on a pristine reference; class C's last frontier question answered NO by 3 fresh builds; both endgame gates FAIL (scan LOW 0/8, precedent census zero) - foreclosure record re-fi"
+  },
+  {
+   "session": 20,
+   "floor": 5,
+   "modality": "escalation",
+   "headline": "Owner Ruling-A named probe EXECUTED (36 builds): 175-insn surviving-label bodies DO exist (zero-slack premise falsified) but score is additive too \u2014 best label build 43 vs floor 5, CABD ceiling 10; bo"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Nothing remains attackable in pure C on today's chassis: class B is price-foreclosed at 170 insns, class C has no C-reachable combine_regs gate inside a 175==175 body in either operand order, and the flipped basin's arithmetic ceiling is 7 > 5.",
-   "mechanism": "local-alloc.c:1240-1298 block_alloc operand tying (gates typed exhaustively in s18); flow.c copy deletion for class B; sched.c reordering cannot undo a seat swap.",
-   "next_probe": "Only a re-activation trigger changes this: an owner grant covering an arithmetic-identity / dependence-edge construct on a live computation, a toolchain finding that alters block_alloc operand tying, a chassis change that gives the body instruction slack, or an owner unpark."
+   "hypothesis": "Nothing remains attackable in pure C on today's chassis. Class B is foreclosed by DEVICE PRICE (+18 rows minimum for 2 rows of gain) rather than by the insn budget \u2014 the ruling's 'zero slack' objection is answered and does not reopen it; class C has no C-reachable combine_regs gate; the CABD and flipped-ABCD basins bottom out at 10 and 7 against a floor of 5.",
+   "mechanism": "cse.c:8038-8063 (only CODE_LABEL / NOTE_INSN_SETJMP end a cse2 EBB) + jump.c pass-1 label demotion for class B; local-alloc.c:1240-1298 block_alloc operand tying (all ten combine_regs gates typed in s18) for class C.",
+   "next_probe": "Only a re-activation trigger changes this: an owner class grant covering the banned arithmetic-identity / dependence-edge construct (measures 4/175 today), a grant or compiler finding that splits a cse2 extended basic block WITHOUT a CODE_LABEL, a toolchain finding that alters block_alloc operand tying, or an owner unpark."
   }
  ],
  "judge_constraints": [

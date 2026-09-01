@@ -2428,3 +2428,96 @@ evidence of the trap, NOT as a result).
 - [s19] Disposition RE-FILED at docs/grind/decisions.md:17443 with a header line carrying the literal token the driver's validator matches ('OWNER-ESCALATION') alongside the standing-ruling title - the previous session was discarded solely because its header omitted that token (driver check: tools/grinder/grind.ps1:1058 requires a line matching 'OWNER-ESCALATION|CANONICAL-ASM GRANT PATH' AND the function name).
 
 - [s19] candidate.c is unchanged and remains the best known form (score 5, cheat-free apart from the one annotated single-level do-while(0) wrap whose classification s15 closed by citation to .claude/rules/do-while-zero-exception.md). Rejected bank now holds 89 forms. src/text1b.c was restored to HEAD before finishing.
+
+## [s20] escalation — the owner's Ruling-A named probe, executed (36 fresh builds)
+
+Chassis re-verified FIRST, on a reference `build/src/text1b.o` rebuilt from PRISTINE main
+source this session (`engine build-c text1b`, sha1 55a39c6dbcf00ec4feda82df16f9325319e1e5a8):
+`memory/grind/func_800770B8/candidate.c` applied to src/text1b.c (plus the two byte-neutral
+caller-side edits it documents) measures **score 5 / build_insns 175 / target_insns 175 /
+rules_dropped 0**. The floor is still 5; the ledger number and the chassis agree.
+
+**The probe.** The 2026-09-01 FORECLOSED-BUCKET REVIEW (Ruling A) returned this function to
+active on the ground that both class closures are PRICE arguments resting on "zero insn slack
+(175 == 175)" while the ledger holds measured 173/174-insn spellings, and that the
+fence-device x slack-spelling cross-product had never been built. This session built it:
+`tmp/grind/func_800770B8/s20/gen.py` -> `s20/v/` (36 bodies), scored one at a time by
+`s20/run.sh` (each build re-applies a body to a pristine src/text1b.c and runs
+`sandbox func_800770B8 --disable all`); full log `s20/sweep.log`.
+
+Axes:
+- bases: **F** = candidate.c (unflipped ABCD, floor, 5/175); **C** = s12 `perm/Q12.c`
+  (flipped CABD basin, 12/175 — the build whose rows 60-64 are the target's byte-exactly,
+  register seats included).
+- label devices (the only constructs ever measured to emit the target's class-B 2+2 split):
+  **c** = s17 C1 duplicated-arm join label; **b** = s17 B1 post-copy branch.
+- slack spellings: **D** = s13 third loop as `do/while` (-1 insn); **G** = s18fx class-C
+  gate-1 block-local reload `b2` (-1); **E** = D+G composed; **P** = s13 inner-loop pointer
+  walk `*p_6a++` (-2); **Q** = P+D (-3).
+
+**Result 1 — the "zero slack" premise is FALSIFIED as stated, and the price argument survives
+anyway, now measured instead of asserted.** Instruction counts compose EXACTLY additively:
+every device costs +2 insns, every -1 slack spelling gives back exactly 1, and the two
+compose. Eight builds this session are 175-insn bodies CARRYING A SURVIVING CODE_LABEL —
+the object s17 declared unconstructible ("this function has ZERO insn slack"):
+
+    FPb 175/43   FPc 175/51   FEb 175/56   FEc 175/65
+    CPb 175/52   CPc 175/60   CEb 175/47   CEc 175/56
+
+So a 175-insn label build EXISTS. It is 43 at best against a floor of 5.
+
+**Result 2 — SCORE is additive too, and that is what forecloses the family.** Measured
+deltas on the F base: device b = +18 rows, device c = +25; slack D = +1, P = +21, G = +36,
+E = +37, Q = +22. Every combination lands within 2 of the sum of its parts (e.g. FDc = 31 =
+5+25+1; FPc = 51 = 5+25+21; FPb = 43 = 5+18+21). Two consequences:
+- the CHEAPEST slack (D, +1 row) only buys -1 insn, and the cheapest -2 slack in nineteen
+  sessions of spellings costs +21 rows (P), so a device can only be brought back to 175 by
+  paying ~+21 rows before the device's own collateral is counted;
+- the device's own collateral (+18 / +25 rows) ALREADY exceeds by an order of magnitude the
+  2 rows class B is worth. Even a hypothetical free -2 slack would leave the best label build
+  at 23. Class B is foreclosed by the DEVICE'S price, not by the insn budget — the correction
+  the ruling asked for strengthens the closure rather than reopening it.
+
+**Result 3 — the flip ceiling recomputed over the CABD basin: 10, i.e. 5 worse than the
+floor.** The CABD basin was never priced against slack/devices before. All twelve C-base
+builds this session are >= 12 (C00 12, CD0 13, CG0 32, CE0 33, CP0 35, CQ0 36, plus the six
+device builds 30..61). With s12's exhaustive 79-position second-wrap sweep on this exact base
+(minimum 10 at W039/W040, which additionally costs a second FAKE-annotated wrap) the basin's
+true ceiling is **10**. s19's "ceiling 7" figure came from the flipped-ABCD basin; the CABD
+number is worse, not better. The only value below 5 ever recorded on any flipped basin is
+s14's P8 = 4/175, which IS the `(t0 * 4) >> 1` arithmetic-identity detour the Judge FAILED on
+2026-09-01 and which remains banned; nothing in this sweep uses it.
+
+**Gate (a) re-run this session — FAILED.** `python3 tools/scan_hand_coded.py --single
+func_800770B8` (log `tmp/grind/func_800770B8/s20/scan.log`): `tier=LOW score=0/8`, "no strong
+hand-coded indicators", all of S1-S8 unset (0 multu/mflo pairs; no empty-body branches; 175
+insns / 5 spills / 14 distinct regs; max load burst 3 per 8-insn window; no high-similarity
+sibling; no BIOS jumptable pattern; every callee-save use paired with an `$sp` save; no
+redundant mask-before-shift). Ordinary GCC 2.7.2 output; the canonical-asm grant path is not
+available.
+
+**Gate (b) re-run against the UNCAPPED index — FAILED.** The review's Correction 2 (census
+ran against a cap-truncated artifact) is answered: `docs/reference/sotn-construct-index.md`
+has since been rebuilt uncapped (2,746 lines, commit aa535002, generated 2026-09-01, vs the
+1,056-line artifact s19 used). Re-censused on the new index: ZERO hits for
+`combine_regs|local-alloc|reg_qty|operand[ -]order|register seat|swap operand`. The gate is
+also vacuous for the same reason as in s19 — after this sweep there is still no closing
+construct in hand to seek precedent FOR: the only constructs that emit either target row
+group are the two label devices (>= +18 rows of collateral, measured above) and the banned
+identity detour.
+
+- [s20] Chassis re-verified on a PRISTINE reference: `engine build-c text1b` from untouched main source regenerated build/src/text1b.o (sha1 55a39c6dbcf00ec4feda82df16f9325319e1e5a8) BEFORE any probe; candidate.c then measures score 5 / build_insns 175 / target_insns 175 / rules_dropped 0. Floor flat at 5 since s11 (ten sessions, five modalities).
+
+- [s20] The owner's Ruling-A named probe is EXECUTED IN FULL, not deferred: 36 builds spanning the exact cross-product the ruling specified, plus the two -2-insn slack spellings (E = D+G, P = pointer walk) needed to bring a +2-insn device back to 175.
+
+- [s20] FALSIFIED: 'this function has zero insn slack (175 == 175)' as a constructibility claim. Eight 175-insn bodies carrying a surviving CODE_LABEL were built this session (FPb 43, FPc 51, FEb 56, FEc 65, CPb 52, CPc 60, CEb 47, CEc 56).
+
+- [s20] CONFIRMED and now quantified: score composes additively on these axes. Device collateral on the floor base is +18 (B1) / +25 (C1) rows; slack collateral is +1 (D), +21 (P), +36 (G), +37 (E), +22 (Q). Class B is worth 2 rows, so the device's own price forecloses it by ~9x regardless of the instruction budget.
+
+- [s20] CABD basin priced for the first time against slack and devices: minimum 12 across twelve builds, 10 including s12's second-wrap sweep — the basin's ceiling is 10, five worse than the floor and worse than the flipped-ABCD basin's 7. s19's 'ceiling 7' was not an under-estimate.
+
+- [s20] Both endgame gates re-fail on freshly-run evidence: scan_hand_coded tier=LOW 0/8; uncapped sotn-construct-index census returns zero for every seat/operand-order shape.
+
+- [s20] Four new rejected forms banked (93 total), including the first 175-insn surviving-label builds this ledger has ever held: rejected/s20-classB-B1-label-device-plus-pointer-walk-slack-175insn-score43.c, s20-classB-C1-joinlabel-plus-pointer-walk-slack-175insn-score51.c, s20-classB-C1-joinlabel-plus-dowhile-gate1-slack-175insn-score65.c, s20-CABD-basin-plus-B1-label-slack-175insn-score52.c.
+
+- [s20] src/text1b.c was restored to its pristine committed state at the end of the sweep; the only tracked edits this session are the ledger, decisions.md, and the four rejected forms.
