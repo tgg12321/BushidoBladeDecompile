@@ -922,3 +922,76 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - probe: Full re-read of evidence.md (1272 lines), hypotheses.md (855 lines), the 16-entry floor history, the 11-form rejected/ bank and the six cross-knowledge decisions.md entries; then the pass-attribution cross-check plus a prototype-level check of s16's leg-3 emptiness claim.
 - result: No lever exists. The walker is loop-carried, hence an allocno and never a local-alloc quantity, and tools/ra_solver's forward model already reproduces the real allocation exactly (sort order MATCH, dispositions 8/8) — a model that predicts every seat correctly leaves no room for a later pass to be the cause. New this session: s16's leg-3 emptiness is an ABI/prototype fact, not a search result — set_preference needs a copy insn binding a pseudo to $v1, and a void leaf with one pointer parameter and no calls can never contain one, and the signature is fixed by the target. So the re-opening route the s16 frontier named ('exhibit a C form whose hard_reg_full_preferences contains 3') is closed by the function's own prototype. The three foreclosure legs are jointly exhaustive over source-controllable inputs.
 - verdict: KILLED
+
+## [s18] H44 — the s15/s16/s17 foreclosure closes find_reg's pass-0 input space for a FIXED allocno set, but never closed the allocno SET itself; an upstream (cse.c) unification could reach the target seats
+- mechanism: `tools/ra_solver/inverse_compose.py hypothesis --merge P,Q` models exactly what cse.c does when it unifies two materialisations of one value: the survivor takes the SUM of the references, the UNION of the live range and the UNION of the conflicts, and the exact forward RA model is then replayed. That input class is upstream of every leg the foreclosure argues (priority / conflicts / ~regs_used_so_far / regs_someone_prefers), and no session had ever run it on this function.
+- probe: tmp/grind/func_800324D0/s18/merge_sweep.py — all 56 ordered pairs of the 8 allocnos, via the tool, goal {73:$v1, 75:$a2, 85:$a2} (s13, dispositions 8/8 MATCH). Then tmp/grind/func_800324D0/s18/merge_depth2.py — all 2408 merge CHAINS of depth <= 2, in-process (merge_pseudos + Sim).
+- result: 56/56 negative at depth 1; 2408/2408 negative at depth <= 2 (875 of them faithful, i.e. not deleting a goal pseudo). ZERO chains reach the full goal and ZERO chains put the walker (73) in $v1 at all — not even unfaithfully. Logs: s18/merge_sweep.log, s18/merge_depth2.log; JSON: s18/merge_sweep.json, s18/merge_depth2.json.
+- verdict: KILLED (the CSE / allocno-set-shrink axis is closed to depth 2; it is NOT the missing input)
+
+## [s18] H45 — THE FORECLOSURE'S PRIORITY LEG IS FALSE. The target disposition IS reachable by allocation ORDER alone, and the walker does not need a priority lift at all
+- mechanism: The filed record (docs/grind/decisions.md:17155) argues "lifting the walker above 75 needs a 4.84x priority lift — arithmetically impossible". That is a claim about ONE pairwise race (73 vs 75). It was never checked against the full order space, so it never established that beating 75 is what the target actually requires.
+- probe: tmp/grind/func_800324D0/s18/order_closure.py — enumerate ALL 8! = 40320 permutations of the allocation order and replay the exact find_reg forward model (Sim.simulate(order=...)) on each, everything else held at the measured model; count those reaching the FULL target disposition {72:$a0, 73:$v1, 74:$v0, 75:$a2, 76:$a1, 85:$a2, 86:$t0, 91:$a3}.
+- result: **336 of 40320 orders reach the full 8/8 target disposition** (6720 seat the walker in $v1; 2016 reach the 3-seat goal). The necessary precedences, extracted over all 336 (s18/order_constraints.log), are exactly: 73 before {75,76,85,91,86}; 76 before {75,85,91,86}; 91 before 86 — and **72 and 74 are completely unconstrained** (they may occupy any position). So the requirement is NOT "beat 75"; it is the three-way relation pri(73) > pri(76) > {pri(75), pri(85)}.
+- verdict: CONFIRMED (the order channel is OPEN — the recorded priority leg overstates the requirement and is falsified as written)
+
+## [s18] H46 — with the correct constraint set, the walker's live length does not have to change AT ALL; the reachable region is a demotion of the three short-lived allocnos
+- mechanism: global.c sorts by priority = floor_log2(nrefs)*nrefs/livelen*10000*size, so an order is reachable iff some (nrefs, livelen) assignment induces it. Live length is the source-controllable term (compute a value earlier / consume it later). Measured ALLOCDBG inputs (fresh extract from candidate.c THIS session, s18/model_candidate.json): 73 nrefs=24 livelen=62 pri=15483 | 75 nrefs=10 livelen=4 pri=75000 | 76 nrefs=26 livelen=22 pri=47272 | 85 nrefs=8 livelen=7 pri=34285 | fixed 72=29838, 74=26666, 91=333, 86=326.
+- probe: tmp/grind/func_800324D0/s18/livelen_feasibility.py (6,447,060 live-length tuples land in the 336-order hit set), s18/walker_relief.py (rank by demand on the walker instead of total distance), s18/relief_curve.py (the Pareto curve: cheapest demotions for every walker live length 1..70).
+- result: **At the MEASURED walker live length of 62 — the walker untouched — a target-reaching order exists**, requiring only livelen(75) >= 20 (from 4), livelen(76) >= 68 (from 22), livelen(85) >= 16 (from 7). The curve trades off smoothly: at l73=20 the requirement collapses to l75>=7, l76>=22 (UNCHANGED), l85>=7 (UNCHANGED) — i.e. shortening the walker to 20 needs a single +3 lengthening of pseudo 75. Full curve in s18/relief_curve.json / .log.
+- verdict: CONFIRMED (a concrete, quantified, source-side lever map now exists where the record said "arithmetically dead")
+
+## [s18] H47 — allocno live length IS source-order-controllable (the s16 blanket claim was generalised from one probe on the one allocno that cannot move)
+- mechanism: s16's P1 moved the WALKER's load below the 11 pad stores, got a byte-identical RA model, and the record generalised that to "the live-length term is not source-order-controllable at all". The walker is loop-carried and pinned by construction, so it is the worst possible witness for a general claim.
+- probe: hoisted `c = ptr[4]; ptr += 5;` above the 11 pad stores (s18/body_v1_hoist_c.c), fresh extract (s18/model_v1_hoist_c.json), compared against the candidate model extracted the same way this session.
+- result: The models DIFFER. Pseudo 74's live length moved 9 -> 21 (priority 26666 -> 11428) and the allocation order changed from [75,76,85,72,74,73,91,86] to [75,76,85,72,73,74,91,86]. So an ordinary source-order edit does move live lengths and does move the order. (Pseudo 76 was unmoved at 22 by THIS particular edit, and the form is off-shape: sandbox 21, build_insns 67 != target 68 — banked at rejected/hoist-c-load-above-pad-stores-67insns.c.)
+- verdict: CONFIRMED (the lever exists and is measurable; the blanket claim is retired — what remains is finding an edit that moves 75/76/85 by the amounts H46 quantifies while holding 68 insns)
+
+## Frontier (for s19+ — REPLACES the s17 frontier, which rested on a leg that s18 falsified)
+1. **The function is NOT foreclosed. Do not return owner-gated on decisions.md:17155.**
+   s18 filed a correction entry against that record. The order channel is open (336/40320
+   target-reaching orders), the walker needs no priority lift, and the constraint set is
+   pri(73) > pri(76) > {pri(75), pri(85)} with 72/74 free.
+2. **Attack the live lengths of pseudos 75, 76 and 85 — not the walker.** Targets from the
+   relief curve (s18/relief_curve.json), pick any point on it: with the walker unchanged at 62,
+   need livelen 75 >= 20 (from 4), 76 >= 68 (from 22), 85 >= 16 (from 7); each unit the walker
+   comes down relaxes all three. Identity from the s5 chassis note: 75 = the cmd HEAD web (the
+   staged loop-tail `cmd = *ptr`), 85 = the cmd ARM web (`cmd = c - 0x80`), 76 = the stream byte
+   `c`, 73 = the walker `ptr`, 72 = `pad`, 74 = `val`. The lever is ordinary C: compute a value
+   earlier / consume it later so its live range spans more insns, WITHOUT changing the 68-insn
+   shape. Measure with `tools/ra_solver/extract.py func_800324D0 code6cac_b` (one run, no
+   sandbox needed) and read allocdbg livelens BEFORE spending a sandbox measurement.
+3. **Two model traps s18 hit — do not repeat them.** (a) `Sim.__init__` re-seeds
+   `model["flow"]` from the ALLOCDBG rows, so editing `model["flow"]` before constructing a Sim
+   is a silent NO-OP; use `Sim.simulate(overrides={pseudo: {"nrefs":..,"livelen":..}})` or
+   `simulate(order=[...])`. (b) `Sim.flow` is keyed by INT, not str.
+
+## [s18] The upstream CSE / allocno-set-shrink class — the one input class sitting above every leg of the filed foreclosure — can reach the target seats.
+- mechanism: inverse_compose.py hypothesis --merge P,Q models cse.c unifying two materialisations: the survivor takes the SUM of references, the UNION of the live range and the UNION of the conflicts, and the exact find_reg forward model is replayed. Never run on this function in 17 prior sessions.
+- probe: tmp/grind/func_800324D0/s18/merge_sweep.py (all 56 ordered pairs, via the tool) and s18/merge_depth2.py (all 2408 merge chains of depth <= 2, in-process merge_pseudos + Sim), goal {73:$v1, 75:$a2, 85:$a2} (s13, dispositions 8/8 MATCH).
+- result: 56/56 negative at depth 1; 2408/2408 negative at depth <= 2 (875 of them faithful). ZERO chains reach the goal and ZERO put the walker (allocno 73) in $v1 at all.
+- verdict: KILLED
+
+## [s18] The filed foreclosure's priority leg ('lifting the walker above allocno 75 needs a 4.84x priority lift — arithmetically impossible in a shape fixed at 68 instructions') establishes that the target allocation is unreachable by ordering.
+- mechanism: That leg reasons about a single pairwise race (73 vs 75) and never checks what the target disposition actually demands of the allocation ORDER, so it cannot support the general claim it is used for.
+- probe: s18/order_closure.py — enumerate all 8! = 40320 permutations of the allocation order and replay the exact ra_solver find_reg model (Sim.simulate(order=...)) on each, everything else held at the model re-extracted THIS session from the candidate body (s18/model_candidate.json; sort order MATCH, dispositions 8/8).
+- result: 336 of 40320 orders reach the FULL 8/8 target disposition; 6720 seat the walker in $v1; 2016 reach the 3-seat goal. Necessary precedences over all 336 (s18/order_constraints.log): 73 before {75,76,85,91,86}, 76 before {75,85,91,86}, 91 before 86, with 72 and 74 UNCONSTRAINED. The requirement is pri(73) > pri(76) > {pri(75), pri(85)} — not 'beat 75'.
+- verdict: KILLED
+
+## [s18] Reaching a target-producing order requires a large, source-impossible change to the loop-carried walker's live length.
+- mechanism: global.c sorts allocnos by priority = floor_log2(nrefs)*nrefs/livelen*10000*size, so an order is reachable iff some (nrefs, livelen) assignment induces it, and live length is the source-controllable term. Measured ALLOCDBG inputs this session: 73(24,62) pri 15483 | 75(10,4) pri 75000 | 76(26,22) pri 47272 | 85(8,7) pri 34285 | fixed 72=29838, 74=26666, 91=333, 86=326.
+- probe: s18/livelen_feasibility.py (6447060 live-length tuples landing in the 336-order hit set), s18/walker_relief.py (ranked by demand on the walker rather than total distance), s18/relief_curve.py (Pareto curve for walker live length 1..70).
+- result: At the walker's MEASURED live length of 62 — walker untouched — a target-reaching order exists, needing only livelen(75) >= 20 (from 4), livelen(76) >= 68 (from 22), livelen(85) >= 16 (from 7). At walker livelen 20 the requirement collapses to livelen(75) >= 7 with 76 and 85 UNCHANGED. Full curve banked at s18/relief_curve.json.
+- verdict: CONFIRMED
+
+## [s18] Allocno live length is not source-order-controllable (the s16 blanket claim carried into the foreclosure record).
+- mechanism: s16 generalised from one probe that moved the WALKER — loop-carried and pinned by construction, the worst possible witness for a claim about every allocno.
+- probe: Hoisted `c = ptr[4]; ptr += 5;` above the 11 pad stores (s18/body_v1_hoist_c.c), ran a fresh tools/ra_solver/extract.py, and compared against the candidate model extracted the same way this session.
+- result: The models DIFFER: pseudo 74's live length moves 9 -> 21 (priority 26666 -> 11428) and the allocation order changes from [75,76,85,72,74,73,91,86] to [75,76,85,72,73,74,91,86]. The form itself is off-shape (sandbox 21, build_insns 67 != target 68) and is banked as rejected.
+- verdict: KILLED
+
+## [s18] The chassis is still the 15-chassis on today's HEAD, so every chassis-relative conclusion in the ledger remains current.
+- mechanism: sandbox scores against build/src/code6cac_b.o and never rebuilds it, so an absolute floor is only honest against a pristine reference object; s17 left that reference rebuilt from pristine HEAD and this session built nothing before measuring.
+- probe: Applied memory/grind/func_800324D0/candidate.c to src/code6cac_b.c and ran `& tools/wteng.ps1 main sandbox func_800324D0 --disable all` (s18/sandbox_candidate.log).
+- result: score 15, target_insns 68 == build_insns 68, rules_dropped 0.
+- verdict: CONFIRMED

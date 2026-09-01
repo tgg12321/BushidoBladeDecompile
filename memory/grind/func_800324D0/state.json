@@ -1,8 +1,8 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 17,
- "current_modality": "synthesis",
+ "session_count": 18,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -105,23 +105,29 @@
    "floor": 15,
    "modality": "synthesis",
    "headline": "Synthesis merged-attack pass is empty and the foreclosure record is FILED (docs/grind/decisions.md:17155): chassis re-measured 15/68/68 on today's HEAD, the owner-granted INCLUDE_ASM migration re-veri"
+  },
+  {
+   "session": 18,
+   "floor": 15,
+   "modality": "solver",
+   "headline": "Solver falsified the filed foreclosure's priority leg: 336 of all 40320 allocation orders reach the FULL 8/8 target disposition, the walker needs NO priority lift, and a quantified live-length relief "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The function is foreclosed and the proof record is already filed; the only correct next action is the disposition, which only an `escalation`-modality session may return.",
-   "mechanism": "Floor flat at 15 for fourteen sessions across eight modalities; both endgame-lock gates FAIL twice each; the pure-C residual is closed over find_reg's complete pass-0 input space by three legs (priority, conflicts, the two non-conflict channels), and s17 added the prototype argument that shuts the last named re-opening route. grindlib.py:569 reserves the standing-ruling disposition for `escalation` modality, which is why s17 returned progress.",
-   "next_probe": "Next session, in `escalation` modality: re-verify the chassis by the standing procedure (one build + one sandbox, expect 15/68/68) and return owner-gated with escalation_ref = 'docs/grind/decisions.md:17155 \u2014 2026-08-31 \u2014 func_800324D0 \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED'. No new measurement is required; do not spend turns on spellings."
+   "hypothesis": "The residual closes by DEMOTING the three short-lived allocnos (75 = cmd head web, 76 = stream byte c, 85 = cmd arm web) rather than promoting the loop-carried walker \u2014 the walker's live length may stay exactly where it is.",
+   "mechanism": "336 of 40320 allocation orders reach the full 8/8 target; the necessary relation is pri(73) > pri(76) > {pri(75), pri(85)} with 72/74 free, and priority = floor_log2(nrefs)*nrefs/livelen*10000*size, so lengthening a live range demotes an allocno. Quantified in s18/relief_curve.json.",
+   "next_probe": "Spell C that lengthens the live ranges of pseudos 75/76/85 without changing the 68-instruction shape (compute the value earlier / consume it later \u2014 e.g. move the staged `cmd = *ptr` read earlier in the loop tail, or widen the cmd arm web's span), then run ONE `tools/ra_solver/extract.py func_800324D0 code6cac_b` and read the ALLOCDBG livelens against the curve BEFORE spending a sandbox measurement. Target at the measured walker livelen 62: l75 >= 20, l76 >= 68, l85 >= 16."
   },
   {
-   "hypothesis": "The only remaining real work is an operator-lane commit, and its diff is banked and byte-verified.",
-   "mechanism": "tmp/grind/func_800324D0/s17/migration.diff migrates the function to INCLUDE_ASM/INCLUDE_RODATA and deletes the four legacy register pins main still carries; full build with it applied is SHA1 == oracle on HEAD b94a65de. No grind session can land it (no_c_body => sandbox 68 => grind.ps1:561 unreachable; grind.ps1:886 reverts).",
-   "next_probe": "Operator: git apply the banked diff, run a fresh layer-2 cheat-reviewer, run verify-oracle plus check_completion_integrity.py UNDER WSL, and commit as 'cheat-cleanup: func_800324D0 \u2014 migrate to INCLUDE_ASM, delete 4 register-asm pins (owner ruling 5, 2026-08-30)'. Sessions must not re-attempt it and must not re-file it as an integration handoff."
+   "hypothesis": "A much smaller total perturbation exists if the walker's live length can be reduced at all, because every unit off the walker relaxes all three demotions simultaneously.",
+   "mechanism": "Pareto curve s18/relief_curve.json: walker livelen 55 needs (75,76,85) >= (18,60,14); walker livelen 20 needs (7,22,7) \u2014 a single +3 lengthening of pseudo 75 with 76 and 85 untouched. s16 showed the walker's livelen is invariant to moving its LOAD, but nothing has tested restructuring the loop tail so the walker's last use precedes the back-edge test.",
+   "next_probe": "Extract-only sweep: three or four loop-tail restructurings that shorten the walker's span (increment before the switch; a separate tail pointer that dies early; hoisting the back-edge test's operand), each measured with extract.py and read for allocdbg livelen(73). Report the achievable minimum before any sandbox run."
   },
   {
-   "hypothesis": "Re-opening the pure-C question requires falsifying a foreclosure leg with a measurement, not writing another spelling.",
-   "mechanism": "The three legs are: walker priority cannot reach 75's (needs 4.84x, and the live-length term is not source-order-controllable \u2014 s16 P1 produced a byte-identical RA model); the loop-carried walker conflicts with every allocno; and both non-conflict channels are shut (~regs_used_so_far saturated because $3 is call-used in a leaf; regs_someone_prefers structurally empty by the function's prototype).",
-   "next_probe": "One tools/ra_solver/extract.py run, before any sandbox measurement: does a candidate form show a non-empty hard_reg_full_preferences containing 3, or a walker livelen other than 62? Absent that (and s17 argues the first is impossible for this signature), only a toolchain/model finding or a new class grant covering the invented overlapping-local pair can re-open the function."
+   "hypothesis": "The 336-order hit set may also be reachable through the nrefs term, which no session has swept.",
+   "mechanism": "priority = floor_log2(nrefs)*nrefs/livelen makes the reference count a step function \u2014 crossing a power of two moves priority discontinuously, so a small change in reference count may satisfy pri(76) > pri(75) far more cheaply than a 46-unit live-length change.",
+   "next_probe": "Extend s18/livelen_feasibility.py to sweep (nrefs, livelen) jointly per allocno over plausible ranges, re-rank the solutions by total source-side edit distance, and spell the cheapest."
   }
  ],
  "judge_constraints": [

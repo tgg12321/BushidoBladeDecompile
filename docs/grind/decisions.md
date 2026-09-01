@@ -17253,3 +17253,62 @@ foreclosure legs — concretely, a C form whose `tools/ra_solver/extract.py` mod
 `hard_reg_full_preferences` containing 3, or a walker livelen different from 62. Both are checkable
 in one extract run before any sandbox measurement is spent; absent one of those, no register-seat
 spelling can close this function.
+
+## 2026-08-31 — func_800324D0 — **CORRECTION: THE 2026-08-31 FORECLOSURE RECORD (decisions.md:17155) IS FALSIFIED ON ITS PRIORITY LEG — the function is grindable again**
+
+Filed by grind session 18 (solver modality). This entry does not dispose of anything; it retracts
+the load-bearing leg of an earlier disposition record so that no later session forecloses this
+function on it. Chassis re-measured this session with the candidate applied: **score 15,
+target_insns 68 == build_insns 68, rules_dropped 0**
+(`tmp/grind/func_800324D0/s18/sandbox_candidate.log`).
+
+**What the record claims (decisions.md:17155, "Priority leg").** "Allocation order is 75, 76, 85,
+72, 74, 73 (walker), 91, 86 ... allocno 75 takes first-free `$3`. Lifting the walker above 75 needs
+a 4.84x priority lift — arithmetically impossible in a shape fixed at 68 instructions."
+
+**Why that is the wrong question.** It reasons about ONE pairwise race (73 vs 75) and never checks
+what the target disposition actually requires of the order. Session 18 enumerated **all 8! = 40320
+permutations of the allocation order** and replayed the exact `tools/ra_solver` find_reg forward
+model (sort order MATCH, dispositions 8/8, model re-extracted this session from the candidate body:
+`tmp/grind/func_800324D0/s18/model_candidate.json`) on every one
+(`tmp/grind/func_800324D0/s18/order_closure.py`, `.log`, `.json`):
+
+- **336 of 40320 orders reach the FULL 8/8 target disposition** {72:$a0, 73:$v1, 74:$v0, 75:$a2,
+  76:$a1, 85:$a2, 86:$t0, 91:$a3}; 6720 seat the walker in `$v1`.
+- The necessary precedences over all 336 (`s18/order_constraints.log`) are: **73 before
+  {75,76,85,91,86}; 76 before {75,85,91,86}; 91 before 86** — and **72 and 74 are unconstrained**.
+  The requirement is the three-way relation `pri(73) > pri(76) > {pri(75), pri(85)}`, not "beat 75".
+- Solving `priority = floor_log2(nrefs)*nrefs/livelen*10000*size` under that constraint set
+  (`s18/livelen_feasibility.py`, 6,447,060 admissible live-length tuples; `s18/walker_relief.py`;
+  Pareto curve `s18/relief_curve.json`) shows **the walker needs no lift at all**: at its MEASURED
+  live length of 62 a target-reaching order exists, requiring only livelen(75) >= 20 (from 4),
+  livelen(76) >= 68 (from 22), livelen(85) >= 16 (from 7). Shortening the walker relaxes all three
+  smoothly — at l73 = 20 the whole requirement is a single +3 lengthening of pseudo 75.
+
+**A second sub-claim also retired.** The record's leg-1 sentence "the live-length term is not
+source-order-controllable at all" generalises from s16's single probe, which moved the WALKER — a
+loop-carried value pinned by construction, i.e. the one allocno that cannot move. Session 18
+hoisted `c = ptr[4]; ptr += 5;` above the 11 pad stores and re-extracted: pseudo 74's live length
+moves **9 -> 21** (priority 26666 -> 11428) and the allocation order changes to
+[75,76,85,72,73,74,91,86] (`s18/model_v1_hoist_c.json` vs `s18/model_candidate.json`). That
+particular form is off-shape and rejected (sandbox 21, build_insns 67 != 68), but the lever is real
+and measurable.
+
+**What SURVIVES from the record.** Leg 2 (the walker conflicts with every allocno) and leg 3's
+channel arguments (`~regs_used_so_far` saturated; `regs_someone_prefers` empty by the function's
+prototype) are untouched — and session 18 additionally CLOSED a new axis they never covered: the
+upstream CSE / allocno-set-shrink class. All 56 single merges and all 2408 merge chains of depth
+<= 2 replayed through `inverse_compose.py hypothesis --merge` reach the target zero times, and put
+the walker in `$v1` zero times (`s18/merge_sweep.log`, `s18/merge_depth2.log`). None of those legs
+constrains the ORDER channel, which is the one now shown open.
+
+**Also unchanged and still true:** the owner-ruling-5 INCLUDE_ASM migration remains banked and
+oracle-green (`tmp/grind/func_800324D0/s17/migration.diff`) as the fallback representation, and
+both endgame-lock gates still FAIL (scan_hand_coded tier=LOW 0/8; zero SOTN precedent). Those are
+disposition inputs, not reasons to stop grinding a channel that is measurably open.
+
+**Consequence.** func_800324D0 is NOT foreclosed. A later session must not return `owner-gated` on
+decisions.md:17155. The live frontier is in `memory/grind/func_800324D0/hypotheses.md` (s18
+frontier, H45-H47): attack the live lengths of pseudos 75 / 76 / 85 (the two cmd webs and the
+stream byte `c`) toward the relief curve, holding the 68-instruction shape, and verify with one
+`tools/ra_solver/extract.py` run before spending a sandbox measurement.

@@ -1,3 +1,21 @@
+/* [s18 2026-08-31] READ THIS BEFORE THE s17 HEADER BELOW: THE FUNCTION IS NOT
+ * FORECLOSED. The s17 note "Do not grind this body" is withdrawn. s18 (solver)
+ * enumerated ALL 40320 allocation orders against the exact ra_solver find_reg
+ * model and found 336 that reach the FULL 8/8 target disposition, so the
+ * foreclosure record's priority leg ("the walker needs a 4.84x lift, which is
+ * arithmetically dead") is answering the wrong question: the target does NOT
+ * require the walker to beat allocno 75. It requires pri(73) > pri(76) >
+ * {pri(75), pri(85)}, with 72 and 74 unconstrained -- reachable by DEMOTING the
+ * three short-lived allocnos rather than promoting the loop-carried walker. At
+ * the walker's measured live length of 62, unchanged, the requirement is
+ * livelen(75) >= 20 (from 4), livelen(76) >= 68 (from 22), livelen(85) >= 16
+ * (from 7); shortening the walker relaxes all three (full Pareto curve:
+ * tmp/grind/func_800324D0/s18/relief_curve.json). Live length IS
+ * source-order-controllable -- measured, s18 H47. Correction entry filed at
+ * docs/grind/decisions.md:17257. Body BELOW is unchanged and re-measured this
+ * session at score 15, 68 == 68, rules_dropped 0
+ * (tmp/grind/func_800324D0/s18/sandbox_candidate.log). Attack pseudos 75/76/85
+ * (the two cmd webs and the stream byte c), not the walker. */
 /* [s17 2026-08-31] RE-VERIFIED on a fresh reference (pristine checkout ->
  * build SHA1 == oracle -> this body -> sandbox --disable all): score 15,
  * 68 == 68, rules_dropped 0 (tmp/grind/func_800324D0/s17/

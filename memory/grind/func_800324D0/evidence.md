@@ -1324,3 +1324,96 @@ a banked, byte-verified two-line diff.
 - [s17] Disposition filed this session at docs/grind/decisions.md:17155 — 'OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED' — superseding the two retired-shape DECISION PACKET entries (:14092, :16729) and the INTEGRATION HANDOFF entry (:16655). It records the gate evidence, the three-leg closure, the exact operator steps for the granted migration, and three re-activation triggers. Main still carries the four register pins at src/code6cac_b.c:1802 until the operator lands that commit — the one debt the foreclosure does not clear.
 
 - [s17] MECHANICAL NOTE for the next session: `python tools/grinder/grindlib.py validate . <outcome> synthesis func_800324D0` REJECTS an owner-gated outcome whose escalation_ref contains 'RESOLVED BY STANDING RULING' outside `escalation` modality (grindlib.py:569) — exhaustion is the driver's call. The foreclosure record is already filed at docs/grind/decisions.md:17155, so the FIRST session dispatched in `escalation` modality can return owner-gated citing it verbatim on turn one, with no new measurement required.
+
+## [s18] SOLVER — the recorded foreclosure is FALSIFIED on its priority leg; the order channel is open
+
+Chassis re-measured this session with the candidate applied: **score 15, target_insns 68 ==
+build_insns 68, rules_dropped 0** (`tmp/grind/func_800324D0/s18/sandbox_candidate.log`). Fresh
+`tools/ra_solver/extract.py func_800324D0 code6cac_b` run FROM THE CANDIDATE BODY (solver rule 2)
+reproduces the banked model exactly (`s18/model_candidate.json`): order [75,76,85,72,74,73,91,86],
+dispositions 8/8, ALLOCDBG (nrefs, livelen) = 75(10,4) 76(26,22) 85(8,7) 72(37,62) 74(8,9)
+73(24,62) 91(3,90) 86(3,92), priorities 75000 / 47272 / 34285 / 29838 / 26666 / 15483 / 333 / 326.
+
+**1. The CSE / allocno-set axis is closed (new kill).** `inverse_compose.py hypothesis --merge`
+models an upstream unification of two materialisations — the one input class that sits upstream of
+every leg the foreclosure argues. All 56 ordered pairs (s18/merge_sweep.log) and all 2408 merge
+chains of depth <= 2 (s18/merge_depth2.log) were replayed against the exact forward model: zero
+reach the target, and zero put the walker in $v1 at all.
+
+**2. The order channel is NOT closed — 336 of 40320 orders reach the FULL target.**
+`s18/order_closure.py` enumerates every permutation of the allocation order and replays find_reg.
+Result: 6720 orders seat the walker in $v1, 2016 reach the 3-seat goal, and **336 reach the full
+8/8 target disposition**. The necessary precedences over all 336 (`s18/order_constraints.log`):
+
+    73 before 75, 76, 85, 91, 86
+    76 before 75, 85, 91, 86
+    91 before 86            (already true)
+    72, 74 unconstrained    (they may sit anywhere)
+
+The filed record's priority leg — "lifting the walker above 75 needs a 4.84x priority lift" — is
+therefore answering the wrong question. The target does not require the walker to beat allocno 75.
+It requires pri(73) > pri(76) > {pri(75), pri(85)}, which can be produced by DEMOTING the three
+short-lived allocnos instead of promoting the loop-carried one.
+
+**3. The walker does not have to move at all.** Solving priority =
+floor_log2(nrefs)*nrefs/livelen*10000*size for the constraint set (`s18/livelen_feasibility.py`,
+6,447,060 admissible live-length tuples; `s18/walker_relief.py`; Pareto curve in
+`s18/relief_curve.json`):
+
+| walker livelen | required 75 | required 76 | required 85 | note |
+|---|---|---|---|---|
+| 62 (MEASURED, unchanged) | >= 20 (from 4) | >= 68 (from 22) | >= 16 (from 7) | walker untouched |
+| 55 | >= 18 | >= 60 | >= 14 | |
+| 20 | >= 7 | >= 22 (UNCHANGED) | >= 7 (UNCHANGED) | one +3 lengthening of 75 |
+
+Pseudo identity (s5 chassis note, unchanged): 72 = `pad`, 73 = walker `ptr`, 74 = `val`,
+76 = stream byte `c`, 75 = cmd HEAD web (the staged loop-tail `cmd = *ptr`), 85 = cmd ARM web
+(`cmd = c - 0x80`).
+
+**4. Live length IS source-order-controllable — the s16 blanket claim is retired.** s16 generalised
+"the live-length term is not source-order-controllable at all" from a single probe that moved the
+WALKER (loop-carried, hence pinned by construction — the worst possible witness). Hoisting
+`c = ptr[4]; ptr += 5;` above the 11 pad stores (`s18/body_v1_hoist_c.c`) and re-extracting
+(`s18/model_v1_hoist_c.json`) moves pseudo 74's live length 9 -> 21 (priority 26666 -> 11428) and
+CHANGES THE ALLOCATION ORDER to [75,76,85,72,73,74,91,86]. That form is itself off-shape and
+rejected (sandbox 21, build_insns 67 != 68, `s18/sandbox_v1_hoist_c.log`, banked at
+`rejected/hoist-c-load-above-pad-stores-67insns.c`) — but it proves the lever is real and
+measurable, which is all the frontier needs.
+
+**Tool traps hit and corrected this session (cost 1 turn each, do not repeat).**
+`Sim.__init__` re-seeds `model["flow"]` from the ALLOCDBG rows, so mutating `model["flow"]` before
+constructing a Sim is a silent NO-OP — the first run of `priority_ceiling.py` produced a
+completely flat, entirely fictitious "the order never changes" result that way. Use
+`Sim.simulate(overrides={pseudo: {"nrefs":..,"livelen":..}})` and `simulate(order=[...])`. Also
+`Sim.flow` is keyed by int, `model["flow"]` by str.
+
+**Consequence for the disposition.** The foreclosure record at docs/grind/decisions.md:17155 rests
+on three legs; leg 1 (priority) is falsified as written and leg 3's live-length sub-claim is
+retired. s18 filed a correction entry in docs/grind/decisions.md. This function is grindable
+again and must NOT be disposed of on that record.
+
+- [s18] Chassis THIS session: sandbox --disable all = score 15, target_insns 68 == build_insns 68, rules_dropped 0 (tmp/grind/func_800324D0/s18/sandbox_candidate.log).
+
+- [s18] The RA model was RE-EXTRACTED this session from the candidate body (solver rule 2), not inherited: order [75,76,85,72,74,73,91,86], dispositions 8/8, ALLOCDBG (nrefs,livelen) 75(10,4) 76(26,22) 85(8,7) 72(37,62) 74(8,9) 73(24,62) 91(3,90) 86(3,92) (s18/model_candidate.json).
+
+- [s18] 336 of the 40320 possible allocation orders reach the FULL 8/8 target disposition {72:$a0, 73:$v1, 74:$v0, 75:$a2, 76:$a1, 85:$a2, 86:$t0, 91:$a3}; 6720 seat the walker in $v1 (s18/order_closure.json).
+
+- [s18] Necessary precedences over all 336 target-reaching orders: 73 before {75,76,85,91,86}; 76 before {75,85,91,86}; 91 before 86; 72 and 74 unconstrained (s18/order_constraints.json).
+
+- [s18] Relief curve: with the walker at its measured livelen 62, the target order is reachable if livelen(75) >= 20, livelen(76) >= 68, livelen(85) >= 16; at walker livelen 20 the requirement is livelen(75) >= 7 with 76 and 85 unchanged (s18/relief_curve.json).
+
+- [s18] Pseudo identity (s5 chassis note, unchanged): 72 = pad, 73 = walker ptr, 74 = val, 76 = stream byte c, 75 = cmd HEAD web (the staged loop-tail `cmd = *ptr`), 85 = cmd ARM web (`cmd = c - 0x80`).
+
+- [s18] CSE / allocno-set axis newly CLOSED: 56 single merges and 2408 depth-<=2 merge chains all negative, none seating the walker in $v1 (s18/merge_sweep.json, s18/merge_depth2.json).
+
+- [s18] Live length is measurably source-controllable: an ordinary source hoist moved pseudo 74 from livelen 9 to 21 and changed the allocation order (s18/model_v1_hoist_c.json vs s18/model_candidate.json).
+
+- [s18] Correction entry FILED by this session at docs/grind/decisions.md:17257 — it retracts the priority leg of the foreclosure record at decisions.md:17155 and states explicitly that a later session must NOT return owner-gated on that record.
+
+- [s18] TOOL TRAP banked: Sim.__init__ re-seeds model['flow'] from the ALLOCDBG rows, so mutating model['flow'] before constructing a Sim is a silent NO-OP — it produced a fully fictitious flat result on the first run of priority_ceiling.py. Use Sim.simulate(overrides=...) / simulate(order=...); Sim.flow is int-keyed while model['flow'] is str-keyed.
+
+- [s18] Rejected form banked: memory/grind/func_800324D0/rejected/hoist-c-load-above-pad-stores-67insns.c (sandbox 21, build_insns 67 != 68 — shape broken).
+
+- [s18] Unchanged from s17 and still true: both endgame-lock gates FAIL (scan_hand_coded tier=LOW 0/8; zero SOTN precedent for any closing construct), and the owner-ruling-5 INCLUDE_ASM migration remains banked and oracle-green at tmp/grind/func_800324D0/s17/migration.diff as the fallback representation. Those are disposition inputs, not reasons to stop grinding a channel that is measurably open.
+
+- [s18] No src edit survives this session: src/code6cac_b.c was restored with `git checkout --` after the last measurement.
