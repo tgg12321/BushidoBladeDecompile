@@ -1,7 +1,7 @@
 {
  "func": "func_800203B4",
  "file": "code6cac",
- "session_count": 5,
+ "session_count": 6,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -33,23 +33,29 @@
    "floor": 0,
    "modality": "synthesis",
    "headline": "Synthesis: the ledger's central inference is now a DIRECT measurement - disassembly of the islands-deleted build shows all 39 C-emitted instructions are already byte-exact, so the residual is exactly "
+  },
+  {
+   "session": 6,
+   "floor": 0,
+   "modality": "synthesis",
+   "headline": "Synthesis s6: the 25-instruction asm surface is now MEASURED minimal - three island-partition variants that move the C-expressible SDK-macro instructions into C all score non-zero (12/4/8), so the cod"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 (terminal, modality-gated): the standing-ruling disposition is the only remaining action, and it is valid only from a driver-dispatched `escalation` session.",
-   "mechanism": "The driver validator accepts `owner-gated` only from `escalation` modality (discard marker docs/grind/decisions.md:17591). Everything the disposition needs already exists on disk: the Judge FAIL (17546), the proof-of-foreclosure record (17550), the byte-final candidate, and now the exact 25-instruction residual anatomy (fact 34). It is a cite-and-return, not new work.",
-   "next_probe": "In escalation modality: run the fact-38 trigger presence check (grep inline_asm_canonical.txt for func_800203B4, grep .claude/rules/cop2-addressing-preamble-cluster.md for a widened scan, tail docs/grind/decisions.md for an owner class grant), then ONE confirming `sandbox func_800203B4 --disable all` on candidate.c, then return owner-gated with escalation_ref docs/grind/decisions.md:17550. Do not re-file the record and do not re-argue cluster membership in any spelling."
+   "hypothesis": "F1 (terminal, modality-gated): the standing-ruling disposition is the only remaining action and it is valid only from a driver-dispatched escalation session.",
+   "mechanism": "The driver validator accepts owner-gated only from escalation modality (discard marker docs/grind/decisions.md:17591). Everything the disposition needs is already on disk: the Judge FAIL (17546), the proof-of-foreclosure record (17550), the byte-final candidate, the 25-instruction residual anatomy (fact 34) and now its measured minimality (fact 41). It is a cite-and-return, not new work.",
+   "next_probe": "In escalation modality: run the fact-43 three-grep trigger presence check, then ONE confirming 'sandbox func_800203B4 --disable all' on candidate.c, then return owner-gated with escalation_ref docs/grind/decisions.md:17550. Do not re-file the record and do not re-argue cluster membership in any spelling."
   },
   {
-   "hypothesis": "F2: the only re-activation trigger worth a per-session check is an owner class grant covering non-$aN-source cop2 addressing-preamble sites; if it lands, this function is a PURE INTEGRATION HANDOFF, not a codegen task.",
-   "mechanism": "Such a grant would admit this function's three `addu $t4,$v0/$s0,$zero` sites into the sanctioned family. candidate.c then applies unchanged: its review surface is four literal PsyQ SDK gte_* macro bodies with no hand-invented instruction (fact 21) plus a pure-C head that needs no sanctioned-family claim at all (fact 18).",
-   "next_probe": "One turn: the three greps of fact 38. If a trigger has landed, apply memory/grind/func_800203B4/candidate.c, confirm sandbox 0, and hand off per evidence.md fact 11 (driver writes the inline_asm_canonical.txt grant line + docs/grind/borderline.md entry; then layer-2 cheat-reviewer, verify-oracle --rebuild, queue done)."
+   "hypothesis": "F2 (standing, one turn): an owner class grant covering non-$aN-source cop2 addressing-preamble sites would make this function a PURE INTEGRATION HANDOFF, not a codegen task.",
+   "mechanism": "Such a grant admits this function's three 'addu $t4,$v0/$s0,$zero' sites into the sanctioned family. candidate.c then applies unchanged: its review surface is four literal PsyQ SDK gte_* macro bodies with no hand-invented instruction (fact 21) and now with no reducible instruction either (fact 41), plus a pure-C head that needs no sanctioned-family claim at all (fact 18).",
+   "next_probe": "One turn: the three greps of fact 43. If a trigger has landed, apply memory/grind/func_800203B4/candidate.c, confirm sandbox 0, and hand off per evidence.md fact 11 (driver writes the inline_asm_canonical.txt grant line + docs/grind/borderline.md entry; then layer-2 cheat-reviewer, verify-oracle --rebuild, queue done)."
   },
   {
-   "hypothesis": "F3: if the driver dispatches solver / forensics / rederive anyway, those axes are foreclosed A PRIORI by fact 33 and must not be spent searching.",
-   "mechanism": "ra_solver and sched_solver reason about register seats and emission order among the instructions the compiler actually emits, and forensic cc1 dumps attribute a divergence to a pass. This function has ZERO divergent C-emitted instructions - all 39 match exactly - so there is no seat to re-assign, no order to re-schedule and no pass to attribute. The gap is expressiveness (GCC 2.7.2 has no cop2 intrinsic; the PsyQ gte_* macros are themselves inline asm), which no solver models.",
-   "next_probe": "One confirming pair of runs (candidate.c -> 0, 65/65; rejected/pure-c-no-islands-floor-26.c -> 26, build_insns 39), re-state facts 33-34, return `progress` in under five turns. Do NOT re-launch a permuter campaign (facts 28/32), do NOT reorder locals or statements (H7/H10), do NOT re-probe the delay nops, the named intermediate or the `arg0 += 0x354` spelling (H6/H8/H11)."
+   "hypothesis": "F3: if the driver dispatches solver / forensics / rederive anyway, those axes are foreclosed a priori by facts 33 and 41 and must not be spent searching.",
+   "mechanism": "ra_solver and sched_solver reason about register seats and emission order among the instructions the compiler actually emits, and forensic cc1 dumps attribute a divergence to a pass. This function has ZERO divergent C-emitted instructions (fact 33) so there is no seat to re-assign, no order to re-schedule and no pass to attribute; and the asm side is now measured irreducible (fact 41). The gap is expressiveness, which no solver models.",
+   "next_probe": "One confirming pair of runs (candidate.c -> 0, 65/65; rejected/pure-c-no-islands-floor-26.c -> 26, build_insns 39), re-state facts 33/34/41, return progress in under five turns. Do NOT re-run the permuter (facts 28/32), re-order locals or statements (H7/H10), re-probe the delay nops / named intermediate / 'arg0 += 0x354' spelling (H6/H8/H11), or re-partition the islands (H12)."
   }
  ],
  "judge_constraints": [

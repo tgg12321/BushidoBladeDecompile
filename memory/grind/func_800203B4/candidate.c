@@ -34,7 +34,14 @@
  * A ~35k-iteration permuter campaign over the islands-deleted pure-C chassis (base 3000 on
  * asm-differ) produced no valid improvement - best novel find 2960 and semantics-broken
  * (memory/grind/func_800203B4/rejected/permuter-best-find-2960-semantics-broken.c). The
- * permuter axis is spent; see evidence.md facts 28-29. */
+ * permuter axis is spent; see evidence.md facts 28-29.
+ *
+ * s6 (synthesis, 2026-09-01) MEASURED the minimality of the asm surface: three variants that
+ * move the C-expressible parts of the SDK macro bodies out of the islands into C all fail -
+ * thin gte_SetRotMatrix (C-loaded matrix words) = 12, thin gte_stlvnl (no `move $12` preamble)
+ * = 4, thin gte_ldv0 (VX0/VY0 packing in C) = 8; forms banked in rejected/thin-*.c, evidence.md
+ * fact 41. The 25 instructions inside these four islands are byte-forced to be there; do not
+ * try to "shrink the asm". Floor re-confirmed 0 (65/65) an eleventh time. */
 void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
     s32 mat[8];
     s32 vec[3];

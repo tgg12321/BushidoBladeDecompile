@@ -371,3 +371,74 @@
 - [s5] fact 39: candidate.c is UNCHANGED this session (the s5-promoted nop-free form remains best-known and byte-final at floor 0) and no new rejected form was produced - the synthesis found no untried C-side lever to spell. The merged attack is written up at the head of the s6 section of memory/grind/func_800203B4/hypotheses.md: 39 exact C insns + 3 free operand materializations + 25 un-C-expressible insns = the whole 65-instruction function.
 
 - [s5] fact 40: the disposition state is unchanged and remains modality-gated - the Judge FAIL (docs/grind/decisions.md:17546) and the filed proof-of-foreclosure record (docs/grind/decisions.md:17550) stand untouched; this session returns `progress` and not `owner-gated` solely because the mandated modality is `synthesis`, not `escalation` (s2's owner-gated from `recon` was discarded for exactly that reason, marker at decisions.md:17591).
+
+## s6 (2026-09-01, SYNTHESIS - the second synthesis session; the asm surface is now MEASURED minimal)
+
+41. **THE 25-INSTRUCTION ASM AUTHORIZATION SURFACE IS MINIMAL (new, measured three ways -
+    the one lever s1-s5 never spelled).** Every prior session treated the four islands as
+    atomic SDK macro bodies and asked only "is the whole island authorizable?". s6 asked the
+    complementary question: can the C-expressible parts of the macro bodies (fact 34 tier b -
+    the `move $12,rN` preambles, the five matrix `lw`s, the `lhu/lhu/sll/or` VX0/VY0 packing)
+    be moved OUT of the asm into C, leaving smaller cop2-only islands? All three partitions
+    were spelled and measured; ALL are non-zero:
+    - **varH (thin gte_SetRotMatrix)** - `s32 r0..r4 = mat[0..4];` in C, asm reduced to five
+      `ctc2 %n,$n`: **score 12, build_insns 63** (artifact
+      tmp/grind/func_800203B4/s6/varH_thin_setrotmatrix.o, form
+      rejected/thin-setrotmatrix-c-loads-score12.c). GCC issues the five loads in its own
+      order/registers and drops the `move $12` + one load; the target's interleave
+      (lw,lw,ctc2,ctc2,lw,lw,lw,ctc2,ctc2,ctc2) is not reproducible from separated C loads.
+    - **varI (thin gte_stlvnl)** - the three `swc2` addressing the operand register directly
+      (`swc2 $25, 0(%0)`), no `move $12, %0`: **score 4, build_insns 64** (artifact
+      varI_thin_stlvnl.o, form rejected/thin-stlvnl-no-preamble-score4.c). Losing the
+      preamble costs the `addu $t4,$s0,$zero` at 80020498 AND re-bases all three swc2 off the
+      wrong register - 4 mismatches for one "removed" instruction.
+    - **varJ (thin gte_ldv0)** - the packing written in C as
+      `u32 pack = ((u32)*(u16*)&vec[1] << 16) | *(u16*)&vec[0];` with only `mtc2`/`lwc2` in
+      asm: **score 8, build_insns 64** (artifact varJ_thin_ldv0.o, form
+      rejected/thin-ldv0-c-packing-score8.c). This was the most promising partition (the
+      packing is genuinely ordinary C) and it still fails: GCC materializes the halfword
+      reads and the shift/or in different registers and a different order from the SDK
+      macro's fixed $13/$14 sequence.
+    **Consequence for the ledger:** the 25 instructions named in fact 34 are not merely
+    "currently inside asm" - they are byte-forced to be inside asm. There is no partition of
+    this function into (more C, less asm) that reaches 0, so no future session and no future
+    authorization reviewer can shrink the surface below 25. Any class-grant record may state
+    minimality as MEASURED, not argued.
+42. **Floor re-confirmed an ELEVENTH time on the 2026-09-01 chassis** (this dispatch's
+    chassis-check again read "measurement unavailable"): candidate.c applied to
+    src/code6cac.c -> `sandbox func_800203B4 --disable all` = **0, build_insns 65 ==
+    target_insns 65, rules_dropped 0** (artifact
+    tmp/grind/func_800203B4/s6/code6cac_sandbox0_s6.o). src/code6cac.c reverted to
+    INCLUDE_ASM after every one of the four builds this session (`git status` clean apart
+    from metrics/events.jsonl + ledger + scratch) per [[asm-until-matched]].
+43. **Re-activation triggers re-checked (fact 38 repeat) and NONE has landed:**
+    `grep func_800203B4 inline_asm_canonical.txt` - no match;
+    `.claude/rules/cop2-addressing-preamble-cluster.md` - zero occurrences of func_800203B4,
+    enumeration unchanged; `docs/grind/decisions.md` tail is still the 09:05 discarded-session
+    marker, i.e. no owner class grant for non-$aN-source cop2 preamble sites has been filed.
+    Presence check only - no membership argument was made or re-derived, per the binding
+    Judge constraint.
+44. **candidate.c is UNCHANGED as code** (the s5 nop-free form remains byte-final at floor 0);
+    only its header comment gained the fact-41 minimality note. No C-side lever remains
+    unspelled that any session has been able to name: structural (s4), permuter (s5 predecessor
+    s4), synthesis-by-disassembly (s5) and now island-partition (s6) are all measured dead.
+
+- [s6] fact 41: the 25-instruction asm authorization surface is MEASURED minimal. Three island-partition variants that move the C-expressible parts of the SDK macro bodies out of asm into C all score non-zero: varH thin gte_SetRotMatrix (C-loaded matrix words, ctc2-only asm) = 12 / build 63; varI thin gte_stlvnl (swc2 addressing the operand register, no `move $12` preamble) = 4 / build 64; varJ thin gte_ldv0 (VX0/VY0 packing written in C, mtc2+lwc2 only in asm) = 8 / build 64. Forms banked in memory/grind/func_800203B4/rejected/, objects in tmp/grind/func_800203B4/s6/. The 25 instructions of fact 34 are byte-forced to live inside asm; minimality is now measured, not argued.
+
+- [s6] fact 42: floor re-confirmed an eleventh time on the 2026-09-01 chassis (dispatch chassis-check again read 'measurement unavailable') - candidate.c -> sandbox --disable all = 0, build_insns 65 == target_insns 65, rules_dropped 0 (tmp/grind/func_800203B4/s6/code6cac_sandbox0_s6.o). src reverted to INCLUDE_ASM after all four builds; tree clean apart from metrics/events.jsonl, ledger and scratch.
+
+- [s6] fact 43: re-activation triggers re-checked and none has landed - no func_800203B4 line in inline_asm_canonical.txt, zero occurrences in .claude/rules/cop2-addressing-preamble-cluster.md, decisions.md tail still the 09:05 discarded-session marker. Presence check only.
+
+- [s6] fact 44: candidate.c unchanged as code (s5 nop-free form, byte-final at 0); header comment updated with the minimality note. Four distinct axes are now measured dead - structural, permuter, disassembly-synthesis and island-partition.
+
+- [s6] fact 41: the 25-instruction asm authorization surface is MEASURED minimal - varH thin gte_SetRotMatrix = 12/build 63, varI thin gte_stlvnl (no 'move $12' preamble) = 4/build 64, varJ thin gte_ldv0 (packing in C) = 8/build 64. The 12 ordinary-integer SDK-macro-body instructions of fact 34 tier (b) are byte-forced to live inside asm: as C dead code GCC's DCE deletes them (fact 29), and as C live code feeding asm operands GCC emits them in the wrong registers and order. No partition of this function into (more C, less asm) reaches 0, so 25 is the minimum authorizable surface and a future class-grant record may state minimality as measured rather than argued.
+
+- [s6] fact 42: floor re-confirmed an ELEVENTH time on the 2026-09-01 chassis (dispatch chassis-check again read 'measurement unavailable') - candidate.c -> sandbox --disable all = 0, build_insns 65 == target_insns 65, rules_dropped 0 (tmp/grind/func_800203B4/s6/code6cac_sandbox0_s6.o). src/code6cac.c reverted to INCLUDE_ASM after all five builds this session per [[asm-until-matched]]; working tree clean apart from metrics/events.jsonl, the ledger files and scratch.
+
+- [s6] fact 43: re-activation triggers re-checked and NONE has landed - no func_800203B4 line in inline_asm_canonical.txt, zero occurrences in .claude/rules/cop2-addressing-preamble-cluster.md, decisions.md tail still the 09:05 discarded-session marker. Presence check only; no membership argument made or re-derived.
+
+- [s6] fact 44: candidate.c is unchanged as code (the s5 nop-free form remains byte-final at floor 0); only its header comment gained the fact-41 minimality note. Four distinct axes are now measured dead on this function - structural (s4), permuter (s4/s5), disassembly-synthesis (s5) and island-partition (s6).
+
+- [s6] merged attack (written into hypotheses.md): 39 C-emitted instructions are byte-exact by disassembly (fact 33) + 3 operand-address materializations that return for free once an island consumes them (fact 34d) + 25 byte-forced asm instructions (11 cop2 opcodes GCC 2.7.2 cannot emit, 12 SDK-macro integer instructions proven irreducible by fact 41, 2 assembler-supplied cop2 load-delay nops) = the whole 65-instruction function. The codegen question is closed in BOTH directions; what remains is purely authorization, and both gates are measured shut (scan_hand_coded LOW, cluster membership denied by Judge FAIL decisions.md:17546).
+
+- [s6] modality note: this session returns 'progress' and not 'owner-gated' solely because the mandated modality is synthesis, not escalation - s2's owner-gated from recon was discarded for exactly that reason (marker docs/grind/decisions.md:17591). The proof-of-foreclosure record at docs/grind/decisions.md:17550 stands filed and untouched; nothing was re-filed or re-argued this session.

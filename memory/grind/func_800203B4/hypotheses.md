@@ -354,3 +354,77 @@ spelling again.
 - probe: Presence check only (no membership argument, per the binding Judge constraint): grep func_800203B4 in inline_asm_canonical.txt; grep the membership table and scan definition in .claude/rules/cop2-addressing-preamble-cluster.md.
 - result: No grant line for func_800203B4 in inline_asm_canonical.txt; the cluster rule still enumerates the same 28 members derived by the `addu $t4, $aN, $zero` scan and still omits this function; no owner class grant filed.
 - verdict: KILLED
+
+## s6 (2026-09-01, SYNTHESIS - island-partition minimality)
+
+- **H12 — KILLED (measured x3, new this session):** "The asm authorization surface can be
+  shrunk below 25 instructions by moving the C-expressible parts of the PsyQ SDK macro bodies
+  (fact 34 tier b: the `move $12,rN` addressing preambles, the five matrix `lw`s, the
+  `lhu/lhu/sll/or` VX0/VY0 packing) out of the islands into C, leaving smaller cop2-only
+  islands." Mechanism it assumed: those 12 instructions are ordinary integer code, so a C
+  spelling that CONSUMES the values (feeding them to asm operands rather than dropping them,
+  which is what makes fact 29's DCE argument bite) should survive and emit the same bytes.
+  Probes (each applied to src/code6cac.c, `sandbox func_800203B4 --disable all`, src reverted
+  after):
+  - varH thin gte_SetRotMatrix -> **12 / build 63** (rejected/thin-setrotmatrix-c-loads-score12.c)
+  - varI thin gte_stlvnl, no `move $12` preamble -> **4 / build 64** (rejected/thin-stlvnl-no-preamble-score4.c)
+  - varJ thin gte_ldv0, packing in C -> **8 / build 64** (rejected/thin-ldv0-c-packing-score8.c)
+  Result: GCC 2.7.2 chooses its own registers and its own emission order for the extracted
+  computations, and the SDK macro bodies' fixed $12-$15 sequence and lw/ctc2 interleave are
+  not reproducible from separated C. The residual is byte-forced INSIDE the asm, so 25 is the
+  minimum authorizable surface for this function. This retires the last complementary
+  question the ledger had never asked (s1-s5 all treated the islands as atomic).
+- **H1 re-CONFIRMED (eleventh measurement):** candidate.c -> 0, 65/65, rules_dropped 0
+  (tmp/grind/func_800203B4/s6/code6cac_sandbox0_s6.o).
+- **Trigger presence check (H13, standing):** none of the three re-activation triggers has
+  landed (evidence fact 43).
+
+### Merged attack after s6 (the complete picture in one paragraph)
+The function is 65 target instructions. 39 of them are emitted by the pure-C body and are
+byte-exact against asm/funcs/func_800203B4.s, verified by disassembly (fact 33); 3 more are
+operand-address materializations that reappear for free once an island consumes the address
+(fact 34d); the remaining 25 are byte-forced to live inside inline asm — 11 are cop2 opcodes
+GCC 2.7.2 cannot emit at all, 12 are ordinary-integer SDK-macro-body instructions that are
+either DCE-deleted when written as C dead code (fact 29) or emitted in the wrong
+registers/order when written as C live code feeding asm operands (fact 41, NEW), and 2 are
+assembler-supplied cop2 load-delay nops that cost nothing (fact 21). Therefore the codegen
+question is closed in both directions: the C part cannot be improved (it is exact) and the asm
+part cannot be reduced (it is minimal). What remains is purely an AUTHORIZATION question, and
+both authorization gates are measured shut — scan_hand_coded LOW (fact 10, re-run by the Judge
+in fact 12) and cluster membership denied by Judge FAIL (decisions.md:17546) because this
+function's three idiom sites copy from `$v0`/`$s0` rather than `$aN`. The proof-of-foreclosure
+record is already filed at decisions.md:17550; the terminal disposition is modality-gated to a
+driver-dispatched `escalation` session (decisions.md:17591).
+
+Frontier reset (strongest 1-3, in order):
+  F1 (terminal, modality-gated): emit `owner-gated` citing decisions.md:17550 — valid ONLY from
+     an `escalation` session. It is a cite-and-return; every supporting fact is on disk
+     (Judge FAIL 17546, foreclosure record 17550, residual anatomy fact 34, minimality fact 41,
+     eleven floor confirmations). Do not re-file the record; do not re-argue cluster membership.
+  F2 (standing, one turn): the three-grep trigger check (fact 43). If an owner class grant for
+     non-$aN-source cop2 addressing-preamble sites lands, this function is a PURE INTEGRATION
+     HANDOFF: apply candidate.c unchanged, confirm sandbox 0, hand off per evidence fact 11.
+  F3 (a priori foreclosed): solver / forensics / rederive. There is no divergent C-emitted
+     instruction to re-seat, re-order or attribute to a pass (fact 33), and the asm surface is
+     minimal (fact 41). If dispatched, confirm candidate.c -> 0 and islands-deleted -> 26,
+     re-state facts 33/34/41, return `progress` inside five turns. Do NOT re-run the permuter
+     (facts 28/32), re-order locals or statements (H7/H10), re-probe the delay nops, the named
+     intermediate or the `arg0 += 0x354` spelling (H6/H8/H11), or re-partition the islands (H12).
+
+## [s6] H12: the asm authorization surface can be shrunk below 25 instructions by moving the C-expressible parts of the PsyQ SDK macro bodies (the 'move $12,rN' addressing preambles, the five matrix lw's, the lhu/lhu/sll/or VX0/VY0 packing) out of the islands into C, leaving smaller cop2-only islands.
+- mechanism: Those 12 instructions are ordinary integer code. Fact 29's DCE argument only bites when they are written as C computations whose results are never consumed; written as C values that FEED asm operands they are live, so they should survive and could in principle emit the same bytes - which would shrink the surface any future authorization axis has to cover.
+- probe: Three variants spelled and applied to src/code6cac.c, each measured with 'sandbox func_800203B4 --disable all' and reverted after: varH thin gte_SetRotMatrix (s32 r0..r4 = mat[0..4] in C, asm reduced to five ctc2 %n,$n); varI thin gte_stlvnl (swc2 $25/$26/$27 addressing the operand register directly, no 'move $12, %0'); varJ thin gte_ldv0 (u32 pack = ((u32)*(u16*)&vec[1] << 16) | *(u16*)&vec[0] in C, only mtc2/lwc2 in asm).
+- result: varH = 12, build_insns 63; varI = 4, build_insns 64; varJ = 8, build_insns 64 (all rules_dropped 0, target_insns 65). Objects tmp/grind/func_800203B4/s6/varH_thin_setrotmatrix.o, varI_thin_stlvnl.o, varJ_thin_ldv0.o; forms banked as rejected/thin-setrotmatrix-c-loads-score12.c, rejected/thin-stlvnl-no-preamble-score4.c, rejected/thin-ldv0-c-packing-score8.c. GCC 2.7.2 picks its own registers and emission order for the extracted computations, and the SDK macro bodies' fixed $12-$15 sequence and lw/ctc2 interleave are not reproducible from separated C; dropping the stlvnl preamble additionally re-bases all three swc2 (4 mismatches for one removed instruction).
+- verdict: KILLED
+
+## [s6] H1 (standing): the candidate body (pure-C head + four literal PsyQ SDK gte_* macro islands) reproduces all 65 target instructions on the current chassis.
+- mechanism: $t4..$t7 ARE $12..$15, so the SDK macro's 'move $12,%0' emits the target's 'addu $t4,rN,$zero'; GCC materializes the operand addresses exactly as the target does.
+- probe: candidate.c applied to src/code6cac.c -> 'sandbox func_800203B4 --disable all' (run twice this session: before and after the header-comment update).
+- result: 0, build_insns 65 == target_insns 65, rules_dropped 0 both times. Artifact tmp/grind/func_800203B4/s6/code6cac_sandbox0_s6.o. Eleventh independent confirmation; this dispatch's chassis-check again read 'measurement unavailable'.
+- verdict: CONFIRMED
+
+## [s6] H13 (standing): one of the three re-activation triggers has landed since s5.
+- mechanism: An owner class grant covering non-$aN-source cop2 addressing-preamble sites, an updated cluster enumeration, or a grant line in inline_asm_canonical.txt would make this function a pure integration handoff with candidate.c unchanged.
+- probe: Presence check only (no membership argument re-derived, per the binding Judge constraint): grep func_800203B4 in inline_asm_canonical.txt; grep func_800203B4 in .claude/rules/cop2-addressing-preamble-cluster.md; tail docs/grind/decisions.md.
+- result: No match in inline_asm_canonical.txt; zero occurrences in the cluster enumeration (unchanged); decisions.md tail is still the 2026-09-01 09:05 discarded-session marker. No trigger has landed.
+- verdict: KILLED
