@@ -18262,3 +18262,7 @@ there is no closing construct left for a precedent to license, granted or not.
 3. **A PSX-tagged SOTN-master precedent** for the invented multi-write carrier class
    appearing in `docs/reference/sotn-construct-index.md` on a future re-pin — noting
    that per H70 a plain borrow precedent would no longer be sufficient here.
+
+## 2026-09-01 13:04 — func_8002EA24 — layer-1 review — **FAIL**
+
+Undisclosed always-true guard (`if (a0_var >= 0)`) wrapping the LZCS island, paired with a dead `lzcr = 0` init, is a cheat-by-spelling construct the self-vet never mentions or justifies.

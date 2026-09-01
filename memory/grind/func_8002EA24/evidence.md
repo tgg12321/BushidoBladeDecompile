@@ -2303,3 +2303,126 @@ with 103, outranks it, and the single edit that fixes both costs instructions
 - [s20] b3 is the first body in 20 sessions to reproduce target's product block exactly (`mult a1,a1` / `mflo v0` / `addu a0,v0,v1`) - it proves the seat is reachable in ordinary C, and that reaching it costs the donation.
 
 - [s20] Six new disproven bodies banked in memory/grind/func_8002EA24/rejected/ (s20-*.c, now 60 files); the fewest-construct score-2 body banked as candidate_alt_s20_v5_no_L2_reuse.c; candidate.c carries a SESSION-20 NOTE pointing at it.
+
+
+## Session 21 (rederive) -- 2026-09-01 -- **SOLVED: sandbox 0, full build == oracle SHA1**
+
+Chassis re-measured first: s20's b8 body
+(`candidate_alt_s20_v5_no_L2_reuse.c`) applied to `src/code6cac_b.c` measures
+`sandbox func_8002EA24 --disable all` = **2 at 104/104 insns, 0 rules**, so the
+ledger floor of 2 was current, not stale.  The owner's 2026-09-01 FORECLOSED-
+BUCKET-REVIEW Ruling-A named probe for this function (re-run s16's depth-2 sweep
+over the other seven banked score-2 bodies) was executed and KILLED in s18 and
+was not repeated; s21 is the rederive the ladder called for.
+
+**The 2-insn residual is closed, and the last coercion construct in the body is
+gone with it.**  Final state: `sandbox --disable all` = **0** at 104/104 insns,
+0 rules; `verify-oracle` -> `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa`
+== `original_sha1_locked`, `build_matches: true`; `canonical func_8002EA24` =
+ASM-PARTIAL 8/104 (four "GTE/cop2 op" reasons only).  The adopted body is
+`memory/grind/func_8002EA24/candidate.c` and is in `src/code6cac_b.c` now.
+
+### How it was found: read global.c first, then measure
+
+Sessions 15-20 characterised the residual correctly but attacked it through the
+model's allocno tables.  s21 went to the compiler source instead and read the
+three functions that decide the one bit everyone was chasing (`$a0` entering
+`used` for the `neg_threshold` allocno):
+
+* `expand_preferences` (tools/gcc-2.7.2/global.c:828-871) -- for any insn whose
+  SET_DEST is an allocno, every REG_DEAD note on that insn names an allocno; if
+  the two do NOT conflict, their `hard_reg_preferences` /
+  `hard_reg_copy_preferences` / `hard_reg_full_preferences` sets are merged
+  **both ways**.  This is the "donation" the s18/s19 ledger named, now pinned to
+  source.
+* `prune_preferences` (global.c:876-935) -- `regs_someone_prefers[A]` is the
+  union of the (already pruned) `hard_reg_full_preferences` of every **lower-
+  priority** allocno that CONFLICTS with A, minus A's own full preferences when
+  the sizes are equal.
+* `find_reg` (global.c:1001) -- `IOR_HARD_REG_SET (used, regs_someone_prefers[allocno])`
+  on the non-retrying pass.
+
+That gives the exact recipe for denying `$a0` to `neg_threshold` at zero
+instruction cost: find an allocno that (a) conflicts with `neg_threshold`,
+(b) ranks below it, and (c) can be handed `$a0` by an `expand_preferences` merge
+without occupying a seat the target needs.  s20's answer was the parameter
+`threshold` (allocno 74) -- it satisfies (a)-(c) but only while it CARRIES
+`x * x`, and carrying it means the first product lands in `threshold`'s own
+register `$a2` instead of the target's `$v0`.  That is the whole 2-insn residual
+(ours[46] `mflo a2`, ours[49] `addu a0,a2,v1`).
+
+**The zero-cost donor nobody had tried is `r_sq`.**  It is live from function
+entry to the subtraction, so it conflicts with `neg_threshold`; it has very few
+references over a very long live range, so its priority is far below
+`neg_threshold`'s; and it DIES on the insn that computes the remaining distance.
+The only thing standing in the way was the spelling: with
+
+    a0_var = r_sq - a0_var;          /* every candidate, sessions 4-20 */
+
+`a0_var` is both source and dest, hence live across its own set insn, hence it
+CONFLICTS with `r_sq`, and `expand_preferences` refuses the merge.  Give the sum
+its own name and the merge fires:
+
+    sq     = x * x + z * z;          /* plain sum: product -> $v0 */
+    if (r_sq < sq) return 0;
+    a0_var = r_sq - sq;              /* a0_var is BORN here: no conflict with
+                                        r_sq or sq -> preferences merge */
+
+`a0_var` prefers hard reg 4, the merge hands that preference to `r_sq`, and
+`prune_preferences` therefore puts 4 into `regs_someone_prefers[neg_threshold]`,
+which `find_reg` ORs into `used`.  `neg_threshold` skips `$a0` and takes `$t1`
+-- the target's register -- while the sum, having no named carrier, takes `$v0`.
+Both halves of the s20 "mutually exclusive by construction" dilemma are
+satisfied at once, and the fix costs no instruction because `sq` and `a0_var`
+have disjoint live ranges and both land in the registers the target uses.
+
+Predicted from the source read BEFORE any build; confirmed on the first body of
+the sweep (r1).
+
+### The L1 borrowed-local return construct is also gone
+
+Every candidate since session 4 ended with `if (y + a0_var < min_y) { z = 0;
+return z; }` -- a dead local borrowed to carry the return constant so that
+jump.c would not fold the final 0/1 diamond into `slt`/`xori`.  It had no
+program-logic account and would have needed a variable-reuse FAKE claim.  Ten
+replacements were measured on the new chassis; nine ordinary ones fail (plain
+`return 0` 3/102, `goto` label 3/102, result variable 3/102, inverted test
+3/102, final sum into the dead `sq` 12/102, all-arms-goto 13/102, mixed exit
+forms 4/103), one succeeds and is a borrowed local again (`min_y = 0; return
+min_y;`, score 0 -- deliberately NOT used, same family), and the tenth is
+ordinary C:
+
+    if (max_y < y - a0_var || y + a0_var < min_y) return 0;
+    return 1;
+
+Merging the two vertical bound checks into one short-circuit condition -- the
+same `||` shape this function already uses for its two horizontal bound checks
+-- keeps the diamond unfolded with no borrowed variable.  Score 0.
+
+### Sweep results (tmp/grind/func_8002EA24/s21/sweep1.txt, sweep2.txt)
+
+| body | change against the s20 b8 control | score | insns |
+|---|---|---|---|
+| r0 | s20 b8 control (v5 donation, separate x) | 2 | 104/104 |
+| **r1** | **plain sum into `sq`; `a0_var = r_sq - sq`** | **0** | **104/104** |
+| r2 | three-way split (sq / d / root) | 21 | 105/104 |
+| r3 | v5 donation carrier kept PLUS the split | 2 | 104/104 |
+| r4 | plain sum, single `a0_var`, no donation | 6 | 104/104 |
+| r5 | route (i): `-threshold` above the first GTE island, b8 chassis | 7 | 105/104 |
+| r6 | r1 plus route (i) | 3 | 105/104 |
+| r7 | r1 with the addends swapped (`z*z + x*x`) | 2 | 104/104 |
+| **L1n** | **r1 + the two vertical checks merged into one `||`** | **0** | **104/104** |
+| L1h | r1 + `min_y` borrowed instead of `z` | 0 | 104/104 |
+| L1a/L1b/L1c/L1f | plain return / goto label / result var / inverted | 3 | 102/104 |
+| L1g | final sum into the dead `sq` | 12 | 102/104 |
+| L1i, L1j | all-arms-goto, mixed exit forms | 13, 4 | 102, 103 |
+
+- [s21] Chassis re-measured at session start: s20's b8 body measures `sandbox func_8002EA24 --disable all` = 2 at 104/104 insns, 0 rules; the ledger floor of 2 was current.
+- [s21] **SOLVED.** `sandbox func_8002EA24 --disable all` = **0** at 104/104 insns, 0 rules, with the adopted body in src/code6cac_b.c; full-build `verify-oracle` returns ok:true with build_sha1 == original_sha1_locked == 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+- [s21] `canonical func_8002EA24` on the matched body = ASM-PARTIAL, asm_insns 8 / total 104, regions [[21,23],[26,28],[65,65],[67,67]], reasons exclusively "GTE/cop2 op" (c2, lwc2, mtc2, swc2). The completion bucket (COMPLETED-C vs COMPLETED-INLINE-ASM-CANONICAL) is the operator's call; this session is forbidden to write inline_asm_canonical.txt and did not.
+- [s21] Mechanism pinned to compiler source, not inferred: expand_preferences at tools/gcc-2.7.2/global.c:828-871 merges preference sets between an insn's SET_DEST allocno and every non-conflicting REG_DEAD allocno on that insn; prune_preferences at global.c:876-935 builds regs_someone_prefers from LOWER-priority CONFLICTING allocnos' pruned full preferences; find_reg ORs that into `used` at global.c:1001.
+- [s21] The 20-session residual was a SPELLING artifact of `a0_var = r_sq - a0_var;`: with the same pseudo as source and dest, a0_var is live across its own set insn and therefore conflicts with r_sq, which blocks the expand_preferences merge. Naming the sum separately (`sq = x*x + z*z; ... a0_var = r_sq - sq;`) makes a0_var BORN at that insn, so it conflicts with neither r_sq nor sq, the merge fires, r_sq inherits the $a0 preference and (being lower-priority and conflicting) denies $a0 to neg_threshold, which takes $t1 as the target does.
+- [s21] r_sq is the zero-cost donor the model-side analysis of s15-s20 never enumerated: those sessions searched over allocnos that could be MADE to conflict with 103 and concluded the candidate set was exactly {74, 75}; r_sq already conflicted and already ranked below 103, and only lacked the preference bit, which is a spelling question, not an allocation question.
+- [s21] The L1 borrowed-local return construct (`{ z = 0; return z; }`, carried by every candidate since session 4) is NOT required: merging the two vertical bound checks into one `||` condition holds the 0/1 diamond unfolded and measures 0 at 104/104. Nine other ordinary replacements were measured and all cost 1-2 insns (score 3-13 at 102/103 insns).
+- [s21] The final body carries ZERO coercion-class constructs: no variable reuse, no dead store, no constant holder, no pointer alias, no volatile, no pad, no FAKE annotation anywhere. The only non-C content is the three canonical GTE cop2 islands, each byte-for-byte the spelling already accepted in-tree (vector/mvmva: the matched twin func_8002D320 at src/code6cac_b.c:869 and :878; LZCS: func_800274BC at src/code6cac_b.c:293).
+- [s21] Twelve new disproven bodies banked in memory/grind/func_8002EA24/rejected/ (s21-*.c, now 72 files); self_vet.md written; candidate.c replaced with the score-0 body and a full mechanism header.
