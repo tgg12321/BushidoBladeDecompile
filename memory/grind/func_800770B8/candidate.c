@@ -81,6 +81,22 @@
  *     at first RTL emission, not at declaration, so the pseudo-number tie-break in
  *     cse.c make_regs_eqv / local-alloc allocno ordering is not C-controllable here.
  *
+ * s17 NEGATIVE RESULTS (12 fresh builds + a compiler-source enumeration; detail in
+ *   evidence.md [s17]):
+ *   - CLASS B'S MECHANISM IS NOW DEMONSTRATED AND PRICED, not merely unfound.  Under
+ *     cse pass 2 (`after_loop = 1`) an extended basic block is terminated by exactly
+ *     two things - a CODE_LABEL or a NOTE_INSN_SETJMP (tools/gcc-2.7.2/cse.c:8038-
+ *     8063), so no note/scope/wrap/inline fence can ever break it.  With a surviving
+ *     CODE_LABEL placed between the copy-based stores and the raw-result stores, plus
+ *     the s8 make_regs_eqv canonical promotion, the target's exact 2+2 split IS
+ *     emitted (rejected/s17-classB-split-DEMONSTRATED-join-label-177insn-score30.c:
+ *     `move $17,$2 / sw $17,0($28) / sw $18,4($17) ... sw $0,48($2) / sh $0,52($2)`).
+ *     It costs 177 insns.  A label with no live reference is demoted to
+ *     NOTE_INSN_DELETED_LABEL by jump.c pass 1 (dump-proven, A3 byte-identical to A2),
+ *     so a free label does not exist; a label with a live reference costs its branch
+ *     (176 s9, 177 B1, 177 C1).  This function has ZERO insn slack (175 = 175), so
+ *     class B is foreclosed BY PRICE.
+ *
  * INHERITED, STILL BINDING (do not re-derive): s6 (19 address spellings),
  *   s9 (3234-atom sched_solver sweep, 0 hits), s10 (full struct rewrite 178 insns),
  *   s11 (63-position single-wrap sweep + 18 nested), s12 (24/24 store-group orders,

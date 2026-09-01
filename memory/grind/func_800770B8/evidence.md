@@ -2056,3 +2056,116 @@ reading: the pseudo numbers cannot be moved from C here.
 - [s15] Three forms banked to memory/grind/func_800770B8/rejected/ (bank now holds 79): s16-inline-helper-returns-ptr-collapses-170insn.c, s16-inline-helper-byte-neutral-175insn-score5.c, s16-decl-order-permutation-byte-neutral-all-120.c.
 
 - [s15] src/text1b.c was restored to its committed INCLUDE_ASM state at session end (asm-until-matched); the floor-5 body lives in memory/grind/func_800770B8/candidate.c with its s16 negative results recorded in the header.
+
+## [s17] synthesis — 2026-09-01 — FLOOR 5 (re-verified); CLASS B's 2+2 SPLIT IS PRODUCED IN C FOR THE FIRST TIME IN SEVENTEEN SESSIONS, and its price is proven to be at least one instruction the function does not have
+
+Chassis re-measured at session start with `candidate.c` applied:
+**score 5, build_insns 175, target_insns 175** — unchanged. Restored and
+re-verified at 5 / 175 / 175 at session end; `src/text1b.c` returned to HEAD.
+
+### The source-level enumeration that made this session possible
+`tools/gcc-2.7.2/cse.c:8038-8063` (`cse_end_of_basic_block`) — the scan loop is
+`while (p && GET_CODE (p) != CODE_LABEL)` with exactly two early `break`s inside:
+
+* `if (! after_loop && GET_CODE (p) == NOTE && NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END) break;`
+* `if (GET_CODE (p) == NOTE && NOTE_LINE_NUMBER (p) == NOTE_INSN_SETJMP) break;`
+
+cse pass 2 runs with `after_loop = 1`, so under cse2 **an extended basic block is
+terminated by exactly two things: a `CODE_LABEL`, or a `NOTE_INSN_SETJMP`.**
+NOTE_INSN_SETJMP is emitted only for a real `setjmp` call, which this function does
+not and cannot contain. Therefore the ONLY C-reachable cse2 block break is a real
+`CODE_LABEL`. This retires nine sessions of "find some fence" guessing: there is no
+note, scope, wrap, loop or inline boundary that cse2 honours — s8's NOTE_INSN_LOOP_END
+fence worked in cse1 for exactly the reason the `! after_loop` guard states, and cse2
+ignores that note by construction.
+
+### Probe 1 — a dead label does not survive to cse2 (8 builds, dump-attributed)
+`tmp/grind/func_800770B8/s17/gen.py` -> `s17/b/`, log `s17/sweep.log`. The H1 split
+shape (`pn = call(); p_old = pn;` with the 0x30/0x34 stores through `pn`), crossed
+with three label spellings (`goto Lb; Lb: ;`, a bare `Lb: ;`, `do { break; } while (0);`)
+and with/without the s8 make_regs_eqv canonical promotion (`p_old` reused for the tail
+block's `D_800A36A0` re-read):
+
+| id | shape | score / insns |
+|----|-------|---------------|
+| A1 | split, no label, no promotion (control) | 23 / 170 |
+| A2 | split + promotion | 14 / **175** |
+| A3 | split + promotion + `goto Lb; Lb: ;` | 14 / **175** (byte-identical to A2) |
+| A4 | split + `goto Lb; Lb: ;`, no promotion | 23 / 170 |
+| A5 | split + promotion + bare `Lb: ;` | 14 / 175 (byte-identical to A2) |
+| A6 | split + promotion + `do { break; } while (0);` | 19 / 175 |
+| A7 | split + bare label, no promotion | 23 / 170 |
+| A8 | split + `do{break;}while(0)`, no promotion | 25 / 170 |
+
+A3/A5 are byte-identical to A2: a label with no live reference is **free and inert**.
+Pass attribution read from `tools/grinder/dump.ps1` dumps of A3
+(`tmp/grind/func_800770B8/dumps/`): `text1b.rtl` carries
+`(jump_insn 88) (barrier 89) (code_label 90 ... ("Lb"))`; by `text1b.jump` insn 90 is
+already `(note 90 86 93 "" NOTE_INSN_DELETED_LABEL)` and the jump is gone — jump.c
+pass 1 deletes a jump-to-next-insn and then the now-unreferenced label, converting it
+to a NOTE. A NOTE is not a `CODE_LABEL`, so `cse_end_of_basic_block` walks straight
+through it in cse1 AND cse2. **A zero-cost surviving label does not exist**; the
+forbidden "dead-goto label-pad" family is not merely banned here, it is measurably
+inert.
+
+### Probe 2 — the label must sit BETWEEN the copy and the raw uses, and then the split appears (4 builds)
+`s17/gen2.py` -> `s17/c/`, `s17/gen3.py` -> `s17/e/`; logs `s17/sweep_branch.log`,
+`s17/sweep_join.log`. Rows read with `s17/rows.py` off the sandbox object.
+
+| id | shape | score / insns | rows 29-37 |
+|----|-------|---------------|------------|
+| B1 | split + promotion + `if (r != 0) { raw stores }` | 23 / 177 | label lands AFTER the stores -> still `$17`-based |
+| B2 | B1 without promotion | 19 / 174 | copy gone, all `$2` |
+| C1 | split + promotion + duplicated-arm `if (r) { +4 store } else { +4 store }` join label, raw stores AFTER the join | 30 / **177** | **`move $17,$2` / `sw $17,0($28)` / `sw $18,4($17)` ... `sw $0,48($2)` / `sh $0,52($2)` — THE TARGET'S 2+2 SPLIT** |
+| C2 | C1 without promotion | 14 / 173 | jump.c cross-jumps the arms, label gone, all `$2` |
+
+**C1 is the first C body in seventeen sessions to emit the class-B split**: the copy
+survives, the global and `+4` stores go through the copy register, and the 0x30/0x34
+stores go through the raw call-result register — exactly `asm/funcs/func_800770B8.s`
+rows 29-38. The recipe is now fully named: (i) two pseudos with one copy, (ii) the s8
+make_regs_eqv canonical promotion so the long-lived pseudo wins the pre-label uses,
+(iii) a `CODE_LABEL` that survives jump.c, placed between the copy-based uses and the
+raw-based uses. B1 shows placement is part of the recipe: a conditional *jump* does not
+end a cse block (the scan follows the fall-through), only the join LABEL does, so an
+`if` wrapping the raw stores puts the label one statement too late.
+
+### Why this CLOSES class B instead of opening it
+Every surviving `CODE_LABEL` costs at least one instruction, and the function has no
+spare instruction: ours and the target are both exactly 175.
+* an unreferenced label is deleted (A3/A5, dump-proven) -> free but inert;
+* a label kept alive by a conditional branch costs the branch (s9's `if (p_old != 0)`
+  = 176 / score 16; B1 = 177);
+* a label kept alive by a duplicated-arm `if/else` costs the branch plus the duplicate
+  (C1 = 177), and if the arms are byte-identical jump.c cross-jumps them and deletes
+  the label again (C2 = 173);
+* the target's own control flow offers no label to reuse — `asm/funcs/func_800770B8.s`
+  rows 24-40 are straight-line from the `jal func_8006E49C` to the loop top.
+
+So class B is not "no mechanism found": it is **a known, demonstrated mechanism whose
+minimum price is +1 insn on a function with zero slack**. That is a proof of
+foreclosure, and it is strictly stronger than the previous "every reaching spelling
+collapses to 170" exhaustion argument.
+
+- [s17] Chassis re-verified: candidate.c = 5 / 175 / 175 at session start and at session end; src/text1b.c restored to HEAD.
+- [s17] SOURCE-READ (tools/gcc-2.7.2/cse.c:8038-8063): under cse pass 2 (`after_loop = 1`) an extended basic block is terminated by exactly two things - a CODE_LABEL or a NOTE_INSN_SETJMP. The NOTE_INSN_LOOP_END break is guarded by `! after_loop`. NOTE_INSN_SETJMP requires a real setjmp call. Therefore the ONLY C-reachable cse2 block break is a real CODE_LABEL, and no note / scope / wrap / inline / loop device can ever serve as a class-B fence.
+- [s17] DUMP-PROVEN (tmp/grind/func_800770B8/dumps, body A3): `goto Lb; Lb: ;` emits (jump_insn)(barrier)(code_label "Lb") in text1b.rtl, and text1b.jump already shows it as NOTE_INSN_DELETED_LABEL - jump.c pass 1 deletes the jump-to-next-insn and then the unreferenced label. A3/A5 measure byte-identical to A2 (14/175). A free-but-surviving label does not exist in GCC 2.7.2.
+- [s17] FIRST EVER PRODUCTION OF THE CLASS-B 2+2 SPLIT IN C (body C1, rejected/s17-classB-split-DEMONSTRATED-join-label-177insn-score30.c): two pseudos + one copy, the s8 canonical promotion, and a duplicated-arm if/else join label placed between the copy-based stores and the raw-based stores emits `move $17,$2 / sw $17,0($28) / sw $18,4($17) ... sw $0,48($2) / sh $0,52($2)` - the target's rows 29-38 shape. Cost 177 insns / score 30.
+- [s17] Placement is part of the recipe: a conditional JUMP does not end a cse block (the scan follows the fall-through); only the join LABEL does. B1 (`if (r != 0) { raw stores }`) puts the label after the stores and stays $17-based at 177 insns / score 23.
+- [s17] The price of a surviving label is >= 1 insn under every spelling measured across s9/s17 (branch 176, branch+promotion 177, duplicated-arm join 177, cross-jumped arms 173 with the label deleted), and func_800770B8 has zero insn slack (175 = 175). Class B is FORECLOSED BY PRICE, with the mechanism demonstrated rather than merely unfound.
+- [s17] Four forms banked: s17-classB-split-DEMONSTRATED-join-label-177insn-score30.c (C1), s17-classB-branch-after-copy-label-too-late-177insn.c (B1), s17-classB-dead-goto-label-deleted-by-jump-byte-inert.c (A3), s17-classB-promotion-only-collapses-onto-s1-175insn.c (A2). The rejected bank now holds 83 forms.
+
+- [s16] Chassis re-verified this session: memory/grind/func_800770B8/candidate.c measures score 5 / build_insns 175 / target_insns 175 at session start and again at session end; src/text1b.c restored to HEAD (INCLUDE_ASM) before finishing.
+
+- [s16] SOURCE-READ (tools/gcc-2.7.2/cse.c:8038-8063): under cse pass 2 (after_loop = 1) an extended basic block is terminated by exactly two things - a CODE_LABEL or a NOTE_INSN_SETJMP. The NOTE_INSN_LOOP_END break is guarded by `! after_loop`. Therefore no note, lexical scope, do-while(0) wrap, inline-function boundary or loop note can ever serve as a class-B fence; the only C-reachable cse2 block break is a real CODE_LABEL.
+
+- [s16] DUMP-PROVEN (tmp/grind/func_800770B8/dumps, body A3): `goto Lb; Lb: ;` emits (jump_insn)(barrier)(code_label "Lb") in text1b.rtl, and text1b.jump already carries it as NOTE_INSN_DELETED_LABEL - jump.c pass 1 removes the jump-to-next-insn and demotes the unreferenced label. A3 and A5 measure byte-identical to the unlabelled A2 (14/175). A free-but-surviving CODE_LABEL does not exist in GCC 2.7.2.
+
+- [s16] FIRST EVER PRODUCTION OF THE CLASS-B 2+2 SPLIT IN C (body C1, banked as rejected/s17-classB-split-DEMONSTRATED-join-label-177insn-score30.c): two pseudos with one copy + the s8 make_regs_eqv canonical promotion + a duplicated-arm if/else join label placed between the copy-based stores and the raw-based stores emits the target's rows 29-38 shape at 177 insns / score 30.
+
+- [s16] Placement is part of the recipe: a conditional JUMP does not end a cse block (the scan follows the fall-through); only the join LABEL does. B1 (`if (r != 0) { raw stores }` + promotion) puts the label one statement too late and stays $17-based at 177 insns / score 23.
+
+- [s16] The price of a surviving label is >= 1 insn under every spelling measured across s9 and s17 (real branch 176/16; branch+promotion 177/23; duplicated-arm join 177/30; cross-jumped identical arms 173/14 with the label deleted), and func_800770B8 has zero insn slack (build 175 = target 175). Class B is foreclosed BY PRICE, with the mechanism demonstrated rather than merely unfound.
+
+- [s16] Re-measured on today's floor-5 chassis: the s8 canonical-promotion result reproduces exactly (A2 = 175 insns / score 14, rows 35-36 still `sw $0,48($17)` / `sh $0,52($17)`), so the promotion alone flips the canonical without splitting - as s8 concluded on the floor-9 chassis.
+
+- [s16] Four forms banked to memory/grind/func_800770B8/rejected/ (bank now holds 83): s17-classB-split-DEMONSTRATED-join-label-177insn-score30.c, s17-classB-branch-after-copy-label-too-late-177insn.c, s17-classB-dead-goto-label-deleted-by-jump-byte-inert.c, s17-classB-promotion-only-collapses-onto-s1-175insn.c.
