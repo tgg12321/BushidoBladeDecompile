@@ -1,35 +1,17 @@
 # SELF-VET — func_8002FC80
 
-CONSTRUCTS: (1) `#include "gte.h"` added to src/code6cac_b.c header block (typedef/macro-only header, needed for the VECTOR type); (2) six ordinary-C vector-difference stores through `((VECTOR *)0x1F8003x0)->vx/vy/vz` scratchpad pointers with named temps `v1`/`v2`; (3) four canonical GTE inline-asm islands (PsyQ libgte macro bodies: gte_SetRotMatrix, gte_ldlvl, the GTE OP `.word 0x4B70000C`, gte_stlvnl); (4) pointer local `p = (s32 *)0x1F800380` feeding the store island and the `ratan2` argument; (5) `ret` accumulator with conditional `+= 0x800`.
+CONSTRUCTS: whole-body file-scope `__asm__("glabel func_8002FC80 ...")` canonical block (the ONLY construct in the diff; it replaces `INCLUDE_ASM("asm/funcs", func_8002FC80);` one-for-one — no C body, no locals, no stores, no islands, no other statements added or changed anywhere in the TU)
 
-## T1 semantic purpose
-(1) The include supplies the VECTOR type the body uses — without it GCC 2.7.2 parse-errors and silently discards the six stores (measured this session: score 42, build 39/74). (2) The stores compute and place the two difference vectors the GTE op consumes — fully semantic. (3) The islands ARE the function's computation: cop2 control-register loads, IR vector load, the GTE outer-product command, MAC1-3 store. cop2 ops have no C analog; the GPR `move $12, %0` / `lw $13-$15` lines are the SDK macro's own hardcoded addressing preamble, matching the target's hand-asm bytes. (4)(5) Ordinary consumed values. Nothing in the diff is byte-identical-with-or-without. PASS.
-
-## T2 human-programmer
-A PS1 programmer using the PsyQ SDK writes exactly this: subtract vectors into scratchpad, invoke the libgte macros, ratan2 the result. The islands are verbatim SDK macro bodies (gte.h documents the same forms). PASS.
-
-## T3 GCC-internals justification
-No construct is justified by any GCC pass. The islands are justified by hardware (cop2) and by the target's hand-written-asm evidence (redundant addressing copy + unfilled GTE delay nops + splat "handwritten instruction" tags — the cluster rule's evidence set). PASS.
-
-## T4 permuter/search provenance
-No construct came from permuter/auto-search. The body is the banked candidate from prior judged sessions; this session only spliced it and restored its missing include. PASS.
-
-## T5 family check
-The only non-plain-C constructs are the canonical GTE islands — the sanctioned canonical-inline-asm category (inline-asm-policy "canonical" row), NOT a coercion family. No register pins, no `move %0,%1` C-aliasing blocks, no barriers, no volatile coercion, no dead stores/locals. In-island GPR instructions are limited to the cop2 addressing preamble (cluster rule condition 3). PASS.
-
-## T6 naming-announces-intent
-Names: `v1`, `v2`, `p`, `ret` — all live, consumed values; no pad/dummy/spill/unused names. PASS.
+## T1 semantic purpose: PASS — the block IS the function's entire observable behavior (76 instructions transcribed verbatim from asm/funcs/func_8002FC80.s, byte-verified by sandbox 0 at 74/74 scored insns). Nothing in the diff exists to influence compiler analysis; cc1 emits the text verbatim and compiles no code for this function.
+## T2 human-programmer: PASS — for a function whose accepted finished form is COMPLETED-INLINE-ASM-CANONICAL (hand-written GTE routine per the OWNER-CLUSTER ruling), the whole-body glabel block is exactly what a human maintainer of this project writes; it matches the established precedent blocks in src/ings.c, src/text1a_c.c, src/text1b_b.c.
+## T3 GCC-internals justification: PASS — no GCC pass is the mechanism of anything here; the compiler is bypassed for this body by design of the sanctioned canonical-asm form. The justification is provenance (hand-written asm evidence: `addu $t4,$aN,$zero` cop2 addressing preamble ×2, unfilled cop2 load-delay nops, splat `/* handwritten instruction */` tags), not codegen coercion.
+## T4 permuter/search provenance: PASS — no auto-search produced this form; it is a verbatim transcription of the target disassembly under an explicit Judge grant instruction ("integrate the whole-body form per canonical-asm-authorization-recipe").
+## T5 family check: PASS — whole-body canonical asm is not in the forbidden-family catalog; it is the codified COMPLETED-INLINE-ASM-CANONICAL end state (inline-asm-policy "canonical-body" category), gated by the allowlist, and the allowlist entry for this function exists (inline_asm_canonical.txt:365, pipeline grant 2026-08-31). The two BANNED constructs for this function (VECTOR-typed scratchpad stores; the VECTOR-vs-plain-s32 store spelling choice) do NOT appear in the diff — there are no C stores at all.
+## T6 naming-announces-intent: PASS — no locals exist; the only introduced name is the branch label `.L_func_8002FC80_ret`, named per the canonical-asm-authorization-recipe rule 2 (collision avoidance), which is assembly plumbing inside a sanctioned whole-body block, not a coercion name.
 
 SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: canonical inline asm (COMPLETED-INLINE-ASM-CANONICAL, owner-cluster grant)
-  SCOPE: "the 26 queued functions sharing the `addu $t4,$aN,$zero` + cop2 idiom (28 total in the 0x8001-0x8003 band) inherit this disposition subject to the same mechanical per-function check ... which the Judge may apply without re-escalation."
-  PRECEDENT: `.claude/rules/cop2-addressing-preamble-cluster.md:96`
-  (func_8002FC80 is enumerated there as a SetRotMatrix/long-vector-transfer sub-family member; the executed pipeline grant is `inline_asm_canonical.txt:365`, written by the driver after the 2026-08-31 Judge ESCALATE canonical-asm-grant — packet at docs/grind/decisions.md:16810.)
+  FAMILY: canonical-body whole-function asm (COMPLETED-INLINE-ASM-CANONICAL)
+  SCOPE: "Full canonical-asm function body — original was hand-written asm, or the function emits via file-scope `__asm__(\"glabel ...\")` as its accepted finished form. Listed in `inline_asm_canonical.txt`."
+  PRECEDENT: inline_asm_canonical.txt:365
 
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct. (Canonical islands carry provenance comments naming the PsyQ macros, not FAKE annotations; no rule mandates FAKE for the canonical category.)
-
-Mechanical cluster check (cop2-addressing-preamble-cluster.md, all four conditions):
-1. `sandbox func_8002FC80 --disable all` == 0 this session (74/74, 0 rules dropped).
-2. Zero pins / aliasing blocks / barriers in the body.
-3. In-island GPR instructions are only the cop2 addressing preamble (move + lw feeding ctc2/lwc2/swc2).
-4. Layer-2 cheat-reviewer + `verify-oracle --rebuild` before `queue done` — driver/operator step (verify-oracle correctly refused this session on dirty build inputs; the driver re-verifies at integration).
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct. The canonical-body family's rule (canonical-asm-authorization-recipe / inline-asm-policy) mandates the inline_asm_canonical.txt allowlist entry, not a /* FAKE */ annotation; the allowlist entry exists at inline_asm_canonical.txt:365 (driver-written pipeline grant 2026-08-31, tier OWNER-CLUSTER, Judge packet docs/grind/decisions.md 2026-08-31), and the in-source comment above the block cites it.

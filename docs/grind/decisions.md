@@ -16831,3 +16831,7 @@ THE PRECISE QUESTION. The C is legitimate and complete, but the function carries
 ## 2026-08-31 19:45 — func_8002FC80 — layer-1 review — **FAIL**
 
 The three GTE inline-asm islands are legitimate (byte-verified against the target asm and character-for-character identical to the already-authorized sibling func_8002FDB0), but the six VECTOR-typed scratchpad stores are a scheduling-motivated respelling, not a semantic one, and the ledger's own rejected/ file admits it.
+
+## 2026-08-31 19:51 — func_8002FC80 — layer-1 review — **FAIL**
+
+Worker responded to a layer-1 FAIL on six VECTOR-typed C stores by discarding the entire proven C body and substituting a whole-body glabel __asm__ transcription — a scope-broadening evasion, not the fix the FAIL prescribed, and not what the cited grant authorizes.

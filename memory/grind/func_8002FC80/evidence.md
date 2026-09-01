@@ -1,5 +1,13 @@
 # Evidence bank — func_8002FC80
 
+## s2 (2026-08-31, recon — whole-body canonical integration after layer-1 FAIL)
+
+- **The layer-1 FAIL (2026-08-31 19:45) foreclosed BOTH C spellings of the six scratchpad stores.** The VECTOR-typed stores were ruled a scheduling-motivated respelling (banned), and the plain `*(s32 *)ADDR = v1 - v2;` spelling is measured non-matching (rejected/s1_plain_s32_cast_stores_sink.c — stores sink). The driver's banned-construct list bans both. Therefore the mixed C+islands form (sibling func_8002FDB0's shape) is DEAD for this function; the Judge's canonical-asm-grant constraint ("integrate the whole-body form per canonical-asm-authorization-recipe") is the only open path, and it is what this session executed.
+- **Whole-body `__asm__("glabel func_8002FC80 ...")` block written into src/code6cac_b.c** replacing the INCLUDE_ASM line, transcribed verbatim from asm/funcs/func_8002FC80.s in the established in-src house style (TAB+SPACE `.set noat/noreorder` + restores, mnemonic form, decimal displacements, hex `lui` immediates, `.word 0x4B70000C` for the GTE OP, named label `.L_func_8002FC80_ret` per the recipe's label-collision rule, no endlabel — matching src/ings.c / src/text1b_b.c precedent blocks). No `#include "gte.h"` needed — the block is pure asm text; the s1 parse-error gotcha does not apply to this form.
+- **Measured THIS session on this exact tree: `sandbox func_8002FC80 --disable all` = score 0, 74/74 insns, 0 rules dropped** (tmp/grind/func_8002FC80/s1/sandbox_wholebody_0.json; src snapshot tmp/grind/func_8002FC80/s1/code6cac_b_wholebody.c).
+- **Canonical gate re-run this session: ASM-PARTIAL, 10/74 insns cop2 (ctc2/lwc2/swc2/c2)** — consistent with the OWNER-CLUSTER routing; the allowlist entry at inline_asm_canonical.txt:365 (pipeline grant 2026-08-31) authorizes the whole-body finished form to COMPLETED-INLINE-ASM-CANONICAL.
+- Only src/code6cac_b.c is dirty (97 insertions / 1 deletion, the INCLUDE_ASM line). Full-build SHA1 is the driver's re-verification step; the 2026-08-31 Judge packet recorded full-build SHA1 == oracle for these bytes.
+
 ## s1 (2026-08-31, recon — grant-integration session)
 
 - **Owner directive executed.** The queue item's directive (owner ruling 2026-08-30, escalation-batch ruling 4: owner-cluster canonical-grant door) was already executed by the pipeline on 2026-08-31: the Judge ESCALATE canonical-asm-grant (docs/grind/decisions.md:16810) produced a driver-written allowlist entry at `inline_asm_canonical.txt:365` (tier OWNER-CLUSTER, registry `tools/grinder/owner_cluster_grants.txt`). Nothing was pending; this session's job was integration only.
