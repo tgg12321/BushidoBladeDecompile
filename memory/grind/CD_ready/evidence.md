@@ -1265,3 +1265,127 @@ spellings — including forms deleted from HEAD, via `git show <commit>^:<path>`
 - [s60] Alternative volatile spellings all lose: type-level on the global with a direct &g_cd_status_c costs a lui/%lo (score 4, build 180 - CD_sync s107 found the same thing at decisions.md:18333); making idx_1494/idx_1495 volatile as well scores 8, in both the cast-base and the &g_cd_status_a-base spellings.
 
 - [s60] Scope: src/system.c was restored to INCLUDE_ASM("asm/funcs", CD_ready); and verified clean against HEAD at session end. Only memory/grind/CD_ready/ files and metrics/events.jsonl are dirty. Old vT40 body retained at memory/grind/CD_ready/candidate-vT40-masked4-no-volatile.c; 4 forms added to rejected/ (bank now 129).
+
+## s61 (rederive, 2026-09-01) — the masked-2 residual is a DECOUPLED order/seat pair, and the exact allocator inequality that couples them is now written down
+
+Base for every measurement below: `memory/grind/CD_ready/candidate.c` (the vAT1 form recovered in
+s60), spliced into `src/system.c` with `tmp/grind/CD_ready/s61/splice.py`. Re-measured live at
+session start: **score 2, build_insns 179 == target_insns 179, rules_dropped 0** — the s60 floor
+reproduces exactly on today's HEAD chassis.
+
+### [s61-1] The masked-2 residual, disassembled: TWO instructions, TRANSPOSED, registers already correct
+`tmp/grind/CD_ready/s61/show.py` (objdump -dr of the sandbox .o against `asm/funcs/CD_ready.s`,
+index-aligned) prints the whole function; the ONLY divergence in all 179 instructions is:
+
+    idx  BUILD                 TARGET
+     55  sll  $v0,$v0,2        sll  $v0,$v0,2
+     56  sll  $a0,$a0,2        addu $v0,$v0,$s5      <-- transposed
+     57  addu $v0,$v0,$s5      sll  $a0,$a0,2        <-- transposed
+     58  lw   $v1,0($v0)       lw   $v1,0($v0)
+
+Every register in the block already matches the target, including both seats ($a0 for the
+`*(s32 *)t0` chain, $v1 for the `arg5` stack argument). The residual is a pure emission-ORDER
+swap of two independent ALU insns inside the `do_timeout` printf-argument block. This is a much
+smaller and much better-characterised residual than the 59-session floor-4 one; it is NOT the old
+coupled fixed point (that one also cost an instruction and two branch destinations).
+
+### [s61-2] Pass attribution READ, not guessed: sched2, and the two insns are a priority tie
+`pwsh tools/grinder/dump.ps1 CD_ready` on the vAT1 base (dumps in `tmp/grind/CD_ready/dumps/`).
+`system.sched2` for CD_ready shows the post-schedule order 99(lbu a0), 115(lbu v0), 141(lw a1),
+117(sll v0), **106(sll a0), 120(addu v0)**, 122(lw v1), 128, 111, 133, 137, 143. The target needs
+120 before 106. Both are `{ashlsi3}`/`{addsi3_internal}` with equal-length dependency paths to the
+`printf` call (106->111->145(lw a3)->call ; 120->122->137(sw 16(sp))->call), so INSN_PRIORITY ties
+and `rank_for_schedule` falls through to `INSN_LUID` — i.e. to the RTL emission order, i.e. to the
+C statement order. NOTE FOR FUTURE SESSIONS: `dump.ps1` prints a spurious
+`src/system.c:619: too few arguments to function 'printf'` on stderr while the candidate is
+spliced (CD_init calls the 5-arg prototype with 2 args). The dumps are still written and are
+valid — check the mtimes, do not conclude the dump failed.
+
+### [s61-3] CONFIRMED (F2): the ORDER is independently reachable — `t0 *= 4` position is the lever
+Deferring the t0 shift until AFTER the arg5 chain (`w04_t0_shift_deferred.c`) raises the a0-shift's
+LUID above the v0-addu's and the scheduler emits the TARGET order:
+
+     55 sll v0,v0,2 | 56 addu v0,v0,s5 | 57 sll <t0>,<t0>,2 | 58 lw <arg5>,0(v0)   <-- exact target shape
+
+This is the first time in 61 sessions that the 56/57 pair has been emitted in the target order in a
+179-instruction body. F2's prediction — that vAT1 decouples the order from the seat — is CONFIRMED
+for the order half.
+
+### [s61-4] ...but the same lever inverts the SEAT: order-correct costs the $a0/$v1 assignment
+`w04` scores **6**, and all six differing instructions (51,57,58,61,63,67) differ ONLY in that the
+t0 chain sits in `$v1` where the target uses `$a0`, and the arg5 value sits in `$a0` where the
+target uses `$v1`. Order right, seats swapped. Baseline = seats right, order wrong (2). Same
+information content, opposite halves.
+
+### [s61-5] The exact allocator equation behind the seat swap (read from source + the .lreg dump)
+`tools/gcc-2.7.2/local-alloc.c:1660-1685`, `qty_compare_1`, sorts quantities DESCENDING by
+
+    pri(q) = floor_log2(qty_n_refs[q]) * qty_n_refs[q] * qty_size[q] / (qty_death[q] - qty_birth[q]) * 10000
+
+with ties broken by qty number (birth order). `qty_n_refs[qty] = reg_n_refs[regno]` (line 297) is
+the FUNCTION-WIDE, loop-depth-weighted reference count of the pseudo, not a block-local count.
+`find_free_reg` then hands out hard regs in ascending register number, so the first-allocated of
+the two block pseudos takes `$v1` (because `$v0` is already taken by the higher-priority
+function-scope `v0` variable, pseudo 74: refs 13 / len 8 -> pri 4.875) and the second takes `$a0`.
+
+From `tmp/grind/CD_ready/s61/w04.lreg` (`;; Function CD_ready`), for the w04 body:
+  - pseudo 98 = the t0 chain: "used 8 times across 11 insns" -> pri = floor_log2(8)*8/11 = **2.18**
+  - pseudo 97 = arg5:         "used 4 times across 4 insns"  -> pri = floor_log2(4)*4/4  = **2.00**
+t0 wins, is allocated first, takes `$v1`; arg5 takes `$a0`. The target needs the reverse.
+
+**THE INEQUALITY THE NEXT SESSION MUST SATISFY** (holding the w04 order-correct shape fixed):
+
+    pri(arg5) > pri(t0)     i.e.   floor_log2(R5)*R5/L5  >  floor_log2(Rt)*Rt/Lt
+
+with the current values R5=4, L5=4, Rt=8, Lt=11 giving 2.00 vs 2.18. Two ways to flip it, both
+tiny: (a) lengthen the t0 live range to Lt >= 13 (24/13 = 1.85 < 2.00) without changing its ref
+count — note Lt = 12 gives an exact 2.00 TIE, which then resolves by qty number and still loses,
+so 13 is the real threshold; or (b) raise arg5's weighted ref count to R5 = 5 or 6 at L5 = 4
+(pri 2.5 / 3.0), which must stay BELOW pseudo 74's 4.875 or arg5 steals `$v0` instead.
+
+### [s61-6] Measurements taken this session (all 179/179 insns, 0 rules, on the vAT1 base)
+Fresh natural-C rederivation of the printf-argument block (modality work — a structurally
+different shape, not a tweak):
+  - fully natural `printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], tbl_125c[idx_1494[0]],
+    tbl_125c[idx_1494[1]])` — **14**; with a `pp` alias — 14; with named byte indices — 14
+  - one arg hoisted to a named intermediate: arg5-first 14, arg4-first 7, both-named 7/8
+Source-position sweep of the staged block:
+  - v0/arg5 chain first, pp last / pp first — 7 / 7
+  - pp moved after the t0 chain — **2** (basin-equivalent to baseline)
+  - `t0 *= 4` deferred past the arg5 chain (**w04**) — **6**, ORDER CORRECT (see s61-3/4)
+  - only the `+tbl` deferred, shift left early — **2** (basin-equivalent; confirms the SHIFT, not
+    the add, is the LUID that matters)
+  - arg5 natural + t0 staged — 4; t0 natural + arg5 staged — 9; `&tbl_125c[t0]` fold — 3
+Seat-control sweep on the w04 (order-correct) base — ALL score 6, i.e. the seat swap is INVARIANT
+to every source-level perturbation that does not change the pri equation:
+  - declaration order t0-first / pp-first, a fresh index pseudo instead of the outer `v0`,
+    `pp` assigned first / last, arg5 written naturally, `&tbl_125c[t0]` fold, t0 loaded before pp
+Ref-count/live-range attacks on the w04 base:
+  - splitting the byte and the pointer into two variables (4 spellings) — **9**, and it reshuffles
+    the whole block (lbu order flips, the D_800A11D5 sub-block migrates): a different, worse basin,
+    not a seat fix
+  - variable-reuse of an existing function-scope local to change `reg_n_refs`:
+    arg5 := `status` 6, := `cnt` 10, := `i` 20; t0 := `i` 24, := `cnt` 9,
+    t0 := `status` **5** — and z05 is a trap: the extra function-wide refs push the t0 quantity
+    over the callee-saved threshold and it lands in `$s0`, while the ORDER reverts to wrong. A
+    lower score here is NOT progress toward the target seat.
+
+- [s61] Chassis check: the s60 vAT1 floor reproduces exactly on today's HEAD - score 2, build_insns 179 == target_insns 179, rules_dropped 0, cheat_asm_stripped 5.
+
+- [s61] The masked-2 residual is now fully localised and is NOT what the s60 header guessed: all 179 instructions already carry the target's registers, both seats included ($a0 for the *(s32*)t0 chain, $v1 for the arg5 stack argument). The only divergence is that build insns 56/57 are `sll $a0,$a0,2` then `addu $v0,$v0,$s5` where the target has them transposed.
+
+- [s61] Pass attribution READ from tmp/grind/CD_ready/dumps/system.sched2 (not hypothesised): the two insns are sched2 insns 106 and 120, they tie on INSN_PRIORITY (equal-cost dependency paths 106->111->145->call and 120->122->137->call), and rank_for_schedule falls through to INSN_LUID, so C statement order decides.
+
+- [s61] THE ALLOCATOR EQUATION, from tools/gcc-2.7.2/local-alloc.c:1660-1685: qty_compare_1 sorts quantities DESCENDING by pri(q) = floor_log2(qty_n_refs[q]) * qty_n_refs[q] * qty_size[q] / (qty_death[q] - qty_birth[q]) * 10000, ties broken by qty number (birth order); and local-alloc.c:297 sets qty_n_refs[qty] = reg_n_refs[regno], the FUNCTION-WIDE loop-depth-weighted count. find_free_reg then hands out hard regs in ascending register number, so the first-allocated of the two block pseudos takes $v1 ($v0 is already held by the higher-priority function-scope `v0` variable, pseudo 74: refs 13 / len 8 -> pri 4.875) and the second takes $a0.
+
+- [s61] Measured inputs from tmp/grind/CD_ready/s61/w04.lreg (;; Function CD_ready): pseudo 98 = the t0 chain, 'used 8 times across 11 insns' -> pri = 3*8/11 = 2.18; pseudo 97 = arg5, 'used 4 times across 4 insns' -> pri = 2*4/4 = 2.00. t0 sorts first, takes $v1; arg5 takes $a0 - the exact inversion of the target.
+
+- [s61] THE INEQUALITY THE NEXT SESSION MUST SATISFY, holding the w04 order-correct shape fixed: pri(arg5) > pri(t0). Two knobs. (a) lengthen the t0 live range to >= 13 insns at unchanged refs - 24/13 = 1.85 < 2.00 wins, but Lt = 12 is an exact 2.00 TIE that resolves by qty number and still loses, so 13 is the real threshold. (b) raise arg5's weighted ref count to 5 or 6 at live range 4 (pri 2.5 / 3.0), which must stay strictly below pseudo 74's 4.875 or arg5 steals $v0 instead.
+
+- [s61] Source-position sweep on the vAT1 base (all 179/179, 0 rules): pp moved after the t0 chain = 2 (basin-equivalent); deferring only the `+tbl` while leaving the shift early = 2, which proves the SHIFT and not the add is the LUID that matters; arg5 natural + t0 staged = 4; &tbl_125c[t0] fold = 3; v0-chain-first = 7; t0 natural + arg5 staged = 9.
+
+- [s61] TOOLING NOTE for future sessions: `pwsh tools/grinder/dump.ps1 CD_ready` prints a spurious `src/system.c:619: too few arguments to function 'printf'` on stderr while a CD_ready candidate is spliced in (CD_init calls the 5-argument prototype with 2 arguments). The dumps are still written and are valid - check the file mtimes rather than concluding the dump failed.
+
+- [s61] tmp/grind/CD_ready/s61/show.py is a reusable index-aligned disassembly differ (objdump -dr of tmp/sandbox/CD_ready/system.o against asm/funcs/CD_ready.s, with relocations printed) - it is what turned a bare 'score 6' into 'six instructions, register-swapped, order correct'. Use it on every scored variant in this neighbourhood; the z05 trap shows score alone lies here.
+
+- [s61] src/system.c was restored to HEAD at end of session (tmp/grind/CD_ready/s61/splice.py --restore); the only dirt is the engine's own metrics/events.jsonl.

@@ -50,14 +50,25 @@
  *   - same, with the base taken as `&g_cd_status_a` in cdrom_IrqHandler's exact shape: score 8.
  *   Only the 1496 access path may be volatile; 1494/1495 must stay plain.
  *
- * REMAINING RESIDUAL (masked 2, 179/179 - a NEW frontier, not the old floor-4 one). The two
- * differing instructions sit in the do_timeout printf-argument block (build insns ~51-67): the
- * build lands the staged table index in $v1 where the target uses $a0, and the `sll ,2` / `lw`
- * pair around insns 57-58 is transposed against the target. The old floor-4 coupled fixed point
- * (sched2 LUID tie vs qty_compare 5.33-vs-5.33 seat trade, vT32-vs-vT40) is NOT this residual:
- * that one cost branch-destination correctness and an instruction; this body has the correct
- * 179-instruction count and correct branch destinations already. Every t0-web / arg5 axis killed
- * in s53-s59 was killed against the vT40 (masked-4) base and is RE-OPENABLE against this one.
+ * REMAINING RESIDUAL (masked 2, 179/179) - CORRECTED AND FULLY LOCALISED IN s61 (2026-09-01).
+ * The s60 header guessed a register mismatch here; the s61 disassembly (tmp/grind/CD_ready/s61/
+ * show.py) proves otherwise. EVERY register in all 179 instructions already matches the target,
+ * both seats included. The entire residual is a transposition of two independent ALU insns in the
+ * do_timeout printf-argument block:
+ *     idx  BUILD              TARGET
+ *      55  sll  $v0,$v0,2     sll  $v0,$v0,2
+ *      56  sll  $a0,$a0,2     addu $v0,$v0,$s5
+ *      57  addu $v0,$v0,$s5   sll  $a0,$a0,2
+ *      58  lw   $v1,0($v0)    lw   $v1,0($v0)
+ * Attribution READ from tmp/grind/CD_ready/dumps/system.sched2: sched2 insns 106 (sll a0) and
+ * 120 (addu v0) tie on INSN_PRIORITY and rank_for_schedule falls through to INSN_LUID, so C
+ * statement order decides. Moving `t0 *= 4` after the arg5 chain DOES produce the target order
+ * (s61 w04) but inverts the local-alloc seat via qty_compare_1 - order and seat are each
+ * independently reachable and anti-correlated through that one lever. The arithmetic of the
+ * inequality that would satisfy both is written out at the end of hypotheses.md (s61).
+ * Every t0-web / arg5 axis killed in s53-s59 was killed against the vT40 (masked-4) base; s61
+ * re-ran the natural-C, source-position, decl-order, pseudo-split and variable-reuse families
+ * against THIS base (all banked in evidence.md s61 and rejected/s61-*).
  */
 s32 marionation_Exec(s32 a0, u8 *a1)
 {

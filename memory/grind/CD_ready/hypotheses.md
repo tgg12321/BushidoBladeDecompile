@@ -1334,3 +1334,98 @@ gate, the family is.
 - probe: Read CD_sync's s107 record (docs/grind/decisions.md:18287-18400) and re-verified the asm-consumer facts by grep: the eight assembly files still referencing D_800A1494/95/96 by name.
 - result: Dead for CD_ready by the same symbol-level fact. The storage is defined in assembly (asm/data/7D920.data.s:31048-31076, plus dlabel D_800A1498 whose first word is `.word D_800A1494`) and is referenced by name from CD_cw.s (6 sites), getintr.s (5), func_800819C4.s (5), func_800817A0.s (4), func_80081E1C.s (1) plus the three INCLUDE_ASM bodies. CD_sync's own record states the consequence verbatim: 'it holds identically for CD_ready and CD_datasync'. Deliberately not re-measured here (banked negative); the session's budget went to the vAT1 half instead, which is what moved the floor.
 - verdict: KILLED
+
+## s61 (rederive, 2026-09-01)
+
+### H-s61-A — CONFIRMED (partially): the vAT1 residual decouples; the ORDER half is reachable
+STATEMENT. F2's claim that at 179/179 with correct branch destinations the seat and the emission
+order are independently reachable rather than a coupled trade.
+MECHANISM. sched2's `rank_for_schedule` ties on INSN_PRIORITY between insn 106 (`sll $a0,$a0,2`)
+and insn 120 (`addu $v0,$v0,$s5`) — equal-cost dependency paths to the printf call — and falls
+through to INSN_LUID, i.e. to RTL emission order, i.e. to C statement order.
+PROBE. Move `t0 *= 4` from before the arg5 chain to after it (w04_t0_shift_deferred.c);
+`sandbox CD_ready --disable all`; disassemble with tmp/grind/CD_ready/s61/show.py.
+RESULT. Order becomes EXACTLY the target's (55 sll v0 / 56 addu v0,s5 / 57 sll t0 / 58 lw arg5) —
+first time in 61 sessions. VERDICT: **CONFIRMED for the order half.**
+
+### H-s61-B — KILLED: the seat half is NOT reachable by source position, declaration order, or fresh pseudos
+STATEMENT. Once the order is fixed by H-s61-A, the $a0/$v1 seat assignment can be recovered by the
+usual source-shape levers (declaration order, statement position, fresh-vs-borrowed pseudos,
+pointer-vs-integer typing, natural-vs-staged argument spelling).
+MECHANISM. local-alloc `qty_compare_1` (tools/gcc-2.7.2/local-alloc.c:1660-1685) orders quantities
+by floor_log2(refs)*refs*size/(death-birth); none of those levers changes refs or the live-range
+length of the two competing block pseudos.
+PROBE. 8 spellings on the w04 base (x01-x08): decl order t0-first, decl order pp-first, fresh index
+pseudo, pp assigned first, arg5 natural, `&tbl_125c[t0]` fold, pp assigned last, chains swapped
+onto the outer `v0`.
+RESULT. x01-x07 ALL score exactly 6 with the identical six register-swapped instructions; x08 = 9.
+VERDICT: **KILLED.** The seat is a function of the pri equation only.
+
+### H-s61-C — KILLED: splitting the byte and the pointer into two variables fixes the seat
+STATEMENT. Reducing the t0 quantity's ref count from 4 real refs to 2 (separate `tb` byte var and
+`tp` pointer var) lowers its pri below arg5's and hands `$a0` to arg5... sorry, to t0.
+MECHANISM. floor_log2(4)*4/L vs floor_log2(8)*8/11 — dropping to 4 weighted refs more than halves
+the numerator.
+PROBE. y01/y02/y03/y05/y07 — five spellings of the byte/pointer split, plus y04 (pointer-typed
+destination only).
+RESULT. All score 9, and the disassembly shows a DIFFERENT, worse basin: the two `lbu` loads swap
+position (51/52), the D_800A11D5 sub-block migrates from 59-62 to 61-64, and the sw/lw ordering
+around 60-63 breaks. The extra pseudo perturbs the scheduler, not just the allocator.
+VERDICT: **KILLED** as spelled — the ref-count lever cannot be pulled by introducing a new pseudo.
+
+### H-s61-D — KILLED (and a trap banked): variable-reuse to retune reg_n_refs
+STATEMENT. Because `qty_n_refs[qty] = reg_n_refs[regno]` is the FUNCTION-WIDE weighted ref count,
+reusing an existing function-scope local (`status`, `cnt`, `i`) for arg5 or for t0 retunes the pri
+equation without adding an instruction — a sanctioned variable-reuse-for-codegen-control lever.
+PROBE. z01-z06 on the w04 base.
+RESULT. arg5 := status 6 / cnt 10 / i 20; t0 := i 24 / cnt 9 / status 5. Nothing reaches the target
+seat. VERDICT: **KILLED for these six carriers.** BANK THE TRAP: z05 (t0 := status) scores 5, LOWER
+than w04's 6, and is a dead end — the borrowed variable's function-wide refs and call-crossings push
+the quantity past the caller-saved cutoff so t0 lands in `$s0` (callee-saved), AND the order reverts
+to the wrong one. Score alone is misleading in this neighbourhood; always disassemble.
+
+### THE OPEN QUESTION, stated arithmetically (the whole of the next session's job)
+Hold the w04 order-correct shape. Current: pri(t0) = floor_log2(8)*8/11 = 2.18,
+pri(arg5) = floor_log2(4)*4/4 = 2.00. Need pri(arg5) > pri(t0). Exactly two knobs:
+  (a) lengthen the t0 quantity's live range to >= 13 insns at unchanged refs (12 gives an exact
+      TIE, which resolves by qty number and still loses). Its birth is the `lbu` and its death is
+      the `lw $a3` argument load, and BOTH ends are already pinned by expand_call's argument
+      evaluation order — moving the birth earlier means crossing the `puts` call, which forces a
+      callee-saved seat (the z05 trap). Look instead for a way to make the arg-2/arg-3 computation
+      (`*pp`, `D_800A11DC[D_800A11D5]`) land BETWEEN t0's birth and death, which lengthens t0 for
+      free because those insns already exist.
+  (b) raise arg5's weighted ref count to 5 or 6 while holding its live range at 4 (pri 2.5 / 3.0),
+      staying strictly below pseudo 74's 4.875 or arg5 steals `$v0` instead. z01-z03 show that
+      borrowing an existing local overshoots; what is UNTRIED is a carrier whose function-wide
+      weighted count lands at exactly 5-6, and whether an out-of-loop reference (weight 1 instead
+      of the in-loop weight 2) can be used to tune the count by a single unit.
+
+## [s61] F2: at 179/179 with correct branch destinations the sched2 emission order and the local-alloc seat are independently reachable rather than a coupled trade.
+- mechanism: sched2 rank_for_schedule ties on INSN_PRIORITY between insn 106 (sll $a0,$a0,2) and insn 120 (addu $v0,$v0,$s5) - equal-cost dependency paths to the printf call - and falls through to INSN_LUID, i.e. to RTL emission order, i.e. to C statement order. Read from tmp/grind/CD_ready/dumps/system.sched2, not hypothesised.
+- probe: Move `t0 *= 4` from before the arg5 chain to after it (tmp/grind/CD_ready/s61/w04_t0_shift_deferred.c), sandbox, then index-align the disassembly against asm/funcs/CD_ready.s with tmp/grind/CD_ready/s61/show.py.
+- result: The build emits the EXACT target order (55 sll v0 / 56 addu v0,s5 / 57 sll t0 / 58 lw arg5) for the first time in 61 sessions, at 179 instructions and 0 rules. Score is 6 because the two block pseudos swap hard registers.
+- verdict: CONFIRMED
+
+## [s61] Once the order is fixed, the $a0/$v1 seat can be recovered by ordinary source-shape levers: declaration order, statement position, a fresh pseudo instead of the borrowed outer `v0`, pointer-vs-integer typing, natural-vs-staged argument spelling.
+- mechanism: local-alloc qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660-1685) orders quantities by floor_log2(refs)*refs*size/(death-birth); none of those levers changes either input for the two competing pseudos.
+- probe: 8 spellings on the order-correct w04 base (x01-x08): decl order t0-first, decl order pp-first, fresh index pseudo, pp assigned first, arg5 written naturally, &tbl_125c[t0] fold, pp assigned last, chains swapped onto the outer `v0`.
+- result: x01-x07 all score exactly 6 with the identical six register-swapped instructions (51,57,58,61,63,67); x08 scores 9. The seat is invariant to every perturbation that leaves the pri equation alone.
+- verdict: KILLED
+
+## [s61] Splitting the loaded byte and the derived pointer into two variables drops the t0 quantity's weighted ref count from 8 to 4 and flips the allocation order, fixing the seat.
+- mechanism: pri = floor_log2(refs)*refs/(death-birth); halving refs more than halves the numerator, so t0 would sort below arg5 and be allocated second, taking $a0.
+- probe: y01/y02/y03/y05/y07 (five spellings of the byte/pointer split) plus y04 (pointer-typed destination only), all on the w04 order-correct base.
+- result: All score 9 and land in a DIFFERENT, worse basin: the two lbu loads swap position (51/52), the D_800A11D5 sub-block migrates from 59-62 to 61-64, and the sw/lw ordering around 60-63 breaks. The extra pseudo perturbs the scheduler, not just the allocator.
+- verdict: KILLED
+
+## [s61] Because qty_n_refs[qty] = reg_n_refs[regno] is the FUNCTION-WIDE loop-weighted ref count, reusing an existing function-scope local (status / cnt / i) as the carrier for arg5 or for t0 retunes the pri equation for free - a sanctioned variable-reuse-for-codegen-control lever.
+- mechanism: local-alloc.c:297 assigns the quantity the pseudo's whole-function reference count, so borrowing a carrier with more (or fewer) references anywhere in CD_ready moves that quantity in the qty_compare_1 sort without emitting an instruction.
+- probe: z01-z06 on the w04 base: arg5 := status / cnt / i, and t0 := i / cnt / status.
+- result: arg5 := status 6, := cnt 10, := i 20; t0 := i 24, := cnt 9, := status 5. None reaches the target seat. TRAP BANKED: z05 scores 5 - LOWER than w04 - yet is a dead end, because the borrowed carrier's function-wide refs and call-crossings push the quantity past the caller-saved cutoff and t0 lands in $s0 (callee-saved) while the order reverts to wrong. Score alone is misleading in this neighbourhood.
+- verdict: KILLED
+
+## [s61] A fresh, fully natural rederivation of the do_timeout printf-argument block (no staged t0/arg5, no pp alias) reaches or beats the staged vAT1 basin - the mandated rederive attack.
+- mechanism: If the staged spelling is only a historical accident, GCC's own argument expansion from the natural expression printf(fmt, D_800F19C0, D_800A11DC[D_800A11D5], tbl_125c[idx_1494[0]], tbl_125c[idx_1494[1]]) should reproduce the target block directly.
+- probe: v01-v07: fully natural, natural + pp alias, natural + named byte indices, and each of arg4/arg5/both hoisted to named intermediates in both orders.
+- result: 14, 14, 14, 14 (arg5-first), 7 (arg4-first), 7 and 8 (both named). All 179 instructions, 0 rules - the natural forms preserve the instruction count and the branch destinations but land 5-12 instructions worse than the staged basin. The staged spelling is load-bearing, not decorative.
+- verdict: KILLED
