@@ -1,38 +1,36 @@
-/* candidate.c — func_800770B8 (src/text1b.c) — s3 structural, 2026-09-01
- * Honest floor THIS form, measured s3: sandbox --disable all = 9 (175/175 insns).
- * (s2 form re-measured 10 on today's chassis at the start of s3; s3 dropped it 10 -> 9
- * and closed the last insn-COUNT gap: ours is now 175 insns, exactly the target's.)
+/* candidate.c — func_800770B8 (src/text1b.c) — s2 structural, 2026-09-01
+ * Honest floor THIS form, measured s2: sandbox --disable all = 10 (174/175 insns).
+ * (s1 form measured 14 on the same chassis at the start of s2; s2 dropped it 14 -> 12 -> 10.)
  * 100% ordinary C, zero cheats, zero annotations, no FAKE-annotated constructs.
  *
- * s3 addition over the s2 form (one edit, ordinary C, measured):
- *   Inner loop 2 (the arg2 bit-scan) is a `for (a2 = 0; a2 < 0xA; a2 = (s16)(a2 + 1))`
- *   instead of a preheader `a2 = 0;` plus a do-while with a trailing increment.
- *   This closes residual class D (the reorg.c delay-slot fill choice, PROVEN in s2):
- *   with the `for` shape reorg no longer steals the `ori` from the fall-through
- *   thread; it fills the beqz from the branch-target thread by copying
- *   `addiu $v0,$a2,1` and redirecting past it — exactly the target's rows 103-105
- *   and 113. Insn count 174 -> 175, score 10 -> 9.
- *   NOTE the a2 initialiser must stay a `for`-header init here; s2's H6 (a2 = 0 as the
- *   FIRST statement of the outer do-body) is still what fixes rows 30-34/37, and the
- *   `for` header supplies exactly that RTL position for the second inner loop.
+ * s2 additions over the s1 form (both ordinary C, both measured):
+ *   1. Tail store grouping: the `*(s32 *)D_800A36A0 = arg1;` and
+ *      `*(s8 *)(D_800A36A0 + 0x65) = 0;` stores share ONE read of the global
+ *      through a local `u8 *q` (14 -> 12). Without it GCC reloads D_800A36A0
+ *      between the two stores (the pointer store may alias the global), giving
+ *      2 extra insns (lw + load-delay nop) that the target does not have.
+ *      Target's grouping is exactly {+0, +0x65} | {+0x67} | {lbu +0x67, sb +0x66},
+ *      so only THIS pair is grouped; s1's K2 (grouping the whole tail) is still dead.
+ *   2. `a2 = 0;` moved from the outer-loop preheader + outer-loop tail into the
+ *      FIRST statement of the outer loop body (12 -> 10). This sinks the
+ *      `addu $a2,$zero,$zero` from sched1 slot 30 to slot 37 (after the
+ *      0x30/0x34 store cluster) exactly as target, and drops the duplicate
+ *      trailing `a2 = 0;`. Rows 30-34 and 37 are now byte-clean.
  *
- * NOTE: applying this body also requires the two caller-side edits (see
- * tmp/grind/func_800770B8/s3/try.py): the prototype near the caller becomes
+ * NOTE: applying this body also requires the two caller-side edits (already applied
+ * in src/text1b.c by this session): the prototype near the caller becomes
  * `s32 func_800770B8(s32, s32, s32);` and the call site passes
  * `(s32)&D_8009BD24` (was `(s32 *)&D_8009BD24`). Byte-neutral for the caller.
  *
- * Residual at floor 9 (3 classes; class D is CLOSED):
- *   A. prologue rows 7-12 (4 diffs): sched2 (post-RA!) ordering of
- *      {sw $ra, sw $s1, addiu $a1 0x1008, lui/lw D_800A374C, addiu $s1,$s0,0x58}.
- *      s3 correction: this is a SCHED2 question, not sched1 — the register-save
- *      insns do not exist until after reload. 12 statement orderings measured, all
- *      neutral-or-worse. See evidence.md s3.
- *   B. rows 35-36 (2 diffs): the 0x30/0x34 stores go through $s1 (p_old) in ours,
- *      through $v0 (the raw call-result pseudo) in target. Second-handle spellings
- *      KILLED three times (K1 s1, K4 s2, and every s3 restatement is byte-neutral).
- *   C. rows 62-64 (3 diffs): the p_6a/p_7e base `addu` ties its dest to the lw pseudo
- *      ($v0) in ours and to the sll pseudo ($v1) in target — a local-alloc
- *      dest-coalesce decision. Six address spellings measured; all neutral or worse.
+ * Residual at floor 10 (4 classes, all mapped — see evidence.md s2):
+ *   A. prologue rows 7-12: `sw $ra` / `sw $s1` save order + ClearOTagR a1-first
+ *      arg evaluation + `addiu $s1,$s0,0x58` placement (sched1 block-0 order).
+ *   B. rows 35-36: the 0x30/0x34 stores go through $s1 (p_old) in ours, through
+ *      $v0 (the raw call-result pseudo) in target. Second-handle spellings KILLED
+ *      twice (K1 s1, K4 s2).
+ *   C. rows 62-64: p_6a/p_7e base addu dest register (local-alloc coalesce).
+ *   D. row 104: reorg delay-slot fill choice — mechanism PROVEN in s2, see
+ *      evidence.md; the target build's fall-through steal was blocked.
  */
 s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     u16 sp[2];
@@ -77,8 +75,8 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
         *(s16 *)(ptr + 0x40) = 0;
         *(u8 *)(base + t0 + 0x68) = (u8)t0;
         {
-            s16 *p_6a = (s16 *)(D_800A36A0 + (t0 * 10) + 0x6A);
-            s16 *p_7e = (s16 *)(D_800A36A0 + (t0 * 10) + 0x7E);
+            s16 *p_6a = (s16 *)(D_800A36A0 + 0x6A + (t0 * 10));
+            s16 *p_7e = (s16 *)(D_800A36A0 + 0x7E + (t0 * 10));
             do {
                 p_6a[a2] = -1;
                 p_7e[a2] = 0;

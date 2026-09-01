@@ -237,3 +237,172 @@ KILLED (measured, forms banked in rejected/):
 - probe: s16 *p_6a = (s16 *)((t0 * 10) + (s32)D_800A36A0 + 0x6A); same for p_7e; sandbox --disable all.
 - result: 34 (from a 10 chassis). The +0x6A/+0x7E constants fold into the int expression, destroying the shared (t0*10) CSE and restructuring rows 55-70. With s1's K3 this closes the address-shape axis on rows 62-64 from both directions - it is a local-alloc dest-coalesce decision.
 - verdict: KILLED
+
+## Session 3 (structural, 2026-09-01) - floor 10 -> 9
+
+CONFIRMED:
+- H9 "class D closes if inner loop 2 is spelled as a `for` loop" - the C-reachable
+  blocker of reorg's fall-through delay-slot steal. 10 -> 9, 174 -> 175 insns; our
+  insn count now equals the target's exactly. Rows 103-105 and 113 byte-clean.
+- H10 "BB2_NO_FT_STEAL=1 reproduces the target region" - re-verified the s2
+  mechanism from the other knob (skip the fall-through fill outright rather than
+  force mark_target_live_regs all-live); identical output, so any blocker suffices.
+- H11 "class A is a sched2 (post-reload) decision, not sched1" - PASS-ATTRIBUTION
+  CORRECTION. The register saves do not exist in sched1's RTL; text1b.sched2 shows
+  the whole contested cluster at priority 1, decided by rank_for_schedule
+  tie-breaks. s2's sched1 attribution was wrong and should not be inherited.
+- H12 "pointer-domain PLUS is canonicalized, so C source order cannot set the RTL
+  operand order of the row-62 addu" - C1 measured NEUTRAL on both chassis.
+
+KILLED (measured, forms banked in rejected/):
+- K7 short-circuit `||` respelling of the bit test to force a CODE_LABEL at the
+  then-arm head (own_fallthrough==0). Measured 32 / 176 insns: the second test is
+  really emitted, so the label costs more than the delay slot buys. It also has no
+  semantic justification - the code has exactly one condition.
+  rejected/s3-shortcircuit-or-duplicate-test.c
+- K8 `if ((arg2 & mask) == mask)` to make the guard branch an NE test (which makes
+  mostly_true_jump return 1 so fill_eager_delay_slots tries the branch-target
+  thread FIRST). Measured 29: the register-to-register compare keeps `mask` live
+  across the branch and restructures the loop. Route (b) through `prediction > 0`
+  is closed at the C level. rejected/s3-mask-equality-test-ne-branch.c
+- K9 goto-into-the-arm (`if (c) goto set; goto skip; set: ...; skip:`) to plant a
+  CODE_LABEL at the then-arm head. Measured byte-NEUTRAL (10 on the s2 chassis):
+  jump.c folds the conditional-goto/goto pair back into one conditional branch and
+  the label does not survive to reorg, so own_fallthrough stays 1. Superseded by H9
+  anyway.
+- K10 `s32 ot = D_800A374C;` named local for the ClearOTagR OT argument - the s2
+  frontier's own suggested class-A probe. 11 on the s2 chassis, 10 on the s3
+  chassis: worse, not better. Form kept at tmp/grind/func_800770B8/s3/v/A6.c.
+- K11 the `D_800A35D8 = arg0;` store moved anywhere BEFORE ClearOTagR (three
+  placements) - 31/32/32 with the build collapsing 175 -> 172 because cse forwards
+  $s0 across the call. rejected/s3-sp-inits-after-snd-stopall.c banks the nearest
+  neighbour (A12, 13); rejected/s3-p_old-after-cleartotagr-sp-first.c banks A2.
+- K12 named int/pointer row bases and constant-folded-onto-base address shapes for
+  p_6a/p_7e - 33/34 and 13 (176 insns) respectively.
+  rejected/s3-rowbase-int-named-intermediate.c and
+  rejected/s3-p6a-constant-folded-onto-base.c
+- K13 five restatements of the 0x30/0x34 stores (B1-B4 plus the s2 K6 global form):
+  B2/B3/B4 exactly byte-NEUTRAL, B1 = 12. No C spelling reaches the raw
+  call-result pseudo.
+
+## Live frontier (for s4)
+
+1. **Class C (3 diffs) - the row-62 dest coalesce - is now a SOLVER question, not a
+   spelling question.** Eight address shapes are measured dead (s1 K3, s2 K5, s3
+   C1/C2/C3/C4/C6/C7). The single decision is whether local-alloc ties the addu's
+   output to the lw pseudo (ours, $v0) or the sll pseudo (target, $v1); both die at
+   that insn. Probe: `tools/ra_solver/inverse_compose.py classify` on that seat,
+   plus the `.lreg` "dies in N places" counts for the two input pseudos
+   ([[local-alloc-death-count-class-wall]] gate first). Do this BEFORE any more C.
+   The dumps for the floor-9 form are already in tmp/grind/func_800770B8/s3/idumps/.
+2. **Class A (4 diffs) - sched2 ready-list order among eight priority-1 insns.**
+   Twelve statement orderings are measured dead and the attribution is now correct
+   (sched2, post-reload; text1b.sched2 block 0 "from 546 to 81"). The open question
+   is whether the target's emission order is reachable AT ALL, since the save
+   insns' LUIDs are fixed by save_restore_insns and only {15, 26, 28, 18, 21} are
+   C-controllable. Probe: `tools/sched_solver` on sched2 block 0 with the target's
+   emission order as the goal - it is order- and clock-exact, so it returns
+   REACHABLE (with the required LUID permutation, which then becomes a C question)
+   or FORECLOSED. That verdict is worth more than another dozen permutations.
+3. **Class B (2 diffs) - closed at the C level; five spellings measured.** The
+   target keeps the raw func_8006E49C result live past the copy into p_old and uses
+   it for the 0x30/0x34 stores. Every C form that names the value twice triggers a
+   cse forward that deletes the D_800A35D0 preheader reload (-5 insns). Next step is
+   the ra_solver on that seat, not more C variants; if it classifies the seat as
+   reachable only via a second live pseudo, that is a ruling-request, not a grind.
+
+## [s3] Class D closes if inner loop 2 is written as a `for` loop
+- mechanism: reorg.c fill_eager_delay_slots - the `for` spelling blocks the fall-through delay-slot steal of the `ori`, so reorg falls through to the branch-target-thread call and fills by copying `addiu $v0,$a2,1` and redirecting past it (the target's shape). Verified independently with the instrumented cc1's BB2_NO_FT_STEAL=1 knob (reorg.c:3817), which produces the identical region from the s2 body.
+- probe: `for (a2 = 0; a2 < 0xA; a2 = (s16)(a2 + 1)) { ... }` replacing the preheader `a2 = 0;` plus do-while with trailing increment; sandbox --disable all.
+- result: 10 -> 9, and 174 -> 175 insns - our insn count now EQUALS the target's for the first time. Rows 103-105 and 113 byte-clean. `for` respellings of the outer loop and of inner loop 1 (E1/E2/E3) are byte-neutral, so they are not adopted.
+- verdict: CONFIRMED
+
+## [s3] Class A is a sched2 (post-reload) decision, not a sched1 block-0 decision
+- mechanism: the `sw $s0/$s1/$s2/$s3/$ra` prologue stores are emitted by save_restore_insns AFTER reload, so they are absent from sched1's RTL entirely. text1b.sched2 block 0 ("from 546 to 81") carries them as insns 546..556, and every insn in the contested cluster has priority 1 - the order is settled by rank_for_schedule's dependence-class and LUID tie-breaks plus the "greater potential hazard" reordering.
+- probe: read tmp/grind/func_800770B8/s3/idumps/text1b.sched (pseudos, no saves present) and text1b.sched2 (real regs, saves present, all priority 1).
+- result: attribution corrected. The target's emission order for the cluster is ours exactly REVERSED: target 548, 554, 28, 26, 15 vs ours 554, 15, 26, 28, 548.
+- verdict: CONFIRMED
+
+## [s3] Statement ordering around the ClearOTagR call can move class A
+- mechanism: LUID order feeds sched2's final rank_for_schedule tie-break
+- probe: twelve orderings (A2-A12) of {p_old assign, sp[0]/sp[1] inits, ClearOTagR call, D_800A35D8 store, snd_StopAll call}, measured on both the s2 and s3 chassis
+- result: the best is NEUTRAL (A5, sp inits before p_old). A2/A6/A10/A11 = +1, A3/A4 = +2, A12 = +4, A7/A8/A9 = +21..+22 with a 3-insn collapse (cse forwards $s0 across the call once the global store moves ahead of it).
+- verdict: KILLED
+
+## [s3] A short-circuit `||` respelling plants a surviving CODE_LABEL at the then-arm head (own_fallthrough==0)
+- mechanism: do_jump's TRUTH_ORIF_EXPR creates a drop_through_label at the then-arm head when if_true_label is null, which makes own_thread_p return 0 for the fall-through thread
+- probe: `if (((arg2 & mask) != 0) || ((arg2 & mask) == mask))`; sandbox --disable all
+- result: 32 with 176 insns - the second test is genuinely emitted and costs more than the delay slot buys. It also has no semantic justification: the code has exactly one condition. Superseded by H9, which achieves own_fallthrough==0 from ordinary loop spelling.
+- verdict: KILLED
+
+## [s3] `if ((arg2 & mask) == mask)` makes the guard an NE branch so mostly_true_jump returns 1 and reorg tries the branch-target thread first
+- mechanism: reorg.c mostly_true_jump's final switch returns 1 for NE and 0 for EQ; prediction > 0 sends fill_eager_delay_slots to the target thread before the fall-through thread
+- probe: the equality-against-mask spelling (semantically identical for a single-bit mask); sandbox --disable all
+- result: 29 with 175 insns - the register-to-register compare keeps `mask` live across the branch and restructures the loop. Route (b) (prediction > 0) is closed at the C level; route (a) (own_fallthrough == 0) is the one that works.
+- verdict: KILLED
+
+## [s3] A goto-into-the-arm shape plants a CODE_LABEL that survives to reorg
+- mechanism: an explicit label at the then-arm head, referenced by a conditional goto, would make own_thread_p return 0 for the fall-through thread
+- probe: `if (c) goto set; goto skip; set: <arm>; skip: <increment>`; sandbox --disable all
+- result: 10 on the s2 chassis - byte-NEUTRAL. jump.c folds the conditional-goto/goto pair back into a single conditional branch and the label does not survive, so own_fallthrough stays 1.
+- verdict: KILLED
+
+## [s3] The row-62 base addu's operand order is settable from C source order
+- mechanism: s1's H4 showed int-domain PLUS preserves written operand order, so the pointer-domain form should at least be testable
+- probe: `(t0 * 10) + D_800A36A0 + 0x6A` (C1), plus five further address shapes (C2/C3/C4/C6/C7)
+- result: C1 byte-NEUTRAL on both chassis (pointer-domain PLUS is canonicalized, confirming H4's negative direction); C2/C3/C4 = 33/34; C6/C7 = 13 with 176 insns. Row 62 is a local-alloc dest-coalesce decision between two dying input pseudos, not an address shape.
+- verdict: KILLED
+
+## [s3] Class B's $v0-based 0x30/0x34 stores are reachable by restating the store expressions
+- mechanism: a different C spelling of the same address might resolve to the raw call-result pseudo rather than to p_old's
+- probe: B2 (`(u8 *)p_old` casts), B3 (all four stores through the global), B4 (`p_old[12] = 0;` array form), B1 (stores emitted first); sandbox --disable all
+- result: B2/B3/B4 all byte-NEUTRAL (9); B1 = 12 (it reorders the output too). With s1's K1 and s2's K4 that is five measured spellings; class B has no C-level lever left.
+- verdict: KILLED
+
+## [s3] Class D (the reorg delay-slot fill divergence, and the entire 174-vs-175 insn-count gap) closes if inner loop 2 is spelled as a `for` loop instead of a preheader `a2 = 0;` plus a do-while with a trailing increment.
+- mechanism: reorg.c fill_eager_delay_slots. s2 proved our build wins the fall-through steal of the `ori` (own_fallthrough=1, likely=0, setsopp=0) where the target build lost it and filled from the branch-target thread by copying `addiu $v0,$a2,1` and redirecting past it. The `for` spelling blocks the fall-through fill, so control reaches the branch-target-thread call. Independently re-verified with the instrumented cc1's BB2_NO_FT_STEAL=1 knob (reorg.c:3817), which skips the fall-through fill outright and produces the identical region from the s2 body.
+- probe: for (a2 = 0; a2 < 0xA; a2 = (s16)(a2 + 1)) { ... } replacing the preheader init + do-while; sandbox func_800770B8 --disable all
+- result: 10 -> 9; build_insns 174 -> 175, exactly the target's count for the first time in the grind. Rows 103-105 and 113 byte-clean. `for` respellings of the outer loop and of inner loop 1 measured byte-neutral (9), so they are not adopted.
+- verdict: CONFIRMED
+
+## [s3] Class A (prologue rows 7-12) is a sched1 block-0 ordering decision, as recorded by s2.
+- mechanism: s2 attributed the cluster to sched1. In fact the `sw $s0/$s1/$s2/$s3/$ra` prologue stores are emitted by save_restore_insns AFTER reload and do not exist in sched1's RTL at all; text1b.sched shows sched1's block 0 operating on pseudos with no saves, while text1b.sched2 block 0 ("from 546 to 81") carries them as insns 546..556 with every insn in the contested cluster at priority 1.
+- probe: Read tmp/grind/func_800770B8/s3/idumps/text1b.sched and text1b.sched2 for func_800770B8 block 0 (priorities, ready lists, insn UID->pattern mapping).
+- result: Attribution corrected to SCHED2 (post-reload). All eight contested insns are priority 1, so the order is settled by rank_for_schedule tie-breaks (dependence class vs last_scheduled_insn, then INSN_LUID) and the 'greater potential hazard' reordering. The target's emission order is ours exactly reversed: target 548(sw ra), 554(sw s1), 28(li a1), 26(lui/lw a0), 15(addiu s1) vs ours 554, 15, 26, 28, 548.
+- verdict: KILLED
+
+## [s3] Statement ordering around the ClearOTagR call can move the class-A cluster toward the target's order.
+- mechanism: C statement order sets RTL LUIDs, which feed sched2's final rank_for_schedule tie-break; s2's H7 proved the addiu-$s1 slot does move with statement order.
+- probe: Twelve orderings (A2-A12) of {p_old assign, sp[0]/sp[1] inits, ClearOTagR call, D_800A35D8 store, snd_StopAll call}, measured on both the s2 chassis (base 10) and the s3 chassis (base 9).
+- result: Best is byte-NEUTRAL (A5: sp inits before p_old). A2/A6/A10/A11 = +1, A3/A4 = +2, A12 = +4, A7/A8/A9 = +21..+22 with the build collapsing 175 -> 172 (moving the D_800A35D8 store ahead of the call lets cse forward $s0). Axis spent.
+- verdict: KILLED
+
+## [s3] A short-circuit `||` respelling of the bit test plants a surviving CODE_LABEL at the then-arm head, giving own_fallthrough==0 (the s2 frontier's suggested class-D route).
+- mechanism: do_jump's TRUTH_ORIF_EXPR creates a drop_through_label at the then-arm head when if_true_label is null; own_thread_p returns 0 on any CODE_LABEL between the branch and the thread's first active insn when label==NULL_RTX.
+- probe: if (((arg2 & mask) != 0) || ((arg2 & mask) == mask)) { ... }; sandbox --disable all
+- result: 32 with 176 insns - the second test is genuinely emitted and costs more than the delay slot buys. It also has no semantic justification (the code has exactly one condition). Superseded by the `for` spelling, which achieves the same block from ordinary C.
+- verdict: KILLED
+
+## [s3] Making the guard branch an NE test (`if ((arg2 & mask) == mask)`) makes mostly_true_jump return 1, so fill_eager_delay_slots tries the branch-target thread FIRST - the second C-reachable route to the target's fill.
+- mechanism: reorg.c mostly_true_jump's final switch returns 1 for NE and 0 for EQ; fill_eager_delay_slots only tries the fall-through thread first when prediction <= 0.
+- probe: if ((arg2 & mask) == mask) { ... } (semantically identical for a single-bit mask); sandbox --disable all
+- result: 29 with 175 insns - the register-to-register compare keeps `mask` live across the branch and restructures the loop. Route (b) through prediction > 0 is closed at the C level.
+- verdict: KILLED
+
+## [s3] A goto-into-the-arm shape plants a CODE_LABEL at the then-arm head that survives to reorg.
+- mechanism: An explicit label referenced by a conditional goto would make own_thread_p return 0 for the fall-through thread.
+- probe: if (c) goto set; goto skip; set: <arm>; skip: <increment>; sandbox --disable all
+- result: Byte-NEUTRAL (10 on the s2 chassis). jump.c folds the conditional-goto/goto pair back into one conditional branch and the label does not survive, so own_fallthrough stays 1.
+- verdict: KILLED
+
+## [s3] The row-62 base addu's operand order (class C) is settable from C source order, as s1's H4 achieved for the row-43 addu.
+- mechanism: s1's H4 established that an int-domain PLUS preserves written operand order while a pointer-domain PLUS is canonicalized; if the p_6a/p_7e base add could be written (offset, base) the dest would coalesce onto the sll pseudo as in the target.
+- probe: C1 `(t0 * 10) + D_800A36A0 + 0x6A` (pointer domain), C2 named int base, C3 named u8* row, C4 mixed, C6 constant folded onto the base first, C7 scaled-array form; sandbox --disable all on both chassis.
+- result: C1 byte-NEUTRAL on both chassis (positively confirming that pointer-domain PLUS is canonicalized); C2/C3/C4 = 33/34; C6/C7 = 13 with 176 insns. With s1's K3 and s2's K5 that is eight measured address shapes - row 62 is a local-alloc dest-coalesce decision between two dying input pseudos, not an address shape.
+- verdict: KILLED
+
+## [s3] Class B's $v0-based 0x30/0x34 stores are reachable by restating the store expressions (without a cse-visible second handle).
+- mechanism: A different C spelling of the same address might resolve to the raw func_8006E49C result pseudo rather than to p_old's.
+- probe: B1 (stores emitted before the global/+4 stores), B2 (`(u8 *)p_old` casts), B3 (all four stores through the global), B4 (`p_old[12] = 0;` array form); sandbox --disable all.
+- result: B2/B3/B4 all exactly byte-NEUTRAL (9); B1 = 12 (it reorders the output too). With s1's K1 and s2's K4 that is five measured spellings; class B has no C-level lever left.
+- verdict: KILLED

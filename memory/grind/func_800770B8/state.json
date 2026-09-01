@@ -1,7 +1,7 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Structural: floor 14 -> 10 (tail {+0,+0x65} store grouping = -2; a2 initialiser moved into the outer loop body = -2), and the reorg delay-slot residual's mechanism PROVEN with the instrumented cc1's B"
+  },
+  {
+   "session": 3,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "Floor 10 -> 9 and the insn-count gap CLOSED (175/175): writing inner loop 2 as an ordinary `for` loop blocks reorg's fall-through delay-slot steal and reproduces the target's copy+redirect fill (class"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Class D closes if a CODE_LABEL is materialised at the head of the inner-loop-2 if-body, making own_fallthrough==0 so reorg skips the fall-through steal and fills from the branch-target thread by copy+redirect (the target's shape, and the last insn of the count gap).",
-   "mechanism": "reorg.c own_thread_p returns 0 on ANY CODE_LABEL between the branch and the thread's first active insn when label==NULL_RTX; with own_fallthrough==0 fill_eager_delay_slots' else-arm skips straight to the target-thread call. Option (b), an all-live mark_target_live_regs answer, needs find_basic_block()==-1 and is NOT C-reachable - do not spend probes on it.",
-   "next_probe": "Try C shapes that put a label at the then-arm head: short-circuit `if (A || B)` respellings of the existing single bit test, and goto-into-the-arm shapes. Verify each BEFORE scoring by re-running tmp/grind/func_800770B8/s2/run_idump.sh with BB2_DBR_DEBUG=1 and reading the `own=` field of the `DBRDBG thr insn=<uid>` line for the inner-loop-2 beqz."
+   "hypothesis": "Class C (3 diffs, rows 62-64) is a local-alloc dest-coalesce between two dying input pseudos and is now a SOLVER question, not a spelling question. Eight address shapes are measured dead.",
+   "mechanism": "Rows 60 and 61 are byte-identical (`lw $v0,%gp_rel(D_800A36A0)`, `sll $v1,$v1,1`); only the following addu differs - ours ties the dest to the lw pseudo ($v0) with operands (lw, sll), the target ties it to the sll pseudo ($v1) with operands (sll, lw). Both inputs die at that insn, so the tie is a local-alloc/reload preference, and C1 proves pointer-domain PLUS canonicalization removes source order from the equation.",
+   "next_probe": "Run tools/ra_solver/inverse_compose.py classify on that seat and read .lreg's `dies in N places` for the two input pseudos (apply the [[local-alloc-death-count-class-wall]] gate first). The full cc1 -da dump set for the floor-9 form is already at tmp/grind/func_800770B8/s3/idumps/. Do NOT spend more C address shapes on this."
   },
   {
-   "hypothesis": "Class A(ii) - the ~3-row prologue cluster - is the ClearOTagR argument evaluation order: target emits the constant a1=0x1008 before the two-insn a0 global load, ours emits the a0 chain first because sched1 ranks its longer path to the jal higher.",
-   "mechanism": "sched1 priority (longest path to the block end) beats LUID order in block 0; s2's H7 proved statement order DOES move block-0 insns, so the axis is live rather than a wall.",
-   "next_probe": "Read tmp/grind/func_800770B8/s2/idumps/text1b.sched for block 0's computed priorities and ready-list order, then try argument-expression shapes that shorten the a0 chain or lengthen the a1 one (a named local read of the OT pointer before the call, a differently-typed OT argument). Re-measure the prologue register-save rows together with it - H7's regression came entirely from the save order, not from the addiu."
+   "hypothesis": "Class A (4 diffs, prologue rows 7-12) may be sched2-unreachable: the target's emission order is ours exactly reversed, and only five of the eight priority-1 insns have C-controllable LUIDs.",
+   "mechanism": "sched2 block 0 'from 546 to 81' has every contested insn at priority 1, so rank_for_schedule falls through to its dependence-class and INSN_LUID tie-breaks plus the 'greater potential hazard' reordering. The five save insns' LUIDs are fixed by save_restore_insns; only {15 addiu s1, 26 a0 load, 28 a1 const, 18/21 sh stores} follow C statement order, and sched1's output order for that subset was [15, 26, 28, 18, 21] under every one of the twelve orderings measured.",
+   "next_probe": "Run tools/sched_solver on sched2 block 0 with the target's emission order (548, 554, 28, 26, 15) as the goal. It is order- and clock-exact, so it returns REACHABLE with the required LUID permutation (which then becomes a concrete C question) or FORECLOSED. That verdict is worth more than another dozen statement permutations."
   },
   {
-   "hypothesis": "Classes B and C are register-allocator decisions with no remaining C spelling; they should be classified with the solver suite rather than probed with more source variants.",
-   "mechanism": "B: our call-result temp dies at the copy into p_old (.lreg `Register 80 used 2 times`), and both directions of a second C handle collapse the build. C: rows 62-64 are a local-alloc dest-coalesce / reg_n_deaths decision - the row-pointer restructure (K3) and the int-domain address form (K5) both fail badly.",
-   "next_probe": "Run tools/ra_solver inverse_compose.py classify on the p_old-vs-call-result seat (class B) and read .lreg's `dies in N places` for the row-62 base and offset pseudos behind the local-alloc-death-count gate (class C). Do NOT let this consume a session before frontier items 1 and 2 are spent."
+   "hypothesis": "Class B (2 diffs, rows 35-36) needs the raw func_8006E49C result to stay live past the copy into p_old, and no C spelling produces that without triggering a cse forward.",
+   "mechanism": "Our call-result pseudo is `Register 80 used 2 times` (set plus the copy into p_old), so it dies at the copy; the target uses it four times. Every C form naming the value twice makes cse forward the handle and DELETE the D_800A35D0 loop-preheader reload, a 5-insn collapse (K1, K4). B1-B4 show restating the store addresses is byte-neutral.",
+   "next_probe": "Run tools/ra_solver inverse_compose.py classify on the p_old-vs-call-result seat. If it classifies as reachable only via a second live pseudo, that residual is a ruling-request (is a second C handle a sanctioned variable-reuse form here?), not more grinding. Do not spend another session on C variants for this class."
   }
  ],
  "judge_constraints": [],
