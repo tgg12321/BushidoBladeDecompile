@@ -312,6 +312,19 @@ For EVERY construct in the proposed source change, walk this checklist:
    - The "lever" naming convention is the giveaway. Workers who describe
      their technique as a "lever" are usually describing how to bend the
      compiler, not how to express the program.
+   - **Bound (owner ruling 2026-08-31,
+     .claude/rules/ordinary-c-judge-decidable.md): this test applies to
+     constructs with NO truthful semantic reading.** A construct that IS
+     semantically truthful on its face (e.g. typing a 16-byte GTE
+     scratchpad slot as `VECTOR` when SDK vector macros consume it, a
+     real value bound to a named local, a declaration matching the
+     documented object model) is NOT a cheat merely because the worker
+     chose that spelling after observing codegen, and
+     "scheduling/allocation-motivated respelling" is not a FAIL ground
+     for it — choosing among semantically-truthful spellings by codegen
+     effect is the method of matching decomp. Judge the C text; reserve
+     this test's FAIL for constructs whose ONLY reading is the compiler
+     mechanism.
 
 4. **"Necessary only because permuter / search found it" test.** If the
    worker arrived at this construct via an auto-search tool (permuter,

@@ -35,15 +35,20 @@ entirely):
              evidence + Judge verdict; the driver writes the grant. No user
              sign-off wait; pre-2026-08-18 this bucket meant "needs user
              canonical-asm sign-off")
-  escalated  carries a decision packet awaiting an owner ruling
-             (.claude/rules/escalation-not-parked.md, owner ruling
-             2026-08-24). Skipped by `next`; sticky across `regen`; NEVER
-             indefinite — a ruling returns it to active. Replaces the
-             retired `parked` status (legacy `parked` items are read
-             compatibly and count as escalated).
+  foreclosed exhaustion disposition recorded silently (owner ruling
+             2026-08-31, .claude/rules/ordinary-c-judge-decidable.md —
+             frontier empty + both endgame-lock gates fail; the
+             proof-of-foreclosure lives in docs/grind/decisions.md).
+             Skipped by `next`; sticky across `regen`; NEVER surfaced to
+             the owner as a question. Re-activated (`unpark`) on a new
+             class grant, a toolchain finding, or an explicit owner call.
+             Replaces the retired `escalated` status (2026-08-24..31) and
+             the earlier `parked` status — both legacy statuses are read
+             compatibly and behave like foreclosed.
 
 Queue file: engine/queue.json (committed). Driven by `python3 -m engine.cli
-queue {next,done,escalate,unpark,status,regen,reopen}`.
+queue {next,done,foreclose,unpark,status,regen,reopen}` (`escalate`/`park`
+are legacy aliases for foreclose).
 
 Concurrency: every mutator (mark_done / mark_parked / reopen / generate) runs
 its load-modify-save under an advisory lock (`engine/queue.json.lock`) and
@@ -75,7 +80,11 @@ from . import score
 
 QUEUE_PATH = "engine/queue.json"
 _AUTHORIZE = {"ASM-WHOLE", "ASM-STRUCTURAL", "JTBL-INFRA"}
-_STATUS_RANK = {"active": 0, "authorize": 1, "escalated": 2, "parked": 2}
+_STATUS_RANK = {"active": 0, "authorize": 1, "escalated": 2, "parked": 2,
+                "foreclosed": 2}
+# Statuses `next` skips and `regen` keeps sticky. `escalated`/`parked` are
+# legacy (pre-2026-08-31) and behave like `foreclosed`.
+_INACTIVE = ("parked", "escalated", "foreclosed")
 
 
 class QueueConflict(RuntimeError):
@@ -284,7 +293,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
             # were auto-routed by the distance>500 heuristic, which that audit
             # found is not evidence of hand-coded asm) and the owner returned to
             # active on 2026-08-01.
-            if (it.get("status") in ("parked", "escalated")
+            if (it.get("status") in _INACTIVE
                     or it.get("origin") == "regression"
                     or it.get("owner_override")
                     # Owner directives on ACTIVE items must survive regen too —
@@ -629,14 +638,16 @@ def mark_done(func: str) -> dict:
                         else "COMPLETED-C")
     result = {"ok": True, "func": func, "completion": completion_state,
               "sha1": v.get("build_sha1")}
-    if item.get("status") in ("parked", "escalated"):
-        # Transparency, not refusal (2026-08-19 audit): completing a parked/escalated
-        # item OVERRIDES a terminal owner disposition. That is usually strictly
-        # good — every completion gate above still applied — but the override
-        # must be loud in the done record, not silent, so the park's audit
-        # trail (borderline.md / decisions.md) can be reconciled.
+    if item.get("status") in _INACTIVE:
+        # Transparency, not refusal (2026-08-19 audit): completing a
+        # foreclosed (or legacy parked/escalated) item OVERRIDES a recorded
+        # disposition. That is usually strictly good — every completion gate
+        # above still applied — but the override must be loud in the done
+        # record, not silent, so the disposition's audit trail
+        # (borderline.md / decisions.md) can be reconciled.
         result["park_overridden"] = (item.get("escalation")
                                      or item.get("park_reason")
+                                     or item.get("foreclosure")
                                      or "(no reason recorded)")
     if gates:
         # Transparency, not refusal: fidelity-class gates model the original
@@ -646,41 +657,38 @@ def mark_done(func: str) -> dict:
     return result
 
 
-def mark_parked(func: str, reason: str = "") -> dict:
-    with _locked():
-        q = load()
-        tok = _fingerprint()
-        if not any(it["func"] == func for it in q.get("items", [])):
-            return {"ok": False, "func": func, "reason": "not in queue"}
-        for it in q["items"]:
-            if it["func"] == func:
-                it["status"] = "parked"
-                it["park_reason"] = reason
-        q["items"].sort(key=_sort_key)
-        q["counts"] = _counts(q["items"])
-        save(q, expect=tok)
-    return {"ok": True, "func": func, "park_reason": reason}
-
-
-def mark_escalated(func: str, packet: str = "") -> dict:
-    """Escalate: the item carries a concrete decision packet awaiting an
-    owner ruling (.claude/rules/escalation-not-parked.md, 2026-08-24 —
-    replaces the retired terminal park). The packet must state a DECIDABLE
-    question (grant / family / fidelity / routing); "this is hard" is not a
-    packet — that stays ACTIVE with a modality change. `mark_unparked`
-    is the mechanism that spends the ruling and returns it to active."""
+def mark_foreclosed(func: str, reason: str = "") -> dict:
+    """Foreclose: record an exhaustion disposition silently (owner ruling
+    2026-08-31, .claude/rules/ordinary-c-judge-decidable.md — replaces the
+    retired `escalated` decision-packet state). The reason points at the
+    proof-of-foreclosure entry in docs/grind/decisions.md. Nothing is
+    surfaced to the owner; `next` skips the item; `mark_unparked`
+    re-activates it on a new class grant, a toolchain finding, or an
+    explicit owner call. This path only ever refuses C — the function stays
+    INCLUDE_ASM on main — so it carries zero cheat risk."""
     with _locked():
         q = load()
         tok = _fingerprint()
         item = next((it for it in q.get("items", []) if it["func"] == func), None)
         if item is None:
             return {"ok": False, "func": func, "reason": "not in queue"}
-        item["status"] = "escalated"
-        item["escalation"] = packet
+        item["status"] = "foreclosed"
+        item["foreclosure"] = reason
         q["items"].sort(key=_sort_key)
         q["counts"] = _counts(q["items"])
         save(q, expect=tok)
-    return {"ok": True, "func": func, "escalation": packet}
+    return {"ok": True, "func": func, "foreclosure": reason}
+
+
+def mark_parked(func: str, reason: str = "") -> dict:
+    """Legacy alias (pre-2026-08-24 `park`) — routes to mark_foreclosed."""
+    return mark_foreclosed(func, reason)
+
+
+def mark_escalated(func: str, packet: str = "") -> dict:
+    """Legacy alias (2026-08-24..31 `escalate`) — routes to mark_foreclosed
+    (owner ruling 2026-08-31: the decision-packet state is retired)."""
+    return mark_foreclosed(func, packet)
 
 
 def mark_unparked(func: str, reason: str = "") -> dict:
@@ -696,12 +704,15 @@ def mark_unparked(func: str, reason: str = "") -> dict:
         item = next((it for it in q.get("items", []) if it["func"] == func), None)
         if item is None:
             return {"ok": False, "func": func, "reason": "not in queue"}
-        if item.get("status") not in ("parked", "escalated"):
-            return {"ok": False, "func": func, "reason": "not parked/escalated"}
+        if item.get("status") not in _INACTIVE:
+            return {"ok": False, "func": func,
+                    "reason": "not foreclosed/parked/escalated"}
         item["status"] = "active"
         item["unparked_from"] = (item.pop("escalation", "")
-                                 or item.pop("park_reason", ""))
+                                 or item.pop("park_reason", "")
+                                 or item.pop("foreclosure", ""))
         item.pop("park_reason", None)
+        item.pop("foreclosure", None)
         item["unpark_reason"] = (reason or "")[:400]
         q["items"].sort(key=_sort_key)
         q["counts"] = _counts(q["items"])

@@ -752,9 +752,10 @@ def autoescalate(root, func, file_stem, scan_tier, rule_count, date):
     escalation_ref line. The driver calls this when an `escalation`-modality session
     fails to self-file (dodges with a flat-floor progress), so the function can never
     loop unresolved. Per the owner's 2026-07-27 standing auto-ruling, a non-STRONG
-    scan tier means both AND-gates fail and the entry is RESOLVED (terminal
-    OWNER-ACCEPTED INCOMPLETE). Per the 2026-08-18 ruling (judge-sole-gate,
-    b9d91163) a STRONG tier no longer waits on the owner either: it routes to the
+    scan tier means both AND-gates fail and the entry is RESOLVED — since the
+    2026-08-31 ruling (ordinary-c-judge-decidable) that disposition is a SILENT
+    FORECLOSURE (no decision packet, nothing surfaced to the owner). Per the
+    2026-08-18 ruling (judge-sole-gate, b9d91163) a STRONG tier routes to the
     pipeline canonical-asm grant path (function stays ACTIVE; the Judge makes the
     final call on the authored candidate and the driver writes the grant)."""
     st = load_state(root, func) or {}
@@ -773,17 +774,16 @@ the next session authors the whole-body canonical form per
 the final call; on its verdict the driver writes the inline_asm_canonical.txt grant and logs
 it to docs/grind/borderline.md for later owner audit."""
     else:
-        ref = f"{date} — {func} — OWNER-ESCALATION — ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
+        ref = f"{date} — {func} — RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
         tail = f"""Both AND-gates fail on the ledger evidence: canonical-asm — `scan_hand_coded --single
 {func}` = **{scan_tier}** (ordinary GCC RA/scheduler artifact, no hand-coded signature);
 coercion family — no SOTN-master precedent recorded for the residual axes. Per the owner's
-2026-08-24 ruling (.claude/rules/escalation-not-parked.md): the item is ESCALATED with a
-decision packet, not parked — the packet must state the DECIDABLE question this function's
-residual poses (the specific grant/family/fidelity/routing choice), the evidence pointers,
-and the consequence of each answer. The two AND-gates remain the unchanged STANDARD; the
-owner rules on packets in batches, and the ruling returns the item to active either way.
-If no decidable question exists, the item stays ACTIVE with a modality change instead
-(difficult-is-not-impossible) — "this is hard" is not a packet."""
+2026-08-31 ruling (.claude/rules/ordinary-c-judge-decidable.md): the item is FORECLOSED
+silently — this entry is the proof-of-foreclosure record, not a question; nothing is
+surfaced to the owner and no packet exists. The two AND-gates remain the unchanged
+STANDARD. The function stays INCLUDE_ASM on main; re-activation triggers are a new owner
+class grant covering the residual, a toolchain-fidelity finding, or an explicit owner
+`queue unpark`."""
     entry = f"""
 ## {ref}
 
@@ -957,24 +957,27 @@ MODALITY_PLAYBOOK = {
                    "an in-hand SOTN-master precedent EXISTS for the closing construct "
                    "(file+line citation — 'same spirit' does not count). If BOTH gates FAIL "
                    "(scan LOW + no precedent — the common case), APPLY THE OWNER'S STANDING "
-                   "RULING (2026-07-27, .claude/rules/endgame-lock-disposition.md): APPEND "
-                   "an `## <date> — <func> — **OWNER-ESCALATION — RESOLVED BY STANDING "
-                   "RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**` entry to "
-                   "docs/grind/decisions.md stating both gates' evidence and the exhaustion "
-                   "(sessions/modalities/permuter iters from the ledger), then return "
-                   "result=owner-gated with escalation_ref citing that entry — the driver "
-                   "parks terminally, no owner wait. If gate (a) PASSES (STRONG scan tier), "
+                   "RULING (2026-07-27, .claude/rules/endgame-lock-disposition.md; silent "
+                   "foreclosure per the 2026-08-31 ruling ordinary-c-judge-decidable): APPEND "
+                   "an `## <date> — <func> — **RESOLVED BY STANDING RULING (2026-07-27): "
+                   "FORECLOSED**` entry to docs/grind/decisions.md stating both gates' "
+                   "evidence and the exhaustion (sessions/modalities/permuter iters from the "
+                   "ledger) — this is a proof-of-foreclosure RECORD, never a question or a "
+                   "decision packet addressed to the owner — then return result=owner-gated "
+                   "with escalation_ref citing that entry; the driver forecloses silently, "
+                   "no owner wait, nothing surfaced. If gate (a) PASSES (STRONG scan tier), "
                    "append a `## <date> — <func> — CANONICAL-ASM GRANT PATH` entry with the "
                    "scanner evidence and return owner-gated citing it — per the owner's "
                    "2026-08-18 ruling (judge-sole-gate) the function STAYS ACTIVE and the "
                    "next session authors the whole-body canonical form; no owner wait. If "
                    "only gate (b) passes (an actually-exhibited SOTN precedent), file the "
-                   "standing-ruling entry AND include the precedent citation — the driver "
+                   "foreclosure entry AND include the precedent citation — the driver "
                    "borderline-logs it for owner batch review; the frozen list is owner-only "
-                   "to extend and the disposition is still the terminal refusal. NEVER file "
-                   "an 'awaiting owner ruling' entry — that shape is retired. A flat-floor "
-                   "`progress` is NOT an acceptable outcome this session — the driver will "
-                   "auto-file the disposition if you dodge."),
+                   "to extend and the disposition is still the silent foreclosure. NEVER "
+                   "file an 'awaiting owner ruling' or 'DECISION PACKET' entry — those "
+                   "shapes are retired. A flat-floor `progress` is NOT an acceptable "
+                   "outcome this session — the driver will auto-file the disposition if "
+                   "you dodge."),
 }
 
 
@@ -1255,10 +1258,10 @@ memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting
 - "candidate-ready" means: sandbox distance 0 THIS session, edits in place in src/. The driver re-verifies bytes itself — never claim it speculatively.
 - SELF-VET IS MANDATORY FOR candidate-ready. Before you write the outcome JSON, write memory/grind/{func}/self_vet.md using the template in your role prompt: a CONSTRUCTS: line, the six cheat-checklist tests answered IN WRITING for every construct in your diff, a SANCTIONED-FAMILY-CLAIMS: section (each claimed family carrying its rule's SCOPE sentence quoted VERBATIM plus a PRECEDENT as file:line or a commit hash), and an ANNOTATION-CONFORMANCE: line. The driver checks all of that mechanically and DISCARDS a candidate-ready session that lacks it — the same disposition as a scope violation. Then a fresh adversarial cheat-reviewer (layer 1) rules on your diff BEFORE the Judge is spawned; a layer-1 FAIL bounces straight back without a Judge cycle. Writing the vet honestly is how you pass both: if you cannot quote a scope sentence and cite a precedent for a family you are claiming, you do not have that family, and the correct outcome is `ruling-request`, not a submission.
 - "ruling-request" is for a construct you cannot classify (sanctioned SOTN family vs cheat; genuine hand-written-asm evidence). Ask a precise question.
-- "owner-gated" is for when every remaining sanctioned axis is measured dead. FILE the entry in docs/grind/decisions.md YOURSELF THIS session (docs/grind/ is in your allowed surface), THEN return owner-gated with escalation_ref citing it — you do not wait for an entry to pre-exist, you create it. The driver verifies the entry names {func} and ESCALATES the function (decision packet awaiting an owner ruling — .claude/rules/escalation-not-parked.md, 2026-08-24) so the queue advances. Never use it to defer work that is still grindable (a floor still dropping is grindable). This is the mandated outcome in `escalation` modality.
+- "owner-gated" is for when every remaining sanctioned axis is measured dead. FILE the entry in docs/grind/decisions.md YOURSELF THIS session (docs/grind/ is in your allowed surface), THEN return owner-gated with escalation_ref citing it — you do not wait for an entry to pre-exist, you create it. The driver verifies the entry names {func} and FORECLOSES the function silently (owner ruling 2026-08-31, .claude/rules/ordinary-c-judge-decidable.md — a recorded disposition, never a question to the owner) so the queue advances. Never use it to defer work that is still grindable (a floor still dropping is grindable). This is the mandated outcome in `escalation` modality.
 - OWNER'S STANDING AUTO-RULING (2026-07-27) — this governs HOW you word an escalation, and it NEVER authorizes ending a function early. Two separate questions, do not conflate them:
   (A) IS THE FUNCTION EXHAUSTED? This is the DRIVER's call, not yours. The driver assigns `escalation` modality only after the honest floor has been FLAT across many sessions AND >=4 DISTINCT modalities. If your mandated modality is NOT `escalation`, the answer is NO — you may not dispose of the function, however dead your own axis looks. A killed axis is a `progress` outcome with the kills banked; the ladder still has untried modalities (forensics / rederive / synthesis) and the owner's standing directive is to work the top item to completion however many sessions it takes ([[no-deferral-work-to-completion]], [[difficult-is-not-impossible]]). Judge FAILs do NOT make a function exhausted — a FAILed construct is one dead lever, and a FAIL on annotation FORMAT is a one-comment fix, not a wall.
-  (B) ONCE THE DRIVER HAS DECLARED EXHAUSTION (you are in `escalation` modality), evaluate the two endgame-lock AND-gates: (1) canonical-asm needs STRONG `scan_hand_coded` signals (S1/S2/S6); (2) a coercion/spelling family needs an in-hand SOTN-master precedent you can CITE (file+line or commit). "Same spirit", "genre-adjacent", "only lever left", "measured to work", and a partition/elimination argument do NOT qualify — and a census you ran that came back NEGATIVE is a FAILED gate, not an open question. Whatever the gate outcome, your entry is a DECISION PACKET (owner ruling 2026-08-24, .claude/rules/escalation-not-parked.md): title it `## <date> — {func} — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**` and state (i) the single DECIDABLE question this residual poses (the specific grant / family / fidelity / routing choice — with the gate evidence), (ii) evidence POINTERS (ledger lines, measurements, scan output), (iii) the concrete consequence of each answer (what closes at what floor / what resumes). The driver escalates the item; the owner rules on packets in batches and the item returns to active either way — nothing is terminal. "This is hard" is NOT a packet: if no decidable question exists, the honest outcome is `progress` with the kills banked, and the item stays active for the next modality. AUTO-REJECT CLASS (owner ruling 2026-08-24, second): a packet whose YES would LOWER a standard — permanent-rule sanction, a no-precedent family grant, a canonical evidence-bar override, any "accept the debt" wording — is PRE-DECIDED NO and must NOT be filed; that residual stays ACTIVE under standing policy. File packets only for fidelity/routing/provenance questions or genuinely gate-PASSING evidence.
+  (B) ONCE THE DRIVER HAS DECLARED EXHAUSTION (you are in `escalation` modality), evaluate the two endgame-lock AND-gates: (1) canonical-asm needs STRONG `scan_hand_coded` signals (S1/S2/S6); (2) a coercion/spelling family needs an in-hand SOTN-master precedent you can CITE (file+line or commit). "Same spirit", "genre-adjacent", "only lever left", "measured to work", and a partition/elimination argument do NOT qualify — and a census you ran that came back NEGATIVE is a FAILED gate, not an open question. Whatever the gate outcome, your entry is a PROOF-OF-FORECLOSURE RECORD (owner ruling 2026-08-31, .claude/rules/ordinary-c-judge-decidable.md — the DECISION PACKET shape is retired; you never address a question to the owner): title it `## <date> — {func} — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**` and state (i) the gate evidence (scan tier, precedent census result), (ii) evidence POINTERS (ledger lines, measurements, scan output), (iii) the re-activation triggers that would make the residual attackable again (a class grant covering it, a toolchain finding). The driver forecloses the item silently; nothing is surfaced to the owner; an owner unpark or a later ruling re-activates it. "This is hard" is NOT a disposition: if the ladder is not exhausted, the honest outcome is `progress` with the kills banked, and the item stays active for the next modality. AUTO-REJECT CLASS (owner ruling 2026-08-24, reaffirmed 2026-08-31): a construct outside the frozen family list is a clean FAIL/refusal — do not argue for it in the record beyond citing the negative census; that residual's disposition is the same silent foreclosure.
 - Bytes proven but blocked ONLY by a surface you may not touch (prologue_config.json/inline_asm_canonical.txt) is an INTEGRATION HANDOFF, not an endgame lock: say so plainly in the entry, list the exact operator steps, and return owner-gated. Do not dress it up as exhaustion — and note the operator still runs a fresh layer-2 cheat-reviewer on your C before it is accepted, so a Judge PASS on a construct is not a guarantee of acceptance.
 - A hypothesis KILLED with measurements is a fully successful session. Eliminating search space IS the job. There is no such thing as a failed session — only an unproven one, and unproven sessions are discarded by the driver as if they never ran.
 """

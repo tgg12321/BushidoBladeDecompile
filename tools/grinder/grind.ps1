@@ -387,10 +387,12 @@ function Invoke-JudgeEscalation([string]$func, [string]$kind, $v) {
     #     The function stays ACTIVE so the next session integrates to
     #     COMPLETED-INLINE-ASM-CANONICAL. Non-STRONG tier = evidence failure:
     #     falls through to the log-and-refuse path.
-    #   family-extension / policy-question — logged to docs/grind/borderline.md
-    #     with the Judge's packet, then the STANDING REFUSAL applies (terminal
-    #     OWNER-ACCEPTED INCOMPLETE park, endgame-lock-disposition). The owner
-    #     reviews the ledger in batches; nothing is pending.
+    #   any other kind — RETIRED (owner ruling 2026-08-31, ordinary-c-judge-
+    #     decidable): the Judge no longer emits family-extension /
+    #     policy-question. Defensively, a legacy/unknown kind is logged to
+    #     docs/grind/borderline.md and the item is FORECLOSED silently
+    #     (recorded disposition, skipped by `queue next`, nothing surfaced
+    #     to the owner).
     $date = Get-Date -Format 'yyyy-MM-dd'
     $ekind = [string]$v.escalate_kind
     if (-not $ekind) { $ekind = 'policy-question' }
@@ -454,13 +456,13 @@ $(if ($v.constraint) { "**Constraint recorded for any future session:** $($v.con
         $ekind = 'integration-handoff (REFUSED: no executable remedy in verdict)'
     }
     $evid = "judge ESCALATE packet in docs/grind/decisions.md ($ref)"
-    $disp = "REFUSED under the current frozen policy (endgame-lock standing ruling 2026-07-27, extended by judge-sole-gate 2026-08-18); terminal OWNER-ACCEPTED INCOMPLETE park; candidate preserved at memory/grind/$func/candidate.c; re-attemptable if a later owner ruling spends this entry."
+    $disp = "REFUSED under the current frozen policy; FORECLOSED silently (owner ruling 2026-08-31, ordinary-c-judge-decidable); candidate preserved at memory/grind/$func/candidate.c; re-attemptable if a later owner ruling spends this entry."
     python tools/grinder/grindlib.py log-borderline . $func $ekind $evid $disp $date | Out-Null
-    Invoke-Eng @('queue', 'park', $func, '--reason', "OWNER-ACCEPTED INCOMPLETE (judge ESCALATE $ekind, logged to borderline.md per ruling 2026-08-18): $ref") | Out-Null
-    Journal "$func JUDGE ESCALATE ($kind, $ekind) — logged to borderline ledger, ESCALATED with decision packet (owner ruling 2026-08-24)."
-    Log "${func}: judge ESCALATE — borderline-logged + terminal park (no owner wait)."
+    Invoke-Eng @('queue', 'foreclose', $func, '--reason', "FORECLOSED (judge ESCALATE $ekind refused; owner ruling 2026-08-31): $ref") | Out-Null
+    Journal "$func JUDGE ESCALATE ($kind, $ekind) — refused + FORECLOSED silently (owner ruling 2026-08-31)."
+    Log "${func}: judge ESCALATE — borderline-logged + foreclosed (silent disposition)."
     git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
-    git -C $Root commit -m "grind: $func judge ESCALATE — borderline-logged, terminal park [skip-park-src-guard]" 2>$null | Out-Null
+    git -C $Root commit -m "grind: $func foreclosed (judge ESCALATE refused) [skip-park-src-guard]" 2>$null | Out-Null
 }
 
 function Set-FailRouting([string]$func, $v) {
@@ -605,14 +607,16 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
         }
         if ($n -ge 5) {
             $reason = "scope livelock: $n candidates re-proposed edits to $($offStem -join ', '), " +
-                      "which the driver cannot accept. Needs an owner decision: extend " +
-                      "tools/grinder/scope_allow.txt for this function, or reprioritise it."
-            Invoke-Eng @('queue', 'park', $func, '--reason', $reason) | Out-Null
-            Add-Decision $func 'scope livelock' 'OWNER-ESCALATION' $reason
-            Journal "$func SCOPE-LIVELOCK — escalated after $n identical out-of-scope candidates ($($offStem -join ', '))."
-            Log "${func}: SCOPE LIVELOCK — escalated so the queue advances; owner decision needed."
+                      "which the driver cannot accept (the legitimate route is a Judge " +
+                      "ESCALATE integration-handoff scope grant, which no session took). " +
+                      "FORECLOSED (owner ruling 2026-08-31); re-activated by an owner unpark " +
+                      "or a scope_allow.txt grant."
+            Invoke-Eng @('queue', 'foreclose', $func, '--reason', $reason) | Out-Null
+            Add-Decision $func 'scope livelock' 'FORECLOSED' $reason
+            Journal "$func SCOPE-LIVELOCK — foreclosed after $n identical out-of-scope candidates ($($offStem -join ', '))."
+            Log "${func}: SCOPE LIVELOCK — foreclosed so the queue advances (silent disposition)."
             git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
-            git -C $Root commit -m "grind: $func escalated on scope livelock [skip-park-src-guard]" 2>$null | Out-Null
+            git -C $Root commit -m "grind: $func foreclosed on scope livelock [skip-park-src-guard]" 2>$null | Out-Null
             $script:livelockParks++
             if ($script:livelockParks -ge 3) {
                 Circuit-Break "scope livelock on $script:livelockParks distinct functions — the scope gate looks systemically wrong, not function-specific"
@@ -1110,21 +1114,22 @@ while ($true) {
         'ruling-request' { Invoke-JudgeRuling $func ([string]$o.ruling_question); Revert-SessionEdits $func }
         'candidate-ready' { Invoke-CandidatePath $func $stem $modality $o }
         'owner-gated' {
-            # A filed escalation entry (verified above to name $func) means every
-            # sanctioned axis is measured dead. Per owner ruling 2026-08-18
-            # (judge-sole-gate, b9d91163) NOTHING waits on the owner: a
-            # RESOLVED BY STANDING RULING entry parks terminally; a
+            # A filed disposition entry (verified above to name $func) means every
+            # sanctioned axis is measured dead. Per owner rulings 2026-08-18
+            # (judge-sole-gate) and 2026-08-31 (ordinary-c-judge-decidable)
+            # NOTHING waits on the owner and no packet is filed: a
+            # RESOLVED BY STANDING RULING entry FORECLOSES silently; a
             # CANONICAL-ASM GRANT PATH entry keeps the function ACTIVE for
             # authoring/integration; any legacy pending-shaped ref is
-            # borderline-logged and parked terminally.
+            # borderline-logged and foreclosed.
             python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null
             Revert-SessionEdits $func
             $escRef = [string]$o.escalation_ref
             if ($escRef -match 'RESOLVED BY STANDING RULING') {
-                $reason = "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): $escRef"
-                Invoke-Eng @('queue', 'park', $func, '--reason', $reason) | Out-Null
-                Log "${func}: ENDGAME LOCK — ESCALATED with decision packet ($escRef; owner ruling 2026-08-24)."
-                Journal "$func s$sessionN [$modality] STANDING RULING (2026-07-27) applied — OWNER-ACCEPTED INCOMPLETE: $($o.headline)"
+                $reason = "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): $escRef"
+                Invoke-Eng @('queue', 'foreclose', $func, '--reason', $reason) | Out-Null
+                Log "${func}: ENDGAME LOCK — FORECLOSED silently ($escRef; owner ruling 2026-08-31)."
+                Journal "$func s$sessionN [$modality] STANDING RULING (2026-07-27) applied — FORECLOSED: $($o.headline)"
             } elseif ($escRef -match 'CANONICAL-ASM GRANT PATH') {
                 # Owner ruling 2026-08-18 (judge-sole-gate, b9d91163): STRONG-tier
                 # canonical-asm no longer waits on the owner. Stay ACTIVE — the next
@@ -1145,13 +1150,13 @@ while ($true) {
                     "Read the escalation entry in docs/grind/decisions.md and the ledger, and verify its bytes claim yourself (the banked form + measurements). If the claim is sound and the remedy is a scope widening and/or a superseded-ban clearance per .claude/rules/integration-handoff-self-serve.md, return ESCALATE with escalate_kind=integration-handoff plus scope_paths=[...] (allowed classes: include/*.h, src/*.c, root-level rule/allowlist *.txt; the denylist is refused mechanically) and/or unban_construct=<substring>. If the claim does not hold, FAIL with the defect.")
             } else {
                 # Legacy pending-shaped ref (pre-2026-08-18). No pending states exist
-                # anymore: log to the borderline ledger and park terminally.
+                # anymore: log to the borderline ledger and foreclose silently.
                 $date = Get-Date -Format 'yyyy-MM-dd'
-                python tools/grinder/grindlib.py log-borderline . $func 'policy-question' "session-filed escalation: $escRef" "terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry." $date | Out-Null
-                $reason = "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): $escRef"
-                Invoke-Eng @('queue', 'park', $func, '--reason', $reason) | Out-Null
-                Log "${func}: OWNER-GATED — borderline-logged + ESCALATED with decision packet: $escRef"
-                Journal "$func s$sessionN [$modality] OWNER-GATED — borderline-logged, terminal park: $($o.headline)"
+                python tools/grinder/grindlib.py log-borderline . $func 'policy-question' "session-filed disposition: $escRef" "FORECLOSED silently (owner ruling 2026-08-31 — no pending states, no packets); re-attemptable if a later owner ruling spends this entry." $date | Out-Null
+                $reason = "FORECLOSED (logged to borderline.md; owner ruling 2026-08-31): $escRef"
+                Invoke-Eng @('queue', 'foreclose', $func, '--reason', $reason) | Out-Null
+                Log "${func}: OWNER-GATED — borderline-logged + FORECLOSED silently: $escRef"
+                Journal "$func s$sessionN [$modality] OWNER-GATED — borderline-logged, foreclosed: $($o.headline)"
             }
             # engine/queue.json is where `queue park` wrote the parked status — it
             # MUST be staged, or the park stays as working-tree dirt and the next
@@ -1188,12 +1193,12 @@ while ($true) {
                     git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
                     git -C $Root commit -m "grind: $func auto-filed canonical-asm grant path (backstop) [skip-park-src-guard]" 2>$null | Out-Null
                 } else {
-                    $bsReason = "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): $ref"
-                    Invoke-Eng @('queue', 'park', $func, '--reason', $bsReason) | Out-Null
-                    Log "${func}: ESCALATION BACKSTOP — session dodged in escalation modality (floor $($o.floor) >= prior $priorFloor); driver auto-filed + escalated."
-                    Journal "$func s$sessionN [escalation] AUTO-FILED by driver backstop (session did not self-file): $ref"
+                    $bsReason = "FORECLOSED (standing ruling 2026-07-27, auto-filed backstop; silent per owner ruling 2026-08-31): $ref"
+                    Invoke-Eng @('queue', 'foreclose', $func, '--reason', $bsReason) | Out-Null
+                    Log "${func}: EXHAUSTION BACKSTOP — session dodged in escalation modality (floor $($o.floor) >= prior $priorFloor); driver auto-filed + foreclosed."
+                    Journal "$func s$sessionN [escalation] AUTO-FILED by driver backstop (session did not self-file) — foreclosed: $ref"
                     git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
-                    git -C $Root commit -m "grind: $func auto-escalated owner-gated (backstop) [skip-park-src-guard]" 2>$null | Out-Null
+                    git -C $Root commit -m "grind: $func foreclosed (exhaustion backstop) [skip-park-src-guard]" 2>$null | Out-Null
                 }
             } else {
                 python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null

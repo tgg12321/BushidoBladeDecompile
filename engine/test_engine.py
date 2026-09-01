@@ -2055,10 +2055,13 @@ def test_queue_write_serialization() -> None:
             Q.mark_parked("func_A", reason="lane A")
             Q.mark_parked("func_B", reason="lane B")
             by_func = {it["func"]: it for it in Q.load()["items"]}
+            # mark_parked is a legacy alias for mark_foreclosed since the
+            # 2026-08-31 ruling (ordinary-c-judge-decidable) — the persisted
+            # status is "foreclosed"; the lock semantics under test are the same.
             eq("queue lock: lane A's park survived lane B's write",
-               by_func["func_A"]["status"], "parked")
+               by_func["func_A"]["status"], "foreclosed")
             eq("queue lock: lane B's park landed too",
-               by_func["func_B"]["status"], "parked")
+               by_func["func_B"]["status"], "foreclosed")
             eq("queue lock: untouched item intact",
                by_func["func_C"]["status"], "active")
 
@@ -2079,7 +2082,7 @@ def test_queue_write_serialization() -> None:
                   conflicted)
             after = {it["func"]: it for it in Q.load()["items"]}
             eq("queue lock: writer B's park was NOT silently clobbered",
-               after.get("func_B", {}).get("status"), "parked")
+               after.get("func_B", {}).get("status"), "foreclosed")
             check("queue lock: writer A's stale drop did not take effect",
                   "func_A" in after)
 

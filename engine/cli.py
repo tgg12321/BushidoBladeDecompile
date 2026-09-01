@@ -89,9 +89,9 @@ def main() -> int:
     sub.add_parser("test", help="run the engine regression suite (fast pure-logic + build-read tiers)")
 
     qp = sub.add_parser("queue", help="consolidated INCOMPLETE-work queue — work the TOP item to done")
-    qp.add_argument("action", choices=["next", "done", "escalate", "park", "unpark", "status", "regen", "reopen"])
-    qp.add_argument("func", nargs="?", help="function name (required for done/park/unpark/reopen)")
-    qp.add_argument("--reason", default="", help="reason / decision packet (for escalate/unpark/reopen; park is a legacy alias for escalate)")
+    qp.add_argument("action", choices=["next", "done", "foreclose", "escalate", "park", "unpark", "status", "regen", "reopen"])
+    qp.add_argument("func", nargs="?", help="function name (required for done/foreclose/unpark/reopen)")
+    qp.add_argument("--reason", default="", help="reason / disposition pointer (for foreclose/unpark/reopen; escalate and park are legacy aliases for foreclose — owner ruling 2026-08-31)")
     qp.add_argument("--file", default="", help="src file stem (required for reopen)")
 
     a = ap.parse_args()
@@ -205,12 +205,13 @@ def main() -> int:
                 pass
             print(json.dumps(it, indent=2))
             return 0
-        if a.action in ("done", "escalate", "park", "unpark"):
+        if a.action in ("done", "foreclose", "escalate", "park", "unpark"):
             if not a.func:
                 print(f"queue {a.action}: requires a function name")
                 return 2
             r = (Q.mark_done(a.func) if a.action == "done"
-                 else Q.mark_escalated(a.func, a.reason) if a.action in ("escalate", "park")
+                 else Q.mark_foreclosed(a.func, a.reason)
+                 if a.action in ("foreclose", "escalate", "park")
                  else Q.mark_unparked(a.func, a.reason))
             print(json.dumps(r, indent=2))
             MET.record_event(f"queue-{a.action}", a.func, r, exit_code=0 if r.get("ok") else 1)

@@ -230,17 +230,19 @@ same work in fewer, bigger turns (owner policy 2026-07-20):
 - Finish by writing the outcome JSON to the exact path in the brief. Schema and
   validity rules are in the brief. `candidate-ready` only when sandbox printed
   distance 0 THIS session with your edits in place in src/.
-- If a filed escalation entry (OWNER-ESCALATION / RESOLVED BY STANDING RULING /
-  CANONICAL-ASM GRANT PATH) for your function already exists in
-  docs/grind/decisions.md and the ledger shows every remaining sanctioned axis
-  measured dead, do NOT spin re-measuring dead axes: emit `owner-gated` citing
-  the entry in `escalation_ref`. Per the owner's 2026-08-18 ruling
-  (.claude/rules/judge-sole-gate.md) nothing waits on the owner: the driver
-  either keeps the function active on the canonical-asm grant path (STRONG
-  scanner tier) or borderline-logs and parks it terminally. This is NOT an
-  escape hatch for hard-but-grindable work — the driver rejects the claim
-  unless the escalation entry exists and names your function. Never file an
-  "awaiting owner ruling" entry; that shape is retired.
+- If a filed disposition entry (RESOLVED BY STANDING RULING / FORECLOSED /
+  CANONICAL-ASM GRANT PATH, or a legacy OWNER-ESCALATION) for your function
+  already exists in docs/grind/decisions.md and the ledger shows every
+  remaining sanctioned axis measured dead, do NOT spin re-measuring dead axes:
+  emit `owner-gated` citing the entry in `escalation_ref`. Per the owner's
+  2026-08-18 (.claude/rules/judge-sole-gate.md) and 2026-08-31
+  (.claude/rules/ordinary-c-judge-decidable.md) rulings nothing waits on the
+  owner and no packet is filed: the driver either keeps the function active on
+  the canonical-asm grant path (STRONG scanner tier) or borderline-logs and
+  FORECLOSES it silently. This is NOT an escape hatch for hard-but-grindable
+  work — the driver rejects the claim unless the entry exists and names your
+  function. Never file an "awaiting owner ruling" or "DECISION PACKET" entry;
+  those shapes are retired.
 
 ## Solver suite (available to every modality; the `solver` modality is dedicated to it)
 
