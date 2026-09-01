@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "CD_datasync",
-      "file": "system",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15943 \u2014 2026-08-30 \u2014 CD_datasync (src/system.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
-    },
-    {
       "func": "func_800770B8",
       "file": "text1b",
       "distance": 32,
@@ -1826,6 +1816,17 @@
       "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:19128 - '## 2026-09-01 - func_80072CD4 (src/text1b.c) - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (gate (a) FAILS, gate (b) PASSES on the operator census - borderline-log for owner batch review; the residual is an adjudication deadlock, not a codegen gap)'"
     },
     {
+      "func": "CD_datasync",
+      "file": "system",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 0,
+      "status": "foreclosed",
+      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15943 \u2014 2026-08-30 \u2014 CD_datasync (src/system.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
+      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:19229 \u2014 2026-09-01 \u2014 CD_datasync (src/system.c) \u2014 RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED"
+    },
+    {
       "func": "func_8001F938",
       "file": "code6cac",
       "distance": 8,
@@ -1876,13 +1877,13 @@
   ],
   "counts": {
     "total": 211,
-    "active": 197,
+    "active": 196,
     "by_status": {
-      "active": 197,
-      "foreclosed": 14
+      "active": 196,
+      "foreclosed": 15
     },
     "by_verdict": {
-      "C": 165,
+      "C": 164,
       "ASM-PARTIAL": 32
     }
   }

@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 19,
+ "session_count": 20,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -117,23 +117,29 @@
    "floor": 7,
    "modality": "escalation",
    "headline": "Owner ruling-10 return-to-active executed: the last un-tried axis (cc1psx as the calibration oracle, F31) is KILLED by a 23-form dual-fork sweep - both compilers share the same floor, the same ranking"
+  },
+  {
+   "session": 20,
+   "floor": 7,
+   "modality": "escalation",
+   "headline": "Owner Ruling-A named probe (Ruling D, F14 verbatim) executed in full and KILLED \u2014 the Intr/Alarm aggregate is BYTE-IDENTICAL to the existing pointer-local base (7/91) or a 12-24 regression, and prong "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "RETAINED AS DOCUMENTATION ONLY (the 2026-08-30 disposition declares this space closed). F29: inverting the now-empirical descending-UID sched1 model - enumerate the pre-sched LUID orders C can actually emit and replay each - identifies a C-emittable order that produces target's block order.",
-   "mechanism": "The sched1 pick rule is established (ready[0]; descending priority, ties by descending UID) and the dependence DAG plus LOG_LINKS are decoded and on disk from s18. What is missing is a faithful latency-queue / hazard-reordering model validated against the banked chassis traces.",
-   "next_probe": "Do NOT re-run as a single-axis search: s19 showed the whole argument-spelling space is one attractor on TWO independent compilers, so an order-only enumeration cannot escape it. Only worth reviving as part of a JOINT sched.c-order x global.c-seat solver (the recorded re-activation trigger)."
+   "hypothesis": "F32 \u2014 tools/ra_solver/inverse.py local can type the block-3 seat residual REACHABLE or FORECLOSED and name the C-lever vectors, converting this function's disposition from an exhaustion argument into a proof.",
+   "mechanism": "The classify verdict names inverse.py as the next tool, and this session extracted the QTYDBG attribution (block 3 quantities, births, deaths, refs, allocation order and the reproduced qty_compare priorities) that the 2026-08-30 campaign said was missing. find_free_reg's ascending scan gives a closed-form condition for target's $a0 seat: both $v0 and $v1 occupied across the chain's whole span at allocation time.",
+   "next_probe": "Run inverse.py local against CD_datasync block 3 with a HAND-VERIFIED --goal-order (perturb.py --goal-from-target currently SKIPS this block: 'goal is not a topological order, 2 violations', because difflib mis-pairs the duplicate sll / lw skeletons \u2014 fix needs anchor-based alignment, which is an operator-lane change to tools/). Bound and profile the run; the CD_ready precedent is that an unbounded inverse.py local can burn 100% CPU without finishing depth 1. A REACHABLE verdict must name a lever vector nobody has spelled \u2014 91 forms are already banked."
   },
   {
-   "hypothesis": "RETAINED AS DOCUMENTATION ONLY. F30: the identical block on the sibling CD_sync (splat cpu_side_move_dir_4) behaves differently under the same lever, isolating chassis pressure from block mechanism.",
-   "mechanism": "Same 14-insn target sequence, same early-lw-a3 failure, different register pressure and a different spelling of arg3. CD_ready, the third twin, reached the same standing-ruling disposition on 2026-08-30 with the same coupled-fixed-point re-activation trigger, which is evidence the family shares one residual.",
-   "next_probe": "If ever revived, run the s19 dual-fork harness (which is function-agnostic apart from the hardcoded name) on CD_sync FIRST - it costs ~1.5s/form and would settle the family question before any sandbox time is spent."
+   "hypothesis": "The standing family trigger: a JOINT sched.c-emission-order x global.c/local-alloc.c-seat solver closes CD_datasync, CD_sync and CD_ready together.",
+   "mechanism": "Every C change that fixes the emission order breaks the register seats and vice versa \u2014 proven over 20 sessions here, 68 on CD_ready and 107 on CD_sync. The current solver suite is single-axis, which is why all three twins land on the same disposition. This session's classify result (RA first, with an ordering component behind it) is further evidence the two axes are coupled rather than separable.",
+   "next_probe": "When a joint solver exists, re-open CD_datasync, CD_sync and CD_ready as ONE basin. Use the s19 dual-fork harness (tmp/grind/CD_datasync/s19/: psx.sh + score.py + expand.py + sweep.sh, ~1.5 s/form, ~15x cheaper than a sandbox run, function-agnostic apart from the hardcoded name) as the scoring loop."
   },
   {
-   "hypothesis": "RE-ACTIVATION TRIGGER (the only live one): a toolchain-model advance that can search the JOINT sched.c emission-order x global.c allocno-seat space closes CD_datasync and its two twins together.",
-   "mechanism": "Every C change that fixes the emission order breaks the register seats and vice versa - proven across 19 sessions here and 59 on the twin CD_ready. The current solver suite (ra_solver, sched_solver) is single-axis, which is why both functions land on the same disposition.",
-   "next_probe": "When a joint solver exists, re-open CD_datasync, CD_sync and CD_ready as one basin; the s19 dual-fork harness gives that campaign a 15x-cheaper scoring loop than the sandbox."
+   "hypothesis": "C bodies for the five asm-only Intr consumers would make the Ruling D aggregate-merge scope grant spendable across the twin family.",
+   "mechanism": "Prong (c) requires the merge to be COMPLETE \u2014 every merged per-word symbol removed from C AND from the splat symbol config. getintr, CD_cw, func_800817A0 (CD_flush), func_800819C4 and func_80081E1C reference D_800A1494/95/96 from assembly (48 sites total), and CD_cw additionally references D_800F19B8/BC/C0 (14 sites), so the per-word symbols cannot be retired while those bodies are INCLUDE_ASM.",
+   "next_probe": "Completeness trigger only, and a LOW-value one on this evidence: this session measured the merge as byte-identical to the existing pointer-local spelling, so unblocking prong (c) would not move CD_datasync's residual. Record it so a future session does not re-derive the blocker; do not prioritise it as a closing lever."
   }
  ],
  "judge_constraints": [],

@@ -2110,3 +2110,167 @@ sweep and not the permuter.
 - [s19] NOT an integration handoff: nothing is bytes-proven and nothing is blocked by an untouchable surface. src/system.c carries INCLUDE_ASM("asm/funcs", CD_datasync); with 0 regfix/asmfix rules. The best honest form is simply 7 masked points away and stays in memory/grind/CD_datasync/candidate.c.
 
 - [s19] Exhaustion at disposition: 19 sessions, >=7 distinct modalities (structural, permuter, forensics, rederive, synthesis, recon, escalation), 84 banked rejected forms, the s9 twelve-spelling sweep, the s13/s14 permuter basins, the s15/s16 RANKDBG sched1 forensics (0 of 103 in-block tie-break decisions class-resolved), the s17 index-globals axis, the s18 empirical descending-UID sched1 model, and the s19 dual-fork sweep - all closed negative.
+
+## s20 (escalation / Ruling-A named probe = Ruling D, F14 verbatim) — 2026-09-01
+
+- [s20] CHASSIS RE-MEASURED LIVE. memory/grind/CD_datasync/candidate.c spliced into
+  src/system.c (HEAD carries INCLUDE_ASM("asm/funcs", CD_datasync);) and scored:
+  `sandbox CD_datasync --disable all` -> score **7**, target_insns 91, build_insns 91,
+  rules_dropped 0 (cheat_asm_stripped 5 belong to other functions in the TU). The ledger floor
+  of 7 is chassis-current; every conclusion below is measured against it.
+
+- [s20] **OWNER DIRECTIVE EXECUTED IN FULL.** The 2026-09-01 FORECLOSED-BUCKET REVIEW
+  (docs/grind/decisions.md:17743) Ruling A row `CD_datasync (d7)` named the probe
+  "Ruling D session (F14 verbatim)". F14 (hypotheses.md:976-991) asks for Sony's aggregate
+  declarations of `Intr` (typedef struct { u8 sync, ready, c; } CD_intr; at 0x800A1494/95/96)
+  and `Alarm` (0x800F19B8/BC/C0) instead of the per-word splat scalars. Both halves were built
+  and measured this session; neither had ever been measured on this function.
+
+- [s20] **PRONG (c) RE-DERIVED FIRST-HAND FOR CD_datasync — the Intr merge FAILS structurally.**
+  `grep -rcE 'D_800A149[456]' asm/` returns nine files: the data definition
+  asm/data/7D920.data.s (10 sites, carrying dlabel D_800A1494/95/96 and D_800A1498 whose
+  first word is `.word D_800A1494`), the three INCLUDE_ASM twin bodies CD_datasync.s /
+  CD_ready.s / CD_sync.s (2 sites each), and **five asm-only consumers**: getintr.s (22),
+  CD_cw.s (8), func_800817A0.s = CD_flush (8), func_800819C4.s (8), func_80081E1C.s (2).
+  The per-word symbols must therefore survive in the splat symbol config, so any CD_intr
+  declaration is necessarily a SECOND handle on the same storage — verbatim the prong the
+  g_stage_id merge died on (decisions.md:10722), the prong CD_sync's Ruling D died on
+  (decisions.md:18305-18317) and the prong CD_ready's Ruling D died on (CD_ready evidence [s68]).
+  This is now re-derived first-hand on the third and last member of the set; the finding is
+  symbol-level, not function-level, and the Ruling D scope grant is unspendable by any of the
+  three twins while those five asm-only consumers exist.
+
+- [s20] **PRONG (c) FOR THE `Alarm` HALF ALSO FAILS.** `grep -rcE 'D_800F19(B8|BC|C0)' asm/`
+  returns exactly four files — CD_cw.s (14 sites), CD_datasync.s (14), CD_ready.s (14),
+  CD_sync.s (14). CD_cw is an asm-only queue body with no C form, so the three per-word
+  symbols must likewise survive the splat config and a CD_alarm declaration is again a second
+  handle. The Alarm merge is prong-(c)-blocked for the same structural reason as Intr.
+
+- [s20] **F14 MEASURED AND KILLED ON THE BYTES — the aggregate is either BYTE-INERT or a
+  REGRESSION; it cannot reach the residual.** Seven spellings built on the candidate chassis
+  (all banked in rejected/s20-f14-*.c, harness tmp/grind/CD_datasync/s20/{apply,gen}.py):
+
+  | form | spelling | score | build_insns |
+  |---|---|---|---|
+  | base | candidate.c | **7** | 91 |
+  | f14b | extern CD_intr D_800A1494; + CD_intr *ip = &D_800A1494;, ip->sync / ip->ready | 7 | 91 |
+  | f14c | f14b with volatile CD_intr | 7 | 91 |
+  | f14a | extern CD_intr D_800A1494;, direct D_800A1494.sync / .ready (no pointer local) | 24 | 89 |
+  | f14d | f14a with volatile | 24 | 89 |
+  | f14e | typedef struct { s32 timeout; s32 count; void *arg; } CD_alarm; extern CD_alarm D_800F19B8; + member accesses | 12 | 91 |
+  | f14f | f14e with volatile | 12 | 91 |
+  | f14g | both merges together | 12 | 91 |
+
+- [s20] **THE DECISIVE MEASUREMENT: f14b and f14c are BYTE-IDENTICAL to the base**, not merely
+  equal-scoring. Full-object disassemblies captured for all three
+  (tmp/grind/CD_datasync/s20/dis_{base,f14b,f14c}.txt, `mipsel-linux-gnu-objdump -d` of the
+  cheat-stripped sandbox object) diff clean. MECHANISM: the `u8 *idx_1494` pointer local the
+  candidate already carries produces exactly the RTL the struct produces — one hoisted base
+  pseudo plus lbu 0(base) / lbu 1(base). F14's stated premise ("Sony's source has ONE object
+  with two member offsets — a shape this repo cannot currently express") is FALSIFIED: the repo
+  already expresses it, the base-register addressing target uses is already achieved, and the
+  aggregate declaration adds nothing the pointer local did not. `volatile` on the aggregate is
+  likewise byte-inert here (both member reads are single, unduplicated, already ordered).
+  F14 is therefore not a deferred-for-scope opportunity — it is a NO-OP on the residual, and
+  the two prong-(c) failures above make it unspendable as a family claim regardless.
+
+- [s20] The 24 / 89 result for the direct-member forms REPRODUCES the s17 measurement
+  (rejected/both-indices-via-globals-drops-idx-base-24-89.c, 24 / 89): dropping the pointer
+  local loses the hoisted base and the build comes out two instructions SHORT of target's 91,
+  re-confirming that target demonstrably hoists an index base and that the three hoisted table
+  pointers are structurally required by target's instruction count.
+
+- [s20] **NEW, MODEL-CORRECTING FINDING — the solver chain types the FIRST divergence as RA,
+  not scheduling.** `tools/ra_solver/inverse_compose.py classify system CD_datasync
+  --target-object build/src/system.o --ours-object tmp/sandbox/CD_datasync/system.o` (the
+  INCLUDE_ASM-routed object path; build/src/system.o verified to carry target's bytes — its
+  CD_datasync head matches asm/funcs/CD_datasync.s instruction-for-instruction) returns:
+      FIRST DIVERGENCE: RA   next tool: tools/ra_solver/inverse.py (global / local)
+      ours   addu v1,v1,s0 / lbu v0,0(s1) / lbu v1,1(s1) / lw a3,0(v0) / lw v1,0(v1) / sll v1,v1,2
+      target addu a0,a0,s0 / lbu a0,0(s1) / lbu v0,1(s1) / lw a3,0(a0) / lw v1,0(v0) / sll a0,a0,2
+  This is the first time the solver suite has been pointed at CD_datasync's residual at all
+  (the 2026-08-30 campaign got as far as goal_from_tgt and then STOPPED: `perturb.py
+  --goal-from-target` skipped the block on a difflib alignment failure, and the recorded
+  next step — "resolve attribution via QTYDBG blk dump, then run inverse.py local" — was never
+  executed by s19, which spent its session on the cc1psx axis instead).
+
+- [s20] **POSITIONAL BLOCK MAP (build idx 44-64, ours | target), captured this session to
+  tmp/grind/CD_datasync/s20/blk_ours.txt / blk_tgt.txt:** the residual is one interleaving
+  choice. Target computes the idx[1] (arg5) chain FIRST and COMPLETELY in $v0
+  (lbu 48 / sll 51 / addu 52 / lw v1 54) while SPREADING the idx[0] (arg4) chain across the
+  block in $a0 (lbu 47 / sll 53 / addu 57 / **lw a3 at 62, the block's last memory
+  reference**). Ours does the mirror image: idx[0] first and complete in $v0
+  (lbu 47 / sll 51 / addu 52 / lw a3 55) and idx[1] spread in $v1 (lbu 48 / sll 53 / addu 54 /
+  lw v1 58). Same instruction multiset, same count, different chain-to-register assignment and
+  different completion order.
+
+- [s20] **LOCAL-ALLOC GROUND TRUTH FOR THE RESIDUAL BLOCK, extracted first-hand** (the
+  2026-08-30 campaign's un-executed step): `python3 tools/ra_solver/local_extract.py system`
+  -> tmp/ra_solver_work/system.local.json (40 functions, 287 qty rows). CD_datasync block 3
+  is the printf argument block; its main-pass quantities are
+      ord0 qty0 pseudo92  birth 8  death 20 refs 12 -> got $v0(2)
+      ord1 qty1 pseudo104 birth 12 death 24 refs 12 -> got $v1(3)
+      ord2 qty3 pseudo99  birth 22 death 38 refs 12 -> got $v0(2)
+      ord3 qty4 pseudo105 birth 24 death 28 refs 4  -> got $v1(3)
+  plus two suggested-pass rows (qty5 pseudo94 -> $a1, qty2 pseudo86 -> $a3).
+  qty_compare priorities are 30000 / 30000 (tie broken by lower qty) / 22500 / 20000, which
+  reproduces the printed `ord` column exactly. The consequence for the goal: target holds one
+  chain in $a0 (hard reg 4), and find_free_reg scans ASCENDING, so reaching $a0 requires
+  BOTH $v0 and $v1 to be occupied across that chain's whole span at the moment it is allocated
+  — i.e. the third-allocated quantity must overlap the first two, whereas here qty0 (death 20)
+  has already died before qty3 (birth 22) is allocated. That is a two-part requirement of
+  exactly the shape the ra_solver README's title_mv_exec2 worked example describes, and it is
+  the first time this function's residual has had a stated allocation-level spec rather than a
+  scheduling narrative.
+
+- [s20] GATE (a) canonical-asm FAILS, re-measured this session:
+  `python3 tools/scan_hand_coded.py --single CD_datasync` -> **tier=LOW score=1/8** (91 insns),
+  "no strong hand-coded indicators". Only S4 (4 loads in an 8-insn window @ insn 46) fires —
+  and that window IS the ordinary load_register_parameters argument block under study. S1
+  (multu pacing), S2 (empty branch) and S6 (BIOS jumptable), the only STRONG-tier carriers, are
+  all negative, as are S3/S5/S7/S8. Fifth independent reproduction (s17, s18, s19, the
+  2026-08-30 campaign, and now s20). Independently barred by provenance: this body is compiled
+  Sony PsyQ 3.5 LIBCD CD_datasync (91 words = exactly 0x14F4-0x1388 in the library object,
+  memory/closer/libcd-groundtruth.md:59-67), and the twin-family canonical-asm request covering
+  this exact function was DENIED on three independently dispositive grounds
+  (docs/grind/decisions.md:15, 2026-07-09).
+
+- [s20] GATE (b) in-hand SOTN-master precedent FAILS BY CONSTRUCTION, restated against the
+  2026-09-01 review's systemic finding #2 (cap-truncated censuses are not evidence): the
+  objection does not apply here, because there is no construct to census. The floor is 7, not
+  0 — no C construct CLOSES this function, so there is nothing for which a precedent could be
+  cited. The constructs that HOLD the floor at 7 (one FAKE-annotated do{}while(0) wrap plus
+  three plain pointer locals) are already inside sanctioned families and are not the blocker.
+  The two aggregate spellings measured this session are the sanctioned aggregate-merge family
+  and they FAIL prong (c) on their own evidence, above.
+
+- [s20] EXHAUSTION AT DISPOSITION: 20 sessions; floor flat at 7 since s9 (eleven consecutive
+  sessions); modalities spent — recon, structural, permuter, forensics, rederive, synthesis,
+  escalation, and now the solver chain; 91 disproven forms banked in
+  memory/grind/CD_datasync/rejected/ (7 added this session); ~60k permuter iterations across
+  four campaigns (s13/s14) on a re-aligned objective proven monotone with the sandbox and still
+  unable to descend; 23 argument spellings scored on BOTH compiler forks (s19) landing on one
+  shared attractor and one shared minimum.
+
+- [s20] The working tree was restored to HEAD (`git checkout -- src/system.c`) before finishing;
+  only memory/grind/CD_datasync/, docs/grind/decisions.md and tmp/ were written.
+
+- [s20] Chassis re-measured live this session: candidate.c spliced into src/system.c (HEAD carries INCLUDE_ASM) -> sandbox CD_datasync --disable all = score 7, target_insns 91, build_insns 91, rules_dropped 0. The ledger floor of 7 is chassis-current.
+
+- [s20] F14's Intr aggregate reached through a pointer local (with or without volatile) is BYTE-IDENTICAL to the existing u8 *idx_1494 base — objdump diff of the cheat-stripped sandbox objects is clean. The aggregate declaration adds nothing the pointer local did not; target's base-register addressing was already achieved.
+
+- [s20] Prong (c) of the sanctioned aggregate-merge family FAILS symbol-level, re-derived first-hand on the third and last twin: five asm-only consumers of D_800A1494/95/96 (getintr 22 sites, CD_cw 8, func_800817A0 8, func_800819C4 8, func_80081E1C 2) and one asm-only consumer of D_800F19B8/BC/C0 (CD_cw, 14 sites) force the per-word symbols to survive the splat config. The Ruling D scope grant is unspendable by CD_sync / CD_ready / CD_datasync alike until those consumers have C bodies.
+
+- [s20] Direct-member access without a pointer local scores 24 / 89 — two instructions SHORT of target's 91 — reproducing s17 and re-confirming that target hoists an index base and that the three hoisted table pointers are required by target's instruction count.
+
+- [s20] The Alarm (0x800F19B8/BC/C0) aggregate merge, never measured before, scores 12 / 91 volatile or not, and 12 / 91 combined with the Intr merge.
+
+- [s20] inverse_compose.py classify types the FIRST divergence as RA, not scheduling — the first solver-chain verdict ever obtained for this function's residual, and a correction to the model sessions 10-19 worked under.
+
+- [s20] First-hand local-alloc ground truth for the residual block (tmp/ra_solver_work/system.local.json, CD_datasync block 3) reproduces GCC's printed allocation order exactly from qty_compare priorities 30000/30000/22500/20000, and shows why the third-allocated quantity falls back to $v0 instead of target's $a0: qty0 dies at 20 before qty3 is born at 22.
+
+- [s20] scan_hand_coded --single CD_datasync = tier LOW, score 1/8, S4 only — fifth independent reproduction; provenance (PsyQ 3.5 LIBCD CD_datasync, 91 words = 0x14F4-0x1388) independently bars a canonical-asm claim, and the twin-family request was DENIED 2026-07-09 (decisions.md:15).
+
+- [s20] Exhaustion at disposition: 20 sessions, floor flat at 7/91 since s9 (eleven consecutive sessions), eight distinct modalities (recon, structural, permuter, forensics, rederive, synthesis, escalation, solver), 91 banked rejected forms (7 added this session), ~60k permuter iterations over four campaigns including a re-aligned objective proven monotone with the sandbox that still could not descend, and 23 argument spellings scored on BOTH compiler forks with identical ranking and no form below the shared minimum.
+
+- [s20] Foreclosure record filed this session at docs/grind/decisions.md:19229; working tree restored to HEAD (git checkout -- src/system.c) — only memory/grind/CD_datasync/, docs/grind/decisions.md and tmp/ were written.

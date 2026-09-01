@@ -2515,3 +2515,81 @@ the seats and vice versa).
 ## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
 
 Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-merge session — which is this ledger's OWN open frontier item F14 (hypotheses.md:976-991), deferred for scope and never killed. H28 killed the volatile QUALIFIER on the split extern u8 declarations; F14's struct SHAPE is explicitly a separate, untested question. Falsifiable claim (F14 verbatim): extern volatile CD_intr Intr indexed as members reproduces the target's shared-base lbu 0/1($s1) addressing and scores below 7/91.
+
+## [s20] F14 (the Sony `Intr` / `Alarm` aggregate declarations) — KILLED, measured
+- **statement:** Declaring 0x800A1494/95/96 as Sony's `CD_intr` struct (and 0x800F19B8/BC/C0 as
+  the `Alarm` struct) reproduces target's hoisted base-register addressing that neither the
+  reference spelling nor a `u8 *` pointer local reaches, and moves the residual.
+- **mechanism claimed by F14:** target reaches Intr through a hoisted base (`lbu a0,0(s1)` /
+  `lbu v0,1(s1)`, offsets 0 and 1); a single aggregate object with two member offsets is the
+  shape that emits that, and the repo could not express it while `D_800A1494` is `extern u8`.
+- **probe:** seven spellings built on the candidate chassis and sandbox-scored, plus full
+  objdump comparison of the equal-scoring ones (harness `tmp/grind/CD_datasync/s20/apply.py`
+  + `gen.py`; disassemblies `dis_base.txt` / `dis_f14b.txt` / `dis_f14c.txt`).
+- **result:** struct-through-a-pointer-local (f14b) and its volatile variant (f14c) are
+  **BYTE-IDENTICAL** to the base at 7 / 91 — the existing `u8 *idx_1494` local already emits
+  the identical RTL, so the aggregate is a no-op on the residual. Direct member access without
+  the pointer local is 24 / 89 (f14a/f14d), reproducing s17's index-globals regression and its
+  two-instructions-short build. The Alarm merge is 12 / 91 (f14e/f14f) and the combined merge
+  12 / 91 (f14g). Nothing beats 7. Independently, prong (c) of the sanctioned aggregate-merge
+  family FAILS first-hand for BOTH halves: five asm-only consumers of D_800A1494/95/96
+  (getintr 22 sites, CD_cw 8, func_800817A0 8, func_800819C4 8, func_80081E1C 2) and one
+  asm-only consumer of D_800F19B8/BC/C0 (CD_cw, 14 sites) force the per-word symbols to survive
+  the splat config, making any aggregate declaration a second handle on the same storage.
+- **verdict:** KILLED (both on the bytes and on the family prong). Do not re-propose the Intr
+  or Alarm aggregate for this function or either twin; the Ruling D scope grant is unspendable
+  until CD_cw / getintr / func_800817A0 / func_800819C4 / func_80081E1C have C bodies.
+
+## [s20] F32 — the residual is an ALLOCATION problem with a stated two-part spec, not a scheduling narrative
+- **statement:** target's `$a0`-held idx[0] chain is reachable iff the block-3 quantity that
+  carries that chain is allocated THIRD while both `$v0` and `$v1` are still occupied across
+  its whole span; every measured C lever to date has moved only one half of that requirement.
+- **mechanism:** `local-alloc.c` `find_free_reg` scans hard registers ASCENDING (MIPS defines no
+  REG_ALLOC_ORDER here), so `$a0` (hard reg 4) is handed out only when 2 and 3 are both in the
+  `used` set for the candidate's `[birth,death)`. First-hand ground truth for this function
+  (`tools/ra_solver/local_extract.py system` -> `tmp/ra_solver_work/system.local.json`,
+  CD_datasync block 3): ord0 qty0 p92 [8,20) refs12 -> $v0; ord1 qty1 p104 [12,24) refs12 ->
+  $v1; ord2 qty3 p99 [22,38) refs12 -> $v0; ord3 qty4 p105 [24,28) refs4 -> $v1. `qty_compare`
+  priorities 30000 / 30000 (tie -> lower qty) / 22500 / 20000 reproduce the printed `ord`
+  column exactly. qty0 DIES at 20, before qty3 is born at 22, which is precisely why the third
+  allocation falls back to $v0 instead of climbing to $a0. This is the same two-part shape as
+  the ra_solver README's `title_mv_exec2` worked example (one extra overlapping higher-priority
+  quantity moves the target only to $a0's predecessor; the hard-reg half alone leaves it in
+  $v1; only both together land the wanted seat).
+- **corroboration:** `inverse_compose.py classify system CD_datasync --target-object
+  build/src/system.o --ours-object tmp/sandbox/CD_datasync/system.o` types the FIRST divergence
+  as **RA** (next tool: `inverse.py` global / local), not as a scheduling divergence — which
+  corrects the model sessions 10-19 worked under.
+- **next probe (NOT executed — the un-executed step the 2026-08-30 campaign named and s19
+  skipped):** run `tools/ra_solver/inverse.py local` against block 3 with the goal resolved
+  from `goal_from_tgt.py` plus the QTYDBG attribution above, and read the returned lever
+  vectors. `perturb.py --goal-from-target` is known to SKIP this block (difflib mis-pairs the
+  duplicate `sll` / `lw` skeletons), so the goal must be supplied hand-verified or the
+  alignment upgraded to anchor-based. Verdicts are hypotheses until a spelled C form measures;
+  the block's C surface is heavily banked already (91 rejected forms), so a REACHABLE verdict
+  must name a lever vector nobody has spelled, and a FORECLOSED verdict converts this
+  function's disposition from an exhaustion argument into a proof.
+
+## [s20] F14 — declaring 0x800A1494/95/96 as Sony's CD_intr struct (and 0x800F19B8/BC/C0 as the Alarm struct) reproduces target's hoisted base-register addressing that the u8* pointer local cannot reach, and moves the residual.
+- mechanism: F14's premise: target reaches Intr through a hoisted base (lbu a0,0(s1) / lbu v0,1(s1), offsets 0 and 1); a single aggregate object with two member offsets is the shape that emits that, and the repo could not express it while D_800A1494 is declared extern u8. This is the sanctioned per-word-splat-symbol -> aggregate-merge family (owner ruling 2026-08-17), authorized as a scope grant by Ruling D of the 2026-09-01 FORECLOSED-BUCKET REVIEW.
+- probe: Seven spellings built on the live candidate chassis and sandbox-scored (harness tmp/grind/CD_datasync/s20/apply.py + gen.py): struct-via-pointer-local (f14b), same volatile (f14c), struct with direct member access and no pointer local (f14a) and its volatile variant (f14d), the CD_alarm merge (f14e) and its volatile variant (f14f), and both merges together (f14g). The two equal-scoring forms were then compared at the object level via mipsel-linux-gnu-objdump -d of the cheat-stripped sandbox object (dis_base.txt vs dis_f14b.txt / dis_f14c.txt). Prong (c) of the family was re-derived first-hand with grep -rcE 'D_800A149[456]' asm/ and grep -rcE 'D_800F19(B8|BC|C0)' asm/.
+- result: Baseline re-measured at 7/91, rules_dropped 0. f14b = 7/91 and f14c = 7/91, and both are BYTE-IDENTICAL to the base (objdump diff clean) — the existing u8 *idx_1494 pointer local already emits exactly the RTL the struct emits, so F14's stated premise ('a shape this repo cannot currently express') is falsified and the aggregate is a NO-OP on the residual. f14a/f14d = 24/89, reproducing s17's index-globals regression and its two-instructions-SHORT build. f14e/f14f/f14g = 12/91. Nothing beat 7. Independently, prong (c) FAILS structurally for both halves: five asm-only consumers of D_800A1494/95/96 (getintr.s 22 sites, CD_cw.s 8, func_800817A0.s 8, func_800819C4.s 8, func_80081E1C.s 2) plus the data definition in asm/data/7D920.data.s, and one asm-only consumer of D_800F19B8/BC/C0 (CD_cw.s, 14 sites), force the per-word symbols to survive the splat config, so any aggregate declaration is a SECOND handle on the same storage — verbatim the prong g_stage_id died on (decisions.md:10722), CD_sync's Ruling D died on (decisions.md:18305-18317) and CD_ready's Ruling D died on ([s68]).
+- verdict: KILLED
+
+## [s20] F32 — the residual is an ALLOCATION problem with a stated two-part spec (target's $a0 seat needs both $v0 and $v1 occupied across the chain's span at allocation time), not the scheduling divergence sessions 10-19 modelled.
+- mechanism: local-alloc.c find_free_reg scans hard registers ASCENDING (MIPS defines no REG_ALLOC_ORDER here), so $a0 (hard reg 4) is handed out only when regs 2 and 3 are both in the used set over the candidate quantity's [birth,death). Reaching target's seat therefore requires the chain-carrying quantity to be allocated THIRD while the first two are still live across it — the two-part shape of the ra_solver README's title_mv_exec2 worked example.
+- probe: tools/ra_solver/inverse_compose.py classify system CD_datasync --target-object build/src/system.o --ours-object tmp/sandbox/CD_datasync/system.o (INCLUDE_ASM-routed object path; build/src/system.o verified to carry target's bytes by matching its CD_datasync head against asm/funcs/CD_datasync.s), plus a positional build-idx 44-64 block map of both objects, plus first-hand local-alloc ground truth via python3 tools/ra_solver/local_extract.py system.
+- result: classify types the FIRST divergence as RA (next tool: inverse.py global/local), not scheduling — correcting the model sessions 10-19 worked under. The positional map shows target computing the idx[1]/arg5 chain first and completely in $v0 (lbu 48 / sll 51 / addu 52 / lw v1 54) while SPREADING the idx[0]/arg4 chain in $a0 (lbu 47 / sll 53 / addu 57 / lw a3 at 62, the block's last memory reference); our build is the exact mirror image. tmp/ra_solver_work/system.local.json block 3 gives ord0 qty0 p92 [8,20) refs12 -> $v0; ord1 qty1 p104 [12,24) refs12 -> $v1; ord2 qty3 p99 [22,38) refs12 -> $v0; ord3 qty4 p105 [24,28) refs4 -> $v1, with qty_compare priorities 30000 / 30000 (tie -> lower qty) / 22500 / 20000 reproducing the printed ord column exactly. qty0 dies at 20 before qty3 is born at 22, which is precisely why the third allocation falls back to $v0 instead of climbing to $a0.
+- verdict: CONFIRMED
+
+## [s20] Endgame-lock gate (a): CD_datasync qualifies for a canonical-asm grant.
+- mechanism: The canonical-asm path requires STRONG scan_hand_coded signals (S1 multu pacing / S2 empty branch / S6 BIOS jumptable).
+- probe: python3 tools/scan_hand_coded.py --single CD_datasync
+- result: tier=LOW score=1/8 (91 insns), 'no strong hand-coded indicators'. Only S4 fires (4 loads in an 8-insn window @ insn 46) — and that window IS the ordinary load_register_parameters argument block under study. S1/S2/S6 all negative, as are S3/S5/S7/S8. Fifth independent reproduction (s17, s18, s19, the 2026-08-30 campaign, s20). Independently barred by provenance: compiled Sony PsyQ 3.5 LIBCD CD_datasync, 91 words = exactly 0x14F4-0x1388 in the library object (memory/closer/libcd-groundtruth.md:59-67), and the twin-family canonical-asm request covering this exact function was DENIED on three independently dispositive grounds on 2026-07-09 (docs/grind/decisions.md:15).
+- verdict: KILLED
+
+## [s20] Endgame-lock gate (b): an in-hand SOTN-master precedent exists for the construct that would close CD_datasync.
+- mechanism: A coercion/spelling family needs a citable SOTN-master exhibit (file+line or commit) for the CLOSING construct.
+- probe: Direct examination of what holds the floor, restated against the 2026-09-01 review's systemic finding #2 (cap-truncated sotn-construct-index.md censuses are not evidence).
+- result: FAILS by construction, and the review's census objection does not rescue it: no census was the basis of the failure. The honest floor is 7, not 0 — no C construct CLOSES this function, so a closing-construct precedent cannot exist. The constructs that HOLD the floor at 7 (one FAKE-annotated do{}while(0) wrap plus three plain pointer locals) are already inside sanctioned families and are not the blocker. The one family this session did claim — the sanctioned aggregate merge — fails its own prong (c) on first-hand evidence.
+- verdict: KILLED
