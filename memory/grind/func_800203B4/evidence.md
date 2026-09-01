@@ -126,3 +126,47 @@
 - [s1] fact 16: floor re-measured 0 on the 2026-09-01 chassis this session (dispatch chassis-check was 'measurement unavailable'); queue distance 33 is the stale pre-migration figure per fact 1; src reverted clean per asm-until-matched
 
 - [s1] no codegen work remains: H1 CONFIRMED x4, H2/H3 KILLED, H4 resolved NO by Judge FAIL; residual = 11 cop2 insns with no C form; scanner tier LOW and cluster membership denied, so both authorization gates are measured dead
+
+## s4 (2026-09-01, STRUCTURAL — the first non-recon modality on this function)
+
+17. **THE PURE-C BOUND IS 26, AND IT IS STRUCTURE-INVARIANT (new, measured).** The candidate
+    body with all four inline-asm islands deleted — the maximal pure-C form of this function —
+    scores `sandbox --disable all` = **26, build_insns 39, target_insns 65, rules_dropped 0**
+    (form banked at memory/grind/func_800203B4/rejected/pure-c-no-islands-floor-26.c). The
+    score equals the EXACT instruction-count deficit (65 - 39 = 26): every one of the 39
+    C-emitted instructions matches the target, so the residual is 100% instructions that no C
+    construct can emit (5x ctc2, mtc2, lwc2, 3x swc2, the MVMVA `.word 0x4A486012`, their
+    addressing preamble, and the two unfilled cop2 load-delay nops). GCC 2.7.2 has no cop2
+    intrinsic — the PsyQ SDK's own gte_* macros are inline asm — so no structural lever
+    (declaration order, block-local splits, type narrowing, statement re-association) can move
+    26 toward 0. **The structural modality is bounded at 26 and is therefore measured DEAD**;
+    it is not a spelling problem, it is an expressiveness one.
+18. **The s1 candidate's block-local `new_var` named intermediate is CODEGEN-NEUTRAL
+    (measured).** Replacing the `{ s32 new_var; new_var = game_GetPlayerData(...); src = ...; }`
+    block with the plain nested expression `src = *(s32 *)((... << 2) + game_GetPlayerData(...))`
+    still scores **0, 65/65, rules_dropped 0**. candidate.c has been PROMOTED to this simpler
+    form (artifact tmp/grind/func_800203B4/s2/varB_no_newvar_score0.o): it removes a construct
+    that would otherwise have to be defended as a named-intermediate under
+    `.claude/rules/narrow-byte-args-packed-call.md`, shrinking the review surface to the four
+    islands alone. Body is otherwise unchanged and still byte-final.
+19. **Local DECLARATION ORDER is load-bearing (measured).** Reordering the locals from
+    `s32 mat[8]; s32 vec[3]; s32 src;` to `s32 src; s32 vec[3]; s32 mat[8];` scores **25 with
+    build_insns 66** — one instruction MORE than the target, i.e. the frame layout that puts
+    `mat` at sp+0x10 and `vec` at sp+0x30 is a consequence of the declaration order and must
+    not be "tidied". Banked at rejected/decl-order-swap-costs-one-insn.c, artifact
+    tmp/grind/func_800203B4/s2/varC_declorder_score25.o.
+20. **Floor re-confirmed a FIFTH time on the 2026-09-01 chassis** (dispatch chassis-check again
+    read "measurement unavailable"): s1 candidate applied -> 0, 65/65, rules_dropped 0,
+    cheat_asm_stripped 25; promoted varB form -> same. src/code6cac.c reverted to INCLUDE_ASM
+    after every measurement (git diff clean) per [[asm-until-matched]]. Measurement table:
+    tmp/grind/func_800203B4/s2/measurements.md.
+
+- [s2] PURE-C BOUND = 26: candidate body with all four inline-asm islands deleted scores sandbox --disable all = 26 with build_insns 39 vs target 65; score == exact deficit, so zero mismatched instructions among the 39 C-emitted ones. The residual is exclusively cop2 traffic (5x ctc2, mtc2, lwc2, 3x swc2, MVMVA .word 0x4A486012) plus its addressing preamble and two unfilled cop2 load-delay nops. GCC 2.7.2 has no cop2 intrinsic, so the structural modality is bounded at 26 by expressiveness, not spelling â€” the axis is measured dead, not merely unexplored. Form banked: memory/grind/func_800203B4/rejected/pure-c-no-islands-floor-26.c
+
+- [s2] candidate.c IMPROVED this session: the s1 body's block-local `new_var` named intermediate is codegen-neutral (0, 65/65 with and without it), so candidate.c now uses the plain nested expression. Net effect on any future authorization review: the only constructs left to defend are the four SDK-macro asm islands themselves â€” no C-side family claim is needed at all.
+
+- [s2] Local declaration order (mat[8], vec[3], src) is LOAD-BEARING: swapping to (src, vec[3], mat[8]) gives score 25 / build_insns 66. Banked at rejected/decl-order-swap-costs-one-insn.c so it is never re-tried or 'cleaned up'.
+
+- [s2] Floor 0 re-confirmed a fifth time on the 2026-09-01 chassis (0, 65/65, rules_dropped 0, cheat_asm_stripped 25), both for the s1 form and the promoted varB form. src/code6cac.c reverted to INCLUDE_ASM after each measurement per [[asm-until-matched]]; working tree clean apart from ledger/scratch.
+
+- [s2] No new authorization argument was made and none was re-derived: the Judge FAIL (docs/grind/decisions.md:17546) and the filed foreclosure record (docs/grind/decisions.md:17550) stand untouched, per the binding Judge constraint in this brief. This session did not emit owner-gated because the mandated modality is `structural`, not `escalation` (s2's owner-gated from recon was discarded for exactly that reason, marker at decisions.md:17591).

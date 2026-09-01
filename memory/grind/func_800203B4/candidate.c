@@ -1,9 +1,16 @@
-/* func_800203B4 â€” s1 candidate, sandbox --disable all == 0 (65/65, rules_dropped 0) on 2026-09-01.
- * Head = pre-migration pure-C head (commit 83dc0e5d, matched in Wave 16); islands respelled
- * from register-pin/move-aliasing form to the func_8002FDB0-authorized single-block spelling
- * (src/code6cac_b.c:1315-1345, inline_asm_canonical.txt:268). Cluster ruling decisions.md
- * 2026-08-17 (func_8002FDB0 GRANTED) covers this sibling: needs driver-written
- * inline_asm_canonical.txt grant line before queue done. */
+/* func_800203B4 — s4 (structural) candidate. sandbox --disable all == 0 (65/65,
+ * rules_dropped 0), measured 2026-09-01. Supersedes the s1 candidate: the s1 body wrapped
+ * the game_GetPlayerData call in a block-local `new_var` named intermediate; s4 MEASURED
+ * that split to be codegen-neutral (score 0 with it and without it), so the plainer nested
+ * expression is used — one fewer construct to defend. Local DECLARATION ORDER
+ * (mat[8], vec[3], src) IS load-bearing: swapping it to (src, vec[3], mat[8]) costs +1 insn
+ * (score 25, build 66) — see rejected/decl-order-swap-costs-one-insn.c.
+ * Head = pre-migration pure-C head (commit 83dc0e5d, matched in Wave 16); islands are the
+ * func_8002FDB0-authorized single-block spelling (src/code6cac_b.c:1315-1345,
+ * inline_asm_canonical.txt:268) — NOTE the 2026-08-17 cluster grant was ruled NOT to reach
+ * this function (Judge FAIL, docs/grind/decisions.md:17546); foreclosure record at
+ * docs/grind/decisions.md:17550. This body is byte-final and awaits an authorization axis,
+ * not codegen work. */
 void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
     s32 mat[8];
     s32 vec[3];
@@ -11,11 +18,8 @@ void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
 
     *(s16 *)(arg0 + 0x350) = 1;
     *(s16 *)(arg0 + 0x352) = *(u16 *)((u8 *)&D_8008D59E + arg1 * 20);
-    {
-        s32 new_var;
-        new_var = game_GetPlayerData(*(s16 *)(arg0 + 4));
-        src = *(s32 *)((((s32)*(s16 *)(arg0 + 0x352)) << 2) + new_var);
-    }
+    src = *(s32 *)((((s32)*(s16 *)(arg0 + 0x352)) << 2) +
+                   game_GetPlayerData(*(s16 *)(arg0 + 4)));
     func_8002EECC(src, mat);
     /* PsyQ libgte inline macro gte_SetRotMatrix(r) â€” loads the 5 packed
      * rotation-matrix words at r into cop2 control regs $0..$4.  The SDK

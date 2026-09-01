@@ -76,3 +76,57 @@ constraint forbids it in any spelling).
 - probe: dossier func_800203B4 (CONSISTENCY OK) -> applied memory/grind/func_800203B4/candidate.c to src/code6cac.c -> sandbox func_800203B4 --disable all -> reverted src to INCLUDE_ASM
 - result: score 0, 65/65 insns, rules_dropped 0, cheat_asm_stripped 25 â€” identical to the three prior measurements (evidence.md facts 6, 8, 13)
 - verdict: CONFIRMED
+
+## s4 (2026-09-01, structural)
+
+- **H5 — KILLED (measured):** "A structural rearrangement of the pure-C body (declaration
+  order / block-local splits / re-association / type narrowing) can close part of the residual
+  without inline asm." Mechanism proposed: frame-layout and expression-shape levers change
+  which instructions GCC emits. Probe: islands deleted -> `sandbox --disable all` = 26 with
+  build_insns 39 (score == exact 65-39 deficit, so ALL 39 emitted insns already match); then
+  two structural perturbations of the full body. Result: the entire 26-insn residual is cop2
+  transfers + the MVMVA word + their preamble/delay nops, which GCC 2.7.2 emits ONLY from
+  inline asm. **Verdict: KILLED — the structural axis is bounded at 26 by expressiveness, not
+  by spelling.** (evidence.md fact 17)
+- **H6 — KILLED (measured, and it IMPROVED the candidate):** "The s1 body's block-local
+  `new_var` named intermediate is load-bearing for the target's codegen." Probe: replaced with
+  the plain nested expression -> still 0, 65/65. **Verdict: KILLED — codegen-neutral;
+  candidate.c promoted to the simpler form** (evidence.md fact 18).
+- **H7 — CONFIRMED (measured):** "Local declaration order is load-bearing for the frame
+  layout." Probe: (src, vec, mat) instead of (mat, vec, src) -> score 25, build_insns 66.
+  **Verdict: CONFIRMED — do not reorder** (evidence.md fact 19).
+
+Frontier: UNCHANGED and still not codegen. Every C-side question is now closed on measurement
+(H1 CONFIRMED x5, H2/H3/H5/H6 KILLED, H4 resolved NO by Judge FAIL decisions.md:17546,
+H7 CONFIRMED). The only remaining action is the standing-ruling terminal disposition, which is
+modality-gated to a driver-dispatched `escalation` session (s2's owner-gated from recon was
+discarded for exactly this; s4 is `structural`, so this session returns `progress`). An
+escalation session should: check the re-activation triggers (a widened scan in
+.claude/rules/cop2-addressing-preamble-cluster.md / a grant line in inline_asm_canonical.txt /
+an owner class grant in the decisions.md tail), then return owner-gated with
+escalation_ref = docs/grind/decisions.md:17550. Do NOT re-measure beyond one confirming run,
+do NOT re-file the foreclosure record, do NOT re-argue cluster membership in any spelling.
+
+## [s2] A structural rearrangement of the pure-C body (declaration order / block-local splits / re-association / type narrowing) can close part of the residual without inline asm.
+- mechanism: frame-layout and expression-shape levers change which instructions GCC 2.7.2 emits; if any part of the 65-insn target were reachable by C spelling, a structural perturbation would move the score.
+- probe: deleted all four inline-asm islands from candidate.c -> applied to src/code6cac.c:1813 -> `sandbox func_800203B4 --disable all`
+- result: score 26, build_insns 39, target_insns 65, rules_dropped 0 â€” score equals the EXACT deficit 65-39, so all 39 C-emitted instructions match; the whole residual is 5x ctc2 / mtc2 / lwc2 / 3x swc2 / MVMVA .word 0x4A486012 plus their addressing preamble and two unfilled cop2 load-delay nops, none of which GCC 2.7.2 can emit from C (the PsyQ gte_* macros are themselves inline asm).
+- verdict: KILLED
+
+## [s2] The s1 candidate's block-local `new_var` named intermediate around game_GetPlayerData is load-bearing for the target codegen.
+- mechanism: named-intermediate declaration order affects GCC 2.7.2 temp allocation / evaluation order.
+- probe: replaced the { s32 new_var; ... } block with the plain nested expression; sandbox --disable all
+- result: score 0, 65/65, rules_dropped 0 â€” identical. Codegen-neutral. candidate.c PROMOTED to the simpler form, removing a construct that would otherwise need defending as a named-intermediate family claim.
+- verdict: KILLED
+
+## [s2] Local declaration order (mat[8], vec[3], src) is load-bearing for the target frame layout.
+- mechanism: GCC 2.7.2 assigns frame slots in declaration order; target has mat @ sp+0x10 and vec @ sp+0x30.
+- probe: reordered to (src, vec[3], mat[8]); sandbox --disable all
+- result: score 25, build_insns 66 (one insn MORE than target) â€” order is required; banked as a rejected form so no future session 'tidies' it.
+- verdict: CONFIRMED
+
+## [s2] The banked floor of 0 for candidate.c still holds on the current chassis (dispatch chassis-check read 'measurement unavailable').
+- mechanism: chassis-relative re-measurement per the dispatch contract.
+- probe: applied memory/grind/func_800203B4/candidate.c (s1 form) -> sandbox --disable all
+- result: score 0, 65/65, rules_dropped 0, cheat_asm_stripped 25 â€” fifth independent confirmation; src reverted to INCLUDE_ASM after every measurement (git diff clean).
+- verdict: CONFIRMED
