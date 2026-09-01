@@ -17927,3 +17927,103 @@ ledger note). No grant is issued; the AUTO-REJECT class is unchanged.
    func_80072CD4 gate.
 5. ra_solver `--target-object` implementation + engine suite green.
 6. Grinder drill + relaunch.
+
+
+## 2026-09-01 -- func_800645B0 -- **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Session 15 (forensics modality) executed the owner's 2026-09-01 Ruling-A named
+probe -- the sole ground on which this function was returned to active from the
+foreclosed bucket -- and KILLED it with measurements and pass attribution.  The
+reopen's premise is spent; nothing new is asked of the owner.
+
+### (i) Gate evidence
+
+**Gate (a) -- canonical-asm.** `python3 tools/scan_hand_coded.py --single
+func_800645B0` was re-run in session 14: **tier=LOW score=0/8**, "no strong
+hand-coded indicators" (S1..S8 all clear; 78 insns, 5 spills, 7 distinct
+registers).  Nothing in the source or the target stream changed since, and this
+session's own dumps confirm an ordinary compiled loop.  **FAILED.**
+
+**Gate (b) -- SOTN-master precedent, re-censused against the AMENDED class per
+the reopen note.**  The reopen directed a re-census against the 2026-08-31
+amended named-intermediate class definition rather than the 2026-08-30
+hyper-specific phrasing, on the index rebuilt UNCAPPED on 2026-09-01 at pin
+`aa53500226ee84be763f3e8702b27de06456b3a7`.  Result: **still FAILED**, and now
+for a reason internal to the amended rule itself.  The only construct measured
+at distance 0 for this function in fifteen sessions requires a **multi-WRITE
+carrier** (`wid = i + j;` at the inner-loop top and `wid = idx2 + idx;` later in
+the same iteration), and `.claude/rules/no-new-park-categories.md:227-228`
+states in terms: "Multi-WRITE carriers remain NOT this entry (the `y1` FAIL,
+decisions.md:1833, and the 2026-08-30 func_80045878 `c` FAIL stand)."  The
+index's PSX-tagged reuse evidence is the frozen variable-reuse family, not this
+shape: the five `// fake reuse of i?` hits
+(`src/boss/mar/cutscene.c:172`, `src/st/cen/cutscene.c:211`,
+`src/st/lib/cutscene.c:153`, `src/st/no3/cutscene.c:360`,
+`src/st/top/cutscene.c:143`) all BORROW an existing loop index, which
+`.claude/rules/staged-value-reused-variable.md` bound 2 bars us from inventing;
+`src/weapon/w_037.c:300` ("FAKE but makes register allocation work") is the
+once-written shape this session measured at 3 / 78; and the `new_var_temp`
+class (`docs/reference/sotn-construct-index.md:1425`, 20 hits) carries
+DECLARATION lines only, so it structurally cannot evidence a write count and
+cannot supply a multi-write precedent even in principle.
+
+### (ii) Evidence pointers
+
+- **Chassis re-measured this session.** SB body (`memory/grind/func_800645B0/candidate.c`)
+  pasted over the `INCLUDE_ASM` line: `sandbox func_800645B0 --disable all` =
+  score **1**, target_insns 78, build_insns 78, rules_dropped 0.
+- **The named probe, both directions, honest sandbox, this session's tree.**
+  P1 (`wid = i + j; idx = wid;` at the loop top; `wid2 = idx2 + idx;` for the *3
+  sum) = **3 / 78** at 78 build insns.  P2, the mirror (`idx = i + j;` at the
+  loop top; `wid = idx; wid2 = idx2 + wid;` inside the if-arm) = **3 / 78** at 78
+  build insns.  Every local in both bodies is written exactly once -- the exact
+  spelling the reopen note named.  Both residuals land on the identical three
+  objdump positions (11, 12 and 65: the inner-loop head and the back-edge delay
+  slot), i.e. the WD fresh-destination residual verbatim.
+- **Pass attribution (new this session, dump-proven).**  `cse.c` deletes the
+  copy.  `tmp/grind/func_800645B0/s15/p1.rtl.txt` carries
+  `(insn 41 38 44 (set (reg/v:SI 74) (reg/v:SI 79)))`; `p1.cse.txt` contains
+  ZERO occurrences of insn 41 and ZERO references to pseudo 74.
+  `p2.rtl.txt` carries `(insn 60 57 63 (set (reg/v:SI 79) (reg/v:SI 74)))`;
+  `p2.cse.txt` contains ZERO occurrences of insn 60 and ZERO references to
+  pseudo 79, with insn 63 reading `(plus:SI (reg/v:SI 75) (reg/v:SI 74))`
+  directly.  Because the copy dies in the first post-RTL pass, `loop.c`'s
+  `count_loop_regs_set` and `sched.c`'s `birthing_insn_p` never see a second set
+  of the carrier: reg_n_sets stays 1, the max-priority lift is applied to the
+  loop-top `addu`, and the target's loop-head placement is unreachable.
+- **Why this closes the family, not just two spellings.**  At the inner-loop top
+  the only real value is `i + j` itself, so a once-written intermediate there is
+  necessarily either a pure copy (deleted by cse -- 3 / 78) or the carrier
+  itself (the SB/WD arrangement -- 1 / 78 and 3 / 78 respectively, both already
+  banked).  Raising reg_n_sets above 1 therefore REQUIRES a second,
+  differently-valued write to one carrier.  That is a multi-write carrier: this
+  function's standing banned construct, and excluded by the amended family in
+  terms.  Per the reopen note's own rule ("if any reviewer judges it covered by
+  a standing ban, the ban wins and the probe FAILs"), the probe FAILs.
+- **Ledger.** `memory/grind/func_800645B0/hypotheses.md` H64/H65;
+  `memory/grind/func_800645B0/evidence.md` session-15 section; banked forms
+  `memory/grind/func_800645B0/rejected/two-once-written-locals-copy-deleted-by-cse.c`
+  and `...-mirror-copy-deleted-by-cse.c`.  Prior dispositions: 2026-08-13,
+  2026-08-20, 2026-08-25 (decision packet + owner ruling YES), 2026-08-30.
+- **Best form preserved** at `memory/grind/func_800645B0/candidate.c` (the SB
+  chassis, ordinary C, zero cheat constructs, honest floor 1 / 78).  `main`
+  continues to carry `INCLUDE_ASM("asm/funcs", func_800645B0);` per
+  asm-until-matched.  `src/text1b.c` was restored to HEAD at end of session.
+
+### (iii) Re-activation triggers
+
+1. An owner-landed family grant covering an INVENTED multi-write carrier (a
+   fresh local written once at a loop top and re-written later in the same
+   iteration with a derived value).  The body is already measured at 0 / 78 and
+   banked; such a grant closes this function immediately.
+2. A PSX-tagged SOTN-master precedent for that construct class appearing in
+   `docs/reference/sotn-construct-index.md` on a future re-pin -- noting that
+   the `new_var_temp` class would first have to be extended beyond declaration
+   lines to be capable of showing one.
+3. A toolchain finding that changes when GCC 2.7.2's `cse_insn` deletes a
+   reg-reg copy, or that supplies an ordinary-C lever on `sched.c`'s
+   `birthing_insn_p` priority lift other than reg_n_sets.
+
+## 2026-09-01 11:09 — func_800645B0 — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s15 of func_800645B0, which the driver DISCARDED as invalid (owner-gated: the standing-ruling terminal disposition requires `escalation` modality (driver-declared exhaustion), not `forensics`. A dead axis in this modality is a `progress` outcome with the kills banked ΓÇö the ladder still has untried modalities.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
