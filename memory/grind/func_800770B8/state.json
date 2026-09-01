@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 9,
- "current_modality": "forensics",
+ "session_count": 10,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -57,23 +57,29 @@
    "floor": 9,
    "modality": "forensics",
    "headline": "Forensics typed class A FORECLOSED to statement order (sched2 read out + exhaustive 3234-atom sched_solver sweep, 0 hits), killed class B's last reserved probe by measurement (176 insns / score 16), a"
+  },
+  {
+   "session": 10,
+   "floor": 9,
+   "modality": "rederive",
+   "headline": "Rederive ladder spent: struct-typed rewrite KILLED (178 insns), fresh m2c corroborates the current body, two more structural shapes byte-neutral - and class C typed FORECLOSED-in-C with model-exact lo"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Class C is now a two-register SEAT question, not an operand-order question, and the seat may be winnable once the collateral damage of the shift-as-ptrop form is understood.",
-   "mechanism": "With `(s16 *)((u8 *)(t0 * 10) + (s32)D_800A36A0 + 0x6A)` insn 173 already has the target's operand order and dest tie at 175 insns; the residual is that the lw lands in $v1 and the sll in $v0 where the target has them the other way round, and the rest of the inner loop's addressing chain re-allocates (score 33). The damage is concentrated in the loop body's other address chains (t0*2 into the 0x10/0x8/0xC/0x14/0x3C stores, t0*4 into D_800A35D0, t0*4 into the 0x40/0x42 stores), which now share pseudos differently.",
-   "next_probe": "Diff tmp/grind/func_800770B8/s9/dC2/text1b.lreg and .greg against tmp/grind/func_800770B8/s9/d/ for the loop block, find which chain lost its seat, then re-spell ONLY that chain while keeping the shift-as-ptrop form for p_6a/p_7e (e.g. keep the existing `base` local for the 0x10/0x40 chains so only the 0x6A/0x7E row changes domain). Start from rejected/s9-classC-shift-as-ptrop-flips-order-free-but-score33.c."
+   "hypothesis": "Class C can still be won if some C-level change makes the merged dest/sll quantity's qty_compare priority drop below the bare lw's 20000 while the flip is in place.",
+   "mechanism": "qty_compare priority is floor_log2(refs)*refs*size/(death-birth)*10000. The merged chain is currently span 28 / refs 22 (pri 31428) and is ranked ord1, taking $v0 ahead of the lw. Dropping it below 20000 needs span > 44 or refs <= 15; then the lw is allocated first into $v0 over [48,52) and the chain is forced to $v1 - the target's seat. This is a DIFFERENT axis from the three input-perturbation families the solver enumerated (those perturb qty0/qty1/qty4; this perturbs qty3 itself, which the --swap goal held fixed).",
+   "next_probe": "Re-run tools/ra_solver/inverse.py local on tmp/grind/func_800770B8/s10/text1b.local.FLIPPED.json with the goal expressed as qty3 -> $v1 ONLY (drop the qty4 constraint) and --depth 2, so qty3's own refs/span atoms enter the search space. Then look for a C form that lengthens the 0x6A/0x7E base pointer's live range past block-insn 72 without adding an instruction - e.g. a use of the row base after inner loop 1 that the target already pays for. Start from rejected/s10-classC-flip-int-domain-same-score33-collateral.c (the cleanest flip spelling)."
   },
   {
-   "hypothesis": "Class A can only be re-opened by changing block 0's dependence GRAPH; the single graph change the solver says would flip it is 'p_old is not allocated to a callee-save register'.",
-   "mechanism": "del_dep 15 <- 566 (removing the anti-dependence between `addu $s1,$s0,88` and `sw $s1`) is the one non-add_dep, non-cost atom that flips 560/566. It corresponds to p_old living in a caller-save register - but p_old crosses four calls, and s5 already proved the $v0 preference is stripped by prune_preferences (global.c:897). Note the atom still does NOT produce the target order on its own (it gives 15,26,28,560,566).",
-   "next_probe": "Do NOT spend spelling measurements on prologue statement order again - it is exhaustively dead at depth 1. If class A is revisited, finish the depth-2 sched_solver sweep restricted to spellable atoms (`--atoms luid,luid_move --depth 2`, goal in PICK order: --goal-before 15:26 --goal-before 26:28 --goal-before 28:566 --goal-before 566:560) to close the pair case, then treat class A as FORECLOSED."
+   "hypothesis": "The three residual classes are not independent: a single change that alters block 1's quantity structure could move class C without the +24 collateral, because the collateral IS the block-1 seat rotation.",
+   "mechanism": "The flipped build's block-1 assignment is a one-register rotation of the base build's ({chain,base,sext,results} = {$v0,$v1,$a0,$a1} vs target's {$v1,$a0,$a1,$v0}). All five quantities are re-seated together, so a perturbation that removes one quantity from block 1 entirely (or splits one) changes every seat at once rather than only the contested pair.",
+   "next_probe": "Enumerate what each of the five block-1 quantities is in RTL terms by reading tmp/grind/func_800770B8/dumps/text1b.lreg for block 1 (regs 86, 89, 100, 108/109, 110/111), then ask inverse.py local for a 2-atom vector that also moves qty1 or qty2. Do NOT spend more measurements on 6A/7E address spellings - five are now on record and all four flip spellings measure identically."
   },
   {
-   "hypothesis": "The 8 real residual rows now decompose as 4 (class A, scheduler-foreclosed) + 2 (class B, cse pseudo identity, no untested lever) + 3 (class C, register seat, the only live axis) - row 50 is a scorer artifact (s6).",
-   "mechanism": "Every remaining sanctioned axis except the class-C seat has now been typed dead with either a model-exact solver verdict or a measurement.",
-   "next_probe": "Run tools/ra_solver (local_extract.py + inverse.py local, then inverse_compose.py classify) on the two pseudos behind the C2 form's lw and sll to type the class-C seat REACHABLE or FORECLOSED before spending more spelling measurements."
+   "hypothesis": "Classes A and B remain foreclosed; the function's only live axis is the class-C seat.",
+   "mechanism": "s9 closed class A with a model-exact 3234-atom sched_solver sweep (0 hits) and closed class B by measurement (a real branch boundary costs an instruction the function does not have: 176 / 16). s10 added no new information on either and its two prologue/call-shape rederives were byte-neutral.",
+   "next_probe": "If the class-C axis above also measures dead, the ladder's remaining sanctioned axes are exhausted and the honest next step is the driver's escalation modality - not more spelling search. Do not re-open class A statement order or class B second-handle spellings; both are exhaustively banked."
   }
  ],
  "judge_constraints": [],

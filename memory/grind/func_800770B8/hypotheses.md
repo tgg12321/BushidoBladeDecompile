@@ -935,3 +935,51 @@ scored, 8 real, one unrelocated-LO16 artifact".
 - probe: (s16 *)((u8 *)(t0 * 10) + (s32)D_800A36A0 + 0x6A) and a named-`row`-local variant, measured with sandbox --disable all and read back from a fresh instrumented-cc1 dump (tmp/grind/func_800770B8/s9/dC2/).
 - result: CONFIRMED for the flip: 175 insns (s6/s7 had this shape at 176) emitting `lw $3,D_800A36A0; sll $2,$2,1; addu $2,$2,$3; addu $7,$2,106; addu $5,$2,126` - the target's operand order, dest tied to the shift pseudo, constants off the shift. Rows 62-64 therefore reduce from an operand-order question to a two-register SEAT question (target: lw in $v0, sll in $v1; ours reversed). NOT a win as a spelling: whole-function score 33 (vs 9) because the inner loop's addressing chain re-schedules and re-allocates around the new tree shape. Banked as rejected/s9-classC-shift-as-ptrop-flips-order-free-but-score33.c and s9-classC-shift-as-ptrop-named-row-local-score33.c.
 - verdict: CONFIRMED
+
+## [s10] The original C used a struct type for the D_800A36A0 block, and writing the accesses as struct/array references reproduces the target's addressing.
+- mechanism: the block is addressed only through one base register at strides 1/2/4/10, which is genuine aggregate evidence; an ARRAY_REF/COMPONENT_REF tree would build the row addresses differently from our explicit pointer arithmetic and could change the plus operand order at insn 173.
+- probe: full struct-typed rewrite (unk08/0C/10/14/3C[2], unk40[2][2], unk68[2], unk6A[2][5], unk7E[2][5]) applied to src/text1b.c and measured with `sandbox func_800770B8 --disable all`.
+- result: 178 insns / score 22 (baseline 175 / 9). Two regressions: LICM hoists `&D_800A35D0 + 2` into an outer-preheader register (+3 insns, absent from the target), and the 0x6A/0x7E constant folds onto the INDEX side (`addiu $2,$3,106` before the base addu) instead of remaining a trailing addiu. The plus operand order at insn 173 did NOT flip. Banked rejected/s10-struct-typed-rederive-licm-hoists-D3-178insn.c.
+- verdict: KILLED
+
+## [s10] The class-C flip's +24 score collateral is a spelling artifact of s9's cast form, and re-spelling only the 0x6A/0x7E row will confine the damage.
+- mechanism: s9 hypothesised the flipped tree re-seats the loop body's other addressing chains and that keeping the `base` local for the 0x10/0x40 chains would leave them intact.
+- probe: four distinct flip spellings measured with `sandbox func_800770B8 --disable all`: s9's `(u8 *)(t0*10) + (s32)D_800A36A0 + 0x6A`; the same with operands textually swapped; the pure int-domain `(t0*10) + (s32)D_800A36A0 + 0x6A`; and a named `s32 row10 = t0 * 10;` intermediate (plus a named `s32 i4 = t0 * 4;` index variant).
+- result: ALL measure exactly 175 insns / score 33 with a byte-identical positional diff. The collateral is intrinsic to the flipped tree, not to a spelling. Banked rejected/s10-classC-flip-int-domain-same-score33-collateral.c, s10-classC-flip-named-i4-index-score33.c, s10-classC-flip-named-shift-local-qty4-span-unchanged-score33.c.
+- verdict: KILLED
+
+## [s10] Class C's register seat is reachable by a C-spellable perturbation of local-alloc's inputs.
+- mechanism: the addu dest ties to operand 0, so the flip moves the dest's quantity merge from the short lw pseudo (span 8, refs 10, qty_compare pri 37500) to the long sll chain (span 28, refs 22, pri 31428). Both rank ord1 in block 1 and both take $v0; the target needs the merged quantity in $v1 and the bare lw in $v0.
+- probe: tools/ra_solver/local_extract.py QTYDBG ground truth on BOTH builds (tmp/grind/func_800770B8/s10/text1b.local.BASE.json and text1b.local.FLIPPED.json), then tools/ra_solver/inverse.py local --func func_800770B8 --block 1 --swap 3,4 --depth 2 over a 392-atom space, then a direct measurement of the one C-plausible family.
+- result: the solver returns REACHABLE with 30 minimal single-atom vectors in exactly three families - live_shrink on qty0 (the sign-extension of t0, born >=33 instead of 6), live_shrink on qty1 (the FIRST D_800A36A0 read, born >=33 instead of 10), and live_shrink/refs_up on qty4 (the SECOND D_800A36A0 read, span 4->2 or refs 4->7). Families 1 and 2 contradict the target's own emission (its sext and first lw ARE the first insns of the loop body, rows 38-41), so they describe a different function, not a spelling of this one. Family 3 was measured: naming the shift in its own statement leaves the QTYDBG rows byte-identical (qty4 still [48,52) refs 4), i.e. GCC emits the global read before the final `sll ...,1` regardless of spelling, and refs 7 would need the second read used seven times where the target uses it twice. Class C is therefore REACHABLE-in-model but FORECLOSED to every C-spellable input perturbation found at depth 2.
+- verdict: KILLED
+
+## [s10] Statement-level restructuring outside the three residual classes can still move the floor.
+- mechanism: the rederive ladder's remaining shapes - the outer loop as a `for`, and the call-result local `r` removed by nesting the two calls (m2c's literal reading) - change pseudo birth order around the prologue and the call sequence, which is where classes A and B live.
+- probe: both shapes applied and measured with `sandbox func_800770B8 --disable all`.
+- result: both measure 9 / 175 insns - byte-neutral. Banked rejected/s10-outer-for-loop-byte-neutral.c and rejected/s10-nested-call-no-r-local-byte-neutral.c.
+- verdict: KILLED
+
+## [s10] The original C used a struct type for the D_800A36A0 block, and writing the accesses as struct/array references reproduces the target's addressing.
+- mechanism: The block is addressed only through one base register at strides 1/2/4/10 - genuine aggregate evidence - so an ARRAY_REF/COMPONENT_REF tree would build the row addresses differently from our explicit pointer arithmetic and could change the plus operand order at insn 173.
+- probe: Full struct-typed rewrite (s16 unk08/0C/10/14/3C[2], s16 unk40[2][2], u8 unk68[2], s16 unk6A[2][5], s16 unk7E[2][5]) applied to src/text1b.c and measured with sandbox func_800770B8 --disable all.
+- result: 178 insns / score 22 (baseline 175 / 9). LICM hoists `&D_800A35D0 + 2` into an outer-preheader register (+3 insns; the target has no such hoist) and the 0x6A/0x7E constant folds onto the INDEX side (`addiu $2,$3,106` before the base addu). The plus operand order at insn 173 did not flip. Banked rejected/s10-struct-typed-rederive-licm-hoists-D3-178insn.c.
+- verdict: KILLED
+
+## [s10] The class-C flip's +24 score collateral is a spelling artifact of s9's cast form, and re-spelling only the 0x6A/0x7E row confines the damage.
+- mechanism: s9 hypothesised the flipped tree re-seats the loop body's other addressing chains and that keeping the `base` local for the 0x10/0x40 chains would leave them intact.
+- probe: Four distinct flip spellings measured with sandbox --disable all: s9's `(u8 *)(t0*10) + (s32)D_800A36A0 + 0x6A`; the same with operands textually swapped; the pure int-domain `(t0*10) + (s32)D_800A36A0 + 0x6A`; a named `s32 row10 = t0 * 10;` intermediate; plus a named `s32 i4 = t0 * 4;` index variant.
+- result: Every one measures exactly 175 insns / score 33 with a byte-identical positional diff. The collateral is intrinsic to the flipped tree, not to a spelling. Also corrects s6: the pure int-domain form KEEPS the second lw of D_800A36A0 on this chassis. Banked three rejected forms.
+- verdict: KILLED
+
+## [s10] Class C's register seat is reachable by a C-spellable perturbation of local-alloc's inputs.
+- mechanism: The addu dest ties to operand 0, so the flip moves the dest's quantity merge from the short lw pseudo (span 8, refs 10, qty_compare pri 37500) to the long sll chain (span 28, refs 22, pri 31428). Both rank ord1 in block 1 and both take $v0; the target needs the merged quantity in $v1 and the bare lw in $v0.
+- probe: tools/ra_solver/local_extract.py QTYDBG ground truth on BOTH builds, then tools/ra_solver/inverse.py local --func func_800770B8 --block 1 --swap 3,4 --depth 2 over a 392-atom space, then a direct measurement + re-extraction of the one C-plausible family.
+- result: REACHABLE with 30 minimal single-atom vectors in three families: live_shrink qty0 (the sign-extension of t0, born >=33 instead of 6), live_shrink qty1 (the FIRST D_800A36A0 read, born >=33 instead of 10), and live_shrink/refs_up qty4 (the SECOND D_800A36A0 read, span 4->2 or refs 4->7). Families 1 and 2 contradict the target's own emission (its sext and first lw ARE the loop body's first insns, rows 38-41). Family 3 was measured: naming the shift in its own statement leaves the QTYDBG rows byte-identical (qty4 still [48,52) refs 4), so GCC emits the global read before the final `sll ...,1` regardless of spelling. Class C is REACHABLE-in-model but FORECLOSED to every C-spellable depth-2 input perturbation.
+- verdict: KILLED
+
+## [s10] Statement-level restructuring outside the three residual classes can still move the floor.
+- mechanism: The rederive ladder's remaining shapes - the outer loop as a `for`, and the call-result local `r` removed by nesting the two calls (m2c's literal reading) - change pseudo birth order around the prologue and the call sequence, where classes A and B live.
+- probe: Both shapes applied and measured with sandbox func_800770B8 --disable all.
+- result: Both measure 9 / 175 insns - byte-neutral. Banked rejected/s10-outer-for-loop-byte-neutral.c and rejected/s10-nested-call-no-r-local-byte-neutral.c.
+- verdict: KILLED

@@ -145,6 +145,66 @@
  *     inner loop's addressing chain re-allocates around the new tree shape.
  *   - A hard-reg address is unreachable from C (calls.c:2039 / calls.c:2114).
  *   Full detail in evidence.md s8; s9 should work class C or class A.
+ *
+ * s10 (rederive) - candidate BODY UNCHANGED, re-measured 9 (175/175) at session
+ * start. s10 ran the rederive ladder (fresh m2c, structurally different shapes)
+ * and then typed class C with model-exact local-alloc ground truth:
+ *   - A FULL STRUCT-TYPED REDERIVE of the D_800A36A0 block (real evidence-backed
+ *     layout: s16 unk08/0C/10/14/3C[2], s16 unk40[2][2], u8 unk68[2],
+ *     s16 unk6A[2][5], s16 unk7E[2][5]) measures 178 insns / score 22. Two
+ *     distinct regressions: LICM hoists `&D_800A35D0 + 2` into a register in the
+ *     outer-loop preheader (+3 insns, target has no such hoist), and the 0x6A/0x7E
+ *     ARRAY_REF folds the constant onto the INDEX side (`addiu $2,$3,106` before
+ *     the addu) instead of onto the base. Struct typing is NOT the original shape.
+ *   - A fresh m2c decompile corroborates the current body exactly and offers no
+ *     new lever; its only structural readings not already in the ledger are that
+ *     the 6A/7E base is `(t0 * 0xA) + D_800A36A0` (shift-first - i.e. the class-C
+ *     flip) and that the sp[] slot pointer is hoisted before inner loop 2.
+ *   - Two more structurally different shapes measure BYTE-NEUTRAL (9 / 175):
+ *     the outer loop written as `for (t0 = 0; t0 < 2; t0 = (s16)(t0+1))`, and the
+ *     `r` local removed by nesting `func_8006E49C(func_80076FF8(p_old), ...)`.
+ *   - CLASS C IS NOW TYPED FORECLOSED-IN-C. All FOUR spellings of the operand
+ *     flip converge on exactly 175 insns / score 33 with an identical positional
+ *     diff: `(u8 *)(t0*10) + (s32)D_800A36A0 + 0x6A` (s9), the same with the two
+ *     operands textually swapped, the pure int-domain `(t0*10) + (s32)D_800A36A0
+ *     + 0x6A` (which on this chassis KEEPS the second lw - s6's "int domain
+ *     deletes the re-read" no longer holds), and a named `s32 row10 = t0 * 10;`
+ *     intermediate. The collateral is therefore intrinsic to the flipped TREE,
+ *     not to any spelling.
+ *     Mechanism, from tools/ra_solver/local_extract.py QTYDBG ground truth on
+ *     block 1 (the outer-loop body) of both builds:
+ *        BASE   ord0 qty2 r89 [12,14) refs4 ->$v0 | ord1 qty4 r110 [48,56) refs10 ->$v0
+ *               ord2 qty3 r108 [28,52) refs16 ->$v1 | ord3 qty1 r100 [10,44) refs12 ->$a0
+ *               ord4 qty0 r86 [6,46) refs14 ->$a1
+ *        FLIP   ord0 qty2 r89 [12,14) refs4 ->$v0 | ord1 qty3 r110 [28,56) refs22 ->$v0
+ *               ord2 qty4 r109 [48,52) refs4 ->$v1 | ord3 qty1 r100 [10,44) refs12 ->$v1
+ *               ord4 qty0 r86 [6,46) refs14 ->$a0
+ *     The addu's dest ties to operand 0. Unflipped, that merges the dest with the
+ *     SHORT lw quantity (span 8, refs 10, qty_compare pri 37500) which is ranked
+ *     ord1 and takes $v0, pushing the sll chain to $v1 - our current, wrong-way
+ *     seat. Flipped, the dest merges with the LONG sll chain (span 28, refs 22,
+ *     pri 31428): it is still ranked ord1, still takes $v0, and now the lone lw
+ *     (pri 20000) is pushed to $v1. Both builds give the merged quantity $v0; the
+ *     target needs the merged quantity in $v1 and the lw in $v0.
+ *   - inverse.py local (--swap 3,4 --depth 2, 392-atom space) returns REACHABLE
+ *     with 30 minimal single-atom vectors in exactly three families, and every one
+ *     is C-unreachable here:
+ *       (a) 13x live_shrink qty0 (r86 = the sign-extension of t0): born at >=33
+ *           instead of 6. The sext feeds the FIRST address chain of the body and
+ *           the TARGET's own sext ($a1, rows 38-39) is born at the body's first
+ *           insn, so this is not the target's configuration.
+ *       (b) 11x live_shrink qty1 (r100 = the first D_800A36A0 read): born at >=33
+ *           instead of 10. Same objection - the target's first lw is row 41.
+ *       (c) 4x live_shrink + 2x refs_up on qty4 (the SECOND D_800A36A0 read):
+ *           span 4->2, or refs 4->7/8. Naming the shift in its own statement
+ *           (`s32 row10 = t0 * 10;`) does NOT shrink the span: re-extracted QTYDBG
+ *           for that form is byte-for-byte the same rows (qty4 [48,52) refs 4), so
+ *           GCC emits the global read BEFORE the final `sll ...,1` regardless of
+ *           spelling. refs 7 would need the second read used seven times; the
+ *           target uses it twice.
+ *     Equivalent closed-form statement of what would win, for any future lever:
+ *     pri(merged dest chain) must drop below pri(lw) = 20000, i.e. the merged
+ *     chain needs span > 44 (currently 28) or refs <= 15 (currently 22).
  */
 s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     u16 sp[2];

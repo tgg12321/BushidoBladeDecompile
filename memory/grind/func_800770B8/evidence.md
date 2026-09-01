@@ -1186,3 +1186,54 @@ assignment of a call result. No spelling reaches this shape.
 - [s9] c-typeck.c:1988 + c-typeck.c:2695 fix the PLUS operand order by pointer-typedness, and c-typeck.c:2654-2678 is the distributive law that moved 0x6A onto the wrong side in the s6 attempts. Both are now named lines, not hypotheses.
 
 - [s9] The class-C flip is reachable at 175 insns; three disproven forms banked this session (bank now holds 36).
+
+- [s10] Chassis re-measured at session start: the s3 candidate body is 9 / 175 insns, unchanged.
+
+- [s10] A full STRUCT-TYPED rederive of the D_800A36A0 block is NOT the original shape: 178 insns / score 22. The evidence-backed layout (s16 unk08/unk0C/unk10/unk14/unk3C[2] at stride 2, s16 unk40[2][2] and the D_800A35D0 pair at stride 4, u8 unk68[2], s16 unk6A[2][5] and unk7E[2][5] at stride 10) is certainly the real object model, but writing it as C ARRAY_REFs makes GCC 2.7.2 (a) hoist `&D_800A35D0 + 2` into a loop-invariant register in the outer preheader (rows 30-32, +3 insns; the target has no such hoist) and (b) fold the 0x6A/0x7E constant onto the INDEX side (`addiu $2,$3,106` emitted BEFORE the base addu) instead of leaving it as a trailing addiu off the base. Banked rejected/s10-struct-typed-rederive-licm-hoists-D3-178insn.c.
+
+- [s10] A fresh m2c decompile (tools/m2c, --target mipsel-gcc-c) of asm/funcs/func_800770B8.s corroborates the current body statement-for-statement and adds no new lever. Its only two structural readings not already in the ledger are that the 6A/7E base is `(var_t0 * 0xA) + D_800A36A0` (shift-first, i.e. the class-C flip) and that the sp[] slot address is hoisted into a pointer before inner loop 2 - both already covered.
+
+- [s10] Two further structurally different shapes measure BYTE-NEUTRAL (9 / 175 insns): writing the OUTER loop as `for (t0 = 0; t0 < 2; t0 = (s16)(t0 + 1))` instead of the do-while, and deleting the `r` local by nesting the call as `func_8006E49C(func_80076FF8(p_old), D_800A35D8)` (m2c's literal shape). Banked as rejected/s10-outer-for-loop-byte-neutral.c and rejected/s10-nested-call-no-r-local-byte-neutral.c. Statement-level restructuring outside the three residual classes is inert.
+
+- [s10] The class-C collateral is a property of the flipped TREE, not of any spelling. Four distinct flip spellings all measure EXACTLY 175 insns / score 33 with a byte-identical positional diff: (1) `(u8 *)(t0*10) + (s32)D_800A36A0 + 0x6A` (s9's form), (2) the same with the operands written in the other textual order, (3) the pure int-domain `(t0*10) + (s32)D_800A36A0 + 0x6A`, (4) a named `s32 row10 = t0 * 10;` intermediate (and a named `s32 i4 = t0 * 4;` index variant). NOTE this also corrects s6: on today's chassis the pure int-domain form KEEPS the second lw of D_800A36A0 (s6 recorded that it deleted it), so "int domain deletes the re-read" is chassis-stale and must not be re-quoted.
+
+- [s10] LOCAL-ALLOC GROUND TRUTH for the class-C seat (tools/ra_solver/local_extract.py, BB2_QTY_DEBUG QTYDBG rows, block 1 = the outer-loop body); artifacts tmp/grind/func_800770B8/s10/text1b.local.BASE.json and text1b.local.FLIPPED.json:
+    BASE (score 9)   ord0 qty2 r89  [12,14) refs4  -> $v0
+                     ord1 qty4 r110 [48,56) refs10 -> $v0
+                     ord2 qty3 r108 [28,52) refs16 -> $v1
+                     ord3 qty1 r100 [10,44) refs12 -> $a0
+                     ord4 qty0 r86  [6,46)  refs14 -> $a1
+    FLIPPED (33)     ord0 qty2 r89  [12,14) refs4  -> $v0
+                     ord1 qty3 r110 [28,56) refs22 -> $v0
+                     ord2 qty4 r109 [48,52) refs4  -> $v1
+                     ord3 qty1 r100 [10,44) refs12 -> $v1
+                     ord4 qty0 r86  [6,46)  refs14 -> $a0
+  The addu's dest ties to operand 0, so unflipped it merges into the SHORT lw quantity (span 8, refs 10, qty_compare pri 37500) and flipped it merges into the LONG sll chain (span 28, refs 22, pri 31428). In BOTH cases the merged quantity is ranked ord1 and takes $v0 - which is why the flip alone cannot win. The target needs the merged quantity in $v1 and the bare lw in $v0.
+
+- [s10] inverse.py local --swap 3,4 --depth 2 (392-atom space) on the FLIPPED model returns REACHABLE with 30 minimal single-atom vectors in exactly three families, all C-unreachable here: 13x live_shrink on qty0 (r86 = the sign-extension of t0; born >=33 instead of 6), 11x live_shrink on qty1 (r100 = the FIRST D_800A36A0 read; born >=33 instead of 10), and 4x live_shrink + 2x refs_up on qty4 (the SECOND D_800A36A0 read; span 4->2, or refs 4->7/8). Families (a) and (b) contradict the target's own emission, whose sext and first lw ARE the first insns of the loop body (rows 38-41). Family (c) was probed directly: naming the shift in its own statement re-extracts to byte-identical QTYDBG rows (qty4 still [48,52) refs 4), so GCC emits the global read BEFORE the final `sll ...,1` regardless of spelling, and refs 7 would need the second read used seven times where the target uses it twice.
+
+- [s10] Closed-form statement of what any future class-C lever must achieve, so the next session can test against it without re-deriving: with the flip in place, the merged dest quantity's qty_compare priority must fall below the bare lw's 20000, i.e. floor_log2(refs)*refs/span*10000 < 20000 - span > 44 (currently 28) or refs <= 15 (currently 22).
+
+- [s10] Chassis re-measured at session start and again at session end: the s3 candidate body is 9 / 175 insns, unchanged; the residual is still rows 7-12 (class A), 35-36 (class B), 62-64 (class C), plus the row-50 LO16 scorer artifact.
+
+- [s10] A full struct-typed rederive of the D_800A36A0 block measures 178 insns / score 22: GCC 2.7.2 LICM-hoists `&D_800A35D0 + 2` into the outer-loop preheader and folds the 0x6A/0x7E constant onto the index side. Struct typing is not the original shape even though the aggregate evidence (base register + strides 1/2/4/10) is real.
+
+- [s10] A fresh m2c decompile corroborates the current body statement-for-statement and adds no new lever; its only structural readings beyond the ledger are the shift-first 6A/7E base (the known class-C flip) and a hoisted sp[] slot pointer.
+
+- [s10] Two more structurally different shapes are byte-neutral at 9 / 175: the outer loop as a `for`, and the `r` local deleted by nesting func_8006E49C(func_80076FF8(p_old), D_800A35D8).
+
+- [s10] Four distinct spellings of the class-C operand flip all measure exactly 175 insns / score 33 with a byte-identical positional diff, so the collateral is a property of the flipped tree, not of any spelling.
+
+- [s10] CORRECTION to s6: on today's chassis the pure int-domain 6A/7E form KEEPS the second lw of D_800A36A0; 'int domain deletes the re-read' is chassis-stale and must not be re-quoted.
+
+- [s10] Local-alloc ground truth (QTYDBG, block 1 = outer-loop body). BASE (score 9): ord0 qty2 r89 [12,14) refs4 -> $v0; ord1 qty4 r110 [48,56) refs10 -> $v0; ord2 qty3 r108 [28,52) refs16 -> $v1; ord3 qty1 r100 [10,44) refs12 -> $a0; ord4 qty0 r86 [6,46) refs14 -> $a1. FLIPPED (score 33): ord0 qty2 r89 [12,14) refs4 -> $v0; ord1 qty3 r110 [28,56) refs22 -> $v0; ord2 qty4 r109 [48,52) refs4 -> $v1; ord3 qty1 r100 [10,44) refs12 -> $v1; ord4 qty0 r86 [6,46) refs14 -> $a0.
+
+- [s10] The addu's dest ties to operand 0: unflipped it merges into the SHORT lw quantity (pri 37500), flipped into the LONG sll chain (pri 31428). In BOTH cases the merged quantity ranks ord1 and takes $v0, which is exactly why the flip alone cannot win - the target needs the merged quantity in $v1 and the bare lw in $v0.
+
+- [s10] inverse.py local --swap 3,4 --depth 2 (392 atoms) returns REACHABLE with 30 minimal single-atom vectors in exactly three families: 13x live_shrink qty0 (sext of t0 born >=33 instead of 6), 11x live_shrink qty1 (first D_800A36A0 read born >=33 instead of 10), 4x live_shrink + 2x refs_up qty4 (second D_800A36A0 read, span 4->2 or refs 4->7/8).
+
+- [s10] Families 1 and 2 are excluded by the target itself: its sign-extension ($a1, rows 38-39) and its first lw (row 41) are the first insns of the loop body, so 'born at >=33' describes a different function. Family 3 was measured directly - naming the shift in its own statement re-extracts to byte-identical QTYDBG rows (qty4 still [48,52) refs 4), so GCC emits the global read before the final `sll ...,1` regardless of spelling.
+
+- [s10] Closed-form target for any future class-C lever, so it need not be re-derived: with the flip in place the merged dest quantity's qty_compare priority must fall below the bare lw's 20000, i.e. floor_log2(refs)*refs/span*10000 < 20000 - span > 44 (currently 28) or refs <= 15 (currently 22).
+
+- [s10] src/text1b.c was restored to its pristine INCLUDE_ASM state at session end; no build files are left modified.
