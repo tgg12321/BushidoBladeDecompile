@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 61,
- "current_modality": "rederive",
+ "session_count": 62,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -375,23 +375,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s61 rederive: the masked-2 residual is fully localised - two transposed ALU insns, all 179 registers already correct - and F2's decoupling is CONFIRMED for the order half (deferring `t0 *= 4` emits th"
+  },
+  {
+   "session": 62,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s62 structural: floor 2 re-verified live; the residual is now SPLIT into two disjoint fully-characterised branches (candidate.c = all 179 registers correct with one adjacent 56/57 transposition; new c"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 (was F2, now sharpened to arithmetic) - the target body is reachable by satisfying pri(arg5) > pri(t0) while holding the w04 order-correct shape, via knob (a): lengthening the t0 quantity's live range to >= 13 insns without changing its reference count.",
-   "mechanism": "qty_compare_1 (local-alloc.c:1660-1685). t0 is currently refs 8 / len 11 -> 2.18 against arg5's 2.00; len 13 gives 1.85 and hands t0 the second seat, which is $a0. t0's birth (its lbu) and death (the `lw $a3` argument load) are both pinned by expand_call's argument evaluation order, and moving the birth earlier crosses the `puts` call, which forces a callee-saved seat (the z05 trap). The free lengthening is therefore to make the already-existing arg-2/arg-3 computation (*pp, D_800A11DC[D_800A11D5]) land BETWEEN t0's birth and death rather than outside it.",
-   "next_probe": "Splice tmp/grind/CD_ready/s61/w04_t0_shift_deferred.c, run `pwsh tools/grinder/dump.ps1 CD_ready`, and read the CD_ready section of tmp/grind/CD_ready/dumps/system.lreg for the exact 'used N times across M insns' line of the t0 pseudo after each perturbation. Then sweep spellings that move the D_800A11D5 / D_800F19C0 argument computations inside t0's range: hoisting D_800A11DC[D_800A11D5] to a named intermediate placed between the t0 load and the t0 shift; the same for *pp; and both. Score with `& tools/wteng.ps1 main sandbox CD_ready --disable all` and ALWAYS disassemble with tmp/grind/CD_ready/s61/show.py - target is 179/179 with the 56/57 pair in target order AND $a0/$v1 correct."
+   "hypothesis": "BRANCH B (c02, score 6, every instruction in the target's position, pure 2-way seat swap): shortening the t0 quantity's live range by exactly ONE insn (11 -> 10) at its pinned reference count of 8 raises pri 2.18 -> 2.40, which is exactly candidate.c's profile, and candidate.c's seats are correct.",
+   "mechanism": "local-alloc qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660-1685) with the birth/death luids taken from sched1's OUTPUT. Reference counts are pinned at 8 (H-s62-C), dead constructs are deleted before reg_scan (H-s62-B) and source statement position is normalised by sched1 (H-s62-E), so the only remaining lever is the DEPENDENCE STRUCTURE sched1 schedules against.",
+   "next_probe": "Splice tmp/grind/CD_ready/s62/c02_v0_inplace_addr_shifthead.c, run `pwsh tools/grinder/dump.ps1 CD_ready` and read the CD_ready section of tmp/grind/CD_ready/dumps/system.sched (NOT .sched2) to identify exactly which insn sched1 places between t0's birth and its last use in c02 but not in candidate.c. Then sweep spellings that create or remove a true data dependence around that one insn - e.g. deriving the arg5 index byte through idx_1495[0] rather than idx_1494[1], deriving the t0 pointer as idx_1495 - 1, or re-associating the (u8 *) vs (s32) casts on the tbl_125c base so the addu's operand order changes. Score with `& tools/wteng.ps1 main sandbox CD_ready --disable all` and ALWAYS disassemble with tmp/grind/CD_ready/s61/show.py. Target: pseudo 98 at 8 refs / 10 insns while the disassembly stays in c02's exact order."
   },
   {
-   "hypothesis": "F2 - knob (b): arg5's weighted reference count can be tuned to exactly 5 or 6 (pri 2.5 / 3.0), which beats t0's 2.18 without reaching pseudo 74's 4.875 and therefore without stealing $v0.",
-   "mechanism": "qty_n_refs is the function-wide count weighted by loop depth (local-alloc.c:297), so an in-loop reference adds 2 and an OUT-OF-LOOP reference adds only 1. s61's z01-z03 overshot because every carrier tried (status, cnt, i) is itself referenced inside the poll loop. A single-unit tune therefore requires a carrier whose extra references sit outside the `loop:` ... `goto loop` region.",
-   "next_probe": "Enumerate CD_ready's function-scope locals and count their loop-weighted references from the CD_ready section of tmp/grind/CD_ready/dumps/system.lreg ('used N times' is already the weighted number). Identify any carrier that would put the arg5 quantity at weighted 5 or 6, prefer ones whose refs are outside the loop, and measure arg5 := that carrier on the w04 base. Also worth one probe: whether the existing `saved` (u8) or `dst2` can carry it, noting qty_size differs for QImode and changes the numerator."
+   "hypothesis": "BRANCH A (candidate.c, score 2, every register correct): the last two instructions can be un-transposed by flipping the sched2 INSN_LUID order of t0's sll and arg5's address addu without moving t0's live range off 10.",
+   "mechanism": "sched2 rank_for_schedule ties on INSN_PRIORITY between the two (equal-cost dependency paths to the printf call) and falls through to INSN_LUID, i.e. to sched1's output order. Source statement position is measured inert (i01-i08 reproduce 2 or regress to 4), so the lever must change the dependence graph sched1 sees, not the statement order.",
+   "next_probe": "Read the CD_ready section of tmp/grind/CD_ready/dumps/system.sched on the candidate base and find what gives t0's sll the lower luid. Then probe dependence-changing spellings that do NOT alter the instruction sequence: taking the arg5 index byte from idx_1495[0] instead of idx_1494[1] (same lbu, different pointer quantity, different dependency chain), deriving the t0 address from idx_1495 - 1, and swapping which of the two byte loads is written first while keeping both in a single statement. Score each and require the disassembly to stay register-perfect."
   },
   {
-   "hypothesis": "F3 (blocking for completion, not for progress, carried forward UNCHANGED from s60) - the `volatile u8 *idx_1496;` in this body is covered by legitimate-volatile-interrupt-touched rather than by the volatile-coercion ban.",
-   "mechanism": "Prong 1 is satisfied with citations at every link (IRQ writer getintr at asm/funcs/getintr.s:304; handler installed by InterruptCallback(2, &D_80081F1C) at src/system.c:609 and :630). Prong 2's harm is demonstrated by controlled measurement - removing the qualifier alone moves 179 insns to 178 and score 2 to 4, because GCC hoists the flag load out of the poll loop. What is open is that prong 2's shape list is exact (spin-wait / double-read-across-sequence-point / IRQ-mutated-loop-bound) and this poll loop has body work, plus the absent volatile_extern_allowlist.txt entry for D_800A1494/95/96.",
-   "next_probe": "This is a ruling-request, not a measurement, and it should be raised the moment the score reaches 0 - not before, because it costs a session either way and the arithmetic frontier above is still live. Question to ask: does prong 2 admit a poll loop with body work when the double-read harm is shown by controlled measurement, and do the already-shipped matched in-TU declarations at src/system.c:549-551 and :748-749 plus the matched pointer-arithmetic shape at :770-771 constitute the allowlist grant for D_800A1496?"
+   "hypothesis": "F3 (carried forward UNCHANGED from s60/s61 - blocking for completion, not for progress): the `volatile u8 *idx_1496;` in this body is covered by legitimate-volatile-interrupt-touched rather than by the volatile-coercion ban.",
+   "mechanism": "Prong 1 is satisfied with citations at every link (IRQ writer getintr at asm/funcs/getintr.s:304; handler installed by InterruptCallback(2, &D_80081F1C) at src/system.c:609 and :630). Prong 2's harm is demonstrated by controlled measurement - removing the qualifier alone moves 179 insns to 178 and score 2 to 4. What is open is that prong 2's shape list is exact (spin-wait / double-read-across-sequence-point / IRQ-mutated-loop-bound) and this poll loop has body work, plus the absent volatile_extern_allowlist.txt entry for D_800A1494/95/96.",
+   "next_probe": "This is a ruling-request, not a measurement, and it should be raised the moment the score reaches 0 - not before, because it costs a session either way and both arithmetic branches above are still live. Question to ask: does prong 2 admit a poll loop with body work when the double-read harm is shown by controlled measurement, and do the already-shipped matched in-TU declarations at src/system.c:549-551 and :748-749 plus the matched pointer-arithmetic shape at :770-771 constitute the allowlist grant for D_800A1496?"
   }
  ],
  "judge_constraints": [

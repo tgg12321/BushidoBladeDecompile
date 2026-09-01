@@ -1429,3 +1429,123 @@ pri(arg5) = floor_log2(4)*4/4 = 2.00. Need pri(arg5) > pri(t0). Exactly two knob
 - probe: v01-v07: fully natural, natural + pp alias, natural + named byte indices, and each of arg4/arg5/both hoisted to named intermediates in both orders.
 - result: 14, 14, 14, 14 (arg5-first), 7 (arg4-first), 7 and 8 (both named). All 179 instructions, 0 rules - the natural forms preserve the instruction count and the branch destinations but land 5-12 instructions worse than the staged basin. The staged spelling is load-bearing, not decorative.
 - verdict: KILLED
+
+## s62 (structural, 2026-09-01)
+
+### H-s62-A — KILLED: F1's "free lengthening" of t0's live range via the arg-2/arg-3 computations
+STATEMENT. Making the `*pp` and `D_800A11DC[D_800A11D5]` printf-argument computations land
+BETWEEN t0's birth and death lengthens t0's live range to >= 13 at unchanged reference count,
+dropping pri(t0) from 2.18 below arg5's 2.00 and handing t0 the target's seat.
+MECHANISM (as inherited). local-alloc qty_compare_1, tools/gcc-2.7.2/local-alloc.c:1660-1685.
+PROBE. a01-a09: each of `*pp` and `D_800A11DC[D_800A11D5]`, and both together in both orders,
+hoisted into a fresh named intermediate placed (i) right after t0's birth, (ii) between the arg5
+chain and the t0 shift, (iii) after the t0 shift, (iv) before t0's birth as a control.
+RESULT. 10, 16, 20, 20, 13, 13, 20, 16, 10 — every variant worse than the base's 6, none anywhere
+near the floor. The fresh pseudo perturbs sched1 (same failure mode as s61's y-series).
+VERDICT: **KILLED**, and the hypothesis's premise is now known to point the WRONG WAY — see H-s62-D.
+
+### H-s62-B — KILLED: F2 knob (b), retuning arg5's weighted reference count from C
+STATEMENT. A carrier whose extra references sit outside the poll loop, or a dead store / identity
+operation, can put the arg5 quantity at weighted 5 or 6 and flip the qty_compare_1 sort.
+MECHANISM. qty_n_refs = reg_n_refs, the loop-weighted whole-function count (local-alloc.c:297).
+PROBE. g01-g08 on the order-perfect c02 base: `arg5 = 0;` before the load, `arg5 = v0;`,
+`arg5 = arg5;`, `arg5 |= 0;`, `arg5 += 0;`, `arg5 = t0;`, and two positional variants.
+RESULT. ALL EIGHT score exactly 6 at 179 insns — byte-identical output to c02. Every such
+construct is deleted before reg_scan runs, so it cannot touch qty_n_refs at all.
+VERDICT: **KILLED.** The count is only movable by giving the quantity a REAL extra occurrence,
+which is what b07 does (arg5 carries the address: 4 refs -> 8, pri 2.00 -> 4.00).
+
+### H-s62-C — KILLED: reducing t0's reference count by folding the byte load into the shift
+STATEMENT. `t0 = idx_1494[0] << 2;` makes the lbu define a temp and the sll define t0, dropping
+t0 from 4 insn-mentions to 3 (weighted 8 -> 6, floor_log2 3 -> 2) and its pri from 2.18 to ~1.2.
+PROBE. e01-e08 (the fold combined with the c02 arg5 shape, the b07 arg5 shape, `*4` instead of
+`<< 2`, address-of index expression, and three positions), plus a .lreg read.
+RESULT. Scores 9-13. The .lreg shows pseudo 98 STILL at 8 references — cse/copy-propagation puts
+the lbu back as t0's definition — while the range shortens 11 -> 10, so the fold RAISES pri to
+2.40 instead of lowering it. t0's reference count is 8 on every base ever measured here.
+VERDICT: **KILLED.**
+
+### H-s62-D — CONFIRMED (and it CORRECTS the inherited frontier): the seat is set by t0's live-range LENGTH, and the target value is 10, not >= 13
+STATEMENT. The $a0/$v1 assignment is a function of pri(t0) alone once the arg5 quantity is at 2.00.
+MECHANISM. qty_compare_1's floor_log2(refs)*refs*size/(death-birth) ordering, read from
+tmp/grind/CD_ready/dumps/system.lreg on three separate bases.
+PROBE. Dump + read pseudos 74/97/98 on candidate.c (score 2), on c02 and f01 (score 6), on b07
+(score 3) and on e01 (score 10).
+RESULT.
+  candidate.c: t0 = 8/10 = 2.40, arg5 = 4/4 = 2.00 -> SEATS CORRECT
+  c02 / f01  : t0 = 8/11 = 2.18, arg5 = 4/4 = 2.00 -> seats swapped
+  b07        : t0 = 8/12 = 2.00, arg5 = 8/6 = 4.00 -> SEATS CORRECT
+  e01        : t0 = 8/10 = 2.40, arg5 = 4/4 = 2.00 -> seats swapped (but its ORDER broke, so the
+               2.40 reading is consistent: e01's failure is sched1, not local-alloc)
+The seats are correct whenever t0's range is 10 (pri 2.40) or whenever arg5 outranks t0 outright.
+s61's F1 asked for a range of >= 13; the measurement says the order-perfect branch needs 11 -> 10,
+a ONE-INSN SHORTENING in the opposite direction. VERDICT: **CONFIRMED.**
+
+### H-s62-E — KILLED: statement position inside the do_timeout block
+STATEMENT. Re-ordering the t0 chain, the arg5 chain, the `pp` alias and the arg5 load relative to
+one another moves the sched2 LUID tie and/or the qty_compare inputs.
+PROBE. f01-f08 (8 orderings on the c02 base) and i01-i08 (8 orderings on the candidate base,
+including deferring ONLY t0's `addu` past the arg5 load, and advancing only part of the v0 chain),
+plus a .lreg read on f01.
+RESULT. f01-f08 ALL exactly 6. i01-i08: 2, 2, 4, 2, 2, 2, 4, 2 — the floor form is reproduced by
+six of the eight, and nothing improves. f01's .lreg is IDENTICAL to c02's (97 = 4/4, 98 = 8/11).
+sched1 normalises source statement order before local-alloc sees it.
+VERDICT: **KILLED** — with a mechanism reading, not just a score. The ONLY source-level change that
+has ever moved the sched2 order is deferring the whole `t0 *= 4` statement past the arg5 LOAD
+(s61's w04), and that also moves t0's range 10 -> 11 and so costs the seats.
+
+### THE FRONTIER, restated arithmetically (the next session's job)
+The residual has split into two disjoint, fully-characterised branches:
+  BRANCH A (`candidate.c`, score 2) — every register correct, t0 range 10, arg5 4/4.
+      Defect: sched2 emits build 56/57 (`sll $a0` , `addu $v0`) as the target's 57/56.
+      What is needed: flip the INSN_LUID order of those two insns in sched1's OUTPUT without
+      moving t0's range off 10. Source statement position is measured inert (i01-i08), so the
+      lever must be a dependence-structure change, not a position change.
+  BRANCH B (`c02`, score 6) — every instruction in the target's position, pure 2-way seat swap.
+      Defect: t0 range is 11, one too long; at 10 the seats come out right (that is exactly
+      candidate.c's profile).
+      What is needed: remove ONE insn from between t0's birth and its last use in sched1's output
+      while keeping the in-place `v0 += (s32)tbl_125c` spelling. Reference counts are pinned at 8
+      (H-s62-C) and dead constructs are deleted before reg_scan (H-s62-B), so the lever is again
+      dependence structure / sched1, not refs.
+  BRANCH C (`b07`, score 3) — seats correct AND arg5's pri raised to 4.00 by giving it a real
+      third occurrence (it carries the address). Defect: `addu $v1,$v0,$s5` instead of the
+      target's in-place `addu $v0,$v0,$s5`, which then transposes 58/61. Closing this needs the
+      address to accumulate in the `v0` quantity while arg5 still has >= 3 occurrences — the two
+      requirements are in direct tension and no spelling reconciling them has been found yet.
+
+## [s62] F1: making the arg-2/arg-3 printf-argument computations land between t0's birth and death lengthens t0's live range to >=13 at unchanged reference count and flips the qty_compare_1 sort.
+- mechanism: local-alloc qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660-1685) orders quantities by floor_log2(refs)*refs*size/(death-birth); inserting already-existing insns inside the range lengthens it for free.
+- probe: a01-a09: *pp and/or D_800A11DC[D_800A11D5] hoisted into fresh named intermediates at five positions relative to t0's birth, death and the arg5 chain, on the s61 order-correct w04 base (score 6).
+- result: 10, 16, 20, 20, 13, 13, 20, 16, 10 - every variant worse than the base; the fresh pseudo perturbs sched1, the same failure mode as s61's y-series.
+- verdict: KILLED
+
+## [s62] F2 knob (b): arg5's loop-weighted reference count can be tuned to 5 or 6 from C (dead store, self-assign, identity op, or a carrier with out-of-loop references).
+- mechanism: qty_n_refs[qty] = reg_n_refs[regno], the loop-weighted whole-function count (local-alloc.c:297).
+- probe: g01-g08 on the order-perfect c02 base: arg5 = 0 before the load, arg5 = v0, arg5 = arg5, arg5 |= 0, arg5 += 0, arg5 = t0, and two positional variants.
+- result: ALL EIGHT score exactly 6 at 179 insns - byte-identical output to c02. Every such construct is deleted before reg_scan runs, so it cannot touch qty_n_refs at all.
+- verdict: KILLED
+
+## [s62] Folding the byte load into the shift statement (t0 = idx_1494[0] << 2) drops t0 from 4 insn-mentions to 3 (weighted 8 -> 6) and lowers its priority below arg5's.
+- mechanism: the lbu would define a temp and the sll would define t0, removing one occurrence from t0's reg_n_refs.
+- probe: e01-e08 (the fold combined with the c02 arg5 shape, the b07 arg5 shape, *4 vs <<2, an address-of index expression and three positions), plus a .lreg read of pseudo 98.
+- result: Scores 9-13. The .lreg shows pseudo 98 STILL at 8 references (cse/copy-propagation restores the lbu as t0's definition) while the range shortens 11 -> 10, so the fold RAISES pri to 2.40. t0's reference count is 8 on every base ever measured here.
+- verdict: KILLED
+
+## [s62] The $a0/$v1 seat assignment is a function of t0's qty_compare_1 priority once the arg5 quantity sits at 2.00, and the range that produces the target's seats is 10 - NOT the >=13 the inherited frontier predicted.
+- mechanism: qty_compare_1's floor_log2(refs)*refs*size/(death-birth) ordering, read from tmp/grind/CD_ready/dumps/system.lreg (pseudo 98 = t0, 97 = arg5 value, 74 = the reused v0) rather than hypothesised.
+- probe: pwsh tools/grinder/dump.ps1 CD_ready on four separate bases - candidate.c (score 2), c02 and f01 (score 6), b07 (score 3), e01 (score 10) - reading the CD_ready register list of system.lreg each time.
+- result: candidate.c t0 = 8 refs/10 insns = 2.40 with arg5 4/4 = 2.00 -> SEATS CORRECT; c02 and f01 t0 = 8/11 = 2.18 -> seats swapped; b07 t0 = 8/12 = 2.00 with arg5 8/6 = 4.00 -> SEATS CORRECT; e01 t0 = 8/10 = 2.40 -> seats swapped but its sched1 order broke independently. The order-perfect branch therefore needs a ONE-INSN SHORTENING of t0's range (11 -> 10), the opposite direction from the inherited F1.
+- verdict: CONFIRMED
+
+## [s62] Statement position inside the do_timeout block moves either the sched2 LUID tie or the local-alloc priority inputs.
+- mechanism: RTL emission order follows source statement order, and both sched2's INSN_LUID tiebreak and local-alloc's birth/death luids are read off the insn chain.
+- probe: f01-f08 (8 orderings of the t0 chain, the arg5 load and the pp alias on the c02 base) and i01-i08 (8 orderings on the candidate base, including deferring ONLY t0's addu past the arg5 load), plus a .lreg read on f01.
+- result: f01-f08 ALL score exactly 6; i01-i08 score 2,2,4,2,2,2,4,2 (six of eight reproduce the floor, none improves). f01's .lreg is IDENTICAL to c02's (97 = 4/4, 98 = 8/11): sched1 normalises source statement order before local-alloc sees it. The only source change ever to move the sched2 order is s61's w04 (deferring the whole t0 *= 4 past the arg5 load), and that costs the seats by moving t0's range 10 -> 11.
+- verdict: KILLED
+
+## [s62] Respelling the arg5 address computation as an in-place accumulation on the reused v0 carrier reaches the target's instruction ORDER exactly.
+- mechanism: the target emits addu $v0,$v0,$s5 in place on the shifted index, i.e. the address lives in the same quantity as the shift result (pseudo 74, the reused function-scope v0), and only the loaded value is a separate quantity.
+- probe: variant c02 - v0 = idx_1494[1] << 2; v0 += (s32)tbl_125c; arg5 = *(s32 *)v0; - on the s61 order-deferred w04 base; sandbox then index-aligned disassembly with tmp/grind/CD_ready/s61/show.py.
+- result: score 6 at 179/179/0 with EVERY INSTRUCTION in the target's position and opcode; the six differing instructions (51, 57, 58, 61, 63, 67) differ only by a consistent 2-way register swap (t0 takes $v1 where the target uses $a0, arg5's value takes $a0 where the target uses $v1). Cleanest statement of the seat residual in 62 sessions.
+- verdict: CONFIRMED

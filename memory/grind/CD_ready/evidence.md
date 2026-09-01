@@ -1389,3 +1389,109 @@ Ref-count/live-range attacks on the w04 base:
 - [s61] tmp/grind/CD_ready/s61/show.py is a reusable index-aligned disassembly differ (objdump -dr of tmp/sandbox/CD_ready/system.o against asm/funcs/CD_ready.s, with relocations printed) - it is what turned a bare 'score 6' into 'six instructions, register-swapped, order correct'. Use it on every scored variant in this neighbourhood; the z05 trap shows score alone lies here.
 
 - [s61] src/system.c was restored to HEAD at end of session (tmp/grind/CD_ready/s61/splice.py --restore); the only dirt is the engine's own metrics/events.jsonl.
+
+## s62 (structural, 2026-09-01) — the residual is now split into TWO complementary, fully-characterised branches
+
+Live chassis re-measurement at session start: `candidate.c` (vAT1) = **score 2, build 179,
+target 179, rules_dropped 0**. The ledger floor of 2 reproduces exactly; nothing drifted.
+
+### [s62] The masked-2 floor form has EVERY REGISTER CORRECT — its whole residual is one adjacent transposition
+Disassembly of `candidate.c` (tmp/grind/CD_ready/s61/show.py 50 70) against asm/funcs/CD_ready.s:
+all 179 instructions match opcode-and-register EXCEPT build 56/57, which are the target's 57/56:
+
+    build 55 sll  $v0,$v0,2   | target 55 sll  $v0,$v0,2
+    build 56 sll  $a0,$a0,2   | target 56 addu $v0,$v0,$s5
+    build 57 addu $v0,$v0,$s5 | target 57 sll  $a0,$a0,2
+    build 58 lw   $v1,0($v0)  | target 58 lw   $v1,0($v0)
+
+i.e. t0's `sll` and arg5's address `addu` are swapped. Registers, count, branch destinations,
+everything else: exact. This is the sched2 INSN_PRIORITY tie broken by INSN_LUID that the ledger
+has described since s6, now isolated with NOTHING else wrong.
+
+### [s62] There is a second, disjoint branch whose ORDER is 100% correct and whose only defect is a pure 2-way seat swap
+Respelling the arg5 address computation as an IN-PLACE accumulation on the reused `v0` carrier —
+`v0 = idx_1494[1] << 2;  v0 += (s32)tbl_125c;  arg5 = *(s32 *)v0;` — on the s61 order-deferred
+w04 base (variant `c02`, tmp/grind/CD_ready/s62/c02_v0_inplace_addr_shifthead.c) gives **score 6,
+179 insns, 0 rules** with EVERY INSTRUCTION IN THE TARGET'S POSITION AND OPCODE. The six differing
+instructions (51, 57, 58, 61, 63, 67) differ only by a consistent 2-way register swap: the t0
+quantity takes `$v1` where the target uses `$a0`, and the arg5 value takes `$a0` where the target
+uses `$v1`. This is the cleanest statement of the seat residual in 62 sessions.
+
+### [s62] Best form ever measured on the order-correct branch: score 3
+`v0 = idx_1494[1] << 2;  arg5 = v0 + (s32)tbl_125c;  arg5 = *(s32 *)arg5;` (variant `b07`) scores
+**3** at 179/179/0. Its seats are CORRECT (t0 -> $a0, arg5 value -> $v1); the only defect is that
+the address addu writes arg5's register instead of accumulating in place on `$v0`
+(`addu $v1,$v0,$s5` vs the target's `addu $v0,$v0,$s5`), which then transposes 58/61.
+Ten follow-up spellings of the t0 chain on this base (d01-d10: one-statement, `+=`, inline deref,
+chain-first, shift interleaved at four positions, `&tbl[t0]` address-of) ALL score exactly 3
+except the inline-deref (14) — the b07 basin is invariant to the t0 chain's spelling and position.
+
+### [s62] MEASURED qty_compare_1 INPUTS on all three branches (read from .lreg, not hypothesised)
+`pwsh tools/grinder/dump.ps1 CD_ready`, then the CD_ready section of
+tmp/grind/CD_ready/dumps/system.lreg. Pseudo 98 = t0, pseudo 97 = the arg5 value, pseudo 74 = the
+reused function-scope `v0`. "used N times" is already the loop-weighted count (this block is inside
+the `goto loop` poll, so every mention counts 2).
+
+| base | score | t0 (98) | arg5 (97) | seats |
+|---|---|---|---|---|
+| candidate.c (vAT1) | 2 | 8 refs / 10 insns = 2.40 | 4 / 4 = 2.00 | **CORRECT** |
+| c02 + f01 (order-perfect) | 6 | 8 / 11 = 2.18 | 4 / 4 = 2.00 | swapped |
+| b07 | 3 | 8 / 12 = 2.00 | 8 / 6 = 4.00 | **CORRECT** |
+| e01 (t0 byte-load folded) | 10 | 8 / 10 = 2.40 | 4 / 4 = 2.00 | swapped (order broke) |
+
+Two facts fall straight out and they CORRECT the s61 frontier: (i) the seats come out right at
+t0 range **10** and at arg5 pri 4.00, and wrong at t0 range 11 — so the needed change on the
+order-perfect branch is to SHORTEN t0's live range by ONE insn (11 -> 10), not to lengthen it to
+>= 13 as F1 predicted; (ii) t0's reference count is 8 on every single base measured, including the
+one where the byte load was folded into the shift statement — it is not tunable from C.
+
+### [s62] Statement POSITION inside the do_timeout block is provably inert (both branches)
+- f01-f08 (8 orderings of the t0 chain / arg5 load / `pp` on the c02 base): ALL score exactly 6.
+- i01-i08 (8 orderings on the candidate base, incl. deferring only t0's `addu`): 2,2,4,2,2,2,4,2.
+- The .lreg for f01 is IDENTICAL to c02's (97 = 4/4, 98 = 8/11), i.e. sched1 normalises source
+  statement order before local-alloc sees it. Position cannot move the qty_compare inputs.
+This closes, with a mechanism reading rather than a score, the axis s61's x-series killed by score.
+
+### [s62] Dead stores, self-assigns and identity ops on a block-local scalar are removed before reg_scan
+g01-g08 on the c02 base: `arg5 = 0;` before the load, `arg5 = v0;`, `arg5 = arg5;`, `arg5 |= 0;`,
+`arg5 += 0;`, `arg5 = t0;`, and two positional variants — ALL score exactly 6 with 179 insns, i.e.
+byte-identical to c02. The F2 "knob (b)" (retune arg5's weighted reference count) is therefore
+INERT for a block-local scalar: nothing survives to reg_scan. The only way arg5's count moved (to 8,
+in b07) was by giving it a REAL extra occurrence — carrying the address.
+
+### [s62] Named intermediates for the arg-2 / arg-3 printf arguments are destructive
+a01-a09 (hoisting `*pp` and/or `D_800A11DC[D_800A11D5]` into fresh locals at five positions
+relative to t0's birth/death): 10, 16, 20, 20, 13, 13, 20, 16, 10 — every one worse than the base 6.
+The extra pseudo perturbs sched1, exactly as s61's y-series found for the byte/pointer split.
+This is the direct disproof of F1's proposed "free lengthening" probe.
+
+### [s62] Other spellings measured on the order-deferred base (all worse, banked)
+b01 9 / b02 10 / b03 9 / b04 9 / b05 10 / b06 14 / b08 9; c01 15 / c03 15 / c04 15 / c05 15 /
+c06 15 / c07 15; e01-e08 10,10,10,13,10,9,10,10. Notable: a FOUR-statement arg5 chain
+(`v0 <<= 2; v0 += tbl; arg5 = *v0;` written as four separate statements, c01) costs 9 points over
+the three-statement form (c02) — statement COUNT in this block matters even though position does not.
+
+### Artifacts
+tmp/grind/CD_ready/s62/{gen.py,gen2.py,...,gen8.py} (variant generators, each documenting its
+mechanism), the 49 variant .c files, and the three banked .lreg extracts
+b07_lreg_regs.txt / f01_lreg_regs.txt / candidate_lreg_regs.txt.
+
+- [s62] Live chassis check: candidate.c (vAT1) re-measures score 2, build_insns 179, target_insns 179, rules_dropped 0. The ledger floor reproduces exactly on the current chassis.
+
+- [s62] The masked-2 floor form has EVERY REGISTER CORRECT. Index-aligned disassembly shows all 179 instructions matching opcode and register except build 56/57, which are the target's 57/56: build emits `sll $a0,$a0,2` then `addu $v0,$v0,$s5`, the target the reverse. The whole residual on this branch is one adjacent transposition.
+
+- [s62] New best form on the order-correct branch: b07 (v0 = idx_1494[1] << 2; arg5 = v0 + (s32)tbl_125c; arg5 = *(s32 *)arg5;) scores 3 at 179/179/0 - the best ever recorded there (previous best 6). Its seats are CORRECT; the only defect is that the address addu writes arg5's register instead of accumulating in place on $v0, which then transposes 58/61.
+
+- [s62] b07's basin is invariant to the t0 chain: d01-d10 (one-statement, +=, chain-first, shift interleaved at four positions, address-of-index) ALL score exactly 3 except the inline-deref spelling (14).
+
+- [s62] Measured qty_compare_1 table (tmp/grind/CD_ready/dumps/system.lreg; pseudo 98 = t0, 97 = arg5 value): candidate.c 8/10 = 2.40 vs 4/4 = 2.00 -> correct seats; c02 and f01 8/11 = 2.18 vs 4/4 = 2.00 -> swapped; b07 8/12 = 2.00 vs 8/6 = 4.00 -> correct seats.
+
+- [s62] t0's loop-weighted reference count is 8 on EVERY base measured, including the one where the byte load was folded into the shift statement. It is not tunable from C at this call site.
+
+- [s62] Statement COUNT in the block matters even though statement POSITION does not: writing the arg5 chain as four statements (c01) instead of three (c02) costs 9 score points (15 vs 6).
+
+- [s62] Other spellings measured and banked, all worse than their base: b01 9, b02 10, b03 9, b04 9, b05 10, b06 14, b08 9; c01/c03/c04/c05/c06/c07 all 15; e01-e08 10,10,10,13,10,9,10,10; a01-a09 10,16,20,20,13,13,20,16,10.
+
+- [s62] src/system.c was restored to its committed INCLUDE_ASM state at end of session; the tree is clean. candidate.c is unchanged (vAT1, still the floor form at 2).
+
+- [s62] Six new rejected forms banked under memory/grind/CD_ready/rejected/ (139 total), each slug naming why it is dead.
