@@ -1,7 +1,0 @@
-regfix.txt:2294: func_80057CC8: subst "addu\s+\$3,\$6,\$2" "addu	$2,$2,$6" @ 35
-regfix.txt:2295: func_80057CC8: subst "lh\s+\$4,0\(\$3\)" "lh	$4,0($2)" @ 40
-regfix.txt:2296: func_80057CC8: subst "lh\s+\$5,2\(\$3\)" "lh	$5,2($2)" @ 41
-regfix.txt:2297: func_80057CC8: subst "sll\s+\$19,\$19,16" "sll	$3,$19,16" @ 45
-regfix.txt:2298: func_80057CC8: subst "lw\s+\$3,4\(\$18\)" "lw	$4,4($18)" @ 46
-regfix.txt:2299: func_80057CC8: subst "sra\s+\$19,\$19,14" "sra	$3,$3,14" @ 47
-regfix.txt:2300: func_80057CC8: subst "addu\s+\$3,\$3,\$19" "addu	$3,$3,$4" @ 48
