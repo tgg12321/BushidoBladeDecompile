@@ -17739,3 +17739,191 @@ the item to active:
    and 0).
 3. A toolchain finding that gives GCC 2.7.2 a C-level path to cop2 emission (currently disproven at
    the compiler-source level, facts 50–51).
+
+## 2026-09-01 — FORECLOSED-BUCKET REVIEW — OWNER RULING (batch): 12 unparks, 2 grants, 1 conditional, 4 foreclosures affirmed, 1 question logged
+
+**Provenance.** Owner (Trenton), 2026-09-01, in conversation, after a five-cluster
+documentary review of all foreclosed items was presented with per-item verdicts and
+a ranked recommendation list: *"Go ahead and resolve these all to your best
+recommendation."* This record lands the delegated rulings BEFORE any code spends
+them ([[ruling-record-lands-before-code]]). The review was read-only: five
+independent reviewers over each function's latest decisions.md record plus its
+`memory/grind/<func>/` ledger. A first draft of this record was FAILed by a
+layer-2 cheat-reviewer (two findings: a mis-scoped canonical-asm widening and an
+over-broad unban clause); this corrected record incorporates both fixes and passed
+a fresh layer-2 review before landing. Nothing in this record lowers a standard;
+the frozen family list is unchanged; every eventual completion still passes
+layer-1 + default-FAIL Judge + full-build SHA1 == oracle.
+
+### Systemic findings the rulings rest on
+
+1. **The 2026-08-31 ruling was never applied to the foreclosed bucket.** Fifteen of
+   the records are dated 2026-08-30 — one day before [[ordinary-c-judge-decidable]]
+   (73bee8f8) retired motive-testing, relaxed the named-intermediate family to
+   once-written, and defined the foreclosure re-activation triggers. The migration
+   re-examined only the returned bucket (three of whose four members have since
+   PASSed or advanced). None of the 15 foreclosed records were re-read against the
+   amended text until this review.
+2. **Precedent-gate censuses ran against a truncated derived artifact.**
+   `docs/reference/sotn-construct-index.md` caps large classes at 40 entries
+   (func_80072CD4's gate turned on 40 of 958 `dup_if_else_arm` hits) and carries
+   only 13 detector classes, so for shapes with no detector (func_8001F938,
+   get_alarm) a zero-hit census was structurally guaranteed and is not evidence
+   about SOTN master.
+3. **Several exhaustion claims are depth-limited in the exact shape falsified on
+   func_800324D0** (decisions.md:17257): pairwise/depth-2 reasoning declared closed
+   over channels never enumerated (func_80060A68's `inverse.py local` was killed at
+   100% CPU without finishing depth 1, then replaced by a two-quantity hand
+   comparison; func_80034F88 and func_80033550 never received an allocation-order
+   closure; func_800770B8's "zero insn slack" premise ignores its own ledger's
+   173/174-insn spellings).
+
+### Ruling A — RETURN TO ACTIVE (owner `queue unpark`, Ruling-3 trigger), 12 items
+
+Each item returns to the active grind lane with a named, falsifiable next probe
+(recorded in its ledger). No candidate is pre-accepted; each is adjudicated fresh
+by layer-1 + the default-FAIL Judge against current rule text.
+
+| function | reopen ground | named probe |
+|---|---|---|
+| func_800645B0 (d1) | its own frontier names the trigger that fired 2026-08-31 (amended named-intermediate family, once-written) | measure the two-distinct-once-written-locals spelling (never built; textually distinct from every banned_constructs entry — see the ban clause below); re-census gate (b) against the amended class definition |
+| func_80060A68 (d2) | an unfinished search (inverse.py local killed at 100% CPU before depth 1) was rebranded as an analytic closure over 2 of 23 quantities | bounded/profiled `inverse.py local --block 0` order enumeration; `local_extract.py --suggest` (instrument postdates the record) |
+| func_80045294 (d2) | ra_solver names the goal REACHABLE at one atom (`refs_up 72: 3->4`); the sanctioned [[duplicated-statement-into-arms]] ref-lift that just closed func_800324D0 was never tried | duplicate a real a0-referencing statement per the family (loop-tail extension 2026-08-06); verify `nrefs_flow(72)==4` via extract.py before spending a sandbox run |
+| CD_sync (d2) | see Ruling D (aggregate) | Ruling D session |
+| func_8002EA24 (d2) | depth-2 solver sweep ran against 1 of 8 banked score-2 bodies, by the sweeping session's own admission (state.json frontier item 1) | re-run `s16/depth2_sweep.py` over the other seven banked bodies (filter AMBIGUOUS via goal_from_tgt.py first) |
+| func_80017848 (d3) | guard-only duplication never measured (only whole-loop dup was priced, 35); the load-bearing cse EBB attribution is inference, never dump-confirmed; the record's "byte-matches only via a cheat" sentence is false (see Corrections) | duplicate loop 2's 4-insn GUARD into the loop-1 skip path on chassis A + candidate chassis; run `.cse`/`.combine` dumps via dump.ps1 |
+| CD_ready (d4) | see Ruling D; also the s50 masked-2/179 form's volatile disqualification rests on a false premise (cdrom_IrqHandler/CD_flush in the same TU are matched with these bytes volatile) | Ruling D session; re-score the banked vAT1 form post-`-mel` |
+| func_80033550 (d4) | the counting theorem ("no byte-free occupant exists at 34/34") is contradicted by the ledger's own s7 dupU measurement (byte-free arm duplication homed ptr in $a3); the real search-loop tail was never examined under the 2026-08-06 control-transfer-tail extension | re-test [[duplicated-statement-into-arms]] against the search-loop tail (a REAL pre-existing branch — the invented-branch objection does not apply) |
+| func_80062020 (d4) | its foreclosure closed one of THREE enumerated frontier items and inherits an exhaustion quantifier scoped to CFG breaks only; the ledger's own s8 next-probe item (ii) — cse2's code-free internal skip/abandon conditions (cse.c:8330 nsets/QImode skip; cse.c:8550 max_qty abandon), a non-CFG route to the target's epilogue arrangement — appears exactly once in the ledger and was never measured. The same-lvalue dual-spelling construct REMAINS BANNED (its 2026-08-25 and 2026-08-31 FAILs are substantive merits rulings — layer-2 review of this record confirmed so twice); any future candidate must be a genuinely different, non-banned spelling | measure the cse2 nsets/max_qty path-abandonment route; any resulting candidate faces fresh layer-1 + Judge adjudication with all standing bans in force |
+| func_80072CD4 (d4) | gate (ii) decided on 40 of 958 index entries (cap-truncated, annotated-first bias) | decided by the uncapped index rebuild (this ruling, operator lane); a qualifying PSX `dup_if_else_arm` exhibit flips the gate — full-population negative re-forecloses |
+| CD_datasync (d7) | see Ruling D; its own open frontier F14 (hypotheses.md:976-991) specifies the aggregate probe and was deferred for scope, never killed | Ruling D session (F14 verbatim) |
+| func_800770B8 (d32, floor 5) | both class closures are price arguments resting on "zero insn slack" while the ledger holds 173/174-insn spellings; the fence-device x slack-spelling cross-product was never built in 19 sessions; s19's flip ceiling was computed on the wrong basin (s14's flipped+P8 = 4 < the claimed ceiling 7; s12's CABD basin never priced) | bounded sweep (~12 builds): {s17 C1/B1 label devices} x {s13 do-while 174-insn third loop, class-C gate-1 174-insn body} x {floor, CABD basins}; recompute the flip ceiling over CABD |
+
+**Ban clause (narrowed twice by layer-2 review; final form).** **NO
+`banned_constructs` entry is cleared by this ruling.** The first draft cleared
+func_800645B0's four bans (layer-2 FAIL #1: two are substantive
+multi-write-carrier bans); the second draft cleared func_80062020's 2026-08-31
+22:31 re-ban (layer-2 FAIL #2: that entry carries the independent substantive
+ground "deleting the incriminating comments does not change what the code does,"
+and the 22:25 entry it leans on is itself titled "final call — FAIL" — the
+"merits were won" framing was selective quotation and is WITHDRAWN). All
+standing bans on all functions remain in force. Unparked functions may only
+close via spellings no standing ban covers; if any reviewer judges a probe
+covered by a ban, the ban wins and the probe FAILs.
+
+### Ruling B — cop2 widened-anchor question: LOGGED FOR THE OWNER, NOT GRANTED
+
+The first draft of this record widened the 2026-08-17 cop2 cluster anchor
+(`addu $t4,$aN,$zero`) to general materialize-then-copy preambles and ordered
+func_800203B4 integrated. The layer-2 reviewer FAILed that draft correctly: the
+2026-09-01 09:01 Judge ruling it cited is itself a FAIL(CONSTRUCT) that names the
+7-function beneficiary set only as what a hypothetical owner class grant would
+cover, `scan_hand_coded` reads LOW (1/8) for func_800203B4, and per
+[[judge-sole-gate]] rule 4 a family/anchor extension is owner-only and is never
+executed from inside the pipeline — delegation in general terms does not
+substitute for an informed owner ruling on the specific evidence with the
+adversarial objection in hand ([[ordinary-c-judge-decidable]] § informed-approval
+record).
+
+Accordingly: **func_800203B4 (and the other six named functions) STAY
+FORECLOSED** under their own records. The widened-anchor question is logged to
+`docs/grind/borderline.md` as a `family-candidate` entry carrying the full
+evidence BOTH ways (for: islands are literal PsyQ SDK macro bodies, 25-insn
+residual measured irreducible, GCC 2.7.2's MIPS backend has zero cop2 mnemonics,
+the 2026-08-17 precedent covers the same idiom with an `$aN` source; against: LOW
+scan tier, zero-hit SOTN census, the Judge's FAIL, the AUTO-REJECT clause "a LOW
+scan tier is an answer"). It is presented to the owner in the session report as
+a question for their own hand. Only a subsequent explicit owner ruling spends it.
+
+### Ruling C — ra_solver `--target-object` escape (tooling grant, operator lane)
+
+`tools/ra_solver/inverse_compose.py` receives the same `--target-object` escape
+granted to `sched_solver` on 2026-08-25, so RA-seat residuals of post-migration
+(INCLUDE_ASM) functions are analysable again — the ledger-documented pipeline-wide
+gap (get_alarm record, 2026-08-30). Read-only diagnostic; produces no bytes,
+touches no gate. Implemented in the operator lane with the engine suite kept
+green. (get_alarm itself STAYS FORECLOSED until the tool exists and a session has
+new evidence to bring; this grant is the tool, not a verdict.)
+
+### Ruling D — CD_intr aggregate-merge session AUTHORIZED (sanctioned family, scope grant only)
+
+One sibling-scoped structural session is authorized to apply the
+**per-word-splat-symbol → aggregate merge** family (owner ruling 2026-08-17,
+[[no-new-park-categories]] § SOTN-accepted) to the libcd `Intr` object:
+`typedef struct { u8 sync, ready, c; } CD_intr; extern volatile CD_intr Intr;`
+(0x800A1494/95/96), retiring `g_cd_status_a/b/c` per prong (c), spelled at the
+canonical shared-header site per prong (d), repointing CD_sync, CD_ready,
+CD_datasync and the matched consumers (CD_flush, cdrom_IrqHandler, CD_cw,
+getintr). Evidence for prong (a) is already banked: base+offset addressing in the
+original bytes (`lbu 0/1($s1)`; D_800A1498's first word pointing at &Intr), the
+2026-07-09 naming census (bios.c v1.86 $Id xref), the closer Ruling 1 (2026-07-09)
+naming this merge verbatim as the honest replacement, and CD_datasync frontier
+F14. Volatility is grounded by the matched in-TU consumers (cdrom_IrqHandler,
+CD_flush) that already declare these bytes volatile. MANDATORY first step: the
+prong-(c) asm-consumer check over `asm/funcs/{CD_cw,func_800817A0,func_800819C4,
+func_80081E1C,getintr}.s` and `asm/data/7D920.data.s` — the prong on which the
+g_stage_id merge failed. Byte-neutrality for every matched consumer via
+`verify-oracle --rebuild` is mandatory before any scoring. This is a scope grant
+(the family is already sanctioned); the three CD_* functions return to active
+under Ruling A and their candidates face the normal gates.
+
+### Ruling E — func_8001F938: first-hand SOTN sweep EXECUTED, result NEGATIVE — stays FORECLOSED
+
+The F2 (signedness-split dual read) refusal of 2026-08-18 STANDS. The 2026-08-30
+gate-(b) census was a detector-coverage artifact (finding 2), so this ruling
+commissioned a first-hand sweep of the sotn-decomp checkout (HEAD db41b28e,
+PSX-config membership verified per hit) for the redundant dual-typed
+same-address read shape. **Result: NEGATIVE** — five sweep stages (address-of
+casts, normalized-lvalue opposite-sign pairing, dual-cast files, s16/u16 unions,
+Entity ext cross-view same-offset collisions) found zero opposite-signedness
+same-address read pairs in PSX master; the closest exhibits (faerie.c/demon.c
+"needed for match" offset-cast respelling; w_017/w_032 union-view slot reuse)
+are all same-signedness. The function STAYS FORECLOSED; the sweep is banked in
+its ledger as the census of record, replacing the detector-artifact census
+(sweep scripts + raw output retained under tmp/, methodology recorded in the
+ledger note). No grant is issued; the AUTO-REJECT class is unchanged.
+
+### Foreclosures AFFIRMED (4)
+
+- **main** — the maspsx branch-fill DECLINE (2026-08-24) stands; the mechanism is
+  proven three ways and whole-EXE-verified at exactly 2 bytes; the beneficiary set
+  has decayed to `main` alone, which strengthens the DECLINE. The one recorded
+  residual thread (the declined maspsx-side remedy was scoped from cc1-side
+  counterfactuals, never built) is noted for a future fidelity ruling, not acted on.
+- **func_80022F34** — the `break_out_memory_refs`/`distribute_notes`/`reload`
+  chain is pinned to compiler source at every link and was independently
+  re-verified in this review (explow.c:274-291; mips.h:2368 unconditional for
+  SYMBOL_REF — the -G/sdata axis is dead three ways, including by the target's own
+  all-absolute `lui %hi/%lo` addressing). Optional hardening only: verify the
+  single maspsx load-delay-nop point against the nop-gate list (would restate the
+  honest floor 11 -> 10; changes nothing else).
+- **func_80034F88** — gates honestly measured, the owner-granted instrument was
+  built, run, and measured inert three independent ways; the two-pseudos
+  requirement is structural (no live-range splitting in 2.7.2). Optional hardening:
+  the 9! allocation-order closure over the validated simulate.py model for
+  `pseudo 74 -> $v1` (the same standard that falsified func_800324D0's record).
+- **func_800203B4** — stays foreclosed per Ruling B (question logged, not granted).
+
+### Corrections filed with this ruling
+
+1. **func_80017848**, 2026-08-30 record (decisions.md:15498 vicinity): the sentence
+   asserting the function "byte-matches on main only via a cheat (cheat-asm)" is
+   RETRACTED — the function has carried zero rules and zero cheat-asm of its own
+   since 2026-08-19 (proven in its 2026-08-25 record). Driver-backstop boilerplate;
+   same correction shape as decisions.md:17257.
+2. **func_80062020**: the review's initial claim that the 22:31 re-ban was a bare
+   citation defect is WITHDRAWN — layer-2 verification of the underlying
+   decisions.md text found the 22:25 entry titled "final call — FAIL" and the
+   22:31 entry carrying an independent substantive merits ground. The ban stands;
+   no correction to those records is filed.
+
+### Execution order (operator)
+
+1. This record lands as a standalone `rules:` commit (same commit adds the
+   borderline entries).
+2. Ledger reopen notes appended to the 12 unparked functions' ledgers.
+3. `queue unpark` x12 on a clean tree.
+4. Uncapped SOTN index rebuild (`build_sotn_index.py --cap 1000`), rechecking the
+   func_80072CD4 gate.
+5. ra_solver `--target-object` implementation + engine suite green.
+6. Grinder drill + relaunch.

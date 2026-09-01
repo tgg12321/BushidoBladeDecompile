@@ -336,3 +336,18 @@ disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 �
 category: canonical-asm-grant
 evidence: scan_hand_coded --single func_8002D320 tier=OWNER-CLUSTER (cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)) (driver-verified); judge ESCALATE packet in docs/grind/decisions.md (2026-08-31)
 disposition taken: inline_asm_canonical.txt entry written by the driver per owner ruling 2026-08-18; function stays ACTIVE for canonical-asm integration.
+
+## 2026-09-01 — cop2 materialize-then-copy widened anchor — family-candidate
+category: family-candidate
+evidence: FOR — memory/grind/func_800203B4 ledger: islands are literal PsyQ SDK macro bodies, residual measured as exactly 25 un-C-expressible insns (11 cop2 + 12 in-island integer + 2 delay nops), island partition measured minimal (s6), GCC 2.7.2 MIPS backend has zero cop2 mnemonics (s8); the 2026-08-17 func_8002FDB0 cluster ruling covers the same idiom with an `$aN` copy source. AGAINST — scan_hand_coded LOW 1/8; zero-hit SOTN census (2026-09-01 s9 record); Judge FAIL(CONSTRUCT) 2026-09-01 09:01 (decisions.md:17546) holding the non-$aN widening is a family extension; AUTO-REJECT clause "a LOW scan tier is an answer, not an obstacle to be waived". Would-be beneficiaries per the Judge's hypothetical enumeration: func_80017FA0, func_80019310, func_800203B4, func_800204C0, func_8002FF20, func_80031890, func_8003E6D8.
+disposition taken: NOT granted (first-draft grant FAILed by layer-2 review and struck). Question logged for the owner's own hand per [[judge-sole-gate]] rule 4 and surfaced in the 2026-09-01 session report; all seven functions keep their current dispositions until an explicit owner ruling lands.
+
+## 2026-09-01 — tools/ra_solver inverse_compose --target-object — policy-question (resolved)
+category: policy-question
+evidence: owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry, Ruling C); mirrors the sched_solver --target-object escape granted 2026-08-25; closes the ledger-documented pipeline-wide gap (get_alarm 2026-08-30 record: every post-migration RA-seat residual un-analysable).
+disposition taken: operator lane implements; read-only diagnostic, no gate or byte surface touched; engine suite kept green.
+
+## 2026-09-01 — libcd CD_intr aggregate merge — policy-question (resolved)
+category: policy-question
+evidence: owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry, Ruling D); applies the already-sanctioned per-word-splat->aggregate-merge family (2026-08-17) to 0x800A1494/95/96; prong-(a) evidence banked (target base+offset addressing, 2026-07-09 naming census, closer Ruling 1 naming the merge, CD_datasync F14); volatility grounded by matched in-TU consumers.
+disposition taken: one sibling-scoped structural session authorized; mandatory prong-(c) asm-consumer check first; byte-neutrality via verify-oracle --rebuild; candidates face the normal gates.
