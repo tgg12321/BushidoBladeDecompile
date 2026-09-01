@@ -2169,3 +2169,190 @@ collapses to 170" exhaustion argument.
 - [s16] Re-measured on today's floor-5 chassis: the s8 canonical-promotion result reproduces exactly (A2 = 175 insns / score 14, rows 35-36 still `sw $0,48($17)` / `sh $0,52($17)`), so the promotion alone flips the canonical without splitting - as s8 concluded on the floor-9 chassis.
 
 - [s16] Four forms banked to memory/grind/func_800770B8/rejected/ (bank now holds 83): s17-classB-split-DEMONSTRATED-join-label-177insn-score30.c, s17-classB-branch-after-copy-label-too-late-177insn.c, s17-classB-dead-goto-label-deleted-by-jump-byte-inert.c, s17-classB-promotion-only-collapses-onto-s1-175insn.c.
+
+## [s18] solver — 2026-09-01 — THE WHOLE SOLVER SUITE IS NOW SPENT ON THIS FUNCTION WITH FULL-DISPOSITION GOALS; SCHED IS FORECLOSED IN BOTH PASSES AND GLOBAL-ALLOC AT DEPTH 3
+
+(This session is the driver's "session 17"; the previous session labelled its own
+artifacts `s17`, so this one banks under `s18` to avoid clobbering
+`tmp/grind/func_800770B8/s17/`. Nothing in the s17 record is contradicted here.)
+
+Chassis re-measured as the first action: `memory/grind/func_800770B8/candidate.c`
+applied to `src/text1b.c` = **score 5 / build_insns 175 / target_insns 175**, and
+re-measured again at session end after every probe = 5/175. No drift; `src/text1b.c`
+was returned to HEAD (`INCLUDE_ASM`) before the outcome was written.
+
+### 1. Object-level typing of the floor-5 residual (the mandated first step)
+
+`inverse_compose.py classify` still refuses this function (rules-to-zero guard) and
+names the object-level classifier, exactly as s5/s7 banked. `goal_from_tgt.py classify
+text1b func_800770B8` on the floor-5 body:
+
+    FIRST DIVERGENCE: RA      $v0 -> $v1 x4 | $s1 -> $v0 x2 | $v1 -> $v0 x1
+    5 renamed pair(s), 0 pair(s) skipped (skeleton differs)
+
+**Zero skipped pairs is the load-bearing number and it is new to the ledger.** It
+means our 175-instruction stream and the target's 175-instruction stream have the
+same skeleton at every position: the entire honest residual is five in-place
+register-name replacements. There is no insn our build lacks, none it adds, and none
+in the wrong slot.
+
+### 2. FULL-DISPOSITION global-alloc inverse — NEGATIVE at depth 3 (supersedes s5)
+
+The solver playbook's rule (3) says a subset goal voids the vectors. Every previous
+ra_solver run on this function used a subset: s5 ran `--goal '{"75": 2}'` (class B
+alone, depth 2) and s10 ran `local --swap 3,4` on the FLIPPED model. This session ran
+the goal that states the whole target disposition.
+
+`goal_from_tgt.py goal ... --model tmp/ra_solver_work/func_800770B8.model.json`
+attributes `$s1->$v0 (x2)` uniquely to **pseudo 75** (p_old, class B) and reports the
+other two substitutions AMBIGUOUS at register level (38 pseudos hold $v0, 13 hold
+$v1). The class-C member is identified from the s6 dump read-out already in this
+ledger: `.lreg` insn 173 = `(set (reg 110) (plus (reg 109) (reg 108)))`, so the
+class-C goal is **pseudo 110 -> $v1 (3)**.
+
+    inverse.py global <model> --goal '{"75": 2, "110": 3}' --depth 2  -> NEGATIVE
+    inverse.py global <model> --goal '{"75": 2, "110": 3}' --depth 3  -> NEGATIVE
+    inverse.py global <model> --goal '{"110": 3}'          --depth 3  -> NEGATIVE
+    (search bounds: refs delta +12/-6, live length +/-2,4,8)
+
+Same mechanism as s5 for the class-B half (pseudo 75 crosses 3 calls and $v0 is
+call-used, so `prune_preferences`, global.c:897, strips the $v0 preference before
+`find_reg` runs; pseudo 74 is stripped identically). The class-C half is now
+independently NEGATIVE — no perturbation of refs / live span / birth order /
+conflicts / preferences / calls-crossed reaches pseudo 110 -> $v1.
+Artifact: `tmp/grind/func_800770B8/s18/inv_global_full.log`.
+
+### 3. BOTH SCHEDULING PASSES ARE FORECLOSED — and pass 1 had never been checked
+
+s9's exhaustive 3234-atom sweep was a **sched2** result aimed at class A. s5's
+"no differing block" was **pass 2 only** and carried an explicit alignment caveat.
+This session ran the object-level goal path on both passes of the floor-5 body,
+using the s5-patched `goalmap` (the `_macro_expand_counts` bug still bites: the
+stock tool aborts with "honest object has 175 insns but text1b.hon.s body has 169
+lines"):
+
+    perturb.py <sched.json> --func func_800770B8 --pass {1,2} \
+      --goal-from-target text1b --target-object build/src/text1b.o \
+      --ours-object tmp/sandbox/func_800770B8/text1b.o --atoms luid,luid_move --depth 2
+
+    align honobj->tgtobj: |A|=175 |B|=175
+        {'equal': 170, 'replace': 5, 'delete': 0, 'insert': 0, 'moved': 0}
+    PASS 1: no differing block.   PASS 2: no differing block.
+
+**`moved: 0` with a real target object.** The floor-5 build's instruction order is
+target-exact in sched1 and in sched2. Scheduling is not a lever for any part of the
+remaining 5 points, in either pass — this is the first time that has been stated for
+sched1, and it retires "emission order" as a description of the floor-5 residual.
+Artifact: `tmp/grind/func_800770B8/s18/perturb_base.log`.
+
+### 4. TOOLING TRAP (transferable, costs a whole probe if unknown)
+
+`tools/sched_solver/mkasm.sh` **ignores a `--target` argument** and unconditionally
+does `cp <stem>.hon.s <stem>.tgt.s` (per the 2026-08-25 owner ruling baked into its
+comments: for INCLUDE_ASM-routed functions the src-derived stream cannot carry the
+target). So the solver-playbook instruction "pin the target with `--target
+<stem>.tgt.head.s`" is **actively dangerous on this function**: `.tgt.head.s` copied
+from `.tgt.s` is OUR OWN stream, and `goalmap.py --target` then reports
+`align hon->tgt {equal: 169}` and "block N: GOAL == OURS (identity)" for every
+block — a fictitious clean bill of health. This session hit it and caught it only
+by `cmp`-ing the two files. The correct path for this function is
+`--target-object build/src/<stem>.o --ours-object tmp/sandbox/<func>/<stem>.o`, and
+`build/src/text1b.o` must be a HEAD (INCLUDE_ASM) build for that to be the target.
+
+### 5. Local-alloc inverse on the BASE model: REACHABLE, one family, MEASURED DEAD in C
+
+s10 ran `inverse.py local --swap 3,4` on the FLIPPED model only. On the BASE
+(floor-5) model the block-1 quantities re-extract byte-identically to s10's BASE
+table (chassis stable):
+
+    ord0 qty2 r89  [12,14) refs4  -> $v0
+    ord1 qty4 r110 [48,56) refs10 -> $v0     <- the sum / addiu chain; target wants $v1
+    ord2 qty3 r108 [28,52) refs16 -> $v1     <- the `sll ...,2` (t0*4) chain
+    ord3 qty1 r100 [10,44) refs12 -> $a0
+    ord4 qty0 r86  [6,46)  refs14 -> $a1
+
+`inverse.py local ... --block 1 --swap 3,4 --depth 2` (392-atom space, 7 classes)
+returns **REACHABLE: 55 distinct minimal vectors, all one atom, all ONE family** —
+`live_shrink qty 3: born later (28 -> 35..46)`. In words: if the t0*4 shift chain
+were born later in the block, qty3 would lose $v1 to qty4 and the seats would swap
+into the target's `addu $v1,$v1,$v0`. The tool prints its own standing caveat
+(camera_set_zoom 2026-08-05): a birth/span vector is a claim about ALLOC-TIME order,
+which is not known to equal emission order — NECESSARY, not SUFFICIENT.
+
+**Spelled and measured — five builds, all worse** (`s18/sweep_v.log`, generator
+`s18/gen.py`, bodies in `s18/v/`). The family says "delay the birth of the t0*4
+quantity"; s12 (24/24 store-group orders) and s13 (120 five-element orders) already
+relocated it by statement movement, so this session attacked it in place, by
+changing which subexpression the two t0*4 consumers demand:
+
+| variant | spelling | score | insns |
+|---|---|---|---|
+| V1 | group B via s16 index `*((s16 *)&D_800A35D0 + t0*2 + 1)` | 37 | 177 |
+| V2 | group C via s16 index `*((s16 *)(base + 0x40) + t0*2 + 1)` | **6** | 175 |
+| V3 | V1 + V2 | 15 | 177 |
+| V4 | group B array-typed `((s16 (*)[2])&D_800A35D0)[t0][1]` | 37 | 177 |
+| V5 | group B + group C array-typed | 15 | 177 |
+
+V2 is the only one that stays at 175 insns, and its positional diff shows **class C
+is completely unchanged** (rows 62-64 still `addu $2,$2,$3`); the extra point is a
+NEW break at row 54 (`addu $2,$3,$4` vs target `addu $v0, $a0, $v1`). So the s16-index
+spelling does not move qty3's birth in the direction the model needs — it only
+re-orders a different plus. Banked:
+`rejected/s18-qty3-birth-delay-groupC-s16-index-176row54-score6.c`,
+`rejected/s18-qty3-birth-delay-groupB-s16-index-177insn-score37.c`,
+`rejected/s18-qty3-birth-delay-both-array-typed-177insn-score15.c`.
+
+The local family is also contradicted by the target's own emission, exactly as s10's
+three families were: our build emits the `sll ...,2` at the target's own row 42 and
+section 3 proves `moved: 0` in both passes, so "born at >= 35 instead of 28"
+describes a function that emits its loop head in a different order from the target.
+
+### 6. The FLIPPED basin, typed for the first time
+
+Applying `s12/perm/Q00.c` (flipped-ABCD, 29/175) and classifying it object-level:
+
+    9 renamed pair(s), 11 pair(s) skipped (skeleton differs)
+    $a0->$a1 x4 | $a1->$v0 x3 | $v1->$a0 x3 | $s1->$v0 x2 | $v0->$v1 x2 | $a1->$v1 x1
+    align honobj->tgtobj: {'equal': 147, 'replace': 15, 'delete': 8, 'insert': 8, 'moved': 5}
+
+This SHARPENS s13's "the flip's damage is emission order in rows 38-59": only **5**
+of the 28 damaged slots are moves; 15 are in-place replacements and 8+8 are genuine
+insert/delete pairs. The flip does not merely re-order the loop head, it changes
+which instructions the loop head contains. `perturb.py` cannot search it: block 1
+(27 insns) reports `goal differs from ours` but is **SKIPPED — goal is not a
+topological order (19 violations pass 1, 22 pass 2): the target alignment mis-paired
+duplicate instruction text**. That is a tooling limit, not a verdict; recorded so no
+future session re-runs it expecting an answer.
+Artifacts: `s18/perturb_flip_p1.log`, `s18/perturb_flip_p2.log`,
+`s18/goalmap_flip.log` (the FICTITIOUS identity run of section 4 — kept as the
+evidence of the trap, NOT as a result).
+
+- [s18] Chassis: candidate.c = score 5 / 175 build insns / 175 target insns at session start and again at session end. src/text1b.c returned to HEAD INCLUDE_ASM before the outcome was written.
+- [s18] goal_from_tgt.py classify on the floor-5 body reports 5 renamed pairs and ZERO skipped pairs: our stream and the target's stream share the same skeleton at all 175 positions, so the entire honest residual is five in-place register-name replacements.
+- [s18] inverse.py global with the FULL disposition goal {"75": 2, "110": 3} returns NEGATIVE at depth 2 AND depth 3 (bounds: refs +12/-6, live length +/-2,4,8). The class-C-only goal {"110": 3} is independently NEGATIVE at depth 3. This supersedes s5's subset goal {"75": 2} under solver rule (3); global allocation is foreclosed for BOTH residual classes, not just class B.
+- [s18] SCHED IS FORECLOSED IN BOTH PASSES on the floor-5 body. perturb.py with the object-level goal (--target-object build/src/text1b.o --ours-object tmp/sandbox/func_800770B8/text1b.o) reports NO differing block for pass 1 and pass 2, with align honobj->tgtobj = {equal 170, replace 5, delete 0, insert 0, moved 0}. s9's sweep was sched2/class-A only; sched1 had never been checked on this function.
+- [s18] TOOLING TRAP: tools/sched_solver/mkasm.sh ignores --target and always copies hon.s to tgt.s, so goalmap/perturb "--target tmp/sched_map/<stem>.tgt.head.s" (the solver playbook's own instruction) compares this function against ITSELF and prints "GOAL == OURS (identity)" for every block. Verify with cmp before trusting any sched goal on an INCLUDE_ASM-routed function; use --target-object/--ours-object instead.
+- [s18] inverse.py local on the BASE model (--block 1 --swap 3,4 --depth 2, 392 atoms) is REACHABLE with 55 minimal single-atom vectors in exactly ONE family: live_shrink qty3 (r108, the t0*4 shift chain) born later (28 -> 35..46). Block-1 QTYDBG rows re-extract byte-identically to s10's BASE table.
+- [s18] The live_shrink-qty3 family is MEASURED DEAD in C in place (5 builds): group B via s16 index 37/177, group C via s16 index 6/175, both 15/177, group B array-typed 37/177, both array-typed 15/177. The only 175-insn variant (group C via s16 index) leaves class C rows 62-64 completely unchanged and breaks row 54 instead. Statement-level relocation of the same quantity was already exhausted by s12 (24/24 group orders) and s13 (120 five-element orders).
+- [s18] The FLIPPED-ABCD basin (29/175) typed object-level for the first time: 9 renamed pairs + 11 skeleton-differing pairs; align = {equal 147, replace 15, delete 8, insert 8, moved 5}. Only 5 of the 28 damaged slots are MOVES - the flip changes which instructions the loop head contains, it does not merely reorder them. This sharpens s13's "emission order" framing.
+- [s18] perturb.py cannot search the flipped basin: block 1's goal is not a topological order (19 violations pass 1, 22 pass 2) because the target alignment mis-pairs duplicate instruction text. A tooling limit, not a verdict - do not re-run expecting vectors.
+
+- [s17] Chassis re-measured at session start and again at session end: memory/grind/func_800770B8/candidate.c applied to src/text1b.c = score 5 / build_insns 175 / target_insns 175. No drift from the s11-s17 ledger floor. src/text1b.c was returned to HEAD (INCLUDE_ASM) before the outcome was written; the only tree changes are memory/grind/func_800770B8/* and tmp/.
+
+- [s17] goal_from_tgt.py classify on the floor-5 body reports 5 renamed pairs and ZERO skipped (skeleton-differing) pairs - our 175-insn stream and the target's 175-insn stream share the same skeleton at every position, so the entire honest residual is five in-place register-name replacements. Substitutions: $v0->$v1 x4, $s1->$v0 x2, $v1->$v0 x1.
+
+- [s17] inverse.py global with the FULL disposition goal {"75": 2, "110": 3} is NEGATIVE at depth 2 AND depth 3 (search bounds refs +12/-6, live length +/-2,4,8); the class-C-only goal {"110": 3} is independently NEGATIVE at depth 3. This supersedes s5's subset goal {"75": 2} under the solver playbook's rule (3) that a subset goal voids the vectors.
+
+- [s17] SCHED IS FORECLOSED IN BOTH PASSES: perturb.py with the object-level goal reports no differing block for pass 1 and for pass 2, align honobj->tgtobj = {equal 170, replace 5, delete 0, insert 0, moved 0}. sched1 had never been checked on this function; s9's 3234-atom sweep was sched2/class-A only and s5's pass-2 run carried an explicit alignment caveat.
+
+- [s17] TOOLING TRAP (transferable): tools/sched_solver/mkasm.sh ignores a --target argument and unconditionally copies <stem>.hon.s to <stem>.tgt.s, so following the solver playbook's 'pin the target with --target <stem>.tgt.head.s' on an INCLUDE_ASM-routed function compares the function against ITSELF and prints 'block N: GOAL == OURS (identity)' for every block - a fictitious clean bill of health. Caught here only by cmp-ing the two files. Correct path: --target-object build/src/<stem>.o --ours-object tmp/sandbox/<func>/<stem>.o, with build/src/<stem>.o from a HEAD build.
+
+- [s17] The stock tools/sched_solver/goalmap.py still aborts on this function with '_macro_expand_counts' undercounting (honest object 175 insns vs hon.s 169 lines); the s5-patched scratch copy tmp/grind/func_800770B8/s5/sched_solver/perturb.py works and was used for every sched run this session.
+
+- [s17] inverse.py local on the BASE model (--block 1 --swap 3,4 --depth 2, 392 atoms, 7 classes) is REACHABLE with 55 minimal single-atom vectors in exactly ONE family: live_shrink qty3 (r108, the t0*4 shift chain) born later (28 -> 35..46). Block-1 QTYDBG rows re-extract byte-identically to s10's BASE table (ord0 qty2 r89 [12,14) refs4 -> $v0; ord1 qty4 r110 [48,56) refs10 -> $v0; ord2 qty3 r108 [28,52) refs16 -> $v1; ord3 qty1 r100 [10,44) refs12 -> $a0; ord4 qty0 r86 [6,46) refs14 -> $a1).
+
+- [s17] The live_shrink-qty3 family is measured dead in C in place: group B via s16 index 37/177, group C via s16 index 6/175, both 15/177, group B array-typed 37/177, both array-typed 15/177. Banked as rejected/s18-qty3-birth-delay-groupC-s16-index-176row54-score6.c, rejected/s18-qty3-birth-delay-groupB-s16-index-177insn-score37.c, rejected/s18-qty3-birth-delay-both-array-typed-177insn-score15.c.
+
+- [s17] The FLIPPED-ABCD basin (s12/perm/Q00.c, re-measured 29/175) typed object-level for the first time: 9 renamed pairs + 11 skeleton-differing pairs; align = {equal 147, replace 15, delete 8, insert 8, moved 5}. Only 5 of the 28 damaged slots are moves.
+
+- [s17] Net effect on the ledger: all three solver backends (global-alloc, local-alloc, both scheduler passes) have now been run against this function's residual with full-disposition goals, and every one returns either a NEGATIVE verdict or a single family that measurement kills. No new floor; no construct proposed; nothing in the s11-s17 record contradicted.

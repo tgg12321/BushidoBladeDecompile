@@ -97,6 +97,31 @@
  *     (176 s9, 177 B1, 177 C1).  This function has ZERO insn slack (175 = 175), so
  *     class B is foreclosed BY PRICE.
  *
+ * s18 NEGATIVE RESULTS (5 fresh builds + the full solver suite re-run with
+ *   FULL-DISPOSITION goals; detail in evidence.md [s18]):
+ *   - THE FLOOR-5 BUILD IS THE TARGET MODULO FIVE REGISTER NAMES.  goal_from_tgt.py
+ *     classify reports 5 renamed pairs and ZERO skeleton-differing pairs, and
+ *     sched_solver perturb (object-level goal, --target-object build/src/text1b.o)
+ *     reports NO differing block in sched1 AND sched2, with align honobj->tgtobj =
+ *     {equal 170, replace 5, delete 0, insert 0, moved 0}.  s9 had only ever checked
+ *     sched2; "emission order" is retired as a description of this residual.
+ *   - GLOBAL ALLOCATION IS FORECLOSED FOR BOTH CLASSES, not just class B.
+ *     inverse.py global with the FULL goal {"75": 2, "110": 3} is NEGATIVE at depth 2
+ *     and depth 3, and the class-C-only goal {"110": 3} is NEGATIVE at depth 3.  s5's
+ *     subset goal {"75": 2} is superseded under solver rule (3).
+ *   - LOCAL ALLOCATION offers exactly one family and it is dead in C.  inverse.py
+ *     local on the BASE model (--block 1 --swap 3,4, 392 atoms) is REACHABLE with 55
+ *     single-atom vectors, all `live_shrink qty3 born later (28 -> 35..46)` (qty3 =
+ *     r108, the t0*4 shift chain).  Five in-place spellings that delay that birth
+ *     measure 37/177, 6/175, 15/177, 37/177, 15/177; the only 175-insn one leaves
+ *     rows 62-64 byte-unchanged and breaks row 54 instead.  Statement-level
+ *     relocation of the same quantity was already exhausted by s12 (24/24) and s13
+ *     (120 orders).  Banked rejected/s18-qty3-birth-delay-*.c.
+ *   - TOOLING TRAP: tools/sched_solver/mkasm.sh ignores --target and copies hon.s to
+ *     tgt.s, so the solver playbook's "--target <stem>.tgt.head.s" compares this
+ *     function against ITSELF and prints "GOAL == OURS (identity)" for every block.
+ *     cmp the two files before trusting any sched goal here.
+ *
  * INHERITED, STILL BINDING (do not re-derive): s6 (19 address spellings),
  *   s9 (3234-atom sched_solver sweep, 0 hits), s10 (full struct rewrite 178 insns),
  *   s11 (63-position single-wrap sweep + 18 nested), s12 (24/24 store-group orders,

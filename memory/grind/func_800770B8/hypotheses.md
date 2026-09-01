@@ -1736,3 +1736,107 @@ measured non-existent (s15).
 - probe: 4 builds (s17/gen2.py -> s17/c/, s17/gen3.py -> s17/e/; logs s17/sweep_branch.log, s17/sweep_join.log), rows read off the sandbox object with s17/rows.py: B1 = split + promotion + `if (r != 0) { raw stores }`; B2 = B1 without promotion; C1 = split + promotion + a duplicated-arm `if (r) { +4 store } else { +4 store }` join label with the raw stores after the join; C2 = C1 without promotion.
 - result: CONFIRMED as a mechanism, FORECLOSED by price. C1 emits the split for the first time in seventeen sessions - `move $17,$2 / sw $17,0($28) / sw $18,4($17) ... sw $0,48($2) / sh $0,52($2)`, exactly asm/funcs/func_800770B8.s rows 29-38 - at 177 insns / score 30. B1 (177/23) shows placement is part of the recipe: a conditional jump does not end a cse block (the scan follows the fall-through), only the join label does, so rows 33-34 stay $17-based. B2 (174/19) and C2 (173/14) lose the label entirely - jump.c cross-jumps the identical arms - and collapse back to one pseudo. Across s9 and s17 every surviving label costs at least one instruction (176, 177, 177), and the function has zero slack: build and target are both exactly 175, and the target's rows 24-40 are straight-line so there is no existing label to reuse.
 - verdict: CONFIRMED
+
+## [s18] solver — hypothesis dispositions
+
+### H-s18-1 — KILLED (typed FORECLOSED)
+**Statement.** The floor-5 residual, which `goal_from_tgt.py classify` labels "FIRST
+DIVERGENCE: RA", is reachable by perturbing the inputs of GCC 2.7.2's `global.c`
+allocator, when the goal is stated as the FULL target disposition rather than the
+class-B subset s5 used.
+**Mechanism.** `global_alloc` assigns hard registers from allocno priority order,
+preferences (`set_preference` / `prune_preferences`) and the conflict graph; the
+solver perturbs refs, live length, birth order, conflicts, preferences and
+calls-crossed and replays `find_reg` exactly.
+**Probe.** `inverse.py global tmp/ra_solver_work/func_800770B8.model.json` with
+`--goal '{"75": 2, "110": 3}'` at depth 2 and depth 3, and `--goal '{"110": 3}'` at
+depth 3 (bounds refs +12/-6, live length +/-2,4,8).
+**Result.** NEGATIVE in all three runs. Class B fails for s5's reason (pseudo 75
+crosses 3 calls, `$v0` is call-used, `prune_preferences` at global.c:897 strips the
+preference before `find_reg` runs). Class C (pseudo 110 -> `$v1`) is NEGATIVE
+independently. Artifact `tmp/grind/func_800770B8/s18/inv_global_full.log`.
+
+### H-s18-2 — KILLED (typed FORECLOSED, and the first sched1 statement on this function)
+**Statement.** Some part of the floor-5 residual is an instruction-ORDER residual
+reachable by a source-statement move, in sched1 (which s9 never checked — its
+3234-atom sweep was sched2 aimed at class A) or in sched2 against a REAL target.
+**Mechanism.** `sched.c`'s list scheduler runs twice at -O2 (`flag_schedule_insns`
+and `flag_schedule_insns_after_reload`); `sched_solver` replicates it order- and
+clock-exactly (6978/6978 blocks) and maps `luid` / `luid_move` atoms to source
+statement moves.
+**Probe.** `perturb.py tmp/sched_solver_work/text1b.sched.json --func func_800770B8
+--pass {1,2} --goal-from-target text1b --target-object build/src/text1b.o
+--ours-object tmp/sandbox/func_800770B8/text1b.o --atoms luid,luid_move --depth 2`,
+run through the s5-patched `goalmap` (the stock one aborts on the
+`_macro_expand_counts` bug).
+**Result.** No differing block in EITHER pass, with
+`align honobj->tgtobj = {equal 170, replace 5, delete 0, insert 0, moved 0}`. The
+floor-5 build's instruction order is target-exact in both scheduling passes. Every
+remaining point is an in-place register name. Artifact `s18/perturb_base.log`.
+
+### H-s18-3 — CONFIRMED-then-KILLED (model REACHABLE, C-spelling dead)
+**Statement.** Class C's seat can be flipped by making the `t0*4` shift chain (qty3,
+r108) BORN LATER in the loop-body block, which hands `$v1` to qty4 (r110, the sum)
+and prints the target's `addu $v1,$v1,$v0`.
+**Mechanism.** `local-alloc.c block_alloc`: `qty_compare` orders quantities by
+`floor_log2(refs)*refs*size/(death-birth)`, then `find_free_reg` scans ascending over
+`regs_live_at[birth..death]`; shrinking qty3's live range moves it behind qty4.
+**Probe.** `inverse.py local tmp/ra_solver_work/text1b.local.json --func
+func_800770B8 --block 1 --swap 3,4 --depth 2` (392 atoms / 7 classes) on the BASE
+model — s10 only ever ran this on the FLIPPED model. Then five C spellings that delay
+the birth in place rather than by moving statements (s12/s13 already swept statement
+moves exhaustively): group B and/or group C addressed by `s16` index or array type.
+**Result.** The model says REACHABLE with 55 minimal single-atom vectors, ALL in the
+one family `live_shrink qty3 born later (28 -> 35..46)`. Measured in C: 37/177,
+6/175, 15/177, 37/177, 15/177 — all worse than the 5/175 baseline. The only variant
+that keeps 175 insns (group C via `s16` index) leaves rows 62-64 byte-unchanged and
+breaks row 54 instead. The family is additionally contradicted by the target's own
+emission (H-s18-2 proves `moved: 0`, i.e. our `sll ...,2` already sits at the
+target's row 42). Bodies in `s18/v/`, log `s18/sweep_v.log`, three banked under
+`memory/grind/func_800770B8/rejected/s18-qty3-birth-delay-*.c`.
+
+### H-s18-4 — KILLED as a searchable axis (tooling limit, recorded so it is not re-run)
+**Statement.** The flipped-ABCD basin's 24-point loop-head collateral (s13 attributed
+it to "emission order in rows 38-59") is a scheduling residual, so `sched_solver` can
+hand back `luid`/`luid_move` vectors that restore the loop head under the flip.
+**Mechanism.** As H-s18-2.
+**Probe.** Apply `s12/perm/Q00.c` (29/175), re-extract the sched model, classify
+object-level, and run `perturb.py` on both passes.
+**Result.** The basin's alignment is `{equal 147, replace 15, delete 8, insert 8,
+moved 5}` — only 5 moved slots; the flip CHANGES WHICH INSTRUCTIONS the loop head
+contains, so "emission order" was too generous a description. `perturb.py` then
+refuses block 1 in both passes: `goal is not a topological order (19 / 22
+violations)` because the target alignment mis-pairs duplicate instruction text. No
+vectors are obtainable from this toolkit for the flipped basin.
+
+### Standing warning added this session
+`tools/sched_solver/mkasm.sh` ignores `--target` and copies `hon.s` to `tgt.s`. On an
+INCLUDE_ASM-routed function, following the solver playbook's "pin the target with
+`--target <stem>.tgt.head.s`" compares the function against ITSELF and prints
+"GOAL == OURS (identity)" for every block. Always `cmp <stem>.hon.s <stem>.tgt.s`
+first; the correct path is `--target-object build/src/<stem>.o --ours-object
+tmp/sandbox/<func>/<stem>.o` with `build/src/<stem>.o` from a HEAD build.
+
+## [s17] The floor-5 residual, which goal_from_tgt.py classify labels 'FIRST DIVERGENCE: RA', is reachable by perturbing GCC 2.7.2 global.c allocator inputs when the goal states the FULL target disposition rather than the class-B subset s5 used.
+- mechanism: global_alloc assigns hard registers from allocno priority order, preferences (set_preference / prune_preferences) and the conflict graph; ra_solver perturbs refs, live length, birth order, conflicts, preferences and calls-crossed and replays find_reg exactly.
+- probe: inverse.py global tmp/ra_solver_work/func_800770B8.model.json --goal '{"75": 2, "110": 3}' at depth 2 and depth 3, plus --goal '{"110": 3}' at depth 3 (bounds: refs +12/-6, live length +/-2,4,8). Pseudo 75 = p_old (class B, uniquely attributed by the tool); pseudo 110 = the class-C sum, from the s6 .lreg read-out insn 173 = (set (reg 110) (plus (reg 109) (reg 108))).
+- result: NEGATIVE in all three runs. Class B fails for s5's reason (pseudo 75 crosses 3 calls, $v0 is call-used, prune_preferences at global.c:897 strips the preference before find_reg runs); class C (pseudo 110 -> $v1) is NEGATIVE independently and for the first time. Log tmp/grind/func_800770B8/s18/inv_global_full.log.
+- verdict: KILLED
+
+## [s17] Some part of the floor-5 residual is an instruction-ORDER residual reachable by a source-statement move, either in sched1 (never checked on this function - s9's exhaustive 3234-atom sweep was sched2 aimed at class A) or in sched2 measured against a REAL target stream.
+- mechanism: sched.c's list scheduler runs twice at -O2 (flag_schedule_insns and flag_schedule_insns_after_reload); sched_solver replicates it order- and clock-exactly (6978/6978 blocks) and maps luid / luid_move atoms onto source statement moves.
+- probe: perturb.py tmp/sched_solver_work/text1b.sched.json --func func_800770B8 --pass {1,2} --goal-from-target text1b --target-object build/src/text1b.o --ours-object tmp/sandbox/func_800770B8/text1b.o --atoms luid,luid_move --depth 2, run through the s5-patched goalmap (the stock one aborts on the _macro_expand_counts bug).
+- result: No differing block in EITHER pass, with align honobj->tgtobj = {equal 170, replace 5, delete 0, insert 0, moved 0}. The floor-5 build's instruction order is target-exact in sched1 and sched2; every remaining point is an in-place register name. Log tmp/grind/func_800770B8/s18/perturb_base.log.
+- verdict: KILLED
+
+## [s17] Class C's seat can be flipped by making the t0*4 shift chain (qty3, r108) born LATER in the loop-body block, which hands $v1 to qty4 (r110, the sum) and prints the target's addu $v1,$v1,$v0.
+- mechanism: local-alloc.c block_alloc: qty_compare orders quantities by floor_log2(refs)*refs*size/(death-birth), then find_free_reg scans ascending over regs_live_at[birth..death]; shrinking qty3's live range moves it behind qty4.
+- probe: inverse.py local tmp/ra_solver_work/text1b.local.json --func func_800770B8 --block 1 --swap 3,4 --depth 2 (392 atoms / 7 classes) on the BASE model - s10 only ever ran this on the FLIPPED model - then five C spellings that delay the birth IN PLACE rather than by moving statements (s12/s13 swept statement moves exhaustively): group B and/or group C addressed by s16 index or array type.
+- result: Model says REACHABLE with 55 minimal single-atom vectors, ALL in the one family live_shrink qty3 born later (28 -> 35..46). Measured in C: 37/177, 6/175, 15/177, 37/177, 15/177 - all worse than 5/175. The only 175-insn variant (group C via s16 index) leaves rows 62-64 byte-unchanged and breaks row 54 (addu $2,$3,$4 vs target addu $v0,$a0,$v1) instead. The family is additionally contradicted by the target's own emission: the sched result above proves moved:0, i.e. our sll ...,2 already sits at the target's row 42.
+- verdict: KILLED
+
+## [s17] The flipped-ABCD basin's 24-point loop-head collateral (s13 attributed it to 'emission order in rows 38-59') is a scheduling residual, so sched_solver can hand back luid/luid_move vectors that restore the loop head under the flip.
+- mechanism: As above - sched.c list scheduler, both passes.
+- probe: Applied tmp/grind/func_800770B8/s12/perm/Q00.c (re-measured 29/175), re-extracted the sched model (parity=True, 486 funcs / 1752 blocks / 14250 picks), classified object-level and ran perturb.py on both passes.
+- result: Object-level alignment is {equal 147, replace 15, delete 8, insert 8, moved 5} - only 5 moved slots, so the flip CHANGES WHICH INSTRUCTIONS the loop head contains rather than merely reordering them, sharpening s13's framing. perturb.py then refuses block 1 in both passes: 'goal is not a topological order' (19 violations pass 1, 22 pass 2) because the target alignment mis-pairs duplicate instruction text. No vectors are obtainable from this toolkit for the flipped basin - a tooling limit, not a verdict.
+- verdict: KILLED
