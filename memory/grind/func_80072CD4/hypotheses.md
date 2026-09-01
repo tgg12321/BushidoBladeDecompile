@@ -1441,3 +1441,57 @@ The three carry-forward items are project-wide, not this function's:
 3. The precedent-search ordering lesson in H-s13-5 — check the in-project sibling first —
    should be applied to every function currently sitting in the FORECLOSED bucket on a
    gate-(ii) negative. Several of those censuses searched only outward.
+
+## 2026-09-01 — s13b (escalation modality) — DISPOSITION FILED: foreclosed, gate (a) FAIL / gate (b) PASS-on-shape; the residual is an adjudication deadlock, not a codegen gap
+
+This session re-ran the dispatch of the s13 lane that ended in the 17:38 layer-1 FAIL, and did NOT
+re-attempt the construct. Findings, all measured here:
+
+1. **The owner's Ruling-A named probe is SPENT** (executed in the operator lane, POSITIVE, banked at
+   :1287-1289). There is no remaining probe of that directive available to a grind session.
+2. **The chassis has not drifted.** floor-4 body = 4/79==79; banned per-arm body = 0/79==79. So the
+   byte match is real and reproducible, and the only thing between this function and COMPLETED-C is
+   adjudication of ONE construct.
+3. **The deadlock, stated precisely for whoever inherits this:** the closing form duplicates
+   `r0=0xFC`, `g0=0xC3`, `r1=0xFC` into both arms of the inner `if`. `state.json` banned_constructs
+   entry 5 names exactly that, so the driver rejects any `candidate-ready` declaring it before a
+   Judge sees it. Layer-1 (2026-09-01 17:38) says the form IS duplicated-statement-into-arms and is
+   FAILed for MISSING `/* FAKE */`. The standing `judge_constraints` entry says land it with **NO**
+   `/* FAKE */` because it is ordinary C. Both spellings have been submitted; both were FAILed. An
+   agent cannot resolve this — the frozen family list is owner-only to extend
+   (`judge-sole-gate.md` rule 4), and every `decisions.md` "ruling: … PASS" that purported to clear
+   it was authored inside the grind pipeline's own cadence and is itself banned.
+4. **No new lever was tried, and that is the correct outcome for this modality.** The duplication
+   dial is fully mapped (s7 half-dup 6/80 and 9/80; s8 rgb2/rgb3 per-arm 17/89; s6 all three
+   branch-polarity/arm-order variants 11/79, 39/79, 46/79; s5 cross-block alias chassis 11/78,
+   13/79). s9 settled the mechanism at dump level (sched2 bottom-up tiebreak + cross_jump running
+   after sched2). s12 killed the toolchain-fidelity argument with the original PsyQ cc1psx. There is
+   no un-tried sanctioned axis; there is one un-adjudicated construct.
+
+**Do NOT, on inheriting this:** re-measure the dial, re-run the census, re-submit either spelling of
+the per-arm body, or write another `decisions.md` "ruling" entry. The only things that move this
+function are the four re-activation triggers enumerated in the foreclosure record.
+
+## [s13] The chassis has drifted since s13, so the banked floor-4 and score-0 measurements need re-derivation before they can be spent in a disposition.
+- mechanism: Grind measurements are chassis-relative; the driver's dispatch reported 'measurement unavailable' for the HEAD honest floor, so neither banked number could be quoted without re-measuring.
+- probe: Applied memory/grind/func_80072CD4/fallback_floor4.c and rejected/rederive_polyg4_struct_perarm_score0_banned_family.c in turn via tmp/grind/func_80072CD4/s5/apply.py, running `sandbox func_80072CD4 --disable all` on each, then reverted src/text1b.c to INCLUDE_ASM.
+- result: floor-4 body = score 4, build_insns 79 == target 79, rules_dropped 0; per-arm banned body = score 0, build_insns 79 == 79, rules_dropped 0. Both reproduce the s13 numbers exactly.
+- verdict: KILLED
+
+## [s13] Gate (a) of the endgame-lock AND-gate might have flipped: func_80072CD4 could carry STRONG hand-coded-asm signals and take the canonical-asm grant path.
+- mechanism: tools/scan_hand_coded.py scores S1..S8; a STRONG tier requires S1 (multu pacing), S2 (empty branch) or S6 (BIOS jumptable).
+- probe: python3 tools/scan_hand_coded.py --single func_80072CD4, output banked at tmp/grind/func_80072CD4/s13b/scan_hand_coded.txt.
+- result: tier LOW, score 0/8, no signal set at all (79 insns, 3 spills, 6 distinct regs). This is compiler output, not hand-written asm.
+- verdict: KILLED
+
+## [s13] The owner's 2026-09-01 Ruling-A named probe for this function is still open and is this session's mandated work.
+- mechanism: The queue item's owner directive names 'Ruling A - named probe in ledger reopen note'; the reopen note (memory/grind/func_80072CD4/hypotheses.md:1283-1285) names the uncapped dup_if_else_arm precedent census.
+- probe: Read the reopen note, the result entry at hypotheses.md:1287-1289, and memory/grind/func_80072CD4/census-2026-09-01.md.
+- result: The probe was already EXECUTED in the operator lane and returned POSITIVE (8 verified PSX exhibits in 4 matched zero-INCLUDE_ASM US-PSX files at pin aa53500226ee84be763f3e8702b27de06456b3a7). The directive is SPENT; no grind-session probe of it remains.
+- verdict: CONFIRMED
+
+## [s13] A candidate-ready is reachable this session by re-spelling the known score-0 body, with or without /* FAKE */ annotations.
+- mechanism: The per-arm POLY_G4 body measures 0, so only classification stands between it and COMPLETED-C.
+- probe: Compared the construct against memory/grind/func_80072CD4/state.json banned_constructs and the full layer-1 FAIL history in docs/grind/decisions.md (:8459, :8467, :8479, :8487, :19124).
+- result: The construct is banned_constructs entry 5, so the driver rejects any candidate-ready declaring it before a Judge sees it. The un-annotated spelling was FAILed 2026-09-01 17:38 for MISSING the mandatory /* FAKE */; the annotated spelling is forbidden by the standing judge_constraints entry ('NO /* FAKE */ annotations ... this is ordinary C'). Both spellings have been submitted and both were FAILed. Not agent-resolvable: the frozen family list is owner-only to extend (judge-sole-gate.md rule 4).
+- verdict: KILLED

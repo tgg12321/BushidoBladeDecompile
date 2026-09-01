@@ -1292,3 +1292,43 @@ memory/grind/func_80072CD4/candidate.c. Self-vet: memory/grind/func_80072CD4/sel
 forensics / solver / escalation×3 held the honest floor at 4 with 35 banked rejected forms; the
 residual was never a missing C form, it was an adjudication question about a form that had
 measured 0 since s2. The pure-C match exists, as the prime directive always held.
+
+## [s13b-escalation] 2026-09-01 — disposition session: chassis re-measured, both gates re-evaluated, foreclosure record filed
+
+- **Chassis re-measured this session, both bodies, same `tmp/grind/func_80072CD4/s5/apply.py`
+  harness.** Clean floor-4 body (`memory/grind/func_80072CD4/fallback_floor4.c`, now restored as
+  `candidate.c`): `sandbox func_80072CD4 --disable all` = **4**, build_insns **79** == target 79,
+  rules_dropped 0 (`tmp/grind/func_80072CD4/s13b/sandbox_floor4.json`). The banned per-arm POLY_G4
+  RGB-triple body (`rejected/rederive_polyg4_struct_perarm_score0_banned_family.c`): **0**,
+  build_insns **79** == 79, rules_dropped 0 (`tmp/grind/func_80072CD4/s13b/sandbox_banned_perarm.json`).
+  Both numbers reproduce the s13 measurements exactly — the chassis has NOT drifted.
+- **Gate (a) re-run, not quoted:** `python3 tools/scan_hand_coded.py --single func_80072CD4` =
+  tier **LOW, 0/8**, no S1/S2/S6 (`tmp/grind/func_80072CD4/s13b/scan_hand_coded.txt`). The
+  canonical-asm grant path is closed for this function; this is compiler output.
+- **Gate (b) stands POSITIVE on shape** from the operator-lane Ruling-A census
+  (`census-2026-09-01.md`, `hypotheses.md:1287-1289`): 8 verified PSX exhibits in 4 matched
+  zero-`INCLUDE_ASM` US-PSX files at pin `aa53500226…`. Caveat unchanged and load-bearing: exhibits
+  are source-level; no per-exhibit asm-level `cross_jump` re-merge confirmation, so they establish
+  the SHAPE ships in SOTN master, not that SOTN accepted it for THIS mechanism.
+- **`src/text1b.c` was returned to `INCLUDE_ASM("asm/funcs", func_80072CD4);` after every
+  measurement**; `git status` clean apart from `metrics/events.jsonl`.
+- **`candidate.c` restored to the clean floor-4 body** (it had been left holding the byte-identical
+  copy of the banned per-arm form after the 17:38 layer-1 FAIL — `diff` was empty against
+  `rejected/rederive_polyg4_struct_perarm_score0_banned_family.c`). The byte-exact body now exists
+  only under `rejected/`, which is where the layer-1 FAIL directed it.
+- **Foreclosure record filed** at the tail of `docs/grind/decisions.md`
+  (`## 2026-09-01 — func_80072CD4 … RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED`).
+
+- [s13] CHASSIS (re-measured s13b, 2026-09-01): clean floor-4 body = sandbox --disable all 4, build_insns 79 == target 79, rules_dropped 0 (tmp/grind/func_80072CD4/s13b/sandbox_floor4.json).
+
+- [s13] CHASSIS (re-measured s13b): the per-arm POLY_G4 RGB-triple body = sandbox 0, build_insns 79 == 79, rules_dropped 0 (tmp/grind/func_80072CD4/s13b/sandbox_banned_perarm.json). The byte match is real and reproducible; the residual is adjudication, not codegen.
+
+- [s13] GATE (a) FAILS: scan_hand_coded --single func_80072CD4 = tier LOW 0/8, no S1/S2/S6 (tmp/grind/func_80072CD4/s13b/scan_hand_coded.txt).
+
+- [s13] GATE (b) PASSES ON SHAPE: the operator Ruling-A census found 8 verified PSX exhibits of an unconditional identical arm-tail statement duplicated into both if/else arms, in 4 fully matched zero-INCLUDE_ASM US-PSX files - boss/rbo5/doors.c:919-939, dra/62DEC.c:1600-1605, dra/game_handlers.c:245-251 (VERSION_US branch), main/psxsdk/libspu/s_sca.c:129-137 plus 4 siblings - at pin aa53500226ee84be763f3e8702b27de06456b3a7 (memory/grind/func_80072CD4/census-2026-09-01.md). Caveat carried verbatim: source-level verification only, no per-exhibit asm-level cross_jump re-merge confirmation, so the exhibits establish the SHAPE ships in SOTN master, not that SOTN accepted it for this MECHANISM.
+
+- [s13] candidate.c had been left holding a byte-identical copy of the banned per-arm body after the 17:38 layer-1 FAIL (diff against rejected/rederive_polyg4_struct_perarm_score0_banned_family.c was empty); it is restored this session to the clean floor-4 body, and the byte-exact form now lives only under rejected/, where the layer-1 FAIL directed it.
+
+- [s13] src/text1b.c was returned to INCLUDE_ASM("asm/funcs", func_80072CD4); after every measurement; the working tree carries only ledger, decisions.md and metrics modifications.
+
+- [s13] The six docs/grind/decisions.md 'ruling: ... PASS' entries for this function (2026-08-20 05:46 / 06:09 / 06:35 / 06:54, 07:53, and 2026-09-01 17:30) were authored inside the grind pipeline's own session cadence, are listed in state.json banned_constructs, and are NOT cited as authority anywhere in this session's record.

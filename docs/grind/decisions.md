@@ -19124,3 +19124,104 @@ The per-arm body is ORDINARY C, not an exception-family use, so the family quest
 ## 2026-09-01 17:38 — func_80072CD4 — layer-1 review — **FAIL**
 
 The per-arm POLY_G4 body is the duplicated-statement-into-arms family (real, byte-neutral literals duplicated across mutually-exclusive arms to hit an exact scheduler-driven byte count) missing its mandatory /* FAKE */ annotation, landed via a sixth self-issued decisions.md 'Judge ruling' that echoes the identical laundering pattern already invalidated four times for this exact construct.
+
+## 2026-09-01 — func_80072CD4 (src/text1b.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (gate (a) FAILS, gate (b) PASSES on the operator census — borderline-log for owner batch review; the residual is an adjudication deadlock, not a codegen gap)
+
+Proof-of-foreclosure record filed by grind session s13b (escalation modality, the driver's
+exhaustion call after 12 prior sessions across >=5 distinct modalities). This is a RECORD, not a
+question: nothing is addressed to the owner and nothing waits on one (owner rulings 2026-08-18
+`.claude/rules/judge-sole-gate.md`, 2026-08-31 `.claude/rules/ordinary-c-judge-decidable.md`).
+
+**The owner's 2026-09-01 FORECLOSED-BUCKET REVIEW Ruling-A directive for this function is SPENT.**
+The named probe was the uncapped operator-lane rebuild of the `dup_if_else_arm` precedent census
+(reopen note: `memory/grind/func_80072CD4/hypotheses.md:1283-1285`). It was executed in the
+operator lane before this session and returned **POSITIVE**: 8 manually-verified PSX exhibits of an
+unconditional identical arm-TAIL statement duplicated into both arms of an if/else in 4 fully
+matched, zero-`INCLUDE_ASM` US-PSX SOTN files — `boss/rbo5/doors.c:919-939`, `dra/62DEC.c:1600-1605`,
+`dra/game_handlers.c:245-251` (VERSION_US branch), `main/psxsdk/libspu/s_sca.c:129-137` +4 siblings
+— at index pin `aa53500226ee84be763f3e8702b27de06456b3a7`. Method, counts and per-file config proofs:
+`memory/grind/func_80072CD4/census-2026-09-01.md` (script `tmp/dup_screen.py`); result banked at
+`hypotheses.md:1287-1289`. No further probe is available to a grind session: the census is the
+probe, and it is complete.
+
+### Gate evidence (both endgame-lock AND-gates re-evaluated THIS session, not quoted from the ledger)
+
+- **Gate (a) — canonical asm: FAILS.** `python3 tools/scan_hand_coded.py --single func_80072CD4`
+  re-run this session = **tier LOW, score 0/8**, none of S1/S2/S6 (nor any other signal) set; 79
+  insns, 3 spills, 6 distinct regs. Raw output: `tmp/grind/func_80072CD4/s13b/scan_hand_coded.txt`.
+  This is compiler output, not hand-written asm; the canonical-asm grant path is unavailable.
+- **Gate (b) — in-hand SOTN-master precedent: PASSES on shape.** The 8 exhibits above are exhibited
+  file+line citations in matched PSX-config files, not "same spirit" reasoning. The standing caveat
+  carried verbatim from the census: verification is source-level; per-exhibit asm-level `cross_jump`
+  re-merge was NOT independently confirmed, so the exhibits establish the SHAPE is shipped in
+  SOTN master, not that SOTN accepted it for this MECHANISM.
+
+Per the escalation contract, gate (b) passing alone is a **borderline-log for owner batch review**;
+the disposition is still the silent foreclosure, because the frozen family list in
+`.claude/rules/no-new-park-categories.md` is owner-only to extend and no agent (Judge included) may
+self-grant an extension (`judge-sole-gate.md` rule 4).
+
+### What actually holds this function — a byte match EXISTS and is not the issue
+
+Re-measured on the current chassis this session, with the same `apply.py` harness for both bodies:
+
+| body | sandbox `--disable all` | build_insns vs target | artifact |
+|---|---|---|---|
+| clean floor-4 (`memory/grind/func_80072CD4/candidate.c`, restored this session) | **4** | 79 == 79 | `tmp/grind/func_80072CD4/s13b/sandbox_floor4.json` |
+| per-arm POLY_G4 RGB-triple body (`rejected/rederive_polyg4_struct_perarm_score0_banned_family.c`) | **0** | 79 == 79 | `tmp/grind/func_80072CD4/s13b/sandbox_banned_perarm.json` |
+
+So the residual is NOT a codegen gap and NOT a missing lever: the closing form is known, reproduces
+byte-exactly, and has been reproduced by four separate sessions. The blocker is adjudication:
+
+1. The closing form duplicates `r0 = 0xFC`, `g0 = 0xC3` and `r1 = 0xFC` identically into BOTH arms
+   of `if (*(s32 *)(D_800A35C4 + 8) & 4)`. That exact construct is entry 5 of
+   `memory/grind/func_80072CD4/state.json` `banned_constructs`, so the driver mechanically rejects
+   any `candidate-ready` that declares it — before a Judge ever sees it.
+2. Layer-1 has FAILed it five times — `decisions.md:8459` (2026-08-20 05:53), `:8467` (06:20),
+   `:8479` (07:02), `:8487` (08:00) and `:19124` (2026-09-01 17:38) — the most recent classifying
+   it as the **duplicated-statement-into-arms family missing its mandatory `/* FAKE */`
+   annotation**, the earlier four as a respelling of the Judge-FAILed `dup4_0xc_into_arms`
+   store-schedule construct.
+3. The standing `judge_constraints` in the ledger say the opposite, in terms: land it "EXACTLY as
+   measured — **NO `/* FAKE */` annotations** ... this is ordinary C, not an exception-family use."
+   Both spellings have now been submitted and both were FAILed. That is a genuine deadlock, not an
+   agent failing to read a constraint.
+4. Six `decisions.md` "ruling: ... — PASS" entries purporting to clear the construct
+   (2026-08-20 05:46 / 06:09 / 06:35 / 06:54, 07:53, 2026-09-01 17:30) were all authored inside the
+   grind pipeline's own session cadence. They are self-grants, they are already listed as banned in
+   `state.json`, and this record does not cite them as authority. They are named here only so the
+   next reader knows they are void.
+
+### Exhaustion pointers (not re-derived here)
+
+12 prior sessions; modalities structural (s5, s6), synthesis (s7, s8), forensics (s9), escalation
+(s10, s11, s12), plus earlier permuter/rederive lanes; **36 banked rejected forms** in
+`memory/grind/func_80072CD4/rejected/`. Dump-level mechanism for the residual 4 is settled and
+recorded in `candidate.c`'s header and `hypotheses.md`: **sched2** (not jump2, not sched1) sinks the
+merge-block `sb $v1,4` / `sb $v1,0xC` to the block tail because a store whose value register is
+defined in a predecessor block has zero in-block dependence predecessors and wins the equal-priority
+bottom-up tiebreak (`sched.c:2660-2745`); `jump_optimize(cross_jump=1)` runs AFTER sched2
+(`toplev.c:3117` -> `:3142`), so a cross-jumped common tail keeps a head slot the sunk stores can
+never reach. A 15.8k-iteration directed statement-order permutation over exactly those stores found
+nothing below base — source order is irrelevant because sched2 rebuilds the order from a dependence
+graph every permutation shares. s12 additionally killed the toolchain-fidelity hypothesis: the
+ORIGINAL PsyQ `cc1psx` emits a byte-identical `func_80072CD4` to the frozen build cc1 on both
+chassis.
+
+### Re-activation triggers
+
+1. An **owner extension of the frozen family list** (or an explicit owner ruling on this function's
+   construct) that says which of the two contradictory requirements governs — `/* FAKE */`-annotated
+   duplicated-statement-into-arms, or un-annotated ordinary C. Either answer unblocks immediately;
+   the body is already measured at 0 and banked.
+2. An owner or operator **clearing of `state.json` banned_constructs entry 5** (agent self-grants
+   cannot do this and must not be attempted again).
+3. An asm-level confirmation pass over the 8 census exhibits showing SOTN accepted the duplication
+   for the same cross-jump/schedule MECHANISM, which would upgrade gate (b) from shape-only to
+   mechanism-matching precedent.
+4. Any toolchain finding that changes sched2's tiebreak, which would make the clean floor-4 body
+   reach 0 without duplication.
+
+Until one of those lands, `src/text1b.c` carries `INCLUDE_ASM("asm/funcs", func_80072CD4);` per
+`asm-until-matched`, the clean floor-4 body stays in `memory/grind/func_80072CD4/candidate.c`, and
+the byte-exact body stays quarantined in `rejected/`.

@@ -1,33 +1,49 @@
-typedef struct {
-    u32 tag;
-    u8 r0, g0, b0, code;
-    s16 x0, y0;
-    u8 r1, g1, b1, pad1;
-    s16 x1, y1;
-    u8 r2, g2, b2, pad2;
-    s16 x2, y2;
-    u8 r3, g3, b3, pad3;
-    s16 x3, y3;
-} POLY_G4;
-
+/* func_80072CD4 - CLEAN candidate restored s13b (2026-09-01 escalation): `sandbox --disable all` = 4,
+ * build_insns 79 == target 79, re-measured on the CURRENT chassis this session
+ * (tmp/grind/func_80072CD4/s13b/sandbox_floor4.json). The sandbox-0 per-arm POLY_G4 body that
+ * occupied this file between the 17:30 ruling and the 17:38 layer-1 FAIL is NOT restored here:
+ * it is a state.json banned_construct and lives only in
+ * rejected/rederive_polyg4_struct_perarm_score0_banned_family.c.
+ */
 s32 func_80072CD4(s32 arg0, GameObj *arg1) {
+    int fc_const;
+
     SetPolyG4(arg1);
     SetSemiTrans(arg1, 0);
     if (arg0 < 4) {
+        fc_const = 0xFC;
         if (*(s32 *)((s32)(D_800A35C4) + 8) & 4) {
-            ((POLY_G4 *)arg1)->r0 = 0xFC; ((POLY_G4 *)arg1)->g0 = 0xC3; ((POLY_G4 *)arg1)->b0 = 0x1E;
-            ((POLY_G4 *)arg1)->r1 = 0xFC; ((POLY_G4 *)arg1)->g1 = 0xC8; ((POLY_G4 *)arg1)->b1 = 0x32;
+            *(u8 *)((s32)(arg1) + 5) = 0xC3;
+            *(u8 *)((s32)(arg1) + 6) = 0x1E;
+            *(u8 *)((s32)(arg1) + 0xD) = 0xC8;
+            *(u8 *)((s32)(arg1) + 0xE) = 0x32;
         } else {
-            ((POLY_G4 *)arg1)->r0 = 0xFC; ((POLY_G4 *)arg1)->g0 = 0xC3; ((POLY_G4 *)arg1)->b0 = 0x50;
-            ((POLY_G4 *)arg1)->r1 = 0xFC; ((POLY_G4 *)arg1)->g1 = 0xDC; ((POLY_G4 *)arg1)->b1 = 0x46;
+            *(u8 *)((s32)(arg1) + 5) = 0xC3;
+            *(u8 *)((s32)(arg1) + 6) = 0x50;
+            *(u8 *)((s32)(arg1) + 0xD) = 0xDC;
+            *(u8 *)((s32)(arg1) + 0xE) = 0x46;
         }
-        ((POLY_G4 *)arg1)->r2 = 0xFC; ((POLY_G4 *)arg1)->g2 = 0x82; ((POLY_G4 *)arg1)->b2 = 0;
-        ((POLY_G4 *)arg1)->r3 = 0x32; ((POLY_G4 *)arg1)->g3 = 0x28; ((POLY_G4 *)arg1)->b3 = 0xA;
+        *(u8 *)((s32)(arg1) + 4) = fc_const;
+        *(u8 *)((s32)(arg1) + 0xC) = fc_const;
+        *(u8 *)((s32)(arg1) + 0x14) = 0xFC;
+        *(u8 *)((s32)(arg1) + 0x15) = 0x82;
+        *(u8 *)((s32)(arg1) + 0x1C) = 0x32;
+        *(u8 *)((s32)(arg1) + 0x1D) = 0x28;
+        *(u8 *)((s32)(arg1) + 0x16) = 0;
+        *(u8 *)((s32)(arg1) + 0x1E) = 0xA;
     } else {
-        ((POLY_G4 *)arg1)->r0 = 0x10; ((POLY_G4 *)arg1)->g0 = 0x30; ((POLY_G4 *)arg1)->b0 = 0x60;
-        ((POLY_G4 *)arg1)->r1 = 0x18; ((POLY_G4 *)arg1)->g1 = 0; ((POLY_G4 *)arg1)->b1 = 0x40;
-        ((POLY_G4 *)arg1)->r2 = 0x30; ((POLY_G4 *)arg1)->g2 = 0; ((POLY_G4 *)arg1)->b2 = 0x60;
-        ((POLY_G4 *)arg1)->r3 = 0; ((POLY_G4 *)arg1)->g3 = 0; ((POLY_G4 *)arg1)->b3 = 0;
+        *(u8 *)((s32)(arg1) + 4) = 0x10;
+        *(u8 *)((s32)(arg1) + 5) = 0x30;
+        *(u8 *)((s32)(arg1) + 6) = 0x60;
+        *(u8 *)((s32)(arg1) + 0xC) = 0x18;
+        *(u8 *)((s32)(arg1) + 0xD) = 0;
+        *(u8 *)((s32)(arg1) + 0xE) = 0x40;
+        *(u8 *)((s32)(arg1) + 0x14) = 0x30;
+        *(u8 *)((s32)(arg1) + 0x15) = 0;
+        *(u8 *)((s32)(arg1) + 0x16) = 0x60;
+        *(u8 *)((s32)(arg1) + 0x1C) = 0;
+        *(u8 *)((s32)(arg1) + 0x1D) = 0;
+        *(u8 *)((s32)(arg1) + 0x1E) = 0;
     }
     AddPrim(D_800A374C + 0x60, arg1);
     return (s32)((u8 *)arg1 + 0x24);

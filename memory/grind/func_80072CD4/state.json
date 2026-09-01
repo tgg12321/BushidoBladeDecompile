@@ -1,7 +1,7 @@
 {
  "func": "func_80072CD4",
  "file": "text1b",
- "session_count": 12,
+ "session_count": 13,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -81,18 +81,29 @@
    "floor": 4,
    "modality": "escalation",
    "headline": "Owner ruling-7 calibration probe executed: the ORIGINAL PsyQ cc1psx emits a byte-identical func_80072CD4 to the frozen build cc1 on BOTH chassis, killing the toolchain-fidelity hypothesis (the packet'"
+  },
+  {
+   "session": 13,
+   "floor": 4,
+   "modality": "escalation",
+   "headline": "Disposition filed: gate (a) canonical-asm FAILS (scan LOW 0/8, re-run this session), gate (b) SOTN precedent PASSES on shape (operator Ruling-A census, 8 PSX exhibits) - foreclosed as an adjudication "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A C form exists that stops sched1 hoisting the arms' tail `li` (the 0x32/0x46 constant) to the arm TOP without demanding a different instruction \u2014 the single residual mechanism for this function after s12.",
-   "mechanism": "sched.c's schedule_block walks bottom-up; the arm-tail li has unit=-1 and no in-block consumer, so it loses every equal-priority tiebreak, is picked last bottom-up, and is emitted first. Target emits it last, which is what lets RA reuse $v0 for it and what keeps `sb $v0,0xD` inside the arm (no cross-jump).",
-   "next_probe": "Extend tools/sched_solver/perturb.py to a depth-3 search over the restricted --atoms luid,luid_move sets only (84 and 63 atoms) for pass-1 blocks 2 and 3 of the cross-block chassis, and confirm the depth-2 zero-vector result survives. perturb.py has no depth-3 mode today, so this is tooling-lane work rather than session work."
+   "hypothesis": "An owner ruling that picks ONE of the two contradictory annotation requirements (FAKE-annotated duplicated-statement-into-arms vs un-annotated ordinary C) closes this function immediately.",
+   "mechanism": "The closing body is already measured at 0 with build_insns 79 == 79 and banked; the only blocker is state.json banned_constructs entry 5 plus the layer-1 vs judge_constraints contradiction, neither of which an agent may clear.",
+   "next_probe": "Owner/operator lane only: clear or re-word banned_constructs entry 5 and state which annotation form governs, then run a normal layer-1 + Judge FINAL CALL on rejected/rederive_polyg4_struct_perarm_score0_banned_family.c (sandbox 0 on main plus full-build SHA1 == oracle)."
   },
   {
-   "hypothesis": "The calibration probe generalises: no BB2 function's residual is a decompals-vs-PsyQ cc1 configuration artefact.",
-   "mechanism": "If cc1psx and the build cc1 agree instruction-for-instruction on a function whose scheduling residual is the hardest in the queue, the port is faithful at least for this optimisation path.",
-   "next_probe": "Run tmp/grind/func_80072CD4/s12/probe.sh (parameterised for the TU) on two or three other endgame-locked functions whose ledgers reached a 'compiler configuration' argument \u2014 e.g. func_80017848, func_800645B0 \u2014 and bank the result once, project-wide, so no future session spends the argument again."
+   "hypothesis": "The 8 census exhibits also match this function's MECHANISM (cross_jump re-merge after sched2), not just its source shape, which would upgrade gate (b) from shape-only to mechanism-matching precedent.",
+   "mechanism": "The census verified source-level duplication only; whether SOTN's shipped builds actually re-merge the duplicated arm tails via jump_optimize(cross_jump=1) after sched2 was never checked.",
+   "next_probe": "Operator lane: build the 4 cited SOTN US-PSX files at pin aa53500226 and objdump the 8 exhibit sites to confirm the second copy is cross-jump-dead in the shipped bytes."
+  },
+  {
+   "hypothesis": "The clean floor-4 body could reach 0 without any duplication if sched2's equal-priority bottom-up tiebreak can be perturbed from C.",
+   "mechanism": "sched.c schedule_block picks bottom-up; merge-block stores whose value register is defined in a predecessor block have zero in-block dependence predecessors, win the pri=1 potential-hazard tiebreak (sched.c:2660-2745), are picked first and hence emitted LAST; jump_optimize(cross_jump=1) runs after sched2 (toplev.c:3117 -> :3142), so a cross-jumped tail keeps the head slot the sunk stores cannot reach.",
+   "next_probe": "Tooling lane, not session work: extend tools/sched_solver/perturb.py to a depth-3 search over the restricted --atoms luid,luid_move sets (84 and 63 atoms) for pass-1 blocks 2 and 3 of the cross-block chassis, and confirm the depth-2 zero-vector result survives."
   }
  ],
  "judge_constraints": [
