@@ -1,3 +1,21 @@
+/* s67 UPDATE (2026-09-01, solver). This body is UNCHANGED and remains the floor at masked 2
+ * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). It holds the
+ * SEATS with a single adjacent ALU transposition left.
+ *
+ * s67 did NOT improve the floor, but it moved the frontier off this body onto a different base.
+ * Read memory/grind/CD_ready/hypotheses.md s67 before working here. The three results that matter:
+ *   1. KILLED: an EMPTY do{}while(0) is byte-neutral NOWHERE in the do_timeout block (six
+ *      positions, 9/7/7/10/11/10 against the base's 6). The loop note is a sched1 region boundary
+ *      here, so a reference count can never be bought for free on this function.
+ *   2. CONFIRMED, new axis: SPLITTING the existing tbl_125c wrap so `t0 *= 4` falls into a bare
+ *      loop-depth-1 gap LOWERS the t0 shift temp's reg_n_refs and flips the seats
+ *      (memory/grind/CD_ready/progress/s67-y02-seats-correct-base.c, score 6).
+ *   3. CONFIRMED by pre-registered prediction: on the order-perfect d01 base, raising the arg5
+ *      VALUE quantity's refs to exactly 6 (two extra nesting levels on the arg5 load) gives it
+ *      $v1, the target's seat (progress/s67-e02-arg5-value-v1.c, score 8).
+ * The new frontier base is progress/s67-d01-order-perfect-base.c (score 7, 179 insns) whose
+ * instruction SEQUENCE is the target's from insn 53 to the end; its residual is purely seats.
+ */
 /* CD_ready candidate - s60 (2026-09-01). HONEST FLOOR: masked 2, build 179 == target 179,
  * rules_dropped 0. This SUPERSEDES the 59-session vT40 body (masked 4, build 178), which is
  * retained beside this file as candidate-vT40-masked4-no-volatile.c.

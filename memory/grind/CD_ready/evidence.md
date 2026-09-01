@@ -1941,3 +1941,171 @@ quantity dumps s01/u01/u02/w01/x02 `.qty.txt`.
 - [s66] Owner directive acknowledgement: the queue item's 2026-09-01 FORECLOSED-BUCKET REVIEW Ruling-A named probe (re-score the banked vAT1 form post--mel) was executed in s60 and produced the current floor of 2; nothing was owed this session. Recorded here for the third time because the auto-audit still flags it.
 
 - [s66] src/system.c was restored to its committed INCLUDE_ASM state at end of session; the only dirt is metrics/events.jsonl plus memory/grind/CD_ready/. candidate.c is unchanged as a body (vAT1, floor 2) - only its header comment gained the s66 correction, and it was re-scored at 2 after that edit. Eight new rejected forms banked (160 total).
+
+## s67 (solver, 2026-09-01) — the loop-note lever is characterised in BOTH directions, the *pp order defect is SOLVED, and the arg5-value seat is SOLVED; a new order-perfect base (d01) replaces k03 as the frontier
+
+Owner directive acknowledgement (fourth time, for the auto-audit): the queue item's
+2026-09-01 FORECLOSED-BUCKET REVIEW Ruling-A named probe ("re-score the banked vAT1 form
+post-`-mel`") was executed in s60 and produced the current `candidate.c` and the floor of 2.
+Nothing further is owed on it.
+
+Live chassis check at session start: clean tree (`INCLUDE_ASM`) scores 179;
+`memory/grind/CD_ready/candidate.c` re-measures **score 2 / build 179 / target 179 /
+rules_dropped 0**; the order-perfect base `k03`/`u00` re-measures **6**. Both ledger numbers
+reproduce exactly on today's HEAD.
+
+### [s67] KILLED — the ledger's named frontier probe: an EMPTY `do { } while (0)` is NOT byte-neutral anywhere
+The s66 frontier asked whether the loop NOTE by itself moves code, or whether the sched1 damage
+in w01/u02/x02 comes only from the raised reference counts changing local-alloc downstream.
+Six empty wraps were spliced into the `u00` body (score 6), one per insertion point:
+
+| position | score |
+|---|---|
+| before the t0 byte load        | 9 |
+| before the `pp` assignment     | 7 |
+| before the arg5 byte load      | 7 |
+| before `t0 *= 4`               | 10 |
+| before the arg5 load           | 11 |
+| immediately before the printf  | 10 |
+
+**Not one is byte-neutral** (base 6). An empty wrap raises no pseudo's reference count — it
+contains no mentions — so the entire perturbation is attributable to the NOTE. The loop note
+behaves as a sched1 region boundary in this block. Consequence, stated as a rule for future
+sessions: **on this function you can never buy a reference count for free; every note you add
+costs instruction order somewhere, and the question is only whether the order damage is
+repairable.** This closes the s66 frontier item 1 as a KILL, and it is the explanation that
+unifies every wrap result s66 measured.
+
+### [s67] CONFIRMED, NEW AXIS — reference counts can be LOWERED as well as raised, by SPLITTING the existing wrap
+s66 only ever ADDED wraps. But the whole do_timeout block already sits inside the sanctioned
+tbl_125c `do { } while (0)`, so every mention in it is counted at loop depth 2. Cutting that wrap
+in two and letting a statement fall into the BARE gap puts its mentions back at depth 1.
+Measured on the `u00` base (score 6), varying which statements sit in the bare gap:
+
+| variant | bare gap | score | insns |
+|---|---|---|---|
+| y02 | `t0 *= 4` only            | **6** | 179 |
+| y01 | `t0 *= 4` + `t0 = tbl+t0` | 11 | 179 |
+| y03 | `t0 = tbl+t0` only        | 15 | 179 |
+| y06 | both, no second wrap      | 15 | 179 |
+| y07 | control: wrap merely CUT IN TWO, nothing bare (all depths held at 2) | 10 | 179 |
+| y20 | whole arg5 address chain bare | 17 | 179 |
+
+y07 is the important control: re-bracketing alone, with no depth change, costs 4 points. y02 is
+therefore not "free"; it is a depth change that happens to pay for its own note.
+
+**y02's disassembly is the first form in this function's history whose SEATS are the target's on
+a base derived from the order-perfect body**: the arg5 value lands in `$v1` and the t0 address in
+`$a0`, exactly as the target has them. Its whole residual is ordering — the `*pp` argument load
+sinks from the target's 53/54 to 60/61 and the t0 `addu` rises from 61 to 56 to fill the hole,
+plus the two `lbu`s transpose. This is the exact mirror of k03 (order right, seats wrong) and it
+proves the depth-lowering axis does what the closed-form model says it does.
+
+### [s67] MEASURED — statement order is INERT inside the split-wrap skeleton
+A 4x4 grid (gen4.py, variants d01-d16) crossed four permutations of the four head loads
+(`t0 = idx[0]`, `v0 = idx[1]`, `pp = ...`, `a1v = *pp`) against four split boundaries. The scores
+depend ONLY on the boundary and are **identical across all four head permutations**:
+7 / 11 / 6 / 9 repeated four times. Inside a wrapped scheduling region the four independent
+loads are ordered by INSN_PRIORITY alone; no two of them tie, so the INSN_LUID rung — the single
+ordering lever s63 identified — is never reached. Future sessions should not spend measurements
+permuting those four statements.
+
+### [s67] CONFIRMED — s66's frontier item 2: the `a1v = *pp` named intermediate puts the *pp load back at 53/54
+s66 predicted that the y-family's *pp defect is structural: `*pp` is an expand_call ARGUMENT load,
+emitted at the call site, so it is born inside wrap2 and sched1 will not lift it across the note.
+Giving it its own statement converts it into an ordinary load positioned by INSN_LUID. Measured
+(c01-c06, all score 6 at 180 insns): the `lui $a1 / lw $a1` pair moves to build **53/54, the
+target's slots**, on every spelling. The 180th instruction is NOT a copy — the intermediate
+coalesces — it is a load-delay `nop` maspsx must emit because the t0 `addu` no longer fills the
+D_800A11D5 `lbu`'s delay slot. Control c00/c08 (the hoist alone on the UNSPLIT base) scores 10, so
+the hoist only pays inside the split skeleton.
+
+### [s67] THE NEW FRONTIER BASE — d01: order-perfect at 179 instructions, residual is purely seats
+`d01` = wrap1 `{puts, t0 byte, arg5 byte, pp, a1v, arg5 sll, arg5 addr}` / bare `{t0 *= 4}` /
+wrap2 `{arg5 load, t0 addr, printf, CD_flush}`. Score 7, 179 instructions, 0 rules. Its
+disassembly (tmp/grind/CD_ready/s67/, `show.py 50 69`) is the target's instruction SEQUENCE from
+insn 53 to the end — including the `*pp` pair at 53/54 and the t0 `addu` back at 61 filling the
+D_800A11D5 delay slot. The seven differing instructions are the transposed `lbu` pair at 51/52 and
+five register mismatches. Local-alloc read directly (`s67/d01.qty.txt`):
+
+| qty | reg | role | birth-death | refs | pri | ord | got | target |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 98  | t0            | 10-34 | 10 | 1.25 | 2 | $v1 | **$a0** |
+| 1 | 100 | a1v           | 14-36 | 4  | (copy-suggested) | SUGG | $a1 | $a1 OK |
+| 2 | 97  | arg5 address  | 16-20 | 4  | 2.00 | 1 | $v0 | $v0 OK |
+| 3 | 96  | arg5 VALUE    | 20-28 | 4  | 1.00 | 3 | $a2 | **$v1** |
+| 4 | 111 | D_800A11D5    | 24-32 | 8  | 3.00 | 0 | $v0 | $v0 OK |
+
+### [s67] CONFIRMED BY PRE-REGISTERED PREDICTION — double-nesting the arg5 load gives the arg5 value its target seat
+From the d01 table the model predicts: reg96 must outrank reg98, i.e. `pri(96) > 1.25`. With
+`pri = floor_log2(refs)*refs*size/(death-birth)` and span 8, `refs=5` gives exactly 1.25 (a TIE,
+which reg98 wins on quantity number, 0 < 3) and `refs=6` gives 1.50 (a WIN). reg96 has exactly two
+mentions, so refs 6 requires depth 4 on the load plus depth 2 on the call. Predicted BEFORE
+measuring; then measured (e02, arg5 load wrapped in two extra nesting levels):
+  - `refs(96)` = **6**, exactly as predicted;
+  - reg96 moves from ord 3 to **ord 2** and `got=3` = **`$v1`, the target's seat**;
+  - the disassembly confirms it end-to-end: build `58 lw $v1,0($v0)` / `62 sw $v1,16($sp)` against
+    target `58 lw $v1,0($v0)` / `63 sw $v1,0x10($sp)` — same register, the seat 62 sessions chased.
+  - e01 (ONE nesting level, `refs=5`) scores 9 and does NOT flip the seat — the predicted tie.
+The local-alloc model of this function is now fully predictive: it named the required reference
+count and the resulting hard register in advance, and both came out.
+
+### [s67] WHAT REMAINS, stated precisely
+e02 scores 8, not 0, because the win costs two things:
+  1. **reg98 (t0) falls to ord 3 and takes `$a3`, not the target's `$a0`.** Its find_free_reg
+     `used` set already contains 4 (`$a0`) on this base — in y02, which has no `a1v` quantity,
+     reg98's used set does NOT contain 4 and it correctly takes `$a0`. So introducing the a1v
+     quantity is what removes `$a0` from t0's reach. Establishing WHY `$a0` enters that used set
+     is the single unresolved mechanical question left in the residual.
+  2. The two extra nesting notes re-perturb the instruction order (the D_800A11D5 chain and the
+     t0 `addu` shift), costing back what d01 had won.
+So the function now has three separately-solved pieces that have never been held simultaneously:
+the target instruction sequence (k03/d01), the arg5-value seat (e02), and the t0 seat (y02).
+
+### Artifacts
+tmp/grind/CD_ready/s67/{gen.py,gen2.py,gen3.py,gen4.py,gen5.py} (each documenting its mechanism),
+the 47 variant .c files, and the quantity dumps y02.qty.txt / d01.qty.txt / e02.qty.txt.
+
+- [s67] Live chassis check: clean tree (INCLUDE_ASM) 179; memory/grind/CD_ready/candidate.c re-measures score 2 / build 179 / target 179 / rules_dropped 0; the order-perfect base u00/k03 re-measures 6. Both ledger numbers reproduce exactly.
+- [s67] KILLED, and it answers the s66 frontier item 1: an EMPTY `do { } while (0);` is NOT byte-neutral at ANY of six insertion points in the do_timeout block (scores 9/7/7/10/11/10 against the base's 6). An empty wrap raises no reference count, so the whole perturbation is the NOTE. The loop note acts as a sched1 region boundary here. RULE FOR FUTURE SESSIONS: on this function a reference count can never be bought for free - every added note costs instruction order somewhere.
+- [s67] CONFIRMED, NEW AXIS never tried before s67: reference counts can be LOWERED as well as raised, by SPLITTING the already-present tbl_125c do-while(0) so a statement falls into a BARE depth-1 gap. y02 (`t0 *= 4` alone in the gap) scores 6 at 179 insns and is the FIRST form in this function's history whose SEATS are the target's on a body derived from the order-perfect base: arg5 value in $v1, t0 address in $a0. Its residual is purely ordering.
+- [s67] MEASURED control: re-bracketing the wrap into two with NOTHING in the bare gap (all depths held at 2) costs 4 points (y07 = 10). y02's depth change therefore pays for its own note; it is not free.
+- [s67] KILLED: y01 both t0 statements bare 11; y03 t0 addu alone bare 15; y06 both bare with no second wrap 15; y20 whole arg5 address chain bare 17; y14 both bare with the arg5 load wrapped 11.
+- [s67] MEASURED, and it retires an entire lever: statement ORDER is INERT inside the split-wrap skeleton. A 4x4 grid (d01-d16) crossing four permutations of the four head loads against four split boundaries produced scores that depend ONLY on the boundary - 7/11/6/9, identical for all four head permutations. The four loads are separated by INSN_PRIORITY, so the INSN_LUID rung s63 identified as "the ONLY lever" is never reached inside a wrapped region.
+- [s67] CONFIRMED, s66 frontier item 2: hoisting the printf's second argument into a named intermediate (`void *a1v; a1v = *pp;`) moves the *pp load from build 60/61 back to the target's 53/54 on every spelling measured (c01-c06, score 6). The load is an expand_call ARGUMENT load born inside wrap2; giving it a statement makes its position depend on INSN_LUID instead. The extra 180th instruction is a load-delay nop, not a copy - the intermediate coalesces. Control: the hoist alone on the UNSPLIT base scores 10 (c00/c08), so it only pays inside the split skeleton.
+- [s67] NEW FRONTIER BASE d01 (wrap1 = puts/t0byte/arg5byte/pp/a1v/arg5sll/arg5addr, bare = `t0 *= 4`, wrap2 = arg5load/t0addr/printf/CD_flush): score 7, 179 insns, 0 rules, and its instruction SEQUENCE is the target's from insn 53 to the end - the *pp pair at 53/54 and the t0 addu back at 61 filling the D_800A11D5 delay slot. The residual is the transposed lbu pair at 51/52 plus five register mismatches. This base replaces k03 as the frontier.
+- [s67] MEASURED, d01's local-alloc table: qty0 reg98 t0 10-34 refs10 pri 1.25 -> ord2 -> $v1 (target $a0); qty1 reg100 a1v 14-36 refs4 copy-suggested -> $a1 OK; qty2 reg97 arg5 address 16-20 refs4 pri 2.00 -> ord1 -> $v0 OK; qty3 reg96 arg5 VALUE 20-28 refs4 pri 1.00 -> ord3 -> $a2 (target $v1); qty4 reg111 D_800A11D5 24-32 refs8 pri 3.00 -> ord0 -> $v0 OK.
+- [s67] CONFIRMED BY PRE-REGISTERED PREDICTION: the model predicted that reg96 needs refs=6 (refs=5 gives pri 1.25, an exact tie reg98 wins on quantity number; refs=6 gives 1.50 > 1.25), reachable by nesting the arg5 load two extra levels. Measured e02: refs(96)=6 exactly, reg96 moves ord3 -> ord2 and got=3 = $v1, THE TARGET'S SEAT, confirmed in the disassembly as `lw $v1,0($v0)` / `sw $v1,16($sp)`. e01 (one level, refs=5) does not flip it, exactly as the predicted tie says. The local-alloc model of this function is now fully predictive.
+- [s67] THE REMAINING QUESTION, stated mechanically: on the a1v-carrying bases (d01/e02) reg98's find_free_reg `used` set CONTAINS 4 ($a0), so t0 cannot reach its target seat and takes $v1 (d01) or $a3 (e02). On y02, which has no a1v quantity, reg98's used set does NOT contain 4 and it takes $a0 correctly. Why introducing the a1v quantity puts $a0 into t0's used set is the single unresolved mechanical question in the whole residual.
+- [s67] The function now has three separately-SOLVED pieces that have never been held at once: the target instruction sequence (k03/d01), the arg5-value seat (e02, via double-nesting the arg5 load), and the t0 seat (y02, via the depth split with no a1v).
+- [s67] src/system.c was restored to its committed INCLUDE_ASM state at end of session; the only dirt is metrics/events.jsonl plus memory/grind/CD_ready/. candidate.c is unchanged as a body (vAT1, floor 2). Fifteen new rejected forms banked (175 total).
+
+- [s67] Live chassis check: clean tree (INCLUDE_ASM) scores 179; memory/grind/CD_ready/candidate.c re-measures score 2 / build 179 / target 179 / rules_dropped 0; the order-perfect base u00/k03 re-measures 6. Both ledger numbers reproduce exactly on today's HEAD, and candidate.c was re-verified at 2 again after its header comment was updated.
+
+- [s67] Owner directive acknowledgement (fourth recording, for the auto-audit): the queue item's 2026-09-01 FORECLOSED-BUCKET REVIEW Ruling-A named probe ('re-score the banked vAT1 form post--mel') was executed in s60 and is what produced the current candidate.c and the floor of 2. Nothing further was owed this session.
+
+- [s67] KILLED, answering the s66 frontier item 1: an EMPTY do { } while (0); is byte-neutral at NONE of six insertion points in the do_timeout block (9/7/7/10/11/10 against the base's 6). An empty wrap raises no reference count, so the whole perturbation is the NOTE - the loop note acts as a sched1 region boundary here. STANDING RULE for future sessions on this function: a reference count can never be bought for free; every added note costs instruction order somewhere, and the only question is whether that damage is repairable.
+
+- [s67] CONFIRMED, an axis no prior session attempted: reg_n_refs can be LOWERED by SPLITTING the already-present tbl_125c do-while(0) so a statement falls into a bare loop-depth-1 gap. y02 (`t0 *= 4` alone in the gap) scores 6 at 179 insns and is the FIRST body derived from the order-perfect base whose SEATS are the target's: arg5 value in $v1, t0 address in $a0.
+
+- [s67] MEASURED control: cutting the wrap in two with NOTHING in the bare gap (all loop depths held at 2) costs 4 points (y07 = 10). y02's depth change therefore pays for its own note rather than being free.
+
+- [s67] KILLED: y01 both t0 statements at depth 1 = 11; y03 the t0 addu alone at depth 1 = 15; y06 both at depth 1 with no second wrap = 15; y14 both at depth 1 with the arg5 load wrapped = 11; y20 the whole arg5 address chain at depth 1 = 17.
+
+- [s67] MEASURED, and it retires a lever the ledger had called 'the ONLY lever': statement ORDER is INERT inside the split-wrap skeleton. A 4x4 grid (d01-d16) crossing four permutations of the four head loads against four split boundaries gave scores that depend only on the boundary - 7/11/6/9, identical for all four permutations - and y09-y17 on the non-hoisted skeleton are all 6. The four independent loads are separated by INSN_PRIORITY, so sched.c's INSN_LUID rung is never reached inside a wrapped region.
+
+- [s67] CONFIRMED, answering the s66 frontier item 2: hoisting the printf's second argument into a named intermediate (`void *a1v; a1v = *pp;`) moves the *pp load from build 60/61 back to the target's 53/54 on every in-wrap1 spelling measured (c01-c06, score 6 at 180 insns). *pp is an expand_call ARGUMENT load born inside wrap2; giving it a statement makes its position depend on INSN_LUID. The extra 180th instruction is a load-delay nop, NOT a copy - the intermediate coalesces. Controls: the hoist alone on the UNSPLIT base scores 10 (c00/c08); the hoist inside wrap2 reproduces the late load (c07 = 8).
+
+- [s67] NEW FRONTIER BASE d01 - wrap1 {puts, t0 byte, arg5 byte, pp, a1v, arg5 sll, arg5 addr} / bare {t0 *= 4} / wrap2 {arg5 load, t0 addr, printf, CD_flush}: score 7, 179 insns, 0 rules, and its instruction SEQUENCE is the target's from insn 53 to the end, including the *pp pair at 53/54 and the t0 addu back at 61 filling the D_800A11D5 delay slot. The seven differing instructions are the transposed lbu pair at 51/52 plus five register mismatches. Saved as memory/grind/CD_ready/progress/s67-d01-order-perfect-base.c; this base replaces k03 as the frontier.
+
+- [s67] MEASURED, d01's local-alloc table (tmp/grind/CD_ready/s67/d01.qty.txt): qty0 reg98 t0 10-34 refs10 pri 1.25 -> ord2 -> $v1 (target wants $a0); qty1 reg100 a1v 14-36 refs4 copy-suggested -> $a1, correct; qty2 reg97 arg5 address 16-20 refs4 pri 2.00 -> ord1 -> $v0, correct; qty3 reg96 arg5 VALUE 20-28 refs4 pri 1.00 -> ord3 -> $a2 (target wants $v1); qty4 reg111 D_800A11D5 24-32 refs8 pri 3.00 -> ord0 -> $v0, correct.
+
+- [s67] CONFIRMED BY PRE-REGISTERED PREDICTION: the model said reg96 needs refs exactly 6 (refs 5 gives pri 1.25, an exact tie reg98 wins on quantity number; refs 6 gives 1.50 > 1.25), reachable by nesting the arg5 load two extra levels. Measured e02: refs(96) = 6 exactly, reg96 moved ord3 -> ord2 and got=3 = $v1, the target's seat, confirmed in the disassembly as `lw $v1,0($v0)` / `sw $v1,16($sp)`. e01 (one level, refs 5) does not flip it, exactly as the predicted tie says.
+
+- [s67] THE REMAINING QUESTION, stated mechanically and for the first time located OUTSIDE the priority sort: on every a1v-carrying base (d01, e02) reg98's find_free_reg `used` set CONTAINS hard reg 4 ($a0), so t0 cannot reach its target seat and takes $v1 (d01) or $a3 (e02). On y02, which has no a1v quantity, reg98's used set does NOT contain 4 and it takes $a0 correctly. Why introducing the a1v quantity puts $a0 into t0's used set is the single unresolved mechanical question in the whole residual.
+
+- [s67] The function now has three separately-SOLVED pieces that have never been held simultaneously: the target instruction sequence (k03 and d01), the arg5-value seat $v1 (e02, via refs(reg96) = 6), and the t0 seat $a0 (y02, via the depth split on a body with no a1v quantity).
+
+- [s67] F3 is carried unchanged and remains blocking for COMPLETION only, not for progress: the `volatile u8 *idx_1496;` in candidate.c needs a legitimate-volatile-interrupt-touched prong-2 ruling plus a volatile_extern_allowlist.txt grant for D_800A1494/95/96. It should be raised as a ruling-request the moment the score reaches 0, not before.
+
+- [s67] src/system.c was restored to its committed INCLUDE_ASM state at end of session; the only dirt is metrics/events.jsonl plus memory/grind/CD_ready/. candidate.c's BODY is unchanged (vAT1, floor 2); only its header comment gained the s67 summary. Fifteen new rejected forms banked (175 total).
