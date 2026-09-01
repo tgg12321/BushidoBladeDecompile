@@ -1,3 +1,59 @@
+/* [s21 2026-09-01] REDERIVE. Body UNCHANGED and re-measured this session on a
+ * pristine-HEAD reference (`& tools/wteng.ps1 main build` -> SHA1 == oracle):
+ * score 15, build_insns 68 == target_insns 68, rules_dropped 0
+ * (s21/sandbox_candidate_final.log). THE FLOOR IS 15.
+ *
+ * (1) THE s20 FRONTIER'S ONLY UNMEASURED AXIS IS NOW MEASURED AND DEAD.
+ *     s20 left one live question: can the twelve arm references be split
+ *     across TWO carriers of <= 15 weighted refs each while keeping one
+ *     dispatch and 68 instructions? Probe A (nested dispatch: outer
+ *     `if (cmd < 6)` over two 6-arm switches) answers NO twice over. It costs
+ *     +11 instructions (79 vs 68), and — the part that kills the axis rather
+ *     than this one spelling — the RA model shows pseudo 76 completely
+ *     UNSPLIT at nrefs 26, identical to the base body; only its live length
+ *     moves (22 -> 30). reg_n_refs counts references to a C VARIABLE, not to a
+ *     dispatch region: twelve `pad[X] = val;` arms are twelve references to
+ *     `val` however many jump tables sit above them. Two carriers would need
+ *     two C variables holding the same loaded byte — the BANNED base/ff
+ *     overlapping-live-range family respelled, with no semantic reading.
+ *
+ * (2) THE REQUIREMENT IS RESTATED EXACTLY, FROM THE MEASURED TABLE, AND IT IS
+ *     A SINGLE UNREACHABLE NUMBER. Re-deriving find_reg's outcome from this
+ *     body's own ALLOCDBG (order [75,76,85,72,74,73,91,86]) shows pad (72) is
+ *     NOT a competitor for $v1 at all — it carries a hard-reg preference on
+ *     $a0 and takes it whenever it is allocated — and neither is c (74),
+ *     which is the ONLY allocno without a hard conflict on $v0 and therefore
+ *     takes $v0 from any position. Simulating the order
+ *     [72, 74, 73, 76, 85, 75, 91, 86] by hand against the model's conflict
+ *     sets yields 72->$a0, 74->$v0, 73->$v1, 76->$a1, 85->$a2, 75->$a2,
+ *     91->$a3, 86->$t0: the FULL 8/8 target disposition. So the entire
+ *     residual reduces to three simultaneous demotions below the walker's
+ *     invariant pri 15483:
+ *         75 (biased cmd) nrefs 10: needs livelen >= 20   (measured 4)
+ *         85 (zext temp)  nrefs  8: needs livelen >= 16   (measured 7)
+ *         76 (val)        nrefs 26: needs livelen >= 68   (measured 22)
+ *     s19's probe H buys 75's demotion (pri 9333) for exactly +1 instruction
+ *     on an exact-68 budget. The third is the wall: livelen(76) >= 68 means
+ *     the operand byte must be live for MORE instructions than the entire
+ *     loop — i.e. live across the back edge with a preheader definition. Its
+ *     measured ceiling over all nineteen bodies built for this function is 30
+ *     (probe A, which costs +11 insns); the best 68-insn shape reaches 26
+ *     (probe D, operand read hoisted to the loop head). There is no semantic
+ *     reading in which the operand byte survives an iteration: every arm
+ *     consumes it immediately, so any preheader definition of `val` is a dead
+ *     store, which is a cheat family and also costs the instruction the
+ *     budget does not have.
+ *
+ * (3) Rederive's transplant leg is closed by record, not by guess: there is no
+ *     Kengo C source anywhere (docs/grind/decisions.md:5937 — `Kengo/` holds
+ *     names + sizes only, "There is no Kengo C ... never a source shape to
+ *     transplant"), so the `kengo:HIGH | is_pad/Pad_Prs` tag above this
+ *     function is a NAMING attribution and carries no shape.
+ *
+ * Also measured flat/dead this session: loop syntax (for-form with the advance
+ * in the step clause is BIT-IDENTICAL in the RA model, 15/68) and head-branch
+ * nesting (payload test outermost: 17/69, RA model bit-identical to base).
+ * Full write-up: evidence.md [s21], hypotheses.md [s21]. */
 /* [s20 2026-09-01] FORENSICS. Body UNCHANGED and re-measured this session on a
  * pristine-HEAD reference (build SHA1 == oracle, s20/build_head_reference.log):
  * score 15, 68 == 68, rules_dropped 0. THE FLOOR IS 15.

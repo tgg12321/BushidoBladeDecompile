@@ -1668,3 +1668,126 @@ table forces a single carrier, but that has not been measured.
 - [s20] Probe M and N prove the references are conserved, not eliminated: val demoted 47272 -> 2222 while a fresh pseudo 77 takes the seat at pri 40000 and the walker's register does not move.
 
 - [s20] New measurements this session: P1 (hoist + H) 69 insns score 31; Q (base + u32 c) 67 insns score 29; M 71 insns score 34; N 70 insns score 33; base re-verified 68 insns score 15.
+
+## [s21] 2026-09-01 — rederive
+
+**Chassis re-measured first, per the standing s15 procedure.** `git status`
+clean apart from `metrics/events.jsonl`; `& tools/wteng.ps1 main build` from
+pristine HEAD → SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` MATCH, so the
+reference object `build/src/code6cac_b.o` is the target itself. Applying
+`memory/grind/func_800324D0/candidate.c` and running
+`sandbox func_800324D0 --disable all` gives **score 15, build_insns 68 ==
+target_insns 68, rules_dropped 0** (`tmp/grind/func_800324D0/s21/
+sandbox_candidate_final.log`). The dispatch brief's "measurement unavailable"
+chassis line is resolved: **the floor is 15**, unchanged since s5.
+
+**The rederive transplant leg is closed by record.** The comment above the
+function in `src/code6cac_b.c` reads `/* kengo:HIGH | is_pad/Pad_Prs | 111i */`,
+which has invited three sessions' worth of speculation. It is a NAMING
+attribution only: `docs/grind/decisions.md:5937-5939` records that `Kengo/`
+holds `kengo_functions_full.txt` (name + size + source path) and that "There is
+no Kengo C ... never a source shape to transplant", and `kengo_matches.csv` has
+no source column. m2c re-decompilation was attempted and refused without the
+jump table (`Found jr instruction ... but the corresponding jump table is not
+provided`); it was abandoned as zero-value because the target's shape is already
+read insn-by-insn in `asm/funcs/func_800324D0.s` and reproduced at 68/68. The
+decomp.me corpus leg was judged non-applicable: the residual is a
+register-seat swap inside a shape that already matches instruction-for-
+instruction, so a corpus of other projects' bodies cannot contribute.
+
+**Four structurally distinct shapes built and measured** (bodies, sandbox logs
+and extracted RA models all in `tmp/grind/func_800324D0/s21/`):
+
+| probe | shape | score | insns | pseudo 76 (val) nrefs/livelen/pri |
+|---|---|---|---|---|
+| base | candidate.c | 15 | 68 | 26 / 22 / 47272 |
+| A | nested dispatch: `if (cmd < 6)` over two 6-arm switches | 28 | **79** | **26** / 30 / 34666 |
+| B | head tests re-NESTED, payload test outermost | 17 | 69 | 26 / 22 / 47272 |
+| C | `for` form, advance in the third clause | 15 | 68 | 26 / 22 / 47272 |
+| D | operand read hoisted out of the payload branch | 16 | 68 | 26 / **26** / 40000 |
+
+**Probe A settles the s20 frontier's only unmeasured axis.** s20 left one live
+question: split the twelve arm references across TWO carriers of <= 15 weighted
+refs each (each would then need only livelen > 28.4, inside the measured
+21-34 envelope) while keeping one jump table and 68 instructions. A is the
+strongest available approximation — it splits the DISPATCH — and it fails on
+both legs. It costs +11 instructions (79 vs 68), and the RA model
+(`s21/model_A_nested_dispatch.json`) shows **pseudo 76 completely unsplit at
+nrefs 26**, byte-for-byte the base body's count; only its live length moves
+(22 → 30, pri 47272 → 34666), and a NEW allocno 97 appears for the half-select
+temp (nrefs 6, livelen 4, pri 30000). The mechanism is decisive and general:
+`reg_n_refs` counts references to a C VARIABLE, so twelve `pad[X] = val;` arms
+are twelve references to `val` no matter how many dispatch regions sit above
+them. Two carriers require two C variables holding the same loaded byte —
+the BANNED base/ff overlapping-live-range family respelled, with no semantic
+reading whatsoever (all twelve arms store the same byte).
+
+**The residual restated exactly, from this body's own ALLOCDBG.** Base order
+`[75, 76, 85, 72, 74, 73, 91, 86]` with
+`75:(10,4)=75000  76:(26,22)=47272  85:(8,7)=34285  72:(37,62)=29838
+74:(8,9)=26666  73:(24,62)=15483  91:(3,90)=333  86:(3,92)=326`, dispositions
+`72→4 73→6 74→2 75→3 76→5 85→3 86→8 91→7` against the target
+`72→4 73→3 74→2 75→6 76→5 85→6 86→8 91→7`.
+
+Two competitors that earlier sessions treated as blockers are measured NOT to
+be blockers, which shrinks the requirement:
+- **pad (72) never competes for `$v1`.** `prefs{72}=[4]`; find_reg tries a
+  preferred register first, so 72 takes `$a0` from any position in the order.
+  Its pri 29838 is irrelevant.
+- **c (74) never competes either.** Every other allocno carries a hard conflict
+  on reg 2 (`hard_conflicts` in `s19/model_base.json`: 72,73,75,76,85,86,91 all
+  list `[2,29]`; 74 lists only `[29]`), so `$v0` is reserved for 74 by
+  exclusion and 74's position is free.
+
+Simulating the order `[72, 74, 73, 76, 85, 75, 91, 86]` by hand against the
+model's conflict sets: 72→$a0 (pref), 74→$v0, 73→ first free non-conflicting =
+$v1, 76→ (conflicts 72,73; hard 2) $a1, 85→ (conflicts 72,73,76) $a2, 75→
+(conflicts 72,73,76; does NOT conflict with 85) $a2, 91→$a3, 86→$t0. That is
+the **FULL 8/8 target disposition**. So the whole residual is three
+simultaneous demotions below the walker's invariant pri 15483:
+
+    75 (biased cmd)  nrefs 10  →  needs livelen >= 20   (measured 4)
+    85 (zext temp)   nrefs  8  →  needs livelen >= 16   (measured 7)
+    76 (val)         nrefs 26  →  needs livelen >= 68   (measured 22)
+
+(Thresholds from `pri = floor_log2(n)*n/livelen*10000 < 15483`.) This
+reproduces s18's relief curve from a completely independent direction and
+confirms it, while removing pad and c from the constraint set.
+
+**The third demotion is the wall, and it is a single unreachable number.**
+`livelen(76) >= 68` requires the operand byte to be live for MORE instructions
+than the entire loop (62) — i.e. live across the back edge with a definition in
+the preheader. Measured ceiling over all NINETEEN bodies ever built for this
+function: **30** (probe A, +11 insns); the best 68-insn shape reaches **26**
+(probe D). Semantically there is no reading in which the operand byte survives
+an iteration — every arm consumes it on the next instruction — so any preheader
+definition of `val` is a dead store (a cheat family) AND costs the instruction
+the exact-68 budget does not have. The gap is 2.3x against a quantity bounded
+above by the function's own instruction count.
+
+**Two further axes measured inert.** Loop syntax: probe C's `for` form with the
+advance in the step clause produces a **bit-identical** RA model to the while
+form (same order, same nrefs/livelen/pri for all eight allocnos) at the same
+15/68 — loop syntax is not a lever here. Head-branch nesting: probe B's
+re-nesting (distinct from s19's probe F order-swap, which jump.c normalised)
+also produces a bit-identical RA model, and costs +1 instruction for nothing.
+
+- [s21] CHASSIS: pristine-HEAD `& tools/wteng.ps1 main build` -> SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa MATCH, then candidate.c applied -> `sandbox func_800324D0 --disable all` = score 15, build_insns 68 == target_insns 68, rules_dropped 0 (s21/sandbox_candidate_final.log). The dispatch brief's 'measurement unavailable' chassis line is resolved: THE FLOOR IS 15, unchanged since s5.
+
+- [s21] Base ALLOCDBG (order [75,76,85,72,74,73,91,86]): 75:(nrefs 10, livelen 4)=75000, 76:(26,22)=47272, 85:(8,7)=34285, 72:(37,62)=29838, 74:(8,9)=26666, 73:(24,62)=15483, 91:(3,90)=333, 86:(3,92)=326. Dispositions 72->4 73->6 74->2 75->3 76->5 85->3 86->8 91->7 against target 72->4 73->3 74->2 75->6 76->5 85->6 86->8 91->7.
+
+- [s21] pad (72) is NOT a competitor for $v1 in any spelling: prefs{72}=[4] and find_reg tries preferred registers first, so 72 takes $a0 from any position in the allocation order.
+
+- [s21] c (74) is NOT a competitor either: it is the ONLY allocno without a hard conflict on reg 2 (72,73,75,76,85,86,91 all list hard_conflicts [2,29]; 74 lists [29]), so $v0 is reserved for it by exclusion.
+
+- [s21] Hand-simulating find_reg over [72,74,73,76,85,75,91,86] against the model's conflict sets yields the FULL 8/8 target disposition - so the residual is exactly three demotions below pri(73)=15483: livelen(75)>=20, livelen(85)>=16, livelen(76)>=68.
+
+- [s21] Nested dispatch does NOT split the arm carrier: pseudo 76 measured at nrefs 26 (unchanged) in the two-jump-table body, livelen 22->30, and the shape costs +11 instructions (79 vs 68).
+
+- [s21] livelen(76) ceiling over ALL nineteen bodies built for this function = 30 (probe A, +11 insns); best 68-insn shape = 26 (probe D). Required 68 exceeds the loop's own 62 instructions.
+
+- [s21] The walker's triple (nrefs 24, livelen 62-71, pri 13521-15483) is invariant across all nineteen bodies, including the four built this session.
+
+- [s21] for-form vs while-form is BIT-IDENTICAL in the RA model at the same 15/68; head-branch re-nesting is bit-identical and costs +1 instruction.
+
+- [s21] No Kengo C source exists anywhere in the project (docs/grind/decisions.md:5937-5939); the `kengo:HIGH | is_pad/Pad_Prs` tag is a naming attribution only.

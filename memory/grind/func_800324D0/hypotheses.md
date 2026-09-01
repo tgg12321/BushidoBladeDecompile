@@ -1115,3 +1115,113 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - probe: Body P1 (hoist + H) and body Q (base + u32 c) sandboxed: s20/sandbox_P1_hoist_plus_H.log, s20/sandbox_Q_base_u32c.log.
 - result: KILLED - not additive. P1 measures 69 insns / score 31: the hoist's -1 evaporates once the biased command is computed in the preheader, because both edits compete for the same preheader slot. Q shows the widening is worth -1 on the base chassis (67, score 29) but -3 on the H chassis (s19 probe K, 66). The levers interact and nothing lands on 68 with H's allocation.
 - verdict: KILLED
+
+## [s21] 2026-09-01 — rederive
+
+**H41 — KILLED.** *A spelling exists that splits the twelve arm references
+across TWO carriers of <= 15 weighted refs each while preserving a single
+12-entry jump table and 68 instructions* (the s20 frontier's only unmeasured
+axis). Probe: build the nested-dispatch shape (outer `if (cmd < 6)` over two
+6-arm switches), sandbox it, extract the RA model.
+**Result:** score 28, build_insns **79** vs target 68
+(`s21/sandbox_A_nested_dispatch.log`), and pseudo 76 stays at **nrefs 26** —
+identical to the base body — with only livelen moving 22 → 30
+(`s21/model_A_nested_dispatch.json`). **Mechanism of the kill:** `reg_n_refs`
+counts references to a C VARIABLE, not to a dispatch region; twelve
+`pad[X] = val;` arms are twelve references to `val` regardless of how many jump
+tables sit above them. Splitting the carrier therefore requires two C variables
+holding the same loaded byte, which is the BANNED base/ff overlapping-live-range
+family respelled and has no semantic reading. The axis is closed, not just this
+spelling.
+
+**H42 — KILLED (and it supersedes the s20 framing).** *The binding requirement
+is a competition between the walker and the arm carrier alone.* Probe:
+re-derive find_reg's outcome from this body's own ALLOCDBG + conflict/pref sets
+rather than from the s18 abstract order enumeration.
+**Result:** pad (72) and c (74) are NOT competitors — 72 carries `prefs=[4]` and
+takes `$a0` from any position, and 74 is the only allocno without a hard
+conflict on reg 2, so `$v0` is reserved for it by exclusion. Hand-simulating the
+order `[72,74,73,76,85,75,91,86]` against the model's conflict sets yields the
+**FULL 8/8 target disposition**. The residual is therefore exactly three
+demotions below the walker's invariant pri 15483: `livelen(75) >= 20` (from 4),
+`livelen(85) >= 16` (from 7), `livelen(76) >= 68` (from 22). This confirms
+s18's relief curve from an independent direction and REMOVES pad and c from
+the constraint set.
+
+**H43 — KILLED with a measured ceiling.** *`livelen(76)` can be lifted to the
+required 68 by an honest C shape at 68 instructions.* Probe: hoist the operand
+read out of the payload branch to the top of the loop body (probe D), the
+shape that maximises val's live range without a preheader definition; also read
+livelen(76) off every model built for this function.
+**Result:** D gives livelen(76) = 26 at 68 insns, score 16
+(`s21/sandbox_D_val_hoisted_head.log`, `s21/model_D_val_hoisted_head.json`) —
+and it is semantically wrong anyway (it reads the operand byte on the 0xFF and
+short-command paths, which the target bytes prove the original does not do).
+Ceiling across all NINETEEN bodies ever built: **30** (probe A, +11 insns).
+Required: **68**, which is longer than the entire loop (62) and therefore
+demands that `val` be live across the back edge with a preheader definition.
+No such definition has a semantic reading — every arm consumes the operand byte
+on the next instruction — so it is a dead store (cheat family) AND costs an
+instruction the exact-68 budget does not have.
+
+**H44 — KILLED.** *Loop syntax or head-branch topology is a lever on the allocno
+census.* Probes: `for` form with the stream advance in the third clause (C);
+head tests re-nested with the payload test outermost (B).
+**Result:** C is 15/68 with a **bit-identical** RA model to the while form
+(same order, same nrefs/livelen/pri for all eight allocnos); B is 17/69, also
+bit-identical in the model. Both banked in `rejected/`. Syntax-level loop and
+branch restructuring is measured inert for this function.
+
+**H45 — KILLED by record (rederive transplant leg).** *A Kengo or corpus
+transplant can supply a different source shape.* There is no Kengo C anywhere:
+`docs/grind/decisions.md:5937-5939` records `Kengo/` as names + sizes only,
+"never a source shape to transplant"; the `kengo:HIGH | is_pad/Pad_Prs` comment
+above the function is a naming attribution. m2c refuses the function without
+the jump table and would in any case only reproduce the shape already read
+insn-by-insn from `asm/funcs/func_800324D0.s` and already built at 68/68.
+
+### Frontier after s21
+The s20 frontier is now empty: item 1 (two-carrier split) is H41-KILLED,
+item 2 (walker live-length reduction) is subsumed — the walker's (nrefs 24,
+livelen 62-71, pri 13521-15483) triple is invariant across all nineteen bodies
+and the requirement has been restated as three demotions that do not involve
+it — and item 3 was already answered a priori. What remains, stated as the
+single open question a future session would have to answer:
+
+- **Is there a 68-instruction C body in which `val`'s live range crosses the
+  loop back edge without a dead preheader store?** Everything else in the
+  residual is bought: s19's probe H buys `livelen(75) >= 20` for +1 instruction
+  and makes 85 vanish. If some shape pays for H's instruction AND puts a real,
+  consumed value in `val` before the loop, the disposition closes. Nineteen
+  bodies say the second half has no semantic reading; that is an argument, not
+  a measurement, and it is the only place left to look.
+
+## [s21] A spelling exists that splits the twelve arm references across TWO carriers of <= 15 weighted refs each while preserving a single 12-entry jump table and 68 instructions (the s20 frontier's only unmeasured axis).
+- mechanism: At nrefs 15 the floor_log2 tier drops to 3 and the demotion requirement collapses to live_length > 28.4, which is inside the measured 21-34 envelope. Probe: nested dispatch - an outer `if (cmd < 6)` over two 6-arm switches - as the strongest available approximation (it splits the DISPATCH).
+- probe: Built tmp/grind/func_800324D0/s21/body_A_nested_dispatch.c, sandboxed it, and extracted the RA model with tools/ra_solver/extract.py.
+- result: score 28, build_insns 79 vs target 68 (s21/sandbox_A_nested_dispatch.log). Decisively: pseudo 76 stays at nrefs 26 - byte-for-byte the base body's count - with only livelen moving 22 -> 30 (pri 47272 -> 34666); a NEW allocno 97 appears for the half-select temp (nrefs 6, livelen 4, pri 30000). reg_n_refs counts references to a C VARIABLE, not to a dispatch region, so twelve `pad[X] = val;` arms are twelve references to `val` however many jump tables sit above them. Two carriers would require two C variables holding the same loaded byte - the BANNED base/ff overlapping-live-range family respelled, with no semantic reading.
+- verdict: KILLED
+
+## [s21] The binding competition for $v1 involves pad (72) and c (74) as blockers that must also be demoted, as earlier sessions assumed.
+- mechanism: Re-derive find_reg's outcome directly from this body's own ALLOCDBG plus the model's conflict/pref/hard_conflict sets, instead of from s18's abstract 40320-order enumeration.
+- probe: Hand-simulated find_reg over the order [72,74,73,76,85,75,91,86] against s19/model_base.json conflicts, prefs and hard_conflicts.
+- result: FALSE, and the requirement shrinks. pad (72) carries prefs=[4] and takes $a0 from ANY position in the order, so it never competes for $v1; c (74) is the only allocno without a hard conflict on reg 2 (all of 72,73,75,76,85,86,91 list hard_conflicts [2,29]; 74 lists only [29]), so $v0 is reserved for it by exclusion and its position is free. The simulated order yields 72->$a0, 74->$v0, 73->$v1, 76->$a1, 85->$a2, 75->$a2, 91->$a3, 86->$t0 - the FULL 8/8 target disposition. The residual therefore reduces to exactly three demotions below the walker's invariant pri 15483: livelen(75) >= 20 (from 4), livelen(85) >= 16 (from 7), livelen(76) >= 68 (from 22). This reproduces s18's relief curve from an independent direction and REMOVES pad and c from the constraint set.
+- verdict: KILLED
+
+## [s21] reg_live_length(76) can be lifted to the required 68 by an honest C shape at 68 instructions.
+- mechanism: 76's live range starts at the operand load inside the payload branch and ends at the last arm store. Hoisting the load to the top of the loop body is the shape that maximises the range without inventing a preheader definition.
+- probe: Built s21/body_D_val_hoisted_head.c (operand read hoisted out of the payload branch), sandboxed it, extracted its model; and read livelen(76) off every model built for this function to date.
+- result: D gives livelen(76) = 26 at 68 insns, score 16 (s21/sandbox_D_val_hoisted_head.log, s21/model_D_val_hoisted_head.json) - and it is semantically wrong anyway, reading the operand byte on the 0xFF and short-command paths the target bytes prove the original does not read. Ceiling across all NINETEEN bodies ever built for this function: 30 (probe A, +11 insns). Required: 68, which is LONGER THAN THE ENTIRE LOOP (62), so `val` would have to be live across the back edge with a preheader definition. No such definition has a semantic reading - every arm consumes the operand byte on the next instruction - so it is a dead store (cheat family) AND costs an instruction the exact-68 budget does not have.
+- verdict: KILLED
+
+## [s21] Loop syntax or head-branch topology is a lever on the allocno census.
+- mechanism: A `for` form with the stream advance in the third clause changes where the increment is emitted; re-nesting the head tests (payload test outermost) changes the CFG shape, distinct from s19's probe F order-swap which jump.c normalised.
+- probe: Built and measured s21/body_C_for_form.c and s21/body_B_nested_head.c; extracted RA models for both.
+- result: C: score 15, build_insns 68, and a BIT-IDENTICAL RA model to the while form (same order [75,76,85,72,74,73,91,86], same nrefs/livelen/pri for all eight allocnos). B: score 17, build_insns 69, RA model also bit-identical to base - the extra instruction buys literally nothing. Syntax-level loop and branch restructuring is measured inert for this function.
+- verdict: KILLED
+
+## [s21] The rederive modality's transplant leg (Kengo / m2c / decomp.me corpus) can supply a structurally different source shape.
+- mechanism: The function carries a `kengo:HIGH | is_pad/Pad_Prs` tag in src/code6cac_b.c, which has invited speculation about a Kengo transplant for several sessions.
+- probe: Checked the repo record for Kengo C availability; ran m2c on asm/funcs/func_800324D0.s.
+- result: docs/grind/decisions.md:5937-5939 records that `Kengo/` holds names + sizes + source paths ONLY - 'There is no Kengo C ... never a source shape to transplant' - so the tag is a naming attribution and carries no shape. m2c refuses the function without the jump table ('Found jr instruction ... but the corresponding jump table is not provided') and would in any case only reproduce the shape already read insn-by-insn from the target asm and already built at 68/68. The decomp.me corpus leg is non-applicable: the residual is a register-seat swap inside a body that already matches instruction-for-instruction.
+- verdict: KILLED
