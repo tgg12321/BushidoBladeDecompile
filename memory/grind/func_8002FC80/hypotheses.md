@@ -1,5 +1,24 @@
 # Hypothesis ledger — func_8002FC80
 
+## s6 (2026-08-31, recon — post-20:22-ban re-map + u8*-param measurement)
+
+- H1: "The natural typed-param spelling (a1[i]/a0[i]/a2[i] loads + plain scalar stores + granted
+  islands) — the exact form the 20:22 layer-1 next-action prescribed — is non-matching on the current
+  chassis." — **CONFIRMED**: 34 @ 73/74, 0 rules dropped, measured this session on HEAD 2a15c020.
+  The prescribed fix cannot close the function; the sink mechanism is the dump-proven s3/s4 chain.
+- H2: "Retyping the free prototype to u8* params (no C-side declaration or caller exists anywhere —
+  verified by grep) makes the cast in `*(s32 *)(aN + K)` semantically REQUIRED, produces the same
+  non-struct load RTL as the s4 form, and measures 0." — **CONFIRMED, MATCH-CLASS**: 0 @ 74/74,
+  0 rules dropped, cheat_asm_stripped=46, measured this session with edits in src (then reverted;
+  snapshot = candidate.c, object = tmp/grind/func_8002FC80/s1/sandbox_u8param_0.o).
+- H3 (OPEN — goes to the Judge, not self-adjudicated): "The u8*-param reconstruction is a distinct
+  legitimate ordinary-C construct (cast forced by the type system; codebase-dominant record-access
+  idiom; FDB0-parity for the same slots), not a respelling of the banned typed-pointer double-cast
+  load." — filed as this session's ruling-request; the case FOR and AGAINST is written out in
+  evidence.md s6. If YES: next session submits candidate.c as candidate-ready. If NO: the head's
+  entire byte-producing C space is foreclosed by bans (s6 map) and the function needs an
+  escalation/routing decision.
+
 ## s5 (2026-08-31, recon — re-submission)
 
 - H1: "The s4 discard was a validator keyword false-positive on self-vet wording (verbatim ban-text quotation),

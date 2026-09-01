@@ -1093,43 +1093,35 @@ void func_8002EECC(void *arg0, void *arg1) {
 void func_8002F2D0(s32 *a0, s32 *a1);
 INCLUDE_ASM("asm/funcs", func_8002F2D0);
 INCLUDE_ASM("asm/funcs", func_8002F770);
-/* func_8002FC80 — mixed C + canonical GTE islands (OWNER-CLUSTER grant
- * inline_asm_canonical.txt:365, cluster rule cop2-addressing-preamble-cluster.md;
- * islands character-identical to func_8002FDB0's granted islands).
- * Matched 2026-08-31: sandbox --disable all = 0 @ 74/74. The loads use the
- * byte-offset pointer-cast idiom func_8002FDB0 ships for the same scratchpad
- * workspace; the cast keeps MEM_IN_STRUCT_P clear on the loads so the sched.c
- * true_dependence exemption never fires and the six scratchpad stores keep
- * their source order (mechanism dumps: memory/grind/func_8002FC80/evidence.md s4). */
-s32 func_8002FC80(s32 *a0, s32 *a1, s32 *a2) {
+s32 func_8002FC80(u8 *a0, u8 *a1, u8 *a2) {
     s32 v1, v2;
     s32 *p;
     s32 ret;
 
     /* Compute (a1 - a0) into scratchpad SCR[0x60..0x68] and (a2 - a0)
      * into SCR[0x70..0x78] — same layout as func_8002FDB0. */
-    v1 = *(s32 *)((u8 *)a1 + 0);
-    v2 = *(s32 *)((u8 *)a0 + 0);
+    v1 = *(s32 *)a1;
+    v2 = *(s32 *)a0;
     *(s32 *)0x1F800360 = v1 - v2;
 
-    v1 = *(s32 *)((u8 *)a1 + 4);
-    v2 = *(s32 *)((u8 *)a0 + 4);
+    v1 = *(s32 *)(a1 + 4);
+    v2 = *(s32 *)(a0 + 4);
     *(s32 *)0x1F800364 = v1 - v2;
 
-    v1 = *(s32 *)((u8 *)a1 + 8);
-    v2 = *(s32 *)((u8 *)a0 + 8);
+    v1 = *(s32 *)(a1 + 8);
+    v2 = *(s32 *)(a0 + 8);
     *(s32 *)0x1F800368 = v1 - v2;
 
-    v1 = *(s32 *)((u8 *)a2 + 0);
-    v2 = *(s32 *)((u8 *)a0 + 0);
+    v1 = *(s32 *)a2;
+    v2 = *(s32 *)a0;
     *(s32 *)0x1F800370 = v1 - v2;
 
-    v1 = *(s32 *)((u8 *)a2 + 4);
-    v2 = *(s32 *)((u8 *)a0 + 4);
+    v1 = *(s32 *)(a2 + 4);
+    v2 = *(s32 *)(a0 + 4);
     *(s32 *)0x1F800374 = v1 - v2;
 
-    v1 = *(s32 *)((u8 *)a2 + 8);
-    v2 = *(s32 *)((u8 *)a0 + 8);
+    v1 = *(s32 *)(a2 + 8);
+    v2 = *(s32 *)(a0 + 8);
     *(s32 *)0x1F800378 = v1 - v2;
 
     /* PsyQ libgte inline macro gte_SetRotMatrix(r) — loads the 3 packed

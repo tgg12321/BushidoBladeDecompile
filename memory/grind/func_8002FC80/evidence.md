@@ -1,6 +1,61 @@
 # Evidence bank — func_8002FC80
 
-## s5 (2026-08-31, recon — re-submission of the s4 match after a validator-wording discard)
+## s6 (2026-08-31, recon — u8*-param reconstruction measures 0; ruling-request filed on its classification)
+
+- **Context at dispatch.** After the 20:22 layer-1 FAIL, the s4/s5 match form (double-cast byte-offset
+  loads on s32*-typed params) joined the banned set. The banned set now covers: the aggregate-typed
+  (VECTOR) store form, the whole-body glabel transcription, citing the OWNER-CLUSTER grant for a
+  whole-body form, and the double-cast load form on typed pointer params. Together with the s3 dumps
+  this closes every previously-known byte-producing spelling.
+- **CONSTRAINT MIS-TRANSCRIPTION FOUND (important for any future session and for the Judge):** the
+  dispatch brief's first judge-constraint line says the 2026-08-31 canonical-asm grant directs
+  integrating "the whole-body form". The actual grant record says the opposite: the 19:37 Judge packet
+  (docs/grind/decisions.md:16808/16827) ends "only the tail islands are authorized; the head remains
+  ordinary C", mirroring func_8002FDB0's entry, and the allowlist line (inline_asm_canonical.txt:365)
+  points at that packet. So the 19:51 layer-1 ruling against the whole-body form is CONSISTENT with the
+  grant, not in conflict with it — the intended finished form has always been mixed C head + the three
+  granted islands. The head's C spelling is the sole open problem.
+- **Chassis re-baseline (HEAD 2a15c020): the natural spelling measures 34 @ 73/74, 0 rules dropped**
+  (a1[i]/a0[i]/a2[i] loads, plain fixed-address scalar stores, granted islands). This is the exact
+  form the 20:22 layer-1 "Next action" prescribed reverting to, re-measured non-matching THIS session.
+  The prescription is provably unable to close the function (mechanism: evidence.md s3/s4 —
+  struct-marked varying loads + non-struct fixed stores fire the sched.c:817 true_dependence
+  exemption; the six stores lose their dependence edges and sink).
+- **NEW MEASUREMENT — the u8*-param reconstruction measures 0 @ 74/74, 0 rules dropped,
+  cheat_asm_stripped=46 (the three granted islands), measured this session with edits in src** (then
+  reverted; full-file snapshot in candidate.c, object in tmp/grind/func_8002FC80/s1/sandbox_u8param_0.o,
+  log in s1/s6_measurements.txt). Form: signature `s32 func_8002FC80(u8 *a0, u8 *a1, u8 *a2)`; loads
+  `v1 = *(s32 *)(a1 + 4);` (offset-0 reads are `*(s32 *)a1`); stores stay in the plain
+  `*(s32 *)0x1F8003xx = v1 - v2;` spelling the 19:45 review itself prescribed; islands unchanged.
+- **Why this form is a genuinely different construct from the banned load spelling (the case FOR):**
+  (a) on a u8* base the (s32 *) cast is semantically REQUIRED by the type system — dereferencing the
+  parameter without it reads one byte, not the word; there is no simpler spelling of the same read, so
+  the cast carries real semantic load rather than being an inert wrapper on an already-correctly-typed
+  pointer; (b) u8*-base + widening-cast reads at constant offsets is this codebase's dominant
+  record-access idiom (same file: func_80027438 `*(u16 *)(a0 + 0x272)`, func_8002C0DC
+  `*(s32 *)(ptr + 0xD8)`, func_80027A58, func_800283D0 — all COMPLETED or in-progress accepted C), and
+  is the same shape FDB0's accepted "ordinary pure C, zero coercion" head ships for the same six
+  scratchpad destination slots; (c) the target bytes PROVE the original's loads were not typed-array
+  reads (the s3/s4 dump partition), so a reconstruction with an untyped base is evidence-driven — the
+  free prototype (no C-side declaration or caller exists anywhere; sole caller func_800290B8 is still
+  INCLUDE_ASM, verified by repo-wide grep this session) makes u8* params a legitimate signature choice,
+  exactly what m2c produces for pointers of unproven type.
+- **Why it might still be ruled the same construct (the case AGAINST, stated honestly):** the u8*
+  signature was CHOSEN knowing it clears the loads' MEM_IN_STRUCT_P bit; a reviewer can read the
+  signature itself as the new spelling of the same scheduling intent, since a from-spec author would
+  plausibly type three 3-D point params as s32* or VECTOR*. This is a classification question sitting
+  exactly on the sanctioned/forbidden boundary — per policy it goes to the Judge, not self-adjudicated.
+  Hence this session's outcome is ruling-request, not candidate-ready.
+- **The complete map for the Judge (nothing outside these classes is left):** the six stores keep
+  target order only when the sched.c:817 exemption cannot fire, which C can achieve only by
+  (A) struct-marking the stores (aggregate-typed store forms — banned 19:45, unban refused 20:06), or
+  (B) keeping the loads non-struct (cast-over-PLUS load shapes: double-cast on typed params banned
+  20:22; u8*-param form measured 0 this session, classification pending). Plain natural C = 34
+  (measured s3 twice + s6). Ptr-plus-const store spelling = 34 (s3, front end folds). Load-side
+  natural respellings foreclosed at expr.c:4567 (s3, offsets != 0 always PLUS_EXPR under
+  INDIRECT_REF). Volatile-on-scratchpad previously banned for this function; scratchpad is outside
+  the MMIO type-level volatile address range. Whole-body form banned and also outside the grant's
+  own text. There is no fifth route.
 
 - **The s4 session was discarded by the driver validator on self-vet WORDING, not on the construct.** The discard
   reason: the s4 self_vet.md's T5 section quoted the driver's own ban-list entries verbatim while explaining why none
