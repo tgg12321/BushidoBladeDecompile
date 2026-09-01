@@ -1068,3 +1068,108 @@ forward is to submit and be judged.
    Nothing further should be re-searched: the spelling space of the dead
    mention is enumerated (three byte-exact, one killed at 109 / 13) and 47
    disproven forms are banked in `rejected/`.
+
+---
+
+## s14b (2026-08-31, SOLVER modality) — SOLVED. score 0 / 108 insns with ZERO constructs.
+
+Chassis re-measured first: HEAD is `INCLUDE_ASM`, so the session re-measured the
+banked compliant baseline (`rejected/s12-compliant-plain-tail-110-score14.c`)
+before spending anything: 110 insns / score 14, unchanged. Every number below is
+on that chassis.
+
+### H14b.1 — CONFIRMED. The compliant (no-fresh-local) chassis is ONE insn from target, and that insn is RA-caused.
+*Statement:* s12's 110/14 "plain tail" is usually quoted as 2 insns long; adding
+the `t = a0 + 3;` named intermediate (H13.2's mechanism, never before applied to
+the COMPLIANT chassis — s12/s11 only applied it to the carrier chassis) should
+remove the HImode cse temp and leave a pure register-rename residual.
+*Probe:* `rejected/s14-void-sig-plain-tail-plus-t-109-score13.c`.
+*Result:* **109 insns / score 13.** Disassembly: the tail instruction STREAM is
+target's, insn for insn —
+`move a0,s1 / addiu v0,s2,3 / sh v0,22(a0) / li v0,0x8000 / sh s2,4(a0) /
+ sh s5,8(a0) / sh s2,20(a0) / sh s2,16(a0) / sw v0,24(a0)` vs target's identical
+stream in `$v0`/`$v1`. The only differences in the WHOLE function are two
+register names (base `$a0` vs `$v0`, scratch `$v0` vs `$v1`) and the single
+extra `move a0,v0` at the top, which is the copy of the first call's return
+value that the base's `$a0` seat forces. **CONFIRMED** — and this is a better
+compliant floor form than s11's static-inline helper (same score 13, no helper).
+
+### H14b.2 — CONFIRMED (closed form, solver-typed). Under a `void` signature the base can NEVER take $v0.
+*Statement:* not "we have not found a spelling", but: no input to either
+allocation model reaches the seat.
+*Probe:* `local_extract.py text1a_c` + `extract.py func_80045878 text1a_c` +
+`simulate.py` (7/7 dispositions match, sort order MATCH) +
+`inverse.py global ... --goal {"76": 2}` +
+`inverse.py local ... --func func_80045878 --block 13 --goal {"0":3,"1":3}`.
+*Result:*
+  - block 13 (the tail) holds exactly two block-local qtys — qty0 = reg 79
+    (`a0+3`), birth 6 death 8, refs 2, **got $v0**; qty1 = reg 101 (`0x8000`),
+    birth 18 death 20, refs 2, **got $v0** — because `find_free_reg` scans
+    ascending (MIPS defines no `REG_ALLOC_ORDER`) and `$v0` is free;
+  - the base allocno is global pseudo 76, pri 25000, calls_crossed 0, **got $a0**;
+  - `inverse.py global --goal {"76": 2}` returns **NEGATIVE at depth 2**: no
+    perturbation of refs / live span / birth order / conflicts / preferences /
+    calls-crossed reaches `$v0`, because `$v0` is already taken by a
+    local-allocated qty before global_alloc runs;
+  - `inverse.py local --goal {"0":3,"1":3}` returns **exactly ONE minimal
+    vector, 1 atom**: `hard $v0 live across [6,20) — a real arg/return value
+    genuinely live across the block`.
+**CONFIRMED.** The whole endgame therefore had exactly one honest opening, and
+the solver named it in one call.
+
+### H14b.3 — CONFIRMED. The target's `addu $v0,$s1,$zero` is the RETURN VALUE move, not a base copy. func_80045878 returns the object pointer.
+*Statement:* thirteen sessions treated that insn as a base copy that had to be
+manufactured (hence the carrier/dead-mention search). The solver's only vector
+is a live `$v0` across the tail — i.e. a return value. Target's own bytes agree:
+`$v0` holds `s1` at `jr $ra` and is never clobbered after the copy. And the
+project already contains the independent evidence: **src/text1a_pre.c:173**
+declares `extern s32 *func_80045878(s32);` and **:179-186** consumes the result
+(`ptr = func_80045878(a0); g_player_ptrs[a0] = (s32)ptr; func_80040594(ptr);
+ ...; return ptr;`) — in an already-matched function.
+*Probe:* change the signature to `s16 *`, delete the `v0 = s1;` base reuse
+entirely, write the six tail stores directly through `s1`, end with
+`return s1;`. (`tmp/grind/func_80045878/s14/probe_R1_return_s1.c`.)
+*Result:* **108 insns / score 0.** Tail disassembly is target's exactly:
+`move v0,s1 / addiu v1,s2,3 / sh v1,22(v0) / li v1,0x8000 / sh s2,4(v0) /
+ sh s5,8(v0) / sh s2,20(v0) / sh s2,16(v0) / sw v1,24(v0)`.
+*Mechanism:* returning `s1` gives the tail pseudo a copy relationship with hard
+`$v0`, so local-alloc's SUGGESTED-REGISTER pass (`qty_phys_copy_sugg`, which
+runs BEFORE the ascending-order main pass) seats it in `$v0`; the two 2-ref
+scratches then fall to `$v1`. No extra insn anywhere, and no fresh pseudo is
+needed because the return value is a real value of the function.
+**CONFIRMED.**
+
+### H14b.4 — CONFIRMED. On the return-value chassis the `t` named intermediate is unnecessary; plain source order suffices.
+*Statement:* if the only reason for `t = a0 + 3;` was to stop cse building a
+HImode temp for the three `a0` half-word stores, then simply writing the
+`a0 + 3` store AFTER those three stores should have the same effect with no
+extra variable.
+*Probe:* (a) drop `t`, keep `s1[11] = a0 + 3;` FIRST; (b) drop `t`, write the
+three a0 stores first and `s1[11] = a0 + 3;` last.
+*Result:* (a) **109 insns / score 6** (the HImode temp returns —
+`rejected/s14-return-sig-a0plus3-store-first-109-score6.c`); (b) **108 insns /
+score 0**, reproduced twice. **CONFIRMED** — the final form carries no named
+intermediate, no annotation, and no sanctioned-family claim: the construct
+inventory is EMPTY.
+
+### H14b.5 — CONFIRMED at whole-EXE level.
+`verify-oracle` with the form in src/: `"ok": true, "build_matches": true` —
+full clean-driver build+link SHA1 still `62efab4f73f992798c43e8c730aa43baa10bb4fa`.
+
+### WHAT THIS RETIRES
+The entire s2–s13b search space is retired, not merely superseded: the carrier
+topology (s12's five-step foreclosure), the dead-mention topology (s13b's
+H13b.3 "every byte-exact form contains a semantically dead statement"), and the
+2026-08-31 decision packet's three-part routing question. H13b.3 is now known to
+be **false as stated** — it was true only under the unexamined premise that the
+function is `void`. The premise, not the search, was the wall. Standing judge
+constraints are satisfied vacuously (no fresh local, no dead store anywhere in
+the diff).
+
+### NEXT PROBE
+None on this function. Integration follow-up only, and deliberately NOT done by
+this session (out of scope, and each could perturb an already-matched function):
+reconcile `src/text1a_pre.c:173` (`extern s32 *func_80045878(s32);` — right
+return type, wrong arity) and `include/m2c_context.h:624` (stale
+`void func_80045878(s32,s32,s32);`, included by no src/*.c) to
+`s16 *func_80045878(s32, s32, s32);` in a separate, separately-verified change.

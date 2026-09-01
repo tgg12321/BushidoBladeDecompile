@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80045878",
-      "file": "text1a_c",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8): returned to active \u2014 fresh layer-1 + default-FAIL Judge adjudication of the s13b candidate against the amended rules (named-intermediate once-written relaxation + store-level dead-store deadness). Nothing pre-decided; all prerequisites verified per instance.",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md - 2026-08-31 (s13b) - func_80045878 (src/text1a_c.c) - OWNER-ESCALATION - ESCALATED WITH DECISION PACKET"
-    },
-    {
       "func": "func_800324D0",
       "file": "code6cac_b",
       "distance": 27,
@@ -1941,14 +1931,14 @@
     }
   ],
   "counts": {
-    "total": 217,
-    "active": 201,
+    "total": 216,
+    "active": 200,
     "by_status": {
-      "active": 201,
+      "active": 200,
       "foreclosed": 16
     },
     "by_verdict": {
-      "C": 167,
+      "C": 166,
       "ASM-PARTIAL": 34
     }
   }

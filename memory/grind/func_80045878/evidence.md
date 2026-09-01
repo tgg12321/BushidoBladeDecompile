@@ -1307,3 +1307,62 @@ that feeds only a statement GCC deletes).
   carried only two, because it claimed no family for `p = s1;`. Under the
   amended named-intermediate entry s14 DOES claim a family for it, so it now
   carries the mandated annotation (what + mechanism + lever-exhaustion).
+
+## [s14b] 2026-08-31 — solver modality — FUNCTION SOLVED (score 0, zero constructs)
+
+FACTS (all measured this session, all with the form in place in src/text1a_c.c):
+
+- **The function returns the object pointer.** Signature is
+  `s16 *func_80045878(s32 a0, s32 a1, s32 a2)` ending `return s1;`. Evidence,
+  two independent strands:
+  (i) target's bytes leave the object pointer in `$v0` at `jr $ra`
+      (`addu $v0,$s1,$zero` at .L800459DC, never clobbered afterwards);
+  (ii) an already-matched caller consumes it — src/text1a_pre.c:173
+      `extern s32 *func_80045878(s32);`, :179-186
+      `ptr = func_80045878(a0); g_player_ptrs[a0] = (s32)ptr;
+       func_80040594(ptr); ...; return ptr;`.
+- **score 0 / build_insns 108 == target_insns 108 / rules_dropped 0**, measured
+  twice (the second time after a full oracle rebuild).
+- **verify-oracle: `"ok": true, "build_matches": true`** — full clean-driver
+  build+link SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+- **Construct inventory: EMPTY.** No fresh local, no carrier, no dead store, no
+  dead mention, no alias, no named intermediate, no FAKE annotation, no
+  sanctioned-family claim. Both standing judge_constraints are satisfied
+  vacuously. self_vet.md written accordingly.
+- Tail source order is load-bearing (disclosed, not a construct): three `a0`
+  half-word stores, then `s1[11] = a0 + 3;`, then the 0x8000 store. Writing the
+  `a0 + 3` store first costs one insn (109 / score 6) because cse builds a
+  HImode temp for the three `a0` stores.
+
+SOLVER MEASUREMENTS (the route to the answer, reusable elsewhere):
+- `simulate.py` on this function: sort order MATCH, dispositions **7/7**. The
+  global model is exact here.
+- Block 13 (the tail) local-alloc ground truth on the compliant chassis:
+  qty0 = reg 79 (`a0+3`) birth 6 death 8 refs 2 -> **$v0**; qty1 = reg 101
+  (`0x8000`) birth 18 death 20 refs 2 -> **$v0**. Base = global pseudo 76,
+  pri 25000, calls_crossed 0 -> **$a0**.
+- `inverse.py global --goal {"76": 2}` -> **NEGATIVE at depth 2** (no refs /
+  span / birth / conflict / preference / calls-crossed perturbation reaches
+  `$v0`).
+- `inverse.py local --func func_80045878 --block 13 --goal {"0":3,"1":3}` ->
+  **one minimal vector, one atom**: `hard $v0 live across [6,20) — a real
+  argument/return value genuinely live across that span`. That single line is
+  what identified the return value; the rest of the session was spelling it.
+
+CORRECTION TO THE LEDGER (important for future sessions):
+- s13b's H13b.3 ("EVERY byte-exact form of this function contains a
+  semantically dead statement") is **FALSE as stated**. It is true only under
+  the premise that the function is `void`. The premise was never tested by
+  s2..s14a; thirteen sessions searched inside it. The general lesson banked:
+  when an RA residual is a single copy insn at the top of the last block and
+  the copied value is still live in `$v0` at `jr $ra`, test the SIGNATURE
+  before searching for a carrier.
+- The 2026-08-31 (s13b) decision packet's three-part routing question and the
+  2026-08-31 22:45 layer-1 FAIL are both MOOT: nothing they concern appears in
+  the submitted diff.
+
+OUT-OF-SCOPE FOLLOW-UP (not done here, flagged for integration): two stale
+declarations remain — src/text1a_pre.c:173 (`extern s32 *func_80045878(s32);`,
+right return type, wrong arity; separate TU, oracle still matches) and
+include/m2c_context.h:624 (`void func_80045878(s32,s32,s32);`, included by no
+src/*.c). Reconciling them is a separate, separately-verified change.
