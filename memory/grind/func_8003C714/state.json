@@ -1,7 +1,7 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 15,
    "modality": "structural",
    "headline": "Structural axis closed with two measured kills (do-while(0) inner loop is PHONY; +1 RTL insn costs ~6.5 score) \u2014 re-filed the bytes-proven INTEGRATION HANDOFF under a header the driver's regex accepts"
+  },
+  {
+   "session": 3,
+   "floor": 15,
+   "modality": "structural",
+   "headline": "Structural axis closed with a POSITIVE proof: the shipped cc1 emits the target's exact in-loop lui/lw/ori/mult quartet the moment loop.c:1631 declines the 0x91A2B3C5 movable; three new kills (K10 zero"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The chassis, not the C, is the residual: our generic mips-mips-gnu cc1 has a live FP register file the PS1 R3000A does not have, giving loop.c a threshold of 122 where the original toolchain saw 58.",
-   "mechanism": "loop.c:532 threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs); regclass.c:380-387 counts hard regs with !fixed_regs[i]; -msoft-float fixes the 32 FP regs via mips.h CONDITIONAL_REGISTER_USAGE",
-   "next_probe": "Operator-only: elect the flag variant per docs/grind/decisions.md:19622, mirror it into engine/buildconfig.py, verify-oracle --rebuild, then apply candidate.c and expect sandbox 0."
+   "hypothesis": "The structural (spelling) axis is fully enumerated and closed: size (K2/K8), zero-cost size (K10), admission (K9), the loop_has_call branch (K11), the moved_once doubling (K7/K12), and savings/lifetime (H7, both pinned at 1). No untried structural lever remains.",
+   "mechanism": "loop.c:1631 (threshold*savings*lifetime) >= insn_count with savings=lifetime=1 and threshold=119, plus the enumerated admission guards at loop.c:697-700/1594",
+   "next_probe": "Do not re-spend a session on spelling. A future dispatch here should be a non-spelling modality, and its first act should be to read this ledger's H6 \u2014 the target's shape is already proven reproducible on the shipped chassis, so any probe that only re-derives the shape is wasted."
   },
   {
-   "hypothesis": "If the global -msoft-float variant is elected, func_800324D0 (code6cac_b) regresses 0 -> 3 and needs an ordinary structural re-grind \u2014 its loop must be spelled at <= 58 RTL insns (currently 72) for its `li 255` hoist to survive at threshold 58.",
-   "mechanism": "the same loop.c:1631 desirability test in reverse: 122 >= 72 hoists, 58 < 72 does not",
-   "next_probe": "After any chassis change, queue reopen func_800324D0 and grind its loop body down to <= 58 RTL insns (read `Loop from ...: N real insns.` in the .loop dump as the gradient)."
+   "hypothesis": "The residual is a single scalar, `threshold`, whose original value must have been in [56,58]; the shipped chassis supplies 122 (119 after the first hoist) because n_non_fixed_regs counts a 32-register FP file the PS1 R3000A does not have.",
+   "mechanism": "loop.c:532 threshold=(loop_has_call?1:2)*(1+n_non_fixed_regs); regclass.c:380-387 counts hard regs with !fixed_regs[i]",
+   "next_probe": "BARRED for grind sessions by the standing Judge constraint on this function (CC_FLAGS / cc1 configuration / buildconfig are not a lever and may not be re-filed). Recorded here as the measured cause only, not as a proposed action."
   },
   {
-   "hypothesis": "No further C search on func_8003C714 is warranted on the shipped chassis; all three inputs to loop.c:1631 plus every movable-admission escape are now enumerated from source and measured closed.",
-   "mechanism": "loop.c:1594 (safe-to-move), 1609-1611 (moved_once doubling), 1621-1633 (desirability), 1719/1904 (threshold decay), 735-768 (reg_single_usage)",
-   "next_probe": "None on the C axis. If a future session is dispatched here anyway, spend it on the chassis question (cc1 configuration fidelity), not on spelling."
+   "hypothesis": "If a future ruling ever re-opens the chassis question, func_800324D0 (code6cac_b) regresses 0 -> 3 under a threshold of 58 and needs an ordinary structural re-grind to <= 58 RTL insns in its loop (currently 72).",
+   "mechanism": "the same loop.c:1631 test in reverse: 122 >= 72 hoists its `li 255`, 58 < 72 does not",
+   "next_probe": "Not actionable from this function's queue slot; recorded so the dependency is not lost."
   }
  ],
  "judge_constraints": [

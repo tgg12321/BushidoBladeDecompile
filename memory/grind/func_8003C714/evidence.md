@@ -250,3 +250,76 @@ the `INCLUDE_ASM` line or over a previous body), `vA_dowhile0_1800.c`,
 - [s2] The previous session's identical handoff was discarded on a title-regex technicality, not on substance: grind.ps1:1063 requires the decisions.md header line naming the function to carry OWNER-ESCALATION or CANONICAL-ASM GRANT PATH, while grind.ps1:1148 (which handles INTEGRATION HANDOFF) runs later in the chain. The re-filed entry at docs/grind/decisions.md:19622 carries both markers on the header line.
 
 - [s2] grindlib.py:568 states 'Integration handoffs and gate-PASSING escalations stay legal anywhere', so this disposition is legal in structural modality and is not a self-applied exhaustion claim.
+
+## s3 (2026-09-01, structural modality) — measurements
+
+All measurements taken with `memory/grind/func_8003C714/candidate.c` (or the
+listed variant) spliced over the `INCLUDE_ASM("asm/funcs", func_8003C714);` line
+at `src/code6cac_c2.c:629`; `src/code6cac_c2.c` was restored to HEAD at the end
+of the session.
+
+| # | Form | sandbox score | build_insns | `.loop` insn_count | regno-84 movable |
+|---|---|---|---|---|---|
+| 1 | `candidate.c` (baseline, chassis re-check) | 15 | 105 | 56 | moved to 205 |
+| 2 | `rejected/byte-neutral-masks-fold-before-loop.c` (`& 0xFF` on all four stores) | 15 | 105 | **56 (+0)** | moved |
+| 3 | `s3/body_callC.c` (baseline + one call in the loop) | — | — | 57 | moved |
+| 4 | `s3/body_callD.c` (K8 inlined-address respelling + one call in the loop) | 55 | 116 | **59** | **not desirable** |
+
+Baseline movable table (form 1), identical to s2's:
+```
+Loop from 25 to 146: 56 real insns.
+Insn 33: regno 78 (life 1), move-insn savings 1  moved to 203
+Insn 46: regno 84 (life 1), move-insn savings 1  moved to 205
+Insn 60: regno 91 (life 31), move-insn savings 1  moved to 207
+```
+
+Form-4 movable table (`tmp/grind/func_8003C714/s3/callD_loop_table.txt`):
+```
+Loop from 25 to 169: 59 real insns.
+Insn 36: regno 77 (life 50), move-insn savings 2  moved to 226
+Insn 45: regno 84 (life 1), move-insn savings 1 not desirable
+Insn 66: regno 95 (life 31), move-insn savings 1  moved to 228
+Insn 142: regno 138 (life 1), move-insn forces 36 savings 1  moved to 230
+```
+
+Form-4 emitted code around the un-hoisted constant
+(`tmp/grind/func_8003C714/s3/callD_inloop_split_const.txt`,
+`mipsel-linux-gnu-objdump -d tmp/sandbox/func_8003C714/code6cac_c2.o`):
+```
+     d98:  3c0291a2   lui   v0,0x91a2
+     d9c:  8e230000   lw    v1,0(s1)
+     da0:  3442b3c5   ori   v0,v0,0xb3c5
+     da4:  00620018   mult  v1,v0
+     da8:  00004010   mfhi  t0
+```
+Target, `asm/funcs/func_8003C714.s:8003C754..8003C764`:
+```
+  lui  $v0, (0x91A2B3C5 >> 16)
+  lw   $v1, 0x4($a2)
+  ori  $v0, $v0, (0x91A2B3C5 & 0xFFFF)
+  mult $v1, $v0
+  mfhi $t1
+```
+Instruction-for-instruction identical (the base register and the mfhi
+destination differ only because form 4 carries the diagnostic call). This is the
+first POSITIVE reproduction of the target's residual shape on the shipped
+chassis: the split, sched1-interleaved constant is what this cc1 emits whenever
+`loop.c:1631` declines the movable — no chassis change is required to obtain the
+shape, only to obtain the decision.
+
+Source lines verified this session in `tools/gcc-2.7.2/loop.c` (quoted in
+hypotheses.md H7): 344, 532, 791, 793, 1609-1613, 1631, 1719, 1904, 1912.
+
+- [s3] Chassis re-check: candidate.c in place of the INCLUDE_ASM line at src/code6cac_c2.c:629 measures score 15, target_insns 104, build_insns 105 — unchanged from s1/s2; the .loop movable table (`Loop from 25 to 146: 56 real insns.` / regno 78 moved to 203 / regno 84 moved to 205 / regno 91 (life 31) moved to 207) reproduces s2's verbatim.
+
+- [s3] POSITIVE reproduction of the residual shape on the shipped chassis: with the movable declined, objdump of the sandbox object shows `lui v0,0x91a2 / lw v1 / ori v0,0xb3c5 / mult v1,v0 / mfhi` — identical to target 8003C754..8003C764. The C body is right; only the loop.c decision differs.
+
+- [s3] loop.c source-verified this session: 532 (threshold formula), 791 (lifetime), 793 (savings = n_times_used, hence always >= 1), 1609-1613 (moved_once doubling), 1631 (desirability), 1719/1904 (threshold -= 3), 344/1912 (moved_once is per-function and only set on a real move).
+
+- [s3] Byte-neutral redundant masks add 0 to insn_count (56 -> 56) because they fold at expand/cse1, before loop.c counts the loop — the zero-cost-inflation channel is empty.
+
+- [s3] With loop_has_call the movable is declined at insn_count 59 (measured: `not desirable`) and still moves at 57 — so the exact residual condition on the shipped chassis is: (loop_has_call AND insn_count >= 59) OR (no call AND insn_count >= 120). The first is excluded by the absence of any jal in the target loop; the second by the target loop being 59 machine instructions inside a 104-instruction function.
+
+- [s3] The two constant movables in the target are structurally IDENTICAL inputs to loop.c:1631 (both savings 1, both lifetime 1) — 0x88888889 is hoisted to the preheader and 0x91A2B3C5 is not — so they can only be separated by the `threshold -= 3` decay the first hoist applies. That pins the original compile's initial threshold to the window [56,58] and identifies the residual as a build-configuration scalar with no C-side input.
+
+- [s3] src/code6cac_c2.c was restored to its HEAD content (INCLUDE_ASM) at the end of the session; the only dirty tracked file is metrics/events.jsonl.

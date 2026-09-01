@@ -30,6 +30,16 @@
  * 104-instruction function). Do not grind this body further; see
  * hypotheses.md H4/K5 and the 2026-09-01 docs/grind/decisions.md entry.
  *
+ * [s3 2026-09-01 UPDATE] Re-verified unchanged on the current chassis: score 15,
+ * 104 target / 105 build, movable table identical. s3 added the first POSITIVE
+ * evidence that this body is the right C: when loop.c:1631 is made to decline
+ * the 0x91A2B3C5 movable (diagnostic form s3/body_callD.c), the SHIPPED cc1
+ * emits `lui v0,0x91a2 / lw v1 / ori v0,0xb3c5 / mult v1,v0` — the target's
+ * 8003C754..8003C760 quartet, instruction for instruction. The residual is the
+ * desirability arithmetic alone; savings and lifetime are both pinned at their
+ * structural minimum of 1 (loop.c:791/793), so the product equals `threshold`.
+ * See hypotheses.md H6/H7 and K10/K11/K12.
+ *
  * Remaining d15 residual = ONE loop.c decision + its seat fallout:
  *  build hoists the 0x91A2B3C5 (/1800 magic) const load to the preheader
  *  (movable, savings 1, life 1, threshold 122 vs insn_count ~56); target has it
