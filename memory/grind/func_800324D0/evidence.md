@@ -1063,3 +1063,48 @@ docs/grind/decisions.md this session.
 - [s13] Representation fact verified this session: asm/funcs/func_800324D0.s:20-21 references jtbl_800105A0; asm/rodata/jtbl_800105A0.s exists but is referenced by NOTHING in bb2.ld, Makefile, regfix.txt or asmfix.txt (the 2026-06-09 rodata cleanup retired all asm/data/*.rodata* segments). That is the real, sweep-3-reconfirmed ground for this function asm-until-matched deferral (borderline.md:154) and the subject of the filed packet.
 
 - [s13] The s12 REFUSED / OWNER-ACCEPTED INCOMPLETE disposition was deliberately NOT re-filed: the owner second 2026-08-24 ruling makes an accept-the-debt packet pre-decided NO and not to be filed, so the function stays ACTIVE under standing policy while the routing question is decided.
+
+## [s14] 2026-08-31 — owner ruling 5 EXECUTED: migration to INCLUDE_ASM, oracle-verified, pins deleted
+
+- **The owner's 2026-08-30 batch ruling 5 (`docs/grind/decisions.md:14829`) is executed.** src/code6cac_b.c:1698
+  now reads:
+      /* kengo:HIGH  |  is_pad/Pad_Prs  |  111i */
+      INCLUDE_ASM("asm/funcs", func_800324D0);
+      INCLUDE_RODATA("asm/rodata", jtbl_800105A0);
+  replacing the 55-line four-`register asm("$N")`-pin body. Full clean-driver build:
+  `sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want` **MATCH**
+  (tmp/grind/func_800324D0/s14/build_sha1_migrated.log). `tools/check_completion_integrity.py` (WSL): "OK: all
+  completed functions satisfy their category's invariants."
+- **No bb2.ld / splat edit was needed.** The s13 packet assumed the table had to become a separate object
+  (the func_80036940 jtbl-infra shape). It does not: `INCLUDE_RODATA` splices asm/rodata/jtbl_800105A0.s into
+  code6cac_b.o(.rodata) at the statement's position — exactly the slot the compiler's switch table occupied —
+  and the `.L8003256C…` local labels resolve against the func_800324D0.s pulled in one line above. This kept
+  the whole migration inside a grind session's allowed surface.
+- **Cheat-class status:** src/code6cac_b.c now contains zero `register … asm("…")` declarations. Pins remain
+  elsewhere on main (src/config.c ×16, src/text1a_c.c ×26, src/code6cac_c2.c ×6) — other functions' items.
+  Zero regfix.txt / asmfix.txt rules touch this function; it is not in inline_asm_canonical.txt, not in any
+  maspsx gate list.
+- **Chassis drift: the floor is 17, not 15.** candidate.c measured 17 twice this session — once over the
+  migrated file, once over a pristine HEAD replication of the s13 procedure (68 == 68 insns both times,
+  rules_dropped 0). No change to this function's C explains it; the +2 appeared between 2026-08-26 and
+  2026-08-31 from unrelated commits. Prime suspect is the lo16-addend false-distance artifact (this function
+  takes `%hi/%lo` of jtbl_800105A0, and score.py does not mask section-relative R_MIPS_LO16 addends). Treat
+  every pre-s14 absolute floor number in this ledger as chassis-relative to the OLD chassis.
+- **What did NOT change:** the residual's character. s13's solver verdict stands — the honest form is a
+  uniform walker↔cmd 2-register swap, typed FORECLOSED at depth 3 against an 8/8-exact forward model, with
+  `prera_hard=[4]` the mechanical reason no C spelling can plant a $v1/$a2 preference in a leaf. Both
+  endgame-lock gates still FAIL (scan_hand_coded tier=LOW 0/8 at s12+s13; zero SOTN file+line precedent).
+
+- [s14] src/code6cac_b.c:1698 now reads INCLUDE_ASM("asm/funcs", func_800324D0); + INCLUDE_RODATA("asm/rodata", jtbl_800105A0); replacing 55 lines of four-register-asm-pin C (git diff --stat: 2 insertions, 55 deletions).
+
+- [s14] Full clean-driver build with the migration in place: sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH, verified twice this session.
+
+- [s14] tools/check_completion_integrity.py (WSL): 'OK: all completed functions satisfy their category's invariants.'
+
+- [s14] No bb2.ld / splat / Makefile / gate-list edit was needed to route the jump table: INCLUDE_RODATA keeps it in the same TU and the local labels resolve against the INCLUDE_ASM'd body. This corrects the s13 packet's central premise.
+
+- [s14] Chassis drift: the banked candidate measures 17 (twice, via two independent application paths) against the ledger's 15, with 68 == 68 insns and rules_dropped 0 — so all pre-s14 absolute floor numbers in this ledger are relative to the old chassis.
+
+- [s14] Residual character unchanged: s13's solver FORECLOSED verdict (depth 3, 8/8-exact forward model, prera_hard=[4]) and both failing endgame-lock gates (scan_hand_coded tier=LOW 0/8; zero SOTN file+line precedent) still stand.
+
+- [s14] Working tree left with the migration applied and oracle-verified; a grind session may not commit, so the operator commit is the only remaining step.

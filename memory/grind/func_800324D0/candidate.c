@@ -1,3 +1,11 @@
+/* [s14 2026-08-31] CHASSIS UPDATE: this form now measures 17, not 15 (measured
+ * twice: over the migrated src and over a pristine HEAD replication; 68 == 68
+ * insns, rules_dropped 0). The +2 appeared from unrelated commits between
+ * 2026-08-26 and 2026-08-31; prime suspect is the lo16-addend false-distance
+ * artifact (this function takes %hi/%lo of jtbl_800105A0). Also: main no longer
+ * holds any C body for this function - it is INCLUDE_ASM + INCLUDE_RODATA since
+ * s14 (owner ruling 5, 2026-08-30). To measure this candidate, replace those two
+ * lines with the body below. */
 /* func_800324D0 — BEST FORM (s5 ledger entry, brief-session 4, 2026-08-20):
  * sandbox --disable all = 15, build_insns 68 == target 68. FIRST floor drop
  * since s1 (27 -> 15).

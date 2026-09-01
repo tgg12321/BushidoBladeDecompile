@@ -1,7 +1,7 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 13,
+ "session_count": 14,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -81,27 +81,34 @@
    "floor": 15,
    "modality": "escalation",
    "headline": "Owner-directed solver modality executed (first time in 13 sessions): residual typed FORECLOSED at depth 3 against an exact 8/8 forward model, and all three unmodelled fallback mechanisms measured iner"
+  },
+  {
+   "session": 14,
+   "floor": 17,
+   "modality": "escalation",
+   "headline": "Owner ruling 5 (2026-08-30) EXECUTED: func_800324D0 migrated to INCLUDE_ASM + INCLUDE_RODATA inside the src surface (no bb2.ld edit needed), four register-asm pins deleted, full build SHA1 == oracle; "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "With every modelled RA lever FORECLOSED, the only remaining honest route is a genuinely different 68-instruction SHAPE - a C expression whose pre-RA RTL insn multiset differs from ours - not another allocation-steering spelling of the same shape.",
-   "mechanism": "inverse.py rtl_shape class: the RA and scheduler models permute and rename a FIXED insn set, so reaching a different assignment now requires changing the set the front end and early optimisers build",
+   "hypothesis": "The +2 chassis drift (15 -> 17) is the lo16-addend scoring artifact rather than a codegen regression \u2014 the absolute floor is contaminated and small deltas are unreadable until it is separated.",
+   "mechanism": "engine/score.py masks branch/jump targets but not section-relative R_MIPS_LO16 addends; func_800324D0 takes %hi/%lo of jtbl_800105A0, whose rodata position shifts when a neighbouring function in code6cac_b changes.",
+   "next_probe": "Disassemble the sandbox .o and the target stream for the candidate form and diff instruction-by-instruction: if the two extra differing insns are exactly the lui/addiu pair carrying the jtbl address, the drift is the artifact and the true residual is still 15."
+  },
+  {
+   "hypothesis": "With every modelled RA lever FORECLOSED, the only remaining honest route is a genuinely different 68-instruction SHAPE \u2014 a C expression whose pre-RA RTL insn multiset differs from ours, not another allocation-steering spelling.",
+   "mechanism": "inverse.py rtl_shape class: the RA and scheduler models permute and rename a FIXED insn set, so reaching a different assignment now requires changing the set the front end and early optimisers build.",
    "next_probe": "Enumerate C expressions for the stream walk whose combine/cse output differs in the insn multiset while still landing exactly 68 insns (the s10 index-walk family all came out at 69); sandbox each and re-classify with inverse_compose to confirm the first divergence moved out of RA."
   },
   {
-   "hypothesis": "A pre-RA appearance of $v1 or $a2 - the mechanically missing ingredient (prera_hard=[4]) - is unreachable in any 68-insn form of this leaf function.",
-   "mechanism": "global.c set_preference can only record hard-reg preferences for registers that appear as hard regs in pre-RA RTL; on MIPS those arise from call argument/return conventions, and a leaf has none",
-   "next_probe": "If re-opened: confirm from the .rtl/.combine dumps that no PsyQ-idiom expansion (div/mod, multu, DImode helper) can introduce $v1/$a2 pre-RA without adding instructions - a one-read check that closes the last theoretical crack."
-  },
-  {
-   "hypothesis": "The jtbl_800105A0 routing question, answered YES, lets the four register-asm pins leave main without touching the pure-C standing of the function.",
-   "mechanism": "asm-until-matched migration: INCLUDE_ASM routing needs the currently C-generated jump table supplied from asm/rodata instead, which needs bb2.ld / splat inputs - outside grind-session surface",
-   "next_probe": "Operator: wire asm/rodata/jtbl_800105A0.s into the link (or re-home the table), switch src/code6cac_b.c:1541 to INCLUDE_ASM, full build, SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa, then run tools/check_completion_integrity.py."
+   "hypothesis": "A pre-RA appearance of $v1 or $a2 \u2014 the mechanically missing ingredient (prera_hard=[4]) \u2014 is unreachable in any 68-insn form of this leaf function.",
+   "mechanism": "global.c set_preference can only record hard-reg preferences for registers that appear as hard regs in pre-RA RTL; on MIPS those arise from call argument/return conventions, and a leaf has none.",
+   "next_probe": "Confirm from the .rtl/.combine dumps that no PsyQ-idiom expansion (div/mod, multu, DImode helper) can introduce $v1/$a2 pre-RA without adding instructions \u2014 a one-read check that closes the last theoretical crack."
   }
  ],
  "judge_constraints": [
-  "LAYER-1 CHEAT-REVIEWER FAIL: The base/ff local split is engineered purely to steer GCC's set_preference/find_reg register-allocation cascade to a specific hard register, not to express program semantics \u2014 a Test-3 GCC-internals-justification cheat regardless of the self-vet's program-logic framing. Next action: Revert to the pin-free single-variable spelling (or any spelling reached without instrumented-cc1 RA forensics) and accept the honest sandbox distance if no clean form closes it; do not restructure locals specifically to steer set_preference/find_reg. If genuinely no clean-C path closes"
+  "LAYER-1 CHEAT-REVIEWER FAIL: The base/ff local split is engineered purely to steer GCC's set_preference/find_reg register-allocation cascade to a specific hard register, not to express program semantics \u2014 a Test-3 GCC-internals-justification cheat regardless of the self-vet's program-logic framing. Next action: Revert to the pin-free single-variable spelling (or any spelling reached without instrumented-cc1 RA forensics) and accept the honest sandbox distance if no clean form closes it; do not restructure locals specifically to steer set_preference/find_reg. If genuinely no clean-C path closes",
+  "Land the owner-ruling-5 migration as an ordinary in-scope edit to src/code6cac_b.c through the normal gates (it is already inside the per-function surface \u2014 no scope grant exists or is needed); do not re-file it as an integration handoff, and do not claim bytes-proven while `sandbox --disable all` is non-zero."
  ],
  "banned_constructs": [
   "`base = *(u8 **)(pad + 0x58); ff = 0xFF;` declared as two block-0 locals with deliberately overlapping live ranges, immediately followed by `ptr = base + 5;`",
