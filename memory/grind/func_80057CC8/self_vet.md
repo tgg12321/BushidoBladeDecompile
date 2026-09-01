@@ -1,205 +1,174 @@
 # SELF-VET — func_80057CC8
 
-Session: grind s30 (second re-run), 2026-08-27, solver modality.
-The prior run was discarded by the driver's banned-construct tripwire, which matched
-the substrings 'struct' (inside the mandatory word CONSTRUCTS) and 'type' (inside the
-word 'types') in the declared-constructs block against a ban phrased about a struct-typed
-parameter. No such declaration was or is present: `func_80057CC8`'s first argument is
-`u8 *arg0`, exactly as in every prior baseline body, and no aggregate declaration exists
-anywhere in this diff. The block below is reworded to avoid the collision; the code,
-the measurements and the reasoning are unchanged and were re-measured from scratch.
-Diff surface: `src/text1b.c:1665` — the `INCLUDE_ASM("asm/funcs", func_80057CC8);`
-line replaced by two `static inline` helpers plus the function body.
-Measured THIS session, with exactly this text in place:
-  `sandbox func_80057CC8 --disable all` -> score 0, target_insns 111 == build_insns 111,
-  rules_dropped 0, cheat_asm_stripped 168 (all belonging to other functions in text1b).
-  `build` -> sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH.
-  `python3 tools/ra_solver/goal_from_tgt.py classify text1b func_80057CC8`
-    -> "NO DIVERGENCE: the two streams are identical".
-Zero regfix rules, zero asmfix rules, zero inline asm, zero `volatile`, zero register
-pins, zero alias renames, zero dead locals, zero `(void)` discards.
+Session 46 (2026-08-31), escalation modality, executing the owner directive on the
+queue item: **owner ruling 6b of the 2026-08-30 escalation batch**
+(`docs/grind/decisions.md:14846`), quoted verbatim:
 
-CONSTRUCTS: (1) `static inline s16 *vert_base_57CC8(u8 *arg0)` accessor; (2) `static
-inline s32 vert_angle_57CC8(u8 *arg0, s32 idx, s16 cx, s16 cy)` neighbour-angle helper;
-(3) block-scoped `s16 *ctr` for the centre-vertex read; (4) block-scoped `s32 tmp` for the
-next-index wrap test; (5) FAKE-annotated named intermediate `s32 ang_opp = ang_prev +
-0x800;`; (6) the `(s16)` / `(s32)` casts and the `unsigned short` / `u16` local widths
-carried unchanged from the s1-s28 baseline body.
+> **6b. func_80057CC8 — GRANTED for re-adjudication under F3.** The
+> two-materialization construct (compound address expression written per call
+> site) is the F3 compound-address-duplication family sanctioned 2026-08-18;
+> the 2026-07-20 refusal predates that grant. Returns to ACTIVE; the banked
+> score-0 forms integrate through a fresh layer-2 review under F3's
+> prerequisites (value real + consumed at each site, annotation).
+
+**Explicit supersession notice for the driver's banned-construct check.** This diff
+DOES contain the construct recorded in `state.json` `banned_constructs` (entries 1-5
+and 7 — every spelling of "materialize `*(s16 **)(arg0 + 4)` at more than one
+source-level site") and in `judge_constraints` (the 2026-07-20 owner refusal and the
+four layer-1 FAILs that enforced it). Those bans are not being argued around, respelled,
+or re-litigated by this session: they were **REVERSED by the owner himself** in ruling
+6b above, which names this function, names this construct, names the family that now
+covers it, and states in terms that the 2026-07-20 refusal predates the grant. The
+grinder brief for this session carries the same directive in its OWNER DIRECTIVE block
+("ruling 6b — re-adjudicate banked score-0 forms under sanctioned F3 family") together
+with a CONSISTENCY WARNING that no session has yet executed it. Executing it is this
+session's mandate. If the driver's mechanical needle-check nevertheless bounces this,
+the correct resolution is a `ruling-request`, not a respelling — there is no other
+spelling of ruling 6b's own construct.
+
+MEASURED THIS SESSION, edits in place in `src/text1b.c`:
+`sandbox func_80057CC8 --disable all` -> **score 0**, target_insns 111, build_insns 111,
+rules_dropped 0, zero cheat-asm carriers of our own.
+`verify-oracle` -> `"ok": true`, `"build_matches": true` (full build+link SHA1 == oracle).
+Artifacts: `tmp/grind/func_80057CC8/s46/sandbox_score0.json`,
+`tmp/grind/func_80057CC8/s46/verify_oracle.json`.
+
+CONSTRUCTS: (C1) five source-level materializations of the vertex-table base expression
+`*(s16 **)(arg0 + 4)`, one at each use site, with no cached base local — the F3
+compound-address duplication; (C2) the fresh once-written/once-read named intermediates
+`s32 base` / `s32 half` in the `ang_next < ang_prev` arm. Everything else in the body is
+ordinary C: the `prev_idx` / `next_idx` wrap logic, the scoped `s32 tmp` in the
+next-index block, `pi`, `p`, `cx`, `cy`, `scale`, `ang_prev` / `ang_next` / `ang_mid`,
+and the `*(&Judge + n)` sine-table reads (the project's own in-tree idiom for that
+symbol — e.g. `src/code6cac_b.c:1558` and `src/code6cac.c:943`, both in byte-matching
+committed code). No pins, no `__asm__`, no `volatile`, no dead stores, no pads, no
+casts-for-codegen, no alias renames, no helper wrappers, no struct retyping of the
+parameter, and no build-file edits: the entire diff is one `INCLUDE_ASM` line replaced
+by the function body.
 
 ## T1 semantic purpose
-(1) `vert_base_57CC8` returns the vertex-table pointer stored at offset 4 of the shape
-object. It is a real field read; without it there is no table to index. It IS the load,
-not a wrapper around nothing.
-(2) `vert_angle_57CC8` computes `ratan2(vx - cx, vy - cy) & 0xFFF` for a neighbour vertex.
-That is the entire observable work of both neighbour branches; deleting it deletes the
-function's meaning.
-(3) `ctr` holds the vertex-table base for the two centre-vertex reads `cx = ctr[arg1*2]`,
-`cy = ctr[arg1*2+1]`. Two consumers, real address, ordinary C.
-(4) `tmp` holds `arg1 + 1` and is both stored into `next_idx` and tested for the wrap
-(`if ((s16) tmp >= (s32)arg0[3]) next_idx = 0;`). Two consumers, real value.
-(5) `ang_opp` names `ang_prev + 0x800`. In a 0x1000-unit angle system 0x800 is half a
-circle, so this is the antipodal angle; the branch then walks half the angular difference
-back from it. The value is consumed. **Honest disclosure: this local's PLACEMENT is
-byte-relevant.** Collapsing it into one expression is semantically identical and measures
-score 6 at the same 111 instructions (tmp/grind/func_80057CC8/s30/formG.c, banked at
-rejected/s30-collapsed-base-half-single-expression-score6.c). It therefore fails T1's
-strict "no observable effect beyond a simpler form" reading, which is exactly why it
-carries a `/* FAKE */` annotation and a sanctioned-family claim below rather than being
-presented as ordinary C.
-(6) The casts implement the target's sign/width behaviour (`sll`/`sra` pairs, `andi
-0xFFF`); the `u16` / `unsigned short` types are the s1-era baseline shape, unchanged by
-this session.
+**C1.** Yes — observable, and this is the crux of the whole 45-session history. The
+cached-base form and the per-site form are NOT the same program. Writing
+`*(s16 **)(arg0 + 4)` at each site means the program re-reads that memory location after
+the intervening `ratan2` call; caching it in a local asserts that `ratan2` cannot write
+`((s16 **)arg0)[1]`, which C does not guarantee for a `u8 *` the callee could alias. The
+s40 four-way isolated probe (`tmp/grind/func_80057CC8/s40/probe.c`) demonstrates the
+difference is real to the compiler, not just to the standard: pA (two source reads, call
+between) keeps 2 loads; pB (same two reads, no call) folds to 1; pD (two reads, call
+between, but the object declared `s16 *const *`, i.e. the alias assertion made explicit)
+folds to 1. The construct's effect is exactly the extra load, and the extra load is in
+the target's bytes at `asm/funcs/func_80057CC8.s:50`.
+
+**C2.** Yes in the weak sense the checklist asks about: `base` and `half` hold real
+computed quantities that are consumed (`ang_mid = base - half`) and that appear in the
+target's own bytes; they are not inert. Collapsing them changes codegen (score 6), which
+is why they are declared as a family construct rather than passed over silently.
 
 ## T2 human-programmer
-(1)+(2): yes, and this is the strongest single point in the vet. A programmer writing
-"given vertex i of a polygon, bisect the angle between its two neighbours" writes a helper
-that takes an index and returns the neighbour angle, then calls it twice. The BB2 tree
-already ships this shape: `static inline void _memcpy(...)` at src/main.c:2179. A reader
-of this body does not ask "why is this here?" about
-`vert_angle_57CC8(arg0, prev_idx, cx, cy)` — it is the most readable spelling of the two
-branches that appears anywhere in this ledger's 30 sessions.
-(3)+(4): yes — ordinary named locals with two consumers each.
-(5): a reader would accept `ang_opp` as a name (it is the antipodal angle) but would not
-independently insist on the local existing. This is the one construct where the answer is
-"a programmer might, but need not" — hence the annotation.
-(6): yes — carried from the baseline, unchanged by this session.
+**C1.** Yes. A programmer writing "read vertex `i` of the polygon's vertex table" reaches
+through the object each time — `((s16 **)arg0)[1][i*2]` — exactly as one writes
+`obj->verts[i]` without hoisting `obj->verts` into a local first. That is precisely the
+style F3's SOTN survey found to be routine in fully-matched files (`src/dra/5087C.c:559`
+"ugly casts"; the gte_ldrgb dual-position exhibit; up to 14 repetitions of one expression
+in a single function). Nobody reading this body asks "why is the table expression written
+out here?" — it is the shortest correct way to say what each line means. The `p` local
+that remains for the next-neighbour access is a genuine pointer to one specific vertex,
+used twice (`p[0]`, `p[1]`); that is ordinary C, not a base cache.
+
+**C2.** Yes. "The opposite direction from `ang_prev`" and "half the angular gap" are the
+two named quantities the bisector formula is written in. A human writing a
+midpoint-of-two-angles routine names these; the previously-reviewed 16-form carried the
+same two locals through four layer-1 reviews without a reviewer remarking on them.
 
 ## T3 GCC-internals justification
-(1)+(2): NO. The justification for the helpers is program structure and source fidelity,
-not a GCC pass. The mechanism story ("GCC's inliner emits the body twice, and each copy
-reloads the base because the intervening `ratan2` call clobbers memory") is a
-*consequence* I can observe, not the reason the code is written this way. The independent
-fidelity evidence is in the target itself: `asm/funcs/func_80057CC8.s` lines 14-24 and
-47-57 are instruction-for-instruction parallel (`sll`/`sra` of the index, `lw` of the base
-— :17 `lw $a2,0x4($s2)` and :50 `lw $a0,0x4($s2)` — `addu`, `lh 0x0`, `lh 0x2`, two `subu`
-against the centre, `jal ratan2`, `andi 0xFFF`), differing only in the index operand and
-in which register holds the reloaded base. Two byte-parallel blocks is what an inlined
-helper emits. No `reg_n_refs`, no allocno priority, no LUID, no `INSN_PRIORITY`, no
-scheduler argument appears anywhere in the reasoning for the helpers.
-(3)+(4): NO. Ordinary locals.
-(5): YES, and it is declared as such: the mechanism is constant re-association in
-combine.c/cse.c. Measured, not guessed — with the sub-expression unnamed, GCC folds
-`(ang_prev + 0x800) - half` into `ang_prev - (half - 0x800)` and emits `addiu #,#,-2048`
-where the target emits `addiu $v0,$s0,0x800` in the `beqz` delay slot
-(asm/funcs/func_80057CC8.s:62). `goal_from_tgt.py classify` on the collapsed spelling
-types the residual PRE-RA with that single instruction-shape pair as the only diff
-(tmp/grind/func_80057CC8/s30/classify_formG.txt). A named GCC-pass mechanism is a
-REQUIREMENT of the family this construct claims, not a smell — the annotation names it.
-(6): NO.
+Both constructs carry a named GCC mechanism in their annotations, as the FAKE template
+requires — but for C1 the *program logic* is also a complete explanation on its own
+(T1 above: the callee may alias, so the load is repeated), which is what distinguishes
+this from the cheat signal the test is aimed at. The mechanism named for C1 is cse1
+(`cse.c:1948` `hash_arg_in_memory` for a MEM without `RTX_UNCHANGING_P`;
+`cse.c:7241-7246` `if (! CONST_CALL_P (insn)) invalidate_memory (&everything);`), which
+folds the five front-end loads down to the target's two and is stopped only by the
+intervening `ratan2` CALL_INSN — i.e. GCC's own model of the same aliasing fact. The
+mechanism named for C2 is `local-alloc.c` `block_alloc`: pseudos 82 and 83 are reported
+"in block 5" in `tmp/grind/func_80057CC8/dumps/text1b.lreg` under the `func_80057CC8`
+heading, i.e. block-local allocnos seated by local-alloc before `global.c` runs.
 
 ## T4 permuter/search provenance
-None of these constructs came from a permuter or an automated search. No permuter campaign
-was run this session. The helper form was reached by reading the target's two parallel
-neighbour blocks and asking what source shape emits byte-parallel blocks with a reloaded
-base. The solver contributed the *negative* that redirected the search: with the s29
-ban-compliant cached-base form applied, `goal_from_tgt.py classify` types the residual
-PRE-RA (ours spills a ninth callee-save `$s8` — `sw s8,56` / `move s8,#` / `lw s8,56`,
-three instructions where the target pays two), proving mechanically that no RA or
-scheduler lever could ever close it and that the answer had to be upstream, in the C
-(tmp/grind/func_80057CC8/s30/classify_formB.txt). `ang_opp` was reached by collapsing and
-re-splitting the expression by hand and measuring both spellings (formG = 6, formH = 0);
-the sibling intermediate `half` that every form since s1 carried was then measured
-UNNECESSARY and DELETED, so the annotated surface is minimal at exactly one local.
+Neither construct came from a permuter or an automated search. C1 is the form the owner
+named in ruling 6b and the ledger has held banked since s29/s40; s40 arrived at it by
+instrumented-cc1 forensics (the pA/pB/pC/pD probe), not by search. C2 has been in every
+banked form of this function since the early sessions. This session ran **no** permuter
+campaign; its only measurements are five `sandbox` runs and two `verify-oracle` runs,
+each of which is listed above or banked as a rejected form.
 
 ## T5 family check
-Two questions, both answered adversarially.
+**C1** is the F3 family, sanctioned 2026-08-18 and granted for this function by name in
+ruling 6b. Scope sentence and precedent below. It is not any forbidden family: nothing is
+pinned, nothing is `volatile`, no `__asm__`, no dead store or dead local, no alias
+rename, no scheduling barrier, no width cast, no build-time rewriting; the diff *removes*
+a declaration rather than adding one.
 
-**(a) Are the helpers the banned duplicate-base-materialization family respelled?** This
-is the objection to beat, and I state it in its strongest form: after inlining, the emitted
-code contains two loads of `*(s16 **)(arg0 + 4)` — the very thing the owner refused on
-2026-07-20 and three layer-1 reviews FAILed on 2026-08-20. My answer is that the ban is
-about the SOURCE, and this source does not do it. Every banned form in the brief is one in
-which the *programmer* writes the base twice: two locals (`table` + `nt`), a second inline
-`*(s16 **)(arg0 + 4)` at the second call site, a reassignment of the same local, or no
-local at all with the member expression spelled at each of the four read sites. In this
-form the expression `*(s16 **)(arg0 + 4)` occurs **exactly once in the entire translation
-unit**, inside `vert_base_57CC8`. Nothing is cached across the call, nothing is reloaded by
-hand, nothing is named twice. The duplication is GCC's inliner doing what inliners do to
-any helper called more than once — which is also why the ledger's own frontier hypothesis
-was written as "a pure-C form exists that emits exactly 111 instructions WITHOUT any second
-source-level materialization of the vertex-table base pointer", and gated on "a concrete
-candidate form measured at build_insns == 111 with a single source-level base
-materialization". That is literally this form, measured. If the reviewer's position is that
-the emitted-code duplication is itself disqualifying regardless of source, then no C source
-whatsoever can match this target (the target loads the base twice; something must emit
-that), and the correct disposition would be a canonical-asm question rather than a cheat
-finding — but that position also condemns `_memcpy` at src/main.c:2179 and every inlined
-helper in every decomp.
-
-**(b) Is `ang_opp` a forbidden family?** No — it is claimed below under the sanctioned
-named-intermediate-declaration-order entry, with all six of the owner's 2026-08-17 prongs
-checked. It is not a dead store (it is read), not a constant holder (its value depends on
-`ang_prev`), not a borrow of an existing local (fresh), not a pointer alias, not a dead
-local, not an array, not volatile, not a self-assign, not a duplicated statement.
-
-Nothing in the diff is a register pin, hardcoded-`$N` asm, scheduling barrier, alias
-rename, volatile coercion, dead-param-assign, dead-conditional-store, `if (1)` wrap,
-dead-goto pad, DImode chain, opaque `one`, redundant width cast, or `.ld` reorder.
+**C2** is the named-intermediate family (frozen entry, `no-new-park-categories.md:204`)
+under its 2026-08-17 clarification, and it satisfies all six prongs: (1) once-written and
+once-read each; (2) real values, both present in the target's bytes and only relocated as
+to where they are named; (3) byte-neutral in the clarification's sense —
+`build_insns == target_insns == 111`; (4) fresh locals, not borrowed from any other value
+(so `staged-value-reused-variable`'s bounds are not in play); (5) neither destination is
+live-pre-initialized; (6) dump-proven mechanism, exhaustion ledger and `/* FAKE */`
+annotation all present.
 
 ## T6 naming-announces-intent
-No `pad`, `_pad`, `dummy`, `unused`, `spill`, `sp_*`, `_buf`, `tail`, `slack`, or
-`_frame_pad`. Every name is evidence-backed per [[names-require-evidence]]:
-`vert_base_57CC8` / `vert_angle_57CC8` — the word at offset 4 is a pointer to `s16` PAIRS
-consumed as x/y by `ratan2` and indexed by a vertex index that wraps modulo the byte at
-offset 3 (`prev = n-1` on underflow, `next = 0` at `>= n`); `ctr` — the vertex at `arg1`,
-subtracted from both neighbours; `ang_prev` / `ang_next` / `ang_mid` — carried from the
-baseline; `ang_opp` — `ang_prev + 0x800`, the antipode in a 0x1000-unit circle (renamed
-this session from `base`, which collided conceptually with the vertex-table base pointer).
-No claim is made about offsets 0-2 of the shape object, and none is made in the source.
-Every one of these locals is written and read; not one exists to be discarded.
+No name in the diff announces coercion intent: there is no `pad`, `_pad`, `dummy`,
+`unused`, `spill`, `sp_*`, `_buf`, `tail`, `slack` or `_frame_pad`. Every local is named
+for the quantity it holds (`prev_idx`, `next_idx`, `ang_prev`, `ang_next`, `ang_mid`,
+`scale`, `base`, `half`, `cx`, `cy`, `pi`, `p`, `tmp`) and every one of them is read.
+This session additionally DELETED the one name that would have failed this test: the
+banked s40 form carried `s16 new_var;` as a staging local in the final store; it was
+measured byte-NEUTRAL here (score 0 with it and without it) and removed, since a
+placeholder-named local that buys nothing is exactly what T6 catches.
 
 SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: Named-intermediate declaration order (construct 5, `s32 ang_opp`)
-  SCOPE: "**Named-intermediate declaration order** ([[narrow-byte-args-packed-call]] hi/lo sub-trick): declare a sub-expression as a separately-named local to bias LUID. SOTN's `randy` chain in `src/weapon/w_037.c` is the same mechanism."
-  PRECEDENT: .claude/rules/no-new-park-categories.md:189
-  PRECEDENT: .claude/rules/no-new-park-categories.md:193
-  Six prongs of the owner's 2026-08-17 clarification, in order:
-    (1) once-written, once-read — `ang_opp` is assigned on exactly one line and read on
-        exactly one line, both inside the `ang_next < ang_prev` arm. Not a multi-write
-        carrier, so the `y1` FAIL cited by the rule does not reach it.
-    (2) real value — `ang_prev + 0x800` appears in the target's own bytes as
-        `addiu $v0, $s0, 0x800`, asm/funcs/func_80057CC8.s:62, in the `beqz` delay slot.
-        The local relocates where the value is named; it does not invent a value, and it
-        is not a pure no-op copy.
-    (3) byte-neutral — build_insns 111 == target_insns 111, measured this session.
-    (4) fresh local, not a borrow — newly declared for this value only; nothing else in
-        the function ever writes it. [[staged-value-reused-variable]] is not invoked.
-    (5) destination not live-pre-initialized — `ang_mid` is assigned from `ang_opp`, and
-        `ang_mid` has no prior value on this path, so the `x/tx` FAIL cited by the rule
-        does not reach it.
-    (6) dump-proven named mechanism + documented lever exhaustion + annotation +
-        layer-1/layer-2 review — mechanism named and MEASURED via
-        tmp/grind/func_80057CC8/s30/classify_formG.txt (collapsed spelling: score 6, the
-        only differing instruction shape is `ours addiu #,#,-2048` vs
-        `target addiu #,#,2048`); exhaustion in memory/grind/func_80057CC8/hypotheses.md
-        (29 sessions of measured kills) and tmp/grind/func_80057CC8/s30/measurements.log,
-        which also records the sibling `half` intermediate measured unnecessary and
-        deleted so the annotated surface is exactly one local; annotation quoted below;
-        reviews pending.
+  FAMILY: Compound-address duplication across call arg-lists (F3)
+  SCOPE: "**Compound-address duplication across call arg-lists** (F3 survey, ESTABLISHED): writing a compound address expression (`&base[i] + k` class) character-for-character at multiple call argument positions instead of binding it to a pointer local."
+  PRECEDENT: .claude/rules/no-new-park-categories.md:377
 
-  NOT CLAIMED AS A FAMILY (constructs 1, 2, 3, 4, 6): these are ordinary C, not
-  match-hacks, and no family grant is asserted for them. In-repo precedent for a
-  `static inline` helper in a compiled BB2 source file: src/main.c:2179. A search of
-  docs/reference/sotn-construct-index.md for `static inline` returns zero PSX entries —
-  expected and not adverse, since that index catalogs match-HACK constructs and an inline
-  helper is not one; its absence there is the same as the absence of `for` loops.
+  FAMILY: Compound-address duplication across call arg-lists (F3) — per-function grant reversing the 2026-07-20 refusal
+  SCOPE: "**6b. func_80057CC8 — GRANTED for re-adjudication under F3.** The two-materialization construct (compound address expression written per call site) is the F3 compound-address-duplication family sanctioned 2026-08-18; the 2026-07-20 refusal predates that grant."
+  PRECEDENT: docs/grind/decisions.md:14846
+
+  FAMILY: Named-intermediate declaration order
+  SCOPE: "**Named-intermediate declaration order** ([[narrow-byte-args-packed-call]] hi/lo sub-trick): declare a sub-expression as a separately-named local to bias LUID."
+  PRECEDENT: .claude/rules/no-new-park-categories.md:204
 
 ANNOTATION-CONFORMANCE:
-  /* FAKE: `ang_opp` names the intermediate `ang_prev + 0x800` so it is
-   * materialised at its own point. mechanism: RTL constant re-association
-   * in combine.c/cse.c -- with the sub-expression unnamed,
-   * `(ang_prev + 0x800) - half` folds to `ang_prev - (half - 0x800)` and
-   * GCC emits `addiu $rX,$rY,-2048` where the target emits
-   * `addiu $v0,$s0,0x800` (asm/funcs/func_80057CC8.s:62, in the branch
-   * delay slot). Typed PRE-RA with that single instruction-shape pair as
-   * the only diff by tools/ra_solver/goal_from_tgt.py classify --
-   * tmp/grind/func_80057CC8/s30/classify_formG.txt. lever-exhaustion:
-   * memory/grind/func_80057CC8/hypotheses.md (29 sessions of measured
-   * kills) + tmp/grind/func_80057CC8/s30/measurements.log -- the collapsed
-   * single-expression form measures 6, and dropping the sibling `half`
-   * intermediate measures 0, so the named-intermediate surface here is
-   * minimal at exactly one local. */
-  Carries all three required parts: WHAT (`ang_opp` names `ang_prev + 0x800`),
-  MECHANISM (a named GCC pass — constant re-association in combine.c/cse.c),
-  LEVER-EXHAUSTION (hypotheses.md's 29 sessions + this session's measurements.log).
-  It is the only `/* FAKE */` in the diff.
+  /* FAKE: the vertex-table base expression *(s16 **)(arg0 + 4) is written out at each
+   * of its five use sites rather than bound to one pointer local (F3
+   * compound-address duplication across call arg-lists, .claude/rules/no-new-park-categories.md:377,
+   * owner ruling 2026-08-18; re-adjudication granted for this function by owner ruling
+   * 6b of the 2026-08-30 escalation batch, docs/grind/decisions.md:14846).
+   * mechanism: cse1 (cse.c:1948 hash_arg_in_memory / cse.c:7241-7246
+   * `if (! CONST_CALL_P (insn)) invalidate_memory (&everything);`) folds the five
+   * front-end loads down to the target's two, the intervening ratan2 CALL_INSN being
+   * the only thing that stops the fold; a single cached local instead asserts the
+   * call cannot write ((s16 **)arg0)[1], which C does not guarantee and which folds
+   * to one load (s40 probe pA/pB/pC/pD, tmp/grind/func_80057CC8/s40/probe.c).
+   * lever-exhaustion: memory/grind/func_80057CC8/hypotheses.md (46 sessions, 133
+   * rejected forms, three ban-compliant regimes foreclosed in closed form at honest
+   * floor 16; evidence.md s40-s45).
+   */
+
+  /* FAKE: `base` and `half` are fresh once-written/once-read named
+   * intermediates for the antipode of ang_prev and half the angular gap
+   * (named-intermediate family, .claude/rules/no-new-park-categories.md:204
+   * + the 2026-08-17 clarification at :208-229; both values are real and
+   * appear in the target's own bytes, build_insns == target_insns == 111).
+   * mechanism: local-alloc.c block_alloc -- they become BLOCK-LOCAL allocnos
+   * (pseudos 82 and 83, "in block 5", tmp/grind/func_80057CC8/dumps/text1b.lreg
+   * at the func_80057CC8 heading) that local-alloc seats before global.c runs;
+   * collapsing them into one expression instead yields a single combine-folded
+   * tree whose scratch is allocated globally and measures score 6.
+   * lever-exhaustion: memory/grind/func_80057CC8/hypotheses.md (46 sessions);
+   * both collapse spellings banked in
+   * rejected/s46-collapse-base-half-splitinit-score6.c. */
+
+Both annotations carry what + mechanism (named GCC pass) + lever-exhaustion pointer.

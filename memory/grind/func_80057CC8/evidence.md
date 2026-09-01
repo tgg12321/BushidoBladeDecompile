@@ -2924,3 +2924,80 @@ s40c seat-census script re-pointed at `tmp/grind/func_80057CC8/s41/`
 - [s45] [s45] No new C form was written or measured, by design: the modality was escalation, the driver had declared exhaustion, and the ledger frontier named every remaining axis measured dead with a mechanism. candidate.c is unchanged apart from an s45 header addendum; nothing was added to rejected/ because no new form was proposed.
 
 - [s45] [s45] Hygiene: src/text1b.c restored to its committed INCLUDE_ASM state immediately after the floor measurement (git checkout src/text1b.c); git status shows only docs/grind/decisions.md, the three ledger files and metrics/events.jsonl modified. No permuter campaign launched, nothing to orphan.
+
+
+## [s46] 2026-08-31 — escalation modality — OWNER RULING 6b EXECUTED — sandbox distance 0, oracle SHA1 match
+
+**Headline: func_80057CC8 byte-matches in pure C.** `sandbox func_80057CC8 --disable all`
+-> score 0, target_insns 111, build_insns 111, rules_dropped 0; `verify-oracle` -> `"ok": true`,
+`"build_matches": true`. Artifacts: `tmp/grind/func_80057CC8/s46/sandbox_score0.json`,
+`tmp/grind/func_80057CC8/s46/verify_oracle.json`, `tmp/grind/func_80057CC8/s46/text1b.c.{bak,win0,win1,win2}`.
+
+### What changed (and it is NOT a new lever)
+Nothing about the codegen search changed. The winning form is the one s40 banked on
+2026-08-27 as `rejected/s40-no-base-local-per-use-site-reads-score0-RULING-PENDING.c`,
+which measured 0 then and measures 0 now. What changed is AUTHORITY. The queue item for
+this session carried an owner directive that no prior session had acknowledged (the
+brief's own CONSISTENCY WARNING said so): **owner ruling 6b of the 2026-08-30 escalation
+batch**, `docs/grind/decisions.md:14846`, verbatim —
+
+> **6b. func_80057CC8 — GRANTED for re-adjudication under F3.** The two-materialization
+> construct (compound address expression written per call site) is the F3
+> compound-address-duplication family sanctioned 2026-08-18; the 2026-07-20 refusal
+> predates that grant. Returns to ACTIVE; the banked score-0 forms integrate through a
+> fresh layer-2 review under F3's prerequisites (value real + consumed at each site,
+> annotation).
+
+That reverses the 2026-07-20 owner refusal this ledger has been organised around since
+s8, and it retires `state.json` `banned_constructs` entries 1-5 and 7 (all of which are
+spellings of "materialize `*(s16 **)(arg0 + 4)` at more than one source-level site") and
+the four layer-1 FAILs that enforced them. The F3 family itself is
+`.claude/rules/no-new-park-categories.md:377` (owner ruling 2026-08-18, SOTN family
+survey ESTABLISHED). Both F3 prerequisites are satisfied and stated in-source: the
+duplicated expression's value is loaded and consumed at every one of its five sites, and
+the duplication site carries a `/* FAKE: ... */` annotation naming mechanism (cse1) and
+lever-exhaustion (this ledger).
+
+### Two measurements that are genuinely new this session
+1. **`s16 new_var` is byte-NEUTRAL and was deleted.** The banked s40 form staged the last
+   sine-table read through `s16 new_var` inside the store expression
+   (`(s32)(new_var = *(&Judge + ...))`). Removing both the assignment and the declaration
+   measures **score 0, 111/111** — identical. It bought nothing, and a placeholder-named
+   local that buys nothing is exactly what cheat-checklist T6 catches, so the submitted
+   form drops it. (Incidental correction: the first scripted removal deleted the
+   like-named `s16 new_var;` belonging to an unrelated function earlier in text1b.c;
+   caught by diffing against `text1b.c.bak` and restored in the same session — the final
+   diff touches only the `INCLUDE_ASM` line at src/text1b.c:1737.)
+2. **The `base` / `half` named intermediates ARE load-bearing, and both collapse spellings
+   fail.** Collapsing them into one expression
+   (`ang_mid = (ang_prev + 0x800) - (s32)(ang_prev - ang_next) / 2;`) measures **score 6**
+   at 111 insns; so does the split-init-accumulation respelling on `ang_mid` itself
+   (`ang_mid = ang_prev + 0x800; ang_mid -= (s32)(ang_prev - ang_next) / 2;`) — **score 6**.
+   The lever is therefore the two separately-NAMED intermediates, not operator
+   association and not statement count. Banked as
+   `rejected/s46-collapse-base-half-splitinit-score6.c`. Mechanism named from the dump
+   rather than guessed: `tmp/grind/func_80057CC8/dumps/text1b.lreg` reports pseudos 82 and
+   83 as "used 2 times ... in block 5" under the `func_80057CC8` heading — block-LOCAL
+   allocnos that `local-alloc.c` `block_alloc` seats before `global.c` ever runs. They are
+   claimed as the frozen named-intermediate family
+   (`.claude/rules/no-new-park-categories.md:204` + the 2026-08-17 clarification at
+   :208-229) and all six prongs hold; annotated accordingly.
+
+### What is NOT retracted
+Every ban-compliant foreclosure this ledger banked in s38-s45 stands unchanged and is
+still correct: the honest floor of the space WITHOUT a second materialization is 16, the
+three regimes (A allocno-priority 16.2x gap, B inverted block order, C ninth callee-save)
+are foreclosed with named mechanisms, and s44/s45 proved in closed form that distance 0
+REQUIRES the second source-level materialization of `*(s16 **)(arg0 + 4)`. s46 does not
+find a way around that proof — it is the proof being cashed, because the owner granted
+the construct the proof said was necessary. Likewise both endgame-lock gates remain FAILed
+(scan_hand_coded LOW 1/8; no SOTN-index entry for the construct) — the disposition filed
+at `docs/grind/decisions.md:14627` is superseded by ruling 6b, not by new gate evidence.
+
+### Submission state
+`memory/grind/func_80057CC8/candidate.c` carries the exact submitted body;
+`memory/grind/func_80057CC8/self_vet.md` carries the six-test vet, the three
+SANCTIONED-FAMILY-CLAIMS blocks with verbatim scope sentences and in-repo precedents, and
+an explicit supersession notice for the driver's banned-construct needle check (the diff
+does contain the formerly-banned construct, by owner grant; if the mechanical check bounces
+it, the resolution is a ruling-request, not a respelling).

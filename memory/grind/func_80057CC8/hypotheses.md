@@ -1978,3 +1978,51 @@ prior sibling/Kengo/corpus axes) produce no shape that is not already banked.
 - probe: Drafted and appended the entry: both gates' evidence, the three-regime foreclosure with named mechanisms, the crosser-set proof, this session's solver verdict, the exhaustion tally, and one decidable provenance question resting on s43's m2c re-derivation, s40's cse1 pass census and s40's four-function predicate probe.
 - result: Entry appended at docs/grind/decisions.md:14627 under the standing-ruling title. No standard is asked to move.
 - verdict: CONFIRMED
+
+
+## [s46] 2026-08-31 — escalation modality
+
+- hypothesis: The owner directive attached to this queue item (2026-08-30 escalation-batch
+  ruling 6b) removes the only thing standing between this function and COMPLETED-C, so the
+  s40 banked score-0 form can be integrated as-is under the F3 compound-address-duplication
+  family rather than re-ground.
+  mechanism: Ruling 6b (docs/grind/decisions.md:14846) reclassifies "compound address
+  expression written per call site" as the F3 family sanctioned 2026-08-18
+  (.claude/rules/no-new-park-categories.md:377) and states the 2026-07-20 refusal predates
+  that grant, which retires banned_constructs 1-5/7 and the four layer-1 FAILs derived from
+  them. The codegen mechanism is unchanged from s40: cse1 (cse.c:1948 hash_arg_in_memory;
+  cse.c:7241-7246 invalidate_memory at a non-const call) folds five front-end loads to the
+  target's two, and only the intervening ratan2 CALL_INSN stops the fold.
+  probe: Applied the s40 form to src/text1b.c at the INCLUDE_ASM line (1737);
+  `sandbox func_80057CC8 --disable all`; `verify-oracle`.
+  result: score 0, target_insns 111, build_insns 111, rules_dropped 0; verify-oracle
+  ok=true, build_matches=true (full build+link SHA1 == oracle). Artifacts in
+  tmp/grind/func_80057CC8/s46/.
+  verdict: CONFIRMED
+
+- hypothesis: The `s16 new_var` staging local in the banked s40 form's final store is
+  load-bearing and must be kept.
+  mechanism: It stages `*(&Judge + ((ang_mid + 0x400) & 0xFFF))` through an s16 local
+  inside the store expression; if it biased anything it would be a named-intermediate-class
+  LUID / allocation effect.
+  probe: Deleted both the embedded assignment and the declaration; re-measured sandbox.
+  result: score 0, 111/111 — byte-identical with and without it. It is inert.
+  verdict: KILLED (and the local is removed from the submitted form; keeping an inert
+  placeholder-named local would have failed cheat-checklist T6 for nothing)
+
+- hypothesis: The `base` / `half` pair in the ang_next<ang_prev arm is ordinary
+  sub-expression naming that can be collapsed, so the submission need not claim the
+  named-intermediate family at all.
+  mechanism: If the two locals were pure syntax, combine would fold them and the collapsed
+  single expression would emit identical RTL.
+  probe: Two collapse spellings measured. (A) single expression
+  `ang_mid = (ang_prev + 0x800) - (s32)(ang_prev - ang_next) / 2;`. (B) split-init
+  accumulation on ang_mid itself, `ang_mid = ang_prev + 0x800; ang_mid -= ...;`.
+  result: A -> score 6 @ 111 insns. B -> score 6 @ 111 insns. Both banked as
+  rejected/s46-collapse-base-half-splitinit-score6.c. The lever is the two separately-NAMED
+  intermediates, not the operator association and not the statement count. Dump attribution
+  (not guessed): text1b.lreg reports pseudos 82/83 as block-LOCAL allocnos "in block 5",
+  i.e. local-alloc.c block_alloc seats them before global.c runs.
+  verdict: KILLED (the pair stays, and is declared + FAKE-annotated as the frozen
+  named-intermediate family, .claude/rules/no-new-park-categories.md:204 with the
+  2026-08-17 clarification; all six prongs verified in self_vet.md)

@@ -1734,7 +1734,86 @@ INCLUDE_ASM("asm/funcs", func_8005763C);
 INCLUDE_ASM("asm/funcs", func_80057ACC);
 extern s32 ratan2(s32, s32);
 extern s16 Judge;
-INCLUDE_ASM("asm/funcs", func_80057CC8);
+/* Per-vertex neighbour-angle midpoint: computes the outward bisector direction at
+ * vertex arg1 of the polygon whose vertex table hangs off arg0[4], and writes the
+ * offset point into *arg2 / *arg3.
+ *
+ * FAKE: the vertex-table base expression *(s16 **)(arg0 + 4) is written out at each
+ * of its five use sites rather than bound to one pointer local (F3
+ * compound-address duplication across call arg-lists, .claude/rules/no-new-park-categories.md:377,
+ * owner ruling 2026-08-18; re-adjudication granted for this function by owner ruling
+ * 6b of the 2026-08-30 escalation batch, docs/grind/decisions.md:14846).
+ * mechanism: cse1 (cse.c:1948 hash_arg_in_memory / cse.c:7241-7246
+ * `if (! CONST_CALL_P (insn)) invalidate_memory (&everything);`) folds the five
+ * front-end loads down to the target's two, the intervening ratan2 CALL_INSN being
+ * the only thing that stops the fold; a single cached local instead asserts the
+ * call cannot write ((s16 **)arg0)[1], which C does not guarantee and which folds
+ * to one load (s40 probe pA/pB/pC/pD, tmp/grind/func_80057CC8/s40/probe.c).
+ * lever-exhaustion: memory/grind/func_80057CC8/hypotheses.md (46 sessions, 133
+ * rejected forms, three ban-compliant regimes foreclosed in closed form at honest
+ * floor 16; evidence.md s40-s45).
+ */
+void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
+    unsigned short prev_idx;
+    unsigned short next_idx;
+    s32 ang_prev;
+    s32 ang_next;
+    s32 ang_mid;
+    s32 scale;
+    s32 base;
+    s32 half;
+    u16 cx;
+    s16 *p;
+    s32 pi;
+    u16 cy;
+
+    prev_idx = arg1 - 1;
+    cx = *(u16 *)((s32)(*(s16 **)(arg0 + 4)) + arg1 * 4 + 0);
+    cy = *(u16 *)((s32)(*(s16 **)(arg0 + 4)) + arg1 * 4 + 2);
+
+    if ((s16) prev_idx < 0) {
+        prev_idx = arg0[3] - 1;
+    }
+
+    {
+        s32 tmp = arg1 + 1;
+        next_idx = tmp;
+        if ((s16) tmp >= (s32)arg0[3]) {
+            next_idx = 0;
+        }
+    }
+
+    pi = (s16) prev_idx;
+    ang_prev = ratan2((*(s16 **)(arg0 + 4))[pi * 2] - (s16) cx,
+                      (*(s16 **)(arg0 + 4))[pi * 2 + 1] - (s16) cy) & 0xFFF;
+    p = (s16 *)((((s32)(next_idx << 16) >> 16) << 2) + (s32)(*(s16 **)(arg0 + 4)));
+    ang_next = ratan2(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
+
+    if (ang_next < ang_prev) {
+        /* FAKE: `base` and `half` are fresh once-written/once-read named
+         * intermediates for the antipode of ang_prev and half the angular gap
+         * (named-intermediate family, .claude/rules/no-new-park-categories.md:204
+         * + the 2026-08-17 clarification at :208-229; both values are real and
+         * appear in the target's own bytes, build_insns == target_insns == 111).
+         * mechanism: local-alloc.c block_alloc -- they become BLOCK-LOCAL allocnos
+         * (pseudos 82 and 83, "in block 5", tmp/grind/func_80057CC8/dumps/text1b.lreg
+         * at the func_80057CC8 heading) that local-alloc seats before global.c runs;
+         * collapsing them into one expression instead yields a single combine-folded
+         * tree whose scratch is allocated globally and measures score 6.
+         * lever-exhaustion: memory/grind/func_80057CC8/hypotheses.md (46 sessions);
+         * both collapse spellings banked in
+         * rejected/s46-collapse-base-half-splitinit-score6.c. */
+        base = ang_prev + 0x800;
+        half = (s32)(ang_prev - ang_next) / 2;
+        ang_mid = base - half;
+    } else {
+        ang_mid = ((s32)(ang_next - ang_prev) / 2) + ang_prev;
+    }
+
+    scale = arg0[2] * 40;
+    *arg2 = cx + ((scale * (s32)(*(&Judge + (ang_mid & 0xFFF)))) >> 12);
+    *arg3 = cy + ((scale * (s32)(*(&Judge + (((s16)ang_mid + 0x400) & 0xFFF)))) >> 12);
+}
 
 INCLUDE_ASM("asm/funcs", func_80057E84);
 INCLUDE_ASM("asm/funcs", func_80058580);

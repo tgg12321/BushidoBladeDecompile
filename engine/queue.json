@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80057CC8",
-      "file": "text1b",
-      "distance": 30,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 6b \u2014 re-adjudicate banked score-0 forms under sanctioned F3 family",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:14627 - '## 2026-08-27 - func_80057CC8 (src/text1b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
-    },
-    {
       "func": "func_8002D320",
       "file": "code6cac_b",
       "distance": 32,
@@ -1947,15 +1937,15 @@
     }
   ],
   "counts": {
-    "total": 219,
-    "active": 200,
+    "total": 218,
+    "active": 199,
     "by_status": {
-      "active": 200,
+      "active": 199,
       "escalated": 19
     },
     "by_verdict": {
-      "C": 166,
-      "ASM-PARTIAL": 34
+      "ASM-PARTIAL": 34,
+      "C": 165
     }
   }
 }

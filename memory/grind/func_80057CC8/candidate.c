@@ -1,168 +1,67 @@
-/* s45 ADDENDUM (2026-08-27, escalation modality).  UNCHANGED form; RE-MEASURED on the live
- * chassis this session: `sandbox func_80057CC8 --disable all` -> score 16, target_insns 111,
- * build_insns 108, rules_dropped 0.  Two s45 results bear on it:
- *   (1) The s44 frontier's one remaining named surface -- a solver verdict on the
- *       crosser-set formulation -- is SPENT and AGREES with the hand proof.
- *       `python3 tools/ra_solver/goal_from_tgt.py classify text1b func_80057CC8` (the
- *       asm-until-matched backend s39 identified; never inverse_compose.py) returns
- *       `FIRST DIVERGENCE: PRE-RA / next tool: none -- the residual is upstream of every
- *       model`, with one-sided shapes ours `sll #,#,0x2` against target `move #,#`,
- *       `lw #,4(#)`, `sll #,#,0x10`, `sra #,#,0xe` -- exactly the target's post-call address
- *       formation at asm/funcs/func_80057CC8.s:49-52, including the second base load at :50.
- *       Machine-checked: no RA and no scheduler perturbation reaches distance 0 from this
- *       form.  (tmp/grind/func_80057CC8/s45/classify_16form.txt)
- *   (2) Both endgame-lock AND-gates were evaluated and both FAIL: scan_hand_coded --single
- *       gives tier=LOW score=1/8 (S4 only; no S1/S2/S6), and the pinned SOTN construct index
- *       has no class covering a second source-level materialization of one pointer
- *       expression across a call.  The owner's 2026-07-27 standing auto-ruling therefore
- *       applies and the disposition is filed at docs/grind/decisions.md:14627 --
- *       REFUSED / OWNER-ACCEPTED INCOMPLETE, honest floor 16, committed representation
- *       unchanged as INCLUDE_ASM with zero rules and zero cheat-asm.
- *   Full argument: evidence.md / hypotheses.md, both under the [s45] headings.
+/* s46 (2026-08-31, escalation modality) — CANDIDATE, sandbox distance 0.
+ *
+ * MEASURED THIS SESSION on the live chassis with these exact edits in src/text1b.c:
+ *   `sandbox func_80057CC8 --disable all` -> score 0, target_insns 111, build_insns 111,
+ *   rules_dropped 0, zero cheat-asm, zero regfix/asmfix rules
+ *   `verify-oracle` -> ok: true, build_matches: true (full-build SHA1 == oracle)
+ *   artifacts: tmp/grind/func_80057CC8/s46/{sandbox_score0.json,verify_oracle.json}
+ *
+ * WHY THIS FORM IS NOW ADMISSIBLE (the whole reason s46 differs from s1..s45).
+ * The form is the s40 banked one (rejected/s40-no-base-local-per-use-site-reads-
+ * score0-RULING-PENDING.c), which every prior session was forbidden to submit: it
+ * writes the vertex-table base expression *(s16 **)(arg0 + 4) at each of its five use
+ * sites instead of binding it to one pointer local, and that is the construct the
+ * 2026-07-20 owner refusal closed and state.json banned_constructs entry 5 records.
+ * The owner's 2026-08-30 escalation-batch **ruling 6b** (docs/grind/decisions.md:14846)
+ * REVERSED that: "func_80057CC8 — GRANTED for re-adjudication under F3. The
+ * two-materialization construct (compound address expression written per call site)
+ * is the F3 compound-address-duplication family sanctioned 2026-08-18; the 2026-07-20
+ * refusal predates that grant. Returns to ACTIVE; the banked score-0 forms integrate
+ * through a fresh layer-2 review under F3's prerequisites (value real + consumed at
+ * each site, annotation)."  F3 itself is .claude/rules/no-new-park-categories.md:377.
+ * Both F3 prerequisites are met and stated in the in-source annotation: the duplicated
+ * expression's value is loaded and consumed at every one of the five sites (two for
+ * the cx/cy centre read, two for the prev-neighbour ratan2 argument pair, one for the
+ * next-neighbour address), and the duplication site carries the FAKE annotation naming
+ * mechanism (cse1) and lever-exhaustion (hypotheses.md).
+ *
+ * DELTA vs the banked s40 file: the `s16 new_var;` staging local in the final store was
+ * measured byte-NEUTRAL this session (score 0 with and without) and is therefore DELETED
+ * — a dead local with an intent-announcing name is exactly what cheat-checklist T6
+ * catches, and it bought nothing.  The `base`/`half` split-init in the ang_next<ang_prev
+ * arm was tested for the same collapse and is NOT neutral (collapsing it measures score 6,
+ * banked as rejected/s46-collapse-base-half-splitinit-score6.c), so it stays; it is the
+ * user-sanctioned split-init accumulation family ([[split-init-accumulation-sanctioned]]).
+ *
+ * Prior floor: 16 (s38-s45, flat across solver/forensics/rederive/structural/escalation).
+ * That 16 was the floor of the ban-COMPLIANT search space only; s44/s45 proved in closed
+ * form that distance 0 REQUIRES the second source-level materialization, which is exactly
+ * what ruling 6b now permits.  Nothing about the ban-compliant foreclosure is retracted.
+ *
+ * Self-vet: memory/grind/func_80057CC8/self_vet.md
  */
-/* s44 ADDENDUM (2026-08-27, structural).  UNCHANGED form; RE-MEASURED on the live chassis
- * this session: `sandbox func_80057CC8 --disable all` -> score 16, target_insns 111,
- * build_insns 108.  Two s44 results bear on it:
- *   (1) The s43 frontier's last named axis (the Regime-B order attack) is SPENT.  The
- *       second `lbu 3($s2)` IS recoverable in wrap-first order by reading the count through
- *       an unfusable rtx (`(u8)(*(u16 *)(arg0 + 2) >> 8)`) -- and it is worth ONE point
- *       (44 @ 109 vs d1's 45 @ 106).  More decisively, Regime B emits its two wrap branches
- *       in the INVERTED order relative to the target (s44/d1.s: next-wrap first; target:
- *       prev-wrap first, asm/funcs/func_80057CC8.s:18-26 then :30-36), and s42 proved that
- *       inversion is required by Regime B's own cross-block-address property.  Regime B is
- *       foreclosed on block order alone.
- *   (2) The foreclosure now has a form that does not depend on the three-regime partition:
- *       the target forms its post-call vertex address from a base loaded at :50, its
- *       live-across-call set is exactly the eight callee-saves at :3-16, none of which can
- *       supply that base, and GCC 2.7.2 can emit the second load only from a second
- *       unfusable source materialization (cse cannot cross the intervening jal) or by
- *       rematerialization, which s36 killed.  Distance 0 therefore REQUIRES the second
- *       source-level materialization of *(s16 **)(arg0 + 4) refused on 2026-07-20, and 16
- *       is the complete ban-compliant floor.
- *   Full argument: evidence.md / hypotheses.md, both under the [s44] headings.
- */
-/* s43 ADDENDUM (2026-08-27, rederive).  UNCHANGED form; RE-MEASURED on the live chassis
- * this session: `sandbox func_80057CC8 --disable all` -> score 16, target_insns 111,
- * build_insns 108, rules_dropped 0.  Three s43 results bear on it:
- *   (1) s42 frontier item #2 (a never-run Regime-A permuter campaign) is KILLED.  Two
- *       campaigns, seeded from THIS form and from the source-distinct-but-register-
- *       equivalent s42 a1.c, ran 55,693 iterations and produced 8 outputs.  Seven are
- *       semantics-breaking; the one legal find (`pi` reused to carry `cx`) measures 23 @
- *       111 insns and rotates the seats FURTHER from target
- *       (rejected/s43-permuter-pi-reused-as-cx-carrier-score23-111insns.c).
- *   (2) Every improving permuter find wins the same illegal way -- it leaves the
- *       next-address pseudo PARTIALLY DEFINED (assignment sunk inside the next-wrap `if`).
- *       That is not incidental: see (3).
- *   (3) The Regime-A wall now has a closed quantitative form.  global.c:635 priority is
- *       floor_log2(n)*n/live_length; the next-address allocno (pseudo 88) sits at 2*6/4 =
- *       3.00 against arg0 (pseudo 72) at 2*5/54 = 0.185, a 16.2x gap.  Semantics pin the
- *       address's last use at ~insn 55 and its reference count at 6, so the best legal
- *       stretch reaches 2*6/55 = 0.218 -- still above arg0.  Legal C can move the ratio by
- *       ~1.4x against a required 16x, which is exactly why only partial definition (an
- *       illegal program) moves it.
- *   Full argument: hypotheses.md / evidence.md, both under the [s43] headings.
- */
-/* s42 ADDENDUM (2026-08-27, rederive).  This form is UNCHANGED and was RE-MEASURED on the
- * live chassis this session: `sandbox func_80057CC8 --disable all` -> score 16,
- * target_insns 111, build_insns 108, rules_dropped 0.  Two s42 results bear on it:
- *   (1) Its register map is SHAPE-INVARIANT.  The in-file sibling idiom transplanted from
- *       the two COMPLETED neighbours func_80048530 (src/text1b.c:312) and func_800611A4
- *       (src/text1b.c:3252) -- an s32 base `vt = *(s32 *)(arg0 + 4)` with ONE reused s16*
- *       cursor instead of this form's asymmetric `table[pi*2]` + `next_vert` pair -- lands
- *       on a register-IDENTICAL disposition table at the same score 16 / 108 insns
- *       (rejected/s42-sibling-idiom-s32-base-reused-cursor-REGEQUIV-score16.c).  The seat
- *       rotation that separates this form from the target is therefore not an artefact of
- *       how this particular source is spelled.
- *   (2) The rival post-call-address regime is now FORECLOSED, not merely behind.  Five
- *       independent post-call forms (s42 e1/g1/h1/h2/h3) all take a NINTH callee-save
- *       ($fp/$s8 for arg3) because the vertex-table base must be carried across the call;
- *       the target saves only $s0-$s7 (asm/funcs/func_80057CC8.s:3-16) and gets away with
- *       eight solely via the banned second materialization `lw $a0,0x4($s2)` (line 50).
- *       So this 108-insn pre-call form is the only ban-compliant regime that even has the
- *       target's callee-save COUNT, and 16 is the ban-compliant floor.
- *   Full argument: hypotheses.md / evidence.md, both under the [s42] headings.
- */
-/* BEST MEASURED FORM (grind s38b, 2026-08-27, synthesis modality).
- * MEASURED THIS SESSION on the live chassis: `sandbox func_80057CC8 --disable all`
- * -> score 16, target_insns 111, build_insns 108, rules_dropped 0.  Re-measured a
- * second time with the /* FAKE * / annotation below in place: still 16 / 108.
+/* Per-vertex neighbour-angle midpoint: computes the outward bisector direction at
+ * vertex arg1 of the polygon whose vertex table hangs off arg0[4], and writes the
+ * offset point into *arg2 / *arg3.
  *
- * WHAT THIS FORM IS.  It is the s34/s35/s36 score-20 form plus exactly ONE added
- * statement, `next_vert = &Judge;`, placed after `scale = arg0[2] * 40;`, with the two
- * sine-table reads then spelled `*(next_vert + ...)` instead of `*(&Judge + ...)`.
- * Nothing else differs.  The annotation-free score-20 predecessor is preserved at
- * tmp/grind/func_80057CC8/s37/v20.c.
- *
- * FAMILY / RULING STATUS -- SETTLED.  s38 emitted a ruling-request on which sanctioned
- * family covers the added statement; the ruling came back and is recorded in the
- * function's judge_constraints:  the construct is sanctioned ONLY as
- * .claude/rules/staged-value-reused-variable.md.  Do NOT cite
- * .claude/rules/defeat-licm-hoist-var-reuse.md (loop-scoped; this function has no loop)
- * and do NOT cite .claude/rules/pointer-alias-fake-exception.md (its canonical shape is a
- * FRESH local, and s37 measured a fresh local at 20 -- the alias half is provably not the
- * lever).  The ruling requires the bound-4 annotation to name local-alloc.c block-local
- * pre-seating AND to state the liveness argument; the annotation in the body below does
- * both, and bounds 5/6 must still be re-checked at submission time.
- *
- * THE MECHANISM (dump-verified, tmp/grind/func_80057CC8/dumps/text1b.lreg).  The
- * next-neighbour address is a BLOCK-LOCAL call-crossing quantity ("Register 88 used 3
- * times across 4 insns IN BLOCK 4; crosses 1 call"), so local-alloc seats it BEFORE
- * global.c runs.  A second SET of the same C variable in the FINAL basic block removes
- * the "in block 4" tag entirely (lreg then prints "Register 88 used 6 times across 4
- * insns; crosses 1 call" with no block tag), i.e. pseudo 88 becomes a global allocno and
- * local-alloc no longer pre-seats it.  That is the whole four-point gain (20 -> 16) at an
- * unchanged 108 instructions.
- *
- * THE LEVER IS REGIME-SPECIFIC (measured, do not assume it carries).  It is worth ZERO
- * points in the post-call-address regime (s38: 31 with and 31 without) and ZERO points in
- * the arm-selected-address regime (s38b: 21 with and 21 without, both spellings --
- * rejected/s38b-arm-address-basefirst-plus-lever-score21.c and
- * rejected/s38b-arm-address-nocast-twins-plus-lever-score21.c).  It pays only where the
- * address pseudo is genuinely block-local, i.e. the merge-block-offset regime this form
- * uses.
- *
- * THE EXACT REGISTER MAP (s40c, read straight off the greg dump's "Register
- * dispositions" table, tmp/grind/func_80057CC8/s40c/d16.greg -- this CORRECTS the s38b
- * header above it, which reported the score-20 predecessor's map by mistake.  On the live
- * chassis cxs HAS reached $s1; the lever's four points are exactly that).
- *   ours   : $s0 = cys (pseudo 129), $s1 = cxs (119), $s2 = next-ADDRESS (88),
- *            $s3 = arg0 (72), $s4/$s5 = raw cx/cy (83/86), $s6 = arg2 (74),
- *            $s7 = arg3 (75)   (8 callee-saves, 6 quantities cross the call)
- *   target : $s0 = cys, $s1 = cxs,          $s2 = arg0, $s3 = next-INDEX, $s4/$s5 = raw
- *            cx/cy, $s6 = arg2, $s7 = arg3  (8 callee-saves, 6 quantities cross)
- * The full normalised diff (tmp/grind/func_80057CC8/s38b/base16.hon.s vs
- * asm/funcs/func_80057CC8.s) contains NOTHING except (a) that one seat rotation applied
- * to ~12 lines, and (b) the address-formation block: ours is one pre-call `addu $17,$17,$6`
- * where the target has four post-call insns `sll $3,$19,16 / lw $4,4($18) / sra $3,$3,14 /
- * addu $3,$3,$4`.  That is the entire 111-vs-108 instruction gap.
- *
- * WHY IT IS NOT 0 -- THE CLOSED-FORM DILEMMA (s38b, both horns now measured).
- *   Horn 1, PRE-CALL address formation (this form).  Exactly 6 quantities cross the call,
- *   matching the target, so 8 callee-saves suffice and the count is 108.  But sched1 runs
- *   BEFORE local-alloc and sinks the address add into the slot preceding the jal, so the
- *   address pseudo's live_length is 4; its allocno priority floor_log2(n)*n/4 is >= 0.5 for
- *   any n, while arg0's is 2*5/54 = 0.185 over the whole function.  The address therefore
- *   ALWAYS outranks arg0 in global.c:635 allocno_compare and takes $s1 -- exactly the seat
- *   the target gives cxs.  arg0 cannot be raised (its live_length is the whole function and
- *   shortening it makes it stop crossing the call entirely: measured 47) and the address
- *   cannot be lowered (only a scheduling barrier would pin its def, a forbidden family).
- *   Horn 2, POST-CALL address formation (rejected/s38-postcall-address-*.c, 31 @ 110).
- *   Here the seat ORDER is right -- measured map $s0 cys, $s1 cxs (both matching target),
- *   then $s2 table, $s3 arg0, $s4 off -- but SEVEN quantities cross instead of six, because
- *   the vertex-table base and the wrapped offset must both survive the call.  GCC takes a
- *   ninth callee-save ($s8/$fp, `sw s8,56(sp)`), costing +2 instructions, and the extra
- *   `table` allocno displaces arg0 from $s2 to $s3.
- *   The target has it both ways ONLY because it re-derives the base from arg0 after the
- *   call (`lw $a0,0x4($s2)`, asm/funcs/func_80057CC8.s:50) -- arg0 does double duty as the
- *   scale source AND the base source, so the base costs zero extra crossing quantities.
- *   Every ban-compliant substitute for that double duty was measured and costs exactly one
- *   supernumerary crossing quantity: centre-relative (s33, 38), prev-address + delta
- *   (s32 next-differences, 42), carried table + offset (s38, 31).  The residual is
- *   therefore ONE supernumerary live-across-call quantity, and removing it is precisely
- *   the second source-level materialization the owner refused on 2026-07-20.
+ * FAKE: the vertex-table base expression *(s16 **)(arg0 + 4) is written out at each
+ * of its five use sites rather than bound to one pointer local (F3
+ * compound-address duplication across call arg-lists, .claude/rules/no-new-park-categories.md:377,
+ * owner ruling 2026-08-18; re-adjudication granted for this function by owner ruling
+ * 6b of the 2026-08-30 escalation batch, docs/grind/decisions.md:14846).
+ * mechanism: cse1 (cse.c:1948 hash_arg_in_memory / cse.c:7241-7246
+ * `if (! CONST_CALL_P (insn)) invalidate_memory (&everything);`) folds the five
+ * front-end loads down to the target's two, the intervening ratan2 CALL_INSN being
+ * the only thing that stops the fold; a single cached local instead asserts the
+ * call cannot write ((s16 **)arg0)[1], which C does not guarantee and which folds
+ * to one load (s40 probe pA/pB/pC/pD, tmp/grind/func_80057CC8/s40/probe.c).
+ * lever-exhaustion: memory/grind/func_80057CC8/hypotheses.md (46 sessions, 133
+ * rejected forms, three ban-compliant regimes foreclosed in closed form at honest
+ * floor 16; evidence.md s40-s45).
  */
 void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     unsigned short prev_idx;
+    unsigned short next_idx;
     s32 ang_prev;
     s32 ang_next;
     s32 ang_mid;
@@ -170,16 +69,13 @@ void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     s32 base;
     s32 half;
     u16 cx;
-    s16 new_var;
+    s16 *p;
     s32 pi;
     u16 cy;
-    s16 *table;
-    s16 *next_vert;
 
     prev_idx = arg1 - 1;
-    table = *(s16 **)(arg0 + 4);
-    cx = *(u16 *)((s32)table + arg1 * 4 + 0);
-    cy = *(u16 *)((s32)table + arg1 * 4 + 2);
+    cx = *(u16 *)((s32)(*(s16 **)(arg0 + 4)) + arg1 * 4 + 0);
+    cy = *(u16 *)((s32)(*(s16 **)(arg0 + 4)) + arg1 * 4 + 2);
 
     if ((s16) prev_idx < 0) {
         prev_idx = arg0[3] - 1;
@@ -187,18 +83,32 @@ void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
 
     {
         s32 tmp = arg1 + 1;
-        s32 off = tmp * 4;
+        next_idx = tmp;
         if ((s16) tmp >= (s32)arg0[3]) {
-            off = 0;
+            next_idx = 0;
         }
-        next_vert = (s16 *)(off + (s32)table);
     }
 
     pi = (s16) prev_idx;
-    ang_prev = ratan2(table[pi * 2] - (s16) cx, table[pi * 2 + 1] - (s16) cy) & 0xFFF;
-    ang_next = ratan2(next_vert[0] - (s16) cx, next_vert[1] - (s16) cy) & 0xFFF;
+    ang_prev = ratan2((*(s16 **)(arg0 + 4))[pi * 2] - (s16) cx,
+                      (*(s16 **)(arg0 + 4))[pi * 2 + 1] - (s16) cy) & 0xFFF;
+    p = (s16 *)((((s32)(next_idx << 16) >> 16) << 2) + (s32)(*(s16 **)(arg0 + 4)));
+    ang_next = ratan2(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
 
     if (ang_next < ang_prev) {
+        /* FAKE: `base` and `half` are fresh once-written/once-read named
+         * intermediates for the antipode of ang_prev and half the angular gap
+         * (named-intermediate family, .claude/rules/no-new-park-categories.md:204
+         * + the 2026-08-17 clarification at :208-229; both values are real and
+         * appear in the target's own bytes, build_insns == target_insns == 111).
+         * mechanism: local-alloc.c block_alloc -- they become BLOCK-LOCAL allocnos
+         * (pseudos 82 and 83, "in block 5", tmp/grind/func_80057CC8/dumps/text1b.lreg
+         * at the func_80057CC8 heading) that local-alloc seats before global.c runs;
+         * collapsing them into one expression instead yields a single combine-folded
+         * tree whose scratch is allocated globally and measures score 6.
+         * lever-exhaustion: memory/grind/func_80057CC8/hypotheses.md (46 sessions);
+         * both collapse spellings banked in
+         * rejected/s46-collapse-base-half-splitinit-score6.c. */
         base = ang_prev + 0x800;
         half = (s32)(ang_prev - ang_next) / 2;
         ang_mid = base - half;
@@ -207,18 +117,6 @@ void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     }
 
     scale = arg0[2] * 40;
-    /* FAKE: stages the sine-table base address &Judge through `next_vert`, the
-     * next-neighbour vertex pointer, whose previous value is dead here (its last
-     * read is the `ang_next` ratan2 argument three statements above, and it is
-     * never read again after this point), and whose staged value is read by the
-     * two statements immediately below; mechanism: local-alloc.c block-local
-     * pre-seating -- the second SET removes pseudo 88's `in block 4` tag so
-     * local-alloc no longer seats it ahead of global.c, worth 4 points (20 -> 16);
-     * lever-exhaustion: memory/grind/func_80057CC8/hypotheses.md (38 sessions) and
-     * the s37 negative controls banked as rejected/s37-fresh-jt-pointer-local-
-     * no-gain-score20.c, s37-jt-initialised-at-declaration-score48-110insns.c,
-     * s37-table-reuse-for-judge-base-no-gain-score20.c */
-    next_vert = &Judge;
-    *arg2 = cx + ((scale * (s32)(*(next_vert + (ang_mid & 0xFFF)))) >> 12);
-    *arg3 = cy + ((scale * (s32)(new_var = *(next_vert + (((s16)ang_mid + 0x400) & 0xFFF)))) >> 12);
+    *arg2 = cx + ((scale * (s32)(*(&Judge + (ang_mid & 0xFFF)))) >> 12);
+    *arg3 = cy + ((scale * (s32)(*(&Judge + (((s16)ang_mid + 0x400) & 0xFFF)))) >> 12);
 }
