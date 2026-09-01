@@ -1221,3 +1221,116 @@
 ## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
 
 Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-merge session. This ledger's s50 masked-2/179 find was disqualified on the false premise that D_800A1495 is 'not touched by any interrupt handler in this codebase' — cdrom_IrqHandler (same TU, matched, the registered CD IRQ callback) reads it through a volatile pointer. Under the aggregate declaration the volatility is a type property of a census-proven Sony object, not a per-use coercion. Also: re-score the banked Closer form (git show 043e4b80^:memory/closer/candidates/marionation_vAT1_notailwrap.c) post-mel. Provenance correction: BB2 links PsyQ 4.0-era bios.c v1.86 (memory/closer/libcd-groundtruth.md), not 3.5 as two record sentences state.
+
+## [s60] 2026-09-01 — frontier REWRITTEN at floor 2 (was 4)
+
+The owner's Ruling-A named probe (decisions.md:17795 — "re-score the banked vAT1 form
+post-`-mel`") succeeded: `marionation_vAT1_notailwrap.c`, recovered from
+`git show 043e4b80^:memory/closer/candidates/marionation_vAT1_notailwrap.c`, scores
+**masked 2, build 179 == target 179, 0 rules** on the current chassis, against a live-measured
+baseline of 4/178 for the 59-session vT40 body. It is now `memory/grind/CD_ready/candidate.c`;
+vT40 is retained as `candidate-vT40-masked4-no-volatile.c`. Full measurement table, prong-1
+citations and residual analysis: evidence.md [s60].
+
+**Every hypothesis below supersedes the pre-s60 frontier.** The old single frontier item (the
+"coupled fixed point" needing a joint sched2-LUID x local-alloc-birth solver search) was
+formulated against a 178-instruction base with two wrong branch destinations. vAT1 pays both of
+those legs already, so that item is retired as *stated* and replaced by F1-F3.
+
+### F1 (HIGHEST VALUE, cheap) — replay the s53-s59 kill list against the vAT1 base
+
+**Hypothesis.** One or more of the axes killed in s53-s59 moves the residual at the vAT1 base,
+because every one of those kills was a measurement of "does this move the masked-4/178 vT40
+body", and the vAT1 body differs in instruction count, branch destinations, tail wrap, and the
+register holding the staged table index ($v1 here vs $a0 in the target).
+**Mechanism.** A kill is a statement about a basin, not about a C construct. Changing the base
+changes the basin. The s59 record itself notes the t0-web probes behaved differently on the
+vT32 vs vT40 bases (4 vs 8 launch floors), which is direct evidence that these axes are
+base-sensitive.
+**Next probe.** Re-run, against `candidate.c` (vAT1), in this order (cheapest first): (i) the
+t0-address-web refs/fold variants (s59 v11-v19, sources kept in `tmp/grind/CD_ready/s59/`);
+(ii) chain-idx1496 and cnt split-init (s57); (iii) decl-scope shortening for `saved`/`status`
+(s56); (iv) arg3 wrap position/count (s54). Score each with
+`& tools/wteng.ps1 main sandbox CD_ready --disable all`. Anything below 2 is a floor drop.
+
+### F2 — the residual is a two-instruction seat+order tie in the printf-argument block
+
+**Hypothesis.** The 2 remaining differing instructions are the `sll ,2` / `lw` transposition at
+build insns ~57-58 plus the $v1-vs-$a0 seat for the staged table index, both inside the
+`do_timeout` `debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5)` block.
+**Mechanism.** Same class the ledger has always described (sched2 LUID tie x local-alloc
+seat), but now WITHOUT the instruction-count and branch-destination costs that made every
+previous fix a trade. The seat and the order may now be independently reachable.
+**Next probe.** Run `pwsh tools/grinder/dump.ps1 CD_ready` on the vAT1 base and read
+`.lreg`/`.greg` for the index pseudo's seat and `.sched2` for the LUID tie — do NOT re-use the
+vT40-era dumps, which describe a different body. Then classify with
+`tools/ra_solver/inverse_compose.py classify`; the solver verdicts in the ledger were all
+computed on vT40 and must be recomputed.
+
+### F3 (BLOCKING for completion, not for progress) — settle the volatile family
+
+**Hypothesis.** `volatile u8 *idx_1496;` on the IRQ-set CD status byte 0x800A1496 is covered by
+[[legitimate-volatile-interrupt-touched]], not by the volatile-coercion ban.
+**Mechanism / evidence in hand.** Prong 1 is satisfied with citations at every link (writer
+`getintr` at asm/funcs/getintr.s:304; caller `cdrom_IrqHandler` at src/system.c:770; installed
+via `InterruptCallback(2, &D_80081F1C)` at src/system.c:609 and :630). The qualifier is
+load-bearing and the harm is measured, not asserted: s60 v01 removes it and nothing else, and
+GCC hoists the flag load out of the poll loop (179 -> 178 insns, score 2 -> 4). The identical
+declaration already ships in MATCHED committed code in the same TU (src/system.c:549-551,
+:748-749) and matched `cdrom_IrqHandler` derives a volatile byte pointer by pointer arithmetic
+at :770-771, the same shape used here.
+**What is OPEN.** (a) Prong 2's shape list is exact and this use-site — a poll loop whose body
+calls VSync/getintr between successive reads — is closest to double-read-across-sequence-point
+but is not verbatim any of the three; (b) D_800A1494/95/96 have no `volatile_extern_allowlist.txt`
+entry.
+**Next probe.** This is not a measurement, it is a `ruling-request`: ask whether prong 2 admits
+a poll loop with body work when the double-read harm is demonstrated by controlled measurement,
+and whether the already-shipped matched in-TU declarations constitute the allowlist grant.
+**Do not submit candidate-ready on this body before that is answered** — the score is not the
+gate, the family is.
+
+### Retired this session
+
+- The pre-s60 frontier item ("joint sched2-LUID x local-alloc-birth solver search; do not
+  re-open on existing tooling") is RETIRED AS STATED. Its premise — that fixing the order
+  costs the seats and vice versa — was measured on a base that also had to buy an instruction
+  and two branch destinations. It may re-form at the vAT1 base, but it must be re-derived
+  there, not inherited.
+- Ruling D (the CD_intr aggregate merge) is DEAD for this function by CD_sync s107's
+  symbol-level prong-(c) finding (decisions.md:18287-18400, sibling-consequence paragraph).
+  Do not re-measure it; re-activation requires the five asm-only consumers of
+  D_800A1494/95/96 to reach C.
+- v02/v03/v04 (s60): every alternative volatile SPELLING loses. Type-level volatile on the
+  global with a direct `&g_cd_status_c` costs a `lui/%lo` (180 insns, score 4); making
+  idx_1494/idx_1495 volatile too scores 8. Only the 1496 access path may carry the qualifier,
+  and only when the pointer is derived as `idx_1494 + 2`.
+
+## [s60] The banked Closer-phase form marionation_vAT1_notailwrap.c still scores masked 2 on the current post--mel, post-naming-wave chassis (the owner's 2026-09-01 Ruling A named probe for this function, decisions.md:17795).
+- mechanism: vAT1 differs from the 59-session vT40 body in two ways: (1) each check arm is self-contained with its own `return check;` (the inlined-_memcpy shape), so GCC cross-jumping forward-redirects arm 1's guard into arm 2's identical tail - this fixes BOTH unmasked branch-destination diffs and lets the tail do-while(0) wrap be dropped; (2) idx_1496 (the IRQ-set CD status byte 0x800A1496) is declared `volatile u8 *`, which stops GCC hoisting the flag load out of the `goto loop` poll and supplies the target's 179th instruction.
+- probe: git show 043e4b80^:memory/closer/candidates/marionation_vAT1_notailwrap.c -> tmp/grind/CD_ready/s60/vAT1.c; spliced over INCLUDE_ASM at src/system.c:379 with tmp/grind/CD_ready/s60/splice.py; `& tools/wteng.ps1 main sandbox CD_ready --disable all`. Live baseline measured in the same session for chassis validity.
+- result: baseline (vT40 candidate.c) = score 4, build 178, target 179, rules 0. vAT1 = score 2, build 179, target 179, rules 0. candidate.c rewritten to the vAT1 body and re-scored after writing: 2/179/179/0.
+- verdict: CONFIRMED
+
+## [s60] The `volatile` on idx_1496 is load-bearing rather than incidental - it is what supplies the 179th instruction.
+- mechanism: Without the qualifier GCC treats the flag read as loop-invariant and hoists it out of the `loop:`/`tail: if (a0 == 0) goto loop;` poll, merging what the C standard permits it to merge but the CD IRQ writer invalidates.
+- probe: s60 v01: vAT1 with `volatile u8 *idx_1496;` changed to `u8 *idx_1496;` and NOTHING else changed. Sandbox scored.
+- result: score 4, build_insns 179 -> 178. Exactly one instruction and two score points attributable to the qualifier alone.
+- verdict: CONFIRMED
+
+## [s60] Prong 1 of .claude/rules/legitimate-volatile-interrupt-touched.md (asynchronous IRQ writer, NAMED with function + file:line) is satisfied for 0x800A1496.
+- mechanism: The rule accepts a write inside a function installed via InterruptCallback, or inside a function called from such an installed handler.
+- probe: grep of asm/funcs for writes to D_800A1494/95/96 and of src/*.c for the handler installation.
+- result: Writer: `getintr` writes the byte at asm/funcs/getintr.s:304 (`sb $v0, %lo(D_800A1496)($at)`; also :244 for 1494, :274/:309 for 1495), and func_800819C4 at asm/funcs/func_800819C4.s:71. Caller chain: getintr() is called from cdrom_IrqHandler (src/system.c:770), whose entry carries glabel D_80081F1C (src/system.c:758-768), installed as the IRQ-2 CD-ROM callback by `InterruptCallback(2, &D_80081F1C);` at src/system.c:609 and :630. Corroboration: matched committed in-TU code already declares these exact bytes `extern volatile u8 g_cd_status_a/b/c` at src/system.c:549-551 and :748-749, and matched cdrom_IrqHandler derives a volatile byte pointer BY POINTER ARITHMETIC at :770-771 (`volatile u8 *s1 = &g_cd_status_b; volatile u8 *s3 = s1 - 1;`) - the same shape vAT1 uses.
+- verdict: CONFIRMED
+
+## [s60] An alternative, less contestable spelling of the same volatile (type-level on the global, or on all three Intr pointers) reaches the same or a better score.
+- mechanism: If the qualifier could live on the global declaration rather than on a derived local pointer, the construct would sit squarely inside the sanctioned `extern volatile T G;` shape.
+- probe: s60 v02 (`extern volatile u8 g_cd_status_c; idx_1496 = &g_cd_status_c;`), v03 (all three Intr pointers volatile, base cast from &D_800A1494), v04 (v03 with the base taken as &g_cd_status_a, cdrom_IrqHandler's exact shape). Three sandbox runs.
+- result: v02 = score 4, build 180 (the direct symbol reference forces its own lui/%lo materialisation and destroys the single-base addressing - the identical finding CD_sync s107 recorded at decisions.md:18333). v03 = score 8, build 179. v04 = score 8, build 179. Only the 1496 access path may carry the qualifier, and only with the pointer derived as `idx_1494 + 2`.
+- verdict: KILLED
+
+## [s60] Ruling D (the CD_intr per-word-splat aggregate merge) is still spendable on CD_ready even though CD_sync's session 107 found prong (c) unsatisfiable.
+- mechanism: Prong (c) of the sanctioned aggregate-merge family requires exactly one C handle per storage location, so it fails whenever the merged symbols must survive in the splat config for assembly consumers.
+- probe: Read CD_sync's s107 record (docs/grind/decisions.md:18287-18400) and re-verified the asm-consumer facts by grep: the eight assembly files still referencing D_800A1494/95/96 by name.
+- result: Dead for CD_ready by the same symbol-level fact. The storage is defined in assembly (asm/data/7D920.data.s:31048-31076, plus dlabel D_800A1498 whose first word is `.word D_800A1494`) and is referenced by name from CD_cw.s (6 sites), getintr.s (5), func_800819C4.s (5), func_800817A0.s (4), func_80081E1C.s (1) plus the three INCLUDE_ASM bodies. CD_sync's own record states the consequence verbatim: 'it holds identically for CD_ready and CD_datasync'. Deliberately not re-measured here (banked negative); the session's budget went to the vAT1 half instead, which is what moved the floor.
+- verdict: KILLED

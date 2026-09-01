@@ -1112,3 +1112,156 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s59] Exhaustion at disposition: 59 sessions; >=7 distinct modalities (structural, permuter, forensics, rederive, synthesis, escalation, solver); 175+ hand-written forms; 125 banked rejected forms; 20 distinct spellings converging on the same masked-4/178 attractor; ~50+ CPU-hr of permuter across 13 basins with zero novel closures; plus the full 2026-08-30 solver-chain run (perturb.py depth-1 exhaustive over 1034 atoms; inverse.py local depth-2 over 118 atoms).
 
 - [s59] Disposition entry FILED THIS SESSION at docs/grind/decisions.md:15629 - '2026-08-30 - CD_ready (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'. It supersedes the 2026-08-25 entry at decisions.md:12356 by re-measuring both gates AND closing the solver axis the ruling-10 return-to-active was issued for.
+
+## [s60] 2026-09-01 — FLOOR 4 -> 2. Owner Ruling-A directive executed; the banked vAT1 form re-scores at 2 post-`-mel`
+
+Modality dispatched: `escalation` (disposition session). It did NOT end in a disposition,
+because the owner's named probe worked: **the honest floor dropped from 4 to 2** and the
+exhaustion counter resets. Nothing was foreclosed and no decisions.md entry was filed.
+
+**The directive.** `docs/grind/decisions.md:17795`, 2026-09-01 FORECLOSED-BUCKET REVIEW,
+Ruling A row `CD_ready (d4)`: *"Ruling D session; re-score the banked vAT1 form
+post-`-mel`"*, on the reopen ground that the s50 masked-2/179 form's volatile
+disqualification rested on a false premise. Both halves were addressed.
+
+### Half 1 — Ruling D (CD_intr aggregate merge): DEAD, and deliberately not re-measured here
+
+Grind session 107 on the twin `CD_sync` executed Ruling D in full on 2026-09-01 and recorded
+the result at `docs/grind/decisions.md:18287-18400`. Its prong-(c) finding is **symbol-level,
+not function-level**, and its own record says so verbatim: *"The prong-(c) finding is
+symbol-level, not function-level: it holds identically for `CD_ready` and `CD_datasync`."*
+The storage 0x800A1494/95/96 is DEFINED IN ASSEMBLY (`asm/data/7D920.data.s:31048-31076`,
+plus `dlabel D_800A1498` whose first word is `.word D_800A1494`) and is referenced by name
+from eight assembly files (`CD_cw.s` 6 sites, `getintr.s` 5, `func_800819C4.s` 5,
+`func_800817A0.s` 4, `func_80081E1C.s` 1, plus the three INCLUDE_ASM bodies). The per-word
+symbols must therefore survive in the splat symbol config, so any `CD_intr` declaration is
+necessarily a SECOND handle on the same storage — exactly the prong the g_stage_id merge died
+on (decisions.md:10722). CD_sync additionally MEASURED all five prong-conformant spellings at
+18-34 against a floor of 2, with volatile strictly WORSE than plain. Re-running that battery
+here would burn a session re-deriving a banked negative; this session spent the budget on
+half 2, which is what moved the floor. The Ruling D re-activation trigger is unchanged: the
+asm-only consumers (CD_cw, getintr, func_800819C4, func_800817A0, func_80081E1C) must reach C.
+
+### Half 2 — the vAT1 re-score: THE FLOOR MOVED
+
+Recovered with `git show 043e4b80^:memory/closer/candidates/marionation_vAT1_notailwrap.c`
+(Closer phase 2, 2026-07-09) into `tmp/grind/CD_ready/s60/vAT1.c`, spliced over
+`INCLUDE_ASM("asm/funcs", CD_ready);` at src/system.c:379 with
+`tmp/grind/CD_ready/s60/splice.py` (the s59 harness, re-pathed).
+
+| # | body | score | build_insns | target_insns | rules |
+|---|---|---|---|---|---|
+| baseline | the 59-session `candidate.c` (vT40) | **4** | 178 | 179 | 0 |
+| vAT1 | the recovered Closer form, verbatim | **2** | **179** | 179 | 0 |
+| v01 | vAT1 with `volatile` removed from `idx_1496` and NOTHING else | 4 | 178 | 179 | 0 |
+| v02 | vAT1 + `extern volatile u8 g_cd_status_c;`, `idx_1496 = &g_cd_status_c;` | 4 | 180 | 179 | 0 |
+| v03 | vAT1 + all three Intr pointers (1494/1495/1496) volatile | 8 | 179 | 179 | 0 |
+| v04 | v03 with the base taken as `&g_cd_status_a` (cdrom_IrqHandler's exact shape) | 8 | 179 | 179 | 0 |
+
+The chassis is current: the baseline row re-measures the ledger's floor 4 live this session, so
+every number above is chassis-valid. `candidate.c` (rewritten to the vAT1 body with the full
+header) was re-spliced and re-scored at 2/179/179/0 AFTER being written. `src/system.c` was
+restored to `INCLUDE_ASM` and the tree verified clean at session end.
+
+**What vAT1 buys over vT40.** Two independent things, and only the second is contested:
+1. *Structural, uncontested.* Each check arm is self-contained with its own `return check;`
+   (the inlined-`_memcpy` shape: the `a1 == 0` guard lives inside the inlined copy and falls
+   through to the arm's own return). GCC's cross-jumping then forward-redirects arm 1's guard
+   into arm 2's identical tail, which is the target's byte layout. This FIXES BOTH unmasked
+   branch-destination diffs vT40 never fixed, with no done-label gymnastics, and it drops the
+   tail `do { } while (0)` wrap entirely (measured inert). Ordinary C.
+2. *The volatile, and it is LOAD-BEARING — v01 is the controlled measurement.* Removing the
+   qualifier and changing nothing else costs exactly one instruction (179 -> 178) and two
+   score points (2 -> 4): GCC hoists the `*idx_1496` flag load out of the `goto loop` poll.
+   The target contains a load GCC emits only when that object is volatile.
+
+### The volatile: prong 1 of legitimate-volatile-interrupt-touched is SATISFIED WITH CITATIONS
+
+The rule demands a NAMED writer with function + file:line, not an assertion. Banked:
+- **The byte is written by `getintr`** — `asm/funcs/getintr.s:304` `sb $v0, %lo(D_800A1496)($at)`
+  (and :244 writes D_800A1494, :274 / :309 write D_800A1495). `asm/funcs/func_800819C4.s:71`
+  writes D_800A1496 as well.
+- **`getintr()` is called from the installed IRQ handler.** `cdrom_IrqHandler` (src/system.c:770)
+  calls `getintr()` in its service loop; its entry carries `glabel D_80081F1C` (the file-scope
+  `__asm__` block at src/system.c:758-768); and `InterruptCallback(2, &D_80081F1C);` installs it
+  as the IRQ-2 (CD-ROM) callback at **src/system.c:609 and :630**. That is the rule's
+  "installed via InterruptCallback ... or a function called from such an installed handler"
+  clause, satisfied by citation at every link.
+
+**In-TU precedent that the project ALREADY ships these bytes as volatile in matched code:**
+src/system.c:549-551 and :748-749 declare `extern volatile u8 g_cd_status_a/b/c`
+(= 0x800A1494/95/96 per named_syms.txt:68-70, symbol_addrs.txt:85-87) inside byte-matching
+committed functions, and src/system.c:770-771 — inside matched `cdrom_IrqHandler` — writes
+`volatile u8 *s1 = &g_cd_status_b; volatile u8 *s3 = s1 - 1;`, i.e. a matched function derives
+a volatile byte pointer BY POINTER ARITHMETIC, structurally the same shape vAT1 uses
+(`idx_1496 = idx_1494 + 2`). The owner's reopen ground for this function was exactly this
+correction, and it is confirmed first-hand.
+
+### The volatile: prong 2 is OPEN, and it is the gate on any future candidate-ready
+
+The rule's prong-2 list is EXACT, not illustrative: spin-wait / double-read-across-sequence-
+point / IRQ-mutated-loop-bound. This use-site is the `loop:` ... `tail: if (a0 == 0) goto loop;`
+poll, whose body calls `VSync(-1)` and `getintr()` between successive reads of `*idx_1496`.
+That is closest to **double-read-across-sequence-point** (`x = G; foo(); y = G;` where `foo()`
+services the IRQ), and the v01 measurement is direct evidence of exactly the harm the prong
+describes — GCC does in fact merge the reads when the qualifier is absent. But it is not
+VERBATIM any of the three listed shapes: the loop is not body-free, so it is not the listed
+spin-wait. Also, D_800A1494/95/96 carry **no entry in `volatile_extern_allowlist.txt`** (the
+file exists; the nearest entries are D_800A14D0 / D_800A14D4, the granted cdread.c CdlREAD
+block). **Consequence for the next session: do NOT take this body to candidate-ready on the
+strength of the score alone. Prong 2 + the allowlist grant is a `ruling-request`, and it should
+be asked with the prong-1 citations and the v01 controlled measurement in hand — that is a far
+stronger packet than anything this ledger has previously put to a ruling.**
+
+### The residual at 2 is a DIFFERENT residual — the old frontier does not describe it
+
+Disassembly comparison (`tmp/grind/CD_ready/s60/cmp2.py` against `asm/funcs/CD_ready.s`) puts
+both remaining differing instructions in the `do_timeout` printf-argument block, build insns
+~51-67: the build carries the staged table index in `$v1` where the target uses `$a0`, and the
+`sll ,2` / `lw` pair around insns 57-58 is transposed against the target.
+
+The 59-session frontier — "a coupled fixed point: vT40 (t0 first) gets the seats right and the
+order wrong (4); vT32 (arg5 first) gets the order right and the seats wrong (8); every
+single-axis search fixes one and breaks the other" — was formulated against a base that was
+178 instructions long with two wrong branch destinations. **vAT1 is 179/179 with correct branch
+destinations already**, so the instruction-count and branch legs of that trade are already
+paid; the seat/order tie is now the only thing left, from a strictly better starting point.
+Everything killed in s53-s59 (the t0-address-web refs/fold axis, arg3 wrap position/count,
+stmt-expr arg3, decl-scope shortening, chain-idx1496, cnt split-init, the single-qty demotion
+of pseudo 104) was killed AGAINST THE vT40 MASKED-4 BASE. Those kills do not transfer: they
+measured "does this move 4", not "does this move 2", and the register assignment in the block
+differs ($v1 vs $a0). **They are all re-openable against vAT1 and should be re-run there before
+anything exotic is attempted.** That, and not a disposition, is this function's frontier now.
+
+### Process lesson worth carrying to other foreclosed items
+
+The 2026-09-01 review's systemic finding 1 is confirmed on this function in the strongest
+possible form: a form banked at masked 2 sat unspent in `memory/closer/candidates/` (a
+directory outside `memory/grind/CD_ready/`, deleted from the tree by commit 043e4b80) while
+59 sessions ground a masked-4 base and three separate records declared the function
+exhausted. The cross-knowledge sweep in the session brief pointed at `memory/closer/*` and
+that is where the answer was. **When a ledger reports a long flat floor, recover and re-score
+every banked form from every sibling campaign directory BEFORE spending a session on new
+spellings — including forms deleted from HEAD, via `git show <commit>^:<path>`.**
+
+- [s60] FLOOR DROPPED 4 -> 2 on a live-measured chassis. Baseline (the 59-session vT40 candidate.c) re-measured THIS session at score 4 / build 178 / target 179 / rules 0; the new candidate.c (vAT1 body) at score 2 / build 179 / target 179 / rules 0, re-verified after the file was rewritten. This resets the exhaustion counter; no decisions.md entry was filed and nothing was foreclosed.
+
+- [s60] The owner's 2026-09-01 FORECLOSED-BUCKET REVIEW Ruling A row for CD_ready (decisions.md:17795) named two things. Half 2 ('re-score the banked vAT1 form post--mel') is the one that worked. Half 1 ('Ruling D session') is dead for this function by CD_sync s107's symbol-level prong-(c) finding, which that record itself extends to CD_ready and CD_datasync by name.
+
+- [s60] The recovered form was NOT in memory/grind/CD_ready/. It lived at memory/closer/candidates/marionation_vAT1_notailwrap.c, a path deleted from HEAD by commit 043e4b80, and was recovered with `git show 043e4b80^:<path>`. Three separate records (2026-08-25, 2026-08-30, and the s58/s59 sessions) declared this function exhausted while a banked masked-2 form sat one git-show away. This is the 2026-09-01 review's systemic finding 1 confirmed in its strongest form.
+
+- [s60] The volatile qualifier on idx_1496 is load-bearing by controlled measurement, not by argument: s60 v01 removes it and changes nothing else, and build_insns falls 179 -> 178 with the score rising 2 -> 4, because GCC hoists the flag load out of the poll loop.
+
+- [s60] Prong 1 of legitimate-volatile-interrupt-touched is satisfied with citations at every link: getintr writes D_800A1496 (asm/funcs/getintr.s:304); getintr() is called from cdrom_IrqHandler (src/system.c:770); cdrom_IrqHandler's entry is glabel D_80081F1C (src/system.c:758-768) and is installed as the IRQ-2 CD-ROM callback by InterruptCallback(2, &D_80081F1C) at src/system.c:609 and :630.
+
+- [s60] The project ALREADY ships these bytes as volatile in matched, committed, byte-correct code in the same TU: `extern volatile u8 g_cd_status_a/b/c` at src/system.c:549-551 and :748-749 (= 0x800A1494/95/96 per named_syms.txt:68-70 and symbol_addrs.txt:85-87), and matched cdrom_IrqHandler derives a volatile byte pointer by pointer arithmetic at src/system.c:770-771 - structurally the same shape vAT1 uses.
+
+- [s60] PRONG 2 IS OPEN AND IS THE GATE ON COMPLETION, NOT THE SCORE. The rule's shape list is exact (spin-wait / double-read-across-sequence-point / IRQ-mutated-loop-bound); this use-site is a poll loop whose body calls VSync(-1) and getintr() between successive reads of *idx_1496 - closest to double-read-across-sequence-point but not verbatim any of the three, since the loop is not body-free. D_800A1494/95/96 also carry no entry in volatile_extern_allowlist.txt (nearest entries: D_800A14D0 / D_800A14D4, the granted cdread.c CdlREAD block). A future session must resolve this by ruling-request BEFORE any candidate-ready.
+
+- [s60] The residual at masked 2 is a DIFFERENT residual from the one 59 sessions chased. Both differing instructions sit in the do_timeout printf-argument block (build insns ~51-67): the build holds the staged table index in $v1 where the target uses $a0, and the sll,2 / lw pair around insns 57-58 is transposed. The old 'coupled fixed point' frontier assumed fixing the order costs the seats - but it was formulated against a 178-instruction base with two wrong branch destinations, and vAT1 pays both of those legs already.
+
+- [s60] CONSEQUENCE FOR THE KILL LIST: every axis killed in s53-s59 (t0-address-web refs/fold, arg3 wrap position/count, stmt-expr arg3, decl-scope shortening, chain-idx1496, cnt split-init, single-qty demotion of pseudo 104) was killed against the vT40 masked-4/178 base. Those kills measured 'does this move 4', not 'does this move 2', and the register holding the staged index differs. They are re-openable against vAT1 and should be replayed there first - the s59 variant sources are still in tmp/grind/CD_ready/s59/.
+
+- [s60] Alternative volatile spellings all lose: type-level on the global with a direct &g_cd_status_c costs a lui/%lo (score 4, build 180 - CD_sync s107 found the same thing at decisions.md:18333); making idx_1494/idx_1495 volatile as well scores 8, in both the cast-base and the &g_cd_status_a-base spellings.
+
+- [s60] Scope: src/system.c was restored to INCLUDE_ASM("asm/funcs", CD_ready); and verified clean against HEAD at session end. Only memory/grind/CD_ready/ files and metrics/events.jsonl are dirty. Old vT40 body retained at memory/grind/CD_ready/candidate-vT40-masked4-no-volatile.c; 4 forms added to rejected/ (bank now 129).

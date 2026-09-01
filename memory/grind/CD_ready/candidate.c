@@ -1,29 +1,71 @@
-/* marionation_Exec candidate (2026-07-06, session-10 final) - masked 4.
- * All techniques comply with the construct-honesty line (owner ruling
- * 2026-07-06, .claude/rules/do-while-zero-exception.md): every byte from the
- * pristine compiler consuming semantically-true C; zero regfix/asmfix rules,
- * zero pins, zero __asm__. do-while(0) wraps are FAKE-annotated per site.
- * Remaining gap (masked 4): the do_timeout sll/addu pair order+seats and the
- * region-3 delay-slot nop - both root-caused, see notes.md. */
-/* s58 (2026-08-25) NAMING MAP - this body predates the naming wave; to splice it
- * into the current src/system.c apply: marionation_Exec->CD_ready, sys_VSync->VSync,
- * tslTm2LoadImage_2->puts, debug_printf->printf, cdrom_ClearIrq->CD_flush,
- * sys_GetVblankCount->CheckCallback, func_80080828->getintr. All needed externs are
- * already present at src/system.c:353-375. Harness: tmp/grind/CD_ready/s58/splice.py.
- * Re-measured on the post-migration chassis s58: masked 4, build 178, target 179. */
-/* s59 (2026-08-30): re-measured AGAIN on the current HEAD chassis - masked 4, build 178,
- * target 179, 0 rules. Still the best known honest form after 59 sessions. The 2026-08-30
- * solver campaign's last unprobed axis (single-qty demotion of pseudo 104 = the `t0` address
- * web, refs 4->3/4->2 or born-earlier) was spelled and measured this session: 10 variants,
- * nothing below 4 on either chassis (vT40 base 4; vT32/order-correct base 9, best 8).
- * Dispositioned REFUSED / OWNER-ACCEPTED INCOMPLETE - docs/grind/decisions.md:15629. */
+/* CD_ready candidate - s60 (2026-09-01). HONEST FLOOR: masked 2, build 179 == target 179,
+ * rules_dropped 0. This SUPERSEDES the 59-session vT40 body (masked 4, build 178), which is
+ * retained beside this file as candidate-vT40-masked4-no-volatile.c.
+ *
+ * PROVENANCE. This is the Closer-phase form `marionation_vAT1_notailwrap.c`, recovered with
+ *   git show 043e4b80^:memory/closer/candidates/marionation_vAT1_notailwrap.c
+ * It was banked 2026-07-09 at masked 2 and then set aside on a premise the owner corrected in
+ * the 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md:17795, Ruling A row `CD_ready (d4)`):
+ * "re-score the banked vAT1 form post-`-mel`". Executed this session; it re-scores at 2 on the
+ * current post-`-mel`, post-naming-wave chassis. Floor 4 -> 2.
+ *
+ * NAMING MAP (this body predates the naming wave). To splice into the current src/system.c:
+ *   marionation_Exec->CD_ready, sys_VSync->VSync, tslTm2LoadImage_2->puts, debug_printf->printf,
+ *   cdrom_ClearIrq->CD_flush, sys_GetVblankCount->CheckCallback, func_80080828->getintr.
+ * Harness: tmp/grind/CD_ready/s60/splice.py (marker: INCLUDE_ASM("asm/funcs", CD_ready); at
+ * src/system.c:379). All needed externs already exist at src/system.c:353-375.
+ *
+ * THE ONE CONSTRUCT THAT DISTINGUISHES THIS FROM vT40 - and the open family question.
+ * `volatile u8 *idx_1496;` (the pointer to the IRQ-set CD status byte 0x800A1496 = g_cd_status_c).
+ * It is LOAD-BEARING and MEASURED so: strip the qualifier and nothing else (s60 v01) and the score
+ * goes 2 -> 4 with build_insns 179 -> 178, i.e. GCC hoists the flag load out of the `goto loop`
+ * polling loop and the target's 179th instruction disappears. The target therefore contains an
+ * access GCC only emits when the object is volatile.
+ *   PRONG 1 of .claude/rules/legitimate-volatile-interrupt-touched.md is SATISFIED WITH CITATIONS:
+ *     - IRQ writer: `getintr` writes the byte - asm/funcs/getintr.s:304 `sb $v0, %lo(D_800A1496)($at)`
+ *       (also :244 for 1494, :274/:309 for 1495); func_800819C4 likewise at asm/funcs/func_800819C4.s:71.
+ *     - Installed handler: `getintr()` is called from `cdrom_IrqHandler` (src/system.c:770), whose
+ *       entry carries glabel D_80081F1C (src/system.c:758-768) and which is installed as the IRQ-2
+ *       (CD-ROM) callback by `InterruptCallback(2, &D_80081F1C);` at src/system.c:609 and :630.
+ *   IN-TU PRECEDENT (matched, committed, byte-correct code declares these very bytes volatile):
+ *     - src/system.c:549-551 `extern volatile u8 g_cd_status_a; ... _b; ... _c;`
+ *     - src/system.c:748-749 the same, inside cdrom_IrqHandler's own declaration block
+ *     - src/system.c:770-771 `volatile u8 *s1 = &g_cd_status_b; volatile u8 *s3 = s1 - 1;`
+ *       i.e. a matched function derives a volatile byte pointer BY POINTER ARITHMETIC, the same
+ *       shape used here (`idx_1496 = idx_1494 + 2`).
+ *   PRONG 2 (use-site shape) IS THE OPEN QUESTION and must be settled before any candidate-ready:
+ *   the rule's exact list is spin-wait / double-read-across-sequence-point / IRQ-mutated-loop-bound.
+ *   This use-site is the `loop:` ... `tail: if (a0 == 0) goto loop;` poll whose body calls VSync()
+ *   and getintr() between successive reads of `*idx_1496` - closest to
+ *   double-read-across-sequence-point, but it is not verbatim any of the three. Also note
+ *   D_800A1494/95/96 carry NO entry in volatile_extern_allowlist.txt, so a candidate needs either
+ *   that grant or a ruling that the already-shipped in-TU declarations cover it. DO NOT submit
+ *   candidate-ready on this body without resolving that; the honest move is a ruling-request.
+ *
+ * MEASURED-DEAD RESPELLINGS OF THE SAME VOLATILE (all s60, banked in rejected/):
+ *   - type-level on the global, pointer taken directly (`extern volatile u8 g_cd_status_c;
+ *     idx_1496 = &g_cd_status_c;`): score 4, build 180 - the separate lui/%lo materialisation
+ *     destroys the single-base addressing (identical finding to CD_sync s107, decisions.md:18333).
+ *   - all three Intr pointers volatile (idx_1494/1495/1496): score 8, build 179.
+ *   - same, with the base taken as `&g_cd_status_a` in cdrom_IrqHandler's exact shape: score 8.
+ *   Only the 1496 access path may be volatile; 1494/1495 must stay plain.
+ *
+ * REMAINING RESIDUAL (masked 2, 179/179 - a NEW frontier, not the old floor-4 one). The two
+ * differing instructions sit in the do_timeout printf-argument block (build insns ~51-67): the
+ * build lands the staged table index in $v1 where the target uses $a0, and the `sll ,2` / `lw`
+ * pair around insns 57-58 is transposed against the target. The old floor-4 coupled fixed point
+ * (sched2 LUID tie vs qty_compare 5.33-vs-5.33 seat trade, vT32-vs-vT40) is NOT this residual:
+ * that one cost branch-destination correctness and an instruction; this body has the correct
+ * 179-instruction count and correct branch destinations already. Every t0-web / arg5 axis killed
+ * in s53-s59 was killed against the vT40 (masked-4) base and is RE-OPENABLE against this one.
+ */
 s32 marionation_Exec(s32 a0, u8 *a1)
 {
   s32 v0;
   s32 cnt;
   u8 *idx_1494;
   u8 *idx_1495;
-  u8 *idx_1496;
+  volatile u8 *idx_1496;
   int new_var;
   int new_var3;
   s32 *tbl_125c;
@@ -35,7 +77,7 @@ s32 marionation_Exec(s32 a0, u8 *a1)
   s32 i;
   D_800F19B8 = sys_VSync(-1) + 0x3C0;
   tbl_125c = D_800A125C;
-  idx_1494 = &D_800A1494;
+  idx_1494 = (u8 *)&D_800A1494;
   idx_1495 = 1 + idx_1494;
   idx_1496 = idx_1494 + 2;
   D_800F19BC = 0;
@@ -136,9 +178,8 @@ s32 marionation_Exec(s32 a0, u8 *a1)
         dst++;
       }
       while (i != (-1));
-      return check;
     }
-    goto done;
+    return check;
     check2:
     check = *(idx_1496 - 1) & new_var3;
     if (!check) goto tail;
@@ -159,15 +200,12 @@ s32 marionation_Exec(s32 a0, u8 *a1)
       }
       while (i != (-1));
     }
-    done:
     return check;
-    do { /* FAKE: do-while(0) places NOTE_INSN_LOOP_BEG before the interior label so reorg.c mostly_true_jump predicts the check2 beqz taken */
     tail:
     if (a0 == 0)
     {
       goto loop;
     }
-    } while (0);
     return 0;
   }
 }
