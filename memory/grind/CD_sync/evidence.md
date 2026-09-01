@@ -1848,3 +1848,49 @@ across 6 chassis (~81k+ iters, 0 novel basin closures), m2c (s8), in-repo transp
 - [s106] 13 rejected forms banked -> 135 total in memory/grind/CD_sync/rejected/.
 
 - [s106] src/system.c restored to HEAD (INCLUDE_ASM); working tree carries only ledger + decisions.md + metrics/events.jsonl + untracked scratch.
+
+- [s107] Chassis re-measured at dispatch: candidate.c spliced over
+  `INCLUDE_ASM("asm/funcs", CD_sync);` at `src/system.c:376` -> `sandbox CD_sync
+  --disable all` = **score 2, target_insns 160, build_insns 160, rules_dropped 0,
+  scorable true**. The ledger floor of 2 is chassis-current; no drift.
+- [s107] The 0x800A1494/95/96 storage is DEFINED IN ASSEMBLY, not in C:
+  `asm/data/7D920.data.s:31048-31076` carries `dlabel D_800A1494` (.byte 0x00),
+  `dlabel D_800A1495` (.byte 0x00), `dlabel D_800A1496` (.byte 0x00 x2) and
+  `dlabel D_800A1498` whose first word is `.word D_800A1494`. Eight `asm/funcs/*.s`
+  files reference these names directly (CD_cw 6 sites, getintr 5, func_800819C4 5,
+  func_800817A0/CD_flush 4, func_80081E1C 1, plus CD_sync/CD_ready/CD_datasync).
+  Any aggregate declaration is therefore a second handle -> the sanctioned
+  per-word-splat->aggregate family's prong (c) cannot be satisfied for this object
+  while those consumers remain assembly.
+- [s107] In C, `src/system.c` reaches the same bytes under a SECOND set of names
+  (`g_cd_status_a/b/c`, named_syms.txt:68-70, symbol_addrs.txt:85-87) used by two
+  matched in-TU consumers (src/system.c:416-419 and :493-496, :621). So the object
+  already has two C handle families plus the asm handles; the merge would have had
+  to retire all of them.
+- [s107] Measured cost of the aggregate spelling on CD_sync (5 builds, artifacts in
+  tmp/grind/CD_sync/s107/): volatile+direct 34/159, volatile+base-pointer 32/157,
+  non-volatile+direct 34/159, non-volatile+base-pointer 18/157, aggregate-with-pun
+  2/160. `volatile` on the aggregate is strictly worse than plain, contradicting the
+  reopen note's expectation.
+- [s107] `python3 tools/scan_hand_coded.py --single CD_sync` ->
+  `HAND_CODED: tier=LOW score=2/8 (CD_sync, 160 insns) - no strong hand-coded
+  indicators`; only S4 (4 loads in an 8-insn window @ insn 49) and S5 (1
+  approx-sibling CD_ready, jaccard 0.64) fire; S1/S2/S6 all negative. Third
+  independent reproduction (s104, s105/s106, s107). Artifact
+  `tmp/grind/CD_sync/s107/scan_hand_coded.txt`.
+
+- [s107] Chassis re-measured at dispatch: candidate.c spliced over INCLUDE_ASM at src/system.c:376 -> sandbox CD_sync --disable all = score 2, target_insns 160, build_insns 160, rules_dropped 0, scorable true. The ledger floor of 2 is chassis-current; no drift.
+
+- [s107] The 0x800A1494/95/96 storage is defined in assembly at asm/data/7D920.data.s:31048-31076 (dlabels D_800A1494/95/96 plus the D_800A1498 descriptor whose first word is .word D_800A1494), and is referenced by name from eight asm files (CD_cw 6 sites, getintr 5, func_800819C4 5, func_800817A0/CD_flush 4, func_80081E1C 1, plus CD_sync/CD_ready/CD_datasync).
+
+- [s107] Aggregate-merge cost on CD_sync (5 builds): volatile+direct 34/159, volatile+base-pointer 32/157, non-volatile+direct 34/159, non-volatile+base-pointer 18/157, aggregate-with-pun 2/160. volatile is strictly worse than plain, contradicting the reopen note's expectation.
+
+- [s107] The aggregate DECLARATION itself is byte-neutral (p5 = 2/160) but only while the refused cross-symbol delta is retained through a (u8*)&D_800A1494 pointer pun - explicitly forbidden by prong (d) ('never a per-use pointer pun') and retiring nothing.
+
+- [s107] scan_hand_coded --single CD_sync: tier=LOW score=2/8, only S4 and S5 fire; S1/S2/S6 negative.
+
+- [s107] The prong-(c) finding is symbol-level, not function-level: it holds identically for CD_ready and CD_datasync (frontier F14), so the Ruling D scope grant cannot be spent by any of the three while CD_cw / getintr / func_800819C4 / func_800817A0 / func_80081E1C remain assembly-only consumers.
+
+- [s107] src/system.c verified clean against HEAD at session end (keeps INCLUDE_ASM("asm/funcs", CD_sync);). 5 disproven forms banked to memory/grind/CD_sync/rejected/ (140 total).
+
+- [s107] Foreclosure record filed this session at docs/grind/decisions.md:18279.

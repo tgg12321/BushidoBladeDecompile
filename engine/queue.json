@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "CD_sync",
-      "file": "system",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15206 (## 2026-08-30 - CD_sync (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE)"
-    },
-    {
       "func": "func_80045294",
       "file": "text1a_c",
       "distance": 2,
@@ -1818,6 +1808,17 @@
       "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md \u2014 `## 2026-09-01 \u2014 func_800645B0 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**` (final entry in the file; both endgame-lock gates re-run and FAILED this session: scan_hand_coded tier=LOW 0/8, precedent census NEGATIVE on the uncapped index at pin aa53500)"
     },
     {
+      "func": "CD_sync",
+      "file": "system",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "foreclosed",
+      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15206 (## 2026-08-30 - CD_sync (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE)",
+      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18279 \u2014 ## 2026-09-01 \u2014 CD_sync (src/system.c) \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (owner Ruling D executed in full; the CD_intr aggregate merge is not a lever and its prong (c) is structurally unsatisfiable)"
+    },
+    {
       "func": "func_8001F938",
       "file": "code6cac",
       "distance": 8,
@@ -1868,13 +1869,13 @@
   ],
   "counts": {
     "total": 211,
-    "active": 205,
+    "active": 204,
     "by_status": {
-      "active": 205,
-      "foreclosed": 6
+      "active": 204,
+      "foreclosed": 7
     },
     "by_verdict": {
-      "C": 173,
+      "C": 172,
       "ASM-PARTIAL": 32
     }
   }

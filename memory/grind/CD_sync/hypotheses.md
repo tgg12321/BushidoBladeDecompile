@@ -1704,3 +1704,90 @@ across 6 chassis (~81k+ iters, 0 novel basin closures), m2c (s8), in-repo transp
 ## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
 
 Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-merge session (sanctioned family 2026-08-17; prong-(c) asm-consumer check mandatory first). This ledger's own gap: no hypothesis for split-scalars-hide-aggregate exists despite closer Ruling 1 (2026-07-09) naming the merge as the honest replacement and W4 answering YES for 0x800A1494/95/96. The 'idx_1494 is not IRQ-mutated' volatile-rejection premise is FALSE (cdrom_IrqHandler + CD_flush, same TU, matched, declare these bytes volatile). Falsifiable claim: the volatile CD_intr aggregate declaration scores below 2/160 and retires the refused cross-symbol idiom.
+
+## s107 [escalation] — owner directive 2026-09-01 Ruling D (CD_intr aggregate merge) EXECUTED and KILLED
+
+- **hypothesis (verbatim from the 2026-09-01 operator reopen note):** "the volatile
+  CD_intr aggregate declaration scores below 2/160 and retires the refused
+  cross-symbol idiom."
+- **mechanism claimed:** the target addresses the libcd `Intr` bytes base+offset
+  (`lbu 0/1($s1)`), so declaring 0x800A1494/95/96 as one aggregate
+  (`typedef struct { u8 sync, ready, c; } CD_intr;`) instead of two per-word splat
+  scalars would reproduce the base-register addressing honestly and remove the need
+  for the `(s32)&D_800A1494 - (s32)D_800A125C` cross-symbol delta the owner REFUSED
+  on 2026-07-20.
+- **probe:** 5 builds on the re-measured chassis (candidate spliced at
+  `src/system.c:376`, baseline re-confirmed **2 / 160 / 160**, rules_dropped 0).
+  The aggregate was declared ON the existing splat symbol `D_800A1494` so the
+  measurement needed no splat-config change. `tmp/grind/CD_sync/s107/mkprobe.py`,
+  `mkprobe5.py`.
+- **result:**
+
+  | probe | spelling | score | build_insns |
+  |---|---|---|---|
+  | baseline | banked candidate.c (cross-symbol FAKE lever) | **2** | 160 |
+  | p1 | `extern volatile CD_intr D_800A1494;` + direct `.sync` / `.ready` | 34 | 159 |
+  | p2 | volatile aggregate reached through `volatile CD_intr *ip` | 32 | 157 |
+  | p3 | non-volatile aggregate + direct member access | 34 | 159 |
+  | p4 | non-volatile aggregate through `CD_intr *ip` | 18 | 157 |
+  | p5 | aggregate declaration + existing lever kept via `(u8 *)&D_800A1494` pun | **2** | 160 |
+
+- **verdict: KILLED.** Every prong-conformant spelling of the merge scores 18-34,
+  i.e. 9x-17x WORSE than the standing floor of 2 — the claim "scores below 2/160" is
+  measured FALSE in all four member-access spellings, volatile and non-volatile,
+  direct and base-pointer. p4 (18) simply re-lands in the known honest-respelling
+  basin s105 measured at 15; the aggregate adds nothing over `idx_1494[0]/[1]`.
+  p5 shows the aggregate DECLARATION is byte-neutral (still 2/160) but only while
+  the refused cross-symbol delta is retained through a `(u8 *)&D_800A1494` pointer
+  pun — which prong (d) of the sanctioned family explicitly forbids ("never a
+  per-use pointer pun") and which retires nothing. The merge is therefore neither a
+  lever nor an honest replacement for the closing construct.
+- **prong (c) — the MANDATORY first step of Ruling D — is STRUCTURALLY
+  UNSATISFIABLE, independently of the scores.** Prong (c) requires "every merged
+  per-word symbol is removed from C and from the splat symbol config, leaving
+  exactly one C handle per storage location". Measured this session:
+  `asm/data/7D920.data.s:31048-31076` *defines* `D_800A1494`, `D_800A1495`,
+  `D_800A1496` (and the `D_800A1498` descriptor whose first word is
+  `.word D_800A1494`) as dlabels, and eight assembly consumers reference them **by
+  name**: `asm/funcs/CD_cw.s` (6 sites), `getintr.s` (5), `func_800819C4.s` (5,
+  incl. D_800A1498), `func_800817A0.s` = CD_flush (4), `func_80081E1C.s` (1),
+  plus the three INCLUDE_ASM bodies `CD_sync.s` / `CD_ready.s` / `CD_datasync.s`.
+  The per-word symbols must therefore survive in the splat symbol config, so an
+  aggregate handle is necessarily a SECOND handle on the same storage. This is
+  verbatim the failure mode that killed the g_stage_id merge
+  (decisions.md:10722: "prong (c) is unsatisfiable today ... the merge cannot leave
+  one handle per location").
+- **corollary for the sibling ledgers (CD_ready, CD_datasync F14):** the prong-(c)
+  finding is symbol-level, not function-level — it holds identically for every
+  member of the Ruling D set. The Ruling D scope grant cannot be spent by any of
+  the three until the asm-only consumers (`CD_cw`, `getintr`, `func_800819C4`,
+  `func_800817A0`, `func_80081E1C`) are themselves decompiled to C.
+- **also corrected:** the reopen note's premise that the volatile-rejection was
+  based on a false "not IRQ-mutated" claim is beside the point here — volatility was
+  tested directly (p1/p2) and is strictly WORSE (34/32) than non-volatile (34/18),
+  because `volatile` forces a fresh `lui/%lo` materialisation per access and
+  destroys the single-base addressing the merge was supposed to create.
+
+## [s107] Ruling D / operator reopen note: 'the volatile CD_intr aggregate declaration scores below 2/160 and retires the refused cross-symbol idiom' - declaring 0x800A1494/95/96 as one aggregate reproduces the target's lbu 0/1($s1) base+offset addressing honestly.
+- mechanism: The sanctioned per-word-splat-symbol -> aggregate merge family (no-new-park-categories.md:238-254, owner ruling 2026-08-17) replaces per-symbol lui/%lo materialisation with a single base register, which is the addressing shape the original bytes exhibit; volatility is grounded by the matched in-TU IRQ consumers (cdrom_IrqHandler, CD_flush).
+- probe: 5 sandbox builds on the re-measured chassis with the aggregate declared on the existing splat symbol D_800A1494 (no splat-config change needed for the measurement): p1 volatile+direct member, p2 volatile+base pointer, p3 non-volatile+direct, p4 non-volatile+base pointer, p5 aggregate declaration with the existing lever retained via a (u8*)&D_800A1494 pun. tmp/grind/CD_sync/s107/mkprobe.py, mkprobe5.py.
+- result: baseline candidate.c = 2/160/160 rules_dropped 0. p1 = 34 (159 insns), p2 = 32 (157), p3 = 34 (159), p4 = 18 (157), p5 = 2 (160). Every prong-conformant spelling is 9x-17x worse than the floor. volatile is strictly WORSE than plain (34/32 vs 34/18) because it forces a fresh lui/%lo per access and destroys the single-base addressing the merge was meant to create. p4 (18) merely re-lands in the honest-respelling basin s105 measured at 15. p5 holds at 2 only because it keeps the owner-refused cross-symbol delta behind a per-use pointer pun, which prong (d) forbids in terms and which retires nothing.
+- verdict: KILLED
+
+## [s107] Ruling D's MANDATORY first step - the prong-(c) asm-consumer check over asm/funcs/{CD_cw,func_800817A0,func_800819C4,func_80081E1C,getintr}.s and asm/data/7D920.data.s - can be satisfied for the Intr object.
+- mechanism: Prong (c) requires the merge be complete: every merged per-word symbol removed from C AND from the splat symbol config, leaving exactly one C handle per storage location. An asm-only consumer that names a per-word symbol forces that symbol to survive, making any aggregate a second handle (the exact prong the g_stage_id merge died on, decisions.md:10722).
+- probe: Grepped the six named files plus all of asm/ for g_cd_status_[abc] and D_800A149[45678]; inspected asm/data/7D920.data.s:31048-31076 for the definitions.
+- result: The storage is DEFINED IN ASSEMBLY: dlabel D_800A1494 (.byte 0x00), dlabel D_800A1495 (.byte 0x00), dlabel D_800A1496 (.byte 0x00 x2), and dlabel D_800A1498 whose first word is literally '.word D_800A1494'. Eight asm files reference the names directly: CD_cw.s (6 sites), getintr.s (5), func_800819C4.s (5 incl. D_800A1498), func_800817A0.s = CD_flush (4), func_80081E1C.s (1), plus the INCLUDE_ASM bodies CD_sync.s / CD_ready.s / CD_datasync.s. The per-word symbols cannot be removed from the splat config, so exactly-one-handle is unreachable. In C the bytes additionally carry a second name family (g_cd_status_a/b/c, named_syms.txt:68-70) used by two matched in-TU consumers at src/system.c:416-419 and :493-496,:621.
+- verdict: KILLED
+
+## [s107] Endgame-lock gate (a): CD_sync qualifies for the canonical-asm grant path (STRONG scan_hand_coded tier).
+- mechanism: STRONG hand-coded signals (S1 multu pacing / S2 empty branch / S6 BIOS jumptable) indicate the original body was hand-written assembly rather than compiler output.
+- probe: python3 tools/scan_hand_coded.py --single CD_sync (artifact tmp/grind/CD_sync/s107/scan_hand_coded.txt).
+- result: HAND_CODED: tier=LOW score=2/8 (CD_sync, 160 insns) - no strong hand-coded indicators. Only S4 (4 loads in an 8-insn window @ insn 49) and S5 (1 approx-sibling CD_ready, jaccard 0.64) fire; S1, S2 and S6 are all negative. Third independent reproduction (s104, s105/s106, s107). Independently barred by the 2026-07-09 Judge constraint on this ledger.
+- verdict: KILLED
+
+## [s107] Endgame-lock gate (b): an in-hand SOTN-master precedent exists for the construct that actually closes the 2-insn residual.
+- mechanism: A citable SOTN-master exhibit (file+line) of the closing construct would place it inside an owner-sanctioned family; 'same spirit' does not qualify and a negative census is a failed gate, not an open question.
+- probe: The closing construct is the cross-symbol address-difference idiom (s32)&D_800A1494 - (s32)D_800A125C carried in candidate.c as a FAKE combine-foldable chain-extender. sotn-construct-index censuses for cross-symbol / symbol-difference / (s32)&D_xxxx shapes: zero hits in s104 and again in s106 (tmp/grind/CD_sync/s106/gate_b_sotn_census.txt), reproducing the s98 first-hand SOTN / Vagrant Story / ESA survey negative.
+- result: NEGATIVE, and the owner REFUSED this exact family on 2026-07-20 (standing Judge constraint on this ledger, parallel to the motion_SetMotion CLOBBER refusal). The aggregate-merge family DOES carry SOTN precedent (include/game.h Vram merges, PRs #1175 / bd612229 / 88344c03) but it is not the closing construct and cannot become one here - see the two KILLED hypotheses above.
+- verdict: KILLED

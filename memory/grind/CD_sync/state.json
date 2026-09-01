@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 106,
+ "session_count": 107,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -645,9 +645,20 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "s106 executed BOTH solver-campaign axes flagged unprobed on 2026-08-30 and KILLED both (11 byte-neutral measurements; g3 basin admits only {6,9,14} under every allocno perturbation, h5 split forms ine"
+  },
+  {
+   "session": 107,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Owner Ruling D (CD_intr aggregate merge) executed in full and KILLED: prong (c) is structurally unsatisfiable (8 asm consumers define/reference D_800A1494/95/96 by name) and every prong-conformant spe"
   }
  ],
  "frontier": [
+  {
+   "hypothesis": "Once the asm-only consumers of D_800A1494/95/96 (CD_cw, getintr, func_800819C4, func_800817A0, func_80081E1C) are decompiled to C, prong (c) of the sanctioned aggregate family becomes satisfiable and owner Ruling D can be spent for real across the whole libcd Intr cluster.",
+   "mechanism": "Prong (c) fails today only because those consumers force the per-word splat symbols to survive in the splat symbol config, making any aggregate a second handle. Removing the asm consumers removes the constraint.",
+   "next_probe": "Re-run the p1-p4 aggregate sweep at the canonical shared-header site (prong (d)) with the per-word symbols retired, after those five functions reach C; verify byte-neutrality for every matched consumer with verify-oracle --rebuild before scoring."
+  },
   {
    "hypothesis": "A NEW sanctioned family lands in .claude/rules/ whose mechanism touches allocno birth order WITHOUT a byte-neutrality requirement, re-opening the p106/val5 tie.",
    "mechanism": "Every measured lever on this residual is byte-neutral-or-nothing: the F1 chain-extender is structurally excluded (s105) because both tie operands are runtime-dependent through the loaded index, and every allocno perturbation that does register also moves emission order into the g3 basin (s106).",

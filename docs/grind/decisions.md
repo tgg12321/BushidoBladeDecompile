@@ -18274,3 +18274,130 @@ Ruling request only (no code submitted; src/ verified clean at HEAD). The ban do
 ## 2026-09-01 13:29 — func_8002EA24 — final call — **PASS**
 
 Diff is one hunk in src/code6cac_b.c; no pipeline/rule/allowlist file touched, so no build-time output-rewriting surface exists. Constructs: three cop2 islands + ordinary C (two-arm LZC guard, sq/a0_var split, neg_threshold, min_y/max_y). Decisive fact: every island is verbatim in-tree precedent -- vector/MVMVA from the matched twin func_8002D320 (src/code6cac_b.c:869,:878), LZCS from the authorized func_800274BC (src/code6cac_b.c:293) -- and func_8002EA24 is enumerated BY NAME in the landed 2026-08-17 owner cluster ruling (.claude/rules/cop2-addressing-preamble-cluster.md), which delegates the per-function check to me without re-escalation. I re-ran that 4-point check myself: sandbox --disable all = 0 at 104/104, rules_dropped 0; zero pins/aliasing/barriers; in-island GPR limited to the addressing preamble (one addu per island, two in the LZCS form, nothing swallowed); verify_oracle_s21c.txt build_sha1 == oracle. Target asm confirms the islands are real hand-asm (asm/funcs/func_8002EA24.s:22-32,71-76, splat 'handwritten instruction' tags) and the guard is real target code (bltz at :69). The two-arm LZC guard is the exact form I sanctioned on 2026-09-01 13:16 (docs/grind/decisions.md:18270); banned_constructs is []; T1 disclosure banked in self_vet.md. No /* FAKE */ construct present, so none is required. Full evidence: memory/grind/func_8002EA24/{evidence.md,hypotheses.md,self_vet.md} and rejected/. NOTE for the operator, not a defect in the C: the engine's mechanical gate counts these cop2 islands as non-cheat (cheat_asm_count 0), so `queue done` will record COMPLETED-C, but the honest bucket is COMPLETED-INLINE-ASM-CANONICAL. I did not route this as canonical-asm-grant (scan_hand_coded is TIGHT_C 3/8, no S1/S2/S6, and the function is absent from tools/grinder/owner_cluster_grants.txt) nor as integration-handoff (inline_asm_canonical.txt is on the scope-grant denylist by design). The allowlist line remains the operator's to write.
+
+
+## 2026-09-01 — CD_sync (src/system.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (owner Ruling D executed in full; the CD_intr aggregate merge is not a lever and its prong (c) is structurally unsatisfiable)
+
+**What this is.** Grind session 107 (`escalation` modality) on `CD_sync` @ `0x80080DB0`
+(`src/system.c`, formerly `cpu_side_move_dir_4`; PsyQ libcd `bios.c` v1.86 `CD_sync`, name
+string `"CD_sync"` @ `0x80016240`). This is a proof-of-foreclosure RECORD under the owner's
+standing auto-ruling of 2026-07-27 ([[endgame-lock-disposition]]) as amended by the
+2026-08-31 ruling [[ordinary-c-judge-decidable]] — it asks the owner nothing, it records
+what was measured. The function was returned to active by the 2026-09-01
+FORECLOSED-BUCKET REVIEW (decisions.md, Ruling A row `CD_sync (d2)`, executing via **Ruling
+D — CD_intr aggregate-merge session AUTHORIZED**). That directive has now been executed in
+full and both of its components fail on measurement.
+
+**Chassis (re-measured this session, not inherited).** `memory/grind/CD_sync/candidate.c`
+spliced over `INCLUDE_ASM("asm/funcs", CD_sync);` at `src/system.c:376` ->
+`sandbox CD_sync --disable all` = **score 2, target_insns 160, build_insns 160,
+rules_dropped 0, scorable true**. The ledger floor is chassis-current.
+
+**Ruling D, mandatory first step (prong (c) asm-consumer check): FAILS — structurally, not
+by price.** The sanctioned per-word-splat-symbol -> aggregate merge family
+(`.claude/rules/no-new-park-categories.md:238-254`, owner ruling 2026-08-17) requires at
+prong (c) that "the merge is complete: every merged per-word symbol is removed from C and
+from the splat symbol config, leaving exactly one C handle per storage location". The
+0x800A1494/95/96 storage is **defined in assembly**: `asm/data/7D920.data.s:31048-31076`
+carries `dlabel D_800A1494` / `D_800A1495` / `D_800A1496`, plus `dlabel D_800A1498` whose
+first word is literally `.word D_800A1494`. Eight assembly files reference those names
+directly — `asm/funcs/CD_cw.s` (6 sites), `getintr.s` (5), `func_800819C4.s` (5, incl.
+D_800A1498), `func_800817A0.s` = CD_flush (4), `func_80081E1C.s` (1), and the three
+INCLUDE_ASM bodies `CD_sync.s` / `CD_ready.s` / `CD_datasync.s`. The per-word symbols must
+therefore survive in the splat symbol config, so any `CD_intr` declaration is necessarily a
+SECOND handle on the same storage. This is verbatim the failure that killed the g_stage_id
+merge (decisions.md:10722 — "prong (c) is unsatisfiable today ... the merge cannot leave one
+handle per location"). Ruling D named this check mandatory and first precisely because it is
+the prong g_stage_id died on; it dies here the same way. (In C the bytes additionally carry a
+second name family, `g_cd_status_a/b/c` — named_syms.txt:68-70, symbol_addrs.txt:85-87 — used
+by two matched in-TU consumers at src/system.c:416-419 and :493-496,:621.)
+
+**Ruling D's falsifiable claim: measured FALSE.** The reopen note recorded the claim "the
+volatile CD_intr aggregate declaration scores below 2/160 and retires the refused
+cross-symbol idiom." Five builds this session (the aggregate declared on the existing symbol
+`D_800A1494` so the measurement needed no splat-config change;
+`tmp/grind/CD_sync/s107/mkprobe.py`, `mkprobe5.py`):
+
+| probe | spelling | score | build_insns |
+|---|---|---|---|
+| baseline | banked candidate.c | **2** | 160 |
+| p1 | `extern volatile CD_intr D_800A1494;` + direct `.sync` / `.ready` | 34 | 159 |
+| p2 | volatile aggregate through `volatile CD_intr *ip` | 32 | 157 |
+| p3 | non-volatile aggregate + direct member access | 34 | 159 |
+| p4 | non-volatile aggregate through `CD_intr *ip` | 18 | 157 |
+| p5 | aggregate declaration + existing lever kept via `(u8 *)&D_800A1494` pun | **2** | 160 |
+
+Every prong-conformant spelling scores 18-34, i.e. 9x-17x worse than the standing floor of
+2, volatile and non-volatile, direct and base-pointer. p4 (18) merely re-lands in the
+honest-respelling basin s105 already measured at 15 — the aggregate buys nothing over
+`idx_1494[0]/[1]`. p5 shows the aggregate DECLARATION is byte-neutral (2/160) but only while
+the owner-refused cross-symbol delta is retained through a `(u8 *)&D_800A1494` pointer pun,
+which prong (d) forbids in terms ("never a per-use pointer pun") and which retires nothing.
+Note also that `volatile` — the specific spelling the reopen note expected to win — is
+strictly WORSE than plain (34/32 vs 34/18), because it forces a fresh `lui/%lo`
+materialisation per access and destroys the very single-base addressing the merge was meant
+to create. The reopen note's premise-correction (that these bytes ARE IRQ-mutated and are
+declared volatile by matched in-TU consumers) is accepted and is not the issue: volatility
+was tested directly and loses.
+
+**Gate (a) — canonical-asm grant path: FAILS.** `python3 tools/scan_hand_coded.py --single
+CD_sync` (run this session, artifact `tmp/grind/CD_sync/s107/scan_hand_coded.txt`):
+`HAND_CODED: tier=LOW score=2/8 (CD_sync, 160 insns) — no strong hand-coded indicators`.
+Only S4 (4 loads in an 8-insn window @ insn 49) and S5 (1 approx-sibling `CD_ready`,
+jaccard 0.64) fire; **S1 multu-pacing, S2 empty-branch and S6 BIOS-jumptable are all
+negative**. Third independent reproduction (s104, s105/s106, s107). Independently barred by
+the 2026-07-09 Judge constraint on this function's ledger, which forbids resurfacing
+canonical-asm authorization under any exhaustion/cluster framing.
+
+**Gate (b) — SOTN-master precedent for the CLOSING construct: FAILS.** The construct that
+actually holds the 2 -> 0 residual is not the aggregate merge; it is the cross-symbol
+address-difference idiom `(s32)&D_800A1494 - (s32)D_800A125C` carried in candidate.c as a
+FAKE combine-foldable chain-extender. `docs/reference/sotn-construct-index.md` censuses for
+cross-symbol / symbol-difference / `(s32)&D_xxxx` shapes returned **zero hits** in s104 and
+again in s106 (`tmp/grind/CD_sync/s106/gate_b_sotn_census.txt`), reproducing the s98
+first-hand SOTN / Vagrant Story / ESA survey negative. The owner **REFUSED this exact family
+on 2026-07-20** (decisions.md; parallel to the motion_SetMotion CLOBBER refusal) and that
+refusal is a standing Judge constraint on this ledger. A negative census is a failed gate,
+not an open question (AUTO-REJECT class, owner ruling 2026-08-24 reaffirmed 2026-08-31). The
+aggregate family DOES have SOTN precedent (`include/game.h` `Vram` merges, PRs #1175 /
+bd612229 / 88344c03) — but it is not the closing construct and, per the prongs and the
+measurements above, cannot become one here.
+
+**Exhaustion.** 107 sessions; floor flat at 2 since the post-migration chassis
+re-measurement; modalities spent include structural, rederive, synthesis, permuter,
+forensics, solver and escalation. 140 disproven forms banked in
+`memory/grind/CD_sync/rejected/` (5 added this session). Prior campaigns: s99 symbolic-variant
+sweep (h5 basin closed), s100 F97a analytic closure, s101 F1 pointer-alias killed across 5
+shapes, s102 F2 livelen-shortening killed across 6 probes, s103 theorem-locking of the
+residual to the 2-insn pair {sll4@54 <-> addu5@55} at a sched.c LUID tiebreak, s105 F1
+chain-extender proved structurally inapplicable to the p106/val5 tie (10 probes) + psyz
+upstream re-check (`decomp/src/libcd/bios.c:94` is still `INCLUDE_ASM` for `CD_sync`), s106
+both solver-campaign axes killed (11 byte-neutral measurements; the g3 basin admits only
+{6,9,14} under every allocno perturbation).
+
+**Disposition.** FORECLOSED, silently, per the standing ruling. Nothing is put to the owner
+and nothing pends. `src/system.c:376` keeps `INCLUDE_ASM("asm/funcs", CD_sync);` (verified
+clean against HEAD at session end) and the annotated masked-2 form stays in
+`memory/grind/CD_sync/candidate.c` for any future re-attempt.
+
+**Sibling consequence (not a disposition of those items — a fact for their next sessions).**
+The prong-(c) finding is symbol-level, not function-level: it holds identically for
+`CD_ready` and `CD_datasync` (frontier F14), the other two members of the Ruling D set. The
+Ruling D scope grant cannot be spent by any of the three while `CD_cw`, `getintr`,
+`func_800819C4`, `func_800817A0` and `func_80081E1C` remain assembly-only consumers of
+`D_800A1494/95/96`.
+
+**Re-activation triggers.** (1) The asm-only consumers of `D_800A1494/95/96` (CD_cw,
+getintr, func_800819C4, func_800817A0, func_80081E1C) are decompiled to C, at which point
+prong (c) of the sanctioned aggregate family becomes satisfiable and Ruling D can be spent
+for real across the whole libcd cluster. (2) A new sanctioned family lands in
+`.claude/rules/` whose mechanism touches allocno birth order WITHOUT a byte-neutrality
+requirement, re-opening the p106/val5 tie. (3) A matched libcd `bios.c` body for `CD_sync`
+appears upstream in psyz / sozud psy-q-decomp, closing the function by provenance instead of
+by search (re-check `decomp/src/libcd/bios.c` ~line 94).
+
+**References:** ledger `memory/grind/CD_sync/{evidence.md,hypotheses.md,candidate.c,state.json,rejected/}`;
+artifacts `tmp/grind/CD_sync/s107/` (mkprobe.py, mkprobe5.py, finish.py, append.py, the five
+probe bodies, scan_hand_coded.txt); prior records decisions.md:11814 (2026-08-25),
+decisions.md:15206 (2026-08-30), decisions.md:10722 (the g_stage_id prong-(c) precedent),
+Ruling D at decisions.md:17843.
