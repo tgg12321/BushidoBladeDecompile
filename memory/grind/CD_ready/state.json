@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 65,
+ "session_count": 66,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -399,21 +399,27 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "s65 synthesis: the seat residual is now READ out of local-alloc (instrumented-cc1 QTYDBG) instead of inferred - the s61-s63 .lreg window model is a wrong proxy, and the whole residual reduces to ONE n"
+  },
+  {
+   "session": 66,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s66 synthesis: the seat residual is reduced to closed form - with the target's instruction sequence held, every qty_compare_1 input except the loop-depth-weighted reg_n_refs is FORCED - s65's named fr"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The whole residual is one sched1 exchange: insn 145 (the arg-4 register load, t0's death) against insn 137 (the arg-5 stack store, the arg5 value's death) on the order-perfect base. Making 137 precede 145 gives the arg5 value pri 2.00 against t0's 1.00, so the value takes $v1 and t0 takes $a0 - the target's seats on a base that already emits the target's instruction order, i.e. score 0.",
-   "mechanism": "qty_compare_1 (local-alloc.c:1640-1684) reads death-birth off sched1's output order; the two quantities currently tie at 1.33 only because 145 (t0's death) sits one slot before 137 (the value's death). sched1 orders them by INSN_PRIORITY: 145 is a load whose result feeds the call's $a3 (path cost 2), 137 is a store with no successor but the call (path cost 1).",
-   "next_probe": "Do NOT sweep statement order (measured inert twice). Attack the PRIORITY of the pair. (a) Read tools/gcc-2.7.2/sched.c's insn_cost / priority computation for a store whose value is a pseudo versus a load into a hard argument register, and check whether the store's priority can be raised by any C-visible property of the stored VALUE (e.g. the value arriving from a different rtx class). (b) Enumerate the argument shapes that keep arg4's deref folded into the a3 load while changing arg5's store into something with a successor. (c) As a control, dump sched1 for asm/funcs/CD_ready.s's own implied order by reconstructing what quantity spans the TARGET's registers require, and check whether the target is instead consistent with 145 preceding 137 plus a DIFFERENT arg5 spelling - i.e. whether the target's block has four quantities at all. Instrument for all of it: bash tmp/grind/CD_ready/s63/qty.sh <out> then the `func=CD_ready blk=3` lines; splice with tmp/grind/CD_ready/s63/splice.py; score with `& tools/wteng.ps1 main sandbox CD_ready --disable all`."
+   "hypothesis": "An EMPTY `do { } while (0)` placed at each candidate position in the do_timeout block is byte-neutral, i.e. the loop NOTE by itself does not move the *pp expand_call argument load - and if so, the sched1 damage seen in w01/u02/x02 comes from the raised reference counts changing local-alloc's answer downstream, not from the note. This is the single measurement that separates the two causes, and no session has made it.",
+   "mechanism": "NOTE_INSN_LOOP_BEG/END are notes, not barriers; sched.c splits into scheduling regions on labels and jumps, not notes. If an empty wrap at position P is byte-neutral while the same wrap containing the arg5 load is not, the note is innocent and the search collapses to 'which pseudos may gain a reference'. If even the empty wrap moves insn 141, the loop-note family is dead for this block and the residual has no reachable lever at all - which is itself the finding that would justify a foreclosure record.",
+   "next_probe": "Generate one variant per insertion point in the k03 (or u00, which is free) body: an empty `do { } while (0);` before the t0 byte load, before the pp assignment, before the arg5 chain, between the arg5 chain and the t0 shift, and immediately before the printf call. Score each with `& tools/wteng.ps1 main sandbox CD_ready --disable all` (harness: tmp/grind/CD_ready/s63/sweep.ps1) and QTYDBG the byte-neutral ones with tmp/grind/CD_ready/s66/probe2.sh. Then, for every position that is byte-neutral empty, re-run it with ONLY the arg5 load moved inside."
   },
   {
-   "hypothesis": "The equivalent win on the same base is making the arg5 LOAD (insn 113), rather than the t0 shift (insn 117), fill the 111 -> 113 latency slot: that keeps the address quantity at span 1 (pri 4.00, rank 0) and gives the arg5-value quantity a lower quantity number than t0's, which wins the tie for it.",
-   "mechanism": "sched1's ready list picks the highest-priority ready insn; 117 is ready because its input (insn 99, the t0 byte load) has the longest path in the block and is always scheduled first. If 117 were not ready at that cycle, 113 would be emitted next and both the span and the quantity-number effects would vanish.",
-   "next_probe": "Find a C spelling that delays the t0 byte load's READINESS rather than its source position - e.g. making the t0 byte load depend on something scheduled after 111 (a genuine data dependence, not a fabricated one), or shortening the t0 chain's path to the call so 99 no longer outranks the arg5 chain. Both r-series (lowering a competitor's LUID) and the m-series (moving statements) are already dead, so the probe must change the DEPENDENCE GRAPH's shape. Check first with the sched1 dump (pwsh tools/grinder/dump.ps1 CD_ready, then tmp/grind/CD_ready/s63/ext.py) that the intended change actually moves 99 or 117 before spending a sandbox run."
+   "hypothesis": "The arg5 value's fifth reference can be bought without a wrap around any code-generating statement, by hoisting the printf's fifth argument out of the call into a wrapped assignment while ALSO hoisting `*pp` out of the call, so the call statement no longer owns the expand_call argument load whose displacement costs w01 its four points.",
+   "mechanism": "w01's failure is fully explained by insn 141 (`a1 = mem(D_800F19C0)`) moving from build 53/54 to 60/61: that stretches the arg5 value quantity's span from 6 to 8, dropping its pri to 1.25 so the extra reference is wasted. insn 141 is emitted by expand_call at the call site, so its LUID is pinned to the call statement; giving `*pp` its own named intermediate before the wrap converts it into an ordinary load whose position is set by statement order instead.",
+   "next_probe": "On the u00 base (free split), hoist `a1v = *pp;` into its own statement ahead of the wrap, then wrap the arg5 load (and separately, the arg5 load plus the call). Measure, then QTYDBG, and check specifically whether the *pp load stays at build 53/54. Note s62's a-series found named intermediates for the arg-2/arg-3 arguments destructive on the vT40 base (10-20) - so measure a control with the hoist and NO wrap first to price the hoist on THIS base before attributing any regression to the wrap."
   },
   {
-   "hypothesis": "F3 (carried unchanged from s60-s64, blocking for COMPLETION only, not for progress): the `volatile u8 *idx_1496;` in this body is covered by legitimate-volatile-interrupt-touched rather than by the volatile-coercion ban.",
+   "hypothesis": "F3 (carried unchanged from s60-s65, blocking for COMPLETION only, not for progress): the `volatile u8 *idx_1496;` in this body is covered by legitimate-volatile-interrupt-touched rather than by the volatile-coercion ban.",
    "mechanism": "Prong 1 is satisfied with citations at every link (IRQ writer getintr at asm/funcs/getintr.s:304; handler installed by InterruptCallback(2, &D_80081F1C) at src/system.c:609 and :630). Prong 2's harm is shown by controlled measurement - removing the qualifier alone moves 179 insns to 178 and score 2 to 4. What is open is that prong 2's shape list is exact (spin-wait / double-read-across-sequence-point / IRQ-mutated-loop-bound) and this poll loop has body work, plus the absent volatile_extern_allowlist.txt entry for D_800A1494/95/96.",
    "next_probe": "This is a ruling-request, not a measurement, and it should be raised the moment the score reaches 0 - not before, because it costs a session either way and the allocation branch above is still live. Question to ask: does prong 2 admit a poll loop with body work when the double-read harm is shown by controlled measurement, and do the already-shipped matched in-TU declarations at src/system.c:549-551 and :748-749 plus the matched pointer-arithmetic shape at :770-771 constitute the allowlist grant for D_800A1496?"
   }

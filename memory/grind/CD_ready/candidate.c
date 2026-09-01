@@ -76,7 +76,16 @@
  * $a0 (all four seats as the target wants them). On the order-perfect base the arg5 address
  * quantity stretches to span 2 (pri 2.00) because sched1 fills the addu->load latency slot with
  * the t0 shift, and t0 then beats the arg5 value on a 1.33-vs-1.33 tie broken by quantity number.
- * The single change that would close the function is named in evidence.md/hypotheses.md s65.
+ * s66 CORRECTION - do not spend the s65 frontier probe. s65 named the closing change as
+ * "exchange sched1 insns 145 and 137"; reading k03.sched.txt against the QTYDBG columns shows
+ * insn 145 is the death of NO local quantity (reg 98 = the `t0` variable is set twice in the
+ * block, so REG_N_DEATHS == 2 and local_alloc skips it; global-alloc seats it, correctly, at
+ * $a0). The tie is between reg 104 (the t0 SHIFT temp, insn 117 -> insn 122) and reg 97 (the
+ * arg5 VALUE, insn 113 -> insn 137). With the target's instruction sequence held, both pseudos'
+ * births, deaths and quantity numbers are forced and both carry the minimum two mentions, so
+ * qty_n_refs - the loop-depth-weighted reg_n_refs - is the residual's ONLY free variable. s66
+ * demonstrated that a do-while(0) loop note really does move it (arg5 value 4 -> 5 or 6), but
+ * every placement tried also perturbs sched1 (best 8). See evidence.md/hypotheses.md s66.
  * Every t0-web / arg5 axis killed in s53-s59 was killed against the vT40 (masked-4) base; s61
  * re-ran the natural-C, source-position, decl-order, pseudo-split and variable-reuse families
  * against THIS base (all banked in evidence.md s61 and rejected/s61-*).

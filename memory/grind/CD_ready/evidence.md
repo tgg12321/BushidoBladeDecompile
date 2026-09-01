@@ -1783,3 +1783,161 @@ files, and the quantity dumps k03.qty.txt / n01.qty.txt / n03.qty.txt / b07.qty.
 - [s65] KILLED (inert): hoisting the D_800A11D5 byte to lower its LUID so it fills the 111->113 slot instead of the t0 shift (r01/r03/r04 = 6 with a quantity table structurally identical to k03; r02 = 11).
 
 - [s65] src/system.c was restored to its committed INCLUDE_ASM state at end of session; the only dirt is metrics/events.jsonl plus memory/grind/CD_ready/. candidate.c is unchanged as a body (vAT1, floor 2); only its header comment gained the s65 correction. Six new rejected forms banked (152 total).
+
+## s66 (synthesis, 2026-09-01) — the seat residual is reduced to a CLOSED-FORM statement over local-alloc's inputs, s65's named frontier probe is CORRECTED, and a new working lever on those inputs (loop-note ref weighting) is demonstrated
+
+Owner directive acknowledgement (third time, for the auto-audit): the queue item's
+2026-09-01 FORECLOSED-BUCKET REVIEW Ruling-A probe ("re-score the banked vAT1 form
+post-`-mel`") was executed in s60 and is what produced the current `candidate.c` and the floor of
+2. Nothing further is owed on it.
+
+Live chassis check at session start: clean tree (`INCLUDE_ASM`) scores 179;
+`memory/grind/CD_ready/candidate.c` re-measures **score 2 / build 179 / target 179 /
+rules_dropped 0**; the order-perfect base `k03` re-measures **6**. Both ledger numbers reproduce.
+
+### [s66] THE BLOCK-3 RTL, READ IN FULL — every pseudo in the residual is now named from the dump
+From `tmp/grind/CD_ready/s63/k03.sched.txt` (sched1 output for the ORDER-PERFECT base, i.e. the
+base whose instruction sequence IS the target's), the do_timeout block is exactly:
+
+    91  a0 = "D_800161B8"        93  call puts
+    99  reg/v 98 = lbu(reg76)                 <- `t0` byte
+    106 reg/v 74 = lbu(reg76+1)               <- arg5 index, into the reused `v0` VARIABLE
+    141 a1 = mem(D_800F19C0)                  <- *pp, an expand_call ARGUMENT load
+    108 reg/v 74 = reg74 << 2                 <- arg5 sll, in place on v0
+    111 reg 102   = reg74 + reg81             <- arg5 ADDRESS (reg74 dies here)
+    117 reg 104   = reg98 << 2                <- t0 SHIFT temp (reg98 dies here)
+    113 reg/v 97  = mem(reg102)               <- arg5 VALUE (reg102 dies here)
+    128 reg 107   = lbu(D_800A11D5)
+    122 reg/v 98  = reg104 + reg81            <- t0 ADDRESS, reg98 REBORN (reg104 dies here)
+    137 mem(sp+16) = reg97                    <- the 5th argument store (reg97 dies here)
+    133 reg 110   = reg107 << 2
+    143 a2 = mem(reg110 + D_800A11DC)   145 a3 = mem(reg98)   139 a0 = fmt   147 call printf
+
+`block_alloc` numbers this block's insns as **pos = 4 + 2*(index of the insn in the list above)**,
+verified against all four measured quantities. That mapping is what makes the QTYDBG birth/death
+columns readable, and it is the thing s65 got wrong.
+
+### [s66] CORRECTION TO s65 — the frontier probe s65 named was aimed at the wrong pair of insns
+s65's headline frontier was "exchange the sched1 positions of insn 145 (`a3 = mem(reg98)`, *t0's
+death*) and insn 137 (the arg-5 stack store)". With the position mapping above, **insn 145 is not
+the death of any local quantity**: the quantity s65 called "the t0 chain" is `reg 104`, the
+SHIFT temp, and it is born at 117 (pos 18) and dies at **122** (pos 24), the t0 address `addu`.
+`reg 98` (the user variable `t0`) never enters local-alloc at all — it is SET TWICE in the block
+(99 and 122) and therefore has `REG_N_DEATHS == 2`, which disqualifies it from `local_alloc`'s
+quantity list; global-alloc seats it, and seats it correctly at `$a0`. The same exclusion applies
+to `reg/v 74` (`v0`), which is cross-block. Any future probe built on "move insn 145" is
+therefore attacking an insn that has no bearing on the tie.
+
+### [s66] THE RESIDUAL, IN CLOSED FORM (this is the whole remaining problem, stated once)
+On the order-perfect base the four local quantities and their `qty_compare_1` inputs are
+(`pri = floor_log2(refs) * refs * size / (death - birth)`; measured, `s65/k03.qty.txt`):
+
+| qty# | reg | role | birth-death | refs | pri | got |
+|---|---|---|---|---|---|---|
+| 0 | 102 | arg5 ADDRESS | 16-20 | 4 | 2.00 | $v0 |
+| 1 | 104 | t0 SHIFT temp | 18-24 | 4 | **1.33** | $v1 (target wants $a0) |
+| 2 |  97 | arg5 VALUE   | 20-26 | 4 | **1.33** | $a0 (target wants $v1) |
+| 3 | 110 | D_800A11D5 chain | 22-30 | 8 | 3.00 | $v0 |
+
+Quantities 1 and 2 tie; `qty_compare_1` breaks the tie by quantity NUMBER
+(`local-alloc.c:1683 return *q1 - *q2;`), i.e. by birth order, which the t0 temp wins. If the
+order were reversed, `find_free_reg` would hand reg97 `$v1` (used set {0,1,2,5}) and then reg104
+`$a0` (used set {0,1,2,3,5}) — exactly the target's seats, on a base that already emits the
+target's instruction sequence, i.e. score 0.
+
+**Everything except `refs` is FORCED by the target's own instruction sequence.** Births and deaths
+are positions in that sequence; quantity numbers are birth order; both pseudos carry the minimum
+possible TWO mentions (reg104: the `sll` that sets it and the `addu` that reads it; reg97: the
+`lw` that sets it and the `sw` that reads it), and a third mention of either would be a third
+instruction, which breaks the 179-instruction parity. **The only free input left in the whole
+residual is `qty_n_refs` = `reg_n_refs`, the LOOP-DEPTH-WEIGHTED reference count.**
+
+### [s66] NEW, WORKING LEVER — `do { } while (0)` really does move `reg_n_refs`, measured
+`reg_n_refs` is accumulated in flow.c weighted by loop depth, and a `do { } while (0)` emits real
+`NOTE_INSN_LOOP_BEG/END` notes. Measured with QTYDBG on the k03 base:
+  - u01 (arg5 load AND the printf call inside one wrap): arg5 value refs **4 -> 6**, the
+    D_800A11D5 chain 8 -> 12, the arg5 address 4 -> 5.
+  - u02 / x02 / x03 (only the arg5 load statement wrapped): arg5 value refs **4 -> 5**.
+  - w01 (only the printf call wrapped): arg5 value refs 4 -> 5, D_800A11D5 chain 8 -> 12.
+This is the first C-level lever ever demonstrated on this function's `qty_compare_1` reference
+counts. It is exactly the axis s62's g-series proved unreachable by ordinary statements (dead
+stores / self-assigns on a block-local scalar are removed before reg_scan), and it is orthogonal
+to the span and quantity-number inputs, both of which the target's instruction order pins.
+
+### [s66] ...but every wrap measured so far also perturbs sched1, and the perturbation costs more than the seats are worth
+
+| variant | wrap placement | score | what the wrap did besides moving refs |
+|---|---|---|---|
+| u00 / x02-base | none (arg5 address split into its own `a5a` statement) | **6** | byte-identical to k03: the split is FREE |
+| w01 | printf call only, k03 spelling | 10 | the `*pp` argument load (insn 141) is pushed from build 53/54 to 60/61, stretching the arg5 value's span to 8 so its pri drops to 1.25 and it loses anyway |
+| w02 | printf call only, a5a spelling | 10 | same |
+| w04 | printf call only, candidate (t0-first) statement order | 10 | same |
+| u01 | arg5 load + printf call | 13 | block restructured |
+| u02 / x02 / x03 | arg5 load only, after the t0 statements | **8** | the t0 chain collapses into ONE 10-32 quantity (refs 12) and the two `lbu`s transpose |
+| x01 / x04 / u03 | arg5 load only before the t0 statements; addu+load wrapped | 12 | order breaks harder |
+| w03 | whole arg5 chain + call | 12 | **180 insns** — the only variant this session that lost instruction parity |
+
+CAUTION for the next session: for the WRAP variants the QTYDBG `reg1=` -> role mapping is NOT
+established (x02's `got=` columns read as if the seats had flipped, but its disassembly shows the
+t0 chain still in `$v1` and the arg5 value still in `$a0`). Only the k03 mapping above is
+RTL-verified. Re-derive the mapping from a fresh sched dump before trusting a wrap variant's table.
+
+### [s66] KILLED — every t0-chain pseudo topology that could remove the shift temp from local-alloc (s01-s08)
+The model says the tie disappears if `reg 104` stops being a local quantity, and it can only stop
+being one by acquiring a second death (as `reg 98` does) or by leaving the block. Measured on the
+order-perfect base: s01 separate `s32 t0a` address variable **9**; s02 `s32 *` carrier 9;
+s03 `t0 <<= 2` instead of `t0 *= 4` **7** (not a no-op — the spelling IS a lever, just the wrong
+way); s04 whole address in one statement 6 (byte-identical to k03); s05 `u8 *` carrier accumulated
+in place 9; s06 t0 byte load moved down beside its shift 7; s07 arg4 fully inline with no `t0`
+variable at all 14; s08 arg5 address accumulated in place on `v0` 15.
+QTYDBG on s01 shows exactly what the model predicts and why it does not help: giving the address
+its own single-death variable lets `combine_regs` tie the shift temp INTO it, producing ONE
+quantity `reg 99` at 18-32 with refs 12 -> pri 2.57, which then beats the arg5 value even more
+decisively (rank 2 vs 3) and takes `$v1`. Merging the t0 chain is the wrong direction.
+
+### Artifacts
+tmp/grind/CD_ready/s66/{gen.py,gen2.py,gen3.py,gen4.py} (the s/u/w/x generators, each documenting
+its mechanism), probe2.sh (WSL-side QTYDBG driver — the s65 probe.sh cannot run from the Windows
+Git-Bash tool, its objdump/venv calls need `bash tools/wsl.sh`), the 21 variant .c files, and the
+quantity dumps s01/u01/u02/w01/x02 `.qty.txt`.
+
+- [s66] Live chassis check: clean tree 179; candidate.c score 2 / build 179 / target 179 / rules_dropped 0; k03 (order-perfect base) 6. Both ledger numbers reproduce exactly.
+- [s66] block_alloc's insn numbering for CD_ready's do_timeout block is pos = 4 + 2*(index in sched1's output order), verified against all four measured quantities. This is what makes the QTYDBG birth/death columns interpretable.
+- [s66] CORRECTION TO s65: insn 145 (`a3 = mem(reg98)`) is NOT the death of any local quantity. The quantity s65 called "the t0 chain" is reg 104, the SHIFT temp, born at insn 117 and dead at insn 122 (the t0 address addu). s65's named frontier probe (exchange 145 and 137) was aimed at the wrong pair of insns.
+- [s66] reg 98 (the `t0` user variable) is excluded from local-alloc because it is set twice in the block (insns 99 and 122) and so has REG_N_DEATHS == 2; local_alloc only takes single-death, single-block pseudos. Global-alloc seats it, and seats it CORRECTLY at $a0 on every base measured. reg/v 74 (`v0`) is excluded for being cross-block.
+- [s66] CLOSED-FORM STATEMENT OF THE RESIDUAL: on the order-perfect base the four local quantities are 102 arg5-address 16-20 refs4 pri 2.00; 104 t0-shift-temp 18-24 refs4 pri 1.33; 97 arg5-value 20-26 refs4 pri 1.33; 110 22-30 refs8 pri 3.00. 104 and 97 TIE and the tie breaks by quantity number (local-alloc.c:1683), which 104 wins by being born one slot earlier. Births, deaths and quantity numbers are all positions in the target's own instruction sequence and are therefore FORCED; both tied pseudos carry the minimum possible two mentions. qty_n_refs (= reg_n_refs, the loop-depth-weighted count) is the ONLY free input left in the entire residual.
+- [s66] CONFIRMED, NEW LEVER: a do-while(0) wrap emits real NOTE_INSN_LOOP_BEG/END and does raise the enclosed pseudos' loop-depth-weighted reg_n_refs. Measured by QTYDBG on the k03 base: both arg5-value mentions wrapped -> refs 4->6 (u01); only the load wrapped -> 4->5 (u02/x02/x03); only the printf call wrapped -> 4->5 (w01). The D_800A11D5 chain goes 8->12 when the call is inside the wrap. This is the first demonstrated C-level lever on this function's qty_compare_1 reference counts, and it is orthogonal to the span/quantity-number inputs that the target's order pins.
+- [s66] KILLED (as scored): every wrap placement measured so far also perturbs sched1 and loses more than it gains - printf-call-only 10 (it displaces the *pp expand_call argument load from build 53/54 to 60/61 and stretches the arg5 value's span to 8, dropping its pri to 1.25); arg5-load-only 8 (best of the family; the t0 chain collapses into one 10-32 refs-12 quantity and the two lbu's transpose); load+call 13; whole arg5 chain + call 12 and 180 insns (loses instruction parity).
+- [s66] KILLED: every t0-chain pseudo topology aimed at removing the shift temp from local-alloc - s01 separate address variable 9, s02 s32* carrier 9, s03 `t0 <<= 2` 7, s04 one-statement address 6, s05 u8* carrier 9, s06 byte load beside the shift 7, s07 arg4 fully inline 14, s08 arg5 address in place on v0 15. QTYDBG on s01 shows combine_regs ties the shift temp INTO the new single-death address variable, giving one 18-32 refs-12 quantity at pri 2.57 that beats the arg5 value harder. Merging the t0 chain is the wrong direction.
+- [s66] MEASURED (byte-neutral, useful as a base): splitting the arg5 address into its own `a5a = v0 + (s32)tbl_125c;` statement is FREE - u00 scores 6, identical to k03. Any future ref-count probe can use the split spelling without paying for it.
+- [s66] CAUTION: for the wrap variants the QTYDBG reg1->role mapping is NOT established. x02's `got=` columns read as though the seats flipped, but its disassembly shows the t0 chain still in $v1 and the arg5 value still in $a0. Only the k03 mapping is RTL-verified (from k03.sched.txt). Re-derive the mapping from a fresh sched dump before trusting any wrap variant's quantity table.
+- [s66] TOOLING: tmp/grind/CD_ready/s65/probe.sh cannot be run from the Windows Git-Bash tool (its objdump and .venv calls are WSL-side). tmp/grind/CD_ready/s66/probe2.sh is the working splice-then-QTYDBG driver; disassembly is `bash tools/wsl.sh "python3 tmp/grind/CD_ready/s63/show.py 48 72"`.
+- [s66] src/system.c was restored to its committed INCLUDE_ASM state at end of session; the only dirt is metrics/events.jsonl plus memory/grind/CD_ready/. candidate.c is unchanged as a body (vAT1, floor 2). Eight new rejected forms banked (160 total).
+
+- [s66] Live chassis check: clean tree (INCLUDE_ASM) 179; memory/grind/CD_ready/candidate.c re-measures score 2 / build 179 / target 179 / rules_dropped 0; the order-perfect base k03 re-measures 6. Both ledger numbers reproduce exactly on today's HEAD.
+
+- [s66] The do_timeout block's sched1 RTL is now transcribed insn-by-insn in evidence.md s66, with every pseudo's role named: reg/v 98 = the `t0` variable (set at insn 99, re-set at 122), reg/v 74 = the reused `v0` variable, reg 102 = the arg5 address, reg 104 = the t0 shift temp, reg/v 97 = the arg5 value, reg 107/110 = the D_800A11D5 chain, insn 141 = the *pp expand_call argument load.
+
+- [s66] block_alloc numbers CD_ready's block-3 insns as pos = 4 + 2*(index in sched1's output order), verified against all four measured quantities. Prior sessions could not read the QTYDBG birth/death columns without this.
+
+- [s66] CORRECTION TO s65: insn 145 is the death of NO local quantity, so s65's named frontier probe (exchange insns 145 and 137) was aimed at the wrong pair. The t0 quantity in the tie is reg 104, which dies at insn 122 (the t0 address addu), not at 145.
+
+- [s66] reg 98 is excluded from local-alloc because it is set twice in the block (REG_N_DEATHS == 2); reg/v 74 is excluded for being cross-block. Global-alloc seats both, and seats them correctly, on every base measured - so the seat residual lives entirely inside local-alloc's four-quantity sort.
+
+- [s66] CLOSED-FORM RESIDUAL: on the order-perfect base the quantities are 102 arg5-address 16-20 refs4 pri 2.00 -> $v0; 104 t0-shift-temp 18-24 refs4 pri 1.33 -> $v1; 97 arg5-value 20-26 refs4 pri 1.33 -> $a0; 110 22-30 refs8 pri 3.00 -> $v0. 104 and 97 TIE and the tie breaks by quantity number, which 104 wins by being born one slot earlier. If reg 97 sorted first, find_free_reg would give it $v1 (used {0,1,2,5}) and then give reg 104 $a0 (used {0,1,2,3,5}) - the target, i.e. score 0.
+
+- [s66] NEW LEVER, first ever demonstrated on this function's qty_compare_1 reference counts: a do-while(0) wrap raises the enclosed pseudos' loop-depth-weighted reg_n_refs (arg5 value 4 -> 6 with both mentions inside, 4 -> 5 with one; D_800A11D5 chain 8 -> 12). This is exactly the axis s62's g-series proved unreachable by ordinary statements.
+
+- [s66] KILLED (scored, 179 insns, 0 rules): all ten do-while(0) wrap placements - u01 13, u02 8, u03 12, u04 13, w01 10, w02 10, w03 12 (180 insns), w04 10, x01 12, x02 8, x03 8, x04 12. The printf-call-only wraps lose because the note displaces the *pp expand_call argument load; the load-only wraps lose because the t0 chain collapses into one merged quantity and the two lbu's transpose.
+
+- [s66] KILLED (scored): all eight t0-chain pseudo topologies aimed at removing the shift temp from local-alloc - s01 9, s02 9, s03 7, s04 6, s05 9, s06 7, s07 14, s08 15. QTYDBG on s01 shows combine_regs merging the shift temp into a single-death address variable, which makes the merged t0 quantity (pri 2.57) beat the arg5 value harder.
+
+- [s66] MEASURED and free: the arg5 address split (u00) is byte-identical to k03 at score 6.
+
+- [s66] CAUTION banked for the next session: for the WRAP variants the QTYDBG reg1 -> role mapping is NOT established - x02's got= columns read as though the seats had flipped, but its disassembly shows the t0 chain still in $v1 and the arg5 value still in $a0. Only the k03 mapping is RTL-verified.
+
+- [s66] TOOLING: tmp/grind/CD_ready/s65/probe.sh cannot run from the Windows Git-Bash tool (its objdump and .venv calls are WSL-side). tmp/grind/CD_ready/s66/probe2.sh is the working splice-then-QTYDBG driver; disassembly is `bash tools/wsl.sh "python3 tmp/grind/CD_ready/s63/show.py 48 72"`.
+
+- [s66] Owner directive acknowledgement: the queue item's 2026-09-01 FORECLOSED-BUCKET REVIEW Ruling-A named probe (re-score the banked vAT1 form post--mel) was executed in s60 and produced the current floor of 2; nothing was owed this session. Recorded here for the third time because the auto-audit still flags it.
+
+- [s66] src/system.c was restored to its committed INCLUDE_ASM state at end of session; the only dirt is metrics/events.jsonl plus memory/grind/CD_ready/. candidate.c is unchanged as a body (vAT1, floor 2) - only its header comment gained the s66 correction, and it was re-scored at 2 after that edit. Eight new rejected forms banked (160 total).

@@ -1791,3 +1791,115 @@ scheduled first. Both routes need a mechanism-level probe, not a spelling sweep.
 - probe: r01 (ix statement between the arg5 chain and the t0 chain), r02 (head of the block), r03 (u8-typed index), r04 (after the t0 chain), plus a QTYDBG read on r01.
 - result: r01 6, r03 6, r04 6 - byte-inert; r02 11. QTYDBG on r01 is STRUCTURALLY IDENTICAL to k03 (same four quantities, spans 16-20/18-24/20-26/22-30, same ranks, same got= 2/2/3/4). The two candidate fillers are NOT tied on INSN_PRIORITY (117: shift -> addu -> a3 load -> call outranks 128: load -> shift -> a2 load -> call), so the LUID rung is never reached.
 - verdict: KILLED
+
+## s66 hypotheses (synthesis, 2026-09-01)
+
+### H-s66-A — CONFIRMED (by RTL reading, and it CORRECTS s65's frontier)
+Statement: the two quantities that tie in `qty_compare_1` on the order-perfect base are the t0
+SHIFT temp (`reg 104`, born at the `sll`, insn 117, dead at the t0 address `addu`, insn 122) and
+the arg5 VALUE (`reg 97`, born at the `lw`, insn 113, dead at the stack store, insn 137) — NOT the
+pair s65 named. `reg 98` (the `t0` user variable) and `reg/v 74` (`v0`) are not local quantities
+at all: reg98 is set twice in the block so `REG_N_DEATHS == 2`, and reg74 is cross-block; both are
+handled by global-alloc, which seats them correctly on every base measured.
+Mechanism: `local_alloc` only builds quantities for single-death, single-block pseudos;
+`block_alloc` numbers the block's insns pos = 4 + 2*index in sched1 output order (verified against
+all four measured births/deaths).
+Probe: read `tmp/grind/CD_ready/s63/k03.sched.txt` in full and align it with
+`tmp/grind/CD_ready/s65/k03.qty.txt`.
+Result: the mapping closes exactly; s65's "insn 145 is t0's death" is wrong.
+Verdict: CONFIRMED.
+
+### H-s66-B — CONFIRMED: the residual has exactly ONE free variable left
+Statement: with the target's instruction sequence held (the order-perfect base), every
+`qty_compare_1` input except `qty_n_refs` is forced — births, deaths and quantity numbers are all
+positions in that sequence, and both tied pseudos carry the minimum possible two mentions, so a
+third mention would be a third instruction and would break the 179-instruction parity. Therefore
+the ONLY way to close the function on this branch is to change the loop-depth-weighted reference
+count of one of the two tied pseudos.
+Mechanism: `pri = floor_log2(refs)*refs*size/(death-birth)`, ties by quantity number
+(local-alloc.c:1640-1684); `qty_n_refs[qty] = reg_n_refs[regno]` (local-alloc.c:297);
+`reg_n_refs` is accumulated in flow.c weighted by loop depth.
+Probe: the full measured quantity table plus s01-s08 (eight t0-chain topologies attacking the
+alternative escape, "make the shift temp not be a local quantity").
+Result: all eight regress or are byte-identical (9/9/7/6/9/7/14/15); s01's QTYDBG shows
+`combine_regs` merging the shift temp into a single-death address variable, which makes the t0
+quantity BEAT the arg5 value harder (pri 2.57). The alternative escape is closed.
+Verdict: CONFIRMED.
+
+### H-s66-C — CONFIRMED (the lever exists) / KILLED (every placement measured so far)
+Statement: a `do { } while (0)` wrap raises the loop-depth-weighted `reg_n_refs` of the pseudos
+whose mentions it encloses, and is therefore the one C-level lever that can reach the residual's
+only free variable.
+Mechanism: the wrap emits real `NOTE_INSN_LOOP_BEG`/`NOTE_INSN_LOOP_END`; flow.c's reference
+counter adds `loop_depth` per mention, so an enclosed mention counts 3 instead of 2.
+Probe: 10 wrap placements (u00-u04, w01-w04, x01-x04) on the order-perfect base, each QTYDBG'd or
+scored.
+Result: the ref counts move exactly as predicted — arg5 value 4 -> 6 with both mentions enclosed,
+4 -> 5 with one — but every placement also perturbs sched1 and loses more than the seats are
+worth: printf-call-only 10 (it displaces the `*pp` expand_call argument load and stretches the
+arg5 value's span to 8, so its pri falls to 1.25 and it loses anyway), arg5-load-only 8 (best of
+the family), load+call 13, whole-chain 12 at 180 insns.
+Verdict: lever CONFIRMED; all ten placements KILLED.
+
+### H-s66-D — CONFIRMED (free base improvement, no score change)
+Statement: splitting the arg5 address into its own statement (`a5a = v0 + (s32)tbl_125c;
+arg5 = *(s32 *)a5a;`) is byte-neutral on the order-perfect base.
+Probe: u00.
+Result: score 6, identical to k03. Any future ref-count probe may use the split spelling for free.
+Verdict: CONFIRMED.
+
+### THE FRONTIER AFTER s66
+The function is one register-pair swap from zero on a base that already emits all 179 target
+instructions in the target's order, and the swap is decided by a single integer: whether the arg5
+VALUE pseudo's loop-depth-weighted `reg_n_refs` exceeds 4. Everything else in `qty_compare_1` is
+pinned by the target's own instruction sequence. The one demonstrated lever on that integer is the
+loop note, and the whole remaining search is: **find a loop-note placement (or another
+loop_depth-raising construct) that raises the arg5 value's count to 5 or 6 WITHOUT moving the
+`*pp` expand_call argument load or merging the t0 chain.** Concretely untried:
+  (a) a wrap that encloses ONLY the `arg5` mention inside the call's argument list — e.g. hoist
+      the fifth argument into `arg5` inside a wrap that does NOT contain the call itself, with the
+      `pp` dereference also hoisted out of the call so that the call statement's expand_call
+      argument loads are no longer sensitive to the note's position;
+  (b) two nested wraps arranged so the arg5 load sits at depth 3 while the `*pp` load's position
+      relative to the note is unchanged (the note itself, not the depth, is what moved insn 141 —
+      test this by measuring an EMPTY wrap placed at each candidate position and confirming it is
+      byte-neutral before adding the load to it);
+  (c) the reverse polarity: leave the arg5 value at refs 4 and find a construct that raises the
+      T0 SHIFT temp's span (not its refs) — the only span-changing edit that does not move an
+      instruction would be one that changes which insn the temp dies at, i.e. re-associating the
+      t0 address `addu` so the temp is read one slot later, which is worth a small sweep because
+      it is the only span lever the forced-order argument does not obviously kill.
+An EMPTY-wrap byte-neutrality survey (b) is the cheapest next measurement and should come first:
+it separates "the loop note perturbs sched1" from "raising refs perturbs sched1", which no
+session has yet distinguished.
+
+- [s66] The two quantities that tie on the order-perfect base are reg 104 (the t0 SHIFT temp, born at insn 117, dead at insn 122) and reg 97 (the arg5 VALUE, born at insn 113, dead at insn 137); reg 98 and reg 74 are not local quantities at all (two deaths / cross-block) and are seated correctly by global-alloc. s65's "insn 145 is t0's death" is wrong and its named frontier probe was aimed at the wrong pair.
+- [s66] With the target's instruction sequence held, every qty_compare_1 input except qty_n_refs is forced, and both tied pseudos carry the minimum possible two mentions. The loop-depth-weighted reference count is the residual's only remaining free variable.
+- [s66] A do-while(0) wrap DOES raise the enclosed pseudos' loop-depth-weighted reg_n_refs (arg5 value 4->6 both mentions enclosed, 4->5 with one), which is the first C-level lever ever demonstrated on this function's qty_compare_1 reference counts.
+- [s66] All ten wrap placements measured regress: the note also perturbs sched1, displacing the *pp expand_call argument load or merging the t0 chain. Best of the family is 8 (arg5-load-only).
+- [s66] All eight t0-chain pseudo topologies aimed at removing the shift temp from local-alloc regress or are byte-identical; combine_regs merging the shift temp into a single-death address variable makes the t0 quantity win harder (pri 2.57).
+- [s66] Splitting the arg5 address into its own statement is byte-neutral on the order-perfect base (u00 = 6 = k03), so future ref-count probes can use the split spelling for free.
+
+## [s66] The two quantities that tie in qty_compare_1 on the order-perfect base are the t0 SHIFT temp (reg 104) and the arg5 VALUE (reg 97) - NOT the pair s65 named. reg 98 (the `t0` user variable) and reg/v 74 (`v0`) never enter local-alloc at all.
+- mechanism: local_alloc only builds quantities for single-death, single-block pseudos; reg 98 is SET TWICE in the block (insns 99 and 122) so REG_N_DEATHS == 2, and reg 74 is cross-block. Both are seated by global-alloc, correctly ($a0 / $v0) on every base measured. block_alloc numbers the block's insns pos = 4 + 2*(index in sched1 output order), which is the mapping that makes the QTYDBG birth/death columns readable.
+- probe: Read tmp/grind/CD_ready/s63/k03.sched.txt (sched1 RTL for the order-perfect base) in full and align it insn-by-insn with the four measured quantities in tmp/grind/CD_ready/s65/k03.qty.txt.
+- result: The mapping closes exactly on all four quantities: 102 arg5-address = insn 111 -> 113 (pos 16-20); 104 t0 shift temp = insn 117 -> 122 (pos 18-24); 97 arg5 value = insn 113 -> 137 (pos 20-26); 110 = insn 128 -> 143 (pos 22-30, reg 107 combined in by combine_regs). s65's claim that insn 145 (`a3 = mem(reg98)`) is 't0's death' is wrong - 145 is the death of no local quantity - so s65's headline frontier probe (exchange insns 145 and 137) would have been spent on the wrong pair.
+- verdict: CONFIRMED
+
+## [s66] With the target's instruction sequence held (the order-perfect base), the residual has exactly ONE free variable: the loop-depth-weighted reference count qty_n_refs. Births, deaths and quantity numbers are all positions in that sequence and are therefore forced, and both tied pseudos already carry the minimum possible two mentions.
+- mechanism: qty_compare_1 (local-alloc.c:1640-1684) sorts by pri = floor_log2(refs)*refs*size/(death-birth) with ties broken by quantity number (line 1683, `return *q1 - *q2;`), and quantity numbers are assigned in birth order. qty_n_refs[qty] = reg_n_refs[regno] (local-alloc.c:297), and reg_n_refs is accumulated in flow.c weighted by loop depth. reg 104's two mentions are the sll that sets it and the addu that reads it; reg 97's are the lw that sets it and the sw that reads it; a third mention of either is a third instruction and breaks the 179-instruction parity.
+- probe: Measured quantity table for k03 (102: 16-20 refs4 pri 2.00 -> $v0; 104: 18-24 refs4 pri 1.33 -> $v1; 97: 20-26 refs4 pri 1.33 -> $a0; 110: 22-30 refs8 pri 3.00 -> $v0), plus s01-s08: eight t0-chain pseudo topologies attacking the only alternative escape (making the shift temp not be a local quantity at all).
+- result: s01 separate s32 address variable 9; s02 s32* carrier 9; s03 `t0 <<= 2` instead of `t0 *= 4` 7 (not a no-op - the spelling is a lever, in the wrong direction); s04 whole address in one statement 6 (byte-identical to k03); s05 u8* carrier accumulated in place 9; s06 t0 byte load moved beside its shift 7; s07 arg4 fully inline with no t0 variable 14; s08 arg5 address accumulated in place on v0 15. All 179 insns, 0 rules. QTYDBG on s01 shows why the family cannot work: giving the address a single-death variable lets combine_regs tie the shift temp INTO it, producing one 18-32 refs-12 quantity at pri 2.57 that beats the arg5 value harder than the 1.33 tie did.
+- verdict: CONFIRMED
+
+## [s66] A `do { } while (0)` wrap raises the loop-depth-weighted reg_n_refs of the pseudos whose mentions it encloses, and is therefore the one C-level lever that reaches the residual's only free variable.
+- mechanism: The wrap emits real NOTE_INSN_LOOP_BEG / NOTE_INSN_LOOP_END; flow.c's reference counter adds loop_depth per mention, so a mention inside the wrap counts 3 instead of 2. Raising the arg5 value from 4 to 5 gives pri 1.67 and to 6 gives 2.00, either of which beats the t0 shift temp's 1.33, which would hand reg 97 $v1 and reg 104 $a0 - the target's seats on a base that already emits the target's instruction sequence.
+- probe: Ten wrap placements on the order-perfect base, QTYDBG'd and/or scored: u00 (no wrap, arg5 address split into its own statement), u01 (load + call), u02/x02/x03 (load only, three positions), u03 (load only, k03 spelling), u04 (load + call, k03 spelling), w01/w02/w04 (printf call only, three bases), w03 (whole arg5 chain + call), x01/x04 (load before the t0 statements / addu+load).
+- result: The reference counts move exactly as predicted - arg5 value 4 -> 6 with both mentions enclosed (u01), 4 -> 5 with one (u02/x02/x03/w01), D_800A11D5 chain 8 -> 12 when the call is inside. But every placement also perturbs sched1 and loses more than the seats are worth: printf-call-only 10 (it displaces the *pp expand_call argument load from build 53/54 to 60/61 and stretches the arg5 value's span to 8, so its pri falls to 1.25 and it loses the tie anyway); arg5-load-only 8 (best of the family; the t0 chain collapses into one 10-32 refs-12 quantity and the two lbu's transpose); load+call 13; load before the t0 statements 12; whole arg5 chain + call 12 at 180 insns (the only variant this session to lose instruction parity).
+- verdict: CONFIRMED as a lever, KILLED for all ten placements measured
+
+## [s66] Splitting the arg5 address computation into its own statement (`a5a = v0 + (s32)tbl_125c; arg5 = *(s32 *)a5a;`) is byte-neutral on the order-perfect base, so future reference-count probes can use the split spelling for free.
+- mechanism: The split does not add an instruction (GCC already materialises the address into reg 102) and does not move any LUID that the sched1 tie depends on.
+- probe: u00_a5addr_split_nowrap.c scored against k03.
+- result: u00 = score 6, build 179, target 179, rules_dropped 0 - identical to k03.
+- verdict: CONFIRMED
