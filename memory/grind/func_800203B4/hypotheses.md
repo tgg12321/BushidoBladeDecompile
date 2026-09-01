@@ -130,3 +130,67 @@ do NOT re-file the foreclosure record, do NOT re-argue cluster membership in any
 - probe: applied memory/grind/func_800203B4/candidate.c (s1 form) -> sandbox --disable all
 - result: score 0, 65/65, rules_dropped 0, cheat_asm_stripped 25 — fifth independent confirmation; src reverted to INCLUDE_ASM after every measurement (git diff clean).
 - verdict: CONFIRMED
+
+## s5 (2026-09-01, structural - second structural session)
+
+- **H8 - KILLED (measured, and it IMPROVED the candidate):** "The two explicit load-delay
+  `nop`s inside the gte_ldv0 island are load-bearing for the byte match." Mechanism proposed:
+  the target's two unfilled cop2 load-delay slots are literal bytes that must come from
+  somewhere in the source. Probe: deleted both `"nop\n"` lines -> `sandbox --disable all`.
+  Result: **0, 65/65, rules_dropped 0, cheat_asm_stripped 25** - the assembler stage emits the
+  load-delay padding itself. **Verdict: KILLED; candidate.c PROMOTED** to the nop-free form,
+  which is the literal PsyQ SDK gte_ldv0 macro body (no hand-invented instruction remains in
+  any island). (evidence.md fact 21)
+- **H9 - CONFIRMED (measured; upgrades an s4 ARGUMENT into a MEASUREMENT):** "The pure-C bound
+  of 26 is a minimum attained by the canonical body, not an artifact of one spelling."
+  Mechanism: if any of the 39 C-emitted instructions were spelling-dependent, a structural
+  perturbation could trade some of them; if the residual is purely cop2 expressiveness, a
+  perturbation can only add mismatches. Probe: islands-deleted body with locals reordered
+  (src, vec, mat) -> score 30, build_insns 39. **Verdict: CONFIRMED - the bound moves UP under
+  perturbation; 26 is the floor and the structural axis stays DEAD** (H5, s4).
+  (evidence.md fact 22)
+- **H10 - CONFIRMED (measured):** "Statement order (the vec[] stores relative to the
+  func_8002EECC call) is load-bearing." Probe: hoisted the three vec[] stores above the call ->
+  score 17, build_insns 63. **Verdict: CONFIRMED - do not reorder statements.**
+  (evidence.md fact 23; rejected/vec-stores-hoisted-above-call.c)
+- **H11 - KILLED (measured):** "The `arg0 += 0x354;` param mutation is load-bearing." Probe:
+  deleted it and re-associated into the stlvnl operand as `"r"(arg0 + 0x354)` -> 0, 65/65.
+  **Verdict: KILLED - codegen-neutral, a free stylistic choice; the candidate keeps the `+=`
+  form.** (evidence.md fact 24)
+
+Frontier: UNCHANGED and still not codegen. Every C-side question on this function is closed on
+measurement (H1 CONFIRMED x7, H2/H3/H5/H6/H8/H11 KILLED, H7/H9/H10 CONFIRMED, H4 resolved NO by
+Judge FAIL decisions.md:17546). The body is byte-final at floor 0 and its authorization surface
+is now minimal: four inline-asm islands, each a literal PsyQ SDK gte_* macro body, plus a pure-C
+head that needs no sanctioned-family claim at all. The only remaining action is the
+standing-ruling terminal disposition, which is modality-gated to a driver-dispatched
+`escalation` session. An escalation session should: check the re-activation triggers (a widened
+scan in .claude/rules/cop2-addressing-preamble-cluster.md / a grant line in
+inline_asm_canonical.txt / an owner class grant in the decisions.md tail), then return
+owner-gated with escalation_ref = docs/grind/decisions.md:17550. Do NOT re-measure beyond one
+confirming run, do NOT re-file the foreclosure record, do NOT re-argue cluster membership in any
+spelling.
+
+## [s3] H8: the two explicit load-delay `nop` lines inside the gte_ldv0 island are load-bearing for the byte match (the target's two unfilled cop2 delay slots must come from somewhere in the source).
+- mechanism: If the assembler stage (maspsx/as) supplies cop2 load-delay padding itself, the hand-written nops are redundant filler inside the asm template rather than required instructions.
+- probe: Deleted both "nop\n" lines after `lwc2 $1, 8($12)` from candidate.c, applied to src/code6cac.c:1813, `sandbox func_800203B4 --disable all` (tmp/grind/func_800203B4/s3/varG_no_explicit_nops.c).
+- result: score 0, build_insns 65, target_insns 65, rules_dropped 0, cheat_asm_stripped 25 - identical to the form with the nops. candidate.c PROMOTED to the nop-free form and re-measured at 0, 65/65 (artifact candidate_s5_score0.o).
+- verdict: KILLED
+
+## [s3] H9: the pure-C bound of 26 (islands deleted, build_insns 39 == all 39 C-emitted instructions matching) is a MINIMUM attained by the canonical body, not an artifact of one spelling - i.e. s4's structure-invariance claim is measurable, not merely argued.
+- mechanism: If any of the 39 C-emitted instructions were spelling-dependent, a structural perturbation could trade some of them for target instructions; if the entire residual is cop2 expressiveness, a perturbation can only ADD mismatches to an already-fully-matching set.
+- probe: Islands-deleted body with locals reordered to (src, vec[3], mat[8]) applied and scored: tmp/grind/func_800203B4/s3/varE_purec_declorder.c.
+- result: score 30 with build_insns 39 - the same 39 instructions, four of which now mismatch (canonical order scores 26 == the exact 65-39 deficit). The bound moves UP under perturbation. Banked at memory/grind/func_800203B4/rejected/purec-declorder-swap-raises-bound-26-to-30.c.
+- verdict: CONFIRMED
+
+## [s3] H10: statement order - specifically the position of the three vec[n] = arg2[n] stores relative to the func_8002EECC(src, mat) call - is load-bearing for the target codegen.
+- mechanism: GCC 2.7.2 schedules and merges stores differently across a call boundary (call-clobbered registers force different reload placement), so moving the stores past the call changes the emitted instruction stream.
+- probe: Hoisted the three vec[] stores above the func_8002EECC call, applied, scored: tmp/grind/func_800203B4/s3/varF_vec_hoist.c.
+- result: score 17 with build_insns 63 - two FEWER instructions than the 65-insn target plus 17 mismatches. The stores must stay between the gte_SetRotMatrix island and the gte_ldv0 island. Banked at memory/grind/func_800203B4/rejected/vec-stores-hoisted-above-call.c.
+- verdict: CONFIRMED
+
+## [s3] H11: the `arg0 += 0x354;` param mutation before the gte_stlvnl island is load-bearing (the target materializes the destination address in $s0 via that add).
+- mechanism: Re-associating the offset into the asm operand expression would let GCC fold it elsewhere or emit the addiu at a different point in the stream.
+- probe: Deleted `arg0 += 0x354;` and wrote the stlvnl operand as "r"(arg0 + 0x354), applied, scored: tmp/grind/func_800203B4/s3/varD_ptr_expr.c.
+- result: score 0, build_insns 65, target_insns 65 - codegen-neutral. Both spellings are ordinary C with no family claim; candidate.c keeps the `+=` form because it mirrors the SDK call shape.
+- verdict: KILLED

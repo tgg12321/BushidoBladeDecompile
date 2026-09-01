@@ -1,7 +1,7 @@
 {
  "func": "func_800203B4",
  "file": "code6cac",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,18 +15,29 @@
    "floor": 0,
    "modality": "structural",
    "headline": "Structural axis measured DEAD: pure-C bound is 26 (all 39 C-emitted insns already match; residual is cop2-only), the s1 named-intermediate is codegen-neutral (candidate simplified), decl order is load"
+  },
+  {
+   "session": 3,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "Structural axis stays dead but the candidate IMPROVED: the two explicit cop2 load-delay nops in the gte_ldv0 island are unnecessary (0, 65/65 without them), so every island is now a literal PsyQ SDK m"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The terminal disposition (standing ruling 2026-07-27, already RECORDED at docs/grind/decisions.md:17550) is valid only when emitted from a driver-dispatched `escalation` session.",
-   "mechanism": "driver validator gates the owner-gated outcome on escalation modality (discard marker decisions.md:17591); the record and the Judge FAIL are already filed, so escalation is a cite-and-return, not new work.",
-   "next_probe": "In escalation modality: grep .claude/rules/cop2-addressing-preamble-cluster.md for a widened scan, inline_asm_canonical.txt for a func_800203B4 grant line, and the decisions.md tail for an owner class grant covering non-$aN-source cop2 preamble sites; if none landed, one confirming sandbox run then owner-gated with escalation_ref docs/grind/decisions.md:17550."
+   "hypothesis": "The terminal disposition (standing ruling 2026-07-27, record already filed at docs/grind/decisions.md:17550) is the only remaining action, and it is valid only when emitted from a driver-dispatched `escalation` session.",
+   "mechanism": "The driver validator gates the owner-gated outcome on escalation modality (discard marker decisions.md:17591); the foreclosure record and the Judge FAIL are already filed, so escalation is a cite-and-return, not new work.",
+   "next_probe": "In escalation modality: grep .claude/rules/cop2-addressing-preamble-cluster.md for a widened scan, inline_asm_canonical.txt for a func_800203B4 grant line, and the decisions.md tail for an owner class grant covering non-$aN-source cop2 preamble sites; if none landed, one confirming sandbox run, then owner-gated with escalation_ref docs/grind/decisions.md:17550."
   },
   {
-   "hypothesis": "No C-side work remains on this function in ANY modality (forensics / rederive / synthesis included): the C chassis is byte-exact and the residual is cop2-only.",
-   "mechanism": "evidence fact 17 \u2014 with the islands removed, score == the exact insn-count deficit, so every C-emitted instruction already matches; a permuter/dump/rederive pass has nothing to search over.",
-   "next_probe": "If the driver dispatches another C-side modality, spend it confirming this bound once (islands-removed run = 26, build 39) rather than re-searching spellings; then bank and return progress."
+   "hypothesis": "No C-side work remains on this function in ANY modality (forensics / rederive / synthesis / permuter included): the C chassis is byte-exact and the residual is cop2-only.",
+   "mechanism": "Facts 17 and 22 - with the islands removed the score equals the exact instruction-count deficit (65-39=26) and any structural perturbation only raises it, so every C-emitted instruction already matches and a permuter/dump/rederive pass has nothing to search over.",
+   "next_probe": "If the driver dispatches another C-side modality, spend it confirming this bound once (islands-removed run = 26 with build 39; full body = 0 with build 65) and then bank and return progress rather than re-searching spellings."
+  },
+  {
+   "hypothesis": "If a re-activation trigger ever lands (an owner class grant covering non-$aN-source cop2 addressing-preamble sites, or a toolchain-fidelity finding), this function is a pure INTEGRATION HANDOFF, not a codegen task.",
+   "mechanism": "candidate.c is byte-final at floor 0 and its review surface is now minimal (four literal SDK macro islands; a pure-C head needing no sanctioned-family claim); only the inline_asm_canonical.txt grant line and the borderline entry - surfaces this session may not touch - are missing.",
+   "next_probe": "On re-activation: apply memory/grind/func_800203B4/candidate.c, driver writes the grant line + docs/grind/borderline.md entry, then layer-2 cheat-reviewer, verify-oracle --rebuild, queue done (evidence.md fact 11)."
   }
  ],
  "judge_constraints": [

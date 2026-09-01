@@ -170,3 +170,64 @@
 - [s2] Floor 0 re-confirmed a fifth time on the 2026-09-01 chassis (0, 65/65, rules_dropped 0, cheat_asm_stripped 25), both for the s1 form and the promoted varB form. src/code6cac.c reverted to INCLUDE_ASM after each measurement per [[asm-until-matched]]; working tree clean apart from ledger/scratch.
 
 - [s2] No new authorization argument was made and none was re-derived: the Judge FAIL (docs/grind/decisions.md:17546) and the filed foreclosure record (docs/grind/decisions.md:17550) stand untouched, per the binding Judge constraint in this brief. This session did not emit owner-gated because the mandated modality is `structural`, not `escalation` (s2's owner-gated from recon was discarded for exactly that reason, marker at decisions.md:17591).
+
+## s5 (2026-09-01, STRUCTURAL - the second structural session; four NEW measured forms)
+
+21. **THE TWO EXPLICIT LOAD-DELAY `nop`s IN THE gte_ldv0 ISLAND ARE NOT NEEDED (new, measured;
+    candidate.c PROMOTED).** Deleting the two `"nop\n"` lines that followed `lwc2 $1, 8($12)`
+    in the second island still scores `sandbox --disable all` = **0, 65/65, rules_dropped 0,
+    cheat_asm_stripped 25** - the assembler stage supplies the cop2 load-delay padding. This is
+    a pure authorization-surface win: the island is now the LITERAL PsyQ SDK gte_ldv0 macro
+    body, so no instruction in ANY of the four islands is hand-invented filler. candidate.c is
+    promoted to this form (artifact tmp/grind/func_800203B4/s3/candidate_s5_score0.o) and
+    re-measured at 0, 65/65 after promotion.
+22. **THE PURE-C BOUND OF 26 IS A MINIMUM, NOT AN ARTIFACT OF ONE SPELLING (new, measured).**
+    s4 measured the islands-deleted body at 26 (build 39 == all 39 C-emitted insns matching) and
+    ARGUED structure-invariance; s5 MEASURED a perturbation of it: the same islands-deleted body
+    with locals reordered to (src, vec[3], mat[8]) scores **30 with build_insns 39** - the same
+    39 instructions, but four of them now mismatch. Structural perturbation moves the pure-C
+    bound UP, never down, so 26 is attained by the canonical form and the residual really is 26
+    instructions that no C construct emits. Banked:
+    rejected/purec-declorder-swap-raises-bound-26-to-30.c.
+23. **STATEMENT ORDER IS LOAD-BEARING (new, measured).** Hoisting the three `vec[n] = arg2[n]`
+    stores above the `func_8002EECC(src, mat)` call scores **17 with build_insns 63** - two
+    FEWER instructions than the target plus 17 mismatches (GCC 2.7.2 schedules/merges the stores
+    differently across the call boundary). The vec[] stores must stay between the
+    gte_SetRotMatrix island and the gte_ldv0 island. Banked:
+    rejected/vec-stores-hoisted-above-call.c.
+24. **THE `arg0 += 0x354;` PARAM MUTATION IS A FREE CHOICE (new, measured).** Deleting it and
+    re-associating the address into the stlvnl asm operand as `"r"(arg0 + 0x354)` also scores
+    **0, 65/65**. Both spellings are ordinary C (no family claim either way); candidate.c keeps
+    the `+=` form because it mirrors the SDK call shape. Form banked at
+    tmp/grind/func_800203B4/s3/varD_ptr_expr.c so it is never re-probed.
+25. **Floor re-confirmed a SIXTH and SEVENTH time on the 2026-09-01 chassis** (the s5 dispatch
+    chassis-check again read "measurement unavailable"): s4 candidate -> 0, 65/65,
+    rules_dropped 0, cheat_asm_stripped 25; promoted varG candidate -> identical.
+    src/code6cac.c reverted to INCLUDE_ASM after every run (git diff clean) per
+    [[asm-until-matched]]. Measurement table: tmp/grind/func_800203B4/s3/measurements.md.
+26. **No authorization argument was made or re-derived this session.** The Judge FAIL
+    (docs/grind/decisions.md:17546) and the filed foreclosure record
+    (docs/grind/decisions.md:17550) stand untouched, per the binding Judge constraint. The
+    outcome is `progress` because the mandated modality is `structural`, not `escalation` (the
+    s2 owner-gated from `recon` was discarded for exactly that reason, marker at
+    decisions.md:17591).
+27. **TOOLING NOTE.** tmp/grind/func_800203B4/s2/apply.py is BROKEN on this machine (Windows
+    python 3.9: `pathlib.write_text(newline=)` is 3.10+; it also choked on cp1252 bytes in the
+    old candidate.c). Use tmp/grind/func_800203B4/s3/apply.py instead; candidate.c is now pure
+    ASCII. A silently-failed apply reads as `score 65, build_insns 0` (INCLUDE_ASM still in
+    place) or as `"score": null` with "func_800203B4 not found in ... code6cac.o" - treat both
+    as apply failures, not codegen findings.
+
+- [s3] fact 21: the two explicit load-delay nops in the gte_ldv0 island are unnecessary - deleting them still scores sandbox --disable all = 0, 65/65, rules_dropped 0, cheat_asm_stripped 25, because the assembler stage supplies cop2 load-delay padding. candidate.c PROMOTED to this form: every instruction in all four islands is now a literal PsyQ SDK gte_* macro instruction, with no hand-invented filler anywhere in the body. This is a strict authorization-surface reduction for whatever axis eventually re-activates the function.
+
+- [s3] fact 22: the pure-C bound of 26 is now MEASURED to be a minimum, not an argued one - the islands-deleted body with locals reordered (src, vec, mat) scores 30 with the same build_insns 39, i.e. structural perturbation adds mismatches to an already-fully-matching 39-instruction set. The 26-instruction residual really is exclusively cop2 traffic (5x ctc2, mtc2, lwc2, 3x swc2, MVMVA .word 0x4A486012) plus its addressing preamble and load-delay slots, which GCC 2.7.2 cannot emit from C. The structural axis (H5, killed in s4) is confirmed dead by a second, independent kind of measurement.
+
+- [s3] fact 23: statement order is load-bearing - hoisting the three vec[] stores above the func_8002EECC call scores 17 with build_insns 63 (two fewer instructions than target). Banked as a rejected form so no future session 'tidies' the ordering.
+
+- [s3] fact 24: the arg0 += 0x354 param mutation is a free stylistic choice - the re-associated "r"(arg0 + 0x354) operand form also scores 0, 65/65. Banked so it is never re-probed.
+
+- [s3] fact 25: floor re-confirmed a SIXTH and SEVENTH time on the 2026-09-01 chassis (the dispatch chassis-check again read 'measurement unavailable'): s4 candidate -> 0, 65/65, rules_dropped 0, cheat_asm_stripped 25; promoted candidate -> identical. src/code6cac.c reverted to INCLUDE_ASM after every run; working tree clean apart from ledger + scratch.
+
+- [s3] fact 26: no authorization argument was made or re-derived - the Judge FAIL (docs/grind/decisions.md:17546) and the filed foreclosure record (docs/grind/decisions.md:17550) stand untouched per the binding Judge constraint. Outcome is `progress` and not `owner-gated` solely because the mandated modality is `structural`; the terminal disposition is modality-gated to a driver-dispatched `escalation` session (s2's owner-gated from recon was discarded for exactly that reason, marker at decisions.md:17591).
+
+- [s3] fact 27 (tooling): tmp/grind/func_800203B4/s2/apply.py is broken on this machine (Windows python 3.9 has no pathlib.write_text(newline=), and the old candidate.c carried cp1252 bytes). Use tmp/grind/func_800203B4/s3/apply.py; candidate.c is now pure ASCII. A silently-failed apply reads as score 65 / build_insns 0, or as "score": null with 'func_800203B4 not found in ... code6cac.o' - both are apply failures, not codegen findings.

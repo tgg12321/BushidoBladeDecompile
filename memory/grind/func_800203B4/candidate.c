@@ -1,13 +1,30 @@
-/* func_800203B4 — s4 (structural) candidate. sandbox --disable all == 0 (65/65,
- * rules_dropped 0), measured 2026-09-01. Supersedes the s1 candidate: the s1 body wrapped
- * the game_GetPlayerData call in a block-local `new_var` named intermediate; s4 MEASURED
- * that split to be codegen-neutral (score 0 with it and without it), so the plainer nested
- * expression is used — one fewer construct to defend. Local DECLARATION ORDER
- * (mat[8], vec[3], src) IS load-bearing: swapping it to (src, vec[3], mat[8]) costs +1 insn
- * (score 25, build 66) — see rejected/decl-order-swap-costs-one-insn.c.
+/* func_800203B4 - s5 (structural) candidate. sandbox --disable all == 0 (65/65,
+ * rules_dropped 0, cheat_asm_stripped 25), measured 2026-09-01.
+ *
+ * CHANGE vs the s4 candidate: the two explicit "nop" lines that padded the cop2 load
+ * delay after `lwc2 $1, 8($12)` in the gte_ldv0 island are DELETED. Measured
+ * codegen-neutral (0, 65/65 with and without them; source form banked at
+ * tmp/grind/func_800203B4/s3/varG_no_explicit_nops.c) - the assembler stage supplies the
+ * load-delay nops, so the island is now the LITERAL PsyQ SDK gte_ldv0 macro body with no
+ * hand-written filler instructions. This shrinks the authorization surface: nothing in any
+ * island is invented; every instruction is an SDK macro instruction.
+ *
+ * Other measured facts baked into this form (do not "tidy"):
+ *  - Local DECLARATION ORDER (mat[8], vec[3], src) is load-bearing: (src, vec, mat) costs
+ *    +1 insn with the islands (score 25, build 66) and raises the pure-C bound from 26 to
+ *    30 without them - rejected/decl-order-swap-costs-one-insn.c and
+ *    rejected/purec-declorder-swap-raises-bound-26-to-30.c.
+ *  - STATEMENT ORDER is load-bearing: hoisting the three vec[] stores above the
+ *    func_8002EECC call scores 17 (build 63) - rejected/vec-stores-hoisted-above-call.c.
+ *  - `arg0 += 0x354;` may equivalently be re-associated into the stlvnl operand as
+ *    "r"(arg0 + 0x354): measured 0, 65/65 (tmp/grind/func_800203B4/s3/varD_ptr_expr.c).
+ *    Kept as the += form because it mirrors the SDK call shape; the choice is free.
+ *  - The s1 block-local `new_var` named intermediate was measured codegen-neutral in s4 and
+ *    dropped; no C-side sanctioned-family claim is needed for this body at all.
+ *
  * Head = pre-migration pure-C head (commit 83dc0e5d, matched in Wave 16); islands are the
  * func_8002FDB0-authorized single-block spelling (src/code6cac_b.c:1315-1345,
- * inline_asm_canonical.txt:268) — NOTE the 2026-08-17 cluster grant was ruled NOT to reach
+ * inline_asm_canonical.txt:268) - NOTE the 2026-08-17 cluster grant was ruled NOT to reach
  * this function (Judge FAIL, docs/grind/decisions.md:17546); foreclosure record at
  * docs/grind/decisions.md:17550. This body is byte-final and awaits an authorization axis,
  * not codegen work. */
@@ -21,7 +38,7 @@ void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
     src = *(s32 *)((((s32)*(s16 *)(arg0 + 0x352)) << 2) +
                    game_GetPlayerData(*(s16 *)(arg0 + 4)));
     func_8002EECC(src, mat);
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r) â€” loads the 5 packed
+    /* PsyQ libgte inline macro gte_SetRotMatrix(r) --- loads the 5 packed
      * rotation-matrix words at r into cop2 control regs $0..$4.  The SDK
      * macro body hardcodes $12-$15 and copies the operand into $12. */
     __asm__ volatile(
@@ -40,7 +57,7 @@ void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
     vec[0] = arg2[0];
     vec[1] = arg2[1];
     vec[2] = arg2[2];
-    /* PsyQ libgte inline macro gte_ldv0(r) â€” pack VX0/VY0 into one word,
+    /* PsyQ libgte inline macro gte_ldv0(r) --- pack VX0/VY0 into one word,
      * mtc2 to $0, lwc2 VZ0 into $1, then the 2-cycle GTE load delay. */
     __asm__ volatile(
         "move   $12, %0\n"
@@ -50,13 +67,11 @@ void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
         "or     $13, $13, $14\n"
         "mtc2   $13, $0\n"
         "lwc2   $1, 8($12)\n"
-        "nop\n"
-        "nop\n"
         :: "r"(vec) : "$12", "$13", "$14");
-    /* GTE MVMVA sf=1, mx=rotation, v=V0, cv=none â€” cop2 command 0x0486012. */
+    /* GTE MVMVA sf=1, mx=rotation, v=V0, cv=none --- cop2 command 0x0486012. */
     __asm__ volatile(".word 0x4A486012");
     arg0 += 0x354;
-    /* PsyQ libgte inline macro gte_stlvnl(r) â€” store MAC1/MAC2/MAC3
+    /* PsyQ libgte inline macro gte_stlvnl(r) --- store MAC1/MAC2/MAC3
      * ($25/$26/$27) to r. */
     __asm__ volatile(
         "move   $12, %0\n"
