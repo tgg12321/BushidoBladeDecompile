@@ -1,4 +1,101 @@
-# Evidence bank — func_8002FC80
+# Evidence bank - func_8002FC80
+
+## s2-of-run3 (2026-09-01, permuter - A THIRD BYTE-EXACT SPELLING CLASS FOUND; distance 0; candidate-ready)
+
+**Headline: the function matches with NO pointer cast anywhere on the load side.**  Typing the
+three parameters `VECTOR *` and the two scratchpad destinations `VECTOR *` - i.e. spelling the
+whole function as the vector arithmetic it is - produces the target's 74/74 bytes exactly.  This
+class is neither of the two classes the ledger had banked, and it is reached without touching
+either of the two constructs the layer-1 reviewer FAILed (no `u8 *` parameters, no widening
+`*(s32 *)(aN + K)` reads, no whole-body assembly).
+
+- **The measurement.**  With the body in place in `src/code6cac_b.c` (plus `#include "gte.h"`,
+  which that TU did not previously carry): `sandbox func_8002FC80 --disable all` -> **score 0,
+  target_insns 74, build_insns 74, scorable true, rules_dropped 0, cheat_asm_stripped 37**
+  (artifact `tmp/grind/func_8002FC80/s2/s2run3_sandbox_vector_form_0.txt`).  `verify-oracle` ->
+  **ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, build_matches true**
+  (artifact `s2run3_verify_oracle.txt`).  Both on HEAD ba76c074's chassis, this session.
+
+- **The exact accepted body** (banked at `memory/grind/func_8002FC80/candidate.c`, body-only):
+  `s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2)`; six statements of the form
+  `((VECTOR *)0x1F800360)->vx = a1->vx - a0->vx;` (three into the 0x1F800360 slot from a1, three
+  into the 0x1F800370 slot from a2); the four granted cop2 islands, character-for-character the
+  same as the already-authorized sibling `func_8002FDB0` (src/code6cac_b.c:1238ff) except that the
+  operands are `(VECTOR *)` rather than `(s32 *)`; `VECTOR *p` assigned `(VECTOR *)0x1F800380`
+  **immediately before the gte_stlvnl island**; `ret = ratan2(p->vx, p->vz);` with
+  `if (p->vy > 0) ret += 0x800;`.  No temps, no volatile, no `u8 *`, no widening cast, no
+  whole-body assembly.
+
+- **THE SOURCE-LEVEL MECHANISM, READ OUT OF THE COMPILER RATHER THAN GUESSED.**
+  `tools/gcc-2.7.2/sched.c:812-840` (`true_dependence`) drops a store->load dependence when exactly
+  one side is `MEM_IN_STRUCT_P` with a varying address and the other is a non-struct memref at a
+  fixed address.  In the natural `s32 *` spelling the loads `a1[1]`/`a1[2]` ARE struct-marked
+  (`tools/gcc-2.7.2/expr.c:4569` marks any INDIRECT_REF whose operand is a PLUS_EXPR) while the
+  stores to the literal scratchpad addresses are NOT, so the second clause fires, every store->load
+  edge vanishes and sched1 sinks all six stores past all twelve loads -> floor 34.  The three ways
+  out are therefore: unmark the loads (the banned cast class), mark the stores (the earlier
+  VECTOR-store class), **or mark BOTH** - which is what this session's form does.  With
+  `MEM_IN_STRUCT_P` set on both sides neither clause's `! MEM_IN_STRUCT_P (...)` conjunct holds, the
+  dependence survives, and the six load/subtract/store blocks stay in source order with no C-level
+  nudging of the scheduler at all.  This is a consequence of typing the function honestly, not a
+  lever aimed at the scheduler: the same body written with `s32 *` params and `s32 *` destinations
+  would be the one that needs an explanation, because it is the one that describes three 3-D points
+  as loose integer arrays.
+
+- **KILLED - "name the two scratchpad difference vectors as pointer locals".**  The obvious
+  simplification `s32 *d1 = (s32 *)0x1F800360; d1[0] = ...` (and its no-temps variant) measures
+  **69 insns vs the target's 75** with the wrong address materialization: a pointer local produces
+  one `lui/ori` pair and `sw v0,0(reg)`, where the target reloads the assembler temp per store
+  (`lui at,0x1f80; sw v0,864(at)`), which is the signature of a *literal constant* store address.
+  The six store destinations must therefore be spelled as constant addresses.  Banked at
+  `rejected/s2r3_named_scratchpad_vector_pointers_69insns.c`.
+
+- **KILLED - "assign `p` up front with the other declarations".**  `VECTOR *a0,*a1,*a2` params with
+  `p` assigned before the first cop2 island measures **73 insns vs 75**: the two constants
+  0x1F800360 and 0x1F800380 are both live early, so sched1 fills the block-4 and block-5 load-delay
+  slots with their `lui`/`ori` halves, where the target leaves `nop`s and materialises 0x1F800380
+  only at the gte_stlvnl site.  Moving the assignment to its use site closed the last two
+  instructions.  Banked at
+  `rejected/s2r3_vector_params_p_assigned_early_regalloc_residual.c`.
+
+- **KILLED - "`p` is a removable convenience; inline `(VECTOR *)0x1F800380` at its four use sites".**
+  Measures **76 insns vs 75** and re-materialises the address for the `ratan2` argument
+  (`lui a0; lw a0,896(a0)` instead of `lw a0,0(v0)`).  So `p` is a real single-address-four-uses
+  binding, not decoration.  Banked at `rejected/s2r3_vector_params_no_p_local_76insns.c`.
+  (This reproduces, on this chassis and in this spelling class, the same conclusion the previous
+  run recorded in the u8* class - the "just inline it" simplification is disproven twice over.)
+
+- **Why this class supersedes both banked classes for the Judge's simplest-known-form criterion.**
+  The u8*-param class needs a non-obvious parameter type plus nine widening casts.  The
+  s32*-param/VECTOR-store class is asymmetric - it types the destinations as vectors while leaving
+  the sources as integer arrays, which is exactly the asymmetry the 19:45 layer-1 FAIL read as
+  motive.  This class types every one of the five 3-component quantities the function touches with
+  the same PsyQ `VECTOR`, contains zero casts on the read side, and is the spelling a programmer
+  handed "subtract point a0 from points a1 and a2, cross the two differences with the GTE, return
+  the angle" would write.  The `(VECTOR *)0xADDR` casts that remain are the unavoidable spelling of
+  a fixed hardware scratchpad address and are already the accepted idiom in this file
+  (`func_8002FDB0` at src/code6cac_b.c ships `*(s32 *)0x1F800360 = v1 - v2;` and
+  `"r"((s32 *)0x1F800360)`; `func_8002D320` ships `vin = (s32 *)(obj + 0xF8);` named pointer locals
+  feeding cop2 macro operands).
+
+- **The TU gained `#include "gte.h"`** (inserted immediately before `#include "code6cac.h"`).
+  gte.h is the project's PsyQ geometry header and defines `VECTOR` at include/gte.h:25; it was not
+  previously included by src/code6cac_b.c.  verify-oracle confirms the whole 606,208-byte image is
+  still byte-identical with it in place, so the include perturbs nothing else in the TU.
+
+- **Search method (permuter modality).**  The prior run's permuter workspace
+  `tmp/grind/func_8002FC80/s2/permA` (compile.sh + target.o) was reused as a fast objdump-level
+  differ (`cmp.sh`, `side.sh`, `runcmp.sh`) rather than launching a fresh randomized campaign: the
+  previous run had already exhausted the `s32 *`-parameter basin with a full campaign (588 KB log,
+  four distinct proposals, all banked in rejected/) and fresh-seed discipline calls for a
+  structurally different chassis, not a re-seed of the same one.  The structurally different chassis
+  was the type system - retyping the operands rather than re-permuting the statements - and it
+  yielded on the first probe.  No campaign was launched and none is running.
+
+- Artifacts: tmp/grind/func_8002FC80/s2/{s2run3_sandbox_vector_form_0.txt, s2run3_verify_oracle.txt,
+  final_body.c, v1_vector_params.c, v3_vec_notemps.c, v7_vec_p_late.c, v8_vec_p_late_vecout.c,
+  v9_vec_no_p_local.c, n1_named_scr_ptrs.c, n2_named_scr_ptrs_inline.c, runcmp.sh, side.sh,
+  fulldiff.sh, cmp.sh}.
 
 ## s2-of-run2 (2026-09-01, structural — OWNER DIRECTIVE EXECUTED; distance 0 re-measured on the CURRENT chassis; candidate-ready)
 

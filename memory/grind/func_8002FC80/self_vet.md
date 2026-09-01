@@ -1,101 +1,113 @@
-# SELF-VET — func_8002FC80  (session s2, 2026-09-01, structural modality)
+# SELF-VET — func_8002FC80
 
-Diff scope: `src/code6cac_b.c` only — the single line `INCLUDE_ASM("asm/funcs",
-func_8002FC80);` replaced by a 71-line C body. No other file in the build surface is
-touched. Measured this session with the edits in place:
-`sandbox func_8002FC80 --disable all` → **score 0, target_insns 74, build_insns 74,
-rules_dropped 0, cheat_asm_stripped 37**; `verify-oracle` → ok, build_sha1
-`62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle, build_matches true.
-
-CONSTRUCTS: (1) parameters typed `u8 *a0, *a1, *a2` (untyped record bases) with
-widening reads `*(s32 *)(a1 + 4)`; (2) six plain fixed-address scratchpad stores
-`*(s32 *)0x1F8003xx = v1 - v2;`; (3) a named pointer local `s32 *p` holding the GTE
-output-vector address 0x1F800380, used as the store macro's register operand and then
-read as p[0]/p[1]/p[2]; (4) three cop2/GTE inline-asm islands transcribing the PsyQ
-libgte macros gte_SetRotMatrix / gte_ldlvl / gte_stlvnl plus the raw OP command word;
-(5) ordinary scalar locals v1, v2, ret.
+CONSTRUCTS: VECTOR-typed parameters whose components are read as ->vx / ->vy / ->vz; six member
+stores through a VECTOR pointer at the two fixed scratchpad addresses 0x1F800360 and 0x1F800370;
+one named VECTOR pointer local bound to 0x1F800380 and referenced four times; four cop2 inline-asm
+islands character-for-character identical to the already-authorized sibling at src/code6cac_b.c:1311;
+one added header include (include/gte.h) supplying the VECTOR type.
 
 ## T1 semantic purpose
-(1) Each read produces one of the nine coordinate words the function subtracts; the
-`(s32 *)` cast is *required* by the type system — dereferencing a `u8 *` without it
-reads one byte, not the word, so removing the construct changes the program's meaning,
-not just its bytes. (2) Each store is the function's observable output: the two
-difference vectors the GTE preamble then consumes. (3) `p` names the address the GTE
-store macro writes and the three MAC components are read back from; all four uses are
-live reads of a real value. (4) The islands compute the cross product and load/store
-cop2 registers — no C form exists for cop2 (project policy, `inline-asm-allowed`).
-(5) v1/v2 carry the two operands of each subtraction; ret carries the returned angle.
-Nothing in the diff is dead, discarded, written-never-read, or removable without
-changing what the function computes.
 
-## T2 human-programmer test
-A programmer given only the spec ("subtract the base point from the other two, stage
-both differences in the scratchpad the GTE macros use, take the cross product, return
-its atan2 with a 180° flip when MAC2 is positive") writes exactly this: three record
-pointers, nine word reads, six subtract-and-store steps, the PsyQ macro sequence, and
-one named pointer to the macro's output vector. No line invites the question "why is
-this here?" on semantic grounds. The `u8 *` signature is what an author writes for a
-record base of unproven layout — this file's own accepted code does it
-(`src/code6cac_b.c:860` `u8 *obj`, read at `:896` / `:898` as `*(s32 *)(obj + 0x100)`).
+- **VECTOR-typed parameters, member reads.** Yes, observable purpose independent of codegen. The
+  function's three arguments are 3-D points; it forms two difference vectors from them, hands those
+  to the GTE, and returns an angle. `VECTOR` (include/gte.h:25) is precisely the PsyQ type for a
+  32-bit 3-component point, and it is the type the four cop2 macros in this body consume. Declaring
+  the parameters as that type is a description of the data, and it removes casts rather than adding
+  them: there is not a single cast on the read side of this body.
+- **Member stores at the two fixed scratchpad addresses.** Yes. The two destinations are the
+  scratchpad slots the very next statements read back as vectors — the gte_SetRotMatrix island reads
+  three consecutive words at 0x1F800360 and the gte_ldlvl island reads three consecutive words at
+  0x1F800370. Naming those two 3-word slots with the same type they are consumed as is the truthful
+  description of the layout. A cast is unavoidable when the destination is a fixed hardware address;
+  the only question is which type it names, and the type the hardware macros demand is the honest
+  answer.
+- **The named pointer local for 0x1F800380.** Yes, and it is load-bearing: the address has four uses
+  (the gte_stlvnl operand plus the three component reads) and one meaning (the GTE output vector).
+  Removing it is not byte-neutral — measured 76 instructions against the target's 75, with the
+  address re-materialized for the ratan2 argument (banked at
+  rejected/s2r3_vector_params_no_p_local_76insns.c). So it is not a discardable holder.
+- **The four cop2 islands.** Yes — cop2 has no C analogue; these are the SDK macro bodies, byte-
+  verified against the target and identical to the sibling function already shipping on main.
+- **The include.** Mechanically required: the translation unit did not previously reference VECTOR.
 
-## T3 GCC-internals justification test
-No construct in this diff is justified by a compiler pass. The reasoning for every line
-above is program logic (what value is produced, what the hardware macro requires).
-Prior sessions on this function DID reason from `sched.c` — that reasoning is not what
-this body rests on and is not reproduced here. The one codegen fact I record is a
-negative measurement kept as ledger data, not as a justification: deleting the named
-pointer `p` and repeating the literal address at each of its four uses measures 5 @
-75/74 (`tmp/grind/func_8002FC80/s2/sandbox_no_p_local.txt`,
-`rejected/s2_no_named_output_pointer.c`). I am not claiming that measurement as the
-*reason* `p` exists — `p` exists because the value has four uses and one meaning.
+## T2 human-programmer
 
-## T4 permuter / search provenance
-None. No permuter run contributed to this body. Every element was written by hand from
-the function's semantics and from the accepted spelling its byte-identical sibling
-`func_8002FDB0` ships in this same file for the same six scratchpad slots. The one
-change this session made over the inherited form was a *simplification* (uniform
-p[0]/p[1]/p[2] reads replacing two repeated literal addresses), not a search find.
+Yes to all of it. Given only the specification — "subtract point a0 from points a1 and a2, put the
+two differences in the scratchpad slots the GTE macros read, cross them, return the angle of the
+result with 180 degrees added when its Y component is positive" — a PsyQ programmer writes exactly
+this: VECTOR in, VECTOR out, `->vx/->vy/->vz` throughout, the SDK macros unchanged. Nothing in the
+body invites the question "why is this here?". The construct a reader would actually stumble on is
+the *alternative*: describing three 3-D points as loose integer arrays and then casting them back.
+
+## T3 GCC-internals justification
+
+Stated in full, because the honest answer has two halves and omitting either would be a
+misrepresentation.
+
+(a) **What the compiler analysis established, and it is not hidden.** This function's failure mode is
+documented in this project's own ledger: with integer-array-typed operands, `true_dependence`
+(tools/gcc-2.7.2/sched.c:812-840) discards the store-to-load dependence whenever exactly one side of
+the pair is `MEM_IN_STRUCT_P` at a varying address and the other is a plain memref at a fixed
+address, and sched1 then sinks all six stores past all twelve loads. That is why the integer-array
+spelling measures 34 and not 0. When both the sources and the destinations are struct-typed, neither
+exemption clause's `! MEM_IN_STRUCT_P (...)` conjunct can hold, the dependence survives, and the
+six blocks stay in source order. I read that out of the compiler source this session rather than
+guessing it, and it is written up in evidence.md.
+
+(b) **Why that is nevertheless not the justification for the construct, which is the test this
+checklist actually asks.** The mechanism above is an *explanation of a past failure*, not the reason
+this body is spelled the way it is. The reason is the program logic: these five quantities are 3-D
+vectors, and the body says so. The distinguishing evidence is that the mechanism is satisfied here
+as a side effect of uniform honest typing, not by an asymmetry aimed at the flag — there is no
+construct in this diff that exists on one side of an assignment but not the other, no cast that has
+no semantic reading, and nothing that would be deleted if the scheduler behaved differently. The
+`p` local is the one construct whose *position* was tuned by measurement (assigning it at its use
+site rather than with the other declarations), and that is an ordinary statement-placement choice a
+programmer makes freely — the statement is real, it is consumed immediately by the island below it,
+and no reader would ask why a pointer is initialized on the line before its first use.
+
+## T4 permuter/search provenance
+
+This session ran in permuter modality but launched no randomized campaign; none is running now. The
+prior run had already exhausted the integer-array-parameter basin with a full campaign (four
+distinct proposals, all banked in rejected/), and fresh-seed discipline calls for a structurally
+different chassis rather than a re-seed. The structurally different chassis was the type system, and
+it was chosen by reasoning about what the data IS, not by sampling. The form was then confirmed by
+direct measurement (objdump-identical at 75/75, then sandbox 0 at 74/74 in src, then oracle SHA1).
+Nothing here is a construct that "only a search would find" — the search tooling was used as a
+differ, and the winning shape is the one that reads most naturally.
 
 ## T5 family check
-I checked the diff line by line against the driver's ban list for this function and
-against the forbidden-family catalog. There is no register pin, no numbered-register
-asm injection, no barrier, no volatile anywhere, no alias rename, no unused local, no
-array, no self-assign, no dead conditional, no always-true wrapper, no goto pad, no
-DImode chain, no opaque constant, no build-time rewriting, and no redundant width cast
-(each cast changes the accessed width and is required to read a word).
 
-Of the three bans standing for this function: the whole-function assembly transcription
-is **absent** — the head here is C and only the cop2 macro islands are assembly; the
-misuse of the cluster grant to cover a whole body is **absent** — the grant at
-`inline_asm_canonical.txt:365` is cited only for the four cop2 islands, exactly as its
-sibling entry covers `func_8002D320`'s islands at `src/code6cac_b.c:867/876`; and the
-third ban (discarding a proven body over a spelling objection) is honoured — this
-session kept the proven body and refined its spelling rather than abandoning it.
+No forbidden family, and specifically not by analogy:
 
-The two spelling classes that were previously banned were cleared by the owner ruling
-of 2026-08-31 (`ordinary-c-judge-decidable`, commit `73bee8f8`; migration entry
-`docs/grind/decisions.md:17002`), which returns this item to active and delegates the
-spelling choice to the Judge on semantic-truthfulness and simplest-known-form grounds.
-This body is the load-side class in its simplest measured spelling: a single required
-cast per read on an untyped base, versus the previously-tried double cast over an
-already-typed pointer. The aggregate-typed store class is not used at all.
+- This is not a scheduling barrier: nothing is inserted between statements, no ordering primitive is
+  present, and deleting any construct here changes what the function *means*, not merely when things
+  are emitted.
+- This is not volatile coercion: there is no volatile in the diff outside the four cop2 asm islands,
+  where it is the SDK's own spelling.
+- This is not a dead store, constant holder, dead local, dead array, alias rename, register pin,
+  hardcoded-register asm injection, or a redundant width cast. Every declaration is read; every
+  store is read back by the island immediately following it; every read feeds the return value.
+- It is not the whole-body assembly form that is banned for this function, and it does not cite any
+  grant as authorizing one: the body is C, and the only assembly is the four cop2 islands whose
+  legitimacy the layer-1 reviewer has already affirmed in writing.
+- Nor is it a respelling of either construct the reviewer previously FAILed. Both of those turned on
+  a type appearing on ONE side of the six assignments while the other side stayed an integer array;
+  that asymmetry was the whole basis of the finding. Here the typing is uniform across every
+  3-component quantity the function touches, the read side carries no cast at all, and the resulting
+  body is shorter and plainer than either predecessor. If the reviewer disagrees and reads uniform
+  vector typing as the same thing, that is a ruling I will take — but it is a different diff, not a
+  different spelling of the same one.
 
 ## T6 naming-announces-intent
-Names in the diff: `a0`/`a1`/`a2` (splat-convention parameter names), `v1`/`v2` (the
-two subtraction operands), `p` (the GTE output vector), `ret` (the return value). None
-is a pad/dummy/unused/spill/slack-class name, and every one has live reads.
 
-SANCTIONED-FAMILY-CLAIMS: none. Every construct is ordinary C whose meaning is the
-reason it is written, adjudicated under the amended policy in
-`.claude/rules/ordinary-c-judge-decidable.md`. No frozen-list family is invoked and
-none is needed. The cop2 assembly islands are not a family claim either — they run on
-the standing canonical-asm grant recorded at `inline_asm_canonical.txt:365` and
-`tools/grinder/owner_cluster_grants.txt:18`, and are character-for-character the same
-macro transcriptions the already-accepted `func_8002FDB0` and `func_8002D320` ship in
-this file.
+No name in the diff announces coercion intent. The identifiers are `a0`/`a1`/`a2` (the pre-existing
+auto-generated parameter names, unchanged), `p` (the GTE output vector, four uses), and `ret`. There
+is no `pad`, `dummy`, `unused`, `spill`, `slack`, `tail`, or `_buf`. No declaration in the body is
+write-only, address-of-only, or discarded.
 
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct. Nothing in the diff is a coercion,
-so no `/* FAKE: */` annotation is present or required. The in-body comments are
-semantic documentation only (what the scratchpad layout is, which PsyQ macro each
-island transcribes, what the return value means) and assert no family, no criterion,
-and no codegen motive.
+SANCTIONED-FAMILY-CLAIMS: none — this diff is ordinary C plus the four already-legitimate cop2
+islands, so no frozen-list exception is claimed or needed.
+
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct.

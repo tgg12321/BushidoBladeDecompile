@@ -1,4 +1,33 @@
-# Hypothesis ledger — func_8002FC80
+# Hypothesis ledger - func_8002FC80
+
+## s2-of-run3 (2026-09-01, permuter - third byte-exact class found)
+
+- H1: "Naming the two scratchpad difference vectors as pointer locals (`s32 *d1 = (s32 *)0x1F800360`)
+  marks the stores MEM_IN_STRUCT_P and kills the sink without any load-side cast." - **KILLED**:
+  69 insns vs 75, wrong address materialization (one lui/ori + `sw v0,0(reg)` where the target
+  reloads `at` per store). The six store destinations must be literal constant addresses.
+  Banked at rejected/s2r3_named_scratchpad_vector_pointers_69insns.c.
+- H2: "Typing the three parameters `VECTOR *` and reading `->vx/->vy/->vz` makes BOTH sides of the
+  store/load pair MEM_IN_STRUCT_P, so neither exemption clause in sched.c true_dependence can fire,
+  the dependence survives and the six blocks stay in source order - with no cast anywhere on the
+  load side." - **CONFIRMED**: sink gone on the first probe; structure identical to target, residual
+  was register allocation only (73 insns vs 75).
+- H3: "The residual is caused by `p` being assigned before the first cop2 island, which leaves the
+  0x1F800380 constant live early enough for sched1 to fill two load-delay slots the target leaves as
+  nops." - **CONFIRMED**: moving `p = (VECTOR *)0x1F800380;` to immediately before the gte_stlvnl
+  island gives **75/75 IDENTICAL** at the objdump level, and **sandbox score 0 @ 74/74, 0 rules
+  dropped** with the body in src; verify-oracle build_sha1 == oracle.
+- H4: "Spelling the GTE output slot with the same `VECTOR` type (`p->vx/vy/vz`) rather than
+  `s32 *p` + `p[0]/p[1]/p[2]` is byte-neutral, so the uniformly-typed body is available." -
+  **CONFIRMED**: identical bytes; the uniform form is the submitted candidate.
+- H5: "`p` is a removable convenience - inline `(VECTOR *)0x1F800380` at its four use sites." -
+  **KILLED**: 76 insns vs 75; the address is re-materialised for the ratan2 argument. Banked at
+  rejected/s2r3_vector_params_no_p_local_76insns.c.
+- H6: "Re-seeding a randomized permuter campaign on the `s32 *`-parameter chassis would find a third
+  class." - **KILLED by construction, not measured**: the previous run's campaign already exhausted
+  that basin (four proposals, all banked in rejected/), and fresh-seed discipline requires a
+  structurally different chassis. The structurally different chassis that worked was the TYPE
+  SYSTEM, not the statement order.
 
 ## s2-of-run2 (2026-09-01, structural — owner directive executed)
 

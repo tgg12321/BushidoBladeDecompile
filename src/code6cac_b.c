@@ -5,6 +5,7 @@
 #include "sound.h"
 #include "game.h"
 #include "system.h"
+#include "gte.h"
 #include "code6cac.h"
 #include "bb2_const.h"
 
@@ -1197,7 +1198,79 @@ void func_8002EECC(void *arg0, void *arg1) {
 void func_8002F2D0(s32 *a0, s32 *a1);
 INCLUDE_ASM("asm/funcs", func_8002F2D0);
 INCLUDE_ASM("asm/funcs", func_8002F770);
-INCLUDE_ASM("asm/funcs", func_8002FC80);
+s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
+    VECTOR *p;
+    s32 ret;
+
+    /* Difference vectors: (a1 - a0) into the scratchpad VECTOR at
+     * SCR[0x60..0x68], (a2 - a0) into the one at SCR[0x70..0x78] — the two
+     * operands the GTE macros below read back (same slots as func_8002FDB0). */
+    ((VECTOR *)0x1F800360)->vx = a1->vx - a0->vx;
+    ((VECTOR *)0x1F800360)->vy = a1->vy - a0->vy;
+    ((VECTOR *)0x1F800360)->vz = a1->vz - a0->vz;
+    ((VECTOR *)0x1F800370)->vx = a2->vx - a0->vx;
+    ((VECTOR *)0x1F800370)->vy = a2->vy - a0->vy;
+    ((VECTOR *)0x1F800370)->vz = a2->vz - a0->vz;
+
+    /* PsyQ libgte inline macro gte_SetRotMatrix(r) — loads the 3 packed
+     * rotation-matrix words at r into cop2 control regs R11R12/R13R21/R22R23.
+     * The SDK macro body hardcodes $12-$15 and copies the operand into $12. */
+    __asm__ volatile(
+        "move   $12, %0
+"
+        "lw     $13, 0($12)
+"
+        "lw     $14, 4($12)
+"
+        "ctc2   $13, $0
+"
+        "lw     $15, 8($12)
+"
+        "ctc2   $14, $2
+"
+        "ctc2   $15, $4
+"
+        :: "r"((VECTOR *)0x1F800360) : "$12", "$13", "$14", "$15");
+    /* PsyQ libgte inline macro gte_ldlvl(r) — load long vector at r into
+     * IR1/IR2/IR3 ($9/$10/$11), IR3 first, then the 2-cycle GTE load delay. */
+    __asm__ volatile(
+        "move   $12, %0
+"
+        "lwc2   $11, 8($12)
+"
+        "lwc2   $9, 0($12)
+"
+        "lwc2   $10, 4($12)
+"
+        "nop
+"
+        "nop
+"
+        :: "r"((VECTOR *)0x1F800370) : "$12");
+    /* GTE OP (outer/cross product of the IR vector with the rotation matrix
+     * diagonal), sf=0 — cop2 command 0x0170000C. */
+    __asm__ volatile(".word 0x4B70000C");
+    /* PsyQ libgte inline macro gte_stlvnl(r) — store MAC1/MAC2/MAC3
+     * ($25/$26/$27) to r. */
+    p = (VECTOR *)0x1F800380;
+    __asm__ volatile(
+        "move   $12, %0
+"
+        "swc2   $25, 0($12)
+"
+        "swc2   $26, 4($12)
+"
+        "swc2   $27, 8($12)
+"
+        :: "r"(p) : "$12");
+    /* Angle of the cross product in the XZ plane, +0x800 (180 deg) when its
+     * Y component is positive. */
+    ret = ratan2(p->vx, p->vz);
+    if (p->vy > 0) {
+        ret += 0x800;
+    }
+    return ret;
+}
 /* kengo:HIGH  |  nm_cpu/cpu_check_tubazeri  |  76i  |  x2 size collision */
 s32 func_8002FDB0(s32 *arg0) {
     s32 stride;

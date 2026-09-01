@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002FC80",
-      "file": "code6cac_b",
-      "distance": 28,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:16851 \u2014 '2026-08-31 \u2014 func_8002FC80 \u2014 OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET'",
-      "unpark_reason": "owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8): the two byte-exact ordinary-C spelling classes were banned on motive/uniqueness grounds the ruling retires; bans cleared, item returns to active \u2014 the Judge adjudicates the spelling under the amended policy (semantic truthfulness + simplest-known-form), no owner pick needed. Whole-body-asm and grant-misuse bans stand."
-    },
-    {
       "func": "func_8003D888",
       "file": "code6cac_c2",
       "distance": 32,
@@ -1921,15 +1911,15 @@
     }
   ],
   "counts": {
-    "total": 215,
-    "active": 199,
+    "total": 214,
+    "active": 198,
     "by_status": {
-      "active": 199,
+      "active": 198,
       "foreclosed": 16
     },
     "by_verdict": {
-      "ASM-PARTIAL": 34,
-      "C": 165
+      "C": 165,
+      "ASM-PARTIAL": 33
     }
   }
 }
