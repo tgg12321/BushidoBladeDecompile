@@ -144,7 +144,8 @@
  ],
  "judge_constraints": [
   "Do not add func_8002EA24 to inline_asm_canonical.txt or retire any regfix rules this session. Keep the LZC block ONLY in the exact func_800274BC-authorized shape; re-spell the vector/mvmva block minimally (operand address computed in C and bound via %N, template limited to the $t4 copy, lwc2/swc2 and the mvmva .word, no hardcoded $v0 addiu and no $2 clobber) and record its measured score; then drive H5/H6 to sandbox 0 on that body. The canonical-asm disposition is re-submitted for a FINAL CALL only once the function is byte-identical on main with zero rules.",
-  "LAYER-1 CHEAT-REVIEWER FAIL: Undisclosed always-true guard (`if (a0_var >= 0)`) wrapping the LZCS island, paired with a dead `lzcr = 0` init, is a cheat-by-spelling construct the self-vet never mentions or justifies. Next action: Revert to the pre-session-21 state or fix in place: either (a) drop the `if (a0_var >= 0)` guard and the `lzcr = 0` init entirely and unconditionally execute the LZCS island + `lzcr = sp_var;` (since a0_var's non-negativity is already proven by the earlier `if (r_sq < sq) return 0;`), then re-measure `sandbox --disable all`; or (b) if removing it changes the score (i."
+  "LAYER-1 CHEAT-REVIEWER FAIL: Undisclosed always-true guard (`if (a0_var >= 0)`) wrapping the LZCS island, paired with a dead `lzcr = 0` init, is a cheat-by-spelling construct the self-vet never mentions or justifies. Next action: Revert to the pre-session-21 state or fix in place: either (a) drop the `if (a0_var >= 0)` guard and the `lzcr = 0` init entirely and unconditionally execute the LZCS island + `lzcr = sp_var;` (since a0_var's non-negativity is already proven by the earlier `if (r_sq < sq) return 0;`), then re-measure `sandbox --disable all`; or (b) if removing it changes the score (i.",
+  "The LZC guard is sanctioned ONLY as the two-arm live-assignment form with the T1 disclosure banked; the single-arm dead-init spelling stays banned, and this ruling covers that construct alone -- the rest of the body still faces a normal FINAL CALL."
  ],
  "origin": "queue",
  "created": "2026-07-30T14:18:37.150771+00:00",
@@ -157,9 +158,6 @@
   "gate_b": "FAIL - no closing construct exists; SOTN construct-index census negative",
   "re_attempt_eligible": true
  },
- "banned_constructs": [
-  "s32 lzcr = 0; if (a0_var >= 0) { <LZCS island>; lzcr = sp_var; } ... s32 shift = 0x16 - (lzcr & ~1);",
-  "The candidate.c header (session-21 self-documentation) and self_vet.md's T1/T3/T5 walkthroughs enumerate `lzcr` only as \"an LZC table-lookup intermediate\" and never address why it is zero-initialized or why the LZCS island is wrapped in a condition at all."
- ],
+ "banned_constructs": [],
  "ladder_skip": 1
 }

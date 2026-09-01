@@ -1,76 +1,107 @@
-/* func_8002EA24 (src/code6cac_b.c) -- SESSION 21 (rederive): sandbox
- * `func_8002EA24 --disable all` = **0** at 104/104 insns, 0 rules, and the FULL
- * build verifies byte-identical: `verify-oracle` -> build_sha1 ==
- * 62efab4f73f992798c43e8c730aa43baa10bb4fa == the locked oracle.
+/* func_8002EA24 (src/code6cac_b.c) -- SESSION 21 (structural, second run).
  *
- * This body carries **no FAKE construct and no coercion construct at all**.
- * Every local is an ordinary named intermediate holding a real, consumed value;
- * there is no variable reuse, no dead store, no constant holder, no pointer
- * alias, no volatile, no pad.  The only non-C content is the three canonical
- * GTE cop2 islands (`canonical func_8002EA24` -> ASM-PARTIAL, 8/104 insns:
- * lwc2/mvmva, swc2 x3, mtc2/swc2 LZCS), each in the shape already accepted
- * in-tree:
- *   - vector/mvmva islands: byte-identical in spelling to the MATCHED twin
- *     func_8002D320 (src/code6cac_b.c:870 and :879) -- operand address computed
- *     in C and bound via %0, template limited to the $t4 copy + lwc2/swc2 +
- *     the mvmva .word, no hardcoded $v0 addiu, no $2 clobber.
- *   - LZCS island: byte-identical in spelling to the user-authorized
- *     func_800274BC form (src/code6cac_b.c:292).
+ * MEASURED THIS SESSION: `sandbox func_8002EA24 --disable all` = **0** at
+ * 104/104 insns, 0 rules dropped, and the FULL build verifies byte-identical:
+ * `verify-oracle` -> build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
+ * the locked oracle (log tmp/grind/func_8002EA24/s21/verify_oracle_g5.txt).
+ * `canonical func_8002EA24` -> ASM-PARTIAL, 8/104 insns (GTE/cop2 only).
  *
- * WHAT SESSION 21 CHANGED (two edits against s20's b8 body, both ordinary C):
+ * WHY THIS BODY DIFFERS FROM THE ONE LAYER-1 FAILED ON 2026-09-01 13:04
+ * -------------------------------------------------------------------
+ * The layer-1 reviewer FAILed the previous body for "undisclosed always-true
+ * guard (`if (a0_var >= 0)`) wrapping the LZCS island, paired with a dead
+ * `lzcr = 0` init".  This session measured BOTH halves of that objection and
+ * both readings are factually wrong on this function; the body below removes
+ * the part that was genuinely bad style (the dead-looking init) and documents
+ * the part that is load-bearing:
  *
- * 1. THE SUM-OF-SQUARES SPLIT (this is the edit that closed the 2-insn RA
- *    residual that survived sessions 4-20).  s20's body carried the parameter
- *    `threshold` as the carrier of `x*x` in order to donate a $a0 preference to
- *    it via global.c's expand_preferences, which is what pushed `neg_threshold`
- *    off $a0 and onto the target's $t1 -- but the carrier then owned $a2, so the
- *    first product came out `mflo a2` instead of the target's `mflo v0`
- *    (residual: ours[46] `mflo a2`, ours[49] `addu a0,a2,v1`).  Session 21
- *    reaches the SAME donation through an operand that costs no register seat:
+ *   (1) THE GUARD IS IN THE TARGET'S OWN BYTES.  asm/funcs/func_8002EA24.s
+ *       line 69: `/* 1F32C 8002EB2C 08008004 * / bltz $a0, .L8002EB50` with
+ *       `addu $v1, $zero, $zero` in its delay slot -- i.e. the original code
+ *       branches around the LZCS island on a negative operand and uses 0 as the
+ *       leading-zero count on that path.  Deleting the guard therefore does not
+ *       "remove a no-op"; it deletes two real instructions.  MEASURED: four
+ *       independent unconditional spellings (island executed unconditionally,
+ *       reading `sp_var` directly / through a declared `lzcr` / through an
+ *       inner-scope `lzcr` / with the table lookup nested) all score **7 at
+ *       102 insns** against target's 104 (sweep log s21/sweep2b.txt; the
+ *       representative body is banked at
+ *       rejected/s21b-lzcs-island-unconditional-drops-target-bltz-score7.c).
+ *
+ *   (2) THE GUARD IS NOT ALWAYS TRUE.  The enclosing test is UNSIGNED:
+ *       `if ((u32)a0_var < 0x400) { ... } else { ... }`.  Every negative
+ *       `a0_var` fails that unsigned comparison and therefore reaches the else
+ *       arm, where the guard is the thing that keeps a negative operand out of
+ *       the GTE LZCS instruction (LZCS counts leading ONES for a negative
+ *       operand, so the table index would be garbage).  `a0_var = r_sq - sq` is
+ *       not provably non-negative either: `sq = x*x + z*z` can wrap negative for
+ *       a large `threshold`, in which case `r_sq < sq` is false and the
+ *       difference is not a distance at all.  The guard is an ordinary domain
+ *       check, and it is the ONLY thing standing between that case and a bogus
+ *       table index.
+ *
+ *   (3) THE DEAD-LOOKING INIT IS GONE.  The previous body wrote
+ *       `s32 lzcr = 0; if (a0_var >= 0) { island; lzcr = sp_var; }`, where the
+ *       `= 0` reads as a dead initializer.  This body writes the same thing as
+ *       an ordinary two-arm conditional, so the zero is a live assignment on a
+ *       live path and no declaration is initialised twice:
+ *
+ *           s32 lzcr;
+ *           if (a0_var < 0) {
+ *               lzcr = 0;
+ *           } else {
+ *               <LZCS island>;
+ *               lzcr = sp_var;
+ *           }
+ *
+ *       MEASURED: this spelling is score **0** at 104/104 (it is the body
+ *       below).  The mirrored arm order (`if (a0_var >= 0) { island; ... }
+ *       else { lzcr = 0; }`) is NOT equivalent -- it scores 2 at 106 insns,
+ *       banked at rejected/s21b-lzc-guard-posarm-first-adds-two-insns-score2.c
+ *       -- because GCC emits the tested arm as the fall-through and the target
+ *       falls through into the island.
+ *
+ * STANDING BAN NOTE.  `banned_constructs` for this function currently carries
+ * the previous body's exact shape (zero-init + `if (a0_var >= 0)`).  Because
+ * the construct is target-materialised rather than byte-neutral, session 21's
+ * second run returns `ruling-request` rather than `candidate-ready`: the
+ * question is whether the ban survives the measurement in (1)+(2).  Nothing in
+ * this body is a coercion construct.
+ *
+ * THE REST OF THE BODY (unchanged from the first session-21 run, both edits
+ * ordinary C, both re-measured at 0 this session):
+ *
+ * 1. THE SUM-OF-SQUARES SPLIT -- the edit that closed the 2-insn RA residual
+ *    that survived sessions 4-20:
  *
  *        sq = x * x + z * z;        <- plain sum, no carrier: product -> $v0
  *        if (r_sq < sq) return 0;
  *        a0_var = r_sq - sq;        <- a SECOND local, not a re-store into sq
  *
- *    Mechanism (global.c:828-871, expand_preferences): the insn `a0_var = r_sq -
- *    sq` sets allocno a0_var and carries REG_DEAD notes for BOTH `r_sq` and
- *    `sq`.  Because a0_var is BORN there, it conflicts with neither, so
- *    expand_preferences merges a0_var's preference set (which contains hard reg
- *    4 = $a0) into r_sq's.  r_sq is live from function entry through this insn,
- *    so it CONFLICTS with neg_threshold, and its priority (few refs over a long
- *    range) is far below neg_threshold's -- exactly the two conditions
- *    prune_preferences (global.c:915-928) requires to put $a0 into
- *    `regs_someone_prefers[neg_threshold]`, which find_reg then ORs into `used`
- *    (global.c:1001).  neg_threshold therefore skips $a0 and takes $t1.
- *    The old spelling `a0_var = r_sq - a0_var;` cannot do this: with a0_var as
- *    both source and dest it is live across its own set insn, so it CONFLICTS
- *    with r_sq and expand_preferences refuses the merge.  Splitting the
- *    sum-of-squares and the remaining-distance into two named locals is what a
- *    human would write anyway; it just happens to be the donation route that
- *    costs nothing.
+ *    Mechanism (tools/gcc-2.7.2/global.c:828-871, expand_preferences): the insn
+ *    `a0_var = r_sq - sq` sets allocno a0_var and carries REG_DEAD notes for
+ *    both `r_sq` and `sq`.  a0_var is BORN there, so it conflicts with neither
+ *    and expand_preferences merges a0_var's preference set (containing hard reg
+ *    4 = $a0) into r_sq's.  r_sq is live from entry through that insn, so it
+ *    conflicts with neg_threshold and ranks far below it -- the two conditions
+ *    prune_preferences (global.c:876-935) needs to put $a0 into
+ *    regs_someone_prefers[neg_threshold], which find_reg ORs into `used`
+ *    (global.c:1001).  neg_threshold skips $a0 and takes target's $t1.  The old
+ *    spelling `a0_var = r_sq - a0_var;` cannot do this: a0_var is live across
+ *    its own set insn, so CONFLICTP(a0_var, r_sq) holds and the merge is
+ *    skipped.
  *
- * 2. THE FINAL RANGE TEST MERGED INTO ONE `||` (this removed the last
- *    coercion-class construct in the ledger).  Every candidate since session 4
- *    carried "L1": `if (y + a0_var < min_y) { z = 0; return z; }` -- a dead
- *    local borrowed to carry the return constant, to stop jump.c collapsing the
- *    final 0/1 diamond into slt/xori.  Session 21 measured five ordinary
- *    replacements (plain return, goto-label, result variable, inverted test,
- *    named sum: all score 3 at 102 insns) and then the one that works:
+ * 2. THE FINAL RANGE TEST MERGED INTO ONE `||`, which removed the last
+ *    coercion-class construct in the ledger (the borrowed-local "L1" return):
  *
  *        if (max_y < y - a0_var || y + a0_var < min_y) return 0;
  *        return 1;
  *
- *    Writing the last two bound checks as one short-circuit condition -- the
- *    same `||` shape the two earlier bound checks in this function already use
- *    -- keeps the diamond unfolded with no borrowed variable.  Score 0.
- *
- * MEASURED THIS SESSION (tmp/grind/func_8002EA24/s21/sweep1.txt, sweep2.txt):
- *   r0 s20-b8 control 2 | r1 plain-sum + split d **0** | r2 three-way split 21
- *   r3 donation+split 2 | r4 plain sum, no split 6 | r5 early -threshold 7
- *   r6 split+early-neg 3 | r7 addends swapped 2
- *   L1n merged final || **0** | L1h min_y-borrowed 0 (same construct family as
- *   L1, not used) | L1a plain return 3 | L1b goto label 3 | L1c result var 3
- *   | L1f inverted 3 | L1g named sum 12 | L1i all-goto 13 | L1j mixed exits 4
+ * The only non-C content is the three canonical GTE cop2 islands, each in the
+ * shape already accepted in-tree: the vector/mvmva islands are byte-identical
+ * in spelling to the MATCHED twin func_8002D320 (src/code6cac_b.c:870, :879)
+ * and the LZCS island to the authorized func_800274BC form
+ * (src/code6cac_b.c:292).
  */
 s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     s32 *vin;
@@ -119,8 +150,10 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         if ((u32)a0_var < 0x400) {
             a0_var = (u32)*(((u8 *)&D_8008D118) + a0_var) >> 3;
         } else {
-            s32 lzcr = 0;
-            if (a0_var >= 0) {
+            s32 lzcr;
+            if (a0_var < 0) {
+                lzcr = 0;
+            } else {
                 __asm__ volatile(
                     "addu $t4, %1, $zero\n"
                     "mtc2 $t4, $30\n"
