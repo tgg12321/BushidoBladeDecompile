@@ -1954,3 +1954,66 @@ outside a grind session writable surface, and is the concrete next step.
 ## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
 
 Returned to active under Ruling A. Ground: the depth-2 atom sweep ran against ONE baseline of eight banked score-2 bodies, by this ledger's own frontier item 1. Named probe: for each of the seven other banked score-2 bodies run extract.py -> goal_from_tgt.py goal --model, discard AMBIGUOUS/empty, re-run s16/depth2_sweep.py on survivors with body-specific models. All-AMBIGUOUS hardens the foreclosure; any reaching atom voids it.
+
+## [s18] H18a -- Ruling A: a depth-2 solver combination reaches the goal on a banked score-2 body OTHER than the plain control.
+- mechanism: the eight banked score-2 bodies have different pseudo sets, so an
+  atom pair geometrically unspellable on the plain control may be spellable on
+  another body; s16 swept only one baseline.
+- probe: `tmp/grind/func_8002EA24/s18/harvest.sh` over all eight bodies plus
+  candidate_alt_L1_via_ylow -- splice, `sandbox --disable all`, `extract.py`,
+  `goal_from_tgt.py goal --model --json --show`.
+- result: all nine measure sandbox 2 at 104/104 insns and all nine produce the
+  BYTE-IDENTICAL residual (`ours[31] slt a0,a1,t1` / `ours[32] bnez a0` against
+  target's `$v0`), attributed AMBIGUOUS with an EMPTY goal in every case.  The
+  frontier's own filter discards all nine, so the sweep cannot be run on any of
+  them.  Artifacts `s18/*.goal.txt`.
+- verdict: KILLED (the directive is executed; the axis is closed, not deferred)
+
+## [s18] H18b -- the s15/s16 sweeps' `prefs` atoms never exercised preference DONATION, so the depth-1/depth-2 reaching sets are under-reported.
+- mechanism: `simulate.py:161` reads someone_prefers from `self.m["full_prefs"]`,
+  which has an entry for every allocno, so a `prefs` override never reaches it;
+  and the atom generator only emitted SINGLETON preference sets.
+- probe: `s18/sweep_fixedprefs.py` (override propagated into full_prefs) plus
+  `s18/pref_probe.py` (per-allocno, fix on/off).
+- result: CONFIRMED.  With the fix, `p74:prefs->[4]` moves 103 from $a0 to $a2
+  and `p75:prefs->[4]` to $a3 where the unfixed model reported no change at all;
+  the singleton-only alphabet is what hid the additive vectors.  (The repaired
+  depth-1 sweep still reports the same three reaching atoms, because reaching
+  $t1 needs an ADDITIVE preference set, which the alphabet cannot spell.)
+- verdict: CONFIRMED
+
+## [s18] H18c -- the unique clean preference-donation vector is recipient 74 (threshold) <- donor 97 (a0_var), and it is C-spellable.
+- mechanism: global.c:843-870 expand_preferences IORs two allocnos'
+  hard_reg_preferences whenever a single_set to one carries a REG_DEAD note for
+  the other and `! CONFLICTP` holds both ways; prune_preferences then folds the
+  recipient's set into regs_someone_prefers[103] because 74 is lower priority
+  than 103 and conflicts with it; find_reg pass 0 (global.c:1001) unions
+  someone_prefers into `used` and first-fits 103 to $t1.
+- probe: `s18/donor_probe.py` + `s18/symmetric_probe.py` (model), then three
+  real builds (`s18/v1`, `v3`, `v5`) measured with `sandbox --disable all` and
+  attributed with `goal_from_tgt.py`.
+- result: CONFIRMED in both the model and the bytes.  v5
+  (`threshold = max_y*max_y; a0_var = threshold + z*z;`) measures **2 at 104
+  insns with the L3 staged boolean DELETED** and with the range-test chain --
+  target insns 30/31/39, the residual all nine banked bodies carry -- matching
+  for the first time.  The remaining 2 insns are `mflo a2`/`addu a0,a2,v1`
+  against target's `mflo v0`/`addu a0,v0,v1`.
+- verdict: CONFIRMED (floor unchanged at 2; residual RELOCATED)
+
+## [s18] H18a (owner directive, Ruling A 2026-09-01) -- a depth-2 solver combination reaches the plain control's goal on a banked score-2 body OTHER than the plain control.
+- mechanism: The banked score-2 bodies have different pseudo sets and live-range geometry, so an atom pair geometrically unspellable on the plain control may be spellable on another body; s16's depth-2 sweep ran against one baseline only.
+- probe: tmp/grind/func_8002EA24/s18/harvest.sh over all eight banked score-2 bodies plus candidate_alt_L1_via_ylow: splice into src/code6cac_b.c -> `sandbox func_8002EA24 --disable all` -> tools/ra_solver/extract.py -> tools/ra_solver/goal_from_tgt.py goal --model --json --show. The frontier's own filter discards any body attributing AMBIGUOUS / goal {}.
+- result: All NINE bodies measure sandbox 2 at 104/104 insns and all nine produce the byte-identical residual at the same two indices (ours[31] `slt a0,a1,t1`, ours[32] `bnez a0` against target's $v0), attributed AMBIGUOUS (3-4 pseudos hold $a0) with an EMPTY goal in every single case. The sweep is unrunnable on all of them; s17's caveat generalises from the banked body to the entire bank. Artifacts: s18/*.goal.txt, s18/*.model.json.
+- verdict: KILLED
+
+## [s18] H18b -- the s15 depth-1 and s16 depth-2 sweeps' `prefs` atoms never exercised preference DONATION, so their reaching sets are under-reported.
+- mechanism: tools/ra_solver/simulate.py:161 builds prune_preferences' someone_prefers accumulation from self.m['full_prefs'] via `full_prefs_in.get(a, prefs[a])`; full_prefs carries an entry for EVERY allocno in this model, so the `.get` never falls back and a `prefs` override is discarded for someone_prefers. In real GCC (global.c:928) both the allocno's own upgrade and the donation into regs_someone_prefers read the same hard_reg_preferences array and cannot be separated. Second, independent gap: the atom generator only ever set prefs to a SINGLETON [r], so 'ADD $a0 to an allocno that already prefers its own argument register' was not in the alphabet.
+- probe: tmp/grind/func_8002EA24/s18/sweep_fixedprefs.py (override propagated into full_prefs, depth-1 re-run) and s18/pref_probe.py (per-allocno, fix on/off, same run).
+- result: CONFIRMED. With the repair, p74:prefs->[4] moves 103 from $a0 to $a2 and p75:prefs->[4] moves it to $a3, where the unrepaired model reported literally no change (deltas={}). The repaired depth-1 sweep still reports only the three known reaching atoms, because reaching $t1 needs an ADDITIVE preference set that the singleton alphabet cannot spell -- the two defects mask each other.
+- verdict: CONFIRMED
+
+## [s18] H18c -- the unique clean preference-donation vector is recipient allocno 74 (the dead `threshold` parameter) receiving $a0 from donor 97 (a0_var), and it is C-spellable at zero instruction cost.
+- mechanism: GCC 2.7.2 global.c:843-870 expand_preferences IORs two allocnos' hard_reg_preferences (and full/copy preferences) whenever a single_set to one carries a REG_DEAD note for the other and `! CONFLICTP` holds in BOTH directions. prune_preferences (global.c:877-929, reverse priority order) then folds the recipient's set into regs_someone_prefers[103] because 74 is lower priority than 103 and already conflicts with it; find_reg pass 0 (global.c:1001) ORs someone_prefers into `used` and first-fits 103 to $t1. Donation only works from a LOWER-priority conflicting allocno, which in the order `101 96 97 100 109 108 72 102 117 103 74 99 75` is exactly {74, 99 (needs an added conflict edge), 75}; donors already carrying $a0 are {97, 102}; 75<->97 is blocked by their conflict and 99 was measured dead by rank in s11 -- so 74<->97 is the only survivor.
+- probe: s18/donor_probe.py and s18/symmetric_probe.py (modelling the symmetric IOR, not just the forward leg) and s18/combined_probe.py, then three real builds measured with `sandbox --disable all` and attributed with goal_from_tgt.py: v1 (threshold carries the tail sum), v3 (threshold carries the whole sum of squares), v4/v5 (threshold carries one product).
+- result: CONFIRMED in the model AND in the bytes. v5 (`threshold = max_y*max_y; a0_var = threshold + z*z;`) measures sandbox 2 at 104 insns with the L3 staged-boolean FAKE DELETED, and the range-test chain -- target insns 30/31/39, the divergence every one of the nine banked bodies carries -- MATCHES for the first time in 18 sessions. v1 = 6 (chain clean, tail poisoned exactly as the model predicted by the parasitic 74<->102 leg), v3 = 3, v4 = 4. In v5 every poisonous leg is blocked by an existing conflict (74<->100, 74<->96, 75<->97), so the wanted leg is the only one that fires -- shielding by construction.
+- verdict: CONFIRMED

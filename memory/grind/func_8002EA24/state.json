@@ -1,8 +1,8 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 17,
- "current_modality": "escalation",
+ "session_count": 18,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -105,23 +105,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "Owner ruling 1 (2026-08-30) executed: the local-alloc suggested-register pass -- the last unobserved mechanism in the allocation stack -- is measured INERT on this residual; both endgame-lock gates re"
+  },
+  {
+   "session": 18,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Owner Ruling A probe executed and KILLED (all 9 banked score-2 bodies share one byte-identical residual, all AMBIGUOUS/empty goal); repairing a two-part blind spot in the s15/s16 solver sweeps opened "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A depth-2 solver combination reaches the plain control's goal on a banked score-2 body OTHER than the plain control, where the pseudo set and live-range geometry differ.",
-   "mechanism": "s16's depth-2 sweep ran against ONE baseline. The seven banked score-2 bodies have different pseudo sets, so an atom pair geometrically unspellable on the plain control (Route C's +4 overlap across a 25-instruction gap) may be spellable on a body whose y load already sits closer to the range chain. s17 caveat: the banked candidate's own residual yields an EMPTY goal (pseudo split), so only bodies whose residual is a genuine seat swap can be swept at all.",
-   "next_probe": "For each banked score-2 body: extract.py -> goal_from_tgt.py goal --model; DISCARD any body whose attribution returns AMBIGUOUS / goal {} (not RA-expressible); for the rest run tmp/grind/func_8002EA24/s16/depth2_sweep.py with the body-specific model and goal passed as argv, and report only vectors whose atoms are individually spellable in C."
+   "hypothesis": "The 74<->97 expand_preferences pairing can be obtained WITHOUT routing a value through allocno 74, which would leave the sum of squares in $a0 and close the function at 0.",
+   "mechanism": "v3/v4/v5 all create the REG_DEAD(74) note on an a0_var-defining insn by making `threshold` CARRY a real value, and the carried value then occupies 74's own argument register $a2 -- that IS v5's remaining 2-insn residual. expand_preferences only needs a single_set to 97 whose REG_NOTES mention 74; it does not require 74's value to be an operand of the result. Any construct that makes threshold's LAST USE land on the insn defining a0_var, rather than on the 4th range test, satisfies the pass without displacing a register.",
+   "next_probe": "(a) reassociate so the 4th range test's `threshold < z` and the sum of squares share one statement (a real reassociation, not a dead read); (b) try the reverse direction -- a single_set to 74 carrying REG_DEAD(97) ALONE, which needs a0_var's last use at a threshold-setting statement with y (102) NOT dying on the same insn (v1 failed only on that parasitic leg); (c) re-run s18/symmetric_probe.py against v5's OWN model to see whether 74 can be denied $a2 while keeping its donated $a0."
   },
   {
-   "hypothesis": "The residual is a pseudo SPLIT: the original C had one more local than the banked body -- a short-lived boolean temp for the first range test, with a0_var's $a0 value supplied by some other value live across the chain.",
-   "mechanism": "goal_from_tgt attributes the whole residual to `$a0 -> $v0 x2` with three $a0-holding pseudos and an empty goal; target's `negu $t1,$a2` / `slt $v0,$a1,$t1` / `bnez $v0` at 8002EAA4-8002EAAC shows the boolean in $v0 while 103 already sits in $t1. The forward enumeration of a0_var carriers (s9/s11: sum-of-squares 19, delta temps 16-28, vin/vout 6/5, y hoisted 11, x folded 19/6/19/24, -threshold IS 103) is complete and empty, so the missing $a0 occupant is not any value the current body computes.",
-   "next_probe": "Source archaeology rather than RA search: look for a value the ORIGINAL routine plausibly computed and this decompilation elides entirely (a cached member re-read, an early-computed tail value). func_8002D320 -- the leading-flag-parameter twin, jaccard 0.60, ledger at memory/grind/func_8002D320/ -- is the only donor with the same skeleton; diff its shape against this body's chain for a local we do not have."
+   "hypothesis": "v5's new residual (x*x in $a2 rather than $v0) is RA-expressible where all nine older bodies' residual is not, so the solver can be pointed at it for the first time.",
+   "mechanism": "The nine banked bodies attribute AMBIGUOUS with an empty goal because three or four pseudos hold $a0. v5's residual is a two-instruction $a2/$v0 exchange on the multiply result -- a shape goal_from_tgt may attribute to a single pseudo.",
+   "next_probe": "Read tmp/grind/func_8002EA24/s18/v5_threshold_holds_xsq.goal.txt (already banked); if the goal is non-empty run tmp/grind/func_8002EA24/s18/sweep_fixedprefs.py -- the REPAIRED sweep, NOT s16's -- against s18/v5_threshold_holds_xsq.model.json with that goal, at depth 1 then depth 2."
   },
   {
-   "hypothesis": "The BB2_SUGG_DEBUG measurement generalizes: for any zero-rule function whose residual is a CROSS-BLOCK allocno seat, local-alloc is provably not the mechanism, so every other ledger frontier line naming the suggested-register pass is stale in the same way.",
-   "mechanism": "local-alloc forms quantities only for block-local pseudos, so a cross-block residual can never be reached by qty_phys_copy_sugg / qty_phys_sugg; and global.c's kick-out is gated on a failed placement.",
-   "next_probe": "Grep memory/grind/*/ hypotheses and frontier files for 'suggested-register' / 'qty_phys' / 'local-alloc' and re-check each against the pseudo's block span (local_extract.py --suggest is one cheap run per TU). Retire the stale ones before a session spends a whole modality on them."
+   "hypothesis": "The simulate.py full_prefs defect and the singleton-prefs alphabet have under-reported the reaching set on OTHER functions' ra_solver campaigns, not just this one.",
+   "mechanism": "Every model produced by tools/ra_solver/extract.py carries a full_prefs entry per allocno, so `full_prefs_in.get(a, prefs[a])` never falls back anywhere; any sweep that used a prefs atom to test preference donation measured only half the pass.",
+   "next_probe": "Grep memory/grind/*/ for sweeps that concluded a preference route dead on the strength of a `prefs` atom, and re-run those with tmp/grind/func_8002EA24/s18/sweep_fixedprefs.py's full_prefs propagation (the fix is 6 lines; a permanent repair in tools/ra_solver/simulate.py is an operator-lane change, outside a grind session's allowed surface)."
   }
  ],
  "judge_constraints": [

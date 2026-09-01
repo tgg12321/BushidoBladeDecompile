@@ -2005,3 +2005,120 @@ That is an engine/tools change, outside a grind session's writable surface.
 - [s17] EXHAUSTION of record: 17 sessions; honest floor flat at 2 since session 4; 8 distinct modalities (escalation, forensics, permuter, recon, rederive, structural, synthesis, solver); ~118k + ~84k fresh-seed permuter iterations; 47 disproven bodies banked in memory/grind/func_8002EA24/rejected/. All three model-reaching routes are RTL-foreclosed with measurements: A (own $t1 preference on 103 -- unrepresentable in the pre-RA RTL, s15); B (edge 97<->103 -- 15/21, s15); C (edge 102<->103 -- 25-instruction gap, 10/11, s16). The forward enumeration of a0_var carriers is complete and empty (s9/s11).
 
 - [s17] There is NO cheat on main for this function: 0 regfix/asmfix rules, and src/code6cac_b.c carries INCLUDE_ASM("asm/funcs", func_8002EA24); per asm-until-matched. This is an honest floor-2 residual, not a cheat-held byte match; the retired chassis is preserved at memory/grind/func_8002EA24/retired-chassis-2026-08/rules.txt.
+
+## [s18] forensics -- the owner's 2026-09-01 Ruling A probe, and the expand_preferences donation channel
+
+### The Ruling A probe (directive, executed first): NEGATIVE on all eight bodies
+Owner ruling 2026-09-01 (docs/grind/decisions.md:17743, Ruling A) reopened this
+function with a named probe: "re-run `s16/depth2_sweep.py` over the other seven
+banked bodies (filter AMBIGUOUS via goal_from_tgt.py first)".  Executed for all
+EIGHT score-2 bodies (`tmp/grind/func_8002EA24/s18/harvest.sh`: splice ->
+`sandbox --disable all` -> `ra_solver/extract.py` -> `goal_from_tgt.py goal
+--model`):
+
+| body | sandbox | residual | attribution |
+|---|---|---|---|
+| memory/grind/func_8002EA24/candidate.c | 2 | ours[31] `slt a0,a1,t1` / ours[32] `bnez a0` vs tgt `$v0` | AMBIGUOUS, 3 pseudos hold $a0 -- goal {} |
+| s8/v6_neg_inline_no_local | 2 | IDENTICAL (same two indices, same $a0->$v0) | AMBIGUOUS -- goal {} |
+| s8/v7_neg_init_after_x_load | 2 | IDENTICAL | AMBIGUOUS -- goal {} |
+| s8/v10_nested_range_tests_only | 2 | IDENTICAL | AMBIGUOUS -- goal {} |
+| s8/v11_sum_own_local | 2 | IDENTICAL | AMBIGUOUS, 4 pseudos hold $a0 -- goal {} |
+| s8/v12_single_four_way_if | 2 | IDENTICAL | AMBIGUOUS -- goal {} |
+| s8/v14_split_stage_into_sum | 2 | IDENTICAL | AMBIGUOUS, 4 pseudos -- goal {} |
+| s9/v5_vout_dies_in_chain | 2 | IDENTICAL | AMBIGUOUS -- goal {} |
+| candidate_alt_L1_via_ylow | 2 | IDENTICAL | AMBIGUOUS -- goal {} |
+
+The frontier's own stated filter ("DISCARD any body whose attribution returns
+AMBIGUOUS / goal {}") therefore discards every single one: the depth-2 sweep is
+UNRUNNABLE on all of them, and the s17 caveat generalises from the banked body
+to the whole bank.  The directive is executed and its hypothesis is KILLED.
+The stronger fact the sweep produced: **all nine bodies have the byte-identical
+residual at the same two instruction indices** -- the score-2 plateau is one
+single divergence, not eight body-specific ones.  Artifacts:
+`tmp/grind/func_8002EA24/s18/*.goal.txt`, `*.model.json`.
+
+### A defect in the s15/s16 solver sweeps (forensics)
+`simulate.py:161` builds prune_preferences' someone_prefers accumulation from
+`self.m["full_prefs"]`:
+
+    pruned_full = full_prefs_in.get(a, prefs[a]) - temp_excl
+
+`full_prefs` carries an entry for EVERY allocno in this model (most of them
+empty lists), so the `.get` never falls back and a `prefs` OVERRIDE IS
+DISCARDED for someone_prefers.  Every `pN:prefs[...]->[R]` atom in the s15
+depth-1 and s16 depth-2 sweeps therefore exercised only the allocno's own
+upgrade path; the DONATION half of a preference -- global.c:928,
+`regs_someone_prefers[allocno] |= hard_reg_preferences[b]` for lower-priority
+conflicting b -- was never simulated.  In real GCC both halves read the same
+`hard_reg_preferences` array and cannot be separated.  A second, independent
+gap: the atom generator only ever set prefs to a SINGLETON `[r]`, so "ADD $a0
+to an allocno that already prefers its own argument register" was not in the
+atom alphabet at all.  Repaired sweep + probes:
+`tmp/grind/func_8002EA24/s18/sweep_fixedprefs.py`, `pref_probe.py`,
+`donor_probe.py`, `symmetric_probe.py`, `combined_probe.py`.
+
+### What the repaired model says (measured, plain control)
+Donation only works from an allocno that is LOWER priority than 103 and
+CONFLICTS with 103; in the order `101 96 97 100 109 108 72 102 117 103 74 99 75`
+that is exactly {74 threshold, 99 min_y (needs an added conflict edge), 75
+r_sq}.  Donors are the allocnos already carrying $a0: {97 a0_var, 102 y}.
+Modelling expand_preferences' SYMMETRIC IOR (both directions, global.c:863-866):
+
+  * 74 <- 97  : 103 -> $t1, **zero collateral**  (and `! CONFLICTP` holds both ways)
+  * 75 <- 97  : 103 -> $t1, zero collateral, but 75 and 97 CONFLICT -> the pass skips it
+  * 74 <- 102 : 103 -> $t1 but y is handed $a2 and min_y $v1  (this is the s11 failure)
+  * 75 <- 102 : 103 -> $t1 but y is handed $a3 and min_y $v1
+  * 99 <- any : needs an added 99<->103 conflict edge; s11 measured that edit demotes 99 to last (score 13)
+
+So **74 <- 97 is the unique clean donation vector**, and s11's "74/75 -- they
+work but the symmetric IOR hands `y` their argument register" was measured with
+donor 102 only; donor 97 was never paired.
+
+### Three C spellings built, and the first chain-clean body in 18 sessions
+All three delete the L3 staged boolean (they do not need it) and all three keep
+104 instructions.
+
+| variant | spelling | sandbox | residual |
+|---|---|---|---|
+| `s18/v0_plain_control.c` | the banked body minus L3 | 3 | insns 30/31/39: neg_threshold in $a0, target $t1 |
+| `s18/v1_threshold_reuse_tailsum.c` | `threshold = y + a0_var;` for the tail sum | 6 | chain CLEAN; tail poisoned exactly as modelled (y -> $a2, min_y -> $v1) -- the 74<->102 leg fires alongside 74<->97 |
+| `s18/v3_threshold_holds_sumsq.c` | `threshold = x*x + z*z; a0_var = r_sq - threshold;` | 3 | chain CLEAN; the whole sum/remainder chain sits in $a2 |
+| `s18/v4_threshold_holds_zsq.c` | `threshold = z*z; a0_var = x*x + threshold;` | 4 | chain CLEAN; both mflo operands displaced |
+| `s18/v5_threshold_holds_xsq.c` | `threshold = x*x; a0_var = threshold + z*z;` | **2** | chain CLEAN; ONLY `mflo a2`/`addu a0,a2,v1` vs target's `mflo v0`/`addu a0,v0,v1` |
+
+v5 is banked as `memory/grind/func_8002EA24/candidate_alt_s18_pref_donation.c`.
+It ties the floor (2) but it is a genuinely new chassis: for the first time the
+range-test chain -- target insns 30/31/39, the divergence every one of the nine
+banked bodies carries -- MATCHES, and it matches with the L3 FAKE deleted.  The
+residual has moved to the sum of squares: the x*x product lands in 74's own
+argument register $a2, which target leaves dead from the 4th range test onward.
+Every poisonous expand_preferences leg in v5 is blocked by an EXISTING conflict
+(74<->100 and 74<->96 are both in 74's conflict list; 75<->97 is in 97's), so
+the 74<->97 leg is the only one that fires -- the shielding is by construction,
+not by luck.
+
+### Chassis
+HEAD floor re-measured this session with the banked candidate applied:
+**2, 104/104 insns**, disassembly attribution unchanged from s16/s17.  src/ was
+restored to HEAD (`git checkout -- src/code6cac_b.c`) at the end of every probe
+batch; the tree is clean.
+
+- [s18] CHASSIS: HEAD floor re-measured this session with the banked candidate applied to src/code6cac_b.c -- `sandbox func_8002EA24 --disable all` = 2, 104/104 insns, residual `ours[31] slt a0,a1,t1` / `ours[32] bnez a0` vs target's $v0. Unchanged from s16/s17.
+
+- [s18] All NINE banked score-2 bodies (candidate.c, s8/v6, s8/v7, s8/v10, s8/v11, s8/v12, s8/v14, s9/v5, candidate_alt_L1_via_ylow) measure 2 at 104/104 and share the BYTE-IDENTICAL residual at the same two instruction indices, every one attributed AMBIGUOUS with goal {}. The score-2 plateau is ONE divergence, not nine body-specific ones.
+
+- [s18] tools/ra_solver/simulate.py:161 discards a `prefs` override when computing someone_prefers (full_prefs has an entry for every allocno, so the .get fallback never fires). This is a live tool defect that silently under-reports every sweep run through simulate.py on any function whose model carries full_prefs -- not just this one.
+
+- [s18] The s15/s16 atom generator emits SINGLETON preference sets only, so additive vectors ('keep $a2, add $a0') are outside its alphabet. Both defects together are why 18 sessions of solver work never surfaced the donation channel.
+
+- [s18] expand_preferences (global.c:843-870) is the mechanism, verified in the compiler source in-tree: the IOR is symmetric and gated on `! CONFLICTP` both ways, and it fires on any single_set whose REG_NOTES carry a REG_DEAD for a non-conflicting allocno -- no hard-register copy required.
+
+- [s18] Model verdicts on the symmetric IOR (s18/symmetric_probe.txt): 74<-97 CLEAN (103 -> $t1, zero collateral); 75<-97 clean but CONFLICTP-blocked; 74<-102 and 75<-102 reach $t1 but hand y the parameter's argument register and min_y $v1 -- which is exactly the s11 measured failure, i.e. s11 tested the 74/75 recipients with donor 102 only and never paired donor 97.
+
+- [s18] NEW CHASSIS BANKED: memory/grind/func_8002EA24/candidate_alt_s18_pref_donation.c (= s18/v5) -- sandbox 2, 104 insns, NO L3 staged boolean, chain fully matched. Its residual is `ours[46] mflo a2` / `ours[49] addu a0,a2,v1` against target's `mflo v0` / `addu a0,v0,v1`: the x*x product occupies allocno 74's own argument register $a2, which target leaves dead from the 4th range test onward.
+
+- [s18] The v5 construct (`threshold = max_y * max_y;`) is a borrow of an existing PARAMETER for a second unrelated value = the variable-reuse family; it is banked as EVIDENCE and is NOT submitted, carries no FAKE annotation, and no family claim is made this session because the body does not reach 0.
+
+- [s18] Three disproven spellings banked: rejected/prefdonation-tailsum-y-leg-poisons-tail-score6.c, rejected/prefdonation-threshold-holds-whole-sumsq-score3.c, rejected/prefdonation-threshold-holds-zsq-score4.c.
+
+- [s18] src/code6cac_b.c was restored to HEAD (`git checkout --`) after every probe batch; the only tracked dirt at session end is the ledger files and metrics/events.jsonl.
