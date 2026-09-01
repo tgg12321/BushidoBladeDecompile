@@ -1224,3 +1224,140 @@ scored, 8 real, one unrelocated-LO16 artifact".
 - probe: Instruction-for-instruction read-out of the floor-5 build against the target (tmp/grind/func_800770B8/s13/ours.py), plus a posdiff of flipped-ABCD.
 - result: On the floor-5 form the seats are ALREADY correct. Rows 37-61 are identical to the target row for row, including the target's non-obvious construction of t0*10 - it computes t0*4 for the 0x40/0x42 store group (row 42 `sll $v1,$a1,2`), adds t0 (row 56 `addu $v1,$v1,$a1` = t0*5), then shifts (row 61 `sll $v1,$v1,1`) - which our build reproduces in the target's own registers. Rows 60-61 already place the reloaded D_800A36A0 in $v0 and the shift chain in $v1. The residual is one token: ours `addu $2,$2,$3` vs target `addu $v1,$v1,$v0`, both `addu rd,rs,rt` with rd==rs, so the printed order IS the RTL (plus A B) order, which is the source order (GCC 2.7.2's fold() only commutes to move a CONSTANT second - it has no complexity-based swap). Under the flip the order becomes right but the two hard registers swap, so the printed insn is unchanged and 24 further rows regress.
 - verdict: KILLED
+
+## [s14] synthesis — 2026-09-01 (floor 5 -> 4)
+
+Modality: synthesis. Merged the whole ledger (s1-s13), spent the s13 frontier's
+item 1, and reset the frontier below. Four hypotheses measured, three settled.
+
+## [s14] Under the p_6a flip, the loop head's emission order is restored by changing what the loop head COMPUTES (an additional early consumer of t0*4), not by re-spelling the inner block's address. (s13 frontier item 1.)
+- mechanism: s13 proved the flip is the only way to reach the target's plus-operand
+  order and that its 24-point collateral is entirely rows 38-59, where the flipped
+  build hoists the D_800A36A0 load ahead of `sll $a1,1` and postpones `sll $a1,2`
+  from row 42 to row 50. If the t0*4 shift is demanded EARLY under the flip, the
+  loop head's emission order should return to the target's.
+- probe: 11 perturbations of the loop head's first-demand order x 3 bases (floor-5
+  candidate, flipped-ABCD `s12/perm/Q00.c`, flipped-CABD `s12/perm/Q12.c`) = 33
+  builds; `tmp/grind/func_800770B8/s14/gen.py`, `s14/sweep.log`.
+- result: CONFIRMED, and stronger than stated. Group A's index written
+  `(t0 * 4) >> 1` on the flipped-ABCD body measures **4 / 175 insns** (from 29),
+  a new floor. The positional diff shows the contested addition now emits
+  `addu $v1,$v1,$v0` with the target's own seats and rows 43-64 matching the target
+  row for row: **residual class C is CLOSED**. All ten other perturbations
+  (group C integer-domain, group A pointer-domain, group B one-step, `t0 << 2`,
+  group D hoisted, the 0x5C/0x60 pair hoisted two ways, the inner index built from
+  t0*4 explicitly, groups B+C both integer-domain) are neutral or worse on every
+  base; the pair hoists are disqualified on insn count (173 / 174).
+- verdict: CONFIRMED
+
+## [s14] The class-C fix is available without its `sra` if the t0*4 pseudo is given extra REFERENCES rather than an extra dependence (a reg_n_refs effect, not a dependence-graph effect).
+- mechanism: if what reversed the two shifts' birth order under the flip were
+  local-alloc's reference counting, then spelling group C's (and group B's) index
+  inline at each store — two references to t0*4 instead of one through the shared
+  `ptr` local, with no new instruction — should reproduce the effect and leave the
+  target's two independent `sll`s intact, closing class D as well as class C.
+- probe: 8 builds on flipped-ABCD; `s14/gen4.py`, `s14/sweep4.log`.
+- result: KILLED. Group C inline = 25, group B inline = 35/177, both = 12/177,
+  group A inline = 29, the 0x5C/0x60 pair derived from t0*4 = 39/176, group D
+  derived from t0*4 = 7/176. Nothing reaches 4, and every variant that adds a real
+  second derivation costs an instruction (176/177 against the target's 175). The
+  effect is the DEPENDENCE EDGE t0*2 <- t0*4, not the reference count.
+- verdict: KILLED
+
+## [s14] The dependence can be spelled in the other direction (t0*4 derived from t0*2), which would let the target's `sll $v0,$a1,1` stay first and close class D at the same time.
+- mechanism: the target computes t0*2 first (row 40) and t0*4 second (row 42). If
+  the sharing that closes class C is symmetric, writing group C as
+  `base + ((t0 * 2) * 2)` should give the same seat fix with the shifts in the
+  target's order.
+- probe: 13 builds on flipped-ABCD; `s14/gen2.py`, `s14/sweep2.log`.
+- result: KILLED, and the asymmetry is now a measured fact. `(t0*2)*2` = 29 and
+  `(t0*2)<<1` = 29 — i.e. byte-identical to the unperturbed flipped body, no effect
+  whatsoever. Only t0*2-derived-from-t0*4 works. Also settled in the same sweep:
+  `(t0 * 4) / 2` measures 29 because GCC 2.7.2's `fold()` collapses the exact
+  division back to `t0 * 2` before RTL (the mult/shift identity is NOT collapsed);
+  a named `s32 i4 = t0*4;` consumed only by group C measures 29 while the same
+  local consumed by group A as `i4 >> 1` measures 4, so naming is not the lever;
+  `(u32)(t0*4) >> 1` (srl) also measures 4.
+- verdict: KILLED
+
+## [s14] Class B (rows 35-36) may be re-openable on the floor-4/floor-5 chassis, since s7/s8/s9 foreclosed it on the floor-9 chassis.
+- mechanism: the target's 0x30/0x34 stores go through the raw `func_8006E49C`
+  result pseudo ($v0); ours go through the `p_old` copy ($s1). s7/s8 attributed the
+  collapse to cse pass 2 + flow.c deleting the copy, but all of that was measured
+  two chassis ago.
+- probe: 4 fresh spellings of the whole post-call block on the floor-4 body;
+  `s14/gen3.py`, `s14/sweep3.log`.
+- result: KILLED (re-confirmed). Every spelling that actually reaches the raw
+  result pseudo — fresh `u8 *nb` local with the stores first (24), the result
+  assigned straight into `D_800A36A0` (22), fresh local with the global assigned
+  first (22) — collapses the function to **170 instructions, five fewer than the
+  target's 175**, exactly the s7 failure mode. The only spelling that preserves 175
+  routes all four stores through `(u8 *)p_old` and is byte-worse (6). Class B is
+  foreclosed on the current chassis, not just the old one.
+- verdict: KILLED
+
+## [s14] A second `do { } while (0);` recovers a row on the floor-4 chassis.
+- mechanism: s12 found a second wrap worth 2 points in the flipped-CABD basin
+  (12 -> 10 at positions W039/W040). The floor-4 body is a different basin
+  (flipped-ABCD + the t0*4 dependence), so the sweep had to be re-run against it.
+- probe: 79-position second-wrap sweep on the floor-4 body; `s14/wrap.log`.
+- result: KILLED. Minimum 4, reached at 34 of the 79 positions, all byte-identical
+  to the no-second-wrap build; nothing below 4. The floor-4 form carries exactly
+  one wrap (the s11 prologue fence), and s12's "the CABD basin needs a second wrap"
+  note no longer applies to the live basin.
+- verdict: KILLED
+
+## Live frontier (for s15) — reset by the s14 synthesis
+
+1. **Class D is a two-instruction gap with a known cause, and the next lever is a
+   spelling of the t0*2 <- t0*4 dependence that emits `sll` rather than `sra`, or a
+   C construct that supplies the same dependence edge for free.**
+   - mechanism: at floor 4 the loop head occupies exactly the target's three slots
+     (`shift / lw / shift`) with the two quantities in the target's own registers by
+     role ($3 = t0*4, $2 = t0*2). The only defects are that our first shift is the
+     *4 and our second is an `sra` deriving t0*2 from it, where the target emits
+     *2 first and *4 second, both directly from $a1. s14 measured that the
+     dependence edge (not the reference count, not a named local, not the division
+     identity) is what re-seats the contested plus — so the question is now narrow
+     and mechanical: what else creates an RTL dependence from the t0*4 pseudo to the
+     t0*2 pseudo?
+   - next probe: (a) run `pwsh tools/grinder/dump.ps1 func_800770B8` on the floor-4
+     body and read `.combine` / `.lreg` for the two shift pseudos — s14 never
+     attributed WHICH pass reverses their birth order, and the dump names it in one
+     read; then check whether the `sra` is a combine artifact that a different
+     source shape would emit as `sll`. (b) Measure address spellings in which group
+     A's five stores index a *half-word* object derived from group C's pointer, e.g.
+     `s16 *rowC = (s16 *)(base + (t0 * 4));` with group A written as offsets from a
+     narrowed re-cast of `rowC` — a dependence edge that is arithmetically forced
+     rather than an identity, and therefore not a first-reach classification problem.
+     (c) Measure whether a *struct/array* type over `base` whose element size is 4
+     produces the same edge naturally (s10 killed a whole-block struct rewrite at 178
+     insns, but never a type applied only to groups A and C).
+
+2. **The `(t0 * 4) >> 1` token needs a ruling before ANY floor-4 form can be
+   submitted, and the answer determines whether the honest floor is 4 or 5.**
+   - mechanism: the token is an arithmetic identity (it computes `t0 * 2`) with no
+     semantic purpose (T1), which no human would write from the specification (T2),
+     whose justification is a named GCC mechanism (T3). The frozen family list
+     sanctions "opaque arithmetic variables" but the forbidden catalog separately
+     lists "`s32 one = 1;` opaque variable to defeat single-bit transform"; the two
+     entries are in tension for this exact shape, and the non-extension clause
+     forbids generalising from either. This is a first reach.
+   - next probe: emit a `ruling-request` (s14 does). If it is ruled a cheat, the
+     honest floor stays 5 and frontier item 1 must find a *forced* dependence
+     (option (b)/(c) above) rather than an identity. If it is ruled sanctioned, the
+     form still needs class D and class B closed before it is byte-complete, so the
+     ruling unblocks a submission path but does not by itself finish the function.
+
+3. **The do-while(0) scoping conflict is still unresolved and still gates the
+   prologue fence (carried unchanged from s11/s12/s13).**
+   - mechanism: `.claude/rules/do-while-zero-exception.md` (owner ruling 2026-07-06)
+     abolishes the reorg.c-only scoping that `.claude/rules/no-new-park-categories.md`
+     :256-271 and the grind role-prompt's frozen-family table still assert. The
+     dedicated rule is the later document and the stale entry designates it as the
+     authority, but a submission would be the first BB2 use of a wrap for a sched2
+     effect.
+   - next probe: unchanged — resolve by ruling, or have the operator update
+     no-new-park-categories.md:256-271. s14 adds one datum: on the floor-4 chassis a
+     SECOND wrap is inert (79 positions, min 4), so the wrap count in any submitted
+     form will be exactly one.

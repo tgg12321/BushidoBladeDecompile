@@ -1618,3 +1618,191 @@ conflict at `.claude/rules/no-new-park-categories.md:256-271` vs
 - [s13] Consolidated statement of the lock: the flip fixes the operand order but swaps the seats; s12's CABD group order fixes the seats but breaks the store rows. Neither can be applied without the other's damage, and the damage is loop-head emission order in rows 38-59.
 
 - [s13] Not re-probed this session (banked exhausted by s11/s12, per the brief): group order 24/24, group spelling, pointer/index hoists, wrap positions (63-position single + 18 nested + 79+79 second-wrap). Class B (rows 35-36) remains foreclosed by s7/s8/s9. The do-while(0) scoping conflict between .claude/rules/no-new-park-categories.md:256-271 and .claude/rules/do-while-zero-exception.md is carried forward unresolved.
+
+## [s14] synthesis — 2026-09-01 — FLOOR 5 -> 4; RESIDUAL CLASS C IS CLOSED for the first time in fourteen sessions
+
+Chassis re-measured at session start: `sandbox func_800770B8 --disable all` on the
+inherited s11 body = **score 5 / build_insns 175 / target 175**, identical to the
+s11/s12/s13 ledger floor. No drift; every inherited conclusion is spent against the
+same numbers it was banked with. (The dispatch brief's "measurement unavailable" is
+a driver-side gap, not a chassis change.)
+
+### 1. The s13 frontier's item 1 is CONFIRMED, and it closes class C
+
+s13 left this as the strongest hypothesis: *under the p_6a operand flip, the loop
+head's emission order (rows 38-59) can be restored by changing what the loop head
+COMPUTES rather than how the inner block spells its address — the lever is an
+additional early CONSUMER of `t0*4`.* s14 spelled that as eleven perturbations of the
+loop head's first-demand order and measured them on three bases in one sweep
+(`tmp/grind/func_800770B8/s14/sweep.log`, 33 builds; generator `s14/gen.py`;
+F = the floor-5 candidate, A = flipped-ABCD `s12/perm/Q00.c` (29),
+C = flipped-CABD `s12/perm/Q12.c` (12)):
+
+| perturbation | F (5) | A (29) | C (12) | insns |
+|---|---|---|---|---|
+| P0 control | 5 | 29 | 12 | 175 |
+| P1 group C into the integer domain, addend first | 6 | 29 | 12 | 175 |
+| P2 group A into the pointer domain, base first | 6 | 29 | 13 | 175 |
+| P3 group B in one step (`&D_800A35D0 + t0*4`) | 10 | 31 | 17 | 175 |
+| P4 0x5C/0x60 pair hoisted to the top of the loop body | 50 | 48 | 57 | **173** |
+| P5 0x5C/0x60 pair moved to the inner-loop boundary | 71 | 71 | 71 | **174** |
+| P6 group D hoisted above every t0*N group | 40 | 29 | 35 | 175 |
+| P7 group C's shift as `t0 << 2` | 5 | 29 | 12 | 175 |
+| **P8 group A's index as `(t0 * 4) >> 1`** | 7 | **4** | 12 | 175 |
+| P9 inner index as `(t0*4)*2 + t0*2` | 5 | 43 | 43 | **178** |
+| P10 groups B and C both integer-domain, addend first | 11 | 31 | 17 | 175 |
+
+**P8 on the flipped-ABCD base measures 4/175 — a new floor.** Positional diff
+(`s3/posdiff.py`) of that build:
+
+    replace ours[35:37] / tgt[35:37]      <- class B, unchanged
+      O 35 sw $0,48($17)     T 35 sw $zero, 0x30($v0)
+      O 36 sh $0,52($17)     T 36 sh $zero, 0x34($v0)
+    insert tgt[40:42]        T 40 sll $v0, $a1, 1
+                             T 41 lw $a0, %gp_rel(D_800A36A0)($gp)
+    delete ours[41:43]       O 41 lw $4,0($28)
+                             O 42 sra $2,$3,0x1
+    replace ours[50:51]                   <- the known LO16 scorer artifact
+      O 50 addiu $2,$2,0     T 50 addiu $v0, $v0, %lo(D_800A35D0)
+
+Rows 43-64 now match the target row for row. **Residual class C (rows 62-64,
+`addu $2,$2,$3` vs `addu $v1,$v1,$v0`) — the lock s6 through s13 could not break —
+is GONE.** Class A was already gone at floor 5. What replaces class C is a smaller,
+sharper residual, recorded below as **class D**.
+
+### 2. Class D — the new 2-row residual, fully characterised
+
+Our loop head (`s13/ours.py 36 52`) vs the target, same three slots:
+
+    ours    40 sll $3,$5,0x2      (t0*4)      target 40 sll $v0,$a1,1   (t0*2)
+    ours    41 lw  $4,0($28)      (global)    target 41 lw  $a0,...     (global)
+    ours    42 sra $2,$3,0x1      (t0*2)      target 42 sll $v1,$a1,2   (t0*4)
+
+Same slot count, same lw position, and the two quantities land in the target's own
+registers by role ($3/$v1 carries t0*4, $2/$v0 carries t0*2). Only two things differ:
+the ORDER of the two shifts and the opcode of the second — because our t0*2 is
+*derived from* t0*4 (`sra`), whereas the target computes both shifts directly from
+t0. That derivation is exactly the token that closes class C, so class D is the
+price of the class-C fix, and the two are currently welded together.
+
+### 3. The dependence DIRECTION is what matters, not the reference count
+
+13 builds, `s14/sweep2.log` (generator `s14/gen2.py`), all on flipped-ABCD:
+
+| variant | score | insns |
+|---|---|---|
+| D03 group A `(t0*4) >> 1` (= P8) | **4** | 175 |
+| D06 group A `(u32)(t0*4) >> 1` (srl) | **4** | 175 |
+| D09 named `s32 i4 = t0*4;` + `i4 >> 1`, C uses `i4` | **4** | 175 |
+| D12 D03 + group C as `base + (t0 << 2)` | **4** | 175 |
+| D04 `(s32)base + ((t0*4) >> 1)` (base named first) | 5 | 175 |
+| D05 `base + ((t0*4) >> 1)` (pointer domain) | 5 | 175 |
+| D11 D03 + group C into the integer domain | 5 | 175 |
+| D08 `u8 *pC = base + t0*4;` hoisted, C uses pC | 25 | 175 |
+| D01 group C as `base + ((t0*2) * 2)` | 29 | 175 |
+| D02 group C as `base + ((t0*2) << 1)` | 29 | 175 |
+| D07 group A as `(t0*4) / 2` | 29 | 175 |
+| D10 named `s32 i4 = t0*4;`, C uses it, A unchanged | 29 | 175 |
+| D14 D03 + the 0x5C/0x60 pair also `(t0*4) >> 1` | 14 | 176 |
+
+Four facts fall out:
+
+1. **The direction is asymmetric.** t0*2 derived from t0*4 = 4. t0*4 derived from
+   t0*2 (`(t0*2)*2`, `(t0*2)<<1`) = 29, i.e. it does nothing at all.
+2. **`/ 2` is folded away.** `(t0*4) / 2` measures exactly the unperturbed 29, so
+   GCC 2.7.2's `fold()` collapses the exact division back to `t0*2` and the
+   dependence never reaches RTL. Only a shift survives. (This is a genuinely useful
+   toolchain datum: the mult/exact-div identity folds, the mult/shift identity does
+   not.)
+3. **Naming alone is inert.** `s32 i4 = t0*4;` used only by group C = 29; the same
+   local additionally consumed by group A as `i4 >> 1` = 4. The local is not the
+   lever; the consumption is.
+4. **Spelling of the surrounding groups is second-order** — group C in the integer
+   domain, `t0 << 2`, or base-first ordering move the result by at most 1.
+
+### 4. Bumping the t0*4 reference count WITHOUT the dependence does not work
+
+8 builds, `s14/sweep4.log` (generator `s14/gen4.py`), on flipped-ABCD. The idea was
+to raise `reg_n_refs` on the t0*4 pseudo without paying class D's `sra`:
+
+| variant | score | insns |
+|---|---|---|
+| E5 group C's two stores spelled with the index inline (2 refs, no `ptr`) | 25 | 175 |
+| E6 the same on group B | 35 | 177 |
+| E7 both | 12 | 177 |
+| E8 group A's five stores spelled with the index inline | 29 | 175 |
+| E1 the 0x5C/0x60 pair via `(t0*4) >> 1`, group A unchanged | 39 | **176** |
+| E4 group D via `base + ((t0*4) >> 2)` | 7 | **176** |
+| E9 P8 + group C's stores spelled inline | 5 | 175 |
+| E10 group C's stores inline, group A back to `t0*2` | 25 | 175 |
+
+Nothing reaches 4. Reference count alone moves the flipped base from 29 to 25 (E5)
+and to 12 (E7, but at 177 insns — disqualified on count). **It is the dependence
+edge, not the reference count, that reverses the shift birth order and re-seats the
+contested plus.**
+
+### 5. Class B re-confirmed dead ON THIS CHASSIS
+
+s7/s8/s9 foreclosed class B (rows 35-36: the 0x30/0x34 stores go through the `p_old`
+copy rather than the raw `func_8006E49C` result) on the floor-9 chassis. Re-measured
+here on floor-4 with four fresh spellings of the whole post-call block
+(`s14/sweep3.log`, generator `s14/gen3.py`):
+
+| variant | score | insns |
+|---|---|---|
+| B1 fresh `u8 *nb` result local, stores first, `p_old`/global assigned after | 24 | **170** |
+| B3 result assigned straight into `D_800A36A0`, `p_old` derived after | 22 | **170** |
+| B4 fresh `u8 *nb`, global first, `p_old` last | 22 | **170** |
+| B2 all four stores spelled through `(u8 *)p_old` | 6 | 175 |
+
+Every spelling that actually reaches the raw call-result pseudo collapses the block
+to **170 instructions — five FEWER than the target's 175** — which is the same
+failure mode s7 recorded (the copy the target keeps is deleted by flow.c). The one
+spelling that preserves 175 is byte-worse. Class B stays foreclosed, now on the
+current chassis.
+
+### 6. A second do-while(0) wrap is inert on the floor-4 chassis
+
+79-position second-wrap sweep on the floor-4 body (`s14/wrap.log`, positions
+generated by `s12/gen_wrap.py`): **minimum 4**, reached at 34 of the 79 positions,
+all byte-identical to the no-second-wrap build. Nothing goes below 4; the harmful
+positions are the familiar ones (inside the inner loop / around the call block,
+down to 67-163 insns). The floor-4 form therefore carries exactly ONE wrap — the
+s11 prologue fence — and s12's "the CABD basin needs a SECOND wrap" note no longer
+applies to the live basin.
+
+### 7. The open classification question (carried to the next session)
+
+The floor-4 form differs from the floor-5 form in exactly two source tokens:
+(1) `p_6a`/`p_7e` written flipped — ordinary C, and s13 proved this is the operand
+order the original source must have had; (2) group A's index written `(t0 * 4) >> 1`
+instead of `t0 * 2`. Token (2) is an arithmetic identity with no semantic purpose
+(cheat-checklist T1) that no human would write from the specification (T2), and its
+justification is a named GCC mechanism (T3). It is not obviously covered by any
+frozen family: the sanctioned list carries "opaque arithmetic variables" while the
+forbidden catalog carries "`s32 one = 1;` opaque variable to defeat single-bit
+transform", and the two are in tension for this shape. **This is a first reach, so
+the honest cheat-free floor remains 5 until a ruling says otherwise, and the s14
+outcome is a ruling-request rather than a submission.** The STRUCTURAL finding — that
+an early t0*4 dependence in the loop head closes class C — is independent of how
+token (2) is ultimately spelled, and is the real inheritance from this session.
+
+- [s14] FLOOR 5 -> 4 and RESIDUAL CLASS C IS CLOSED. Deriving group A's half-word index from the t0*4 pseudo (`(t0 * 4) >> 1` instead of `t0 * 2`) on the flipped-p_6a ABCD body measures 4/175 and emits the contested addition as `addu $v1,$v1,$v0` with the target's own seats; rows 43-64 match the target row for row. This confirms the s13 frontier item 1 exactly: the lever was what the LOOP HEAD COMPUTES, not how the inner block spells its address.
+
+- [s14] The class-C fix costs a NEW 2-row residual (class D): ours 40 `sll $3,$5,0x2` / 41 `lw $4` / 42 `sra $2,$3,0x1` against target 40 `sll $v0,$a1,1` / 41 `lw $a0` / 42 `sll $v1,$a1,2`. Same slots, same lw position, same registers by role - only the order of the two shifts and the opcode of the second differ, because our t0*2 is derived from t0*4 while the target computes both from t0 directly.
+
+- [s14] The dependence DIRECTION is asymmetric and load-bearing: t0*2 derived from t0*4 gives 4; t0*4 derived from t0*2 (`(t0*2)*2` or `(t0*2)<<1`) gives 29, i.e. is completely inert.
+
+- [s14] GCC 2.7.2's fold() collapses `(t0 * 4) / 2` back to `t0 * 2` (measures exactly the unperturbed 29) but does NOT collapse `(t0 * 4) >> 1`. The mult/exact-division identity folds; the mult/shift identity survives to RTL. Reusable toolchain datum.
+
+- [s14] Naming is not the lever: `s32 i4 = t0 * 4;` consumed only by group C measures 29; the same local additionally consumed by group A as `i4 >> 1` measures 4. `(u32)(t0*4) >> 1` (srl) also measures 4.
+
+- [s14] Raising reg_n_refs on the t0*4 pseudo WITHOUT creating the dependence does not close class C: spelling group C's two stores with the index inline (two refs instead of one through `ptr`) gives 25, the same on group B gives 35/177, both together 12/177, group A's five stores inline gives 29. It is the dependence edge, not the reference count.
+
+- [s14] Loop-head first-demand order is otherwise exhausted (33 builds, three bases x 11 perturbations): group C into the integer domain, group A into the pointer domain, group B in one step, `t0 << 2`, and group D hoisted are all neutral-or-worse everywhere; hoisting the 0x5C/0x60 pair to the loop top (173 insns) or to the inner-loop boundary (174 insns) is catastrophic on every base.
+
+- [s14] CLASS B RE-CONFIRMED FORECLOSED ON THE FLOOR-4 CHASSIS (s7/s8/s9 measured it on the floor-9 chassis). Four fresh spellings of the post-call block: every one that reaches the raw `func_8006E49C` result pseudo collapses the function to 170 instructions - five FEWER than the target's 175 - and the one spelling that preserves 175 is byte-worse (6).
+
+- [s14] A SECOND `do { } while (0);` is inert on the floor-4 chassis: 79-position sweep, minimum 4, reached at 34 of 79 positions all byte-identical to the unwrapped build, nothing below 4. The live form carries exactly one wrap (the s11 prologue fence).
+
+- [s14] CLASSIFICATION OPEN: the floor-4 form's second token, `(t0 * 4) >> 1` for a half-word index, is an arithmetic identity with no semantic purpose (T1), which no human would write from the specification (T2), justified by a named GCC mechanism (T3). It is a first reach - the sanctioned "opaque arithmetic variables" entry and the forbidden "`s32 one = 1;` opaque variable" entry are in tension for this shape. Until a ruling lands, the honest cheat-free floor is 5 and the floor-4 form is NOT submittable.

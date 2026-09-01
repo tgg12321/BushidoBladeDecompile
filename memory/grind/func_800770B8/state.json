@@ -100,7 +100,9 @@
    "next_probe": "Unchanged: emit a ruling-request, or have the operator update no-new-park-categories.md:256-271 to match the 2026-07-06 ruling. s13 adds no new datum here and deliberately did not re-probe the wrap axis; s12's datum stands (the CABD basin needs a SECOND wrap to reach 10, so the wrap count will not shrink if class C is closed from that side)."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "func_800770B8's honest floor stays 5. Do not respell the t0*4->t0*2 identity detour in any form. The dependence may only be reached if it is FORCED by real program structure -- e.g. group A addressed through a cursor genuinely derived from group C's t0*4 pointer, where the derivation has a truthful semantic reading and emits no instruction the target lacks."
+ ],
  "banned_constructs": [],
  "ladder_skip": 0,
  "pending_fixup": null,
