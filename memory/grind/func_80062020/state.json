@@ -91,15 +91,15 @@
  "judge_constraints": [
   "func_80062020's epilogue must write the terminator row through ONE tree shape; the floor-4 body in candidate.c remains the best uncontested form. The next session may not respell the alias/direct split (including permuter-derived chained-assignment variants such as rejected/epilogue-permuter-s4-dualspelling-chain.c). Since every sanctioned axis is measured dead (structural s3, permuter s4 ~46k iters, aggregate/tree-shape s5, forensics s6) and scan_hand_coded is LOW 0/8, the correct next move is to rewrite the s4 escalation packet as a fidelity-limited lock, correcting the now-false 'no SOTN precedent' assertion and grounding the refusal in the two-shape theorem plus this ruling.",
   "LAYER-1 CHEAT-REVIEWER FAIL: The candidate epilogue is the identical byte-for-byte construct the Judge already FAILed on 2026-08-25 (pointer p for cols b/c, direct symbol-relative expression for col a); it is being resubmitted under a different family label whose own scope sentence it self-admittedly does not fit, and the ledger's explicit ban on this exact construct was never mechanically cleared. Next action: Do not commit. The construct is banned in the current, unamended ledger (state.json judge_constraints) and is the same body already FAILed by the Judge on 2026-08-25 under a closely rel",
-  "Keep the epilogue body exactly as submitted; fix only the comments - delete the /* FAKE */ marker and every proven-spelling-class-reconstruction / ruling-6a four-point claim, and re-file the mixed spelling as ordinary C under ordinary-c-judge-decidable Ruling 1 sec.3."
+  "Keep the epilogue body exactly as submitted; fix only the comments - delete the /* FAKE */ marker and every proven-spelling-class-reconstruction / ruling-6a four-point claim, and re-file the mixed spelling as ordinary C under ordinary-c-judge-decidable Ruling 1 sec.3.",
+  "LAYER-1 CHEAT-REVIEWER FAIL: Same-lvalue dual-spelling addressing-mode steer (row[0] re-spelled as the full &D_800F1198+ofs expression) \u2014 the exact construct already FAILed by two prior Judges (2026-08-25 and 2026-08-31); deleting the incriminating comments does not change what the code does. Next action: Do not commit. This construct (the same-lvalue dual-spelling epilogue store) is FAILed on the merits, independent of its comments or claimed family \u2014 it is the identical construct two prior Judges already rejected. The worker must return to the honest floor-4 candidate (uniform row-pointer ep"
  ],
  "origin": "queue",
  "created": "2026-07-24T03:28:39.877485+00:00",
- "banned_constructs": [],
- "ladder_skip": 1,
- "pending_fixup": {
-  "kind": "annotation",
-  "detail": "Keep the epilogue body exactly as submitted; fix only the comments - delete the /* FAKE */ marker and every proven-spelling-class-reconstruction / ruling-6a four-point claim, and re-file the mixed spelling as ordinary C under ordinary-c-judge-decidable Ruling 1 sec.3.",
-  "set": "2026-09-01T03:25:19.793095+00:00"
- }
+ "banned_constructs": [
+  "row = (s32 *)((u8 *)&D_800F1198 + ofs); row[2]=0; row[1]=0; *(s32 *)((u8 *)&D_800F1198 + ofs) = 0;",
+  "Self-vet's SCOPE NOTE: 'the C body is BYTE-FOR-BYTE IDENTICAL to the body the Judge already FAILed on 2026-08-31 22:24 ... The ONLY changes are comments.'"
+ ],
+ "ladder_skip": 11,
+ "pending_fixup": null
 }

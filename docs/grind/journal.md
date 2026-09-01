@@ -1372,3 +1372,5 @@
 - 2026-08-31 21:22 func_8002D320 JUDGE ESCALATE (canonical-asm-grant) — grant EXECUTED (tier TIGHT_C), function stays active.
 - 2026-08-31 21:38 func_8002D320 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-08-31 21:55 func_8003D888 s1 [recon] floor=13: Recon: cheat chassis replaced with natural C; floor 32->13 via param-reuse-as-ptr discovery; seat-rotation mechanism greg-proven (n's $a1 copy-preference vs prune purge); endgame lever identified (entry-copy-above-lw schedule).
+- 2026-08-31 22:25 func_80062020: judge FAILED a bytes-proven candidate — The CODE is legitimate and I am not objecting to it. The mixed epilogue spelling (row[1]/row[2] vs the array-base expres
+- 2026-08-31 22:31 func_80062020: LAYER-1 FAILED a sandbox-0 candidate — Same-lvalue dual-spelling addressing-mode steer (row[0] re-spelled as the full &D_800F1198+ofs expression) — the exact construct already FAILed by two prior Judges (2026-08-25 and 2026-08-31); deleting the incriminating comments does not change what the code does.
