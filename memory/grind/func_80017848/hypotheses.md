@@ -2347,3 +2347,67 @@ free out-of-block use site anywhere.
 ## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
 
 Returned to active under Ruling A. Ground: guard-only duplication was never measured (only whole-loop duplication was priced at 35), and the load-bearing cse EBB-boundary attribution is behavioural inference, never dump-confirmed. The 2026-08-30 record's 'byte-matches only via a cheat' sentence is RETRACTED by the ruling (zero rules/cheat-asm since 2026-08-19). Named probes: (1) duplicate loop 2's 4-instruction GUARD (not body) into the loop-1 skip path, score on chassis A and the candidate chassis; (2) run dump.ps1 .cse/.combine on chassis A to convert the EBB account from inference to attribution.
+
+## s27 (escalation, 2026-09-01)
+
+**H-s27-1 — Loop 2's preheader copy becomes reachable if loop 2's guard block stops
+being a join, because cse's extended basic block would then contain the load of
+ctx+0xC.** (Inherited s26 frontier item 1; the owner's 2026-09-01 Ruling-A named probe.)
+Probe: three guard-duplication spellings with a single shared loop body — G1 (guard only,
+duplicated into the loop-1 taken path, `goto` into the shared preheader), G2 (guard +
+preheader duplicated into the taken path, `goto` into the shared do-while body), G3 (same
+as G2 but duplicated into the SKIP path). Result: **18 / 44 / 47**, build_insns
+**134 / 133 / 136** against a 127-insn target. jump2 does not cross-jump the duplicated
+tails back together (after cse the two arms are no longer identical, which is exactly what
+`do_cross_jump` requires). **KILLED** — the mechanism is real (see H-s27-2) but no C
+spelling of it is affordable; whole-loop duplication was already 35 (s12).
+
+**H-s27-2 — the EBB-boundary account of the loop-1/loop-2 asymmetry is correct.**
+Probe: `.cse` dump of chassis A via `tools/grinder/dump.ps1` (dumps/ings.cse:4270-4915).
+Result: loop 1's preheader re-read is folded away by substitution (insn 89 reads reg 79,
+the guard block's own load, directly); loop 2's is emitted as a real load (insn 162) because
+`code_label 145` — the join loop 1's guard branches to — ends cse's block scan
+(cse.c:8038). **CONFIRMED**, and it is now dump-evidence rather than three sessions of
+inference.
+
+**H-s27-3 — cse is the producer of TARGET's loop-2 preheader copy `addu $a3,$a0,$zero`.**
+Probe: read target's own CFG in `asm/funcs/func_80017848.s` against the confirmed cse rule
+from H-s27-2. Result: target has the identical join (`blez $v0, .L8001791C` at 0x800178C8)
+with its loop-1 exit-tail reload of ctx+0xC at 0x80017914 sitting BEFORE the label, so cse's
+window for target's own loop-2 preheader excluded that load too. **KILLED** — cse cannot be
+the producer of the copy we are missing. Every future proposal must name a producer that
+works ACROSS a join label and costs zero instructions (target 127, candidate already 127).
+
+**H-s27-4 — putting the ctx+0xC load INSIDE loop 2's guard block (after the join) gives the
+preheader an in-block equal to fold against, producing the copy without duplicating
+anything.** Probe: cells J (guard reads ctx+0xC inline), J2 (J plus dropping the now-dead
+loop-1 exit-tail re-read), L (J with the read named into a fresh local `r` whose second use
+is the do-while condition), L2 (J with `r`'s second use post-loop, as math_Distance3D's first
+argument), all on chassis A. Result: **14 / 14 / 13 / 21**, build_insns 125 / 125 / 126 / 125
+— cse folds the in-block pair by SUBSTITUTION and the form comes out SHORT, and the
+out-of-block second use that preserves a copy elsewhere in this function is priced exactly
+where the banked table already put it. **KILLED.**
+
+## [s27] Loop 2's preheader copy becomes reachable if loop 2's guard block stops being a join, because cse's extended basic block would then contain the load of ctx+0xC (s26 frontier item 1; the owner's 2026-09-01 Ruling-A named probe).
+- mechanism: cse_end_of_basic_block (tools/gcc-2.7.2/cse.c:8038) ends the block scan at ANY code label, so the load that precedes the join is outside the window in which cse processes loop 2's preheader; removing the join would put them in one window and the redundant re-read would fold as it does in loop 1.
+- probe: Three guard-duplication cells on the candidate chassis, all keeping ONE shared loop body: G1 = loop-2 guard duplicated into the loop-1 taken path with a goto into the shared preheader+body; G2 = guard AND preheader duplicated into the taken path with a goto into the shared do-while body; G3 = same as G2 but duplicated into the loop-1 SKIP path (the literal wording of the ruling).
+- result: G1 = 18 (134 build insns), G2 = 44 (133), G3 = 47 (136), against a 127-insn target and a floor of 3. jump2 does not cross-jump the duplicated tails back together, because after cse the two arms are no longer identical (one arm's redundant read is folded, the other's is not) - exactly the identity do_cross_jump requires. Whole-loop duplication was already 35 (s12).
+- verdict: KILLED
+
+## [s27] The EBB-boundary account of the loop-1 / loop-2 asymmetry is correct and not merely a behavioural inference.
+- mechanism: cse folds a redundant read only against an equal expression recorded earlier in the SAME extended basic block; the join label between loop 1's exit tail and loop 2's guard starts a new block.
+- probe: pwsh tools/grinder/dump.ps1 -Func func_80017848 with body_A.c applied; read post-cse RTL at tmp/grind/func_80017848/dumps/ings.cse:4270-4915.
+- result: Loop 1: insn 64 loads ctx+0xC after code_label 61, and the preheader (insn 89) reuses reg 79 directly - the re-read is substituted away. Loop 2: insn 141 loads ctx+0xC, then code_label 145 (the join), then the preheader at insn 162 is still a real (mem (plus (reg 72) (const_int 12))). Both fates visible side by side in one dump.
+- verdict: CONFIRMED
+
+## [s27] cse is the producer of TARGET's loop-2 preheader copy 'addu $a3,$a0,$zero' at 0x80017930.
+- mechanism: If cse folded a redundant ctx+0xC re-read into an orphaned copy in target's loop-2 preheader, the load it folded against would have to sit inside the same cse block.
+- probe: Read target's own CFG in asm/funcs/func_80017848.s against the dump-confirmed cse rule from the previous hypothesis.
+- result: Target carries the identical join: the loop-1 guard's 'blez $v0, .L8001791C' (0x800178C8) branches to the label that loop 2's guard block starts at, and the loop-1 exit-tail reload 'lw $a0, 0xC($s2)' / 'sll $a1, $s4, 6' sits at 0x80017914/18, BEFORE that label. cse's window excluded that load in the original compilation too, so cse cannot have produced the copy. The EBB-removal frontier was aimed at a mechanism the original build did not use.
+- verdict: KILLED
+
+## [s27] Putting the ctx+0xC load INSIDE loop 2's guard block (after the join) gives the preheader an in-block equal to fold against, producing the copy with no duplication at all.
+- mechanism: Same cse rule, satisfied by relocating the load instead of removing the label; a fresh named local carrying the read, with an out-of-block second use downstream of the base add, should then survive combine per the s16 trichotomy.
+- probe: Cells J (guard reads *(u8**)(ctx+0xC) inline instead of p), J2 (J plus dropping the now-dead loop-1 exit-tail re-read), L (J with the read named into a fresh local r whose second use is the do-while condition), L2 (J with r's second use post-loop as math_Distance3D's first argument) - all on chassis A.
+- result: 14 (125 insns) / 14 (125) / 13 (126) / 21 (125). cse folds the in-block pair by SUBSTITUTION, so the forms come out SHORT rather than gaining a copy, and the out-of-block second use prices exactly where the banked table already put it (post-loop 19-22, in-body 6, pre-join 12).
+- verdict: KILLED

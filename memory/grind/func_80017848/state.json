@@ -1,7 +1,7 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 26,
+ "session_count": 27,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -159,23 +159,24 @@
    "floor": 3,
    "modality": "escalation",
    "headline": "Floor holds at 3 (re-measured 127/127 on the migrated chassis); the owner's 2026-08-30 ruling-10 directive is executed as a modality change rather than a fourth escalation packet, and six new cells re"
+  },
+  {
+   "session": 27,
+   "floor": 3,
+   "modality": "escalation",
+   "headline": "Owner's 2026-09-01 Ruling-A probe EXECUTED: guard-only duplication is dead at 18/44/47, the .cse dump confirms the EBB-boundary attribution AND proves target's own CFG carries the same join (so cse ca"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Loop 2's preheader copy is reachable if loop 2's GUARD BLOCK stops being a join - i.e. if the loop-1 guard's skip path reaches loop 2's guard through its own copy of that guard rather than by branching to a shared label - because then cse's extended basic block would include the load of ctx+0xC and would fold loop 2's redundant re-read into a copy exactly as it does in loop 1.",
-   "mechanism": "cse_end_of_basic_block terminates the extended basic block at a label with more than one reference, so the load of `p` that precedes the join is outside cse's window when it processes loop 2's preheader - which is precisely why loop 2's redundant read stays a real `lw` (E-s26-2) while loop 1's folds to a copy. Removing the join removes that boundary.",
-   "next_probe": "s12 measured duplicating the WHOLE of loop 2 into both arms of the loop-1 guard at 35 (jump2 does not re-merge). Duplicating only loop 2's GUARD (a 4-instruction test) into the loop-1 skip path, leaving one shared loop body, has never been measured - build it on chassis A and on the candidate chassis and score both. If it is also >= 10, the join is structurally unremovable from C and that closes the last cse-boundary lever."
+   "hypothesis": "The producer of target's loop-2 preheader copy is a pass that creates or preserves a redundant reg-reg copy ACROSS a join label - it is not cse (killed this session), not combine on an in-block use (s17's seven-path enumeration), and not local-alloc's optimize_reg_copy_1/_2 (s15/s22 analysis + G1=G2=13 measurement).",
+   "mechanism": "Item 3 of this session's evidence shows a producer must exist that is insensitive to the code_label boundary, since target's own CFG has the join and still emits the copy. Every pass enumerated across 27 sessions is now excluded, so the enumeration itself is incomplete rather than the search.",
+   "next_probe": "Not a C probe: a toolchain reading. Enumerate every 2.7.2 pass that can emit a (set (reg) (reg)) not present in the incoming RTL - candidates not yet read end to end for this function are reload's inheritance/spill-copy emission (reload1.c emit_reload_insns) and regmove/optimize_reg_copy_3 - and check each against the constraint 'must fire in a block whose predecessor is a join'. Only if one qualifies does a C spelling become worth pricing."
   },
   {
-   "hypothesis": "Chassis A's two missing copies have a single shared cause that an instrumented-cc1 dump can name, and the dump would either confirm the EBB-boundary explanation for loop 2 or expose a different reason that the C can still address.",
-   "mechanism": "On chassis A the residual is exactly 'the two copies and nothing else', which makes it the cleanest chassis yet for a pass-attribution run: loop 1's redundant read is visibly folded-then-deleted (127 -> 126) and loop 2's visibly not folded at all, so .cse and .combine dumps of the SAME build show both fates side by side in one function.",
-   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_80017848` with body_A.c applied (the instrumented cc1 is tools/gcc-2.7.2/cc1, NOT build/cc1; re-prove codegen identity with tmp/grind/func_80017848/s15/idump.sh first) and read .cse for whether loop 2's `lw` is even entered in the same qty as `p`, then .combine for loop 1's copy deletion. Cheap, and it either confirms or replaces the EBB-boundary account that this session inferred from behaviour alone."
-  },
-  {
-   "hypothesis": "The residual's remaining 3 points are the same two points at two sites, so any lever that buys ONE preheader copy for free buys both - and the only known producer (an orphaned cse-folded redundant read, per s9/s15/s16) requires a second use whose price is now measured at every site in the function.",
-   "mechanism": "Loop 1 buys its copy for exactly 1 point (the `p = q` tail materialises as `addu a0,a3,zero` where target has `lw a0,12(s2)`); loop 2 cannot buy it at all (19-22 post-loop, 6 in-body, 12 pre-join carrier). The asymmetry is entirely about where a free second use exists, not about the copy mechanism, which is understood.",
-   "next_probe": "Any future proposal must name a second-use SITE, not a mechanism - the mechanism is settled. Before spending a cell, price the site against the banked table (post-loop 19-22, in-body 6, pre-join 12, guard-consuming 6-28) and reject anything that adds a live value across loop 2, since target already occupies s0-s5 and a seventh callee-save grows the prologue."
+   "hypothesis": "The 3-point residual is unreachable in ordinary C on this chassis, and the function's disposition is the recorded foreclosure rather than a further modality.",
+   "mechanism": "Loop 1 buys its copy for 1 point via a free second use (p = q). Loop 2 has no free second-use site anywhere in the function - post-loop 19-22, in-body 6, pre-join 12, guard-consuming 6-28 - and the copy cannot be bought by removing the cse boundary (18/44/47) or by relocating the load (13/14/14/21).",
+   "next_probe": "None until a re-activation trigger fires: an owner class grant covering an invented dead local whose only purpose is to orphan a reg-reg copy, or the toolchain finding above. Both are recorded in the decisions.md entry."
   }
  ],
  "judge_constraints": [],

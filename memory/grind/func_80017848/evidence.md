@@ -3224,3 +3224,143 @@ classifies as not-a-packet and directs to be returned as `progress` instead.
 - [s26] The owner's 2026-08-30 escalation-batch ruling 10 (docs/grind/decisions.md, the 2026-08-30 escalation-batch entry) returns func_80017848 to ACTIVE 'with modality change per escalation-not-parked' on the ground that its own latest ledger entry states nothing pends the owner. This session executed that directive as a structural modality and deliberately did NOT file a fourth escalation packet: three dispositions already exist (docs/grind/decisions.md:5752, :5988, :12080), both endgame-lock gates were re-run and FAILED as recently as s25 (scan_hand_coded tier=LOW 0/8; no SOTN-master file:line precedent), and a packet restating 'both gates fail' carries no decidable question - which .claude/rules/escalation-not-parked.md (owner ruling 2026-08-24, second) classifies as not-a-packet and directs to be returned as `progress` with the kills banked.
 
 - [s26] src/ings.c was restored to its committed INCLUDE_ASM state at the end of the session (git status clean for src/); the only tree changes are the ledger files under memory/grind/func_80017848/.
+
+## s27 (escalation, 2026-09-01) — the owner's Ruling-A named probe, EXECUTED
+
+The 2026-09-01 FORECLOSED-BUCKET REVIEW (docs/grind/decisions.md, Ruling A row for
+func_80017848) returned this function to active on exactly two grounds, and named the
+probe that had to be run: *"duplicate loop 2's 4-insn GUARD into the loop-1 skip path
+on chassis A + candidate chassis; run `.cse`/`.combine` dumps via dump.ps1."*
+Both halves ran this session. Both are now measured, and the guard-duplication axis is
+CLOSED with numbers rather than inference.
+
+### E-s27-0 — chassis re-measurement (do not quote older floors)
+`sandbox func_80017848 --disable all` with `memory/grind/func_80017848/candidate.c`
+applied to src/ings.c: **score 3, target_insns 127, build_insns 127, scorable true**.
+Chassis A (`tmp/grind/func_80017848/s27/body_A.c`, the s26 body): **score 4, 127/126**.
+The floor is unchanged at 3 on the post-migration chassis.
+
+### E-s27-1 — guard duplication is measured DEAD at three spellings (18 / 44 / 47)
+The frontier's premise was that loop 2's preheader copy is unreachable because
+`cse_end_of_basic_block` terminates the extended basic block at the join label that
+loop 1's guard branches to, and that duplicating only loop 2's *guard* (not the whole
+loop, priced 35 by s12) might remove the join cheaply enough to pay for itself.
+Three spellings were built on the candidate chassis, all with a single shared loop body
+(so the duplication is strictly the guard, or the guard plus the 4-insn preheader):
+
+| cell | shape | score | build insns |
+|---|---|---|---|
+| G1 | loop-2 GUARD duplicated into the loop-1 taken path; `goto` into the shared preheader+body | **18** | 134 |
+| G2 | guard AND preheader duplicated into the loop-1 taken path; `goto` into the shared do-while body | **44** | 133 |
+| G3 | guard AND preheader duplicated into the loop-1 SKIP path; `goto` into the shared do-while body | **47** | 136 |
+
+Every one of them ADDS instructions (134/133/136 against a 127-insn target) — jump2's
+cross-jumping does NOT re-merge the duplicated tails, because after cse the two copies
+are no longer identical (one arm's redundant read is folded, the other's is not), which
+is precisely the condition `do_cross_jump` requires. The cheapest guard-only spelling
+G1 is +7 insns and 6x the floor. **KILLED.** The "remove the cse EBB boundary from C"
+lever is dead at every spelling that keeps one shared loop body; whole-loop duplication
+was already dead at 35 (s12). Banked as
+`rejected/s27_l2_guard_dup_shared_preheader_costs_18.c`,
+`rejected/s27_l2_guard_plus_preheader_dup_taken_path_costs_44.c`,
+`rejected/s27_l2_guard_plus_preheader_dup_skip_path_costs_47.c`.
+
+### E-s27-2 — the dump CONFIRMS the EBB attribution (it was inference until now)
+`pwsh tools/grinder/dump.ps1 -Func func_80017848` with body_A.c applied; the post-cse
+RTL for the function is `tmp/grind/func_80017848/dumps/ings.cse` lines 4270-4915. The
+two loops' fates are visible side by side in one dump, which is what s26's frontier
+item asked for:
+
+    (code_label 61 ...)                                  <- loop-1 guard block STARTS here
+    (insn 64  (set (reg 79) (mem (plus (reg 72) (const_int 12)))))   <- the load of ctx+0xC
+    (insn 72  (set (reg 85) (plus (reg 84) (reg 79))))               <- guard address
+    (insn 75  (set (reg 85) (mem (plus (reg 85) (const_int 28)))))
+    (jump_insn 79 ... (label_ref 145))                               <- skip to loop 2's guard
+    (insn 86  (set (reg 77) (mem (plus (reg 72) (const_int 16)))))   <- links
+    (insn 89  (set (reg 81) (plus (reg 84) (reg 79))))  <- PREHEADER: reg 79 reused, the
+                                                           redundant re-read is GONE
+    ...
+    (insn 141 (set (reg 79) (mem (plus (reg 72) (const_int 12)))))   <- loop-1 exit tail
+    (insn 143 (set (reg 84) (ashift (reg 74) (const_int 6))))
+    (code_label 145 ...)                                 <- THE JOIN. cse block ends here.
+    (insn 151 (set (reg 108) (plus (reg 84) (reg 79))))              <- loop-2 guard address
+    (insn 155 (set (reg 110) (mem (plus (reg 108) (const_int 32)))))
+    (jump_insn 158 ... (label_ref 218))
+    (insn 162 (set (reg 112) (mem (plus (reg 72) (const_int 12)))))  <- PREHEADER: still a
+                                                                        REAL LOAD, not folded
+    (insn 164 (set (reg 81) (plus (reg 84) (reg 112))))
+
+That is the mechanism, dump-confirmed, no longer inferred: `cse_end_of_basic_block`
+(tools/gcc-2.7.2/cse.c:8038, the scan loop `while (p && GET_CODE (p) != CODE_LABEL)`)
+ends the block at ANY code label, so the load at insn 141 is outside the window in which
+cse processes loop 2's preheader (insn 162), while loop 1's load (insn 64) is inside its
+own window and its preheader re-read is substituted away.
+
+### E-s27-3 — the same dump RETIRES the cse account as an explanation of TARGET
+The dump proves more than the frontier asked. On chassis A cse does not turn loop 1's
+redundant read into a surviving copy either — it SUBSTITUTES it (insn 89 reads reg 79
+directly; no copy insn exists at all, which is why chassis A is 126 insns, one short).
+A copy only survives when a second use orphans it (the candidate chassis's `p = q`).
+More decisively: **the target's own control flow has the very join this frontier wanted
+removed.** `asm/funcs/func_80017848.s` shows the loop-1 guard's `blez $v0, .L8001791C`
+(0x800178C8) branching to the label that loop 2's guard block starts at, and the loop-1
+exit tail's `lw $a0, 0xC($s2)` / `sll $a1, $s4, 6` (0x80017914/18) sitting BEFORE that
+label. So in the original compilation the load of ctx+0xC was outside cse's window for
+loop 2's preheader exactly as it is for us — **cse cannot have produced target's
+`addu $a3, $a0, $zero` at 0x80017930.** The EBB-removal frontier was therefore not only
+unaffordable (E-s27-1) but aimed at a mechanism the target itself did not use. Any
+future proposal for loop 2's copy must explain a producer that works ACROSS a join
+label, and must do so without adding an instruction (target is 127 and the candidate is
+already 127).
+
+### E-s27-4 — four corollary spellings of "give loop 2's guard block its own read"
+If cse's window is the problem, the obvious cheap alternative to duplicating the guard
+is to put the load of ctx+0xC *inside* loop 2's guard block (after the join label), so
+the preheader's re-read has an in-block equal to fold against. Measured on chassis A:
+
+| cell | shape | score | build insns |
+|---|---|---|---|
+| J  | loop-2 guard reads `*(u8 **)(ctx + 0xC)` inline instead of `p` | **14** | 125 |
+| J2 | J, plus the now-dead loop-1 exit-tail re-read of ctx+0xC dropped | **14** | 125 |
+| L  | J + the read named into a fresh local `r`, second use in the do-while CONDITION | **13** | 126 |
+| L2 | J + `r` named, second use post-loop (math_Distance3D's first argument) | **21** | 125 |
+
+All four LOSE instructions rather than gaining the copy: cse folds the in-block pair by
+SUBSTITUTION (125/126 insns against 127), reproducing E-s27-3's finding at a second
+site. Naming the read into `r` and giving it an out-of-block second use — the exact
+shape the s16 trichotomy says preserves a copy — does not help either: L is 13 and L2
+is 21, consistent with the banked price table (post-loop second uses 19-22, in-body 6).
+**KILLED.** Banked as `rejected/s27_chassisA_l2_guard_reads_ctx0xC_inline_costs_14.c`,
+`rejected/s27_chassisA_guard_read_plus_dead_tail_reread_dropped_costs_14.c`,
+`rejected/s27_chassisA_named_addend_r_second_use_in_cond_costs_13.c`,
+`rejected/s27_chassisA_named_addend_r_second_use_postloop_costs_21.c`.
+
+### E-s27-5 — endgame-lock gates, re-run on the current chassis
+Gate (a), `python3 tools/scan_hand_coded.py --single func_80017848`:
+`HAND_CODED: tier=LOW score=0/8 (func_80017848, 127 insns)` — all eight signals unlit
+(S3 reports 127 insns / 7 spills / 12 distinct regs, i.e. ordinary compiler output).
+Gate (b): there is no closing construct to seek a precedent FOR — 27 sessions have
+produced no C form at distance 0, so the question "is this construct SOTN-sanctioned"
+never arises; the cheapest measured form is the standing candidate at 3. What holds the
+byte match is nothing: the function carries zero rules and zero cheat-asm of its own
+and is committed as `INCLUDE_ASM("asm/funcs", func_80017848);` (the 2026-08-30 record's
+"byte-matches only via a cheat" sentence was retracted by the 2026-09-01 review's
+Correction 1). Both gates FAIL.
+
+- [s27] Floor re-measured this session on the post-migration chassis with memory/grind/func_80017848/candidate.c applied to src/ings.c: sandbox --disable all = 3, target_insns 127, build_insns 127, scorable true. Chassis A (body_A.c) = 4 at 127/126.
+
+- [s27] Guard-only duplication with one shared loop body: G1 = 18 / 134 insns. Guard+preheader duplication: G2 = 44 / 133 (taken path), G3 = 47 / 136 (skip path). jump2 does not re-merge the duplicated tails. The last untried cse-boundary lever is closed with measurements.
+
+- [s27] Dump-confirmed pass attribution (tmp/grind/func_80017848/dumps/ings.cse:4270-4915): loop 1's preheader re-read is substituted away against its own block's load (insns 64/89); loop 2's stays a real load (insn 162) because code_label 145 ends cse's block scan (cse_end_of_basic_block, tools/gcc-2.7.2/cse.c:8038). Three sessions of inference are now evidence.
+
+- [s27] NEW, load-bearing: target's own control flow carries that same join (blez at 0x800178C8 -> the label starting loop 2's guard block; the loop-1 exit-tail reload of ctx+0xC at 0x80017914 sits BEFORE it), so cse cannot have produced target's 'addu $a3,$a0,$zero' at 0x80017930. Any future proposal must name a producer that works ACROSS a join label at zero instruction cost - target is 127 and the candidate is already 127.
+
+- [s27] Four corollary spellings that move the load into loop 2's guard block instead of removing the label: J = 14, J2 = 14, L = 13, L2 = 21, at 125/125/126/125 insns. cse substitutes rather than orphaning a copy.
+
+- [s27] Endgame gate (a): python3 tools/scan_hand_coded.py --single func_80017848 -> HAND_CODED: tier=LOW score=0/8 (127 insns); all eight signals unlit (S3: 127 insns, 7 spills, 12 distinct regs). FAIL.
+
+- [s27] Endgame gate (b): FAIL and moot - there is no closing construct to seek a SOTN-master precedent for, because 27 sessions have produced no C form at distance 0. The cheapest measured form is the standing candidate at 3.
+
+- [s27] What holds the byte match: nothing. func_80017848 carries zero regfix/asmfix rules and zero cheat-asm of its own and is committed as INCLUDE_ASM("asm/funcs", func_80017848); - the 2026-08-30 record's 'byte-matches only via a cheat' sentence was retracted by the 2026-09-01 review, Correction 1.
+
+- [s27] 7 new disproven forms banked under memory/grind/func_80017848/rejected/ (185 total). src/ings.c was restored to its committed INCLUDE_ASM state; the working tree carries only ledger + docs/grind edits.

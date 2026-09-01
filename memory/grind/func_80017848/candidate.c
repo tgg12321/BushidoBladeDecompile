@@ -827,3 +827,39 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  *      sites are 19-22 (s10/s11), the loop body is 6, a pre-join carrier is 12.
  *      The second-use lever that buys loop 1's copy is unbuyable for loop 2.
  */
+/* [s27 ESCALATION ADDENDUM — body unchanged, re-measured this session at 3
+ * (127 target insns / 127 build insns, scorable) on the post-migration chassis.]
+ *
+ * s27 executed the owner's 2026-09-01 FORECLOSED-BUCKET REVIEW Ruling-A named probe
+ * verbatim — the sole ground on which this function was returned to active:
+ *
+ *   (1) GUARD-ONLY DUPLICATION, the last untried cse-boundary lever, is DEAD at three
+ *       spellings: G1 (guard duplicated into the loop-1 taken path, shared preheader +
+ *       body) = 18 at 134 insns; G2 (guard + preheader duplicated, shared do-while body)
+ *       = 44 at 133; G3 (same, duplicated into the SKIP path) = 47 at 136.  jump2 does
+ *       not cross-jump the duplicated tails back together, so every spelling is +6..+9
+ *       instructions against a 127-insn target.
+ *
+ *   (2) THE .cse DUMP CONFIRMS the EBB-boundary attribution that was inference until
+ *       now (dumps/ings.cse:4270-4915 on chassis A): loop 1's redundant read is folded
+ *       by substitution against its own block's load; loop 2's stays a real `lw` because
+ *       `code_label 145` — the join loop 1's guard branches to — ends cse's block scan
+ *       (cse.c:8038).
+ *
+ *   (3) AND THE SAME DUMP RETIRES cse AS AN EXPLANATION OF TARGET.  Target's own CFG
+ *       carries that identical join (`blez $v0, .L8001791C` at 0x800178C8, with the
+ *       loop-1 exit-tail `lw $a0, 0xC($s2)` at 0x80017914 BEFORE the label), so cse's
+ *       window excluded the load in the original compilation too.  cse therefore cannot
+ *       have produced target's `addu $a3, $a0, $zero` at 0x80017930.  Any future
+ *       proposal must name a producer that works ACROSS a join label at zero instruction
+ *       cost.
+ *
+ *   (4) Four corollary "load inside loop 2's guard block" spellings (J/J2/L/L2 on
+ *       chassis A) measured 14 / 14 / 13 / 21 at 125/125/126/125 insns — cse substitutes
+ *       instead of leaving a copy, and the out-of-block second use that preserves one is
+ *       priced exactly where the banked table already put it.
+ *
+ * Endgame-lock gates re-run: (a) scan_hand_coded = LOW 0/8; (b) no closing construct
+ * exists to seek a precedent for (no C form at distance 0 in 27 sessions).  Disposed
+ * under the owner's standing ruling (2026-07-27) — see docs/grind/decisions.md.
+ */

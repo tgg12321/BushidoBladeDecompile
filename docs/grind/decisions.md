@@ -18610,3 +18610,115 @@ inputs or the emission indices that set qty8's span; (iii) an honest early consu
 frontier's fidelity item — the sibling cluster func_80060B70 / func_80061250 /
 func_80061658 / func_80061710, the last now COMPLETED-C, is the place to look);
 (iv) an owner unpark. Until then: FORECLOSED, silently, queue advances.
+
+## 2026-09-01 — func_80017848 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Proof-of-foreclosure record filed by grind session 27 (escalation modality) after
+executing the owner's 2026-09-01 FORECLOSED-BUCKET REVIEW **Ruling-A named probe** —
+the sole ground on which this function was returned to active. This is a RECORD, not a
+question to the owner and not a decision packet: per [[judge-sole-gate]] (2026-08-18)
+and [[ordinary-c-judge-decidable]] (2026-08-31) nothing here waits on a ruling.
+
+### The Ruling-A probe, executed and measured
+
+Ruling A's row for func_80017848 named exactly one probe: *"duplicate loop 2's 4-insn
+GUARD into the loop-1 skip path on chassis A + candidate chassis; run `.cse`/`.combine`
+dumps via dump.ps1."* Both halves ran.
+
+**(1) Guard duplication — DEAD at every spelling that keeps one shared loop body.**
+Three cells were built on the candidate chassis (`sandbox func_80017848 --disable all`,
+target 127 insns):
+
+| cell | shape | score | build insns |
+|---|---|---|---|
+| G1 | loop-2 GUARD duplicated into the loop-1 taken path; `goto` into the shared preheader + body | 18 | 134 |
+| G2 | guard AND preheader duplicated into the taken path; `goto` into the shared do-while body | 44 | 133 |
+| G3 | guard AND preheader duplicated into the SKIP path; `goto` into the shared do-while body | 47 | 136 |
+
+Every spelling ADDS 6-9 instructions; jump2's cross-jumping does not re-merge the
+duplicated tails, because after cse the two arms are no longer identical (one arm's
+redundant read is folded, the other's is not) — precisely the identity `do_cross_jump`
+requires. Whole-loop duplication was already priced at 35 by session 12. Forms banked at
+`memory/grind/func_80017848/rejected/s27_l2_guard_dup_shared_preheader_costs_18.c`,
+`…_s27_l2_guard_plus_preheader_dup_taken_path_costs_44.c`,
+`…_s27_l2_guard_plus_preheader_dup_skip_path_costs_47.c`.
+
+**(2) The dumps CONFIRM the load-bearing attribution that had been inference.**
+`pwsh tools/grinder/dump.ps1 -Func func_80017848` on chassis A; post-cse RTL at
+`tmp/grind/func_80017848/dumps/ings.cse:4270-4915`. Loop 1's preheader re-read of
+ctx+0xC is folded away by substitution (insn 89 reads reg 79, its own block's load);
+loop 2's is still a real load (insn 162) because `code_label 145` — the join loop 1's
+guard branches to — ends cse's block scan (`cse_end_of_basic_block`,
+`tools/gcc-2.7.2/cse.c:8038`). The s26 frontier's EBB explanation is therefore correct.
+
+**(3) The same dump RETIRES cse as an explanation of the TARGET, which closes the axis
+on the merits and not merely on price.** Target's own control flow carries that
+identical join: `blez $v0, .L8001791C` at 0x800178C8 branches to the label that loop 2's
+guard block starts at, and the loop-1 exit-tail reload `lw $a0, 0xC($s2)` / `sll $a1,
+$s4, 6` sits at 0x80017914/18, BEFORE that label. So in the original compilation the
+load was outside cse's window for loop 2's preheader exactly as it is for us — **cse
+cannot have produced target's `addu $a3, $a0, $zero` at 0x80017930.** Removing the join
+was both unaffordable and aimed at a mechanism the original build did not use.
+
+**(4) Four corollary spellings closed the obvious cheap alternative.** Putting the
+ctx+0xC load inside loop 2's guard block (after the join) so the preheader has an
+in-block equal to fold against: J = 14 (125 insns), J2 = 14 (125), L (read named into a
+fresh local with a second use in the do-while condition) = 13 (126), L2 (second use
+post-loop, as math_Distance3D's first argument) = 21 (125). cse substitutes rather than
+leaving a copy and the forms come out SHORT; the out-of-block second use that preserves
+a copy elsewhere in this function prices exactly where the banked table already put it
+(post-loop 19-22, in-body 6, pre-join 12). All four banked under `rejected/`.
+
+### Gate evidence (both endgame-lock AND-gates FAIL)
+
+- **Gate (a) — canonical-asm / hand-coded signal: FAIL.**
+  `python3 tools/scan_hand_coded.py --single func_80017848` →
+  `HAND_CODED: tier=LOW score=0/8 (func_80017848, 127 insns)`; all eight signals unlit
+  (S3 reports 127 insns / 7 spills / 12 distinct registers — ordinary compiler output).
+  Re-run this session on the current chassis.
+- **Gate (b) — in-hand SOTN-master precedent for the closing construct: FAIL, and moot.**
+  There is no closing construct to seek a precedent for: 27 sessions have produced no C
+  form at distance 0. The cheapest measured form is the standing candidate at 3
+  (`memory/grind/func_80017848/candidate.c`, re-measured this session at 127/127). The
+  precedent question would only arise once a distance-0 form existed.
+- **What holds the byte match: nothing.** The function carries zero regfix/asmfix rules
+  and zero cheat-asm of its own and is committed as
+  `INCLUDE_ASM("asm/funcs", func_80017848);`. (The 2026-08-30 record's "byte-matches on
+  main only via a cheat" sentence was retracted by the 2026-09-01 review, Correction 1.)
+
+### Exhaustion
+
+27 sessions across the modalities rederive / structural / forensics / synthesis /
+solver / escalation. The honest floor has been 3 since session 9 (5 → 3 at s9) and has
+been re-measured at 3 on every chassis since, including the post-migration chassis
+(s25) and this session. 185 disproven forms are banked in
+`memory/grind/func_80017848/rejected/`. The residual is 3 differing instructions: a
+dead reg-reg copy in loop 2's preheader and the two instructions that follow from its
+absence. The producing mechanism for loop 1's copy is fully understood (an orphaned
+redundant read whose destination has a second use downstream of the base add, so
+`can_combine_p` refuses to substitute it); the same lever is unbuyable for loop 2
+because loop 2 has no free second-use site anywhere in the function (E-s26-6/7), and as
+of this session cse is additionally ruled out as the producer of target's own loop-2
+copy (item 3 above).
+
+### Evidence pointers
+
+- `memory/grind/func_80017848/evidence.md` — E-s27-0 … E-s27-5 (this session);
+  E-s26-1 … E-s26-7, and the s9-s25 spans for the earlier kills.
+- `memory/grind/func_80017848/hypotheses.md` — H-s27-1 … H-s27-4.
+- `memory/grind/func_80017848/candidate.c` — best form, 3, with the s27 addendum.
+- `memory/grind/func_80017848/rejected/` — 185 disproven forms, 7 added this session.
+- `tmp/grind/func_80017848/dumps/ings.cse` (and .combine/.lreg/.jump2 from the same run)
+  — the pass-attribution evidence for items 2 and 3.
+
+### Re-activation triggers
+
+1. An owner class grant covering an invented dead local whose only purpose is to be a
+   second use that orphans a reg-reg copy (today outside the frozen family list; the
+   AUTO-REJECT clause applies, so this record does not argue for it).
+2. A toolchain finding that names a GCC 2.7.2 pass which creates or preserves a
+   redundant reg-reg copy ACROSS a join label at zero instruction cost — the producer
+   item 3 shows must exist and which no pass enumerated so far (cse, combine,
+   local-alloc's `optimize_reg_copy_1`/`_2`, global-alloc, reload) accounts for.
+3. Any candidate that reaches distance 0; it faces layer-1 + the default-FAIL Judge
+   afresh, with all standing bans in force.
