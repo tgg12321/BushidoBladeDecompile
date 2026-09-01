@@ -1370,3 +1370,4 @@
 - 2026-08-31 20:54 func_80057CC8 COMPLETED-C after 46 sessions (closer: s46 [escalation]).
 - 2026-08-31 21:06 func_8002D320: LAYER-1 FAILED a sandbox-0 candidate — The GTE cop2 islands are legitimate (cluster-listed, mechanically clean), but the tail construct `if (y + x < min_y) { z = 0; return z; }` is a return-value-through-dead-variable coercion misfiled under staged-value-reused-variable -- it stages a hardcoded constant (not a real computed value) purely to defeat jump.c's store-flag if-conversion single-set fold, functionally identical to the brief's own forbidden 'goto-end-with-ret-val accumulator' family and to the canonical FAIL example in test #1 of the checklist.
 - 2026-08-31 21:22 func_8002D320 JUDGE ESCALATE (canonical-asm-grant) — grant EXECUTED (tier TIGHT_C), function stays active.
+- 2026-08-31 21:38 func_8002D320 COMPLETED-C after 1 sessions (closer: s1 [recon]).
