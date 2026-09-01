@@ -65,23 +65,6 @@
  *     birth order / conflicts / preferences / calls-crossed can close it.
  *   - Class C (residual C above) is the one unspent typed-verdict axis:
  *     local_extract.py + inverse.py local. That is s6's first move.
- *
- * s6 (synthesis) - candidate BODY UNCHANGED, re-measured 9 / 175 insns on today's
- * chassis. Two durable corrections to the residual description above:
- *   1. Class C is NOT a local-alloc dest-coalesce decision. text1b.lreg insn 173 is
- *      (set (reg 110) (plus (reg 109) (reg 108))) with reg 109 = the lw of
- *      D_800A36A0 and reg 108 = the sll. Rows 60/61 are byte-identical to the
- *      target, so BOTH input pseudos already get the target's hard registers
- *      ($v0/$v1); in both builds the dest ties to operand 1 of addu %0,%1,%2. The
- *      whole class is the RTL plus's OPERAND ORDER, decided at expand/fold time.
- *      Int-domain spellings DO flip it (D2) but delete the target's second lw of
- *      D_800A36A0 at row 60; E4 keeps the re-read and flips the order but costs one
- *      insn (176) because 0x6A/0x7E fold onto the shift side. 13 more spellings
- *      measured s6 (19 total for this seat) - see hypotheses.md.
- *   2. Residual row 50 (addiu $2,$2,0 vs addiu $v0,$v0,%lo(D_800A35D0)) is a
- *      SCORING ARTIFACT: the object carries R_MIPS_HI16/LO16 against D_800A35D0
- *      with a zero addend and the scorer masks HI16 but not LO16. The honest
- *      residual is 8 real rows, not 9.
  */
 s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     u16 sp[2];
@@ -108,10 +91,9 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     }
     t0 = 0;
     do {
-        u8 *base = D_800A36A0;
         u8 *ptr;
         a2 = 0;
-        ptr = (u8 *)((t0 * 2) + (s32)base);
+        ptr = (u8 *)((t0 * 2) + (s32)D_800A36A0);
         *(s16 *)(ptr + 0x10) = 0;
         *(s16 *)(ptr + 0x8) = 0;
         *(s16 *)(ptr + 0xC) = 0;
@@ -121,10 +103,10 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
         ptr = (t0 * 4) + ptr;
         *(s16 *)(ptr + 2) = 0;
         *(s16 *)(ptr + 0) = 0;
-        ptr = base + (t0 * 4);
+        ptr = D_800A36A0 + (t0 * 4);
         *(s16 *)(ptr + 0x42) = 0;
         *(s16 *)(ptr + 0x40) = 0;
-        *(u8 *)(base + t0 + 0x68) = (u8)t0;
+        *(u8 *)(D_800A36A0 + t0 + 0x68) = (u8)t0;
         {
             s16 *p_6a = (s16 *)(D_800A36A0 + (t0 * 10) + 0x6A);
             s16 *p_7e = (s16 *)(D_800A36A0 + (t0 * 10) + 0x7E);
