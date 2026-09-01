@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 7,
- "current_modality": "solver",
+ "session_count": 8,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 9,
    "modality": "solver",
    "headline": "Class B re-attributed from register allocation to cse pseudo identity: the last RA-layer mechanism is dead, the target's 2+2 $s1/$v0 store split is REACHABLE and proven in the cse dump, but it costs e"
+  },
+  {
+   "session": 8,
+   "floor": 9,
+   "modality": "forensics",
+   "headline": "Forensics named the class-B pass exactly: cse pass 1 reproduces the target's 2+2 store split, cse pass 2 (after_loop=1) destroys it and flow.c deletes the copy - and the split is insn-count FREE, corr"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Class B closes if the split copy can be paid for: the 2+2 $s1/$v0 division is proven reachable (H10, cse insns 68/71 on pseudo 75 and 77/80 on pseudo 76), and its ONLY defect is the one extra copy insn that makes the second pseudo join the quantity.",
-   "mechanism": "cse.c make_regs_eqv makes whichever pseudo first receives the call result the quantity's canonical register for the whole extended basic block, so a second pseudo can only be introduced by a later copy, and that copy is a real instruction. It cannot be elided: it vanishes only if both pseudos get the same hard register (which destroys the split), and the second pseudo cannot be born free from (set 76 (reg 2)) because C offers exactly one assignment of a call result.",
-   "next_probe": "Two ordinary-C routes. (1) Find a byte-neutral 174-insn variant of the floor-9 body ANYWHERE in the function and compose it with H10 (tmp/grind/func_800770B8/s7/v/H10.c). s6's D3 was the only 174 ever recorded and s7 disproved it, so this is a fresh search - the tail block, the inner loops, and the sp[] accumulation are all untried for insn count. (2) Find a second pointer whose definition is NOT a copy of the call result but is provably the same address - e.g. a struct member or array element whose address GCC recomputes instead of forwarding - so the second pseudo enters the quantity without a move."
+   "hypothesis": "Class B is one measurement short of a closed axis: only a REAL control-flow boundary between the copy and the 0x30/0x34 stores (a label/jump that survives to cse pass 2) remains untested.",
+   "mechanism": "cse pass 2 respects only genuine block boundaries (CODE_LABEL / JUMP_INSN), not LOOP_END notes; a real boundary would keep the two pseudos in different quantities all the way to RA and give the free split. The target's asm is straight-line there, so such a boundary cannot be free in instructions.",
+   "next_probe": "Spend at most ONE probe: a real branch (e.g. a genuine early-out) between the copy and the stores, measured for insn count. Then treat class B as closed and move to class C or class A. Do NOT re-open note fences, store-base spellings, canonical naming/ordering, the promotion lever, or hard-reg addressing - all measured dead in s7/s8."
   },
   {
-   "hypothesis": "Class C (rows 62-64) closes if the RTL plus at insn 173 can be flipped to (shift, load) while the row-60 lw of D_800A36A0 stays a distinct in-place memory read.",
-   "mechanism": "Pointer-domain PLUS canonicalizes to (base, offset) and keeps the re-read; int-domain PLUS preserves written order but lets cse forward the loop-top base local's register and delete the re-read. E4 keeps the re-read and flips the order but folds 0x6A/0x7E onto the shift operand before the add, costing one insn (176).",
-   "next_probe": "Attack the CONSTANT FOLD, not the operand order. Index the row through a struct or array element type so +0x6A is a member offset rather than a folded addend, or give the two inner-loop pointers a common (u8 *)(t0*10) + (s32)D_800A36A0 row whose two users each add their own constant afterwards. Read text1b.rtl (pre-optimization) for E4 (tmp/grind/func_800770B8/s6/v/E4.c) and for the baseline side by side; the baseline dump set is in tmp/grind/func_800770B8/dumps/."
+   "hypothesis": "Class C (rows 62-64) closes if the +0x6A / +0x7E constants can be kept OFF the shift operand while the shift stays the canonical pointer operand of the plus at insn 173.",
+   "mechanism": "Pointer-domain PLUS canonicalises to (base, offset) and keeps the row-60 re-read; int-domain PLUS preserves written order but lets cse forward the loop-top base local and delete the re-read. E4 keeps the re-read and flips the order but folds 0x6A/0x7E onto the shift operand before the add, costing one insn (176).",
+   "next_probe": "Attack the constant fold, not the operand order: index the row through a struct or array element type so +0x6A is a member offset rather than a folded addend, or give the two inner-loop pointers a common (u8 *)(t0*10) + (s32)D_800A36A0 row whose two users each add their own constant. Read text1b.rtl for E4 (tmp/grind/func_800770B8/s6/v/E4.c) against the baseline dumps in tmp/grind/func_800770B8/dumps/."
   },
   {
-   "hypothesis": "Do NOT re-open any RA-layer attack on class B, the prologue fence, the A2-A12 statement-ordering set, the do-while(0) carve-out ruling-request, the store-base spelling permutations, or an RA solver run on the row-62 seat.",
-   "mechanism": "Class B is foreclosed at global-alloc (s5, prune_preferences global.c:897) and now at local-alloc (s7: pseudo 75 forms no local quantity and the function carries one suggestion in total) - it is a PRE-RA question. Store-base spelling is measured byte-neutral in every permutation (s7 H5/H6/H7). The prologue fence and A2-A12 orderings are closed by s5 (the target's prologue is straight-line and a real first-statement loop costs +11 insns while our count already equals the target's 175). The row-62 RA seat is closed by s6 (both input pseudos already carry the target's hard registers).",
-   "next_probe": "None. A session that finds itself running an RA solver on this function, re-permuting store bases, or respelling a prologue fence should stop and go to frontier item 1 or 2."
+   "hypothesis": "Class A (prologue rows 7-12, 4 of the 8 real residual rows) is the largest untouched residual and has never had its sched2 decision read out of a dump.",
+   "mechanism": "The register-save stores do not exist until after reload, so the ordering of {sw $ra, sw $s1, addiu $a1 0x1008, lui/lw D_800A374C, addiu $s1,$s0,0x58} is decided by the second scheduling pass; s5 closed the fence hypothesis (the target's prologue is straight-line, and a real first-statement loop costs +11 insns) but nobody has compared our .sched2 ready-list order against the target's emission order.",
+   "next_probe": "Build the floor-9 body with the instrumented cc1 (tmp/grind/func_800770B8/s8/dump.sh with DOUT=...), read text1b.sched2 for the prologue block, and check whether tools/sched_solver can type the residual REACHABLE or FORECLOSED before spending any spelling measurements."
   }
  ],
  "judge_constraints": [],

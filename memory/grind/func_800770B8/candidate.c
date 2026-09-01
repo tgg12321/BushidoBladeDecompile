@@ -102,6 +102,24 @@
  *      p_old-vs-global permutation).
  *   2. s6's D3 address form is 175 insns on this chassis, not 174. There is no
  *      insn credit anywhere on record to pay for the class-B split copy.
+ *
+ * s8 (forensics) - candidate BODY UNCHANGED, re-measured 9 (175/175) at session
+ * start and again at session end. s8 corrected and then closed the class-B
+ * picture with instrumented-cc1 dumps:
+ *   - The target's 2+2 store split costs ZERO extra insns (target asm rows 29-38:
+ *     one copy `addu $s1,$v0,$zero` with the raw call result still live in $v0).
+ *     s7's "+1 insn, structural" was a property of H10's spelling.
+ *   - cse PASS 1 reproduces the split exactly when a NOTE_INSN_LOOP_END breaks the
+ *     extended basic block; cse PASS 2 (after_loop=1, so the note is ignored)
+ *     re-merges the block and canonicalises both pseudos onto one register, and
+ *     flow.c deletes the dead copy. Note-based fences cannot buy class B.
+ *   - Within one cse block a pseudo-to-pseudo copy always collapses, so no naming
+ *     or ordering of the two pointers produces the split (7 forms, 170 or 175).
+ *   - The make_regs_eqv promotion IS a free C-controllable lever (reusing p_old for
+ *     the tail's D_800A36A0 re-read: 175 insns, not 170) but it collapses onto $s1
+ *     and damages the tail.
+ *   - A hard-reg address is unreachable from C (calls.c:2039 / calls.c:2114).
+ *   Full detail in evidence.md s8; s9 should work class C or class A.
  */
 s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     u16 sp[2];

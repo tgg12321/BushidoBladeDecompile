@@ -1002,3 +1002,153 @@ pay with.
 - [s7] Giving the raw call result its own C name FIRST is strictly wrong, not merely neutral: it makes that pseudo canonical, sends all four stores through it, deletes the move $s1,$v0 copy and drops a callee-saved register (frame 0x40 -> 0x38, p_old shares $s0 with arg0), landing at 170 insns / score 23.
 
 - [s7] s6's D3 address form is 175 insns on the committed chassis, not the 174 s6 recorded; no form on record is under 175 insns while keeping the floor-9 structure, so there is no insn credit available to pay for the class-B split copy.
+
+## s8 (forensics) — 2026-09-01
+
+Chassis re-measured at session start with the committed candidate applied:
+**score 9, build_insns 175, target_insns 175** — unchanged; restored and
+re-verified at 9 / 175 at session end.
+
+### The target's class-B shape, read off the target asm (not inferred)
+`asm/funcs/func_800770B8.s` lines 29-38, immediately after `jal func_8006E49C`:
+
+    addu  $v1, $s1, $zero        ; prev = the OLD p_old (arg0+0x58)
+    addu  $s1, $v0, $zero        ; p_old = the call result   <-- the ONE copy
+    ...
+    sw    $s1, %gp_rel(D_800A36A0)($gp)
+    sw    $v1, 0x4($s1)
+    sw    $zero, 0x30($v0)       ; <-- raw call-result register, still live
+    sh    $zero, 0x34($v0)
+
+`$s1` has exactly two lives (`addiu $s1,$s0,0x58` then `addu $s1,$v0,$zero`) and is
+dead after line 36 (a grep for $s1 shows only the save/restore afterwards), so the
+target carries **two pseudos holding the same value with a single copy between
+them** — and that costs the same insn count as our one-pseudo form, because when
+the raw-result pseudo is seated in $v0 its `(set Q (reg:SI 2 v0))` birth insn is a
+no-op and is deleted, leaving the `(set P (reg Q))` copy as the only move. **The
+class-B split is insn-count FREE in principle**; s7's "the split costs one insn"
+conclusion was a property of s7's H10 spelling (two long-lived pseudos), not of
+the split itself.
+
+### PASS ATTRIBUTION (the point of this session): cse pass 1 CAN produce the split; cse pass 2 destroys it
+Probe W1 = H1's shape (`pn = call(); p_old = pn;` then the two p_old stores, then
+the two pn stores) with a `do { } while (0);` between the copy and the stores,
+built with the instrumented cc1 (`tmp/grind/func_800770B8/s8/dW1/`). Dumps read in
+pass order:
+
+* `text1b.rtl` — insns 83/86 on `(reg/v:SI 75)` (p_old), insns 89/92 on
+  `(reg/v:SI 81)` (pn), copy at insn 68. As written.
+* `text1b.cse` — **the split SURVIVES cse1 exactly in the target's shape**:
+  83/86 still `reg 75`, 89/92 still `reg 81`. Mechanism named:
+  `cse.c: cse_end_of_basic_block()` contains
+  `if (! after_loop && GET_CODE (p) == NOTE && NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END) break;`
+  — the empty loop's LOOP_END note ends the extended basic block, `reg_qty` is
+  reset, and the two pseudos are never made equivalent.
+* `text1b.loop` — unchanged (split still present).
+* `text1b.cse2` — **the split is GONE**: 83/86 rewritten to `reg 81`. cse pass 2
+  runs `cse_main` with `after_loop = 1`, so the `! after_loop` guard above no longer
+  fires, the LOOP_END note is ignored, the block re-merges, `make_regs_eqv` puts 75
+  and 81 in one quantity and `canon_reg` rewrites every use onto `qty_first_reg`.
+* `text1b.flow` — insn 68 becomes `NOTE_INSN_DELETED`: with no uses left the copy
+  is dead and flow.c removes it.
+* `text1b.greg` — insn 65 is `(set (reg:SI 2 v0) (reg:SI 2 v0))`; all four stores
+  on $v0; p_old's callee-saved life is gone. Result 170 insns / score 23.
+
+This retires an entire family of proposals: **a NOTE-based (do-while(0)-style)
+basic-block fence cannot buy class B at all** — it is undone by cse2 two passes
+before RA. s4's "fence measures 5/7" effect is a scheduling artifact elsewhere in
+the function, not a class-B mechanism.
+
+### The C-level invariant, measured seven ways
+| id | shape | score / insns |
+|----|-------|---------------|
+| H1 (re-measured) | `pn = call(); p_old = pn;` stores 2+2 as target | 23 / 170 |
+| V1 | H1 with the pn stores moved BEFORE the copy | 25 / 170 |
+| V2 | V1 with the +4 store spelled through the global | 25 / 170 |
+| W1 | H1 + `do{}while(0)` between the copy and the stores | 23 / 170 |
+| W2 | H1 + `do{}while(0)` before the copy (control) | 23 / 170 |
+| V3 | V1 + `p_old` reused in the tail block (ordinary C) | 20 / **175** |
+| V4 | H1 + `p_old` reused in the tail block | 18 / **175** |
+
+Reading `cse.c: make_regs_eqv()` against these: within ONE extended basic block a
+copy between two pseudos ALWAYS collapses. Uses that precede the copy take the
+pre-copy canonical register; uses that follow it take the post-copy canonical.
+Whichever pseudo wins, the other's uses are rewritten onto it and the copy dies
+(H1/V1/V2/W1/W2 → 170) or the copy survives with everything on the long-lived
+pseudo (V3/V4 → 175, still `sw $0,48($17)`). **The target needs P (the callee-saved
+long-lived pseudo) canonical for the two stores that FOLLOW the copy and Q (the raw
+call result) canonical for the two stores that also follow it — mutually exclusive
+under make_regs_eqv.** The positional diff for V3 and V4 confirms rows 35/36 stay
+$17-based in both.
+
+### The promotion lever is real, free in insn count, and still not enough
+`make_regs_eqv`'s canonicality test is
+`(uid_cuid[regno_last_uid[new]] > cse_basic_block_end || uid_cuid[regno_first_uid[new]] < cse_basic_block_start) && uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]]`.
+In H1 the long-lived `p_old` fails it (it dies at the +4 store, inside the block),
+so the call-result pseudo stays canonical and everything collapses onto $v0.
+Giving `p_old` a genuine later use — reusing the variable for the tail block's
+`D_800A36A0` re-read, ordinary C, the same `u8 *p` role — flips the canonical and
+costs **zero insns** (V3/V4 are both 175). But it collapses onto $s1 instead of
+splitting, and it damages the tail: the positional diff for V4 shows rows 126-137
+turn into `lw $17,0($28)` / `sw $0,32($17)` where the target re-loads D_800A36A0
+into $v0/$a0 per statement. Score 18 vs 9.
+
+### Why a hard-register address (the last free route) is not C-reachable
+The one rtx `canon_reg` refuses to touch is a hard register ("Never replace a hard
+reg..."), so `(mem (plus (reg:SI 2 v0) 48))` would survive cse, cse2 and RA and would
+reproduce the target exactly at 175 insns. `calls.c: expand_call()` forecloses it:
+when the call feeds an assignment the caller passes a TARGET and expand emits
+`emit_move_insn (target, valreg)` returning the pseudo (calls.c:2039); when it does
+not, the tail is `else target = copy_to_reg (valreg);` (calls.c:2114). The hard
+return register never escapes into a later address rtx, and C offers exactly one
+assignment of a call result. No spelling reaches this shape.
+
+- [s8] Chassis re-measured with the committed candidate: 9 / 175 / 175 at session start AND at session end.
+
+- [s8] The target's class-B split is insn-count FREE, not +1: target rows 29-38 show ONE copy (addu $s1,$v0,$zero) with the raw call result still live in $v0 for the 0x30/0x34 stores, and $s1 dead after row 36. s7's "+1 insn" was a property of H10's two-long-lived-pseudo spelling, not of the split.
+
+- [s8] PROVEN with instrumented-cc1 dumps (tmp/grind/func_800770B8/s8/dW1): cse PASS 1 keeps the target's exact 2+2 pseudo split when a NOTE_INSN_LOOP_END breaks the extended basic block (cse.c cse_end_of_basic_block: `if (! after_loop && ... NOTE_INSN_LOOP_END) break;`), and cse PASS 2 destroys it because it runs with after_loop=1 and ignores that note; flow.c then deletes the dead copy. A NOTE-based fence therefore cannot buy class B under any spelling - it is undone two passes before RA.
+
+- [s8] Measured on the floor-9 chassis: H1 23/170, V1 25/170, V2 25/170, W1 23/170, W2 23/170, V3 20/175, V4 18/175. Within one cse extended basic block a pseudo-to-pseudo copy ALWAYS collapses (make_regs_eqv + canon_reg); uses before the copy take the pre-copy canonical, uses after take the post-copy canonical, so the target's requirement (long-lived pseudo canonical for two post-copy stores AND raw result canonical for two other post-copy stores) is mutually exclusive.
+
+- [s8] The make_regs_eqv canonicality promotion IS C-controllable at ZERO insn cost: reusing `p_old` for the tail block's D_800A36A0 re-read (ordinary variable reuse) gives it a last_uid beyond cse_basic_block_end and flips the canonical from the call-result pseudo to p_old - V3 20/175 and V4 18/175 (vs 170 without it). It collapses onto $s1 rather than splitting, and the tail rows 126-137 become $17-based where the target re-loads D_800A36A0 per statement.
+
+- [s8] A hard-register address (the only rtx canon_reg will not rewrite) would reproduce the target at 175 insns but is not C-reachable: calls.c:2039 emits `emit_move_insn (target, valreg)` when the call feeds an assignment and calls.c:2114 does `target = copy_to_reg (valreg)` otherwise, so a call's hard return register never escapes into a later address rtx.
+
+- [s8] Four disproven forms banked: s8-cse1-block-break-undone-by-cse2-170insn.c (W1), s8-promotion-collapses-onto-p_old-tail-cost-175insn.c (V4), s8-stores-before-copy-reorders-only-no-split-175insn.c (V3), s8-h1-order-flip-still-collapses-170insn.c (V1). The rejected bank now holds 33 forms.
+
+### Live frontier (for s9)
+1. **Class B is one measurement short of foreclosed.** Every route except one is
+   now measured or read out of the compiler source: NOTE fences (undone by cse2),
+   both canonical choices (collapse), both store orderings (collapse), the
+   promotion lever (free but collapses to $s1 and damages the tail), and hard-reg
+   addressing (unreachable from C per calls.c). The single untested route is a
+   REAL control-flow boundary between the copy and the two stores — a label/jump
+   that survives to cse2 — which the target's straight-line asm does not contain
+   and which cannot be free in insns. Next session should spend at most one probe
+   confirming that and then treat class B as a closed axis.
+2. **Class C (rows 62-64) is unchanged and is now the highest-value open axis** —
+   see the s6 frontier: attack the CONSTANT FOLD (index the row through a struct
+   or array element type so +0x6A is a member offset rather than an addend folded
+   onto the shift operand before the add). E4 remains the only form that flips the
+   operand order AND keeps the row-60 re-read, at +1 insn.
+3. **Class A (prologue rows 7-12, 4 rows) has not been attacked since s3/s5** and
+   is now the largest untouched residual. s5 closed the fence hypothesis; the
+   sched2 ordering of the reload-emitted save stores has never been read out of a
+   `.sched2` dump against the target's order. That dump is one build away.
+
+- [s8] [s8] Chassis re-measured with the committed candidate applied to src/text1b.c: score 9, build_insns 175, target_insns 175 - at session start AND at session end.
+
+- [s8] [s8] The target's class-B split is insn-count FREE, not +1: asm/funcs/func_800770B8.s rows 29-38 show ONE copy (addu $s1,$v0,$zero) with the raw call result still live in $v0 for the 0x30/0x34 stores, and $s1 dead after row 36 (only the epilogue restore follows). This retires the 's7: no insn credit exists to pay for the split' blocker.
+
+- [s8] [s8] PASS ATTRIBUTION, proven with instrumented-cc1 dumps in tmp/grind/func_800770B8/s8/dW1: cse PASS 1 keeps the target's exact 2+2 pseudo split when a NOTE_INSN_LOOP_END breaks the extended basic block (cse.c cse_end_of_basic_block: 'if (! after_loop && ... NOTE_INSN_LOOP_END) break;'), and cse PASS 2 destroys it because it runs with after_loop=1 and ignores that note; flow.c then deletes the dead copy insn 68.
+
+- [s8] [s8] Consequence: a NOTE-based (do-while(0)-style) basic-block fence cannot buy class B under ANY spelling - it is undone two passes before RA. s4's fenced 5/7 measurements are a scheduling artifact elsewhere in the function, not a class-B mechanism.
+
+- [s8] [s8] Measured on the floor-9 chassis: H1 23/170, V1 25/170, V2 25/170, W1 23/170, W2 23/170, V3 20/175, V4 18/175. Within one cse extended basic block a pseudo-to-pseudo copy ALWAYS collapses: uses before the copy take the pre-copy canonical register and uses after take the post-copy canonical, so the target's requirement is mutually exclusive.
+
+- [s8] [s8] The make_regs_eqv canonicality promotion IS C-controllable at ZERO insn cost: reusing p_old for the tail block's D_800A36A0 re-read gives it a last_uid beyond cse_basic_block_end and flips the canonical away from the call-result pseudo - V3 175 insns and V4 175 insns, against 170 for the same forms without the reuse. It collapses onto $s1 rather than splitting and regresses the tail (rows 126-137).
+
+- [s8] [s8] A hard-register address would reproduce the target at 175 insns but is not C-reachable: calls.c:2039 emits emit_move_insn (target, valreg) when the call feeds an assignment, calls.c:2114 does target = copy_to_reg (valreg) otherwise.
+
+- [s8] [s8] Four disproven forms banked to memory/grind/func_800770B8/rejected/ (bank now holds 33): s8-cse1-block-break-undone-by-cse2-170insn.c, s8-promotion-collapses-onto-p_old-tail-cost-175insn.c, s8-stores-before-copy-reorders-only-no-split-175insn.c, s8-h1-order-flip-still-collapses-170insn.c.
