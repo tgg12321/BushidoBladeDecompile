@@ -857,7 +857,111 @@ INCLUDE_ASM("asm/funcs", func_8002C61C);
 INCLUDE_ASM("asm/funcs", func_8002CA8C);
 INCLUDE_ASM("asm/funcs", func_8002CD58);
 /* kengo:HIGH  |  nm_special_cam/special_camera_Init  |  370i */
-INCLUDE_ASM("asm/funcs", func_8002D320);
+s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
+    if (flag == 0) {
+        s32 *vin;
+        s32 *vout;
+        *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
+        *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
+        *(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
+        vin = (s32 *)(obj + 0xF8);
+        __asm__ volatile(
+            "addu $t4, %0, $zero\n"
+            "lwc2 $0, 0($t4)\n"
+            "lwc2 $1, 4($t4)\n"
+            "nop\n"
+            "nop\n"
+            ".word 0x4A486012"
+            : : "r"(vin) : "$12", "memory");
+        vout = (s32 *)(obj + 0x100);
+        __asm__ volatile(
+            "addu $t4, %0, $zero\n"
+            "swc2 $25, 0($t4)\n"
+            "swc2 $26, 4($t4)\n"
+            "swc2 $27, 8($t4)"
+            : : "r"(vout) : "$12", "memory");
+    }
+    {
+        s32 x;
+        s32 z;
+        s32 sp_var;
+        s32 min_y;
+        s32 max_y;
+        s32 y_low;
+        s32 y_high;
+        s32 y;
+        s32 ret;
+        s32 neg_threshold = -threshold;
+
+        x = *(s32 *)(obj + 0x100);
+        if (x < neg_threshold || threshold < x) return 0;
+        z = *(s32 *)(obj + 0x104);
+        if (z < neg_threshold || threshold < z) return 0;
+
+        x = x * x + z * z;
+        if (r_sq < x) return 0;
+        x = r_sq - x;
+
+        if ((u32)x < 0x400) {
+            x = (u32)*(((u8 *)&D_8008D118) + x) >> 3;
+        } else {
+            s32 lzcr = 0;
+            if (x >= 0) {
+                __asm__ volatile(
+                    "addu $t4, %1, $zero\n"
+                    "mtc2 $t4, $30\n"
+                    "nop\n"
+                    "nop\n"
+                    "addu $t4, $sp, $zero\n"
+                    "swc2 $31, 0($t4)"
+                    : "=m"(sp_var) : "r"(x) : "$12");
+                lzcr = sp_var;
+            }
+            {
+                s32 shift = 0x16 - (lzcr & ~1);
+                s32 tbl = *(((u8 *)&D_8008D118) + ((u32)x >> shift));
+                x = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
+            }
+        }
+
+        max_y = 0;
+        min_y = 0;
+        y_low = *(s32 *)(obj + 0xB0);
+        if (y_low < 0) {
+            min_y = y_low;
+        } else if (min_y < y_low) {
+            max_y = y_low;
+        }
+        y_high = *(s32 *)(obj + 0xC0);
+        if (y_high < min_y) {
+            min_y = y_high;
+        } else if (max_y < y_high) {
+            max_y = y_high;
+        }
+        y = *(s32 *)(obj + 0x108);
+        if (max_y < y - x) return 0;
+        if (y + x < min_y) {
+            ret = 1; /* FAKE: dead store -- overwritten by `ret = 0;` on the
+                      * next statement, never read.  Mechanism: jump.c's
+                      * store-flag if-conversion requires SINGLE-SET 0/1 arms;
+                      * the two-set arm keeps target's unfolded diamond (bnez;
+                      * move v0,zero delay; addiu v0,1) instead of folding the
+                      * pair to `slt` + `xori v0,v0,1`.  Family:
+                      * dead-store-fake-exception (confirmed closure
+                      * func_80078EC0, .claude/rules/dead-store-fake-exception.md:107-128).
+                      * Lever-exhaustion: memory/grind/func_8002D320/hypotheses.md
+                      * sessions 1-2 (five pure-C tail shapes measured: plain
+                      * early-return 3/118, result-carrier nest 4/119,
+                      * goto-reject 3/118, inverted sense 3/118, combined-&&
+                      * 8/119) + the twin func_8002EA24's six-shape tail census
+                      * on the identical diamond. */
+            ret = 0;
+        } else {
+            ret = 1;
+        }
+        return ret;
+    }
+}
 /* func_8002D518 - MATCHED FORM (s8 synthesis, 2026-08-19). Honest sandbox
  * distance 0 with all 33 regfix/asmfix rules dropped and cheat-asm stripped;
  * build_insns 144 == target_insns 144. Re-measured on the s8 chassis with this
@@ -1160,8 +1264,8 @@ s32 func_8002FC80(u8 *a0, u8 *a1, u8 *a2) {
         :: "r"(p) : "$12");
     /* Angle of the cross product in the XZ-ish plane, +0x800 (180 deg)
      * when MAC2 is positive. */
-    ret = ratan2(p[0], *(s32 *)0x1F800388);
-    if (*(s32 *)0x1F800384 > 0) {
+    ret = ratan2(p[0], p[2]);
+    if (p[1] > 0) {
         ret += 0x800;
     }
     return ret;
@@ -1767,60 +1871,66 @@ next:
     if (t1 < 4) goto loop;
 }
 /* kengo:HIGH  |  is_pad/Pad_Prs  |  111i */
-void func_800324D0(u8 *a0) {
-    register u8 *v1 asm("v1");
-    register u8 v0 asm("v0");
-    register u32 a2 asm("a2");
-    register u8 a1 asm("a1");
+void func_800324D0(u8 *pad) {
+    u8 *ptr;
+    u8 c;
+    u8 val;
 
-    v1 = *(u8 **)(a0 + 0x58);
-    v0 = 0xFF;
-    a0[0xA1] = v0;
-    a0[0xA3] = v0;
-    a0[0xA2] = v0;
-    a0[0xA4] = v0;
-    a0[0xAA] = 0;
-    a0[0xA7] = 0;
-    a0[0xA8] = 0;
-    a0[0xA5] = 0;
-    a0[0xA6] = v0;
-    a0[0xAB] = v0;
-    a0[0xAC] = v0;
+    ptr = *(u8 **)(pad + 0x58);
+    pad[0xA1] = 0xFF;
+    pad[0xA3] = 0xFF;
+    pad[0xA2] = 0xFF;
+    pad[0xA4] = 0xFF;
+    pad[0xAA] = 0;
+    pad[0xA7] = 0;
+    pad[0xA8] = 0;
+    pad[0xA5] = 0;
+    pad[0xA6] = 0xFF;
+    pad[0xAB] = 0xFF;
+    pad[0xAC] = 0xFF;
 
-    v0 = v1[4];
-    v1 += 5;
-    if (v0 == 0) return;
-
-    do {
-        a2 = v0;
-        if (a2 == 0xFF) {
-            v1 += 6;
-        } else if (a2 < 0x80) {
-            v1++;
+    c = ptr[4];
+    ptr += 5;
+    while (c != 0) {
+        if (c == 0xFF) {
+            ptr += 6;
+        } else if (c < 0x80) {
+            ptr++;
         } else {
-            a2 -= 0x80;
-            a1 = *v1;
-            v1++;
-            if (a2 < 12) {
-                switch (a2) {
-                    case 0: a0[0xA1] = a1; break;
-                    case 1: a0[0xA3] = a1; break;
-                    case 2: a0[0xA7] = a1; break;
-                    case 3: a0[0xA8] = a1; break;
-                    case 4: a0[0xA9] = a1; break;
-                    case 5: a0[0xA5] = a1; break;
-                    case 6: a0[0xA6] = a1; break;
-                    case 7: a0[0xA2] = a1; break;
-                    case 8: a0[0xA4] = a1; break;
-                    case 9: a0[0xAA] = a1; break;
-                    case 10: a0[0xAB] = a1; break;
-                    case 11: a0[0xAC] = a1; break;
-                }
+            val = *ptr;
+            ptr++;
+            /* FAKE: the loop tail (`c = *ptr; ptr++;` + its back-transfer) is
+             * duplicated into all twelve command arms instead of being reached
+             * by falling out of the switch, mechanism: flow.c's reg_n_refs
+             * census counts the duplicated walker references before global.c's
+             * allocno_compare ranks the allocnos: the walker pseudo's
+             * reg_n_refs goes 24 -> 96 while the operand carrier stays at 26
+             * (measured, .lreg dumps), so the walker now outranks it and takes
+             * $v1 instead of $a2, while jump2's
+             * cross-jump pass runs after reload and re-merges the thirteen
+             * identical tails, so not one duplicated reference materializes
+             * (68 == 68, byte-identical, full SHA1 == oracle),
+             * lever-exhaustion: memory/grind/func_800324D0/hypotheses.md s1-s21
+             * (the whole demote-the-carrier channel, the RA-seat channel, four
+             * permuter campaigns) and evidence.md [s22] */
+            switch (c - 0x80) {
+                case 0: pad[0xA1] = val; c = *ptr; ptr++; continue;
+                case 1: pad[0xA3] = val; c = *ptr; ptr++; continue;
+                case 2: pad[0xA7] = val; c = *ptr; ptr++; continue;
+                case 3: pad[0xA8] = val; c = *ptr; ptr++; continue;
+                case 4: pad[0xA9] = val; c = *ptr; ptr++; continue;
+                case 5: pad[0xA5] = val; c = *ptr; ptr++; continue;
+                case 6: pad[0xA6] = val; c = *ptr; ptr++; continue;
+                case 7: pad[0xA2] = val; c = *ptr; ptr++; continue;
+                case 8: pad[0xA4] = val; c = *ptr; ptr++; continue;
+                case 9: pad[0xAA] = val; c = *ptr; ptr++; continue;
+                case 10: pad[0xAB] = val; c = *ptr; ptr++; continue;
+                case 11: pad[0xAC] = val; c = *ptr; ptr++; continue;
             }
         }
-        v0 = *v1;
-        v1++;
-    } while (v0 != 0);
+        c = *ptr;
+        ptr++;
+    }
 }
 INCLUDE_ASM("asm/funcs", func_800325E0);
 void func_80032854(s32 arg0, s32 arg1, u8 *arg2, s16 *arg3) {

@@ -1,5 +1,66 @@
 # Evidence bank — func_8002FC80
 
+## s2-of-run2 (2026-09-01, structural — OWNER DIRECTIVE EXECUTED; distance 0 re-measured on the CURRENT chassis; candidate-ready)
+
+- **The owner directive that dispatched this session was executed first, before any default
+  structural work.** Directive (queue item, owner ruling 2026-08-31, `ordinary-c-judge-decidable`,
+  commit 73bee8f8; migration entry docs/grind/decisions.md:17002): the two byte-exact ordinary-C
+  spelling classes were banned on motive/uniqueness grounds that the ruling retires; those bans are
+  cleared, the item returns to ACTIVE, and the Judge picks the spelling under semantic-truthfulness
+  + simplest-known-form. The whole-body-asm ban and the grant-misuse ban STAND and are both
+  honoured by this session's diff. No session before this one had acknowledged the directive
+  (the dispatch audit flagged exactly that), so acknowledging and spending it was the deliverable.
+
+- **THE CHASSIS MOVED SINCE THE s7 MEASUREMENTS — and the form still measures 0.** HEAD is now
+  811924d4; `src/code6cac_b.c` has gained a full C body for `func_8002D320` (it was INCLUDE_ASM
+  when candidate.c was snapshotted, so the s7 candidate.c is a STALE full-file image and must never
+  be copied over src wholesale — it would silently revert func_8002D320 to INCLUDE_ASM). This
+  session spliced ONLY the func_8002FC80 region out of candidate.c into the live src file
+  (tmp/splice_fc80.py). Re-measured on that chassis: **score 0, target_insns 74, build_insns 74,
+  rules_dropped 0, cheat_asm_stripped 37** (37, not the s6-era 46 — the count is whole-file and
+  moved with func_8002D320's landing, which is why it is not a stable signature).
+  `verify-oracle` → ok, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle,
+  build_matches true. Both measured with the edits in place in src.
+
+- **NEW THIS SESSION — a strictly simpler byte-exact spelling of the tail was found and is now the
+  candidate.** The inherited body read the GTE output vector inconsistently: `p[0]` through the
+  named pointer for MAC1, but repeated literal addresses `*(s32 *)0x1F800384` / `0x1F800388` for
+  MAC2 and MAC3. Respelling all three as `p[0]` / `p[1]` / `p[2]` — one name for one vector,
+  uniform component indexing, mirroring how the gte_stlvnl island wrote those same three words —
+  **measures 0 @ 74/74, 0 rules dropped** (artifact
+  tmp/grind/func_8002FC80/s2/sandbox_uniform_p_idx.txt). This matters for the Judge's
+  simplest-known-form criterion: the accepted body now spells one thing one way.
+
+- **KILLED — "the named output pointer `p` is a removable convenience".** Deleting the `s32 *p`
+  declaration and inlining `(s32 *)0x1F800380` at all four use sites measures **5 @ 75/74 insns**,
+  0 rules dropped (artifact tmp/grind/func_8002FC80/s2/sandbox_no_p_local.txt; form banked at
+  rejected/s2_no_named_output_pointer.c). So the pointer is not decoration — but note the ledger
+  framing deliberately: `p` is in the body because the address has four uses and one meaning
+  (it is the register operand the gte_stlvnl macro requires AND the base of the three components
+  read back), not because of what the measurement says. The measurement is recorded as the
+  disproof of the "just inline it" simplification a future reviewer would otherwise propose.
+
+- **In-file precedent for every construct, all of it already accepted on main:**
+  `func_8002D320` (src/code6cac_b.c:860) ships a `u8 *obj` record-base parameter read with widening
+  casts at :896 / :898 (`*(s32 *)(obj + 0x100)`) and named pointer locals feeding cop2 macro
+  operands at :867 (`vin = (s32 *)(obj + 0xF8);`) and :876 (`vout = (s32 *)(obj + 0x100);`) — the
+  same two constructs this body uses, in the same file, under the same cluster grant
+  (inline_asm_canonical.txt:365 for FC80, the adjacent line for D320;
+  tools/grinder/owner_cluster_grants.txt:18). `func_8002FDB0` (immediately following FC80 in the
+  file) ships the identical four cop2 islands character-for-character and the identical plain
+  fixed-address store spelling for the same six scratchpad slots.
+
+- **What is in the diff, exhaustively:** one line removed (the INCLUDE_ASM), 71 lines added.
+  Signature `s32 func_8002FC80(u8 *a0, u8 *a1, u8 *a2)`; nine widening reads
+  `*(s32 *)(aN + K)` (offset-0 reads spelled `*(s32 *)aN`); six plain stores
+  `*(s32 *)0x1F8003xx = v1 - v2;`; the four granted cop2 islands; `s32 *p` + `ret` +
+  `v1`/`v2`; `ratan2(p[0], p[2])` with `if (p[1] > 0) ret += 0x800;`. No volatile, no
+  aggregate-typed store, no double cast over an already-typed pointer, no whole-body assembly.
+  self_vet.md was rewritten this session against this exact diff.
+
+- Artifacts: tmp/grind/func_8002FC80/s2/{sandbox_uniform_p_idx.txt, sandbox_no_p_local.txt,
+  verify_oracle_final.txt, src_formA_p_local.c, keep_formA.c}; tmp/splice_fc80.py.
+
 ## s7 (2026-08-31, recon — provenance deliverable executed; OWNER-ESCALATION decision packet filed; outcome owner-gated)
 
 - **This session executed the Judge's 20:32 binding constraint** ("the next session's deliverable is a

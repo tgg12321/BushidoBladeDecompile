@@ -1,5 +1,29 @@
 # Hypothesis ledger — func_8002FC80
 
+## s2-of-run2 (2026-09-01, structural — owner directive executed)
+
+- H1: "The banked byte-exact load-side spelling (u8* record-base params + widening casts, plain
+  fixed-address stores, granted cop2 islands) still measures 0 on the CURRENT chassis, which has
+  moved since s7 (func_8002D320 landed as C in the same TU)." — **CONFIRMED**: 0 @ 74/74,
+  0 rules dropped, cheat_asm_stripped 37; verify-oracle build_sha1 == oracle. Measured this
+  session with the edits in place in src. The stale-snapshot trap was avoided by splicing only
+  the FC80 region rather than copying candidate.c over src.
+- H2: "The tail can be spelled more uniformly — all three GTE output components read through the
+  one named vector pointer (p[0]/p[1]/p[2]) instead of one indexed read plus two repeated literal
+  addresses — and still produce the target bytes." — **CONFIRMED**: 0 @ 74/74. This is now the
+  candidate; it is strictly simpler than the inherited form under the simplest-known-form
+  criterion the 2026-08-31 owner ruling hands the Judge.
+- H3: "The named pointer to the GTE output vector is a removable convenience; inlining the literal
+  address at its four use sites is the simpler spelling." — **KILLED**: 5 @ 75/74 insns (one extra
+  instruction), 0 rules dropped. Banked at rejected/s2_no_named_output_pointer.c. The simpler-looking
+  form is also the one that repeats a magic address four times, so it is not simpler on the
+  semantic reading either.
+- H4 (inherited, now SPENT): "Which byte-producing C class is the faithful source is not
+  self-adjudicable and must be owner-selected." — **SUPERSEDED** by the 2026-08-31 owner ruling:
+  the option-select question was delegated to the Judge, the bans on both classes were cleared, and
+  this session submits the load-side class in its simplest measured spelling. The escalation packet
+  at docs/grind/decisions.md:16851 is answered and requires no further owner action.
+
 ## s7 (2026-08-31, recon — provenance deliverable per the 20:32 Judge constraint)
 
 - H1: "The head's original form was hand-written asm (routing → whole-body canonical)." —
