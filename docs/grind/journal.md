@@ -1362,3 +1362,4 @@
 - 2026-08-31 18:52 func_80078654 COMPLETED-C after 11 sessions (closer: s11 [escalation]).
 - 2026-08-31 19:17 func_800324D0 s15 [synthesis] floor=15: Chassis drift KILLED at the root (the '17' was a stale s14-migrated reference object, not codegen — floor is 15), and the RA foreclosure upgraded from a depth-3 search NEGATIVE to a two-case proof over the entire allocation-input space.
 - 2026-08-31 19:28 func_800324D0 s16 [synthesis] OWNER-GATED — borderline-logged, terminal park: Foreclosure completed over find_reg's ENTIRE pass-0 input space (the two non-conflict channels, never examined before, are both shut) and the last live-length lever measured flat with a byte-identical RA model; decision packet filed on the one remaining decidable question — how the already-GRANTED ruling-5 migration lands, since no grind session mechanically can.
+- 2026-08-31 19:37 func_8002FC80 JUDGE ESCALATE (canonical-asm-grant) — grant EXECUTED (tier LOW), function stays active.

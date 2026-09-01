@@ -5,7 +5,9 @@
  "current_modality": null,
  "floor_history": [],
  "frontier": [],
- "judge_constraints": [],
+ "judge_constraints": [
+  "canonical-asm GRANTED (pipeline, 2026-08-31, tier LOW): integrate the whole-body form per canonical-asm-authorization-recipe to COMPLETED-INLINE-ASM-CANONICAL; the allowlist entry is already written."
+ ],
  "banned_constructs": [],
  "ladder_skip": 0,
  "pending_fixup": null,
