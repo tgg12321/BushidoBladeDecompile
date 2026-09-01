@@ -1,7 +1,7 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 12,
+ "session_count": 13,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -75,23 +75,29 @@
    "floor": 5,
    "modality": "structural",
    "headline": "Class C is NOT foreclosed: holding the flip fixed and permuting the outer loop's four store groups (24/24 measured) reaches a build that emits the target's rows 60-64 exactly, register seats included "
+  },
+  {
+   "session": 13,
+   "floor": 5,
+   "modality": "structural",
+   "headline": "Loop-shape frontier KILLED with 315 builds (inner and outer loop shapes byte-identical under every spelling; third loop's `for` uniquely correct; all 96 non-final inner-block positions worse) and clas"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A loop-SHAPE change (not a statement-order or spelling change) makes the class-C flip free, closing the last gap between the two basins.",
-   "mechanism": "s12 eliminated every statement-level degree of freedom it could enumerate - group order (24/24), group spelling (8 forms), hoists (12 forms), wraps (79+79 positions) - and the flipped body's score never left the 20-29 band except by moving the store groups. The remaining unmeasured statement-level structure is the shape of the loops themselves, which is what sets the pseudo birth order the flip perturbs.",
-   "next_probe": "On the flipped ABCD body (baseline 29) and the flipped CABD body (baseline 12), measure: the inner p_6a/p_7e loop written as a `for` instead of a `do/while`; the same loop written pointer-walking (`*p_6a++ = -1; *p_7e++ = 0;`) so the 0x6A/0x7E pointers are live-updated rather than indexed; the inner loop split into two separate loops; and the `a2 = 0;` initialiser moved to each of the group boundaries (s12's permutation always kept it first). Do NOT re-probe group order, group spelling, hoists, or wrap positions - all four are exhausted and banked."
+   "hypothesis": "Under the flip, the loop head's emission order (rows 38-59) can be restored by changing what the loop head COMPUTES rather than how the inner block spells its address - because class C is now known to be a single source-operand-order token whose only cost is that it re-orders the `lw` and the `sll ...,2` in the loop head.",
+   "mechanism": "s13 proved the flip is the sole way to reach the target's operand order and that its 24 points are entirely rows 38-59, where the flipped build hoists the D_800A36A0 load ahead of the `sll $a1,1` and postpones the `sll $a1,2` from row 42 to row 50. The target emits BOTH shifts around the load (rows 40, 41, 42). So the lever is anything that forces the `t0*4` shift to be computed early under the flip - i.e. an additional early CONSUMER of `t0*4` in the loop head, or a change in which group first needs it. This is not the group-ORDER axis s12 exhausted (that moves whole store groups); it is the order in which the loop head's three derived values (t0*2, t0*4, the reloaded global) are first demanded.",
+   "next_probe": "On the flipped-ABCD body (baseline 29), measure spellings that change the FIRST DEMAND order of the loop-head values without moving any store group: (i) group A's address written `(t0 * 4) / 2 + (s32)base` so t0*4 is demanded before t0*2; (ii) group C's `base + (t0 * 4)` rewritten to `(t0 * 4) + (s32)base` so it enters the integer domain at the same point the flipped inner block does; (iii) the 0x5C/0x60 store pair (which uses t0*2) moved ahead of group A; (iv) the same three on flipped-CABD (baseline 12), where the seats are already right and only the store rows are wrong. Read the resulting emission order with tmp/grind/func_800770B8/s13/ours.py 37 66 and compare against the target rows printed in evidence.md [s13]."
   },
   {
-   "hypothesis": "The allocator atom that the CABD store-group order actually moves is directly readable, and naming it will identify a C construct that moves the same atom without displacing the stores.",
-   "mechanism": "s10's inverse.py run searched a synthetic 392-atom depth-2 space around a single build. s12 now has TWO real builds that differ only in the contested seat - flipped-ABCD (seat wrong, stores right) and flipped-CABD (seat right, stores wrong) - so the allocator state difference is measurable rather than hypothesised.",
-   "next_probe": "Run tools/ra_solver/local_extract.py QTYDBG on both builds (rebuild each via tmp/grind/func_800770B8/s3/try.py with perm/Q00.c and perm/Q12.c), diff the qty rows for block 1, and read off which of span/refs/birth actually changed on the merged chain quantity. Then re-run inverse.py local with the goal restricted to qty3 -> $v1 only (drop the qty4 constraint) at --depth 2 as the s11 frontier proposed, seeded with the measured delta rather than the synthetic space."
+   "hypothesis": "The allocator atom that swaps $v0/$v1 under the flip is directly readable, and naming it identifies a C construct that restores the seats without the CABD group order (re-typed from the s12 frontier - the question is no longer 'what re-seats the contested quantity' but 'what makes the loop head's emission order survive the flip').",
+   "mechanism": "s13 showed the floor-5 form already has the target's seats and the flipped form already has the target's operand order, so the two builds differ in exactly one crossing. s12 supplied two real builds that isolate it (flipped-ABCD: order right, seats wrong; flipped-CABD: both right in rows 60-64), which makes the allocator/emission state difference measurable rather than hypothesised.",
+   "next_probe": "Run tools/ra_solver/local_extract.py QTYDBG on flipped-ABCD (s12/perm/Q00.c) and flipped-CABD (s12/perm/Q12.c), rebuilt via tmp/grind/func_800770B8/s3/try.py, and diff the qty rows for block 1. Then run `pwsh tools/grinder/dump.ps1 func_800770B8` on flipped-ABCD and read the .sched dump for rows 38-59 to attribute the lw/sll reordering to sched1 vs expand/RTL emission order - s13 could only observe the reordering in the final objdump, not name the pass that does it. Do NOT re-run inverse.py against the s10 seat goal; that goal is obsolete."
   },
   {
-   "hypothesis": "The floor-5 form is submittable as-is once the do-while(0) scoping conflict is ruled on (carried forward unchanged from s11).",
-   "mechanism": ".claude/rules/do-while-zero-exception.md (owner ruling 2026-07-06) abolishes the reorg.c-only scoping that .claude/rules/no-new-park-categories.md:256-271 and the grind role-prompt's frozen-family table still assert. The dedicated rule is the later document and the stale entry designates it as the authority, but a submission would be the first BB2 use of a wrap for a sched2 effect.",
-   "next_probe": "Unchanged from the s11 frontier: emit a ruling-request, or have the operator update no-new-park-categories.md:256-271 to match the 2026-07-06 ruling. s12 adds a datum the ruling should weigh - the CABD basin needs a SECOND wrap to reach 10, so the wrap count will not shrink if class C is closed from that side."
+   "hypothesis": "The floor-5 form is submittable as-is once the do-while(0) scoping conflict is ruled on (carried forward unchanged from s11/s12).",
+   "mechanism": ".claude/rules/do-while-zero-exception.md (owner ruling 2026-07-06) abolishes the reorg.c-only scoping that .claude/rules/no-new-park-categories.md:256-271 and the grind role-prompt's frozen-family table still assert. The dedicated rule is the later document and the stale entry designates it as the authority, but a submission would be the first BB2 use of a wrap for a sched2 effect. Note this only removes class A - it does not close classes B or C, so the form is not byte-complete regardless.",
+   "next_probe": "Unchanged: emit a ruling-request, or have the operator update no-new-park-categories.md:256-271 to match the 2026-07-06 ruling. s13 adds no new datum here and deliberately did not re-probe the wrap axis; s12's datum stands (the CABD basin needs a SECOND wrap to reach 10, so the wrap count will not shrink if class C is closed from that side)."
   }
  ],
  "judge_constraints": [],

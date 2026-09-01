@@ -1400,3 +1400,221 @@ Class B is untouched by everything in this session and remains where s8/s9 left 
 - [s12] The two basins do not compose: unflipped+ABCD gives the target's loop-head rows 38-61 exactly with the wrong operand order at row 62 (score 5); flipped+CABD gives the target's rows 60-64 exactly with the store groups displaced (score 12, 10 with a second wrap). The original C produced both, so our loop body still differs from the original somewhere outside the class-C expression, outside the group order, and outside the A/B/D spellings - all three of which s12 measured exhaustively.
 
 - [s12] Class B (rows 35-36) was not touched by anything in s12; s8's instrumented-cc1 dumps and s9's 176-insn measurement stand unchanged.
+
+## [s13] structural — 2026-09-01 — floor 5 (unchanged); the s12 loop-SHAPE frontier is CLOSED and class C is re-typed to a single RTL plus-operand-order token with a measured 24-point collateral cost
+
+Chassis re-measured at session start: `sandbox func_800770B8 --disable all` on
+`memory/grind/func_800770B8/candidate.c` = **score 5 / build_insns 175 / target 175**,
+identical to the floor the s11/s12 ledger recorded. No chassis drift; every s12
+conclusion below is spent against the same numbers it was banked with.
+
+Positional diff of the floor-5 form re-run this session
+(`tmp/grind/func_800770B8/s3/posdiff.py`, 175 vs 175) — unchanged from s11:
+rows 35-36 (class B), row 50 (the known LO16 scorer artifact,
+[[sandbox-lo16-text-addend-false-distance]]), rows 62-64 (class C).
+
+### 1. The s12 frontier hypothesis — "a loop-SHAPE change makes the class-C flip free" — is KILLED, on all three loops
+
+s12 left the loop shapes as the last unenumerated statement-level structure.
+This session enumerated all three of them, on four bases in parallel
+(F = the floor-5 unflipped-ABCD candidate; A = flipped ABCD, `s12/perm/Q00.c`,
+baseline 29; B = flipped BACD, `s12/perm/Q06.c`, baseline 14; C = flipped CABD,
+`s12/perm/Q12.c`, baseline 12).
+
+**(a) Inner p_6a/p_7e loop shape — 48 builds, `tmp/grind/func_800770B8/s13/sh.log`.**
+
+| shape | F (5) | A (29) | B (14) | C (12) | insns |
+|---|---|---|---|---|---|
+| `do { } while (a2 < 5)` (current) | 5 | 29 | 14 | 12 | 175 |
+| `for (a2 = 0; a2 < 5; ...)` | 5 | 29 | 14 | 12 | 175 |
+| `while (a2 < 5) { }` | 5 | 29 | 14 | 12 | 175 |
+| pointer-walking `*p_6a++ = -1; *p_7e++ = 0;` | 26 | 48 | 37 | 35 | **173** |
+| split into two separate loops | 26 | 50 | 37 | 35 | **186** |
+| the two stores swapped (`p_7e` first) | 9 | 33 | 18 | 16 | 175 |
+
+for / while / do-while are **byte-identical** on every base — GCC 2.7.2 lowers all
+three to the same RTL here, so the inner loop's syntactic shape carries no
+information at all. Pointer-walking is *insn-count disqualifying*: it elides two
+instructions the target has (173 vs 175), which is positive evidence the original
+source indexed `p_6a[a2]` rather than post-incrementing. Splitting the loop costs
+eleven instructions. Swapping the two stores costs a uniform +4 on every base.
+
+Also measured in the same sweep: moving the `a2 = 0;` initialiser from the top of
+the outer-loop body down to immediately before the inner-loop block. Byte-neutral
+on F, A and C; costs +2 on B (14 -> 16). This was s12's explicit "a2 = 0 always kept
+first" caveat — it is now measured and inert on every basin of interest.
+Banked: `rejected/s13-inner-loop-pointer-walk-173insn-score26.c`,
+`rejected/s13-inner-loop-split-into-two-loops-186insn-score26.c`,
+`rejected/s13-inner-loop-store-order-swapped-score9.c`.
+
+**(b) Inner-loop POSITION — a degree of freedom s12 never had. 240 builds,
+`tmp/grind/func_800770B8/s13/p5.log` + `s13/p5/manifest.tsv`.**
+
+s12's exhaustive "24/24 store-group orders" permuted only the four store groups
+A/B/C/D and *always left the p_6a/p_7e block after all four*. This session
+promoted the inner-loop block to a fifth permutable element and measured all
+5! = 120 orders x {unflipped, flipped} = 240 builds.
+
+Result: **every one of the 96 orders that does not put I last is worse than the
+corresponding I-last order.** Top of the table:
+
+    5  ABCDI u   <- the floor-5 candidate (control; reproduces exactly)
+    7  ABDCI u
+   12  CABDI f   <- reproduces s12's flipped-CABD = 12 exactly (control)
+   13  ACBDI u / CADBI f
+   14  ACDBI u / BACDI f
+   15  CABDI u
+
+Not one variant with I in a non-final position appears in the top 24. Hoisting the
+inner loop ahead of any store group is strictly harmful, and the two controls
+(ABCDI u = 5, CABDI f = 12) reproduce s12's numbers to the point, which validates
+the harness. Best non-baseline order banked as
+`rejected/s13-inner-block-hoisted-before-groupC-score7-best-of-96.c`.
+Side datum: the 96 non-I-last orders produce build_insns in {173, 174, 175} — some
+of them lose instructions the target has, so they are disqualified on count alone.
+
+**(c) Outer loop and third loop shape — 27 builds, `tmp/grind/func_800770B8/s13/lp.log`.**
+
+Outer `t0` loop written three ways x third `a2 < 0xA` loop written three ways, on
+F / A / C:
+
+- **Outer loop shape is completely byte-neutral.** `t0 = 0; do { } while (t0 < 2)`,
+  `for (t0 = 0; t0 < 2; t0 = (s16)(t0 + 1))`, and `t0 = 0; while (t0 < 2) { }` produce
+  *identical bytes* on all three bases (F 5/5/5, A 29/29/29, C 12/12/12). Another
+  zero-information axis.
+- **The third loop's `for` shape is uniquely correct.** Rewriting it as
+  `a2 = 0; do { ... } while (a2 < 0xA)` or `a2 = 0; while (a2 < 0xA) { ... }` drops
+  build_insns from 175 to **174** and costs +1 score on every base (F 5->6,
+  A 29->30, C 12->13). The target has 175 instructions, so the `for` spelling
+  already in the candidate is confirmed against its two alternatives rather than
+  merely assumed. Banked `rejected/s13-third-loop-as-dowhile-174insn-score6.c`.
+
+**Verdict: the s12 frontier's "loop SHAPE" hypothesis is KILLED with 315
+measurements.** All three loops are either byte-neutral under every alternative
+spelling (inner, outer) or already at their unique optimum (third). There is no
+loop-shape degree of freedom left in this function.
+
+### 2. Class C re-typed: the residual is exactly ONE RTL plus-operand-order token, and its 24-point collateral cost is now isolated
+
+Reading the two builds instruction-for-instruction (`tmp/grind/func_800770B8/s13/ours.py`)
+produced a much sharper statement of class C than s6/s10/s12 had.
+
+**Our floor-5 build already reproduces the target's entire address chain.** Rows
+37-61 are identical to the target row for row, including the non-obvious part: the
+target does **not** compute `t0 * 10` directly. It computes `t0 * 4` for the 0x40/0x42
+store group (row 42 `sll $v1, $a1, 2`), then reuses it — row 56 `addu $v1, $v1, $a1`
+makes `t0 * 5`, and row 61 `sll $v1, $v1, 1` makes `t0 * 10`. Our build emits exactly
+that chain in exactly those registers (`addu $3,$3,$5` at 56, `sll $3,$3,0x1` at 61),
+and rows 60-61 already put the reloaded `D_800A36A0` in `$v0`/`$2` and the shift chain
+in `$v1`/`$3` — **the target's own seats.** The prior sessions' framing of class C as
+a local-alloc seat question (s10's QTYDBG priority target) is therefore obsolete on
+this form: the seats are already right.
+
+What is left is one token:
+
+    ours   62  addu $2,$2,$3        (= addu $v0, $v0, $v1  — reloaded global first)
+    target 62  addu $v1, $v1, $v0   (                       — shift chain first)
+
+Both are `addu rd, rs, rt` with `rd == rs`, so the printed operand order *is* the RTL
+`(plus A B)` operand order, i.e. it is the source-level operand order surviving
+`fold`. GCC 2.7.2's `fold()` only commutes a binary operand pair to move a *constant*
+to the second position; it has no complexity-based swap, so the source order is
+preserved verbatim. Confirming s6's attribution, and narrowing it: it is not "an RTL
+order question at insn 173", it is *this one addend pair*.
+
+**17 spellings of the inner-block address measured** (`tmp/grind/func_800770B8/s13/addr.log`,
+`s13/addr/manifest.tsv`), all on the floor-5 base:
+
+| spelling of `p_6a` | score | insns |
+|---|---|---|
+| `(s16 *)(D_800A36A0 + (t0 * 10) + 0x6A)` (current) | 5 | 175 |
+| `(s16 *)((s32)D_800A36A0 + (t0 * 10) + 0x6A)` | **5** | 175 |
+| `(s16 *)((t0 * 10) + D_800A36A0 + 0x6A)` (no cast) | **5** | 175 |
+| `(s16 *)(D_800A36A0 + (t0 * 10)) + 0x35` | 5 | 175 |
+| flip on `p_7e` only, `p_6a` unflipped | **5** | 175 |
+| `(s16 *)((t0 * 10) + (s32)D_800A36A0 + 0x6A)` (the flip) | 29 | 175 |
+| flip on `p_6a` only, `p_7e` unflipped | **29** | 175 |
+| `s32 off = t0 * 10;` + `(s16 *)(off + (s32)D_800A36A0 + 0x6A)` | 29 | 175 |
+| `(s16 *)((t0 * 5) * 2 + (s32)D_800A36A0 + 0x6A)` | 29 | 175 |
+| `(s16 *)((t0 * 10) + (s32)D_800A36A0) + 0x35` | 29 | 175 |
+| `&((s16 *)(D_800A36A0 + 0x6A))[t0 * 5]` | 9 | 176 |
+| `(s16 *)((t0 * 10) + (s32)(D_800A36A0 + 0x6A))` | 9 | 176 |
+| `(s16 *)(&D_800A36A0[(t0 * 10) + 0x6A])` | 9 | 176 |
+| `(s16 *)(0x6A + (t0 * 10) + (s32)D_800A36A0)` | 16 | 176 |
+| `(s16 *)((t0 * 10) + 0x6A + (s32)D_800A36A0)` | 16 | 176 |
+| `(s16 *)((t0 * 10) + (s32)base + 0x6A)` | 41 | **174** |
+| `(s16 *)(base + (t0 * 10) + 0x6A)` | 41 | **174** |
+
+Four results worth carrying forward:
+
+1. **The `(s32)` cast is not the trigger; the operand ORDER is.** Writing the whole
+   address as integer arithmetic with the global still *first*
+   (`(s32)D_800A36A0 + (t0 * 10) + 0x6A`) is byte-identical to the current form (5).
+   So class C is not a type/pointer-arithmetic artefact — the cost attaches solely
+   to which addend the source names first.
+2. **Writing the addend first without a cast does not work.** `(t0 * 10) + D_800A36A0`
+   scores 5, i.e. the C front end's pointer-arithmetic lowering canonicalises the
+   pointer back to the first position. The cast is the *only* way to express the flip,
+   which is why every flipped spelling collapses onto the same 29.
+3. **`p_7e`'s spelling is inert; `p_6a`'s spelling is everything.** Flipping only
+   `p_7e` measures 5 (byte-identical to the unflipped form); flipping only `p_6a`
+   measures 29 (byte-identical to flipping both). CSE derives `p_7e` from `p_6a`'s
+   address, so the contested `addu` is emitted from `p_6a`'s expression alone. Any
+   future probe of class C only has to vary `p_6a`.
+   Banked `rejected/s13-classC-flip-p7e-only-inert-score5.c`.
+4. **Routing the flip through the `base` local deletes the second `lw`** (174 insns,
+   score 41) — the target reloads `D_800A36A0` from `$gp` at row 60, so the inner
+   block must re-read the global and not reuse the outer-loop copy. That closes
+   the "use `base` in the inner block" idea permanently.
+   Banked `rejected/s13-classC-flip-through-base-local-drops-second-lw-174insn-score41.c`.
+
+**The flip's collateral cost, read out.** Posdiff of flipped-ABCD (`s12/perm/Q00.c`,
+29) against the target shows the damage is *not* in the inner block at all — rows
+60-64 of the flipped build are `lw $3 / sll $2,$2,1 / addu $2,$2,$3 / addiu $7,$2,106 /
+addiu $5,$2,126`, i.e. the operand order is now RIGHT (shift chain first) but the two
+hard registers have *swapped* ($2 = shift, $3 = load, where the target has $v1 = $3 =
+shift, $v0 = $2 = load), so the printed insn is `addu $2,$2,$3` again and the row still
+mismatches. The 24 extra points all sit in rows 38-59: under the flip GCC hoists the
+`lw` ahead of the `sll` (ours 40 `lw $3` / 41 `sll $2,$4,0x1` vs target 40 `sll $v0,$a1,1`
+/ 41 `lw $a0`) and delays the `sll ...,2` from row 42 to row 50, which re-seats the whole
+loop head.
+
+So class C is a genuine two-part lock, and this session can state it precisely for
+the first time: **the flip fixes the operand order but swaps the seats; s12's CABD
+group order fixes the seats but breaks the store rows. Neither the flip nor the
+group order can be applied without the other's damage, and the damage is emission
+order in rows 38-59, not allocation.** Every remaining lever must move the *emission
+order of the loop head under the flip*, not the inner block.
+
+### 3. What this session did NOT touch (deliberately, per the brief)
+
+Group order (s12, 24/24), group spelling (s12, 8 forms), pointer/index hoists (s12,
+12 forms), wrap positions (s11 63-position + 18 nested; s12 79+79 second-wrap) were
+all left alone — they are banked exhausted. Class B (rows 35-36) was not re-probed;
+it remains foreclosed by s7/s8/s9 measurement + dumps. The do-while(0) scoping
+conflict at `.claude/rules/no-new-park-categories.md:256-271` vs
+`.claude/rules/do-while-zero-exception.md` is carried forward unresolved.
+
+- [s13] Chassis re-measured at session start and again at session end: memory/grind/func_800770B8/candidate.c = score 5 / build_insns 175 / target 175. No drift from the s11/s12 ledger floor; every s12 conclusion is spent against the same numbers it was banked with. Positional diff unchanged: rows 35-36 (class B), row 50 (the known LO16 scorer artifact), rows 62-64 (class C).
+
+- [s13] LOOP SHAPE IS FULLY EXHAUSTED (315 builds). Inner p_6a/p_7e loop as `do { } while (a2 < 5)`, `for (a2 = 0; a2 < 5; ...)` and `while (a2 < 5) { }` are byte-identical on all four bases tested. Outer t0 loop as do-while, for and while are byte-identical on all three bases tested. GCC 2.7.2 lowers all of them to the same RTL here.
+
+- [s13] The third loop's `for (a2 = 0; a2 < 0xA; a2 = (s16)(a2 + 1))` is uniquely correct: rewriting it as `a2 = 0; do { ... } while (a2 < 0xA)` or as a while-loop drops build_insns from 175 to 174 and costs +1 score on every base. The candidate's spelling is now confirmed against its alternatives rather than assumed.
+
+- [s13] Pointer-walking the inner loop (`*p_6a++ = -1; *p_7e++ = 0;`) produces 173 build_insns - two FEWER than the target's 175. That is positive evidence the original source indexed `p_6a[a2]` rather than post-incrementing, and it disqualifies the whole post-increment family on count alone.
+
+- [s13] The inner-loop BLOCK is a fifth permutable element that s12 never varied (s12 permuted only the four store groups and always left the block last). All 120 orders x {flipped, unflipped} = 240 builds measured: every one of the 96 non-final positions is worse than its final-position counterpart, best alternative ABDCI = 7 vs the ABCDI = 5 baseline, and several non-final orders produce 173/174 insns. Hoisting the inner loop ahead of any store group is strictly harmful.
+
+- [s13] CLASS C IS ONE SOURCE-LEVEL OPERAND-ORDER TOKEN, NOT AN ALLOCATION RESIDUAL. The floor-5 build matches the target row for row from 37 to 61, including the target's t0*4 -> +t0 -> <<1 reuse chain for t0*10 (rows 42, 56, 61) and the target's exact seats at rows 60-61 ($v0 = reloaded global, $v1 = shift chain). The only mismatch is `addu $2,$2,$3` vs `addu $v1,$v1,$v0`. Since both are addu rd,rs,rt with rd==rs, the printed operand order is the RTL plus operand order, which is the source order verbatim: GCC 2.7.2's fold() commutes a binary pair only to move a CONSTANT to the second position and has no complexity-based swap.
+
+- [s13] The (s32) cast is NOT the trigger - the order is. `(s16 *)((s32)D_800A36A0 + (t0 * 10) + 0x6A)` (fully integer arithmetic, pointer named first) is byte-identical to the candidate at 5/175. Conversely `(s16 *)((t0 * 10) + D_800A36A0 + 0x6A)` (addend first, no cast) is also 5, because the C front end canonicalises the pointer back to first position. The cast is therefore the ONLY way to express the flip, and all seven flipped spellings collapse onto exactly 29/175.
+
+- [s13] Only p_6a carries degrees of freedom: flipping p_7e alone is inert (5, byte-identical to unflipped); flipping p_6a alone is byte-identical to flipping both (29). cse derives p_7e's address from p_6a's. This halves the class-C search space for every future session.
+
+- [s13] The inner block MUST re-read D_800A36A0 from $gp. Routing its address through the live `base` local (either operand order) deletes the second lw, giving 174 build_insns / score 41 - and the target has that lw at row 60. The `base`-routed inner-block family is closed permanently.
+
+- [s13] The flip's 24-point collateral cost is emission ORDER in the loop head, not allocation. Posdiff of flipped-ABCD shows rows 60-64 have the operand order RIGHT (shift chain first) but the two hard registers swapped ($2 = shift, $3 = load, against the target's $v1 = $3 = shift, $v0 = $2 = load), so the printed insn is `addu $2,$2,$3` again and the row still mismatches; all 24 extra points sit in rows 38-59, where GCC hoists the `lw` ahead of the `sll` (ours 40 `lw $3` / 41 `sll $2,$4,0x1` vs target 40 `sll $v0,$a1,1` / 41 `lw $a0`) and delays the `sll ...,2` from row 42 to row 50.
+
+- [s13] Consolidated statement of the lock: the flip fixes the operand order but swaps the seats; s12's CABD group order fixes the seats but breaks the store rows. Neither can be applied without the other's damage, and the damage is loop-head emission order in rows 38-59.
+
+- [s13] Not re-probed this session (banked exhausted by s11/s12, per the brief): group order 24/24, group spelling, pointer/index hoists, wrap positions (63-position single + 18 nested + 79+79 second-wrap). Class B (rows 35-36) remains foreclosed by s7/s8/s9. The do-while(0) scoping conflict between .claude/rules/no-new-park-categories.md:256-271 and .claude/rules/do-while-zero-exception.md is carried forward unresolved.

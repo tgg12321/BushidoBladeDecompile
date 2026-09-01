@@ -93,41 +93,6 @@
  *     eight A/B/D group re-spellings on the flipped body (six byte-identical at 29,
  *     deleting the `base` local costs an instruction at 176).
  *
- * s13 UPDATE (structural, 2026-09-01) - the body below is UNCHANGED and re-measures
- * 5 / 175 insns on today's chassis. Two things changed in the RESIDUAL TYPING:
- *   * CLASS C IS NOT A REGISTER-ALLOCATION RESIDUAL on this form. Reading the build
- *     against the target instruction for instruction (tmp/grind/func_800770B8/s13/ours.py)
- *     shows rows 37-61 identical, INCLUDING the target's non-obvious way of building
- *     t0*10: it computes t0*4 for the 0x40/0x42 group (row 42 `sll $v1,$a1,2`), adds t0
- *     (row 56 `addu $v1,$v1,$a1` -> t0*5), then shifts (row 61 `sll $v1,$v1,1`). We emit
- *     that chain in the target's own registers, and rows 60-61 already put the reloaded
- *     D_800A36A0 in $v0 and the shift chain in $v1 - the target's seats. The residual is
- *     ONE token: ours `addu $2,$2,$3` vs target `addu $v1,$v1,$v0`, i.e. the source-level
- *     operand order of that single addition. (GCC 2.7.2's fold() only commutes to move a
- *     CONSTANT second; it has no complexity swap, so source order survives verbatim.)
- *     s10's "qty3 -> $v1 seat" framing and the priority target derived from it are
- *     obsolete for this form.
- *   * THE FLIP'S COST IS THE OPERAND ORDER ALONE - not the (s32) cast, not the integer
- *     domain. `(s16 *)((s32)D_800A36A0 + (t0 * 10) + 0x6A)` (fully integer arithmetic,
- *     pointer still FIRST) is byte-identical to the form below at 5. And
- *     `(s16 *)((t0 * 10) + D_800A36A0 + 0x6A)` (addend first, no cast) is ALSO 5, because
- *     the C front end canonicalises the pointer back to first position - so the cast is
- *     the only way to express the flip at all. 17 spellings measured, s13/addr.log.
- *   * Only p_6a matters: flipping p_7e alone is inert (5); flipping p_6a alone is
- *     byte-identical to flipping both (29). cse derives p_7e from p_6a's address.
- *   * The inner block MUST re-read D_800A36A0. Routing it through the `base` local
- *     deletes the second lw (174 insns, score 41) and the target HAS that lw at row 60.
- *   * s13 NEGATIVE RESULTS - LOOP SHAPE IS FULLY EXHAUSTED, 315 builds, do not re-run:
- *     inner loop as for / while / do-while is BYTE-IDENTICAL on all four bases;
- *     outer t0 loop as do-while / for / while is BYTE-IDENTICAL on all three bases;
- *     the third a2<0xA loop's `for` is uniquely correct (do-while and while both drop to
- *     174 insns, +1 score everywhere); pointer-walking the inner loop gives 173 insns
- *     (elides two the target has); splitting it in two gives 186; swapping its two stores
- *     costs +4; moving `a2 = 0;` to the inner-loop boundary is byte-neutral here.
- *     The inner-loop BLOCK promoted to a fifth permutable element beside the four store
- *     groups: all 120 orders x {flipped, unflipped} measured (s13/p5.log) - every one of
- *     the 96 non-I-last orders is worse; best alternative ABDCI = 7 vs ABCDI = 5.
- *
  * Applying this body also requires the two caller-side edits (see
  * tmp/grind/func_800770B8/s3/try.py): the prototype becomes
  * `s32 func_800770B8(s32, s32, s32);` and the call site passes
@@ -196,6 +161,10 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
             s16 *p_7e = (s16 *)(D_800A36A0 + (t0 * 10) + 0x7E);
             do {
                 p_6a[a2] = -1;
+                a2 = (s16)(a2 + 1);
+            } while (a2 < 5);
+            a2 = 0;
+            do {
                 p_7e[a2] = 0;
                 a2 = (s16)(a2 + 1);
             } while (a2 < 5);
