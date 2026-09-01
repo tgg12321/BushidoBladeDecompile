@@ -18078,3 +18078,56 @@ deleted by cse.c or combine.c before the scheduler).  Ledger:
 `memory/grind/func_800645B0/` (evidence.md session-16 section, hypotheses
 H66/H67/H68, four new banked forms under `rejected/`).  `src/text1b.c` restored
 to HEAD; `main` continues to carry `INCLUDE_ASM("asm/funcs", func_800645B0);`.
+
+## 2026-09-01 — cop2 materialize-then-copy WIDENED ANCHOR — OWNER GRANT (informed ruling)
+
+**Provenance.** Owner (Trenton), 2026-09-01, in conversation, verbatim: **"Grant"** —
+given after the operator's recommendation presented the objections in full
+([[ordinary-c-judge-decidable]] § informed-approval pattern): `scan_hand_coded`
+tier LOW (1/8) on func_800203B4, the zero-hit SOTN census, and the Judge's
+2026-09-01 09:01 FAIL(CONSTRUCT) routing ruling were all before the owner when
+the grant was made. This resolves the `family-candidate` borderline entry filed
+earlier today (docs/grind/borderline.md, "cop2 materialize-then-copy widened
+anchor"). Record lands before execution per [[ruling-record-lands-before-code]].
+
+**The grant.** The 2026-08-17 func_8002FDB0 cluster ruling's mechanical anchor
+(`addu $t4,$aN,$zero`) is widened to the **general materialize-then-copy cop2
+addressing preamble**: the copy source need not be an `$aN` argument register
+(observed sources in the band: `$v0/$v1/$s0-$s6/$t0/$t1/$sp`), same
+0x8001-0x8003 band, same evidence set — a redundant copy GCC 2.7.2 never emits
+(a fresh value copied into a second register with no non-cop2 consumer),
+unfilled cop2 load-delay slots, and splat `/* handwritten instruction */` tags —
+and the SAME unchanged 4-point mechanical per-function check (sandbox 0; zero
+pins/aliasing blocks/scheduling barriers; in-island GPR instructions limited to
+the addressing preamble, nothing else swallowed; fresh layer-2 cheat-reviewer on
+the applied diff AND `verify-oracle --rebuild` before `queue done`).
+
+**Grounds (same category as the existing GTE carve-outs, not a relaxation):**
+func_800203B4's ledger proves the category membership by measurement — its 39
+C-emitted instructions are byte-exact, its islands are character-for-character
+PsyQ SDK macro bodies, GCC 2.7.2's MIPS backend contains zero cop2 mnemonics
+(s8: the 11 cop2 insns are unemittable from C by construction), and three
+island-partition variants measured the 12 in-island integer instructions
+un-movable into C (s6: 12/4/8, all non-zero). The `$aN` anchor of 2026-08-17 was
+a scan convenience, not an evidence principle; the idiom signals are identical.
+The LOW whole-function scan tier is the known GTE-wrapper-misroute artifact (the
+function head is compiled C; the gate scores whole functions).
+
+**Mechanical membership (enumerated 2026-09-01, `tmp/scan_cop2_widened.py`,
+banked with output in the cluster rule doc).** 68 in-band functions carry the
+idiom; 66 carry at least one non-`$aN`-source site newly covered by this
+widening. Of the Judge's hypothetical seven: func_80019310, func_800203B4,
+func_800204C0, func_8002FF20, func_80031890, func_8003E6D8 confirmed carriers
+(handwritten-tagged sites); **func_80017FA0 is no longer a beneficiary — it
+reached COMPLETED-C in pure C on 2026-08-20.** The 2026-08-17 load-bearing
+negative applies unchanged: membership closes the tail island ONLY when a
+function's pure-C body independently reaches sandbox 0 — it is not a shortcut,
+and reaching for it early remains the func_8002EA24-2026-07-30 refusal shape.
+
+**Execution.** func_800203B4 proceeds as the pure integration handoff its own
+foreclosure record specifies (trigger 1): candidate.c applied verbatim,
+sandbox re-verified 0, `inline_asm_canonical.txt` grant line + borderline entry
+written by the operator, fresh layer-2 cheat-reviewer, `verify-oracle
+--rebuild`, `queue done`. The other five confirmed carriers stay in their
+current queue states; their islands are covered when (and only when) their C
+bodies reach zero under the normal grind gates.

@@ -132,3 +132,30 @@ The near-miss members worth checking first, by distance: `func_80032314` (27),
 - [[inline-asm-injection]] — the boundary condition 3 enforces.
 - [[gte-wrapper-misroute-park]] / [[gte-3x3]] — neighbouring GTE families.
 - [[judge-sole-gate]] — why no member needs a fresh escalation.
+
+## Widened anchor (owner GRANT 2026-09-01 — supersedes the $aN scope limit)
+
+Owner ruling 2026-09-01 (decisions.md "cop2 materialize-then-copy WIDENED
+ANCHOR — OWNER GRANT"; informed ruling — the LOW scan tier, zero-hit SOTN
+census and the Judge's 2026-09-01 09:01 routing FAIL were all presented before
+the grant): the anchor widens from the literal `addu $t4,$aN,$zero` to the
+**general materialize-then-copy cop2 addressing preamble** — the copy source
+may be ANY register (observed in-band: `$v0/$v1/$s0-$s6/$t0/$t1/$sp`), same
+0x8001-0x8003 band, same evidence set (redundant copy GCC 2.7.2 never emits +
+unfilled cop2 load-delay slots + splat `/* handwritten instruction */` tags),
+same 4-point mechanical per-function check below, unchanged.
+
+Mechanical enumeration (2026-09-01, `tmp/scan_cop2_widened.py`: `addu $tN,$rX,
+$zero` with a cop2 transfer referencing `$tN` within the next 6 lines, band
+filter on the function address): **68 in-band carriers, 66 with at least one
+non-`$aN`-source site** newly covered by the widening — a superset of the 28
+rows above (the table's queue states are 2026-08-18-stale; the scan is the
+live membership source, re-run it rather than trusting the table). Confirmed
+handwritten-tagged carriers among the Judge-enumerated set: `func_80019310`,
+`func_800203B4` (integrated under this grant), `func_800204C0`,
+`func_8002FF20`, `func_80031890`, `func_8003E6D8`. (`func_80017FA0` reached
+COMPLETED-C in pure C on 2026-08-20 and needs nothing.)
+
+The load-bearing negative is unchanged and applies with full force to the
+widened set: membership closes the TAIL ISLAND only, when the function's
+pure-C body independently reaches sandbox 0 under the normal grind gates.

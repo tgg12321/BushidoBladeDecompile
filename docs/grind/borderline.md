@@ -351,3 +351,8 @@ disposition taken: operator lane implements; read-only diagnostic, no gate or by
 category: policy-question
 evidence: owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry, Ruling D); applies the already-sanctioned per-word-splat->aggregate-merge family (2026-08-17) to 0x800A1494/95/96; prong-(a) evidence banked (target base+offset addressing, 2026-07-09 naming census, closer Ruling 1 naming the merge, CD_datasync F14); volatility grounded by matched in-TU consumers.
 disposition taken: one sibling-scoped structural session authorized; mandatory prong-(c) asm-consumer check first; byte-neutrality via verify-oracle --rebuild; candidates face the normal gates.
+
+## 2026-09-01 — cop2 materialize-then-copy widened anchor — canonical-asm-grant (RESOLUTION of today's family-candidate entry)
+category: canonical-asm-grant
+evidence: owner GRANT 2026-09-01 (decisions.md "cop2 materialize-then-copy WIDENED ANCHOR — OWNER GRANT"), issued as an informed ruling with the objections presented (LOW scan tier, zero-hit SOTN census, Judge 09:01 routing FAIL). Same evidence set + same 4-point mechanical check as the 2026-08-17 cluster ruling; mechanical membership enumerated (68 in-band carriers, 66 with non-$aN-source sites; scan method in the cluster rule doc).
+disposition taken: today's earlier family-candidate entry is RESOLVED-GRANTED. func_800203B4 integrated per its foreclosure record's trigger-1 recipe under the full gates (sandbox 0 re-verify, fresh layer-2 cheat-reviewer, verify-oracle --rebuild, queue done). Remaining confirmed carriers (func_80019310, func_800204C0, func_8002FF20, func_80031890, func_8003E6D8) keep their queue states; islands covered only when their C bodies independently reach zero.
