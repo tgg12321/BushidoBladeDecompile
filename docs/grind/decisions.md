@@ -18131,3 +18131,10 @@ written by the operator, fresh layer-2 cheat-reviewer, `verify-oracle
 --rebuild`, `queue done`. The other five confirmed carriers stay in their
 current queue states; their islands are covered when (and only when) their C
 bodies reach zero under the normal grind gates.
+
+## 2026-09-01 — func_800203B4 — COMPLETED-INLINE-ASM-CANONICAL (ledger closed)
+
+Integration handoff executed under the 2026-09-01 owner GRANT (widened cop2
+materialize-then-copy anchor). Verification chain in commit 49972383. Ledger
+facts preserved in git history (memory/grind/func_800203B4 removed at close;
+includes fact 53, the full-build correction of the s3 nop-deletion claim).
