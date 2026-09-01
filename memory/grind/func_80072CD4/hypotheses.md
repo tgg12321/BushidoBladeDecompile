@@ -1396,3 +1396,48 @@ judge constraint.
    upholds the ban and a NEW pure-C chassis is required.
 3. (project-wide, not this function) The s12 cc1psx calibration result generalises; run
    tmp/grind/func_80072CD4/s12/probe.sh on func_80017848 / func_800645B0 and bank once.
+
+## 2026-09-01 — s13 (continuation) — the Judge answered the ruling-request: PASS. Body landed, byte match, floor 4 → 0.
+
+### H-s13-4 — with the construct tripwire cleared, the measured-0 per-arm POLY_G4 body clears the full FINAL CALL. CONFIRMED.
+
+The first half of s13 returned `ruling-request` because grindlib's mechanical
+`banned_constructs` check (grindlib.py:306) would auto-discard any honest `candidate-ready`
+whose CONSTRUCTS: line described the per-arm 0xFC duplication, and a session may not
+self-clear (`unban_construct` is driver-invoked only). The Judge ruled PASS
+(docs/grind/decisions.md:19120, `2026-09-01 17:30`) and the driver cleared entry 5; state.json
+now carries only the four procedural 2026-08-20 self-issued-"ruling" bans, which stand and are
+cited nowhere here.
+
+Probe: apply the measured body to src/text1b.c, then sandbox + verify-oracle.
+Result: sandbox **0** (79 == 79, rules_dropped 0) and verify-oracle **ok:true**, full-build
+SHA1 == `62efab4f73f992798c43e8c730aa43baa10bb4fa`. Both prongs of the standing FINAL CALL
+constraint cleared in the same session, on the same tree. Artifacts:
+tmp/grind/func_80072CD4/s13/sandbox_perarm_final.json,
+tmp/grind/func_80072CD4/s13/verify_oracle.txt.
+
+### H-s13-5 — the strongest precedent for this shape was on main in this very file the whole time. CONFIRMED (by the Judge, independently of any grind session's claim).
+
+s10's precedent census went to SOTN and came back negative; s13's first half went back with an
+uncapped index and found s_sca.c. Both searched outward. The COMPLETED-C sibling
+func_80072BC4 at src/text1b.c:6023-6029 — same file, same primitive, same inner if/else —
+already duplicates `*(u8 *)(arg1 + 0x1D) = 0xC3;` into both arms with the common tail after
+the join, and has been accepted on main for months. **Methodological lesson worth carrying to
+other functions: run the in-project census (the near-duplicate sibling, the same TU, the same
+primitive family) BEFORE the cross-project one.** The queue's own near-duplicate lead named
+func_80072BC4 as this function's analog from session 1; twelve sessions read it for chassis
+shape and none of them read it as precedent for the construct.
+
+### Frontier after s13 (function CLOSED)
+
+func_80072CD4 is COMPLETED-C: pure C, zero cheat-asm, sandbox 0, full-build SHA1 == oracle.
+The three carry-forward items are project-wide, not this function's:
+1. The s12 cc1psx calibration result (the decompals port is byte-faithful to the original PsyQ
+   cc1 on this function's hardest optimisation path, on both chassis) generalises; run
+   tmp/grind/func_80072CD4/s12/probe.sh on func_80017848 / func_800645B0 and bank it once
+   project-wide so no future session spends the "compiler configuration" argument again.
+2. The depth-3 tools/sched_solver/perturb.py extension named in the s12 frontier is no longer
+   needed HERE, but is still the right tool for the next sched1-hoist-shaped residual.
+3. The precedent-search ordering lesson in H-s13-5 — check the in-project sibling first —
+   should be applied to every function currently sitting in the FORECLOSED bucket on a
+   gate-(ii) negative. Several of those censuses searched only outward.

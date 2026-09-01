@@ -1244,3 +1244,51 @@ Re-open triggers restated there; the fidelity trigger is deleted from the list a
   instruction and jump2 cross_jump re-merges the copies; (3) lever-exhaustion documented —
   YES, twelve sessions across five modalities and 35 banked rejected forms; (4) FAKE
   annotation — now present; (5) layer-1 + layer-2 review — pending, gated on the ruling.
+
+## [s13-escalation, continuation after the 2026-09-01 17:30 Judge ruling] 2026-09-01 — BYTE MATCH LANDED
+
+- The blocker s13's first half identified (grindlib's mechanical `banned_constructs`
+  tripwire, entry 5, covering the per-arm 0xFC POLY_G4 duplication) has been CLEARED by the
+  driver on the Judge's verdict `## 2026-09-01 17:30 — func_80072CD4 — ruling: ... — PASS`
+  (docs/grind/decisions.md:19120). state.json `banned_constructs` now carries only the four
+  PROCEDURAL entries (the 2026-08-20 self-issued decisions.md "ruling" bans); those remain in
+  force and are not cited anywhere in this session's vet or record.
+- The Judge's operative findings, verified independently by that ruling and not taken from any
+  grind session's claims: (a) all 24 field values in the body match target stores exactly, and
+  asm/funcs/func_80072CD4.s writes 0xFC to +0x04 and +0x0C on BOTH paths, so the duplicated
+  statements are real, not dead; (b) the POLY_G4 typedef is src/code6cac_b2_pre.c:150-158
+  verbatim; (c) the COMPLETED-C sibling func_80072BC4 (src/text1b.c:6023-6029) already ships
+  this exact shape on main — `*(u8 *)(arg1 + 0x1D) = 0xC3;` duplicated into both arms of its
+  inner if/else with the common tail written after the join. That in-file, in-project,
+  already-accepted exhibit is a stronger citation than the SOTN s_sca.c census hit.
+- Under .claude/rules/ordinary-c-judge-decidable.md Ruling 1 sec.3 the construct is ORDINARY C:
+  every field is assigned exactly once per path, each arm writes the complete vertex-0/1 RGB
+  triples, and r0, g0 AND r1 are all common across the arms and all written per-arm — nothing
+  is cherry-picked. No exception family is claimed and no /* FAKE */ annotation attaches.
+
+**MEASUREMENTS THIS SESSION (both on the current chassis, with the body in place in src/):**
+- `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all` → **score 0**, target_insns 79,
+  build_insns 79, scorable true, rules_dropped 0, cheat_asm_stripped 166 (that 166 is other
+  functions' cheat-asm in the TU, not this function's — this body contains zero `__asm__`).
+  Raw JSON: tmp/grind/func_80072CD4/s13/sandbox_perarm_final.json.
+- `& tools/wteng.ps1 main verify-oracle` → **"ok": true**, full-build SHA1
+  `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle. Log:
+  tmp/grind/func_80072CD4/s13/verify_oracle.txt. This is the FINAL CALL the standing judge
+  constraint demanded (sandbox 0 on main AND full-build SHA1 == oracle); both prongs cleared.
+- `python3 tools/scan_hand_coded.py --single func_80072CD4` → tier LOW, 0/8 (S1-S8 all
+  negative), tmp/grind/func_80072CD4/s13/scan_hand_coded.txt. Recorded for completeness only:
+  canonical-asm was never the route here and is moot now that pure C matches.
+
+**What landed.** src/text1b.c carries the body exactly as measured — the file-scope POLY_G4
+typedef (character-for-character the src/code6cac_b2_pre.c shape) plus plain
+`((POLY_G4 *)arg1)->field = <literal>` assignments. No holder local, no intent-announcing
+symbol, ascending field order per triple, no /* FAKE */ annotation, no pending-ruling header
+narration — precisely the form the standing judge_constraints entry specified. The body is
+byte-identical to memory/grind/func_80072CD4/rejected/rederive_polyg4_struct_perarm_score0_banned_family.c
+(its historical filename's "banned_family" suffix is now stale) and is mirrored to
+memory/grind/func_80072CD4/candidate.c. Self-vet: memory/grind/func_80072CD4/self_vet.md.
+
+**Floor: 4 → 0.** Twelve prior sessions across recon / structural×3 / permuter / synthesis×2 /
+forensics / solver / escalation×3 held the honest floor at 4 with 35 banked rejected forms; the
+residual was never a missing C form, it was an adjudication question about a form that had
+measured 0 since s2. The pure-C match exists, as the prime directive always held.
