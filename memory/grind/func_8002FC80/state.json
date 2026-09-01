@@ -6,10 +6,14 @@
  "floor_history": [],
  "frontier": [],
  "judge_constraints": [
-  "canonical-asm GRANTED (pipeline, 2026-08-31, tier LOW): integrate the whole-body form per canonical-asm-authorization-recipe to COMPLETED-INLINE-ASM-CANONICAL; the allowlist entry is already written."
+  "canonical-asm GRANTED (pipeline, 2026-08-31, tier LOW): integrate the whole-body form per canonical-asm-authorization-recipe to COMPLETED-INLINE-ASM-CANONICAL; the allowlist entry is already written.",
+  "LAYER-1 CHEAT-REVIEWER FAIL: The three GTE inline-asm islands are legitimate (byte-verified against the target asm and character-for-character identical to the already-authorized sibling func_8002FDB0), but the six VECTOR-typed scratchpad stores are a scheduling-motivated respelling, not a semantic one, and the ledger's own rejected/ file admits it. Next action: Revert the six VECTOR component-store lines back to plain `*(s32 *)CONST = v1 - v2;` (matching the already-authorized func_8002FDB0 spelling) and find a genuine pure-C lever for the store-sink symptom -- e.g. re-examine operand/read or"
  ],
- "banned_constructs": [],
- "ladder_skip": 0,
+ "banned_constructs": [
+  "`((VECTOR *)0x1F800360)->vx = v1 - v2;` (and the five sibling component stores at 0x1F800360/364/368/370/374/378)",
+  "Choice of VECTOR-typed stores vs. the plain `*(s32 *)ADDR = v1 - v2;` form used by the already-authorized sibling func_8002FDB0 for the identical scratchpad slots 0x1F800360-0x1F800378"
+ ],
+ "ladder_skip": 10,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-23T07:31:51.225985+00:00"

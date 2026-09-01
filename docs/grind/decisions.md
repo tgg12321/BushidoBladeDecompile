@@ -16827,3 +16827,7 @@ WHY IT IS SOUND (verified by me this session, not taken from the ledger).
 THE PRECISE QUESTION. The C is legitimate and complete, but the function carries inline assembly and is NOT yet listed in inline_asm_canonical.txt, so it cannot be committed as done without a canonical-asm grant — and writing that grant is not mine to do. The scanner tier for this function is not STRONG; instead it qualifies through the second evidence door the owner granted on 2026-08-30 (decisions.md:14814, ruling 4), which substitutes by-name membership in a landed owner cluster ruling for the scanner tier. func_8002FC80 is the first row of that registry (tools/grinder/owner_cluster_grants.txt:18). I have verified the registry row, the landed ruling behind it, and the mechanical conditions the ruling asked the Judge to check. The driver should re-verify the OWNER-CLUSTER tier and execute the grant, mirroring func_8002FDB0's entry: only the tail islands are authorized; the head remains ordinary C.
 
 
+
+## 2026-08-31 19:45 — func_8002FC80 — layer-1 review — **FAIL**
+
+The three GTE inline-asm islands are legitimate (byte-verified against the target asm and character-for-character identical to the already-authorized sibling func_8002FDB0), but the six VECTOR-typed scratchpad stores are a scheduling-motivated respelling, not a semantic one, and the ledger's own rejected/ file admits it.
