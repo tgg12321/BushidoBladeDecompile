@@ -92,6 +92,27 @@
  * multi-write carrier, which the 2026-08-31 amended named-intermediate family
  * excludes by name.  See hypotheses H64/H65 and
  * rejected/two-once-written-locals-copy-deleted-by-cse.c.
+ *
+ * s16 (2026-09-01, forensics): floor RE-MEASURED on that day's tree with this
+ * exact body -- score 1, target_insns 78, build_insns 78, rules_dropped 0.
+ * THIS BODY IS STILL THE FLOOR, BUT ITS FRAMING IS OBSOLETE: H68 falsified
+ * H59's closed-form "you cannot have both halves".  On the WD chassis (fresh
+ * destination `wid = idx2 + idx;`, target's operand order at index 20), adding
+ * a second REAL, NON-COPY write to `idx` -- `idx = last & 7;`, the masked
+ * random value the halfword store consumes, computed into the slot index that
+ * is dead from the *3 sum onward -- keeps reg_n_sets[idx] == 2 alive through
+ * combine into sched.c, denies birthing_insn_p's lift, and reproduces the
+ * target's loop head (11/12) and back-edge delay slot (65) as well.  Measured
+ * 2 / 78 at 78 insns; the ONLY residual is two register names (`andi s0,v0,7`
+ * / `sh s0,X(at)` against the target's `$v0`).  See hypotheses H66/H67/H68 and
+ * rejected/both-halves-idx-second-real-nonco-andi-regseat-2of78.c.  The next
+ * attack on this function is a REGISTER-SEAT question (ra_solver /
+ * inverse_compose classify with the owner's 2026-09-01 Ruling-C
+ * --target-object escape), not a scheduling or RTL-expansion question.
+ * Also killed this session: every once-set const-1 carrier (loop.c hoists the
+ * invariant set out of both loops and RA seats it callee-saved: +2 insns), and
+ * every second write to the carrier whose RHS is a bare register (cse.c deletes
+ * pseudo->pseudo copies, combine.c deletes hardreg->pseudo call returns).
  */
 s32 func_800645B0(void) {
     s32 i;

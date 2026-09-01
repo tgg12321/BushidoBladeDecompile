@@ -1923,3 +1923,136 @@ Returned to active under Ruling A. Ground: the 2026-08-31 amended named-intermed
   lines only and structurally cannot evidence a write count, so it cannot
   supply a multi-write precedent even in principle.
 - **verdict: KILLED** — gate (b) FAILS again, now against the amended class.
+
+
+## H66 (session 16, 2026-09-01, forensics) - KILLED. The other end of the scheduler tie: making the const-1 `li` BIRTHING is unreachable, because reg_n_sets[val] == 1 is also loop.c's hoist precondition
+
+- **statement.** Every prior attack tried to DENY sched.c's birthing lift on the
+  loop-top `addu` (by raising reg_n_sets[idx]).  The untried mirror is to GRANT
+  the same lift to its competitor, the `val = 1;` const set: if both insns carry
+  `max_priority`, `rank_for_schedule` (tools/gcc-2.7.2/sched.c:2408-2465) falls
+  through the priority test and the class test to `INSN_LUID (tmp) - INSN_LUID
+  (tmp2)`, i.e. SOURCE STATEMENT ORDER decides the loop head -- and the SB
+  chassis' existing, natural order (`idx = i + j;` then `val = 1;`) is already
+  the one that would put the addu at the loop top.  `birthing_insn_p`
+  (sched.c:2505-2536) lifts a SET whose destination is live and has
+  `reg_n_sets == 1`; `val` currently has three sets (1, the D_800A3444 read, the
+  OR), so it is never lifted.  Give the const-1 its own once-set carrier and the
+  tie appears.
+- **mechanism / why it cannot be bought.** `reg_n_sets[val] == 1` is
+  SIMULTANEOUSLY the precondition for loop.c's loop-invariant hoist of that same
+  set (`n_times_set == 1` + invariant).  GCC 2.7.2 reads both from one counter,
+  so the lift cannot be obtained without the hoist.  The hoisted constant is then
+  live across the inner loop's `jal rand`, so RA must seat it in a CALLEE-SAVED
+  register, adding one `sw` and one `lw` -- exactly +2 insns over the target's 78.
+  The target keeps `addiu $v1,$zero,0x1` INSIDE the inner loop
+  (asm/funcs/func_800645B0.s:16).
+- **probe.** Four spellings, all measured with the honest
+  `sandbox func_800645B0 --disable all` on this session's tree (SB floor
+  re-confirmed 1 / 78 the same day), plus a full instrumented-cc1 dump set on
+  the variant-E build:
+
+  | variant | shape | score | insns |
+  |---|---|---|---|
+  | A | SB chassis + fresh `flags` local for the D_800A3444 RMW | 13 | 80 |
+  | B | WD chassis + fresh `flags` local for the RMW | 12 | 80 |
+  | C | WD chassis + `mask` reused as the RMW carrier | 14 | **77** |
+  | E | WD chassis + `idx` reused as the RMW carrier | 15 | 80 |
+
+- **result.** All four lose, and the dumps name the pass.
+  `tmp/grind/func_800645B0/s15b/e.loop.txt` (loop.c's own dump) reports
+  `Insn 41: regno 78 (life 1), move-insn savings 1  moved to 188` for the inner
+  loop and `Insn 188: regno 78 (life 52), move-insn savings 1 halved since
+  already moved  moved to 190` for the outer one, and the resulting
+  `(insn 190 ... (set (reg/v:SI 78) (const_int 1)))` sits BEFORE the outer
+  `NOTE_INSN_LOOP_BEG` (insn 15) -- hoisted out of both loops.  The emitted
+  prologue then carries `li $20,0x00000001` plus `sw $20,32($sp)` /
+  `lw $20,32($sp)` and `.frame regs=6` against the target's 5.  Variant C is the
+  only form this function has ever measured at 77 insns (one SHORT of target),
+  banked for the record.
+- **verdict:** KILLED, and it closes a FAMILY, not a spelling: no once-set
+  const-1 carrier of any name can work here, so every "make the li birthing so
+  the priorities tie and LUID decides" attack is dead.  Corollary of independent
+  value: the SB chassis' reuse of `val` for the RMW is a LICM DEFEAT
+  (.claude/rules/defeat-licm-hoist-var-reuse.md), not merely a scheduling choice.
+- **banked.** `rejected/once-set-const1-{sb-split,wd-split,wd-mask-carrier,wd-idx-carrier}-licm-hoist-*.c`
+
+## H67 (session 16, 2026-09-01) - KILLED, and it generalises s15's cse.c finding: a second set of the carrier that is a REG-REG COPY is deleted, by cse.c OR by combine.c
+
+- **statement.** A second, semantically REAL write to `idx` taken from a call
+  return -- `idx = rand();` with the halfword store consuming `idx & 7` (the WD
+  chassis otherwise unchanged) -- should raise reg_n_sets[idx] to 2 and deny the
+  birthing lift.
+- **mechanism.** It does not, because the RTL for a call return landing in a
+  local is a HARD-REG COPY, `(set (reg/v:SI 74) (reg:SI 2 v0))`, and combine.c
+  substitutes `$v0` into the consumer and deletes the copy.  s15 proved the
+  pseudo->pseudo case dies in cse.c; this is the hardreg->pseudo case, and it
+  dies one pass later.  Either way the count seen by sched.c is 1.
+- **probe.** `g_wd_idx_borrowed_for_rand.c` measured at
+  `sandbox --disable all`, then `pwsh tools/grinder/dump.ps1 func_800645B0` and
+  a per-pass census of `(set (reg/v:SI 74) ...)` across the dump chain.
+- **result.** 3 / 78, the WD residual verbatim (11/12/65; index 20 exact).  Pass
+  census (`tmp/grind/func_800645B0/s15b/g.*.txt`): rtl 2 sets, cse 2, cse2 2,
+  flow 2 -- **combine 1, sched 1**, insn 118 gone.
+- **verdict:** KILLED.  Rule for future sessions: a second write to the carrier
+  must COMPUTE something; any spelling whose RHS is a bare register (another
+  local, a parameter, or a call return) is deleted before the scheduler.
+
+## H68 (session 16, 2026-09-01) - CONFIRMED, and it FALSIFIES H59's "closed-form KILLED": a non-copy second real write to `idx` wins BOTH halves, and the residual becomes a 2-insn REGISTER SEAT
+
+- **statement.** H59 (session 12) declared the 1-vs-3 trade closed-form: target's
+  operand order at index 20 needs a fresh destination for the *3 sum (which drops
+  reg_n_sets[idx] to 1), the loop head needs reg_n_sets[idx] >= 2, and "the
+  function computes nothing else that lands in `idx`".  The last clause is FALSE.
+  The halfword store consumes `rand() & 7`, and the slot index is dead from the
+  moment the *3 sum is taken -- so `idx = last & 7;` is a second write that is
+  (a) semantically real, (b) a computation, not a copy, so no pass deletes it.
+- **mechanism.** reg_n_sets[idx] = 2 survives cse/cse2/flow/combine into sched.c,
+  `birthing_insn_p` returns 0 for the loop-top `addu`, `adjust_priority` leaves
+  its priority unlifted, the list scheduler emits it first in the block, and
+  reorg.c steals it into the back-edge delay slot -- exactly the target's
+  arrangement -- while the *3 sum keeps the fresh destination `wid` that
+  optabs.c:398-421 requires for target's `(idx2, idx)` operand order.
+- **probe.** `h_wd_idx_second_set_nonco.c` (WD chassis + `idx = last & 7;` +
+  `*((s16 *)(... + idx2)) = idx;`), honest sandbox, then the objdump differ
+  `tmp/grind/func_800645B0/s12/diff.py`.
+- **result.** **2 / 78 at 78 insns** -- the best the WD family has ever reached
+  and the first form on this function to hold BOTH halves at once.  Index 20:
+  exact.  Loop head 11/12: exact.  Delay slot 65: exact.  The entire residual is
+  two register names: `55 OURS andi s0,v0,7 | TGT andi v0,v0,7` and
+  `58 OURS sh s0,X(at) | TGT sh v0,X(at)` -- the masked value must stay in the
+  rand-return seat instead of being computed into idx's callee-saved seat.
+  A second non-copy spelling, `idx = wid << 2;` (the byte-offset scaling, variant
+  K), also holds the structure: 78 insns, target's opcode sequence exactly, and
+  ALL TWELVE differences are register names (idx/idx2/wid rotate through
+  s1/s0/v1 because idx no longer vacates its seat for `wid`).
+- **verdict:** CONFIRMED.  The scheduling/optabs lock that has framed this
+  function since session 6 is BROKEN; what remains is a register-allocation seat
+  problem of 2 insns (or of 12 register names on the K spelling), which is
+  ra_solver territory -- and the owner's 2026-09-01 Ruling C gave
+  `inverse_compose.py` the `--target-object` escape that makes it usable on this
+  INCLUDE_ASM function.
+- **banked.** `rejected/both-halves-idx-second-real-nonco-andi-regseat-2of78.c`,
+  `rejected/idx-second-set-byte-offset-seat-permutation-12of78.c`,
+  `rejected/idx-second-set-from-rand-is-a-copy-deleted-by-combine.c`
+- **NOTE ON STANDING.** These forms are measurements, not proposals: 2 / 78 is
+  not a candidate, and the constructs (borrowing the dead slot index for a second
+  real value) would face the normal family/citation gates if one ever reaches 0.
+
+## [s15] H66 - the mirror attack on the scheduler tie: give the const-1 `li` the same birthing_insn_p max-priority lift the loop-top addu gets, so rank_for_schedule falls through to INSN_LUID and the SB chassis' natural source order decides the loop head.
+- mechanism: sched.c:2408-2465 rank_for_schedule tie-breaks on INSN_LUID only when priorities tie; birthing_insn_p (sched.c:2505-2536) lifts a SET whose dest is live and has reg_n_sets == 1. `val` has three sets today, so it is never lifted. BUT reg_n_sets[val] == 1 is simultaneously loop.c's invariant-hoist precondition, and GCC 2.7.2 reads both from one counter.
+- probe: Four spellings measured with the honest sandbox on this session's tree (SB floor re-confirmed 1/78 first): A = SB + fresh `flags` local for the D_800A3444 RMW; B = WD + fresh `flags`; C = WD + `mask` as RMW carrier; E = WD + `idx` as RMW carrier. Plus a full instrumented-cc1 dump set on the E build (pwsh tools/grinder/dump.ps1).
+- result: A 13/78 @ 80 insns, B 12/78 @ 80, C 14/78 @ 77, E 15/78 @ 80. loop.c's own dump (tmp/grind/func_800645B0/s15b/e.loop.txt) reports 'Insn 41: regno 78 (life 1), move-insn savings 1  moved to 188' (inner loop) then 'Insn 188: regno 78 (life 52), move-insn savings 1 halved since already moved  moved to 190' (outer loop), and the resulting (insn 190 (set (reg/v:SI 78) (const_int 1))) sits BEFORE the outer NOTE_INSN_LOOP_BEG (insn 15). The hoisted constant is live across `jal rand`, so RA seats it callee-saved: the build gains `li $20,1` in the prologue plus `sw $20,32($sp)` / `lw $20,32($sp)` (.frame regs=6 vs the target's 5) = exactly +2 insns. The target keeps `addiu $v1,$zero,0x1` INSIDE the inner loop (asm/funcs/func_800645B0.s:16).
+- verdict: KILLED
+
+## [s15] H67 - a second REAL write to idx taken from a call return (`idx = rand();`, the halfword store consuming `idx & 7`) raises reg_n_sets[idx] to 2 and denies the birthing lift.
+- mechanism: It does not: a call return landing in a local is a hard-reg copy (set (reg/v:SI 74) (reg:SI 2 v0)), and combine.c substitutes $v0 into the consumer and deletes the copy. s15 proved the pseudo->pseudo copy case dies in cse.c; this is the hardreg->pseudo case, one pass later.
+- probe: Measured g_wd_idx_borrowed_for_rand.c with `sandbox func_800645B0 --disable all`, then ran pwsh tools/grinder/dump.ps1 func_800645B0 and censused (set (reg/v:SI 74) ...) across the whole dump chain.
+- result: 3/78 - the WD residual verbatim (positions 11/12/65; index 20 exact). Per-pass census (tmp/grind/func_800645B0/s15b/g.*.txt): rtl 2 sets, cse 2, cse2 2, flow 2, combine 1, sched 1, insn 118 absent from combine onward. Rule for future sessions: a second write to the carrier must COMPUTE something; any RHS that is a bare register (another local, a param, a call return) is deleted before the scheduler.
+- verdict: KILLED
+
+## [s15] H68 - H59's closed-form 'you cannot have target's operand order at index 20 AND target's inner-loop head' is FALSE: a second, semantically real, NON-COPY write to idx exists in this function's own data flow and wins both halves.
+- mechanism: The halfword store consumes `rand() & 7` and `idx` is dead from the *3 sum onward, so `idx = last & 7;` is a real computation into idx. reg_n_sets[idx] == 2 then survives cse/cse2/flow/combine into sched.c, birthing_insn_p returns 0 for the loop-top addu, its priority is not lifted, the list scheduler emits it first in the block and reorg.c steals it into the back-edge delay slot - while the *3 sum keeps the fresh destination `wid` that optabs.c:398-421 requires for target's (idx2, idx) operand order.
+- probe: h_wd_idx_second_set_nonco.c (WD chassis + `idx = last & 7;` + `*((s16 *)(... + idx2)) = idx;`) measured with the honest sandbox, then differed insn-for-insn with tmp/grind/func_800645B0/s12/diff.py. Sibling spelling k_wd_idx_byteoffset.c (`idx = wid << 2;` as the second write, the three word stores indexing on idx) measured the same way.
+- result: 2/78 at 78 insns - the best the WD family has ever reached and the first form on this function to hold both halves. Index 20 EXACT, inner-loop head 11/12 EXACT, back-edge delay slot 65 EXACT. Entire residual = two register names: 55 OURS `andi s0,v0,7` / TGT `andi v0,v0,7`, 58 OURS `sh s0,X(at)` / TGT `sh v0,X(at)`. The k spelling reproduces the target's whole opcode sequence at 78 insns with ALL TWELVE differences being register names (idx/idx2/wid rotate through s1/s0/v1 because idx no longer vacates its seat for wid).
+- verdict: CONFIRMED

@@ -1,8 +1,8 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 14,
- "current_modality": "escalation",
+ "session_count": 15,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -87,18 +87,29 @@
    "floor": 1,
    "modality": "escalation",
    "headline": "Last live frontier item KILLED with measurements (induction-variable index costs 5-11 insns; the target recomputes i+j with a register-register addu twice); both endgame-lock gates re-run and FAILED, "
+  },
+  {
+   "session": 15,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "The session-6 scheduling/optabs lock is BROKEN: a non-copy second real write to idx (idx = last & 7) wins BOTH halves at 2/78 with index 20, loop head 11/12 and delay slot 65 all exact - the residual "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A future sanctioned family (or an independently discovered SOTN-master precedent) covering an INVENTED staging copy - `wid = i + j; idx = wid;` - would immediately close this function at distance 0; the body is already measured and banked.",
-   "mechanism": "That single construct raises reg_n_sets[idx] above 1 (denying sched.c's birthing_insn_p lift, restoring the target's loop-head placement) while leaving the *3 sum a destination distinct from both operands (satisfying optabs.c:398-421 for the target's operand order). It is the only shape measured at score 0 in 14 sessions, and it is currently a banned construct for this function.",
-   "next_probe": "Do NOT re-propose it as a candidate. Re-open only on an owner-landed family grant, or on a PSX-tagged SOTN-master precedent for the construct class appearing in docs/reference/sotn-construct-index.md."
+   "hypothesis": "The 2-insn residual of the h form is a pure register-seat question: the masked random value must stay in the rand-return seat ($v0) instead of being computed into idx's callee-saved seat ($s0), while idx still carries a second non-copy write so reg_n_sets[idx] == 2 survives into sched.c.",
+   "mechanism": "Any second write to idx lands in idx's allocated seat, and idx is seated callee-saved because it is live across the inner loop's jal rand. The target computes the mask in $v0 and never writes $s0 in that part of the arm. So the question is whether a C form exists whose second real write to idx is consumed where the target also uses $s0 (the target writes $s0 only in the wid chain: `addu $s0,$s1,$s0` and `sll $s0,$s0,2`).",
+   "next_probe": "SOLVER modality: tools/ra_solver/inverse_compose.py classify on the h and k builds using the owner's 2026-09-01 Ruling-C --target-object / --ours-object escape (which exists precisely for INCLUDE_ASM functions like this one), to type the seat residual REACHABLE or FORECLOSED and get ranked C-lever vectors. Banked bodies: rejected/both-halves-idx-second-real-nonco-andi-regseat-2of78.c and rejected/idx-second-set-byte-offset-seat-permutation-12of78.c."
   },
   {
-   "hypothesis": "tools/sched_solver/goalmap.py's object mode is unusable for any function whose body contains assembler-expanded macros, which will silently block the same axis on other functions.",
-   "mechanism": "build_map gates object mode on len(hon_obj) == len(hon), comparing an OBJECT instruction count to an asm TEXT line count; absolute-address memory forms (sw/sh/lw against a bare symbol) expand one text line into a lui/%lo pair, so the counts legitimately differ on the same tree (78 vs 69 here).",
-   "next_probe": "OPERATOR-SIDE, outside a grind session's surface: replace the 1:1 length assertion with an expansion-aware mapping from honest text lines to object insn positions, keeping a guard that still refuses a genuinely mismatched source state. Not needed for func_800645B0 - session 13 obtained the verdict with an explicit --goal-before."
+   "hypothesis": "Other non-copy second writes to idx exist in this function's data flow and may seat better than `idx = last & 7;` - the search over WHICH real value to route through idx has only two samples so far (the masked rand at 2/78 and the byte-offset scaling at 12/78).",
+   "mechanism": "The requirement proven this session is narrow: the second write must be a computation (not a bare-register RHS, H67) and must not make some other carrier once-set-and-invariant (H66). Every remaining real value in the arm - the three (rand() & 0xFF) - 0x7F store operands, the D_800A3444 RMW, idx2, mask - is a candidate carrier, and each seats differently.",
+   "next_probe": "REDERIVE/forensics: enumerate the arm's real values as candidate second writes to idx (and to the other locals), measure each with the honest sandbox, and read .greg for the seat each one forces. Cheap - one apply + one sandbox per variant, ~1 minute each."
+  },
+  {
+   "hypothesis": "If a seating fix is found, the resulting construct is 'borrow an existing local (the dead slot index) for a second real value' - the frozen variable-reuse family - and must clear its own citation gate before it can be submitted.",
+   "mechanism": "staged-value-reused-variable.md bound 2 permits BORROWING an existing local and bars INVENTING one to borrow; the h/k forms borrow `idx` (an existing local carrying a real consumed value) but also declare the fresh `wid` named intermediate for the sum, which H58 measured as ordinary C.",
+   "next_probe": "Before any candidate-ready: read .claude/rules/defeat-licm-hoist-var-reuse.md and .claude/rules/staged-value-reused-variable.md end to end, quote the scope sentence, and find a PSX-tagged precedent in docs/reference/sotn-construct-index.md. If the citation cannot be made, emit ruling-request rather than a submission - and note that the banned-construct list for this function bars every DEAD or STAGED second set, which these are not (they are consumed real values), but a fresh adversarial reviewer will test exactly that distinction."
   }
  ],
  "judge_constraints": [

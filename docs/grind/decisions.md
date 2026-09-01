@@ -18042,3 +18042,39 @@ source-level-verification caveat carried verbatim. Nothing is pre-accepted: the
 function is active in the queue and its candidate faces normal layer-1 +
 default-FAIL Judge adjudication with the family prerequisites (byte-neutrality
 on chassis, annotation, exhaustion record) in force.
+
+## 2026-09-01 — func_800645B0 — PROGRESS NOTE (session 16, forensics): the void FORECLOSED span above is superseded on the merits — the scheduling/optabs lock is BROKEN
+
+Not a disposition and not a question to the owner.  This note exists because the
+discarded-session span at decisions.md (2026-09-01 11:09 marker) still reads as a
+foreclosure argument, and a later reader must not spend it: its central premise —
+inherited from H59 (2026-08-25) — was measured FALSE this session.
+
+**What changed.**  H59 declared the "operand order at index 20 vs inner-loop-head
+placement" trade closed-form, on the premise that the function "computes nothing
+else that lands in `idx`" and therefore every second set of `idx` must be a
+dead/staged store (this function's banned constructs).  That premise is false.
+The halfword store consumes `rand() & 7`, and `idx` is dead from the *3 sum
+onward, so `idx = last & 7;` is a second write that is semantically real AND a
+computation rather than a copy — so no pass deletes it (s15's cse.c deletion and
+this session's combine.c deletion both only reach REG-REG copies).
+
+**Measured, honest `sandbox func_800645B0 --disable all`, this session's tree**
+(SB floor re-confirmed 1 / 78 first): the WD chassis (fresh-destination sum
+`wid = idx2 + idx;`) plus that second write = **2 / 78 at 78 insns**, with index
+20, the inner-loop head (11/12) and the back-edge delay slot (65) ALL EXACT.  The
+entire residual is two register names: `andi s0,v0,7` / `sh s0,X(at)` against the
+target's `$v0`.  A sibling non-copy spelling (`idx = wid << 2;`) reproduces the
+target's whole opcode sequence at 78 insns with all twelve differences being
+register names.
+
+**Consequence.**  What remains on this function is a REGISTER-ALLOCATION SEAT
+problem, not a scheduler or RTL-expansion problem — and the owner's 2026-09-01
+Ruling C (`inverse_compose.py --target-object`) is exactly the instrument for it.
+Two hypotheses were also KILLED with dump attribution this session (H66: every
+once-set const-1 carrier is hoisted by loop.c out of both loops and seated
+callee-saved, +2 insns; H67: any second write whose RHS is a bare register is
+deleted by cse.c or combine.c before the scheduler).  Ledger:
+`memory/grind/func_800645B0/` (evidence.md session-16 section, hypotheses
+H66/H67/H68, four new banked forms under `rejected/`).  `src/text1b.c` restored
+to HEAD; `main` continues to carry `INCLUDE_ASM("asm/funcs", func_800645B0);`.

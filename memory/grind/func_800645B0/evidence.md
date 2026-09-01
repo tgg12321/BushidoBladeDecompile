@@ -1,3 +1,63 @@
+## Session 16 (2026-09-01, forensics) -- the session-6 scheduling/optabs lock is BROKEN: a non-copy second real write to `idx` wins both halves; the residual is now a register seat
+
+- **Chassis re-measured first.** SB body (`candidate.c`) pasted over the
+  `INCLUDE_ASM` line: `sandbox func_800645B0 --disable all` = **score 1,
+  target_insns 78, build_insns 78, rules_dropped 0**.  The floor of 1 is current.
+
+- **H68 (CONFIRMED) -- the headline.**  H59 (s12) declared the 1-vs-3 trade
+  closed-form on the premise that "the function computes nothing else that lands
+  in `idx`".  That premise is FALSE: the halfword store consumes `rand() & 7`,
+  and `idx` is dead from the *3 sum onward, so `idx = last & 7;` is a second
+  write that is both semantically real and a COMPUTATION (not a copy, so no pass
+  deletes it).  With the WD chassis' fresh-destination sum (`wid = idx2 + idx;`,
+  which optabs.c:398-421 requires for target's operand order) plus that second
+  write, the honest sandbox measures **2 / 78 at 78 insns** -- index 20 EXACT,
+  inner-loop head 11/12 EXACT, back-edge delay slot 65 EXACT.  The whole residual
+  is two register names: `55 OURS andi s0,v0,7 | TGT andi v0,v0,7` and
+  `58 OURS sh s0,X(at) | TGT sh v0,X(at)`.  A second non-copy spelling
+  (`idx = wid << 2;`, the byte-offset scaling) reproduces the target's ENTIRE
+  opcode sequence at 78 insns with all twelve differences being register names.
+  **The remaining problem on this function is register allocation, not
+  scheduling and not RTL expansion.**
+
+- **H67 (KILLED) -- which second writes do NOT work, and why.**  `idx = rand();`
+  measures 3 / 78 (the WD residual verbatim) because a call return landing in a
+  local is a HARD-REG COPY `(set (reg/v:SI 74) (reg:SI 2 v0))` and **combine.c
+  deletes it**.  Per-pass census of the dumps
+  (`tmp/grind/func_800645B0/s15b/g.{rtl,cse,cse2,flow,combine,sched}.txt`):
+  2 sets of reg 74 at rtl / cse / cse2 / flow, **1 set at combine and at sched**,
+  insn 118 gone.  Together with s15's cse.c finding (pseudo->pseudo copies die in
+  cse) the rule is: **a second write to the carrier must COMPUTE something; any
+  spelling whose RHS is a bare register is deleted before the scheduler.**
+
+- **H66 (KILLED) -- the mirror attack on the scheduler tie, closed as a FAMILY.**
+  `rank_for_schedule` (sched.c:2408-2465) falls through to `INSN_LUID` only when
+  priorities tie, so granting the const-1 `li` the same `birthing_insn_p`
+  max-priority lift the loop-top `addu` gets would hand the loop head to source
+  statement order.  That needs `reg_n_sets[val] == 1` -- which is ALSO loop.c's
+  invariant-hoist precondition.  Dump proof (`s15b/e.loop.txt`, loop.c's own
+  dump): `Insn 41: regno 78 (life 1), move-insn savings 1  moved to 188` then
+  `Insn 188: regno 78 (life 52), ... halved since already moved  moved to 190`,
+  with `(insn 190 (set (reg/v:SI 78) (const_int 1)))` sitting BEFORE the outer
+  `NOTE_INSN_LOOP_BEG`.  The hoisted constant is live across `jal rand`, so RA
+  seats it callee-saved and the function pays `sw $20,32($sp)` + `lw $20,32($sp)`
+  = +2 insns (`.frame regs=6` vs the target's 5).  Four spellings measured:
+  A (SB + fresh `flags`) 13 / 80, B (WD + fresh `flags`) 12 / 80,
+  C (WD + `mask` carrier) **14 / 77**, E (WD + `idx` carrier) 15 / 80.
+  Corollary: the SB chassis' reuse of `val` for the D_800A3444 RMW is a LICM
+  DEFEAT, not merely a scheduling choice.
+
+- **Artifacts.** `tmp/grind/func_800645B0/s15b/` -- variant bodies
+  `a_sb_valsplit.c`, `b_wd_valsplit.c`, `c_wd_mask_carrier.c`,
+  `e_wd_idx_carrier.c`, `g_wd_idx_borrowed_for_rand.c`,
+  `h_wd_idx_second_set_nonco.c`, `k_wd_idx_byteoffset.c`; dumps
+  `e.{loop,rtl,sched}.txt` and `g.{rtl,cse,cse2,flow,combine,loop,lreg,sched}.txt`.
+  Banked forms: `rejected/both-halves-idx-second-real-nonco-andi-regseat-2of78.c`,
+  `rejected/idx-second-set-byte-offset-seat-permutation-12of78.c`,
+  `rejected/idx-second-set-from-rand-is-a-copy-deleted-by-combine.c`,
+  `rejected/once-set-const1-*-licm-hoist-*.c` (four).
+  `src/text1b.c` restored to HEAD at end of session.
+
 
 
 ## Session 15 (2026-09-01, forensics) -- the Ruling-A named probe executed; cse.c is the reason the amended once-written family cannot close this function
@@ -67,3 +127,17 @@
   full pass dumps in `tmp/grind/func_800645B0/dumps/` (last written for P1).
   Banked forms: `rejected/two-once-written-locals-copy-deleted-by-cse.c`,
   `rejected/two-once-written-locals-mirror-copy-deleted-by-cse.c`.
+
+- [s15] Floor re-measured first thing this session: SB chassis (memory/grind/func_800645B0/candidate.c) pasted over the INCLUDE_ASM line = score 1, target_insns 78, build_insns 78, rules_dropped 0. The ledger floor of 1 is current on today's tree.
+
+- [s15] The remaining problem on func_800645B0 is REGISTER ALLOCATION, not scheduling and not RTL expansion: on the h form every instruction and every position matches and only two register names differ ($s0 where the target keeps the rand-return seat $v0); on the k form all 78 opcodes and their order match and twelve register names differ.
+
+- [s15] loop.c hoists a once-set loop-invariant scalar out of BOTH loops here, and because the value is then live across `jal rand` it costs a callee-saved save/restore pair (+2 insns). This is why the SB chassis' reuse of `val` for the D_800A3444 RMW is load-bearing: it is a LICM defeat (.claude/rules/defeat-licm-hoist-var-reuse.md), not merely a scheduling choice.
+
+- [s15] A reg-reg copy can never raise reg_n_sets at schedule time in this function: pseudo->pseudo copies die in cse.c (s15), hardreg->pseudo call-return copies die in combine.c (this session, per-pass dump census).
+
+- [s15] Variant C (WD + `mask` as the RMW carrier) is the only form ever measured on this function at 77 insns - one SHORT of the target's 78 - at score 14. Banked for the record.
+
+- [s15] src/text1b.c was restored to HEAD at end of session; main continues to carry INCLUDE_ASM("asm/funcs", func_800645B0). No engine/tools/rules files were touched.
+
+- [s15] The 2026-09-01 11:09 discarded-session FORECLOSED span in docs/grind/decisions.md is superseded on the merits; a PROGRESS NOTE recording that (not a disposition, no question to the owner) was appended to docs/grind/decisions.md this session.
