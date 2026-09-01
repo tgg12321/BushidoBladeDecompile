@@ -27,7 +27,12 @@ param(
     # also keeps Fable's separate per-model allowance from stalling the
     # pipeline (the 2026-08-12 incident: five 429 wait cycles over 2.5 h).
     [string]$Model = 'claude-opus-5[1m]',
-    [string]$ReconModel = 'claude-fable-5[1m]',
+    # 2026-09-01: Fable 5.1 released; the `claude-fable-5[1m]` alias still
+    # resolves to Fable 5 (probed via `claude -p --output-format json`), so the
+    # recon lane is pinned to the new id explicitly. Judge/execution lanes are
+    # unchanged (the 2026-08-12 / 2026-08-17 directives are about lane
+    # assignment, not model version).
+    [string]$ReconModel = 'claude-fable-5-1[1m]',
     # Judge stays on Opus per the 2026-08-12 directive: Fable 5 has its own
     # per-model allowance, and exhausting it on judging stalled the whole
     # pipeline — five 429 wait cycles over 2.5 h with a proven candidate parked

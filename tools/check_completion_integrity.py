@@ -45,6 +45,23 @@ sys.path.insert(0, str(REPO))
 os.chdir(REPO)
 from engine import cheats, inlineasm, pipeline as P, score  # noqa: E402
 from engine import queue as Q  # noqa: E402
+sys.path.insert(0, str(REPO / "tools"))
+import audit_asm_cheats as AAC  # noqa: E402  (the manual detector's island scanner)
+
+
+def _island_funcs(src_text: str | None, stem: str) -> dict[str, int]:
+    """func -> number of multi-insn in-body __asm__ blocks that carry at least
+    one instruction outside the cop2 whitelist (the hardcoded-GPR addressing
+    preamble of a GTE island, or smuggled work). Mirrors the
+    'Multi-instruction __asm__ inside C function bodies' section of
+    tools/audit_asm_cheats.py so this guard and that report cannot disagree."""
+    out: dict[str, int] = {}
+    if src_text is None:
+        return out
+    for _f, _line, _n, fname, _insns in AAC.scan_c_body_smuggled_work(src_text, f"{stem}.c"):
+        if fname:
+            out[fname] = out.get(fname, 0) + 1
+    return out
 
 QUEUE = REPO / "engine" / "queue.json"
 
@@ -71,6 +88,7 @@ def main() -> int:
         if not Path(ref_o).exists():
             continue
         src_text = inlineasm._read_src_cached(stem)
+        island_funcs = _island_funcs(src_text, stem)
         for func in score._o_func_table(ref_o):
             if func in in_queue:
                 continue  # INCOMPLETE — the queue covers it
@@ -125,6 +143,23 @@ def main() -> int:
                 violations.append(
                     f"{func} ({stem}.c): NOT in queue and NOT canonical, but has "
                     f"{cheat_count} cheat construct(s) in source — should be INCOMPLETE")
+            elif func in island_funcs:
+                # The engine's cheat count treats a canonical cop2 island (GTE
+                # mnemonics + its hardcoded-GPR addressing preamble) as
+                # non-cheat, so `queue done` records the function COMPLETED-C.
+                # The completion standard says that bucket is pure C; a body
+                # carrying an inline-asm island is COMPLETED-INLINE-ASM-CANONICAL
+                # and must be listed. Five functions slipped through this gap
+                # 2026-07-28..2026-09-01 (Judge note, docs/grind/decisions.md
+                # 2026-09-01 func_8002EA24 final call); this keeps the two
+                # detectors (this tool + tools/audit_asm_cheats.py) in agreement.
+                violations.append(
+                    f"{func} ({stem}.c): NOT canonical but carries a multi-insn "
+                    f"inline-asm island with non-cop2 instructions "
+                    f"({island_funcs[func]} block(s)) — either the island is "
+                    f"canonical hand-asm (authorize it in inline_asm_canonical.txt "
+                    f"with evidence; honest bucket COMPLETED-INLINE-ASM-CANONICAL) "
+                    f"or it is injection (should be INCOMPLETE)")
             else:
                 total_completed_c += 1
                 # COMPLETED-C + maspsx gate: cheat-pathway gates are violations
