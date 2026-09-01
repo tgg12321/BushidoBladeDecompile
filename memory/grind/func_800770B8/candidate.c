@@ -62,6 +62,25 @@
  *     (9/176).  Eleven flip spellings across s6/s13/s15 now collapse onto exactly
  *     one build.
  *
+ * s16 NEGATIVE RESULTS (128 fresh builds + a whole-corpus census; detail in
+ * evidence.md [s16]):
+ *   - The class-B "2+2 split" is UNIQUE in the executable.  An exhaustive census
+ *     of all 1,435 asm/funcs/*.s (tmp/grind/func_800770B8/s16/census.py and
+ *     census_broad.py) finds exactly ONE call-result copy whose copy register AND
+ *     raw $v0 are both used as store bases afterwards: this function.  All four
+ *     sibling call sites of func_8006E49C store through the raw $v0 with no copy
+ *     retained.  The s15 frontier's only reserved re-opening path for class B -
+ *     "find a sibling that names the source shape" - is measured non-existent.
+ *   - Procedural factoring is byte-transparent (8 builds).  `static inline`
+ *     helpers for the post-call header init that take the ALREADY-ASSIGNED pointer
+ *     are byte-identical to this body (5/175); ones that take the CALL RESULT as a
+ *     parameter collapse to 170 insns exactly as s7/s8's two-local forms did, since
+ *     an inline parameter is the same pseudo-to-pseudo copy make_regs_eqv kills.
+ *   - Local declaration ORDER is inert: all 120 permutations of the five top-level
+ *     locals measure 5/175, one single distinct build.  GCC 2.7.2 numbers pseudos
+ *     at first RTL emission, not at declaration, so the pseudo-number tie-break in
+ *     cse.c make_regs_eqv / local-alloc allocno ordering is not C-controllable here.
+ *
  * INHERITED, STILL BINDING (do not re-derive): s6 (19 address spellings),
  *   s9 (3234-atom sched_solver sweep, 0 hits), s10 (full struct rewrite 178 insns),
  *   s11 (63-position single-wrap sweep + 18 nested), s12 (24/24 store-group orders,

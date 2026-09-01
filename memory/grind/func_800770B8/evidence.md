@@ -1936,3 +1936,123 @@ the same 2026-06-04 text, not a second independent restriction.)
 - [s14] Endgame gate evidence is in hand and NEGATIVE on both prongs: canonical func_800770B8 re-run this session returns {verdict: C, asm_insns: 0, total: 175, distance: 5}, and s11's tools/scan_hand_coded.py --single func_800770B8 returned tier=LOW score=0/8 with S1-S8 all unset -- so the canonical-asm grant path is a measured FAIL, and the coercion-family prong has no SOTN-master precedent for an arithmetic-identity dependence edge (verified independently by the 2026-09-01 Judge).
 
 - [s14] State of the residual at floor 5: class B (2 rows, 0x30/0x34 stores through the p_old copy instead of the raw call result) is foreclosed three times over on two chassis -- every spelling reaching the raw pseudo lets flow.c delete the copy and its four dependents, collapsing the function to 170 instructions against the target's 175; class C (3 rows, addu $2,$2,$3 vs addu $v1,$v1,$v0) is reachable only through the flip, whose collateral is repairable only by the Judge-FAILED identity; class A is closed and legitimate.
+
+## [s16] synthesis — 2026-09-01 — FLOOR 5 (re-verified); the ledger's LAST named re-opening path for class B is killed by an exhaustive corpus census, and two brand-new axes (procedural factoring, declaration order) are swept dead
+
+Chassis re-measured as the first action of the session, `candidate.c` applied to
+`src/text1b.c` via `tmp/grind/func_800770B8/s3/try.py`: **score 5, build_insns 175,
+target_insns 175** — identical to the s15 chassis, so every s3-s15 spelling
+conclusion remains chassis-valid and none of them was re-spent. Restored and
+re-verified at 5 / 175 at session end.
+
+### 1. The class-B "2+2 split" is UNIQUE in the entire 1,435-function corpus — frontier item 2's only proposed re-opening path does not exist
+
+The s15 frontier reserved exactly one way to re-open class B: *"find a sibling
+function that performs the same allocate-then-initialise sequence and whose target
+asm shows the same copy retained, which would NAME the source shape instead of
+guessing it."* This session ran that census mechanically instead of by hand.
+
+`tmp/grind/func_800770B8/s16/census.py` (log `census_callee_save_split.log`) and its
+broadened twin `census_broad.py` (log `census_broad.log`) scan **all 1,435
+`asm/funcs/*.s` files** for the class-B shape: a `addu $X, $v0, $zero` /
+`move $X, $v0` copy of a call return value (a `jal` within the preceding 4 rows),
+followed within 18 rows by **stores through BOTH the copy register and the raw
+`$v0`**. Narrow form (callee-saved destination only): **1 hit — func_800770B8
+itself.** Broadened form (any destination register): **2 hits — func_800770B8 and a
+false positive in func_80068F70**, where the `addu $a0,$v0,$zero` sits *before* the
+`jal` and copies a *different* call's result (func_80068F70 then stores through the
+raw `$v0` only: `sw $s0,0x24($v0)` / `sw $v0,D_800A3500`, i.e. the ordinary
+collapsed shape our body already produces).
+
+Independently, the direct-caller census of `func_8006E49C` — the allocator whose
+result class B is about — lists five call sites (func_80068F70, func_8006E534,
+func_800784E4, func_80078824, func_800770B8). **All four siblings use the raw `$v0`
+for every post-call store and carry no retained copy at all.** Two of them
+(func_800784E4, func_80078824) store only to gp-rel globals; func_8006E534 stores
+the raw result to D_800A356C and then works exclusively through gp-rel globals;
+func_80068F70 stores through the raw `$v0` and then increments it.
+
+So there is no sibling to learn the source shape from, matched or unmatched: the
+target's 2+2 split is a one-of-one shape in this executable. **Frontier item 2 is
+KILLED** — not "unattempted", but measured non-existent across the whole corpus.
+
+### 2. Procedural factoring (`static inline` helpers) is byte-transparent — a genuinely new axis, dead
+
+Nothing in s1-s15 ever varied the FUNCTION DECOMPOSITION of the body; every probe
+kept one flat function. `static inline` is ordinary, in-project C (`src/main.c:2179`
+already ships `static inline void _memcpy`), and GCC 2.7.2 inlines it at `-O2`, so
+it is a legitimate structural degree of freedom — and one with real theoretical
+reach for class B, since `integrate.c` copies the callee's RTL with its own pseudos
+and block notes, which is exactly the kind of thing that could give the copy and the
+stores different cse quantities.
+
+Eight builds (`tmp/grind/func_800770B8/s16/gen_inline.py`, bodies in `s16/i/`, log
+`s16/sweep_inline.log`), all on the floor-5 body, factoring the post-call header
+initialisation four different ways x two argument routings:
+
+| id | shape | score / insns |
+|----|-------|---------------|
+| I1 | `hdr_clear(u8 *p)` does 0x30/0x34, called with `p_old` | **5 / 175** |
+| I2 | I1 called with `D_800A36A0` instead | **5 / 175** |
+| I3 | `hdr_link(s32 *p, s32 prev)` does the global + 0x4 stores | **5 / 175** |
+| I4 | `hdr_init(...)` does all four stores | **5 / 175** |
+| I5 | `hdr_new(...)` takes the call result, returns it; 0x30/0x34 outside | 23 / 170 |
+| I6 | `hdr_all(...)` takes the call result, does all four, returns it | 23 / 170 |
+| I7 | second local `q`, `hdr_clear2(q)` BEFORE `p_old = q` | 25 / 170 |
+| I8 | second local `q`, `hdr_clear2(q)` AFTER `p_old = q` | 23 / 170 |
+
+Two clean readings. (a) I1-I4 are **byte-identical to the un-factored floor-5 body**:
+GCC 2.7.2's inliner leaves no cse-visible boundary and creates no surviving extra
+pseudo — the inlined statements land in the caller's extended basic block exactly as
+if written inline, so factoring cannot buy class B. (b) I5-I8 reproduce the *same*
+170-instruction collapse as s7's/s8's two-local forms (H1 23/170, V1 25/170), to the
+identical scores: passing the call result through an inline parameter is, at RTL,
+the same pseudo-to-pseudo copy `make_regs_eqv` collapses. The inline-parameter route
+is therefore not a new mechanism, it is the banked one with new syntax.
+
+### 3. Local DECLARATION ORDER is completely inert — 120/120 builds byte-identical
+
+Also never swept in fifteen sessions, and a plausible lever on paper: s8's forecloser
+for class B rests on `cse.c: make_regs_eqv`'s canonicality test, which compares
+`uid_cuid[regno_first_uid]` / `regno_last_uid` and settles ties by `qty_first_reg`
+(pseudo NUMBER), and `local-alloc.c` orders allocnos partly by pseudo number too. If
+pseudo numbering followed declaration order, permuting the declarations would be a
+free, ordinary-C way to move both the class-B canonical choice and the class-C seat.
+
+`tmp/grind/func_800770B8/s16/gen_decl.py` emits **all 120 permutations** of the five
+top-level locals (`u16 sp[2]; s32 *p_old; s32 r; s16 t0; s16 a2;`) into `s16/d/`,
+each measured with `sandbox --disable all` (log `s16/sweep_decl.log`, manifest
+`s16/d/manifest.tsv`). **Result: every one of the 120 builds scores 5 / 175 — a
+single distinct build.** GCC 2.7.2 numbers pseudos at first RTL EMISSION (the order
+`expand_expr` first materialises each `DECL_RTL`), not at declaration, so for a body
+whose locals are all used in a fixed statement order the declaration list is
+semantically and byte-wise inert. This retires the "named-intermediate declaration
+order" family as a lever for THIS function without needing to argue about its
+sanction status, and it also retires the tie-break half of the s8 canonicality
+reading: the pseudo numbers cannot be moved from C here.
+
+### Bank / artifacts
+- `memory/grind/func_800770B8/rejected/s16-inline-helper-returns-ptr-collapses-170insn.c` (I6)
+- `memory/grind/func_800770B8/rejected/s16-inline-helper-byte-neutral-175insn-score5.c` (I4)
+- `memory/grind/func_800770B8/rejected/s16-decl-order-permutation-byte-neutral-all-120.c` (D001, representative of all 120)
+- rejected bank now holds 79 forms.
+
+- [s16] Chassis re-measured with candidate.c applied: score 5, build_insns 175, target_insns 175 — at session start AND at session end. Unchanged from s15.
+- [s16] EXHAUSTIVE CORPUS CENSUS (1,435 asm/funcs/*.s scanned, tmp/grind/func_800770B8/s16/census.py + census_broad.py): the class-B "2+2 split" — a call-result copy whose copy register AND raw $v0 are BOTH used as store bases afterwards — occurs EXACTLY ONCE in the whole executable, in func_800770B8 itself. The only other hit, func_80068F70, is a false positive (the copy precedes the jal and belongs to a different call). The s15 frontier's sole reserved re-opening path for class B ("find a sibling whose target asm retains the copy") is therefore measured NON-EXISTENT, not merely untried.
+- [s16] All four sibling call sites of func_8006E49C (func_80068F70, func_8006E534, func_800784E4, func_80078824) store through the RAW $v0 result and retain no copy — i.e. they emit exactly the collapsed shape our body produces. No sibling can name the target's source shape.
+- [s16] NEW AXIS SWEPT DEAD — procedural factoring: 8 builds with `static inline` helpers for the post-call header init (tmp/grind/func_800770B8/s16/i/, sweep_inline.log). Helpers taking the ALREADY-ASSIGNED pointer (I1-I4) are BYTE-IDENTICAL to the un-factored body (5/175): GCC 2.7.2's integrate.c leaves no cse-visible block boundary and no surviving extra pseudo. Helpers taking the CALL RESULT as a parameter (I5-I8) collapse to 170 insns at scores 23/23/25/23 — the identical collapse s7/s8 measured for two-local forms, because an inline parameter is the same pseudo-to-pseudo copy make_regs_eqv eliminates.
+- [s16] NEW AXIS SWEPT DEAD — local declaration order: all 120 permutations of the five top-level locals measure 5 / 175, one single distinct build (tmp/grind/func_800770B8/s16/d/, sweep_decl.log). GCC 2.7.2 numbers pseudos at first RTL emission, not at declaration, so declaration order is byte-inert for this body; the pseudo-number tie-break in cse.c make_regs_eqv / local-alloc allocno ordering is not C-controllable here.
+
+- [s15] Chassis re-measured with candidate.c applied at session start AND at session end: score 5, build_insns 175, target_insns 175 - unchanged from s15, so every s3-s15 spelling conclusion stays chassis-valid and none was re-spent.
+
+- [s15] EXHAUSTIVE CORPUS CENSUS (1,435 asm/funcs/*.s): the class-B '2+2 split' - a call-result copy whose copy register AND raw $v0 are both used as store bases afterwards - occurs EXACTLY ONCE in the whole executable, in func_800770B8 itself. The only other hit (func_80068F70) is a false positive: its copy precedes the jal and belongs to a different call, and it then stores through the raw $v0 only.
+
+- [s15] All four sibling call sites of func_8006E49C (func_80068F70, func_8006E534, func_800784E4, func_80078824) store through the RAW $v0 result and retain no copy, i.e. they emit exactly the collapsed shape our body produces. No sibling in the game can name the target's source shape - the s15 frontier's sole reserved re-opening path for class B is measured non-existent, not merely untried.
+
+- [s15] NEW AXIS SWEPT DEAD - procedural factoring: static inline helpers taking the already-assigned pointer are byte-identical to the unfactored body (I1-I4, 5/175); helpers taking the call result as a parameter or returning it collapse to 170 insns (I5 23, I6 23, I7 25, I8 23), the identical collapse s7/s8 banked for two-local forms. GCC 2.7.2's integrate.c leaves no cse-visible block boundary and no surviving extra pseudo, so factoring is new syntax for a banked mechanism.
+
+- [s15] NEW AXIS SWEPT DEAD - local declaration order: all 120 permutations of the five top-level locals measure 5/175, one single distinct build. This retires the declaration-order lever for this function on MEASUREMENT rather than on sanction grounds, and retires the pseudo-number tie-break half of s8's cse.c canonicality reading.
+
+- [s15] Three forms banked to memory/grind/func_800770B8/rejected/ (bank now holds 79): s16-inline-helper-returns-ptr-collapses-170insn.c, s16-inline-helper-byte-neutral-175insn-score5.c, s16-decl-order-permutation-byte-neutral-all-120.c.
+
+- [s15] src/text1b.c was restored to its committed INCLUDE_ASM state at session end (asm-until-matched); the floor-5 body lives in memory/grind/func_800770B8/candidate.c with its s16 negative results recorded in the header.

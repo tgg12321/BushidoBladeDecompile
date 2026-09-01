@@ -1,7 +1,7 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 14,
+ "session_count": 15,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -87,23 +87,29 @@
    "floor": 5,
    "modality": "synthesis",
    "headline": "Synthesis: the Judge's own suggested replacement for the FAILed identity is MEASURED DEAD (8 cursor builds materialise the pointer difference), partial array typing of groups A/C is dead (20 builds), "
+  },
+  {
+   "session": 15,
+   "floor": 5,
+   "modality": "synthesis",
+   "headline": "Floor 5 re-verified; an exhaustive 1,435-function corpus census proves the class-B 2+2 split is unique to this function (killing the ledger's last named re-opening path), and two never-swept structura"
   }
  ],
  "frontier": [
   {
    "hypothesis": "The function is exhausted at floor 5 and the correct next outcome is a proof-of-foreclosure record, not another probing modality.",
-   "mechanism": "15 sessions across 8 distinct modalities (recon, structural x3, permuter, synthesis x3, solver, forensics x2, rederive, escalation), floor flat at 5 since s11, and all three residual classes now carry a named, dump-attributed or measurement-backed forecloser. The one construct that ever went below 5 was cleanly auto-rejected by the Judge on 2026-09-01, and s15 measured the sanctioned alternative that FAIL itself proposed and found it does not exist.",
-   "next_probe": "When the driver assigns escalation modality, file '## <date> - func_800770B8 - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' in docs/grind/decisions.md. Gate evidence to state: (i) canonical-asm is NOT the disposition -- canonical returns verdict C / asm_insns 0, and scan_hand_coded returned tier=LOW score=0/8 with S1-S8 unset (s11), so the STRONG-scanner AND-gate is a measured FAIL; (ii) the coercion-family prong FAILS with a negative census -- no SOTN-master precedent exists for an arithmetic-identity dependence edge. Re-activation triggers: a class grant covering dependence-edge constructs, or a toolchain finding that changes how cse/flow treat the class-B copy."
+   "mechanism": "16 sessions across 8 distinct modalities (recon, structural x3, permuter, synthesis x4, solver, forensics x2, rederive, escalation); floor flat at 5 since s11; all three residual classes carry a named, dump-attributed or measurement-backed forecloser; the one construct that ever went below 5 was auto-rejected by the Judge on 2026-09-01; s15 measured the sanctioned alternative that FAIL itself proposed and found it does not exist; s16 killed the last named re-opening path plus two previously-unswept structural axes (procedural factoring, declaration order).",
+   "next_probe": "When the driver assigns escalation modality, file '## <date> - func_800770B8 - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' in docs/grind/decisions.md. Gate evidence to state: (i) canonical-asm is NOT the disposition - `canonical func_800770B8` returns verdict C / asm_insns 0 / total 175 / distance 5 (s15) and tools/scan_hand_coded.py --single returned tier=LOW score=0/8 with S1-S8 unset (s11), so the STRONG-scanner AND-gate is a measured FAIL; (ii) the coercion-family prong FAILS with a negative census - docs/reference/sotn-construct-index.md carries no SOTN-master precedent for an arithmetic-identity dependence edge. Re-activation triggers: a class grant covering dependence-edge constructs, or a toolchain finding that changes how cse2/flow treat the class-B copy."
   },
   {
-   "hypothesis": "Class B's 5-instruction collapse is the only residual whose mechanism implies the original source differed from ours in SHAPE rather than in spelling -- if any axis is ever re-opened, it is this one.",
-   "mechanism": "Every spelling that stores to 0x30/0x34 through the raw func_8006E49C result produces 170 instructions, five FEWER than the target. The target's source therefore keeps BOTH the raw pointer and the copy live across those stores for a reason our body does not reproduce -- a liveness fact, not a scheduling or allocation artefact (flow.c deletes the copy the moment the raw pseudo is used directly). s7/s8/s9 attributed it to cse pass 2 destroying the 2+2 split cse pass 1 builds; s14 re-confirmed it on the floor-4 chassis with four fresh block spellings.",
-   "next_probe": "Only worth re-opening with a NEW datum: find a sibling function in text1b.c that performs the same allocate-then-initialise sequence and whose target asm shows the same copy retained, which would NAME the source shape instead of guessing it. Do not re-run the four post-call block spellings; they are banked twice (s9, s14)."
+   "hypothesis": "If any axis is ever re-opened it is class B, and after s16 it requires a TOOLCHAIN datum rather than a source datum.",
+   "mechanism": "s15 named the source-datum route (find a sibling whose target asm retains the copy); s16's whole-corpus census measured that route empty, so nothing in the game can name the shape. What remains is a fact about the compiler: any finding that lets a pseudo-to-pseudo copy survive cse2 inside one extended basic block - a note or boundary cse2 honours with after_loop=1, or an rtx class canon_reg refuses to rewrite that IS reachable from C (s8 proved the hard-return-register form is not, via calls.c:2039/2114).",
+   "next_probe": "Do NOT re-run the four post-call block spellings (banked three times: s9, s14, s16), inline-parameter routings (s16), or NOTE-based fences for class B (s8 dumps). Only a new compiler-source or dump finding about cse2's block termination under after_loop=1 justifies re-opening."
   },
   {
    "hypothesis": "Nothing else is open. This entry exists to stop the next session re-spending measured axes.",
-   "mechanism": "Every remaining degree of freedom in this body has been swept to exhaustion across s6-s15, and each sweep is banked with its generator and log under tmp/grind/func_800770B8/.",
-   "next_probe": "Explicitly do NOT re-probe: flip spellings (11 spellings collapse onto one build, s6/s13/s15), store-group order (24/24, s12), loop shape (315 builds, s13), inner-block position (240 orders, s13), wrap position or count (63 + 18 + 79 + 79 + 79 positions, s11/s12/s14), loop-head demand order (33 builds, s14), dependence direction (13 builds, s14), reference count without a dependence (8 builds, s14), pointer-cursor derivation (8 builds, s15), partial array typing (20 builds, s15), the whole-body struct rewrite (s10, 178 insns), or the identity detour in any spelling (Judge FAIL, 2026-09-01)."
+   "mechanism": "Every remaining degree of freedom in this body has been swept to exhaustion across s6-s16, each sweep banked with its generator and log under tmp/grind/func_800770B8/.",
+   "next_probe": "Explicitly do NOT re-probe: flip spellings (11 collapse onto one build, s6/s13/s15), store-group order (24/24, s12), loop shape (315 builds, s13), inner-block position (240 orders, s13), wrap position or count (63 + 18 + 79 + 79 + 79 positions, s11/s12/s14), loop-head demand order (33 builds, s14), dependence direction (13 builds, s14), reference count without a dependence (8 builds, s14), pointer-cursor derivation (8 builds, s15), partial array typing (20 builds, s15), the whole-body struct rewrite (s10, 178 insns), procedural factoring / static inline helpers (8 builds, s16), local declaration order (120 builds, s16), or the identity detour in any spelling (Judge FAIL, 2026-09-01)."
   }
  ],
  "judge_constraints": [
