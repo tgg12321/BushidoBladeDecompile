@@ -1,8 +1,8 @@
 {
  "func": "func_80033550",
  "file": "code6cac_b",
- "session_count": 11,
- "current_modality": "escalation",
+ "session_count": 12,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -69,23 +69,29 @@
    "floor": 4,
    "modality": "escalation",
    "headline": "s11 escalation: floor re-measured 4 on this chassis; NEW instruction-budget closure (first 1:1 disasm correspondence \u2014 30/34 identical, 4 differ in one register field) proves no byte-free register occ"
+  },
+  {
+   "session": 12,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "Owner Ruling-A named probe (duplicated-arms at the search loop's REAL branches) KILLED at both real branch sites; the residual's RA arithmetic converted from argument to measurement - dS4 moves the po"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A tools/ra_solver inverse.py with a HARD_CONFLICT_ADD atom class returns REACHABLE for --goal {\"72\": 7}, settling the single unsearched RA axis mechanically instead of by hand.",
-   "mechanism": "inverse.py's CONFLICT_ADD atoms are pseudo-pseudo only over the focus set {72,74}; there is no hard-conflict-add atom, so 'give 72 hard conflicts 5 and 6' has never been searched by the solver \u2014 it has only been argued closed by hand (s5/s7/s8/s9) and now by this session's instruction budget.",
-   "next_probe": "OPERATOR/INFRA ITEM \u2014 tools/ is a forbidden surface for a grind session. If the atom class is ever added, re-run the s10 model (tmp/ra_solver_work/func_80033550.model.json) and compare the verdict against this session's instruction-budget closure; a REACHABLE verdict would be a genuine re-open trigger for this function and every sibling seat residual."
+   "hypothesis": "A byte-free fifth block-local allocno exists - a pseudo that receives a hard register at local-alloc and whose defining insn is deleted afterwards - and can be combined with a byte-free pointer use after it.",
+   "mechanism": "local-alloc assigns block-local quantities ascending (v0,v1,a0,a1,a2) BEFORE global.c allocates the pointer, so only deletions that happen after local-alloc (reload, jump2/cross_jump, delay-slot fill in reorg.c, final.c) can leave the seat occupied at allocation time and empty in the emitted bytes.",
+   "next_probe": "Do NOT re-probe arm duplication: s7 (invented branch, Judge-FAILed) and s12 (both real branches, structurally killed) have exhausted that channel. The unexamined post-RA deletion channels are delay-slot fill (reorg.c) and final.c no-op deletion. Concretely: are the two `li v0,6` delay-slot materializations, or the `li v0,1` in the beq's delay slot, distinct local pseudos at local-alloc time that reorg.c later duplicates/folds - and if so can one be forced to seat at $a2 while the pointer is still live? Read tmp/grind/func_80033550/dumps/*.greg (pwsh tools/grinder/dump.ps1 func_80033550) and the reorg output BEFORE spelling anything."
   },
   {
-   "hypothesis": "A future owner-landed sanctioned family can keep a value alive in a register across another value's live range WITHOUT emitting an instruction.",
-   "mechanism": "global.c find_reg scans hard registers in numeric-ascending order over the complement of the hard-conflict set; only added conflicts on $a1 AND $a2 can push the pointer to $a3, and priority/refs levers provably cannot add conflicts (s10 ra_solver NEGATIVE at depth 2 and 3).",
-   "next_probe": "Do NOT spend a session on spellings. Evaluate any newly sanctioned family DIRECTLY against two prices first: (a) s10 measured that the first surviving occupant already costs the entry-copy slot (rejected/s10-f1-chain-partial-detour-eats-entry-copy-slot-4.c), and (b) s11's instruction-budget closure says every one of the 34 target slots is already spoken for, so the family must be byte-free by construction, not merely 'usually cheap'."
+   "hypothesis": "A byte-free pointer use after the last load exists (the (ii) half alone), which would move the pointer $a1 -> $a2 at zero cost and halve the remaining requirement.",
+   "mechanism": "confirmed this session (dS4) as a conflict lever; the only open question is whether any use of arg0 after the third load emits no instruction. Address-of, casts and discards produce no RTL and therefore no conflict, so the use must be a real RTL reference that is deleted after local-alloc.",
+   "next_probe": "Same deletion-channel question as frontier item 1 applied to a USE rather than a DEF, with the same answer space. Measure it only in combination with item 1 - item 2 alone still lands the pointer on $a2, i.e. distance 4, which is the current floor and buys nothing on its own."
   },
   {
-   "hypothesis": "A rederive-modality reconstruction (a different overall shape) reaches the target seating.",
-   "mechanism": "The s6 closure theorem is scoped to THIS 34-insn shape; a different source shape yields a different allocno set and entry-copy topology.",
-   "next_probe": "Now much more tightly constrained than when s9 wrote it: s11's 1:1 correspondence shows the build already reproduces 30 of 34 target instructions exactly and the remaining 4 differ only in a register field, so a 'different shape' would have to give up an already-perfect instruction stream to buy conflicts it can only get by adding instructions. Any rederive attempt must state up front which of the 34 matched instructions it is willing to lose and why the trade nets below 4."
+   "hypothesis": "A rederive-modality reconstruction (a different overall shape) affords a fifth block-local naturally.",
+   "mechanism": "s6's closure theorem is scoped to THIS 34-insn shape; a different source shape yields a different allocno set and entry-copy topology. s12 now supplies the exact acceptance test such a shape must pass.",
+   "next_probe": "Any rederive attempt must be checked against the s12 seating law up front: does the proposed shape put FIVE block-local values live across the three loads, and does it keep the pointer live past the last of them, WITHOUT adding an instruction to the 34 already spoken for (s11's 1:1 correspondence, 30/34 identical)? If either half is no, the shape cannot reach $a3 and should not be built."
   }
  ],
  "judge_constraints": [

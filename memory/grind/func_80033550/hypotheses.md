@@ -719,3 +719,94 @@ upward-exposed uses and whether any VALID construct reaches the same channel.
 ## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
 
 Returned to active under Ruling A. Ground: the s11 counting theorem ('no byte-free occupant can exist at 34/34') is contradicted by this ledger's own s7 dupU measurement (byte-free arm duplication, jump2-merged, ptr homed in $a3); the s8 rejection only examined the straight-line i==6 tail, never the search loop's two-exit tail, which the 2026-08-06 control-transfer-tail extension covers. Named probe: re-test duplicated-statement-into-arms against the search-loop tail (a REAL pre-existing branch — the invented-branch ground of the s7 kill does not apply). Fallback (Ruling C lane): HARD_CONFLICT_ADD atom extension to inverse.py, then --goal {"72": 7}.
+
+## [s12] 2026-09-01 — STRUCTURAL modality — owner Ruling-A named probe
+
+- **H-s12-1 — "duplicated-statement-into-arms works at the search loop's REAL two-exit tail
+  (the invented-branch ground of the s8 kill does not apply)."** (owner Ruling-A named probe)
+  - mechanism claimed by the reopen note: s7's dupU showed arm duplication reshapes the
+    conflict graph byte-free via jump2 cross_jump; the s8 Judge FAIL only rejected an
+    INVENTED branch, so a real branch should keep the mechanism and lose the objection.
+  - probe: 7 variants over both real branch sites — site 1 (loop's two exits): dR1 (dup w0
+    load) 11, dR2 (dup all 3 loads) 12, dR3 (dup w1+w2) 20, dR4 (arms + do-while tail) 18,
+    dR7 (dup `i*12`) 16/33 insns; site 2 (the real `if (i==6) return;`): dR5 (dup 3 loads
+    into the return arm) 5/34, dR6 (dup the `i==6` test into both loop arms) 5/34; plus
+    diagnostic dX (dup the three stores into the return arm) 20/44.
+  - result: **KILLED — three distinct measured mechanisms.** (1) Site 1's two exits merge
+    UPSTREAM of the `i==6` test, so cross_jump hoists the duplicate out of the tail; dR4's
+    disasm shows the merged loads ahead of `beq` and the pointer coalesced into $a0 with the
+    entry copy deleted. (2) Site 2's duplicable statements are all DCE-able and die before
+    conflict construction (dR5/dR6 are RA-inert; the +1 is a pure sched1 artefact of dropping
+    the do-while(0) fence). (3) The only non-DCE-able statements at site 2 are the stores,
+    which are semantically invalid on the not-found path — and even as a diagnostic they do
+    not cross-jump merge (44 insns) and coalesce the pointer into $a0. dupU's byte-freeness
+    required *symmetric* arms; both real branches here are asymmetric (one returns, one
+    falls through), so cross_jump cannot erase them.
+  - verdict: **KILLED**
+
+- **H-s12-2 — "the pointer's $a1 seat can be vacated by a byte-free structural respell
+  (load order / store-operand folding)."**
+  - mechanism: local-alloc seats the block-locals ascending (idx=v0, w0=v1, w1=a0, w2=a1)
+    before global.c allocates the pointer; the pointer takes $a1 because w2's def is the
+    pointer's death insn and therefore not a conflict.
+  - probe: dS5 (w2 loaded first) 4/34, dS6 (w0,w2,w1) 4/34, dS1 (all three stores read
+    arg0[] directly) 9/33, dS3 (last two stores read directly) 8/33, dS7 (no do-while,
+    w2 first) 5/33.
+  - result: **KILLED.** dS5's disasm shows the emitted load order following the source and
+    the LAST-emitted load again taking the pointer's own register — the reuse follows
+    emission order, not source identity, so no permutation blocks $a1. Folding loads into
+    store operands loses an instruction slot instead (33 insns).
+  - verdict: **KILLED**
+
+- **H-s12-3 — "extending the pointer's live range past the last load blocks $a1 and moves it
+  one seat up the ascending scan."**
+  - mechanism: global.c find_reg scans hard regs ascending over the complement of the
+    conflict set; w2 becomes a real conflict once the pointer outlives it.
+  - probe: dS4 = base + trailing `arg0[0] = w0;` (35 insns, score 5), disassembled.
+  - result: **CONFIRMED — `move a2,a0` / `lw v1,0(a2)` / `lw a0,4(a2)` / `lw a1,8(a2)`;
+    every other seat target-exact; pointer $a1 -> $a2.** Price: exactly one instruction.
+  - verdict: **CONFIRMED** (not a candidate — the extension is not byte-free)
+
+- **H-s12-4 — "the target seating ($a3) is reachable at all from ordinary valid C, and its
+  exact price can be measured."**
+  - mechanism: five block-locals live with the pointer occupy v0,v1,a0,a1,a2 by local-alloc's
+    ascending first-free scan; the pointer then finds $a3.
+  - probe: dZ (DIAGNOSTIC, semantics-extending: a fourth load `w3=arg0[3]` plus two trailing
+    stores; 37 insns, score 10), disassembled.
+  - result: **CONFIRMED — `move a3,a0`, `lw a2,0(a3)`, `lw v1,4(a3)`, `lw a0,8(a3)`.** First
+    ordinary valid C in this function's history to reproduce the target's entry copy and all
+    three target base registers simultaneously. Price: three extra instruction slots (the
+    fifth local's load + the two uses that keep it and the pointer alive).
+  - verdict: **CONFIRMED**
+
+**Net frontier restatement after s12.** The residual is no longer "an unexplained register
+seat"; it is a fully specified, measured shopping list: **(i) a fifth block-local allocno
+live across the three loads whose defining insn is deleted AFTER local-alloc, and (ii) a use
+of the pointer after that allocno's last use — both at zero instruction cost.** s12 measured
+the price of each half when spelled honestly (one slot for (ii) alone, three for both), and
+s7+s12 together close the only known post-RA-deletion channel (arm duplication + cross_jump)
+at both of this function's real branch sites.
+
+## [s12] duplicated-statement-into-arms works at the search loop's REAL two-exit tail (the invented-branch ground of the s8 Judge FAIL does not apply)
+- mechanism: s7's dupU showed identical duplicated arms survive to RA as real conflicts and are then erased by post-reload jump_optimize cross_jump; a REAL pre-existing branch should keep that mechanism while dropping the 'invented branch' objection
+- probe: 7 variants over both real branch sites, each measured with `sandbox func_80033550 --disable all` and disassembled: site 1 (the loop's beqz-found exit vs the i<6 fall-through) dR1 dup w0 load=11, dR2 dup all three loads=12, dR3 dup w1+w2=20, dR4 arms+do-while tail=18, dR7 dup i*12=16/33insns; site 2 (the real `if (i==6) return;`) dR5 dup three loads into the return arm=5/34, dR6 dup the i==6 test into both loop arms=5/34; plus diagnostic dX dup the three stores into the return arm=20/44insns
+- result: Site 1: the two loop exits merge UPSTREAM of the i==6 test, so cross_jump hoists the merged copy out of the tail region entirely - dR4's disasm shows `lw a3,4(a0); lw a2,8(a0)` landing before `beq a1,v0` (i.e. executing on the not-found return path) and the pointer coalescing into $a0 with the entry copy deleted (that deletion is what keeps the count at 34). Site 2: the duplicable statements are all DCE-able and die before conflict construction - dR5/dR6 are RA-inert with seating unchanged (pointer still $a1); their +1 is purely a sched1 artefact of dropping the do-while(0) fence, the final `sll v0,v0,2` migrating behind the three lw's. The only non-DCE-able statements at site 2 are the four stores, and duplicating any of them into the i==6 arm writes D_80107850[72] on the not-found path (semantically invalid C, not a candidate); measured anyway, dX does not even cross-jump merge (44 insns, the arms' tails differ) and it coalesces the pointer into $a0. dupU does not transfer because its byte-freeness required SYMMETRIC arms whose only asymmetry was a merged-away condition; both real branches here are asymmetric (one returns, one falls through).
+- verdict: KILLED
+
+## [s12] the pointer's $a1 seat can be vacated by a byte-free structural respell (load-order permutation or folding the loads into the store operands)
+- mechanism: local-alloc seats the block-locals ascending (idx=v0, w0=v1, w1=a0, w2=a1) before global.c allocates the pointer, and the pointer takes $a1 because w2's def is the pointer's death insn and therefore not a conflict; reordering the loads should change which value dies there
+- probe: dS5 (w2 loaded first)=4/34, dS6 (w0,w2,w1)=4/34, dS1 (all three stores read arg0[] directly)=9/33, dS3 (last two stores read directly)=8/33, dS7 (no do-while, w2 first)=5/33; dS5 disassembled to tmp/grind/func_80033550/s12/dS5.dis.txt
+- result: dS5's disasm shows the emitted load order following the source (`lw a0,8(a1); lw v1,0(a1); lw a1,4(a1)`) with the LAST-EMITTED load again taking the pointer's own register. Law: the reuse follows emission order, not source identity, so no permutation blocks $a1. Folding the loads into the store operands loses an instruction slot instead (33 insns).
+- verdict: KILLED
+
+## [s12] extending the pointer's live range past the last load blocks $a1 and moves it exactly one seat up global.c's ascending scan
+- mechanism: global.c find_reg scans hard registers ascending over the complement of the conflict set; w2 becomes a genuine conflict (rather than a register reuse) once the pointer outlives the insn that defines it
+- probe: dS4 = candidate + a trailing `arg0[0] = w0;` - 35 insns, score 5, disassembled to tmp/grind/func_80033550/s12/dS4.dis.txt
+- result: CONFIRMED: `move a2,a0` / `lw v1,0(a2)` / `lw a0,4(a2)` / `lw a1,8(a2)`, with idx=v0, w0=v1, w1=a0, w2=a1, i=v1 all target-exact and the pointer moved $a1 -> $a2. The price is exactly one instruction, so this is not a candidate - but it identifies the lever precisely and for the first time by construction.
+- verdict: CONFIRMED
+
+## [s12] the target seating (pointer in $a3) is reachable from ordinary, semantically-valid C at all, and its exact instruction price can be measured
+- mechanism: five block-local values live simultaneously with the pointer occupy v0,v1,a0,a1,a2 under local-alloc's ascending first-free scan, after which global.c's ascending scan finds $a3 for the pointer
+- probe: dZ (DIAGNOSTIC, semantics-extending: adds a fourth load w3=arg0[3] plus two trailing stores; 37 insns, score 10), disassembled to tmp/grind/func_80033550/s12/dZ.dis.txt
+- result: CONFIRMED: `move a3,a0`, `lw a2,0(a3)`, `lw v1,4(a3)`, `lw a0,8(a3)` - the first ordinary valid C in this function's 12-session history to reproduce the target's entry copy AND all three target base registers at once. Price: three extra instruction slots (the fifth local's load plus the two uses that keep it and the pointer alive). This converts s11's counting argument into a constructed one and names exactly what is missing.
+- verdict: CONFIRMED

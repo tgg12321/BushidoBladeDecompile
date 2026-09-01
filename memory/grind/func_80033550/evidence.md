@@ -821,3 +821,115 @@ measurement that the occupant is not byte-free).
 - [s11] Disposition FILED this session at docs/grind/decisions.md:15517 as OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE. It asks for no standard to be lowered (no family grant, no canonical evidence-bar override, no 'accept the debt' wording), so it is not auto-reject class; nothing pends the owner.
 
 - [s11] Owner ruling 10 of the 2026-08-30 escalation batch (decisions.md:14870) returned this item to ACTIVE on a bookkeeping ground only ('the queue lagged the ledger'), naming no new lever; that ground is discharged by this session's fresh measurements and the new entry.
+
+## s12 (2026-09-01, STRUCTURAL modality — owner Ruling-A named probe EXECUTED, plus a measured RA model)
+
+**Chassis re-measure.** HEAD is `INCLUDE_ASM("asm/funcs", func_80033550);`
+(src/code6cac_b.c:2276). `memory/grind/func_80033550/candidate.c` pasted over that line
+(plus three `extern u8 D_80107850/54/58;` declarations, which exist only in
+`undefined_syms_auto.txt:994-996`, not in any header) measures
+**score 4, target_insns 34, build_insns 34, rules_dropped 0** — the ledger floor holds on
+this chassis. src/ was restored to HEAD at session end (git clean except metrics/events.jsonl).
+
+### 1. Owner Ruling-A named probe — duplicated-statement-into-arms on the search-loop's REAL branches: **KILLED, three separate measured mechanisms**
+
+The reopen note (hypotheses.md:719) directed a re-test of the sanctioned
+duplicated-statement-into-arms family against "the search loop's two-exit tail", on the
+ground that the s8 Judge FAIL only rejected an *invented* branch. This function has exactly
+two real branch sites, and both were probed:
+
+**Site 1 — the loop's two exits (`beqz` early-found vs the `i<6` fall-through), merging at
+.L80033580.** Variants dR1 (duplicate `w0=arg0[0]` into both exits, **11**), dR2 (all three
+loads, **12**), dR3 (`w1`+`w2`, **20**), dR4 (loads in arms + do-while wrap in tail, **18**),
+dR7 (duplicate `new_var = i*12` into both exits, **16**, 33 insns).
+All stay at 33-34 insns, so the duplication IS count-free — but it is **not tail-free**:
+the two loop exits merge **UPSTREAM of the `i == 6` test**, so cross_jump hoists the merged
+copy out of the tail region entirely. dR4's disassembly
+(tmp/grind/func_80033550/s12/, `dis.sh`) shows the merged `lw a3,4(a0); lw a2,8(a0)` landing
+*before* `beq a1,v0` — i.e. executing on the not-found return path — and the resulting
+rotation coalesces the pointer into **$a0** (the entry copy is deleted, which is what keeps
+the count at 34) with `i` rotated to $a1. This is the structural reason the family cannot
+work at site 1: any statement duplicated into the loop's arms is relocated ahead of the
+tail, so it buys conflicts in the wrong region and pays with the entry copy.
+
+**Site 2 — the real `if (i == 6) return;` branch.** dR5 (duplicate all three loads into the
+return arm, **5**, 34 insns) and dR6 (duplicate the real `i==6` exit test into both loop
+arms, **5**, 34 insns): the duplicated copies are dead on the return path and are deleted
+before conflict construction — **RA-inert**, `.greg` seating unchanged, pointer still $a1.
+The only residue is a sched1 side-effect (the final `sll v0,v0,2` migrates behind the three
+`lw`s once the do-while(0) fence is dropped) worth exactly +1.
+
+**Site 2 with a non-DCE-able statement.** The only statements at this site that survive DCE
+are the four stores, and duplicating any of them into the `i == 6` arm writes
+`D_80107850[6*12]` on the not-found path — **semantically invalid C**, so it is not a
+candidate at all. Measured anyway as a diagnostic (dX): it does not even cross-jump merge
+(**44 insns**, score 20, the arms' tails differ), and it coalesces the pointer into $a0
+rather than seating it in $a3.
+
+**Ruling-A verdict.** The s7 `dupU` result does NOT transfer to a real branch. `dupU`'s
+byte-freeness depended on an invented always-merged branch wrapping *identical* statement
+sequences whose only asymmetry was the merged-away condition; both of this function's real
+branches have **asymmetric arms** (one returns, one falls through), so cross_jump can never
+merge them away completely. At site 1 the merge point is upstream of the tail; at site 2 the
+duplicable statements are all DCE-able and the non-DCE-able ones are semantically excluded.
+The owner's ground for reopening ("the s11 counting theorem is contradicted by dupU") is
+answered: dupU was count-free only inside a shape the Judge has already ruled a cheat, and
+it never reached distance <= 4 anyway (honest 11).
+
+### 2. NEW — the residual's RA arithmetic is now MEASURED, not argued (three constructions)
+
+s9/s10/s11 argued from `.greg` that reaching $a3 needs hard conflicts
+superset-of {2,3,4,5,6}. This session built the constructions and measured them.
+
+- **`$a1` is blocked exactly by extending the pointer's live range past the last load.**
+  dS4 = base + a trailing `arg0[0] = w0;` (35 insns, score 5). Disassembly
+  (s12/dS4.dis.txt): `move a2,a0`, `lw v1,0(a2)`, `lw a0,4(a2)`, `lw a1,8(a2)` — every seat
+  target-correct (idx=v0, w0=v1, w1=a0, w2=a1, i=v1) and the pointer moved **$a1 -> $a2**.
+  Cost: one instruction. Reason: w2 (the last load) normally *reuses* the pointer's register
+  because the pointer dies in that very insn, so it is not a conflict; extend the range and
+  it becomes one, and find_reg's ascending scan lands on the next free seat, $a2.
+- **No load-order permutation blocks $a1 for free.** dS5 (`w2` first) and dS6 (`w0,w2,w1`)
+  both measure 4 at 34 insns, and dS5's disassembly shows the emitted order following the
+  source (`lw a0,8(a1); lw v1,0(a1); lw a1,4(a1)`) with the **last-emitted** load again
+  taking the pointer's own register. Law: whichever load is emitted last reuses the
+  pointer's hard register, so $a1 can only be blocked by an extra use, never by reordering.
+  dS1 (all three stores read `arg0[...]` directly, 33 insns, score 9) and dS3 (33 insns,
+  score 8) fold the loads into the store operands and lose the count instead.
+- **The full seating is reachable, and its price is now known exactly.** dZ (DIAGNOSTIC,
+  not a candidate — it adds a fourth load and two stores, 37 insns, score 10) gives the
+  pointer a fifth simultaneously-live block-local value plus the live-range extension, and
+  the pointer seats in **$a3**: `move a3,a0` / `lw a2,0(a3)` / `lw v1,4(a3)` /
+  `lw a0,8(a3)` — the first ordinary, semantically-valid C in this function's history to
+  reproduce the target's entry copy AND all three target base registers.
+  **So the requirement is exactly: FIVE block-local values live simultaneously with the
+  pointer (occupying v0,v1,a0,a1,a2 by local-alloc's ascending first-free scan) plus a
+  pointer use after the last of them.** The target affords only four (idx, w0, w1, w2), and
+  dZ needed three extra instruction slots to buy the fifth and the extension.
+
+This sharpens s11's instruction-budget closure from a counting argument into a named,
+constructed one: the missing ingredient is a **byte-free fifth block-local allocno whose
+defining insn is deleted after local-alloc** (post-RA deletion: cross_jump / delay-slot fill
+/ final), **together with a byte-free pointer use after it**. Both must be free; dS4 proves
+the extension alone already costs a slot when spelled as a store, and s7 proved the only
+known post-RA-deletion channel (arm duplication + cross_jump) is unavailable here at real
+branches (section 1).
+
+Artifacts: tmp/grind/func_80033550/s12/{apply.py,sweep.ps1,dis.sh,variants/*.c,
+dR5.dis.txt,dS4.dis.txt,dS5.dis.txt,dX.dis.txt,dZ.dis.txt}.
+Banked forms: memory/grind/func_80033550/rejected/s12-*.c (9 files).
+
+- [s12] Chassis re-measured this session: candidate.c pasted over the INCLUDE_ASM at src/code6cac_b.c:2276 (plus three `extern u8 D_80107850/54/58;` decls, which live only in undefined_syms_auto.txt:994-996 and in no header) gives score 4, target_insns 34, build_insns 34, rules_dropped 0. src/ was restored to HEAD at session end; the tree is clean apart from the ledger and metrics/events.jsonl.
+
+- [s12] Owner Ruling-A (the reopen note at memory/grind/func_80033550/hypotheses.md:719) is EXECUTED IN FULL and KILLED: duplicated-statement-into-arms is unavailable at this site not by policy but by structure - the loop's two exits merge upstream of the i==6 test, and the i==6 arm's duplicable statements are all DCE-able while its non-DCE-able ones are semantically invalid.
+
+- [s12] The owner's stated ground for reopening (that s11's counting theorem is contradicted by s7's dupU) is answered on the merits: dupU was count-free only inside the invented-symmetric-arm shape the Judge already ruled a cheat, it required symmetric arms that neither real branch here provides, and it never reached distance <= 4 anyway (honest 11).
+
+- [s12] MEASURED RA LAW (new): the last-emitted load of arg0 always reuses the pointer's hard register, because the pointer dies in that insn and is therefore not a conflict. Verified across load-order permutations (dS5/dS6) - the reuse follows emission order, not source order.
+
+- [s12] MEASURED RA LAW (new): blocking $a1 == extending the pointer past the last load. Spelled honestly (dS4, one trailing store) it costs exactly one instruction and moves the pointer $a1 -> $a2 with every other seat target-exact.
+
+- [s12] MEASURED RA LAW (new): the pointer reaches $a3 iff FIVE block-local values are live simultaneously with it (filling v0,v1,a0,a1,a2 by local-alloc's ascending first-free scan) AND the pointer is used after the last of them. The target affords only four such values (idx,w0,w1,w2); dZ needed three extra instruction slots to buy the fifth and the extension.
+
+- [s12] Consequently the residual is now a fully specified shopping list rather than an unexplained register seat: (i) a byte-free fifth block-local allocno whose defining insn is deleted AFTER local-alloc (post-RA deletion channels only: cross_jump, delay-slot fill in reorg.c, final.c), and (ii) a byte-free use of the pointer after that allocno's last use. s7 + s12 together close the only known post-RA-deletion channel (arm duplication + cross_jump) at both of this function's real branch sites.
+
+- [s12] 9 forms banked to memory/grind/func_80033550/rejected/s12-*.c, each named for the mechanism that killed it; two of them (dS4, dZ) are positive-result diagnostics kept for their disassembly, not proposals.

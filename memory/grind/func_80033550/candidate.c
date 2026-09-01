@@ -91,6 +91,20 @@
  * construct that would put $a3 in the pre-RA RTL) is a false claim. Both
  * endgame-lock gates re-measured failing (scan LOW 0/8; no SOTN precedent).
  * Standing 2026-07-27 ruling re-applied: docs/grind/decisions.md:15517.
+ * s12 (2026-09-01, STRUCTURAL, owner Ruling-A named probe): floor re-measured
+ * 4 (34/34, 0 rules). Ruling A KILLED at both real branch sites: the loop's two
+ * exits merge UPSTREAM of the i==6 test (cross_jump hoists the duplicate out of
+ * the tail, pointer coalesces to $a0, 11-20), and the i==6 arm's duplicable
+ * statements are all DCE-able (RA-inert, +1 sched artefact only) while the only
+ * non-DCE-able ones (the stores) are semantically invalid on the not-found path.
+ * dupU does not transfer: its byte-freeness needed SYMMETRIC arms, and both real
+ * branches here are asymmetric. NEW measured RA arithmetic: dS4 (base + one
+ * trailing store) moves the pointer $a1 -> $a2 with every other seat
+ * target-exact (blocking $a1 == extending the pointer past the last load, which
+ * otherwise reuses its register); dZ (diagnostic, 37 insns) reaches
+ * `move a3,a0` + all three `lw ...(a3)` with FIVE block-locals live. Residual is
+ * now a specified shopping list: a byte-free fifth block-local deleted after
+ * local-alloc PLUS a byte-free pointer use after it. See evidence.md s12.
  * NOTE: this file is CRLF - normalise to LF after pasting into src/*.c.
  * Residual 4 = arg0's pointer pseudo homed in $a1 (build) vs $a3 (target):
  * move + 3 lw base regs. See evidence.md for the RTL conflict analysis. */
