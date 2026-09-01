@@ -644,3 +644,146 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - probe: grep -rn 'register .* asm(' src/*.c after the migration landed.
 - result: FALSE as stated: pins remain in src/config.c (16), src/text1a_c.c (26) and src/code6cac_c2.c (6), each under its own queue item. The migration's benefit is real but local: code6cac_b.c is now pin-free.
 - verdict: KILLED
+
+## [s15] 2026-08-31 (synthesis, brief-session 15; scratch tmp/grind/func_800324D0/s15/)
+
+34. **H34 — the s14 "+2 chassis drift" (15 -> 17) is the
+    [[sandbox-lo16-text-addend-false-distance]] artifact rather than a codegen
+    regression.** mechanism (as inherited): engine/score.py masks branch/jump
+    targets but not section-relative R_MIPS_LO16 addends, and this function takes
+    `%hi/%lo` of jtbl_800105A0. probe: reproduce the 17 (candidate applied over a
+    pristine HEAD checkout -> `sandbox --disable all` = **17**,
+    s15/sandbox_candidate.log), then diff the two normalized instruction streams
+    that score.py itself compares (`engine.score.normalized_insns` over
+    build/src/code6cac_b.o vs tmp/sandbox/func_800324D0/code6cac_b.o,
+    s15/insn_diff_candidate.log). result: **KILLED — the drift is real, its cause
+    is now positively identified, and it is NOT the lo16 artifact.**
+    score.py has masked section-relative HI16/LO16 addends since that memory note
+    was written (engine/score.py:63 `_SECTION_ADDEND_RELOCS = {"R_MIPS_HI16",
+    "R_MIPS_LO16"}`, plus `_mask_section_addend`), so the candidate's jtbl load
+    already normalizes to `lui a3,@.rodata` / `addiu a3,a3,@.rodata`. The two
+    extra diffs came from the **REFERENCE** side: `sandbox` scores against
+    `build/src/<stem>.o` (engine/sandbox.py:72), and s14 left that object built
+    from **its own INCLUDE_ASM/INCLUDE_RODATA migration of this TU** (mtime
+    18:59, exactly the s14 migrated build). In the migrated object the table is
+    reached through `%hi/%lo(jtbl_800105A0)` — relocations against a NAMED GLOBAL
+    symbol, which `_mask_section_addend` deliberately does not mask — so the
+    reference stream read `lui a3,0x0` / `addiu a3,a3,0` against our masked
+    `@.rodata`: two instructions of pure false distance, 15 -> 17.
+35. **H35 — with the reference object rebuilt from pristine HEAD the floor is
+    still 15 and the residual is still the uniform 2-swap.** mechanism: the
+    reference must be a byte-correct build of the PINNED source, not of any
+    session's edit; `sandbox` never rebuilds it. probe: `git checkout --
+    src/code6cac_b.c` -> `& tools/wteng.ps1 main build` (sha1
+    62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH,
+    s15/build_head_reference.log) -> re-apply candidate.c -> `sandbox --disable
+    all`. result: **CONFIRMED — score 15, target_insns 68 == build_insns 68,
+    rules_dropped 0** (s15/sandbox_candidate_freshref.log). The re-diff
+    (s15/insn_diff_candidate_freshref.log) is exactly 15 substituted operands over
+    11 instructions and is a **pure `v1` <-> `a2` rename**: zero insertions, zero
+    deletions, zero reorderings. Every chassis-relative kill banked in s1-s13 is
+    therefore current, and the s14 "17" must not be quoted again. **Standing
+    procedure for this function: if the floor does not read 15, rebuild
+    `build/src/code6cac_b.o` from a pristine checkout BEFORE concluding
+    anything.**
+36. **H36 — the owner-ruling-5 INCLUDE_ASM migration can be landed by a grind
+    session "through the normal candidate path" (the remedy prescribed by the
+    2026-08-31 Judge FAIL, decisions.md:16725).** mechanism:
+    `Invoke-CandidatePath` requires the driver's own `sandbox --disable all`
+    re-check to print 0 (grind.ps1:561); any non-candidate outcome ends with
+    `git checkout -- src include` (grind.ps1:886), which reverts every src edit a
+    `progress` session makes. probe: applied the exact s14 migration
+    (`INCLUDE_ASM("asm/funcs", func_800324D0);` +
+    `INCLUDE_RODATA("asm/rodata", jtbl_800105A0);`) and ran `sandbox
+    func_800324D0 --disable all`. result: **KILLED —
+    `{"score": 68, "build_insns": 0, "no_c_body": true, "target_insns": 68}`**
+    (s15/sandbox_include_asm_form.log). An INCLUDE_ASM body has no C body to
+    score, so the sandbox reports the FULL 68 rather than 0; the candidate path
+    is mechanically unreachable for a representation-only change, and a
+    `progress` session's src edit is mechanically reverted. **The migration is
+    therefore not landable by ANY grind session under the current driver** — it
+    needs the operator lane (an ordinary `cheat-cleanup:` commit) or a driver
+    change. Recorded as a mechanical fact only: it is NOT re-filed as an
+    integration handoff (that framing already drew a Judge FAIL) and no session
+    should spend turns re-attempting it.
+37. **H37 — the closure argument for the residual is a bounded search (s13's
+    depth-3 inverse.py NEGATIVE) and therefore leaves unexamined input space.**
+    mechanism: re-derive the requirement directly from the exact forward model
+    instead of searching perturbations of it. probe:
+    `tools/ra_solver/extract.py func_800324D0 code6cac_b` +
+    `simulate.py --trace` re-run this session on the fresh chassis
+    (s15/simulate_trace.log): sort order MATCH, dispositions **8/8**. result:
+    **KILLED — the closure is a PROOF over the whole input space, not a bounded
+    search.** Exact model numbers (allocation order 75, 76, 85, 72, 74, 73, 91,
+    86):
+      - pseudo 73 = the walker (`ptr`), pri **15483**, gets `$6`; the target
+        wants `$3`.
+      - pseudo 75 = the `c & 0xff` web, pri **75000**, gets `$3`; 85 = the
+        `-0x80` web, pri 34285, `$3`; 76 = `val` (QI), pri 47272, `$5`;
+        72 = `pad`, 29838, `$4`; 74 = `c`, 26666, `$2`.
+      - `conflicts[73] = [72, 73, 74, 75, 76, 85, 86, 91]` — **73 conflicts with
+        every other allocno in the function**, because the walker is live from
+        the first instruction to the last.
+    Two exhaustive cases for "73 receives $3":
+    **(a) 73 is allocated before 75, 76 and 85.** It must out-prioritise 75 at
+    75000, a **4.84x** lift of 15483. With
+    `pri = floor_log2(n)*n/livelen * 10000`, 73's live length cannot fall below
+    the loop body (~54 of the 68 instructions), so the only free variable is n:
+    `floor_log2(n)*n > 465` needs ~80+ weighted refs against today's 24 — and
+    every extra reference is an extra instruction in a shape fixed at 68.
+    Symmetrically, pushing 75, 76 and 85 all below 15483 requires 76 (`val`) to
+    be live across roughly the whole loop, but `val` is defined and consumed
+    inside the payload arm by the function's own semantics. **Arithmetically
+    foreclosed.**
+    **(b) $3 is excluded for 75/76/85 by a conflict.** Any such exclusion comes
+    either from an earlier allocno already holding $3 or from a hard `$v1` live
+    range. Because 73 conflicts with EVERY allocno and is live at EVERY
+    instruction, either source excludes $3 for 73 as well. **Structurally
+    foreclosed — case (b) can never help, for any C spelling, at any depth.**
+    Case (b) is new this session and is what upgrades s13's "no vector found at
+    depth 3" to "no vector exists". The residual is unreachable by ANY
+    allocation-input perturbation of this instruction shape; only a different
+    68-insn shape in which the walker is not live across the loop could move it,
+    and the function's semantics (one forward stream pointer) forbid such a
+    shape.
+
+## Frontier (for s16+ — RESET by this synthesis pass)
+1. **The floor is 15 and the chassis-drift question is CLOSED.** Do not
+   re-measure the drift; do re-run `build` from a pristine checkout first if any
+   future sandbox prints something other than 15 (H34/H35).
+2. **The RA residual is FORECLOSED BY PROOF, not by search** — H37 case (b) is
+   the new decisive leg. No refs / live-length / birth-order / conflict /
+   preference perturbation of this 68-insn shape can hand `$3` to the walker.
+   The only theoretically open door is a different 68-instruction shape in which
+   the walker's live range does not span the loop, which the function's
+   semantics forbid. Any session that wants to re-open this must first exhibit
+   such a shape, not another spelling.
+3. **Representation debt, operator-only:** main still carries the four
+   `register asm("$N")` pins; the owner-ruling-5 migration is verified correct
+   and oracle-green (s14) but is mechanically unlandable from a grind session
+   (H36). It needs the operator lane. Do not spend session turns on it, and do
+   not re-file it as an integration handoff.
+
+## [s15] The s14 '+2 chassis drift' (15 -> 17) is the known sandbox-lo16-text-addend-false-distance artifact rather than a codegen regression.
+- mechanism: engine/score.py was believed to mask branch/jump targets but not section-relative R_MIPS_LO16 addends, and this function takes %hi/%lo of jtbl_800105A0, so a rodata shift could move the score without moving the codegen.
+- probe: Reproduced the 17 (candidate.c applied over a pristine HEAD checkout; tmp/grind/func_800324D0/s15/sandbox_candidate.log), then diffed the two normalized instruction streams score.py itself compares via engine.score.normalized_insns over build/src/code6cac_b.o and tmp/sandbox/func_800324D0/code6cac_b.o (s15/insn_diff_candidate.log).
+- result: The drift is real but the attributed cause is wrong. score.py ALREADY masks section-relative HI16 and LO16 addends (engine/score.py:63 _SECTION_ADDEND_RELOCS plus _mask_section_addend), so our jtbl load normalizes to `lui a3,@.rodata` / `addiu a3,a3,@.rodata`. The two extra diffs came from the REFERENCE side: sandbox scores against build/src/<stem>.o (engine/sandbox.py:72) and never rebuilds it, and s14 left that object built from its own INCLUDE_ASM/INCLUDE_RODATA migration of this TU (mtime matching the s14 migrated build). In that object the table is reached through %hi/%lo(jtbl_800105A0) — relocations against a NAMED GLOBAL symbol, which _mask_section_addend deliberately does not mask — so the reference stream read `lui a3,0x0` / `addiu a3,a3,0`. Exactly two instructions of pure false distance.
+- verdict: KILLED
+
+## [s15] With the reference object rebuilt from pristine HEAD the floor is still 15 and the residual is still the uniform walker/cmd 2-swap.
+- mechanism: The sandbox reference must be a byte-correct build of the PINNED source, not of any session's edit; the sandbox command never regenerates it.
+- probe: `git checkout -- src/code6cac_b.c` -> `& tools/wteng.ps1 main build` (s15/build_head_reference.log) -> re-apply candidate.c -> `& tools/wteng.ps1 main sandbox func_800324D0 --disable all` (s15/sandbox_candidate_freshref.log) -> re-diff the normalized streams (s15/insn_diff_candidate_freshref.log).
+- result: Build sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH. Sandbox: score 15, target_insns 68 == build_insns 68, rules_dropped 0. The diff is exactly 15 substituted operands over 11 instructions and is a PURE v1 <-> a2 rename: zero insertions, zero deletions, zero reorderings. Every chassis-relative kill banked in s1-s13 is therefore current and the s14 '17' must never be quoted again.
+- verdict: CONFIRMED
+
+## [s15] The owner-ruling-5 INCLUDE_ASM migration can be landed by a grind session 'through the normal candidate path', which is the remedy the 2026-08-31 Judge FAIL prescribed (docs/grind/decisions.md:16725).
+- mechanism: Invoke-CandidatePath requires the driver's own `sandbox --disable all` re-check to print 0 (tools/grinder/grind.ps1:561); every non-candidate outcome ends with `git checkout -- src include` (grind.ps1:886), which reverts a progress session's src edit.
+- probe: Applied the exact s14 migration (INCLUDE_ASM("asm/funcs", func_800324D0); + INCLUDE_RODATA("asm/rodata", jtbl_800105A0);) to src/code6cac_b.c and ran `& tools/wteng.ps1 main sandbox func_800324D0 --disable all` (s15/sandbox_include_asm_form.log).
+- result: The sandbox returns {"score": 68, "build_insns": 0, "no_c_body": true, "target_insns": 68}. An INCLUDE_ASM body has no C body to score, so the sandbox reports the FULL 68 rather than 0 — the candidate path can never pass for a representation-only change, and a progress session's src edit is mechanically reverted. The migration is not landable by ANY grind session under the current driver; it needs the operator lane (an ordinary cheat-cleanup: commit) or a driver change. Recorded as a mechanical fact only — deliberately NOT re-filed as an integration handoff, since that framing already drew a Judge FAIL.
+- verdict: KILLED
+
+## [s15] The closure argument for the residual is a bounded search (s13's depth-3 inverse.py NEGATIVE) and therefore leaves unexamined allocation-input space.
+- mechanism: Rather than searching perturbations of the forward model, derive the requirement directly from it: global.c allocno_compare priority plus find_reg's first-free scan over the conflict sets.
+- probe: Re-ran tools/ra_solver/extract.py func_800324D0 code6cac_b and simulate.py --trace on the corrected chassis (s15/simulate_trace.log), then hand-derived the exhaustive case split for 'pseudo 73 receives $3'.
+- result: Forward model still exact (sort order MATCH, dispositions 8/8). Order 75,76,85,72,74,73,91,86 with priorities 75000, 47272, 34285, 29838, 26666, 15483 (=73, the walker), 333, 326; conflicts[73] = [72,73,74,75,76,85,86,91] — the walker conflicts with EVERY other allocno because it is live at every instruction. Case (a) 73 allocated first: needs a 4.84x priority lift; pri = floor_log2(n)*n/livelen*10000, livelen cannot drop below the ~54-insn loop body, so floor_log2(n)*n > 465 requires ~80+ weighted refs against today's 24, each ref costing an instruction in a shape fixed at 68; symmetrically, driving 75/76/85 all below 15483 needs val (76) live across the whole loop, which the payload arm's semantics forbid. Case (b) $3 excluded for 75/76/85 by conflict: any earlier allocno holding $3, or any hard $v1 live range, also excludes $3 for 73, because 73 conflicts with everything and is live everywhere — so case (b) can never help at any depth, for any C spelling. Case (b) is new this session and upgrades 'no vector found at depth 3' to 'no vector exists'.
+- verdict: KILLED

@@ -1,8 +1,8 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 14,
- "current_modality": "escalation",
+ "session_count": 15,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -87,23 +87,29 @@
    "floor": 17,
    "modality": "escalation",
    "headline": "Owner ruling 5 (2026-08-30) EXECUTED: func_800324D0 migrated to INCLUDE_ASM + INCLUDE_RODATA inside the src surface (no bb2.ld edit needed), four register-asm pins deleted, full build SHA1 == oracle; "
+  },
+  {
+   "session": 15,
+   "floor": 15,
+   "modality": "synthesis",
+   "headline": "Chassis drift KILLED at the root (the '17' was a stale s14-migrated reference object, not codegen \u2014 floor is 15), and the RA foreclosure upgraded from a depth-3 search NEGATIVE to a two-case proof ove"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The +2 chassis drift (15 -> 17) is the lo16-addend scoring artifact rather than a codegen regression \u2014 the absolute floor is contaminated and small deltas are unreadable until it is separated.",
-   "mechanism": "engine/score.py masks branch/jump targets but not section-relative R_MIPS_LO16 addends; func_800324D0 takes %hi/%lo of jtbl_800105A0, whose rodata position shifts when a neighbouring function in code6cac_b changes.",
-   "next_probe": "Disassemble the sandbox .o and the target stream for the candidate form and diff instruction-by-instruction: if the two extra differing insns are exactly the lui/addiu pair carrying the jtbl address, the drift is the artifact and the true residual is still 15."
+   "hypothesis": "The RA residual is foreclosed by proof for THIS 68-instruction shape; the only door still theoretically open is a different 68-instruction shape in which the walker's live range does not span the loop.",
+   "mechanism": "Both closure cases depend on the walker allocno being live at every instruction (giving it the lowest priority AND a conflict with every other allocno). A shape that breaks the walker's function-spanning live range invalidates both legs simultaneously \u2014 nothing weaker does.",
+   "next_probe": "Do not spend another session on spelling variants. Any re-opening attempt must FIRST exhibit a candidate 68-instruction shape whose walker web is not loop-spanning (and it must not be the banned base/ff split, nor the s10 index-walk family which lands at 69), then measure it. If no such shape can be written for a single forward stream pointer, the honest disposition is escalation modality."
   },
   {
-   "hypothesis": "With every modelled RA lever FORECLOSED, the only remaining honest route is a genuinely different 68-instruction SHAPE \u2014 a C expression whose pre-RA RTL insn multiset differs from ours, not another allocation-steering spelling.",
-   "mechanism": "inverse.py rtl_shape class: the RA and scheduler models permute and rename a FIXED insn set, so reaching a different assignment now requires changing the set the front end and early optimisers build.",
-   "next_probe": "Enumerate C expressions for the stream walk whose combine/cse output differs in the insn multiset while still landing exactly 68 insns (the s10 index-walk family all came out at 69); sandbox each and re-classify with inverse_compose to confirm the first divergence moved out of RA."
+   "hypothesis": "The absolute floor of this function is only trustworthy when build/src/code6cac_b.o was produced from pristine HEAD.",
+   "mechanism": "sandbox scores against build/src/<stem>.o and never rebuilds it; a prior session's INCLUDE_ASM migration leaves a reference whose jtbl relocations are symbol-relative and therefore unmasked by engine/score.py.",
+   "next_probe": "First action of any future session: `git checkout -- src/code6cac_b.c`, `& tools/wteng.ps1 main build` (expect SHA1 == oracle), then apply candidate.c and sandbox \u2014 expect exactly 15, 68/68. Treat any other number as a stale-reference symptom, not as codegen news."
   },
   {
-   "hypothesis": "A pre-RA appearance of $v1 or $a2 \u2014 the mechanically missing ingredient (prera_hard=[4]) \u2014 is unreachable in any 68-insn form of this leaf function.",
-   "mechanism": "global.c set_preference can only record hard-reg preferences for registers that appear as hard regs in pre-RA RTL; on MIPS those arise from call argument/return conventions, and a leaf has none.",
-   "next_probe": "Confirm from the .rtl/.combine dumps that no PsyQ-idiom expansion (div/mod, multu, DImode helper) can introduce $v1/$a2 pre-RA without adding instructions \u2014 a one-read check that closes the last theoretical crack."
+   "hypothesis": "The four register-asm pins on main are representation debt that only the operator lane can clear.",
+   "mechanism": "The owner's 2026-08-30 ruling 5 grants the INCLUDE_ASM + INCLUDE_RODATA migration and s14 proved it oracle-green, but the driver has no path that commits a representation-only src change: the candidate gate needs sandbox 0 (impossible for a body with no C) and every other outcome reverts src.",
+   "next_probe": "Operator action, not a session probe: commit the two-line migration as `cheat-cleanup: func_800324D0 \u2014 migrate to INCLUDE_ASM, delete 4 register-asm pins (owner ruling 5, 2026-08-30)` with a fresh layer-2 cheat-reviewer, then re-run verify-oracle and check_completion_integrity.py. Sessions must not re-attempt it or re-file it as an integration handoff."
   }
  ],
  "judge_constraints": [

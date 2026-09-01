@@ -1,11 +1,28 @@
-/* [s14 2026-08-31] CHASSIS UPDATE: this form now measures 17, not 15 (measured
- * twice: over the migrated src and over a pristine HEAD replication; 68 == 68
- * insns, rules_dropped 0). The +2 appeared from unrelated commits between
- * 2026-08-26 and 2026-08-31; prime suspect is the lo16-addend false-distance
- * artifact (this function takes %hi/%lo of jtbl_800105A0). Also: main no longer
- * holds any C body for this function - it is INCLUDE_ASM + INCLUDE_RODATA since
- * s14 (owner ruling 5, 2026-08-30). To measure this candidate, replace those two
- * lines with the body below. */
+/* [s15 2026-08-31] CHASSIS CORRECTED - THE FLOOR IS 15, NOT 17. The s14 "+2
+ * drift" was a MEASUREMENT ARTIFACT with a fully identified cause, not codegen:
+ * `sandbox` scores against the REFERENCE object build/src/code6cac_b.o, and s14
+ * left that object built from its own INCLUDE_ASM/INCLUDE_RODATA migration of
+ * this TU. In the migrated object the jump-table address is loaded through
+ * `%hi/%lo(jtbl_800105A0)` - relocations against a NAMED GLOBAL symbol, whose
+ * immediate fields engine/score.py does NOT mask - so the reference stream reads
+ * `lui a3,0x0` / `addiu a3,a3,0`, while any C build reaches the same table
+ * through a `.rodata` SECTION-relative reloc that score.py DOES mask to
+ * `@.rodata`. Two insns of pure false distance, hence 15 -> 17. This is NOT the
+ * [[sandbox-lo16-text-addend-false-distance]] artifact the s14 entry suspected:
+ * score.py has masked section-relative HI16/LO16 addends since that memory was
+ * written (engine/score.py:63 _SECTION_ADDEND_RELOCS). Rebuilding the reference
+ * from pristine HEAD (`& tools/wteng.ps1 main build`, SHA1 == oracle) and
+ * re-measuring this file gives score 15, 68 == 68, rules_dropped 0
+ * (tmp/grind/func_800324D0/s15/sandbox_candidate_freshref.log), and the 15 diffs
+ * are a pure v1<->a2 rename with zero ordering or count difference
+ * (s15/insn_diff_candidate_freshref.log).
+ * STANDING PROCEDURE for every future session on this function: if the floor
+ * reads anything other than 15, run `& tools/wteng.ps1 main build` from a
+ * pristine `git checkout -- src/code6cac_b.c` FIRST, then apply this body and
+ * sandbox. A stale build/src/<stem>.o silently poisons the absolute score.
+ * Main still carries the legacy four-pin body: the owner-ruling-5 INCLUDE_ASM
+ * migration is mechanically unreachable from a grind session (hypotheses.md s15
+ * H36). To measure this candidate, replace that body with the one below. */
 /* func_800324D0 — BEST FORM (s5 ledger entry, brief-session 4, 2026-08-20):
  * sandbox --disable all = 15, build_insns 68 == target 68. FIRST floor drop
  * since s1 (27 -> 15).
