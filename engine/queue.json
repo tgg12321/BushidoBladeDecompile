@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800324D0",
-      "file": "code6cac_b",
-      "distance": 27,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 5 \u2014 jtbl_800105A0 re-wiring granted (operator lane, oracle-gated); pins leave main",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:14092 - 2026-08-26 func_800324D0 OWNER-ESCALATION - ESCALATED WITH DECISION PACKET (representation/routing: may asm/rodata/jtbl_800105A0.s be wired back into the link so func_800324D0 can migrate to INCLUDE_ASM and its four register-asm pins leave main?)"
-    },
-    {
       "func": "func_8002FC80",
       "file": "code6cac_b",
       "distance": 28,
@@ -1942,18 +1932,29 @@
       "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
       "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-26 \u2014 func_80022F34 (src/code6cac.c) \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: '## 2026-08-31 - func_80022F34 (src/code6cac.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
+    },
+    {
+      "func": "func_800324D0",
+      "file": "code6cac_b",
+      "distance": 27,
+      "verdict": "C",
+      "rules": 0,
+      "status": "escalated",
+      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 5 \u2014 jtbl_800105A0 re-wiring granted (operator lane, oracle-gated); pins leave main",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:14092 - 2026-08-26 func_800324D0 OWNER-ESCALATION - ESCALATED WITH DECISION PACKET (representation/routing: may asm/rodata/jtbl_800105A0.s be wired back into the link so func_800324D0 can migrate to INCLUDE_ASM and its four register-asm pins leave main?)",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:16729"
     }
   ],
   "counts": {
     "total": 219,
-    "active": 202,
+    "active": 201,
     "by_status": {
-      "active": 202,
-      "escalated": 17
+      "active": 201,
+      "escalated": 18
     },
     "by_verdict": {
-      "C": 167,
-      "ASM-PARTIAL": 35
+      "ASM-PARTIAL": 35,
+      "C": 166
     }
   }
 }

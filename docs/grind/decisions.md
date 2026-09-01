@@ -16725,3 +16725,72 @@ continues under standing policy — the next productive attempt is a genuinely d
 ## 2026-08-31 19:05 — func_800324D0 — ruling: INTEGRATION HANDOFF filed for func_800324D0 : docs/grind/decisions.md:16655 — 20 — **FAIL**
 
 The integration-handoff claim does not hold on three independent legs, each verified directly. (1) The 'working-tree diff awaiting commit' does not exist: `git status --porcelain` and `git diff -- src/` are clean for src/code6cac_b.c, and src/code6cac_b.c:1698-1701 still carries all four `register ... asm("v1"/"v0"/"a2"/"a1")` pins. The migrated body survives only as tmp/grind/func_800324D0/s14/code6cac_b.migrated.c, which is unversioned scratch, and the single banked build log (build_sha1_migrated.log) cannot be tied to it — its mtime (18:59) sits after the candidate re-apply, and pristine HEAD also SHA1-matches, so a MATCH line is not discriminating evidence for the migrated form. (2) The handoff class requires bytes PROVEN = `sandbox --disable all` == 0 AND full-build SHA1 == oracle (.claude/rules/integration-handoff-self-serve.md, opening paragraph). This function's sandbox is 17 (s14 sandbox_chassis.log, state.json floor_history session 14) and the entry itself states 'Not done: the pure-C match.' The bytes-proven precondition is unmet. (3) There is no commit surface a grind session may not stage, so there is nothing for the driver to widen. grind.ps1:596 defines the per-function surface as 'candidates for $func may only edit src/$stem.c'; the entire remedy is src/code6cac_b.c, the function's own TU, and tools/grinder/scope_allow.txt has no entry for this function because none is required. No path in the allowed classes (include/*.h, sibling src/*.c, root-level *.txt) is implicated. No stale ban is implicated either: the two banned_constructs entries concern the invented base/ff local split and are untouched by an INCLUDE_ASM migration, so there is nothing for me to supersede via unban_construct. On the merits I record what I did verify as sound, so the next session does not re-litigate it: the mechanism is correct. INCLUDE_RODATA (include/include_asm.h:18) does emit `.section .rodata` + `.include` at the statement position inside the same TU, so jtbl_800105A0 lands in code6cac_b.o(.rodata) at the slot the compiler switch table occupied, and asm/funcs/func_800324D0.s + asm/rodata/jtbl_800105A0.s both exist. The session's correction of the s13 bb2.ld premise looks right. Owner ruling 5 (decisions.md:14829) does grant this migration and does return the item to ACTIVE. So the work is wanted — it is simply an ordinary in-scope edit that this session could and should have staged through the normal candidate path, not an escalation. I will not ESCALATE a handoff whose defining precondition (sandbox 0) fails and whose remedy needs no grant; under default-FAIL that is a FAIL on evidence, not a routing convenience. This is not a construct objection and bans nothing. Full ledger: memory/grind/func_800324D0/state.json, hypotheses.md, evidence.md, docs/grind/decisions.md:16655.
+
+## 2026-08-31 — func_800324D0 — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Filed by grind session 16 (synthesis modality). This packet does **not** claim bytes-proven pure C,
+does **not** request a family grant, a canonical-asm override, or any "accept the debt" wording, and is
+**not** a re-filing of the 2026-08-31 integration-handoff entry (decisions.md:16655) that drew a Judge
+FAIL at decisions.md:16725. It poses one routing question that became decidable only this session.
+
+### (i) THE DECIDABLE QUESTION
+Owner ruling 5 of the 2026-08-30 batch (`docs/grind/decisions.md:14829`) GRANTED the
+`jtbl_800105A0` re-wiring for this function, and session 14 executed it and verified a full clean-driver
+build at SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle. Session 15 then measured that **no
+grind session can land that granted change**. Which landing route does the owner want?
+
+- **(A) Operator lane.** The operator commits the two-line migration by hand as
+  `cheat-cleanup: func_800324D0 — migrate to INCLUDE_ASM, delete 4 register-asm pins (owner ruling 5,
+  2026-08-30)`, after a fresh layer-2 `cheat-reviewer` and a `verify-oracle` +
+  `tools/check_completion_integrity.py` re-run. Sessions never touch it again.
+- **(B) Driver lane.** `tools/grinder/grind.ps1` is extended so an owner-granted asm-until-matched
+  migration can pass the candidate gate on `no_c_body: true` + full-build SHA1 == oracle instead of
+  `sandbox score == 0`. This is a `tools/grinder/` change, outside any grind session's surface, so it
+  also needs an owner/operator decision — but it generalizes to every future ruling of this shape.
+
+Either answer leaves the function **INCOMPLETE and ACTIVE in the queue** under asm-until-matched
+(`.claude/rules/asm-until-matched.md`); neither marks it COMPLETED, and neither relaxes any standard.
+
+### (ii) EVIDENCE POINTERS
+- **The landing is mechanically impossible from a session (measured, s15):** with the migration applied,
+  `sandbox func_800324D0 --disable all` returns `{"score": 68, "build_insns": 0, "no_c_body": true}`
+  (`tmp/grind/func_800324D0/s15/sandbox_include_asm_form.log`); `Invoke-CandidatePath` requires
+  `"score"\s*:\s*0` (`tools/grinder/grind.ps1:561`), and every non-candidate outcome ends in
+  `git checkout -- src include` (`grind.ps1:886`). The Judge's prescribed remedy at decisions.md:16725
+  ("staged through the normal candidate path") is therefore not executable by any session — that is the
+  new fact, and it is a driver-mechanics measurement, not an opinion about scope.
+- **The migration itself is correct and oracle-green (s14):** `tmp/grind/func_800324D0/s14/build_sha1_migrated.log`,
+  `INCLUDE_RODATA` semantics confirmed at `include/include_asm.h:18`, and the Judge's own 2026-08-31
+  ruling independently verified the mechanism ("the mechanism is correct … the session's correction of
+  the s13 bb2.ld premise looks right").
+- **The pure-C match is FORECLOSED by proof, closed this session over find_reg's complete pass-0 input
+  space** (`memory/grind/func_800324D0/evidence.md`, [s16]; `hypotheses.md` H38/H39): the residual is a
+  pure `$v1`<->`$a2` rename (15 substituted operands, 0 insertions, 0 deletions, 0 reorderings), and all
+  three exclusion channels of `tools/gcc-2.7.2/global.c:998-1001` are shut — conflicts (the walker is
+  live at every instruction, so any `$3`-excluder for allocnos 75/76/85 excludes it for the walker too),
+  `~regs_used_so_far` (saturated: `$3` is call-used and this is a leaf, global.c:363-368), and
+  `regs_someone_prefers` (measured empty — `full_prefs = {75:[],76:[],85:[],72:[4],74:[2],73:[],91:[],86:[]}`,
+  `tmp/grind/func_800324D0/s16/model.json` — because `$v1` has no copy site in a `void` leaf with one
+  pointer parameter and no calls, and self-defeating by rank via `prune_preferences` even if it did).
+  Probe P1 this session additionally shows the live-length term is not source-order-controllable: sinking
+  the walker load below the store block is FLAT 15 with a byte-identical RA model
+  (`s16/sandbox_p1.log`, `s16/model_p1_identical_to_candidate.json`).
+- **Both endgame-lock gates FAIL and were not re-run:** `scan_hand_coded --single func_800324D0`
+  tier=LOW score=0/8 (s12 and s13 logs), and zero SOTN-master file+line precedent for any closing
+  construct (s12, checked against `docs/reference/sotn-construct-index.md`).
+- **Chassis, re-verified this session:** pristine checkout -> `build` (SHA1 == oracle, MATCH) ->
+  candidate.c applied -> `sandbox --disable all` = **15, 68 == 68, rules_dropped 0**
+  (`tmp/grind/func_800324D0/s16/build_head_reference.log`, `s16/sandbox_candidate_freshref.log`). Floor
+  flat at 15 for thirteen consecutive sessions across seven distinct modalities.
+
+### (iii) CONSEQUENCE OF EACH ANSWER
+- **(A) Operator lane:** the four `register … asm("$N")` pins leave `src/code6cac_b.c` immediately, main
+  carries `INCLUDE_ASM("asm/funcs", func_800324D0); INCLUDE_RODATA("asm/rodata", jtbl_800105A0);`, the
+  oracle is unchanged (already verified), and the queue item returns to ACTIVE at floor 15 as an ordinary
+  asm-until-matched INCOMPLETE — grindable again the moment any of the three foreclosure legs is
+  falsified. Cost: one manual commit; no tooling change.
+- **(B) Driver lane:** identical end state for this function, plus every future owner-granted
+  asm-until-matched migration becomes landable autonomously. Cost: a `tools/grinder/grind.ps1` change and
+  its own review; until it exists, this function's pins stay on main.
+- **No answer:** the pins remain on main indefinitely and sessions keep re-measuring a foreclosed
+  residual, which is exactly the spinning the pipeline is designed to prevent.

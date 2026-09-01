@@ -1,7 +1,7 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 15,
+ "session_count": 16,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -93,23 +93,29 @@
    "floor": 15,
    "modality": "synthesis",
    "headline": "Chassis drift KILLED at the root (the '17' was a stale s14-migrated reference object, not codegen \u2014 floor is 15), and the RA foreclosure upgraded from a depth-3 search NEGATIVE to a two-case proof ove"
+  },
+  {
+   "session": 16,
+   "floor": 15,
+   "modality": "synthesis",
+   "headline": "Foreclosure completed over find_reg's ENTIRE pass-0 input space (the two non-conflict channels, never examined before, are both shut) and the last live-length lever measured flat with a byte-identical"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The RA residual is foreclosed by proof for THIS 68-instruction shape; the only door still theoretically open is a different 68-instruction shape in which the walker's live range does not span the loop.",
-   "mechanism": "Both closure cases depend on the walker allocno being live at every instruction (giving it the lowest priority AND a conflict with every other allocno). A shape that breaks the walker's function-spanning live range invalidates both legs simultaneously \u2014 nothing weaker does.",
-   "next_probe": "Do not spend another session on spelling variants. Any re-opening attempt must FIRST exhibit a candidate 68-instruction shape whose walker web is not loop-spanning (and it must not be the banned base/ff split, nor the s10 index-walk family which lands at 69), then measure it. If no such shape can be written for a single forward stream pointer, the honest disposition is escalation modality."
+   "hypothesis": "The pure-C match is foreclosed, and as of s16 the proof covers find_reg's ENTIRE pass-0 input space rather than one shape \u2014 no register-seat spelling can close the residual.",
+   "mechanism": "Three legs: (a) priority \u2014 the walker cannot out-rank allocno 75 (needs a 4.84x lift, and s16's P1 shows the live-length term is not source-controllable at all); (b) conflicts \u2014 any allocno excluding $3 from 75/76/85 also excludes it from the walker, which is live at every instruction; (c) the two non-conflict channels \u2014 ~regs_used_so_far is saturated ($3 call-used, leaf function) and regs_someone_prefers is structurally empty ($v1 has no copy site in a void leaf with one pointer param) and self-defeating by rank via prune_preferences.",
+   "next_probe": "Do NOT probe another spelling. A future session may re-open this ONLY by falsifying one of the three legs with a measurement \u2014 e.g. by exhibiting a C form whose extracted model (tools/ra_solver/extract.py) shows a non-empty hard_reg_full_preferences containing 3, or a walker livelen that actually differs from 62. Both are checkable in one extract run before any sandbox measurement is spent."
   },
   {
-   "hypothesis": "The absolute floor of this function is only trustworthy when build/src/code6cac_b.o was produced from pristine HEAD.",
-   "mechanism": "sandbox scores against build/src/<stem>.o and never rebuilds it; a prior session's INCLUDE_ASM migration leaves a reference whose jtbl relocations are symbol-relative and therefore unmasked by engine/score.py.",
-   "next_probe": "First action of any future session: `git checkout -- src/code6cac_b.c`, `& tools/wteng.ps1 main build` (expect SHA1 == oracle), then apply candidate.c and sandbox \u2014 expect exactly 15, 68/68. Treat any other number as a stale-reference symptom, not as codegen news."
+   "hypothesis": "The only live question for this function is representation ROUTING, and it is already answered in substance \u2014 owner ruling 5 grants the INCLUDE_ASM/INCLUDE_RODATA migration; only the landing lane is undecided.",
+   "mechanism": "With the migration applied, sandbox returns score 68 / build_insns 0 / no_c_body true, so grind.ps1:561's `score == 0` candidate gate can never pass, and grind.ps1:886 reverts a progress session's src edit. The change itself is oracle-green (s14 full build SHA1 == oracle) and needs no scope grant \u2014 it sits inside the function's own TU.",
+   "next_probe": "Owner/operator action, not a session probe: either (A) commit the two-line migration as `cheat-cleanup: func_800324D0 \u2014 migrate to INCLUDE_ASM, delete 4 register-asm pins (owner ruling 5, 2026-08-30)` after a fresh layer-2 cheat-reviewer plus verify-oracle and check_completion_integrity.py, or (B) extend the driver's candidate gate to accept no_c_body + SHA1 == oracle for owner-granted asm-until-matched migrations. Sessions must not re-attempt it and must not re-file it as an integration handoff."
   },
   {
-   "hypothesis": "The four register-asm pins on main are representation debt that only the operator lane can clear.",
-   "mechanism": "The owner's 2026-08-30 ruling 5 grants the INCLUDE_ASM + INCLUDE_RODATA migration and s14 proved it oracle-green, but the driver has no path that commits a representation-only src change: the candidate gate needs sandbox 0 (impossible for a body with no C) and every other outcome reverts src.",
-   "next_probe": "Operator action, not a session probe: commit the two-line migration as `cheat-cleanup: func_800324D0 \u2014 migrate to INCLUDE_ASM, delete 4 register-asm pins (owner ruling 5, 2026-08-30)` with a fresh layer-2 cheat-reviewer, then re-run verify-oracle and check_completion_integrity.py. Sessions must not re-attempt it or re-file it as an integration handoff."
+   "hypothesis": "Nothing else on this function is worth measuring; re-running the endgame-lock gates or any banked axis is the spinning the pipeline is designed to prevent.",
+   "mechanism": "Floor flat at 15 for thirteen consecutive sessions across seven distinct modalities (recon, structural, permuter, synthesis, forensics, rederive, solver/escalation); both gates measured FAIL twice (scan_hand_coded tier=LOW 0/8; zero SOTN file+line precedent); the rejected bank now holds eleven disproven forms.",
+   "next_probe": "If the item returns to active before the routing question is answered, the correct session action is to re-verify the chassis by the standing procedure (one build + one sandbox), confirm 15/68/68, and spend the remaining turns on the leg-falsification checks in frontier item 1 \u2014 not on new spellings."
   }
  ],
  "judge_constraints": [

@@ -1138,3 +1138,135 @@ docs/grind/decisions.md this session.
 - [s15] The owner-ruling-5 migration is mechanically unlandable from a grind session: with INCLUDE_ASM applied the sandbox returns score 68 / build_insns 0 / no_c_body true (s15/sandbox_include_asm_form.log), so the candidate path's sandbox-0 gate can never pass, and grind.ps1:886 reverts a progress session's src edit. The change is verified correct and oracle-green (s14); it needs the operator lane, not another session.
 
 - [s15] Session left src/code6cac_b.c at HEAD (git status clean for src/); only the ledger files and metrics/events.jsonl are modified.
+
+## [s16] 2026-08-31 — synthesis (brief-session 16; scratch tmp/grind/func_800324D0/s16/)
+
+### Chassis (standing procedure followed to the letter)
+`git checkout -- src/code6cac_b.c` -> `& tools/wteng.ps1 main build`
+(s16/build_head_reference.log: sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
+want, MATCH) -> candidate.c body applied -> `sandbox func_800324D0 --disable
+all`: **score 15, target_insns 68 == build_insns 68, rules_dropped 0**
+(s16/sandbox_candidate_freshref.log). The s15 correction holds; the floor is 15
+and the residual is still the uniform walker<->cmd 2-register swap.
+
+### THE MAIN RESULT — the foreclosure is now COMPLETE over all THREE pass-0
+### exclusion channels, and therefore over every C shape, not just this one
+s15 proved two legs (priority lift impossible; conflict-based `$3` exclusion
+self-defeating because the walker conflicts with everything). Reading
+`tools/gcc-2.7.2/global.c` directly this session shows find_reg's pass-0
+exclusion set is built from EXACTLY three sources — global.c:998-1001:
+
+    IOR_HARD_REG_SET      (used, hard_reg_conflicts[allocno]);   /* leg 1 */
+    IOR_COMPL_HARD_REG_SET(used, regs_used_so_far);              /* leg 2 */
+    IOR_HARD_REG_SET      (used, regs_someone_prefers[allocno]); /* leg 3 */
+
+s15 only ever addressed leg 1. Legs 2 and 3 were an unexamined gap in the proof
+(a non-conflict way to push `$3` away from 75/76/85 would NOT have been covered
+by the "73 conflicts with everything" argument). Both are now closed:
+
+**Leg 2 — `~regs_used_so_far` is saturated and can never exclude `$3`.**
+global.c:363-368 seeds `regs_used_so_far` with every register for which
+`regs_ever_live[i] || call_used_regs[i]`. On MIPS `$v1`/`$3` is call-used, and
+this function is a leaf, so `$3` is in the seed before the first find_reg call.
+Its complement therefore contains only callee-saved registers, and leg 2 can
+exclude `$3` for nobody, in any spelling.
+
+**Leg 3 — the preference channel is structurally EMPTY for `$3`.** Measured, not
+argued: the extracted model (s16/model.json, `tools/ra_solver/extract.py`, which
+harvests the sets through the instrumented cc1's BB2_FINDREG_DEBUG hook) gives
+`full_prefs = {75:[], 76:[], 85:[], 72:[4], 74:[2], 73:[], 91:[], 86:[]}` and
+`copy_prefs = {72:[4], everything else []}`. The only two hard-register
+preferences that exist in this function are `$a0` (the incoming `pad` parameter's
+copy) and `$2`. `$v1` appears in NO copy insn, and cannot: a `void` leaf with one
+pointer parameter and no calls never binds `$v1` under the MIPS ABI, so
+`set_preference` has no site to plant from in ANY C spelling.
+And even hypothetically, prune_preferences (global.c:890-930) makes the channel
+self-defeating: `regs_someone_prefers[X]` merges only the preferences of
+allocnos that (i) CONFLICT with X and (ii) rank strictly LOWER than X in
+allocno_order. To divert 75, 76 and 85 off `$3` an allocno P would need `$3`
+unpruned in its own preferences (i.e. `$3` conflict-free for P) while ranking
+below all three — but then P ranks either ABOVE 73 (order index 3 or 4:
+allocnos 72 and 74), in which case P simply takes `$3` itself before the walker's
+turn, or BELOW 73, in which case `regs_someone_prefers[73]` inherits `$3` as well
+and the walker is excluded too. There is no rank at which leg 3 helps.
+
+**Consequence — the foreclosure generalizes past the 68-insn shape.** The s15
+frontier left one door open: "a different 68-instruction shape in which the
+walker's live range does not span the loop". That door is now closed on
+semantics plus leg 1: the walker is loop-carried by definition (iteration N+1's
+read depends on iteration N's advance), so it is live-in at the loop head and
+live-out on the back edge, hence live at every instruction of the loop body, in
+EVERY C spelling of a single forward stream pointer. 75/76/85 all live inside
+that body, so any allocno E that excludes `$3` from them conflicts with a
+sub-range of the walker's range and therefore conflicts with the walker too.
+Splitting the walker into two webs does not escape: the target holds the walker
+in ONE register (`$v1`) across the whole loop, so every split web would have to
+receive `$3`, which is strictly harder — and the measured instance of that family
+(s10's index-walk) lands at 69 insns, off-shape.
+
+### Probe P1 — the last live-length lever, MEASURED FLAT with an identical model
+Sinking the walker load (`ptr = *(u8 **)(pad + 0x58);`) below the 11 pad stores
+is the only source-level move that could shorten the walker's live range without
+changing the instruction count. Measured: **flat 15, 68 == 68**
+(s16/sandbox_p1.log), and the re-extracted RA model
+(s16/model_p1_identical_to_candidate.json) is BYTE-IDENTICAL to the candidate's:
+same order [75,76,85,72,74,73,91,86], same priorities
+[75000,47272,34285,29838,26666,15483,333,326], same walker livelen 62. cc1
+re-establishes the live range regardless of statement position (the `lw` has no
+dependence on the stores). The live-length term of allocno_compare's priority is
+NOT source-order-controllable for this pointer — which kills the whole
+"raise the walker's priority by shrinking its live range" family, not just this
+spelling. Banked: rejected/walker-load-below-stores.c.
+
+### Honest-axis status after this session
+Every sanctioned axis is measured dead across 7 distinct modalities (recon,
+structural, permuter, synthesis, forensics, rederive, escalation/solver), the
+floor has been flat at 15 for twelve consecutive sessions, and the RA residual is
+foreclosed by a three-leg proof over find_reg's complete pass-0 input space
+rather than by any bounded search. Both endgame-lock gates still FAIL
+(scan_hand_coded tier=LOW 0/8 at s12 and s13; zero SOTN-master file+line
+precedent for any closing construct — checked against
+docs/reference/sotn-construct-index.md in s12). The representation question is
+already ANSWERED by the owner (ruling 5, decisions.md:14829), executed and
+oracle-verified in s14; s15 measured that no grind session can land it.
+
+### Session close
+src/code6cac_b.c carries candidate.c verbatim at close (it will be reverted by
+the driver's non-candidate path — that is expected and correct; candidate.c is
+the durable copy). No build-input file outside src/code6cac_b.c was touched.
+
+- [s16] Chassis re-verified by the standing procedure: pristine checkout -> build (SHA1 == oracle, MATCH) -> candidate applied -> sandbox 15, 68 == 68, rules_dropped 0.
+
+- [s16] find_reg's pass-0 exclusion set has EXACTLY three sources (tools/gcc-2.7.2/global.c:998-1001): hard_reg_conflicts, the complement of regs_used_so_far, and regs_someone_prefers. Every prior foreclosure argument in this ledger addressed only the first.
+
+- [s16] Leg 2 is saturated: global.c:363-368 seeds regs_used_so_far with every reg satisfying regs_ever_live[i] || call_used_regs[i]; $v1/$3 is call-used on MIPS and this is a leaf, so $3 is in the seed and the complement (callee-saved only) can never exclude it for anyone.
+
+- [s16] Leg 3 is empty by measurement: full_prefs = {75:[],76:[],85:[],72:[4],74:[2],73:[],91:[],86:[]}, copy_prefs = {72:[4], rest []} (tmp/grind/func_800324D0/s16/model.json). The only hard-register preferences in this function are $a0 (the pad parameter) and $2; $v1 occurs in no copy insn and cannot in a void leaf with one pointer param and no calls, so set_preference has no planting site in any C spelling.
+
+- [s16] Leg 3 is also self-defeating by construction: prune_preferences (global.c:890-930) merges into regs_someone_prefers[X] only the preferences of allocnos that conflict with X AND rank lower than X. A $3-preferring allocno ranked above 73 consumes $3 before the walker's turn; one ranked below 73 poisons regs_someone_prefers[73] as well. No rank helps.
+
+- [s16] The s15 open door ('a 68-insn shape whose walker web is not loop-spanning') is closed on semantics: a forward stream pointer is loop-carried, hence live at every instruction of the loop body in every C spelling, hence conflicts with 75/76/85 wherever they live. Splitting the walker into multiple webs makes it harder (each web would need $3), and the measured instance of that family (s10 index-walk) is off-shape at 69 insns.
+
+- [s16] PROBE P1 (walker load sunk below the 11 pad stores) is FLAT 15, 68 == 68, and its re-extracted RA model is byte-identical to the candidate's (same order, same priorities, same walker livelen 62). Statement position cannot shorten this pointer's live range; the live-length term of the priority formula is not source-controllable here. Banked as rejected/walker-load-below-stores.c.
+
+- [s16] Chassis re-verified by the standing procedure: pristine checkout -> build (SHA1 == oracle, MATCH) -> candidate.c applied -> sandbox 15, 68 == 68, rules_dropped 0. The floor is 15; the s14 '17' remains a retired measurement artifact.
+
+- [s16] find_reg's pass-0 exclusion set has EXACTLY three sources (tools/gcc-2.7.2/global.c:998-1001): hard_reg_conflicts, the complement of regs_used_so_far, and regs_someone_prefers. Every foreclosure argument in this ledger before s16 addressed only the first — this session found and closed that gap rather than restating the existing legs.
+
+- [s16] Leg 2 is saturated and inert: global.c:363-368 seeds regs_used_so_far with every register satisfying regs_ever_live[i] || call_used_regs[i]; $v1/$3 is call-used on MIPS and func_800324D0 is a leaf, so $3 is in the seed before the first find_reg call and the complement (callee-saved only) can never exclude it for any allocno in any spelling.
+
+- [s16] Leg 3 is empty by measurement: full_prefs = {75:[],76:[],85:[],72:[4],74:[2],73:[],91:[],86:[]} and copy_prefs = {72:[4], rest []} (tmp/grind/func_800324D0/s16/model.json, harvested through the instrumented cc1's BB2_FINDREG_DEBUG hook). The only hard-register preferences in the function are $a0 (the pad parameter) and $2; $v1 occurs in no copy insn and cannot in a void leaf with one pointer param and no calls, so set_preference has no planting site.
+
+- [s16] Leg 3 is also self-defeating by construction: prune_preferences (global.c:890-930) merges into regs_someone_prefers[X] only preferences of allocnos that CONFLICT with X and rank strictly LOWER than X. A $3-preferring allocno ranked above 73 consumes $3 before the walker's turn; one ranked below 73 poisons regs_someone_prefers[73] as well. There is no rank at which the channel helps.
+
+- [s16] The s15 open door ('a 68-insn shape whose walker web is not loop-spanning') is closed on semantics: a forward stream pointer is loop-carried, hence live at every instruction of the loop body in every C spelling, hence conflicts with 75/76/85 wherever they live. Splitting the walker into several webs is harder, not easier (each web would need $3), and the measured instance of that family (s10's index-walk) is off-shape at 69 insns.
+
+- [s16] PROBE P1 (walker load sunk below the 11 pad stores) is FLAT 15, 68 == 68, and its re-extracted RA model is byte-identical to the candidate's — same allocation order, same priorities, same walker livelen 62. Statement position cannot shorten this pointer's live range, so the live-length term of the priority formula is not source-controllable here. Banked as memory/grind/func_800324D0/rejected/walker-load-below-stores.c.
+
+- [s16] The residual is unchanged in character since s4: a pure $v1 <-> $a2 rename, 15 substituted operands, zero insertions, zero deletions, zero reorderings.
+
+- [s16] Both endgame-lock gates still FAIL and were deliberately NOT re-run (the brief's anti-spinning rule): scan_hand_coded --single func_800324D0 tier=LOW score=0/8 (s12 and s13 logs), and zero SOTN-master file+line precedent for any closing construct (s12, checked against docs/reference/sotn-construct-index.md).
+
+- [s16] Decision packet filed THIS session at docs/grind/decisions.md:16729 — a ROUTING question only (who lands the already-GRANTED owner-ruling-5 migration, given s15's measurement that grind.ps1:561's score==0 gate can never pass for a no_c_body body and grind.ps1:886 reverts a progress session's src edit). It explicitly claims no bytes-proven pure C, requests no family grant or evidence-bar override, contains no accept-the-debt wording, and is not a re-filing of the integration-handoff entry that drew the 2026-08-31 Judge FAIL.
+
+- [s16] Session left src/code6cac_b.c carrying candidate.c verbatim (the driver's non-candidate path reverts it, which is expected); no build input outside src/code6cac_b.c was touched, and nothing was committed.

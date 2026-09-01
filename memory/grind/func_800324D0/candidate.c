@@ -1,3 +1,14 @@
+/* [s16 2026-08-31] RE-VERIFIED UNCHANGED on a fresh reference: pristine
+ * checkout -> build (SHA1 == oracle) -> this body -> sandbox --disable all =
+ * 15, 68 == 68, rules_dropped 0 (tmp/grind/func_800324D0/s16/
+ * sandbox_candidate_freshref.log). s16 closed the foreclosure over find_reg's
+ * COMPLETE pass-0 input space (global.c:998-1001): conflicts (s15), plus the
+ * two non-conflict channels - ~regs_used_so_far is saturated ($3 is call-used,
+ * leaf fn, global.c:363-368) and regs_someone_prefers is measured EMPTY for
+ * every allocno that matters (s16/model.json) because $v1 has no copy site in a
+ * void leaf with one pointer param, and is self-defeating by rank via
+ * prune_preferences even if it were not. Do not spend another session on a
+ * register-seat spelling; see hypotheses.md H38/H39 and the s17+ frontier. */
 /* [s15 2026-08-31] CHASSIS CORRECTED - THE FLOOR IS 15, NOT 17. The s14 "+2
  * drift" was a MEASUREMENT ARTIFACT with a fully identified cause, not codegen:
  * `sandbox` scores against the REFERENCE object build/src/code6cac_b.o, and s14
