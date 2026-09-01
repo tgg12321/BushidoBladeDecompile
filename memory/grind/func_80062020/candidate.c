@@ -34,6 +34,14 @@
  * LO_SUM lui/addu/sw triple - 35 build insns against a 38-insn target, residual 4. It is
  * clean pure C: 0 rules, 0 pins, 0 volatile, 0 dead vars, one uniform tree shape for all
  * three terminator stores, no construct that any reviewer has objected to across s1-s11.
+ *
+ * RE-MEASURED (grind s12, 2026-09-01, live chassis, this body pasted over the INCLUDE_ASM
+ * at src/text1b.c:3932 and then restored): sandbox func_80062020 --disable all -> score 4,
+ * build_insns 35, target_insns 38, rules_dropped 0. Fifth consecutive session at floor 4, no
+ * chassis drift. s12 executed the owner's 2026-09-01 Ruling-A named probe (cse2's code-free
+ * skip/abandon gates) and KILLED it on six grounds; func_80062020 is FORECLOSED by the
+ * 2026-07-27 standing ruling (docs/grind/decisions.md, 2026-09-01 entry). This remains the
+ * best admissible form.
  */
 void func_80062020(s32 *arg0) {
     s32 i;

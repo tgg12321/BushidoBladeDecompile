@@ -18998,3 +18998,121 @@ probes f1a-f1f / f2a-f2d, the two Ruling-D probes rd1/rd2, f1a.qty.txt, scan_han
 gate_b_census.txt); prior records decisions.md:15629 (2026-08-30 CD_ready), decisions.md:18279
 (2026-09-01 CD_sync, the sibling Ruling-D execution), decisions.md:10722 (the g_stage_id prong-(c)
 precedent), Ruling A at decisions.md:17795 and Ruling D at decisions.md:17843.
+
+## 2026-09-01 — func_80062020 (src/text1b.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Proof-of-foreclosure record filed by grind session s12 (escalation modality) after executing
+the owner's 2026-09-01 FORECLOSED-BUCKET REVIEW **Ruling A** named probe to completion. This is
+a record, not a question: nothing is addressed to the owner and nothing waits on one
+(owner rulings 2026-08-18 `judge-sole-gate`, 2026-08-31 `ordinary-c-judge-decidable`).
+
+### The Ruling-A named probe — EXECUTED AND KILLED
+
+The reopen ground was that the 2026-08-31 foreclosure's exhaustion quantifier was scoped to CFG
+breaks only, while the ledger's own s8 next-probe item (ii) — cse2's **code-free** internal
+skip/abandon conditions (`tools/gcc-2.7.2/cse.c:8330` nsets/QImode skip; `cse.c:8550` max_qty
+abandon) as a **non-CFG** route to the target's DISP8|DISP4|LO_SUM epilogue — had never been
+measured. It has now been measured, on the live chassis, and it is dead on six independent
+grounds:
+
+1. **Block census.** cse2 processes this function as three top-level blocks —
+   `;; Processing block from 2 to 30, 8 sets.` / `from 32 to 90, 12 sets.` / `from 93 to 0,
+   8 sets.` (uniform-pointer pole) resp. `6 sets` (uniform-symbol pole). The epilogue is
+   **already** its own top-level cse2 block, entered via `new_basic_block()` with fresh qty
+   tables. Dump: `tmp/grind/func_80062020/dumps/text1b.cse2`, excerpt banked at
+   `tmp/grind/func_80062020/s12/cse2_uniform_symbol_pole.txt`.
+2. **`nsets == 0` is unreachable.** `cse_end_of_basic_block` does `nsets += 1` for every
+   **non-NOTE insn** (cse.c:8070-8071), not per SET pattern. nsets==0 means a block with zero
+   real insns; measured 6-8. A three-store terminator epilogue cannot have zero insns.
+3. **The QImode skip is not code-free — it is a CFG route.** Both `PUT_MODE (NEXT_INSN (p),
+   QImode)` sites (cse.c:8147, cse.c:8182) sit inside the arm
+   `(follow_jumps || skip_blocks) && GET_CODE (p) == JUMP_INSN && GET_CODE (PATTERN (p)) == SET
+   && GET_CODE (SET_SRC (PATTERN (p))) == IF_THEN_ELSE`. It requires a surviving conditional
+   jump — exactly the CFG break already measured dead across s8's seven code-free shapes and
+   s9's ten whole-function shapes. And a QImode-marked block has already been cse'd as part of
+   the extended path, so the mark suppresses *re-processing*, never the fold.
+4. **The max_qty abandon is quantitatively unreachable and structurally misdirected.**
+   `max_qty = val.nsets * 2`, floored to 500, then `max_qty += max_reg` (cse.c:8340-8352), so
+   the abandon test `val.nsets * 2 + next_qty > max_qty` (cse.c:8550) needs roughly **250+
+   additional insns in the following block**; measured blocks carry 6-12. Independently, that
+   test guards only an **extension past a CODE_LABEL** into a following block — and the
+   epilogue is already its own top-level block, so an extension-abandon cannot reach it.
+5. **There is nothing in the epilogue block for cse2 to skip.** Uniform-SYMBOL pole after cse2:
+   insns 103/108/113 are still `(set (mem:SI (plus:SI (reg/v:SI 74) (symbol_ref:SI
+   ("D_800F11A0" / "D_800F119C" / "D_800F1198")))) (const_int 0))` — cse2 performs **no**
+   unification on that block; the all-LO_SUM output is emitted downstream by combine.
+   Uniform-POINTER pole after cse2: insns 106/109/112 are `(mem (plus (reg 76) 8))`,
+   `(mem (plus (reg 76) 4))`, `(mem (reg 76))` — no symbol_ref remains for cse2 to leave
+   behind. Suppressing cse2 on this block changes neither pole. (This also sharpens the s8
+   attribution: cse2 is the decider only for the *mixed, banned* spelling's col-a chain.)
+6. **Granularity proof.** Both named gates are **block-granular and all-or-nothing** (skip the
+   whole block, or truncate an extension at a block boundary). The target arrangement requires
+   a **within-block 2-of-3 partition** — two stores through a materialized base register, one
+   through LO_SUM, with no label between them. A block-granular gate cannot express a
+   within-block partition, so no setting of either gate can produce the target epilogue.
+
+### Gate evidence
+
+- **Gate (a) — canonical-asm: FAILS.** `python3 tools/scan_hand_coded.py --single func_80062020`
+  re-run this session gives **tier LOW, score 0/8** (38 insns), no S1-S8 signal
+  (`tmp/grind/func_80062020/s12/scan_hand_coded.txt`). Fifth independent re-run (s2, s4, s10,
+  s11, s12) with the same result.
+- **Gate (b) — SOTN-master precedent for the closing construct: FAILS, and is already
+  adjudicated.** A generic alias+direct dual-spelling precedent does exist and is cited on the
+  record (SOTN master `db41b28`: `src/st/lib/e_lock_camera.c:20` with direct writes at lines
+  50-51 and aliased writes at lines 75/91, PSX membership `config/splat.us.*.yaml`;
+  `src/st/cen/e_chamber.c:56` with direct `g_Tilemap.height` at line 240 and aliased at line
+  201). That precedent was carried to a full merits adjudication under owner ruling 6a
+  (docs/grind/decisions.md:14836) and the adjudication **ran to completion and FAILED**: Judge
+  2026-08-31 22:25 FAIL, comments corrected, layer-1 cheat-reviewer 2026-08-31 22:31 FAIL **on
+  the merits** (the exact construct already FAILed by two prior Judges; deleting the
+  incriminating comments does not change what the code does). The same-lvalue dual-spelling
+  addressing-mode steer is a mechanically-enforced entry in
+  `memory/grind/func_80062020/state.json` `banned_constructs`, and the 2026-09-01 reopen note
+  expressly kept all bans in force. The precedent therefore does not supply an **admissible**
+  closing construct for this function.
+
+Both gates fail. Per the owner's standing ruling of 2026-07-27
+(`.claude/rules/endgame-lock-disposition.md`), func_80062020 is **FORECLOSED** as a
+fidelity-limited lock at honest pure-C floor **4**, represented on main as
+`INCLUDE_ASM("asm/funcs", func_80062020);` at src/text1b.c:3932.
+
+### Exhaustion
+
+Floor flat at 4 for eleven consecutive sessions across seven distinct modalities: s1 recon
+(floor 10, residual isolated to the 3-store terminator epilogue), s2 structural (10 to 4),
+s3 structural (CSE-defeat KILLED), s4 permuter (2 fresh-seed basins, ~46k iterations, KILLED),
+s5 synthesis (aggregate/tree-shape KILLED across 5 measured classes), s6 synthesis
+(uniform-spelling space closed by proof, 7 tree-node classes), s7 forensics (two-shape prong 2
+FALSIFIED, pass re-attributed), s8 forensics (deciding pass pinned to cse2; 7 code-free CFG
+shapes measured), s9 rederive (10 whole-function shapes; both uniform poles scored — 4 at 35
+insns and 6 at 39 insns against a 38-insn target), s10/s11 escalation (merits adjudication run
+to completion and FAILed; construct banned), s12 escalation (this record — Ruling-A named probe
+killed on six grounds). 20 rejected forms banked under `memory/grind/func_80062020/rejected/`.
+Floor re-measured **4** this session on the live chassis (score 4, target_insns 38,
+build_insns 35, rules_dropped 0).
+
+Evidence pointers: `memory/grind/func_80062020/evidence.md` (s12 block),
+`memory/grind/func_80062020/hypotheses.md` (the [s12] entry),
+`tmp/grind/func_80062020/s12/` (cse2 dump excerpt, cse.c source excerpts, scan output),
+`memory/grind/func_80062020/candidate.c` (the clean floor-4 body: 0 rules, 0 pins, 0 volatile,
+0 dead vars, one uniform tree shape for all three terminator stores).
+
+### Re-activation triggers
+
+1. **A spelling found on a simpler member of the 32-function species.**
+   `tmp/grind/func_80062020/s9/scan4.py` identified 32 functions in SLUS-00663 exhibiting the
+   identical same-symbol dual-address-form arrangement (func_80061064, func_80045294,
+   func_80057CC8, CD_cw, SpuSetReverbModeParam, and others); none is matched in pure C. Any
+   admissible spelling that closes one of them transfers back here at zero cost.
+2. **An owner class grant covering the same-symbol dual-address-form residual.** The construct
+   is byte-proven (distance 0 + full-build oracle SHA1) and its generic shape is exhibited in
+   shipped SOTN PSX/GCC-2.7.2 code; the only barrier is that the frozen family list does not
+   cover it and extending that list is owner-only. If the owner ever extends it, resubmit
+   `memory/grind/func_80062020/rejected/layer1-fail-0831-2231.c` unchanged.
+3. **A toolchain-fidelity finding that changes combine's handling of the LO_SUM chain.** s12
+   moved the attribution for both UNIFORM poles off cse2 (a no-op on this block) and onto
+   combine (toplev.c:3004), which folds each surviving `(mem (plus reg symbol_ref))` into the
+   lui/addu/`%lo` triple. Any project-wide finding about cc1 2.7.2 combine divergence on
+   `(plus reg symbol_ref)` addresses should re-check this residual against the s9/s12 pole
+   measurements (35 / 39 against a 38-insn target).

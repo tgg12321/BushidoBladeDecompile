@@ -1,7 +1,7 @@
 {
  "func": "func_80062020",
  "file": "text1b",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -75,6 +75,12 @@
    "floor": 4,
    "modality": "escalation",
    "headline": "Disposition: the owner-ordered merits adjudication ran to completion and FAILED (Judge 22:25 + layer-1 22:31 on the merits, construct re-banned), gate (a) canonical-asm LOW 0/8, gate (b) precedent spe"
+  },
+  {
+   "session": 12,
+   "floor": 4,
+   "modality": "escalation",
+   "headline": "Ruling-A named probe EXECUTED and KILLED on six grounds (cse2's nsets/QImode skip and max_qty abandon are block-granular, QImode needs a conditional jump, max_qty needs ~250+ insns, and cse2 is a no-o"
   }
  ],
  "frontier": [
@@ -85,13 +91,13 @@
   },
   {
    "hypothesis": "An owner class grant covering the same-symbol dual-address-form residual would close func_80062020 and 31 siblings in one act.",
-   "mechanism": "The construct is byte-proven (distance 0 + full-build oracle SHA1) and its shape is exhibited in shipped SOTN PSX/GCC-2.7.2 code; the only barrier is that the frozen family list does not cover it and extending that list is owner-only.",
-   "next_probe": "No grind action. If the owner ever extends the frozen list to this shape, unpark func_80062020 and resubmit the body banked at memory/grind/func_80062020/rejected/layer1-fail-0831-2231.c unchanged \u2014 it already measures distance 0 with SHA1 == oracle."
+   "mechanism": "The construct is byte-proven (distance 0 + full-build oracle SHA1) and its generic shape is exhibited in shipped SOTN PSX/GCC-2.7.2 code; the only barrier is that the frozen family list does not cover it and extending that list is owner-only. Two Judges and two layer-1 reviews have FAILed it on the merits under the current list.",
+   "next_probe": "No grind action. If the owner ever extends the frozen list to this shape, unpark func_80062020 and resubmit memory/grind/func_80062020/rejected/layer1-fail-0831-2231.c unchanged - it already measures distance 0 with SHA1 == oracle."
   },
   {
-   "hypothesis": "A toolchain-fidelity finding that changes cse2/combine handling of the LO_SUM chain would make the target arrangement reachable from a uniform spelling.",
-   "mechanism": "s8 attributed the deciding choice to cse2 (-frerun-cse-after-loop) from dumps; cse2 resets its value table only at a label with a live jump reference (cse.c:8517 + 8433), and combine folds the surviving single-use symbolic chain into sw $0,%lo(sym)($at) at toplev.c:3004.",
-   "next_probe": "No grind action here. Any project-wide finding about cc1 2.7.2 cse2/combine divergence should re-check this function's residual against the s9 pole measurements (35/39 vs 38)."
+   "hypothesis": "A toolchain-fidelity finding about COMBINE (not cse2) handling of `(mem (plus reg symbol_ref))` would make the target arrangement reachable from a uniform spelling.",
+   "mechanism": "s12 measured cse2 to be a no-op on the epilogue block in both uniform poles, so the all-LO_SUM pole is produced by combine at toplev.c:3004 folding each surviving `(mem (plus reg symbol_ref))` into a lui/addu/%lo triple, and the all-DISP pole never contains a symbol_ref at all. The residual therefore lives in combine's per-insn address folding, not in any cse2 block gate.",
+   "next_probe": "No grind action here. Any project-wide finding about cc1 2.7.2 combine divergence on `(plus reg symbol_ref)` addresses should re-check this function's residual against the s9/s12 pole measurements (35 / 39 vs target 38)."
   }
  ],
  "judge_constraints": [

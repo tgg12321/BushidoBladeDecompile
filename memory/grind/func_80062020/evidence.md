@@ -1074,3 +1074,54 @@ ever reversed — it is superseded, not disproven.
 - [s11] candidate.c restored per the layer-1 next-action to the clean floor-4 uniform row-pointer epilogue, with an s11 migration banner recording that it was applied to src ONLY for the re-measurement and that src/text1b.c is back at HEAD (INCLUDE_ASM at :3932). The two adjudicated distance-0 bodies remain banked at rejected/judge-fail-0831-2224.c and rejected/layer1-fail-0831-2231.c.
 
 - [s11] Disposition filed this session at docs/grind/decisions.md:17017 as a proof-of-foreclosure RECORD (no family grant, no evidence-bar override, no debt acceptance, nothing addressed to the owner).
+
+## s12 (2026-09-01, escalation modality — owner Ruling-A named probe)
+
+- **Floor re-measured on the live chassis: 4.** `sandbox func_80062020 --disable all` with
+  `memory/grind/func_80062020/candidate.c` pasted over the `INCLUDE_ASM` at src/text1b.c:3932
+  → `score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 166`
+  (all 166 from other functions in text1b.c). Identical to s8/s9/s10/s11 — the chassis has
+  been stable for five sessions and every banked chassis-relative conclusion remains spendable.
+  src/text1b.c was restored to HEAD byte-for-byte afterwards (`tmp/grind/func_80062020/s12/text1b.c.HEAD`).
+- **Uniform-symbol pole re-measured: score 6 / 39 insns** (`rejected/epilogue-uniform-allosum-score6-s9.c`
+  applied), reproducing s9 exactly. Both poles (35 / 39) still straddle the 38-insn target.
+- **cse2 block census for this function** (from `tmp/grind/func_80062020/dumps/text1b.cse2`,
+  banked as `tmp/grind/func_80062020/s12/cse2_uniform_symbol_pole.txt`): three top-level
+  blocks — `2..30, 8 sets` (prologue+guard), `32..90, 12 sets` (loop), `93..end, 8 sets`
+  (epilogue, pointer pole) / `6 sets` (epilogue, symbol pole). The epilogue is already its
+  own top-level cse2 block entered via `new_basic_block()`.
+- **cse2 does NOT unify the epilogue in either pole.** Uniform-symbol pole after cse2:
+  insns 103/108/113 are still `(set (mem:SI (plus:SI (reg/v:SI 74) (symbol_ref:SI ("D_800F11A0"
+  / "D_800F119C" / "D_800F1198")))) (const_int 0))`. Uniform-pointer pole after cse2:
+  insns 106/109/112 are `(mem (plus (reg 76) 8))`, `(mem (plus (reg 76) 4))`, `(mem (reg 76))`.
+  The LO_SUM triples in the symbol pole are emitted downstream by combine, not by cse2 declining
+  to fold. This narrows the s8 attribution: cse2 is the decider only for the *mixed* (banned)
+  spelling's col-a chain; for both UNIFORM poles cse2 is a no-op on the epilogue block.
+- **cse.c gate arithmetic, read at source** (excerpts banked as
+  `tmp/grind/func_80062020/s12/cse_c_8320_8360_maxqty.txt` and `..._nsets_and_qimode_sites.txt`):
+  `nsets += 1` per non-NOTE insn (cse.c:8070); `max_qty = val.nsets*2`, floored to 500, then
+  `+= max_reg` (cse.c:8340-8352); abandon test `val.nsets*2 + next_qty > max_qty` (cse.c:8550)
+  guards only an extension past a CODE_LABEL; both `PUT_MODE (NEXT_INSN (p), QImode)` sites
+  (cse.c:8147, 8182) are inside the `(follow_jumps || skip_blocks) && JUMP_INSN && IF_THEN_ELSE`
+  arm, i.e. they require a surviving conditional branch.
+- **Gate (a) re-run on the live chassis:** `python3 tools/scan_hand_coded.py --single func_80062020`
+  → `tier=LOW score=0/8 (38 insns)`, no S1-S8 signal (`tmp/grind/func_80062020/s12/scan_hand_coded.txt`).
+  Fifth independent re-run (s2, s4, s10, s11, s12 all LOW 0/8).
+
+- [s12] Floor re-measured 4 on the live chassis this session (score 4, target_insns 38, build_insns 35, rules_dropped 0) with memory/grind/func_80062020/candidate.c pasted over the INCLUDE_ASM at src/text1b.c:3932; src/text1b.c was restored to HEAD byte-for-byte afterwards (git status clean for src/).
+
+- [s12] The uniform-symbol pole reproduces at score 6 / 39 insns, so both poles still straddle the 38-insn target exactly as s9 measured (35 and 39).
+
+- [s12] cse2 block census for func_80062020: three top-level blocks, `;; Processing block from 2 to 30, 8 sets.` / `from 32 to 90, 12 sets.` / `from 93 to 0, 8 sets.` (pointer pole) resp. `6 sets` (symbol pole). The epilogue is already its own top-level cse2 block entered through new_basic_block() with fresh qty tables, so no block-boundary manipulation can change how it is entered.
+
+- [s12] cse2 performs NO unification on the epilogue block in either uniform pole. Post-cse2 RTL, symbol pole: insns 103/108/113 remain `(mem:SI (plus:SI (reg/v:SI 74) (symbol_ref:SI ...)))` stores of const 0. Pointer pole: insns 106/109/112 are `(mem (plus (reg 76) 8))`, `(mem (plus (reg 76) 4))`, `(mem (reg 76))`. This RE-ATTRIBUTES the uniform-pole behaviour off cse2 (the s8 attribution holds only for the mixed, banned spelling's col-a chain) and onto combine (toplev.c:3004).
+
+- [s12] cse.c gate arithmetic read at source: `nsets += 1` per non-NOTE insn (cse.c:8070-8071); `max_qty = val.nsets * 2`, floored to 500, then `+= max_reg` (cse.c:8340-8352); the abandon test `val.nsets*2 + next_qty > max_qty` (cse.c:8550) guards only an extension past a CODE_LABEL; both `PUT_MODE (NEXT_INSN (p), QImode)` sites (cse.c:8147, 8182) are inside the `(follow_jumps || skip_blocks) && JUMP_INSN && IF_THEN_ELSE` arm and therefore require a surviving conditional branch.
+
+- [s12] Gate (a) canonical-asm FAILS: scan_hand_coded --single func_80062020 = tier LOW, 0/8, 38 insns, no S1-S8 signal (fifth re-run).
+
+- [s12] Gate (b) SOTN precedent FAILS as an admissible closing construct: the generic alias+direct dual-spelling precedent (SOTN master db41b28, src/st/lib/e_lock_camera.c:20 with direct writes at 50-51 and aliased writes at 75/91; src/st/cen/e_chamber.c:56 with direct g_Tilemap.height at 240 and aliased at 201) was carried to a full merits adjudication under owner ruling 6a and FAILED - Judge 2026-08-31 22:25 FAIL, comments corrected, layer-1 2026-08-31 22:31 FAIL on the merits - and the construct is a mechanically-enforced banned_constructs entry that the 2026-09-01 reopen note expressly kept in force.
+
+- [s12] FORECLOSED record filed this session at docs/grind/decisions.md:19002 ('2026-09-01 - func_80062020 - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED'), carrying both gates' evidence, the six-ground kill of the Ruling-A probe, the exhaustion tally (11 sessions, 7 modalities, ~46k permuter iterations, 20 rejected forms) and three re-activation triggers.
+
+- [s12] No src/ edits remain: the session's only tracked changes are docs/grind/decisions.md, memory/grind/func_80062020/evidence.md and memory/grind/func_80062020/hypotheses.md (plus the engine's own metrics/events.jsonl appends).
