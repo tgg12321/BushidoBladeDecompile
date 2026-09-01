@@ -1270,3 +1270,57 @@ the durable copy). No build-input file outside src/code6cac_b.c was touched.
 - [s16] Decision packet filed THIS session at docs/grind/decisions.md:16729 — a ROUTING question only (who lands the already-GRANTED owner-ruling-5 migration, given s15's measurement that grind.ps1:561's score==0 gate can never pass for a no_c_body body and grind.ps1:886 reverts a progress session's src edit). It explicitly claims no bytes-proven pure C, requests no family grant or evidence-bar override, contains no accept-the-debt wording, and is not a re-filing of the integration-handoff entry that drew the 2026-08-31 Judge FAIL.
 
 - [s16] Session left src/code6cac_b.c carrying candidate.c verbatim (the driver's non-candidate path reverts it, which is expected); no build input outside src/code6cac_b.c was touched, and nothing was committed.
+
+## [s17] 2026-08-31 — synthesis (merged-attack pass + disposition). Scratch: tmp/grind/func_800324D0/s17/
+
+Session 17 was dispatched in `synthesis` modality with the driver's chassis check reading
+"measurement unavailable", an owner directive to route the ruling-5 migration, and a standing Judge
+constraint forbidding the integration-handoff framing. Three things were established, all by
+measurement on today's HEAD (b94a65de):
+
+1. **Chassis: floor 15, 68 == 68, rules_dropped 0** — fourteenth consecutive flat session, eighth
+   distinct modality. Measured by the s15 standing procedure (pristine checkout -> full build, SHA1
+   MATCH -> apply candidate.c -> sandbox): s17/build_head_reference.log,
+   s17/sandbox_candidate_freshref.log. Every chassis-relative kill banked in s1-s16 is current.
+2. **The owner-granted INCLUDE_ASM migration is still oracle-green** — re-measured rather than
+   inherited from s14, because main has advanced five commits since. Full build with the migration
+   applied gives sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH
+   (s17/build_sha1_migrated.log); the exact diff is banked at s17/migration.diff. It remains
+   unlandable from any grind session (no_c_body => sandbox 68 => the candidate gate at grind.ps1:561
+   can never pass; every other path reverts src at grind.ps1:886). The reference object was rebuilt
+   from pristine HEAD afterwards (s17/build_reference_restored.log) so the next session cannot
+   inherit the stale-reference artifact that produced the phantom "17" in s14.
+3. **The merged attack is empty.** Reading the whole ledger together adds exactly one new closure
+   argument rather than a new lever: the walker's seat cannot be decided by any pass other than
+   global alloc (it is loop-carried, hence an allocno and never a local-alloc quantity, and the
+   ra_solver forward model already reproduces all 8 dispositions exactly), and s16's leg-3
+   emptiness is an ABI/prototype fact — a `void` leaf with one pointer parameter and no calls can
+   never contain a copy insn binding $v1, so `set_preference` has nothing to plant no matter how the
+   body is spelled. The three foreclosure legs (priority / conflicts / non-conflict channels) are
+   jointly exhaustive over source-controllable inputs.
+
+**Disposition filed this session:** docs/grind/decisions.md:17155 —
+`OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED`. It supersedes the two
+retired-shape DECISION PACKET entries (:14092, :16729) and the INTEGRATION HANDOFF entry (:16655)
+that drew a Judge FAIL (:16725), and it carries the gate evidence, the three-leg closure, the
+operator steps for the ruling-5 migration, and the three re-activation triggers. Nothing about this
+function is pending an owner decision; the one piece of real-world work left is an operator commit of
+a banked, byte-verified two-line diff.
+
+- [s17] Chassis re-measured this session on HEAD b94a65de by the s15 standing procedure: floor 15, target_insns 68 == build_insns 68, rules_dropped 0 (tmp/grind/func_800324D0/s17/sandbox_candidate_freshref.log), with the reference build SHA1 == oracle (s17/build_head_reference.log). Fourteenth consecutive flat session; eight distinct modalities have now run.
+
+- [s17] The owner-ruling-5 migration (INCLUDE_ASM("asm/funcs", func_800324D0); + INCLUDE_RODATA("asm/rodata", jtbl_800105A0); replacing the four-pin body) builds sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH on today's HEAD — re-verified, not inherited (s17/build_sha1_migrated.log). Exact diff banked at s17/migration.diff.
+
+- [s17] The migration is mechanically unlandable by any grind session: an INCLUDE_ASM body makes sandbox report score 68 / build_insns 0 / no_c_body true, so Invoke-CandidatePath's score==0 gate (grind.ps1:561) can never pass, and every non-candidate disposition ends in Revert-SessionEdits (grind.ps1:886). It is not an integration handoff either — that path requires sandbox == 0 per .claude/rules/integration-handoff-self-serve.md, and the framing already drew a Judge FAIL (docs/grind/decisions.md:16725). It is a gate-shape mismatch, not a scope problem.
+
+- [s17] New closure argument (s17): the s16 leg-3 'regs_someone_prefers is empty' result is a prototype fact rather than a measurement artifact — set_preference requires a copy insn between a pseudo and a hard register, and a void leaf with one pointer parameter and no calls never binds $v1 under the MIPS ABI, so no C spelling can create the site. Combined with the priority leg (4.84x lift needed; live-length term proven not source-order-controllable by s16's P1) and the conflict leg (the loop-carried walker conflicts with every allocno), the foreclosure is closed over find_reg's complete pass-0 input space.
+
+- [s17] Pass attribution checked, not guessed: the walker spans basic blocks, so it is a global allocno and never a local-alloc quantity, and tools/ra_solver's forward model reproduces all 8 real dispositions — the seat is decided in global alloc and nowhere else.
+
+- [s17] Both endgame-lock AND-gates remain FAILED and were deliberately not re-run: scan_hand_coded --single func_800324D0 = tier LOW, score 0/8 (s12, s13 logs), and zero SOTN-master file+line precedent for any closing construct (s12 census against docs/reference/sotn-construct-index.md). The only measured closing construct is the invented overlapping base/ff local pair, which is a BANNED construct for this function and an auto-reject class.
+
+- [s17] Reference hygiene: after the migration build the reference object was rebuilt from pristine HEAD (s17/build_reference_restored.log, SHA1 MATCH), so the next session cannot inherit the stale-reference artifact that produced the phantom floor of 17 in s14. Working tree left clean of src/include edits.
+
+- [s17] Disposition filed this session at docs/grind/decisions.md:17155 — 'OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED' — superseding the two retired-shape DECISION PACKET entries (:14092, :16729) and the INTEGRATION HANDOFF entry (:16655). It records the gate evidence, the three-leg closure, the exact operator steps for the granted migration, and three re-activation triggers. Main still carries the four register pins at src/code6cac_b.c:1802 until the operator lands that commit — the one debt the foreclosure does not clear.
+
+- [s17] MECHANICAL NOTE for the next session: `python tools/grinder/grindlib.py validate . <outcome> synthesis func_800324D0` REJECTS an owner-gated outcome whose escalation_ref contains 'RESOLVED BY STANDING RULING' outside `escalation` modality (grindlib.py:569) — exhaustion is the driver's call. The foreclosure record is already filed at docs/grind/decisions.md:17155, so the FIRST session dispatched in `escalation` modality can return owner-gated citing it verbatim on turn one, with no new measurement required.

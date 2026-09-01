@@ -853,3 +853,72 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - probe: `git checkout -- src/code6cac_b.c` -> `& tools/wteng.ps1 main build` (s16/build_head_reference.log) -> apply candidate.c -> `& tools/wteng.ps1 main sandbox func_800324D0 --disable all` (s16/sandbox_candidate_freshref.log).
 - result: Build sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH. Sandbox: score 15, target_insns 68 == build_insns 68, rules_dropped 0. Floor 15 confirmed for the thirteenth consecutive session; the procedure works verbatim and future sessions should follow it before quoting any number.
 - verdict: CONFIRMED
+
+## [s17] 2026-08-31 (synthesis, brief-session 17; scratch tmp/grind/func_800324D0/s17/) — MERGED-ATTACK PASS + DISPOSITION
+
+## [s17] H41 — the chassis is still the 15-chassis on today's HEAD, and every chassis-relative kill banked in s1-s16 is therefore still current
+- mechanism: `sandbox` scores the candidate against build/src/code6cac_b.o and never rebuilds it (engine/sandbox.py:72), so the ONLY way to quote an absolute floor honestly is the s15 standing procedure: pristine `git checkout -- src/code6cac_b.c` -> full build (reference object rebuilt, SHA1 checked) -> apply candidate.c -> sandbox. The driver's dispatch brief for this session reported the HEAD floor as "measurement unavailable", so nothing could be inherited.
+- probe: `git checkout -- src/code6cac_b.c`; `& tools/wteng.ps1 main build` (s17/build_head_reference.log); `python tmp/grind/func_800324D0/s17/apply.py candidate`; `& tools/wteng.ps1 main sandbox func_800324D0 --disable all` (s17/sandbox_candidate_freshref.log).
+- result: Build sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH. Sandbox: score 15, target_insns 68 == build_insns 68, rules_dropped 0, cheat_asm_stripped 38 (TU-wide, none from this function's candidate body). Floor 15 for the FOURTEENTH consecutive session across eight modalities. The standing procedure is confirmed correct a third time (s15, s16, s17) and should be run verbatim before any future session quotes a number.
+- verdict: CONFIRMED
+
+## [s17] H42 — the owner-ruling-5 INCLUDE_ASM migration may have rotted since s14 (HEAD has advanced: func_80045878 completed, func_80062020 foreclosed), so the operator record cannot be trusted without re-measurement
+- mechanism: The s14 oracle-green proof was taken on a 2026-08-30 tree. Between then and now main gained b94a65de / 549970f8 / ef962c5f / 54313cae / dde89e31, at least one of which rewrote a sibling TU (src/text1a_c.c) and the rodata surface. If the INCLUDE_RODATA("asm/rodata", jtbl_800105A0) line collided with any of that, the granted remedy would be stale and the operator steps in the record would be wrong.
+- probe: Applied the exact two-line migration to src/code6cac_b.c (deleting the legacy four-pin body) and ran a FULL build: `& tools/wteng.ps1 main build` (s17/build_sha1_migrated.log). Diff banked verbatim at s17/migration.diff (68 lines).
+- result: sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH. The migration is oracle-green on today's HEAD (b94a65de), not merely on s14's tree; the local labels the jump table references are supplied by the same asm/funcs/func_800324D0.s that INCLUDE_ASM pulls in, so no bb2.ld edit and no scope grant are involved. The operator record filed this session is therefore actionable as written. Also measured: `python tools/check_completion_integrity.py` cannot run from the Windows interpreter (FileNotFoundError on OBJDUMP, s17/integrity_migrated.log) — the operator must run it under WSL. Reference object restored to pristine HEAD afterwards (s17/build_reference_restored.log, SHA1 MATCH) so the next session does not inherit the s14-shaped stale-reference artifact.
+- verdict: CONFIRMED (the remedy is current; only the landing lane is missing)
+
+## [s17] H43 — synthesis over the whole ledger leaves an unexamined axis somewhere in s1-s16 that a merged attack could still reach
+- mechanism: The point of a synthesis pass is to look for a lever that only appears when the kills are read together rather than one modality at a time: the union of (structural respellings, two dry permuter campaigns, forensics byte-identity, three rederive inputs, the solver's exact forward model, and s15/s16's find_reg closure).
+- probe: Full re-read of evidence.md (1272 lines), hypotheses.md (855 lines), state.json's 16-entry floor history, the 11-form rejected/ bank, and the six cross-knowledge decisions.md entries; then a cross-check of the one remaining structural question the merged view raises — whether the walker's seat could be decided by a pass OTHER than global.c (local-alloc qty assignment or reload), which no single-modality session had to answer.
+- result: No axis survives. The seat is decided in global alloc and nowhere else: the walker spans basic blocks (loop-carried), so it is an allocno and never a local-alloc quantity, and tools/ra_solver's forward model reproduces the REAL allocation exactly (sort order MATCH, dispositions 8/8) — a model that predicts every seat correctly leaves no room for a later pass to be the cause. Independently, s16's leg-3 result is an ABI fact rather than a search result: `set_preference` cannot bind $v1 in a void leaf with one pointer parameter and no calls, and the signature is fixed by the target, so the one re-opening route the s16 frontier named ("exhibit a C form whose hard_reg_full_preferences contains 3") is closed by the function's own prototype, not by how hard anyone searched. The three foreclosure legs are therefore jointly exhaustive over source-controllable inputs.
+- verdict: KILLED (no merged-attack lever exists; the pure-C residual is foreclosed)
+
+## Frontier (for s18+ — RESET by this synthesis pass; supersedes the s16 frontier)
+1. **DISPOSITION FILED — do not re-grind.** docs/grind/decisions.md:17155 records
+   `OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED` for this function, with
+   the gate evidence (scan_hand_coded LOW 0/8; zero SOTN precedent), the three-leg find_reg closure,
+   and the operator steps. If the item is ever re-activated WITHOUT one of the recorded triggers, the
+   correct session action is to re-verify the chassis by the standing procedure and return
+   owner-gated citing that entry — not to spend measurements.
+2. **The only remaining work is an operator-lane commit, and its diff is banked.**
+   `tmp/grind/func_800324D0/s17/migration.diff` (re-verified oracle-green on HEAD b94a65de this
+   session) migrates the function to INCLUDE_ASM/INCLUDE_RODATA and deletes the four legacy register
+   pins that main still carries at src/code6cac_b.c:1802. No grind session can land it: an
+   INCLUDE_ASM body makes sandbox report score 68 / build_insns 0 / no_c_body true, so grind.ps1:561
+   can never pass, and grind.ps1:886 reverts the edit on every other path. Do NOT re-file it as an
+   integration handoff (Judge FAIL 2026-08-31, decisions.md:16725) and do NOT re-attempt it as a
+   candidate.
+3. **Re-opening the pure-C question requires falsifying a leg, not writing a spelling.** Concretely:
+   a C form whose tools/ra_solver/extract.py model shows a non-empty hard_reg_full_preferences
+   containing 3, or a walker livelen other than 62. Both are checkable in ONE extract run before any
+   sandbox measurement is spent. s17 additionally showed the first is closed by the function's
+   prototype (void leaf, one pointer param, no calls => no $v1 copy site can exist), so in practice
+   only a toolchain/model finding or a new class grant can re-open this.
+
+> [s17 addendum — MODALITY GATE] `grindlib.py validate` (grindlib.py:569) rejects an
+> owner-gated outcome whose escalation_ref contains 'RESOLVED BY STANDING RULING' in any
+> modality other than `escalation` — exhaustion is the driver's call, not a session's. That is
+> the ONLY reason s17 returned `progress` rather than the disposition its own evidence
+> supports. The foreclosure record is already filed and complete at
+> docs/grind/decisions.md:17155, so the first session dispatched in `escalation` modality can
+> return owner-gated citing it verbatim on turn one, after nothing more than the standing
+> chassis re-verify (one build + one sandbox, expect 15 / 68 == 68).
+
+## [s17] The chassis is still the 15-chassis on today's HEAD, so every chassis-relative kill banked in s1-s16 remains current (the driver's dispatch reported the HEAD floor as 'measurement unavailable', so nothing could be inherited).
+- mechanism: sandbox scores the candidate against build/src/code6cac_b.o and never rebuilds it (engine/sandbox.py:72), so the only honest way to quote an absolute floor is the s15 standing procedure: pristine checkout -> full build (reference object rebuilt, SHA1 checked) -> apply candidate.c -> sandbox.
+- probe: git checkout -- src/code6cac_b.c; `& tools/wteng.ps1 main build` (s17/build_head_reference.log); python tmp/grind/func_800324D0/s17/apply.py candidate; `& tools/wteng.ps1 main sandbox func_800324D0 --disable all` (s17/sandbox_candidate_freshref.log).
+- result: Build sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH. Sandbox: score 15, target_insns 68 == build_insns 68, rules_dropped 0. Floor 15 for the fourteenth consecutive session across eight distinct modalities; the residual is still the pure v1<->a2 rename over 11 instructions with zero insertions/deletions/reorderings.
+- verdict: CONFIRMED
+
+## [s17] The owner-ruling-5 INCLUDE_ASM migration may have rotted since s14 (main has advanced five commits, including a sibling-TU completion and a rodata-touching change), so the operator record could not be filed on inherited evidence.
+- mechanism: s14's oracle-green proof was taken on a 2026-08-30 tree. If the INCLUDE_RODATA("asm/rodata", jtbl_800105A0) line collided with any later change, the granted remedy would be stale and the filed operator steps would be wrong.
+- probe: Applied the exact two-line migration (deleting the legacy four-pin body) and ran a full build: `& tools/wteng.ps1 main build` (s17/build_sha1_migrated.log); diff banked verbatim at s17/migration.diff; reference object then rebuilt from pristine HEAD (s17/build_reference_restored.log).
+- result: sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH on today's HEAD (b94a65de). The remedy is current and needs no bb2.ld edit and no scope grant. It remains unlandable from a grind session: with it applied sandbox returns score 68 / build_insns 0 / no_c_body true, so grind.ps1:561's score==0 candidate gate can never pass and grind.ps1:886 reverts src on every other path. Also measured: tools/check_completion_integrity.py cannot run from the Windows interpreter (FileNotFoundError on OBJDUMP, s17/integrity_migrated.log) — the operator must run it under WSL.
+- verdict: CONFIRMED
+
+## [s17] Reading the whole ledger together (the union of structural, permuter, forensics, rederive and solver kills) exposes a merged-attack lever that no single-modality session could reach.
+- mechanism: A synthesis pass exists to find a lever visible only across modalities; the one structural question the merged view raises that no prior session had to answer is whether the walker's seat could be decided by a pass other than global.c (local-alloc quantity assignment or reload).
+- probe: Full re-read of evidence.md (1272 lines), hypotheses.md (855 lines), the 16-entry floor history, the 11-form rejected/ bank and the six cross-knowledge decisions.md entries; then the pass-attribution cross-check plus a prototype-level check of s16's leg-3 emptiness claim.
+- result: No lever exists. The walker is loop-carried, hence an allocno and never a local-alloc quantity, and tools/ra_solver's forward model already reproduces the real allocation exactly (sort order MATCH, dispositions 8/8) — a model that predicts every seat correctly leaves no room for a later pass to be the cause. New this session: s16's leg-3 emptiness is an ABI/prototype fact, not a search result — set_preference needs a copy insn binding a pseudo to $v1, and a void leaf with one pointer parameter and no calls can never contain one, and the signature is fixed by the target. So the re-opening route the s16 frontier named ('exhibit a C form whose hard_reg_full_preferences contains 3') is closed by the function's own prototype. The three foreclosure legs are jointly exhaustive over source-controllable inputs.
+- verdict: KILLED

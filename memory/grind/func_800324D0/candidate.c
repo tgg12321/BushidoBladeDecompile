@@ -1,3 +1,15 @@
+/* [s17 2026-08-31] RE-VERIFIED on a fresh reference (pristine checkout ->
+ * build SHA1 == oracle -> this body -> sandbox --disable all): score 15,
+ * 68 == 68, rules_dropped 0 (tmp/grind/func_800324D0/s17/
+ * sandbox_candidate_freshref.log). FUNCTION FORECLOSED this session:
+ * docs/grind/decisions.md:17155 (OWNER-ESCALATION — RESOLVED BY STANDING
+ * RULING (2026-07-27): FORECLOSED). The pure-C residual is closed over
+ * find_reg's entire pass-0 input space and s17 added the prototype
+ * argument: a void leaf with one pointer param and no calls has no $v1
+ * copy site, so set_preference can never plant the missing preference in
+ * ANY spelling. Remaining work is an operator commit of the banked
+ * INCLUDE_ASM migration (tmp/grind/func_800324D0/s17/migration.diff,
+ * re-verified oracle-green on HEAD b94a65de). Do not grind this body. */
 /* [s16 2026-08-31] RE-VERIFIED UNCHANGED on a fresh reference: pristine
  * checkout -> build (SHA1 == oracle) -> this body -> sandbox --disable all =
  * 15, 68 == 68, rules_dropped 0 (tmp/grind/func_800324D0/s16/

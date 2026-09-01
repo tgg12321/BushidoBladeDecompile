@@ -1,7 +1,7 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 16,
+ "session_count": 17,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -99,23 +99,29 @@
    "floor": 15,
    "modality": "synthesis",
    "headline": "Foreclosure completed over find_reg's ENTIRE pass-0 input space (the two non-conflict channels, never examined before, are both shut) and the last live-length lever measured flat with a byte-identical"
+  },
+  {
+   "session": 17,
+   "floor": 15,
+   "modality": "synthesis",
+   "headline": "Synthesis merged-attack pass is empty and the foreclosure record is FILED (docs/grind/decisions.md:17155): chassis re-measured 15/68/68 on today's HEAD, the owner-granted INCLUDE_ASM migration re-veri"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The pure-C match is foreclosed, and as of s16 the proof covers find_reg's ENTIRE pass-0 input space rather than one shape \u2014 no register-seat spelling can close the residual.",
-   "mechanism": "Three legs: (a) priority \u2014 the walker cannot out-rank allocno 75 (needs a 4.84x lift, and s16's P1 shows the live-length term is not source-controllable at all); (b) conflicts \u2014 any allocno excluding $3 from 75/76/85 also excludes it from the walker, which is live at every instruction; (c) the two non-conflict channels \u2014 ~regs_used_so_far is saturated ($3 call-used, leaf function) and regs_someone_prefers is structurally empty ($v1 has no copy site in a void leaf with one pointer param) and self-defeating by rank via prune_preferences.",
-   "next_probe": "Do NOT probe another spelling. A future session may re-open this ONLY by falsifying one of the three legs with a measurement \u2014 e.g. by exhibiting a C form whose extracted model (tools/ra_solver/extract.py) shows a non-empty hard_reg_full_preferences containing 3, or a walker livelen that actually differs from 62. Both are checkable in one extract run before any sandbox measurement is spent."
+   "hypothesis": "The function is foreclosed and the proof record is already filed; the only correct next action is the disposition, which only an `escalation`-modality session may return.",
+   "mechanism": "Floor flat at 15 for fourteen sessions across eight modalities; both endgame-lock gates FAIL twice each; the pure-C residual is closed over find_reg's complete pass-0 input space by three legs (priority, conflicts, the two non-conflict channels), and s17 added the prototype argument that shuts the last named re-opening route. grindlib.py:569 reserves the standing-ruling disposition for `escalation` modality, which is why s17 returned progress.",
+   "next_probe": "Next session, in `escalation` modality: re-verify the chassis by the standing procedure (one build + one sandbox, expect 15/68/68) and return owner-gated with escalation_ref = 'docs/grind/decisions.md:17155 \u2014 2026-08-31 \u2014 func_800324D0 \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED'. No new measurement is required; do not spend turns on spellings."
   },
   {
-   "hypothesis": "The only live question for this function is representation ROUTING, and it is already answered in substance \u2014 owner ruling 5 grants the INCLUDE_ASM/INCLUDE_RODATA migration; only the landing lane is undecided.",
-   "mechanism": "With the migration applied, sandbox returns score 68 / build_insns 0 / no_c_body true, so grind.ps1:561's `score == 0` candidate gate can never pass, and grind.ps1:886 reverts a progress session's src edit. The change itself is oracle-green (s14 full build SHA1 == oracle) and needs no scope grant \u2014 it sits inside the function's own TU.",
-   "next_probe": "Owner/operator action, not a session probe: either (A) commit the two-line migration as `cheat-cleanup: func_800324D0 \u2014 migrate to INCLUDE_ASM, delete 4 register-asm pins (owner ruling 5, 2026-08-30)` after a fresh layer-2 cheat-reviewer plus verify-oracle and check_completion_integrity.py, or (B) extend the driver's candidate gate to accept no_c_body + SHA1 == oracle for owner-granted asm-until-matched migrations. Sessions must not re-attempt it and must not re-file it as an integration handoff."
+   "hypothesis": "The only remaining real work is an operator-lane commit, and its diff is banked and byte-verified.",
+   "mechanism": "tmp/grind/func_800324D0/s17/migration.diff migrates the function to INCLUDE_ASM/INCLUDE_RODATA and deletes the four legacy register pins main still carries; full build with it applied is SHA1 == oracle on HEAD b94a65de. No grind session can land it (no_c_body => sandbox 68 => grind.ps1:561 unreachable; grind.ps1:886 reverts).",
+   "next_probe": "Operator: git apply the banked diff, run a fresh layer-2 cheat-reviewer, run verify-oracle plus check_completion_integrity.py UNDER WSL, and commit as 'cheat-cleanup: func_800324D0 \u2014 migrate to INCLUDE_ASM, delete 4 register-asm pins (owner ruling 5, 2026-08-30)'. Sessions must not re-attempt it and must not re-file it as an integration handoff."
   },
   {
-   "hypothesis": "Nothing else on this function is worth measuring; re-running the endgame-lock gates or any banked axis is the spinning the pipeline is designed to prevent.",
-   "mechanism": "Floor flat at 15 for thirteen consecutive sessions across seven distinct modalities (recon, structural, permuter, synthesis, forensics, rederive, solver/escalation); both gates measured FAIL twice (scan_hand_coded tier=LOW 0/8; zero SOTN file+line precedent); the rejected bank now holds eleven disproven forms.",
-   "next_probe": "If the item returns to active before the routing question is answered, the correct session action is to re-verify the chassis by the standing procedure (one build + one sandbox), confirm 15/68/68, and spend the remaining turns on the leg-falsification checks in frontier item 1 \u2014 not on new spellings."
+   "hypothesis": "Re-opening the pure-C question requires falsifying a foreclosure leg with a measurement, not writing another spelling.",
+   "mechanism": "The three legs are: walker priority cannot reach 75's (needs 4.84x, and the live-length term is not source-order-controllable \u2014 s16 P1 produced a byte-identical RA model); the loop-carried walker conflicts with every allocno; and both non-conflict channels are shut (~regs_used_so_far saturated because $3 is call-used in a leaf; regs_someone_prefers structurally empty by the function's prototype).",
+   "next_probe": "One tools/ra_solver/extract.py run, before any sandbox measurement: does a candidate form show a non-empty hard_reg_full_preferences containing 3, or a walker livelen other than 62? Absent that (and s17 argues the first is impossible for this signature), only a toolchain/model finding or a new class grant covering the invented overlapping-local pair can re-open the function."
   }
  ],
  "judge_constraints": [

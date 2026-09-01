@@ -17151,3 +17151,105 @@ Candidate re-submits the exact construct standing judge_constraints in state.jso
 ## 2026-08-31 23:10 — func_80045878 — final call — **PASS**
 
 Construct inventory is empty and I verified that independently: the src diff is one hunk replacing INCLUDE_ASM with the body (git diff --unified=0 src/text1a_c.c), no pipeline/config/allowlist file touched, no fresh local, no dead store, no annotation, no asm/volatile/pin. Decisive fact: the byte-forcing element is the function's REAL return value (s14b H14b.3, hypotheses.md) - target holds s1 in $v0 at jr $ra, and the already-matched caller src/text1a_pre.c:173,177-186 independently declares and consumes the returned pointer, so `return s1;` is semantically truthful C, not codegen steering (ordinary-c-judge-decidable, ruling 2026-08-31). Both standing judge_constraints / banned_constructs (the `p = s1;` duplicate carrier and the `s0 = (s32) p;` dead read) are absent, not respelled - `s0` here holds a live func_800455AC result that is read; s13b's 'every byte-exact form contains a dead statement' claim is retired as premise-bound. Tail store source order is load-bearing but is an ordinary authoring choice, disclosed in self_vet.md; disproof trail in rejected/ (50 forms) and evidence.md. Note for integration (not a defect in this diff): the stale decls src/text1a_pre.c:173 (arity 1) and include/m2c_context.h:624 (void; included by no src/*.c - grep-verified) are prototype contradictions in the SOTN-accepted kept-mismatch sense.
+
+## 2026-08-31 — func_800324D0 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Filed by grind session 17 (synthesis modality). This is a PROOF-OF-FORECLOSURE RECORD under the
+standing ruling of 2026-07-27 as re-scoped by the owner ruling of 2026-08-31
+(`.claude/rules/ordinary-c-judge-decidable.md`): nothing is addressed to the owner, no packet is
+pending, the driver forecloses the item silently and the queue advances. The 2026-08-26 and
+2026-08-31 DECISION PACKET entries for this function (docs/grind/decisions.md:14092, :16729) and the
+2026-08-31 INTEGRATION HANDOFF entry (:16655) are all SUPERSEDED by this record — they were filed in
+shapes that are now retired, and the last of them drew a Judge FAIL (:16725).
+
+**Chassis, re-measured this session (standing procedure, not quoted from the ledger).**
+`git checkout -- src/code6cac_b.c` -> `& tools/wteng.ps1 main build` -> sha1
+62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH
+(`tmp/grind/func_800324D0/s17/build_head_reference.log`) -> apply
+`memory/grind/func_800324D0/candidate.c` -> `sandbox func_800324D0 --disable all` = **score 15,
+target_insns 68 == build_insns 68, rules_dropped 0**
+(`tmp/grind/func_800324D0/s17/sandbox_candidate_freshref.log`). The honest floor has now been flat at
+15 for **fourteen consecutive sessions** across eight distinct modalities (recon, structural,
+permuter, synthesis, forensics, rederive, solver, escalation). The residual is a pure v1<->a2
+register rename over 11 instructions: zero insertions, zero deletions, zero reorderings.
+
+**(i) Gate evidence — both endgame-lock AND-gates FAIL, measured twice each.**
+
+- Canonical-asm gate: `python3 tools/scan_hand_coded.py --single func_800324D0` = **tier=LOW,
+  score=0/8**, all eight signals absent (s12 `tmp/grind/func_800324D0/s12/scan_hand_coded.log`, s13
+  `.../s13/scan_hand_coded.log`). Not re-run this session: a LOW / 0-of-8 scan is a FAILED gate, not
+  an open question, and re-running it is the spinning the pipeline exists to prevent.
+- Coercion/spelling-family gate: **zero** SOTN-master file+line precedent for any construct that
+  would close the residual (s12 census against `docs/reference/sotn-construct-index.md`). The only
+  measured closing construct is the invented overlapping `base`/`ff` local pair, which is a BANNED
+  construct for this function (layer-1 FAIL 2026-08-20 15:48, docs/grind/decisions.md:9549) and an
+  auto-reject class under the owner ruling of 2026-08-24.
+
+**(ii) Why the pure-C residual is foreclosed, not merely unsolved.** The proof is a closure over
+GCC 2.7.2 `global.c` find_reg pass-0 input space, built from an exact forward model
+(`tools/ra_solver`, sort order MATCH, dispositions 8/8), not from a bounded search:
+
+- *Priority leg.* Allocation order is 75, 76, 85, 72, 74, 73 (walker), 91, 86 with priorities
+  75000, 47272, 34285, 29838, 26666, 15483, 333, 326; allocno 75 takes first-free `$3`. Lifting the
+  walker above 75 needs a 4.84x priority lift — arithmetically impossible in a shape fixed at 68
+  instructions — and s16 probe P1 showed the live-length term is not source-order-controllable at
+  all (moving the walker load below the 11 pad stores produced a byte-identical RA model: same order,
+  same priorities, same walker livelen 62;
+  `tmp/grind/func_800324D0/s16/model_p1_identical_to_candidate.json`).
+- *Conflict leg.* `conflicts[73]` = every other allocno: the walker is loop-carried and therefore
+  live at every instruction in EVERY C spelling of a single forward stream pointer, so any allocno
+  that excludes `$3` from 75/76/85 also excludes it from the walker. Splitting the walker into
+  multiple webs is strictly worse and measured off-shape at 69 insns (s10 index-walk family).
+- *Non-conflict legs.* `~regs_used_so_far` is saturated — `global.c:363-368` seeds the set with every
+  `regs_ever_live[i] || call_used_regs[i]` register and `$v1` is call-used in a leaf function, so the
+  complement (callee-saved only) can never exclude `$3` for anyone. `regs_someone_prefers` is
+  measured EMPTY for every allocno that matters (`tmp/grind/func_800324D0/s16/model.json`:
+  full_prefs {75:[], 76:[], 85:[], 72:[4], 74:[2], 73:[], 91:[], 86:[]}) because `set_preference`
+  needs a copy insn between a pseudo and a hard register, and a `void` leaf with one pointer
+  parameter and no calls never binds `$v1` under the MIPS ABI — a signature fact, not a spelling
+  fact — and `prune_preferences` makes the channel self-defeating by rank even if such a site
+  existed.
+
+**(iii) Representation: the owner-granted migration is correct, oracle-green TODAY, and mechanically
+unlandable by any grind session.** Owner ruling 5 of the 2026-08-30 batch
+(docs/grind/decisions.md:14829) grants wiring this function to INCLUDE_ASM. Re-verified this session
+on today HEAD (b94a65de), not merely inherited from s14: replacing the body in `src/code6cac_b.c`
+with
+
+    INCLUDE_ASM("asm/funcs", func_800324D0);
+    INCLUDE_RODATA("asm/rodata", jtbl_800105A0);
+
+builds sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, **MATCH**
+(`tmp/grind/func_800324D0/s17/build_sha1_migrated.log`; the exact diff, which also deletes the four
+legacy `register ... asm("...")` pins, is banked at `tmp/grind/func_800324D0/s17/migration.diff`).
+No `bb2.ld` edit and no scope grant are needed — the change sits inside the function own TU. It
+still cannot be landed from a session: with the migration applied `sandbox func_800324D0 --disable
+all` returns `{"score": 68, "build_insns": 0, "no_c_body": true}` (s15 log), so
+`Invoke-CandidatePath` `score == 0` gate (`grind.ps1:561`) can never pass, and every other
+disposition path ends in `Revert-SessionEdits` (`grind.ps1:886`), which runs
+`git checkout -- src include`. This is NOT an integration handoff (that framing requires
+`sandbox == 0` per `.claude/rules/integration-handoff-self-serve.md` and already drew a Judge FAIL on
+2026-08-31, :16725), and it is not a scope problem. It is a gate-shape mismatch: the pipeline has no
+lane for a representation-only, bytes-neutral change.
+
+**Operator steps (one commit, no policy deviation).** Apply the banked diff
+(`git apply tmp/grind/func_800324D0/s17/migration.diff`, or re-run
+`python tmp/grind/func_800324D0/s17/apply.py migration`); run a fresh layer-2 `cheat-reviewer` on the
+diff (it is a deletion of four register pins plus two INCLUDE_ lines); run
+`& tools/wteng.ps1 main verify-oracle` and `python3 tools/check_completion_integrity.py` **under
+WSL** (the Windows-side interpreter cannot find objdump —
+`tmp/grind/func_800324D0/s17/integrity_migrated.log`); commit as
+`cheat-cleanup: func_800324D0 — migrate to INCLUDE_ASM, delete 4 register-asm pins (owner ruling 5,
+2026-08-30)`. Until that lands, **main still carries the four register pins** at
+`src/code6cac_b.c:1802` — the one standing debt this foreclosure does not clear, and the reason the
+migration is worth the operator five minutes even with the item out of the queue.
+
+**Re-activation triggers.** (a) A driver change adding a candidate lane for owner-granted
+representation-only migrations (accept `no_c_body` + full-build SHA1 == oracle), which would let a
+session land the ruling-5 migration through the normal gates. (b) A class grant covering an invented
+overlapping-local pair as a sanctioned family (today an auto-reject class), which is the ONLY
+measured construct that closes the 15. (c) A toolchain/model finding that falsifies one of the three
+foreclosure legs — concretely, a C form whose `tools/ra_solver/extract.py` model shows a non-empty
+`hard_reg_full_preferences` containing 3, or a walker livelen different from 62. Both are checkable
+in one extract run before any sandbox measurement is spent; absent one of those, no register-seat
+spelling can close this function.
