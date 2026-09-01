@@ -1549,3 +1549,122 @@ The residual has split into two disjoint, fully-characterised branches:
 - probe: variant c02 - v0 = idx_1494[1] << 2; v0 += (s32)tbl_125c; arg5 = *(s32 *)v0; - on the s61 order-deferred w04 base; sandbox then index-aligned disassembly with tmp/grind/CD_ready/s61/show.py.
 - result: score 6 at 179/179/0 with EVERY INSTRUCTION in the target's position and opcode; the six differing instructions (51, 57, 58, 61, 63, 67) differ only by a consistent 2-way register swap (t0 takes $v1 where the target uses $a0, arg5's value takes $a0 where the target uses $v1). Cleanest statement of the seat residual in 62 sessions.
 - verdict: CONFIRMED
+
+## s63 hypotheses (structural, 2026-09-01)
+
+### H-s63-A — CONFIRMED (by source reading, not by score)
+STATEMENT: the build/target transposition at 56/57 is decided by `INSN_LUID` alone; no dependence-
+graph perturbation can reach it.
+MECHANISM: `tools/gcc-2.7.2/sched.c:2408-2465`, `rank_for_schedule`. Three tie-breakers in order:
+INSN_PRIORITY; a class test against `last_scheduled_insn` that assigns class 3 whenever
+`insn_cost (...) == 1`; and `INSN_LUID (tmp) - INSN_LUID (tmp2)`. Every insn_cost in this window is
+1 on this MIPS target, so the class test is a no-op, and the two candidates (sched1 insn 106,
+t0's `sll`, and insn 120, arg5's address `addu`) have isomorphic three-edge dependence paths to
+the printf call, so their priorities are equal BY SHAPE.
+PROBE: read the pass source; corroborated by the sched1 dumps of both bases
+(tmp/grind/CD_ready/s63/cand.sched.txt, k03.sched.txt) — in candidate 106 precedes 120 and in k03
+120 precedes 106, exactly tracking which statement is written first.
+VERDICT: CONFIRMED. Consequence: s62's frontier item "sweep spellings that create or remove a true
+data dependence around that one insn" is FORECLOSED for both branches — the class rung it targets
+does not exist on this target.
+
+### H-s63-B — KILLED
+STATEMENT: re-basing a byte load onto the other (identical-address) index pointer changes the
+dependence graph enough to flip the tie.
+MECHANISM: `idx_1495 == idx_1494 + 1`, so `idx_1494[1]` / `idx_1495[0]` and `idx_1494[0]` /
+`idx_1495[-1]` are the same bytes through different pointer pseudos, giving each load a different
+LOG_LINKS chain.
+PROBE: j01-j05, j10.
+RESULT: 8, 8, 8, 8, 13, 13 (all 179 insns). Strictly worse. VERDICT: KILLED.
+
+### H-s63-C — KILLED (inert)
+STATEMENT: the C-level operand order / cast shape of the two address `addu`s is a lever on the tie.
+MECHANISM: `plus` operand order at RTL emission.
+PROBE: j06 `(s32)tbl + v0`, j07 `(u8 *)tbl + v0`, j08 `(s32)(t0 + (u8 *)tbl)`, j09 `t0 += (s32)tbl`.
+RESULT: all exactly 2 / 179 / 0 — byte-identical to candidate.c. GCC canonicalises operand order
+for same-provenance operands before emission. VERDICT: KILLED (inert, basin-equivalent; four new
+distinct spellings of the masked-2 floor).
+
+### H-s63-D — KILLED
+STATEMENT: swapping which value the function-scope reused `v0` carries (t0's address instead of the
+arg5 index) moves the qty_compare inputs favourably.
+MECHANISM: a block-local gets its own local-alloc quantity; the cross-block `v0` is a global-alloc
+allocno and never enters qty_compare at all.
+PROBE: k04-k06 (candidate order, arg5-first, and arg5-first-with-t0-byte-head).
+RESULT: 8, 9, 8. Putting the longer-lived t0 chain in `v0` removes it from local-alloc entirely and
+the seats get worse. VERDICT: KILLED.
+
+### H-s63-E — KILLED
+STATEMENT: giving t0's shift its own fresh local shortens t0's live range.
+MECHANISM: an extra pseudo splits the chain.
+PROBE: k07 (candidate order), k08 (arg5 first).
+RESULT: 3 and 6. k07 keeps candidate's 56/57 transposition AND flips build 61 to
+`addu $a0,$s5,$a0` (target: `addu $a0,$a0,$s5`) — distinct-provenance operands defeat GCC's
+canonical ordering. VERDICT: KILLED.
+
+### H-s63-F — CONFIRMED (the coupling is one counter, measured)
+STATEMENT: the order residual and the seat residual are the SAME variable — the number of insns
+between t0's byte load and t0's shift in sched1's output ("window 1").
+MECHANISM: `.lreg`'s "Register 98 used 8 times across N insns" sums reg 98's TWO disjoint live
+ranges (it dies at its `sll`, is reborn by its `addu`). Measured on the sched1 dumps: window 2
+(t0 addu .. a3 load) is 5 on BOTH branches; window 1 is 5 on candidate.c (a5 lbu, the `*pp`
+argument load 141, a5 sll) and 6 on every order-perfect base (same three plus arg5's `addu`).
+qty_compare_1 then gives 3*8/10 = 2.40 (seats correct) vs 3*8/11 = 2.18 (seats swapped).
+PROBE: dump.ps1 on both bases; the .lreg register table and the sched1 insn order read directly.
+VERDICT: CONFIRMED. The order fix mandated by H-s63-A is exactly what lengthens window 1 — they
+cannot be satisfied independently by statement order.
+
+### H-s63-G — KILLED
+STATEMENT: window 1 can be shortened back to 5 on the order-perfect base by re-topologising the
+t0 chain or by evicting the `*pp` load from the window.
+MECHANISM: remove one insn from between t0's byte load and t0's shift.
+PROBE: m01-m10 (byte-load-into-shift fold, whole-address fold, two-statement arg5 chain, four
+positions of the t0 byte load inside the arg5 chain, `&((u8 *)tbl)[idx*4]`, and two `pp` positions).
+RESULT: 7, 9, 8, 6, 10, 7, 7, 6, 9, 6 — the order-perfect basin's floor stays 6. The `*pp` load is
+sched1 insn 141, an ARGUMENT load emitted by `expand_call` whose LUID is fixed at the call site, so
+no placement of the `pp = ...` statement can move it. VERDICT: KILLED.
+
+### What the next session should attack (see state.json frontier)
+The two remaining degrees of freedom that H-s63-F does NOT couple are (i) reg 98's REFERENCE COUNT
+(pinned at 8 across every base measured in s62 and s63 — 4 mentions x loop weight 2), and (ii) the
+priorities of the OTHER quantities in block 3, specifically the arg5-address pseudo (4.00 on
+candidate, 2.67 on the order-perfect base) and the t0-shift pseudo (1.60 vs 2.00). Since 98 is
+allocated before 97 on BOTH branches, the seat swap is find_free_reg's answer changing as 98's
+CONFLICT SET grows — so the untried axis is not 98's own priority at all but the allocation order
+of the two 4.00-priority short-lived pseudos (104/110) that take registers before it.
+
+## [s64] The build/target transposition at 56/57 is decided by INSN_LUID alone; no dependence-graph perturbation can reach it.
+- mechanism: tools/gcc-2.7.2/sched.c:2408-2465 rank_for_schedule has exactly three tie-breakers: INSN_PRIORITY; a class test against last_scheduled_insn that assigns class 3 whenever insn_cost(...) == 1; and INSN_LUID. Every insn_cost in this window is 1 on this MIPS target, so the class rung is a no-op, and the two candidates (sched1 insn 106 = t0's sll, insn 120 = arg5's address addu) have isomorphic three-edge dependence paths to the printf call (106->111->145->147 and 120->122->137->147, load on the same rung), so their priorities are equal by SHAPE.
+- probe: Read the pass source in full; corroborated against the CD_ready sections of the sched1 dumps for both bases (tmp/grind/CD_ready/s63/cand.sched.txt and k03.sched.txt) - in candidate 106 precedes 120, in k03 120 precedes 106, exactly tracking which statement is written first.
+- result: Confirmed by source plus two dumps. This forecloses s62's frontier item for BOTH branches ('sweep spellings that create or remove a true data dependence around that one insn'): the rung it targets does not exist on this target.
+- verdict: CONFIRMED
+
+## [s64] The order residual and the seat residual are the SAME variable: the number of insns between t0's byte load and t0's shift in sched1's output (window 1 of reg 98).
+- mechanism: .lreg's 'Register 98 used 8 times across N insns' is the SUM of reg 98's two disjoint live ranges (98 dies at its own sll and is reborn by its addu), counted in sched1 output positions. Window 2 (t0 addu .. a3 load) is 5 on BOTH branches; window 1 is 5 on candidate.c (between: arg5 lbu, the *pp argument load 141, arg5 sll) and 6 on every order-perfect base (the same three PLUS arg5's addu - the very insn the order fix must move there). qty_compare_1 (local-alloc.c:1640-1684) then gives 3*8/10 = 2.40 (seats correct) vs 3*8/11 = 2.18 (seats swapped).
+- probe: pwsh tools/grinder/dump.ps1 CD_ready on the candidate base and on the k03 order-perfect base; read the .lreg register table and the sched1 insn order directly rather than inferring them.
+- result: Confirmed. The order fix mandated by the first hypothesis is precisely what lengthens window 1, so order and seat cannot be satisfied independently by statement order - the s61/s62 anti-correlation is now explained by a single counter instead of two coupled ties.
+- verdict: CONFIRMED
+
+## [s64] Re-basing either byte load onto the other (identical-address) index pointer changes the dependence graph enough to flip the tie.
+- mechanism: idx_1495 == idx_1494 + 1, so idx_1494[1] / idx_1495[0] and idx_1494[0] / idx_1495[-1] name the same bytes through different pointer pseudos, giving each load a different LOG_LINKS chain.
+- probe: j01 (v0 = idx_1495[0]), j02 (v0 = *idx_1495), j03 (t0 = idx_1495[-1]), j04 (t0 = *(idx_1495 - 1)), j05 (both), j10 (both plus reversed addu operands).
+- result: 8, 8, 8, 8, 13, 13 - all 179 insns, 0 rules. Strictly worse than the base 2. The target's two byte loads are both based on the D_800A1494 pointer.
+- verdict: KILLED
+
+## [s64] The C-level operand order / cast shape of the two address addus is a lever on the tie.
+- mechanism: plus operand order at RTL emission.
+- probe: j06 ((s32)tbl + v0), j07 ((u8 *)tbl + v0), j08 ((s32)(t0 + (u8 *)tbl)), j09 (t0 += (s32)tbl).
+- result: All exactly score 2 / 179 insns / 0 rules - byte-identical to candidate.c. GCC canonicalises plus operand order for same-provenance operands before emission. Four new distinct spellings of the masked-2 floor added to the basin catalog. (The axis is NOT inert when the operands have different provenance - k07 flips build 61 to `addu $a0,$s5,$a0`.)
+- verdict: KILLED
+
+## [s64] Swapping which value the function-scope reused v0 carries (t0's address instead of the arg5 index) moves the qty_compare inputs favourably.
+- mechanism: A block-local gets its own local-alloc quantity; the cross-block v0 is a global-alloc allocno and never enters qty_compare at all.
+- probe: k04 (candidate order, roles swapped), k05 (arg5 chain first), k06 (t0 byte at head).
+- result: 8, 9, 8. Putting the longer-lived t0 chain in v0 removes it from local-alloc entirely and the seats come out worse, not merely different. Also k07/k08 (t0's shift into a second fresh local): 3 and 6 - k07 keeps candidate's transposition AND adds one.
+- verdict: KILLED
+
+## [s64] Window 1 can be shortened back to 5 on the order-perfect base by re-topologising the t0 chain or by evicting the *pp load from the window.
+- mechanism: Remove one insn from between t0's byte load and t0's shift, restoring reg 98 to 8 refs / 10 insns (pri 2.40) while keeping the target instruction order.
+- probe: m01-m10: byte-load-into-shift fold, whole-address single expression, two-statement arg5 chain, four positions of the t0 byte load inside the arg5 chain, &((u8 *)tbl)[idx*4], and two positions of the pp statement.
+- result: 7, 9, 8, 6, 10, 7, 7, 6, 9, 6 - the order-perfect basin's floor stays 6 and none removes an insn from window 1. The *pp load is sched1 insn 141, an ARGUMENT load emitted by expand_call whose LUID is fixed at the call site, which also explains why every pp-position probe in s62 (f04/f05) and s63 (k02/m08/m10) is inert.
+- verdict: KILLED

@@ -1495,3 +1495,136 @@ b07_lreg_regs.txt / f01_lreg_regs.txt / candidate_lreg_regs.txt.
 - [s62] src/system.c was restored to its committed INCLUDE_ASM state at end of session; the tree is clean. candidate.c is unchanged (vAT1, still the floor form at 2).
 
 - [s62] Six new rejected forms banked under memory/grind/CD_ready/rejected/ (139 total), each slug naming why it is dead.
+
+## s63 (structural, 2026-09-01) — the transposition's tie-breaker is READ from sched.c, not inferred; the two branches are proven to be a coupled fixed point in ONE variable
+
+OWNER DIRECTIVE ACKNOWLEDGEMENT. The queue item's owner directive (2026-09-01 FORECLOSED-BUCKET
+REVIEW, decisions.md Ruling A, "re-score the banked vAT1 form post-`-mel`") was EXECUTED IN s60 —
+that is exactly what moved the floor 4 -> 2 and produced the current `candidate.c`. The
+auto-audit's "DIRECTIVE NOT YET IN LEDGER" warning fired only because no session had said so in
+these words. It is done; no further action is owed on it.
+
+Live chassis re-measurement at session start: `candidate.c` (vAT1) = **score 2, build 179,
+target 179, rules_dropped 0**. Floor reproduces exactly.
+
+### [s63] MECHANISM READ FROM SOURCE: the 56/57 tie-breaker is INSN_LUID, and nothing else can reach it
+`tools/gcc-2.7.2/sched.c:2408-2465` (`rank_for_schedule`), read in full this session:
+  1. `INSN_PRIORITY` difference — the two insns tie (see below).
+  2. the three-way class test against `last_scheduled_insn` — `if (link == 0 || insn_cost (tmp,
+     link, last_scheduled_insn) == 1) tmp_class = 3;`. On this MIPS target every `insn_cost` in
+     the window is 1, so BOTH candidates land in class 3 and the test contributes nothing.
+  3. `return INSN_LUID (tmp) - INSN_LUID (tmp2);` — i.e. original RTL emission order = SOURCE
+     statement order.
+There is no fourth tie-breaker. This retires, with a source reading rather than a score, the
+whole family of "perturb the dependence graph so the scheduler prefers the other insn" probes that
+s62's frontier proposed for both branches: the class test is unreachable on this target, so the
+ONLY C-visible lever on this tie is which of the two statements is written first.
+
+### [s63] The two competing insns are named, and their INSN_PRIORITYs are structurally equal
+From the CD_ready section of tmp/grind/CD_ready/dumps/system.sched (sched1 output, candidate base;
+extracted with tmp/grind/CD_ready/s63/ext.py):
+  insn 106  `(set (reg 102) (ashift (reg/v 98) (const_int 2)))`   = t0's `sll`    = build 56
+  insn 120  `(set (reg 104) (plus (reg/v 74) (reg/v 81)))`        = arg5's `addu` = build 57
+Their dependence paths to the call are isomorphic — 106 -> 111 (addu) -> 145 (lw into $a3) -> 147
+(call) and 120 -> 122 (lw) -> 137 (sw to 16(sp)) -> 147 — three edges each with the load on the
+same rung. The priorities are therefore equal BY SHAPE, not by accident, and no re-association or
+cast change can separate them without adding an instruction (which breaks 179).
+
+### [s63] KILLED — re-basing either byte load onto the other index pointer (j01-j05, j10)
+`idx_1495 == idx_1494 + 1`, so `idx_1494[1]` and `idx_1495[0]` name the same byte through
+different pseudos, as do `idx_1494[0]` and `idx_1495[-1]`. Swapping which pointer pseudo each
+load hangs off is byte-identical C and DOES change the dependence graph — and it strictly
+regresses: j01 (`v0 = idx_1495[0]`) 8, j02 (`v0 = *idx_1495`) 8, j03 (`t0 = idx_1495[-1]`) 8,
+j04 (`t0 = *(idx_1495 - 1)`) 8, j05 (both) 13, j10 (both + reversed addu operands) 13.
+The target's two byte loads are both based on the `D_800A1494` pointer; `idx_1495` exists only for
+the two `*idx_1495` reads later in the body.
+
+### [s63] KILLED (inert) — operand order and cast shape on either address `addu` (j06-j09)
+`*(s32 *)((s32)tbl_125c + v0)`, `*(s32 *)((u8 *)tbl_125c + v0)`, `(s32)(t0 + (u8 *)tbl_125c)` and
+`t0 += (s32)tbl_125c` all score exactly 2 with 179 insns — byte-identical to candidate.c. GCC
+canonicalises `plus` operand order before RTL emission, so the C-level operand order of a
+register+register add is not a lever here. (It IS a lever when the two operands are DIFFERENT
+pseudos of different provenance — see k07 below, where it flips `addu $a0,$a0,$s5` to
+`addu $a0,$s5,$a0` and costs a point.)
+
+### [s63] KILLED — role swap of the two carriers (k04-k06)
+Making the function-scope reused `v0` carry the t0 ADDRESS and a fresh block-local carry the arg5
+index (the exact mirror of candidate.c's assignment of roles) scores 8 / 9 / 8. The carrier
+choice is not free: `v0` is a cross-block pseudo that goes to global-alloc, so putting the
+longer-lived t0 chain in it removes t0 from local-alloc's qty_compare entirely and the seats
+come out worse, not merely different.
+
+### [s63] KILLED — t0's shift into a second fresh local (k07, k08)
+`t0b = t0 * 4; t0 = (s32)((u8 *)tbl_125c + t0b);` scores 3: it keeps candidate's 56/57
+transposition AND adds a new one, `addu $a0,$s5,$a0` where the target has `addu $a0,$a0,$s5`
+(build 61). Two distinct pseudos as the addu's operands change GCC's canonical operand order.
+
+### [s63] THE RESIDUAL IS A COUPLED FIXED POINT IN ONE MEASURED VARIABLE — window 1 of reg 98
+`.lreg`'s "Register 98 used 8 times across N insns" is the SUM of reg 98's TWO disjoint live
+ranges (98 dies at its own `sll` and is REBORN by its `addu`), counted in sched1 OUTPUT positions.
+Measured, on the sched1 dumps of both bases:
+
+| base | window 1 (t0 lbu .. t0 sll) | window 2 (t0 addu .. a3 lw) | sum | pri = 3*8/sum | seats | order |
+|---|---|---|---|---|---|---|
+| candidate.c | 5 (between: a5 lbu, `*pp` load 141, a5 sll) | 5 | 10 | 2.40 | CORRECT | 56/57 swapped |
+| k03 / c02 / f01 | 6 (between: a5 lbu, 141, a5 sll, **a5 addu**) | 5 | 11 | 2.18 | swapped | PERFECT |
+
+Window 2 is IDENTICAL on both bases. The entire difference is that the order fix (moving arg5's
+`addu` ahead of t0's `sll`, which is the only thing that can win the LUID tie) necessarily parks
+that `addu` inside window 1 and lengthens it by exactly one. Order and seat are therefore the
+same variable read twice, not two variables — the anti-correlation s61 observed by score is now
+explained by a single counter.
+
+### [s63] The full qty_compare_1 priority tables, computed from the measured .lreg inputs
+`pri = floor_log2(n_refs) * n_refs * size / (death - birth)` (tools/gcc-2.7.2/local-alloc.c:1640-1684):
+  candidate (seats CORRECT): 104 a5-addr 4.00 | 110 4.00 | **98 t0 2.40** | 97 a5-val 2.00 |
+                             107 2.00 | 102 t0-shift 1.60
+  k03/c02   (seats SWAPPED): 110 4.00 | 102 a5-addr 2.67 | **98 t0 2.18** | 97 a5-val 2.00 |
+                             104 t0-shift 2.00 | 107 2.00
+98 is allocated before 97 in BOTH orderings, so the seat swap is NOT a simple "who goes first"
+between the two — it is find_free_reg's answer changing because 98's conflict set grew with its
+range. Ties at 2.00 break by quantity NUMBER (`return *q1 - *q2;`, local-alloc.c:1683).
+
+### [s63] KILLED — every t0-chain topology that could shorten window 1 on the order-perfect base (m01-m10)
+m01 byte-load folded into the shift 7 | m02 whole address in one expression 9 | m03 byte-fold with
+the chain last 8 | m04 two-statement arg5 chain 6 | m05 both folds 10 | m06 t0 byte load between
+the arg5 shift and add 7 | m07 t0 byte load after the arg5 shift 7 | m08 `pp` last 6 | m09
+`&((u8 *)tbl)[idx*4]` 9 | m10 `pp` between the arg5 statements 6. The order-perfect basin's floor
+is 6 and none of these removes an insn from window 1: the `*pp` load is insn 141 (an ARGUMENT load
+emitted by expand_call, LUID fixed at the call site), so it cannot be moved out of window 1 by
+moving the `pp = ...` statement — which is why f04/f05/k02/m08/m10 are all inert.
+
+### Artifacts
+tmp/grind/CD_ready/s63/{gen.py,gen2.py,gen3.py} (28 variants, each series documenting its
+mechanism), ext.py + qty.sh (dump extractors), cand.sched.txt / k03.sched.txt (the two sched1
+extracts the window table is read from), look.ps1 / sweep.ps1 / splice.py / show.py.
+
+- [s63] The owner directive on this queue item (Ruling A, re-score banked vAT1 post--mel) was executed in s60 and is what produced the current floor of 2; this session records that acknowledgement explicitly so the auto-audit stops flagging it.
+- [s63] Live chassis check: candidate.c re-measures score 2, build 179, target 179, rules_dropped 0.
+- [s63] sched.c:2408-2465 read in full: rank_for_schedule's only tie-breakers are INSN_PRIORITY, a three-way class test that collapses to class 3 for every insn on this target (insn_cost == 1), and INSN_LUID. There is no fourth. The 56/57 transposition is therefore decidable ONLY by C statement order.
+- [s63] The two tied insns are sched1 106 (`reg 102 = reg 98 << 2`, t0's sll) and 120 (`reg 104 = reg 74 + reg 81`, arg5's address addu). Their dependence paths to the printf call are isomorphic three-edge chains with the load on the same rung, so their priorities are equal by SHAPE - no re-association can separate them without adding an instruction.
+- [s63] KILLED: re-basing either byte load onto the other (identical-address) index pointer - j01 8, j02 8, j03 8, j04 8, j05 13, j10 13. Both target byte loads are based on the D_800A1494 pointer.
+- [s63] KILLED (inert): operand order / cast shape on either address addu - j06, j07, j08, j09 all score exactly 2 with 179 insns, byte-identical to candidate.c. GCC canonicalises same-provenance plus operands before RTL emission.
+- [s63] KILLED: carrier role swap (function-scope v0 carries t0's address, fresh local carries the arg5 index) - k04 8, k05 9, k06 8. v0 is a cross-block pseudo handled by global-alloc, so this removes t0 from qty_compare entirely.
+- [s63] KILLED: t0's shift into a second fresh local (k07 3, k08 6) - it keeps candidate's transposition AND flips build 61 to `addu $a0,$s5,$a0`; two distinct pseudos as an addu's operands change GCC's canonical operand order.
+- [s63] STRUCTURAL RESULT: `.lreg`'s "across N insns" for reg 98 is the SUM of its two disjoint live ranges, counted in sched1 output positions. Window 2 (t0 addu .. a3 load) is 5 on BOTH branches. Window 1 (t0 lbu .. t0 sll) is 5 on candidate and 6 on the order-perfect base, and the extra insn IS arg5's addu - the very insn the order fix must move there. Order and seat are one variable, not two.
+- [s63] KILLED: all ten t0-chain topologies that could shorten window 1 on the order-perfect base (m01-m10, scores 6-10). The `*pp` load is insn 141, an ARGUMENT load emitted by expand_call with a call-site-fixed LUID, so it cannot be evicted from window 1 by moving the `pp = ...` statement - which explains why every pp-position probe (s62 f04/f05, s63 k02/m08/m10) is inert.
+- [s63] src/system.c restored to its committed INCLUDE_ASM state; tree clean. candidate.c unchanged (vAT1, still the floor form at 2). Seven new rejected forms banked (146 total).
+
+- [s64] The owner directive on this queue item (2026-09-01 FORECLOSED-BUCKET REVIEW, decisions.md Ruling A, 're-score the banked vAT1 form post--mel') was EXECUTED IN s60 - that is what moved the floor 4 -> 2 and produced the current candidate.c. This session records the acknowledgement explicitly; the consistency warning was a bookkeeping gap, not unexecuted work.
+
+- [s64] Live chassis check: memory/grind/CD_ready/candidate.c re-measures score 2, build_insns 179, target_insns 179, rules_dropped 0. The ledger floor reproduces exactly.
+
+- [s64] tools/gcc-2.7.2/sched.c:2408-2465 (rank_for_schedule) read in full: the only tie-breakers are INSN_PRIORITY, a three-way class test that collapses to class 3 for every insn on this target (insn_cost == 1), and INSN_LUID. There is no fourth. The 56/57 transposition is decidable ONLY by C statement order.
+
+- [s64] The two tied insns are named from the sched1 dump: insn 106 (set (reg 102) (ashift (reg/v 98) (const_int 2))) = t0's sll = build 56, and insn 120 (set (reg 104) (plus (reg/v 74) (reg/v 81))) = arg5's address addu = build 57. Their paths to the call are isomorphic, so INSN_PRIORITY ties by shape and cannot be separated without adding an instruction.
+
+- [s64] MEASURED window table (sched1 dumps + .lreg, both bases): candidate.c window1 = 5, window2 = 5, sum 10, pri 2.40, seats CORRECT, order wrong; k03/c02/f01 window1 = 6, window2 = 5, sum 11, pri 2.18, seats swapped, order PERFECT. Window 2 is identical on both; the whole difference is arg5's addu sitting inside window 1, which is exactly where the order fix must put it.
+
+- [s64] Full qty_compare_1 priority tables computed from the measured .lreg inputs. candidate: 104 arg5-addr 4.00, 110 4.00, 98 t0 2.40, 97 arg5-val 2.00, 107 2.00, 102 t0-shift 1.60. k03/c02: 110 4.00, 102 arg5-addr 2.67, 98 t0 2.18, 97 arg5-val 2.00, 104 t0-shift 2.00, 107 2.00. Reg 98 is allocated BEFORE reg 97 on both branches, so the seat swap is find_free_reg's answer changing as 98's conflict set grows - not a rank inversion between the two.
+
+- [s64] Ties in qty_order break by quantity NUMBER (local-alloc.c:1683, `return *q1 - *q2;`), which is why the three 2.00-priority quantities on the order-perfect base allocate in the order 97, 104, 107.
+
+- [s64] KILLED: pointer re-basing of either byte load (j01-j05, j10 = 8/8/8/8/13/13); operand-order and cast reassociation on either address addu (j06-j09, all inert at 2); carrier role swap (k04-k06 = 8/9/8); t0's shift into a second fresh local (k07 = 3, k08 = 6); all ten window-1 topologies on the order-perfect base (m01-m10 = 7/9/8/6/10/7/7/6/9/6).
+
+- [s64] src/system.c was restored to its committed INCLUDE_ASM state at end of session; the tree is clean apart from metrics/events.jsonl. candidate.c is unchanged (vAT1, still the floor form at score 2). Seven new rejected forms banked under memory/grind/CD_ready/rejected/ (146 total).
