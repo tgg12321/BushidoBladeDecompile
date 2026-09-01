@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 11,
- "current_modality": "escalation",
+ "session_count": 12,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -69,23 +69,29 @@
    "floor": 5,
    "modality": "escalation",
    "headline": "Floor 9 -> 5: the s4 empty do-while(0) fence was rejected under a scoping the 2026-07-06 owner ruling abolishes; class A is now closed, and an exhaustive 63-position + 18 nested-wrap sweep proves 5 is"
+  },
+  {
+   "session": 12,
+   "floor": 5,
+   "modality": "structural",
+   "headline": "Class C is NOT foreclosed: holding the flip fixed and permuting the outer loop's four store groups (24/24 measured) reaches a build that emits the target's rows 60-64 exactly, register seats included "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The floor-5 form is submittable as-is once the do-while(0) scoping conflict is ruled on; if it is, the remaining work is only classes B and C (5 rows), and if it is not, the function returns to floor 9 and the escalation disposition is correct.",
-   "mechanism": ".claude/rules/do-while-zero-exception.md (2026-07-06) abolishes the reorg.c-only scoping that .claude/rules/no-new-park-categories.md:256-271 and the grind role-prompt's frozen-family table still assert. The dedicated rule is the later document and is designated as the authority by the stale entry itself, but a candidate-ready submission would be the first BB2 use of a wrap for a sched2 effect, so the ruling should land first.",
-   "next_probe": "Emit a ruling-request (or have the operator update no-new-park-categories.md:256-271 to match the 2026-07-06 ruling). If sanctioned, the next session writes memory/grind/func_800770B8/self_vet.md citing FAMILY do-while(0), SCOPE = the frontmatter sentence quoted above, PRECEDENT .claude/rules/do-while-zero-exception.md (Confirmed applications: marionation_Exec), and then attacks classes B and C from the floor-5 chassis."
+   "hypothesis": "A loop-SHAPE change (not a statement-order or spelling change) makes the class-C flip free, closing the last gap between the two basins.",
+   "mechanism": "s12 eliminated every statement-level degree of freedom it could enumerate - group order (24/24), group spelling (8 forms), hoists (12 forms), wraps (79+79 positions) - and the flipped body's score never left the 20-29 band except by moving the store groups. The remaining unmeasured statement-level structure is the shape of the loops themselves, which is what sets the pseudo birth order the flip perturbs.",
+   "next_probe": "On the flipped ABCD body (baseline 29) and the flipped CABD body (baseline 12), measure: the inner p_6a/p_7e loop written as a `for` instead of a `do/while`; the same loop written pointer-walking (`*p_6a++ = -1; *p_7e++ = 0;`) so the 0x6A/0x7E pointers are live-updated rather than indexed; the inner loop split into two separate loops; and the `a2 = 0;` initialiser moved to each of the group boundaries (s12's permutation always kept it first). Do NOT re-probe group order, group spelling, hoists, or wrap positions - all four are exhausted and banked."
   },
   {
-   "hypothesis": "Class C (3 rows) is the only residual with a live mechanism, and it needs a lever that is neither a spelling nor a wrap.",
-   "mechanism": "s10's closed-form target stands: with the operand flip in place, the merged dest quantity's qty_compare priority must fall below the bare lw's 20000 - span > 44 (currently 28) or refs <= 15 (currently 22). s11 has now killed the two cheapest ways to perturb refs (single and nested loop notes: no effect) and re-confirmed that the flip itself costs a constant +24 elsewhere in the loop body.",
-   "next_probe": "Re-run tools/ra_solver/inverse.py local on tmp/grind/func_800770B8/s10/text1b.local.FLIPPED.json with the goal expressed as qty3 -> $v1 ONLY (drop the qty4 constraint) and --depth 2, so qty3's own refs/span atoms enter the search space; then look for a C form that lengthens the 0x6A/0x7E base pointer's live range past block-insn 72 without adding an instruction. Do NOT re-probe 6A/7E address spellings (six on record, all identical) and do NOT re-probe wraps (63 + 18 measured this session)."
+   "hypothesis": "The allocator atom that the CABD store-group order actually moves is directly readable, and naming it will identify a C construct that moves the same atom without displacing the stores.",
+   "mechanism": "s10's inverse.py run searched a synthetic 392-atom depth-2 space around a single build. s12 now has TWO real builds that differ only in the contested seat - flipped-ABCD (seat wrong, stores right) and flipped-CABD (seat right, stores wrong) - so the allocator state difference is measurable rather than hypothesised.",
+   "next_probe": "Run tools/ra_solver/local_extract.py QTYDBG on both builds (rebuild each via tmp/grind/func_800770B8/s3/try.py with perm/Q00.c and perm/Q12.c), diff the qty rows for block 1, and read off which of span/refs/birth actually changed on the merged chain quantity. Then re-run inverse.py local with the goal restricted to qty3 -> $v1 only (drop the qty4 constraint) at --depth 2 as the s11 frontier proposed, seeded with the measured delta rather than the synthetic space."
   },
   {
-   "hypothesis": "Class B (2 rows) stays foreclosed on the floor-5 chassis.",
-   "mechanism": "s8 proved with instrumented-cc1 dumps that cse pass 1 keeps the target's 2+2 split only when a NOTE breaks the extended basic block, and that cse pass 2 (after_loop=1) destroys it and flow.c deletes the copy; s9 measured that a REAL control-flow boundary costs an instruction the function does not have (176 / 16). s11's wrap sweep re-confirms this on the new chassis (10 before the stores, 11 after).",
-   "next_probe": "None - do not re-open class B. If class C is ever closed and 2 rows remain, the correct move is a ruling-request on whether a 2-row class-B residual has any sanctioned closing construct at all, not another spelling search."
+   "hypothesis": "The floor-5 form is submittable as-is once the do-while(0) scoping conflict is ruled on (carried forward unchanged from s11).",
+   "mechanism": ".claude/rules/do-while-zero-exception.md (owner ruling 2026-07-06) abolishes the reorg.c-only scoping that .claude/rules/no-new-park-categories.md:256-271 and the grind role-prompt's frozen-family table still assert. The dedicated rule is the later document and the stale entry designates it as the authority, but a submission would be the first BB2 use of a wrap for a sched2 effect.",
+   "next_probe": "Unchanged from the s11 frontier: emit a ruling-request, or have the operator update no-new-park-categories.md:256-271 to match the 2026-07-06 ruling. s12 adds a datum the ruling should weigh - the CABD basin needs a SECOND wrap to reach 10, so the wrap count will not shrink if class C is closed from that side."
   }
  ],
  "judge_constraints": [],

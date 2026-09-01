@@ -1287,3 +1287,116 @@ assignment of a call result. No spelling reaches this shape.
 - [s11] No disposition entry was filed in docs/grind/decisions.md: the driver dispatched escalation on a flat-at-9 floor, and the floor moved to 5, which per the escalation brief's option (1) resets the exhaustion counter and mandates a progress outcome instead.
 
 - [s11] src/text1b.c restored to its pristine INCLUDE_ASM state at session end (git checkout); the only tree changes are under memory/grind/func_800770B8/ plus untracked tmp/ scratch.
+
+## [s12] structural, 2026-09-01 — floor 5 (unchanged); CLASS C IS REACHABLE AND HAS BEEN REACHED
+
+Chassis re-measured at dispatch: the s11 candidate.c body applied to src/text1b.c measures
+`sandbox func_800770B8 --disable all` = **5**, 175 build insns / 175 target insns. Positional
+diff re-read (tmp/grind/func_800770B8/s3/posdiff.py): class B rows 35-36, the row-50 LO16
+scorer artifact, class C rows 62-64. Class A absent. Identical to the s11 record.
+
+### The headline: the class-C flip's "+24 intrinsic collateral" was a fixed-body artifact
+
+s10 and s11 both varied the SPELLING of the class-C plus-operand flip while holding the rest
+of the outer-loop body at its ABCD statement order, measured 175/33 (floor-9 chassis) and
+175/29 (floor-5 chassis) for every spelling, and concluded the collateral was intrinsic to the
+flipped tree. s12 inverted the experiment: hold the flip fixed (int-domain spelling) and
+permute the four store groups of the outer loop body.
+
+Groups, as they appear in the body:
+  A  `ptr = (u8 *)((t0 * 2) + (s32)base);` + sh 0 at ptr+0x10, +0x8, +0xC, +0x14, +0x3C
+  B  `ptr = (u8 *)&D_800A35D0; ptr = (t0 * 4) + ptr;` + sh 0 at ptr+2, ptr+0
+  C  `ptr = base + (t0 * 4);` + sh 0 at ptr+0x42, ptr+0x40
+  D  `*(u8 *)(base + t0 + 0x68) = (u8)t0;`
+
+All 24 orders measured (tmp/grind/func_800770B8/s12/perm/, log perm.log), every one 175 insns:
+  CABD 12 | CADB 13 | BACD 14 | BADC 16 | CBAD 16 | CBDA 17 | BCAD 22 | CDAB 22 | BCDA 23
+  ABCD 29 | ABDC 29 | ACBD 29 | ACDB 29 | ADCB 29 | DABC 29 | DACB 29 | DCAB 35 | BDCA 37
+  DBCA 37 | ADBC 38 | BDAC 38 | CDBA 38 | DBAC 38 | DCBA 38
+ABCD - the order every prior session used, and the order the TARGET emits its stores in - is
+among the worst. CABD is the best at 12.
+
+**The CABD build closes residual class C.** Its objdump (rows 60-64, reg-names=numeric):
+    lw    $2,0($28)        <- the second D_800A36A0 read       (target: lw $v0, %gp_rel)
+    sll   $3,$3,0x1        <- t0*5 -> t0*10                    (target: sll $v1,$v1,1)
+    addu  $3,$3,$2         <- chain FIRST, dest = chain        (target: addu $v1,$v1,$v0)
+    addiu $7,$3,106                                            (target: addiu $a3,$v1,0x6A)
+    addiu $5,$3,126                                            (target: addiu $a1,$v1,0x7E)
+Register seats included: the merged quantity takes $v1 and the bare lw takes $v0, which is
+exactly the seat assignment s10's ra_solver run typed as REACHABLE-in-model but FORECLOSED to
+every C-spellable depth-2 input perturbation. It is not foreclosed; a statement-order change
+outside the class-C expression reaches it. The CABD positional diff contains no rows 62-64
+hunk at all — it is class B (2 rows) + the row-50 artifact + the displacement of the C store
+group I introduced by moving it (an insert of tgt[40], a 4-row delete at ours[42:46], a 3-row
+insert of tgt[52:55], and a 2-row replace at 57-58).
+
+### What does NOT recover the flip's collateral (two exhaustive sweeps + 12 hoist variants)
+
+1. **Wraps do not reach it.** Exhaustive second-`do { } while (0);` sweep at all 79 legal
+   statement positions of the flipped ABCD body: minimum 29, and 42 of the 79 positions are
+   byte-identical to no wrap at all. Log tmp/grind/func_800770B8/s12/wrapflip.log. Combined
+   with s11's 63-position sweep on the unflipped body, the wrap lever on this function is now
+   exhaustively characterised: it reaches the prologue save-store scheduling region (worth the
+   4 rows of class A) and nothing else.
+2. **Integer index hoists are inert.** `s32 i2 = t0 * 2;` / `s32 i4 = t0 * 4;` hoisted to the
+   top of the loop body and substituted into A/B/C: 29 with both, 29 with either alone -
+   byte-identical to the un-hoisted flipped body. On the UNFLIPPED floor-5 body the same
+   hoists measure 5, i.e. they are byte-neutral there (a free structural degree of freedom for
+   future sessions). Log r.log (R1/R2/R3/R6).
+3. **Pointer hoists partially recover it, and one of them triggers LICM.** `u8 *pC = base +
+   (t0*4);` hoisted: 25. pC + `u8 *pB = (u8 *)&D_800A35D0 + (t0*4);`: 20, and adding `u8 *pA`
+   and/or `u8 *pD` changes nothing (R5/R7/R8/R9 all 20). pB ALONE regresses to 40: hoisting the
+   &D_800A35D0 base into its own local makes LICM lift the `lui/addiu %hi/%lo(D_800A35D0)` pair
+   out of the outer loop entirely (they appear at build rows 30-31, in the prologue), whereas
+   the target computes them inside the loop at rows 49-50. This is the same LICM hazard s10's
+   struct-typed rederive hit, reached by a completely different construct - so "any construct
+   that gives &D_800A35D0 a loop-invariant name triggers the hoist" is now a two-witness fact.
+   Log r.log/r2.log (R4/R5/R7-R12).
+
+### The state of the two residuals after s12
+
+Class C: **REACHABLE, reached, and now a statement-ORDER problem rather than an expression
+problem.** Two basins exist and neither is 0:
+  * unflipped + ABCD store order  = the target's loop-head emission rows 38-61 EXACTLY, and the
+    wrong plus-operand order at row 62 -> floor 5 (3 class-C rows + 2 class-B rows).
+  * flipped   + CABD store order  = the target's class-C rows 60-64 EXACTLY, and the store
+    groups emitted in the wrong order -> 12.
+The original C therefore produced BOTH, which means our loop body still differs from the
+original somewhere OUTSIDE the class-C expression and OUTSIDE the four store groups' order.
+Class B is untouched by everything in this session and remains where s8/s9 left it.
+
+### Live frontier after s12
+
+1. **Find the statement-level structure that makes the flip free.** The two basins prove the
+   original C reaches both the target's loop-head emission AND the flipped addu. s12 has now
+   eliminated: the class-C expression spelling (s10, 4 forms; s12 int-domain), the four store
+   groups' ORDER (24/24 measured), the spelling of groups A/B/D (8 forms, six byte-identical),
+   integer index hoists, pointer hoists, and wraps (79 positions in each basin). What remains
+   untried at statement level: the SHAPE of the two loops themselves - the inner
+   `do { p_6a[a2] = -1; p_7e[a2] = 0; a2++; } while (a2 < 5)` written as a `for`, as a
+   pointer-walking loop (`*p_6a++ = -1`), or unrolled/split into two loops; and the position of
+   the `a2 = 0;` initialisers relative to the store groups (s12's permutation always kept
+   `a2 = 0;` first). Probe those on the FLIPPED body and score against 29 (ABCD) / 12 (CABD).
+2. **Re-run the ra_solver inverse with the goal restricted to qty3 -> $v1.** The s11 frontier's
+   probe is still unspent and is now better motivated: s12 has an actual build (CABD) in which
+   the seat comes out right, so `tools/ra_solver/local_extract.py` QTYDBG on the CABD build vs
+   the flipped-ABCD build gives a MEASURED pair of allocator states that differ only in the
+   contested seat - a far stronger input to `inverse.py local` than the synthetic depth-2
+   atom space s10 searched. Extract both, diff the qty rows, and read off which atom the store
+   group order actually moved.
+3. **Class B (2 rows) stays foreclosed.** Nothing in s12 touched it; s8's dumps and s9's
+   measurement stand. Do not re-open it by spelling search.
+
+- [s12] Chassis re-measured at dispatch: the s11 candidate body applied to src/text1b.c measures sandbox --disable all = 5, 175 build insns / 175 target insns, residual = class B rows 35-36 + the row-50 LO16 scorer artifact + class C rows 62-64. Class A absent. Matches the ledger.
+
+- [s12] Class C is REACHABLE and has been REACHED in a real build. The CABD-store-group-order flipped body emits addu $3,$3,$2 / addiu $7,$3,106 / addiu $5,$3,126 after lw $2,0($28) / sll $3,$3,0x1 - byte-equal to the target's rows 60-64 (addu $v1,$v1,$v0 / addiu $a3,$v1,0x6A / addiu $a1,$v1,0x7E). This overturns the s10 typing 'class C is REACHABLE-in-model but FORECLOSED to every C-spellable input perturbation'.
+
+- [s12] The 24-way store-group permutation spread is 12..38 with the target's own emission order (ABCD) sitting at 29, near the worst. Full table in evidence.md [s12]. Statement ORDER, not expression spelling, is this function's dominant structural lever.
+
+- [s12] The wrap lever on func_800770B8 is now exhaustively characterised across three sweeps (s11: 63 positions unflipped; s12: 79 positions flipped-ABCD, 79 positions flipped-CABD). It reaches the prologue save-store scheduling region (the 4 rows of class A) and, in the CABD basin, 2 rows of store-group displacement. It reaches nothing else - 42/79 and 38/79 positions are byte-identical to no wrap at all.
+
+- [s12] Integer-valued hoists (s32 i2 = t0*2; s32 i4 = t0*4;) are byte-neutral on the floor-5 body and completely inert on the flipped body; pointer-valued hoists are what move this function's loop-head schedule. A hoisted &D_800A35D0 pointer local triggers a LICM lift of its lui/addiu out of the outer loop (score 40) - the same hazard s10's struct-typed rederive hit, now witnessed by a second, unrelated construct.
+
+- [s12] The two basins do not compose: unflipped+ABCD gives the target's loop-head rows 38-61 exactly with the wrong operand order at row 62 (score 5); flipped+CABD gives the target's rows 60-64 exactly with the store groups displaced (score 12, 10 with a second wrap). The original C produced both, so our loop body still differs from the original somewhere outside the class-C expression, outside the group order, and outside the A/B/D spellings - all three of which s12 measured exhaustively.
+
+- [s12] Class B (rows 35-36) was not touched by anything in s12; s8's instrumented-cc1 dumps and s9's 176-insn measurement stand unchanged.

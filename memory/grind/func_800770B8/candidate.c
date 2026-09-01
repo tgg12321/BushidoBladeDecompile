@@ -68,6 +68,31 @@
  *   - The class-C operand flip on THIS chassis: 29 (was 33 on the floor-9 chassis),
  *     with or without an adjacent wrap; flip + a class-B wrap 34.
  *
+ * s12 UPDATE (structural, 2026-09-01) - the body below is UNCHANGED and still
+ * measures 5 on today's chassis, but the residual typing has changed:
+ *   * CLASS C IS NOT FORECLOSED. s10/s11 typed it FORECLOSED-in-C after varying
+ *     the SPELLING of the plus-operand flip with the loop body held at its ABCD
+ *     store-group order. s12 inverted that: holding the flip FIXED and permuting
+ *     the four store groups (all 24 orders measured) reaches CABD = score 12,
+ *     whose build emits `lw $2 / sll $3,$3,1 / addu $3,$3,$2 / addiu $7,$3,106 /
+ *     addiu $5,$3,126` - the target's rows 60-64 exactly, register seats included.
+ *     Banked rejected/s12-classC-CLOSED-flip-plus-CABD-group-order-score12.c.
+ *   * The two basins do not compose. unflipped+ABCD gives the target's loop-head
+ *     rows 38-61 exactly and the wrong operand order (this form, 5); flipped+CABD
+ *     gives the target's rows 60-64 exactly and the store groups in the wrong
+ *     order (12, or 10 with a second wrap at s12/wrapq12 position W039/W040).
+ *     The original C produced both, so our loop body still differs from the
+ *     original somewhere OUTSIDE the class-C expression and OUTSIDE the group order.
+ *   * s12 NEGATIVE RESULTS (do not re-run; all in evidence.md/hypotheses.md [s12]):
+ *     79-position second-wrap sweep on flipped ABCD (min 29, 42/79 byte-identical);
+ *     79-position second-wrap sweep on flipped CABD (min 10 at W039/W040);
+ *     integer index hoists `s32 i2/i4` on the flipped body (inert, 29) and on THIS
+ *     body (byte-neutral, 5 - a free structural degree of freedom);
+ *     pointer hoists pA/pB/pC/pD in every combination (best 20; pB alone regresses
+ *     to 40 because LICM lifts the &D_800A35D0 lui/addiu out of the outer loop);
+ *     eight A/B/D group re-spellings on the flipped body (six byte-identical at 29,
+ *     deleting the `base` local costs an instruction at 176).
+ *
  * Applying this body also requires the two caller-side edits (see
  * tmp/grind/func_800770B8/s3/try.py): the prototype becomes
  * `s32 func_800770B8(s32, s32, s32);` and the call site passes

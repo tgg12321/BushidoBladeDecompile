@@ -1037,3 +1037,63 @@ scored, 8 real, one unrelocated-LO16 artifact".
 - probe: python3 tools/scan_hand_coded.py --single func_800770B8
 - result: tier=LOW score=0/8, 'no strong hand-coded indicators'; S1-S8 all unset (175 insns, 5 spills, 14 distinct regs). The canonical-asm grant path is NOT available to this function.
 - verdict: KILLED
+
+## [s12] The class-C plus-operand flip is intrinsically worth +24 rows of collateral, so class C is FORECLOSED-in-C (the s10/s11 typing).
+- mechanism: s10 measured four flip spellings at 175/33 with byte-identical positional diffs and concluded "the collateral is intrinsic to the flipped tree, not to a spelling"; s11 re-measured it at 29 on the floor-5 chassis and concluded the same. Both sessions varied the SPELLING OF THE FLIP while holding the rest of the loop body fixed.
+- probe: hold the flip FIXED (int-domain spelling `(t0 * 10) + (s32)D_800A36A0 + 0x6A/0x7E`) and vary the REST of the outer-loop body instead. Exhaustive 24-way permutation of the four store groups of the outer loop body - A = `ptr = (t0*2)+base` + the five sh at 0x10/0x8/0xC/0x14/0x3C; B = `ptr = &D_800A35D0 + t0*4` + sh at +2/+0; C = `ptr = base + t0*4` + sh at 0x42/0x40; D = the `sb` at base+t0+0x68 - each measured with `sandbox func_800770B8 --disable all`. Generator tmp/grind/func_800770B8/s12/gen_perm.py, results tmp/grind/func_800770B8/s12/perm.log.
+- result: KILLED. The collateral is NOT intrinsic. Source order ABCD (the order all prior sessions used) is one of the WORST of the 24: score 29. Group order CABD scores **12**, CADB 13, BACD 14, CBAD 16, BADC 16, CBDA 17. Spread 12..38 over the 24 orders. More importantly the CABD build closes residual class C outright: its objdump reads `lw $2,0($28) / sll $3,$3,0x1 / addu $3,$3,$2 / addiu $7,$3,106 / addiu $5,$3,126`, i.e. exactly the target's `lw $v0 / sll $v1,$v1,1 / addu $v1,$v1,$v0 / addiu $a3,$v1,0x6A / addiu $a1,$v1,0x7E` including the register seats ($v1 for the merged chain, $v0 for the bare lw). Rows 62-64 do not appear in the CABD positional diff at all.
+- verdict: KILLED (and it overturns the s10 "class C is FORECLOSED to every C-spellable input perturbation" typing: class C is REACHABLE and has now been REACHED in a real build)
+
+## [s12] A do-while(0) note fence can recover the flip's scheduling collateral.
+- mechanism: the flipped ABCD build delays `sll <t0*4>` from target row 42 to row 50 and emits the D_800A36A0 lw before the t0*2 shift, which looks like a sched1 priority change; NOTE_INSN_LOOP_BEG/END pairs bound scheduling regions (proven for class A in s11).
+- probe: exhaustive second-wrap sweep - an empty `do { } while (0);` at each of the 79 legal statement positions of the flipped ABCD body (which already carries the class-A wrap), all measured. Generator tmp/grind/func_800770B8/s12/gen_wrap.py, results tmp/grind/func_800770B8/s12/wrapflip.log.
+- result: minimum 29 over all 79 positions (42 of the 79 are byte-identical at 29; the rest regress to 30-40, three of them by changing the instruction count). No wrap position touches the flip collateral at all. This is the second exhaustive wrap sweep on this function (s11 did 63 positions on the unflipped body) and it confirms wraps reach the prologue scheduling region and nothing else.
+- verdict: KILLED
+
+## [s12] Naming the loop body's shared index expressions as locals recovers the flip's collateral (the s10 "named i4" lever, re-run on the floor-5 chassis).
+- mechanism: the flip delays the birth of the t0*4 chain; hoisting the shared subexpressions into their own statements at the top of the loop body should force them to be computed early, as the target does at rows 40/42.
+- probe: six variants on the flipped ABCD body, measured: R1 `s32 i2 = t0*2; s32 i4 = t0*4;` both hoisted; R2 i4 only; R3 i2 only; R4 `u8 *pC = base + (t0*4);` hoisted; R5 pC + `u8 *pB = (u8 *)&D_800A35D0 + (t0*4);` hoisted; R6 = R1 applied to the UNFLIPPED floor-5 body as a control. Also R7-R12 adding `u8 *pA` and `u8 *pD` hoists in every combination. Logs tmp/grind/func_800770B8/s12/r.log and r2.log.
+- result: INTEGER index hoists are completely inert on the flipped body - R1/R2/R3 all 29, identical to no hoist at all. POINTER hoists do move it: R4 (pC) 25, R5/R7/R8/R9 (pB+pC, with or without pA/pD) 20, R10 (pC+pD) 25. R11 (pB alone) REGRESSES to 40 because hoisting the &D_800A35D0 base makes LICM lift its `lui/addiu` pair out of the outer loop entirely (they appear at build rows 30-31, in the prologue; the target computes them inside the loop at rows 49-50). R6 control measures 5 - the index hoists are byte-neutral on the unflipped body, so they are a free structural degree of freedom there.
+- verdict: KILLED as a route to closing the flip collateral (best 20, vs 12 for plain CABD reordering); CONFIRMED as the mechanism note that pointer-valued hoists, not integer-valued ones, are what move this function's loop-head schedule.
+
+## [s12] A second do-while(0) wrap recovers the CABD basin's store-group displacement.
+- mechanism: in the CABD flipped build class C is closed and the entire residual is the displacement of the C store group; a NOTE fence between the store groups might re-order the emission back toward ABCD.
+- probe: exhaustive second-wrap sweep at all 79 legal statement positions of the CABD flipped body (which already carries the class-A wrap), all measured. Log tmp/grind/func_800770B8/s12/wrapq12.log, manifest wrapq12/manifest.tsv.
+- result: minimum 10, at exactly two positions - W039 (before `*(s16 *)(ptr + 0) = 0;`, the last store of the B group) and W040 (before the D-group `sb`), with W038 at 11. 38 of the 79 positions are byte-identical at 12. So a second wrap is worth 2 rows in this basin and no more; the CABD basin bottoms out at 10, which is still 5 worse than the plain unflipped floor-5 form and would additionally cost a second FAKE-annotated wrap. Banked rejected/s12-classC-closed-CABD-plus-second-wrap-score10.c.
+- verdict: KILLED
+
+## [s12] The flip's ABCD-order collateral is caused by the SPELLING of the other three store groups (base local, pointer vs int-domain addressing, one-step vs two-step &D_800A35D0).
+- mechanism: if the target's original C is A-first (its emission is: sext, sll t0*2, lw, sll t0*4, then the A stores), and A-first + the flip measures 29 in our body, then our body must differ from the original in the spelling of some group other than class C.
+- probe: eight spelling variants of groups A/B/D on the flipped ABCD body, measured: U1 `ptr = base + (t0*2)`; U2 `(t0*2) + (s32)D_800A36A0` (re-read instead of the `base` local); U3 `ptr = D_800A36A0 + (t0*2)`; U4 the `base` local deleted entirely (every group re-reads the global); U5 `base` declared `s32` instead of `u8 *`; U6 the two-step `&D_800A35D0` assignment collapsed into one statement; U7 the D-group store written as `base[t0 + 0x68]`; U8 the C-group pointer written int-domain. Log tmp/grind/func_800770B8/s12/u.log.
+- result: U1/U2/U3/U5/U7/U8 all measure exactly 29 / 175 - byte-identical to the un-respelled flipped ABCD body. U4 costs an instruction (176 / 32): deleting the `base` local makes GCC emit a third D_800A36A0 read. U6 measures 31. So the spelling of the non-class-C groups is completely inert on this chassis; only their ORDER moves the codegen. This narrows the remaining unknown: the difference between our body and the original is a statement-level structure that is neither the class-C expression, nor the four groups' order (24/24 measured), nor the spelling of groups A/B/D (8 measured).
+- verdict: KILLED
+
+## [s12] The class-C plus-operand flip is intrinsically worth ~24 rows of collateral, so class C is FORECLOSED-in-C (the s10/s11 typing).
+- mechanism: s10/s11 varied the SPELLING of the flip while holding the loop body at its ABCD store-group order and got 175/33 and 175/29 with byte-identical positional diffs, concluding the collateral was intrinsic to the flipped tree.
+- probe: Inverted the experiment: held the flip fixed (int-domain spelling) and measured all 24 permutations of the outer loop body's four store groups (A = t0*2 base + five sh; B = &D_800A35D0 + t0*4 + two sh; C = base + t0*4 + two sh; D = the 0x68 sb). tmp/grind/func_800770B8/s12/gen_perm.py, perm.log.
+- result: Spread 12..38, all 175 insns. ABCD (the order every prior session used, and the order the target emits stores in) is among the worst at 29; CABD scores 12, CADB 13, BACD 14. The CABD build closes class C outright - objdump reads lw $2,0($28) / sll $3,$3,0x1 / addu $3,$3,$2 / addiu $7,$3,106 / addiu $5,$3,126, matching the target's rows 60-64 including the seats ($v1 merged chain, $v0 bare lw). Rows 62-64 do not appear in its positional diff.
+- verdict: KILLED
+
+## [s12] A do-while(0) note fence can recover the flip's scheduling collateral on the ABCD body.
+- mechanism: The flipped ABCD build delays the t0*4 shift from target row 42 to row 50 and emits the D_800A36A0 lw before the t0*2 shift, which looks like a sched1 priority change; NOTE_INSN_LOOP_BEG/END pairs bound scheduling regions (proven for class A in s11).
+- probe: Exhaustive second-wrap sweep at all 79 legal statement positions of the flipped ABCD body. tmp/grind/func_800770B8/s12/wrapflip.log.
+- result: Minimum 29 over all 79 positions; 42 of the 79 are byte-identical to no wrap at all, the rest regress to 30-40 (three by changing insn count). No position touches the flip collateral.
+- verdict: KILLED
+
+## [s12] A second wrap recovers the CABD basin's store-group displacement.
+- mechanism: In the CABD build class C is closed and the whole residual is the displacement of the C store group, so a NOTE fence between store groups might re-order emission back toward ABCD.
+- probe: Exhaustive second-wrap sweep at all 79 legal statement positions of the CABD flipped body. tmp/grind/func_800770B8/s12/wrapq12.log + wrapq12/manifest.tsv.
+- result: Minimum 10, at exactly two positions (W039 before the B group's last store, W040 before the D-group sb), W038 at 11, 38 of 79 byte-identical at 12. The CABD basin bottoms out at 10 - still 5 worse than the plain unflipped form, and it would cost a SECOND FAKE-annotated wrap.
+- verdict: KILLED
+
+## [s12] Naming the loop body's shared index expressions as locals recovers the flip's collateral.
+- mechanism: The flip delays the birth of the t0*4 chain; hoisting shared subexpressions into their own statements at the top of the loop body should force them computed early, as the target does at rows 40/42.
+- probe: Twelve variants on the flipped ABCD body: integer hoists s32 i2/i4 (both, either); pointer hoists u8 *pA/pB/pC/pD in every combination; plus the integer hoists applied to the UNFLIPPED floor-5 body as a control. tmp/grind/func_800770B8/s12/r.log, r2.log.
+- result: Integer index hoists are completely inert (29, byte-identical to no hoist). Pointer hoists move it: pC 25, pB+pC 20 (adding pA and/or pD changes nothing), pC+pD 25. pB ALONE REGRESSES to 40 - hoisting the &D_800A35D0 base makes LICM lift its lui/addiu pair out of the outer loop into the prologue (build rows 30-31), the same LICM hazard s10's struct rederive hit, now a two-witness fact. Control: the integer hoists measure 5 on the unflipped body, i.e. byte-neutral - a free structural degree of freedom.
+- verdict: KILLED
+
+## [s12] The flip's ABCD-order collateral is caused by the spelling of the OTHER three store groups.
+- mechanism: The target's emission is A-first (sext, sll t0*2, lw, sll t0*4, then the A stores); A-first plus the flip measures 29 in our body, so our body must differ from the original in some non-class-C group's spelling.
+- probe: Eight spelling variants of groups A/B/D on the flipped ABCD body (pointer vs int-domain A address, base local vs re-read, base deleted, base typed s32, one-step &D_800A35D0, array-subscript D store, int-domain C address). tmp/grind/func_800770B8/s12/u.log.
+- result: Six of the eight measure exactly 29 / 175, byte-identical to the un-respelled body. Deleting the base local costs an instruction (176 / 32, GCC emits a third D_800A36A0 read); collapsing the two-step &D_800A35D0 assignment gives 31. The spelling of the non-class-C groups is inert; only their ORDER moves codegen.
+- verdict: KILLED
