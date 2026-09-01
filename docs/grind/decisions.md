@@ -18138,3 +18138,127 @@ Integration handoff executed under the 2026-09-01 owner GRANT (widened cop2
 materialize-then-copy anchor). Verification chain in commit 49972383. Ledger
 facts preserved in git history (memory/grind/func_800203B4 removed at close;
 includes fact 53, the full-build correction of the s3 nop-deletion claim).
+
+## 2026-09-01 — func_800645B0 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Grind session s16, `escalation` modality (driver-declared exhaustion: honest floor
+flat at 1 across sessions s8–s16 and five distinct modalities — rederive, permuter,
+escalation, solver, forensics). This is a proof-of-foreclosure RECORD, not a
+question to the owner and not a decision packet; per the owner's 2026-08-31 ruling
+([[ordinary-c-judge-decidable]]) the driver forecloses silently and nothing waits on
+anyone. It supersedes the two earlier terminal-sounding spans of 2026-09-01 (the one
+voided by the 11:09 discarded-session marker, and the PROGRESS NOTE that correctly
+reopened its merits) by carrying both gates re-run in a modality entitled to dispose.
+
+**What changed since the last record, and why the reopening premise is now spent.**
+The previous session broke the long-standing scheduling/optabs lock: the `h` chassis
+(fresh-destination sum `wid = idx2 + idx;` plus a second REAL, non-copy write to the
+slot index, `idx = last & 7;`) reaches **2 / 78 at 78 insns** with the index-20
+operand order, the inner-loop head (11/12) and the back-edge delay slot (65) all
+EXACT, leaving a residual of two register names. Its frontier was explicitly a
+register-SEAT question and its named next probe was the owner's 2026-09-01 **Ruling C**
+`--target-object` escape. That probe has now been executed, and it returns a typed
+negative with a named mechanism.
+
+### (i) Gate evidence
+
+**Gate (a) — canonical-asm. FAILED.** `python3 tools/scan_hand_coded.py --single
+func_800645B0`, re-run this session: **tier=LOW score=0/8**, "no strong hand-coded
+indicators" — S1 (0 multu/mflo pairs), S2 (no empty-body branches), S3 (78 insns,
+5 spills, 7 distinct registers), S4 (max load burst 2 in any 8-insn window), S5
+(no high-similarity siblings, jaccard < 0.5), S6, S7, S8 all clear. The function is
+an ordinary compiled double loop; nothing in it argues hand-written asm.
+
+**Gate (b) — SOTN-master precedent. FAILED, and now moot on the merits.** Re-censused
+this session against the uncapped `docs/reference/sotn-construct-index.md` (pin
+`aa53500226ee84be763f3e8702b27de06456b3a7`, index generated 2026-09-01, 2746 lines).
+The only PSX-tagged reuse evidence remains the five `// fake reuse of i?` cutscene
+hits (`src/boss/mar/cutscene.c:172`, `src/st/cen/cutscene.c:211`,
+`src/st/lib/cutscene.c:153`, `src/st/no3/cutscene.c:360`, `src/st/top/cutscene.c:143`),
+all of which BORROW an existing loop index. What is new is that a borrow no longer
+helps even hypothetically: H70 below measures a second, differently-valued borrow of
+`idx` at the same 2 / 78 with the identical residual shape, proving the *borrow
+itself* — not the choice of borrowed value — is what costs the two instructions. So
+there is no closing construct left for a precedent to license, granted or not.
+
+### (ii) Evidence pointers
+
+- **Chassis re-measured first, this session's tree.** SB body
+  (`memory/grind/func_800645B0/candidate.c`) pasted over the `INCLUDE_ASM` line:
+  `sandbox func_800645B0 --disable all` = **score 1, target_insns 78, build_insns 78,
+  rules_dropped 0**. The `h` form re-measured **2 / 78** unchanged.
+- **H69 (CONFIRMED) — Ruling C executed; the seat is typed FORECLOSED.**
+  `inverse_compose.py classify text1b func_800645B0 --target-object
+  build/src/text1b.o --ours-object tmp/sandbox/func_800645B0/text1b.o` on the `h`
+  build: **FIRST DIVERGENCE: RA**, 78 vs 78, same instructions, different registers
+  (`andi s0,v0,0x7` / `sh s0,0(at)` against target's `$v0`). `goal_from_tgt.py goal
+  --scope` narrows `$s0 -> $v0` to **UNIQUE pseudo 74**, goal `{"74": 2}`.
+  `inverse.py global --goal {"74":2} --depth 2 --top 8`, over a 126-atom space in six
+  classes (refs / live span / birth order / conflicts / preferences / calls-crossed),
+  returns **FORECLOSED + NEGATIVE RESULT** and names the mechanism verbatim:
+  *"pseudo 74 crosses 1 call(s) and $v0 is call-used, so prune_preferences
+  (global.c:897) strips it from this allocno's preferences before find_reg ever sees
+  it."* The extracted model corroborates independently: `flow["74"].calls_crossed = 1`
+  and `hard_conflicts["74"] = [2, 17, 29]` — $v0 (reg 2) is a HARD conflict, so no
+  preference or priority perturbation reaches it. The sibling `k` chassis (byte-offset
+  second write) is 12 / 78 with **every opcode exact** — a pure register permutation
+  whose goal `{"74":16, "78":16, "73":3}` returns NEGATIVE for the full goal and for
+  each narrowed sub-goal, each time because the needed preference atoms cannot be
+  emitted from C at all ("callee-saved registers cannot appear in pre-RA RTL from any
+  C at all, so no spelling reaches this — only a forbidden register-asm pin would").
+  Transcripts: `tmp/grind/func_800645B0/s16/solver_h_classify.txt`,
+  `solver_h_inverse.txt`, `solver_k_inverse.txt`, `solver_k_inverse_narrow.txt`.
+- **H70 (KILLED) — the last open search dies as a family.** Routing a different real
+  value through `idx` (`idx = val | mask;` consumed by `D_800A3444 = idx;`, with the
+  halfword store taking `last & 7` inline) measures **2 / 78 at 78 insns** with the
+  residual displaced one statement, identical in shape: `or s0,v1,s2` / `sw s0,0(gp)`
+  against target's `$v1`. The masked random DOES reach `$v0` the moment it stops being
+  written into `idx`. Every value borrowed into `idx` inherits `idx`'s callee-saved
+  seat because `idx` crosses the `rand` call; the target computes all of them
+  caller-saved. Banked:
+  `memory/grind/func_800645B0/rejected/or-result-routed-through-idx-same-callee-saved-seat-2of78.c`.
+- **H71 (KILLED) — the only C lever on the call-crossing is contradicted by the
+  target.** Moving `last = rand();` after the *3 sum so `idx` dies before the call does
+  free the seat (idx becomes caller-saved) but lands in `$a0`, drags `j` to `$a1`, and
+  lets reorg.c steal the sum into the `jal rand` delay slot: **11 / 78**, loop head
+  rewritten at 10/11/14/17/18/19/20/63/65. The target's own stream has `jal` at 18,
+  `sll s1,s0,0x1` in the delay slot at 19 and `addu s0,s1,s0` at 20 — the target's
+  index is itself live across that call, so the call-crossing that forecloses `$v0` is
+  a property of the original code. Banked:
+  `rejected/rand-moved-after-sum-steals-the-jal-delay-slot-11of78.c`.
+- **H72 (KILLED) — the last ordinary-C alternative to the sum spelling.**
+  `idx = idx * 3;` is byte-identical to the SB floor (1 / 78, same single residual at
+  index 20): synth_mult reduces it to `(plus (ashift idx 1) idx)`, CSE unifies the
+  ashift with the live `idx2`, and the PLUS reaches the same `expand_binop` call with
+  `target == op1`, so optabs.c:400-419 swaps identically. The operand-order wall is
+  spelling-invariant for every commutative PLUS whose destination is the idx pseudo.
+  Banked: `rejected/mul3-strength-reduce-folds-to-the-same-addu-operand-order.c`.
+- **Exhaustion.** 16 sessions; modalities rederive, permuter, escalation, solver,
+  forensics (>=4 distinct, as the driver requires); 49 banked rejected forms under
+  `memory/grind/func_800645B0/rejected/`; permuter axis discharged in s9 (all 11
+  score-0 finds were the banned loop-note wrapper, 6 distinct bodies); four standing
+  layer-1 cheat-reviewer FAILs, each of which banned a construct that remains banned.
+  Ledger: `memory/grind/func_800645B0/evidence.md` (session-s16 section, newest first)
+  and `hypotheses.md` H69–H72.
+- **Best form preserved** at `memory/grind/func_800645B0/candidate.c` — the SB chassis,
+  ordinary C, zero cheat constructs, honest floor **1 / 78** re-measured this session.
+  `src/text1b.c` was restored to HEAD at end of session and `main` continues to carry
+  `INCLUDE_ASM("asm/funcs", func_800645B0);` per asm-until-matched.
+
+### (iii) Re-activation triggers
+
+1. **An owner-landed family grant covering an INVENTED multi-write carrier** (a fresh
+   local written once at a loop top and re-written later in the same iteration with a
+   derived value). That body is already measured at 0 / 78 and banked; such a grant
+   closes the function immediately. Nothing in this record asks for one, and the
+   frozen family list is owner-only to extend.
+2. **A toolchain or model finding that reaches the seat.** Concretely: an ordinary-C
+   lever that keeps a value out of a call-crossing allocno's register while leaving the
+   surrounding schedule intact, or an extension of the RA model past the local-alloc
+   suggested-register pass (`qty_phys_copy_sugg` / `qty_phys_sugg`, reported-not-scored
+   today) that the inverse solver named as the only place the mechanism could still
+   live. The two chassis to re-test against any such finding are `h` (2 / 78, residual
+   = 2 register names) and `k` (12 / 78, every opcode exact, pure register permutation).
+3. **A PSX-tagged SOTN-master precedent** for the invented multi-write carrier class
+   appearing in `docs/reference/sotn-construct-index.md` on a future re-pin — noting
+   that per H70 a plain borrow precedent would no longer be sufficient here.

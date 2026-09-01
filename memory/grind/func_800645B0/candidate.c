@@ -113,6 +113,47 @@
  * invariant set out of both loops and RA seats it callee-saved: +2 insns), and
  * every second write to the carrier whose RHS is a bare register (cse.c deletes
  * pseudo->pseudo copies, combine.c deletes hardreg->pseudo call returns).
+ *
+ * s16 (2026-09-01, escalation/disposition -- the SIXTH session on this ladder;
+ * NOTE the evidence.md block immediately below self-labels "Session 16", which
+ * is the previous session; driver numbering for THIS one is s16 and its scratch
+ * is tmp/grind/func_800645B0/s16/): floor RE-MEASURED on this tree with this
+ * exact body -- score 1, target_insns 78, build_insns 78, rules_dropped 0.
+ * THIS BODY IS STILL THE FLOOR.  The s15 frontier (the register-SEAT residual of
+ * the h form) was taken to a typed verdict with the owner's 2026-09-01 Ruling-C
+ * instrument and both remaining frontier items were KILLED:
+ *   - `inverse_compose.py classify --target-object build/src/text1b.o
+ *     --ours-object tmp/sandbox/func_800645B0/text1b.o` on the h build:
+ *     FIRST DIVERGENCE = **RA** (78 vs 78, the two andi/sh insns only).
+ *     goal_from_tgt narrows it to UNIQUE pseudo 74 -> $v0, and
+ *     `inverse.py global --goal {"74":2} --depth 2` returns **FORECLOSED /
+ *     NEGATIVE**: pseudo 74 crosses one call, so global.c:897
+ *     prune_preferences strips the call-used $v0 before find_reg ever sees it
+ *     (and flow records a hard conflict with $v0).  Same NEGATIVE for the k
+ *     (byte-offset) build under its full goal {"74":16,"78":16,"73":3} and
+ *     under each narrowed sub-goal.
+ *   - Frontier item 2 ("some OTHER real value may seat better than
+ *     `idx = last & 7;`") is KILLED as a FAMILY: routing the OR result through
+ *     idx instead (`idx = val | mask;`) also measures 2 / 78 with the identical
+ *     two-insn shape one statement later (`or s0,v1,s2` / `sw s0,0(gp)` vs
+ *     target's $v1).  Every value borrowed into idx inherits idx's callee-saved
+ *     seat; the target computes all of them caller-saved.  Banked at
+ *     rejected/or-result-routed-through-idx-same-callee-saved-seat-2of78.c.
+ *   - The one C lever on the call-crossing (move `last = rand();` after the sum
+ *     so idx dies before the call) works on the seat and destroys the schedule:
+ *     11 / 78, because reorg.c then steals the sum into the jal delay slot.  The
+ *     target's own stream proves ITS idx is live across that jal, so the
+ *     call-crossing is a property of the target.  Banked at
+ *     rejected/rand-moved-after-sum-steals-the-jal-delay-slot-11of78.c.
+ *   - Also killed: `idx = idx * 3;` (the honest multiply spelling of the *3
+ *     offset) is byte-identical to this body -- synth_mult + CSE reduce it to
+ *     the same commutative PLUS with target == op1, so optabs.c:400-419 swaps
+ *     identically.  Banked at
+ *     rejected/mul3-strength-reduce-folds-to-the-same-addu-operand-order.c.
+ * Disposition filed: the 2026-09-01 RESOLVED BY STANDING RULING (2026-07-27):
+ * FORECLOSED entry in docs/grind/decisions.md (both endgame-lock gates re-run
+ * and FAILED this session: scan_hand_coded tier=LOW 0/8; precedent census
+ * NEGATIVE on the uncapped index at pin aa53500).
  */
 s32 func_800645B0(void) {
     s32 i;

@@ -1,3 +1,107 @@
+## Session s16 (2026-09-01, escalation/disposition) -- the s15 register-seat frontier taken to a TYPED verdict with the owner's Ruling-C instrument: the seat is FORECLOSED, and borrowing idx is what costs the two insns
+
+(Driver numbering: this is grind session s16, scratch `tmp/grind/func_800645B0/s16/`.
+The block below self-labels "Session 16" but is the PREVIOUS session -- the ledger's
+own numbering drifted; trust the scratch-directory names.)
+
+- **Chassis re-measured FIRST.**  SB body (`candidate.c`) pasted over the
+  `INCLUDE_ASM` line: `sandbox func_800645B0 --disable all` = **score 1,
+  target_insns 78, build_insns 78, rules_dropped 0**.  The floor of 1 is current
+  on this tree; the h form re-measured **2 / 78** unchanged.
+
+- **H69 (CONFIRMED) -- the h residual is RA-stage and its seat is FORECLOSED.**
+  The owner's 2026-09-01 Ruling-C `--target-object` escape is implemented and
+  works on this INCLUDE_ASM function.  `inverse_compose.py classify text1b
+  func_800645B0 --target-object build/src/text1b.o --ours-object
+  tmp/sandbox/func_800645B0/text1b.o` on the h build prints **FIRST DIVERGENCE:
+  RA** (honest 78 / target 78; same instructions, different registers -- only
+  `andi`/`sh`).  `goal_from_tgt.py goal --scope` narrows `$s0 -> $v0` to
+  **UNIQUE pseudo 74** and emits goal `{"74": 2}`.  `inverse.py global
+  --goal {"74":2} --depth 2 --top 8` over a 126-atom space in 6 classes
+  (refs / live span / birth order / conflicts / preferences / calls-crossed)
+  returns **FORECLOSED + NEGATIVE RESULT**, naming the mechanism: *"pseudo 74
+  crosses 1 call(s) and $v0 is call-used, so prune_preferences (global.c:897)
+  strips it from this allocno's preferences before find_reg ever sees it."*
+  The extracted model corroborates it independently: `flow["74"].calls_crossed
+  = 1` and `hard_conflicts["74"] = [2, 17, 29]` -- $v0 (reg 2) is a HARD
+  conflict, so no preference or priority perturbation can reach it.
+  Transcripts: `tmp/grind/func_800645B0/s16/solver_h_classify.txt`,
+  `solver_h_inverse.txt`; model `h.model.json`, goal `h.goal.json`.
+
+- **H70 (KILLED) -- frontier item 2 ("some other real value may seat better")
+  dies as a FAMILY, not as a spelling.**  Routing the occupancy-bit OR result
+  through idx instead of the masked random (`idx = val | mask;` consumed by
+  `D_800A3444 = idx;`, with the halfword store taking `last & 7` inline) also
+  measures **2 / 78 at 78 insns**, and the residual is the IDENTICAL two-insn
+  shape one statement later: `59 OURS or s0,v1,s2 / TGT or v1,v1,s2`,
+  `60 OURS sw s0,0(gp) / TGT sw v1,0(gp)`.  Note what this proves in passing:
+  the masked random DOES land in $v0 as soon as it is not written into idx.  So
+  the cost is not *which* value is borrowed -- it is the borrow.  idx is live
+  across the `last = rand()` call, so its allocno is seated callee-saved for its
+  whole range and every borrowed value inherits $s0, while the target computes
+  every value in this arm caller-saved.  The three remaining candidate values
+  (the `(rand() & 0xFF) - 0x7F` store operands, `idx2`, `mask`) are all consumed
+  inside the same call-straddled region and inherit the same seat.  Banked:
+  `rejected/or-result-routed-through-idx-same-callee-saved-seat-2of78.c`.
+
+- **H71 (KILLED) -- the one C lever on the call-crossing is a target-contradicted
+  direction.**  Ending idx's live range before the call (move `last = rand();`
+  from before the *3 sum to after it) DOES free the seat -- idx drops to a
+  caller-saved register -- but to **$a0, not $v0**, dragging `j` to $a1, and it
+  measures **11 / 78**: with the sum available early, reorg.c fills the
+  `jal rand` delay slot with the sum instead of the target's `sll s1,s0,0x1`,
+  rewriting the whole loop head (10, 11, 14, 17, 18/19 swapped, 20, 63, 65).
+  Decisively, the TARGET's own stream has `jal` at 18, `sll s1,s0,1` in the
+  delay slot at 19 and `addu s0,s1,s0` at 20 -- i.e. **the target's idx IS live
+  across that call**, which is exactly why the target seats it callee-saved.
+  The call-crossing that forecloses $v0 is a property of the original code, not
+  of our spelling.  Banked:
+  `rejected/rand-moved-after-sum-steals-the-jal-delay-slot-11of78.c`.
+
+- **H72 (KILLED) -- the multiply spelling of the *3 offset is not a lever.**
+  `idx = idx * 3;` (an entirely ordinary C spelling of the word offset, and the
+  one form whose synth_mult expansion could plausibly emit target's
+  `addu dst, <idx<<1>, idx` operand order without a fresh destination) is
+  **byte-identical to the SB floor**: 1 / 78 with the same single residual at
+  index 20.  GCC 2.7.2 reduces `idx * 3` to `(plus (ashift idx 1) idx)`, CSE
+  unifies the ashift with the live `idx2`, and the PLUS reaches the same
+  `expand_binop` call with `target == op1`, so optabs.c:400-419 swaps
+  identically.  H24/H58's operand-order wall is spelling-invariant for every
+  commutative-PLUS form whose destination is the idx pseudo.  Banked:
+  `rejected/mul3-strength-reduce-folds-to-the-same-addu-operand-order.c`.
+
+- **The k (byte-offset) chassis is now fully typed too.**  Re-measured 12 / 78
+  at 78 insns with EVERY OPCODE EXACT -- a pure register permutation
+  (`goal_from_tgt`: `$s1->$s0 x9, $s0->$s1 x3, $v1->$s0 x2, $a0->$v1 x2`, goal
+  `{"74":16, "78":16, "73":3}`).  Its goal requires two distinct allocnos (74 =
+  idx, 78 = the sum) to share $s0, i.e. the target's sum destination coalesces
+  into idx's seat.  `inverse.py global` returns NEGATIVE for the full goal AND
+  for each narrowed sub-goal (`{"74":16}`, `{"74":16,"73":3}`, `{"78":16}`),
+  each time reporting that the needed preference atoms cannot be emitted at all
+  ("callee-saved registers cannot appear in pre-RA RTL from any C at all, so no
+  spelling reaches this -- only a forbidden register-asm pin would").
+  Transcripts: `solver_k_inverse.txt`, `solver_k_inverse_narrow.txt`.
+
+- **Both endgame-lock gates re-run this session and both FAILED.**
+  (a) `python3 tools/scan_hand_coded.py --single func_800645B0` = **tier=LOW
+  score=0/8**, "no strong hand-coded indicators" (S1..S8 all clear; 78 insns,
+  5 spills, 7 distinct registers).  (b) Precedent census re-confirmed NEGATIVE
+  on the uncapped `docs/reference/sotn-construct-index.md` (pin
+  `aa53500226ee84be763f3e8702b27de06456b3a7`, index generated 2026-09-01, 2746
+  lines): the only PSX-tagged reuse evidence is still the five
+  `// fake reuse of i?` cutscene hits, all of which BORROW an existing loop
+  index -- and this session's H70 proves the borrow is precisely what costs the
+  two insns here, so even a granted borrow would not close the function.
+  Disposition filed: `## 2026-09-01 -- func_800645B0 -- RESOLVED BY STANDING
+  RULING (2026-07-27): FORECLOSED` in `docs/grind/decisions.md`.
+
+- **Artifacts.** `tmp/grind/func_800645B0/s16/` -- `apply.py`, `diff.py`,
+  `m1_rand_after_sum.c`, `v1_mul3.c`, `t2_or_into_idx.c`, `h.model.json`,
+  `h.goal.json`, `k.model.json`, `k.goal.json`, `solver_h_classify.txt`,
+  `solver_h_inverse.txt`, `solver_k_inverse.txt`, `solver_k_inverse_narrow.txt`,
+  `inv.sh`, `inv2.sh`.  `src/text1b.c` restored to HEAD at end of session.
+
+
 ## Session 16 (2026-09-01, forensics) -- the session-6 scheduling/optabs lock is BROKEN: a non-copy second real write to `idx` wins both halves; the residual is now a register seat
 
 - **Chassis re-measured first.** SB body (`candidate.c`) pasted over the
@@ -141,3 +245,23 @@
 - [s15] src/text1b.c was restored to HEAD at end of session; main continues to carry INCLUDE_ASM("asm/funcs", func_800645B0). No engine/tools/rules files were touched.
 
 - [s15] The 2026-09-01 11:09 discarded-session FORECLOSED span in docs/grind/decisions.md is superseded on the merits; a PROGRESS NOTE recording that (not a disposition, no question to the owner) was appended to docs/grind/decisions.md this session.
+
+- [s16] Chassis re-measured FIRST on this session's tree: SB body (memory/grind/func_800645B0/candidate.c) pasted over the INCLUDE_ASM line gives sandbox func_800645B0 --disable all = score 1, target_insns 78, build_insns 78, rules_dropped 0. The floor of 1 is current; the h form re-measured 2 / 78 unchanged.
+
+- [s16] The owner's 2026-09-01 Ruling-C --target-object escape is IMPLEMENTED in tools/ra_solver/inverse_compose.py and works on this INCLUDE_ASM function; build/src/text1b.o is a valid target stream (78 insns, matches asm/funcs alignment).
+
+- [s16] inverse_compose classify on the h build: FIRST DIVERGENCE = RA, 78 vs 78, identical instruction multiset, two register differences only (andi/sh, $s0 vs target $v0).
+
+- [s16] goal_from_tgt scope-narrowed attribution: $s0 -> $v0 narrows to UNIQUE pseudo 74; inverse.py global returns FORECLOSED + NEGATIVE at depth 2 naming global.c:897 prune_preferences (pseudo 74 crosses 1 call, $v0 is call-used). Model: flow[74].calls_crossed = 1, hard_conflicts[74] = [2,17,29].
+
+- [s16] The k (byte-offset) chassis is 12 / 78 with EVERY OPCODE EXACT - a pure register permutation ($s1->$s0 x9, $s0->$s1 x3, $v1->$s0 x2, $a0->$v1 x2). Its goal requires two distinct allocnos (idx and the sum) to share $s0; inverse.py returns NEGATIVE for the full goal and every narrowed sub-goal.
+
+- [s16] Borrowing idx for ANY real value costs exactly the same two instructions: the masked-random borrow (h) and the OR-result borrow (t2) both measure 2 / 78 with the same residual shape, and the masked random lands in $v0 as soon as it is not written into idx.
+
+- [s16] The target's own instruction stream proves its index is live across the jal rand (jal at 18, sll s1,s0,1 in the delay slot at 19, addu s0,s1,s0 at 20), so the call-crossing that forecloses the $v0 seat is a property of the original code and cannot be spelled away.
+
+- [s16] Endgame-lock gate (a) FAILED: tools/scan_hand_coded.py --single func_800645B0 = tier=LOW score=0/8, no strong hand-coded indicators (S1..S8 all clear; 78 insns, 5 spills, 7 distinct registers).
+
+- [s16] Endgame-lock gate (b) FAILED: precedent census re-run on the uncapped docs/reference/sotn-construct-index.md (pin aa53500226ee84be763f3e8702b27de06456b3a7, generated 2026-09-01, 2746 lines) - only the five `// fake reuse of i?` cutscene borrow hits, and H70 shows a borrow precedent would not close this function anyway.
+
+- [s16] Disposition filed by this session at the end of docs/grind/decisions.md: `## 2026-09-01 - func_800645B0 - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**`. src/text1b.c restored to HEAD; main still carries INCLUDE_ASM("asm/funcs", func_800645B0).

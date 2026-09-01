@@ -1,8 +1,8 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 15,
- "current_modality": "forensics",
+ "session_count": 16,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -93,23 +93,24 @@
    "floor": 1,
    "modality": "forensics",
    "headline": "The session-6 scheduling/optabs lock is BROKEN: a non-copy second real write to idx (idx = last & 7) wins BOTH halves at 2/78 with index 20, loop head 11/12 and delay slot 65 all exact - the residual "
+  },
+  {
+   "session": 16,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "Ruling-C solver executed on both frontier chassis: the h form's 2/78 residual is typed RA-stage and FORECLOSED (idx crosses a call, global.c:897 prune_preferences + a hard conflict with $v0), and borr"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 2-insn residual of the h form is a pure register-seat question: the masked random value must stay in the rand-return seat ($v0) instead of being computed into idx's callee-saved seat ($s0), while idx still carries a second non-copy write so reg_n_sets[idx] == 2 survives into sched.c.",
-   "mechanism": "Any second write to idx lands in idx's allocated seat, and idx is seated callee-saved because it is live across the inner loop's jal rand. The target computes the mask in $v0 and never writes $s0 in that part of the arm. So the question is whether a C form exists whose second real write to idx is consumed where the target also uses $s0 (the target writes $s0 only in the wid chain: `addu $s0,$s1,$s0` and `sll $s0,$s0,2`).",
-   "next_probe": "SOLVER modality: tools/ra_solver/inverse_compose.py classify on the h and k builds using the owner's 2026-09-01 Ruling-C --target-object / --ours-object escape (which exists precisely for INCLUDE_ASM functions like this one), to type the seat residual REACHABLE or FORECLOSED and get ranked C-lever vectors. Banked bodies: rejected/both-halves-idx-second-real-nonco-andi-regseat-2of78.c and rejected/idx-second-set-byte-offset-seat-permutation-12of78.c."
+   "hypothesis": "The h chassis (2 / 78) closes if an ordinary-C form exists that keeps a computed value out of a call-crossing allocno's callee-saved seat while leaving the surrounding schedule intact - i.e. a lever on the local-alloc SUGGESTED-REGISTER pass rather than on global.c's priority inputs.",
+   "mechanism": "inverse.py's NEGATIVE explicitly bounds itself: the mechanism must lie outside the modelled inputs, and it names qty_phys_copy_sugg / qty_phys_sugg (reported-not-scored today) and reload's spill-retry as the only remaining candidates. Every modelled global-alloc input has been searched at depth 2.",
+   "next_probe": "Extend the ra_solver instrumentation to SCORE the local-alloc suggested-register pass (it is currently reported only), then re-run inverse on tmp/grind/func_800645B0/s16/h.model.json with goal {\"74\":2}. This is a tooling task, not a spelling search - the spelling search over borrowed values is closed by H70."
   },
   {
-   "hypothesis": "Other non-copy second writes to idx exist in this function's data flow and may seat better than `idx = last & 7;` - the search over WHICH real value to route through idx has only two samples so far (the masked rand at 2/78 and the byte-offset scaling at 12/78).",
-   "mechanism": "The requirement proven this session is narrow: the second write must be a computation (not a bare-register RHS, H67) and must not make some other carrier once-set-and-invariant (H66). Every remaining real value in the arm - the three (rand() & 0xFF) - 0x7F store operands, the D_800A3444 RMW, idx2, mask - is a candidate carrier, and each seats differently.",
-   "next_probe": "REDERIVE/forensics: enumerate the arm's real values as candidate second writes to idx (and to the other locals), measure each with the honest sandbox, and read .greg for the seat each one forces. Cheap - one apply + one sandbox per variant, ~1 minute each."
-  },
-  {
-   "hypothesis": "If a seating fix is found, the resulting construct is 'borrow an existing local (the dead slot index) for a second real value' - the frozen variable-reuse family - and must clear its own citation gate before it can be submitted.",
-   "mechanism": "staged-value-reused-variable.md bound 2 permits BORROWING an existing local and bars INVENTING one to borrow; the h/k forms borrow `idx` (an existing local carrying a real consumed value) but also declare the fresh `wid` named intermediate for the sum, which H58 measured as ordinary C.",
-   "next_probe": "Before any candidate-ready: read .claude/rules/defeat-licm-hoist-var-reuse.md and .claude/rules/staged-value-reused-variable.md end to end, quote the scope sentence, and find a PSX-tagged precedent in docs/reference/sotn-construct-index.md. If the citation cannot be made, emit ruling-request rather than a submission - and note that the banned-construct list for this function bars every DEAD or STAGED second set, which these are not (they are consumed real values), but a fresh adversarial reviewer will test exactly that distinction."
+   "hypothesis": "The k chassis (12 / 78, every opcode exact) closes if RA can be made to coalesce the sum's destination into idx's seat and swap idx/idx2 between $s0 and $s1.",
+   "mechanism": "Target seats idx, the sum and the byte offset all in $s0 with idx2 in $s1; ours rotates them through s1/s0/v1. The two allocnos do not conflict (idx is dead across the sum), so the assignment is feasible in principle - it is an allocation-order outcome, not a legality one.",
+   "next_probe": "Only worth spending after frontier item 1's instrumentation exists: the same suggested-register scoring is what would type this reachable or dead. Model and goal are banked at tmp/grind/func_800645B0/s16/k.model.json and k.goal.json."
   }
  ],
  "judge_constraints": [
