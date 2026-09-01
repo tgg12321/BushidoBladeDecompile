@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 9,
    "modality": "structural",
    "headline": "Floor 10 -> 9 and the insn-count gap CLOSED (175/175): writing inner loop 2 as an ordinary `for` loop blocks reorg's fall-through delay-slot steal and reproduces the target's copy+redirect fill (class"
+  },
+  {
+   "session": 4,
+   "floor": 9,
+   "modality": "permuter",
+   "headline": "First permuter campaigns ever run on this function: class A's sched2 residual is REACHABLE (fence + statement reorder measures 5) but every found fence is a scheduling barrier; the honest floor stays "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Class C (3 diffs, rows 62-64) is a local-alloc dest-coalesce between two dying input pseudos and is now a SOLVER question, not a spelling question. Eight address shapes are measured dead.",
-   "mechanism": "Rows 60 and 61 are byte-identical (`lw $v0,%gp_rel(D_800A36A0)`, `sll $v1,$v1,1`); only the following addu differs - ours ties the dest to the lw pseudo ($v0) with operands (lw, sll), the target ties it to the sll pseudo ($v1) with operands (sll, lw). Both inputs die at that insn, so the tie is a local-alloc/reload preference, and C1 proves pointer-domain PLUS canonicalization removes source order from the equation.",
-   "next_probe": "Run tools/ra_solver/inverse_compose.py classify on that seat and read .lreg's `dies in N places` for the two input pseudos (apply the [[local-alloc-death-count-class-wall]] gate first). The full cc1 -da dump set for the floor-9 form is already at tmp/grind/func_800770B8/s3/idumps/. Do NOT spend more C address shapes on this."
+   "hypothesis": "There is an ORDINARY-C construct that anchors a NOTE_INSN_LOOP_BEG/END pair between the reload-emitted save stores and the first body insn - i.e. a genuine loop whose notes land at the prologue boundary. If one exists, floor 5 is immediately available (V10 measured it) and the remaining residual is only classes B and C.",
+   "mechanism": "Only LOOP notes survive to sched2 anchored mid-block (reemit_notes reattaches them via REG_NOTES); BLOCK notes all migrate to the top of the function and are measured byte-neutral (V7/V8). So the honest form must be a real loop construct, not a scope. Candidates not yet measured: rewriting the two sp[] initialisers as a genuine 2-iteration loop placed first; hoisting an existing loop earlier; or a loop-carrying form of the ClearOTagR argument setup.",
+   "next_probe": "Measure a small set of REAL loops placed as the function's first statement (e.g. `for (t0 = 0; t0 < 2; t0++) sp[t0] = 0;` plus variants that keep the two sh $zero stores straight-line). Judge each by comparing its .sched2 note anchor position against tmp/grind/func_800770B8/s4/dumps/v1/in.i.sched2 (the exact anchor that must be reproduced), not by score alone."
   },
   {
-   "hypothesis": "Class A (4 diffs, prologue rows 7-12) may be sched2-unreachable: the target's emission order is ours exactly reversed, and only five of the eight priority-1 insns have C-controllable LUIDs.",
-   "mechanism": "sched2 block 0 'from 546 to 81' has every contested insn at priority 1, so rank_for_schedule falls through to its dependence-class and INSN_LUID tie-breaks plus the 'greater potential hazard' reordering. The five save insns' LUIDs are fixed by save_restore_insns; only {15 addiu s1, 26 a0 load, 28 a1 const, 18/21 sh stores} follow C statement order, and sched1's output order for that subset was [15, 26, 28, 18, 21] under every one of the twelve orderings measured.",
-   "next_probe": "Run tools/sched_solver on sched2 block 0 with the target's emission order (548, 554, 28, 26, 15) as the goal. It is order- and clock-exact, so it returns REACHABLE with the required LUID permutation (which then becomes a concrete C question) or FORECLOSED. That verdict is worth more than another dozen statement permutations."
+   "hypothesis": "With a fence in place the FULL A2-A12 statement-ordering set from s3 re-opens and may take class A below the 5 that V10 measured. DIAGNOSTIC ONLY - any form carrying the fence is unsubmittable.",
+   "mechanism": "s3 measured all twelve orderings on an unfenced chassis, where sched2 re-sorts the boundary and flattens the axis. V9 vs V10 proves the coupling: the same edit is -1 unfenced and +4 fenced. Only one of the twelve orderings has been re-tested on a fenced chassis.",
+   "next_probe": "Re-run the whole A2-A12 ordering set on the fenced chassis (rejected/s4-empty-do-while-zero-sched2-fence-CHEAT.c is the harness base) and record the fenced floor for each. That maps how much of the residual is ordering versus fence and tells the next session what an honest fence would actually be worth."
   },
   {
-   "hypothesis": "Class B (2 diffs, rows 35-36) needs the raw func_8006E49C result to stay live past the copy into p_old, and no C spelling produces that without triggering a cse forward.",
-   "mechanism": "Our call-result pseudo is `Register 80 used 2 times` (set plus the copy into p_old), so it dies at the copy; the target uses it four times. Every C form naming the value twice makes cse forward the handle and DELETE the D_800A35D0 loop-preheader reload, a 5-insn collapse (K1, K4). B1-B4 show restating the store addresses is byte-neutral.",
-   "next_probe": "Run tools/ra_solver inverse_compose.py classify on the p_old-vs-call-result seat. If it classifies as reachable only via a second live pseudo, that residual is a ruling-request (is a second C handle a sanctioned variable-reuse form here?), not more grinding. Do not spend another session on C variants for this class."
+   "hypothesis": "If no ordinary-C loop-note anchor exists, the correct disposition for class A is a ruling request on whether the do-while(0) carve-out extends from reorg.c to sched2 - not another spelling grind.",
+   "mechanism": ".claude/rules/do-while-zero-exception.md is scoped verbatim to the LABEL_OUTSIDE_LOOP_P / reorg.c interaction. The s4 mechanism is sched2's ready-list ordering in block 0, a different pass, and the non-extension clause in no-new-park-categories.md forbids generalising the carve-out. A bare do { } while (0) also fails T1/T2/T3/T6 outright, so only a real-bodied wrap could ever be in scope - and the only real-bodied wrap that helps (V12) is one insn short of the target.",
+   "next_probe": "Only after the loop-note-anchor probe above comes back negative: emit a ruling-request quoting the reorg.c scope sentence, the sched2 dump evidence, and a docs/reference/sotn-construct-index.md census for a sched2-motivated do-while(0) in SOTN master. Do not spend further sessions respelling the fence."
   }
  ],
  "judge_constraints": [],

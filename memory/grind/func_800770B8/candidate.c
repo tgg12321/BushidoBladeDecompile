@@ -33,6 +33,19 @@
  *   C. rows 62-64 (3 diffs): the p_6a/p_7e base `addu` ties its dest to the lw pseudo
  *      ($v0) in ours and to the sll pseudo ($v1) in target — a local-alloc
  *      dest-coalesce decision. Six address spellings measured; all neutral or worse.
+ *
+ * s4 (permuter modality) — candidate BODY UNCHANGED, still floor 9 on today's
+ * chassis (re-measured 9 / 175 insns at session start). s4's finds are all
+ * cheat-family and live in rejected/:
+ *   - A bare `do { } while (0);` immediately before the `p_old` assign measures 7,
+ *     and combined with `p_old` moved after the ClearOTagR call it measures 5.
+ *     Dumps prove the mechanism is a mid-block NOTE_INSN_LOOP_BEG/END pair that
+ *     stops sched2 interleaving the reload-emitted save stores with the first
+ *     body insns — i.e. a scheduling barrier. NOT submittable.
+ *   - Ordinary inner brace scopes do NOT reproduce it (block notes migrate to the
+ *     top of the function); measured byte-neutral.
+ *   - IMPORTANT for the next session: `p_old` moved after ClearOTagR measures 10
+ *     UNFENCED but 5 FENCED. s3's "twelve orderings dead" is chassis-conditional.
  */
 s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     u16 sp[2];

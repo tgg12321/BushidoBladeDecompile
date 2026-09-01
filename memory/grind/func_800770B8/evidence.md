@@ -386,3 +386,127 @@ s2/run_wdump.sh (what-if -> s2/wdumps/); trace in s2/dbr.err.
 - [s3] Sibling evidence: src/text1b_b.c:922 (func_800784E4, already matched) makes the same `ClearOTagR(D_800A374C, 0x1008);` call and its target asm emits the a0 lui/lw chain BEFORE the a1 constant - i.e. our order, not func_800770B8's. So the a1-first order in this target is not a property of the call, it is a property of this block's sched2 tie-breaks.
 
 - [s3] TOOLING: tmp/grind/func_800770B8/s3/try.py applies a candidate from a pristine `git show HEAD:src/text1b.c` snapshot (s2's apply.py mutated the live tree, which made back-to-back variant measurements order-dependent); tmp/grind/func_800770B8/s3/m.ps1 does apply+sandbox in one PowerShell call; all 24 measured variants are kept under tmp/grind/func_800770B8/s3/v/.
+
+## [s4] permuter modality — the class-A sched2 fence and the p_old/ClearOTagR coupling
+
+Chassis re-measured at session start: the s3 candidate.c form measures **9** on
+today's chassis (175/175 insns), identical to the s3 ledger entry. Nothing drifted.
+
+### Workspace (first permuter run this function has ever had)
+`tools/decomp-permuter/nonmatchings/func_800770B8_s4/` (and `_s4B/`) — hand-built,
+NOT `import.py`. base.c is a standalone TU: the six typedefs plus the seven
+`extern` decls that already sit above the function in src/text1b.c (lines
+6396-6407), then the function body verbatim. compile.sh mirrors the engine's
+non-GP pipeline (cc1 `-O2 -G0 ... -mel` → prologue_fix → maspsx with the seven
+standard flag groups → multu_pad → as). target.o is built from
+`asm/funcs/func_800770B8.s` with a `gp=64`-stripped prelude so the function sits
+at offset 0.
+
+GOTCHA worth reusing: `compile.sh` must NOT pass a `realpath`'d input to cpp.
+The repo path contains a space, so cc1 emits `.file 1 "/mnt/c/.../Bushido Blade 2
+Decompile/..."` and maspsx dies with `too many values to unpack (expected 3)`
+while printing only `MASPSX: An exception occurred:` — the object silently comes
+out empty (0 insns). Fix: `sed 's|^\t\.file.*|\t.file\t1 "base.c"|'` between cc1
+and prologue_fix. Validated: base 175 insns vs target 175, and the objdump diff
+is exactly the ledger's classes A (3 rows) + B (2 rows) + C (3 rows).
+
+### The finds
+Campaign A (label `s4-random-floor9`, base permuter score 372, 16166 iters, 7
+finds): the dominant, repeatedly-rediscovered lever is a bare
+`do { } while (0);` inserted in the prologue, and it pays MORE the earlier it
+sits — score 155 immediately before `p_old = (s32*)(arg0+0x58);`, 249 after it,
+309 after the `sp[]` inits.
+
+Sandbox measurements of that lever (honest metric, not permuter score):
+
+| form | sandbox | insns |
+|---|---|---|
+| s3 candidate (baseline) | 9 | 175 |
+| + `do { } while (0);` immediately before the `p_old` assign (V1) | **7** | 175 |
+| + `do { } while (0);` after the `p_old` assign (V4) | 11 | 175 |
+| real `do { p_old=…; sp[0]=0; sp[1]=0; } while (0);` (V2) | 11 | 175 |
+| real `do { p_old=…; } while (0);` (V3) | 9 | 175 |
+| inner brace scope holding `p_old`/`r` (V7) | 9 | 175 |
+| two nested inner brace scopes (V8) | 9 | 175 |
+
+V1 closes the `sw $ra,56($sp)` row: with it, sched2 emits all five
+register-save stores contiguously and only the `addiu $s1,$s0,88` / `li $a1,4104`
+pair remains swapped (objdump diff 14 half-rows → the sandbox's 9 → 7).
+
+### Pass attribution (dumps, not a guess)
+`tmp/grind/func_800770B8/s4/dumps/{cand,v1}/in.i.*` (full cc1 `-da` set for both).
+- The loop notes are present from `.rtl` onward and survive to `.dbr` (+6 lines
+  at every stage). Basic-block structure is IDENTICAL in both (14 blocks, block 0
+  is `558→81` vs `570→93`), so the notes do **not** split a scheduling region.
+- `in.i.sched2` block 0, ours: `… insn 566 (sw $s2) / insn 15 (addiu $s1) /
+  insn 26 (a0) / insn 28 (a1) / insn 560 (sw $ra) / NOTE_INSN_PROLOGUE_END`.
+  With V1: `… insn 578 (sw $s2) / insn 568 (sw $ra) / NOTE_INSN_PROLOGUE_END /
+  NOTE_INSN_LOOP_BEG 583 / NOTE_INSN_LOOP_END 582 / insn 27 (addiu $s1) /
+  insn 38 (a0) / insn 40 (a1)`.
+  i.e. the note pair sits BETWEEN the reload-emitted saves and the first three
+  body insns and stops sched2 from interleaving them.
+- NOTE_INSN_BLOCK_BEG/END notes do NOT do this: in both dumps every block note
+  has migrated to the very top of the function ahead of the first prologue insn,
+  which is why V7/V8 (real inner scopes, ordinary C) are exactly byte-neutral.
+  Only LOOP notes stay anchored mid-block (sched.c reattaches them via REG_NOTES
+  in `reemit_notes`).
+
+### The coupling — why s3's twelve statement orderings all measured dead
+s3 measured A2-A12 (orderings of the `p_old` assign / `sp[]` inits / ClearOTagR
+call / `D_800A35D8` store / `snd_StopAll` call) on an UNFENCED chassis and got
+neutral-or-worse everywhere. Campaign B (seeded on the V1 chassis, base score
+155) found score **35** by combining the fence with exactly one of those
+orderings — `p_old = (s32*)(arg0+0x58);` moved to AFTER the ClearOTagR call.
+Measured both ways:
+
+| form | sandbox |
+|---|---|
+| honest s3 chassis + `p_old` moved after ClearOTagR (V9) | **10** (worse) |
+| V1 fence + `p_old` moved after ClearOTagR (V10) | **5** |
+
+So the statement-order axis for class A is **NOT dead** — it was MASKED. The
+reorder is only profitable once sched2's prologue window is fenced; unfenced it
+costs a row. s3's "twelve orderings measured dead" conclusion is hereby scoped
+to the unfenced chassis only, and the whole ordering set is worth re-running on
+any chassis that carries a legitimate fence.
+
+### Two further measurements bounding the fence's shape
+- `do { <entire remaining function body> } while (0);` + the `p_old` move (V11):
+  **39**, 176 insns — a whole-body wrap is far worse; the note must sit at the
+  prologue boundary specifically, not merely at function scope.
+- real `do { sp[0]=0; sp[1]=0; ClearOTagR(D_800A374C,0x1008); } while (0);` on
+  the `p_old`-moved chassis (V12): **8**, 174 insns. This is the only
+  non-empty-bodied wrap that beats the honest floor, and it is one insn SHORT of
+  the target's 175, so it is not on the path to 0 as written.
+
+### Disposition of the winning forms
+V1/V10 (floor 7 / floor 5) are CHEATS and are banked as rejected/, not as
+candidate.c. An empty-bodied `do { } while (0);` whose entire measured effect is
+to stop sched2 from interleaving reload-emitted save stores with body insns is a
+scheduling barrier by construction: it fails T1 (no observable effect on the
+function's output), T2 (no human writes an empty do-while at a function's top),
+T3 (the mechanism IS a named GCC pass's behaviour and nothing else) and T6.
+`.claude/rules/do-while-zero-exception.md` does not cover it either — that
+carve-out is scoped to the LABEL_OUTSIDE_LOOP_P / reorg.c interaction, and this
+is sched2. First reach of an unsanctioned family ⇒ not submittable.
+candidate.c therefore remains the s3 form at floor 9.
+
+- [s4] Chassis check: the s3 candidate.c form re-measures 9 (175/175 insns) on today's chassis, identical to the s3 ledger entry - nothing drifted.
+
+- [s4] This is the FIRST permuter run this function has ever had; the ledger contained no permuter evidence at all before s4.
+
+- [s4] Workspaces tools/decomp-permuter/nonmatchings/func_800770B8_s4 and _s4B are hand-built (not import.py): base.c is a standalone TU of the six typedefs plus the seven extern decls already sitting above the function in src/text1b.c, then the body verbatim; compile.sh mirrors the engine's non-GP pipeline (cc1 -O2 -G0 ... -mel, prologue_fix, maspsx with the seven standard flag groups, multu_pad, as); target.o is built from asm/funcs/func_800770B8.s with a gp=64-stripped prelude so the function sits at offset 0. Validated: 175 base insns vs 175 target, and the objdump diff is exactly the ledger's classes A (3 rows) + B (2 rows) + C (3 rows).
+
+- [s4] REUSABLE TOOLING GOTCHA: a permuter compile.sh for this repo must NOT hand cpp a realpath'd input. The repo path contains a space, so cc1 emits a .file directive containing spaces, maspsx dies with 'too many values to unpack (expected 3)' while printing only 'MASPSX: An exception occurred:', and the .o comes out silently EMPTY (0 insns) while the pipeline still exits 0. Fix: sed the .file line to a constant between cc1 and prologue_fix.
+
+- [s4] Campaign A telemetry: base permuter score 372, 16166 iterations, 7 finds (155/249/275x2/309/355x2), best 155; the do-while(0) construct was rediscovered from three independent seeds and pays MORE the earlier it sits (155 before the p_old assign, 249 after it, 309 after the sp[] inits).
+
+- [s4] Campaign B telemetry (seeded on the fenced chassis): base permuter score 155, 17760 iterations, 2 finds (95, 35), best 35 = the fence plus p_old moved after ClearOTagR plus two further dead constructs the permuter piled on top.
+
+- [s4] Sandbox measurement table (honest metric, all 175 insns unless noted): s3 candidate 9 | V1 empty do-while(0) before the p_old assign 7 | V4 same after the p_old assign 11 | V2 real wrap of the first three statements 11 | V3 real wrap of the p_old assign only 9 | V7 inner brace scope 9 | V8 two nested inner scopes 9 | V9 p_old moved after ClearOTagR unfenced 10 | V10 fence + p_old moved 5 | V11 whole-body do-while(0) wrap + p_old moved 39 (176 insns) | V12 real wrap of sp[0]/sp[1]/ClearOTagR on the moved chassis 8 (174 insns).
+
+- [s4] A measured honest distance of 5 exists for this function's C (V10), which is direct evidence that classes A and B are not jointly foreclosed - the residual at 5 is smaller than any class-partition argument previously banked.
+
+- [s4] Every s4 form that beats the honest floor is banked under memory/grind/func_800770B8/rejected/ with a name that states why it is dead; candidate.c is byte-identical to the s3 body and still measures 9. src/text1b.c was reverted to HEAD (INCLUDE_ASM) at session end.
+
+- [s4] Both campaigns were harvested with --stop before the session ended; pgrep confirms no surviving permuter process.
