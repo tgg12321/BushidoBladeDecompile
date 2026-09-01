@@ -191,3 +191,51 @@
 - probe: Measured live lengths for every variant in the A* and C_* sweeps out of the .lreg dump.
 - result: CONFIRMED, and achieved: writing the final OR as `(masked_word) | (r << n)` gives the count live length 27 > s's 26, and the .greg dump then reports the target allocation order `74 72 73 75` with s in $a2 (6) and the count in $a3 (7). The mechanism is the LUID tie-break, not a dependence-graph change as s2 predicted.
 - verdict: CONFIRMED
+
+
+## s4 (permuter, 2026-09-01)
+
+- **H-s4-1 (CONFIRMED -> MATCH).** The floor-13 residual is closable by ordinary-C
+  spelling changes inside the if-arm; no coercion beyond the sanctioned split-init and
+  named-intermediate families is needed.
+  Probe: three telemetered decomp-permuter campaigns (candidate.c chassis, s3 a-family
+  frontier chassis, s3 b-family frontier chassis) plus a hand-derived 7-member
+  operand-order sweep on the survivor. Result: `m1 = 1 << avail; m1 -= 1;` (split-init)
+  takes the b-family chassis from 19 to 1, and naming the masked high-bit slice `hi`
+  takes it to 0. Verdict: CONFIRMED.
+
+- **H-s4-2 (CONFIRMED).** The final OR's emitted source-operand order is set by RTL
+  expansion from the C expression tree, independently of the register allocation.
+  Mechanism: expr.c expand_binop emits the tree's operand 0 as the first source of
+  `iorsi3`; combine preserves it.
+  Probe: cc1 -da dumps of the score-1 and score-0 forms
+  (tmp/grind/func_8003D888/s4/dumps_v0 vs dumps_w3). `.greg` is byte-identical (same
+  conflicts, same `;; 75 preferences: 3`, same dispositions); the sole `.combine`
+  difference is `(ior:SI (reg 88) (reg 89))` vs `(ior:SI (reg 89) (reg/v 81))`.
+  Verdict: CONFIRMED.
+
+- **H-s4-3 (KILLED).** "Swapping the OR's operands in the source expression is
+  interchangeable with naming one of them."
+  Probe: the in-situ swap `r = (r << n) | (((u32)p >> shift) & m2);` measures **17**, vs
+  0 for the named form. The swap moves the statement's LUID, which changes sched1's order
+  and therefore REG_LIVE_LENGTH / allocno_compare; the naming does not.
+  Verdict: KILLED -- the two are NOT interchangeable, and this is the resolution of the
+  s3 G2/G3(b) coupling.
+
+- **H-s4-4 (KILLED).** "An existing local can carry the masked slice instead of a fresh
+  one." Probe: borrowing `m2` scores 19, borrowing `m1` scores 29, and naming the OTHER
+  operand (`lo = r << n`) scores 18. Verdict: KILLED -- only a fresh local holding the
+  masked slice reaches 0.
+
+- **H-s4-5 (CONFIRMED).** The m1 split-init and the named intermediate are independent
+  levers. Probe: the matched form minus the split (`m1 = (1 << avail) - 1;` with `hi`
+  retained) scores 19. Verdict: CONFIRMED -- both are required.
+
+- **s3 frontier H8(a)/H8(b)/H8(c) are SUPERSEDED, not killed.** H8(c) predicted that once
+  the seating gates were satisfied the remaining differences would be register names and
+  the build would reach distance 0 -- that is what happened, but by a different route:
+  the win came from the b-family chassis (which H8(b) framed as the wrong-seating
+  branch), and the avail/$a1 hard-reg conflict of H8(a) never had to be removed at all.
+  The split-init mutation reorganised the block's pseudos enough that the seating question
+  dissolved. Recorded so a future session does not re-open H8(a) as an outstanding lever:
+  it is moot.

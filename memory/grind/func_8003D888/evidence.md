@@ -263,3 +263,83 @@ Two sub-problems, both visible in the greg conflict lines:
 - [s3] The 37th insn is a register consequence, not a scheduling one: our 36-insn builds are short exactly one assembler-inserted load-delay nop, because the target's `addu a3,a1,zero` must precede `lw a1,8(a2)` (that load DEFINES $a1). Once avail lands in $a1 the 37th insn appears for free.
 
 - [s3] Harness note: the PowerShell tool cannot invoke `bash tools/wsl.sh` (wsl is not on its PATH); dumps must be generated from the Bash tool, scores from the PowerShell tool. The PowerShell tool's working directory also persists across calls, so Set-Location to the repo root at the top of each sweep.
+
+
+## s4 (permuter, 2026-09-01) -- MATCH. Floor 13 -> 0; full-build SHA1 == oracle.
+
+Chassis: candidate.c re-applied to src/code6cac_c2.c at session start and re-measured
+**13** (37/37 insns), matching the s2/s3 ledger. HEAD still carried the legacy
+register-pin/__asm__ cheat chassis when this session started; the working tree now holds
+the matched pure-C body.
+
+### Permuter setup (three chassis, all telemetered, all harvested + stopped in-session)
+Standalone single-function workspaces built by tmp/grind/func_8003D888/s4/mkws.sh
+(full PsyQ pipeline: cpp -> cc1 -O2 -G0 -mel -> prologue_fix -> maspsx 2.34 -> multu_pad,
+region-extracted, assembled with the project AS_FLAGS; target.o assembled from
+asm/funcs/func_8003D888.s). VERIFIED FAITHFUL: the standalone build of candidate.c
+reproduces the same insn stream and the same seating as the full-TU sandbox build, so the
+standalone context is a valid permuter chassis for this function.
+  - tmp/perm_3D888_s4a  base = candidate.c (floor 13)                weighted base 725
+  - tmp/perm_3D888_s4b  base = frontier_blocklocal_ptr_afamily_15.c  weighted base 375
+  - tmp/perm_3D888_s4c  base = frontier_blocklocal_ptr_bfamily_19.c  weighted base 670
+
+The permuter's weighted metric RANKED THE FRONTIER FORMS AHEAD OF THE FLOOR FORM (375 and
+670 vs 725) even though the objdump floor said the opposite (15 and 19 vs 13) -- a useful
+calibration datum: on a function whose whole residual is register naming, the permuter's
+reg-weighted score and the engine's raw insn-diff score are not monotone in each other,
+and seeding the permuter from the STRUCTURALLY closest form rather than the numerically
+lowest-scoring form is what produced the win here.
+
+### The find (s4c, output-10-1, ~2 min / ~600 iterations from launch)
+A single mutation of the b-family frontier form: split the low-mask computation
+`m1 = (1 << avail) - 1;` into `m1 = 1 << avail; m1 = m1 - 1;`. Weighted 670 -> 10.
+Re-measured by hand in the cheat-invisible sandbox: **13 -> 1**, 37/37 insns. The residual
+at score 1 was ONE instruction: `or $v1,$v1,$v0` (target) vs `or $v1,$v0,$v1` (build) --
+the source-operand order of the final IOR, with every other instruction and every register
+already correct.
+
+### Closing the last instruction (hand-derived, 7-member operand-order sweep)
+| spelling of the final OR | score |
+|---|---|
+| `hi = ((u32)p >> shift) & m2; r = (r << n) OR hi;`  **<- MATCH**       | **0** |
+| `r = (((u32)p >> shift) & m2) OR (r << n);` (the permuter find)        | 1 |
+| `r = (r << n) OR (((u32)p >> shift) & m2);` (operands swapped in situ) | 17 |
+| `r <<= n; r OR= ((u32)p >> shift) & m2;`                               | 18 |
+| `r = r << n; r = r OR (((u32)p >> shift) & m2);`                       | 18 |
+| `lo = r << n; r = (((u32)p >> shift) & m2) OR lo;` (name the OTHER operand) | 18 |
+| `m2 = ((u32)p >> shift) & m2; r = (r << n) OR m2;` (borrow m2 as carrier)   | 19 |
+| `m1 = ((u32)p >> shift) & m2; r = (r << n) OR m1;` (borrow m1 as carrier)   | 29 |
+
+### MECHANISM, dump-proven (dumps_v0 = score-1 form, dumps_w3 = matched form)
+The two forms have BYTE-IDENTICAL `.greg` allocation: same conflict lines for 72/73/74/75,
+same `;; 75 preferences: 3`, same register dispositions. The ONLY difference in the whole
+`.combine` dump is the IOR insn's source-operand order:
+
+    score-1 form : (ior:SI (reg:SI 88) (reg:SI 89))    -> or $v1,$v0,$v1
+    matched form : (ior:SI (reg:SI 89) (reg/v:SI 81))  -> or $v1,$v1,$v0
+
+So the lever is RTL EXPANSION operand order (expr.c expand_binop takes the C expression
+tree's operand 0 as the first source), preserved through combine -- NOT a register
+allocation effect and NOT a scheduling effect. That is precisely why naming the masked
+slice works where swapping the operands in the source expression does not: the in-situ
+swap ALSO moves the statement's LUID, which changes sched1's order, REG_LIVE_LENGTH and
+`allocno_compare`, and regresses the build to 17 (the s3 G2/G3(b) coupling). Naming the
+sub-expression keeps the statement where it was and changes only the expression tree.
+
+### The m1 split is load-bearing and independent
+Removing the split from the matched form (`m1 = (1 << avail) - 1;` with `hi` still
+present) scores **19**. The split and the named intermediate are two independent levers;
+both are required. `m1 = 1 << avail; m1 -= 1;` (the exact owner-sanctioned compound shape)
+and the permuter's `m1 = m1 - 1;` both score 0 -- the committed form uses `-=`.
+
+### Final state
+`sandbox func_8003D888 --disable all` = **score 0, 37/37 insns**, and `verify-oracle` =
+ok with build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, with the
+annotated body in src/code6cac_c2.c. Self-vet at memory/grind/func_8003D888/self_vet.md.
+
+- [s4] MATCH: floor 13 -> 0 (37/37 insns), full-build SHA1 == oracle. Two independent levers, both required: (a) same-variable split-init of the low mask `m1 = 1 << avail; m1 -= 1;` (owner-sanctioned family 2026-06-13; without it the form scores 19), and (b) a fresh named intermediate `u32 hi` for the masked high-bit slice, which fixes the final OR's source-operand order.
+- [s4] The last instruction of the gap was `or $v1,$v1,$v0` vs `or $v1,$v0,$v1`. Dump-proven mechanism: the `.greg` allocation is byte-identical between the score-1 and score-0 forms; the only difference in `.combine` is the IOR insn's operand order, so the lever is RTL expansion (expr.c expand_binop reading the C expression tree's operand order), preserved by combine -- not RA, not scheduling.
+- [s4] Naming the sub-expression is NOT interchangeable with swapping the operands in the source expression: the in-situ swap also moves the statement's LUID, perturbing sched1 -> REG_LIVE_LENGTH -> allocno_compare, and regresses the build to 17. This is the concrete resolution of s3's G2/G3(b) coupling -- the two knobs decouple by naming rather than by reordering.
+- [s4] Seven operand-order spellings measured: named-hi 0, permuter find 1, in-situ swap 17, compound `r <<= n; r |= ...` 18, two-statement 18, name-the-other-operand 18, borrow m2 19, borrow m1 29. Only a FRESH named local for the masked slice reaches 0; borrowing an existing local as the carrier is strictly worse.
+- [s4] Permuter calibration datum: the permuter's reg-weighted score ranked the s3 frontier forms (375, 670) ahead of the numerically lower-scoring floor form (725), and the win came from the b-family frontier chassis, not from the floor chassis. On a register-naming residual the weighted score and the engine's insn-diff score are not monotone -- seed from the STRUCTURALLY closest form, not the numerically lowest one.
+- [s4] Standalone single-function permuter workspaces (tmp/grind/func_8003D888/s4/mkws.sh) were verified to reproduce the full-TU sandbox insn stream and seating for this function, so the cheap standalone chassis was a valid proxy; three campaigns (s4a/s4b/s4c) were launched, harvested and stopped in-session with telemetry.
