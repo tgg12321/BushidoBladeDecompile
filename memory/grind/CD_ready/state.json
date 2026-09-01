@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 64,
- "current_modality": "structural",
+ "session_count": 65,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -393,21 +393,27 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s63 structural: the 56/57 tie-breaker is READ from sched.c (rank_for_schedule's class rung collapses to class 3 on this target, so INSN_LUID = C statement order is the only lever), and the 62-session "
+  },
+  {
+   "session": 65,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s65 synthesis: the seat residual is now READ out of local-alloc (instrumented-cc1 QTYDBG) instead of inferred - the s61-s63 .lreg window model is a wrong proxy, and the whole residual reduces to ONE n"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The seat swap on the order-perfect base is find_free_reg's answer changing as reg 98's CONFLICT SET grows, not reg 98's own qty_compare rank - reg 98 is allocated before reg 97 on BOTH branches. The untried axis is therefore the two short-lived high-priority pseudos (the arg5 address and the D_800A11D5 index shift) that take hard registers BEFORE 98 does.",
-   "mechanism": "local-alloc.c:1568-1600 allocates qtys in qty_order (qty_compare_1 descending, ties by qty number at :1683) and find_free_reg takes the first non-conflicting hard reg. On candidate the arg5-address pseudo has pri 4.00 (span 2) and grabs its register first; on the order-perfect base it is 2.67 (span 3) while the t0-shift pseudo rises from 1.60 to 2.00. Nothing in s62 or s63 probed those two pseudos' spans directly - every probe so far aimed at reg 98 itself.",
-   "next_probe": "Splice tmp/grind/CD_ready/s63/k03_a5first_t0byte_head.c (order-perfect, score 6, candidate's arg5 spelling), run `pwsh tools/grinder/dump.ps1 CD_ready`, and run the instrumented cc1 with BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 via tmp/grind/CD_ready/s63/qty.sh to capture the ACTUAL qty_order and the hard register each quantity got (QTYDBG lines carry blk/ord/qty/reg1/birth/death/refs/got). Identify CD_ready's block by matching death-birth to 2x the .lreg 'across N insns' values. Then sweep spellings that lengthen the arg5-ADDRESS pseudo's span or shorten the t0-SHIFT pseudo's span on that base - e.g. moving the D_800A11D5 index computation between the arg5 addu and its load. Score with `& tools/wteng.ps1 main sandbox CD_ready --disable all` and disassemble with tmp/grind/CD_ready/s63/show.py 50 70."
+   "hypothesis": "The whole residual is one sched1 exchange: insn 145 (the arg-4 register load, t0's death) against insn 137 (the arg-5 stack store, the arg5 value's death) on the order-perfect base. Making 137 precede 145 gives the arg5 value pri 2.00 against t0's 1.00, so the value takes $v1 and t0 takes $a0 - the target's seats on a base that already emits the target's instruction order, i.e. score 0.",
+   "mechanism": "qty_compare_1 (local-alloc.c:1640-1684) reads death-birth off sched1's output order; the two quantities currently tie at 1.33 only because 145 (t0's death) sits one slot before 137 (the value's death). sched1 orders them by INSN_PRIORITY: 145 is a load whose result feeds the call's $a3 (path cost 2), 137 is a store with no successor but the call (path cost 1).",
+   "next_probe": "Do NOT sweep statement order (measured inert twice). Attack the PRIORITY of the pair. (a) Read tools/gcc-2.7.2/sched.c's insn_cost / priority computation for a store whose value is a pseudo versus a load into a hard argument register, and check whether the store's priority can be raised by any C-visible property of the stored VALUE (e.g. the value arriving from a different rtx class). (b) Enumerate the argument shapes that keep arg4's deref folded into the a3 load while changing arg5's store into something with a successor. (c) As a control, dump sched1 for asm/funcs/CD_ready.s's own implied order by reconstructing what quantity spans the TARGET's registers require, and check whether the target is instead consistent with 145 preceding 137 plus a DIFFERENT arg5 spelling - i.e. whether the target's block has four quantities at all. Instrument for all of it: bash tmp/grind/CD_ready/s63/qty.sh <out> then the `func=CD_ready blk=3` lines; splice with tmp/grind/CD_ready/s63/splice.py; score with `& tools/wteng.ps1 main sandbox CD_ready --disable all`."
   },
   {
-   "hypothesis": "BRANCH A (candidate.c, score 2) is CLOSED to statement-order and dependence work: the target order at 56/57 strictly requires arg5's addu to be emitted before t0's sll, and that move lengthens reg 98's window 1 by exactly one insn, flipping the seats.",
-   "mechanism": "sched.c:2408-2465 rank_for_schedule (INSN_LUID is the only live tie-breaker; the class rung needs an insn_cost != 1 that this target never produces) crossed with local-alloc.c:1640-1684 qty_compare_1 on reg 98's summed two-range span (10 -> 2.40 seats correct, 11 -> 2.18 seats swapped).",
-   "next_probe": "Do NOT re-sweep statement order or dependence spellings on this branch - s63 killed the family by source reading plus 28 measurements. The only remaining way branch A moves is raising reg 98's REFERENCE COUNT from 8 to 9+ with a REAL extra occurrence that costs no instruction (at 9 refs and span 11 the priority is 3*9/11 = 2.45, above candidate's own 2.40). s62 proved dead stores, self-assigns and identity ops on a block-local scalar are deleted before reg_scan, so the extra occurrence must materialise a byte the target already has: inspect asm/funcs/CD_ready.s for a second consumer of the t0 address that the current C computes by some other route."
+   "hypothesis": "The equivalent win on the same base is making the arg5 LOAD (insn 113), rather than the t0 shift (insn 117), fill the 111 -> 113 latency slot: that keeps the address quantity at span 1 (pri 4.00, rank 0) and gives the arg5-value quantity a lower quantity number than t0's, which wins the tie for it.",
+   "mechanism": "sched1's ready list picks the highest-priority ready insn; 117 is ready because its input (insn 99, the t0 byte load) has the longest path in the block and is always scheduled first. If 117 were not ready at that cycle, 113 would be emitted next and both the span and the quantity-number effects would vanish.",
+   "next_probe": "Find a C spelling that delays the t0 byte load's READINESS rather than its source position - e.g. making the t0 byte load depend on something scheduled after 111 (a genuine data dependence, not a fabricated one), or shortening the t0 chain's path to the call so 99 no longer outranks the arg5 chain. Both r-series (lowering a competitor's LUID) and the m-series (moving statements) are already dead, so the probe must change the DEPENDENCE GRAPH's shape. Check first with the sched1 dump (pwsh tools/grinder/dump.ps1 CD_ready, then tmp/grind/CD_ready/s63/ext.py) that the intended change actually moves 99 or 117 before spending a sandbox run."
   },
   {
-   "hypothesis": "F3 (carried forward unchanged from s60/s61/s62 - blocking for completion, not for progress): the `volatile u8 *idx_1496;` in this body is covered by legitimate-volatile-interrupt-touched rather than by the volatile-coercion ban.",
+   "hypothesis": "F3 (carried unchanged from s60-s64, blocking for COMPLETION only, not for progress): the `volatile u8 *idx_1496;` in this body is covered by legitimate-volatile-interrupt-touched rather than by the volatile-coercion ban.",
    "mechanism": "Prong 1 is satisfied with citations at every link (IRQ writer getintr at asm/funcs/getintr.s:304; handler installed by InterruptCallback(2, &D_80081F1C) at src/system.c:609 and :630). Prong 2's harm is shown by controlled measurement - removing the qualifier alone moves 179 insns to 178 and score 2 to 4. What is open is that prong 2's shape list is exact (spin-wait / double-read-across-sequence-point / IRQ-mutated-loop-bound) and this poll loop has body work, plus the absent volatile_extern_allowlist.txt entry for D_800A1494/95/96.",
    "next_probe": "This is a ruling-request, not a measurement, and it should be raised the moment the score reaches 0 - not before, because it costs a session either way and the allocation branch above is still live. Question to ask: does prong 2 admit a poll loop with body work when the double-read harm is shown by controlled measurement, and do the already-shipped matched in-TU declarations at src/system.c:549-551 and :748-749 plus the matched pointer-arithmetic shape at :770-771 constitute the allowlist grant for D_800A1496?"
   }

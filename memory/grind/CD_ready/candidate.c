@@ -66,6 +66,17 @@
  * (s61 w04) but inverts the local-alloc seat via qty_compare_1 - order and seat are each
  * independently reachable and anti-correlated through that one lever. The arithmetic of the
  * inequality that would satisfy both is written out at the end of hypotheses.md (s61).
+ * S65 CORRECTION TO THE PARAGRAPH ABOVE (read this before spending a session on the seats).
+ * The s61-s63 model of the seat half (reg 98's ".lreg used 8 times across N insns" window) is a
+ * PROXY and it is wrong: reg 98 is not one of local-alloc's block-3 quantities at all. The
+ * instrumented cc1 (`bash tmp/grind/CD_ready/s63/qty.sh <out>`, BB2_QTY_DEBUG/BB2_SUGG_DEBUG)
+ * prints the real thing - every quantity's qty_compare_1 inputs, its rank, and the hard register
+ * find_free_reg gave it. Measured on THIS body: 104 arg5-ADDRESS 18-20 refs4 pri 4.00 -> $v0;
+ * 110 22-30 refs8 3.00 -> $v0; 97 arg5-VALUE 20-26 refs4 1.33 -> $v1; 102 t0 16-24 refs4 1.00 ->
+ * $a0 (all four seats as the target wants them). On the order-perfect base the arg5 address
+ * quantity stretches to span 2 (pri 2.00) because sched1 fills the addu->load latency slot with
+ * the t0 shift, and t0 then beats the arg5 value on a 1.33-vs-1.33 tie broken by quantity number.
+ * The single change that would close the function is named in evidence.md/hypotheses.md s65.
  * Every t0-web / arg5 axis killed in s53-s59 was killed against the vT40 (masked-4) base; s61
  * re-ran the natural-C, source-position, decl-order, pseudo-split and variable-reuse families
  * against THIS base (all banked in evidence.md s61 and rejected/s61-*).

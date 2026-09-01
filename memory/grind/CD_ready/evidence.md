@@ -1628,3 +1628,158 @@ extracts the window table is read from), look.ps1 / sweep.ps1 / splice.py / show
 - [s64] KILLED: pointer re-basing of either byte load (j01-j05, j10 = 8/8/8/8/13/13); operand-order and cast reassociation on either address addu (j06-j09, all inert at 2); carrier role swap (k04-k06 = 8/9/8); t0's shift into a second fresh local (k07 = 3, k08 = 6); all ten window-1 topologies on the order-perfect base (m01-m10 = 7/9/8/6/10/7/7/6/9/6).
 
 - [s64] src/system.c was restored to its committed INCLUDE_ASM state at end of session; the tree is clean apart from metrics/events.jsonl. candidate.c is unchanged (vAT1, still the floor form at score 2). Seven new rejected forms banked under memory/grind/CD_ready/rejected/ (146 total).
+
+## s65 (synthesis, 2026-09-01) — the seat residual is READ OUT OF THE ALLOCATOR for the first time: QTYDBG names every quantity, its qty_compare inputs, its allocation rank and the hard register it got
+
+OWNER DIRECTIVE: the queue item's directive (2026-09-01 FORECLOSED-BUCKET REVIEW, Ruling A row
+`CD_ready (d4)`) has two halves. Half 1 (the Ruling-D CD_intr aggregate merge) is KILLED for this
+function by CD_sync s107's symbol-level prong-(c) finding; half 2 (re-score the banked vAT1 form
+post-`-mel`) was EXECUTED in s60 and is what produced the current floor. Acknowledged again here;
+no action was owed.
+
+Live chassis re-measurement at session start: `candidate.c` (vAT1) = **score 2, build 179,
+target 179, rules_dropped 0**; `k03_a5first_t0byte_head.c` (the order-perfect base) = **6**.
+Both reproduce exactly.
+
+### [s65] THE INSTRUMENT: BB2_QTY_DEBUG/BB2_SUGG_DEBUG give the ACTUAL local-alloc answer, and it retires the .lreg proxy s61-s63 reasoned from
+`bash tmp/grind/CD_ready/s63/qty.sh <out>` runs the instrumented cc1 (tools/gcc-2.7.2/cc1) over
+src/system.c with the local-alloc hooks. Two line kinds matter, and both carry `func=CD_ready`:
+
+    SUGGDBG-QTY func=CD_ready blk=3 qty=N reg1=R birth=B death=D refs=F ...   (qty_compare inputs)
+    QTYDBG blk=3 ord=K qty=N reg1=R ... got=H                                 (rank K -> hard reg H)
+
+`got=` is the hard register NUMBER (2 = $v0, 3 = $v1, 4 = $a0). `blk=3` is CD_ready's do_timeout
+block; the FIRST group of `QTYDBG blk=3` lines in the file belongs to CD_ready (later groups are
+other functions in the TU). birth/death are luids at 2 per insn.
+**This supersedes the .lreg "Register 98 used 8 times across N insns" reading that s61/s62/s63
+built their whole model on.** That line is per-REGISTER and sums two disjoint live ranges; the
+quantities local-alloc actually sorts are different objects, and reg 98 is not even one of them.
+
+### [s65] MEASURED quantity tables — the seat swap, root-caused
+
+Block 3, candidate.c (score 2, SEATS CORRECT, order wrong):
+
+| qty | reg1 | birth-death | refs | pri | rank | got |
+|---|---|---|---|---|---|---|
+| 1 | 104 arg5 ADDRESS | 18-20 (span 1 insn) | 4 | 4.00 | 0 | 2 = $v0 |
+| 3 | 110 D_800A11DC chain | 22-30 | 8 | 3.00 | 1 | 2 = $v0 |
+| 2 | 97 arg5 VALUE | 20-26 | 4 | 1.33 | 2 | 3 = **$v1 (target)** |
+| 0 | 102 t0 chain | 16-24 | 4 | 1.00 | 3 | 4 = **$a0 (target)** |
+
+Block 3, k03 / c02 / f01 (score 6, order PERFECT, seats swapped):
+
+| qty | reg1 | birth-death | refs | pri | rank | got |
+|---|---|---|---|---|---|---|
+| 3 | 110 | 22-30 | 8 | 3.00 | 0 | 2 = $v0 |
+| 0 | 102 arg5 ADDRESS | 16-20 (span 2 insns) | 4 | 2.00 | 1 | 2 = $v0 |
+| 1 | 104 t0 chain | 18-24 | 4 | 1.33 | 2 | 3 = $v1 (WRONG) |
+| 2 | 97 arg5 VALUE | 20-26 | 4 | 1.33 | 3 | 4 = $a0 (WRONG) |
+
+THE MECHANISM, exactly: on the order-perfect base the t0 quantity and the arg5-VALUE quantity TIE
+at pri 1.33 (identical refs 4, identical span 6 luid) and `qty_compare_1` breaks the tie by
+QUANTITY NUMBER (local-alloc.c:1683 `return *q1 - *q2;`), i.e. by birth order — which t0 wins
+because its `sll` is born two luids before the arg5 load. `find_free_reg` then hands the earlier
+quantity the lower free hard register, so t0 takes $v1 and the value takes $a0. On candidate.c the
+tie does not arise at all: the arg5 ADDRESS quantity is only ONE insn long (its `addu` and its
+dependent `lw` are adjacent in sched1's output), so it ranks 4.00, is allocated first, and the
+whole ordering rotates into the target's assignment.
+This CORRECTS s63's H-s63-F ("find_free_reg's answer changing because 98's conflict set grew"):
+the conflict sets are incidental; what changes is the RANK ORDER, and it changes because of a
+sched1 latency-slot decision (below), not because of anything about reg 98.
+
+### [s65] THE sched1 DECISION THAT COSTS THE SEATS, read from the RTL dump
+tmp/grind/CD_ready/s63/k03.sched.txt, sched1 output for the order-perfect base, in order:
+
+    99  reg98 = lbu(t0 byte)  | 106 reg74 = lbu(arg5 byte) | 141 a1 = *pp | 108 reg74 <<= 2 |
+    111 reg102 = reg74 + reg81  (arg5 ADDRESS addu)  |  117 reg104 = reg98 << 2  (t0 sll)  |
+    113 reg97 = mem[reg102]  (arg5 LOAD)  | 128 reg107 = lbu D_800A11D5 | 122 reg98 = reg104+reg81
+    | 137 mem[sp+16] = reg97 (arg5 stack store) | 133 reg110 = reg107<<2 | 143 a2 = ... |
+    145 a3 = mem[reg98] | 139 a0 = fmt | 147 call printf
+
+The arg5 load (113) depends on the addu (111) with one cycle of latency, so sched1 fills the slot
+with an independent ready insn — and it picks 117, the t0 shift. THAT one filler choice does both
+kinds of damage at once: it stretches the address quantity from span 1 to span 2 (4.00 -> 2.00,
+demoting it below reg 110) AND it makes the t0 quantity born before the arg5-value quantity, which
+is how t0 wins the 1.33 tie. On candidate.c the t0 shift is already scheduled before the addu, so
+111 and 113 end up adjacent and neither effect fires.
+
+### [s65] THE SINGLE NAMED CHANGE THAT WOULD CLOSE THE FUNCTION (the frontier, stated as one swap)
+Hold the order-perfect base. Exchange the sched1 positions of insn 145 (`a3 = mem[reg98]`, the
+arg-4 register load, currently t0's death) and insn 137 (`mem[sp+16] = reg97`, the arg-5 stack
+store, currently the value's death). That makes the value quantity 20-24 (pri 2.00) and the t0
+quantity 18-26 (pri 1.00): the value is then allocated BEFORE t0, takes $v1, and t0 takes $a0 —
+the target's seats, on a base that already has the target's instruction order. Equivalently: any
+change that makes the arg5 LOAD, rather than the t0 shift, fill the 111->113 latency slot also
+wins, because it flips the qty numbers.
+Why 145 currently beats 137 in the ready list (read from sched.c, corroborated by the dump): 145
+is a load feeding the call's $a3 (path cost 2), 137 is a store with no successor but the call
+(path cost 1), so INSN_PRIORITY separates them and the LUID tiebreak never runs.
+
+### [s65] KILLED — arg5 carrying a real second value to raise its reference count (n01-n08, 8 forms)
+`arg5 = idx_1494[1]; v0 = arg5 << 2; ...` and six variants (copy-then-shift, in-place v0 address,
+whole chain in arg5, pp last, t0 byte late, shift folded into the address) plus the same staging on
+the candidate base: 8, 6, 8, 9, 8, 8, 6, 8 — all 179 insns, 0 rules, none better than its base.
+Disassembly of n01: the ORDER comes out perfect but the byte no longer lands in the v0 carrier
+(build `lbu $a0,1($s2)` + `sll $v0,$a0,2` vs target `lbu $v0` + `sll $v0,$v0,2`), i.e. the staging
+pseudo does not coalesce and buys three new mismatches. QTYDBG on n03 shows block 3 dropping from
+four local quantities to TWO: the staged pseudos become cross-block and leave local-alloc for
+global-alloc entirely. This is the mirror image of b07 (which raises arg5's refs by carrying the
+ADDRESS, gets the seats right, and pays with `addu $v1,$v0,$s5` instead of the target's in-place
+`addu $v0,$v0,$s5`).
+
+### [s65] KILLED — materialising arg4 into its own local to move the a3 load (q01-q05)
+`arg4 = *(s32 *)t0;` at three positions, `arg4 = tbl_125c[t0];`, the role swap (arg5 folded into
+the call and arg4 staged), and both args folded into the call: 11, 11, 12, 10, 11 — all 179 insns,
+all far worse than the base 6. The a3 argument load cannot be repositioned by materialising its
+value; doing so restructures the whole block.
+
+### [s65] KILLED (inert) — hoisting the D_800A11D5 byte to lower its LUID (r01-r04)
+Hypothesis: the competing latency-slot filler is insn 128 (the D_800A11D5 byte load) and it loses
+only the INSN_LUID tiebreak because expand_call emits it at the call site; a `ix = D_800A11D5;`
+statement placed before the t0 chain would lower its LUID and make it the filler instead. Measured:
+r01 6, r03 (u8 index) 6, r04 6 — and QTYDBG on r01 is STRUCTURALLY IDENTICAL to k03 (same four
+quantities, same spans 16-20/18-24/20-26/22-30, same ranks, same `got=` 2/2/3/4). The hoist is
+byte-inert: the two fillers are NOT tied on INSN_PRIORITY, so the LUID rung is never reached.
+r02 (the same statement at the head of the block) regresses to 11.
+
+### Artifacts
+tmp/grind/CD_ready/s65/{gen.py,gen2.py,gen3.py} (the n/q/r variant generators, each documenting
+its mechanism), probe.sh (splice + disassemble + quantity-table extractor), the 17 variant .c
+files, and the quantity dumps k03.qty.txt / n01.qty.txt / n03.qty.txt / b07.qty.txt / r01.qty.txt.
+
+- [s65] The instrumented cc1's BB2_QTY_DEBUG/BB2_SUGG_DEBUG output (tmp/grind/CD_ready/s63/qty.sh) prints, for every local-alloc quantity in CD_ready's block 3, its qty_compare_1 inputs (birth/death/refs), its rank in qty_order, and the hard register find_free_reg gave it (got=, 2 = $v0, 3 = $v1, 4 = $a0). This is the direct readout of the thing 62 sessions inferred from scores and from the .lreg per-register line.
+- [s65] The .lreg "Register 98 used 8 times across N insns" number that s61/s62/s63 built their model on is NOT a qty_compare input: reg 98 is not one of block 3's four local quantities at all (it is defined twice, and its second range is a different quantity). Every window-1/window-2 argument in the s63 ledger is measuring a proxy.
+- [s65] MEASURED, candidate.c (score 2, seats CORRECT): block-3 quantities are 104 arg5-address 18-20 refs4 pri 4.00 -> rank 0 -> $v0; 110 22-30 refs8 3.00 -> rank 1 -> $v0; 97 arg5-value 20-26 refs4 1.33 -> rank 2 -> $v1; 102 t0 16-24 refs4 1.00 -> rank 3 -> $a0.
+- [s65] MEASURED, k03/c02/f01 (score 6, order PERFECT, seats swapped): 110 22-30 refs8 3.00 -> $v0; 102 arg5-address 16-20 refs4 2.00 -> $v0; 104 t0 18-24 refs4 1.33 -> $v1; 97 arg5-value 20-26 refs4 1.33 -> $a0. The t0 and arg5-value quantities TIE at 1.33 and the tie is broken by QUANTITY NUMBER (local-alloc.c:1683), which t0 wins by being born two luids earlier.
+- [s65] ROOT CAUSE (supersedes the s63 conflict-set explanation): on the order-perfect base sched1 fills the latency slot between the arg5 address addu (insn 111) and its dependent load (insn 113) with the t0 shift (insn 117). That single filler choice both stretches the address quantity from span 1 to span 2 (pri 4.00 -> 2.00, demoting it below reg 110) and makes the t0 quantity born before the arg5-value quantity, which is how t0 wins the tie. Read from tmp/grind/CD_ready/s63/k03.sched.txt.
+- [s65] THE ONE CHANGE THAT WOULD CLOSE THE FUNCTION: on the order-perfect base, exchange the sched1 positions of insn 145 (a3 = mem[reg98], the arg-4 register load = t0's death) and insn 137 (mem[sp+16] = reg97, the arg-5 stack store = the value's death). Value becomes 20-24 (pri 2.00), t0 becomes 18-26 (pri 1.00), the value is allocated first and takes $v1, t0 takes $a0 - target seats on a base that already has the target order. 145 currently precedes 137 because it is a load feeding the call's $a3 (path cost 2) against a store with path cost 1, so INSN_PRIORITY separates them and no LUID tiebreak is available.
+- [s65] KILLED: giving the arg5 variable a real second value to raise its reference count - n01-n08 (byte staged through arg5 in seven spellings plus the same on the candidate base) score 8/6/8/9/8/8/6/8. n01's disassembly gets the ORDER perfect but the staging pseudo does not coalesce with the v0 carrier (lbu into $a0 then sll into $v0 vs the target's in-place lbu/sll on $v0). QTYDBG on n03 shows block 3 dropping to two local quantities: the staged pseudos leave local-alloc for global-alloc.
+- [s65] KILLED: materialising arg4 into its own local to move the a3 argument load (q01-q05) - 11, 11, 12, 10, 11 at 179 insns.
+- [s65] KILLED (inert): hoisting the D_800A11D5 byte into a statement to lower its LUID so it, rather than the t0 shift, fills the 111->113 latency slot (r01/r03/r04 = 6, byte-inert; r02 = 11). QTYDBG on r01 is structurally identical to k03 - same quantities, spans, ranks and hard registers. The two candidate fillers are not tied on INSN_PRIORITY, so the LUID rung is never reached.
+- [s65] src/system.c was restored to its committed INCLUDE_ASM state at end of session (tmp/grind/CD_ready/s63/splice.py --restore); the only dirt is metrics/events.jsonl. candidate.c is unchanged (vAT1, still the floor form at score 2). Six new rejected forms banked (152 total).
+
+- [s65] Live chassis check: memory/grind/CD_ready/candidate.c re-measures score 2, build_insns 179, target_insns 179, rules_dropped 0; the order-perfect k03 base re-measures 6. The ledger floor reproduces exactly.
+
+- [s65] The owner directive on this queue item (2026-09-01 FORECLOSED-BUCKET REVIEW, Ruling A row CD_ready (d4)) has two halves: half 1 (the Ruling-D CD_intr aggregate merge) is KILLED for this function by CD_sync s107's symbol-level prong-(c) finding, and half 2 (re-score the banked vAT1 form post--mel) was EXECUTED in s60 and produced the current floor. Nothing was owed this session.
+
+- [s65] NEW INSTRUMENT: the instrumented cc1's BB2_QTY_DEBUG/BB2_SUGG_DEBUG output (bash tmp/grind/CD_ready/s63/qty.sh <out>) prints, for every local-alloc quantity in CD_ready's block 3, its qty_compare_1 inputs (birth/death/refs), its rank in qty_order and the hard register find_free_reg gave it (got=, 2=$v0 3=$v1 4=$a0). The first group of `QTYDBG blk=3` lines in the file is CD_ready's.
+
+- [s65] The .lreg 'Register 98 used 8 times across N insns' line that s61/s62/s63 built their entire model on is NOT a qty_compare input: reg 98 is not one of block 3's four local quantities (it is defined twice and its second range belongs to a different quantity). The window-1/window-2 framing of s63 is a proxy measurement.
+
+- [s65] MEASURED, candidate.c (score 2, seats CORRECT): 104 arg5-address 18-20 refs4 pri 4.00 rank0 -> $v0; 110 22-30 refs8 3.00 rank1 -> $v0; 97 arg5-value 20-26 refs4 1.33 rank2 -> $v1; 102 t0 16-24 refs4 1.00 rank3 -> $a0.
+
+- [s65] MEASURED, k03/c02/f01 (score 6, order PERFECT, seats swapped): 110 3.00 -> $v0; 102 arg5-address 16-20 refs4 2.00 -> $v0; 104 t0 18-24 refs4 1.33 -> $v1; 97 arg5-value 20-26 refs4 1.33 -> $a0. t0 and the arg5 value TIE at 1.33 and the tie breaks by QUANTITY NUMBER (local-alloc.c:1683), which t0 wins by being born two luids earlier.
+
+- [s65] ROOT CAUSE (supersedes s63's conflict-set explanation): sched1 fills the latency slot between the arg5 address addu (insn 111) and its dependent load (insn 113) with the t0 shift (insn 117). That one filler choice both stretches the address quantity from span 1 to span 2 (4.00 -> 2.00, demoting it below reg 110) and makes t0 born before the arg5 value. Read from tmp/grind/CD_ready/s63/k03.sched.txt.
+
+- [s65] THE SINGLE CHANGE THAT WOULD CLOSE THE FUNCTION: on the order-perfect base, exchange the sched1 positions of insn 145 (a3 = mem[reg98], the arg-4 register load = t0's death, luid 24) and insn 137 (mem[sp+16] = reg97, the arg-5 stack store = the value's death, luid 26). Value becomes 20-24 (pri 2.00), t0 becomes 18-26 (pri 1.00), value allocates first and takes $v1, t0 takes $a0 - the target's seats on a base that already has the target's instruction order.
+
+- [s65] Why that swap is hard: 145 is a load feeding the call's $a3 (path cost 2 to the call) and 137 is a store with no successor but the call (path cost 1), so INSN_PRIORITY separates them outright and no tiebreak rung is reachable.
+
+- [s65] KILLED: arg5 carrying a real second value (its byte index) to raise reg_n_refs - n01-n08 score 8/6/8/9/8/8/6/8 at 179 insns. The staging pseudo does not coalesce with the v0 carrier, and on n03 block 3 collapses from four local quantities to two (pseudos leave local-alloc for global-alloc).
+
+- [s65] KILLED: materialising arg4 into its own local to move the a3 argument load (q01-q05) - 11, 11, 12, 10, 11 at 179 insns.
+
+- [s65] KILLED (inert): hoisting the D_800A11D5 byte to lower its LUID so it fills the 111->113 slot instead of the t0 shift (r01/r03/r04 = 6 with a quantity table structurally identical to k03; r02 = 11).
+
+- [s65] src/system.c was restored to its committed INCLUDE_ASM state at end of session; the only dirt is metrics/events.jsonl plus memory/grind/CD_ready/. candidate.c is unchanged as a body (vAT1, floor 2); only its header comment gained the s65 correction. Six new rejected forms banked (152 total).

@@ -1668,3 +1668,126 @@ of the two 4.00-priority short-lived pseudos (104/110) that take registers befor
 - probe: m01-m10: byte-load-into-shift fold, whole-address single expression, two-statement arg5 chain, four positions of the t0 byte load inside the arg5 chain, &((u8 *)tbl)[idx*4], and two positions of the pp statement.
 - result: 7, 9, 8, 6, 10, 7, 7, 6, 9, 6 - the order-perfect basin's floor stays 6 and none removes an insn from window 1. The *pp load is sched1 insn 141, an ARGUMENT load emitted by expand_call whose LUID is fixed at the call site, which also explains why every pp-position probe in s62 (f04/f05) and s63 (k02/m08/m10) is inert.
 - verdict: KILLED
+
+## s65 hypotheses (synthesis, 2026-09-01)
+
+### H-s65-A — CONFIRMED (and it REPLACES the s61/s62/s63 model of the seat residual)
+STATEMENT: the $a0/$v1 seat swap between the two branches is decided by the RANK ORDER of block
+3's four local-alloc quantities, and that order is readable directly out of the instrumented cc1
+rather than inferred from scores or from the .lreg per-register line.
+MECHANISM: `qty_compare_1` (tools/gcc-2.7.2/local-alloc.c:1640-1684) sorts quantities descending by
+floor_log2(refs)*refs*size/(death-birth), ties by quantity number (:1683); `find_free_reg` then
+gives each quantity the lowest hard register not in its conflict set.
+PROBE: `bash tmp/grind/CD_ready/s63/qty.sh <out>` (BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 over
+src/system.c) with candidate.c and with k03 spliced; read the `func=CD_ready blk=3` SUGGDBG-QTY
+lines (qty_compare inputs) and the first group of `QTYDBG blk=3` lines (`ord=` rank, `got=` hard
+register).
+RESULT:
+  candidate.c (2): 104 arg5-ADDRESS 18-20 refs4 -> 4.00 rank0 $v0 | 110 22-30 refs8 3.00 rank1 $v0
+                 | 97 arg5-VALUE 20-26 refs4 1.33 rank2 $v1 | 102 t0 16-24 refs4 1.00 rank3 $a0
+  k03 (6):       110 3.00 rank0 $v0 | 102 arg5-ADDRESS 16-20 2.00 rank1 $v0
+                 | 104 t0 18-24 1.33 rank2 $v1 | 97 arg5-VALUE 20-26 1.33 rank3 $a0
+On the order-perfect base t0 and the arg5 VALUE tie at 1.33 and t0 wins the tie by quantity number
+(it is born two luids earlier). On candidate.c the tie never arises because the address quantity is
+one insn long and ranks 4.00.
+VERDICT: CONFIRMED. This retires the s63 explanation ("find_free_reg's answer changing because reg
+98's conflict set grew") and the whole window-1/window-2 framing: reg 98 is not one of the four
+quantities, and the .lreg line s61-s63 read is a per-register sum of two disjoint ranges.
+
+### H-s65-B — CONFIRMED: the coupling is ONE sched1 latency-slot decision, and it is named
+STATEMENT: the order fix and the seat loss are both consequences of sched1 choosing the t0 shift as
+the filler for the arg5 addu -> arg5 load latency slot.
+MECHANISM: sched1 list-schedules insn 111 (`reg102 = reg74 + reg81`, the arg5 address addu); its
+consumer 113 (`reg97 = mem[reg102]`) is not ready for one cycle, so the highest-priority ready insn
+is emitted between them. That insn is 117 (`reg104 = reg98 << 2`, the t0 shift). Consequences: the
+address quantity's span goes 1 -> 2 (pri 4.00 -> 2.00, demoted below reg 110), and the t0 quantity
+is born before the arg5-value quantity, which is what wins it the 1.33 tie.
+PROBE: the sched1 RTL dump for the order-perfect base, tmp/grind/CD_ready/s63/k03.sched.txt, read
+insn by insn and cross-checked against the QTYDBG birth/death luids of both bases.
+VERDICT: CONFIRMED.
+
+### H-s65-C — KILLED: raising the arg5 quantity's reference count by staging a real second value in it
+STATEMENT: s62 showed refs only move with a REAL extra occurrence (b07: address in arg5, refs 4->8,
+seats correct). Staging the arg5 BYTE INDEX in arg5 instead should raise the count the same way
+while leaving the address to accumulate in the v0 carrier (which is what b07 gets wrong).
+PROBE: n01-n07 on the k03 order-perfect base (byte + v0 shift; copy-then-shift; byte + in-place v0
+address; whole chain in arg5; pp last; t0 byte late; shift folded into the address) and n08, the
+same staging on the candidate base.
+RESULT: 8, 6, 8, 9, 8, 8, 6, 8 — all 179 insns, 0 rules, never better than the base. n01's
+disassembly has the ORDER perfect but the staging pseudo does not coalesce with the v0 carrier
+(`lbu $a0,1($s2)` + `sll $v0,$a0,2` against the target's in-place `lbu $v0` + `sll $v0,$v0,2`),
+costing three new mismatches. QTYDBG on n03 shows block 3 collapsing from four local quantities to
+two: the staged pseudos become cross-block and are handled by global-alloc.
+VERDICT: KILLED.
+
+### H-s65-D — KILLED: materialising arg4 into its own local to reposition the a3 argument load
+STATEMENT: t0's quantity dies at insn 145 (`a3 = mem[reg98]`); giving arg4 a named local moves that
+load to the statement and re-times the quantity.
+PROBE: q01 (arg4 local after the t0 chain), q02 (before the arg5 chain), q03 (`tbl_125c[t0]`
+spelling), q04 (role swap: arg5 folded into the call, arg4 staged), q05 (both args folded).
+RESULT: 11, 11, 12, 10, 11 at 179 insns — every one far worse than the base 6.
+VERDICT: KILLED.
+
+### H-s65-E — KILLED (inert): lowering the D_800A11D5 byte load's LUID so it becomes the filler
+STATEMENT: insn 128 (the D_800A11D5 byte load) is the other ready candidate for the 111 -> 113
+latency slot and loses only the INSN_LUID tiebreak because expand_call emits it at the call site; a
+`ix = D_800A11D5;` statement placed before the t0 chain lowers its LUID and should make it the
+filler, which would leave the arg5 load born before the t0 shift and flip the quantity numbers.
+PROBE: r01 (statement between the arg5 chain and the t0 chain), r02 (at the head of the block),
+r03 (u8-typed index), r04 (after the t0 chain), plus a QTYDBG read on r01.
+RESULT: r01/r03/r04 = 6 and r01's quantity table is STRUCTURALLY IDENTICAL to k03's (same four
+quantities, spans 16-20/18-24/20-26/22-30, same ranks, same got= 2/2/3/4); r02 = 11. The two
+candidate fillers are not tied on INSN_PRIORITY — 117 (shift -> addu -> a3 load -> call) outranks
+128 (load -> shift -> a2 load -> call) on this target — so the LUID rung is never reached and the
+hoist is byte-inert.
+VERDICT: KILLED.
+
+### THE FRONTIER AFTER s65 (one target, stated as a single scheduling swap)
+Everything now reduces to ONE named exchange in sched1's output on the order-perfect base:
+insn 145 (`a3 = mem[reg98]`, the arg-4 register load, currently t0's death at luid 24) and insn 137
+(`mem[sp+16] = reg97`, the arg-5 stack store, currently the value's death at luid 26). Swapping
+them makes the arg5-value quantity 20-24 (pri 2.00) and the t0 quantity 18-26 (pri 1.00), so the
+value is allocated first, takes $v1, and t0 takes $a0 — the target's seats on a base that already
+carries the target's instruction order, i.e. score 0.
+Why it is hard: 145 is a load whose result feeds the call's $a3 (path cost 2 to the call), 137 is a
+store with no successor but the call (path cost 1), so INSN_PRIORITY separates them outright and no
+tiebreak rung is reachable. The only C-visible levers on that pair are (i) the ARGUMENT SHAPE — the
+4th argument being a memory dereference is what makes 145 a load; any spelling that makes arg4
+already-in-a-register turns 145 into a move and changes its cost, and q01-q05 show the naive
+version of that (a named local) is destructive, but the untried variants are those that keep the
+deref folded while lengthening the ARG-5 store's path (e.g. a 6th argument, or an arg-5 expression
+whose value is consumed by something after the store — neither of which exists in this call), and
+(ii) the equivalent win of making the arg5 LOAD, not the t0 shift, fill the 111->113 slot, which
+requires the t0 shift to be UNREADY at that moment, i.e. its own input (the t0 byte load, insn 99)
+to be scheduled after 111 — that byte load has the longest path in the block, so it is always
+scheduled first. Both routes need a mechanism-level probe, not a spelling sweep.
+
+## [s65] The $a0/$v1 seat swap between the two branches is decided by the RANK ORDER of block 3's four local-alloc quantities, and that order is readable directly out of the instrumented cc1 rather than inferred from scores or from the .lreg per-register line.
+- mechanism: qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1640-1684) sorts quantities descending by floor_log2(refs)*refs*size/(death-birth) with ties broken by quantity number (:1683); find_free_reg then gives each quantity the lowest hard register not in its conflict set.
+- probe: bash tmp/grind/CD_ready/s63/qty.sh <out> (BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 over src/system.c) with candidate.c spliced and with k03_a5first_t0byte_head.c spliced; read the `func=CD_ready blk=3` SUGGDBG-QTY lines (qty_compare inputs) and the first group of `QTYDBG blk=3` lines (ord= rank, got= hard register, 2=$v0 3=$v1 4=$a0).
+- result: candidate.c (score 2): 104 arg5-ADDRESS 18-20 refs4 pri 4.00 rank0 $v0 | 110 22-30 refs8 3.00 rank1 $v0 | 97 arg5-VALUE 20-26 refs4 1.33 rank2 $v1 | 102 t0 16-24 refs4 1.00 rank3 $a0 (all four as the target wants). k03 (score 6, order perfect): 110 3.00 $v0 | 102 arg5-ADDRESS 16-20 2.00 $v0 | 104 t0 18-24 1.33 $v1 (WRONG) | 97 arg5-VALUE 20-26 1.33 $a0 (WRONG). On the order-perfect base t0 and the arg5 value TIE at 1.33 and t0 wins by quantity number, being born two luids earlier. Reg 98 - the register the s61/s62/s63 model was built on - is not one of the four quantities at all.
+- verdict: CONFIRMED
+
+## [s65] The order fix and the seat loss are both consequences of ONE sched1 decision: choosing the t0 shift as the filler for the arg5 addu -> arg5 load latency slot.
+- mechanism: sched1 emits insn 111 (reg102 = reg74 + reg81, the arg5 address addu); its consumer 113 (reg97 = mem[reg102]) is not ready for one cycle, so the highest-priority ready insn goes between them and that is 117 (reg104 = reg98 << 2, the t0 shift). This stretches the address quantity's span from 1 to 2 (pri 4.00 -> 2.00, demoting it below reg 110) AND makes the t0 quantity born before the arg5-value quantity, which is what wins it the 1.33 tie.
+- probe: Read the sched1 RTL dump for the order-perfect base (tmp/grind/CD_ready/s63/k03.sched.txt) insn by insn and cross-check against the QTYDBG birth/death luids of both bases.
+- result: sched1 order confirmed: 99 t0 lbu, 106 arg5 lbu, 141 *pp, 108 arg5 sll, 111 arg5 addu, 117 t0 sll, 113 arg5 lw, 128 D_800A11D5 lbu, 122 t0 addu, 137 sw 16(sp), 133, 143, 145 a3 lw, 139, 147 call. On candidate.c the t0 shift is scheduled before the addu, 111 and 113 end up adjacent and neither effect fires.
+- verdict: CONFIRMED
+
+## [s65] Raising the arg5 quantity's reference count by staging a REAL second value (the arg5 byte index) in the arg5 variable flips the qty_compare order while leaving the address to accumulate in the v0 carrier - the untried intersection of branch B (order) and branch C (b07's arg5 priority).
+- mechanism: local-alloc.c:297 sets qty_n_refs = reg_n_refs (function-wide, loop-weighted); s62 proved dead stores cannot move it and that only a real extra occurrence does (b07: 4 -> 8 refs). b07 raises the count by carrying the ADDRESS, which mis-destines the addu; carrying the BYTE should not.
+- probe: n01-n07 on the k03 order-perfect base (byte + v0 shift; copy-then-shift; byte + in-place v0 address; whole chain in arg5; pp last; t0 byte late; shift folded into the address) and n08 (same staging on the candidate base). Sandbox score for each, index-aligned disassembly of n01, QTYDBG on n01 and n03.
+- result: 8, 6, 8, 9, 8, 8, 6, 8 - all 179 insns, 0 rules, none better than its base. n01's ORDER is perfect but the staging pseudo does not coalesce with the v0 carrier (lbu $a0,1($s2) + sll $v0,$a0,2 against the target's in-place lbu $v0 + sll $v0,$v0,2), buying three new mismatches. QTYDBG on n03 shows block 3 collapsing from four local quantities to two - the staged pseudos become cross-block and go to global-alloc.
+- verdict: KILLED
+
+## [s65] Materialising arg4 into its own local repositions the a3 argument load (insn 145, t0's death) and re-times the t0 quantity.
+- mechanism: A named local makes the deref a statement-level load rather than an argument load emitted by expand_call at the call site, moving t0's death luid.
+- probe: q01 (arg4 local after the t0 chain), q02 (before the arg5 chain), q03 (tbl_125c[t0] spelling), q04 (role swap: arg5 folded into the call, arg4 staged), q05 (both args folded into the call).
+- result: 11, 11, 12, 10, 11 - all 179 insns, 0 rules, every one far worse than the base 6. Materialising the value restructures the whole block rather than re-timing one insn.
+- verdict: KILLED
+
+## [s65] Hoisting the D_800A11D5 byte into a statement lowers its INSN_LUID below the t0 shift's, so it becomes the filler for the 111 -> 113 latency slot instead, leaving the arg5 load born before the t0 shift and flipping the quantity numbers.
+- mechanism: sched.c rank_for_schedule falls through to INSN_LUID when INSN_PRIORITY ties; insn 128's LUID is high only because expand_call emits the arg-3 computation at the call site.
+- probe: r01 (ix statement between the arg5 chain and the t0 chain), r02 (head of the block), r03 (u8-typed index), r04 (after the t0 chain), plus a QTYDBG read on r01.
+- result: r01 6, r03 6, r04 6 - byte-inert; r02 11. QTYDBG on r01 is STRUCTURALLY IDENTICAL to k03 (same four quantities, spans 16-20/18-24/20-26/22-30, same ranks, same got= 2/2/3/4). The two candidate fillers are NOT tied on INSN_PRIORITY (117: shift -> addu -> a3 load -> call outranks 128: load -> shift -> a2 load -> call), so the LUID rung is never reached.
+- verdict: KILLED
