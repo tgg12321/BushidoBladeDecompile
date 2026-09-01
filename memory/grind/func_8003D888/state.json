@@ -1,7 +1,7 @@
 {
  "func": "func_8003D888",
  "file": "code6cac_c2",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 13,
    "modality": "structural",
    "headline": "Floor holds at 13; the seat rotation is now named exactly (find_reg pass-0 someone_prefers + allocno_compare order) and s1's H5 delay-slot lever is killed as a scheduling misattribution."
+  },
+  {
+   "session": 3,
+   "floor": 13,
+   "modality": "structural",
+   "headline": "Floor holds at 13, but the seat problem is decomposed into three gates and two are SOLVED: a block-local ptr/word carrier purges the count's $a1 preference (count -> $a3), and the final OR's operand a"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H7a: the count allocno's live length can be pushed to >= 26 (tie with s at 9 refs, which hands $a2 to the lower allocno number 72=s) by changing the DEPENDENCE GRAPH so the r<<=count shift cannot be scheduled early.",
-   "mechanism": "allocno_compare priority = floor_log2(refs)*refs/live_length; sched1 places r<<=count right after the `and` because nothing forces it below the word load, where the target places it",
-   "next_probe": "spell the if-arm so the shifted value depends on the word load (e.g. build r from the word-derived term first, or make the count's last use the or/store), re-measure, and read lreg's 'Register NN used X times across Y insns' for the count after each spelling; success = count live length >= s's with refs unchanged at 9"
+   "hypothesis": "H8(a): the avail allocno's hard-$a1 conflict can be removed by making avail's LAST use land at block-1 sched1 index 0 or 1, ahead of the `p = s[0]` load, so that avail and the block-local ptr/word carrier have disjoint ranges and can share $a1 exactly as the target does.",
+   "mechanism": "global_conflicts records a hard-reg conflict for every global that is live while a local_alloc-assigned hard reg is live. The p load's sched1 index is INSN_PRIORITY-driven (its source placement is byte-inert -- D1/D2 measured), so the fix must lower avail's death index rather than raise the load's index.",
+   "next_probe": "Sweep spellings that change the sched1 depth of the `1 << avail` mask chain (avail's last use): fold m1 into the `r = s[1] & m1` expression, hoist the const-1 out of both mask chains, or express m1 via a chain whose priority exceeds the load's. After each, re-read `;; 74 conflicts:` in the .greg dump and check for the absence of 5. Start from memory/grind/func_8003D888/frontier_blocklocal_ptr_afamily_15.c."
   },
   {
-   "hypothesis": "H7b: the carrier can keep its own $a1 preference if the carrier IS the param variable and the param's incoming value retains a use that cse cannot rewrite to hard $a1 (which is what deletes the carrier's entry copy in variant E).",
-   "mechanism": "set_preference records the $a1 copy-pref from the surviving entry copy (set 73 (reg a1)); in E, cse propagates hard $a1 into the count copy, the entry copy becomes dead and is deleted, and the preference goes to the count instead",
-   "next_probe": "enumerate spellings where the param's incoming value has a second, non-substitutable use before it is overwritten (e.g. the compare reading the param rather than the count, or the count copy placed where the hard-reg equivalence has been invalidated); verify with the greg header that the carrier gets a 'preferences: 5' line and the count does not"
+   "hypothesis": "H8(b): the allocation-order knob (OR association) and the local_alloc seating knob can be decoupled, giving b-family allocation order 74 72 73 75 together with a-family local seating (const-1 in $a0, r in $v1).",
+   "mechanism": "In the b-family association local_alloc gives the const-1 pseudo $v1, which forces r off $v1; in the a-family it gives it $a0 correctly but the allocation order is wrong. local_alloc's choice depends on the block-local pseudo set and their live ranges, which the same source construct controls.",
+   "next_probe": "Inside the b-family, sweep spellings of the const-1 / mask chain (m2 named vs inlined vs a separate `one` local, `1 << n` computed at different points, m1 and m2 sharing or not sharing the constant) and read the greg 'Register dispositions' line for which block-local takes hard 3 ($v1). Success = b-family order with 78 (const-1) in 4 and r (75) in 3."
   },
   {
-   "hypothesis": "H7c: the two gates may be separable -- fixing only the priority order (H7a) may already move the floor below 22 even with the count still holding $a1.",
-   "mechanism": "with the count in $a1 and s allocated first, the rotation becomes s->$a2 (correct) with carrier/count swapped, i.e. 2 wrong seats instead of 3",
-   "next_probe": "apply the H7a spelling to variant A and measure; a score below 22 confirms the gates are independent and gives the next session a monotone gradient"
+   "hypothesis": "H8(c): with G1+G2+G3 all satisfied the build reaches 37 insns and distance 0 without any coercion construct, because every remaining difference at score 15 is a register name.",
+   "mechanism": "At score 15 the instruction stream, the in-place `subu`, the branch delay slot content and both entry copies already match the target; the diff is s/$t0-vs-$a2 and avail/$a2-vs-$a1 plus the load-delay nop that follows automatically once avail is in $a1.",
+   "next_probe": "After H8(a) and H8(b) land, re-disassemble with tmp/grind/func_8003D888/s2/dis.sh and diff position-by-position against asm/funcs/func_8003D888.s; if a scheduling slot remains, attack it with the now-established LUID tie-break lever rather than with dependence-graph changes."
   }
  ],
  "judge_constraints": [],

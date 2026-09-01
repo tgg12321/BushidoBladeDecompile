@@ -154,3 +154,112 @@ ours emits it immediately after the `and`, so the target's count lives ~3 insns 
 - [s2] The only window where the count is live and the carrier is dead is the else-arm tail (li v0,1; sllv v0,v0,a3); occupying hard $a1 there would purge the count's preference, but local-alloc has $v0/$v1 free and no spare insn exists. Variant B forces a hard-$a1 occupant (block-local ptr/word) but its range lands inside the carrier's range too, so all three globals inherit the $a1 conflict and s spills to $t0 (score 20).
 
 - [s2] Harness hazard banked: src/code6cac_c2.c has an extern prototype for func_8003D888 ABOVE its caller func_8003D7B4; a splice script anchored on 's32 func_8003D888(' matches the prototype and silently deletes the caller. The sandbox still prints 13 on the mutilated TU, so always git diff --stat src/ before trusting a measurement.
+
+## s3 (structural, 2026-09-01) -- floor stays 13; the seating problem is decomposed and two of
+##   its three gates are now SOLVED by ordinary-C statement association
+
+Chassis re-check: candidate.c re-applied to src/code6cac_c2.c and re-measured **13** (37/37
+insns) at the start and again at the end of the session, so every number below is on the
+current chassis.  HEAD still carries the legacy register-pin/__asm__ cheat chassis.
+
+### s2's "source text order is inert" conclusion is WRONG and is retracted
+`rank_for_schedule` (tools/gcc-2.7.2/sched.c) breaks ties in this order: INSN_PRIORITY, then
+the dependence class relative to `last_scheduled_insn`, then **`INSN_LUID` -- the original
+insn order**.  Every scheduling decision in this function's if-arm is a priority tie, so the
+LUID tie-break (i.e. the SOURCE STATEMENT ORDER / expression association) decides the sched1
+order, and sched1's order is what REG_LIVE_LENGTH -- and therefore `allocno_compare` -- is
+computed from.  s2 measured only two reorderings (A2/A3) that happened not to change any tie;
+the general claim does not hold.  Measured proof: writing the final OR as
+`(masked_word) | (r << n)` instead of `(r << n) | (masked_word)` moves the count allocno's
+live length from 25 to 27 with the insn stream otherwise unchanged.
+
+### The residual is THREE independent gates, not two
+Reading find_reg (global.c:995-1085; MIPS defines no REG_ALLOC_ORDER, so hard regs are tried
+ascending 2,3,4,5,6,7,...) and prune_preferences (global.c:881-931) against the dumps:
+  G1  the carrier of the ptr/word value must be able to take hard $a1 -- i.e. the count
+      allocno must not hold an $a1 copy-preference (find_reg pass 0 ORs in
+      regs_someone_prefers, so any preference held by a lower-priority conflicting allocno
+      removes that register from every higher-priority allocno's first-pass choices).
+  G2  `allocno_compare` must order s BEFORE the count, or the count takes $a2 first.
+  G3  local_alloc's block-local seating must leave $v1 for r and put the const-1 pseudo in
+      $a0, and must not give the AVAIL allocno a hard-$a1 conflict.
+
+### G1 SOLVED (new shape): make the ptr/word carrier a BLOCK-LOCAL
+If `avail` stays a global and the ptr/word value is a fresh block-local `p` declared inside
+the if-arm, local_alloc seats `p` in hard $a1 inside block 1.  Hard $a1 is then live inside
+the count allocno's range, prune_preferences (global.c:908-910) purges the count's $a1
+copy-preference, and the greg dump loses its `;; 73 preferences: 5` line entirely.  Measured
+consequence: the count lands in **$a3** (target) and the s2 3-cycle seat rotation is gone.
+Forms: memory/grind/func_8003D888/frontier_blocklocal_ptr_{a,b}family_*.c.
+
+### G2 SOLVED (new lever): the final OR's operand association
+| if-arm final expression | L(s) | L(count) | allocno order | seats s/count/p/r/const1 | score |
+|---|---|---|---|---|---|
+| `r = (r << n) OR (((u32)p >> shift) & m2);` | 26 | 25 | 74 73 72 75 | $t0 / $a3 / $a1 / $v1 / $a0 | **15** |
+| `r = (((u32)p >> shift) & m2) OR (r << n);` | 26 | 27 | **74 72 73 75** | $a2 / $a3 / $a1 / $a0 / $v1 | 19 |
+| `r <<= n; r OR= ((u32)p >> shift) & m2;`    | 26 | 25 | 74 73 72 75 | -- | 18-20 |
+`74 72 73 75` is the TARGET allocation order (avail, s, count, r).  With it, s takes $a2 and
+the count takes $a3 exactly as the target does.
+
+### G3 is the whole remaining residual
+Two sub-problems, both visible in the greg conflict lines:
+  (a) the AVAIL allocno conflicts with hard $a1 in every measured form
+      (`;; 74 conflicts: ... 5 ...`).  In the target, avail and the ptr/word value SHARE $a1
+      (`lw a1,8(a2)` ... `sllv v0,a0,a1` ... `lw a1,0(a2)` ... `lw a1,0(a1)` ... `sw a1,4(a2)`),
+      so their live ranges must be disjoint.  The .sched dump for C_bnbe shows block 1's sched1
+      order beginning `27 (n -= avail), 40 (p = s[0]), 21 (li 1), 22 (1 << avail)` -- the p load
+      sits at index 1, BEFORE avail's last use at index 3, so the two ranges overlap.  The p
+      load's position is PRIORITY-driven, not LUID-driven: moving `p = s[0]` to the last possible
+      source position (variants D1/D2) is byte-identical to leaving it early.
+  (b) the OR association that fixes G2 also flips local_alloc: in the b-family the const-1
+      pseudo takes $v1 (pushing r off $v1 and avail off $a0), while in the a-family it takes
+      $a0 correctly.  The two knobs are currently coupled through the same source construct.
+
+### Additional eliminations banked this session
+- MEMORY-OP ORDER IS FORCED, not a lever.  The target's own order is load s[1], load s[0],
+  store s[0], load *ptr, store s[2], store s[1]; GCC 2.7.2's sched.c has no alias analysis, so
+  loads and stores are mutually dependent and any alternative source order emits a different
+  load/store sequence.  All alternative orders are dead by inspection.
+- A 24-variant cross product over {OR association} x {m2 named vs inlined} x {m1 before vs
+  after the `n -= avail` subtract} x {`s[1] = p` before vs after the OR} shows only the OR
+  association matters: m2 naming, m1 placement and `s[1] = p` placement are completely
+  byte-inert (all 8 members of each association family score identically).
+- The 37th insn is not a scheduling artifact.  Our 36-insn builds are short exactly one
+  assembler-inserted load-delay `nop`: the target's `addu a3,a1,zero` must precede
+  `lw a1,8(a2)` because that lw DEFINES $a1 -- a true dependence, not a delay-slot choice.
+  Once avail lands in $a1 the 37th insn appears for free.  (This closes s1's H5 framing from
+  the opposite direction to s2: the missing insn is a REGISTER consequence, not a scheduling
+  one, and it costs nothing to chase.)
+
+- [s3] s2's claim that source statement order is inert is RETRACTED: rank_for_schedule's third tie-break is INSN_LUID (original source order), every if-arm decision here is a priority tie, and sched1's order feeds REG_LIVE_LENGTH and hence allocno_compare.
+- [s3] Making the ptr/word carrier a BLOCK-LOCAL of the if-arm (avail stays a separate global) gets local_alloc to seat it in hard $a1, which purges the count allocno's $a1 copy-preference (global.c:908-910) and puts the count in $a3 -- the s2 3-cycle seat rotation is eliminated.
+- [s3] Writing the final OR as `(masked_word) | (r << n)` raises the count allocno's live length 25 -> 27 and flips allocno_compare into the target allocation order 74(avail) 72(s) 73(count) 75(r), seating s in $a2 and the count in $a3.
+- [s3] Best structural form this session: score 15 / 36 insns with 5 of 6 target register roles correct (count $a3, ptr/word $a1, r $v1, const-1 $a0); saved as memory/grind/func_8003D888/frontier_blocklocal_ptr_afamily_15.c. The floor itself is unchanged at 13 (candidate.c, 37/37).
+- [s3] Remaining blocker G3(a): the avail allocno conflicts with hard $a1 because sched1 places the `p = s[0]` load at block-1 index 1, ahead of avail's last use at index 3; the load's position is priority-driven and the statement's source placement is byte-inert (D1/D2 measured).
+- [s3] Remaining blocker G3(b): the OR association that fixes the allocation order also makes local_alloc put the const-1 pseudo in $v1 instead of $a0, pushing r off $v1; the two effects are coupled through one construct.
+- [s3] Memory-operation order is FORCED by the target's own load/store sequence (sched.c has no alias analysis), so statement reordering across the s[0]/s[1]/s[2] accesses is a dead axis.
+- [s3] Our 36-insn builds are short exactly the assembler's load-delay nop; the target's second entry copy precedes the avail load because that load defines $a1, so the 37th insn is a register-allocation consequence.
+
+- [s3] Chassis re-verified: memory/grind/func_8003D888/candidate.c re-applies cleanly to src/code6cac_c2.c and measures 13 (37/37 insns) both at the start and at the end of this session; HEAD still carries the legacy register-pin/__asm__ cheat chassis.
+
+- [s3] rank_for_schedule (tools/gcc-2.7.2/sched.c) tie-breaks on INSN_LUID (original source order) after INSN_PRIORITY and the last_scheduled_insn dependence class; this makes source statement order and expression association a live lever for sched1's output, and therefore for REG_LIVE_LENGTH and allocno_compare. s2's inertness conclusion is retracted.
+
+- [s3] MIPS defines no REG_ALLOC_ORDER in gcc 2.7.2, so find_reg tries hard registers in ascending order 2,3,4,5,6,7,... -- confirmed against every greg disposition measured this session.
+
+- [s3] The residual is THREE independent gates, not two: G1 the count allocno must not hold an $a1 copy-preference (find_reg pass 0 ORs in regs_someone_prefers); G2 allocno_compare must order s before the count; G3 local_alloc must leave $v1 for r, put the const-1 pseudo in $a0, and not give the avail allocno a hard-$a1 conflict.
+
+- [s3] G1 SOLVED: making the ptr/word value a block-local of the if-arm gets local_alloc to seat it in hard $a1, which purges the count's $a1 copy-preference via prune_preferences (global.c:908-910); the greg dump loses its `;; 73 preferences: 5` line and the count moves to $a3.
+
+- [s3] G2 SOLVED: writing the final OR as `(((u32)p >> shift) & m2) | (r << n)` raises the count allocno's live length from 25 to 27 and flips allocno_compare into the target order 74(avail) 72(s) 73(count) 75(r), seating s in $a2 and the count in $a3.
+
+- [s3] Best structural form this session: score 15 / 36 insns with 5 of the 6 target register roles correct (count $a3, ptr/word $a1, r $v1, const-1 $a0; only s and avail wrong) -- memory/grind/func_8003D888/frontier_blocklocal_ptr_afamily_15.c. The b-family form (score 19) has the correct allocation ORDER instead. The floor itself is unchanged at 13.
+
+- [s3] G3(a) remaining: the avail allocno conflicts with hard $a1 in every measured form (`;; 74 conflicts: ... 5 ...`) because the .sched dump shows block 1's sched1 order beginning `27 (n -= avail), 40 (p = s[0]), 21 (li 1), 22 (1 << avail)` -- the p load is at index 1, before avail's last use at index 3. The load's position is INSN_PRIORITY-driven: moving `p = s[0]` to the last possible source position (variants D1/D2) is byte-identical.
+
+- [s3] G3(b) remaining: the same OR association that fixes G2 makes local_alloc put the const-1 pseudo in $v1 instead of $a0, pushing r off $v1 and avail off $a0; the allocation-order knob and the local-seating knob are currently coupled through one construct.
+
+- [s3] A 24-variant cross product shows only the OR association matters: m2 named vs inlined, m1 computed before vs after the `n -= avail` subtract, and `s[1] = p` placed before vs after the OR are all completely byte-inert (all 8 members of each association family score identically: a=15, b=19, c=18/20).
+
+- [s3] The 37th insn is a register consequence, not a scheduling one: our 36-insn builds are short exactly one assembler-inserted load-delay nop, because the target's `addu a3,a1,zero` must precede `lw a1,8(a2)` (that load DEFINES $a1). Once avail lands in $a1 the 37th insn appears for free.
+
+- [s3] Harness note: the PowerShell tool cannot invoke `bash tools/wsl.sh` (wsl is not on its PATH); dumps must be generated from the Bash tool, scores from the PowerShell tool. The PowerShell tool's working directory also persists across calls, so Set-Location to the repo root at the top of each sweep.

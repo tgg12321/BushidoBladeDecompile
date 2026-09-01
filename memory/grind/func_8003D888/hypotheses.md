@@ -123,3 +123,71 @@
 - probe: derived from the greg dispositions + lreg ref/live-length counts and checked against the target's own insn order
 - result: measured priorities s = 9 refs / 26 insns = 1.038, count = 9 refs / 24 insns = 1.125, so the count is always ordered first and takes $a2. The target's if-arm places sllv v1,v1,a3 (r <<= count) LATE, after lw a1,0(a1), giving its count ~3 more live insns. H6 (the if-arm slot diffs) is therefore UPSTREAM of seating, not downstream of it as s1 assumed.
 - verdict: CONFIRMED
+
+## [s3] Source statement order / expression association inside the if-arm is inert (s2's conclusion)
+- mechanism: s2 claimed sched1 rebuilds the block from the dependence DAG so text order cannot matter
+- probe: read rank_for_schedule in tools/gcc-2.7.2/sched.c (third tie-break = INSN_LUID = original insn order); then measured A7/A8/A9/A10/A11/A12/A13/A14 plus a 24-variant cross product, reading REG_LIVE_LENGTH out of the .lreg dump for every one
+- result: the association of the final OR changes the count allocno's live length from 25 to 27 and flips the allocno_compare order from `74 73 72 75` to the target's `74 72 73 75`; scores move 22 -> 21 -> 19 -> 15 across the family. Statement text order is a REAL lever whenever the competing insns tie on INSN_PRIORITY, which they all do here.
+- verdict: KILLED (s2's inertness claim is false; the lever is live and was used to solve gate G2)
+
+## [s3] The ptr/word carrier must be the same variable as avail (the merged-carrier family A/E)
+- mechanism: s1/s2 assumed the target's $a1 holding avail then ptr then word implied ONE pseudo
+- probe: built the alternative shape -- `avail` a global, ptr/word a fresh BLOCK-LOCAL `p` declared inside the if-arm -- and dumped lreg/greg/sched
+- result: local_alloc seats `p` in hard $a1 inside block 1, hard $a1 becomes live inside the count's range, prune_preferences purges the count's $a1 copy-preference (the `;; 73 preferences: 5` line disappears), and the count moves to $a3 with s at $a2 in the b-family. Scores 15/19 vs the merged family's 22. The target's $a1 holds TWO different pseudos that happen not to overlap, not one merged carrier.
+- verdict: KILLED (merged-carrier is the wrong shape; the block-local shape is the right one)
+
+## [s3] Statement ORDER of the memory operations in the if-arm is an available lever
+- mechanism: GCC 2.7.2's sched.c has no alias analysis, so loads and stores are mutually dependent and source order fixes their emitted order
+- probe: enumerated every semantics-preserving permutation of {load s[1], load s[0], store s[0], load *ptr, store s[2], store s[1]} against the target's own emitted order
+- result: the target's order IS our order; every alternative would emit a different load/store sequence and cannot match. The axis is closed by inspection, no measurement needed.
+- verdict: KILLED
+
+## [s3] H7a/H7b/H7c (s2 frontier) are all resolved or superseded
+- H7a (push the count allocno's live length to >= 26 by changing the dependence graph): CONFIRMED, but the mechanism is the LUID tie-break on the final OR's association, not a dependence-graph change -- measured 25 -> 27, which flips the allocation order to the target's.
+- H7b (the carrier keeps its own $a1 preference if it IS the param): SUPERSEDED. The carrier never needs its own preference; the correct fix is to delete the COUNT's preference by making the ptr/word value a block-local that local_alloc seats in hard $a1.
+- H7c (the two gates may be separable): CONFIRMED -- they are separable, and separating them moved the structural score from 22 to 15.
+
+## [s3] H8 OPEN (new frontier)
+  The block-local-ptr shape solves G1 (count off $a1) and the OR association solves G2
+  (allocation order 74 72 73 75).  What is left is G3: (a) the AVAIL allocno picks up a hard-$a1
+  conflict because sched1 schedules the `p = s[0]` load at block-1 index 1, ahead of avail's last
+  use (the `1 << avail` shift) at index 3, so avail cannot share $a1 with p the way the target
+  does; and (b) the same OR association that fixes G2 makes local_alloc put the const-1 pseudo in
+  $v1 rather than $a0, which pushes r off $v1.
+- mechanism: global_conflicts records a hard-reg conflict for every global that is live while a
+  local_alloc-assigned hard reg is live; the p load's sched1 position is INSN_PRIORITY-driven
+  (its source position is byte-inert -- D1/D2 measured), so the fix must lower avail's death
+  index rather than raise the load's index.
+- next probe: (i) find a spelling in which avail's LAST use lands at block-1 index 0 or 1 -- e.g.
+  give the `1 << avail` mask chain a dependence that raises its sched1 depth above the p load's,
+  or express m1 so that its final insn is consumed earlier; verify by re-reading
+  `;; 74 conflicts:` in the greg dump for the absence of 5.  (ii) decouple the local_alloc seating
+  from the OR association: sweep spellings of the const-1 / m2 chain (named vs inlined, mask via
+  a separate local, `1 << n` hoisted above the loads) inside the b-family and watch which
+  block-local takes $v1 in the greg dispositions; the goal is b-family allocation ORDER with
+  a-family local seating.  Start from memory/grind/func_8003D888/frontier_blocklocal_ptr_*.c and
+  the 24-variant generator in tmp/grind/func_8003D888/s3/.
+
+## [s3] s2's conclusion that source statement order / expression association inside the if-arm is codegen-inert holds in general for this function.
+- mechanism: s2 argued sched1 rebuilds each basic block from the dependence DAG plus INSN_PRIORITY, so text order cannot survive. But rank_for_schedule (tools/gcc-2.7.2/sched.c) breaks ties on INSN_PRIORITY, then dependence class vs last_scheduled_insn, then INSN_LUID -- the original source insn order. Every scheduling decision in this if-arm is a priority tie, and sched1's output is what REG_LIVE_LENGTH (and hence allocno_compare) is computed from.
+- probe: Read rank_for_schedule in full; then measured A7/A8/A9/A10/A11/A12/A13/A14 and a 24-variant cross product (OR association x m2 named/inlined x m1 before/after the subtract x s[1]=p before/after the OR) with `sandbox --disable all`, reading the count and s allocnos' 'used N times across M insns' out of the .lreg dump and the allocation order out of the .greg dump for each.
+- result: The final OR's operand association moves the count allocno's live length from 25 to 27 with the insn stream otherwise unchanged, flipping the allocno_compare order from `74 73 72 75` to the target's `74 72 73 75`. Scores across the family: 22 -> 21 -> 19 -> 15.
+- verdict: KILLED
+
+## [s3] The target's $a1 (avail -> ptr -> word) is ONE merged carrier pseudo, so the correct C shape is the merged-carrier family A/E that s1 and s2 pursued.
+- mechanism: s1/s2 inferred a single variable from a single hard register holding three values in sequence. The alternative is two pseudos with disjoint live ranges that local_alloc/global_alloc happen to seat in the same hard register.
+- probe: Built the alternative shape -- `avail` stays a global, the ptr/word value is a fresh BLOCK-LOCAL `p` declared inside the if-arm -- and dumped .lreg/.greg/.sched for it (Bx, Bx2, Bx5-Bx7, C_* cross product).
+- result: local_alloc seats `p` in hard $a1 inside block 1. Hard $a1 is then live inside the count allocno's range, so prune_preferences (global.c:908-910) PURGES the count's $a1 copy-preference -- the `;; 73 preferences: 5` line disappears from the greg dump entirely. The count lands in $a3 (target) and the s2 3-cycle seat rotation is eliminated. Scores 15 (a-family) / 19 (b-family) vs the merged family's 22.
+- verdict: KILLED
+
+## [s3] Reordering the memory operations in the if-arm (the s[0]/s[1]/s[2] loads and stores) is an available structural lever.
+- mechanism: GCC 2.7.2's sched.c has no alias analysis, so all loads and stores in a block are mutually dependent and their source order fixes their emitted order.
+- probe: Enumerated every semantics-preserving permutation of {load s[1], load s[0], store s[0], load *ptr, store s[2], store s[1]} and checked each against the target's own emitted order in asm/funcs/func_8003D888.s.
+- result: The target's memory order IS our current order (load s[1], load s[0], store s[0], load *ptr, store s[2], store s[1]). Every alternative source order would emit a different load/store sequence and therefore cannot match. Axis closed by inspection, no measurement needed.
+- verdict: KILLED
+
+## [s3] H7a (s2): the count allocno's live length can be pushed to >= 26 so that allocno_compare orders s ahead of it.
+- mechanism: allocno_compare priority = floor_log2(refs)*refs/live_length; with refs pinned at 9 for both s and the count by the target's own insn stream, s (live length 26) can only win if the count's live length reaches 26 (tie -> lower allocno number 72 = s wins).
+- probe: Measured live lengths for every variant in the A* and C_* sweeps out of the .lreg dump.
+- result: CONFIRMED, and achieved: writing the final OR as `(masked_word) | (r << n)` gives the count live length 27 > s's 26, and the .greg dump then reports the target allocation order `74 72 73 75` with s in $a2 (6) and the count in $a3 (7). The mechanism is the LUID tie-break, not a dependence-graph change as s2 predicted.
+- verdict: CONFIRMED
