@@ -17546,3 +17546,48 @@ log, pristine-reference recovery), `tmp/grind/func_800770B8/s19/` (row-diff tool
 ## 2026-09-01 09:01 — func_800203B4 — ruling: Does the 2026-08-17 func_8002FDB0 cluster ruling (grant text inline_asm_canonica — **FAIL**
 
 NO — the cluster ruling does not reach func_800203B4. The owner's grant text is doubly anchored: the literal idiom 'addu $t4,$aN,$zero' AND the counts '28 total in the 0x8001-0x8003 band / 26 queued'. I verified asm/funcs/func_800203B4.s myself: its three sites are 'addu $t4,$v0,$zero' (L27, L48) and 'addu $t4,$s0,$zero' (L59) — not $aN — and the enumeration (.claude/rules/cop2-addressing-preamble-cluster.md) reconciles to exactly 28, the ruling's own number, without it. Decisive: my own band re-scan allowing non-$aN sources yields ~35 functions (adds 80017FA0, 80019310, 800203B4, 800204C0, 8002FF20, 80031890, 8003E6D8), so admitting this spelling enlarges a count-anchored owner grant by ~7 members — a family extension, which is FAIL(CONSTRUCT) per .claude/rules/ordinary-c-judge-decidable.md (the family-extension escalate kind is retired; the frozen list as it stands is the whole decision surface). The alternate route is independently closed: I re-ran tools/scan_hand_coded.py --single func_800203B4 — score 1, tier LOW, only s4_front_loads; no S1/S2/S6, so the judge-sole-gate rule-3 canonical-asm-grant path is unavailable. Nothing here impugns the measurement work: evidence.md facts 1-8 and the sandbox==0 candidate are sound and correctly self-reported as a ruling-request rather than candidate-ready (self_vet.md T5 OPEN ITEM), and the ledger's own fact 9 diagnosed the gap accurately. The residual is 11 cop2 insns with no C form and no sanctioned axis. Evidence lives at memory/grind/func_800203B4/{evidence.md facts 3,4,9,10; hypotheses.md H3 KILLED, H4; self_vet.md; candidate.c}. Re-activation trigger for the owner's own cadence: a class grant covering non-$aN-source materialize-then-copy cop2 preamble sites in the band; log the packet to docs/grind/borderline.md.
+
+## 2026-09-01 — func_800203B4 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Proof-of-foreclosure record per [[ordinary-c-judge-decidable]] Ruling 3, filed by the s2 grind
+session under the binding Judge constraint from the 2026-09-01 09:01 FAIL ruling above
+(decisions.md:17546): "func_800203B4 has no sanctioned authorization axis ... take foreclosure
+per ordinary-c-judge-decidable Ruling 3."
+
+**(i) Gate evidence — both endgame-lock AND-gates fail:**
+- **Canonical-asm gate:** `tools/scan_hand_coded.py --single func_800203B4` = score 1, tier LOW,
+  only s4_front_loads; no S1/S2/S6. Measured twice independently (session s1 retry, and the Judge's
+  own re-run recorded in the 2026-09-01 09:01 ruling). The [[judge-sole-gate]] rule-3 STRONG-tier
+  grant path is unavailable.
+- **Cluster/family gate:** the 2026-08-17 func_8002FDB0 cluster ruling does NOT reach this
+  function — Judge FAIL, decisions.md:17546. The grant is doubly anchored (literal idiom
+  `addu $t4,$aN,$zero` and the counts 28-in-band/26-queued); this function's three idiom sites are
+  `addu $t4,$v0,$zero` (.s L27, L48) and `addu $t4,$s0,$zero` (L59), and the Judge's own band
+  re-scan showed admitting non-$aN sources enlarges the count-anchored grant by ~7 members — a
+  family extension, FAIL(CONSTRUCT). No other sanctioned family applies: the residual is 11 cop2
+  insns (ctc2×5, mtc2, lwc2, swc2×3, MVMVA `.word 0x4A486012`) with no C form under GCC 2.7.2.
+
+**(ii) Evidence pointers:**
+- The measurement work is complete and sound (the FAIL ruling says so in terms): the pure-C head +
+  FDB0-style single-block island body scores `sandbox --disable all == 0`, 65/65, rules_dropped 0.
+  Proven three times: s1 (tmp/grind/func_800203B4/s1/code6cac_sandbox0.o), s1 retry
+  (code6cac_sandbox0_retry.o), and **re-proven on the current chassis 2026-09-01 by this session**
+  (code6cac_sandbox0_chassis_recheck_20260901.o). The body is final in
+  memory/grind/func_800203B4/candidate.c; main keeps `INCLUDE_ASM` per [[asm-until-matched]].
+- Ledger: memory/grind/func_800203B4/evidence.md facts 1-11; hypotheses.md H1 CONFIRMED,
+  H3 KILLED (scanner path), H4 resolved NO by the 2026-09-01 09:01 ruling; self_vet.md.
+- Record trail: decisions.md:17546-17548 (the FAIL ruling and its band re-scan).
+
+**(iii) Re-activation triggers:**
+- An owner class grant covering non-$aN-source materialize-then-copy cop2 addressing-preamble
+  sites in the 0x8001-0x8003 band (the Judge's ruling names the ~7 functions such a grant would
+  admit: 80017FA0, 80019310, 800203B4, 800204C0, 8002FF20, 80031890, 8003E6D8). If granted, this
+  function is a pure integration handoff: candidate.c is byte-final; driver writes the
+  inline_asm_canonical.txt line + borderline entry, layer-2 cheat-reviewer, verify-oracle
+  --rebuild, queue done. Zero codegen work remains.
+- A toolchain-fidelity finding giving the cop2 island a C form, or an explicit owner
+  `queue unpark`.
+
+## 2026-09-01 09:05 — func_800203B4 — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s1 of func_800203B4, which the driver DISCARDED as invalid (owner-gated: the standing-ruling terminal disposition requires `escalation` modality (driver-declared exhaustion), not `recon`. A dead axis in this modality is a `progress` outcome with the kills banked ΓÇö the ladder still has untried modalities.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
