@@ -2122,3 +2122,88 @@ batch; the tree is clean.
 - [s18] Three disproven spellings banked: rejected/prefdonation-tailsum-y-leg-poisons-tail-score6.c, rejected/prefdonation-threshold-holds-whole-sumsq-score3.c, rejected/prefdonation-threshold-holds-zsq-score4.c.
 
 - [s18] src/code6cac_b.c was restored to HEAD (`git checkout --`) after every probe batch; the only tracked dirt at session end is the ledger files and metrics/events.jsonl.
+
+## [s19] forensics -- the donation axis is structurally closed; v5 stands as the best body
+
+Chassis re-measured at session start with `s18/v5_threshold_holds_xsq.c` applied to
+src/code6cac_b.c: `sandbox func_8002EA24 --disable all` = **score 2, build_insns 104,
+target_insns 104, rules_dropped 0, cheat_asm_stripped 36**.  The ledger floor of 2 carries
+over unchanged; the driver's dispatch note ("measurement unavailable") is superseded by this
+measurement.
+
+**Owner directive status.** The 2026-09-01 FORECLOSED-BUCKET REVIEW Ruling A probe for this
+function (re-run the depth-2 sweep over the other seven banked score-2 bodies after filtering
+AMBIGUOUS) was executed and KILLED by s18 (H18a): all nine banked bodies produce the
+byte-identical residual with an empty goal.  s19 therefore worked the frontier s18 left, which
+is the directive's own success condition ("any reaching atom voids it" -- none was found).
+
+**1. v5's relocated residual is not an allocation problem (H19a).**  The repaired sweep
+(`s18/sweep_fixedprefs.py`, which propagates a preference override into `full_prefs` so the
+prune_preferences DONATION half is actually simulated) was pointed at v5's own model with the
+hand-resolved goal `74 -> $v0`: 872 atoms at depth 1 -> **0 reaching**; 370,615 pairs at
+depth 2 -> **0 reaching** (CLEAN 0, with-collateral 0).  Artifacts
+`tmp/grind/func_8002EA24/s19/depth1_v5_goal74v0.txt` and `depth2_v5_goal74v0.txt`.  The
+baseline seat vector for v5 is `{101:$v0, 96:$v1, 97:$a0, 100:$a1, 108:unassigned, 72:$t0,
+102:$v1, 116:$v1, 103:$t1, 74:$a2, 99:$a2, 75:$a3}` -- **103 (neg_threshold) sits on target's
+$t1**, which is what eighteen sessions were chasing, and it is bought at the price of allocno
+74 (the `threshold` parameter) holding the `max_y*max_y` product in its own argument register
+$a2 where the target holds it in $v0.
+
+**2. WHY the price is structural, read off the RTL (H19b).**  `pwsh tools/grinder/dump.ps1
+func_8002EA24` with the plain control body applied, then `s19/scan_flow.py
+tmp/grind/func_8002EA24/dumps/code6cac_b.flow 97 74` (log `s19/flow_scan_plain.txt`):
+
+    insn 101  DEAD74  (set (reg:SI 107) (lt:SI (reg/v:SI 74) (reg/v:SI 96)))   ; threshold < z
+    insn 118  SET97   (set (reg/v:SI 97) (plus:SI (reg:SI 108) (reg:SI 109)))  ; x*x + z*z
+    insn 131  SET97   (set (reg/v:SI 97) (minus:SI (reg/v:SI 75) (reg/v:SI 97)))
+    insn 146  SET97   (set (reg/v:SI 97) (zero_extend (subreg:QI (reg:SI 116) 0)))
+    insn 189  SET97   (set (reg/v:SI 97) (lshiftrt:SI (reg:SI 126) (reg:SI 128)))
+    BOTH (expand_preferences would fire): []
+
+`threshold` (pseudo 74) dies in exactly ONE insn in the whole function, and that insn's
+SET_DEST is a fresh boolean pseudo (107), not a0_var (97).  a0_var is set in exactly four
+insns, none of which reads threshold.  `global.c:838-870` requires ONE insn that is both a
+single_set to 97 and a bearer of REG_DEAD(74); the two sets are disjoint, and the only way to
+intersect them is to make threshold an OPERAND of an a0_var-setting statement -- i.e. to make
+threshold carry a value.  **The REG_DEAD note and the carried value travel together**, and the
+carried value then occupies threshold's argument register.  s18's frontier item 1 asked
+whether the note could be obtained without displacing a register; the answer, from the RTL
+rather than from another spelling, is NO.
+
+**3. Both escapes from that reading are measured dead.**
+  - donor = the product temp instead of the parameter (H19c): allocno 108 ALREADY dies on
+    insn 118, whose dest IS 97, so its side-condition is free; it fails only on priority
+    (108 outranks 103, and prune_preferences folds only LOWER-priority conflicting allocnos).
+    Demoting it by lengthening its live range -- `xsq = max_y*max_y;` hoisted above the z
+    range test, ordinary C, no reuse, no FAKE -- measures **9**.
+  - reverse direction, single_set to 74 carrying REG_DEAD(97) (H19d): v1's shape plus the
+    y-load hoist that would give 74 and 102 the conflict needed to block v1's parasitic leg
+    measures **11 at 103 insns** (one instruction short of target).  Independently, the
+    reverse direction is structurally impossible to spell cleanly: both tail tests read y AND
+    a0_var, so whichever executes second carries both REG_DEAD notes, and y has no third use.
+  - carrier choice inside the surviving family (H19e): `threshold` carrying z*z measures 4;
+    the source-level operand order of the sum is inert (2, identical to v5).
+
+**4. What is banked.**  v5 is preserved as
+`memory/grind/func_8002EA24/candidate_alt_s19_v5_threshold_holds_xsq.c`.  It is NOT promoted
+over `candidate.c` (both measure 2) because it trades one annotated construct for another: it
+DELETES the L3 staged boolean but ADDS the `threshold` parameter reuse.  Its standing value is
+diagnostic -- it is the first body in nineteen sessions whose range-test chain (target insns
+30/31/39) matches, so it isolates the remaining divergence to two instructions with a named
+cause.  Four new rejected forms banked (54 total).
+
+- [s19] Chassis re-measured this session with the s18 v5 body applied: sandbox func_8002EA24 --disable all = score 2, build_insns 104, target_insns 104, rules_dropped 0, cheat_asm_stripped 36. The floor is unchanged at 2; the dispatch brief's 'measurement unavailable' is superseded.
+
+- [s19] Owner directive (2026-09-01 FORECLOSED-BUCKET REVIEW, Ruling A) was already executed and KILLED by s18 H18a -- all nine banked score-2 bodies produce a byte-identical residual with an empty goal, so the re-run sweep is unrunnable on any of them. s19 worked the frontier that probe left, which is the directive's own success condition; no reaching atom was found, so the directive's outcome stands as 'foreclosure hardened'.
+
+- [s19] global.c:838-870 read in full this session: the IOR is keyed on a REG_DEAD note on a single_set whose SET_DEST has a global allocno, symmetric, gated on !CONFLICTP in both directions, with an extra copy-preference IOR when the dead reg IS the SET_SRC.
+
+- [s19] The .flow dump proves REG_DEAD(74) occurs on exactly ONE insn (101, dest = fresh boolean pseudo 107) and 97 is set on exactly FOUR insns (118, 131, 146, 189), with empty intersection -- so the preference donation is only obtainable by making threshold an operand of an a0_var-setting statement, i.e. by making it carry a value into its own argument register $a2.
+
+- [s19] Model baselines compared this session: plain control {103:$a0, 108:$v0, 109:unassigned}, candidate.c {103:$t1, 108:$v0}, v5 {103:$t1, 108:unassigned, 74:$a2}. The plain body seats the x*x product temp (108) in target's $v0 correctly; v5 buys $t1 for 103 by destroying that temp. The two halves of the match are, on today's evidence, mutually exclusive within the donation family.
+
+- [s19] Four new rejected forms banked (54 total): s19-threshold-holds-zsq-mirror-residual-score4.c, s19-sum-operand-flip-inert-score2.c, s19-xsq-hoist-demotes-product-temp-score9.c, s19-tailsum-plus-yhoist-blocks-both-legs-score11.c.
+
+- [s19] v5 preserved as memory/grind/func_8002EA24/candidate_alt_s19_v5_threshold_holds_xsq.c. NOT promoted over candidate.c (both measure 2): it deletes the L3 staged boolean but adds a `threshold` parameter reuse, so it trades one annotated construct for another. Its value is diagnostic -- first body in 19 sessions whose range-test chain (target insns 30/31/39) matches.
+
+- [s19] src/code6cac_b.c was restored to HEAD at end of session; the working tree carries only memory/ ledger additions and the untracked tmp/ scratch.

@@ -1,7 +1,7 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 18,
+ "session_count": 19,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -111,23 +111,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Owner Ruling A probe executed and KILLED (all 9 banked score-2 bodies share one byte-identical residual, all AMBIGUOUS/empty goal); repairing a two-part blind spot in the s15/s16 solver sweeps opened "
+  },
+  {
+   "session": 19,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics closes the s18 preference-donation frontier structurally: the .flow dump proves REG_DEAD(74) and the a0_var-setting insns are DISJOINT sets, so the donation note and the carried value travel"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 74<->97 expand_preferences pairing can be obtained WITHOUT routing a value through allocno 74, which would leave the sum of squares in $a0 and close the function at 0.",
-   "mechanism": "v3/v4/v5 all create the REG_DEAD(74) note on an a0_var-defining insn by making `threshold` CARRY a real value, and the carried value then occupies 74's own argument register $a2 -- that IS v5's remaining 2-insn residual. expand_preferences only needs a single_set to 97 whose REG_NOTES mention 74; it does not require 74's value to be an operand of the result. Any construct that makes threshold's LAST USE land on the insn defining a0_var, rather than on the 4th range test, satisfies the pass without displacing a register.",
-   "next_probe": "(a) reassociate so the 4th range test's `threshold < z` and the sum of squares share one statement (a real reassociation, not a dead read); (b) try the reverse direction -- a single_set to 74 carrying REG_DEAD(97) ALONE, which needs a0_var's last use at a threshold-setting statement with y (102) NOT dying on the same insn (v1 failed only on that parasitic leg); (c) re-run s18/symmetric_probe.py against v5's OWN model to see whether 74 can be denied $a2 while keeping its donated $a0."
+   "hypothesis": "The depth-2 sweep on the PLAIN control model with goal 103 -> $t1 has never been run with the s18 full_prefs repair in place, so its reported reaching set is under-reported exactly as the depth-1 set was.",
+   "mechanism": "s16's depth-2 sweep predates the s18 discovery that simulate.py:161 reads someone_prefers from full_prefs and therefore discards every `prefs` atom for the DONATION half of prune_preferences. s18 re-ran only depth 1 (repaired), which still reported the same three atoms (conf97<->103, conf103<->97, p103:prefs->[9]) because reaching $t1 needs an ADDITIVE preference set the singleton alphabet cannot spell. A repaired DEPTH-2 run over 370k pairs can spell additive combinations for the first time, and unlike v5's goal this goal is known-achievable (candidate.c and v5 both reach it).",
+   "next_probe": "python3 tmp/grind/func_8002EA24/s18/sweep_fixedprefs.py tmp/grind/func_8002EA24/s18/v0_plain_control.model.json 103 9 --depth2 ; then spell any reaching pair that does NOT touch allocno 74 (the parameter) -- those are the only vectors that can keep allocno 108 in $v0."
   },
   {
-   "hypothesis": "v5's new residual (x*x in $a2 rather than $v0) is RA-expressible where all nine older bodies' residual is not, so the solver can be pointed at it for the first time.",
-   "mechanism": "The nine banked bodies attribute AMBIGUOUS with an empty goal because three or four pseudos hold $a0. v5's residual is a two-instruction $a2/$v0 exchange on the multiply result -- a shape goal_from_tgt may attribute to a single pseudo.",
-   "next_probe": "Read tmp/grind/func_8002EA24/s18/v5_threshold_holds_xsq.goal.txt (already banked); if the goal is non-empty run tmp/grind/func_8002EA24/s18/sweep_fixedprefs.py -- the REPAIRED sweep, NOT s16's -- against s18/v5_threshold_holds_xsq.model.json with that goal, at depth 1 then depth 2."
+   "hypothesis": "The named reaching atom conf97<->103 can be created from the neg_threshold SIDE (extending 103's live range past the sum) rather than the a0_var side (birthing 97 early), and that direction has never been spelled.",
+   "mechanism": "97 and 103 do not conflict because 103's last use is the 3rd range test (`z < neg_threshold`), which precedes insn 118 where 97 is born. Every banked attempt (a0var-live-early-hoists-mults.c, a0var-dead-early-set-score16.c, ztest-after-sum-hoists-mults-score21.c) moved 97's birth EARLIER, which drags the multiplies with it. Giving neg_threshold a real later use instead leaves the multiply block alone.",
+   "next_probe": "Spell the tail's lower-bound test through neg_threshold rather than through min_y/y (the two are the same quantity family), e.g. re-express one of the two tail comparisons so neg_threshold is read after the sum; measure with `sandbox --disable all` and re-extract the model to confirm the 97<->103 edge actually appeared before judging the score."
   },
   {
-   "hypothesis": "The simulate.py full_prefs defect and the singleton-prefs alphabet have under-reported the reaching set on OTHER functions' ra_solver campaigns, not just this one.",
+   "hypothesis": "The simulate.py full_prefs defect and the singleton-prefs alphabet have under-reported the reaching set on OTHER functions' ra_solver campaigns, not just this one (carried unchanged from s18; still untouched).",
    "mechanism": "Every model produced by tools/ra_solver/extract.py carries a full_prefs entry per allocno, so `full_prefs_in.get(a, prefs[a])` never falls back anywhere; any sweep that used a prefs atom to test preference donation measured only half the pass.",
-   "next_probe": "Grep memory/grind/*/ for sweeps that concluded a preference route dead on the strength of a `prefs` atom, and re-run those with tmp/grind/func_8002EA24/s18/sweep_fixedprefs.py's full_prefs propagation (the fix is 6 lines; a permanent repair in tools/ra_solver/simulate.py is an operator-lane change, outside a grind session's allowed surface)."
+   "next_probe": "Grep memory/grind/*/ for sweeps that concluded a preference route dead on the strength of a `prefs` atom, and re-run those with tmp/grind/func_8002EA24/s18/sweep_fixedprefs.py's full_prefs propagation. A permanent repair in tools/ra_solver/simulate.py is an operator-lane change, outside a grind session's allowed surface."
   }
  ],
  "judge_constraints": [
