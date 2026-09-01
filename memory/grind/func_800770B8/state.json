@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 13,
- "current_modality": "structural",
+ "session_count": 14,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -81,23 +81,29 @@
    "floor": 5,
    "modality": "structural",
    "headline": "Loop-shape frontier KILLED with 315 builds (inner and outer loop shapes byte-identical under every spelling; third loop's `for` uniquely correct; all 96 non-final inner-block positions worse) and clas"
+  },
+  {
+   "session": 14,
+   "floor": 5,
+   "modality": "synthesis",
+   "headline": "Synthesis: the Judge's own suggested replacement for the FAILed identity is MEASURED DEAD (8 cursor builds materialise the pointer difference), partial array typing of groups A/C is dead (20 builds), "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Under the flip, the loop head's emission order (rows 38-59) can be restored by changing what the loop head COMPUTES rather than how the inner block spells its address - because class C is now known to be a single source-operand-order token whose only cost is that it re-orders the `lw` and the `sll ...,2` in the loop head.",
-   "mechanism": "s13 proved the flip is the sole way to reach the target's operand order and that its 24 points are entirely rows 38-59, where the flipped build hoists the D_800A36A0 load ahead of the `sll $a1,1` and postpones the `sll $a1,2` from row 42 to row 50. The target emits BOTH shifts around the load (rows 40, 41, 42). So the lever is anything that forces the `t0*4` shift to be computed early under the flip - i.e. an additional early CONSUMER of `t0*4` in the loop head, or a change in which group first needs it. This is not the group-ORDER axis s12 exhausted (that moves whole store groups); it is the order in which the loop head's three derived values (t0*2, t0*4, the reloaded global) are first demanded.",
-   "next_probe": "On the flipped-ABCD body (baseline 29), measure spellings that change the FIRST DEMAND order of the loop-head values without moving any store group: (i) group A's address written `(t0 * 4) / 2 + (s32)base` so t0*4 is demanded before t0*2; (ii) group C's `base + (t0 * 4)` rewritten to `(t0 * 4) + (s32)base` so it enters the integer domain at the same point the flipped inner block does; (iii) the 0x5C/0x60 store pair (which uses t0*2) moved ahead of group A; (iv) the same three on flipped-CABD (baseline 12), where the seats are already right and only the store rows are wrong. Read the resulting emission order with tmp/grind/func_800770B8/s13/ours.py 37 66 and compare against the target rows printed in evidence.md [s13]."
+   "hypothesis": "The function is exhausted at floor 5 and the correct next outcome is a proof-of-foreclosure record, not another probing modality.",
+   "mechanism": "15 sessions across 8 distinct modalities (recon, structural x3, permuter, synthesis x3, solver, forensics x2, rederive, escalation), floor flat at 5 since s11, and all three residual classes now carry a named, dump-attributed or measurement-backed forecloser. The one construct that ever went below 5 was cleanly auto-rejected by the Judge on 2026-09-01, and s15 measured the sanctioned alternative that FAIL itself proposed and found it does not exist.",
+   "next_probe": "When the driver assigns escalation modality, file '## <date> - func_800770B8 - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' in docs/grind/decisions.md. Gate evidence to state: (i) canonical-asm is NOT the disposition -- canonical returns verdict C / asm_insns 0, and scan_hand_coded returned tier=LOW score=0/8 with S1-S8 unset (s11), so the STRONG-scanner AND-gate is a measured FAIL; (ii) the coercion-family prong FAILS with a negative census -- no SOTN-master precedent exists for an arithmetic-identity dependence edge. Re-activation triggers: a class grant covering dependence-edge constructs, or a toolchain finding that changes how cse/flow treat the class-B copy."
   },
   {
-   "hypothesis": "The allocator atom that swaps $v0/$v1 under the flip is directly readable, and naming it identifies a C construct that restores the seats without the CABD group order (re-typed from the s12 frontier - the question is no longer 'what re-seats the contested quantity' but 'what makes the loop head's emission order survive the flip').",
-   "mechanism": "s13 showed the floor-5 form already has the target's seats and the flipped form already has the target's operand order, so the two builds differ in exactly one crossing. s12 supplied two real builds that isolate it (flipped-ABCD: order right, seats wrong; flipped-CABD: both right in rows 60-64), which makes the allocator/emission state difference measurable rather than hypothesised.",
-   "next_probe": "Run tools/ra_solver/local_extract.py QTYDBG on flipped-ABCD (s12/perm/Q00.c) and flipped-CABD (s12/perm/Q12.c), rebuilt via tmp/grind/func_800770B8/s3/try.py, and diff the qty rows for block 1. Then run `pwsh tools/grinder/dump.ps1 func_800770B8` on flipped-ABCD and read the .sched dump for rows 38-59 to attribute the lw/sll reordering to sched1 vs expand/RTL emission order - s13 could only observe the reordering in the final objdump, not name the pass that does it. Do NOT re-run inverse.py against the s10 seat goal; that goal is obsolete."
+   "hypothesis": "Class B's 5-instruction collapse is the only residual whose mechanism implies the original source differed from ours in SHAPE rather than in spelling -- if any axis is ever re-opened, it is this one.",
+   "mechanism": "Every spelling that stores to 0x30/0x34 through the raw func_8006E49C result produces 170 instructions, five FEWER than the target. The target's source therefore keeps BOTH the raw pointer and the copy live across those stores for a reason our body does not reproduce -- a liveness fact, not a scheduling or allocation artefact (flow.c deletes the copy the moment the raw pseudo is used directly). s7/s8/s9 attributed it to cse pass 2 destroying the 2+2 split cse pass 1 builds; s14 re-confirmed it on the floor-4 chassis with four fresh block spellings.",
+   "next_probe": "Only worth re-opening with a NEW datum: find a sibling function in text1b.c that performs the same allocate-then-initialise sequence and whose target asm shows the same copy retained, which would NAME the source shape instead of guessing it. Do not re-run the four post-call block spellings; they are banked twice (s9, s14)."
   },
   {
-   "hypothesis": "The floor-5 form is submittable as-is once the do-while(0) scoping conflict is ruled on (carried forward unchanged from s11/s12).",
-   "mechanism": ".claude/rules/do-while-zero-exception.md (owner ruling 2026-07-06) abolishes the reorg.c-only scoping that .claude/rules/no-new-park-categories.md:256-271 and the grind role-prompt's frozen-family table still assert. The dedicated rule is the later document and the stale entry designates it as the authority, but a submission would be the first BB2 use of a wrap for a sched2 effect. Note this only removes class A - it does not close classes B or C, so the form is not byte-complete regardless.",
-   "next_probe": "Unchanged: emit a ruling-request, or have the operator update no-new-park-categories.md:256-271 to match the 2026-07-06 ruling. s13 adds no new datum here and deliberately did not re-probe the wrap axis; s12's datum stands (the CABD basin needs a SECOND wrap to reach 10, so the wrap count will not shrink if class C is closed from that side)."
+   "hypothesis": "Nothing else is open. This entry exists to stop the next session re-spending measured axes.",
+   "mechanism": "Every remaining degree of freedom in this body has been swept to exhaustion across s6-s15, and each sweep is banked with its generator and log under tmp/grind/func_800770B8/.",
+   "next_probe": "Explicitly do NOT re-probe: flip spellings (11 spellings collapse onto one build, s6/s13/s15), store-group order (24/24, s12), loop shape (315 builds, s13), inner-block position (240 orders, s13), wrap position or count (63 + 18 + 79 + 79 + 79 positions, s11/s12/s14), loop-head demand order (33 builds, s14), dependence direction (13 builds, s14), reference count without a dependence (8 builds, s14), pointer-cursor derivation (8 builds, s15), partial array typing (20 builds, s15), the whole-body struct rewrite (s10, 178 insns), or the identity detour in any spelling (Judge FAIL, 2026-09-01)."
   }
  ],
  "judge_constraints": [

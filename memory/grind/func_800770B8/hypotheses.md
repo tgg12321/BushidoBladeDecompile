@@ -1361,3 +1361,175 @@ item 1, and reset the frontier below. Four hypotheses measured, three settled.
      no-new-park-categories.md:256-271. s14 adds one datum: on the floor-4 chassis a
      SECOND wrap is inert (79 positions, min 4), so the wrap count in any submitted
      form will be exactly one.
+
+## [s15] synthesis — 2026-09-01 (floor 5, unchanged; three hypotheses KILLED, one CONFIRMED)
+
+Driver session index 14; ledger label [s15] because the prior session wrote [s14].
+Judge constraint in force (state.json, from the 2026-09-01 07:23 FAIL): *"func_800770B8's
+honest floor stays 5. Do not respell the t0*4->t0*2 identity detour in any form. The
+dependence may only be reached if it is FORCED by real program structure -- e.g. group A
+addressed through a cursor genuinely derived from group C's t0*4 pointer, where the
+derivation has a truthful semantic reading and emits no instruction the target lacks."*
+s15 built exactly that construction and it does not exist.
+
+## [s15] A cursor genuinely derived from group C's t0*4 pointer can supply the class-C dependence edge without emitting an instruction the target lacks. (The Judge's own suggested replacement for the FAILed identity.)
+- mechanism: if group A's base is written as an offset from a named `s16 *rowC =
+  (s16 *)(base + (t0 * 4))`, the t0*2 quantity is reached through a pointer difference
+  rather than through an arithmetic identity, so the construct would have a truthful
+  semantic reading ("group A's row sits half-way into group C's stride") while still
+  giving the t0*4 pseudo the early first-demand that s14 proved re-seats the contested
+  `addu`. The open question was purely whether GCC 2.7.2 folds the difference back into
+  the already-live shift or materialises it.
+- probe: 8 builds, `tmp/grind/func_800770B8/s14/b/gen6.py` / `b/w/` / `b/sweep6.log`;
+  four derivations (`((u8 *)rowC - base) >> 1`, `rowC - (s16 *)base`,
+  `((u8 *)rowC - base) / 2`, `(u8 *)rowC - (t0 * 2)`) on the unflipped (5) and
+  flipped-ABCD (29) bases, with group C hoisted to the top of the loop body so the
+  cursor exists before group A.
+- result: KILLED, decisively and on both bases. `>>1` and the `s16 *` difference both
+  measure 176 instructions (36 flipped / 38 unflipped) — GCC materialises the `subu`
+  (plus an `sra` for the halfword-typed difference) instead of folding it back, which
+  is precisely the "emits an instruction the target lacks" condition the Judge attached
+  to the sanction. `/2` measures 178 (54). `(u8 *)rowC - (t0 * 2)` keeps 175 insns but
+  scores 51, because it re-introduces the t0*2 pseudo it was meant to derive. No
+  spelling comes near the 4 that the banned identity reached, and none is byte-legal.
+- verdict: KILLED
+
+## [s15] Applying an array/struct TYPE to groups A and C alone (the axis s10's whole-body rewrite never isolated) creates the t0*4 -> t0*2 relation naturally, as a consequence of element size rather than as an identity.
+- mechanism: s10's full struct rewrite regressed to 178 insns because LICM hoisted
+  `&D_800A35D0 + 2` and the 0x6A/0x7E constants folded onto the index side — both
+  effects of typing parts of the body that s15 leaves alone. Typing ONLY the two
+  groups whose strides are 2 and 4 keeps those hazards out and was reserved untried by
+  the s14 frontier (item 1c).
+- probe: 20 builds, `tmp/grind/func_800770B8/s14/b/gen5.py` / `b/v/` / `b/sweep5.log`:
+  group A as `*((s16 *)(base + off) + t0)` (x5 stores), group C as
+  `((s16 (*)[2])(base + 0x40))[t0]`, and both together, each on three bases
+  (unflipped 5, flipped ABCD 29, flipped CABD 12).
+- result: KILLED. Group A array-typed is BYTE-IDENTICAL to its base under the flip
+  (29/175) and worse without it (31/175); group C array-typed always costs one
+  instruction (18/176, 15/176, 39/176); both together 33-37 at 176. GCC 2.7.2 computes
+  each stride directly from `t0` whatever the element type — the element type decides
+  the *shift amount*, never the *dependence*. The edge the identity created is not
+  expressible as a type.
+- verdict: KILLED
+
+## [s15] The class-C operand flip is a property of the (s32) integer cast, so a different route into pointer_int_sum's ptrop slot might reach the target's operand order without the +24-row loop-head collateral.
+- mechanism: s6 attributed the flip to c-typeck.c:2695 (`build (resultcode, result_type,
+  ptrop, intop)` — the pointer-typed side is unconditionally operand 0) and s13 measured
+  seven flip spellings, ALL of which put the addend in ptrop by casting the global to
+  `(s32)` and therefore all of which also make the whole address expression
+  integer-typed. Integer typing is what lets cse forward the base and re-float the loop
+  head (s6's D-family read-out). Casting the ADDEND to `u8 *` instead reaches the same
+  slot while leaving the expression pointer-typed, so the collateral might be avoidable.
+- probe: 10 builds (`b/gen5.py` P1-P6, `b/sweep5.log`): `(s16 *)((u8 *)(t0 * 10) +
+  (s32)D_800A36A0 + 0x6A)` and four relatives, plus the honestly array-typed row
+  `((s16 (*)[5])(D_800A36A0 + 0x6A))[t0]`, on all three bases.
+- result: KILLED — and the kill is a reusable toolchain datum. The `u8 *`-addend
+  spelling applied to the UNFLIPPED base measures 29/175, i.e. it is byte-identical to
+  the `(s32)`-cast flip; applied to the already-flipped base it is a no-op. The flip is
+  therefore mechanism-independent: it is decided by which side lands in ptrop, not by
+  the cast that puts it there, and its loop-head collateral is intrinsic to the operand
+  order. Eleven flip spellings across s6/s13/s15 now collapse onto exactly one build.
+  The array-typed row is the flip plus one instruction (9/176 — the same build as s13's
+  `&((s16 *)(D_800A36A0 + 0x6A))[t0 * 5]`).
+- verdict: KILLED
+
+## [s15] The do-while(0) prologue fence needs no ruling: the apparent rule conflict resolves by citation, and the honest floor is therefore 5 rather than 9.
+- mechanism: `.claude/rules/no-new-park-categories.md:256-271` prints the stale
+  2026-06-04 scoping ("applies only to the LABEL_OUTSIDE_LOOP_P / reorg.c interaction"),
+  but the same paragraph designates the dedicated rule as the authority on the
+  prerequisites; the dedicated rule `.claude/rules/do-while-zero-exception.md` is the
+  LATER document (owner ruling 2026-07-06) and states in its scope sentence that the
+  construct is "an allowed pure-C match device for ANY codegen effect incl. register
+  allocation, with mandatory inline FAKE annotation", with its body adding "The former
+  scoping to the reorg.c label-note mechanism is abolished" and its prerequisite 2
+  removing exhaustion as a hard gate for single-level wraps.
+- probe: full read of both rule files end to end (they are the only two documents in the
+  chain); confirmation that the candidate carries exactly ONE level of wrap and an inline
+  `/* FAKE: ... */` naming what + mechanism (sched2, GCC 2.7.2 sched.c list scheduler,
+  second pass) + lever-exhaustion (s3/s5/s9/s10/s11 sweeps).
+- result: CONFIRMED. The construct is inside the sanctioned family with its
+  prerequisites met, so class A is legitimately closed and the floor-5 body is
+  cheat-free. Four sessions (s11-s14) carried this as an open ruling question; no Judge
+  cycle is owed and none should be spent on it.
+- verdict: CONFIRMED
+
+## Live frontier (for s16) — reset by the s15 synthesis
+
+**Summary of the merged attack: there is no sanctioned axis left open.** Class A is
+closed and legitimate. Class B (2 rows) is foreclosed three times over, on two different
+chassis, with a named mechanism (any spelling that reaches the raw call-result pseudo
+lets flow.c delete the copy and its four dependents, collapsing the function to 170
+instructions against the target's 175). Class C (3 rows) is reachable only through the
+operand flip; the flip's +24-row collateral is intrinsic to the operand order (s15 item
+3) and the ONLY construct ever measured to repair it is the arithmetic identity the
+Judge FAILED on 2026-09-01. The Judge's own suggested legal replacement is now measured
+non-existent (s15 item 1), as is the type-level route (s15 item 2). The frontier below
+is ordered accordingly: item 1 is a disposition, not a probe.
+
+1. **The function is exhausted at floor 5 and the correct next outcome is a
+   proof-of-foreclosure record.**
+   - mechanism: 15 sessions, 8 distinct modalities (recon, structural x3, permuter,
+     synthesis x3, solver, forensics x2, rederive, escalation), floor flat at 5 since
+     s11, and every one of the three residual classes now carries a named,
+     dump-attributed or measurement-backed forecloser. The 2026-09-01 Judge FAIL is a
+     clean auto-reject of the only construct that ever went below 5, and s15 measured
+     the sanctioned alternative the FAIL itself proposed.
+   - next probe: when the driver assigns `escalation`, file
+     `## <date> — func_800770B8 — **RESOLVED BY STANDING RULING (2026-07-27):
+     FORECLOSED**` in docs/grind/decisions.md. Gate evidence to state: (i) canonical-asm
+     is NOT the disposition — `canonical func_800770B8` re-run in s15 returns
+     `{"verdict": "C", "asm_insns": 0, "total": 175, "distance": 5}`, and s11's
+     `tools/scan_hand_coded.py --single func_800770B8` returned tier=LOW score=0/8 with
+     S1-S8 all unset, so the STRONG-scanner AND-gate is a measured FAIL, not an open
+     question; (ii) the coercion-family gate FAILS
+     with a negative census — `docs/reference/sotn-construct-index.md` carries no
+     SOTN-master precedent for an arithmetic-identity dependence edge (the 2026-09-01
+     FAIL verified this independently). Re-activation triggers: a class grant covering
+     dependence-edge constructs, or a toolchain finding that changes how cse/flow treat
+     the class-B copy.
+2. **Class B's 5-instruction collapse is the only residual whose mechanism implies the
+   target's C differed from ours in SHAPE rather than in spelling — if any axis is ever
+   re-opened, it is this one.**
+   - mechanism: every spelling that stores to 0x30/0x34 through the raw
+     `func_8006E49C` result produces 170 instructions, five FEWER than the target. So the
+     target's source keeps BOTH the raw pointer and the copy live across those stores for
+     a reason our body does not reproduce — not a scheduling or allocation artefact but a
+     liveness one (flow.c deletes the copy the moment the raw pseudo is used directly).
+     s7/s8/s9 attributed it to cse pass 2 destroying the 2+2 split that cse pass 1
+     builds; s14 re-confirmed on the floor-4 chassis with four fresh block spellings.
+   - next probe: only worth re-opening with a NEW datum, e.g. a sibling function in
+     text1b.c that performs the same alloc-then-initialise sequence and whose target asm
+     shows the same copy retained — that would name the source shape rather than guess it.
+     Do not re-run the four block spellings; they are banked twice.
+3. **Nothing else. Explicitly do NOT re-probe:** flip spellings (11 collapse onto one
+   build, s6/s13/s15), store-group order (24/24, s12), loop shape (315 builds, s13),
+   inner-block position (240 orders, s13), wrap position or count (63 + 18 + 79 + 79 +
+   79 positions across s11/s12/s14), loop-head demand order (33 builds, s14), dependence
+   direction (13 builds, s14), reference count without a dependence (8 builds, s14),
+   pointer-cursor derivation (8 builds, s15), partial array typing (20 builds, s15), the
+   whole-body struct rewrite (s10, 178 insns), or the identity detour in any spelling
+   (Judge FAIL, 2026-09-01).
+
+## [s14] A cursor genuinely derived from group C's t0*4 pointer can supply the class-C dependence edge without emitting an instruction the target lacks (the replacement path the 2026-09-01 Judge FAIL itself proposed).
+- mechanism: If group A's base is an offset from a named `s16 *rowC = (s16 *)(base + (t0 * 4))`, the t0*2 quantity is reached through a pointer difference rather than an arithmetic identity, giving the construct a truthful semantic reading while still handing the t0*4 pseudo the early first-demand that s14 proved re-seats the contested `addu`. The only open question was whether GCC 2.7.2 folds the difference back into the already-live shift or materialises it.
+- probe: 8 builds (tmp/grind/func_800770B8/s14/b/gen6.py, b/w/, b/sweep6.log): four derivations of group A's base from rowC -- ((u8 *)rowC - base) >> 1, rowC - (s16 *)base, ((u8 *)rowC - base) / 2, (u8 *)rowC - (t0 * 2) -- on the unflipped (5) and flipped-ABCD (29) bases, with group C hoisted so the cursor exists before group A.
+- result: Both >>1 forms measure 176 instructions (36 flipped / 38 unflipped): GCC materialises the subu, plus an sra for the halfword-typed difference, i.e. exactly the 'emits an instruction the target lacks' condition the Judge attached to the sanction. The /2 form measures 178 (54). (u8 *)rowC - (t0 * 2) keeps 175 insns but scores 51 because it re-introduces the very t0*2 pseudo the derivation was meant to avoid. Nothing approaches the 4 the banned identity reached.
+- verdict: KILLED
+
+## [s14] Applying an array/struct TYPE to groups A and C alone creates the t0*4 -> t0*2 relation naturally, as a consequence of element size rather than as an identity (the axis s10's whole-body struct rewrite never isolated; reserved untried by the s14 frontier).
+- mechanism: s10's full struct rewrite regressed to 178 insns because LICM hoisted &D_800A35D0 + 2 and the 0x6A/0x7E constants folded onto the index side -- both effects of typing parts of the body this probe leaves alone. Typing only the two groups whose strides are 2 and 4 keeps those hazards out.
+- probe: 20 builds (tmp/grind/func_800770B8/s14/b/gen5.py P7-P10, b/v/, b/sweep5.log): group A as *((s16 *)(base + off) + t0) for all five stores, group C as ((s16 (*)[2])(base + 0x40))[t0], and both together, each on three bases (unflipped 5, flipped ABCD 29, flipped CABD 12).
+- result: Group A array-typed is BYTE-IDENTICAL to its base under the flip (29/175) and worse without it (31/175); group C array-typed always costs one instruction (18/176 unflipped, 15/176 flipped, 39/176 CABD); both together 33-37 at 176. GCC 2.7.2 computes each stride directly from t0 whatever the element type -- the type decides the shift amount, never the dependence.
+- verdict: KILLED
+
+## [s14] The class-C operand flip is a property of the (s32) integer cast, so a different route into pointer_int_sum's ptrop slot could reach the target's operand order without the +24-row loop-head collateral.
+- mechanism: s6 attributed the flip to c-typeck.c:2695 (the pointer-typed side is unconditionally operand 0) and s13's seven flip spellings ALL put the addend in ptrop by casting the global to (s32), which also makes the whole address integer-typed -- and integer typing is what lets cse forward the base and re-float the loop head. Casting the ADDEND to u8 * reaches the same slot while leaving the expression pointer-typed.
+- probe: 10 builds (b/gen5.py P1-P6, b/sweep5.log): (s16 *)((u8 *)(t0 * 10) + (s32)D_800A36A0 + 0x6A) and four relatives, plus the honestly array-typed row ((s16 (*)[5])(D_800A36A0 + 0x6A))[t0], on all three bases.
+- result: The u8*-addend spelling applied to the UNFLIPPED base measures 29/175 -- byte-identical to the (s32)-cast flip -- and is a no-op on the already-flipped base. The flip is decided by which side lands in ptrop, not by the cast that puts it there, so its collateral is intrinsic to the operand order. Eleven flip spellings across s6/s13/s15 now collapse onto one build. The array-typed row is the flip plus one instruction (9/176), the same build as s13's &((s16 *)(D_800A36A0 + 0x6A))[t0 * 5].
+- verdict: KILLED
+
+## [s14] The do-while(0) prologue fence needs no ruling: the apparent conflict between no-new-park-categories.md:256-271 and do-while-zero-exception.md resolves by citation, so the honest floor is legitimately 5 rather than 9.
+- mechanism: no-new-park-categories.md:256-271 still prints the stale 2026-06-04 reorg.c-only scoping, but that same paragraph designates the dedicated rule as the authority on prerequisites; do-while-zero-exception.md is the LATER document (owner ruling 2026-07-06) and its scope sentence sanctions the construct 'for ANY codegen effect incl. register allocation, with mandatory inline FAKE annotation', its body stating 'The former scoping to the reorg.c label-note mechanism is abolished' and its prerequisite 2 removing exhaustion as a hard gate for single-level wraps.
+- probe: Full read of both rule files end to end (they are the whole citation chain), plus confirmation that candidate.c carries exactly ONE level of wrap with an inline /* FAKE: ... */ naming what + mechanism (GCC 2.7.2 sched.c list scheduler, second pass) + lever-exhaustion (s3/s5/s9/s10/s11 sweeps).
+- result: The construct sits inside the sanctioned family with every prerequisite met. Class A is legitimately closed and the floor-5 body is cheat-free. Sessions s11-s14 all carried this as an open ruling question; no Judge cycle is owed and none should be spent on it.
+- verdict: CONFIRMED
