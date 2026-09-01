@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 18,
- "current_modality": "forensics",
+ "session_count": 19,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -111,23 +111,19 @@
    "floor": 5,
    "modality": "forensics",
    "headline": "Forensics names class C's decision for the first time in 18 sessions: local-alloc block_alloc's ordered operand-tying loop (combine_regs), not seat priority - all ten gates typed, the only two C-reach"
+  },
+  {
+   "session": 19,
+   "floor": 5,
+   "modality": "escalation",
+   "headline": "Floor re-verified at 5 on a pristine reference; class C's last frontier question answered NO by 3 fresh builds; both endgame gates FAIL (scan LOW 0/8, precedent census zero) - foreclosure record re-fi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Class C is reachable from the FLOOR-5 SEATS (not from the flip) if some C shape makes combine_regs fail on operand 1 of RTL insn 185 without adding or deleting an instruction. This session proves the only two C-reachable gates both need an extra live use of the reload, so the remaining question is narrow and concrete: is there a spelling in which an ALREADY-PRESENT instruction consumes the reload after the add?",
-   "mechanism": "local-alloc.c:1240-1298 block_alloc operand-tying loop + combine_regs gates 1 and 2 (local-alloc.c:470-478 for reg_qty, :1917 for the REG_DEAD requirement). Rows 38-64 are one basic block; the target's later uses of D_800A36A0 are all fresh reloads in later blocks.",
-   "next_probe": "Enumerate the instructions the target emits between rows 62 and the inner-loop head (63 addiu, 64 addiu, 65 sll, 66 addiu, 67 move, 68 sra) and ask whether any of them can be spelled to consume the reload pseudo instead of a fresh value - e.g. a form in which p_7e is derived from the reload rather than from the sum. If none can, class C is closed for the unflipped order and the residual reduces to the flip's seat swap."
-  },
-  {
-   "hypothesis": "The plain flip's loop-head collateral (t0*4 sinking 42 -> 50, reload rising 41 -> 40) is a sched_solver-searchable ordering residual, because unlike s17's Q00 basin its alignment is moves-only.",
-   "mechanism": "sched.c list scheduler; sched_solver models both passes order- and clock-exactly. perturb.py refused Q00 only because delete 8 / insert 8 made the goal non-topological; a multiset-identical loop head does not have that defect.",
-   "next_probe": "SOLVER modality: apply tmp/grind/func_800770B8/s18/fx/v/p2_flip.c, re-extract the sched model, classify object-level with --target-object build/src/text1b.o --ours-object tmp/sandbox/func_800770B8/text1b.o (NOT the mkasm --target path, which is broken - see the s18 tooling trap), and run perturb.py on block 1 for both passes. A vector here would be the first constructive lead on the flip basin in 12 sessions; a 'not topological' refusal again would close it for good. Note the flip also needs its seat swap explained, so a scheduling win alone is not sufficient."
-  },
-  {
-   "hypothesis": "Everything else in the ledger remains measured dead; do not re-spend it.",
-   "mechanism": "s6-s18 swept every degree of freedom with generators and logs banked under tmp/grind/func_800770B8/.",
-   "next_probe": "Explicitly do NOT re-probe: flip spellings (11 collapse onto one build), store-group order (24/24), loop shape (315 builds), inner-block position (240 orders), wrap position/count (63+18+79+79+79), loop-head demand order (33), dependence direction (13), reference count (8), pointer-cursor derivation (8), partial array typing (20), whole-body struct rewrite, procedural factoring (8), local declaration order (120), dead/join label fences, qty3 birth delay (5), the identity detour in any spelling (Judge FAIL 2026-09-01), global-alloc inverse at any goal subset, or either sched pass on the floor-5 body (moved:0 against a real target object)."
+   "hypothesis": "Nothing remains attackable in pure C on today's chassis: class B is price-foreclosed at 170 insns, class C has no C-reachable combine_regs gate inside a 175==175 body in either operand order, and the flipped basin's arithmetic ceiling is 7 > 5.",
+   "mechanism": "local-alloc.c:1240-1298 block_alloc operand tying (gates typed exhaustively in s18); flow.c copy deletion for class B; sched.c reordering cannot undo a seat swap.",
+   "next_probe": "Only a re-activation trigger changes this: an owner grant covering an arithmetic-identity / dependence-edge construct on a live computation, a toolchain finding that alters block_alloc operand tying, a chassis change that gives the body instruction slack, or an owner unpark."
   }
  ],
  "judge_constraints": [
