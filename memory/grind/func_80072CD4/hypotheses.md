@@ -1287,3 +1287,112 @@ Returned to active under Ruling A. Ground: gate (ii) was decided on 40 of 958 du
 ## 2026-09-01 — operator census result (owner ruling 2026-09-01, Ruling A probe EXECUTED)
 
 POSITIVE — the full-population dup_if_else_arm census (all 958 index entries at pin aa53500; full brace-aware scan of the 1224-file US-PSX set, superseding the 40-entry sample the 2026-08-30 gate used) found 8 manually-verified exhibits of the operative property (unconditional identical arm-TAIL statement in both if/else arms, hoistable below the join) in 4 fully-matched zero-INCLUDE_ASM US-PSX files: boss/rbo5/doors.c:919-939 (textbook sole-statement arm), dra/62DEC.c:1600-1605, dra/game_handlers.c:245-251 (VERSION_US branch), main/psxsdk/libspu/s_sca.c:129-137 +4 siblings (matched Sony PsyQ library code). Full report with method, counts and config proofs: census-2026-09-01.md in this ledger (script tmp/dup_screen.py). GATE (ii) NOW PASSES ON SHAPE for this construct class. Caveat carried verbatim: verification is source-level; per-exhibit asm-level cross_jump re-merge was not independently confirmed — the adjudicating session must verify byte-neutrality on its own chassis per the family's standing prerequisites. Nothing is pre-accepted: the floor-4 candidate.c and the per-arm duplication chassis proceed to normal layer-1 + default-FAIL Judge adjudication when the queue reaches this function. The prior 2026-08-30 gate-(ii) NEGATIVE is superseded as a sample-size artifact (its near-misses, e.g. bo4/doors.c:241, were correctly disqualified — nested tails — but the population contained true exhibits the 40-entry cap never surfaced).
+
+## 2026-09-01 — s13 (escalation modality) — the owner's Ruling-A probe is EXECUTED and POSITIVE, so this is NOT a foreclosure session; the blocker is now a mechanical ban, not a missing precedent
+
+**What s13 found before probing.** The owner directive attached to this function's queue
+item ("owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A — named
+probe in ledger reopen note") had ALREADY been executed, in the operator lane, before this
+session started. The reopen note is hypotheses.md:1283-1289; the result is
+memory/grind/func_80072CD4/census-2026-09-01.md and the decisions.md entry
+"## 2026-09-01 — func_80072CD4 — Ruling-A census EXECUTED: POSITIVE — precedent gate flips
+on shape". The 2026-08-30 gate-(ii) NEGATIVE that drove the previous foreclosure is
+formally superseded as a 40-of-958 sample-size artifact. The consistency warning in the
+s13 brief ("DIRECTIVE NOT YET IN LEDGER") was stale: no grind session had acknowledged it,
+but the operator lane had already run it. This session's acknowledgement closes that.
+
+**Consequence for the mandated disposition.** The s13 brief's default escalation script is
+"both AND-gates FAIL -> file FORECLOSED". That script does not apply on the facts:
+gate (b) now PASSES. Filing a foreclosure would directly contradict the owner ruling issued
+the same day, whose operative sentence is "the function is active in the queue and its
+candidate faces normal layer-1 + default-FAIL Judge adjudication". s13 therefore returned
+`ruling-request`, which the brief explicitly permits, rather than `owner-gated`.
+
+### H-s13-1 — the sandbox-0 per-arm body still measures 0 on the CURRENT chassis. CONFIRMED.
+
+The s13 brief reported "CHASSIS CHECK: measurement unavailable", so every banked spelling
+conclusion needed re-measurement before it could be spent. Probe: apply
+rejected/rederive_polyg4_struct_perarm_score0_banned_family.c to src/text1b.c via
+tmp/grind/func_80072CD4/s5/apply.py, then `& tools/wteng.ps1 main sandbox func_80072CD4
+--disable all`. Result: **score 0, build_insns 79 == target_insns 79, rules_dropped 0,
+cheat_asm_stripped 166** (raw JSON: tmp/grind/func_80072CD4/s13/sandbox_perarm_score0.json).
+src/text1b.c was reverted to `INCLUDE_ASM("asm/funcs", func_80072CD4);` immediately after,
+per asm-until-matched and the standing judge constraint; the tree is clean.
+This also re-proves the chassis itself is intact (79-insn target, 0 rules dropped).
+
+### H-s13-2 — the census's strongest exhibit is precedent for this function's EXACT shape (head-duplication), not merely for the family. CONFIRMED, independently re-verified from source.
+
+The census scored src/main/psxsdk/libspu/s_sca.c for the identical-TAIL property. s13
+re-read the pinned file directly (`git show aa53500226ee84be763f3e8702b27de06456b3a7:
+src/main/psxsdk/libspu/s_sca.c` in the local sotn-decomp working copy) and found the same
+exhibit ALSO carries the identical-HEAD property, which is the property func_80072CD4's
+per-arm body actually has:
+
+    if (attr->cd.reverb == 0) {
+        cnt = _spu_RXX->rxx.spucnt;     /* s_sca.c:131 - FIRST statement of the arm */
+        cnt &= ~4;
+        _spu_RXX->rxx.spucnt = cnt;
+    } else {
+        cnt = _spu_RXX->rxx.spucnt;     /* s_sca.c:135 - IDENTICAL, hoistable above the join */
+        cnt |= 4;
+        _spu_RXX->rxx.spucnt = cnt;
+    }
+
+Four such if/else pairs in the one function (CDREV/CDMIX/EXTREV/EXTMIX); `grep -n "cnt =
+_spu_RXX"` returns exactly 8 hits. PSX membership re-confirmed at the pin
+(config/splat.us.main.yaml:2 `platform: psx`, :266 `- [0x1B5A8, c, psxsdk/libspu/s_sca]`);
+`grep -c INCLUDE_ASM` over the pinned file == 0, so the shipped US-PSX bytes were produced
+from source carrying the duplication. This is matched **Sony PsyQ library** C — the same
+vendor/toolchain-era code family BB2 links. Transcript:
+tmp/grind/func_80072CD4/s13/sotn_s_sca_head_dup_verification.txt.
+func_80072CD4's `r0 = 0xFC` / `r1 = 0xFC` are likewise the identical leading components of
+each arm's RGB triple, writable once above the `if`, written twice instead. Same shape.
+
+### H-s13-3 — the remaining blocker is grindlib's mechanical banned-constructs tripwire, and it CANNOT be cleared from inside a grind session. CONFIRMED by reading the enforcement code.
+
+tools/grinder/grindlib.py:306 `check_banned_constructs` runs on every `candidate-ready`
+BEFORE the layer-1 reviewer (grindlib.py:589). `_ban_trips` (grindlib.py:257) fires when
+at least 50% of a banned entry's significant terms appear in the self-vet's `CONSTRUCTS:`
+block, after absence-asserting sentences are stripped. state.json `banned_constructs` still
+carries the verbatim entry "candidate.c: `((POLY_G4 *)arg1)->r0/r1 = 0xFC` written inside
+BOTH inner arms (@0x04 and @0x0C) ...". Any HONEST CONSTRUCTS: line for this body
+necessarily repeats most of that entry's content words (poly_g4, arg1, r0, r1, 0xfc, arms,
+inner, duplicat*), so an honest candidate-ready is auto-discarded as an INVALID SESSION —
+work lost, no reviewer, no Judge. The only sanctioned clearing path is
+`clear_banned_constructs` (grindlib.py:347), documented as **driver-invoked**; a session
+cannot self-clear, and self-clearing would be the exact self-grant pattern that produced the
+2026-08-20 FAIL wave.
+=> The correct s13 move is to ASK, not to submit. Hence `ruling-request`.
+
+**Gate (a), re-measured for the record.** `python3 tools/scan_hand_coded.py --single
+func_80072CD4` = **tier LOW, score 0/8** (all of S1-S8 negative;
+tmp/grind/func_80072CD4/s13/scan_hand_coded.txt). Canonical-asm remains FAILED — unchanged
+from s10. Gate (a) FAIL + gate (b) PASS is exactly the configuration the brief describes as
+"only gate (b) passes", and it is the configuration the owner's own reopen note anticipated.
+
+**What s13 did NOT do, deliberately.** It did not append any `## ... ruling: ... PASS`
+entry to docs/grind/decisions.md. Five prior layer-1 FAILs for this function were driven by
+grind-session self-issued "ruling" entries; [[judge-sole-gate]] rule 4 forbids any agent
+from issuing one. The question is carried in the outcome JSON's `ruling_question` field,
+where the Judge answers it, and nowhere else.
+
+**Body parked, not promoted.** The submission-ready form — the measured-0 body plus the two
+`/* FAKE: ... */` annotations that prerequisite 4 of
+.claude/rules/duplicated-statement-into-arms.md demands and that EVERY prior submission
+omitted — is banked at
+memory/grind/func_80072CD4/pending_ruling_2026-09-01_perarm_annotated.c.
+candidate.c is left as the clean floor-4 reviewer-passable body, unchanged, per the standing
+judge constraint.
+
+### Frontier after s13
+
+1. (blocking, driver/Judge lane) A ruling that either (a) clears the `banned_constructs`
+   entries covering the per-arm 0xFC duplication so the annotated body can be submitted
+   through the normal layer-1 + Judge path, or (b) upholds the ban ON THE MERITS with the
+   s_sca.c precedent in evidence — in which case the function is genuinely terminal and the
+   next escalation session forecloses with a complete record.
+2. (unchanged from s12) The sched1 arm-tail-`li` hoist question, needing a depth-3
+   tools/sched_solver/perturb.py that does not exist yet. Only relevant if the ruling
+   upholds the ban and a NEW pure-C chassis is required.
+3. (project-wide, not this function) The s12 cc1psx calibration result generalises; run
+   tmp/grind/func_80072CD4/s12/probe.sh on func_80017848 / func_800645B0 and bank once.
