@@ -78,6 +78,20 @@
  *   chassis_jd_inline_index_arith.c — 3 / 78, index arithmetic written inline
  *     with no idx2/wid locals; residual is the three loop-top points only.
  *   rejected/maintained-index-nonfold-reset-costs-one-insn.c ("OA") — 3 / 79.
+ *
+ * s15 (2026-09-01, forensics; owner ruling 2026-09-01 Ruling A reopen): floor
+ * RE-MEASURED on that day's tree with this exact body -- score 1,
+ * target_insns 78, build_insns 78, rules_dropped 0.  The reopen's named probe
+ * (the "two-distinct-once-written-locals" spelling of the banned multi-write
+ * carrier) was executed in both directions and measured 3 / 78 each, with the
+ * residual landing on the WD loop-head positions.  Dump-proven cause: cse.c
+ * DELETES a once-written copy intermediate (p1.rtl.txt insn 41 / p2.rtl.txt
+ * insn 60 are absent from the corresponding .cse dumps, along with their
+ * pseudos), so reg_n_sets for the loop-top carrier stays 1 and sched.c's
+ * birthing_insn_p keeps its lift.  Raising reg_n_sets here REQUIRES a
+ * multi-write carrier, which the 2026-08-31 amended named-intermediate family
+ * excludes by name.  See hypotheses H64/H65 and
+ * rejected/two-once-written-locals-copy-deleted-by-cse.c.
  */
 s32 func_800645B0(void) {
     s32 i;

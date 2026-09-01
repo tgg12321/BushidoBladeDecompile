@@ -18027,3 +18027,18 @@ cannot supply a multi-write precedent even in principle.
 ## 2026-09-01 11:09 — func_800645B0 — DISCARDED-SESSION MARKER (driver-stamped)
 
 Text appended above by session s15 of func_800645B0, which the driver DISCARDED as invalid (owner-gated: the standing-ruling terminal disposition requires `escalation` modality (driver-declared exhaustion), not `forensics`. A dead axis in this modality is a `progress` outcome with the kills banked ΓÇö the ladder still has untried modalities.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
+
+## 2026-09-01 — func_80072CD4 — Ruling-A census EXECUTED: POSITIVE — precedent gate flips on shape
+
+The owner-ruling-2026-09-01 Ruling-A probe for func_80072CD4 ran in the operator
+lane: a full-population census over all 958 dup_if_else_arm entries (uncapped
+index at pin aa53500, plus a full brace-aware scan of the 1224-file US-PSX set)
+found 8 manually-verified exhibits of the operative property in 4 fully-matched
+US-PSX files, including matched Sony PsyQ library code
+(main/psxsdk/libspu/s_sca.c). The 2026-08-30 gate-(ii) NEGATIVE is superseded as
+an artifact of the 40-entry index cap. Exhibits, method, counts and config
+proofs are banked in memory/grind/func_80072CD4/census-2026-09-01.md with the
+source-level-verification caveat carried verbatim. Nothing is pre-accepted: the
+function is active in the queue and its candidate faces normal layer-1 +
+default-FAIL Judge adjudication with the family prerequisites (byte-neutrality
+on chassis, annotation, exhaustion record) in force.

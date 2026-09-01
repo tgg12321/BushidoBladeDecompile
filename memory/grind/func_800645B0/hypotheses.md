@@ -1838,3 +1838,88 @@ another session looking for a spelling that gets both.
 ## 2026-09-01 â€” operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
 
 Returned to active under Ruling A. Ground: the 2026-08-31 amended named-intermediate family (once-written) is this ledger's own frontier trigger. ALL banned_constructs entries STAND untouched (layer-2 review confirmed the wid multi-write and val/idx shapes are substantive multi-write-carrier bans, not motive-class). Named probe: build and measure the two-distinct-once-written-locals spelling â€” each fresh local written exactly once, textually and semantically distinct from every banned entry; if any reviewer judges it covered by a standing ban, the ban wins and the probe FAILs. Also: re-census gate (b) against the amended class definition, not the 2026-08-30 hyper-specific phrasing.
+
+
+## H64 (session 15, 2026-09-01, forensics) — KILLED. The owner-directed Ruling-A named probe: a once-written named intermediate cannot raise reg_n_sets, because cse.c deletes the copy
+
+- **statement.** The 2026-09-01 operator reopen note's named probe: build and
+  measure the "two-distinct-once-written-locals" spelling — the banned
+  multi-write carrier split into two fresh locals, each written exactly once,
+  textually and semantically distinct from every banned entry, and exactly the
+  shape the 2026-08-31 amended named-intermediate family (once-written,
+  any number of reads) describes.  If it reaches 0 / 78 the function closes
+  inside a sanctioned family.
+- **mechanism (predicted).** The closing pair of conditions from H58/H59 +
+  H61/H62: the *3 sum's expansion destination must be distinct from both
+  operands (optabs.c:398-421) for the target's `addu $s0,$s1,$s0` operand
+  order, AND reg_n_sets for the inner-loop-top carrier must be > 1 to deny
+  sched.c's `birthing_insn_p` max-priority lift and keep the target's loop-head
+  placement.  The banned `wid` form satisfies both only because `wid` is
+  WRITTEN TWICE.  The probe asks whether two once-written locals can satisfy
+  both without a multi-write carrier.
+- **probe.** Two bodies, honest `sandbox func_800645B0 --disable all`, against
+  an SB control re-measured this session (1 / 78, 78 build insns):
+  P1 = `wid = i + j; idx = wid;` at the inner-loop top plus
+  `wid2 = idx2 + idx;` for the sum (three word stores read `wid2`);
+  P2 = the mirror, `idx = i + j;` at the loop top plus `wid = idx;` and
+  `wid2 = idx2 + wid;` inside the if-arm.  Both: every local written exactly
+  once.  Then `pwsh tools/grinder/dump.ps1 func_800645B0` on each tree and a
+  .rtl-vs-.cse comparison of the copy insn.
+- **result.** P1 = **3 / 78 at 78 build insns**; P2 = **3 / 78 at 78 build
+  insns**.  Both residuals are the SAME three positions as the WD
+  fresh-destination chassis — objdump 11/12 (ours `li v1,1` then
+  `addu s0,s3,a0`; target `addu s0,s3,a0` then `li v1,1`) and 65 (the back-edge
+  delay slot: the target steals the addu, we steal the li).  The operand-order
+  half is won; the loop-head half is lost, exactly as with WD.
+  **PASS ATTRIBUTION (new, dump-proven): cse.c deletes the copy.**  In P1
+  `tmp/grind/func_800645B0/s15/p1.rtl.txt` carries
+  `(insn 41 38 44 (set (reg/v:SI 74) (reg/v:SI 79)))` (`idx = wid`), and
+  `p1.cse.txt` contains ZERO occurrences of insn 41 and ZERO references to
+  pseudo 74 — `cse_insn` propagated reg79 into both the `1 << idx` shift and
+  the `idx << 1`, then deleted the copy.  P2 is identical:
+  `(insn 60 57 63 (set (reg/v:SI 79) (reg/v:SI 74)))` in p2.rtl.txt, absent
+  from p2.cse.txt, with insn 63 reading `(plus:SI (reg/v:SI 75) (reg/v:SI 74))`
+  directly.  Because the copy dies in cse — the FIRST pass after RTL generation
+  — loop.c's `count_loop_regs_set` and sched.c's `birthing_insn_p` never see a
+  second set of the carrier.
+- **verdict: KILLED**, and it is a CLOSED-FORM kill of the whole amended
+  family for this function, not just of these two spellings.  The amended
+  named-intermediate family requires (1) once-written and (2) a real,
+  non-copy value.  At the inner-loop top the only real value is `i + j`
+  itself, so any once-written intermediate there is either (a) a pure copy —
+  deleted by cse, reg_n_sets stays 1, 3 / 78 — or (b) the carrier itself,
+  which is the once-written SB/WD arrangement already measured at 3 / 78.
+  Raising reg_n_sets above 1 REQUIRES a second, differently-valued write to the
+  same carrier, i.e. a multi-WRITE carrier — which the 2026-08-31 clarification
+  excludes in terms ("Multi-WRITE carriers remain NOT this entry", the `y1`
+  FAIL decisions.md:1833 and the 2026-08-30 func_80045878 `c` FAIL standing) and
+  which is this function's standing banned construct.
+- **banked.** `rejected/two-once-written-locals-copy-deleted-by-cse.c` and
+  `rejected/two-once-written-locals-mirror-copy-deleted-by-cse.c`.
+
+## H65 (session 15, 2026-09-01) — KILLED. Endgame-lock gate (b), re-censused against the AMENDED class definition per the reopen note
+
+- **statement.** Re-run the SOTN-master precedent census for the closing
+  construct against the 2026-08-31 amended named-intermediate class definition
+  (not the 2026-08-30 hyper-specific phrasing), on the UNCAPPED index rebuilt
+  2026-09-01 at pin `aa535002`.
+- **probe.** `docs/reference/sotn-construct-index.md` — class table plus greps
+  for reuse / register-allocation / regalloc annotations, PSX (untagged)
+  entries only.
+- **result.** The amended class ITSELF forecloses the citation: the closing
+  construct for this function is a multi-WRITE carrier, and the amended
+  clarification (`.claude/rules/no-new-park-categories.md:227-228`) states
+  "Multi-WRITE carriers remain NOT this entry".  Independently, the index's
+  own PSX reuse evidence is the frozen variable-reuse family, not this shape:
+  the `// fake reuse of i?` hits (`src/boss/mar/cutscene.c:172`,
+  `src/st/cen/cutscene.c:211`, `src/st/lib/cutscene.c:153`,
+  `src/st/no3/cutscene.c:360`, `src/st/top/cutscene.c:143`) all BORROW an
+  existing loop index, which is `.claude/rules/defeat-licm-hoist-var-reuse.md`
+  and is bounded by `staged-value-reused-variable.md` bound 2 against INVENTED
+  borrows; and `src/weapon/w_037.c:300` ("FAKE but makes register allocation
+  work") is the once-written named-intermediate shape this session just
+  measured at 3 / 78.  The `new_var_temp` class
+  (`docs/reference/sotn-construct-index.md:1425`, 20 hits) carries DECLARATION
+  lines only and structurally cannot evidence a write count, so it cannot
+  supply a multi-write precedent even in principle.
+- **verdict: KILLED** — gate (b) FAILS again, now against the amended class.
