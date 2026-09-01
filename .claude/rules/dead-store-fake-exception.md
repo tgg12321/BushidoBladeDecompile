@@ -32,7 +32,20 @@ value is never read (GCC DCEs the store; its existence influences RA /
 scheduling / flow analysis upstream of DCE):
 
 - self-assignment: `x = x;`
-- dead store to a local: `dest = val1;` where `dest` is never read
+- dead store to a local: `dest = val1;` where the STORED VALUE is never
+  read — **deadness is STORE-level, not variable-level (owner ruling
+  2026-08-31, [[ordinary-c-judge-decidable]] Ruling 2):** the store is in
+  scope even if `dest` is later re-assigned and read (defensive-init
+  shape: `x = a; ... x = b;` with every read reached only by the second
+  store). The scope sentence above always said this; the earlier bullet
+  wording "`dest` is never read" mis-stated it and is superseded. The
+  owner approved this resolution with its consequence stated explicitly
+  (it was surfaced by the func_80045878 packet, decisions.md:16508-16515
+  — see [[ordinary-c-judge-decidable]] § Informed-approval record). It
+  does NOT by itself legalize any previously-FAILed instance: every
+  candidate is adjudicated fresh, with ALL of this rule's prerequisites
+  (exhaustion, named mechanism, annotation, dual review) verified per
+  instance.
 - dead conditional store: `if (c) { v = e; } ...; v = e;` (inner store dead)
 - dead param assign: `arg0 = 0;` / `param = param;` never read after
 - **combine-foldable chain-extender** (scope extension, owner ruling

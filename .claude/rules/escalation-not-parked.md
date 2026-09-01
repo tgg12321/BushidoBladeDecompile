@@ -8,6 +8,16 @@ metadata:
 
 # Owner ruling 2026-08-24 — escalation replaces parking
 
+> **SUPERSEDED IN DISPOSITION SHAPE (owner ruling 2026-08-31,
+> [[ordinary-c-judge-decidable]]):** the ESCALATED state and the
+> decision-packet mechanism are retired. Exhaustion dispositions take the
+> silent `foreclosed` queue status (recorded to decisions.md/journal,
+> skipped by `queue next`, re-activated on new evidence or owner unpark —
+> never surfaced as a question). Ordinary-C construct questions are
+> Judge-decidable against the frozen family list (non-membership = FAIL +
+> borderline log, never a packet). This file's AUTO-REJECT class and its
+> "everything must be decompiled eventually" posture survive unchanged.
+
 Owner (Trenton), verbatim:
 
 > "I don't want anything parked anymore. Everything has to be decompiled

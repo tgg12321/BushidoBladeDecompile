@@ -214,8 +214,16 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     limit: SOTN's acceptance was never conditioned on a GCC pass. A fresh
     named intermediate therefore qualifies under this entry **whatever GCC
     pass it acts through** (LUID bias, cse.c re-materialization, allocno
-    priority), provided ALL of: (1) once-written, once-read — multi-write
-    carriers are NOT this entry (the `y1` FAIL, decisions.md:1833, stands);
+    priority), provided ALL of: (1) once-written — **relaxed from
+    "once-written, once-read" by owner ruling 2026-08-31
+    ([[ordinary-c-judge-decidable]]; evidence: the SOTN-master PSX
+    `new_var_temp` class, docs/reference/sotn-construct-index.md:649 —
+    NOTE the caveat carried in that rule's § Ruling 1: the index carries
+    declaration lines only, so this is precedent for the existence of
+    fresh RA-purposed locals in SOTN PSX master, not a line-for-line shape
+    match; the owner ruled with that caveat presented): a fresh local
+    holding a real, consumed value may be read any number of times.** Multi-WRITE carriers remain NOT this entry (the `y1` FAIL,
+    decisions.md:1833, and the 2026-08-30 func_80045878 `c` FAIL stand);
     (2) real value — the intermediate holds a computation that appears in
     the target's own bytes and only relocates where the value is named;
     pure no-op copies stay with the dead-store family and its
@@ -450,13 +458,16 @@ Per this policy:
    queue is a worklist of unfinished work; it can hold parked items
    indefinitely without inventing a new "done" category for them.
 
-Escalations to a waiting owner no longer exist (owner ruling 2026-08-18,
-[[judge-sole-gate]]). The exhaustive dispositions are: (a) more search,
-(b) the pipeline canonical-asm grant path IF the hand-coded signals
-support it, (c) terminal OWNER-ACCEPTED INCOMPLETE park with a
-borderline-ledger entry. There is no (d) "new infrastructure carve-out",
-and a proposed frozen-list extension is logged to
-`docs/grind/borderline.md` — never granted in-pipeline, never waited on.
+Escalations to a waiting owner no longer exist (owner rulings 2026-08-18
+[[judge-sole-gate]] and 2026-08-31 [[ordinary-c-judge-decidable]]). The
+exhaustive dispositions are: (a) more search, (b) the pipeline
+canonical-asm grant path IF the hand-coded signals support it, (c) the
+silent `foreclosed` queue state (proof-of-foreclosure recorded to
+decisions.md, skipped by `queue next`, re-activated on new evidence or
+owner unpark). There is no (d) "new infrastructure carve-out", and a
+proposed frozen-list extension is a clean FAIL(CONSTRUCT) logged to
+`docs/grind/borderline.md` — never granted in-pipeline, never filed as a
+question to the owner.
 
 ## Related
 
