@@ -17013,3 +17013,133 @@ The CODE is legitimate and I am not objecting to it. The mixed epilogue spelling
 ## 2026-08-31 22:31 — func_80062020 — layer-1 review — **FAIL**
 
 Same-lvalue dual-spelling addressing-mode steer (row[0] re-spelled as the full &D_800F1198+ofs expression) — the exact construct already FAILed by two prior Judges (2026-08-25 and 2026-08-31); deleting the incriminating comments does not change what the code does.
+
+## 2026-08-31 — func_80062020 (src/text1b.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Filed by grind session s11 (escalation modality; driver-declared exhaustion — honest floor
+FLAT at 4 across s2–s11 over six distinct modalities: structural s2/s3, permuter s4
+(~46k iterations across two fresh-seed basins), synthesis s5/s6, forensics s7/s8, rederive s9,
+escalation s10/s11). This is a **proof-of-foreclosure record**, not a question and not a
+decision packet: nothing here is addressed to the owner and nothing waits on an answer.
+
+### 0. The routing question this function was held open for is ANSWERED and SPENT
+
+The 2026-08-30 s10 packet (this file, :15732) asked one routing question: does owner ruling 6a
+(:14836) supersede the `d1bf57c9` `banned_constructs` entries so the dual-spelling epilogue can
+be adjudicated on the merits? The owner answered **YES** on 2026-08-31 (migration entry in this
+file; ruling `ordinary-c-judge-decidable`, commit 73bee8f8): all three bans were cleared via
+`grindlib unban` and the ordered adjudication was authorised to proceed.
+
+**That adjudication then ran to completion, and it FAILED:**
+
+- **Judge, 2026-08-31 22:25 — FAIL** (this file, `## 2026-08-31 22:25 — func_80062020 — final
+  call — **FAIL**`). Decisive defect stated as comments-only: a `/* FAKE */` marker on a store
+  with full semantic purpose, plus a proven-spelling-class-reconstruction claim asserting
+  ruling-6a criterion 1 as satisfied when this ledger's own `hypotheses.md [s8]` records that
+  criterion KILLED ("the claim is false as stated" — uniform shape JOINctl_i12 measured the
+  exact target arrangement, at the cost of an extra branch).
+- The prescribed one-comment fix was executed verbatim (FAKE marker and every family/criterion
+  claim deleted; re-filed as ordinary C under `ordinary-c-judge-decidable` Ruling 1 sec.3) and
+  the body was re-measured with the edit in place: `sandbox func_80062020 --disable all` →
+  **score 0**, 38/38, rules_dropped 0; `verify-oracle` → ok, build_sha1
+  `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle.
+- **Layer-1 cheat-reviewer, 2026-08-31 22:31 — FAIL** (this file, preceding entry): "Same-lvalue
+  dual-spelling addressing-mode steer (row[0] re-spelled as the full &D_800F1198+ofs
+  expression) — the exact construct already FAILed by two prior Judges (2026-08-25 and
+  2026-08-31); deleting the incriminating comments does not change what the code does."
+  Prescribed next action: "return to the honest floor-4 candidate (uniform row-pointer
+  epilogue)." The construct is once again a mechanically-enforced `banned_constructs` entry in
+  `memory/grind/func_80062020/state.json`.
+
+Ruling 6a is written with two branches; its "proof holds" branch is now spent and refused, so
+**ruling 6a's own "proof fails" branch takes effect: fidelity-limited INCLUDE_ASM at floor 4,
+terminal.** No further grind session can advance this item, because the only known distance-0
+spelling is a banned construct and respelling a banned construct is the same construct.
+
+### 1. Gate (a) — canonical-asm: **FAILS**
+
+`python3 tools/scan_hand_coded.py --single func_80062020` re-run this session →
+**tier LOW, score 0/8**, 38 insns, zero signals (S1 no multu/mflo pacing; S2 no empty-body
+branches; S3/S4 "too short (38 < 40 insns)"; S5 jaccard < 0.5; S6 no BIOS jumptable; S7 all
+callee-saves saved; S8 no redundant mask). Fourth independent re-run, agreeing with s2, s4 and
+s10. Canonical-asm is refused on the scanner evidence bar; no override of that bar is requested.
+
+### 2. Gate (b) — in-hand SOTN-master precedent: **PASSES on shape, but is SPENT**
+
+s10 pinned exact, version-checked citations (SOTN master HEAD `db41b28`):
+`src/st/lib/e_lock_camera.c:20` (`Tilemap* tilemap = &g_Tilemap;`) with direct
+`g_Tilemap.x` / `.width` at :50–51 and the SAME members aliased `tilemap->x` at :75 and
+`tilemap->width` at :91; and `src/st/cen/e_chamber.c:56` with direct `g_Tilemap.height` at :240
+and aliased `tilemap->height` at :201. Both files are members of `config/splat.us.*.yaml`
+(PSX US build, GCC 2.7.2), version-checked per `sotn-citation-requires-version-check`; they are
+not PSP/Saturn-only. The 2026-07-24 s4 packet's "no SOTN precedent" assertion remains formally
+corrected. **But this gate no longer decides anything**: the precedent was placed in front of a
+fresh Judge AND a fresh layer-1 reviewer under the amended 2026-08-31 policy, on the merits,
+with the bans cleared — and the construct was refused anyway. A precedent that has already been
+adjudicated and lost is spent, not open. Per the AUTO-REJECT CLASS instruction this record does
+not argue for the construct beyond citing the outcome.
+
+### 3. The honest floor and what holds the residual
+
+- **Floor re-measured this session on the live chassis** (`candidate.c` body pasted over
+  `INCLUDE_ASM("asm/funcs", func_80062020);` at `src/text1b.c:3932`; src restored to HEAD
+  immediately afterwards): `sandbox func_80062020 --disable all` → **score 4**, target_insns 38,
+  build_insns 35, rules_dropped 0, cheat_asm_stripped 166 (all from other functions in
+  text1b.c). Identical to the digit to s8, s9 and s10 — **no drift across four sessions**.
+- **Nothing dishonest holds any part of this function.** The floor-4 candidate
+  (`memory/grind/func_80062020/candidate.c`) is clean pure C: 0 rules, 0 pins, 0 volatile,
+  0 dead vars, one uniform tree shape for all three terminator stores. The residual is 4
+  instructions in the epilogue: the target writes column a of the terminator row through a
+  `lui/addu/sw` LO_SUM triple while both uniform C spellings write it either through the shared
+  base register (score 4 @ 35 insns) or through LO_SUM for all three columns (score 6 @ 39
+  insns). The 38-insn target's 11-insn epilogue = 8 shared-base + 3 LO_SUM is arithmetically
+  unreachable from either uniform pole (s9 measurement, both poles scored).
+- Deciding pass, attributed from dumps rather than guessed (s8): **cse2**
+  (`-frerun-cse-after-loop`), with cse1 already broken for free by a `NOTE_INSN_LOOP_END`.
+
+### 4. Exhaustion pointers (evidence, not assertion)
+
+- Floor history and per-session kills: `memory/grind/func_80062020/evidence.md`,
+  `memory/grind/func_80062020/hypotheses.md` (s1–s11 blocks).
+- 20 disproven forms banked under `memory/grind/func_80062020/rejected/`, including both
+  uniform poles, all five aggregate/tree-shape variants, the permuter-derived chained-assignment
+  variants, the s9 CFG-break forms, and the two adjudicated distance-0 bodies
+  (`judge-fail-0831-2224.c`, `layer1-fail-0831-2231.c`).
+- Permuter: two fresh-seed basins, ~46k iterations (s4) — the only byte-0 form found was the
+  same dual-spelling construct that has now been refused three times.
+- Two-shape theorem and its s7 falsification/re-attribution:
+  `tmp/grind/func_80062020/s7/two_shape_law_validation.md`; whole-function sweep results:
+  `tmp/grind/func_80062020/s9/wholesweep_results.txt`.
+
+### 5. Last live search idea, closed this session
+
+The s9/s10 frontier's remaining search hypothesis was a jump2-survivable cross-jump: two arms
+that become identical only after reload/combine, so `jump1` (toplev.c:2827) and the second full
+jump pass (2923) fail to cross-jump them but `jump2` (3142, `cross_jump=1`) succeeds, leaving
+the combine-folded `sw $0,%lo(sym)($at)` behind with no branch. s9 already killed the
+dead-register-set spelling (erased at 2827). **The class is now closed definitionally**: the
+target epilogue is branch-free and contains only the three terminator stores plus their address
+arithmetic, so the only body the surviving arm may contain is those same stores; two arms
+carrying identical stores make the controlling condition semantically dead, which is the
+`dead-conditional-store` / `if (1) { ... }` forbidden family. Any condition that is NOT dead
+adds a branch or a computation the 38-insn target does not contain. There is therefore no
+admissible member of the class, and no measurement can produce one.
+
+### 6. Disposition and re-activation triggers
+
+**FORECLOSED** under the owner's standing ruling of 2026-07-27
+(`.claude/rules/endgame-lock-disposition.md`), executed silently per the 2026-08-31 ruling
+(`.claude/rules/ordinary-c-judge-decidable.md`): func_80062020 stays as
+`INCLUDE_ASM("asm/funcs", func_80062020);` at `src/text1b.c:3932`, a fidelity-limited lock at
+honest floor 4, with its clean floor-4 candidate preserved in
+`memory/grind/func_80062020/candidate.c`. Gate (a) FAILED (scan LOW 0/8), gate (b) is spent
+(precedent adjudicated and refused on the merits with the bans cleared), and the last search
+class is closed. The queue advances.
+
+**Re-activation triggers:** (i) an owner class grant covering the same-symbol
+dual-address-form residual — which would dispose of the whole 32-function species identified by
+`tmp/grind/func_80062020/s9/scan4.py`, all of which are still INCLUDE_ASM; (ii) a
+toolchain-fidelity finding that changes cse2/combine behaviour on the LO_SUM chain; (iii) a
+spelling discovered on a SIMPLER census member (the immediate neighbour `func_80061064` on
+`D_800F1150`, or the shorter members `CD_cw` / `SpuSetReverbModeParam`) that transfers back
+here at zero extra cost; (iv) an owner unpark.

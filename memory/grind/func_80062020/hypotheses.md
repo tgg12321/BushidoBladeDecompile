@@ -821,3 +821,39 @@ untouched and remain available if the owner answers ANSWER B and a sibling funct
 - probe: candidate.c pasted over INCLUDE_ASM("asm/funcs", func_80062020); at src/text1b.c:3853 -> `& tools/wteng.ps1 main sandbox func_80062020 --disable all`; src restored to HEAD immediately afterwards.
 - result: score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 167 — identical to the digit to both s8 and s9. No drift; git status clean apart from the pre-existing metrics/events.jsonl and this session's docs/grind/decisions.md packet.
 - verdict: KILLED
+
+## [s11] The remaining search class - a jump2-survivable cross-jump whose arms carry REAL program logic - has no admissible member.
+- mechanism: The s9/s10 frontier proposed two arms that become identical only after reload/combine, so jump1 (toplev.c:2827) and the second full jump pass (2923) fail to cross-jump them but jump2 (3142, cross_jump=1) succeeds, leaving combine's folded sw $0,%lo(sym)($at) behind with no branch. s9 already killed the dead-register-set spelling (erased at 2827), and the frontier's own precondition was that any arm body must be REAL program logic.
+- probe: Enumerate what an arm may legally contain, given the target. The target epilogue is BRANCH-FREE and contains exactly the three terminator stores plus their address arithmetic (11 insns = 8 shared-base + 3 LO_SUM). Cross-jumping leaves ONE copy of the arm body in the emitted code, so that body must appear in the target bytes; therefore the only permissible arm body is those same three stores.
+- result: Two arms carrying identical stores make the controlling condition semantically dead, which is the dead-conditional-store / `if (1) { ... }` forbidden family (checklist T1 + T5) - not a C form that may be submitted. Conversely any condition that is NOT dead contributes a branch or a computation the 38-insn target does not contain, so it cannot reach distance 0. The class is empty by construction; no measurement can produce a member.
+- verdict: KILLED
+
+## [s11] The 2026-08-31 owner YES answer reopens a path to distance 0 that survives review.
+- mechanism: The routing answer cleared all three banned_constructs entries and ordered a merits adjudication of the dual-spelling epilogue under ruling 6a's four-point bar, with oracle SHA1 deciding.
+- probe: Run the adjudication to completion - Judge 22:25, prescribed comment-only fix executed verbatim and re-measured (score 0, 38/38, verify-oracle SHA1 == oracle), fresh layer-1 22:31.
+- result: Layer-1 FAILed the fixed submission on the merits ("the exact construct already FAILed by two prior Judges; deleting the incriminating comments does not change what the code does") and prescribed a return to the honest floor-4 candidate; the construct was re-banned mechanically. Ruling 6a's "proof fails" branch is the operative one.
+- verdict: KILLED
+
+## [s11] The honest floor has drifted since s10 (the brief again reported "measurement unavailable").
+- mechanism: Drift would make every banked chassis-relative conclusion unspendable and reopen killed axes.
+- probe: floor-4 uniform body pasted over src/text1b.c:3932 -> sandbox func_80062020 --disable all; src restored to HEAD immediately afterwards.
+- result: score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 166 - identical to the digit to s8, s9 and s10. Fourth consecutive stable session.
+- verdict: KILLED
+
+## [s11] The 2026-08-31 owner YES answer (ruling 6a supersedes the d1bf57c9 bans) reopens a path to distance 0 that survives review.
+- mechanism: The routing answer cleared all three banned_constructs entries and ordered a fresh layer-1 + default-FAIL Judge adjudication of the dual-spelling epilogue against ruling 6a's four-point bar, with oracle SHA1 deciding.
+- probe: Run the adjudication to completion: Judge 2026-08-31 22:25 FAIL (comment-only defect), execute the prescribed one-comment fix verbatim, re-measure (score 0, 38/38, verify-oracle SHA1 == oracle), fresh layer-1 2026-08-31 22:31.
+- result: Layer-1 FAILed the fixed submission ON THE MERITS — 'the exact construct already FAILed by two prior Judges (2026-08-25 and 2026-08-31); deleting the incriminating comments does not change what the code does' — prescribed a return to the honest floor-4 candidate, and the construct is a mechanically-enforced banned_constructs entry again. Ruling 6a's own 'proof fails' branch is the operative one.
+- verdict: KILLED
+
+## [s11] The remaining search class — a jump2-survivable cross-jump whose arms carry REAL program logic — has an admissible member.
+- mechanism: Two arms that become identical only after reload/combine so jump1 (toplev.c:2827) and the 2923 pass fail to cross-jump them but jump2 (3142, cross_jump=1) succeeds, leaving combine's folded sw $0,%lo(sym)($at) behind with no branch. s9 killed the dead-register-set spelling (erased at 2827); the frontier's precondition was that the arm body be real program logic.
+- probe: Enumerate what an arm may legally contain given the target: the target epilogue is branch-free and contains exactly the three terminator stores plus their address arithmetic (11 insns = 8 shared-base + 3 LO_SUM); cross-jumping leaves ONE copy of the arm body in the emitted code, so that body must appear in the target bytes.
+- result: The only permissible arm body is those same three stores, which makes the controlling condition semantically dead — the dead-conditional-store / 'if (1) { ... }' forbidden family (checklist T1 + T5), not a submittable C form. Any condition that is NOT dead contributes a branch or computation the 38-insn target does not contain and so cannot reach distance 0. The class is empty by construction; no measurement can produce a member.
+- verdict: KILLED
+
+## [s11] The honest floor has drifted since s10 (the brief again reported 'measurement unavailable').
+- mechanism: Chassis drift would make every banked chassis-relative conclusion in this ledger unspendable and reopen killed axes.
+- probe: Paste the floor-4 uniform row-pointer body over INCLUDE_ASM("asm/funcs", func_80062020); at src/text1b.c:3932 -> `& tools/wteng.ps1 main sandbox func_80062020 --disable all`; restore src/text1b.c to HEAD immediately afterwards.
+- result: score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 166 — identical to the digit to s8, s9 and s10. Fourth consecutive stable session; src restored, git status clean apart from ledger/docs edits and the pre-existing metrics/events.jsonl.
+- verdict: KILLED

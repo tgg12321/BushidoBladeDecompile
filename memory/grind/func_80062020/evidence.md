@@ -1008,3 +1008,69 @@ ever reversed — it is superseded, not disproven.
 - [s11] The "same-lvalue dual spelling" objection that drove the 2026-08-25 Judge FAIL and the 2026-08-30 layer-1 FAIL does not survive contact with the text: row+0 is written exactly ONCE in the epilogue, `row[0]` appears nowhere in the function, and there is no discard, no redundant write and no pair of stores to one lvalue. Two different lvalues reached through two different expressions is not dual spelling of one lvalue. The earlier FAILs were against the FAMILY CLAIM (proven-spelling-class reconstruction / ruling 6a) that the s10 annotation asserted, not against the C; deleting the claim removes the thing that was FAILed.
 
 - [s11] Ledger housekeeping: candidate.c now holds the distance-0 body (previously it held the floor-4 uniform body, which is superseded and remains banked at rejected/epilogue-uniform-pointer-floor4-superseded.c); its header carries an s11 migration banner recording that the body is applied to src/text1b.c THIS session and that every number quoted was measured with it in place. No new rejected form was produced this session - the annotation-fix contract permits no new constructs.
+
+- [s11-disposition] THE ORDERED ADJUDICATION IS SPENT AND FAILED. The owner answered the s10
+  routing packet YES on 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8): ruling 6a supersedes
+  the d1bf57c9 bans, all three bans cleared via grindlib unban, adjudication of the dual-spelling
+  epilogue proceeds on the merits. It then proceeded and lost. Judge 2026-08-31 22:25 FAIL
+  (comment-only defect: a /* FAKE */ marker on a semantically-purposeful store plus a
+  proven-spelling-class-reconstruction claim asserting ruling-6a criterion 1 satisfied, refuted by
+  this ledger's own hypotheses.md [s8] KILLED entry). The prescribed one-comment fix was executed
+  verbatim and re-measured at score 0 / 38-38 with verify-oracle SHA1 == oracle. Layer-1
+  2026-08-31 22:31 then FAILed the fixed submission ON THE MERITS - "the exact construct already
+  FAILed by two prior Judges; deleting the incriminating comments does not change what the code
+  does" - and the construct is a mechanically-enforced banned_constructs entry again. Ruling 6a's
+  own "proof fails" branch therefore governs: fidelity-limited INCLUDE_ASM at floor 4, terminal.
+
+- [s11-disposition] FLOOR RE-MEASURED, NO DRIFT (4th consecutive session). The floor-4 uniform
+  body pasted over INCLUDE_ASM("asm/funcs", func_80062020); at src/text1b.c:3932 ->
+  sandbox func_80062020 --disable all = score 4, target_insns 38, build_insns 35, rules_dropped 0,
+  cheat_asm_stripped 166. Identical to the digit to s8, s9 and s10. src/text1b.c restored to HEAD
+  immediately afterwards (git status clean apart from decisions.md, candidate.c and the
+  pre-existing metrics/events.jsonl).
+
+- [s11-disposition] GATE (a) canonical-asm FAILS, 4th independent re-run:
+  tools/scan_hand_coded.py --single func_80062020 -> tier LOW, score 0/8, 38 insns, zero S1-S8
+  signals (S3/S4 report "too short (38 < 40 insns)"). Agrees with s2, s4, s10.
+
+- [s11-disposition] GATE (b) SOTN precedent PASSES on shape but is SPENT. The s10 citations
+  (SOTN master db41b28: src/st/lib/e_lock_camera.c:20 + :50-51 direct + :75/:91 aliased;
+  src/st/cen/e_chamber.c:56 + :240 direct + :201 aliased; both in config/splat.us.*.yaml, PSX
+  GCC 2.7.2) stand and remain correct. They no longer decide anything: the precedent was put in
+  front of a fresh Judge AND a fresh layer-1 reviewer under the amended 2026-08-31 policy, with
+  the bans cleared, on the merits - and the construct was refused anyway. An adjudicated-and-lost
+  precedent is spent, not open.
+
+- [s11-disposition] CANDIDATE RESTORED per the layer-1 next-action. candidate.c now holds the
+  clean floor-4 uniform row-pointer epilogue (0 rules, 0 pins, 0 volatile, 0 dead vars, one tree
+  shape for all three terminator stores) with an s11 migration banner recording that it was
+  applied to src ONLY for the re-measurement and that src is back at HEAD. The two adjudicated
+  distance-0 bodies stay banked at rejected/judge-fail-0831-2224.c and
+  rejected/layer1-fail-0831-2231.c - do not resubmit either in any spelling absent a new grant.
+
+- [s11-disposition] DISPOSITION FILED: docs/grind/decisions.md:17017 -
+  "## 2026-08-31 - func_80062020 (src/text1b.c) - **RESOLVED BY STANDING RULING (2026-07-27):
+  FORECLOSED**". A proof-of-foreclosure RECORD, not a packet and not a question: no family grant,
+  no evidence-bar override, no debt acceptance, nothing addressed to the owner. Re-activation
+  triggers recorded there: an owner class grant covering the 32-function same-symbol
+  dual-address-form species, a toolchain-fidelity finding on cse2/combine LO_SUM handling, a
+  spelling found on a simpler census member (func_80061064 / CD_cw / SpuSetReverbModeParam) that
+  transfers back, or an owner unpark.
+
+- [s11] Honest floor re-measured this session on the live chassis with the floor-4 candidate in place: score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 166 (all from other functions in text1b.c). No drift across s8/s9/s10/s11.
+
+- [s11] Gate (a) canonical-asm FAILS, 4th independent re-run: python3 tools/scan_hand_coded.py --single func_80062020 -> tier LOW, score 0/8, 38 insns, zero S1-S8 signals (S3/S4 'too short (38 < 40 insns)'). Agrees with s2, s4 and s10.
+
+- [s11] Gate (b) SOTN precedent PASSES on shape (SOTN master db41b28: src/st/lib/e_lock_camera.c:20 + :50-51 direct + :75/:91 aliased; src/st/cen/e_chamber.c:56 + :240 direct + :201 aliased; both in config/splat.us.*.yaml, PSX GCC 2.7.2) but is SPENT: that precedent was placed before a fresh Judge AND a fresh layer-1 reviewer under the amended 2026-08-31 policy, with the bans cleared, on the merits — and the construct was refused anyway.
+
+- [s11] The owner-ordered adjudication is complete and lost: Judge 2026-08-31 22:25 FAIL (comment-only defect — /* FAKE */ on a semantically-purposeful store plus a ruling-6a criterion-1 claim refuted by this ledger's own hypotheses.md [s8] KILLED entry); the prescribed one-comment fix was executed verbatim and re-measured at score 0 / 38-38 with verify-oracle SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa; layer-1 2026-08-31 22:31 FAILed it on the merits and the construct was re-banned.
+
+- [s11] Nothing dishonest holds any part of this function. The preserved candidate is clean pure C: 0 rules, 0 pins, 0 volatile, 0 dead vars, one uniform tree shape for all three terminator stores. The 4-insn residual is the target's lui/addu/sw LO_SUM triple for column a of the terminator row, unreachable from either uniform pole (all-shared-base = 4 @ 35 insns; all-LO_SUM = 6 @ 39 insns) against a 38-insn target whose 11-insn epilogue is 8 shared-base + 3 LO_SUM.
+
+- [s11] Exhaustion: floor FLAT at 4 across s2-s11 over six distinct modalities (structural s2/s3, permuter s4 with two fresh-seed basins and ~46k iterations, synthesis s5/s6, forensics s7/s8, rederive s9, escalation s10/s11), with 20 disproven forms banked under memory/grind/func_80062020/rejected/.
+
+- [s11] Deciding pass attributed from dumps, not guessed (s8): cse2 (-frerun-cse-after-loop), with cse1 already broken for free by a NOTE_INSN_LOOP_END.
+
+- [s11] candidate.c restored per the layer-1 next-action to the clean floor-4 uniform row-pointer epilogue, with an s11 migration banner recording that it was applied to src ONLY for the re-measurement and that src/text1b.c is back at HEAD (INCLUDE_ASM at :3932). The two adjudicated distance-0 bodies remain banked at rejected/judge-fail-0831-2224.c and rejected/layer1-fail-0831-2231.c.
+
+- [s11] Disposition filed this session at docs/grind/decisions.md:17017 as a proof-of-foreclosure RECORD (no family grant, no evidence-bar override, no debt acceptance, nothing addressed to the owner).
