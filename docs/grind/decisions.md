@@ -17333,3 +17333,109 @@ func_8003D888 FINAL CALL. The diff DELETES a full register-pin + __asm__ cheat c
 ## 2026-09-01 07:23 — func_800770B8 — ruling: May a source-level arithmetic IDENTITY be used purely to create an RTL dependenc — **FAIL**
 
 The construct is an algebraically-equivalent detour on a LIVE computation whose only effect is the reference/dependence flow it creates. That is not the 'opaque arithmetic variables' family (whose mechanism, per .claude/rules/loop-rotation-two-shift.md:81, is hiding a value from constant analysis -- `s32 one = 1;`; nothing here is opaque, the value is fully transparent). Its correct family is the combine-foldable chain-extender (.claude/rules/dead-store-fake-exception.md:51-58, owner ruling 2026-07-01), and that entry's defining prerequisite is failed by construction: it sanctions a detour 'that combine folds back to the direct form with ZERO emitted bytes.' The session's own s11/s14 datum is that `(t0*4)/2` DOES fold and is inert (score 29), and `>>1` was chosen precisely because fold() will not collapse it -- so it materializes, as candidate.c's own class-D read-out shows: our row 42 emits `sra $2,$3,0x1` where the target emits `sll $v1,$a1,2`. A byte-materializing chain-extender is an explicit FAIL (tools/grinder/roles/grind-session.md:78-81). Non-membership in the frozen list is therefore a clean FAIL, not a packet (.claude/rules/ordinary-c-judge-decidable.md Ruling 1). Note the claimed rule tension is not real: the role prompt's forbidden-catalog line naming `s32 one = 1;` is a stale entry contradicted by the frozen list in the same file and by no-new-park-categories.md:190 -- but that family does not cover this shape either way. Verified myself: no-new-park-categories.md:179-214 (SOTN-accepted list, no entry covers an arithmetic-identity dependence edge), dead-store-fake-exception.md:51-58, loop-rotation-two-shift.md:78-83, and the class-D residual text in memory/grind/func_800770B8/candidate.c. Answering the session's explicit ask: yes, record floor 5, close this family, and pursue the type-forced derivation instead -- a cursor really derived from group C's t0*4 pointer has a semantic reading and would not emit a `sra` the target does not have. This ruling does NOT clear the separate unresolved do-while(0) prologue wrap; full evidence in hypotheses.md [s14], evidence.md [s14], rejected/s14-classD-*.c.
+
+## 2026-09-01 — func_800770B8 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Disposition record for `func_800770B8` (src/text1b.c), filed under the owner's standing
+auto-ruling of 2026-07-27 (`.claude/rules/endgame-lock-disposition.md`) and recorded, not
+asked, per the 2026-08-31 ruling (`.claude/rules/ordinary-c-judge-decidable.md`). This is a
+proof-of-foreclosure record. Nothing is addressed to the owner and nothing waits on a reply.
+
+**Chassis, measured this session (s19).** `memory/grind/func_800770B8/candidate.c` applied to
+src/text1b.c: `sandbox func_800770B8 --disable all` = **score 5, build_insns 175,
+target_insns 175, rules_dropped 0**. The floor has been flat at 5 since s11 (nine consecutive
+sessions) across the modalities escalation, structural, synthesis, solver and forensics.
+
+**What the residual is.** The floor-5 body is the target modulo FIVE in-place register names,
+verified again this session by a normalised opcode+register row diff
+(`tmp/grind/func_800770B8/s19/rows.py`): the only genuinely differing rows are 35, 36
+(class B — two stores go through the `p_old` copy `$s1` instead of the raw
+`func_8006E49C` result `$v0`) and 62, 63, 64 (class C — `addu $v0,$v0,$v1` /
+`addiu $a3,$v0,0x6A` / `addiu $a1,$v0,0x7E` against the target's `addu $v1,$v1,$v0` /
+`addiu $a3,$v1,0x6A` / `addiu $a1,$v1,0x7E`). Every other diff line is an objdump alias
+(`move` vs `addu …,$zero`, `li` vs `addiu …,$zero`). There is no instruction slack anywhere:
+175 == 175.
+
+**Gate (a) — canonical-asm evidence: FAILED.** `python3 tools/scan_hand_coded.py --single
+func_800770B8` returns `tier=LOW score=0/8`, with every one of S1–S8 unset ("no strong
+hand-coded indicators"): 0 multu/mflo pairs, no empty-body branches, 5 spills over 175 insns
+and 14 distinct registers, max load burst 3 in any 8-insn window, no high-similarity sibling
+(jaccard < 0.5), no BIOS jumptable pattern, all callee-save uses paired with an `$sp` save, no
+redundant mask-before-shift. The function is ordinary compiler output; the canonical-asm grant
+path is not available.
+
+**Gate (b) — in-hand SOTN-master precedent: FAILED, and vacuous.** There is no closing
+construct in hand to seek precedent for. Both residual classes are attributed to named GCC
+passes and both attributions are measured dead:
+
+- class C is decided by `local-alloc.c` `block_alloc`'s operand-tying loop
+  (tools/gcc-2.7.2/local-alloc.c:1240-1298), which ties the destination of RTL insn 185
+  `(set (reg:SI 110) (plus:SI (reg:SI 109) (reg:SI 108)))` to the FIRST operand for which
+  `combine_regs` succeeds. All ten `combine_regs` gates (local-alloc.c:1784-1946) were
+  enumerated and typed in s18: six are structurally impossible for two SImode pseudos in a
+  plain `addsi3`, one is unreachable on MIPS (all candidates GR_REGS), one detaches the dest
+  from BOTH operands, and the only two C-reachable gates both require the `D_800A36A0`
+  reload to stay live past the add — which in a zero-slack single basic block must add or
+  delete an instruction. Gate 1 was actually built and priced: 174 insns, score 49
+  (`rejected/s18fx-classC-blocklocal-reload-defeats-op1-tie-174insn-score49.c`).
+- class B is foreclosed by price four times over (s7/s8/s9/s14): every spelling that reaches
+  the raw result pseudo lets flow.c delete the copy and its four dependents, collapsing the
+  body to 170 insns, five FEWER than the target's 175.
+- the ONLY construct ever measured to repair the alternative (flipped) basin was the
+  arithmetic identity detour `(t0 * 4) >> 1`, which the Judge **FAILED** on 2026-09-01
+  (docs/grind/decisions.md, 07:23 entry) as a byte-materialising chain-extender outside the
+  frozen family list. Under the 2026-08-24 / 2026-08-31 auto-reject class that is a clean
+  FAIL, not an open question.
+- Precedent census run this session: `docs/reference/sotn-construct-index.md` (1,056 lines)
+  has **zero** PSX/GCC-2.7.2 entries matching `operand order|addend|tie|combine_regs|
+  local-alloc|reload live` or `identity|detour|dependence|chain-extend|redundant read`.
+  A NEGATIVE census is a failed gate, not an open question.
+
+**The last live frontier item was killed this session.** s18 carried one well-posed untried
+question: run `sched_solver`'s `perturb.py` on the PLAIN operand-order flip (29/175), whose
+loop-head collateral is multiset-identical to the target's and therefore, unlike s17's Q00
+basin, a topologically valid perturb input. s19 re-measured the flip on today's chassis
+(score 29 / 175 / 175, confirmed) and row-diffed it: under the flip, rows 60–64 carry **five**
+differing rows (`lw $v1` vs `lw $v0`, `sll $v0,$v0,1` vs `sll $v1,$v1,1`, plus 62/63/64 still
+wrong) where the floor-5 body carries **three** and matches rows 60 and 61 exactly. A
+scheduling repair reorders emissions; it does not undo the flip's seat swap. So the flip
+basin's arithmetic ceiling, with its entire 24-row loop-head collateral perfectly repaired, is
+class B (2) + class C region (5) = **7** — strictly WORSE than the standing floor of 5. The
+solver run is therefore incapable of dropping the floor and is not worth spending; the item is
+closed, not deferred.
+
+**Exhaustion evidence (pointers, not assertions).** 19 sessions; ≥5 distinct modalities
+(escalation, structural, synthesis, solver, forensics, permuter); **88** banked rejected forms
+in `memory/grind/func_800770B8/rejected/`; two telemetered permuter campaigns totalling
+**33,926 iterations** / 9 finds, best permuter score 35, none matching (evidence.md lines 502,
+504); and ~1,900 enumerated sandbox builds across the swept axes — flip spellings (11 collapse
+onto one build), store-group order (24/24), loop shape (315), inner-block position (240), wrap
+position/count (63 + 18 + 79×3), loop-head demand order (33), dependence direction (13),
+reference count (8), pointer-cursor derivation (8), partial array typing (20), procedural
+factoring (8), local declaration order (120), qty3 birth delay (5), and a 1,435-function corpus
+census proving the class-B 2+2 split unique to this function. All three solver backends have
+been run with FULL-disposition goals: `inverse.py global` NEGATIVE at depth 2 and depth 3 for
+both `{"75":2,"110":3}` and `{"110":3}`; `inverse.py local` REACHABLE in exactly one family
+(`live_shrink qty3 born later`) which five C spellings kill on bytes; `perturb.py` with the
+object-level goal reports **no differing block in sched1 OR sched2**, align
+{equal 170, replace 5, delete 0, insert 0, moved 0}.
+
+**Both gates FAIL — the common case.** Applying the standing ruling: FORECLOSED silently. The
+function is not completable in pure C with any construct currently available to this pipeline,
+and the only construct that would close it is already Judge-FAILED.
+
+**Re-activation triggers.** (i) an owner grant that extends the frozen family list to cover an
+arithmetic-identity / dependence-edge construct on a live computation (the 2026-09-01 07:23
+FAIL would then be revisitable); (ii) a toolchain finding that changes `local-alloc.c`
+`block_alloc` operand-tying behaviour, or any chassis change that gives the body instruction
+slack (today 175 == 175); (iii) a canonical-asm class grant covering ordinary-compiler-output
+functions, which the LOW scanner tier currently denies; (iv) an owner unpark.
+
+**Evidence pointers.** `memory/grind/func_800770B8/evidence.md` and `hypotheses.md` (s1–s19),
+`candidate.c` (the floor-5 body, cheat-free, one annotated single-level do-while(0) wrap),
+`rejected/` (88 forms), `tmp/grind/func_800770B8/s19/` (this session's row-diff tool and logs),
+`tmp/grind/func_800770B8/s18/` (lreg/greg dumps, solver logs).
+
+## 2026-09-01 08:41 — func_800770B8 — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s19 of func_800770B8, which the driver DISCARDED as invalid (owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md names func_800770B8). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
