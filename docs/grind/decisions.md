@@ -16971,3 +16971,37 @@ THE PRECISE QUESTION THE LEDGER RECORDS: the C is legitimate and the bytes are p
 ## 2026-08-31 21:38 — func_8002D320 — final call — **PASS**
 
 Two construct classes, both clean. (1) Three cop2 islands: I diffed each template against asm/funcs/func_8002D320.s (0x8002D37C-D3A4, 0x8002D43C-D450) -- every non-cop2 instruction inside is the single `addu $t4, <addr>, $zero` preamble, addresses computed in C and bound as "r", $12 declared, no pins/barriers/hardcoded-$N operands. Family: cop2-addressing-preamble-cluster.md:73 (verified: func_8002D320 enumerated by name), grant EXECUTED on the OWNER-CLUSTER door (owner_cluster_grants.txt:20; inline_asm_canonical.txt entry present). (2) The tail dead `ret = 1;` is the verbatim func_80078EC0 confirmed closure of dead-store-fake-exception.md:107-128, a frozen-list family (no-new-park-categories.md:275); all three prerequisites hold -- exhaustion (hypotheses.md H2/H4, five measured tail shapes 3/4/3/3/8 plus the twin census, two banked in rejected/), mechanism named (jump.c store-flag single-set precondition), annotation on the statement at src/code6cac_b.c:944. DECISIVE: the banned staged-z form (`{ z = 0; return z; }`, a borrowed live local carrying a constant to the exit, misfiled under staged-value-reused-variable) is absent in every spelling -- `ret` is a dedicated result variable set live in both arms; this is the correctly-filed family, not a respelling. Independently verified: `git status` shows the diff touching only src/code6cac_b.c plus ledger/metrics -- no Makefile, pipeline txt, script over compiler output, or prebuilt .o, i.e. nothing in the deleted build-time-rewriting class. Full evidence: memory/grind/func_8002D320/{hypotheses.md,evidence.md,self_vet.md}; prior packet docs/grind/decisions.md:16948.
+
+## 2026-08-31 — OWNER RULING (ordinary-c-judge-decidable, 73bee8f8) — escalation retirement + migration
+
+Owner ruling landed at 73bee8f8 (rules) / 17a1824b (engine+grinder), layer-2
+cheat-reviewer FAIL->corrected->PASS on the rule docs. Operative changes:
+ordinary-C candidates are Judge-decidable (family-extension/policy-question
+ESCALATE retired -> FAIL + borderline log); dead-store deadness is STORE-level;
+named-intermediate relaxed to once-written (SOTN new_var_temp, caveat carried);
+exhaustion dispositions are the silent `foreclosed` queue state (no packets,
+nothing surfaced to the owner).
+
+**Migration executed (operator, this entry is the audit trail):**
+
+- FORECLOSED (15): main, func_800645B0, func_8002EA24, CD_sync,
+  func_80045294, func_80060A68, func_80017848, func_80033550, CD_ready,
+  func_80072CD4, CD_datasync, func_8001F938, get_alarm, func_80034F88,
+  func_80022F34 — each item's `foreclosure` reason points at its latest
+  disposition entry in this file. Re-activation triggers: a new class grant
+  covering the residual, a toolchain-fidelity finding, or an owner unpark.
+- RETURNED TO ACTIVE (4):
+  - func_80045878 — fresh layer-1 + default-FAIL Judge adjudication of the
+    s13b candidate under the amended rules; nothing pre-decided.
+  - func_800324D0 — mechanical integration question; routes via the driver's
+    integration-handoff path.
+  - func_80062020 — the 2026-08-30 packet's question is answered YES: ruling
+    6a (this file :14836) supersedes the stale d1bf57c9 banned_constructs
+    entries; all 3 bans cleared via grindlib unban; the ordered adjudication
+    of the dual-spelling epilogue proceeds on the merits.
+  - func_8002FC80 — the two byte-exact ordinary-C spelling classes (VECTOR
+    component stores / cast-shaped loads) were banned on motive/uniqueness
+    grounds the ruling retires; those 3 bans cleared (the whole-body-asm and
+    grant-misuse bans STAND); the Judge picks the spelling under the amended
+    policy (semantic truthfulness + simplest-known-form). The 2026-08-31
+    s7 packet's option-select question is thereby delegated to the Judge.

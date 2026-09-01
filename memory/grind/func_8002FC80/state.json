@@ -27,12 +27,9 @@
   "The head's byte-producing space is now closed on both sched.c levers (aggregate-marked stores, non-struct-marked loads) \u2014 do NOT seek a third spelling of either; the next session's deliverable is a routing/provenance decision packet (is the head's original form hand-written asm?), not another candidate."
  ],
  "banned_constructs": [
-  "`((VECTOR *)0x1F800360)->vx = v1 - v2;` (and the five sibling component stores at 0x1F800360/364/368/370/374/378)",
-  "Choice of VECTOR-typed stores vs. the plain `*(s32 *)ADDR = v1 - v2;` form used by the already-authorized sibling func_8002FDB0 for the identical scratchpad slots 0x1F800360-0x1F800378",
   "Whole-body `__asm__(\"glabel func_8002FC80 ...\")` block replacing the entire function (all 76 instructions, including the six subtract-and-store steps, the cop2 preamble, and the ratan2 tail)",
   "Citation of the OWNER-CLUSTER grant (inline_asm_canonical.txt:365) as authorizing whole-body replacement",
-  "Abandoning a distance-0 pure-C-with-islands candidate whose only defect was a store-spelling choice",
-  "v1 = *(s32 *)((u8 *)a1 + 4); (and the five sibling loads at a1/a2/a0 offsets 0/4/8, src/code6cac_b.c:1111-1133)"
+  "Abandoning a distance-0 pure-C-with-islands candidate whose only defect was a store-spelling choice"
  ],
  "ladder_skip": 30,
  "pending_fixup": null,

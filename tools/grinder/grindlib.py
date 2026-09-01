@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# The explicit coding declaration is LOAD-BEARING on Windows python 3.9: its
+# CLI tokenizer has a long-line/multibyte buffer bug (spurious "Non-UTF-8 code
+# starting with '\xe2'" SyntaxError when an em-dash straddles a tokenizer
+# buffer boundary — surfaced 2026-08-31 after a brief-string edit shifted byte
+# offsets). The declaration switches decoding to the codecs path, which is
+# correct. Do not remove.
 """Grinder ledger + session logic. Pure stdlib; runs on Windows python.
 
 The ledger (memory/grind/<func>/) is the pipeline's persistent brain:
