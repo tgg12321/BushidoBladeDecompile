@@ -4,6 +4,126 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_800645B0",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-30 - func_800645B0 - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
+    },
+    {
+      "func": "func_8002EA24",
+      "file": "code6cac_b",
+      "distance": 2,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15099 -- 2026-08-30 -- func_8002EA24 (src/code6cac_b.c) -- OWNER-ESCALATION -- RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
+    },
+    {
+      "func": "CD_sync",
+      "file": "system",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15206 (## 2026-08-30 - CD_sync (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE)"
+    },
+    {
+      "func": "func_80045294",
+      "file": "text1a_c",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15292 \u2014 2026-08-30 \u2014 func_80045294 (saTan0Init, src/text1a_c.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
+    },
+    {
+      "func": "func_80060A68",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15403 (2026-08-30 - func_80060A68 - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE); re-affirms the driver-filed packet at docs/grind/decisions.md:12060 and the owner's 2026-08-30 batch ruling 8 at docs/grind/decisions.md:14860. Nothing pends on the owner."
+    },
+    {
+      "func": "func_80017848",
+      "file": "ings",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-30 \u0393\u00c7\u00f6 func_80017848 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
+    },
+    {
+      "func": "func_80033550",
+      "file": "code6cac_b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15517 \u2014 2026-08-30 \u2014 func_80033550 (src/code6cac_b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
+    },
+    {
+      "func": "CD_ready",
+      "file": "system",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15629 - '## 2026-08-30 - CD_ready (src/system.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'",
+      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note"
+    },
+    {
+      "func": "func_80062020",
+      "file": "text1b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:17017 \u2014 ## 2026-08-31 \u2014 func_80062020 (src/text1b.c) \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**"
+    },
+    {
+      "func": "func_80072CD4",
+      "file": "text1b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15851 \u2014 '## 2026-08-30 \u2014 func_80072CD4 (src/text1b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE' (owner-funded ruling-7 calibration probe executed and negative; both endgame-lock AND-gates re-measured FAIL)"
+    },
+    {
+      "func": "CD_datasync",
+      "file": "system",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15943 \u2014 2026-08-30 \u2014 CD_datasync (src/system.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
+    },
+    {
+      "func": "func_800770B8",
+      "file": "text1b",
+      "distance": 32,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:17443 - 2026-09-01 - func_800770B8 - OWNER-ESCALATION record - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED",
+      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note"
+    },
+    {
       "func": "func_8003C714",
       "file": "code6cac_c2",
       "distance": 33,
@@ -1707,137 +1827,6 @@
       "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): 2-byte reorg branch-retarget residual (decisions.md 2026-08-30 main packet); the maspsx branch-fill DECLINE (decisions.md:10303) stands and the packet's queue-routing question is mooted by the foreclosed state. Re-activated on a fidelity ruling or owner unpark."
     },
     {
-      "func": "func_800645B0",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 ## 2026-08-25 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (solver axis discharged)**",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-30 - func_800645B0 - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
-    },
-    {
-      "func": "func_8002EA24",
-      "file": "code6cac_b",
-      "distance": 2,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 1 \u2014 local-alloc suggestion instrumentation granted; solver modality once built",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:11688 -- 2026-08-25 func_8002EA24 OWNER-ESCALATION -- ESCALATED WITH DECISION PACKET (tooling-repair authorization; solver-first directive executed)",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15099 -- 2026-08-30 -- func_8002EA24 (src/code6cac_b.c) -- OWNER-ESCALATION -- RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
-    },
-    {
-      "func": "CD_sync",
-      "file": "system",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:11814 - 2026-08-25 - CD_sync (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (owner directive 2026-08-24 executed and measured)",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15206 (## 2026-08-30 - CD_sync (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE)",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
-    },
-    {
-      "func": "func_80045294",
-      "file": "text1a_c",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:11915 \u2014 2026-08-25 \u2014 func_80045294 (saTan0Init, src/text1a_c.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15292 \u2014 2026-08-30 \u2014 func_80045294 (saTan0Init, src/text1a_c.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
-    },
-    {
-      "func": "func_80060A68",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 8 \u2014 s10 packet spent (option (b) executed 2026-08-25); ordinary INCLUDE_ASM item",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-25 \u0393\u00c7\u00f6 func_80060A68 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15403 (2026-08-30 - func_80060A68 - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE); re-affirms the driver-filed packet at docs/grind/decisions.md:12060 and the owner's 2026-08-30 batch ruling 8 at docs/grind/decisions.md:14860. Nothing pends on the owner.",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
-    },
-    {
-      "func": "func_80017848",
-      "file": "ings",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-25 - func_80017848 (src/ings.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (re-filed on the post-migration chassis)'",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-30 \u0393\u00c7\u00f6 func_80017848 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
-    },
-    {
-      "func": "func_80033550",
-      "file": "code6cac_b",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:12231 \u2014 ## 2026-08-25 - func_80033550 (src/code6cac_b.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (owner directive 2026-08-24 executed and measured)",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15517 \u2014 2026-08-30 \u2014 func_80033550 (src/code6cac_b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
-    },
-    {
-      "func": "CD_ready",
-      "file": "system",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:12356 - 2026-08-25 - CD_ready (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15629 - '## 2026-08-30 - CD_ready (src/system.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
-    },
-    {
-      "func": "func_80062020",
-      "file": "text1b",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8): packet's question answered YES \u2014 ruling 6a (decisions.md:14836) supersedes the stale d1bf57c9 banned_constructs entries; bans cleared via grindlib unban; the ordered adjudication of the dual-spelling epilogue proceeds on the merits.",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:15732 \u2014 ## 2026-08-30 (s10) \u2014 func_80062020 (src/text1b.c) \u2014 **OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET**",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:17017 \u2014 ## 2026-08-31 \u2014 func_80062020 (src/text1b.c) \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**"
-    },
-    {
-      "func": "func_80072CD4",
-      "file": "text1b",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 7 \u2014 one bounded calibration-only probe, then solver modality; build/flags frozen",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md - '## 2026-08-25 - func_80072CD4 (src/text1b.c) - **OWNER-ESCALATION - ESCALATED WITH DECISION PACKET**' (fidelity/routing question: Option A toolchain-fidelity calibration probe vs Option B return to ACTIVE with modality solver/ra_solver; no family grant, no permanent-rule sanction and no canonical evidence-bar override requested)",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15851 \u2014 '## 2026-08-30 \u2014 func_80072CD4 (src/text1b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE' (owner-funded ruling-7 calibration probe executed and negative; both endgame-lock AND-gates re-measured FAIL)",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
-    },
-    {
-      "func": "CD_datasync",
-      "file": "system",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-25 \u0393\u00c7\u00f6 CD_datasync \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15943 \u2014 2026-08-30 \u2014 CD_datasync (src/system.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
-    },
-    {
       "func": "func_8001F938",
       "file": "code6cac",
       "distance": 8,
@@ -1886,15 +1875,6 @@
       "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
     },
     {
-      "func": "func_800770B8",
-      "file": "text1b",
-      "distance": 32,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:17443 - 2026-09-01 - func_800770B8 - OWNER-ESCALATION record - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED"
-    },
-    {
       "func": "func_800203B4",
       "file": "code6cac",
       "distance": 33,
@@ -1906,14 +1886,14 @@
   ],
   "counts": {
     "total": 213,
-    "active": 195,
+    "active": 207,
     "by_status": {
-      "active": 195,
-      "foreclosed": 18
+      "active": 207,
+      "foreclosed": 6
     },
     "by_verdict": {
-      "C": 163,
-      "ASM-PARTIAL": 32
+      "C": 174,
+      "ASM-PARTIAL": 33
     }
   }
 }
