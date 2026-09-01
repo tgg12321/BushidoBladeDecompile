@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 10,
- "current_modality": "rederive",
+ "session_count": 11,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -63,23 +63,29 @@
    "floor": 9,
    "modality": "rederive",
    "headline": "Rederive ladder spent: struct-typed rewrite KILLED (178 insns), fresh m2c corroborates the current body, two more structural shapes byte-neutral - and class C typed FORECLOSED-in-C with model-exact lo"
+  },
+  {
+   "session": 11,
+   "floor": 5,
+   "modality": "escalation",
+   "headline": "Floor 9 -> 5: the s4 empty do-while(0) fence was rejected under a scoping the 2026-07-06 owner ruling abolishes; class A is now closed, and an exhaustive 63-position + 18 nested-wrap sweep proves 5 is"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Class C can still be won if some C-level change makes the merged dest/sll quantity's qty_compare priority drop below the bare lw's 20000 while the flip is in place.",
-   "mechanism": "qty_compare priority is floor_log2(refs)*refs*size/(death-birth)*10000. The merged chain is currently span 28 / refs 22 (pri 31428) and is ranked ord1, taking $v0 ahead of the lw. Dropping it below 20000 needs span > 44 or refs <= 15; then the lw is allocated first into $v0 over [48,52) and the chain is forced to $v1 - the target's seat. This is a DIFFERENT axis from the three input-perturbation families the solver enumerated (those perturb qty0/qty1/qty4; this perturbs qty3 itself, which the --swap goal held fixed).",
-   "next_probe": "Re-run tools/ra_solver/inverse.py local on tmp/grind/func_800770B8/s10/text1b.local.FLIPPED.json with the goal expressed as qty3 -> $v1 ONLY (drop the qty4 constraint) and --depth 2, so qty3's own refs/span atoms enter the search space. Then look for a C form that lengthens the 0x6A/0x7E base pointer's live range past block-insn 72 without adding an instruction - e.g. a use of the row base after inner loop 1 that the target already pays for. Start from rejected/s10-classC-flip-int-domain-same-score33-collateral.c (the cleanest flip spelling)."
+   "hypothesis": "The floor-5 form is submittable as-is once the do-while(0) scoping conflict is ruled on; if it is, the remaining work is only classes B and C (5 rows), and if it is not, the function returns to floor 9 and the escalation disposition is correct.",
+   "mechanism": ".claude/rules/do-while-zero-exception.md (2026-07-06) abolishes the reorg.c-only scoping that .claude/rules/no-new-park-categories.md:256-271 and the grind role-prompt's frozen-family table still assert. The dedicated rule is the later document and is designated as the authority by the stale entry itself, but a candidate-ready submission would be the first BB2 use of a wrap for a sched2 effect, so the ruling should land first.",
+   "next_probe": "Emit a ruling-request (or have the operator update no-new-park-categories.md:256-271 to match the 2026-07-06 ruling). If sanctioned, the next session writes memory/grind/func_800770B8/self_vet.md citing FAMILY do-while(0), SCOPE = the frontmatter sentence quoted above, PRECEDENT .claude/rules/do-while-zero-exception.md (Confirmed applications: marionation_Exec), and then attacks classes B and C from the floor-5 chassis."
   },
   {
-   "hypothesis": "The three residual classes are not independent: a single change that alters block 1's quantity structure could move class C without the +24 collateral, because the collateral IS the block-1 seat rotation.",
-   "mechanism": "The flipped build's block-1 assignment is a one-register rotation of the base build's ({chain,base,sext,results} = {$v0,$v1,$a0,$a1} vs target's {$v1,$a0,$a1,$v0}). All five quantities are re-seated together, so a perturbation that removes one quantity from block 1 entirely (or splits one) changes every seat at once rather than only the contested pair.",
-   "next_probe": "Enumerate what each of the five block-1 quantities is in RTL terms by reading tmp/grind/func_800770B8/dumps/text1b.lreg for block 1 (regs 86, 89, 100, 108/109, 110/111), then ask inverse.py local for a 2-atom vector that also moves qty1 or qty2. Do NOT spend more measurements on 6A/7E address spellings - five are now on record and all four flip spellings measure identically."
+   "hypothesis": "Class C (3 rows) is the only residual with a live mechanism, and it needs a lever that is neither a spelling nor a wrap.",
+   "mechanism": "s10's closed-form target stands: with the operand flip in place, the merged dest quantity's qty_compare priority must fall below the bare lw's 20000 - span > 44 (currently 28) or refs <= 15 (currently 22). s11 has now killed the two cheapest ways to perturb refs (single and nested loop notes: no effect) and re-confirmed that the flip itself costs a constant +24 elsewhere in the loop body.",
+   "next_probe": "Re-run tools/ra_solver/inverse.py local on tmp/grind/func_800770B8/s10/text1b.local.FLIPPED.json with the goal expressed as qty3 -> $v1 ONLY (drop the qty4 constraint) and --depth 2, so qty3's own refs/span atoms enter the search space; then look for a C form that lengthens the 0x6A/0x7E base pointer's live range past block-insn 72 without adding an instruction. Do NOT re-probe 6A/7E address spellings (six on record, all identical) and do NOT re-probe wraps (63 + 18 measured this session)."
   },
   {
-   "hypothesis": "Classes A and B remain foreclosed; the function's only live axis is the class-C seat.",
-   "mechanism": "s9 closed class A with a model-exact 3234-atom sched_solver sweep (0 hits) and closed class B by measurement (a real branch boundary costs an instruction the function does not have: 176 / 16). s10 added no new information on either and its two prologue/call-shape rederives were byte-neutral.",
-   "next_probe": "If the class-C axis above also measures dead, the ladder's remaining sanctioned axes are exhausted and the honest next step is the driver's escalation modality - not more spelling search. Do not re-open class A statement order or class B second-handle spellings; both are exhaustively banked."
+   "hypothesis": "Class B (2 rows) stays foreclosed on the floor-5 chassis.",
+   "mechanism": "s8 proved with instrumented-cc1 dumps that cse pass 1 keeps the target's 2+2 split only when a NOTE breaks the extended basic block, and that cse pass 2 (after_loop=1) destroys it and flow.c deletes the copy; s9 measured that a REAL control-flow boundary costs an instruction the function does not have (176 / 16). s11's wrap sweep re-confirms this on the new chassis (10 before the stores, 11 after).",
+   "next_probe": "None - do not re-open class B. If class C is ever closed and 2 rows remain, the correct move is a ruling-request on whether a 2-row class-B residual has any sanctioned closing construct at all, not another spelling search."
   }
  ],
  "judge_constraints": [],

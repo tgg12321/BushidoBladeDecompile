@@ -1,210 +1,77 @@
-/* candidate.c — func_800770B8 (src/text1b.c) — s3 structural, 2026-09-01
- * Honest floor THIS form, measured s3: sandbox --disable all = 9 (175/175 insns).
- * (s2 form re-measured 10 on today's chassis at the start of s3; s3 dropped it 10 -> 9
- * and closed the last insn-COUNT gap: ours is now 175 insns, exactly the target's.)
- * 100% ordinary C, zero cheats, zero annotations, no FAKE-annotated constructs.
+/* candidate.c - func_800770B8 (src/text1b.c) - s11 escalation, 2026-09-01
+ * Honest floor THIS form, measured s11 on today's chassis:
+ *     sandbox func_800770B8 --disable all = 5   (175 build insns / 175 target insns)
+ * This SUPERSEDES the s3 body (floor 9) that sessions s3-s10 carried.
  *
- * s3 addition over the s2 form (one edit, ordinary C, measured):
- *   Inner loop 2 (the arg2 bit-scan) is a `for (a2 = 0; a2 < 0xA; a2 = (s16)(a2 + 1))`
- *   instead of a preheader `a2 = 0;` plus a do-while with a trailing increment.
- *   This closes residual class D (the reorg.c delay-slot fill choice, PROVEN in s2):
- *   with the `for` shape reorg no longer steals the `ori` from the fall-through
- *   thread; it fills the beqz from the branch-target thread by copying
- *   `addiu $v0,$a2,1` and redirecting past it — exactly the target's rows 103-105
- *   and 113. Insn count 174 -> 175, score 10 -> 9.
- *   NOTE the a2 initialiser must stay a `for`-header init here; s2's H6 (a2 = 0 as the
- *   FIRST statement of the outer do-body) is still what fixes rows 30-34/37, and the
- *   `for` header supplies exactly that RTL position for the second inner loop.
+ * WHAT CHANGED IN s11 - and why the s4 rejection was stale
+ * -------------------------------------------------------
+ * s4 measured this exact body at 5 and banked it as
+ *   rejected/s4-dw0-fence-plus-pold-move-FLOOR5-CHEAT.c
+ * on the reading that an empty `do { } while (0);` acting on the SCHEDULER is a
+ * scheduling barrier and therefore a cheat. That reading was correct under the
+ * 2026-06-04 mechanism-scoping, and it is NO LONGER the project's rule.
+ * `.claude/rules/do-while-zero-exception.md` (owner ruling 2026-07-06) states, in
+ * its own frontmatter scope sentence:
+ *     "SANCTIONED (owner ruling 2026-07-06, supersedes the 2026-06-04
+ *      mechanism-scoping): `do { ... } while (0);` (any body, incl. empty) is an
+ *      allowed pure-C match device for ANY codegen effect incl. register
+ *      allocation, with mandatory inline FAKE annotation; nested wraps need a
+ *      single-level-insufficient justification."
+ * and in its body: "The former scoping to the reorg.c label-note mechanism is
+ * abolished". Its "Confirmed applications" section records marionation_Exec
+ * (2026-07-06) as EXACTLY this situation: a wrap-based candidate reviewer-FAILed
+ * under the old scoping, then reinstated by the owner ruling.
  *
- * NOTE: applying this body also requires the two caller-side edits (see
- * tmp/grind/func_800770B8/s3/try.py): the prototype near the caller becomes
+ * NOTE A DOCUMENTATION CONFLICT THE NEXT SESSION MUST RESOLVE BEFORE SUBMITTING:
+ * `.claude/rules/no-new-park-categories.md:256-271` still carries the OLD
+ * 2026-06-04 summary ("applies only to the LABEL_OUTSIDE_LOOP_P / reorg.c
+ * interaction"), and the grind role-prompt's frozen-family table quotes that
+ * stale summary. The dedicated rule is the designated authority (the stale entry
+ * itself says so: "The dedicated rule [[do-while-zero-exception]] enumerates the
+ * strict prerequisites"), but the two texts disagree, so a `ruling-request` on
+ * this point should precede any candidate-ready submission of this form.
+ *
+ * THE FORM
+ * --------
+ * Two edits over the s3 body, both measured:
+ *   1. an empty, FAKE-annotated `do { } while (0);` as the first statement
+ *      (kills residual class A - the 4 prologue rows);
+ *   2. `p_old = (s32 *)(arg0 + 0x58);` moved to AFTER the ClearOTagR call
+ *      (unfenced this is WORSE, 10; fenced it is required for 5 - the coupling
+ *      is measured, see evidence.md [s4] V9/V10).
+ * Everything else is the s3 body verbatim (see the s3 notes preserved below in
+ * the ledger, not repeated here).
+ *
+ * RESIDUAL AT FLOOR 5 - exactly two classes, 5 rows, positional diff re-read s11
+ * (tmp/grind/func_800770B8/s3/posdiff.py, 175 vs 175):
+ *   class B, rows 35-36 (2 rows): ours `sw $0,0x30($s1) / sh $0,0x34($s1)`,
+ *     target `sw $zero,0x30($v0) / sh $zero,0x34($v0)` - the stores go through
+ *     the copy (p_old) instead of the raw call-result pseudo. Foreclosed by
+ *     measurement + dumps in s7/s8/s9.
+ *   class C, rows 62-64 (3 rows): ours `addu $2,$2,$3 / addiu $7,$2,106 /
+ *     addiu $5,$2,126`, target `addu $v1,$v1,$v0 / addiu $a3,$v1,0x6A /
+ *     addiu $a1,$v1,0x7E` - a local-alloc seat question, see s10's QTYDBG
+ *     ground truth and the closed-form priority target.
+ *   (row 50 `addiu $2,$2,%lo(D_800A35D0)` is the known LO16 scorer artifact,
+ *    [[sandbox-lo16-text-addend-false-distance]], not a real byte diff.)
+ *   CLASS A IS GONE at floor 5 - the prologue now matches row for row.
+ *
+ * s11 NEGATIVE RESULTS (do not re-run; all banked in evidence.md [s11]):
+ *   - EXHAUSTIVE single-wrap sweep: an empty `do { } while (0);` inserted at each
+ *     of the 63 legal statement positions of this body. Minimum score 5; no
+ *     position beats the one already in the form. Log:
+ *     tmp/grind/func_800770B8/s11/sweep.log, manifest sw/manifest.tsv.
+ *   - Nested wraps (depth 2 and depth 3) at 9 positions in and around the outer
+ *     loop body and the p_6a/p_7e inner loop: best 5, and depth 3 is byte-identical
+ *     to depth 2 everywhere - loop-note ref weighting does NOT move the contested
+ *     class-C quantities. Log: tmp/grind/func_800770B8/s11/nsweep.log.
+ *   - The class-C operand flip on THIS chassis: 29 (was 33 on the floor-9 chassis),
+ *     with or without an adjacent wrap; flip + a class-B wrap 34.
+ *
+ * Applying this body also requires the two caller-side edits (see
+ * tmp/grind/func_800770B8/s3/try.py): the prototype becomes
  * `s32 func_800770B8(s32, s32, s32);` and the call site passes
- * `(s32)&D_8009BD24` (was `(s32 *)&D_8009BD24`). Byte-neutral for the caller.
- *
- * Residual at floor 9 (3 classes; class D is CLOSED):
- *   A. prologue rows 7-12 (4 diffs): sched2 (post-RA!) ordering of
- *      {sw $ra, sw $s1, addiu $a1 0x1008, lui/lw D_800A374C, addiu $s1,$s0,0x58}.
- *      s3 correction: this is a SCHED2 question, not sched1 — the register-save
- *      insns do not exist until after reload. 12 statement orderings measured, all
- *      neutral-or-worse. See evidence.md s3.
- *   B. rows 35-36 (2 diffs): the 0x30/0x34 stores go through $s1 (p_old) in ours,
- *      through $v0 (the raw call-result pseudo) in target. Second-handle spellings
- *      KILLED three times (K1 s1, K4 s2, and every s3 restatement is byte-neutral).
- *   C. rows 62-64 (3 diffs): the p_6a/p_7e base `addu` ties its dest to the lw pseudo
- *      ($v0) in ours and to the sll pseudo ($v1) in target — a local-alloc
- *      dest-coalesce decision. Six address spellings measured; all neutral or worse.
- *
- * s4 (permuter modality) — candidate BODY UNCHANGED, still floor 9 on today's
- * chassis (re-measured 9 / 175 insns at session start). s4's finds are all
- * cheat-family and live in rejected/:
- *   - A bare `do { } while (0);` immediately before the `p_old` assign measures 7,
- *     and combined with `p_old` moved after the ClearOTagR call it measures 5.
- *     Dumps prove the mechanism is a mid-block NOTE_INSN_LOOP_BEG/END pair that
- *     stops sched2 interleaving the reload-emitted save stores with the first
- *     body insns — i.e. a scheduling barrier. NOT submittable.
- *   - Ordinary inner brace scopes do NOT reproduce it (block notes migrate to the
- *     top of the function); measured byte-neutral.
- *   - IMPORTANT for the next session: `p_old` moved after ClearOTagR measures 10
- *     UNFENCED but 5 FENCED. s3's "twelve orderings dead" is chassis-conditional.
- *
- * s5 (synthesis modality) — candidate BODY UNCHANGED, re-measured 9 (175/175) on
- * today's chassis. Two results reset the picture; full detail in evidence.md s5.
- *   - The honest-fence hunt is CLOSED. A real first-statement loop DOES anchor a
- *     NOTE_INSN_LOOP_BEG at the V1 fence position (dumped and read), but costs
- *     +11 insns (175 -> 186, score 41-42), and our count already equals the
- *     target's — so no real loop is on the path to 0. Decisively, the TARGET has
- *     no loop, label or branch in its prologue at all, so its contiguous save
- *     emission is NOT a note fence; the s4 do-while(0) is a coincidental route to
- *     the same order, not the original mechanism.
- *   - The residual is majority-RA, not scheduling: goal_from_tgt.py classify
- *     reports FIRST DIVERGENCE = RA ($v0->$v1 x4, $s1->$v0 x2, $v1->$v0 x1).
- *     Class B ($s1->$v0, i.e. residual B above) attributes uniquely to pseudo 75
- *     (p_old) and inverse.py global returns FORECLOSED: p_old crosses 4 calls and
- *     $v0 is call-used, so prune_preferences (global.c:897) strips the $v0
- *     preference before find_reg runs. No C spelling moving refs / live span /
- *     birth order / conflicts / preferences / calls-crossed can close it.
- *   - Class C (residual C above) is the one unspent typed-verdict axis:
- *     local_extract.py + inverse.py local. That is s6's first move.
- *
- * s6 (synthesis) - candidate BODY UNCHANGED, re-measured 9 / 175 insns on today's
- * chassis. Two durable corrections to the residual description above:
- *   1. Class C is NOT a local-alloc dest-coalesce decision. text1b.lreg insn 173 is
- *      (set (reg 110) (plus (reg 109) (reg 108))) with reg 109 = the lw of
- *      D_800A36A0 and reg 108 = the sll. Rows 60/61 are byte-identical to the
- *      target, so BOTH input pseudos already get the target's hard registers
- *      ($v0/$v1); in both builds the dest ties to operand 1 of addu %0,%1,%2. The
- *      whole class is the RTL plus's OPERAND ORDER, decided at expand/fold time.
- *      Int-domain spellings DO flip it (D2) but delete the target's second lw of
- *      D_800A36A0 at row 60; E4 keeps the re-read and flips the order but costs one
- *      insn (176) because 0x6A/0x7E fold onto the shift side. 13 more spellings
- *      measured s6 (19 total for this seat) - see hypotheses.md.
- *   2. Residual row 50 (addiu $2,$2,0 vs addiu $v0,$v0,%lo(D_800A35D0)) is a
- *      SCORING ARTIFACT: the object carries R_MIPS_HI16/LO16 against D_800A35D0
- *      with a zero addend and the scorer masks HI16 but not LO16. The honest
- *      residual is 8 real rows, not 9.
- *
- * s7 (solver) - candidate BODY UNCHANGED, re-measured 9 / 175 insns on today's
- * chassis. Two durable corrections to the residual description above:
- *   1. Class B is NOT a register-allocation question. The last unspent RA-layer
- *      mechanism (local-alloc's suggested-register pass, qty_phys_copy_sugg /
- *      qty_phys_sugg) is dead: pseudo 75 (p_old) forms no local-alloc quantity at
- *      all, and the whole function carries exactly one suggestion anywhere
- *      (blk0 qty0, copysugg=[$a0]). Class B is cse PSEUDO IDENTITY: cse.c
- *      make_regs_eqv makes the first pseudo the call result is copied into the
- *      quantity's qty_first_reg, and canon_reg never substitutes a hard reg, so
- *      all four post-call stores canonicalise onto ONE register. The target's
- *      2+2 $s1/$v0 split is REACHABLE - hoisting a `u8 *pp` to function scope,
- *      assigning it after the global + 0x4 stores and reusing it in the tail
- *      makes pp's regno_last_uid fall past the cse block end, pp becomes
- *      canonical, and text1b.cse then shows insns 68/71 on pseudo 75 and 77/80
- *      on pseudo 76 - but the copy that makes pp join the quantity is a real
- *      insn: 176 / score 12. Store-base SPELLING is byte-neutral (9/175 for every
- *      p_old-vs-global permutation).
- *   2. s6's D3 address form is 175 insns on this chassis, not 174. There is no
- *      insn credit anywhere on record to pay for the class-B split copy.
- *
- * s8 (forensics) - candidate BODY UNCHANGED, re-measured 9 (175/175) at session
- * start and again at session end. s8 corrected and then closed the class-B
- * picture with instrumented-cc1 dumps:
- *   - The target's 2+2 store split costs ZERO extra insns (target asm rows 29-38:
- *     one copy `addu $s1,$v0,$zero` with the raw call result still live in $v0).
- *     s7's "+1 insn, structural" was a property of H10's spelling.
- *   - cse PASS 1 reproduces the split exactly when a NOTE_INSN_LOOP_END breaks the
- *     extended basic block; cse PASS 2 (after_loop=1, so the note is ignored)
- *     re-merges the block and canonicalises both pseudos onto one register, and
- *     flow.c deletes the dead copy. Note-based fences cannot buy class B.
- *   - Within one cse block a pseudo-to-pseudo copy always collapses, so no naming
- *     or ordering of the two pointers produces the split (7 forms, 170 or 175).
- *   - The make_regs_eqv promotion IS a free C-controllable lever (reusing p_old for
- *     the tail's D_800A36A0 re-read: 175 insns, not 170) but it collapses onto $s1
- *     and damages the tail.
- *
- * s9 (forensics) - candidate BODY UNCHANGED, re-measured 9 (175/175) at session
- * start and again at session end. s9 typed two of the three residual classes:
- *   - CLASS A IS FORECLOSED TO STATEMENT ORDER. The sched2 dump was finally read
- *     out (tmp/grind/func_800770B8/s9/d/text1b.sched2, block 0) and the 15
- *     prologue insns mapped 1:1 to both asm streams: rows 1-7 and 13-15 already
- *     match, so class A is exactly the 5-insn permutation ours 566,15,26,28,560
- *     vs target 560,566,28,26,15. `sw $ra` (UID 560) is released in the backward
- *     pass by the first jal and `sw $s1` (566) by `addu $s1,$s0,88`; the jal is
- *     emitted after that addu, so 560 is ALWAYS released first, and as the only
- *     function-unit insn in its priority-1 group it is promoted by
- *     schedule_select's potential-hazard rule (sched.c:2708-2721). tools/sched_solver
- *     reproduces block 0 exactly and an EXHAUSTIVE depth-1 sweep of all 3234 input
- *     atoms finds 0 that reach the target order; no luid / luid_move (statement
- *     move) atom even flips the 560/566 pair. Hoisting p_old past the ClearOTagR
- *     setup - the s4 lead - is simulated dead (gives 26,28,566,15,560).
- *   - CLASS B HAS NO UNTESTED MECHANISM LEFT. The reserved probe (a real branch
- *     between the copy and the 0x30/0x34 stores) measures 176 insns / score 16.
- *   - CLASS C's operand flip is now FREE in instructions (175, was 176): making the
- *     shift the pointer operand and the global the integer operand -
- *     `(s16 *)((u8 *)(t0 * 10) + (s32)D_800A36A0 + 0x6A)` - flips insn 173 because
- *     c-typeck.c:1988/2695 put the POINTER-typed side at operand 0 unconditionally.
- *     Rows 62-64 then reduce to a register-seat question (target: lw in $v0, sll in
- *     $v1; ours reversed). Whole-function score is 33, so it is not yet a win - the
- *     inner loop's addressing chain re-allocates around the new tree shape.
- *   - A hard-reg address is unreachable from C (calls.c:2039 / calls.c:2114).
- *   Full detail in evidence.md s8; s9 should work class C or class A.
- *
- * s10 (rederive) - candidate BODY UNCHANGED, re-measured 9 (175/175) at session
- * start. s10 ran the rederive ladder (fresh m2c, structurally different shapes)
- * and then typed class C with model-exact local-alloc ground truth:
- *   - A FULL STRUCT-TYPED REDERIVE of the D_800A36A0 block (real evidence-backed
- *     layout: s16 unk08/0C/10/14/3C[2], s16 unk40[2][2], u8 unk68[2],
- *     s16 unk6A[2][5], s16 unk7E[2][5]) measures 178 insns / score 22. Two
- *     distinct regressions: LICM hoists `&D_800A35D0 + 2` into a register in the
- *     outer-loop preheader (+3 insns, target has no such hoist), and the 0x6A/0x7E
- *     ARRAY_REF folds the constant onto the INDEX side (`addiu $2,$3,106` before
- *     the addu) instead of onto the base. Struct typing is NOT the original shape.
- *   - A fresh m2c decompile corroborates the current body exactly and offers no
- *     new lever; its only structural readings not already in the ledger are that
- *     the 6A/7E base is `(t0 * 0xA) + D_800A36A0` (shift-first - i.e. the class-C
- *     flip) and that the sp[] slot pointer is hoisted before inner loop 2.
- *   - Two more structurally different shapes measure BYTE-NEUTRAL (9 / 175):
- *     the outer loop written as `for (t0 = 0; t0 < 2; t0 = (s16)(t0+1))`, and the
- *     `r` local removed by nesting `func_8006E49C(func_80076FF8(p_old), ...)`.
- *   - CLASS C IS NOW TYPED FORECLOSED-IN-C. All FOUR spellings of the operand
- *     flip converge on exactly 175 insns / score 33 with an identical positional
- *     diff: `(u8 *)(t0*10) + (s32)D_800A36A0 + 0x6A` (s9), the same with the two
- *     operands textually swapped, the pure int-domain `(t0*10) + (s32)D_800A36A0
- *     + 0x6A` (which on this chassis KEEPS the second lw - s6's "int domain
- *     deletes the re-read" no longer holds), and a named `s32 row10 = t0 * 10;`
- *     intermediate. The collateral is therefore intrinsic to the flipped TREE,
- *     not to any spelling.
- *     Mechanism, from tools/ra_solver/local_extract.py QTYDBG ground truth on
- *     block 1 (the outer-loop body) of both builds:
- *        BASE   ord0 qty2 r89 [12,14) refs4 ->$v0 | ord1 qty4 r110 [48,56) refs10 ->$v0
- *               ord2 qty3 r108 [28,52) refs16 ->$v1 | ord3 qty1 r100 [10,44) refs12 ->$a0
- *               ord4 qty0 r86 [6,46) refs14 ->$a1
- *        FLIP   ord0 qty2 r89 [12,14) refs4 ->$v0 | ord1 qty3 r110 [28,56) refs22 ->$v0
- *               ord2 qty4 r109 [48,52) refs4 ->$v1 | ord3 qty1 r100 [10,44) refs12 ->$v1
- *               ord4 qty0 r86 [6,46) refs14 ->$a0
- *     The addu's dest ties to operand 0. Unflipped, that merges the dest with the
- *     SHORT lw quantity (span 8, refs 10, qty_compare pri 37500) which is ranked
- *     ord1 and takes $v0, pushing the sll chain to $v1 - our current, wrong-way
- *     seat. Flipped, the dest merges with the LONG sll chain (span 28, refs 22,
- *     pri 31428): it is still ranked ord1, still takes $v0, and now the lone lw
- *     (pri 20000) is pushed to $v1. Both builds give the merged quantity $v0; the
- *     target needs the merged quantity in $v1 and the lw in $v0.
- *   - inverse.py local (--swap 3,4 --depth 2, 392-atom space) returns REACHABLE
- *     with 30 minimal single-atom vectors in exactly three families, and every one
- *     is C-unreachable here:
- *       (a) 13x live_shrink qty0 (r86 = the sign-extension of t0): born at >=33
- *           instead of 6. The sext feeds the FIRST address chain of the body and
- *           the TARGET's own sext ($a1, rows 38-39) is born at the body's first
- *           insn, so this is not the target's configuration.
- *       (b) 11x live_shrink qty1 (r100 = the first D_800A36A0 read): born at >=33
- *           instead of 10. Same objection - the target's first lw is row 41.
- *       (c) 4x live_shrink + 2x refs_up on qty4 (the SECOND D_800A36A0 read):
- *           span 4->2, or refs 4->7/8. Naming the shift in its own statement
- *           (`s32 row10 = t0 * 10;`) does NOT shrink the span: re-extracted QTYDBG
- *           for that form is byte-for-byte the same rows (qty4 [48,52) refs 4), so
- *           GCC emits the global read BEFORE the final `sll ...,1` regardless of
- *           spelling. refs 7 would need the second read used seven times; the
- *           target uses it twice.
- *     Equivalent closed-form statement of what would win, for any future lever:
- *     pri(merged dest chain) must drop below pri(lw) = 20000, i.e. the merged
- *     chain needs span > 44 (currently 28) or refs <= 15 (currently 22).
+ * `(s32)&D_8009BD24`. Byte-neutral for the caller.
  */
 s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     u16 sp[2];
@@ -213,10 +80,26 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     s16 t0;
     s16 a2;
 
-    p_old = (s32 *)(arg0 + 0x58);
+    /* FAKE: empty do-while(0) wrap. Effect: it anchors a
+       NOTE_INSN_LOOP_BEG/END pair at this statement position, which stops sched2
+       interleaving the five reload-emitted frame-save stores with the first body
+       insns; without it the prologue emits sw $s1 / addiu $s1,$s0,0x58 / lw
+       D_800A374C / li 0x1008 / sw $ra where the target emits sw $ra / sw $s1 /
+       li 0x1008 / lw D_800A374C / addiu $s1 (residual class A, 4 rows).
+       mechanism: GCC 2.7.2 sched.c list scheduler, second pass (sched2, post-reload);
+       the notes bound the scheduling region so the save stores cannot be hoisted
+       across them. See evidence.md [s9] for the insn-level read-out of the
+       unfenced order and [s11] for the measurement.
+       lever-exhaustion: hypotheses.md classes A/B/C; s3 (12 statement orderings),
+       s5 (honest-loop fence hunt, +11 insns), s9 (exhaustive 3234-atom sched_solver
+       depth-1 sweep against the target emission order: 0 hits; the only reachable
+       sub-goal needs atoms not expressible in C), s10 (struct-typed rederive 178
+       insns), s11 (63-position single-wrap sweep + 18 nested-wrap variants). */
+    do { } while (0);
     sp[0] = 0;
     sp[1] = 0;
     ClearOTagR(D_800A374C, 0x1008);
+    p_old = (s32 *)(arg0 + 0x58);
     D_800A35D8 = arg0;
     snd_StopAll();
     func_8006E950(6, p_old);

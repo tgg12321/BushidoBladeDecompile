@@ -983,3 +983,57 @@ scored, 8 real, one unrelocated-LO16 artifact".
 - probe: Both shapes applied and measured with sandbox func_800770B8 --disable all.
 - result: Both measure 9 / 175 insns - byte-neutral. Banked rejected/s10-outer-for-loop-byte-neutral.c and rejected/s10-nested-call-no-r-local-byte-neutral.c.
 - verdict: KILLED
+
+## [s11] The s4 empty do-while(0) fence is a SANCTIONED construct under the current rules, not the cheat s4 recorded, so the honest floor is 5 rather than 9.
+- mechanism: `.claude/rules/do-while-zero-exception.md` carries owner ruling 2026-07-06, whose scope sentence reads "SANCTIONED (owner ruling 2026-07-06, supersedes the 2026-06-04 mechanism-scoping): `do { ... } while (0);` (any body, incl. empty) is an allowed pure-C match device for ANY codegen effect incl. register allocation, with mandatory inline FAKE annotation". Its body states "The former scoping to the reorg.c label-note mechanism is abolished", and its Confirmed-applications section records marionation_Exec as a wrap candidate reviewer-FAILed under the old scoping and reinstated by this ruling. s4 rejected the form under the abolished scoping.
+- probe: Re-applied rejected/s4-dw0-fence-plus-pold-move-FLOOR5-CHEAT.c verbatim and measured `sandbox func_800770B8 --disable all` on today's chassis; then re-read the positional diff with tmp/grind/func_800770B8/s3/posdiff.py.
+- result: **score 5, 175/175 insns** (vs 9 for the s3 body measured in the same session). The positional diff loses residual class A entirely - the prologue matches row for row - leaving only class B (rows 35-36) and class C (rows 62-64) plus the row-50 LO16 scorer artifact. candidate.c replaced with the annotated floor-5 form.
+- verdict: CONFIRMED
+
+## [s11] A SECOND wrap, somewhere else in the body, closes class B or class C.
+- mechanism: If NOTE_INSN_LOOP_BEG/END pairs can bound a scheduling region (proven for class A), they can also break a cse extended basic block (class B) or change local-alloc's loop-depth ref weighting (class C, the s10 frontier's closed-form target of span > 44 or refs <= 15).
+- probe: EXHAUSTIVE single-wrap sweep - an empty `do { } while (0);` inserted at each of the 63 legal statement positions of the floor-5 body (all lines ending `;` or `{` that are not declarations), each measured with sandbox --disable all. Generator/manifest tmp/grind/func_800770B8/s11/sw/manifest.tsv, results tmp/grind/func_800770B8/s11/sweep.log.
+- result: minimum 5 over all 63 positions; nothing beats the wrap already in the form. Class-B-adjacent positions regress (10 before the stores, 11 after), consistent with s8's dump-proven cse-pass-2 undo. The whole outer-loop-body region is byte-neutral.
+- verdict: KILLED
+
+## [s11] Nested do-while(0) wraps multiply local-alloc's loop-depth ref weighting enough to move the class-C seat.
+- mechanism: GCC 2.7.2's flow.c accumulates REG_N_REFS with a loop-depth weight, and local-alloc's qty_compare priority is floor_log2(refs)*refs*size/(death-birth)*10000; extra nesting levels around the second D_800A36A0 read were the only remaining route to the s10 closed-form target (raise qty4 above the merged chain, or drop the chain below 20000).
+- probe: depth-2 and depth-3 wraps at 9 positions in and around the outer-loop body and the p_6a/p_7e inner loop, 18 variants, all measured. Log tmp/grind/func_800770B8/s11/nsweep.log.
+- result: best 5; and **depth 3 is byte-identical to depth 2 at every one of the 9 positions** (8/8, 42/42, 7/7, 60/60, 5/5). Nesting does not reach the contested quantities at all. Banked rejected/s11-nested-dw0-depth2-in-6a7e-block-score8.c and s11-nested-dw0-depth2-inner-loop-byte-neutral-score5.c.
+- verdict: KILLED
+
+## [s11] The class-C operand flip's +24 collateral is specific to the floor-9 chassis and shrinks once class A is closed.
+- mechanism: If the collateral were partly the prologue's re-scheduling, closing class A with the wrap would reduce it.
+- probe: The s9/s10 flip spelling applied on top of the floor-5 body, alone and combined with wraps, measured with sandbox --disable all.
+- result: 29 (vs 5 baseline) - the collateral is 24 rows on both chassis, so it is intrinsic to the flipped tree exactly as s10 concluded. Flip + class-B wrap 34; a wrap immediately before the flipped decls fuses the inner loops (60 / 163 insns). Banked rejected/s11-classC-flip-on-floor5-chassis-score29.c and s11-classB-wrap-plus-classC-flip-score34.c.
+- verdict: KILLED
+
+## [s11] The s4 empty do-while(0) fence is a SANCTIONED construct under the current rules, not the cheat s4 recorded, so the honest floor is 5 rather than 9.
+- mechanism: .claude/rules/do-while-zero-exception.md carries owner ruling 2026-07-06 whose scope sentence sanctions 'do { ... } while (0);' (any body, incl. empty) as a pure-C match device for ANY codegen effect incl. register allocation, with a mandatory inline FAKE annotation; its body states 'The former scoping to the reorg.c label-note mechanism is abolished' and its Confirmed-applications section records marionation_Exec as a wrap candidate reviewer-FAILed under the old scoping and reinstated by this ruling. s4 rejected the form under the abolished scoping.
+- probe: Re-applied rejected/s4-dw0-fence-plus-pold-move-FLOOR5-CHEAT.c verbatim, measured 'sandbox func_800770B8 --disable all' on today's chassis, then re-read the positional diff with tmp/grind/func_800770B8/s3/posdiff.py.
+- result: score 5, 175/175 insns (the s3 body measured 9 in the same session). Residual class A (prologue rows 7-12) is GONE - the prologue matches row for row. Remaining: class B rows 35-36, class C rows 62-64, plus the known row-50 LO16 scorer artifact.
+- verdict: CONFIRMED
+
+## [s11] A SECOND do-while(0) wrap somewhere else in the body closes class B or class C.
+- mechanism: If NOTE_INSN_LOOP_BEG/END pairs can bound a sched2 region (proven for class A), they might also break a cse extended basic block (class B) or change local-alloc's loop-depth ref weighting (class C, s10's closed-form target: span > 44 or refs <= 15).
+- probe: EXHAUSTIVE single-wrap sweep - an empty 'do { } while (0);' inserted at each of the 63 legal statement positions of the floor-5 body (every line ending ';' or '{' that is not a declaration), each measured with sandbox --disable all. Manifest tmp/grind/func_800770B8/s11/sw/manifest.tsv, results tmp/grind/func_800770B8/s11/sweep.log.
+- result: Minimum 5 over all 63 positions; nothing beats the wrap already in the form. Class-B-adjacent positions regress (10 before the stores, 11 after), consistent with s8's dump-proven cse-pass-2 undo. The whole outer-loop-body region P025-P051 is byte-neutral at 5.
+- verdict: KILLED
+
+## [s11] Nested do-while(0) wraps multiply local-alloc's loop-depth ref weighting enough to move the class-C seat.
+- mechanism: flow.c accumulates REG_N_REFS with a loop-depth weight and local-alloc's qty_compare priority is floor_log2(refs)*refs*size/(death-birth)*10000; extra nesting was the only remaining route to s10's closed-form target.
+- probe: depth-2 and depth-3 wraps at 9 positions in and around the outer-loop body and the p_6a/p_7e inner loop - 18 variants, all measured. Log tmp/grind/func_800770B8/s11/nsweep.log.
+- result: Best 5, and depth 3 measures BYTE-IDENTICALLY to depth 2 at every one of the 9 positions (8/8, 42/42, 7/7, 60/60, 5/5). Nesting does not reach the contested quantities at all.
+- verdict: KILLED
+
+## [s11] The class-C operand flip's +24 collateral is specific to the floor-9 chassis and shrinks once class A is closed.
+- mechanism: If part of the collateral were the prologue re-scheduling, closing class A with the wrap would reduce it.
+- probe: The s9/s10 flip spelling applied on the floor-5 body, alone and combined with wraps, measured with sandbox --disable all.
+- result: 29 against a 5 baseline - the collateral is 24 rows on BOTH chassis, so it is intrinsic to the flipped tree exactly as s10 concluded. Flip + class-B wrap 34; a wrap immediately before the flipped decls fuses the inner loops (60 / 163 insns).
+- verdict: KILLED
+
+## [s11] Endgame-lock gate (a): func_800770B8 qualifies for the canonical-asm grant path.
+- mechanism: The disposition brief requires the scan_hand_coded tier before any foreclosure or grant record.
+- probe: python3 tools/scan_hand_coded.py --single func_800770B8
+- result: tier=LOW score=0/8, 'no strong hand-coded indicators'; S1-S8 all unset (175 insns, 5 spills, 14 distinct regs). The canonical-asm grant path is NOT available to this function.
+- verdict: KILLED
