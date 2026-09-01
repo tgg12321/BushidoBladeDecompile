@@ -17591,3 +17591,76 @@ per ordinary-c-judge-decidable Ruling 3."
 ## 2026-09-01 09:05 — func_800203B4 — DISCARDED-SESSION MARKER (driver-stamped)
 
 Text appended above by session s1 of func_800203B4, which the driver DISCARDED as invalid (owner-gated: the standing-ruling terminal disposition requires `escalation` modality (driver-declared exhaustion), not `recon`. A dead axis in this modality is a `progress` outcome with the kills banked ΓÇö the ladder still has untried modalities.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
+
+## 2026-09-01 — func_800203B4 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Proof-of-foreclosure record per [[endgame-lock-disposition]] (owner standing ruling 2026-07-27)
+and [[ordinary-c-judge-decidable]] Ruling 3, filed by grind session **s9 in driver-dispatched
+`escalation` modality** (driver-declared exhaustion: honest floor FLAT across 8 prior sessions and
+six distinct modalities — recon, structural ×2, permuter, synthesis ×2, solver, forensics). This
+entry supersedes the identical-conclusion text appended by the DISCARDED s1 session
+(decisions.md:17550, voided by the driver marker at decisions.md:17591): the conclusion was right,
+the modality was not. Nothing below is a question to the owner and no packet is filed.
+
+**(i) Gate evidence — both endgame-lock AND-gates FAIL:**
+- **Gate (a), canonical-asm / STRONG scanner tier: FAILS.** `python3 tools/scan_hand_coded.py
+  --single func_800203B4` re-run THIS session: `tier=LOW score=1/8`, the only set signal is
+  `S4 front loads`; S1 (multu pacing), S2 (empty branch) and S6 (BIOS jumptable) are all clear.
+  Log: `tmp/grind/func_800203B4/s9/scan_hand_coded_s9.txt`. Third independent measurement (s1
+  retry, the Judge's own re-run in the 2026-09-01 09:01 ruling, and s9) — all identical. The
+  [[judge-sole-gate]] Rule-3 canonical-asm grant path is therefore unavailable.
+- **Gate (b), in-hand SOTN-master precedent for the closing construct: FAILS (negative census).**
+  `docs/reference/sotn-construct-index.md` (1,365 entries, pinned commit) returns **zero** matches
+  for `ctc2`, `mvmva`, `0x4A48`, `cop2`, `gte_ldv0`, `gte_stlvnl`, or an `addu $t4,…,$zero`
+  addressing preamble. No sanctioned family covers the residual, and the 2026-08-17 func_8002FDB0
+  cluster grant was ruled NOT to reach this function (Judge **FAIL**, decisions.md:17546): that
+  grant is doubly anchored on the literal idiom `addu $t4,$aN,$zero` and the counts
+  28-in-band / 26-queued, while this function's three sites are `addu $t4,$v0,$zero`
+  (asm/funcs/func_800203B4.s L27, L48) and `addu $t4,$s0,$zero` (L59). The Judge's own band
+  re-scan showed admitting non-`$aN` sources would enlarge the count-anchored grant by ~7 members
+  — a family extension, FAIL(CONSTRUCT). Per the binding Judge constraint in that ruling, no
+  membership argument is re-derived or respelled here.
+
+**(ii) Evidence pointers — the codegen work is complete and the residual is structural:**
+- **Floor re-measured on the CURRENT chassis this session:** candidate.c applied to
+  src/code6cac.c → `sandbox func_800203B4 --disable all` = **score 0, target_insns 65,
+  build_insns 65, rules_dropped 0, cheat_asm_stripped 25**. Artifact
+  `tmp/grind/func_800203B4/s9/code6cac_sandbox0_s9.o`. src/code6cac.c was reverted to
+  `INCLUDE_ASM` after the measurement per [[asm-until-matched]]; the body is final in
+  `memory/grind/func_800203B4/candidate.c`. Fifth independent proof (s1, s1-retry, s2, s4, s9).
+- **The residual is 25 stripped instructions and is MINIMAL by measurement:** all 39 C-emitted
+  instructions are already byte-exact in the islands-deleted build (evidence.md fact 33/34), and
+  three island-partition variants that move C-expressible SDK-macro instructions into C score
+  non-zero (12 / 4 / 8 — rejected/thin-setrotmatrix-c-loads-score12.c,
+  rejected/thin-stlvnl-no-preamble-score4.c, rejected/thin-ldv0-c-packing-score8.c; fact 41).
+- **The residual is unreachable from C by compiler construction, not merely by search**
+  (facts 50-51): GCC 2.7.2's MIPS backend contains ZERO cop2 mnemonics and no cop2 RTL register
+  class, so the 11 cop2 instructions (ctc2×5, mtc2, lwc2, swc2×3, MVMVA `.word 0x4A486012`) are
+  unemittable; and the 12 SDK-macro integer instructions have no reachable register seat under
+  ascending-scan allocation.
+- **Every search axis is measured dead:** permuter — 67,817 iterations over the pure-C chassis,
+  4 novel finds all sub-instruction and semantics-broken (facts 28/32,
+  rejected/permuter-best-find-2960-semantics-broken.c); solver — `inverse_compose.py classify`
+  returns NO DIVERGENCE on the candidate chassis and FIRST DIVERGENCE: PRE-RA, "next tool: none"
+  (fact 45); structural/decl-order/statement-order — banked in `rejected/` (H6/H7/H8/H10/H11);
+  forensics — facts 50-51 above. Ledger: `memory/grind/func_800203B4/evidence.md` (facts 1-56),
+  `hypotheses.md`, `rejected/` (8 forms).
+- **Re-activation triggers re-checked this session — NONE has landed** (presence check only, no
+  membership argument): `grep -c func_800203B4 inline_asm_canonical.txt` = 0;
+  `grep -c func_800203B4 .claude/rules/cop2-addressing-preamble-cluster.md` = 0; decisions.md tail
+  was still the 2026-09-01 09:05 discarded-session marker.
+
+**(iii) Re-activation triggers:**
+1. An owner **class grant** covering non-`$aN`-source materialize-then-copy cop2
+   addressing-preamble sites in the 0x8001–0x8003 band (the Judge's band re-scan names the ~7
+   functions such a grant would admit: 80017FA0, 80019310, 800203B4, 800204C0, 8002FF20, 80031890,
+   8003E6D8). If granted, this function becomes a **pure integration handoff with zero codegen
+   work remaining**: apply `memory/grind/func_800203B4/candidate.c` verbatim, confirm sandbox 0,
+   driver writes the `inline_asm_canonical.txt` grant line + `docs/grind/borderline.md` entry, then
+   layer-2 cheat-reviewer → `verify-oracle --rebuild` → `queue done`.
+2. A toolchain-fidelity finding that gives the cop2 island a legitimate C form.
+3. An explicit owner `queue unpark`.
+
+## 2026-09-01 10:23 — func_800203B4 — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s9 of func_800203B4, which the driver DISCARDED as invalid (owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md names func_800203B4). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
