@@ -127,17 +127,17 @@
 
 - [s1] no codegen work remains: H1 CONFIRMED x4, H2/H3 KILLED, H4 resolved NO by Judge FAIL; residual = 11 cop2 insns with no C form; scanner tier LOW and cluster membership denied, so both authorization gates are measured dead
 
-## s4 (2026-09-01, STRUCTURAL — the first non-recon modality on this function)
+## s4 (2026-09-01, STRUCTURAL ï¿½ the first non-recon modality on this function)
 
 17. **THE PURE-C BOUND IS 26, AND IT IS STRUCTURE-INVARIANT (new, measured).** The candidate
-    body with all four inline-asm islands deleted — the maximal pure-C form of this function —
+    body with all four inline-asm islands deleted ï¿½ the maximal pure-C form of this function ï¿½
     scores `sandbox --disable all` = **26, build_insns 39, target_insns 65, rules_dropped 0**
     (form banked at memory/grind/func_800203B4/rejected/pure-c-no-islands-floor-26.c). The
     score equals the EXACT instruction-count deficit (65 - 39 = 26): every one of the 39
     C-emitted instructions matches the target, so the residual is 100% instructions that no C
     construct can emit (5x ctc2, mtc2, lwc2, 3x swc2, the MVMVA `.word 0x4A486012`, their
     addressing preamble, and the two unfilled cop2 load-delay nops). GCC 2.7.2 has no cop2
-    intrinsic — the PsyQ SDK's own gte_* macros are inline asm — so no structural lever
+    intrinsic ï¿½ the PsyQ SDK's own gte_* macros are inline asm ï¿½ so no structural lever
     (declaration order, block-local splits, type narrowing, statement re-association) can move
     26 toward 0. **The structural modality is bounded at 26 and is therefore measured DEAD**;
     it is not a spelling problem, it is an expressiveness one.
@@ -151,7 +151,7 @@
     islands alone. Body is otherwise unchanged and still byte-final.
 19. **Local DECLARATION ORDER is load-bearing (measured).** Reordering the locals from
     `s32 mat[8]; s32 vec[3]; s32 src;` to `s32 src; s32 vec[3]; s32 mat[8];` scores **25 with
-    build_insns 66** — one instruction MORE than the target, i.e. the frame layout that puts
+    build_insns 66** ï¿½ one instruction MORE than the target, i.e. the frame layout that puts
     `mat` at sp+0x10 and `vec` at sp+0x30 is a consequence of the declaration order and must
     not be "tidied". Banked at rejected/decl-order-swap-costs-one-insn.c, artifact
     tmp/grind/func_800203B4/s2/varC_declorder_score25.o.
@@ -231,3 +231,58 @@
 - [s3] fact 26: no authorization argument was made or re-derived - the Judge FAIL (docs/grind/decisions.md:17546) and the filed foreclosure record (docs/grind/decisions.md:17550) stand untouched per the binding Judge constraint. Outcome is `progress` and not `owner-gated` solely because the mandated modality is `structural`; the terminal disposition is modality-gated to a driver-dispatched `escalation` session (s2's owner-gated from recon was discarded for exactly that reason, marker at decisions.md:17591).
 
 - [s3] fact 27 (tooling): tmp/grind/func_800203B4/s2/apply.py is broken on this machine (Windows python 3.9 has no pathlib.write_text(newline=), and the old candidate.c carried cp1252 bytes). Use tmp/grind/func_800203B4/s3/apply.py; candidate.c is now pure ASCII. A silently-failed apply reads as score 65 / build_insns 0, or as "score": null with 'func_800203B4 not found in ... code6cac.o' - both are apply failures, not codegen findings.
+
+- [s4] fact 28: the PERMUTER axis is measured DEAD. A purpose-built single-function permuter
+  workspace (tmp/grind/func_800203B4/s4/perm) was run against the pure-C (islands-deleted)
+  chassis for ~35k+ iterations at -j 8. Base score 3000 on asm-differ's weighted metric; the
+  best novel find was 2960 and it is SEMANTICALLY INVALID (it hoists `arg0 += 0x354;` above the
+  0x350/0x352 stores, shifting every later offset). Nothing came within ~350 points of the
+  ~2600 that recovering even one residual instruction would require. The permuter modality has
+  now been spent on this function and produced zero usable proposals; do not re-run it.
+
+- [s4] fact 29 (why the permuter cannot help here, mechanistically): the 26-instruction residual
+  splits into ~11 genuinely cop2-only instructions (5x ctc2, mtc2, lwc2, 3x swc2, the MVMVA
+  .word 0x4A486012) and ~13-15 ordinary integer instructions that make up the SDK macros'
+  addressing preamble (`move $12,rN`, five matrix lw's, the lhu/sll/or packing of VX0/VY0) plus
+  two load-delay slots. The preamble instructions are individually C-expressible, but ONLY as
+  computations whose results are never consumed (reads of mat[0..4] and a packed word built from
+  vec[0]/vec[1] that feed nothing, since their real consumers are cop2 registers). GCC 2.7.2's
+  DCE deletes exactly that, and any source form written to survive DCE would be a dead-read /
+  constant-holder coercion aimed at materializing bytes - a cheat, not a match. So the residual
+  is UNREACHABLE by C rather than merely unfound, and this is true independent of search effort.
+
+- [s4] fact 30: floor re-confirmed an EIGHTH and NINTH time on the 2026-09-01 chassis (dispatch
+  chassis-check again read "measurement unavailable"): candidate.c applied -> sandbox
+  --disable all = 0, build_insns 65 == target_insns 65, rules_dropped 0, cheat_asm_stripped 25
+  (artifact tmp/grind/func_800203B4/s4/code6cac_sandbox0_s4.o); islands-deleted body -> 26,
+  build_insns 39. src/code6cac.c reverted to INCLUDE_ASM after both runs; tree clean.
+
+- [s4] fact 31 (tooling, reusable): the permuter workspace recipe that WORKS for this project is
+  banked at tmp/grind/func_800203B4/s4/ (mkws.sh, mkws2.sh, perm/compile.sh). Two traps cost
+  real time and will cost the next session the same unless read: (a) base.c must be the
+  cpp-preprocessed TU AND needs `typedef struct GameObj GameObj;` prepended or pycparser aborts
+  with "Syntax error in base.c ... before: GameObj" (code6cac.c carries GameObj prototypes with
+  no visible typedef - cc1 tolerates the parse error, pycparser does not; the typedef is
+  codegen-neutral, verified by byte-comparing the extracted function region); (b) compile.sh
+  MUST extract only the `.globl func_800203B4` .. `.end func_800203B4` region and assemble that
+  alone - assembling the whole TU makes the scorer diff every other function in code6cac.c
+  against a single-function target.o and yields a nonsense base score of ~1,017,894.
+
+- [s4] fact 32 (final campaign numbers, superseding the "~35k" figure quoted in fact 28): the
+  campaign ran 67,817 iterations over 1,723 s at -j 8 and was harvested with --stop (0 live
+  campaigns at session end; 9 worker procs killed). FOUR novel finds total, best 2935 vs base
+  3000 - every one of them below the 100-point cost of a single recovered instruction, and every
+  one of them semantically invalid: output-2960-1 hoists `arg0 += 0x354;` above the 0x350/0x352
+  stores; output-2935-1 re-assigns `src` from `new_var` AFTER new_var's block scope has closed
+  and then dereferences it, and drops the value of the arg0 mutation entirely. This is the
+  signature of a search with no valid basin to find, not of an under-sampled one.
+
+- [s4] fact 28: the PERMUTER axis is measured DEAD - 67,817 iterations at -j 8 over the pure-C chassis, base score 3000, best novel find 2935, all four finds semantically invalid. The permuter modality has now been spent on this function and produced zero usable proposals; do not re-run it.
+
+- [s4] fact 29: the mechanistic reason the permuter cannot help - the 26-instruction residual is ~11 cop2-only instructions plus ~13-15 ordinary integer preamble instructions that are C-expressible ONLY as DCE-deleted dead computations; surviving DCE would require a dead-read / constant-holder coercion, i.e. a cheat. The residual is unreachable by C, not merely unfound.
+
+- [s4] fact 30: floor re-confirmed an eighth and ninth time on the 2026-09-01 chassis (dispatch chassis-check again read 'measurement unavailable'): candidate.c -> 0, 65/65, rules_dropped 0, cheat_asm_stripped 25; islands-deleted -> 26, build_insns 39. src/code6cac.c reverted to INCLUDE_ASM after every run; working tree clean apart from ledger files + scratch.
+
+- [s4] fact 31 (tooling, reusable project-wide): the permuter-workspace recipe that WORKS on this project is banked at tmp/grind/func_800203B4/s4/ (mkws.sh, mkws2.sh, perm/compile.sh). Two traps: (a) base.c must be the cpp-preprocessed TU AND needs 'typedef struct GameObj GameObj;' prepended or pycparser aborts with 'Syntax error in base.c ... before: GameObj' (code6cac.c carries GameObj prototypes with no visible typedef - cc1 tolerates the parse error, pycparser does not); the typedef is codegen-neutral, verified by byte-comparing the extracted function region. (b) compile.sh MUST extract only the '.globl' .. '.end' region of the target function and assemble that alone - assembling the whole TU makes the scorer diff every other function in code6cac.c against a single-function target.o, yielding a nonsense base score of ~1,017,894.
+
+- [s4] fact 32: final campaign numbers - 67,817 iterations / 1,723 s / 4 novel finds / best 2935 / harvested with --stop, 9 worker procs killed, 0 live campaigns at session end. The best find is banked at memory/grind/func_800203B4/rejected/permuter-best-find-2960-semantics-broken.c so no future session mistakes the 2960 datapoint for a lead.

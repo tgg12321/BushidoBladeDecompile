@@ -27,7 +27,14 @@
  * inline_asm_canonical.txt:268) - NOTE the 2026-08-17 cluster grant was ruled NOT to reach
  * this function (Judge FAIL, docs/grind/decisions.md:17546); foreclosure record at
  * docs/grind/decisions.md:17550. This body is byte-final and awaits an authorization axis,
- * not codegen work. */
+ * not codegen work.
+ *
+ * s4 (permuter modality, 2026-09-01) changed NOTHING in this body and confirmed it again at
+ * sandbox --disable all == 0, 65/65 (artifact tmp/grind/func_800203B4/s4/code6cac_sandbox0_s4.o).
+ * A ~35k-iteration permuter campaign over the islands-deleted pure-C chassis (base 3000 on
+ * asm-differ) produced no valid improvement - best novel find 2960 and semantics-broken
+ * (memory/grind/func_800203B4/rejected/permuter-best-find-2960-semantics-broken.c). The
+ * permuter axis is spent; see evidence.md facts 28-29. */
 void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
     s32 mat[8];
     s32 vec[3];

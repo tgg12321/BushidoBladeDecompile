@@ -79,22 +79,22 @@ constraint forbids it in any spelling).
 
 ## s4 (2026-09-01, structural)
 
-- **H5 — KILLED (measured):** "A structural rearrangement of the pure-C body (declaration
+- **H5 ï¿½ KILLED (measured):** "A structural rearrangement of the pure-C body (declaration
   order / block-local splits / re-association / type narrowing) can close part of the residual
   without inline asm." Mechanism proposed: frame-layout and expression-shape levers change
   which instructions GCC emits. Probe: islands deleted -> `sandbox --disable all` = 26 with
   build_insns 39 (score == exact 65-39 deficit, so ALL 39 emitted insns already match); then
   two structural perturbations of the full body. Result: the entire 26-insn residual is cop2
   transfers + the MVMVA word + their preamble/delay nops, which GCC 2.7.2 emits ONLY from
-  inline asm. **Verdict: KILLED — the structural axis is bounded at 26 by expressiveness, not
+  inline asm. **Verdict: KILLED ï¿½ the structural axis is bounded at 26 by expressiveness, not
   by spelling.** (evidence.md fact 17)
-- **H6 — KILLED (measured, and it IMPROVED the candidate):** "The s1 body's block-local
+- **H6 ï¿½ KILLED (measured, and it IMPROVED the candidate):** "The s1 body's block-local
   `new_var` named intermediate is load-bearing for the target's codegen." Probe: replaced with
-  the plain nested expression -> still 0, 65/65. **Verdict: KILLED — codegen-neutral;
+  the plain nested expression -> still 0, 65/65. **Verdict: KILLED ï¿½ codegen-neutral;
   candidate.c promoted to the simpler form** (evidence.md fact 18).
-- **H7 — CONFIRMED (measured):** "Local declaration order is load-bearing for the frame
+- **H7 ï¿½ CONFIRMED (measured):** "Local declaration order is load-bearing for the frame
   layout." Probe: (src, vec, mat) instead of (mat, vec, src) -> score 25, build_insns 66.
-  **Verdict: CONFIRMED — do not reorder** (evidence.md fact 19).
+  **Verdict: CONFIRMED ï¿½ do not reorder** (evidence.md fact 19).
 
 Frontier: UNCHANGED and still not codegen. Every C-side question is now closed on measurement
 (H1 CONFIRMED x5, H2/H3/H5/H6 KILLED, H4 resolved NO by Judge FAIL decisions.md:17546,
@@ -194,3 +194,29 @@ spelling.
 - probe: Deleted `arg0 += 0x354;` and wrote the stlvnl operand as "r"(arg0 + 0x354), applied, scored: tmp/grind/func_800203B4/s3/varD_ptr_expr.c.
 - result: score 0, build_insns 65, target_insns 65 - codegen-neutral. Both spellings are ordinary C with no family claim; candidate.c keeps the `+=` form because it mirrors the SDK call shape.
 - verdict: KILLED
+
+## s4 (2026-09-01, permuter)
+
+## [s4] H12: an automated randomized search over the PURE-C chassis (all four cop2 islands deleted, base score 26) can find a semantically-valid C spelling that scores BELOW 26 - i.e. some C statement form emits one or more of the 26 residual instructions (the non-cop2 members of the islands: 4x `move $12,rN` (addu), 5x lw, 2x lhu, sll, or - 13 of the 26 are ordinary integer instructions that C *can* in principle emit).
+- mechanism: The 26-instruction residual is not homogeneous. Only 11 of them are cop2 (5x ctc2, mtc2, lwc2, 3x swc2, the MVMVA .word); the other ~13-15 are the SDK macros' addressing preamble (register copy of the operand, the packed lhu/sll/or of VX0/VY0, the five matrix lw's) plus two load-delay slots. Those are ordinary MIPS integer instructions. If GCC 2.7.2 could be steered into emitting them - reading mat[0..4], packing vec[0]/vec[1] into a word, copying an array address into $12 - from ordinary C, the pure-C bound would be lower than 26 and the un-authorizable residual would shrink toward the 11 genuinely cop2-only instructions. A hand search cannot cover that space; a randomized permuter search over ~35k iterations can.
+- probe: Built a purpose-made single-function permuter workspace (tmp/grind/func_800203B4/s4/perm) - target.o assembled from asm/funcs/func_800203B4.s; base.c = the cpp-preprocessed FULL code6cac.c TU (correct codegen context) with the islands-deleted body substituted and a `typedef struct GameObj GameObj;` prepended purely so pycparser can parse the TU (measured codegen-neutral: the extracted func_800203B4 region is byte-identical with and without it); compile.sh runs the exact engine pipeline (cc1 -mel | prologue_fix | maspsx | align sed | multu_pad) and extracts ONLY the .globl..`.end func_800203B4` region before assembling, so the permuter scores the function and not the whole TU. Campaign via tools/permuter_campaign.py launch -j 8, label purec-no-islands-fnonly.
+- result: base score 3000 (asm-differ weighted; = the 26-instruction deficit plus alignment penalties). Over ~35k+ iterations the search produced only three novel outputs, best 2960 - a 40-point (sub-one-instruction) move, and INVALID: output-2960-1 hoists `arg0 += 0x354;` to the top of the body, which changes every subsequent `arg0 + 0xNNN` offset (semantics-breaking, as permuter randomizations are permitted to be). No find approached, let alone crossed, the 2600-equivalent that a single genuinely-recovered instruction would require. The randomized search cannot invent the statements (array reads feeding nothing, a packed lhu/sll/or of two array elements) that the preamble instructions would need - and any such statement would be dead code that GCC's DCE deletes, which is exactly why the residual is unreachable rather than merely unfound.
+- verdict: KILLED
+
+## [s4] An automated randomized search over the PURE-C chassis (all four cop2 islands deleted, sandbox score 26) can find a semantically-valid C spelling scoring below 26 - i.e. some C statement form emits one or more of the ~13-15 ORDINARY INTEGER instructions inside the 26-instruction residual (the SDK macros' addressing preamble: 4x 'move $12,rN' (addu), 5x matrix lw, the lhu/sll/or packing of VX0/VY0), shrinking the un-authorizable residual toward the 11 genuinely cop2-only instructions.
+- mechanism: The residual is not homogeneous: only 11 of the 26 are cop2 (5x ctc2, mtc2, lwc2, 3x swc2, the MVMVA .word 0x4A486012). The rest are ordinary MIPS integer instructions that C can in principle express. A hand search cannot cover that spelling space; a randomized permuter search over tens of thousands of iterations can. If a valid basin existed it would show as a find at or below 2600 on asm-differ's weighted metric (one recovered instruction = 100 points off the 3000 base).
+- probe: Built a purpose-made SINGLE-FUNCTION permuter workspace at tmp/grind/func_800203B4/s4/perm: target.o assembled from asm/funcs/func_800203B4.s (macro.inc wrapper); base.c = the cpp-preprocessed FULL code6cac.c TU (correct codegen context) with the islands-deleted body substituted, plus a prepended 'typedef struct GameObj GameObj;' needed only so pycparser parses the TU (verified codegen-neutral by byte-comparing the extracted function region with and without it); compile.sh runs the exact engine pipeline (cc1 -mel | prologue_fix | maspsx | align sed | multu_pad) and assembles ONLY the '.globl func_800203B4' .. '.end func_800203B4' region, so the scorer diffs the function and not the whole TU. Campaign launched via tools/permuter_campaign.py launch -j 8 (label purec-no-islands-fnonly), waited in-turn across five ~9-minute windows, harvested with --stop.
+- result: base_score 3000; 67,817 iterations in 1,723 s; FOUR novel finds (2960, 2980, 2978, 2935). Best = 2935, i.e. 65 points off base - below the 100-point cost of a single recovered instruction, so no find recovered ANY residual instruction. All four are semantically invalid: output-2960-1 hoists 'arg0 += 0x354;' above the 0x350/0x352 stores (shifting every later offset); output-2935-1 re-assigns 'src' from 'new_var' after that block scope has closed and then dereferences it. Campaign stopped, 9 worker procs killed, 0 live campaigns at session end.
+- verdict: KILLED
+
+## [s4] The residual's ordinary-integer instructions are unreachable by C in principle, not merely unfound by this search.
+- mechanism: The preamble instructions are only C-expressible as computations whose results are never consumed - reads of mat[0..4] and a word packed from vec[0]/vec[1] whose real consumers are cop2 registers. GCC 2.7.2's DCE deletes exactly that, and any source form written to survive DCE would be a dead-read / constant-holder coercion aimed at materializing bytes: a cheat, not a match. So no amount of search effort changes the bound.
+- probe: Structural reasoning cross-checked against the campaign result (no find within 350 points of the one-instruction threshold despite 67,817 samples) and against the s3 measurement that the islands-deleted body scores EXACTLY the 65-39=26 deficit, i.e. all 39 C-emitted instructions already match.
+- result: Consistent: the search behaves like one with no valid basin (finds cluster tightly just under base and are all semantics-breaking), which is exactly what an unreachable residual predicts.
+- verdict: CONFIRMED
+
+## [s4] The dispatch chassis-check read 'measurement unavailable', so both banked floors must be re-measured before being spent.
+- mechanism: Ledger conclusions are chassis-relative and the driver's own measurement was missing this dispatch.
+- probe: Applied memory/grind/func_800203B4/candidate.c to src/code6cac.c:1813 and ran 'sandbox func_800203B4 --disable all'; then applied the islands-deleted body (rejected/pure-c-no-islands-floor-26.c) and ran it again. src reverted after each run.
+- result: candidate -> score 0, build_insns 65 == target_insns 65, rules_dropped 0, cheat_asm_stripped 25 (artifact tmp/grind/func_800203B4/s4/code6cac_sandbox0_s4.o). Islands-deleted -> score 26, build_insns 39. Eighth and ninth independent confirmations; both banked numbers hold on this chassis.
+- verdict: CONFIRMED
