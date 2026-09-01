@@ -286,3 +286,88 @@
 - [s4] fact 31 (tooling, reusable project-wide): the permuter-workspace recipe that WORKS on this project is banked at tmp/grind/func_800203B4/s4/ (mkws.sh, mkws2.sh, perm/compile.sh). Two traps: (a) base.c must be the cpp-preprocessed TU AND needs 'typedef struct GameObj GameObj;' prepended or pycparser aborts with 'Syntax error in base.c ... before: GameObj' (code6cac.c carries GameObj prototypes with no visible typedef - cc1 tolerates the parse error, pycparser does not); the typedef is codegen-neutral, verified by byte-comparing the extracted function region. (b) compile.sh MUST extract only the '.globl' .. '.end' region of the target function and assemble that alone - assembling the whole TU makes the scorer diff every other function in code6cac.c against a single-function target.o, yielding a nonsense base score of ~1,017,894.
 
 - [s4] fact 32: final campaign numbers - 67,817 iterations / 1,723 s / 4 novel finds / best 2935 / harvested with --stop, 9 worker procs killed, 0 live campaigns at session end. The best find is banked at memory/grind/func_800203B4/rejected/permuter-best-find-2960-semantics-broken.c so no future session mistakes the 2960 datapoint for a lead.
+
+## s5 (2026-09-01, SYNTHESIS - merged attack; two banked inferences upgraded to direct measurement)
+
+33. **THE "ALL 39 C-EMITTED INSTRUCTIONS ALREADY MATCH" CLAIM IS NOW DIRECTLY VERIFIED BY
+    DISASSEMBLY, not inferred from arithmetic (new).** s4/s5 established it by the argument
+    "score 26 == the 65-39 deficit, therefore zero mismatches among the 39". This session
+    disassembled the islands-deleted build itself
+    (`mipsel-linux-gnu-objdump -d tmp/grind/func_800203B4/s5/code6cac_purec26_s5.o`, region
+    `00003564 <func_800203B4>`) and compared all 39 instructions against
+    asm/funcs/func_800203B4.s one by one. **Every one of the 39 is mnemonic- and
+    operand-identical to its target counterpart** (17 prologue/lookup insns 800203B4-800203F4;
+    7 insns 800203F8-80020410 through the func_8002EECC call; the 9-insn vec[] store block
+    80020444-80020464; the 6-insn epilogue 800204A8-800204BC). `move s0,a0` / `move s1,a2` are
+    the assembler's spelling of the target's `addu $s0,$a0,$zero` / `addu $s1,$a2,$zero`. The
+    pure-C chassis is therefore not "close" - it is EXACT for everything C can emit, and the
+    only gap is instructions C cannot emit at all. Artifact:
+    tmp/grind/func_800203B4/s5/code6cac_purec26_s5.o.
+34. **EXACT ANATOMY OF THE UN-REACHABLE RESIDUAL (new; refines fact 29's "~13-15 ordinary
+    integer" estimate into an enumeration).** The islands-deleted build is missing 28 target
+    instructions relative to asm/funcs/func_800203B4.s, in three tiers:
+    - **11 cop2-only opcodes** - `ctc2` x5 (80020424, 80020428, 80020438, 8002043C, 80020440),
+      `mtc2` (80020480), `lwc2` (80020484), `swc2` x3 (8002049C, 800204A0, 800204A4), and the
+      MVMVA word `.word 0x4A486012` (80020490). GCC 2.7.2 has no cop2 intrinsic; the PsyQ SDK's
+      own gte_* macros are inline asm. Unreachable, categorically.
+    - **12 ordinary-integer instructions INSIDE the SDK macro bodies** - `addu $t4,rN,$zero` x3
+      (80020418, 8002046C, 80020498), `lw` x5 (8002041C, 80020420, 8002042C, 80020430,
+      80020434), `lhu` x2 (80020470, 80020474), `sll` (80020478), `or` (8002047C). Individually
+      C-expressible, but only as computations whose sole consumers are cop2 registers - i.e. as
+      dead code that GCC's DCE removes (fact 29). Reaching them from C would require a
+      dead-read / constant-holder coercion, which is a cheat, not a match.
+    - **2 cop2 load-delay `nop`s** (80020488, 8002048C) - supplied by the assembler stage when
+      the island is present (fact 21), so they cost nothing in the source.
+    - **PLUS 3 operand-address materializations that are NOT residual at all**:
+      `addiu $v0,$sp,0x10` (80020414), `addiu $v0,$sp,0x30` (80020468),
+      `addiu $s0,$s0,0x354` (80020494). These are ordinary C (`&mat[0]`, `&vec[0]`,
+      `arg0 += 0x354`) and vanish from the islands-deleted build only because nothing consumes
+      them once the islands are gone; they reappear automatically the moment an island uses the
+      address. **So the genuinely un-authorizable-by-C set is 25 instructions, not 26-28.**
+      This is the number any future class-grant record should quote for this function.
+35. **TOOLING CAVEAT A (new, corrects an implicit assumption in facts 13/16/20/25/30):**
+    `cheat_asm_stripped` in the sandbox JSON is NOT a per-function island counter. It reads
+    **25 for BOTH** the island-bearing candidate (build_insns 65) and the islands-deleted body
+    (build_insns 39) measured back-to-back this session. Do not read it as evidence about the
+    function under test; only `score` / `build_insns` / `target_insns` / `rules_dropped` are.
+36. **TOOLING CAVEAT B (new; softens the *form* of the s4/s5 argument without changing its
+    conclusion):** `asm/funcs/func_800203B4.s` contains **67 instruction words**
+    (800203B4..800204BC inclusive) while the sandbox reports `target_insns` **65**. The scorer's
+    counts are therefore normalized, not raw, so the tidy identity "score 26 == 65 - 39, hence
+    zero mismatches among the 39" is not airtight arithmetic. Fact 33's direct disassembly
+    comparison replaces it and reaches the same conclusion by stronger evidence. Future sessions
+    on any function: do not build a proof out of `target_insns - build_insns == score`; diff the
+    disassembly.
+37. **Floor re-confirmed a TENTH time on the 2026-09-01 chassis** (this dispatch's chassis-check
+    again read "measurement unavailable"): candidate.c applied -> `sandbox --disable all` =
+    **0, build_insns 65 == target_insns 65, rules_dropped 0** (artifact
+    tmp/grind/func_800203B4/s5/code6cac_sandbox0_s5.o); islands-deleted body -> **26,
+    build_insns 39** (artifact tmp/grind/func_800203B4/s5/code6cac_purec26_s5.o).
+    src/code6cac.c reverted to INCLUDE_ASM after each run; working tree clean apart from
+    ledger + scratch.
+38. **Re-activation triggers re-checked this session and NONE has landed:**
+    `inline_asm_canonical.txt` has **no** func_800203B4 line (grep: no match);
+    `.claude/rules/cop2-addressing-preamble-cluster.md` still enumerates the same 28 members
+    derived by the `addu $t4, $aN, $zero` scan and still does **not** list func_800203B4;
+    no owner class grant covering non-$aN-source cop2 preamble sites has been filed. No
+    membership argument was made or re-derived - this was a presence check only, per the
+    binding Judge constraint.
+39. **candidate.c is UNCHANGED this session** (the s5-promoted nop-free form remains the best
+    known and is byte-final at floor 0). No new rejected form was produced: the synthesis found
+    no untried C-side lever to spell.
+
+- [s5] fact 33: the 'all 39 C-emitted instructions already match' claim is now DIRECTLY VERIFIED by disassembly rather than inferred from score arithmetic - objdump of the islands-deleted build (tmp/grind/func_800203B4/s5/code6cac_purec26_s5.o, region 00003564 <func_800203B4>) shows all 39 instructions mnemonic- and operand-identical to their counterparts in asm/funcs/func_800203B4.s. The pure-C chassis is not 'close', it is exact for everything C can emit.
+
+- [s5] fact 34: exact anatomy of the un-reachable residual, refining s4's '~13-15 ordinary integer' estimate into an enumeration. The islands-deleted build is missing 28 target instructions in four tiers: (a) 11 cop2-only opcodes - ctc2 x5 at 80020424/80020428/80020438/8002043C/80020440, mtc2 at 80020480, lwc2 at 80020484, swc2 x3 at 8002049C/800204A0/800204A4, and the MVMVA word 0x4A486012 at 80020490; (b) 12 ordinary-integer instructions INSIDE the SDK macro bodies - addu $t4,rN,$zero x3 at 80020418/8002046C/80020498, lw x5 at 8002041C/80020420/8002042C/80020430/80020434, lhu x2 at 80020470/80020474, sll at 80020478, or at 8002047C, all C-expressible only as DCE-deleted dead code; (c) 2 assembler-supplied cop2 load-delay nops at 80020488/8002048C (free, per fact 21); (d) 3 operand-address materializations at 80020414/80020468/80020494 that are ordinary C (&mat[0], &vec[0], arg0 += 0x354) and return automatically once an island consumes them. Therefore the genuinely un-authorizable-by-C set is 25 instructions, not 26-28 - this is the number any future class-grant record should quote.
+
+- [s5] fact 35 (tooling): cheat_asm_stripped is NOT a per-function island counter - it reads 25 for both the island-bearing candidate (build_insns 65) and the islands-deleted body (build_insns 39), measured back-to-back this session. Facts 13/16/20/25/30 quote it as corroboration; that corroboration is void. Use build_insns as the apply/removal check.
+
+- [s5] fact 36 (tooling, methodological): asm/funcs/func_800203B4.s contains 67 instruction words (800203B4..800204BC inclusive) while the sandbox reports target_insns 65, so the scorer's counts are normalized rather than raw and the tidy identity 'score 26 == 65 - 39, hence zero mismatches among the 39' is not airtight arithmetic. Fact 33's disassembly comparison replaces it and reaches the same conclusion by stronger evidence. Project-wide lesson: do not build a proof out of target_insns - build_insns == score; diff the disassembly.
+
+- [s5] fact 37: floor re-confirmed a TENTH time on the 2026-09-01 chassis (this dispatch's chassis-check again read 'measurement unavailable') - candidate.c applied -> sandbox --disable all = 0, build_insns 65 == target_insns 65, rules_dropped 0 (tmp/grind/func_800203B4/s5/code6cac_sandbox0_s5.o); islands-deleted body -> 26, build_insns 39 (tmp/grind/func_800203B4/s5/code6cac_purec26_s5.o). src/code6cac.c reverted to INCLUDE_ASM after each run per [[asm-until-matched]]; working tree clean apart from the two ledger files and scratch.
+
+- [s5] fact 38: re-activation triggers re-checked and NONE has landed - no func_800203B4 line in inline_asm_canonical.txt, .claude/rules/cop2-addressing-preamble-cluster.md still enumerates the same 28 `addu $t4, $aN, $zero` members without this function, and no owner class grant for non-$aN-source cop2 preamble sites is filed. Presence check only; no membership argument was made or re-derived, per the binding Judge constraint.
+
+- [s5] fact 39: candidate.c is UNCHANGED this session (the s5-promoted nop-free form remains best-known and byte-final at floor 0) and no new rejected form was produced - the synthesis found no untried C-side lever to spell. The merged attack is written up at the head of the s6 section of memory/grind/func_800203B4/hypotheses.md: 39 exact C insns + 3 free operand materializations + 25 un-C-expressible insns = the whole 65-instruction function.
+
+- [s5] fact 40: the disposition state is unchanged and remains modality-gated - the Judge FAIL (docs/grind/decisions.md:17546) and the filed proof-of-foreclosure record (docs/grind/decisions.md:17550) stand untouched; this session returns `progress` and not `owner-gated` solely because the mandated modality is `synthesis`, not `escalation` (s2's owner-gated from `recon` was discarded for exactly that reason, marker at decisions.md:17591).

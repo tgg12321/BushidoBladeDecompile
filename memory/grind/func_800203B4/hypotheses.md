@@ -220,3 +220,137 @@ spelling.
 - probe: Applied memory/grind/func_800203B4/candidate.c to src/code6cac.c:1813 and ran 'sandbox func_800203B4 --disable all'; then applied the islands-deleted body (rejected/pure-c-no-islands-floor-26.c) and ran it again. src reverted after each run.
 - result: candidate -> score 0, build_insns 65 == target_insns 65, rules_dropped 0, cheat_asm_stripped 25 (artifact tmp/grind/func_800203B4/s4/code6cac_sandbox0_s4.o). Islands-deleted -> score 26, build_insns 39. Eighth and ninth independent confirmations; both banked numbers hold on this chassis.
 - verdict: CONFIRMED
+
+## s6 (2026-09-01, SYNTHESIS - the merged attack)
+
+### The merged picture (what five sessions add up to)
+
+func_800203B4 is a 65-instruction PsyQ-SDK GTE wrapper: set the rotation matrix from a
+caller-supplied 3x3 (gte_SetRotMatrix), load a short vector (gte_ldv0), run one MVMVA
+(sf=1, rot . V0), store the result long-vector (gte_stlvnl) into `arg0 + 0x354`, around a
+pure-C head that stamps 0x350/0x352, indexes D_8008D59E by `arg1 * 20`, and calls
+game_GetPlayerData -> table -> func_8002EECC(src, mat).
+
+Five sessions have MEASURED, not argued, the following partition of its 65 instructions:
+
+- **39 instructions are emitted by C and are ALREADY EXACT.** Verified this session by
+  disassembling the islands-deleted build and comparing instruction by instruction against
+  asm/funcs/func_800203B4.s - not by the earlier score-arithmetic inference (evidence facts
+  33, 36).
+- **3 instructions are ordinary C that only appear when an island consumes them**
+  (`&mat[0]`, `&vec[0]`, `arg0 += 0x354`) - free, not residual (fact 34).
+- **25 instructions cannot come from C at all**: 11 cop2 opcodes (5x ctc2, mtc2, lwc2,
+  3x swc2, the MVMVA word), 12 ordinary-integer instructions that live INSIDE the SDK macro
+  bodies and are C-expressible only as DCE-deleted dead code, and 2 assembler-supplied cop2
+  load-delay slots (facts 29, 34).
+
+Everything above the C/asm line is closed: declaration order and statement order are
+load-bearing and pinned (H7, H10); the named intermediate, the explicit delay nops and the
+`arg0 += 0x354` spelling are all codegen-neutral and the candidate has been simplified to the
+minimal surface (H6, H8, H11); the structural bound is a measured minimum that only rises
+under perturbation (H5, H9); and 67,817 permuter iterations over the pure-C chassis produced
+four semantically-invalid finds, none within 350 points of recovering a single instruction
+(H12). The C body is byte-final: sandbox --disable all = 0, 65/65, now confirmed TEN times
+across five sessions and every chassis re-check.
+
+**So the function's residual is an AUTHORIZATION question, not a codegen question**, and both
+authorization gates are measured dead: scan_hand_coded is LOW (score 1, s4 signal only - H3),
+and the 2026-08-17 FDB0 cluster grant was ruled NOT to reach this function by Judge FAIL
+(docs/grind/decisions.md:17546) because its idiom sites copy from $v0/$s0 rather than $aN.
+The proof-of-foreclosure record is already filed at docs/grind/decisions.md:17550.
+
+### The reset frontier (strongest three, for the next ladder pass)
+
+- **F1 (terminal, modality-gated) - emit the standing-ruling disposition from an `escalation`
+  session.** Mechanism: the driver validator accepts `owner-gated` only from a
+  driver-dispatched `escalation` modality (s2's owner-gated from `recon` was discarded, marker
+  decisions.md:17591). Everything the disposition needs already exists: the Judge FAIL
+  (17546), the foreclosure record (17550), the byte-final candidate, and now the exact 25-insn
+  residual anatomy (fact 34). Next probe: one confirming sandbox --disable all run on
+  candidate.c, the three-way trigger presence check of fact 38, then `owner-gated` with
+  escalation_ref docs/grind/decisions.md:17550. Do not re-file the record, do not re-argue
+  membership in any spelling.
+- **F2 - the only re-activation trigger worth a per-session check is a class grant covering
+  non-$aN-source cop2 addressing-preamble sites.** Mechanism: such a grant would admit this
+  function's three `addu $t4,$v0/$s0,$zero` sites into the sanctioned family, at which point
+  the function is a PURE INTEGRATION HANDOFF - candidate.c applies unchanged, the driver writes
+  the inline_asm_canonical.txt line and the docs/grind/borderline.md entry, then layer-2
+  cheat-reviewer -> verify-oracle --rebuild -> queue done. Next probe (cheap, ~1 turn): grep
+  inline_asm_canonical.txt for func_800203B4, grep
+  .claude/rules/cop2-addressing-preamble-cluster.md for a widened scan/membership, tail
+  docs/grind/decisions.md for an owner class grant. Checked 2026-09-01: none present (fact 38).
+- **F3 - if the driver dispatches solver / forensics / rederive anyway, those axes are
+  foreclosed A PRIORI by fact 33 and must not be spent searching.** Mechanism: ra_solver and
+  sched_solver reason about register seats and emission order AMONG THE INSTRUCTIONS THE
+  COMPILER ACTUALLY EMITS; forensic cc1 dumps attribute a divergence to a pass. This function
+  has **zero divergent C-emitted instructions** - all 39 match exactly - so there is no seat to
+  re-assign, no order to re-schedule and no pass to attribute. The gap is expressiveness (no
+  cop2 intrinsic in GCC 2.7.2), which no solver models. Next probe for such a session: one
+  confirming pair of runs (candidate -> 0/65; islands-deleted -> 26/39), re-state facts 33-34,
+  return `progress` in under 5 turns. Do NOT re-launch a permuter campaign (H12/facts 28/32),
+  do NOT reorder locals or statements (H7/H10), do NOT re-probe the nops, the named
+  intermediate or the `+=` spelling (H6/H8/H11).
+
+### Hypotheses measured this session
+
+- **H13 - CONFIRMED (measured by disassembly, upgrading an inference):** "Every one of the 39
+  instructions the pure-C chassis emits is already identical to its target counterpart, so the
+  residual is exclusively instructions C cannot emit."
+  - mechanism: If any C-emitted instruction diverged, the islands-deleted build would show a
+    mnemonic/operand difference against asm/funcs/func_800203B4.s at that address, and a
+    codegen lever (RA seat, schedule slot, expression shape) would exist to attack. The earlier
+    sessions inferred "no divergence" from `score == target_insns - build_insns`, which is only
+    valid if the scorer's counts are raw - and they are not (fact 36).
+  - probe: Applied rejected/pure-c-no-islands-floor-26.c -> sandbox --disable all (26,
+    build_insns 39) -> mipsel-linux-gnu-objdump -d on the resulting
+    tmp/grind/func_800203B4/s5/code6cac_purec26_s5.o, region 00003564 func_800203B4, and
+    compared all 39 instructions line-by-line against asm/funcs/func_800203B4.s.
+  - result: All 39 match exactly (17 + 7 + 9 + 6 as itemized in evidence fact 33); the 28
+    absent target instructions decompose into 11 cop2 opcodes + 12 in-island integer insns +
+    2 assembler-supplied delay nops + 3 operand-address materializations that are ordinary C
+    and return for free with the islands. Un-authorizable-by-C set = **25 instructions**.
+  - verdict: CONFIRMED
+
+- **H14 - KILLED (measured):** "cheat_asm_stripped in the sandbox JSON reports the number of
+  inline-asm instructions stripped from the function under test, so it can be used as a check
+  that the islands were really applied/removed."
+  - mechanism: The field name and its stability at 25 across sessions suggested a per-function
+    island count (25 == exactly this function's four islands).
+  - probe: Ran sandbox func_800203B4 --disable all back-to-back on the island-bearing
+    candidate and on the islands-deleted body in the same session.
+  - result: **25 in BOTH cases**, while build_insns went 65 -> 39. It is not a per-function
+    counter. Use build_insns (65 vs 39) as the apply/removal check, per the fact-27 tooling
+    note.
+  - verdict: KILLED
+
+- **H15 - KILLED (checked, no measurement needed):** "A re-activation trigger has landed since
+  s5 (a widened cluster enumeration, a grant line, or an owner class grant)."
+  - mechanism: The foreclosure record's own re-activation triggers; a landed trigger would
+    convert the function into an integration handoff immediately.
+  - probe: grep func_800203B4 in inline_asm_canonical.txt; grep membership/scan definition in
+    .claude/rules/cop2-addressing-preamble-cluster.md; presence check only, no membership
+    argument (Judge constraint).
+  - result: No grant line; the cluster file still enumerates the same 28 `addu $t4,$aN,$zero`
+    members without this function; no class grant filed.
+  - verdict: KILLED (for now - re-check is F2, ~1 turn)
+
+Frontier: F1/F2/F3 above. The C body is final; no session should spend measurements on
+spelling again.
+
+## [s5] Every one of the 39 instructions the pure-C chassis emits is already identical to its target counterpart, so the residual is exclusively instructions C cannot emit (H13 - upgrading s4/s5's score-arithmetic inference to a direct instruction-level comparison).
+- mechanism: If any C-emitted instruction diverged, the islands-deleted build would show a mnemonic/operand difference against asm/funcs/func_800203B4.s at that address and a codegen lever (RA seat, schedule slot, expression shape) would exist to attack. The prior sessions inferred 'no divergence' from score == target_insns - build_insns, which is only sound if the scorer's counts are raw instruction counts - and they are not (the .s carries 67 instruction words while the sandbox reports target_insns 65).
+- probe: Applied memory/grind/func_800203B4/rejected/pure-c-no-islands-floor-26.c to src/code6cac.c, ran `sandbox func_800203B4 --disable all` (26, build_insns 39), then disassembled the resulting object (mipsel-linux-gnu-objdump -d tmp/grind/func_800203B4/s5/code6cac_purec26_s5.o, region 00003564 <func_800203B4>) and compared all 39 instructions line-by-line against asm/funcs/func_800203B4.s.
+- result: All 39 match exactly: 17 prologue/lookup insns (800203B4-800203F4), 7 insns through the func_8002EECC call (800203F8-80020410), the 9-insn vec[] store block (80020444-80020464), and the 6-insn epilogue (800204A8-800204BC); `move s0,a0`/`move s1,a2` are the assembler spelling of the target's `addu $s0,$a0,$zero`/`addu $s1,$a2,$zero`. The 28 absent target instructions decompose into 11 cop2 opcodes, 12 ordinary-integer instructions inside the SDK macro bodies, 2 assembler-supplied cop2 load-delay nops, and 3 operand-address materializations (addiu $v0,$sp,0x10 / addiu $v0,$sp,0x30 / addiu $s0,$s0,0x354) that are ordinary C and reappear for free once an island consumes them.
+- verdict: CONFIRMED
+
+## [s5] cheat_asm_stripped in the sandbox JSON reports the number of inline-asm instructions stripped from the function under test, so it can be used as a check that the islands were really applied or removed (H14).
+- mechanism: The field name plus its stability at exactly 25 across five sessions - which equals this function's four islands' instruction count - made it look like a per-function island counter, and facts 13/16/20/25/30 quote it as corroboration.
+- probe: Ran `sandbox func_800203B4 --disable all` back-to-back in this session on the island-bearing candidate.c and on the islands-deleted body.
+- result: cheat_asm_stripped read 25 in BOTH cases while build_insns went 65 -> 39. It is not a per-function counter and carries no information about the function under test; only score / build_insns / target_insns / rules_dropped do.
+- verdict: KILLED
+
+## [s5] A re-activation trigger has landed since s5 - a widened cluster enumeration, a grant line in inline_asm_canonical.txt, or an owner class grant covering non-$aN-source cop2 addressing-preamble sites (H15).
+- mechanism: The filed foreclosure record (docs/grind/decisions.md:17550) names exactly these triggers; a landed trigger converts the function from foreclosed into a pure integration handoff, since candidate.c is already byte-final at floor 0.
+- probe: Presence check only (no membership argument, per the binding Judge constraint): grep func_800203B4 in inline_asm_canonical.txt; grep the membership table and scan definition in .claude/rules/cop2-addressing-preamble-cluster.md.
+- result: No grant line for func_800203B4 in inline_asm_canonical.txt; the cluster rule still enumerates the same 28 members derived by the `addu $t4, $aN, $zero` scan and still omits this function; no owner class grant filed.
+- verdict: KILLED

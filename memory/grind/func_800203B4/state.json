@@ -1,8 +1,8 @@
 {
  "func": "func_800203B4",
  "file": "code6cac",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 0,
    "modality": "permuter",
    "headline": "Permuter axis KILLED: a 67,817-iteration campaign over the pure-C (islands-deleted) chassis produced 4 novel finds, all sub-instruction and all semantics-broken; floor re-confirmed 0 (65/65) and the p"
+  },
+  {
+   "session": 5,
+   "floor": 0,
+   "modality": "synthesis",
+   "headline": "Synthesis: the ledger's central inference is now a DIRECT measurement - disassembly of the islands-deleted build shows all 39 C-emitted instructions are already byte-exact, so the residual is exactly "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The terminal disposition (standing ruling 2026-07-27; foreclosure record already filed at docs/grind/decisions.md:17550) is the only remaining action, and it is valid only from a driver-dispatched `escalation` session.",
-   "mechanism": "The driver validator gates the owner-gated outcome on escalation modality (discard marker decisions.md:17591). The Judge FAIL (decisions.md:17546) and the foreclosure record are both already filed, so escalation is a cite-and-return, not new work.",
-   "next_probe": "In escalation modality: grep .claude/rules/cop2-addressing-preamble-cluster.md for a widened enumeration, inline_asm_canonical.txt for a func_800203B4 grant line, and the decisions.md tail for an owner class grant covering non-$aN-source cop2 preamble sites; if none landed, one confirming sandbox run, then owner-gated with escalation_ref docs/grind/decisions.md:17550."
+   "hypothesis": "F1 (terminal, modality-gated): the standing-ruling disposition is the only remaining action, and it is valid only from a driver-dispatched `escalation` session.",
+   "mechanism": "The driver validator accepts `owner-gated` only from `escalation` modality (discard marker docs/grind/decisions.md:17591). Everything the disposition needs already exists on disk: the Judge FAIL (17546), the proof-of-foreclosure record (17550), the byte-final candidate, and now the exact 25-instruction residual anatomy (fact 34). It is a cite-and-return, not new work.",
+   "next_probe": "In escalation modality: run the fact-38 trigger presence check (grep inline_asm_canonical.txt for func_800203B4, grep .claude/rules/cop2-addressing-preamble-cluster.md for a widened scan, tail docs/grind/decisions.md for an owner class grant), then ONE confirming `sandbox func_800203B4 --disable all` on candidate.c, then return owner-gated with escalation_ref docs/grind/decisions.md:17550. Do not re-file the record and do not re-argue cluster membership in any spelling."
   },
   {
-   "hypothesis": "No C-side work remains in ANY modality - permuter was the last untried axis and it is now dead alongside structural and recon.",
-   "mechanism": "Facts 17, 22, 28 and 29: the islands-deleted body scores exactly the 65-39 instruction deficit (every C-emitted instruction already matches), structural perturbation only raises it, and 67,817 randomized samples found no valid form below it because the residual is cop2 expressiveness plus DCE-deleted preamble.",
-   "next_probe": "If the driver dispatches another C-side modality anyway, spend it on ONE confirming pair of runs (candidate -> 0/65; islands-removed -> 26/39) and return progress; do not re-search spellings and do not re-launch a permuter campaign (fact 28)."
+   "hypothesis": "F2: the only re-activation trigger worth a per-session check is an owner class grant covering non-$aN-source cop2 addressing-preamble sites; if it lands, this function is a PURE INTEGRATION HANDOFF, not a codegen task.",
+   "mechanism": "Such a grant would admit this function's three `addu $t4,$v0/$s0,$zero` sites into the sanctioned family. candidate.c then applies unchanged: its review surface is four literal PsyQ SDK gte_* macro bodies with no hand-invented instruction (fact 21) plus a pure-C head that needs no sanctioned-family claim at all (fact 18).",
+   "next_probe": "One turn: the three greps of fact 38. If a trigger has landed, apply memory/grind/func_800203B4/candidate.c, confirm sandbox 0, and hand off per evidence.md fact 11 (driver writes the inline_asm_canonical.txt grant line + docs/grind/borderline.md entry; then layer-2 cheat-reviewer, verify-oracle --rebuild, queue done)."
   },
   {
-   "hypothesis": "On any re-activation trigger this function is a pure INTEGRATION HANDOFF, not a codegen task.",
-   "mechanism": "candidate.c is byte-final at floor 0 and its review surface is minimal - four literal PsyQ SDK gte_* macro islands with no hand-invented instruction, plus a pure-C head needing no sanctioned-family claim. Only the inline_asm_canonical.txt grant line and the docs/grind/borderline.md entry are missing, and both are surfaces a grind session may not touch.",
-   "next_probe": "On re-activation: apply memory/grind/func_800203B4/candidate.c, driver writes the grant line + borderline entry, then layer-2 cheat-reviewer, verify-oracle --rebuild, queue done (evidence.md fact 11)."
+   "hypothesis": "F3: if the driver dispatches solver / forensics / rederive anyway, those axes are foreclosed A PRIORI by fact 33 and must not be spent searching.",
+   "mechanism": "ra_solver and sched_solver reason about register seats and emission order among the instructions the compiler actually emits, and forensic cc1 dumps attribute a divergence to a pass. This function has ZERO divergent C-emitted instructions - all 39 match exactly - so there is no seat to re-assign, no order to re-schedule and no pass to attribute. The gap is expressiveness (GCC 2.7.2 has no cop2 intrinsic; the PsyQ gte_* macros are themselves inline asm), which no solver models.",
+   "next_probe": "One confirming pair of runs (candidate.c -> 0, 65/65; rejected/pure-c-no-islands-floor-26.c -> 26, build_insns 39), re-state facts 33-34, return `progress` in under five turns. Do NOT re-launch a permuter campaign (facts 28/32), do NOT reorder locals or statements (H7/H10), do NOT re-probe the delay nops, the named intermediate or the `arg0 += 0x354` spelling (H6/H8/H11)."
   }
  ],
  "judge_constraints": [
