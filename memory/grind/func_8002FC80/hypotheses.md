@@ -1,5 +1,19 @@
 # Hypothesis ledger — func_8002FC80
 
+## s7 (2026-08-31, recon — provenance deliverable per the 20:32 Judge constraint)
+
+- H1: "The head's original form was hand-written asm (routing → whole-body canonical)." —
+  **KILLED**: scan_hand_coded tier=LOW 1/8 (only S4, explained by the granted cop2 preamble), and
+  two distinct C spelling classes compile to the exact 74/74 target bytes — the head is compiler
+  output. Whole-body routing stays foreclosed (LOW tier is an answer; 19:51 ban stands).
+- H2: "The chassis moved since the s3–s6 measurements, invalidating the banked floors." —
+  **KILLED**: git diff 2a15c020..HEAD empty on all build surfaces (single docs commit a8100f66);
+  floors 34 (natural) / 0 (Class A) / 0 (Class B) are current-chassis.
+- H3 (the residual, NOT self-adjudicable): "Which of the two byte-producing C classes is the
+  faithful 1998 source?" — filed as the OWNER-ESCALATION decision packet at
+  docs/grind/decisions.md:16851 (option-select: Class A / Class B / Neither, with consequences).
+  No frontier exists inside the measured map until the owner rules.
+
 ## s6 (2026-08-31, recon — post-20:22-ban re-map + u8*-param measurement)
 
 - H1: "The natural typed-param spelling (a1[i]/a0[i]/a2[i] loads + plain scalar stores + granted
@@ -56,3 +70,15 @@
 ## s1 (2026-08-31, recon)
 
 - H1: "The banked candidate body, spliced over HEAD's INCLUDE_ASM, reproduces sandbox 0 under the executed canonical-asm grant." — CONFIRMED after one correction: the splice alone measured 42 (build 39/74) because HEAD's src/code6cac_b.c lacks `#include "gte.h"` and GCC 2.7.2 silently discards the six VECTOR-store statements on parse-error recovery (see evidence.md). Restoring the include (present in the candidate full-file snapshot) measures **0 (74/74, 0 rules dropped)**. No frontier remains — the function is candidate-ready on the grant path to COMPLETED-INLINE-ASM-CANONICAL.
+
+## [s1] The head's original form was hand-written asm, so the function should route whole-body canonical.
+- mechanism: canonical-asm routing requires STRONG scan_hand_coded evidence (S1/S2/S6); hand-written asm would show pacing/spill/cluster anomalies unreachable from C.
+- probe: Re-ran tools/scan_hand_coded.py --single func_8002FC80 this session; cross-checked against the two distance-0 C measurements in the ledger.
+- result: tier=LOW, score 1/8 (only S4 front-loads, explained by the granted cop2 preamble islands); two distinct ordinary-C spelling classes compile to the exact 74/74 target bytes.
+- verdict: KILLED
+
+## [s1] The chassis moved since the s3-s6 measurements, so the banked floors (natural 34; Class A 0; Class B 0) need re-measuring before being quoted.
+- mechanism: Floors are chassis-relative; any build-surface change invalidates them.
+- probe: git diff --stat 2a15c020..HEAD -- src/ include/ Makefile bb2.ld engine/ tools/gcc-2.7.2 tools/maspsx
+- result: Empty diff; the only commit since the measurement chassis is a8100f66 (docs-only judge-ruling commit). All banked floors are current-chassis.
+- verdict: CONFIRMED

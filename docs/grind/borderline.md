@@ -326,3 +326,8 @@ disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 �
 category: canonical-asm-grant
 evidence: scan_hand_coded --single func_8002FC80 tier=OWNER-CLUSTER (cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)) (driver-verified); judge ESCALATE packet in docs/grind/decisions.md (2026-08-31)
 disposition taken: inline_asm_canonical.txt entry written by the driver per owner ruling 2026-08-18; function stays ACTIVE for canonical-asm integration.
+
+## 2026-08-31 — func_8002FC80 — policy-question
+category: policy-question
+evidence: session-filed escalation: docs/grind/decisions.md:16851 — '2026-08-31 — func_8002FC80 — OWNER-ESCALATION — ESCALATED WITH DECISION PACKET'
+disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.

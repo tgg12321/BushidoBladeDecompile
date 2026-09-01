@@ -16847,3 +16847,78 @@ The six byte-offset pointer-cast loads (*(s32 *)((u8 *)aN + K) on an already s32
 ## 2026-08-31 20:32 — func_8002FC80 — ruling: func_8002FC80: this session measured a NEW form - signature s32 func_8002FC80(u8 — **FAIL**
 
 The u8*-param form is the 20:22-banned load construct with the cast moved into the signature. I verified the ledger's own statement of intent: hypotheses.md s6-H2 says the retype 'makes the cast ... semantically REQUIRED, produces the same non-struct load RTL as the s4 form, and measures 0' — same mechanism (keep MEM_IN_STRUCT_P clear so the sched.c:817 exemption cannot fire), same bytes, reached by a different spelling. Test 3 is decisive: the two signatures read the identical three words at 0/4/8 and differ only in codegen, and the choice was made by measurement, not by spec. The cited precedent does not cover it — I read func_80027438 and func_8002C0DC in src/code6cac_b.c: both are heterogeneous large-record byte bases at offsets like 0x272/0x44C-stride, not a homogeneous 3-word vector; and the accepted sibling func_8002FDB0, which does this same computation into the same six scratchpad slots, ships `s32 *arg0` — typed, not u8*. So the claimed FDB0 parity is false exactly where it is load-bearing. No unban is warranted: the 20:22 ban was on the load construct's purpose, not merely on the double-cast's textual form. Note for the record (verified against docs/grind/decisions.md:16808): the grant authorizes only the three tail islands, head stays ordinary C — the dispatch brief's first judge_constraint line ('integrate the whole-body form') is a mis-transcription, and the 19:51 whole-body ban stands. Full evidence: hypotheses.md s3/s4/s6, evidence.md s6 map, rejected/.
+
+## 2026-08-31 — func_8002FC80 — **OWNER-ESCALATION — ESCALATED WITH DECISION PACKET**
+
+Filed by grind session s7 (recon) executing the Judge's 2026-08-31 20:32 binding constraint: "the
+next session's deliverable is a routing/provenance decision packet (is the head's original form
+hand-written asm?), not another candidate."
+
+**PROVENANCE FINDING — the routing half of the question is ANSWERED: the head is NOT hand-written asm.**
+- `tools/scan_hand_coded.py --single func_8002FC80`, re-run this session (artifact
+  tmp/grind/func_8002FC80/s1/s7_scan_hand_coded.txt): **tier=LOW, score 1/8**, "no strong
+  hand-coded indicators" — only S4 (front-loaded loads) fires, which the granted cop2 preamble
+  islands already explain. Per .claude/rules/escalation-not-parked.md, a LOW scan tier is an
+  ANSWER: whole-body canonical routing is foreclosed by the evidence bar. This is consistent with
+  the standing 19:51 whole-body ban (decisions.md:16835) and with the grant's own text
+  (decisions.md:16808/16827: only the three tail islands are authorized; the head remains ordinary C).
+- Two distinct ordinary-C spelling classes each compile to the EXACT target bytes (74/74,
+  `sandbox --disable all` = 0, 0 rules dropped; full-build SHA1 == oracle recorded in the
+  2026-08-31 Judge packet). A head that two different C sources reproduce byte-for-byte is
+  compiler output. The original head was compiled C.
+
+**THE DECIDABLE QUESTION (fidelity/provenance — option-select).** The target byte order of the six
+scratchpad stores is producible from exactly two C source classes and nothing else. The partition is
+dump-proven and measured (evidence.md s3/s4/s6): GCC 2.7.2's sched.c:817 true_dependence exemption
+sinks the stores unless EITHER the stores are struct-marked OR the loads are non-struct; the natural
+pair (typed `a1[i]` loads + plain `*(s32 *)ADDR` stores) measures 34 @ 73/74 (re-verified s6 on this
+chassis); ptr-plus-const stores measured dead (front-end folding, s3); all other load respellings
+foreclosed at expr.c:4567 (s3/s4). Therefore the 1998 source necessarily wrote ONE of:
+- **Class A — aggregate-typed stores:** `((VECTOR *)0x1F800360)->vx = v1 - v2;` (six component
+  stores; the PsyQ idiom — the granted islands consume these exact slots as a rotation MATRIX at
+  0x1F800360 and a long VECTOR at 0x1F800370). Measured 0 @ 74/74. Banned 19:45
+  (decisions.md:16831); unban refused 20:06 (:16839) on prong-1 uniqueness — correctly, because TWO
+  classes exist, so neither is provably unique.
+- **Class B — cast-shaped loads:** `*(s32 *)((u8 *)a1 + 4)` / the u8*-param equivalent (the
+  cast-over-PLUS shape the authorized sibling func_8002FDB0's accepted "ordinary pure C" head ships
+  for the same six destination slots from its constant base). Measured 0 @ 74/74. Banned 20:22
+  (:16843) and 20:32 (:16847).
+Both bans are sound under default-FAIL precisely BECAUSE of the two-class ambiguity: neither class
+can prove itself the unique original, so no agent may self-select one. Only the owner can pick the
+accepted reconstruction. **Which does the owner accept as the faithful original spelling?**
+  1. **Class A (VECTOR component stores)** — the 4-prong proven-spelling-class-reconstruction
+     mapping is in evidence.md s3 (precedent InitHiraRmd_80041AC8: same /s flag, same sched.c
+     clause), now with the two-class ambiguity disclosed (the ground of the 20:06 refusal).
+  2. **Class B (FDB0-parity cast loads)** — sibling-parity case in evidence.md s6, with the 20:32
+     counter-evidence (FDB0's own param is typed `s32 *`; the file's other cast precedents are
+     heterogeneous records, not 3-vectors) equally disclosed.
+  3. **Neither** — the item returns to ACTIVE with the entire byte-producing C space measured
+     closed under the standing bans; future sessions inherit that map and must find an axis outside
+     it (none is currently known).
+
+**EVIDENCE POINTERS.**
+- Ledger: memory/grind/func_8002FC80/evidence.md s3 (mechanism chain sched.c:817/843/869 +
+  expr.c:4567 + memrefs_conflict_p; ptr-plus-const dead), s4 (Class B match + FDB0 dump parity),
+  s6 (u8* measurement + the complete class map); hypotheses.md s3-s7.
+- Dumps/objects: tmp/grind/func_8002FC80/s1/fc80_plain34_sched.txt, fdb0_sched.txt,
+  fc80_match_sched.txt, full_tu_match_sched.dump; s1/sandbox_u8param_0.o, s5/sandbox_match_0.o.
+- Rulings: decisions.md:16831, :16835, :16839, :16843, :16847; grant :16810 +
+  inline_asm_canonical.txt:365 (three tail islands only; the dispatch-brief "whole-body"
+  transcription error is corrected at :16849).
+- Scanner + chassis verification: tmp/grind/func_8002FC80/s1/s7_scan_hand_coded.txt (tier=LOW 1/8;
+  `git diff 2a15c020..HEAD` empty on all build surfaces — every floor above is current-chassis).
+
+**CONSEQUENCE OF EACH ANSWER.**
+(1) Judge/driver `unban_construct` clears the Class-A tripwire; next session applies the preserved
+body (rejected/layer1-fail-0831-1945.c lines 1097-1169) through the FULL normal gates (driver
+sandbox-0 re-verify, layer-1, default-FAIL Judge, full-build SHA1) → COMPLETED-C at floor 0.
+(2) Same path with memory/grind/func_8002FC80/candidate.c (Class B) → COMPLETED-C at floor 0.
+(3) Item stays ACTIVE at honest floor 34; the Judge's no-third-spelling constraint stands; the
+grind continues only on axes outside the measured-closed map.
+
+**AUTO-REJECT CHECK (escalation-not-parked, 2026-08-24).** This packet requests none of the
+auto-reject class: no permanent rule, no new coercion family (Class A cites the existing
+proven-spelling-class-reconstruction policy; Class B is ordinary-C sibling parity), no canonical
+evidence-bar override (the LOW scan verdict is REPORTED as foreclosing whole-body routing, not
+appealed), no accept-the-debt wording. It is a pure fidelity selection between two measured,
+byte-identical reconstructions of the same original.

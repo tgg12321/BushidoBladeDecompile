@@ -1,5 +1,40 @@
 # Evidence bank — func_8002FC80
 
+## s7 (2026-08-31, recon — provenance deliverable executed; OWNER-ESCALATION decision packet filed; outcome owner-gated)
+
+- **This session executed the Judge's 20:32 binding constraint** ("the next session's deliverable is a
+  routing/provenance decision packet (is the head's original form hand-written asm?), not another
+  candidate"). No new candidate was attempted; no banned lever was re-spelled.
+- **Provenance answer: the head is NOT hand-written asm.** `scan_hand_coded.py --single func_8002FC80`
+  re-run this session: **tier=LOW, score 1/8**, only S4 (front-loaded loads) fires — and the granted
+  cop2 preamble islands already explain that signal. Per escalation-not-parked, a LOW tier is an
+  answer: whole-body canonical routing is foreclosed by the evidence bar (consistent with the standing
+  19:51 whole-body ban and the grant's own islands-only text). Independently, two distinct ordinary-C
+  spelling classes compile to the EXACT 74/74 target bytes — a head reproducible byte-for-byte from C
+  source is compiler output. Artifact: tmp/grind/func_8002FC80/s1/s7_scan_hand_coded.txt.
+- **Chassis verified unchanged since the s3–s6 measurements:** `git diff --stat 2a15c020..HEAD` on
+  src/ include/ Makefile bb2.ld engine/ and the toolchain dirs is EMPTY; the only commit since is
+  a8100f66 (docs-only). Every banked floor is therefore current-chassis as of HEAD a8100f66:
+  natural typed-load/plain-store form = 34 @ 73/74; Class A (VECTOR stores) = 0 @ 74/74 (banned);
+  Class B (cast/u8* loads) = 0 @ 74/74 (banned).
+- **OWNER-ESCALATION decision packet FILED at docs/grind/decisions.md:16851** ("2026-08-31 —
+  func_8002FC80 — OWNER-ESCALATION — ESCALATED WITH DECISION PACKET"). The decidable question is
+  fidelity/provenance, option-select: the bytes admit exactly two C source classes (the s3/s4/s6
+  dump-proven partition); the owner picks Class A (VECTOR component stores,
+  proven-spelling-class-reconstruction mapping with the two-class ambiguity disclosed), Class B
+  (FDB0-parity cast loads, counter-evidence disclosed), or Neither (item stays ACTIVE at floor 34
+  with the byte-producing space measured closed). Consequences and evidence pointers are in the
+  packet. Session outcome: **owner-gated**, escalation_ref = that entry.
+- **Owner-directive acknowledgment (repeat — the dossier WARN persists because acknowledgment is
+  keyed off state.json, which sessions may not touch):** the queue directive (ruling 4, owner-cluster
+  canonical-grant door) was executed by the pipeline 2026-08-31 — grant written for the three tail
+  islands (inline_asm_canonical.txt:365), whole-body integration attempted and layer-1 FAILed/banned.
+  The door's surviving object is the islands; the head was the open problem and is now escalated.
+- **Standing DO-NOT list for future sessions (all measured/ruled, do not repeat):** no third spelling
+  of either sched.c lever (Judge constraint); no whole-body form; no re-measure of natural (34),
+  ptr-plus-const (34), or either banned 0-class unless the owner rules; no canonical-asm re-appeal
+  (scan tier=LOW). Until the owner rules on the packet there is NO grindable axis inside the known map.
+
 ## s6 (2026-08-31, recon — u8*-param reconstruction measures 0; ruling-request filed on its classification)
 
 - **Context at dispatch.** After the 20:22 layer-1 FAIL, the s4/s5 match form (double-cast byte-offset
@@ -143,3 +178,15 @@
 - **With the include restored: sandbox `--disable all` == 0, 74/74, 0 rules dropped, measured this session on HEAD+splice.** `gte.h` is typedef/macro-only (VECTOR/SVECTOR/CVECTOR/DVECTOR/MATRIX + gte_* asm macros) — zero codegen effect on sibling functions; the whole-TU sandbox compile succeeded with all siblings present.
 - **`verify-oracle --rebuild` refused (exit 3, "dirty-build-inputs")** — correct behavior with uncommitted src edits; full-build SHA1 is the driver's re-verification step at integration. The 2026-08-31 Judge packet already recorded full-build SHA1 == oracle for this exact body on that day's tree.
 - Cluster-rule mechanical check (cop2-addressing-preamble-cluster.md) conditions 1–3 verified this session; condition 4 (layer-2 + verify-oracle) is the integration gate. Self-vet: `memory/grind/func_8002FC80/self_vet.md`.
+
+- [s1] This session executed the Judge's 2026-08-31 20:32 binding constraint verbatim: deliverable is a routing/provenance decision packet, not another candidate. No banned lever was re-spelled; no candidate was attempted.
+
+- [s1] Provenance: the head is NOT hand-written asm. scan_hand_coded tier=LOW 1/8 (artifact s7_scan_hand_coded.txt); per escalation-not-parked a LOW tier is an answer, so whole-body canonical routing is foreclosed by the evidence bar, consistent with the standing 19:51 whole-body ban and the grant's islands-only text (decisions.md:16808).
+
+- [s1] The target bytes admit exactly two C source classes (dump-proven partition, evidence.md s3/s4/s6): Class A aggregate-typed VECTOR component stores (measured 0 @ 74/74; banned 19:45, unban refused 20:06 on two-class non-uniqueness) and Class B cast-shaped/u8* loads (measured 0 @ 74/74; banned 20:22/20:32). Natural typed-load/plain-store C measures 34 @ 73/74 on this chassis.
+
+- [s1] OWNER-ESCALATION decision packet filed this session at docs/grind/decisions.md:16851: option-select fidelity question (Class A / Class B / Neither) with evidence pointers and per-answer consequences; auto-reject check written into the packet (no new family, no permanent rule, no evidence-bar override requested).
+
+- [s1] Owner directive (ruling 4, owner-cluster canonical-grant door) acknowledged again in evidence.md s7: executed by the pipeline 2026-08-31 (islands granted at inline_asm_canonical.txt:365; whole-body attempt layer-1 FAILed and banned). The dossier WARN persists only because acknowledgment keys off state.json, which sessions may not touch.
+
+- [s1] Until the owner rules on the packet there is no grindable axis inside the measured map: both sched.c levers are Judge-closed, load respellings foreclosed at expr.c:4567, ptr-plus-const folds (34), volatile banned, whole-body banned, canonical routing scan-LOW.

@@ -1,10 +1,23 @@
 {
  "func": "func_8002FC80",
  "file": "code6cac_b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 34,
+   "modality": "recon",
+   "headline": "Provenance answered (head is compiled C, scan tier=LOW; whole-body routing foreclosed); OWNER-ESCALATION decision packet filed at docs/grind/decisions.md:16851 selecting between the two measured byte-"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Owner selects Class A or Class B in the filed packet",
+   "mechanism": "Judge/driver unban_construct clears the chosen class's tripwire per integration-handoff-self-serve",
+   "next_probe": "Apply the chosen body (Class A: rejected/layer1-fail-0831-1945.c lines 1097-1169; Class B: candidate.c) and take it through the full normal gates to COMPLETED-C at floor 0"
+  }
+ ],
  "judge_constraints": [
   "canonical-asm GRANTED (pipeline, 2026-08-31, tier LOW): integrate the whole-body form per canonical-asm-authorization-recipe to COMPLETED-INLINE-ASM-CANONICAL; the allowlist entry is already written.",
   "LAYER-1 CHEAT-REVIEWER FAIL: The three GTE inline-asm islands are legitimate (byte-verified against the target asm and character-for-character identical to the already-authorized sibling func_8002FDB0), but the six VECTOR-typed scratchpad stores are a scheduling-motivated respelling, not a semantic one, and the ledger's own rejected/ file admits it. Next action: Revert the six VECTOR component-store lines back to plain `*(s32 *)CONST = v1 - v2;` (matching the already-authorized func_8002FDB0 spelling) and find a genuine pure-C lever for the store-sink symptom -- e.g. re-examine operand/read or",

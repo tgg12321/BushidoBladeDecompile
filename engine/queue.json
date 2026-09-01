@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002FC80",
-      "file": "code6cac_b",
-      "distance": 28,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (judge ESCALATE policy-question, logged to borderline.md per ruling 2026-08-18): 2026-08-26 \u2014 func_8002FC80 \u2014 JUDGE ESCALATE on final call (policy-question) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 4 \u2014 owner-cluster canonical-grant door; integrate via full gates using the door"
-    },
-    {
       "func": "func_80057CC8",
       "file": "text1b",
       "distance": 30,
@@ -1943,18 +1933,29 @@
       "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 5 \u2014 jtbl_800105A0 re-wiring granted (operator lane, oracle-gated); pins leave main",
       "unparked_from": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:14092 - 2026-08-26 func_800324D0 OWNER-ESCALATION - ESCALATED WITH DECISION PACKET (representation/routing: may asm/rodata/jtbl_800105A0.s be wired back into the link so func_800324D0 can migrate to INCLUDE_ASM and its four register-asm pins leave main?)",
       "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:16729"
+    },
+    {
+      "func": "func_8002FC80",
+      "file": "code6cac_b",
+      "distance": 28,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "escalated",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (judge ESCALATE policy-question, logged to borderline.md per ruling 2026-08-18): 2026-08-26 \u2014 func_8002FC80 \u2014 JUDGE ESCALATE on final call (policy-question) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)",
+      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 4 \u2014 owner-cluster canonical-grant door; integrate via full gates using the door",
+      "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:16851 \u2014 '2026-08-31 \u2014 func_8002FC80 \u2014 OWNER-ESCALATION \u2014 ESCALATED WITH DECISION PACKET'"
     }
   ],
   "counts": {
     "total": 219,
-    "active": 201,
+    "active": 200,
     "by_status": {
-      "active": 201,
-      "escalated": 18
+      "active": 200,
+      "escalated": 19
     },
     "by_verdict": {
-      "ASM-PARTIAL": 35,
-      "C": 166
+      "C": 166,
+      "ASM-PARTIAL": 34
     }
   }
 }
