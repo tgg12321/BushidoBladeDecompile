@@ -1,0 +1,37 @@
+{
+ "func": "func_8003D888",
+ "file": "code6cac_c2",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 13,
+   "modality": "recon",
+   "headline": "Recon: cheat chassis replaced with natural C; floor 32->13 via param-reuse-as-ptr discovery; seat-rotation mechanism greg-proven (n's $a1 copy-preference vs prune purge); endgame lever identified (ent"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "H5: reproducing the copy-above-lw entry schedule (unfilled load-delay nop) cascades the whole seating to target (avail shares $a1 with ptr/word, cnt->$a3, s->$a2)",
+   "mechanism": "sched1 tie between the n-copy and the avail lw; conflict analysis shows avail can only take $a1 when h5 dies before the lw",
+   "next_probe": "read the .sched dump priorities/dependence classes for the {n-copy, avail-lw} pair (sched-rank-class-tie-wall lens); run tools/sched_solver on the entry block; then spell the C that wins the tie"
+  },
+  {
+   "hypothesis": "H2b: in-place subu (target subu a3,a3,a1) without the delay-slot copy regression \u2014 cse-equivalence defeat that does not reorder the ptr store above the subtract",
+   "mechanism": "cse substitutes n for cnt while the copy equivalence is live; needs invalidation that leaves the entry schedule intact",
+   "next_probe": "sweep small spellings (cnt written via expression, else-arm use mix) with sandbox; if none, classify with ra_solver inverse_compose.py classify"
+  },
+  {
+   "hypothesis": "H6: the two if-arm slot diffs (sllv r after and vs after word load; li 32/lw order) resolve once seating is fixed",
+   "mechanism": "downstream of register seats (dependence classes change with seats)",
+   "next_probe": "re-diff only after H5/H2b close; do not chase these slots at current seating"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-01T02:38:06.756529+00:00"
+}
