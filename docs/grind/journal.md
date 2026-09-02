@@ -1499,3 +1499,4 @@
 - 2026-09-02 14:47 func_800861BC COMPLETED-C after 2 sessions (closer: s2 [structural]).
 - 2026-09-02 14:52 func_80043C7C COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-02 14:56 func_80043DE0 COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-02 15:16 func_80030580 s1 [recon] floor=2: func_80030580 s1 recon: clean pure-C rewrite 45->2; body byte-identical, only the 24-byte phantom frame (ours 8) remains; mechanism = combine.c REG_DEAD-orphan USE slots
