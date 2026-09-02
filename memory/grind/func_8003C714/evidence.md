@@ -941,3 +941,110 @@ first `lw` by sched1.
 - [s8] The only genuine admission KILL in scan_loop is the reg_single_usage branch at loop.c:735-767, which deletes an invariant set outright instead of making it a movable. It is doubly gated: the array is allocated only under loop_has_call (loop.c:586-589), and `validate_replace_rtx (SET_DEST, SET_SRC, use)` must substitute the CONST_INT into the use — which here is the MIPS highpart multiply with register_operand operands, so it can never validate.
 
 - [s8] n_non_fixed_regs (60 on this chassis) is written in exactly two places in the whole compiler: init_reg_sets_1 (regclass.c:380-387, i.e. CC_FLAGS / CONDITIONAL_REGISTER_USAGE, which is how -msoft-float gives 28 and threshold 58) and globalize_reg (regclass.c:530, `n_non_fixed_regs--`), reachable only from a file-scope global register variable. Reaching threshold < 56 needs N <= 28, i.e. 32 register-asm pins TU-wide — the forbidden pin family, applied to a file carrying 43 other functions.
+
+## s9 (2026-09-01) — escalation / disposition modality
+
+No new grinding axis was opened. The driver assigned `escalation` after the floor
+stayed FLAT at 15 across eight sessions and six distinct modalities; this session
+re-measured the chassis, ran the two endgame-lock AND-gates, and filed the
+foreclosure record.
+
+### s9-1 Chassis re-measurement (FIRST action, before any reasoning)
+
+`memory/grind/func_8003C714/candidate.c` applied over the `INCLUDE_ASM` line in
+`src/code6cac_c2.c` (`tmp/grind/func_8003C714/s9/apply.py`), then
+`& tools/wteng.ps1 main sandbox func_8003C714 --disable all`:
+
+    {"score": 15, "target_insns": 104, "build_insns": 105, "scorable": true,
+     "func": "func_8003C714", "file": "code6cac_c2", "disable": "all",
+     "strip_cheat_asm": true, "rules_dropped": 0, "cheat_asm_stripped": 10}
+
+Identical to s3-s8. The chassis has NOT drifted; every banked spelling conclusion
+in this ledger is still chassis-current. `src/code6cac_c2.c` was reverted to its
+`INCLUDE_ASM` line afterwards (`git checkout --`), so the tree is clean apart from
+`metrics/events.jsonl`.
+
+### s9-2 Gate (a): hand-coded scanner — FAIL (tier LOW, 0/8)
+
+`python3 tools/scan_hand_coded.py --single func_8003C714`:
+
+    HAND_CODED: tier=LOW  score=0/8  (func_8003C714, 104 insns)
+      Reason: no strong hand-coded indicators
+      [ ] S1 multu pacing   only 0 multu/mflo pair(s)
+      [ ] S2 empty branch   no empty-body branches
+      [ ] S3 no spills      104 insns, 2 spills, 9 distinct regs
+      [ ] S4 front loads    max load burst was 1 in any 8-insn window
+      [ ] S5 cluster        no high-similarity siblings (jaccard < 0.5)
+      [ ] S6 BIOS jumptable no BIOS jumptable call pattern
+      [ ] S7 unsaved $sN    all callee-save uses have $sp save
+      [ ] S8 redundant mask no redundant mask-before-shift
+
+None of the three STRONG signals (S1/S2/S6) fire. The canonical-asm grant path is
+closed for this function — it is compiler output, exactly as s1-s8 assumed.
+This is the first time the scanner has actually been RUN on this function; every
+prior session assumed the tier rather than measuring it, so this closes a small
+open assumption in the ledger.
+
+### s9-3 Gate (b): SOTN-master precedent census — NEGATIVE
+
+Construct requiring precedent: the s6 distance-0 form — 32 balanced
+`z += c; z -= c;` pairs on a local whose only use is post-loop, present solely to
+drive `count_loop_regs_set`'s `insn_count` from 56 past 120 so `loop.c:1631`
+declines the `0x91A2B3C5` movable, with biv elimination then deleting the whole
+carrier inside `loop_optimize` for zero emitted bytes
+(`rejected/balanced-biv-noise-64-insns-d0-but-inadmissible.c`).
+
+Census against `docs/reference/sotn-construct-index.md` (sotn-decomp master
+`aa53500226ee84be763f3e8702b27de06456b3a7`, 1911 files scanned, 12 construct
+classes, 2746 index lines):
+
+    grep -iE "insn_count|licm|hoist|loop_optimize|invariant|strength|unroll|biv"  ->  0 hits
+    grep -iE "loop-carried|balanced|noise"                                        ->  0 hits
+    grep -i  "loop"  ->  19 hits, all of them either prose match-comments about
+                        loop SHAPE ("This is just not a for-loop"), a
+                        `score->read_pos = score->loop_pos;` dup-arm statement, or
+                        `after_loop:` / `loop_30:` style exit labels. None is a
+                        loop-body-inflating construct.
+
+The twelve classes the index actually carries are `fake_comment`,
+`fake_identifier`, `self_assign`, `match_comment`, `do_while_zero`,
+`pad_dummy_local`, `new_var_temp`, `pointer_alias`, `dup_if_else_arm`,
+`const_holder`, `empty_if`, `nested_exit_label`. SOTN master ships NO
+loop-body-inflating dead-arithmetic construct. Note in particular that
+`pad_dummy_local` (816 hits) is the nearest-looking class and does NOT cover this:
+those are DECLARED unused locals, whereas this construct requires in-loop
+arithmetic STATEMENTS that survive `cse1` — and BB2's already-sanctioned
+dead-scalar-local / constant-holder families were measured worth +0 insn_count
+here in s5 K15 for exactly that reason.
+
+Gate (b) is a FAILED gate, not an open question (owner ruling 2026-08-24,
+reaffirmed 2026-08-31: a construct outside the frozen family list is a clean
+refusal and is not argued for beyond the negative census).
+
+### s9-4 Disposition
+
+Both AND-gates FAIL, so the owner's 2026-07-27 standing ruling applies and the
+disposition is the silent foreclosure of `.claude/rules/ordinary-c-judge-decidable.md`
+(2026-08-31). Proof-of-foreclosure record appended at
+`docs/grind/decisions.md:19815`
+(`## 2026-09-01 — func_8003C714 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**`),
+carrying both gates' evidence, the term-by-term closure table for
+`loop.c:1631`, the exhaustion counts (9 sessions / 6 modalities / 66,016 permuter
+iterations / 16 banked rejected forms), and three named re-activation triggers.
+No owner question is asked and no packet is filed.
+
+- [s9] Chassis re-measured this session with candidate.c applied: sandbox func_8003C714 --disable all = score 15, 104 target / 105 build, rules_dropped 0, cheat_asm_stripped 10. The honest pure-C floor has been 15 in all nine sessions.
+
+- [s9] Gate (a) FAILS: scan_hand_coded --single func_8003C714 reports tier=LOW score=0/8, with none of the STRONG signals S1/S2/S6 firing. The function is ordinary compiler output and the canonical-asm grant path is unavailable.
+
+- [s9] Gate (b) FAILS: a precedent census of docs/reference/sotn-construct-index.md (sotn master aa53500226, 1911 files) returns ZERO hits for insn_count/LICM/hoist/loop_optimize/invariant/strength/unroll/biv and ZERO for loop-carried/balanced/noise. SOTN master ships no loop-body-inflating dead-arithmetic construct.
+
+- [s9] The s6 distance-0 construct also fails the 6-test checklist on its own terms: T1 (the emitted function is byte-identical with and without it at every intermediate k), T2 (no human writes 32 balanced add/sub pairs into a three-iteration display loop), T3 (its whole justification is count_loop_regs_set / loop.c:1631), T6 (pure noise carrier). It matches no frozen family and is in the AUTO-REJECT class per the 2026-08-24 ruling.
+
+- [s9] The loop.c:1631 inequality `threshold * savings * m->lifetime >= insn_count` is closed TERM BY TERM for ordinary C on this chassis: savings pinned at 1 (loop.c:791, s7 H11); lifetime pinned at 1 (loop.c:793) with the loop.c:1609 moved_once doubling self-defeating because the hoist that sets it inflates lifetime to 14/15 (s7 K20); threshold (loop.c:532) reachable only via CC_FLAGS (barred) or 32 register-asm pins via globalize_reg/regclass.c:530 (forbidden family), with loop_has_call only reaching 61 where 61-3=58 >= 56 still hoists (s8 K26); ADMISSION dead in five measured spellings and at the mechanism level (s8 K23); movable ORDER free but capped at -6 because the loop has exactly three movables (s8 K24); loop FORM count-neutral (s8 K25); and insn_count's only free carrier is a constant-step biv whose sole use is post-loop, i.e. dead code by construction (s6 H10, s7 K21/K22).
+
+- [s9] Exhaustion: nine sessions across six distinct modalities (s1 recon, s2/s3 structural, s4 permuter, s5/s6 synthesis, s7 solver, s8 forensics, s9 escalation), floor 15 at every one; 66,016 decomp-permuter iterations on this exact body with zero improvements over base; 16 disproven forms banked in memory/grind/func_8003C714/rejected/, each named for its mechanism.
+
+- [s9] Foreclosure record appended at docs/grind/decisions.md:19815 — `## 2026-09-01 — func_8003C714 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**` — carrying both gates' evidence, the term-by-term closure table, the exhaustion counts, and three named re-activation triggers. It asks the owner no question and files no packet.
+
+- [s9] Tree state at end of session: src/code6cac_c2.c reverted to its INCLUDE_ASM line (clean); modified files are docs/grind/decisions.md and the three memory/grind/func_8003C714/ ledger files only (plus the engine's own metrics/events.jsonl).

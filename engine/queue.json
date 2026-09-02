@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8003C714",
-      "file": "code6cac_c2",
-      "distance": 33,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8002FF20",
       "file": "code6cac_b",
       "distance": 34,
@@ -1874,18 +1866,27 @@
       "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:17443 - 2026-09-01 - func_800770B8 - OWNER-ESCALATION record - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED",
       "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
       "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md \u2014 '## 2026-09-01 \u2014 func_800770B8 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' (appended this session, s20; records the executed Ruling-A named probe, both failed endgame gates, and the re-activation triggers)"
+    },
+    {
+      "func": "func_8003C714",
+      "file": "code6cac_c2",
+      "distance": 33,
+      "verdict": "C",
+      "rules": 0,
+      "status": "foreclosed",
+      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:19815 \u2014 ## 2026-09-01 \u2014 func_8003C714 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**"
     }
   ],
   "counts": {
     "total": 211,
-    "active": 195,
+    "active": 194,
     "by_status": {
-      "active": 195,
-      "foreclosed": 16
+      "active": 194,
+      "foreclosed": 17
     },
     "by_verdict": {
-      "C": 163,
-      "ASM-PARTIAL": 32
+      "ASM-PARTIAL": 32,
+      "C": 162
     }
   }
 }

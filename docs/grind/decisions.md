@@ -19811,3 +19811,143 @@ construct giving >= 64 extra loop-carried RTL insns that die inside
 or the cheaper trade of `h` free hoists against `c > 63 - 3h` extra insns.
 No owner action is requested by this entry; it exists to retract the earlier
 foreclosure premise.
+
+## 2026-09-01 — func_8003C714 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Disposition session (s9, `escalation` modality). This is a proof-of-foreclosure
+RECORD, not a question and not a decision packet: per the owner's 2026-08-31
+ruling (`.claude/rules/ordinary-c-judge-decidable.md`) the driver forecloses
+silently and nothing is surfaced for owner action.
+
+**Chassis re-measured first, this session.** `memory/grind/func_8003C714/candidate.c`
+applied over the `INCLUDE_ASM` line in `src/code6cac_c2.c`, then
+`sandbox func_8003C714 --disable all`:
+`score 15, target_insns 104, build_insns 105, rules_dropped 0, cheat_asm_stripped 10`.
+The honest pure-C floor is **15** and has been 15 in every one of the nine
+sessions. `src/code6cac_c2.c` was reverted to its `INCLUDE_ASM` line before this
+entry was written; the tree is clean.
+
+### The residual, in one sentence
+
+One `loop.c:1631` desirability decision and its downstream register/scheduling
+shadow: the build hoists the `0x91A2B3C5` (`/1800` magic) constant load into the
+loop preheader, where the target keeps it IN-LOOP as a `lui`/`ori` pair that
+`sched1` interleaves with the first `lw` (`lui v0 / lw v1 / ori v0 / mult`).
+s3 proved POSITIVELY that the shipped `cc1` emits the target's exact quartet the
+moment `loop.c:1631` declines that movable, and s6 K18 measured that at score 0
+every register seat lands on the target — so the RA and scheduler components are
+consequences of the hoist, not independent residuals.
+
+### Gate (a) — canonical-asm / hand-coded signal: **FAIL**
+
+`python3 tools/scan_hand_coded.py --single func_8003C714`, run this session:
+
+    HAND_CODED: tier=LOW  score=0/8  (func_8003C714, 104 insns)
+      Reason: no strong hand-coded indicators
+      [ ] S1 multu pacing      only 0 multu/mflo pair(s)
+      [ ] S2 empty branch      no empty-body branches
+      [ ] S3 no spills         104 insns, 2 spills, 9 distinct regs
+      [ ] S4 front loads       max load burst was 1 in any 8-insn window
+      [ ] S5 cluster           no high-similarity siblings (jaccard < 0.5)
+      [ ] S6 BIOS jumptable    no BIOS jumptable call pattern
+      [ ] S7 unsaved $sN use   all callee-save uses have $sp save
+      [ ] S8 redundant mask    no redundant mask-before-shift
+
+None of S1/S2/S6 (the STRONG signals) fire. The function is compiler output and
+the canonical-asm grant path is not available to it.
+
+### Gate (b) — in-hand SOTN-master precedent for the closing construct: **FAIL**
+
+The ONLY construct measured to close this function (s6: `sandbox` score 0,
+104 == 104, on the SHIPPED chassis) is **balanced dead loop-carried arithmetic**:
+32 `z += c; z -= c;` pairs on a local whose sole use is post-loop, inserted for
+the single purpose of taking `count_loop_regs_set`'s `insn_count` from 56 to
+>= 120 so that `loop.c:1631` declines the magic-constant movable, after which biv
+elimination deletes the entire carrier inside `loop_optimize` for zero emitted
+bytes. It is banked as a reachability proof only, at
+`memory/grind/func_8003C714/rejected/balanced-biv-noise-64-insns-d0-but-inadmissible.c`.
+
+Precedent census run this session against `docs/reference/sotn-construct-index.md`
+(sotn-decomp master `aa53500226ee84be763f3e8702b27de06456b3a7`, 1911 files
+scanned):
+
+    grep -iE "insn_count|licm|hoist|loop_optimize|invariant|strength|unroll|biv"  ->  0 hits
+    grep -iE "loop-carried|balanced|noise"                                        ->  0 hits
+
+The index's twelve construct classes (`fake_comment`, `fake_identifier`,
+`self_assign`, `match_comment`, `do_while_zero`, `pad_dummy_local`,
+`new_var_temp`, `pointer_alias`, `dup_if_else_arm`, `const_holder`, `empty_if`,
+`nested_exit_label`) contain nothing of this shape. SOTN master ships no
+loop-body-inflating dead-arithmetic construct. **The census came back NEGATIVE:
+that is a FAILED gate, not an open question.**
+
+The construct also fails the 6-test checklist on its own terms — T1 (no
+observable effect: the emitted function is byte-identical with and without it at
+every intermediate k), T2 (no human writes 32 balanced add/sub pairs into a
+three-iteration display loop), T3 (its entire justification is a named GCC
+internal, `count_loop_regs_set` / `loop.c:1631`), T6 (the carrier is a pure noise
+local). It matches no frozen family and is therefore in the AUTO-REJECT class
+(owner ruling 2026-08-24, reaffirmed 2026-08-31). It is not argued for here
+beyond the negative census.
+
+### Exhaustion evidence
+
+Nine sessions, six distinct modalities: s1 recon, s2/s3 structural, s4 permuter,
+s5/s6 synthesis, s7 solver, s8 forensics, s9 escalation. Floor 15 at every one.
+66,016 decomp-permuter iterations on this exact body with **zero** improvements
+over base (s4; workspace recipe `tmp/grind/func_8003C714/s4/mkws.sh`, validated
+so its base-vs-target diff is exactly the d15 residual). Sixteen disproven forms
+banked in `memory/grind/func_8003C714/rejected/`, each named for its mechanism.
+
+The `loop.c:1631` inequality `threshold * savings * m->lifetime >= insn_count` is
+closed **term by term** for ordinary C on the shipped chassis:
+
+| term | status | evidence |
+|---|---|---|
+| `savings` | pinned at 1, its structural minimum (`loop.c:791`) | s7 H11 |
+| `m->lifetime` | pinned at 1, its structural minimum (`loop.c:793`). The `moved_once` doubling at `loop.c:1609` does fire (59 -> 118, 60 -> 120) but is self-defeating: the inner-loop hoist that sets it inflates lifetime 1 -> 14/15, and lifetime multiplies the threshold side | s7 K20 |
+| `threshold` (`loop.c:532`) | not a C-reachable dial. `n_non_fixed_regs` moves only via `CC_FLAGS` (barred by this function's binding judge constraint and by `.claude/rules/no-compiler-divergence.md`) or via `globalize_reg` (`regclass.c:530`, i.e. 32 file-scope register-asm pins — the forbidden pin family). `loop_has_call` only halves it to 61, and 61 - 3 = 58 >= 56 still hoists | s8 K26 |
+| movable ADMISSION | dead in five measured spellings and at the mechanism level. `scan_loop`'s gate is exactly three tests and a compiler-generated CONST_INT set passes all three unconditionally: `loop.c:649` `may_not_optimize` needs the SAME pseudo twice (two source-level `/1800` divisions give two DISTINCT pseudos, so it never fires); `loop.c:695-700`'s `(! REG_USERVAR_P && ! REG_LOOP_TEST_P)` disjunct is true for every compiler temp; `loop.c:715` `may_trap_p(const_int)` is 0. `m->cond` and `m->global` are not admission gates. The two-basic-block form BACKFIRES — loop.c matches the two magic loads and savings goes 1 -> 2 | s8 K23 |
+| movable ORDER | free and ordinary C, but caps at -6. The loop has only THREE movables, so threshold bottoms out at 116 against a requirement of < 56, and the reordering relocates the emitted `/1800` quartet away from the target's order (which candidate.c already has) | s8 K24 |
+| loop FORM | count-neutral: do-while / for / while all give 56 real insns and 107 asm lines; the `loop_top` counting route (`loop.c:592`) adds only NOTEs, not `i`-class insns | s8 K25 |
+| `insn_count` | the one live term. Requirement: `c > 63 - 3h` (c = extra insn_count, h = extra movables moved before the magic). Every basic-block-local carrier dies at the `cse1` / `delete_dead_from_cse` fixpoint immediately upstream of `loop_optimize` (`toplev.c:2865-2866`) and is worth +0: K10 masks, K15 dead ALU chains at k = 4/8/16/32, K16 giv/address chains at k = 1..16, all with a byte-identical function. The only carrier that survives counting and then dies for free is a **constant-step biv whose sole use is post-loop** — dead code by construction, i.e. the gate-(b) construct. A LIVE carrier costs +1.12N..+2.5N emitted instructions (s7 K21). Free extra hoists `h` do not exist: a step constant big enough to be hoisted makes the biv increment a REGISTER and disqualifies biv elimination (~9 emitted instructions each), while a step small enough to stay free folds into `addiu` and creates no movable — mutually exclusive channels (s7 K22) | s6 H10, s7 K21/K22, s8 H13 |
+
+Against a 104-instruction target whose preheader (`8003C73C..8003C750`) is six
+instructions with room for zero additions, no ordinary-C spelling remains on this
+axis.
+
+### Evidence pointers
+
+- `memory/grind/func_8003C714/hypotheses.md` — H4-H13, K5-K26
+- `memory/grind/func_8003C714/evidence.md` — §s2 (flag sweeps), §s2b, §s6 (the
+  distance-0 measurement), §s7, §s8, §s9 (this session's gate evidence)
+- `memory/grind/func_8003C714/candidate.c` — the honest ordinary-C best, floor 15
+- `memory/grind/func_8003C714/rejected/` — 16 disproven forms, each named for its
+  mechanism
+- `tmp/grind/func_8003C714/s9/` — this session's apply script, scan output and
+  census output
+- `tmp/grind/func_8003C714/dumps/code6cac_c2.loop` — the movable table
+
+### Re-activation triggers
+
+This residual becomes attackable again if any of the following occurs:
+
+1. **A class grant covering dead loop-carried counting carriers.** If the frozen
+   family list is ever extended to cover a `/* FAKE */`-annotated loop-carried
+   carrier deleted by `strength_reduce`'s biv elimination (mechanism:
+   `count_loop_regs_set` counts it before `move_movables` runs), this function
+   closes immediately — the closing body is already written and measured at
+   distance 0 in
+   `rejected/balanced-biv-noise-64-insns-d0-but-inadmissible.c`.
+2. **A toolchain finding that changes `n_non_fixed_regs` on the shipped chassis
+   without a `CC_FLAGS` edit** — e.g. evidence that the original build's cc1 was
+   configured soft-float, which would make `-msoft-float` chassis FIDELITY rather
+   than a chassis change. s2 measured that under that configuration 43 of 44
+   functions in `code6cac_c2` are unchanged and `func_8003C714` goes 15 -> 0, but
+   `func_800324D0` regresses 0 -> 3; resolving that conflict is an
+   owner/operator question about the build chassis, NOT a grind lever, and the
+   earlier INTEGRATION HANDOFF entries built on it were correctly FAILed
+   (decisions.md 2026-09-01 18:33).
+3. **A fourth movable appearing in this loop from ordinary C**, which would take
+   the s8 K24 order dial past its -6 cap. s8 measured that the loop has exactly
+   three.

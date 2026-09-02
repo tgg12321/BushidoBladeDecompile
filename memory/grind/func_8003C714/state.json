@@ -1,8 +1,8 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 8,
- "current_modality": "forensics",
+ "session_count": 9,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,29 @@
    "floor": 15,
    "modality": "forensics",
    "headline": "Forensics: the loop.c:1631 desirability inequality is now closed TERM BY TERM \u2014 ADMISSION killed with five measured spellings (K23), the free movable-ORDER dial found and killed at -6 vs -66 (K24), lo"
+  },
+  {
+   "session": 9,
+   "floor": 15,
+   "modality": "escalation",
+   "headline": "Disposition session: both endgame-lock AND-gates FAIL (scan_hand_coded tier=LOW 0/8; SOTN precedent census for the closing loop-carried counting construct returns 0 hits) \u2014 foreclosure record filed at"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No sanctioned route to distance 0 is known to remain: the loop.c:1631 inequality is now closed term by term, and its last open term (insn_count) has only one free carrier, which is dead code by construction.",
-   "mechanism": "savings and lifetime are pinned at 1 (s7 H11); threshold is writable only by CC_FLAGS (barred) or 32 register-asm pins (cheat) and its per-move decrement caps at -6 (s8 K26/K24); movable ADMISSION cannot be failed by a CONST_INT set (s8 K23); loop form is count-neutral (s8 K25); the only free insn_count carrier is a small-immediate-constant-step biv whose sole use is post-loop (s6 H10, s7 K21).",
-   "next_probe": "None is visible on this axis. The honest next step is the driver assigning `escalation`, where the foreclosure record writes itself from s7 H11 + s8 H13 (the inequality closed term by term), s6 H10 (distance 0 measured on the shipped chassis but only via an inadmissible construct), and K20-K26. If the ladder instead assigns another grinding modality, it must find a channel that changes insn_count or the movable ORDER with no added local at all \u2014 and s8 measured the two candidates for that (statement reordering, loop form) at +0 and -6."
+   "hypothesis": "A class grant covering /* FAKE */-annotated loop-carried counting carriers would close this function immediately \u2014 the closing body is already written and already measured at distance 0.",
+   "mechanism": "count_loop_regs_set takes insn_count before move_movables and before strength_reduce, so a loop-carried constant-step biv is COUNTED and then deleted by biv elimination inside loop_optimize for zero emitted bytes; 32 balanced pairs take the loop 56 -> 121 real insns byte-identically and flip the 0x91A2B3C5 movable to 'not desirable' at >= 120.",
+   "next_probe": "None from inside a grind session \u2014 this is an owner-only extension of the frozen family list. If it ever lands, restore memory/grind/func_8003C714/rejected/balanced-biv-noise-64-insns-d0-but-inadmissible.c, re-measure, and add the FAKE annotation."
   },
   {
-   "hypothesis": "Do NOT re-open the ADMISSION axis. It is measured dead in five spellings and killed at the mechanism level.",
-   "mechanism": "loop.c:695-700's `(! REG_USERVAR_P && ! REG_LOOP_TEST_P)` disjunct admits every compiler temp unconditionally; may_not_optimize needs the SAME pseudo set twice, which distinct source-level divisions never produce; may_trap_p(const_int) is 0; m->cond/m->global are not gates.",
-   "next_probe": "None. If a session's reading of loop.c:770-800 suggests m->cond / m->consec / m->global as escape hatches, that reading is wrong \u2014 see s8 K23 and rejected/admission-escape-hatches-all-pass-a-const-int-movable.c for the three-test enumeration and the five measurements."
+   "hypothesis": "A toolchain finding that changes n_non_fixed_regs on the shipped chassis without a CC_FLAGS edit (i.e. evidence the original build's cc1 was configured soft-float, making -msoft-float chassis FIDELITY rather than a chassis change) would let the honest candidate.c body match as-is.",
+   "mechanism": "loop.c:532 threshold = 2*(1+n_non_fixed_regs) is 122 with FP regs free and 58 with them fixed; after the post-first-hoist `threshold -= 3` the magic faces 55 against insn_count 56 and stays in-loop in the target's split lui/ori form.",
+   "next_probe": "None from inside a grind session (barred by this function's binding judge constraint and by .claude/rules/no-compiler-divergence.md). Any such finding must also resolve the s2 conflict where the same configuration regresses func_800324D0 from 0 to 3, and the earlier INTEGRATION HANDOFF entries built on this axis were correctly FAILed (decisions.md 2026-09-01 18:33)."
   },
   {
-   "hypothesis": "Do NOT re-open RA or scheduler search, const-FORM respellings, added hoists, inner-loop moved_once doubling, natural accumulators, or the permuter \u2014 all measured dead in s3/s4/s6/s7.",
-   "mechanism": "s6 K18 measured that at score 0 every register seat lands on the target, so the RA/SCHED components goal_from_tgt.py classify reports are the hoist's downstream shadow; s7 K20/K21/K22 closed the doubling, the natural-carrier and the added-hoist channels with sweeps; s4 ran 66,016 permuter iterations with 0 finds on this exact body.",
-   "next_probe": "None. Every one of these is banked with a rejected/*.c file naming the mechanism."
+   "hypothesis": "A fourth ordinary-C movable in this loop would take the s8 K24 movable-ORDER dial past its measured -6 cap.",
+   "mechanism": "Each movable moved before the magic decrements threshold by 3 (loop.c:1719/1904); with only three movables the dial bottoms out at 116 against a requirement of < 56.",
+   "next_probe": "None visible. s8 measured the loop has exactly three movables, and s7 K22 measured that free extra hoists do not exist (a step constant big enough to be hoisted disqualifies biv elimination at ~9 emitted instructions; one small enough to stay free folds into addiu and creates no movable)."
   }
  ],
  "judge_constraints": [

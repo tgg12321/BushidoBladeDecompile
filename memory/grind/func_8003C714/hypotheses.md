@@ -1202,3 +1202,89 @@ untried structural channel is visible in loop.c:
 - probe: Source read of loop.c:532 / 2202 / 586-593 / 735-767 and regclass.c:360-535, plus the arithmetic against the measured baseline: reaching threshold < insn_count 56 needs 2*(1+N) - 3 < 56, i.e. N <= 28 from the current 60.
 - result: FALSE by both inputs. (1) n_non_fixed_regs is 60; -msoft-float takes it to 28 / threshold 58, which is exactly the s2 route, but CC_FLAGS is a BARRED surface. The only other writer anywhere in the compiler is globalize_reg, reachable only from a file-scope `register T x asm("$k");` — the forbidden register-asm-pin family — and it would take 32 of them TU-wide (deliberately NOT measured: it would produce only a cheat artifact, and code6cac_c2.c carries 43 other functions). (2) loop_has_call halves threshold to 61, the single biggest lever in loop.c, and is STILL insufficient: 61 - 3 = 58 >= 56, so the magic is still hoisted; it would additionally need insn_count >= 59, and a call in the loop is a different function (the target loop 8003C750..8003C7C8 contains none). The one genuine admission KILL a call would unlock — the reg_single_usage deletion branch at loop.c:735-767, whose array is allocated only under loop_has_call at loop.c:586-589 — additionally requires validate_replace_rtx to substitute the CONST_INT into its single use; that use is the MIPS highpart multiply, whose operands are register_operand, so it can never validate.
 - verdict: KILLED
+
+## s9 (2026-09-01) — escalation / disposition modality
+
+### K27 — the hand-coded scanner tier is LOW (0/8), MEASURED not assumed. KILLED (canonical-asm path)
+
+Statement: `func_8003C714` might qualify for the canonical-asm grant path, which
+would make the residual moot.
+Mechanism: `tools/scan_hand_coded.py` scores eight hand-written-asm signals; the
+grant path requires a STRONG tier, i.e. one of S1 (multu pacing), S2 (empty-body
+branch) or S6 (BIOS jumptable).
+Probe: `python3 tools/scan_hand_coded.py --single func_8003C714`.
+Result: `tier=LOW score=0/8`; zero signals of any strength. S1 finds 0 multu/mflo
+pairs, S2 no empty-body branches, S3 sees 2 spills across 104 insns and 9 distinct
+registers, S4 a max load burst of 1 in any 8-insn window, S5 no similar siblings,
+S6 no BIOS jumptable pattern, S7 all callee-saves properly saved, S8 no redundant
+mask-before-shift.
+Verdict: **KILLED.** The function is ordinary compiler output. Sessions s1-s8 all
+assumed this; s9 is the first to measure it. Do not re-run this scan — the answer
+is banked, and it will not change without a scanner change.
+
+### K28 — no SOTN-master precedent exists for the closing construct. KILLED (family-grant path)
+
+Statement: the s6 distance-0 construct (32 balanced `z += c; z -= c;` loop-carried
+pairs whose sole purpose is inflating `count_loop_regs_set`'s `insn_count`) might
+have an in-hand SOTN-master precedent, which under the endgame-lock AND-gates
+would make it citable rather than an auto-reject.
+Mechanism: `docs/reference/sotn-construct-index.md` is the machine-generated index
+of every match-hack construct SOTN master ships at commit
+`aa53500226ee84be763f3e8702b27de06456b3a7` (1911 files scanned). A hit is citable
+evidence; an absence after a real search is evidence of no precedent.
+Probe: `grep -iE "insn_count|licm|hoist|loop_optimize|invariant|strength|unroll|biv"`
+-> 0 hits. `grep -iE "loop-carried|balanced|noise"` -> 0 hits. `grep -i loop` ->
+19 hits, every one either a prose comment about loop SHAPE, one dup-arm statement
+(`src/main/psxsdk/libsnd/seqread.c:328`), or an exit label. The index's twelve
+classes were enumerated and none has this shape; the nearest-looking one,
+`pad_dummy_local` (816 hits), is DECLARED unused locals, which s5 K15 already
+measured at +0 insn_count here because they die at the `cse1` /
+`delete_dead_from_cse` fixpoint upstream of `loop_optimize`.
+Verdict: **KILLED.** The census is NEGATIVE, which is a FAILED gate, not an open
+question. Do not re-run it and do not attempt to argue the construct in from
+adjacency — per the owner's 2026-08-24 ruling (reaffirmed 2026-08-31) a construct
+outside the frozen family list is a clean refusal.
+
+### H14 (open, but NOT a grind lever) — the residual is now gated on policy, not on search
+
+With K27 and K28 both KILLED, and with the `loop.c:1631` inequality closed term by
+term across s6-s8 (savings pinned at 1, lifetime pinned at 1, `threshold` movable
+only by `CC_FLAGS` or 32 register-asm pins, ADMISSION dead in five spellings,
+movable ORDER capped at -6, loop FORM count-neutral, and `insn_count`'s only free
+carrier being dead code by construction), the function's residual is no longer a
+search problem. It is decided by policy: the ONE construct that reaches distance 0
+on the shipped chassis is inadmissible, and the ONE chassis on which the honest
+body reaches distance 0 is barred.
+
+Three named re-activation triggers are recorded in the foreclosure entry
+(`docs/grind/decisions.md:19815`):
+  1. a class grant covering `/* FAKE */`-annotated loop-carried counting carriers
+     deleted by `strength_reduce` biv elimination — the closing body already
+     exists and is already measured at distance 0;
+  2. a toolchain finding that changes `n_non_fixed_regs` on the shipped chassis
+     without a `CC_FLAGS` edit (soft-float chassis-fidelity evidence), which must
+     also resolve the s2 conflict where `func_800324D0` regresses 0 -> 3;
+  3. a fourth ordinary-C movable in this loop, taking the s8 K24 order dial past
+     its -6 cap.
+
+None of the three is reachable from inside a grind session. A future session
+dispatched onto this function should verify the disposition entry still stands
+rather than re-opening any axis above.
+
+## [s9] func_8003C714 might qualify for the canonical-asm grant path (gate a), which would make the d15 residual moot.
+- mechanism: tools/scan_hand_coded.py scores eight hand-written-asm signals; the grant path requires a STRONG tier, i.e. one of S1 (multu pacing), S2 (empty-body branch) or S6 (BIOS jumptable) firing.
+- probe: python3 tools/scan_hand_coded.py --single func_8003C714 (output banked at tmp/grind/func_8003C714/s9/scan.txt)
+- result: tier=LOW score=0/8 — zero signals of any strength. S1 finds 0 multu/mflo pairs, S2 no empty-body branches, S3 sees 2 spills over 104 insns / 9 distinct regs, S4 a max load burst of 1 per 8-insn window, S5 no similar siblings, S6 no BIOS jumptable pattern, S7 all callee-saves saved, S8 no redundant mask-before-shift. Sessions s1-s8 all ASSUMED this tier; s9 is the first to measure it.
+- verdict: KILLED
+
+## [s9] The only construct measured to reach distance 0 on the shipped chassis (32 balanced loop-carried `z += c; z -= c;` pairs inflating count_loop_regs_set's insn_count from 56 past 120 so loop.c:1631 declines the 0x91A2B3C5 movable) might have an in-hand SOTN-master precedent, satisfying gate (b).
+- mechanism: docs/reference/sotn-construct-index.md is the machine-generated index of every match-hack construct sotn-decomp master ships at commit aa53500226ee84be763f3e8702b27de06456b3a7 (1911 files scanned, 12 construct classes, 2746 lines). A hit is citable SOTN-master evidence; an absence after a real search is evidence of no precedent.
+- probe: grep -iE "insn_count|licm|hoist|loop_optimize|invariant|strength|unroll|biv" and grep -iE "loop-carried|balanced|noise" over the index, plus enumeration of all twelve class headings and a manual read of every `loop` hit (census banked at tmp/grind/func_8003C714/s9/census.txt).
+- result: 0 hits and 0 hits. The 19 `loop` hits are all either prose match-comments about loop SHAPE, one dup-arm statement (src/main/psxsdk/libsnd/seqread.c:328), or exit labels (after_loop:, loop_30:). The twelve classes are fake_comment, fake_identifier, self_assign, match_comment, do_while_zero, pad_dummy_local, new_var_temp, pointer_alias, dup_if_else_arm, const_holder, empty_if, nested_exit_label — none has this shape. The nearest-looking class, pad_dummy_local (816 hits), is DECLARED unused locals, which s5 K15 already measured at +0 insn_count here because they die at the cse1/delete_dead_from_cse fixpoint upstream of loop_optimize.
+- verdict: KILLED
+
+## [s9] The chassis may have drifted since the s8 ledger entry, in which case every banked spelling conclusion would need re-measuring before it could be spent.
+- mechanism: The dispatch brief reported the HEAD honest floor as 'measurement unavailable', so the ledger's floor of 15 could not be trusted without re-measurement.
+- probe: Applied memory/grind/func_8003C714/candidate.c over the INCLUDE_ASM line in src/code6cac_c2.c (tmp/grind/func_8003C714/s9/apply.py), then `& tools/wteng.ps1 main sandbox func_8003C714 --disable all`.
+- result: score 15, target_insns 104, build_insns 105, scorable true, rules_dropped 0, cheat_asm_stripped 10 — bit-for-bit the s3/s4/s5/s6/s7/s8 measurement. No chassis drift; the whole ledger is chassis-current. src/code6cac_c2.c was reverted to INCLUDE_ASM afterwards.
+- verdict: CONFIRMED

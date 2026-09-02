@@ -161,6 +161,22 @@
  * this axis is open. This body remains the honest ordinary-C best at 15. See
  * hypotheses.md H13/K23/K24/K25/K26 and evidence.md section s8.
  *
+ *
+ * [s9 2026-09-01 UPDATE, escalation/disposition modality] Chassis re-checked
+ * first: this body still scores 15 (104 target / 105 build, rules_dropped 0,
+ * cheat_asm_stripped 10). No new grinding axis was opened; s9 ran the two
+ * endgame-lock AND-gates and both FAILED. (a) tools/scan_hand_coded.py --single
+ * reports tier=LOW score=0/8 with none of the STRONG signals S1/S2/S6 firing --
+ * measured, where s1-s8 had only assumed it -- so the canonical-asm grant path
+ * is closed. (b) A precedent census of docs/reference/sotn-construct-index.md
+ * (sotn-decomp master aa53500226) returns ZERO hits for insn_count / LICM /
+ * hoist / invariant / biv / loop-carried across all twelve construct classes, so
+ * the s6 distance-0 form (balanced loop-carried counting noise) has no
+ * SOTN-master precedent and stays an auto-reject. Under the owner's 2026-07-27
+ * standing ruling the function is therefore FORECLOSED, recorded at
+ * docs/grind/decisions.md:19815 with three named re-activation triggers. THIS
+ * BODY REMAINS THE HONEST ORDINARY-C BEST AND IS THE FORM TO RESTORE if any
+ * trigger fires. See hypotheses.md K27/K28/H14 and evidence.md section s9.
  * Remaining d15 residual = ONE loop.c decision + its seat fallout:
  *  build hoists the 0x91A2B3C5 (/1800 magic) const load to the preheader
  *  (movable, savings 1, life 1, threshold 122 vs insn_count ~56); target has it
