@@ -1,8 +1,9 @@
-/* func_800300B4 candidate - s1 (2026-09-02), re-measured s1b (recon, 2026-09-02): sandbox --disable all == 0 (83/83).
+/* func_800300B4 candidate - s1 (2026-09-02), re-measured s1b and s1c (recon, 2026-09-02): sandbox --disable all == 0 (83/83).
  * Island 2 (gte_ldv0 pack lhu/lhu/sll/or + mtc2) is character-identical to the on-main, owner-granted
  * func_800203B4 island (inline_asm_canonical.txt:367, src/code6cac.c:1858-1870) and to the Judge-PASSed
  * cluster sibling func_8002E838 (decisions.md:20262, src/code6cac_b.c:1245-1255). The layer-1-prescribed
- * pack-in-C respelling measures 19 (rejected/pack-in-c-island2-*.c) - pending ruling-request s1b.
+ * pack-in-C respelling measures 19 (rejected/pack-in-c-island2-*.c). Island-2 ban LIFTED by ruling
+ * 2026-09-02 07:30 (decisions.md:20474): the gte_ldv0 macro-body pack is inside the sanctioned island unit.
  * Owner-cluster canonical-asm member (tools/grinder/owner_cluster_grants.txt:23).
  * One FAKE: do-while(0) wrap around gte_stlvnl (flow.c loop-note ref weighting
  * seats &mac in s2 ahead of arg0 in s3; see evidence.md E2). */

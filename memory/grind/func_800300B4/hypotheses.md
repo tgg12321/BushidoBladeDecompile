@@ -35,3 +35,13 @@ Frontier: ruling-request only. If the ruling admits the gte_ldv0 macro body unde
 func_800203B4 grant text and the two sibling PASSes did), candidate.c is a 0-form ready for re-submission with
 the self-vet's precedent citations replaced by func_800203B4 / func_8002E838. If it does not, the function has
 no pure-C or sanctioned-asm form for those 7 bytes and the correct disposition is the cluster-door foreclosure.
+
+## s1c (2026-09-02, recon)
+
+- H6 CONFIRMED - the 0-form candidate is admissible under the lifted ban: ruling 2026-09-02 07:30
+  (decisions.md:20474) places the gte_ldv0 pack inside the island unit; chassis re-measured at sandbox 0 (83/83).
+  Self-vet rewritten without the banned func_8002FC80 / LoadAverageShort12 anchors.
+
+Frontier: none - candidate-ready. If the Judge FAILs the do-while(0) wrap on prerequisites, the only alternative
+seat lever is a natural spelling lowering arg0 to <=5 refs, which the six byte-pinned s3 uses forbid (H1); that
+outcome would be a ruling-request on the wrap, not a re-grind.

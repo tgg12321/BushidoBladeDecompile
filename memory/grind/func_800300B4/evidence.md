@@ -123,3 +123,22 @@ prescribed alternative cannot be built. The pack island is now a BANNED construc
 driver rejects a candidate-ready re-declaring it regardless of precedent; the only path is a ruling.
 
 **Artifacts:** tmp/grind/func_800300B4/s1/v_packC_A.c, v_packC_B.c, diff_packC_A.txt, diff_packC_B.txt, apply.py.
+
+## s1c (2026-09-02, recon) - ruling landed; chassis re-check 0; resubmitted
+
+**Ruling 2026-09-02 07:30 (docs/grind/decisions.md:20474) PASS:** the gte_ldv0 macro-body pack (lhu/lhu/sll/or
+through the macro's $12 copy) IS inside the sanctioned island unit; the island-2 ban is lifted. The second ban
+(the s1 self-vet's func_8002FC80 / inline_asm_canonical.txt:174 LoadAverageShort12 anchors) STANDS - those
+citations are removed from self_vet.md entirely; the vet now anchors on func_800203B4 (inline_asm_canonical.txt:367,
+src/code6cac.c:1858-1870), func_8002E838 (decisions.md:20262) and the ruling itself (decisions.md:20474).
+
+**Chassis re-check.** candidate.c applied to src/code6cac_b.c: canonical ASM-PARTIAL (11/83 cop2);
+`sandbox --disable all` score 0, 83/83, rules_dropped 0, cheat_asm_stripped 33
+(tmp/grind/func_800300B4/s1/sandbox_s1c.txt). No source change beyond the header comment. Edits left in place
+in src/ for the driver's byte re-verification (candidate-ready).
+
+**Still owed at the final call (ruling text):** the island-3 do-while(0) FAKE prerequisites (all three present:
+annotation carries what + mechanism flow.c loop_depth ref weighting -> local-alloc.c qty_compare_1 + lever-exhaustion
+pointer to hypotheses.md H1-H3; single-level; family sanctioned for register allocation by owner ruling 2026-07-06),
+and the owner-cluster inline_asm_canonical.txt line, which the driver writes before queue done (honest bucket
+COMPLETED-INLINE-ASM-CANONICAL, as func_8002E838).
