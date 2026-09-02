@@ -28,6 +28,27 @@
  * duplicate's merged code has to coincide with insns the target already emits. Cheapest
  * measured duplicate: arms2 (+17 fdiff, vars=16).
  *
+ * SESSION 4 (permuter) NARROWS THE LAW AND CLOSES THE CROSS-JUMP ROUTE. (a) The orphan
+ * generator is not "any indexed global" but specifically a symbol_ref that combine folds
+ * INTO the mem with a register index. The target materialises D_80106A78 and D_8008E194
+ * into hard registers (lui/addiu, asm lines 4-5 and 46-47) and folds only Judge (lines
+ * 59/61, 76/78); tblall - all four D_8008E194 accesses respelled as direct indexed reads
+ * with the tbl local removed - stays at vars=8 (bodydiff 64). (b) jump2 cross-jumping DOES
+ * re-merge a statement duplicated into all four arms of the kind chain essentially for
+ * free (armjoin1 = 139 insns vs base 140, bodydiff 1), but the four-arm join at
+ * .L800307B0 is the target's only merge point and none of its three statements reads
+ * Judge, while the two that do must run before the += passes. (c) Two permuter campaigns
+ * (--stack-diffs, so the sp offsets are inside the objective), 84,064 iterations across
+ * the draft3 chassis and the structurally different jidx2 named-index chassis, produced
+ * zero novel finds - only score-10 ties with the base.
+ *
+ * s4 body-neutral composables (all fdiff 0, vars 8), on top of the s3 list: judge2d
+ * (extern s16 Judge[][0x1000]; Judge[0][i], TU-safe), judgestr (extern struct { s16
+ * t[0x1000]; } Judge; Judge.t[i], TU-safe), jcastb, jbyteoff/jbyteoff1 (byte-offset
+ * address arithmetic), jptr2 (two s16 * locals aliasing &Judge), jidx2 (named s32 index
+ * locals), i16 / uidx (index casts), objalias (a second u8 * alias of obj), srcs16 (src
+ * retyped s16 * with halved offsets), regall / regi (register storage class).
+ *
  * Additional s3 body-neutral composables: block-scope `extern` redeclarations of any of
  * the three globals; `*(s16 *)((s32)&Judge + (idx * 2))`; `% 0x1000` and `& ~0xF000` /
  * `& ~(-0x1000)` mask spellings; a `(u16)` cast on the first index; a redundant second

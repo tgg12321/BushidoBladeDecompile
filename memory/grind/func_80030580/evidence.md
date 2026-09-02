@@ -311,3 +311,79 @@ was obtained without it and supersedes the question it was asked to answer.
 - [s3] s2's frontier probe (a BB2_COMBINE_DEBUG print inside distribute_notes) is NOT available to a grind session: it requires editing tools/gcc-2.7.2/combine.c, which the session contract forbids. The sites-1 law was obtained without it and supersedes the question that probe was asked to answer.
 
 - [s3] src/code6cac_b.c was restored to HEAD at the end of the session; the working tree carries only memory/grind/func_80030580/ ledger changes.
+
+## Session 4 (2026-09-02, permuter) — measured facts
+
+- **Chassis re-measured.** With `tmp/grind/func_80030580/s1/draft3.c` (== the body in
+  `memory/grind/func_80030580/candidate.c`) applied to `src/code6cac_b.c`,
+  `engine sandbox func_80030580 --disable all` prints `"score": 2`. Unchanged from s1–s3.
+  `tools/fake_ablate.py` reports **no FAKE-annotated constructs** in the candidate, so
+  every s1–s4 instance kill was measured with zero FAKE carriers present.
+
+- **Why only Judge orphans (new, refines the s3 law).** The target materialises the other
+  two globals into hard registers and folds only Judge into the mem:
+  `asm/funcs/func_80030580.s:4-5` `lui $a3,%hi(D_80106A78); addiu $a3,$a3,%lo(...)`,
+  `:46-47` `lui $a0,%hi(D_8008E194); addiu $a0,$a0,%lo(...)`, versus `:59-61` and `:76-78`
+  `lui $at,%hi(Judge); addu $at,$at,$v0; lh $v1,%lo(Judge)($at)`. Our candidate emits the
+  identical pattern. A materialised symbol pseudo stays live and never dies into an
+  orphaned REG_DEAD note, so **only a folded-into-mem symbol_ref with a register index
+  generates a `ctx=spill_new` slot** — `tblall` (four indexed `(&D_8008E194)[...]` sites,
+  `tbl` local removed) stays at vars=8 / one slot at bodydiff=64.
+
+- **jump2 cross-jump re-merge is real and ~free.** `armjoin1` — `*(s16 *)obj = 0;`
+  duplicated into all four arms of the kind chain and deleted from the join — compiles to
+  **139 insns vs the base's 140** (`bodydiff=1`, the diff line is a *removed* insn). Costs
+  for the other placements: `armjoin1_keep` 3, `armjoin_keep` 13, `armjoin` (all three join
+  statements) 17, `armp2z` 157. All stay vars=8. So F3.1's mechanism works — but the
+  target's only cross-jump merge point is the four-arm join at `.L800307B0`, whose three
+  statements (`obj+0x50 = 1`, `obj+5 = 0`, `obj+0 = 0`) contain no Judge read, and the two
+  statements that do (`obj+0x44`, `obj+0x4C`) must run before the `+=` passes.
+
+- **Thirteen more body-neutral spellings banked** (all bodydiff=0, all vars=8, free to
+  compose with any future frame lever):
+  `judge2d` (`extern s16 Judge[][0x1000];` + `Judge[0][i]`, TU-safe),
+  `judgestr` (`extern struct { s16 t[0x1000]; } Judge;` + `Judge.t[i]`, TU-safe),
+  `jcastb` (`((s16 *)(u8 *)&Judge)[i]`), `jbyteoff` / `jbyteoff1`
+  (`*(s16 *)((u8 *)&Judge + i*2)`), `jptr2` (two `s16 *` locals aliasing `&Judge`),
+  `jidx2` (named `s32 ax, az` index locals), `i16` (`(u16)` cast on the first index),
+  `uidx` (`(u32)` cast on the second), `objalias` (a second `u8 *` local aliasing `obj`),
+  `srcs16` (`src` retyped `s16 *`, all offsets halved), `regall` / `regi` (`register`
+  storage class on the locals). Sources: `tmp/grind/func_80030580/s4/var_<name>.c`.
+
+- **Permuter campaigns (the session's mandated modality) — 84,064 iterations, 0 finds.**
+  Workspaces built by `tmp/grind/func_80030580/s4/mk_ws.sh` (single-function preprocessed
+  TU + `prelude.inc` + `asm/funcs/func_80030580.s` at offset 0; `compile.sh` copied from
+  `tmp/perm_stf` with the cheat stages omitted, so the search space is the honest pure-C
+  one). Both launched through `tools/permuter_campaign.py` with `--stack-diffs` (default —
+  required here, since without it the scorer normalises the `addiu sp` offsets away and
+  the entire remaining gap becomes invisible) and `--stop-on-zero`.
+  - `tmp/perm_30580_s4a`, label `draft3-chassis`: base score 10, **38,802 iterations /
+    973 s**, one output — `output-10-1` at 2.0 s, a score-**10 tie** with the base.
+  - `tmp/perm_30580_s4b`, label `jidx2-named-index-chassis` (seeded from the body-neutral
+    named-index-local variant, a structurally different AST): base score 10, **45,262
+    iterations / ~1090 s**, one output — `output-10-1` at 22.8 s, again a score-10 tie.
+  - Both harvested with `--stop`; `permuter_campaign.py status` = **0 live campaigns**.
+  - Reusable fact: the permuter's randomizer set (`tools/decomp-permuter/src/randomizer.py`)
+    contains exactly one frame-moving randomizer, `perm_pad_var_decl`, and it moves the
+    frame by adding an emitted store — immediately penalised by the byte scorer. The
+    permuter therefore cannot reach this function's residual from a body-exact chassis.
+
+- [s4] Chassis re-measured this session: with s1/draft3.c (== candidate.c's body) applied to src/code6cac_b.c, engine sandbox func_80030580 --disable all prints "score": 2 - the whole residual is still the prologue/epilogue pair (addiu sp,-8 vs the target's -24).
+
+- [s4] tools/fake_ablate.py finds NO FAKE-annotated constructs in memory/grind/func_80030580/candidate.c, so every s1-s4 instance kill was measured with zero FAKE carriers present.
+
+- [s4] The orphan generator is narrower than s3 recorded: it is a symbol_ref that combine folds INTO the mem with a register index. asm/funcs/func_80030580.s materialises D_80106A78 (lines 4-5) and D_8008E194 (lines 46-47) into hard registers with lui %hi / addiu %lo, and folds only Judge (lines 59/61 and 76/78, lui $at,%hi(Judge); addu $at,$at,$v0; lh %lo(Judge)($at)). Four indexed sites on D_8008E194 (tblall) leave vars=8.
+
+- [s4] jump2 cross-jumping re-merges a statement duplicated into all FOUR arms of the kind chain at negative cost: armjoin1 (*(s16 *)obj = 0; into every arm, deleted from the join) compiles to 139 insns vs the base's 140. armjoin1_keep 3, armjoin_keep 13, armjoin 17, armp2z 157 - all vars=8.
+
+- [s4] The target's only cross-jump merge point is the four-arm join at .L800307B0, whose statements are obj+0x50 = 1, obj+5 = 0 and obj+0 = 0 - none reads Judge - so the confirmed merge mechanism has no Judge-carrying payload available on this chassis.
+
+- [s4] Thirteen further body-neutral spellings banked (bodydiff 0, vars 8, free to compose): judge2d, judgestr (both also TU-neutral), jcastb, jbyteoff, jbyteoff1, jptr2, jidx2, i16, uidx, objalias, srcs16, regall, regi - sources at tmp/grind/func_80030580/s4/var_<name>.c.
+
+- [s4] Permuter campaign s4a (draft3 chassis): base score 10, 38,802 iterations / 973 s, one output - a score-10 tie at 2.0 s. Campaign s4b (jidx2 named-index chassis): base score 10, 45,262 iterations / ~1090 s, one output - a score-10 tie at 22.8 s. Both harvested with --stop; permuter_campaign.py status = 0 live campaigns, 0 stale registry entries.
+
+- [s4] --stack-diffs is load-bearing for this function: without it the permuter scorer normalises the sp offsets away and the entire remaining gap becomes invisible (the workspace would false-match at score 0). permuter_campaign.py passes it by default.
+
+- [s4] tools/decomp-permuter/src/randomizer.py contains exactly one frame-moving randomizer, perm_pad_var_decl, and it moves the frame by adding an emitted store that the byte scorer penalises - so the permuter cannot reach this residual from a body-exact chassis. Recording this so a future session does not re-seed a third body-exact campaign.
+
+- [s4] A reusable permuter workspace builder for this function now exists: tmp/grind/func_80030580/s4/mk_ws.sh <dir> [body.c] (single-function preprocessed TU with the Vec3i typedef and the three extern decls, prelude.inc + asm/funcs/func_80030580.s at offset 0, compile.sh with the cheat stages omitted).

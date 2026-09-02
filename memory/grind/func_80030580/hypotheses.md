@@ -305,3 +305,126 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## Session 4 (2026-09-02, permuter) - floor 2 (flat); two campaigns, 84k iterations, 0 improvement
+
+### KILL RE-AUDIT (mandated; floor flat 3 sessions)
+Re-measured on the CURRENT chassis this session: `sandbox --disable all` on the applied
+candidate = 2 (unchanged). `tools/fake_ablate.py --func func_80030580 --file code6cac_b
+--candidate memory/grind/func_80030580/candidate.c` reports "no FAKE-annotated constructs
+found; nothing to ablate" - the candidate and every banked variant are FAKE-free, so
+condition (b) of the re-audit (ablate every FAKE carrier) is vacuous for this function and
+every s1-s3 instance kill stands as measured. The closest banked forms reproduce exactly:
+arms2 vars=16/bodydiff=17, j3read vars=16/18, dupXZ vars=24/199, j4read vars=24/25.
+
+### CONFIRMED
+- H4.1 jump2 cross-jumping DOES re-merge a statement duplicated into all FOUR arms of the
+  kind chain at essentially zero byte cost. `armjoin1` (the join statement `*(s16 *)obj = 0;`
+  duplicated into each of the four arms and deleted from the join) measures bodydiff=1 -
+  and the single differing line is a REMOVED insn (139 insns vs base's 140), i.e. the merge
+  is not merely free, it absorbs a delay-slot filler. `armjoin_keep` = 13, `armjoin` (all
+  three join statements) = 17, `armjoin1_keep` = 3. The re-merge mechanism that F3.1 needed
+  is real and cheap; what it cannot do here is carry a Judge lookup, because the kind-chain
+  join is the target's ONLY cross-jump merge point and none of its three statements
+  (`*(s32 *)(obj+0x50) = 1;`, `*(u8 *)(obj+5) = 0;`, `*(s16 *)obj = 0;`) depends on Judge.
+- H4.2 The s3 law is narrower than "indexed global site". `tblall` respells all four
+  D_8008E194 accesses as direct indexed reads of the global and deletes the `tbl` pointer
+  local - four indexed sites on a second global - and still measures vars=8 with one slot.
+  Reading the target asm confirms why: D_8008E194 and D_80106A78 are MATERIALISED
+  (`lui/addiu` into $a0 / $a3) in both ours and the target, so their symbol pseudos stay
+  live and never orphan; only Judge is folded to `lui $at,%hi(Judge); addu $at,$at,$v0;
+  lh %lo(Judge)($at)`. The generator is specifically a symbol_ref that combine folds INTO
+  the mem with a register index, and in this function only Judge takes that form.
+
+## [s4] A statement duplicated into all four arms of the kind chain is re-merged byte-neutrally by jump2 cross-jumping, and such a merge can therefore carry a third/fourth indexed-Judge site for free
+- mechanism: jump2 cross-jumping is the only byte-removing pass after combine; four identical arm tails feeding one join are merged back to a single copy, while each source-level copy still creates its own address pseudo during combine and orphans into an 8-byte reload spill slot
+- probe: tmp/grind/func_80030580/s4/frame4.py variants armjoin (all three join statements into all four arms, deleted from the join), armjoin_keep, armjoin1 (only `*(s16 *)obj = 0;`), armjoin1_keep, armp2z (the pos.z += vel.z/2 pass into the arms), armjx; each measured with the instrumented cc1 (BB2_FRAME_DEBUG=1) for vars=, the FRAMEDBG slot census, the ($sp) count and fdiff vs s1/var_base.s
+- result: the FIRST half is confirmed and the second is refuted. armjoin1 costs bodydiff=1 (139 insns vs base 140 - the merge removes an insn), armjoin1_keep 3, armjoin_keep 13, armjoin 17, armp2z 157. Every one stays at vars=8 with the single ctx=spill_new_p110 slot, because the only statements available at that merge point (obj+0x50 = 1, obj+5 = 0, obj+0 = 0) contain no indexed-Judge read, and the two statements that do contain one (the vel.x / vel.z stores) must execute BEFORE the += passes and so cannot be moved past the chain. The kind-chain join is the target's only cross-jump merge point (asm/funcs/func_80030580.s .L800307B0), so on this chassis the cross-jump route does not deliver an extra lookup site.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present (fake_ablate reports none)
+
+## [s4] Enriching the ADDRESS AST of the two existing Judge lookups splits the folded address pseudo into two and adds an orphan slot
+- mechanism: a two-level address expression (2-D array subscript, struct member then subscript, an intermediate pointer cast, a byte-offset add, a pointer local, a named index local) could leave combine with a second dying pseudo per site
+- probe: frame4.py + extra4.py variants judge2d (`extern s16 Judge[][0x1000]`, `Judge[0][i]`), judgestr (`extern struct { s16 t[0x1000]; } Judge`, `Judge.t[i]`), jcastb (`((s16 *)(u8 *)&Judge)[i]`), jbyteoff / jbyteoff1 (`*(s16 *)((u8 *)&Judge + i*2)`), jptr2 (two `s16 *` locals aliasing &Judge, one per site), jidx2 (named `s32` index locals ax/az), plus i16 / uidx (HImode and unsigned index casts), objalias (a second pointer local aliasing obj), srcs16 (`src` retyped `s16 *` with all offsets halved), regall / regi (`register` storage class on the locals)
+- result: all thirteen are body-neutral (bodydiff=0) and all measure vars=8 with exactly one ctx=spill_new slot. judge2d/judgestr also leave the rest of the TU untouched. Address-AST depth, index mode, storage class and pointer aliasing do not change how many pseudos combine leaves dying; they are banked as further free-to-compose spellings, not as frame levers.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s4] The s3 orphan law generalises to any array-indexed global, so adding indexed sites on D_8008E194 supplies the missing slots
+- mechanism: s3 established slots = indexed-Judge sites - 1 and attributed it to the fold (mem (plus (reg idx) (symbol_ref))); a second global indexed the same way should feed the same distribute_notes path
+- probe: frame4.py variant tblall (all four D_8008E194 accesses respelled `(&D_8008E194)[arg1 * 7 + k]`, the `tbl` pointer local removed - four indexed sites on the second global), plus a re-measure of s3's tblglob0 / tblglob2 / tblglob4 with bodydiff reported
+- result: tblall stays at vars=8 with one slot at bodydiff=64; tblglob0 = 0 bodydiff, tblglob2 = 46, tblglob4 = 152, all vars=8. Reading asm/funcs/func_80030580.s lines 4-5 and 46-47 explains it: D_80106A78 and D_8008E194 are MATERIALISED into hard registers by `lui %hi / addiu %lo` in the target exactly as in ours, so their symbol pseudos stay live and never die into an orphan note; only Judge is folded into the mem (`lui $at,%hi(Judge); addu $at,$at,$v0; lh %lo(Judge)($at)`, lines 59/61 and 76/78). The generator is a symbol_ref that combine folds INTO the mem with a register index, and Judge is the only symbol in this function that takes that form.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s4] A decomp-permuter campaign on the score-2 chassis finds a spelling that closes the 16-byte frame gap
+- mechanism: the permuter's randomizers (perm_temp_for_expr, perm_duplicate_assignment, perm_expand_expr, perm_reorder_stmts, perm_refer_to_var, perm_struct_ref, perm_pad_var_decl, ...) explore source shapes hand-enumeration does not reach, and with --stack-diffs the scorer SEES the `addiu sp,-8` vs `-24` prologue difference, so the frame gap is inside the objective
+- probe: two campaigns via tools/permuter_campaign.py with --stack-diffs (default) and --stop-on-zero, workspaces built by tmp/grind/func_80030580/s4/mk_ws.sh (single-function preprocessed TU, prelude.inc + asm/funcs/func_80030580.s assembled at offset 0, cheat stages omitted from compile.sh so the search space is the honest pure-C one). Campaign s4a = the draft3/candidate chassis, base score 10, 38,802 iterations over 16 min. Campaign s4b = the structurally different named-index-local chassis (var_jidx2.c: `s32 ax, az` index locals, body-neutral), base score 10, 45,262 iterations over 18 min.
+- result: 84,064 iterations across the two chassis produced ZERO novel finds - the only output directory in each workspace is a score-10 TIE with the base (output-10-1, at 2.0 s and 22.8 s after launch respectively), i.e. a re-spelling that reproduces the same two-instruction gap. Best new score 10 = base score 10 in both. Both campaigns were harvested with --stop and `permuter_campaign.py status` reports 0 live campaigns. The permuter's local search does not reach the frame lever from either chassis: the one randomizer that moves the frame (perm_pad_var_decl) does so by adding an emitted store, which the byte scorer immediately penalises.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: two permuter chassis (draft3 candidate and jidx2 named-index-local), both at sandbox --disable all = 2, no FAKE constructs present
+
+### FRONTIER after s4 (highest value first)
+- F4.1 The orphan generator is a symbol_ref folded INTO a mem with a register index, and
+  Judge is the only such symbol here. The remaining question is therefore whether a THIRD
+  and FOURTH Judge fold can exist without emitting bytes. Every byte-removing route after
+  combine is now measured: CSE (deletes the pseudo too, dupread), and jump2 cross-jumping
+  (works, ~free, but the only merge point carries no Judge statement). Next probe: check
+  whether the loop's back-edge / the `/32` bgez join at code_label 99 is a second usable
+  merge point - place a duplicated Judge-dependent statement at the two `bgez` arms of the
+  `/32` and at the loop exit, and measure bodydiff / vars.
+- F4.2 Why "sites - 1"? One site's address pseudo keeps a hard register. Unread since s3.
+  Probe: `pwsh tools/grinder/dump.ps1 func_80030580` on var_j3read and diff the .lreg/.greg
+  entries for p110 / p130 / the survivor to see what class assignment distinguishes them.
+  If the survivor can be made classless, THREE sites give vars=24 and j3read's +18 body
+  becomes the whole remaining gap.
+- F4.3 Re-open the "24 = 8 + 16" reading. Every session so far has assumed three 8-byte
+  orphans, from an s2 corpus census of LEAF functions. func_80030580 is a leaf, but the
+  alternative decomposition (one orphan + one untouched 16-byte slot, the
+  [[phantom-frame-slots-gcc272]] mechanism) has only been probed through BLKmode struct
+  temps (all of which emit sp accesses). Probe: sweep constructs that make cc1 call
+  assign_stack_local for a 16-byte object that reload later never touches - a DImode or
+  larger-mode intermediate that combine folds away, or a struct-valued conditional - and
+  accept only variants with 0 ($sp) accesses.
+
+## [s4] A decomp-permuter campaign on the score-2 chassis finds a spelling that closes the 16-byte frame gap
+- mechanism: the permuter's randomizers (perm_temp_for_expr, perm_duplicate_assignment, perm_expand_expr, perm_reorder_stmts, perm_refer_to_var, perm_struct_ref, perm_pad_var_decl, ...) explore source shapes hand-enumeration does not reach, and with --stack-diffs the scorer SEES the `addiu sp,-8` vs `-24` prologue difference, so the frame gap is inside the objective
+- probe: two campaigns via tools/permuter_campaign.py with --stack-diffs (default) and --stop-on-zero; workspaces built by tmp/grind/func_80030580/s4/mk_ws.sh (single-function preprocessed TU, prelude.inc + asm/funcs/func_80030580.s assembled at offset 0, cheat stages omitted from compile.sh so the search space is the honest pure-C one). s4a = the draft3/candidate chassis (base score 10, 38,802 iterations / 973 s); s4b = the structurally different named-index-local chassis var_jidx2.c (base score 10, 45,262 iterations / ~1090 s).
+- result: 84,064 iterations across the two chassis produced ZERO novel finds. Each workspace's only output directory is a score-10 TIE with the base (output-10-1 at 2.0 s and 22.8 s after launch), i.e. a respelling reproducing the same two-instruction gap; best_new_score == base_score == 10 in both. Both harvested with --stop; permuter_campaign.py status reports 0 live campaigns. Reusable fact: tools/decomp-permuter/src/randomizer.py contains exactly one frame-moving randomizer, perm_pad_var_decl, and it moves the frame by adding an emitted store that the byte scorer immediately penalises, so the permuter's local search cannot reach this residual from a body-exact chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: two permuter chassis (draft3 candidate and jidx2 named-index-local), both at sandbox --disable all = 2, no FAKE constructs present (fake_ablate reports none in candidate.c)
+
+## [s4] A statement duplicated into all four arms of the kind chain is re-merged byte-neutrally by jump2 cross-jumping, and such a merge can therefore carry a third and fourth indexed-Judge site for free
+- mechanism: jump2 cross-jumping is the only byte-removing pass after combine; four identical arm tails feeding one join are merged back to a single copy, while each source-level copy still creates its own address pseudo during combine and orphans into an 8-byte reload spill slot
+- probe: tmp/grind/func_80030580/s4/frame4.py variants armjoin (all three post-chain join statements duplicated into all four arms and deleted from the join), armjoin_keep, armjoin1 (only `*(s16 *)obj = 0;`), armjoin1_keep, armp2z (the pos.z += vel.z/2 pass into the arms) and armjx, each measured with the instrumented cc1 (BB2_FRAME_DEBUG=1) for vars=, the FRAMEDBG slot census, the ($sp) count and fdiff vs s1/var_base.s
+- result: The mechanism half is CONFIRMED and the payload half is refuted. armjoin1 costs bodydiff=1 and the single differing line is a REMOVED insn (139 vs base's 140) - the four-arm merge is not merely free, it absorbs a delay-slot filler. armjoin1_keep 3, armjoin_keep 13, armjoin 17, armp2z 157. All stay at vars=8 with the single ctx=spill_new_p110 slot, because the only statements available at that merge point (obj+0x50 = 1, obj+5 = 0, obj+0 = 0) contain no indexed-Judge read, while the two statements that do (the obj+0x44 and obj+0x4C velocity stores) must execute before the += passes and so cannot be moved past the chain. The four-arm join at .L800307B0 is the target's only cross-jump merge point.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s4] The s3 orphan law generalises to any array-indexed global, so adding indexed sites on D_8008E194 supplies the missing slots
+- mechanism: s3 established slots = indexed-Judge sites - 1 and attributed it to the fold (mem (plus (reg idx) (symbol_ref))); a second global indexed the same way should feed the same combine distribute_notes path
+- probe: frame4.py variant tblall (all four D_8008E194 accesses respelled `(&D_8008E194)[arg1 * 7 + k]` with the tbl pointer local removed - four indexed sites on the second global), plus a re-measure of s3's tblglob0 / tblglob2 / tblglob4 with bodydiff reported, cross-read against the lui/addiu vs folded-mem patterns in asm/funcs/func_80030580.s
+- result: tblall stays at vars=8 with one slot at bodydiff=64; tblglob0 = 0 bodydiff, tblglob2 = 46, tblglob4 = 152, all vars=8. asm/funcs/func_80030580.s lines 4-5 and 46-47 show D_80106A78 and D_8008E194 MATERIALISED into hard registers by lui %hi / addiu %lo in the target exactly as in ours, so their symbol pseudos stay live and never die into an orphaned REG_DEAD note; only Judge is folded into the mem (lines 59/61 and 76/78). The law narrows to: a symbol_ref that combine folds INTO the mem with a register index, and Judge is the only symbol in this function taking that form.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s4] Enriching the address AST of the two existing Judge lookups splits the folded address pseudo into two and adds an orphan slot
+- mechanism: a two-level address expression (2-D array subscript, struct member then subscript, an intermediate pointer cast, a byte-offset add, a pointer local, a named index local) could leave combine with a second dying pseudo per site
+- probe: frame4.py + extra4.py variants judge2d (extern s16 Judge[][0x1000], Judge[0][i]), judgestr (extern struct { s16 t[0x1000]; } Judge, Judge.t[i]), jcastb (((s16 *)(u8 *)&Judge)[i]), jbyteoff / jbyteoff1 (*(s16 *)((u8 *)&Judge + i*2)), jptr2 (two s16 * locals aliasing &Judge), jidx2 (named s32 index locals), i16 / uidx (index casts), objalias (a second u8 * alias of obj), srcs16 (src retyped s16 * with halved offsets), regall / regi (register storage class)
+- result: All thirteen are body-neutral (bodydiff=0) and all measure vars=8 with exactly one ctx=spill_new slot; judge2d and judgestr also leave the rest of the TU byte-identical. Address-AST depth, index mode, storage class and pointer aliasing do not change how many pseudos combine leaves dying. They are banked in evidence.md as further free-to-compose spellings for any future frame lever.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s4] The s1-s3 instance kills were measured on a chassis or FAKE state that no longer holds, so the closest banked forms need re-measuring before new probes
+- mechanism: an instance kill is only as good as its chassis and FAKE state; a lever measured inert while a FAKE carrier occupied its target pseudo is not a kill
+- probe: mandated kill re-audit: engine sandbox func_80030580 --disable all on the applied candidate; tools/fake_ablate.py --func func_80030580 --file code6cac_b --candidate memory/grind/func_80030580/candidate.c; and a re-run of the four closest s3 forms (arms2, j3read, dupXZ, j4read) plus base through frame3.py with the instrumented cc1
+- result: The chassis is unchanged: sandbox --disable all prints score 2. fake_ablate reports 'no FAKE-annotated constructs found; nothing to ablate' - the candidate and every banked variant are FAKE-free, so the ablation half of the re-audit is vacuous for this function. The closest forms reproduce their s3 numbers exactly: base vars=8/bodydiff=0, arms2 vars=16/17, j3read vars=16/18, dupXZ vars=24/199, j4read vars=24/25. The s1-s3 instance kills stand as recorded.
+- verdict: CONFIRMED
