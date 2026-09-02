@@ -20660,3 +20660,53 @@ Body is ordinary C (listener-delta, range clamp, log-table lookup, Judge sin/cos
 ## 2026-09-02 13:54 — func_80017D84 — final call — **PASS**
 
 Ordinary C, no sanctioned-family claim needed. Constructs: a TU-local `typedef struct { s32 v[8]; } ObjBlock;` for one 32-byte struct assignment, a local `c` reused twice, and a statement order chosen among semantically-equivalent orders. Decisive fact: the target genuinely copies 32 bytes (asm/funcs/func_80017D84.s +0x14..+0x33, 8 lw / 8 sw through v1/a0/a1/a2), so the struct type is a truthful semantic reading, not codegen-only fiction; order selection by measurement is explicitly not a FAIL ground (.claude/rules/ordinary-c-judge-decidable.md, 2026-08-31). Verified myself: `sandbox --disable all` = 0 (66/66, rules_dropped 0); the diff touches only src/ings.c (plus engine-written metrics/events.jsonl) - no pipeline/rule/prebuilt-.o surface; grep confirms zero __asm__/volatile/register in the body (the cheat_asm_stripped:3 count is the pre-existing file-scope blocks at ings.c:91/117, per E-s1-4); the `c` idiom is verbatim the committed sibling obj_UpdatePosition (src/ings.c:751-753). Full evidence: memory/grind/func_80017D84/evidence.md (E-s1-1..E-s1-5), hypotheses.md, rejected/.
+
+## 2026-09-02 — func_800861BC — **INTEGRATION HANDOFF: bytes proven (oracle SHA1), closure runs through the aggregate-merge family (owner ruling 2026-08-17) whose header/multi-function surface the per-function scope cannot touch**
+
+WHAT WAS PROVEN (s1, recon). func_800861BC is Sony LIBSND `_SsVmDoAllocate` (psyz vm_aloc2.c analog). With
+`memory/grind/func_800861BC/candidate_v4_dup_arms.c` in src/main.c the full clean build is oracle-exact
+(verify-oracle build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, tmp/grind/func_800861BC/s1/verify_oracle.txt;
+func_800861BC is a T symbol of build/src/main.o, no asm object linked). A second oracle run with the COMPLETE
+per-word-symbol merge applied to every main.c consumer (nine splat scalars D_801027F1/F6/F7/FC, D_80102806/08/0A/0C/0E
+-> `struct struct_svm D_801027F0`, diff: memory/grind/func_800861BC/merged_main_s1.diff) is also oracle-exact
+(s1/verify_oracle_merged.txt) — prong (e) byte-neutrality for every other consumer is measured. The preferred body,
+`memory/grind/func_800861BC/candidate.c`, uses an ordinary `static inline` helper instead of the FAKE-annotated
+duplicated statement and produces the identical instruction stream (s1/v8_inline_helper_pairdiff.txt: real 0 at 132/132).
+
+WHY THE SANDBOX CANNOT READ 0. `sandbox --disable all` = 18 for both bodies; every one of the 18 is a named-symbol LO16
+addend (struct field `D_801027F0+N` vs the reference object's splat per-word symbol `+0`), which engine/score.py:61
+deliberately does not mask. No struct spelling can sandbox-0 while asm/funcs/*.s name the per-word symbols; precedent:
+e788983a (func_8003B9D0) landed with the same artifact at residual 3 on the oracle SHA1. The only spelling that could
+sandbox-0 is a per-use pointer pun on separate scalars, which the 2026-08-17 ruling names as debt (prong d) and which
+measured 37 here anyway.
+
+FAMILY + PRONGS (no-new-park-categories.md:238). (a) object model predates the grind: the target binary itself derives
+&D_8010280A as `addiu $t1,$v1,-2` off `$v1=&D_8010280C` (asm/funcs/func_800861BC.s:5-6); psyz's header-canonical
+`struct struct_svm` (libsnd_private.h:150-171) places all nine fields at the BB2 offsets; src/main.c func_800871D4's
+comment already maps D_8010280A <- _svm_cur.voice; named_syms.txt:3604. (b) struct with the documented fields.
+(c) complete merge measured (merged_main_s1.diff; grep shows no other TU references). (d) header placement — the
+operator step below. (e) oracle-exact on the merged tree; layer-2 review pending.
+
+MECHANISM (pass-attributed from tmp/grind/func_800861BC/dumps/). explow.c memory_address force_reg materializes every
+offset struct-field address into a pseudo; cse.c use_related_value anchors each block's later `_svm_cur` accesses on the
+block's FIRST materialized field; cse2 re-folds nonzero deltas to constants. The target's post-join anchor is voiceOffset,
+which requires the dirty|=8 statement to be emitted in both arms and re-merged by jump2 cross-jump (helper or duplicate).
+Ordinary orderings measured and killed: hypotheses.md H3-H7.
+
+OPERATOR STEPS (mirrors e788983a). 1. Add `struct struct_svm` + `extern struct struct_svm D_801027F0;` (or a named
+`_svm_cur` via named_syms.txt — psyz evidence is strong; names-require-evidence applies) to include/sound.h (or a new
+include/libsnd.h) with the field types in candidate.c (u8 + short; `voice` must be `short`). 2. Apply
+merged_main_s1.diff to src/main.c, moving the struct decl out of the TU into the header, and swap the function body for
+candidate.c (helper form) — or keep candidate_v4_dup_arms.c if the reviewer prefers the FAKE-annotated family.
+3. Delete the nine per-word externs from C (the asm/funcs .s references keep their undefined_syms_auto.txt names, as in
+e788983a). 4. verify-oracle (expect SHA1 match; sandbox 18 is the artifact). 5. Fresh layer-2 cheat-reviewer on the diff.
+6. `queue done func_800861BC`, close the ledger. 7. Follow-up (unmeasured): func_80087CAC's FAKE pointer alias to
+D_80102806 (`_svm_cur.seq_sep_no`, src/main.c:1213) may retire under natural field access by the same explow.c mechanism.
+
+RE-ACTIVATION / NOT A FORECLOSURE. Nothing here is an endgame lock: the C is proven; only the integration surface
+(header + sibling-function rewrites + scope_allow) is outside the session contract. Ledger: memory/grind/func_800861BC/
+(evidence.md, hypotheses.md, self_vet.md, candidate.c, candidate_v4_dup_arms.c, merged_main_s1.diff, rejected/).
+
+## 2026-09-02 14:20 — func_800861BC — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s1 of func_800861BC, which the driver DISCARDED as invalid (owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md names func_800861BC). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
