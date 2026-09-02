@@ -45,3 +45,20 @@ Judge, owner-cluster allowlist line, `verify-oracle --rebuild`, `queue done`.)
 ## [s1-retry 2026-09-02] Status
 H0-H2 unchanged and re-confirmed (sandbox 0, 149/149). The prior discard was paperwork only
 (multi-line SCOPE quotes in self_vet.md); self_vet.md rewritten with single-line quotes.
+
+## H3 [s3, CONFIRMED] Ruling A comment conformance closes the layer-1 FAIL
+Statement: the 13:26 layer-1 FAIL is satisfied by naming the SDK macro (`gte_Lzc`,
+gtemac.h:174-178 = gte_ldlzc inline_c.h:228-231 + gte_nop x2 inline_c.h:1346-1347 +
+gte_stlzc inline_c.h:1318-1322) in the island comment; no instruction changes.
+Probe: re-apply + sandbox = 0 (149/149); grindlib.check_banned_constructs ok.
+Result: CONFIRMED — candidate-ready again. Frontier empty; remaining steps are the driver's
+(layer-1 cheat-reviewer, Judge, owner-cluster allowlist line, verify-oracle --rebuild, queue done).
+
+## H4 [s4, CONFIRMED] Validator family-count false positive is prose wording only
+Statement: the s3 discard ("3 families, 2 scopes") came from the T5 sentence wrap putting
+`family:` at line start, which grindlib `_FAMILY_BLOCK` (case-insensitive, line-anchored)
+counts as a FAMILY block; the candidate and its two real family claims are unchanged.
+Probe: `tmp/grind/func_800325E0/s4/famcount.py` on the old vet -> 3 FAM / 2 SCOPE; after
+rewording -> 2 / 2. Re-apply + sandbox = 0 (149/149); canonical 2/149; banned-check ok.
+Result: CONFIRMED — candidate-ready again. Frontier empty; remaining steps are the driver's
+(layer-1 cheat-reviewer, Judge, owner-cluster allowlist line, verify-oracle --rebuild, queue done).

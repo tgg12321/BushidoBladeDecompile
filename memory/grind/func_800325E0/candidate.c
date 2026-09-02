@@ -6,7 +6,7 @@
  * func_8005C650(arg0, L, R).  Enumerated carrier under the owner cop2 cluster grant
  * (tools/grinder/owner_cluster_grants.txt:24; .claude/rules/cop2-addressing-preamble-cluster.md).
  * Honest bucket: COMPLETED-INLINE-ASM-CANONICAL (allowlist line required).  Everything
- * outside the island is ordinary C with no FAKE constructs.  Measured s1 (2026-09-02):
+ * outside the island is ordinary C with no FAKE constructs.  Measured s1/s3 (2026-09-02):
  * `sandbox func_800325E0 --disable all` == 0 (149/149).  Ledger: memory/grind/func_800325E0/. */
 void func_800325E0(s32 arg0, s32 *arg1) {
     s32 sp_tmp;
@@ -31,9 +31,16 @@ void func_800325E0(s32 arg0, s32 *arg1) {
             dist_volume = (u32)(u8)(*(((u8 *)&D_8008D118) + dist_sq)) >> 3;
         } else {
             u32 clz;
-            /* Hand-written GTE leading-zero-count block (LZCS in, LZCR out) â€”
-             * canonical inline asm, identical to the user-authorized block in
-             * the matched sibling func_800274BC (src/code6cac_b.c:292). */
+            /* PsyQ 4.5 SDK GTE macro body: gte_Lzc(dist_sq, &sp_tmp) (gtemac.h:174-178) =
+             * gte_ldlzc(r0) `mtc2 %0,$30` (inline_c.h:228-231) + gte_nop() x2 `nop`
+             * (inline_c.h:1346-1347) + gte_stlzc(r0) `swc2 $31,0(%0)` (inline_c.h:1318-1322).
+             * The `addu $t4,%1,$zero` and `addiu $v0,$sp,0x10` / `addu $t4,$v0,$zero`
+             * operand materialisations are the cop2-addressing-preamble idiom the owner
+             * cluster grant covers (.claude/rules/cop2-addressing-preamble-cluster.md;
+             * registry tools/grinder/owner_cluster_grants.txt:24); nothing outside the
+             * macro body is in the island.  Same spelling as the matched siblings
+             * func_800274BC / func_80032314 / func_8002E838 (inline_asm_canonical.txt).
+             */
             __asm__ volatile(
                 "addu   $t4, %1, $zero\n"
                 "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */

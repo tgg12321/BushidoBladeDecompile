@@ -86,3 +86,46 @@ divide-by-constant `mfhi` scratch regs follow (`$t2 -> $t3`, `$t3 -> $t1`).
 - Island text (11 lines, `src/code6cac_b.c:2432-2442`) diffed against the func_8002E838 island
   (`:1189-1199`): identical; only the consuming assignment after the block differs (`clz =` vs
   `lzcr =`).
+
+## [s3 2026-09-02, recon] Layer-1 FAIL (13:26) resolved: island comment now names the SDK macro
+
+- The 2026-09-02 13:26 layer-1 FAIL was comment-conformance only: owner Ruling A (2026-09-02,
+  `.claude/rules/cop2-addressing-preamble-cluster.md:163-176`) requires every island comment to
+  name the Sony PsyQ GTE macro and header line it reproduces; the s1/s2 comment named only the
+  sibling func_800274BC. Instructions unchanged.
+- Macro identification (verified against the PsyQ 4.5 headers vendored at
+  `tmp/grind/motion_SetMotion/s7/repos/rood-reverse/include/psx/`, `$PSLibId: Run-time Library
+  Release 4.5$`): the 7-insn island is **`gte_Lzc(r1, r2)`** (`gtemac.h:174-178`) =
+  `gte_ldlzc(r0)` = `mtc2 %0,$30` (`inline_c.h:228-231`) + `gte_nop()` x2 = `nop`
+  (`inline_c.h:1346-1347`) + `gte_stlzc(r0)` = `swc2 $31,0(%0)` (`inline_c.h:1318-1322`).
+  The `addu $t4,%1,$zero` and `addiu $v0,$sp,0x10` / `addu $t4,$v0,$zero` GPR insns are the
+  operand materialisations (the cop2-addressing-preamble idiom the cluster grant covers), not
+  macro text; nothing else is in the island. Note: there is no `gte_lzc` (lowercase) macro —
+  the load is `gte_ldlzc`; the composite is `gte_Lzc` in gtemac.h.
+- Re-applied candidate.c over `INCLUDE_ASM` with the new comment
+  (`tmp/grind/func_800325E0/s3/apply.py`, `fixindent.py`): `sandbox func_800325E0 --disable all`
+  = **0**, 149/149, rules_dropped 0; `canonical` = 2/149 (mtc2, swc2 only).
+- Driver ban tripwire checked mechanically (`tmp/grind/func_800325E0/s3/check_vet.py` calling
+  `grindlib.check_banned_constructs`): ok — the vet's CONSTRUCTS block declares the island by
+  macro name and does not echo the banned comment text. All six PRECEDENT file:line cites exist;
+  both SCOPE quotes are single-line.
+- Ban entry semantics: the banned construct is the island *with the old comment* (the FAIL's own
+  "Next action" says fix the comment and identify the macro). The island body is admitted by the
+  same grant that passed func_8002E838 (`inline_asm_canonical.txt:373`, decisions.md:20264).
+
+## [s4 2026-09-02, recon] Second driver discard resolved: phantom third FAMILY line in self_vet.md
+
+- The s3 session was DISCARDED by the validator: "claims 3 sanctioned family/families but quotes
+  only 2 verbatim SCOPE sentence(s)". Root cause (measured with
+  `tmp/grind/func_800325E0/s4/famcount.py`, which runs grindlib's own `_FAMILY_BLOCK` regex
+  `(?im)^\s*FAMILY\s*:\s*(.+)$`): the T5 prose "It matches no forbidden\nfamily: no pin, ..."
+  wrapped so that `family:` began a line, and the case-insensitive regex counted it as a third
+  FAMILY block. No code defect and no family-claim defect. Fix: reworded that line to
+  "construct class: ..."; famcount now reports FAMILY@71, FAMILY@86, SCOPE@72, SCOPE@87 (2/2).
+- Lesson for every future vet on any function: never let the bare word `family:` (any case)
+  start a line outside the SANCTIONED-FAMILY-CLAIMS blocks — the validator counts it.
+- Re-applied `candidate.c` over `INCLUDE_ASM` (`tmp/grind/func_800325E0/s4/apply.py`):
+  `sandbox func_800325E0 --disable all` = **0**, 149/149, rules_dropped 0;
+  `canonical func_800325E0` = 2/149 canonical-asm (mtc2, swc2 — the gte_Lzc island only).
+  `grindlib.check_banned_constructs` ok; all six PRECEDENT file:line cites exist
+  (s3/check_vet.py). Candidate text unchanged from s3.

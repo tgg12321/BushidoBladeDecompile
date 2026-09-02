@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800325E0",
-      "file": "code6cac_b",
-      "distance": 37,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80017D84",
       "file": "ings",
       "distance": 37,
@@ -1816,15 +1808,15 @@
     }
   ],
   "counts": {
-    "total": 203,
-    "active": 184,
+    "total": 202,
+    "active": 183,
     "by_status": {
-      "active": 184,
+      "active": 183,
       "foreclosed": 19
     },
     "by_verdict": {
-      "ASM-PARTIAL": 28,
-      "C": 156
+      "C": 156,
+      "ASM-PARTIAL": 27
     }
   }
 }
