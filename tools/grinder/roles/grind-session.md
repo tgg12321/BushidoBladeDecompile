@@ -222,6 +222,26 @@ same work in fewer, bigger turns (owner policy 2026-07-20):
   construct, and the layer-1 cheat-reviewer runs on your diff BEFORE the Judge.
   A banned construct respelled is the same construct — change the ATTACK, not the
   spelling.
+- KILLS CARRY THEIR CONDITIONS. Every `KILLED` hypothesis in your outcome
+  JSON needs `kill_scope` ("instance" or "class") and `measured_on`; a
+  `class` kill also needs `predicate_cite` — a file:line that EXISTS
+  (`loop.c:705` resolves under tools/gcc-2.7.2/; repo paths work too).
+  The driver discards an outcome whose STATEMENT uses class wording
+  ("unreachable", "impossible", "permanently", "any natural geometry/form/
+  spelling/shape", "every form/spelling/chassis", "all forms/spellings/
+  chassis", "no natural", "cannot ever", "cannot be made to") on an
+  `instance` kill; `result` is free prose. State the arms you tried, the
+  chassis, and which FAKE constructs were present. A lever measured with a
+  FAKE carrier on the same pseudo, or on a partial instance (3 of 12 arms),
+  is an INSTANCE result.
+- WHEN EVERYTHING LOOKS DEAD, ONE VERDICT IS WRONG. The matching C exists.
+  If the brief's KILL LEDGER shows a flat floor, re-measure before you
+  re-derive: `tools/fake_ablate.py` on the closest banked form first.
+- RULE SCOPE IS DATED. The brief's CURRENT SCOPE block is authoritative; a
+  ban, rejection, or ruling that predates a family grant covering the same
+  construct is superseded by the grant. If a banked score-0 form was
+  rejected under a scope the block no longer states, restore it, re-measure,
+  and submit under the current family with its SCOPE quoted.
 - Before finishing a `candidate-ready`: write `memory/grind/<func>/self_vet.md`
   (template above). Non-negotiable — the driver checks it mechanically.
 - Before finishing: save your best form to `memory/grind/<func>/candidate.c`

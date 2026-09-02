@@ -768,6 +768,19 @@ class TestKillHygiene(unittest.TestCase):
         ok, why = G.validate_outcome(o, "structural", self.root)
         self.assertFalse(ok); self.assertIn("does not resolve", why)
 
+    def test_cite_bare_compiler_filename_resolves(self):
+        self._make_cited_file()
+        o = self.killed(kill_scope="class", predicate_cite="loop.c:705",
+                        statement="no movable can pass with n_times_set != 1 — all forms")
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertTrue(ok, why)
+
+    def test_cite_bare_filename_missing_fails(self):
+        o = self.killed(kill_scope="class", predicate_cite="nosuch.c:12",
+                        statement="no movable can pass with n_times_set != 1 — all forms")
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertFalse(ok); self.assertIn("does not resolve", why)
+
     def test_result_field_wording_does_not_trip(self):
         o = self.killed(result="floor flat 15; the arm is unreachable on this chassis")
         ok, why = G.validate_outcome(o, "structural", self.root)

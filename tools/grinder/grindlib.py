@@ -549,15 +549,44 @@ _CLASS_CLAIM_RE = re.compile(
     r"cannot (ever|be made to))\b", re.I)
 
 
+_COMPILER_SRC_DIR = ("tools", "gcc-2.7.2")
+
+
+def _resolve_cite_path(rel, root):
+    """Absolute path for the file part of a cite, or None. House convention in
+    the ledgers is a BARE compiler filename (`loop.c:1631` — 273 of 279 cites),
+    so a name with no path separator resolves under tools/gcc-2.7.2/: that path
+    directly first, then any file with that basename sitting in that directory."""
+    parts = [p for p in rel.replace("\\", "/").split("/") if p]
+    if not parts:
+        return None
+    path = os.path.join(root, *parts)
+    if os.path.isfile(path):
+        return path
+    if len(parts) == 1:
+        cdir = os.path.join(root, *_COMPILER_SRC_DIR)
+        cand = os.path.join(cdir, parts[0])
+        if os.path.isfile(cand):
+            return cand
+        try:
+            for name in os.listdir(cdir):
+                if name == parts[0] and os.path.isfile(os.path.join(cdir, name)):
+                    return os.path.join(cdir, name)
+        except OSError:
+            return None
+    return None
+
+
 def _cite_resolves(cite, root):
     """True when a predicate_cite actually points at something: a `path:line`
-    whose file exists in the repo with at least that many lines, or a hash git
-    knows. An unresolvable cite is how a class kill gets asserted without a
+    whose file exists in the repo (bare compiler filenames resolve under
+    tools/gcc-2.7.2/) with at least that many lines, or a hash git knows. An
+    unresolvable cite is how a class kill gets asserted without a
     predicate — the exact failure the scope field exists to stop."""
     m = re.search(r"([\w./\\-]+\.\w+):(\d+)", cite)
     if m:
-        path = os.path.join(root, *m.group(1).replace("\\", "/").split("/"))
-        if not os.path.isfile(path):
+        path = _resolve_cite_path(m.group(1), root)
+        if path is None:
             return False
         try:
             with open(path, encoding="utf-8", errors="replace") as f:
@@ -605,8 +634,9 @@ def _validate_kill(h, root):
                            "the whole class fails; a search that came back empty is an "
                            "instance kill, not a class kill.")
         if not _cite_resolves(cite, root):
-            return False, (f"predicate_cite does not resolve: {cite} (file missing / "
-                           "line beyond EOF / unknown hash)")
+            return False, (f"predicate_cite does not resolve: {cite} (no such file "
+                           "(bare names resolve under tools/gcc-2.7.2/) / line beyond "
+                           "EOF / unknown hash)")
     return True, ""
 
 
@@ -1011,7 +1041,16 @@ MODALITY_PLAYBOOK = {
                  "~9-min window — never hand-poll across turns), then "
                  "harvest --stop, then write your outcome. Findings are PROPOSALS — vet "
                  "against the cheat catalog. Save logs under tmp/grind/<func>/s<N>/ and "
-                 "list them in artifacts."),
+                 "list them in artifacts."
+                 " CHASSIS RULE (2026-09-01): if the ledger already banks a permuter campaign "
+                 "on the SAME candidate chassis with 0 novel finds after >=20k iterations, "
+                 "re-seeding it is not a probe — the session must permute a structurally "
+                 "different chassis (a banked instance-kill form is a good seed) or a "
+                 "different lever hint. The permuter cannot express N-way statement "
+                 "duplication into arms, goto-into-existing-body, chassis swaps, or "
+                 "FAKE-construct removal — if the frontier names one of those, spend the "
+                 "session on `tools/sweep_variants.py` over hand-written variants and "
+                 "`tools/fake_ablate.py`, and bank those measurements as the artifact."),
     "solver": ("SOLVER modality — tools/ra_solver + tools/sched_solver inverse search "
                "(validated: global 10/10, reload 194/194, sched 6978/6978 blocks). "
                "Operational rules, in order: (1) run `python3 tools/ra_solver/inverse_compose.py "
@@ -1033,13 +1072,32 @@ MODALITY_PLAYBOOK = {
                "tmp/grind/<func>/s<N>/ and list them in artifacts."),
     "forensics": ("Instrumented cc1: RTL/ALLOCDBG/GREG dumps. Name the exact GCC pass and "
                   "decision producing the divergence. Save dumps under tmp/grind/<func>/s<N>/ "
-                  "and list them in artifacts."),
+                  "and list them in artifacts."
+                  " PASS-INPUT ENUMERATION: naming the pass that produced the divergence "
+                  "is half the job; the other half is enumerating the source-side INPUT "
+                  "shapes that change what the pass sees (func_80038C70: 46 sessions on "
+                  "how to stop find_cross_jump, when the closer was to give the block no "
+                  "set-insn at all). Use tools/loop_movables.py (loop.c decisions, every "
+                  "predicate term incl. n_times_set and the running threshold), "
+                  "tools/nrefs_census.py (reg_n_refs / allocno order + what-if lifts), "
+                  "tools/label_census.py (branch targets, predecessors, callee-saved ref "
+                  "counts, target vs build) and bank their output as artifacts."),
     "rederive": ("Re-derivation: fresh m2c decompile, decomp.me corpus "
                  "(tools/decomp_me_scrape.py), sibling/Kengo transplant. Produce a "
                  "structurally DIFFERENT C shape, not a tweak of the current one."),
     "synthesis": ("Re-read the ENTIRE ledger (evidence.md + hypotheses.md + rejected/). "
                   "Write the best merged attack. Reset the frontier to the strongest 1-3 "
-                  "hypotheses for the next ladder pass."),
+                  "hypotheses for the next ladder pass."
+                  " KILL RE-AUDIT (2026-09-01): list every instance kill in state.json "
+                  "kills[] whose measured_on differs from the current chassis or names a "
+                  "FAKE construct no longer present; re-measure the two closest-to-target "
+                  "ones with tools/fake_ablate.py BEFORE proposing anything new. "
+                  "CONTRADICTION RULE: if the ledger now marks EVERY chassis as foreclosed, "
+                  "impossible, or dead, at least one of those verdicts is wrong — the "
+                  "matching C exists. Re-audit the WEAKEST foreclosure (the one with no "
+                  "predicate_cite, or the oldest) first; func_80041188 spent 14 sessions "
+                  "proving one chassis impossible while the other sat foreclosed on an "
+                  "incomplete loop.c predicate."),
     "annotation-fix": ("ANNOTATION FIX-UP — TINY SCOPE. The Judge FAILed the previous "
                        "candidate on ANNOTATION FORMAT ONLY: the work itself was accepted, "
                        "and the sole defect is the /* FAKE: ... */ comment's presence or "
