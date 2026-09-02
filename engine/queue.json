@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002FF20",
-      "file": "code6cac_b",
-      "distance": 34,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "unparked_from": "FORECLOSED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-08-31): 2026-09-01 \u2014 func_8002FF20 \u2014 JUDGE ESCALATE on final call (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)",
-      "unpark_reason": "grant rescan 2026-09-02: cop2 cluster condition 3: SDK macro body is the template (owner Ruling A 2026-09-02) (.claude/rules/cop2-addressing-preamble-cluster.md:163)"
-    },
-    {
       "func": "func_800300B4",
       "file": "code6cac_b",
       "distance": 37,
@@ -1834,14 +1824,14 @@
     }
   ],
   "counts": {
-    "total": 205,
-    "active": 186,
+    "total": 204,
+    "active": 185,
     "by_status": {
-      "active": 186,
+      "active": 185,
       "foreclosed": 19
     },
     "by_verdict": {
-      "ASM-PARTIAL": 30,
+      "ASM-PARTIAL": 29,
       "C": 156
     }
   }

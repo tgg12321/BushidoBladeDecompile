@@ -51,3 +51,39 @@
 
 Artifacts: tmp/grind/func_8002FF20/s1/{body.c, body_final.c, code6cac_b_sandbox0.o, bytecmp.py,
 scan_hand_coded.txt, apply.py, finalize.py}.
+
+## s1b (2026-09-02, recon — owner directive: grant rescan, cop2 cluster condition 3) — RE-MEASURED ON CURRENT CHASSIS, BYTES PROVEN
+
+9. **Directive executed.** The queue directive "grant rescan 2026-09-02: cop2 cluster condition 3: SDK macro
+   body is the template (owner Ruling A 2026-09-02)" was executed this session: the banked candidate body
+   (identical to `tmp/grind/func_8002FF20/s1/body_final.c`) was restored into `src/code6cac_b.c` in place of
+   the `INCLUDE_ASM` line (HEAD 63e6bcf6 chassis). `canonical func_8002FF20` = ASM-PARTIAL, "11/99 insns
+   canonical-asm (c2, ctc2, lwc2, mtc2, swc2)". `sandbox func_8002FF20 --disable all` = **score 0, 99/99,
+   rules_dropped 0** (the `cheat_asm_stripped: 33` field is FILE-wide — `engine/sandbox.py:68`
+   `inlineasm.write_stripped(stem, ...)` counts every island in code6cac_b.c, not this function's; build_insns
+   99 == target proves nothing of this body was stripped). `& tools/wteng.ps1 main build` = **sha1
+   62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH**. No codegen change since s1; the chassis move
+   (asm-until-matched migration) did not perturb the body.
+10. **Ruling A conformance edits (comments only, bytes unchanged — sandbox re-run 0, 99/99).** Owner Ruling A
+   (docs/grind/decisions.md "2026-09-02 — OWNER RULING", rule text
+   `.claude/rules/cop2-addressing-preamble-cluster.md:163`) requires "every island comment must cite the
+   macro name and header line". The s1 comments named island 2 `gte_ldv0` — WRONG macro: the PsyQ
+   `gte_ldv0` body is two `lwc2`; the `lhu/lhu/sll/or` VX0/VY0 pack + `mtc2 $0` + `lwc2 $1` body is
+   **`gte_ldlv0`** (PsyQ 4.5 `inline_c.h:101-110`, the exact cite the owner ruling and allowlist rows :373/:374
+   use). Island 3's `.word 0x4A486012` is the `gte_rtv0()` macro. Comments now name gte_SetRotMatrix(r0),
+   gte_ldlv0(r0) [inline_c.h:101-110], gte_rtv0(), gte_stlvnl(r0) and state "verbatim macro body".
+   **Header-line caveat:** no copy of PsyQ `inline_c.h` exists on this machine (searched tools/, include/,
+   docs/, tmp/sotn-decomp, tmp/psyq_prov/psyz, Desktop/sotn-decomp, WSL home — SOTN fetches the SDK at build
+   time; bin/ holds only tarball hashes), so line numbers for gte_SetRotMatrix / gte_rtv0 / gte_stlvnl could
+   NOT be verified locally and are cited by header + macro name only, exactly as the operator-written
+   allowlist rows for func_8002E838 (:373) and func_80031890 (:374) do. The only line-numbered cite
+   (gte_ldlv0 :101-110) is the one the owner ruling itself records.
+11. **Grant-door status.** Registry row exists: `tools/grinder/owner_cluster_grants.txt:29` (func_8002FF20,
+   widened anchor, owner grant 2026-09-01 decisions.md:18082, row per owner ruling 2026-09-02). Under Ruling C
+   the Judge PASS path counts the four islands, finds no `inline_asm_canonical.txt` line, and executes the
+   grant through the registry door, titling the commit COMPLETED-INLINE-ASM-CANONICAL. The prior
+   borderline.md:360 REFUSAL is marked SPENT by the owner (borderline.md:556). Nothing remains for a grind
+   session to do on this function except submit.
+
+Artifacts: tmp/grind/func_8002FF20/s1b/{body.c, body_final.c, fix_comments.py, bank.py}. Candidate:
+memory/grind/func_8002FF20/candidate.c (whole-file copy of src/code6cac_b.c with the body applied).

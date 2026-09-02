@@ -1530,7 +1530,104 @@ s32 func_8002FDB0(s32 *arg0) {
 
 
 /* kengo:HIGH  |  is_coli/coli_check_circle_hit_line  |  92i */
-INCLUDE_ASM("asm/funcs", func_8002FF20);
+/* func_8002FF20 -- pure-C head (72 insns, byte-exact with zero coercion) + four PsyQ SDK
+ * GTE macro islands (gte_SetRotMatrix, gte_ldlv0, gte_rtv0 = cop2 MVMVA .word 0x4A486012,
+ * gte_stlvnl), character-identical to the func_800203B4 (src/code6cac.c,
+ * inline_asm_canonical.txt:367), func_8002E838 (:373) and func_80031890 (:374) authorized
+ * spellings. Each island is the verbatim body of the named Sony PsyQ GTE macro (PsyQ 4.5
+ * inline_c.h) -- cluster condition 3 as clarified by owner Ruling A 2026-09-02
+ * (.claude/rules/cop2-addressing-preamble-cluster.md:163). Confirmed carrier under the
+ * 2026-09-01 widened cop2 materialize-then-copy owner GRANT (docs/grind/decisions.md:18082;
+ * registry row tools/grinder/owner_cluster_grants.txt:29): the three $t4 copy sources here are
+ * $v0/$v0/$v0 (.s L60, L72, L84). Honest bucket: COMPLETED-INLINE-ASM-CANONICAL (allowlist
+ * line required). Measured 2026-09-01 (s1) and re-measured 2026-09-02 on the current chassis:
+ * sandbox --disable all == 0 (99/99, rules_dropped 0); full build SHA1 == oracle MATCH.
+ * Load-bearing: `vec` is ONE named local used by both the gte_ldv0 and gte_stlvnl operands so
+ * cse.c materializes `addiu $v0,$s0,0x2C` once and island 3 reuses $v0 (.s L84).
+ * Full ledger: memory/grind/func_8002FF20/. */
+void func_8002FF20(u8 *arg0, u8 arg1) {
+    s32 mat_local[8];
+    s32 *playerData;
+    s32 *s2_ptr;
+    s32 *rot_mat;
+    s32 *vec;
+
+    arg0[8] = 1;
+    arg0[9] = arg1;
+    playerData = (s32 *)game_GetPlayerData(arg0[6] < 1);
+    rot_mat = (s32 *)((u8 *)arg0 + 0xC);
+    s2_ptr = (s32 *)playerData[arg0[9]];
+
+    /* 3x3 identity matrix at arg0+0xC..arg0+0x1D (9 s16 entries). */
+    *(s16 *)((u8 *)arg0 + 0xC) = 0x1000;
+    *(s16 *)((u8 *)arg0 + 0xE) = 0;
+    *(s16 *)((u8 *)arg0 + 0x10) = 0;
+    *(s16 *)((u8 *)arg0 + 0x12) = 0;
+    *(s16 *)((u8 *)arg0 + 0x14) = 0x1000;
+    *(s16 *)((u8 *)arg0 + 0x16) = 0;
+    *(s16 *)((u8 *)arg0 + 0x18) = 0;
+    *(s16 *)((u8 *)arg0 + 0x1A) = 0;
+    *(s16 *)((u8 *)arg0 + 0x1C) = 0x1000;
+    RotMatrixX(*(s16 *)((u8 *)arg0 + 0x54), rot_mat);
+    RotMatrixY(*(s16 *)((u8 *)arg0 + 0x56), rot_mat);
+    RotMatrixZ(*(s16 *)((u8 *)arg0 + 0x58), rot_mat);
+    func_8002EECC(s2_ptr, mat_local);
+    MulMatrix0(mat_local, rot_mat, rot_mat);
+
+    /* Subtract opponent reference position from self position. */
+    *(s32 *)((u8 *)arg0 + 0x2C) -= s2_ptr[5];
+    *(s32 *)((u8 *)arg0 + 0x30) -= s2_ptr[6];
+    *(s32 *)((u8 *)arg0 + 0x34) -= s2_ptr[7];
+
+    /* PsyQ 4.5 inline_c.h macro gte_SetRotMatrix(r0) --- verbatim macro body:
+     * copies the operand into $12, loads the 5 packed rotation-matrix words
+     * through $13-$15 and ctc2's them into cop2 control regs $0..$4. */
+    __asm__ volatile(
+        "move   $12, %0\n"
+        "lw     $13, 0($12)\n"
+        "lw     $14, 4($12)\n"
+        "ctc2   $13, $0\n"
+        "ctc2   $14, $1\n"
+        "lw     $13, 8($12)\n"
+        "lw     $14, 12($12)\n"
+        "lw     $15, 16($12)\n"
+        "ctc2   $13, $2\n"
+        "ctc2   $14, $3\n"
+        "ctc2   $15, $4\n"
+        :: "r"(mat_local) : "$12", "$13", "$14", "$15");
+    vec = (s32 *)((u8 *)arg0 + 0x2C);
+    /* PsyQ 4.5 inline_c.h:101-110 macro gte_ldlv0(r0) --- verbatim macro body:
+     * lhu/lhu/sll/or packs VX0/VY0 (s32 x,y) into one word, mtc2 to $0, lwc2 VZ0
+     * into $1; the 2-cycle GTE load delay is carried as explicit nops (maspsx does
+     * not supply them in the full-build context -- measured 2026-09-01). */
+    __asm__ volatile(
+        "move   $12, %0\n"
+        "lhu    $14, 4($12)\n"
+        "lhu    $13, 0($12)\n"
+        "sll    $14, $14, 16\n"
+        "or     $13, $13, $14\n"
+        "mtc2   $13, $0\n"
+        "lwc2   $1, 8($12)\n"
+        "nop\n"
+        "nop\n"
+        :: "r"(vec) : "$12", "$13", "$14");
+    /* PsyQ 4.5 inline_c.h macro gte_rtv0() --- cop2 MVMVA sf=1, mx=rotation,
+     * v=V0, cv=none: the macro's single `.word 0x4A486012` (cop2 0x0486012). */
+    __asm__ volatile(".word 0x4A486012");
+    /* PsyQ 4.5 inline_c.h macro gte_stlvnl(r0) --- verbatim macro body: copies
+     * the operand into $12 and swc2's MAC1/MAC2/MAC3 ($25/$26/$27) to r0. */
+    __asm__ volatile(
+        "move   $12, %0\n"
+        "swc2   $25, 0($12)\n"
+        "swc2   $26, 4($12)\n"
+        "swc2   $27, 8($12)\n"
+        :: "r"(vec) : "$12");
+
+    /* Halve x, y, z (signed arithmetic shift). */
+    *(s32 *)((u8 *)arg0 + 0x2C) >>= 1;
+    *(s32 *)((u8 *)arg0 + 0x30) >>= 1;
+    *(s32 *)((u8 *)arg0 + 0x34) >>= 1;
+}
 
 INCLUDE_ASM("asm/funcs", func_800300B4);
 void func_80030208(void) {

@@ -26,3 +26,12 @@ Empty for codegen. Remaining step is the grant path under the normal grind gates
 (evidence.md fact 8). If the Judge FAILs the island body on a construct, the only respelling
 axis is the island partition (thin-island variants) — func_800203B4 s6 measured those 12/4/8
 non-zero for the identical macro set; expect the same here.
+
+## H4 — CONFIRMED (s1b, 2026-09-02)
+**Statement:** The banked s1 body is chassis-stable: restored onto HEAD 63e6bcf6 (asm-until-matched chassis,
+INCLUDE_ASM replaced) it still scores sandbox 0 (99/99, rules_dropped 0) and the full build SHA1 == oracle.
+**Mechanism:** none needed — the body compiles in the same TU context; the migration touched only the
+INCLUDE_ASM line for this function.
+**Probe:** apply s1 body; canonical; sandbox --disable all; full build; comment-only Ruling A edits; sandbox again.
+**Result:** 0 / 0 / MATCH / 0. Submitted candidate-ready under cluster condition 3 (Ruling A). Frontier stays
+empty for codegen; the only remaining step is the driver's grant-door integration.

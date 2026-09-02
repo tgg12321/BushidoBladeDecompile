@@ -1162,7 +1162,108 @@ INCLUDE_ASM("asm/funcs", func_8002DAD0);
 INCLUDE_ASM("asm/funcs", func_8002DE20);
 INCLUDE_ASM("asm/funcs", func_8002E6B0);
 /* kengo:HIGH  |  is_pad/pad_main_control  |  98i */
-INCLUDE_ASM("asm/funcs", func_8002E838);
+void func_8002E838(u8 *obj) {
+    s32 sp_tmp;
+    s32 *mat;
+    s32 *vec;
+    s32 dist_sq;
+    s32 angle;
+    s32 dist;
+
+    *(s32 *)(obj + 0xA8) = (*(s32 **)(obj + 0x64))[0] - (*(s32 **)(obj + 0x60))[0];
+    *(s32 *)(obj + 0xAC) = (*(s32 **)(obj + 0x64))[1] - (*(s32 **)(obj + 0x60))[1];
+    *(s32 *)(obj + 0xB0) = (*(s32 **)(obj + 0x64))[2] - (*(s32 **)(obj + 0x60))[2];
+    angle = ratan2(*(s32 *)(obj + 0xA8), *(s32 *)(obj + 0xB0));
+    dist_sq = *(s32 *)(obj + 0xA8) * *(s32 *)(obj + 0xA8)
+            + *(s32 *)(obj + 0xB0) * *(s32 *)(obj + 0xB0);
+    *(s16 *)(obj + 0xFA) = 0x800 - angle;
+
+    if ((u32)dist_sq < 0x400) {
+        dist = (u32)*(((u8 *)&D_8008D118) + dist_sq) >> 3;
+    } else {
+        s32 lzcr = 0;
+        if (dist_sq >= 0) {
+            /* Hand-written GTE leading-zero-count block (LZCS in, LZCR out) —
+             * canonical inline asm, identical to the user-authorized block in
+             * the matched sibling func_8001A67C (src/code6cac.c). */
+            __asm__ volatile(
+                "addu   $t4, %1, $zero\n"
+                "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
+                "nop\n"
+                "nop\n"
+                "addiu  $v0, $sp, 0x10\n"  /* &sp_tmp */
+                "addu   $t4, $v0, $zero\n"
+                "swc2   $31, 0($t4)\n"     /* sp_tmp <- LZCR */
+                : "=m"(sp_tmp)
+                : "r"(dist_sq)
+                : "$2", "$12");
+            lzcr = sp_tmp;
+        }
+        {
+            s32 shift = 0x16 - (lzcr & ~1);
+            s32 tbl = *(((u8 *)&D_8008D118) + ((u32)dist_sq >> shift));
+            dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
+        }
+    }
+
+    angle = ratan2(*(s32 *)(obj + 0xAC), dist);
+    mat = (s32 *)(obj + 0xD8);
+    *(s16 *)(obj + 0xF8) = 0x800 - angle;
+
+    /* identity 3x3 rotation matrix at obj+0xD8 */
+    *(s16 *)(obj + 0xD8) = 0x1000;
+    *(s16 *)(obj + 0xDA) = 0;
+    *(s16 *)(obj + 0xDC) = 0;
+    *(s16 *)(obj + 0xDE) = 0;
+    *(s16 *)(obj + 0xE0) = 0x1000;
+    *(s16 *)(obj + 0xE2) = 0;
+    *(s16 *)(obj + 0xE4) = 0;
+    *(s16 *)(obj + 0xE6) = 0;
+    *(s16 *)(obj + 0xE8) = 0x1000;
+    RotMatrixY(*(s16 *)(obj + 0xFA), mat);
+    RotMatrixX(*(s16 *)(obj + 0xF8), mat);
+
+    /* PsyQ libgte inline macro gte_SetRotMatrix(r) --- loads the 5 packed
+     * rotation-matrix words at r into cop2 control regs $0..$4.  Same island
+     * as the matched func_800203B4 (src/code6cac.c). */
+    __asm__ volatile(
+        "move   $12, %0\n"
+        "lw     $13, 0($12)\n"
+        "lw     $14, 4($12)\n"
+        "ctc2   $13, $0\n"
+        "ctc2   $14, $1\n"
+        "lw     $13, 8($12)\n"
+        "lw     $14, 12($12)\n"
+        "lw     $15, 16($12)\n"
+        "ctc2   $13, $2\n"
+        "ctc2   $14, $3\n"
+        "ctc2   $15, $4\n"
+        :: "r"(mat) : "$12", "$13", "$14", "$15");
+    vec = (s32 *)(obj + 0xA8);
+    /* PsyQ libgte inline macro gte_ldv0(r) --- pack VX0/VY0 into one word,
+     * mtc2 to $0, lwc2 VZ0 into $1, then the 2-cycle GTE load delay. */
+    __asm__ volatile(
+        "move   $12, %0\n"
+        "lhu    $14, 4($12)\n"
+        "lhu    $13, 0($12)\n"
+        "sll    $14, $14, 16\n"
+        "or     $13, $13, $14\n"
+        "mtc2   $13, $0\n"
+        "lwc2   $1, 8($12)\n"
+        "nop\n"
+        "nop\n"
+        :: "r"(vec) : "$12", "$13", "$14");
+    /* GTE MVMVA sf=1, mx=rotation, v=V0, cv=none --- cop2 command 0x0486012. */
+    __asm__ volatile(".word 0x4A486012");
+    /* PsyQ libgte inline macro gte_stlvnl(r) --- store MAC1/MAC2/MAC3
+     * ($25/$26/$27) to r (rotated vector written back in place). */
+    __asm__ volatile(
+        "move   $12, %0\n"
+        "swc2   $25, 0($12)\n"
+        "swc2   $26, 4($12)\n"
+        "swc2   $27, 8($12)\n"
+        :: "r"(vec) : "$12", "memory");
+}
 /* kengo:HIGH  |  sa_tan2/saTan2LinePrimInit  |  110i */
 s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     s32 *vin;
@@ -1430,13 +1531,17 @@ s32 func_8002FDB0(s32 *arg0) {
 
 /* kengo:HIGH  |  is_coli/coli_check_circle_hit_line  |  92i */
 /* func_8002FF20 -- pure-C head (72 insns, byte-exact with zero coercion) + four PsyQ SDK
- * GTE macro islands (gte_SetRotMatrix, gte_ldv0, cop2 MVMVA .word 0x4A486012, gte_stlvnl),
- * character-identical to the func_8002FDB0 (this file, inline_asm_canonical.txt:268) and
- * func_800203B4 (src/code6cac.c, inline_asm_canonical.txt:367) authorized spellings.
- * Confirmed carrier under the 2026-09-01 widened cop2 materialize-then-copy owner GRANT
- * (docs/grind/decisions.md:18082 record; .claude/rules/cop2-addressing-preamble-cluster.md:156):
- * the three $t4 copy sources here are $v0/$v0/$v0 (.s L60, L72, L84). Measured 2026-09-01 (s1):
- * sandbox --disable all == 0 (99/99, rules_dropped 0); full build SHA1 == oracle.
+ * GTE macro islands (gte_SetRotMatrix, gte_ldlv0, gte_rtv0 = cop2 MVMVA .word 0x4A486012,
+ * gte_stlvnl), character-identical to the func_800203B4 (src/code6cac.c,
+ * inline_asm_canonical.txt:367), func_8002E838 (:373) and func_80031890 (:374) authorized
+ * spellings. Each island is the verbatim body of the named Sony PsyQ GTE macro (PsyQ 4.5
+ * inline_c.h) -- cluster condition 3 as clarified by owner Ruling A 2026-09-02
+ * (.claude/rules/cop2-addressing-preamble-cluster.md:163). Confirmed carrier under the
+ * 2026-09-01 widened cop2 materialize-then-copy owner GRANT (docs/grind/decisions.md:18082;
+ * registry row tools/grinder/owner_cluster_grants.txt:29): the three $t4 copy sources here are
+ * $v0/$v0/$v0 (.s L60, L72, L84). Honest bucket: COMPLETED-INLINE-ASM-CANONICAL (allowlist
+ * line required). Measured 2026-09-01 (s1) and re-measured 2026-09-02 on the current chassis:
+ * sandbox --disable all == 0 (99/99, rules_dropped 0); full build SHA1 == oracle MATCH.
  * Load-bearing: `vec` is ONE named local used by both the gte_ldv0 and gte_stlvnl operands so
  * cse.c materializes `addiu $v0,$s0,0x2C` once and island 3 reuses $v0 (.s L84).
  * Full ledger: memory/grind/func_8002FF20/. */
@@ -1474,9 +1579,9 @@ void func_8002FF20(u8 *arg0, u8 arg1) {
     *(s32 *)((u8 *)arg0 + 0x30) -= s2_ptr[6];
     *(s32 *)((u8 *)arg0 + 0x34) -= s2_ptr[7];
 
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r) --- loads the 5 packed
-     * rotation-matrix words at r into cop2 control regs $0..$4.  The SDK
-     * macro body hardcodes $12-$15 and copies the operand into $12. */
+    /* PsyQ 4.5 inline_c.h macro gte_SetRotMatrix(r0) --- verbatim macro body:
+     * copies the operand into $12, loads the 5 packed rotation-matrix words
+     * through $13-$15 and ctc2's them into cop2 control regs $0..$4. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -1491,9 +1596,10 @@ void func_8002FF20(u8 *arg0, u8 arg1) {
         "ctc2   $15, $4\n"
         :: "r"(mat_local) : "$12", "$13", "$14", "$15");
     vec = (s32 *)((u8 *)arg0 + 0x2C);
-    /* PsyQ libgte inline macro gte_ldv0(r) --- pack VX0/VY0 into one word,
-     * mtc2 to $0, lwc2 VZ0 into $1, then the 2-cycle GTE load delay carried
-     * as explicit nops (maspsx does not supply them in the full-build context). */
+    /* PsyQ 4.5 inline_c.h:101-110 macro gte_ldlv0(r0) --- verbatim macro body:
+     * lhu/lhu/sll/or packs VX0/VY0 (s32 x,y) into one word, mtc2 to $0, lwc2 VZ0
+     * into $1; the 2-cycle GTE load delay is carried as explicit nops (maspsx does
+     * not supply them in the full-build context -- measured 2026-09-01). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"
@@ -1505,10 +1611,11 @@ void func_8002FF20(u8 *arg0, u8 arg1) {
         "nop\n"
         "nop\n"
         :: "r"(vec) : "$12", "$13", "$14");
-    /* GTE MVMVA sf=1, mx=rotation, v=V0, cv=none --- cop2 command 0x0486012. */
+    /* PsyQ 4.5 inline_c.h macro gte_rtv0() --- cop2 MVMVA sf=1, mx=rotation,
+     * v=V0, cv=none: the macro's single `.word 0x4A486012` (cop2 0x0486012). */
     __asm__ volatile(".word 0x4A486012");
-    /* PsyQ libgte inline macro gte_stlvnl(r) --- store MAC1/MAC2/MAC3
-     * ($25/$26/$27) to r. */
+    /* PsyQ 4.5 inline_c.h macro gte_stlvnl(r0) --- verbatim macro body: copies
+     * the operand into $12 and swc2's MAC1/MAC2/MAC3 ($25/$26/$27) to r0. */
     __asm__ volatile(
         "move   $12, %0\n"
         "swc2   $25, 0($12)\n"
@@ -1869,7 +1976,98 @@ s32 func_80030D50(s32 arg0, s32 arg1, s32 arg2) {
     return arg1 + ((arg0 * arg2) >> 12);
 }
 INCLUDE_ASM("asm/funcs", func_80030D7C);
-INCLUDE_ASM("asm/funcs", func_80031890);
+/* kengo:?  |  s1 recon  |  GTE rotate-velocity-by-table-angle (sibling of func_8002E838) */
+void func_80031890(u8 *obj, u8 *ent, s32 idx) {
+    s32 *mat;
+    s32 *vec;
+    s32 angle1;
+    s32 angle2;
+    s32 sum_sq;
+    s32 adj;
+
+    if (*(s16 *)(ent + 0x2) != 0xE) {
+        s32 vx = *(s32 *)(ent + 0x44);
+        s32 vz = *(s32 *)(ent + 0x4C);
+        s32 av = *(s16 *)(ent + 0x5E);
+        sum_sq = vx * vx + vz * vz;
+        if (rng_Next() & 1) {
+            adj = sum_sq / 64;
+        } else {
+            adj = -sum_sq / 64;
+        }
+        *(s16 *)(ent + 0x5E) = av + adj;
+    }
+
+    mat = (s32 *)(obj + 0xD8);
+    angle1 = (&D_8008EBA0)[idx] & 0xFFF;
+    angle2 = (((*(s32 *)(ent + 0x2C) * 16) + *(s32 *)(ent + 0x30) + (*(s32 *)(ent + 0x34) * 8)) & 0x7FF) - 0x400;
+    /* identity 3x3 rotation matrix at obj+0xD8 */
+    *(s16 *)(obj + 0xD8) = 0x1000;
+    *(s16 *)(obj + 0xDA) = 0;
+    *(s16 *)(obj + 0xDC) = 0;
+    *(s16 *)(obj + 0xDE) = 0;
+    *(s16 *)(obj + 0xE0) = 0x1000;
+    *(s16 *)(obj + 0xE2) = 0;
+    *(s16 *)(obj + 0xE4) = 0;
+    *(s16 *)(obj + 0xE6) = 0;
+    *(s16 *)(obj + 0xE8) = 0x1000;
+    RotMatrixY(angle1, mat);
+    RotMatrixX(angle2, mat);
+
+    /* PsyQ libgte inline macro gte_SetRotMatrix(r) --- loads the 5 packed
+     * rotation-matrix words at r into cop2 control regs $0..$4.  Same island
+     * as the matched func_800203B4 (src/code6cac.c) / func_8002E838. */
+    __asm__ volatile(
+        "move   $12, %0\n"
+        "lw     $13, 0($12)\n"
+        "lw     $14, 4($12)\n"
+        "ctc2   $13, $0\n"
+        "ctc2   $14, $1\n"
+        "lw     $13, 8($12)\n"
+        "lw     $14, 12($12)\n"
+        "lw     $15, 16($12)\n"
+        "ctc2   $13, $2\n"
+        "ctc2   $14, $3\n"
+        "ctc2   $15, $4\n"
+        :: "r"(mat) : "$12", "$13", "$14", "$15");
+    vec = (s32 *)(ent + 0x44);
+    /* PsyQ libgte inline macro gte_ldv0(r) --- pack VX0/VY0 into one word,
+     * mtc2 to $0, lwc2 VZ0 into $1, then the 2-cycle GTE load delay. */
+    __asm__ volatile(
+        "move   $12, %0\n"
+        "lhu    $14, 4($12)\n"
+        "lhu    $13, 0($12)\n"
+        "sll    $14, $14, 16\n"
+        "or     $13, $13, $14\n"
+        "mtc2   $13, $0\n"
+        "lwc2   $1, 8($12)\n"
+        "nop\n"
+        "nop\n"
+        :: "r"(vec) : "$12", "$13", "$14");
+    /* GTE MVMVA sf=1, mx=rotation, v=V0, cv=none --- cop2 command 0x0486012. */
+    __asm__ volatile(".word 0x4A486012");
+    /* PsyQ libgte inline macro gte_stlvnl(r) --- store MAC1/MAC2/MAC3
+     * ($25/$26/$27) to r (rotated vector written back in place). */
+    __asm__ volatile(
+        "move   $12, %0\n"
+        "swc2   $25, 0($12)\n"
+        "swc2   $26, 4($12)\n"
+        "swc2   $27, 8($12)\n"
+        :: "r"(vec) : "$12", "memory");
+
+    if ((u32)(angle1 - 0x401) < 0x7FFU) {
+        *(s32 *)(ent + 0x44) /= 8;
+        *(s32 *)(ent + 0x48) /= 8;
+        *(s32 *)(ent + 0x4C) /= 8;
+    } else {
+        *(s32 *)(ent + 0x44) /= 4;
+        *(s32 *)(ent + 0x48) /= 4;
+        *(s32 *)(ent + 0x4C) /= 4;
+    }
+    *(s32 *)(ent + 0x2C) += *(s32 *)(ent + 0x44) / 2;
+    *(s32 *)(ent + 0x30) += *(s32 *)(ent + 0x48) / 2;
+    *(s32 *)(ent + 0x34) += *(s32 *)(ent + 0x4C) / 2;
+}
 INCLUDE_ASM("asm/funcs", func_80031B24);
 void func_80032040(void) {
     s32 i;
