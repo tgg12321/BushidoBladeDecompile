@@ -918,3 +918,88 @@ not a spelling question.
 - probe: Read func_80047FBC (src/text1b.c:82) and func_80047EE8 (src/text1b.c:35) side by side with memory/grind/func_800480C0/candidate.c, and the grant rows at engine/volatile_cheats.py:757-767.
 - result: func_80047FBC is this routine with four parameters instead of six and is COMPLETED-C on main. Its body is line-for-line candidate.c: same base_addr/p init chain, the same annotated `arg0 = 0;` dead param store with the same cse2 canonical-register justification, the same (((s32)(arg1 << 16)) >> 14) offset, the same (((*p) >> 2) << 2) re-base, the same in-loop word + four halfword cursor reads, the same while ((count--) != 0) tail. The one difference is its leading `volatile u32 pre_pad[8];`, granted by the 2026-08-20 owner ruling; func_800481E8 holds the same grant from the 2026-08-22 parked-but-proven audit. func_800480C0 is the fourth member of that family, in the same TU, with the same window, and is not in the enumeration - which is exactly what the 2026-09-02 04:28 Judge FAIL turned on (docs/grind/decisions.md:20349).
 - verdict: CONFIRMED
+
+## s11 (escalation, 2026-09-02, chassis HEAD 37f9ecdb)
+
+H-s11-1 (KILLED, instance). *Statement:* On the current chassis (HEAD 37f9ecdb)
+the banked candidate body still measures a floor of 20, and the single annotated
+FAKE it carries (`arg0 = 0;`) is not masking a phantom-slot lever on the pseudo
+it occupies. *Mechanism:* a banked instance kill is only valid on the chassis and
+FAKE state it was measured under; the driver mandates re-measuring the closest
+form with FAKEs ablated before spending a session elsewhere. *Probe:* installed
+`memory/grind/func_800480C0/candidate.c` over the INCLUDE_ASM line, ran
+`sandbox func_800480C0 --disable all`, then
+`tools/fake_ablate.py --func func_800480C0 --file text1b --candidate
+memory/grind/func_800480C0/candidate.c`. *Result:* sandbox = 20 (74/74,
+rules_dropped 0), identical to s3-s10. Ablator finds exactly one FAKE unit;
+keep-all = 20 / 74 insns, drop-1 = 32 / 73 insns. Removing the FAKE raises the
+floor and deletes an instruction, so it cannot be hiding a lever that would
+lower it. All 29 banked instance kills stand on this chassis.
+*measured_on:* HEAD 37f9ecdb, candidate.c installed over the INCLUDE_ASM line,
+one FAKE present (`arg0 = 0;`) and separately ablated; volatile pre_pad stripped
+by the sandbox in both variants. *kill_scope:* instance.
+
+H-s11-2 (KILLED, instance). *Statement:* func_800480C0 shows STRONG hand-coded-asm
+signals, which would open the canonical-asm grant path as the endgame disposition.
+*Mechanism:* endgame-lock AND-gate (a) — a canonical-asm grant requires STRONG
+`scan_hand_coded` signals S1 (multu pacing), S2 (empty-body branch) or S6 (BIOS
+jumptable). *Probe:* `python3 tools/scan_hand_coded.py --single func_800480C0`.
+*Result:* `tier=LOW score=1/8`, reason "no strong hand-coded indicators". The
+only hit is S4 (front loads: 4 loads in an 8-insn window @ insn 32), which the
+tier rule does not count as strong; S1 finds 0 multu/mflo pairs, S3 counts 9
+spills across 13 registers (compiler behaviour, not hand allocation), S5 finds no
+sibling above jaccard 0.5, S7 finds every callee-save properly saved, S2/S6/S8
+find nothing. Gate (a) FAILS; no canonical-asm path.
+*measured_on:* HEAD 37f9ecdb, read-only scan over asm/funcs/func_800480C0.s; no
+candidate installed, no FAKE construct in play. *kill_scope:* instance.
+
+H-s11-3 (CONFIRMED). *Statement:* An in-hand SOTN-master (PSX / GCC 2.7.2)
+precedent EXISTS for the volatile-leading-pad construct that closes this
+function, but it evidences the declaration shape only and does not extend BB2's
+closed per-function enumeration. *Mechanism:* endgame-lock AND-gate (b) requires
+a citable file+line SOTN exhibit, not "same spirit"; separately,
+`.claude/rules/no-new-park-categories.md:340-342` and
+`engine/volatile_cheats.py:744` scope the BB2 carve-out as an enumeration whose
+every row was added by a dated owner ruling. *Probe:* grep
+`docs/reference/sotn-construct-index.md` for pad-array declarations and read the
+`_SANCTIONED_UNWRITTEN_PADS` table's provenance comments. *Result:* three PSX
+hits — `:103` src/st/sel/stream.c:80 `volatile u32 pad[4]; // FAKE`;
+`:84` src/st/e_background_bushes_trees.h:160 `volatile char pad[8]; //! FAKE`;
+`:101` src/st/sel/2C048.c:564 `volatile u32 pad; // !FAKE:`. The index records
+declaration sites only, so the *unwritten* sub-case is not itself established,
+and the index header disclaims that a hit is a BB2 authorization. All five
+post-original rows in `_SANCTIONED_UNWRITTEN_PADS`
+(engine/volatile_cheats.py:746-769) carry inline 2026-08-20 / 2026-08-22 OWNER
+RULING citations. So the precedent is real and is recorded in the foreclosure
+entry for owner batch review, but it does not authorize the row, and the
+disposition remains the silent foreclosure.
+
+**Session outcome:** disposition filed at docs/grind/decisions.md:20353
+(RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED), returned `owner-gated`.
+No further probe should be spent re-spelling class A / class B / DImode routes —
+s4 (~50k permuter iterations), s6-s9 (producer forensics) and s10 (55 structural
+forms, all vars=0/unalloc=0) closed them, and s10's sibling transplant showed the
+residual is a source DECLARATION carried by three COMPLETED-C siblings under
+owner grants, not an unfound spelling.
+
+## [s11] On the current chassis (HEAD 37f9ecdb) the banked candidate body still measures a floor of 20, and the single annotated FAKE it carries (arg0 = 0;) is not masking a phantom-slot lever on the pseudo it occupies.
+- mechanism: A banked instance kill is only valid on the chassis and FAKE state it was measured under; the driver's KILL RE-AUDIT mandate requires re-measuring the closest banked form with every FAKE ablated before spending the session elsewhere.
+- probe: Installed memory/grind/func_800480C0/candidate.c over the INCLUDE_ASM line via tmp/grind/func_800480C0/s3/install.py, ran `sandbox func_800480C0 --disable all`, then `tools/fake_ablate.py --func func_800480C0 --file text1b --candidate memory/grind/func_800480C0/candidate.c`; restored src/text1b.c to HEAD afterwards.
+- result: sandbox = {"score": 20, "target_insns": 74, "build_insns": 74, "rules_dropped": 0} - identical to s3 through s10, so the flat floor is real on this chassis and not a stale ledger number. The ablator finds exactly one FAKE unit (arg0 = 0; at candidate.c L206): keep-all = 20 / 74 insns, drop-1 = 32 / 73 insns. Removing the FAKE raises the floor and deletes an instruction, so it cannot be concealing a lever that would lower it. The volatile pre_pad[8] is not counted as a FAKE unit because the volatile-cheat stripper removes it before scoring - which is precisely why the honest floor reads 20 and not 0. All 29 banked instance kills stand unchanged on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 37f9ecdb, candidate.c installed over the INCLUDE_ASM line; one FAKE present (arg0 = 0;) and separately ablated; volatile pre_pad stripped by the sandbox in both variants.
+
+## [s11] func_800480C0 shows STRONG hand-coded-asm signals, which would open the canonical-asm grant path as this function's endgame disposition.
+- mechanism: Endgame-lock AND-gate (a): a canonical-asm grant requires STRONG scan_hand_coded signals - S1 multu pacing, S2 empty-body branch, or S6 BIOS jumptable. Weak signals (S4 front loads, S5 cluster) do not qualify.
+- probe: python3 tools/scan_hand_coded.py --single func_800480C0 (output banked at tmp/grind/func_800480C0/s11/scan_hand_coded.txt).
+- result: HAND_CODED: tier=LOW score=1/8 (74 insns), reason 'no strong hand-coded indicators'. Only S4 fires (4 loads in an 8-insn window @ insn 32). S1 finds 0 multu/mflo pairs; S3 counts 9 spills across 13 distinct registers (compiler allocation behaviour, not hand allocation); S5 finds no sibling above jaccard 0.5; S7 finds every callee-save properly saved; S2, S6 and S8 find nothing. Gate (a) FAILS - no canonical-asm grant path. Consistent with the rest of the ledger: m2c rederives this control flow directly (s10 axis 1), and a COMPLETED-C sibling with a line-for-line identical body (func_80047FBC, src/text1b.c:82) already ships on main.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 37f9ecdb, read-only scanner pass over asm/funcs/func_800480C0.s; no candidate installed, no FAKE construct in play.
+
+## [s11] An in-hand SOTN-master (PSX / GCC 2.7.2) precedent exists for the volatile-leading-pad construct that closes this function, but it evidences the declaration shape only and does not extend BB2's closed per-function enumeration.
+- mechanism: Endgame-lock AND-gate (b) requires a citable file+line SOTN-master exhibit ('same spirit' does not count). Separately, .claude/rules/no-new-park-categories.md:340-342 and engine/volatile_cheats.py:744 scope BB2's carve-out as an enumeration, not a shape predicate, and every row in it was added by a dated owner ruling.
+- probe: Grepped docs/reference/sotn-construct-index.md (machine-generated at sotn-decomp master aa53500226ee84be763f3e8702b27de06456b3a7, 1911 files) for volatile pad declarations, and read the provenance comments on every row of engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS.
+- result: Three PSX (untagged, i.e. GCC 2.7.2, not the PSP/mwcc or Saturn ports) hits: sotn-construct-index.md:103 -> src/st/sel/stream.c:80 `volatile u32 pad[4]; // FAKE`; :84 (and :620) -> src/st/e_background_bushes_trees.h:160 `volatile char pad[8]; //! FAKE`; :101 -> src/st/sel/2C048.c:564 `volatile u32 pad; // !FAKE:`. Honest limit: the index records declaration sites only, so it does not resolve whether those pads are subsequently written - it evidences the volatile-leading-pad construct, not specifically the UNWRITTEN sub-case this function needs - and the index header states a hit 'is not, by itself, a BB2 authorization'. Meanwhile all five post-original rows in _SANCTIONED_UNWRITTEN_PADS (engine/volatile_cheats.py:746-769: func_80047EE8, func_80047FBC, func_800481E8, func_80049A2C, func_80041688) carry inline dated 2026-08-20 / 2026-08-22 OWNER RULING citations; none was added by a Judge, a driver scope grant, or a session. So a sixth row is a family extension, which the 2026-08-31 ordinary-c-judge-decidable ruling makes FAIL(CONSTRUCT) - exactly what the 2026-09-02 04:28 Judge ruled at decisions.md:20349. The precedent is recorded in the foreclosure entry so the driver borderline-logs it for owner batch review; the disposition is still the silent foreclosure.
+- verdict: CONFIRMED

@@ -3,6 +3,25 @@
  * file is a CANDIDATE, not the state of HEAD; every 'measured on main' statement in the
  * headers below means 'measured with this body installed over that INCLUDE_ASM line'.
  * Install with tmp/grind/func_800480C0/s3/install.py. */
+/* s11 (escalation, 2026-09-02, chassis HEAD 37f9ecdb) - BODY UNCHANGED. Floor
+ * re-measured 20 (74/74, rules_dropped 0) with this body installed over the
+ * INCLUDE_ASM line; src/text1b.c restored to HEAD afterwards. Mandated FAKE
+ * re-audit re-run on this chassis (tools/fake_ablate.py): one FAKE unit
+ * (`arg0 = 0;`), keep-all 20 / drop-1 32 - load-bearing, masking no lever.
+ * DISPOSITION FILED: docs/grind/decisions.md:20353 - RESOLVED BY STANDING
+ * RULING (2026-07-27): FORECLOSED. Gate (a) canonical-asm FAILS
+ * (scan_hand_coded tier=LOW 1/8, only S4 fires, no STRONG signal). Gate (b)
+ * SOTN precedent for the volatile-leading-pad CONSTRUCT is in hand
+ * (docs/reference/sotn-construct-index.md:103 -> src/st/sel/stream.c:80
+ * `volatile u32 pad[4]; // FAKE`; :84 -> e_background_bushes_trees.h:160
+ * `volatile char pad[8]; //! FAKE`) but does NOT open the family: BB2's
+ * carve-out is a CLOSED per-function enumeration, owner-only to extend
+ * (.claude/rules/no-new-park-categories.md:340-342,
+ * engine/volatile_cheats.py:744). This body is therefore the final banked form
+ * and is UNBLOCKED the moment an owner ruling adds the
+ * `("pre_pad", 8)` row - the bytes are already proven (SHA1 match,
+ * tmp/grind/func_800480C0/s1/build.log). Do NOT re-file this as an INTEGRATION
+ * HANDOFF (Judge FAIL, decisions.md:20349). */
 /* s10 (rederive, 2026-09-02, chassis HEAD a0198d09) - BODY UNCHANGED, floor
  * re-measured 20 (74/74, `sandbox func_800480C0 --disable all`). The mandated
  * rederive axes were all three run to the end and they CONVERGE on this body:

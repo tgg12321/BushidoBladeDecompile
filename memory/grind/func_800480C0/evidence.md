@@ -857,3 +857,107 @@ holds on the current chassis.
 - [s10] TOOLING DEFECT FIXED, and it matters for reading s6-s9 numbers: tmp/grind/func_800480C0/s6/probe.sh counts insns with grep -E '^[ \t]+[a-z]', where \t inside a bracket expression is a literal backslash-t, so it always reported insns=0; and when that script is run from Git Bash on the Windows host instead of through WSL, its cd to the /mnt path fails, cc1 never runs, and awk reports the frame line of the PREVIOUS run's probe.s. tmp/grind/func_800480C0/s10/probe.sh fixes both (deletes probe.s/fn.s first, prints CC1-FAIL if cc1 produced nothing) and every s10 measurement was taken through bash tools/wsl.sh.
 
 - [s10] src/text1b.c is byte-clean at HEAD at session end; every probe restored it via git checkout before and after each compile.
+
+## s11 (escalation, 2026-09-02, chassis HEAD 37f9ecdb) — DISPOSITION SESSION
+
+E-s11-1. **Floor re-measured on the current chassis: 20, unchanged.**
+`sandbox func_800480C0 --disable all` with `memory/grind/func_800480C0/candidate.c`
+installed over the `INCLUDE_ASM("asm/funcs", func_800480C0);` line reads
+`{"score": 20, "target_insns": 74, "build_insns": 74, "scorable": true,
+"rules_dropped": 0, "cheat_asm_stripped": 166}`. (The 166 stripped bytes are
+pre-existing file-scope cheat-asm elsewhere in text1b.c, not this function.)
+src/text1b.c was restored to its HEAD INCLUDE_ASM state immediately after the
+measurement; the working tree ends this session clean apart from ledger files
+and the engine-written metrics/events.jsonl.
+
+E-s11-2. **Mandated FAKE re-audit re-run on this chassis.**
+`tools/fake_ablate.py --func func_800480C0 --file text1b --candidate
+memory/grind/func_800480C0/candidate.c` (`tmp/grind/func_800480C0/s11/fake_ablate.txt`)
+finds exactly ONE FAKE unit in the candidate — the annotated `arg0 = 0;` dead
+param store at candidate.c L206. keep-all = score 20 / 74 build insns;
+drop-1 = score 32 / 73 build insns. So the FAKE is load-bearing for the
+instruction stream (it buys the 74th insn and the `$a0`/`base_addr` value split)
+and it does NOT sit on a pseudo that a phantom-slot lever would otherwise
+occupy. This re-confirms s8's and s10's ablation verdicts under the current
+chassis and closes the KILL RE-AUDIT the driver mandated: no banked instance
+kill was measured with a FAKE carrier masking its target, because there is only
+one FAKE and its ablation moves the floor the wrong way (20 -> 32).
+Note the `volatile u32 pre_pad[8];` declaration is NOT counted as a FAKE unit by
+the ablator — the volatile-cheat stripper removes it before scoring, which is
+exactly why the honest floor reads 20 and not 0.
+
+E-s11-3. **Endgame gate (a), canonical-asm: FAILS.**
+`python3 tools/scan_hand_coded.py --single func_800480C0`
+(`tmp/grind/func_800480C0/s11/scan_hand_coded.txt`) gives
+`HAND_CODED: tier=LOW score=1/8 (74 insns), Reason: no strong hand-coded
+indicators`. Signal detail: S1 multu pacing — 0 multu/mflo pairs; S2 empty
+branch — none; S3 no spills — 74 insns / 9 spills / 13 distinct regs (i.e. it
+DOES spill, which is compiler behaviour); S4 front loads — the only hit
+(4 loads in an 8-insn window @ insn 32); S5 cluster — no high-similarity sibling
+above jaccard 0.5; S6 BIOS jumptable — no; S7 unsaved $sN — all callee-saves are
+saved; S8 redundant mask — none. None of the STRONG signals (S1/S2/S6) fire, so
+there is no canonical-asm grant path. This is consistent with everything else in
+the ledger: m2c rederives the control flow (s10 axis 1) and a COMPLETED-C
+sibling with the same body exists on main.
+
+E-s11-4. **Endgame gate (b), SOTN-master precedent: the CONSTRUCT is exhibited,
+the FAMILY is still closed.** Grepping `docs/reference/sotn-construct-index.md`
+(machine-generated at sotn-decomp master `aa535002`, 1911 files) for leading
+volatile pad declarations returns three PSX (untagged, GCC 2.7.2) hits:
+`:103` -> `src/st/sel/stream.c:80` `volatile u32 pad[4]; // FAKE`;
+`:84`/`:620` -> `src/st/e_background_bushes_trees.h:160`
+`volatile char pad[8]; //! FAKE`; `:101` -> `src/st/sel/2C048.c:564`
+`volatile u32 pad; // !FAKE:` (scalar). Honest limit of this evidence: the index
+records the DECLARATION site only, so it establishes that SOTN master ships a
+volatile leading pad as a match hack but does NOT resolve whether those specific
+pads are subsequently written — i.e. it does not, on its own, evidence the
+*unwritten* sub-case that this function needs. And per the index header, a hit
+"is not, by itself, a BB2 authorization."
+
+E-s11-5. **Why gate (b) passing on the construct still does not unblock this
+function.** BB2's carve-out is not a predicate over shapes; it is a CLOSED
+per-function enumeration. `.claude/rules/no-new-park-categories.md:340-342`:
+"applies to func_8001E404, func_8001E6E4, func_8003CF84 ONLY; any further use
+requires a fresh owner ruling". `engine/volatile_cheats.py:744`: "Any extension
+requires a fresh owner ruling". All five later rows in
+`_SANCTIONED_UNWRITTEN_PADS` (`engine/volatile_cheats.py:746-769` — func_80047EE8,
+func_80047FBC, func_800481E8, func_80049A2C, func_80041688) carry an inline dated
+OWNER RULING citation (2026-08-20 / 2026-08-22); none was added by a Judge, a
+driver scope grant, or a session. A sixth row is therefore a family extension,
+which under the 2026-08-31 ordinary-c-judge-decidable ruling is FAIL(CONSTRUCT),
+not an escalation — exactly what the 2026-09-02 04:28 Judge ruled at
+decisions.md:20349.
+
+E-s11-6. **Disposition filed.** `docs/grind/decisions.md:20353` —
+`## 2026-09-02 — func_800480C0 (src/text1b.c) — RESOLVED BY STANDING RULING
+(2026-07-27): FORECLOSED`. It carries both gates' evidence, the ten-session /
+seven-modality exhaustion table, the ~50k-iteration permuter result, the 29+2
+kills and 31 rejected forms, the s10 sibling-transplant identification of the
+residual as a source DECLARATION rather than an unfound spelling, and three
+re-activation triggers (owner enumeration row; a general class grant; a
+toolchain finding that plants four distribute_notes orphans at one block head
+from ordinary live C on a body with narrow lhu+sll+sra parameter loads). Because
+gate (b) produced an in-hand precedent citation, the driver borderline-logs the
+record for owner batch review; the disposition is still the silent foreclosure.
+
+- [s11] Floor re-measured this session on chassis HEAD 37f9ecdb: sandbox func_800480C0 --disable all with candidate.c installed = score 20, target_insns 74, build_insns 74, rules_dropped 0 - unchanged since s3, so the driver's exhaustion call rests on a live number, not a stale ledger entry.
+
+- [s11] The 20 residual insns are all sp-offset deltas: build frame 0x38 vs target frame 0x58. The 74-instruction stream is otherwise byte-identical. The gap is a 32-byte allocated-but-never-touched vars window at sp+0x18..0x37, with ZERO sw/lw in that range anywhere in asm/funcs/func_800480C0.s.
+
+- [s11] Mandated FAKE re-audit (tools/fake_ablate.py, tmp/grind/func_800480C0/s11/fake_ablate.txt): exactly one FAKE unit in the candidate (arg0 = 0;). keep-all = 20 / 74 insns; drop-1 = 32 / 73 insns. The FAKE is load-bearing for the stream and masks no phantom-slot lever, re-confirming s8's and s10's ablation verdicts on the current chassis.
+
+- [s11] Endgame gate (a) FAILS: scan_hand_coded --single func_800480C0 = tier LOW, score 1/8, only S4 (front loads) firing; none of the STRONG signals S1/S2/S6 fire. No canonical-asm grant path.
+
+- [s11] Endgame gate (b) PASSES on the construct: SOTN PSX master ships volatile leading pads as match hacks - docs/reference/sotn-construct-index.md:103 (src/st/sel/stream.c:80, volatile u32 pad[4]; // FAKE), :84 (src/st/e_background_bushes_trees.h:160, volatile char pad[8]; //! FAKE), :101 (src/st/sel/2C048.c:564, scalar form). The index records declaration sites only, so the unwritten sub-case is not itself established by it.
+
+- [s11] Gate (b) does not unblock the function because BB2's carve-out is a CLOSED per-function enumeration, not a shape predicate: .claude/rules/no-new-park-categories.md:340-342 ('applies to func_8001E404, func_8001E6E4, func_8003CF84 ONLY; any further use requires a fresh owner ruling') and engine/volatile_cheats.py:744 ('Any extension requires a fresh owner ruling'). All five later rows carry inline dated owner-ruling citations.
+
+- [s11] The residual is a source DECLARATION, not an unfound spelling: s10's sibling transplant showed func_80047FBC (src/text1b.c:82) is this same routine with four parameters, COMPLETED-C on main, line-for-line identical to candidate.c apart from its granted volatile u32 pre_pad[8]; (engine/volatile_cheats.py:757-758). func_80047EE8 and func_800481E8 carry the identical grant. func_800480C0 is the fourth family member, same TU, same untouched window, no row.
+
+- [s11] Exhaustion: ten sessions, floor FLAT at 20 since s3, across seven distinct modalities (recon, structural, permuter, synthesis, solver, forensics, rederive) - including ~50k permuter iterations over 2 chassis with --stack-diffs (s4), the combine.c distribute_notes orphan-USE producer identification (s6, combine.c:10832-10841), a solver classify that closed its own axis PRE-RA with 'next tool: none' (s7), a filter-free census of all 1096 compiled functions (s8), and 55 structural respellings every one of which measured vars=0 / unalloc=0 (s10). 29 instance kills + 2 class kills, 31 rejected forms banked.
+
+- [s11] Bytes remain proven for the granted form: with the enumeration row present the sandbox reads 0 and the full clean-driver build SHA1s to 62efab4f73f992798c43e8c730aa43baa10bb4fa (tmp/grind/func_800480C0/s1/build.log). The function integrates unchanged the moment an owner ruling adds the row.
+
+- [s11] Disposition record filed this session at docs/grind/decisions.md:20353 - '## 2026-09-02 - func_800480C0 (src/text1b.c) - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED'. It is a proof-of-foreclosure record, not a decision packet and not a re-filing of the INTEGRATION HANDOFF at decisions.md:20282 (Judge FAIL at decisions.md:20349).
+
+- [s11] src/text1b.c was restored to its HEAD INCLUDE_ASM("asm/funcs", func_800480C0); state after the measurement; the session's diff touches only docs/grind/decisions.md, memory/grind/func_800480C0/{candidate.c,evidence.md,hypotheses.md}, tmp/, and the engine-written metrics/events.jsonl.

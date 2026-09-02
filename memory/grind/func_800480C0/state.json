@@ -1,8 +1,8 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 10,
- "current_modality": "rederive",
+ "session_count": 11,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -63,23 +63,29 @@
    "floor": 20,
    "modality": "rederive",
    "headline": "Rederive spent on all three axes: fresh m2c reproduces the banked control flow, the sibling transplant reproduces the banked body verbatim (func_80047FBC is this routine with 4 params, COMPLETED-C on "
+  },
+  {
+   "session": 11,
+   "floor": 20,
+   "modality": "escalation",
+   "headline": "Disposition filed: gate (a) canonical-asm FAILS (scan_hand_coded tier=LOW 1/8, no STRONG signal); gate (b) SOTN precedent for the volatile-leading-pad construct is in hand (sotn-construct-index.md:103"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is not a spelling question any more: with class A closed in both directions, class B capped at 1 across 55 forms, and the DImode route dead, the 32-byte untouched window at sp+0x18..0x37 has no remaining honest producer on this body, and the sibling transplant identifies it as the same source declaration the three granted siblings carry.",
-   "mechanism": "func_80047FBC (src/text1b.c:82) is this routine with four parameters, COMPLETED-C on main, line-for-line identical to candidate.c apart from its granted `volatile u32 pre_pad[8];` (engine/volatile_cheats.py:757-767, 2026-08-20 and 2026-08-22 owner rulings). func_800480C0 is the fourth member of the same family in the same TU with the same window and no row.",
-   "next_probe": "This is the escalation-modality disposition, not a probe: file the proof-of-foreclosure record naming the three sibling grants as the gate evidence and the missing enumeration row as the single re-activation trigger. It should NOT be spent re-spelling class A or class B, and it should not be re-filed as an INTEGRATION HANDOFF - the 2026-09-02 04:28 Judge FAIL (docs/grind/decisions.md:20349) already ruled that the unwritten-leading-pad enumeration is closed and that this function is not in it."
+   "hypothesis": "An owner ruling adding the ('pre_pad', 8) row for func_800480C0 to engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS re-activates this function and completes it with zero further grinding.",
+   "mechanism": "The bytes are already proven end-to-end: with the row honoured, sandbox --disable all reads 0 and the full clean-driver build SHA1s to the oracle (tmp/grind/func_800480C0/s1/build.log). The three in-file siblings received identical rows under the 2026-08-20 / 2026-08-22 owner rulings after the same bytes proof.",
+   "next_probe": "No probe. Operator steps are enumerated verbatim at docs/grind/decisions.md:20330-20345 (apply candidate.c over the INCLUDE_ASM line, add the row, sandbox must print 0, verify-oracle --rebuild, fresh layer-2 cheat-reviewer, queue done). A grind session may not write engine/ - it is on the scope-grant denylist at .claude/rules/integration-handoff-self-serve.md:63 and is mechanically refused by _SCOPE_GRANT_ALLOWED_RE (tools/grinder/grindlib.py:401)."
   },
   {
-   "hypothesis": "A third permuter basin seeded from a stream-preserving alternative chassis (b9's s16 round-trip temporaries, or b2's u8* cursor) reaches a form the two basins of s4 could not, because those basins were both seeded from the single s1/s3 chassis.",
-   "mechanism": "s4 ran ~50k iterations with --stack-diffs across two chassis, but both were spellings of the same pointer-cursor body. b2 and b9 compile to the identical 72-insn stream from materially different C, so decomp-permuter's mutation neighbourhoods around them are disjoint from what s4 explored.",
-   "next_probe": "tools/permuter_campaign.py with b9_stackarg_himode_roundtrip.c and b2_bytewalker.c as separate import bases, --stack-diffs on, fresh-seed stopping rule (~20-30 fresh seeds with no novel find). Wait in-turn with `permuter_campaign.py wait --dir <ws>` and harvest --stop before writing the outcome. Expect a negative: the frame delta is a declaration, not a schedule, and no permuter mutation adds a local aggregate."
+   "hypothesis": "A general class grant converting the per-function enumeration into a family predicate - 'allocated-but-never-touched leading vars window with zero target stores, in a TU where sibling functions already hold grants' - would cover this function without a per-function row.",
+   "mechanism": "The enumeration has grown to eight rows by six separate owner rulings, at least four of which (func_80047EE8, func_80047FBC, func_800481E8, and this function) are members of one four-function batch-loader family in one TU with the identical 0x18-0x37 window. That is the shape a predicate would generalise.",
+   "next_probe": "Owner-only. Nothing for a grind session to measure: the frozen family list is owner-only to extend (.claude/rules/no-new-park-categories.md), and the 2026-08-31 ordinary-c-judge-decidable ruling makes a session-side extension attempt FAIL(CONSTRUCT), not an escalation."
   },
   {
-   "hypothesis": "The args=56 / vars=0 layout is indistinguishable from args=24 / vars=32 in the shipped bytes, so a fourteen-word outgoing-argument block would also reproduce the frame - but no honest call site in this function has fourteen arguments.",
-   "mechanism": "MIPS o32 with ACCUMULATE_OUTGOING_ARGS sizes the arg block from the widest call; the single call here is func_800482C8 with five arguments (args= 24 after alignment, with the fifth stored at 0x10($sp)). Reaching args= 56 needs a wider call that the target stream does not contain.",
-   "next_probe": "Closed, not open - recorded so it is not re-derived. Fabricating a dead wide call site is the family the owner refused on 2026-08-17 (.claude/rules/no-new-park-categories.md:357-366), and a real one would emit stores. No probe should be spent here."
+   "hypothesis": "A toolchain finding that plants FOUR combine.c distribute_notes orphan pseudos at one block head from ordinary live C, on a body whose parameters arrive through narrow lhu+sll+sra loads, would give the 32-byte window an honest producer.",
+   "mechanism": "s6 named the producer as a distribute_notes orphan USE (combine.c:10832-10841) and s7 established the orphans DO stack at one block head; but this body's narrow parameter loads rule out the orphan shape SetDrawEnv (3 phantoms, vars=32, ordinary C) uses, and s10's 55 forms all measured unalloc=0.",
+   "next_probe": "Not a per-function probe - it is a cross-function toolchain question. If a future session on another queue item finds a body that reaches four orphans at one block head with narrow parameter loads, re-open this function and transplant the producer shape. Do NOT re-spell class A, class B or the DImode route here: s4 (~50k permuter iters), s6-s9 (forensics) and s10 (55 forms) closed all three."
   }
  ],
  "judge_constraints": [
@@ -334,6 +340,22 @@
    "measured_on": "HEAD a0198d09, bodies at tmp/grind/func_800480C0/s10/bodies/ installed one at a time over the INCLUDE_ASM line; FAKE state per body - b1 carries no FAKE at all, b2/b5/b6 carry the annotated `arg0 = 0;",
    "predicate_cite": "",
    "result": "All four measure vars= 0 with unalloc=0. b1 is 71 insns - dropping the second base carrier removes the move $18,$16 the "
+  },
+  {
+   "session": 11,
+   "statement": "On the current chassis (HEAD 37f9ecdb) the banked candidate body still measures a floor of 20, and the single annotated FAKE it carries (arg0 = 0;) is not masking a phantom-slot lever on the pseudo it",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 37f9ecdb, candidate.c installed over the INCLUDE_ASM line; one FAKE present (arg0 = 0;) and separately ablated; volatile pre_pad stripped by the sandbox in both variants.",
+   "predicate_cite": "",
+   "result": "sandbox = {\"score\": 20, \"target_insns\": 74, \"build_insns\": 74, \"rules_dropped\": 0} - identical to s3 through s10, so the"
+  },
+  {
+   "session": 11,
+   "statement": "func_800480C0 shows STRONG hand-coded-asm signals, which would open the canonical-asm grant path as this function's endgame disposition.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 37f9ecdb, read-only scanner pass over asm/funcs/func_800480C0.s; no candidate installed, no FAKE construct in play.",
+   "predicate_cite": "",
+   "result": "HAND_CODED: tier=LOW score=1/8 (74 insns), reason 'no strong hand-coded indicators'. Only S4 fires (4 loads in an 8-insn"
   }
  ],
  "ladder_skip": 0,

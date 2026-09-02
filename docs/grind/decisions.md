@@ -20349,3 +20349,120 @@ family (`.claude/rules/no-new-park-categories.md:334`) after the same bytes proo
 ## 2026-09-02 04:28 — func_800480C0 — ruling: INTEGRATION HANDOFF filed for func_800480C0 : 2026-09-02 — func_800480C0 (src/te — **FAIL**
 
 The unwritten-leading-pad family is a CLOSED per-function enumeration, and func_800480C0 is not in it. .claude/rules/no-new-park-categories.md:340-342 states the scope verbatim: 'applies to func_8001E404, func_8001E6E4, func_8003CF84 ONLY; any further use requires a fresh owner ruling', and engine/volatile_cheats.py:744 repeats 'Any extension requires a fresh owner ruling'. I read every row in _SANCTIONED_UNWRITTEN_PADS (engine/volatile_cheats.py:746-769): all five later rows (func_80047EE8/func_80047FBC/func_800481E8/func_80049A2C/func_80041688) carry an inline dated OWNER RULING citation (2026-08-20, 2026-08-22) - not one was added by a Judge or driver grant. So a new row is a family extension, which since the 2026-08-31 ordinary-c-judge-decidable ruling is FAIL(CONSTRUCT), not an escalation. The ledger's own argument ('6-arg twin of COMPLETED-C func_80047FBC, same allowlist row shape', evidence.md s1) is exactly the cluster/circumstantial precedent my standing policy says does not lower the bar; first-reach of an enumerated exception is a cheat. ESCALATE(integration-handoff) is unavailable on three independent grounds: (a) the prerequisite is sandbox --disable all == 0 and this reads 20 (candidate.c header, evidence.md ladder) - the 0 is conditional on the very grant being requested; (b) the requested path engine/volatile_cheats.py is on the explicit denylist (integration-handoff-self-serve.md:63) and is mechanically refused by _SCOPE_GRANT_ALLOWED_RE (tools/grinder/grindlib.py:401), which admits only include/*.h, src/*.c and root-level *.txt; (c) an allowlist row in the cheat-stripper weakens a gate, which that rule's 'most severe' list keeps owner-only. banned_constructs and judge_constraints are both empty, so there is no stale ban to supersede and unban_construct does not apply. I did not re-run the full build (that would require mutating src/text1b.c; I am read-only), and I take no position on the SHA1 claim - it is not what decides this. The bytes claim, the ladder, and the frame forensics are banked and unaffected by this ruling: memory/grind/func_800480C0/evidence.md, hypotheses.md, tmp/grind/func_800480C0/s1/, and the full handoff packet at docs/grind/decisions.md:20282. That packet is the record the owner reads on their own cadence; if the owner grants the row, this function integrates unchanged. Until then the pad may not be used here in any spelling, and the next session must pursue an honest producer for the allocated-but-untouched 32-byte vars region (sp+0x18..0x37) - the phantom-slot-frame-lever producers, not a declared filler.
+
+## 2026-09-02 — func_800480C0 (src/text1b.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Filed by grind session s11 (escalation modality) as a PROOF-OF-FORECLOSURE RECORD. This is
+not a question, not a decision packet, and not a re-filing of the 2026-09-02 INTEGRATION
+HANDOFF at decisions.md:20282 — that packet was ruled **FAIL** at decisions.md:20349
+(the unwritten-leading-pad allowlist is a closed per-function enumeration, owner-only to
+extend, and this function is not in it). The driver forecloses silently; an owner ruling
+adding the enumeration row, or a class grant covering the construct, re-activates the item
+unchanged.
+
+### Chassis re-measurement (this session, HEAD 37f9ecdb)
+
+- `sandbox func_800480C0 --disable all` with `memory/grind/func_800480C0/candidate.c`
+  installed over the `INCLUDE_ASM` line: `{"score": 20, "target_insns": 74,
+  "build_insns": 74, "rules_dropped": 0}`. Floor unchanged from s3 through s11.
+- Mandated FAKE re-audit re-run on this chassis (`tools/fake_ablate.py --func
+  func_800480C0 --file text1b --candidate memory/grind/func_800480C0/candidate.c`,
+  `tmp/grind/func_800480C0/s11/fake_ablate.txt`): exactly one FAKE unit
+  (`arg0 = 0;`); keep-all = 20 / 74 insns, drop-1 = 32 / 73 insns. The FAKE is
+  load-bearing for the instruction stream and masks no phantom-slot lever — s8's and
+  s10's ablation verdicts re-confirmed on the current chassis. src/text1b.c was restored
+  to its HEAD `INCLUDE_ASM("asm/funcs", func_800480C0);` state after the measurement.
+- The 20 residual insns are all sp-offset deltas: the build frame is `0x38`, the target
+  frame is `0x58`, and the 74-instruction stream is otherwise byte-identical. The gap is
+  a 32-byte allocated-but-never-touched vars window at `sp+0x18..0x37`
+  (`asm/funcs/func_800480C0.s` has ZERO `sw`/`lw` in that range).
+
+### Gate (a) — canonical-asm: **FAILS**
+
+`python3 tools/scan_hand_coded.py --single func_800480C0`
+(`tmp/grind/func_800480C0/s11/scan_hand_coded.txt`):
+
+    HAND_CODED: tier=LOW  score=1/8  (func_800480C0, 74 insns)
+    Reason: no strong hand-coded indicators
+    [ ] S1 multu pacing  [ ] S2 empty branch  [ ] S3 no spills  [X] S4 front loads
+    [ ] S5 cluster       [ ] S6 BIOS jumptable [ ] S7 unsaved $sN [ ] S8 redundant mask
+
+None of the STRONG signals (S1/S2/S6) fire; the single hit is S4 (front loads), which the
+tier rule does not count as strong. The body is ordinary compiled C — a five-argument call
+to `func_800482C8` inside a `while ((count--) != 0)` cursor loop — and the m2c rederive
+(s10 axis 1) reproduces its control flow directly. No canonical-asm grant path.
+
+### Gate (b) — SOTN-master precedent for the closing construct: **PASSES ON THE CONSTRUCT,
+does not open the family**
+
+The closing construct is a leading `volatile u32 pre_pad[8];` frame declaration. SOTN
+master ships the construct, and the citations are in hand (PSX/GCC-2.7.2, untagged in the
+index, i.e. not the PSP/mwcc or Saturn ports):
+
+- `docs/reference/sotn-construct-index.md:103` → `src/st/sel/stream.c:80` —
+  `volatile u32 pad[4]; // FAKE`
+- `docs/reference/sotn-construct-index.md:84` (and `:620`) →
+  `src/st/e_background_bushes_trees.h:160` — `volatile char pad[8]; //! FAKE`
+- `docs/reference/sotn-construct-index.md:101` → `src/st/sel/2C048.c:564` —
+  `volatile u32 pad; // !FAKE:` (scalar form)
+
+Honest qualification: the index records the declaration site, not whether those pads are
+subsequently written, so it evidences the *volatile-leading-pad* construct as a shipped
+SOTN match hack but does not by itself establish the *unwritten* sub-case. The index's own
+header states a hit "is not, by itself, a BB2 authorization."
+
+That is why gate (b) does not change the disposition. BB2's carve-out is not a family
+predicate but a **closed per-function enumeration**:
+`.claude/rules/no-new-park-categories.md:340-342` — "applies to func_8001E404,
+func_8001E6E4, func_8003CF84 ONLY; any further use requires a fresh owner ruling" — and
+`engine/volatile_cheats.py:744` — "Any extension requires a fresh owner ruling". Every one
+of the five later rows in `_SANCTIONED_UNWRITTEN_PADS` (`engine/volatile_cheats.py:746-769`:
+func_80047EE8, func_80047FBC, func_800481E8, func_80049A2C, func_80041688) carries an
+inline dated OWNER RULING citation (2026-08-20 / 2026-08-22); not one was added by a Judge,
+a driver scope grant, or a session. Adding a sixth is a family extension, which under the
+2026-08-31 `ordinary-c-judge-decidable` ruling is FAIL(CONSTRUCT). Per the standing
+instruction, this record carries the precedent citation so the driver borderline-logs it
+for owner batch review; the disposition is still the silent foreclosure.
+
+### Exhaustion evidence (ledger pointers)
+
+Ten sessions, floor FLAT at 20 since s3 (s1/s2 recorded 32 before the un-annotated
+`arg0 = 0;` strip was corrected), across seven distinct modalities:
+
+| s | modality | outcome |
+|---|---|---|
+| s1 | recon | bytes-at-0 ladder proven (32 → 20 → 0), integration handoff filed |
+| s2 | structural | phantom "seat rotation" — later shown to be the un-annotated strip artifact |
+| s3 | structural | floor corrected 32 → 20; residual isolated as a pure +32 vars delta |
+| s4 | permuter | ~50k iterations, 2 chassis, `--stack-diffs`; nothing below 20 |
+| s5–s6 | synthesis | phantom unit corrected 4 → 8 bytes; producer named as a combine.c `distribute_notes` orphan USE (combine.c:10832-10841) |
+| s7 | solver | `inverse_compose.py classify` closes the axis itself (PRE-RA, "next tool: none") |
+| s8–s9 | forensics | four-member sibling family closed; 1096-function census; func_80041AC8 shown to be the same producer class, not a third |
+| s10 | rederive | fresh m2c + sibling transplant + 10 new chassis (55 forms total), every one vars=0 / unalloc=0 |
+| s11 | escalation | this record |
+
+Banked: 29 instance kills + 2 class kills, 31 rejected forms in
+`memory/grind/func_800480C0/rejected/`. The decisive negative is s10's sibling transplant:
+`func_80047FBC` (src/text1b.c:82) is this same routine with four parameters, COMPLETED-C on
+main, and its body is line-for-line this candidate — the ONLY structural difference is the
+granted `volatile u32 pre_pad[8];` at `engine/volatile_cheats.py:757-758`. So the residual
+is not a spelling that has gone unfound; it is a source declaration whose sanction is an
+owner-held enumeration row.
+
+### Re-activation triggers
+
+1. An owner ruling adding `"func_800480C0": frozenset({("pre_pad", 8)}),` to
+   `engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS` (and the matching scope line in
+   `.claude/rules/no-new-park-categories.md`). The bytes are already proven: with that row
+   the sandbox reads 0 and the full clean build SHA1s to
+   `62efab4f73f992798c43e8c730aa43baa10bb4fa` (`tmp/grind/func_800480C0/s1/build.log`).
+   The operator steps are enumerated verbatim at decisions.md:20330-20345.
+2. A general class grant that converts the per-function enumeration into a family predicate
+   covering "allocated-but-never-touched leading vars window with zero target stores".
+3. A toolchain finding that produces four `distribute_notes` orphan pseudos at one block
+   head from ordinary live C on a body with narrow (`lhu`+`sll`+`sra`) parameter loads —
+   the one honest producer shape s6–s10 could not reach on this chassis.
+
+**Artifacts:** `tmp/grind/func_800480C0/s11/{scan_hand_coded.txt,fake_ablate.txt,entry.md}`,
+`memory/grind/func_800480C0/{candidate.c,evidence.md,hypotheses.md,rejected/}`,
+prior packet at decisions.md:20282 and its FAIL at decisions.md:20349.
