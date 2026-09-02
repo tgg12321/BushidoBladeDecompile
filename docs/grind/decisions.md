@@ -20985,3 +20985,108 @@ The only construct in candidate.c is `volatile u32 pre_pad[4]; // !FAKE` (Phanto
 ## 2026-09-02 17:55 — func_80030580 — ruling: Is a self-cancelling arithmetic term on a real store - specifically `X + K - K`  — **FAIL**
 
 The construct is outside the frozen list, so first-reach = cheat. It has no truthful semantic reading (ordinary-c-judge-decidable Ruling 1/4 protects real-operand splits like `v=a; v+=b;` — here the operands cancel and the statement's value is exactly *(s32*)(src+0xF4)), so the ordinary-C shield does not apply and a family entry is required. I checked each adjacent family myself: F6 (no-new-park-categories.md:400-405) sanctions ONLY the `i++; i--;` statement pair and the empty-if — not an inline term, and its `+= 2 / -= 1` neighbour stays banned; 'opaque arithmetic variables' (line ~193) is the `s32 one = 1;` bit-test-transform shape and its own non-extension clause forbids generalising (decisions.md:5589 refused `-((s16)a1 * -0xB0)` on exactly that ground). Controlling precedent POSTDATES every relevant grant: func_80041188, 2026-08-23 (decisions.md:10216), closed on 'the only escape is a cancelling `out2 - out2` term, i.e. forbidden opaque arithmetic', with no PSX construct-index exhibit of a cancelling-term reference. I re-ran that search: the sole `+ 1 - 1` hit is sotn-construct-index.md:488, a comment-only line in `e_skelerang.h` explicitly about PSP alignment — not PSX GCC 2.7.2 precedent. Answering the session's second question: YES, the ban binds any spelling of the same effect — `X ^ K ^ K`, `X + K - K` with K written through a named local, or split across two statements — because the ground is the fabricated net-zero operand, not the operator. Bytes being proven (sandbox 0, bodydiff 4) is not a mitigating fact under default-FAIL; the exhaustion ledger (hypotheses.md s8, 60+ measured shapes, 24 banked rejected/) is credible and is the right foreclosure record, but exhaustion is a prerequisite for using a sanctioned family, never a substitute for one. Do not re-derive this: it is now a banned construct for this function and the reasoning is logged here and in docs/grind/borderline.md.
+
+## 2026-09-02 — func_80030580 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Filed by session s9 (modality `escalation`) as a proof-of-foreclosure RECORD under
+the owner's standing auto-ruling (`.claude/rules/endgame-lock-disposition.md`,
+silent foreclosure per the 2026-08-31 ruling `ordinary-c-judge-decidable`). This is
+not a question, not a decision packet, and nothing here waits on the owner.
+
+**The residual, stated exactly.** With `memory/grind/func_80030580/pure-c-floor2-body.c`
+applied, `sandbox func_80030580 --disable all` = **2** (re-measured THIS session:
+`score 2, target_insns 148, build_insns 148, rules_dropped 0`). All 148 body
+instructions match the target. The entire residual is the frame: our prologue emits
+`addiu $sp,$sp,-8` against the target's `addiu $sp,$sp,-0x18`, plus the matching
+epilogue `addu`. `asm/funcs/func_80030580.s` contains **not one `($sp)` reference**,
+so the target's 24 bytes are entirely untouched frame. Instrumented-cc1 FRAMEDBG on
+the current chassis reports our `vars=8` from a single `spill_new_p110` combine-orphan
+`alter_reg` slot; the target needs 24. `tools/fake_ablate.py` reports **no
+FAKE-annotated constructs** in `memory/grind/func_80030580/candidate.c` — the banked
+chassis is FAKE-free, so every kill below was measured with nothing occupying p110.
+
+**Gate (a) — canonical-asm scanner: FAILS.**
+`python3 tools/scan_hand_coded.py --single func_80030580` →
+`HAND_CODED: tier=LOW score=2/8 (148 insns)`, reason "no strong hand-coded
+indicators". None of the STRONG signals fires: S1 multu pacing (0 multu/mflo pairs),
+S2 empty branch (none), S6 BIOS jumptable (no pattern). The two set bits are the weak
+S3 (no spills, 9 distinct regs) and S4 (5 loads in an 8-insn window @ insn 71), which
+the tiering does not credit as hand-coded evidence. The function is ordinary compiled
+C; the canonical-asm grant path is not available.
+
+**Gate (b) — SOTN-master precedent for the closing construct: PASSES (cited).**
+The only construct measured to reach the target's 24 untouched frame bytes at
+`bodydiff=4 sp=0` (i.e. body byte-identical, only the two `$sp` lines differing) is
+the Phantom-frame-slot volatile pad local, `volatile u32 pre_pad[4]; // !FAKE` in
+first-decl position (`.claude/rules/no-new-park-categories.md:415-427`,
+`.claude/rules/phantom-slot-frame-lever.md`). SOTN master exhibits that exact
+construct on PSX (untagged in the index, i.e. PSX/GCC-2.7.2 provenance):
+- `docs/reference/sotn-construct-index.md:103` → `src/st/sel/stream.c:80` —
+  `volatile u32 pad[4]; // FAKE`
+- `docs/reference/sotn-construct-index.md:84` → `src/st/e_background_bushes_trees.h:160` —
+  `volatile char pad[8]; //! FAKE`
+The index's `pad_dummy_local` family carries 816 hits in total
+(`docs/reference/sotn-construct-index.md:29`, `:601`).
+
+**Why the disposition is still foreclosure despite gate (b).** The construct's family
+is already sanctioned, and the bytes are already proven: session s7 independently
+re-ran a full clean driver build with `candidate.c`'s pad form applied and got
+`sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want ... MATCH`. What blocks
+completion is not the C and not the compiler — it is that the family's own FORM
+CONSTRAINT requires a per-function row in `_SANCTIONED_UNWRITTEN_PADS`
+(`engine/volatile_cheats.py:746`), without which the cheat-stripper deletes the pad
+(`engine/volatile_cheats.py:249 find_unused_local_arrays`) and the sandbox keeps
+printing 2. `engine/` is outside a grind session's writable surface, and the
+2026-09-02 17:24 Judge ruling (`docs/grind/decisions.md:20981`) established that the
+table's extension is owner-only: all 8 existing rows (git `272e47c4`, `b734618d`) were
+operator-added under named owner rulings, none of which names `func_80030580`, and
+`integration-handoff-self-serve.md` mechanically refuses `engine/` paths. So the
+disposition is the silent foreclosure; the precedent citation above is recorded for
+the driver's borderline log and owner batch review, not as a request.
+
+**Exhaustion evidence (pointers, not re-derivation).**
+- 9 sessions, 6 distinct modalities: recon (s1), structural (s2, s3), permuter (s4),
+  synthesis (s5, s6), solver (s7), forensics (s8), escalation (s9).
+- Permuter axis: 84,000 iterations over two chassis, 0 novel finds (s4).
+- Solver axis: closed by tool verdict — `tools/ra_solver` typed the residual PRE-RA
+  with no model applicable (class kill H-s8-1, predicate `reload1.c:2403`).
+- 31 banked disproven forms in `memory/grind/func_80030580/rejected/`; 27 instance
+  kills + 1 class kill in `memory/grind/func_80030580/hypotheses.md`.
+- Pass attribution is measured, not guessed (s8, dumps banked): the orphan
+  `(use (reg N))` insns first appear at `.combine`, and the emission site is
+  `tools/gcc-2.7.2/combine.c:10835-10840`, guard
+  `REG_NOTE_KIND (note) == REG_DEAD && place == 0 && tem != 0`. The residual is a
+  two-clause predicate — clause A: the death scan crosses a `CODE_LABEL` (`tem != 0`);
+  clause B: combine's substitution leaves the register with no remaining reference
+  (`place == 0`).
+- **This session closed both remaining live frontier items with 31 new measurements.**
+  Frontier item 2 (add a folded-symbol site at zero byte cost): 15 shapes replacing
+  one or two `tbl`-relative reads with direct `(&D_8008E194)[arg1*7+K]` reads — every
+  one `vars=8`; the `tbl[0]` shapes are byte-neutral but frame-inert, the rest cost
+  43..79 body instructions. Frontier item 1 (a clause-B operand drop with truthful
+  semantics): 16 shapes. The important negative is that clause B **is** reachable
+  honestly — widening the Judge index mask to the loaded value's own width
+  (`& 0xFFFF`) makes combine genuinely delete the AND for a reason true of the data
+  (FRAMEDBG pseudo count falls p110 → p109, `bodydiff=1`) — and it still yields
+  `vars=8`. Siting the same drop INSIDE the `tbl[0]` arm chain, where clause A holds
+  by construction, also yields `vars=8` in all 6 shapes. Clause A and clause B do not
+  co-fire from any spelling measured in 9 sessions.
+
+**Auto-reject class, noted and not argued.** The two forms that DO reach `vars=24`
+are both standing Judge FAILs and are banned constructs for this function: the
+volatile pad (2026-09-02 17:24, prerequisite owner-only) and the self-cancelling
+arithmetic term `X + K - K` in any spelling (2026-09-02 17:55,
+`docs/grind/decisions.md:20985`, negative PSX census — the sole `+ 1 - 1` index hit is
+a PSP-alignment comment at `docs/reference/sotn-construct-index.md:488`).
+
+**Re-activation triggers.** (1) An owner grant adding
+`"func_80030580": frozenset({("pre_pad", 4)}),` to `_SANCTIONED_UNWRITTEN_PADS` —
+after which the operator steps are: apply `memory/grind/func_80030580/candidate.c`'s
+pad form to `src/code6cac_b.c`, fresh layer-2 `cheat-reviewer`, `sandbox` reads 0,
+`verify-oracle`, `queue done`. (2) A toolchain finding that makes GCC 2.7.2 reserve a
+13..16-byte untouched `stack_temp` from semantically real code — i.e. any C that makes
+combine's clause A and clause B co-fire, which is the one open question this ledger
+leaves. (3) A class grant covering ordinary-C frame-size carriers.
+
+**Disposition.** `src/code6cac_b.c` restored to HEAD at session end; the FAKE-free
+floor-2 body remains at `memory/grind/func_80030580/candidate.c`.

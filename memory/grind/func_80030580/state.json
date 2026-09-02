@@ -1,8 +1,8 @@
 {
  "func": "func_80030580",
  "file": "code6cac_b",
- "session_count": 8,
- "current_modality": "forensics",
+ "session_count": 9,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics: pass attribution corrected from cse2 to combine.c/distribute_notes (combine.c:10835, REG_DEAD && place==0 && tem!=0), turning the frame residual into a two-clause predicate; four more sourc"
+  },
+  {
+   "session": 9,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Escalation: both live frontier items closed with 31 measurements (all vars=8); scan tier LOW, PSX SOTN precedent for the volatile-pad closer cited; foreclosure record filed at docs/grind/decisions.md:"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "There is a combine substitution that makes a REAL loaded value entirely unused (clause B) while the C that triggers it still carries meaning.",
-   "mechanism": "combine.c:10835 needs place == 0, i.e. combine must DROP an operand rather than fold it into the consumer. Every operand-dropping simplification measured so far (+ K - K, multiply-by-zero, truncating store) is semantically vacuous; every operand-folding one rehomes the note. The open question is whether any GCC 2.7.2 simplification drops an operand for a reason that is TRUE of the data rather than true by construction.",
-   "next_probe": "Enumerate the operand-deleting paths in tools/gcc-2.7.2/combine.c (simplify_binary_operation, simplify_and_const_int, make_compound_operation, simplify_comparison) and for each ask what C triggers it: e.g. an AND whose mask provably covers the loaded value's width, a shift pair that is the identity on the real data, a compare combine folds using nonzero_bits. Spell any candidate at body statements 10/11/16/38 and measure with tmp/grind/func_80030580/s8/mkpk.py + s7/runfiles.py, requiring vars>=16 at bodydiff<=4 sp=0."
+   "hypothesis": "An owner grant of the _SANCTIONED_UNWRITTEN_PADS row closes the function immediately; nothing else is outstanding.",
+   "mechanism": "The pad form's bytes are proven (full clean build SHA1 == oracle, s7). Only the sandbox scorer, not the real build, is affected by the allowlist row.",
+   "next_probe": "Operator path on grant: apply memory/grind/func_80030580/candidate.c's pad form to src/code6cac_b.c via tmp/grind/func_80030580/s1/apply.py, run a fresh layer-2 cheat-reviewer, add the func_80030580 -> frozenset({(\"pre_pad\", 4)}) row to engine/volatile_cheats.py:746, then sandbox reads 0, verify-oracle, queue done."
   },
   {
-   "hypothesis": "A second folded-symbol site can be added without adding a load, lifting the frame under the s3 site law at zero byte cost.",
-   "mechanism": "The site law (slots = folded-symbol sites - 1) plus this session's xb_jbase measurement (one lookup through jb = &Judge, vars=8 bodydiff=0) shows the (symbol_ref) fold survives a named base pointer. Never measured: whether replacing an existing tbl-relative read with a directly indexed read of the SAME address through the global symbol (D_8008E194[arg1*7 + 4] in one arm) adds a folded site while cse keeps the load count constant.",
-   "next_probe": "Generate the D_8008E194-indexed spellings of the three arm reads and of tbl[2]/tbl[3], one site at a time and pairwise, and measure with s7/runfiles.py; accept only vars>=16 at bodydiff=0 sp=0. Note the s8 rejected forms tblidx-global-indexed-table.c and tblall-second-global-indexed.c cover the ALL-sites variants - the untested cases are the single-site and two-site ones."
+   "hypothesis": "There is C from which combine's clause A (death scan crosses a CODE_LABEL) and clause B (substitution leaves the register unreferenced) co-fire, yielding a 13..16-byte untouched alter_reg reservation from semantically real code.",
+   "mechanism": "combine.c:10835-10840, guard REG_NOTE_KIND (note) == REG_DEAD && place == 0 && tem != 0. This session proved each clause is independently reachable honestly (f1_wide gives an honest clause-B drop, p110 -> p109 at bodydiff=1; the tbl[0] arm chain supplies clause A by construction) but never observed them co-firing in 22 shapes.",
+   "next_probe": "Only worth re-opening on a toolchain finding or a class grant. The mechanical route would be to instrument distribute_notes to log (clause A, clause B) per note and diff the log between the banned self-cancel form pr16_38 (vars=24) and f1_wide (vars=8), isolating what the self-cancel form does to the death scan that an honest drop does not."
   },
   {
-   "hypothesis": "If frontier items 1 and 2 also measure dead, the sanctioned ladder for func_80030580 is spent and the foreclosure record is complete.",
-   "mechanism": "Four families died this session on top of nineteen in s8 and eight in s7; the solver axis is closed by tool verdict (H-s8-1, predicate reload1.c:2403), the permuter axis at 84k iterations in s4, and both known vars=24 routes are closed by standing Judge constraints (the volatile pad and the aggregate/self-cancel forms).",
-   "next_probe": "Do NOT dispose of the function from a non-escalation modality. Work items 1 and 2 first; only an escalation-modality session should assemble the record, and it now has the full chain: the site law, the combine.c:10835 two-clause predicate, and the clause-B/T1 coincidence that explains why every byte-free carrier found so far is semantically vacuous."
+   "hypothesis": "Byte-neutral composables banked over s8/s9 remain free to layer under any future real lever.",
+   "mechanism": "Shapes that compile to identical bytes change nothing and can be stacked with a frame-moving construct without cost.",
+   "next_probe": "Reuse memory/grind/func_80030580/composable-tblentry-pointer-byte-neutral.c, composable-posptr-byte-neutral.c, the 8 packed-word shapes from s8, and this session's byte-neutral tbl[0] global-indexed and arm mask/shift-identity shapes (tmp/grind/func_80030580/s9/g0a.c, g0ab.c, ar_wideall.c, ar_shlall.c)."
   }
  ],
  "judge_constraints": [
@@ -300,6 +306,22 @@
    "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present",
    "predicate_cite": "",
    "result": "All eight vars=8 sp=0. bodydiff=0 for xb_e4, xb_e4b, xb_dst, xb_kind, xb_jbase, xb_srcp; 15 for xb_flag; 65 for xb_amp. "
+  },
+  {
+   "session": 9,
+   "statement": "Replacing one or two tbl-relative reads with a directly indexed read of the same address through the global symbol ((&D_8008E194)[arg1*7+K]) adds a folded-symbol site under the s3 site law at zero byt",
+   "kill_scope": "instance",
+   "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session (score 2, target_insns 148, build_insns 148, rules_dropped 0), zero FAKE constructs present (tools/fake_ablate.py repor",
+   "predicate_cite": "",
+   "result": "Every shape vars=8. The three tbl[0] single-site shapes and the tbl[0] pair are byte-neutral (bodydiff=0) but frame-iner"
+  },
+  {
+   "session": 9,
+   "statement": "A combine substitution that leaves a real loaded value's operand entirely unused (clause B, place == 0) for a reason true of the data rather than true by construction produces an additional alter_reg ",
+   "kill_scope": "instance",
+   "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present (fake_ablate reports none in candidate.c)",
+   "predicate_cite": "",
+   "result": "All 16 shapes vars=8. The informative positive: f1_wide (*(u16 *)(src + 0x1CA) & 0xFFFF) is an HONEST clause-B drop -- c"
   }
  ],
  "ladder_skip": 0,
