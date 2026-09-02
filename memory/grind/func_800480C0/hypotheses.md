@@ -688,3 +688,111 @@ re-measured **20** (74/74) this session. All s5 measurements are on that chassis
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 28583e8e, shipped listing asm/funcs/func_800480C0.s; byte-visible shape, no compile required
+
+## s9 — forensics (2026-09-02, chassis HEAD 0c7f30e4)
+
+### H-s9-1 — KILLED (instance)
+**Statement.** A fifth or sixth member of the func_800482C8 batch-loader family exists in
+the shipped binary, and one of them writes the sp+0x18..0x37 window, which would name the
+32-byte object and give an honest row-free C form for all four known siblings.
+**Mechanism.** function.c assign_stack_local reserves a slot from a source DECL at
+RTL-expand; a live sibling would show the object's stores in its shipped listing.
+**Probe.** `grep -l 'func_800482C8' asm/funcs/*.s src/*.c`.
+**Result.** Exactly five files match: asm/funcs/{func_80047EE8,func_80047FBC,func_800480C0,
+func_800481E8}.s, func_800482C8's own listing, and src/text1b.c. The family has four
+members and they are all already characterised; there is no further body to inspect.
+**measured_on.** HEAD 0c7f30e4, read-only grep over asm/funcs and src; no candidate installed.
+
+### H-s9-2 — KILLED (instance)
+**Statement.** func_80041AC8's three phantoms come from a producer whose RTL provenance
+differs from SetDrawEnv's, which would mean the mult-free ceiling of three measured in s8
+is not a real ceiling.
+**Mechanism.** s8 established func_80041AC8 (src/text1a_post.c:298) is mult-free with 3
+phantoms and vars=32 and is not the display.c clamp idiom, so its orphans might have a
+different plant site.
+**Probe.** Dumped text1a_post.i and display.i with the instrumented cc1 -da
+(tmp/grind/func_800480C0/s9/{dump.sh,dump2.sh}); located each hardreg=-1 pseudo in the .cse
+and .combine dumps.
+**Result.** Both bodies use the identical producer. func_80041AC8's orphans 115/105/85 are
+defined at .cse insns 171/106/26 by `(set (reg:SI P) (ashift:SI (subreg:SI (reg:HI Q) 0)
+(const_int 16)))`, each followed by an `ashiftrt ... 16` carrying `REG_EQUAL (sign_extend:SI
+(reg:HI Q))`; SetDrawEnv's orphans 140/137/128 are defined at .cse insns 217/209/166 by the
+same pattern. In .combine each survives only as `(insn (use (reg:SI P)))`. Same class, no
+third producer.
+**measured_on.** HEAD 0c7f30e4, instrumented cc1 tools/gcc-2.7.2/cc1 on src/text1a_post.c
+and src/display.c as they stand at HEAD; no candidate installed.
+
+### H-s9-3 — KILLED (class)
+**Statement.** The class-A combine ashift-deletion producer can be made to fire on
+func_800480C0's four halfword sites while the shipped 74-insn stream is preserved.
+**Mechanism.** combine deletes the `ashift` half of the shift-pair sign extension only when
+it can substitute a MEMORY equivalent for the HImode pseudo and re-form the extension as a
+signed narrow load; that substitution is gated by can_combine_p's
+`use_crosses_set_p (src, INSN_CUID (insn))` test, which refuses whenever a register in the
+MEM's address is set between the two insns.
+**Probe.** (a) Read the emitted asm of both attested producers: func_80041AC8 ships
+`lh $2,0($16)` beside `lhu $3,0($16)`, SetDrawEnv ships `lh $5,22($sp)` and
+`lh $2,D_8009BE78` against its own stack local — every orphan is paid for with an emitted
+signed narrow load. (b) Read asm/funcs/func_800480C0.s: zero `lh`, and every one of the
+four `lhu $aN,0x0($s0)` loads has `addiu $s0,$s0,0x2` on its base register between the load
+and the `sll/sra` pair, which is why those pairs survive into the shipped bytes at all.
+(c) Measured the immediate-sign-extend spelling (`s32 a1v = (s16)*(u16*)p;`) that would be
+the fold's best chance: `vars= 0, regs= 8/0, args= 24`, unalloc=0, orphanUSE=0 — identical
+to the control.
+**Result.** Firing the producer requires giving a halfword a memory home or removing the
+intervening `addiu`; both change the emitted stream (the constant-offset variant was killed
+in s8 on displacement and addiu-count grounds), and the spelling that keeps the stream
+keeps orphanUSE at 0.
+**predicate_cite.** tools/gcc-2.7.2/combine.c:917
+**measured_on.** HEAD 0c7f30e4, s6/probe.sh on tmp/grind/func_800480C0/s9/bodies/
+{CTRL_candidate,A_s32_immediate_sx}.c installed over the INCLUDE_ASM line; annotated
+`arg0 = 0;` FAKE present in every body (its ablation grid was scored in s8: keep-all 20,
+drop-1 32).
+
+### H-s9-4 — KILLED (instance)
+**Statement.** Extending the arg1 scale into a longer combine-foldable arithmetic chain
+plants extra distribute_notes orphan USEs, one per fold.
+**Mechanism.** The shipped `sll $a1,16; sra $a1,14` is itself a combine merge of a
+sign-extension pair with a `* 4`; if each additional merge orphaned an intermediate, chain
+length would be a free phantom multiplier.
+**Probe.** Three bodies measured with s6/probe.sh: B_arg1_chain_2x2 (`((s16)arg1*2)*2`),
+C_arg1_chain_2x2x1 (`((s16)arg1*2)*2*1`), D_arg1_mul4_after_sx (`(s16)arg1*4`).
+**Result.** All three print `vars= 0, regs= 8/0, args= 24`, unalloc=0, orphanUSE=0 —
+identical to the control. combine's shift-merge rewrites i3 in place, so the intermediate's
+REG_DEAD note always finds a home and distribute_notes never has to plant a USE. Chain
+length is not the lever; only the MEM-substitution shape of H-s9-3 orphans anything.
+**measured_on.** HEAD 0c7f30e4, bodies at tmp/grind/func_800480C0/s9/bodies/ installed one
+at a time over the INCLUDE_ASM line; annotated `arg0 = 0;` FAKE present in every body.
+
+## [s9] A fifth or sixth member of the func_800482C8 batch-loader family exists in the shipped binary, and one of them writes the sp+0x18..0x37 window, which would name the 32-byte object and give a row-free C form for all four known siblings.
+- mechanism: function.c assign_stack_local reserves a slot from a source DECL at RTL-expand and never reclaims frame_offset; a sibling in which the object is LIVE would show its stores in the shipped listing.
+- probe: grep -l 'func_800482C8' asm/funcs/*.s src/*.c
+- result: Exactly five files match: asm/funcs/{func_80047EE8,func_80047FBC,func_800480C0,func_800481E8}.s, func_800482C8's own listing, and src/text1b.c. The family has four members, all already characterised in s8's frame census; there is no further body to inspect for a live instance of the object.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 0c7f30e4, read-only grep over asm/funcs/*.s and src/*.c; no candidate installed, no FAKE construct in play
+
+## [s9] func_80041AC8's three phantoms come from a producer whose RTL provenance differs from SetDrawEnv's, which would mean s8's mult-free ceiling of three is not a real ceiling.
+- mechanism: s8 established func_80041AC8 (src/text1a_post.c:298) is mult-free with 3 phantoms and vars=32 and is not the display.c clamp idiom, so its orphan plant sites might have a different RTL shape that stacks differently.
+- probe: Dumped src/text1a_post.c and src/display.c with the instrumented cc1 -da (tmp/grind/func_800480C0/s9/dump.sh, dump2.sh) and located every BB2_ALLOC_DEBUG hardreg=-1 pseudo in the .cse and .combine dumps.
+- result: Identical producer in both bodies. func_80041AC8's orphans 115/105/85 are defined at .cse insns 171/106/26 by `(set (reg:SI P) (ashift:SI (subreg:SI (reg:HI Q) 0) (const_int 16)))`, each followed by an `ashiftrt ... 16` carrying REG_EQUAL (sign_extend:SI (reg:HI Q)); SetDrawEnv's orphans 140/137/128 are defined at .cse insns 217/209/166 by the same pattern; in .combine each survives only as `(insn (use (reg:SI P)))`. Same class, no distinct third producer.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 0c7f30e4, instrumented cc1 tools/gcc-2.7.2/cc1 on src/text1a_post.c and src/display.c as they stand at HEAD; no candidate installed
+
+## [s9] The class-A combine ashift-deletion producer can be made to fire on func_800480C0's four halfword sites while the shipped 74-insn stream is preserved.
+- mechanism: combine deletes the ashift half of a shift-pair sign extension only when it can substitute a MEMORY equivalent for the HImode pseudo and re-form the extension as a signed narrow load; that substitution is gated by can_combine_p's use_crosses_set_p test, which refuses whenever a register in the MEM's address is set between the two insns.
+- probe: (a) Read the emitted asm of both attested producers - func_80041AC8 ships `lh $2,0($16)` beside `lhu $3,0($16)`, SetDrawEnv ships `lh $5,22($sp)` and `lh $2,D_8009BE78` - so every orphan is paid for with an emitted signed narrow load. (b) Read asm/funcs/func_800480C0.s: zero `lh`, and each of the four `lhu $aN,0x0($s0)` loads has `addiu $s0,$s0,0x2` on its base register between the load and its sll/sra pair. (c) Measured the immediate-sign-extend spelling (s32 a1v = (s16)*(u16*)p), the fold's best chance, with s6/probe.sh.
+- result: The spelling that preserves the stream keeps orphanUSE at 0: A_s32_immediate_sx prints `.frame $sp,56 # vars= 0, regs= 8/0, args= 24`, unalloc=0, orphanUSE=0, identical to the CTRL_candidate control. Firing the producer requires giving a halfword a memory home or removing the intervening addiu, both of which change the emitted stream (the constant-offset variant was already killed in s8 on displacement and addiu-count grounds). The surviving sll/sra pairs in the shipped bytes are themselves the evidence that the fold did not fire in the original.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 0c7f30e4, tmp/grind/func_800480C0/s9/bodies/{CTRL_candidate,A_s32_immediate_sx}.c installed one at a time over the INCLUDE_ASM line in src/text1b.c; annotated `arg0 = 0;` FAKE dead param store present in every body (s8 scored its ablation grid: keep-all 20, drop-1 32)
+- predicate_cite: tools/gcc-2.7.2/combine.c:917
+
+## [s9] Extending the arg1 scale into a longer combine-foldable arithmetic chain plants extra distribute_notes orphan USEs, one per fold.
+- mechanism: The shipped `sll $a1,16; sra $a1,14` is itself a combine merge of a sign-extension shift pair with a `* 4`; if each additional merge orphaned its intermediate, chain length would be a free phantom multiplier on a body that needs four phantoms.
+- probe: Three bodies measured with tmp/grind/func_800480C0/s6/probe.sh via s9/run.sh: B_arg1_chain_2x2 (((s16)arg1*2)*2), C_arg1_chain_2x2x1 (((s16)arg1*2)*2*1), D_arg1_mul4_after_sx ((s16)arg1*4).
+- result: All three print `.frame $sp,56 # vars= 0, regs= 8/0, args= 24`, unalloc=0, orphanUSE=0 - identical to the control. combine's shift-merge rewrites i3 in place, so the intermediate's REG_DEAD note always finds a home and distribute_notes never has to plant a USE. Chain length is not the lever on this body; only the MEM-substitution shape orphans anything.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 0c7f30e4, bodies at tmp/grind/func_800480C0/s9/bodies/ installed one at a time over the INCLUDE_ASM line; annotated `arg0 = 0;` FAKE present in every body

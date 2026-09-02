@@ -3,6 +3,35 @@
  * file is a CANDIDATE, not the state of HEAD; every 'measured on main' statement in the
  * headers below means 'measured with this body installed over that INCLUDE_ASM line'.
  * Install with tmp/grind/func_800480C0/s3/install.py. */
+/* s9 (forensics, 2026-09-02, chassis HEAD 0c7f30e4) - BODY UNCHANGED, floor
+ * re-measured 20 (74/74). Both s8 frontier items closed NEGATIVE, and the
+ * class-A producer is now fully named:
+ *  1. THE FAMILY HAS EXACTLY FOUR MEMBERS. grep for callers of func_800482C8
+ *     over asm/funcs/*.s + src/*.c returns only the four known siblings; there
+ *     is no fifth batch loader anywhere in the binary, so no live sibling can
+ *     name the 32-byte object.
+ *  2. func_80041AC8 IS NOT A THIRD PRODUCER CLASS. Its three orphan pseudos
+ *     (115/105/85, .cse insns 171/106/26) and SetDrawEnv's three (140/137/128,
+ *     .cse insns 217/209/166) are defined by the IDENTICAL RTL pattern
+ *     `(set (reg:SI P) (ashift:SI (subreg:SI (reg:HI Q) 0) (const_int 16)))`
+ *     followed by an `ashiftrt ... 16` carrying REG_EQUAL (sign_extend (reg:HI Q)).
+ *     One class-A producer in this tree, not two.
+ *  3. ITS PRECONDITION IS BYTE-VISIBLE AND ABSENT HERE. combine deletes that
+ *     ashift only by substituting a MEMORY equivalent for the HImode pseudo and
+ *     re-forming the extension as a signed narrow load - func_80041AC8 pays for
+ *     each orphan with an emitted `lh $2,0($16)`, SetDrawEnv with `lh $5,22($sp)` /
+ *     `lh $2,D_8009BE78`. The substitution is gated by can_combine_p's
+ *     use_crosses_set_p (tools/gcc-2.7.2/combine.c:917). func_800480C0's shipped
+ *     stream has ZERO `lh`, and each of its four `lhu $aN,0x0($s0)` loads carries
+ *     an `addiu $s0,$s0,0x2` on the base register between the load and its
+ *     sll/sra pair - which is precisely why those pairs survive into the target
+ *     bytes. Class A is closed here on a cited predicate, not by analogy.
+ *  Four new spellings measured (45 total on this body), all vars=0/unalloc=0/
+ *  orphanUSE=0: immediate s32 sign-extends of the u16 loads, and three
+ *  combine-foldable chain extensions of the arg1 scale (chain length is not the
+ *  lever - shift merges rewrite i3 in place and orphan nothing).
+ *  Instruments: tmp/grind/func_800480C0/s9/{dump.sh,dump2.sh,run.sh,bodies/,dumps/}.
+ *  Full record: evidence.md / hypotheses.md s9. */
 /* s8 (forensics, 2026-09-02, chassis HEAD 28583e8e) - BODY UNCHANGED, floor
  * re-measured 20 (74/74). Mandated FAKE re-audit: tools/fake_ablate.py finds one
  * FAKE unit (the annotated `arg0 = 0;`) and scores keep-all 20 / drop-1 32 - the

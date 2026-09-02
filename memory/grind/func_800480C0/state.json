@@ -1,7 +1,7 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -51,23 +51,29 @@
    "floor": 20,
    "modality": "forensics",
    "headline": "Forensics: the four text1b siblings' shipped frames reserve the IDENTICAL untouched 0x18-0x37 window despite 2/4/6/2 parameters, and a filter-free census of all 1096 compiled functions puts the mult-f"
+  },
+  {
+   "session": 9,
+   "floor": 20,
+   "modality": "forensics",
+   "headline": "Both s8 frontier items closed negative: the func_800482C8 family has exactly four members (no live sibling to name the 32-byte object), and func_80041AC8's three phantoms are the SAME combine ashift-d"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is a DECLARED 32-byte local in the shipped source shared by all four siblings; the remaining open question is whether that object is LIVE in some variant of the routine, which would make it ordinary C needing no engine allowlist row.",
-   "mechanism": "function.c assign_stack_local reserves the slot from the source DECL at RTL-expand and never reclaims frame_offset; a 32-byte PsyQ-era local in a sprite-batch routine is a MATRIX or an 8-word packet/DMA staging buffer. Shape-invariance across four structurally different siblings (s8) is the declaration signature; phantom residue would vary with expression shape.",
-   "next_probe": "Survey the rest of the shipped binary for a fifth/sixth member of this routine family (other batch loaders that call func_800482C8 or its neighbours) and check whether any of them WRITES the 0x18-0x37 window - a live sibling names the object and gives an honest, row-free C form for all four. `grep -l 'jal.*func_800482C8' asm/funcs/*.s` is the entry point, then framecensus.py on each hit."
+   "hypothesis": "A DImode (long long) intermediate that GCC folds or deletes before emission leaves an unallocated DImode pseudo, giving class-B-style 8-byte phantoms WITHOUT an emitted mult/div - the only untested route to four phantoms on a mult-free stream.",
+   "mechanism": "s8's census shows the only bodies above three phantoms are func_80042874/func_80042A88 at six, both mult/div, whose phantoms are DImode HILO residue. s8 also showed a constant power-of-two divide folds at expand and leaves nothing. A long long expression whose high word is provably dead may still create the DImode pseudo at expand while emitting only SImode instructions.",
+   "next_probe": "Read the .greg/.combine provenance of func_80042874's six phantoms (dump src/text1a_c.c with tools/gcc-2.7.2/cc1 -da) to see whether the DImode pseudo requires an emitted mult/div or merely a DImode expand; then spell a byte-neutral long long intermediate on func_800480C0's word/scale sites and measure with tmp/grind/func_800480C0/s6/probe.sh."
   },
   {
-   "hypothesis": "A third phantom producer class exists that neither the combine-orphan (class A) nor the mult/div HILO (class B) taxonomy covers, and it is what lets func_80041AC8 reach three phantoms with vars=32.",
-   "mechanism": "func_80041AC8 (src/text1a_post.c) is mult-free with 3 phantoms and vars=32 and is NOT the display.c clamp idiom that produces SetDrawEnv's three. If its orphans have a different RTL provenance, the mult-free ceiling of 3 measured in s8 might not be a real ceiling.",
-   "next_probe": "Dump text1a_post with -da, run tmp/grind/func_800480C0/s6/count_uses.py on the .combine for func_80041AC8, and read the RTL around each orphan plant site (s7/plantsites.py + s7/plantkind.py). If the provenance is a new shape, test whether it is spellable byte-neutrally on func_800480C0's stream."
+   "hypothesis": "Both phantom producer classes are now measured closed on this body (class A on a cited predicate this session, class B at 1 across 41 forms in s2-s8), so the 32-byte untouched region has no remaining honest producer and the shape-invariance across the four siblings is a source DECLARATION.",
+   "mechanism": "s8's frame census: all four siblings reserve the identical 0x18-0x37 window with args=0x18 and callee-saved base 0x38 despite 2/4/6/2 parameters; phantom residue tracks expression shape and would vary. Three of the four already carry owner-granted `volatile u32 pre_pad[8];` rows at engine/volatile_cheats.py:757-767.",
+   "next_probe": "If the DImode route above also measures dead, the honest-producer search is complete and the correct disposition is an escalation-modality entry recording that both producer classes are closed with predicate cites, with the pre_pad row for func_800480C0 named as the re-activation trigger. Do NOT re-spell class A or class B."
   },
   {
-   "hypothesis": "Class A and class B are both exhausted on this body (A capped at <=1 by the shipped listing, B measured at 1 across 41 forms), so further structural spellings on either axis re-measure dead ground.",
-   "mechanism": "s7 target-listing evidence (one arithmetic-address-then-deref site, all narrow loads at displacement 0) plus s2-s8 measurements (41 forms, permuter ~50k iterations, two chassis).",
-   "next_probe": "None on these axes. If a future dispatch assigns structural or permuter modality, spend it on frontier item 1 or 2 instead and bank the redirect."
+   "hypothesis": "One of the shipped sll/sra pairs sign-extends a value that DOES have a memory home - the two stack-passed s16 arguments arrive via `lw $v1,0x68($sp)` / `lw $a0,0x6C($sp)` - so the class-A substitution might fire there without touching the four halfword loads.",
+   "mechanism": "H-s9-3's predicate closes the four halfword sites (base register set between load and use). The prologue's four sll/sra pairs on the s16 params are a separate population; arg2/arg3 arrive in registers with no memory home, but arg4/arg5 are incoming stack arguments whose slots are never written, so use_crosses_set_p has nothing to trip on for them.",
+   "next_probe": "Check whether the two stack-passed s16 arguments can be spelled so combine substitutes their incoming stack MEM and folds `lw + sll + sra` into `lh 0x6A($sp)` - and, separately, whether any spelling keeps the emitted lw+sll+sra triple while still deleting an intermediate. Measure with s6/probe.sh; asm/funcs/func_800480C0.s lines 31-34 are the reference."
   }
  ],
  "judge_constraints": [
@@ -266,6 +272,38 @@
    "measured_on": "HEAD 28583e8e, shipped listing asm/funcs/func_800480C0.s; byte-visible shape, no compile required",
    "predicate_cite": "",
    "result": "The target emits four `lhu $aN, 0x0($s0)` each followed by a separate `addiu $s0,$s0,0x2`. Every narrow load sits at dis"
+  },
+  {
+   "session": 9,
+   "statement": "A fifth or sixth member of the func_800482C8 batch-loader family exists in the shipped binary, and one of them writes the sp+0x18..0x37 window, which would name the 32-byte object and give a row-free ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 0c7f30e4, read-only grep over asm/funcs/*.s and src/*.c; no candidate installed, no FAKE construct in play",
+   "predicate_cite": "",
+   "result": "Exactly five files match: asm/funcs/{func_80047EE8,func_80047FBC,func_800480C0,func_800481E8}.s, func_800482C8's own lis"
+  },
+  {
+   "session": 9,
+   "statement": "func_80041AC8's three phantoms come from a producer whose RTL provenance differs from SetDrawEnv's, which would mean s8's mult-free ceiling of three is not a real ceiling.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 0c7f30e4, instrumented cc1 tools/gcc-2.7.2/cc1 on src/text1a_post.c and src/display.c as they stand at HEAD; no candidate installed",
+   "predicate_cite": "",
+   "result": "Identical producer in both bodies. func_80041AC8's orphans 115/105/85 are defined at .cse insns 171/106/26 by `(set (reg"
+  },
+  {
+   "session": 9,
+   "statement": "The class-A combine ashift-deletion producer can be made to fire on func_800480C0's four halfword sites while the shipped 74-insn stream is preserved.",
+   "kill_scope": "class",
+   "measured_on": "HEAD 0c7f30e4, tmp/grind/func_800480C0/s9/bodies/{CTRL_candidate,A_s32_immediate_sx}.c installed one at a time over the INCLUDE_ASM line in src/text1b.c; annotated `arg0 = 0;` FAKE dead param store pr",
+   "predicate_cite": "tools/gcc-2.7.2/combine.c:917",
+   "result": "The spelling that preserves the stream keeps orphanUSE at 0: A_s32_immediate_sx prints `.frame $sp,56 # vars= 0, regs= 8"
+  },
+  {
+   "session": 9,
+   "statement": "Extending the arg1 scale into a longer combine-foldable arithmetic chain plants extra distribute_notes orphan USEs, one per fold.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 0c7f30e4, bodies at tmp/grind/func_800480C0/s9/bodies/ installed one at a time over the INCLUDE_ASM line; annotated `arg0 = 0;` FAKE present in every body",
+   "predicate_cite": "",
+   "result": "All three print `.frame $sp,56 # vars= 0, regs= 8/0, args= 24`, unalloc=0, orphanUSE=0 - identical to the control. combi"
   }
  ],
  "ladder_skip": 0,

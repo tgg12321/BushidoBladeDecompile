@@ -620,3 +620,88 @@
 - [s8] The target loop at .L80048144 loads all four halfwords at displacement 0x0 off $s0 with a separate addiu $s0,$s0,0x2 after each, so the class-A constant-offset shape (dying base+CONST address folded into a mem displacement) does not appear in the shipped stream and cannot be introduced byte-neutrally.
 
 - [s8] Three of the four siblings (func_80047EE8, func_80047FBC, func_800481E8) are COMPLETED-C on main carrying `volatile u32 pre_pad[8];` with owner-granted rows at engine/volatile_cheats.py:757-767 (rulings 2026-08-20 and 2026-08-22); func_800480C0 is the fourth member of the same shipped frame family and the only one without a row (Judge FAIL 2026-09-02 04:28, docs/grind/decisions.md:20349).
+
+## s9 — forensics (2026-09-02, chassis HEAD 0c7f30e4)
+
+- [s9] CHASSIS RE-MEASURED. `memory/grind/func_800480C0/candidate.c` installed over the
+  INCLUDE_ASM line, `sandbox func_800480C0 --disable all` prints `"score": 20,
+  "target_insns": 74, "build_insns": 74` on HEAD 0c7f30e4. src/text1b.c restored to HEAD
+  afterwards (`git status` clean apart from metrics/events.jsonl). The floor of 20 has now
+  reproduced on four consecutive chassis (7e18adc2, 28583e8e, 0c7f30e4 and s3's).
+
+- [s9] FRONTIER ITEM 1 IS CLOSED NEGATIVE: THE FAMILY HAS EXACTLY FOUR MEMBERS. s8's
+  frontier proposed surveying the binary for a fifth/sixth batch-loader sibling that might
+  WRITE the 0x18-0x37 window and so name the object honestly. `grep -l 'func_800482C8'
+  asm/funcs/*.s src/*.c` returns exactly five files: the four known siblings
+  (func_80047EE8, func_80047FBC, func_800480C0, func_800481E8), plus func_800482C8's own
+  listing and src/text1b.c. There is no fifth caller anywhere in the shipped binary, so
+  there is no live sibling to name the 32-byte object. The "is the object LIVE in some
+  variant of the routine" question has no further body to ask it of.
+
+- [s9] FRONTIER ITEM 2 IS CLOSED NEGATIVE: func_80041AC8 IS NOT A THIRD PRODUCER CLASS —
+  IT IS THE SAME COMBINE ASHIFT-DELETION AS SetDrawEnv. s8 flagged func_80041AC8
+  (src/text1a_post.c:298) as the one mult-free 3-phantom body never read. Dumped with the
+  instrumented cc1 (`tmp/grind/func_800480C0/s9/dumps/text1a_post.*`, dump.sh) and
+  cross-read against display.c (`s9/dumps/display.*`, dump2.sh):
+
+  | body | orphan pseudos (BB2_ALLOC_DEBUG hardreg=-1) | .cse RTL that defines them |
+  |---|---|---|
+  | func_80041AC8 | 115, 105, 85 | insns 171/106/26: `(set (reg:SI P) (ashift:SI (subreg:SI (reg:HI Q) 0) (const_int 16)))` |
+  | SetDrawEnv | 140, 137, 128 | insns 217/209/166: byte-for-byte the same pattern |
+
+  In every one of the six cases the NEXT insn is `(set (reg:SI Q') (ashiftrt:SI (reg:SI P)
+  (const_int 16)))` carrying `REG_EQUAL (sign_extend:SI (reg:HI Q))`, and in the .combine
+  dump P survives only as the orphan `(insn (use (reg:SI P)))` that s6 attributed to
+  distribute_notes (combine.c:10832-10841). So this tree has ONE class-A producer, not two
+  or three, and its RTL signature is fixed: **combine deletes the `ashift` half of a
+  shift-pair sign-extension of an HImode PSEUDO**.
+
+- [s9] THE PRODUCER'S PRECONDITION, NAMED AND BYTE-VISIBLE. Combine can only delete that
+  `ashift` because it substitutes a MEMORY equivalent for the HImode pseudo and re-forms
+  the sign extension as a signed narrow load. The emitted proof is in both bodies:
+  func_80041AC8 ships `lh $2,0($16)` next to `lhu $3,0($16)` (source reads `*var_s0` twice,
+  once cast to u16 and once compared signed); SetDrawEnv ships `lh $5,22($sp)` and
+  `lh $2,D_8009BE78` against values it had just stored into its stack local. So the
+  producer needs (a) an HImode value with a MEMORY home (stack local or global), and (b)
+  that home reachable at the shift site — i.e. `can_combine_p`'s `use_crosses_set_p (src,
+  INSN_CUID (insn))` guard at tools/gcc-2.7.2/combine.c:917 must not fire, which means no
+  intervening set of the address registers.
+
+  func_800480C0's shipped 74-insn stream (asm/funcs/func_800480C0.s) satisfies NEITHER.
+  It contains no `lh` at all; its four halfword values come from `lhu $aN,0x0($s0)` with an
+  `addiu $s0,$s0,0x2` on the base register BETWEEN each load and its `sll/sra` pair (which
+  is exactly why those pairs survive into the shipped bytes instead of folding to `lh`),
+  and its four s16 parameters arrive in $a2/$a3/$v1/$a0 with no memory home at all. Any
+  spelling that gives a halfword a memory home or removes the intervening `addiu` changes
+  the emitted stream — the constant-offset variant was already killed in s8 on displacement
+  and addiu-count grounds.
+
+- [s9] FOUR NEW SPELLINGS MEASURED, ALL CLASS-A-NEGATIVE (running total of measured
+  structural forms on this body: 45). Instrument: s6/probe.sh (instrumented-cc1 frame +
+  BB2_ALLOC_DEBUG unalloc count + s6/count_uses.py orphan-USE count on a -da .combine),
+  runner tmp/grind/func_800480C0/s9/run.sh, bodies at s9/bodies/:
+    * CTRL_candidate           -> `vars= 0, regs= 8/0, args= 24`, unalloc=0, orphanUSE=0
+    * A_s32_immediate_sx       -> identical. The four halfword reads spelled as IMMEDIATE
+      s32 sign-extends (`s32 a1v = (s16)*(u16*)p;` instead of an s16 local) do NOT fire the
+      fold: the `addiu` still crosses the mem, combine.c:917 still refuses.
+    * B_arg1_chain_2x2 / C_arg1_chain_2x2x1 / D_arg1_mul4_after_sx -> identical. Extending
+      the arg1 scale into a longer combine-foldable chain (`((s16)arg1*2)*2`, `*2*2*1`,
+      `(s16)arg1*4`) plants NO orphan: combine's shift-merge rewrites i3 in place (that is
+      how the shipped `sll $a1,16; sra $a1,14` arises) and the intermediate's REG_DEAD note
+      finds a home, so distribute_notes never plants a USE. Chain length is not the lever.
+  Banked: rejected/s9-s32-immediate-sign-extend-no-orphan.c,
+  rejected/s9-arg1-foldable-chain-extension-no-orphan.c.
+
+- [s9] Chassis re-measured: with memory/grind/func_800480C0/candidate.c installed, `sandbox func_800480C0 --disable all` prints score 20, target_insns 74, build_insns 74 on HEAD 0c7f30e4. Floor 20 has now reproduced on four consecutive chassis. src/text1b.c restored to HEAD afterwards.
+
+- [s9] The func_800482C8 caller family has exactly four members. grep over asm/funcs/*.s and src/*.c returns only func_80047EE8, func_80047FBC, func_800480C0, func_800481E8 plus the callee's own listing and src/text1b.c - so s8's frontier-1 probe (find a fifth sibling that WRITES the untouched window) has no candidate to run on.
+
+- [s9] This tree has ONE class-A phantom producer, not several. func_80041AC8's three orphans (pseudos 115/105/85, .cse insns 171/106/26) and SetDrawEnv's three (140/137/128, .cse insns 217/209/166) share the identical RTL signature: `(set (reg:SI P) (ashift:SI (subreg:SI (reg:HI Q) 0) (const_int 16)))` followed by an `ashiftrt ... 16` carrying REG_EQUAL (sign_extend:SI (reg:HI Q)), with P surviving in .combine only as the orphan `(insn (use (reg:SI P)))`.
+
+- [s9] The producer's precondition is an HImode value with a MEMORY home: combine deletes the ashift by substituting the mem back and re-forming the extension as a signed narrow load, so each orphan is paid for with an emitted `lh` (func_80041AC8: `lh $2,0($16)` beside `lhu $3,0($16)`; SetDrawEnv: `lh $5,22($sp)`, `lh $2,D_8009BE78`). The substitution is gated by can_combine_p's use_crosses_set_p at tools/gcc-2.7.2/combine.c:917.
+
+- [s9] func_800480C0's shipped 74-insn stream contains zero `lh`, and every one of its four `lhu $aN,0x0($s0)` loads has `addiu $s0,$s0,0x2` on the base register between the load and its `sll/sra` pair. That intervening set is exactly what makes use_crosses_set_p refuse - and is why the sll/sra pairs survive into the target bytes instead of folding to `lh`. The target listing is therefore direct evidence that the class-A fold did not fire in the original either.
+
+- [s9] Four new spellings measured negative on the s6 probe harness (running total 45 structural forms on this body): immediate s32 sign-extends of the four u16 loads, and three combine-foldable chain extensions of the arg1 scale. All print vars=0, unalloc=0, orphanUSE=0, identical to the control.
+
+- [s9] Combine's shift-MERGE (which produced the shipped `sll $a1,16; sra $a1,14` from a sign extension plus a `*4`) rewrites i3 in place and orphans nothing; only the MEM-substitution shape reaches distribute_notes' no-home path. The two combine behaviours must not be conflated when proposing chain-length levers.
