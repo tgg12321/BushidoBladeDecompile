@@ -8,14 +8,20 @@
  * The direction constants MUST be spelled `v = A; if (cond) v = B; dir.v = v;` -- ternary
  * flips branch sense (rejected/ternary-direction-flips-branch-sense.c), and storing into
  * dir.vx inside if/else arms forces a frame reload (rejected/struct-store-in-both-arms-reloads.c).
- * REQUIRES the fidelity gate entry `func_80027640` in maspsx_label_nop_funcs.txt -- an OPERATOR
- * surface (add-scope-allow denylist), NOT landed by any grind session (s1 was discarded for it):
- * target has `lh $v0,4($a0)` @0x800277A0 -> `.L800277A4:` -> `nop` -> `sw $v0,0x18($sp)`;
- * maspsx drops that load-delay nop across a .L merge label unless the function is listed
- * (.claude/rules/maspsx-label-nop-gate.md). Without the entry: sandbox 1 (that nop). With it
- * (proven in tmp/ by s2: tmp/grind/func_80027640/s1/build_gated.sh + link_gated.sh): 160/160
- * words and full-build SHA1 == oracle. Handoff entry: docs/grind/decisions.md:20004.
- * Commit tag: [infra-rule: maspsx-label-nop] + site citation asm/funcs/func_80027640.s:95-98. */
+ * RESIDUAL (s3, structural): sandbox --disable all == 1 on the stock chassis. The single missing
+ * word is the load-delay `nop` at 0x800277A4: target is `lh $v0,0x4($a0)` @0x800277A0 ->
+ * `.L800277A4:` -> `nop` -> `sw $v0,0x18($sp)` @0x800277A8, and `j .L800277A4` @0x80027770 pins the
+ * label to the nop's address. cc1's instruction stream is ALREADY the target's (the compiler is not
+ * the divergence, tmp/grind/func_80027640/s2/cc1.s:526-531); maspsx drops the nop because its
+ * is_label() only matches `$L` while this GCC fork emits `.L`. s3 proved this is invariant under
+ * every C spelling: any byte-correct form must define a basic-block label at 0x800277A4, textually
+ * between the load and its consumer. So NO C change can improve this body -- it is final pure C.
+ * The residual is a maspsx fidelity defect; s3 measured a 4-line general repair (apply maspsx's own
+ * $at/$gp delay-fill test inside the .L-label branch) that is byte-neutral across all 31 other C
+ * objects, relinks to SHA1 == oracle, and makes the per-function maspsx_label_nop_funcs.txt list
+ * dead code. That is an operator/tools surface, NOT a gate-list entry (the gate-list route was
+ * foreclosed by the Judge and is not re-proposed). Details: memory/grind/func_80027640/evidence.md
+ * s3 + docs/grind/decisions.md (2026-09-01 s3 entry). */
 void func_80027640(s32 arg0)
 {
     VECTOR tgt;

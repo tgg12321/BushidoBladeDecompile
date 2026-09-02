@@ -90,3 +90,108 @@
 - [s1] src/code6cac_b.c restored to HEAD (INCLUDE_ASM) before finishing; only memory/grind/func_80027640/, tmp/ and docs/grind/decisions.md were written this session
 
 - [s1] The per-function scoping rationale for the gate (index-anchored regfix/asmfix rules) is moot since regfix/asmfix went to zero on 2026-08-25 -- recorded in the decisions entry as a re-activation trigger only, not proposed
+
+## s3 (2026-09-01, structural) -- floor 1 unchanged; the residual is proven C-UNREACHABLE and the
+## maspsx defect behind it is proven GENERALLY fixable, byte-neutrally, with NO gate-list entry
+
+Context: the Judge FAILed s2's INTEGRATION HANDOFF with the binding constraint "func_80027640 may
+not be closed via a maspsx_label_nop_funcs.txt entry or any maspsx gate-list addition; change
+modality and pursue a route that needs no build-surface change." This session attacked the
+structural axis (can a C respelling avoid the seam?) and, after proving it cannot, characterised
+the defect itself.
+
+- **Chassis re-measure (HEAD + candidate.c applied):** `sandbox func_80027640 --disable all` = **1**
+  (target 158 / build 157, rules_dropped 0). Same single residual as s2: the load-delay `nop` at
+  0x800277A4.
+
+- **PASS ATTRIBUTION (cc1 dump read, not guessed):** `tmp/grind/func_80027640/s2/cc1.s:526-531` --
+  cc1's own output is
+      lh   $2,0($4)
+      #nop            <- cc1 emits the hazard hint here
+      sw   $2,16($sp)
+      lh   $2,4($4)
+      .L75:           <- merge label; NO hint, cc1 leaves the seam to the assembler
+      sw   $2,24($sp)
+  The compiler is NOT the divergence: cc1's instruction stream is already the target's. maspsx's own
+  debug comment names the failure exactly (`tmp/grind/func_80027640/s2/unungated.s:558`):
+  `#nop # DEBUG: '.L75:' does not load from $2` -- maspsx treated the LABEL LINE as the next
+  instruction, because `is_label()` is `^\$L(b|e)?\d+:$` and this GCC fork emits `.L`
+  (tools/maspsx/maspsx/__init__.py:256). maspsx also strips every `.set reorder/noreorder` (0 `.set`
+  directives survive in the emitted function), so GAS cannot recover the nop either.
+
+- **STRUCTURAL IMPOSSIBILITY PROOF (general over ALL C forms, not a search result).** The target
+  fixes three consecutive words: 0x800277A0 `lh $v0,0x4($a0)`, 0x800277A4 `nop`, 0x800277A8
+  `sw $v0,0x18($sp)`; and 0x80027770 `j .L800277A4` (encoded 0x08009DE9) fixes the branch
+  destination at the NOP's address. Therefore any C form that produces the target bytes must
+  (i) emit a compiler-generated basic-block label at 0x800277A4, since GCC always defines a label at
+  a jump destination, and (ii) place that label textually between the `lh` and its consuming `sw`,
+  since those are the immediately adjacent words. GCC 2.7.2 spells such labels `.L<n>:` in this
+  build. So EVERY byte-correct C spelling lands on maspsx's `.L` blind spot -- the residual is
+  invariant under declaration order, block-local splits, type narrowing and statement
+  re-association. There is no structural lever; the axis is closed by construction, not by search.
+
+- **PROJECT-WIDE CENSUS of the blind spot** (`tmp/grind/func_80027640/s2/scan_blindspots.sh` +
+  `analyze_sites.py`, both compile every `src/*.c` with the real Makefile flags and read maspsx's own
+  DEBUG lines): **33 sites** where maspsx sees a `.L` label as the next "instruction" after a load.
+  28 are harmless (the post-label instruction does not read the loaded register). Of the 5
+  consuming-looking sites, 2 are false positives (the post-label load REDEFINES the register:
+  `D_800832F8` in ings2, `_spu_Fw1ts` in main). The 3 real load->label->consumer seams are:
+    * `func_8001EA84` (code6cac.c): `lbu $2,D_800A3804` / `.L269:` / `sb $2,D_800A3817`
+    * `func_8003ACB8` (code6cac_c_ab.c): `lh $2,D_800A36C6` / `.L29:` / `sh $2,D_800A3904`
+    * `func_80027640` (code6cac_b.c): `lh $2,4($4)` / `.L75:` / `sw $2,24($sp)`
+  The first two are ALREADY oracle-matching WITHOUT a nop -- because their consumer is a `%hi/%lo`
+  macro whose `lui $at` expansion fills the load delay. That is precisely the `uses_at` test maspsx
+  already applies on its ordinary (non-label) path and does NOT apply inside the `.L`-label branch.
+  func_80027640's consumer is `sw $v0,0x18($sp)` -- sp-relative, no `$at` -- so its delay is
+  genuinely unfilled and the target HAS the nop. **Exactly one site in the whole project needs it.**
+
+- **THE GENERAL FIX, MEASURED (4 lines, no per-function list).** Inside the `.L`-label branch, apply
+  the same delay-fill test the ordinary path already uses
+  (`tmp/grind/func_80027640/s2/maspsx_at_aware_label_fix.diff`):
+      if line_loads_from_reg(after_label, r_dest) and (
+              not uses_at(after_label) or self._uses_gp(after_label) or self.nop_at_expansion):
+  Measured with a PATCHED COPY under tmp/ (`tools/maspsx` itself untouched;
+  `build_patched.sh` replicates the Makefile pipeline including per-file -G8/--expand-lb/align-2):
+    * Control run with STOCK maspsx through the same script reproduces `build/src/*.o`
+      BYTE-IDENTICALLY for all 31 unrelated objects -- the harness is faithful.
+    * With the fix: **all 31 unrelated objects still byte-identical to the oracle build**; the only
+      changed object is `code6cac_b.o`, which is the one carrying the candidate C.
+    * `compare_words.py` on the fixed `code6cac_b.o`: **160/160 words vs asm/funcs/func_80027640.s,
+      8 differing words = the unresolved relocations only** (4x jal, lui/lh %hi/%lo D_800A36A4, j).
+    * Full relink in tmp/ (`link_atfix.sh`): **SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
+      oracle**, 606208 bytes.
+    * Re-run with an EMPTY `--label-nop-funcs` list: identical objects everywhere, including
+      code6cac_b. **The fix SUBSUMES the entire per-function gate list** (its 5 current entries --
+      spu_DmaTransfer, CD_getsector, func_80060E04, func_80040594, _spu_init -- keep matching with
+      the list empty), so it retires the mechanism rather than extending it.
+
+- **Two narrower/broader variants MEASURED AND KILLED** (so no future session re-tries them):
+    * Global `is_label` widened to `[$.]L\d+:` -- breaks `code6cac_c2.o` (the mflo/mfhi-with-label
+      path starts seeing the label and reorders the div expansion). NOT byte-neutral.
+    * Simply un-gating the load-consumer branch (drop the `label_nop_func_set` test, keep no `$at`
+      test) -- breaks `code6cac_c_ab.o` (func_8003ACB8 gains a nop its target does not have). NOT
+      byte-neutral. The `$at`-aware form above is the only one of the three that holds.
+
+- The gate list's own header comment justifies per-function scoping by "index-anchored regfix/asmfix
+  rules"; those are ZERO project-wide since 2026-08-25 ([[rules-to-zero-complete]]), and the
+  measurement above shows the cascade it feared does not occur for the `$at`-aware form.
+
+- `src/code6cac_b.c` was restored to HEAD (`INCLUDE_ASM`) before finishing; this session wrote only
+  `memory/grind/func_80027640/`, `tmp/grind/func_80027640/s2/` and `docs/grind/decisions.md`.
+  `tools/maspsx/` was NEVER modified -- every measurement used a copy under tmp/.
+
+- [s2] Chassis re-measure on HEAD with memory/grind/func_80027640/candidate.c applied: sandbox --disable all = 1 (target 158 / build 157, rules_dropped 0); the single residual is the load-delay nop at 0x800277A4
+
+- [s2] The C is final: any byte-correct form must put a GCC .L basic-block label at 0x800277A4 between lh $v0,0x4($a0) and sw $v0,0x18($sp), because the j at 0x80027770 (0x08009DE9) pins the jump destination to the nop's address -- so no structural lever exists
+
+- [s2] cc1's own output already equals the target instruction stream (tmp/grind/func_80027640/s2/cc1.s:526-531); maspsx names its own failure at unungated.s:558 -- "#nop # DEBUG: '.L75:' does not load from $2"; maspsx emits 0 .set reorder/noreorder directives in the function so GAS cannot insert the nop either
+
+- [s2] Project-wide census of the blind spot: 33 sites, 28 non-consuming, 2 false positives, 3 real seams; func_8001EA84 and func_8003ACB8 already match WITHOUT a nop because their %hi/%lo consumer's lui $at expansion fills the load delay; func_80027640 is the only site project-wide with a genuinely unfilled delay
+
+- [s2] The 4-line $at-aware repair of maspsx's .L-label branch (tmp/grind/func_80027640/s2/maspsx_at_aware_label_fix.diff) keeps all 31 unrelated C objects byte-identical to the oracle build, gives func_80027640 160/160 target words (8 reloc-only diffs), and relinks to SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle
+
+- [s2] With the repair and an EMPTY --label-nop-funcs list every object still matches, so maspsx_label_nop_funcs.txt (spu_DmaTransfer, CD_getsector, func_80060E04, func_80040594, _spu_init) and its flag become inert -- the repair RETIRES the gate mechanism instead of extending it, which is why it is not the route the Judge foreclosed
+
+- [s2] The gate list's stated rationale (index-anchored regfix/asmfix cascades) is stale: regfix.txt and asmfix.txt have been empty project-wide since 2026-08-25, and the cascade is measured absent for the $at-aware form
+
+- [s2] tools/maspsx was NEVER modified: every measurement used a copy under tmp/grind/func_80027640/s2/. src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before finishing; this session wrote only memory/grind/func_80027640/, tmp/grind/func_80027640/s2/ and docs/grind/decisions.md

@@ -20082,3 +20082,92 @@ here only as a re-activation trigger, not proposed.
 ## 2026-09-01 22:05 — func_80027640 — ruling: INTEGRATION HANDOFF filed for func_80027640 : docs/grind/decisions.md:20004 -- 2 — **FAIL**
 
 The C in memory/grind/func_80027640/candidate.c is clean pure C (no asm, volatile, pins, FAKE, dead stores) and I verified the bytes claim myself: tmp/grind/func_80027640/s1/build_gated.sh reproduces the Makefile pipeline verbatim with only --label-nop-funcs pointed at a scratch list, gated_words.txt shows 8 differing words all unresolved relocs, and link_gated.sh's gated_sha1.txt is 62efab4f...bb4fa == oracle. The decisive fact is dispositional, not technical: the ONLY blocker is an entry in maspsx_label_nop_funcs.txt, which .claude/rules/integration-handoff-self-serve.md places on the add-scope-allow DENYLIST by name (assembler-behavior gates, severe-blocker class) — so no driver-executable grant exists and integration-handoff is unavailable; on the live chassis the honest score is 1, not 0. Default-FAIL governs. The escalation record at docs/grind/decisions.md:20004 (plus the s1 evidence) stands as the owner's audit item; the standing question — whether the label-nop fix should be globalized now that regfix/asmfix are at zero (maspsx-gate-lists.md 'Endgame' item 1) — is recorded there and is the owner's call, not mine.
+
+## 2026-09-01 — func_80027640 (src/code6cac_b.c) — **INTEGRATION HANDOFF (tools/maspsx fidelity repair) — NOT the foreclosed gate-list route**
+
+**Status of the C: FINAL.** `memory/grind/func_80027640/candidate.c` is ordinary pure C (two libgte
+`VECTOR` locals; no asm, no volatile, no pin, no FAKE construct, no dead store, no constant holder,
+no alias, no `do {} while (0)`). With it applied, `sandbox func_80027640 --disable all` = **1**
+(target 158 / build 157, rules_dropped 0). The one missing word is a load-delay `nop`.
+
+**s3 (structural modality) proved the residual is unreachable from C — for ALL C forms, not just
+the ones tried.** The target fixes four words: `lh $v0,0x4($a0)` @0x800277A0, `nop` @0x800277A4,
+`sw $v0,0x18($sp)` @0x800277A8, and `j .L800277A4` @0x80027770 (encoded 0x08009DE9, pinning the
+jump destination to the nop's address). Any C form that produces those bytes must therefore define
+a compiler basic-block label at 0x800277A4 — GCC always defines a label at a jump destination —
+placed textually between the load and its consuming store. GCC 2.7.2 spells such labels `.L<n>:` in
+this build, and maspsx's `is_label()` is `^\$L(b|e)?\d+:$` (tools/maspsx/maspsx/__init__.py:256), so
+every byte-correct spelling lands on the same blind spot. Declaration order, block-local splits,
+type narrowing and statement re-association cannot move it. cc1 is exonerated by its own dump
+(`tmp/grind/func_80027640/s2/cc1.s:526-531`): its instruction stream is already the target's, and
+maspsx names the failure itself in `unungated.s:558` — `#nop # DEBUG: '.L75:' does not load from $2`.
+maspsx also strips every `.set reorder/noreorder`, so GAS cannot recover the nop either.
+
+**This is NOT a re-file of the s2 handoff.** The Judge foreclosed closing this function "via a
+maspsx_label_nop_funcs.txt entry or any maspsx gate-list addition". No gate-list entry is proposed
+here, and none is needed: the repair below makes the gate list DEAD CODE.
+
+**The repair (4 lines, `tmp/grind/func_80027640/s2/maspsx_at_aware_label_fix.diff`).** maspsx's
+ordinary (non-label) load-delay path already asks whether the consumer's own `%hi/%lo` `lui $at`
+expansion fills the delay slot (`uses_at` / `_uses_gp` / `nop_at_expansion`). Its `.L`-label branch
+does not — it is instead gated on a per-function opt-in list. Apply the same test inside the label
+branch:
+
+    if line_loads_from_reg(after_label, r_dest) and (
+            not uses_at(after_label) or self._uses_gp(after_label) or self.nop_at_expansion):
+
+**Why this is a correctness repair, not a per-function hack — project-wide census.** Compiling every
+`src/*.c` with the real Makefile flags and reading maspsx's own DEBUG output
+(`tmp/grind/func_80027640/s2/scan_blindspots.sh` + `analyze_sites.py`) finds **33** `.L`-blind-spot
+sites. 28 are harmless (the post-label instruction does not read the loaded register); 2 more are
+false positives (the post-label load REDEFINES the register: `D_800832F8` in ings2, `_spu_Fw1ts` in
+main). Only **3** are real load→label→consumer seams:
+  * `func_8001EA84` (code6cac.c): `lbu $2,D_800A3804` / `.L269:` / `sb $2,D_800A3817`
+  * `func_8003ACB8` (code6cac_c_ab.c): `lh $2,D_800A36C6` / `.L29:` / `sh $2,D_800A3904`
+  * `func_80027640` (code6cac_b.c): `lh $2,4($4)` / `.L75:` / `sw $2,24($sp)`
+The first two already match the oracle WITHOUT a nop, because their `%hi/%lo` consumer's `lui $at`
+fills the delay — exactly what the added test preserves. func_80027640's consumer is sp-relative, so
+its delay is genuinely unfilled and the target HAS the nop. One site project-wide needs it.
+
+**Measurements (all in tmp/; `tools/maspsx` was never modified — a patched COPY was used).**
+`build_patched.sh` replicates the Makefile pipeline per file (per-file -G8, `--expand-lb`,
+align-3→2). Control run with STOCK maspsx reproduces `build/src/*.o` byte-identically for all 31
+unrelated objects, so the harness is faithful. With the repair:
+  * all 31 unrelated objects remain **byte-identical to the oracle build**; only `code6cac_b.o`
+    (the object carrying the candidate C) changes;
+  * `compare_words.py` on that object: **160/160 words** vs `asm/funcs/func_80027640.s`, 8 differing
+    words = unresolved relocations only (4× jal, lui/lh %hi/%lo D_800A36A4, absolute j);
+  * full relink of the oracle build tree with it (`link_atfix.sh`): **SHA1
+    62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle**, 606208 bytes;
+  * re-run with an **empty** `--label-nop-funcs` list: identical objects everywhere. The repair
+    subsumes all five current entries (spu_DmaTransfer, CD_getsector, func_80060E04, func_80040594,
+    _spu_init), so `maspsx_label_nop_funcs.txt` and its `--label-nop-funcs` flag become inert.
+Two cheaper variants were measured and KILLED: widening `is_label` to `[$.]L\d+:` breaks
+`code6cac_c2.o` (the mflo/mfhi-with-label div expansion reorders), and un-gating the label branch
+without the `$at` test breaks `code6cac_c_ab.o` (func_8003ACB8 gains a nop its target lacks). The
+`$at`-aware form is the only byte-neutral one of the three. The gate list's own header justifies
+per-function scoping by "index-anchored regfix/asmfix rules"; those are ZERO project-wide since
+2026-08-25, and the cascade it feared is measured absent for this form.
+
+**Operator steps (all outside a grind session's surface):**
+1. Apply `tmp/grind/func_80027640/s2/maspsx_at_aware_label_fix.diff` to
+   `tools/maspsx/maspsx/__init__.py` (4 lines in `_handle_nop_before_next_instruction`).
+2. Replace `INCLUDE_ASM("asm/funcs", func_80027640);` in src/code6cac_b.c with
+   `memory/grind/func_80027640/candidate.c`
+   (`python3 tmp/grind/func_80027640/s1/apply.py memory/grind/func_80027640/candidate.c`; drop the
+   header comment before committing).
+3. `& tools/wteng.ps1 main sandbox func_80027640 --disable all` → expect 0; then
+   `verify-oracle --rebuild` → expect SHA1 == oracle for the whole tree.
+4. Fresh layer-2 `cheat-reviewer` on the C (self-vet: `memory/grind/func_80027640/self_vet.md`) —
+   a Judge PASS on the construct is not acceptance.
+5. Optional follow-up (independently verifiable, not required for this match): the five entries in
+   `maspsx_label_nop_funcs.txt` are now inert and the list plus `--label-nop-funcs` can be retired.
+6. `& tools/wteng.ps1 main queue done func_80027640`.
+
+**Re-activation triggers if the repair is declined:** any toolchain change that makes maspsx
+recognise this fork's `.L` local labels, or a cc1 change that emits `$L`-prefixed locals, closes
+this function immediately with the existing candidate and no other edit.
+
+## 2026-09-01 22:20 — func_80027640 — ruling: INTEGRATION HANDOFF filed for func_80027640 : docs/grind/decisions.md:20086 -- 2 — **FAIL**
+
+The C in memory/grind/func_80027640/candidate.c is clean pure C (two libgte VECTOR locals; no asm/volatile/pin/FAKE/dead store) and I do not object to it; s2/s3 evidence (hypotheses.md H8/H10-H13, evidence.md s2, the 33-site census) is thorough and tools/maspsx is verifiably unmodified (git status clean). The defect is dispositional and decisive: the sole proposed remedy is a source patch to tools/maspsx/maspsx/__init__.py (tmp/grind/func_80027640/s2/maspsx_at_aware_label_fix.diff, verified 4 lines in _handle_nop_before_next_instruction). That is a SUBSTRATE change, which .claude/rules/integration-handoff-self-serve.md puts on the add-scope-allow path denylist twice over ('Anything under tools/...' and the 'What STILL pends the owner' list: 'Any change to the ... substrate (cc1/maspsx/linker/Makefile)'), and the standing policy makes pipeline edits that alter emitted bytes an automatic FAIL(CONSTRUCT). No driver-executable grant exists, so ESCALATE(integration-handoff) is unavailable. It is also a refile of the foreclosed s1 handoff against the standing judge_constraint ('pursue a route that needs no build-surface change. Do not refile this handoff'). On the live chassis the honest floor is 1, not 0. Default-FAIL governs; the decisions.md entries remain the owner's audit item for the globalize-the-label-nop-fix question.
