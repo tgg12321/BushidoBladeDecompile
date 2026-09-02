@@ -1,3 +1,12 @@
+/* REJECTED (s7, solver) - score 7, no improvement. Spells the island-2 pack's two halfword reads
+ * THROUGH the `lv` pointer at byte offsets 0 and 4 (the target's addressing shape) instead of off
+ * arg0 at 0x2C/0x30. The front end does emit the target's shape - `.rtl` insn 41
+ * `(mem:HI (reg 76))`, insn 44 `(mem/s:HI (plus (reg 76) 4))` - but cse.c's find_best_addr
+ * (tools/gcc-2.7.2/cse.c:2622, tiebreak at :2720) re-folds both MEM addresses back to
+ * `(plus (reg 72) 44/48)`, so the emitted code is byte-identical to the plain arg0 spelling.
+ * Representative of five equivalent spellings measured in s7 (v_lvcast/v_hwptr/v_amp/v_hwarg/
+ * v_order, all 7, all classifying PRE-RA with the same multiset delta). See hypotheses.md H32.
+ */
 /* func_800300B4 - s4 BEST BAN-COMPLIANT FORM: sandbox --disable all == 7, with ONE do-while(0)
  * FAKE wrap (s3's 7-form needed TWO; s2: 11 with three; s1: 19 with one).
  * NOT a submission candidate: the 7-insn residual is the island-2 gte_ldlv0 GPR pack, which is the
@@ -49,22 +58,6 @@
  * (hoisting the pack) moves the pack quantity exactly two registers, $3 -> $5, for a score of 9.
  * See hypotheses.md H29/H30: this closes s1's re-activation trigger (c); the only remaining routes
  * are the two owner rulings (a) and (b).
- *
- * s7 (solver) UPDATE. Re-measured 7 on HEAD 5dc32f12 (FAKE-free control still 19, candidate.c still
- * 0). The residual's ATTRIBUTION changed: `inverse_compose.py classify` types this body **PRE-RA**,
- * not RA - the register-blanked multisets differ (ours `lhu #,44(#)`/`lhu #,48(#)`, target
- * `lhu #,0(#)`/`lhu #,4(#)`), which RA and the scheduler cannot express. The cc1 -da dumps name the
- * pass: `.rtl` already carries the TARGET's shape, `(mem:HI (reg 76))` and
- * `(mem/s:HI (plus (reg 76) 4))`, and `.cse` carries `(mem:HI (plus (reg 72) 44))`. The predicate is
- * cse.c find_best_addr (tools/gcc-2.7.2/cse.c:2622, from fold_rtx's MEM case at :5034): ADDRESS_COST
- * ties a bare REG (1, config/mips/mips.h:2897) against `(plus reg SMALL_INT)` (1,
- * config/mips/mips.c:1653), and the rtx_cost tiebreak at cse.c:2720 always takes the PLUS form. Six
- * pack spellings plus the FAKE-free control all measure the same, and a memory-loaded-base positive
- * control flips the classification to RA with a MATCHING multiset. So the residual is DOUBLY locked
- * and each lock is independently sufficient: cse.c:2720 forces the 44/48 displacements, and
- * local-alloc.c:2207/:2249 (s6 H29) keeps any C pseudo out of $t4/$t5/$t6 - while the target's loads
- * are based on $t4, written only by the island's own `move $12, %0`. See hypotheses.md H31/H32/H33
- * and the docs/grind/borderline.md s7 addendum.
  */
 /* kengo:?  |  GTE rotate+translate of the object's local vector, then dispatch */
 void func_800300B4(u8 *arg0) {
@@ -99,8 +92,8 @@ void func_800300B4(u8 *arg0) {
     /* Long-vector load (VECTOR vx/vy/vz as s32 words at +0x2C): pack the low
      * halves of vx/vy into VXY0 as ordinary C, then cop2 ops (mtc2 $0, lwc2 $1,
      * 2-cycle load delay, MVMVA sf=1 rot*V0 no-translation = 0x0486012). */
-    packed = *(u16 *)(arg0 + 0x2C) | (*(u16 *)(arg0 + 0x30) << 16);
     lv = (s32 *)(arg0 + 0x2C);
+    packed = *(u16 *)lv | (((u16 *)lv)[2] << 16);
     __asm__ volatile(
         "move   $12, %0\n"
         "mtc2   %1, $0\n"

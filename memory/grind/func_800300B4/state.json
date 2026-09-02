@@ -1,8 +1,8 @@
 {
  "func": "func_800300B4",
  "file": "code6cac_b",
- "session_count": 6,
- "current_modality": "synthesis",
+ "session_count": 7,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -39,22 +39,28 @@
    "floor": 7,
    "modality": "synthesis",
    "headline": "Floor holds at 7 (0-form still 0, still island-2-banned); the last non-policy re-activation trigger is now a class kill - find_free_reg's only order bypass (just_try_suggested, local-alloc.c:2207) is "
+  },
+  {
+   "session": 7,
+   "floor": 7,
+   "modality": "solver",
+   "headline": "Solver triage re-types the 7-insn island-2 residual as PRE-RA, not RA: cse.c find_best_addr (cse.c:2720) re-folds the pack's two halfword loads from the front end's target-shaped 0(lv)/4(lv) back to 4"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "UNCHANGED, DOMINANT, and now the ONLY item: the whole 7-insn ban-compliant residual is the island-2 gte_ldlv0 GPR pack, and it is a policy question - does .claude/rules/cop2-addressing-preamble-cluster.md condition 3 admit a verbatim PsyQ 4.5 SDK macro body whose lhu/lhu/sll/or is template text rather than an addressing preamble?",
-   "mechanism": "Condition 3 ('in-island GPR instructions limited to the cop2 addressing preamble - nothing else may be swallowed into the template', .claude/rules/cop2-addressing-preamble-cluster.md:106) read against PsyQ 4.5 inline_c.h:101-110. judge-sole-gate rule 4 reserves the family-scope call for the owner via the borderline ledger.",
-   "next_probe": "None in-pipeline. Already filed at docs/grind/borderline.md:370 with the s3 and s6 addenda. Do NOT re-request the ruling, do NOT submit candidate.c, do NOT cite the struck 07:30 / 07:59 rulings or the banned sibling precedents, and do NOT re-derive the pack in C (H4/H17/H23/H26/H29/H30)."
+   "hypothesis": "UNCHANGED, DOMINANT, still the only item: the whole 7-insn ban-compliant residual is the island-2 gte_ldlv0 GPR pack, and it is the owner policy question - does cop2-addressing-preamble-cluster.md condition 3 admit a verbatim PsyQ 4.5 SDK macro body whose lhu/lhu/sll/or is template text rather than an addressing preamble?",
+   "mechanism": "Condition 3 ('in-island GPR instructions limited to the cop2 addressing preamble - nothing else may be swallowed into the template', .claude/rules/cop2-addressing-preamble-cluster.md:106) read against PsyQ 4.5 inline_c.h:101-110. judge-sole-gate rule 4 reserves the family-scope call for the owner via the borderline ledger. s7 supplies the mechanical proof the entry was missing: the C route is closed at both the cse layer (cse.c:2720) and the RA layer (local-alloc.c:2207).",
+   "next_probe": "None in-pipeline. Filed at docs/grind/borderline.md:370 with s3, s6 and now s7 addenda. Do NOT re-request the ruling, do NOT submit candidate.c, do NOT cite the struck 07:30 / 07:59 rulings or the banned sibling precedents, and do NOT re-derive the pack in C - that derivation is now closed at two independent layers on top of H4/H17/H23/H26/H30."
   },
   {
-   "hypothesis": "Re-activation trigger (c) - a toolchain path letting GCC 2.7.2 base a C-side halfword pair on the asm-internal $t4 copy and seat its temps in $13/$14 while $2/$3 are free - is closed, leaving only the two owner-ruling triggers (a) and (b).",
-   "mechanism": "s6 H29 class kill: find_free_reg's sole order bypass (just_try_suggested restriction to qty_phys_copy_sugg/qty_phys_sugg, tools/gcc-2.7.2/local-alloc.c:2207) never runs for suggestion-free quantities, and the pack quantities are measured suggestion-free; the ascending scan at :2249 passes over a free $13/$14. Contention moves the temps one register per conflicting live quantity (H30).",
-   "next_probe": "No probe. Do not re-open without new compiler evidence (e.g. a reload path that assigns a $t register to a pseudo in this shape). A future session tempted to 'look for a toolchain path to $t5/$t6' should read hypotheses.md H29 and stop."
+   "hypothesis": "Solver backends (inverse.py, inverse_sched.py) are a dead route for this function and a future solver session must not spend on them.",
+   "mechanism": "inverse_compose.py classify types the real body PRE-RA and reports 'no backend - the residual is upstream of every model'; RA and scheduler models permute and rename a FIXED instruction multiset and this residual IS a multiset difference. The only body that classifies RA is the semantics-changed positive control v_probe_matbase.",
+   "next_probe": "No probe. If a future session wants an RA answer for the pack, the direct instrumented-cc1 measurement already exists (s6 H29, BB2_SUGG_DEBUG/BB2_QTY_DEBUG dumps at tmp/grind/func_800300B4/s6/suggdbg_all.txt)."
   },
   {
-   "hypothesis": "The seat axis of the ban-compliant chassis is closed: the single do-while(0) wrap is necessary and sufficient, and no FAKE-free or alternative-chassis form reaches the four call-crossing seats.",
-   "mechanism": "qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1666) with arg0's refs pinned at 9 and &mac's at 4 by cse.c address propagation (s5 H27); statement-chassis variation measured inert (s5 H28); 17 wrap spans and 2 wrap depths already swept (H19/H21/H22/H24); 24,590 ordinary-C-only permuter iterations (s4 H25).",
+   "hypothesis": "The seat axis of the ban-compliant chassis remains closed: the single do-while(0) wrap is necessary and sufficient, and no FAKE-free or alternative-chassis form reaches the four call-crossing seats.",
+   "mechanism": "qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1666) with arg0's refs pinned at 9 and &mac's at 4 by cse.c address propagation (s5 H27) - note s7 identifies that same cse address propagation, at find_best_addr, as the first lock on the island-2 residual, so the two findings share a mechanism; statement-chassis variation measured inert (s5 H28); 17 wrap spans and 2 wrap depths swept (H19/H21/H22/H24); 24,590 ordinary-C-only permuter iterations (s4 H25).",
    "next_probe": "No probe. Cite H27 + H25 as the .claude/rules/do-while-zero-exception.md prerequisite-(a) lever exhaustion in whatever submission eventually clears the policy question."
   }
  ],
@@ -167,6 +173,22 @@
    "measured_on": "HEAD 5eac882d, pack-in-C island 2 (no banned construct), islands 1/3 as banked, FAKE = the single banked do-while(0) wrap",
    "predicate_cite": "",
    "result": "9 and 10 against the baseline 7 - both worse. The mechanism works in the expected direction but is far too weak: content"
+  },
+  {
+   "session": 7,
+   "statement": "The 7-insn island-2 residual is owned by the register allocator (the standing s1-H4 / s6-H29 attribution), so RA-layer levers are the right place to search.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 5dc32f12, best_ban_compliant.c (pack-in-C island 2, no banned construct, islands 1/3 as banked), FAKE = the single banked do-while(0) wrap; re-confirmed identically on the FAKE-free control v_now",
+   "predicate_cite": "",
+   "result": "KILLED - the attribution was one layer too low. The classifier reports FIRST DIVERGENCE: PRE-RA: the register-blanked in"
+  },
+  {
+   "session": 7,
+   "statement": "Some semantically-correct C spelling of the island-2 halfword pack renders its two loads with displacements 0 and 4 off a materialised pointer (the target's shape) rather than 44 and 48 off arg0.",
+   "kill_scope": "class",
+   "measured_on": "HEAD 5dc32f12, pack-in-C island 2 (no banned construct), islands 1/3 as banked; measured BOTH with the single banked do-while(0) FAKE present (six forms, score 7) and FAKE-free (v_nowrap, score 19) - ",
+   "predicate_cite": "tools/gcc-2.7.2/cse.c:2720",
+   "result": "KILLED. All six spellings score 7 (v_nowrap 19) and all seven classify PRE-RA with the identical multiset delta lhu #,44"
   }
  ],
  "ladder_skip": 30,

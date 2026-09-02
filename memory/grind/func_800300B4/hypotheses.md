@@ -287,7 +287,7 @@ Frontier after s3:
 - kill_scope: instance
 - measured_on: HEAD 9c1533fc, wide dir wrap + single island-3 wrap, pack-in-C island 2 (no banned construct)
 
-## s4 (2026-09-02, permuter, HEAD 81558ab7) � floor stays 7, FAKE count 2 -> 1
+## s4 (2026-09-02, permuter, HEAD 81558ab7) � floor stays 7, FAKE count 2 -> 1
 
 Three decomp-permuter campaigns, all launched and stopped in-session via
 tools/permuter_campaign.py (workspaces tmp/grind/func_800300B4/s4/perm{1,2,3}; hand-built
@@ -320,7 +320,7 @@ same 84-instruction body with exactly the known arg0/&mac seat swap + island-2 p
 - probe: permuter campaign perm2 on the FAKE-FREE ban-compliant base (weighted 388) with
   perm_ins_block, perm_add_mask, perm_xor_zero, perm_mult_zero, perm_add_self_assignment,
   perm_pad_var_decl, perm_dummy_comma_expr, perm_empty_stmt, perm_condition and perm_inline all
-  set to weight 0.0 � i.e. the randomizer may only reorder/rename/retype/split ordinary C.
+  set to weight 0.0 � i.e. the randomizer may only reorder/rename/retype/split ordinary C.
   24,590 iterations, 6 jobs, 745 s (campaign.log + campaign_meta.json in
   tmp/grind/func_800300B4/s4/perm2/).
 - result: best weighted score 338 (base 388); 19 outputs, none below 338. Nothing in the sampled
@@ -334,7 +334,7 @@ same 84-instruction body with exactly the known arg0/&mac seat swap + island-2 p
   FAKE = none (perm_ins_block disabled); 24,590 permuter iterations
 
 ## [s4] H26: some C spelling on the closed single-wrap chassis reduces the 7-insn island-2 residual.
-- mechanism: same as H23/H4 � the target pack reads through the asm-internal $t4 copy into
+- mechanism: same as H23/H4 � the target pack reads through the asm-internal $t4 copy into
   $t5/$t6 and local-alloc.c:2249 find_free_reg hands out hard regs in numeric order with $v0/$v1
   free, so no C temp can land in $13/$14.
 - probe: permuter campaign perm3 seeded on the s4 single-wrap 7-form (base weighted 180),
@@ -610,4 +610,126 @@ Frontier after s6 (RESET - strongest first):
 - mechanism: Mandated dispatch chassis re-measure (the brief reported 'measurement unavailable') plus the mandated KILL RE-AUDIT of the instance kills whose forms sit closest to the target.
 - probe: tmp/grind/func_800300B4/s6/probe.sh over v_base (= best_ban_compliant.c), v_zero (= candidate.c), v_nowrap (hand-built FAKE-free control, braces removed and body intact), v_reaudit_hwptr (= rejected/named-hw-pointer-for-pack-low-half-s4-7.c), v_reaudit_lvseat (= rejected/island2-pack-through-lv-seats-lv-in-a1-s3-7.c); plus 'python3 tools/fake_ablate.py --func func_800300B4 --file code6cac_b --candidate memory/grind/func_800300B4/best_ban_compliant.c'.
 - result: v_base 7, v_zero 0, v_nowrap 19, v_reaudit_hwptr 7, v_reaudit_lvseat 7 - all identical to s3/s4/s5. fake_ablate reports 1 FAKE unit, keep-all 7, drop-1 27; the 27 is the s5-documented ablator artefact (it deletes only the 'do {' line and orphans the five-line FAKE comment tail) and is not a FAKE-free datum, so the hand-built v_nowrap = 19 remains the authoritative FAKE-free control. No banked kill names a FAKE construct absent from the current best form, so none needed voiding.
+- verdict: CONFIRMED
+
+## [s7] H31: the 7-insn island-2 residual is owned by the register allocator (the standing s1-H4 / s6-H29 attribution), so RA-layer levers are the right place to search.
+- mechanism: s1 H4 and s6 H29/H30 read the residual as `find_free_reg`'s ascending numeric scan
+  (tools/gcc-2.7.2/local-alloc.c:2249) seating the pack temps in $2/$3 instead of the target's
+  $t5/$t6. The solver modality mandates typing the residual BEFORE searching any backend
+  (`inverse_compose.py classify`), which is the check that had never been run on this function.
+- probe: `python3 tools/ra_solver/inverse_compose.py classify code6cac_b func_800300B4
+  --target-object build/src/code6cac_b.o --ours-object tmp/sandbox/func_800300B4/code6cac_b.o`
+  (object path, the mandated escape for an INCLUDE_ASM-routed function), run against the banked
+  best form and against six alternative spellings plus the FAKE-free control. Then
+  `pwsh tools/grinder/dump.ps1 func_800300B4` and a per-pass scan of the two HImode MEMs of the pack
+  (tmp/grind/func_800300B4/s7/scanpass.py, seg.py) to READ the owning pass rather than infer it.
+- result: **KILLED — the attribution was one layer too low.** The classifier reports
+  `FIRST DIVERGENCE: PRE-RA`: the register-blanked instruction MULTISETS differ (ours
+  `lhu #,44(#)` + `lhu #,48(#)`, target `lhu #,0(#)` + `lhu #,4(#)`), which RA and the scheduler
+  cannot express because they permute and rename a FIXED multiset. The dumps name the pass exactly:
+  `.rtl` carries `(mem:HI (reg 76))` and `(mem/s:HI (plus (reg 76) 4))` — the TARGET's addressing
+  shape, emitted by the front end — and `.cse` carries
+  `(mem:HI (plus (reg 72) (const_int 44)))`. reg 76 is the `lv` pointer, reg 72 is `arg0`. The RA
+  measurements of s1/s6 remain valid but describe the SECOND of two locks, not the first; closing
+  the RA layer alone was never sufficient, which is why every RA-directed probe since s1 has been
+  flat at 7.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 5dc32f12, best_ban_compliant.c (pack-in-C island 2, no banned construct, islands
+  1/3 as banked), FAKE = the single banked do-while(0) wrap; re-confirmed identically on the
+  FAKE-free control v_nowrap.c (score 19) and on five alternative pack spellings
+
+## [s7] H32: some semantically-correct C spelling of the island-2 halfword pack renders its two loads with displacements 0 and 4 off a materialised pointer (the target's shape) rather than 44 and 48 off arg0.
+- mechanism: The PRE-RA divergence found in H31 is created by cse.c. `fold_rtx`'s MEM case calls
+  `find_best_addr (insn, &XEXP (x, 0))` (tools/gcc-2.7.2/cse.c:5034); `find_best_addr` (cse.c:2622)
+  walks the address's equivalence class, picks the lowest `ADDRESS_COST`, and breaks ties by the
+  HIGHEST `rtx_cost` (cse.c:2717-2726, rationale in its header comment at cse.c:2613-2616). On MIPS
+  `ADDRESS_COST(ADDR) = REG_P(ADDR) ? 1 : mips_address_cost(ADDR)` (config/mips/mips.h:2897) and
+  `mips_address_cost` returns 1 for `(plus reg SMALL_INT)` (config/mips/mips.c:1653-1654), so the
+  bare-REG address and the `reg+44` address TIE at cost 1 and the rtx_cost tiebreak at cse.c:2720
+  hands the win to the PLUS form. The condition that makes the PLUS entry exist is simply that the
+  pointer's equivalence class contains a `(plus reg CONST_INT)` — which it does for any pointer
+  computed as `arg0 + constant`, i.e. for every semantically-correct spelling of this pack.
+- probe: six spellings measured and re-classified through tmp/grind/func_800300B4/s7/pc.sh —
+  `v_base` (banked best), `v_lvcast` (`*(u16*)lv | (((u16*)lv)[2]<<16)`), `v_hwptr` (named
+  `u16 *hw = (u16*)lv`, indexed 0/2), `v_amp` (`*(u16*)&lv[0] | (*(u16*)&lv[1]<<16)`), `v_hwarg`
+  (named `u16 *hw` straight off arg0), `v_order` (pointer materialised BEFORE the pack, order-only
+  control), plus the FAKE-free control `v_nowrap`. Positive control `v_probe_matbase` deliberately
+  changes semantics to base the reads on `mat`, a pointer LOADED FROM MEMORY (so cse holds no
+  `(plus reg const)` entry for it), isolating the predicate's condition.
+- result: **KILLED.** All six spellings score 7 (v_nowrap 19) and all seven classify PRE-RA with the
+  identical multiset delta `lhu #,44(#)/lhu #,48(#)` vs `lhu #,0(#)/lhu #,4(#)`. Naming the pointer,
+  indexing through it, taking its address, and reordering its definition are all re-folded by
+  find_best_addr. The positive control confirms the predicate exactly: with a memory-loaded base the
+  multiset MATCHES and the classification flips to `RA` — proving the 44/48 rendering is caused by
+  equivalence-class membership in find_best_addr and by nothing else. The residual is therefore
+  DOUBLY locked and each lock is independently sufficient: (1) PRE-RA at cse.c:2720 forces the
+  44/48 displacements; (2) RA at local-alloc.c:2207/:2249 (s6 H29) means that even with the
+  displacements fixed the loads would be based on a C pseudo in $a0/$v0, never on `$t4` — and `$t4`
+  is written only by the island's own `move $12, %0`. The RA residual of the positive control states
+  the whole remaining problem: target `lhu t5,0(t4) ; lhu t6,4(t4)` against ours
+  `lhu v1,0(a0) ; lhu v0,4(a0)`. The only instruction stream in which those loads can be based on
+  `$t4` is one where they are emitted INSIDE the asm template — i.e. the `gte_ldlv0` SDK macro body,
+  which is exactly the policy question already filed at docs/grind/borderline.md:370.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/cse.c:2720
+- measured_on: HEAD 5dc32f12, pack-in-C island 2 (no banned construct), islands 1/3 as banked;
+  measured BOTH with the single banked do-while(0) FAKE present (six forms, score 7) and FAKE-free
+  (v_nowrap, score 19) — the PRE-RA lock is FAKE-independent
+
+## [s7] H33 (kill re-audit, mandated): the chassis is unchanged since s6 and no banked instance kill needs voiding.
+- mechanism: the dispatch brief reported the HEAD honest floor as "measurement unavailable", and the
+  floor has now been flat for three sessions, so both the chassis re-measure and the instance-kill
+  re-audit are mandatory before any new probe.
+- probe: tmp/grind/func_800300B4/s7/probe.sh and pc.sh over v_base (= best_ban_compliant.c), v_zero
+  (= candidate.c), v_nowrap (s6's hand-built FAKE-free control) and v_reaudit_hwptr
+  (= rejected/named-hw-pointer-for-pack-low-half-s4-7.c, the banked instance kill whose form sits
+  closest to the target).
+- result: v_base 7, v_zero 0 (classify: IDENTICAL), v_nowrap 19, v_reaudit_hwptr 7 — every number
+  identical to s3/s4/s5/s6 on HEAD 5dc32f12. No banked kill rests on a FAKE construct absent from
+  the current best form, so none needed voiding. The re-audit did, however, add information the
+  earlier re-audits could not: v_nowrap and v_reaudit_hwptr both classify PRE-RA with the same
+  multiset delta, so the closest-to-target banked kill was measuring the RA layer beneath an
+  unbroken cse lock.
+- verdict: CONFIRMED
+
+Frontier after s7 (strongest first):
+  (1) UNCHANGED, DOMINANT, still the ONLY item, now with a two-layer mechanical proof. The whole
+      7-insn ban-compliant residual is the island-2 `gte_ldlv0` GPR pack, and it is the policy
+      question at docs/grind/borderline.md:370 (s3, s6 and now s7 addenda). Do NOT re-request the
+      ruling, do NOT submit candidate.c, do NOT cite the struck 07:30 / 07:59 rulings or the banned
+      sibling precedents, and do NOT re-derive the pack in C — the C derivation is now closed at
+      TWO independent layers (H32 class kill at cse.c:2720, s6 H29 class kill at
+      local-alloc.c:2207), on top of H4/H17/H23/H26/H30.
+  (2) The seat axis is closed and the single do-while(0) FAKE is proven necessary (s5 H27 class kill
+      at local-alloc.c:1666, backed by s4 H25's 24,590 ordinary-C-only permuter iterations). No
+      probe. Cite H27 + H25 as the do-while-zero-exception prerequisite-(a) lever exhaustion.
+  (3) Solver backends are FORECLOSED as a route for this residual, by the solver's own triage:
+      `inverse_compose.py classify` types the real body PRE-RA and reports "no backend — the
+      residual is upstream of every model". `inverse.py` / `inverse_sched.py` on this function would
+      produce fiction. Do not spend a future solver session on them; the ONLY body that classifies
+      RA is the semantics-changed positive control v_probe_matbase.
+
+## [s7] The 7-insn island-2 residual is owned by the register allocator (the standing s1-H4 / s6-H29 attribution), so RA-layer levers are the right place to search.
+- mechanism: s1 H4 and s6 H29/H30 read the residual as find_free_reg's ascending numeric scan (tools/gcc-2.7.2/local-alloc.c:2249) seating the pack temps in $2/$3 instead of the target's $t5/$t6. The solver modality mandates typing the residual with inverse_compose.py classify BEFORE searching any backend, which had never been run on this function.
+- probe: python3 tools/ra_solver/inverse_compose.py classify code6cac_b func_800300B4 --target-object build/src/code6cac_b.o --ours-object tmp/sandbox/func_800300B4/code6cac_b.o (object path, the mandated escape for an INCLUDE_ASM-routed function whose build object carries the target's own assembled bytes), run on the banked best form; then pwsh tools/grinder/dump.ps1 func_800300B4 and a per-pass scan of the pack's two HImode MEMs across every -da dump (tmp/grind/func_800300B4/s7/scanpass.py, seg.py) to READ the owning pass instead of inferring it.
+- result: KILLED - the attribution was one layer too low. The classifier reports FIRST DIVERGENCE: PRE-RA: the register-blanked instruction multisets differ (ours 'lhu #,44(#)' + 'lhu #,48(#)', target 'lhu #,0(#)' + 'lhu #,4(#)'), which RA and the scheduler cannot express because they permute and rename a fixed multiset - the tool's own next-tool field reads 'no backend - the residual is upstream of every model'. The dumps name the pass exactly: .rtl carries (mem:HI (reg 76)) at insn 41 and (mem/s:HI (plus (reg 76) (const_int 4))) at insn 44, i.e. the FRONT END already emits the target's addressing shape through the lv pointer (insn 38 sets reg 76 = reg 72 + 44; reg 72 is arg0), and .cse carries (mem:HI (plus (reg 72) (const_int 44))). Every later dump (.loop/.combine/.flow/.lreg/.sched/.greg) carries the rewritten form. The RA measurements of s1/s6 remain valid but describe the SECOND of two locks; closing the RA layer alone was never sufficient, which is why every RA-directed probe since s1 has measured flat at 7.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 5dc32f12, best_ban_compliant.c (pack-in-C island 2, no banned construct, islands 1/3 as banked), FAKE = the single banked do-while(0) wrap; re-confirmed identically on the FAKE-free control v_nowrap.c (score 19) and on five alternative pack spellings
+
+## [s7] Some semantically-correct C spelling of the island-2 halfword pack renders its two loads with displacements 0 and 4 off a materialised pointer (the target's shape) rather than 44 and 48 off arg0.
+- mechanism: cse.c fold_rtx's MEM case calls find_best_addr (tools/gcc-2.7.2/cse.c:5034 -> :2622). find_best_addr walks the address's equivalence class, takes the lowest ADDRESS_COST and breaks ties by the HIGHEST rtx_cost (cse.c:2717-2726; rationale in its header comment at cse.c:2613-2616). On MIPS ADDRESS_COST(ADDR) = REG_P(ADDR) ? 1 : mips_address_cost(ADDR) (config/mips/mips.h:2897) and mips_address_cost returns 1 for (plus reg SMALL_INT) (config/mips/mips.c:1653-1654), so a bare-REG address and a reg+44 address TIE at cost 1 and the rtx_cost tiebreak at cse.c:2720 hands the win to the PLUS form. The condition creating the PLUS entry is simply that the pointer's equivalence class contains a (plus reg CONST_INT) - true for any pointer computed as arg0 + constant.
+- probe: Six spellings measured and re-classified via tmp/grind/func_800300B4/s7/pc.sh (sandbox + classify per form): v_base (banked best, pack off arg0), v_lvcast (*(u16*)lv | (((u16*)lv)[2]<<16)), v_hwptr (named u16 *hw = (u16*)lv, indexed 0/2), v_amp (*(u16*)&lv[0] | (*(u16*)&lv[1]<<16)), v_hwarg (named u16 *hw straight off arg0), v_order (pointer materialised BEFORE the pack, order-only control), plus the FAKE-free control v_nowrap. Positive control v_probe_matbase deliberately changes semantics to base the two reads on mat, a pointer LOADED FROM MEMORY, so cse holds no (plus reg const) entry for it - isolating the predicate's condition.
+- result: KILLED. All six spellings score 7 (v_nowrap 19) and all seven classify PRE-RA with the identical multiset delta lhu #,44(#)/lhu #,48(#) vs lhu #,0(#)/lhu #,4(#): naming the pointer, indexing through it, taking its address and reordering its definition are all re-folded by find_best_addr. The positive control confirms the predicate exactly - with a memory-loaded base the multiset MATCHES the target and the classification flips to RA. The residual is therefore doubly locked, each lock independently sufficient: (1) PRE-RA at cse.c:2720 forces the 44/48 displacements; (2) RA at local-alloc.c:2207/:2249 (s6 H29) means that even with the displacements fixed the loads would be based on a C pseudo seated in $a0/$v0, never on $t4 - and $t4 is written only by the island's own 'move $12, %0'. The positive control's RA residual states the whole remaining problem: target 'addiu v0,s3,44 ; lhu t5,0(t4) ; lhu t6,4(t4) ; move t4,v0 ; mtc2 t5,$0 ; or t5,t5,t6 ; sll t6,t6,0x10' against ours 'addiu a1,s3,44 ; lhu v0,4(a0) ; lhu v1,0(a0) ; move t4,a1 ; mtc2 v1,$0 ; or v1,v1,v0 ; sll v0,v0,0x10'. The only stream in which those loads can be based on $t4 is one where they are emitted inside the asm template - i.e. the gte_ldlv0 SDK macro body, which is exactly the policy question filed at docs/grind/borderline.md:370.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 5dc32f12, pack-in-C island 2 (no banned construct), islands 1/3 as banked; measured BOTH with the single banked do-while(0) FAKE present (six forms, score 7) and FAKE-free (v_nowrap, score 19) - the PRE-RA lock is FAKE-independent
+- predicate_cite: tools/gcc-2.7.2/cse.c:2720
+
+## [s7] The chassis is unchanged since s6 and no banked instance kill needs voiding: best_ban_compliant.c still measures 7, candidate.c still 0, the FAKE-free control still 19, and the closest-to-target banked kill still 7.
+- mechanism: Mandated dispatch chassis re-measure (the brief reported 'measurement unavailable') plus the mandated KILL RE-AUDIT, the floor having been flat for three sessions.
+- probe: tmp/grind/func_800300B4/s7/probe.sh and pc.sh over v_base (= best_ban_compliant.c), v_zero (= candidate.c), v_nowrap (s6's hand-built FAKE-free control) and v_reaudit_hwptr (= rejected/named-hw-pointer-for-pack-low-half-s4-7.c, the banked instance kill whose form sits closest to the target).
+- result: v_base 7, v_zero 0 (classify: IDENTICAL), v_nowrap 19, v_reaudit_hwptr 7 - every number identical to s3/s4/s5/s6 on HEAD 5dc32f12. No banked kill rests on a FAKE construct absent from the current best form, so none needed voiding. The re-audit added information earlier re-audits could not: v_nowrap and v_reaudit_hwptr both classify PRE-RA with the same multiset delta, so the closest-to-target banked kill was measuring the RA layer beneath an unbroken cse lock.
 - verdict: CONFIRMED

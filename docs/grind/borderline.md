@@ -429,3 +429,60 @@ SDK GTE-macro body; (b) an owner ruling making the func_800203B4 / func_8002E838
 islands citable precedent for cluster siblings. Bytes unchanged: `candidate.c` = sandbox 0 (83/83)
 and verify-oracle ok; ban-compliant floor = 7 (best_ban_compliant.c, one sanctioned do-while(0)
 wrap whose necessity is itself a class kill at local-alloc.c:1666, hypotheses.md H27).
+
+### 2026-09-02 — func_800300B4 — s7 addendum (solver modality): the residual is DOUBLY locked, and the first lock is cse.c, not the register allocator
+
+The policy question in this entry is unchanged, but the evidence behind it was incomplete: every
+session from s1 to s6 attributed the 7-insn ban-compliant residual to the register allocator. The
+solver triage that the `solver` modality mandates was run for the first time in s7 and re-types it.
+
+`python3 tools/ra_solver/inverse_compose.py classify code6cac_b func_800300B4 --target-object
+build/src/code6cac_b.o --ours-object tmp/sandbox/func_800300B4/code6cac_b.o` reports
+**FIRST DIVERGENCE: PRE-RA** — the register-blanked instruction multisets differ (ours
+`lhu #,44(#)` + `lhu #,48(#)`, target `lhu #,0(#)` + `lhu #,4(#)`), which no RA or scheduler
+perturbation can express. The cc1 `-da` dumps name the owning pass in one read: `.rtl` carries
+`(mem:HI (reg 76))` and `(mem/s:HI (plus (reg 76) 4))` — i.e. the FRONT END already emits exactly the
+target's addressing shape through the `lv` pointer — and `.cse` carries
+`(mem:HI (plus (reg 72) (const_int 44)))`.
+
+The predicate is `find_best_addr` (tools/gcc-2.7.2/cse.c:2622, reached from `fold_rtx`'s MEM case at
+cse.c:5034): it walks the address's equivalence class, takes the lowest `ADDRESS_COST` and breaks
+ties by the HIGHEST `rtx_cost` (cse.c:2717-2726). On MIPS `ADDRESS_COST` is 1 for a bare REG
+(config/mips/mips.h:2897) and `mips_address_cost` is also 1 for `(plus reg SMALL_INT)`
+(config/mips/mips.c:1653-1654), so the two tie and the rtx_cost tiebreak at cse.c:2720
+unconditionally hands the win to the PLUS form — for any pointer whose equivalence class contains a
+`(plus reg CONST_INT)` entry, i.e. for every semantically-correct spelling of `arg0 + 0x2C`.
+
+Six spellings were measured and re-classified (pointer named, pointer indexed, `&lv[i]` sub-word
+reads, a named `u16 *` off arg0, and a definition-order control), plus the FAKE-free control: all
+score 7 (FAKE-free 19) and all classify PRE-RA with the identical multiset delta. A deliberately
+semantics-changed positive control that bases the reads on `mat` — a pointer LOADED FROM MEMORY, so
+cse holds no `(plus reg const)` entry for it — flips the classification to `RA` with a MATCHING
+multiset, isolating the predicate exactly.
+
+That positive control also states the whole residual in one block:
+
+    ours  : addiu a1,s3,44 ; lhu v0,4(a0) ; lhu v1,0(a0) ; move t4,a1 ; mtc2 v1,$0 ; or v1,v1,v0 ; sll v0,v0,0x10
+    target: addiu v0,s3,44 ; lhu t5,0(t4) ; lhu t6,4(t4) ; move t4,v0 ; mtc2 t5,$0 ; or t5,t5,t6 ; sll t6,t6,0x10
+
+So the residual carries TWO independent, individually sufficient locks:
+
+1. **PRE-RA, cse.c:2720** — every semantically-correct C spelling renders the two halfword loads as
+   `lhu 44($s3)` / `lhu 48($s3)`, never `lhu 0(reg)` / `lhu 4(reg)`.
+2. **RA, local-alloc.c:2207 / :2249** (s6 H29) — even given the correct displacements, the loads
+   would be based on a C pseudo seated in `$a0`/`$v0`, never on `$t4`; and `$t4` is written only by
+   the island's own `move $12, %0`.
+
+The bearing on the question this entry asks is direct. The target's two halfword loads are based on
+a register that only the asm template defines, and the C the compiler is given already produces the
+right RTL before cse rewrites it. The only instruction stream that can produce the target's bytes is
+one in which the `lhu/lhu/sll/or` are emitted inside the `gte_ldlv0` template — which is what the
+PsyQ 4.5 `inline_c.h:101-110` macro body does verbatim. Whether cluster condition 3
+(`.claude/rules/cop2-addressing-preamble-cluster.md:106`) admits that template text remains the
+owner's call; s7 adds only that no C-side route to those bytes exists, now measured at both layers
+rather than one.
+
+Evidence: `memory/grind/func_800300B4/hypotheses.md` H31/H32/H33; classifier reports
+`tmp/grind/func_800300B4/s7/classify_base.txt` and `cls_v_*.txt`; cc1 `-da` dumps
+`tmp/grind/func_800300B4/dumps/code6cac_b.{rtl,cse,greg}` with the per-pass scan
+`tmp/grind/func_800300B4/s7/scanpass.py`; sandbox scores `tmp/grind/func_800300B4/s7/sb_v_*.txt`.

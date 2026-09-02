@@ -539,13 +539,13 @@ diff.py, qtydbg.py, sb_v_*.txt, diff_v_*.txt, qty_v_*.txt, v_*.c}`.
 **Workspace validation.** No permuter campaign had ever been run on this function. A minimal-TU
 permuter workspace was hand-built at tmp/grind/func_800300B4/s4/perm1 (base.c = the FAKE-free
 ban-compliant body + externs, cpp-preprocessed; compile.sh replicating the Makefile pipeline for
-code6cac_b exactly � cc1 `-O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w
+code6cac_b exactly � cc1 `-O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w
 -mel`, prologue_fix, maspsx with --expand-lb twice as `maspsx_flags_for` does for EXPAND_LB_FILES,
 multu_pad, then `sed -n '/^\.ent	func_800300B4$/,/^\.end	func_800300B4$/p'` extraction;
 target.o from asm/funcs/func_800300B4.s with the single `mvmva 1,0,0,3,0` line rewritten to
 `.word 0x4A486012` because binutils has no mvmva mnemonic). Validation: the minimal-TU build and
-the target are both 84 instructions and their normalized diff is EXACTLY the two known items �
-the arg0/&mac ($s2/$s3) seat swap and the island-2 pack � i.e. the minimal TU reproduces the
+the target are both 84 instructions and their normalized diff is EXACTLY the two known items �
+the arg0/&mac ($s2/$s3) seat swap and the island-2 pack � i.e. the minimal TU reproduces the
 full-TU codegen context for this function. Permuter weighted base score 388 corresponds to the
 sandbox score 19 of that form.
 
@@ -572,10 +572,10 @@ mechanical complement to s1's H2 and s2's H16, which killed pointer copies and p
 one spelling at a time.
 
 **Measurement 3 (perm3, label seven-form-single-wrap, 6 jobs, 7,212 iterations / 236 s).** Seeded
-on the s4 single-wrap 7-form (weighted base 180 � independently confirming 180 <-> sandbox 7), all
+on the s4 single-wrap 7-form (weighted base 180 � independently confirming 180 <-> sandbox 7), all
 randomizers enabled. One improvement found: weighted 175, a named `u16 *` intermediate for the
 pack's low half. Hand-spelled two ways (`u16 *hw = (u16 *)(arg0 + 0x2C);` and `*(u16 *)lv`) and
-both measure sandbox **7** � the weighted 175 is a register-class delta the objdump insn metric
+both measure sandbox **7** � the weighted 175 is a register-class delta the objdump insn metric
 does not see. No proposal below 7 in 7,212 iterations, re-confirming H4/H23 on the s4 chassis.
 Banked at rejected/named-hw-pointer-for-pack-low-half-s4-7.c.
 
@@ -787,3 +787,129 @@ wrap, and the asm spelling is under ban 4.
 - [s6] Ledger writes this session: hypotheses.md s6 section (H29, H30, kill re-audit), evidence.md s6 section (E-s6-0..E-s6-5), a docs/grind/borderline.md s6 addendum recording that the entry's only non-policy escape route is now measured closed, an s6 note in best_ban_compliant.c's header, and two new rejected forms. candidate.c is unchanged (still the 0-form).
 
 - [s6] No ruling was re-requested, candidate.c was not submitted, and no struck ruling (07:30 / 07:59) or banned sibling precedent was cited. src/code6cac_b.c is back at INCLUDE_ASM; every probe restores it via 'git checkout --'.
+
+## [s7] solver modality — the island-2 residual is PRE-RA (cse.c address propagation), not RA
+
+**Chassis re-measure (dispatch reported "measurement unavailable").** On HEAD 5dc32f12,
+`sandbox func_800300B4 --disable all`: `best_ban_compliant.c` = **7**, `candidate.c` (the 0-form
+carrying the banned island-2 block) = **0**, the hand-built FAKE-free control
+(`tmp/grind/func_800300B4/s7/v_nowrap.c`, s6's) = **19**, and the closest banked instance kill
+`rejected/named-hw-pointer-for-pack-low-half-s4-7.c` = **7**. Identical to s3/s4/s5/s6 — the
+chassis has not moved and no banked kill needed voiding. Raw scores in
+`tmp/grind/func_800300B4/s7/sb_*.txt`.
+
+**The solver triage that the modality mandates, run FIRST, changed the residual's type.**
+`python3 tools/ra_solver/inverse_compose.py classify code6cac_b func_800300B4
+--target-object build/src/code6cac_b.o --ours-object tmp/sandbox/func_800300B4/code6cac_b.o`
+(object path — the mandated escape for an INCLUDE_ASM-routed function; `build/src/code6cac_b.o`
+carries the target's own assembled bytes because main commits the function as INCLUDE_ASM).
+Report: `tmp/grind/func_800300B4/s7/classify_base.txt`.
+
+    func_800300B4 (code6cac_b): honest 83 insns, target 83 insns
+    FIRST DIVERGENCE: PRE-RA
+      next tool: no backend — the residual is upstream of every model
+      instruction shapes present in ONE stream only (registers blanked):
+        ours only  : lhu #,44(#)      ours only  : lhu #,48(#)
+        target only: lhu #,0(#)       target only: lhu #,4(#)
+
+This CONTRADICTS the ledger's standing attribution. s1 H4, s6 H29 and s6 H30 all placed the 7-insn
+residual in the register allocator (`find_free_reg` numeric order, local-alloc.c:2249/2207). Those
+measurements are correct but they were aimed at the SECOND layer: the FIRST divergence is an
+instruction-multiset difference, which RA and the scheduler cannot express at all — the target's
+two halfword loads carry displacements 0 and 4, ours carry 44 and 48.
+
+**Pass attribution READ, not guessed** (`pwsh tools/grinder/dump.ps1 func_800300B4`, dumps under
+`tmp/grind/func_800300B4/dumps/`, scanned by `tmp/grind/func_800300B4/s7/scanpass.py`). Tracking the
+two HImode MEMs of the pack across every dump:
+
+    .rtl    (mem:HI (reg/v:SI 76))                      <- insn 41, TARGET's shape
+    .rtl    (mem/s:HI (plus:SI (reg/v:SI 76) (const_int 4)))   <- insn 44, TARGET's shape
+    .jump   unchanged
+    .cse    (mem:HI (plus:SI (reg/v:SI 72) (const_int 44)))    <- REWRITTEN
+    .loop/.combine/.flow/.lreg/.sched  ... all carry the rewritten form
+    .greg   (mem:HI (plus:SI (reg/v:SI 19 s3) (const_int 44)))
+
+reg 76 = the `lv` pointer (`insn 38: (set (reg 76) (plus (reg 72) (const_int 44)))`), reg 72 = the
+`arg0` parameter. **The front end already emits exactly the target's addressing shape. cse.c
+destroys it.**
+
+**The exact predicate.** `cse.c fold_rtx` case MEM calls `find_best_addr (insn, &XEXP (x, 0))`
+(tools/gcc-2.7.2/cse.c:5034). `find_best_addr` (cse.c:2622) walks the address's equivalence class
+and takes the entry with the lowest `ADDRESS_COST`, breaking ties by the HIGHEST `rtx_cost`
+(cse.c:2717-2726; the rationale is in its own header comment at cse.c:2613-2616: "For two addresses
+of equal cost, choose the one with the highest `rtx_cost` value as that has the potential of
+eliminating the most insns"). On MIPS `ADDRESS_COST(ADDR) = REG_P(ADDR) ? 1 : mips_address_cost(ADDR)`
+(config/mips/mips.h:2897) and `mips_address_cost` returns 1 for `(plus reg SMALL_INT)`
+(config/mips/mips.c:1653-1654). So a bare REG address and a `reg+small-const` address tie at cost 1,
+and the tiebreak at cse.c:2720 hands the win to the PLUS form — every time, unconditionally, for any
+pointer whose cse equivalence class contains a `(plus reg CONST_INT)` entry.
+
+**Six spellings measured, all identical** (`tmp/grind/func_800300B4/s7/pc.sh`, which sandboxes AND
+re-classifies each form; per-form reports `cls_*.txt`):
+
+| form | what it spells | score | classify |
+|---|---|---|---|
+| `v_base` | `*(u16*)(arg0+0x2C) | (*(u16*)(arg0+0x30)<<16)` (banked best) | 7 | PRE-RA, 44/48 |
+| `v_lvcast` | `*(u16*)lv | (((u16*)lv)[2]<<16)` | 7 | PRE-RA, 44/48 |
+| `v_hwptr` | named `u16 *hw = (u16*)lv; hw[0] | (hw[2]<<16)` | 7 | PRE-RA, 44/48 |
+| `v_amp` | `*(u16*)&lv[0] | (*(u16*)&lv[1]<<16)` | 7 | PRE-RA, 44/48 |
+| `v_hwarg` | `u16 *hw = (u16*)(arg0+0x2C); hw[0] | (hw[2]<<16)` | 7 | PRE-RA, 44/48 |
+| `v_order` | `lv` materialised BEFORE the pack (order-only control) | 7 | PRE-RA, 44/48 |
+| `v_nowrap` | s6's FAKE-free control (no do-while(0) at all) | 19 | PRE-RA, 44/48 |
+
+So the lock is FAKE-independent and spelling-independent: naming the pointer, indexing through it,
+taking its address, reordering its definition — cse re-folds all of them back to `44($s3)/48($s3)`.
+
+**Positive control — the predicate's condition isolated.** `v_probe_matbase` is a deliberately
+SEMANTICS-CHANGED model probe (not a candidate, not banked in `rejected/`): it bases the two
+halfword reads on `mat`, a pointer LOADED FROM MEMORY, so cse has no `(plus reg const)` entry in its
+class. Result: score still 7, but `FIRST DIVERGENCE: RA` — the multiset now MATCHES the target
+(`lhu #,0(#)` / `lhu #,4(#)`). That confirms the mechanism is exactly equivalence-class membership
+in `find_best_addr`, and nothing else. Its RA residual also states the whole remaining problem in
+one block (`tmp/grind/func_800300B4/s7/cls_v_probe_matbase.txt`):
+
+    ours  : addiu a1,s3,44 ; lhu v0,4(a0) ; lhu v1,0(a0) ; move t4,a1 ; mtc2 v1,$0 ; or v1,v1,v0 ; sll v0,v0,0x10
+    target: addiu v0,s3,44 ; lhu t5,0(t4) ; lhu t6,4(t4) ; move t4,v0 ; mtc2 t5,$0 ; or t5,t5,t6 ; sll t6,t6,0x10
+
+i.e. even with the addressing shape fixed, the target's loads are BASED ON `$t4` — the register the
+island's own `move $12, %0` writes — and its temps are `$t5/$t6`. That is the s6 H29 class kill
+(`local-alloc.c:2207`: the pack quantities are suggestion-free, so `just_try_suggested` never runs
+and the ascending scan at :2249 takes $2/$3 over a free $13/$14).
+
+**Composed conclusion.** The 7-insn residual is DOUBLY locked, at two different compiler layers, and
+each lock is independently sufficient:
+
+  1. PRE-RA (`cse.c:2720` find_best_addr rtx_cost tiebreak): every semantically-correct C spelling
+     of the pack renders `lhu 44($s3)/lhu 48($s3)`, never `lhu 0(reg)/lhu 4(reg)`.
+  2. RA (`local-alloc.c:2207` / :2249, s6 H29): even given the correct addressing shape, no C pseudo
+     reaches $t4/$t5/$t6, and $t4 is written only by the island's own `move $12,%0`.
+
+The only stream in which the target's loads can be based on `$t4` is one where they are emitted
+INSIDE the asm template — which is precisely the `gte_ldlv0` SDK macro body, and precisely the
+policy question filed at docs/grind/borderline.md:370. s7 does not re-request that ruling; it
+supplies the mechanical proof the entry was missing, as an addendum.
+
+**Deliberately NOT done (solver rule 2).** `inverse.py` was not run. The only body whose stream
+classifies RA is `v_probe_matbase`, which is semantically wrong; deriving RA lever vectors from it
+would be modelling a program we cannot ship (the func_80072CD4 baseline-routing defect in reverse).
+The real body classifies PRE-RA, for which the tool itself reports "no backend — the residual is
+upstream of every model", and the RA layer was already measured directly with the instrumented cc1
+in s6.
+
+- [s7] Chassis re-measured on HEAD 5dc32f12: best_ban_compliant.c = 7, candidate.c (0-form, carries the banned island-2 block) = 0, hand-built FAKE-free control = 19, rejected/named-hw-pointer-for-pack-low-half-s4-7.c = 7. Unchanged from s3/s4/s5/s6.
+
+- [s7] inverse_compose.py classify (object path, target = build/src/code6cac_b.o which carries the target's own bytes under asm-until-matched) types the real ban-compliant body PRE-RA, with the sole multiset delta being the two halfword loads' displacements: ours 44/48, target 0/4.
+
+- [s7] Pass attribution READ from cc1 -da dumps, not guessed: .rtl already carries the target's addressing shape ((mem:HI (reg 76)) and (mem/s:HI (plus (reg 76) 4)), reg 76 = the lv pointer, reg 72 = arg0); .cse carries (mem:HI (plus (reg 72) 44)). cse.c is the owning pass.
+
+- [s7] The exact predicate is cse.c find_best_addr (cse.c:2622, called from fold_rtx's MEM case at cse.c:5034): ADDRESS_COST ties a bare REG (1, config/mips/mips.h:2897) against (plus reg SMALL_INT) (1, config/mips/mips.c:1653-1654), and the rtx_cost tiebreak at cse.c:2720 always prefers the PLUS form.
+
+- [s7] Six pack spellings (pointer named, pointer indexed, &lv[i] sub-word reads, a named u16* off arg0, and a definition-order control) all score 7 and all classify PRE-RA with the identical multiset delta; the FAKE-free control (19) does too, so the cse lock is FAKE-independent.
+
+- [s7] Positive control (semantics deliberately changed, not a candidate): basing the two reads on mat - a pointer loaded from memory, for which cse holds no (plus reg const) entry - makes the multiset MATCH the target and flips the classification to RA. This isolates equivalence-class membership in find_best_addr as the sole cause of the 44/48 displacements.
+
+- [s7] With the addressing shape fixed by that control, the remaining RA residual is exactly the target's use of $t4 as the loads' base and $t5/$t6 as its temps - and $t4 is written only by the island's own 'move $12, %0', which the s6 H29 class kill (local-alloc.c:2207/:2249, suggestion-free quantities, ascending scan) already closed to C pseudos.
+
+- [s7] Net: the 7-insn residual carries two independently sufficient locks at two different compiler layers (cse.c:2720 and local-alloc.c:2207), so the C-derivation route is closed twice over. The remaining route is unchanged and is the owner policy question at docs/grind/borderline.md:370, to which an s7 addendum with this proof was filed.
+
+- [s7] Solver backends are foreclosed as a route here by the solver's own triage: inverse.py / inverse_sched.py permute a fixed multiset and the real body's multiset differs; the tool reports 'no backend - the residual is upstream of every model'. inverse.py was deliberately NOT run (solver rule 2: the only RA-classifying body is the semantics-changed positive control, and deriving vectors from it would model a program that cannot ship).
