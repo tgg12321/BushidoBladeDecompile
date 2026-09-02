@@ -6,10 +6,10 @@
  "floor_history": [],
  "frontier": [],
  "judge_constraints": [
-  "LAYER-1 CHEAT-REVIEWER FAIL: Island 2 (gte_ldv0/rtv0) swallows the SVECTOR s16-unpack GPR arithmetic (lhu/lhu/sll/or) into the 'canonical' asm block, violating the cop2-addressing-preamble-cluster grant's own mechanical condition 3 ('in-island GPR instructions limited to the cop2 addressing preamble \u2014 nothing else may be swallowed into the template'); the do-while(0) wrap on island 3 is otherwise conforming. Next action: Restructure island 2: compute the SVECTOR pack as ordinary C (a local `u32 packed = ...;` from the two s16 halfword reads/shift/or \u2014 semantically identical, and something GCC "
+  "LAYER-1 CHEAT-REVIEWER FAIL: Island 2 (gte_ldv0/rtv0) swallows the SVECTOR s16-unpack GPR arithmetic (lhu/lhu/sll/or) into the 'canonical' asm block, violating the cop2-addressing-preamble-cluster grant's own mechanical condition 3 ('in-island GPR instructions limited to the cop2 addressing preamble \u2014 nothing else may be swallowed into the template'); the do-while(0) wrap on island 3 is otherwise conforming. Next action: Restructure island 2: compute the SVECTOR pack as ordinary C (a local `u32 packed = ...;` from the two s16 halfword reads/shift/or \u2014 semantically identical, and something GCC ",
+  "Island 2 is authorized AS A UNIT only in the exact func_800203B4 gte_ldv0 spelling; no GPR instruction beyond an SDK macro body may enter any island, cite inline_asm_canonical.txt:367 + decisions.md:20262, and the final call still owes the island-3 do-while(0) FAKE prerequisites plus the owner-cluster allowlist line before queue done."
  ],
  "banned_constructs": [
-  "__asm__ volatile block for gte_ldv0/gte_rtv0 containing `lhu $14,4($12)`, `lhu $13,0($12)`, `sll $14,$14,16`, `or $13,$13,$14` ahead of `mtc2 $13,$0`",
   "Self-vet's characterization of island 2 as 'the exact spelling of the integrated cluster sibling func_8002FC80' and its fallback citation to inline_asm_canonical.txt:174 (LoadAverageShort12, a GTE-leaf-wrapper authorization under a different family/policy)"
  ],
  "kills": [],

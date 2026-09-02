@@ -19,3 +19,19 @@
 Frontier: none — candidate at 0. If the Judge rejects the wrap, the only remaining axis is a
 natural spelling that lowers arg0 to <=5 refs, which the byte-pinned six s3 uses do not allow;
 that would be a ruling-request, not a re-grind.
+
+## s1b (2026-09-02, recon)
+
+- H4 KILLED (class) - island 2 with the VXY0 pack computed in ordinary C (layer-1 prescribed form). Measured
+  sandbox 19 in two spellings (lv[] index form; explicit u16 reads), with the E3 do-while(0) wrap present.
+  Predicate: the target pack reads through $t4 (asm-internal `move $12,%0` copy, no C handle) into $t5/$t6;
+  local-alloc.c:2249 find_free_reg allocates hard regs in numeric order (no REG_ALLOC_ORDER in
+  config/mips/mips.h), so with $v0/$v1 free no C temp reaches $13/$14. Both spellings landed in v0/v1 off $s2.
+- H5 CONFIRMED (documentary) - the island is on main character-identical in func_800203B4 (owner grant
+  2026-09-01, inline_asm_canonical.txt:367), func_8002E838 (Judge PASS decisions.md:20262) and func_80031890
+  (Judge PASS decisions.md:20268), all with the pack inside the asm block.
+
+Frontier: ruling-request only. If the ruling admits the gte_ldv0 macro body under condition 3 (as the
+func_800203B4 grant text and the two sibling PASSes did), candidate.c is a 0-form ready for re-submission with
+the self-vet's precedent citations replaced by func_800203B4 / func_8002E838. If it does not, the function has
+no pure-C or sanctioned-asm form for those 7 bytes and the correct disposition is the cluster-door foreclosure.

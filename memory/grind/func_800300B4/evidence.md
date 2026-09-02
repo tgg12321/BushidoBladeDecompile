@@ -74,3 +74,52 @@ func_8002F2D0 returns; an earlier computation would have to survive two calls â€
 **Artifacts:** tmp/grind/func_800300B4/s1/body_v1.c, diff.py, qtydbg.py, qtydbg_all.txt (v1 trace),
 qtydbg_e2_dowhile.txt (matched trace), tmp/grind/func_800300B4/dumps/ (cc1 -da of v1: f.lreg/f.greg
 carry the "Register N used M times across L insns" table).
+
+## s1b (2026-09-02, recon) - layer-1 FAIL follow-up: the prescribed pack-in-C form is measured dead; precedent found
+
+**Chassis re-check.** Banked candidate.c re-applied to src/code6cac_b.c: canonical ASM-PARTIAL (11/83 cop2),
+`sandbox --disable all` score 0 (cheat_asm_stripped 33, rules_dropped 0). Floor unchanged; src restored to
+`INCLUDE_ASM` at session end (asm-until-matched; no candidate-ready submitted).
+
+**Measurement 4 - island 2 with the VXY0 pack computed in ordinary C (the layer-1 reviewer's prescribed
+next action), two spellings, both sandbox 19** (tmp/grind/func_800300B4/s1/diff_packC_A.txt, diff_packC_B.txt;
+forms in rejected/pack-in-c-island2-lv-index-vregs-off-s2-19.c and
+rejected/pack-in-c-island2-u16-reads-vregs-off-s2-19.c):
+  A: `lv = (s32 *)(arg0 + 0x2C); packed = (u16)lv[0] | (lv[1] << 16);` asm operands "r"(lv), "r"(packed),
+     island = move $12,%0 / mtc2 %1,$0 / lwc2 $1,8($12) / nop / nop / .word 0x4A486012.
+  B: same but `packed = *(u16 *)(arg0 + 0x2C) | (*(u16 *)(arg0 + 0x30) << 16);`.
+Build emits (A) `addiu a1,s2,44; lw v0,48(s2); lhu v1,44(s2); sll v0,v0,16; or v1,v1,v0; move t4,a1; mtc2 v1,$0`
+(B identical except `lhu v0,48(s2)`), vs target `addiu v0,s3,44; move t4,v0; lhu t6,4(t4); lhu t5,0(t4);
+sll t6,t6,16; or t5,t5,t6; mtc2 t5,$0`. Two independent gaps, neither reachable from C:
+  (i) the target's halfword loads are based on $t4 - a register that exists only inside the asm string as
+      the SDK macro's `move $12,%0` copy; C code has no handle on it, so cse folds every C-side read to an
+      arg0-pseudo-based offset. Any C spelling of the pack reads off arg0's register, never off $t4.
+  (ii) the temps are $t5/$t6 ($13/$14). local-alloc.c:2249-2258 find_free_reg scans hard regs in numeric
+      order because config/mips/mips.h defines no REG_ALLOC_ORDER (grep count 0), and $v0/$v1 are free at
+      that point (both forms put the pack in v0/v1); no C-side temp can land in $13/$14 while $2/$3 are free.
+  Side effect: the extra C-side arg0 reads raise arg0's reg_n_refs, so the arg0/&mac seat swap (E1) returns
+  on top of the island bytes even with the E3 do-while(0) wrap in place - 19 = 7 island insns + 12 seat-swap.
+Conclusion: the lhu/lhu/sll/or is hand-asm in the target (PsyQ inline_a.h gte_ldv0 macro body, which
+hardcodes $13/$14 and reads through the $12 copy). It is not a "swallowed" compiler-expressible computation;
+it is unreachable by GCC 2.7.2 from any C source.
+
+**Precedent (on main, found this session - the s1 self-vet cited the wrong sibling).**
+  - src/code6cac.c:1858-1870, func_800203B4: the SAME island character-for-character (move $12,%0; lhu $14,4($12);
+    lhu $13,0($12); sll $14,$14,16; or $13,$13,$14; mtc2 $13,$0; lwc2 $1,8($12); nop; nop). Owner-GRANTED
+    2026-09-01 (inline_asm_canonical.txt:367) with the grant text explicitly recording that "three thin-island
+    variants that move C-expressible macro parts into C score 12/4/8 - memory/grind/func_800203B4 s6" and that
+    the islands were "authorized AS UNITS after the pure-C respelling was measured unable to close".
+  - src/code6cac_b.c:1245-1255, func_8002E838: cluster sibling (owner_cluster_grants.txt:22), same island,
+    Judge final call PASS 2026-09-02 01:27 (docs/grind/decisions.md:20262), which found the island
+    "CHARACTER-IDENTICAL to ... func_800203B4 src/code6cac.c:1839-1881 (owner grant 2026-09-01)".
+  - src/code6cac_b.c:2012-2022, func_80031890: same island, Judge PASS 2026-09-02 01:34 (decisions.md:20268).
+  The s1 self-vet's precedent citations (func_8002FC80, which has no gte_ldv0 island, and LoadAverageShort12
+  inline_asm_canonical.txt:174) were the wrong anchors - both are now BANNED citations and are not reused.
+
+**Remaining question (ruling-request, not re-grind).** The layer-1 FAIL applies cluster condition 3 ("in-island
+GPR limited to the cop2 addressing preamble") to the gte_ldv0 macro-body pack, while the same island passed the
+Judge in two cluster siblings on the same day and is owner-granted in func_800203B4. Measurement 4 shows the
+prescribed alternative cannot be built. The pack island is now a BANNED construct for this function, so the
+driver rejects a candidate-ready re-declaring it regardless of precedent; the only path is a ruling.
+
+**Artifacts:** tmp/grind/func_800300B4/s1/v_packC_A.c, v_packC_B.c, diff_packC_A.txt, diff_packC_B.txt, apply.py.
