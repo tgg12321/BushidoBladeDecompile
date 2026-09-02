@@ -402,3 +402,30 @@ measure exactly 7 (memory/grind/func_800300B4/hypotheses.md H23): the target's p
 and COMPLETED-C is therefore now exactly the policy question in the entry above, with no remaining
 codegen residual attached to it. Best ban-compliant form (two do-while(0) FAKE wraps, not a
 submission): memory/grind/func_800300B4/best_ban_compliant.c. Evidence: evidence.md s3 section.
+
+### 2026-09-02 addendum (session s6) — the only non-policy escape route is now measured closed
+The entry above listed three re-activation triggers, two of them owner rulings and one a toolchain
+finding: "a toolchain finding that lets GCC 2.7.2 base a C-side halfword pair on the asm-internal
+$t4 copy and seat its temps in $13/$14 with $2/$3 free". Session s6 measured that trigger dead, so
+the question in this entry is now the *whole* remaining distance between func_800300B4 and
+COMPLETED-C, with no alternative route for a future session to take instead.
+
+Evidence (memory/grind/func_800300B4/hypotheses.md H29/H30; dumps
+tmp/grind/func_800300B4/s6/suggdbg_all.txt and suggdbg_packhigh.txt, produced by the instrumented
+cc1 with BB2_SUGG_DEBUG=1): `find_free_reg` has exactly one bypass of ascending numeric hard-reg
+order — the `just_try_suggested` restriction to `qty_phys_copy_sugg`/`qty_phys_sugg`
+(tools/gcc-2.7.2/local-alloc.c:2207-2213); the ascending scan at :2249 takes the `int regno = i;`
+arm because MIPS defines no REG_ALLOC_ORDER (regclass.c:112). The three island-2 pack quantities
+carry `ncopysugg=0 nsugg=0`, so the bypass never runs for them, and every suggestion recorded
+anywhere in this function is one of {4,5,6,7,30} — suggestions come only from copies between a
+pseudo and a hard register, and nothing but hardcoded-$N asm ever copies to $t5/$t6. The FFR lines
+show $13/$14 free and simply passed over (`qty=4 ... used=0,1,4,26..67` -> got $2). A contention
+probe that makes $v0/$v1 busy across the pack (the explicit conditional in the original predicate,
+never previously tested) moves the pack quantity exactly two registers, $3 -> $5, and scores 9
+against the baseline 7.
+
+Status of the two remaining triggers is unchanged: (a) an owner ruling that condition 3 admits an
+SDK GTE-macro body; (b) an owner ruling making the func_800203B4 / func_8002E838 / func_80031890
+islands citable precedent for cluster siblings. Bytes unchanged: `candidate.c` = sandbox 0 (83/83)
+and verify-oracle ok; ban-compliant floor = 7 (best_ban_compliant.c, one sanctioned do-while(0)
+wrap whose necessity is itself a class kill at local-alloc.c:1666, hypotheses.md H27).

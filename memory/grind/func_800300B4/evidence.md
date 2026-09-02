@@ -676,3 +676,114 @@ Banked at `rejected/merged-frame-struct-no-quantity-change-19.c`.
 - [s5] The 7-insn residual is unchanged and is entirely the island-2 gte_ldlv0 GPR pack. No new C-side axis for it was found or probed this session (H4 class kill at local-alloc.c:2249 plus H17/H23/H26 stand); the ruling filed at docs/grind/borderline.md:370 was NOT re-requested and candidate.c was NOT submitted.
 
 - [s5] src/code6cac_b.c is back at INCLUDE_ASM; only memory/grind/func_800300B4/ and tmp/grind/func_800300B4/s5/ were written.
+
+## s6 (2026-09-02, synthesis, HEAD 5eac882d) — the merged attack, and the close of trigger (c)
+
+### E-s6-0 — chassis re-measure (dispatch reported "measurement unavailable")
+`best_ban_compliant.c` = sandbox **7**; `candidate.c` (0-form, banned island-2 block) = sandbox
+**0**; FAKE-free control `v_nowrap.c` = **19**. All three identical to s3/s4/s5. Artifacts
+tmp/grind/func_800300B4/s6/{sb_v_base.txt, sb_v_zero.txt, sb_v_nowrap.txt}.
+
+### E-s6-1 — KILL RE-AUDIT
+`tools/fake_ablate.py` on best_ban_compliant.c: 1 FAKE unit, keep-all 7, drop-1 27. The 27 is the
+s5-documented ablator artefact (it deletes only the `do {` line and orphans the five-line FAKE
+comment tail), not a FAKE-free datum; the authoritative FAKE-free control is the hand-built
+`v_nowrap.c` = 19. The two closest-to-target banked instance kills re-measure unchanged on this
+chassis: `rejected/named-hw-pointer-for-pack-low-half-s4-7.c` = 7 and
+`rejected/island2-pack-through-lv-seats-lv-in-a1-s3-7.c` = 7. No kill required voiding, and no
+banked kill names a FAKE construct absent from the current best form.
+
+### E-s6-2 — the merged attack, stated once (this is the synthesis deliverable)
+func_800300B4 is a three-island GTE routine. Written with the PsyQ inline macros it byte-matches
+exactly: `candidate.c` measures sandbox 0 (83/83, rules_dropped 0) and passed `verify-oracle` in
+s1f/s1g. Its island 2 is Sony's `gte_ldlv0` body (PsyQ 4.5 inline_c.h:101-110), and that block is
+under mechanical ban 4 pending an owner reading of cluster condition 3. Everything the pipeline has
+done since is the ban-compliant programme: express island 2's GPR pack as ordinary C and close the
+rest of the function. That programme is now COMPLETE and its floor is 7:
+
+  * s1  19 — pack-in-C, one do-while(0) wrap; the four call-crossing seats break.
+  * s2  11 — raise `&dir` instead of squeezing `&mac`; all four seats land (H18).
+  * s3   7 — widen the `&dir` wrap upward to `mac`-adds..end; the entire tail matches (H21).
+  * s4   7 — a single wrap opening inside the island block replaces the two wraps (H24).
+  * s5   7 — the last wrap is PROVEN NECESSARY (class kill H27, local-alloc.c:1666).
+  * s6   7 — the last non-policy re-activation trigger is closed (class kill H29, :2207).
+
+The residual 7 is one diff hunk and nothing else:
+    TGT: addiu v0,s3,44 ; move t4,v0 ; lhu t6,4(t4) ; lhu t5,0(t4) ; sll t6,t6,0x10 ;
+         or t5,t5,t6 ; mtc2 t5,$0 ; lwc2 $1,8(t4)
+    BLD: lhu v0,48(s3) ; lhu v1,44(s3) ; sll v0,v0,0x10 ; or v1,v1,v0 ; addiu v0,s3,44 ;
+         move t4,v0 ; mtc2 v1,$0 ; lwc2 $1,8(t4)
+Two independent properties of the target hunk are unreachable from C: its base register is `$t4`,
+which exists only inside the asm block's own `move $12,%0` preamble, and its temps are `$t5`/`$t6`.
+
+### E-s6-3 — the register-order question, answered with the compiler rather than by inference
+Previous sessions asserted the numeric-order predicate (local-alloc.c:2249) from source reading.
+s6 measured it. The instrumented cc1 was run with `BB2_SUGG_DEBUG=1` (the `SUGGDBG-QTY` /
+`SUGGDBG-FFR` instrumentation, which prints each quantity's suggestion sets and the exact `used` /
+`first_used` hard-reg sets `find_free_reg` scans) over the whole TU with `best_ban_compliant.c`
+applied — dump `tmp/grind/func_800300B4/s6/suggdbg_all.txt`, 3,357 lines.
+
+Three facts, all read directly off the dump:
+  1. `find_free_reg` has exactly one bypass of ascending numeric order — the `just_try_suggested`
+     restriction to `qty_phys_copy_sugg` / `qty_phys_sugg` at local-alloc.c:2207-2213. The
+     ascending scan at :2249 uses the `int regno = i;` arm (:2254) because MIPS defines no
+     REG_ALLOC_ORDER (guard at regclass.c:112; nothing under config/mips/ defines it).
+  2. The three island-2 pack quantities carry no suggestions at all
+     (`qty=4/5/6 ... ncopysugg=0 nsugg=0`), so the bypass never runs for them. Across the whole
+     function every suggestion recorded is one of {4,5,6,7,30} — i.e. $a0-$a3, $t2 and $s6 — because
+     a suggestion is only created by a copy between a pseudo and a hard register, and in this ABI
+     nothing but hardcoded-$N asm ever copies to $t5/$t6.
+  3. $13 and $14 are FREE when the pack is allocated and are simply passed over:
+     `SUGGDBG-FFR qty=4 class=1 jts=0 born=20 dead=26 used=0,1,4,26..67` -> got $2;
+     `qty=5 ... used=0,1,2,4,12,...` -> got $3; `qty=6 ... used=0,1,3,4,12,...` -> got $2.
+     ($12 appears in `used` only because the island asm block clobbers `"$12"` — the sole
+     mechanism in this function that ever marks a $t register used.)
+
+### E-s6-4 — the contention probe (H4's conditional, tested for the first time)
+H4/H23 phrased the kill conditionally: "with $v0/$v1 free no C temp reaches $13/$14". Statement
+placement is the one ordinary-C lever that changes what is live across the pack, so the pack was
+hoisted into the live range of the `game_GetPlayerData` return value and the `playerData[arg0[9]]`
+index chain. Result: `v_packhigh` = 9, `v_packtop` = 10 (baseline 7). The dump shows the mechanism
+working and its size: the pack value quantity moves from $3 to **$5**
+(`QTYDBG blk=0 ord=15 qty=3 reg1=77 birth=14 death=30 refs=4 got=5`, suggdbg_packhigh.txt) — one
+register per conflicting live quantity. Reaching $13 from $2 therefore needs eleven further
+simultaneously-live quantities over the pack's 6-insn range, which this straight-line body cannot
+produce without invented dead values (a cheat family). Banked at
+rejected/pack-hoisted-above-island1-contention-s6-9.c and
+rejected/pack-hoisted-to-function-top-s6-10.c.
+
+### E-s6-5 — consequences for the frontier
+Re-activation trigger (c) from s1's H8 ("a toolchain finding letting GCC 2.7.2 base a C-side
+halfword pair on the asm-internal $t4 copy and seat its temps in $13/$14 with $2/$3 free") is now a
+class kill with its own predicate (H29, local-alloc.c:2207) rather than an open question. The
+function's remaining distance to COMPLETED-C is a single policy variable with two owner-ruling
+triggers left, (a) and (b). No grind modality has an axis on it: the pack is class-dead in C
+(H4/H23/H26/H29/H30), the seat axis is class-dead FAKE-free (H27) and closed with the one sanctioned
+wrap, and the asm spelling is under ban 4.
+
+- [s6] No ruling was re-requested, `candidate.c` was not submitted, and no struck ruling or banned
+  sibling precedent was cited.
+- [s6] `src/code6cac_b.c` is back at `INCLUDE_ASM` (every probe restores it via `git checkout --`).
+  Only `memory/grind/func_800300B4/`, `tmp/grind/func_800300B4/s6/` and `docs/grind/borderline.md`
+  were written.
+- [s6] Floor unchanged at 7; the 0-form is still 0 and still blocked solely by the island-2 ban.
+
+- [s6] Chassis re-measured on HEAD 5eac882d: best_ban_compliant.c = sandbox 7, candidate.c (0-form carrying the banned island-2 block) = sandbox 0, hand-built FAKE-free control = 19. Nothing has moved since s3/s4/s5.
+
+- [s6] The ban-compliant programme is complete and its floor is 7: s1 19 (pack-in-C, seats break) -> s2 11 (raise &dir instead of squeezing &mac, H18) -> s3 7 (widen the &dir wrap upward, whole tail matches, H21) -> s4 7 with one wrap instead of two (H24) -> s5 the last wrap proven necessary (class kill H27, local-alloc.c:1666) -> s6 the last non-policy trigger closed (class kill H29, local-alloc.c:2207).
+
+- [s6] The residual 7 is one diff hunk and nothing else. TGT: addiu v0,s3,44 ; move t4,v0 ; lhu t6,4(t4) ; lhu t5,0(t4) ; sll t6,t6,0x10 ; or t5,t5,t6 ; mtc2 t5,$0 ; lwc2 $1,8(t4). BLD: lhu v0,48(s3) ; lhu v1,44(s3) ; sll v0,v0,0x10 ; or v1,v1,v0 ; addiu v0,s3,44 ; move t4,v0 ; mtc2 v1,$0 ; lwc2 $1,8(t4). Two independent properties of the target hunk are unreachable from C: its base register $t4 exists only inside the asm block's own 'move $12,%0' preamble, and its temps are $t5/$t6.
+
+- [s6] find_free_reg's register order was measured, not inferred. Its only bypass of ascending numeric order is the just_try_suggested restriction to qty_phys_copy_sugg/qty_phys_sugg (tools/gcc-2.7.2/local-alloc.c:2207-2213); the ascending scan at :2249 takes the 'int regno = i;' arm at :2254 because MIPS defines no REG_ALLOC_ORDER (guard at regclass.c:112).
+
+- [s6] BB2_SUGG_DEBUG dump (tmp/grind/func_800300B4/s6/suggdbg_all.txt): the three island-2 pack quantities report ncopysugg=0 nsugg=0, so the suggestion bypass never runs for them; every suggestion recorded anywhere in func_800300B4 is one of {4,5,6,7,30}, because suggestions come only from copies between a pseudo and a hard register and nothing but hardcoded-$N asm ever copies to $t5/$t6.
+
+- [s6] The FFR lines show $13/$14 free and simply passed over: 'SUGGDBG-FFR qty=4 class=1 jts=0 born=20 dead=26 used=0,1,4,26..67' -> got $2; qty=5 used=0,1,2,4,12,... -> got $3; qty=6 used=0,1,3,4,12,... -> got $2. $12 is in the used sets only because the island asm block clobbers "$12" - the sole mechanism in this function that ever marks a $t register used.
+
+- [s6] Contention scales one register per conflicting live quantity: hoisting the pack above island 1 moves its value quantity from $3 to $5 (score 9); hoisting it to the top of the function scores 10. Reaching $13 from $2 would need eleven further simultaneously-live quantities over the pack's 6-insn range.
+
+- [s6] Consequence for the ledger: s1's H8 re-activation trigger (c) is now a class kill with its own predicate rather than an open question, so func_800300B4's remaining distance to COMPLETED-C is a single policy variable with two owner-ruling triggers left, (a) and (b). No grind modality has an axis on it: the pack is class-dead in C (H4/H23/H26/H29/H30), the seat axis is class-dead FAKE-free (H27) and closed with the one sanctioned wrap, and the asm spelling is under ban 4.
+
+- [s6] Ledger writes this session: hypotheses.md s6 section (H29, H30, kill re-audit), evidence.md s6 section (E-s6-0..E-s6-5), a docs/grind/borderline.md s6 addendum recording that the entry's only non-policy escape route is now measured closed, an s6 note in best_ban_compliant.c's header, and two new rejected forms. candidate.c is unchanged (still the 0-form).
+
+- [s6] No ruling was re-requested, candidate.c was not submitted, and no struck ruling (07:30 / 07:59) or banned sibling precedent was cited. src/code6cac_b.c is back at INCLUDE_ASM; every probe restores it via 'git checkout --'.

@@ -486,3 +486,128 @@ Frontier after s5 (RESET — strongest first):
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 9b2e1331, pack-in-C island 2 (no banned construct), islands 1/3 as banked, measured both FAKE-free and with the single do-while(0) wrap
+
+## s6 (2026-09-02, synthesis, HEAD 5eac882d) - re-activation trigger (c) closed with a predicate
+
+Chassis re-measured at dispatch (the brief again reported "measurement unavailable"):
+`memory/grind/func_800300B4/best_ban_compliant.c` = sandbox **7**, `memory/grind/func_800300B4/
+candidate.c` (the 0-form carrying the banned island-2 block) = sandbox **0**
+(tmp/grind/func_800300B4/s6/sb_v_base.txt, sb_v_zero.txt). Identical to s3/s4/s5; nothing moved.
+
+KILL RE-AUDIT (mandated). `tools/fake_ablate.py --func func_800300B4 --file code6cac_b --candidate
+memory/grind/func_800300B4/best_ban_compliant.c` reports 1 FAKE unit, keep-all = 7, drop-1 = 27 -
+the 27 is the s5 tooling artefact (the ablator deletes only the `do {` line and orphans the 5-line
+FAKE comment tail), NOT a FAKE-free measurement. The hand-built FAKE-free control
+(tmp/grind/func_800300B4/s6/v_nowrap.c, braces removed, body intact) re-measures **19** on this
+chassis, agreeing with s4/s5. The two closest-to-target banked instance kills re-measure unchanged:
+`rejected/named-hw-pointer-for-pack-low-half-s4-7.c` = 7,
+`rejected/island2-pack-through-lv-seats-lv-in-a1-s3-7.c` = 7. No kill needed voiding.
+
+## [s6] H29: GCC 2.7.2's local allocator has a path that seats a C-side pseudo in $13/$14 while $2/$3 are free - i.e. s1's H4 predicate (find_free_reg numeric order, local-alloc.c:2249) has a bypass that would let the island-2 pack be written in C.
+- mechanism: This is s1's re-activation trigger (c), the only one of the three that a grind session
+  can act on, and it is the frontier's own next_probe: "re-read tools/gcc-2.7.2/local-alloc.c
+  find_free_reg and the reload register-class handling for any path that assigns $12-$14 to a pseudo
+  while $2/$3 are free". `find_free_reg` has exactly one order-bypass: when `just_try_suggested` is
+  set (local-alloc.c:2207-2213) the scan set is restricted to `qty_phys_copy_sugg[qty]` /
+  `qty_phys_sugg[qty]`, so a quantity carrying a suggestion of hard reg 13 or 14 would take it
+  regardless of $2/$3 being free. Everything else falls through to the ascending numeric scan at
+  local-alloc.c:2249-2254, whose `int regno = i;` arm is the live one because MIPS defines no
+  REG_ALLOC_ORDER (the guard is regclass.c:112; there is no definition anywhere under config/mips/).
+- probe: instrumented cc1 (tools/gcc-2.7.2/cc1) run with BB2_SUGG_DEBUG=1 and BB2_QTY_DEBUG=1 over
+  the whole TU with best_ban_compliant.c applied - one `SUGGDBG-QTY` line per quantity (suggestion
+  sets, class, birth/death/refs) and one `SUGGDBG-FFR` line per find_free_reg call (the `used` and
+  `first_used` hard-reg sets it actually scans). Dump:
+  tmp/grind/func_800300B4/s6/suggdbg_all.txt (3,357 lines; func_800300B4 is the span headed
+  `func=func_800300B4`). Then two contention probes that make $v0/$v1 busy across the pack by
+  hoisting it (v_packhigh.c: pack computed between the `game_GetPlayerData` call and the `mat`
+  load; v_packtop.c: pack as the function's first statement), each sandboxed and the closer one
+  re-dumped (suggdbg_packhigh.txt).
+- result: **KILLED, and the trigger is closed.** (i) The three pack quantities carry NO suggestions
+  at all - `qty=4 ... ncopysugg=0 nsugg=0`, `qty=5 ... ncopysugg=0 nsugg=0`, `qty=6 ...
+  ncopysugg=0 nsugg=0` - so the `just_try_suggested` bypass never runs for them; only quantities
+  0/1/3/7/12/15/17 (the ones copied to/from $2, $4-$7, i.e. return value and argument registers)
+  get a suggestion pass at all, and every suggestion recorded anywhere in this function is one of
+  {4,5,6,7,30}. Hard regs 13/14 are not reachable as a suggestion in this ABI: a suggestion is only
+  created by a copy between a pseudo and a hard register, and nothing but hardcoded-$N asm ever
+  copies to $t5/$t6. (ii) The numeric scan is confirmed to have 13/14 FREE and simply pass them
+  over: `SUGGDBG-FFR qty=4 class=1 jts=0 born=20 dead=26 used=0,1,4,26..67` (regs 2,3,5-25 all
+  free) -> got $2; `qty=5 ... used=0,1,2,4,12,...` -> got $3; `qty=6 ... used=0,1,3,4,12,...` ->
+  got $2. Note $12 IS in the `used` sets - the island asm block's `"$12"` clobber marks it - which
+  is the only mechanism in this function that ever marks a $t register used. (iii) The contention
+  probes show the scan is monotone in the number of conflicting live quantities and moves one
+  register per conflict, not more: hoisting the pack above island 1 pushes its value quantity from
+  $3 to **$5** (`QTYDBG blk=0 ord=15 qty=3 reg1=77 birth=14 death=30 refs=4 got=5`) and scores 9;
+  hoisting it to the top of the function scores 10. So reaching $13 from $2 requires ELEVEN further
+  simultaneously-live conflicting quantities across the pack's 6-insn live range - a quantity count
+  this function's straight-line body cannot produce without invented dead values (a cheat family).
+  Forms banked at rejected/pack-hoisted-above-island1-contention-s6-9.c and
+  rejected/pack-hoisted-to-function-top-s6-10.c.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:2207
+- measured_on: HEAD 5eac882d, pack-in-C island 2 (no banned construct), islands 1/3 as banked,
+  FAKE = the single banked do-while(0) wrap (present in the dumped form; the register-order finding
+  is wrap-independent - the pack quantities cross no call and take no loop weighting)
+- CONSEQUENCE: s1's H8 re-activation trigger (c) is now a measured dead end, not an open question.
+  The three triggers reduce to the two owner-ruling ones (a) and (b). Any future session tempted to
+  "look for a toolchain path to $t5/$t6" should read this entry and stop.
+
+## [s6] H30: making $v0/$v1 busy across the island-2 pack (the explicit conditional in H4's predicate, never previously tested) moves the pack temps toward the target's $t5/$t6 far enough to reduce the 7-insn residual.
+- mechanism: H4/H23's predicate is conditional - "with $v0/$v1 free no C temp reaches $13/$14".
+  Statement placement is the one ordinary-C lever that changes which hard regs are live across the
+  pack's range, so hoisting the pack into the region where the `game_GetPlayerData` return value and
+  the `playerData[arg0[9]]` index chain are live is the direct test of that condition.
+- probe: tmp/grind/func_800300B4/s6/v_packhigh.c (pack between the call and the `mat` load) and
+  v_packtop.c (pack as the first statement of the function); `sandbox func_800300B4 --disable all`
+  via tmp/grind/func_800300B4/s6/probe.sh; register outcomes read from suggdbg_packhigh.txt.
+- result: 9 and 10 (baseline 7) - both worse. The mechanism works in the expected direction but is
+  far too weak: contention moves the pack value quantity exactly two registers ($3 -> $5), while
+  the target needs $13/$14, and the hoist simultaneously costs 2-3 insns of position/scheduling in
+  the previously-matching prologue region. Confirms the numeric-order model quantitatively and
+  disposes of the "make $v0/$v1 busy" reading of H4's conditional.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 5eac882d, pack-in-C island 2 (no banned construct), islands 1/3 as banked,
+  FAKE = the single banked do-while(0) wrap
+
+Frontier after s6 (RESET - strongest first):
+  (1) UNCHANGED AND DOMINANT, and now the ONLY item. The whole 7-insn ban-compliant residual is the
+      island-2 `gte_ldlv0` GPR pack, and it is a policy question filed at
+      docs/grind/borderline.md:370 (with s3 and s6 addenda): does
+      .claude/rules/cop2-addressing-preamble-cluster.md condition 3 admit a verbatim PsyQ 4.5 SDK
+      macro body whose lhu/lhu/sll/or is template text rather than an addressing preamble? Do NOT
+      re-request the ruling, do NOT submit candidate.c, do NOT cite the struck 07:30 / 07:59
+      rulings or the banned sibling precedents, and do NOT re-derive the pack in C
+      (H4 + H17 + H23 + H26 + H29 + H30).
+  (2) The seat axis is closed and the single do-while(0) FAKE is proven necessary (s5 H27 class
+      kill at local-alloc.c:1666, backed by s4 H25's 24,590 ordinary-C-only permuter iterations).
+      No probe. Cite H27 + H25 as the do-while-zero-exception prerequisite-(a) lever exhaustion.
+  (3) Re-activation triggers are now TWO, not three: (a) an owner ruling admitting SDK macro-body
+      GPR instructions under condition 3 (lifts ban 1); (b) an owner ruling making the
+      func_800203B4 / func_8002E838 / func_80031890 islands citable precedent for cluster siblings
+      (lifts ban 3). Trigger (c) - a toolchain path seating a C pseudo in $13/$14 while $2/$3 are
+      free - is KILLED by s6 H29 with the suggestion-path predicate at local-alloc.c:2207, and must
+      not be re-opened without new compiler evidence.
+
+## [s6] GCC 2.7.2's local allocator has a path that seats a C-side pseudo in $13/$14 while $2/$3 are free - i.e. s1's H4 predicate (find_free_reg ascending numeric order, tools/gcc-2.7.2/local-alloc.c:2249) has a bypass that would let the island-2 gte_ldlv0 GPR pack be written in ordinary C. This is s1's re-activation trigger (c), the only one of the three that a grind session can act on.
+- mechanism: find_free_reg has exactly one bypass of ascending hard-reg order: when just_try_suggested is set, the scan set is restricted to qty_phys_copy_sugg[qty] / qty_phys_sugg[qty] (tools/gcc-2.7.2/local-alloc.c:2207-2213), so a quantity carrying a suggestion of hard reg 13 or 14 would take it regardless of $2/$3 being free. Everything else falls through to the ascending scan at :2249-2254, whose 'int regno = i;' arm is live because MIPS defines no REG_ALLOC_ORDER (guard at regclass.c:112; nothing under config/mips/ defines it).
+- probe: Instrumented cc1 (tools/gcc-2.7.2/cc1) run with BB2_SUGG_DEBUG=1 and BB2_QTY_DEBUG=1 over the whole TU with best_ban_compliant.c applied, capturing one SUGGDBG-QTY line per quantity (suggestion sets, class, birth/death/refs) and one SUGGDBG-FFR line per find_free_reg call (the exact 'used' and 'first_used' hard-reg sets scanned): tmp/grind/func_800300B4/s6/suggdbg_all.txt, 3357 lines. Then two contention probes making $v0/$v1 busy across the pack by hoisting it (v_packhigh.c, v_packtop.c), sandboxed via tmp/grind/func_800300B4/s6/probe.sh, with the closer one re-dumped (suggdbg_packhigh.txt).
+- result: KILLED, and the trigger is closed. (i) The three island-2 pack quantities carry no register suggestions at all - qty=4/5/6 all report ncopysugg=0 nsugg=0 - so the just_try_suggested bypass never runs for them; only quantities 0/1/3/7/12/15/17 (those copied to/from $2 and $4-$7, i.e. return value and argument registers) get a suggestion pass, and every suggestion recorded anywhere in this function is one of {4,5,6,7,30}. A suggestion is created only by a copy between a pseudo and a hard register, and in this ABI nothing but hardcoded-$N asm ever copies to $t5/$t6. (ii) The ascending scan is confirmed to have $13/$14 FREE and simply pass over them: 'SUGGDBG-FFR qty=4 class=1 jts=0 born=20 dead=26 used=0,1,4,26..67' -> got $2; qty=5 used=0,1,2,4,12,... -> got $3; qty=6 used=0,1,3,4,12,... -> got $2. ($12 appears in 'used' only because the island asm block clobbers "$12" - the sole mechanism in this function that ever marks a $t register used.) (iii) The contention probes show the scan is monotone in the number of conflicting live quantities and moves one register per conflict: hoisting the pack above island 1 moves its value quantity from $3 to $5 (QTYDBG blk=0 ord=15 qty=3 reg1=77 birth=14 death=30 refs=4 got=5) for a score of 9. Reaching $13 from $2 therefore requires eleven further simultaneously-live conflicting quantities across the pack's 6-insn live range, which this straight-line body cannot produce without invented dead values (a cheat family). s1's H8 re-activation trigger (c) is now a measured dead end; the three triggers reduce to the two owner-ruling ones (a) and (b).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 5eac882d, pack-in-C island 2 (no banned construct), islands 1/3 as banked, FAKE = the single banked do-while(0) wrap present in the dumped form; the register-order finding is wrap-independent (the pack quantities cross no call and take no loop weighting)
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:2207
+
+## [s6] Making $v0/$v1 busy across the island-2 pack - the explicit conditional in H4's predicate, never previously tested - moves this form's pack temps toward the target's $t5/$t6 far enough to reduce the 7-insn residual.
+- mechanism: H4/H23 phrased the kill conditionally ('with $v0/$v1 free no C temp reaches $13/$14'). Statement placement is the one ordinary-C lever that changes which hard registers are live across the pack's range, so hoisting the pack into the live range of the game_GetPlayerData return value and the playerData[arg0[9]] index chain is the direct test of that condition.
+- probe: tmp/grind/func_800300B4/s6/v_packhigh.c (pack computed between the call and the mat load) and v_packtop.c (pack as the function's first statement); 'sandbox func_800300B4 --disable all' via tmp/grind/func_800300B4/s6/probe.sh; register outcomes read from suggdbg_packhigh.txt.
+- result: 9 and 10 against the baseline 7 - both worse. The mechanism works in the expected direction but is far too weak: contention moves the pack value quantity exactly two registers ($3 -> $5) while the target needs $13/$14, and the hoist simultaneously costs 2-3 insns of position/scheduling in the previously-matching prologue region. Banked at rejected/pack-hoisted-above-island1-contention-s6-9.c and rejected/pack-hoisted-to-function-top-s6-10.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 5eac882d, pack-in-C island 2 (no banned construct), islands 1/3 as banked, FAKE = the single banked do-while(0) wrap
+
+## [s6] The chassis is unchanged since s5 and no banked instance kill needs voiding: best_ban_compliant.c still measures 7, candidate.c still measures 0, the FAKE-free control still measures 19, and the two closest-to-target banked kills still measure 7.
+- mechanism: Mandated dispatch chassis re-measure (the brief reported 'measurement unavailable') plus the mandated KILL RE-AUDIT of the instance kills whose forms sit closest to the target.
+- probe: tmp/grind/func_800300B4/s6/probe.sh over v_base (= best_ban_compliant.c), v_zero (= candidate.c), v_nowrap (hand-built FAKE-free control, braces removed and body intact), v_reaudit_hwptr (= rejected/named-hw-pointer-for-pack-low-half-s4-7.c), v_reaudit_lvseat (= rejected/island2-pack-through-lv-seats-lv-in-a1-s3-7.c); plus 'python3 tools/fake_ablate.py --func func_800300B4 --file code6cac_b --candidate memory/grind/func_800300B4/best_ban_compliant.c'.
+- result: v_base 7, v_zero 0, v_nowrap 19, v_reaudit_hwptr 7, v_reaudit_lvseat 7 - all identical to s3/s4/s5. fake_ablate reports 1 FAKE unit, keep-all 7, drop-1 27; the 27 is the s5-documented ablator artefact (it deletes only the 'do {' line and orphans the five-line FAKE comment tail) and is not a FAKE-free datum, so the hand-built v_nowrap = 19 remains the authoritative FAKE-free control. No banked kill names a FAKE construct absent from the current best form, so none needed voiding.
+- verdict: CONFIRMED
