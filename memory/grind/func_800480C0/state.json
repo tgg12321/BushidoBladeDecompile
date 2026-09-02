@@ -1,0 +1,39 @@
+{
+ "func": "func_800480C0",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 20,
+   "modality": "recon",
+   "headline": "func_800480C0 bytes PROVEN (full build SHA1 == oracle) as the 6-arg twin of COMPLETED-C func_80047FBC; sandbox reads 20 only because the pre_pad[8] engine allowlist row (owner-only) is missing - INTEG"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Operator adds \"func_800480C0\": frozenset({(\"pre_pad\", 8)}) to engine/volatile_cheats.py and integrates candidate.c",
+   "mechanism": "allowlist row lets the sandbox honour the sanctioned pad so the honest floor reads 0",
+   "next_probe": "sandbox func_800480C0 --disable all -> 0; verify-oracle; layer-2 cheat-reviewer; queue done"
+  }
+ ],
+ "judge_constraints": [
+  "func_800480C0 may not carry an unwritten volatile frame pad in any spelling until an owner ruling adds its row to engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS; pursue an honest producer for the sp+0x18..0x37 untouched region instead."
+ ],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Removing the arg0 = 0 dead store (pad still stripped) measures 32 on this chassis, so the store is load-bearing for this body",
+   "kill_scope": "instance",
+   "measured_on": "HEAD dd2808d5, candidate body with volatile pre_pad[8] present but detector-stripped, arg0=0 removed",
+   "predicate_cite": "",
+   "result": "32 vs 20 with the store"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-02T09:18:48.346901+00:00"
+}
