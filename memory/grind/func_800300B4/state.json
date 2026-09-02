@@ -1,8 +1,8 @@
 {
  "func": "func_800300B4",
  "file": "code6cac_b",
- "session_count": 7,
- "current_modality": "solver",
+ "session_count": 8,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 7,
    "modality": "solver",
    "headline": "Solver triage re-types the 7-insn island-2 residual as PRE-RA, not RA: cse.c find_best_addr (cse.c:2720) re-folds the pack's two halfword loads from the front end's target-shaped 0(lv)/4(lv) back to 4"
+  },
+  {
+   "session": 8,
+   "floor": 7,
+   "modality": "forensics",
+   "headline": "Floor holds at 7 (0-form still 0, still island-2-banned); the cse lock's last un-enumerated source shape is now a class kill at find_best_addr's SECOND branch (cse.c:2750), and breaking the cse lock i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "UNCHANGED, DOMINANT, still the only item: the whole 7-insn ban-compliant residual is the island-2 gte_ldlv0 GPR pack, and it is the owner policy question - does cop2-addressing-preamble-cluster.md condition 3 admit a verbatim PsyQ 4.5 SDK macro body whose lhu/lhu/sll/or is template text rather than an addressing preamble?",
-   "mechanism": "Condition 3 ('in-island GPR instructions limited to the cop2 addressing preamble - nothing else may be swallowed into the template', .claude/rules/cop2-addressing-preamble-cluster.md:106) read against PsyQ 4.5 inline_c.h:101-110. judge-sole-gate rule 4 reserves the family-scope call for the owner via the borderline ledger. s7 supplies the mechanical proof the entry was missing: the C route is closed at both the cse layer (cse.c:2720) and the RA layer (local-alloc.c:2207).",
-   "next_probe": "None in-pipeline. Filed at docs/grind/borderline.md:370 with s3, s6 and now s7 addenda. Do NOT re-request the ruling, do NOT submit candidate.c, do NOT cite the struck 07:30 / 07:59 rulings or the banned sibling precedents, and do NOT re-derive the pack in C - that derivation is now closed at two independent layers on top of H4/H17/H23/H26/H30."
+   "hypothesis": "UNCHANGED, DOMINANT, still the only item: the whole 7-insn ban-compliant residual is the island-2 gte_ldlv0 GPR pack, and it is the owner policy question -- does cop2-addressing-preamble-cluster.md condition 3 admit a verbatim PsyQ 4.5 SDK macro body whose lhu/lhu/sll/or is template text rather than an addressing preamble?",
+   "mechanism": "Condition 3 ('in-island GPR instructions limited to the cop2 addressing preamble -- nothing else may be swallowed into the template', .claude/rules/cop2-addressing-preamble-cluster.md:106) read against PsyQ 4.5 inline_c.h:101-110. judge-sole-gate rule 4 reserves the family-scope call for the owner via the borderline ledger. s7 and s8 supply the mechanical proof the entry was missing: the C route is closed at the cse layer by a complete enumeration of BOTH find_best_addr branches (cse.c:2720 for zero displacement, cse.c:2750 for nonzero) and at the RA layer (local-alloc.c:1666, :2207), and breaking the cse layer is measured to be worth zero.",
+   "next_probe": "None in-pipeline. Filed at docs/grind/borderline.md:370 with s3, s6, s7 and s8 addenda. Do NOT re-request the ruling, do NOT submit candidate.c, do NOT cite the struck 07:30 / 07:59 rulings or the banned sibling precedents, and do NOT re-derive the pack in C."
   },
   {
-   "hypothesis": "Solver backends (inverse.py, inverse_sched.py) are a dead route for this function and a future solver session must not spend on them.",
-   "mechanism": "inverse_compose.py classify types the real body PRE-RA and reports 'no backend - the residual is upstream of every model'; RA and scheduler models permute and rename a FIXED instruction multiset and this residual IS a multiset difference. The only body that classifies RA is the semantics-changed positive control v_probe_matbase.",
-   "next_probe": "No probe. If a future session wants an RA answer for the pack, the direct instrumented-cc1 measurement already exists (s6 H29, BB2_SUGG_DEBUG/BB2_QTY_DEBUG dumps at tmp/grind/func_800300B4/s6/suggdbg_all.txt)."
+   "hypothesis": "The cse layer is enumerated to exhaustion AND shown to buy nothing even where it is broken, so it is a dead route for this function.",
+   "mechanism": "Zero-displacement pointer addresses lose find_best_addr's strict-'>' rtx_cost tiebreak (s7 H32, cse.c:2720); nonzero-displacement pointer addresses lose its REG+const associative merge (s8 H35, cse.c:2750); and the one body with the lock fully broken still scores 7 (s8 H36, s7's v_probe_matbase control).",
+   "next_probe": "No probe. A future session must not spend on cse-directed pack spellings; cite H32 + H35 + H36 as the closure."
   },
   {
-   "hypothesis": "The seat axis of the ban-compliant chassis remains closed: the single do-while(0) wrap is necessary and sufficient, and no FAKE-free or alternative-chassis form reaches the four call-crossing seats.",
-   "mechanism": "qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1666) with arg0's refs pinned at 9 and &mac's at 4 by cse.c address propagation (s5 H27) - note s7 identifies that same cse address propagation, at find_best_addr, as the first lock on the island-2 residual, so the two findings share a mechanism; statement-chassis variation measured inert (s5 H28); 17 wrap spans and 2 wrap depths swept (H19/H21/H22/H24); 24,590 ordinary-C-only permuter iterations (s4 H25).",
-   "next_probe": "No probe. Cite H27 + H25 as the .claude/rules/do-while-zero-exception.md prerequisite-(a) lever exhaustion in whatever submission eventually clears the policy question."
+   "hypothesis": "The RA layer of this function is local-alloc ONLY, so allocno-priority tooling is inapplicable and the banked local-alloc class kills are the complete RA picture.",
+   "mechanism": "global.c allocates no allocnos here (s8 H37, nrefs_census reports no ALLOCDBG rows); the standing closures are s5 H27 (qty_compare_1, local-alloc.c:1666, arg0 refs 9 vs &mac refs 4) and s6 H29 (just_try_suggested, local-alloc.c:2207, ncopysugg=0 nsugg=0 so the ascending scan at :2249 takes $2/$3 over a free $13/$14).",
+   "next_probe": "No probe. Use BB2_QTY_DEBUG / BB2_SUGG_DEBUG, never nrefs_census, if a future session needs an RA measurement on this body."
   }
  ],
  "judge_constraints": [
@@ -189,6 +195,30 @@
    "measured_on": "HEAD 5dc32f12, pack-in-C island 2 (no banned construct), islands 1/3 as banked; measured BOTH with the single banked do-while(0) FAKE present (six forms, score 7) and FAKE-free (v_nowrap, score 19) - ",
    "predicate_cite": "tools/gcc-2.7.2/cse.c:2720",
    "result": "KILLED. All six spellings score 7 (v_nowrap 19) and all seven classify PRE-RA with the identical multiset delta lhu #,44"
+  },
+  {
+   "session": 8,
+   "statement": "Some semantically-identical C spelling that materialises the pack's base pointer at a NONZERO displacement from the two halfword reads escapes cse's re-basing of those reads onto arg0, because find_be",
+   "kill_scope": "class",
+   "measured_on": "HEAD a1f92d7b, pack-in-C island 2 (no banned construct), islands 1/3 as banked, FAKE = the single banked do-while(0) wrap present in all three forms; v_base control re-measured 7 in the same run",
+   "predicate_cite": "tools/gcc-2.7.2/cse.c:2750",
+   "result": "KILLED. v_d28 = 7, v_d20 = 7, v_base = 7, and all three emit a byte-identical island-2 window (lhu v0,48(s3) ; lhu v1,44"
+  },
+  {
+   "session": 8,
+   "statement": "Closing the PRE-RA cse lock alone (getting the pack's two loads to render at displacements 0 and 4 off a materialised pointer, the target's shape) lowers the ban-compliant residual below 7 on the bodi",
+   "kill_scope": "instance",
+   "measured_on": "HEAD a1f92d7b for the v_base/v_d28/v_d20 comparison (all 7); the control datum is the s7 measurement on HEAD 5dc32f12 of v_probe_matbase (semantics deliberately changed, single banked do-while(0) FAKE",
+   "predicate_cite": "",
+   "result": "KILLED. v_probe_matbase scores 7 -- the same as v_base, the same as all six s7 pack spellings, the same as both s8 displ"
+  },
+  {
+   "session": 8,
+   "statement": "The global register allocator (global.c) participates in this function's island-2 residual, so a global-allocator census can rank the pack quantities against arg0 / &mac / &dir.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD a1f92d7b, v_d28 applied to src/code6cac_b.c as a C body, instrumented cc1 tools/gcc-2.7.2/cc1, single banked do-while(0) FAKE present",
+   "predicate_cite": "",
+   "result": "KILLED. The census reports 'no ALLOCDBG rows for func_800300B4' with the form applied as a real C body (not INCLUDE_ASM)"
   }
  ],
  "ladder_skip": 30,

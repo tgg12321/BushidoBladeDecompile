@@ -65,6 +65,18 @@
  * local-alloc.c:2207/:2249 (s6 H29) keeps any C pseudo out of $t4/$t5/$t6 - while the target's loads
  * are based on $t4, written only by the island's own `move $12, %0`. See hypotheses.md H31/H32/H33
  * and the docs/grind/borderline.md s7 addendum.
+ *
+ * s8 (forensics) UPDATE. Re-measured 7 on HEAD a1f92d7b; fake_ablate on the closest banked kill
+ * re-confirms 7 with the wrap / 19 without, so no banked kill needed voiding. The cse lock's LAST
+ * un-enumerated source shape is now closed: find_best_addr's rtx_cost tiebreak (cse.c:2720) uses a
+ * strict `>` and so only defeats a BARE-REG incumbent, but a nonzero-displacement pointer incumbent
+ * -- `hb = (u16 *)(arg0 + 0x28); packed = hb[2] | ((u32)hb[4] << 16);`, byte-identical semantics --
+ * is taken instead by find_best_addr's SECOND branch, the flag_expensive_optimizations REG+const
+ * associative merge at cse.c:2750 (loop :2793-2807). Two such spellings measure 7 and emit a
+ * byte-identical island-2 window; the -da dumps show `.rtl` (mem (plus reg78 c)) becoming `.cse`
+ * (mem (plus reg72 c)). And breaking the cse lock is worth nothing anyway: s7's positive control
+ * v_probe_matbase, whose multiset MATCHES and whose classification is RA, also scores 7. See
+ * hypotheses.md H34/H35/H36/H37 and the docs/grind/borderline.md s8 addendum.
  */
 /* kengo:?  |  GTE rotate+translate of the object's local vector, then dispatch */
 void func_800300B4(u8 *arg0) {

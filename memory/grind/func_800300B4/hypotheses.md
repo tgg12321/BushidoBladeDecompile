@@ -733,3 +733,155 @@ Frontier after s7 (strongest first):
 - probe: tmp/grind/func_800300B4/s7/probe.sh and pc.sh over v_base (= best_ban_compliant.c), v_zero (= candidate.c), v_nowrap (s6's hand-built FAKE-free control) and v_reaudit_hwptr (= rejected/named-hw-pointer-for-pack-low-half-s4-7.c, the banked instance kill whose form sits closest to the target).
 - result: v_base 7, v_zero 0 (classify: IDENTICAL), v_nowrap 19, v_reaudit_hwptr 7 - every number identical to s3/s4/s5/s6 on HEAD 5dc32f12. No banked kill rests on a FAKE construct absent from the current best form, so none needed voiding. The re-audit added information earlier re-audits could not: v_nowrap and v_reaudit_hwptr both classify PRE-RA with the same multiset delta, so the closest-to-target banked kill was measuring the RA layer beneath an unbroken cse lock.
 - verdict: CONFIRMED
+
+## [s8] H34 (mandated chassis re-measure + kill re-audit): the chassis is unchanged since s7 and the closest-to-target banked instance kill still rests on a FAKE unit that is genuinely load-bearing.
+- mechanism: the dispatch brief again reported the HEAD honest floor as "measurement unavailable"
+  and the floor has now been flat for four sessions, so both the chassis re-measure and the
+  FAKE-ablation re-audit of the closest banked instance kill are mandatory before any new probe.
+- probe: `bash tmp/grind/func_800300B4/s8/pc.sh v_base` (v_base = memory/grind/func_800300B4/
+  best_ban_compliant.c verbatim) plus `python3 tools/fake_ablate.py --func func_800300B4
+  --file code6cac_b --candidate memory/grind/func_800300B4/rejected/named-hw-pointer-for-pack-low-half-s4-7.c`
+  (the banked instance kill whose form sits closest to the target).
+- result: v_base = 7 on HEAD a1f92d7b, identical to s3/s4/s5/s6/s7. fake_ablate finds exactly ONE
+  FAKE unit in the closest banked kill (the `do { /* FAKE ... */` wrap at L56) and reports
+  keep-all = 7, drop-1 = 19 over the full 2^1 grid (both variants build, bi = 83 insns). So the
+  banked kill was NOT measured with a FAKE carrier sitting on a pseudo the lever wanted: the wrap
+  is load-bearing for the four call-crossing seats (s5 H27) and is orthogonal to the island-2 pack.
+  No banked kill needed voiding.
+- verdict: CONFIRMED
+
+## [s8] H35: some semantically-identical C spelling that materialises the pack's base pointer at a NONZERO displacement from the two halfword reads escapes cse's re-basing of those reads onto arg0, because find_best_addr's rtx_cost tiebreak (cse.c:2720) ties between two (plus REG CONST_INT) forms and therefore keeps the incumbent.
+- mechanism: s7's H32 class kill pinned the fold to find_best_addr's FIRST branch, the
+  ADDRESS_COST/rtx_cost tiebreak at tools/gcc-2.7.2/cse.c:2717-2726. Read literally, that branch only
+  loses for a BARE-REG incumbent: `best_rtx_cost = (elt->cost + 1) >> 1` with `elt` the entry for a
+  plain pseudo has rtx_cost 0, so any `(plus reg const)` member of the class strictly beats it. If
+  the incumbent address were itself `(plus reg const)` the costs would TIE and the strict `>`
+  at cse.c:2720 would fail, leaving the target-shaped pointer-based address in place. This was the
+  last un-enumerated source-side input shape for the cse lock (the dispatch brief's PASS-INPUT
+  ENUMERATION mandate) and it is source-reachable without any coercion construct: base the pack
+  pointer BEFORE the two reads and index it, e.g. `hb = (u16 *)(arg0 + 0x28); packed = hb[2] |
+  ((u32)hb[4] << 16);` -- byte-identical semantics (0x28 + 2*2 = 0x2C, 0x28 + 4*2 = 0x30), but both
+  MEM addresses are now `(plus reg78 4)` and `(plus reg78 8)` instead of `(reg76)` and
+  `(plus reg76 4)`.
+- probe: two variants built on the banked best chassis and measured through
+  tmp/grind/func_800300B4/s8/pc.sh -- `v_d28` (base arg0+0x28, indices 2/4) and `v_d20` (base
+  arg0+0x20, indices 6/8, a second displacement to rule out a 0x28-specific accident) -- each scored
+  with `sandbox --disable all` and disassembled (dis_v_*.txt). Then a full cc1 `-da` dump set for
+  v_d28 (tmp/grind/func_800300B4/s8/dumps_v_d28/) and a per-pass scan of the pack's three HImode
+  MEMs across .rtl / .cse / .greg.
+- result: **KILLED.** v_d28 = 7 and v_d20 = 7, and the emitted island-2 window is
+  BYTE-IDENTICAL to v_base's in all three forms (`lhu v0,48(s3) ; lhu v1,44(s3) ; sll v0,v0,0x10 ;
+  or v1,v1,v0 ; addiu v0,s3,44 ; move t4,v0 ; mtc2 v1,$0 ; lwc2 $1,8(t4)`). The dumps show the
+  pointer DID materialise and was then re-merged: `.rtl` carries `(mem/s:HI (plus (reg/v:SI 78) ...))`
+  twice (reg 78 = `hb`), `.cse` carries all three MEMs rebased onto `(plus (reg/v:SI 72) ...)`
+  (reg 72 = arg0), and `.greg` carries them on `(reg/v:SI 19 s3)`. So the escape does not exist: the
+  nonzero-displacement incumbent is taken by find_best_addr's SECOND branch, the
+  `flag_expensive_optimizations`-gated REG+const associative merge (cse.c:2750, selection loop at
+  cse.c:2793-2807), which calls `cse_gen_binary (PLUS, Pmode, p->exp, c)` for every member `p` of
+  the BASE register's class -- including `(plus reg72 0x28)` -- and folds the two constants together
+  into `(plus reg72 0x2C)`. Zero-displacement loses branch one (s7 H32); nonzero-displacement loses
+  branch two (here). Taken together the two branches close every constant-offset pointer spelling of
+  this pack, which is the complete set of semantically-identical source shapes: the pack's address is
+  `arg0 + literal` in the source no matter how it is written, so the base register's cse class always
+  contains a `(plus arg0 CONST_INT)` entry for the merge to fire on.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/cse.c:2750
+- measured_on: HEAD a1f92d7b, pack-in-C island 2 (no banned construct), islands 1/3 as banked, FAKE
+  = the single banked do-while(0) wrap present in all three forms; v_base control re-measured 7 in
+  the same run and the FAKE-ablation grid of the closest banked kill (H34) re-confirmed 7/19
+
+## [s8] H36: closing the PRE-RA cse lock alone (getting the pack's two loads to render at displacements 0 and 4 off a materialised pointer, the target's shape) lowers the ban-compliant residual below 7.
+- mechanism: s7 typed the residual as DOUBLY locked -- PRE-RA at cse.c:2720 forcing the 44/48
+  displacements, and RA at local-alloc.c:2207/:2249 keeping any C pseudo out of $t4/$t5/$t6 -- and
+  asserted each lock is "independently sufficient", but never stated the consequence for the FLOOR.
+  s7's positive control `v_probe_matbase` is exactly the experiment: it deliberately changes
+  semantics so the pack's base is a pointer LOADED FROM MEMORY, which removes the
+  `(plus reg CONST_INT)` entry from the base's cse equivalence class and therefore breaks lock 1
+  outright -- `inverse_compose.py classify` on it flips from PRE-RA to RA with a MATCHING
+  register-blanked instruction multiset.
+- probe: read the banked score of that control alongside its classification --
+  tmp/grind/func_800300B4/s7/sb_v_probe_matbase.txt and cls_v_probe_matbase.txt -- and compare
+  against the s8 chassis re-measure of v_base (H34).
+- result: **KILLED.** `v_probe_matbase` scores **7**, the same as v_base and as all six s7 pack
+  spellings and as both s8 displacement spellings. A body whose PRE-RA lock is fully broken -- the
+  multisets match, the classification is RA, the pack is rendered in the target's addressing shape --
+  buys exactly zero honest distance, because lock 2 then supplies the whole residual on its own
+  (the control's RA diff is `lhu t5,0(t4) ; lhu t6,4(t4)` against `lhu v1,0(a0) ; lhu v0,4(a0)`,
+  i.e. seat names only, and the seats it needs are $t4/$t5/$t6 which no C pseudo can reach because
+  $t4 is written only by the island's own `move $12, %0`). This converts s7's "doubly locked, each
+  lock independently sufficient" from an inference into a measurement: the RA lock ALONE holds the
+  ban-compliant form at 7 in the one body where the cse lock is broken, so cse-layer work on this
+  function did not move the number there and there is no reason to expect it to elsewhere. Any
+  future session tempted by a cse-directed probe should stop here.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD a1f92d7b for the v_base comparison (7); the control datum is the s7 measurement
+  on HEAD 5dc32f12 of v_probe_matbase (semantics deliberately changed, single banked do-while(0)
+  FAKE present, pack-in-C island 2, islands 1/3 as banked)
+
+## [s8] H37: the global register allocator (global.c) participates in this function's island-2 residual, so a global-allocator census can rank the pack quantities against arg0/&mac/&dir.
+- mechanism: the forensics brief mandates banking tools/nrefs_census.py output; that tool reads
+  BB2_ALLOC_DEBUG allocno rows produced by global.c:615's priority formula from the instrumented
+  cc1 at tools/gcc-2.7.2/cc1.
+- probe: tmp/grind/func_800300B4/s8/census.sh v_d28 -- apply the form, run
+  `python3 tools/nrefs_census.py --func func_800300B4 --file code6cac_b`, restore src.
+- result: **KILLED.** The census reports "no ALLOCDBG rows for func_800300B4" with the form applied
+  as a real C body (not INCLUDE_ASM), i.e. global.c allocates no allocnos in this function at all --
+  every pseudo here is disposed of by local-alloc as a QUANTITY. That is consistent with, and
+  explains, why every productive RA measurement on this function (s5 H27 qty_compare_1 at
+  local-alloc.c:1666; s6 H29 just_try_suggested at local-alloc.c:2207 and the ascending scan at
+  :2249) has been a local-alloc measurement: the global-allocator axis is empty for this body, and
+  nrefs_census / allocno-order reasoning does not apply to it. A future session should use
+  BB2_QTY_DEBUG / BB2_SUGG_DEBUG (local-alloc), not nrefs_census, for this function.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD a1f92d7b, v_d28 applied to src/code6cac_b.c as a C body, instrumented cc1
+  tools/gcc-2.7.2/cc1, single banked do-while(0) FAKE present
+
+Frontier after s8 (strongest first):
+  (1) UNCHANGED, DOMINANT, still the ONLY item, and now with the floor consequence measured rather
+      than inferred. The whole 7-insn ban-compliant residual is the island-2 `gte_ldlv0` GPR pack,
+      and it is the owner policy question filed at docs/grind/borderline.md:370 (s3, s6, s7 and now
+      s8 addenda). Do NOT re-request the ruling, do NOT submit candidate.c, do NOT cite the struck
+      07:30 / 07:59 rulings or the banned sibling precedents.
+  (2) The cse layer is now enumerated to exhaustion AND shown to buy nothing even where it is
+      broken. Zero-displacement pointer addresses lose find_best_addr's rtx_cost tiebreak
+      (s7 H32, cse.c:2720); nonzero-displacement pointer addresses lose its REG+const associative
+      merge (s8 H35, cse.c:2750); and the one body with the lock fully broken still scores 7
+      (s8 H36). No probe.
+  (3) The RA layer is local-alloc ONLY -- global.c allocates nothing here (s8 H37), so
+      nrefs_census.py / allocno-priority reasoning is inapplicable and the local-alloc class kills
+      (s5 H27 at local-alloc.c:1666, s6 H29 at local-alloc.c:2207) are the complete RA picture.
+      No probe.
+
+## [s8] Some semantically-identical C spelling that materialises the pack's base pointer at a NONZERO displacement from the two halfword reads escapes cse's re-basing of those reads onto arg0, because find_best_addr's rtx_cost tiebreak (cse.c:2720) ties between two (plus REG CONST_INT) forms and therefore keeps the incumbent.
+- mechanism: s7's H32 class kill pinned the 44/48 displacements to find_best_addr's FIRST branch, the ADDRESS_COST/rtx_cost tiebreak at tools/gcc-2.7.2/cse.c:2717-2726. That branch uses a STRICT '>' at cse.c:2720, so it only defeats a BARE-REG incumbent (rtx_cost 0); two (plus REG CONST_INT) addresses tie and the incumbent would survive. The shape is source-reachable with no coercion construct and byte-identical semantics: materialise the pack base before the reads and index it, hb = (u16 *)(arg0 + 0x28); packed = hb[2] | ((u32)hb[4] << 16); (0x28 + 2*2 = 0x2C, 0x28 + 4*2 = 0x30). This was the last un-enumerated source-side input shape for the cse lock, i.e. the dispatch brief's PASS-INPUT ENUMERATION mandate.
+- probe: Two variants on the banked best chassis measured with sandbox --disable all and disassembled through tmp/grind/func_800300B4/s8/pc.sh: v_d28 (base arg0+0x28, indices 2/4) and v_d20 (base arg0+0x20, indices 6/8, a second displacement to rule out a 0x28-specific accident), against the v_base control. Then a full cc1 -da dump set for v_d28 (tmp/grind/func_800300B4/s8/dumps_v_d28/) and a per-pass scan of the pack's three HImode MEMs across .rtl / .cse / .greg.
+- result: KILLED. v_d28 = 7, v_d20 = 7, v_base = 7, and all three emit a byte-identical island-2 window (lhu v0,48(s3) ; lhu v1,44(s3) ; sll v0,v0,0x10 ; or v1,v1,v0 ; addiu v0,s3,44 ; move t4,v0 ; mtc2 v1,$0 ; lwc2 $1,8(t4)) against the target's addiu v0,s3,44 ; move t4,v0 ; lhu t6,4(t4) ; lhu t5,0(t4) ; sll t6,t6,0x10 ; or t5,t5,t6 ; mtc2 t5,$0 ; lwc2 $1,8(t4). The dumps show the pointer DID materialise and was then re-merged: .rtl carries (mem/s:HI (plus (reg/v:SI 78) ...)) twice (reg 78 = hb), .cse carries all three MEMs rebased onto (plus (reg/v:SI 72) ...) (reg 72 = arg0), .greg carries them on (reg/v:SI 19 s3). The rewriting agent is find_best_addr's SECOND branch, the flag_expensive_optimizations-gated REG+const associative merge at cse.c:2750 (selection loop cse.c:2793-2807), which builds cse_gen_binary (PLUS, Pmode, p->exp, c) for every member of the BASE register's equivalence class -- including (plus reg72 0x28) -- and folds the two constants into (plus reg72 0x2C). Zero displacement loses branch one (s7 H32, cse.c:2720); nonzero displacement loses branch two. Every semantically-identical spelling of this pack has the address arg0 + literal, so the base register's cse class always contains a (plus arg0 CONST_INT) entry for one branch or the other to fire on.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD a1f92d7b, pack-in-C island 2 (no banned construct), islands 1/3 as banked, FAKE = the single banked do-while(0) wrap present in all three forms; v_base control re-measured 7 in the same run
+- predicate_cite: tools/gcc-2.7.2/cse.c:2750
+
+## [s8] Closing the PRE-RA cse lock alone (getting the pack's two loads to render at displacements 0 and 4 off a materialised pointer, the target's shape) lowers the ban-compliant residual below 7 on the bodies measured here.
+- mechanism: s7 typed the residual as doubly locked -- PRE-RA at cse.c:2720 forcing the 44/48 displacements, RA at local-alloc.c:2207/:2249 keeping any C pseudo out of $t4/$t5/$t6 -- and asserted each lock is independently sufficient, but never priced the consequence for the FLOOR. s7's positive control v_probe_matbase is exactly that experiment: it deliberately changes semantics so the pack's base is a pointer LOADED FROM MEMORY, which empties the base's cse equivalence class of any (plus reg CONST_INT) entry and so breaks lock 1 outright; inverse_compose.py classify on it flips from PRE-RA to RA with a MATCHING register-blanked instruction multiset.
+- probe: Read the banked honest score of that control alongside its classification (tmp/grind/func_800300B4/s7/sb_v_probe_matbase.txt, cls_v_probe_matbase.txt) and compare against the s8 chassis re-measure of v_base and the two s8 displacement spellings.
+- result: KILLED. v_probe_matbase scores 7 -- the same as v_base, the same as all six s7 pack spellings, the same as both s8 displacement spellings. In the one body where lock 1 is fully broken (multisets match, classification RA, pack rendered in the target's addressing shape) lock 2 supplies the entire residual on its own: the control's RA diff is lhu t5,0(t4) ; lhu t6,4(t4) against lhu v1,0(a0) ; lhu v0,4(a0), i.e. seat names only, and those seats are $t4/$t5/$t6, which no C pseudo can occupy because $t4 is written only by the island's own move $12, %0. This turns s7's independently-sufficient inference into a measurement, and it means cse-directed probing on this function did not move the number where it succeeded.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD a1f92d7b for the v_base/v_d28/v_d20 comparison (all 7); the control datum is the s7 measurement on HEAD 5dc32f12 of v_probe_matbase (semantics deliberately changed, single banked do-while(0) FAKE present, pack-in-C island 2, islands 1/3 as banked)
+
+## [s8] The global register allocator (global.c) participates in this function's island-2 residual, so a global-allocator census can rank the pack quantities against arg0 / &mac / &dir.
+- mechanism: The forensics brief mandates banking tools/nrefs_census.py output; that tool reads BB2_ALLOC_DEBUG allocno rows produced by global.c:615's priority formula from the instrumented cc1 at tools/gcc-2.7.2/cc1.
+- probe: tmp/grind/func_800300B4/s8/census.sh v_d28 -- apply the form as a real C body, run python3 tools/nrefs_census.py --func func_800300B4 --file code6cac_b and tools/label_census.py, restore src.
+- result: KILLED. The census reports 'no ALLOCDBG rows for func_800300B4' with the form applied as a real C body (not INCLUDE_ASM): global.c allocates no allocnos in this function at all, and every pseudo is disposed of by local-alloc as a QUANTITY. That is consistent with, and explains, why every productive RA measurement on this function has been a local-alloc measurement (s5 H27 qty_compare_1 at local-alloc.c:1666; s6 H29 just_try_suggested at local-alloc.c:2207 and the ascending scan at :2249). A future session should reach for BB2_QTY_DEBUG / BB2_SUGG_DEBUG on this body, not nrefs_census / allocno-priority reasoning.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD a1f92d7b, v_d28 applied to src/code6cac_b.c as a C body, instrumented cc1 tools/gcc-2.7.2/cc1, single banked do-while(0) FAKE present
+
+## [s8] The chassis is unchanged since s7 and the closest-to-target banked instance kill still rests on a FAKE unit that is genuinely load-bearing, so no banked kill needs voiding.
+- mechanism: Mandated dispatch chassis re-measure (the brief again reported 'measurement unavailable') plus the mandated KILL RE-AUDIT, the floor having been flat for four sessions: an instance kill measured while a FAKE carrier occupies the pseudo its lever targets is not a kill.
+- probe: bash tmp/grind/func_800300B4/s8/pc.sh v_base (v_base = memory/grind/func_800300B4/best_ban_compliant.c verbatim), plus python3 tools/fake_ablate.py --func func_800300B4 --file code6cac_b --candidate memory/grind/func_800300B4/rejected/named-hw-pointer-for-pack-low-half-s4-7.c over the full FAKE-unit grid.
+- result: v_base = 7 on HEAD a1f92d7b, identical to s3/s4/s5/s6/s7. fake_ablate enumerates exactly ONE FAKE unit in the closest banked kill (the do-while(0) wrap at L56) and scores the full 2^1 grid: keep-all 7, drop-1 19, both variants building at 83 insns. The banked kill was therefore not measured under a FAKE carrier occupying a pseudo its lever wanted -- the wrap serves the four call-crossing seats (s5 H27) and is orthogonal to the island-2 pack.
+- verdict: CONFIRMED

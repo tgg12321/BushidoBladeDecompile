@@ -913,3 +913,101 @@ in s6.
 - [s7] Net: the 7-insn residual carries two independently sufficient locks at two different compiler layers (cse.c:2720 and local-alloc.c:2207), so the C-derivation route is closed twice over. The remaining route is unchanged and is the owner policy question at docs/grind/borderline.md:370, to which an s7 addendum with this proof was filed.
 
 - [s7] Solver backends are foreclosed as a route here by the solver's own triage: inverse.py / inverse_sched.py permute a fixed multiset and the real body's multiset differs; the tool reports 'no backend - the residual is upstream of every model'. inverse.py was deliberately NOT run (solver rule 2: the only RA-classifying body is the semantics-changed positive control, and deriving vectors from it would model a program that cannot ship).
+
+## s8 (forensics) -- 2026-09-02, HEAD a1f92d7b
+
+Modality: forensics (instrumented cc1 / -da dumps, pass-input enumeration). No candidate submitted;
+the island-2 policy question at docs/grind/borderline.md:370 is untouched and was not re-requested.
+
+**Chassis re-measure (mandated -- the brief again reported "measurement unavailable").**
+`best_ban_compliant.c` (copied verbatim to tmp/grind/func_800300B4/s8/v_base.c) measures
+`sandbox func_800300B4 --disable all` = **7** on HEAD a1f92d7b. Unchanged from s3/s4/s5/s6/s7.
+Artifact: tmp/grind/func_800300B4/s8/sb_v_base.txt.
+
+**Kill re-audit (mandated -- floor flat four sessions).** `tools/fake_ablate.py` on the closest-to-
+target banked instance kill (rejected/named-hw-pointer-for-pack-low-half-s4-7.c) enumerates ONE FAKE
+unit (the do-while(0) wrap at L56) and scores the full 2^1 grid: keep-all **7**, drop-1 **19**, both
+building at 83 insns. The banked kill therefore was not measured under a FAKE carrier occupying a
+pseudo its lever wanted -- the wrap serves the four call-crossing seats (s5 H27) and is orthogonal
+to the island-2 pack. No banked kill voided.
+
+**New forensic result: the cse lock's last un-enumerated input shape is closed (H35, class kill).**
+s7 pinned the pack's 44/48 displacements to find_best_addr's FIRST branch (the ADDRESS_COST tie plus
+the rtx_cost tiebreak, tools/gcc-2.7.2/cse.c:2717-2726). Reading that branch literally exposed an
+escape s7 did not test: the tiebreak at cse.c:2720 uses a STRICT `>`, so it only defeats a BARE-REG
+incumbent (rtx_cost 0); two `(plus REG CONST_INT)` forms TIE and the incumbent survives. That shape
+is reachable in ordinary C with byte-identical semantics -- materialise the pack base at a nonzero
+displacement and index it. Two spellings were built and measured:
+
+    v_d28:  hb = (u16 *)(arg0 + 0x28);  packed = hb[2] | ((u32)hb[4] << 16);   -> 7
+    v_d20:  hb = (u16 *)(arg0 + 0x20);  packed = hb[6] | ((u32)hb[8] << 16);   -> 7
+    v_base: (banked best, pack straight off arg0)                              -> 7
+
+All three emit a BYTE-IDENTICAL island-2 window:
+    lhu v0,48(s3) ; lhu v1,44(s3) ; sll v0,v0,0x10 ; or v1,v1,v0 ;
+    addiu v0,s3,44 ; move t4,v0 ; mtc2 v1,$0 ; lwc2 $1,8(t4)
+against the target's
+    addiu v0,s3,44 ; move t4,v0 ; lhu t6,4(t4) ; lhu t5,0(t4) ;
+    sll t6,t6,0x10 ; or t5,t5,t6 ; mtc2 t5,$0 ; lwc2 $1,8(t4)
+
+The `-da` dump set for v_d28 (tmp/grind/func_800300B4/s8/dumps_v_d28/) names the pass and the
+transition exactly: `.rtl` carries the pack's HImode MEMs as `(mem/s:HI (plus (reg/v:SI 78) ...))`
+(reg 78 = the `hb` pointer -- so the pointer really did materialise; it was not front-end folded),
+`.cse` carries all three rebased onto `(plus (reg/v:SI 72) ...)` (reg 72 = arg0), and `.greg` carries
+them on `(reg/v:SI 19 s3)`. The rewriting agent is find_best_addr's SECOND branch, the
+`flag_expensive_optimizations`-gated REG+const associative merge at cse.c:2750 (selection loop
+cse.c:2793-2807), which builds `cse_gen_binary (PLUS, Pmode, p->exp, c)` for every member of the BASE
+register's equivalence class -- here `(plus reg72 0x28)` -- and folds the two constants into
+`(plus reg72 0x2C)`.
+
+So the two branches of find_best_addr close the source-shape enumeration completely for this pack:
+zero displacement loses branch one (s7 H32, cse.c:2720), nonzero displacement loses branch two
+(s8 H35, cse.c:2750). Every semantically-identical spelling has the address `arg0 + literal`, so the
+base register's class always contains a `(plus arg0 CONST_INT)` entry for one branch or the other to
+fire on.
+
+**New forensic result: breaking the cse lock buys zero honest distance (H36).** s7 asserted the
+residual is doubly locked with each lock "independently sufficient" but never priced it. s7's own
+positive control `v_probe_matbase` -- semantics deliberately changed so the pack's base is loaded
+from memory, which empties the base's cse class of any `(plus reg const)` entry and flips
+`inverse_compose.py classify` from PRE-RA to RA with a MATCHING register-blanked multiset -- scores
+**7** (tmp/grind/func_800300B4/s7/sb_v_probe_matbase.txt). Same as v_base, same as all six s7
+spellings, same as both s8 spellings. In the one body where lock 1 is broken, lock 2 alone supplies
+the entire residual: the control's RA diff is `lhu t5,0(t4) ; lhu t6,4(t4)` vs
+`lhu v1,0(a0) ; lhu v0,4(a0)`, seat names only, and those seats are $t4/$t5/$t6 -- unreachable for a
+C pseudo because $t4 is written only by the island's own `move $12, %0`. Consequence for future
+sessions: a cse-directed probe on this function is measured to be worth nothing.
+
+**New forensic result: the global allocator is not involved (H37).** With v_d28 applied as a real C
+body, `tools/nrefs_census.py --func func_800300B4 --file code6cac_b` reports "no ALLOCDBG rows" --
+global.c allocates no allocnos here; every pseudo is a local-alloc QUANTITY. This explains why every
+productive RA measurement on this function has been a local-alloc one (s5 H27 qty_compare_1,
+local-alloc.c:1666; s6 H29 just_try_suggested, local-alloc.c:2207 and the ascending scan at :2249),
+and it tells the next session to reach for BB2_QTY_DEBUG / BB2_SUGG_DEBUG, not nrefs_census, on this
+body. tools/label_census.py output banked alongside it.
+
+**Position unchanged.** Floor 7 ban-compliant, 0 with the banned island-2 block. The whole residual
+is still the island-2 gte_ldlv0 GPR pack and still the owner policy question at
+docs/grind/borderline.md:370. Nothing in s8 is a submission and no ruling was re-requested.
+
+Artifacts: tmp/grind/func_800300B4/s8/{pc.sh, apply.py, dump_v.sh, census.sh, v_base.c, v_d28.c,
+v_d20.c, sb_v_base.txt, sb_v_d28.txt, sb_v_d20.txt, dis_v_base.txt, dis_v_d28.txt, dis_v_d20.txt,
+dumps_v_d28/, nrefs_v_d28.txt, labels_v_d28.txt, hyp_s8.md, ev_s8.md}.
+Rejected forms banked: rejected/pack-ptr-nonzero-displacement-cse-remerges-s8-7.c,
+rejected/pack-ptr-arg0-0x20-cse-remerges-s8-7.c.
+
+- [s8] Chassis re-measured on HEAD a1f92d7b: best_ban_compliant.c (ban-compliant, one do-while(0) FAKE) = sandbox --disable all 7; candidate.c (the 0-form) remains blocked by the island-2 ban and was not submitted.
+
+- [s8] Mandated kill re-audit: fake_ablate.py on rejected/named-hw-pointer-for-pack-low-half-s4-7.c enumerates one FAKE unit and scores keep-all 7 / drop-1 19 (both build, 83 insns) -- the wrap is load-bearing and no banked kill needed voiding.
+
+- [s8] Two byte-identical-semantics pointer spellings that give BOTH pack loads a nonzero displacement (base arg0+0x28 indices 2/4; base arg0+0x20 indices 6/8) each measure 7 and emit an island-2 window byte-identical to the banked best form.
+
+- [s8] The -da dumps for the arg0+0x28 form prove the pointer materialises and is then re-merged: .rtl has the pack MEMs as (mem/s:HI (plus (reg/v:SI 78) ...)), .cse has them rebased to (plus (reg/v:SI 72) ...) (arg0), .greg has them on (reg/v:SI 19 s3).
+
+- [s8] The rebasing agent for a nonzero-displacement incumbent is find_best_addr's SECOND branch (tools/gcc-2.7.2/cse.c:2750, selection loop :2793-2807), the flag_expensive_optimizations REG+const associative merge, which folds (plus arg0 0x28) with the index constant into (plus arg0 0x2C). Zero displacement loses the FIRST branch's strict-'>' rtx_cost tiebreak at cse.c:2720 (s7 H32). Together the two branches close every constant-offset pointer spelling of the pack.
+
+- [s8] s7's positive control v_probe_matbase -- cse lock broken, register-blanked multiset MATCHING the target, classification RA -- also scores 7, so breaking the cse lock buys zero honest distance and the RA lock alone holds the ban-compliant number at 7.
+
+- [s8] global.c allocates no allocnos in this function (nrefs_census reports no ALLOCDBG rows on a real C body); all register decisions here are local-alloc quantities, which is why BB2_QTY_DEBUG / BB2_SUGG_DEBUG have been the only productive RA instrumentation.
+
+- [s8] No candidate was submitted, no ruling was re-requested, and none of the banned constructs or struck rulings were relied on. The island-2 policy question at docs/grind/borderline.md:370 is unchanged; an s8 addendum was appended there recording items 3-6 above.

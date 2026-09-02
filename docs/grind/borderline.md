@@ -486,3 +486,41 @@ Evidence: `memory/grind/func_800300B4/hypotheses.md` H31/H32/H33; classifier rep
 `tmp/grind/func_800300B4/s7/classify_base.txt` and `cls_v_*.txt`; cc1 `-da` dumps
 `tmp/grind/func_800300B4/dumps/code6cac_b.{rtl,cse,greg}` with the per-pass scan
 `tmp/grind/func_800300B4/s7/scanpass.py`; sandbox scores `tmp/grind/func_800300B4/s7/sb_v_*.txt`.
+
+### 2026-09-02 — func_800300B4 — s8 addendum (forensics modality): the cse lock's source-shape enumeration is complete, and breaking that lock is measured to buy nothing
+
+Not a re-request. The policy question in this entry is unchanged; this addendum only tightens the
+evidence behind "the C route is closed", so the owner sees a finished proof rather than a partial one.
+
+1. **The cse layer is now enumerated to exhaustion, both branches of find_best_addr.** s7 pinned the
+   pack's 44/48 displacements to branch one — the ADDRESS_COST tie plus the rtx_cost tiebreak at
+   tools/gcc-2.7.2/cse.c:2717-2726. That tiebreak uses a strict `>`, so it only defeats a BARE-REG
+   incumbent; two `(plus REG CONST_INT)` addresses tie and the incumbent would survive. That escape
+   is reachable in ordinary C with byte-identical semantics, and s8 built and measured it:
+   `hb = (u16 *)(arg0 + 0x28); packed = hb[2] | ((u32)hb[4] << 16);` (and a second base at 0x20).
+   Both score 7, and both emit an island-2 window byte-identical to the banked best form. The `-da`
+   dumps (tmp/grind/func_800300B4/s8/dumps_v_d28/) show the pointer really does materialise in
+   `.rtl` — `(mem/s:HI (plus (reg/v:SI 78) …))` — and is then rebased onto arg0 in `.cse` by
+   find_best_addr's SECOND branch, the `flag_expensive_optimizations`-gated REG+const associative
+   merge at cse.c:2750 (selection loop cse.c:2793-2807), which folds `(plus reg72 0x28)` and the
+   index constant together into `(plus reg72 0x2C)`. Zero displacement loses branch one; nonzero
+   displacement loses branch two; every semantically-identical spelling of this pack has the address
+   `arg0 + literal`, so one branch or the other always fires. (hypotheses.md H35, class kill,
+   predicate cse.c:2750.)
+
+2. **Even a body with that lock fully broken still measures 7.** s7's positive control
+   `v_probe_matbase` changes semantics so the pack's base is loaded from memory; its cse class then
+   holds no `(plus reg const)` entry, `inverse_compose.py classify` flips PRE-RA → RA, and the
+   register-blanked instruction multiset MATCHES the target. Its honest score is nonetheless **7**
+   (tmp/grind/func_800300B4/s7/sb_v_probe_matbase.txt) — identical to every ban-compliant form ever
+   measured on this chassis. Its remaining diff is seats only, `lhu t5,0(t4) ; lhu t6,4(t4)` against
+   `lhu v1,0(a0) ; lhu v0,4(a0)`, and those seats are $t4/$t5/$t6 — which no C pseudo can occupy,
+   because $t4 is written only by the island's own `move $12, %0`. So the two locks are not merely
+   independent; the RA lock alone holds the number at 7. (hypotheses.md H36.)
+
+Net: the question the owner is being asked is unchanged and is the whole remaining distance —
+does cop2-addressing-preamble-cluster.md condition 3 admit the verbatim PsyQ 4.5 `gte_ldlv0` SDK
+macro body, whose lhu/lhu/sll/or is template text rather than an addressing preamble? What s8 adds
+is that the alternative (respell the pack in ordinary C) is now closed at the cse layer by a complete
+enumeration of both find_best_addr branches, on top of the local-alloc closures of s5/s6, and that
+succeeding at the cse layer would not have moved the floor anyway.
