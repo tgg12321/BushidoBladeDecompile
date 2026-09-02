@@ -494,3 +494,129 @@
 - [s7] Reusable instruments added: tmp/grind/func_800480C0/s7/plantsites.py (per-function orphan count grouped by plant site, flags shared sites), s7/plantkind.py (resolves each plant site to its insn kind), s7/run.sh (batch wrapper around s6/probe.sh). NOTE: s6/probe.sh must be invoked through WSL - run from Git Bash it silently reports insns=0.
 
 - [s7] candidate.c now carries a MIGRATION BANNER stating that func_800480C0 is committed on main as INCLUDE_ASM and that every 'measured on main' claim in its headers means 'measured with this body installed', clearing the dispatch-time STALE HEAD CLAIMS consistency warning.
+
+## s8 — forensics (2026-09-02, chassis HEAD 28583e8e)
+
+- [s8] CHASSIS RE-MEASURED. `memory/grind/func_800480C0/candidate.c` installed over the
+  INCLUDE_ASM line, `sandbox func_800480C0 --disable all` prints
+  `"score": 20, "target_insns": 74, "build_insns": 74`. The ledger floor of 20 reproduces
+  on HEAD 28583e8e. src/text1b.c restored to HEAD afterwards (`git status` clean apart
+  from metrics/events.jsonl).
+
+- [s8] MANDATED KILL RE-AUDIT — FAKE ABLATION. `python3 tools/fake_ablate.py --func
+  func_800480C0 --file text1b --candidate memory/grind/func_800480C0/candidate.c` finds
+  exactly ONE ablatable FAKE unit (the annotated `arg0 = 0;` dead param store) and scores
+  the full grid: keep-all = **20** (74 insns), drop-1 = **32** (73 insns). The FAKE is
+  strictly load-bearing and it is NOT masking a lever — removing it costs an instruction
+  and 12 score. Every s2–s7 kill measured with the store present therefore stands on its
+  own terms; there is no func_8002EA24-style carrier-occupies-the-pseudo hazard here,
+  because the store's target pseudo ($a0/arg0) is not the residual's carrier (the residual
+  is the frame size, and the two streams already agree on all 74 instructions).
+
+- [s8] THE FRONTIER-2 "CALLER-PROVIDED 32-BYTE RECORD" READING IS NEGATIVE, MEASURED FROM
+  THE CALL SITES. Every caller of the four text1b siblings passes SCALARS only:
+  `src/text1a_post.c:277/279/284/286` and `src/text1a_pre.c:268/271/275/278` call
+  `func_800480C0(sec, 0, 0x80, 0, -0x140, 0xF0)` / `func_80047EE8(sec, 0)` /
+  `func_80047FBC(sec, 0, 0x80, 0)`; `src/text1a_c2.c:161` calls
+  `func_800481E8((s32)fp_ptr, 0)`; the asm callers `func_80040594.s:125/144/152/172`,
+  `func_80041988.s:47/61/68`, `func_80045B68.s:149`, `func_800460E4.s:219` show the same
+  shape. The callee `func_800482C8` (src/text1b.c:209) takes a `u8 *` into a TIM/image data
+  blob and owns its own locals (`s16 rect[4]`, `s16 buf[512]`) — it never reads a
+  caller-supplied 32-byte stack area. So the 32 bytes are NOT an aggregate the original
+  built on the stack and passed by address; if the original declared a 32-byte object, it
+  was declared LOCAL and never referenced.
+
+- [s8] THE FOUR SIBLINGS' TARGET FRAMES ARE IDENTICAL IN THE UNTOUCHED WINDOW — the
+  strongest declaration-signature evidence banked so far. `tmp/grind/func_800480C0/s8/
+  framecensus.py` over the shipped listings gives:
+
+  | target | frame | callee-saved base | sp-slots used below it | untouched |
+  |---|---|---|---|---|
+  | func_80047EE8 | 0x48 | 0x38 | 0x10 only | 0x14–0x37 |
+  | func_80047FBC | 0x50 | 0x38 | 0x10 only | 0x14–0x37 |
+  | func_800480C0 | 0x58 | 0x38 | 0x10 only | 0x14–0x37 |
+  | func_800481E8 | 0x48 | 0x38 | 0x10 only | 0x14–0x37 |
+
+  All four reserve args = 0x18 (only the 5th-argument slot 0x10 is ever written) and the
+  SAME 32-byte untouched vars region 0x18–0x37; the frame totals differ only by how many
+  callee-saved registers each body needs (0x48/0x50/0x58/0x48). The four bodies differ
+  structurally — 2, 4, 6 and 2 parameters, and func_800481E8 carries an extra
+  `if (a3v < 0x280)` clamp — yet the reserved vars is bit-for-bit the same size at the same
+  offset. Phantom residue scales with EXPRESSION SHAPE (the tree census below shows counts
+  of 0/1/2/3 tracking each body's fold sites), so a shape-invariant 32 bytes across four
+  structurally different siblings is the signature of one shared source DECLARATION, not of
+  allocation residue. Three of the four already carry owner-granted `volatile u32
+  pre_pad[8];` rows (engine/volatile_cheats.py:757-767, owner rulings 2026-08-20 / 08-22).
+
+- [s8] FILTER-FREE TREE-WIDE PHANTOM CENSUS — FOUR PHANTOMS IS ATTESTED NOWHERE ON A
+  MULT-FREE BODY. s5's bound came from a census that FILTERED OUT any function with live
+  stack traffic (refuted in s6); this one filters nothing. All 32 `src/*.c` TUs recompiled
+  with the instrumented cc1 (`tmp/grind/func_800480C0/s8/allcensus.sh`), 1096 functions
+  with a `.ent`/`.end` pair, phantom counted as `hardreg=-1 AND livelen<=2`
+  (`tmp/grind/func_800480C0/s8/phantom_census_v2.py`):
+    * ALL functions: {0: 1043, 1: 39, 2: 7, 3: 5, 6: 2}
+    * mult-free:     {0: 980, 1: 30, 2: 7, 3: 3}
+    * the only bodies above 3 are func_80042874 / func_80042A88 (src/text1a_c.c), both
+      mult/div (class-B DImode HILO), at 6 phantoms / vars=48.
+    * the mult-free 3s are SetDrawEnv, SetDrawEnv2 (src/display.c) and func_80041AC8
+      (src/text1a_post.c), all vars=32 — 24 phantom bytes plus 8 bytes of live local.
+  func_800480C0's target stream contains no mult/div, so the class-B producer that reaches
+  6 cannot be spelled here byte-neutrally, and the mult-free ceiling measured across the
+  whole tree is 3 — one short of the four the 32-byte region needs.
+
+- [s8] CENSUS METHOD CORRECTION (worth carrying forward): `hardreg=-1` alone does NOT mean
+  phantom. v1 of the census reported func_80060E38 (src/text1b.c:3317) as a NINE-phantom
+  mult-free body; it is a nine-SPILL body — 32 scratchpad-address constants live at once,
+  `nrefs=2 livelen=57..65 pri≈300`, and its frame bytes are genuinely written. Phantoms
+  carry the get_cs/SetDrawEnv signature `nrefs=2 livelen=2 pri=10000`. Both scripts are
+  banked (`phantom_census_v1_spill_conflated.py`, `phantom_census_v2.py`) so the next
+  session can see the discriminator rather than re-derive it.
+
+- [s8] DIVIDE/MULTIPLY SPELLING OF THE POWER-OF-TWO SCALES PLANTS NO PHANTOM AND IS
+  BYTE-NEUTRAL. New attack (not in the 38 forms s2–s7 measured): the two `((x) >> 2) << 2`
+  sites and the `(arg1 << 16) >> 14` scale respelled as ordinary unsigned `/ 4 * 4` and
+  `* 4`, on the theory that expand_divmod's constant-power-of-two path might leave a
+  foldable intermediate for combine to delete. Measured with
+  `tmp/grind/func_800480C0/s8/run.sh` (s6 probe: instrumented cc1 frame + BB2_ALLOC_DEBUG +
+  orphan-USE count on a -da .combine dump):
+    * `A_divmul_both.c`   → `.frame $sp,56 # vars= 0, regs= 8/0, args= 24`, unalloc=0, orphanUSE=0
+    * `B_divmul_arg1mul.c`→ same
+    * `C_divmul_loop.c`   → same
+  and `sandbox func_800480C0 --disable all` on A prints score 20 / 74 / 74 — i.e. the
+  division spelling is codegen-IDENTICAL to the shift spelling (GCC 2.7.2 folds the
+  constant power-of-two divide at expand time, before combine ever runs) and contributes
+  nothing. Banked at rejected/s8-divmul-spelling-no-phantom.c and
+  rejected/s8-divmul-arg1-scale-no-phantom.c. Running total of measured structural forms on
+  this body: 41.
+
+- [s8] THE CLASS-A CONSTANT-OFFSET RESPELLING IS CLOSED ON TARGET-LISTING EVIDENCE. The
+  class-A producer (s7) is `T = base + CONST; X = *T` with T dying, which combine folds
+  into the mem's displacement — so the honest C shape that would plant four orphans here is
+  reading the four halfwords at constant offsets (`*(u16*)((s32)p + 4)`, `+6`, `+8`, `+10`)
+  and advancing `p` once. The target's own loop at `.L80048144` (asm/funcs/func_800480C0.s)
+  emits `lhu $aN, 0x0($s0)` FOUR TIMES with a separate `addiu $s0,$s0,0x2` between each —
+  every load at displacement zero off a pointer that is live across the whole loop. A
+  constant-offset respelling therefore changes the emitted displacements and the addiu
+  count, i.e. it cannot be byte-neutral. Combined with s7's finding that the body owns
+  exactly one arithmetic-address-then-deref site, class A is capped at ≤1 here by the
+  target listing itself, not by analogy.
+
+- [s8] Chassis re-measured: with memory/grind/func_800480C0/candidate.c installed, sandbox func_800480C0 --disable all prints score 20, target_insns 74, build_insns 74 on HEAD 28583e8e; src/text1b.c restored to HEAD afterwards.
+
+- [s8] FAKE ablation grid (tools/fake_ablate.py): the candidate has exactly ONE ablatable FAKE unit, the annotated `arg0 = 0;` dead param store; keep-all scores 20 at 74 insns, drop-1 scores 32 at 73 insns. Load-bearing, and not masking any lever.
+
+- [s8] All four text1b siblings' SHIPPED frames reserve the identical untouched window 0x18-0x37 (args=0x18, only the 5th-arg slot 0x10 written; callee-saved base 0x38), with frame totals 0x48/0x50/0x58/0x48 differing only by register count - despite 2/4/6/2 parameters and structurally different bodies (func_800481E8 carries an extra clamp). Instrument: tmp/grind/func_800480C0/s8/framecensus.py.
+
+- [s8] Filter-free tree-wide phantom census (all 32 TUs, 1096 functions, instrumented cc1): mult-free phantom distribution {0:980, 1:30, 2:7, 3:3}; all-functions {0:1043, 1:39, 2:7, 3:5, 6:2}. The only bodies above 3 phantoms are func_80042874 and func_80042A88 (src/text1a_c.c), both mult/div at 6 phantoms / vars=48. Four phantoms on a mult-free body is attested nowhere in the tree.
+
+- [s8] Census-method correction for future sessions: hardreg=-1 alone does NOT mean phantom. func_80060E38 (src/text1b.c:3317) has nine hardreg=-1 pseudos, but they are genuine register-pressure SPILLS (nrefs=2, livelen=57-65, pri~300) whose frame bytes are written. Phantoms carry the get_cs/SetDrawEnv signature nrefs=2 livelen=2 pri=10000; the discriminator is livelen<=2. Both scripts banked (phantom_census_v1_spill_conflated.py vs phantom_census_v2.py).
+
+- [s8] The three mult-free 3-phantom bodies are SetDrawEnv, SetDrawEnv2 (src/display.c) and func_80041AC8 (src/text1a_post.c); the first two are the clamp idiom already characterised in s6, the third has never been read and is the only unexamined phantom producer in the tree.
+
+- [s8] Callers of the four siblings pass scalars only (src/text1a_post.c:277-286, src/text1a_pre.c:268-278, src/text1a_c2.c:161; asm callers func_80040594/func_80041988/func_80045B68/func_800460E4), and callee func_800482C8 (src/text1b.c:209) reads a u8* image blob and owns its own s16 rect[4] / s16 buf[512]. No 32-byte record is passed by address anywhere in the cluster.
+
+- [s8] Unsigned /4 *4 spelling of both `>>2 <<2` sites (and *4 for the arg1 scale) is codegen-identical to the shifts - sandbox 20 / 74 / 74, vars=0, unalloc=0, orphanUSE=0 - because GCC 2.7.2 folds constant power-of-two division at expand, before combine.
+
+- [s8] The target loop at .L80048144 loads all four halfwords at displacement 0x0 off $s0 with a separate addiu $s0,$s0,0x2 after each, so the class-A constant-offset shape (dying base+CONST address folded into a mem displacement) does not appear in the shipped stream and cannot be introduced byte-neutrally.
+
+- [s8] Three of the four siblings (func_80047EE8, func_80047FBC, func_800481E8) are COMPLETED-C on main carrying `volatile u32 pre_pad[8];` with owner-granted rows at engine/volatile_cheats.py:757-767 (rulings 2026-08-20 and 2026-08-22); func_800480C0 is the fourth member of the same shipped frame family and the only one without a row (Judge FAIL 2026-09-02 04:28, docs/grind/decisions.md:20349).

@@ -1,8 +1,8 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 7,
- "current_modality": "solver",
+ "session_count": 8,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 20,
    "modality": "solver",
    "headline": "Solver axis closed by the classifier itself (PRE-RA, 'next tool: none'); orphan-plant census corrected (orphans DO stack at one block head) but the target's own lhu+sll+sra narrow loads rule out the o"
+  },
+  {
+   "session": 8,
+   "floor": 20,
+   "modality": "forensics",
+   "headline": "Forensics: the four text1b siblings' shipped frames reserve the IDENTICAL untouched 0x18-0x37 window despite 2/4/6/2 parameters, and a filter-free census of all 1096 compiled functions puts the mult-f"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The arithmetic-address orphan is the only class-A shape measured to stack, and it needs an address pseudo that DIES at its single deref; func_800480C0 may still be spellable so that its one such site qualifies.",
-   "mechanism": "combine merges `(set T (plus A B))` + `(set X (mem T))` into `(set X (mem (plus A B)))`, deleting T's def; the stranded REG_DEAD note is planted at the block head and two can chain there (func_80040594, text1a_pre.combine insns 564/565 after code_label 457). The insn count is unchanged by the merge, which is exactly what a zero-byte-delta lever needs.",
-   "next_probe": "Enumerate every mem reference in func_800480C0's target stream whose address is a register that could legitimately be a dying single-use sum. The entry `count = *(p++)` after `p = base_addr + ((*p>>2)<<2)` is the only candidate. Ask whether the ALGORITHM (not a fabricated copy) can be spelled so that address dies at the deref while p's subsequent advance is carried by a different live value - e.g. by carrying the loop pointer as an index rather than as a pointer. Measure with tmp/grind/func_800480C0/s6/probe.sh under WSL and report vars/unalloc/orphanUSE plus the insn delta. If it cannot be done without a redundant recomputation, class A is capped at 0-1 here and the residual is not a phantom problem at all."
+   "hypothesis": "The residual is a DECLARED 32-byte local in the shipped source shared by all four siblings; the remaining open question is whether that object is LIVE in some variant of the routine, which would make it ordinary C needing no engine allowlist row.",
+   "mechanism": "function.c assign_stack_local reserves the slot from the source DECL at RTL-expand and never reclaims frame_offset; a 32-byte PsyQ-era local in a sprite-batch routine is a MATRIX or an 8-word packet/DMA staging buffer. Shape-invariance across four structurally different siblings (s8) is the declaration signature; phantom residue would vary with expression shape.",
+   "next_probe": "Survey the rest of the shipped binary for a fifth/sixth member of this routine family (other batch loaders that call func_800482C8 or its neighbours) and check whether any of them WRITES the 0x18-0x37 window - a live sibling names the object and gives an honest, row-free C form for all four. `grep -l 'jal.*func_800482C8' asm/funcs/*.s` is the entry point, then framecensus.py on each hit."
   },
   {
-   "hypothesis": "The target's 32 bytes are one 32-byte AGGREGATE declared in the original source, shared by all four text1b siblings, rather than four phantom residues. This is now the leading hypothesis, not the fallback.",
-   "mechanism": "function.c assign_stack_local reserves an aggregate slot at RTL-expand from the source DECL and never reclaims frame_offset; a PsyQ MATRIX is exactly 32 bytes. BB2_ALLOC_DEBUG reports ZERO unallocated pseudos for func_80047EE8 and func_80047FBC, so the siblings' identical 32-byte regions are a declaration in the shipped source, not residues. s7 removed the two producer shapes that could plausibly have scaled to four on this body: the HImode sign-extend fold (absent from the target's own lhu+sll+sra stream) and pointer copy temps (propagated before combine).",
-   "next_probe": "FORENSICS modality. Examine func_800482C8 and the callers of the four siblings for a 32-byte record (PsyQ MATRIX, 8-word buffer) that the original built on the stack and passed by address, whose address-taking this decompilation folded into pointer arithmetic. A LIVE such local is ordinary C and needs no engine allowlist row. Cross-check whether func_800482C8's own body reads a caller-provided 32-byte area."
+   "hypothesis": "A third phantom producer class exists that neither the combine-orphan (class A) nor the mult/div HILO (class B) taxonomy covers, and it is what lets func_80041AC8 reach three phantoms with vars=32.",
+   "mechanism": "func_80041AC8 (src/text1a_post.c) is mult-free with 3 phantoms and vars=32 and is NOT the display.c clamp idiom that produces SetDrawEnv's three. If its orphans have a different RTL provenance, the mult-free ceiling of 3 measured in s8 might not be a real ceiling.",
+   "next_probe": "Dump text1a_post with -da, run tmp/grind/func_800480C0/s6/count_uses.py on the .combine for func_80041AC8, and read the RTL around each orphan plant site (s7/plantsites.py + s7/plantkind.py). If the provenance is a new shape, test whether it is spellable byte-neutrally on func_800480C0's stream."
   },
   {
-   "hypothesis": "No further session should be spent on RA or scheduler models for this function.",
-   "mechanism": "goal_from_tgt.py classify returns PRE-RA with 'next tool: none - the residual is upstream of every model', and the two streams agree on all 74 instructions and on every register assignment. The frame size is fixed by get_frame_size before either allocator or either scheduler pass runs.",
-   "next_probe": "None - this is a recorded exclusion. If a future driver dispatch assigns solver modality again, the correct action is to re-run `goal_from_tgt.py classify text1b func_800480C0` under WSL to confirm the verdict is unchanged on the then-current chassis, bank that one measurement, and spend the rest of the session on the forensics item above."
+   "hypothesis": "Class A and class B are both exhausted on this body (A capped at <=1 by the shipped listing, B measured at 1 across 41 forms), so further structural spellings on either axis re-measure dead ground.",
+   "mechanism": "s7 target-listing evidence (one arithmetic-address-then-deref site, all narrow loads at displacement 0) plus s2-s8 measurements (41 forms, permuter ~50k iterations, two chassis).",
+   "next_probe": "None on these axes. If a future dispatch assigns structural or permuter modality, spend it on frontier item 1 or 2 instead and bank the redirect."
   }
  ],
  "judge_constraints": [
@@ -220,6 +226,46 @@
    "measured_on": "HEAD 7e18adc2, tmp/grind/func_800480C0/s7/bodies/{C_ptrtemps4.c,D_ptrtemps5.c}, annotated `arg0 = 0;` dead param store present, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump; banked at memory",
    "predicate_cite": "",
    "result": "Both measure `vars= 0, regs= 8/0, unalloc=0, orphanUSE=0`. A plain register COPY is propagated away by cse/cse2 long bef"
+  },
+  {
+   "session": 8,
+   "statement": "The s2-s7 kills on func_800480C0 were measured while the annotated `arg0 = 0;` FAKE dead param store occupied the pseudo those levers targeted, so at least one of them is a masking artifact rather tha",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 28583e8e, memory/grind/func_800480C0/candidate.c installed over the INCLUDE_ASM line in src/text1b.c; FAKE state = the single annotated dead param store, ablated in the drop-1 arm",
+   "predicate_cite": "",
+   "result": "keep-all = score 20 at 74 build insns; drop-1 (store removed) = score 32 at 73 build insns. The store is strictly load-b"
+  },
+  {
+   "session": 8,
+   "statement": "The target's 32 untouched vars bytes are a 32-byte record the caller built on the stack and passed by address, whose address-taking this decompilation folded into pointer arithmetic (s7 frontier item ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 28583e8e, shipped call sites of the four siblings; no candidate installed (read-only forensics)",
+   "predicate_cite": "",
+   "result": "Every caller passes scalars only - e.g. func_800480C0(sec, 0, 0x80, 0, -0x140, 0xF0). The callee takes a u8* into a TIM/"
+  },
+  {
+   "session": 8,
+   "statement": "func_800480C0's 32-byte untouched vars region is allocation residue, so an ordinary-C spelling of this body that produces four phantom slots exists.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 28583e8e, census over the 1096 functions the 32 src/*.c TUs compile with the instrumented cc1; candidate not installed during the census (HEAD sources), FAKE state irrelevant to the census",
+   "predicate_cite": "",
+   "result": "(a) All four siblings reserve the SAME 0x18-0x37 untouched window with args=0x18 and callee-saved base 0x38, differing o"
+  },
+  {
+   "session": 8,
+   "statement": "Spelling the power-of-two scales as ordinary unsigned division/multiplication leaves an expand_divmod intermediate for combine to delete, planting phantom slots on this body.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 28583e8e, bodies at tmp/grind/func_800480C0/s8/bodies/ installed one at a time over the INCLUDE_ASM line, annotated dead param store present in each",
+   "predicate_cite": "",
+   "result": "All three: .frame $sp,56 # vars= 0, regs= 8/0, args= 24, unalloc=0, orphanUSE=0. sandbox --disable all on A_divmul_both "
+  },
+  {
+   "session": 8,
+   "statement": "Class A can be reached four times on this body by reading the four halfwords at constant offsets from one base pointer and advancing the pointer once.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 28583e8e, shipped listing asm/funcs/func_800480C0.s; byte-visible shape, no compile required",
+   "predicate_cite": "",
+   "result": "The target emits four `lhu $aN, 0x0($s0)` each followed by a separate `addiu $s0,$s0,0x2`. Every narrow load sits at dis"
   }
  ],
  "ladder_skip": 0,

@@ -569,3 +569,122 @@ re-measured **20** (74/74) this session. All s5 measurements are on that chassis
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 7e18adc2, tmp/grind/func_800480C0/s7/bodies/{C_ptrtemps4.c,D_ptrtemps5.c}, annotated `arg0 = 0;` dead param store present, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump; banked at memory/grind/func_800480C0/rejected/s7-single-use-ptr-copy-temps-no-orphan.c and rejected/s7-five-ptr-copy-temps-no-orphan.c
+
+## s8 — forensics (2026-09-02, chassis HEAD 28583e8e, candidate.c + its one FAKE dead param store)
+
+### H-s8-1 (KILL RE-AUDIT, mandated) — "the banked kills were measured while a FAKE carrier occupied the residual's pseudo"
+- **Mechanism tested:** func_8002EA24-s8 hazard — a `/* FAKE */` construct sitting on the
+  register a lever targets makes the lever read inert.
+- **Probe:** `tools/fake_ablate.py --func func_800480C0 --file text1b --candidate
+  memory/grind/func_800480C0/candidate.c` (full subset grid; one FAKE unit ⇒ 2 variants).
+- **Result:** keep-all = 20 / 74 insns; drop-1 = 32 / 73 insns. The dead param store is
+  load-bearing and its pseudo ($a0/arg0) is not the residual's carrier — the residual is the
+  frame size and the two streams already agree on all 74 instructions.
+- **Verdict:** KILLED (the masking hypothesis). kill_scope: instance.
+
+### H-s8-2 — "the 32 untouched bytes are a caller-built 32-byte record passed by address, folded into pointer arithmetic by this decompilation" (s7 frontier item 2, first half)
+- **Probe:** every call site of the four siblings, in C and in asm
+  (src/text1a_post.c:277-286, src/text1a_pre.c:268-278, src/text1a_c2.c:161,
+  asm/funcs/func_80040594.s:125/144/152/172, func_80041988.s:47/61/68,
+  func_80045B68.s:149, func_800460E4.s:219), plus the callee func_800482C8 (src/text1b.c:209).
+- **Result:** every caller passes scalars; the callee takes a `u8 *` into an image blob and
+  owns its own `s16 rect[4]` / `s16 buf[512]`. No caller-provided 32-byte stack area exists
+  anywhere in the cluster.
+- **Verdict:** KILLED. kill_scope: instance (measured on the shipped call sites of these
+  four functions on HEAD 28583e8e).
+
+### H-s8-3 — "the target's 32-byte untouched region is allocation residue (phantom slots), so an ordinary-C spelling that produces four phantoms exists" (the axis every session s2–s7 has attacked)
+- **Mechanism:** alter_reg pays 8 bytes of `vars` per unallocated pseudo; four phantoms = 32 bytes.
+- **Probe A (frame invariance):** tmp/grind/func_800480C0/s8/framecensus.py over the four
+  siblings' shipped listings. All four reserve the SAME 0x18–0x37 untouched window with
+  callee-saved base 0x38 and args 0x18, despite having 2/4/6/2 parameters and different loop
+  bodies. Phantom counts track expression shape; a shape-invariant 32 bytes does not.
+- **Probe B (filter-free tree census):** all 32 TUs recompiled with the instrumented cc1
+  (s8/allcensus.sh), 1096 functions, phantom = `hardreg=-1 AND livelen<=2`
+  (s8/phantom_census_v2.py; the livelen discriminator separates phantoms from genuine spills —
+  v1 mis-read func_80060E38's nine spills as phantoms). Distribution mult-free
+  {0:980, 1:30, 2:7, 3:3}; only mult/div bodies exceed 3 (func_80042874 / func_80042A88 at 6).
+- **Result:** the highest phantom count measured on any mult-free body in the tree is 3
+  (SetDrawEnv, SetDrawEnv2, func_80041AC8). func_800480C0's target stream contains no
+  mult/div, so the 6-phantom class-B producer cannot be spelled here byte-neutrally.
+- **Verdict:** KILLED. kill_scope: instance — this is a census result over the 1096 functions
+  this tree compiles on HEAD 28583e8e, not a proof from a gate predicate. Re-open it if a
+  mult-free 4-phantom body is ever compiled anywhere in the tree.
+
+### H-s8-4 — "spelling the power-of-two scales as ordinary unsigned division/multiplication leaves an expand_divmod intermediate for combine to delete, planting phantoms"
+- **Probe:** three bodies (both `>>2 <<2` sites as `/4 *4`; plus the `(arg1<<16)>>14` scale as
+  `((arg1<<16)>>16) * 4`; loop site alone) through s6/probe.sh + a sandbox score on A.
+- **Result:** all three give `vars= 0, regs= 8/0, args= 24, unalloc=0, orphanUSE=0`, and A
+  scores 20 / 74 / 74 — codegen-identical to the shift spelling. GCC 2.7.2 folds the constant
+  power-of-two divide at expand, so no intermediate insn ever exists to orphan.
+- **Verdict:** KILLED. kill_scope: instance (measured on HEAD 28583e8e with the annotated dead
+  param store present; bodies at tmp/grind/func_800480C0/s8/bodies/, banked in rejected/).
+
+### H-s8-5 — "class A can be reached four times by reading the four halfwords at constant offsets from one base pointer"
+- **Mechanism:** class A is `T = base + CONST; X = *T` with T dying; combine folds CONST into
+  the mem displacement, deletes T's def, strands the REG_DEAD note at the block head.
+- **Probe:** read the target loop rather than compile — asm/funcs/func_800480C0.s `.L80048144`.
+- **Result:** the target emits four `lhu $aN, 0x0($s0)` with a separate `addiu $s0,$s0,0x2`
+  between each. Every narrow load is at displacement ZERO off a pointer that stays live across
+  the loop; there is no dying constant-offset address anywhere in the target stream. The
+  respelling would change the emitted displacements and the addiu count.
+- **Verdict:** KILLED. kill_scope: instance (measured against the shipped listing for this
+  function; the shape is byte-visible, so no compile was needed).
+
+### s8 frontier
+1. The residual is a DECLARED 32-byte local in the shipped source, and the only C form of it
+   is the unwritten pad the Judge banned here for want of an engine allowlist row. The four
+   siblings' frame invariance (H-s8-3 probe A) plus the tree-wide mult-free ceiling of 3
+   phantoms (probe B) plus the caller/callee census (H-s8-2) now close every honest producer
+   this ledger has been able to name. What is NOT yet done: a targeted survey of what a
+   32-byte PsyQ-era local in a sprite-batch routine would BE (MATRIX, a 8-word DMA/packet
+   staging buffer) and whether any of the four siblings' asm shows an addressing pattern that
+   would make it LIVE in a variant of the routine elsewhere in the game (e.g. an unsplit
+   duplicate at another address). A live 32-byte local is ordinary C and needs no row.
+2. func_80041AC8 (src/text1a_post.c) is the one mult-free body in the tree with 3 phantoms AND
+   vars=32 that is NOT a display.c clamp idiom. Its producing shape has never been read.
+   Reading its .combine orphans (s6/count_uses.py) may name a third phantom producer class,
+   which is the only way the mult-free ceiling of 3 could move.
+3. Class B multiplicity on this body remains 1 across 41 measured forms; class A is capped at
+   ≤1 by the target listing. Neither axis can reach 4 — further spellings on either are
+   re-measuring dead ground.
+
+## [s8] The s2-s7 kills on func_800480C0 were measured while the annotated `arg0 = 0;` FAKE dead param store occupied the pseudo those levers targeted, so at least one of them is a masking artifact rather than a real kill.
+- mechanism: func_8002EA24-s8 hazard: a /* FAKE */ construct sitting on the register a lever moves makes the lever read inert. tools/fake_ablate.py scores the candidate across every subset of its FAKE units.
+- probe: python3 tools/fake_ablate.py --func func_800480C0 --file text1b --candidate memory/grind/func_800480C0/candidate.c (one FAKE unit found; full 2-variant grid scored).
+- result: keep-all = score 20 at 74 build insns; drop-1 (store removed) = score 32 at 73 build insns. The store is strictly load-bearing, and its pseudo ($a0/arg0) is not the residual's carrier - the residual is the frame size and the two streams already agree on all 74 instructions. No banked kill is a masking artifact.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 28583e8e, memory/grind/func_800480C0/candidate.c installed over the INCLUDE_ASM line in src/text1b.c; FAKE state = the single annotated dead param store, ablated in the drop-1 arm
+
+## [s8] The target's 32 untouched vars bytes are a 32-byte record the caller built on the stack and passed by address, whose address-taking this decompilation folded into pointer arithmetic (s7 frontier item 2, first half).
+- mechanism: function.c assign_stack_local reserves an aggregate slot at RTL-expand from the source DECL; a caller-owned record passed by address would explain a live 32-byte object invisible in the callee's own stream.
+- probe: Read every call site of the four siblings in C and asm (src/text1a_post.c:277-286, src/text1a_pre.c:268-278, src/text1a_c2.c:161, asm/funcs/func_80040594.s:125/144/152/172, func_80041988.s:47/61/68, func_80045B68.s:149, func_800460E4.s:219) and the callee func_800482C8 (src/text1b.c:209).
+- result: Every caller passes scalars only - e.g. func_800480C0(sec, 0, 0x80, 0, -0x140, 0xF0). The callee takes a u8* into a TIM/image blob and owns its own s16 rect[4] / s16 buf[512]; it never reads a caller-supplied 32-byte stack area. If the original declared a 32-byte object it was declared LOCAL and never referenced.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 28583e8e, shipped call sites of the four siblings; no candidate installed (read-only forensics)
+
+## [s8] func_800480C0's 32-byte untouched vars region is allocation residue, so an ordinary-C spelling of this body that produces four phantom slots exists.
+- mechanism: alter_reg pays 8 bytes of vars per unallocated pseudo (class A = combine.c distribute_notes orphan USE, class B = mult/div DImode HILO scratch); four phantoms would be 32 bytes.
+- probe: (a) tmp/grind/func_800480C0/s8/framecensus.py over the four siblings' shipped listings; (b) filter-free tree census - all 32 src/*.c TUs recompiled with the instrumented cc1 (s8/allcensus.sh), 1096 functions, phantom = hardreg=-1 AND livelen<=2 (s8/phantom_census_v2.py; the livelen term separates phantoms from genuine spills, which v1 conflated - func_80060E38's nine hardreg=-1 pseudos are spills at livelen 57-65, not phantoms).
+- result: (a) All four siblings reserve the SAME 0x18-0x37 untouched window with args=0x18 and callee-saved base 0x38, differing only in frame total (0x48/0x50/0x58/0x48) as their register counts differ - despite having 2/4/6/2 parameters and structurally different bodies. Phantom residue tracks expression shape; a shape-invariant 32 bytes does not. (b) Mult-free phantom distribution over the tree is {0:980, 1:30, 2:7, 3:3}; the only bodies above 3 are func_80042874/func_80042A88 (both mult/div, 6 phantoms). The target stream for func_800480C0 has no mult/div, so the 6-phantom producer cannot be spelled here byte-neutrally, and the measured mult-free ceiling is 3 - one short of four.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 28583e8e, census over the 1096 functions the 32 src/*.c TUs compile with the instrumented cc1; candidate not installed during the census (HEAD sources), FAKE state irrelevant to the census
+
+## [s8] Spelling the power-of-two scales as ordinary unsigned division/multiplication leaves an expand_divmod intermediate for combine to delete, planting phantom slots on this body.
+- mechanism: expand_divmod's constant-power-of-two path could emit a separate scale insn that combine folds into the consumer, deleting its def and stranding a REG_DEAD note at the block head (the class-A shape).
+- probe: Three bodies through tmp/grind/func_800480C0/s8/run.sh (s6 probe: instrumented cc1 .frame + BB2_ALLOC_DEBUG unalloc + orphan-USE count on a -da .combine dump): both `((x)>>2)<<2` sites as `/4*4`; the same plus `(arg1<<16)>>14` as `((arg1<<16)>>16)*4`; the loop site alone. Plus a sandbox score on the first.
+- result: All three: .frame $sp,56 # vars= 0, regs= 8/0, args= 24, unalloc=0, orphanUSE=0. sandbox --disable all on A_divmul_both prints score 20 / target 74 / build 74 - the division spelling is codegen-IDENTICAL to the shift spelling, because GCC 2.7.2 folds the constant power-of-two divide at expand before combine runs. Running total of measured structural forms on this body: 41.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 28583e8e, bodies at tmp/grind/func_800480C0/s8/bodies/ installed one at a time over the INCLUDE_ASM line, annotated dead param store present in each
+
+## [s8] Class A can be reached four times on this body by reading the four halfwords at constant offsets from one base pointer and advancing the pointer once.
+- mechanism: Class A is `T = base + CONST; X = *T` with T dying; combine folds CONST into the mem displacement, deletes T's def, and distribute_notes plants the stranded REG_DEAD as an orphan USE at the block head - insn count unchanged, which is what a zero-byte-delta lever needs.
+- probe: Read the shipped loop rather than compile: asm/funcs/func_800480C0.s at .L80048144.
+- result: The target emits four `lhu $aN, 0x0($s0)` each followed by a separate `addiu $s0,$s0,0x2`. Every narrow load sits at displacement ZERO off a pointer that is live across the whole loop; there is no dying constant-offset address in the target stream at all. A constant-offset respelling changes the emitted displacements and the addiu count, so it cannot be byte-neutral. With s7's finding that the body owns exactly one arithmetic-address-then-deref site, class A is capped at <=1 here by the shipped listing itself.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 28583e8e, shipped listing asm/funcs/func_800480C0.s; byte-visible shape, no compile required

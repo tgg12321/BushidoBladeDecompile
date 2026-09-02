@@ -3,6 +3,21 @@
  * file is a CANDIDATE, not the state of HEAD; every 'measured on main' statement in the
  * headers below means 'measured with this body installed over that INCLUDE_ASM line'.
  * Install with tmp/grind/func_800480C0/s3/install.py. */
+/* s8 (forensics, 2026-09-02, chassis HEAD 28583e8e) - BODY UNCHANGED, floor
+ * re-measured 20 (74/74). Mandated FAKE re-audit: tools/fake_ablate.py finds one
+ * FAKE unit (the annotated `arg0 = 0;`) and scores keep-all 20 / drop-1 32 - the
+ * store is load-bearing and masks no lever. Three forensic results: (1) every
+ * caller of the four text1b siblings passes scalars and func_800482C8 owns its
+ * own locals, so the 32 bytes are not a caller-built record; (2) all four
+ * siblings' shipped frames reserve the IDENTICAL untouched window 0x18-0x37 with
+ * args=0x18 and callee-saved base 0x38 despite 2/4/6/2 parameters - the signature
+ * of one shared source declaration, not of shape-dependent allocation residue;
+ * (3) a filter-free census of all 1096 functions this tree compiles finds the
+ * mult-free phantom ceiling is THREE (SetDrawEnv, SetDrawEnv2, func_80041AC8),
+ * with only the two mult/div bodies at 6 - four phantoms on a mult-free body is
+ * attested nowhere. Two further spellings measured inert (unsigned /4*4 for the
+ * power-of-two scales is codegen-identical: GCC folds it at expand). Full record:
+ * evidence.md / hypotheses.md s8. */
 /* s7 (solver, 2026-09-02, chassis HEAD 7e18adc2) - BODY UNCHANGED, floor re-measured
  * 20 (74/74). goal_from_tgt.py classify returns PRE-RA, 'next tool: none - the residual
  * is upstream of every model': registers and instruction order already match exactly,
