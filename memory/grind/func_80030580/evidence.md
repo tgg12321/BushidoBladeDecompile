@@ -387,3 +387,126 @@ was obtained without it and supersedes the question it was asked to answer.
 - [s4] tools/decomp-permuter/src/randomizer.py contains exactly one frame-moving randomizer, perm_pad_var_decl, and it moves the frame by adding an emitted store that the byte scorer penalises - so the permuter cannot reach this residual from a body-exact chassis. Recording this so a future session does not re-seed a third body-exact campaign.
 
 - [s4] A reusable permuter workspace builder for this function now exists: tmp/grind/func_80030580/s4/mk_ws.sh <dir> [body.c] (single-function preprocessed TU with the Vec3i typedef and the three extern decls, prelude.inc + asm/funcs/func_80030580.s at offset 0, compile.sh with the cheat stages omitted).
+
+## Session 5 (2026-09-02, synthesis) — floor 2 (flat); the ORPHAN-GENERATOR CATALOG
+
+### Chassis re-measured this session
+`sandbox func_80030580 --disable all` = **2** with `candidate.c` (= s1/draft3.c) applied to
+src/code6cac_b.c. Unchanged: body byte-identical, the whole residual is `addiu sp,-0x18`
+(target, vars=24) vs `addiu sp,-8` (ours, vars=8, one `ctx=spill_new_p110` slot).
+
+### KILL RE-AUDIT (mandated) — the s3/s4 site-law kills all stand on the current chassis
+Re-ran `tmp/grind/func_80030580/s3/frame3.py base j3read j4read dupXZ dupX` with the
+instrumented cc1 on the current tree. `tools/fake_ablate.py` reported no FAKE constructs
+in candidate.c at s4 and the candidate is unchanged, so these are zero-FAKE measurements:
+
+    base    vars= 8  bodydiff=  0   spill_new_p110
+    j3read  vars=16  bodydiff= 18   p110 + p130
+    j4read  vars=24  bodydiff= 25   p110 + p130 + p143     <- exact target frame
+    dupX    vars=16  bodydiff= 15   p110 + p125
+    dupXZ   vars=24  bodydiff=199   p110 + p125 + p145
+
+Identical to the s3/s4 numbers. The `slots = max(0, indexed-Judge sites - 1)` law is
+re-confirmed, and **j4read (+25 body lines) is the cheapest known form that reaches the
+target's exact frame** — it is the form the next session should attack, not dupXZ (+199).
+
+### NEW INSTRUMENT — a standalone orphan-generator catalog probe
+`tmp/grind/func_80030580/s5/genprobe.py <file.c>` compiles an arbitrary self-contained C
+file with the project's cpp/cc1 flags under `BB2_FRAME_DEBUG=1` and prints, per function,
+`vars=`, the `($sp)` access count and the list of non-`round_frame` FRAMEDBG contexts.
+It makes "does construct X generate a phantom slot?" a five-second question with no
+src/ edit and no sandbox run. Probe corpora written this session:
+`s5/gen_probe.c` (14 shapes), `s5/gen2.c` (17), `s5/gen3.c` (16).
+
+### GENERATOR 2 (from the project memory) is INERT here — HImode bitwise
+`phantom-frame-slots-gcc272` documents "two HImode (s16) locals feeding an HImode bitwise
+expression `(a & ~b) & 1`" as a phantom-slot trigger (measured on func_80037540). Probed
+five in-function forms (`himin` s16, `himin32` s32, `hi1` single local, `hiu` unsigned,
+`qimin` QImode) with `s5/frame5.py`: **all stay vars=8** (bodydiff 7-10). The standalone
+repro `gen_probe.c:p_hi` also measures vars=0. This generator does not fire in
+func_80030580's context. Banked `rejected/himode-bitwise-phantom-generator-inert.c`.
+
+### GENERATOR 3 — NEW, characterised this session, and NOT hostable by this function
+`text1a_post:func_80041E10`'s three orphan slots (the s3 "no branch, no label" witness)
+are now explained. Reduced to a minimal repro and bisected across 33 standalone shapes:
+
+    p_div255_1/2/3   g_sel[k] = (s16)((((a1 >> 8*k) & 0xFF) << 12) / 255);
+                     -> vars = 8 / 16 / 24, ONE ctx=spill_new PER SITE (no -1)
+
+Both halves of the shape are load-bearing:
+  * the dividend must be masked/shifted — `q1` `(s16)(x / 255)` = vars 0, `r3`
+    `(s16)(((x & 0xFF) << 12) / 255)` = vars 8, `r11` `(x & 0xFFFF)` also fires;
+  * the quotient must be truncated to HImode at the store — `r2` (same expression, s32
+    destination) = vars 0, `r14` (via an s32 local then `(s16)`) = vars 8;
+  * the division must be a magic-multiply one — `r7` (`>> 3` instead of `/`) = 0,
+    `r17` (`%`) = 0, `p_div2` (`/2`, `/32`) = 0, `q9` (`/256`) = 0;
+  * any further arithmetic after the truncation kills it — `r13` (`* y`) = 0, `r15`
+    (`+ 1`) = 0. `r6` (`/3`) and `r8` (`* 0x1000 / 255`) do fire, so the constant is free.
+
+**This generator counts SITES, not sites-1** — it is the only known way to buy 3 slots
+from 3 source constructs. func_80030580 divides only by 32 and by 2 (both expand to shift
+sequences), so it cannot host it: `t32a`/`t32b`/`m32a`/`m32b`/`m32c` (truncation and
+mask/shift spellings of the `/32`) are all byte-neutral AND frame-inert, `t32c`/`t32d`
+cost 15 body lines, `h2x`/`h2all` (truncating the `/2` chain) cost 29/51.
+Banked `rejected/truncated-division-generator-not-hostable.c`.
+
+### The signature axis is dead — an unused trailing parameter buys nothing
+`arg3u` / `arg4u` / `arg5u` (3, 4 and 5 parameters with the extras unused), `arg3p`
+(pointer) and `arg3s` (s16) are all bodydiff=0, vars=8. A dead incoming-argument pseudo
+is deleted before reload and never becomes an orphan, so "the original had more
+parameters" cannot explain the 16 missing frame bytes.
+Banked `rejected/unused-trailing-params-frame-inert.c`.
+
+### Pass attribution (dumps regenerated this session, `tmp/grind/func_80030580/dumps/`)
+* `.lreg` names exactly ONE pseudo for this function:
+  `Register 110 used 2 times across 67 insns in block 6; ST_REGS or none; pointer.`
+  The other three address pseudos of the two Judge lookups (107, 127, 130) do not appear
+  at all — combine deleted them outright, note and pseudo.
+* `.combine` contains exactly one orphan USE, `(insn 393 99 100 (use (reg:SI 110)))`,
+  placed immediately after `code_label 99` (the `/32` `bgez` join). The only other USE is
+  the epilogue's `(use (reg/i:SI 2 v0))`.
+* Both emitted Judge loads sit in the SAME basic block (target 0x80030644-0x800306D0, no
+  label between 0x80030618 and 0x80030790), so the "one orphan per fold" reading cannot
+  be rescued by block geometry: two folds in one block yield one orphan.
+
+### Body-neutral composables added this session (bodydiff 0, vars 8, free to compose)
+`hmask1` `(u16)(ang & 0xFFF)` on the first index, `hnot1` `(u16)(ang & (u16)~0xF000)`,
+`hloc1` (a `u16 ang` local feeding the first index only), `hcopy` (`& (u16)0xFFFF` on the
+0x56 copy), `hcopy2` (`c | *(u16 *)(obj + 0x54)` — the just-stored zero is forwarded),
+`hkind` (`s16 k = tbl[0]` driving the chain), `t32a`/`t32b` ((s16)/(s32)(s16) truncation
+of the `/32`), `m32a`/`m32b` (`<< 0` on the `/32` dividend), `m32c` (`*(s32 *)(src+0x18)
+>> 16` for the same halfword), `svx` (`(s16)tbl[3]`), `mulpar`, `muls16`, `mulboth16`
+((s16) casts on the multiply operands), `arg3u`/`arg4u`/`arg5u`/`arg3p`/`arg3s`.
+Sources: `tmp/grind/func_80030580/s5/var_<name>.c`.
+
+- [s5] Chassis re-measured: sandbox func_80030580 --disable all = 2 with candidate.c applied; residual still addiu sp,-0x18 (vars=24) vs -8 (vars=8, one ctx=spill_new_p110 slot).
+- [s5] Kill re-audit on the current chassis reproduces s3/s4 exactly: j3read vars=16/bodydiff 18, j4read vars=24/bodydiff 25, dupX vars=16/bodydiff 15, dupXZ vars=24/bodydiff 199. j4read is the CHEAPEST known form that reaches the target's exact frame and is the correct attack surface, not dupXZ.
+- [s5] The phantom-frame HImode-bitwise generator ((a & ~b) & 1 on two s16 locals, project memory phantom-frame-slots-gcc272) does NOT fire in func_80030580: five in-function forms all vars=8, and a standalone repro measures vars=0.
+- [s5] A THIRD generator is characterised: (s16)(<masked-or-shifted dividend> / <constant>) yields one ctx=spill_new slot PER SITE with no -1 (p_div255_1/2/3 -> vars 8/16/24). It needs the mask/shift on the dividend, the HImode truncation at the store, a magic-multiply division, and no arithmetic after the cast. It explains text1a_post:func_80041E10's three orphans.
+- [s5] Generator 3 is not hostable by func_80030580: its only divisions are /32 and /2, which expand to shift sequences and never fire it (t32a/t32b/m32a/m32b/m32c byte-neutral and frame-inert; t32c/t32d cost 15; h2x/h2all cost 29/51).
+- [s5] Unused trailing parameters are body-neutral AND frame-inert (arg3u/arg4u/arg5u/arg3p/arg3s all bodydiff=0, vars=8) - the "original signature was wider" hypothesis buys no frame bytes.
+- [s5] Dumps: .lreg names only Register 110 (ST_REGS or none; pointer); pseudos 107/127/130 are deleted by combine outright. .combine holds exactly one orphan USE, insn 393 after code_label 99. Both emitted Judge loads are in ONE basic block, so two folds in one block yield one orphan.
+- [s5] New reusable instrument: tmp/grind/func_80030580/s5/genprobe.py + gen_probe.c / gen2.c / gen3.c - a standalone catalog probe that answers "does construct X generate a phantom slot?" in one cc1 run with no src edit and no sandbox run.
+- [s5] src/code6cac_b.c restored to HEAD at the end of the session; the working tree carries only the ledger changes.
+
+- [s5] Chassis re-measured this session: sandbox func_80030580 --disable all = 2 with candidate.c (= s1/draft3.c) applied to src/code6cac_b.c; body byte-identical, the whole residual is addiu sp,-0x18 (vars=24) vs ours -8 (vars=8, one ctx=spill_new_p110 slot).
+
+- [s5] Kill re-audit on the current chassis reproduces s3/s4 exactly (base 8/0, j3read 16/18, j4read 24/25, dupX 16/15, dupXZ 24/199), so the slots = max(0, indexed-Judge sites - 1) law stands with zero FAKE carriers present.
+
+- [s5] j4read is the cheapest known form that reaches the target's exact vars=24, at +25 fdiff lines against dupXZ's +199; fdiff itemises its surplus as exactly the two extra Judge lookups (lh angle / addu const / andi 0xFFF / sll 1 / lh Judge / addu, twice), so a byte-neutral 4-site form must make those ~11 net insns vanish after combine.
+
+- [s5] The HImode-bitwise phantom generator documented in the project memory phantom-frame-slots-gcc272 does NOT fire in func_80030580: himin/himin32/hi1/hiu/qimin all stay vars=8 (bodydiff 7-10) and a standalone repro measures vars=0.
+
+- [s5] A THIRD generator is now characterised and explains the s3 witness text1a_post:func_80041E10: (s16)(<masked-or-shifted dividend> / <constant>) yields one ctx=spill_new slot PER SITE with no -1 (p_div255_1/2/3 -> vars 8/16/24). It needs the mask/shift on the dividend, the HImode truncation at the store, and a magic-multiply division, and any arithmetic after the cast kills it.
+
+- [s5] Generator 3 is not hostable by func_80030580: its only divisions are /32 and /2, which expand to shift sequences and never enter the magic-multiply path (t32a/t32b/m32a/m32b/m32c byte-neutral and frame-inert, t32c/t32d cost 15, h2x/h2all cost 29/51).
+
+- [s5] Unused trailing parameters are body-neutral AND frame-inert (arg3u/arg4u/arg5u/arg3p/arg3s all bodydiff=0, vars=8) - a dead incoming-argument pseudo is deleted before reload and never orphans.
+
+- [s5] Pass attribution from freshly regenerated dumps: .lreg names only Register 110 (ST_REGS or none; pointer) while pseudos 107/127/130 are deleted outright by combine, and .combine holds exactly one orphan USE (insn 393) after code_label 99; both emitted Judge loads live in one basic block in the target as well.
+
+- [s5] 20 further body-neutral composables banked (bodydiff 0, vars 8): hmask1, hnot1, hloc1, hcopy, hcopy2, hkind, t32a, t32b, m32a, m32b, m32c, svx, mulpar, muls16, mulboth16, arg3u, arg4u, arg5u, arg3p, arg3s - sources at tmp/grind/func_80030580/s5/var_<name>.c.
+
+- [s5] New reusable instrument: tmp/grind/func_80030580/s5/genprobe.py plus gen_probe.c / gen2.c / gen3.c - a standalone orphan-generator catalog probe that answers 'does construct X generate a phantom slot?' in one cc1 run with no src edit and no sandbox run.
+
+- [s5] src/code6cac_b.c was restored to HEAD at the end of the session; the working tree carries only memory/grind/func_80030580/ ledger changes.

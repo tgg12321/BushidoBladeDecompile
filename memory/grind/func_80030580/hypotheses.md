@@ -428,3 +428,143 @@ arms2 vars=16/bodydiff=17, j3read vars=16/18, dupXZ vars=24/199, j4read vars=24/
 - probe: mandated kill re-audit: engine sandbox func_80030580 --disable all on the applied candidate; tools/fake_ablate.py --func func_80030580 --file code6cac_b --candidate memory/grind/func_80030580/candidate.c; and a re-run of the four closest s3 forms (arms2, j3read, dupXZ, j4read) plus base through frame3.py with the instrumented cc1
 - result: The chassis is unchanged: sandbox --disable all prints score 2. fake_ablate reports 'no FAKE-annotated constructs found; nothing to ablate' - the candidate and every banked variant are FAKE-free, so the ablation half of the re-audit is vacuous for this function. The closest forms reproduce their s3 numbers exactly: base vars=8/bodydiff=0, arms2 vars=16/17, j3read vars=16/18, dupXZ vars=24/199, j4read vars=24/25. The s1-s3 instance kills stand as recorded.
 - verdict: CONFIRMED
+
+## Session 5 (2026-09-02, synthesis)
+
+### Re-audited (mandated kill re-audit) — all three re-measured on the CURRENT chassis
+**H-s5-0. The s3/s4 indexed-site kills were measured on a chassis or FAKE state that no
+longer holds.** KILLED (instance). Probe: `frame3.py base j3read j4read dupXZ dupX` with
+the instrumented cc1 on the tree as it stands, candidate.c applied, zero FAKE constructs
+(fake_ablate found none at s4 and candidate.c is unchanged since). Result: byte-for-byte
+the same numbers as s3/s4 — base 8/0, j3read 16/18, j4read 24/25, dupX 16/15, dupXZ
+24/199. Nothing to reopen on that axis; **j4read** (exact target frame at only +25 body
+lines) is hereby promoted as the closest-to-target banked form, superseding dupXZ (+199)
+as the thing the next session should try to make byte-neutral.
+
+### H-s5-1. The phantom-frame HImode-bitwise generator supplies the missing 16 bytes
+KILLED (instance). Mechanism tested: `phantom-frame-slots-gcc272` records that two HImode
+locals feeding an HImode bitwise expression `(a & ~b) & 1` make GCC 2.7.2 allocate a stack
+slot for a computation it then register-allocates away, with no store emitted — a second,
+Judge-independent generator that this function's ledger had never tested.
+Probe: five in-function forms via `s5/frame5.py` (`himin` two s16 locals, `himin32` the
+s32 control, `hi1` a single s16 local, `hiu` unsigned, `qimin` QImode), plus a standalone
+repro `gen_probe.c:p_hi` through the new `s5/genprobe.py`.
+Result: every in-function form stays **vars=8 with the single spill_new_p110 slot**
+(bodydiff 7-10); the standalone repro measures **vars=0**. The generator does not fire in
+this function's context. Measured on: candidate.c/draft3 chassis (sandbox --disable all
+= 2 re-measured this session), no FAKE constructs present.
+Banked `rejected/himode-bitwise-phantom-generator-inert.c`.
+
+### H-s5-2. A generator that scales as SITES (not sites-1) exists and can be hosted here
+CONFIRMED in part, KILLED (instance) as a lever for this function. Mechanism: the s3
+census witness `text1a_post:func_80041E10` (vars=24, three orphans, no branch and no label)
+was never explained. Probe: reduced it to a minimal standalone repro and bisected the shape
+across 33 constructs in `s5/gen_probe.c`, `s5/gen2.c`, `s5/gen3.c` under `genprobe.py`.
+Result — the generator is `(s16)(<masked-or-shifted dividend> / <constant>)`, i.e. a signed
+magic-multiply division whose dividend carries a mask/shift and whose quotient is truncated
+to HImode at the store. It yields **one ctx=spill_new slot PER SITE with no -1**
+(p_div255_1/2/3 -> vars 8/16/24). Each half is load-bearing: `q1` `(s16)(x/255)` = 0,
+`r2` (s32 destination) = 0, `r7` (`>>3`) = 0, `r17` (`%`) = 0, `r13`/`r15` (arithmetic
+after the cast) = 0; `r6` (`/3`), `r8`, `r11`, `r14` all fire.
+But func_80030580's only divisions are `/32` and `/2`, which expand to shift sequences and
+never enter the magic-multiply path: `t32a`/`t32b`/`m32a`/`m32b`/`m32c` are byte-neutral
+AND frame-inert (vars=8), `t32c`/`t32d` cost 15 body lines, `h2x`/`h2all` cost 29/51.
+Measured on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this
+session), no FAKE constructs present.
+Banked `rejected/truncated-division-generator-not-hostable.c`.
+
+### H-s5-3. The original signature was wider, and a dead incoming argument reserves the bytes
+KILLED (instance). Mechanism: an unused parameter gets an incoming-argument pseudo in the
+prologue; if that pseudo survived to reload unallocated it would take an alter_reg stack
+slot exactly like the combine orphan, and the callers (func_800307D0 / func_80030900 /
+cpu_set_move_command_and_dir) pass two arguments under K&R no-prototype rules, so a wider
+signature is ordinary C and costs nothing at the call sites.
+Probe: `arg3u`, `arg4u`, `arg5u` (3, 4 and 5 parameters with the extras unused), `arg3p`
+(pointer-typed extra), `arg3s` (s16-typed extra) via `s5/frame5.py`.
+Result: all five are **bodydiff=0 and vars=8**. The dead argument pseudo is deleted before
+reload and never orphans. Measured on: candidate.c/draft3 chassis (sandbox --disable all
+= 2 re-measured this session), no FAKE constructs present.
+Banked `rejected/unused-trailing-params-frame-inert.c`.
+
+### H-s5-4. Two folds in one basic block can be made to yield two orphans by block geometry
+KILLED (instance). Mechanism: s2 read the orphan as "the REG_DEAD walk crosses a
+CODE_LABEL", which predicts one orphan per fold once each fold sits at the head of its own
+block. Probe: regenerated `tmp/grind/func_80030580/dumps/` on the current chassis and read
+`.lreg` and `.combine` directly (pass attribution, not inference).
+Result: `.lreg` names exactly one pseudo — `Register 110 used 2 times across 67 insns in
+block 6; ST_REGS or none; pointer` — and pseudos 107/127/130 do not appear at all (combine
+deleted them outright). `.combine` holds exactly one orphan USE, `(insn 393 99 100 (use
+(reg:SI 110)))`, right after `code_label 99`. Both emitted Judge loads live in the SAME
+basic block in the target as well (0x80030644-0x800306D0, no label between 0x80030618 and
+0x80030790), so the target's three orphans cannot come from two folds however the blocks
+are arranged: the target's own geometry is the geometry we already reproduce.
+Measured on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this
+session), no FAKE constructs present.
+
+### Frontier after s5 (reset to the strongest three)
+1. **Make j4read byte-neutral.** j4read reaches the target's exact vars=24 for +25 body
+   lines — the cheapest known form by a factor of eight over dupXZ. Nobody has yet
+   itemised WHICH 25 lines those are. Next probe: `tools/fdiff.py s1/var_base.s
+   s3/var_j4read.s func_80030580` and classify every added insn; if the surplus is
+   dominated by the two extra `lui/addu/lh` triples, search placements for the two extra
+   sites where jump2 cross-jumping (measured at NEGATIVE cost by s4's armjoin1) removes
+   them, i.e. sites duplicated into every arm of a join rather than added in line.
+2. **Mine the corpus for generator 4 with the new standalone probe.** Two generators are
+   now characterised (indexed-global fold, sites-1; truncated magic-multiply division,
+   sites) and one documented generator is inert here. `s5/genprobe.py` reduces "does
+   construct X orphan?" to one cc1 run. Next probe: re-run `s3/census3.py` to list every
+   leaf with vars>0, then for each witness whose C contains neither an indexed global nor
+   a truncated constant division, reduce it to a minimal standalone repro in the
+   `gen2.c`/`gen3.c` style and bisect it. Only a generator that fires on a construct
+   func_80030580 already contains (a pointer-biv loop, a struct copy, a 32x32 multiply
+   with `>>12`, a shift-based signed divide, a four-arm equality chain) can close this.
+3. **Re-open the 16-vs-24 decomposition with a direct measurement, not a census.** Every
+   session since s2 has assumed vars=24 means three 8-byte slots because a corpus census
+   of OUR compiled C never produced a non-spill_new leaf slot. That is an argument about
+   the sample, not about the target. `MIPS_STACK_ALIGN` means the target's vars is only
+   pinned to 17..24, so 8+8+4 (two orphans plus a 4-byte object) and 8+16 (one orphan
+   plus a 16-byte object) both round to 24. Next probe: use `genprobe.py` to enumerate
+   which constructs produce a non-spill_new `ctx=` (stack_temp / stack_local) that emits
+   ZERO `($sp)` accesses in a LEAF — s1 only ever tested `Vec3i tmp` (which does touch
+   sp); untested are unions, casts between struct types, a struct-typed conditional
+   expression, and a struct compared or passed by value to nothing.
+
+## [s5] The s3/s4 indexed-Judge-site kills were measured on a chassis or FAKE state that no longer holds, so the site law needs re-deriving
+- mechanism: Kills are chassis-relative; a lever measured inert while a FAKE carrier occupied its target pseudo is not a kill. candidate.c carries no FAKE constructs (fake_ablate, s4) and is unchanged, so the re-measurement is a zero-FAKE control.
+- probe: Re-ran tmp/grind/func_80030580/s3/frame3.py base j3read j4read dupXZ dupX with the instrumented cc1 (BB2_FRAME_DEBUG=1) on the current tree with candidate.c applied, after re-measuring the chassis with sandbox --disable all.
+- result: Byte-for-byte the s3/s4 numbers: base vars=8/bodydiff 0 (spill_new_p110), j3read 16/18, j4read 24/25, dupX 16/15, dupXZ 24/199. Chassis re-measured at score 2. The kills stand; j4read is promoted over dupXZ as the closest-to-target banked form (exact vars=24 for +25 body lines instead of +199). fdiff itemises j4read's surplus as exactly the two extra Judge lookups (lh angle / addu const / andi 0xFFF / sll 1 / lh Judge / addu, twice) plus the prologue-epilogue pair flipping from -8 to -24.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s5] The phantom-frame HImode-bitwise generator (two s16 locals feeding (a & ~b) & 1, project memory phantom-frame-slots-gcc272) supplies the missing 16 frame bytes in this function
+- mechanism: That memory records GCC 2.7.2 allocating a stack slot for a computation it later register-allocates away, with no store emitted - a generator independent of the indexed-global fold that this function's ledger had never tested.
+- probe: Five in-function forms through the new tmp/grind/func_80030580/s5/frame5.py harness (himin = two s16 locals, himin32 = the s32 control, hi1 = one s16 local, hiu = unsigned, qimin = QImode), plus a standalone repro gen_probe.c:p_hi through the new s5/genprobe.py catalog probe.
+- result: Every in-function form stays vars=8 with the single ctx=spill_new_p110 slot (bodydiff 7-10); the standalone repro measures vars=0. The generator does not fire in this function's context. Banked rejected/himode-bitwise-phantom-generator-inert.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s5] A phantom-slot generator that scales as SITES rather than sites-1 exists in this compiler and can be hosted by func_80030580's divisions
+- mechanism: The s3 census witness text1a_post:func_80041E10 has vars=24 with three orphan slots and no branch or label at all, so a generator other than the indexed-global fold must exist; if it counts sites rather than sites-1, three source constructs would buy the target's three slots.
+- probe: Reduced func_80041E10 to a minimal standalone repro and bisected the shape across 33 constructs in s5/gen_probe.c, s5/gen2.c and s5/gen3.c under s5/genprobe.py; then tried every truncation and mask/shift spelling of this function's own /32 and /2 divisions in-function (t32a-t32d, m32a-m32c, h2x, h2all).
+- result: The generator is (s16)(<masked-or-shifted dividend> / <constant>) - a signed magic-multiply division whose dividend carries a mask/shift and whose quotient is truncated to HImode at the store - and it yields ONE ctx=spill_new slot PER SITE with no -1 (p_div255_1/2/3 -> vars 8/16/24). Each half is load-bearing: q1 (s16)(x/255)=0, r2 (s32 destination)=0, r7 (>>3)=0, r17 (%)=0, r13/r15 (arithmetic after the cast)=0, while r3/r4/r6/r8/r11/r14 all fire. But func_80030580 divides only by 32 and by 2, which expand to shift sequences and never enter the magic-multiply path: t32a/t32b/m32a/m32b/m32c are byte-neutral AND frame-inert (vars=8), t32c/t32d cost 15 body lines, h2x/h2all cost 29/51. Confirmed as a generator, killed as a lever for this function. Banked rejected/truncated-division-generator-not-hostable.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s5] The original function had a wider signature and a dead incoming-argument pseudo reserves the missing frame bytes
+- mechanism: An unused parameter gets an incoming-argument pseudo in the prologue; if it survived to reload unallocated it would take an alter_reg stack slot exactly like the combine orphan. The three callers pass two arguments under K&R no-prototype rules, so a wider signature is ordinary C and costs nothing at the call sites.
+- probe: arg3u, arg4u, arg5u (3, 4 and 5 parameters with the extras unused), arg3p (pointer-typed extra) and arg3s (s16-typed extra) through s5/frame5.py.
+- result: All five measure bodydiff=0 and vars=8 - body-neutral and frame-inert. The dead argument pseudo is deleted before reload and never becomes an orphan. Banked rejected/unused-trailing-params-frame-inert.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s5] Two folded Judge addresses in one basic block can be made to yield two orphan slots by rearranging block geometry, per session 2's CODE_LABEL reading
+- mechanism: s2 read the orphan as combine.c:10836 distribute_notes walking back from i3, hitting a CODE_LABEL and emitting (use (reg N)) there, which predicts one orphan per fold once each fold sits at the head of its own block.
+- probe: Regenerated tmp/grind/func_80030580/dumps/ on the current chassis (pass attribution, per contract) and read .lreg and .combine directly instead of inferring, then compared against the target's block boundaries in asm/funcs/func_80030580.s.
+- result: .lreg names exactly one pseudo - 'Register 110 used 2 times across 67 insns in block 6; ST_REGS or none; pointer' - and pseudos 107/127/130 do not appear at all, combine having deleted them outright. .combine holds exactly one orphan USE, (insn 393 99 100 (use (reg:SI 110))), immediately after code_label 99. Both emitted Judge loads sit in ONE basic block in the target too (0x80030644-0x800306D0, no label between 0x80030618 and 0x80030790), so the geometry we already reproduce is the target's own geometry and two folds in it yield one orphan.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present

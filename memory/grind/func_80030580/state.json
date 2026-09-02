@@ -1,8 +1,8 @@
 {
  "func": "func_80030580",
  "file": "code6cac_b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "Permuter modality spent: 84k iterations over two chassis, 0 novel finds; the s3 orphan law is narrowed to folded-into-mem symbol_refs (only Judge qualifies) and the jump2 cross-jump route is measured "
+  },
+  {
+   "session": 5,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Synthesis: kill re-audit reproduces the site-law exactly (j4read = target frame at +25 body, the cheapest known form); a THIRD orphan generator is characterised and the documented HImode-bitwise gener"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A second cross-jump merge point exists in the target - the /32 bgez join at code_label 99 or the loop exit - and it can carry a duplicated Judge-dependent statement byte-neutrally",
-   "mechanism": "s4 proved four-arm duplication is re-merged at zero (indeed negative) byte cost by jump2; the kind-chain join failed only because none of its statements reads Judge. The /32 bgez join sits between the two Judge lookups, where a Judge-dependent statement IS in scope",
-   "next_probe": "spell the /32 as an explicit if/else (both arms present, per s3's d32tern shape) and duplicate the obj+0x44 velocity store - or just its (&Judge)[...] subexpression via a named intermediate - into BOTH arms; measure vars= and bodydiff with INSTR=1 frame4.py. Also test the loop-exit join (a duplicated Judge-dependent statement in the break arm and after the loop)."
+   "hypothesis": "j4read - the exact target frame at only +25 body lines - can be made byte-neutral by placing its two extra indexed-Judge sites where jump2 cross-jumping removes their emitted code",
+   "mechanism": "s4 measured a statement duplicated into all four arms of the kind chain being re-merged by jump2 at NEGATIVE cost (armjoin1: 139 insns vs the base's 140). The s3/s4 attempts placed extra sites in line, where nothing can remove them; the surplus is now itemised as exactly two lh/addu/andi/sll/lh/addu triples, so the question is whether a duplicated placement exists whose merged tail coincides with insns the target already emits.",
+   "next_probe": "Enumerate placements for the 3rd and 4th sites that put IDENTICAL Judge-reading tails in two or more blocks that jump2 can cross-jump: the four kind-chain arms (payload must be a statement the join already contains), the /32 bgez join spelled as an explicit if/else, and the loop-break vs loop-exit paths. Measure each with INSTR=1 frame5.py, accepting only vars=24 with bodydiff trending toward 0, and read tmp/grind/func_80030580/dumps/code6cac_b.jump2 to confirm whether the merge fired."
   },
   {
-   "hypothesis": "The law is sites-1 rather than sites because exactly one folded address pseudo keeps a hard register; if that site can be made to orphan too, THREE lookup sites give vars=24",
-   "mechanism": "lreg/greg assign a class to one of the folded address pseudos (its (use (reg N)) lands where a class can be inferred) while the others are left classless and go to reload1 alter_reg for a stack slot",
-   "next_probe": "pwsh tools/grinder/dump.ps1 func_80030580 with tmp/grind/func_80030580/s3/var_j3read.c applied, then diff the .lreg/.greg entries for p110, p130 and the survivor to identify what class assignment distinguishes the one that keeps a register. A 3rd site costs +18 body vs the 4th's +25, so making the survivor orphan halves the remaining gap."
+   "hypothesis": "A fourth generator exists that fires on a construct func_80030580 already contains, supplying the missing two slots without adding a Judge site",
+   "mechanism": "Three generators are now known: the indexed-global fold (sites-1), the truncated magic-multiply division (sites), and the HImode-bitwise phantom form (inert here). Each was found by reducing a corpus witness to a minimal standalone repro, and s5/genprobe.py now makes that reduction cost one cc1 run. Only a generator firing on a pointer-biv loop, a struct copy, a 32x32 multiply with >>12, a shift-based signed divide or a four-arm equality chain can close this function.",
+   "next_probe": "Re-run tmp/grind/func_80030580/s3/census3.py to list every leaf with vars>0, drop the witnesses whose C contains an indexed global or a truncated constant division (both now explained), and reduce each remaining witness to a minimal standalone repro in the s5/gen2.c style, bisecting it with genprobe.py until the firing sub-expression is isolated. Then test the isolated shape in-function with frame5.py."
   },
   {
-   "hypothesis": "The target's vars=24 is not three 8-byte orphans but one orphan plus one untouched 16-byte slot (the phantom-frame-slots-gcc272 mechanism)",
-   "mechanism": "GCC 2.7.2 calls assign_stack_local for a computation it later register-allocates away; get_frame_size() counts it and no store is ever emitted. The three-orphan reading rests on an s2 corpus census of leaf functions, not on a direct measurement of this target",
-   "next_probe": "sweep constructs that make cc1 assign a 16-byte stack object reload never touches - a DImode or larger-mode intermediate combine folds away, a struct-valued conditional, a chained struct assignment - accepting only variants with 0 ($sp) accesses and reading ctx= from the FRAMEDBG census (stack_temp / stack_local rather than spill_new would confirm the alternative decomposition)."
+   "hypothesis": "The target's vars=24 is not three 8-byte orphans; MIPS_STACK_ALIGN only pins it to 17..24, so 8+8+4 or 8+16 also round to 24",
+   "mechanism": "Every session since s2 has assumed three orphans because a corpus census of OUR compiled C never produced a non-spill_new leaf slot - an argument about the sample, not about the target. s1 only ever tested one non-spill_new shape (a Vec3i tmp local, which does touch sp), so the space of constructs that allocate an untouched stack_temp / stack_local in a leaf is essentially unexplored.",
+   "next_probe": "Use s5/genprobe.py to enumerate constructs that produce a non-spill_new ctx= with ZERO ($sp) accesses in a leaf: unions, casts between struct types, a struct-typed conditional expression, a struct-valued comma expression, a struct copy whose destination is immediately overwritten, and a 4-byte object alongside the existing orphan. Any hit that emits no sp traffic is then spelled in-function and measured for bodydiff with frame5.py."
   }
  ],
  "judge_constraints": [],
@@ -152,6 +158,46 @@
    "measured_on": "candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present",
    "predicate_cite": "",
    "result": "All thirteen are body-neutral (bodydiff=0) and all measure vars=8 with exactly one ctx=spill_new slot; judge2d and judge"
+  },
+  {
+   "session": 5,
+   "statement": "The s3/s4 indexed-Judge-site kills were measured on a chassis or FAKE state that no longer holds, so the site law needs re-deriving",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Byte-for-byte the s3/s4 numbers: base vars=8/bodydiff 0 (spill_new_p110), j3read 16/18, j4read 24/25, dupX 16/15, dupXZ "
+  },
+  {
+   "session": 5,
+   "statement": "The phantom-frame HImode-bitwise generator (two s16 locals feeding (a & ~b) & 1, project memory phantom-frame-slots-gcc272) supplies the missing 16 frame bytes in this function",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Every in-function form stays vars=8 with the single ctx=spill_new_p110 slot (bodydiff 7-10); the standalone repro measur"
+  },
+  {
+   "session": 5,
+   "statement": "A phantom-slot generator that scales as SITES rather than sites-1 exists in this compiler and can be hosted by func_80030580's divisions",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "The generator is (s16)(<masked-or-shifted dividend> / <constant>) - a signed magic-multiply division whose dividend carr"
+  },
+  {
+   "session": 5,
+   "statement": "The original function had a wider signature and a dead incoming-argument pseudo reserves the missing frame bytes",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "All five measure bodydiff=0 and vars=8 - body-neutral and frame-inert. The dead argument pseudo is deleted before reload"
+  },
+  {
+   "session": 5,
+   "statement": "Two folded Judge addresses in one basic block can be made to yield two orphan slots by rearranging block geometry, per session 2's CODE_LABEL reading",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": ".lreg names exactly one pseudo - 'Register 110 used 2 times across 67 insns in block 6; ST_REGS or none; pointer' - and "
   }
  ],
  "ladder_skip": 0,
