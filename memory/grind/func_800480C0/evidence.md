@@ -43,3 +43,78 @@
 - [s1] scan_hand_coded --single func_800480C0: LOW 1/8 (S4 only) - no canonical-asm signal
 
 - [s1] retired 2026-08 chassis floor 36 (33 regfix rules, 5 register pins) is superseded; ledger floor now 20 (honest as the engine reads it) / 0 (bytes proven)
+
+## s2 — structural (2026-09-02, chassis HEAD c8e81f83, -mel, 0 regfix/asmfix rules)
+
+- **The s1 "honest floor 20" was a SANDBOX ARTIFACT and is retired.** The
+  volatile-cheat stripper deletes the *declarator text* of `volatile u32
+  pre_pad[8];` but leaves the dangling `volatile` qualifier, which then binds to
+  the next declaration. The stripped source it actually scores
+  (`tmp/sandbox/func_800480C0/src/text1b.c:160-161`) reads `volatile` /
+  `u32 *p;` — i.e. the 20 was measured on a `volatile u32 *p` body that no
+  session ever wrote. Confirmed by measuring the same body with the pad removed
+  from source: 32. The **honest pad-free floor is 32** (73 scorable insns vs
+  target 74). A plain non-volatile `u32 pre_pad[8]` also scores 32 (the stripper
+  removes it cleanly, no dangling qualifier).
+- **Frame gradient instrument** (`tmp/frame_probe.sh func_800480C0 text1b`,
+  cpp | cc1 -mel, reads cc1's own `# vars=`): separates "wrong frame" from
+  "wrong codegen" and is ~15 s per spelling. Baseline honest body:
+  `.frame $sp,56 # vars= 0, regs= 8/0, args= 24`. Target:
+  `.frame $sp,88 # vars= 32, regs= 8, args= 24`. **regs and args already match;
+  the entire frame gap is vars=32.**
+- **`volatile` is NOT load-bearing for the frame slot.** A plain unused
+  `u32 pre_pad[8]` compiles to vars=32 exactly like the volatile one
+  (`tmp/grind/func_800480C0/s2/frame_ladder.txt`). The volatile in the pad family
+  buys engine allowlist eligibility, not codegen — so there is no "non-volatile
+  respelling" escape from the ban; the plain form is the forbidden
+  dead-vars-local-array family (`.claude/rules/dead-vars-local-array.md`).
+- **Phantom-slot ceiling on this body is 8 bytes, not 32.** 13 distinct honest
+  structural spellings measured (`tmp/grind/func_800480C0/s2/frame_ladder.txt`):
+  the folded loop-guard compare in the func_8003D9A0 spelling
+  (`guard = count - 1; if (guard != -1)`) and every derivative of it produce
+  `vars= 8` and nothing more. Rotated-while (func_8003DBE4 shape), hoisted inner
+  temporaries, HImode narrow accumulators, named pointer intermediates, unsigned
+  count, added register pressure, 4 stacked independent guards, per-stack-arg
+  guards, nested guards — all measured `vars= 0` or `vars= 8`. No spelling
+  reached 16, let alone 32.
+- **The 8-byte phantom slot is genuinely zero-cost**
+  (`tmp/grind/func_800480C0/s2/v9.s`): the vars region 0x18-0x1F carries no
+  `sw`/`lw`; the register saves start at 0x20. The lever is real; it simply
+  saturates one quarter of the way to the target, and the best spelling carrying
+  it scores 36 — worse than the vars=0 body's 32.
+- **The residual at 32 is frame + a callee-saved SEAT ROTATION, and the two are
+  coupled.** objdump of the honest build
+  (`tmp/grind/func_800480C0/s2/v0_dis.txt`) matches the target
+  instruction-for-instruction except (a) every sp-relative offset and (b) the
+  callee-saved bindings: the target holds base_addr in `$s2` and sx_arg2..5 in
+  `$s6/$s5/$s4/$s3`; the honest build holds them in `$s6` and `$s5/$s4/$s3/$s2`.
+  Since the pad-carrying build byte-matches the oracle, adding the 32 frame bytes
+  ALSO fixes the seats — the seat rotation is downstream of `get_frame_size`, not
+  an independent residual. Attacking seats and frame separately is therefore the
+  wrong decomposition, and it explains why s1 read the frame gap as "20 sp-offset
+  deltas only": that 20 was measured on the accidental volatile-pointer body,
+  which happens to seat correctly.
+
+- [s2] honest pad-free floor = 32; the ledger's 20 was a stripper artifact (dangling `volatile` binds to `u32 *p`) - tmp/sandbox/func_800480C0/src/text1b.c:160
+
+- [s2] target frame decomposition: vars=32, regs=8, args=24; the honest build already matches regs and args exactly - the entire gap is vars
+
+- [s2] 13 structural spellings measured; phantom-slot production saturates at vars=8 (zero-cost, verified no sw/lw in the slot) - tmp/grind/func_800480C0/s2/frame_ladder.txt
+
+- [s2] plain non-volatile unused u32 pre_pad[8] also gives vars=32, so `volatile` is not the codegen agent in the pad family
+
+- [s2] honest build vs target differ by sp offsets AND a callee-saved seat rotation (base_addr $s6 vs target $s2); the pad build gets both right, so frame and seats are one coupled residual
+
+- [s2] Honest pad-free floor of func_800480C0 is 32 (73 scorable insns vs target 74); the ledger's 20 is retired as a sandbox-stripper artifact - engine/cheats.py deletes the pad declarator text but leaves a dangling `volatile` that binds to `u32 *p` (tmp/sandbox/func_800480C0/src/text1b.c:160-161).
+
+- [s2] Target frame decomposes as vars=32, regs=8, args=24 (.frame $sp,88). The honest build already matches regs and args exactly (.frame $sp,56 # vars= 0, regs= 8/0, args= 24) - the entire frame gap is the 32 vars bytes.
+
+- [s2] A plain non-volatile unused `u32 pre_pad[8]` compiles to the same vars=32, so `volatile` buys engine-allowlist eligibility, not codegen; there is no non-volatile respelling that escapes the pad ban without landing in the dead-vars-local-array family.
+
+- [s2] 13 honest structural spellings measured via the cc1 `# vars=` gradient saturate at vars=8; the 8-byte slot is verified zero-cost (no sw/lw in 0x18-0x1F, tmp/grind/func_800480C0/s2/v9.s) but its best sandbox score is 36 vs the baseline 32.
+
+- [s2] The honest build's residual is sp offsets PLUS a callee-saved seat rotation (base_addr $s6 vs target $s2; sx_arg2..5 $s5/$s4/$s3/$s2 vs target $s6/$s5/$s4/$s3), and the pad-carrying build fixes both at once - frame and seats are coupled through get_frame_size.
+
+- [s2] Reusable instrument for this function: tmp/frame_probe.sh func_800480C0 text1b prints cc1's own `# vars=` in ~15 s, separating 'wrong frame' from 'wrong codegen' far more cheaply than the sandbox score.
+
+- [s2] The s1 bytes-proven body (volatile pre_pad[8] + arg0=0, full build SHA1 == oracle) is preserved at memory/grind/func_800480C0/rejected/pad-judge-banned-2026-09-02.c; it remains unusable under the Judge's 2026-09-02 04:28 ruling until an owner grant adds the engine/volatile_cheats.py row.

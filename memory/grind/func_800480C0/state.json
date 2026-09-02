@@ -1,21 +1,37 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 20,
    "modality": "recon",
    "headline": "func_800480C0 bytes PROVEN (full build SHA1 == oracle) as the 6-arg twin of COMPLETED-C func_80047FBC; sandbox reads 20 only because the pre_pad[8] engine allowlist row (owner-only) is missing - INTEG"
+  },
+  {
+   "session": 2,
+   "floor": 32,
+   "modality": "structural",
+   "headline": "Ledger floor 20 was a sandbox-stripper artifact (dangling `volatile` binds to `u32 *p`); honest pad-free floor is 32, and 13 structural spellings cap phantom-slot production at vars=8 of the 32 needed"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Operator adds \"func_800480C0\": frozenset({(\"pre_pad\", 8)}) to engine/volatile_cheats.py and integrates candidate.c",
-   "mechanism": "allowlist row lets the sandbox honour the sanctioned pad so the honest floor reads 0",
-   "next_probe": "sandbox func_800480C0 --disable all -> 0; verify-oracle; layer-2 cheat-reviewer; queue done"
+   "hypothesis": "The callee-saved seat rotation (base_addr $s6 -> $s2) is reachable from a C-level lever, and the 32 vars bytes follow the seat rather than the other way round.",
+   "mechanism": "global.c allocno ordering / reload seat assignment - the s2 measurement establishes frame -> seats, but the inverse direction is untested.",
+   "next_probe": "tools/ra_solver/inverse_compose.py classify on the honest build's allocation for func_800480C0; if REACHABLE, spell the ranked lever vector and re-measure both the sandbox score and tmp/frame_probe.sh vars=."
+  },
+  {
+   "hypothesis": "The seat divergence originates at the two `addu ...,$zero` base copies (target insns 3 and 5), so an emission-order lever there re-seats the whole chain.",
+   "mechanism": "sched.c list-scheduler ordering of the base-copy pair determines which allocno is seen first by global alloc.",
+   "next_probe": "tools/sched_solver on the pre-scheduler RTL for func_800480C0, then spell the C forms that swap the two copies' emission order and re-measure."
+  },
+  {
+   "hypothesis": "The 32 vars bytes could come from the outgoing-args side rather than from locals.",
+   "mechanism": "current_function_outgoing_args_size is sized by the widest call; a wider call signature would move bytes out of vars into args.",
+   "next_probe": "Long shot but cheap: args already reads 24 in both target and build, so probe whether any honest call spelling in this body moves args at all before spending more on it."
   }
  ],
  "judge_constraints": [
@@ -30,6 +46,14 @@
    "measured_on": "HEAD dd2808d5, candidate body with volatile pre_pad[8] present but detector-stripped, arg0=0 removed",
    "predicate_cite": "",
    "result": "32 vs 20 with the store"
+  },
+  {
+   "session": 2,
+   "statement": "Honest phantom-slot structural producers reach vars=8 on this body across 13 measured spellings, one quarter of the 32 vars bytes the target reserves, and the best spelling carrying the 8 bytes scores",
+   "kill_scope": "instance",
+   "measured_on": "HEAD c8e81f83, pad-free bodies, only FAKE construct present is the banked `arg0 = 0;` dead store; 13 spellings measured with the cc1 `# vars=` gradient plus sandbox --disable all",
+   "predicate_cite": "",
+   "result": "Every spelling measured vars= 0 or vars= 8; none reached 16 or 32 (tmp/grind/func_800480C0/s2/frame_ladder.txt). The var"
   }
  ],
  "ladder_skip": 0,
