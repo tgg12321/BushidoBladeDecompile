@@ -1,8 +1,8 @@
 {
  "func": "func_80027640",
  "file": "code6cac_b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 1,
    "modality": "permuter",
    "headline": "Permuter axis KILLED with measurements: first faithful workspace built and fidelity-proved (base_score 100 = exactly one insertion), 114,656 iterations across two structurally distinct chassis, zero s"
+  },
+  {
+   "session": 5,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Floor re-measured 1 on the current chassis; residual RE-ATTRIBUTED from maspsx to cc1 (mips.c:705 CODE_LABEL early-out), class-confirmed by a 32-TU cc1 census (0 of 1.4MB nops survive a .L label), and"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No C-side frontier remains, and as of s4 the machine-search axis is closed empirically as well as analytically. Any further C-spelling search can only move the object away from the target.",
-   "mechanism": "Triply closed: (1) s3 -- the target bytes pin the cross-jump label onto the nop's address (j @0x80027770 encodes 0x800277A4), so any byte-correct form must place a label between the lh and its consuming sw; (2) s3/s4 -- given that placement GCC 2.7.2 is designed not to emit the nop (mips_fill_delay_slot zeroes the counter at a CODE_LABEL; final_prescan_insn is the only '#nop' emitter and is gated on it), re-confirmed s4 in a fresh dump from a different translation unit; (3) s4 -- 114,656 permuter iterations across two structurally distinct chassis produced zero score-0 forms, and the candidate chassis produced no scoring move at all from base 100.",
-   "next_probe": "none -- do not dispatch another spelling or search modality against this residual, and do not dispatch a second permuter session (this one was zero-yield)."
+   "hypothesis": "The C axis is closed at the RTL-emission level: every property a C spelling controls is consumed by passes that run before `final`, while the divergence is created inside final/mips_fill_delay_slot and keyed only on 'is the next insn a CODE_LABEL', which the target's own bytes force to be true.",
+   "mechanism": "tools/gcc-2.7.2/config/mips/mips.c:705 zeroes dslots_number_nops when the insn after the load (NOTEs skipped, mips.c:694-696) is a CODE_LABEL; the `j` at 0x80027770 encodes 0x800277A4, pinning the label onto the nop. Confirmed by source, by tmp/grind/func_80027640/s2/cc1.s:526-531, and by an s5 census finding 0 counterexamples in 1.4 MB of cc1 output.",
+   "next_probe": "None on the spelling axis. Do not re-dispatch permuter (s4 was zero-yield across 114,656 iterations) and do not re-dispatch structural (s2/s3 closed it). The only sub-branch left is the USE/CLOBBER escape below."
   },
   {
-   "hypothesis": "The only known route to 0 remains the assembler-layer repair, currently foreclosed for grind sessions by the Judge's no-build-surface-change constraint.",
-   "mechanism": "s3's 4-line $at-aware fix applies maspsx's own uses_at / _uses_gp / nop_at_expansion delay-fill test inside the '.L'-label branch, matching ASPSX 2.34's behaviour; measured byte-neutral across all 31 other C objects and relinking to SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, and it subsumes and retires maspsx_label_nop_funcs.txt entirely. The root cause is that maspsx's is_label regex ^\\$L(b|e)?\\d+:$ (tools/maspsx/maspsx/__init__.py:256) does not match this GCC fork's '.L' labels (LOCAL_LABEL_PREFIX \".\", tools/gcc-2.7.2/config/mips/mips.h:774).",
-   "next_probe": "operator/owner decision only -- a class grant covering assembler-fidelity repairs, or an owner unpark, would re-activate it. No grind session should refile it."
+   "hypothesis": "The bare USE/CLOBBER escape from mips.c:705 has no ordinary-C spelling, so its elimination would convert the C-axis closure from 'exhaustion' into 'proven by construction'.",
+   "mechanism": "A non-NOTE, zero-byte, non-prescanned insn between the load and the label keeps dslots_number_nops alive so the `#nop` prints after the label; final.c:1548-1550 makes USE/CLOBBER the only such insn kind. Every 2.7.2 CLOBBER emitter (emit_no_conflict_block for multiword/DImode, store_constructor on a register aggregate, struct-return setup) places the clobber before its own value insns, which consume the counter at mips.c:4106.",
+   "next_probe": "One cheap forensics session: build the candidate with the instrumented cc1 (tools/gcc-2.7.2/cc1, NOT build/cc1) dumping the late RTL and confirm the seam's insn chain is exactly [lh][CODE_LABEL][sw] with only NOTEs elided; then, in a scratch TU only, test whether any ordinary-C construct (a long long temp, a struct-valued assignment, an aggregate initialiser) can leave a standalone CLOBBER as the last surviving insn of a basic block after flow.c. If it cannot -- the expectation -- record the class kill with predicate_cite tools/gcc-2.7.2/config/mips/mips.c:705."
   },
   {
-   "hypothesis": "If the driver declares exhaustion and dispatches escalation modality, the foreclosure record needs no new measurement -- both AND-gates are already answered in the ledger.",
-   "mechanism": "Canonical-asm is not indicated (canonical verdict C; the body is an ordinary compiled function whose instruction stream cc1 already reproduces exactly). No SOTN-master coercion-family precedent can apply because the residual is not a codegen-shape residual at all -- it is one assembler hazard-fill word, so there is no construct for a family to sanction.",
-   "next_probe": "in escalation modality, file the '## <date> -- func_80027640 -- **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' record citing evidence.md s3+s4 and the tmp/grind/func_80027640/s2, s3, s4 artifacts; no further probing needed."
+   "hypothesis": "Both known routes to distance 0 are already proven to SHA1 == oracle and are blocked only by the build-surface ban, so this function's disposition is a driver/ruling question rather than a search question.",
+   "mechanism": "Route A: the s2/s3 4-line $at-aware maspsx label fix (tmp/grind/func_80027640/s2/maspsx_at_aware_label_fix.diff), measured byte-neutral across all 31 other C objects, relinking to 62efab4f73f992798c43e8c730aa43baa10bb4fa, and subsuming maspsx_label_nop_funcs.txt entirely. Route B: a maspsx_label_nop_funcs.txt entry, exactly as func_80060E04, func_80040594 and spu_DmaTransfer already use. Both are build-surface changes; both standing Judge constraints forbid them.",
+   "next_probe": "In escalation modality only: file the '## <date> -- func_80027640 -- **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' record citing evidence.md s3/s4/s5 and the s2/s3/s4/s5 artifacts, naming the re-activation trigger (a class grant covering assembler-fidelity repairs, or a ruling lifting the build-surface ban) -- either turns this into a same-day close because the C is already final."
   }
  ],
  "judge_constraints": [
@@ -54,5 +60,31 @@
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-09-02T02:48:02.166959+00:00"
+ "created": "2026-09-02T02:48:02.166959+00:00",
+ "kills": [
+  {
+   "session": 5,
+   "statement": "The missing nop at 0x800277A4 is a marker that cc1 emitted and maspsx then dropped (the s1/s2-era attribution carried in candidate.c's header and in the s1 handoff).",
+   "kill_scope": "instance",
+   "measured_on": "HEAD + memory/grind/func_80027640/candidate.c applied to src/code6cac_b.c; zero FAKE constructs present; raw cc1 (no maspsx) output of src/code6cac_b.c with the canonical CC_FLAGS",
+   "predicate_cite": "",
+   "result": "FALSE. cc1 prints '#nop' after the FIRST lh ('lh $2,0($4)' / '#nop' / 'sw $2,16($sp)') and prints NOTHING between 'lh $2"
+  },
+  {
+   "session": 5,
+   "statement": "Somewhere in this project's 32 translation units GCC 2.7.2 emits a load-delay '#nop' that survives an immediately following .L code label, which would show that the mips.c:705 early-out is conditional",
+   "kill_scope": "class",
+   "measured_on": "HEAD chassis, candidate.c applied; zero FAKE constructs; cc1 census over all 32 src/*.c, canonical CC_FLAGS -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.c:705",
+   "result": "ZERO sites where a '#nop' follows a .L label, and 5 sites where the suppression demonstrably fired (code6cac_c_ab.s func"
+  },
+  {
+   "session": 5,
+   "statement": "func_8003ACB8's nop-free resolution of the same load/.L-label/consumer geometry (asm/funcs/func_8003ACB8.s:93-95) transfers to func_80027640's seam, giving a route to the target bytes that needs no no",
+   "kill_scope": "instance",
+   "measured_on": "HEAD + candidate.c applied, sandbox --disable all score 1 (target_insns 158, build_insns 157); zero FAKE constructs; target bytes read from asm/funcs/*.s",
+   "predicate_cite": "",
+   "result": "Does not transfer. func_80027640's consumer at the label is 'sw $v0,0x18($sp)' -- sp-relative, needing no %hi/%lo expans"
+  }
+ ]
 }

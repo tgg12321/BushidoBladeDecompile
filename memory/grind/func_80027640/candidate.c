@@ -11,11 +11,16 @@
  * RESIDUAL (s3, structural): sandbox --disable all == 1 on the stock chassis. The single missing
  * word is the load-delay `nop` at 0x800277A4: target is `lh $v0,0x4($a0)` @0x800277A0 ->
  * `.L800277A4:` -> `nop` -> `sw $v0,0x18($sp)` @0x800277A8, and `j .L800277A4` @0x80027770 pins the
- * label to the nop's address. cc1's instruction stream is ALREADY the target's (the compiler is not
- * the divergence, tmp/grind/func_80027640/s2/cc1.s:526-531); maspsx drops the nop because its
- * is_label() only matches `$L` while this GCC fork emits `.L`. s3 proved this is invariant under
- * every C spelling: any byte-correct form must define a basic-block label at 0x800277A4, textually
- * between the load and its consumer. So NO C change can improve this body -- it is final pure C.
+ * label to the nop's address (j word 0x08009DE9 -> 0x009DE9<<2 = 0x800277A4; re-decoded s5).
+ * ATTRIBUTION CORRECTED IN s5: cc1's stream is target-identical in the ORDER of its real
+ * instructions, but it does NOT contain this nop at all -- tmp/grind/func_80027640/s2/cc1.s:526-531
+ * shows `lh $2,4($4)` / `.L75:` / `sw $2,24($sp)` with NO `#nop` marker between them. The nop is
+ * suppressed inside cc1 by mips.c:705 (`GET_CODE (next_insn) == CODE_LABEL` zeroes
+ * dslots_number_nops), so maspsx cannot be "dropping" a marker that was never emitted; maspsx is
+ * only the SECOND blind emitter (its is_label() matches `$L`, not this fork's `.L`). s3 proved
+ * this is invariant under every C spelling: any byte-correct form must define a basic-block label
+ * at 0x800277A4, textually between the load and its consumer. So NO C change can improve this
+ * body -- it is final pure C.
  * The residual is a maspsx fidelity defect; s3 measured a 4-line general repair (apply maspsx's own
  * $at/$gp delay-fill test inside the .L-label branch) that is byte-neutral across all 31 other C
  * objects, relinks to SHA1 == oracle, and makes the per-function maspsx_label_nop_funcs.txt list
@@ -28,7 +33,13 @@
  * 160-word target by exactly the one missing nop) scores this chassis at base 100 = one
  * insertion, zero register/reordering penalty, and 56,275 iterations produced no output at
  * all; a structurally different scalar-join chassis (rejected/scalar-join-chassis-perm-basin.c)
- * bottomed out at 750 over 58,381 more. 114,656 iterations, zero score-0 forms. */
+ * bottomed out at 750 over 58,381 more. 114,656 iterations, zero score-0 forms.
+ * s5 (2026-09-02, synthesis) re-measured this body on the current chassis: sandbox --disable all
+ * == 1 (target_insns 158, build_insns 157), and closed the last open escape from mips.c:705 --
+ * a project-wide cc1 census (32 TUs, tmp/grind/func_80027640/s5/cc1s) found ZERO cases of a
+ * `#nop` surviving a `.L` label and 5 other sites where the suppression fires, and the only
+ * insn kind that defeats the predicate (a bare USE/CLOBBER, which final.c:1548-1550 skips before
+ * FINAL_PRESCAN_INSN at final.c:1956) has no ordinary-C spelling that leaves it dangling. */
 void func_80027640(s32 arg0)
 {
     VECTOR tgt;

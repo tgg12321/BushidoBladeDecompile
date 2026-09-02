@@ -191,3 +191,89 @@ route the Judge foreclosed (that route is NOT re-proposed; the fix makes the gat
 - probe: Fresh raw cc1 dump of this session's REDUCED TU (a context s3 never compiled): tmp/grind/func_80027640/s4/cc1_raw.s, 21 '#nop' hints in the function; read lines 145-149.
 - result: Verbatim: 'lh $2,0($4)' / '#nop' / 'sw $2,16($sp)' / 'lh $2,4($4)' / '.L8:' / 'sw $2,24($sp)'. Two structurally identical load/store pairs four words apart. The first, with no label between load and consumer, gets the '#nop' hint. The second, whose consumer sits behind the cross-jump merge label .L8, gets no hint at all. Same C statement shape, opposite outcome, decided purely by the intervening label -- s3's source reading confirmed first-hand and independent of translation-unit context.
 - verdict: CONFIRMED
+
+## s5 (2026-09-02, synthesis) -- MERGED ATTACK + FRONTIER RESET
+
+### Merged state of the problem (one paragraph, everything s1-s5 knows)
+The body in `memory/grind/func_80027640/candidate.c` is final, ordinary, FAKE-free pure C and
+reproduces 157 of the target's 158 scorable instructions in the right order and the right
+registers. The single residual is one *insertion*: the byte at 0x800277A4 must be `nop`, it must
+carry the label `.L800277A4` (proved: the `j` at 0x80027770 is word 0x08009DE9, target
+0x009DE9<<2 = 0x800277A4), it must be immediately preceded by `lh $v0,0x4($a0)` and immediately
+followed by `sw $v0,0x18($sp)`. Two independent tools in this pipeline could emit that nop and
+BOTH are blind: (1) cc1, which suppresses it at `mips.c:705`
+(`GET_CODE (next_insn) == CODE_LABEL` -> `dslots_number_nops = 0`) -- confirmed by source, by the
+raw cc1 output at `tmp/grind/func_80027640/s2/cc1.s:526-531`, and by an s5 project-wide census of
+32 TUs finding 0/1.4 MB cases of a `#nop` surviving a `.L` label; (2) maspsx, whose `is_label()`
+matches `$L` and not this fork's `.L`. Route (2) is precisely how the three in-tree precedents of
+this exact geometry (func_80060E04, func_80040594, spu_DmaTransfer) byte-match -- via
+`maspsx_label_nop_funcs.txt` -- and it is the route the Judge foreclosed for this function twice,
+the second time widened to ANY build-surface change. Route (1) is defeated only by a bare
+USE/CLOBBER insn between the load and the label (`final.c:1548-1550` skips those before
+`FINAL_PRESCAN_INSN` at `final.c:1956`), and no ordinary-C construct leaves one dangling there.
+The permuter axis is closed empirically (s4: 114,656 iterations, two chassis, zero score-0).
+
+### Frontier reset -- the strongest hypotheses for the next ladder pass (ranked)
+1. **The C axis is closed at the RTL-emission level, and the closure is now predicate-named on
+   BOTH sides of the seam.** Everything a C spelling controls (statement order, arm shape,
+   register pressure, aggregate vs scalar locals, chassis) feeds passes that run *before* final;
+   the divergence is created inside `final`/`mips_fill_delay_slot`, downstream of every one of
+   them, and is keyed only on "is the next insn a CODE_LABEL", which the target's own bytes force
+   to be true. *Next probe:* none on the spelling axis. The only unfalsified sub-branch is the
+   USE/CLOBBER escape (see 2); do not re-dispatch permuter (s4 was zero-yield) and do not
+   re-dispatch structural (s2/s3 closed it).
+2. **The USE/CLOBBER escape is the single remaining un-measured C-side question, and it is
+   expected to be a FAKE-family construct rather than ordinary C.** Mechanism: any non-NOTE insn
+   between the load and the CODE_LABEL keeps `dslots_number_nops` alive past `mips.c:705`; a bare
+   USE/CLOBBER is additionally invisible to `FINAL_PRESCAN_INSN`, so the `#nop` is printed on the
+   first insn *after* the label -- the target byte. *Next probe (forensics modality, one session,
+   cheap):* build the candidate with the instrumented cc1 (`tools/gcc-2.7.2/cc1`) dumping `.final`
+   / `.jump2` and confirm the insn chain at the seam is exactly `[lh][CODE_LABEL][sw]` with only
+   NOTEs elided; then, in a scratch TU only, check whether ANY ordinary-C construct (multiword
+   `long long` temp, struct-valued assignment, aggregate init) can leave a standalone CLOBBER as
+   the last insn of a basic block that survives flow.c. If it cannot -- the expectation -- record
+   a class kill with `predicate_cite tools/gcc-2.7.2/config/mips/mips.c:705` and the C axis is
+   fully proven closed by construction, not by exhaustion.
+3. **The only known routes to 0 are both outside grind scope, and the function's disposition is
+   therefore a driver/owner question, not a search question.** Route A: the s2/s3 4-line
+   `$at`-aware maspsx repair (byte-neutral across all 31 other C objects, relinks to SHA1 ==
+   oracle, retires `maspsx_label_nop_funcs.txt` entirely). Route B: a
+   `maspsx_label_nop_funcs.txt` entry, exactly as func_80060E04 / func_80040594 /
+   spu_DmaTransfer already do. Both are build-surface changes, both are explicitly banned by the
+   two standing Judge constraints. *Next probe:* in `escalation` modality, file the
+   `RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED` record citing evidence.md s3/s4/s5 and
+   the s2/s3/s4/s5 artifacts, and name the re-activation trigger: a class grant covering
+   assembler-fidelity repairs, or a Judge/owner ruling lifting the build-surface ban -- either
+   one turns this into a same-day close, because the C is already final and both routes are
+   already proven to SHA1 == oracle.
+
+## [s5] The missing nop at 0x800277A4 is a marker that cc1 emitted and maspsx then dropped (the s1/s2-era attribution carried in candidate.c's header and in the s1 handoff).
+- mechanism: maspsx's is_label() regex (tools/maspsx/maspsx/__init__.py:256) matches only $L-prefix locals and not this fork's '.L' labels (LOCAL_LABEL_PREFIX ".", tools/gcc-2.7.2/config/mips/mips.h:774), so maspsx was believed to be discarding a '#nop' that cc1 had produced.
+- probe: Read the raw cc1 output for the seam, tmp/grind/func_80027640/s2/cc1.s:526-531, and compared it against the same file's other load-delay sites.
+- result: FALSE. cc1 prints '#nop' after the FIRST lh ('lh $2,0($4)' / '#nop' / 'sw $2,16($sp)') and prints NOTHING between 'lh $2,4($4)', '.L75:' and 'sw $2,24($sp)'. There is no marker for maspsx to drop. The suppression happens inside cc1 at tools/gcc-2.7.2/config/mips/mips.c:705, where mips_fill_delay_slot skips NOTEs (mips.c:694-696) and then takes the early-out that sets dslots_number_nops = 0 because GET_CODE (next_insn) == CODE_LABEL. maspsx is a SECOND, independent blind emitter (which is why the s2/s3 maspsx repair also produces the byte), but it is not the origin. candidate.c's header comment has been corrected in place.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD + memory/grind/func_80027640/candidate.c applied to src/code6cac_b.c; zero FAKE constructs present; raw cc1 (no maspsx) output of src/code6cac_b.c with the canonical CC_FLAGS
+
+## [s5] Somewhere in this project's 32 translation units GCC 2.7.2 emits a load-delay '#nop' that survives an immediately following .L code label, which would show that the mips.c:705 early-out is conditional on something a C spelling can vary.
+- mechanism: If the CODE_LABEL early-out in mips_fill_delay_slot were reachable-past under some operand, insn-type or num_nops combination, at least one of the ~1.4 MB of cc1 output in this repo would contain the pattern 'load / .L<n>: / #nop', and that site's C would be the template for func_80027640.
+- probe: tmp/grind/func_80027640/s5/census.sh compiled all 32 src/*.c with the canonical CC_FLAGS directly out of tools/gcc-2.7.2/build/cc1 (no maspsx, no as) into tmp/grind/func_80027640/s5/cc1s/ (1.4 MB); tmp/grind/func_80027640/s5/suppress_census.py scanned every load for a following .L label.
+- result: ZERO sites where a '#nop' follows a .L label, and 5 sites where the suppression demonstrably fired (code6cac_c_ab.s func_8003ACB8, main.s spu_DmaTransfer, text1a_pre.s func_80040594, text1b.s func_80060E04, ings2.s) -- func_80027640 itself is a sixth, absent from the count only because it was still INCLUDE_ASM when the census ran. The predicate is unconditional in practice as well as in source: it tests only GET_CODE(next_insn), never the load's operands, mode or num_nops.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD chassis, candidate.c applied; zero FAKE constructs; cc1 census over all 32 src/*.c, canonical CC_FLAGS -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.c:705
+
+## [s5] func_8003ACB8's nop-free resolution of the same load/.L-label/consumer geometry (asm/funcs/func_8003ACB8.s:93-95) transfers to func_80027640's seam, giving a route to the target bytes that needs no nop emitter at all.
+- mechanism: At func_8003ACB8 the consumer after the label is 'sh $2,D_800A3904', which maspsx expands into 'lui $at,%hi(...)' + 'sh', and that lui occupies the load-delay slot -- so the original binary has no nop there and the current build matches it with no gate-list entry.
+- probe: Disassembly comparison of the in-tree instances of the geometry (asm/funcs/func_8003ACB8.s:93-95, func_80060E04.s:8-10, func_80040594.s:21-23) against the target bytes at asm/funcs/func_80027640.s:95-98.
+- result: Does not transfer. func_80027640's consumer at the label is 'sw $v0,0x18($sp)' -- sp-relative, needing no %hi/%lo expansion, so maspsx has no expansion word to place in the slot; the target's own byte at 0x800277A4 is a literal 0x00000000. The two in-tree instances that DO carry a literal nop (func_80060E04, func_80040594, plus spu_DmaTransfer) byte-match only through maspsx_label_nop_funcs.txt entries -- exactly the route the two standing Judge constraints foreclose for this function.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD + candidate.c applied, sandbox --disable all score 1 (target_insns 158, build_insns 157); zero FAKE constructs; target bytes read from asm/funcs/*.s
+
+## [s5] A bare USE or CLOBBER insn placed between the load and the CODE_LABEL would keep dslots_number_nops alive past mips.c:705 and cause the '#nop' to be printed on the first insn AFTER the label, i.e. at 0x800277A4.
+- mechanism: mips.c:694-696 skips only NOTEs when computing next_insn, so any non-NOTE insn defeats the CODE_LABEL test at mips.c:705. tools/gcc-2.7.2/final.c:1548-1550 breaks out of final_scan_insn on GET_CODE(body) == USE || CLOBBER, long before the FINAL_PRESCAN_INSN call at final.c:1956 -- so such an insn emits no bytes AND does not consume the pending nop. The next prescanned insn is then the post-label 'sw $2,24($sp)', whose reg_mentioned_p($2) test at mips.c:4113 fires and prints '#nop'.
+- probe: Source read of tools/gcc-2.7.2/config/mips/mips.c:690-730 and 4106-4127 plus tools/gcc-2.7.2/final.c:1540-1560 and 1956, cross-checked against the census result that no other insn kind ever survives the predicate.
+- result: CONFIRMED as the unique mechanical escape from the predicate, and it is the ONLY remaining unmeasured C-side question on this function. Its ordinary-C reachability is NOT established and is expected to be nil: every 2.7.2 construct that emits a standalone CLOBBER (emit_no_conflict_block for multiword/DImode, store_constructor clearing a register aggregate, struct-return setup) emits it immediately BEFORE its own value-producing insns, and those insns are prescanned and consume dslots_number_nops at mips.c:4106 before the label is reached; leaving a CLOBBER dangling requires a dead multiword value, which is a dead-store/dead-local FAKE construct and would in any case be removed by flow.c. USE insns are emitted only immediately before a CALL_INSN (argument registers, which emit bytes) and at expand_function_end.
+- verdict: CONFIRMED
