@@ -643,3 +643,146 @@ either way.
 - [s6] The construct is UNRULED, not accepted: it fails the six-test checklist on T1/T2/T3 and no frozen family covers an aggregate-typed local in this role (named-local-fake-exception.md is scalars-only with frame coercion forbidden; the named-intermediate prongs describe each union MEMBER but not the union OBJECT). docs/reference/sotn-construct-index.md has zero occurrences of "union", so it does not index this construct and is silent rather than negative.
 - [s6] Instruments: tmp/grind/func_80030580/s6/frame6.py + extra6.py (in-function sweep, same harness as s3/s5) and gen4.c / gen5.c / gen6.c (standalone catalog probes run through s5/genprobe.py).
 - [s6] src/code6cac_b.c restored to HEAD at the end of the session; the working tree carries only memory/grind/func_80030580/ ledger changes.
+
+## Session 6 (driver session 6, 2026-09-02, synthesis) — floor 2 (honest, stripped) / **BYTES PROVEN on main**
+
+### Starting point
+The previous ledger session's union-local candidate was ruled **FAIL** by the Judge
+(docs/grind/decisions.md 2026-09-02 17:07): the union type carries no semantic content
+(gen6.c c1/c2 emit the same instructions through two plain u16 locals at vars=0), so it
+needs frozen-family membership and has none. The ruling names the one frozen route to
+this residual: the **Phantom-frame-slot volatile pad local** family in its exact
+form-constrained shape (`volatile u32 pad[N];`, first-decl, `// !FAKE`, engine allowlist
+row, frame forensics per .claude/rules/phantom-slot-frame-lever.md). This session
+restored `memory/grind/func_80030580/pure-c-floor2-body.c` (byte-identical to
+s1/draft3.c) as the chassis and measured that route.
+
+### The measurement — `tmp/grind/func_80030580/s6/padsweep.py` (INSTR=1, instrumented cc1)
+N swept 1..6, pad inserted as the FIRST declaration of the body:
+
+    padbase   vars= 8   bodydiff=  0  sp=0   ctx=spill_new_p110
+    pad1      vars=16   bodydiff=  4  sp=0   ctx=stack_temp | ctx=spill_new_p110
+    pad2      vars=16   bodydiff=  4  sp=0   ctx=stack_temp | ctx=spill_new_p110
+    pad3      vars=24   bodydiff=  4  sp=0   ctx=stack_temp | ctx=spill_new_p110
+    pad4      vars=24   bodydiff=  4  sp=0   ctx=stack_temp | ctx=spill_new_p110
+    pad5      vars=32   bodydiff=  4  sp=0   ctx=stack_temp | ctx=spill_new_p110
+    pad6      vars=32   bodydiff=  4  sp=0   ctx=stack_temp | ctx=spill_new_p110
+
+`pre_pad[4]` (16 bytes = exactly the gap between our 8-byte combine orphan and the
+target's 24) is the exact-fit choice; `pad3` reaches the same rounded 24 with 12 bytes.
+`tools/fdiff.py` on pad4 vs the base prints ours=140 target=140 with the entire diff
+being the two wanted lines: `subu $sp,$sp,8` -> `subu $sp,$sp,24` and the matching
+`addu`. Zero `($sp)` references touch the pad — the family's untouched-slot prerequisite
+is satisfied by direct measurement, not by inference.
+
+### THE FUNCTION IS BYTE-MATCHED ON MAIN
+`& tools/wteng.ps1 main build` with this body in src/code6cac_b.c:
+
+    sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa
+    want 62efab4f73f992798c43e8c730aa43baa10bb4fa
+    MATCH
+
+Re-run a second time after the annotation was reworded — MATCH both times. The body is
+the s1-s5 pure-C body verbatim plus the one annotated pad declaration.
+
+### Why the sandbox still prints 2 — the integration handoff
+`sandbox func_80030580 --disable all` = **2**. The cheat-stripper removes the pad
+declaration because `engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS` has no row
+for this function; the family's FORM CONSTRAINT explicitly requires that row
+(no-new-park-categories.md:420-424). `engine/` is outside a grind session's writable
+surface. This is exactly the shape of the 2026-08-22 grant rows (func_80049A2C,
+func_800481E8, func_80041688), whose own comment records the principle: "the allowlist
+affects only the sandbox score, never the real build, so the proof needs no row"
+(engine/volatile_cheats.py:759-765). Operator step: add
+`"func_80030580": frozenset({("pre_pad", 4)}),` to `_SANCTIONED_UNWRITTEN_PADS`, after
+a fresh layer-2 cheat-reviewer on the C.
+
+### DETECTOR FINDING (disclosed, not exploited)
+`find_unused_local_arrays` decides "unused" with a plain `\bname\b` search over the
+function body text — COMMENTS INCLUDED. The first version of this session's annotation
+spelled the identifier `pre_pad` in the comment above the declaration; that alone made
+the detector treat the pad as referenced, the stripper left it in place, and
+`sandbox --disable all` printed `"score": 0`. That 0 is a detector artifact, not an
+honest floor. The comment was rewritten to avoid the identifier and the sandbox
+correctly returned to 2. Any function whose ledger prose or annotation names its own
+unused array is currently invisible to this detector — engine-side finding for the
+operator (engine/volatile_cheats.py:273-278); this session did not and must not spend it.
+
+- [s6b] Judge-mandated route MEASURED and it closes the function: `volatile u32 pre_pad[4];` as the first declaration of the s1-s5 pure-C body gives vars=24, sp=0, bodydiff=4 (only the two subu/addu $sp lines, 140/140 insns) and a full clean build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, verified twice.
+- [s6b] Pad-size gradient measured with the instrumented cc1 (s6/padsweep.py): pad1/pad2 vars=16, pad3/pad4 vars=24, pad5/pad6 vars=32; pre_pad[4] is the exact-fit 16 bytes between our 8-byte combine orphan slot and the target's 24.
+- [s6b] The honest sandbox score stays 2 because the cheat-stripper deletes the pad: the Phantom-frame-slot volatile pad family requires a per-function row in engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS ("func_80030580": ("pre_pad", 4)), a surface a grind session may not touch. Same integration shape as the byte-proven 2026-08-22 rows func_80049A2C / func_800481E8 / func_80041688.
+- [s6b] The union candidate is dead by Judge ruling (2026-09-02 17:07 FAIL, aggregate carrier with no semantic content and no frozen family); it stays banked at rejected/union-dead-member-store-frame-24-unruled.c and must not be respelled.
+- [s6b] DETECTOR FINDING, disclosed and not exploited: engine.volatile_cheats.find_unused_local_arrays checks references with a plain \bname\b search over the body INCLUDING COMMENTS, so an annotation that spells the pad's own identifier makes the stripper skip it and the sandbox print a false 0. Observed once this session, immediately reverted by rewording the comment.
+- [s6b] src/code6cac_b.c restored to HEAD at the end of the session; the proven body lives in memory/grind/func_80030580/candidate.c.
+
+## Session 7 (2026-09-02, synthesis) — floor 2; s6's byte-match INDEPENDENTLY RE-VERIFIED
+
+s6 was discarded by the driver on a filing technicality (its handoff entry heading
+lacked the literal `OWNER-ESCALATION` token, so `grind.ps1:1171` could not match it).
+Its *measurements* were never disputed, and none of them were taken on trust here —
+every one below was re-run from scratch this session.
+
+### Re-verification (all this session, current chassis)
+| what | command | result |
+|---|---|---|
+| HEAD chassis | `sandbox func_80030580 --disable all` | **148** (HEAD is `INCLUDE_ASM`; explains the dispatch "measurement unavailable") |
+| pure-C floor body | apply `pure-c-floor2-body.c`, sandbox | **2** — the ledger floor reproduces exactly |
+| candidate (floor body + `volatile u32 pre_pad[4]; // !FAKE`) | sandbox | **2** — the stripper deletes the pad (`engine/volatile_cheats.py:249`) |
+| candidate | full clean driver `build` | `sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want` → **MATCH** |
+| frame forensics | `INSTR=1 padsweep.py 2 3 4 5` | `padbase vars=8 bodydiff=0` · `pad2 vars=16` · `pad3 vars=24` · `pad4 vars=24 bodydiff=4 sp=0` · `pad5 vars=32`; every variant `sp=0` |
+
+The `bodydiff=4` on pad4 is exactly the `subu $sp,$sp,8 -> subu $sp,$sp,24` line and
+its matching `addu` — 140/140 body instructions identical, zero `($sp)` references
+touching the pad.
+
+### The residual is now TYPED (this is the session's new finding)
+Our matching body compiles to `vars=8`, and the frame instrument attributes that 8
+to a single `ctx=spill_new_p110` slot. The target is `vars=24`. Because **all 140
+body instructions already match**, the missing 16 bytes cannot be a spill slot that
+carries traffic — any such slot would show as body divergence, and there is none.
+So the target's extra frame bytes are a **declared frame object of 13..16 bytes
+that no instruction touches** (MIPS_STACK_ALIGN rounds 17..24 to 24, so 13..16 all
+land on 24; measured: `pad3` = 12 bytes → 24 as well, i.e. 9..16 bytes qualify).
+
+This RETIRES the s2/s3 model — "the target's vars=24 is three 8-byte combine-orphan
+spill slots" — that shaped sessions 2 through 5 and sent them hunting for extra
+indexed-`Judge` lookup sites under the sites-1 orphan law. It confirms live-frontier
+item 3 (which was ranked third) and demotes frontier items 1 and 2 (both of which
+assume an orphan-spill producer).
+
+### Why the sandbox cannot print 0 here
+The Judge's 2026-09-02 17:07 constraint names the Phantom-frame-slot volatile pad
+local family as the only frozen route to these bytes, and that family's FORM
+CONSTRAINT includes a per-function row in `_SANCTIONED_UNWRITTEN_PADS`
+(`engine/volatile_cheats.py:746`). `engine/` is outside a grind session's writable
+surface, so the score stays at 2 no matter how correct the C is. This is an
+INTEGRATION HANDOFF, filed at `docs/grind/decisions.md` (2026-09-02,
+`func_80030580 — OWNER-ESCALATION: INTEGRATION HANDOFF`), not an exhaustion claim.
+
+### Adjacent forms checked and NOT pursued (reasoning, no measurement spent)
+- Non-volatile dead scalar locals would survive the stripper (`find_volatile_unused_locals`
+  only matches `volatile`; `find_orphaned_local_decls` skips zero-reference decls) and
+  would make the sandbox print 0 without any engine row. **Not pursued**: the
+  2026-09-02 17:07 ruling states `named-local-fake-exception.md:5,72` "excludes arrays
+  and frame coercion explicitly", so a dead scalar used for frame coercion is outside
+  that family, and reaching 0 by a spelling the detector happens not to catch is
+  cheat-checklist T4/T5 by construction. Recorded so no later session re-derives it as
+  a "discovery".
+
+- [s6] HEAD chassis measured this session: sandbox func_80030580 --disable all = 148 (HEAD carries INCLUDE_ASM), which explains the dispatch brief's 'measurement unavailable'.
+
+- [s6] memory/grind/func_80030580/pure-c-floor2-body.c re-measured on the current chassis: sandbox --disable all = 2, reproducing the ledger floor exactly; the residual 2 is subu $sp,$sp,8 vs the target's subu $sp,$sp,24 plus the matching addu, with all 140 body instructions identical.
+
+- [s6] memory/grind/func_80030580/candidate.c applied to src/code6cac_b.c and built with the full clean driver: sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want -> MATCH. The function is solved; only the sandbox scorer disagrees.
+
+- [s6] Frame forensics re-run on the current chassis (instrumented cc1, BB2_FRAME_DEBUG=1): padbase vars=8 bodydiff=0, pad2 vars=16, pad3 vars=24, pad4 vars=24 bodydiff=4 sp=0, pad5 vars=32 - every variant sp=0, so no ($sp) reference touches the pad and bodydiff=4 is exactly the two stack-adjust lines.
+
+- [s6] The blocker is engine/volatile_cheats.py:746 _SANCTIONED_UNWRITTEN_PADS, which needs the row "func_80030580": frozenset({("pre_pad", 4)}). engine/ is outside a grind session's writable surface, so no C spelling can make the sandbox print 0 for the Judge-mandated form.
+
+- [s6] Precedent for the handoff shape: the 2026-08-22 rows for func_80049A2C, func_800481E8 and func_80041688 were byte-proven first and granted the row afterwards; engine/volatile_cheats.py:759-765 records the principle that the allowlist affects only the sandbox score, never the real build.
+
+- [s6] Engine finding disclosed and not exploited (re-confirmed this session): find_unused_local_arrays decides 'unused' with a plain \bname\b search over the body text including comments, so an annotation that spells its own pad identifier makes the pad invisible to the stripper and yields a false score of 0. The candidate's annotation is worded to avoid the identifier and the sandbox correctly prints 2.
+
+- [s6] s6 was discarded on a filing technicality only - its handoff heading lacked the literal OWNER-ESCALATION token that tools/grinder/grind.ps1:1171 matches on; its measurements were never disputed and have all been independently re-run here.
+
+- [s6] src/code6cac_b.c was restored to HEAD at session end; the proven body lives at memory/grind/func_80030580/candidate.c and the self-vet at memory/grind/func_80030580/self_vet.md.

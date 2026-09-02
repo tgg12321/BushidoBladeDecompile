@@ -1,7 +1,7 @@
 {
  "func": "func_80030580",
  "file": "code6cac_b",
- "session_count": 5,
+ "session_count": 6,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -33,27 +33,34 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "Synthesis: kill re-audit reproduces the site-law exactly (j4read = target frame at +25 body, the cheapest known form); a THIRD orphan generator is characterised and the documented HImode-bitwise gener"
+  },
+  {
+   "session": 6,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Bytes re-proven independently (full clean build SHA1 == oracle with candidate.c applied); sandbox stays at 2 only because the Judge-mandated volatile pad needs an engine allowlist row a grind session "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "j4read - the exact target frame at only +25 body lines - can be made byte-neutral by placing its two extra indexed-Judge sites where jump2 cross-jumping removes their emitted code",
-   "mechanism": "s4 measured a statement duplicated into all four arms of the kind chain being re-merged by jump2 at NEGATIVE cost (armjoin1: 139 insns vs the base's 140). The s3/s4 attempts placed extra sites in line, where nothing can remove them; the surplus is now itemised as exactly two lh/addu/andi/sll/lh/addu triples, so the question is whether a duplicated placement exists whose merged tail coincides with insns the target already emits.",
-   "next_probe": "Enumerate placements for the 3rd and 4th sites that put IDENTICAL Judge-reading tails in two or more blocks that jump2 can cross-jump: the four kind-chain arms (payload must be a statement the join already contains), the /32 bgez join spelled as an explicit if/else, and the loop-break vs loop-exit paths. Measure each with INSTR=1 frame5.py, accepting only vars=24 with bodydiff trending toward 0, and read tmp/grind/func_80030580/dumps/code6cac_b.jump2 to confirm whether the merge fired."
+   "hypothesis": "An ordinary-C construct exists that makes GCC 2.7.2 reserve a 9..16-byte frame object no instruction touches - now the only honest axis, and typed precisely for the first time by H-s7-2.",
+   "mechanism": "The residual is no longer 'missing orphan spill slots' but 'a declared untouched object'. Candidates are constructs whose stores are removed but whose slot survives, or whose value folds: a Vec3i local assigned from *(Vec3i *)(obj + 0x2C) and never read, a struct copy whose destination is immediately overwritten, a small union used for a single half-word read, a struct-typed conditional expression.",
+   "next_probe": "Extend tmp/grind/func_80030580/s5/genprobe.py to sweep those shapes in-function with tmp/grind/func_80030580/s6/padsweep.py's instrument, accepting only vars=24 with bodydiff<=4 and sp=0; then check each accepted shape against the frozen family list before proposing it, since a construct whose stores vanish still needs a truthful semantic reading."
   },
   {
-   "hypothesis": "A fourth generator exists that fires on a construct func_80030580 already contains, supplying the missing two slots without adding a Judge site",
-   "mechanism": "Three generators are now known: the indexed-global fold (sites-1), the truncated magic-multiply division (sites), and the HImode-bitwise phantom form (inert here). Each was found by reducing a corpus witness to a minimal standalone repro, and s5/genprobe.py now makes that reduction cost one cc1 run. Only a generator firing on a pointer-biv loop, a struct copy, a 32x32 multiply with >>12, a shift-based signed divide or a four-arm equality chain can close this function.",
-   "next_probe": "Re-run tmp/grind/func_80030580/s3/census3.py to list every leaf with vars>0, drop the witnesses whose C contains an indexed global or a truncated constant division (both now explained), and reduce each remaining witness to a minimal standalone repro in the s5/gen2.c style, bisecting it with genprobe.py until the firing sub-expression is isolated. Then test the isolated shape in-function with frame5.py."
+   "hypothesis": "Operator integration closes the function immediately with no further C work.",
+   "mechanism": "The C is the Judge-mandated form and is byte-proven; the only missing artefact is one sandbox-scoring allowlist row.",
+   "next_probe": "Per docs/grind/decisions.md 2026-09-02 'func_80030580 - OWNER-ESCALATION: INTEGRATION HANDOFF': apply candidate.c, run a fresh layer-2 cheat-reviewer against memory/grind/func_80030580/self_vet.md, add the (\"pre_pad\", 4) row to _SANCTIONED_UNWRITTEN_PADS, then sandbox reads 0 and verify-oracle / queue done follow."
   },
   {
-   "hypothesis": "The target's vars=24 is not three 8-byte orphans; MIPS_STACK_ALIGN only pins it to 17..24, so 8+8+4 or 8+16 also round to 24",
-   "mechanism": "Every session since s2 has assumed three orphans because a corpus census of OUR compiled C never produced a non-spill_new leaf slot - an argument about the sample, not about the target. s1 only ever tested one non-spill_new shape (a Vec3i tmp local, which does touch sp), so the space of constructs that allocate an untouched stack_temp / stack_local in a leaf is essentially unexplored.",
-   "next_probe": "Use s5/genprobe.py to enumerate constructs that produce a non-spill_new ctx= with ZERO ($sp) accesses in a leaf: unions, casts between struct types, a struct-typed conditional expression, a struct-valued comma expression, a struct copy whose destination is immediately overwritten, and a 4-byte object alongside the existing orphan. Any hit that emits no sp traffic is then spelled in-function and measured for bodydiff with frame5.py."
+   "hypothesis": "The j4read / jump2 cross-jump route and the 'fourth generator' hunt are deprioritised, not killed.",
+   "mechanism": "Both were built on the s2/s3 orphan-spill model of the residual, which H-s7-2 retires; they manufacture extra spill slots, and the target's extra bytes are not spill slots.",
+   "next_probe": "Re-rank them only if the orphan-spill model is reinstated by a contrary frame measurement; otherwise spend sessions on frontier item 1."
   }
  ],
  "judge_constraints": [
-  "Restore memory/grind/func_80030580/pure-c-floor2-body.c as the chassis; the only frozen route to the target's 24 untouched locals bytes is the Phantom-frame-slot volatile pad local family in its exact sanctioned form (volatile u32 pad[N], first-decl position, // !FAKE annotation, engine allowlist row, frame forensics per .claude/rules/phantom-slot-frame-lever.md) -- measure it, do not respell the aggregate carrier."
+  "Restore memory/grind/func_80030580/pure-c-floor2-body.c as the chassis; the only frozen route to the target's 24 untouched locals bytes is the Phantom-frame-slot volatile pad local family in its exact sanctioned form (volatile u32 pad[N], first-decl position, // !FAKE annotation, engine allowlist row, frame forensics per .claude/rules/phantom-slot-frame-lever.md) -- measure it, do not respell the aggregate carrier.",
+  "Do not resubmit func_80030580 on any /* FAKE */ pad-local route: the phantom-frame-slot family's engine-allowlist prerequisite is owner-granted and unreachable from a grind session. Work state.json frontier item 1 -- an ordinary-C declared frame object of 13..16 bytes that no instruction touches (vars=24, bodydiff<=4, sp=0), measured on the pure-c-floor2-body.c chassis."
  ],
  "banned_constructs": [],
  "kills": [
@@ -200,6 +207,14 @@
    "measured_on": "candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present",
    "predicate_cite": "",
    "result": ".lreg names exactly one pseudo - 'Register 110 used 2 times across 67 insns in block 6; ST_REGS or none; pointer' - and "
+  },
+  {
+   "session": 6,
+   "statement": "On this chassis, substituting a non-volatile dead scalar local for the volatile pad array is not an available route to a submittable candidate, because the 2026-09-02 17:07 ruling reads named-local-fa",
+   "kill_scope": "instance",
+   "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session; the only FAKE construct present in the candidate is `volatile u32 pre_pad[4]`",
+   "predicate_cite": "",
+   "result": "Recorded in hypotheses.md as H-s7-3 so a later session does not re-derive the detector gap as a discovery and burn a Jud"
   }
  ],
  "ladder_skip": 0,

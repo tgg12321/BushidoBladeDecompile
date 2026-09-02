@@ -612,3 +612,116 @@ session), no FAKE constructs present.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s1/draft3.c body applied to src/code6cac_b.c (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## s6b (driver session 6, synthesis) — the Judge-mandated pad route
+
+**H-PAD (CONFIRMED, bytes proven).** *Statement:* the target's 16 missing frame bytes are
+reachable by the Phantom-frame-slot volatile pad local family in its exact sanctioned
+form — `volatile u32 pre_pad[4];` as the first declaration of the s1-s5 pure-C body,
+`// !FAKE` annotated. *Mechanism:* reload's `alter_reg` / `get_frame_size()` count a
+never-accessed volatile local, so it costs frame bytes and zero instructions.
+*Probe:* `INSTR=1 PYTHONPATH=. python3 tmp/grind/func_80030580/s6/padsweep.py` (N=1..6)
+plus a full clean build. *Result:* pad4 -> vars=24, sp=0, bodydiff=4 (exactly the two
+`subu/addu $sp` lines, 140/140 insns); full build SHA1 == oracle, verified twice. The
+honest sandbox still prints 2 because the stripper removes the pad absent the
+`_SANCTIONED_UNWRITTEN_PADS` row — engine/ is not a grind-session surface, so the
+residual is an INTEGRATION HANDOFF, not a codegen problem.
+
+**H-UNION (dead by ruling).** The s6a union local is FAILed (2026-09-02 17:07): the union
+type carries no semantic content, and no frozen family covers an aggregate carrier in
+that role. Do not respell it.
+
+**H-DETECT (finding, not a lever).** `find_unused_local_arrays` treats a pad as
+referenced when its identifier appears anywhere in the body text, comments included, so
+a self-naming annotation yields a false `sandbox = 0`. Observed and reverted this
+session; reported for the operator. It is not to be used as a route to a 0.
+
+## Session 7 (2026-09-02, synthesis) — frontier reset
+
+### H-s7-1 — CONFIRMED (re-measurement, not inference)
+**Statement.** The s6 candidate (`pure-c-floor2-body.c` + `volatile u32 pre_pad[4]; // !FAKE`
+in first-decl position) makes `src/code6cac_b.c` build to the oracle SHA1, and the
+pure-C chassis without the pad still measures `sandbox --disable all` = 2 on the
+current chassis.
+**Probe.** Applied each body with `tmp/grind/func_80030580/s1/apply.py`; ran
+`sandbox --disable all` on HEAD (148), on the floor body (2) and on the candidate (2);
+ran the full clean driver `build` on the candidate.
+**Result.** `sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want ... MATCH`. The
+candidate's sandbox 2 is the cheat-stripper deleting the pad
+(`engine/volatile_cheats.py:249`), not a body divergence. **Verdict: CONFIRMED.**
+
+### H-s7-2 — the residual is a DECLARED untouched frame object, not a spill slot (CONFIRMED)
+**Statement.** The 16 frame bytes separating our `vars=8` from the target's `vars=24`
+are contributed by a declared frame object of roughly 9..16 bytes that no instruction
+references; they are not additional combine-orphan spill slots.
+**Mechanism.** With all 140 body instructions matching, a spill slot carrying any
+traffic would appear as body divergence; `tools/fdiff.py` shows the entire diff is
+`subu/addu $sp,8 -> 24`. The pad sweep confirms the size→frame mapping empirically:
+12 bytes (`pad3`) and 16 bytes (`pad4`) both round to `vars=24`, 8 bytes to 16, 20 to 32.
+**Probe.** `INSTR=1 PYTHONPATH=. python3 tmp/grind/func_80030580/s6/padsweep.py 2 3 4 5`
+with the instrumented cc1 (`tools/gcc-2.7.2/cc1`, `BB2_FRAME_DEBUG=1`); every variant
+reported `sp=0`.
+**Result.** `padbase vars=8 bodydiff=0 sp=0 ctx=spill_new_p110` ·
+`pad2 vars=16` · `pad3 vars=24` · `pad4 vars=24 bodydiff=4 sp=0` · `pad5 vars=32`.
+**Verdict: CONFIRMED.** Consequence: the s2/s3 "three 8-byte orphan spill slots" model
+is retired, and with it the premise under live-frontier items 1 and 2 (both search for
+extra indexed-`Judge` sites to manufacture orphan spills under the sites-1 law). The
+honest search space is now "ordinary C that declares a 9..16-byte object GCC 2.7.2
+keeps in the frame but never touches".
+
+### H-s7-3 — KILLED (instance): reaching sandbox 0 by a form the stripper does not detect
+**Statement.** On this chassis, substituting a non-volatile dead scalar local for the
+volatile pad array is not an available route to a submittable candidate, because the
+2026-09-02 17:07 ruling reads `named-local-fake-exception.md:5,72` as excluding frame
+coercion from the dead-scalar family.
+**Mechanism.** `find_volatile_unused_locals` (`engine/volatile_cheats.py:388`) matches
+only `volatile`-qualified scalars, and `find_orphaned_local_decls`
+(`engine/volatile_cheats.py:659`) explicitly skips zero-reference declarations, so a
+plain `u32` dead local survives stripping and would score 0 — which is precisely the
+cheat-checklist T4/T5 shape (passing a detector only because the detector does not
+catch this spelling).
+**Probe.** Source read of the three detectors plus the ruling text in
+`docs/grind/decisions.md` (2026-09-02 17:07); no measurement spent, deliberately.
+**Result.** Recorded so that a later session does not re-derive this as a discovery.
+**Verdict: KILLED.** `kill_scope: instance` — measured/argued on the
+`pure-c-floor2-body.c` chassis (sandbox = 2 re-measured this session) with the pad as
+the only FAKE construct; a future owner ruling that extends the dead-scalar family to
+frame coercion would revive it.
+
+### FRONTIER (reset — strongest first)
+1. **An ordinary-C construct that reserves a 9..16-byte frame object GCC 2.7.2 never
+   touches.** This is now the ONLY honest axis, and H-s7-2 makes it precise for the
+   first time. Probe: extend `tmp/grind/func_80030580/s5/genprobe.py` to sweep
+   *semantically real* candidates whose stores DCE away or whose value is folded —
+   a `Vec3i` local assigned from `*(Vec3i *)(obj + 0x2C)` and then never read, a struct
+   copy whose destination is immediately overwritten, a small union used for one
+   half-word read, a struct-typed conditional expression — and accept only
+   `vars=24 bodydiff<=4 sp=0`. Note that the sanctioned-family bar still applies to
+   anything whose stores vanish; the target is a construct that reads truthfully.
+2. **Operator integration.** `docs/grind/decisions.md` 2026-09-02
+   `func_80030580 — OWNER-ESCALATION: INTEGRATION HANDOFF` — apply `candidate.c`,
+   layer-2 cheat-reviewer, add `"func_80030580": frozenset({("pre_pad", 4)}),` to
+   `_SANCTIONED_UNWRITTEN_PADS`, then sandbox reads 0.
+3. **Deprioritised:** the j4read / jump2 cross-jump route and the "fourth generator"
+   hunt. Both were built on the retired orphan-spill model (H-s7-2); re-rank them only
+   if that model is somehow reinstated.
+
+## [s6] The s6 candidate (pure-c-floor2-body.c plus `volatile u32 pre_pad[4]; // !FAKE` in first-decl position) builds src/code6cac_b.c to the oracle SHA1, and the same body without the pad measures sandbox --disable all = 2 on the current chassis.
+- mechanism: The pad is a declared, never-accessed volatile object: reload's alter_reg / get_frame_size count it into the frame, so it costs 16 frame bytes and zero instructions. The sandbox cheat-stripper deletes the declaration (engine/volatile_cheats.py:249 find_unused_local_arrays), which is why the honest score reads 2 while the real build matches.
+- probe: Applied each body with tmp/grind/func_80030580/s1/apply.py; ran `sandbox func_80030580 --disable all` on HEAD, on pure-c-floor2-body.c and on candidate.c; ran the full clean driver build on candidate.c.
+- result: HEAD = 148 (HEAD carries INCLUDE_ASM). Floor body = 2. Candidate = 2 (pad stripped). Full build: sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want -> MATCH. Nothing was taken on trust from the discarded s6 session; every number was re-run this session.
+- verdict: CONFIRMED
+
+## [s6] The 16 frame bytes separating our vars=8 from the target's vars=24 are contributed by a declared frame object of roughly 9 to 16 bytes that no instruction references, not by additional combine-orphan spill slots.
+- mechanism: All 140 body instructions already match the target, so a spill slot carrying any traffic would appear as body divergence; tools/fdiff.py shows the entire diff is subu/addu $sp,8 -> 24. The pad sweep gives the size-to-frame mapping empirically: 8 bytes -> vars=16, 12 and 16 bytes -> vars=24, 20 bytes -> vars=32, every variant with sp=0.
+- probe: INSTR=1 PYTHONPATH=. python3 tmp/grind/func_80030580/s6/padsweep.py 2 3 4 5, using the instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_FRAME_DEBUG=1.
+- result: padbase vars=8 bodydiff=0 sp=0 ctx=spill_new_p110 | pad2 vars=16 | pad3 vars=24 | pad4 vars=24 bodydiff=4 sp=0 | pad5 vars=32. This retires the s2/s3 model that the target's vars=24 is three 8-byte combine-orphan spill slots - the model that shaped sessions 2 through 5 and underpins live-frontier items 1 and 2, both of which hunt extra indexed-Judge sites under the sites-1 orphan law. Live-frontier item 3 is vindicated and promoted to first.
+- verdict: CONFIRMED
+
+## [s6] On this chassis, substituting a non-volatile dead scalar local for the volatile pad array is not an available route to a submittable candidate, because the 2026-09-02 17:07 ruling reads named-local-fake-exception.md:5,72 as excluding frame coercion from the dead-scalar family.
+- mechanism: engine/volatile_cheats.py:388 find_volatile_unused_locals matches only volatile-qualified scalars, and engine/volatile_cheats.py:659 find_orphaned_local_decls explicitly skips zero-reference declarations, so a plain u32 dead local survives stripping and the sandbox would print 0 without any engine row. That is exactly cheat-checklist T4/T5: passing the detectors only because the detectors do not catch this spelling.
+- probe: Source read of the three detectors plus the ruling text at docs/grind/decisions.md 2026-09-02 17:07; deliberately no measurement spent on a form that cannot be submitted.
+- result: Recorded in hypotheses.md as H-s7-3 so a later session does not re-derive the detector gap as a discovery and burn a Judge cycle on it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session; the only FAKE construct present in the candidate is `volatile u32 pre_pad[4]`
