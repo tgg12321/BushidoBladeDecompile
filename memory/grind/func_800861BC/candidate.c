@@ -1,3 +1,9 @@
+/* s2 (structural, 2026-09-02): this body is LANDED in src/main.c together with the
+ * include/sound.h declarations (pipeline scope grant, tools/grinder/scope_allow.txt).
+ * Re-measured this session: verify-oracle --rebuild SHA1 == oracle, and the cheat-blind
+ * sandbox reads 0 at 132/132 AFTER the rebuild (the 18 banked by s1 was stale-build/
+ * reference addend noise, retired — see evidence.md s2). No FAKE construct in this body.
+ */
 /* CANDIDATE — func_800861BC (Sony LIBSND `_SsVmDoAllocate`; psyz vm_aloc2.c analog)
  * s1 re-run (recon, 2026-09-02). BYTES PROVEN on the header-form tree banked as
  * memory/grind/func_800861BC/integration_patch.diff (include/sound.h + src/main.c):

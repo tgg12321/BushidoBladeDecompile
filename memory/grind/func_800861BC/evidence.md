@@ -184,3 +184,44 @@ constructs anywhere in the diff).
 - [s1] Session end state: src/main.c and include/sound.h reverted to HEAD; build/ rebuilt from HEAD (verify-oracle --rebuild) so no stale C-compiled reference object is left for a later session to false-zero against.
 
 - [s1] Escalation entry filed: docs/grind/decisions.md '2026-09-02 — func_800861BC — OWNER-ESCALATION — INTEGRATION HANDOFF' with operator steps (git apply integration_patch.diff; build; layer-2 cheat-reviewer; queue done).
+
+## s2 (structural, 2026-09-02) — INTEGRATION LANDED AND RE-MEASURED
+
+The pipeline scope grant executed after s1 (commit 12a31f6d) added
+`func_800861BC include/sound.h` to tools/grinder/scope_allow.txt, so the banked
+integration patch is now inside the session's allowed surface. s2 applied it and
+re-measured everything from scratch:
+
+- `git apply memory/grind/func_800861BC/integration_patch.diff` applies clean at
+  HEAD (include/sound.h + src/main.c only, 77 insertions / 37 deletions).
+- `sandbox func_800861BC --disable all` immediately after applying = **18** at
+  132/132, rules_dropped 0 (tmp/grind/func_800861BC/s2/sandbox.txt). This is the
+  number the ledger recorded as the "floor" in s1, and s2 proves it is NOT a
+  residual: it is stale-reference noise. `build/src/main.o` at that moment was
+  still the pre-patch object, whose relocations name the per-word splat symbols
+  at addend 0, while the new object names `D_801027F0` with a field addend;
+  engine/score.py compares named-symbol addends, so all 18 hunks are addend-only.
+  (Same mechanism as [[sandbox-lo16-text-addend-false-distance]].)
+- `verify-oracle --rebuild --allow-dirty` (the dirty tree IS the intended new
+  reference): ok true, build_sha1 = expected =
+  62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true
+  (tmp/grind/func_800861BC/s2/verify_oracle.txt). `mipsel-linux-gnu-nm
+  build/src/main.o` -> `000025d8 T func_800861BC`: the function is compiled from
+  C in main.o, not linked from an asm object.
+- `sandbox func_800861BC --disable all` AFTER the rebuild = **0** at 132/132,
+  rules_dropped 0, cheat_asm_stripped 19 (other functions in the TU)
+  (tmp/grind/func_800861BC/s2/sandbox_post_rebuild.txt). Zero honest, cheat-blind
+  distance with the cheat stripper on.
+
+So the honest floor for func_800861BC is 0, not 18. The 18 was an artifact of
+measuring an aggregate-merge rewrite against a reference object built before the
+merge; any future session that sees 18 right after applying a symbol-shape change
+should regenerate build/ before believing it.
+
+Merge completeness (prong c) as measured: `grep -rn` over src/ and include/ finds
+exactly one C handle (`D_801027F0`) for the nine merged locations and zero
+residual per-word references. The undefined_syms_auto.txt lines for those names
+must STAY for now — 11 files under asm/ still reference them, including the
+still-INCLUDE_ASM'd siblings func_80086818, func_80086CF8, func_800872A4
+(tmp/grind/func_800861BC/s2/asm_consumers.txt). They retire when those siblings
+reach C; that file is also outside this function's scope grant.

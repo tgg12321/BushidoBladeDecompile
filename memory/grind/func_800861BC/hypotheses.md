@@ -69,3 +69,19 @@
 - probe: driver/engine source reading + the 18-hunk pairdiff classification (s1/v9_header_form_pairdiff.txt)
 - result: 18 of 18 residual hunks are addend-only (real 0); the gate reads 18 for every struct spelling (H1 26, v4 18, v8 18, v9 header form 18) and 37 for the pointer-free scalar chassis. Disposition: integration handoff / operator landing (func_80038170 precedent).
 - verdict: CONFIRMED
+
+## s2 (structural, 2026-09-02)
+
+H-s2-1 (CONFIRMED): landing integration_patch.diff on the granted surface
+(include/sound.h + src/main.c) yields a byte-exact tree — full-build SHA1 ==
+oracle, func_800861BC a T symbol of build/src/main.o — and the residual 18 that
+s1 recorded as the floor is stale-build/ reference noise, not codegen: after
+`verify-oracle --rebuild` the cheat-blind sandbox reads 0 at 132/132.
+Measured on: HEAD + integration_patch.diff, no FAKE construct in the target
+function. Artifacts: s2/sandbox.txt (18, pre-rebuild), s2/verify_oracle.txt
+(ok/SHA1 match), s2/sandbox_post_rebuild.txt (0).
+
+Consequence: the structural modality has nothing left to search on this function
+— the ordinary-C body in candidate.c is the match. Remaining work is acceptance
+(layer-1/layer-2 review + queue done) plus the already-banked follow-up that
+func_80087CAC's FAKE pointer alias should now retire under natural field access.
