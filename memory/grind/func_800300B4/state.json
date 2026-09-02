@@ -87,14 +87,10 @@
   "Island 2 is authorized AS A UNIT only in the exact func_800203B4 gte_ldv0 spelling; no GPR instruction beyond an SDK macro body may enter any island, cite inline_asm_canonical.txt:367 + decisions.md:20262, and the final call still owes the island-3 do-while(0) FAKE prerequisites plus the owner-cluster allowlist line before queue done.",
   "LAYER-1 CHEAT-REVIEWER FAIL: Island 2's gte_ldv0 SVECTOR pack (lhu/lhu/sll/or) is C-expressible data processing swallowed into a cop2 asm template in violation of cluster condition 3, admitted only via a same-pipeline 'Judge ruling' that reinterprets the cluster's own scope on GCC-internals grounds -- an action judge-sole-gate rule 4 explicitly forbids and that was never logged to the family-extension ledger. Next action: Do not commit. Revert src/code6cac_b.c to INCLUDE_ASM for func_800300B4. The island-2 GPR pack is not resolvable by re-citation -- it is a genuine family-scope question (does",
   "Island 2 must be spelled character-identically to the owner-granted func_800203B4 island (src/code6cac.c:1860-1870, inline_asm_canonical.txt:367), named gte_ldlv0 with inline_c.h:101-110 as the provenance citation and inline_asm_canonical.txt:367 as the authorization; no GPR instruction beyond the SDK macro body plus its move-preamble may enter any island; bans 2/3/4 stay in force (no reliance on the struck 07:30 ruling and no func_8002E838 / func_80031890 / func_8002FC80 / LoadAverageShort12 / inline_asm_canonical.txt:174 citations \u2014 self_vet.md must be rewritten accordingly); and the final call still owes, independently, the island-3 do-while(0) FAKE prerequisites (ladder exhaustion verifiable in hypotheses.md, named GCC-pass mechanism, annotation present), sandbox --disable all == 0, layer-2 PASS, verify-oracle --rebuild, and the allowlist line.",
-  "LAYER-1 CHEAT-REVIEWER FAIL: Island 2's gte_ldlv0 GPR data-pack (lhu/lhu/sll/or) is admitted only via an in-pipeline 'Judge ruling' (decisions.md:20575) resolving a genuine cluster-condition-3 family-scope question that judge-sole-gate rule 4 reserves for the owner via the borderline ledger, never for in-pipeline self-adjudication. Next action: Do not commit. Revert src/code6cac_b.c to INCLUDE_ASM for func_800300B4 (the driver already does this on FAIL). File the family-scope question to docs/grind/borderline.md as a policy-question entry: 'Does cop2-addressing-preamble-cluster.md condition 3 "
+  "LAYER-1 CHEAT-REVIEWER FAIL: Island 2's gte_ldlv0 GPR data-pack (lhu/lhu/sll/or) is admitted only via an in-pipeline 'Judge ruling' (decisions.md:20575) resolving a genuine cluster-condition-3 family-scope question that judge-sole-gate rule 4 reserves for the owner via the borderline ledger, never for in-pipeline self-adjudication. Next action: Do not commit. Revert src/code6cac_b.c to INCLUDE_ASM for func_800300B4 (the driver already does this on FAIL). File the family-scope question to docs/grind/borderline.md as a policy-question entry: 'Does cop2-addressing-preamble-cluster.md condition 3 ",
+  "RE-ADJUDICATE (grant rescan 2026-09-02): family 'cop2 cluster condition 3: SDK macro body is the template (owner Ruling A 2026-09-02)' granted at .claude/rules/cop2-addressing-preamble-cluster.md:163 cove... Restore the matching banked form, re-measure on the current chassis, and if it reaches 0 submit under that family with its SCOPE quoted verbatim. 4 superseded ban(s) moved to superseded_bans."
  ],
- "banned_constructs": [
-  "Self-vet's characterization of island 2 as 'the exact spelling of the integrated cluster sibling func_8002FC80' and its fallback citation to inline_asm_canonical.txt:174 (LoadAverageShort12, a GTE-leaf-wrapper authorization under a different family/policy)",
-  "The 2026-09-02 07:30 docs/grind/decisions.md entry ('RULING: the gte_ldv0 macro-body pack IS inside the sanctioned island unit; the ban is lifted'), commit dca87cf4",
-  "Precedent citations to func_8002E838 (src/code6cac_b.c:1244-1255, decisions.md:20262 PASS) and func_80031890 (decisions.md:20268 PASS) carrying the identical gte_ldv0 pack inside their islands",
-  "island 2 __asm__ block (gte_ldlv0: move $12,%0; lhu $14,4($12); lhu $13,0($12); sll $14,$14,16; or $13,$13,$14; mtc2 $13,$0; lwc2 $1,8($12); nop; nop)"
- ],
+ "banned_constructs": [],
  "kills": [
   {
    "session": 1,
@@ -276,5 +272,27 @@
  "ladder_skip": 30,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-09-02T11:58:49.332355+00:00"
+ "created": "2026-09-02T11:58:49.332355+00:00",
+ "superseded_bans": [
+  {
+   "text": "Self-vet's characterization of island 2 as 'the exact spelling of the integrated cluster sibling func_8002FC80' and its fallback citation to inline_asm_canonical.txt:174 (LoadAverageShort12, a GTE-leaf-wrapper authorization under a different family/policy)",
+   "superseded_by": "cop2 cluster condition 3: SDK macro body is the template (owner Ruling A 2026-09-02) (.claude/rules/cop2-addressing-preamble-cluster.md:163, 2026-09-02)",
+   "when": "2026-09-02T15:41:17.814504+00:00"
+  },
+  {
+   "text": "The 2026-09-02 07:30 docs/grind/decisions.md entry ('RULING: the gte_ldv0 macro-body pack IS inside the sanctioned island unit; the ban is lifted'), commit dca87cf4",
+   "superseded_by": "cop2 cluster condition 3: SDK macro body is the template (owner Ruling A 2026-09-02) (.claude/rules/cop2-addressing-preamble-cluster.md:163, 2026-09-02)",
+   "when": "2026-09-02T15:41:17.814561+00:00"
+  },
+  {
+   "text": "Precedent citations to func_8002E838 (src/code6cac_b.c:1244-1255, decisions.md:20262 PASS) and func_80031890 (decisions.md:20268 PASS) carrying the identical gte_ldv0 pack inside their islands",
+   "superseded_by": "cop2 cluster condition 3: SDK macro body is the template (owner Ruling A 2026-09-02) (.claude/rules/cop2-addressing-preamble-cluster.md:163, 2026-09-02)",
+   "when": "2026-09-02T15:41:17.814565+00:00"
+  },
+  {
+   "text": "island 2 __asm__ block (gte_ldlv0: move $12,%0; lhu $14,4($12); lhu $13,0($12); sll $14,$14,16; or $13,$13,$14; mtc2 $13,$0; lwc2 $1,8($12); nop; nop)",
+   "superseded_by": "cop2 cluster condition 3: SDK macro body is the template (owner Ruling A 2026-09-02) (.claude/rules/cop2-addressing-preamble-cluster.md:163, 2026-09-02)",
+   "when": "2026-09-02T15:41:17.814566+00:00"
+  }
+ ]
 }

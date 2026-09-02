@@ -22,3 +22,8 @@ func_8002D518 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; regi
 func_8002E838 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
 func_800300B4 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
 func_800325E0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
+# 2026-09-01 widened-anchor owner GRANT (decisions.md:18082) — confirmed
+# handwritten-tagged carriers named in the grant; rows added by the operator
+# 2026-09-02 per owner Ruling A (decisions.md 2026-09-02 OWNER RULING):
+func_80031890 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-02)
+func_8002FF20 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-02)
