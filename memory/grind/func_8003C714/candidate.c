@@ -40,6 +40,21 @@
  * structural minimum of 1 (loop.c:791/793), so the product equals `threshold`.
  * See hypotheses.md H6/H7 and K10/K11/K12.
  *
+ * [s4 2026-09-01 UPDATE] Re-verified again on the current chassis: score 15,
+ * 104 target / 105 build, movable table unchanged. Two additions this session,
+ * both negative and both now banked: (a) the FIRST decomp-permuter campaign for
+ * this function ran 66,016 iterations over this exact body and improved on its
+ * base score ZERO times (workspace recipe in tmp/grind/func_8003C714/s4/mkws.sh,
+ * validated so its base-vs-target diff is exactly the d15 residual); (b) the
+ * inherited K9 claim that defeating the hoist needs 23 further hoists is
+ * arithmetically wrong -- threshold reduction and insn_count inflation compound,
+ * and the true crossover is 13 (measured: the 0x91A2B3C5 movable flips to "not
+ * desirable" at k=13 added invariants). The channel is REAL on the shipped
+ * chassis with no call in the loop, and is byte-foreclosed only because each of
+ * the 13 hoists emits a preheader instruction and the target preheader
+ * (8003C73C..8003C750, six instructions) has room for zero. See hypotheses.md
+ * K13/K14 and rejected/invariant-hoist-threshold-decrement-needs-13-preheader-insns.c.
+ *
  * Remaining d15 residual = ONE loop.c decision + its seat fallout:
  *  build hoists the 0x91A2B3C5 (/1800 magic) const load to the preheader
  *  (movable, savings 1, life 1, threshold 122 vs insn_count ~56); target has it

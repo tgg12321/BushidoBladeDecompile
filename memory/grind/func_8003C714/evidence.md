@@ -323,3 +323,110 @@ hypotheses.md H7): 344, 532, 791, 793, 1609-1613, 1631, 1719, 1904, 1912.
 - [s3] The two constant movables in the target are structurally IDENTICAL inputs to loop.c:1631 (both savings 1, both lifetime 1) — 0x88888889 is hoisted to the preheader and 0x91A2B3C5 is not — so they can only be separated by the `threshold -= 3` decay the first hoist applies. That pins the original compile's initial threshold to the window [56,58] and identifies the residual as a build-configuration scalar with no C-side input.
 
 - [s3] src/code6cac_c2.c was restored to its HEAD content (INCLUDE_ASM) at the end of the session; the only dirty tracked file is metrics/events.jsonl.
+
+## s4 (2026-09-01) — permuter modality: a validated permuter workspace, a flat basin, and the corrected joint-channel arithmetic
+
+### The permuter workspace (new infrastructure, reusable)
+No permuter workspace had ever existed for this function. One was hand-built
+this session and, critically, VALIDATED against the ledger before it was trusted:
+
+  build script : tmp/grind/func_8003C714/s4/mkws.sh
+  compile.sh   : tmp/grind/func_8003C714/s4/compile.sh   (copied into the workspace)
+  workspace    : tmp/perm_8003C714_s4/  (base.c, compile.sh, settings.toml, target.o)
+
+Pipeline mirrored from the Makefile exactly, because a permuter that compiles
+with different flags searches a different problem:
+  * `mipsel-linux-gnu-cpp` with the project's full CPP_DEFS **plus `-DPERMUTER`**
+    — include/include_asm.h:33 makes `INCLUDE_ASM` a no-op under `PERMUTER`, which
+    is what stops the sibling `asm/funcs/*.s` files from being `.include`d into
+    the permuter's assembly step. Without it the workspace does not build at all.
+  * `tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1
+    -mno-abicalls -fno-builtin -w -mel` (`-mel` is load-bearing per the Makefile).
+  * `prologue_fix` -> `maspsx` with the full MASPSX_FLAGS set -> the
+    `code6cac_c2` RODATA_ALIGN2 `sed 's/.align\t3/.align\t2/'` -> `multu_pad`.
+  * Function extraction: the maspsx output labels are NOT tab-indented
+    (`.globl\tfunc_8003C714` / `.ent\tfunc_8003C714` / `.end\tfunc_8003C714` all
+    start at column 0), so the awk range must anchor on `^\.globl[ \t]+<fn>$` ..
+    `^\.end[ \t]+<fn>$`. The `tools/mar_perm_workspace.sh` template anchors on
+    `^\t\.ent\t<fn>$`, which silently matches nothing and hands the assembler the
+    whole file tail — the visible symptom is a cascade of
+    `macro used $at after ".set noat"` plus
+    `.size expression for <fn> does not evaluate to a constant`.
+  * Do NOT prepend a `.set noat` / `.set noreorder` prelude to the extracted
+    compiler output: maspsx already emits its own `.set` directives inline and
+    the extra prelude is what triggers the `$at` cascade. (The prelude IS needed
+    for `target.s`, which is glabel-macro asm.)
+
+Validation before launch — base object vs target object, per-function objdump
+diff, was EXACTLY the known d15 residual and nothing else:
+    < lui t1, / < ori t1,t1,        (our hoisted 0x91A2B3C5, preheader)
+    > lui v0, / > ori v0,v0,        (target's in-loop split pair)
+    < mfhi t2 / > mfhi t1  (x4)     (the downstream seat)
+
+### The campaign
+  launch : python3 tools/permuter_campaign.py launch --func func_8003C714 \
+             --dir tmp/perm_8003C714_s4 --label s4-candidate-basin -j 8
+  base_score 590 (permuter's weighted metric; the objdump-distance is 15)
+  waits  : three in-turn `wait` calls, 553.5 s / 552.2 s / 551.8 s,
+           iterations 19,709 -> 43,363 -> 65,711, `novel: []` every time
+  harvest: --stop, elapsed_s 1776.1, iterations 66,016,
+           finds_total 0, finds_new 0, best_new_score null, procs_killed 9
+
+Sixty-six thousand randomized spellings did not once improve on the base score.
+That is the strongest available empirical statement that the residual has no
+C-side input, and it is consistent with the source-level account in H7/K9.
+
+### The lever switch: the joint threshold/insn_count sweep
+Per the fresh-seed rule the flat basin was closed and the session changed lever
+rather than reseeding. The new lever came from re-reading the two `threshold -= 3`
+sites (tools/gcc-2.7.2/loop.c:1719 and loop.c:1904) and noticing that the
+inherited K9 arithmetic treats threshold reduction and insn_count inflation as
+independent, when in fact each added invariant movable moves BOTH terms of
+loop.c:1631 in the favourable direction.
+
+Sweep artifacts: tmp/grind/func_8003C714/s4/gen_k.py (body generator),
+sweep_k.sh / sweep_k2.sh (drivers), tmp/grind/func_8003C714/s4/kdumps/
+(body_k<k>.c, k<k>.i, k<k>.s, k<k>.i.loop for k = 0,4,8,12,13,14,15,16,20,24).
+
+| k  | insn_count | 0x91A2B3C5 movable | verdict         |
+|----|-----------|--------------------|-----------------|
+| 0  | 56        | regno 84           | moved to 205    |
+| 4  | 66        | regno 89           | moved to 238    |
+| 8  | 74        | regno 93           | moved to 264    |
+| 12 | 82        | regno 97           | moved to 290    |
+| 13 | 84        | regno 98           | **not desirable** |
+| 14 | 86        | regno 99           | **not desirable** |
+| 15 | 88        | regno 100          | **not desirable** |
+| 16 | 90        | regno 101          | **not desirable** |
+| 20 | 98        | regno 105          | **not desirable** |
+| 24 | 106       | regno 105/…        | **not desirable** |
+
+k16.s confirms the payoff shape directly: `li $2,-1851654144` (0x91A2B3C5) sits
+INSIDE the loop, immediately after the loop-top label `.L133:`, feeding
+`mult $3,$2` — reproducing the target's construct on the SHIPPED chassis with no
+call in the loop, which K11 could not do.
+
+Why it is still foreclosed: only movables that are actually MOVED pay the
+`threshold -= 3`, and loop.c:1700-1717 emits each moved movable into the loop
+preheader. Thirteen extra preheader instructions are required ahead of the magic;
+the target preheader 8003C73C..8003C750 is six instructions and every one is
+accounted for (biv init, the single hoisted 0x88888889 movable as lui+ori, and
+two strength-reduction giv inits). Available room: zero.
+
+- [s4] Chassis re-check at session start: candidate.c spliced over the INCLUDE_ASM line at src/code6cac_c2.c:629 measures score 15 / target_insns 104 / build_insns 105 with `sandbox func_8003C714 --disable all`. The ledger floor of 15 is chassis-current. src/ was restored to the INCLUDE_ASM line before the session closed; the working tree carries no src edits.
+
+- [s4] First permuter workspace ever built for this function, and it is validated rather than assumed: tmp/perm_8003C714_s4, recipe committed to tmp/grind/func_8003C714/s4/mkws.sh + compile.sh. Its base-vs-target objdump diff is exactly the d15 residual and nothing else.
+
+- [s4] Two reusable workspace gotchas discovered and written up in evidence.md: (1) the cpp step needs -DPERMUTER, because include/include_asm.h:33 no-ops INCLUDE_ASM under it -- without that the sibling asm/funcs/*.s files get .include'd and the workspace cannot build; (2) maspsx emits `.globl`/`.ent`/`.end` at column 0, so the function-extraction awk must anchor on `^\.globl[ \t]+<fn>$` .. `^\.end[ \t]+<fn>$`, not on the tab-indented `^\t\.ent\t<fn>$` that tools/mar_perm_workspace.sh uses (the mismatch silently hands the assembler the whole file tail and shows up as a `macro used $at after ".set noat"` cascade). Also: do not prepend a .set noat/.set noreorder prelude to extracted compiler output -- maspsx emits its own.
+
+- [s4] Campaign telemetry: base_score 590, elapsed 1776.1 s, 66,016 iterations, finds_total 0, finds_new 0, best_new_score null, stopped with --stop and 9 processes killed. No campaign outlives this session.
+
+- [s4] loop.c:1719 and loop.c:1904 were read this session: BOTH `threshold -= 3` sites are unconditional and fire on every move (the first for the move-insn path, the second for the consec-copy path).
+
+- [s4] The k-sweep movable tables (tmp/grind/func_8003C714/s4/kdumps/k<k>.i.loop) give the crossover to the insn: k=12 insn_count 82 -> moved; k=13 insn_count 84 -> not desirable; k=16 insn_count 90 with threshold 122-3*11=89 -> not desirable.
+
+- [s4] tmp/grind/func_8003C714/s4/kdumps/k16.s places `li $2,-1851654144` (0x91A2B3C5) inside the loop under `.L133:` feeding `mult $3,$2` -- the target's 8003C754..8003C760 construct, on the shipped chassis, with no call in the loop.
+
+- [s4] Foreclosure arithmetic, unchanged in conclusion but now with an exact number: 13 additional hoisted preheader instructions are required ahead of the magic; the target preheader 8003C73C..8003C750 is 6 instructions with room for 0.
+
+- [s4] Banked this session: memory/grind/func_8003C714/rejected/invariant-hoist-threshold-decrement-needs-13-preheader-insns.c (the k=13 diagnostic body, explicitly labelled a cheat and a diagnostic, never a candidate). candidate.c is unchanged as C and carries a new s4 header note. hypotheses.md and evidence.md both carry full s4 sections.

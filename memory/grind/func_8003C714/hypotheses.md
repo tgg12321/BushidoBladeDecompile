@@ -341,3 +341,134 @@ chassis has not drifted; every s1/s2 conclusion is still chassis-current.
 - probe: Read loop.c:344 (moved_once alloca-ed once per FUNCTION) and loop.c:1912 (set only when a movable is actually moved), combined with s2's K7 measurement that a degenerate do{}while(0) is marked PHONY and never scanned
 - result: Closed for a second independent reason: arming moved_once requires the same pseudo to have been moved by an earlier scan_loop call, i.e. a REAL nested loop, which emits a back-edge branch inside the loop body. The target body 8003C754..8003C840 is straight-line. The tantalising +4-insn margin is irrelevant because the trigger itself is byte-excluded.
 - verdict: KILLED
+
+## s4 (2026-09-01, permuter modality)
+
+Chassis re-check first: `memory/grind/func_8003C714/candidate.c` spliced over the
+`INCLUDE_ASM` line at src/code6cac_c2.c:629, `sandbox func_8003C714 --disable all`
+prints **score 15, target_insns 104, build_insns 105**, and the `.loop` dump
+reproduces the s2/s3 movable table verbatim (`Loop from 25 to 146: 56 real insns.`
+/ regno 78, 84, 91 all `moved to`). Chassis unchanged; src/ was restored to the
+`INCLUDE_ASM` line before the session closed.
+
+### KILLED
+
+- **K13 — random search over the candidate.c basin yields nothing.** A full
+  decomp-permuter campaign was built and validated for this function for the
+  first time (workspace `tmp/perm_8003C714_s4`, hand-built to mirror the shipped
+  pipeline exactly: cpp `-DPERMUTER` over the whole TU, `build/cc1 -O2 -G0
+  -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel`,
+  prologue_fix, maspsx with the project flag set, the `code6cac_c2` rodata
+  `.align 3 -> .align 2` fix, multu_pad, then a `.globl func_8003C714 .. .end
+  func_8003C714` extraction assembled standalone; `target.o` = prelude +
+  `asm/funcs/func_8003C714.s`). The workspace validated against the ledger:
+  base-vs-target objdump diff is EXACTLY the known d15 residual (hoisted `lui
+  t1/ori t1` vs the target's in-loop `lui v0 ... ori v0`, plus the mfhi seat t2
+  vs t1) and nothing else. Campaign: `permuter_campaign.py launch -j 8`,
+  base_score 590, run **1776 s / 66,016 iterations**, harvested with `--stop`:
+  **0 finds, 0 novel, best_new_score null** — the search never once improved on
+  the base score. Three consecutive `wait` windows (553 s, 552 s, 552 s) each
+  returned `novel: []`. Per the fresh-seed rule this basin is exhausted; the
+  session switched LEVER rather than reseeding, which produced K14.
+
+- **K14 — the `threshold -= 3` / `insn_count` JOINT channel is real, is exactly
+  13 hoists wide, and is byte-foreclosed by a factor of thirteen.** This is the
+  one arithmetic error in the inherited ledger. K9 treated threshold reduction
+  and insn_count inflation as separate axes and estimated "23 further hoists"
+  for the former; but every movable that loop.c MOVES both decrements
+  `threshold` by 3 (loop.c:1719 and loop.c:1904 — verified this session, both
+  decrement sites are unconditional, taken on every move) AND contributes to the
+  `insn_count` the movable is tested against. The two effects push
+  loop.c:1631's `threshold * savings * lifetime >= insn_count` in the SAME
+  direction, so the real requirement is much weaker than 23. Probe: a sweep
+  `k = 0,4,8,12,13,14,15,16,20,24` of bodies that add `k` loop-invariant
+  large-constant movables (alternating `acc ^= C` / `acc += C`) AHEAD of the
+  `/1800` statement, each compiled with `cc1 -dL` and its per-function movable
+  table read (`tmp/grind/func_8003C714/s4/kdumps/k<k>.i.loop`):
+
+      k=0   insn_count 56   0x91A2B3C5 movable (regno 84)  moved to 205
+      k=12  insn_count 82   0x91A2B3C5 movable (regno 97)  moved to 290
+      k=13  insn_count 84   0x91A2B3C5 movable (regno 98)  NOT DESIRABLE
+      k=14  insn_count 86   0x91A2B3C5 movable (regno 99)  NOT DESIRABLE
+      k=16  insn_count 90   0x91A2B3C5 movable (regno 101) NOT DESIRABLE
+
+  and the emitted asm at k=16 (`tmp/grind/func_8003C714/s4/kdumps/k16.s`) carries
+  `li $2,-1851654144` (= 0x91A2B3C5) INSIDE the loop, directly under the loop-top
+  label `.L133:` and feeding `mult $3,$2`. **This is the first time the shipped
+  chassis has been made to decline this movable with NO call in the loop** — K11
+  had only ever reached "not desirable" by arming `loop_has_call`, which the
+  target bytes forbid. The arithmetic checks exactly: at k=16, eleven movables
+  are moved ahead of the magic, so threshold = 122 - 3*11 = 89 < insn_count 90.
+
+  It is nevertheless DEAD, and now dead with a number attached. The decrement is
+  paid only by movables that are ACTUALLY MOVED, and loop.c:1700-1717 emits every
+  moved movable's set into the loop PREHEADER
+  (`emit_insns_before (temp, loop_start)`). Declining the magic therefore costs
+  **13 additional hoisted preheader instructions ahead of it**. The target
+  preheader is 8003C73C..8003C750 — six instructions, every one accounted for:
+  `addu t0,zero,zero` (biv init), `lui a3 / ori a3` = the single hoisted movable
+  0x88888889, and `lui a2 / addiu a2` + `addu a1,s0,zero` (strength-reduction giv
+  inits, not movables). Room for extra hoisted movables in the target bytes:
+  **zero**. The zero-byte-cost variant (13 hoists whose preheader insns a later
+  pass deletes) is closed by K10 in its general form: constructs cheap enough to
+  vanish, vanish UPSTREAM of loop.c; constructs that survive to loop.c also
+  survive to the assembler. Banked as
+  `rejected/invariant-hoist-threshold-decrement-needs-13-preheader-insns.c`.
+
+### FRONTIER (for the next session)
+1. The desirability test at loop.c:1631 is now closed on BOTH of its terms with
+   measurements rather than estimates: `insn_count` alone needs +64 (K8/K10),
+   `threshold` alone needs 23 hoists (K9), and the JOINT path needs 13 hoists
+   (K14) — and all three are foreclosed by the same six-instruction target
+   preheader / 59-instruction target loop budget. `savings` and `lifetime` are
+   pinned at 1 by construction (H7). There is nothing left in this test.
+2. Random search is now measured, not assumed: 66,016 permuter iterations over
+   the validated candidate.c basin produced zero improvements on a base score of
+   590. Do not re-run a campaign from this basin. The validated workspace recipe
+   is `tmp/grind/func_8003C714/s4/mkws.sh` + `compile.sh` if a future session
+   wants a DIFFERENT seed cheaply.
+3. Every remaining question about this function is the chassis question
+   (n_non_fixed_regs / CC_FLAGS), which the standing Judge constraint bars grind
+   sessions from re-filing. A future dispatch should be told that up front.
+
+## [s4] A decomp-permuter campaign over the validated candidate.c basin can find a spelling that reaches distance 0 on the shipped chassis.
+- mechanism: randomized C-level mutation (decomp-permuter) scored against a standalone-assembled func_8003C714 object extracted from a full-TU compile through the exact shipped pipeline
+- probe: Hand-built and VALIDATED workspace tmp/perm_8003C714_s4 (base-vs-target diff = exactly the known d15 residual, nothing else); `python3 tools/permuter_campaign.py launch --func func_8003C714 --dir tmp/perm_8003C714_s4 --label s4-candidate-basin -j 8`; three in-turn `wait` windows (553+552+552 s); `harvest --stop`.
+- result: base_score 590, elapsed 1776 s, **66,016 iterations, finds_total 0, finds_new 0, best_new_score null**. Not a single iteration improved on the base score, and no `wait` window returned a novel find. The basin is flat, consistent with the ledger's account that the residual is a single pass-level decision with no C-side input.
+- verdict: KILLED
+
+## [s4] The loop.c threshold decrement and insn_count inflation are independent axes, so defeating the 0x91A2B3C5 hoist via threshold reduction requires the 23 further hoists K9 estimated.
+- mechanism: loop.c:1719 / loop.c:1904 `threshold -= 3` on every move, against loop.c:1631 `threshold * savings * lifetime >= insn_count`, where added invariant movables ALSO raise insn_count
+- probe: k-sweep (k = 0,4,8,12,13,14,15,16,20,24) of bodies adding k loop-invariant large-constant movables ahead of the /1800 statement; each compiled with `cc1 -dL` and its per-function movable table read from tmp/grind/func_8003C714/s4/kdumps/k<k>.i.loop; k16 disassembly checked for constant placement.
+- result: The two axes are NOT independent — they compound. The 0x91A2B3C5 movable flips from `moved to` (k=12, insn_count 82) to `not desirable` (k=13, insn_count 84) and stays declined at k=14/15/16. At k=16, threshold = 122 - 3*11 = 89 < insn_count 90, and the emitted asm places `li $2,-1851654144` INSIDE the loop under `.L133:` feeding `mult $3,$2` — the target's shape, on the shipped chassis, with no call in the loop. K9's estimate of 23 is corrected to 13.
+- verdict: KILLED (the ESTIMATE is killed; the CHANNEL is confirmed real but byte-foreclosed — see the next entry)
+
+## [s4] The corrected 13-hoist joint channel is byte-reachable: 13 extra hoisted movables can be spelled without disturbing the target's emitted instructions.
+- mechanism: loop.c:1700-1717 `emit_insns_before (temp, loop_start)` — every MOVED movable emits its set into the loop preheader, and only moved movables pay `threshold -= 3`
+- probe: Counted the target preheader 8003C73C..8003C750 in asm/funcs/func_8003C714.s against the movable/giv inventory: 6 instructions = biv init `addu t0,zero,zero`, the ONE hoisted movable `lui a3 / ori a3` (0x88888889), and the giv inits `lui a2 / addiu a2` + `addu a1,s0,zero`.
+- result: The target preheader has room for ZERO additional hoisted movables and the channel needs 13. The zero-byte-cost variant is closed by K10's general finding (constructs cheap enough to vanish, vanish upstream of loop.c). Byte-foreclosed by a factor of thirteen.
+- verdict: KILLED
+
+## [s4] A decomp-permuter campaign over the validated candidate.c basin can find a spelling that reaches distance 0 on the shipped chassis.
+- mechanism: randomized C-level mutation (decomp-permuter) scored against a standalone-assembled func_8003C714 object extracted from a full-TU compile driven through the exact shipped pipeline (cpp -DPERMUTER, build/cc1 -O2 -G0 -mel, prologue_fix, maspsx, rodata .align 3->2, multu_pad)
+- probe: Hand-built workspace tmp/perm_8003C714_s4 (recipe: tmp/grind/func_8003C714/s4/mkws.sh + compile.sh), VALIDATED before launch -- its base-vs-target per-function objdump diff is exactly the known d15 residual (hoisted lui/ori t1 vs the target's in-loop lui/ori v0, plus the mfhi t2-vs-t1 seat) and nothing else. Then `python3 tools/permuter_campaign.py launch --func func_8003C714 --dir tmp/perm_8003C714_s4 --label s4-candidate-basin -j 8`, three in-turn `wait` windows (553.5 s / 552.2 s / 551.8 s), then `harvest --stop`.
+- result: base_score 590; elapsed 1776.1 s; 66,016 iterations; finds_total 0, finds_new 0, best_new_score null; every wait window returned novel: []. Not one randomized spelling improved on the base score. The basin is flat, exactly as the source-level account in H7/K9 predicts.
+- verdict: KILLED
+
+## [s4] The loop.c threshold decrement and the loop's insn_count are independent axes, so defeating the 0x91A2B3C5 hoist via threshold reduction requires the 23 further hoists that the inherited K9 estimated.
+- mechanism: tools/gcc-2.7.2/loop.c:1719 and loop.c:1904 both apply `threshold -= 3` unconditionally on every move, and the test at loop.c:1631 is `threshold * savings * m->lifetime >= insn_count` -- but each added loop-invariant movable ALSO raises insn_count, so the two effects compound instead of trading off
+- probe: k-sweep over k = 0,4,8,12,13,14,15,16,20,24 bodies that add k loop-invariant large-constant movables (alternating `acc ^= C` / `acc += C`) AHEAD of the /1800 statement; each compiled with `cc1 -dL` and its per-function movable table read from tmp/grind/func_8003C714/s4/kdumps/k<k>.i.loop; the k=16 assembly checked for constant placement.
+- result: The axes compound. The 0x91A2B3C5 movable is `moved to` at k=12 (insn_count 82) and flips to `not desirable` at k=13 (insn_count 84), staying declined at k=14/15/16/20/24. At k=16 eleven movables move ahead of it, so threshold = 122 - 3*11 = 89 < insn_count 90 -- the arithmetic checks exactly. K9's estimate of 23 is corrected to 13.
+- verdict: KILLED
+
+## [s4] The corrected 13-hoist joint channel is byte-reachable -- 13 extra hoisted movables could be spelled without disturbing the target's emitted instructions.
+- mechanism: loop.c:1700-1717 `emit_insns_before (temp, loop_start)`: every movable that is actually MOVED emits its set into the loop preheader, and only moved movables pay the `threshold -= 3`
+- probe: Counted the target preheader 8003C73C..8003C750 in asm/funcs/func_8003C714.s against the full movable/giv inventory established in s1-s3.
+- result: Six instructions, all accounted for: `addu t0,zero,zero` (biv init), `lui a3 / ori a3` = the ONE hoisted movable 0x88888889, and `lui a2 / addiu a2` + `addu a1,s0,zero` (strength-reduction giv inits, not movables). Room for extra hoisted movables: zero, against a requirement of 13. The zero-byte-cost variant is closed by s3's K10 in general form (constructs cheap enough to vanish, vanish upstream of loop.c; constructs that survive to loop.c survive to the assembler).
+- verdict: KILLED
+
+## [s4] The shipped chassis can only be made to decline the 0x91A2B3C5 movable by arming loop_has_call (the s3 K11 position).
+- mechanism: loop.c:532 threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs), i.e. 61 with a call and 122 without
+- probe: The same k-sweep: none of the k bodies contains a call, so loop_has_call is false and threshold starts at 122 in every one of them; read the k=16 assembly (tmp/grind/func_8003C714/s4/kdumps/k16.s) for the constant's final placement.
+- result: Refuted. At k>=13 the movable is declined with loop_has_call FALSE, and k16.s emits `li $2,-1851654144` (0x91A2B3C5) INSIDE the loop directly under the loop-top label `.L133:`, feeding `mult $3,$2`. This is the first no-call reproduction of the target's construct on the shipped chassis; it does not open a path (the preheader budget still forecloses it) but it removes the last doubt that the decision, and not the chassis, is what produces the target's shape.
+- verdict: CONFIRMED
