@@ -1,8 +1,8 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 7,
- "current_modality": "solver",
+ "session_count": 8,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 15,
    "modality": "solver",
    "headline": "Solver: all three s6 frontier items closed with measurements - the moved_once doubling is self-defeating (lifetime inflates 1->15), no NATURAL loop-carried carrier is free (only constant-step bivs are"
+  },
+  {
+   "session": 8,
+   "floor": 15,
+   "modality": "forensics",
+   "headline": "Forensics: the loop.c:1631 desirability inequality is now closed TERM BY TERM \u2014 ADMISSION killed with five measured spellings (K23), the free movable-ORDER dial found and killed at -6 vs -66 (K24), lo"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Nothing sanctioned is known to remain on the loop.c desirability axis: every measured route to distance 0 runs through a small-immediate-constant-step biv whose only use is post-loop, which is dead code by construction and matches no frozen SOTN family.",
-   "mechanism": "c > 63 - 3h with savings and lifetime pinned at 1; c is only free for constant-step bivs (K21), h is never free (K22), and the moved_once shortcut that would halve c is self-defeating (K20).",
-   "next_probe": "If the ladder demands another pass on this axis, it must find a way to change insn_count or the movable ORDER with no added local at all - and no such channel is visible in loop.c. Otherwise the honest next step is the driver assigning `escalation`, where H11/K20/K21/K22 plus s6's H10 write the foreclosure record directly."
+   "hypothesis": "No sanctioned route to distance 0 is known to remain: the loop.c:1631 inequality is now closed term by term, and its last open term (insn_count) has only one free carrier, which is dead code by construction.",
+   "mechanism": "savings and lifetime are pinned at 1 (s7 H11); threshold is writable only by CC_FLAGS (barred) or 32 register-asm pins (cheat) and its per-move decrement caps at -6 (s8 K26/K24); movable ADMISSION cannot be failed by a CONST_INT set (s8 K23); loop form is count-neutral (s8 K25); the only free insn_count carrier is a small-immediate-constant-step biv whose sole use is post-loop (s6 H10, s7 K21).",
+   "next_probe": "None is visible on this axis. The honest next step is the driver assigning `escalation`, where the foreclosure record writes itself from s7 H11 + s8 H13 (the inequality closed term by term), s6 H10 (distance 0 measured on the shipped chassis but only via an inadmissible construct), and K20-K26. If the ladder instead assigns another grinding modality, it must find a channel that changes insn_count or the movable ORDER with no added local at all \u2014 and s8 measured the two candidates for that (statement reordering, loop form) at +0 and -6."
   },
   {
-   "hypothesis": "ADMISSION, not desirability: some ordinary-C spelling could stop the (set r 0x91A2B3C5) insn from being a movable at all.",
-   "mechanism": "loop.c:770-800 builds the movable only after invariant_p and the n_times_set checks; m->cond (conditionally invariant), m->consec (multiple sets of the same pseudo in the loop) and m->global (first use before loop_start or last use after loop_end) are the three structural escape hatches, and none of them has ever been examined for this function - s3's K10-K12 only killed const-FORM respellings.",
-   "next_probe": "Spell candidates that would make the divisor pseudo global or conditionally invariant (e.g. a pre-loop or post-loop use of the same t/1800 value that cse1 cannot merge into the in-loop copy) and read the movable table in the .loop dump via tmp/grind/func_8003C714/s7/sweep.sh - one cc1 run per form, no sandbox needed. Prior is LOW (cse1 normally CSEs a pre-loop x/1800 into the loop copy), but it is the only structurally untried lever left."
+   "hypothesis": "Do NOT re-open the ADMISSION axis. It is measured dead in five spellings and killed at the mechanism level.",
+   "mechanism": "loop.c:695-700's `(! REG_USERVAR_P && ! REG_LOOP_TEST_P)` disjunct admits every compiler temp unconditionally; may_not_optimize needs the SAME pseudo set twice, which distinct source-level divisions never produce; may_trap_p(const_int) is 0; m->cond/m->global are not gates.",
+   "next_probe": "None. If a session's reading of loop.c:770-800 suggests m->cond / m->consec / m->global as escape hatches, that reading is wrong \u2014 see s8 K23 and rejected/admission-escape-hatches-all-pass-a-const-int-movable.c for the three-test enumeration and the five measurements."
   },
   {
-   "hypothesis": "Do NOT re-open an RA or scheduler search on this function.",
-   "mechanism": "goal_from_tgt.py classify names an RA component ($t2 -> $t1 x10) and a nop-only SCHED component, which reads like a live seat problem; s6 K18 measured that at score 0 every seat lands, so both are consequent on the loop.c hoist.",
-   "next_probe": "None. If a session's triage points at RA/sched for func_8003C714, that is the classifier seeing the hoist's downstream shadow - go back to loop.c:1631."
+   "hypothesis": "Do NOT re-open RA or scheduler search, const-FORM respellings, added hoists, inner-loop moved_once doubling, natural accumulators, or the permuter \u2014 all measured dead in s3/s4/s6/s7.",
+   "mechanism": "s6 K18 measured that at score 0 every register seat lands on the target, so the RA/SCHED components goal_from_tgt.py classify reports are the hoist's downstream shadow; s7 K20/K21/K22 closed the doubling, the natural-carrier and the added-hoist channels with sweeps; s4 ran 66,016 permuter iterations with 0 finds on this exact body.",
+   "next_probe": "None. Every one of these is banked with a rejected/*.c file naming the mechanism."
   }
  ],
  "judge_constraints": [

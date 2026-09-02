@@ -1021,3 +1021,184 @@ for ordinary C. What remains is not a spelling search:
 - probe: tmp/grind/func_8003C714/s7/gen_hoist.py k=1,4,8,16,22 (loop-carried counters with LARGE constant steps at the TOP of the body, post-loop folded so the D_800A37B8 store stays 0), plus re-reading the gen_biv k=2 movable table in dumps/biv2.i.loop
 - result: FALSE. Hoists are created (moved 8 -> 9/12/16) but cost ~9 emitted instructions each: asm 116/137/165/241/285 against baseline 107. The dump names the mechanism - 'Insn 49: possible biv, reg 74, const = (reg:SI 82)': a step constant big enough to be hoisted makes the increment a REGISTER, which disqualifies the biv from elimination; a step small enough to stay free folds into addiu and creates no movable. The two channels are mutually exclusive. s6's one free hoist is 'Insn 145: regno 132 (life 1)', the literal 21 of the 'j != 21' exit test at the loop BOTTOM - a counter substitution, after the magic in insn order, so it never reduces the threshold the magic is tested at.
 - verdict: KILLED
+
+## s8 (2026-09-01, forensics modality) — the ADMISSION axis is closed and the THRESHOLD term is closed at its source
+
+Chassis re-checked first: candidate.c spliced, `sandbox --disable all` = score 15,
+104 target / 105 build, unchanged since s1.
+
+This session took the s7 frontier's item 2 (attack ADMISSION rather than
+desirability) and closed it with five measured spellings plus a full read of
+scan_loop's admission gate. It also found — and killed — one dial s7's K22 had
+not tested: REORDERING the existing hoists rather than adding new ones.
+
+### CONFIRMED
+
+- **H13 — the desirability inequality of loop.c:1631 is now closed term by term,
+  at the mechanism level, for ordinary C on the shipped chassis.** The test is
+  `threshold * savings * m->lifetime >= insn_count`, evaluated for the
+  0x91A2B3C5 movable at `119 * 1 * 1 >= 56`. Term by term:
+  * `savings` = `n_times_used[regno]` = 1 (loop.c:793) — structural minimum, s7 H11.
+  * `m->lifetime` = 1 (loop.c:791) — structural minimum, s7 H11.
+  * `threshold` = `(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (loop.c:532)
+    minus 3 per preceding move (loop.c:1719/1904). `n_non_fixed_regs` is writable
+    only by `init_reg_sets_1` (regclass.c:380-387, i.e. CC_FLAGS — BARRED) and by
+    `globalize_reg` (regclass.c:530, i.e. 32 file-scope register-asm pins — a
+    cheat). `loop_has_call` halves it to 61, which is still >= 56 after the one
+    preceding decrement, and requires a call the target's loop does not have.
+    The per-move decrement is bounded by the number of movables in THIS loop,
+    which is 3 (`threshold` is a scan_loop local recomputed per loop), so
+    reordering caps at 122 -> 116 against a < 56 requirement.
+  * `insn_count` is the only term left, and s7's K21 already measured that its
+    one free carrier is dead code by construction.
+  Nothing on this axis is open for ordinary C.
+
+### KILLED
+
+- **K23 — the ADMISSION axis (s7 frontier item 2) is dead. No ordinary-C spelling
+  stops the `(set (reg N) (const_int 0x91A2B3C5))` insn from becoming a
+  movable.** scan_loop's admission gate is exactly three tests and a
+  compiler-generated CONST_INT set passes all three unconditionally:
+  loop.c:649 `may_not_optimize` (written only by count_loop_regs_set at
+  loop.c:3037/3044 — same pseudo in two basic blocks, or set twice with a use
+  between, or explicitly clobbered; distinct source divisions give DISTINCT
+  pseudos so it never fires); loop.c:695-700 whose second disjunct
+  `(! REG_USERVAR_P && ! REG_LOOP_TEST_P)` is true for every compiler temp; and
+  loop.c:715 whose `may_trap_p (src)` is 0 for a CONST_INT. `m->cond` and
+  `m->global`, the two fields s7 named, are not admission gates at all —
+  `m->global` (loop.c:790) is consumed only for `m->savemode` on partial movables
+  (loop.c:888) and `m->cond` (loop.c:789) is structurally 0 because
+  `invariant_p (const_int)` returns 1.
+  MEASURED, five forms, `tmp/grind/func_8003C714/s8/sweep_adm.sh`
+  (base 56 insns/3 movables/107 asm as control):
+  `cond` 58/4/109, `twobb` 66/4+match/123, `preloop` 56/3/120,
+  `postloop` 56/3/118, `twosame` 63/3/119 — the magic is hoisted in every one,
+  and every one costs bytes. `twobb` actively backfires: the two magic loads are
+  MATCHED (`Insn 73: regno 92 (life 1), done move-insn matches 54`) and `savings`
+  goes 1 -> 2, making the hoist strictly more desirable.
+  `rejected/admission-escape-hatches-all-pass-a-const-int-movable.c`.
+
+- **K24 — the MOVABLE-ORDER dial is free and ordinary C, and is exactly 11x too
+  small.** s7's K22 killed ADDING hoists (they cost ~9 emitted instructions
+  each). This session tested the adjacent thing: reordering the hoists that
+  already exist. Plain statement reordering inside the loop body moves the magic
+  from movable slot 2 to slot 3 with insn_count PINNED at 56 and the emitted
+  instruction count unchanged at 107 — genuinely free. But the loop has only
+  THREE movables (regno 78 = `&D_80106A58`, regno 84 = 0x91A2B3C5, regno 91 =
+  0x88888889), so the free range is threshold 122 -> 116, i.e. -6 against the -66
+  the inequality needs. It is also byte-divergent in SEQUENCE: the emitted /1800
+  quartet relocates past the /30 block, and the target's statement order is
+  already the candidate's. Measured: `sweep_ord.sh` — 0x22,0x23,0x21,0x24 and
+  0x23,0x22,0x21,0x24 both give 56 insns / slot 3 / 107 asm; 0x24,0x22,0x23,0x21
+  gives 56 / slot 3 / 108.
+  `rejected/statement-reorder-buys-free-slots-but-caps-at-minus-6.c`.
+
+- **K25 — the LOOP FORM is insn_count-neutral; the `loop_top` route adds zero.**
+  `count_loop_regs_set` counts from `loop_top ? loop_top : loop_start`
+  (loop.c:592), so a loop entered at the bottom counts a wider range and might
+  have inflated insn_count for free. Measured (`sweep_form.sh`): do-while, `for`
+  and `while` spellings of the identical body all give `56 real insns`, the same
+  3 movables with the magic 2nd, and 107 asm lines. The `for`/`while` forms do
+  widen the range (25..146 -> 24..148 / 25..148) but the extra luids are NOTEs,
+  not `'i'`-class insns, so `count` at loop.c:3007 never sees them.
+
+- **K26 — `threshold` is not a C-reachable dial by any route.** `loop.c:532` has
+  two inputs. `n_non_fixed_regs` is set once in `init_reg_sets_1`
+  (regclass.c:380-387) and decremented ONLY by `globalize_reg` (regclass.c:530),
+  which is reachable only from a file-scope `register T x asm("$k");` — the
+  register-asm-pin cheat family — and would need 32 instances TU-wide to reach
+  threshold < 56 (`2*(1+N) - 3 < 56 => N <= 28`, from 60). NOT measured,
+  deliberately. `loop_has_call` (loop.c:2202) halves threshold to 61, which is
+  the biggest single lever in the file and still insufficient: 61 - 3 = 58 >= 56,
+  so the magic is still hoisted, and a call in the loop is a different function
+  (the target loop 8003C750..8003C7C8 has none). The one genuine admission kill
+  that a call WOULD unlock — the `reg_single_usage` deletion at loop.c:735-767,
+  gated on the array being allocated at loop.c:586-589 — additionally requires
+  `validate_replace_rtx` to substitute the CONST_INT into its single use; the use
+  is the MIPS highpart multiply with `register_operand` operands, so it can never
+  validate.
+  `rejected/threshold-term-only-movable-by-cheat-or-by-a-call-in-the-loop.c`.
+
+### FRONTIER after s8
+
+The loop.c:1631 axis is now closed term by term with measurements, and no
+untried structural channel is visible in loop.c:
+
+1. **There is no known sanctioned route to distance 0.** Every measured route
+   runs through `insn_count >= 120`, whose only free carrier (s6 H10, s7 K21) is
+   a small-immediate-constant-step biv used only after the loop — dead code by
+   construction, failing T1/T2/T6 and matching no frozen SOTN family. `savings`,
+   `lifetime` (s7 H11), `threshold` (s8 K26), movable ADMISSION (s8 K23), movable
+   ORDER (s8 K24) and loop form (s8 K25) are each independently closed.
+2. **Do NOT re-open**: RA/scheduler search (s7 H12, s6 K18 — every seat lands at
+   score 0, the classifier is seeing the hoist's shadow); const-FORM respellings
+   (s3 K10-K12); inner-loop `moved_once` doubling (s7 K20); added hoists
+   (s7 K22); natural accumulators/checksums (s7 K21); permuter (s4, 66,016
+   iterations, 0 finds); the CC_FLAGS/`-msoft-float` chassis story (barred, and
+   superseded by s6 H10 anyway).
+3. **The disposition question is ripe and is the DRIVER's call.** Seven sessions
+   across five distinct modalities (recon, structural x2, permuter, synthesis x2,
+   solver) plus this forensics session have held the honest floor at 15. If the
+   driver assigns `escalation`, the foreclosure record writes itself from
+   s7 H11 + s8 H13 (the inequality closed term by term), s6 H10 (distance 0 is
+   reachable but only via an inadmissible construct), and K20-K26.
+
+## [s8] H13 — the loop.c:1631 desirability inequality is closed term by term for ordinary C on the shipped chassis: savings and lifetime are at their structural minimum (s7 H11), threshold is writable only by CC_FLAGS or 32 register-asm pins and its per-move decrement is capped at -6 by this loop's 3 movables, and insn_count's only free carrier is dead code (s7 K21).
+- mechanism: loop.c:1631 `threshold * savings * m->lifetime >= insn_count`, with threshold from loop.c:532 `(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` minus 3 per move (loop.c:1719/1904); n_non_fixed_regs from regclass.c:380-387 / 530; savings from loop.c:793; lifetime from loop.c:791.
+- probe: full read of scan_loop's admission gate and move_movables' desirability block, plus the s8 admission (6 forms), order (4 forms) and loop-form (3 forms) sweeps through tmp/grind/func_8003C714/s8/
+- result: every term except insn_count is closed at the mechanism level, and insn_count was closed by s7 K21.
+- verdict: CONFIRMED
+
+## [s8] K23 — an ordinary-C spelling can make the `(set r 0x91A2B3C5)` insn fail loop.c's movable ADMISSION (the m->cond / m->consec / m->global paths s7's frontier named).
+- mechanism: loop.c:649 may_not_optimize (set by count_loop_regs_set at loop.c:3037/3044), loop.c:695-700 the uservar/basic-block test, loop.c:715 the trap test; m->cond at loop.c:789 and m->global at loop.c:790.
+- probe: tmp/grind/func_8003C714/s8/sweep_adm.sh with gen_adm.py forms base / cond (division in a conditionally-executed basic block) / twobb (a second /1800 in the else arm) / preloop (a /1800 before the loop) / postloop (a /1800 after the loop) / twosame (a second /1800 in the same basic block); one cc1 -dL run each, reading the loop-25 movable table.
+- result: FALSE. All five probes still hoist the magic (56/58/66/56/56/63 insn_count, 107/109/123/120/118/119 asm lines). m->global is not an admission gate (loop.c:888 uses it only for savemode on partial movables); m->cond is structurally 0 because invariant_p(const_int) returns 1; may_not_optimize never fires because two source-level divisions give two DISTINCT pseudos. twobb backfires: loop.c MATCHES the two magic loads (`Insn 73: regno 92 (life 1), done move-insn matches 54`) and savings goes 1 -> 2.
+- verdict: KILLED
+
+## [s8] K24 — reordering the loop body's statements (as opposed to s7 K22's ADDING hoists) is a free way to push the magic later in the movable list and reduce the threshold it is tested at.
+- mechanism: scan_loop appends movables in insn order (loop.c:797-803) and move_movables does `threshold -= 3` per successful move (loop.c:1719/1904), so k moves ahead of the magic give threshold = 122 - 3k.
+- probe: tmp/grind/func_8003C714/s8/sweep_ord.sh with gen_ord.py, four statement orders of the identical four body statements; read the loop-25 movable table and the emitted asm.
+- result: TRUE but 11x too small, and byte-divergent. Reordering is free (insn_count pinned at 56, asm 107 lines) and does move the magic from slot 2 to slot 3, but this loop has only THREE movables so the ceiling is threshold 116 against a < 56 requirement. The emitted /1800 quartet also relocates past the /30 block, and the target's order is already the candidate's.
+- verdict: KILLED
+
+## [s8] K25 — a `for`/`while` loop form inflates insn_count for free, because count_loop_regs_set counts from loop_top rather than loop_start.
+- mechanism: loop.c:592 `count_loop_regs_set (loop_top ? loop_top : loop_start, end, ...)`; loop.c:3007 increments `count` only for GET_RTX_CLASS == 'i'.
+- probe: tmp/grind/func_8003C714/s8/sweep_form.sh with gen_form.py — do-while, for, while spellings of the identical body.
+- result: FALSE. All three give 56 real insns, 3 movables with the magic 2nd, 107 asm lines. The range does widen (25..146 -> 24..148 / 25..148) but the extra luids are NOTEs, not 'i'-class insns.
+- verdict: KILLED
+
+## [s8] K26 — `threshold` (loop.c:532) is a C-reachable dial on the shipped chassis.
+- mechanism: `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`; n_non_fixed_regs is written by init_reg_sets_1 (regclass.c:380-387) and decremented by globalize_reg (regclass.c:530); loop_has_call is set at loop.c:2202.
+- probe: source read of loop.c and regclass.c plus the arithmetic (`2*(1+N) - 3 < 56 => N <= 28`, from 60); the loop_has_call halving evaluated against the measured baseline insn_count 56.
+- result: FALSE. n_non_fixed_regs moves only via CC_FLAGS (barred) or 32 file-scope register-asm pins (the forbidden register-pin family — not measured, deliberately). loop_has_call halves threshold to 61 but 61 - 3 = 58 >= 56, so the magic is still hoisted, and a call in the loop is a different function. The `reg_single_usage` deletion branch a call would unlock (loop.c:735-767) additionally needs validate_replace_rtx to substitute a CONST_INT into the MIPS highpart multiply, whose operands are register_operand — it can never validate.
+- verdict: KILLED
+
+## [s8] H13 — the loop.c:1631 desirability inequality `threshold * savings * m->lifetime >= insn_count` is closed term by term for ordinary C on the shipped chassis; only insn_count remains a dial and s7's K21 already closed it.
+- mechanism: threshold comes from loop.c:532 `(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` minus 3 per successful move (loop.c:1719/1904); savings = n_times_used[regno] (loop.c:793) = 1; m->lifetime (loop.c:791) = 1; n_non_fixed_regs is written only by init_reg_sets_1 (regclass.c:380-387) and globalize_reg (regclass.c:530).
+- probe: Full read of scan_loop's admission gate and move_movables' desirability block in tools/gcc-2.7.2/loop.c and of regclass.c:360-535, cross-checked against the baseline movable table in tmp/grind/func_8003C714/s8/dumps/base.i.loop and against 13 measured cc1 -dL runs across three sweeps.
+- result: Baseline (candidate.c) loop-25 movable table: 3 movables — regno 78 (&D_80106A58, life 1), regno 84 (0x91A2B3C5, life 1), regno 91 (0x88888889, life 31) — insn_count 56, magic tested at 119*1*1 >= 56. savings and lifetime are structural minima (s7 H11); threshold is closed by K26; the per-move decrement is capped at -6 by K24; admission is closed by K23; loop form is neutral by K25.
+- verdict: CONFIRMED
+
+## [s8] K23 — some ordinary-C spelling can make the `(set r 0x91A2B3C5)` insn fail loop.c's movable ADMISSION via the m->cond / m->consec / m->global paths (the s7 frontier's item 2).
+- mechanism: loop.c:649 `! may_not_optimize[regno]` (written only by count_loop_regs_set at loop.c:3037 same-pseudo-in-two-basic-blocks and loop.c:3044 set-twice-with-a-use-between); loop.c:695-700 the uservar / basic-block test; loop.c:715 the trap test; m->cond at loop.c:789 and m->global at loop.c:790.
+- probe: tmp/grind/func_8003C714/s8/sweep_adm.sh with gen_adm.py — six forms, one cc1 -O2 -G0 -mel -dL run each, reading the loop-25 movable table and the emitted asm line count: base / cond (division inside `if (i != 5) {}` so its set sits in a conditionally-executed basic block) / twobb (a second /1800 in the else arm — two basic blocks) / preloop (a /1800 before the loop, m->global via regno_first_uid < INSN_LUID(loop_start)) / postloop (a /1800 after the loop, m->global via regno_last_uid > end) / twosame (a second /1800 in the same basic block, the n_times_set / consec route).
+- result: FALSE, unanimously. base 56 insns / 3 movables / 107 asm; cond 58 / 4 / 109; twobb 66 / 4+match / 123; preloop 56 / 3 / 120; postloop 56 / 3 / 118; twosame 63 / 3 / 119. The magic is admitted and hoisted in every single one, and every one costs bytes. Mechanism: loop.c:695-700's second disjunct `(! REG_USERVAR_P && ! REG_LOOP_TEST_P)` is TRUE for every compiler temp, so that test can never reject an expand_divmod-generated pseudo; may_trap_p(const_int) is 0 so loop.c:715 never fires; and may_not_optimize never fires because two source-level divisions produce two DISTINCT pseudos. m->global is not an admission gate at all (loop.c:888 consumes it only for m->savemode on partial movables) and m->cond is structurally 0 because invariant_p(const_int) returns 1. The twobb form actively BACKFIRES: loop.c's movable matching merges the two magic loads (`Insn 54: regno 86 (life 2), savings 2` + `Insn 73: regno 92 (life 1), done move-insn matches 54`), doubling savings and making the hoist strictly more desirable.
+- verdict: KILLED
+
+## [s8] K24 — REORDERING the hoists that already exist (as distinct from s7's K22, which killed ADDING hoists) is a free way to push the 0x91A2B3C5 movable later in the movable list and lower the threshold it is tested at.
+- mechanism: scan_loop appends movables in insn order (loop.c:797-803); move_movables walks the list in order and does `threshold -= 3` after each successful move (loop.c:1719/1904), so k moves ahead of the magic give threshold = 122 - 3k.
+- probe: tmp/grind/func_8003C714/s8/sweep_ord.sh with gen_ord.py — four statement orders of the identical four body statements (0x21,0x22,0x23,0x24 as control; 0x22,0x23,0x21,0x24; 0x23,0x22,0x21,0x24; 0x24,0x22,0x23,0x21), reading the loop-25 movable table plus a diff of the emitted bodies.
+- result: TRUE as a mechanism, dead as a lever. Reordering IS free — insn_count pinned at 56 and emitted instruction count pinned at 107 — and it does move the magic from movable slot 2 (regno 84) to slot 3 (regno 126/127), i.e. threshold 119 -> 116. But this loop has exactly THREE movables, so slot 3 is the ceiling: -6 against the -66 the inequality needs (threshold must fall below insn_count 56). `threshold` is a scan_loop LOCAL recomputed per loop (loop.c:532), so the file's other loops contribute nothing. It is byte-divergent in SEQUENCE anyway — the diff relocates the whole /1800 quartet (lw/mult/mfhi/addu/sra/sra/subu/sb 33($5)) past the /30 block — and the target's statement order is already the candidate's.
+- verdict: KILLED
+
+## [s8] K25 — a `for` or `while` loop form inflates insn_count for free, because count_loop_regs_set counts from loop_top rather than loop_start when the loop is entered at the bottom.
+- mechanism: loop.c:592 `count_loop_regs_set (loop_top ? loop_top : loop_start, end, ...)`; loop.c:3007 increments `count` only for insns with GET_RTX_CLASS == 'i'.
+- probe: tmp/grind/func_8003C714/s8/sweep_form.sh with gen_form.py — do-while, for, and while spellings of the byte-identical body, one cc1 -dL run each.
+- result: FALSE. All three give `56 real insns`, the same 3 movables with the magic 2nd, and 107 asm lines. The `for`/`while` forms do widen the counted range (25..146 -> 24..148 and 25..148) but every extra luid is a NOTE, not an 'i'-class insn, so `count` never sees them. The loop_top route contributes exactly zero.
+- verdict: KILLED
+
+## [s8] K26 — `threshold` (loop.c:532) is a C-reachable dial on the shipped chassis.
+- mechanism: `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`; n_non_fixed_regs is set in init_reg_sets_1 (regclass.c:380-387) after CONDITIONAL_REGISTER_USAGE and decremented ONLY by globalize_reg (regclass.c:530); loop_has_call is set at loop.c:2202 when the loop body contains a CALL_INSN.
+- probe: Source read of loop.c:532 / 2202 / 586-593 / 735-767 and regclass.c:360-535, plus the arithmetic against the measured baseline: reaching threshold < insn_count 56 needs 2*(1+N) - 3 < 56, i.e. N <= 28 from the current 60.
+- result: FALSE by both inputs. (1) n_non_fixed_regs is 60; -msoft-float takes it to 28 / threshold 58, which is exactly the s2 route, but CC_FLAGS is a BARRED surface. The only other writer anywhere in the compiler is globalize_reg, reachable only from a file-scope `register T x asm("$k");` — the forbidden register-asm-pin family — and it would take 32 of them TU-wide (deliberately NOT measured: it would produce only a cheat artifact, and code6cac_c2.c carries 43 other functions). (2) loop_has_call halves threshold to 61, the single biggest lever in loop.c, and is STILL insufficient: 61 - 3 = 58 >= 56, so the magic is still hoisted; it would additionally need insn_count >= 59, and a call in the loop is a different function (the target loop 8003C750..8003C7C8 contains none). The one genuine admission KILL a call would unlock — the reg_single_usage deletion branch at loop.c:735-767, whose array is allocated only under loop_has_call at loop.c:586-589 — additionally requires validate_replace_rtx to substitute the CONST_INT into its single use; that use is the MIPS highpart multiply, whose operands are register_operand, so it can never validate.
+- verdict: KILLED

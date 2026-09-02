@@ -779,3 +779,165 @@ SOTN family.
 - [s7] 'Insn 49: possible biv, reg 74, const = (reg:SI 82)' is the one-line proof that a hoistable (large) step constant converts the counter into a register-increment biv, which loop.c cannot final-value-replace, so the counter materialises.
 
 - [s7] inverse_compose.py classify explicitly refuses on this zero-rule function (it would report a FICTITIOUS PRE-RA verdict from an absent tgt.s) and directs to goal_from_tgt.py; that object-level classifier reports a nop-only SCHED difference plus $t2 -> $t1 x10 / $t1 -> $v0 x2, all consequent on the hoist per s6 K18.
+
+## s8 (2026-09-01, forensics modality) — the ADMISSION axis and the THRESHOLD term, both closed at the mechanism level
+
+Chassis re-checked FIRST, before anything was spent: `candidate.c` spliced over the
+`INCLUDE_ASM` line in `src/code6cac_c2.c`, `& tools/wteng.ps1 main sandbox
+func_8003C714 --disable all` prints **score 15, target_insns 104, build_insns 105,
+cheat_asm_stripped 10, rules_dropped 0** — identical to s1–s7. Every inherited
+measurement is still chassis-current.
+
+Harness: `tmp/grind/func_8003C714/s8/sweep_adm.sh` (+ `gen_adm.py`),
+`sweep_ord.sh` (+ `gen_ord.py`), `sweep_form.sh` (+ `gen_form.py`) — the s7 driver
+with a named-variant generator instead of a numeric sweep. One `cc1 -O2 -G0 -mel
+-dL` run per form; the gradient read straight out of the `.loop` dump
+(`Loop from A to B: N real insns.` + the movable table) with `asm_lines` as the
+byte proxy. No sandbox run is needed per form.
+
+### Baseline movable table for the target loop (s8/dumps/base.i.loop)
+
+    Loop from 25 to 146: 56 real insns.
+    Insn 33: regno 78 (life 1),  move-insn savings 1  moved to 203   <- &D_80106A58
+    Insn 46: regno 84 (life 1),  move-insn savings 1  moved to 205   <- 0x91A2B3C5
+    Insn 60: regno 91 (life 31), move-insn savings 1  moved to 207   <- 0x88888889
+
+Three movables, the magic SECOND. Emitted preheader (s8/dumps/base.s):
+`move $8,$0 / li $9,0x91a20000 / ori $9,$9,0xb3c5 / li $7,0x88880000 /
+ori $7,$7,0x8889 / la $6,D_80106A58 / move $5,$16`. The two `$9` instructions are
+the whole d15 residual: the target has them INSIDE the loop, interleaved with the
+first `lw` by sched1.
+
+### Facts measured this session
+
+- [s8] Chassis re-verified: candidate.c scores 15 (104 target / 105 build),
+  unchanged since s1.
+
+- [s8] ADMISSION SWEEP (6 forms, `sweep_adm.sh base cond twobb preloop postloop
+  twosame`). Columns: loop range | insn_count | magic still hoisted | asm lines.
+
+      base      25..146 |  56 | YES, 2nd, life 1              | 107
+      cond      25..153 |  58 | YES, 3rd, life 1              | 109
+      twobb     28..173 |  66 | YES, and now savings 2        | 123
+      preloop   37..158 |  56 | YES, 2nd, life 1              | 120
+      postloop  25..146 |  56 | YES, 2nd, life 1              | 118
+      twosame   28..163 |  63 | YES, 2nd, life 8              | 119
+
+  Not one of the five probes removes the `(set (reg N) (const_int 0x91A2B3C5))`
+  insn from loop.c's movable list, and every one of them costs bytes (+2 .. +16
+  asm lines against a 104-instruction target).
+
+- [s8] The `twobb` form is the decisive one and it BACKFIRES: two `/1800`
+  divisions in two different basic blocks of the loop produce two DISTINCT
+  pseudos, so `may_not_optimize` is never set; instead loop.c's movable MATCHING
+  merges them —
+  `Insn 54: regno 86 (life 2), move-insn savings 2  moved to 234` and
+  `Insn 73: regno 92 (life 1), done move-insn matches 54` — which DOUBLES
+  `savings` and makes the hoist strictly more desirable.
+
+- [s8] MOVABLE-ORDER SWEEP (`sweep_ord.sh ord_base ord_2213 ord_4z ord_2314`).
+  Statement order inside the loop body changes which const loads precede the
+  magic, hence how many `threshold -= 3` decrements it has already seen:
+
+      0x21,0x22,0x23,0x24 (candidate) | 56 insns | magic slot 2 (r84)  | 107 asm
+      0x22,0x23,0x21,0x24             | 56 insns | magic slot 3 (r126) | 107 asm
+      0x23,0x22,0x21,0x24             | 56 insns | magic slot 3 (r126) | 116 -> 107 asm
+      0x24,0x22,0x23,0x21             | 56 insns | magic slot 3 (r127) | 108 asm
+
+  Reordering is insn_count-neutral AND emitted-instruction-count-neutral, so the
+  order dial is genuinely free — but this loop has only THREE movables, so the
+  magic can reach slot 3 and no further: threshold 122 -> 116 maximum, against a
+  requirement of < 56. `threshold` is a scan_loop LOCAL (loop.c:532) recomputed
+  per loop, so the file's other loops contribute nothing.
+
+- [s8] The reordered forms are byte-DIVERGENT anyway. `diff` of ord_2213's
+  emitted body against ord_base relocates the entire /1800 quartet
+  (`lw $3,4($6) / mult $3,$9 / mfhi $10 / addu / sra / sra / subu / sb $2,33($5)`)
+  past the /30 block and reshuffles `addu $8,$8,1`. The target's statement order
+  IS 0x21, 0x22, 0x23, 0x24 and candidate.c already has it.
+
+- [s8] LOOP-FORM SWEEP (`sweep_form.sh f_dowhile f_for f_while`): identical
+  results for all three spellings — `56 real insns`, 3 movables with the magic
+  2nd, 107 asm lines. The `for`/`while` forms widen the counted range from
+  25..146 to 24..148 / 25..148 because `count_loop_regs_set` counts from
+  `loop_top ? loop_top : loop_start` (loop.c:592), but the extra luids are NOTEs,
+  not `'i'`-class insns, so `count` at loop.c:3007 is unchanged. The `loop_top`
+  route contributes exactly zero.
+
+- [s8] SOURCE READ, `tools/gcc-2.7.2/loop.c` scan_loop admission gate — the three
+  tests a movable must pass, and why a compiler-generated CONST_INT set passes
+  all three unconditionally:
+  * loop.c:649 `! may_not_optimize[REGNO (SET_DEST (set))]`. The array is
+    written ONLY by `count_loop_regs_set` (loop.c:3037 same-pseudo-in-two-basic-
+    blocks, loop.c:3044 set-twice-with-a-use-between, and the explicit-CLOBBER
+    case). Distinct source-level divisions give distinct pseudos, so it never
+    fires — measured as `twobb`.
+  * loop.c:695-700, second disjunct `(! REG_USERVAR_P && ! REG_LOOP_TEST_P)`, is
+    TRUE for every compiler temp. The magic pseudo comes out of expand_divmod, is
+    never a user variable and is never the loop-test reg, so this test can never
+    reject it — independent of `maybe_never`, of where the division sits, and of
+    `loop_reg_used_before_p`.
+  * loop.c:715 `! ((maybe_never || call_passed) && may_trap_p (src))`. `src` is a
+    CONST_INT (move_insn set from the REG_EQUAL note at loop.c:665) and
+    `may_trap_p (const_int)` is 0.
+
+- [s8] `m->cond` and `m->global` — the two fields s7's frontier named as escape
+  hatches — are NOT admission gates. `m->global` (loop.c:790) is read only for
+  `m->savemode` on PARTIAL movables (loop.c:888); the desirability test at
+  loop.c:1631 never consults it. `m->cond` (loop.c:789) is `(tem|tem1|tem2) > 1`,
+  i.e. `invariant_p` returned 2; `invariant_p` of a CONST_INT returns 1 always,
+  so `m->cond` is structurally 0 here and the re-check at loop.c:1586 passes
+  trivially. The `preloop` and `postloop` probes confirm by measurement: both
+  make the divisor value live across the loop boundary and both still hoist.
+
+- [s8] SOURCE READ, `loop.c:532`
+  `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs);` — the threshold
+  term has exactly two inputs and both are closed:
+  * `n_non_fixed_regs` is set once in `init_reg_sets_1` (regclass.c:380-387)
+    after `CONDITIONAL_REGISTER_USAGE` (regclass.c:369), which is how
+    `-msoft-float` produces the 60 -> 28 / threshold 122 -> 58 that s2 measured.
+    CC_FLAGS is a BARRED surface. The ONLY other writer in the entire compiler is
+    `globalize_reg` (regclass.c:530, `n_non_fixed_regs--`), reached only from a
+    file-scope global register variable `register T x asm("$k");` — the
+    register-asm-pin cheat family, and it would take 32 of them TU-wide to reach
+    threshold < 56. Not measured, deliberately: running it would produce nothing
+    but a cheat artifact.
+  * `loop_has_call` (set at loop.c:2202 when the loop contains a CALL_INSN)
+    HALVES threshold to 61. Still not enough: 61 - 3 = 58 >= 56, the magic is
+    STILL hoisted, and it would additionally need insn_count >= 59. It also
+    changes the function (the target loop 8003C750..8003C7C8 contains no call).
+
+- [s8] The one genuine ADMISSION KILL that exists in scan_loop — the
+  `reg_single_usage` branch at loop.c:735-767, which DELETES an invariant set
+  instead of making it a movable — is gated on `loop_has_call` (the array is only
+  allocated at loop.c:586-589) AND on
+  `validate_replace_rtx (SET_DEST (set), SET_SRC (set), use)`. The use here is the
+  MIPS highpart multiply, whose operands are `register_operand`, so substituting
+  a CONST_INT into it cannot validate. Even with a call in the loop this branch
+  cannot fire for the 0x91A2B3C5 magic.
+
+- [s8] Chassis re-verified FIRST, before anything was spent: candidate.c spliced over the INCLUDE_ASM line, `sandbox func_8003C714 --disable all` prints score 15, target_insns 104, build_insns 105, cheat_asm_stripped 10, rules_dropped 0 — identical to s1-s7. Every inherited measurement is chassis-current.
+
+- [s8] Baseline movable table for the target loop (tmp/grind/func_8003C714/s8/dumps/base.i.loop): `Loop from 25 to 146: 56 real insns.` / `Insn 33: regno 78 (life 1), move-insn savings 1  moved to 203` (&D_80106A58) / `Insn 46: regno 84 (life 1), move-insn savings 1  moved to 205` (0x91A2B3C5) / `Insn 60: regno 91 (life 31), move-insn savings 1  moved to 207` (0x88888889). Three movables, the magic SECOND, tested at 119*1*1 >= 56.
+
+- [s8] Emitted preheader of the candidate (s8/dumps/base.s): `move $8,$0 / li $9,0x91a20000 / ori $9,$9,0xb3c5 / li $7,0x88880000 / ori $7,$7,0x8889 / la $6,D_80106A58 / move $5,$16`. The two $9 instructions ARE the d15 residual — the target has them inside the loop, interleaved with the first `lw` by sched1.
+
+- [s8] ADMISSION sweep, 6 forms (loop range | insn_count | magic still hoisted | asm lines): base 25..146 | 56 | YES 2nd | 107; cond 25..153 | 58 | YES 3rd | 109; twobb 28..173 | 66 | YES with savings 2 | 123; preloop 37..158 | 56 | YES 2nd | 120; postloop 25..146 | 56 | YES 2nd | 118; twosame 28..163 | 63 | YES 2nd life 8 | 119. Not one removes the movable, and every one costs bytes.
+
+- [s8] The twobb form's dump is the decisive line: `Insn 54: regno 86 (life 2), move-insn savings 2  moved to 234` followed by `Insn 73: regno 92 (life 1), done move-insn matches 54`. Two /1800 divisions in two basic blocks give two DISTINCT pseudos (so may_not_optimize never fires) which loop.c then MATCHES and merges, doubling savings — the admission attack makes the hoist MORE desirable, not less.
+
+- [s8] MOVABLE-ORDER sweep: 0x21,0x22,0x23,0x24 (candidate) 56 insns / magic slot 2 (r84) / 107 asm; 0x22,0x23,0x21,0x24 56 / slot 3 (r126) / 107; 0x23,0x22,0x21,0x24 56 / slot 3 (r126) / 107; 0x24,0x22,0x23,0x21 56 / slot 3 (r127) / 108. Statement reordering is genuinely free in both insn_count and emitted instruction count — and caps at threshold 116 because the loop has only three movables.
+
+- [s8] The reordered forms are byte-divergent in sequence: diff of ord_2213's body against ord_base relocates `lw $3,4($6) / mult $3,$9 / mfhi $10 / addu $2,$10,$3 / sra $2,$2,10 / sra $3,$3,31 / subu $2,$2,$3 / sb $2,33($5)` past the /30 block and reshuffles `addu $8,$8,1`. The target's statement order is 0x21,0x22,0x23,0x24, which candidate.c already has.
+
+- [s8] LOOP-FORM sweep: do-while / for / while spellings of the identical body all give 56 real insns, 3 movables with the magic 2nd, and 107 asm lines. The for/while forms widen the counted range from 25..146 to 24..148 / 25..148 (count_loop_regs_set counts from `loop_top ? loop_top : loop_start`, loop.c:592) but the extra luids are NOTEs, so `count` at loop.c:3007 is unchanged.
+
+- [s8] PASS ATTRIBUTION (source-read, not guessed): scan_loop's admission gate is exactly three tests — loop.c:649 `! may_not_optimize[REGNO (SET_DEST (set))]`, loop.c:695-700 the uservar/basic-block test, loop.c:715 the trap test — and a compiler-generated CONST_INT set passes all three unconditionally. may_not_optimize is written only by count_loop_regs_set (loop.c:3037/3044) for a pseudo set in two basic blocks or set twice with a use between, or explicitly clobbered.
+
+- [s8] m->cond (loop.c:789) and m->global (loop.c:790) are NOT admission gates, contrary to the s7 frontier's framing: m->global is consumed only for m->savemode on PARTIAL movables (loop.c:888) and the desirability test at loop.c:1631 never reads it; m->cond is `(tem|tem1|tem2) > 1` and invariant_p of a CONST_INT returns 1, so it is structurally 0 for this movable and the re-check at loop.c:1586 passes trivially.
+
+- [s8] loop.c:532 `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` — a call inside the loop HALVES the threshold to 61. This looks like the biggest lever in the file and is not one: 61 - 3 = 58 >= insn_count 56, so the magic is still hoisted, and the target's loop contains no call.
+
+- [s8] The only genuine admission KILL in scan_loop is the reg_single_usage branch at loop.c:735-767, which deletes an invariant set outright instead of making it a movable. It is doubly gated: the array is allocated only under loop_has_call (loop.c:586-589), and `validate_replace_rtx (SET_DEST, SET_SRC, use)` must substitute the CONST_INT into the use — which here is the MIPS highpart multiply with register_operand operands, so it can never validate.
+
+- [s8] n_non_fixed_regs (60 on this chassis) is written in exactly two places in the whole compiler: init_reg_sets_1 (regclass.c:380-387, i.e. CC_FLAGS / CONDITIONAL_REGISTER_USAGE, which is how -msoft-float gives 28 and threshold 58) and globalize_reg (regclass.c:530, `n_non_fixed_regs--`), reachable only from a file-scope global register variable. Reaching threshold < 56 needs N <= 28, i.e. 32 register-asm pins TU-wide — the forbidden pin family, applied to a file carrying 43 other functions.

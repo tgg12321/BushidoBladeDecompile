@@ -122,6 +122,45 @@
  * This body remains the honest ordinary-C best at 15. See hypotheses.md
  * H11/H12/K20/K21/K22 and evidence.md section s7.
  *
+ * [s8 2026-09-01 UPDATE, forensics modality] Chassis re-checked first: this body
+ * still scores 15 (104 target / 105 build, cheat_asm_stripped 10, rules_dropped
+ * 0). s8 closed the last two open items on the loop.c:1631 axis, so the
+ * inequality `threshold * savings * m->lifetime >= insn_count` is now measured
+ * closed TERM BY TERM for ordinary C on the shipped chassis:
+ *   K23 ADMISSION is dead (s7 frontier item 2). scan_loop's admission gate is
+ *       exactly three tests and a compiler-generated CONST_INT set passes all
+ *       three unconditionally: loop.c:649 `may_not_optimize` (written only by
+ *       count_loop_regs_set at loop.c:3037/3044, and two source-level /1800
+ *       divisions give two DISTINCT pseudos so it never fires), loop.c:695-700
+ *       whose `(! REG_USERVAR_P && ! REG_LOOP_TEST_P)` disjunct is true for
+ *       every compiler temp, and loop.c:715 whose may_trap_p is 0 for a
+ *       CONST_INT. m->cond and m->global are NOT admission gates: m->global
+ *       (loop.c:790) is read only for m->savemode on partial movables
+ *       (loop.c:888), and m->cond is structurally 0 because
+ *       invariant_p(const_int) returns 1. Five spellings measured (division in
+ *       a conditional BB, a second /1800 in the else arm, a /1800 before the
+ *       loop, one after it, a second one in the same BB): all still hoist, all
+ *       cost +2..+16 asm lines. The two-basic-block form BACKFIRES -- loop.c
+ *       MATCHES the two magic loads and savings goes 1 -> 2.
+ *   K24 the movable ORDER dial is FREE and ordinary C but caps at -6. Plain
+ *       statement reordering moves the magic from movable slot 2 to slot 3 with
+ *       insn_count pinned at 56 and 107 asm lines -- but this loop has only
+ *       THREE movables, so threshold reaches 116 against a < 56 requirement,
+ *       and the reordering relocates the emitted /1800 quartet away from the
+ *       target's order (which this body already has).
+ *   K25 loop FORM is insn_count-neutral: do-while / for / while all give 56
+ *       real insns and 107 asm lines; the loop_top counting route (loop.c:592)
+ *       adds only NOTEs, not 'i'-class insns.
+ *   K26 `threshold` (loop.c:532) is not a C-reachable dial: n_non_fixed_regs
+ *       moves only via CC_FLAGS (barred) or globalize_reg (regclass.c:530,
+ *       i.e. 32 file-scope register-asm pins -- the forbidden pin family), and
+ *       loop_has_call only halves it to 61, where 61 - 3 = 58 >= 56 still
+ *       hoists.
+ * With s7's H11 (savings and lifetime both pinned at 1) and s7's K21
+ * (insn_count's only free carrier is dead code by construction), nothing on
+ * this axis is open. This body remains the honest ordinary-C best at 15. See
+ * hypotheses.md H13/K23/K24/K25/K26 and evidence.md section s8.
+ *
  * Remaining d15 residual = ONE loop.c decision + its seat fallout:
  *  build hoists the 0x91A2B3C5 (/1800 magic) const load to the preheader
  *  (movable, savings 1, life 1, threshold 122 vs insn_count ~56); target has it
