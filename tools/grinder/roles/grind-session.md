@@ -83,7 +83,7 @@ instances remain FAIL.)
 Variable reuse for codegen control · opaque arithmetic variables · sub-word param
 reads (`*(u16 *)&local`) · mixed exit forms (`goto endK` + inline `return`) ·
 duplicate-read into branch arms · named-intermediate declaration order ·
-`do { ... } while (0);` wrap (LABEL_OUTSIDE_LOOP_P / reorg.c interaction ONLY) ·
+`do { ... } while (0);` wrap (ANY codegen effect incl. register allocation — owner ruling 2026-07-06; FAKE-annotated) ·
 dead stores / self-assigns to LOCALS or PARAMS · constant-holder / dead scalar
 locals · C-level pointer alias to a global · duplicated statement into arms ·
 written-never-read local array · type-level MMIO volatile (0x1F801000-0x1F802FFF)
@@ -112,7 +112,7 @@ there, and neighboring families are NOT interchangeable:
 | Pointer local to a global (`T *p = &D_x;`) | pointer-alias — `.claude/rules/pointer-alias-fake-exception.md` | FAKE required on EVERY alias (prereq 3); `asm("Sym")` renames remain forbidden. |
 | A REAL statement duplicated into 2+ arms | duplicated-statement — `.claude/rules/duplicated-statement-into-arms.md` | statement must be real + byte-neutral re-merge; a same-value re-store is dead-store, not this. FAKE required. |
 | Local array written-never-read / leading pad | dead array/pad — `.claude/rules/dead-vars-local-array.md` (+ 2026-08-17 re-scope: unwritten volatile leading pad) | target bytes must contain the dead stores (oracle-enforced); volatile + FAKE; `(void)&local` forbidden. |
-| `do { } while (0);` wrap | `.claude/rules/do-while-zero-exception.md` | LABEL_OUTSIDE_LOOP_P / reorg.c interaction ONLY; FAKE required; for/while/if equivalents NOT sanctioned. |
+| `do { } while (0);` wrap | `.claude/rules/do-while-zero-exception.md` | sanctioned for ANY codegen effect incl. register allocation (owner ruling 2026-07-06 SUPERSEDES the reorg.c-only scoping — do not quote the old scope); FAKE required; nested wraps need a single-level-insufficient justification; for/while/if equivalents NOT sanctioned. |
 | Merging splat per-word `D_x` scalars into a struct | aggregate merge — `no-new-park-categories.md` 2026-08-17 entry | 5 prongs; prong (a) needs base-register or stride evidence, NOT adjacency (splat-symbol-names-are-not-evidence); header-canonical, complete, never TU-local. |
 | Sub-word read of a local/param | `.claude/rules/narrow-stack-param-subword-offset.md` | ordinary C; no FAKE needed. |
 | `goto endK` mixed with inline `return` | `.claude/rules/cross-jump-store-tail-merge.md` | ordinary C; no FAKE needed. |

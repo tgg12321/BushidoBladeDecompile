@@ -96,7 +96,7 @@ have NO auto-load glob and must be read directly when relevant:
 - **inline-asm-injection** — FORBIDDEN: hardcoded-`$N` single-instruction `__asm__`; also `asm("Sym")` alias renames.
 - **inline-move-aliasing** — ARCHIVED/FORBIDDEN tombstone (placeholder-move recipe).
 - **param-local-alias-prologue-pair-flip** — ARCHIVED/FORBIDDEN tombstone.
-- **do-while-zero-exception** — the ONE sanctioned no-semantic-purpose wrapper; strict prerequisites; READ BEFORE using `do {...} while (0);`.
+- **do-while-zero-exception** — the ONE sanctioned no-semantic-purpose wrapper; sanctioned for ANY codegen effect incl. register allocation (owner ruling 2026-07-06); FAKE-annotated, lever-exhaustion documented; READ BEFORE using `do {...} while (0);`.
 - **legitimate-volatile-interrupt-touched** — narrow `extern volatile` carve-out (IRQ-touched globals only); two-prong test; READ BEFORE adding any volatile. NB (func_80078B04, 2026-06-12): `*(volatile T *)(computed MMIO address)` is a DIFFERENT, legitimate category (hardware-register access; detector distinguishes it from `&D_xxx` casts) — a single-read of an MMIO-pointer table plateauing 1-2 regs off target allocation is the symptom that the original access was volatile.
 - **pointer-rmw-global-sanctioned** — narrow zero-displacement pointer-RMW spelling sanction.
 - **proven-spelling-class-reconstruction** — same-bytes respelling exception; ALL conditions must hold.

@@ -255,20 +255,19 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
   full `verify-oracle --rebuild`, layer-2 cheat-reviewer.
 - **`do { ... } while (0);` wrap** (empty or non-empty body)
   ([[do-while-zero-exception]] / [[sotn-do-while-zero-research-2026-06-04]]):
-  emits NOTE_INSN_LOOP_BEG which sets LABEL_OUTSIDE_LOOP_P on outside-loop
-  labels, suppressing reorg.c's `relax_delay_slots` invert-jump peephole
-  for NE conditions. **Narrowly sanctioned, last-resort only.** Annotate
-  with `/* FAKE: ... */` or `// FAKE`. SOTN evidence: 18+ instances in
-  master across `sprintf.c`, `5087C.c`, `c_004.c`, `w_045.c`, etc., with
-  two PR-merge messages explicitly accepting it. **The dedicated rule
-  [[do-while-zero-exception]] enumerates the strict prerequisites
-  (demonstrated lever-exhaustion, applies only to the LABEL_OUTSIDE_LOOP_P
-  / reorg.c interaction, NOT a precedent for other wrappers).** User policy
-  2026-06-04: this is the ONE no-semantic-purpose wrapper sanctioned in
-  BB2 source. Other syntactic equivalents (`for (i=0;i<1;i++)`,
-  `while(1) { ...; break; }`, `if (1) { }`) are NOT sanctioned by this
-  rule's existence — they have to clear the same SOTN-evidence bar
-  independently.
+  sanctioned as a pure-C match device for ANY codegen effect, including
+  register allocation (owner ruling 2026-07-06, which SUPERSEDES the
+  2026-06-04 reorg.c/LABEL_OUTSIDE_LOOP_P-only scoping; that scoping is
+  abolished and must not be cited as a FAIL ground). Last-resort, mandatory
+  `/* FAKE: ... */` annotation, documented lever-exhaustion, named GCC-pass
+  mechanism; nested wraps need a single-level-insufficient justification.
+  SOTN evidence: 18+ instances in master across `sprintf.c`, `5087C.c`,
+  `c_004.c`, `w_045.c`, etc., with two PR-merge messages explicitly
+  accepting it. User policy 2026-06-04: this is the ONE no-semantic-purpose
+  wrapper sanctioned in BB2 source. Other syntactic equivalents
+  (`for (i=0;i<1;i++)`, `while(1) { ...; break; }`, `if (1) { }`) are NOT
+  sanctioned by this rule's existence — they have to clear the same
+  SOTN-evidence bar independently.
 
 The `cheat-reviewer` agent treats these patterns as ALLOWED — the
 "family check" (test #5 of its 6-test checklist) no longer flags them.

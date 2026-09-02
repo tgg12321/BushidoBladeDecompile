@@ -94,13 +94,15 @@ in memory/project/sotn-*-research-*.md with citation:
      `rejected_forms`, `_disproven_avenues`, or `sessions[]` ledger must
      show the lever exhaustion. If this is the FIRST lever the worker
      reached for, **FAIL**.
-  2. The wrap is being used SPECIFICALLY to defeat the
-     LABEL_OUTSIDE_LOOP_P / reorg.c invert-jump-peephole interaction (or
-     the analogous loop-note interaction with loop.c's other passes).
-     Using it to bend a different GCC pass is OUT OF SCOPE for this
-     exception — that's a fresh borderline construct needing its own
-     SOTN evidence. If the worker can't articulate which GCC-pass
-     interaction the wrap is defeating, **FAIL**.
+  2. The worker NAMES the GCC-pass mechanism the wrap bends. Any pass
+     qualifies — reorg.c LABEL_OUTSIDE_LOOP_P, loop.c, global.c register
+     allocation, sched.c — because the owner ruling of 2026-07-06
+     (do-while-zero-exception.md, "supersedes the 2026-06-04
+     mechanism-scoping") sanctions the wrap for ANY codegen effect. A FAIL
+     citing "wrong pass" or "out of scope for this exception" is a
+     stale-scope error, not a policy ground. If the worker cannot
+     articulate WHICH GCC-pass interaction the wrap is defeating, **FAIL**
+     (mechanism unnamed), and say so in those words.
   3. The wrap is annotated with `/* FAKE: <one-line reason> */` or
      `// FAKE` in the source. If unannotated, **FAIL** (push back for
      the annotation; this is a transparency requirement, not a
