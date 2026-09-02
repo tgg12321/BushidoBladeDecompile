@@ -861,5 +861,53 @@ class TestKillHygiene(unittest.TestCase):
         self.assertIn("## KILL LEDGER", brief)
 
 
+class TestGrantRescan(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        G.init_ledger(self.root, "func_A", "s")
+        G.init_ledger(self.root, "func_B", "s")
+        rj = os.path.join(self.root, "memory", "grind", "func_A", "rejected", "inline-both-call-sites.c")
+        with open(rj, "w", encoding="utf-8", newline="\n") as f:
+            f.write("/* REJECTED s8: compound-address duplication across call arg-lists scores 0 but cheat-by-spelling */\n")
+        G.add_banned_construct(self.root, "func_A", "duplicating the compound address expression *(s16**)(arg0+4) at each call site")
+        G.add_judge_constraint(self.root, "func_B", "unrelated constraint")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_scan_finds_only_matching_ledger(self):
+        from tools.grinder import grant_rescan as R
+        hits = R.scan(self.root, ["compound-address duplication", "compound address expression"])
+        self.assertEqual(sorted(hits), ["func_A"])
+        self.assertTrue(any("rejected/inline-both-call-sites.c" in h for h in hits["func_A"]))
+        self.assertTrue(any(h.startswith("banned_constructs[0]") for h in hits["func_A"]))
+
+    def test_apply_injects_constraint_and_supersedes_ban(self):
+        from tools.grinder import grant_rescan as R
+        hits = R.scan(self.root, ["compound address expression"])
+        R.apply(self.root, hits, family="F3 compound-address duplication", ref=".claude/rules/no-new-park-categories.md:377", date="2026-09-01")
+        st = G.load_state(self.root, "func_A")
+        self.assertEqual(st["banned_constructs"], [])
+        self.assertEqual(len(st["superseded_bans"]), 1)
+        self.assertIn("F3 compound-address duplication", st["superseded_bans"][0]["superseded_by"])
+        self.assertTrue(any("RE-ADJUDICATE" in c for c in st["judge_constraints"]))
+        self.assertEqual(G.load_state(self.root, "func_B")["banned_constructs"], [])
+
+    def test_supersede_bans_is_case_insensitive_and_preserves_others(self):
+        G.add_banned_construct(self.root, "func_A", "some other construct")
+        n = G.supersede_bans(self.root, "func_A", ["COMPOUND ADDRESS"], "grant X")
+        self.assertEqual(n, 1)
+        st = G.load_state(self.root, "func_A")
+        self.assertEqual(st["banned_constructs"], ["some other construct"])
+        self.assertEqual(st["superseded_bans"][0]["superseded_by"], "grant X")
+
+    def test_brief_shows_superseded_bans(self):
+        G.supersede_bans(self.root, "func_A", ["compound address"], "grant X (2026-09-01)")
+        brief = G.build_brief(self.root, "func_A", "structural", "/tmp/o.json")
+        self.assertIn("SUPERSEDED BANS", brief)
+        self.assertIn("grant X (2026-09-01)", brief)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -362,6 +362,27 @@ def unban_construct(root, func, needle):
     return removed
 
 
+def supersede_bans(root, func, needles, superseded_by):
+    """Move every banned_constructs entry containing any needle (case-insensitive)
+    into state['superseded_bans'] with the grant reference. Returns the count.
+    The ban text is preserved for the audit trail; only the mechanical tripwire
+    (check_banned_constructs) stops seeing it."""
+    st = load_state(root, func)
+    if not st:
+        return 0
+    keep, moved = [], []
+    for b in st.get("banned_constructs", []):
+        if any(n.lower() in str(b).lower() for n in needles):
+            moved.append({"text": b, "superseded_by": superseded_by, "when": _now()})
+        else:
+            keep.append(b)
+    if moved:
+        st["banned_constructs"] = keep
+        st.setdefault("superseded_bans", []).extend(moved)
+        save_state(root, func, st)
+    return len(moved)
+
+
 # integration-handoff-self-serve (owner ruling 2026-08-19): path classes the
 # driver may grant into scope_allow.txt. Everything else — and the explicit
 # denylist — stays owner-only (the "most severe blockers" list).
@@ -1407,6 +1428,10 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
                   + "\n".join(f"  - BANNED: {b}" for b in banned_list) + "\n")
     else:
         banned = ""
+    sup = st.get("superseded_bans") or []
+    if sup:
+        banned += ("\n## SUPERSEDED BANS (cleared by a later family grant — no longer enforced)\n"
+                   + "\n".join(f"  - {str(b.get('text', ''))[:160]}\n      superseded by: {b.get('superseded_by', '')}" for b in sup) + "\n")
     fx = st.get("pending_fixup") or {}
     if fx:
         fixup = ("\n## FIX-UP NOTICE — the Judge's stated defect (this is your whole task)\n"
@@ -1613,6 +1638,7 @@ if __name__ == "__main__":
     #   grindlib.py grant-canonical-asm <root> <func> <tier> <date>   -> prints allowlist line / exit 1 refused
     #   grindlib.py log-borderline <root> <func> <category> <evidence> <disposition> <date>
     #   grindlib.py rule-scopes <root> <func>                        -> prints the current-scope block
+    #   grindlib.py supersede-bans <root> <func> <superseded_by> <needle> [needles...]  -> prints count moved
     import sys
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -1676,6 +1702,9 @@ if __name__ == "__main__":
     elif cmd == "unban":
         # unban <root> <func> <needle>  -> prints number of entries removed
         print(unban_construct(sys.argv[2], sys.argv[3], sys.argv[4]))
+    elif cmd == "supersede-bans":
+        # supersede-bans <root> <func> <superseded_by> <needle> [needles...]
+        print(supersede_bans(sys.argv[2], sys.argv[3], sys.argv[5:], sys.argv[4]))
     elif cmd == "add-scope-allow":
         # add-scope-allow <root> <func> <date> <path> [more paths...]
         line = add_scope_allow(sys.argv[2], sys.argv[3], sys.argv[5:], sys.argv[4])
