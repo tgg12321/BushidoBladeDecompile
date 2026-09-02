@@ -20000,3 +20000,85 @@ THE PRECISE GRANT THE DRIVER EXECUTES. Add `inline_asm_canonical.txt` to this fu
 Evidence: memory/grind/func_8002FF20/{evidence.md facts 1-8, self_vet.md, state.json}; asm/funcs/func_8002FF20.s:55-95.
 
 **Constraint recorded for any future session:** The four GTE islands are authorized AS UNITS in exactly this spelling; a later session may not move island GPR lines into C, add any GPR asm outside an island, or respell `vec` as two separate address expressions (evidence.md fact 5: island 3 must reuse the cse.c-materialized $v0). The function retires as COMPLETED-INLINE-ASM-CANONICAL, not COMPLETED-C.
+
+## 2026-09-01 — func_80027640 (src/code6cac_b.c) — **OWNER-ESCALATION — INTEGRATION HANDOFF (bytes proven: sandbox 0 AND full-build SHA1 == oracle with the gate entry; blocked ONLY by `maspsx_label_nop_funcs.txt`, a fidelity-gate surface a grind session may not stage)**
+
+This is **not** an exhaustion claim and **not** an endgame lock. The function is
+solved in pure C with zero constructs of any kind. What is missing is a one-line
+per-function opt-in in `maspsx_label_nop_funcs.txt`, which
+`.claude/rules/integration-handoff-self-serve.md` places on the add-scope-allow
+DENYLIST (assembler-behavior gates are substrate-adjacent), so neither a grind
+session nor the driver's scope-widening path may land it — it is an operator
+surface (same class the func_80022F34 record at decisions.md:13491 calls
+"operator surface, outside the grind scope"; precedent for landing one:
+commit edd7faae, `closer: ratify maspsx label-nop opt-in for func_80088740`).
+
+**Why the previous session was discarded.** s1 (2026-09-01) reached sandbox 0 by
+adding `func_80027640` to `maspsx_label_nop_funcs.txt` directly; the driver's scope
+check correctly discarded that session. This session (recon, re-dispatched as s1)
+re-measured everything on the live HEAD chassis WITHOUT touching that file and
+proves the bytes in `tmp/` only.
+
+**Re-measured this session (candidate body applied to src/code6cac_b.c, nothing
+else touched; src restored to HEAD afterwards):**
+* `sandbox func_80027640 --disable all` -> `"score": 1` (target_insns 158,
+  build_insns 157, rules_dropped 0). The single diff is the load-delay `nop` at
+  0x800277A4: target `lh $v0,0x4($a0)` @0x800277A0 -> `.L800277A4:` -> `nop` ->
+  `sw $v0,0x18($sp)` @0x800277A8 (asm/funcs/func_80027640.s:95-98). maspsx's
+  `is_label()` does not recognise the `.L` merge label, so the store-value-consumer
+  hazard nop is dropped — the exact gnd_get_fog shape documented in
+  `.claude/rules/maspsx-label-nop-gate.md` (if/else merge label, store-value consumer).
+* Object-level proof with the gate: `tmp/grind/func_80027640/s1/build_gated.sh`
+  reruns the Makefile pipeline for code6cac_b with `--label-nop-funcs=` pointed at a
+  SCRATCH copy of the list plus `func_80027640`. Result
+  (`tmp/grind/func_80027640/s1/gated_words.txt`, `objdump -dz`, no `...` collapse):
+  **160/160 words, 8 differing words, all unresolved pre-link relocation sites**
+  (4x `jal`, `lui/lh %hi/%lo(D_800A36A4)`, 1x absolute `j`). Every codegen word matches.
+* Full-link proof with the gate: `tmp/grind/func_80027640/s1/link_gated.sh` copies
+  the oracle-matching `build/` tree, swaps in the gated `code6cac_b.o`, relinks with a
+  path-rewritten copy of `bb2.ld`, objcopy + make_psexe:
+  **SHA1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle**
+  (`tmp/grind/func_80027640/s1/gated_sha1.txt`).
+
+**The C** (`memory/grind/func_80027640/candidate.c`): two local libgte `VECTOR`s
+(`tgt` @sp+0x10, `dir` @sp+0x20; include/gte.h), scalar temps `vx`/`vz` with
+`v = A; if (cond) v = B;` for the signed direction constants, a `s16 *` walk of the
+stage table, a saturating `u8` counter. No volatile, no asm, no register pins, no
+FAKE construct, no dead store, no constant holder, no alias, no do-while(0). The
+retired chassis's 8 `volatile s32` locals (4 unreferenced) are gone. Rejected
+spellings are banked in `memory/grind/func_80027640/rejected/` (ternary flips branch
+sense = 6; struct-store-in-both-arms reloads = 21).
+
+**Why no C spelling can close the last instruction.** The residual is an assembler
+hazard nop, not a compiler artefact: cc1's output is already identical to the
+target's instruction stream; ASPSX 2.34 inserted the nop and our maspsx drops it
+across `.L` labels. `.claude/rules/maspsx-gate-lists.md` adjudicates this list as a
+FIDELITY gate ("No C spelling can emit an assembler hazard nop") and names the
+per-function opt-in as the pure-C RETIREMENT path, not a park.
+
+**Operator steps (exact):**
+1. Append `func_80027640` to `maspsx_label_nop_funcs.txt` (one name per line).
+2. Replace `INCLUDE_ASM("asm/funcs", func_80027640);` in src/code6cac_b.c with
+   `memory/grind/func_80027640/candidate.c` (`python3 tmp/grind/func_80027640/s1/apply.py
+   memory/grind/func_80027640/candidate.c` does exactly that; drop the header comment
+   block if desired).
+3. `& tools/wteng.ps1 main sandbox func_80027640 --disable all` -> expect 0;
+   `& tools/wteng.ps1 main verify-oracle --rebuild` -> expect SHA1 == oracle.
+4. Run a fresh layer-2 `cheat-reviewer` on the C (self-vet at
+   `memory/grind/func_80027640/self_vet.md`).
+5. `& tools/wteng.ps1 main queue done func_80027640`; commit with the
+   `[infra-rule: maspsx-label-nop]` tag plus the target-site citation in step "Re-measured"
+   above (required by tools/hooks/no_new_regfix_guard.py for a net gate-list addition).
+
+**Observation for the owner (no action requested):** the per-function scoping of this
+gate exists only to protect index-anchored regfix/asmfix rules in sibling functions
+(`maspsx_label_nop_funcs.txt` header; `.claude/rules/maspsx-label-nop-gate.md` "Why
+per-function"). Since 2026-08-25 regfix.txt/asmfix.txt are empty project-wide, that
+hazard no longer exists; a global load-consumer `.L`-label nop in maspsx would make
+this whole class (func_80022F34's last non-frame diff included) plain pure C with no
+list entry. That is a substrate change on the severe-blocker list, so it is recorded
+here only as a re-activation trigger, not proposed.
+
+## 2026-09-01 22:05 — func_80027640 — ruling: INTEGRATION HANDOFF filed for func_80027640 : docs/grind/decisions.md:20004 -- 2 — **FAIL**
+
+The C in memory/grind/func_80027640/candidate.c is clean pure C (no asm, volatile, pins, FAKE, dead stores) and I verified the bytes claim myself: tmp/grind/func_80027640/s1/build_gated.sh reproduces the Makefile pipeline verbatim with only --label-nop-funcs pointed at a scratch list, gated_words.txt shows 8 differing words all unresolved relocs, and link_gated.sh's gated_sha1.txt is 62efab4f...bb4fa == oracle. The decisive fact is dispositional, not technical: the ONLY blocker is an entry in maspsx_label_nop_funcs.txt, which .claude/rules/integration-handoff-self-serve.md places on the add-scope-allow DENYLIST by name (assembler-behavior gates, severe-blocker class) — so no driver-executable grant exists and integration-handoff is unavailable; on the live chassis the honest score is 1, not 0. Default-FAIL governs. The escalation record at docs/grind/decisions.md:20004 (plus the s1 evidence) stands as the owner's audit item; the standing question — whether the label-nop fix should be globalized now that regfix/asmfix are at zero (maspsx-gate-lists.md 'Endgame' item 1) — is recorded there and is the owner's call, not mine.

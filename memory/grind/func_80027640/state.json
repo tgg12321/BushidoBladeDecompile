@@ -1,0 +1,23 @@
+{
+ "func": "func_80027640",
+ "file": "code6cac_b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 1,
+   "modality": "recon",
+   "headline": "func_80027640: pure C at sandbox 1 (lone maspsx .L-label hazard nop); with the maspsx_label_nop_funcs.txt entry proven in tmp/ at 160/160 words AND full-build SHA1 == oracle; INTEGRATION HANDOFF filed"
+  }
+ ],
+ "frontier": [],
+ "judge_constraints": [
+  "func_80027640 may not be closed via a maspsx_label_nop_funcs.txt entry or any maspsx gate-list addition; change modality and pursue a route that needs no build-surface change. Do not refile this handoff."
+ ],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-02T02:48:02.166959+00:00"
+}
