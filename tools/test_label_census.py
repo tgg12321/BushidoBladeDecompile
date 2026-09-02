@@ -92,6 +92,47 @@ JTBL = """glabel func_J
 """
 
 
+# Coprocessor moves: operand 2 of ctc2/mfc2/... and operand 1 of lwc2/swc2 are
+# COP registers, not GPRs (asm/funcs/SetColorMatrix.s).
+COP = """glabel func_C
+    /* 0 80000000 00000000 */  ctc2       $t0, $16 /* handwritten instruction */
+    /* 4 80000004 00000000 */  lwc2       $16, 0x10($s1)
+    /* 8 80000008 00000000 */  swc2       $17, 0x0($a0)
+    /* C 8000000C 00000000 */  mfc2       $s0, $17
+    /* 10 80000010 00000000 */  jr         $ra
+    /* 14 80000014 00000000 */   nop
+endlabel func_C
+"""
+
+# 32 address-named files carry a symbolic glabel (asm/funcs/func_8003F168.s ->
+# `glabel stage_ExecInitFunc`).
+SYMBOLIC = """glabel stage_ExecInitFunc
+    /* 0 8003F168 00000000 */  addiu      $sp, $sp, -0x18
+    /* 4 8003F16C 00000000 */  beqz       $a0, .L8003F178
+    /* 8 8003F170 00000000 */   nop
+    /* C 8003F174 00000000 */  addu       $s0, $a0, $zero
+  .L8003F178:
+    /* 10 8003F178 00000000 */  jr         $ra
+    /* 14 8003F17C 00000000 */   nop
+endlabel stage_ExecInitFunc
+"""
+
+TWO_GLABELS = SYMBOLIC + """glabel other_func
+    /* 18 8003F180 00000000 */  jr         $ra
+    /* 1C 8003F184 00000000 */   nop
+endlabel other_func
+"""
+
+# hand-written canonical asm: glabel, but no /* addr */ comment columns
+CANON = """glabel func_H
+	lui	$v0, %hi(D_800A1510)
+	beqz	$a0, .Lskip
+	addu	$s0, $a1, $zero
+  .Lskip:
+	jr	$ra
+endlabel func_H
+"""
+
 class TestCensus(unittest.TestCase):
     def test_parse_target_labels_and_branches(self):
         ins, labels = parse_asm(TARGET)
@@ -130,6 +171,15 @@ class TestCensus(unittest.TestCase):
         c = census(JTBL, "func_J")
         # prev insn is the delay slot of an unconditional jr -> no fallthrough
         self.assertEqual(c["labels"][".L80000008"]["preds"], ["beqz@3"])
+
+    def test_jlabel_with_trailing_args(self):
+        # splat also emits `jlabel .L8008B5CC, global` (19 sites, 3 files)
+        text = JTBL.replace("  jlabel .L8000001C",
+                            "  jlabel .L8000001C, global")
+        ins, labels = parse_asm(text, "func_J")
+        self.assertEqual(len(ins), 10)
+        self.assertIn(".L8000001C", labels)
+        self.assertNotIn("jlabel", [i["op"] for i in ins])
 
     def test_alabel_is_not_a_label(self):
         c = census(JTBL, "func_J")
@@ -222,6 +272,65 @@ class TestCensus(unittest.TestCase):
         self.assertEqual(c["labels"][".L80000030"]["preds"],
                          ["beqz@0", "beqz@2", "beqz@14", "fallthrough@15"])
 
+
+    # --- R1: coprocessor operands are not GPRs -------------------------------
+
+    def test_ctc2_cop_operand_not_counted_as_gpr(self):
+        c = census(COP, "func_C")
+        # ctc2 $t0, $16 -> $16 is COP2 control reg 16, NOT $s0
+        self.assertEqual(c["reg_refs"]["$s0"], 1)   # only the mfc2 GPR
+        ins, _ = parse_asm(COP, "func_C")
+        self.assertTrue(ins[0]["args"].startswith("$t0, $16"))
+
+    def test_lwc2_swc2_cop_operand_not_counted_base_is(self):
+        c = census(COP, "func_C")
+        self.assertEqual(c["reg_refs"]["$s1"], 1)   # base reg of lwc2 only
+        ins, _ = parse_asm(COP, "func_C")
+        self.assertEqual(ins[1]["args"], "$16, 0x10($s1)")
+        self.assertEqual(ins[2]["args"], "$17, 0x0($a0)")
+
+    def test_mfc2_gpr_operand_is_counted(self):
+        ins, _ = parse_asm(COP, "func_C")
+        self.assertEqual(ins[3]["args"], "$s0, $17")
+
+    def test_cop_ops_numeric_gpr_still_normalised(self):
+        text = """	.ent	f
+f:
+	mtc2	$16,$9
+	.end	f
+"""
+        ins, _ = parse_asm(text, "f")
+        self.assertEqual(ins[0]["args"], "$s0,$9")   # rt normalised, cop reg not
+        self.assertEqual(census(text, "f")["reg_refs"]["$s0"], 1)
+
+    # --- R2: single-glabel fallback on the target side -----------------------
+
+    def test_single_glabel_resolves_mismatched_filename(self):
+        c = census(SYMBOLIC, "func_8003F168", allow_single_glabel=True)
+        self.assertFalse(c["missing"])
+        self.assertEqual(c["n_insns"], 6)
+        self.assertIn("stage_ExecInitFunc", c["note"])
+        self.assertIn(".L8003F178", c["labels"])
+
+    def test_single_glabel_fallback_is_opt_in(self):
+        self.assertTrue(census(SYMBOLIC, "func_8003F168")["missing"])
+
+    def test_multi_glabel_file_stays_strict(self):
+        self.assertTrue(
+            census(TWO_GLABELS, "func_8003F168", allow_single_glabel=True)["missing"])
+
+    def test_matching_name_needs_no_note(self):
+        c = census(SYMBOLIC, "stage_ExecInitFunc", allow_single_glabel=True)
+        self.assertFalse(c["missing"])
+        self.assertIsNone(c["note"])
+
+    # --- m1: comment-less canonical asm takes the target path ----------------
+
+    def test_handwritten_canonical_asm_is_parsed(self):
+        ins, labels = parse_asm(CANON, "func_H")
+        self.assertEqual([i["op"] for i in ins], ["lui", "beqz", "addu", "jr"])
+        self.assertEqual(labels, {".Lskip": 3})
+        self.assertNotIn("endlabel", [i["op"] for i in ins])
 
 if __name__ == "__main__":
     unittest.main()

@@ -23,6 +23,11 @@ Usage:
             `.set noreorder` blocks). Numeric registers are normalised to ABI
             names so both sides compare directly.
 
+Coprocessor operands (`ctc2 $t0, $16`, `lwc2 $16, 0x10($s1)`) name COP2/COP0
+registers, not GPRs; they are left numeric and never counted as callee-saved
+references. An address-named file whose `glabel` is symbolic resolves by
+filename when it defines exactly one function.
+
 LIMITATION -- indirect jumps: a `jr $reg` computed from a jump table carries no
 textual edge, so its targets show up with zero predecessors. Those labels are
 flagged `(jtbl target? ...)`; the project has 112 non-`$ra` `jr` sites, so a
@@ -51,8 +56,9 @@ CALLEE_SAVED = ["$s0", "$s1", "$s2", "$s3", "$s4", "$s5", "$s6", "$s7"]
 LABEL = re.compile(r"^\s*(\.L\w+|\$L\d+|[A-Za-z_]\w*):\s*$")
 # .LC0 = rodata string, .Lfe1 = frame-end marker: never branch targets
 NOT_A_BRANCH_TARGET = re.compile(r"^\.L(C|fe)\d+$")
-# splat directives, no trailing colon
-SPLAT_LABEL_DIR = re.compile(r"^\s*(jlabel|alabel|dlabel|endlabel)\s+(\S+)\s*$")
+# splat directives, no trailing colon; may carry extra args (`jlabel .L8, global`)
+SPLAT_LABEL_DIR = re.compile(
+    r"^\s*(jlabel|alabel|dlabel|endlabel)\s+([^\s,]+)\s*(?:,.*)?$")
 # group 1 = whitespace after the comment (3+ = delay slot), 2 = op, 3 = args
 TARGET_INSN = re.compile(
     r"^\s*/\*\s*[0-9A-Fa-f]+\s+[0-9A-Fa-f]{8}\s+[0-9A-Fa-f]{8}\s*\*/(\s+)(\S+)\s*(.*)$"
@@ -63,6 +69,12 @@ _NUMREG = re.compile(r"\$(\d+)\b")
 _SREG = re.compile(r"\$(s[0-7])\b")
 _PRED = re.compile(r"^(.*)@(\d+)$")
 
+# Coprocessor moves: operand 1 is a GPR, operand 2 is a COP register.
+COP_MOVE = {"cfc2", "ctc2", "mfc2", "mtc2", "cfc0", "ctc0", "mfc0", "mtc0"}
+# Coprocessor loads/stores: operand 1 is a COP register, the rest is an address
+# whose base register IS a GPR.
+COP_MEM = {"lwc2", "swc2"}
+
 BRANCHES = {
     "b", "j", "beq", "bne", "beqz", "bnez", "blez", "bgtz", "bltz", "bgez",
     "bgezal", "bltzal", "beql", "bnel",
@@ -70,12 +82,26 @@ BRANCHES = {
 UNCOND = {"b", "j", "jr"}
 
 
-def _norm_regs(args):
-    """$16 -> $s0, $4 -> $a0, $0 -> $zero, $30 -> $fp ..."""
-    def sub(m):
-        n = int(m.group(1))
-        return ABI[n] if 0 <= n < 32 else m.group(0)
-    return _NUMREG.sub(sub, args)
+def _abi_sub(m):
+    n = int(m.group(1))
+    return ABI[n] if 0 <= n < 32 else m.group(0)
+
+
+def _norm_regs(args, op=None):
+    """$16 -> $s0, $4 -> $a0, $0 -> $zero, $30 -> $fp ...
+
+    COP operands are deliberately LEFT NUMERIC: `ctc2 $t0, $16` writes COP2
+    control register 16, not $s0. Leaving them numeric also keeps them out of
+    the callee-saved count, which counts $s0..$s7 by name.
+    """
+    if op in COP_MOVE or op in COP_MEM:
+        parts = args.split(",")
+        if len(parts) >= 2:
+            if op in COP_MOVE:
+                return ",".join([_NUMREG.sub(_abi_sub, parts[0])] + parts[1:])
+            return ",".join([parts[0]]
+                            + [_NUMREG.sub(_abi_sub, x) for x in parts[1:]])
+    return _NUMREG.sub(_abi_sub, args)
 
 
 def _span(lines, func):
@@ -97,7 +123,31 @@ def _span(lines, func):
     return start, len(lines)
 
 
-def parse_asm(text, func=None):
+def _glabels(lines):
+    return [ln.strip().split(None, 1)[1].strip()
+            for ln in lines
+            if ln.strip().startswith("glabel ") and len(ln.strip().split()) > 1]
+
+
+def _resolve(lines, func, allow_single_glabel):
+    """-> (name_to_span_on, note_or_None).
+
+    32 address-named files carry a symbolic glabel (asm/funcs/func_8003F168.s
+    is `glabel stage_ExecInitFunc`). When the filename-derived name misses and
+    the file defines exactly ONE function, use it. Multi-glabel files stay
+    strict -- there the name genuinely disambiguates.
+    """
+    if not func or _span(lines, func) is not None:
+        return func, None
+    if allow_single_glabel:
+        gl = _glabels(lines)
+        if len(gl) == 1:
+            return gl[0], ("note: using glabel %s (file is named %s)"
+                           % (gl[0], func))
+    return func, None
+
+
+def parse_asm(text, func=None, allow_single_glabel=False):
     """-> (instructions, {label: index_of_next_instruction}).
 
     Each instruction is {"op", "args", "raw", "fmt", "in_noreorder",
@@ -105,15 +155,18 @@ def parse_asm(text, func=None):
     `func` is not present in `text`.
     """
     lines = text.splitlines()
+    func, _note = _resolve(lines, func, allow_single_glabel)
     span = _span(lines, func)
     if span is None:
         return [], {}
     lo, hi = span
     body = lines[lo:hi]
 
-    # Detect the format ONCE: a splat file must never be fed to BUILD_INSN
-    # (its `jlabel`/`endlabel` lines look exactly like build instructions).
-    is_target = any(TARGET_INSN.match(ln) for ln in body)
+    # Detect the format ONCE, by `glabel` rather than by the `/* addr */`
+    # comment column, so hand-written canonical-asm files (which have no
+    # comment column) still take the target path. TARGET_INSN is then used
+    # only for the delay-slot marker.
+    is_target = any(ln.strip().startswith("glabel ") for ln in lines)
 
     ins = []
     labels = {}
@@ -133,25 +186,29 @@ def parse_asm(text, func=None):
                 continue
             labels[name] = len(ins)
             continue
-        if is_target:
-            m = TARGET_INSN.match(raw)
-            if m:
-                ins.append({"op": m.group(2), "args": _norm_regs(m.group(3).strip()),
-                            "raw": raw, "fmt": "target", "in_noreorder": False,
-                            # splat marks a delay slot with one EXTRA space
-                            "delay_slot": len(m.group(1)) > 2})
-            continue
         s = raw.strip()
-        if s.startswith(".set"):
-            if "noreorder" in s:
-                noreorder = True
-            elif "reorder" in s:
-                noreorder = False
+        if s.startswith("."):
+            if s.startswith(".set"):
+                if "noreorder" in s:
+                    noreorder = True
+                elif "reorder" in s:
+                    noreorder = False
+            continue                      # any other assembler directive
+        m = TARGET_INSN.match(raw)
+        if m:
+            op = m.group(2)
+            ins.append({"op": op, "args": _norm_regs(m.group(3).strip(), op),
+                        "raw": raw, "fmt": "target", "in_noreorder": noreorder,
+                        # splat marks a delay slot with one EXTRA space
+                        "delay_slot": len(m.group(1)) > 2})
             continue
         m = BUILD_INSN.match(raw)
         if m:
-            ins.append({"op": m.group(1), "args": _norm_regs(m.group(2).strip()),
-                        "raw": raw, "fmt": "build", "in_noreorder": noreorder,
+            op = m.group(1)
+            ins.append({"op": op, "args": _norm_regs(m.group(2).strip(), op),
+                        "raw": raw,
+                        "fmt": "target" if is_target else "build",
+                        "in_noreorder": noreorder,
                         # cc1 DOES fill delay slots, but only inside noreorder
                         "delay_slot": noreorder})
 
@@ -171,12 +228,15 @@ def _sort_preds(preds):
     return sorted(preds, key=key)
 
 
-def census(text, func=None):
-    """-> {"n_insns", "labels": {L: {"at","preds","n_preds"}}, "reg_refs", "missing"}"""
-    ins, labels = parse_asm(text, func)
+def census(text, func=None, allow_single_glabel=False):
+    """-> {"n_insns", "labels", "reg_refs", "missing", "note"}"""
+    lines = text.splitlines()
+    name, note = _resolve(lines, func, allow_single_glabel)
+    ins, labels = parse_asm(text, name)
     if func and not ins and not labels:
         return {"n_insns": 0, "labels": {},
-                "reg_refs": {r: 0 for r in CALLEE_SAVED}, "missing": True}
+                "reg_refs": {r: 0 for r in CALLEE_SAVED},
+                "missing": True, "note": note}
 
     preds = {name: [] for name in labels}
 
@@ -214,6 +274,7 @@ def census(text, func=None):
                        "n_preds": len(preds[n])} for n in labels},
         "reg_refs": reg_refs,
         "missing": False,
+        "note": note,
     }
 
 
@@ -276,7 +337,9 @@ def main(argv=None):
         sys.stderr.write("error: target asm not found: %s\n" % tpath)
         return 2
     with open(tpath, "r", encoding="utf-8", errors="replace") as f:
-        tc = census(f.read(), a.func)
+        tc = census(f.read(), a.func, allow_single_glabel=True)
+    if tc.get("note"):
+        sys.stderr.write(tc["note"] + "\n")
     if tc.get("missing"):
         sys.stderr.write("error: %s not found in %s\n" % (a.func, tpath))
         return 2
