@@ -363,3 +363,29 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s3 q1 all-block-local arm shape on the do-while(0) carrier (FAKE wrap present); tmp/grind/func_80016E60/s5/va_s16shift.c, vc_u32shift.c
+
+## [s6] The block-0 `sw s5,44(sp) / move s5,a0` pair is a pure INSN_LUID relation, and a bare parameter use can never satisfy it
+
+- verdict: CONFIRMED (dump-proven, tools/gcc-2.7.2/sched.c:2462 + sched.c:3256)
+- mechanism: sched2's block 0 holds 14 insns, all priority 1 except the branch; rank_for_schedule's priority and class tests are both ties (a dependence whose producer is a plain move has insn_cost 1, so every candidate is class 3), so the pick order is the descending-INSN_LUID tie-break and, because the scan is bottom-up, the emission order is ascending LUID. Each `sw sN` is anti-dependent on its `move sN`, so the three (save,init) groups emit in the LUID order of their moves. Ours emits s5 first because the parameter copy is insn 4; the target emits it third. sched1 cannot help: sched.c:3256-3282 pins the LEADING RUN of hard-register-source SETs at the top of block 0 out of scheduling entirely (`INSN_REF_COUNT (head) = 1`), which is exactly the `assign_parms` copy.
+- measured on: the s5 u8-shift honest candidate and the s5 do-while(0) carrier, current HEAD chassis; tmp/grind/func_80016E60/dumps/ings.{sched,sched2} (s5-form state) and the s6 final-form dumps.
+
+## [s6] A named local handle on the parameter (`ot_base = arg0;`) closes the block-0 pair and takes the do-while(0) carrier to distance 0
+
+- verdict: CONFIRMED
+- mechanism: the extra copy gives combine an i2/i3 pair (`p1 = a0` + `p2 = p1`); combine deletes the earlier insn and leaves the merged `p2 = a0` at the LATER position (dumps/ings.combine: insn 4 -> NOTE_INSN_DELETED, insn 19 -> `(set (reg 81) (reg:SI 4 a0))`). Block 0's head is then `select = 0`, a SET from a constant, so sched.c:3256's leading-run pin breaks immediately and insn 19 is schedulable; `birthing_insn_p` (sched.c:2504) holds on it (fresh pseudo, reg_n_sets == 1, REG dest) so `adjust_priority` (sched.c:2586) raises it to max_priority and the bottom-up scan emits it AFTER the two init insns. sched2 then sees LUID(19) > LUID(16) > LUID(13) and emits the groups s1, s2, s5.
+- measured: carrier 4 -> 0 (a1_argalias), honest 25 -> 21 (a2_argalias_honest). Insn count stays 211.
+- OPEN CLASSIFICATION QUESTION (this session's `ruling-request`): the construct is a fresh, once-written, once-read local holding a PURE COPY of a parameter. The frozen named-intermediate entry's 2026-08-17 clarification (.claude/rules/no-new-park-categories.md:225-227) routes "pure no-op copies" out of that family and into "the dead-store family and its prerequisites", but the dead-store rule's own scope sentence is a dead store / self-assignment to a LOCAL or PARAMETER (this is neither: it is live, and it is read), and the pointer-alias rule's scope is a second handle to a GLOBAL (this is a handle on a PARAMETER). SOTN-master precedent for the exact shape: docs/reference/sotn-construct-index.md:96 (`src/st/no0/e_stone_rose.c:611`, `Entity* fakeEntity = self; // !FAKE`).
+
+## [s6] The honest env/select seat swap remains 1 point worse than leaving the seat wrong
+
+- verdict: KILLED (instance)
+- statement: On the u8-shift + `ot_base` chassis, the s2 split-init accumulation spelling of `env` takes the $s0 seat honestly but measures 22 (208 insns) rather than beating the 21 that leaves the seat wrong.
+- mechanism: the split's earlier env birth frees ClearOTagR's jal delay slot, so reorg.c stops peeling `li a1,1` into the three back edges (our slots are `nop`), and the accumulation still parks the multiply partial in env's own hard register.
+- measured on: honest u8-shift arm shape with the `ot_base` handle, NO FAKE do-while wrap present; tmp/grind/func_80016E60/s6/{b1_splitinit,b2_splitrev,b3_splitinit_top,b4_symfirst_late}_objdiff.txt.
+
+## [s6] Frontier reset for s7
+
+1. **Resolve the `ot_base` family question** (this session's ruling request). If it is ruled ordinary C or granted under a family, the function is DONE at distance 0 with `memory/grind/func_80016E60/candidate.c` applied verbatim; the only remaining work is the self-vet and the Judge. If it is refused, the residual is the block-0 pair again and E-s6-4 says no bare-parameter spelling reaches it, which would make the pair a class-level foreclosure candidate against sched.c:3256.
+2. **Close the env seat honestly at 211 insns.** The target needs env at 8 weighted refs (a 4th real in-loop reference) or livelen <= 17. The split-init route reaches the seat but drops to 208 insns because it steals ClearOTagR's delay slot from `li a1,1`. Untried: a split-init spelling whose SECOND set is the one adjacent to ClearOTagR (so the delay slot still takes `li a1,1`), and any spelling that gives env a fourth reference without a second set.
+3. **Reuse the E-s6-4 inference project-wide.** Any BB2 function whose only residual is the position of the parameter's (save,init) group in block 0 is, by sched.c:3256, evidence that the original source named the parameter into a local; this is a one-statement fix elsewhere and has never been in the technique index.

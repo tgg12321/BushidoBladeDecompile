@@ -11,12 +11,6 @@ void func_80016E60(u8 *arg0, s32 arg1) {
 
     select = 0;
     special = 0;
-    /* FAKE: local handle on the parameter; effect: the a0->pseudo copy stops
-       being the leading insn of block 0, so sched.c:3256's parameter-copy pin
-       no longer keeps it unschedulable and sched1's birthing_insn_p boost
-       (sched.c:2504) emits it after the select/special inits; mechanism: combine
-       folds `p1 = a0` into this later copy, raising its INSN_LUID above the two
-       init insns for sched2. lever-exhaustion: memory/grind/func_80016E60/hypotheses.md */
     ot_base = arg0;
     if (D_800A38DC == 2) {
         special = D_800A389A < 1;
@@ -34,7 +28,8 @@ void func_80016E60(u8 *arg0, s32 arg1) {
         idx = D_800A36AC & 1;
         D_800A38B4 = fb_base + (idx * 0x9A00);
         D_800A374C = (u8 *)&ot[idx];
-        env = &D_800F7438 + (idx * 0x4090);
+        env = (u8 *)&D_800F7438;
+        env += idx * 0x4090;
 
         ClearOTagR(D_800A374C, 1);
         func_80019568();
@@ -47,15 +42,8 @@ void func_80016E60(u8 *arg0, s32 arg1) {
         func_8005C6D0();
         DrawSync(0);
         VSync(2);
-        /* FAKE: loop-note wrap; effect: env's three in-loop references are
-           weighted at loop_depth 3 instead of 2, so global.c seats env in $s0
-           and select in $s1 (the target's assignment); mechanism: flow.c:2087
-           reg_n_refs += loop_depth feeding global.c allocno_compare.
-           lever-exhaustion: memory/grind/func_80016E60/hypotheses.md */
-        do {
-            PutDispEnv(env + 0x5C);
-            PutDrawEnv(env);
-        } while (0);
+        PutDispEnv(env + 0x5C);
+        PutDrawEnv(env);
         DrawOTag(ot_base + 0x408C);
         DrawOTag(D_800A374C);
         D_800A36AC++;

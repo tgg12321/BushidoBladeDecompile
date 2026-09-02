@@ -52,7 +52,9 @@
    "next_probe": "Re-measure the s2 H6 honest split-init env form (`env = (u8 *)(idx * 0x4090); env += (s32)&D_800F7438;`) ON TOP OF the new u8-shift arm shape - it has never been composed with it, and its two costs (one operand parked in env's own hard reg, plus three lost reorg.c back-edge peels of `li a1,1`) may interact differently now that the arms move no instructions. Also sweep select's in-loop reference count: the two ?: arms each read `select` twice, so a spelling that reads it once per arm is the only untried route to the <=16 weighted refs the arithmetic needs."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Cite the closing handle as pointer-alias-fake-exception \u00a7 exact-scope bullet 3 (pass-through alias at a call site), not named-intermediate; keep it one once-written pass-through with no second handle on the same object."
+ ],
  "banned_constructs": [],
  "kills": [
   {
