@@ -945,13 +945,77 @@ void func_8003D478(s32 x, s32 y, u8 *str, s32 color) {
     } while (ch != 0);
 }
 typedef char *va_list;
-#define va_start(ap, last) (ap = (char *)__builtin_next_arg(last))
+#define va_start(ap, last) ((ap) = (va_list)(&(last) + 1))
 #define va_arg(ap, type) ((type *)(void *)(ap += 4))[-1]
 
 s32 strlen(u8 *);
 void sprintf(u8 *, u8 *, s32);
 
-INCLUDE_ASM("asm/funcs", func_8003D52C);
+void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
+    u8 buf[0x400];
+    u8 seg[0x100];
+    va_list ap;
+    s32 cur_arg;
+    s32 seen_pct;
+    u8 *p;
+    s32 ch;
+
+    cur_arg = first_arg;
+    seen_pct = 0;
+    p = seg;
+    va_start(ap, first_arg);
+    buf[0] = 0;
+
+    while ((ch = *fmt++) != 0) {
+        if (ch == '%') {
+            if (seen_pct == 0) {
+                seen_pct = 1;
+            } else {
+                *p = 0;
+                sprintf(buf + strlen(buf), seg, cur_arg);
+                p = seg;
+                cur_arg = va_arg(ap, s32);
+            }
+        }
+        *p++ = ch;
+    }
+
+    *p = 0;
+    sprintf(buf + strlen(buf), seg, cur_arg);
+
+    p = buf;
+    while ((ch = *p++) != 0) {
+        s32 row = D_800A3360;
+        if (row >= 0x1A) break;
+
+        if (ch == ' ') {
+            D_800A335C++;
+        } else if (ch == '\n') {
+            D_800A335C = 0;
+            D_800A3360 = row + 1;
+        } else if (ch == '~') {
+            ch = *p++;
+            if (ch == 0) break;
+            if (ch == 'c' || ch == 'C') {
+                s32 d1, d2, d3;
+                d1 = *p++;
+                if (d1 == 0) break;
+                d2 = *p++;
+                if (d2 == 0) break;
+                d3 = *p++;
+                if (d3 == 0) break;
+                D_800A3364 = ((d1 - '0') << 5) | ((d2 - '0') << 13) | ((d3 - '0') << 21);
+            }
+        } else {
+            func_8003D39C(D_800A335C * 8 + 0x10, row * 8 + 0x10, ch, D_800A3364);
+            D_800A335C++;
+        }
+        if (D_800A335C >= 0x4C) {
+            D_800A335C = 0;
+            D_800A3360++;
+        }
+    }
+}
 
 /* kengo:LOW  |  su_menu_home/_DispSleepMenuTex  |  146i  |  PS2 UI — reverted */
 void func_8003D774(s32 arg0, s32 arg1) {
