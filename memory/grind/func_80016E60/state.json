@@ -1,8 +1,8 @@
 {
  "func": "func_80016E60",
  "file": "ings",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 30,
    "modality": "structural",
    "headline": "Bit-arm seats reduced to an exact local-alloc model: the target's chain must be a per-arm LOCAL quantity, the 3-quantity hand-rolled sort cannot emit the needed order from the measured birth order, an"
+  },
+  {
+   "session": 4,
+   "floor": 30,
+   "modality": "permuter",
+   "headline": "Named the bit-arm order divergence: sched1's birthing_insn_p boost (reg_n_sets==1 on a block-local `shift`); a function-scope shift/mask kills it and turns the whole bit-arm residual into pure registe"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The target's bit arm has three block-local quantities born in the order shift, mask, chain (addiu, li, lbu) - the one birth order from which the hand-rolled 3-element sort emits [0,1,2] = the target seats. Finding the C that makes sched1 place the addiu first closes both bit arms at once.",
-   "mechanism": "With births shift(10)/mask(12)/chain(14) the priorities are shift 13333, mask 40000, chain 40000; the sort then takes the b>a, not(c>b) branch and returns [0,1,2], i.e. shift $v0, mask $v1, chain $a0 - and the emitted order addiu, li, lbu is exactly the target's.",
-   "next_probe": "Read tmp/grind/func_80016E60/dumps/ings.sched for blk 22 and work out why the li outranks the addiu (INSN_PRIORITY tie vs the rank_for_schedule class test against the preceding CALL, tools/gcc-2.7.2/sched.c rank_for_schedule); then look for a byte-neutral C form that raises the addiu's priority or lowers the li's."
+   "hypothesis": "A BLOCK-LOCAL `shift` pseudo with reg_n_sets != 1 closes both bit arms outright: the emission order becomes addiu, li, lbu (arm A) and addiu, li, sllv, lbu (arm B), local-alloc's birth order becomes shift, mask, chain, and the three-quantity hand-rolled sort then hands out exactly shift $v0, mask $v1, chain $a0 in arm A and chain $v0 in arm B (the chain is born after the shift dies there, so it reuses $v0).",
+   "mechanism": "birthing_insn_p (tools/gcc-2.7.2/sched.c:2504) gates on reg_n_sets[regno] == 1, and reg_n_sets is counted by flow BEFORE combine. Two sets in one basic block keep the pseudo local (local-alloc.c reg_basic_block) while making the boost impossible. The s3 unreachable-permutation kill was computed for the birth order mask, chain, shift, which only exists BECAUSE of the boost - with the boost gone the birth order is shift, mask, chain and the s3 sort analysis gives [0,1,2] = the target seats.",
+   "next_probe": "Hunt for a two-set block-local shift that survives cse2. Foldable integer-constant splits are dead (s4). Untried: (a) a second set whose operand is not a compile-time constant in cse's view (the H6 env lever's shape - a symbol address or a memory read), (b) reusing an EXISTING local that is already set elsewhere in the function as the shift carrier (sanctioned variable-reuse family, .claude/rules/defeat-licm-hoist-var-reuse.md, FAKE required - check whether the borrowed pseudo stays block-local for local-alloc), (c) a `do { } while (0)` or duplicated-statement shape that gives the arm a second set. Verify each with a one-line grep of tmp/grind/func_80016E60/s4/sched.log for `ADJPRI insn=<addiu uid> ... birth=` after re-running tmp/grind/func_80016E60/s4/prio.sh."
   },
   {
-   "hypothesis": "A byte-neutral fourth block-local quantity in each bit arm switches local-alloc to the real qsort path, where the q1 priorities (shift 40000, mask 30000 as qty0, chain 30000 as qty1) already sort to exactly the target seats.",
-   "mechanism": "local-alloc.c:1502 qsort(qty_compare_1) is a proper priority sort with a qty-number tie-break, unlike the 3-element special case; the x1 probe proved the switch happens at next_qty >= 4 but its extra insn stretched mask's span and inverted mask vs chain.",
-   "next_probe": "Look for a fourth quantity that costs no insn and does not stretch mask's span - e.g. a duplicated read of D_800A3788 into a second variable that jump.c cross-jumping or combine re-merges - and re-read the QTYDBG rows to check mask keeps span 8."
+   "hypothesis": "Keeping the n4 shape (function-scope shift/mask, block-local bits) and moving the global.c seat of `shift` from $a0 to $v0 closes the bit arms from the other direction, because arm A's chain would then be pushed off $v0 onto $a0.",
+   "mechanism": "local-alloc runs first and gives arm A's only block-local quantity (the chain) the lowest free hard reg, $v0; global.c then seats `shift` and `mask` around it. Forcing local-alloc to leave $v0 alone - e.g. by giving arm A a second block-local quantity born before the chain, or by lifting the chain onto the global path only in arm A - reverses the pair.",
+   "next_probe": "On the n4 carrier, sweep: (i) arm A with mask block-local as well (two locals born before the chain), (ii) arm A's chain written as a direct read-modify-write on D_800A3788 (compiler temp) while arm B keeps the named `bits`, (iii) tools/ra_solver/local_extract.py QTYDBG plus tools/ra_solver/inverse_compose.py classify on the n4 state to get a typed REACHABLE/FORECLOSED verdict on `shift -> $v0` before spending more hand variants."
   },
   {
-   "hypothesis": "The env/select seat remains the larger residual; the do-while(0) carrier is the sanctioned fallback but now carries a measured extra cost (the prologue pair) that a byte-clean env lever would not pay.",
-   "mechanism": "flow.c:2087 counts reg_n_refs before combine; global.c allocno_compare needs env at 8 weighted refs. E-s3-7 shows the carrier itself perturbs the prologue, so any carrier submission must also explain that pair.",
-   "next_probe": "Re-measure the carrier's prologue pair once the bit arms are byte-clean, and compare it against the honest split-init form (33) to see whether the displacement is a wrap artefact or an independent defect."
+   "hypothesis": "The env/select seat remains the larger residual (19 of the honest 30) and is unchanged by this session's work; the do-while(0) carrier is still the only measured lever that swaps it, at the cost of the `sw s5,44(sp) / move s5,a0` prologue pair.",
+   "mechanism": "flow.c:2087 counts reg_n_refs before combine; global.c allocno_compare needs env at 8 weighted refs. The honest split-init env lever (s2 H6) measures 33 because combine parks one operand in env's own hard reg and the earlier birth deletes three reorg.c back-edge peels.",
+   "next_probe": "Re-measure the carrier's prologue pair on the n4 chassis now that the bit arms carry no insn movement, and check whether that pair is a wrap artefact or an independent defect; then re-run the honest split-init env form on top of n4 to see whether the two levers compose (s2 measured them separately)."
   }
  ],
  "judge_constraints": [],
@@ -114,6 +120,30 @@
    "measured_on": "v5 do-while(0) carrier (FAKE present), body_r1_bitsA_only.c / body_r2_bitsB_only.c",
    "predicate_cite": "",
    "result": "15 and 17. The function-scope pseudo (reg1 = 81) appears as a LOCAL quantity row, so the arm falls back to the three-blo"
+  },
+  {
+   "session": 4,
+   "statement": "Same-variable split-init accumulation on a BLOCK-LOCAL `shift` (shift = select - 1; shift -= 2, and two sibling spellings) raises reg_n_sets above 1 and defeats the sched1 birthing boost while keeping",
+   "kill_scope": "instance",
+   "measured_on": "q2 do-while(0) carrier (FAKE do-while wrap around {PutDispEnv, PutDrawEnv} present); tmp/grind/func_80016E60/s4/variants2/p1_q2_splitarith_m1m2.c, p2_q2_splitarith_p1m4.c, p5_q2_splitmul.c, p3_allblk_",
+   "predicate_cite": "",
+   "result": "p1 = 11, p2 = 11, p5 = 11 - and p1's objdiff is byte-for-byte the s3 q2 diff, i.e. the addiu still moves in both arms, s"
+  },
+  {
+   "session": 4,
+   "statement": "Putting `bits` at function scope alongside a function-scope `shift` and `mask` lets global.c seat all three bit-arm quantities at once, now that the emission order is fixed.",
+   "kill_scope": "instance",
+   "measured_on": "q2 do-while(0) carrier (FAKE do-while wrap present); tmp/grind/func_80016E60/s4/variants/n1_fn_shift_fn_mask_fn_bits.c and n2_fn_shift_blk_mask_fn_bits.c",
+   "predicate_cite": "",
+   "result": "17 and 17, against 11 for n4 which keeps `bits` block-local. A function-scope `bits` is one global.c allocno shared by b"
+  },
+  {
+   "session": 4,
+   "statement": "A permuter campaign seeded from the s3 honest candidate finds a form below the honest floor of 30.",
+   "kill_scope": "instance",
+   "measured_on": "asm-until-matched chassis, s3 honest candidate as base.c, no FAKE constructs; tmp/grind/func_80016E60/s4/perm_a",
+   "predicate_cite": "",
+   "result": "64 finds, best 212 against a base of 585 - no sub-floor form and no novel structural class; every find was an attractor "
   }
  ],
  "ladder_skip": 0,

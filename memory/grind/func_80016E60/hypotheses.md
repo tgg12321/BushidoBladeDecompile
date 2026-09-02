@@ -203,3 +203,75 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: v5 do-while(0) carrier (FAKE present), body_r1_bitsA_only.c / body_r2_bitsB_only.c
+
+## [s4] H13 CONFIRMED - the bit-arm `li`-before-`addiu` divergence is sched1's adjust_priority/birthing_insn_p register-pressure boost, and it fires because a per-arm block-local `shift` has reg_n_sets == 1.
+- mechanism: tools/gcc-2.7.2/sched.c:2504 birthing_insn_p returns 1 for a SET whose REG dest is live and whose reg_n_sets[regno] == 1; sched.c:2586 adjust_priority then raises that insn's INSN_PRIORITY to max_priority (0x7F000001 here, inherited from the block-ending jump). sched1 scans bottom-up, so the boosted insn is picked FIRST and therefore EMITTED LAST. `mask` (two sets) and `bits` (two sets) print birth=0 and stay at priority 1, where rank_for_schedule (sched.c:2408) falls through to the INSN_LUID tie-break.
+- probe: `pwsh tools/grinder/dump.ps1 func_80016E60` for pass attribution, then the instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_SCHED_DEBUG=1 BB2_RANK_DEBUG=1 BB2_PRIO_DEBUG=1 - tmp/grind/func_80016E60/s4/sched.log lines 7788-7812, tmp/grind/func_80016E60/s4/prio.log
+- result: `SCHEDDBG ADJPRI insn=390 deaths=0 birth=1 maxpri=2130706433 pri=1` then `PICK clock=5 picked=390 (pri=2130706433 luid=4)` out of the ready list `[390(p=1,l=4) 399(p=1,l=8) 393(p=1,l=5)]`. Removing the boost (function-scope `shift`, reg_n_sets == 2) produces the target's emission order in BOTH arms, measured - see H14.
+- verdict: CONFIRMED
+
+## [s4] H14 CONFIRMED - a function-scope `shift` and `mask` (written in both bit arms) removes the birthing boost and makes the bit-arm residual pure register naming with zero insn movement.
+- mechanism: writing one variable in both arms gives its pseudo reg_n_sets == 2, so birthing_insn_p is false, no insn in the arm is boosted, and rank_for_schedule's INSN_LUID tie-break emits `addiu, li, lbu` (arm A) and `addiu, li, sllv, lbu` (arm B) - the target's orders.
+- probe: tools/sweep_variants.py over the scope grid on the do-while(0) carrier (tmp/grind/func_80016E60/s4/variants/): n1 fn/fn/fn = 17, n2 fn-shift/blk-mask/fn-bits = 17, n3 fn-shift/blk-mask/blk-bits = 17, n4 fn-shift/fn-mask/blk-bits = 11, n5 blk-shift/fn-mask/fn-bits = 17; then tools/objdiff.py on n4
+- result: n4 = 11 on the carrier and 30 honest (the same numbers as the s3 candidate) but the diff no longer contains ANY insn position change: it is `addiu a0 -> v0` and `sllv v1,v1,a0 -> v1,v1,v0` in both arms plus arm A's `lbu/or/sb` on $v0 where the target uses $a0. Arm B's chain is byte-correct. The honest n4 form is the new candidate.c.
+- verdict: CONFIRMED
+
+## [s4] Buying reg_n_sets != 1 for a BLOCK-LOCAL `shift` through same-variable split-init accumulation, so that the target's local-alloc birth order (shift, mask, chain) and its seats (shift $v0, mask $v1, chain $a0/$v0) are reachable without making `shift` a global.c allocno.
+- mechanism: flow.c counts reg_n_sets before combine, so the s2 H6 env split-init (`env = idx*0x4090; env += (s32)&D_800F7438;`) raised its count from 6 to 10 and survived to flow. The same trick was expected to give the shift two sets and defeat sched.c:2504 birthing_insn_p.
+- probe: three arithmetic split spellings, all block-local on the s3 q2 shape, swept with tools/sweep_variants.py on the q2 do-while(0) carrier - `shift = select - 1; shift -= 2;` (p1), `shift = select + 1; shift -= 4;` (p2), `shift = select * 1; shift -= 3;` (p5); plus the all-block-local variant (p3) and a blk-shift/fn-mask/blk-bits variant (p4)
+- result: p1 = 11, p2 = 11, p5 = 11 - all three reproduce the s3 q2 objdiff EXACTLY (the addiu still moves in both arms), so the boost still fires; p3 = 15 (identical to the s3 q1 all-block form), p4 = 14. cse2 reassociates two integer-constant offsets into a single addiu before flow counts the sets; the env split-init survived only because its second operand was a symbol address that cse cannot fold into the first set.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: q2 do-while(0) carrier (FAKE do-while wrap around {PutDispEnv, PutDrawEnv} present); tmp/grind/func_80016E60/s4/variants2/p1_q2_splitarith_m1m2.c, p2, p5, p3_allblk_splitarith.c, p4_blkshift_fnmask_blkbits_splitarith.c
+
+## [s4] Making `bits` a function-scope variable alongside a function-scope `shift` and `mask`, so that all three bit-arm quantities share the fixed emission order and the global.c seats.
+- mechanism: a function-scope `shift` removes the sched1 boost (H14); the guess was that putting the chain on the same footing would let global.c seat all three at once.
+- probe: body n1 (fn shift / fn mask / fn bits) and n2 (fn shift / blk mask / fn bits) in tmp/grind/func_80016E60/s4/variants/, swept on the do-while(0) carrier
+- result: 17 and 17 (against 11 for n4, which keeps `bits` block-local). A function-scope `bits` is ONE global.c allocno shared by both arms and therefore cannot be $a0 in arm A and $v0 in arm B - the s3 H11 finding is unchanged by the emission-order fix.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: q2 do-while(0) carrier (FAKE do-while wrap present); tmp/grind/func_80016E60/s4/variants/n1_fn_shift_fn_mask_fn_bits.c / n2_fn_shift_blk_mask_fn_bits.c
+
+## [s4] A permuter campaign seeded from the s3 honest candidate finds a form below the honest floor of 30.
+- mechanism: the permuter's random passes (perm_temp_for_expr, perm_reorder_stmts, perm_split_assignment, perm_refer_to_var, perm_duplicate_assignment) cover exactly the space of small C respellings that move sched1 birth order and flow reference counts.
+- probe: tools/permuter_campaign.py launch --func func_80016E60 --dir tmp/grind/func_80016E60/s4/perm_a --label honest-q2-candidate-30 -j 8 --stop-on-zero (base permuter score 585, --stack-diffs default), harvested at 26,426 iterations / 805 s
+- result: 64 finds, BEST 212 against a base of 585, no sub-floor form and no novel structural class - every find was an attractor around the seed. Campaign harvested and stopped. The productive lever this session came from pass attribution (dump.ps1 + the instrumented cc1), not from sampling; a re-seed of this same chassis is banked as spent.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: asm-until-matched chassis, s3 honest candidate as base.c, no FAKE constructs; tmp/grind/func_80016E60/s4/perm_a
+
+## [s4] The bit arms' `li`-before-`addiu` emission divergence is produced by sched1's register-pressure heuristic: adjust_priority raises the shift's addiu to max_priority because birthing_insn_p is true for it, and birthing_insn_p is true only because a per-arm block-local `shift` pseudo has reg_n_sets == 1.
+- mechanism: tools/gcc-2.7.2/sched.c:2504 birthing_insn_p returns 1 for a SET whose REG dest is live in bb_live_regs and whose reg_n_sets[regno] == 1; sched.c:2586 adjust_priority then sets INSN_PRIORITY(prev) = max_priority. Here max_priority is 0x7F000001, inherited from the block-ending jump (insn 407, priority 2147483477). sched1 scans the basic block BOTTOM-UP, so a boosted insn is picked first and therefore EMITTED LAST. `mask` (mask = 1; mask <<= shift) and `bits` (bits = D_800A3788; bits |= mask) each carry two sets, print birth=0, stay at priority 1, and fall through rank_for_schedule (sched.c:2408) to the INSN_LUID tie-break.
+- probe: pwsh tools/grinder/dump.ps1 func_80016E60 for pass attribution, then the instrumented cc1 (tools/gcc-2.7.2/cc1) run over src/ings.c with BB2_SCHED_DEBUG=1 BB2_RANK_DEBUG=1 and separately BB2_PRIO_DEBUG=1; read tmp/grind/func_80016E60/s4/sched.log lines 7788-7812 and tmp/grind/func_80016E60/s4/prio.log.
+- result: The trace is explicit: ready list [390(p=1,l=4) 399(p=1,l=8) 393(p=1,l=5)], then `SCHEDDBG ADJPRI insn=390 deaths=0 birth=1 maxpri=2130706433 pri=1`, then `SCHEDDBG PICK clock=5 picked=390 (pri=2130706433 luid=4)`, then 399, then 393 - emission li, lbu, addiu. Every other insn in the arm prints birth=0. Enumerating the eight boost subsets over {shift, mask, chain} against the three possible source orders shows the target emission `addiu, li, lbu` is reachable from exactly two configurations ({none boosted} and {chain only}), and both require the shift unboosted. That is why the s2 H8 and s3 nine-spelling statement-permutation probes all came back inert: statement order only moves LUIDs and the boost overrides LUID entirely.
+- verdict: CONFIRMED
+
+## [s4] Declaring `shift` and `mask` at function scope, so each is written in both bit arms, gives their pseudos reg_n_sets == 2, removes the sched1 boost, and reproduces the target's emission order in both arms.
+- mechanism: Two sets of one pseudo make birthing_insn_p false (sched.c:2504), no insn in the arm is boosted, and rank_for_schedule's INSN_LUID tie-break emits addiu, li, lbu in arm A and addiu, li, sllv, lbu in arm B - the target's orders. flow.c counts reg_n_sets across the whole function, so scope, not statement order, is the control.
+- probe: tools/sweep_variants.py over a five-cell scope grid on the do-while(0) carrier (tmp/grind/func_80016E60/s4/variants/), then tools/objdiff.py on the winner, then the wrap-free honest form.
+- result: n4 (fn shift / fn mask / blk bits) = 11 on the carrier and 30 honest - the same scores as the s3 q2 candidate, but the objdiff no longer contains a single insn-position change. It is now `-addiu a0,s1,-3 / +addiu v0,s1,-3` and `-sllv v1,v1,a0 / +sllv v1,v1,v0` in both arms plus arm A's lbu/or/sb on $v0 where the target uses $a0; arm B's chain is byte-correct on $v0. Grid: n1 fn/fn/fn = 17, n2 = 17, n3 = 17, n4 = 11, n5 blk-shift = 17. The honest n4 is the new candidate.c.
+- verdict: CONFIRMED
+
+## [s4] Same-variable split-init accumulation on a BLOCK-LOCAL `shift` (shift = select - 1; shift -= 2, and two sibling spellings) raises reg_n_sets above 1 and defeats the sched1 birthing boost while keeping the shift out of global.c.
+- mechanism: flow.c counts reg_n_sets before combine runs, which is why the s2 H6 env split-init raised env's count from 6 to 10 and survived; the same trick was expected to give the shift two sets.
+- probe: tools/sweep_variants.py on the q2 do-while(0) carrier over tmp/grind/func_80016E60/s4/variants2/: p1 `shift = select - 1; shift -= 2;`, p2 `shift = select + 1; shift -= 4;`, p5 `shift = select * 1; shift -= 3;` (all block-local on the q2 shape), p3 the all-block-local variant, p4 blk-shift/fn-mask/blk-bits.
+- result: p1 = 11, p2 = 11, p5 = 11 - and p1's objdiff is byte-for-byte the s3 q2 diff, i.e. the addiu still moves in both arms, so the boost still fired. p3 = 15 (identical to the s3 q1 all-block form), p4 = 14. cse2 reassociates two integer-constant offsets into a single addiu before flow counts the sets. The H6 env split-init survived cse only because its second operand was a symbol address that cse cannot fold into the first set; a pair of integer constants is foldable.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: q2 do-while(0) carrier (FAKE do-while wrap around {PutDispEnv, PutDrawEnv} present); tmp/grind/func_80016E60/s4/variants2/p1_q2_splitarith_m1m2.c, p2_q2_splitarith_p1m4.c, p5_q2_splitmul.c, p3_allblk_splitarith.c, p4_blkshift_fnmask_blkbits_splitarith.c
+
+## [s4] Putting `bits` at function scope alongside a function-scope `shift` and `mask` lets global.c seat all three bit-arm quantities at once, now that the emission order is fixed.
+- mechanism: A function-scope shift removes the sched1 boost; the guess was that putting the chain on the same footing would let global.c allocate the whole arm coherently.
+- probe: bodies n1 (fn shift / fn mask / fn bits) and n2 (fn shift / blk mask / fn bits) in tmp/grind/func_80016E60/s4/variants/, swept on the do-while(0) carrier.
+- result: 17 and 17, against 11 for n4 which keeps `bits` block-local. A function-scope `bits` is one global.c allocno shared by both arms and therefore cannot be $a0 in arm A and $v0 in arm B - the s3 H11 finding survives the emission-order fix unchanged.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: q2 do-while(0) carrier (FAKE do-while wrap present); tmp/grind/func_80016E60/s4/variants/n1_fn_shift_fn_mask_fn_bits.c and n2_fn_shift_blk_mask_fn_bits.c
+
+## [s4] A permuter campaign seeded from the s3 honest candidate finds a form below the honest floor of 30.
+- mechanism: The permuter's random passes (perm_temp_for_expr, perm_reorder_stmts, perm_split_assignment, perm_refer_to_var, perm_duplicate_assignment) cover exactly the space of small C respellings that move sched1 birth order and flow reference counts, so a hill-climb from the seed should reach any nearby honest basin.
+- probe: tools/permuter_campaign.py launch --func func_80016E60 --dir tmp/grind/func_80016E60/s4/perm_a --label honest-q2-candidate-30 -j 8 --stop-on-zero (base permuter score 585, --stack-diffs default), waited in-turn and harvested at 26,426 iterations / 805 s, then harvest --stop.
+- result: 64 finds, best 212 against a base of 585 - no sub-floor form and no novel structural class; every find was an attractor around the seed. The productive lever this session came from pass attribution (dump.ps1 plus the instrumented cc1), not from sampling. Campaign harvested and stopped; a re-seed of this same chassis is banked as spent.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: asm-until-matched chassis, s3 honest candidate as base.c, no FAKE constructs; tmp/grind/func_80016E60/s4/perm_a

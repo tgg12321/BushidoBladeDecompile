@@ -1,21 +1,36 @@
 /* func_80016E60 candidate - honest floor 30 on the asm-until-matched chassis
- * (INCLUDE_ASM main, 0 rules). Pure C, no FAKE construct. s3 revision: same
- * score as the s2 candidate (30) but the bit arms now use the s3 "q2" spelling
- * (block-scoped `shift` and `mask` per arm, function-scope `bits`), which is
- * the only measured spelling whose arm-A bit-arm REGISTER assignment is
- * byte-exact (shift=$v0, mask=$v1, chain=$a0) once env's seat is fixed.
+ * (INCLUDE_ASM main, 0 rules). Pure C, no FAKE construct. s4 revision.
  *
- * Residuals vs target (evidence.md E-s1-5, E-s2-2..E-s2-7, E-s3-1..E-s3-6):
+ * s4 CHANGE vs the s3 "q2" candidate: `shift` and `mask` are FUNCTION-SCOPE
+ * (written in both bit arms) instead of block-scoped per arm. Same score (30)
+ * but STRICTLY closer: the s3 form's bit arms emitted `li` before `addiu`
+ * (an emission-ORDER divergence in both arms); the s4 form emits the target's
+ * `addiu; li; lbu` order in arm A and `addiu; li; sllv; lbu` in arm B, so the
+ * whole bit-arm residual is now pure REGISTER NAMING with zero insn movement.
+ *
+ * MECHANISM (s4, measured - tools/gcc-2.7.2/sched.c:2504 birthing_insn_p /
+ * :2586 adjust_priority): a block-local `shift` pseudo has reg_n_sets == 1, so
+ * birthing_insn_p() is true for its `addiu` and adjust_priority() raises that
+ * insn's INSN_PRIORITY to max_priority (0x7F000001 here, inherited from the
+ * block-ending jump). sched1 then picks it FIRST in its bottom-up scan, which
+ * emits it LAST of the three ready insns -> `li, lbu, addiu`. Writing `shift`
+ * in BOTH arms through one function-scope variable makes reg_n_sets == 2, the
+ * boost never fires, all three insns stay at priority 1, and rank_for_schedule
+ * falls through to the INSN_LUID tie-break, which reproduces the target order
+ * exactly. Full trace: tmp/grind/func_80016E60/s4/sched.log.
+ *
+ * Residuals vs target (evidence.md E-s4-*):
  *  (1) env/select seat swap - global.c priority (every s0/s1 line of the diff).
  *      Honest split-init lever measures 33; the sanctioned do-while(0) carrier
- *      (carrier_q2_dowhile.c) measures 11.
- *  (2) bit arms: ours emits `li` before `addiu` in both arms (target emits
- *      `addiu` first) and arm B's chain lands in $a0 instead of $v0 because
- *      `bits` is one global allocno shared by both arms.
- *      s3 proved the chain must be a PER-ARM LOCAL quantity and that arm A then
- *      needs local-alloc order shift, mask, chain - unreachable with the
- *      measured sched1 birth order (mask, chain, shift) through the 3-quantity
- *      hand-rolled sort at local-alloc.c:1541-1553.
+ *      (carrier_n4_dowhile.c) measures 11.
+ *  (2) bit arms, REGISTERS ONLY: making `shift` function-scope also makes it a
+ *      global.c allocno, and global.c seats it in $a0 (target: $v0) while the
+ *      block-local arm-A chain takes $v0 (target: $a0). Arm B's chain is
+ *      already byte-correct ($v0). The wanted allocation - shift $v0, mask
+ *      $v1, chain $a0/$v0 - is what the ALL-BLOCK-LOCAL form produces once the
+ *      birth order is shift, mask, chain, so the open question is a block-local
+ *      `shift` pseudo with reg_n_sets != 1 (cse folds every split-init
+ *      spelling measured so far).
  */
 void func_80016E60(u8 *arg0, s32 arg1) {
     u8 *ot[2];
@@ -26,7 +41,8 @@ void func_80016E60(u8 *arg0, s32 arg1) {
     u32 fb_base;
     s32 idx;
     u32 pad;
-    s32 bits;
+    s32 shift;
+    s32 mask;
 
     select = 0;
     special = 0;
@@ -85,8 +101,7 @@ void func_80016E60(u8 *arg0, s32 arg1) {
 
         if ((special != 0) && (select >= 3)) {
             if (D_80102794 & 0x80008000) {
-                s32 shift;
-                s32 mask;
+                s32 bits;
                 func_8005C650(0, 0x7F, 0x7F);
                 shift = select - 3;
                 mask = 1;
@@ -95,8 +110,7 @@ void func_80016E60(u8 *arg0, s32 arg1) {
                 bits |= mask;
                 D_800A3788 = bits;
             } else if (D_80102794 & 0x20002000) {
-                s32 shift;
-                s32 mask;
+                s32 bits;
                 func_8005C650(0, 0x7F, 0x7F);
                 shift = select - 3;
                 mask = 1;
