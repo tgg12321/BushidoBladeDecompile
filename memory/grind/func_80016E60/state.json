@@ -1,7 +1,7 @@
 {
  "func": "func_80016E60",
  "file": "ings",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 30,
    "modality": "structural",
    "headline": "Honest env ref-lift found (split-init accumulation swaps the seat with no FAKE) and the bit-arm shift seat solved; the env-livelen route is measured dead."
+  },
+  {
+   "session": 3,
+   "floor": 30,
+   "modality": "structural",
+   "headline": "Bit-arm seats reduced to an exact local-alloc model: the target's chain must be a per-arm LOCAL quantity, the 3-quantity hand-rolled sort cannot emit the needed order from the measured birth order, an"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The bit-arm residual is now a 2-way swap (target local order is shift, mask, chain; c3 gives shift, chain, mask). Demoting mask below the chain - or lengthening the chain's span - closes it without touching env.",
-   "mechanism": "local-alloc.c qty_compare pri = floor_log2(refs)*refs*size/(death-birth), ties on qty number; find_free_reg scans ascending. Source statement order is inert (s2 H8), so the lever must be refs or span.",
-   "next_probe": "run tools/ra_solver/local_extract.py + local_alloc.py on the c3 and v5 states, read the blk 22 / blk 24 rows, solve for the refs/span perturbation that puts mask second and the lbu/or/sb chain third, then spell it."
+   "hypothesis": "The target's bit arm has three block-local quantities born in the order shift, mask, chain (addiu, li, lbu) - the one birth order from which the hand-rolled 3-element sort emits [0,1,2] = the target seats. Finding the C that makes sched1 place the addiu first closes both bit arms at once.",
+   "mechanism": "With births shift(10)/mask(12)/chain(14) the priorities are shift 13333, mask 40000, chain 40000; the sort then takes the b>a, not(c>b) branch and returns [0,1,2], i.e. shift $v0, mask $v1, chain $a0 - and the emitted order addiu, li, lbu is exactly the target's.",
+   "next_probe": "Read tmp/grind/func_80016E60/dumps/ings.sched for blk 22 and work out why the li outranks the addiu (INSN_PRIORITY tie vs the rank_for_schedule class test against the preceding CALL, tools/gcc-2.7.2/sched.c rank_for_schedule); then look for a byte-neutral C form that raises the addiu's priority or lowers the li's."
   },
   {
-   "hypothesis": "A byte-clean honest ref-lift for env exists if its extra set can sit in a different basic block from its final `addu env,tmpA,tmpB`.",
-   "mechanism": "flow.c counts refs before combine; jump.c cross-jumping / tail-merge can re-merge duplicated arms, so a set duplicated into two arms can survive as two flow references but one emitted insn.",
-   "next_probe": "look for a two-arm region that dominates ClearOTagR (the special/limit if-chain before the loop, or a re-spelling of idx that branches), measure a duplicated env set there, and compare against body_w2_offfirst.c's 33."
+   "hypothesis": "A byte-neutral fourth block-local quantity in each bit arm switches local-alloc to the real qsort path, where the q1 priorities (shift 40000, mask 30000 as qty0, chain 30000 as qty1) already sort to exactly the target seats.",
+   "mechanism": "local-alloc.c:1502 qsort(qty_compare_1) is a proper priority sort with a qty-number tie-break, unlike the 3-element special case; the x1 probe proved the switch happens at next_qty >= 4 but its extra insn stretched mask's span and inverted mask vs chain.",
+   "next_probe": "Look for a fourth quantity that costs no insn and does not stretch mask's span - e.g. a duplicated read of D_800A3788 into a second variable that jump.c cross-jumping or combine re-merges - and re-read the QTYDBG rows to check mask keeps span 8."
   },
   {
-   "hypothesis": "With the env-livelen route dead and the honest split-init route measured byte-hostile, the narrow do-while(0) carrier (11) is the sanctioned last-resort form for the env seat.",
-   "mechanism": "flow.c loop-note depth weighting feeding global.c allocno_compare - the same mechanism as func_800174F4's shipped FAKE in this file; .claude/rules/do-while-zero-exception.md sanctions the wrap for any codegen effect.",
-   "next_probe": "only after the bit-arm rotation is closed: stack the winning arm spelling on carrier_v5_dowhile.c, and if it reaches 0 write the FAKE annotation (what + flow.c/global.c mechanism + this ledger's exhaustion record) and the self-vet."
+   "hypothesis": "The env/select seat remains the larger residual; the do-while(0) carrier is the sanctioned fallback but now carries a measured extra cost (the prologue pair) that a byte-clean env lever would not pay.",
+   "mechanism": "flow.c:2087 counts reg_n_refs before combine; global.c allocno_compare needs env at 8 weighted refs. E-s3-7 shows the carrier itself perturbs the prologue, so any carrier submission must also explain that pair.",
+   "next_probe": "Re-measure the carrier's prologue pair once the bit arms are byte-clean, and compare it against the honest split-init form (33) to see whether the displacement is a wrap artefact or an independent defect."
   }
  ],
  "judge_constraints": [],
@@ -84,6 +90,30 @@
    "measured_on": "v5 do-while(0) carrier (FAKE present), body_g1_singleset_allblk.c",
    "predicate_cite": "",
    "result": "23 - the 1 is still a fresh single-use invariant in each arm, the pair still merges and still hoists (same mechanism as "
+  },
+  {
+   "session": 3,
+   "statement": "Producing the arm-A local-alloc seat order shift, mask, chain from three block-local quantities whose measured sched1 birth order is mask, chain, shift (or mask, shift, chain when no `bits` variable e",
+   "kill_scope": "instance",
+   "measured_on": "v5 do-while(0) carrier (FAKE do-while wrap around {PutDispEnv, PutDrawEnv} present) and the honest asm-until-matched chassis; body_q1_allblk.c / body_p1_blkshift_blkmask_nobits.c / body_r1_bitsA_only.",
+   "predicate_cite": "",
+   "result": "Every three-quantity spelling measured lands on [mask, shift, chain] or [mask, chain, shift]; none reaches the target se"
+  },
+  {
+   "session": 3,
+   "statement": "Changing the sched1 birth order inside a bit arm - making the addiu (shift) the first-born quantity instead of the li (mask) - through the source form of the arm.",
+   "kill_scope": "instance",
+   "measured_on": "v5 do-while(0) carrier (FAKE present) and the honest chassis; body_u1.c/body_u2.c/body_u3.c/body_w1_u8bits.c/body_w2_noshiftvar.c/body_w3_umask.c/body_t1_q1_splitshift.c/body_t3_q2_splitshift.c",
+   "predicate_cite": "",
+   "result": "All nine produce the identical geometry mask 10/18/refs 8, chain 12/20/refs 8, shift 14/16/refs 4 (or mask, shift, chain"
+  },
+  {
+   "session": 3,
+   "statement": "Keeping the bit-arm chain in a function-scope `bits` variable referenced in only ONE arm, so that the other arm gets a fresh compiler temp and the two arms can take different hard registers.",
+   "kill_scope": "instance",
+   "measured_on": "v5 do-while(0) carrier (FAKE present), body_r1_bitsA_only.c / body_r2_bitsB_only.c",
+   "predicate_cite": "",
+   "result": "15 and 17. The function-scope pseudo (reg1 = 81) appears as a LOCAL quantity row, so the arm falls back to the three-blo"
   }
  ],
  "ladder_skip": 0,

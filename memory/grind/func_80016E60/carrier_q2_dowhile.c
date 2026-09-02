@@ -1,22 +1,8 @@
-/* func_80016E60 candidate - honest floor 30 on the asm-until-matched chassis
- * (INCLUDE_ASM main, 0 rules). Pure C, no FAKE construct. s3 revision: same
- * score as the s2 candidate (30) but the bit arms now use the s3 "q2" spelling
- * (block-scoped `shift` and `mask` per arm, function-scope `bits`), which is
- * the only measured spelling whose arm-A bit-arm REGISTER assignment is
- * byte-exact (shift=$v0, mask=$v1, chain=$a0) once env's seat is fixed.
- *
- * Residuals vs target (evidence.md E-s1-5, E-s2-2..E-s2-7, E-s3-1..E-s3-6):
- *  (1) env/select seat swap - global.c priority (every s0/s1 line of the diff).
- *      Honest split-init lever measures 33; the sanctioned do-while(0) carrier
- *      (carrier_q2_dowhile.c) measures 11.
- *  (2) bit arms: ours emits `li` before `addiu` in both arms (target emits
- *      `addiu` first) and arm B's chain lands in $a0 instead of $v0 because
- *      `bits` is one global allocno shared by both arms.
- *      s3 proved the chain must be a PER-ARM LOCAL quantity and that arm A then
- *      needs local-alloc order shift, mask, chain - unreachable with the
- *      measured sched1 birth order (mask, chain, shift) through the 3-quantity
- *      hand-rolled sort at local-alloc.c:1541-1553.
- */
+/* func_80016E60 - do-while(0) FAKE carrier + s3 q2 bit-arm spelling. Score 11.
+ * Residual: li/addiu order in both arms, arm B chain $a0 vs $v0, and the
+ * `sw s5,44(sp); move s5,a0` prologue pair (which the wrap itself causes -
+ * it is absent from the honest h1 form at 30). NOT a submission: see self-vet
+ * requirements and the exhaustion ledger. */
 void func_80016E60(u8 *arg0, s32 arg1) {
     u8 *ot[2];
     u8 *env;
@@ -59,8 +45,10 @@ void func_80016E60(u8 *arg0, s32 arg1) {
         func_8005C6D0();
         DrawSync(0);
         VSync(2);
-        PutDispEnv(env + 0x5C);
-        PutDrawEnv(env);
+        do {
+            PutDispEnv(env + 0x5C);
+            PutDrawEnv(env);
+        } while (0);
         DrawOTag(arg0 + 0x408C);
         DrawOTag(D_800A374C);
         D_800A36AC++;

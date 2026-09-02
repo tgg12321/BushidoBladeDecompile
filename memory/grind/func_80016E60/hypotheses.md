@@ -131,3 +131,75 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: v5 do-while(0) carrier (FAKE present), body_g1_singleset_allblk.c
+
+## [s3] H11 CONFIRMED — the bit-arm chain (lbu/or/sb) must be a PER-ARM BLOCK-LOCAL quantity, because the target gives it $a0 in the `|=` arm and $v0 in the `&= ~` arm; any spelling that shares one `bits` variable across the two arms is a single global.c allocno and can only reproduce one arm.
+- mechanism: global.c assigns one hard register per allocno; local-alloc.c allocates per basic block, so two per-arm quantities can land on different hard registers. A function-scope variable whose references all lie in one block is still local-allocated (reg_basic_block), so function scope is not a way to force the global path.
+- probe: r1 (bits referenced only in the `|=` arm) and r2 (only in the `&= ~` arm) + local_extract QTYDBG rows — pseudo 81 (the function-scope `bits`) appears as a LOCAL quantity row in blk 22 / blk 24 respectively; target register readout from asm/funcs/func_80016E60.s (0x800170A0 `lbu $a0`, 0x800170E8 `lbu $v0`)
+- result: r1 = 15, r2 = 17; every shared-chain spelling (q2/u1/u2/u3 = 11, c3 = 14, f1 = 17, v5 = 11) reproduces at most one arm
+- verdict: CONFIRMED
+
+## [s3] H12 CONFIRMED — the "q2" arm spelling (block-scoped `shift` AND block-scoped `mask` per arm, function-scope `bits`) is the only measured spelling whose `|=` arm reproduces the target's bit-arm REGISTERS exactly (shift $v0, mask $v1, chain $a0).
+- mechanism: two block-local quantities (shift pri 40000, mask pri 30000) take $v0 and $v1 in ascending find_free_reg order, and the global `bits` allocno is pushed to $a0 by its conflicts with both.
+- probe: body_q2_blkshift_blkmask_fnbits.c on the do-while(0) carrier (score 11, q2_objdiff.txt) + objdump readout of the arm; honest form body_h1_q2_honest.c (score 30, h1_objdiff.txt)
+- result: carrier 11 with the `|=` arm's registers byte-exact; residual is the `li`-before-`addiu` emission order in both arms plus the `&= ~` arm's chain in $a0. Honest 30 — same score as the s2 candidate but strictly closer, so it is the new candidate.c.
+- verdict: CONFIRMED
+
+## [s3] Producing the arm-A local-alloc seat order shift, mask, chain from three block-local quantities whose measured sched1 birth order is mask, chain, shift (or mask, shift, chain when no `bits` variable exists), measured on the v5 do-while(0) carrier and on the honest chassis.
+- mechanism: for next_qty == 3 local-alloc skips qsort and runs the hand-rolled sort at tools/gcc-2.7.2/local-alloc.c:1541-1553, whose three qty_compare calls use the fixed qty indices 0,1,2 while EXCHANGE permutes qty_order; enumerating its three branches shows the reachable permutations are exactly [0,1,2], [0,2,1] and [2,1,0]. With qty0 = mask, qty1 = chain, qty2 = shift the wanted seat order is the permutation [2,0,1]; with qty0 = mask, qty1 = shift, qty2 = chain it is [1,0,2]. Neither is in the reachable set for any priority values.
+- probe: body_q1_allblk.c (15), body_p1_blkshift_blkmask_nobits.c (17), body_r1_bitsA_only.c (15), body_r2_bitsB_only.c (17), body_c4.c (26) plus the priority replay of every QTYDBG row from tools/ra_solver/local_extract.py
+- result: every three-quantity spelling measured lands on [mask, shift, chain] (v0/v1/a0) or [mask, chain, shift]; none reaches the target seats. The 4-quantity probe body_x1_probe4qty.c does take the real qsort path (local-alloc.c:1502) and orders strictly by priority, but the extra insn stretched mask's span from 8 to 12 and dropped its priority below the chain's, so it landed shift/z/chain/mask (29).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v5 do-while(0) carrier (FAKE do-while wrap around {PutDispEnv, PutDrawEnv} present) and the honest asm-until-matched chassis; body_q1_allblk.c / body_p1_blkshift_blkmask_nobits.c / body_r1_bitsA_only.c / body_r2_bitsB_only.c
+
+## [s3] Changing the sched1 birth order inside a bit arm — making the `addiu` (shift) the first-born quantity instead of the `li` (mask) — through the source form of the arm.
+- mechanism: qty numbers are assigned in birth order within the block, and birth order is the post-sched1 RTL order; changing which insn sched1 places first would change which permutations the 3-element sort can reach.
+- probe: nine spellings, each read back through tools/ra_solver/local_extract.py QTYDBG rows — u1/u2/u3 (statement permutations on the q2 shape), w1 (`u8 bits`), w3 (`u32 mask`), w2 (no `shift` variable, `mask <<= select - 3`), t1/t3 (split-init accumulation `shift = select; shift -= 3;`), q1 (all block-scoped)
+- result: all nine produce the identical geometry mask birth 10 / death 18 / refs 8, chain 12 / 20 / 8, shift 14 / 16 / 4 (or mask, shift, chain when no `bits` variable exists). Source statement order is inert (extends the s2 H8 kill to the q2 shape) and the split-init form is folded back to one insn by cse before local-alloc runs.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v5 do-while(0) carrier (FAKE present) and the honest chassis; body_u1.c/body_u2.c/body_u3.c/body_w1_u8bits.c/body_w2_noshiftvar.c/body_w3_umask.c/body_t1_q1_splitshift.c/body_t3_q2_splitshift.c
+
+## [s3] Keeping the bit-arm chain in a function-scope `bits` variable referenced in only ONE arm, so that the other arm gets a fresh compiler temp and the two arms can take different hard registers.
+- mechanism guess: a function-scope declaration would keep the pseudo on the global.c path even when all its references fall inside one basic block.
+- probe: body_r1_bitsA_only.c and body_r2_bitsB_only.c + local_extract QTYDBG rows
+- result: 15 and 17. The QTYDBG rows show the function-scope pseudo (reg1 = 81) as a LOCAL quantity in the arm that references it, so the arm falls back to the three-block-local geometry and its unreachable seat order. Declaration scope does not control the local/global split; the span of the references does.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v5 do-while(0) carrier (FAKE present), body_r1_bitsA_only.c / body_r2_bitsB_only.c
+
+## [s3] The bit-arm lbu/or/sb chain must be a per-arm block-local quantity, because the target seats it in $a0 in the `|=` arm and $v0 in the `&= ~` arm, so a single `bits` variable shared by both arms (one global.c allocno, one hard register) can reproduce at most one arm.
+- mechanism: global.c assigns one hard register per allocno; local-alloc.c allocates per basic block. A function-scope variable whose references all fall in one block is still local-allocated via reg_basic_block, so declaration scope does not control the local/global split.
+- probe: body_r1_bitsA_only.c and body_r2_bitsB_only.c measured on the do-while(0) carrier, with tools/ra_solver/local_extract.py QTYDBG rows read back; target registers read from asm/funcs/func_80016E60.s (0x800170A0 lbu $a0, 0x800170E8 lbu $v0).
+- result: r1 = 15, r2 = 17; the function-scope pseudo 81 shows up as a LOCAL quantity row in the arm that references it. Every shared-chain spelling measured (q2/u1/u2/u3 = 11, c3 = 14, f1 = 17, v5 = 11) reproduces at most one arm.
+- verdict: CONFIRMED
+
+## [s3] The q2 arm spelling - block-scoped `shift` and block-scoped `mask` per arm with a function-scope `bits` - reproduces the target's bit-arm registers exactly in the `|=` arm (shift $v0, mask $v1, chain $a0).
+- mechanism: Two block-local quantities (shift pri 40000 from refs 4 / span 2, mask pri 30000 from refs 8 / span 8) take $v0 and $v1 in ascending find_free_reg order, and the global `bits` allocno is pushed to $a0 by its conflicts with both.
+- probe: body_q2_blkshift_blkmask_fnbits.c on the v5 do-while(0) carrier (sandbox + objdump of the arm) and the honest wrap-free form body_h1_q2_honest.c.
+- result: Carrier 11 with the `|=` arm byte-exact; honest 30, the same score as the s2 candidate but strictly closer, so it becomes the new candidate.c. Residual: `li` emitted before `addiu` in both arms, and the `&= ~` arm's chain in $a0 instead of $v0.
+- verdict: CONFIRMED
+
+## [s3] Producing the arm-A local-alloc seat order shift, mask, chain from three block-local quantities whose measured sched1 birth order is mask, chain, shift (or mask, shift, chain when no `bits` variable exists), measured on the v5 do-while(0) carrier and on the honest chassis.
+- mechanism: For next_qty == 3 local-alloc skips qsort and runs the hand-rolled sort whose three qty_compare calls use the FIXED qty indices 0,1,2 while EXCHANGE permutes qty_order; enumerating its branches gives the reachable permutations [0,1,2], [0,2,1], [2,1,0] only. The wanted seat order is the permutation [2,0,1] (or [1,0,2] in the no-`bits` geometry).
+- probe: body_q1_allblk.c (15), body_p1_blkshift_blkmask_nobits.c (17), body_r1_bitsA_only.c (15), body_r2_bitsB_only.c (17), plus a hand replay of the sort against every QTYDBG row emitted by tools/ra_solver/local_extract.py for those states.
+- result: Every three-quantity spelling measured lands on [mask, shift, chain] or [mask, chain, shift]; none reaches the target seats. The 4-quantity probe body_x1_probe4qty.c does take the real qsort path (local-alloc.c:1502) and orders strictly by priority, but its extra insn stretched mask's span from 8 to 12 and dropped mask below the chain, landing shift/z/chain/mask at 29.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v5 do-while(0) carrier (FAKE do-while wrap around {PutDispEnv, PutDrawEnv} present) and the honest asm-until-matched chassis; body_q1_allblk.c / body_p1_blkshift_blkmask_nobits.c / body_r1_bitsA_only.c / body_r2_bitsB_only.c
+
+## [s3] Changing the sched1 birth order inside a bit arm - making the addiu (shift) the first-born quantity instead of the li (mask) - through the source form of the arm.
+- mechanism: Quantity numbers are assigned in birth order within the block and birth order is the post-sched1 RTL order, so a different sched1 placement would change which permutations the 3-element sort can reach.
+- probe: Nine spellings, each read back through tools/ra_solver/local_extract.py QTYDBG rows: u1/u2/u3 (statement permutations on the q2 shape), w1 (`u8 bits`), w3 (`u32 mask`), w2 (no `shift` variable, `mask <<= select - 3`), t1/t3 (split-init accumulation `shift = select; shift -= 3;`), q1 (all block-scoped).
+- result: All nine produce the identical geometry mask 10/18/refs 8, chain 12/20/refs 8, shift 14/16/refs 4 (or mask, shift, chain with no `bits` variable). Source statement order is inert on the q2 shape too, and cse folds the split-init shift back to one insn before local-alloc runs.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v5 do-while(0) carrier (FAKE present) and the honest chassis; body_u1.c/body_u2.c/body_u3.c/body_w1_u8bits.c/body_w2_noshiftvar.c/body_w3_umask.c/body_t1_q1_splitshift.c/body_t3_q2_splitshift.c
+
+## [s3] Keeping the bit-arm chain in a function-scope `bits` variable referenced in only ONE arm, so that the other arm gets a fresh compiler temp and the two arms can take different hard registers.
+- mechanism: The guess was that a function-scope declaration keeps the pseudo on the global.c path even when all its references lie inside one basic block.
+- probe: body_r1_bitsA_only.c and body_r2_bitsB_only.c plus their QTYDBG rows.
+- result: 15 and 17. The function-scope pseudo (reg1 = 81) appears as a LOCAL quantity row, so the arm falls back to the three-block-local geometry and its unreachable seat order. The span of the references, not the declaration, decides local vs global.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v5 do-while(0) carrier (FAKE present), body_r1_bitsA_only.c / body_r2_bitsB_only.c

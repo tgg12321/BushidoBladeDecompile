@@ -1462,3 +1462,4 @@
 - 2026-09-02 01:34 func_80031890 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-02 02:02 func_80016E60 s1 [recon] floor=30: recon: honest floor 30 (from 46) - LICM hoist of `1<<n` defeated by a multi-set mask, ?:-arms match; residual = env/select global.c priority seat swap (do-while(0) carrier measures 11, mechanism confirmed) + bit-arm local/global seat split
 - 2026-09-02 02:23 func_80016E60 s2 [structural] floor=30: Honest env ref-lift found (split-init accumulation swaps the seat with no FAKE) and the bit-arm shift seat solved; the env-livelen route is measured dead.
+- 2026-09-02 02:44 func_80016E60 s3 [structural] floor=30: Bit-arm seats reduced to an exact local-alloc model: the target's chain must be a per-arm LOCAL quantity, the 3-quantity hand-rolled sort cannot emit the needed order from the measured birth order, and the new q2 arm spelling makes the |= arm byte-exact (carrier 11, honest 30).
