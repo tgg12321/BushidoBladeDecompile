@@ -304,3 +304,59 @@ driver's re-verification. Header comment of candidate.c updated (codegen-neutral
 
 **Artifacts:** tmp/grind/func_800300B4/s1/{canonical_s1g.txt, sandbox_s1g.txt, sandbox_s1g_final.txt,
 verify_oracle_s1g.txt, write_vet_s1g.py, write_s1g.py}.
+
+## s1h (2026-09-02, recon, HEAD db16e520; ledger state reset to session_count 0 by the driver) - chassis re-measured; ban-compliant floor bounded; seat-swap window in the pack-in-C chassis measured closed
+
+**Chassis re-check (Measurement 9).** `memory/grind/func_800300B4/candidate.c` (unchanged since s1g) applied over the
+INCLUDE_ASM line: canonical ASM-PARTIAL 11/83 cop2 (tmp/grind/func_800300B4/s1/canonical_s1h.txt); `sandbox --disable all`
+score 0, 83/83, rules_dropped 0, cheat_asm_stripped 33 (sandbox_s1h_cand.txt). The 0-form still carries the island-2
+gte_ldlv0 block, which is BANNED for this function (state.json banned_constructs[3], re-imposed by the 2026-09-02 08:12
+layer-1 FAIL after the 07:59 Judge PASS) - so it is measured, not submittable. src restored to INCLUDE_ASM at session end.
+
+**Measurement 10 - ban-compliant chassis re-measured: pack-in-C form A (rejected/pack-in-c-island2-lv-index-vregs-off-s2-19.c)
+= sandbox 19 on HEAD db16e520** (sandbox_s1h_packA.txt), identical to s1b. Decomposition unchanged: 7 island-2 insns
+(target `addiu v0,s3,44; move t4,v0; lhu t6,4(t4); lhu t5,0(t4); sll; or; mtc2 t5` vs build `addiu a1,s3,44; lw v0,48(s3);
+lhu v1,44(s3); sll; or; move t4,a1; mtc2 v1`) + 12 arg0/&mac seat-swap insns. This 19 is the honest floor of the best form
+that declares NO banned construct.
+
+**Measurement 11 (H14) - pack-in-C form A + NESTED do-while(0) around island 3 (loop_depth 2): sandbox 21, WORSE**
+(sandbox_s1h_h14.txt, diff_h14.txt; form banked at rejected/pack-in-c-nested-dowhile-mac-overshoots-s0-21.c). The
+island-2 residual (7) is unchanged; arg0 now lands in s3 as in the target, but &mac overshoots to s0 and pushes lookup/&dir/&mtx
+one seat each (14 seat diffs). BB2_QTY_DEBUG traces (qtydbg_packA.txt:619-624, qtydbg_h14.txt:619-623), local-alloc.c
+qty_compare_1 priority = floor_log2(refs)*refs/(death-birth), pack-in-C chassis (pseudo numbers differ from s1: arg0=72,
+&mac=114, &dir=104, lookup=75, &mtx=102):
+
+| pseudo | refs (A) | birth-death | pri (A) | seat (A) | refs (H14) | pri (H14) | seat (H14) | target |
+|---|---|---|---|---|---|---|---|---|
+| lookup 75 | 3 | 84-92 | .375 | s0 | 3 | .375 | s1 | s0 |
+| &dir 104 | 4 | 72-98 | .308 | s1 | 4 | .308 | s2 | s1 |
+| arg0 72 | 9 | 2-96 | .287 | s2 | 9 | .287 | s3 | s3 |
+| &mtx 102 | 3 | 56-70 | .214 | s0 | 3 | .214 | s1 | s0 |
+| &mac 114 | 6 | 32-94 | .194 | s3 | 8 | .387 | s0 | s2 |
+
+Arithmetic consequence (the integer window): in the pack-in-C chassis arg0 has 9 refs (the two C-side halfword reads add
+two arg0-based MEM refs; cse folds `lv[i]` to `44/48(arg0)`), so &mac must satisfy .287 < log2(r)*r/62 < .308, i.e.
+log2(r)*r in (17.8, 19.1). r=6 gives 12 (s3), r=7 gives 14 (s3), r=8 gives 24 (s0). No integer ref count seats &mac in s2
+while arg0 has 9 refs; the single wrap (+2) undershoots and the nested wrap (+4) overshoots. Lowering arg0 to 8 refs
+(.255) opens (15.8, 19.1) - still no integer hit; 10 refs (.319) puts arg0 above &dir. So the 12-insn seat swap is not
+recoverable by loop-depth weighting in any pack-in-C spelling that keeps the reads arg0-based, and the ban-compliant floor
+stays 19 (H4's 7 island insns + 12 seat insns), not 7.
+
+**Sibling/duplicate scan.** `tmp/duplicates_leads.txt` has no func_800300B4 row. The known analogs are the three cluster
+siblings carrying the identical island (func_800203B4, func_8002E838, func_80031890) - recorded as facts in s1b/s1d; their
+citation is banned for this function's self-vet (bans 2/3).
+
+**Artifacts:** tmp/grind/func_800300B4/s1/{canonical_s1h.txt, sandbox_s1h_cand.txt, sandbox_s1h_packA.txt, sandbox_s1h_h14.txt,
+diff_h14.txt, v_h14_packC_nested.c, qtydbg_h14.txt, qtydbg_packA.txt, run_qty_s1h.sh}.
+
+- [s1] The proven 0-form (memory/grind/func_800300B4/candidate.c, verify-oracle ok in s1/s1f/s1g) carries the island-2 gte_ldlv0 block that state.json banned_constructs[3] forbids (re-imposed by the 2026-09-02 08:12 layer-1 FAIL after the 07:59 Judge PASS); it is banked, not submitted.
+
+- [s1] Ban-compliant floor on HEAD db16e520 is 19 (pack-in-C form A): 7 insns of island 2 (halfword pair based on the asm-internal $t4 copy with temps $t5/$t6 while $v0/$v1 are free - H4 class kill, local-alloc.c:2249) + 12 insns of the arg0/&mac seat swap.
+
+- [s1] In the pack-in-C chassis arg0 has 9 refs (the two C-side halfword reads are cse-folded to arg0-based MEMs), so the seat swap's integer window is empty: no do-while depth seats &mac in s2 (single wrap 19, nested wrap 21).
+
+- [s1] No duplicate/sibling lead in tmp/duplicates_leads.txt; the only analogs are the cluster siblings carrying the identical island (citation banned for this function).
+
+- [s1] Borderline entry docs/grind/borderline.md:370 amended with an addendum: island named gte_ldlv0 with PsyQ 4.5 inline_c.h:101-110 provenance, the 07:59 PASS / 08:12 FAIL sequence, and the measured ban-compliant floor.
+
+- [s1] src/code6cac_b.c restored to INCLUDE_ASM at session end; no engine/tools/rules files touched.

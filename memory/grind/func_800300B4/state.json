@@ -1,10 +1,28 @@
 {
  "func": "func_800300B4",
  "file": "code6cac_b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 19,
+   "modality": "recon",
+   "headline": "recon s1h: chassis re-measured on HEAD db16e520 (0-form still 0 but carries the banned island-2 gte_ldlv0 block; ban-compliant pack-in-C floor 19); H14 nested do-while(0) seat recovery KILLED (21, &ma"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The island-2 residual (7 insns) has no C-side form: pack-in-C is class-dead (H4) and every asm spelling of the pack is the banned construct; the ban-compliant floor is fixed at 19 until the owner answers the condition-3 question.",
+   "mechanism": "policy residual (cop2-addressing-preamble-cluster condition 3 vs a verbatim SDK macro body), owner-only per the 08:12 layer-1 FAIL and judge-sole-gate rule 4.",
+   "next_probe": "none in-pipeline; the ladder should advance to escalation with docs/grind/borderline.md:370 (+ s1h addendum) as the record. Do not re-request a ruling (07:59 PASS was already refused by layer-1 as owner-only)."
+  },
+  {
+   "hypothesis": "The arg0/&mac seat swap in the pack-in-C chassis cannot be closed by loop-depth weighting at any wrap depth or placement (integer window empty with arg0 at 9 or 8 refs).",
+   "mechanism": "local-alloc.c qty_compare_1 priority arithmetic, measured in qtydbg_packA.txt / qtydbg_h14.txt.",
+   "next_probe": "only if a spelling makes the C-side halfword reads NOT arg0-based without a cheat (none known: cse folds lv[i] to 44/48(arg0)); otherwise skip."
+  }
+ ],
  "judge_constraints": [
   "LAYER-1 CHEAT-REVIEWER FAIL: Island 2 (gte_ldv0/rtv0) swallows the SVECTOR s16-unpack GPR arithmetic (lhu/lhu/sll/or) into the 'canonical' asm block, violating the cop2-addressing-preamble-cluster grant's own mechanical condition 3 ('in-island GPR instructions limited to the cop2 addressing preamble \u2014 nothing else may be swallowed into the template'); the do-while(0) wrap on island 3 is otherwise conforming. Next action: Restructure island 2: compute the SVECTOR pack as ordinary C (a local `u32 packed = ...;` from the two s16 halfword reads/shift/or \u2014 semantically identical, and something GCC ",
   "Island 2 is authorized AS A UNIT only in the exact func_800203B4 gte_ldv0 spelling; no GPR instruction beyond an SDK macro body may enter any island, cite inline_asm_canonical.txt:367 + decisions.md:20262, and the final call still owes the island-3 do-while(0) FAKE prerequisites plus the owner-cluster allowlist line before queue done.",
@@ -18,7 +36,16 @@
   "Precedent citations to func_8002E838 (src/code6cac_b.c:1244-1255, decisions.md:20262 PASS) and func_80031890 (decisions.md:20268 PASS) carrying the identical gte_ldv0 pack inside their islands",
   "island 2 __asm__ block (gte_ldlv0: move $12,%0; lhu $14,4($12); lhu $13,0($12); sll $14,$14,16; or $13,$13,$14; mtc2 $13,$0; lwc2 $1,8($12); nop; nop)"
  ],
- "kills": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "H14: pack-in-C form A plus a nested do-while(0) around the gte_stlvnl island (loop_depth 2, &mac refs 6->8) recovers the 12-insn arg0/&mac seat swap and bounds the ban-compliant floor at 7.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD db16e520, pack-in-C island 2 (no banned construct), islands 1/3 as banked, FAKE = nested do-while(0) on island 3 only",
+   "predicate_cite": "",
+   "result": "sandbox 21 (single wrap: 19). arg0 reaches s3 but &mac priority .387 > lookup .375 -> s0, cascading lookup/&dir/&mtx one"
+  }
+ ],
  "ladder_skip": 30,
  "pending_fixup": null,
  "origin": "queue",

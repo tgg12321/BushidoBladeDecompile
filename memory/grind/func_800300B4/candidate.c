@@ -15,6 +15,8 @@
  * func_8002FC80, LoadAverageShort12, inline_asm_canonical.txt:174 or the struck 07:30 ruling.
  * s1g (HEAD 22a0ab87): re-measured sandbox 0 (83/83) + verify-oracle ok; self_vet.md rewritten with a minimal
  * CONSTRUCTS block so the driver's banned-construct tripwire (grindlib._ban_trips) no longer keyword-matches ban 2.
+ * s1h (HEAD db16e520): re-measured sandbox 0 (83/83); island 2 is BANNED again by the 08:12 layer-1 FAIL, so this form is
+ * banked as the proven 0-form, not submitted; ban-compliant pack-in-C floor is 19 (H14: nested wrap overshoots, 21).
  * One FAKE: do-while(0) wrap around gte_stlvnl (flow.c loop-note ref weighting seats &mac in s2 ahead of arg0 in s3;
  * see evidence.md E2; fake_ablate keep-all 0 / drop-1 13). */
 /* kengo:?  |  GTE rotate+translate of the object's local vector, then dispatch */

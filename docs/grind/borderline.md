@@ -371,3 +371,13 @@ disposition taken: FORECLOSED silently (owner ruling 2026-08-31 — no pending s
 category: policy-question
 evidence: layer-1 cheat-reviewer FAIL x2 (docs/grind/decisions.md:20470, :20478) against the gte_ldv0 SDK-macro-body pack (lhu/lhu/sll/or through the macro's $12 copy) inside cluster island 2; the Judge's 07:30 PASS ruling (decisions.md:20474) was struck by the second FAIL as a rule-4 scope reinterpretation. Question for the owner: does cop2-addressing-preamble-cluster.md mechanical condition 3 ("in-island GPR instructions limited to the cop2 addressing preamble") admit an SDK GTE-macro body whose GPR instructions read through the macro's own redundant $t4 copy? FOR: the owner's own 2026-09-01 grant text (inline_asm_canonical.txt:367, func_800203B4) names "lhu VX0/VY0 pack" as an authorized island unit under the same unchanged 4-point check; the identical island is on main in cluster siblings func_8002E838 (49d6927e) and func_80031890 (1a2e49e4); the pack is measured unreachable from C (memory/grind/func_800300B4 H4 class kill, sandbox 19 both spellings, local-alloc.c:2249). AGAINST: the reviewer reads the lhu/sll/or as C-expressible data processing and holds that a same-pipeline ruling cannot widen the cluster's scope. Bytes: sandbox 0 (83/83) and verify-oracle ok with the candidate (memory/grind/func_800300B4/candidate.c). Session record: docs/grind/decisions.md 2026-09-02 func_800300B4 FORECLOSED entry.
 disposition taken: FORECLOSED silently (owner ruling 2026-08-31 — no pending states); candidate preserved at memory/grind/func_800300B4/candidate.c; re-attemptable unchanged if a later owner ruling spends this entry.
+
+### 2026-09-02 addendum (session s1h) — provenance correction for the entry above
+The island is Sony's `gte_ldlv0` ("load 32-bit VECTOR into V0"), not `gte_ldv0`: its body in PsyQ Run-time Library 4.5
+inline_c.h:101-110 is verbatim `lhu $13,4(%0); lhu $12,0(%0); sll $13,$13,16; or $12,$12,$13; mtc2 $12,$0; lwc2 $1,8(%0)`
+(clobbers $12,$13); the target differs only by the older-SDK `move $12,%0` prefix and a one-register temp shift
+(memory/grind/func_800300B4/hypotheses.md H9/H10, excerpt at tmp/grind/func_800300B4/s1/psyq45_inline_c_excerpt.txt). The
+lhu/lhu/sll/or is the SDK header text, i.e. the template itself. Subsequent pipeline events: Judge ruling PASS 2026-09-02 07:59
+(decisions.md:20575) lifting the island-2 ban, then layer-1 FAIL 08:12 (decisions.md:20579) holding the question owner-only
+and re-imposing the ban. Ban-compliant floor measured 19 on HEAD db16e520 (seat-swap recovery by loop-depth weighting
+measured closed, H14); the question above is unchanged and still open for the owner.
