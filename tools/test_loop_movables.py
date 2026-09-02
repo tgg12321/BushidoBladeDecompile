@@ -2,7 +2,8 @@
 """Unit tests for tools/loop_movables.py parsers. Run: python tools/test_loop_movables.py -v"""
 import os, sys, unittest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from tools.loop_movables import parse_loops, count_sets_in_range, function_segment
+from tools.loop_movables import (parse_loops, count_sets_in_range, function_segment,
+                                 analyze_loop)
 
 LOOP_DUMP = """;; Function func_A
 
@@ -107,17 +108,84 @@ Insn 115: regno 100 (life 1), move-insn savings 1 not desirable
         self.assertEqual(c["decision"], "not desirable")
 
     def test_real_multiline_rtl(self):
-        """One count per insn on real multi-line RTL; hard-reg and pseudo dests."""
+        """One count per insn on real multi-line RTL; PSEUDO dests only (loop.c:596)."""
         sets, has_call = count_sets_in_range(REAL_CSE, 0, 1000)
         self.assertTrue(has_call)
         self.assertEqual(sets[78], 2)   # insns 13 and 26
         self.assertEqual(sets[72], 1)   # insn 4 -> (reg/v:SI 72)
-        self.assertEqual(sets[2], 1)    # set inside the call parallel
-        self.assertEqual(sets[31], 1)   # (clobber (reg:SI 31 ra))
+        self.assertEqual(set(sets), {72, 78})
+        # HARD regs are excluded: loop.c:596 force-sets n_times_set=1 for every
+        # i < FIRST_PSEUDO_REGISTER, so they are never the movable's gate.
+        self.assertNotIn(2, sets)       # (set (reg:SI 2 v0) ...) inside the call parallel
+        self.assertNotIn(31, sets)      # (clobber (reg:SI 31 ra))
         # range filtering by UID
         sets2, has_call2 = count_sets_in_range(REAL_CSE, 22, 27)
         self.assertFalse(has_call2)
         self.assertEqual(sets2, {78: 1})
+
+
+# Verbatim from tmp/grind/VSync/dumps/ings2.loop, function D_80083418: three
+# consecutive `halved` movables in one loop. insn_count *= 2 at loop.c:1611
+# mutates move_movables' LOCAL insn_count, so the doubling PERSISTS: 62/124/248.
+HALVED_DUMP = """;; Function D_80083418
+
+Loop from 8 to 114: 31 real insns.
+Insn 223: regno 84 (life 30), move-insn savings 1 halved since already moved  moved to 235
+Insn 225: regno 86 (life 30), move-insn savings 1 halved since already moved  moved to 237
+Insn 227: regno 89 (life 30), move-insn savings 1 halved since already moved  moved to 239
+"""
+
+
+class TestAnalyzeLoop(unittest.TestCase):
+    def test_halved_doubling_persists(self):
+        lp = parse_loops(function_segment(HALVED_DUMP, "D_80083418"))[0]
+        self.assertEqual(lp["insn_count"], 31)
+        out = analyze_loop(lp, {}, False, 60)
+        self.assertEqual([m["insn_count_faced"] for m in out["movables"]], [62, 124, 248])
+        # running threshold: -3 after each moved movable (loop.c:1719)
+        self.assertEqual([m["threshold_faced"] for m in out["movables"]], [122, 119, 116])
+
+    def test_forced_move_annotation(self):
+        """decision==moved with lhs < insn_count => already_moved/forces disjunct (loop.c:1630)."""
+        seg = """Loop from 1 to 9: 5000 real insns.
+Insn 20: regno 74 (life 1), savings 1  moved to 9
+"""
+        out = analyze_loop(parse_loops(seg)[0], {}, False, 60)
+        m = out["movables"][0]
+        self.assertEqual((m["lhs"], m["insn_count_faced"]), (122, 5000))
+        self.assertTrue(m["forced"])
+
+    def test_threshold_uncertain_after_matched_move(self):
+        """The partial&&match branch (loop.c:1646-1668) prints ' moved to' but does
+        NOT decrement threshold, so later rows' threshold is uncertain."""
+        seg = """Loop from 1 to 9: 5 real insns.
+Insn 20: regno 74 (life 1), matches 12 savings 1  moved to 9
+Insn 21: regno 75 (life 1), savings 1  moved to 10
+"""
+        out = analyze_loop(parse_loops(seg)[0], {}, False, 60)
+        a, b = out["movables"]
+        self.assertEqual(a["matches"], 12)
+        self.assertFalse(a["threshold_uncertain"])
+        self.assertTrue(b["threshold_uncertain"])
+
+    def test_loop_has_call_halves_threshold(self):
+        seg = """Loop from 1 to 9: 5 real insns.
+Insn 20: regno 74 (life 1), savings 1  moved to 9
+"""
+        self.assertEqual(analyze_loop(parse_loops(seg)[0], {}, True, 60)["threshold_initial"], 61)
+        self.assertEqual(analyze_loop(parse_loops(seg)[0], {}, False, 28)["threshold_initial"], 58)
+
+    def test_multiset_list_reported(self):
+        seg = "Loop from 1 to 9: 5 real insns.\n"
+        out = analyze_loop(parse_loops(seg)[0], {74: 1, 80: 3}, False, 60)
+        self.assertEqual(out["multi_set"], {80: 3})
+
+
+class TestBannerRequired(unittest.TestCase):
+    def test_missing_banner_returns_none(self):
+        """UIDs restart per function, so a whole-dump fallback would aggregate wrongly."""
+        self.assertIsNone(function_segment(LOOP_DUMP, "func_NOPE"))
+        self.assertIsNotNone(function_segment(LOOP_DUMP, "func_B"))
 
 
 if __name__ == "__main__":
