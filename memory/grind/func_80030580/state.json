@@ -66,7 +66,8 @@
  ],
  "judge_constraints": [
   "Restore memory/grind/func_80030580/pure-c-floor2-body.c as the chassis; the only frozen route to the target's 24 untouched locals bytes is the Phantom-frame-slot volatile pad local family in its exact sanctioned form (volatile u32 pad[N], first-decl position, // !FAKE annotation, engine allowlist row, frame forensics per .claude/rules/phantom-slot-frame-lever.md) -- measure it, do not respell the aggregate carrier.",
-  "Do not resubmit func_80030580 on any /* FAKE */ pad-local route: the phantom-frame-slot family's engine-allowlist prerequisite is owner-granted and unreachable from a grind session. Work state.json frontier item 1 -- an ordinary-C declared frame object of 13..16 bytes that no instruction touches (vars=24, bodydiff<=4, sp=0), measured on the pure-c-floor2-body.c chassis."
+  "Do not resubmit func_80030580 on any /* FAKE */ pad-local route: the phantom-frame-slot family's engine-allowlist prerequisite is owner-granted and unreachable from a grind session. Work state.json frontier item 1 -- an ordinary-C declared frame object of 13..16 bytes that no instruction touches (vars=24, bodydiff<=4, sp=0), measured on the pure-c-floor2-body.c chassis.",
+  "func_80030580 may not use a self-cancelling term in ANY spelling; work state.json frontier items 2 and 3 (cse-merged 4-site Judge form; post-reload jump2 tail-merge of real insns) or assemble the foreclosure record from an escalation-modality session."
  ],
  "banned_constructs": [],
  "kills": [

@@ -929,3 +929,57 @@ kindlocal, anglocal, posptr) are byte-neutral and are banked as free composables
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present
+
+
+## [s8] The target's missing 16 frame bytes are two additional combine/distribute_notes orphan pseudos, and a self-cancelling `+ K - K` term on an existing store -- where K is a memory read not already loaded at that point -- buys exactly one such orphan each, byte-free.
+- mechanism: The extra term forces two lhu insns into RTL; cse2 proves the sum equals the original value so the loads die; combine.c distribute_notes then cannot rehome the dead pseudos' REG_DEAD notes and emits bare `(insn (use (reg N)))`. Those pseudos have refs but no live range, global.c gives them no hard register, and reload1.c alter_reg calls assign_stack_local(SImode, 8, -1) on each -- 8 bytes, zero instructions.
+- probe: tmp/grind/func_80030580/s8/gen5.py (30 single-statement variants), gen6.py (10 pairs), gen2.py (13 operand variants), all through tmp/grind/func_80030580/s7/runfiles.py with the instrumented cc1 (BB2_FRAME_DEBUG=1); pass attribution from `pwsh tools/grinder/dump.ps1 func_80030580` read with tmp/grind/func_80030580/s8/dsec.py.
+- result: Statements 10, 11, 16 and 38 are byte-neutral single sites (vars=16 bodydiff=4 sp=0). The pairs 10+38, 11+38 and 16+38 each measure vars=24 bodydiff=4 sp=0, where the 4 diff lines are only the two subu/addu $sp prologue-epilogue lines. `sandbox func_80030580 --disable all` printed 0 with the 16+38 pair applied to src/code6cac_b.c this session. The .cse2 dump has one `(use (reg))` in the function; the .combine dump has five (insns 413/414/415/416 for regs 89/116/188/75); .greg shows regs 89, 116 and 188 unallocated; FRAMEDBG reports ctx=spill_new_p89 | spill_new_p116 | spill_new_p188 | round_frame = 24 bytes.
+- verdict: CONFIRMED
+
+## [s8] cse deleting a redundant indexed-Judge LOAD does NOT delete the folded address pseudo -- the combine orphan survives the deletion, which is why the cancel lever works at all; the Judge operand is simply far too powerful for this function's residual.
+- mechanism: The fold that creates the orphan happens in combine, which runs after cse2; a load that cse2 proves redundant leaves its address and value pseudos referenced only by the orphan `(use)` insns combine emits, so the slots are allocated by alter_reg even though no instruction remains.
+- probe: tmp/grind/func_80030580/s8/var_jeqx2.c (`tbl[3] + JX - JX`), var_jnew2.c (index +0x800), var_jnew4.c (indices +0x800 and +0xC00), var_c48_jx.c, measured with s7/runfiles.py.
+- result: jeqx2 vars=48 bodydiff=6 sp=0 (six orphan slots; the only body change is a single `lw $4,68($7)` moved one slot earlier); jnew2 vars=56; jnew4 vars=96. This answers the s7 frontier-2 question that had never been measured, in the affirmative, and simultaneously explains why every Judge-based spelling overshoots: the indexed Judge expression carries five or six extra pseudos where a plain field read carries one.
+- verdict: CONFIRMED
+
+## [s8] The self-cancel lever requires a memory read: substituting a register-resident or already-loaded operand for K leaves the frame at vars=8.
+- mechanism: A value already in a pseudo produces no new load insn for cse2 to kill, so combine has no deleted setter and emits no orphan `(use)`.
+- probe: tmp/grind/func_80030580/s8/gen2.py, thirteen operands at the obj+0x48 store, through s7/runfiles.py.
+- result: arg1 vars=8 bodydiff=0; i vars=8 bodydiff=12; tbl[3] (already loaded there) vars=8 bodydiff=0; *(s32*)(obj+0x44) (already loaded there) vars=8 bodydiff=0. Every not-yet-loaded memory operand measured vars=16: tbl[0], tbl[2], *(u16*)(tbl+4), *(u16*)(src+4), *(s16*)(src+0x1A), *(s16*)(src+0x1CA), *(s32*)(src+0xF4), *(u8*)(obj+0xA). Banked rejected/self-cancel-register-operand-frame-inert.c.
+- verdict: CONFIRMED
+
+## [s8] KILLED (instance): nineteen ordinary-C and sanctioned-family respellings of func_80030580 leave the frame at vars=8 on the current chassis.
+- mechanism: Each of these families changes control flow, naming or read placement, none of which creates a load that cse2 deletes after combine has run; a dead scalar local fed by memory reads fails for the opposite reason -- its loads are dead from the start and are removed before combine, so no orphan `(use)` is ever emitted.
+- probe: tmp/grind/func_80030580/s8/gen7.py, gen8.py, gen9.py (armdup50, armdup58, dw0arms, dw0judge, dupstore2c, gotoend, reread56, reuse_i, ni_scale, ni_ang, sr_tbl4, ptr_src, loop_amp, loop_cont, loop_neg, loop_swap, arm13) plus var_jdeadloc.c and var_jmulzero.c from gen.py, all through s7/runfiles.py with the instrumented cc1.
+- result: every one measured vars=8. bodydiff ranged from 0 (dw0arms, gotoend, ni_scale, ptr_src, loop_cont, jdeadloc, jmulzero) to 165 (ni_ang). Families covered: duplicated-statement-into-arms, do-while(0) wrap, mixed exit forms, same-value re-store, split-read, variable-reuse, named-intermediate, pointer-alias, loop-guard respelling, arm merging, dead scalar local, front-end-folded multiply-by-zero. Banked rejected/sanctioned-family-shapes-frame-inert-s8.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present in the chassis
+
+## [s8] KILL RE-AUDIT: the s7 vecnamed kill (the named Vec3i local, the only ordinary shape that had reached vars=24) reproduces unchanged on the current chassis with no FAKE carriers.
+- mechanism: The named Vec3i local is BLKmode for GCC 2.7.2, so expand_decl gives it a real ctx=stack_temp frame object that the body loads and stores, rather than leaving an unallocated pseudo with an alter_reg phantom slot.
+- probe: tmp/grind/func_80030580/s7/var_vecnamed.c re-run through s7/runfiles.py this session alongside a fresh var_base.c control.
+- result: base vars=8 bodydiff=0 sp=0 ctx=spill_new_p110; vecnamed vars=24 bodydiff=10 sp=6 ctx=stack_temp | spill_new_p110. Identical to the s7 measurement. The kill stands and the chassis has not drifted.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present
+
+### FRONTIER (rewritten by s8)
+1. **The ruling question.** `memory/grind/func_80030580/ruling-form-cse-cancelled-load-orphan.c`
+   is bytes-proven (sandbox 0 this session). Its only construct is two `+ K - K` terms.
+   If a ruling places "an expression whose value cse proves redundant" inside a sanctioned
+   family, the function closes today; if not, the last known route to vars=24 is closed and
+   an escalation-modality session has a complete foreclosure record.
+2. **An ORDINARY-C statement that cse2 proves redundant**, placed at body statement 10, 11,
+   16 or 38 (the four byte-neutral sites). The requirement is now exact and testable: it must
+   emit at least one load in RTL, that load's value must be proven equal to an already-live
+   value by cse2 (NOT dead from the start -- see the jdeadloc measurement), and it must be
+   byte-neutral. Probe with the tmp/grind/func_80030580/s8/gen5.py harness, which takes any
+   statement rewrite and reports vars/bodydiff/sp in one call.
+3. **Post-reload insn deletion as an alternative byte-free route.** reload fixes the frame
+   size, and `jump2` cross-jumping runs afterwards. A form whose extra instructions are real
+   before reload (so they carry orphan pseudos and the frame) but are tail-merged away by
+   jump2 would be byte-neutral for semantically real code. Never measured. Start from j3read
+   (vars=16 bodydiff=18) and try to place its 18 extra insns as an exact tail duplicate of an
+   existing arm.

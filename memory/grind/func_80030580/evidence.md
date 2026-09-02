@@ -933,3 +933,104 @@ best *submittable* form is the honest floor-2 body. `src/code6cac_b.c` restored 
 - [s7] phantom-slot-frame-lever producers 1 and 3 are measured dead here in eight spellings; four of them (whilerot, kindlocal, anglocal, posptr) are byte-neutral (bodydiff=0, vars=8) and are banked as free composables for a future session to stack on top of a real generator.
 
 - [s7] candidate.c is RESET to the FAKE-free pure-c-floor2-body.c: the s6 candidate's volatile u32 pre_pad[4] route is closed by the standing Judge constraint, so the ledger's best submittable form is the honest floor-2 body. src/code6cac_b.c was restored to HEAD; the working tree carries only memory/grind/func_80030580/ ledger changes.
+
+
+## [s8 -- forensics, 2026-09-02] The residual 16 frame bytes are SOLVED mechanically: a bytes-proven vars=24 form exists at sandbox distance 0
+
+**Chassis re-measured this session.** HEAD (`INCLUDE_ASM`) = 148. `pure-c-floor2-body.c`
+applied = **2** (this is the number to quote; the ledger's "floor=2" is confirmed on the
+current chassis, zero FAKE constructs present -- `candidate.c` is byte-identical to
+`pure-c-floor2-body.c`).
+
+**The lever (new, previously unknown to this ledger).** Adding a self-cancelling term
+`+ K - K` to an existing store, where `K` is a MEMORY read that is *not already loaded at
+that program point*, buys exactly **+8 frame bytes and zero instructions**. Two such terms
+at the right pair of sites reach the target frame exactly:
+
+    *(s32 *)(obj + 0x2C) = *(s32 *)(src + 0xF4) + *(u16 *)(src + 4) - *(u16 *)(src + 4);
+    ...
+        *(u16 *)(obj + 0x5C) = *(u16 *)(tbl + 4) + *(u16 *)(src + 4) - *(u16 *)(src + 4);
+
+measures `vars=24 bodydiff=4 sp=0` (the 4 diff lines are ONLY the two `subu $sp,$sp,N` /
+`addu $sp,$sp,N` prologue/epilogue lines -- all 140 body instructions are byte-identical),
+and **`sandbox func_80030580 --disable all` printed 0 with those two edits in src/ this
+session**. Saved as `memory/grind/func_80030580/ruling-form-cse-cancelled-load-orphan.c`.
+It is NOT `candidate.c` and was NOT left in src/: on this agent's own 6-test reading the
+construct fails T1 (no observable effect) and T2 (no human writes `x + K - K`), and no
+frozen SOTN family covers "an expression whose value cse proves redundant", so the session
+returns a `ruling-request` rather than a submission.
+
+**Pass attribution (dumps banked, not guessed).** `pwsh tools/grinder/dump.ps1
+func_80030580` on the vars=24 form; sections extracted with
+`tmp/grind/func_80030580/s8/dsec.py`:
+
+  - `code6cac_b.cse2`: the func_80030580 section contains exactly ONE `(use (reg ...))`
+    insn -- `(insn 389 ... (use (reg/i:SI 2 v0)))`, the ordinary return-value use.
+  - `code6cac_b.combine`: FIVE -- insn 413 `(use (reg:SI 89))`, insn 414 `(use (reg:SI 116))`,
+    insn 416 `(use (reg:HI 188))`, insn 415 `(use (reg/v:SI 75))`, plus the v0 use.
+  - `code6cac_b.lreg`: the same five survive local-alloc unallocated.
+  - `code6cac_b.greg`: only two remain as register references -- reg 75 got a hard register
+    (`$t1`); regs 89, 116 and 188 got NO hard register.
+
+So the producing pass is **`combine.c` / `distribute_notes`**: when combine deletes the insn
+that set a pseudo and the pseudo's REG_DEAD note has no insn to be rehomed on, it emits a
+bare `(use (reg N))`. That leaves a pseudo with refs but no live range; `global.c` gives it
+no hard register; `reload1.c alter_reg` then calls `assign_stack_local (SImode, 8, -1)` for
+each, and `align == -1` rounds each slot to 8 bytes. FRAMEDBG agrees exactly:
+`ctx=spill_new_p89 | ctx=spill_new_p116 | ctx=spill_new_p188 | ctx=round_frame`, i.e.
+8 (the base Judge-fold orphan) + 8 + 8 = 24. This CONFIRMS the s7 alter_reg model and
+retires the s7 "byte-free generator must be an aggregate" framing: the byte-free generator
+is a *deleted load*, not a declared object.
+
+**The input-shape law (measured, 30 single-site + 10 paired + 13 operand variants).**
+Writing `X + K - K` onto every assignment statement in the body, one at a time:
+  - `K` register-resident or already loaded at that point (`arg1`, `i`, `tbl[3]` at the
+    obj+0x48 store, `*(s32 *)(obj + 0x44)` at the obj+0x48 store) -> `vars=8`, no slot.
+  - `K` a memory read not yet loaded there -> `vars=16`, `sp=0`, always exactly one extra slot
+    (measured for tbl[0], tbl[2], `*(u16 *)(tbl + 4)`, `*(u16 *)(src + 4)`,
+    `*(s16 *)(src + 0x1A)`, `*(s16 *)(src + 0x1CA)`, `*(s32 *)(src + 0xF4)`, `*(u8 *)(obj + 0xA)`).
+  - Byte-neutral single sites (bodydiff=4, i.e. frame only): statement 10
+    (`*(u8 *)(obj + 0xA) = i;`), 11 (`*(s16 *)(obj + 2) = arg1;`), 16
+    (`*(s32 *)(obj + 0x2C) = *(s32 *)(src + 0xF4);`) and 38
+    (`*(u16 *)(obj + 0x5C) = *(u16 *)(tbl + 4);`, the tbl[0]==2 arm).
+  - Pairing two byte-neutral sites: **10+38, 11+38 and 16+38 all give `vars=24 bodydiff=4
+    sp=0`.** Pairs drawn from the early cluster (10+11, 10+16, 11+16) reach vars=24 but cost
+    bodydiff=40 (register-pressure fallout), and pairs involving statement 15 stay at vars=16.
+  - Scaling: `+ JX - JX` with `JX` an indexed `Judge` read costs SIX slots (`vars=48`), and a
+    four-term Judge cancel costs twelve (`vars=96`) -- the Judge index expression carries many
+    more pseudos, so it massively overshoots.
+
+**Frontier-2 answered (the never-measured cse question).** "Does cse deleting a redundant
+Judge LOAD also delete the address pseudo that combine would otherwise fold and orphan?"
+**No -- the orphan survives, and that is exactly why the lever works.** `jeqx2`
+(`tbl[3] + JX - JX`) measures `vars=48 bodydiff=6 sp=0`; the only body change is one
+`lw $4,68($7)` moved a single slot earlier. The route is open, just badly over-powered:
+Judge is the wrong operand, a plain field read is the right one. For the record the banked
+4-site forms re-measured identically on the current chassis: `j3read vars=16 bodydiff=18`,
+`j4read vars=24 bodydiff=25` -- the site law is intact.
+
+**Nineteen ordinary-C / sanctioned-family respellings measured frame-INERT** (all `vars=8`,
+chassis floor 2, no FAKEs): duplicated-statement-into-arms (obj+0x50 and obj+0x58 pushed into
+all four arms), `do { } while (0)` wraps around the arm chain and around the Judge block,
+mixed exit forms (`goto endK` + inline return), a same-value re-store of the obj+0x2C field,
+a split-read hoist of `*(u16 *)(tbl + 4)`, variable-reuse borrowing `i` for the angle,
+named-intermediate locals for the scaled product and for the angle, a pointer alias over the
+source position vector, four loop-guard respellings (`&` instead of `&&`, operand swap,
+`continue` form, `< 0` form), merging the identical tbl[0]==1 and tbl[0]==3 arms, a dead
+scalar local fed by two Judge reads (`vars=8 bodydiff=0` -- its loads die BEFORE combine, so
+no orphan is created; this is why the dead-scalar-local family cannot host the lever), and a
+Judge read multiplied by zero (folded in the front end, no RTL at all). Banked as
+`rejected/sanctioned-family-shapes-frame-inert-s8.c` and
+`rejected/self-cancel-register-operand-frame-inert.c`.
+
+**Kill re-audit (mandated, floor flat 3+ sessions).** The closest banked instance kill,
+`vecnamed` (the named Vec3i local, s7's only vars=24 ordinary shape), re-measured on the
+current chassis with zero FAKE constructs: `vars=24 bodydiff=10 sp=6` -- unchanged, still
+carrying six real `($sp)` accesses. The kill stands.
+
+**Why this narrows the function to a single question.** The frame lever is now known, cheap,
+and exactly tunable -- but its defining property is that the added expression *has no
+observable effect*, which is the same property the cheat checklist tests for. Every
+semantically-real respelling measured this session left the frame at 8. So the remaining
+search is not "find another generator" (that is answered) but "is there an ORDINARY-C
+statement whose value GCC 2.7.2 proves redundant in cse2, at one of statements 10/11/16/38".
