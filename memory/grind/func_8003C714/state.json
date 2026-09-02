@@ -1,7 +1,7 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 5,
+ "session_count": 6,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -33,23 +33,29 @@
    "floor": 15,
    "modality": "synthesis",
    "headline": "Synthesis: merged s1-s4 into one measured law (BYTE-COUNT COUPLING, H8) and closed the last half-open channel with two new nulls (K15 dead code, K16 giv/address chains) on a positive-control-validated"
+  },
+  {
+   "session": 6,
+   "floor": 15,
+   "modality": "synthesis",
+   "headline": "BREAKTHROUGH: sandbox distance 0 MEASURED on the shipped chassis (104==104) \u2014 the s5 BYTE-COUNT COUPLING law (H8) is falsified; loop-carried RTL escapes the cse1 fixpoint, is counted by loop.c, and di"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Nothing on the spelling side remains: loop.c:1631 is closed on every input by measurement, and the BYTE-COUNT COUPLING law (H8) explains why no future spelling can open it. Do NOT dispatch a spelling, structural, permuter or other search modality on this body \u2014 every such session will re-derive K8/K10/K13/K14/K15/K16.",
-   "mechanism": "loop.c:1631 with savings and lifetime pinned at 1 (loop.c:791/793) reduces the test to threshold vs insn_count; threshold is a build-configuration scalar (loop.c:532) and insn_count is byte-coupled (H8), so both terms are outside C's reach at the required magnitudes.",
-   "next_probe": "The only non-redundant probe left is a forensics pass on the SECOND half of the residual: read the .greg/.sched dumps for the candidate build and determine whether the mfhi-temp seat (our t2 vs target t1) is a pure consequence of the 0x91A2B3C5 hoist freeing t1, or an INDEPENDENT second residual. If independent it is a genuinely new sub-target worth a session; if consequent (expected), the function is fully characterised and the driver has its exhaustion evidence."
+   "hypothesis": "An ORDINARY-C construct exists that puts >= 64 extra loop-carried RTL insns in front of count_loop_regs_set and dies inside loop_optimize \u2014 the same channel the s6 proof used, spelled naturally instead of as balanced noise.",
+   "mechanism": "loop-carried SETs are opaque to cse1's value numbering (toplev.c:2865) so they reach count_loop_regs_set; a biv whose only use is post-loop is removed entirely by strength_reduce's biv elimination inside loop_optimize, after move_movables has already consumed insn_count and before local-alloc can see the pseudo (K18).",
+   "next_probe": "Sweep candidate NATURAL carriers with tmp/grind/func_8003C714/s6/sweep.sh \u2014 the `.loop` line `Loop from 25 to N: M real insns.` is the gradient and costs one cc1 run per form, no sandbox needed. Untried carrier families: a genuine running accumulator/checksum whose final value is stored after the loop, a second real index, long-long / multi-word arithmetic on a loop-carried local, a struct or array copy idiom, an unrolled per-element computation. Target: M >= 120, carrier used only after the loop."
   },
   {
-   "hypothesis": "CLOSED RECORD (root cause, barred as a lever): the residual is the scalar `threshold`, whose original value must have been in [56,58]; the shipped chassis supplies 122 because n_non_fixed_regs counts a 32-register hard-float file the PS1 R3000A does not have.",
-   "mechanism": "loop.c:532 threshold=(loop_has_call?1:2)*(1+n_non_fixed_regs); regclass.c:380-387 counts hard regs with !fixed_regs[i].",
-   "next_probe": "NONE \u2014 barred for grind sessions by the standing Judge constraint and by the 2026-09-01 18:33 ruling at docs/grind/decisions.md:19776, which additionally established that the global variant would BREAK the oracle (func_800324D0 regresses 0 -> 3). Recorded as the measured cause only; must not be re-filed in any shape, including as calibration evidence for an escalation."
+   "hypothesis": "Free HOISTS are a cheaper route than free insns: with h extra hoisted movables ahead of the 0x91A2B3C5 movable the requirement drops from +64 insns to c > 63 - 3h, so ~21 free hoists would need none.",
+   "mechanism": "loop.c:1719/1904 do `threshold -= 3` after every movable actually moved, and the 0x91A2B3C5 movable is tested after the first hoist (threshold 119). gen_biv k=2 already measured one extra hoist at zero byte cost, so the channel is real and unexplained.",
+   "next_probe": "Re-run gen_biv.py k=2 and diff its .loop movable table against k=0/k=1 to identify WHICH pseudo gained a hoist and why it costs no preheader instruction; then try to scale that shape (more invariants of the same kind) and read `moved` vs asm line count at each step."
   },
   {
-   "hypothesis": "CLOSED RECORD (dependency): if a future owner ruling ever re-opens the chassis question, func_800324D0 (code6cac_b) needs an ordinary structural re-grind to <= 58 RTL insns in its loop (currently 72).",
-   "mechanism": "the same loop.c:1631 test in reverse \u2014 122 >= 72 hoists its `li 255`, 58 < 72 does not.",
-   "next_probe": "Not actionable from this function's queue slot; carried forward so the dependency is not lost."
+   "hypothesis": "CLOSED RECORD (superseded \u2014 do not re-file in any shape): the chassis/threshold=122 root cause (loop.c:532 with regclass.c:380-387 counting a 32-register hard-float file the R3000A lacks).",
+   "mechanism": "still a true description of one route, and still barred by the standing Judge constraint and the 2026-09-01 18:33 ruling",
+   "next_probe": "NONE. It is no longer an exhaustion or escalation ground either, because H10 measured distance 0 on the shipped chassis. Any future session quoting 'unreachable on the shipped chassis' from s2-s5 is quoting a retracted claim."
   }
  ],
  "judge_constraints": [

@@ -686,3 +686,175 @@ points would be free and the function would reopen. Both halves are now measured
 - probe: Five construct families measured across s2-s5 against the same instrument: redundant &0xFF masks (K10), dead ALU chains k<=32 (K15), pointer/giv chains k<=16 (K16), inlined index addressing (K8), invariant const movables k=16 (K14).
 - result: No family is off the line: 0/0, 0/0, 0/0, +2 insn_count / +13 score, +34 insn_count / +66 asm lines. Declining the 0x91A2B3C5 movable needs insn_count >= 120 with no extra hoists (+64 RTL insns) or insn_count >= 84 with 13 extra hoists (+28 RTL insns AND 13 extra preheader instructions); the target's whole body is 104 instructions, its loop 59, its preheader 6 with all six already accounted for. The cheapest route overshoots the entire function's byte budget by roughly 2x.
 - verdict: CONFIRMED
+
+
+## s6 (2026-09-01, synthesis modality) -- THE FUNCTION IS REACHABLE. H8 IS FALSIFIED.
+
+Chassis re-check first, before anything was spent: `candidate.c` spliced over the
+`INCLUDE_ASM` line, `sandbox func_8003C714 --disable all` prints **score 15,
+target_insns 104, build_insns 105** -- identical to s1-s5. Every inherited
+measurement was still chassis-current when this session started.
+
+This session was mandated to MERGE, not to search. Merging s1-s5 produced one
+question the ledger had never asked in this form: *why* does every free
+construct die before `loop.c`? The answer (read out of `tools/gcc-2.7.2/loop.c`
+and `toplev.c` this session) is that all of them were **basic-block-local**, and
+`cse1` + `delete_dead_from_cse` are a redundancy fixpoint immediately upstream of
+`loop_optimize`. The one class of RTL that cse1 provably CANNOT touch is
+**loop-carried** arithmetic: a value that flows across the back edge is opaque to
+cse1's value numbering. No prior session had put a loop-carried construct in
+front of `count_loop_regs_set`. That is the whole finding.
+
+### CONFIRMED
+
+- **H9 -- THE CSE1-FIXPOINT LAW, and the loop-carried hole in it.** cse1
+  (`toplev.c:2865`) and `delete_dead_from_cse` (2866) run immediately before
+  `loop_optimize` (2895) with no insn-creating pass in between, so every insn
+  `count_loop_regs_set` counts is non-redundant *at cse1's fixpoint*. That is
+  why K10 (masks), K15 (dead ALU chains) and K16 (giv/address chains) all
+  measured insn_count +0: all three are basic-block-local and cse1 is a fixpoint
+  over them. It is NOT a law about bytes. **Loop-carried arithmetic escapes it**,
+  and `strength_reduce`'s biv elimination -- which runs INSIDE `loop_optimize`,
+  AFTER `move_movables` has already used `insn_count` -- deletes it for zero
+  emitted bytes. That is a genuine free channel and it is large.
+
+- **H10 -- distance 0 is REACHABLE on the shipped chassis. MEASURED, not
+  argued.** Body: `tmp/grind/func_8003C714/s6/body_fv32.c` (banked at
+  `rejected/balanced-biv-noise-64-insns-d0-but-inadmissible.c`). 32 balanced
+  `z += c; z -= c;` pairs (net 0) on a loop-carried local `z`, `z += 1` at the
+  bottom, and the single post-loop use `D_800A37B8 = z - 3;` (loop.c
+  final-value-replaces `z` with 3, so the store folds to the `D_800A37B8 = 0`
+  the target already has). `sandbox func_8003C714 --disable all` prints
+  **score 0, target_insns 104, build_insns 104**. The residual this function has
+  carried since s1 is GONE. The form is an inadmissible cheat and was NOT
+  submitted -- but reachability is now a measurement, and every "unreachable on
+  the shipped chassis" statement in s2-s5 (K5, H8, the two decisions.md
+  INTEGRATION HANDOFF entries, the 2026-09-01 18:33 ruling's premise) is
+  superseded by it. The chassis/CC_FLAGS story was a TRUE description of one
+  route, never the only route.
+
+### KILLED
+
+- **K17 -- H8 (BYTE-COUNT COUPLING) is FALSE.** Sweep `gen_multi.py`
+  (k unbalanced `j += 1` increments on a test-carrying biv), harness
+  `tmp/grind/func_8003C714/s6/sweep.sh`, identical to the s5 driver:
+
+      k=1   57 real insns   asm 107 lines
+      k=2   58 real insns   asm 107 lines
+      k=4   60 real insns   asm 107 lines
+      k=8   64 real insns   asm 107 lines
+      k=16  72 real insns   asm 107 lines
+      k=32  88 real insns   asm 107 lines
+      k=64  120 real insns  1x "not desirable"   asm 106 lines
+
+  insn_count tracks k **1:1** while the emitted function stays BYTE-IDENTICAL
+  (107 lines) all the way to k=32, and at k=64 the 0x91A2B3C5 movable flips to
+  "not desirable" exactly as loop.c:1631 predicts (119 >= 120 is false). +64 RTL
+  insns for +0 bytes. H8's table was a true summary of three basic-block-local
+  families and a false generalisation.
+
+- **K18 -- the noise must NOT sit on the surviving counter, and must NOT sit on
+  the giv-driving biv.** Three placements measured at the same insn_count:
+  * noise on the biv that carries the exit test (`gen_multi`/`gen_bal`, and the
+    name-swapped `gen_swap`): 104 == 104 emitted instructions, instruction
+    sequence exact, but **score 22** -- a pure REGISTER ROTATION. The `.lreg`
+    dump names the cause in one line: `Register 73 used 263 times across 58
+    insns`. The noise inflates the surviving counter's `reg_n_refs`, which is
+    local-alloc's priority key, so the counter is allocated FIRST and takes a1;
+    the target allocates it LAST (dst=a1, src=a2, magic=a3, counter=t0) and ours
+    comes out rotated (counter=a1, dst=a2, src=a3, magic=t0).
+  * noise on `i`, the biv that drives the src/dst givs (`gen_bal2`, `gen_noisei`):
+    asm 108 / 109 lines -- the giv bookkeeping materialises 2-5 instructions.
+  * noise on a third biv `z` whose ONLY use is post-loop (`gen_fv`): the biv is
+    eliminated outright, its pseudo never reaches local-alloc, the counter keeps
+    its baseline `reg_n_refs`, and the seat rotation disappears -> **score 0**.
+  The seat is therefore not a separate residual at all (this also answers the s5
+  frontier's forensics question: the mfhi t2-vs-t1 seat was CONSEQUENT on the
+  hoist, not independent -- at score 0 every seat lands on the target).
+
+- **K19 -- balanced pairs are needed, not raw increments, if the surviving
+  counter must keep the target's stride.** `gen_multi` k=64 leaves the counter
+  at stride 64 / limit 192 (two wrong immediates on top of the rotation);
+  `gen_bal` (32 balanced pairs + one `+= 1`) restores stride 1 / limit 3. Both
+  score 22; only the `gen_fv` placement fixes the rotation.
+
+### FRONTIER (reset -- this is a SPELLING problem again, with an exact target)
+
+1. **THE LIVE ITEM: find an ordinary-C spelling of ">= 64 extra loop-carried RTL
+   insns inside the loop that die inside loop_optimize."** The requirement is
+   exact and now cheaply testable: `insn_count >= 120` (measure it with
+   `sweep.sh`, one cc1 run per form, no sandbox needed -- the `.loop` line
+   `Loop from 25 to N: M real insns.` IS the gradient), with the carrier being a
+   biv whose only use is post-loop (K18) so local-alloc never sees it.
+   Constraints already known: loop-carried (else cse1 eats it, K10/K15/K16), not
+   on the counter, not on the giv-driving biv. What has NOT been tried: any
+   NATURAL carrier -- a genuine running accumulator/checksum whose final value
+   is stored after the loop, a second index the source really had, 64-bit or
+   multi-word arithmetic, a struct-copy idiom, an unrolled inner computation.
+2. **The cheaper trade: free HOISTS instead of free insns.** loop.c:1631 is
+   `threshold * savings * lifetime >= insn_count` with savings=lifetime=1, and
+   `threshold -= 3` after every move (loop.c:1719/1904). With `h` extra hoists
+   ahead of the 0x91A2B3C5 movable the requirement is `c > 63 - 3h`, so 21 free
+   hoists need ZERO extra insns and 10 free hoists need only +34. Free hoists
+   are known to exist: `gen_biv.py` k=2 (`j += 7`, test `j != 21`) measured
+   `moved` 8 -> 9 with asm still 107 lines -- one extra hoist at zero byte cost,
+   unexplained and unexploited. Characterising that channel is probably cheaper
+   than finding a 64-insn carrier.
+3. **CLOSED RECORD (superseded, do not re-file).** The chassis/`threshold`=122
+   root cause (loop.c:532 / regclass.c:380-387) remains a true description of a
+   BARRED route; it is no longer an exhaustion argument, because H10 measured
+   distance 0 on the shipped chassis. Nothing here goes to the owner.
+
+## [s6] The cse1 fixpoint (toplev.c:2865-2866) is why every prior free-insn_count probe measured +0, and loop-carried arithmetic is the hole in it.
+- mechanism: cse1 + delete_dead_from_cse run immediately before loop_optimize with no insn-creating pass between; they are a redundancy fixpoint over basic-block-local RTL but cannot value-number across a loop back edge. strength_reduce's biv elimination then deletes surviving loop-carried insns INSIDE loop_optimize, after move_movables has already consumed insn_count.
+- probe: gen_multi.py / gen_bal.py / gen_fv.py sweeps through tmp/grind/func_8003C714/s6/sweep.sh, reading the .loop movable table and the emitted asm line count at each k
+- result: insn_count 56 -> 121 with a byte-identical emitted function; the 0x91A2B3C5 movable flips to "not desirable" at insn_count >= 120 exactly as loop.c:1631 predicts.
+- verdict: CONFIRMED
+
+## [s6] Distance 0 is reachable for func_8003C714 on the SHIPPED chassis (no CC_FLAGS change, no chassis change).
+- mechanism: 32 balanced loop-carried `z += c; z -= c;` pairs raise insn_count past threshold 119 so loop.c:1631 declines the 0x91A2B3C5 hoist; z's only use is post-loop so biv elimination deletes all 64 insns for zero bytes; the magic then emits in the target's in-loop split lui/lw/ori/mult form and every register seat lands.
+- probe: tmp/grind/func_8003C714/s6/body_fv32.c spliced over the INCLUDE_ASM line at src/code6cac_c2.c:629; `& tools/wteng.ps1 main sandbox func_8003C714 --disable all`
+- result: score 0, target_insns 104, build_insns 104. The form is an inadmissible cheat (T1/T2/T3/T6 all FAIL, no frozen family) and was NOT submitted; it is banked as the reachability proof at rejected/balanced-biv-noise-64-insns-d0-but-inadmissible.c.
+- verdict: CONFIRMED
+
+## [s6] H8 BYTE-COUNT COUPLING: on this chassis loop.c's insn_count is a faithful proxy for the emitted instruction count, so loop.c:1631 is closed by construction.
+- mechanism: s5 claimed every deletion opportunity cheap enough to be byte-free happens before loop_optimize, and everything surviving loop_optimize survives to the assembler
+- probe: gen_multi.py sweep k = 1/2/4/8/16/32/64 (loop-carried increments on a test-carrying biv), .loop insn_count vs emitted asm line count
+- result: FALSE. insn_count 57/58/60/64/72/88/120 against a constant 107 emitted asm lines. The law held only for basic-block-local constructs (the three families s5 sampled); loop-carried constructs break it completely.
+- verdict: KILLED
+
+## [s6] The d15 residual is one loop.c decision PLUS an independent mfhi-temp register seat (t2 vs t1) that would need its own sub-target.
+- mechanism: s5 frontier item 1 -- forensics question of whether the seat is consequent on the hoist or independent
+- probe: measured directly rather than by dump-reading: at score 0 (body_fv32.c) every register in the function lands on the target, including the mfhi temp
+- result: CONSEQUENT. There is no second residual. The seat rotation seen in the intermediate forms (score 22) is a DIFFERENT effect -- local-alloc priority from the noise carrier's inflated reg_n_refs (.lreg: `Register 73 used 263 times across 58 insns`) -- and it vanishes when the carrier is a post-loop-use biv.
+- verdict: KILLED
+
+## [s6] H9 — cse1 (toplev.c:2865) + delete_dead_from_cse (2866) are a redundancy fixpoint immediately upstream of loop_optimize (2895), which is why every prior free-insn_count probe measured +0; loop-carried arithmetic is the one RTL class that escapes it, and strength_reduce's biv elimination (inside loop_optimize, AFTER move_movables consumes insn_count) deletes it for zero emitted bytes.
+- mechanism: count_loop_regs_set counts class-'i' insns between loop_start and end BEFORE move_movables and BEFORE strength_reduce; cse1 cannot value-number across a loop back edge, so a loop-carried SET survives to be counted; a biv whose only use is post-loop is then eliminated outright by strength_reduce and every one of its update insns disappears without reaching flow, combine, local-alloc or the assembler.
+- probe: tmp/grind/func_8003C714/s6/sweep.sh over gen_multi.py (k unbalanced increments on a test-carrying biv) and gen_fv.py (balanced pairs on a post-loop-use biv); read the .loop movable table and the emitted asm line count at each k
+- result: gen_multi k=1/2/4/8/16/32 -> insn_count 57/58/60/64/72/88 with the emitted function BYTE-IDENTICAL (107 asm lines) at every k; k=64 -> insn_count 120 and the 0x91A2B3C5 movable prints 'not desirable' exactly as loop.c:1631 predicts (119 >= 120 is false).
+- verdict: CONFIRMED
+
+## [s6] H10 — distance 0 is reachable for func_8003C714 on the SHIPPED chassis with no CC_FLAGS change and no chassis change of any kind.
+- mechanism: 32 balanced loop-carried `z += c; z -= c;` pairs (net 0) take the loop's insn_count from 56 to 121, so loop.c:1631 declines the 0x91A2B3C5 movable and the magic emits in the target's in-loop split lui/lw/ori/mult form; z's only use is the post-loop `D_800A37B8 = z - 3;`, which loop.c final-value-replaces with the constant 0 the target already stores, so biv elimination removes all 64 insns for zero bytes and local-alloc never sees the carrier pseudo.
+- probe: tmp/grind/func_8003C714/s6/body_fv32.c spliced over the INCLUDE_ASM line at src/code6cac_c2.c:629; `& tools/wteng.ps1 main sandbox func_8003C714 --disable all`
+- result: score 0, target_insns 104, build_insns 104. The form fails cheat tests T1/T2/T3/T6 and matches no frozen SOTN family, so it was NOT submitted; it is banked as the reachability proof at memory/grind/func_8003C714/rejected/balanced-biv-noise-64-insns-d0-but-inadmissible.c and src/ was restored to INCLUDE_ASM.
+- verdict: CONFIRMED
+
+## [s6] K17 — H8 (s5's BYTE-COUNT COUPLING law: byte-neutral C is count-neutral C, so loop.c:1631 is closed by construction).
+- mechanism: s5 argued every deletion cheap enough to be byte-free happens before loop_optimize and everything surviving loop_optimize survives to the assembler
+- probe: gen_multi.py sweep k = 1/2/4/8/16/32/64, .loop insn_count against emitted asm line count
+- result: FALSE. insn_count 57/58/60/64/72/88/120 against a CONSTANT 107 emitted asm lines. H8 was a true summary of the three basic-block-local families s5 happened to sample and a false generalisation; it must not be quoted again as a foreclosure argument.
+- verdict: KILLED
+
+## [s6] K18 — the extra-insn carrier can sit anywhere in the loop.
+- mechanism: local-alloc's quantity priority is keyed on reg_n_refs, so a carrier that survives to register allocation reorders the whole allocation
+- probe: three placements at equal insn_count: carrier on the exit-test biv (gen_multi/gen_bal/gen_swap), carrier on the giv-driving biv i (gen_bal2/gen_noisei), carrier on a third biv whose only use is post-loop (gen_fv); plus tmp/grind/func_8003C714/dumps/code6cac_c2.lreg
+- result: FALSE, and the failure mode is now named. Exit-test carrier: 104==104 emitted, instruction sequence exact, but score 22 — a pure cyclic register rotation (target dst=a1 src=a2 magic=a3 counter=t0; build counter=a1 dst=a2 src=a3 magic=t0), caused by `.lreg: Register 73 used 263 times across 58 insns`. giv-driving carrier: 108/109 asm lines (giv bookkeeping materialises 2-5 instructions). Post-loop-use carrier: score 0. Only the third placement works.
+- verdict: KILLED
+
+## [s6] The d15 residual is one loop.c decision PLUS an independent mfhi-temp register seat (t2 vs t1) needing its own sub-target (the s5 frontier's forensics question).
+- mechanism: s5 asked whether the seat was consequent on the hoist or a second residual
+- probe: answered by direct measurement rather than dump-reading: at score 0 every register in the function lands on the target
+- result: CONSEQUENT — there is no second residual. The seat rotation seen at score 22 is a different, fully-explained effect (local-alloc priority from the carrier's reg_n_refs) and vanishes with the correct carrier placement.
+- verdict: KILLED

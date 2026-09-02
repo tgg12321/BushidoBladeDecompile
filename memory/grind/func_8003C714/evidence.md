@@ -535,3 +535,92 @@ confirmation of what K9 asserted.
 - [s5] Positive control on the same harness (s4's gen_k.py): k=12 -> 82 insns / 157 asm lines / all moved; k=13 -> 84 / 159 / two 'not desirable'; k=16 -> 90 / 173 / seven 'not desirable'. K14 reproduced exactly.
 
 - [s5] Merged foreclosure arithmetic for the next session, in one line: the residual is loop.c:1631 `threshold * savings * lifetime >= insn_count` with savings and lifetime pinned at 1 (H7), threshold 119 after the first hoist, insn_count 56; every route to flipping it (insn_count alone +64 — K8/K10/K15/K16; threshold alone 23 hoists — K9; the compound route 13 hoists — K14; loop_has_call — K11; moved_once doubling — K7/K12; admission — K9 + this session's may_not_move read) is now measured, and each is foreclosed by the same 104-instruction target / 59-instruction loop / 6-instruction preheader budget.
+
+
+## s6 (2026-09-01, synthesis) -- reachability measured; H8 falsified
+
+Chassis: candidate.c spliced -> score 15, 104 target / 105 build (unchanged from
+s1-s5). src/code6cac_c2.c restored to the INCLUDE_ASM line before the session
+closed.
+
+### The measurement that changes the function
+
+| form | carrier | .loop insn_count | emitted | sandbox score |
+|---|---|---|---|---|
+| candidate.c (baseline) | -- | 56 | 105 insns | 15 |
+| gen_biv k=1 (`j += 1`, test on j) | test biv | 57 | 107 asm lines | -- |
+| gen_multi k=8 / 16 / 32 | test biv | 64 / 72 / 88 | 107 asm lines (byte-identical) | -- |
+| gen_multi k=64 | test biv | 120 ("not desirable") | 104 insns | 22 |
+| gen_bal k=32 (balanced, stride 1) | test biv | 121 ("not desirable") | 104 insns | 22 |
+| gen_swap k=32 (names/roles swapped) | test biv | 121 | 104 insns | 22 |
+| gen_bal2 / gen_noisei k=32 | giv-driving biv `i` | 120 / 121 | 108 / 109 asm lines | -- |
+| **gen_fv k=32 (post-loop-use biv `z`)** | **post-loop biv** | **121** | **104 insns** | **0** |
+
+The score-22 rows are NOT partial matches in the usual sense: the emitted
+instruction SEQUENCE is already the target's, 104 for 104, and all 22 differences
+are one cyclic register rotation (target dst=a1 src=a2 magic=a3 counter=t0; those
+builds counter=a1 dst=a2 src=a3 magic=t0). `.lreg` gives the cause in one line --
+`Register 73 used 263 times across 58 insns` -- the noise carrier's reg_n_refs is
+local-alloc's priority key. Moving the carrier to a biv whose only use is
+post-loop removes the pseudo before local-alloc runs and the rotation disappears.
+
+### The score-0 form (inadmissible; banked as proof, not as a candidate)
+
+    i = 0; z = 0;
+    do {
+        src = (u8 *)&D_80106A58 + i * 8;
+        dst = (u8 *)s0 + i * 4;
+        dst[0x21] = *(s32 *)(src + 4) / 1800;
+        z += 3; z += 7; ... (32 balanced `z += c` / `z -= c` pairs, net 0,
+                             spread across the four store statements)
+        ...
+        z += 1;
+        i += 1;
+    } while (i < 3);
+    ...
+    D_800A37B8 = z - 3;      /* loop.c final-value-replaces z with 3 -> stores 0,
+                                which is the store the target already has */
+
+`sandbox func_8003C714 --disable all` -> **score 0, 104 == 104**. It fails cheat
+tests T1 (the pairs sum to zero and have no observable effect), T2 (no human
+writes this), T3 (the mechanism IS loop.c:1631's insn_count) and T6, and matches
+no frozen SOTN family, so it was not submitted.
+
+### Why this was invisible to s1-s5
+
+Every earlier free-insn_count probe (K10 redundant masks, K15 dead ALU chains,
+K16 giv/address chains) was BASIC-BLOCK-LOCAL, and cse1 + delete_dead_from_cse
+(toplev.c:2865-2866) are a redundancy fixpoint sitting immediately before
+loop_optimize (2895). Loop-carried arithmetic is the one class cse1 cannot value-
+number away, and strength_reduce's biv elimination -- inside loop_optimize,
+after move_movables has consumed insn_count -- removes it for free.
+
+### Artifacts
+
+- `tmp/grind/func_8003C714/s6/sweep.sh` (harness, cloned from the s5 driver)
+- `tmp/grind/func_8003C714/s6/gen_biv.py`, `gen_multi.py`, `gen_bal.py`,
+  `gen_bal2.py`, `gen_swap.py`, `gen_noisei.py`, `gen_fv.py`
+- `tmp/grind/func_8003C714/s6/body_mi64.c`, `body_bal32.c`, `body_sw32.c`,
+  `body_fv32.c` (the score-0 form)
+- `tmp/grind/func_8003C714/s6/mi64.dis`, `bal32.dis`, `cmp.py` (target-vs-build
+  instruction comparator)
+- `tmp/grind/func_8003C714/s6/dumps/` (per-k .i/.s/.loop dumps for every sweep)
+- `tmp/grind/func_8003C714/dumps/code6cac_c2.lreg` (the reg_n_refs evidence)
+
+- [s6] Chassis re-checked before anything was spent: candidate.c spliced -> score 15, target_insns 104, build_insns 105 — identical to s1-s5, so every inherited conclusion was chassis-current at session start.
+
+- [s6] loop.c:1631 is `threshold * savings * m->lifetime >= insn_count` with savings and lifetime pinned at 1 (loop.c:791/793) and threshold 122 minus 3 per prior move (loop.c:1719/1904) = 119 at the 0x91A2B3C5 movable's test. insn_count must therefore reach 120. This session reached it: 121.
+
+- [s6] The free channel measured end to end: gen_multi k=1..32 raises the loop from `Loop from 25 to 146: 56 real insns.` to 88 real insns with the emitted function byte-identical (107 asm lines) at every k — +32 RTL insns for +0 bytes.
+
+- [s6] score-0 body (inadmissible): i and z both start at 0; 32 balanced `z += c; z -= c;` pairs spread across the four store statements; `z += 1; i += 1;` at the bottom; `while (i < 3)`; and the single post-loop use `D_800A37B8 = z - 3;` which loop.c final-value-replaces to the `D_800A37B8 = 0` the target already has.
+
+- [s6] The intermediate score-22 forms already emit the target's exact 104-instruction SEQUENCE; the only difference is a one-position cyclic register rotation, and tmp/grind/func_8003C714/dumps/code6cac_c2.lreg names the cause: `Register 73 used 263 times across 58 insns` (the carrier's reg_n_refs is local-alloc's priority key).
+
+- [s6] A second free channel exists and is uncharacterised: gen_biv.py k=2 (`j += 7`, exit test `j != 21`) raised the dump's `moved to` count from 8 to 9 — one EXTRA hoisted movable — with the emitted function still 107 asm lines. Each extra hoist is threshold -= 3, so the requirement generalises to `c > 63 - 3h`: 21 free hoists would need zero extra insns.
+
+- [s6] Harness validity: the s6 sweep driver is the s5 driver verbatim (only the directory changed), and it reproduced the s5/s4 baseline numbers (`Loop from 25 to 146: 56 real insns.` / 107 asm lines) as its k=0 control in every sweep.
+
+- [s6] src/code6cac_c2.c was restored to the INCLUDE_ASM line before the session closed; `git status` shows only memory/grind ledger files, the new rejected/ form, docs/grind/decisions.md and metrics/events.jsonl.
+
+- [s6] docs/grind/decisions.md carries a new CORRECTION entry retracting the premise of the two 2026-09-01 INTEGRATION HANDOFF entries (decisions.md:19501 and :19622) — operators must not act on their step lists, since distance 0 needs no CC_FLAGS change.

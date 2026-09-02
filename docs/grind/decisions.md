@@ -19777,3 +19777,37 @@ R3000A has no FPU).
 ## 2026-09-01 18:33 — func_8003C714 — ruling: INTEGRATION HANDOFF filed for func_8003C714 : docs/grind/decisions.md:19622 — 20 — **FAIL**
 
 Integration-handoff prerequisites are not met. (1) Bytes are NOT proven: on the shipped chassis (Makefile:35 CC_FLAGS, verified myself — no -msoft-float) candidate.c scores 15, not 0; distance 0 exists only under a MODIFIED cc1 flag set. (2) No full-build SHA1==oracle evidence exists anywhere in the ledger (grep of evidence.md finds only object-level sha1 comparisons), and the entry's own measurement shows func_800324D0 regressing 0->3 under the global variant, i.e. the proposed chassis would BREAK the oracle. (3) The requested remedy (CC_FLAGS in Makefile + engine/buildconfig.py) is on the add-scope-allow denylist verbatim (.claude/rules/integration-handoff-self-serve.md: 'Anything under tools/, engine/ ... Makefile') and is named in that rule's owner-only severe-blocker list ('any change to ... build flags [[no-compiler-divergence]]'). .claude/rules/no-compiler-divergence.md forbids the whole 'the toolchain is the variable' axis as an escalation ground. candidate.c itself is ordinary cheat-free C and is NOT banned; the defect is the disposition, not the body. The chassis-fidelity question is recorded here for the owner's own cadence; it is not a pipeline grant. Evidence: docs/grind/decisions.md:19622ff, state.json frontier[0..2], evidence.md s2/s2b.
+
+## 2026-09-01 — func_8003C714 — **CORRECTION: the earlier INTEGRATION HANDOFF entries are SUPERSEDED — distance 0 is reachable on the SHIPPED chassis**
+
+Session s6 (synthesis modality) measured `sandbox func_8003C714 --disable all` =
+**score 0, target_insns 104, build_insns 104** with the shipped `CC_FLAGS`, no
+chassis change of any kind. The two 2026-09-01 INTEGRATION HANDOFF entries above
+(decisions.md:19501 and :19622) and the 18:33 ruling that FAILed them rest on the
+premise that the `loop.c:1631` desirability test cannot be made to decline the
+0x91A2B3C5 movable from C on this chassis. **That premise is false and is now
+measured false.** Operators must NOT act on those entries' step lists.
+
+Mechanism (full record in `memory/grind/func_8003C714/hypotheses.md` §s6, H9/H10,
+K17-K19): `insn_count` is taken by `count_loop_regs_set` before `move_movables`
+and before `strength_reduce`. Every earlier free-insn_count probe (K10 masks,
+K15 dead ALU chains, K16 giv/address chains) was basic-block-local and therefore
+died at the `cse1` / `delete_dead_from_cse` fixpoint (`toplev.c:2865-2866`) that
+sits immediately upstream of `loop_optimize`. **Loop-carried** arithmetic escapes
+that fixpoint, is counted, and is then deleted inside `loop_optimize` by biv
+elimination for zero emitted bytes: a sweep of 32 balanced `z += c; z -= c;`
+pairs takes the loop from `56 real insns` to `121 real insns` with the emitted
+function byte-identical at every intermediate point, and at `insn_count >= 120`
+the movable flips to `not desirable` and the whole function matches.
+
+The score-0 form is an **inadmissible cheat** (fails cheat-checklist T1/T2/T3/T6,
+matches no frozen SOTN family) and was NOT submitted; it is banked only as the
+reachability proof at
+`memory/grind/func_8003C714/rejected/balanced-biv-noise-64-insns-d0-but-inadmissible.c`.
+The function therefore stays ACTIVE and INCOMPLETE, and its residual is now an
+ordinary spelling problem with an exact, cheaply-testable target: an ordinary-C
+construct giving >= 64 extra loop-carried RTL insns that die inside
+`loop_optimize` (carrier must be a biv whose only use is post-loop — see K18),
+or the cheaper trade of `h` free hoists against `c > 63 - 3h` extra insns.
+No owner action is requested by this entry; it exists to retract the earlier
+foreclosure premise.

@@ -76,6 +76,26 @@
  * with a 6-instruction preheader. loop.c:1631 is closed BY CONSTRUCTION, not by
  * search. Do not open another spelling, structural or search modality on this
  * body. See hypotheses.md H8/K15/K16 and the s5 frontier.
+*
+ * [s6 2026-09-01 UPDATE, synthesis modality] READ THIS BEFORE SPENDING ANY
+ * EARLIER PARAGRAPH. Chassis re-checked first: this body still scores 15
+ * (104 target / 105 build). Everything above about loop.c:1631 being "closed
+ * by construction" is now WRONG and is superseded: s6 MEASURED sandbox
+ * distance 0 on the SHIPPED chassis. The s5 BYTE-COUNT COUPLING law (H8) is
+ * FALSIFIED. A free insn_count channel exists: LOOP-CARRIED arithmetic on a
+ * local whose only use is post-loop survives cse1/delete_dead_from_cse
+ * (which is what killed every earlier attempt), is counted by
+ * count_loop_regs_set, and is then deleted inside loop_optimize by biv
+ * elimination for ZERO emitted bytes. Sweep: 32 balanced `z += c; z -= c;`
+ * pairs take insn_count 56 -> 121 with the emitted function BYTE-IDENTICAL at
+ * every intermediate k. At insn_count >= 120 the 0x91A2B3C5 movable is
+ * declined and the whole function matches: score 0, 104 == 104.
+ * That exact form is an INADMISSIBLE CHEAT (see
+ * rejected/balanced-biv-noise-64-insns-d0-but-inadmissible.c) and was NOT
+ * submitted. This body remains the honest ordinary-C best at 15. The function
+ * is now a SPELLING problem with an exact target -- see hypotheses.md
+ * H9/K17/K18 and the s6 frontier.
+ *
  * Remaining d15 residual = ONE loop.c decision + its seat fallout:
  *  build hoists the 0x91A2B3C5 (/1800 magic) const load to the preheader
  *  (movable, savings 1, life 1, threshold 122 vs insn_count ~56); target has it
