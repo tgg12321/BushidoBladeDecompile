@@ -1,0 +1,55 @@
+{
+ "func": "func_80016E60",
+ "file": "ings",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 30,
+   "modality": "recon",
+   "headline": "recon: honest floor 30 (from 46) - LICM hoist of `1<<n` defeated by a multi-set mask, ?:-arms match; residual = env/select global.c priority seat swap (do-while(0) carrier measures 11, mechanism confi"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Honest env ref/livelen lever: a spelling of the special-arm argument or the if/else that reduces RTL insns between env's birth and PutDrawEnv on both paths by >=9 (livelen 26 -> <=17), or a genuine 4th in-loop use of env",
+   "mechanism": "global.c priority floor_log2(refs)*refs/livelen; flow.c reg_live_length counts insns on every path",
+   "next_probe": "rewrite `select | (D_800A3788 << 16)` / the two func_8005C8A8 calls (e.g. one call with ?: args) and re-extract the RA model; compare env livelen"
+  },
+  {
+   "hypothesis": "Bit-arm seats: shift/mask local (single-block) but seated before the chain, e.g. block-scoped `mask` declared before `shift` with `mask <<= select - 3`, or a chain spelling that leaves v0/v1 busy during lbu..sb",
+   "mechanism": "local-alloc.c qty_compare order + find_free_reg first-free; global.c hard_conflicts from the local-allocated chain",
+   "next_probe": "run local_extract on each variant and read the blk rows for the arm block; target order = shift, mask, chain"
+  },
+  {
+   "hypothesis": "If H4's honest levers measure dead next session, the do-while(0) carrier (v5, 11) is the sanctioned last-resort form for the env seat (owner ruling 2026-07-06, .claude/rules/do-while-zero-exception.md), pending the bit-arm seats",
+   "mechanism": "flow.c loop-note ref weighting feeding global.c allocno_compare (same mechanism as func_800174F4's shipped FAKE in this file)",
+   "next_probe": "only after H4 (ii)/(iii) are measured dead; then FAKE-annotate v5 and attack H5 on top of it"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "A `goto loop;` spelling of the main loop, measured on the asm-until-matched chassis with no FAKE constructs present.",
+   "kill_scope": "instance",
+   "measured_on": "asm-until-matched chassis (INCLUDE_ASM main, 0 rules), no FAKE constructs, body_v2_goto.c",
+   "predicate_cite": "",
+   "result": "54 (worse than v1's 46): exit-arm layout changes, hoist not the governing factor"
+  },
+  {
+   "session": 1,
+   "statement": "A pure copy alias `disp = env; PutDispEnv(disp + 0x5C);` measured as a ref lift for env's global.c priority, on the asm-until-matched chassis with no FAKE present.",
+   "kill_scope": "instance",
+   "measured_on": "asm-until-matched chassis, no FAKE constructs, body_v8_copyalias.c",
+   "predicate_cite": "",
+   "result": "30 unchanged; inert"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-02T06:34:58.474415+00:00"
+}
