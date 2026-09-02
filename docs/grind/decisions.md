@@ -20478,3 +20478,96 @@ RULING: the gte_ldv0 macro-body pack IS inside the sanctioned island unit; the b
 ## 2026-09-02 07:37 — func_800300B4 — layer-1 review — **FAIL**
 
 Island 2's gte_ldv0 SVECTOR pack (lhu/lhu/sll/or) is C-expressible data processing swallowed into a cop2 asm template in violation of cluster condition 3, admitted only via a same-pipeline 'Judge ruling' that reinterprets the cluster's own scope on GCC-internals grounds -- an action judge-sole-gate rule 4 explicitly forbids and that was never logged to the family-extension ledger.
+
+## 2026-09-02 — func_800300B4 (src/code6cac_b.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Filed by grind session s1d (recon modality) as a PROOF-OF-FORECLOSURE RECORD. This is not a
+question and not a decision packet. It is the integration-handoff shape: **the bytes are proven**
+(sandbox 0, 83/83, and full-build SHA1 == oracle with the candidate in place, evidence.md s1/s1c/s1d),
+and the sole blocker is an **owner-only family-scope question** that judge-sole-gate rule 4 forbids
+any agent or the Judge to answer. The driver forecloses silently; an owner ruling on the question
+below re-activates the item with `memory/grind/func_800300B4/candidate.c` unchanged.
+
+### What is proven
+
+- `memory/grind/func_800300B4/candidate.c` applied over the `INCLUDE_ASM` line: `canonical` ASM-PARTIAL
+  (11/83 cop2), `sandbox func_800300B4 --disable all` = 0 (83/83, rules_dropped 0) re-measured this session
+  on HEAD 924b9410 (`tmp/grind/func_800300B4/s1/sandbox_s1d.txt`); `verify-oracle` ok in s1
+  (build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa). src restored to `INCLUDE_ASM` afterwards.
+- One FAKE construct, a single-level `do { gte_stlvnl island } while (0);` wrap, annotated
+  (what + mechanism flow.c loop_depth ref weighting -> local-alloc.c qty_compare_1 + lever-exhaustion
+  pointer). `tools/fake_ablate.py`: keep-all 0, drop-1 13 (`scans_s1d.txt`). The layer-1 reviewer's
+  own 07:20 FAIL called this wrap "otherwise conforming".
+- 72 of 83 instructions are ordinary C. The other 11 are cop2 transfers inside three PsyQ libgte
+  macro-body islands (gte_SetRotMatrix, gte_ldv0 + gte_rtv0, gte_stlvnl), each entered through the
+  cluster's redundant `addu $t4,<reg>,$zero` copy (asm/funcs/func_800300B4.s:19,30,42) with splat
+  handwritten tags on the cop2 ops.
+
+### The blocker — cluster condition 3 vs an SDK macro body (owner-only)
+
+Island 2 is the PsyQ `gte_ldv0` macro body: `move $12,%0; lhu $14,4($12); lhu $13,0($12);
+sll $14,$14,16; or $13,$13,$14; mtc2 $13,$0; lwc2 $1,8($12); nop; nop`. The target does exactly
+this through the redundant copy (asm/funcs/func_800300B4.s:29-36: `addiu $v0,$s3,0x2C; addu
+$t4,$v0,$zero; lhu $t6,4($t4); lhu $t5,0($t4); sll; or; mtc2 $t5,$0`).
+
+- Layer-1 FAIL 2026-09-02 07:20 (decisions.md:20470) and 07:37 (:20478): the lhu/lhu/sll/or is
+  "C-expressible data processing swallowed into a cop2 asm template", violating condition 3
+  ("in-island GPR instructions limited to the cop2 addressing preamble"). The 07:37 FAIL struck the
+  Judge's 07:30 PASS ruling (:20474) as a rule-4 scope reinterpretation and named it a "genuine
+  family-scope question". Mechanical bans now in force for this function: the island-2 block, the
+  07:30 ruling, and the func_8002E838 / func_80031890 precedent citations.
+- The reviewer's prescribed alternative (pack in C) is measured dead as a class:
+  `memory/grind/func_800300B4/hypotheses.md` H4, sandbox 19 in both spellings
+  (`rejected/pack-in-c-island2-lv-index-vregs-off-s2-19.c`, `-u16-reads-vregs-off-s2-19.c`,
+  diffs `tmp/grind/func_800300B4/s1/diff_packC_{A,B}.txt`). Predicate: the target's halfword loads
+  are based on $t4, a register that exists only as the macro's asm-internal copy (no C handle), and
+  its temps are $t5/$t6 while $v0/$v1 are free — local-alloc.c:2249 find_free_reg scans hard regs in
+  numeric order (config/mips/mips.h has no REG_ALLOC_ORDER), so no C temp reaches $13/$14.
+- Every other partition is closed: each pack instruction is either in C (dead, H4) or in asm (banned);
+  a respelled asm pack is the same construct under the ban's any-spelling clause; a
+  `register ... asm("$12")` pin is a catalog cheat; a whole-body grant is outside the cluster door
+  (canonical gate: ASM-PARTIAL).
+
+Facts on main relevant to the owner's audit (recorded as facts, not spent as precedent — the
+citations are banned for this function's self-vet):
+- `inline_asm_canonical.txt:367` (func_800203B4, owner GRANT 2026-09-01) authorizes by name
+  "gte_ldv0 (move $12,%0; lhu VX0/VY0 pack; mtc2 $0; lwc2 $1; 2 explicit GTE load-delay nops)" and
+  records the islands were "authorized AS UNITS after the pure-C respelling was measured unable to
+  close". The widened-anchor grant states its 4-point check (incl. condition 3) is "unchanged".
+- The character-identical island is on main in cluster siblings func_8002E838
+  (src/code6cac_b.c:1240-1258, commit 49d6927e, Judge PASS decisions.md:20262) and func_80031890
+  (commit 1a2e49e4, Judge PASS :20268), both rows in `tools/grinder/owner_cluster_grants.txt`.
+- func_800300B4 is itself an enumerated cluster member (`owner_cluster_grants.txt:23`;
+  cop2-addressing-preamble-cluster.md:85,97,125).
+
+### Gate evidence (standing ruling 2026-07-27 shape)
+
+- (a) canonical-asm: `tools/scan_hand_coded.py --single func_800300B4` fires S4 only (no S1/S2/S6),
+  the known LOW artifact for every GTE-macro carrier; the function's door is the OWNER-CLUSTER
+  registry row, which the driver's grant helper honours. The door is open; condition 3's reading is
+  what is contested.
+- (b) SOTN-master precedent: `docs/reference/sotn-construct-index.md` has no cop2/GTE-island
+  category (SOTN consumes the SDK macros through its vendored inline_c.h); the index is silent, not
+  negative. In-repo precedent is the func_800203B4 owner grant text quoted above.
+
+### Re-activation triggers (any one re-opens the item unchanged)
+
+1. An owner ruling that cluster condition 3 admits an SDK GTE-macro body whose GPR instructions read
+   through the macro's own $t4 copy (the reading the func_800203B4 grant text already embodies).
+   Operator steps then: apply `memory/grind/func_800300B4/candidate.c`, re-run `sandbox --disable all`
+   (expect 0), fresh layer-2 cheat-reviewer, `verify-oracle --rebuild`, driver writes the
+   owner-cluster `inline_asm_canonical.txt` row (COMPLETED-INLINE-ASM-CANONICAL, as func_8002E838),
+   `queue done`.
+2. An owner ruling that the func_800203B4 / func_8002E838 / func_80031890 islands are citable
+   precedent for cluster siblings (lifts the citation ban).
+3. A toolchain finding that lets GCC 2.7.2 base a C-side halfword pair on the asm-internal $t4 copy
+   with temps in $13/$14 while $2/$3 are free (voids H4's predicate).
+
+**Evidence pointers:** `memory/grind/func_800300B4/{evidence.md (s1, s1b, s1c, s1d), hypotheses.md
+(H1-H8), candidate.c, self_vet.md, rejected/}`; `tmp/grind/func_800300B4/s1/{sandbox_s1d.txt,
+canonical_s1d.txt, scans_s1d.txt, qtydbg_e2_dowhile.txt, diff_packC_A.txt, diff_packC_B.txt}`;
+docs/grind/borderline.md 2026-09-02 func_800300B4 policy-question entry.
+
+## 2026-09-02 07:45 — func_800300B4 — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s1 of func_800300B4, which the driver DISCARDED as invalid (owner-gated: the standing-ruling terminal disposition requires `escalation` modality (driver-declared exhaustion), not `recon`. A dead axis in this modality is a `progress` outcome with the kills banked ΓÇö the ladder still has untried modalities.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
