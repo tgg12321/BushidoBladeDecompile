@@ -1461,3 +1461,4 @@
 - 2026-09-02 01:27 func_8002E838 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-02 01:34 func_80031890 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-02 02:02 func_80016E60 s1 [recon] floor=30: recon: honest floor 30 (from 46) - LICM hoist of `1<<n` defeated by a multi-set mask, ?:-arms match; residual = env/select global.c priority seat swap (do-while(0) carrier measures 11, mechanism confirmed) + bit-arm local/global seat split
+- 2026-09-02 02:23 func_80016E60 s2 [structural] floor=30: Honest env ref-lift found (split-init accumulation swaps the seat with no FAKE) and the bit-arm shift seat solved; the env-livelen route is measured dead.

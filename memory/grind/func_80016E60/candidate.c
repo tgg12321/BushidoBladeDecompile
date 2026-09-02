@@ -1,14 +1,21 @@
-/* func_80016E60 candidate — session 1 (recon), honest floor 30 on the
- * asm-until-matched chassis (INCLUDE_ASM main, 0 rules). Pure C, no FAKE.
- * Residuals vs target (see evidence.md E-s1-5): (1) env/select seat swap
- * (target env=$s0, select=$s1; ours reversed) — global.c priority: env
- * refs 6 / livelen 26 -> pri 4615 < select 27/157 -> 6878; needs env >= 8
- * weighted refs (one more real use inside the loop) or livelen <= 17.
- * (2) bit-arm seats: target shift=$v0, mask=$v1, lbu/or chain=$a0; ours
- * chain=$v0 (local-alloc first-free), mask=$v1, shift=$a0.
- * The do-while(0) carrier on {PutDispEnv,PutDrawEnv} (tmp/grind/func_80016E60/
- * s1/body_v5_dowhile.c) measures 11 and closes residual (1) — recorded as a
- * mechanism measurement, NOT yet a submission (lever exhaustion incomplete). */
+/* func_80016E60 candidate - honest floor 30 on the asm-until-matched chassis
+ * (INCLUDE_ASM main, 0 rules). Pure C, no FAKE construct. Re-measured 30 in
+ * session 2; chassis unchanged.
+ *
+ * Residuals vs target (evidence.md E-s1-5, E-s2-2..E-s2-7):
+ *  (1) env/select seat swap - global.c priority. env has exactly 3 byte-visible
+ *      refs and its birth is pinned before ClearOTagR (its addu sits in that
+ *      call's delay slot with CALL_USED operands), so livelen >= ~23 and the
+ *      <=17 route is measured dead. Two ways out are measured:
+ *        - HONEST: split-init accumulation (rejected/splitinit-env-refs10-*.c)
+ *          lifts flow refs 6->10, wins the seat (pri 7317 > 6878) and scores 33 -
+ *          combine parks one operand in env's own reg, so the set's shape and the
+ *          three reorg back-edge peels are lost.
+ *        - FAKE: the s1 do-while(0) carrier (carrier_v5_dowhile.c) scores 11.
+ *  (2) bit-arm seats - block-scoping `shift` alone lands the target's
+ *      `addiu $v0,$s1,-3` exactly (rejected/blkshift-fnmask-blkbits-*.c, 14);
+ *      what remains there is a 2-way mask/chain swap.
+ */
 void func_80016E60(u8 *arg0, s32 arg1) {
     u8 *ot[2];
     u8 *env;
