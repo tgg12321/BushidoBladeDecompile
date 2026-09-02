@@ -561,3 +561,8 @@ COMPLETED-C on 2026-09-02 01:27/01:34 — reclassified COMPLETED-INLINE-ASM-CANO
 rows for func_80031890 + func_8002FF20 (named in the 2026-09-01 widened-anchor grant);
 `grant_rescan --apply` on func_800300B4 + func_8002FF20 (bans superseded, returned to active).
 Their candidates still pass layer-1, the Judge and full-build SHA1 before landing.
+
+## 2026-09-02 — func_8002FF20 — canonical-asm-grant
+category: canonical-asm-grant
+evidence: scan_hand_coded --single func_8002FF20 tier=OWNER-CLUSTER (cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-02)) (driver-verified); judge ESCALATE packet in docs/grind/decisions.md (2026-09-02)
+disposition taken: inline_asm_canonical.txt entry written by the driver per owner ruling 2026-08-18; function stays ACTIVE for canonical-asm integration.
