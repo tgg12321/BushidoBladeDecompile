@@ -46,7 +46,8 @@ class TestValidateOutcome(unittest.TestCase):
         base = {
             "result": "progress", "floor": 12, "headline": "killed h1",
             "hypotheses": [{"statement": "s", "mechanism": "m", "probe": "p",
-                            "result": "floor 14 -> 12", "verdict": "KILLED"}],
+                            "result": "floor 14 -> 12", "verdict": "KILLED",
+                            "kill_scope": "instance", "measured_on": "test chassis"}],
             "evidence": ["fact"], "frontier": [{"hypothesis": "h", "mechanism": "m",
                                                 "next_probe": "n"}],
             "artifacts": [], "ruling_question": "",
@@ -64,7 +65,9 @@ class TestValidateOutcome(unittest.TestCase):
 
     def test_progress_needs_measured_hypothesis(self):
         bad = self.good(hypotheses=[{"statement": "s", "mechanism": "m", "probe": "p",
-                                     "result": "it seems hard", "verdict": "KILLED"}])
+                                     "result": "it seems hard", "verdict": "KILLED",
+                                     "kill_scope": "instance",
+                                     "measured_on": "test chassis"}])
         ok, why = G.validate_outcome(bad, "structural", self.root)
         self.assertFalse(ok)  # no digits in result => no measurement
 
@@ -690,6 +693,91 @@ class TestCitedRuleScopes(unittest.TestCase):
         self.assertIn('  - slug-a: "' + "x" * 300 + '…" (.claude/rules/slug-a.md)', out)
         short = G.render_rule_scopes([("slug-b", "short desc")])
         self.assertIn('  - slug-b: "short desc" (.claude/rules/slug-b.md)', short)
+
+
+class TestKillHygiene(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        G.init_ledger(self.root, "func_X", "stem")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def killed(self, floor=15, **kw):
+        h = {"statement": "tail duplication into 3 arms", "mechanism": "flow.c reg_n_refs",
+             "probe": "sandbox", "result": "flat 15", "verdict": "KILLED",
+             "kill_scope": "instance", "measured_on": "HEAD chassis, staged read L3 present"}
+        h.update(kw)
+        return {"result": "progress", "floor": floor, "headline": "h",
+                "hypotheses": [h], "evidence": ["e"], "frontier": [], "artifacts": []}
+
+    def test_instance_kill_valid(self):
+        ok, why = G.validate_outcome(self.killed(), "structural", self.root)
+        self.assertTrue(ok, why)
+
+    def test_killed_requires_kill_scope(self):
+        o = self.killed(); del o["hypotheses"][0]["kill_scope"]
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertFalse(ok); self.assertIn("kill_scope", why)
+
+    def test_killed_requires_measured_on(self):
+        o = self.killed(measured_on="")
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertFalse(ok); self.assertIn("measured_on", why)
+
+    def test_class_claim_wording_needs_class_scope(self):
+        o = self.killed(statement="tail duplication is unreachable by any natural geometry")
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertFalse(ok); self.assertIn("class-level claim", why)
+
+    def test_class_kill_needs_predicate_cite(self):
+        o = self.killed(kill_scope="class")
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertFalse(ok); self.assertIn("predicate_cite", why)
+
+    def test_class_kill_with_cite_valid(self):
+        o = self.killed(kill_scope="class", predicate_cite="tools/gcc-2.7.2/loop.c:705",
+                        statement="no movable can pass with n_times_set != 1 — all forms")
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertTrue(ok, why)
+
+    def test_confirmed_needs_no_scope(self):
+        o = self.killed(verdict="CONFIRMED"); del o["hypotheses"][0]["kill_scope"]
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertTrue(ok, why)
+
+    def test_apply_records_kills_structurally(self):
+        G.apply_outcome(self.root, "func_X", self.killed(), "structural")
+        st = G.load_state(self.root, "func_X")
+        self.assertEqual(len(st["kills"]), 1)
+        k = st["kills"][0]
+        self.assertEqual(k["session"], 1)
+        self.assertEqual(k["kill_scope"], "instance")
+        self.assertEqual(k["measured_on"], "HEAD chassis, staged read L3 present")
+        hyp = open(os.path.join(self.root, "memory", "grind", "func_X", "hypotheses.md"),
+                   encoding="utf-8").read()
+        self.assertIn("- kill_scope: instance", hyp)
+        self.assertIn("- measured_on: HEAD chassis, staged read L3 present", hyp)
+
+    def test_legacy_state_without_kills_key_still_applies(self):
+        st = G.load_state(self.root, "func_X"); del st["kills"]; G.save_state(self.root, "func_X", st)
+        G.apply_outcome(self.root, "func_X", self.killed(), "structural")
+        self.assertEqual(len(G.load_state(self.root, "func_X")["kills"]), 1)
+
+    def test_brief_reaudit_block_on_flat_floor(self):
+        for _ in range(3):
+            G.apply_outcome(self.root, "func_X", self.killed(), "structural")
+        brief = G.build_brief(self.root, "func_X", "permuter", "/tmp/o.json")
+        self.assertIn("KILL RE-AUDIT REQUIRED", brief)
+        self.assertIn("tail duplication into 3 arms", brief)
+
+    def test_brief_no_reaudit_while_floor_moves(self):
+        G.apply_outcome(self.root, "func_X", self.killed(floor=20), "structural")
+        G.apply_outcome(self.root, "func_X", self.killed(floor=15), "structural")
+        brief = G.build_brief(self.root, "func_X", "permuter", "/tmp/o.json")
+        self.assertNotIn("KILL RE-AUDIT REQUIRED", brief)
+        self.assertIn("## KILL LEDGER", brief)
 
 
 if __name__ == "__main__":

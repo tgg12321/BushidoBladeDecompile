@@ -486,7 +486,8 @@ def init_ledger(root, func, file_stem, origin="queue"):
         save_state(root, func, {
             "func": func, "file": file_stem, "session_count": 0,
             "current_modality": None, "floor_history": [], "frontier": [],
-            "judge_constraints": [], "banned_constructs": [], "ladder_skip": 0,
+            "judge_constraints": [], "banned_constructs": [], "kills": [],
+            "ladder_skip": 0,
             "pending_fixup": None, "origin": origin, "created": _now(),
         })
     for name, header in (("evidence.md", f"# Evidence bank — {func}\n"),
@@ -508,16 +509,63 @@ def append_evidence(root, func, text, session=None):
 def append_hypothesis(root, func, h, session=None):
     p = os.path.join(ledger_dir(root, func), "hypotheses.md")
     tag = f"s{session}" if session else "?"
+    extra = ""
+    if h.get("verdict") == "KILLED":
+        extra = (f"- kill_scope: {h.get('kill_scope', 'instance')}\n"
+                 f"- measured_on: {h.get('measured_on', '?')}\n")
+        if h.get("predicate_cite"):
+            extra += f"- predicate_cite: {h['predicate_cite']}\n"
     with open(p, "a", encoding="utf-8", newline="\n") as f:
         f.write(f"\n## [{tag}] {h.get('statement', '?')}\n"
                 f"- mechanism: {h.get('mechanism', '?')}\n"
                 f"- probe: {h.get('probe', '?')}\n"
                 f"- result: {h.get('result', '?')}\n"
-                f"- verdict: {h.get('verdict', '?')}\n")
+                f"- verdict: {h.get('verdict', '?')}\n" + extra)
 
 
 def _has_measurement(text):
     return any(ch.isdigit() for ch in str(text))
+
+
+# ── Kill hygiene (2026-09-01 post-mortem) ────────────────────────────────────
+# Four of six 20+-session runs were prolonged by a KILLED hypothesis measured
+# on one confounded instance (3 of 12 arms with a staged read; a lever under a
+# FAKE carrier on the same pseudo; a loop.c predicate missing one term) and
+# then cited by later sessions as class-level law. A kill now declares its
+# scope: `instance` kills are chassis-relative and re-testable; `class` kills
+# must cite the gate predicate by file:line.
+KILL_SCOPES = ("instance", "class")
+_CLASS_CLAIM_RE = re.compile(
+    r"\b(any (natural )?(geometry|form|spelling|shape)|every (form|spelling|chassis)|"
+    r"all (forms|spellings|chassis)|no natural|unreachable|impossible|permanently|"
+    r"foreclosed|closed[- ]form|cannot (be|reach)|by construction)\b", re.I)
+
+
+def _validate_kill(h):
+    """(ok, reason) for one KILLED hypothesis dict."""
+    scope = str(h.get("kill_scope", "")).strip().lower()
+    if scope not in KILL_SCOPES:
+        return False, ("KILLED hypothesis lacks kill_scope ('instance' or 'class'): "
+                       f"{str(h.get('statement', ''))[:80]!r}")
+    if not str(h.get("measured_on", "")).strip():
+        return False, ("KILLED hypothesis lacks measured_on (the chassis + FAKE-construct "
+                       "state it was measured under, e.g. 'HEAD chassis, L3 carrier present'): "
+                       f"{str(h.get('statement', ''))[:80]!r}")
+    text = f"{h.get('statement', '')} {h.get('result', '')}"
+    if scope == "instance" and _CLASS_CLAIM_RE.search(text):
+        m = _CLASS_CLAIM_RE.search(text).group(0)
+        return False, (f"KILLED hypothesis makes a class-level claim ({m!r}) with "
+                       "kill_scope='instance'. Either narrow the wording to the instance you "
+                       "measured (which arms, which chassis, which FAKE state) or set "
+                       "kill_scope='class' and cite the gate predicate in predicate_cite.")
+    if scope == "class":
+        cite = str(h.get("predicate_cite", "")).strip()
+        if not cite or not _CITATION.search(cite):
+            return False, ("class-scope KILLED hypothesis requires predicate_cite as file:line "
+                           "(e.g. tools/gcc-2.7.2/loop.c:705) naming the gate predicate "
+                           "the whole class fails; a search that came back empty is an "
+                           "instance kill, not a class kill.")
+    return True, ""
 
 
 def validate_outcome(o, modality, root, func=None):
@@ -605,6 +653,11 @@ def validate_outcome(o, modality, root, func=None):
         if not o.get("evidence"):
             return False, "recon must bank evidence"
         return True, ""
+    for h in o.get("hypotheses", []):
+        if h.get("verdict") == "KILLED":
+            ok, why = _validate_kill(h)
+            if not ok:
+                return False, why
     proven = [h for h in o.get("hypotheses", [])
               if h.get("verdict") in ("CONFIRMED", "KILLED")
               and _has_measurement(h.get("result", ""))]
@@ -737,6 +790,15 @@ def apply_outcome(root, func, o, modality):
     for e in o.get("evidence", []):
         append_evidence(root, func, e, session=n)
     st["session_count"] = n
+    kills = st.setdefault("kills", [])
+    for h in o.get("hypotheses", []):
+        if h.get("verdict") == "KILLED":
+            kills.append({"session": n,
+                          "statement": str(h.get("statement", ""))[:200],
+                          "kill_scope": str(h.get("kill_scope", "instance")),
+                          "measured_on": str(h.get("measured_on", ""))[:200],
+                          "predicate_cite": str(h.get("predicate_cite", ""))[:120],
+                          "result": str(h.get("result", ""))[:120]})
     st["current_modality"] = modality
     st["floor_history"].append({"session": n, "floor": o.get("floor"),
                                 "modality": modality,
@@ -1304,6 +1366,31 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
         scopes = render_rule_scopes(cited_rule_scopes(root, func))
     except Exception:
         scopes = ""
+    kills = st.get("kills") or []
+    inst = [k for k in kills if k.get("kill_scope") != "class"]
+    cls = [k for k in kills if k.get("kill_scope") == "class"]
+    floors_only = [e.get("floor") for e in st["floor_history"][-3:]]
+    flat3 = (len(floors_only) == 3 and all(isinstance(f, int) for f in floors_only)
+             and len(set(floors_only)) == 1)
+    kill_block = ("\n## KILL LEDGER\n"
+                  f"  instance kills (chassis-relative, RE-TESTABLE): {len(inst)}\n"
+                  f"  class kills (predicate-cited, standing): {len(cls)}\n")
+    if inst:
+        kill_block += "  newest instance kills:\n" + "\n".join(
+            f"    s{k['session']}: {k['statement'][:110]}\n"
+            f"        measured on: {k['measured_on'][:110]}"
+            for k in inst[-6:]) + "\n"
+    if flat3 and inst:
+        kill_block += (
+            "\n## KILL RE-AUDIT REQUIRED (floor flat 3 sessions; instance kills exist)\n"
+            "An instance kill is only as good as the chassis and FAKE state it was measured\n"
+            "under. Before ANY new probe this session: pick the instance kill whose form sat\n"
+            "closest to the target, and re-measure it (a) on the CURRENT chassis and (b) with\n"
+            "every FAKE construct ablated (`python3 tools/fake_ablate.py --func " + func +
+            " --file " + st['file'] + " --candidate <form.c>`). A lever measured 'inert' while\n"
+            "a FAKE carrier occupied its target pseudo is not a kill (func_8002EA24 s8);\n"
+            "a lever killed on 3 of 12 arms is not a class kill (func_800324D0 s6). Record\n"
+            "the re-measurement as a hypothesis either way.\n")
     return f"""# GRIND SESSION — {func} (src/{st['file']}.c)
 
 You are session {st['session_count'] + 1} of a cumulative grind. Your mandated
@@ -1316,7 +1403,7 @@ modality for THIS session is: **{modality}**
 ## Ledger state (your inheritance — do not re-derive any of it)
 Floor history:
 {floors}
-
+{kill_block}
 Live frontier:
 {frontier}
 
@@ -1343,10 +1430,13 @@ memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting
 - NARRATION vs ARTIFACTS. Keep your own prose terse: fragments over sentences, no preamble, no recap of what a tool result already shows, no restating the plan each turn. This does NOT apply to what you WRITE: evidence.md, hypotheses.md, candidate.c header comments, any docs/grind/decisions.md entry, and the outcome JSON stay full, precise, self-contained prose — they are the owner's audit trail and the next session's entire inheritance, and a terse ledger costs far more than it saves by forcing re-derivation.
 - When finished, write your outcome JSON (single object) to EXACTLY this path: {outcome_path}
   Schema: {{"result": "progress"|"candidate-ready"|"ruling-request"|"owner-gated", "floor": <int>,
-  "headline": "<one line>", "hypotheses": [{{"statement","mechanism","probe","result","verdict":"CONFIRMED"|"KILLED"}}],
+  "headline": "<one line>", "hypotheses": [{{"statement","mechanism","probe","result","verdict":"CONFIRMED"|"KILLED",
+     "kill_scope":"instance"|"class" (KILLED only, REQUIRED), "measured_on":"<chassis + FAKE state>" (KILLED only, REQUIRED),
+     "predicate_cite":"<file:line of the gate predicate>" (class kills only, REQUIRED)}}],
   "evidence": ["fact ..."], "frontier": [<=3 of {{"hypothesis","mechanism","next_probe"}}],
   "artifacts": ["tmp/grind/..."], "ruling_question": "", "escalation_ref": ""}}
 - "candidate-ready" means: sandbox distance 0 THIS session, edits in place in src/. The driver re-verifies bytes itself — never claim it speculatively.
+- KILL SCOPE IS MANDATORY. `instance` = "this form, on this chassis, with these FAKE constructs present, measured N" — the default, and re-testable. `class` = "every form fails predicate P" and needs `predicate_cite` as file:line. Wording like "unreachable", "any natural geometry", "all forms", "foreclosed", "by construction" on an instance kill makes the session INVALID: say what you measured, not what you inferred.
 - SELF-VET IS MANDATORY FOR candidate-ready. Before you write the outcome JSON, write memory/grind/{func}/self_vet.md using the template in your role prompt: a CONSTRUCTS: line, the six cheat-checklist tests answered IN WRITING for every construct in your diff, a SANCTIONED-FAMILY-CLAIMS: section (each claimed family carrying its rule's SCOPE sentence quoted VERBATIM plus a PRECEDENT as file:line or a commit hash), and an ANNOTATION-CONFORMANCE: line. The driver checks all of that mechanically and DISCARDS a candidate-ready session that lacks it — the same disposition as a scope violation. Then a fresh adversarial cheat-reviewer (layer 1) rules on your diff BEFORE the Judge is spawned; a layer-1 FAIL bounces straight back without a Judge cycle. Writing the vet honestly is how you pass both: if you cannot quote a scope sentence and cite a precedent for a family you are claiming, you do not have that family, and the correct outcome is `ruling-request`, not a submission.
 - "ruling-request" is for a construct you cannot classify (sanctioned SOTN family vs cheat; genuine hand-written-asm evidence). Ask a precise question.
 - "owner-gated" is for when every remaining sanctioned axis is measured dead. FILE the entry in docs/grind/decisions.md YOURSELF THIS session (docs/grind/ is in your allowed surface), THEN return owner-gated with escalation_ref citing it — you do not wait for an entry to pre-exist, you create it. The driver verifies the entry names {func} and FORECLOSES the function silently (owner ruling 2026-08-31, .claude/rules/ordinary-c-judge-decidable.md — a recorded disposition, never a question to the owner) so the queue advances. Never use it to defer work that is still grindable (a floor still dropping is grindable). This is the mandated outcome in `escalation` modality.
