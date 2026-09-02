@@ -875,6 +875,19 @@ function Test-AgentApiError([string]$AgentLog) {
     return ($code -ge 500 -or $code -eq 429)
 }
 
+function Get-AgentSpawnException([string]$AgentLog) {
+    # Returns the launch-exception text if the last spawn never started the CLI
+    # (terminal_reason=spawn_exception, written by Invoke-GrindAgent), else ''.
+    # A launch exception is a DRIVER/HOST defect (argv limit, missing binary,
+    # broken PATH), not weather — retrying it forever can never succeed.
+    if (-not (Test-Path $AgentLog)) { return '' }
+    try {
+        $j = (Get-Content $AgentLog -Tail 1 -ErrorAction Stop) | ConvertFrom-Json
+        if ([string]$j.terminal_reason -eq 'spawn_exception') { return [string]$j.result }
+    } catch { }
+    return ''
+}
+
 function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
                            [string]$RoleFile, [string]$AgentModel,
                            [string]$MockScript, [string]$Func,
@@ -886,12 +899,20 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
             Remove-Item Env:\GRIND_BRIEF_PATH, Env:\GRIND_OUTCOME_PATH -ErrorAction SilentlyContinue
         }
     } else {
-        # Fleet-proven invocation: task text directly to -p via array splat, inside a
-        # Job so we get a wall-clock timeout.
+        # Task text goes to the CLI on STDIN, never as an argv element (2026-09-02
+        # incident: func_800300B4's brief grew past 32,767 chars after ten sessions,
+        # and Windows refused to launch `claude -p <brief>` — "The filename or
+        # extension is too long". The exception died inside the Job, the agent.log
+        # was never rewritten, and the driver read the 0-second death as a
+        # usage-limit blip, retrying at the 30-min cap indefinitely.) STDIN has no
+        # length limit; briefs only grow. Inside a Job so we get a wall-clock timeout.
         $task = (Get-Content $BriefPath -Raw -Encoding utf8) +
             "`n`nWhen finished, write your outcome JSON to this exact absolute path (overwrite it):`n  $OutcomePath`n"
         $sid = [guid]::NewGuid().ToString()
         $t0 = Get-Date
+        # A stale agent.log from the previous spawn must never masquerade as this
+        # spawn's diagnostics (it hid the launch failure above for 8 attempts).
+        Remove-Item ($OutcomePath + '.agent.log') -ErrorAction SilentlyContinue
         $job = Start-Job -ScriptBlock {
             param($Task, $RoleFile, $Model, $Sid, $Cwd, $AgentLog, $Func)
             Set-Location $Cwd
@@ -912,17 +933,44 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
             # useless to a decomp session but their tool surface rides in the baseline
             # of every turn, and a turn's context is re-read on all later turns. Also
             # removes the chance a session wanders into a browser/editor tool.
-            $claudeArgs = @('-p', $Task, '--append-system-prompt-file', $RoleFile,
+            # `-p` with no inline prompt reads the task from stdin (see the
+            # argv-length incident note above).
+            $claudeArgs = @('-p', '--append-system-prompt-file', $RoleFile,
                             '--permission-mode', 'bypassPermissions', '--model', $Model,
                             '--strict-mcp-config',
                             '--session-id', $Sid, '--output-format', 'json')
             # Keep the CLI's result line — it is the only diagnostic when a spawn
             # dies instantly (usage limit, auth, API error). Overwritten per spawn.
-            ($null | & claude @claudeArgs 2>&1 | Out-String) | Set-Content $AgentLog -Encoding utf8
+            # A LAUNCH exception (process never started) is written in the same
+            # place as a JSON line with terminal_reason=spawn_exception so the
+            # driver can tell "never launched" from "launched and hit the API".
+            try {
+                $prev = [Console]::OutputEncoding
+                [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+                $OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+                ($Task | & claude @claudeArgs 2>&1 | Out-String) | Set-Content $AgentLog -Encoding utf8
+                [Console]::OutputEncoding = $prev
+            } catch {
+                @{ terminal_reason = 'spawn_exception'; is_error = $true
+                   result = ("agent launch exception: " + $_.Exception.Message) } |
+                    ConvertTo-Json -Compress | Set-Content $AgentLog -Encoding utf8
+            }
         } -ArgumentList $task, $RoleFile, $AgentModel, $sid, $Root, ($OutcomePath + '.agent.log'), $Func
         if (-not (Wait-Job $job -Timeout ($SessionTimeoutMin * 60))) {
             Log "session TIMEOUT after $SessionTimeoutMin min; stopping job."
             Stop-Job $job -ErrorAction SilentlyContinue
+        }
+        # Belt and braces: if the Job itself died (script-block error outside the
+        # try above) and left no agent.log, bank its error text so the failure is
+        # never silent.
+        $agentLogPath = $OutcomePath + '.agent.log'
+        if (-not (Test-Path $agentLogPath)) {
+            $jobErr = ''
+            try { $jobErr = (Receive-Job $job -ErrorAction SilentlyContinue 2>&1 | Out-String).Trim() } catch { }
+            if (-not $jobErr) { $jobErr = "job state $($job.State), no output" }
+            @{ terminal_reason = 'spawn_exception'; is_error = $true
+               result = ("agent job failure: " + $jobErr) } |
+                ConvertTo-Json -Compress | Set-Content $agentLogPath -Encoding utf8
         }
         Remove-Job $job -Force -ErrorAction SilentlyContinue
         $script:LastAgentSeconds = ((Get-Date) - $t0).TotalSeconds
@@ -969,6 +1017,7 @@ function Revert-SessionEdits([string]$func = '') {
 
 $script:consecutiveInvalid = 0
 $script:spawnFails = 0
+$script:spawnExceptions = 0   # consecutive "CLI never launched" spawns (see Get-AgentSpawnException)
 # Scope-livelock tracking. Keyed per function+offending-paths and deliberately
 # NEVER reset — a repeat is a repeat even if healthy sessions happen in between.
 $script:scopeRejects = @{}
@@ -1134,10 +1183,36 @@ while ($true) {
         # usage-limit window circuit-broke an otherwise healthy grind).
         if (-not $o -and ($script:LastAgentSeconds -lt 120 -or (Test-AgentApiError "$outPath.agent.log"))) {
             $script:spawnFails++
+            Revert-SessionEdits $func
+            # (a) LAUNCH exception = the CLI process never started. That is a
+            # driver/host defect, not weather: two in a row circuit-break with
+            # the exception text in INCIDENT.md (2026-09-02: eight silent
+            # retries on an argv-too-long launch failure).
+            $spawnEx = Get-AgentSpawnException "$outPath.agent.log"
+            if ($spawnEx) {
+                $script:spawnExceptions++
+                Log "${func}: agent LAUNCH FAILURE ($([int]$script:LastAgentSeconds)s) — $spawnEx (consecutive $($script:spawnExceptions))."
+                if ($script:spawnExceptions -ge 2) {
+                    Circuit-Break "agent process failed to LAUNCH twice in a row on $func — not an API/usage-limit condition, retrying cannot help: $spawnEx"
+                }
+            } else {
+                $script:spawnExceptions = 0
+            }
+            # (b) Environmental failures (usage limit, API outage) back off, but
+            # NOT forever: 16 consecutive is ~7 hours at the 30-min cap — longer
+            # than any plan-limit window — so beyond that the cause is not weather.
+            if ($script:spawnFails -ge 16) {
+                Circuit-Break "agent spawn failed $($script:spawnFails) consecutive times on $func (~7h of backoff) — see $outPath.agent.log; not retrying indefinitely"
+            }
             $delay = [int][Math]::Min(1800, 60 * [Math]::Pow(2, $script:spawnFails - 1))
             Log "${func}: agent SPAWN/API FAILURE ($([int]$script:LastAgentSeconds)s, no outcome — usage-limit/API-error per agent.log; see $outPath.agent.log) — attempt $($script:spawnFails), retrying in ${delay}s."
-            Revert-SessionEdits $func
-            Start-Sleep -Seconds $delay
+            # Sleep in slices so a STOP request is honoured within a minute
+            # instead of after a full 30-min backoff.
+            $until = (Get-Date).AddSeconds($delay)
+            while ((Get-Date) -lt $until) {
+                if (Test-Path $StopFile) { break }
+                Start-Sleep -Seconds ([int][Math]::Min(30, [Math]::Max(1, ($until - (Get-Date)).TotalSeconds)))
+            }
             if ($Once) { break } else { continue }
         }
         # Preserve the discarded outcome for diagnosis — repeated invalids are
@@ -1171,6 +1246,7 @@ while ($true) {
     }
     $script:consecutiveInvalid = 0
     $script:spawnFails = 0
+    $script:spawnExceptions = 0
     $script:lastDiscardReason = $null
 
     # 7) route by result
