@@ -227,9 +227,10 @@ same work in fewer, bigger turns (owner policy 2026-07-20):
   `class` kill also needs `predicate_cite` — a file:line that EXISTS
   (`loop.c:705` resolves under tools/gcc-2.7.2/; repo paths work too).
   The driver discards an outcome whose STATEMENT uses class wording
-  ("unreachable", "impossible", "permanently", "any natural geometry/form/
-  spelling/shape", "every form/spelling/chassis", "all forms/spellings/
-  chassis", "no natural", "cannot ever", "cannot be made to") on an
+  ("unreachable", "impossible", "permanently", "any [natural] geometry/form/
+  spelling/shape" (the word "natural" is optional — bare "any form" trips
+  too), "every form/spelling/chassis", "all forms/spellings/chassis",
+  "no natural", "cannot ever", "cannot be made to") on an
   `instance` kill; `result` is free prose. State the arms you tried, the
   chassis, and which FAKE constructs were present. A lever measured with a
   FAKE carrier on the same pseudo, or on a partial instance (3 of 12 arms),
