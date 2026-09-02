@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80016E60",
-      "file": "ings",
-      "distance": 36,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "_spu_2pitch",
       "file": "main",
       "distance": 36,
@@ -1848,14 +1840,14 @@
     }
   ],
   "counts": {
-    "total": 207,
-    "active": 188,
+    "total": 206,
+    "active": 187,
     "by_status": {
-      "active": 188,
+      "active": 187,
       "foreclosed": 19
     },
     "by_verdict": {
-      "C": 159,
+      "C": 158,
       "ASM-PARTIAL": 29
     }
   }

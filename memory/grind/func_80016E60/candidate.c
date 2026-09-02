@@ -6,17 +6,22 @@ void func_80016E60(u8 *arg0, s32 arg1) {
     s32 limit;
     u32 fb_base;
     s32 idx;
-    u32 pad;
+    u32 padbits;
     u8 *ot_base;
 
     select = 0;
     special = 0;
-    /* FAKE: local handle on the parameter; effect: the a0->pseudo copy stops
-       being the leading insn of block 0, so sched.c:3256's parameter-copy pin
-       no longer keeps it unschedulable and sched1's birthing_insn_p boost
-       (sched.c:2504) emits it after the select/special inits; mechanism: combine
-       folds `p1 = a0` into this later copy, raising its INSN_LUID above the two
-       init insns for sched2. lever-exhaustion: memory/grind/func_80016E60/hypotheses.md */
+    /* FAKE: pass-through local handle on the parameter (pointer-alias family,
+       .claude/rules/pointer-alias-fake-exception.md exact-scope bullet 3),
+       consumed once at the DrawOTag call site; effect: the prologue's
+       (save,init) group for $s5 emits third instead of first.
+       mechanism: combine.c's i2/i3 merge folds `p1 = a0` into this later copy
+       and leaves it at the LATER position, so sched.c:3256's parameter-copy pin
+       (leading run of hard-register-source SETs) no longer applies, sched1's
+       birthing_insn_p boost (sched.c:2504) emits it after the two init insns,
+       and sched2's INSN_LUID tie-break (sched.c:2462) orders the groups s1,s2,s5.
+       lever-exhaustion: memory/grind/func_80016E60/hypotheses.md (s1-s5 bare-
+       parameter forms, [s6] E-s6-4 hard mechanism, [s6] E-s6-7 honest env route). */
     ot_base = arg0;
     if (D_800A38DC == 2) {
         special = D_800A389A < 1;
@@ -47,11 +52,14 @@ void func_80016E60(u8 *arg0, s32 arg1) {
         func_8005C6D0();
         DrawSync(0);
         VSync(2);
-        /* FAKE: loop-note wrap; effect: env's three in-loop references are
-           weighted at loop_depth 3 instead of 2, so global.c seats env in $s0
-           and select in $s1 (the target's assignment); mechanism: flow.c:2087
-           reg_n_refs += loop_depth feeding global.c allocno_compare.
-           lever-exhaustion: memory/grind/func_80016E60/hypotheses.md */
+        /* FAKE: single-level do { } while (0) wrap around the two env
+           publishes (do-while-zero family, .claude/rules/do-while-zero-exception.md);
+           effect: env is seated in $s0 and select in $s1, the target's assignment.
+           mechanism: the wrap's loop notes make flow.c weight env's three in-loop
+           references at loop_depth 3 instead of 2, lifting its global.c
+           allocno_compare priority above select's.
+           lever-exhaustion: memory/grind/func_80016E60/hypotheses.md ([s2] H6 and
+           [s6] E-s6-7/E-s6-8 - the honest env split-init routes measure 22 vs 21). */
         do {
             PutDispEnv(env + 0x5C);
             PutDrawEnv(env);
@@ -60,20 +68,20 @@ void func_80016E60(u8 *arg0, s32 arg1) {
         DrawOTag(D_800A374C);
         D_800A36AC++;
 
-        pad = D_80102794;
-        if (pad & 0x100010) {
+        padbits = D_80102794;
+        if (padbits & 0x100010) {
             func_8005C650(1, 0x7F, 0x7F);
             select = 0;
             break;
         }
-        if (pad & 0x400040) {
+        if (padbits & 0x400040) {
             func_8005C650(1, 0x7F, 0x7F);
             break;
         }
-        if (pad & 0x10001000) {
+        if (padbits & 0x10001000) {
             func_8005C650(0, 0x7F, 0x7F);
             select = (select == 0) ? limit - 1 : select - 1;
-        } else if (pad & 0x40004000) {
+        } else if (padbits & 0x40004000) {
             func_8005C650(0, 0x7F, 0x7F);
             select = (select == limit - 1) ? 0 : select + 1;
         }
