@@ -20,7 +20,7 @@ Each candidate file holds the COMPLETE replacement function definition
 spliced along with it). The tool:
 
   1. Locates the function's current span in src/<file>.c (signature line +
-     brace matching).
+     brace matching, or its INCLUDE_ASM line).
   2. For each candidate: splices it in, runs
      `python3 -m engine.cli sandbox <func> --disable all`, records the score.
   3. ALWAYS restores src/<file>.c byte-exact afterwards (finally-guarded),
@@ -49,7 +49,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def find_function_span(text: str, func: str) -> tuple[int, int]:
-    """Return (start, end) char offsets of the function's definition in text.
+    """Return (start, end) char offsets of the function's definition in text,
+    or its INCLUDE_ASM line.
 
     start = beginning of the signature line; end = char after the closing
     brace (+ trailing newline). Brace matching skips string/char literals and
@@ -129,6 +130,13 @@ def find_function_span(text: str, func: str) -> tuple[int, int]:
                     return m.start(), end
             j += 1
         raise ValueError(f"unbalanced braces matching {func}")
+    # asm-until-matched (owner ruling 2026-08-19): an INCOMPLETE function is
+    # committed as INCLUDE_ASM("asm/funcs", <func>); — splice candidates over
+    # that line so variants can be swept from a clean tree.
+    inc = re.search(r'(?m)^[ \t]*INCLUDE_ASM\s*\(\s*"asm/funcs"\s*,\s*'
+                    + re.escape(func) + r'\s*\)\s*;[ \t]*\n?', text)
+    if inc:
+        return inc.start(), inc.end()
     raise ValueError(f"definition of {func} not found")
 
 
