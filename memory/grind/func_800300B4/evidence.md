@@ -1152,3 +1152,49 @@ output. The item's disposition remains the owner policy question filed at
 - [s10] Repo census: 17 asm/funcs/*.s carry the identical sll $t6,$t6,16 pack; every one of them that has a matched C form keeps the pack inside a cop2 asm island (func_800203B4, func_8002E838, func_80031890) - none expresses it in C.
 
 - [s10] Modalities now spent on this function: structural (s2, s3), permuter (s4), synthesis (s5, s6), solver (s7), forensics (s8, s9), rederive (s10).
+
+## s11 (escalation modality — RE-ADJUDICATION, not a disposition) - 2026-09-02
+
+**The function is SOLVED.** The dispatch brief arrived with an `escalation` mandate, but it also
+carried a RE-ADJUDICATE judge-constraint and a SUPERSEDED-BANS block: the owner's Ruling A of
+2026-09-02 (`.claude/rules/cop2-addressing-preamble-cluster.md:163`, decisions.md "2026-09-02 —
+OWNER RULING") clarifies cluster condition 3 so that the island's "template" is the body of the
+named Sony PsyQ GTE macro, and it names `gte_ldlv0`'s `lhu/lhu/sll/or` VX0/VY0 pack (PsyQ 4.5
+`inline_c.h:101-110`) as admitted macro text. That is EXACTLY the island-2 construct that three
+layer-1 FAILs (decisions.md:20470, :20478, :20579) had banned and that s3-s10 spent eight sessions
+routing around at a ban-compliant floor of 7. `state.json.banned_constructs` is now EMPTY and all
+four island-2 bans sit in `superseded_bans`. Per the brief's "RULE SCOPE IS DATED" clause the
+correct action was to restore the banked score-0 form and re-measure — not to file a foreclosure.
+
+1. **The banked 0-form re-measures 0 on the current chassis.** `candidate.c` applied over the
+   `INCLUDE_ASM` line: `sandbox func_800300B4 --disable all` = **0** (83/83, rules_dropped 0,
+   cheat_asm_stripped 32) on HEAD 171b3142 — `tmp/grind/func_800300B4/s11/sandbox_s11.txt`.
+2. **Full-build proof.** `verify-oracle --rebuild --allow-dirty` with the C body in place:
+   `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa == expected == oracle`, `ok: true`
+   (`tmp/grind/func_800300B4/s11/verify_oracle_s11.txt`). The bytes are proven at link level, not
+   just object level.
+3. **The single FAKE is re-proven necessary by direct ablation this session (H43).** Deleting only
+   the `do { } while (0);` braces around the gte_stlvnl island — nothing else changed — scores
+   **13** at an unchanged 83/83 instruction count, so the wrap's whole effect is register seating,
+   exactly as the banked flow.c/local-alloc mechanism says. Artifacts:
+   `s11/sandbox_nowrap.txt`, `s11/ablate_nowrap.c`. (This is the honest hand ablation; note the s9
+   finding that `tools/fake_ablate.py` mis-ablates this form by deleting the whole annotated
+   statement span.)
+4. **Admission door and bucket.** `tools/scan_hand_coded.py --single func_800300B4` = tier **LOW**,
+   1/8, S4 only (`s11/scan_hand_coded.txt`) — recorded for completeness, but the scanner is NOT the
+   door here: func_800300B4 is an ENUMERATED owner-cluster registry carrier
+   (`tools/grinder/owner_cluster_grants.txt:23`). Honest bucket is
+   COMPLETED-INLINE-ASM-CANONICAL (allowlist line required), never COMPLETED-C — owner Ruling A,
+   enforced on the Judge PASS path by Ruling C. The in-repo precedent for this exact door + this
+   exact island set is `func_8002FF20`, merged earlier today (decisions.md 2026-09-02 10:58 PASS,
+   commit 11293a16, `src/code6cac_b.c:1533-1548`).
+5. **Header comment rewritten** so nothing rests on the struck in-pipeline rulings (07:30 / 07:59)
+   or on the previously-banned sibling citations: the citation is now the owner rule file line, the
+   registry row, and `inline_asm_canonical.txt:367` (func_800203B4, the character-identical
+   authorized island spelling). Each of the four islands names its macro, and island 2 cites
+   `inline_c.h:101-110` as the ruling itself requires.
+
+- [s11] The 8-session ban-compliant grind at floor 7 (s3-s10) is not wasted: its class kills
+  (cse.c:2720/:2750, local-alloc.c:1666/:2207/:2249) plus the s10 corpus census are the exact
+  "measured unreachable from C at compiler-source level" evidence the owner cites as GROUNDS in
+  Ruling A. The ledger produced the proof that unlocked the ruling that closed the function.

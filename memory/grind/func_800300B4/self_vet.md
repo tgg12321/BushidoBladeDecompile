@@ -1,23 +1,93 @@
-# SELF-VET — func_800300B4
-CONSTRUCTS: (A) four `__asm__ volatile` cop2 blocks, older-SDK `move $12,%0` prefix spelling, hardcoded $12-$15 with clobber lists: gte_SetRotMatrix (5 lw + 5 ctc2); gte_ldlv0 (lhu/lhu/sll/or + mtc2 $0 + lwc2 $1 + 2 nops); gte_rtv0 (.word 0x4A486012 alone); gte_stlvnl (3 swc2, "memory" clobber). (B) one single-level `do { gte_stlvnl block } while (0);` wrap with an inline /* FAKE */ annotation. Nothing else.
+# SELF-VET — func_800300B4  (s11, escalation modality / re-adjudication, 2026-09-02)
 
-## T1 semantic purpose: (A) the cop2 blocks ARE the function's semantics — they drive the GTE (ctc2/mtc2/lwc2/MVMVA/swc2 have no C form). Every GPR instruction inside them is the named Sony libgte macro body plus the cluster's `move $12,%0` preamble and is present verbatim in the target (asm/funcs/func_800300B4.s:18-42; the gte_ldlv0 halfword pack reads through the redundant $t4 copy at :29-36, a register only the macro creates), with splat handwritten tags on the cop2 ops. Provenance of the second block: it is gte_ldlv0 — "load a 32-bit VECTOR (s32 vx,vy,vz) into V0" — whose body in PsyQ Run-time Library Release 4.5 inline_c.h:101-110 (repo copy tmp/grind/motion_SetMotion/s7/repos/rood-reverse/include/psx/inline_c.h; excerpt tmp/grind/func_800300B4/s1/psyq45_inline_c_excerpt.txt) is verbatim `lhu $13,4(%0); lhu $12,0(%0); sll $13,$13,16; or $12,$12,$13; mtc2 $12,$0; lwc2 $1,8(%0)` clobbering $12,$13; the s32-to-s16 pack is Sony's own header text, the mechanical VXY0 packaging the GTE requires. It is NOT gte_ldv0 (the SVECTOR loader, a bare lwc2 pair, inline_c.h:16-20), the name every record before s1e used. Nothing outside the named macro bodies is inside any block. The pack cannot live in C on this chassis: both pack-in-C spellings measure 19 (H4, class kill at local-alloc.c:2249 find_free_reg numeric order — rejected/pack-in-c-island2-*.c) and the 4.5-header-verbatim body with no move prefix measures 7 (H10, rejected/ldlv0-psyq45-verbatim-no-move-prefix-7.c). (B) the wrap has no semantic effect — it is a declared match device, exactly what the sanctioned do-while(0) family covers; annotated FAKE for that reason.
-## T2 human-programmer: (A) yes — a PsyQ programmer writes gte_SetRotMatrix(m); gte_ldlv0(&o->vec); gte_rtv0(); gte_stlvnl(&v); the blocks are those macro bodies spelled out because the project has no SDK inline header (the project's canonical form for every cluster member, e.g. src/code6cac.c:1858-1878). (B) no — a reader would ask why; that is the definition of a FAKE construct and why the annotation is mandatory and present.
-## T3 GCC-internals justification: (A) none — the cop2 blocks are justified by the target bytes and by SDK macro provenance, not by any GCC pass; this vet makes no GCC-internals argument for the gte_ldlv0 block. (B) yes, by design of the family: the mechanism is flow.c loop-note ref weighting changing local-alloc.c qty_compare_1 priority (measured: &mac refs 4->6, seats s3->s2, BB2_QTY_DEBUG trace tmp/grind/func_800300B4/s1/qtydbg_e2_dowhile.txt). The do-while(0) family is sanctioned for ANY codegen effect incl. register allocation (owner ruling 2026-07-06), so the internals citation is the required annotation content, not a cheat signal.
-## T4 permuter/search provenance: none — no permuter or search was run; both constructs were derived by hand from the target bytes (A) and from the BB2_QTY_DEBUG allocator trace (B).
-## T5 family check: (A) canonical inline asm for cop2, owner-cluster canonical-asm grant path — func_800300B4 is enumerated by name in tools/grinder/owner_cluster_grants.txt:23; the blocks contain no cheat-family construct (no pins, no `move %0,%1` aliasing, no barriers). Cluster mechanical condition 3 (in-island GPR = SDK macro body + move-preamble only): block 1 = gte_SetRotMatrix body (inline_c.h:297-307), block 2 = gte_ldlv0 body (inline_c.h:101-110), block 4 = gte_stlvnl body (inline_c.h:1111-1117), each with the cluster's `move $12,%0` prefix and nothing else. Block 2 + block 3 are spelled character-identically to the owner-granted func_800203B4 blocks (src/code6cac.c:1860-1872; authorization inline_asm_canonical.txt:367) — asm template text, clobbers and nops byte-for-byte the same, only the C operand expression differs (`arg0 + 0x2C` here vs `vec` there); mechanical diff at tmp/grind/func_800300B4/s1/island2_203B4.txt vs island2_300B4.txt. The layer-1 objection to block 2 was resolved on provenance grounds by the Judge's 2026-09-02 07:59 PASS ruling (docs/grind/decisions.md:20575), which this vet relies on; it relies on NOTHING struck — the 07:30 ruling is banned and is not cited, and func_8002E838 / func_80031890 / func_8002FC80 / LoadAverageShort12 / inline_asm_canonical.txt:174 are banned anchors and are not cited. (B) do-while(0) — frozen SOTN list entry; single-level; not a for/while/if equivalent; not nested.
-## T6 naming-announces-intent: no pad/dummy/unused/spill names; locals are mac, dir, mtx, playerData, mat, lookup — all real, all read.
+CONSTRUCTS: (1) four PsyQ SDK GTE macro-body `__asm__` islands — gte_SetRotMatrix,
+gte_ldlv0, gte_rtv0 (`.word 0x4A486012`), gte_stlvnl — in the older-SDK
+`move $12, %0` materialize-then-copy spelling; (2) one `do { ... } while (0);`
+wrap around the gte_stlvnl island, FAKE-annotated.
+
+## T1 semantic purpose
+(1) Islands: yes. The GTE (cop2) coprocessor transfers `ctc2`/`mtc2`/`lwc2`/`swc2`
+and the MVMVA command word have no C analogue; without them the function does not
+rotate the vector at all. Each island is the published body of a named Sony PsyQ
+libgte inline macro — the original source called `gte_SetRotMatrix(r)`,
+`gte_ldlv0(r)`, `gte_rtv0()`, `gte_stlvnl(r)`, and the island text IS that macro's
+expansion. Removing them removes the function's behaviour.
+(2) do-while(0) wrap: no semantic effect — it is a codegen device and is declared as
+such under the sanctioned family, with the mandatory FAKE annotation. Ablation
+measured this session: wrap present = sandbox 0, wrap removed = sandbox 13 at the
+same instruction count (83/83), i.e. it is a pure register-seat effect
+(`tmp/grind/func_800300B4/s11/sandbox_nowrap.txt`).
+
+## T2 human-programmer
+(1) Yes, verbatim: a PS1 programmer writes `gte_ldlv0(&obj->lv); gte_rtv0();` etc.
+The islands are exactly the SDK macros a human would call; the preferred future form
+recorded by the owner ruling is a BB2-local GTE macro header so the source reads
+`gte_ldlv0(vec)` with the same bytes. No GPR instruction outside the named macro
+bodies is inside any island.
+(2) No — a human would not write the do-while(0). It is declared FAKE, not passed off
+as program logic.
+
+## T3 GCC-internals justification
+(1) Islands: NO GCC-internals reasoning. They are admitted because they are Sony SDK
+macro text for operations with no C form, under the owner cluster grant — the
+justification is provenance (PsyQ 4.5 `inline_c.h`), not the allocator.
+(2) The do-while(0) wrap IS mechanism-justified (flow.c loop-note reference weighting
+raising the `&mac` refs so local-alloc seats it in `$s2` ahead of `arg0`). That is
+permitted and required for this construct: the sanctioned family mandates a named
+GCC-pass mechanism inside the FAKE annotation, and the annotation carries it.
+
+## T4 permuter/search provenance
+Neither construct came from a permuter win. The islands are transcribed from the PsyQ
+4.5 `inline_c.h:101-110` macro body and are character-identical to the owner-granted
+func_800203B4 islands (`src/code6cac.c:1860-1872`, `inline_asm_canonical.txt:367`).
+The s4 permuter campaign (24.6k ordinary-C-only iterations) never produced either
+construct; it is banked as `rejected/permuter-ordinary-c-best-24k-iters-s4-338w.c`.
+
+## T5 family check
+(1) Islands → cop2-addressing-preamble cluster, condition 3 as CLARIFIED by owner
+Ruling A 2026-09-02. func_800300B4 is an ENUMERATED registry carrier
+(`tools/grinder/owner_cluster_grants.txt:23`). Not a first reach: the identical
+gte_ldlv0 pack was merged today under the same door for func_8002FF20
+(decisions.md 2026-09-02 10:58 PASS). The four superseded bans in
+`state.json.superseded_bans` are exactly this construct; `banned_constructs` is empty.
+(2) do-while(0) → its own frozen-list family, FAKE-annotated. No forbidden family is
+matched: zero register pins, zero hardcoded-`$N` injection of C-expressible work
+outside a macro body, zero scheduling barriers, zero volatile coercion, zero dead
+locals/pads/self-assigns, zero alias renames.
+
+## T6 naming-announces-intent
+No `pad`/`dummy`/`unused`/`spill`/`slack`/`_buf` names. Locals are `mac`, `dir`, `mtx`,
+`playerData`, `mat`, `lookup` — every one is read and consumed by the function's own
+logic.
+
 SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: do-while(0) wrap
-  SCOPE: "`do { <any body> } while (0);` — including empty bodies — is a sanctioned pure-C match device for ANY codegen effect, including register allocation."
-  PRECEDENT: `.claude/rules/do-while-zero-exception.md:29`
-  PRECEDENT: `docs/reference/sotn-construct-index.md:74`
-  FAMILY: canonical cop2 inline asm — owner-cluster canonical-asm grant (cop2 addressing-preamble cluster)
-  SCOPE: "the 26 queued functions sharing the `addu $t4,$aN,$zero` + cop2 idiom (28 total in the 0x8001-0x8003 band) inherit this disposition subject to the same mechanical per-function check ... which the Judge may apply without re-escalation."
-  PRECEDENT: `tools/grinder/owner_cluster_grants.txt:23`
-  PRECEDENT: `.claude/rules/cop2-addressing-preamble-cluster.md:18`
-  PRECEDENT: `inline_asm_canonical.txt:367`
-  PRECEDENT: `src/code6cac.c:1860`
-  PRECEDENT: `docs/grind/decisions.md:20575`
-ANNOTATION-CONFORMANCE: /* FAKE: do-while(0) wrap around gte_stlvnl, mechanism: flow.c loop-note ref weighting (loop_depth doubles the &mac def+asm refs so local-alloc seats it in s2 ahead of arg0), lever-exhaustion: memory/grind/func_800300B4/hypotheses.md */ — carries what + mechanism (named pass: flow.c life_analysis loop_depth weighting -> local-alloc.c qty_compare_1) + lever-exhaustion pointer (hypotheses.md s1 H1-H3: the seat is fixed by births/deaths pinned to target order, every natural spelling gives &mac 4 refs and arg0 7, the pointer-copy lever measured dead at 13 by cse.c canon_reg; fake_ablate drop-1 = 13 shows it is the single load-bearing FAKE, H7; single-level wrap needs no nesting justification per the rule). The cop2 blocks carry no FAKE annotation by design (canonical asm, not a match device).
-Mechanical 4-point cluster check, self-applied (s1g, 2026-09-02, HEAD 22a0ab87): (1) sandbox --disable all == 0 (83/83, rules_dropped 0) this session (tmp/grind/func_800300B4/s1/sandbox_s1g.txt); (2) zero register pins, zero `move %0,%1` aliasing blocks, zero scheduling barriers; (3) in-island GPR = SDK macro body + move-preamble only, block 2 character-identical to the func_800203B4 grant; (4) verify-oracle ok this session (build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, tmp/grind/func_800300B4/s1/verify_oracle_s1g.txt); layer-2 cheat-reviewer + verify-oracle --rebuild are the driver's step. Honest bucket is COMPLETED-INLINE-ASM-CANONICAL: the driver writes the owner-cluster inline_asm_canonical.txt line before queue done.
+  FAMILY: cop2 addressing-preamble cluster, condition 3 (template = the named Sony PsyQ
+    GTE macro body) — owner Ruling A 2026-09-02
+  SCOPE: "condition 3's \"template\" is the body of the named Sony PsyQ GTE macro the island reproduces. GPR instructions that are the macro's own published text — e.g. `gte_ldlv0`'s `lhu/lhu/sll/or` VX0/VY0 pack (PsyQ 4.5 `inline_c.h:101-110`) — are part of the template and ADMITTED. Nothing outside the named macro body may be in the island; every island comment must cite the macro name and header line."
+  PRECEDENT: .claude/rules/cop2-addressing-preamble-cluster.md:163
+  PRECEDENT: tools/grinder/owner_cluster_grants.txt:23
+  PRECEDENT: inline_asm_canonical.txt:367
+
+  FAMILY: do { ... } while (0); match device (owner ruling 2026-07-06)
+  SCOPE: "SANCTIONED (owner ruling 2026-07-06, supersedes the 2026-06-04 mechanism-scoping): `do { ... } while (0);` (any body, incl. empty) is an allowed pure-C match device for ANY codegen effect incl. register allocation, with mandatory inline FAKE annotation; nested wraps need a single-level-insufficient justification. Hard line unchanged: no regfix/pins/inline-asm/semantic-lie C."
+  PRECEDENT: .claude/rules/do-while-zero-exception.md:6
+
+ANNOTATION-CONFORMANCE:
+  /* FAKE: do-while(0) wrap around gte_stlvnl, mechanism: flow.c loop-note ref weighting (loop_depth doubles the &mac def+asm refs so local-alloc seats it in $s2 ahead of arg0), lever-exhaustion: memory/grind/func_800300B4/hypotheses.md H14/H24 + the s5 class kill (no FAKE-free C form reaches the four call-crossing seats, local-alloc.c:1666) */
+  what = the do-while(0) wrap around the gte_stlvnl island; mechanism = flow.c
+  loop-note reference weighting feeding local-alloc's seat order; lever-exhaustion =
+  hypotheses.md (H14/H24 single- and nested-wrap geometry sweep, the s5 class kill that
+  no FAKE-free C form reaches the four call-crossing seats, and the s9 pressure/order
+  closure). Single-level wrap — no nesting, so the nested-wrap justification prong does
+  not apply. Ablation measured this session: 0 with, 13 without.
+
+HONEST BUCKET: COMPLETED-INLINE-ASM-CANONICAL (allowlist line required), never
+COMPLETED-C — mandated by owner Ruling A 2026-09-02 for every cluster carrier. The
+driver must route a PASS through the registry grant door (Ruling C 2026-09-02).
+
+MEASUREMENTS THIS SESSION (HEAD 171b3142 + this diff):
+  sandbox func_800300B4 --disable all == 0 (83/83, rules_dropped 0)  [s11/sandbox_s11.txt]
+  verify-oracle --rebuild --allow-dirty: build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle  [s11/verify_oracle_s11.txt]
+  scan_hand_coded --single: tier=LOW 1/8 (S4 only) — recorded for completeness; the
+  admission door here is the owner cluster REGISTRY row, not the scanner
+  [s11/scan_hand_coded.txt]

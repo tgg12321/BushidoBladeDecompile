@@ -1035,3 +1035,34 @@ that pass sees for the island-2 pack. A future session must not re-open "make re
 - probe: bash tmp/grind/func_800300B4/s10/pc.sh v_base, where v_base is memory/grind/func_800300B4/best_ban_compliant.c verbatim applied over the INCLUDE_ASM line.
 - result: 7 on HEAD c935b7db, identical to s3/s4/s5/s6/s7/s8/s9. s9 already ran the full fake_ablate grid on the closest banked kill (keep-all 7 / drop-1 19) and voided nothing; both s10 forms carry the same single unmodified FAKE unit as the control, so the comparisons are FAKE-state-matched by construction.
 - verdict: CONFIRMED
+
+## H43 (s11, 2026-09-02) — CONFIRMED: the banked 0-form is admissible under owner Ruling A and matches
+
+**Statement.** With the island-2 ban superseded by owner Ruling A 2026-09-02
+(`.claude/rules/cop2-addressing-preamble-cluster.md:163`), the banked score-0 form
+(`candidate.c`: four PsyQ SDK GTE macro-body islands + one FAKE do-while(0) wrap) is admissible
+under the cop2 cluster registry door and reaches distance 0 on the current chassis.
+
+**Probe.** Applied `candidate.c` (header rewritten to cite the owner rule line, the registry row
+`tools/grinder/owner_cluster_grants.txt:23` and `inline_asm_canonical.txt:367` instead of the
+struck in-pipeline rulings) over the `INCLUDE_ASM` line in `src/code6cac_b.c` on HEAD 171b3142.
+
+**Result — CONFIRMED.** `sandbox --disable all` = 0 (83/83, rules_dropped 0);
+`verify-oracle --rebuild --allow-dirty` = full-build SHA1 62efab4f… == oracle.
+Artifacts `tmp/grind/func_800300B4/s11/{sandbox_s11.txt,verify_oracle_s11.txt}`.
+
+## H44 (s11, 2026-09-02) — CONFIRMED: the gte_stlvnl do-while(0) wrap is a pure register-seat effect
+
+**Statement.** Removing ONLY the `do { } while (0);` braces around the gte_stlvnl island, with every
+other character of the 0-form unchanged, raises the distance from 0 to 13 without changing the
+instruction count.
+
+**Probe.** Hand ablation (not `tools/fake_ablate.py`, which s9 showed deletes the whole annotated
+statement span here): dedent the island out of the wrap, delete the two brace lines, re-run
+`sandbox --disable all`.
+
+**Result — CONFIRMED.** 13, build_insns 83 == target_insns 83. The wrap changes zero instructions
+and only their register operands, matching the banked mechanism (flow.c loop-note reference
+weighting raising the `&mac` def+asm refs so local-alloc seats `mac` in `$s2` ahead of `arg0`).
+This is the lever-exhaustion + necessity evidence the FAKE prerequisites require.
+Artifacts `tmp/grind/func_800300B4/s11/{ablate_nowrap.c,sandbox_nowrap.txt}`.
