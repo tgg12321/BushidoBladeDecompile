@@ -1,8 +1,8 @@
 {
  "func": "func_80030580",
  "file": "code6cac_b",
- "session_count": 7,
- "current_modality": "solver",
+ "session_count": 8,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 2,
    "modality": "solver",
    "headline": "Solver typed the residual PRE-RA with no model applicable (class kill); FRAMEDBG proves the target's vars=24 is THREE 8-byte alter_reg slots, correcting s7's 'declared untouched object' model, and thr"
+  },
+  {
+   "session": 8,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics: pass attribution corrected from cse2 to combine.c/distribute_notes (combine.c:10835, REG_DEAD && place==0 && tem!=0), turning the frame residual into a two-clause predicate; four more sourc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A byte-free generator OTHER than the s6 union yields two alter_reg slots and can be hosted by this function's own semantics.",
-   "mechanism": "H-s8-3 proves the target needs exactly that: one slot from the Judge fold plus two from something emitting no instructions. The census so far covers Judge folds (site law), the HImode-bitwise generator (inert here), the truncated-division generator (not hostable - the function only divides by 32 and 2), and generator 4 (the union, Judge-FAILed).",
-   "next_probe": "Run tmp/grind/func_80030580/s5/genprobe.py over a NEW standalone corpus aimed at register-allocated aggregates that are not unions - a small struct never address-taken, short/int bitfield structs, an enum-typed local, a struct whose only use is a member read - accepting only sp=0 hits with ctx=spill_new, then host the hits in-function with tmp/grind/func_80030580/s7/runfiles.py and require vars=24 bodydiff<=4 sp=0."
+   "hypothesis": "There is a combine substitution that makes a REAL loaded value entirely unused (clause B) while the C that triggers it still carries meaning.",
+   "mechanism": "combine.c:10835 needs place == 0, i.e. combine must DROP an operand rather than fold it into the consumer. Every operand-dropping simplification measured so far (+ K - K, multiply-by-zero, truncating store) is semantically vacuous; every operand-folding one rehomes the note. The open question is whether any GCC 2.7.2 simplification drops an operand for a reason that is TRUE of the data rather than true by construction.",
+   "next_probe": "Enumerate the operand-deleting paths in tools/gcc-2.7.2/combine.c (simplify_binary_operation, simplify_and_const_int, make_compound_operation, simplify_comparison) and for each ask what C triggers it: e.g. an AND whose mask provably covers the loaded value's width, a shift pair that is the identity on the real data, a compare combine folds using nonzero_bits. Spell any candidate at body statements 10/11/16/38 and measure with tmp/grind/func_80030580/s8/mkpk.py + s7/runfiles.py, requiring vars>=16 at bodydiff<=4 sp=0."
   },
   {
-   "hypothesis": "A 4-site Judge form exists whose two extra lookups are deleted by cse while their folded address pseudos still orphan, reaching vars=24 at bodydiff<=4.",
-   "mechanism": "j4read already reaches the exact target frame (p110/p130/p143) at bodydiff=25, and s5 itemises the surplus as exactly the two extra lookups (lh angle / addu const / andi 0xFFF / sll 1 / lh Judge / addu, twice). The open question - never measured - is whether cse deleting a redundant Judge LOAD also deletes the address pseudo that combine would otherwise fold and orphan.",
-   "next_probe": "Spell the two extra Judge reads with index expressions provably equal to the existing two (so cse merges the loads) and measure vars/bodydiff with tmp/grind/func_80030580/s7/runfiles.py; if the pseudo survives cse the form is byte-neutral and closes the function with no new construct family."
+   "hypothesis": "A second folded-symbol site can be added without adding a load, lifting the frame under the s3 site law at zero byte cost.",
+   "mechanism": "The site law (slots = folded-symbol sites - 1) plus this session's xb_jbase measurement (one lookup through jb = &Judge, vars=8 bodydiff=0) shows the (symbol_ref) fold survives a named base pointer. Never measured: whether replacing an existing tbl-relative read with a directly indexed read of the SAME address through the global symbol (D_8008E194[arg1*7 + 4] in one arm) adds a folded site while cse keeps the load count constant.",
+   "next_probe": "Generate the D_8008E194-indexed spellings of the three arm reads and of tbl[2]/tbl[3], one site at a time and pairwise, and measure with s7/runfiles.py; accept only vars>=16 at bodydiff=0 sp=0. Note the s8 rejected forms tblidx-global-indexed-table.c and tblall-second-global-indexed.c cover the ALL-sites variants - the untested cases are the single-site and two-site ones."
   },
   {
-   "hypothesis": "If frontier items 1 and 2 also measure dead, the sanctioned ladder for func_80030580 is genuinely spent.",
-   "mechanism": "Both known routes to vars=24 are closed by standing Judge constraints (the volatile u32 pre_pad[4] phantom-pad and the generator-4 union), the solver axis is closed by tool verdict (H-s8-1), and the permuter axis was closed at 84k iterations in s4.",
-   "next_probe": "Do NOT dispose of the function from a non-escalation modality. Work items 1 and 2 first; only an escalation-modality session should assemble the foreclosure record, and it now has the full evidence chain (site law + byte-free-generator requirement + the two Judge FAILs) to do so."
+   "hypothesis": "If frontier items 1 and 2 also measure dead, the sanctioned ladder for func_80030580 is spent and the foreclosure record is complete.",
+   "mechanism": "Four families died this session on top of nineteen in s8 and eight in s7; the solver axis is closed by tool verdict (H-s8-1, predicate reload1.c:2403), the permuter axis at 84k iterations in s4, and both known vars=24 routes are closed by standing Judge constraints (the volatile pad and the aggregate/self-cancel forms).",
+   "next_probe": "Do NOT dispose of the function from a non-escalation modality. Work items 1 and 2 first; only an escalation-modality session should assemble the record, and it now has the full chain: the site law, the combine.c:10835 two-clause predicate, and the clause-B/T1 coincidence that explains why every byte-free carrier found so far is semantically vacuous."
   }
  ],
  "judge_constraints": [
@@ -262,6 +268,38 @@
    "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present",
    "predicate_cite": "",
    "result": "whilerot vars=8 bodydiff=0; kindlocal vars=8 bodydiff=0; anglocal vars=8 bodydiff=0; posptr vars=8 bodydiff=0; neguard v"
+  },
+  {
+   "session": 8,
+   "statement": "The READ-BACK family - consuming a field the function has just stored instead of the value stored - leaves the frame at vars=8 in ten shapes on this chassis, because GCC 2.7.2 cse does not forward the",
+   "kill_scope": "instance",
+   "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session (target_insns 148, build_insns 148, rules_dropped 0); tools/fake_ablate.py reports no FAKE-annotated constructs in cand",
+   "predicate_cite": "",
+   "result": "Every shape vars=8 sp=0 with ctx=spill_new only. bodydiff: controls 0/0, rb_o54 3, rb_o58 3, rb_arm2 5, rb_o50 6, rb_i 7"
+  },
+  {
+   "session": 8,
+   "statement": "The PACKED-WORD EXTRACTION family - spelling a narrow load as a field extraction from the containing aligned 32-bit word - compiles to identical bytes in eight of ten shapes but leaves the frame at va",
+   "kill_scope": "instance",
+   "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "All ten vars=8 sp=0. bodydiff=0 for pk_j1, pk_j2, pk_j12, pk_j1o56, pk_j1u, pk_o56, pk_s1a (and the control); bodydiff=2"
+  },
+  {
+   "session": 8,
+   "statement": "Frontier item 3 - placing real insns before reload so that post-reload jump2 cross-jumping tail-merges them away while the frame stays sized - does not yield a byte-neutral carrier in the five arm-dup",
+   "kill_scope": "instance",
+   "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "cj_tail4 vars=8 bodydiff=17; cj_jonly4 vars=16 bodydiff=37; cj_jt2 vars=16 bodydiff=53; cj_jt3 vars=16 bodydiff=35; cj_j"
+  },
+  {
+   "session": 8,
+   "statement": "The PRE-BRANCH FOLD family - a value or address computed before the tbl[0] arm chain and consumed inside an arm, built directly from clause A of the combine.c:10835 predicate - leaves the frame at var",
+   "kill_scope": "instance",
+   "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "All eight vars=8 sp=0. bodydiff=0 for xb_e4, xb_e4b, xb_dst, xb_kind, xb_jbase, xb_srcp; 15 for xb_flag; 65 for xb_amp. "
   }
  ],
  "ladder_skip": 0,

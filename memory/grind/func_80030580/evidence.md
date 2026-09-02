@@ -1034,3 +1034,116 @@ observable effect*, which is the same property the cheat checklist tests for. Ev
 semantically-real respelling measured this session left the frame at 8. So the remaining
 search is not "find another generator" (that is answered) but "is there an ORDINARY-C
 statement whose value GCC 2.7.2 proves redundant in cse2, at one of statements 10/11/16/38".
+
+
+## [s9 -- forensics, 2026-09-02] Pass attribution CORRECTED to combine.c, and four more source-shape families measured frame-inert
+
+**Chassis re-measured this session (the brief's dispatch measurement was unavailable).**
+`pure-c-floor2-body.c` applied to `src/code6cac_b.c`: `sandbox func_80030580 --disable all`
+= **2**, `target_insns` 148, `build_insns` 148, `rules_dropped` 0. `candidate.c` is
+byte-identical to that body and `tools/fake_ablate.py` reports *"no FAKE-annotated constructs
+found ... nothing to ablate"*, so every measurement below is a zero-FAKE measurement on the
+same chassis as the s7/s8 kills. Mandated kill re-audit: `base` vars=8 bodydiff=0 (p110),
+`pr16_38` vars=24 bodydiff=4 sp=0 (p89 | p116 | p188), `j4read` vars=24 bodydiff=25
+(p110 | p130 | p143), `sa38` vars=16 bodydiff=4 (p110 | p182) -- all identical to s8.
+
+**PASS ATTRIBUTION CORRECTED (dumps read, not guessed).** s8 recorded the frame lever as
+"cse2 proves the sum equals the original value so the loads die". The `-da` dumps say
+otherwise. New instrument `tmp/grind/func_80030580/s8/dumpvar.py` dumps every RTL pass for an
+arbitrary variant body; sections counted with `s8/dsec.py`:
+
+| variant | rtl | jump | cse | loop | cse2 | flow | combine | lreg | greg | section lines @cse2 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| base   | 1 | 1 | 1 | 1 | 1 | 1 | 2 | 2 | 1 | 914 |
+| sa38   | 1 | 1 | 1 | 1 | 1 | 1 | 4 | 4 | 2 | 929 |
+| rb_o54 | 1 | 1 | 1 | 1 | 1 | 1 | 2 | 2 | 1 | 923 |
+| rb_tbl | 1 | 1 | 1 | 1 | 1 | 1 | 2 | 2 | 1 | 930 |
+
+(counts are `(use (reg` insns inside the func_80030580 section.) The cancel form's extra
+insns are STILL PRESENT at `.cse2` (929 lines vs base 914); the orphan `(use)` insns first
+appear at `.combine`. The producing site is **`tools/gcc-2.7.2/combine.c:10835-10840`**, whose
+guard is `REG_NOTE_KIND (note) == REG_DEAD && place == 0 && tem != 0` -- combine deleted the
+setter, the death note found **no home**, and the backward scan had **crossed a CODE_LABEL**.
+The pseudos then survive `.lreg` unallocated, get no hard register at `.greg`, and
+`reload1.c alter_reg` calls `assign_stack_local (SImode, 8, -1)` on each (align -1 rounds to 8).
+
+**This turns the search into a two-clause predicate**, which is what the four probe families
+below were designed against:
+  - clause A (`tem != 0`): the dead register's death scan must cross a CODE_LABEL -- satisfied
+    by anything computed before the `tbl[0]` arm chain and consumed inside an arm;
+  - clause B (`place == 0`): combine's substitution must leave the register with **no remaining
+    reference at all**.
+Every shape measured to date splits cleanly on clause B: constructs where combine *folds* the
+value into its consumer (packed-word narrowing, pre-branch address folding, read-back) keep a
+reference and rehome the note; only constructs where combine *drops* the operand entirely
+(`+ K - K`, multiply-by-zero, truncation) orphan it -- and dropping an operand entirely is the
+same property the cheat checklist's T1 tests for.
+
+**Family 1 -- READ-BACK (10 shapes, all vars=8): KILLED.** Consuming a field the function just
+stored rather than the value stored (`tbl = &D_8008E194 + *(s16 *)(obj + 2) * 7`, `obj+0x50`
+from `obj+4`, `obj+0x54` from `obj+7`, `obj+0x58` from `obj+8`, arm stores from `obj+0x54`,
+the angle from `obj+0x56`, the flag from `obj+0xA`). GCC 2.7.2's cse does **not** forward these
+stores to the later loads at all, so the read-back stays a REAL instruction: bodydiff 3 / 3 / 5
+/ 6 / 7 / 9 / 22 / 37 with the frame untouched. Banked
+`rejected/readback-of-stored-field-frame-inert-s8.c`.
+
+**Family 2 -- PACKED-WORD EXTRACTION (10 shapes, all vars=8): KILLED, but 8 are byte-neutral.**
+Spelling a narrow load as a field extraction from the containing aligned 32-bit word --
+`(*(u32 *)(src + 0x1C8) >> 16) & 0xFFF` for `*(u16 *)(src + 0x1CA) & 0xFFF`,
+`(*(s32 *)(src + 0x18) >> 16) / 32` for `*(s16 *)(src + 0x1A) / 32`, `*(u32 *)(src + 0x1C8) >> 16`
+for the `obj+0x56` store -- compiles to **identical bytes** (bodydiff=0 for pk_j1, pk_j2, pk_j12,
+pk_j1o56, pk_j1u, pk_o56, pk_s1a): combine narrows the `lw`+`srl` back to one `lhu` at the
++0x1CA offset and rehomes the note on the narrowed insn. Frame unmoved. Banked
+`rejected/packed-word-extraction-frame-inert-s8.c`. These are free composables for a future
+session (they change nothing in the bytes and can be layered under a real lever).
+
+**Family 3 -- FRONTIER ITEM 3, the post-reload jump2 cross-jump route: KILLED.** The plan was
+real insns before reload (which fixes the frame) that jump2 tail-merges away afterwards.
+Measured: duplicating the *existing* `obj+0x50` / `obj+5` / `obj+0` tail into all four `tbl[0]`
+arms costs **bodydiff=17** -- jump2 dedups duplicate tails but always keeps one copy, it never
+deletes the last one -- and a same-value Judge re-store duplicated into 2 / 3 / 4 arms buys
+exactly **one** extra slot regardless of copy count (`vars=16` in all of cj_jonly4 / cj_jt2 /
+cj_jt3 / cj_jt4) at bodydiff 35..53, because cse merges the copies' folded addresses long
+before reload. This also corrects the s8 reading of armdup50/armdup58 (a *single* duplicated
+statement is byte-neutral; a three-statement tail at four arms is not). Banked
+`rejected/crossjump-arm-duplication-not-byte-neutral-s8.c`.
+
+**Family 4 -- PRE-BRANCH FOLD (8 shapes, all vars=8; 6 byte-neutral): KILLED.** Designed
+directly from clause A: `s16 *e4 = tbl + 4` consumed inside the arms; `s16 *d = obj + 0x5C`
+with all arm stores through `d[0..2]`; a named `kind = tbl[0]` driving the chain; a named
+`amp = tbl[2]`; a source position pointer; `jb = &Judge` for the first lookup; `u8 *fl = obj + 0xA`
+across the loop. bodydiff=0 for xb_e4, xb_e4b, xb_dst, xb_kind, xb_jbase, xb_srcp; 15 for
+xb_flag; 65 for xb_amp -- clause A is satisfied and clause B is not, in every one. Worth noting
+for the record: `xb_jbase` (ONE lookup through a `&Judge` pointer) is byte-neutral and KEEPS the
+existing p110 orphan, whereas s7's kill (BOTH lookups through the pointer) measured vars=0 --
+one folded site is enough to preserve the orphan. Banked
+`rejected/prebranch-fold-shapes-frame-inert-s8.c`;
+`xb_e4b` saved as `composable-tblentry-pointer-byte-neutral.c`.
+
+**Net.** 36 measured shapes this session, 0 frame movement outside the already-banned
+self-cancel family, the pass attribution corrected from cse2 to combine.c/distribute_notes, and
+the residual reduced to a single sharply-stated question: *is there C with real semantics that
+makes combine drop an operand entirely?* `candidate.c` is unchanged (the FAKE-free floor-2
+body); `src/code6cac_b.c` restored to HEAD.
+
+- [s8] Chassis re-measured this session (the dispatch measurement was unavailable): pure-c-floor2-body.c applied to src/code6cac_b.c gives sandbox func_80030580 --disable all score 2, target_insns 148, build_insns 148, rules_dropped 0, with zero FAKE constructs (fake_ablate).
+
+- [s8] Target frame confirmed from asm/funcs/func_80030580.s: addiu $sp,$sp,-0x18 / addiu $sp,$sp,0x18, no $ra or callee-saved saves, and NOT ONE ($sp) reference in the 148-instruction body - so the 24 bytes are entirely untouched frame, consistent only with unallocated-pseudo alter_reg slots.
+
+- [s8] PASS ATTRIBUTION (dumps banked, not guessed): the orphan (use (reg N)) insns first appear at .combine, not .cse2 - base has 1 through flow and 2 at combine; the vars=16 cancel form sa38 has 1 through flow and 4 at combine, and its .cse2 section is 929 lines against base 914. The emission site is tools/gcc-2.7.2/combine.c:10835-10840, guard REG_NOTE_KIND (note) == REG_DEAD && place == 0 && tem != 0.
+
+- [s8] The residual is now a two-clause predicate: clause A - the dead register's death scan crosses a CODE_LABEL (tem != 0); clause B - combine's substitution leaves the register with no remaining reference (place == 0). Every measured family splits on clause B: operand-FOLDING shapes (packed-word narrowing, pre-branch address, read-back) rehome the note; only operand-DROPPING shapes (+ K - K, multiply-by-zero, truncation) orphan it.
+
+- [s8] READ-BACK family measured frame-inert in 10 shapes (all vars=8, bodydiff 0..37): GCC 2.7.2 cse does no store-to-load forwarding for these u8*/u16* stores, so a read-back costs real instructions instead of a slot.
+
+- [s8] PACKED-WORD EXTRACTION measured frame-inert in 10 shapes, 8 of them at bodydiff=0 - combine narrows lw+srl back to a single lhu and rehomes the note. Eight new byte-neutral composables banked.
+
+- [s8] POST-RELOAD CROSS-JUMP (frontier item 3) measured: jump2 dedups duplicate arm tails but never deletes the last copy (cj_tail4 bodydiff=17 for a purely semantics-preserving duplication), and 2/3/4 duplicated Judge re-stores all buy exactly one extra slot (vars=16) at bodydiff 35..53. The route cannot be byte-neutral.
+
+- [s8] PRE-BRANCH FOLD measured frame-inert in 8 shapes, 6 at bodydiff=0, including a named table-entry pointer (s16 *e4 = tbl + 4), a destination pointer for the obj+0x5C triple, a named kind local and a source position pointer - all ordinary C, all free.
+
+- [s8] Side correction to the s7 judge-pointer-alias kill: routing ONE of the two Judge lookups through jb = &Judge is byte-neutral AND keeps the existing p110 orphan (vars=8); only routing BOTH lookups through the pointer destroys it (s7's vars=0).
+
+- [s8] 36 measured shapes this session; the only bytes-proven vars=24 form remains the Judge-banned self-cancel pair (pr16_38, vars=24 bodydiff=4 sp=0), which was not applied to src/ and is not candidate.c.
+
+- [s8] src/code6cac_b.c restored to HEAD; the working tree carries only memory/grind/func_80030580/ ledger changes plus metrics/events.jsonl.

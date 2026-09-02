@@ -983,3 +983,113 @@ kindlocal, anglocal, posptr) are byte-neutral and are banked as free composables
    jump2 would be byte-neutral for semantically real code. Never measured. Start from j3read
    (vars=16 bodydiff=18) and try to place its 18 extra insns as an exact tail duplicate of an
    existing arm.
+
+## [s8-forensics] The extra loads of the s8 self-cancel lever survive cse AND cse2 and are deleted by COMBINE; the s8 attribution "cse2 proves the sum equals the original value so the loads die" is corrected to combine.c.
+- mechanism: -da dumps of the byte-neutral single-site cancel form (sa38) against the base chassis: the func_80030580 section is 929 lines at .cse2 versus base 914, i.e. the extra load/add/sub insns are still present after cse2; at .combine the section is 900 versus base 887 and the orphan (use (reg N)) count jumps from 2 (base: the v0 return use plus the one Judge-fold orphan) to 4. The orphan is emitted at tools/gcc-2.7.2/combine.c:10835-10840 -- the guard "REG_NOTE_KIND (note) == REG_DEAD && place == 0 && tem != 0" -- i.e. combine deleted the setter, the death note found NO home, and the backward scan had crossed a CODE_LABEL. Those pseudos survive .lreg unallocated and get no hard register at .greg, and reload1.c alter_reg then calls assign_stack_local (SImode, 8, -1) on each.
+- probe: tmp/grind/func_80030580/s8/dumpvar.py (new; dumps every RTL pass for an arbitrary variant body into tmp/grind/func_80030580/s8/dumps_<name>/) over var_base.c, var_sa38.c, var_rb_o54.c, var_rb_tbl.c, sections counted with s8/dsec.py.
+- result: per-pass "(use (reg" counts -- base rtl/jump/cse/loop/cse2/flow = 1, combine = 2, lreg = 2, greg = 1; sa38 rtl..flow = 1, combine = 4, lreg = 4, greg = 2. The producing pass is combine.c/distribute_notes, NOT cse2. This sharpens the input-shape law: a byte-free slot needs a register that is still live at cse2, is made fully unused by a COMBINE substitution, and whose death scan crosses a CODE_LABEL.
+- verdict: CONFIRMED
+
+## [s8-forensics] KILLED (instance): the READ-BACK family -- consuming a field the function has just stored, instead of the value stored -- is frame-inert here in ten shapes, because GCC 2.7.2's cse does not forward these stores to the later loads at all.
+- mechanism: The lever needs a load that reaches combine and is then made unused. A read-back of obj+2 / obj+4 / obj+7 / obj+8 / obj+0x54 / obj+0xA is not proven redundant by cse (the intervening stores are through u8* / u16* pointers into the same object), so the load survives as a REAL instruction: it adds body bytes instead of adding a frame slot.
+- probe: tmp/grind/func_80030580/s8/mkrb.py generating var_rb_tbl / rb_o50 / rb_o54 / rb_o58 / rb_ang / rb_arm1 / rb_arm2 / rb_i (plus rb_o6 and rb_o44 as unchanged controls), measured with s7/runfiles.py under the instrumented cc1.
+- result: every shape vars=8 sp=0, ctx=spill_new only. bodydiff: rb_o44 0, rb_o6 0 (controls), rb_o54 3, rb_o58 3, rb_arm2 5, rb_o50 6, rb_i 7, rb_tbl 9, rb_arm1 22, rb_ang 37. Banked memory/grind/func_80030580/rejected/readback-of-stored-field-frame-inert-s8.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session (target_insns 148, build_insns 148); tools/fake_ablate.py reports no FAKE-annotated constructs in candidate.c
+
+## [s8-forensics] KILLED (instance): the PACKED-WORD EXTRACTION family -- spelling a narrow load as a field extraction from the containing aligned 32-bit word -- is byte-neutral but frame-inert in ten shapes.
+- mechanism: (*(u32 *)(src + 0x1C8) >> 16) & 0xFFF in place of *(u16 *)(src + 0x1CA) & 0xFFF puts an lw plus a shift into RTL; combine narrows the load back to a single lhu at the +0x1CA offset and REHOMES the death note on the narrowed insn (place != 0 at combine.c:10835), so the pseudo keeps a reference and never becomes an orphan. Byte-identical output, no frame change.
+- probe: tmp/grind/func_80030580/s8/mkpk.py generating var_pk_s4 / pk_s1a / pk_j1 / pk_j2 / pk_o56 / pk_j12 / pk_j1o56 / pk_j1u / pk_all (plus pk_o44 control), measured with s7/runfiles.py.
+- result: all vars=8 sp=0. bodydiff=0 for pk_j1, pk_j2, pk_j12, pk_j1o56, pk_j1u, pk_o56, pk_s1a, pk_o44; bodydiff=2 for pk_s4 and pk_all. Eight byte-neutral spellings banked as free composables in rejected/packed-word-extraction-frame-inert-s8.c. This also measures the sub-word-read family applied on the SOURCE side as frame-inert for this function.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present
+
+## [s8-forensics] KILLED (instance): frontier item 3 -- the post-reload jump2 cross-jump route -- does not produce a byte-neutral carrier for the frame in this function.
+- mechanism: The plan was to place real insns that carry orphan pseudos before reload (which fixes the frame) and let jump2 tail-merge them away afterwards. Measured, cross-jumping dedups duplicate arm tails but always keeps ONE copy, so the extra insns remain in the body; and the duplicated Judge re-store contributes only a single extra slot regardless of the copy count, because cse merges the copies' folded addresses long before reload.
+- probe: tmp/grind/func_80030580/s8/mkcj.py generating var_cj_tail4 (the existing obj+0x50 / obj+5 / obj+0 tail duplicated into all four tbl[0] arms), var_cj_jonly4, var_cj_jt2, var_cj_jt3, var_cj_jt4 (a same-value Judge re-store duplicated into 2/3/4 arms), measured with s7/runfiles.py.
+- result: cj_tail4 vars=8 bodydiff=17 (pure duplication of an existing tail is NOT byte-neutral at four arms -- a correction to the s8 armdup50/armdup58 reading, which duplicated a single statement); cj_jonly4 vars=16 bodydiff=37; cj_jt2 vars=16 bodydiff=53; cj_jt3 vars=16 bodydiff=35; cj_jt4 vars=16 bodydiff=44. Banked rejected/crossjump-arm-duplication-not-byte-neutral-s8.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present
+
+## [s8-forensics] KILLED (instance): the PRE-BRANCH FOLD family, designed directly from the combine.c:10835 predicate (a value or address computed before the arm chain and consumed inside an arm, so the death scan must cross the arm's CODE_LABEL), is frame-inert in eight shapes, five of them byte-neutral.
+- mechanism: For the orphan to appear, combine must leave the pseudo with NO home. When the pre-branch value is an address that combine folds into the arm's memory operand, the folded insn still references the base pseudo, so the note is rehomed on it (place != 0) and no (use) is emitted. The CODE_LABEL half of the predicate is satisfied; the place == 0 half is not.
+- probe: tmp/grind/func_80030580/s8/mkxb.py generating var_xb_e4 / xb_e4b (s16 *e4 = tbl + 4 consumed in the arms), xb_dst (s16 *d = obj + 0x5C, all arm stores through d[0..2]), xb_kind (named tbl[0] local driving the chain), xb_amp (named tbl[2]), xb_srcp (source position pointer), xb_jbase (jb = &Judge used for the first lookup), xb_flag (u8 *fl = obj + 0xA across the loop), measured with s7/runfiles.py.
+- result: all vars=8 sp=0. bodydiff=0 for xb_e4, xb_e4b, xb_dst, xb_kind, xb_jbase, xb_srcp; 15 for xb_flag; 65 for xb_amp. Note xb_jbase is byte-neutral at vars=8 while s7's judge-pointer-alias kill (BOTH lookups through the pointer) measured vars=0 -- one folded site is enough to keep the existing orphan. Banked rejected/prebranch-fold-shapes-frame-inert-s8.c; xb_e4b saved as memory/grind/func_80030580/composable-tblentry-pointer-byte-neutral.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present
+
+## [s8-forensics] KILL RE-AUDIT: the chassis has not drifted and the three closest banked forms reproduce their s8 frame measurements exactly.
+- mechanism: mandated re-audit (floor flat since s1). candidate.c is byte-identical to pure-c-floor2-body.c and carries no FAKE constructs, so every measurement this session is a zero-FAKE measurement on the same chassis the s7/s8 kills were taken on.
+- probe: tools/wteng.ps1 main sandbox func_80030580 --disable all with pure-c-floor2-body.c applied; tools/fake_ablate.py --func func_80030580 --file code6cac_b --candidate memory/grind/func_80030580/candidate.c; s7/runfiles.py over var_base.c, var_pr16_38.c, var_j4read.c, var_sa38.c.
+- result: sandbox score 2, target_insns 148, build_insns 148, rules_dropped 0. fake_ablate: "no FAKE-annotated constructs found ... nothing to ablate". base vars=8 bodydiff=0 (p110); pr16_38 vars=24 bodydiff=4 sp=0 (p89 | p116 | p188 -- the Judge-banned self-cancel pair, still the only bytes-proven frame form); j4read vars=24 bodydiff=25 (p110 | p130 | p143); sa38 vars=16 bodydiff=4 (p110 | p182).
+- verdict: CONFIRMED
+
+### FRONTIER (rewritten by s8-forensics)
+1. **A combine substitution that makes a REAL loaded value unused.** The predicate is now exact
+   (combine.c:10835, REG_DEAD && place == 0 && tem != 0), and the search is narrowed to shapes
+   where combine's substitution DROPS an operand rather than folding it into the consumer. Every
+   operand-dropping fold measured so far (self-cancel + K - K, multiply-by-zero, truncation) is
+   semantically vacuous; every operand-folding shape (packed-word extraction, pre-branch address,
+   read-back) rehomes the note. Probe: enumerate the GCC 2.7.2 combine simplifications that delete
+   an operand (simplify_binary_operation / simplify_and_const_int / make_compound_operation) and
+   ask for each whether the C that triggers it can carry real meaning -- e.g. a mask that provably
+   covers a value's range, or a shift pair whose result equals the input on the actual data.
+2. **A second folded-symbol site that costs no load.** The site law (slots = folded-Judge-sites - 1)
+   plus xb_jbase (one lookup through jb = &Judge, vars=8 bodydiff=0) shows folding survives a named
+   base pointer. Untried: whether a SECOND global symbol referenced once -- e.g. replacing an
+   existing tbl-relative read with a directly indexed read of D_8008E194 at the identical address --
+   adds a folded site without adding a load. Probe with s7/runfiles.py; require vars>=16 at
+   bodydiff=0.
+3. **The disposition question is unchanged and belongs to an escalation-modality session.** Four
+   more families died this session (read-back, packed-word extraction, cross-jump duplication,
+   pre-branch fold), on top of the nineteen of s8 and the eight of s7, with the only bytes-proven
+   frame form still the Judge-banned self-cancel pair. Do NOT dispose of the function from a
+   non-escalation modality.
+
+## [s8] The extra loads of the s8 self-cancel frame lever survive cse and cse2 and are deleted by COMBINE; the orphan (use (reg N)) insns that become the 8-byte alter_reg slots are emitted by combine.c/distribute_notes, not by cse2 as the s8 ledger recorded.
+- mechanism: distribute_notes emits a bare (use (reg N)) at tools/gcc-2.7.2/combine.c:10835-10840 when a REG_DEAD note finds no insn to be rehomed on (place == 0) and the backward scan has crossed a CODE_LABEL (tem != 0). That leaves a pseudo with refs but no live range; global.c gives it no hard register; reload1.c alter_reg then calls assign_stack_local (SImode, 8, -1) on each, and align == -1 rounds every slot to 8 bytes.
+- probe: New instrument tmp/grind/func_80030580/s8/dumpvar.py dumps every RTL pass (-da) for an arbitrary variant body; sections extracted and counted with tmp/grind/func_80030580/s8/dsec.py over var_base.c, var_sa38.c, var_rb_o54.c, var_rb_tbl.c.
+- result: (use (reg counts inside the func_80030580 section: base = 1 at rtl/jump/cse/loop/cse2/flow, 2 at combine, 2 at lreg, 1 at greg. sa38 (the byte-neutral single-site cancel, vars=16) = 1 through flow, 4 at combine, 4 at lreg, 2 at greg. The sa38 .cse2 section is 929 lines against base 914, i.e. the extra load/add/sub insns are still present after cse2 and vanish in combine. This corrects the s8 attribution and yields a two-clause search predicate: clause A - the dead register's death scan must cross a CODE_LABEL; clause B - combine's substitution must leave the register with no remaining reference at all.
+- verdict: CONFIRMED
+
+## [s8] The READ-BACK family - consuming a field the function has just stored instead of the value stored - leaves the frame at vars=8 in ten shapes on this chassis, because GCC 2.7.2 cse does not forward these stores to the later loads, so the read-back stays a real instruction.
+- mechanism: The frame lever needs a load that reaches combine and is then made unused. A read-back of obj+2, obj+4, obj+7, obj+8, obj+0x54 or obj+0xA is not proven redundant by cse (the intervening stores go through u8*/u16* pointers into the same object), so the load is emitted as real code: it adds body bytes rather than an unallocated pseudo.
+- probe: tmp/grind/func_80030580/s8/mkrb.py generating var_rb_tbl / rb_o50 / rb_o54 / rb_o58 / rb_ang / rb_arm1 / rb_arm2 / rb_i plus two unchanged controls (rb_o6, rb_o44), all measured with tmp/grind/func_80030580/s7/runfiles.py under the instrumented cc1 (BB2_FRAME_DEBUG=1).
+- result: Every shape vars=8 sp=0 with ctx=spill_new only. bodydiff: controls 0/0, rb_o54 3, rb_o58 3, rb_arm2 5, rb_o50 6, rb_i 7, rb_tbl 9, rb_arm1 22, rb_ang 37. Banked memory/grind/func_80030580/rejected/readback-of-stored-field-frame-inert-s8.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session (target_insns 148, build_insns 148, rules_dropped 0); tools/fake_ablate.py reports no FAKE-annotated constructs in candidate.c
+
+## [s8] The PACKED-WORD EXTRACTION family - spelling a narrow load as a field extraction from the containing aligned 32-bit word - compiles to identical bytes in eight of ten shapes but leaves the frame at vars=8 on this chassis.
+- mechanism: (*(u32 *)(src + 0x1C8) >> 16) & 0xFFF in place of *(u16 *)(src + 0x1CA) & 0xFFF puts an lw plus a shift into RTL, but combine narrows the pair back to a single lhu at the +0x1CA offset; the narrowed insn still references the pseudo, so the REG_DEAD note is rehomed (place != 0 at combine.c:10835) and no orphan (use) is emitted. Clause B of the predicate fails.
+- probe: tmp/grind/func_80030580/s8/mkpk.py generating var_pk_s4 / pk_s1a / pk_j1 / pk_j2 / pk_o56 / pk_j12 / pk_j1o56 / pk_j1u / pk_all plus the pk_o44 control, measured with s7/runfiles.py.
+- result: All ten vars=8 sp=0. bodydiff=0 for pk_j1, pk_j2, pk_j12, pk_j1o56, pk_j1u, pk_o56, pk_s1a (and the control); bodydiff=2 for pk_s4 and pk_all. The byte-neutral spellings are banked as free composables in rejected/packed-word-extraction-frame-inert-s8.c. This also measures the sub-word-read family applied on the SOURCE side as frame-inert here.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present
+
+## [s8] Frontier item 3 - placing real insns before reload so that post-reload jump2 cross-jumping tail-merges them away while the frame stays sized - does not yield a byte-neutral carrier in the five arm-duplication shapes measured on this chassis.
+- mechanism: Cross-jumping dedups identical arm tails but always keeps one copy, so the extra instructions remain in the body; and duplicated Judge re-stores contribute only one extra slot no matter how many copies exist, because cse merges the copies' folded addresses long before reload fixes the frame.
+- probe: tmp/grind/func_80030580/s8/mkcj.py generating var_cj_tail4 (the existing obj+0x50 / obj+5 / obj+0 tail duplicated into all four tbl[0] arms), var_cj_jonly4, var_cj_jt2, var_cj_jt3, var_cj_jt4 (a same-value Judge re-store duplicated into 2/3/4 arms), measured with s7/runfiles.py.
+- result: cj_tail4 vars=8 bodydiff=17; cj_jonly4 vars=16 bodydiff=37; cj_jt2 vars=16 bodydiff=53; cj_jt3 vars=16 bodydiff=35; cj_jt4 vars=16 bodydiff=44. Also corrects the s8 reading of armdup50/armdup58: a single duplicated statement is byte-neutral, a three-statement tail duplicated at four arms is not. Banked rejected/crossjump-arm-duplication-not-byte-neutral-s8.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present
+
+## [s8] The PRE-BRANCH FOLD family - a value or address computed before the tbl[0] arm chain and consumed inside an arm, built directly from clause A of the combine.c:10835 predicate - leaves the frame at vars=8 in eight shapes, six of them byte-neutral.
+- mechanism: The arm's CODE_LABEL satisfies clause A (tem != 0), but combine folds the pre-branch address into the arm's memory operand, and the folded insn still references the base pseudo, so the death note is rehomed and clause B (place == 0) fails. Satisfying the label half of the predicate is not sufficient.
+- probe: tmp/grind/func_80030580/s8/mkxb.py generating var_xb_e4 / xb_e4b (s16 *e4 = tbl + 4 consumed in the arms), xb_dst (s16 *d = obj + 0x5C with all arm stores through d[0..2]), xb_kind (named tbl[0] driving the chain), xb_amp (named tbl[2]), xb_srcp (source position pointer), xb_jbase (jb = &Judge for the first lookup), xb_flag (u8 *fl = obj + 0xA across the loop), measured with s7/runfiles.py.
+- result: All eight vars=8 sp=0. bodydiff=0 for xb_e4, xb_e4b, xb_dst, xb_kind, xb_jbase, xb_srcp; 15 for xb_flag; 65 for xb_amp. Side finding: xb_jbase (ONE lookup through a &Judge pointer) is byte-neutral and KEEPS the existing p110 orphan, whereas the s7 kill (BOTH lookups through the pointer) measured vars=0 - one folded site suffices to preserve the orphan. Banked rejected/prebranch-fold-shapes-frame-inert-s8.c; xb_e4b saved as memory/grind/func_80030580/composable-tblentry-pointer-byte-neutral.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present
+
+## [s8] KILL RE-AUDIT: the chassis has not drifted and the three closest banked forms reproduce their s8 frame measurements exactly with zero FAKE carriers.
+- mechanism: Mandated re-audit because the floor has been flat since s1 and every banked kill is chassis-relative. candidate.c is byte-identical to pure-c-floor2-body.c and carries no FAKE construct, so all of this session's measurements are zero-FAKE measurements on the same chassis the s7/s8 kills were taken on.
+- probe: tools/wteng.ps1 main sandbox func_80030580 --disable all with pure-c-floor2-body.c applied; tools/fake_ablate.py --func func_80030580 --file code6cac_b --candidate memory/grind/func_80030580/candidate.c; s7/runfiles.py over var_base.c, var_pr16_38.c, var_j4read.c, var_sa38.c.
+- result: sandbox score 2, target_insns 148, build_insns 148, rules_dropped 0. fake_ablate: no FAKE-annotated constructs found, nothing to ablate. base vars=8 bodydiff=0 (p110); pr16_38 vars=24 bodydiff=4 sp=0 (p89 | p116 | p188 - the Judge-banned self-cancel pair, still the only bytes-proven frame form); j4read vars=24 bodydiff=25 (p110 | p130 | p143); sa38 vars=16 bodydiff=4 (p110 | p182). Identical to s8.
+- verdict: CONFIRMED
