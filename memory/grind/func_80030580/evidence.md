@@ -510,3 +510,136 @@ Sources: `tmp/grind/func_80030580/s5/var_<name>.c`.
 - [s5] New reusable instrument: tmp/grind/func_80030580/s5/genprobe.py plus gen_probe.c / gen2.c / gen3.c - a standalone orphan-generator catalog probe that answers 'does construct X generate a phantom slot?' in one cc1 run with no src edit and no sandbox run.
 
 - [s5] src/code6cac_b.c was restored to HEAD at the end of the session; the working tree carries only memory/grind/func_80030580/ ledger changes.
+
+## Session 6 (2026-09-02, synthesis) — floor 2 → **0 (bytes proven, construct UNRULED)**
+
+### Chassis re-measured this session
+`sandbox func_80030580 --disable all` = **2** with candidate.c's previous body
+(= s1/draft3.c, now preserved as `memory/grind/func_80030580/pure-c-floor2-body.c`)
+applied to src/code6cac_b.c. `tools/fake_ablate.py` again reports no FAKE-annotated
+constructs, so every s1–s6 instance kill is a zero-FAKE measurement.
+
+### KILL RE-AUDIT (mandated) — the site-law kills all reproduce exactly
+`INSTR=1 PYTHONPATH=. python3 tmp/grind/func_80030580/s3/frame3.py base j3read j4read
+dupX armsvx armsvx_keep arms2` on the current chassis:
+
+    base          vars= 8  bodydiff=  0   p110
+    j3read        vars=16  bodydiff= 18   p110 p130
+    j4read        vars=24  bodydiff= 25   p110 p130 p143   <- exact target frame
+    dupX          vars=16  bodydiff= 15   p110 p125
+    arms2         vars=16  bodydiff= 17   p110 p130
+    armsvx        vars= 8  bodydiff= 84   p115
+    armsvx_keep   vars=16  bodydiff= 73   p110 p130
+
+Identical to s3/s4/s5. Note that `armsvx` (one site MOVED into all four arms = four
+sites) yields ONE slot and `armsvx_keep` (five sites) yields two — so the
+`slots = sites - 1` law is a straight-line-block law, not a global one; duplicated
+sites in sibling arms collapse.
+
+### AXIS A KILLED — symbol-address bias is folded before the pseudos separate
+New idea, measured with `tmp/grind/func_80030580/s6/frame6.py`: respell an EXISTING
+Judge lookup as `(&Judge + K)[i - K]` so that combine has two intermediate address
+pseudos to fold instead of one, buying an orphan with no emitted instruction. Every
+spelling — `bias1`, `bias2`, `biasboth` (both sites), `biasneg` (negative bias),
+`bias1s` (K=1), `biases` (a different K per site), `biasp` (a biased `s16 *` pointer
+local shared by both sites) — is bodydiff=0 and **vars=8**, i.e. body-neutral and
+frame-inert; the byte-offset spelling `biasbyte` collapses the existing orphan to
+vars=0 at bodydiff 4. cse folds the constant into the symbol before the address chain
+ever splits. Banked `rejected/symbol-address-bias-frame-inert.c`. The upside: seven
+more body-neutral composables.
+
+### FRONTIER 3 ANSWERED — no untouched non-spill_new slot found in a leaf
+`tmp/grind/func_80030580/s6/gen4.c` (run through `s5/genprobe.py`) probed eleven shapes
+that could plausibly allocate a stack object a leaf never touches: a union word/half pun
+(`e1`), three struct-temp shapes (`e2`/`e8`/`e11`), a struct copy through a local
+(`e3`), a pointer-cast struct copy (`e4`), a two-halfword struct read as a word (`e5`),
+`long long` arithmetic (`e6`), a 64-bit `(x*y)>>12` (`e7`), and a struct-typed
+conditional expression (`e9`). Every shape that allocated anything got a
+`ctx=stack_temp` **with 3–9 `($sp)` accesses** (e2/e3/e5/e8/e11); every shape with sp=0
+had vars=0 — except `e10`, which is generator 4 below and is `ctx=spill_new`. The same
+file also confirms that the constructs func_80030580 already contains generate nothing
+on their own: the pointer-biv slot-search loop (`f1`), `(x*y)>>12` (`f2`), the `/32`
+(`f3`), the four-arm equality chain (`f4`), a `Vec3i` global-to-global copy (`f5`), and
+an `(s16)` truncation of a Judge read (`f8`) are all vars=0.
+
+### GENERATOR 4 — a register-allocated union of one SImode and two HImode members
+`tmp/grind/func_80030580/s6/gen5.c` and `gen6.c`, bisected across 29 standalone shapes:
+
+    a1  U4 u; u.h[0]=x; u.h[1]=x; g_w[0]=u.w;                    vars= 8 sp=0  1 spill_new
+    a7  g_w[0] = (x & 0xFFFF) | (x << 16);                       vars= 0 sp=0  SAME emitted insns as a1
+    a10 U4 u; u.h[0]=x; u.h[1]=x; return u.w;                    vars=16 sp=0  2 spill_new
+    a11 U4 u; u.h[0]=x; u.h[1]=x; g_h[0]=u.h[1];                 vars=16 sp=0  2 spill_new, ONE emitted sh
+    a13 two independent unions                                   vars=16 sp=0  2 spill_new
+    b1  U4 u; u.h[0]=0; u.h[1]=x; g_h[0]=u.h[0]; g_u[1]=u.h[1];  vars=16 sp=0  2 spill_new
+    b3  U4 u; u.w=x; g_u[0]=u.h[0]; g_u[1]=u.h[1];               vars= 0
+    c1  u16 a=0, b=x; g_h[0]=a; g_u[1]=b;                        vars= 0   identical data flow, no union
+    d1  struct { u16 a, b; } s; ...                              vars= 8 sp=2  ctx=stack_temp
+    d2  union { s32 w; struct { u16 a, b; } h; } ...             vars=16 sp=0  2 spill_new
+    a3 / a4  only ONE half written                               vars= 0
+    a6  union with four u8 members                               vars= 0
+
+Load-bearing conditions, all measured: (i) the object must be a UNION containing a
+word-sized member — the same data flow in two plain `u16` locals (c1/c2/c3) or a bare
+two-halfword struct (d1) produces nothing or a real sp-touching `stack_temp`; (ii) BOTH
+halfword members must be written — writing one (a3/a4) gives vars=0; (iii) the members
+must be HImode — a four-`u8` union (a6) gives vars=0; (iv) reading a half back rather
+than the word doubles the yield (a11/a10 = 2 slots, a1 = 1). Decisively, **a1 and a7
+emit the identical instruction sequence** while a1 reserves 8 phantom bytes and a7
+reserves none — this generator is byte-free.
+
+### The generator closes the function: sandbox --disable all = 0
+In-function sweeps with `tmp/grind/func_80030580/s6/frame6.py` (+ `extra6.py`):
+
+    z05   union{s32 w;u16 h[2]} z; z.h[0]=0; z.h[1]=0;
+          *(u8 *)(obj+5)=z.h[0]; *(s16 *)obj=z.h[1];        vars=24 bodydiff=4 sp=0 -> SANDBOX 0
+    z05n  same with a named struct { u16 a, b; } in the union   vars=24 bodydiff=4
+    z78   same pair hosted on the obj+7 / obj+8 byte stores      vars=24 bodydiff=4
+    z05b  union declared in a block around the two stores        vars=24 bodydiff=4
+    z05i / z05u   s16 members / u32 word member                  vars=24 bodydiff=4
+    u0 / u2 / u0b   dead-member spellings                        vars=24 bodydiff=4 -> SANDBOX 0
+    u56h1 / u54 / u56blk / u58   dead-member, mid-function        vars=24 bodydiff=6
+    u56h0 / u56w / u5456   overshoot                             vars=32
+    z05s bare struct / z05a u16 array                            vars=16 bodydiff=11 sp=3
+    q54 / q54n / q56 / q0a   live pair, DIFFERENT values          vars=16 bodydiff=26-31
+    q5c   live pair inside kind-chain arm 1                      vars=24 bodydiff=74
+    u5c   dead-member spelling inside arm 1                      vars=24 bodydiff=27
+
+bodydiff=4 is exactly the two wanted prologue/epilogue lines (`subu $sp,$sp,8` ->
+`subu $sp,$sp,24` and the matching `addu`), i.e. the body is byte-identical AND the
+frame is exact. `engine sandbox func_80030580 --disable all` printed **"score": 0** with
+`var_z05.c` applied to src/code6cac_b.c, and again with `var_u0.c`.
+
+The byte-neutral placements all need the two union members to hold the SAME value
+(zero), because reading two different values back out of the union forces shift/mask
+composition (q54 +28 lines). That is why the closing placements are the function's zero
+stores.
+
+### Why this is a ruling-request and not a candidate-ready
+The construct is an AGGREGATE-typed local whose only effect on the program is the frame.
+Honest six-test result: T1 FAIL (behaviour is identical without it), T2 FAIL (a reader
+asks why two zeros are routed through a union), T3 FAIL (the mechanism is a named GCC
+pass — combine distributing an orphaned REG_DEAD note as `(use (reg N))`, which reload's
+`alter_reg` then backs with a stack slot that emits nothing), T4 pass (found by a
+standalone generator census, not by search output), T6 pass (`z` announces nothing). T5
+is the open question: the frozen constant-holder grant
+(`.claude/rules/named-local-fake-exception.md`) is scalars-only with frame coercion
+forbidden, while each union MEMBER satisfies the named-intermediate prongs (fresh,
+once-written, once-read, a real value landing in the target's bytes, byte-neutral) — the
+union OBJECT is the thing doing the work, and no frozen family names an aggregate in
+that role. First reach of an unsanctioned family is a cheat regardless of spelling, so
+the session asks rather than submits.
+`docs/reference/sotn-construct-index.md` contains ZERO occurrences of "union" — it does
+not index union locals, so it is silent on this construct and provides no precedent
+either way.
+
+- [s6] Chassis re-measured: sandbox func_80030580 --disable all = 2 with the s1-s5 body (now preserved as memory/grind/func_80030580/pure-c-floor2-body.c); fake_ablate reports no FAKE constructs in it.
+- [s6] Kill re-audit reproduces s3/s4/s5 exactly (base 8/0, j3read 16/18, j4read 24/25, dupX 16/15, arms2 16/17, armsvx 8/84, armsvx_keep 16/73). armsvx (four sites in four arms) yielding ONE slot shows the sites-1 law is per-straight-line-block, not global.
+- [s6] AXIS A KILLED: the symbol-address bias identity (&Judge)[i] == (&Judge + K)[i - K] is body-neutral but frame-inert in seven spellings (bias1/bias2/biasboth/biasneg/bias1s/biases/biasp all vars=8); cse folds the constant into the symbol before the address pseudos separate. biasbyte collapses the existing orphan to vars=0 at bodydiff 4.
+- [s6] FRONTIER 3 ANSWERED for eleven shapes: no construct probed (union word/half pun, struct temps, struct copies through a local, long long arithmetic, 64-bit (x*y)>>12, struct-typed conditional) produces an UNTOUCHED non-spill_new slot in a leaf - every ctx=stack_temp came with 3-9 ($sp) accesses. The constructs func_80030580 already contains (pointer-biv loop, (x*y)>>12, /32, four-arm chain, Vec3i copy, (s16) truncation of a Judge read) generate nothing standalone.
+- [s6] GENERATOR 4 FOUND: a 4-byte UNION local with an SImode member and two HImode members, both halfword members written and at least one read back, is register-allocated (sp=0) and yields TWO ctx=spill_new orphan slots (gen6.c b1/d2, gen5.c a10/a11). It is BYTE-FREE: gen5.c a1 and a7 emit the identical instruction sequence, a1 with 8 phantom bytes and a7 with none.
+- [s6] Generator 4 preconditions are all measured: the union wrapper with a word member is required (two plain u16 locals c1/c2 = vars 0; a bare two-halfword struct d1 and a u16[2] array become a real ctx=stack_temp with ($sp) traffic, in-function z05s/z05a = vars 16 with 3 sp accesses and 11 body lines); both halves must be written (a3/a4 = 0); the members must be HImode (a four-u8 union a6 = 0); a union written as a word and split gives nothing (b3 = 0).
+- [s6] THE FUNCTION CLOSES AT ZERO: variant z05 - union { s32 w; u16 h[2]; } z; z.h[0]=0; z.h[1]=0; *(u8 *)(obj+5)=z.h[0]; *(s16 *)obj=z.h[1]; - measures vars=24, sp=0, three ctx=spill_new slots and bodydiff=4 (only the two wanted sp lines), and engine sandbox func_80030580 --disable all printed "score": 0. Equivalent byte-neutral placements: z05n, z78, z05b, z05i, z05u, and the dead-member spellings u0/u2/u0b.
+- [s6] Byte-neutrality requires the two union members to carry the SAME value, so the closing placements are the function zero stores; a live pair holding two DIFFERENT real values (q54/q54n/q56/q0a/q5c) costs 26-74 body-diff lines because reading the members back forces shift/mask composition.
+- [s6] The construct is UNRULED, not accepted: it fails the six-test checklist on T1/T2/T3 and no frozen family covers an aggregate-typed local in this role (named-local-fake-exception.md is scalars-only with frame coercion forbidden; the named-intermediate prongs describe each union MEMBER but not the union OBJECT). docs/reference/sotn-construct-index.md has zero occurrences of "union", so it does not index this construct and is silent rather than negative.
+- [s6] Instruments: tmp/grind/func_80030580/s6/frame6.py + extra6.py (in-function sweep, same harness as s3/s5) and gen4.c / gen5.c / gen6.c (standalone catalog probes run through s5/genprobe.py).
+- [s6] src/code6cac_b.c restored to HEAD at the end of the session; the working tree carries only memory/grind/func_80030580/ ledger changes.

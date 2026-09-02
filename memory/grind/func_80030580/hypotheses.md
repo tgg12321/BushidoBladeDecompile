@@ -568,3 +568,47 @@ session), no FAKE constructs present.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s6] The s3/s4/s5 indexed-Judge site-law kills still hold on the current chassis, and the law is a straight-line-block law rather than a global one
+- mechanism: An instance kill is only as good as the chassis and FAKE state it was measured under, so the mandated re-audit re-ran the two closest-to-target forms (j4read, the cheapest form reaching the exact vars=24, and dupX) plus the arm-duplication forms on the tree as it stands today.
+- probe: INSTR=1 PYTHONPATH=. python3 tmp/grind/func_80030580/s3/frame3.py base j3read j4read dupX armsvx armsvx_keep arms2, with tools/fake_ablate.py first confirming candidate.c carries no FAKE-annotated construct to ablate.
+- result: base 8/0, j3read 16/18, j4read 24/25, dupX 16/15, arms2 16/17, armsvx 8/84, armsvx_keep 16/73 - byte-for-byte the s3/s4/s5 numbers. New refinement: armsvx MOVES one site into all four arms (four sites) and yields ONE slot, while armsvx_keep (five sites) yields two, so slots = sites - 1 counts sites within a straight-line block; sites duplicated into sibling arms collapse to one.
+- verdict: CONFIRMED
+
+## [s6] An existing Judge lookup can be respelled with a constant symbol bias that the index cancels, giving combine a second address pseudo to fold and orphan without emitting any instruction
+- mechanism: (&Judge)[i] and (&Judge + K)[i - K] denote the same address, but the front end lowers the second as t = &Judge + 2K then u = t + 2*(i-K) then mem(u) - one extra intermediate pseudo per site whose constant contribution is zero, so the emitted address arithmetic should be unchanged after constant folding while combine gets a second REG_DEAD note to orphan.
+- probe: Seven spellings through the new tmp/grind/func_80030580/s6/frame6.py sweep - bias1 (first site, K=0x400), bias2 (second site), biasboth, biasneg (negative K), bias1s (K=1), biases (a different K per site) and biasp (a biased s16 * pointer local shared by both sites) - plus biasbyte, the byte-offset spelling of the same identity.
+- result: bias1, bias2, biasboth, biasneg, bias1s, biases and biasp are ALL bodydiff=0 with vars=8 and the single ctx=spill_new_p110 slot - body-neutral and completely frame-inert; biasbyte collapses the existing orphan to vars=0 at bodydiff 4. cse folds the constant into the symbol_ref before the address chain ever splits into two pseudos, so no second note exists to orphan. Banked rejected/symbol-address-bias-frame-inert.c; the seven neutral spellings join the composable bank.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s1/draft3.c body applied to src/code6cac_b.c (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s6] The target's vars=24 need not be three 8-byte orphans - some construct allocates a non-spill_new stack object that a leaf function never touches, so 8+8+4 or 8+16 would also round to 24
+- mechanism: Every session since s2 assumed three orphans on the strength of a census of OUR compiled corpus, which is an argument about the sample rather than about the target; s1 only ever tested one non-spill_new shape (a Vec3i temp local, which does touch sp), leaving the space of untouched stack_temp / stack_local constructs essentially unexplored.
+- probe: Eleven standalone shapes in tmp/grind/func_80030580/s6/gen4.c through s5/genprobe.py, chosen to cover the untested quadrant: a union word/half pun (e1), three struct-temp shapes (e2/e8/e11), a struct copy through a local (e3), a pointer-cast struct copy (e4), a two-halfword struct read as a word (e5), long long arithmetic (e6), a 64-bit (x*y)>>12 (e7), and a struct-typed conditional expression (e9).
+- result: Every shape that allocated anything at all got a ctx=stack_temp WITH real sp traffic - e2 vars=16/sp=6, e3 vars=16/sp=9, e5 vars=8/sp=3, e8 vars=16/sp=9, e11 vars=16/sp=7 - and every shape with sp=0 measured vars=0, except e10, which turned out to be generator 4 and is ctx=spill_new after all. Across these eleven shapes no construct produced an untouched non-spill_new slot, so the three-orphan reading of the target's frame survives this probe.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: standalone probe corpus compiled with the project cpp/cc1 flags under BB2_FRAME_DEBUG=1, no FAKE constructs present
+
+## [s6] A fourth phantom-slot generator exists that fires on a construct func_80030580 can host byte-neutrally, supplying the missing two slots without adding a Judge lookup site
+- mechanism: Three generators were known (the indexed-global fold at sites-1, the truncated magic-multiply division at one per site, and the inert HImode-bitwise form). The s5 genprobe instrument reduces "does construct X generate a phantom slot?" to one cc1 run, so the remaining catalog could be swept directly rather than reasoned about.
+- probe: 29 standalone shapes in tmp/grind/func_80030580/s6/gen5.c and gen6.c, then the surviving shape hosted in-function at eleven different sites through tmp/grind/func_80030580/s6/frame6.py + extra6.py, each measured for vars=, ($sp) count, FRAMEDBG context list and fdiff against the s1 base; the two cheapest were then confirmed with engine sandbox func_80030580 --disable all.
+- result: CONFIRMED. A 4-byte union local holding an SImode member and two HImode members, where both halfword members are written and at least one is read back, is register-allocated (sp=0) and yields TWO ctx=spill_new orphan slots - gen6.c b1 and d2, gen5.c a10 and a11 all measure vars=16 with sp=0. The generator is byte-free: gen5.c a1 (union) and a7 (the plain (x & 0xFFFF) | (x << 16) spelling) emit the identical instruction sequence, a1 reserving 8 phantom bytes and a7 none. Preconditions measured: the union wrapper with a word member is required (two plain u16 locals c1/c2 give vars=0; a bare two-halfword struct d1 and a u16[2] array become a real stack_temp with sp traffic), both halves must be written (a3/a4 give 0), the members must be HImode (a four-u8 union a6 gives 0), and a union written as a word then split gives nothing (b3 = 0). Hosted on the function's last two zero stores - union { s32 w; u16 h[2]; } z; z.h[0]=0; z.h[1]=0; *(u8 *)(obj+5)=z.h[0]; *(s16 *)obj=z.h[1]; - it measures vars=24, sp=0, three ctx=spill_new slots and bodydiff=4, where all four diff lines are the wanted subu $sp,$sp,8 -> subu $sp,$sp,24 prologue/epilogue pair, and engine sandbox func_80030580 --disable all printed "score": 0. Equivalent byte-neutral placements: z05n, z78, z05b, z05i, z05u, u0, u2, u0b.
+- verdict: CONFIRMED
+
+## [s6] The union generator can be spelled with every member carrying a distinct real value, making it ordinary C rather than a coercion construct
+- mechanism: If the two union members held two DIFFERENT values that the target actually stores, the union would be a genuine packing intermediate - each member written once from a real value and read once into a store the target emits - and the construct would sit inside the named-intermediate prongs rather than outside every frozen family.
+- probe: Five in-function placements where the two halves carry different real values - q54 and q54n (0 and the angle, into obj+0x54 / obj+0x56), q56 (the angle and 0, into obj+0x56 / obj+0x58), q0a (the slot index and arg1, into obj+0xA / obj+2) and q5c (0 and the spin value, inside kind-chain arm 1) - measured with frame6.py.
+- result: All five change the body substantially: q54 and q54n bodydiff=28, q56 bodydiff=26, q0a bodydiff=31 (all vars=16), q5c bodydiff=74 (vars=24). Reading two different values back out of the union forces shift/mask composition that the target does not emit. Byte-neutrality is only reached when both members carry the SAME value, which on this function means zero - so the only byte-neutral placements are the function's zero stores, where the union has no packing role. Banked rejected/live-union-pair-halfword-store-body-28.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s1/draft3.c body applied to src/code6cac_b.c (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s6] The union wrapper is incidental and a plain two-halfword struct or u16[2] array would give the same frame bytes
+- mechanism: If the phantom slots came from the pair of HImode objects rather than from the union type, the construct could be spelled without a union - and a written-then-read local array would fall under a rule family with an existing (if narrow) grant path.
+- probe: z05s (struct { u16 a, b; }) and z05a (u16 z[2]) hosted at the same site as z05, plus the standalone controls gen6.c d1 (struct) and gen5.c a14 (struct read through an s32 cast).
+- result: Both in-function forms measure vars=16 with THREE ($sp) accesses and bodydiff=11 - the object becomes a real ctx=stack_temp that emits sh/sh/lw against the frame, which is neither byte-neutral nor the target's untouched-frame signature. The standalone controls agree (d1 vars=8 sp=2 stack_temp; a14 vars=8 sp=3 stack_temp). The union wrapper with a word-sized member is what keeps the object in registers. Banked rejected/bare-struct-halfword-pair-spills-to-stack.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s1/draft3.c body applied to src/code6cac_b.c (sandbox --disable all = 2 re-measured this session), no FAKE constructs present

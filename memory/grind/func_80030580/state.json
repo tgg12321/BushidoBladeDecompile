@@ -52,7 +52,9 @@
    "next_probe": "Use s5/genprobe.py to enumerate constructs that produce a non-spill_new ctx= with ZERO ($sp) accesses in a leaf: unions, casts between struct types, a struct-typed conditional expression, a struct-valued comma expression, a struct copy whose destination is immediately overwritten, and a 4-byte object alongside the existing orphan. Any hit that emits no sp traffic is then spelled in-function and measured for bodydiff with frame5.py."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Restore memory/grind/func_80030580/pure-c-floor2-body.c as the chassis; the only frozen route to the target's 24 untouched locals bytes is the Phantom-frame-slot volatile pad local family in its exact sanctioned form (volatile u32 pad[N], first-decl position, // !FAKE annotation, engine allowlist row, frame forensics per .claude/rules/phantom-slot-frame-lever.md) -- measure it, do not respell the aggregate carrier."
+ ],
  "banned_constructs": [],
  "kills": [
   {
