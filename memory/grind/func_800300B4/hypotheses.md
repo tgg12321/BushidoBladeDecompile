@@ -885,3 +885,90 @@ Frontier after s8 (strongest first):
 - probe: bash tmp/grind/func_800300B4/s8/pc.sh v_base (v_base = memory/grind/func_800300B4/best_ban_compliant.c verbatim), plus python3 tools/fake_ablate.py --func func_800300B4 --file code6cac_b --candidate memory/grind/func_800300B4/rejected/named-hw-pointer-for-pack-low-half-s4-7.c over the full FAKE-unit grid.
 - result: v_base = 7 on HEAD a1f92d7b, identical to s3/s4/s5/s6/s7. fake_ablate enumerates exactly ONE FAKE unit in the closest banked kill (the do-while(0) wrap at L56) and scores the full 2^1 grid: keep-all 7, drop-1 19, both variants building at 83 insns. The banked kill was therefore not measured under a FAKE carrier occupying a pseudo its lever wanted -- the wrap serves the four call-crossing seats (s5 H27) and is orthogonal to the island-2 pack.
 - verdict: CONFIRMED
+
+## [s9] H38: raising ordinary-C register pressure across the island-2 pack window moves the pack quantities off $v0/$v1 toward the target's $t5/$t6.
+
+**Verdict: KILLED (instance).** Measured on HEAD 1daa9018, `best_ban_compliant.c` chassis
+(pack-in-C island 2, no banned construct, single banked do-while(0) FAKE present),
+`tmp/grind/func_800300B4/s9/v_maxlive.c`.
+
+**Mechanism probed.** s6 H29/H30 established that the pack quantities carry no register
+suggestions (ncopysugg=0 nsugg=0), so `find_free_reg` falls through to the plain ascending
+hard-register scan. s9 first pinned down what "ascending" means here: **`REG_ALLOC_ORDER` is not
+defined for the MIPS back end** (`grep -n REG_ALLOC_ORDER tools/gcc-2.7.2/config/mips/mips.h`
+returns nothing), so `tools/gcc-2.7.2/local-alloc.c:2251` takes the `#else` arm `int regno = i;`
+and the scan is literally regno 0,1,2,3,... The seat a quantity receives is therefore exactly
+`min { regno : regno not in first_used, HARD_REGNO_MODE_OK }`. Confirmed against the whole
+function: every one of the 18 quantities in the base form got precisely the lowest free regno
+(`tmp/grind/func_800300B4/s9/suggdbg_region.txt`). The lever this suggests is to make regnos
+2..12 conflict over the pack quantity's live range so the scan is forced up to 13.
+
+**Probe.** Hoist five long-lived ordinary-C values above the island-2 pack so they are live
+across it: `t5 = mat[5]; t6 = mat[6]; t7 = mat[7]; lookup = (&D_8008EB80)[*(s16 *)(arg0 + 2)];
+a10 = arg0[10];` (each consumed unchanged later in the body -- pure statement reordering, no FAKE,
+no new construct). Measure `sandbox --disable all` and re-run the instrumented cc1 with
+BB2_SUGG_DEBUG=1 / BB2_QTY_DEBUG=1.
+
+**Result.** Score **52** (base 7, build_insns 84). The five hoisted quantities do become live
+across the pack and do take extra registers -- qty7/qty8/qty10 get $7/$8/$9
+(`tmp/grind/func_800300B4/s9/suggdbg_maxlive_region.txt`) -- but the **pack seats do not move at
+all**: qty4 got=2, qty5 got=3, exactly as in the base form (base: qty4 got=2, qty5 got=3, qty6
+got=2). The pressure is spent on the wrong quantities.
+
+## [s9] H39: some register-pressure form exists that outranks the pack quantities and so forces the ascending scan past $2..$12 to the target's $t5/$t6.
+
+**Verdict: KILLED (class).** Predicate: `qty_compare_1`'s priority formula,
+`tools/gcc-2.7.2/local-alloc.c:1666`.
+
+**Mechanism.** H38's probe failed for a structural reason visible in the dump ordering, not for a
+tuning reason. `local_alloc` sorts quantities by `qty_compare_1` and allocates in that order; a
+conflicting register is only unavailable to the pack if its occupant was **already allocated**,
+i.e. ranks ahead of the pack quantity. Priority is
+`floor_log2(n_refs) * n_refs * size / (death - birth)` (local-alloc.c:1666-1673, indices are two
+per insn). The island-2 pack quantity qty4 has refs=4 over born=20/dead=26, i.e.
+`floor_log2(4)*4/6 = 1.333` -- one of the highest priorities in the function, because it is a
+3-instruction temp. It is allocated at ord=4 of 18 in the base form and ord=4 of 19 in the
+max-pressure form; the five hoisted quantities land at ord=15/16/17 and later, *after* the pack
+has already taken $2/$3. That is why adding pressure is inert: anything long-lived enough to span
+the pack window is, by the same formula, lower-priority than the pack and allocated later.
+
+**The budget argument closes the class.** A competitor must (a) be live across the pack
+quantity's whole [born=20, dead=26] range, so its own lifetime is >= 6 index units, and (b) beat
+priority 1.333, so it needs `floor_log2(r) * r > 8`, i.e. r >= 5 references, all of which must sit
+inside its (>= 6-unit, i.e. >= 3-instruction) live range for the ratio to hold -- a longer range
+raises the reference requirement proportionally. Reaching regno 13 needs regnos 2,3,5,6,7,8,9,10,
+11 additionally occupied (4 and 12 already conflict: $a0 and the island's own `$12` clobber), i.e.
+**nine** such competitors, hence >= 45 register references inside the same 3-instruction window.
+MIPS instructions carry at most 3 register references each, so that window can hold at most ~9.
+The requirement exceeds the available reference budget by a factor of five, independent of C
+spelling. The register-pressure axis of the RA lock is therefore closed, and s6 H30's measured
+datum (make $v0/$v1 busy -> pack moves exactly two seats, $3 -> $5, score 9) is exactly what the
+`min free regno` model predicts, not a partial success to be pushed further.
+
+**Consequence.** With H32 + H35 + H36 closing the cse layer and H27 (local-alloc.c:1666
+priority), H29 (local-alloc.c:2207 suggestion bypass) and now H39 (local-alloc.c:1666 ordering +
+reference budget) closing the RA layer, no remaining source-side input to either pass changes what
+that pass sees for the island-2 pack. A future session must not re-open "make registers busy".
+
+## [s9] The banked s5/s6 FAKE-free control for best_ban_compliant.c (19) and the wrapped form (7) still hold on the current chassis, so no banked kill is voided by chassis drift.
+- mechanism: Mandated kill re-audit after three flat sessions: re-measure the closest banked form on HEAD and with every FAKE construct ablated. tools/fake_ablate.py deletes the whole annotated statement span rather than the do{ }while(0) braces, so the honest control is a hand brace-removal.
+- probe: Applied memory/grind/func_800300B4/best_ban_compliant.c over the INCLUDE_ASM line and ran `sandbox func_800300B4 --disable all`; then applied tmp/grind/func_800300B4/s9/v_fakefree.c (identical body, braces removed, annotation deleted) and re-measured; also ran tools/fake_ablate.py for comparison.
+- result: Wrapped form 7 (83/83, rules_dropped 0); hand-ablated FAKE-free control 19 (build_insns 83) - both identical to the s5/s6/s7/s8 numbers. fake_ablate reports drop-1 27 at build_insns 76, i.e. it measured a 7-instruction-shorter program; that 27 is a tool artifact and not a chassis change. Banked as evidence.md s9 items 1-2.
+- verdict: CONFIRMED
+
+## [s9] Raising ordinary-C register pressure across the island-2 pack window moves the pack quantities off $v0/$v1 toward the target's $t5/$t6.
+- mechanism: s6 H29 showed the pack quantities carry no register suggestions, so find_free_reg falls through to the ascending hard-register scan. s9 established what ascending means: REG_ALLOC_ORDER is not defined for the MIPS back end (no hit in tools/gcc-2.7.2/config/mips/mips.h), so local-alloc.c:2251 takes the `int regno = i;` arm and the seat is exactly the lowest-numbered register not in first_used. That predicts the lever: make regnos 2..12 conflict over the pack quantity's live range.
+- probe: tmp/grind/func_800300B4/s9/v_maxlive.c - hoist five ordinary-C values (mat[5], mat[6], mat[7], the D_8008EB80 lookup, arg0[10]) above the island-2 pack so they are live across it, each consumed unchanged later (pure statement reordering, no new construct, no added FAKE). Measured sandbox --disable all and re-ran the instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_SUGG_DEBUG=1 BB2_QTY_DEBUG=1.
+- result: Score 52 (base 7), build_insns 84. The five hoisted quantities do become live across the pack and take $7/$8/$9, but the pack seats are bit-for-bit unchanged: qty4 got=2, qty5 got=3, exactly as in the base dump. Banked as rejected/pressure-hoist-pack-seats-unchanged-s9-52.c; dumps suggdbg_region.txt (base) and suggdbg_maxlive_region.txt (probe).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 1daa9018, best_ban_compliant.c chassis (pack-in-C island 2, no banned construct, islands 1/3 as banked), FAKE = the single banked do-while(0) wrap present and unmodified
+
+## [s9] Some register-pressure form outranks the island-2 pack quantities in local-alloc's allocation order and so forces the ascending scan past regnos 2..12 onto the target's $t5/$t6.
+- mechanism: local_alloc sorts quantities with qty_compare_1 and allocates in that order, so a register is only unavailable to the pack if its occupant was allocated FIRST. Priority is floor_log2(n_refs)*n_refs*size/(death-birth) at tools/gcc-2.7.2/local-alloc.c:1666. The pack temp is a 3-instruction quantity with refs=4 over born=20/dead=26, priority 1.333, allocated 4th of 19 - ahead of anything long-lived enough to span it. A competitor must be live across the pack's whole [20,26] range (lifetime >= 6 index units) AND beat 1.333, needing floor_log2(r)*r > 8, i.e. >= 5 references inside its own >= 3-instruction range; a longer range raises the requirement proportionally. Reaching regno 13 needs regnos 2,3,5,6,7,8,9,10,11 additionally occupied (4 and 12 already conflict: $a0 and the island's own $12 clobber) - nine such competitors, hence >= 45 register references inside a 3-instruction window that MIPS instructions can supply at most ~9 of.
+- probe: Read qty_compare_1's formula at local-alloc.c:1650-1683 and find_free_reg's scan at local-alloc.c:2249-2258; extracted the full per-quantity allocation order (ord=, refs=, birth=, death=, got=) for both compilations from the instrumented-cc1 dumps and checked the min-free-regno model against all 18 base and 19 probe quantities; combined with the H38 measurement and s6 H30's datum (making $v0/$v1 busy moves the pack exactly two seats, $3 -> $5, score 9 - precisely what min-free-regno predicts).
+- result: The model is exact for every quantity in both compilations, and the reference budget is exceeded by roughly a factor of five. The register-pressure axis of the RA lock is closed; s6 H30's two-seat move was the model behaving, not a partial success to push further. With the cse layer already closed on both find_best_addr branches (s7 H32, s8 H35) and shown worthless even when broken (s8 H36), and the RA layer closed at priority (s5 H27), suggestion bypass (s6 H29) and now ordering (s9 H39), no source-side input to either pass remains unenumerated for the island-2 pack.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 1daa9018, best_ban_compliant.c chassis and the v_maxlive pressure form, instrumented cc1 tools/gcc-2.7.2/cc1 with BB2_SUGG_DEBUG/BB2_QTY_DEBUG; single banked do-while(0) FAKE present in both
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:1666

@@ -1011,3 +1011,66 @@ rejected/pack-ptr-arg0-0x20-cse-remerges-s8-7.c.
 - [s8] global.c allocates no allocnos in this function (nrefs_census reports no ALLOCDBG rows on a real C body); all register decisions here are local-alloc quantities, which is why BB2_QTY_DEBUG / BB2_SUGG_DEBUG have been the only productive RA instrumentation.
 
 - [s8] No candidate was submitted, no ruling was re-requested, and none of the banned constructs or struck rulings were relied on. The island-2 policy question at docs/grind/borderline.md:370 is unchanged; an s8 addendum was appended there recording items 3-6 above.
+
+## s9 (forensics) -- chassis re-audit + the register-pressure axis of the RA lock, closed
+
+- [s9] **Chassis re-measured on HEAD 1daa9018.** `memory/grind/func_800300B4/best_ban_compliant.c`
+  applied over the `INCLUDE_ASM` line scores `sandbox func_800300B4 --disable all` = **7**
+  (83/83, rules_dropped 0). The mandated kill re-audit (floor flat 3 sessions) was run on the
+  closest banked form: the FAKE ablation, done by hand as brace-removal
+  (`tmp/grind/func_800300B4/s9/v_fakefree.c`), still measures **19** with build_insns 83 -- the
+  s5 H27 / s6 datum is intact and **no banked kill needed voiding**. src was restored to
+  `INCLUDE_ASM` afterwards; the working tree carries only `metrics/events.jsonl`.
+
+- [s9] **`tools/fake_ablate.py` mis-ablates this form -- use hand brace-removal instead.**
+  `fake_ablate --candidate best_ban_compliant.c` reports drop-1 = 27 at build_insns **76**
+  (`tmp/grind/func_800300B4/s9/fake_ablate_s9.txt`). The 7-instruction shortfall is the tool
+  deleting the whole annotated statement span rather than just the `do {` / `} while (0);`
+  braces, so the 27 is measured on a different program and is not the FAKE-free control. The
+  honest control is 19. Recorded so a later session does not read 27 as a chassis change.
+
+- [s9] **The MIPS back end defines no `REG_ALLOC_ORDER`.** `grep -n REG_ALLOC_ORDER
+  tools/gcc-2.7.2/config/mips/mips.h` returns nothing, so `find_free_reg`'s scan takes the
+  `#else` arm at `tools/gcc-2.7.2/local-alloc.c:2251` (`int regno = i;`) and walks hard registers
+  in plain numeric order. Consequence, verified against all 18 quantities of the base form and all
+  19 of the pressure form: **the seat a quantity receives is exactly the lowest-numbered hard
+  register not in `first_used`**. This makes the RA half of the island-2 residual fully
+  predictive rather than descriptive -- BB2_SUGG_DEBUG's `used=` list alone now tells you the
+  seat before you build.
+
+- [s9] **Base-form island-2 pack quantities (`tmp/grind/func_800300B4/s9/suggdbg_region.txt`).**
+  qty4 (reg 92, born 20, dead 26, refs 4) used={0,1,4,26..67} -> got **2**; qty5 (reg 77, born 22,
+  dead 30, refs 4) used={0,1,2,4,12,...} -> got **3**; qty6 (reg 76, born 28, dead 30, refs 2)
+  used={0,1,3,4,12,...} -> got **2**. Regno 12 conflicts only because the island's own asm
+  clobbers `$12`; regnos 5..11 and 13..15 are free at every one of those calls. The allocator
+  passes over a free $13/$14 purely on index order.
+
+- [s9] **The register-pressure lever is measured inert and then closed as a class (H38/H39).**
+  Hoisting five ordinary-C values (`mat[5]`, `mat[6]`, `mat[7]`, the `D_8008EB80` lookup and
+  `arg0[10]`) above the pack so they are live across it scores **52** and leaves the pack seats
+  bit-for-bit unchanged at $2/$3, while the hoisted quantities themselves take $7/$8/$9
+  (`tmp/grind/func_800300B4/s9/{v_maxlive.c,suggdbg_maxlive_region.txt}`, banked as
+  `rejected/pressure-hoist-pack-seats-unchanged-s9-52.c`). The reason is allocation ORDER, not
+  pressure: `qty_compare_1` (local-alloc.c:1666) ranks by
+  `floor_log2(refs)*refs*size/(death-birth)`, the 3-instruction pack temp scores 1.333 and is
+  allocated at ord=4 of 19, while every quantity long-lived enough to span the pack window scores
+  an order of magnitude lower and is allocated after the pack has already taken $2/$3. Forcing
+  the scan to regno 13 would need nine additional quantities each simultaneously live across the
+  pack's 3-instruction range and each carrying >= 5 references inside it -- >= 45 register
+  references in a window that can hold at most ~9. See H39 for the arithmetic.
+
+- [s9] The island-2 policy question at `docs/grind/borderline.md:370` is unchanged. No candidate
+  was submitted, no ruling was re-requested, no banned construct or struck ruling was relied on,
+  and `memory/grind/func_800300B4/candidate.c` is untouched.
+
+- [s9] Chassis re-measured on HEAD 1daa9018: best_ban_compliant.c = 7 (83/83, rules_dropped 0); hand-ablated FAKE-free control = 19 (build_insns 83). No banked kill voided.
+
+- [s9] tools/fake_ablate.py mis-ablates this form - its drop-1 (27, build_insns 76) deletes the whole annotated statement span, not just the do{ }while(0) braces, so it measures a 7-instruction-shorter program. The honest FAKE-free control is 19; a later session must not read 27 as chassis drift.
+
+- [s9] The MIPS back end defines no REG_ALLOC_ORDER (no hit in tools/gcc-2.7.2/config/mips/mips.h), so find_free_reg takes the #else arm at local-alloc.c:2251 and scans hard registers in plain numeric order. Verified against all 18 quantities of the base form and all 19 of the pressure form: the seat is exactly the lowest-numbered register not in first_used. The RA half of this residual is now predictive from the SUGGDBG used= list alone, before building.
+
+- [s9] Base-form island-2 pack quantities: qty4 (born 20, dead 26, refs 4) used={0,1,4,26..67} -> $2; qty5 (born 22, dead 30, refs 4) used={0,1,2,4,12,...} -> $3; qty6 (born 28, dead 30, refs 2) -> $2. Regno 12 conflicts only because the island's own asm clobbers $12; regnos 5..11 and 13..15 are free at every one of those calls, so the allocator passes over a free $13/$14 purely on index order.
+
+- [s9] Maximal ordinary-C pressure across the pack window (five hoisted live values) scores 52 and leaves the pack seats unchanged at $2/$3 while the hoisted quantities take $7/$8/$9 - the pressure lands on quantities allocated AFTER the pack, because qty_compare_1 ranks the 3-instruction pack temp 4th of 19.
+
+- [s9] src/code6cac_b.c was restored to INCLUDE_ASM("asm/funcs", func_800300B4); at the end of the session; the working tree carries only metrics/events.jsonl. candidate.c is untouched, no candidate was submitted, no ruling was re-requested, and no banned construct or struck ruling was relied on.

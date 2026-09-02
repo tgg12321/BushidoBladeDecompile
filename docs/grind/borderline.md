@@ -524,3 +524,31 @@ macro body, whose lhu/lhu/sll/or is template text rather than an addressing prea
 is that the alternative (respell the pack in ordinary C) is now closed at the cse layer by a complete
 enumeration of both find_best_addr branches, on top of the local-alloc closures of s5/s6, and that
 succeeding at the cse layer would not have moved the floor anyway.
+
+### 2026-09-02 — func_800300B4 — s9 addendum (forensics modality): the RA lock's register-pressure axis is closed by a reference-budget argument, and the seat model is now predictive
+
+The s7/s8 addenda closed the pre-RA (cse.c) lock and showed breaking it buys nothing. s9 closes
+the last open axis on the RA side of the same residual, so the island-2 pack is now understood
+end to end rather than merely observed.
+
+1. `REG_ALLOC_ORDER` is not defined for the MIPS back end (`tools/gcc-2.7.2/config/mips/mips.h`),
+   so `find_free_reg` takes the `#else` arm at `tools/gcc-2.7.2/local-alloc.c:2251` and scans hard
+   registers in plain numeric order. Verified against every quantity of two whole compilations:
+   the seat is exactly the lowest-numbered register not in `first_used`.
+2. In the ban-compliant 7-form the island-2 pack quantities are allocated $2/$3/$2 while $5..$11
+   and $13..$15 are demonstrably free at those calls (`tmp/grind/func_800300B4/s9/suggdbg_region.txt`).
+   The target's pack sits in $t5/$t6 based on $t4 — registers the C side can only reach if regnos
+   2..12 all conflict.
+3. Making them conflict is measured inert and then closed as a class (hypotheses.md H38/H39): a
+   maximal ordinary-C pressure form scores 52 with the pack seats unchanged at $2/$3, because
+   `qty_compare_1` (local-alloc.c:1666) ranks the 3-instruction pack temp at priority 1.333 and
+   allocates it 4th of 19, ahead of anything long-lived enough to span it. Reaching regno 13 would
+   require nine competitors each live across the pack's 3-instruction range with >= 5 references
+   inside it — >= 45 register references in a window that can carry at most ~9.
+
+Net effect on this entry's question: unchanged in substance, stronger in evidence. Both halves of
+the doubly-locked residual — cse.c find_best_addr on both branches (s7 H32, s8 H35), and
+local-alloc on all three of its decision points (s5 H27 priority, s6 H29 suggestion bypass, s9 H39
+ordering + reference budget) — are now enumerated to exhaustion with named predicates. The whole
+remaining distance between func_800300B4 and COMPLETED-C is the owner's cluster-condition-3
+reading recorded at the head of this entry, and no source-side input to any pass remains untried.
