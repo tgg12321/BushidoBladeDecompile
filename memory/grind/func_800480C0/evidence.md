@@ -337,3 +337,122 @@
 - [s5] Three further spellings folding guards onto both of this body's conditional branches (P entry+backedge guards, Q mixed signed/unsigned, R get_cs-style range test) still measure unalloc_pseudos=1 / vars=8 (P, Q) or 0 / 0 (R), and all three take a ninth callee-saved register, moving every sp offset further from the target. Running total 30 structural forms.
 
 - [s5] Reusable instruments added: tmp/grind/func_800480C0/s5/census.sh (compile all 32 TUs), census2.py (untouched-vars-window census with the frame-address filter), census3.py (adds the mult/div correlation), alloc_tu.sh (per-TU BB2_ALLOC_DEBUG capture), dump2.sh (per-TU -da dumps via -dumpbase). They are function-agnostic and apply to any frame-residual grind.
+
+## s6 — synthesis (2026-09-02, chassis HEAD ba593529, -mel, 0 regfix/asmfix rules)
+
+- **Chassis re-measured: floor 20.** `sandbox func_800480C0 --disable all` with
+  `memory/grind/func_800480C0/candidate.c` installed prints
+  `{"score": 20, "target_insns": 74, "build_insns": 74}`. Bare HEAD (INCLUDE_ASM)
+  prints 74 / `no_c_body: true`. src/text1b.c restored to HEAD afterwards.
+
+- **THE PHANTOM-SLOT MECHANISM IS NOW NAMED AND DUMP-VERIFIED, not inferred.**
+  s3/s5 described the producer as "an ST_REGS-classed compare residue". The dumps
+  say something more specific and far more actionable: the phantom is an orphan
+  `(insn N (use (reg:M P)))` planted by **combine.c's `distribute_notes`**
+  (`tools/gcc-2.7.2/combine.c:10832-10841`). When combine rewrites or deletes the
+  insn that DEFINED intermediate pseudo P, P's `REG_DEAD` note has no home; the
+  backward scan at `combine.c:10757-10762` walks `prev_nonnote_insn` only while the
+  predecessor is an `INSN`/`CALL_INSN`, so it stops at the block's leading
+  JUMP_INSN or CODE_LABEL, and with `place == 0 && tem != 0` combine emits
+  `(use P)` right after that jump/label. P then has NO set and NO constraint-bearing
+  reference, so `regclass` records nothing for it and the `.lreg` report prints the
+  default `ST_REGS or none`; `find_reg` cannot seat it, `alter_reg` pays it a stack
+  slot, and `assign_stack_local` bumps `frame_offset` by 8. Zero instructions are
+  emitted for the `use` itself.
+  Worked exhibit (`tmp/grind/func_800480C0/s5/dumps/display.{flow,combine}`, get_cs):
+  flow has `insn 22 (set (reg:HI 83) (mem:HI D_8009BE78))`,
+  `insn 23 (set (reg:SI 85) (ashift (subreg:SI (reg:HI 83)) 16))`,
+  `insn 24 (set (reg:SI 84) (ashiftrt (reg:SI 85) 16))` carrying `REG_DEAD 85`;
+  combine turns 22 into a DELETED note, rewrites 23 to
+  `(set (reg:SI 84) (sign_extend:SI (mem:HI ...)))`, turns 24 into
+  `(set (reg:HI 83) (subreg:HI (reg:SI 84) 0))`, and plants
+  `insn 143 (use (reg:SI 85))` immediately after `jump_insn 18`.
+
+- **New instrument: the orphan-USE census.** `tmp/grind/func_800480C0/s6/count_uses.py`
+  counts pseudo-numbered `(insn ... (use (reg:M P)))` patterns per function in a
+  `.combine` dump (the hard-reg return-value `(use (reg/i:SI 2 $2))` is excluded by
+  the `P >= 64` filter). Run over six TUs (`tmp/grind/func_800480C0/s6/dumps/*.combine`
+  plus s5's display dumps) and correlated against s5's `BB2_ALLOC_DEBUG hardreg=-1`
+  counts:
+
+  | function | orphan USEs | phantoms |
+  |---|---|---|
+  | SetDrawEnv, SetDrawEnv2 (display) | 3 | 3 |
+  | get_cs, get_ce (display), func_80040594 (text1a_pre), func_80038170 (code6cac_c_mid), SpuSetCommonAttr, SsSeqCalledTbyT (main) | 2 | 2 |
+  | func_800400B0, func_800400F8 (config), func_80039320, SsVabOpenHeadWithMode, func_80086014, func_80086130 | 1 | 1 |
+  | func_80042874, func_80042A88 (text1a_c) | 0 | 6 |
+  | func_8003FECC, SpuSetReverbModeParam, _SsSeqPlay | 1 | 2 |
+
+  Orphan-USE count is an EXACT predictor of phantom count for every function whose
+  phantoms are combine residues; the mismatches are the second (mult/div DImode-HILO)
+  producer s5 already identified, either alone (0 USEs / 6 phantoms) or mixed
+  (1 USE / 2 phantoms). Call these **class A** (combine orphan USE) and
+  **class B** (everything else, incl. the mult/div HILO scratch).
+
+- **s5's tree-wide bound "no mult-free function exceeds TWO phantoms" is REFUTED by
+  counterexample.** `SetDrawEnv` (`src/display.c:360`) and its twin `SetDrawEnv2`
+  (`src/display.c:436`) are mult-free, ordinary C, COMPLETED-C on main, and each
+  carries THREE orphan USEs / THREE phantoms:
+  `tmp/grind/func_800480C0/s5/asm/display.s:1243` reads
+  `.frame $sp,64,$31   # vars= 32, regs= 3/0, args= 16` — 24 bytes of phantom plus
+  8 bytes for the live `u16 buf[4]`. s5's bound was an artifact of its own census
+  FILTER: the untouched-vars-window census only admits functions with ZERO `N($sp)`
+  traffic in the vars window, which silently excludes every function that also has a
+  live stack local. Three phantoms from ordinary C on a mult-free body therefore has
+  an in-tree precedent; the ceiling this function is fighting is not 2. The three
+  SetDrawEnv orphans are pseudos 128/137/140, all from the same
+  `s16 loc; ... if (SHORT_GLOBAL - 1 < loc) loc2 = SHORT_GLOBAL - 1;` clamp idiom
+  that produces get_cs's two (`src/display.c:392-400`).
+
+- **This body's own phantom is class B, and class A has never fired here.** Re-measured
+  on the current chassis with the s6 probe: `rejected/phantom-guard-vars8-ceiling.c`
+  gives `vars= 8, unalloc=1, orphanUSE=0` and
+  `rejected/two-branch-guards-still-one-phantom.c` gives
+  `vars= 8, regs= 9/0, unalloc=1, orphanUSE=0`. Both s4/s5 instance kills still hold
+  on HEAD ba593529 — and the new column shows WHY the 30-form ceiling never moved:
+  every spelling tried in s2-s5 was reaching for class B, whose measured multiplicity
+  on this body is 1, while the only producer that reaches 3 anywhere in this tree is
+  class A.
+
+- **Four new spellings, all class-A-negative** (`tmp/grind/func_800480C0/s6/bodies/`,
+  each measured `vars= 0, unalloc=0, orphanUSE=0`):
+  `B_s32params.c` (arg2..arg5 declared `s32` with explicit `(s16)` casts at the
+  sign-extend site — the shape the target's `lw 0x68($sp)` + `sll/sra` suggests),
+  `C_hi_intermediates.c` (four block-scope `s16` intermediates feeding the four
+  `sx_argN`), `D_fnscope_hi.c` (the same four intermediates hoisted to function
+  scope), `G_splitshift_loop.c` (`(((u32)word >> 1) >> 1) << 2` at the loop head, a
+  split shift intended to leave a foldable intermediate at a block head; GCC folds
+  constant-shift-of-constant-shift before combine ever sees two insns, so no
+  intermediate insn exists to orphan).
+
+- [s6] Chassis re-measured: sandbox --disable all with candidate.c installed prints score 20 / target 74 / build 74 on HEAD ba593529; bare HEAD prints 74 with no_c_body true.
+
+- [s6] The phantom slot is an orphan `(insn (use (reg P)))` planted by combine.c distribute_notes (tools/gcc-2.7.2/combine.c:10832-10841) when a REG_DEAD note for an intermediate pseudo whose defining insn combine rewrote or deleted has no home and the backward scan (combine.c:10757-10762) stops at the block's leading jump/label. The pseudo then has no set and no class-bearing reference, regclass leaves its printed class at the default 'ST_REGS or none', find_reg cannot seat it, and alter_reg pays 8 bytes of vars for zero emitted instructions.
+
+- [s6] New instrument tmp/grind/func_800480C0/s6/count_uses.py counts pseudo-numbered orphan USE insns per function in a .combine dump; across six TUs it is an exact predictor of the BB2_ALLOC_DEBUG hardreg=-1 count for every function whose phantoms are combine residues (class A), the residual mismatches being the mult/div DImode-HILO producer (class B).
+
+- [s6] s5's tree-wide bound 'no mult-free function exceeds two phantoms' is refuted by counterexample: SetDrawEnv (src/display.c:360) and SetDrawEnv2 (src/display.c:436) are mult-free ordinary C, COMPLETED-C on main, and each carry three orphan USEs / three phantoms with .frame $sp,64 # vars= 32 (tmp/grind/func_800480C0/s5/asm/display.s:1243). s5's bound was an artifact of its census filter, which drops any function that also has live stack traffic.
+
+- [s6] func_800480C0's own known phantom is class B, not class A: rejected/phantom-guard-vars8-ceiling.c and rejected/two-branch-guards-still-one-phantom.c both re-measure unalloc=1 with orphanUSE=0 on HEAD ba593529, so the 30-form ceiling recorded in s2-s5 is a ceiling on class B only; class A has never been triggered on this body.
+
+- [s6] Four new spellings measured negative for class A (all vars=0 / unalloc=0 / orphanUSE=0): s32-typed arg2..arg5 with explicit (s16) casts, block-scope s16 intermediates for the four sign-extends, the same intermediates at function scope, and a split shift ((word>>1)>>1)<<2 at the loop head (GCC folds constant-shift-of-constant-shift before combine, so no intermediate insn ever exists to orphan).
+
+- [s6] Reusable instruments: tmp/grind/func_800480C0/s6/probe.sh (git-checkout-clean install, cpp, instrumented cc1 frame/unalloc census, -da combine dump, orphan-USE count — one line per body), runall.sh, dumpall.sh, count_uses.py. probe.sh restores src/text1b.c from HEAD before and after every measurement, which the s3 probe did not.
+
+- [s6] Chassis re-measured this session: sandbox func_800480C0 --disable all with memory/grind/func_800480C0/candidate.c installed prints score 20, target_insns 74, build_insns 74 on HEAD ba593529; bare HEAD (INCLUDE_ASM) prints 74 with no_c_body true. src/text1b.c restored to HEAD afterwards.
+
+- [s6] The phantom slot is an orphan (insn (use (reg P))) planted by combine.c distribute_notes (tools/gcc-2.7.2/combine.c:10832-10841) when a REG_DEAD note for an intermediate pseudo whose defining insn combine rewrote or deleted has no home and the backward scan (combine.c:10757-10762) stops at the block's leading jump/label; the pseudo then has no set and no class-bearing reference, regclass leaves its printed class at the default 'ST_REGS or none', find_reg cannot seat it, and alter_reg pays 8 bytes of vars for zero emitted instructions.
+
+- [s6] Worked dump exhibit for the mechanism (get_cs, src/display.c:556): display.flow has insn 22 (set (reg:HI 83) (mem:HI D_8009BE78)), insn 23 (set (reg:SI 85) (ashift (subreg:SI (reg:HI 83)) 16)), insn 24 (set (reg:SI 84) (ashiftrt (reg:SI 85) 16)) with REG_DEAD 85; display.combine deletes 22, rewrites 23 to (set (reg:SI 84) (sign_extend:SI (mem:HI ...))), turns 24 into (set (reg:HI 83) (subreg:HI (reg:SI 84) 0)), and plants insn 143 (use (reg:SI 85)) immediately after jump_insn 18.
+
+- [s6] New instrument tmp/grind/func_800480C0/s6/count_uses.py counts pseudo-numbered orphan USE insns per function in a .combine dump (the hard-reg return-value use is excluded by a P >= 64 filter); across six TUs it is an exact predictor of the BB2_ALLOC_DEBUG hardreg=-1 count for every function whose phantoms are combine residues.
+
+- [s6] Two independent phantom producer classes are now separated by measurement: class A = combine orphan USE (SetDrawEnv/SetDrawEnv2 3, get_cs/get_ce/func_80040594/func_80038170/SpuSetCommonAttr/SsSeqCalledTbyT 2, six functions 1), class B = everything else including the mult/div DImode-HILO scratch (func_80042874 and func_80042A88 at 6 phantoms with 0 orphan USEs).
+
+- [s6] s5's tree-wide bound 'among functions containing no mult/div none exceeds two phantoms' is refuted by counterexample: SetDrawEnv (src/display.c:360) and SetDrawEnv2 (src/display.c:436) are mult-free ordinary C, COMPLETED-C on main, and each carry three orphan USEs and three phantoms with .frame $sp,64 # vars= 32, regs= 3/0, args= 16 (tmp/grind/func_800480C0/s5/asm/display.s:1243) - 24 phantom bytes plus 8 for the live u16 buf[4]. The bound was an artifact of s5's census filter, which drops any function that also owns live stack traffic.
+
+- [s6] func_800480C0's own known phantom is class B, not class A: rejected/phantom-guard-vars8-ceiling.c re-measures vars=8 / unalloc=1 / orphanUSE=0 and rejected/two-branch-guards-still-one-phantom.c re-measures vars=8 / regs=9 / unalloc=1 / orphanUSE=0 on HEAD ba593529. The 30-form ceiling recorded across s2-s5 therefore bounds class B only; the combine-orphan producer that reaches 3 in this tree has never been triggered on this body.
+
+- [s6] Four new spellings measured class-A-negative (all vars=0 / unalloc=0 / orphanUSE=0): s32-typed arg2..arg5 with explicit (s16) casts, block-scope s16 intermediates for the four sign-extends, the same intermediates at function scope, and a split shift ((word>>1)>>1)<<2 at the loop head. mips1 has no register sign-extend pattern so the ashift/ashiftrt intermediate is genuinely live, and GCC folds constant-shift-of-constant-shift before combine so no intermediate insn ever exists there to orphan.
+
+- [s6] Reusable instruments added: tmp/grind/func_800480C0/s6/probe.sh (git-checkout-clean install, cpp, instrumented cc1 frame + BB2_ALLOC_DEBUG unalloc census, -da combine dump, orphan-USE count - one line per body), runall.sh, dumpall.sh, count_uses.py. probe.sh restores src/text1b.c from HEAD before and after every measurement, which the s3 probe did not, removing the header-accumulation hazard of repeated installs.

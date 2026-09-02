@@ -382,3 +382,95 @@ re-measured **20** (74/74) this session. All s5 measurements are on that chassis
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 118e147d, all 32 src/*.c TUs as they stand on main, project cc1 plus instrumented cc1 BB2_ALLOC_DEBUG
+
+## s6 - synthesis (2026-09-02, chassis HEAD ba593529)
+
+## [s6] The phantom slot is an orphan `(insn (use (reg P)))` planted by combine.c's distribute_notes, and the orphan-USE count in a .combine dump predicts a function's phantom count exactly
+- mechanism: combine rewrites or deletes the insn that DEFINED intermediate pseudo P; P's REG_DEAD note then has no home, and the backward scan at tools/gcc-2.7.2/combine.c:10757-10762 walks prev_nonnote_insn only while the predecessor is an INSN/CALL_INSN, so it stops at the block's leading JUMP_INSN or CODE_LABEL. With place == 0 && tem != 0 combine emits `(use P)` after that jump/label (combine.c:10832-10841). P now has no set and no constraint-bearing reference, so regclass records nothing and .lreg prints the default `ST_REGS or none`; find_reg cannot seat it, alter_reg pays a stack slot, assign_stack_local bumps frame_offset by 8, and the `use` emits zero instructions.
+- probe: read display.flow / display.combine for get_cs (insns 22/23/24 -> insn 143 `(use (reg:SI 85))` planted after jump_insn 18); then tmp/grind/func_800480C0/s6/count_uses.py over six TUs' .combine dumps, correlated against s5's BB2_ALLOC_DEBUG hardreg=-1 counts.
+- result: exact 1:1 agreement wherever the phantoms are combine residues - SetDrawEnv 3/3, SetDrawEnv2 3/3, get_cs 2/2, get_ce 2/2, func_80040594 2/2, func_80038170 2/2, SpuSetCommonAttr 2/2, SsSeqCalledTbyT 2/2, six functions at 1/1. The only disagreements are the mult/div DImode-HILO producer, alone (func_80042874 0 USEs / 6 phantoms) or mixed (func_8003FECC, SpuSetReverbModeParam, _SsSeqPlay: 1 USE / 2 phantoms). Two independent producer classes are therefore established: class A = combine orphan USE, class B = everything else.
+- verdict: CONFIRMED
+
+## [s6] s5's tree-wide bound - that among functions containing no mult/div none reserves more than two phantom slots - holds
+- mechanism: s5 restricted census3.py to the 45 mult-free entries of its untouched-vars-window census and read the distinct untouched-vars values {8, 16, 32}, attributing every 32 to a declared pad array. If that bound were real, four folded-compare residues would have no in-tree precedent and the phantom route would be worth abandoning for the aggregate-forensics route.
+- probe: s6's orphan-USE census over six TUs, cross-checked against the raw `.frame` lines in tmp/grind/func_800480C0/s5/asm/display.s rather than against the filtered census.
+- result: REFUTED by counterexample. SetDrawEnv (src/display.c:360) and SetDrawEnv2 (src/display.c:436) contain no mult/multu/div/divu, are ordinary C, are COMPLETED-C on main, and each carry THREE orphan USEs and THREE phantoms; display.s:1243 reads `.frame $sp,64,$31 # vars= 32, regs= 3/0, args= 16` = 24 phantom bytes plus 8 bytes for the live `u16 buf[4]`. s5's bound was an artifact of its own census FILTER, which admits only functions with zero N($sp) traffic in the vars window and therefore drops every function that also owns a live stack local. Three phantoms from ordinary C on a mult-free body has an in-tree precedent; the ceiling is not two. The three SetDrawEnv orphans are pseudos 128/137/140, all from the `s16 loc; ... if (SHORT_GLOBAL - 1 < loc) loc2 = SHORT_GLOBAL - 1;` clamp idiom (src/display.c:392-400) that also produces get_cs's two.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ba593529, six -da TU dumps (display, text1a_c, text1a_pre, config, code6cac_c_mid, main) from the project cc1, correlated with s5's BB2_ALLOC_DEBUG captures; no FAKE construct involved (the measurement is on other functions' shipped bodies)
+
+## [s6] The single phantom the banked vars=8 forms produce is the same class-A combine orphan the multiplicity-2 and multiplicity-3 exhibits use
+- mechanism: if this body's known phantom were class A, the 30-form ceiling of s2-s5 would be a ceiling on the same producer that reaches 3 in SetDrawEnv, and raising multiplicity would be a matter of finding more sites. If it is class B, every spelling tried so far has been attacking a producer that has no multiplicity-3 exhibit anywhere in this tree.
+- probe: re-measure rejected/phantom-guard-vars8-ceiling.c and rejected/two-branch-guards-still-one-phantom.c on HEAD ba593529 with tmp/grind/func_800480C0/s6/probe.sh, which reports frame, BB2_ALLOC_DEBUG unalloc count AND the new orphan-USE count in one line.
+- result: phantom-guard-vars8-ceiling.c = `vars= 8, regs= 8/0, unalloc=1, orphanUSE=0`; two-branch-guards-still-one-phantom.c = `vars= 8, regs= 9/0, unalloc=1, orphanUSE=0`. Both s4/s5 instance kills reproduce unchanged on the current chassis, and both phantoms are class B. Class A has NEVER fired on this body in any of the 34 measured forms. This reframes the entire s2-s5 ceiling: it bounds class B, not the producer that reaches 3 in this tree.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ba593529, the two banked score-36/frame-64 guard bodies as stored in memory/grind/func_800480C0/rejected/, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump; the annotated `arg0 = 0;` dead param store present in both
+
+## [s6] A class-A orphan can be induced on this body by re-spelling the four param sign-extends or by leaving a foldable intermediate at the loop-head block boundary
+- mechanism: class A needs an intermediate pseudo whose defining insn combine rewrites or deletes and which is not referenced again before the head of its basic block. This body has two non-entry blocks whose heads are candidates - the fallthrough block after `beqz $s1` (which holds all four `sll/sra` param sign-extends) and the do-while body at .L80048144 - so a spelling that routes a foldable intermediate through either head should plant a USE.
+- probe: four bodies measured with tmp/grind/func_800480C0/s6/probe.sh - B_s32params.c (arg2..arg5 declared s32 with explicit `(s16)` casts, the shape the target's `lw 0x68($sp)` + `sll/sra` suggests), C_hi_intermediates.c (four block-scope s16 intermediates feeding sx_arg2..5), D_fnscope_hi.c (the same four hoisted to function scope), G_splitshift_loop.c (`(((u32)word >> 1) >> 1) << 2` at the loop head).
+- result: all four measure `vars= 0, unalloc=0, orphanUSE=0`. The sign-extend chains never present combine with a deletable intermediate because mips1 has no register sign-extend pattern, so `ashift`/`ashiftrt` both survive as real insns and their intermediate is genuinely live. The split shift never creates two insns at all: GCC folds constant-shift-of-constant-shift during RTL generation, long before combine.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ba593529, the four s6 bodies in tmp/grind/func_800480C0/s6/bodies/, annotated `arg0 = 0;` dead param store present in all four, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump
+
+## Frontier (for the next session)
+1. EXTRACT THE THREE SetDrawEnv ORPHAN SITES AND TEST THEM VERBATIM. SetDrawEnv is the
+   tree's only mult-free multiplicity-3 exhibit and it is ordinary C on main. Probe:
+   generate `-da` dumps for display (tmp/grind/func_800480C0/s6/dumpall.sh already does
+   this), locate pseudos 128, 137 and 140 in display.flow and display.combine, and write
+   down for each one the exact three-insn chain combine collapsed and which jump/label
+   the USE was planted after. Then ask, per site, whether the same chain can be routed
+   through func_800480C0's two block heads WITHOUT adding instructions. This is the
+   dump-named version of the question s2-s5 answered thirty times by analogy - and note
+   that the class A / class B distinction means none of those thirty spellings actually
+   tested it.
+2. INSTRUMENT THE PLANT SITE INSTEAD OF GUESSING SOURCE SHAPES. tools/gcc-2.7.2/cc1 is
+   already the instrumented compiler (BB2_*_DEBUG hooks). Add a hook at
+   combine.c:10836-10841 that logs, for every planted USE, the function, the pseudo, the
+   insn UID it was planted after, and the pattern of the insn combine had just rewritten;
+   run it over all 32 TUs. That converts "which C shapes orphan an intermediate at a
+   block head" from analogy into an exhaustive catalogue, and it is reusable by every
+   future frame-residual grind. (Editing tools/ is outside a grind session's surface -
+   the catalogue can instead be built read-only by diffing each function's .flow and
+   .combine dumps for pseudos that lose their set, which the s6 instruments already do
+   most of.)
+3. FOUR PHANTOMS OR ONE AGGREGATE (carried from s5, still unspent and now better posed).
+   With the bound of two refuted, 3 is demonstrated and 4 is no longer obviously out of
+   reach, so the aggregate-forensics item is no longer forced - but it is still the only
+   hypothesis that explains why all FOUR text1b siblings reserve exactly 32 bytes.
+   Probe: func_800482C8 and the callers of the four siblings, looking for a 32-byte
+   record (PsyQ MATRIX, 8-word buffer) that the original built on the stack and passed by
+   address, whose address-taking this decompilation folded into pointer arithmetic. A
+   LIVE such local is ordinary C and needs no allowlist row.
+
+## [s6] The phantom slot is an orphan `(insn (use (reg P)))` planted by combine.c's distribute_notes, and the orphan-USE count in a .combine dump predicts a function's phantom count exactly
+- mechanism: combine rewrites or deletes the insn that DEFINED intermediate pseudo P; P's REG_DEAD note then has no home, and the backward scan at tools/gcc-2.7.2/combine.c:10757-10762 walks prev_nonnote_insn only while the predecessor is an INSN/CALL_INSN, so it stops at the block's leading JUMP_INSN or CODE_LABEL. With place == 0 && tem != 0 combine emits `(use P)` after that jump/label (combine.c:10832-10841). P now has no set and no constraint-bearing reference, so regclass records nothing and .lreg prints the default 'ST_REGS or none'; find_reg cannot seat it, alter_reg pays a stack slot, assign_stack_local bumps frame_offset by 8, and the `use` emits zero instructions.
+- probe: Read display.flow / display.combine for get_cs (insns 22/23/24 collapse; insn 143 `(use (reg:SI 85))` planted after jump_insn 18), then ran tmp/grind/func_800480C0/s6/count_uses.py over six TUs' .combine dumps and correlated with s5's BB2_ALLOC_DEBUG hardreg=-1 counts.
+- result: Exact 1:1 agreement wherever the phantoms are combine residues: SetDrawEnv 3/3, SetDrawEnv2 3/3, get_cs 2/2, get_ce 2/2, func_80040594 2/2, func_80038170 2/2, SpuSetCommonAttr 2/2, SsSeqCalledTbyT 2/2, and six functions at 1/1. The only disagreements are the mult/div DImode-HILO producer, alone (func_80042874 and func_80042A88: 0 USEs, 6 phantoms) or mixed (func_8003FECC, SpuSetReverbModeParam, _SsSeqPlay: 1 USE, 2 phantoms). Two independent producer classes are now established: class A = combine orphan USE, class B = everything else.
+- verdict: CONFIRMED
+
+## [s6] s5's tree-wide bound - that among functions containing no mult/div none reserves more than two phantom slots - holds
+- mechanism: s5 restricted census3.py to the 45 mult-free entries of its untouched-vars-window census, read the distinct untouched-vars values {8, 16, 32}, and attributed every 32 to a declared pad array. If that bound were real, four folded-compare residues would have no in-tree precedent and the phantom route would be worth abandoning for the aggregate-forensics route.
+- probe: s6's orphan-USE census over six TUs, cross-checked against the raw `.frame` lines in tmp/grind/func_800480C0/s5/asm/display.s rather than against the filtered census output.
+- result: Refuted by counterexample. SetDrawEnv (src/display.c:360) and SetDrawEnv2 (src/display.c:436) contain no mult/multu/div/divu, are ordinary C, are COMPLETED-C on main, and each carry three orphan USEs and three phantoms; display.s:1243 reads `.frame $sp,64,$31 # vars= 32, regs= 3/0, args= 16` = 24 phantom bytes plus 8 bytes for the live `u16 buf[4]`. s5's bound was an artifact of its own census FILTER, which admits only functions with zero N($sp) traffic in the vars window and therefore drops every function that also owns a live stack local. The three SetDrawEnv orphans are pseudos 128/137/140, all from the `s16 loc; ... if (SHORT_GLOBAL - 1 < loc) loc2 = SHORT_GLOBAL - 1;` clamp idiom at src/display.c:392-400 that also produces get_cs's two. Three phantoms from ordinary C on a mult-free body has an in-tree precedent.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ba593529, six -da TU dumps (display, text1a_c, text1a_pre, config, code6cac_c_mid, main) from the project cc1, correlated with s5's BB2_ALLOC_DEBUG captures; no FAKE construct involved (the measurement is on other functions' shipped bodies)
+
+## [s6] The single phantom the banked vars=8 forms produce is the same class-A combine orphan that the multiplicity-2 and multiplicity-3 exhibits use
+- mechanism: If this body's known phantom were class A, the 30-form ceiling of s2-s5 would bound the same producer that reaches 3 in SetDrawEnv and raising multiplicity would be a matter of finding more sites. If it is class B, every spelling tried so far has been attacking a producer with no multiplicity-3 exhibit anywhere in this tree.
+- probe: Re-measured rejected/phantom-guard-vars8-ceiling.c and rejected/two-branch-guards-still-one-phantom.c on the current chassis with tmp/grind/func_800480C0/s6/probe.sh, which reports frame, BB2_ALLOC_DEBUG unalloc count and the new orphan-USE count in one line.
+- result: phantom-guard-vars8-ceiling.c = vars= 8, regs= 8/0, unalloc=1, orphanUSE=0; two-branch-guards-still-one-phantom.c = vars= 8, regs= 9/0, unalloc=1, orphanUSE=0. Both s4/s5 instance kills reproduce unchanged on HEAD ba593529, and both phantoms are class B. Class A has not fired on this body in any of the 34 measured forms. This reframes the whole s2-s5 ceiling: it bounds class B, not the producer that reaches 3 in this tree.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ba593529, the two banked score-36/frame-64 guard bodies as stored in memory/grind/func_800480C0/rejected/, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump; the annotated `arg0 = 0;` dead param store present in both
+
+## [s6] A class-A orphan can be induced on this body by re-spelling the four param sign-extends or by leaving a foldable intermediate at the loop-head block boundary
+- mechanism: Class A needs an intermediate pseudo whose defining insn combine rewrites or deletes and which is not referenced again before the head of its basic block. This body has two non-entry blocks whose heads are candidates: the fallthrough block after `beqz $s1` (which holds all four sll/sra param sign-extends) and the do-while body at .L80048144.
+- probe: Four bodies measured with tmp/grind/func_800480C0/s6/probe.sh: B_s32params.c (arg2..arg5 declared s32 with explicit (s16) casts, the shape the target's `lw 0x68($sp)` + sll/sra suggests), C_hi_intermediates.c (four block-scope s16 intermediates feeding sx_arg2..5), D_fnscope_hi.c (the same four hoisted to function scope), G_splitshift_loop.c (`(((u32)word >> 1) >> 1) << 2` at the loop head).
+- result: All four measure vars= 0, unalloc=0, orphanUSE=0. The sign-extend chains never present combine with a deletable intermediate because mips1 has no register sign-extend pattern, so ashift and ashiftrt both survive as real insns and the intermediate between them is genuinely live. The split shift never creates two insns at all: GCC folds constant-shift-of-constant-shift during RTL generation, long before combine runs. Bodies banked in memory/grind/func_800480C0/rejected/s6-*.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ba593529, the four s6 bodies in tmp/grind/func_800480C0/s6/bodies/, annotated `arg0 = 0;` dead param store present in all four, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump

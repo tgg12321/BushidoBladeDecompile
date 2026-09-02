@@ -1,7 +1,7 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 5,
+ "session_count": 6,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -33,23 +33,29 @@
    "floor": 20,
    "modality": "synthesis",
    "headline": "Phantom-slot unit corrected 4->8 bytes (target needs FOUR phantoms, not eight); tree census answers s4 frontier 1 as a HIT - 54 ordinary-C bodies on main reserve untouched vars, eight reach two phanto"
+  },
+  {
+   "session": 6,
+   "floor": 20,
+   "modality": "synthesis",
+   "headline": "Phantom slot identified as a combine.c distribute_notes orphan USE (combine.c:10832-10841); s5's mult-free bound of two phantoms refuted by SetDrawEnv (3 phantoms, vars=32, ordinary C); this body's ow"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The RTL shape that orphans a SECOND ST_REGS residue is identifiable from get_cs, the cheapest live exhibit of multiplicity 2 on main, and may be spellable onto one of func_800480C0's two conditional branches.",
-   "mechanism": "regclass assigns the residue class ST_REGS so find_reg cannot seat it in GR_REGS and alter_reg pays it an 8-byte slot; which compare survives to regclass unfolded is decided in combine/jump2, and the dumps name it rather than leaving it to analogy.",
-   "next_probe": "Read tmp/grind/func_800480C0/s5/dumps/display.{combine,lreg,greg} for get_cs blocks 1 and 6 and identify exactly which insn pair leaves Registers 85 and 99 ref'd-but-unallocated; then test that exact shape on this body's entry test and do-while backedge. Thirty guard-shaped spellings have failed by analogy - the dump names the shape in one read."
+   "hypothesis": "The three SetDrawEnv/SetDrawEnv2 orphan sites (pseudos 128, 137, 140) name three concrete three-insn chains combine collapses at a block head, and at least one of them can be routed through one of func_800480C0's two block heads without adding instructions.",
+   "mechanism": "class A fires when combine rewrites or deletes the DEF insn of an intermediate pseudo that is not referenced again before the head of its basic block (combine.c:10757-10762 backward scan terminating on the leading JUMP_INSN/CODE_LABEL, plant at combine.c:10836-10841). SetDrawEnv is the tree's only mult-free multiplicity-3 exhibit, and it is ordinary C on main.",
+   "next_probe": "tmp/grind/func_800480C0/s6/dumpall.sh already regenerates display's -da dumps. Locate pseudos 128, 137 and 140 in display.flow and display.combine, and write down per site the exact chain combine collapsed and which jump/label the USE was planted after. Then ask, per site, whether that chain can be spelled onto func_800480C0's fallthrough block after `beqz $s1` or its do-while body at .L80048144 without changing the 74-insn stream. Note the s6 class A / class B split means none of the thirty s2-s5 spellings actually tested this."
   },
   {
-   "hypothesis": "The target's 32 bytes are one 32-byte AGGREGATE from the original source rather than four coincidental phantom residues, shared by all four text1b siblings.",
-   "mechanism": "function.c assign_stack_local reserves an aggregate slot at RTL-expand from the source DECL and never reclaims frame_offset; a PsyQ MATRIX is exactly 32 bytes. BB2_ALLOC_DEBUG reports ZERO unallocated pseudos for func_80047EE8/func_80047FBC, so the siblings' identical 32-byte regions are a declaration, not residues.",
-   "next_probe": "forensics on func_800482C8 and the callers of the four siblings: look for a 32-byte record (MATRIX / 8-word buffer) the original built on the stack and passed by address, whose address-taking this decompilation folded into pointer arithmetic. A LIVE such local is ordinary C and needs no allowlist row."
+   "hypothesis": "Class A and class B stack, so a body carrying both a folded guard (class B, measured 1 here) and a class-A orphan reaches two phantoms / vars=16 on this function.",
+   "mechanism": "The two producers are independent: class B is a compare residue local-alloc cannot seat; class A is an orphan USE with no set at all. func_8003FECC, SpuSetReverbModeParam and _SsSeqPlay already show 1 orphan USE alongside 1 non-USE phantom in the same function, i.e. the classes co-exist in shipped ordinary C.",
+   "next_probe": "Install rejected/phantom-guard-vars8-ceiling.c (class B, unalloc=1) as the chassis and add whichever class-A trigger frontier 1 identifies; measure with tmp/grind/func_800480C0/s6/probe.sh and record unalloc, vars and the insn delta. Even a costly two-phantom form is worth banking: it is the first measurement above the ceiling s2-s5 established, and it decides whether 4 is an arithmetic sum of the two classes or needs class A alone at multiplicity 4."
   },
   {
-   "hypothesis": "The unwritten volatile pad remains the only in-hand producer of exactly 32 bytes here and is blocked only by the closed per-function enumeration in engine/volatile_cheats.py.",
-   "mechanism": "engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS is a per-function frozenset (engine/volatile_cheats.py:746-770); the three text1b siblings with the identical region ship exactly this construct on main under the 2026-08-20 and 2026-08-22 owner rulings.",
-   "next_probe": "None available to a grind session - the bytes-proven body is preserved at memory/grind/func_800480C0/rejected/pad-judge-banned-2026-09-02.c and integrates unchanged if an owner ruling adds the row (Judge FAIL 2026-09-02 04:28, docs/grind/decisions.md:20349). Do not respend it; spend frontier 1 and 2 first."
+   "hypothesis": "The target's 32 bytes are one 32-byte AGGREGATE from the original source rather than four phantom residues, shared by all four text1b siblings.",
+   "mechanism": "function.c assign_stack_local reserves an aggregate slot at RTL-expand from the source DECL and never reclaims frame_offset; a PsyQ MATRIX is exactly 32 bytes. BB2_ALLOC_DEBUG reports ZERO unallocated pseudos for func_80047EE8/func_80047FBC, so the siblings' identical 32-byte regions are a declaration in the shipped source, not residues. This is carried from s5 and remains unspent - and s6's refutation of the bound of two means it is no longer the forced fallback, just the only hypothesis that explains why all four siblings reserve exactly 32.",
+   "next_probe": "Forensics on func_800482C8 and on the callers of the four siblings: look for a 32-byte record (MATRIX / 8-word buffer) the original built on the stack and passed by address, whose address-taking this decompilation folded into pointer arithmetic. A LIVE such local is ordinary C and needs no allowlist row."
   }
  ],
  "judge_constraints": [
@@ -152,6 +158,30 @@
    "measured_on": "HEAD 118e147d, all 32 src/*.c TUs as they stand on main, project cc1 plus instrumented cc1 BB2_ALLOC_DEBUG",
    "predicate_cite": "",
    "result": "Over that subset untouched vars takes exactly the values {8, 16, 32}, and every 32 belongs to a sanctioned-pad function "
+  },
+  {
+   "session": 6,
+   "statement": "s5's tree-wide bound - that among functions containing no mult/div none reserves more than two phantom slots - holds",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ba593529, six -da TU dumps (display, text1a_c, text1a_pre, config, code6cac_c_mid, main) from the project cc1, correlated with s5's BB2_ALLOC_DEBUG captures; no FAKE construct involved (the measu",
+   "predicate_cite": "",
+   "result": "Refuted by counterexample. SetDrawEnv (src/display.c:360) and SetDrawEnv2 (src/display.c:436) contain no mult/multu/div/"
+  },
+  {
+   "session": 6,
+   "statement": "The single phantom the banked vars=8 forms produce is the same class-A combine orphan that the multiplicity-2 and multiplicity-3 exhibits use",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ba593529, the two banked score-36/frame-64 guard bodies as stored in memory/grind/func_800480C0/rejected/, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump; the annotated `arg0 = 0;` dead p",
+   "predicate_cite": "",
+   "result": "phantom-guard-vars8-ceiling.c = vars= 8, regs= 8/0, unalloc=1, orphanUSE=0; two-branch-guards-still-one-phantom.c = vars"
+  },
+  {
+   "session": 6,
+   "statement": "A class-A orphan can be induced on this body by re-spelling the four param sign-extends or by leaving a foldable intermediate at the loop-head block boundary",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ba593529, the four s6 bodies in tmp/grind/func_800480C0/s6/bodies/, annotated `arg0 = 0;` dead param store present in all four, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump",
+   "predicate_cite": "",
+   "result": "All four measure vars= 0, unalloc=0, orphanUSE=0. The sign-extend chains never present combine with a deletable intermed"
   }
  ],
  "ladder_skip": 0,

@@ -57,6 +57,41 @@
  *  folded-compare residues on a mult-free body has no precedent in this tree.
  *  Instruments: tmp/grind/func_800480C0/s5/{census.sh,census2.py,census3.py,
  *  alloc_tu.sh,dump2.sh}. */
+/* s6 (synthesis, 2026-09-02, chassis HEAD ba593529) - BODY UNCHANGED, floor
+ * re-measured 20 (74/74). Two ledger corrections, both dump-verified:
+ *  1. THE PHANTOM PRODUCER HAS A NAME. s3/s5 called it "an ST_REGS-classed
+ *     compare residue". It is an orphan `(insn (use (reg P)))` planted by
+ *     combine.c's distribute_notes (tools/gcc-2.7.2/combine.c:10832-10841):
+ *     combine rewrites/deletes the insn that DEFINED intermediate pseudo P,
+ *     P's REG_DEAD note finds no home, the backward scan (combine.c:10757-10762)
+ *     stops at the block's leading jump/label, and the USE is planted there.
+ *     P then has no set and no constraint-bearing reference, so regclass leaves
+ *     its printed class at the default `ST_REGS or none`, find_reg cannot seat
+ *     it, and alter_reg pays 8 bytes of vars for zero emitted instructions.
+ *     New instrument tmp/grind/func_800480C0/s6/count_uses.py counts these per
+ *     function in a .combine dump; over six TUs it predicts the BB2_ALLOC_DEBUG
+ *     phantom count exactly (SetDrawEnv 3/3, get_cs 2/2, ... ), the only
+ *     disagreements being the mult/div DImode-HILO producer.
+ *  2. s5's TREE-WIDE BOUND OF TWO IS REFUTED. SetDrawEnv (src/display.c:360)
+ *     and SetDrawEnv2 (src/display.c:436) are mult-free ordinary C, COMPLETED-C
+ *     on main, and each carry THREE orphan USEs / THREE phantoms:
+ *     tmp/grind/func_800480C0/s5/asm/display.s:1243 reads
+ *     `.frame $sp,64 # vars= 32, regs= 3/0, args= 16` (24 phantom + 8 for the
+ *     live u16 buf[4]). s5's bound was an artifact of its census filter, which
+ *     drops any function that also owns live stack traffic.
+ *  AND THE REFRAME THAT MATTERS: this body's own phantom is the OTHER class.
+ *  rejected/phantom-guard-vars8-ceiling.c and
+ *  rejected/two-branch-guards-still-one-phantom.c both re-measure unalloc=1 with
+ *  orphanUSE=0 on the current chassis, so the 30-form ceiling of s2-s5 bounds
+ *  class B (non-combine) only; the combine-orphan producer that reaches 3 in
+ *  this tree has never fired on func_800480C0 at all.
+ *  Four new spellings measured class-A-negative (vars=0/unalloc=0/orphanUSE=0),
+ *  banked in rejected/: s32-typed params with explicit (s16) casts, block-scope
+ *  s16 intermediates, function-scope s16 intermediates, and a split shift
+ *  ((word>>1)>>1)<<2 at the loop head.
+ *  Instruments: tmp/grind/func_800480C0/s6/{probe.sh,runall.sh,dumpall.sh,
+ *  count_uses.py}. probe.sh restores src/text1b.c from HEAD around every
+ *  measurement, which the s3 probe did not. */
 void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
 {
     u32 *p;
