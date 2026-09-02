@@ -534,14 +534,51 @@ def _has_measurement(text):
 # then cited by later sessions as class-level law. A kill now declares its
 # scope: `instance` kills are chassis-relative and re-testable; `class` kills
 # must cite the gate predicate by file:line.
+#
+# The class-claim scan reads the STATEMENT field ONLY (review 2026-09-02):
+# replaying it over statement+result across 484 kill-bearing sessions would
+# have discarded 17.1% of them, 95 of 110 trips coming from the `result`
+# narration, where sweeping words describe a measurement rather than assert a
+# law. `foreclosed` and `by construction` are likewise dropped from the
+# vocabulary: the solver playbook and the escalation gate MANDATE those words,
+# so matching them punished sessions for obeying the driver.
 KILL_SCOPES = ("instance", "class")
 _CLASS_CLAIM_RE = re.compile(
     r"\b(any (natural )?(geometry|form|spelling|shape)|every (form|spelling|chassis)|"
     r"all (forms|spellings|chassis)|no natural|unreachable|impossible|permanently|"
-    r"foreclosed|cannot (ever|be made to)|by construction)\b", re.I)
+    r"cannot (ever|be made to))\b", re.I)
 
 
-def _validate_kill(h):
+def _cite_resolves(cite, root):
+    """True when a predicate_cite actually points at something: a `path:line`
+    whose file exists in the repo with at least that many lines, or a hash git
+    knows. An unresolvable cite is how a class kill gets asserted without a
+    predicate — the exact failure the scope field exists to stop."""
+    m = re.search(r"([\w./\\-]+\.\w+):(\d+)", cite)
+    if m:
+        path = os.path.join(root, *m.group(1).replace("\\", "/").split("/"))
+        if not os.path.isfile(path):
+            return False
+        try:
+            with open(path, encoding="utf-8", errors="replace") as f:
+                nlines = sum(1 for _ in f)
+        except OSError:
+            return False
+        return 0 < int(m.group(2)) <= nlines
+    m = re.search(r"\b([0-9a-f]{7,40})\b", cite)
+    if m:
+        try:
+            import subprocess
+            return subprocess.call(["git", "-C", root, "cat-file", "-e",
+                                    m.group(1) + "^{object}"],
+                                   stdout=subprocess.DEVNULL,
+                                   stderr=subprocess.DEVNULL) == 0
+        except Exception:
+            return False
+    return False
+
+
+def _validate_kill(h, root):
     """(ok, reason) for one KILLED hypothesis dict."""
     scope = str(h.get("kill_scope", "")).strip().lower()
     if scope not in KILL_SCOPES:
@@ -551,13 +588,15 @@ def _validate_kill(h):
         return False, ("KILLED hypothesis lacks measured_on (the chassis + FAKE-construct "
                        "state it was measured under, e.g. 'HEAD chassis, L3 carrier present'): "
                        f"{str(h.get('statement', ''))[:80]!r}")
-    text = f"{h.get('statement', '')} {h.get('result', '')}"
-    if scope == "instance" and _CLASS_CLAIM_RE.search(text):
-        m = _CLASS_CLAIM_RE.search(text).group(0)
-        return False, (f"KILLED hypothesis makes a class-level claim ({m!r}) with "
-                       "kill_scope='instance'. Either narrow the wording to the instance you "
-                       "measured (which arms, which chassis, which FAKE state) or set "
-                       "kill_scope='class' and cite the gate predicate in predicate_cite.")
+    statement = str(h.get("statement", ""))
+    mt = _CLASS_CLAIM_RE.search(statement) if scope == "instance" else None
+    if mt:
+        return False, (f"KILLED hypothesis statement makes a class-level claim "
+                       f"({mt.group(0)!r}) with kill_scope='instance': "
+                       f"{statement[:80]!r}. Either narrow the STATEMENT wording to the "
+                       "instance you measured (which arms, which chassis, which FAKE "
+                       "state) or set kill_scope='class' and cite the gate predicate "
+                       "(file:line that exists) in predicate_cite.")
     if scope == "class":
         cite = str(h.get("predicate_cite", "")).strip()
         if not cite or not _CITATION.search(cite):
@@ -565,6 +604,9 @@ def _validate_kill(h):
                            "(e.g. tools/gcc-2.7.2/loop.c:705) naming the gate predicate "
                            "the whole class fails; a search that came back empty is an "
                            "instance kill, not a class kill.")
+        if not _cite_resolves(cite, root):
+            return False, (f"predicate_cite does not resolve: {cite} (file missing / "
+                           "line beyond EOF / unknown hash)")
     return True, ""
 
 
@@ -586,6 +628,14 @@ def validate_outcome(o, modality, root, func=None):
         if not isinstance(fitem, dict) or not all(
                 k in fitem for k in ("hypothesis", "mechanism", "next_probe")):
             return False, "frontier items require hypothesis/mechanism/next_probe keys"
+    # Kill hygiene runs BEFORE the per-result branches: owner-gated and
+    # ruling-request outcomes reach apply_outcome too, and owner-gated is the
+    # sweeping-prose path where an unscoped kill does the most damage.
+    for h in o.get("hypotheses", []):
+        if h.get("verdict") == "KILLED":
+            ok, why = _validate_kill(h, root)
+            if not ok:
+                return False, why
     if res == "ruling-request":
         if not str(o.get("ruling_question", "")).strip():
             return False, "ruling-request requires ruling_question"
@@ -653,11 +703,6 @@ def validate_outcome(o, modality, root, func=None):
         if not o.get("evidence"):
             return False, "recon must bank evidence"
         return True, ""
-    for h in o.get("hypotheses", []):
-        if h.get("verdict") == "KILLED":
-            ok, why = _validate_kill(h)
-            if not ok:
-                return False, why
     proven = [h for h in o.get("hypotheses", [])
               if h.get("verdict") in ("CONFIRMED", "KILLED")
               and _has_measurement(h.get("result", ""))]
@@ -799,6 +844,7 @@ def apply_outcome(root, func, o, modality):
                           "measured_on": str(h.get("measured_on", ""))[:200],
                           "predicate_cite": str(h.get("predicate_cite", ""))[:120],
                           "result": str(h.get("result", ""))[:120]})
+    st["kills"] = kills[-60:]
     st["current_modality"] = modality
     st["floor_history"].append({"session": n, "floor": o.get("floor"),
                                 "modality": modality,
@@ -1369,16 +1415,21 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
     kills = st.get("kills") or []
     inst = [k for k in kills if k.get("kill_scope") != "class"]
     cls = [k for k in kills if k.get("kill_scope") == "class"]
+    # A WIP-imported ledger can carry a PROSE floor (func_80062020): the
+    # isinstance guard then leaves the trigger dark by design — no comparable
+    # number means no evidence the floor is flat.
     floors_only = [e.get("floor") for e in st["floor_history"][-3:]]
     flat3 = (len(floors_only) == 3 and all(isinstance(f, int) for f in floors_only)
              and len(set(floors_only)) == 1)
-    kill_block = ("\n## KILL LEDGER\n"
-                  f"  instance kills (chassis-relative, RE-TESTABLE): {len(inst)}\n"
-                  f"  class kills (predicate-cited, standing): {len(cls)}\n")
+    kill_block = ""
+    if kills:
+        kill_block = ("\n## KILL LEDGER\n"
+                      f"  instance kills (chassis-relative, RE-TESTABLE): {len(inst)}\n"
+                      f"  class kills (predicate-cited, standing): {len(cls)}\n")
     if inst:
         kill_block += "  newest instance kills:\n" + "\n".join(
-            f"    s{k['session']}: {k['statement'][:110]}\n"
-            f"        measured on: {k['measured_on'][:110]}"
+            f"    s{k.get('session', '')}: {str(k.get('statement', ''))[:110]}\n"
+            f"        measured on: {str(k.get('measured_on', ''))[:110]}"
             for k in inst[-6:]) + "\n"
     if flat3 and inst:
         kill_block += (
@@ -1432,11 +1483,11 @@ memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting
   Schema: {{"result": "progress"|"candidate-ready"|"ruling-request"|"owner-gated", "floor": <int>,
   "headline": "<one line>", "hypotheses": [{{"statement","mechanism","probe","result","verdict":"CONFIRMED"|"KILLED",
      "kill_scope":"instance"|"class" (KILLED only, REQUIRED), "measured_on":"<chassis + FAKE state>" (KILLED only, REQUIRED),
-     "predicate_cite":"<file:line of the gate predicate>" (class kills only, REQUIRED)}}],
+     "predicate_cite":"<file:line of the gate predicate — must EXIST>" (class kills only, REQUIRED)}}],
   "evidence": ["fact ..."], "frontier": [<=3 of {{"hypothesis","mechanism","next_probe"}}],
   "artifacts": ["tmp/grind/..."], "ruling_question": "", "escalation_ref": ""}}
 - "candidate-ready" means: sandbox distance 0 THIS session, edits in place in src/. The driver re-verifies bytes itself — never claim it speculatively.
-- KILL SCOPE IS MANDATORY. `instance` = "this form, on this chassis, with these FAKE constructs present, measured N" — the default, and re-testable. `class` = "every form fails predicate P" and needs `predicate_cite` as file:line. Wording like "unreachable", "any natural geometry", "all forms", "foreclosed", "by construction" on an instance kill makes the session INVALID: say what you measured, not what you inferred.
+- KILL SCOPE IS MANDATORY. `kill_scope` is REQUIRED on every KILLED hypothesis; `instance` is the normal choice = "this form, on this chassis, with these FAKE constructs present, measured N" — re-testable. `class` = "every form fails predicate P" and needs `predicate_cite` as file:line. The check reads your STATEMENT field only (your `result` narration is free prose): wording like "unreachable", "any natural geometry", "all forms", "impossible" in the STATEMENT of an instance kill makes the session INVALID. Say what you measured, not what you inferred.
 - SELF-VET IS MANDATORY FOR candidate-ready. Before you write the outcome JSON, write memory/grind/{func}/self_vet.md using the template in your role prompt: a CONSTRUCTS: line, the six cheat-checklist tests answered IN WRITING for every construct in your diff, a SANCTIONED-FAMILY-CLAIMS: section (each claimed family carrying its rule's SCOPE sentence quoted VERBATIM plus a PRECEDENT as file:line or a commit hash), and an ANNOTATION-CONFORMANCE: line. The driver checks all of that mechanically and DISCARDS a candidate-ready session that lacks it — the same disposition as a scope violation. Then a fresh adversarial cheat-reviewer (layer 1) rules on your diff BEFORE the Judge is spawned; a layer-1 FAIL bounces straight back without a Judge cycle. Writing the vet honestly is how you pass both: if you cannot quote a scope sentence and cite a precedent for a family you are claiming, you do not have that family, and the correct outcome is `ruling-request`, not a submission.
 - "ruling-request" is for a construct you cannot classify (sanctioned SOTN family vs cheat; genuine hand-written-asm evidence). Ask a precise question.
 - "owner-gated" is for when every remaining sanctioned axis is measured dead. FILE the entry in docs/grind/decisions.md YOURSELF THIS session (docs/grind/ is in your allowed surface), THEN return owner-gated with escalation_ref citing it — you do not wait for an entry to pre-exist, you create it. The driver verifies the entry names {func} and FORECLOSES the function silently (owner ruling 2026-08-31, .claude/rules/ordinary-c-judge-decidable.md — a recorded disposition, never a question to the owner) so the queue advances. Never use it to defer work that is still grindable (a floor still dropping is grindable). This is the mandated outcome in `escalation` modality.

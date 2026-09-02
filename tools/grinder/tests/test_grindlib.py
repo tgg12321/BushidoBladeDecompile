@@ -742,11 +742,73 @@ class TestKillHygiene(unittest.TestCase):
         ok, why = G.validate_outcome(o, "structural", self.root)
         self.assertFalse(ok); self.assertIn("predicate_cite", why)
 
+    def _make_cited_file(self, rel="tools/gcc-2.7.2/loop.c", lines=800):
+        p = os.path.join(self.root, *rel.split("/"))
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p, "w", encoding="utf-8", newline="\n") as f:
+            f.write("\n".join("l%d" % i for i in range(lines)))
+        return p
+
     def test_class_kill_with_cite_valid(self):
+        self._make_cited_file()
         o = self.killed(kill_scope="class", predicate_cite="tools/gcc-2.7.2/loop.c:705",
                         statement="no movable can pass with n_times_set != 1 — all forms")
         ok, why = G.validate_outcome(o, "structural", self.root)
         self.assertTrue(ok, why)
+
+    def test_class_kill_cite_must_resolve(self):
+        st = "no movable can pass with n_times_set != 1 — all forms"
+        o = self.killed(kill_scope="class", predicate_cite="tools/gcc-2.7.2/nope.c:12",
+                        statement=st)
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertFalse(ok); self.assertIn("does not resolve", why)
+        self._make_cited_file(lines=100)
+        o = self.killed(kill_scope="class", predicate_cite="tools/gcc-2.7.2/loop.c:705",
+                        statement=st)
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertFalse(ok); self.assertIn("does not resolve", why)
+
+    def test_result_field_wording_does_not_trip(self):
+        o = self.killed(result="floor flat 15; the arm is unreachable on this chassis")
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertTrue(ok, why)
+
+    def test_kill_gate_runs_on_owner_gated(self):
+        dec = os.path.join(self.root, "docs", "grind")
+        os.makedirs(dec, exist_ok=True)
+        with open(os.path.join(dec, "decisions.md"), "w", encoding="utf-8",
+                  newline="\n") as f:
+            f.write("## 2026-09-01 — func_X — OWNER-ESCALATION filed\n")
+        o = self.killed()
+        o["result"] = "owner-gated"
+        o["escalation_ref"] = "docs/grind/decisions.md OWNER-ESCALATION func_X"
+        ok, why = G.validate_outcome(o, "escalation", self.root)
+        self.assertTrue(ok, why)
+        del o["hypotheses"][0]["kill_scope"]
+        ok, why = G.validate_outcome(o, "escalation", self.root)
+        self.assertFalse(ok); self.assertIn("kill_scope", why)
+
+    def test_brief_no_kill_ledger_when_no_kills(self):
+        o = self.killed()
+        o["hypotheses"][0]["verdict"] = "CONFIRMED"
+        G.apply_outcome(self.root, "func_X", o, "structural")
+        brief = G.build_brief(self.root, "func_X", "permuter", "/tmp/o.json")
+        self.assertNotIn("## KILL LEDGER", brief)
+
+    def test_prose_floor_in_window_no_reaudit_and_no_crash(self):
+        G.apply_outcome(self.root, "func_X", self.killed(), "structural")
+        G.apply_outcome(self.root, "func_X", self.killed(floor="prose floor"), "structural")
+        G.apply_outcome(self.root, "func_X", self.killed(), "structural")
+        brief = G.build_brief(self.root, "func_X", "permuter", "/tmp/o.json")
+        self.assertNotIn("KILL RE-AUDIT REQUIRED", brief)
+        self.assertIn("## KILL LEDGER", brief)
+
+    def test_kills_capped_at_60(self):
+        for _ in range(65):
+            G.apply_outcome(self.root, "func_X", self.killed(), "structural")
+        st = G.load_state(self.root, "func_X")
+        self.assertEqual(len(st["kills"]), 60)
+        self.assertEqual(st["kills"][-1]["session"], 65)
 
     def test_confirmed_needs_no_scope(self):
         o = self.killed(verdict="CONFIRMED"); del o["hypotheses"][0]["kill_scope"]
