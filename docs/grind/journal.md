@@ -1494,3 +1494,4 @@
 - 2026-09-02 13:12 func_800300B4 COMPLETED-INLINE-ASM-CANONICAL after 11 sessions (closer: s11 [escalation]).
 - 2026-09-02 13:26 func_800325E0: LAYER-1 FAILED a sandbox-0 candidate — The claimed cop2-addressing-preamble-cluster grant does not cover the island as written: the same-day owner clarification (Ruling A, 2026-09-02) requires every island comment to name the specific Sony PsyQ GTE macro and header line it reproduces, and this candidate's LZCS/LZCR island comment names none.
 - 2026-09-02 13:41 func_800325E0 COMPLETED-INLINE-ASM-CANONICAL after 1 sessions (closer: s1 [recon]).
+- 2026-09-02 13:54 func_80017D84 COMPLETED-C after 1 sessions (closer: s1 [recon]).
