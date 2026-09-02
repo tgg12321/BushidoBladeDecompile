@@ -195,3 +195,89 @@ the defect itself.
 - [s2] The gate list's stated rationale (index-anchored regfix/asmfix cascades) is stale: regfix.txt and asmfix.txt have been empty project-wide since 2026-08-25, and the cascade is measured absent for the $at-aware form
 
 - [s2] tools/maspsx was NEVER modified: every measurement used a copy under tmp/grind/func_80027640/s2/. src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before finishing; this session wrote only memory/grind/func_80027640/, tmp/grind/func_80027640/s2/ and docs/grind/decisions.md
+
+## s4 (2026-09-01, structural, 2nd dispatch) -- floor 1 re-measured; the impossibility proof is
+## now grounded in GCC 2.7.2's OWN SOURCE, not in an argument about label spelling
+
+This session was dispatched `structural` a second time. Rather than re-search spellings that the
+previous session's byte-adjacency argument already excludes, it went one level down and settled the
+question in the compiler source, so no future session needs to re-open it.
+
+- **Chassis re-measure (HEAD + `memory/grind/func_80027640/candidate.c` applied):**
+  `sandbox func_80027640 --disable all` = **1** (target 158 / build 157, rules_dropped 0,
+  cheat_asm_stripped 35). `tmp/grind/func_80027640/s3/sandbox_s3.txt`. Unchanged from s2/s3.
+  `src/code6cac_b.c` restored to HEAD (`INCLUDE_ASM`) before finishing.
+
+- **The target seam, re-read from the bytes** (`tmp/grind/func_80027640/s3/target_seam.txt`,
+  asm/funcs/func_80027640.s:90-99):
+      80027770  j     .L800277A4        (0x08009DE9 -> target 0x800277A4)
+      80027774   subu $v0, $v0, $v1     (delay slot; the IF-arm computes $v0 arithmetically)
+      ...
+      800277A0  lh    $v0, 0x4($a0)     (the ELSE arm's last insn, falls through)
+    .L800277A4:
+      800277A4  nop
+      800277A8  sw    $v0, 0x18($sp)
+  The merge block's FIRST word is the nop and the `j` is encoded to that address, so the label is
+  pinned between the `lh` and the `nop`. Note the nop is needed on the fall-through path ONLY --
+  on the `j` path $v0 comes from `subu`, no load delay -- which is exactly why ASPSX (a reorder
+  assembler working on the emitted text) put it there and why no compiler-side hint exists.
+
+- **KILL, at compiler-source level: cc1 CANNOT emit that nop, for ANY C input.** Every load in
+  this port routes its delay-slot bookkeeping through `mips_fill_delay_slot`
+  (tools/gcc-2.7.2/config/mips/mips.c:673, reached from mips.c:1242 and mips.c:1591, i.e.
+  `mips_move_1word`/`mips_move_2words`, plus mips.md:2950). That function contains, verbatim
+  (`tmp/grind/func_80027640/s3/mips_fill_delay_slot.excerpt.txt`):
+
+        /* Make sure that we don't put nop's after labels.  */
+        next_insn = NEXT_INSN (cur_insn);
+        while (next_insn != (rtx)0 && GET_CODE (next_insn) == NOTE)
+          next_insn = NEXT_INSN (next_insn);
+        ...
+        if (TARGET_DEBUG_F_MODE || !optimize || type == DELAY_NONE
+            || operands == (rtx *)0 || cur_insn == (rtx)0 || next_insn == (rtx)0
+            || GET_CODE (next_insn) == CODE_LABEL
+            || (set_reg = operands[0]) == (rtx)0)
+          { dslots_number_nops = 0; mips_load_reg = 0; ... return ret; }
+
+  So whenever the insn following a load is a CODE_LABEL (skipping NOTEs only), GCC ZEROES
+  `dslots_number_nops`/`mips_load_reg` by design and delegates the hazard to the assembler.
+  `final_prescan_insn` (mips.c:4104, `tmp/grind/func_80027640/s3/final_prescan_insn.excerpt.txt`)
+  is the only thing that ever prints `#nop`, and it is gated on `dslots_number_nops > 0` -- already
+  zeroed -- and is in any case never called for a CODE_LABEL. This is unconditional on the C
+  source: it depends solely on RTL adjacency load -> CODE_LABEL, which the target bytes FORCE
+  (the `j` pins the label to the nop's address; the `lh` occupies label-4). The NOTE-skipping loop
+  is the only slack, and NOTEs emit no words, so nothing a C author can write interposes anything
+  that would both break the adjacency and preserve the bytes.
+  Observed consistency check in the real dump (`tmp/grind/func_80027640/s3/cc1_seam.txt`,
+  s2/cc1.s:526-531): the identical `lh`/`sw` pair 4 words earlier -- with NO label between -- DOES
+  get cc1's `#nop`; the one across `.L75:` does not. Same C statement shape, opposite outcome,
+  decided purely by the label.
+
+- **Therefore the residual is doubly closed on the C axis:** (1) the label placement is forced by
+  the target bytes (s3), and (2) given that placement the compiler is *designed* not to emit the
+  nop (this session). The nop can only come from the assembler layer, i.e. from ASPSX originally
+  and from maspsx here -- and maspsx's `is_label` (`^\$L(b|e)?\d+:$`, tools/maspsx/maspsx/__init__.py:256)
+  does not match this fork's `.L` labels (`LOCAL_LABEL_PREFIX "."`, tools/gcc-2.7.2/config/mips/mips.h:774).
+  No declaration order, block-local split, type narrowing or statement re-association can touch any
+  link in that chain. **The structural axis is closed with a mechanism, not with a search result.**
+
+- **Not re-attempted, and why:** the Judge's binding constraint forbids closing this function via
+  any build-surface change (maspsx/cc1/linker/Makefile source patch or gate-list entry) and forbids
+  refiling the INTEGRATION HANDOFF in any spelling, so s3's measured 4-line `$at`-aware maspsx
+  repair -- which relinks to SHA1 == oracle and retires the gate list entirely -- was NOT refiled
+  here. It remains banked as evidence only. This session proposed no build-surface change and
+  modified no file outside memory/grind/func_80027640/ and tmp/grind/func_80027640/s3/.
+
+- [s3] [s4] Chassis re-measure on HEAD with memory/grind/func_80027640/candidate.c applied: sandbox --disable all = 1 (target 158 / build 157, rules_dropped 0); the single residual is still the load-delay nop at 0x800277A4 (tmp/grind/func_80027640/s3/sandbox_s3.txt)
+
+- [s3] [s4] GCC 2.7.2 SOURCE-LEVEL KILL: tools/gcc-2.7.2/config/mips/mips.c:673 mips_fill_delay_slot carries the comment 'Make sure that we don't put nop's after labels.' and unconditionally zeroes dslots_number_nops/mips_load_reg when GET_CODE(next_insn) == CODE_LABEL; mips.c:4104 final_prescan_insn is the ONLY emitter of '#nop' and is gated on that counter. Every load reaches it (mips.c:1242, mips.c:1591, mips.md:2950). Therefore no C input whatsoever can make cc1 emit the nop at a label -- the compiler delegates the hazard to the assembler by design.
+
+- [s3] [s4] The target pins the adjacency the suppression keys on: j @0x80027770 = 0x08009DE9 -> 0x800277A4, so the merge label is on the nop's address and lh $v0,0x4($a0) occupies 0x800277A0 (tmp/grind/func_80027640/s3/target_seam.txt, asm/funcs/func_80027640.s:90-99). On the j path $v0 comes from the delay-slot subu, so the nop is a fall-through-only hazard fill -- exactly the kind a reorder assembler (ASPSX) inserts and a compiler hint cannot express.
+
+- [s3] [s4] Consistency check inside the real dump (tmp/grind/func_80027640/s3/cc1_seam.txt = s2/cc1.s:526-531): the identical lh/sw pair at 0x80027794/0x8002779C, with no label between, DOES get cc1's '#nop'; the pair across '.L75:' does not. Same C statement shape, opposite outcome, decided purely by the intervening label -- empirical confirmation of the source reading.
+
+- [s3] [s4] Combined with s3's byte-adjacency proof, the C axis is doubly closed: the label placement is forced by the bytes AND, given that placement, cc1 is designed not to emit the nop. The nop can only originate in the assembler layer (ASPSX originally; maspsx here), whose is_label regex ^\$L(b|e)?\d+:$ (tools/maspsx/maspsx/__init__.py:256) does not match this fork's '.L' labels (LOCAL_LABEL_PREFIX ".", tools/gcc-2.7.2/config/mips/mips.h:774).
+
+- [s3] [s4] No build-surface change was proposed or made and the INTEGRATION HANDOFF was NOT refiled, per the Judge's binding constraint. s3's measured 4-line $at-aware maspsx repair (byte-neutral across all 31 unrelated objects, relinks to SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, subsumes and retires maspsx_label_nop_funcs.txt) stays banked as evidence only.
+
+- [s3] [s4] Files written this session: memory/grind/func_80027640/evidence.md, memory/grind/func_80027640/hypotheses.md, tmp/grind/func_80027640/s3/*. src/code6cac_b.c was applied for the measurement and restored to HEAD (INCLUDE_ASM) before finishing; tools/, engine/, .claude/rules/, Makefile and *.ld were never touched.

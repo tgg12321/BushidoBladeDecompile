@@ -85,3 +85,38 @@ route the Judge foreclosed (that route is NOT re-proposed; the fix makes the gat
 - probe: Same patched-copy harness (maspsx_u)
 - result: Breaks code6cac_c_ab.o -- func_8003ACB8 gains a nop its target does not have (its %hi/%lo consumer's lui $at already fills the delay). Not byte-neutral
 - verdict: KILLED
+
+## s4 (2026-09-01, structural, 2nd dispatch)
+
+- H-s4-1 **KILLED (and now mechanism-grounded): "some C spelling makes cc1 emit the load-delay nop
+  at 0x800277A4."** Mechanism: `mips_fill_delay_slot` (tools/gcc-2.7.2/config/mips/mips.c:673,
+  the single common path for every load via mips.c:1242/1591 and mips.md:2950) explicitly zeroes
+  `dslots_number_nops`/`mips_load_reg` when `GET_CODE (next_insn) == CODE_LABEL` -- comment
+  "Make sure that we don't put nop's after labels." `final_prescan_insn` (mips.c:4104) is the only
+  emitter of `#nop` and is gated on that counter. Probe: read the source + the real dump; s2/cc1.s
+  shows the same lh/sw pair WITH a `#nop` 4 words earlier where no label intervenes and WITHOUT one
+  across `.L75:`. Verdict: no C input can change this; the label adjacency is forced by the target
+  bytes (`j` at 0x80027770 encodes 0x800277A4). Do not re-open.
+
+- H-s4-2 **CONFIRMED: the floor is 1 on the stock chassis with the final candidate.**
+  Probe: apply candidate.c, `sandbox func_80027640 --disable all` -> score 1 (158/157,
+  rules_dropped 0). tmp/grind/func_80027640/s3/sandbox_s3.txt.
+
+- REMAINING FRONTIER after s4: none on the C axis. The only known route to 0 is the assembler-layer
+  repair (s3's measured `$at`-aware maspsx fix, SHA1 == oracle, byte-neutral across all 31 other
+  objects, subsumes and retires maspsx_label_nop_funcs.txt) -- foreclosed for grind sessions by the
+  Judge's binding no-build-surface-change constraint. The next productive modality is NOT another
+  C-spelling search; it is forensics/rederive to look for a chassis-independent reading of the seam,
+  or the escalation record once the driver declares exhaustion.
+
+## [s3] Some C spelling (declaration order, block-local split, type narrowing, statement re-association) makes cc1 emit the missing load-delay nop at 0x800277A4.
+- mechanism: GCC 2.7.2 mips backend: every load routes its delay bookkeeping through mips_fill_delay_slot (tools/gcc-2.7.2/config/mips/mips.c:673, reached from mips.c:1242 and mips.c:1591 and mips.md:2950). That function zeroes dslots_number_nops / mips_load_reg when GET_CODE(next_insn) == CODE_LABEL (skipping NOTEs only) -- its own comment is 'Make sure that we do not put nop's after labels.' final_prescan_insn (mips.c:4104) is the only emitter of '#nop' and is gated on that counter, and is never called for a CODE_LABEL.
+- probe: Read the two source regions (banked as tmp/grind/func_80027640/s3/mips_fill_delay_slot.excerpt.txt and final_prescan_insn.excerpt.txt) and cross-checked against the real cc1 dump: tmp/grind/func_80027640/s3/cc1_seam.txt shows the SAME lh/sw pair four words earlier receiving cc1's '#nop' where no label intervenes, and receiving none across '.L75:'. The label placement is forced by the target: j at 0x80027770 encodes 0x08009DE9 -> 0x800277A4, so the merge label sits on the nop's address with lh $v0,0x4($a0) at label-4 (tmp/grind/func_80027640/s3/target_seam.txt).
+- result: cc1 provably cannot emit the nop for any C input, because the suppression depends solely on RTL adjacency load -> CODE_LABEL and that adjacency is pinned by the target bytes. The only slack in the code is a NOTE-skipping loop, and NOTEs emit no words, so nothing writable in C can break the adjacency while preserving the bytes.
+- verdict: KILLED
+
+## [s3] The honest floor on the stock chassis with the final candidate is still 1.
+- mechanism: n/a -- direct measurement of the pinned chassis, required because the driver's dispatch measurement was unavailable.
+- probe: python3 tmp/grind/func_80027640/s1/apply.py memory/grind/func_80027640/candidate.c ; & tools/wteng.ps1 main sandbox func_80027640 --disable all
+- result: score 1, target_insns 158, build_insns 157, rules_dropped 0, cheat_asm_stripped 35 (tmp/grind/func_80027640/s3/sandbox_s3.txt). src/code6cac_b.c restored to HEAD afterwards.
+- verdict: CONFIRMED

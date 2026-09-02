@@ -1,7 +1,7 @@
 {
  "func": "func_80027640",
  "file": "code6cac_b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Residual proved C-unreachable for ALL forms (the target pins a .L label between the lh and its consuming sw); the maspsx .L blind spot is fixable generally in 4 lines, byte-neutral across all 31 other"
+  },
+  {
+   "session": 3,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Floor 1 re-measured; the structural axis is now closed by GCC 2.7.2's own source -- mips_fill_delay_slot deliberately suppresses the load-delay nop whenever the next insn is a CODE_LABEL, and the targ"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No C-side frontier remains: the structural axis is closed by construction (any byte-correct form hits the .L seam) and cc1 is exonerated",
-   "mechanism": "the target bytes pin the label between the load and its consumer; maspsx's is_label misses .L",
-   "next_probe": "none -- a C change can only move the object AWAY from the target"
+   "hypothesis": "No C-side frontier remains. The structural axis is closed by construction at two independent levels (target-byte-forced label adjacency; GCC's designed nop suppression at labels), so further spelling searches can only move the object AWAY from the target.",
+   "mechanism": "mips_fill_delay_slot zeroes the nop counter at a CODE_LABEL; maspsx's is_label misses '.L' so the assembler layer does not restore it either.",
+   "next_probe": "none -- do not dispatch another spelling modality against this residual"
   },
   {
-   "hypothesis": "The 4-line $at-aware maspsx repair lands and closes the function with the existing candidate",
-   "mechanism": "maspsx's own uses_at/_uses_gp/nop_at_expansion delay-fill test applied inside the .L-label branch, matching ASPSX",
-   "next_probe": "operator: apply tmp/grind/func_80027640/s2/maspsx_at_aware_label_fix.diff, apply candidate.c, sandbox -> 0, verify-oracle --rebuild -> SHA1 == oracle (both already measured in tmp/)"
+   "hypothesis": "The only known route to 0 is the assembler-layer repair, which is currently foreclosed for grind sessions by the Judge's no-build-surface-change constraint.",
+   "mechanism": "s3's $at-aware fix applies maspsx's own uses_at/_uses_gp/nop_at_expansion delay-fill test inside the .L-label branch, matching ASPSX; measured byte-neutral project-wide and SHA1 == oracle.",
+   "next_probe": "operator/owner decision only; a class grant covering assembler-fidelity repairs, or an owner unpark, would re-activate it. No grind session should refile it."
   },
   {
-   "hypothesis": "maspsx_label_nop_funcs.txt and --label-nop-funcs can be retired once the repair lands",
-   "mechanism": "the repair subsumes all five currently listed functions",
-   "next_probe": "operator: rebuild with the list emptied and confirm the oracle (already measured byte-identical in tmp/grind/func_80027640/s2/objn)"
+   "hypothesis": "If the driver escalates this function, the foreclosure record is already fully evidenced and needs no new measurement.",
+   "mechanism": "Both AND-gates are already answered in the ledger: canonical-asm is not indicated (canonical verdict C, ordinary compiled body), and no SOTN-master precedent exists for a coercion family here because the residual is not a codegen-shape residual at all -- it is an assembler hazard-fill word.",
+   "next_probe": "in escalation modality, file the RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED record citing evidence.md s3/s4 and tmp/grind/func_80027640/s2+s3 artifacts; no further probing needed"
   }
  ],
  "judge_constraints": [
