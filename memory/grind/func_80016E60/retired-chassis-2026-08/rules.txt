@@ -1,1 +1,0 @@
-regfix.txt:793: func_80016E60: subst ".*" "addu\t$4,$0,$zero" @ 66
