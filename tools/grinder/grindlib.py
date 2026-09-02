@@ -538,7 +538,7 @@ KILL_SCOPES = ("instance", "class")
 _CLASS_CLAIM_RE = re.compile(
     r"\b(any (natural )?(geometry|form|spelling|shape)|every (form|spelling|chassis)|"
     r"all (forms|spellings|chassis)|no natural|unreachable|impossible|permanently|"
-    r"foreclosed|closed[- ]form|cannot (be|reach)|by construction)\b", re.I)
+    r"foreclosed|cannot (ever|be made to)|by construction)\b", re.I)
 
 
 def _validate_kill(h):

@@ -731,6 +731,12 @@ class TestKillHygiene(unittest.TestCase):
         ok, why = G.validate_outcome(o, "structural", self.root)
         self.assertFalse(ok); self.assertIn("class-level claim", why)
 
+    def test_ordinary_negative_wording_is_not_a_class_claim(self):
+        o = self.killed(statement="A closed-form flip condition exists; the LUID tiebreak "
+                                  "cannot be moved by this spelling")
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertTrue(ok, why)
+
     def test_class_kill_needs_predicate_cite(self):
         o = self.killed(kill_scope="class")
         ok, why = G.validate_outcome(o, "structural", self.root)
