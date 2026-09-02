@@ -1,0 +1,15 @@
+{
+ "func": "func_80017D84",
+ "file": "ings",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-02T18:42:01.611958+00:00"
+}

@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80017D84",
-      "file": "ings",
-      "distance": 37,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_800861BC",
       "file": "main",
       "distance": 37,
@@ -1808,14 +1800,14 @@
     }
   ],
   "counts": {
-    "total": 202,
-    "active": 183,
+    "total": 201,
+    "active": 182,
     "by_status": {
-      "active": 183,
+      "active": 182,
       "foreclosed": 19
     },
     "by_verdict": {
-      "C": 156,
+      "C": 155,
       "ASM-PARTIAL": 27
     }
   }

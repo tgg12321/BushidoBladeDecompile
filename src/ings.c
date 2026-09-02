@@ -719,7 +719,30 @@ s32 math_Distance3D_16(s32 *a0, s32 *a1) {
 INCLUDE_ASM("asm/funcs", func_80017848);
 INCLUDE_ASM("asm/funcs", func_80017A44);
 extern void func_80017A44(void *, u8 *);
-INCLUDE_ASM("asm/funcs", func_80017D84);
+typedef struct { s32 v[8]; } ObjBlock;
+s32 func_80017D84(u8 *a0) {
+    u8 *p;
+    s32 i;
+    s32 c;
+
+    p = g_file_data_buf;
+    for (i = 0; i < 8; i++) {
+        if (*(s32 *)p == 0) break;
+        p += 0x34;
+    }
+    if (i == 8) return -1;
+    if (D_800A30E8 < i) D_800A30E8 = i;
+    *(u16 *)(p + 4) = *(u16 *)a0;
+    *(s32 *)p = *(s32 *)(a0 + 4);
+    *(ObjBlock *)(p + 0x14) = **(ObjBlock **)(a0 + 0xC);
+    *(s32 *)(p + 8) = *(s16 *)(a0 + 2);
+    c = *(s32 *)(a0 + 0x10);
+    *(s16 *)(p + 6) = 0;
+    *(s32 *)(p + 0xC) = c;
+    *(s32 *)(p + 0x10) = c + (*(s16 *)(p + 4) << 6);
+    func_80017A44(a0, p);
+    return i;
+}
 void obj_Clear(s32 a0) {
     *(s32 *)(g_file_data_buf + a0 * 52) = 0;
 }
