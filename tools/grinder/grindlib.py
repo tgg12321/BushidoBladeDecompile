@@ -1158,14 +1158,16 @@ def rule_descriptions(root):
         except OSError:
             continue
         m = _RULE_DESC_RE.search(head)
-        out[fn[:-3]] = m.group(1).strip() if m else "(no description line)"
+        if m:
+            out[fn[:-3]] = m.group(1).strip()
     return out
 
 
 def cited_rule_scopes(root, func):
     """[(slug, current_description)] for every rule slug that appears anywhere
-    in this function's ledger: state.json constraints/bans/frontier,
-    hypotheses.md, evidence.md, and the first 60 lines of each rejected/*.c."""
+    in this function's ledger: state.json constraints/bans/frontier/floor
+    history, hypotheses.md, evidence.md, candidate.c, and the first 60 lines
+    of each rejected/*."""
     descs = rule_descriptions(root)
     if not descs:
         return []
@@ -1175,11 +1177,15 @@ def cited_rule_scopes(root, func):
     texts += [str(x) for x in st.get("judge_constraints", [])]
     texts += [str(x) for x in st.get("banned_constructs", [])]
     texts += [json.dumps(f) for f in st.get("frontier", [])]
-    for name in ("hypotheses.md", "evidence.md"):
+    texts.append(json.dumps(st.get("floor_history", [])))
+    for name in ("hypotheses.md", "evidence.md", "candidate.c"):
         p = os.path.join(d, name)
         if os.path.isfile(p):
-            with open(p, encoding="utf-8", errors="replace") as f:
-                texts.append(f.read())
+            try:
+                with open(p, encoding="utf-8", errors="replace") as f:
+                    texts.append(f.read())
+            except OSError:
+                pass
     rj = os.path.join(d, "rejected")
     if os.path.isdir(rj):
         for fn in sorted(os.listdir(rj)):
@@ -1193,9 +1199,11 @@ def cited_rule_scopes(root, func):
 
 
 def render_rule_scopes(pairs):
+    """Render [(slug, description)] as the brief's current-scope block ('' if empty)."""
     if not pairs:
         return ""
-    lines = "\n".join(f'  - {s}: "{d}"' for s, d in pairs)
+    lines = "\n".join(f'  - {s}: "{d if len(d) <= 300 else d[:300] + "…"}" '
+                      f'(.claude/rules/{s}.md)' for s, d in pairs)
     return ("\n## CURRENT SCOPE OF EVERY RULE THIS LEDGER CITES (authoritative NOW)\n"
             "Rule text changes by owner ruling. A scope quoted in hypotheses.md, a\n"
             "rejected/ header, or an older Judge ruling may be SUPERSEDED. The lines\n"
@@ -1292,7 +1300,10 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
                f"If these differ, the chassis has changed since the ledger entry: every banked\n"
                f"spelling conclusion is chassis-relative and MUST be re-measured before it is\n"
                f"spent. Do not quote the ledger floor to the Judge; quote this one.\n")
-    scopes = render_rule_scopes(cited_rule_scopes(root, func))
+    try:
+        scopes = render_rule_scopes(cited_rule_scopes(root, func))
+    except Exception:
+        scopes = ""
     return f"""# GRIND SESSION — {func} (src/{st['file']}.c)
 
 You are session {st['session_count'] + 1} of a cumulative grind. Your mandated

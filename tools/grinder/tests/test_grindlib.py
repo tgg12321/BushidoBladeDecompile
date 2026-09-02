@@ -645,6 +645,52 @@ class TestCitedRuleScopes(unittest.TestCase):
         brief = G.build_brief(self.root, "func_X", "structural", "/tmp/o.json")
         self.assertNotIn("CURRENT SCOPE OF EVERY RULE", brief)
 
+    def test_cited_scopes_from_candidate_c(self):
+        cand = os.path.join(self.root, "memory", "grind", "func_X", "candidate.c")
+        with open(cand, "w", encoding="utf-8", newline="\n") as f:
+            f.write("/* sanctioned narrow exception per "
+                    ".claude/rules/do-while-zero-exception.md */\nvoid f(void) {}\n")
+        got = G.cited_rule_scopes(self.root, "func_X")
+        self.assertEqual(got, [("do-while-zero-exception", "SANCTIONED for ANY codegen effect")])
+
+    def test_cited_scopes_from_floor_history(self):
+        st = G.load_state(self.root, "func_X")
+        st["floor_history"].append(
+            {"session": 1, "floor": 12, "headline": "blocked by unrelated-rule scope"})
+        G.save_state(self.root, "func_X", st)
+        slugs = [s for s, _ in G.cited_rule_scopes(self.root, "func_X")]
+        self.assertEqual(slugs, ["unrelated-rule"])
+
+    def test_rule_without_description_is_skipped(self):
+        p = os.path.join(self.root, ".claude", "rules", "no-desc-rule.md")
+        with open(p, "w", encoding="utf-8", newline="\n") as f:
+            f.write("---\nname: no-desc-rule\n---\nbody\n")
+        self.assertNotIn("no-desc-rule", G.rule_descriptions(self.root))
+
+    def test_rules_dir_absent_gives_empty(self):
+        with tempfile.TemporaryDirectory() as bare:
+            self.assertEqual(G.rule_descriptions(bare), {})
+            G.init_ledger(bare, "func_Y", "stem")
+            self.assertEqual(G.cited_rule_scopes(bare, "func_Y"), [])
+            brief = G.build_brief(bare, "func_Y", "structural", "/tmp/o.json")
+            self.assertIn("GRIND SESSION", brief)
+            self.assertNotIn("CURRENT SCOPE OF EVERY RULE", brief)
+
+    def test_unquoted_description_with_dash(self):
+        p = os.path.join(self.root, ".claude", "rules", "dashy-rule.md")
+        with open(p, "w", encoding="utf-8", newline="\n") as f:
+            f.write("---\nname: dashy-rule\n"
+                    "description: Owner ruling 2026-08-19 - scope is everything\n---\n")
+        self.assertEqual(G.rule_descriptions(self.root)["dashy-rule"],
+                         "Owner ruling 2026-08-19 - scope is everything")
+
+    def test_rendered_line_carries_rule_path_and_truncates(self):
+        long = "x" * 400
+        out = G.render_rule_scopes([("slug-a", long)])
+        self.assertIn('  - slug-a: "' + "x" * 300 + '…" (.claude/rules/slug-a.md)', out)
+        short = G.render_rule_scopes([("slug-b", "short desc")])
+        self.assertIn('  - slug-b: "short desc" (.claude/rules/slug-b.md)', short)
+
 
 if __name__ == "__main__":
     unittest.main()
