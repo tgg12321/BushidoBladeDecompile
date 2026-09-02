@@ -1,8 +1,8 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 6,
- "current_modality": "synthesis",
+ "session_count": 7,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -39,23 +39,29 @@
    "floor": 15,
    "modality": "synthesis",
    "headline": "BREAKTHROUGH: sandbox distance 0 MEASURED on the shipped chassis (104==104) \u2014 the s5 BYTE-COUNT COUPLING law (H8) is falsified; loop-carried RTL escapes the cse1 fixpoint, is counted by loop.c, and di"
+  },
+  {
+   "session": 7,
+   "floor": 15,
+   "modality": "solver",
+   "headline": "Solver: all three s6 frontier items closed with measurements - the moved_once doubling is self-defeating (lifetime inflates 1->15), no NATURAL loop-carried carrier is free (only constant-step bivs are"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An ORDINARY-C construct exists that puts >= 64 extra loop-carried RTL insns in front of count_loop_regs_set and dies inside loop_optimize \u2014 the same channel the s6 proof used, spelled naturally instead of as balanced noise.",
-   "mechanism": "loop-carried SETs are opaque to cse1's value numbering (toplev.c:2865) so they reach count_loop_regs_set; a biv whose only use is post-loop is removed entirely by strength_reduce's biv elimination inside loop_optimize, after move_movables has already consumed insn_count and before local-alloc can see the pseudo (K18).",
-   "next_probe": "Sweep candidate NATURAL carriers with tmp/grind/func_8003C714/s6/sweep.sh \u2014 the `.loop` line `Loop from 25 to N: M real insns.` is the gradient and costs one cc1 run per form, no sandbox needed. Untried carrier families: a genuine running accumulator/checksum whose final value is stored after the loop, a second real index, long-long / multi-word arithmetic on a loop-carried local, a struct or array copy idiom, an unrolled per-element computation. Target: M >= 120, carrier used only after the loop."
+   "hypothesis": "Nothing sanctioned is known to remain on the loop.c desirability axis: every measured route to distance 0 runs through a small-immediate-constant-step biv whose only use is post-loop, which is dead code by construction and matches no frozen SOTN family.",
+   "mechanism": "c > 63 - 3h with savings and lifetime pinned at 1; c is only free for constant-step bivs (K21), h is never free (K22), and the moved_once shortcut that would halve c is self-defeating (K20).",
+   "next_probe": "If the ladder demands another pass on this axis, it must find a way to change insn_count or the movable ORDER with no added local at all - and no such channel is visible in loop.c. Otherwise the honest next step is the driver assigning `escalation`, where H11/K20/K21/K22 plus s6's H10 write the foreclosure record directly."
   },
   {
-   "hypothesis": "Free HOISTS are a cheaper route than free insns: with h extra hoisted movables ahead of the 0x91A2B3C5 movable the requirement drops from +64 insns to c > 63 - 3h, so ~21 free hoists would need none.",
-   "mechanism": "loop.c:1719/1904 do `threshold -= 3` after every movable actually moved, and the 0x91A2B3C5 movable is tested after the first hoist (threshold 119). gen_biv k=2 already measured one extra hoist at zero byte cost, so the channel is real and unexplained.",
-   "next_probe": "Re-run gen_biv.py k=2 and diff its .loop movable table against k=0/k=1 to identify WHICH pseudo gained a hoist and why it costs no preheader instruction; then try to scale that shape (more invariants of the same kind) and read `moved` vs asm line count at each step."
+   "hypothesis": "ADMISSION, not desirability: some ordinary-C spelling could stop the (set r 0x91A2B3C5) insn from being a movable at all.",
+   "mechanism": "loop.c:770-800 builds the movable only after invariant_p and the n_times_set checks; m->cond (conditionally invariant), m->consec (multiple sets of the same pseudo in the loop) and m->global (first use before loop_start or last use after loop_end) are the three structural escape hatches, and none of them has ever been examined for this function - s3's K10-K12 only killed const-FORM respellings.",
+   "next_probe": "Spell candidates that would make the divisor pseudo global or conditionally invariant (e.g. a pre-loop or post-loop use of the same t/1800 value that cse1 cannot merge into the in-loop copy) and read the movable table in the .loop dump via tmp/grind/func_8003C714/s7/sweep.sh - one cc1 run per form, no sandbox needed. Prior is LOW (cse1 normally CSEs a pre-loop x/1800 into the loop copy), but it is the only structurally untried lever left."
   },
   {
-   "hypothesis": "CLOSED RECORD (superseded \u2014 do not re-file in any shape): the chassis/threshold=122 root cause (loop.c:532 with regclass.c:380-387 counting a 32-register hard-float file the R3000A lacks).",
-   "mechanism": "still a true description of one route, and still barred by the standing Judge constraint and the 2026-09-01 18:33 ruling",
-   "next_probe": "NONE. It is no longer an exhaustion or escalation ground either, because H10 measured distance 0 on the shipped chassis. Any future session quoting 'unreachable on the shipped chassis' from s2-s5 is quoting a retracted claim."
+   "hypothesis": "Do NOT re-open an RA or scheduler search on this function.",
+   "mechanism": "goal_from_tgt.py classify names an RA component ($t2 -> $t1 x10) and a nop-only SCHED component, which reads like a live seat problem; s6 K18 measured that at score 0 every seat lands, so both are consequent on the loop.c hoist.",
+   "next_probe": "None. If a session's triage points at RA/sched for func_8003C714, that is the classifier seeing the hoist's downstream shadow - go back to loop.c:1631."
   }
  ],
  "judge_constraints": [

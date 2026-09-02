@@ -624,3 +624,158 @@ after move_movables has consumed insn_count -- removes it for free.
 - [s6] src/code6cac_c2.c was restored to the INCLUDE_ASM line before the session closed; `git status` shows only memory/grind ledger files, the new rejected/ form, docs/grind/decisions.md and metrics/events.jsonl.
 
 - [s6] docs/grind/decisions.md carries a new CORRECTION entry retracting the premise of the two 2026-09-01 INTEGRATION HANDOFF entries (decisions.md:19501 and :19622) — operators must not act on their step lists, since distance 0 needs no CC_FLAGS change.
+
+## s7 (2026-09-01, solver modality) — the three remaining channels, all measured
+
+Chassis re-check first, before anything was spent: `candidate.c` spliced over the
+`INCLUDE_ASM` line at `src/code6cac_c2.c:629`,
+`& tools/wteng.ps1 main sandbox func_8003C714 --disable all` prints
+**score 15, target_insns 104, build_insns 105** — unchanged from s1–s6. Every
+inherited measurement was chassis-current when this session started. `src/` was
+restored to `INCLUDE_ASM` before the session ended (tree clean).
+
+### The exact desirability arithmetic, re-read from the baseline dump
+
+`tmp/grind/func_8003C714/s7/dumps/biv0.i.loop` (the candidate body, unmodified):
+
+    Loop from 25 to 146: 56 real insns.
+    Insn 33: regno 78 (life 1), move-insn savings 1  moved to 203   <- &D_80106A58
+    Insn 46: regno 84 (life 1), move-insn savings 1  moved to 205   <- 0x91A2B3C5
+    Insn 60: regno 91 (life 31), move-insn savings 1  moved to 207  <- 0x88888889
+
+The 0x91A2B3C5 movable is the **second** entry in the movable list, so it is
+tested after exactly one `threshold -= 3` (loop.c:1719/1904): the test at
+loop.c:1631 is `119 * 1 * 1 >= 56`, comfortably true, and the constant is
+hoisted. Note the asymmetry with 0x88888889, which the TARGET also hoists: its
+lifetime is 31 (four `mult` uses spread over the body) versus 1 for the magic,
+so on the original (soft-float, threshold 58) chassis 58*31 kept it moved while
+58*1 declined the magic. Everything about the residual is that one lifetime-1
+movable. `savings = n_times_used[regno] = 1` (loop.c:793) and
+`lifetime = luid(last use) - luid(first use) = 1` (loop.c:791) are both already
+at their structural minimum, so the ONLY dials are `insn_count` (needs >= 120)
+and the number of movables moved BEFORE the magic (each worth -3 of threshold):
+`c > 63 - 3h`.
+
+### Solver triage (mandated first step of the modality)
+
+`inverse_compose.py classify` refuses on this zero-rule function (it would
+report a fictitious PRE-RA verdict from an absent `tgt.s`), and directs to the
+object-level path. `goal_from_tgt.py classify code6cac_c2 func_8003C714`:
+
+    ours 105 insns, target 104 insns   [object-level: replace_with_asmfile-safe]
+    SCHED component: nop-only multiset difference (ours 1, target 0)
+    AND an RA component: $t2 -> $t1 x10, $t1 -> $v0 x2
+    (goal: 12 renamed pairs, 1 pair skipped — skeleton differs, reloc/immediate)
+
+The one "skipped pair" is the lui/ori of the magic itself — the object-level
+classifier can see the *consequences* of the hoist (a seat rotation and one
+extra nop) but not its *cause*, which is upstream of both RA and sched. s6
+already settled the causal question by measurement (at score 0 every seat lands,
+K18), so the RA/SCHED components reported here are CONSEQUENT, not independent
+residuals, and no RA or scheduler lever can move them while the hoist stands.
+Recorded so no future session re-opens an RA search on this function because
+`classify` names an RA component.
+
+### Probe 1 — the `moved_once` insn_count doubling (loop.c:1609). KILLED (K20)
+
+`gen_inner.py` puts the `/1800` statement in a real inner loop, so that the
+inner scan (loop_optimize scans loops last-first, loop.c:425, and `moved_once`
+is a per-FUNCTION array allocated once at loop.c:344) hoists the magic into the
+inner preheader and sets `moved_once[regno]`, and the outer scan then doubles
+`insn_count`.
+
+    k=1  inner "Loop from 46 to 76: 10 real insns"
+         outer "Loop from 25 to 168: 59 real insns."
+               "Insn 225: regno 85 (life 14) ... halved since already moved  moved to 229"
+    k=2  outer "Loop from 25 to 169: 60 real insns."
+               "Insn 226: regno 85 (life 15) ... halved since already moved  moved to 230"
+
+The doubling fires exactly as predicted (59 -> 118, 60 -> 120) and the magic is
+STILL MOVED, because the same hoist that sets `moved_once` also separates the
+SET from its single `mult` use: `m->lifetime` goes 1 -> 14/15, and lifetime
+MULTIPLIES the left side of loop.c:1631 (119 * 1 * 15 = 1785 >= 120). The 2x
+gain on the right is bought with a >=14x loss on the left. Self-defeating for
+any spelling: the only way to set `moved_once` for this pseudo is a hoist out of
+an enclosing inner loop, and every such hoist inflates lifetime past 2.
+Banked: `rejected/inner-loop-moved-once-doubling-inflates-lifetime.c`.
+
+### Probe 2 — a NATURAL loop-carried carrier (the s6 LIVE frontier item). KILLED (K21)
+
+`gen_acc.py` sweep, baseline 56 real insns / 107 asm lines:
+
+    variant                                     insn_count   asm lines
+    acc += *(s32*)(src+4), used after loop         58 (+2)    112 (+5)
+    acc += *(s32*)(src+4), DEAD after loop         56 (+0)    107 (+0)
+    4x acc += mem, used after                      61 (+5)    115 (+8)
+    acc = acc*31 + mem (checksum), used after      60 (+4)    114 (+7)
+    16x acc += mem, used after                     74 (+18)   128 (+21)
+    8x acc = acc*31 + mem, used after              82 (+26)   136 (+29)
+    CONTROL acc += 1, post-use `acc - 3`           57 (+1)    107 (+0)
+
+Dead data-dependent carrier: +0 count (cse1 / delete_dead_from_cse remove it
+before `count_loop_regs_set` — the K10/K15/K16 result, re-confirmed). LIVE
+data-dependent carrier: +N count and +1.12N .. +2.5N emitted instructions. The
+reason is structural: `strength_reduce` can only delete a carrier whose exit
+value it can FOLD, i.e. a biv with a CONSTANT increment (loop.c final-value
+replacement). Anything that reads loop data has a non-constant increment, is
+never a biv, and must be computed. Reaching insn_count 120 with a natural
+carrier costs about +72 emitted instructions on a 104-instruction target.
+The s6 free channel is therefore not "loop-carried arithmetic" in general — it
+is exactly "small-immediate-constant-step biv used only after the loop", which
+is dead code by construction and matches no frozen family.
+Banked: `rejected/natural-accumulator-carrier-costs-1-1-in-bytes.c`.
+
+### Probe 3 — free HOISTS ahead of the magic (the s6 cheaper-trade item). KILLED (K22)
+
+`gen_hoist.py`: k loop-carried counters with LARGE constant steps at the TOP of
+the body (so each step constant needs a lui/ori and becomes an invariant
+movable ahead of the magic), each post-loop-folded to keep the store at 0.
+
+    k=1  : 58 insns, moved 9,  notdesirable 0,  asm 116
+    k=4  : 64 insns, moved 12, notdesirable 0,  asm 137
+    k=8  : 72 insns, moved 16, notdesirable 0,  asm 165
+    k=16 : 88 insns, moved 18, notdesirable 6,  asm 241
+    k=22 : 100 insns, moved 14, notdesirable 16, asm 285
+
+The hoists are created but cost ~9 emitted instructions each. The dump names the
+mechanism: `Insn 49: possible biv, reg 74, const = (reg:SI 82)` — once the step
+is a REGISTER (which is precisely what makes the step constant hoistable), the
+increment is non-constant, loop.c cannot compute the final value, biv
+elimination declines it, and the counter materialises. The s6 free carrier uses
+small immediate steps, which fold into `addiu` and create NO movable. The two
+channels are mutually exclusive; there is no free-hoist family.
+The single free hoist s6 saw (gen_biv k=2, moved 8 -> 9 at 107 asm lines) is
+`Insn 145: regno 132 (life 1)` — the literal 21 of the `j != 21` exit test, at
+the BOTTOM of the loop. It is free only because that biv SUBSTITUTES for the
+original counter, and being AFTER the magic in insn order it never reduces the
+threshold the magic is tested at.
+Banked: `rejected/bigconst-step-biv-creates-hoist-but-kills-biv-elimination.c`.
+
+### Net position after s7
+
+`c > 63 - 3h` still stands, and both terms are now measured closed for ordinary
+C: `h` cannot be raised without ~9 emitted instructions per unit (K22), `c`
+cannot be raised without >=1.12 emitted instructions per unit unless the carrier
+is a constant-step biv used only after the loop (K21), and the one arithmetic
+shortcut that would have halved the requirement is self-defeating (K20). The
+only spelling that reaches distance 0 on the shipped chassis remains the s6
+artificial-biv form, which is dead code by construction and matches no frozen
+SOTN family.
+
+- [s7] CHASSIS: candidate.c spliced over the INCLUDE_ASM line at src/code6cac_c2.c:629 measures score 15, target_insns 104, build_insns 105 - unchanged from s1-s6. src/ was restored to INCLUDE_ASM before the session ended; git tree is clean apart from metrics/events.jsonl.
+
+- [s7] The exact desirability arithmetic, from the baseline .loop dump: the 0x91A2B3C5 movable is the SECOND entry in the movable list (Insn 33 &D_80106A58 life 1, then Insn 46 magic life 1, then Insn 60 0x88888889 life 31), so it faces one threshold -= 3 and is tested at 119 * 1 * 1 >= 56.
+
+- [s7] savings = n_times_used[regno] = 1 (loop.c:793) and lifetime = 1 (loop.c:791) are both at their structural minimum for the magic; the target's asymmetric treatment of 0x88888889 (kept hoisted) versus 0x91A2B3C5 (in-loop) is entirely the lifetime 31 vs 1 split.
+
+- [s7] moved_once is a per-FUNCTION array (loop.c:344) and loop_optimize scans loops LAST-FIRST (loop.c:425), so inner loops really do mark regnos for their enclosing loops - the doubling at loop.c:1611 is a genuine mechanism, measured firing at 59 -> 118 and 60 -> 120.
+
+- [s7] The doubling is nonetheless useless: the inner-loop hoist that arms it moves the SET into the inner preheader and inflates m->lifetime from 1 to 14/15, and lifetime multiplies the threshold side of loop.c:1631.
+
+- [s7] Natural-carrier sweep against baseline 56 real insns / 107 asm lines: acc += mem used-after 58/112; acc += mem dead 56/107; 4x 61/115; acc = acc*31+mem 60/114; 16x acc += mem 74/128; 8x checksum 82/136; control acc += 1 with post-use acc-3 57/107.
+
+- [s7] Free-hoist sweep against the same baseline: k=1 58 insns moved 9 asm 116; k=4 64/12/137; k=8 72/16/165; k=16 88/18/241 (6 not desirable); k=22 100/14/285 (16 not desirable).
+
+- [s7] 'Insn 49: possible biv, reg 74, const = (reg:SI 82)' is the one-line proof that a hoistable (large) step constant converts the counter into a register-increment biv, which loop.c cannot final-value-replace, so the counter materialises.
+
+- [s7] inverse_compose.py classify explicitly refuses on this zero-rule function (it would report a FICTITIOUS PRE-RA verdict from an absent tgt.s) and directs to goal_from_tgt.py; that object-level classifier reports a nop-only SCHED difference plus $t2 -> $t1 x10 / $t1 -> $v0 x2, all consequent on the hoist per s6 K18.

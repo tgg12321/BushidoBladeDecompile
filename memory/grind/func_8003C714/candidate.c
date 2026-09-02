@@ -1,10 +1,10 @@
 /*
- * CANDIDATE — func_8003C714 (src/code6cac_c2.c) — s1 (2026-09-01), honest floor 15
+ * CANDIDATE â€” func_8003C714 (src/code6cac_c2.c) â€” s1 (2026-09-01), honest floor 15
  * (sandbox func_8003C714 --disable all == 15 with this body in place of the
  * INCLUDE_ASM line; chassis = HEAD at session s1, target 104 insns, build 105).
  *
  * 100% ordinary C, zero cheats, zero FAKE constructs. The pre-migration d33 body
- * used register-asm pins (t0/a2/a1) — this supersedes it entirely.
+ * used register-asm pins (t0/a2/a1) â€” this supersedes it entirely.
  *
  * Structure discovered this session (see evidence.md):
  *  - dst/src MUST be recomputed from i each iteration ("index-derived pointers").
@@ -13,12 +13,12 @@
  *    step 4/8) with the address offsets 0x21..0x24 / 4,0 preserved in-place.
  *    Plain pointer bivs (src+=8/dst+=4 spelling) instead get biv-75 ELIMINATED
  *    into a biased combined giv (a1=s0+36, offsets -3..0) and an extra IV for
- *    src+4 — that spelling is dead (rejected/plain-pointer-bivs.c).
+ *    src+4 â€” that spelling is dead (rejected/plain-pointer-bivs.c).
  *  - i += 1 MUST be the last statement of the body. Mid-body increment splits
  *    the giv value and forces a `move a0,a3` copy. sched1 hoists the addiu into
  *    the 4th mult's mfhi shadow exactly as target.
  *
- * [s2 2026-09-01 UPDATE] This body is BYTE-EXACT (distance 0, 104==104) � but
+ * [s2 2026-09-01 UPDATE] This body is BYTE-EXACT (distance 0, 104==104) ï¿½ but
  * only when cc1 is told the PS1 has no FPU. Add `-msoft-float` (or the 32
  * `-ffixed-$f0..$f31`) to CC_FLAGS and this exact C scores 0; with the shipped
  * CC_FLAGS it scores 15. Mechanism: loop.c:532
@@ -34,7 +34,7 @@
  * 104 target / 105 build, movable table identical. s3 added the first POSITIVE
  * evidence that this body is the right C: when loop.c:1631 is made to decline
  * the 0x91A2B3C5 movable (diagnostic form s3/body_callD.c), the SHIPPED cc1
- * emits `lui v0,0x91a2 / lw v1 / ori v0,0xb3c5 / mult v1,v0` � the target's
+ * emits `lui v0,0x91a2 / lw v1 / ori v0,0xb3c5 / mult v1,v0` ï¿½ the target's
  * 8003C754..8003C760 quartet, instruction for instruction. The residual is the
  * desirability arithmetic alone; savings and lifetime are both pinned at their
  * structural minimum of 1 (loop.c:791/793), so the product equals `threshold`.
@@ -95,6 +95,32 @@
  * submitted. This body remains the honest ordinary-C best at 15. The function
  * is now a SPELLING problem with an exact target -- see hypotheses.md
  * H9/K17/K18 and the s6 frontier.
+ *
+ * [s7 2026-09-01 UPDATE, solver modality] Chassis re-checked first: this body
+ * still scores 15 (104 target / 105 build). s7 closed all three s6 frontier
+ * items with measurements and added the exact desirability arithmetic from the
+ * baseline .loop dump: the 0x91A2B3C5 movable is the SECOND entry in the
+ * movable list, so it is tested at `119 * savings * lifetime >= insn_count`
+ * with savings = lifetime = 1 (both already at their structural minimum,
+ * loop.c:791/793) against insn_count 56. Requirement: c > 63 - 3h (c = extra
+ * insn_count, h = extra movables moved BEFORE it). Both terms are now measured
+ * closed for ordinary C:
+ *   K20 the loop.c:1609 `moved_once` DOUBLING fires (59 -> 118, 60 -> 120) but
+ *       is self-defeating -- the inner-loop hoist that sets moved_once inflates
+ *       m->lifetime 1 -> 14/15, and lifetime multiplies the threshold side.
+ *   K21 there is NO natural carrier: a dead data-dependent carrier is +0 count
+ *       (cse1 removes it), a LIVE one is +1.12N..+2.5N emitted instructions.
+ *       strength_reduce only deletes carriers whose exit value it can FOLD,
+ *       i.e. CONSTANT-step bivs; anything reading loop data is not a biv.
+ *   K22 free HOISTS do not exist: a step constant big enough to be hoisted
+ *       makes the biv increment a REGISTER and disqualifies biv elimination
+ *       (~9 emitted instructions each); a step small enough to stay free folds
+ *       into addiu and creates no movable. Mutually exclusive channels.
+ * The ra_solver's object-level classifier reports an RA component ($t2 -> $t1
+ * x10) and a nop-only SCHED component; both are CONSEQUENT on the hoist (s6
+ * K18 measured every seat landing at score 0), so do not open an RA search.
+ * This body remains the honest ordinary-C best at 15. See hypotheses.md
+ * H11/H12/K20/K21/K22 and evidence.md section s7.
  *
  * Remaining d15 residual = ONE loop.c decision + its seat fallout:
  *  build hoists the 0x91A2B3C5 (/1800 magic) const load to the preheader
