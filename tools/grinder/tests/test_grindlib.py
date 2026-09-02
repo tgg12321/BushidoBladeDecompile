@@ -931,6 +931,27 @@ class TestGrantRescan(unittest.TestCase):
         self.assertTrue(all(len(c) <= 400 for c in st["judge_constraints"]))
         self.assertEqual(G.load_state(self.root, "func_B")["banned_constructs"], [])
 
+    def test_constraint_keeps_instruction_when_hits_are_long(self):
+        from tools.grinder import grant_rescan as R
+        d = os.path.join(self.root, "memory", "grind", "func_A", "rejected")
+        for n in range(3):
+            fn = ("s%d-a-very-long-banked-form-slug-describing-the-compound-address-"
+                  "duplication-attempt-with-plenty-of-words-%d.c" % (n, n))
+            with open(os.path.join(d, fn), "w", encoding="utf-8", newline="\n") as f:
+                f.write("/* compound address expression duplicated at each call site */\n")
+        hits = R.scan(self.root, ["compound address expression"])
+        R.apply(self.root, hits,
+                family="F3 compound-address duplication across call argument lists",
+                ref=".claude/rules/no-new-park-categories.md:377", date="2026-09-01")
+        cs = [c for c in G.load_state(self.root, "func_A")["judge_constraints"]
+              if "RE-ADJUDICATE" in c]
+        self.assertEqual(len(cs), 1)
+        c = cs[0]
+        self.assertLessEqual(len(c), 400)
+        self.assertIn("Restore the matching banked form", c)
+        self.assertIn("SCOPE quoted verbatim", c)
+        self.assertIn("moved to superseded_bans", c)
+
     def test_supersede_bans_is_case_insensitive_and_preserves_others(self):
         G.add_banned_construct(self.root, "func_A", "some other construct")
         moved = G.supersede_bans(self.root, "func_A", ["COMPOUND ADDRESS"], "grant X")

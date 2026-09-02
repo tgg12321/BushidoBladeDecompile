@@ -200,13 +200,19 @@ def apply(root: str, hits: dict[str, list[dict]], family: str, ref: str, date: s
                   f"{[m['text'][:60] for m in moved]}")
         else:
             print(f"{func}: no bans affected")
-        where = [f"{h['where']}: {h['term']!r}" for h in hl]
-        G.add_judge_constraint(root, func, (
-            f"RE-ADJUDICATE (grant rescan {date}): family '{family}' granted at {ref} covers "
-            f"terms {ns}. Hits: {'; '.join(where[:3])}. Restore the matching banked form, "
-            "re-measure on the current chassis, and if it reaches 0 submit under that family with "
-            f"its SCOPE quoted verbatim. {len(moved)} superseded ban(s) moved to superseded_bans."
-        )[:400])
+        # The actionable tail must survive: an outer [:400] alone truncated the
+        # instruction itself when the hit list was long (review of eff52edb).
+        # Cap the variable clause, then budget the head so the tail always fits.
+        hits_txt = "; ".join(h["where"] for h in hl[:3])[:120]
+        tail = ("Restore the matching banked form, re-measure on the current chassis, and "
+                "if it reaches 0 submit under that family with its SCOPE quoted verbatim. "
+                f"{len(moved)} superseded ban(s) moved to superseded_bans.")
+        head = (f"RE-ADJUDICATE (grant rescan {date}): family {family!r} granted at {ref} "
+                f"covers terms {', '.join(ns)}. Hits: {hits_txt}. ")
+        budget = 400 - len(tail) - 1
+        if len(head) > budget:
+            head = head[:max(0, budget - 4)] + "... "
+        G.add_judge_constraint(root, func, (head + tail)[:400])
         print(f"{func}: RE-ADJUDICATE constraint added")
         try:
             line = _queue_update(root, func, f"grant rescan {date}: {family} ({ref})")

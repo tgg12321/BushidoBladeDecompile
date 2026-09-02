@@ -74,7 +74,7 @@ queue top continuously; completions land as `Match: <func> — COMPLETED-C
 
 | Owner says | Do |
 |---|---|
-| "status" / "how's the grind" | `pwsh tools/grinder/status.ps1`; summarize floor trajectory, killed-hypothesis count, completions, latest Judge rulings. |
+| "status" / "how's the grind" | `pwsh tools/grinder/status.ps1`; summarize floor trajectory, killed-hypothesis count, completions, latest Judge rulings. Diagnostics a session may be told to run (all read-only; see each file's docstring): tools/fake_ablate.py, tools/loop_movables.py, tools/nrefs_census.py, tools/label_census.py. |
 | "stop" | `pwsh tools/grinder/grind.ps1 -Stop`; confirm the pidfile clears at the next boundary. |
 | "what did the judge rule" | Read + summarize `docs/grind/decisions.md` (newest first). |
 | "it crashed / circuit-break" | Read `docs/grind/INCIDENT.md` + `tmp/grind/grind.log` tail. Fix the stated cause (oracle break → engine loop recovery; usage-limit exhaustion → just relaunch later). Relaunching resumes exactly — all state is on disk. |
