@@ -1,36 +1,41 @@
-/* func_80016E60 candidate - honest floor 30 on the asm-until-matched chassis
- * (INCLUDE_ASM main, 0 rules). Pure C, no FAKE construct. s4 revision.
+/* func_80016E60 candidate - HONEST floor 25 on the asm-until-matched chassis
+ * (INCLUDE_ASM main, 0 rules), down from 30. Pure C, ZERO FAKE constructs.
+ * s5 revision (synthesis session).
  *
- * s4 CHANGE vs the s3 "q2" candidate: `shift` and `mask` are FUNCTION-SCOPE
- * (written in both bit arms) instead of block-scoped per arm. Same score (30)
- * but STRICTLY closer: the s3 form's bit arms emitted `li` before `addiu`
- * (an emission-ORDER divergence in both arms); the s4 form emits the target's
- * `addiu; li; lbu` order in arm A and `addiu; li; sllv; lbu` in arm B, so the
- * whole bit-arm residual is now pure REGISTER NAMING with zero insn movement.
+ * s5 CHANGE vs the s4 candidate: the bit arms are back to ALL-BLOCK-LOCAL
+ * (`shift`, `mask`, `bits` declared inside each arm) and `shift` is declared
+ * `u8` instead of `s32`. That single type change makes BOTH bit arms
+ * BYTE-EXACT - emission order AND register seats - which is the residual
+ * three sessions (s2/s3/s4) attacked from the scope/statement-order/permuter
+ * directions without closing.
  *
- * MECHANISM (s4, measured - tools/gcc-2.7.2/sched.c:2504 birthing_insn_p /
- * :2586 adjust_priority): a block-local `shift` pseudo has reg_n_sets == 1, so
- * birthing_insn_p() is true for its `addiu` and adjust_priority() raises that
- * insn's INSN_PRIORITY to max_priority (0x7F000001 here, inherited from the
- * block-ending jump). sched1 then picks it FIRST in its bottom-up scan, which
- * emits it LAST of the three ready insns -> `li, lbu, addiu`. Writing `shift`
- * in BOTH arms through one function-scope variable makes reg_n_sets == 2, the
- * boost never fires, all three insns stay at priority 1, and rank_for_schedule
- * falls through to the INSN_LUID tie-break, which reproduces the target order
- * exactly. Full trace: tmp/grind/func_80016E60/s4/sched.log.
+ * MEASURED (s5): on the sanctioned do-while(0) env carrier this form scores 4
+ * and its ENTIRE objdiff is the two-line `sw s5,44(sp) / move s5,a0` prologue
+ * pair; the bit arms contribute nothing. Honest (wrap removed) it scores 25
+ * and the whole residual is the env/select global.c seat swap plus that same
+ * prologue pair.
  *
- * Residuals vs target (evidence.md E-s4-*):
- *  (1) env/select seat swap - global.c priority (every s0/s1 line of the diff).
- *      Honest split-init lever measures 33; the sanctioned do-while(0) carrier
- *      (carrier_n4_dowhile.c) measures 11.
- *  (2) bit arms, REGISTERS ONLY: making `shift` function-scope also makes it a
- *      global.c allocno, and global.c seats it in $a0 (target: $v0) while the
- *      block-local arm-A chain takes $v0 (target: $a0). Arm B's chain is
- *      already byte-correct ($v0). The wanted allocation - shift $v0, mask
- *      $v1, chain $a0/$v0 - is what the ALL-BLOCK-LOCAL form produces once the
- *      birth order is shift, mask, chain, so the open question is a block-local
- *      `shift` pseudo with reg_n_sets != 1 (cse folds every split-init
- *      spelling measured so far).
+ * MECHANISM (hypothesis, attribution pending - see hypotheses.md [s5] H16):
+ * s4 proved the bit-arm divergence is sched1's adjust_priority boost, which
+ * fires via birthing_insn_p (tools/gcc-2.7.2/sched.c:2504) only for a SET
+ * whose SET_DEST is a plain REG with reg_n_sets == 1. A `u8 shift` pseudo is
+ * QImode, so the arm's `addiu` writes it through a subreg / QImode dest and
+ * the `GET_CODE (SET_DEST (pat)) == REG` guard no longer selects it - the
+ * boost never fires, the LUID tie-break emits `addiu, li, lbu`, local-alloc's
+ * birth order becomes shift, mask, chain, and the hand-rolled 3-element sort
+ * (local-alloc.c:1541-1553) hands out $v0, $v1, $a0 = the target seats. The
+ * arm still costs exactly one `addiu` - insn count is unchanged at 211.
+ *
+ * REMAINING RESIDUALS (evidence.md E-s5-*):
+ *  (1) env/select seat swap - global.c allocno priority (env 4615 vs select
+ *      6878). The only measured lever remains the sanctioned do-while(0) wrap
+ *      of {PutDispEnv, PutDrawEnv} (carrier_u8shift_dowhile_4.c, score 4).
+ *  (2) the `sw s5,44(sp) / move s5,a0` prologue pair sits FIRST in our block 0
+ *      and THIRD in the target. s5 re-measured this: contrary to E-s3-7 the
+ *      pair is present in BOTH the honest and the carrier forms, i.e. it is an
+ *      independent 2-insn sched2 defect, not a wrap artefact. tools/sched_solver
+ *      says block 0's goal IS reachable and prints three vectors (see the
+ *      frontier); four hand statement-order permutations all measured worse.
  */
 void func_80016E60(u8 *arg0, s32 arg1) {
     u8 *ot[2];
@@ -41,8 +46,6 @@ void func_80016E60(u8 *arg0, s32 arg1) {
     u32 fb_base;
     s32 idx;
     u32 pad;
-    s32 shift;
-    s32 mask;
 
     select = 0;
     special = 0;
@@ -101,6 +104,8 @@ void func_80016E60(u8 *arg0, s32 arg1) {
 
         if ((special != 0) && (select >= 3)) {
             if (D_80102794 & 0x80008000) {
+                u8 shift;
+                s32 mask;
                 s32 bits;
                 func_8005C650(0, 0x7F, 0x7F);
                 shift = select - 3;
@@ -110,6 +115,8 @@ void func_80016E60(u8 *arg0, s32 arg1) {
                 bits |= mask;
                 D_800A3788 = bits;
             } else if (D_80102794 & 0x20002000) {
+                u8 shift;
+                s32 mask;
                 s32 bits;
                 func_8005C650(0, 0x7F, 0x7F);
                 shift = select - 3;

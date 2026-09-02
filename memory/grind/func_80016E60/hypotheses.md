@@ -275,3 +275,91 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: asm-until-matched chassis, s3 honest candidate as base.c, no FAKE constructs; tmp/grind/func_80016E60/s4/perm_a
+
+## [s5] H16 CONFIRMED - declaring the per-arm `shift` as `u8` (QImode) instead of `s32`, on the all-block-local arm shape, closes BOTH bit arms byte-exactly: emission order and register seats.
+- mechanism: s4 established that the arm's emission order is set by sched1's adjust_priority boost, whose gate birthing_insn_p (tools/gcc-2.7.2/sched.c:2504) is a conjunction - `GET_CODE (SET_DEST (pat)) == REG` AND `reg_n_sets[regno] == 1`. Sessions s2/s3/s4 attacked only the second conjunct (make the pseudo multi-set) and cse2 defeated every spelling. A QImode local is written through a narrow / subreg destination, so the first conjunct is what fails. With no insn in the arm boosted, rank_for_schedule (sched.c:2408) falls through to the INSN_LUID tie-break and emits `addiu, li, lbu` in arm A and `addiu, li, sllv, lbu` in arm B; local-alloc's birth order becomes shift, mask, chain; next_qty == 3 takes the hand-rolled 3-element sort (local-alloc.c:1541-1553), whose reachable permutation [0,1,2] is now the wanted one; find_free_reg then seats shift $v0, mask $v1, chain $a0 (arm A) / $v0 (arm B, reusing shift's seat after it dies at the sllv). The subreg-dest half of the mechanism is an INFERENCE from the sched.c source and the measured bytes - it has NOT yet been read out of a cc1 dump, which is the one attribution debt this session leaves.
+- probe: tmp/grind/func_80016E60/s5/gen.py generates four retypings of the s3 q1 all-block arm on the do-while(0) env carrier; each measured with `sandbox func_80016E60 --disable all` plus tools/objdiff.py and an objdump of the arms (tmp/grind/func_80016E60/s5/*_objdiff.txt, *_arm.txt).
+- result: `s32 shift` = 15, `s16 shift` = 15, `u32 shift` = 15, `u8 shift` = 4 - and the score-4 objdiff contains ONLY `sw s5,44(sp) / move s5,a0`, i.e. zero lines from the bit arms. Insn count stays 211. Honest (wrap removed) the same body measures 25, down from the floor of 30 that had stood since s1.
+- verdict: CONFIRMED
+
+## [s5] H17 CONFIRMED - the `sw s5,44(sp) / move s5,a0` prologue pair is an INDEPENDENT sched2 defect, not an artefact of the do-while(0) env wrap, and it is now the entire residual of the sanctioned carrier.
+- mechanism: block 0 is scheduled by sched2 (reload_completed == 1, so adjust_priority is a no-op); the three (save, init) groups are ordered by the ascending INSN_LUID tie-break of their init insns, and the parameter copy `move s5,a0` has the lowest LUID in our RTL because expand_function_start emits it before the body. The target's block 0 has that group THIRD, i.e. the target's RTL has the param copy after `select = 0` and `special = 0`.
+- probe: objdump of block 0 for the honest u8-shift form (score 25) and for four do-while(0) carrier extents (score 4), compared against asm/funcs/func_80016E60.s:0x80016E60-0x80016E94; plus tools/sched_solver extract/mkasm/perturb on pass 2 with the object-level goal path.
+- result: the pair is FIRST in block 0 of the honest form as well as every carrier form, so the s3 E-s3-7 attribution ("caused by the wrap") is void. The solver rates block 0's target order REACHABLE and prints three vectors - `luid swap 4 <-> 21`, `luid_move 4 -> immediately before 21`, `luid_move 4 -> immediately before 23` - all producing the goal order [24, 576, 570, 568, 564, 23, 21, 4, 566, 16, 572, 13, 574, 562].
+- verdict: CONFIRMED
+
+## [s5] Reproducing the target's block-0 order (the `sw s5 / move s5,a0` group third instead of first) by hand permutation of the statements at the top of the function, measured on the u8-shift do-while(0) carrier.
+- mechanism: sched2 orders the three (save, init) groups by the ascending INSN_LUID tie-break, so moving the source statements that own those LUIDs should rotate the groups.
+- probe: five permutations measured with sandbox + objdiff (tmp/grind/func_80016E60/s5/): x4 swap `select = 0` and `special = 0`; x5 hoist `D_800A36B0 = 1` above both inits; z1 move `limit = 3` above the `D_800A38DC == 2` test; z3 move `select = 0` down to just before the while loop; z4 compute `fb_base` before the flag store.
+- result: x4 = 4 but with 12 objdiff lines instead of 8 (the permutation breaks the bit arms while leaving the prologue pair), x5 = 7, z1 = 7, z3 = 6, z4 = 12. No permutation moved the s5 group, and four of five made the score worse. The parameter copy's LUID is not reachable from the statements a human can reorder at that point - the solver's uid->statement mapping is needed before the next attempt.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: u8-shift all-block-local arm shape on the do-while(0) env carrier (FAKE do-while wrap around {PutDispEnv, PutDrawEnv} present); tmp/grind/func_80016E60/s5/x4_swap_init.c, x5_flag_first.c, z1_limit_early.c, z3_select_late.c, z4_fb_early.c
+
+## [s5] Widening or re-placing the do-while(0) env wrap so that the env/select seat swap is bought without the block-0 prologue defect, measured on the u8-shift arm shape.
+- mechanism: flow.c:2087 counts reg_n_refs += loop_depth, so any wrap that puts both PutDispEnv and PutDrawEnv one loop-note deeper raises env from 6 to 8 weighted refs and wins the global.c allocno_compare against select; the guess was that a different extent would change the block-0 scheduling input as a side effect.
+- probe: eight extents measured on the u8-shift honest body (tmp/grind/func_80016E60/s5/w2..w7, x1): {PutDispEnv, PutDrawEnv}; {VSync(2) .. PutDrawEnv}; {DrawSync(0) .. PutDrawEnv}; two separate single-call wraps; {PutDispEnv .. DrawOTag(arg0+0x408C)}; {PutDispEnv .. DrawOTag(D_800A374C)}; {env = ... .. PutDrawEnv}; {ClearOTagR .. DrawOTag(D_800A374C)}.
+- result: 4, 4, 4, 4, 8, 10, 17, 22. Four extents tie at the minimum of 4 and every one of them leaves exactly the same `sw s5,44(sp) / move s5,a0` pair; no extent removes it. The s2 E-s2-6 extent ranking (30 / 29 / 11) was taken on the old arm shape and is superseded by these numbers.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: u8-shift all-block-local arm shape, honest body plus each wrap extent as the only FAKE construct; tmp/grind/func_80016E60/s5/w2_clear_to_drawotag.c, w3_put_to_drawotag.c, w4_put_to_drawotag_arg0.c, w5_vsync_put.c, w6_drawsync_put.c, w7_env_to_put.c, x1_two_wraps.c
+
+## [s5] Splitting the bit-arm chain into two named intermediates (`bits = D_800A3788; bits2 = bits | mask; D_800A3788 = bits2;`) to push the arm to four local quantities and force local-alloc onto the real qsort path, where a priority sort would order shift, mask, chain the way the target needs.
+- mechanism: local-alloc.c:1502 uses qsort(qty_compare_1) once next_qty >= 4, which is a proper priority sort instead of the hand-rolled 3-element sort whose reachable permutations exclude the wanted one (s3 E-s3-2). Unlike the s3 x1 probe, splitting the chain adds a quantity without adding an insn to the arm.
+- probe: tmp/grind/func_80016E60/s5/vd_splitchain.c on the do-while(0) carrier, sandbox + objdiff.
+- result: 17 (against 15 for the same shape with a single `bits`). The two chain pseudos do not stay tied, so the arm gains a register move and the seats drift further from the target. Superseded in any case by H16, which reaches the target seats on the three-quantity path.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s3 q1 all-block-local arm shape on the do-while(0) carrier (FAKE wrap present); tmp/grind/func_80016E60/s5/vd_splitchain.c
+
+## [s5] Narrowing the per-arm `shift` to a 16-bit or unsigned-32-bit type instead of `u8`, as an alternative way to take the arm's addiu out of birthing_insn_p's REG-dest gate.
+- mechanism: the same subreg-dest reasoning as H16 - if the destination is not a plain SImode REG the boost cannot fire.
+- probe: tmp/grind/func_80016E60/s5/va_s16shift.c and vc_u32shift.c on the do-while(0) carrier.
+- result: both 15, identical to the `s32 shift` baseline, and their arm objdumps still emit `li` before `addiu`. HImode is not narrow enough to change the dest form here and `u32` is the same mode as `s32`; only the QImode spelling moves it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s3 q1 all-block-local arm shape on the do-while(0) carrier (FAKE wrap present); tmp/grind/func_80016E60/s5/va_s16shift.c, vc_u32shift.c
+
+## [s5] Declaring the per-arm `shift` as `u8` (QImode) instead of `s32`, on the all-block-local arm shape, closes both bit arms byte-exactly - emission order and register seats - without adding an instruction.
+- mechanism: s4 established that the arm's emission order is set by sched1's adjust_priority boost, whose gate birthing_insn_p (tools/gcc-2.7.2/sched.c:2504) is a CONJUNCTION: `GET_CODE (SET_DEST (pat)) == REG` AND `reg_n_sets[regno] == 1`. Sessions s2/s3/s4 attacked only the second conjunct (make the pseudo multi-set) and cse2 defeated every spelling. A QImode local is written through a narrow / subreg destination, so the FIRST conjunct fails instead. With no insn in the arm boosted, rank_for_schedule (sched.c:2408) falls through to the INSN_LUID tie-break and emits `addiu, li, lbu` in arm A and `addiu, li, sllv, lbu` in arm B; local-alloc's birth order becomes shift, mask, chain; next_qty == 3 runs the hand-rolled 3-element sort (local-alloc.c:1541-1553) whose reachable permutation [0,1,2] is now the wanted one; find_free_reg seats shift $v0, mask $v1, chain $a0 (arm A) / $v0 (arm B, reusing shift's seat after it dies at the sllv). The subreg-dest half is inferred from the sched.c source plus the measured bytes and has not yet been read out of a cc1 dump.
+- probe: tmp/grind/func_80016E60/s5/gen.py generated four retypings of the s3 q1 all-block arm on the do-while(0) env carrier; each measured with `sandbox func_80016E60 --disable all` plus tools/objdiff.py and an objdump of the arms.
+- result: s32 shift = 15, s16 shift = 15, u32 shift = 15, u8 shift = 4 - and the score-4 objdiff contains ONLY `sw s5,44(sp) / move s5,a0`, zero lines from the bit arms. Insn count unchanged at 211. Honest (wrap removed) the same body measures 25, the first floor movement since s1.
+- verdict: CONFIRMED
+
+## [s5] The `sw s5,44(sp) / move s5,a0` prologue pair is an independent sched2 block-0 defect present in the honest form as well as in every do-while(0) carrier form, and it is now the entire residual of the score-4 carrier.
+- mechanism: Block 0 is scheduled by sched2 (reload_completed == 1, so adjust_priority is a no-op); the three (save, init) groups are ordered by the ascending INSN_LUID tie-break of their init insns, and the parameter copy `move s5,a0` has the lowest LUID in our RTL because expand_function_start emits it before the body. The target's block 0 puts that group THIRD, i.e. its RTL has the param copy after `select = 0` and `special = 0`.
+- probe: objdump of block 0 for the honest u8-shift form (25) and for four do-while(0) carrier extents (all 4), compared against asm/funcs/func_80016E60.s:0x80016E60-0x80016E94; plus tools/sched_solver extract/mkasm/perturb on pass 2 with the object-level goal path.
+- result: The pair is FIRST in block 0 of the honest form too, so the s3 E-s3-7 attribution ('caused by the do-while wrap') is void. The solver rates block 0's target order REACHABLE and prints three vectors: `luid swap 4 <-> 21`, `luid_move 4 -> immediately before 21`, `luid_move 4 -> immediately before 23`, all producing the goal order [24, 576, 570, 568, 564, 23, 21, 4, 566, 16, 572, 13, 574, 562].
+- verdict: CONFIRMED
+
+## [s5] Reproducing the target's block-0 group order (the sw s5 / move s5,a0 pair third instead of first) by hand permutation of the statements at the top of the function, measured on the u8-shift do-while(0) carrier.
+- mechanism: sched2 orders the three (save, init) groups by the ascending INSN_LUID tie-break, so moving the source statements that own those LUIDs should rotate the groups.
+- probe: five permutations measured with sandbox + objdiff: swap `select = 0` / `special = 0`; hoist `D_800A36B0 = 1` above both inits; move `limit = 3` above the D_800A38DC test; move `select = 0` down to just before the while loop; compute fb_base before the flag store.
+- result: 4 (but 12 objdiff lines instead of 8 - the swap breaks the bit arms while leaving the pair), 7, 7, 6, 12. No permutation moved the s5 group and four of five were worse. The parameter copy's LUID is not reachable from the statements a human can reorder there; the solver's uid->statement mapping is needed first.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: u8-shift all-block-local arm shape on the do-while(0) env carrier (FAKE do-while wrap around {PutDispEnv, PutDrawEnv} present); tmp/grind/func_80016E60/s5/x4_swap_init.c, x5_flag_first.c, z1_limit_early.c, z3_select_late.c, z4_fb_early.c
+
+## [s5] Widening or re-placing the do-while(0) env wrap so the env/select seat swap is bought without the block-0 prologue defect, measured on the u8-shift arm shape.
+- mechanism: flow.c:2087 counts reg_n_refs += loop_depth, so any wrap putting both PutDispEnv and PutDrawEnv one loop-note deeper raises env from 6 to 8 weighted refs and wins global.c allocno_compare against select; a different extent might change the block-0 scheduling input as a side effect.
+- probe: eight extents measured on the u8-shift body: {PutDispEnv, PutDrawEnv}; {VSync(2)..PutDrawEnv}; {DrawSync(0)..PutDrawEnv}; two separate single-call wraps; {PutDispEnv..DrawOTag(arg0+0x408C)}; {PutDispEnv..DrawOTag(D_800A374C)}; {env = .....PutDrawEnv}; {ClearOTagR..DrawOTag(D_800A374C)}.
+- result: 4, 4, 4, 4, 8, 10, 17, 22. Four extents tie at the minimum of 4 and every one leaves exactly the same prologue pair; no extent removes it. The s2 E-s2-6 extent ranking (30/29/11) was taken on the old arm shape and is superseded.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: u8-shift all-block-local arm shape, honest body plus each wrap extent as the only FAKE construct; tmp/grind/func_80016E60/s5/w2_clear_to_drawotag.c, w3_put_to_drawotag.c, w4_put_to_drawotag_arg0.c, w5_vsync_put.c, w6_drawsync_put.c, w7_env_to_put.c, x1_two_wraps.c
+
+## [s5] Splitting the bit-arm chain into two named intermediates (bits = D_800A3788; bits2 = bits | mask; D_800A3788 = bits2;) to push the arm to four local quantities and force local-alloc onto the real qsort path.
+- mechanism: local-alloc.c:1502 uses qsort(qty_compare_1) once next_qty >= 4, a proper priority sort instead of the hand-rolled 3-element sort whose reachable permutations exclude the wanted one (s3 E-s3-2); unlike the s3 x1 probe, splitting the chain adds a quantity without adding an insn.
+- probe: tmp/grind/func_80016E60/s5/vd_splitchain.c on the do-while(0) carrier, sandbox + objdiff.
+- result: 17, against 15 for the same shape with a single `bits`. The two chain pseudos do not stay tied, so the arm gains a register move and the seats drift further from the target. Superseded in any case by the u8 result, which reaches the target seats on the three-quantity path.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s3 q1 all-block-local arm shape on the do-while(0) carrier (FAKE wrap present); tmp/grind/func_80016E60/s5/vd_splitchain.c
+
+## [s5] Narrowing the per-arm shift to a 16-bit or unsigned-32-bit type instead of u8, as an alternative way to take the arm's addiu out of birthing_insn_p's REG-dest gate.
+- mechanism: the same subreg-dest reasoning as the u8 result - if the destination is not a plain SImode REG the boost cannot fire.
+- probe: tmp/grind/func_80016E60/s5/va_s16shift.c and vc_u32shift.c on the do-while(0) carrier.
+- result: both 15, identical to the s32 baseline, and their arm objdumps still emit `li` before `addiu`. HImode does not change the dest form here and u32 is the same machine mode as s32; only the QImode spelling moves it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s3 q1 all-block-local arm shape on the do-while(0) carrier (FAKE wrap present); tmp/grind/func_80016E60/s5/va_s16shift.c, vc_u32shift.c

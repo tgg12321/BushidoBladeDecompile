@@ -1,8 +1,8 @@
 {
  "func": "func_80016E60",
  "file": "ings",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 30,
    "modality": "permuter",
    "headline": "Named the bit-arm order divergence: sched1's birthing_insn_p boost (reg_n_sets==1 on a block-local `shift`); a function-scope shift/mask kills it and turns the whole bit-arm residual into pure registe"
+  },
+  {
+   "session": 5,
+   "floor": 25,
+   "modality": "synthesis",
+   "headline": "Honest floor 30 -> 25: declaring the per-arm `shift` as u8 (QImode) on the all-block-local arm shape closes BOTH bit arms byte-exactly; on the sanctioned do-while(0) env carrier the form scores 4 and "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A BLOCK-LOCAL `shift` pseudo with reg_n_sets != 1 closes both bit arms outright: the emission order becomes addiu, li, lbu (arm A) and addiu, li, sllv, lbu (arm B), local-alloc's birth order becomes shift, mask, chain, and the three-quantity hand-rolled sort then hands out exactly shift $v0, mask $v1, chain $a0 in arm A and chain $v0 in arm B (the chain is born after the shift dies there, so it reuses $v0).",
-   "mechanism": "birthing_insn_p (tools/gcc-2.7.2/sched.c:2504) gates on reg_n_sets[regno] == 1, and reg_n_sets is counted by flow BEFORE combine. Two sets in one basic block keep the pseudo local (local-alloc.c reg_basic_block) while making the boost impossible. The s3 unreachable-permutation kill was computed for the birth order mask, chain, shift, which only exists BECAUSE of the boost - with the boost gone the birth order is shift, mask, chain and the s3 sort analysis gives [0,1,2] = the target seats.",
-   "next_probe": "Hunt for a two-set block-local shift that survives cse2. Foldable integer-constant splits are dead (s4). Untried: (a) a second set whose operand is not a compile-time constant in cse's view (the H6 env lever's shape - a symbol address or a memory read), (b) reusing an EXISTING local that is already set elsewhere in the function as the shift carrier (sanctioned variable-reuse family, .claude/rules/defeat-licm-hoist-var-reuse.md, FAKE required - check whether the borrowed pseudo stays block-local for local-alloc), (c) a `do { } while (0)` or duplicated-statement shape that gives the arm a second set. Verify each with a one-line grep of tmp/grind/func_80016E60/s4/sched.log for `ADJPRI insn=<addiu uid> ... birth=` after re-running tmp/grind/func_80016E60/s4/prio.sh."
+   "hypothesis": "The `sw s5,44(sp) / move s5,a0` block-0 group can be rotated from position 1 to position 3, which would take the sanctioned do-while(0) carrier from 4 to 0 and make the function submittable under the do-while-zero family.",
+   "mechanism": "sched2 orders the three (save, init) groups by the ascending INSN_LUID tie-break; the parameter copy `move s5,a0` has the lowest LUID because expand_function_start emits it before the body, while the target's RTL has it after `select = 0` and `special = 0`. tools/sched_solver confirms the goal order is reachable by moving the statement that owns LUID 4 to just before LUID 21 or 23.",
+   "next_probe": "Resolve the uid->source-statement mapping the solver is talking about, then spell the vector. goalmap.py has no --target-object flag, so read the mapping either from the model JSON (tmp/sched_solver_work/ings.sched.json - decode its block/insn schema; it was NOT decoded this session) or from a `pwsh tools/grinder/dump.ps1 func_80016E60` .sched2 dump, matching uids 4, 21, 23 to their RTL patterns. Recipe: apply memory/grind/func_80016E60/carrier_u8shift_dowhile_4.c, run the sandbox, then extract.py ings -> mkasm.sh ings -> perturb.py --pass 2 --target-object build/src/ings.o --ours-object tmp/sandbox/func_80016E60/ings.o. Five hand permutations are already banked as dead (rejected/*prologue-worse*, swap-select-special-init-4-but-12-lines.c), so do not re-sweep by hand."
   },
   {
-   "hypothesis": "Keeping the n4 shape (function-scope shift/mask, block-local bits) and moving the global.c seat of `shift` from $a0 to $v0 closes the bit arms from the other direction, because arm A's chain would then be pushed off $v0 onto $a0.",
-   "mechanism": "local-alloc runs first and gives arm A's only block-local quantity (the chain) the lowest free hard reg, $v0; global.c then seats `shift` and `mask` around it. Forcing local-alloc to leave $v0 alone - e.g. by giving arm A a second block-local quantity born before the chain, or by lifting the chain onto the global path only in arm A - reverses the pair.",
-   "next_probe": "On the n4 carrier, sweep: (i) arm A with mask block-local as well (two locals born before the chain), (ii) arm A's chain written as a direct read-modify-write on D_800A3788 (compiler temp) while arm B keeps the named `bits`, (iii) tools/ra_solver/local_extract.py QTYDBG plus tools/ra_solver/inverse_compose.py classify on the n4 state to get a typed REACHABLE/FORECLOSED verdict on `shift -> $v0` before spending more hand variants."
+   "hypothesis": "The QImode mechanism behind the u8-shift win is birthing_insn_p's `GET_CODE (SET_DEST (pat)) == REG` guard failing on a narrow destination, not a change in reg_n_sets - and if so the same guard is a general, reusable lever for every sched1 birthing-boost residual in the project.",
+   "mechanism": "tools/gcc-2.7.2/sched.c:2504 gates the adjust_priority boost on a conjunction; three sessions attacked reg_n_sets and were defeated by cse2, while the dest-form conjunct had never been probed. s16 and u32 measured inert (15), which is consistent with QImode being the only spelling that changes the dest form here.",
+   "next_probe": "Run the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_SCHED_DEBUG=1 BB2_PRIO_DEBUG=1) on the u8-shift body and grep the ADJPRI lines for the arm's addiu: a `birth=0` on an insn whose reg still has reg_n_sets == 1 confirms the dest-form attribution; a `birth=1` that simply never wins would mean the mechanism is something else (e.g. a changed LUID layout from an extra extend insn that combine later folds). Record the verdict either way - the answer generalises beyond this function."
   },
   {
-   "hypothesis": "The env/select seat remains the larger residual (19 of the honest 30) and is unchanged by this session's work; the do-while(0) carrier is still the only measured lever that swaps it, at the cost of the `sw s5,44(sp) / move s5,a0` prologue pair.",
-   "mechanism": "flow.c:2087 counts reg_n_refs before combine; global.c allocno_compare needs env at 8 weighted refs. The honest split-init env lever (s2 H6) measures 33 because combine parks one operand in env's own hard reg and the earlier birth deletes three reorg.c back-edge peels.",
-   "next_probe": "Re-measure the carrier's prologue pair on the n4 chassis now that the bit arms carry no insn movement, and check whether that pair is a wrap artefact or an independent defect; then re-run the honest split-init env form on top of n4 to see whether the two levers compose (s2 measured them separately)."
+   "hypothesis": "An HONEST env/select seat lever still exists and would leave the function needing only the block-0 fix, with no FAKE construct at all.",
+   "mechanism": "global.c allocno_compare: env has 3 byte-visible refs x loop_depth 2 = 6 weighted, pri 4615 at livelen 26; select is 27/157 = 6878. env wins at 8 weighted refs or livelen <= 17 (killed by s2 E-s2-2), or if select drops to <= 16 weighted refs (~6.5 in-loop refs against the present 12) or its livelen stretches past ~234. The only honest lever measured so far is split-init accumulation on env (s2 H6), which took the seat but cost 3 points on the OLD arm shape.",
+   "next_probe": "Re-measure the s2 H6 honest split-init env form (`env = (u8 *)(idx * 0x4090); env += (s32)&D_800F7438;`) ON TOP OF the new u8-shift arm shape - it has never been composed with it, and its two costs (one operand parked in env's own hard reg, plus three lost reorg.c back-edge peels of `li a1,1`) may interact differently now that the arms move no instructions. Also sweep select's in-loop reference count: the two ?: arms each read `select` twice, so a spelling that reads it once per arm is the only untried route to the <=16 weighted refs the arithmetic needs."
   }
  ],
  "judge_constraints": [],
@@ -144,6 +150,38 @@
    "measured_on": "asm-until-matched chassis, s3 honest candidate as base.c, no FAKE constructs; tmp/grind/func_80016E60/s4/perm_a",
    "predicate_cite": "",
    "result": "64 finds, best 212 against a base of 585 - no sub-floor form and no novel structural class; every find was an attractor "
+  },
+  {
+   "session": 5,
+   "statement": "Reproducing the target's block-0 group order (the sw s5 / move s5,a0 pair third instead of first) by hand permutation of the statements at the top of the function, measured on the u8-shift do-while(0)",
+   "kill_scope": "instance",
+   "measured_on": "u8-shift all-block-local arm shape on the do-while(0) env carrier (FAKE do-while wrap around {PutDispEnv, PutDrawEnv} present); tmp/grind/func_80016E60/s5/x4_swap_init.c, x5_flag_first.c, z1_limit_ear",
+   "predicate_cite": "",
+   "result": "4 (but 12 objdiff lines instead of 8 - the swap breaks the bit arms while leaving the pair), 7, 7, 6, 12. No permutation"
+  },
+  {
+   "session": 5,
+   "statement": "Widening or re-placing the do-while(0) env wrap so the env/select seat swap is bought without the block-0 prologue defect, measured on the u8-shift arm shape.",
+   "kill_scope": "instance",
+   "measured_on": "u8-shift all-block-local arm shape, honest body plus each wrap extent as the only FAKE construct; tmp/grind/func_80016E60/s5/w2_clear_to_drawotag.c, w3_put_to_drawotag.c, w4_put_to_drawotag_arg0.c, w5",
+   "predicate_cite": "",
+   "result": "4, 4, 4, 4, 8, 10, 17, 22. Four extents tie at the minimum of 4 and every one leaves exactly the same prologue pair; no "
+  },
+  {
+   "session": 5,
+   "statement": "Splitting the bit-arm chain into two named intermediates (bits = D_800A3788; bits2 = bits | mask; D_800A3788 = bits2;) to push the arm to four local quantities and force local-alloc onto the real qsor",
+   "kill_scope": "instance",
+   "measured_on": "s3 q1 all-block-local arm shape on the do-while(0) carrier (FAKE wrap present); tmp/grind/func_80016E60/s5/vd_splitchain.c",
+   "predicate_cite": "",
+   "result": "17, against 15 for the same shape with a single `bits`. The two chain pseudos do not stay tied, so the arm gains a regis"
+  },
+  {
+   "session": 5,
+   "statement": "Narrowing the per-arm shift to a 16-bit or unsigned-32-bit type instead of u8, as an alternative way to take the arm's addiu out of birthing_insn_p's REG-dest gate.",
+   "kill_scope": "instance",
+   "measured_on": "s3 q1 all-block-local arm shape on the do-while(0) carrier (FAKE wrap present); tmp/grind/func_80016E60/s5/va_s16shift.c, vc_u32shift.c",
+   "predicate_cite": "",
+   "result": "both 15, identical to the s32 baseline, and their arm objdumps still emit `li` before `addiu`. HImode does not change th"
   }
  ],
  "ladder_skip": 0,
