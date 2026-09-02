@@ -1,0 +1,10 @@
+# SELF-VET — _spu_2pitch
+CONSTRUCTS: none (ordinary C only: a `for` loop over a counter, a compound-assignment pair `ratio *= 0x103B; ratio >>= 12;`, unsigned arithmetic locals `lower`/`upper`/`frac`/`steps`; no FAKE annotations, no dead locals, no volatile, no asm, no dead stores)
+## T1 semantic purpose: every statement computes a value the return consumes. `lower`/`upper` are the two adjacent scale points, `frac` the interpolation weight, `steps` the loop bound, `ratio` the running power of 2^(1/48). The compound pair `ratio *= 0x103B; ratio >>= 12;` IS the fixed-point multiply — no statement is byte-inert or removable.
+## T2 human-programmer: a fixed-point `x *= K; x >>= 12;` and a `for (i = 0; i < n; i++)` loop are how a human writes this; a reader asks "why is this here?" about nothing. Names describe the algorithm (`ratio`, `lower`, `upper`, `frac`, `steps`).
+## T3 GCC-internals justification: the reasoning for the two-statement multiply is C semantics (the product is assigned to `ratio`), not a GCC pass. The frame size follows from the `for` loop being the natural loop form; the phantom-slot mechanism is diagnosis (why the plain guard form was 8 bytes short), not a construct added to trigger it.
+## T4 permuter/search provenance: no permuter; hand-written variants v1-v9 (tmp/grind/_spu_2pitch/s1/) chosen from the asm structure. No construct survives only because a detector misses it.
+## T5 family check: no forbidden family matches — no pins, asm, barriers, volatile, dead/pad locals, dead stores, self-assigns, opaque constants, alias renames, wrapping. The compound-assignment pair is adjacent to the sanctioned split-init accumulation shape (memory `feedback/split-init-accumulation-sanctioned.md`) but here it is not a refs-count trick: the two statements emit two distinct real operations (shift-add multiply then shift) exactly as written.
+## T6 naming-announces-intent: `ratio`, `lower`, `upper`, `frac`, `steps`, `i` — no pad/dummy/unused/spill/tail names.
+SANCTIONED-FAMILY-CLAIMS: none
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct
