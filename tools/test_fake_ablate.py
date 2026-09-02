@@ -2,7 +2,8 @@
 """Unit tests for tools/fake_ablate.py (pure text logic; no build). Run: python tools/test_fake_ablate.py -v"""
 import os, sys, unittest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from tools.fake_ablate import find_fake_units, remove_units, ablation_masks
+from tools.fake_ablate import (find_fake_units, remove_units, ablation_masks,
+                              format_units)
 
 BODY = """s32 f(s32 a)
 {
@@ -162,6 +163,57 @@ class TestInvariants(unittest.TestCase):
         m = ablation_masks(6)
         self.assertEqual(len(m), 23)
         self.assertEqual(len(set(m)), 23)
+
+
+LEADING = """void m(void)
+{
+    /* FAKE: holder */ s32 t = 3;
+    return t;
+}
+"""
+
+WORDPROSE = """/* FAKE-family notes: the reused k held both compare constants */
+void f(void)
+{
+    return;
+}
+"""
+
+MANUAL = """void s(u8 c)
+{
+    /* FAKE: the loop tail is duplicated into all twelve arms
+     * instead of falling out of the switch. */
+    switch (c - 0x80) {
+    default:
+        break;
+    }
+}
+"""
+
+
+class TestReviewFixes(unittest.TestCase):
+    def test_first_line_and_format_over_oneline_fixture(self):
+        units = find_fake_units(ONELINE)
+        self.assertEqual(units[0].lines, [])          # inline one-line wrap: rewrite only
+        self.assertEqual(units[0].first_line, 2)
+        out = format_units(units)                     # must not raise (R1)
+        self.assertEqual(len(out), len(units))
+        for u, line in zip(units, out):
+            self.assertIn(f"L{u.first_line + 1}", line)
+
+    def test_leading_inline_marker_before_code(self):
+        units = find_fake_units(LEADING)
+        self.assertEqual([u.kind for u in units], ["line"])
+        self.assertEqual(units[0].lines, [2])
+        self.assertNotIn("t = 3", remove_units(LEADING, units))
+
+    def test_fake_word_prose_is_not_a_marker(self):
+        self.assertEqual(find_fake_units(WORDPROSE), [])
+
+    def test_brace_opening_construct_is_manual(self):
+        units = find_fake_units(MANUAL)
+        self.assertEqual([u.kind for u in units], ["manual"])
+        self.assertIn("switch", units[0].construct)
 
 
 if __name__ == "__main__":

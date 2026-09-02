@@ -56,9 +56,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SWEEP_TIMEOUT = 3600
 # A marker that OPENS a comment (comment-only line) …
-FAKE_OPEN_RE = re.compile(r"^\s*(?:/\*|//)\s*FAKE\b")
+FAKE_OPEN_RE = re.compile(r"^\s*(?:/\*|//)\s*FAKE(?![-\w])")
 # … or one that follows code on the same line.
-FAKE_INLINE_RE = re.compile(r"/\*\s*FAKE\b|//\s*FAKE\b")
+FAKE_INLINE_RE = re.compile(r"/\*\s*FAKE(?![-\w])|//\s*FAKE(?![-\w])")
 COMMENT_CONT_RE = re.compile(r"^\s*(?:/\*|\*|//)")
 DO_RE = re.compile(r"^\s*do\s*\{")
 WHILE0_RE = re.compile(r"^\s*\}\s*while\s*\(\s*0\s*\)\s*;")
@@ -69,10 +69,17 @@ LINE_COMMENT_RE = re.compile(r"//.*$")
 
 @dataclass
 class Unit:
-    kind: str          # "line" | "wrap"
+    kind: str          # "line" | "wrap" | "manual"
     lines: list        # 0-based line indexes removed when the unit is ablated
-    text: str          # first line, for reports
+    text: str          # marker line, for reports
     replace: dict = field(default_factory=dict)  # line index -> replacement text
+    construct: str = ""  # the annotated construct line, for reports
+
+    @property
+    def first_line(self) -> int:
+        """Lowest source line the unit touches (a one-line wrap drops NO
+        lines - it only rewrites one - so `lines[0]` alone can IndexError)."""
+        return min(list(self.lines) + list(self.replace))
 
 
 def _strip_comments(line: str) -> str:
@@ -154,16 +161,22 @@ def _unit_for_construct(lines: list, j: int, prefix: list, text: str):
     """Build the unit covering the construct on line j (plus `prefix` lines)."""
     peeled = _peel_oneliner(lines[j])
     if peeled is not None:
-        return Unit("wrap", list(prefix), text, {j: peeled})
+        return Unit("wrap", list(prefix), text, {j: peeled}, lines[j].strip())
     if DO_RE.match(lines[j]):
         k = _match_while0(lines, j)
         if k is not None:
-            return Unit("wrap", prefix + [j, k], text)
+            return Unit("wrap", prefix + [j, k], text, construct=lines[j].strip())
     if WHILE0_RE.match(lines[j]):
         k = _match_do(lines, j)
         if k is not None:
-            return Unit("wrap", sorted(prefix + [j, k]), text)
-    return Unit("line", prefix + [j], text)
+            return Unit("wrap", sorted(prefix + [j, k]), text, construct=lines[j].strip())
+    code = _strip_comments(lines[j]).strip()
+    if not code.endswith(";"):
+        # Opens a block / continues a multi-line statement: deleting the line
+        # would not remove the device cleanly, so it is not mechanically
+        # ablatable (R4) - reported, excluded from the grid.
+        return Unit("manual", prefix + [j], text, construct=lines[j].strip())
+    return Unit("line", prefix + [j], text, construct=lines[j].strip())
 
 
 def find_fake_units(text: str) -> list:
@@ -183,7 +196,8 @@ def find_fake_units(text: str) -> list:
                 u = Unit("line", block, stripped)
             else:
                 u = _unit_for_construct(lines, j, block, stripped)
-        elif not COMMENT_CONT_RE.match(stripped) and FAKE_INLINE_RE.search(ln):
+        elif (not stripped.startswith("*") and _strip_comments(ln).strip()
+              and FAKE_INLINE_RE.search(ln)):
             # inline marker after code
             u = _unit_for_construct(lines, i, [], stripped)
         else:
@@ -192,6 +206,12 @@ def find_fake_units(text: str) -> list:
         consumed.update(u.lines)
         consumed.update(u.replace)
     return units
+
+
+def format_units(units: list) -> list:
+    """Report lines for a unit list (indexes are positions in THIS list)."""
+    return [f"  [{k}] {u.kind:6s} L{u.first_line + 1}: {u.text[:100]}"
+            for k, u in enumerate(units)]
 
 
 def remove_units(text: str, units: list) -> str:
@@ -233,16 +253,34 @@ def main() -> int:
                     help="refuse a grid larger than this (default 24)")
     a = ap.parse_args()
 
-    text = Path(a.candidate).read_text(encoding="utf-8", errors="replace")
-    units = find_fake_units(text)
+    cand = Path(a.candidate)
+    if not cand.is_file():
+        print(f"no such candidate file: {a.candidate}", file=sys.stderr)
+        return 2
+    text = cand.read_text(encoding="utf-8", errors="replace")
+    all_units = find_fake_units(text)
+    manual = [u for u in all_units if u.kind == "manual"]
+    units = [u for u in all_units if u.kind != "manual"]
+
+    def print_units():
+        print(f"FAKE units in {a.candidate}: {len(units)}")
+        for line in format_units(units):
+            print(line)
+        if manual:
+            print("not mechanically ablatable - ablate by hand:")
+            for u, line in zip(manual, format_units(manual)):
+                print(line)
+                print(f"        construct: {u.construct[:90]}")
+
+    if manual and not units:
+        print_units()
+        return 0
     if not units:
         print(f"no FAKE-annotated constructs found in {a.candidate}; nothing to ablate")
         return 0
     masks = ablation_masks(len(units))
     if len(masks) > a.max_variants:
-        print(f"FAKE units in {a.candidate}: {len(units)}")
-        for k, u in enumerate(units):
-            print(f"  [{k}] {u.kind:4s} L{u.lines[0] + 1}: {u.text[:100]}")
+        print_units()
         print(f"\ngrid is {len(masks)} variants > --max-variants {a.max_variants}; "
               f"re-run with --max-variants {len(masks)} to sweep it anyway", file=sys.stderr)
         return 2
@@ -296,13 +334,14 @@ def main() -> int:
             keep_files.add(best["variant"])
         if a.json:
             print(json.dumps({"func": a.func, "file": a.file,
-                              "units": [{"kind": u.kind, "lines": u.lines, "text": u.text} for u in units],
+                              "units": [{"kind": u.kind, "lines": u.lines, "text": u.text,
+                                         "construct": u.construct} for u in units],
+                              "manual": [{"lines": u.lines, "text": u.text,
+                                          "construct": u.construct} for u in manual],
                               "results": rows,
                               "win": (outdir / best["variant"]).as_posix() if win else None}, indent=2))
         else:
-            print(f"FAKE units in {a.candidate}: {len(units)}")
-            for k, u in enumerate(units):
-                print(f"  [{k}] {u.kind:4s} L{u.lines[0] + 1}: {u.text[:100]}")
+            print_units()
             print("\nscore  bi    variant        removed")
             for x in rows:
                 sc = " ERR" if x["score"] is None else f"{x['score']:4d}"
