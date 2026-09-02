@@ -1496,3 +1496,4 @@
 - 2026-09-02 13:41 func_800325E0 COMPLETED-INLINE-ASM-CANONICAL after 1 sessions (closer: s1 [recon]).
 - 2026-09-02 13:54 func_80017D84 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-02 14:36 func_800861BC JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: func_800861BC include/sound.h), function stays active.
+- 2026-09-02 14:47 func_800861BC COMPLETED-C after 2 sessions (closer: s2 [structural]).
