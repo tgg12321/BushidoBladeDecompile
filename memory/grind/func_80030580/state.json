@@ -1,31 +1,37 @@
 {
  "func": "func_80030580",
  "file": "code6cac_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 2,
    "modality": "recon",
    "headline": "func_80030580 s1 recon: clean pure-C rewrite 45->2; body byte-identical, only the 24-byte phantom frame (ours 8) remains; mechanism = combine.c REG_DEAD-orphan USE slots"
+  },
+  {
+   "session": 2,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Floor flat at 2; the 16 missing frame bytes are now TYPED - a corpus census proves the target's vars=24 is three 8-byte combine-orphan spill slots, not a BLKmode temp, and 44 structural respellings al"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The missing 16 bytes are two more combine.c REG_DEAD-orphan USE slots from address pseudos combined away in the post-loop block",
-   "mechanism": "combine.c:10836 distribute_notes fallback USE; reload1 alter_reg spill slot for a class-less pseudo",
-   "next_probe": "grep '(use (reg' in the .combine dump per variant while sweeping body-neutral spellings: struct-typed obj/src (COMPONENT_REF trees), sibling-style hand-spelled /32, s32 speed locals for the two multiplies"
+   "hypothesis": "The second Judge lookup's folded symbol pseudo (reg 130) can be pushed onto the same combine path as the first (reg 110), yielding a second 8-byte orphan slot",
+   "mechanism": "combine.c:10761 - distribute_notes breaks out early when the dying register is elim_i2/elim_i1 (the register the i2->i3 fold eliminated), dropping the REG_DEAD note before it can reach the label-walk at combine.c:10836 that emits the orphan USE",
+   "next_probe": "add a BB2_COMBINE_DEBUG print inside distribute_notes in tools/gcc-2.7.2/combine.c logging (note reg, from_insn, i1, i2, i3, elim_i1, elim_i2, chosen place), rebuild the instrumented cc1, run it on draft3 and on display.c's get_cs, and diff the paths taken by reg 110 vs reg 130 and by get_cs's two orphans; then hunt a body-neutral spelling that routes the second lookup through the first's path"
   },
   {
-   "hypothesis": "The missing 16 bytes are one untouched BLKmode stack temp (12-byte Vec3i rounds to 16 in assign_stack_temp)",
-   "mechanism": "expand_expr allocates a BLKmode temp for a struct-valued expression and then moves directly, leaving the temp unreferenced",
-   "next_probe": "FRAMEDBG ctx=stack_temp sweep over struct-valued expression shapes (chained struct assignment, struct copy via conditional, COMPONENT_REF-of-struct RHS) accepting only 0 sp accesses in the body"
+   "hypothesis": "A third orphan slot is reachable from a pseudo class not yet observed in this function",
+   "mechanism": "reload1 alter_reg gives a slot to any pseudo left with no register class; combine orphan USEs are one source, but the corpus may contain others (the instrumented cc1 emits a distinct ctx= label per allocation site)",
+   "next_probe": "grep BB2_FRAME_DEBUG in tools/gcc-2.7.2/ to enumerate every ctx= label cc1 can emit, then re-run census2.py over all src/*.c filtering for leaves (args=0, regs=0, 0 sp accesses) with vars=24 and read their C for where the third slot comes from"
   },
   {
-   "hypothesis": "func_80032064's committed C carries the same phantom mechanism and its spelling transfers",
-   "mechanism": "same Judge/angle idiom compiled in the same TU",
-   "next_probe": "BB2_FRAME_DEBUG census of func_80032064 as committed; port its declaration/spelling pattern into draft3 and measure vars="
+   "hypothesis": "One global folded at two sites can orphan twice, so Judge alone can supply two of the three slots",
+   "mechanism": "each folded symbol_ref pseudo is a separate pseudo (reg 107 and reg 127 pre-combine), so two independent deaths are possible in principle",
+   "next_probe": "census the two-slot leaves (config:func_8003FECC, main:SpuSetCommonAttr) for whether their two slots come from two distinct globals or from one global read twice; if one-global-twice is witnessed anywhere, port that call-site spelling into draft3 and measure vars="
   }
  ],
  "judge_constraints": [],
@@ -46,6 +52,30 @@
    "measured_on": "draft3 chassis, sandbox 2, no FAKE constructs",
    "predicate_cite": "",
    "result": "all vars=8 with fdiff=0; jp (s16* alias of Judge) drops to vars=0 and changes the body; a real Vec3i tmp reaches 24 but "
+  },
+  {
+   "session": 2,
+   "statement": "Struct-valued expression spellings of the pos->old copy on the draft3 chassis with no FAKE constructs allocate a BLKmode stack temp and raise vars above 8",
+   "kill_scope": "instance",
+   "measured_on": "draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Every spelling stayed at vars=8 with the same single ctx=spill_new slot and sp_acc=0; five of the six are byte-neutral ("
+  },
+  {
+   "session": 2,
+   "statement": "Structural respellings of the loop, declaration order, block scoping, type narrowing, statement placement, and pointer-vs-array-vs-COMPONENT_REF access shapes on the draft3 chassis with no FAKE constr",
+   "kill_scope": "instance",
+   "measured_on": "draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "All 44 measured vars=8 with exactly one spill_new slot. 15 are body-neutral (fdiff 0) and are banked in evidence.md as f"
+  },
+  {
+   "session": 2,
+   "statement": "Making the two Judge lookups structurally symmetric in the source produces a second combine orphan on the draft3 chassis with no FAKE constructs",
+   "kill_scope": "instance",
+   "measured_on": "draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Every symmetric spelling still yields exactly one 8-byte slot (vars=8) and costs 2-3 fdiff lines of body. The asymmetry "
   }
  ],
  "ladder_skip": 0,

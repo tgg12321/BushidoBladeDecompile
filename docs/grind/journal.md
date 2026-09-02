@@ -1500,3 +1500,4 @@
 - 2026-09-02 14:52 func_80043C7C COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-02 14:56 func_80043DE0 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-02 15:16 func_80030580 s1 [recon] floor=2: func_80030580 s1 recon: clean pure-C rewrite 45->2; body byte-identical, only the 24-byte phantom frame (ours 8) remains; mechanism = combine.c REG_DEAD-orphan USE slots
+- 2026-09-02 15:34 func_80030580 s2 [structural] floor=2: Floor flat at 2; the 16 missing frame bytes are now TYPED - a corpus census proves the target's vars=24 is three 8-byte combine-orphan spill slots, not a BLKmode temp, and 44 structural respellings all measure vars=8.

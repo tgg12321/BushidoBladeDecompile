@@ -89,3 +89,109 @@ to see whether its phantom count also comes from Judge-address orphans.
 - [s1] Sibling func_80032064 (src/code6cac_b.c:2225, matched) uses the identical idiom (same src offsets, Judge lookups, Vec3_copy) — template for spelling; its frame 0x28 includes a call
 
 - [s1] Frame instrument: tmp/grind/func_80030580/s1/frame.py + frame_instr.sh (BB2_FRAME_DEBUG census, .frame line, fdiff count) — reusable next session
+
+## Session 2 (2026-09-02, structural) — floor 2 (unchanged); the frame residual is now MECHANISM-TYPED
+
+### Chassis re-measured this session
+`sandbox func_80030580 --disable all` = **2** with draft3 (= candidate.c) applied to
+src/code6cac_b.c. Body still byte-identical; the whole residual is `addiu sp,-0x18`
+(target, vars=24) vs `addiu sp,-8` (ours, vars=8).
+
+### THE DECISIVE NEW DATUM — corpus census of leaf-function frames
+`tmp/grind/func_80030580/s2/census2.py` compiles a whole `src/*.c` with the instrumented
+cc1 (`BB2_FRAME_DEBUG=1`), groups every FRAMEDBG allocation by function, and cross-reads
+`vars=`/`regs=`/`args=` from the `.frame` line plus the count of `($sp)` accesses in the
+emitted body. Run over 20 source files (code6cac, code6cac_b, code6cac_c, code6cac_c0,
+code6cac_c2, code6cac_c_ab, code6cac_c_mid, config, display, gpu, ings, ings2, main,
+sound, system, text1a_b, text1a_c, text1a_c2, text1b, text1b_b), filtered to functions
+with the SAME frame signature as our target (`args=0, regs=0, sp_acc=0` — a leaf that
+touches none of its frame), every single function with `vars >= 16` is composed
+**exclusively of `ctx=spill_new_pNNN` slots, 8 bytes each**:
+
+    config:func_8003FECC      vars=16  spill_new_p84  + spill_new_p115
+    display:get_cs            vars=16  spill_new_p85  + spill_new_p99
+    display:get_ce            vars=16  spill_new_p85  + spill_new_p99
+    main:SpuSetCommonAttr     vars=16  spill_new_p98  + spill_new_p120
+
+NO leaf anywhere in the scanned corpus reaches a non-zero `vars` through a BLKmode
+`ctx=stack_temp`. In this TU `ctx=stack_temp` appears only in functions that HAVE calls
+(func_800300B4 16/8/32 with args=16; func_8002FF20 32; func_80032064 8 = its real
+`s16 sp_area[2]`), i.e. aggregate-argument / declared-aggregate temps, all of which emit
+sp traffic. **Therefore the target's 24 bytes are three 8-byte orphan-USE spill slots**
+(frontier F1), and F2 (one untouched 16-byte BLKmode temp) is not the shape of this frame.
+
+### The generative recipe for an orphan spill slot, read off a matched witness
+`get_cs`/`get_ce` (src/display.c:556/574, both COMPLETED-C leaves) are the template: each
+clamps against a **distinct halfword global** (`D_8009BE78`, `D_8009BE7A`) inside a
+ternary, so each global's `symbol_ref` pseudo is folded by combine into a `lh %lo(SYM)(at)`
+mem while a CODE_LABEL from the ternary sits between the pseudo's (now deleted) setter and
+the folding point. combine.c:10836 then emits `(use (reg N))` after the label, lreg gives
+the pseudo no class (its only reference is a USE), reload's `alter_reg` hands it a stack
+slot, and the USE emits nothing. Two such globals ⇒ 2 slots ⇒ vars=16.
+Our function reads exactly three globals: `Judge` (folded twice — confirmed in the target
+bytes: two `lui $at,%hi(Judge)` + `lh %lo(Judge)($at)` pairs at 0x80030654/0x80030698),
+`D_8008E194` and `D_80106A78` (both materialised as real base registers via
+`lui`+`addiu`, so their symbol pseudos stay live and cannot orphan).
+
+### The open asymmetry (this is the crack to widen)
+Pre-combine RTL (`tmp/grind/func_80030580/s2/base.rtl`) shows the two Judge lookups are
+STRUCTURALLY IDENTICAL: insn 131 `(set (reg 107) (symbol_ref "Judge"))` → insn 136
+`(set (reg 110) (plus (reg 109) (reg 107)))` → insn 138 `(set (reg:HI 111) (mem (reg 110)))`
+for the sin lookup, and insn 166/171/173 with regs 127/130/131 for the cos lookup.
+combine folds BOTH into `(mem (plus (reg idx) (symbol_ref "Judge")))` (combine insns 140
+and 175) — but only reg 110 produces an orphan USE (`insn 393 (use (reg:SI 110))` right
+after `code_label 99`, the `/32` `bgez` target). reg 130's REG_DEAD note is dropped
+(most likely the `elim_i2` early-`break` at combine.c:10761, i.e. reg 130 was exactly the
+register the i2→i3 fold eliminated, so the note never reaches the label-walk). Why the
+first lookup escapes that path and the second does not is UNRESOLVED and is the single
+highest-value forensics question left on this function.
+
+### 44 structural variants measured this session — every one at vars=8, one spill slot
+Instrument: `tmp/grind/func_80030580/s2/frame2.py` (+ `extra2.py`), same harness as s1 —
+applies a variant to src, runs the project cpp|instrumented-cc1, prints `vars=`, the
+FRAMEDBG census, the `($sp)` count, and the fdiff line count vs `s1/var_base.s`.
+
+Body-NEUTRAL (fdiff = 0) and still vars=8 — these are free to compose with any future
+lever, which is their value: `hd32` (sibling func_80032064's hand-spelled `/32`:
+`{ s32 v1 = *(s16*)(src+0x1A); if (v1 < 0) v1 += 0x1F; ... - (v1 >> 5); }`),
+`castjudge` (`(s32)*(&Judge + idx)` sibling spelling), `hd32cast`, `vely` (`s32 vel_y`
+local), `dord1`/`dord2`/`dord3` (all declaration-order permutations of obj/src/tbl/i),
+`lp_nest` (nested ifs instead of `&&`), `lp_while` (while form with the bumps in the
+body), `c_255` (`255` for `0xFF`), `acopy` (u16 local for the angle copy), `slot8`
+(`(u8)i` cast), `a0idx` (src assigned in the body instead of the declarator), `s32idx`
+(`s32 *src` with word indices `src[61..63]`), `ang32` (`s32 ang` local feeding the FIRST
+Judge index only), `arridx` (`((Vec3i*)(obj+0x2C))[1] = [0]`), `arridx2`, `compref`
+(function-scope `struct PB { Vec3i pos, old, vel; }` with `pb->old = pb->pos`),
+`comprefp`, `unioncpy` (function-scope union member copy), `jmix2`.
+
+Body-CHANGING (recorded so they are never re-proposed): `spd`/`sibfull` (65),
+`veccopy` (14, `Vec3_copy` typedef instead of `Vec3i`), `blk1` (2), `i16` (11), `iu` (2),
+`lp_hi` (4), `z16` (13), `spin` (161), `tbl_late` (18), `hd32top` (16), `copylast` (20),
+`bothu16` (2), `u16cast` (2), `secondzx` (3), `firstsx` (2), `tblidx` (64),
+`tblidx_arm` (152), `posy_mid` (32), `posy_last` (196).
+
+One variant moved the frame DOWN: `jmix` (second Judge lookup spelled
+`*(s16*)((u8*)&Judge + (idx << 1))`) → **vars=0**, fdiff 4. It removes the only orphan,
+confirming from the other side that the single slot we do have is produced by the SECOND
+lookup's combination, not the first.
+
+- [s2] Corpus census (20 files): in leaf functions (args=0, regs=0, 0 sp accesses) every non-zero `vars` is built only from 8-byte `ctx=spill_new` orphan slots — never a BLKmode `ctx=stack_temp`; target vars=24 ⇒ THREE orphan slots
+- [s2] get_cs / get_ce (src/display.c:556/574, COMPLETED-C leaves) are the 2-orphan witnesses: two DISTINCT globals folded into `lh %lo(SYM)(at)` across a ternary's CODE_LABEL ⇒ vars=16
+- [s2] func_80030580 reads only three globals; D_8008E194 and D_80106A78 are materialised as live base registers in the target bytes (`lui`+`addiu`), so only `Judge` can orphan
+- [s2] Both Judge lookups have identical pre-combine RTL and both are folded, yet only one orphans; reg 130's REG_DEAD note is dropped (probable `elim_i2` break, combine.c:10761)
+- [s2] 15 body-neutral respellings banked (hd32, castjudge, dord1-3, lp_nest, lp_while, a0idx, s32idx, ang32, arridx, compref, unioncpy, vely, acopy) — all vars=8, all composable
+- [s2] Instrument: tmp/grind/func_80030580/s2/frame2.py + extra2.py (variant sweep) and census2.py (corpus frame census) — reusable
+
+- [s2] Chassis re-measured this session: sandbox func_80030580 --disable all = 2 with candidate.c (draft3) applied to src/code6cac_b.c; 148/148 insns, body byte-identical, residual is addiu sp,-0x18 (vars=24) vs ours -8 (vars=8).
+
+- [s2] Corpus census over 20 src/*.c: in leaf functions (args=0, regs=0, zero ($sp) accesses) every non-zero vars is built only from 8-byte ctx=spill_new orphan slots; ctx=stack_temp never appears in such a leaf. Target vars=24 therefore means THREE orphan slots.
+
+- [s2] The 2-orphan witnesses are matched, in-tree C: display.c:556 get_cs and display.c:574 get_ce (vars=16 each, two ctx=spill_new), plus config:func_8003FECC and main:SpuSetCommonAttr. Their recipe is one slot per DISTINCT global folded into lh %lo(SYM)(at) across a CODE_LABEL emitted by a ternary/if.
+
+- [s2] func_80030580 reads exactly three globals. The target bytes materialise D_80106A78 (lui+addiu at 0x80030588) and D_8008E194 (lui+addiu at 0x80030620) as live base registers, so their symbol pseudos cannot orphan in any matching form; only Judge is folded (two lui %hi(Judge) + lh %lo(Judge)($at) pairs at 0x80030654 and 0x80030698).
+
+- [s2] Pre-combine RTL shows the two Judge lookups are structurally identical (insn 131 set reg107 = symbol_ref Judge / insn 136 reg110 = plus / insn 138 mem, versus insns 166/171/173 with regs 127/130/131), combine folds both (combine insns 140 and 175), yet only reg 110 produces insn 393 (use (reg:SI 110)) after code_label 99 - the /32 bgez target.
+
+- [s2] 44 structural variants measured at vars=8 with one slot; 15 of them are body-neutral and banked as composable, including the sibling func_80032064 idioms (hand-spelled /32 and (s32)*(&Judge + i)) that s1 had flagged as the next thing to port - they transfer cleanly but are frame-inert.
+
+- [s2] Reusable instruments written this session: tmp/grind/func_80030580/s2/frame2.py + extra2.py (variant sweep printing vars=, the FRAMEDBG census, the ($sp) count and fdiff) and census2.py (corpus-wide leaf frame census).

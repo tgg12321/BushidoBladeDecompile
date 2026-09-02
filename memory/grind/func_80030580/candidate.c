@@ -1,12 +1,25 @@
-/* func_80030580 — session 1 (recon) best form. sandbox --disable all = 2 (frame only).
- * Body is byte-identical to target (pairdiff: only `addiu sp,-8` vs target `-24`).
- * Target frame = 24 bytes of locals with NO sp-relative access (phantom slots);
- * this form yields 8 (one combine.c REG_DEAD-orphan USE slot for the first Judge
- * lookup's address pseudo — see evidence.md). Need +16 phantom bytes, body-neutral.
- * Load-bearing shapes (measured): for-loop with `i++, obj += 0x64` in the header
- * (i++ BEFORE the pointer bump); if/else-if chain (not switch) with case 1 and 3
- * bodies written identically (cross-jumped); vel x,y,z stores then the two += passes
- * in x,y,z order; Vec3i copy or three scalar copies both match the body.
+/* func_80030580 - best form after session 2. sandbox --disable all = 2 (frame only).
+ * Body is byte-identical to the target (pairdiff: only `addiu sp,-8` vs target `-24`).
+ *
+ * THE RESIDUAL, TYPED (s2): the target's 24 locals bytes are THREE 8-byte combine
+ * REG_DEAD-orphan spill slots, not a BLKmode stack temp. Corpus census over 20 src
+ * files (tmp/grind/func_80030580/s2/census2.py) found that every leaf function
+ * (args=0, regs=0, zero sp accesses) with vars>=16 is built only from `ctx=spill_new`
+ * 8-byte slots - display.c's matched get_cs/get_ce are the 2-slot witnesses, each
+ * getting one slot per DISTINCT global folded into `lh %lo(SYM)(at)` across a
+ * CODE_LABEL. This form produces exactly one such slot, from the SECOND Judge lookup.
+ *
+ * Load-bearing shapes (measured, s1+s2): for-loop with `i++, obj += 0x64` in the header
+ * (i++ BEFORE the pointer bump); if/else-if chain (not switch) with the case-1 and
+ * case-3 bodies written identically (cross-jumped); vel x,y,z stores then the two +=
+ * passes in x,y,z order; `tbl` hoisted into a pointer local (indexing the global
+ * directly costs 64 fdiff lines).
+ *
+ * Body-neutral and free to compose with any future lever (all measured fdiff 0, vars 8
+ * in s2): the sibling func_80032064 hand-spelled `/32`; `(s32)*(&Judge + i)`; any
+ * declaration order of obj/src/tbl/i; nested ifs instead of `&&`; a while-form loop;
+ * `s32 *src` with word indices; an `s32 ang` local for the first index; ARRAY_REF /
+ * function-scope-struct COMPONENT_REF / union spellings of the pos->old copy.
  */
 s32 *func_80030580(s32 *arg0, s32 arg1) {
     u8 *obj;
