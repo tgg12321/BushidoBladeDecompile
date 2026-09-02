@@ -21,7 +21,14 @@
  * objects, relinks to SHA1 == oracle, and makes the per-function maspsx_label_nop_funcs.txt list
  * dead code. That is an operator/tools surface, NOT a gate-list entry (the gate-list route was
  * foreclosed by the Judge and is not re-proposed). Details: memory/grind/func_80027640/evidence.md
- * s3 + docs/grind/decisions.md (2026-09-01 s3 entry). */
+ * s3 + docs/grind/decisions.md (2026-09-01 s3 entry).
+ * s4 (2026-09-02, permuter modality) left this body UNCHANGED and confirmed it is the best
+ * form that exists on the C axis: a faithful stand-alone permuter workspace
+ * (tmp/grind/func_80027640/s4/perm, fidelity-proved -- the reduced TU differs from the
+ * 160-word target by exactly the one missing nop) scores this chassis at base 100 = one
+ * insertion, zero register/reordering penalty, and 56,275 iterations produced no output at
+ * all; a structurally different scalar-join chassis (rejected/scalar-join-chassis-perm-basin.c)
+ * bottomed out at 750 over 58,381 more. 114,656 iterations, zero score-0 forms. */
 void func_80027640(s32 arg0)
 {
     VECTOR tgt;

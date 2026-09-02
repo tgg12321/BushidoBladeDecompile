@@ -120,3 +120,74 @@ route the Judge foreclosed (that route is NOT re-proposed; the fix makes the gat
 - probe: python3 tmp/grind/func_80027640/s1/apply.py memory/grind/func_80027640/candidate.c ; & tools/wteng.ps1 main sandbox func_80027640 --disable all
 - result: score 1, target_insns 158, build_insns 157, rules_dropped 0, cheat_asm_stripped 35 (tmp/grind/func_80027640/s3/sandbox_s3.txt). src/code6cac_b.c restored to HEAD afterwards.
 - verdict: CONFIRMED
+
+## [s4] A machine search over C spellings (decomp-permuter) finds a form that reaches score 0.
+- mechanism: the permuter's move set is C-source rewriting (statement/expression permutation,
+  declaration reordering, temp introduction, type changes, branch restructuring). If the residual
+  were any ordinary codegen-shape divergence -- a register seat, an emission order, a fold that
+  did or did not survive -- random C rewriting is the standard way to hit the basin. This session
+  tested whether the func_80027640 residual is of that kind.
+- probe: built the FIRST faithful stand-alone permuter workspace for this function
+  (tmp/grind/func_80027640/s4/perm/), reproducing engine/pipeline.py's code6cac_b command exactly
+  (-mel, --expand-lb, the .align 3 -> 2 rodata sed, prologue_fix, multu_pad) and assembling
+  target.o from asm/funcs/func_80027640.s (160 words) via s4/mktarget.py. Fidelity proved before
+  launching: the reduced TU compiles to 159 words differing from the target ONLY by the single
+  missing nop at word 90 = 0x800277A4 (diff = "89a90 > nop"), and the permuter's own base_score is
+  100 = exactly one insertion, zero register/reordering penalty. Then two campaigns via
+  tools/permuter_campaign.py: campaign 1 on the final candidate chassis (56,275 iterations,
+  28.6 min, -j 8, --stop-on-zero) and campaign 2 on a structurally different scalar-join chassis
+  (58,381 iterations, 29.9 min) that compiles to 155 words with different register assignment
+  throughout. Both harvested with --stop; status confirms 0 live campaigns.
+- result: 114,656 iterations, ZERO forms at score 0. Campaign 1 produced no output at all -- from
+  a base of 100 the permuter has no scoring move, because every C rewrite it can make leaves the
+  one-word insertion in place. Campaign 2 descended 2188 -> 1737 -> 818 -> 750 and then sat flat
+  at 750 for its final 18 minutes, never even returning to chassis 1's 100. A fresh cc1 dump taken
+  from this session's own reduced TU (tmp/grind/func_80027640/s4/cc1_raw.s:145-149) re-confirms
+  the mechanism first-hand and chassis-independently: the lh/sw pair with no intervening label
+  gets cc1's "#nop" hint, the pair across the cross-jump merge label ".L8" gets none.
+- verdict: KILLED
+
+## [s4] The residual might be a codegen-shape divergence that a different chassis exposes.
+- mechanism: if the missing word were, say, a scheduling artifact or a spill, restructuring the
+  if/else join (scalars instead of VECTOR member stores inside the arms, single store after the
+  join) would move it or expose a neighbouring basin.
+- probe: chassis 2 above (tmp/grind/func_80027640/s4/chassis2_body.c, banked as
+  rejected/scalar-join-chassis-perm-basin.c) -- compiled and word-diffed against the target before
+  seeding, then given a full ~30-minute campaign.
+- result: the restructured chassis is strictly worse (155 words vs 160; register assignment
+  diverges across the whole body; branch target shifts) and its best permuted descendant is 750,
+  7.5x chassis 1's base. The residual does not move, split, or change character under
+  restructuring -- consistent with it being an assembler-inserted hazard word rather than any
+  compiler-shape artifact.
+- verdict: KILLED
+
+- REMAINING FRONTIER after s4: still none on the C axis, and now the machine-search axis is closed
+  empirically as well as analytically. The C in candidate.c is final. The only known route to 0
+  remains s3's assembler-layer repair, foreclosed for grind sessions by the Judge's binding
+  no-build-surface-change constraint. Do not dispatch a second permuter session (grindlib's own
+  zero-yield rule applies), and do not dispatch another C-spelling modality against this residual;
+  the productive next step is the escalation record once the driver declares exhaustion.
+
+## [s4] A machine search over C spellings (decomp-permuter) finds a form for func_80027640 that reaches score 0.
+- mechanism: The permuter's move set is C-source rewriting (statement/expression permutation, declaration reordering, temp introduction, type changes, branch restructuring). If the residual were an ordinary codegen-shape divergence -- a register seat, an emission order, a spill, a fold that did or did not survive -- random C rewriting is the standard way to reach the basin. The probe tests whether func_80027640's one-word residual is of that kind at all.
+- probe: Built the FIRST faithful stand-alone permuter workspace for this function (tmp/grind/func_80027640/s4/perm). compile.sh reproduces engine/pipeline.py:c_pipeline_cmd("code6cac_b") exactly -- cpp with the project CPP_DEFS, tools/gcc-2.7.2/build/cc1 with -mel, prologue_fix, maspsx with MASPSX_FLAGS + --expand-lb (code6cac_b is in EXPAND_LB_FILES), the '.align 3 -> .align 2' sed (RODATA_ALIGN2_FILES), multu_pad, as. target.o assembled from asm/funcs/func_80027640.s by s4/mktarget.py = 160 words. base.c is the reduced TU pre-preprocessed with mipsel cpp -P (the permuter preprocesses base.c itself with bare 'cpp -P -nostdinc', which cannot find include/ and kills a naive workspace at launch). FIDELITY PROVED BEFORE LAUNCH: the reduced TU compiles to 159 words differing from the target ONLY by the missing nop at word 90 = 0x800277A4 (diff = '89a90 > nop'), no register or ordering drift. Then two campaigns via tools/permuter_campaign.py launch/wait/harvest --stop, -j 8, --stop-on-zero, --stack-diffs (default).
+- result: Campaign 1 (label s4-vector-chassis, seed = the final candidate): base_score 100 -- exactly one insertion under the standard weights, zero register and zero reordering penalty -- 56,275 iterations over 28.6 min across three fresh-seed windows, and ZERO outputs of any score. Not merely no zero-score find: from a base of 100 the permuter has no scoring move at all, because every C rewrite it can make leaves the one-word insertion in place. Campaign 2 (label s4-scalar-join-chassis, a deliberately different basin) 58,381 iterations over 29.9 min, 190 outputs, descending 2188 -> 1737 -> 818 -> 750 and then flat at 750 for its final 18 minutes -- never returning to chassis 1's 100, never 0. 114,656 iterations total, zero score-0 forms. Both campaigns harvested with --stop; 'permuter_campaign.py status' reports 0 live campaigns, 0 stale registry entries.
+- verdict: KILLED
+
+## [s4] The residual is a codegen-shape divergence that a structurally different chassis would expose or relocate.
+- mechanism: If the missing word were a scheduling artifact, a spill, or a merge that happened to fire, restructuring the if/else join -- plain s32 scalars in both arms with a single pair of tgt.vx/tgt.vz stores after the join, instead of storing into the VECTOR members inside the arms -- would move it, split it, or open a neighbouring basin.
+- probe: tmp/grind/func_80027640/s4/chassis2_body.c, compiled and word-diffed against the 160-word target before seeding, then given a full ~30-minute / 58,381-iteration campaign in tmp/grind/func_80027640/s4/perm2. Banked as memory/grind/func_80027640/rejected/scalar-join-chassis-perm-basin.c.
+- result: The restructured chassis is strictly worse: 155 words vs 160, register assignment diverging across the whole body (a1/a3, a0/a2, v1 swaps), and a shifted branch target. Its best permuted descendant is 750 -- 7.5x chassis 1's base of 100 -- and it plateaued there. The residual does not move, split, or change character under restructuring, which is what an assembler-inserted hazard word behaves like and what a compiler-shape artifact does not.
+- verdict: KILLED
+
+## [s4] The honest floor on the stock chassis with the final candidate applied is still 1 (the driver's dispatch measurement was reported unavailable).
+- mechanism: n/a -- direct chassis re-measure, required because the brief's CHASSIS CHECK said 'measurement unavailable' and every banked conclusion is chassis-relative.
+- probe: python3 tmp/grind/func_80027640/s1/apply.py memory/grind/func_80027640/candidate.c ; & tools/wteng.ps1 main sandbox func_80027640 --disable all
+- result: score 1, target_insns 158, build_insns 157, rules_dropped 0, cheat_asm_stripped 35 (tmp/grind/func_80027640/s4/sandbox_s4.txt). src/code6cac_b.c restored to HEAD (INCLUDE_ASM) afterwards.
+- verdict: CONFIRMED
+
+## [s4] s3's compiler-source mechanism (GCC 2.7.2 mips_fill_delay_slot suppresses the load-delay nop hint whenever the next insn is a CODE_LABEL) is chassis-independent and reproduces in a dump this session produced itself.
+- mechanism: mips.c:673 mips_fill_delay_slot zeroes dslots_number_nops / mips_load_reg at a CODE_LABEL ('Make sure that we don't put nop's after labels.'); mips.c:4104 final_prescan_insn is the only emitter of '#nop' and is gated on that counter. If true, cc1 emits the hint for a load/store pair with no intervening label and withholds it for an otherwise identical pair behind a label -- in ANY translation unit, not just the full code6cac_b.c context s3 examined.
+- probe: Fresh raw cc1 dump of this session's REDUCED TU (a context s3 never compiled): tmp/grind/func_80027640/s4/cc1_raw.s, 21 '#nop' hints in the function; read lines 145-149.
+- result: Verbatim: 'lh $2,0($4)' / '#nop' / 'sw $2,16($sp)' / 'lh $2,4($4)' / '.L8:' / 'sw $2,24($sp)'. Two structurally identical load/store pairs four words apart. The first, with no label between load and consumer, gets the '#nop' hint. The second, whose consumer sits behind the cross-jump merge label .L8, gets no hint at all. Same C statement shape, opposite outcome, decided purely by the intervening label -- s3's source reading confirmed first-hand and independent of translation-unit context.
+- verdict: CONFIRMED

@@ -281,3 +281,127 @@ question in the compiler source, so no future session needs to re-open it.
 - [s3] [s4] No build-surface change was proposed or made and the INTEGRATION HANDOFF was NOT refiled, per the Judge's binding constraint. s3's measured 4-line $at-aware maspsx repair (byte-neutral across all 31 unrelated objects, relinks to SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, subsumes and retires maspsx_label_nop_funcs.txt) stays banked as evidence only.
 
 - [s3] [s4] Files written this session: memory/grind/func_80027640/evidence.md, memory/grind/func_80027640/hypotheses.md, tmp/grind/func_80027640/s3/*. src/code6cac_b.c was applied for the measurement and restored to HEAD (INCLUDE_ASM) before finishing; tools/, engine/, .claude/rules/, Makefile and *.ld were never touched.
+
+## s4 (2026-09-02) -- permuter modality: the machine search axis, measured dead
+
+- [s4] Chassis re-measure on HEAD with `memory/grind/func_80027640/candidate.c` applied:
+  `sandbox func_80027640 --disable all` -> `{"score": 1, "target_insns": 158, "build_insns": 157,
+  "rules_dropped": 0, "cheat_asm_stripped": 35}`. The driver's dispatch measurement was
+  "unavailable", so this is the authoritative chassis number for s4. Floor unchanged at 1.
+
+- [s4] **A faithful stand-alone permuter workspace for this function now exists and is banked**
+  (`tmp/grind/func_80027640/s4/perm/`). It is the first one built for func_80027640; earlier
+  sessions never ran a machine search. Construction and, more importantly, its *fidelity proof*:
+  * `perm/base_src.c` = the reduced TU (src/code6cac_b.c lines 2-160 header+extern block, lines
+    320-322 externs, lines 347-406 = the candidate body). `perm/base.c` is that file after
+    `mipsel-linux-gnu-cpp -P` with the project CPP_FLAGS/CPP_DEFS (the permuter preprocesses
+    base.c itself with bare `cpp -P -nostdinc`, which cannot find include/, so base.c must be
+    pre-preprocessed -- this is why a naive workspace dies at launch with CalledProcessError).
+  * `perm/compile.sh` reproduces `engine/pipeline.py:c_pipeline_cmd("code6cac_b")` exactly:
+    cpp -> `tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls
+    -fno-builtin -w **-mel**` -> prologue_fix -> maspsx (MASPSX_FLAGS **+ --expand-lb**, since
+    code6cac_b is in `EXPAND_LB_FILES`) -> `sed .align 3 -> .align 2` (code6cac_b is in
+    `RODATA_ALIGN2_FILES`) -> multu_pad -> as. Getting `-mel` and `--expand-lb` right is
+    load-bearing; `tools/mar_perm_workspace.sh` (the only pre-existing example in the repo) has
+    NEITHER and would have produced a false chassis.
+  * `perm/target.o` is assembled from `asm/funcs/func_80027640.s` via
+    `tmp/grind/func_80027640/s4/mktarget.py` (glabel -> .globl+label, endlabel dropped, /*..*/
+    address comments stripped, `.set noat/.set noreorder/.text/.align 2` prelude): **160 words.**
+  * **Fidelity proof:** the reduced TU compiles to a 159-word object whose ONLY difference from
+    the 160-word target is the single missing `nop` at word index 90 (= 0x800277A4) --
+    `diff perm/base.txt perm/tgt.txt` = `89a90 > nop`, nothing else, no register or ordering
+    drift (`tmp/grind/func_80027640/s4/cmp.sh`). So the reduced context reproduces full-TU
+    codegen bit-for-bit, and the entire residual really is one word.
+  * The permuter agrees: `base_score = 100`, i.e. exactly one insertion under the standard
+    weights (ins/del = 100), zero register and zero reordering penalty.
+
+- [s4] **Campaign 1 (`perm/`, label `s4-vector-chassis`, the final candidate as seed):
+  56,275 iterations / 28.6 min across three fresh-seed windows, `-j 8`, `--stop-on-zero`,
+  `--stack-diffs` (default) -- ZERO finds of any score.** Not "no zero-score find": the permuter
+  never produced a single output at all, because from a base of 100 there is no scoring move
+  available -- every randomization it can make either keeps the 100-point insertion and adds
+  penalties, or is rejected. Harvested and stopped with
+  `harvest --stop --reason 'fresh-seed window elapsed (27min/55884 iters, 0 novel finds)'`;
+  telemetry is in metrics/events.jsonl (`permuter-launch` / `permuter-harvest`, pid 2860057).
+
+- [s4] **Campaign 2 (`perm2/`, label `s4-scalar-join-chassis`, a deliberately different basin):
+  58,381 iterations / 29.9 min, best score 750, 190 outputs -- never below 386, never within
+  reach of chassis 1's 100, and never 0.** The seed (`tmp/grind/func_80027640/s4/chassis2_body.c`,
+  banked as `memory/grind/func_80027640/rejected/scalar-join-chassis-perm-basin.c`) routes both
+  arms through plain `s32 tvx/tvz` scalars and does the `tgt.vx/tgt.vz` stores once after the
+  if/else, instead of storing into the VECTOR inside the arms. That is a genuinely different
+  chassis -- it compiles to 155 words with a different register assignment throughout
+  (`a1`/`a3`, `a0`/`a2`, `v1` swaps) and a shifted branch target -- so it exercises a different
+  region of the search space, and it descends monotonically (2188 -> 1737 -> 818 -> 750) toward,
+  but never past, the same wall. Best score flat at 750 for the final 18 minutes: no-novel-find
+  window elapsed, harvested and stopped (pid 3463632).
+
+- [s4] **Both campaigns are stopped and deregistered** (`permuter_campaign.py status` ->
+  "0 live campaign(s), 0 stale registry entr(ies)"). Nothing was left simmering.
+
+- [s4] **Independent, first-hand re-confirmation of the s3 compiler mechanism, from a fresh dump
+  taken this session** (`tmp/grind/func_80027640/s4/cc1_raw.s`, the raw cc1 output of the reduced
+  TU -- 21 `#nop` hints in the function). Lines 145-149 read verbatim:
+      lh   $2,0($4)
+      #nop
+      sw   $2,16($sp)
+      lh   $2,4($4)
+      .L8:
+      sw   $2,24($sp)
+  Two structurally identical load/store pairs four words apart. The first, with no label between
+  the load and its consumer, gets cc1's `#nop` hint. The second, whose consumer sits behind the
+  cross-jump merge label `.L8`, gets NO hint at all. This is s3's `mips_fill_delay_slot`
+  CODE_LABEL suppression observed directly in a dump produced by this session's own workspace,
+  on a reduced TU s3 never compiled -- so the finding is chassis-independent, not an artifact of
+  the full-TU context.
+
+- [s4] **What the seam actually is, stated once for the record:** `.L8` is a cross-jump / tail-merge
+  point. Both arms of `if (D_800A36A4 == 3)` end by leaving the vz value in `$v0` and storing it
+  to `0x18($sp)`; GCC merges the two identical stores and jumps the then-arm to the shared store
+  (`j .L8` with `subu $2,$2,$3` in its delay slot, so on that path `$v0` is already resolved). The
+  missing `nop` is therefore a *fall-through-only* load-delay hazard fill: needed on the else path
+  (`lh $2,4($4)` -> `sw`), unnecessary on the jump path. A compiler hint cannot express
+  "hazard on one predecessor edge only", which is precisely why GCC punts it to the assembler and
+  why ASPSX 2.34 -- a reordering assembler that sees the label -- inserts it and maspsx does not.
+
+- [s4] **Conclusion of the permuter axis: KILLED, and killed for a reason that generalizes.**
+  The residual is not a codegen *shape* -- not a register seat, not an emission order, not a
+  spill slot, not a fold. It is one assembler-inserted hazard word. The permuter's entire move
+  set is C-source rewriting, and no C source can cause the C compiler to emit a word the C
+  compiler is explicitly written never to emit at a label. A machine search over C spellings is
+  therefore searching a space that provably does not contain the answer, which is exactly what
+  114,656 iterations across two structurally distinct chassis measured. **No further permuter
+  session should be dispatched against func_80027640.**
+
+- [s4] Files written this session: memory/grind/func_80027640/evidence.md,
+  memory/grind/func_80027640/hypotheses.md,
+  memory/grind/func_80027640/rejected/scalar-join-chassis-perm-basin.c,
+  tmp/grind/func_80027640/s4/*. `src/code6cac_b.c` was applied for the measurement and restored
+  to HEAD (`INCLUDE_ASM`) before finishing. `candidate.c` is unchanged -- s4 found nothing better
+  and nothing better exists on this axis. No build-surface change was proposed or made; the
+  INTEGRATION HANDOFF was NOT refiled; tools/, engine/, .claude/rules/, Makefile and *.ld were
+  never touched.
+
+- [s4] Floor re-measured on HEAD with candidate.c applied: sandbox --disable all = 1 (target_insns 158, build_insns 157, rules_dropped 0, cheat_asm_stripped 35). tmp/grind/func_80027640/s4/sandbox_s4.txt. The brief's dispatch measurement was unavailable; this is the authoritative s4 number.
+
+- [s4] The FIRST faithful stand-alone permuter workspace for func_80027640 now exists and is banked at tmp/grind/func_80027640/s4/perm/. Earlier sessions never ran a machine search on this function. Building it correctly required two things absent from the repo's only pre-existing example (tools/mar_perm_workspace.sh): the -mel cc1 flag and maspsx --expand-lb (code6cac_b is in engine/buildconfig.py EXPAND_LB_FILES), plus the '.align 3 -> .align 2' sed for RODATA_ALIGN2_FILES. Without them the chassis is false.
+
+- [s4] Workspace fidelity is PROVED, not assumed: the reduced TU (src/code6cac_b.c lines 2-160 + 320-322 + the candidate body 347-406) compiles through the exact engine pipeline to a 159-word object whose only difference from the 160-word target.o is the single missing nop at word index 90 = 0x800277A4 -- 'diff base.txt tgt.txt' = '89a90 > nop', with no register or ordering drift (tmp/grind/func_80027640/s4/cmp.sh, perm/base.txt, perm/tgt.txt).
+
+- [s4] The permuter independently confirms the residual's size and kind: base_score = 100 on the candidate chassis, i.e. exactly one insertion under the standard weights (ins/del 100, regs 5, reorderings 60), with zero register and zero reordering penalty. There is no register seat and no emission-order component to this residual at all.
+
+- [s4] Campaign 1 (perm/, s4-vector-chassis, pid 2860057): 56,275 iterations / 28.6 min / -j 8 / --stop-on-zero, ZERO outputs of any score. Stopped with harvest --stop, reason 'fresh-seed window elapsed (27min/55884 iters, 0 novel finds)'. Telemetry in metrics/events.jsonl (permuter-launch / permuter-harvest).
+
+- [s4] Campaign 2 (perm2/, s4-scalar-join-chassis, pid 3463632): 58,381 iterations / 29.9 min, 190 outputs, best score 750, descending 2188 -> 1737 -> 818 -> 750 then flat for the final 18 minutes. Never reached chassis 1's base of 100, never 0. Stopped with harvest --stop.
+
+- [s4] Both campaigns are stopped and deregistered: 'permuter_campaign.py status' reports '0 live campaign(s), 0 stale registry entr(ies)'. Nothing was left simmering past the session.
+
+- [s4] First-hand chassis-independent confirmation of the compiler mechanism, from a dump this session produced: tmp/grind/func_80027640/s4/cc1_raw.s:145-149 shows 'lh $2,0($4)' / '#nop' / 'sw $2,16($sp)' / 'lh $2,4($4)' / '.L8:' / 'sw $2,24($sp)'. Identical load/store pairs four words apart; the one with an intervening cross-jump label gets no '#nop' hint. This is GCC 2.7.2's mips_fill_delay_slot CODE_LABEL suppression (mips.c:673), observed in a translation unit s3 never compiled.
+
+- [s4] What the seam is, for the record: .L8 is a cross-jump / tail-merge point. Both arms of 'if (D_800A36A4 == 3)' leave the vz value in $v0 and store it to 0x18($sp); GCC merges the two identical stores and jumps the then-arm to the shared store ('j .L8' with 'subu $2,$2,$3' in its delay slot, so $v0 is already resolved on that path). The missing nop is therefore a FALL-THROUGH-ONLY load-delay hazard fill -- required on the else edge, unnecessary on the jump edge. A compiler hint cannot express 'hazard on one predecessor edge only', which is exactly why GCC delegates it to the assembler, why ASPSX 2.34 (a reordering assembler that sees the label) inserts it, and why maspsx does not.
+
+- [s4] Why the permuter axis is dead for a reason that generalizes: the residual is not a codegen shape -- not a register seat, not an emission order, not a spill slot, not a fold. It is one assembler-inserted hazard word. The permuter's entire move set is C-source rewriting, and no C source can make the C compiler emit a word the C compiler is explicitly written never to emit at a label. 114,656 iterations across two structurally distinct chassis measured exactly that. No further permuter session should be dispatched against func_80027640; grindlib's own zero-yield rule should skip the second permuter slot.
+
+- [s4] Scope: no build-surface change was proposed or made; the INTEGRATION HANDOFF was NOT refiled in any spelling, per the Judge's two binding constraints. src/code6cac_b.c was applied only to take the measurement and restored to HEAD (INCLUDE_ASM) before finishing. Files changed: memory/grind/func_80027640/{candidate.c (header comment only -- the body is byte-identical to s3's), evidence.md, hypotheses.md, rejected/scalar-join-chassis-perm-basin.c} and tmp/grind/func_80027640/s4/*. tools/, engine/, .claude/rules/, Makefile and *.ld were never touched.
+
+- [s4] candidate.c is unchanged in body and remains the best form: s4 found nothing better, and the measurements say nothing better exists on the C axis.
