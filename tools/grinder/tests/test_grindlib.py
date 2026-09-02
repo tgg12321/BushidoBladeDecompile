@@ -597,5 +597,54 @@ class TestBannedConstructTripwire(unittest.TestCase):
         self.assertFalse(banked)
 
 
+class TestCitedRuleScopes(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        rules = os.path.join(self.root, ".claude", "rules")
+        os.makedirs(rules)
+        with open(os.path.join(rules, "do-while-zero-exception.md"), "w",
+                  encoding="utf-8", newline="\n") as f:
+            f.write('---\nname: do-while-zero-exception\n'
+                    'description: "SANCTIONED for ANY codegen effect"\n---\nbody\n')
+        with open(os.path.join(rules, "unrelated-rule.md"), "w",
+                  encoding="utf-8", newline="\n") as f:
+            f.write('---\nname: unrelated-rule\ndescription: "never cited"\n---\n')
+        G.init_ledger(self.root, "func_X", "stem")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_rule_descriptions_reads_frontmatter(self):
+        d = G.rule_descriptions(self.root)
+        self.assertEqual(d["do-while-zero-exception"], "SANCTIONED for ANY codegen effect")
+        self.assertEqual(d["unrelated-rule"], "never cited")
+
+    def test_cited_scopes_from_rejected_header(self):
+        rj = os.path.join(self.root, "memory", "grind", "func_X", "rejected", "x.c")
+        with open(rj, "w", encoding="utf-8", newline="\n") as f:
+            f.write("/* REJECTED: do-while-zero-exception scope is reorg.c ONLY */\n")
+        got = G.cited_rule_scopes(self.root, "func_X")
+        self.assertEqual(got, [("do-while-zero-exception", "SANCTIONED for ANY codegen effect")])
+
+    def test_cited_scopes_from_state_and_hypotheses(self):
+        G.add_judge_constraint(self.root, "func_X", "see unrelated-rule for why")
+        G.append_hypothesis(self.root, "func_X",
+                            {"statement": "uses do-while-zero-exception", "mechanism": "m",
+                             "probe": "p", "result": "15", "verdict": "KILLED"}, session=1)
+        slugs = [s for s, _ in G.cited_rule_scopes(self.root, "func_X")]
+        self.assertEqual(slugs, ["do-while-zero-exception", "unrelated-rule"])
+
+    def test_brief_carries_current_scope_block(self):
+        G.add_judge_constraint(self.root, "func_X", "do-while-zero-exception applies")
+        brief = G.build_brief(self.root, "func_X", "structural", "/tmp/o.json")
+        self.assertIn("CURRENT SCOPE OF EVERY RULE THIS LEDGER CITES", brief)
+        self.assertIn('do-while-zero-exception: "SANCTIONED for ANY codegen effect"', brief)
+
+    def test_brief_omits_block_when_nothing_cited(self):
+        brief = G.build_brief(self.root, "func_X", "structural", "/tmp/o.json")
+        self.assertNotIn("CURRENT SCOPE OF EVERY RULE", brief)
+
+
 if __name__ == "__main__":
     unittest.main()

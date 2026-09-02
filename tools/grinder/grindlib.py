@@ -1133,6 +1133,78 @@ def knowledge_sweep(root, func, limit=40, names=None):
             + "\n".join(hits) + "\n")
 
 
+# ── Current-scope injection (2026-09-01 post-mortem) ─────────────────────────
+# A ledger paraphrases a rule's scope at the time it was written; rule text
+# moves by owner ruling. func_800283D0 banked its decisive find as "out of
+# scope" by quoting a scoping abolished seven weeks earlier and lost 18
+# sessions; func_8003C714 s1 carried the same caveat. The brief now prints the
+# CURRENT `description:` line of every rule slug the ledger mentions, so a
+# stale kill cannot survive a dispatch unchallenged.
+_RULE_DESC_RE = re.compile(r'(?m)^description:\s*"?(.+?)"?\s*$')
+
+
+def rule_descriptions(root):
+    """{slug: current description line} for every .claude/rules/*.md."""
+    d = os.path.join(root, ".claude", "rules")
+    out = {}
+    if not os.path.isdir(d):
+        return out
+    for fn in sorted(os.listdir(d)):
+        if not fn.endswith(".md"):
+            continue
+        try:
+            with open(os.path.join(d, fn), encoding="utf-8", errors="replace") as f:
+                head = f.read(4000)
+        except OSError:
+            continue
+        m = _RULE_DESC_RE.search(head)
+        out[fn[:-3]] = m.group(1).strip() if m else "(no description line)"
+    return out
+
+
+def cited_rule_scopes(root, func):
+    """[(slug, current_description)] for every rule slug that appears anywhere
+    in this function's ledger: state.json constraints/bans/frontier,
+    hypotheses.md, evidence.md, and the first 60 lines of each rejected/*.c."""
+    descs = rule_descriptions(root)
+    if not descs:
+        return []
+    d = ledger_dir(root, func)
+    texts = []
+    st = load_state(root, func) or {}
+    texts += [str(x) for x in st.get("judge_constraints", [])]
+    texts += [str(x) for x in st.get("banned_constructs", [])]
+    texts += [json.dumps(f) for f in st.get("frontier", [])]
+    for name in ("hypotheses.md", "evidence.md"):
+        p = os.path.join(d, name)
+        if os.path.isfile(p):
+            with open(p, encoding="utf-8", errors="replace") as f:
+                texts.append(f.read())
+    rj = os.path.join(d, "rejected")
+    if os.path.isdir(rj):
+        for fn in sorted(os.listdir(rj)):
+            try:
+                with open(os.path.join(rj, fn), encoding="utf-8", errors="replace") as f:
+                    texts.append("".join(f.readlines()[:60]))
+            except OSError:
+                pass
+    blob = "\n".join(texts)
+    return [(s, descs[s]) for s in sorted(descs) if s in blob]
+
+
+def render_rule_scopes(pairs):
+    if not pairs:
+        return ""
+    lines = "\n".join(f'  - {s}: "{d}"' for s, d in pairs)
+    return ("\n## CURRENT SCOPE OF EVERY RULE THIS LEDGER CITES (authoritative NOW)\n"
+            "Rule text changes by owner ruling. A scope quoted in hypotheses.md, a\n"
+            "rejected/ header, or an older Judge ruling may be SUPERSEDED. The lines\n"
+            "below are the rules' CURRENT `description:` lines, extracted at dispatch.\n"
+            "If a banked kill, rejection, or ban rests on a NARROWER scoping than what is\n"
+            "printed here, that kill is VOID: re-measure the form under the current scope\n"
+            "before spending a session elsewhere.\n" + lines + "\n")
+
+
 def build_brief(root, func, modality, outcome_path, head_floor=""):
     st = load_state(root, func)
     d = ledger_dir(root, func)
@@ -1220,6 +1292,7 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
                f"If these differ, the chassis has changed since the ledger entry: every banked\n"
                f"spelling conclusion is chassis-relative and MUST be re-measured before it is\n"
                f"spent. Do not quote the ledger floor to the Judge; quote this one.\n")
+    scopes = render_rule_scopes(cited_rule_scopes(root, func))
     return f"""# GRIND SESSION — {func} (src/{st['file']}.c)
 
 You are session {st['session_count'] + 1} of a cumulative grind. Your mandated
@@ -1228,7 +1301,7 @@ modality for THIS session is: **{modality}**
 {psyq}
 {ksweep}{chassis}
 {MODALITY_PLAYBOOK[modality]}
-{fixup}{directive}{consistency}{banned}
+{scopes}{fixup}{directive}{consistency}{banned}
 ## Ledger state (your inheritance — do not re-derive any of it)
 Floor history:
 {floors}
@@ -1329,6 +1402,7 @@ if __name__ == "__main__":
     #   grindlib.py constrain <root> <func> <text>
     #   grindlib.py grant-canonical-asm <root> <func> <tier> <date>   -> prints allowlist line / exit 1 refused
     #   grindlib.py log-borderline <root> <func> <category> <evidence> <disposition> <date>
+    #   grindlib.py rule-scopes <root> <func>                        -> prints the current-scope block
     import sys
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -1400,6 +1474,9 @@ if __name__ == "__main__":
                   "integration-handoff-self-serve)")
             sys.exit(1)
         print(line)
+    elif cmd == "rule-scopes":
+        # rule-scopes <root> <func> -> prints the CURRENT SCOPE block (empty if none cited)
+        print(render_rule_scopes(cited_rule_scopes(sys.argv[2], sys.argv[3])))
     else:
         print(f"unknown cmd {cmd}")
         sys.exit(2)
