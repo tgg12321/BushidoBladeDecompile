@@ -258,10 +258,13 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
   sanctioned as a pure-C match device for ANY codegen effect, including
   register allocation (owner ruling 2026-07-06, which SUPERSEDES the
   2026-06-04 reorg.c/LABEL_OUTSIDE_LOOP_P-only scoping; that scoping is
-  abolished and must not be cited as a FAIL ground). Last-resort, mandatory
-  `/* FAKE: ... */` annotation, documented lever-exhaustion, named GCC-pass
-  mechanism; nested wraps need a single-level-insufficient justification.
-  SOTN evidence: 18+ instances in master across `sprintf.c`, `5087C.c`,
+  abolished and must not be cited as a FAIL ground). Match device, not a
+  first resort — prefer natural geometry, but exhaustion is not a hard
+  gate for single-level wraps (rule prerequisite 2); mandatory
+  `/* FAKE: ... */` annotation naming the observed effect; nested wraps
+  need a written single-level-insufficient justification (rule
+  prerequisite 3). SOTN evidence: 18+ instances in master across
+  `sprintf.c`, `5087C.c`,
   `c_004.c`, `w_045.c`, etc., with two PR-merge messages explicitly
   accepting it. User policy 2026-06-04: this is the ONE no-semantic-purpose
   wrapper sanctioned in BB2 source. Other syntactic equivalents
