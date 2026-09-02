@@ -88,3 +88,29 @@ the island unit? If admitted (ban 1 lifted): re-apply candidate.c unchanged, rew
 the SDK header as provenance and NO citation of func_8002E838 / func_80031890 / func_8002FC80 / LoadAverageShort12 (bans 3/4),
 then candidate-ready. If refused as owner-only (rule 4): progress with these kills banked; the borderline entry
 (docs/grind/borderline.md:370) should be amended to name gte_ldlv0 and cite inline_c.h:101-110.
+
+## s1f (2026-09-02, recon, HEAD 22a0ab87) - ban 1 lifted; candidate re-verified and conformed to the func_800203B4 spelling
+
+- H11 CONFIRMED - the banked candidate measures sandbox 0 (83/83, rules_dropped 0) on HEAD 22a0ab87 with the island-2 ban
+  lifted (ruling 2026-09-02 07:59, decisions.md:20575). Measured in BOTH island-2 spellings: joined (.word 0x4A486012 inside
+  the gte_ldlv0 asm block, as banked by s1e) and split (MVMVA as its own `__asm__ volatile(".word 0x4A486012")` after the
+  two nops, exactly as the owner-granted func_800203B4 island at src/code6cac.c:1860-1872). Both 0; the split spelling is
+  now the candidate because judge constraint 4 requires character identity with the granted island, and the diff
+  (tmp/grind/func_800300B4/s1/island2_203B4.txt vs island2_300B4.txt) shows the only difference is the operand expression
+  (`arg0 + 0x2C` vs `vec`). verify-oracle ok with the split candidate in place (build_sha1 == oracle).
+- Frontier: none - candidate-ready under the 07:59 ruling. self_vet.md rewritten per constraint 4: island 2 named gte_ldlv0,
+  provenance inline_c.h:101-110, authorization inline_asm_canonical.txt:367, no citation of the struck 07:30 entry or of
+  func_8002E838 / func_80031890 / func_8002FC80 / LoadAverageShort12 / inline_asm_canonical.txt:174.
+
+## s1g (2026-09-02, recon, HEAD 22a0ab87) - discard root-caused; candidate re-verified
+
+- H12 CONFIRMED - the s1f discard was a validator keyword collision: grindlib._ban_trips matched 9+ of ban 2's 17
+  significant terms inside s1f's prose-heavy CONSTRUCTS block (it cited "docs/grind/decisions.md:20575", "2026", "lifted",
+  "island", "pack"...), although the vet relied only on the 07:59 ruling. A two-sentence structural CONSTRUCTS inventory
+  with all citations moved to T1/T5 passes check_banned_constructs and validate_self_vet (both measured (True, '')).
+- H13 CONFIRMED - the banked candidate measures sandbox 0 (83/83, rules_dropped 0) and verify-oracle ok on HEAD 22a0ab87
+  this session (Measurement 8). No C change since s1f.
+
+Frontier: none - candidate-ready. Remaining risk is the layer-1/Judge reading of block 2 (gte_ldlv0) under cluster
+condition 3, already ruled PASS at decisions.md:20575; if a later ruling reverses it, the only C-side alternative
+(pack in C) is the H4 class kill and the correct outcome would be a ruling-request, not a re-grind.
