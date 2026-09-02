@@ -1,8 +1,16 @@
+/* s7 REJECTED - jptr: `s16 *jt = &Judge;` (pointer-alias-to-a-global spelling) used for
+ * both indexed Judge reads.  Measured with the instrumented cc1 on the
+ * pure-c-floor2-body.c chassis: vars=0 (the ONE existing orphan slot is destroyed, frame
+ * moves 8 -> 0, i.e. AWAY from the target's 24) at bodydiff=19.  Materialising the symbol
+ * in a live pointer register stops combine folding (symbol_ref) into the two loads, so no
+ * address pseudo is left to orphan.  Same failure direction as jmix (byte-offset address,
+ * s2).  Frame-negative AND body-costly. */
 s32 *func_80030580(s32 *arg0, s32 arg1) {
     u8 *obj;
     u8 *src = (u8 *)arg0;
     s16 *tbl;
     s32 i;
+    s16 *jt = &Judge;
 
     obj = (u8 *)&D_80106A78;
     for (i = 0; i < 12; i++, obj += 0x64) {
@@ -18,9 +26,9 @@ s32 *func_80030580(s32 *arg0, s32 arg1) {
     *(s32 *)(obj + 0x30) = *(s32 *)(src + 0xF8) - *(s16 *)(src + 0x1A) / 32;
     *(s32 *)(obj + 0x34) = *(s32 *)(src + 0xFC);
     tbl = &D_8008E194 + arg1 * 7;
-    *(s32 *)(obj + 0x44) = ((&Judge)[*(u16 *)(src + 0x1CA) & 0xFFF] * tbl[2]) >> 12;
+    *(s32 *)(obj + 0x44) = (jt[*(u16 *)(src + 0x1CA) & 0xFFF] * tbl[2]) >> 12;
     *(s32 *)(obj + 0x48) = tbl[3];
-    *(s32 *)(obj + 0x4C) = ((&Judge)[(*(s16 *)(src + 0x1CA) + 0x400) & 0xFFF] * tbl[2]) >> 12;
+    *(s32 *)(obj + 0x4C) = (jt[(*(s16 *)(src + 0x1CA) + 0x400) & 0xFFF] * tbl[2]) >> 12;
     *(s32 *)(obj + 0x2C) += *(s32 *)(obj + 0x44);
     *(s32 *)(obj + 0x30) += *(s32 *)(obj + 0x48);
     *(s32 *)(obj + 0x34) += *(s32 *)(obj + 0x4C);

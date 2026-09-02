@@ -725,3 +725,207 @@ frame coercion would revive it.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session; the only FAKE construct present in the candidate is `volatile u32 pre_pad[4]`
+
+## Session 8 (2026-09-02, solver) — floor 2; the orphan-spill model is REINSTATED
+
+### H-s8-1 — KILLED (class): the solver suite cannot address this residual
+**Statement.** `goal_from_tgt.py classify` types func_80030580's residual as PRE-RA with
+"next tool: none", so neither `tools/ra_solver` nor `tools/sched_solver` has a model that
+covers it: the two streams already agree on register disposition and emission order and
+differ only in the prologue/epilogue `addiu $sp` immediate.
+**Mechanism.** The frame size is fixed by `assign_stack_local` calls made from
+`alter_reg` (`tools/gcc-2.7.2/reload1.c:2403`) for pseudos that reach reload with refs and
+no hard register. The solver models represent seats (which hard register a pseudo gets) and
+clocks (which order insns issue); a slot handed to a pseudo that got NO seat and issues NO
+insn is outside both representations.
+**Probe.** `python3 tools/ra_solver/inverse_compose.py classify code6cac_b func_80030580`
+(refused, zero-rule guard) then `python3 tools/ra_solver/goal_from_tgt.py classify
+code6cac_b func_80030580`.
+**Result.** `FIRST DIVERGENCE: PRE-RA / next tool: none — the residual is upstream of every
+model`; ours-only `addiu #,#,-8` / `addiu #,#,8`, target-only `addiu #,#,-24` / `addiu
+#,#,24`, 148 vs 148 insns.
+**Verdict: KILLED.** `kill_scope: class` — the tool's own typed verdict, not a spelling
+result. `predicate_cite: tools/gcc-2.7.2/reload1.c:2403`. `measured_on:
+pure-c-floor2-body.c chassis, sandbox --disable all = 2, zero FAKE constructs
+(fake_ablate reports none).`
+
+### H-s8-2 — CONFIRMED: the residual is THREE 8-byte alter_reg slots (H-s7-2 corrected)
+**Statement.** The target's `vars=24` is three 8-byte `alter_reg` stack slots and our
+`vars=8` is one of them; the s6 reading that the residual is "a declared untouched frame
+object of 9..16 bytes, not additional combine-orphan spill slots" is retracted.
+**Mechanism.** An unallocated pseudo's `alter_reg` slot costs zero instructions by
+construction, so "every body instruction matches" is not evidence against a spill slot — it
+is what an orphan slot looks like. Slot size is 8 rather than 4 because `alter_reg` calls
+`assign_stack_local (mode, total_size, -1)` and `align = -1` rounds to `alignment = 8`.
+**Probe.** `tmp/grind/func_80030580/s7/fdbg.py` on the base chassis (raw FRAMEDBG lines),
+plus the mandated re-audit `tmp/grind/func_80030580/s3/frame3.py base j3read j4read dupX`.
+**Result.** base: `ctx=spill_new_p110 mode=4 size=8 align=-1 alignment=8 frame_offset=8`.
+j3read: p110@8 + p130@16 (vars=16). j4read: p110@8 + p130@16 + p143@24 (vars=24, the exact
+target frame) at bodydiff=25. dupX: p110@8 + p125@16 (vars=16) at bodydiff=15. Every slot
+is `mode=4` (SImode), `size=8`, `align=-1`.
+**Verdict: CONFIRMED.** Consequence: the s7 frontier item 1 ("an ordinary-C declared frame
+object of 13..16 bytes that no instruction touches") and the Judge constraint phrased on top
+of it are aimed at a premise this session retracts; the honest search space is again "two
+more pseudos that reach reload with refs and no hard register, at zero instruction cost".
+
+### H-s8-3 — CONFIRMED: the target's two extra slots cannot come from its Judge folds
+**Statement.** Because our body is byte-identical to the target's 148 instructions and
+contains exactly two indexed `Judge` loads, and because the re-audited law gives
+`slots = max(0, indexed-Judge sites - 1)`, the target's Judge folds account for exactly ONE
+of its three slots; the other two are produced by a generator that emits no instructions at
+all.
+**Mechanism.** The Judge orphan is a `combine`/`distribute_notes` REG_DEAD-orphan `(use
+(reg N))` on a folded `(symbol_ref)` address pseudo; its count is fixed by the number of
+folded sites, which is fixed by the body, which matches. Any further slot must come from a
+pseudo that is never emitted, i.e. a byte-free generator.
+**Probe.** The re-audit above (site law) combined with the s5/s6 generator census
+(`tmp/grind/func_80030580/s5/gen_probe.c`, `gen2.c`, `gen3.c`, `s6/gen4.c`, `gen5.c`,
+`gen6.c`) and this session's twelve in-function shapes.
+**Result.** The only byte-free multi-slot generator in the census is generator 4 (the
+register-allocated union with a word member and two written HImode members: gen5.c `a1` and
+`a7` emit the identical instruction stream, `a1` reserving 8 phantom bytes and `a7` none;
+`a10`/`a11`/`b1`/`d2` reserve two slots). 1 + 2 = 3 = vars 24.
+**Verdict: CONFIRMED** as a structural constraint on the search, NOT as a proposal: the
+aggregate carrier was FAILed by the Judge on 2026-09-02 17:07 and the standing constraint
+forbids respelling it.
+
+### H-s8-4 — KILLED (instance): pointer-alias-to-`Judge` as a slot source
+**Statement.** Declaring `s16 *jt = &Judge;` and indexing through it at both lookup sites
+moves the frame from vars=8 to vars=0 on this chassis, i.e. away from the target's 24.
+**Mechanism.** Materialising the symbol in a live pointer register stops combine folding
+`(symbol_ref)` into the two `lh` insns, so no address pseudo is left to be orphaned by
+`distribute_notes`; the existing p110 slot disappears with it.
+**Probe.** `tmp/grind/func_80030580/s7/var_jptr.c` through `s7/runfiles.py` (instrumented
+cc1, `BB2_FRAME_DEBUG=1`).
+**Result.** `vars=0 bodydiff=19 sp=0`, only `ctx=round_frame`. Banked
+`rejected/judge-pointer-alias-destroys-orphan.c`.
+**Verdict: KILLED.** `kill_scope: instance` — `measured_on: pure-c-floor2-body.c chassis,
+sandbox --disable all = 2, zero FAKE constructs present`.
+
+### H-s8-5 — KILLED (instance): a scalar sub-word-pun spelling of generator 4
+**Statement.** Substituting an `s32` local written through sub-word lvalues
+(`*(u16 *)&t = 0; *((u16 *)&t + 1) = 0;`) for the s6 union does not reproduce generator 4's
+byte-free slots on this chassis: it measures vars=16 with three `($sp)` accesses and 11
+body-diff lines.
+**Mechanism.** Taking `&t` runs the pseudo through `put_reg_into_stack`, turning it into a
+REAL addressable frame object that the body then loads and stores; generator 4's
+byte-freeness depends on the union staying register-allocated with only phantom
+`ctx=spill_new` slots attached.
+**Probe.** `tmp/grind/func_80030580/s7/var_punword.c` (obj+5 / obj+0 placement) and
+`var_punpair7.c` (obj+7 / obj+8 placement) through `s7/runfiles.py`.
+**Result.** punword `vars=16 bodydiff=11 sp=3  ctx=put_reg_into_stack | ctx=spill_new_p111`;
+punpair7 `vars=16 bodydiff=12 sp=3`. Banked
+`rejected/subword-pun-scalar-forces-frame-address.c`.
+**Verdict: KILLED.** `kill_scope: instance` — `measured_on: pure-c-floor2-body.c chassis,
+sandbox --disable all = 2, zero FAKE constructs present`.
+
+### H-s8-6 — KILLED (instance): a CODE_LABEL placed between the two Judge folds
+**Statement.** Relocating the `/32` term so its `bgez` join sits between the two indexed
+`Judge` lookups does not strand the second REG_DEAD note: the frame stays at vars=8 (one
+slot) and the body costs 30 diff lines.
+**Mechanism.** `distribute_notes` emits the bare `(use (reg N))` only when the backward
+scan from i3 finds no home before a CODE_LABEL/JUMP_INSN; the second fold's note still finds
+a home regardless of the intervening label, so block geometry is not the controlling
+variable for the second slot.
+**Probe.** `tmp/grind/func_80030580/s7/var_divmid.c` through `s7/runfiles.py`.
+**Result.** `vars=8 bodydiff=30 sp=0  ctx=spill_new_p102`. Banked
+`rejected/div32-between-judge-sites-no-second-orphan.c`. Re-confirms the s5/s6
+block-geometry kill on a new spelling and on the current chassis.
+**Verdict: KILLED.** `kill_scope: instance` — `measured_on: pure-c-floor2-body.c chassis,
+sandbox --disable all = 2, zero FAKE constructs present`.
+
+### H-s8-7 — KILLED (instance): phantom-slot-frame-lever producers 1 and 3 in this function
+**Statement.** The two ordinary-C producers named by `.claude/rules/phantom-slot-frame-lever.md`
+— the folded loop-guard compare (producer 1) and live named locals on multi-read fields
+(producer 3) — do not buy a byte-free slot in func_80030580 in the eight spellings measured
+this session; every named-local shape that reaches vars=24 does so through a
+`ctx=stack_temp` with real `($sp)` traffic.
+**Mechanism.** The loop guard here is already a folded pointer-biv compare whose pseudo is
+allocated; a fresh named local for a multi-read field is either coalesced into the existing
+value (bodydiff 0, vars unchanged) or materialised as an addressable temp (stack_temp with
+`($sp)` accesses), never left unallocated-with-refs.
+**Probe.** `tmp/grind/func_80030580/s7/sweep.py` (11 shapes) + `runfiles.py` (posptr,
+srcptr).
+**Result.** whilerot `vars=8 bodydiff=0`; kindlocal `vars=8 bodydiff=0`; anglocal
+`vars=8 bodydiff=0`; posptr `vars=8 bodydiff=0`; neguard `vars=8 bodydiff=20`; limitvar
+`vars=8 bodydiff=11`; velnamed `vars=8 bodydiff=100`; srcptr `vars=8 bodydiff=23`; vecnamed
+`vars=24 bodydiff=10 sp=6`; vechalf `vars=24 bodydiff=183 sp=5`; srcvec `vars=24
+bodydiff=173 sp=5`; tblstruct `vars=16 bodydiff=154 sp=3`.
+**Verdict: KILLED.** `kill_scope: instance` — `measured_on: pure-c-floor2-body.c chassis,
+sandbox --disable all = 2, zero FAKE constructs present`. Four of the shapes (whilerot,
+kindlocal, anglocal, posptr) are byte-neutral and are banked as free composables.
+
+### FRONTIER (rewritten on the corrected model)
+1. **A byte-free generator, other than the s6 union, that yields two `alter_reg` slots.**
+   H-s8-3 proves the target needs exactly that. The census so far covers Judge folds
+   (site-law), the HImode-bitwise generator (inert here), the truncated-division generator
+   (not hostable), and generator 4 (the union, Judge-FAILed). Probe: run
+   `tmp/grind/func_80030580/s5/genprobe.py` over a NEW standalone corpus aimed at
+   register-allocated aggregates that are not unions — a small `struct` passed BY VALUE to
+   nothing, a bitfield struct, an `enum`-typed local, a `char[2]` inside a struct read as a
+   half, `short` bitfields — accepting only sp=0 with `ctx=spill_new`, then host the hits
+   in-function with `s7/runfiles.py` and require vars=24 bodydiff<=4.
+2. **A 4-site Judge form whose two extra lookups vanish after combine.** j4read reaches the
+   exact target frame at bodydiff=25, itemised by s5 as exactly the two extra lookups
+   (lh angle / addu const / andi 0xFFF / sll 1 / lh Judge / addu, twice). Probe: spellings
+   in which the extra index expressions are provably equal to existing ones so cse deletes
+   the LOADS while combine still folds and orphans the ADDRESSES — measure whether cse
+   deleting the load also deletes the address pseudo (it is assumed to, but never measured).
+3. **The disposition question.** Both known routes to vars=24 are closed by standing Judge
+   constraints (the `volatile u32 pre_pad[4]` phantom-pad and the generator-4 union), and
+   H-s8-1 closes the solver axis by tool verdict. If frontier items 1 and 2 also measure
+   dead, the ladder for this function is genuinely spent and the next escalation-modality
+   session has the full evidence chain to file a foreclosure record.
+
+## [s7] goal_from_tgt.py classify types func_80030580's residual as PRE-RA with 'next tool: none', so neither tools/ra_solver nor tools/sched_solver has a model that covers it: the two 148-instruction streams already agree on register disposition and emission order and differ only in the prologue/epilogue addiu $sp immediate.
+- mechanism: The frame size is fixed by assign_stack_local calls made from alter_reg for pseudos that reach reload with refs and no hard register. The solver models represent seats (which hard register a pseudo gets) and clocks (which order insns issue); a slot handed to a pseudo that got no seat and issues no insn is outside both representations.
+- probe: python3 tools/ra_solver/inverse_compose.py classify code6cac_b func_80030580 (refused by the zero-rule guard, which routes to the object path) then python3 tools/ra_solver/goal_from_tgt.py classify code6cac_b func_80030580.
+- result: FIRST DIVERGENCE: PRE-RA / next tool: none - the residual is upstream of every model. ours 148 insns, target 148 insns, object-level replace_with_asmfile-safe; ours-only addiu #,#,-8 and addiu #,#,8, target-only addiu #,#,-24 and addiu #,#,24. The solver modality is mechanically closed for this function.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session; tools/fake_ablate.py reports no FAKE-annotated constructs in the chassis
+- predicate_cite: tools/gcc-2.7.2/reload1.c:2403
+
+## [s7] The target's vars=24 is three 8-byte alter_reg stack slots and our vars=8 is one of them; the s7 reading that the residual is a declared untouched frame object of 9 to 16 bytes rather than additional combine-orphan spill slots is retracted.
+- mechanism: An unallocated pseudo's alter_reg slot costs zero instructions by construction, so 'every body instruction matches' is not evidence against a spill slot - it is exactly what an orphan slot looks like. Slot size is 8 rather than 4 because alter_reg calls assign_stack_local (mode, total_size, -1) and align = -1 rounds to alignment = 8.
+- probe: tmp/grind/func_80030580/s7/fdbg.py on the base chassis (raw FRAMEDBG lines from the instrumented cc1), plus the mandated kill re-audit INSTR=1 PYTHONPATH=. python3 tmp/grind/func_80030580/s3/frame3.py base j3read j4read dupX.
+- result: base: ctx=spill_new_p110 mode=4 size=8 align=-1 alignment=8 frame_offset=8. j3read: p110@8 + p130@16 (vars=16, bodydiff=18). j4read: p110@8 + p130@16 + p143@24 (vars=24 - the exact target frame - bodydiff=25). dupX: p110@8 + p125@16 (vars=16, bodydiff=15). Every slot is mode=4 (SImode), size=8, align=-1. The s2/s3 orphan-spill model is reinstated and the site law slots = max(0, indexed-Judge sites - 1) reproduces exactly.
+- verdict: CONFIRMED
+
+## [s7] Because our body is byte-identical to the target's 148 instructions and contains exactly two indexed Judge loads, and because the re-audited law gives slots = max(0, indexed-Judge sites - 1), the target's Judge folds account for exactly one of its three slots; its other two slots are produced by a generator that emits no instructions.
+- mechanism: The Judge orphan is a combine/distribute_notes REG_DEAD-orphan (use (reg N)) on a folded (symbol_ref) address pseudo; its count is fixed by the number of folded sites, which is fixed by the body, which matches. Any further slot must come from a pseudo that is never emitted, i.e. a byte-free generator.
+- probe: The kill re-audit above combined with the s5/s6 standalone generator census (s5/gen_probe.c, gen2.c, gen3.c; s6/gen4.c, gen5.c, gen6.c) and this session's twelve in-function shapes measured with s7/sweep.py and s7/runfiles.py.
+- result: The only byte-free multi-slot generator anywhere in the census is generator 4 (the register-allocated union with a word member and two written HImode members: gen5.c a1 and a7 emit the identical instruction stream, a1 reserving 8 phantom bytes and a7 none; a10/a11/b1/d2 reserve two slots). 1 Judge orphan + 2 generator-4 slots = 24. Recorded as the SHAPE of the answer and a constraint on the search, NOT as a proposal - the aggregate carrier was Judge-FAILed on 2026-09-02 17:07 and the standing constraint forbids respelling it.
+- verdict: CONFIRMED
+
+## [s7] Declaring s16 *jt = &Judge; and indexing through it at both lookup sites moves the frame from vars=8 to vars=0 on this chassis, away from the target's 24, at a cost of 19 body-diff lines.
+- mechanism: Materialising the symbol in a live pointer register stops combine folding (symbol_ref) into the two lh insns, so no address pseudo is left for distribute_notes to orphan and the existing p110 slot disappears with it. Same failure direction as s2's jmix byte-offset spelling.
+- probe: tmp/grind/func_80030580/s7/var_jptr.c compiled through s7/runfiles.py with the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_FRAME_DEBUG=1).
+- result: vars=0 bodydiff=19 sp=0, only ctx=round_frame reported. Banked memory/grind/func_80030580/rejected/judge-pointer-alias-destroys-orphan.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present (fake_ablate reports none)
+
+## [s7] Substituting an s32 local written through sub-word lvalues (*(u16 *)&t = 0; *((u16 *)&t + 1) = 0;) for the s6 union does not reproduce generator 4's byte-free slots on this chassis: it measures vars=16 with three ($sp) accesses and 11 body-diff lines.
+- mechanism: Taking &t runs the pseudo through put_reg_into_stack, turning it into a real addressable frame object that the body then loads and stores; generator 4's byte-freeness depends on the union staying register-allocated with only phantom ctx=spill_new slots attached.
+- probe: tmp/grind/func_80030580/s7/var_punword.c (obj+5 / obj+0 zero-store placement) and var_punpair7.c (obj+7 / obj+8 placement) through s7/runfiles.py.
+- result: punword vars=16 bodydiff=11 sp=3 with contexts put_reg_into_stack + spill_new_p111; punpair7 vars=16 bodydiff=12 sp=3. The frozen sub-word-access family therefore does not buy generator 4's slots without an aggregate carrier. Banked memory/grind/func_80030580/rejected/subword-pun-scalar-forces-frame-address.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present
+
+## [s7] Relocating the /32 term so its bgez join sits between the two indexed Judge lookups does not strand the second REG_DEAD note on this chassis: the frame stays at vars=8 (one slot, now p102) and the body costs 30 diff lines.
+- mechanism: distribute_notes emits the bare (use (reg N)) only when the backward scan from i3 finds no home before a CODE_LABEL/JUMP_INSN; the second fold's note still finds a home regardless of the intervening label, so block geometry is not the controlling variable for a second slot.
+- probe: tmp/grind/func_80030580/s7/var_divmid.c through s7/runfiles.py with the instrumented cc1.
+- result: vars=8 bodydiff=30 sp=0, ctx=spill_new_p102. Re-confirms the s5/s6 block-geometry kill on a new spelling and on the current chassis. Banked memory/grind/func_80030580/rejected/div32-between-judge-sites-no-second-orphan.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present
+
+## [s7] The two ordinary-C producers named by .claude/rules/phantom-slot-frame-lever.md - the folded loop-guard compare (producer 1) and live named locals on multi-read fields (producer 3) - do not buy a byte-free slot in func_80030580 in the eight spellings measured this session; every named-local shape that reached vars=24 did so through a ctx=stack_temp with real ($sp) traffic.
+- mechanism: The loop guard here is already a folded pointer-biv compare whose pseudo is allocated; a fresh named local for a multi-read field is either coalesced into the existing value (bodydiff 0, vars unchanged) or materialised as an addressable temp with ($sp) accesses, never left unallocated-with-refs.
+- probe: tmp/grind/func_80030580/s7/sweep.py (11 shapes: base, vecnamed, vechalf, velnamed, whilerot, neguard, limitvar, tblstruct, kindlocal, anglocal, srcvec) plus s7/runfiles.py (posptr, srcptr).
+- result: whilerot vars=8 bodydiff=0; kindlocal vars=8 bodydiff=0; anglocal vars=8 bodydiff=0; posptr vars=8 bodydiff=0; neguard vars=8 bodydiff=20; limitvar vars=8 bodydiff=11; velnamed vars=8 bodydiff=100; srcptr vars=8 bodydiff=23; vecnamed vars=24 bodydiff=10 sp=6; vechalf vars=24 bodydiff=183 sp=5; srcvec vars=24 bodydiff=173 sp=5; tblstruct vars=16 bodydiff=154 sp=3. Four shapes (whilerot, kindlocal, anglocal, posptr) are byte-neutral and are banked as free composables; posptr is saved as memory/grind/func_80030580/composable-posptr-byte-neutral.c and srcptr as rejected/src-vec3i-pointer-costly.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present

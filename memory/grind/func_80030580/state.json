@@ -1,8 +1,8 @@
 {
  "func": "func_80030580",
  "file": "code6cac_b",
- "session_count": 6,
- "current_modality": "synthesis",
+ "session_count": 7,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -39,23 +39,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "Bytes re-proven independently (full clean build SHA1 == oracle with candidate.c applied); sandbox stays at 2 only because the Judge-mandated volatile pad needs an engine allowlist row a grind session "
+  },
+  {
+   "session": 7,
+   "floor": 2,
+   "modality": "solver",
+   "headline": "Solver typed the residual PRE-RA with no model applicable (class kill); FRAMEDBG proves the target's vars=24 is THREE 8-byte alter_reg slots, correcting s7's 'declared untouched object' model, and thr"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An ordinary-C construct exists that makes GCC 2.7.2 reserve a 9..16-byte frame object no instruction touches - now the only honest axis, and typed precisely for the first time by H-s7-2.",
-   "mechanism": "The residual is no longer 'missing orphan spill slots' but 'a declared untouched object'. Candidates are constructs whose stores are removed but whose slot survives, or whose value folds: a Vec3i local assigned from *(Vec3i *)(obj + 0x2C) and never read, a struct copy whose destination is immediately overwritten, a small union used for a single half-word read, a struct-typed conditional expression.",
-   "next_probe": "Extend tmp/grind/func_80030580/s5/genprobe.py to sweep those shapes in-function with tmp/grind/func_80030580/s6/padsweep.py's instrument, accepting only vars=24 with bodydiff<=4 and sp=0; then check each accepted shape against the frozen family list before proposing it, since a construct whose stores vanish still needs a truthful semantic reading."
+   "hypothesis": "A byte-free generator OTHER than the s6 union yields two alter_reg slots and can be hosted by this function's own semantics.",
+   "mechanism": "H-s8-3 proves the target needs exactly that: one slot from the Judge fold plus two from something emitting no instructions. The census so far covers Judge folds (site law), the HImode-bitwise generator (inert here), the truncated-division generator (not hostable - the function only divides by 32 and 2), and generator 4 (the union, Judge-FAILed).",
+   "next_probe": "Run tmp/grind/func_80030580/s5/genprobe.py over a NEW standalone corpus aimed at register-allocated aggregates that are not unions - a small struct never address-taken, short/int bitfield structs, an enum-typed local, a struct whose only use is a member read - accepting only sp=0 hits with ctx=spill_new, then host the hits in-function with tmp/grind/func_80030580/s7/runfiles.py and require vars=24 bodydiff<=4 sp=0."
   },
   {
-   "hypothesis": "Operator integration closes the function immediately with no further C work.",
-   "mechanism": "The C is the Judge-mandated form and is byte-proven; the only missing artefact is one sandbox-scoring allowlist row.",
-   "next_probe": "Per docs/grind/decisions.md 2026-09-02 'func_80030580 - OWNER-ESCALATION: INTEGRATION HANDOFF': apply candidate.c, run a fresh layer-2 cheat-reviewer against memory/grind/func_80030580/self_vet.md, add the (\"pre_pad\", 4) row to _SANCTIONED_UNWRITTEN_PADS, then sandbox reads 0 and verify-oracle / queue done follow."
+   "hypothesis": "A 4-site Judge form exists whose two extra lookups are deleted by cse while their folded address pseudos still orphan, reaching vars=24 at bodydiff<=4.",
+   "mechanism": "j4read already reaches the exact target frame (p110/p130/p143) at bodydiff=25, and s5 itemises the surplus as exactly the two extra lookups (lh angle / addu const / andi 0xFFF / sll 1 / lh Judge / addu, twice). The open question - never measured - is whether cse deleting a redundant Judge LOAD also deletes the address pseudo that combine would otherwise fold and orphan.",
+   "next_probe": "Spell the two extra Judge reads with index expressions provably equal to the existing two (so cse merges the loads) and measure vars/bodydiff with tmp/grind/func_80030580/s7/runfiles.py; if the pseudo survives cse the form is byte-neutral and closes the function with no new construct family."
   },
   {
-   "hypothesis": "The j4read / jump2 cross-jump route and the 'fourth generator' hunt are deprioritised, not killed.",
-   "mechanism": "Both were built on the s2/s3 orphan-spill model of the residual, which H-s7-2 retires; they manufacture extra spill slots, and the target's extra bytes are not spill slots.",
-   "next_probe": "Re-rank them only if the orphan-spill model is reinstated by a contrary frame measurement; otherwise spend sessions on frontier item 1."
+   "hypothesis": "If frontier items 1 and 2 also measure dead, the sanctioned ladder for func_80030580 is genuinely spent.",
+   "mechanism": "Both known routes to vars=24 are closed by standing Judge constraints (the volatile u32 pre_pad[4] phantom-pad and the generator-4 union), the solver axis is closed by tool verdict (H-s8-1), and the permuter axis was closed at 84k iterations in s4.",
+   "next_probe": "Do NOT dispose of the function from a non-escalation modality. Work items 1 and 2 first; only an escalation-modality session should assemble the foreclosure record, and it now has the full evidence chain (site law + byte-free-generator requirement + the two Judge FAILs) to do so."
   }
  ],
  "judge_constraints": [
@@ -215,6 +221,46 @@
    "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session; the only FAKE construct present in the candidate is `volatile u32 pre_pad[4]`",
    "predicate_cite": "",
    "result": "Recorded in hypotheses.md as H-s7-3 so a later session does not re-derive the detector gap as a discovery and burn a Jud"
+  },
+  {
+   "session": 7,
+   "statement": "goal_from_tgt.py classify types func_80030580's residual as PRE-RA with 'next tool: none', so neither tools/ra_solver nor tools/sched_solver has a model that covers it: the two 148-instruction streams",
+   "kill_scope": "class",
+   "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session; tools/fake_ablate.py reports no FAKE-annotated constructs in the chassis",
+   "predicate_cite": "tools/gcc-2.7.2/reload1.c:2403",
+   "result": "FIRST DIVERGENCE: PRE-RA / next tool: none - the residual is upstream of every model. ours 148 insns, target 148 insns, "
+  },
+  {
+   "session": 7,
+   "statement": "Declaring s16 *jt = &Judge; and indexing through it at both lookup sites moves the frame from vars=8 to vars=0 on this chassis, away from the target's 24, at a cost of 19 body-diff lines.",
+   "kill_scope": "instance",
+   "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present (fake_ablate reports none)",
+   "predicate_cite": "",
+   "result": "vars=0 bodydiff=19 sp=0, only ctx=round_frame reported. Banked memory/grind/func_80030580/rejected/judge-pointer-alias-d"
+  },
+  {
+   "session": 7,
+   "statement": "Substituting an s32 local written through sub-word lvalues (*(u16 *)&t = 0; *((u16 *)&t + 1) = 0;) for the s6 union does not reproduce generator 4's byte-free slots on this chassis: it measures vars=1",
+   "kill_scope": "instance",
+   "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "punword vars=16 bodydiff=11 sp=3 with contexts put_reg_into_stack + spill_new_p111; punpair7 vars=16 bodydiff=12 sp=3. T"
+  },
+  {
+   "session": 7,
+   "statement": "Relocating the /32 term so its bgez join sits between the two indexed Judge lookups does not strand the second REG_DEAD note on this chassis: the frame stays at vars=8 (one slot, now p102) and the bod",
+   "kill_scope": "instance",
+   "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "vars=8 bodydiff=30 sp=0, ctx=spill_new_p102. Re-confirms the s5/s6 block-geometry kill on a new spelling and on the curr"
+  },
+  {
+   "session": 7,
+   "statement": "The two ordinary-C producers named by .claude/rules/phantom-slot-frame-lever.md - the folded loop-guard compare (producer 1) and live named locals on multi-read fields (producer 3) - do not buy a byte",
+   "kill_scope": "instance",
+   "measured_on": "pure-c-floor2-body.c chassis, sandbox --disable all = 2 re-measured this session, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "whilerot vars=8 bodydiff=0; kindlocal vars=8 bodydiff=0; anglocal vars=8 bodydiff=0; posptr vars=8 bodydiff=0; neguard v"
   }
  ],
  "ladder_skip": 0,

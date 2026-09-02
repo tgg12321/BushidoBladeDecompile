@@ -1,8 +1,20 @@
+/* s7 REJECTED - punword: the SCALAR analogue of the s6 generator-4 union.  An `s32 t`
+ * local written through sub-word lvalues (`*(u16 *)&t = 0; *((u16 *)&t + 1) = 0;`) and
+ * read back into the function's own obj+5 / obj+0 zero stores.  The hope was to buy
+ * generator 4's two byte-free spill_new slots without an AGGREGATE carrier (the shape the
+ * 2026-09-02 17:07 ruling FAILed), using the frozen sub-word-access family instead.
+ * Measured: vars=16 bodydiff=11 sp=3, contexts `put_reg_into_stack` + spill_new_p111.
+ * Taking `&t` forces the pseudo out of a register into a REAL frame object with three
+ * ($sp) accesses -- generator 4's byte-freeness depends on the union staying
+ * register-allocated, which address-taking destroys.  The same shape hosted on the
+ * obj+7 / obj+8 byte pair (var_punpair7.c) measures vars=16 bodydiff=12 sp=3.
+ * Conclusion: there is no scalar spelling of generator 4 on this chassis. */
 s32 *func_80030580(s32 *arg0, s32 arg1) {
     u8 *obj;
     u8 *src = (u8 *)arg0;
     s16 *tbl;
     s32 i;
+    s32 t;
 
     obj = (u8 *)&D_80106A78;
     for (i = 0; i < 12; i++, obj += 0x64) {
@@ -49,7 +61,9 @@ s32 *func_80030580(s32 *arg0, s32 arg1) {
         *(s16 *)(obj + 0x60) = 0;
     }
     *(s32 *)(obj + 0x50) = 1;
-    *(u8 *)(obj + 5) = 0;
-    *(s16 *)obj = 0;
+    *(u16 *)&t = 0;
+    *((u16 *)&t + 1) = 0;
+    *(u8 *)(obj + 5) = *(u16 *)&t;
+    *(s16 *)obj = *((u16 *)&t + 1);
     return (s32 *)obj;
 }

@@ -1,8 +1,14 @@
+/* s7 REJECTED - srcptr: `Vec3i *sp = (Vec3i *)(src + 0xF4);` feeding the three initial
+ * position stores.  vars=8 (frame-inert) at bodydiff=23 -- the typed pointer makes GCC
+ * keep a second live base register instead of three (src + const) addresses.  Kept as
+ * the negative twin of posptr (Vec3i * into obj+0x2C / obj+0x44), which is byte-neutral
+ * (bodydiff=0) and equally frame-inert. */
 s32 *func_80030580(s32 *arg0, s32 arg1) {
     u8 *obj;
     u8 *src = (u8 *)arg0;
     s16 *tbl;
     s32 i;
+    Vec3i *sp = (Vec3i *)(src + 0xF4);
 
     obj = (u8 *)&D_80106A78;
     for (i = 0; i < 12; i++, obj += 0x64) {
@@ -14,9 +20,9 @@ s32 *func_80030580(s32 *arg0, s32 arg1) {
     *(u8 *)(obj + 8) = 0;
     *(u8 *)(obj + 4) = 1;
     *(u8 *)(obj + 6) = *(u16 *)(src + 4);
-    *(s32 *)(obj + 0x2C) = *(s32 *)(src + 0xF4);
-    *(s32 *)(obj + 0x30) = *(s32 *)(src + 0xF8) - *(s16 *)(src + 0x1A) / 32;
-    *(s32 *)(obj + 0x34) = *(s32 *)(src + 0xFC);
+    *(s32 *)(obj + 0x2C) = sp->x;
+    *(s32 *)(obj + 0x30) = sp->y - *(s16 *)(src + 0x1A) / 32;
+    *(s32 *)(obj + 0x34) = sp->z;
     tbl = &D_8008E194 + arg1 * 7;
     *(s32 *)(obj + 0x44) = ((&Judge)[*(u16 *)(src + 0x1CA) & 0xFFF] * tbl[2]) >> 12;
     *(s32 *)(obj + 0x48) = tbl[3];
