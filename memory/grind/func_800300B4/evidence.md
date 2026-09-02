@@ -1074,3 +1074,81 @@ rejected/pack-ptr-arg0-0x20-cse-remerges-s8-7.c.
 - [s9] Maximal ordinary-C pressure across the pack window (five hoisted live values) scores 52 and leaves the pack seats unchanged at $2/$3 while the hoisted quantities take $7/$8/$9 - the pressure lands on quantities allocated AFTER the pack, because qty_compare_1 ranks the 3-instruction pack temp 4th of 19.
 
 - [s9] src/code6cac_b.c was restored to INCLUDE_ASM("asm/funcs", func_800300B4); at the end of the session; the working tree carries only metrics/events.jsonl. candidate.c is untouched, no candidate was submitted, no ruling was re-requested, and no banned construct or struck ruling was relied on.
+
+## s10 (rederive modality) - 2026-09-02
+
+Floor unchanged at **7** (ban-compliant); the 0-form `candidate.c` is unchanged and still blocked
+by the island-2 ban. Three new results, all novel to this ledger.
+
+1. **Chassis re-measured.** The dispatch brief again reported "measurement unavailable".
+   `memory/grind/func_800300B4/best_ban_compliant.c` applied over the INCLUDE_ASM line measures
+   `sandbox func_800300B4 --disable all` = **7** on HEAD c935b7db - identical to s3/s4/s5/s6/s7/s8/s9.
+   No chassis drift, no banked kill voided. (`tmp/grind/func_800300B4/s10/sb_v_base.txt`.)
+
+2. **The residual is invariant under whole-function structural rederivation (H40).** A fresh m2c
+   decompile (`tmp/grind/func_800300B4/s10/m2c.txt`) reproduces the banked control flow exactly and
+   is notable for one thing: it does not emit the pack's lhu/lhu/sll/or as C statements at all - its
+   dataflow sinks all four into the cop2 `M2C_ERROR` block, i.e. their only consumer is the `mtc2`.
+   A deliberately different C shape was then built and measured (`v_struct.c`): parameter re-typed
+   through a declared `Obj_800300B4` struct instead of `u8 *` plus casts, the vector at +0x2C
+   expressed as `union { s32 w[3]; u16 h[6]; }` so the pack is `o->lv.h[0] | ((u32)o->lv.h[2] << 16)`
+   with no pointer casts anywhere, the matrix translation read through `s32 *tr = mat + 5;`, the
+   D_8008EB80 lookup a typed subscript. Score **7**, and the island-2 window is byte-identical to the
+   banked chassis. Struct/union member access, cast-free addressing and a different statement shape
+   all fold to the same MEMs and the same quantities.
+   Banked: `rejected/rederive-struct-union-shape-residual-invariant-s10-7.c`.
+
+3. **A lever no prior session framed - emission ORDER - measured and closed (H41).** s2-s9 all chased
+   the pack's addressing shape and its register seats; both are score-neutral. Positional accounting
+   of the 8-instruction window shows the build ALREADY emits `addiu v0,s3,44` and `move t4,v0`
+   character-identically to the target's first two instructions - they simply sit at window positions
+   5 and 6 instead of 1 and 2. Transposing the two pack statements (`lv = (s32 *)(arg0 + 0x2C);`
+   above `packed = ...`, pure statement reordering, no new construct) DOES lift the address
+   materialisation to position 1 - and loses the $v0 seat in the same move, emitting
+   `addiu a1,s3,44 ; ... ; move t4,a1`. Score **7**, unchanged: one positional match traded for one
+   register match. The trade is structural, not tuning: the `move $12, %0` operand copy is the FIRST
+   LINE OF THE ASM TEMPLATE and so is always emitted immediately before that template's
+   `mtc2 %1, $0`, while `%1` (`packed`) is data-dependent on all four pack instructions. In any
+   ban-compliant body the four pack instructions must therefore sit BETWEEN the `addiu` and the
+   `move`; the target has them AFTER both. Adjacent-but-late (v_base) or leading-but-wrong-seat
+   (v_lvfirst) are the only two arrangements available.
+   Banked: `rejected/lv-materialised-first-addiu-loses-v0-seat-s10-7.c`.
+
+4. **Corpus + codebase census: the island-2 window is macro template text (H42, class kill).** The
+   one instruction in that window with no C-level justification is the redundant copy of a
+   freshly computed address into a second register that is then used as the load base
+   (`addiu $v0,$s3,0x2C ; addu $t4,$v0,$zero ; lhu $t6,4($t4)`) - the address is already in $v0 and
+   has exactly one use. Scanned the local decomp.me corpus (`tmp/decomp_me_corpus/`, 3,754 gcc2.7.2
+   scratches) restricted to `is_matching` scratches with NO inline asm anywhere in source or context
+   (1,564 scratches, so every instruction in their target_assembly is compiler output):
+   **0 occurrences** of that 3-instruction shape. The looser `move rC,rB ; load d(rC)` shape occurs
+   33 times, but every one copies a live variable (a parameter or an established pointer), never a
+   fresh `addiu` result, and the copy destinations observed are $a0/$a1/$a3/$s0/$s1/$t0 - consistent
+   with local-alloc's min-free-regno scan (s9 H39) and never $t4. Repo cross-check: 17 functions in
+   `asm/funcs/` carry the identical `sll $t6,$t6,16` pack shape, and in every one that has reached a
+   matched C form the pack sits inside a cop2 asm island - not one is expressed in C.
+   Artifacts: `corpus_census.py`, `corpus_census.txt`, `repo_pack_census.txt`.
+
+**Consequence for the frontier.** The rederive modality is now spent alongside structural, permuter,
+synthesis, solver and forensics. The cse layer was closed by s7/s8 on both find_best_addr branches
+and shown worthless even when broken; the RA layer was closed by s5/s6/s9 at priority, suggestion
+bypass and ordering; s10 closes the last untested dimension of the window - emission order - and adds
+independent corpus evidence that the target bytes are SDK macro template text rather than compiler
+output. The item's disposition remains the owner policy question filed at
+`docs/grind/borderline.md:370`.
+
+- [s10] Chassis re-measured this session: best_ban_compliant.c = sandbox --disable all 7 on HEAD c935b7db, unchanged since s3. The 0-form candidate.c is untouched and still blocked by the island-2 ban.
+
+- [s10] The whole 7-instruction ban-compliant residual is still exactly the island-2 window and nothing else; both s10 probe forms emit that window and every other instruction in the function matches.
+
+- [s10] The build already emits addiu v0,s3,44 and move t4,v0 character-identically to the target's first two island-2 instructions - the difference at those two positions is position, not content. Lifting them to the front costs the $v0 seat (v_lvfirst: addiu a1,s3,44 ... move t4,a1), for a net zero.
+
+- [s10] The asm template's leading move $12, %0 is emitted immediately before its mtc2 %1, $0, and %1 (packed) is data-dependent on all four pack instructions, so a ban-compliant body places the pack BETWEEN the addiu and the move while the target places it after both.
+
+- [s10] m2c on the raw asm (tmp/grind/func_800300B4/s10/m2c.txt) does not surface the pack as C at all - it sinks lhu/lhu/sll/or into the cop2 M2C_ERROR block, because their only consumer is the mtc2.
+
+- [s10] decomp.me census: across 1,564 is_matching, completely asm-free GCC 2.7.2 scratches there are ZERO instances of addiu rB,rS,K ; move rC,rB ; load d(rC). The looser move-then-load-base shape appears 33 times and always copies a live variable, with destinations $a0/$a1/$a3/$s0/$s1/$t0 and never $t4.
+
+- [s10] Repo census: 17 asm/funcs/*.s carry the identical sll $t6,$t6,16 pack; every one of them that has a matched C form keeps the pack inside a cop2 asm island (func_800203B4, func_8002E838, func_80031890) - none expresses it in C.
+
+- [s10] Modalities now spent on this function: structural (s2, s3), permuter (s4), synthesis (s5, s6), solver (s7), forensics (s8, s9), rederive (s10).

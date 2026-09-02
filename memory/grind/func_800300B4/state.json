@@ -1,8 +1,8 @@
 {
  "func": "func_800300B4",
  "file": "code6cac_b",
- "session_count": 9,
- "current_modality": "forensics",
+ "session_count": 10,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -57,23 +57,29 @@
    "floor": 7,
    "modality": "forensics",
    "headline": "Floor holds at 7 (0-form still 0, still island-2-banned); chassis and the closest banked kill re-audited clean, and the RA lock's last open axis - register pressure - is now a class kill: no REG_ALLOC"
+  },
+  {
+   "session": 10,
+   "floor": 7,
+   "modality": "rederive",
+   "headline": "Floor holds at 7 (0-form still 0, still island-2-banned); rederive spent - the residual is invariant under whole-function structural rewrite, the last untested window dimension (emission ORDER) is mea"
   }
  ],
  "frontier": [
   {
    "hypothesis": "UNCHANGED, DOMINANT, still the only item: the whole 7-insn ban-compliant residual is the island-2 gte_ldlv0 GPR pack, and it is the owner policy question -- does cop2-addressing-preamble-cluster.md condition 3 admit a verbatim PsyQ 4.5 SDK macro body whose lhu/lhu/sll/or is template text rather than an addressing preamble?",
-   "mechanism": "Condition 3 ('in-island GPR instructions limited to the cop2 addressing preamble', .claude/rules/cop2-addressing-preamble-cluster.md:106) read against PsyQ 4.5 inline_c.h:101-110; judge-sole-gate rule 4 reserves the family-scope call for the owner via the borderline ledger. s7/s8/s9 supply the mechanical proof: the C route is closed at the cse layer on both find_best_addr branches (cse.c:2720, cse.c:2750) and worthless even when broken, and at the RA layer on all three decision points (local-alloc.c:1666 priority, :2207 suggestion bypass, :1666 ordering + reference budget).",
-   "next_probe": "None in-pipeline. Filed at docs/grind/borderline.md:370 with s3, s6, s7, s8 and s9 addenda. Do NOT re-request the ruling, do NOT submit candidate.c, do NOT cite the struck 07:30 / 07:59 rulings or the banned sibling precedents, and do NOT re-derive the pack in C."
+   "mechanism": "Condition 3 ('in-island GPR instructions limited to the cop2 addressing preamble', .claude/rules/cop2-addressing-preamble-cluster.md:106) read against PsyQ 4.5 inline_c.h:101-110; judge-sole-gate rule 4 reserves the family-scope call for the owner via the borderline ledger. s7/s8/s9 supply the mechanical proof that the C route is closed (cse.c:2720, cse.c:2750, local-alloc.c:1666/:2207) and s10 adds the corpus proof that the window is macro template text, not compiler output (0/1,564 asm-free matching scratches).",
+   "next_probe": "None in-pipeline. Filed at docs/grind/borderline.md:370 with s3, s6, s7, s8, s9 addenda; the s10 corpus census is banked in evidence.md item 4 and hypotheses.md H42 and should be quoted as further support if the entry is ever revisited. Do NOT re-request the ruling, do NOT submit candidate.c, do NOT cite the struck 07:30 / 07:59 rulings or the banned sibling precedents, and do NOT re-derive the pack in C."
   },
   {
-   "hypothesis": "The RA layer of this function is fully enumerated: seat = min free regno, order = qty_compare_1 priority, and neither can be moved from the source side for the island-2 pack.",
-   "mechanism": "No REG_ALLOC_ORDER for MIPS (local-alloc.c:2251 #else arm); priority floor_log2(refs)*refs*size/(death-birth) at local-alloc.c:1666 puts the 3-instruction pack temp 4th of 19; occupying regnos 2..12 across its 3-instruction range would need >= 45 register references in a window that carries at most ~9.",
-   "next_probe": "No probe. A future session must not re-open 'make registers busy', 'hoist the pack', or allocno-priority tooling (global.c allocates nothing here, s8 H37). Cite s9 H38 + H39 as the closure."
+   "hypothesis": "The island-2 window's emission ORDER is now enumerated alongside its addressing shape and its register seats; no arrangement of the ban-compliant pack aligns more than the one instruction (lwc2) it already aligns.",
+   "mechanism": "The asm template's leading move $12, %0 is bound to its own mtc2 %1, $0, and %1 is data-dependent on the four pack instructions, so the pack sits between the addiu and the move. Lifting the addiu to window position 1 (v_lvfirst) widens lv's live range, loses it the $v0 seat to the higher-priority pack quantity (local-alloc.c:1666, s9 H39), and trades one positional match for one register match.",
+   "next_probe": "No probe. A future session must not re-open 'reorder the island-2 window'. Cite s10 H41."
   },
   {
-   "hypothesis": "The cse layer is enumerated to exhaustion AND shown to buy nothing even where it is broken, so it is a dead route for this function.",
-   "mechanism": "Zero-displacement pointer addresses lose find_best_addr's strict-'>' rtx_cost tiebreak (s7 H32, cse.c:2720); nonzero-displacement pointer addresses lose its REG+const associative merge (s8 H35, cse.c:2750); and the one body with the lock fully broken still scores 7 (s8 H36).",
-   "next_probe": "No probe. Cite H32 + H35 + H36 as the closure."
+   "hypothesis": "The function's C shape is not the variable: the residual survives whole-function structural rederivation, so future sessions should not spend measurements on re-typing, re-structuring or re-spelling the body.",
+   "mechanism": "v_struct changes the parameter typing, the pack's access route (union member instead of pointer casts), the translation read and the lookup expression at once, and the island-2 window comes out byte-identical to the u8*-and-casts chassis. Combined with s7/s8 (cse folds every spelling to the same MEMs) and s5/s6/s9 (local-alloc gives every spelling the same quantities and seats), no source-side input to either pass remains unenumerated.",
+   "next_probe": "No probe. Cite s10 H40 together with s8 H35/H36 and s9 H38/H39 as the closure of the source-shape axis."
   }
  ],
  "judge_constraints": [
@@ -241,6 +247,30 @@
    "measured_on": "HEAD 1daa9018, best_ban_compliant.c chassis and the v_maxlive pressure form, instrumented cc1 tools/gcc-2.7.2/cc1 with BB2_SUGG_DEBUG/BB2_QTY_DEBUG; single banked do-while(0) FAKE present in both",
    "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:1666",
    "result": "The model is exact for every quantity in both compilations, and the reference budget is exceeded by roughly a factor of "
+  },
+  {
+   "session": 10,
+   "statement": "A whole-function structural rederivation (struct-typed parameter, union-member pack with no pointer casts, materialised translation pointer, typed lookup subscript) changes what cse and local-alloc se",
+   "kill_scope": "instance",
+   "measured_on": "HEAD c935b7db, v_struct applied over the INCLUDE_ASM line, islands 1/2(C)/3 as banked, FAKE = the single banked do-while(0) wrap present and unmodified; v_base control re-measured 7 in the same run",
+   "predicate_cite": "",
+   "result": "KILLED. Score 7, identical to the v_base control re-measured 7 in the same run on the same HEAD. The island-2 window is "
+  },
+  {
+   "session": 10,
+   "statement": "Transposing the two island-2 pack statements so that lv = (s32 *)(arg0 + 0x2C) is materialised ABOVE the packed = ... computation lifts the addiu/move pair to the target's window positions 1-2 and low",
+   "kill_scope": "instance",
+   "measured_on": "HEAD c935b7db, best_ban_compliant.c chassis with the two pack statements transposed, islands 1/2(C)/3 as banked, FAKE = the single banked do-while(0) wrap present and unmodified",
+   "predicate_cite": "",
+   "result": "KILLED. Score 7, unchanged. The reorder works as an ordering lever - the address materialisation does move to window pos"
+  },
+  {
+   "session": 10,
+   "statement": "The target's island-2 opening (addiu $v0,$s3,0x2C ; addu $t4,$v0,$zero ; lhu $t6,4($t4)) is a shape GCC 2.7.2 emits from pure C, so a corpus search can recover the C that produces it.",
+   "kill_scope": "class",
+   "measured_on": "HEAD c935b7db, static corpus scan (no compilation): 1,564 matching asm-free GCC 2.7.2 decomp.me scratches plus a 17-function repo census",
+   "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:2249",
+   "result": "KILLED. (a) 0 occurrences in 1,564 matching asm-free scratches - GCC 2.7.2 does not copy a just-computed address into an"
   }
  ],
  "ladder_skip": 30,
