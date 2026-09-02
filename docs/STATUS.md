@@ -1,6 +1,6 @@
 # Project Status
 
-**Live snapshot.** Refreshed 2026-08-30 (post rule-system removal). For
+**Live snapshot.** Refreshed 2026-09-02 (post grinder session-efficiency work). For
 the live worklist run `& tools/wteng.ps1 main queue next` (and `queue status`
 for counters); for build health run `verify-oracle`. The workflow itself lives
 in [`../CLAUDE.md`](../CLAUDE.md).
@@ -12,7 +12,7 @@ in [`../CLAUDE.md`](../CLAUDE.md).
 | Branch | `main` |
 | Oracle SHA1 | `62efab4f73f992798c43e8c730aa43baa10bb4fa` |
 | Build match | ✅ green — full `verify-oracle --rebuild` re-verified 2026-08-30 |
-| Grinder | stopped since 2026-08-27; queue top is now `main` (returned to active by the 2026-08-30 escalation-batch rulings) — relaunch resumes there |
+| Grinder | relaunched 2026-09-02 after the session-efficiency changes (`docs/superpowers/plans/2026-09-01-grinder-session-efficiency.md`: current-scope injection, kill hygiene, FAKE ablation, loop/nrefs/label census tools, grant re-scan) |
 | Current worklist top | via `& tools/wteng.ps1 main queue next` |
 
 **Representation (owner ruling 2026-08-19, [[asm-until-matched]]):** an
@@ -28,7 +28,7 @@ historical regfix/asmfix rule system reached zero rules on 2026-08-25 and was
 removed entirely (files, pipeline stages, tooling) on 2026-08-30; see git
 history if archaeology is ever needed.
 
-## Function inventory (2026-08-30)
+## Function inventory (2026-09-02)
 
 Counts from `python3 tools/check_completion_integrity.py` (the authority — it
 applies the 2026-08-07 data-as-code structural filter; raw `asm/funcs/*.s` file
@@ -36,16 +36,17 @@ counts do not).
 
 | | Count |
 |---|------:|
-| **COMPLETED-C** | **1,072** |
-| **COMPLETED-INLINE-ASM-CANONICAL** (`inline_asm_canonical.txt`) | 181 |
-| **INCOMPLETE** (queue items) | 221 |
-| — active (grinder-eligible) | 221 |
+| **COMPLETED-C** | **1,074** |
+| **COMPLETED-INLINE-ASM-CANONICAL** (`inline_asm_canonical.txt`) | 189 |
+| **INCOMPLETE** (queue items) | 211 |
+| — active (grinder-eligible) | 193 |
+| — foreclosed (standing ruling; re-activated by grant re-scan or unpark) | 18 |
 | — escalated | **0** |
 | Data-as-code symbols (excluded by ruling) | 12 |
 
-≈ 85% of the 1,474 in-scope functions are in a COMPLETED state.
+≈ 86% of the 1,474 in-scope functions are in a COMPLETED state.
 
-Queue verdict breakdown (2026-08-30): 185 `C` (pure-C reachable) + 36
+Queue verdict breakdown (2026-09-02): 179 `C` (pure-C reachable) + 32
 `ASM-PARTIAL` (contain canonical GTE/BIOS/HW asm).
 
 **Escalation backlog: CLEARED 2026-08-30.** The owner ruled on the full
