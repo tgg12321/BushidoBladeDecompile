@@ -21090,3 +21090,7 @@ leaves. (3) A class grant covering ordinary-C frame-size carriers.
 
 **Disposition.** `src/code6cac_b.c` restored to HEAD at session end; the FAKE-free
 floor-2 body remains at `memory/grind/func_80030580/candidate.c`.
+
+## 2026-09-02 18:27 — func_8003D52C — final call — **PASS**
+
+Ordinary C, no sanctioned-family claim needed. Body is a varargs printf-lite: one scratch pointer reused across two sequential scans, literal char constants, while/break — nothing byte-neutral, nothing intent-announcing (self_vet.md T1-T6). The one non-body edit is the file's va_start macro moving from __builtin_next_arg to the address form ((ap)=(va_list)(&(last)+1)); that is the classic pre-stdarg idiom, semantically truthful, and byte-identical in spelling to src/main.c:1707 (verified) — choosing it after measuring the home-slot store is exactly the sanctioned method per .claude/rules/ordinary-c-judge-decidable.md, not a cheat. Independently verified: git diff touches only src/code6cac_c2.c (66/2, no rule/pipeline/Makefile/prebuilt-.o surface); grep over the new body finds zero asm/volatile/register/FAKE, so the retired chassis's asm("s1")/asm("s3") pins and its 1 regfix insert (migration_pin.json) are genuinely gone, not respelled; va_start has exactly one call site in this TU, so the macro change perturbs nothing else. Measurements and mechanisms in evidence.md Facts A-C; killed alternative in rejected/separate-seg_ptr-and-p-locals-d38.c. state.json carries no judge_constraints and no banned_constructs.
