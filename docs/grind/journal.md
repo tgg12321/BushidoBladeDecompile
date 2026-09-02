@@ -1468,3 +1468,4 @@
 - 2026-09-02 04:07 func_80016E60 COMPLETED-C after 6 sessions (closer: s6 [synthesis]).
 - 2026-09-02 04:18 _spu_2pitch COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-02 04:40 func_800480C0 s2 [structural] floor=32: Ledger floor 20 was a sandbox-stripper artifact (dangling `volatile` binds to `u32 *p`); honest pad-free floor is 32, and 13 structural spellings cap phantom-slot production at vars=8 of the 32 needed.
+- 2026-09-02 04:57 func_800480C0 s3 [structural] floor=20: Honest floor corrected 32 -> 20: the sandbox strips an UN-ANNOTATED `arg0 = 0;` dead param store, which also manufactured s2's phantom 'seat rotation'; residual is now a pure +32 vars frame delta over a byte-identical instruction stream, and 8 more spellings cap phantom production at one 4-byte ST_REGS compare residue.

@@ -118,3 +118,82 @@
 - [s2] Reusable instrument for this function: tmp/frame_probe.sh func_800480C0 text1b prints cc1's own `# vars=` in ~15 s, separating 'wrong frame' from 'wrong codegen' far more cheaply than the sandbox score.
 
 - [s2] The s1 bytes-proven body (volatile pre_pad[8] + arg0=0, full build SHA1 == oracle) is preserved at memory/grind/func_800480C0/rejected/pad-judge-banned-2026-09-02.c; it remains unusable under the Judge's 2026-09-02 04:28 ruling until an owner grant adds the engine/volatile_cheats.py row.
+
+## s3 — structural (2026-09-02, chassis HEAD f3ba5f78, -mel, 0 regfix/asmfix rules)
+
+- **THE HONEST FLOOR IS 20, NOT 32 — s2's floor was itself a stripper artifact.**
+  `engine/volatile_cheats.py::find_dead_param_assigns` removes an **un-annotated**
+  `arg0 = 0;` from the scored TU, and `engine/test_engine.py:1094-1116` pins exactly
+  that contract ("annotated dead param assign bypassed" / "un-annotated dead param
+  assign still flagged"). Every s1 and s2 body wrote the store bare, so the sandbox
+  scored a body with the store deleted. Adding the annotation the dead-store family
+  requires anyway (`.claude/rules/dead-store-fake-exception.md`) and changing nothing
+  else moves the score **32 -> 20** (74 build insns vs 74 target, up from 73).
+  Measured this session, both directions, on `tmp/grind/func_800480C0/s3/body_v0a_fake.c`.
+- **THERE IS NO CALLEE-SAVED SEAT ROTATION.** s2 recorded base_addr in $s6 against
+  the target's $s2 and built two of its three frontier items (ra_solver classify,
+  sched_solver base-copy emission order) on that reading. The rotation exists ONLY in
+  the stripped sandbox build — it is the downstream consequence of the deleted dead
+  store. With the store honoured, cc1 emits `move $18,$16` ($s2 = $s0) and seats
+  sx_arg2..5 in $s6/$s5/$s4/$s3, i.e. the target's exact bindings
+  (`tmp/grind/func_800480C0/s3/probe.s`). The instrumented cc1's `BB2_ALLOC_DEBUG`
+  order confirms it directly (`tmp/grind/func_800480C0/s3/alloc.err`): pseudo 83
+  (base_addr, nrefs=4, livelen=52) is allocated third and takes hardreg 18 = $s2.
+  **The residual at 20 is purely the frame size** — the instruction stream is
+  byte-identical to the target and the 20 differing insns are exactly the 20
+  sp-relative operands (1 `addiu $sp`, 8 `sw`, 2 incoming stack-arg `lw`, 8 `lw`,
+  1 `addiu $sp`). Both s2 frontier items are therefore closed as chasing a
+  non-divergence.
+- **New instrument: unallocated-pseudo census.** `tmp/grind/func_800480C0/s3/probe_body.sh
+  <body.c>` installs a body, runs the INSTRUMENTED cc1 (`tools/gcc-2.7.2/cc1`) with
+  `BB2_ALLOC_DEBUG=1`, and prints the `.frame` line **plus the count of allocnos with
+  hardreg=-1**. That is strictly more informative than s2's `# vars=` gradient: it says
+  HOW MANY phantom slots a spelling produced, not just the rounded total. ~20 s per
+  spelling.
+- **The phantom producer is a single ST_REGS-class compare residue, and it caps at
+  one.** The `.lreg` dump for the vars=8 spelling
+  (`tmp/grind/func_800480C0/dumps/text1b.lreg`) names it: `Register 92 used 2 times
+  across 2 insns in block 0; dies in 0 places; ST_REGS or none`. Its preferred class is
+  the MIPS condition-register class, so `find_reg` cannot seat it in GR_REGS and
+  `alter_reg` gives it a 4-byte stack slot which `assign_stack_local` rounds the frame
+  up to 8 for. Eight further spellings this session (for-index, guard+explicit
+  remainder, guard+pointer guard, guard with function-scope sign-extends, dual
+  independent folded guards, named loop-tail intermediate, break-form infinite loop,
+  chained guard-of-guard) every one produced **exactly 0 or 1** unallocated pseudo —
+  never 2. Combined with s2's 13 spellings that is 21 measured structural forms with a
+  hard ceiling of one 4-byte phantom (vars=8) against the 32 bytes needed.
+- **The args-side decomposition is closed.** `args + vars = 0x38` is all the binary
+  fixes (saves start at 0x38), so `(args=24, vars=32)` and `(args=56, vars=0)` are
+  indistinguishable layouts — s2's third frontier item was a real idea. But
+  `current_function_outgoing_args_size` on this body is `MIPS_STACK_ALIGN(20) = 24` in
+  all 21 measured spellings, and the only mechanism that raises it is a call with a
+  wider argument list. The single call `func_800482C8(...)` takes 5 words; fabricating
+  a wider or never-executed call is the **fabricated dead call site** family REFUSED by
+  owner ruling 2026-08-17 (`.claude/rules/no-new-park-categories.md:357-366`). All
+  three s2 frontier items are now closed.
+
+- [s3] honest floor is 20 (74/74), not 32: the sandbox strips an UN-ANNOTATED `arg0 = 0;` dead param store (engine/volatile_cheats.py find_dead_param_assigns; contract pinned at engine/test_engine.py:1094-1116). Adding the mandatory FAKE annotation and nothing else moves 32 -> 20.
+
+- [s3] s2's callee-saved seat rotation does not exist in an honestly-annotated build: cc1 emits base_addr in $s2 and sx_arg2..5 in $s6/$s5/$s4/$s3, identical to target (BB2_ALLOC_DEBUG: pseudo 83 -> hardreg 18). The rotation was an artifact of the stripped dead store; s2 frontier items 1 and 2 are closed.
+
+- [s3] With the annotation present the residual is purely frame size: the instruction stream is byte-identical to the target and the 20 differing insns are exactly the 20 sp-relative operands.
+
+- [s3] The phantom-slot producer on this body is one ST_REGS-classed compare residue (text1b.lreg: 'Register 92 ... ST_REGS or none'), worth a 4-byte alter_reg slot that rounds the frame to vars=8; 8 new spellings (21 cumulative with s2) all produced 0 or 1 such pseudo, never 2.
+
+- [s3] New instrument tmp/grind/func_800480C0/s3/probe_body.sh prints .frame AND the count of hardreg=-1 allocnos from the instrumented cc1's BB2_ALLOC_DEBUG - a phantom-slot census rather than a rounded total.
+
+- [s3] The (args=56, vars=0) alternative frame decomposition is layout-equivalent to (args=24, vars=32) but requires a 14-word call; the only way to widen current_function_outgoing_args_size here is the fabricated-dead-call-site family REFUSED 2026-08-17 (.claude/rules/no-new-park-categories.md:357-366). s2 frontier item 3 closed.
+
+- [s3] The honest floor of func_800480C0 is 20, not 32: engine/volatile_cheats.py::find_dead_param_assigns strips an UN-ANNOTATED `arg0 = 0;` out of the scored TU (contract pinned at engine/test_engine.py:1094-1116). Adding the FAKE annotation the dead-store family already mandates, and nothing else, moves the sandbox score 32 -> 20 and build_insns 73 -> 74.
+
+- [s3] There is no callee-saved seat rotation on this function. With the dead store honoured, cc1 seats base_addr in $s2 and sx_arg2..5 in $s6/$s5/$s4/$s3 - the target's exact bindings (BB2_ALLOC_DEBUG: pseudo 83 -> hardreg 18). s2's rotation was an artifact of the stripped store.
+
+- [s3] At floor 20 the instruction stream is byte-identical to the target; the 20 differing insns are exactly the 20 sp-relative operands, so the entire residual is the 32-byte `vars` frame delta.
+
+- [s3] The phantom-slot producer on this body is a single ST_REGS-classed compare residue (tmp/grind/func_800480C0/dumps/text1b.lreg 'Register 92 ... ST_REGS or none') worth a 4-byte alter_reg slot that rounds the frame to vars=8. 21 cumulative structural spellings (13 in s2, 8 in s3) never produced a second one.
+
+- [s3] New reusable instrument: tmp/grind/func_800480C0/s3/probe_body.sh installs a body, runs the instrumented cc1 with BB2_ALLOC_DEBUG=1 and prints .frame plus the count of allocnos with hardreg=-1 - a phantom-slot census rather than a rounded total, ~20 s per spelling.
+
+- [s3] All three s2 frontier items are closed: no seat divergence for ra_solver, no base-copy emission-order divergence for sched_solver, and the args-side widening reduces to the REFUSED fabricated-dead-call-site family.
+
+- [s3] A general engine gotcha worth carrying to other functions: any grind body relying on a dead store to a parameter MUST carry the /* FAKE: ... */ annotation or the sandbox silently scores a different program and the recorded floor is inflated.

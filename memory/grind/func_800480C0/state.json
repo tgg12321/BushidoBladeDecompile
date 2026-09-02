@@ -1,7 +1,7 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 32,
    "modality": "structural",
    "headline": "Ledger floor 20 was a sandbox-stripper artifact (dangling `volatile` binds to `u32 *p`); honest pad-free floor is 32, and 13 structural spellings cap phantom-slot production at vars=8 of the 32 needed"
+  },
+  {
+   "session": 3,
+   "floor": 20,
+   "modality": "structural",
+   "headline": "Honest floor corrected 32 -> 20: the sandbox strips an UN-ANNOTATED `arg0 = 0;` dead param store, which also manufactured s2's phantom 'seat rotation'; residual is now a pure +32 vars frame delta over"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The callee-saved seat rotation (base_addr $s6 -> $s2) is reachable from a C-level lever, and the 32 vars bytes follow the seat rather than the other way round.",
-   "mechanism": "global.c allocno ordering / reload seat assignment - the s2 measurement establishes frame -> seats, but the inverse direction is untested.",
-   "next_probe": "tools/ra_solver/inverse_compose.py classify on the honest build's allocation for func_800480C0; if REACHABLE, spell the ranked lever vector and re-measure both the sandbox score and tmp/frame_probe.sh vars=."
+   "hypothesis": "The phantom slot's WIDTH, not its count, is the untested axis: reload1.c alter_reg sizes the slot MAX (inherent_size, reg_max_ref_width[i]), so a phantom allocno in a wider mode would take 8+ bytes instead of 4.",
+   "mechanism": "reload1.c alter_reg / assign_stack_local slot sizing from the allocno's mode and its widest reference.",
+   "next_probe": "Force the folded loop-guard's compare residue into DImode (a `long long` guard) and read unalloc_pseudos plus .frame vars= with tmp/grind/func_800480C0/s3/probe_body.sh. Check the DImode-chain ban first - it is scoped to scheduling coercion, but confirm before spelling it."
   },
   {
-   "hypothesis": "The seat divergence originates at the two `addu ...,$zero` base copies (target insns 3 and 5), so an emission-order lever there re-seats the whole chain.",
-   "mechanism": "sched.c list-scheduler ordering of the base-copy pair determines which allocno is seen first by global alloc.",
-   "next_probe": "tools/sched_solver on the pre-scheduler RTL for func_800480C0, then spell the C forms that swap the two copies' emission order and re-measure."
+   "hypothesis": "The 32 untouched bytes may correspond to a LIVE local in the original TU whose uses this decompilation folded away, which would make an ordinary-C producer exist after all.",
+   "mechanism": "GCC 2.7.2 function.c assign_stack_local reserves an aggregate's slot at RTL-expand and never reclaims frame_offset, so a local that survives to expand but whose uses are folded leaves the slot with no traffic.",
+   "next_probe": "forensics modality on the three text1b siblings that carry the identical 32-byte region: look for any call, struct, or buffer shape in their surrounding functions (func_80047EE8 / func_80047FBC / func_800481E8 callers and callees) that would give all four the same 8-word local."
   },
   {
-   "hypothesis": "The 32 vars bytes could come from the outgoing-args side rather than from locals.",
-   "mechanism": "current_function_outgoing_args_size is sized by the widest call; a wider call signature would move bytes out of vars into args.",
-   "next_probe": "Long shot but cheap: args already reads 24 in both target and build, so probe whether any honest call spelling in this body moves args at all before spending more on it."
+   "hypothesis": "The pad remains the only known producer of exactly 32 bytes and is banned here only by the closed per-function enumeration, not by a codegen finding.",
+   "mechanism": "engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS is a per-function frozenset; the family scope sentence in .claude/rules/no-new-park-categories.md:340-342 names three functions and the five later rows were added by owner ruling.",
+   "next_probe": "None available to a grind session - the bytes-proven body is preserved at memory/grind/func_800480C0/rejected/pad-judge-banned-2026-09-02.c and integrates unchanged if an owner ruling ever adds the row. Note for that packet: the pad-free annotated floor is genuinely 20, correcting the s1/s2 numbers."
   }
  ],
  "judge_constraints": [
@@ -54,6 +60,22 @@
    "measured_on": "HEAD c8e81f83, pad-free bodies, only FAKE construct present is the banked `arg0 = 0;` dead store; 13 spellings measured with the cc1 `# vars=` gradient plus sandbox --disable all",
    "predicate_cite": "",
    "result": "Every spelling measured vars= 0 or vars= 8; none reached 16 or 32 (tmp/grind/func_800480C0/s2/frame_ladder.txt). The var"
+  },
+  {
+   "session": 3,
+   "statement": "Phantom-slot production on this body is one ST_REGS-classed compare residue worth a 4-byte alter_reg slot (vars=8), and eight further structural spellings each produced exactly zero or one such unallo",
+   "kill_scope": "instance",
+   "measured_on": "HEAD f3ba5f78, pad-free bodies, only FAKE construct present is the annotated `arg0 = 0;` dead param store; 8 new spellings via the instrumented-cc1 BB2_ALLOC_DEBUG phantom census plus sandbox --disabl",
+   "predicate_cite": "",
+   "result": "Every spelling reported unalloc_pseudos = 0 or 1 and .frame vars = 0 or 8; none reached 2 phantoms or 16 bytes. With s2'"
+  },
+  {
+   "session": 3,
+   "statement": "The (args=56, vars=0) frame decomposition is layout-equivalent to (args=24, vars=32) on this body but is not reachable from any call this function makes.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD f3ba5f78, all 21 s2+s3 spellings, annotated dead-store present in the s3 set",
+   "predicate_cite": "",
+   "result": "args reads 24 in every spelling (MIPS_STACK_ALIGN(20) for the single 5-word call to func_800482C8). Reaching 56 needs a "
   }
  ],
  "ladder_skip": 0,
