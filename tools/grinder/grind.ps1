@@ -285,7 +285,7 @@ function Invoke-Layer1([string]$func, [string]$stem, [string]$diff) {
     $vetPath = Join-Path $Root "memory\grind\$func\self_vet.md"
     $vet = if (Test-Path $vetPath) { Get-Content $vetPath -Raw } else { '(no self-vet on disk)' }
     $scopeBlock = ''
-    try { $scopeBlock = (python tools/grinder/grindlib.py rule-scopes . $func 2>$null | Out-String) } catch { }
+    try { $scopeBlock = (python tools/grinder/grindlib.py rule-scopes . $func 2>$null | Out-String).Trim() } catch { }
     $task = @"
 LAYER-1 REVIEW for $func (src/$stem.c) — you are the pre-Judge gate in the
 Grinder pipeline. A grind session has produced a candidate whose honest
@@ -305,7 +305,8 @@ $vet
 ``````
 
 Verify against the ledger yourself: $led/state.json (judge_constraints and
-banned_constructs — a re-declared banned construct is an automatic FAIL),
+banned_constructs — a re-declared banned construct is an automatic FAIL unless a
+later dated family grant supersedes it (see DATED RULINGS below)),
 $led/hypotheses.md and $led/evidence.md (the lever-exhaustion the FAKE
 prerequisites demand — check it, do not take the claim), $led/rejected/.
 Every quoted SCOPE sentence must actually appear in the rule file it cites, and
@@ -313,12 +314,14 @@ every PRECEDENT must resolve to the file:line or commit it names. A citation
 that does not check out is a FAIL, not a rounding error.
 
 $scopeBlock
-DATED RULINGS: every ban in state.json and every ruling in decisions.md carries a
-date. A family grant in .claude/rules/no-new-park-categories.md dated AFTER a
+DATED RULINGS: rulings in docs/grind/decisions.md carry dates; bans in state.json
+do NOT — date a ban from the dated FAIL entry that created it in
+docs/grind/decisions.md, or ``git log -S "<ban text>" -- memory/grind/<func>/state.json``.
+A family grant in .claude/rules/no-new-park-categories.md dated AFTER a
 per-function refusal or ban SUPERSEDES that refusal for the construct it covers.
-Before citing a ban or an older ruling as a FAIL ground, check whether a later
-dated grant covers the construct; if it does, the ban is stale and the correct
-verdict is decided on the grant's own prerequisites.
+Before citing a ban or an older ruling as a FAIL ground, date it; if a later
+dated grant covers the construct, the ban is stale and the correct verdict is
+decided on the grant's own prerequisites.
 
 Write your verdict JSON (the schema in your role prompt: decision / function /
 summary / evidence / next_action) to the exact path below. Write NOTHING else to
@@ -709,7 +712,7 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
     $diff = (git -C $Root diff -- "src/$stem.c" | Out-String)
     $led = "memory/grind/$func"
     $scopeBlock = ''
-    try { $scopeBlock = (python tools/grinder/grindlib.py rule-scopes . $func 2>$null | Out-String) } catch { }
+    try { $scopeBlock = (python tools/grinder/grindlib.py rule-scopes . $func 2>$null | Out-String).Trim() } catch { }
     $task = @"
 FINAL CALL for $func — bytes are already proven on main (sandbox 0 + retire +
 full-build SHA1 == oracle). Rule ONLY on the legitimacy of the C.
@@ -719,11 +722,11 @@ The candidate diff against HEAD:
 $diff
 ``````
 
+$scopeBlock
+
 Ledger: $led/state.json (judge_constraints — includes the regression diagnosis
 if this is a regression-origin item), $led/hypotheses.md, $led/evidence.md,
 $led/rejected/. Write your verdict JSON to the exact path given below.
-
-$scopeBlock
 "@
     $v = Invoke-Judge $func $task
     $sessionsTaken = ((Get-Content (Join-Path $Root "memory\grind\$func\state.json") -Raw | ConvertFrom-Json).session_count + 1)

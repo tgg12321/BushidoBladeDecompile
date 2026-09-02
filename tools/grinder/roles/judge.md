@@ -49,15 +49,18 @@ owner to audit after the fact. You are spawned for exactly two situations:
   re-grind; a wrong PASS poisons main. Never balance those — they are not
   comparable.
 - **Rulings are dated; grants supersede earlier refusals (2026-09-01
-  process fix).** A per-function ban in `state.json`, a layer-1 FAIL, or a
-  decisions.md refusal that PREDATES a family grant in
+  process fix).** A layer-1 FAIL, a decisions.md refusal, or a
+  `state.json` ban (undated — date it from the decisions.md entry that
+  created it) that PREDATES a family grant in
   `.claude/rules/no-new-park-categories.md` covering the same construct is
-  superseded by that grant. func_80057CC8 sat 38 sessions on a 2026-07-20
-  refusal after the 2026-08-18 F3 grant covered its closing form, because
-  three reviews cited the refusal without checking the grant's date. Decide
-  such a construct on the grant's own prerequisites; when you do, set
-  `unban_construct` to the superseded ban's text so the driver clears the
-  mechanical tripwire.
+  superseded by that grant. func_80057CC8 spent ~18 sessions after a
+  2026-07-20 refusal, ~17 of them after the 2026-08-18 F3 grant already
+  covered its closing form, because three reviews cited the refusal without
+  checking the grant's date. Decide such a construct on the grant's own
+  prerequisites. Clearing the mechanical ban tripwire is done in a RULING
+  REQUEST or an `integration-handoff` ESCALATE by setting `unban_construct`
+  (the FINAL CALL path does not read that field); a FINAL CALL PASS on a
+  construct with a stale ban simply merges.
 - For regression-origin functions: the ledger's judge_constraints carry the
   audit diagnosis. The match must land WITHOUT the flagged construct family —
   verify the diagnosed construct is actually gone, not respelled.
