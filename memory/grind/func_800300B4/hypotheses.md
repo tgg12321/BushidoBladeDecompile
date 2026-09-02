@@ -286,3 +286,101 @@ Frontier after s3:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 9c1533fc, wide dir wrap + single island-3 wrap, pack-in-C island 2 (no banned construct)
+
+## s4 (2026-09-02, permuter, HEAD 81558ab7) — floor stays 7, FAKE count 2 -> 1
+
+Three decomp-permuter campaigns, all launched and stopped in-session via
+tools/permuter_campaign.py (workspaces tmp/grind/func_800300B4/s4/perm{1,2,3}; hand-built
+minimal-TU workspace validated against the full-TU chassis: the FAKE-free base compiles to the
+same 84-instruction body with exactly the known arg0/&mac seat swap + island-2 pack diff).
+
+## [s4] H24: the two do-while(0) FAKE wraps of the s3 7-form can be replaced by a SINGLE wrap whose span opens inside the island block.
+- mechanism: flow.c loop_depth ref weighting into local-alloc.c:1670 qty_compare_1. s3's H21/H22
+  sweep only tested spans that START at or after the `mac[i] += mat[i+5]` translation adds, so
+  every span it measured excluded the island-3 asm and therefore needed a second, dedicated wrap
+  to weight &mac. A span that opens at the island-2 or island-3 asm covers the &mac def AND its
+  asm use AND both trailing calls in one loop region, weighting &mac and &dir together, while
+  still keeping every NOTE_INSN_LOOP_BEG out of a call-argument sequence.
+- probe: permuter campaign perm1 (FAKE-free base, weighted 388) proposed the island-2..end span at
+  iteration 1606 (weighted 180, tmp/grind/func_800300B4/s4/perm1/output-180-1/source.c). Five spans
+  then measured by hand with `sandbox func_800300B4 --disable all`
+  (tmp/grind/func_800300B4/s4/probe.sh, sb_v_*.txt).
+- result: island-2..end = **7**, island-3..end = **7**, island-1..end = 19, pack..end = 20,
+  adds..end (no island-3 wrap) = 19. The 7-forms carry ONE do-while(0) instead of s3's two, at the
+  identical floor and with the identical single-hunk residual (the island-2 gte_ldlv0 pack).
+  New best ban-compliant form banked at memory/grind/func_800300B4/best_ban_compliant.c
+  (island-3..end spelling, clean 
+-escaped asm, re-measured 7).
+- verdict: CONFIRMED
+
+## [s4] H25: an ordinary-C form (no do-while(0), no coercion construct) reaches the four call-crossing seats on the ban-compliant chassis.
+- mechanism: if any ordinary-C spelling can move &mac/&dir above arg0 in local-alloc.c:1670
+  qty_compare_1 order without a loop note, the 7-form needs no FAKE at all. s1's H2 and s2's H16
+  killed pointer copies and pointer-based uses individually; this probes the space mechanically.
+- probe: permuter campaign perm2 on the FAKE-FREE ban-compliant base (weighted 388) with
+  perm_ins_block, perm_add_mask, perm_xor_zero, perm_mult_zero, perm_add_self_assignment,
+  perm_pad_var_decl, perm_dummy_comma_expr, perm_empty_stmt, perm_condition and perm_inline all
+  set to weight 0.0 — i.e. the randomizer may only reorder/rename/retype/split ordinary C.
+  24,590 iterations, 6 jobs, 745 s (campaign.log + campaign_meta.json in
+  tmp/grind/func_800300B4/s4/perm2/).
+- result: best weighted score 338 (base 388); 19 outputs, none below 338. Nothing in the sampled
+  ordinary-C neighbourhood reaches the 180 that the single do-while(0) form reaches, i.e. the
+  seat swap is not closed by any ordinary-C spelling the permuter sampled. The two best proposals
+  are dead-local junk (`unsigned long new_var; ... func_800393C8(new_var = arg0[10], ...)`) and
+  would be cheats regardless; banked at rejected/permuter-ordinary-c-best-24k-iters-s4-338w.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 81558ab7, pack-in-C island 2 (no banned construct), islands 1/3 as banked,
+  FAKE = none (perm_ins_block disabled); 24,590 permuter iterations
+
+## [s4] H26: some C spelling on the closed single-wrap chassis reduces the 7-insn island-2 residual.
+- mechanism: same as H23/H4 — the target pack reads through the asm-internal $t4 copy into
+  $t5/$t6 and local-alloc.c:2249 find_free_reg hands out hard regs in numeric order with $v0/$v1
+  free, so no C temp can land in $13/$14.
+- probe: permuter campaign perm3 seeded on the s4 single-wrap 7-form (base weighted 180),
+  all randomizers enabled, 7,212 iterations / 236 s
+  (tmp/grind/func_800300B4/s4/perm3/). Its one improvement, weighted 175
+  (output-175-1: a named `u16 *` intermediate for the pack's low half), plus a clean hand-spelled
+  version of it and an `lv`-based variant, were then measured in the sandbox.
+- result: sandbox 7 for both hand-spelled forms (sb_v_i3end_hwptr.txt, sb_v_i3end_lvhw.txt); the
+  weighted 175 is a register-class delta the objdump metric does not see. No proposal below 7 in
+  7,212 iterations. Re-confirms H4/H23 on the s4 chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 81558ab7, s4 single-wrap 7-form (one do-while(0) FAKE spanning island 3
+  through end of function), pack-in-C island 2 (no banned construct); 7,212 permuter iterations
+
+Frontier after s4:
+  (1) Unchanged and dominant: the 7-insn residual is the island-2 gte_ldlv0 GPR pack and is a
+      policy question, filed at docs/grind/borderline.md:370. Do NOT re-request that ruling and do
+      NOT re-derive the pack in C (H4 class kill, H17, H23, H26).
+  (2) The best ban-compliant form now carries ONE FAKE do-while(0) instead of two. Removing that
+      last wrap is measured dead for the ordinary-C neighbourhood the permuter samples (H25); the
+      untested remainder is a structural chassis change the permuter cannot express (N-way
+      statement duplication into arms, goto-into-body), which is a `structural`/`synthesis`
+      modality probe, not a permuter one.
+  (3) Do NOT re-probe: wrap span placement (17 spans now measured across H19/H21/H24), wrap depth
+      (H22), island-2 pack spelling (H4/H17/H23/H26), pointer aliases of mac (H2/H16), and
+      ordinary-C randomization of the FAKE-free chassis (H25).
+
+## [s4] The two do-while(0) FAKE wraps of the s3 7-form can be replaced by a SINGLE wrap whose span opens inside the island block (at or after the island-2 asm) and contains the island-3 asm.
+- mechanism: flow.c loop_depth ref weighting feeding local-alloc.c:1670 qty_compare_1. s3's H21/H22 span sweep only sampled spans opening at or after the mac translation adds, so every span it measured excluded the island-3 asm and needed a second dedicated wrap to weight &mac. One loop region covering the &mac def, its island-3 asm use and both trailing calls weights &mac and &dir together, and opening it after the pack keeps every NOTE_INSN_LOOP_BEG out of a call-argument sequence (the 4-insn tail cost s2 paid).
+- probe: permuter campaign tmp/grind/func_800300B4/s4/perm1 (FAKE-free ban-compliant base, weighted 388) proposed the island-2..end span at iteration 1606 (weighted 180, output-180-1); five spans then measured by hand with `sandbox func_800300B4 --disable all` via tmp/grind/func_800300B4/s4/probe.sh
+- result: island-2..end = 7, island-3..end = 7, island-1..end = 19, pack..end = 20, adds..end without an island-3 wrap = 19. The 7-forms carry ONE do-while(0) at the identical floor with the identical single-hunk residual. New best ban-compliant form banked at memory/grind/func_800300B4/best_ban_compliant.c (island-3..end spelling, re-measured 7 after being rewritten with clean \n-escaped asm).
+- verdict: CONFIRMED
+
+## [s4] An ordinary-C form carrying no do-while(0) wrap and no coercion construct reaches the four call-crossing seats on the ban-compliant chassis, in the neighbourhood the permuter samples.
+- mechanism: local-alloc.c:1670 qty_compare_1 priority = floor_log2(refs)*refs*size/(death-birth); the lever would be an ordinary-C spelling that moves &mac/&dir above arg0 without a loop note. s1's H2 and s2's H16 killed pointer copies and pointer-based uses one spelling at a time; this probes the space mechanically.
+- probe: permuter campaign tmp/grind/func_800300B4/s4/perm2 on the FAKE-free base (weighted 388) with perm_ins_block, perm_add_mask, perm_xor_zero, perm_mult_zero, perm_add_self_assignment, perm_pad_var_decl, perm_dummy_comma_expr, perm_empty_stmt, perm_condition and perm_inline all at weight 0.0; 6 jobs, 24,590 iterations, 745 s, harvested with --stop.
+- result: Best weighted score 338 (base 388) over the whole campaign; 19 outputs, none lower. The single do-while(0) form reaches 180 on the same metric, so nothing sampled closes the arg0/&mac seat swap. The two best proposals are dead-local junk (an `unsigned long new_var;` assigned inside a call argument) and are cheats by family regardless; banked at rejected/permuter-ordinary-c-best-24k-iters-s4-338w.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 81558ab7, pack-in-C island 2 (no banned construct), islands 1/3 as banked, FAKE = none (perm_ins_block disabled); 24,590 permuter iterations
+
+## [s4] Some C spelling on the closed single-wrap chassis reduces the 7-insn island-2 residual below 7.
+- mechanism: Same predicate as H4/H23: the target pack reads through the asm-internal $t4 copy into $t5/$t6, and local-alloc.c:2249 find_free_reg hands out hard regs in numeric order with $v0/$v1 free, so no C temp lands in $13/$14.
+- probe: permuter campaign tmp/grind/func_800300B4/s4/perm3 seeded on the s4 single-wrap 7-form (base weighted 180, independently confirming 180 <-> sandbox 7), all randomizers enabled; 6 jobs, 7,212 iterations, 236 s, harvested with --stop. Its one improvement (weighted 175: a named u16* intermediate for the pack's low half) was hand-spelled two ways and sandboxed.
+- result: Both hand-spelled forms measure sandbox 7 (sb_v_i3end_hwptr.txt, sb_v_i3end_lvhw.txt); the weighted 175 is a register-class delta the objdump insn metric does not see. No proposal below 7 in 7,212 iterations. Banked at rejected/named-hw-pointer-for-pack-low-half-s4-7.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 81558ab7, s4 single-wrap 7-form (one do-while(0) FAKE spanning island 3 through end of function), pack-in-C island 2 (no banned construct); 7,212 permuter iterations

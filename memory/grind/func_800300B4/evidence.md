@@ -533,3 +533,69 @@ diff.py, qtydbg.py, sb_v_*.txt, diff_v_*.txt, qty_v_*.txt, v_*.c}`.
 - [s3] docs/grind/borderline.md amended with a 2026-09-02 s3 addendum recording that the ban-compliant residual is now the island alone, so the measured distance from func_800300B4 to COMPLETED-C is exactly the filed cluster-condition-3 policy question with no codegen residual attached to it.
 
 - [s3] src/code6cac_b.c restored to INCLUDE_ASM at session end; no engine/tools/.claude/rules/Makefile/*.ld files touched; candidate.c (the proven 0-form) left untouched; ten disproven forms banked under memory/grind/func_800300B4/rejected/.
+
+## s4 (2026-09-02, permuter modality, HEAD 81558ab7)
+
+**Workspace validation.** No permuter campaign had ever been run on this function. A minimal-TU
+permuter workspace was hand-built at tmp/grind/func_800300B4/s4/perm1 (base.c = the FAKE-free
+ban-compliant body + externs, cpp-preprocessed; compile.sh replicating the Makefile pipeline for
+code6cac_b exactly — cc1 `-O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w
+-mel`, prologue_fix, maspsx with --expand-lb twice as `maspsx_flags_for` does for EXPAND_LB_FILES,
+multu_pad, then `sed -n '/^\.ent	func_800300B4$/,/^\.end	func_800300B4$/p'` extraction;
+target.o from asm/funcs/func_800300B4.s with the single `mvmva 1,0,0,3,0` line rewritten to
+`.word 0x4A486012` because binutils has no mvmva mnemonic). Validation: the minimal-TU build and
+the target are both 84 instructions and their normalized diff is EXACTLY the two known items —
+the arg0/&mac ($s2/$s3) seat swap and the island-2 pack — i.e. the minimal TU reproduces the
+full-TU codegen context for this function. Permuter weighted base score 388 corresponds to the
+sandbox score 19 of that form.
+
+**Measurement 1 (perm1, label nofake-seat, 6 jobs).** At iteration 1606 (40.8 s) the permuter
+proposed a single `do { ... } while (0);` spanning the island-2 asm through the end of the
+function, weighted 180. Hand-spelled and measured with the engine sandbox: **7**. This is s3's
+floor with ONE FAKE wrap instead of two. Span sweep (tmp/grind/func_800300B4/s4/sb_v_*.txt):
+island-2..end 7, island-3..end 7, island-1..end 19, pack..end 20, adds..end (no island-3 wrap) 19.
+The rule the sweep establishes: a single wrap works iff it OPENS AT OR AFTER the island-2 asm and
+CONTAINS the island-3 asm. s3's H21/H22 sweep only sampled spans opening at or after the
+translation adds, so it could not see this. Campaign stopped after the find was validated
+(4 further outputs, best 371).
+
+**Measurement 2 (perm2, label ordinary-c-noinsblock, 6 jobs, 24,590 iterations / 745 s).** Same
+FAKE-free base, but with perm_ins_block plus every coercion randomizer (perm_add_mask,
+perm_xor_zero, perm_mult_zero, perm_add_self_assignment, perm_pad_var_decl, perm_dummy_comma_expr,
+perm_empty_stmt, perm_condition) and perm_inline set to weight 0.0, so the search may only
+reorder / rename / retype / split ordinary C. Best weighted score over the whole campaign: **338**
+(base 388), 19 outputs, none lower. For comparison the single-wrap form is 180. Nothing in the
+sampled ordinary-C neighbourhood closes the arg0/&mac seat swap. The two best proposals are
+dead-local junk (an `unsigned long new_var;` assigned inside a call argument) and are cheats by
+family regardless; banked at rejected/permuter-ordinary-c-best-24k-iters-s4-338w.c. This is the
+mechanical complement to s1's H2 and s2's H16, which killed pointer copies and pointer-based uses
+one spelling at a time.
+
+**Measurement 3 (perm3, label seven-form-single-wrap, 6 jobs, 7,212 iterations / 236 s).** Seeded
+on the s4 single-wrap 7-form (weighted base 180 — independently confirming 180 <-> sandbox 7), all
+randomizers enabled. One improvement found: weighted 175, a named `u16 *` intermediate for the
+pack's low half. Hand-spelled two ways (`u16 *hw = (u16 *)(arg0 + 0x2C);` and `*(u16 *)lv`) and
+both measure sandbox **7** — the weighted 175 is a register-class delta the objdump insn metric
+does not see. No proposal below 7 in 7,212 iterations, re-confirming H4/H23 on the s4 chassis.
+Banked at rejected/named-hw-pointer-for-pack-low-half-s4-7.c.
+
+**Net state.** Floor unchanged at 7 (the island-2 gte_ldlv0 GPR pack, one diff hunk, policy
+question at docs/grind/borderline.md:370). What changed is the cost of reaching it: the best
+ban-compliant form now carries ONE do-while(0) FAKE instead of two
+(memory/grind/func_800300B4/best_ban_compliant.c, re-measured 7 this session). All three campaigns
+were harvested with --stop in-session; `permuter_campaign.py status` reports alive:false for all
+three.
+
+- [s4] No permuter campaign had ever been run on func_800300B4 before this session; three were launched, harvested and stopped in-session (perm1 nofake-seat, perm2 ordinary-c-noinsblock, perm3 seven-form-single-wrap). `permuter_campaign.py status` reports alive:false for all three.
+
+- [s4] A minimal-TU permuter workspace was built and VALIDATED against the full-TU chassis: the FAKE-free ban-compliant base and the target are both 84 instructions and their normalized diff is exactly the two known items (the arg0/&mac $s2/$s3 seat swap and the island-2 pack), so the minimal TU reproduces the full-TU codegen context. Weighted 388 <-> sandbox 19; weighted 180 <-> sandbox 7.
+
+- [s4] target.o for the workspace requires rewriting the single `mvmva 1,0,0,3,0` line of asm/funcs/func_800300B4.s to `.word 0x4A486012` â€” binutils has no mvmva mnemonic. Recipe in tmp/grind/func_800300B4/s4/setup.sh.
+
+- [s4] The ban-compliant floor is unchanged at 7 and the residual is still one diff hunk = the island-2 gte_ldlv0 GPR pack. What s4 changed is its FAKE cost: the best ban-compliant form now carries ONE do-while(0) wrap instead of s3's two.
+
+- [s4] Single-wrap span rule (five spans measured this session, sandbox --disable all): the wrap must OPEN AT OR AFTER the island-2 asm and must CONTAIN the island-3 asm. island-2..end 7, island-3..end 7, island-1..end 19, pack..end 20, adds..end 19.
+
+- [s4] Ordinary-C-only search of the FAKE-free chassis (block insertion and all coercion randomizers disabled) plateaus at weighted 338 over 24,590 iterations, versus 180 for the wrap form â€” the seat swap is not closed by any ordinary-C spelling sampled.
+
+- [s4] The island-2 residual survived 7,212 fully-enabled permuter iterations on the closed chassis, re-confirming H4's local-alloc.c:2249 predicate on the s4 chassis.

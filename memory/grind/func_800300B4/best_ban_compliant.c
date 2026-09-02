@@ -1,30 +1,35 @@
-/* func_800300B4 - s3 BEST BAN-COMPLIANT FORM: sandbox --disable all == 7 (s2: 11, s1: 19).
- * NOT a submission candidate: it carries TWO do-while(0) FAKE wraps. It is banked as the measured
- * floor + mechanism bound for the ban-compliant (pack-in-C island 2) chassis. The 0-form is
+/* func_800300B4 - s4 BEST BAN-COMPLIANT FORM: sandbox --disable all == 7, with ONE do-while(0)
+ * FAKE wrap (s3's 7-form needed TWO; s2: 11 with three; s1: 19 with one).
+ * NOT a submission candidate: the 7-insn residual is the island-2 gte_ldlv0 GPR pack, which is the
+ * policy question filed at docs/grind/borderline.md:370. The 0-form is
  * memory/grind/func_800300B4/candidate.c and remains blocked by the island-2 ban.
  *
- * s3 RESULT: the residual 7 is now EXACTLY the island-2 GPR pack and nothing else - every other
- * instruction of the function byte-matches in ban-compliant pure C:
+ * s4 RESULT (permuter modality). A decomp-permuter campaign seeded on the FAKE-FREE ban-compliant
+ * chassis (tmp/grind/func_800300B4/s4/perm1, base weighted score 388) proposed, at 1606 iterations,
+ * a SINGLE do-while(0) spanning island 2 through the end of the function (weighted 180). Measured
+ * in the sandbox that span scores 7 - the same floor s3 reached with two wraps (a wide dir wrap
+ * PLUS a dedicated island-3 wrap). Span sweep on the single-wrap chassis:
+ *     island-2 .. end   = 7      island-3 .. end   = 7   (this file)
+ *     island-1 .. end   = 19     pack     .. end   = 20
+ *     adds     .. end   = 19  (s3's H22 0-wrap datum, re-confirmed)
+ * i.e. the single wrap must OPEN AT OR AFTER the island-2 asm and must CONTAIN the island-3 asm.
+ * s3's H21/H22 sweep never tested a span starting inside the island block, which is why the
+ * two-wrap form looked necessary. Mechanism is unchanged (flow.c loop_depth ref weighting into
+ * local-alloc.c:1670 qty_compare_1): one loop region that covers the &mac def-and-asm-use AND both
+ * trailing calls weights &mac and &dir together, and opening it after the pack keeps every
+ * NOTE_INSN_LOOP_BEG out of a call-argument sequence (the 4-insn tail cost s2 paid).
+ *
+ * The residual 7 is unchanged and is exactly the island-2 pack (every other instruction matches):
  *     TGT: addiu v0,s3,44 ; move t4,v0 ; lhu t6,4(t4) ; lhu t5,0(t4) ; sll t6,t6,0x10 ;
  *          or t5,t5,t6 ; mtc2 t5,$0 ; lwc2 $1,8(t4)
  *     BLD: lhu v0,48(s3) ; lhu v1,44(s3) ; sll v0,v0,0x10 ; or v1,v1,v0 ; addiu v0,s3,44 ;
  *          move t4,v0 ; mtc2 v1,$0 ; lwc2 $1,8(t4)
- * (the addiu/move/lwc2 are matching context). The four pack insns use $t4 as base and $t5/$t6 as
- * temps - $t4 exists only inside the asm block and $t5/$t6 are unreachable from C while $v0/$v1
- * are free (H4 class kill, tools/gcc-2.7.2/local-alloc.c:2249 find_free_reg numeric order).
- * Six island-2 spellings measured on this chassis (lv-first, lv-index, lv-late, inline operand,
- * or-operand swap, arg0-based) all score exactly 7.
+ * (H4 class kill, tools/gcc-2.7.2/local-alloc.c:2249 find_free_reg numeric order.)
  *
- * s3 MECHANISM (how 11 -> 7): the s2 form put the &dir-raising do-while(0) around
- * func_8002F2D0(mtx,dir) only; its NOTE_INSN_LOOP_BEG landed between `move a0,s0` and the &dir def
- * `addiu s1,sp,32`, and between `li a1,1` and `lh v0,2(s3)`, costing 4 tail-order insns.
- * Widening the wrap to start at the mac translation adds and run to the end of the function moves
- * both loop notes out of the call-setup sequences entirely while giving &dir the same ref
- * weighting. Placement sweep on this chassis: adds..end = 7, call..end = 9, MulMatrix0..end = 14,
- * call+lookup+f80049718 = 11, call only (s2 form) = 11, second disjoint tail wrap = 22,
- * call+f800393C8 = 17, f80049718 only = 22, trailing two calls = 20, nested-x2 on the call = 19,
- * lookup hoisted before MulMatrix0 = 29, lookup inside the call wrap = 16.
- * The island-3 wrap must stay at exactly one level: dropping it scores 19, a second level 9.
+ * s4 also measured that the wrap is NOT replaceable by ordinary C on this chassis: a 24,590-
+ * iteration permuter campaign with perm_ins_block and every coercion randomizer disabled
+ * (tmp/grind/func_800300B4/s4/perm2) never got below weighted 338 (base 388) - it never reaches
+ * the four-seat allocation that the wrap form gets at 180.
  */
 /* kengo:?  |  GTE rotate+translate of the object's local vector, then dispatch */
 void func_800300B4(u8 *arg0) {
@@ -62,32 +67,29 @@ void func_800300B4(u8 *arg0) {
     packed = *(u16 *)(arg0 + 0x2C) | (*(u16 *)(arg0 + 0x30) << 16);
     lv = (s32 *)(arg0 + 0x2C);
     __asm__ volatile(
-        "move   $12, %0
-"
-        "mtc2   %1, $0
-"
-        "lwc2   $1, 8($12)
-"
-        "nop
-"
-        "nop
-"
-        ".word  0x4A486012
-"
+        "move   $12, %0\n"
+        "mtc2   %1, $0\n"
+        "lwc2   $1, 8($12)\n"
+        "nop\n"
+        "nop\n"
+        ".word  0x4A486012\n"
         :: "r"(lv), "r"(packed) : "$12");
-    /* PsyQ libgte inline macro gte_stlvnl(r) - store MAC1/MAC2/MAC3
-     * ($25/$26/$27) to r. */
-    do { /* FAKE: single-level island-3 wrap */
-            __asm__ volatile(
-                "move   $12, %0\n"
-                "swc2   $25, 0($12)\n"
-                "swc2   $26, 4($12)\n"
-                "swc2   $27, 8($12)\n"
-                :: "r"(mac) : "$12", "memory");
-    } while (0);
 
-    /* Add the matrix translation to the rotated vector. */
-    do { /* FAKE: model probe - loop_depth ref weighting, mechanism: flow.c loop-note ref weighting, lever-exhaustion: memory/grind/func_800300B4/hypotheses.md */
+    do { /* FAKE: single do-while(0) spanning the gte_stlvnl island through the
+          * end of the function, mechanism: flow.c loop_depth ref weighting feeding
+          * local-alloc.c:1670 qty_compare_1 (raises &mac and &dir together),
+          * lever-exhaustion: memory/grind/func_800300B4/hypotheses.md H2/H14/H16/
+          * H19/H21/H22/H24/H25 */
+        /* PsyQ libgte inline macro gte_stlvnl(r) - store MAC1/MAC2/MAC3
+         * ($25/$26/$27) to r. */
+        __asm__ volatile(
+            "move   $12, %0\n"
+            "swc2   $25, 0($12)\n"
+            "swc2   $26, 4($12)\n"
+            "swc2   $27, 8($12)\n"
+            :: "r"(mac) : "$12", "memory");
+
+        /* Add the matrix translation to the rotated vector. */
         mac[0] += mat[5];
         mac[1] += mat[6];
         mac[2] += mat[7];
