@@ -1,8 +1,8 @@
 {
  "func": "func_800300B4",
  "file": "code6cac_b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 7,
    "modality": "permuter",
    "headline": "Permuter (first campaigns ever run on this function) cut the ban-compliant 7-form's FAKE count from two do-while(0) wraps to ONE; 24.6k ordinary-C-only iterations never reach the seat allocation, and "
+  },
+  {
+   "session": 5,
+   "floor": 7,
+   "modality": "synthesis",
+   "headline": "Floor holds at 7 (0-form still 0, still island-2-banned); the last do-while(0) FAKE is now PROVEN NECESSARY by a class kill - no FAKE-free C form reaches the four call-crossing seats (local-alloc.c:16"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 7-insn island-2 residual remains the only thing between func_800300B4 and COMPLETED-C, and it is a policy residual: the ban-compliant chassis is otherwise fully closed.",
-   "mechanism": "cop2-addressing-preamble-cluster.md condition 3 ('in-island GPR instructions limited to the cop2 addressing preamble') vs the verbatim PsyQ 4.5 gte_ldlv0 SDK macro body (inline_c.h:101-110), whose lhu/lhu/sll/or is the template text itself.",
-   "next_probe": "None in-pipeline \u2014 filed at docs/grind/borderline.md:370 with the s3 addendum. Do NOT re-request the ruling and do NOT re-derive the pack in C (H4/H17/H23/H26)."
+   "hypothesis": "The entire remaining distance to COMPLETED-C is the island-2 policy question: does cop2-addressing-preamble-cluster.md condition 3 admit a verbatim PsyQ 4.5 gte_ldlv0 SDK macro body, whose lhu/lhu/sll/or is template text rather than an addressing preamble?",
+   "mechanism": "Condition 3 ('in-island GPR instructions limited to the cop2 addressing preamble - nothing else may be swallowed into the template', .claude/rules/cop2-addressing-preamble-cluster.md:106) read against PsyQ 4.5 inline_c.h:101-110. judge-sole-gate rule 4 reserves the family-scope call for the owner via the borderline ledger.",
+   "next_probe": "None in-pipeline. Already filed at docs/grind/borderline.md:370 with the s3 addendum. Do NOT re-request the ruling, do NOT submit candidate.c, do NOT cite the struck 07:30/07:59 rulings or the banned sibling precedents, and do NOT re-derive the pack in C (H4/H17/H23/H26)."
   },
   {
-   "hypothesis": "The one remaining do-while(0) FAKE wrap can be dropped by a structural chassis change the permuter cannot express (N-way statement duplication into arms, goto-into-existing-body, or a different statement chassis for the tail).",
-   "mechanism": "flow.c loop_depth ref weighting into local-alloc.c:1670 qty_compare_1 is the only measured lever on the &mac/&dir frame-array-address pseudos; H25 shows the ordinary-C randomization neighbourhood does not contain the seat allocation, so any remaining route is a chassis change, not a respelling.",
-   "next_probe": "structural/synthesis modality: hand-written variants through tools/sweep_variants.py over tail chassis rewrites, plus tools/fake_ablate.py on memory/grind/func_800300B4/best_ban_compliant.c. Only worth spending if the island-2 policy question resolves in favour of the island."
+   "hypothesis": "The seat axis of the ban-compliant chassis is closed: the single do-while(0) wrap is necessary and sufficient, and no FAKE-free or alternative-chassis form reaches the four call-crossing seats.",
+   "mechanism": "local-alloc.c:1666 qty_compare_1 with arg0 refs pinned at 9 and &mac refs pinned at 4 by cse.c address propagation (s5 H27); statement-chassis variation (merged frame struct) measured inert (s5 H28); 17 wrap spans and 2 wrap depths already swept (H19/H21/H22/H24).",
+   "next_probe": "No probe. Spend future sessions here only if a toolchain finding voids the cse propagation or the local-alloc.c:1666 arithmetic; otherwise cite H27 as prerequisite-(a) evidence and move on."
   },
   {
-   "hypothesis": "The 0-form (memory/grind/func_800300B4/candidate.c, sandbox 0, verify-oracle ok in s1) remains blocked solely by the island-2 ban.",
-   "mechanism": "state.json banned_constructs[3] (the island-2 gte_ldlv0 asm block), re-imposed by the 2026-09-02 08:12 layer-1 FAIL after the 07:59 Judge PASS.",
-   "next_probe": "None \u2014 do not submit it and do not cite the struck 07:30/07:59 rulings or the banned sibling precedents."
+   "hypothesis": "One of s1's three re-activation triggers fires and re-opens the function with candidate.c unchanged.",
+   "mechanism": "(a) an owner ruling admitting SDK macro-body GPR instructions under condition 3 (lifts ban 1); (b) an owner ruling making the func_800203B4 / func_8002E838 / func_80031890 islands citable precedent for cluster siblings (lifts ban 3); (c) a toolchain finding letting GCC 2.7.2 base a C-side halfword pair on the asm-internal $t4 copy and seat its temps in $13/$14 with $2/$3 free (voids H4's predicate at local-alloc.c:2249).",
+   "next_probe": "Trigger (c) is the only one a grind session can act on: re-read tools/gcc-2.7.2/local-alloc.c find_free_reg and the reload register-class handling for any path that assigns $12-$14 to a pseudo while $2/$3 are free, before spending measurements on spellings."
   }
  ],
  "judge_constraints": [
@@ -123,6 +129,22 @@
    "measured_on": "HEAD 81558ab7, s4 single-wrap 7-form (one do-while(0) FAKE spanning island 3 through end of function), pack-in-C island 2 (no banned construct); 7,212 permuter iterations",
    "predicate_cite": "",
    "result": "Both hand-spelled forms measure sandbox 7 (sb_v_i3end_hwptr.txt, sb_v_i3end_lvhw.txt); the weighted 175 is a register-cl"
+  },
+  {
+   "session": 5,
+   "statement": "No loop-note-free (FAKE-free) C form on the ban-compliant pack-in-C chassis reaches the target's four call-crossing seats ($s0 lookup / $s1 &dir / $s2 &mac / $s3 arg0).",
+   "kill_scope": "class",
+   "measured_on": "HEAD 9b2e1331, pack-in-C island 2 (no banned construct), islands 1/3 as banked, FAKE = none in all four probes",
+   "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:1666",
+   "result": "All four FAKE-free forms score exactly 19. The two qty traces are byte-identical (diff of qty_v_lvpack_nowrap.txt and qt"
+  },
+  {
+   "session": 5,
+   "statement": "Merging mac and dir into a single frame struct changes the &mac / &dir quantity structure enough to clear the (.287, .307) seat window.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 9b2e1331, pack-in-C island 2 (no banned construct), islands 1/3 as banked, measured both FAKE-free and with the single do-while(0) wrap",
+   "predicate_cite": "",
+   "result": "7 with the wrap and 19 without - identical to the plain-locals chassis in both conditions. Each member address is still "
   }
  ],
  "ladder_skip": 30,

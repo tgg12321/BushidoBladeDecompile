@@ -599,3 +599,80 @@ three.
 - [s4] Ordinary-C-only search of the FAKE-free chassis (block insertion and all coercion randomizers disabled) plateaus at weighted 338 over 24,590 iterations, versus 180 for the wrap form — the seat swap is not closed by any ordinary-C spelling sampled.
 
 - [s4] The island-2 residual survived 7,212 fully-enabled permuter iterations on the closed chassis, re-confirming H4's local-alloc.c:2249 predicate on the s4 chassis.
+
+## s5 (2026-09-02, synthesis, HEAD 9b2e1331) — merged attack; the last FAKE is proven necessary
+
+Chassis re-measured first (the dispatch brief reported "measurement unavailable"):
+`best_ban_compliant.c` = **7**, `candidate.c` = **0** (`tmp/grind/func_800300B4/s5/sb_v_base.txt`,
+`sb_v_zero.txt`). Identical to s4. No banked conclusion needed re-basing.
+
+### E-s5-1 — kill re-audit (mandated): nothing to void
+Every instance kill in `state.json` was measured on a chassis carrying the same single (or a
+strictly wider) do-while(0) wrap that the current best form carries, so none is stale in the sense
+the re-audit rule targets. The two closest-to-target kills were re-measured anyway:
+`rejected/named-hw-pointer-for-pack-low-half-s4-7.c` = 7 and
+`rejected/island2-pack-through-lv-seats-lv-in-a1-s3-7.c` = 7 — both unchanged from s3/s4.
+`tools/fake_ablate.py` on `best_ban_compliant.c` reports 1 FAKE unit and keep-all 7 / drop-1 27.
+**The 27 is a tool artifact, not a datum:** the wrap's FAKE marker opens on the `do {` line and its
+comment runs over four lines, and the ablator deletes only the `do {` line, orphaning the comment
+tail (`tmp/grind/func_800300B4/ablate/drop-1.c:78-81`). The authoritative FAKE-free control is the
+hand-built `tmp/grind/func_800300B4/s5/v_arg0_nowrap.c` = **19**, which agrees with s4's FAKE-free
+base. Future sessions on this function should build the no-wrap control by hand.
+
+### E-s5-2 — arg0's 9 refs survive the pointer spelling (the trace s2 never took)
+s2's E-s2-2 asserted that the C-side pack adds exactly 2 references to arg0 "whatever the
+spelling", but only measured the arg0-direct and arg0-direct-island-operand spellings. s5 measured
+the pointer spelling that was supposed to move those 2 references onto a different pseudo:
+
+```
+lv = (s32 *)(arg0 + 0x2C);
+packed = *(u16 *)lv | (*(u16 *)((u8 *)lv + 4) << 16);
+```
+
+BB2_QTY_DEBUG traces for that form and for the arg0-direct form are **byte-identical**
+(`diff tmp/grind/func_800300B4/s5/qty_v_lvpack_nowrap.txt tmp/grind/func_800300B4/s5/qty_v_arg0_nowrap.txt`
+is empty): arg0 = `reg1=72 birth=2 death=96 refs=9`, &mac = `reg1=115 birth=32 death=94 refs=4`.
+cse.c substitutes the known `plus (reg arg0) (const 44)` straight back into both halfword MEMs, the
+same propagation that defeats `s32 *m = mac;` in E-s2-3. Sandbox: 19 for the pointer spelling, 19
+for the index spelling `((u16 *)lv)[0] | (((u16 *)lv)[2] << 16)`, 19 for arg0-direct.
+
+### E-s5-3 — the FAKE-free chassis is now excluded arithmetically, not just empirically
+Combining the two measured invariants with `qty_compare_1`
+(`tools/gcc-2.7.2/local-alloc.c:1666`, priority = `floor_log2(refs)*refs*size/(death-birth)`):
+
+| quantity | refs (FAKE-free) | lifetime | priority |
+|---|---|---|---|
+| `&dir` | 4 | 26 | 8/26 = .307 |
+| `arg0` | 9 (invariant, E-s5-2) | 94 | 27/94 = .287 |
+| `&mac` | 4 (invariant, E-s2-3) | 62 | 8/62 = .129 |
+
+arg0 outranks &mac in every FAKE-free form, so the 12-insn seat swap is present in all of them —
+which is exactly what the four probes measure (all 19). The loop-note device is the only measured
+way to move the numerators (&mac's achievable refs are {4,6,8,…} via flow.c loop_depth weighting).
+**Consequence:** the single `do { … } while (0);` wrap in `best_ban_compliant.c` is proven
+necessary, and s5 H27 + s4 H25 together are the lever-exhaustion citation for
+`.claude/rules/do-while-zero-exception.md` prerequisite (a) in any future submission.
+
+### E-s5-4 — merged frame struct: the last untried statement chassis, no effect
+`struct { s32 mac[3]; s32 _g; s32 dir[2]; } f;` reproducing the target's sp+0x10 / sp+0x20 layout
+scores 7 with the banked wrap and 19 without — identical to plain locals in both conditions. Each
+member address is still materialized as its own sp-relative `addiu` pseudo; no quantities merge.
+Banked at `rejected/merged-frame-struct-no-quantity-change-19.c`.
+
+- [s5] No source file outside `memory/grind/`, `tmp/grind/` and `docs/grind/` was modified;
+  `src/code6cac_b.c` is back at `INCLUDE_ASM` (every probe restores it via `git checkout --`).
+- [s5] Floor unchanged at 7; the 0-form is still 0 and still blocked solely by the island-2 ban.
+
+- [s5] Chassis re-measured at dispatch on HEAD 9b2e1331 (the brief reported 'measurement unavailable'): best_ban_compliant.c = sandbox 7, candidate.c (0-form carrying the banned island-2 block) = sandbox 0. Identical to s4; no banked conclusion needed re-basing.
+
+- [s5] KILL RE-AUDIT: every instance kill in state.json was measured on a chassis carrying the same single (or a strictly wider) do-while(0) wrap the current best form carries, so none is stale in the sense the re-audit rule targets. The two closest-to-target kills were re-measured anyway and are unchanged: rejected/named-hw-pointer-for-pack-low-half-s4-7.c = 7, rejected/island2-pack-through-lv-seats-lv-in-a1-s3-7.c = 7.
+
+- [s5] TOOLING FINDING: tools/fake_ablate.py mis-ablates this form's wrap unit. The FAKE marker opens on the `do {` line and its comment runs over four lines; the ablator deletes only the `do {` line and orphans the comment tail (tmp/grind/func_800300B4/ablate/drop-1.c:78-81), producing a mangled variant that scores 27. The authoritative FAKE-free control is the hand-built tmp/grind/func_800300B4/s5/v_arg0_nowrap.c = 19, which agrees with s4's FAKE-free base. Build the no-wrap control by hand on this function; tools/ was not modified.
+
+- [s5] The full FAKE-free seat model, all three rows measured: &dir 4 refs / lifetime 26 = .307; arg0 9 refs / lifetime 94 = .287; &mac 4 refs / lifetime 62 = .129. arg0 outranks &mac in every FAKE-free form, which is why all four FAKE-free probes score 19.
+
+- [s5] SUBMISSION-RELEVANT: the single do-while(0) wrap in best_ban_compliant.c is now proven necessary rather than merely unreplaced. s5 H27 (arithmetic class kill) + s4 H25 (24,590 ordinary-C-only permuter iterations) are the lever-exhaustion citation that .claude/rules/do-while-zero-exception.md prerequisite (a) demands; the FAKE annotation in best_ban_compliant.c has been updated to cite them.
+
+- [s5] The 7-insn residual is unchanged and is entirely the island-2 gte_ldlv0 GPR pack. No new C-side axis for it was found or probed this session (H4 class kill at local-alloc.c:2249 plus H17/H23/H26 stand); the ruling filed at docs/grind/borderline.md:370 was NOT re-requested and candidate.c was NOT submitted.
+
+- [s5] src/code6cac_b.c is back at INCLUDE_ASM; only memory/grind/func_800300B4/ and tmp/grind/func_800300B4/s5/ were written.

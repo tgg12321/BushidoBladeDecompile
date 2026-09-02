@@ -30,6 +30,15 @@
  * iteration permuter campaign with perm_ins_block and every coercion randomizer disabled
  * (tmp/grind/func_800300B4/s4/perm2) never got below weighted 338 (base 388) - it never reaches
  * the four-seat allocation that the wrap form gets at 180.
+ *
+ * s5 (synthesis) UPDATE. The wrap is now PROVEN NECESSARY, not merely unreplaced: with the wrap
+ * braces removed this form scores 19, and so do the pointer-based pack spelling, the index-based
+ * pack spelling and a merged mac/dir frame struct (hypotheses.md H27/H28). BB2_QTY_DEBUG shows
+ * arg0 at refs=9 / lifetime 94 and &mac at refs=4 / lifetime 62 in every FAKE-free form (cse.c
+ * propagates each frame/param address back into its MEMs, so no C spelling moves a reference off
+ * arg0 or onto &mac), i.e. arg0 27/94 = .287 always outranks &mac 8/62 = .129 in
+ * qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1666). Cite s5 H27 + s4 H25 as the
+ * do-while-zero-exception prerequisite-(a) lever exhaustion.
  */
 /* kengo:?  |  GTE rotate+translate of the object's local vector, then dispatch */
 void func_800300B4(u8 *arg0) {
@@ -79,7 +88,8 @@ void func_800300B4(u8 *arg0) {
           * end of the function, mechanism: flow.c loop_depth ref weighting feeding
           * local-alloc.c:1670 qty_compare_1 (raises &mac and &dir together),
           * lever-exhaustion: memory/grind/func_800300B4/hypotheses.md H2/H14/H16/
-          * H19/H21/H22/H24/H25 */
+          * H19/H21/H22/H24/H25 plus the s5 H27 class kill (no FAKE-free form can
+          * reach these seats: local-alloc.c:1666) */
         /* PsyQ libgte inline macro gte_stlvnl(r) - store MAC1/MAC2/MAC3
          * ($25/$26/$27) to r. */
         __asm__ volatile(

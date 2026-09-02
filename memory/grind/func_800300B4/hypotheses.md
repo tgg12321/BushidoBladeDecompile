@@ -384,3 +384,105 @@ Frontier after s4:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 81558ab7, s4 single-wrap 7-form (one do-while(0) FAKE spanning island 3 through end of function), pack-in-C island 2 (no banned construct); 7,212 permuter iterations
+
+## s5 (2026-09-02, synthesis, HEAD 9b2e1331) — floor stays 7; the last FAKE is now PROVEN NECESSARY
+
+Chassis re-measured at dispatch (the brief reported "measurement unavailable"):
+`memory/grind/func_800300B4/best_ban_compliant.c` = sandbox **7**, `candidate.c` (the 0-form
+carrying the banned island-2 block) = sandbox **0** (tmp/grind/func_800300B4/s5/sb_v_base.txt,
+sb_v_zero.txt). Nothing has moved since s4.
+
+KILL RE-AUDIT (mandated): the two closest-to-target banked instance kills were re-measured on this
+chassis — `rejected/named-hw-pointer-for-pack-low-half-s4-7.c` = 7 and
+`rejected/island2-pack-through-lv-seats-lv-in-a1-s3-7.c` = 7, both unchanged from s3/s4. Neither
+kill was measured with a FAKE construct that is no longer present (both carry the same single
+do-while(0) wrap the current best form carries), so no kill needed voiding.
+
+## [s5] H27: no loop-note-free (FAKE-free) C form on the ban-compliant pack-in-C chassis reaches the target's four call-crossing seats.
+- mechanism: `qty_compare_1` (tools/gcc-2.7.2/local-alloc.c:1666) ranks quantities by
+  `floor_log2(n_refs) * n_refs * qty_size / (qty_death - qty_birth)`. Two invariants pin the
+  comparison. (i) arg0's ref count is 9 on this chassis: 7 byte-pinned references plus exactly 2
+  from the C-side halfword pack, and cse.c's address propagation defeats every attempt to move
+  those 2 onto a different pseudo — a pointer spelling (`lv = (s32 *)(arg0 + 0x2C);` then
+  `*(u16 *)lv | (*(u16 *)((u8 *)lv + 4) << 16)`) has the known `plus (reg arg0) (const 44)`
+  substituted straight back into both MEMs. (ii) &mac's ref count is 4 with no loop note, and
+  s2's E-s2-3 measured that no C construct adds references to it (the same cse propagation folds
+  `s32 *m = mac;` back to sp+16). So the ranking is arg0 27/94 = .287 vs &mac 8/62 = .129, and
+  arg0 always outranks &mac — the 12-insn seat swap is present in every FAKE-free form.
+- probe: four FAKE-free forms measured with `sandbox func_800300B4 --disable all` via
+  tmp/grind/func_800300B4/s5/probe.sh — `v_arg0_nowrap` (the banked 7-form with the wrap braces
+  removed), `v_lvpack_nowrap` (pack read through `lv`), `v_lvidx_nowrap` (pack as
+  `((u16 *)lv)[0] | (((u16 *)lv)[2] << 16)`), `v_struct_nowrap` (mac/dir merged into one frame
+  struct). Ref counts read from the instrumented cc1 (BB2_QTY_DEBUG, tmp/grind/func_800300B4/s5/
+  qtydbg.py) for the two spellings that were supposed to differ.
+- result: **all four score 19** (sb_v_arg0_nowrap.txt, sb_v_lvpack_nowrap.txt,
+  sb_v_lvidx_nowrap.txt, sb_v_struct_nowrap.txt). The two qty traces are byte-identical
+  (`diff qty_v_lvpack_nowrap.txt qty_v_arg0_nowrap.txt` is empty; both report
+  `reg1=72 birth=2 death=96 refs=9` for arg0 and `reg1=115 birth=32 death=94 refs=4` for &mac),
+  which closes s2's E-s2-2 "whatever the spelling" claim with a direct trace on the one spelling
+  it had never traced. Controls: the same lv-pack form WITH the banked wrap scores 7
+  (`v_lvpack_wrap`), and the same struct form with the wrap scores 7 (`v_struct_wrap`) — so the
+  wrap, not the spelling, is what carries the seats.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:1666
+- measured_on: HEAD 9b2e1331, pack-in-C island 2 (no banned construct), islands 1/3 as banked,
+  FAKE = none in all four probes
+- CONSEQUENCE (this is the session's deliverable): the single `do { ... } while (0);` wrap the
+  best ban-compliant form carries is not an incidental convenience — it is the only measured
+  device that moves &mac and &dir past arg0 in qty_compare_1 order, and the FAKE-free
+  neighbourhood is now excluded arithmetically (s5 H27) as well as empirically (s4 H25, 24,590
+  permuter iterations). That is precisely the lever-exhaustion evidence
+  `.claude/rules/do-while-zero-exception.md` prerequisite (a) demands, and any future submission
+  should cite H27 + H25 for it rather than the older per-spelling instance kills.
+
+## [s5] H28: merging `mac` and `dir` into one frame struct changes the &mac/&dir quantity structure.
+- mechanism: if both frame addresses derived from one base pseudo, that base's references would
+  sum (4 + 4) and its lifetime would span both, potentially clearing the (.287, .307) window that
+  E-s2-3 showed is unreachable for &mac alone at its pinned lifetime 62.
+- probe: `struct { s32 mac[3]; s32 _g; s32 dir[2]; } f;` reproducing the target's sp+0x10 /
+  sp+0x20 layout, with `#define mac f.mac` / `#define dir f.dir` so the body is otherwise
+  character-identical; measured with and without the banked wrap
+  (tmp/grind/func_800300B4/s5/v_struct_{wrap,nowrap}.c).
+- result: 7 with the wrap and 19 without — identical to the plain-locals chassis in both
+  conditions. Each member address is still materialized as its own sp-relative `addiu` pseudo, so
+  no quantities merge. Banked at rejected/merged-frame-struct-no-quantity-change-19.c. This was
+  the last untried statement-chassis variation for the seat problem.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 9b2e1331, pack-in-C island 2 (no banned construct), islands 1/3 as banked,
+  measured both FAKE-free and with the single do-while(0) wrap
+
+Frontier after s5 (RESET — strongest first):
+  (1) UNCHANGED AND DOMINANT. The whole 7-insn residual is the island-2 gte_ldlv0 GPR pack and is
+      a policy question (does cop2-addressing-preamble-cluster.md condition 3 admit a verbatim
+      PsyQ 4.5 SDK macro body whose lhu/lhu/sll/or is template text rather than an addressing
+      preamble?), filed at docs/grind/borderline.md:370 with the s3 addendum. Do NOT re-request
+      the ruling, do NOT re-derive the pack in C (H4 class kill + H17/H23/H26), and do NOT submit
+      candidate.c or cite the struck 07:30 / 07:59 rulings or the banned sibling precedents.
+  (2) The single do-while(0) FAKE is now PROVEN NECESSARY (H27 class kill), not merely
+      unreplaced. There is no remaining probe here: the axis is closed, and the finding's value is
+      as the FAKE prerequisite-(a) citation for whatever submission eventually clears item (1).
+  (3) The three re-activation triggers from s1's H8 are unchanged and remain the only routes:
+      (a) an owner ruling admitting SDK macro-body GPR instructions under condition 3 (lifts
+      ban 1); (b) an owner ruling making the func_800203B4 / func_8002E838 / func_80031890 islands
+      citable precedent for cluster siblings (lifts ban 3); (c) a toolchain finding that lets
+      GCC 2.7.2 base a C-side halfword pair on the asm-internal $t4 copy and seat its temps in
+      $13/$14 with $2/$3 free (would void H4's predicate at local-alloc.c:2249).
+
+## [s5] No loop-note-free (FAKE-free) C form on the ban-compliant pack-in-C chassis reaches the target's four call-crossing seats ($s0 lookup / $s1 &dir / $s2 &mac / $s3 arg0).
+- mechanism: qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1666) ranks quantities by floor_log2(refs)*refs*size/(death-birth). Two measured invariants pin the comparison: arg0 carries 9 refs (7 byte-pinned + exactly 2 from the C-side halfword pack) because cse.c substitutes the known plus(reg arg0)(const 44) address back into both halfword MEMs whatever pointer spelling is used; and &mac carries 4 refs with no loop note because the same propagation folds every pointer copy back to sp+16 (s2 E-s2-3). So arg0 27/94 = .287 always outranks &mac 8/62 = .129 and the 12-insn seat swap is present in every FAKE-free form. Only flow.c loop_depth ref weighting moves the numerators.
+- probe: Four FAKE-free forms scored with `sandbox func_800300B4 --disable all` via tmp/grind/func_800300B4/s5/probe.sh: v_arg0_nowrap (banked 7-form minus the wrap braces), v_lvpack_nowrap (pack read through a single lv pointer), v_lvidx_nowrap (index spelling), v_struct_nowrap (mac/dir merged into one frame struct). Ref counts read from the instrumented cc1 with BB2_QTY_DEBUG (tmp/grind/func_800300B4/s5/qtydbg.py) for the two spellings that were expected to differ. Controls with the banked wrap: v_lvpack_wrap, v_struct_wrap.
+- result: All four FAKE-free forms score exactly 19. The two qty traces are byte-identical (diff of qty_v_lvpack_nowrap.txt and qty_v_arg0_nowrap.txt is empty): arg0 reg1=72 birth=2 death=96 refs=9, &mac reg1=115 birth=32 death=94 refs=4. Both wrap controls score 7, so the wrap and not the spelling carries the seats. This closes s2's E-s2-2 'whatever the spelling' claim with a direct trace on the one spelling it never traced, and converts s4's empirical 24,590-iteration permuter result (H25) into an arithmetic exclusion.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 9b2e1331, pack-in-C island 2 (no banned construct), islands 1/3 as banked, FAKE = none in all four probes
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:1666
+
+## [s5] Merging mac and dir into a single frame struct changes the &mac / &dir quantity structure enough to clear the (.287, .307) seat window.
+- mechanism: If both frame addresses derived from one base pseudo, that base's references would sum (4 + 4) and its lifetime would span both, potentially reaching a priority that &mac alone cannot reach at its pinned lifetime 62 (s2 E-s2-3 showed its achievable priorities are .129/.194/.387/.484).
+- probe: struct { s32 mac[3]; s32 _g; s32 dir[2]; } f; reproducing the target's sp+0x10 / sp+0x20 layout, with #define mac f.mac / #define dir f.dir so the rest of the body is character-identical; measured both with and without the banked wrap (tmp/grind/func_800300B4/s5/v_struct_wrap.c, v_struct_nowrap.c).
+- result: 7 with the wrap and 19 without - identical to the plain-locals chassis in both conditions. Each member address is still materialized as its own sp-relative addiu pseudo, so no quantities merge. This was the last untried statement-chassis variation for the seat problem. Banked at rejected/merged-frame-struct-no-quantity-change-19.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 9b2e1331, pack-in-C island 2 (no banned construct), islands 1/3 as banked, measured both FAKE-free and with the single do-while(0) wrap
