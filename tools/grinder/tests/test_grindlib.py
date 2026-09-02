@@ -781,6 +781,34 @@ class TestKillHygiene(unittest.TestCase):
         ok, why = G.validate_outcome(o, "structural", self.root)
         self.assertFalse(ok); self.assertIn("does not resolve", why)
 
+    def test_cite_bare_config_mips_filename_resolves(self):
+        self._make_cited_file(rel="tools/gcc-2.7.2/config/mips/mips.c", lines=5000)
+        o = self.killed(kill_scope="class", predicate_cite="mips.c:4680",
+                        statement="no movable can pass with n_times_set != 1 - all forms")
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertTrue(ok, why)
+
+    def test_cite_bare_project_source_resolves(self):
+        self._make_cited_file(rel="src/main.c", lines=800)
+        o = self.killed(kill_scope="class", predicate_cite="main.c:100",
+                        statement="no movable can pass with n_times_set != 1 - all forms")
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertTrue(ok, why)
+
+    def test_cite_parent_escape_rejected(self):
+        o = self.killed(kill_scope="class", predicate_cite="../../x.c:1",
+                        statement="no movable can pass with n_times_set != 1 - all forms")
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertFalse(ok); self.assertIn("does not resolve", why)
+
+    def test_cite_bare_name_matching_directory_fails(self):
+        os.makedirs(os.path.join(self.root, "tools", "gcc-2.7.2", "mips.c"),
+                    exist_ok=True)
+        o = self.killed(kill_scope="class", predicate_cite="mips.c:1",
+                        statement="no movable can pass with n_times_set != 1 - all forms")
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertFalse(ok); self.assertIn("does not resolve", why)
+
     def test_result_field_wording_does_not_trip(self):
         o = self.killed(result="floor flat 15; the arm is unreachable on this chassis")
         ok, why = G.validate_outcome(o, "structural", self.root)

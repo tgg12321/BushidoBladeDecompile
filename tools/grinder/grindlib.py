@@ -570,38 +570,52 @@ _CLASS_CLAIM_RE = re.compile(
     r"cannot (ever|be made to))\b", re.I)
 
 
-_COMPILER_SRC_DIR = ("tools", "gcc-2.7.2")
+# Bare-name cite search path, in order. House convention in the ledgers is a
+# BARE filename with no directory (`loop.c:1631`, `mips.c:4680`): 273 of 279
+# compiler cites and every project-source cite are spelled that way. The two
+# most-cited compiler files live under config/mips (mips.c 66 cites, mips.h
+# 47), not at the gcc-2.7.2 root, and project sources (main.c 49, display.c
+# 30, code6cac.c 18, text1b.c 15, system.c 7) live under src/.
+_CITE_SEARCH_DIRS = (
+    ("tools", "gcc-2.7.2"),
+    ("tools", "gcc-2.7.2", "config", "mips"),
+    ("src",),
+    ("include",),
+)
+_CITE_SEARCH_DIRS_TEXT = ", ".join("/".join(d) + "/" for d in _CITE_SEARCH_DIRS)
+
+
+def _within_root(path, root):
+    """True when path really sits inside root (symlinks and .. resolved)."""
+    try:
+        rp, rr = os.path.realpath(path), os.path.realpath(root)
+        return os.path.commonpath([rp, rr]) == rr
+    except (ValueError, OSError):
+        return False
 
 
 def _resolve_cite_path(rel, root):
-    """Absolute path for the file part of a cite, or None. House convention in
-    the ledgers is a BARE compiler filename (`loop.c:1631` — 273 of 279 cites),
-    so a name with no path separator resolves under tools/gcc-2.7.2/: that path
-    directly first, then any file with that basename sitting in that directory."""
+    """Absolute path for the file part of a cite, or None. A cite with a
+    directory component is resolved relative to the repo root. A BARE name
+    (no separator) is looked up in each _CITE_SEARCH_DIRS entry in order.
+    Cites containing a `..` segment, and anything that resolves outside the
+    repo root, are refused outright."""
     parts = [p for p in rel.replace("\\", "/").split("/") if p]
-    if not parts:
+    if not parts or any(p == ".." for p in parts):
         return None
-    path = os.path.join(root, *parts)
-    if os.path.isfile(path):
-        return path
+    cands = [os.path.join(root, *parts)]
     if len(parts) == 1:
-        cdir = os.path.join(root, *_COMPILER_SRC_DIR)
-        cand = os.path.join(cdir, parts[0])
-        if os.path.isfile(cand):
-            return cand
-        try:
-            for name in os.listdir(cdir):
-                if name == parts[0] and os.path.isfile(os.path.join(cdir, name)):
-                    return os.path.join(cdir, name)
-        except OSError:
-            return None
+        cands += [os.path.join(root, *(d + (parts[0],))) for d in _CITE_SEARCH_DIRS]
+    for path in cands:
+        if os.path.isfile(path) and _within_root(path, root):
+            return path
     return None
 
 
 def _cite_resolves(cite, root):
     """True when a predicate_cite actually points at something: a `path:line`
-    whose file exists in the repo (bare compiler filenames resolve under
-    tools/gcc-2.7.2/) with at least that many lines, or a hash git knows. An
+    whose file exists in the repo (bare names are searched in
+    _CITE_SEARCH_DIRS) with at least that many lines, or a hash git knows. An
     unresolvable cite is how a class kill gets asserted without a
     predicate — the exact failure the scope field exists to stop."""
     m = re.search(r"([\w./\\-]+\.\w+):(\d+)", cite)
@@ -656,8 +670,8 @@ def _validate_kill(h, root):
                            "instance kill, not a class kill.")
         if not _cite_resolves(cite, root):
             return False, (f"predicate_cite does not resolve: {cite} (no such file "
-                           "(bare names resolve under tools/gcc-2.7.2/) / line beyond "
-                           "EOF / unknown hash)")
+                           f"(bare names are searched in {_CITE_SEARCH_DIRS_TEXT}) / "
+                           "line beyond EOF / unknown hash / .. or out-of-root path)")
     return True, ""
 
 
@@ -1065,7 +1079,8 @@ MODALITY_PLAYBOOK = {
                  "list them in artifacts."
                  " CHASSIS RULE (2026-09-01): if the ledger already banks a permuter campaign "
                  "on the SAME candidate chassis with 0 novel finds after >=20k iterations, "
-                 "re-seeding it is not a probe — the session must permute a structurally "
+                 "re-seeding it is not a valid probe (it validates mechanically but is a "
+                 "wasted session on the record) — permute a structurally "
                  "different chassis (a banked instance-kill form is a good seed) or a "
                  "different lever hint. The permuter cannot express N-way statement "
                  "duplication into arms, goto-into-existing-body, chassis swaps, or "
@@ -1118,7 +1133,9 @@ MODALITY_PLAYBOOK = {
                   "matching C exists. Re-audit the WEAKEST foreclosure (the one with no "
                   "predicate_cite, or the oldest) first; func_80041188 spent 14 sessions "
                   "proving one chassis impossible while the other sat foreclosed on an "
-                  "incomplete loop.c predicate."),
+                  "incomplete loop.c predicate. (This rule governs ledger-internal chassis "
+                  "verdicts; it does not override a driver-declared exhaustion "
+                  "disposition in `escalation` modality.)"),
     "annotation-fix": ("ANNOTATION FIX-UP — TINY SCOPE. The Judge FAILed the previous "
                        "candidate on ANNOTATION FORMAT ONLY: the work itself was accepted, "
                        "and the sole defect is the /* FAKE: ... */ comment's presence or "

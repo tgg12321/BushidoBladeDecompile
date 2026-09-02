@@ -242,7 +242,11 @@ same work in fewer, bigger turns (owner policy 2026-07-20):
   ban, rejection, or ruling that predates a family grant covering the same
   construct is superseded by the grant. If a banked score-0 form was
   rejected under a scope the block no longer states, restore it, re-measure,
-  and submit under the current family with its SCOPE quoted.
+  and submit under the current family with its SCOPE quoted. If the restored
+  form trips a `banned_constructs` entry, emit `ruling-request` naming the
+  grant that supersedes it — a `candidate-ready` re-declaring a banned
+  construct is discarded before the Judge sees it — rather than
+  `candidate-ready`.
 - Before finishing a `candidate-ready`: write `memory/grind/<func>/self_vet.md`
   (template above). Non-negotiable — the driver checks it mechanically.
 - Before finishing: save your best form to `memory/grind/<func>/candidate.c`
