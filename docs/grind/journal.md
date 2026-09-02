@@ -1458,3 +1458,4 @@
 - 2026-09-02 00:55 func_80027640 s6 [synthesis] OWNER-GATED — borderline-logged, foreclosed: Floor re-measured 1; the last open C-axis escape from mips.c:705 (a bare USE/CLOBBER between the load and the join CODE_LABEL) KILLED at class scope by a 26-TU synthetic sweep plus a 2,663-label final-RTL census; ladder exhausted across 4 modalities, FORECLOSED record filed at docs/grind/decisions.md:20175.
 - 2026-09-02 01:14 func_80043BD0 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-02 01:18 func_80043D34 COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-02 01:27 func_8002E838 COMPLETED-C after 1 sessions (closer: s1 [recon]).
