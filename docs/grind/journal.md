@@ -1466,3 +1466,4 @@
 - 2026-09-02 03:04 func_80016E60 s4 [permuter] floor=30: Named the bit-arm order divergence: sched1's birthing_insn_p boost (reg_n_sets==1 on a block-local `shift`); a function-scope shift/mask kills it and turns the whole bit-arm residual into pure register naming.
 - 2026-09-02 03:28 func_80016E60 s5 [synthesis] floor=25: Honest floor 30 -> 25: declaring the per-arm `shift` as u8 (QImode) on the all-block-local arm shape closes BOTH bit arms byte-exactly; on the sanctioned do-while(0) env carrier the form scores 4 and its entire residual is the two-insn `sw s5,44(sp)/move s5,a0` prologue pair, which the sched_solver rates REACHABLE.
 - 2026-09-02 04:07 func_80016E60 COMPLETED-C after 6 sessions (closer: s6 [synthesis]).
+- 2026-09-02 04:18 _spu_2pitch COMPLETED-C after 1 sessions (closer: s1 [recon]).
