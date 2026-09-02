@@ -1,3 +1,16 @@
+/* MIGRATION BANNER (asm-until-matched, owner ruling 2026-08-19): func_800480C0 is
+ * committed on main as INCLUDE_ASM("asm/funcs", func_800480C0) in src/text1b.c. This
+ * file is a CANDIDATE, not the state of HEAD; every 'measured on main' statement in the
+ * headers below means 'measured with this body installed over that INCLUDE_ASM line'.
+ * Install with tmp/grind/func_800480C0/s3/install.py. */
+/* s7 (solver, 2026-09-02, chassis HEAD 7e18adc2) - BODY UNCHANGED, floor re-measured
+ * 20 (74/74). goal_from_tgt.py classify returns PRE-RA, 'next tool: none - the residual
+ * is upstream of every model': registers and instruction order already match exactly,
+ * so neither ra_solver nor sched_solver has any purchase here. Three further class-A
+ * spellings measured negative (s16* direct loads, four u16* copy temps, five copy
+ * temps). The target's own narrow loads are lhu+sll+sra, NOT lh, so the HImode
+ * sign-extend fold that makes class-A orphans elsewhere in this tree cannot fire on
+ * this body without changing bytes. Full record: hypotheses.md / evidence.md s7. */
 /* func_800480C0 - s3 (structural, 2026-09-02) BEST POLICY-LEGAL FORM.
  * sandbox --disable all = 20 (74/74 insns); .frame sp,56 (vars=0, regs=8,
  * args=24) vs target .frame sp,88 (vars=32, regs=8, args=24).

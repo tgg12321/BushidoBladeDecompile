@@ -1,8 +1,8 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 6,
- "current_modality": "synthesis",
+ "session_count": 7,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -39,23 +39,29 @@
    "floor": 20,
    "modality": "synthesis",
    "headline": "Phantom slot identified as a combine.c distribute_notes orphan USE (combine.c:10832-10841); s5's mult-free bound of two phantoms refuted by SetDrawEnv (3 phantoms, vars=32, ordinary C); this body's ow"
+  },
+  {
+   "session": 7,
+   "floor": 20,
+   "modality": "solver",
+   "headline": "Solver axis closed by the classifier itself (PRE-RA, 'next tool: none'); orphan-plant census corrected (orphans DO stack at one block head) but the target's own lhu+sll+sra narrow loads rule out the o"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The three SetDrawEnv/SetDrawEnv2 orphan sites (pseudos 128, 137, 140) name three concrete three-insn chains combine collapses at a block head, and at least one of them can be routed through one of func_800480C0's two block heads without adding instructions.",
-   "mechanism": "class A fires when combine rewrites or deletes the DEF insn of an intermediate pseudo that is not referenced again before the head of its basic block (combine.c:10757-10762 backward scan terminating on the leading JUMP_INSN/CODE_LABEL, plant at combine.c:10836-10841). SetDrawEnv is the tree's only mult-free multiplicity-3 exhibit, and it is ordinary C on main.",
-   "next_probe": "tmp/grind/func_800480C0/s6/dumpall.sh already regenerates display's -da dumps. Locate pseudos 128, 137 and 140 in display.flow and display.combine, and write down per site the exact chain combine collapsed and which jump/label the USE was planted after. Then ask, per site, whether that chain can be spelled onto func_800480C0's fallthrough block after `beqz $s1` or its do-while body at .L80048144 without changing the 74-insn stream. Note the s6 class A / class B split means none of the thirty s2-s5 spellings actually tested this."
+   "hypothesis": "The arithmetic-address orphan is the only class-A shape measured to stack, and it needs an address pseudo that DIES at its single deref; func_800480C0 may still be spellable so that its one such site qualifies.",
+   "mechanism": "combine merges `(set T (plus A B))` + `(set X (mem T))` into `(set X (mem (plus A B)))`, deleting T's def; the stranded REG_DEAD note is planted at the block head and two can chain there (func_80040594, text1a_pre.combine insns 564/565 after code_label 457). The insn count is unchanged by the merge, which is exactly what a zero-byte-delta lever needs.",
+   "next_probe": "Enumerate every mem reference in func_800480C0's target stream whose address is a register that could legitimately be a dying single-use sum. The entry `count = *(p++)` after `p = base_addr + ((*p>>2)<<2)` is the only candidate. Ask whether the ALGORITHM (not a fabricated copy) can be spelled so that address dies at the deref while p's subsequent advance is carried by a different live value - e.g. by carrying the loop pointer as an index rather than as a pointer. Measure with tmp/grind/func_800480C0/s6/probe.sh under WSL and report vars/unalloc/orphanUSE plus the insn delta. If it cannot be done without a redundant recomputation, class A is capped at 0-1 here and the residual is not a phantom problem at all."
   },
   {
-   "hypothesis": "Class A and class B stack, so a body carrying both a folded guard (class B, measured 1 here) and a class-A orphan reaches two phantoms / vars=16 on this function.",
-   "mechanism": "The two producers are independent: class B is a compare residue local-alloc cannot seat; class A is an orphan USE with no set at all. func_8003FECC, SpuSetReverbModeParam and _SsSeqPlay already show 1 orphan USE alongside 1 non-USE phantom in the same function, i.e. the classes co-exist in shipped ordinary C.",
-   "next_probe": "Install rejected/phantom-guard-vars8-ceiling.c (class B, unalloc=1) as the chassis and add whichever class-A trigger frontier 1 identifies; measure with tmp/grind/func_800480C0/s6/probe.sh and record unalloc, vars and the insn delta. Even a costly two-phantom form is worth banking: it is the first measurement above the ceiling s2-s5 established, and it decides whether 4 is an arithmetic sum of the two classes or needs class A alone at multiplicity 4."
+   "hypothesis": "The target's 32 bytes are one 32-byte AGGREGATE declared in the original source, shared by all four text1b siblings, rather than four phantom residues. This is now the leading hypothesis, not the fallback.",
+   "mechanism": "function.c assign_stack_local reserves an aggregate slot at RTL-expand from the source DECL and never reclaims frame_offset; a PsyQ MATRIX is exactly 32 bytes. BB2_ALLOC_DEBUG reports ZERO unallocated pseudos for func_80047EE8 and func_80047FBC, so the siblings' identical 32-byte regions are a declaration in the shipped source, not residues. s7 removed the two producer shapes that could plausibly have scaled to four on this body: the HImode sign-extend fold (absent from the target's own lhu+sll+sra stream) and pointer copy temps (propagated before combine).",
+   "next_probe": "FORENSICS modality. Examine func_800482C8 and the callers of the four siblings for a 32-byte record (PsyQ MATRIX, 8-word buffer) that the original built on the stack and passed by address, whose address-taking this decompilation folded into pointer arithmetic. A LIVE such local is ordinary C and needs no engine allowlist row. Cross-check whether func_800482C8's own body reads a caller-provided 32-byte area."
   },
   {
-   "hypothesis": "The target's 32 bytes are one 32-byte AGGREGATE from the original source rather than four phantom residues, shared by all four text1b siblings.",
-   "mechanism": "function.c assign_stack_local reserves an aggregate slot at RTL-expand from the source DECL and never reclaims frame_offset; a PsyQ MATRIX is exactly 32 bytes. BB2_ALLOC_DEBUG reports ZERO unallocated pseudos for func_80047EE8/func_80047FBC, so the siblings' identical 32-byte regions are a declaration in the shipped source, not residues. This is carried from s5 and remains unspent - and s6's refutation of the bound of two means it is no longer the forced fallback, just the only hypothesis that explains why all four siblings reserve exactly 32.",
-   "next_probe": "Forensics on func_800482C8 and on the callers of the four siblings: look for a 32-byte record (MATRIX / 8-word buffer) the original built on the stack and passed by address, whose address-taking this decompilation folded into pointer arithmetic. A LIVE such local is ordinary C and needs no allowlist row."
+   "hypothesis": "No further session should be spent on RA or scheduler models for this function.",
+   "mechanism": "goal_from_tgt.py classify returns PRE-RA with 'next tool: none - the residual is upstream of every model', and the two streams agree on all 74 instructions and on every register assignment. The frame size is fixed by get_frame_size before either allocator or either scheduler pass runs.",
+   "next_probe": "None - this is a recorded exclusion. If a future driver dispatch assigns solver modality again, the correct action is to re-run `goal_from_tgt.py classify text1b func_800480C0` under WSL to confirm the verdict is unchanged on the then-current chassis, bank that one measurement, and spend the rest of the session on the forensics item above."
   }
  ],
  "judge_constraints": [
@@ -182,6 +188,38 @@
    "measured_on": "HEAD ba593529, the four s6 bodies in tmp/grind/func_800480C0/s6/bodies/, annotated `arg0 = 0;` dead param store present in all four, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump",
    "predicate_cite": "",
    "result": "All four measure vars= 0, unalloc=0, orphanUSE=0. The sign-extend chains never present combine with a deletable intermed"
+  },
+  {
+   "session": 7,
+   "statement": "The 20-diff residual on func_800480C0 is reachable by one of the RA or scheduler solver models",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 7e18adc2, memory/grind/func_800480C0/candidate.c installed over the INCLUDE_ASM line in src/text1b.c (sandbox --disable all = 20, 74/74 insns), annotated `arg0 = 0;` dead param store present; obj",
+   "predicate_cite": "",
+   "result": "The classifier returns `FIRST DIVERGENCE: PRE-RA` with `next tool: none - the residual is upstream of every model`. Ours"
+  },
+  {
+   "session": 7,
+   "statement": "A combine class-A orphan USE is planted at most once per plant site, so this body's two usable block heads cap class-A phantom multiplicity at two",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 7e18adc2, the six -da .combine dumps banked under tmp/grind/func_800480C0/s5/dumps and s6/dumps; the measurement reads other functions' shipped COMPLETED-C bodies, no FAKE construct involved",
+   "predicate_cite": "",
+   "result": "Refuted by counterexample. 31 orphan USEs across 21 functions; all 31 are planted immediately after a JUMP_INSN or a COD"
+  },
+  {
+   "session": 7,
+   "statement": "Re-spelling func_800480C0's four narrow loop loads as signed s16 loads orphans four HImode intermediates through the combine sign-extend fold",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 7e18adc2, tmp/grind/func_800480C0/s7/bodies/A_s16ptr_loads.c, annotated `arg0 = 0;` dead param store present, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump; banked at memory/grind/func_8",
+   "predicate_cite": "",
+   "result": "`vars= 0, regs= 8/0, unalloc=0, orphanUSE=0`. Two independent reasons, both measured. (a) A `*(s16 *)p` deref expands st"
+  },
+  {
+   "session": 7,
+   "statement": "Single-use pointer copy temps at the loop head present combine with deletable defs and orphan one pseudo per temp",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 7e18adc2, tmp/grind/func_800480C0/s7/bodies/{C_ptrtemps4.c,D_ptrtemps5.c}, annotated `arg0 = 0;` dead param store present, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump; banked at memory",
+   "predicate_cite": "",
+   "result": "Both measure `vars= 0, regs= 8/0, unalloc=0, orphanUSE=0`. A plain register COPY is propagated away by cse/cse2 long bef"
   }
  ],
  "ladder_skip": 0,

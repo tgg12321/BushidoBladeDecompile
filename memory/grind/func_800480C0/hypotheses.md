@@ -474,3 +474,98 @@ re-measured **20** (74/74) this session. All s5 measurements are on that chassis
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD ba593529, the four s6 bodies in tmp/grind/func_800480C0/s6/bodies/, annotated `arg0 = 0;` dead param store present in all four, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump
+
+## s7 - solver (2026-09-02, chassis HEAD 7e18adc2, floor re-measured 20 / 74-of-74 insns)
+
+## [s7] The 20-diff residual is reachable by one of the RA or scheduler solver models
+- mechanism: solver modality's mandated first step. tools/ra_solver models global.c / local-alloc / reload and tools/sched_solver models both scheduler passes; inverse_compose.py classify triages a residual PRE-RA / RA / SCHED / IDENTICAL so a session does not search the wrong layer.
+- probe: `inverse_compose.py classify text1b func_800480C0` refuses on an INCLUDE_ASM-represented function (it would report a fictitious PRE-RA verdict from the missing .tgt.s), so the object-level classifier was used instead: `python3 tools/ra_solver/goal_from_tgt.py classify text1b func_800480C0` run under WSL with memory/grind/func_800480C0/candidate.c installed in src/text1b.c and tmp/sandbox/func_800480C0/text1b.o freshly produced by `sandbox --disable all` (score 20).
+- result: `FIRST DIVERGENCE: PRE-RA / next tool: none - the residual is upstream of every model`. Ours 74 insns, target 74 insns, and the entire shape delta is the 24 sp-relative operands (`addiu #,#,-56` vs `-88`, eight `sw` and three `lw` shifted by 32, the two incoming-stack-arg `lw` at 104/108 vs 44/48). Neither solver has any purchase: there is no seat to re-assign and no emission order to permute, because the register disposition and the instruction order already match exactly. The residual is decided at RTL-expand / combine time via get_frame_size, upstream of global.c, reload and both scheduler passes.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7e18adc2, memory/grind/func_800480C0/candidate.c installed in src/text1b.c (sandbox --disable all = 20, 74/74 insns), annotated `arg0 = 0;` dead param store present; object-level classify against build/src/text1b.o
+
+## [s7] A combine class-A orphan USE is planted at most once per plant site, so this body's control-flow shape caps class A at two
+- mechanism: distribute_notes plants the orphan `(use (reg P))` after the insn the backward scan stops at (combine.c:10757-10762 terminating on a JUMP_INSN/CODE_LABEL, plant at combine.c:10836-10841). If exactly one note could strand per stopping point, the 74-insn target CFG - entry block, the fallthrough block after `beqz $s1`, the do-while body at .L80048144, the epilogue at .L800481BC - would offer at most two or three usable plant sites and could never reach the four phantoms the 32-byte residual needs.
+- probe: tmp/grind/func_800480C0/s7/plantsites.py and s7/plantkind.py over every .combine dump in tmp/grind/func_800480C0/s5/dumps and s6/dumps (six TUs: display, text1a_pre, code6cac_c_mid, config, main, plus the s6 scratch t.combine). They extract every `(insn UID PREV NEXT (use (reg:M N)))`, resolve PREV to its insn kind, and group by function and plant site.
+- result: REFUTED by counterexample. 31 orphan USEs across 21 functions. 30 of the 31 sit immediately after a JUMP_INSN or CODE_LABEL, one per site - but func_80040594 (src/text1a_pre.c) carries TWO at the SAME site: insn 565 `(use (reg:SI 198))` is planted after `code_label 457 ("done_cases")`, and insn 564 `(use (reg:SI 187))` is then planted after insn 565, chained onto the first orphan at the same block head. Orphans therefore STACK at one plant site, and the number of block heads is not the ceiling on class-A multiplicity. The census also fixes the plant-site kind exactly: JUMP_INSN or CODE_LABEL only (the single apparent `planted-after insn 565` entry is the chained case, not an ordinary insn).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7e18adc2, the six -da .combine dumps banked under tmp/grind/func_800480C0/s5/dumps and s6/dumps; measurement is over other functions' shipped COMPLETED-C bodies, no FAKE construct involved
+
+## [s7] The class-A producer that stacks is the HImode sign-extend fold, so re-spelling func_800480C0's four narrow loads as signed loads will orphan four HImode intermediates
+- mechanism: s6 named the producer but not the RTL shape. checkRECT (text1b sibling file display.c) and SetDrawEnv both show `(set (reg:HI P) (mem:HI ...))` + `ashift` + `ashiftrt` collapsed by combine into one `extendhisi2_internal` (`lh`), deleting P's def and stranding its REG_DEAD note. func_800480C0's loop performs exactly four 16-bit loads that are then sign-extended, so four such folds would give four orphans - an exact fit for the 32-byte residual.
+- probe: tmp/grind/func_800480C0/s7/bodies/A_s16ptr_loads.c - the four loop loads respelled `a1v = *((s16 *)p);` instead of `a1v = (s16)(*((u16 *)p));` - measured with tmp/grind/func_800480C0/s6/probe.sh (instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump). Cross-checked against the target listing.
+- result: `vars= 0, regs= 8/0, unalloc=0, orphanUSE=0`. Two independent reasons, both measured. (a) A `*(s16 *)p` deref expands straight to `(set (reg:SI) (sign_extend:SI (mem:HI)))` - one insn, no HImode intermediate for combine to delete - so the fold never happens. (b) More decisively, the TARGET does not contain the fold at all: asm/funcs/func_800480C0.s at .L80048144 emits `lhu` + `sll 16` + `sra 16` for each of the four loads, never `lh`. The target's own narrow loads are the UNSIGNED-load-then-shift shape candidate.c already spells, so the HImode sign-extend producer cannot fire on this body without changing the 74-instruction stream. The rule's own boundary predicts this: .claude/rules/phantom-slot-frame-lever.md:47-53 requires the widened `reg:HI` to have a second use AS AN HIMODE VALUE, and this algorithm consumes all four values as s32 addends.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7e18adc2, tmp/grind/func_800480C0/s7/bodies/A_s16ptr_loads.c, annotated `arg0 = 0;` dead param store present, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump; banked at rejected/s7-s16ptr-direct-loads-fold-clean.c
+
+## [s7] Single-use pointer copy temps at the loop head present combine with deletable defs and orphan one pseudo per temp
+- mechanism: the func_80040594 double-orphan is a `(set (reg T) (plus A B))` + `(set X (mem (reg T)))` pair that combine merges into `(set X (mem (plus A B)))`, deleting T's def; T's death note then finds no home and strands at the block head. If a plain single-use pointer temp were enough, four temps in the loop body would give four orphans at .L80048144.
+- probe: tmp/grind/func_800480C0/s7/bodies/C_ptrtemps4.c (`{ u16 *q1 = (u16 *)p; a1v = (s16)(*q1); }` for each of the four narrow loads) and D_ptrtemps5.c (the same plus `{ u32 *q0 = p; word = *q0; }` for the word load), both via s6/probe.sh.
+- result: both measure `vars= 0, regs= 8/0, unalloc=0, orphanUSE=0`. A plain register COPY is propagated away by cse/cse2 long before combine runs, so combine never rewrites a death note for it and no note strands. The func_80040594 shape is strictly narrower than "single-use temp": the deleted def must be a real ARITHMETIC insn (there, `index*4 + base`, dump insns 480/482/488 in text1a_pre.flow) whose result is dereferenced exactly once and dies at that deref. func_800480C0 has exactly one site of that shape - the entry-block `p = (u32 *)(base_addr + (((*p) >> 2) << 2)); count = *(p++);` - and its address pseudo does NOT die at the deref, because `p` is carried live into the loop. Producing a second, dying copy of that address would be a semantically redundant recomputation (extra insns, no observable effect), i.e. the forbidden no-semantic-purpose class rather than a lever.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7e18adc2, tmp/grind/func_800480C0/s7/bodies/{C_ptrtemps4.c,D_ptrtemps5.c}, annotated `arg0 = 0;` dead param store present, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump; banked at rejected/s7-single-use-ptr-copy-temps-no-orphan.c and rejected/s7-five-ptr-copy-temps-no-orphan.c
+
+## Frontier (for the next session)
+1. THE ARITHMETIC-ADDRESS ORPHAN IS THE ONLY CLASS-A SHAPE MEASURED TO STACK, AND IT
+   NEEDS A DYING ADDRESS PSEUDO. s7 pinned the reproducible shape: `(set T (plus A B))`
+   + `(set X (mem T))`, combine merges to `(mem (plus A B))`, T's def is deleted, the
+   note strands, and TWO can chain at one block head (func_80040594, text1a_pre.combine
+   insns 564/565 after code_label 457). Probe: enumerate every mem reference in
+   func_800480C0's target stream whose address is a register that could legitimately be
+   a dying single-use sum - the entry `count = *(p++)` after
+   `p = base_addr + ((*p>>2)<<2)` is the only candidate - and ask whether the ALGORITHM
+   (not a fabricated copy) can be spelled so that address dies at the deref while `p`'s
+   subsequent advance comes from a different live value. If it cannot, class A is capped
+   at 0-1 here and the 32-byte residual is not a phantom problem at all.
+2. FOUR PHANTOMS OR ONE AGGREGATE - now the leading hypothesis, not the fallback. s7
+   removed the two producer shapes that could plausibly have scaled to four on this body
+   (HImode sign-extend fold: absent from the target's own `lhu`+`sll`+`sra` stream;
+   pointer copy temps: propagated before combine). All four text1b siblings reserve
+   exactly 32 bytes, three of them via a sanctioned `volatile u32 pre_pad[8]` row whose
+   BB2_ALLOC_DEBUG phantom count is ZERO. Probe: forensics on func_800482C8 and on the
+   callers of the four siblings for a 32-byte record (PsyQ MATRIX, 8-word buffer) the
+   original built on the stack and passed by address, whose address-taking this
+   decompilation folded into pointer arithmetic. A LIVE such local is ordinary C and
+   needs no allowlist row. This is a FORENSICS modality item, not a spelling item.
+3. DO NOT SPEND ANOTHER SESSION ON RA OR SCHEDULER MODELS. `goal_from_tgt.py classify`
+   returns PRE-RA with "next tool: none - the residual is upstream of every model", and
+   the two streams agree on all 74 instructions and on every register. Any future solver
+   work on this function measures a layer the divergence does not live in. Note also
+   that `inverse_compose.py classify` self-refuses on INCLUDE_ASM-represented functions;
+   `goal_from_tgt.py classify` under WSL is the working entry point.
+
+## [s7] The 20-diff residual on func_800480C0 is reachable by one of the RA or scheduler solver models
+- mechanism: tools/ra_solver models global.c / local-alloc / reload and tools/sched_solver models both scheduler passes; inverse_compose.py classify triages a residual PRE-RA / RA / SCHED / IDENTICAL so a session does not search the wrong layer. This is the solver modality's mandated first step.
+- probe: inverse_compose.py classify text1b func_800480C0 self-refuses on an INCLUDE_ASM-represented function (it would report a fictitious PRE-RA verdict from the missing text1b.tgt.s), so the object-level classifier was used: `python3 tools/ra_solver/goal_from_tgt.py classify text1b func_800480C0` under WSL, with memory/grind/func_800480C0/candidate.c installed in src/text1b.c and tmp/sandbox/func_800480C0/text1b.o freshly produced by `sandbox func_800480C0 --disable all` (score 20, 74/74 insns).
+- result: The classifier returns `FIRST DIVERGENCE: PRE-RA` with `next tool: none - the residual is upstream of every model`. Ours 74 insns, target 74 insns; the whole shape delta is 24 sp-relative operands (addiu -56 vs -88; eight sw and three lw at offsets shifted by exactly 32; the two incoming stack-argument lw at 44/48 vs the target's 104/108). Every register assignment and every instruction position already agrees, so there is no seat to re-assign and no emission order to permute. The divergence is decided by get_frame_size at RTL-expand/combine time, upstream of global.c, reload and both scheduler passes. Recorded so no future session spends a modality on this layer.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7e18adc2, memory/grind/func_800480C0/candidate.c installed over the INCLUDE_ASM line in src/text1b.c (sandbox --disable all = 20, 74/74 insns), annotated `arg0 = 0;` dead param store present; object-level classify against build/src/text1b.o and tmp/sandbox/func_800480C0/text1b.o
+
+## [s7] A combine class-A orphan USE is planted at most once per plant site, so this body's two usable block heads cap class-A phantom multiplicity at two
+- mechanism: distribute_notes plants the orphan `(use (reg P))` after the insn its backward scan stops at (tools/gcc-2.7.2/combine.c:10757-10762 terminating on a JUMP_INSN/CODE_LABEL; plant at combine.c:10836-10841). If exactly one note could strand per stopping point, the target CFG - entry block, the fallthrough block after `beqz $s1`, the do-while body at .L80048144, the epilogue at .L800481BC - could never reach the four phantoms the 32-byte residual needs.
+- probe: tmp/grind/func_800480C0/s7/plantsites.py and s7/plantkind.py over every .combine dump banked in tmp/grind/func_800480C0/s5/dumps and s6/dumps (six TUs: display, text1a_pre, code6cac_c_mid, config, main, plus the s6 scratch t.combine). They extract every `(insn UID PREV NEXT (use (reg:M N)))`, resolve PREV to its insn kind, and group by function and plant site.
+- result: Refuted by counterexample. 31 orphan USEs across 21 functions; all 31 are planted immediately after a JUMP_INSN or a CODE_LABEL, and 30 sit one per site - but func_80040594 (src/text1a_pre.c) carries TWO at the SAME head: insn 565 `(use (reg:SI 198))` after `code_label 457 ("done_cases")`, and insn 564 `(use (reg:SI 187))` chained after insn 565. Orphans stack at one plant site, so the block-head count is not the ceiling on class-A multiplicity and the natural bound this session set out to establish does not exist. The census does firmly fix the plant-site KIND: JUMP_INSN or CODE_LABEL only.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7e18adc2, the six -da .combine dumps banked under tmp/grind/func_800480C0/s5/dumps and s6/dumps; the measurement reads other functions' shipped COMPLETED-C bodies, no FAKE construct involved
+
+## [s7] Re-spelling func_800480C0's four narrow loop loads as signed s16 loads orphans four HImode intermediates through the combine sign-extend fold
+- mechanism: s6 named the class-A producer but not its RTL shape. checkRECT and SetDrawEnv both show `(set (reg:HI P) (mem:HI ...))` + `ashift` + `ashiftrt` collapsed by combine into one `extendhisi2_internal` (`lh`), which deletes P's def and strands its REG_DEAD note. func_800480C0's loop performs exactly four 16-bit loads that are then sign-extended, an exact numerical fit for the four phantoms the 32-byte residual needs.
+- probe: tmp/grind/func_800480C0/s7/bodies/A_s16ptr_loads.c - the four loop loads respelled `a1v = *((s16 *)p);` instead of `a1v = (s16)(*((u16 *)p));` - measured with tmp/grind/func_800480C0/s6/probe.sh (instrumented cc1 tools/gcc-2.7.2/cc1 with BB2_ALLOC_DEBUG=1, plus a -da combine dump and the s6 orphan-USE counter). Cross-checked against asm/funcs/func_800480C0.s.
+- result: `vars= 0, regs= 8/0, unalloc=0, orphanUSE=0`. Two independent reasons, both measured. (a) A `*(s16 *)p` deref expands straight to `(set (reg:SI) (sign_extend:SI (mem:HI)))` - one insn, no HImode intermediate for combine to delete. (b) More decisively, the TARGET does not contain the fold at all: asm/funcs/func_800480C0.s at .L80048144 emits `lhu` + `sll 16` + `sra 16` four times and never `lh`, i.e. the target's own narrow loads are the unsigned-load-then-shift shape candidate.c already spells. Inducing the fold would change the 74-instruction stream. The rule's own boundary predicts this: .claude/rules/phantom-slot-frame-lever.md:47-53 requires the widened `reg:HI` to have a second use AS AN HIMODE VALUE, and this algorithm consumes all four values as s32 addends.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7e18adc2, tmp/grind/func_800480C0/s7/bodies/A_s16ptr_loads.c, annotated `arg0 = 0;` dead param store present, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump; banked at memory/grind/func_800480C0/rejected/s7-s16ptr-direct-loads-fold-clean.c
+
+## [s7] Single-use pointer copy temps at the loop head present combine with deletable defs and orphan one pseudo per temp
+- mechanism: func_80040594's double orphan comes from `(set (reg T) (plus A B))` followed by `(set X (mem (reg T)))`, which combine merges into `(set X (mem (plus A B)))`, deleting T's def and stranding its death note at the block head. If a plain single-use pointer temp were sufficient, four temps in the loop body would give four orphans at .L80048144.
+- probe: tmp/grind/func_800480C0/s7/bodies/C_ptrtemps4.c (`{ u16 *q1 = (u16 *)p; a1v = (s16)(*q1); }` for each of the four narrow loads) and D_ptrtemps5.c (the same plus `{ u32 *q0 = p; word = *q0; }` for the word load), both measured via tmp/grind/func_800480C0/s6/probe.sh.
+- result: Both measure `vars= 0, regs= 8/0, unalloc=0, orphanUSE=0`. A plain register COPY is propagated away by cse/cse2 long before combine runs, so combine never rewrites a death note for it and nothing strands. The func_80040594 shape is strictly narrower than 'single-use temp': the deleted def must be a real ARITHMETIC insn (there `index*4 + base`, text1a_pre.flow insns 480/482/488 and 509/511/513) whose result is dereferenced exactly once and dies at that deref. func_800480C0 owns exactly one site of that shape - the entry-block `p = (u32 *)(base_addr + (((*p) >> 2) << 2)); count = *(p++);` - and its address pseudo does not die at the deref because `p` is carried live into the do-while. Making a second, dying copy of that address would be a semantically redundant recomputation with no observable effect, i.e. the forbidden no-semantic-purpose class rather than a lever.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7e18adc2, tmp/grind/func_800480C0/s7/bodies/{C_ptrtemps4.c,D_ptrtemps5.c}, annotated `arg0 = 0;` dead param store present, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump; banked at memory/grind/func_800480C0/rejected/s7-single-use-ptr-copy-temps-no-orphan.c and rejected/s7-five-ptr-copy-temps-no-orphan.c
