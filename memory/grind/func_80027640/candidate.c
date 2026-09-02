@@ -39,7 +39,16 @@
  * a project-wide cc1 census (32 TUs, tmp/grind/func_80027640/s5/cc1s) found ZERO cases of a
  * `#nop` surviving a `.L` label and 5 other sites where the suppression fires, and the only
  * insn kind that defeats the predicate (a bare USE/CLOBBER, which final.c:1548-1550 skips before
- * FINAL_PRESCAN_INSN at final.c:1956) has no ordinary-C spelling that leaves it dangling. */
+ * FINAL_PRESCAN_INSN at final.c:1956) has no ordinary-C spelling that leaves it dangling.
+ * s6 (2026-09-02, synthesis) CLOSED that escape by measurement, not argument: 26 synthetic TUs
+ * covering every plausible CLOBBER/USE-emitting construct placed after the load produced 0 `#nop`s
+ * after a `.L` label, and a 32-TU final-RTL (.dbr) census over 2,663 code labels found 32
+ * USE/CLOBBER-before-label sites -- all expand_function_end return-value uses -- and 0 of them
+ * preceded by a load. Artifacts: tmp/grind/func_80027640/s6/. Ladder exhausted across 4 distinct
+ * modalities; FORECLOSED record filed at docs/grind/decisions.md:20175. THIS BODY IS FINAL: if a
+ * re-activation trigger fires (a grant covering the build-surface fix, or a toolchain change that
+ * makes maspsx recognise this fork's `.L` labels), apply it as-is and the function closes with no
+ * other edit. */
 void func_80027640(s32 arg0)
 {
     VECTOR tgt;

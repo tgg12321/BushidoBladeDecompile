@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80027640",
-      "file": "code6cac_b",
-      "distance": 35,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80043BD0",
       "file": "text1a_c",
       "distance": 35,
@@ -1876,17 +1868,26 @@
       "rules": 0,
       "status": "foreclosed",
       "foreclosure": "FORECLOSED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-08-31): 2026-09-01 \u2014 func_8002FF20 \u2014 JUDGE ESCALATE on final call (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
+    },
+    {
+      "func": "func_80027640",
+      "file": "code6cac_b",
+      "distance": 35,
+      "verdict": "C",
+      "rules": 0,
+      "status": "foreclosed",
+      "foreclosure": "FORECLOSED (logged to borderline.md; owner ruling 2026-08-31): docs/grind/decisions.md:20175"
     }
   ],
   "counts": {
     "total": 211,
-    "active": 193,
+    "active": 192,
     "by_status": {
-      "active": 193,
-      "foreclosed": 18
+      "active": 192,
+      "foreclosed": 19
     },
     "by_verdict": {
-      "C": 162,
+      "C": 161,
       "ASM-PARTIAL": 31
     }
   }

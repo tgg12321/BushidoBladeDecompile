@@ -277,3 +277,53 @@ The permuter axis is closed empirically (s4: 114,656 iterations, two chassis, ze
 - probe: Source read of tools/gcc-2.7.2/config/mips/mips.c:690-730 and 4106-4127 plus tools/gcc-2.7.2/final.c:1540-1560 and 1956, cross-checked against the census result that no other insn kind ever survives the predicate.
 - result: CONFIRMED as the unique mechanical escape from the predicate, and it is the ONLY remaining unmeasured C-side question on this function. Its ordinary-C reachability is NOT established and is expected to be nil: every 2.7.2 construct that emits a standalone CLOBBER (emit_no_conflict_block for multiword/DImode, store_constructor clearing a register aggregate, struct-return setup) emits it immediately BEFORE its own value-producing insns, and those insns are prescanned and consume dslots_number_nops at mips.c:4106 before the label is reached; leaving a CLOBBER dangling requires a dead multiword value, which is a dead-store/dead-local FAKE construct and would in any case be removed by flow.c. USE insns are emitted only immediately before a CALL_INSN (argument registers, which emit bytes) and at expand_function_end.
 - verdict: CONFIRMED
+
+## s6 (2026-09-02, synthesis) -- frontier reset to EMPTY on the C axis
+
+**H-s6-1 (KILLED, class).** *Statement:* the bare USE/CLOBBER escape from
+`tools/gcc-2.7.2/config/mips/mips.c:705` is not reachable from C at a mid-function if/else join --
+GCC 2.7.2 emits standalone USE/CLOBBER insns only at `expand_function_end` (return-value use) and
+never with a pending load delay, so no C spelling can keep `dslots_number_nops` alive across the
+CODE_LABEL that the target's own `j` encoding pins at 0x800277A4.
+*Mechanism:* mips.c:694-696 skips only NOTEs; final.c:1548-1550 breaks `final_scan_insn` on
+USE/CLOBBER before the FINAL_PRESCAN_INSN call at final.c:1956, making USE/CLOBBER the only
+non-NOTE, zero-byte, non-prescanned insn kind; every other insn kind either emits bytes or consumes
+the counter at mips.c:4106.
+*Probe:* (a) 26 synthetic TUs reproducing the seam with every plausible CLOBBER/USE-emitting
+construct placed after the load -> 0 `#nop`s after a `.L` label
+(`tmp/grind/func_80027640/s6/{gen.py,build.sh,scan.py,tus,asm}`); (b) final-RTL `.dbr` chain census
+of all 32 project TUs, 2,663 code labels -> 32 USE/CLOBBER-before-label sites, all
+`expand_function_end` return-value uses, 0 preceded by a load
+(`s6/{proj_rtl.sh,rtlscan_proj.py,projrtl}`).
+*measured_on:* HEAD + candidate.c applied to src/code6cac_b.c, `sandbox --disable all` == 1
+(target_insns 158, build_insns 157); zero FAKE constructs present anywhere in the candidate or in
+the probe TUs. *predicate_cite:* tools/gcc-2.7.2/config/mips/mips.c:705.
+
+**Frontier after s6: empty on every sanctioned axis.**
+* C spelling -- closed (s2/s3 structural, s5 census, s6 class kill above).
+* permuter -- closed (s4: 114,656 iterations, two chassis, zero score-0).
+* construct/coercion families -- not applicable: the residual is a MISSING instruction that no C
+  construct can cause cc1 to emit; nothing would be spelled, so no family is claimed.
+* canonical-asm -- gate closed: the engine's `canonical` verdict is C, no STRONG scan_hand_coded
+  signal.
+* build-surface (the only two proven routes to 0) -- banned by the standing Judge constraints
+  recorded in state.json.
+
+Disposition: FORECLOSED record filed this session at `docs/grind/decisions.md:20175`. The C body in
+`memory/grind/func_80027640/candidate.c` is FINAL -- if a re-activation trigger fires, apply it and
+the function closes with no other edit.
+
+## [s7] A bare USE or CLOBBER insn between the load and the join CODE_LABEL -- the only non-NOTE, zero-byte, non-prescanned insn kind -- cannot be produced from C at a mid-function if/else join, because GCC 2.7.2 emits standalone USE/CLOBBER insns only at expand_function_end (return-value use) and never with a pending load delay.
+- mechanism: mips_fill_delay_slot (tools/gcc-2.7.2/config/mips/mips.c:705) zeroes dslots_number_nops when the insn after the load is a CODE_LABEL, skipping only NOTEs (mips.c:694-696). final_scan_insn breaks on USE/CLOBBER at tools/gcc-2.7.2/final.c:1548-1550, before the FINAL_PRESCAN_INSN call at final.c:1956, so such an insn neither emits bytes nor consumes the pending nop at mips.c:4106 -- it is the unique mechanical escape. Every other insn kind either emits bytes (breaking the target geometry) or is prescanned (printing the nop BEFORE the label, at the wrong address).
+- probe: (a) tmp/grind/func_80027640/s6/gen.py generated 26 TUs reproducing the exact seam (s6/asm/base.s: lh $2,4($4) / .L label / sw $2,0($6)) with a candidate CLOBBER/USE-emitting construct placed AFTER the load -- dead and live long long temps, long long shift/mul/neg/compare, struct copy/zero/constructor, 8- and 16-byte struct-returning calls, double/float temps, double compare, div, mod, local array init, union punning, (void) comma, void call, dead label+goto, baseline -- compiled straight out of cc1 with the canonical CC_FLAGS (s6/build.sh) and scanned by s6/scan.py. (b) s6/proj_rtl.sh compiled all 32 src/*.c with -da keeping the .dbr dump (the post-reorg chain that final walks) and s6/rtlscan_proj.py parsed each dump's top-level NEXT_INSN chain, classifying the previous non-NOTE entry of every CODE_LABEL.
+- result: (a) 0 of 26 TUs emit a #nop after a .L label; 5 of 26 preserve the seam at all (the other 21 constructs emit real insns that land between the load and the label, destroying the geometry rather than exploiting it). (b) Over 2,663 code labels in 32 TUs: 32 sites have a bare USE/CLOBBER immediately before a CODE_LABEL -- every one is the (use (reg/i:SI 2 v0)) return-value use emitted by expand_function_end, plus one CLOBBER in code6cac_b preceded by an addsi3 -- and 0 of the 32 are preceded by a load, i.e. the escape never co-occurs with a pending load delay. Direct RTL proof of the seam itself: s6/rtl/base.i.dbr shows (insn 35 (set (reg/v:SI 2 v0) (mem ...))) followed directly by (code_label 37), with nothing between them, not even a NOTE.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD + memory/grind/func_80027640/candidate.c applied to src/code6cac_b.c; sandbox func_80027640 --disable all == 1 (target_insns 158, build_insns 157, rules_dropped 0, cheat_asm_stripped 35); zero FAKE constructs present in the candidate or in any probe TU (fake_ablate.py is a no-op here)
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.c:705
+
+## [s7] The honest floor for func_80027640 on the current chassis with candidate.c applied is 1 -- one instruction insertion, the build being one instruction short -- unchanged for the sixth consecutive session.
+- mechanism: The missing word is the load-delay nop at 0x800277A4, suppressed inside cc1 because the j at 0x80027770 (word 0x08009DE9 -> 0x009DE9<<2 = 0x800277A4) pins a CODE_LABEL immediately after lh $v0,0x4($a0), satisfying the mips.c:705 early-out.
+- probe: python3 tmp/grind/func_80027640/s1/apply.py memory/grind/func_80027640/candidate.c ; & tools/wteng.ps1 main sandbox func_80027640 --disable all
+- result: score 1, target_insns 158, build_insns 157, scorable true, rules_dropped 0, cheat_asm_stripped 35. src/code6cac_b.c was reverted to INCLUDE_ASM at the end of the session.
+- verdict: CONFIRMED

@@ -1,7 +1,7 @@
 {
  "func": "func_80027640",
  "file": "code6cac_b",
- "session_count": 5,
+ "session_count": 7,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -33,25 +33,21 @@
    "floor": 1,
    "modality": "synthesis",
    "headline": "Floor re-measured 1 on the current chassis; residual RE-ATTRIBUTED from maspsx to cc1 (mips.c:705 CODE_LABEL early-out), class-confirmed by a 32-TU cc1 census (0 of 1.4MB nops survive a .L label), and"
-  }
- ],
- "frontier": [
-  {
-   "hypothesis": "The C axis is closed at the RTL-emission level: every property a C spelling controls is consumed by passes that run before `final`, while the divergence is created inside final/mips_fill_delay_slot and keyed only on 'is the next insn a CODE_LABEL', which the target's own bytes force to be true.",
-   "mechanism": "tools/gcc-2.7.2/config/mips/mips.c:705 zeroes dslots_number_nops when the insn after the load (NOTEs skipped, mips.c:694-696) is a CODE_LABEL; the `j` at 0x80027770 encodes 0x800277A4, pinning the label onto the nop. Confirmed by source, by tmp/grind/func_80027640/s2/cc1.s:526-531, and by an s5 census finding 0 counterexamples in 1.4 MB of cc1 output.",
-   "next_probe": "None on the spelling axis. Do not re-dispatch permuter (s4 was zero-yield across 114,656 iterations) and do not re-dispatch structural (s2/s3 closed it). The only sub-branch left is the USE/CLOBBER escape below."
   },
   {
-   "hypothesis": "The bare USE/CLOBBER escape from mips.c:705 has no ordinary-C spelling, so its elimination would convert the C-axis closure from 'exhaustion' into 'proven by construction'.",
-   "mechanism": "A non-NOTE, zero-byte, non-prescanned insn between the load and the label keeps dslots_number_nops alive so the `#nop` prints after the label; final.c:1548-1550 makes USE/CLOBBER the only such insn kind. Every 2.7.2 CLOBBER emitter (emit_no_conflict_block for multiword/DImode, store_constructor on a register aggregate, struct-return setup) places the clobber before its own value insns, which consume the counter at mips.c:4106.",
-   "next_probe": "One cheap forensics session: build the candidate with the instrumented cc1 (tools/gcc-2.7.2/cc1, NOT build/cc1) dumping the late RTL and confirm the seam's insn chain is exactly [lh][CODE_LABEL][sw] with only NOTEs elided; then, in a scratch TU only, test whether any ordinary-C construct (a long long temp, a struct-valued assignment, an aggregate initialiser) can leave a standalone CLOBBER as the last surviving insn of a basic block after flow.c. If it cannot -- the expectation -- record the class kill with predicate_cite tools/gcc-2.7.2/config/mips/mips.c:705."
+   "session": 6,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Floor re-measured 1 on the current chassis; the last open C-axis escape (bare USE/CLOBBER between the load and the join CODE_LABEL, the unique non-prescanned zero-byte insn kind) KILLED at class scope by a 26-TU synthetic sweep (0 nops survive a .L label) plus a 32-TU final-RTL census (2,663 labels; 32 USE/CLOBBER-before-label sites, all expand_function_end return uses, 0 preceded by a load). Ladder exhausted across 4 distinct modalities; FORECLOSED record filed at docs/grind/decisions.md:20175."
   },
   {
-   "hypothesis": "Both known routes to distance 0 are already proven to SHA1 == oracle and are blocked only by the build-surface ban, so this function's disposition is a driver/ruling question rather than a search question.",
-   "mechanism": "Route A: the s2/s3 4-line $at-aware maspsx label fix (tmp/grind/func_80027640/s2/maspsx_at_aware_label_fix.diff), measured byte-neutral across all 31 other C objects, relinking to 62efab4f73f992798c43e8c730aa43baa10bb4fa, and subsuming maspsx_label_nop_funcs.txt entirely. Route B: a maspsx_label_nop_funcs.txt entry, exactly as func_80060E04, func_80040594 and spu_DmaTransfer already use. Both are build-surface changes; both standing Judge constraints forbid them.",
-   "next_probe": "In escalation modality only: file the '## <date> -- func_80027640 -- **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' record citing evidence.md s3/s4/s5 and the s2/s3/s4/s5 artifacts, naming the re-activation trigger (a class grant covering assembler-fidelity repairs, or a ruling lifting the build-surface ban) -- either turns this into a same-day close because the C is already final."
+   "session": 7,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Floor re-measured 1; the last open C-axis escape from mips.c:705 (a bare USE/CLOBBER between the load and the join CODE_LABEL) KILLED at class scope by a 26-TU synthetic sweep plus a 2,663-label final"
   }
  ],
+ "frontier": [],
  "judge_constraints": [
   "func_80027640 may not be closed via a maspsx_label_nop_funcs.txt entry or any maspsx gate-list addition; change modality and pursue a route that needs no build-surface change. Do not refile this handoff.",
   "func_80027640 may not be closed via ANY build-surface change: no maspsx/cc1/linker/Makefile source patch and no maspsx gate-list entry. Do not refile this handoff in any spelling; change modality."
@@ -85,6 +81,28 @@
    "measured_on": "HEAD + candidate.c applied, sandbox --disable all score 1 (target_insns 158, build_insns 157); zero FAKE constructs; target bytes read from asm/funcs/*.s",
    "predicate_cite": "",
    "result": "Does not transfer. func_80027640's consumer at the label is 'sw $v0,0x18($sp)' -- sp-relative, needing no %hi/%lo expans"
+  },
+  {
+   "id": "s6-use-clobber-escape",
+   "statement": "The bare USE/CLOBBER escape from mips.c:705 is not reachable from C at a mid-function if/else join: GCC 2.7.2 emits standalone USE/CLOBBER insns only at expand_function_end, and never with a pending load delay.",
+   "verdict": "KILLED",
+   "kill_scope": "class",
+   "measured_on": "HEAD + memory/grind/func_80027640/candidate.c applied to src/code6cac_b.c; sandbox --disable all == 1 (target_insns 158, build_insns 157); zero FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.c:705",
+   "session": 6
+  },
+  {
+   "session": 7,
+   "statement": "A bare USE or CLOBBER insn between the load and the join CODE_LABEL -- the only non-NOTE, zero-byte, non-prescanned insn kind -- cannot be produced from C at a mid-function if/else join, because GCC 2",
+   "kill_scope": "class",
+   "measured_on": "HEAD + memory/grind/func_80027640/candidate.c applied to src/code6cac_b.c; sandbox func_80027640 --disable all == 1 (target_insns 158, build_insns 157, rules_dropped 0, cheat_asm_stripped 35); zero FA",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.c:705",
+   "result": "(a) 0 of 26 TUs emit a #nop after a .L label; 5 of 26 preserve the seam at all (the other 21 constructs emit real insns "
   }
- ]
+ ],
+ "disposition": {
+  "result": "owner-gated",
+  "escalation_ref": "docs/grind/decisions.md:20175",
+  "filed": "2026-09-02"
+ }
 }

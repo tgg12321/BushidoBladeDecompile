@@ -20171,3 +20171,82 @@ this function immediately with the existing candidate and no other edit.
 ## 2026-09-01 22:20 — func_80027640 — ruling: INTEGRATION HANDOFF filed for func_80027640 : docs/grind/decisions.md:20086 -- 2 — **FAIL**
 
 The C in memory/grind/func_80027640/candidate.c is clean pure C (two libgte VECTOR locals; no asm/volatile/pin/FAKE/dead store) and I do not object to it; s2/s3 evidence (hypotheses.md H8/H10-H13, evidence.md s2, the 33-site census) is thorough and tools/maspsx is verifiably unmodified (git status clean). The defect is dispositional and decisive: the sole proposed remedy is a source patch to tools/maspsx/maspsx/__init__.py (tmp/grind/func_80027640/s2/maspsx_at_aware_label_fix.diff, verified 4 lines in _handle_nop_before_next_instruction). That is a SUBSTRATE change, which .claude/rules/integration-handoff-self-serve.md puts on the add-scope-allow path denylist twice over ('Anything under tools/...' and the 'What STILL pends the owner' list: 'Any change to the ... substrate (cc1/maspsx/linker/Makefile)'), and the standing policy makes pipeline edits that alter emitted bytes an automatic FAIL(CONSTRUCT). No driver-executable grant exists, so ESCALATE(integration-handoff) is unavailable. It is also a refile of the foreclosed s1 handoff against the standing judge_constraint ('pursue a route that needs no build-surface change. Do not refile this handoff'). On the live chassis the honest floor is 1, not 0. Default-FAIL governs; the decisions.md entries remain the owner's audit item for the globalize-the-label-nop-fix question.
+
+## 2026-09-02 — func_80027640 (src/code6cac_b.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+**Disposition:** proof-of-foreclosure record. No question is addressed to the owner; the driver
+forecloses the item silently. The C body is FINAL and clean; the single residual instruction is a
+compiler/assembler fidelity artefact whose only two known fixes are build-surface changes that two
+standing Judge constraints forbid.
+
+**State at foreclosure.** `memory/grind/func_80027640/candidate.c` applied to src/code6cac_b.c and
+measured THIS session: `sandbox func_80027640 --disable all` → `"score": 1, "target_insns": 158,
+"build_insns": 157, "rules_dropped": 0` — one *insertion*, the build is one instruction short. The
+body is ordinary pure C (two libgte `VECTOR` locals, include/gte.h:25) with ZERO FAKE constructs:
+no volatile, no `__asm__`, no register pin, no dead store, no pointer alias, no `do {} while (0)`,
+no named holder. `tools/fake_ablate.py` is a no-op on it.
+
+**The residual, with its predicate.** Target seam (asm/funcs/func_80027640.s:95-98):
+`lh $v0,0x4($a0)` @0x800277A0 / `.L800277A4:` / `nop` @0x800277A4 / `sw $v0,0x18($sp)` @0x800277A8.
+The label is pinned to the nop's own address by the `j` at 0x80027770 (word 0x08009DE9 →
+0x009DE9<<2 = 0x800277A4), so ANY byte-correct form has a CODE_LABEL textually between the load and
+its consumer. `tools/gcc-2.7.2/config/mips/mips.c:705` (`GET_CODE (next_insn) == CODE_LABEL` inside
+`mips_fill_delay_slot`, after skipping NOTEs only, mips.c:694-696) then zeroes `dslots_number_nops`
+and clears `mips_load_reg*`, so cc1 never emits the `#nop` marker at all
+(`tmp/grind/func_80027640/s2/cc1.s:526-531`). maspsx is only the second blind emitter (its
+`is_label()` regex matches `$L`, not this fork's `.L`); the ORIGIN is cc1.
+
+**Gate evidence (owner's endgame-lock AND-gates, both FAIL).**
+1. *Canonical-asm gate:* the engine's `canonical` verdict for func_80027640 is **C** (pure-C target,
+   158 scorable insns). No STRONG `scan_hand_coded` S1/S2/S6 signal exists. Gate closed.
+2. *Coercion/spelling family gate:* no construct is needed or proposed — the C is already final and
+   FAKE-free, so there is nothing to sanction and no SOTN-master precedent to cite. Gate closed.
+
+**Evidence pointers (every sanctioned axis measured dead).**
+* recon (s1): honest floor 1; frame/aggregate model confirmed from bytes. `evidence.md` s1.
+* structural (s2, s3): the label pin re-derived from the `j` encoding; the C axis proved to be
+  unable to move a CODE_LABEL that the target's own bytes place there. `evidence.md` s2/s3.
+* permuter (s4): faithful stand-alone workspace, fidelity-proved at base_score 100 = exactly one
+  insertion; **114,656 iterations** across two structurally distinct chassis, zero score-0 forms.
+  `evidence.md` s4, `tmp/grind/func_80027640/s4/perm`.
+* synthesis (s5): pass attribution corrected from maspsx to cc1; 32-TU / 1.4 MB raw-cc1 census
+  (`tmp/grind/func_80027640/s5/cc1s`) found **0** `#nop`s surviving a `.L` label and 5 sites where
+  the suppression fires. `evidence.md` s5.
+* synthesis (s6, this session): the LAST open escape from mips.c:705 — a bare `USE`/`CLOBBER`
+  between the load and the label, the only insn kind that is non-NOTE, emits zero bytes, and is
+  skipped before `FINAL_PRESCAN_INSN` (`tools/gcc-2.7.2/final.c:1548-1550` vs the prescan call at
+  final.c:1956) — is now **measured** dead, not merely argued:
+  - 26 synthetic TUs (`tmp/grind/func_80027640/s6/tus`) reproduce the exact seam
+    (`lh $2,4($4)` / `.L` / `sw $2,0($6)` in `s6/asm/base.s`) and probe every plausible
+    CLOBBER/USE-emitting construct after the load — dead `long long` temp, live `long long` from a
+    call, `long long` shift/mul/neg/compare, struct copy / zeroing / constructor / struct-returning
+    call (8- and 16-byte), `double`/`float` temps, div, mod, local array init, union punning,
+    `(void)` comma, void call, dead label+goto. **0 of 26 emit a `#nop` after a `.L` label**
+    (`s6/scan.py`).
+  - Final-RTL (`.dbr`) chain scan of the WHOLE project, 32 TUs, **2,663 code labels**
+    (`s6/projrtl`, `s6/rtlscan_proj.py`): 32 sites have a bare USE/CLOBBER immediately before a
+    CODE_LABEL — every one of them is the `(use (reg/i:SI 2 v0))` return-value use emitted by
+    `expand_function_end` (plus one CLOBBER in code6cac_b) — and **0 of the 32 are preceded by a
+    load**, i.e. the escape never co-occurs with a pending load delay. GCC 2.7.2 does not place a
+    standalone USE/CLOBBER at a mid-function if/else join.
+* The one in-tree nop-free resolution of this geometry, `asm/funcs/func_8003ACB8.s:93-95`, works
+  only because its post-label consumer is a maspsx-expanded `%hi/%lo` store whose `lui $at` fills
+  the delay. func_80027640's consumer is `sw $v0,0x18($sp)` (sp-relative, no expansion), so the
+  slot can only be a literal `nop`.
+
+**The two routes to distance 0 — both proven, both banned.** (Stated for the record only; NOT
+refiled, and no operator steps are requested.)
+* Route A (s2/s3): a 4-line `$at`-aware label fix in `tools/maspsx/maspsx/__init__.py`, measured
+  byte-neutral across all 31 other C objects and relinking to SHA1 == oracle.
+* Route B (s1): a `maspsx_label_nop_funcs.txt` entry — exactly how func_80060E04, func_80040594 and
+  spu_DmaTransfer byte-match today.
+Both are build-surface changes. Standing Judge constraints on this function forbid a gate-list entry
+and ANY build-surface change (decisions.md:20082 and :20171). They are recorded here as the reason
+the residual is unattackable from a grind session, not as a proposal.
+
+**Re-activation triggers.** (i) A class grant covering assembler/compiler fidelity repairs, or any
+ruling lifting the build-surface ban for this function — either closes it the same day, because the
+C is already final and both routes are already proven to SHA1 == oracle. (ii) Any toolchain change
+that makes maspsx recognise this fork's `.L` local labels, or a cc1 change emitting `$L`-prefixed
+locals. (iii) Any counterexample to the s5/s6 census — a `#nop` observed surviving a `.L` label in
+GCC 2.7.2 output — which would reopen the C axis at mips.c:705.

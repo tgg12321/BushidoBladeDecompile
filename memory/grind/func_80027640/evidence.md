@@ -519,3 +519,104 @@ empirically in s4.
 - [s5] The unique mechanical escape from mips.c:705 is a bare USE/CLOBBER insn between the load and the label: mips.c:694-696 skips only NOTEs, and final.c:1548-1550 breaks on USE/CLOBBER before FINAL_PRESCAN_INSN (final.c:1956), so such an insn emits no bytes and does not consume the pending nop -- the `#nop` would then print on the post-label `sw`, at exactly 0x800277A4. No ordinary-C construct leaves a standalone CLOBBER dangling at the end of a basic block; every CLOBBER-emitting construct is immediately followed by its own value insns, which consume the counter at mips.c:4106.
 
 - [s5] Ladder status after s5: recon (s1), structural (s2, s3), permuter (s4 -- 114,656 iterations, two chassis, zero score-0) and synthesis (s5) are all spent with measurements. The C body is final and FAKE-free; the two routes to 0 (the s2/s3 4-line $at-aware maspsx repair, proven byte-neutral across all 31 other C objects and relinking to SHA1 == oracle; and a maspsx_label_nop_funcs.txt entry) are both build-surface changes banned by standing Judge constraints.
+
+## s6 (2026-09-02, synthesis) -- the last open escape from mips.c:705 MEASURED dead; ladder
+## exhausted; FORECLOSED record filed
+
+### Chassis re-measurement (mandated)
+`memory/grind/func_80027640/candidate.c` applied to src/code6cac_b.c at HEAD, then
+`& tools/wteng.ps1 main sandbox func_80027640 --disable all`:
+`"score": 1, "target_insns": 158, "build_insns": 157, "scorable": true, "rules_dropped": 0,
+"cheat_asm_stripped": 35`. Floor **1**, unchanged from s1-s5. Every banked conclusion stays
+chassis-valid.
+
+### KILL RE-AUDIT (mandated)
+`state.json` still has no `kills[]` array (the kills live as prose in hypotheses.md), and
+candidate.c carries ZERO FAKE constructs, so `tools/fake_ablate.py` is a no-op and no banked
+measurement is FAKE-carrier-contaminated. The re-measurement above IS the honest ablation. The two
+s5 instance kills were re-checked against the current chassis by re-running the same measurement:
+both still hold (floor 1; the seam is unchanged).
+
+### The USE/CLOBBER escape -- from "argued unreachable" to "measured dead"
+s5 identified, but did not measure, the one mechanical escape from
+`tools/gcc-2.7.2/config/mips/mips.c:705`: a bare `USE` or `CLOBBER` insn between the load and the
+CODE_LABEL. It is the only insn kind that is simultaneously (a) not a NOTE (so mips.c:694-696 will
+not skip it), (b) zero-byte, and (c) skipped by `final_scan_insn` before the `FINAL_PRESCAN_INSN`
+call -- `tools/gcc-2.7.2/final.c:1548-1550` breaks on `USE`/`CLOBBER`, the prescan call is at
+final.c:1956, and `final_prescan_insn` (mips.c:4099-4127) is what consumes `dslots_number_nops`
+(printing the `#nop` when `length == 0` or `reg_mentioned_p` of the loaded reg, else
+`dslots_load_filled++`). With such an insn at the seam the sequence would be: label printed, then
+`sw $v0,0x18($sp)` prescanned, `reg_mentioned_p ($v0)` true, `#nop` emitted at exactly 0x800277A4
+-- the target bytes.
+
+**Probe 1 -- synthetic construct sweep (26 TUs).** `tmp/grind/func_80027640/s6/gen.py` emits 26
+TUs (`s6/tus/`) of the shape
+
+    int probe(short *p, int c, int *q) {
+      int v; int v2 = 0;
+      if (c > 3) { v = c * 5; } else { v = p[2]; <CONSTRUCT> }
+      q[0] = v; q[1] = v2; return v; }
+
+with `<CONSTRUCT>` placed AFTER the load (the only position that could put an insn between the load
+and the join label): dead `long long` temp, `long long` from a call (live and dead), `long long`
+shift / multiply / negate / compare, struct copy from a global, field-wise struct zeroing, struct
+constructor init, 8- and 16-byte struct-returning calls, `double` and `float` temps, `double`
+compare, integer div, integer mod, local array init + variable index, union type punning, `(void)`
+comma expression, void call, dead label+goto, and the bare baseline. Compiled straight out of cc1
+with the canonical CC_FLAGS (`s6/build.sh` -> `s6/asm/`). The baseline reproduces the target seam
+exactly -- `s6/asm/base.s`: `lh $2,4($4)` / `.L..:` / `sw $2,0($6)`. Scanner `s6/scan.py`:
+**0 of 26 produce a `#nop` after a `.L` label**; 5 of 26 preserve the seam at all (the other 21
+constructs emit real insns that land between the load and the label and thus destroy the geometry
+rather than exploit it).
+
+**Probe 2 -- final-RTL chain census of the whole project.** `s6/proj_rtl.sh` compiles all 32
+`src/*.c` with `-da` and keeps only the `.dbr` (post-reorg, i.e. the exact chain `final` walks) into
+`s6/projrtl/`. `s6/rtlscan_proj.py` parses each dump into its top-level NEXT_INSN chain and asks:
+for each CODE_LABEL, what is the previous non-NOTE entry? Result over **2,663 code labels**:
+* USE/CLOBBER immediately before a CODE_LABEL: **32** sites -- every one is the
+  `(use (reg/i:SI 2 v0))` return-value use emitted by `expand_function_end` (its following label is
+  the epilogue/return label), plus one CLOBBER in code6cac_b whose predecessor is an `addsi3`.
+* Of those 32, the number preceded by a LOAD (i.e. with a pending `dslots_number_nops`): **0**.
+So the escape does occur in GCC 2.7.2 output, but only at function-end, and never with a pending
+load delay. There is no mid-function if/else join in 32 TUs where a standalone USE/CLOBBER survives
+to `final`.
+
+**Direct RTL proof for the seam itself.** `s6/rtl/base.i.dbr` shows the chain
+`(insn 35 ... (set (reg/v:SI 2 v0) (mem ...)))` -> `(code_label 37 35 46 ...)`: the load's
+NEXT_INSN is the CODE_LABEL itself, with nothing between them -- not even a NOTE. That is the
+predicate of mips.c:705 satisfied in its tightest possible form.
+
+### Net
+The C axis is closed with a named predicate (mips.c:705), a named unique escape (final.c:1548-1550
+USE/CLOBBER) and two independent measurements showing the escape is not reachable from C at a
+mid-function join. Combined with s4's 114,656 permuter iterations and s5's 1.4 MB cc1 census, every
+sanctioned axis is measured dead; the two proven routes to distance 0 are build-surface changes
+banned by the two standing Judge constraints. A FORECLOSED record was filed this session at
+`docs/grind/decisions.md:20175`.
+
+- [s6] Chassis re-measured: candidate.c applied, `sandbox --disable all` -> score 1, target_insns 158, build_insns 157, rules_dropped 0, cheat_asm_stripped 35. Floor unchanged at 1 for the sixth session.
+- [s6] CLASS KILL: no ordinary-C construct can place a bare USE/CLOBBER (the unique zero-byte, non-prescanned, non-NOTE insn kind, final.c:1548-1550) between the load and the join CODE_LABEL. Measured two ways: 26 synthetic TUs covering every plausible CLOBBER-emitting construct -> 0 `#nop`s surviving a `.L` label (s6/scan.py); and a 32-TU final-RTL (.dbr) chain census over 2,663 code labels -> 32 USE/CLOBBER-before-label sites, all `expand_function_end` return-value uses, 0 of them preceded by a load (s6/rtlscan_proj.py). predicate_cite tools/gcc-2.7.2/config/mips/mips.c:705.
+- [s6] The seam's RTL chain is `(insn 35 (set (reg 2) (mem ...)))` -> `(code_label 37)` with NOTHING between (s6/rtl/base.i.dbr) -- the mips.c:705 predicate holds in its tightest form, and the synthetic baseline reproduces the target geometry `lh $2,4($4)` / `.L` / `sw $2,0($6)` exactly (s6/asm/base.s).
+- [s6] Ladder: recon (s1), structural (s2/s3), permuter (s4), synthesis (s5/s6) -- 4 distinct modalities, floor flat at 1 across all six sessions. FORECLOSED record filed at docs/grind/decisions.md:20175 with both endgame-lock gates evaluated and FAILED (canonical gate verdict is C; no construct is proposed so no SOTN precedent applies).
+
+- [s7] Chassis re-measured this session: candidate.c applied to src/code6cac_b.c at HEAD -> sandbox --disable all score 1 (target_insns 158, build_insns 157, rules_dropped 0). Floor flat at 1 across s1-s6.
+
+- [s7] KILL RE-AUDIT (mandated): state.json carried no kills[] array before this session (kills were prose in hypotheses.md) and candidate.c has zero FAKE constructs, so tools/fake_ablate.py is a no-op and no banked measurement is FAKE-carrier-contaminated; the re-measurement above IS the honest ablation. Both s5 instance kills still hold on the current chassis. An explicit kills[] entry for the s6 class kill was written to state.json.
+
+- [s7] The synthetic baseline reproduces the target seam exactly -- tmp/grind/func_80027640/s6/asm/base.s contains lh $2,4($4) / .L label / sw $2,0($6) with no #nop -- so the probe TUs are a faithful model of func_80027640's geometry, not an approximation.
+
+- [s7] 26-TU synthetic sweep over every plausible CLOBBER/USE-emitting C construct placed after the load: 0 produce a #nop surviving a .L label (tmp/grind/func_80027640/s6/scan.py).
+
+- [s7] 32-TU final-RTL (.dbr) chain census, 2,663 code labels: 32 bare USE/CLOBBER-before-CODE_LABEL sites, all expand_function_end return-value uses (plus one CLOBBER in code6cac_b), 0 preceded by a load. GCC 2.7.2 does not place a standalone USE/CLOBBER at a mid-function if/else join (tmp/grind/func_80027640/s6/rtlscan_proj.py).
+
+- [s7] s6/rtl/base.i.dbr shows the seam's chain as (insn 35 = the load) -> (code_label 37) directly, with not even a NOTE between them: the mips.c:705 predicate holds in its tightest possible form.
+
+- [s7] Ladder status: recon (s1), structural (s2, s3), permuter (s4 -- 114,656 iterations across two structurally distinct chassis, zero score-0 forms), synthesis (s5, s6). Four distinct modalities, floor flat at 1 for six sessions.
+
+- [s7] Both endgame-lock AND-gates evaluated and FAILED: (1) canonical-asm -- the engine's canonical verdict for func_80027640 is C (pure-C target, 158 scorable insns), no STRONG scan_hand_coded S1/S2/S6 signal; (2) coercion/spelling family -- not applicable, since no construct is proposed at all (the residual is a MISSING instruction, and the C body is already final and FAKE-free), so there is nothing to sanction and no SOTN-master precedent to cite.
+
+- [s7] The two routes to distance 0 are both already proven to SHA1 == oracle and both are build-surface changes banned by the two standing Judge constraints (decisions.md:20082 and :20171): the s2/s3 4-line $at-aware maspsx label fix, and a maspsx_label_nop_funcs.txt entry. They are recorded in the foreclosure entry as the reason the residual is unattackable from a grind session, NOT refiled as a proposal, and no operator steps are requested.
+
+- [s7] FORECLOSED record filed this session at docs/grind/decisions.md:20175, titled '2026-09-02 - func_80027640 (src/code6cac_b.c) - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED', carrying the gate evidence, evidence pointers, and three re-activation triggers.
+
+- [s7] src/code6cac_b.c was reverted to INCLUDE_ASM before the session ended; the final C body lives in memory/grind/func_80027640/candidate.c and applies cleanly via tmp/grind/func_80027640/s1/apply.py if a re-activation trigger fires.

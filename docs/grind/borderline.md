@@ -361,3 +361,8 @@ disposition taken: today's earlier family-candidate entry is RESOLVED-GRANTED. f
 category: integration-handoff (REFUSED: no executable remedy in verdict)
 evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-01 — func_8002FF20 — JUDGE ESCALATE on final call (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
 disposition taken: REFUSED under the current frozen policy; FORECLOSED silently (owner ruling 2026-08-31, ordinary-c-judge-decidable); candidate preserved at memory/grind/func_8002FF20/candidate.c; re-attemptable if a later owner ruling spends this entry.
+
+## 2026-09-02 — func_80027640 — policy-question
+category: policy-question
+evidence: session-filed disposition: docs/grind/decisions.md:20175
+disposition taken: FORECLOSED silently (owner ruling 2026-08-31 — no pending states, no packets); re-attemptable if a later owner ruling spends this entry.
