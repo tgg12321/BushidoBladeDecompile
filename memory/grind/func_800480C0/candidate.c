@@ -35,6 +35,28 @@
  * The pad remains banned here (Judge 2026-09-02 04:28,
  * docs/grind/decisions.md:20349); the bytes-proven pad body is preserved at
  * rejected/pad-judge-banned-2026-09-02.c. */
+/* s5 (synthesis, 2026-09-02) - BODY UNCHANGED, floor re-measured 20 (74/74).
+ * Two ledger corrections this session, both tree-wide measurements:
+ *  1. ONE UNALLOCATED PSEUDO == 8 BYTES OF `vars`, NOT 4. s3 modelled the
+ *     ST_REGS compare residue as a 4-byte alter_reg slot rounded up to 8.
+ *     Correlating cc1's `# vars=` with the instrumented cc1's BB2_ALLOC_DEBUG
+ *     hardreg=-1 count across all 32 TUs gives `vars = 8 * phantoms` exactly
+ *     (func_80042874 6->48, func_80041E10 3->24, get_cs 2->16, ~30 at 1->8).
+ *     So the target's 32 untouched bytes are FOUR phantoms, and every spelling
+ *     in the 30-form ceiling supplies ONE of them.
+ *  2. THE PAD IS NOT THE ONLY PRODUCER OF UNTOUCHED `vars`. 54 ordinary-C
+ *     COMPLETED-C bodies on main reserve untouched frame bytes with no pad
+ *     aggregate and no spill, and eight reach 16 bytes (two phantoms) -
+ *     get_cs/get_ce (src/display.c:556), func_8003FECC, func_80038170,
+ *     func_80040594, SsSeqCalledTbyT, _SsSeqPlay, SpuSetCommonAttr. Same
+ *     ST_REGS residue class (display.lreg: Registers 85 and 99, blocks 1 and 6).
+ *     What is missing here is multiplicity, not mechanism.
+ *  Bound: among the 45 census candidates with no mult/div, untouched `vars`
+ *  takes only {8, 16, 32} and every 32 is a sanctioned-pad function whose
+ *  phantom count is ZERO (the 32 bytes are the declared array). Four
+ *  folded-compare residues on a mult-free body has no precedent in this tree.
+ *  Instruments: tmp/grind/func_800480C0/s5/{census.sh,census2.py,census3.py,
+ *  alloc_tu.sh,dump2.sh}. */
 void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
 {
     u32 *p;

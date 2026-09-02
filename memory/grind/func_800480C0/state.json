@@ -1,8 +1,8 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 20,
    "modality": "permuter",
    "headline": "Permuter (2 chassis, ~50k iters, --stack-diffs) found nothing below the 20-diff baseline; DImode slot-width and multi-BB phantom-multiplicity levers killed; the +32 residual is proven to be a get_fram"
+  },
+  {
+   "session": 5,
+   "floor": 20,
+   "modality": "synthesis",
+   "headline": "Phantom-slot unit corrected 4->8 bytes (target needs FOUR phantoms, not eight); tree census answers s4 frontier 1 as a HIT - 54 ordinary-C bodies on main reserve untouched vars, eight reach two phanto"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Some COMPLETED-C function already on main reproduces an allocated-but-never-touched vars region from ordinary C - without a pad aggregate and without a spill - and its producer is spellable here.",
-   "mechanism": "get_frame_size() counts every assign_stack_local slot; a LIVE local whose traffic is folded away after RTL expand leaves an untouched region, and the project has ~1200 matched bodies to census.",
-   "next_probe": "Cheap no-compile census: for each matched src/*.c function, read the .frame vars= term from the build asm and count sw/lw traffic inside the vars window; report any function with vars>0 and zero traffic that carries no pad/volatile aggregate. A hit names an unspelled producer; a clean negative is the strongest evidence for the pad-allowlist route."
+   "hypothesis": "The RTL shape that orphans a SECOND ST_REGS residue is identifiable from get_cs, the cheapest live exhibit of multiplicity 2 on main, and may be spellable onto one of func_800480C0's two conditional branches.",
+   "mechanism": "regclass assigns the residue class ST_REGS so find_reg cannot seat it in GR_REGS and alter_reg pays it an 8-byte slot; which compare survives to regclass unfolded is decided in combine/jump2, and the dumps name it rather than leaving it to analogy.",
+   "next_probe": "Read tmp/grind/func_800480C0/s5/dumps/display.{combine,lreg,greg} for get_cs blocks 1 and 6 and identify exactly which insn pair leaves Registers 85 and 99 ref'd-but-unallocated; then test that exact shape on this body's entry test and do-while backedge. Thirty guard-shaped spellings have failed by analogy - the dump names the shape in one read."
   },
   {
-   "hypothesis": "The 32 untouched bytes correspond to a LIVE 8-word local in the original TU whose uses this decompilation folded away, shared by all four text1b siblings with the identical region.",
-   "mechanism": "function.c assign_stack_local reserves an aggregate slot at RTL-expand and never reclaims frame_offset, so a local that survives to expand but whose uses fold leaves the slot with no traffic.",
-   "next_probe": "forensics modality on func_80047EE8 / func_80047FBC / func_800481E8 and their callers/callees: look for a call, struct or buffer shape that implies the same 8-word local (e.g. a stack-built argument record passed around func_800482C8)."
+   "hypothesis": "The target's 32 bytes are one 32-byte AGGREGATE from the original source rather than four coincidental phantom residues, shared by all four text1b siblings.",
+   "mechanism": "function.c assign_stack_local reserves an aggregate slot at RTL-expand from the source DECL and never reclaims frame_offset; a PsyQ MATRIX is exactly 32 bytes. BB2_ALLOC_DEBUG reports ZERO unallocated pseudos for func_80047EE8/func_80047FBC, so the siblings' identical 32-byte regions are a declaration, not residues.",
+   "next_probe": "forensics on func_800482C8 and the callers of the four siblings: look for a 32-byte record (MATRIX / 8-word buffer) the original built on the stack and passed by address, whose address-taking this decompilation folded into pointer arithmetic. A LIVE such local is ordinary C and needs no allowlist row."
   },
   {
-   "hypothesis": "The unwritten volatile pad remains the only known producer of exactly 32 bytes and is blocked only by the closed per-function enumeration in engine/volatile_cheats.py.",
-   "mechanism": "engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS is a per-function frozenset; sibling func_80047EE8 ships exactly this construct on main (src/text1b.c:20-36) under owner ruling 2026-08-18.",
-   "next_probe": "None available to a grind session - the bytes-proven body is preserved at memory/grind/func_800480C0/rejected/pad-judge-banned-2026-09-02.c and integrates unchanged if an owner ruling adds the row (Judge FAIL 2026-09-02 04:28, docs/grind/decisions.md:20349)."
+   "hypothesis": "The unwritten volatile pad remains the only in-hand producer of exactly 32 bytes here and is blocked only by the closed per-function enumeration in engine/volatile_cheats.py.",
+   "mechanism": "engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS is a per-function frozenset (engine/volatile_cheats.py:746-770); the three text1b siblings with the identical region ship exactly this construct on main under the 2026-08-20 and 2026-08-22 owner rulings.",
+   "next_probe": "None available to a grind session - the bytes-proven body is preserved at memory/grind/func_800480C0/rejected/pad-judge-banned-2026-09-02.c and integrates unchanged if an owner ruling adds the row (Judge FAIL 2026-09-02 04:28, docs/grind/decisions.md:20349). Do not respend it; spend frontier 1 and 2 first."
   }
  ],
  "judge_constraints": [
@@ -114,6 +120,38 @@
    "measured_on": "HEAD 8395e8f4, all 27 s2/s3/s4 spellings plus the compiler source predicate",
    "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.c:4464",
    "result": "total_size = var_size + args_size + gp_reg_rounded exactly on this configuration; growing the save area (regs= 9/0, fram"
+  },
+  {
+   "session": 5,
+   "statement": "One unallocated pseudo reserves 4 bytes of vars (s3's model), so the target's 32 untouched bytes need eight phantom slots",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 118e147d, all 32 src/*.c TUs compiled with the project cc1 (tools/gcc-2.7.2/build/cc1) and the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_ALLOC_DEBUG=1); no FAKE construct involved - the census r",
+   "predicate_cite": "",
+   "result": "The relation is exactly vars = 8 * unallocated_pseudos with no rounding term: func_80042874 6 phantoms/48 bytes, func_80"
+  },
+  {
+   "session": 5,
+   "statement": "The DImode HILO scratch of mult/div is a second, independent 8-byte phantom producer usable on func_800480C0",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 118e147d, target listing asm/funcs/func_800480C0.s plus the s5 tree census; no FAKE construct involved",
+   "predicate_cite": "",
+   "result": "The producer is real and confirmed elsewhere in the tree, but asm/funcs/func_800480C0.s contains ZERO mult/multu/div/div"
+  },
+  {
+   "session": 5,
+   "statement": "Folding a guard onto BOTH of this body's conditional branches (the entry test and the do-while backedge) raises phantom multiplicity to two",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 118e147d, pad-free bodies, bare `arg0 = 0;` dead param store present (cc1 sees it with or without the FAKE comment), instrumented cc1 tools/gcc-2.7.2/cc1 BB2_ALLOC_DEBUG census",
+   "predicate_cite": "",
+   "result": "P and Q both report `.frame $sp,72 # vars= 8, regs= 9/0, args= 24` with unalloc_pseudos=1; R reports vars=0 / unalloc_ps"
+  },
+  {
+   "session": 5,
+   "statement": "Among functions in this tree containing no mult/div, some reach more than two phantoms",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 118e147d, all 32 src/*.c TUs as they stand on main, project cc1 plus instrumented cc1 BB2_ALLOC_DEBUG",
+   "predicate_cite": "",
+   "result": "Over that subset untouched vars takes exactly the values {8, 16, 32}, and every 32 belongs to a sanctioned-pad function "
   }
  ],
  "ladder_skip": 0,

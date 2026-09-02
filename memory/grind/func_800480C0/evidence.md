@@ -244,3 +244,96 @@
 - [s4] 27 structural spellings across s2/s3/s4 now cap at one unallocated pseudo and vars=8, one quarter of the 32 bytes the target reserves.
 
 - [s4] mips.c compute_frame_size pins total_size = var_size + args_size + gp_reg_rounded on this build (extra_size 0 at mips.c:4464, pretend args excluded at mips.c:4530-4531), so only get_frame_size() locals can close the +32.
+
+## s5 — synthesis (2026-09-02, chassis HEAD 118e147d, -mel, 0 regfix/asmfix rules)
+
+- **Chassis re-measured: floor 20.** `sandbox func_800480C0 --disable all` with
+  `memory/grind/func_800480C0/candidate.c` installed prints
+  `{"score": 20, "target_insns": 74, "build_insns": 74}`. (HEAD itself, carrying
+  `INCLUDE_ASM`, reads 74 / `no_c_body: true` — do not mistake that for the floor.)
+
+- **THE UNIT OF A PHANTOM SLOT IS 8 BYTES, NOT 4. s3's "one 4-byte ST_REGS slot
+  rounded up to vars=8" is corrected: one unallocated pseudo == 8 bytes of `vars`,
+  exactly.** Measured tree-wide this session by cross-correlating cc1's own
+  `# vars=` term with the instrumented cc1's `BB2_ALLOC_DEBUG` hardreg=-1 count,
+  per function, over all 32 TUs (`tmp/grind/func_800480C0/s5/census3.py`,
+  `s5/*.alloc.err`):
+  | function | unalloc pseudos | untouched vars |
+  |---|---|---|
+  | func_80042874 (text1a_c) | 6 | 48 |
+  | func_80041E10 (text1a_post) | 3 | 24 |
+  | get_cs / get_ce (display), func_8003FECC (config), func_80038170 (code6cac_c_mid), func_80040594 (text1a_pre), SsSeqCalledTbyT / _SsSeqPlay / SpuSetCommonAttr (main) | 2 | 16 |
+  | ~30 further functions | 1 | 8 |
+  **Consequence for this function: the target's 32 untouched bytes are exactly FOUR
+  unallocated pseudos (or one 32-byte aggregate), not "eight 4-byte slots". Every
+  spelling in the ledger's 27-form ceiling produced ONE, i.e. 8 of the 32 bytes —
+  the gap is 3 more phantoms, and the ledger's own arithmetic was off by 2x.**
+
+- **s4 frontier item 1 (the precedent census) is ANSWERED, and it is a HIT, not the
+  clean negative the frontier anticipated.** Instrument:
+  `tmp/grind/func_800480C0/s5/census.sh` compiles all 32 `src/*.c` with the project
+  cc1 to `s5/asm/*.s`; `census2.py` parses every `.frame ... # vars=/regs=/args=`
+  line, computes the vars window `[args, args+vars)`, and reports functions with
+  ZERO `N($sp)` traffic in that window AND zero uses of `$sp` as a source operand
+  (the latter filter removes address-taken locals — without it the census
+  false-positives on 21 functions such as func_8006C168). Result: **184 functions
+  have vars>0; 80 have an untouched vars window; 59 of those never take a frame
+  address.** Only 5 of the 59 carry a sanctioned pad row. So allocated-but-never-
+  touched `vars` from ORDINARY C, with no pad aggregate and no spill, is common on
+  main — 54 instances — and **eight of them reach 16 bytes (two phantoms) from
+  ordinary C**. The pad is therefore NOT "the only known producer of untouched vars";
+  it is the only known producer of *four at once* on a body of this shape.
+
+- **The producer class is the same one the s3 `.lreg` read named, at multiplicity 2.**
+  `tmp/grind/func_800480C0/s5/dumps/display.lreg`, function `get_cs`:
+  `Register 85 used 2 times across 2 insns in block 1; ST_REGS or none.` and
+  `Register 99 used 2 times across 2 insns in block 6; ST_REGS or none.` — two
+  ST_REGS-classed compare residues, in two different basic blocks, from two
+  ordinary `x < 0 ? 0 : (x > lim ? lim : x)` clamp ternaries (`src/display.c:556`).
+  func_800480C0's single residue (s3: `Register 92 ... ST_REGS or none`) is the same
+  animal. Multiplicity, not mechanism, is what this function lacks.
+
+- **A SECOND, independent phantom producer exists and is inapplicable here: the
+  DImode HILO scratch of `mult`/`div`.** `func_80041E10` (`src/text1a_post.c:465`) is
+  five statements, a leaf, regs=0, args=0, and reserves `vars=24` with zero traffic —
+  three `mult`s (from three `/255` magic-number divisions) leaving three unallocated
+  8-byte DImode scratches. `func_80042874`/`func_80042A88` reach 6 phantoms / 48 bytes
+  the same way. **`asm/funcs/func_800480C0.s` contains ZERO `mult`/`multu`/`div`/`divu`
+  instructions**, so this producer cannot be spelled here without materialising
+  instructions the byte-identical 74-insn stream does not have.
+
+- **Tree-wide bound on the folded-compare producer: no function in this tree that
+  contains no `mult`/`div` exceeds TWO phantoms (16 bytes).** Across the 59 census
+  candidates, the zero-`mult`/`div` subset (45 functions) shows untouched-vars values
+  of exactly {8, 16, 32}, and every 32 is one of the five sanctioned-pad functions
+  (whose 32 bytes come from the declared array — `BB2_ALLOC_DEBUG` reports ZERO
+  unallocated pseudos for func_80047EE8/func_80047FBC). So four folded-compare
+  residues on a mult-free body has no in-tree precedent at all.
+
+- [s5] One unallocated pseudo reserves exactly 8 bytes of `vars`, not 4: measured across all 32 TUs by correlating cc1's `# vars=` with the instrumented cc1's BB2_ALLOC_DEBUG hardreg=-1 count (6 phantoms->48 in func_80042874, 3->24 in func_80041E10, 2->16 in eight functions, 1->8 in ~30). The target's 32 untouched bytes are FOUR phantoms, and the ledger's 27-spelling ceiling of one phantom covers 8 of the 32 bytes.
+
+- [s5] s4 frontier item 1 (precedent census) answered and it is a HIT: 59 functions on main carry an allocated-but-untouched vars window with no frame-address use, only 5 of which have a sanctioned pad row; eight ordinary-C functions reach 16 untouched bytes (two phantoms). Instruments: tmp/grind/func_800480C0/s5/{census.sh,census2.py,census3.py}.
+
+- [s5] The two-phantom producer is the same ST_REGS-classed compare residue as this function's single one, at multiplicity 2 in distinct basic blocks: display.lreg get_cs `Register 85 ... block 1; ST_REGS or none` + `Register 99 ... block 6`, from two ordinary clamp ternaries at src/display.c:556.
+
+- [s5] A second phantom producer exists — the DImode HILO scratch of mult/div, 8 bytes each (func_80041E10: three /255 divisions -> three mults -> vars=24 with zero traffic; func_80042874: 16 mults -> 6 phantoms -> vars=48). asm/funcs/func_800480C0.s contains zero mult/multu/div/divu, so it is inapplicable without materialising instructions.
+
+- [s5] Tree-wide bound: among the 45 census candidates with no mult/div, untouched-vars takes only the values {8, 16, 32}, and every 32 belongs to one of the five sanctioned-pad functions (BB2_ALLOC_DEBUG reports ZERO unallocated pseudos for func_80047EE8/func_80047FBC, i.e. their 32 bytes are the declared array, not phantoms). Four folded-compare residues on a mult-free body has no precedent in this tree.
+
+- [s5] Three further two-branch guard spellings (guards folded onto BOTH the entry test and the do-while backedge; the same with mixed signed/unsigned guards; a get_cs-style `(u32)g < K` range test on the entry) still report unalloc_pseudos = 1 / vars = 8, or 0 / 0 for the range form, and all three take a NINTH callee-saved register (regs= 9/0), moving every sp offset further from the target. Running total 30 measured structural forms.
+
+- [s5] Chassis re-measured this session: HEAD (INCLUDE_ASM) reads 74 with no_c_body true; with memory/grind/func_800480C0/candidate.c installed, sandbox --disable all prints score 20, target_insns 74, build_insns 74. src/text1b.c was restored to HEAD afterwards.
+
+- [s5] One unallocated pseudo reserves exactly 8 bytes of vars, not 4 (s3's model corrected): measured across all 32 TUs by correlating cc1's `# vars=` term with the instrumented cc1's BB2_ALLOC_DEBUG hardreg=-1 count - 6 phantoms->48 bytes (func_80042874), 3->24 (func_80041E10), 2->16 (eight functions), 1->8 (~30 functions). The target's 32 untouched bytes are FOUR phantoms.
+
+- [s5] s4 frontier item 1 answered as a HIT: 184 functions have vars>0, 80 have an untouched vars window, 59 of those never take a frame address, and only 5 of the 59 carry a sanctioned pad row - so 54 ordinary-C COMPLETED-C bodies on main reserve untouched frame bytes with no pad aggregate and no spill.
+
+- [s5] Eight ordinary-C functions on main reach 16 untouched bytes (two phantoms): get_cs, get_ce (src/display.c:556), func_8003FECC, func_80038170, func_80040594, SsSeqCalledTbyT, _SsSeqPlay, SpuSetCommonAttr. Same producer class as this function's single residue - display.lreg: 'Register 85 used 2 times across 2 insns in block 1; ST_REGS or none' and 'Register 99 ... block 6', from two ordinary clamp ternaries.
+
+- [s5] A second phantom producer exists - the DImode HILO scratch of mult/div, 8 bytes each (func_80041E10: three /255 divisions -> three mults -> vars=24 untouched; func_80042874: 16 mults -> 6 phantoms -> vars=48). asm/funcs/func_800480C0.s contains zero mult/multu/div/divu, so it cannot be used here without materialising instructions.
+
+- [s5] Tree-wide bound: among the 45 census candidates with no mult/div, untouched vars takes only {8, 16, 32}, and every 32 is a sanctioned-pad function whose BB2_ALLOC_DEBUG phantom count is ZERO (their 32 bytes are the declared array). Four folded-compare residues on a mult-free body has no in-tree precedent.
+
+- [s5] Three further spellings folding guards onto both of this body's conditional branches (P entry+backedge guards, Q mixed signed/unsigned, R get_cs-style range test) still measure unalloc_pseudos=1 / vars=8 (P, Q) or 0 / 0 (R), and all three take a ninth callee-saved register, moving every sp offset further from the target. Running total 30 structural forms.
+
+- [s5] Reusable instruments added: tmp/grind/func_800480C0/s5/census.sh (compile all 32 TUs), census2.py (untouched-vars-window census with the frame-address filter), census3.py (adds the mult/div correlation), alloc_tu.sh (per-TU BB2_ALLOC_DEBUG capture), dump2.sh (per-TU -da dumps via -dumpbase). They are function-agnostic and apply to any frame-residual grind.
