@@ -364,12 +364,15 @@ def unban_construct(root, func, needle):
 
 def supersede_bans(root, func, needles, superseded_by):
     """Move every banned_constructs entry containing any needle (case-insensitive)
-    into state['superseded_bans'] with the grant reference. Returns the count.
+    into state['superseded_bans'] with the grant reference. Returns the list of
+    moved entries (each {text, superseded_by, when}) so the caller can report
+    exactly which bans it cleared — a bare count hid a needle that matched the
+    wrong ban (review of a4d3ba3e).
     The ban text is preserved for the audit trail; only the mechanical tripwire
     (check_banned_constructs) stops seeing it."""
     st = load_state(root, func)
     if not st:
-        return 0
+        return []
     keep, moved = [], []
     for b in st.get("banned_constructs", []):
         if any(n.lower() in str(b).lower() for n in needles):
@@ -380,7 +383,16 @@ def supersede_bans(root, func, needles, superseded_by):
         st["banned_constructs"] = keep
         st.setdefault("superseded_bans", []).extend(moved)
         save_state(root, func, st)
-    return len(moved)
+    return moved
+
+
+def preview_superseded_bans(root, func, needles):
+    """Dry-run counterpart of supersede_bans: the ban texts that WOULD move,
+    without touching the ledger. The grant-rescan dry run prints these so a
+    too-broad term is visible before it clears an unrelated ban."""
+    st = load_state(root, func) or {}
+    return [str(b) for b in st.get("banned_constructs", [])
+            if any(n.lower() in str(b).lower() for n in needles)]
 
 
 # integration-handoff-self-serve (owner ruling 2026-08-19): path classes the
@@ -1721,7 +1733,7 @@ if __name__ == "__main__":
         print(unban_construct(sys.argv[2], sys.argv[3], sys.argv[4]))
     elif cmd == "supersede-bans":
         # supersede-bans <root> <func> <superseded_by> <needle> [needles...]
-        print(supersede_bans(sys.argv[2], sys.argv[3], sys.argv[5:], sys.argv[4]))
+        print(len(supersede_bans(sys.argv[2], sys.argv[3], sys.argv[5:], sys.argv[4])))
     elif cmd == "add-scope-allow":
         # add-scope-allow <root> <func> <date> <path> [more paths...]
         line = add_scope_allow(sys.argv[2], sys.argv[3], sys.argv[5:], sys.argv[4])

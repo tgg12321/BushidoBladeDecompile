@@ -904,12 +904,20 @@ class TestGrantRescan(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
+    def wheres(self, hits, func):
+        return [h["where"] for h in hits[func]]
+
     def test_scan_finds_only_matching_ledger(self):
         from tools.grinder import grant_rescan as R
         hits = R.scan(self.root, ["compound-address duplication", "compound address expression"])
         self.assertEqual(sorted(hits), ["func_A"])
-        self.assertTrue(any("rejected/inline-both-call-sites.c" in h for h in hits["func_A"]))
-        self.assertTrue(any(h.startswith("banned_constructs[0]") for h in hits["func_A"]))
+        w = self.wheres(hits, "func_A")
+        self.assertIn("rejected/inline-both-call-sites.c", w)
+        self.assertTrue(any(x.startswith("banned_constructs[0]") for x in w))
+        for h in hits["func_A"]:
+            self.assertIn(h["term"], ("compound-address duplication", "compound address expression"))
+            self.assertLessEqual(len(h["text_snippet"]), 80)
+        self.assertIn("func_A", R.format_hits(hits))
 
     def test_apply_injects_constraint_and_supersedes_ban(self):
         from tools.grinder import grant_rescan as R
@@ -920,12 +928,14 @@ class TestGrantRescan(unittest.TestCase):
         self.assertEqual(len(st["superseded_bans"]), 1)
         self.assertIn("F3 compound-address duplication", st["superseded_bans"][0]["superseded_by"])
         self.assertTrue(any("RE-ADJUDICATE" in c for c in st["judge_constraints"]))
+        self.assertTrue(all(len(c) <= 400 for c in st["judge_constraints"]))
         self.assertEqual(G.load_state(self.root, "func_B")["banned_constructs"], [])
 
     def test_supersede_bans_is_case_insensitive_and_preserves_others(self):
         G.add_banned_construct(self.root, "func_A", "some other construct")
-        n = G.supersede_bans(self.root, "func_A", ["COMPOUND ADDRESS"], "grant X")
-        self.assertEqual(n, 1)
+        moved = G.supersede_bans(self.root, "func_A", ["COMPOUND ADDRESS"], "grant X")
+        self.assertEqual(len(moved), 1)
+        self.assertIn("compound address expression", moved[0]["text"])
         st = G.load_state(self.root, "func_A")
         self.assertEqual(st["banned_constructs"], ["some other construct"])
         self.assertEqual(st["superseded_bans"][0]["superseded_by"], "grant X")
@@ -935,6 +945,118 @@ class TestGrantRescan(unittest.TestCase):
         brief = G.build_brief(self.root, "func_A", "structural", "/tmp/o.json")
         self.assertIn("SUPERSEDED BANS", brief)
         self.assertIn("grant X (2026-09-01)", brief)
+
+    def test_preview_superseded_bans(self):
+        pv = G.preview_superseded_bans(self.root, "func_A", ["compound address"])
+        self.assertEqual(len(pv), 1)
+        self.assertEqual(G.preview_superseded_bans(self.root, "func_B", ["compound address"]), [])
+
+    def test_term_with_apostrophe_does_not_broaden_needle(self):
+        from tools.grinder import grant_rescan as R
+        G.init_ledger(self.root, "func_C", "s")
+        G.add_banned_construct(self.root, "func_C", "reusing the caller's frame slot for the temp")
+        G.add_banned_construct(self.root, "func_C", "caller-saved register pinning")
+        hits = R.scan(self.root, ["caller's frame"])
+        self.assertEqual(sorted(hits), ["func_C"])
+        self.assertEqual([h["term"] for h in hits["func_C"]], ["caller's frame"])
+        R.apply(self.root, hits, family="F9 frame reuse", ref="docs/x.md:1", date="2026-09-01")
+        st = G.load_state(self.root, "func_C")
+        # the apostrophe must NOT have split the needle into a broad "caller"
+        self.assertEqual(st["banned_constructs"], ["caller-saved register pinning"])
+        self.assertEqual(len(st["superseded_bans"]), 1)
+
+    def test_scan_skips_dir_without_state_json(self):
+        from tools.grinder import grant_rescan as R
+        d = os.path.join(self.root, "memory", "grind", "not_a_ledger")
+        os.makedirs(os.path.join(d, "rejected"))
+        with open(os.path.join(d, "rejected", "x.c"), "w", encoding="utf-8", newline="\n") as f:
+            f.write("compound address expression\n")
+        hits = R.scan(self.root, ["compound address expression"])
+        self.assertEqual(sorted(hits), ["func_A"])
+
+    def test_bans_only_filters_soft_hits(self):
+        from tools.grinder import grant_rescan as R
+        with open(os.path.join(self.root, "memory", "grind", "func_B", "evidence.md"),
+                  "a", encoding="utf-8", newline="\n") as f:
+            f.write("\nthe compound address expression appears only in prose here\n")
+        hits = R.scan(self.root, ["compound address expression"])
+        self.assertEqual(sorted(hits), ["func_A", "func_B"])
+        self.assertEqual(sorted(R.filter_bans_only(hits)), ["func_A"])
+
+    def test_apply_unparks_foreclosed_queue_item(self):
+        from tools.grinder import grant_rescan as R
+        os.makedirs(os.path.join(self.root, "engine"), exist_ok=True)
+        qp = os.path.join(self.root, "engine", "queue.json")
+        with open(qp, "w", encoding="utf-8", newline="\n") as f:
+            json.dump({"items": [
+                {"func": "func_A", "status": "foreclosed", "file": "s", "distance": 3, "verdict": "C"},
+                {"func": "func_B", "status": "active", "file": "s", "distance": 4, "verdict": "C"}]}, f)
+        hits = R.scan(self.root, ["compound address expression"])
+        fails = R.apply(self.root, hits, family="F3", ref="r:1", date="2026-09-01")
+        self.assertEqual(fails, 0)
+        items = {i["func"]: i for i in json.load(open(qp, encoding="utf-8"))["items"]}
+        self.assertEqual(items["func_A"]["status"], "active")
+        self.assertEqual(items["func_B"]["status"], "active")
+        self.assertNotIn("unpark_reason", items["func_B"])
+
+    def test_run_refuses_apply_over_max_hits(self):
+        from tools.grinder import grant_rescan as R
+        G.init_ledger(self.root, "func_D", "s")
+        G.add_banned_construct(self.root, "func_D", "the compound address expression again")
+        rc = R.run(["--term", "compound address expression", "--apply", "--family", "F3",
+                    "--ref", "r:1", "--max-hits", "1"], root=self.root)
+        self.assertEqual(rc, 2)
+        # nothing mutated
+        self.assertEqual(len(G.load_state(self.root, "func_A")["banned_constructs"]), 1)
+        rc = R.run(["--term", "compound address expression", "--apply", "--family", "F3",
+                    "--ref", "r:1", "--max-hits", "1", "--yes"], root=self.root)
+        self.assertEqual(rc, 0)
+        self.assertEqual(G.load_state(self.root, "func_A")["banned_constructs"], [])
+
+    def test_run_only_restricts_application(self):
+        from tools.grinder import grant_rescan as R
+        G.init_ledger(self.root, "func_D", "s")
+        G.add_banned_construct(self.root, "func_D", "the compound address expression again")
+        rc = R.run(["--term", "compound address expression", "--apply", "--family", "F3",
+                    "--ref", "r:1", "--only", "func_D"], root=self.root)
+        self.assertEqual(rc, 0)
+        self.assertEqual(G.load_state(self.root, "func_D")["banned_constructs"], [])
+        self.assertEqual(len(G.load_state(self.root, "func_A")["banned_constructs"]), 1)
+
+    def test_run_rejects_bad_date(self):
+        from tools.grinder import grant_rescan as R
+        rc = R.run(["--term", "compound address expression", "--apply", "--family", "F3",
+                    "--ref", "r:1", "--date", "09/01/2026"], root=self.root)
+        self.assertEqual(rc, 2)
+
+    def test_run_refuses_apply_while_grinder_lock_live(self):
+        from tools.grinder import grant_rescan as R
+        os.makedirs(os.path.join(self.root, "tmp", "grind"), exist_ok=True)
+        with open(os.path.join(self.root, "tmp", "grind", "grind.lock"),
+                  "w", encoding="utf-8", newline="\n") as f:
+            f.write(str(os.getpid()))
+        rc = R.run(["--term", "compound address expression", "--apply", "--family", "F3",
+                    "--ref", "r:1"], root=self.root)
+        self.assertEqual(rc, 2)
+        self.assertEqual(len(G.load_state(self.root, "func_A")["banned_constructs"]), 1)
+        # a dry run is always allowed
+        self.assertEqual(R.run(["--term", "compound address expression"], root=self.root), 0)
+
+    def test_dry_run_prints_would_supersede(self):
+        from tools.grinder import grant_rescan as R
+        import io, contextlib
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            R.run(["--term", "compound address expression"], root=self.root)
+        out = buf.getvalue()
+        self.assertIn("WOULD SUPERSEDE:", out)
+        self.assertIn("compound address expression", out)
+        # func_B has no hits at all here, so only func_A is reported
+        buf2 = io.StringIO()
+        G.append_evidence(self.root, "func_B", "compound address expression in prose only")
+        with contextlib.redirect_stdout(buf2):
+            R.run(["--term", "compound address expression"], root=self.root)
+        self.assertIn("(no bans affected)", buf2.getvalue())
 
 
 if __name__ == "__main__":

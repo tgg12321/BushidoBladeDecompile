@@ -79,7 +79,7 @@ queue top continuously; completions land as `Match: <func> — COMPLETED-C
 | "what did the judge rule" | Read + summarize `docs/grind/decisions.md` (newest first). |
 | "it crashed / circuit-break" | Read `docs/grind/INCIDENT.md` + `tmp/grind/grind.log` tail. Fix the stated cause (oracle break → engine loop recovery; usage-limit exhaustion → just relaunch later). Relaunching resumes exactly — all state is on disk. |
 | "resume" | Same as start; the ledger means no work is ever lost between runs. |
-| "a family was granted" / "re-scan after grant" | `python tools/grinder/grant_rescan.py --term "<grant keywords>"`; review the hits; re-run with `--apply --family "<name>" --ref "<file:line>"`; commit `memory/grind engine/queue.json`. Do this the same day the grant lands, before relaunching. |
+| "a family was granted" / "re-scan after grant" | Do this the same day the grant lands. `pwsh tools/grinder/grind.ps1 -Stop` first and confirm the pidfile clears (this writes ledgers + `engine/queue.json`; queue dirt discards a live session — `--apply` refuses while the lock pid is alive). Dry-run `python tools/grinder/grant_rescan.py --term "<keywords>"` → review the `WOULD SUPERSEDE` lines → `--apply --only <func> ... --family "<name>" --ref "<file:line>"` → commit `memory/grind engine/queue.json` → relaunch. |
 
 ## Invariants (violating these breaks the pipeline)
 
