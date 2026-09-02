@@ -48,6 +48,16 @@ owner to audit after the fact. You are spawned for exactly two situations:
 - **Default-FAIL.** When uncertain, FAIL with the reason. A wrong FAIL costs a
   re-grind; a wrong PASS poisons main. Never balance those — they are not
   comparable.
+- **Rulings are dated; grants supersede earlier refusals (2026-09-01
+  process fix).** A per-function ban in `state.json`, a layer-1 FAIL, or a
+  decisions.md refusal that PREDATES a family grant in
+  `.claude/rules/no-new-park-categories.md` covering the same construct is
+  superseded by that grant. func_80057CC8 sat 38 sessions on a 2026-07-20
+  refusal after the 2026-08-18 F3 grant covered its closing form, because
+  three reviews cited the refusal without checking the grant's date. Decide
+  such a construct on the grant's own prerequisites; when you do, set
+  `unban_construct` to the superseded ban's text so the driver clears the
+  mechanical tripwire.
 - For regression-origin functions: the ledger's judge_constraints carry the
   audit diagnosis. The match must land WITHOUT the flagged construct family —
   verify the diagnosed construct is actually gone, not respelled.
