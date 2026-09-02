@@ -1,8 +1,8 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 20,
    "modality": "structural",
    "headline": "Honest floor corrected 32 -> 20: the sandbox strips an UN-ANNOTATED `arg0 = 0;` dead param store, which also manufactured s2's phantom 'seat rotation'; residual is now a pure +32 vars frame delta over"
+  },
+  {
+   "session": 4,
+   "floor": 20,
+   "modality": "permuter",
+   "headline": "Permuter (2 chassis, ~50k iters, --stack-diffs) found nothing below the 20-diff baseline; DImode slot-width and multi-BB phantom-multiplicity levers killed; the +32 residual is proven to be a get_fram"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The phantom slot's WIDTH, not its count, is the untested axis: reload1.c alter_reg sizes the slot MAX (inherent_size, reg_max_ref_width[i]), so a phantom allocno in a wider mode would take 8+ bytes instead of 4.",
-   "mechanism": "reload1.c alter_reg / assign_stack_local slot sizing from the allocno's mode and its widest reference.",
-   "next_probe": "Force the folded loop-guard's compare residue into DImode (a `long long` guard) and read unalloc_pseudos plus .frame vars= with tmp/grind/func_800480C0/s3/probe_body.sh. Check the DImode-chain ban first - it is scoped to scheduling coercion, but confirm before spelling it."
+   "hypothesis": "Some COMPLETED-C function already on main reproduces an allocated-but-never-touched vars region from ordinary C - without a pad aggregate and without a spill - and its producer is spellable here.",
+   "mechanism": "get_frame_size() counts every assign_stack_local slot; a LIVE local whose traffic is folded away after RTL expand leaves an untouched region, and the project has ~1200 matched bodies to census.",
+   "next_probe": "Cheap no-compile census: for each matched src/*.c function, read the .frame vars= term from the build asm and count sw/lw traffic inside the vars window; report any function with vars>0 and zero traffic that carries no pad/volatile aggregate. A hit names an unspelled producer; a clean negative is the strongest evidence for the pad-allowlist route."
   },
   {
-   "hypothesis": "The 32 untouched bytes may correspond to a LIVE local in the original TU whose uses this decompilation folded away, which would make an ordinary-C producer exist after all.",
-   "mechanism": "GCC 2.7.2 function.c assign_stack_local reserves an aggregate's slot at RTL-expand and never reclaims frame_offset, so a local that survives to expand but whose uses are folded leaves the slot with no traffic.",
-   "next_probe": "forensics modality on the three text1b siblings that carry the identical 32-byte region: look for any call, struct, or buffer shape in their surrounding functions (func_80047EE8 / func_80047FBC / func_800481E8 callers and callees) that would give all four the same 8-word local."
+   "hypothesis": "The 32 untouched bytes correspond to a LIVE 8-word local in the original TU whose uses this decompilation folded away, shared by all four text1b siblings with the identical region.",
+   "mechanism": "function.c assign_stack_local reserves an aggregate slot at RTL-expand and never reclaims frame_offset, so a local that survives to expand but whose uses fold leaves the slot with no traffic.",
+   "next_probe": "forensics modality on func_80047EE8 / func_80047FBC / func_800481E8 and their callers/callees: look for a call, struct or buffer shape that implies the same 8-word local (e.g. a stack-built argument record passed around func_800482C8)."
   },
   {
-   "hypothesis": "The pad remains the only known producer of exactly 32 bytes and is banned here only by the closed per-function enumeration, not by a codegen finding.",
-   "mechanism": "engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS is a per-function frozenset; the family scope sentence in .claude/rules/no-new-park-categories.md:340-342 names three functions and the five later rows were added by owner ruling.",
-   "next_probe": "None available to a grind session - the bytes-proven body is preserved at memory/grind/func_800480C0/rejected/pad-judge-banned-2026-09-02.c and integrates unchanged if an owner ruling ever adds the row. Note for that packet: the pad-free annotated floor is genuinely 20, correcting the s1/s2 numbers."
+   "hypothesis": "The unwritten volatile pad remains the only known producer of exactly 32 bytes and is blocked only by the closed per-function enumeration in engine/volatile_cheats.py.",
+   "mechanism": "engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS is a per-function frozenset; sibling func_80047EE8 ships exactly this construct on main (src/text1b.c:20-36) under owner ruling 2026-08-18.",
+   "next_probe": "None available to a grind session - the bytes-proven body is preserved at memory/grind/func_800480C0/rejected/pad-judge-banned-2026-09-02.c and integrates unchanged if an owner ruling adds the row (Judge FAIL 2026-09-02 04:28, docs/grind/decisions.md:20349)."
   }
  ],
  "judge_constraints": [
@@ -76,6 +82,38 @@
    "measured_on": "HEAD f3ba5f78, all 21 s2+s3 spellings, annotated dead-store present in the s3 set",
    "predicate_cite": "",
    "result": "args reads 24 in every spelling (MIPS_STACK_ALIGN(20) for the single 5-word call to func_800482C8). Reaching 56 needs a "
+  },
+  {
+   "session": 4,
+   "statement": "Widening the phantom slot by giving the folded loop-guard a DImode (long long) carrier enlarges vars beyond 8 on this body",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 8395e8f4, pad-free bodies, bare `arg0 = 0;` dead param store present (cc1 sees it with or without the FAKE comment), instrumented cc1 tools/gcc-2.7.2/cc1 BB2_ALLOC_DEBUG",
+   "predicate_cite": "",
+   "result": "all four report .frame $sp,56 # vars= 0 and unalloc_pseudos=0 - the DImode compare residue is allocated, so the phantom "
+  },
+  {
+   "session": 4,
+   "statement": "Placing folded guards in distinct basic blocks, including inside the loop body, raises phantom multiplicity above one and reserves 16 bytes",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 8395e8f4, pad-free bodies, bare `arg0 = 0;` dead param store present, instrumented-cc1 BB2_ALLOC_DEBUG census",
+   "predicate_cite": "",
+   "result": "every spelling reported unalloc_pseudos = 0 or 1 and vars = 0 or 8; none reached 2 phantoms or 16 bytes. The one spellin"
+  },
+  {
+   "session": 4,
+   "statement": "A permuter campaign on this function finds a form scoring below the 20-objdump-diff baseline",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 8395e8f4, candidate chassis (annotated dead param store present) and the vars=8 guard chassis, decomp-permuter with --stack-diffs, ~50k total iterations",
+   "predicate_cite": "",
+   "result": "campaign A best 442 = 74 insns / 20 objdump diffs / frame 64 - EQUAL to the baseline, not better. Campaign B best 583 = "
+  },
+  {
+   "session": 4,
+   "statement": "A frame term other than var_size (extra_size, pretend_args_size, or a larger register-save area) can supply the target's +32 bytes on this mips1 -mno-abicalls build",
+   "kill_scope": "class",
+   "measured_on": "HEAD 8395e8f4, all 27 s2/s3/s4 spellings plus the compiler source predicate",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.c:4464",
+   "result": "total_size = var_size + args_size + gp_reg_rounded exactly on this configuration; growing the save area (regs= 9/0, fram"
   }
  ],
  "ladder_skip": 0,

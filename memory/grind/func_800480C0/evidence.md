@@ -197,3 +197,50 @@
 - [s3] All three s2 frontier items are closed: no seat divergence for ra_solver, no base-copy emission-order divergence for sched_solver, and the args-side widening reduces to the REFUSED fabricated-dead-call-site family.
 
 - [s3] A general engine gotcha worth carrying to other functions: any grind body relying on a dead store to a parameter MUST carry the /* FAKE: ... */ annotation or the sandbox silently scores a different program and the recorded floor is inflated.
+
+## s4 — permuter (2026-09-02)
+
+- **Chassis re-measured: floor 20.** `sandbox func_800480C0 --disable all` with
+  memory/grind/func_800480C0/candidate.c installed prints `{"score": 20, "target_insns": 74,
+  "build_insns": 74}`. The s3 correction (annotated dead param store => 20, not 32) is
+  reproducible on HEAD 8395e8f4.
+- **Isolated-TU permuter workspace reproduces the full-TU divergence exactly.** A one-function
+  TU (common.h + the candidate body, `func_800482C8` left implicitly declared as in the real
+  TU) compiles to 74 insns whose only differences from asm/funcs/func_800480C0.s are the 20
+  sp-relative operands. Builder: tmp/grind/func_800480C0/s4/mk_ws.sh (reusable for any body).
+- **Permuter campaign A** (candidate chassis, base_score 586, 39.4k iterations, `--stack-diffs`):
+  best find 442 = 74 insns / 20 objdump diffs / frame 64 — equal to the baseline residual, not
+  better. **Campaign B** (vars=8 guard chassis, base_score 857, 10.6k iterations, 39 finds):
+  best 583 = 25 objdump diffs / frame 72. Largest frame reached by either campaign is 72, and
+  every frame-72 form carries MORE differing insns than the vars=0 baseline's 20. Both
+  campaigns harvested with --stop; `permuter_campaign.py status` reports 0 live campaigns.
+- **Slot WIDTH is not an axis here.** Four DImode (`long long`) guard spellings do not widen the
+  phantom slot; they delete it (vars=0, unalloc_pseudos=0), because the DImode compare residue
+  gets allocated. s3 frontier item 1 closed.
+- **Phantom multiplicity still capped at one** across six further spellings placing folded
+  guards in distinct basic blocks (including inside the loop), against different constants,
+  with pointer and 64-bit-multiply carriers. Running total: 27 measured structural forms,
+  none above vars=8.
+- **The residual is definitionally a get_frame_size() question.** In GCC 2.7.2's mips.c
+  compute_frame_size, `total_size = var_size + args_size + gp_reg_rounded` on a
+  mips1 / -mno-abicalls build: extra_size is 0 (mips.c:4464), pretend_args_size is added only
+  under ABI_64BIT && mips_isa >= 3 (mips.c:4530-4531), and the register-save offsets are
+  `args_size + extra_size + var_size + gp_reg_size - 4` (mips.c:4548-4550) so enlarging the
+  save area instead of `vars` moves every sp offset the wrong way (confirmed by the frame-72
+  9-register spelling). Only 32 bytes of stack LOCALS can close this gap.
+
+- [s4] Chassis re-measured this session: sandbox func_800480C0 --disable all on memory/grind/func_800480C0/candidate.c prints score 20, target_insns 74, build_insns 74 - the s3 floor correction reproduces on HEAD 8395e8f4.
+
+- [s4] An isolated one-function permuter TU (common.h + the candidate body, func_800482C8 left implicitly declared as in the real TU) reproduces the full-TU divergence exactly: 74 insns, differences confined to the 20 sp-relative operands. Reusable builder: tmp/grind/func_800480C0/s4/mk_ws.sh.
+
+- [s4] Permuter campaign A (candidate chassis): base_score 586, 39.4k iterations, best find 442 which is 74 insns / 20 objdump diffs / frame 64 - no honest improvement over the baseline.
+
+- [s4] Permuter campaign B (vars=8 guard chassis): base_score 857, 10.6k iterations, 39 finds, best 583 = 25 objdump diffs / frame 72. Frame 72 is reached by taking a 9th callee-saved register, not by vars=16.
+
+- [s4] Both campaigns harvested with --stop; permuter_campaign.py status reports 0 live campaigns and 0 stale registry entries.
+
+- [s4] DImode carriers delete the phantom slot rather than widening it (vars=0, unalloc_pseudos=0 in all four s64 spellings), while the banked s3 forms still measure vars=8 / unalloc_pseudos=1 in the same batch - the instrument is live.
+
+- [s4] 27 structural spellings across s2/s3/s4 now cap at one unallocated pseudo and vars=8, one quarter of the 32 bytes the target reserves.
+
+- [s4] mips.c compute_frame_size pins total_size = var_size + args_size + gp_reg_rounded on this build (extra_size 0 at mips.c:4464, pretend args excluded at mips.c:4530-4531), so only get_frame_size() locals can close the +32.

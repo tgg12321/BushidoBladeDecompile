@@ -189,3 +189,91 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD f3ba5f78, all 21 s2+s3 spellings, annotated dead-store present in the s3 set
+
+## s4 — permuter (2026-09-02)
+
+Chassis check at dispatch: `sandbox func_800480C0 --disable all` on the s3 candidate
+re-measured **20** this session (74/74 insns), so the s3 floor correction holds and every
+s4 measurement below is on that chassis.
+
+## [s4] Widening the phantom slot by giving the folded loop-guard a DImode (`long long`) carrier does not enlarge `vars`; it removes the phantom entirely
+- mechanism: reload1.c alter_reg sizes a spill slot MAX (inherent_size, reg_max_ref_width[i]), so a DImode allocno left unallocated would take 8 bytes instead of the 4-byte ST_REGS compare residue the s3 census found. The premise fails upstream: with an `s64` guard the compare is expanded as a DImode comparison whose residue is allocated, so global.c leaves nothing unseated.
+- probe: four `s64` spellings built from the banked vars=8 form (rejected/phantom-guard-vars8-ceiling.c) — single DImode guard, two DImode guards, DImode guard + s32 guard, DImode guard kept live through the loop by an xor accumulation — each through tmp/grind/func_800480C0/s4/probe_body.sh (instrumented cc1, BB2_ALLOC_DEBUG=1, `.frame` + count of allocnos with hardreg=-1).
+- result: all four report `.frame $sp,56 # vars= 0` and `unalloc_pseudos=0`, i.e. WORSE than the s32 guard's vars=8. The instrument was sanity-checked in the same batch: the banked s3 forms still report vars=8 / unalloc_pseudos=1 (phantom-guard-vars8-ceiling.c, dual-fold-guard-still-one-phantom.c). Banked at rejected/dimode-guard-erases-phantom.c. s3 frontier item 1 is closed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 8395e8f4, pad-free bodies, dead param store `arg0 = 0;` present (bare in the probe bodies — cc1 sees it either way; only the sandbox stripper cares about the annotation), instrumented cc1 tools/gcc-2.7.2/cc1 BB2_ALLOC_DEBUG census
+
+## [s4] Placing folded guards in DISTINCT basic blocks (including inside the loop body) does not raise phantom multiplicity above one
+- mechanism: reload1.c alter_reg gives each unallocated allocno its own assign_stack_local slot, so two guards whose live ranges never overlap should strand two pseudos and reserve 16 bytes.
+- probe: six further spellings through the same instrument — guard inside the loop body, two guards in two distinct pre-loop blocks, three guards in three distinct blocks, two guards folded against DIFFERENT constants (-1 and -7), pointer-typed guard beside the scalar guard, 64-bit multiply residue guard.
+- result: every spelling reported unalloc_pseudos = 0 or 1 and `vars` = 0 or 8; none reached 2 phantoms or 16 bytes. One spelling (guard inside the loop) reached `.frame $sp,72` but by taking a NINTH callee-saved register (regs= 9/0), which moves the register-save block and therefore every sp offset the wrong way. With s2's 13 and s3's 8, that is 27 measured structural forms against the target's 32 `vars` bytes. Banked at rejected/multi-bb-guards-still-one-phantom.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 8395e8f4, pad-free bodies, bare `arg0 = 0;` dead param store present, instrumented-cc1 BB2_ALLOC_DEBUG census (tmp/grind/func_800480C0/s4/body_[EFGHIJ]*.c)
+
+## [s4] Two permuter campaigns (~50k iterations, two structurally distinct chassis) produce no form below the 20-objdump-diff baseline and never exceed vars=8
+- mechanism: random C mutation over the candidate body; campaigns launched with the default --stack-diffs so the permuter's scorer does NOT normalise the sp-relative offsets away (without it this function false-matches at 0).
+- probe: tmp/perm_480C0_s4a (candidate chassis, base_score 586, 39.4k iters, 6 finds) and tmp/perm_480C0_s4b (vars=8 guard chassis, base_score 857, 10.6k iters, 39 finds), both `-j` parallel, harvested with --stop. Each campaign's best eight finds were recompiled and objdump-diffed against target.o (tmp/grind/func_800480C0/s4/{s4a_finds.txt,s4b_finds.txt}).
+- result: campaign A best 442 — 74 insns, 20 objdump diffs, i.e. EQUAL to the baseline residual, frame 64. Campaign B best 583 — 25 objdump diffs, frame 72. Across both, the largest frame any find reached is 72 and every 72-byte frame carries MORE differing insns (23-29) than the 20 of the vars=0 baseline; no find reached vars=16 and none scored below 20. Best find banked at rejected/permuter-s4a-best-442-frame64.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 8395e8f4, candidate chassis (annotated dead param store present) and vars=8 guard chassis, decomp-permuter with --stack-diffs, tmp/perm_480C0_s4a + tmp/perm_480C0_s4b
+
+## [s4] No frame term other than `var_size` can supply the target's +32 bytes on a mips1 -mno-abicalls build, so every remaining candidate form must produce 32 bytes of get_frame_size() locals
+- mechanism: GCC 2.7.2 mips.c compute_frame_size: `extra_size = MIPS_STACK_ALIGN (((TARGET_ABICALLS) ? UNITS_PER_WORD : 0))` is 0 for -mno-abicalls (mips.c:4464); `args_size = MIPS_STACK_ALIGN (current_function_outgoing_args_size)` is pinned at 24 by the single 5-word call (mips.c:4466, and the widening route is the REFUSED fabricated-dead-call-site family); `current_function_pretend_args_size` is added to total_size ONLY under `ABI_64BIT && mips_isa >= 3` (mips.c:4530-4531), which this build is not; and the register-save offset is computed as `args_size + extra_size + var_size + gp_reg_size - UNITS_PER_WORD` (mips.c:4548-4550), so growing the save area instead of `vars` moves the saves to the wrong offsets (measured: the s4 in-loop-guard spelling reaches frame 72 via a 9th callee-saved register and its sp offsets diverge further, not less).
+- probe: read mips.c:4448-4575 (the only producer of the `.frame` numbers) and cross-check against the `.frame` term readings of all 27 measured spellings.
+- result: total_size = var_size + args_size + gp_reg_rounded exactly on this configuration. The residual is definitionally a get_frame_size() question: 32 bytes of stack locals, whose only measured producers are (a) the banned unwritten pad aggregate and (b) alter_reg phantom slots, which cap at 8 bytes here.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 8395e8f4, all 27 s2/s3/s4 spellings plus the compiler source predicate
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.c:4464
+
+## Frontier (for the next session)
+1. PRECEDENT CENSUS (cheap, no compile): does any COMPLETED-C function already on main
+   reproduce an allocated-but-never-touched `vars` region from ordinary C — i.e. without a
+   pad aggregate and without a spill? Grep the matched bodies for `.frame` vars regions with
+   zero sw/lw traffic. A hit names a producer nobody here has spelled; a clean negative is
+   itself the strongest evidence for the pad-allowlist route.
+2. FORENSICS (unchanged from s3 item 2): the three text1b siblings carrying the identical
+   32-byte untouched region (func_80047EE8 / func_80047FBC / func_800481E8). Look for a call,
+   struct or buffer shape in their neighbourhood that implies the same 8-word local in the
+   original TU — that would make an ordinary-C LIVE local the producer instead of a pad.
+3. The pad remains the only known producer of exactly 32 bytes and is banned here only by the
+   closed per-function enumeration (Judge 2026-09-02 04:28, docs/grind/decisions.md:20349);
+   the bytes-proven body is preserved at rejected/pad-judge-banned-2026-09-02.c and integrates
+   unchanged if an owner ruling adds the engine/volatile_cheats.py row. Sibling func_80047EE8
+   ships exactly this construct on main (src/text1b.c:20-36).
+
+## [s4] Widening the phantom slot by giving the folded loop-guard a DImode (long long) carrier enlarges vars beyond 8 on this body
+- mechanism: reload1.c alter_reg sizes a spill slot MAX (inherent_size, reg_max_ref_width[i]), so a DImode allocno left unallocated would take 8 bytes instead of the 4-byte ST_REGS compare residue the s3 census found
+- probe: four s64 spellings built from rejected/phantom-guard-vars8-ceiling.c (single DImode guard, two DImode guards, DImode + s32 guard, DImode guard kept live through the loop) through tmp/grind/func_800480C0/s4/probe_body.sh (instrumented cc1, BB2_ALLOC_DEBUG=1, .frame + hardreg=-1 count)
+- result: all four report .frame $sp,56 # vars= 0 and unalloc_pseudos=0 - the DImode compare residue is allocated, so the phantom disappears instead of widening. Same-batch sanity check: the banked s3 forms still report vars=8 / unalloc_pseudos=1. s3 frontier item 1 closed. Banked at rejected/dimode-guard-erases-phantom.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 8395e8f4, pad-free bodies, bare `arg0 = 0;` dead param store present (cc1 sees it with or without the FAKE comment), instrumented cc1 tools/gcc-2.7.2/cc1 BB2_ALLOC_DEBUG
+
+## [s4] Placing folded guards in distinct basic blocks, including inside the loop body, raises phantom multiplicity above one and reserves 16 bytes
+- mechanism: reload1.c alter_reg gives each unallocated allocno its own assign_stack_local slot, so two guards with disjoint live ranges should strand two pseudos
+- probe: six spellings through the same instrument: guard inside the loop body, two guards in two distinct pre-loop blocks, three guards in three blocks, two guards folded against different constants (-1 / -7), pointer-typed guard beside the scalar guard, 64-bit multiply residue guard (tmp/grind/func_800480C0/s4/body_[EFGHIJ]*.c)
+- result: every spelling reported unalloc_pseudos = 0 or 1 and vars = 0 or 8; none reached 2 phantoms or 16 bytes. The one spelling reaching .frame $sp,72 did so by taking a NINTH callee-saved register (regs= 9/0), which moves the register-save block and every sp offset the wrong way. Running total with s2 (13) and s3 (8): 27 measured structural forms. Banked at rejected/multi-bb-guards-still-one-phantom.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 8395e8f4, pad-free bodies, bare `arg0 = 0;` dead param store present, instrumented-cc1 BB2_ALLOC_DEBUG census
+
+## [s4] A permuter campaign on this function finds a form scoring below the 20-objdump-diff baseline
+- mechanism: random C mutation over the candidate body; campaigns launched with the default --stack-diffs so the scorer does not normalise away the sp-relative offsets that ARE the residual here
+- probe: tmp/perm_480C0_s4a (candidate chassis, base_score 586, 39.4k iterations, 6 finds) and tmp/perm_480C0_s4b (vars=8 guard chassis, base_score 857, 10.6k iterations, 39 finds); each campaign best-eight finds recompiled and objdump-diffed against target.o (s4a_finds.txt / s4b_finds.txt); both harvested with --stop, status reports 0 live campaigns
+- result: campaign A best 442 = 74 insns / 20 objdump diffs / frame 64 - EQUAL to the baseline, not better. Campaign B best 583 = 25 diffs / frame 72. Largest frame reached across both is 72 and every frame-72 form carries 23-29 differing insns against the baseline 20; no find reached vars=16. Best find banked at rejected/permuter-s4a-best-442-frame64.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 8395e8f4, candidate chassis (annotated dead param store present) and the vars=8 guard chassis, decomp-permuter with --stack-diffs, ~50k total iterations
+
+## [s4] A frame term other than var_size (extra_size, pretend_args_size, or a larger register-save area) can supply the target's +32 bytes on this mips1 -mno-abicalls build
+- mechanism: GCC 2.7.2 mips.c compute_frame_size is the sole producer of the .frame numbers: extra_size = MIPS_STACK_ALIGN((TARGET_ABICALLS ? UNITS_PER_WORD : 0)) is 0 without abicalls (mips.c:4464); args_size is MIPS_STACK_ALIGN(current_function_outgoing_args_size), pinned at 24 by the single 5-word call (mips.c:4466); current_function_pretend_args_size is added to total_size only under ABI_64BIT && mips_isa >= 3 (mips.c:4530-4531); the register saves sit at args_size + extra_size + var_size + gp_reg_size - 4 (mips.c:4548-4550)
+- probe: read mips.c:4448-4575 and cross-check the args=/vars=/regs= terms of all 27 measured spellings, including the frame-72 spelling that grows the save area instead of vars
+- result: total_size = var_size + args_size + gp_reg_rounded exactly on this configuration; growing the save area (regs= 9/0, frame 72) moves every sp offset further from the target rather than closer. The residual is definitionally a get_frame_size() question - 32 bytes of stack LOCALS - whose only measured producers are the banned unwritten pad aggregate and alter_reg phantom slots (capped at 8 bytes here)
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 8395e8f4, all 27 s2/s3/s4 spellings plus the compiler source predicate
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.c:4464
