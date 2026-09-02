@@ -381,3 +381,24 @@ lhu/lhu/sll/or is the SDK header text, i.e. the template itself. Subsequent pipe
 (decisions.md:20575) lifting the island-2 ban, then layer-1 FAIL 08:12 (decisions.md:20579) holding the question owner-only
 and re-imposing the ban. Ban-compliant floor measured 19 on HEAD db16e520 (seat-swap recovery by loop-depth weighting
 measured closed, H14); the question above is unchanged and still open for the owner.
+
+### 2026-09-02 addendum (session s3) — the ban-compliant residual is now the island alone
+Structural session s3 closed every remaining ban-compliant divergence outside island 2: the honest
+floor of the pack-in-C chassis went 19 (s1) -> 11 (s2) -> **7** (s3, HEAD 9c1533fc). The 7 is a
+single diff hunk containing only the `gte_ldlv0` SVECTOR pack; every other instruction of
+func_800300B4 — all four call-crossing register seats, all scheduling order, the whole tail —
+byte-matches in ban-compliant pure C:
+
+    TGT: addiu v0,s3,44 ; move t4,v0 ; lhu t6,4(t4) ; lhu t5,0(t4) ; sll t6,t6,0x10 ;
+         or t5,t5,t6 ; mtc2 t5,$0 ; lwc2 $1,8(t4)
+    BLD: lhu v0,48(s3) ; lhu v1,44(s3) ; sll v0,v0,0x10 ; or v1,v1,v0 ; addiu v0,s3,44 ;
+         move t4,v0 ; mtc2 v1,$0 ; lwc2 $1,8(t4)
+
+(`addiu`, `move t4,v0` and `lwc2` are matching context.) Six distinct C spellings of the pack all
+measure exactly 7 (memory/grind/func_800300B4/hypotheses.md H23): the target's pack is based on
+`$t4` — a register that exists only inside the asm block's own `move $12,%0` preamble — with temps
+`$t5`/`$t6`, and `local-alloc.c:2249 find_free_reg` allocates hard regs in numeric order with
+`$v0`/`$v1` free, so no C temp can reach `$t5`/`$t6`. The measured distance between this function
+and COMPLETED-C is therefore now exactly the policy question in the entry above, with no remaining
+codegen residual attached to it. Best ban-compliant form (two do-while(0) FAKE wraps, not a
+submission): memory/grind/func_800300B4/best_ban_compliant.c. Evidence: evidence.md s3 section.

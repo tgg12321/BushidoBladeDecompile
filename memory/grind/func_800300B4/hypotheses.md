@@ -227,3 +227,62 @@ Frontier:
 - probe: tmp/grind/func_800300B4/s2/v_macdir_lvlate.c and v_macdir_lvlate_u16.c; sandbox + diff_v_macdir_lvlate_u16.txt.
 - result: both 11; the diff shows addiu v0,s3,44 and move t4,v0 as matching context for the first time, so the island-2 residual is now 5 substitutions + 2 additions instead of 7 substitutions. Banked as the best ban-compliant spelling.
 - verdict: CONFIRMED
+
+## s3 (2026-09-02, structural, HEAD 9c1533fc) — ban-compliant floor 11 -> 7
+
+## [s3] H21: the 4-insn tail-order cost of the &dir do-while(0) wrap is removed by widening the wrap UPWARD (starting it at the mac translation adds and running it to the end of the function) rather than by moving its narrow boundaries.
+- mechanism: NOTE_INSN_LOOP_BEG/END are scheduling-region boundaries. In the s2 (narrow) placement the note lands between `move a0,s0` and the &dir def `addiu s1,sp,32`, and between `li a1,1` and `lh v0,2(s3)`, so sched hoists both later insns one slot. Starting the wrap above every call-argument sequence in the tail keeps the identical flow.c loop_depth ref weighting on &dir while putting no note inside a call setup.
+- probe: tmp/grind/func_800300B4/s3/{v_addall,v_dirall,v_mulall,v_dir3stmt,v_dirsplit2,v_dirlast,v_dirmid,v_dirtail2,v_dirdeep,v_lookupearly,v_lookupin,v_idxsplit}.c via probe.sh; sandbox --disable all; diff_v_addall_mac1.txt.
+- result: adds..end = **7** (new floor, from 11); call..end = 9; MulMatrix0..end = 14; s2 narrow forms 11/11; the other eight placements 16-29. At 7 the tail is fully matching: the entire remaining diff is one hunk containing only the island-2 pack.
+- verdict: CONFIRMED
+
+## [s3] H22: the island-3 do-while(0) can be dropped on the wide-wrap chassis because &mac now gains loop weighting from the two trailing calls inside the wide wrap.
+- mechanism: flow.c loop_depth ref weighting; the wide wrap already contains both `mac` call references, so the dedicated island-3 wrap might be redundant.
+- probe: tmp/grind/func_800300B4/s3/v_addall_mac0.c (no island-3 wrap), v_addall_mac1.c (one level), v_addall.c (nested two levels); sandbox --disable all.
+- result: 0 levels = 19 (the four call-crossing seats break again), 1 level = 7, 2 levels = 9. The island-3 wrap is required and is pinned at exactly one level, so the banked s3 form carries two FAKE do-while(0) wraps instead of s2's three.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 9c1533fc, pack-in-C island 2 (no banned construct), wide dir wrap (mac adds through end of function)
+
+## [s3] H23: some island-2 pack spelling reduces the 7-insn residual on the fully-closed (tail-matching) chassis.
+- mechanism: the residual is the target's `lhu t6,4(t4); lhu t5,0(t4); sll t6,t6,0x10; or t5,t5,t6; mtc2 t5,$0` — base `$t4` is the asm block's own `move $12,%0` preamble register and the temps are `$t5`/`$t6`; local-alloc.c:2249 find_free_reg hands out hard regs in numeric order and `$v0`/`$v1` are free at that point.
+- probe: six spellings on the 7-chassis (tmp/grind/func_800300B4/s3/v_i2_{lvfirst,lvidx,lvlate2,inline,orswap}.c plus the banked arg0-based lv-late form); sandbox --disable all; diff_v_i2_*.txt.
+- result: all six score exactly 7. The `lv`-based spellings additionally regress composition (they seat `lv` in `$a1`, losing the matching `addiu v0,s3,44` + `move t4,v0` context pair). Re-confirms s1's H4 class kill on the s3 chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 9c1533fc, wide dir wrap + single island-3 wrap, pack-in-C island 2 (no banned construct)
+
+Frontier after s3:
+  (1) Ban-compliant floor is 7 and the residual is ONE diff hunk = the island-2 gte_ldlv0 SVECTOR
+      pack. Every other instruction of func_800300B4 byte-matches in ban-compliant pure C.
+      The remaining distance to COMPLETED-C is entirely the policy question at
+      docs/grind/borderline.md:370 (does cop2-addressing-preamble-cluster.md condition 3 admit a
+      verbatim PsyQ gte_ldlv0 SDK macro body, whose GPR pack is not an addressing preamble?).
+      Do NOT re-request that ruling; it is filed.
+  (2) The 7-form carries two do-while(0) FAKEs and is a floor/mechanism bound, not a submission.
+      The 0-form (candidate.c) is still 0 and still blocked by the island-2 ban.
+  (3) Do NOT re-probe: dir-wrap placement (12 spans measured, H19+H21), island-3 wrap depth (H22),
+      island-2 pack spelling (H23 + H4 + H17), pointer aliases of mac (H16), &mac-only ref
+      weighting at any depth (H14), lookup statement position (H21 table).
+
+## [s3] The 4-insn tail-order cost of the &dir do-while(0) wrap is removed by widening the wrap UPWARD - starting it at the mac translation adds and running it to the end of the function - rather than by moving its narrow boundaries as s2's H19 sampled.
+- mechanism: NOTE_INSN_LOOP_BEG/END are scheduling-region boundaries. In the s2 narrow placement the note lands between 'move a0,s0' and the &dir def 'addiu s1,sp,32', and between 'li a1,1' and 'lh v0,2(s3)', so sched hoists both later insns one slot. Starting the wrap above every call-argument sequence in the tail preserves the identical flow.c loop_depth ref weighting on &dir while putting no loop note inside a call setup.
+- probe: Twelve wrap spans measured with tmp/grind/func_800300B4/s3/probe.sh (apply the form over the INCLUDE_ASM line, 'sandbox func_800300B4 --disable all', normalized-insn diff, BB2_QTY_DEBUG trace): v_addall, v_dirall, v_mulall, v_dir3stmt, v_dirsplit2, v_dirlast, v_dirmid, v_dirtail2, v_dirdeep, v_lookupearly, v_lookupin, v_idxsplit.
+- result: adds-through-end = 7 (new floor, down from 11); call-through-end = 9; MulMatrix0-through-end = 14; the two s2 narrow forms 11/11; the remaining eight placements 16-29. At 7 the tail matches completely - the whole remaining diff is one hunk containing only the island-2 pack. Best form banked at memory/grind/func_800300B4/best_ban_compliant.c.
+- verdict: CONFIRMED
+
+## [s3] The island-3 do-while(0) wrap can be dropped on the wide-wrap chassis because &mac already gains loop weighting from the two trailing calls that now sit inside the wide wrap.
+- mechanism: flow.c loop_depth ref weighting feeding local-alloc.c:1670 qty_compare_1 priority = floor_log2(refs)*refs*size/(death-birth); the wide wrap already contains both 'mac' call references, so a dedicated island-3 wrap might be redundant.
+- probe: tmp/grind/func_800300B4/s3/v_addall_mac0.c (no island-3 wrap), v_addall_mac1.c (one level), v_addall.c (nested two levels); sandbox --disable all.
+- result: 0 levels = 19 (the four call-crossing seats break again), 1 level = 7, 2 levels = 9. The island-3 wrap is required and is pinned at exactly one level, so the banked s3 form carries two FAKE do-while(0) wraps instead of s2's three.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 9c1533fc, pack-in-C island 2 (no banned construct), wide dir wrap spanning the mac translation adds through the end of the function
+
+## [s3] Six island-2 pack spellings measured on the fully-closed (tail-matching) chassis reduce the 7-insn residual below 7.
+- mechanism: The residual is the target's 'lhu t6,4(t4); lhu t5,0(t4); sll t6,t6,0x10; or t5,t5,t6; mtc2 t5,$0'. Base $t4 is the asm block's own 'move $12,%0' preamble register and the temps are $t5/$t6; local-alloc.c:2249 find_free_reg hands out hard regs in numeric order and $v0/$v1 are free at that point.
+- probe: tmp/grind/func_800300B4/s3/v_i2_lvfirst.c (pack read through the lv pointer), v_i2_lvidx.c (((u16*)lv)[0]/[2]), v_i2_lvlate2.c (lv defined first, arg0-based reads), v_i2_inline.c (pack expression written inline as the asm operand, no named local), v_i2_orswap.c (or operands swapped high|low), plus the banked arg0-based lv-late spelling; sandbox --disable all + diff_v_i2_*.txt.
+- result: All six score exactly 7 and the diff hunk is unchanged in size. The lv-based spellings additionally regress composition: they seat lv in $a1, losing the matching 'addiu v0,s3,44' + 'move t4,v0' context pair. Re-confirms s1's H4 class kill on the s3 chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 9c1533fc, wide dir wrap + single island-3 wrap, pack-in-C island 2 (no banned construct)

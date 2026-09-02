@@ -434,3 +434,102 @@ move ahead of them.
 - [s2] New floor 11 measured with the nested island-3 wrap + a do-while(0) on func_8002F2D0: all four seats on target, all 12 seat-swap insns gone (sb_v_model_macdir.txt, diff_v_model_macdir.txt).
 
 - [s2] Residual 11 decomposes as 7 (island-2 C pack, s1 H4 class kill at local-alloc.c:2249) + 4 (tail insn order perturbed by the dir wrap's loop notes; s1 diff_h14.txt shows the nested mac wrap alone leaves those pairs matching).
+
+## s3 (2026-09-02, structural, HEAD 9c1533fc) — ban-compliant floor 11 -> 7; the residual is now island 2 alone
+
+Chassis re-measured first: `memory/grind/func_800300B4/best_ban_compliant.c` (the s2 11-form) applied
+over the `INCLUDE_ASM` line scores `sandbox --disable all` = **11** on HEAD 9c1533fc
+(`tmp/grind/func_800300B4/s3/sb_v_base.txt`, `diff_v_base.txt`) — identical to s2. Nothing moved.
+
+### E-s3-1 — the s2 tail-order residual is a wrap-BOUNDARY artifact, not an unavoidable cost of the dir wrap
+s2's H19 killed the tail-4 over five wrap placements that all kept the wrap *narrow* (the
+`func_8002F2D0(mtx, dir)` call plus at most the following one or two statements). The correct
+direction is the opposite one: make the wrap **wider at the top**. Placement sweep measured this
+session, all with the island-3 wrap held at one level and the pack-in-C island 2 unchanged:
+
+| do-while(0) wrap span | sandbox | note |
+|---|---|---|
+| `mac[0..2] += ...` **through the end of the function** | **7** | new floor; tail fully matches |
+| `func_8002F2D0(...)` through the end of the function | 9 | only the `addiu s1,sp,32` / `move a0,s0` pair left |
+| `MulMatrix0(...)` through the end of the function | 14 | &mtx ref weighting breaks its seat |
+| `func_8002F2D0` + `lookup` + `func_80049718` | 11 | s2's other 11-form; different 4-insn tail |
+| `func_8002F2D0` only (the s2 banked form) | 11 | baseline |
+| `func_8002F2D0` only **+ a second disjoint wrap** over the two trailing calls | 22 | |
+| `func_800393C8` only (last call) | 17 | |
+| `func_80049718` only | 22 | |
+| `func_80049718` + `func_800393C8` | 20 | |
+| nested x2 on `func_8002F2D0` | 19 | |
+| `lookup` hoisted above `MulMatrix0`, narrow wrap | 29 | lookup's birth moves; priority collapses |
+| `lookup` computed inside the narrow wrap | 16 | |
+
+Mechanism: the `NOTE_INSN_LOOP_BEG` a `do { } while (0);` emits is a scheduling-region boundary.
+With the narrow (s2) placement the note lands *between* `move a0,s0` and the &dir def
+`addiu s1,sp,32`, and between `li a1,1` and `lh v0,2(s3)`, so `sched` hoists both later insns one
+slot (4 insns of pure order). Starting the wrap at the `mac[i] += mat[i+5]` translation adds puts
+the note ahead of every call-argument sequence in the tail while giving `&dir` the identical
+loop_depth ref weighting, so the seats stay on target and the order cost disappears. Widening one
+statement further (to include `MulMatrix0`) also drags `&mtx` into the loop region and costs 14.
+
+Splitting `lookup` into a named index intermediate (`s32 idx = *(s16 *)(arg0 + 2);`) is
+byte-neutral on this chassis (7 -> 7 measured as `v_idxsplit`, 11 -> 11 on the s2 chassis); it is
+not part of the banked form.
+
+### E-s3-2 — the island-3 wrap depth is pinned at exactly one level on the new chassis
+With the wide dir wrap in place, `&mac` already gains the loop weighting of its two trailing-call
+references. Dropping the island-3 `do { } while (0);` entirely scores **19** (seats break again);
+keeping the s2 nested pair scores **9**; a single level scores **7**. The banked s3 form therefore
+carries **two** FAKE `do { } while (0);` wraps, one fewer than the s2 form.
+
+### E-s3-3 — the residual 7 is EXACTLY the island-2 GPR pack, and six spellings of it all measure 7
+Full diff of the banked form (`tmp/grind/func_800300B4/s3/diff_v_addall_mac1.txt`) — one hunk, no
+other divergence anywhere in the function:
+
+    TGT: addiu v0,s3,44 ; move t4,v0 ; lhu t6,4(t4) ; lhu t5,0(t4) ; sll t6,t6,0x10 ;
+         or t5,t5,t6 ; mtc2 t5,$0 ; lwc2 $1,8(t4)
+    BLD: lhu v0,48(s3) ; lhu v1,44(s3) ; sll v0,v0,0x10 ; or v1,v1,v0 ; addiu v0,s3,44 ;
+         move t4,v0 ; mtc2 v1,$0 ; lwc2 $1,8(t4)
+
+`addiu v0,s3,44`, `move t4,v0` and `lwc2 $1,8(t4)` are matching context. The divergence is the
+four-instruction SVECTOR pack plus the `mtc2` source register. The target's pack is based on `$t4`
+— a register that exists only inside the asm block's own `move $12, %0` preamble — with temps
+`$t5`/`$t6`, while `$v0`/`$v1` are free at that point, so `local-alloc.c:2249 find_free_reg`
+(numeric allocation order) can never hand a C temp `$t5`/`$t6`. This re-confirms s1's H4 class kill
+on the s3 chassis. Six island-2 spellings measured, every one exactly 7: pack read through `lv`
+(pointer deref), pack read through `((u16 *)lv)[0]/[2]`, `lv` defined before the pack with arg0-based
+reads, the pack expression written inline as the asm operand (no named local), the `or` operands
+swapped (high|low), and the s2 arg0-based lv-late spelling. The `lv`-based spellings additionally
+regress composition (they seat `lv` in `$a1`, losing the matching `addiu v0,s3,44`).
+
+**Consequence.** The ban-compliant chassis is now fully closed except for island 2: every register
+seat, every scheduling order and every instruction outside the gte_ldlv0 macro body byte-matches in
+pure C. The distance between func_800300B4 and COMPLETED-C is exactly the question logged at
+`docs/grind/borderline.md:370` — whether the verbatim PsyQ `gte_ldlv0` SDK macro body counts as
+"the cop2 addressing preamble" under `cop2-addressing-preamble-cluster.md` condition 3. Nothing else
+remains.
+
+**Artifacts:** `tmp/grind/func_800300B4/s3/{gen.py, gen2.py, gen3.py, gen4.py, probe.sh, apply.py,
+diff.py, qtydbg.py, sb_v_*.txt, diff_v_*.txt, qty_v_*.txt, v_*.c}`.
+
+- [s3] Chassis re-measured at dispatch on HEAD 9c1533fc: the s2 banked 11-form still scores 11; the ledger floor was accurate.
+- [s3] Ban-compliant floor 11 -> 7 by WIDENING the &dir do-while(0) wrap upward to start at the mac translation adds and run to the end of the function; this moves the loop notes out of every call-argument sequence in the tail while preserving the loop_depth ref weighting that seats &dir.
+- [s3] s2's H19 kill ("wrap placement cannot remove the tail-4") was an INSTANCE kill over five narrow placements; the wide-at-the-top direction it did not sample removes all 4. Twelve placements are now measured (table in E-s3-1).
+- [s3] On the wide-wrap chassis the island-3 do-while(0) is pinned at exactly one level (0 levels = 19, 1 = 7, 2 = 9); the banked form carries two FAKE wraps, one fewer than s2's.
+- [s3] The residual 7 is a single diff hunk containing only the island-2 SVECTOR pack; every other instruction in the function byte-matches ban-compliant pure C.
+- [s3] Six distinct island-2 pack spellings all measure exactly 7 on this chassis, re-confirming s1's H4 class kill (local-alloc.c:2249) — the target's pack is based on the asm-internal $t4 with $t5/$t6 temps while $v0/$v1 are free.
+- [s3] src/code6cac_b.c restored to INCLUDE_ASM at session end; no engine/tools/rules files touched; candidate.c (the 0-form) left untouched.
+
+- [s3] Chassis re-measured at dispatch on HEAD 9c1533fc: the s2 banked 11-form (memory/grind/func_800300B4/best_ban_compliant.c) still scores sandbox --disable all = 11 (tmp/grind/func_800300B4/s3/sb_v_base.txt); the ledger floor was accurate and nothing moved.
+
+- [s3] Ban-compliant honest floor is now 7 (was 19 in s1, 11 in s2), measured this session on HEAD 9c1533fc with tmp/grind/func_800300B4/s3/v_addall_mac1.c applied over the INCLUDE_ASM line.
+
+- [s3] s2's H19 kill ('the dir wrap's 4-insn tail-order cost cannot be removed by moving the wrap boundaries') was an INSTANCE kill over five NARROW placements; the wide-at-the-top direction it did not sample removes all four. Twelve wrap spans are now measured and tabulated in evidence.md E-s3-1.
+
+- [s3] The residual 7 is a single diff hunk containing only the island-2 SVECTOR pack: TGT 'addiu v0,s3,44 ; move t4,v0 ; lhu t6,4(t4) ; lhu t5,0(t4) ; sll t6,t6,0x10 ; or t5,t5,t6 ; mtc2 t5,$0 ; lwc2 $1,8(t4)' vs BLD 'lhu v0,48(s3) ; lhu v1,44(s3) ; sll v0,v0,0x10 ; or v1,v1,v0 ; addiu v0,s3,44 ; move t4,v0 ; mtc2 v1,$0 ; lwc2 $1,8(t4)', with the addiu/move/lwc2 as matching context. Every other instruction in the function - all four call-crossing register seats, all scheduling order, the whole tail - byte-matches in ban-compliant pure C.
+
+- [s3] The island-3 do-while(0) wrap depth is pinned at exactly one level on the wide-wrap chassis (0 levels = 19, 1 = 7, 2 = 9), so the banked s3 form carries two FAKE do-while(0) wraps, one fewer than the s2 form.
+
+- [s3] Splitting the lookup index into a named intermediate ('s32 idx = *(s16 *)(arg0 + 2); lookup = (&D_8008EB80)[idx];') is byte-neutral on this chassis (7 -> 7) and is not part of the banked form.
+
+- [s3] docs/grind/borderline.md amended with a 2026-09-02 s3 addendum recording that the ban-compliant residual is now the island alone, so the measured distance from func_800300B4 to COMPLETED-C is exactly the filed cluster-condition-3 policy question with no codegen residual attached to it.
+
+- [s3] src/code6cac_b.c restored to INCLUDE_ASM at session end; no engine/tools/.claude/rules/Makefile/*.ld files touched; candidate.c (the proven 0-form) left untouched; ten disproven forms banked under memory/grind/func_800300B4/rejected/.
