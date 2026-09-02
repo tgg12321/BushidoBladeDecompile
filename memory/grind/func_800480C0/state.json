@@ -1,8 +1,8 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 9,
- "current_modality": "forensics",
+ "session_count": 10,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -57,23 +57,29 @@
    "floor": 20,
    "modality": "forensics",
    "headline": "Both s8 frontier items closed negative: the func_800482C8 family has exactly four members (no live sibling to name the 32-byte object), and func_80041AC8's three phantoms are the SAME combine ashift-d"
+  },
+  {
+   "session": 10,
+   "floor": 20,
+   "modality": "rederive",
+   "headline": "Rederive spent on all three axes: fresh m2c reproduces the banked control flow, the sibling transplant reproduces the banked body verbatim (func_80047FBC is this routine with 4 params, COMPLETED-C on "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A DImode (long long) intermediate that GCC folds or deletes before emission leaves an unallocated DImode pseudo, giving class-B-style 8-byte phantoms WITHOUT an emitted mult/div - the only untested route to four phantoms on a mult-free stream.",
-   "mechanism": "s8's census shows the only bodies above three phantoms are func_80042874/func_80042A88 at six, both mult/div, whose phantoms are DImode HILO residue. s8 also showed a constant power-of-two divide folds at expand and leaves nothing. A long long expression whose high word is provably dead may still create the DImode pseudo at expand while emitting only SImode instructions.",
-   "next_probe": "Read the .greg/.combine provenance of func_80042874's six phantoms (dump src/text1a_c.c with tools/gcc-2.7.2/cc1 -da) to see whether the DImode pseudo requires an emitted mult/div or merely a DImode expand; then spell a byte-neutral long long intermediate on func_800480C0's word/scale sites and measure with tmp/grind/func_800480C0/s6/probe.sh."
+   "hypothesis": "The residual is not a spelling question any more: with class A closed in both directions, class B capped at 1 across 55 forms, and the DImode route dead, the 32-byte untouched window at sp+0x18..0x37 has no remaining honest producer on this body, and the sibling transplant identifies it as the same source declaration the three granted siblings carry.",
+   "mechanism": "func_80047FBC (src/text1b.c:82) is this routine with four parameters, COMPLETED-C on main, line-for-line identical to candidate.c apart from its granted `volatile u32 pre_pad[8];` (engine/volatile_cheats.py:757-767, 2026-08-20 and 2026-08-22 owner rulings). func_800480C0 is the fourth member of the same family in the same TU with the same window and no row.",
+   "next_probe": "This is the escalation-modality disposition, not a probe: file the proof-of-foreclosure record naming the three sibling grants as the gate evidence and the missing enumeration row as the single re-activation trigger. It should NOT be spent re-spelling class A or class B, and it should not be re-filed as an INTEGRATION HANDOFF - the 2026-09-02 04:28 Judge FAIL (docs/grind/decisions.md:20349) already ruled that the unwritten-leading-pad enumeration is closed and that this function is not in it."
   },
   {
-   "hypothesis": "Both phantom producer classes are now measured closed on this body (class A on a cited predicate this session, class B at 1 across 41 forms in s2-s8), so the 32-byte untouched region has no remaining honest producer and the shape-invariance across the four siblings is a source DECLARATION.",
-   "mechanism": "s8's frame census: all four siblings reserve the identical 0x18-0x37 window with args=0x18 and callee-saved base 0x38 despite 2/4/6/2 parameters; phantom residue tracks expression shape and would vary. Three of the four already carry owner-granted `volatile u32 pre_pad[8];` rows at engine/volatile_cheats.py:757-767.",
-   "next_probe": "If the DImode route above also measures dead, the honest-producer search is complete and the correct disposition is an escalation-modality entry recording that both producer classes are closed with predicate cites, with the pre_pad row for func_800480C0 named as the re-activation trigger. Do NOT re-spell class A or class B."
+   "hypothesis": "A third permuter basin seeded from a stream-preserving alternative chassis (b9's s16 round-trip temporaries, or b2's u8* cursor) reaches a form the two basins of s4 could not, because those basins were both seeded from the single s1/s3 chassis.",
+   "mechanism": "s4 ran ~50k iterations with --stack-diffs across two chassis, but both were spellings of the same pointer-cursor body. b2 and b9 compile to the identical 72-insn stream from materially different C, so decomp-permuter's mutation neighbourhoods around them are disjoint from what s4 explored.",
+   "next_probe": "tools/permuter_campaign.py with b9_stackarg_himode_roundtrip.c and b2_bytewalker.c as separate import bases, --stack-diffs on, fresh-seed stopping rule (~20-30 fresh seeds with no novel find). Wait in-turn with `permuter_campaign.py wait --dir <ws>` and harvest --stop before writing the outcome. Expect a negative: the frame delta is a declaration, not a schedule, and no permuter mutation adds a local aggregate."
   },
   {
-   "hypothesis": "One of the shipped sll/sra pairs sign-extends a value that DOES have a memory home - the two stack-passed s16 arguments arrive via `lw $v1,0x68($sp)` / `lw $a0,0x6C($sp)` - so the class-A substitution might fire there without touching the four halfword loads.",
-   "mechanism": "H-s9-3's predicate closes the four halfword sites (base register set between load and use). The prologue's four sll/sra pairs on the s16 params are a separate population; arg2/arg3 arrive in registers with no memory home, but arg4/arg5 are incoming stack arguments whose slots are never written, so use_crosses_set_p has nothing to trip on for them.",
-   "next_probe": "Check whether the two stack-passed s16 arguments can be spelled so combine substitutes their incoming stack MEM and folds `lw + sll + sra` into `lh 0x6A($sp)` - and, separately, whether any spelling keeps the emitted lw+sll+sra triple while still deleting an intermediate. Measure with s6/probe.sh; asm/funcs/func_800480C0.s lines 31-34 are the reference."
+   "hypothesis": "The args=56 / vars=0 layout is indistinguishable from args=24 / vars=32 in the shipped bytes, so a fourteen-word outgoing-argument block would also reproduce the frame - but no honest call site in this function has fourteen arguments.",
+   "mechanism": "MIPS o32 with ACCUMULATE_OUTGOING_ARGS sizes the arg block from the widest call; the single call here is func_800482C8 with five arguments (args= 24 after alignment, with the fifth stored at 0x10($sp)). Reaching args= 56 needs a wider call that the target stream does not contain.",
+   "next_probe": "Closed, not open - recorded so it is not re-derived. Fabricating a dead wide call site is the family the owner refused on 2026-08-17 (.claude/rules/no-new-park-categories.md:357-366), and a real one would emit stores. No probe should be spent here."
   }
  ],
  "judge_constraints": [
@@ -304,6 +310,30 @@
    "measured_on": "HEAD 0c7f30e4, bodies at tmp/grind/func_800480C0/s9/bodies/ installed one at a time over the INCLUDE_ASM line; annotated `arg0 = 0;` FAKE present in every body",
    "predicate_cite": "",
    "result": "All three print `.frame $sp,56 # vars= 0, regs= 8/0, args= 24`, unalloc=0, orphanUSE=0 - identical to the control. combi"
+  },
+  {
+   "session": 10,
+   "statement": "A long long intermediate in this body leaves an unallocated DImode pseudo that alter_reg pays 8 bytes of vars for, giving class-B-style phantoms without an emitted mult/div (s9 frontier item 1).",
+   "kill_scope": "instance",
+   "measured_on": "HEAD a0198d09, bodies at tmp/grind/func_800480C0/s10/bodies/b3_dimode_count.c and b4_dimode_scale.c installed one at a time over the INCLUDE_ASM line in src/text1b.c; the annotated `arg0 = 0;` dead-pa",
+   "predicate_cite": "",
+   "result": "b3 emits genuine DImode compare/decrement code (insns 72 -> 86) and grows the callee-saved set to regs= 10/0 - the DImod"
+  },
+  {
+   "session": 10,
+   "statement": "The two stack-passed s16 parameters are a class-A substitution site that the four lhu sites are not - their incoming slots at 0x68/0x6C($sp) are never written, so use_crosses_set_p cannot block - and ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD a0198d09, bodies at tmp/grind/func_800480C0/s10/bodies2/ installed one at a time over the INCLUDE_ASM line; the annotated `arg0 = 0;` FAKE present, no other FAKE construct.",
+   "predicate_cite": "",
+   "result": "The substitution fires and it costs bytes rather than producing frame. b7 and b8 both drop insns 72 -> 68 because each l"
+  },
+  {
+   "session": 10,
+   "statement": "A structurally different chassis for the same program - a different cursor type, a 12-byte record struct, or index addressing instead of a moving pointer - changes which pseudos combine sees and reser",
+   "kill_scope": "instance",
+   "measured_on": "HEAD a0198d09, bodies at tmp/grind/func_800480C0/s10/bodies/ installed one at a time over the INCLUDE_ASM line; FAKE state per body - b1 carries no FAKE at all, b2/b5/b6 carry the annotated `arg0 = 0;",
+   "predicate_cite": "",
+   "result": "All four measure vars= 0 with unalloc=0. b1 is 71 insns - dropping the second base carrier removes the move $18,$16 the "
   }
  ],
  "ladder_skip": 0,

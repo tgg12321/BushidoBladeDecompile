@@ -3,6 +3,52 @@
  * file is a CANDIDATE, not the state of HEAD; every 'measured on main' statement in the
  * headers below means 'measured with this body installed over that INCLUDE_ASM line'.
  * Install with tmp/grind/func_800480C0/s3/install.py. */
+/* s10 (rederive, 2026-09-02, chassis HEAD a0198d09) - BODY UNCHANGED, floor
+ * re-measured 20 (74/74, `sandbox func_800480C0 --disable all`). The mandated
+ * rederive axes were all three run to the end and they CONVERGE on this body:
+ *  1. FRESH m2c. `tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax` on
+ *     asm/funcs/func_800480C0.s produces the same control flow this body has
+ *     (the only deltas are m2c's s32-typed arg4/arg5 and a post- rather than
+ *     pre-decrement loop test). Spelled out as a chassis it emits 71 insns with
+ *     vars=0: dropping the second base carrier costs the `move $18,$16` the
+ *     target ships, so the m2c shape is one insn SHORT, not a new lever.
+ *  2. SIBLING TRANSPLANT - THE DECISIVE RESULT. func_80047FBC (src/text1b.c:82)
+ *     is this same routine with 4 parameters instead of 6, and it is COMPLETED-C
+ *     on main. Its body is line-for-line the body below (same `base_addr`/`p`
+ *     init chain, same annotated `arg0 = 0;` dead param store, same in-loop
+ *     cursor arithmetic, same `while ((count--) != 0)` tail). The ONLY
+ *     structural difference between the accepted sibling and this candidate is
+ *     its leading `volatile u32 pre_pad[8];`, granted by the 2026-08-20 owner
+ *     ruling at engine/volatile_cheats.py:757-758. func_80047EE8 (src/text1b.c:35)
+ *     and func_800481E8 carry the identical grant. So the rederive axis does not
+ *     have a different shape to find: the shape is already on main three times.
+ *  3. STRUCTURAL RESPELLINGS - 10 new forms measured (55 total on this body),
+ *     every one vars=0 / unalloc=0:
+ *       b1 fresh-m2c chassis (71 insns)      b2 u8* byte-cursor chassis (72)
+ *       b3 `long long` loop counter (86, regs=10 - a DImode pseudo that IS
+ *          allocated pays REGISTERS, not vars)
+ *       b4 `unsigned long long` scale intermediate with a provably dead high
+ *          word (76 - cc1 lowers it to SImode and orphans nothing)
+ *       b5 12-byte struct-record chassis (63) b6 for-index chassis (62)
+ *       b7 sub-word read of the two STACK-passed s16 params (68)
+ *       b8 sub-word read of all four s16 params (68)
+ *       b9 s16 round-trip temporaries, stream preserved (72)
+ *  TWO LIVE FRONTIER ITEMS CLOSED. (a) s9 frontier 1 (DImode route to four
+ *  phantoms) is dead: b3/b4 are the two ways a long long can enter this body and
+ *  neither leaves an unallocated DImode pseudo. (b) s9 frontier 3 (the two
+ *  stack-passed s16 args as a class-A site) is dead in the useful direction: the
+ *  substitution DOES fire there - b7 drops 72 -> 68 insns because both
+ *  `lw + sll + sra` triples fold into `lh` - but it produces unalloc=0 and it
+ *  DELETES four instructions the target ships. Class A remains a byte-cost, not
+ *  a phantom source, on this body.
+ *  MANDATED FAKE RE-AUDIT (rejected/s10-candidate-minus-fake-reseats-registers.c):
+ *  with the annotated `arg0 = 0;` physically removed the body still emits 72
+ *  insns with vars=0/unalloc=0, but the register seating changes (base carrier
+ *  $22 instead of $18/$s2, second base use binds $4) and the prologue reorders.
+ *  The FAKE is load-bearing for the stream and masks no phantom lever - s8's
+ *  ablation verdict re-confirmed on the current chassis.
+ *  Instruments: tmp/grind/func_800480C0/s10/{probe.sh,runall.sh,runall2.sh,
+ *  gen_bodies.py,gen_bodies2.py,bank.py,bodies/,bodies2/,bodies3/}. */
 /* s9 (forensics, 2026-09-02, chassis HEAD 0c7f30e4) - BODY UNCHANGED, floor
  * re-measured 20 (74/74). Both s8 frontier items closed NEGATIVE, and the
  * class-A producer is now fully named:

@@ -705,3 +705,155 @@
 - [s9] Four new spellings measured negative on the s6 probe harness (running total 45 structural forms on this body): immediate s32 sign-extends of the four u16 loads, and three combine-foldable chain extensions of the arg1 scale. All print vars=0, unalloc=0, orphanUSE=0, identical to the control.
 
 - [s9] Combine's shift-MERGE (which produced the shipped `sll $a1,16; sra $a1,14` from a sign extension plus a `*4`) rewrites i3 in place and orphans nothing; only the MEM-substitution shape reaches distribute_notes' no-home path. The two combine behaviours must not be conflated when proposing chain-length levers.
+
+## s10 (rederive, 2026-09-02, chassis HEAD a0198d09)
+
+Floor re-measured: `sandbox func_800480C0 --disable all` -> `"score": 20`,
+target_insns 74, build_insns 74, with `memory/grind/func_800480C0/candidate.c`
+installed over the `INCLUDE_ASM("asm/funcs", func_800480C0);` line in
+src/text1b.c. Unchanged from s3-s9; the chassis moved 0c7f30e4 -> a0198d09
+(ledger commits only) and the number did not.
+
+New instrument: `tmp/grind/func_800480C0/s10/probe.sh`. It is s6/probe.sh with
+two defects fixed that mattered for this session: (a) the s6 script's insn
+counter used `grep -E '^[ \t]+[a-z]'`, where `\t` inside a bracket expression is
+a literal backslash-t, so it always reported insns=0; (b) when run from Git Bash
+on the Windows host rather than through WSL, the `cd` to the /mnt path fails, cc1
+never runs, and awk silently reports the frame line of the PREVIOUS run's
+`probe.s`. Every s10 measurement was taken through `bash tools/wsl.sh`, and
+probe.sh now deletes probe.s/fn.s before each run and prints CC1-FAIL if cc1
+produced nothing.
+
+### 1. Fresh m2c decompile (rederive axis 1)
+
+`python3 tools/m2c/m2c.py --target mipsel-gcc-c -f func_800480C0 --valid-syntax
+asm/funcs/func_800480C0.s` reproduces the control flow this ledger has carried
+since s1: the two-step base computation, `if (count != 0)` guard, do-while loop
+with a moving cursor and five-argument call. The only deltas are cosmetic - m2c
+types arg4/arg5 as s32 with `(s16)` casts at the use sites, and it renders the
+loop tail as `var_s1 -= 1; while (var_s1 != 0)` rather than the target's
+test-then-decrement `while ((count--) != 0)`. m2c invents no local and no
+aggregate, so it offers no producer for the 32 untouched `vars` bytes. Spelled
+out as a compilable chassis (b1) it measures
+`.frame $sp,56 # vars= 0, regs= 8/0, args= 24`, insns=71, unalloc=0 - one insn
+SHORT of the current body, because using `arg0` directly at both base sites
+removes the `move $18,$16` the target ships at 0x800480D0.
+
+### 2. Sibling transplant (rederive axis 2) - the decisive result
+
+func_80047FBC (src/text1b.c:82) is the same routine with four parameters instead
+of six and it is COMPLETED-C on main today. Read side by side with candidate.c
+the two bodies are line-for-line the same program: `base_addr = arg0; p =
+(u32 *)arg0;`, the annotated `arg0 = 0;` dead param store with the same cse2
+justification, `p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));`, the
+`(((*p) >> 2) << 2)` re-base, `count = *(p++);`, the `if (count != 0)` guard with
+hoisted `sx_argN` widenings, and the in-loop word + four halfword cursor reads
+feeding `func_800482C8`. func_80047EE8 (src/text1b.c:35) is the same body again
+with the widening inlined at the call.
+
+The ONE structural difference between the accepted siblings and this candidate is
+the leading `volatile u32 pre_pad[8];`. All three siblings hold owner grants for
+it - `"func_80047EE8"` and `"func_80047FBC"` from the 2026-08-20 ruling and
+`"func_800481E8"` from the 2026-08-22 "parked-but-proven audit" ruling, at
+engine/volatile_cheats.py:757-767. func_800480C0 is the fourth member of the same
+family in the same translation unit with the same 0x18-0x37 window, and it is not
+in the enumeration; the 2026-09-02 04:28 Judge FAIL
+(docs/grind/decisions.md:20349) turned on exactly that - "the unwritten-leading-pad
+family is a CLOSED per-function enumeration, and func_800480C0 is not in it".
+
+The consequence for THIS modality is concrete rather than rhetorical: the rederive
+mandate is to find a structurally different C shape, and the transplant axis shows
+the shape that reaches the target is already on main three times over, differing
+from what is banked here by one declaration that this function may not carry.
+
+### 3. Structural respellings (rederive axis 3) - ten new forms
+
+All measured with s10/probe.sh; all banked under
+memory/grind/func_800480C0/rejected/ with an s10 header.
+
+| form | .frame | insns | unalloc |
+|---|---|---|---|
+| candidate.c (baseline) | vars=0 regs=8 args=24 | 72 | 0 |
+| b1 fresh-m2c chassis | vars=0 regs=8 args=24 | 71 | 0 |
+| b2 u8* byte-cursor chassis | vars=0 regs=8 args=24 | 72 | 0 |
+| b3 `long long` loop counter | vars=0 regs=10/0 args=24 | 86 | 0 |
+| b4 `unsigned long long` scale intermediate | vars=0 regs=8 args=24 | 76 | 0 |
+| b5 12-byte struct-record chassis | vars=0 regs=9/0 args=24 | 63 | 0 |
+| b6 for-index chassis | vars=0 regs=9/0 args=24 | 62 | 0 |
+| b7 sub-word read of the 2 stack-passed s16 params | vars=0 regs=8 args=24 | 68 | 0 |
+| b8 sub-word read of all 4 s16 params | vars=0 regs=8 args=24 | 68 | 0 |
+| b9 s16 round-trip temporaries | vars=0 regs=8 args=24 | 72 | 0 |
+| candidate.c minus the FAKE | vars=0 regs=8 args=24 | 72 | 0 |
+
+Running total of measured spellings on this body: 55.
+
+### 4. s9 frontier item 1 (DImode phantom route) - CLOSED
+
+There are exactly two places a `long long` can enter this body without inventing
+a value: the loop counter and the two `(word >> 2) << 2` scale expressions.
+
+- b3 makes `count` a `long long`. cc1 emits genuine DImode compare/decrement code
+  (insns 72 -> 86) and grows the callee-saved set to `regs= 10/0`, i.e. the DImode
+  pseudo is ALLOCATED and pays registers. unalloc stays 0, vars stays 0.
+- b4 routes both scale sites through `unsigned long long acc` whose high word is
+  provably zero and never read. cc1 lowers the whole thing to SImode, adding four
+  insns (72 -> 76) with vars=0 and unalloc=0. The dead high word does not survive
+  to allocation as an unallocated DImode pseudo.
+
+So the s8 observation that the only six-phantom bodies in the tree
+(func_80042874/func_80042A88) are mult/div bodies whose phantoms are DImode HILO
+residue does NOT generalise into a route here: on this body a DImode value either
+gets a register pair or gets lowered away, and neither outcome reserves `vars`.
+
+### 5. s9 frontier item 3 (stack-passed s16 args as a class-A site) - CLOSED
+
+The prediction was that arg4/arg5, which arrive in memory at 0x68/0x6C($sp) with
+no intervening write to their slots, would let `use_crosses_set_p`
+(tools/gcc-2.7.2/combine.c:917) pass where it blocks on the four `lhu` sites, so
+combine could substitute the incoming stack MEM and delete an intermediate.
+
+It does exactly that, and it is a byte LOSS. b7 declares arg4/arg5 as s32 and
+reads them `*(s16 *)&argN` (the narrow-stack-param-subword-offset family,
+ordinary C, no annotation needed). insns drop 72 -> 68: both
+`lw $v1,0x68($sp); sll $v0,$v1,16; sra $s4,$v0,16` triples collapse into a single
+signed halfword load. unalloc stays 0 - the substitution rewrites i3 in place, so
+no REG_DEAD note is left homeless and distribute_notes plants no orphan USE. b8
+extends the same reading to all four s16 params with the identical result. b9
+keeps the emitted triple intact by round-tripping through s16 temporaries and
+plants no orphan either.
+
+The class-A producer is therefore not merely blocked on this body (s9's finding
+for the four `lhu` sites); where it CAN fire it deletes target instructions
+instead of reserving frame. Both directions are now measured.
+
+### 6. Mandated FAKE re-audit
+
+`tools/fake_ablate.py --func func_800480C0 --file text1b --candidate
+memory/grind/func_800480C0/candidate.c` returned `ERR` for both keep-all and
+drop-1 variants on this chassis (a tool-side failure, not a scoring result), so
+the ablation was done by hand: candidate.c with the `arg0 = 0;` line physically
+deleted, run through s10/probe.sh
+(rejected/s10-candidate-minus-fake-reseats-registers.c).
+
+Result: insns stays 72 and vars/unalloc stay 0, but the seating changes -
+`sw $22,48($sp); move $22,$16` replaces `sw $18,32($sp); move $18,$16`, the second
+base use binds `$4` instead of `$18` (`addu $16,$4,$2` vs `addu $16,$18,$2`), and
+the prologue store order shifts. The FAKE is load-bearing for the register match
+and masks no phantom lever: with it gone the frame is still empty. s8's verdict
+holds on the current chassis.
+
+- [s10] Floor re-measured on the current chassis: `sandbox func_800480C0 --disable all` prints score 20, target_insns 74, build_insns 74, with candidate.c installed over the INCLUDE_ASM line. Unchanged s3->s10 across chassis 7e18adc2 -> 28583e8e -> 0c7f30e4 -> a0198d09.
+
+- [s10] Running total of measured spellings on this body is now 55 (45 inherited + 10 this session). Every one of the 55 reports vars= 0; the target needs vars= 32.
+
+- [s10] Fresh m2c (tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax) reproduces the banked control flow exactly; its only deltas are s32-typed arg4/arg5 with casts at the use sites and a post-decrement loop tail. It invents no local and no aggregate, so it offers no producer for the 32 untouched vars bytes.
+
+- [s10] The class-A combine substitution DOES fire on the two stack-passed s16 params (insns 72 -> 68, both lw+sll+sra triples folding to lh) and still yields unalloc=0 - so class A is a byte cost on this body wherever it is reachable, not a phantom source.
+
+- [s10] A DImode value in this body is either allocated to a register pair (b3: regs= 10/0, insns 86) or lowered to SImode (b4: insns 76). Neither outcome reserves vars, so s8's DImode-HILO observation on func_80042874/func_80042A88 does not generalise into a route here.
+
+- [s10] Abandoning the moving cursor is byte-fatal in the wrong direction: the struct-record chassis emits 63 insns and the for-index chassis 62, against the target's 74, because base+offset addressing collapses the four addiu increments the target ships.
+
+- [s10] TOOLING DEFECT FIXED, and it matters for reading s6-s9 numbers: tmp/grind/func_800480C0/s6/probe.sh counts insns with grep -E '^[ \t]+[a-z]', where \t inside a bracket expression is a literal backslash-t, so it always reported insns=0; and when that script is run from Git Bash on the Windows host instead of through WSL, its cd to the /mnt path fails, cc1 never runs, and awk reports the frame line of the PREVIOUS run's probe.s. tmp/grind/func_800480C0/s10/probe.sh fixes both (deletes probe.s/fn.s first, prints CC1-FAIL if cc1 produced nothing) and every s10 measurement was taken through bash tools/wsl.sh.
+
+- [s10] src/text1b.c is byte-clean at HEAD at session end; every probe restored it via git checkout before and after each compile.

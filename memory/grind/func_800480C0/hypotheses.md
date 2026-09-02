@@ -796,3 +796,125 @@ at a time over the INCLUDE_ASM line; annotated `arg0 = 0;` FAKE present in every
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 0c7f30e4, bodies at tmp/grind/func_800480C0/s9/bodies/ installed one at a time over the INCLUDE_ASM line; annotated `arg0 = 0;` FAKE present in every body
+
+## s10 hypotheses (rederive, 2026-09-02, chassis HEAD a0198d09)
+
+**H-s10-1 (KILLED, instance).** A `long long` intermediate in this body leaves an
+unallocated DImode pseudo that alter_reg pays 8 bytes of `vars` for, giving the
+class-B-style phantoms the target's 32-byte window needs without an emitted
+mult/div. *Mechanism:* s8's census found the only bodies above three phantoms are
+func_80042874/func_80042A88 at six, both mult/div, whose phantoms are DImode HILO
+residue; the hope was that the DImode-ness, not the mult, was the producer.
+*Probe:* the two places a long long can enter without inventing a value - b3
+(`long long count` loop counter) and b4 (`unsigned long long acc` on both
+`(word >> 2) << 2` scale sites, high word provably zero and never read), measured
+with tmp/grind/func_800480C0/s10/probe.sh. *Result:* b3 emits real DImode
+compare/decrement code (insns 72 -> 86) and grows the callee-saved set to
+`regs= 10/0` - the DImode pseudo is allocated and pays registers; vars=0,
+unalloc=0. b4 is lowered to SImode by cc1 (insns 72 -> 76); vars=0, unalloc=0.
+*measured_on:* HEAD a0198d09, bodies at tmp/grind/func_800480C0/s10/bodies/,
+installed one at a time over the INCLUDE_ASM line; the annotated `arg0 = 0;` FAKE
+present in b3/b4 and no other FAKE construct.
+
+**H-s10-2 (KILLED, instance).** The two STACK-passed s16 parameters are a class-A
+substitution site the four `lhu` sites are not - their incoming slots at
+0x68/0x6C($sp) are never written, so `use_crosses_set_p` cannot block - and firing
+the substitution there plants the orphan USE that reserves `vars`. *Mechanism:*
+s9's predicate (tools/gcc-2.7.2/combine.c:917) closes the four halfword sites
+because an `addiu $s0,$s0,0x2` sits between each load and its sll/sra pair; the
+stack args have no such intervening set. *Probe:* b7 (arg4/arg5 declared s32, read
+`*(s16 *)&argN`), b8 (all four params read sub-word), b9 (s16 round-trip
+temporaries that keep the emitted triple). *Result:* the substitution fires and it
+costs bytes - b7 and b8 both drop insns 72 -> 68 because each
+`lw + sll + sra` triple folds into one signed halfword load - while unalloc stays
+0, because the fold rewrites i3 in place and leaves no homeless REG_DEAD note for
+distribute_notes to convert into an orphan USE. b9 preserves the 72-insn stream
+and also plants nothing. Class A is now measured in both directions on this body:
+blocked at the four `lhu` sites, and a four-instruction deletion where it is not
+blocked. *measured_on:* HEAD a0198d09, bodies at
+tmp/grind/func_800480C0/s10/bodies2/; annotated `arg0 = 0;` FAKE present, no other
+FAKE construct.
+
+**H-s10-3 (KILLED, instance).** A structurally different chassis for the same
+program - a different cursor type, a record struct, or index addressing instead of
+a moving pointer - changes which pseudos combine sees and reserves the target's
+32-byte `vars` window. *Mechanism:* the rederive premise, that the shape banked
+since s1 is one of several and a different one allocates differently. *Probe:* b1
+fresh-m2c chassis, b2 u8* byte cursor, b5 12-byte struct-record with member reads
+and `r++`, b6 `for` index chassis over a u16 array with h[2..5] indexing.
+*Result:* all four measure `vars= 0` with `unalloc=0`, and the two that abandon
+the moving cursor diverge from the target stream in the wrong direction - b5 emits
+base+offset addressing (63 insns) and b6 collapses the four addiu increments (62
+insns) against the target's 74. The interleaved `lhu`/`addiu` cursor is not a
+stylistic choice; it is what the target bytes are. *measured_on:* HEAD a0198d09,
+bodies at tmp/grind/func_800480C0/s10/bodies/; FAKE state as banked per body (b1
+carries none, b2/b5/b6 carry the annotated `arg0 = 0;`).
+
+**H-s10-4 (CONFIRMED).** The annotated `arg0 = 0;` dead param store is load-bearing
+for the register match and masks no phantom lever. *Probe:* `tools/fake_ablate.py`
+returned ERR for both variants on this chassis, so the ablation was done by hand -
+candidate.c with the line deleted, through s10/probe.sh. *Result:* insns stays 72
+and vars/unalloc stay 0, but the base carrier moves from $18/$s2 to $22, the second
+base use binds $4 instead of $18, and the prologue store order shifts. s8's
+keep-all-20 / drop-1-32 verdict re-confirmed on HEAD a0198d09.
+Banked: rejected/s10-candidate-minus-fake-reseats-registers.c.
+
+**H-s10-5 (CONFIRMED).** The shape that reaches the target for this function is
+already on main three times, and the only thing this candidate lacks is a
+declaration it is not permitted to make. *Probe:* read func_80047FBC
+(src/text1b.c:82) and func_80047EE8 (src/text1b.c:35) against candidate.c, and the
+grant rows at engine/volatile_cheats.py:757-767. *Result:* func_80047FBC is this
+routine with four parameters instead of six and is COMPLETED-C on main; its body
+is line-for-line candidate.c - same init chain, same annotated `arg0 = 0;` dead
+param store with the same cse2 justification, same in-loop cursor arithmetic, same
+`while ((count--) != 0)` tail - plus a leading `volatile u32 pre_pad[8];` granted
+by the 2026-08-20 owner ruling. func_800481E8 holds the same grant from the
+2026-08-22 ruling. func_800480C0 is the fourth member of the family in the same
+translation unit with the same 0x18-0x37 untouched window and is not in the
+enumeration (Judge FAIL 2026-09-02 04:28, docs/grind/decisions.md:20349).
+
+### Frontier after s10
+
+The rederive axis is spent: fresh m2c reproduces the banked control flow, the
+sibling transplant produces the banked body verbatim, and ten structural
+respellings all measure vars=0/unalloc=0. Both phantom producer classes are now
+measured closed in both directions (class A blocked at the `lhu` sites on a cited
+predicate, and a four-insn deletion where it is not blocked; class B capped at 1
+across 55 forms), and the DImode route that s9 left open is dead. What remains is
+not a spelling question.
+
+## [s10] A long long intermediate in this body leaves an unallocated DImode pseudo that alter_reg pays 8 bytes of vars for, giving class-B-style phantoms without an emitted mult/div (s9 frontier item 1).
+- mechanism: s8's census found the only bodies above three phantoms are func_80042874/func_80042A88 at six, both mult/div, whose phantoms are DImode HILO residue; the open question was whether the DImode-ness rather than the mult was the producer. There are exactly two places a long long can enter this body without inventing a value: the loop counter and the two (word >> 2) << 2 scale expressions.
+- probe: b3 (long long count loop counter) and b4 (unsigned long long acc on both scale sites, high word provably zero and never read), each installed over the INCLUDE_ASM line and measured with tmp/grind/func_800480C0/s10/probe.sh (frame line + BB2_ALLOC_DEBUG hardreg=-1 count).
+- result: b3 emits genuine DImode compare/decrement code (insns 72 -> 86) and grows the callee-saved set to regs= 10/0 - the DImode pseudo is ALLOCATED and pays registers - with vars=0 and unalloc=0. b4 is lowered to SImode by cc1, adding four insns (72 -> 76), also vars=0/unalloc=0: the provably dead high word does not survive to allocation. Banked as rejected/s10-dimode-count-no-phantom.c and rejected/s10-dimode-scale-folds-to-simode.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD a0198d09, bodies at tmp/grind/func_800480C0/s10/bodies/b3_dimode_count.c and b4_dimode_scale.c installed one at a time over the INCLUDE_ASM line in src/text1b.c; the annotated `arg0 = 0;` dead-param-store FAKE present in both, no other FAKE construct.
+
+## [s10] The two stack-passed s16 parameters are a class-A substitution site that the four lhu sites are not - their incoming slots at 0x68/0x6C($sp) are never written, so use_crosses_set_p cannot block - and firing the substitution there plants the orphan USE that reserves vars (s9 frontier item 3).
+- mechanism: s9's predicate at tools/gcc-2.7.2/combine.c:917 closes the four halfword sites because an addiu $s0,$s0,0x2 sits between each load and its sll/sra pair. The two incoming stack arguments have no such intervening set, so combine should be free to substitute the stack MEM and delete the intermediate pseudo, leaving a homeless REG_DEAD note for distribute_notes.
+- probe: b7 (arg4/arg5 declared s32 and read *(s16 *)&argN, the narrow-stack-param-subword-offset family), b8 (all four s16 params read sub-word), b9 (s16 round-trip temporaries that keep the emitted lw+sll+sra triple intact), measured with tmp/grind/func_800480C0/s10/probe.sh.
+- result: The substitution fires and it costs bytes rather than producing frame. b7 and b8 both drop insns 72 -> 68 because each lw + sll + sra triple collapses into a single signed halfword load, and unalloc stays 0 - the fold rewrites i3 in place, so no REG_DEAD note is left homeless and distribute_notes plants no orphan USE. b9 preserves the 72-insn stream and plants nothing either. Class A is now measured in both directions on this body: blocked at the four lhu sites, and a four-instruction deletion where it is not blocked. Banked as rejected/s10-subword-stackargs-folds-lh-deletes-insns.c, s10-subword-all-params-folds-lh.c, s10-himode-roundtrip-no-orphan.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD a0198d09, bodies at tmp/grind/func_800480C0/s10/bodies2/ installed one at a time over the INCLUDE_ASM line; the annotated `arg0 = 0;` FAKE present, no other FAKE construct.
+
+## [s10] A structurally different chassis for the same program - a different cursor type, a 12-byte record struct, or index addressing instead of a moving pointer - changes which pseudos combine sees and reserves the target's 32-byte vars window.
+- mechanism: The rederive premise: the shape banked since s1 is one of several possible spellings of this routine, and a different one may allocate differently. Tested with the mandated rederive sources - a fresh m2c decompile of asm/funcs/func_800480C0.s and three hand-built alternative chassis.
+- probe: b1 fresh-m2c chassis (arg0 used directly at both base sites, s32 arg4/arg5, no FAKE), b2 u8* byte-cursor chassis, b5 12-byte struct-record chassis with member reads and r++, b6 for-index chassis over a u16 array with h[2..5] indexing; all measured with tmp/grind/func_800480C0/s10/probe.sh.
+- result: All four measure vars= 0 with unalloc=0. b1 is 71 insns - dropping the second base carrier removes the move $18,$16 the target ships at 0x800480D0, so the m2c shape is one insn short rather than a new lever. b2 is 72 insns (cursor type is not a lever). b5 emits base+offset addressing (63 insns, regs= 9/0) and b6 collapses the four addiu increments (62 insns, regs= 9/0), both against the target's 74: the interleaved lhu/addiu cursor is not a stylistic choice, it is what the target bytes are. Banked as rejected/s10-m2c-direct-chassis-no-phantom.c, s10-bytewalker-chassis-no-phantom.c, s10-struct-record-chassis-stream-diverges.c, s10-index-for-chassis-stream-diverges.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD a0198d09, bodies at tmp/grind/func_800480C0/s10/bodies/ installed one at a time over the INCLUDE_ASM line; FAKE state per body - b1 carries no FAKE at all, b2/b5/b6 carry the annotated `arg0 = 0;` dead param store and nothing else.
+
+## [s10] The annotated `arg0 = 0;` dead param store in candidate.c is load-bearing for the register match and masks no phantom lever (mandated FAKE re-audit on the current chassis).
+- mechanism: A lever measured inert while a FAKE carrier occupies its target pseudo is not a kill, so the FAKE has to be ablated before the 55-form vars=0 record can be trusted.
+- probe: tools/fake_ablate.py --func func_800480C0 --file text1b --candidate memory/grind/func_800480C0/candidate.c returned ERR for both keep-all and drop-1 on this chassis (a tool-side failure, not a scoring result), so the ablation was done by hand: candidate.c with the `arg0 = 0;` line physically deleted, run through tmp/grind/func_800480C0/s10/probe.sh and diffed against the baseline listing.
+- result: With the store removed the body still emits 72 insns with vars=0 and unalloc=0, so the FAKE hides nothing; but the seating changes - sw $22,48($sp) / move $22,$16 replaces sw $18,32($sp) / move $18,$16, the second base use binds $4 instead of $18 (addu $16,$4,$2 vs addu $16,$18,$2), and the prologue store order shifts. s8's keep-all-20 / drop-1-32 verdict re-confirmed on HEAD a0198d09. Banked as rejected/s10-candidate-minus-fake-reseats-registers.c.
+- verdict: CONFIRMED
+
+## [s10] The C shape that reaches this function's target bytes is already on main three times over, and the only structural difference between the accepted siblings and this candidate is one declaration this function is not permitted to make.
+- mechanism: The rederive sibling-transplant axis. func_800482C8's caller family has exactly four members (s9), all in src/text1b.c, all reserving the identical untouched 0x18-0x37 window.
+- probe: Read func_80047FBC (src/text1b.c:82) and func_80047EE8 (src/text1b.c:35) side by side with memory/grind/func_800480C0/candidate.c, and the grant rows at engine/volatile_cheats.py:757-767.
+- result: func_80047FBC is this routine with four parameters instead of six and is COMPLETED-C on main. Its body is line-for-line candidate.c: same base_addr/p init chain, the same annotated `arg0 = 0;` dead param store with the same cse2 canonical-register justification, the same (((s32)(arg1 << 16)) >> 14) offset, the same (((*p) >> 2) << 2) re-base, the same in-loop word + four halfword cursor reads, the same while ((count--) != 0) tail. The one difference is its leading `volatile u32 pre_pad[8];`, granted by the 2026-08-20 owner ruling; func_800481E8 holds the same grant from the 2026-08-22 parked-but-proven audit. func_800480C0 is the fourth member of that family, in the same TU, with the same window, and is not in the enumeration - which is exactly what the 2026-09-02 04:28 Judge FAIL turned on (docs/grind/decisions.md:20349).
+- verdict: CONFIRMED
