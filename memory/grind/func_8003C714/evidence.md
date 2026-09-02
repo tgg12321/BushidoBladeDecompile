@@ -430,3 +430,108 @@ two strength-reduction giv inits). Available room: zero.
 - [s4] Foreclosure arithmetic, unchanged in conclusion but now with an exact number: 13 additional hoisted preheader instructions are required ahead of the magic; the target preheader 8003C73C..8003C750 is 6 instructions with room for 0.
 
 - [s4] Banked this session: memory/grind/func_8003C714/rejected/invariant-hoist-threshold-decrement-needs-13-preheader-insns.c (the k=13 diagnostic body, explicitly labelled a cheat and a diagnostic, never a candidate). candidate.c is unchanged as C and carries a new s4 header note. hypotheses.md and evidence.md both carry full s4 sections.
+
+## s5 (2026-09-01) — synthesis modality: measurements
+
+### Chassis re-check (first action of the session)
+`memory/grind/func_8003C714/candidate.c` spliced over the `INCLUDE_ASM` line at
+`src/code6cac_c2.c:629`; `& tools/wteng.ps1 main sandbox func_8003C714 --disable all`:
+
+    "score": 15,  "target_insns": 104,  "build_insns": 105
+
+Unchanged from s1-s4. (The dispatch brief reported "HEAD honest floor:
+measurement unavailable"; that is a driver-side gap, not chassis drift.)
+`src/code6cac_c2.c` was restored to the `INCLUDE_ASM` line before close.
+
+### Pass order, read from source this session
+`tools/gcc-2.7.2/toplev.c` `rest_of_compilation`:
+`2865 cse_main` -> `2866 delete_dead_from_cse` -> `2895 loop_optimize` ->
+`2926 cse_main (cse2)` -> `2984 flow_analysis` -> `3004 combine_instructions` ->
+`3028 schedule_insns`.
+`insn_count` is computed by `count_loop_regs_set` (`loop.c:2989-3092`) as a bare
+`++count` over every insn of `GET_RTX_CLASS == 'i'` in the loop range — no
+liveness filter, JUMP_INSN and CALL_INSN included. Two DCE-capable passes run
+after it (`flow_analysis`, `combine_instructions`) and one runs before it
+(`delete_dead_from_cse`).
+
+### Sweep harness (validated)
+`tmp/grind/func_8003C714/s5/sweep.sh <generator> <tag> <k...>` — generates a
+whole-TU variant, preprocesses it with the project cpp flags, compiles with the
+shipped `tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1
+-mno-abicalls -fno-builtin -w -mel -dL`, then reports the `.loop` dump's
+`Loop from A to B: N real insns.` line, the count of `moved to` /
+`not desirable` movables, and the emitted asm line count for func_8003C714.
+
+POSITIVE CONTROL — `sweep.sh gen_k.py ctl 0 12 13 16` (s4's K14 generator):
+
+    k=0   Loop from 25 to 146: 56 real insns.  moved, 0 not-desirable   asm 107
+    k=12  Loop from 25 to 207: 82 real insns.  moved, 0 not-desirable   asm 157
+    k=13  Loop from 25 to 211: 84 real insns.  2 not-desirable          asm 159
+    k=16  Loop from 25 to 225: 90 real insns.  7 not-desirable          asm 173
+
+Reproduces K14 exactly, so the nulls below are real nulls.
+
+### Measurement 1 (K15) — dead in-loop computation, `sweep.sh gen_dead.py dead 0 4 8 16 32`
+Body adds k chained dead ALU ops on a loaded value (`dead = *(s32 *)(src + 4);
+dead ^= C1; dead += C2; ...`), `dead` never read.
+
+    k=0   Loop from 25 to 146: 56 real insns.   asm 107
+    k=4   Loop from 25 to 167: 56 real insns.   asm 107
+    k=8   Loop from 25 to 185: 56 real insns.   asm 107
+    k=16  Loop from 25 to 221: 56 real insns.   asm 107
+    k=32  Loop from 25 to 293: 56 real insns.   asm 107
+
+`insn_count` pinned at 56; emitted function byte-identical. The UID range grows
+(146 -> 293) because deleted insns keep their UIDs as NOTEs — positive proof the
+insns were generated and then removed by `delete_dead_from_cse` at toplev.c:2866,
+i.e. BEFORE loop.c counts.
+
+### Measurement 2 (K16) — address/giv chains, `sweep.sh gen_chain.py ch 0 1 2 4 8 16`
+Body replaces `dst[0x21] = v/1800;` with a chain `q0 = dst + 1; q1 = q0 + 1; ...;
+q<k-1>[0x21-k] = v/1800;` — real SETs with real uses, so cse1 DCE cannot remove
+them, and all givs of biv `i` with identical stride (the `combine_givs` shape).
+
+    k=0   Loop from 25 to 146: 56 real insns.   asm 107
+    k=1   Loop from 25 to 149: 56 real insns.   asm 107
+    k=2   Loop from 25 to 152: 56 real insns.   asm 107
+    k=4   Loop from 25 to 158: 56 real insns.   asm 107
+    k=8   Loop from 25 to 170: 56 real insns.   asm 107
+    k=16  Loop from 25 to 194: 56 real insns.   asm 107
+
+`insn_count` pinned at 56; emitted function byte-identical. cse1 folds the entire
+add chain into the single memory reference, so the construct never reaches
+loop.c — the post-loop passes (`flow_analysis`, `combine_instructions`) are never
+handed anything to delete.
+
+### Source re-read: the `may_not_move` admission paths (loop.c:3035-3044)
+`count_loop_regs_set` sets `may_not_move[regno]` in three situations: an explicit
+`CLOBBER` of the reg; the reg being set in TWO basic blocks of the loop; the reg
+being set twice in one basic block with a use in between. All three would keep
+the 0x91A2B3C5 constant in the loop. All three require a handle on the MAGIC
+pseudo, which `expand_divmod` creates via `force_reg` and sets exactly once, in
+one basic block, with no C-level name. Closed — this is the source-level
+confirmation of what K9 asserted.
+
+### Artifacts
+- `tmp/grind/func_8003C714/s5/sweep.sh` — the harness
+- `tmp/grind/func_8003C714/s5/gen_dead.py`, `gen_chain.py`, `gen_k.py` (control)
+- `tmp/grind/func_8003C714/s5/dumps/` — per-k `.c`, `.i`, `.s`, and `-dL` `.loop`
+  dumps for all three sweeps
+- `memory/grind/func_8003C714/rejected/dead-locals-deleted-before-loop-counts-them.c`
+- `memory/grind/func_8003C714/rejected/giv-pointer-chain-folds-at-cse1.c`
+
+- [s5] Chassis re-check (first action): candidate.c spliced over the INCLUDE_ASM line at src/code6cac_c2.c:629, `sandbox func_8003C714 --disable all` prints score 15, target_insns 104, build_insns 105 — identical to s1-s4. The brief's 'HEAD honest floor: measurement unavailable' is a driver-side gap, not chassis drift. src/code6cac_c2.c was restored to the INCLUDE_ASM line before close (git status clean on src/).
+
+- [s5] Pass order read from tools/gcc-2.7.2/toplev.c this session: 2865 cse_main -> 2866 delete_dead_from_cse -> 2895 loop_optimize -> 2926 cse2 -> 2984 flow_analysis -> 3004 combine_instructions -> 3028 schedule_insns. loop.c's insn_count is therefore taken with one DCE pass already behind it and two DCE-capable passes still ahead — the exact asymmetry that makes the free-insn channel look plausible and, measured, closes it.
+
+- [s5] loop.c:2989-3092 (count_loop_regs_set): insn_count is a bare ++count over every GET_RTX_CLASS=='i' insn in the loop range — JUMP_INSN and CALL_INSN included, no liveness filter. This is the first time the counter's definition (as opposed to the desirability test that consumes it) has been read into the ledger.
+
+- [s5] loop.c:3035-3044 re-read: may_not_move[regno] is set by (a) an explicit CLOBBER of the reg, (b) the reg being set in TWO basic blocks of the loop, (c) the reg being set twice in one basic block with a use in between. All three would keep the 0x91A2B3C5 constant in-loop; all three need a handle on the magic pseudo, which expand_divmod creates via force_reg and sets exactly once in one basic block with no C-level name. This is the source-level confirmation of what s2's K9 asserted about admission.
+
+- [s5] K15 sweep (dead ALU chains, k=0/4/8/16/32): insn_count 56 at every k; emitted asm 107 lines at every k; loop UID range grows 146 -> 293, proving the insns were generated and then deleted before loop.c counted.
+
+- [s5] K16 sweep (pointer/giv chains, k=0/1/2/4/8/16): insn_count 56 at every k; emitted asm 107 lines at every k.
+
+- [s5] Positive control on the same harness (s4's gen_k.py): k=12 -> 82 insns / 157 asm lines / all moved; k=13 -> 84 / 159 / two 'not desirable'; k=16 -> 90 / 173 / seven 'not desirable'. K14 reproduced exactly.
+
+- [s5] Merged foreclosure arithmetic for the next session, in one line: the residual is loop.c:1631 `threshold * savings * lifetime >= insn_count` with savings and lifetime pinned at 1 (H7), threshold 119 after the first hoist, insn_count 56; every route to flipping it (insn_count alone +64 — K8/K10/K15/K16; threshold alone 23 hoists — K9; the compound route 13 hoists — K14; loop_has_call — K11; moved_once doubling — K7/K12; admission — K9 + this session's may_not_move read) is now measured, and each is foreclosed by the same 104-instruction target / 59-instruction loop / 6-instruction preheader budget.

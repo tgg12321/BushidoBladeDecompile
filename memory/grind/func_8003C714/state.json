@@ -1,8 +1,8 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,22 +27,28 @@
    "floor": 15,
    "modality": "permuter",
    "headline": "Permuter axis closed with a validated workspace (66,016 iterations, 0 finds) and the inherited K9 arithmetic CORRECTED: the threshold/insn_count channel compounds, so defeating the 0x91A2B3C5 hoist ne"
+  },
+  {
+   "session": 5,
+   "floor": 15,
+   "modality": "synthesis",
+   "headline": "Synthesis: merged s1-s4 into one measured law (BYTE-COUNT COUPLING, H8) and closed the last half-open channel with two new nulls (K15 dead code, K16 giv/address chains) on a positive-control-validated"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The loop.c:1631 desirability test is now closed on every term with measurements rather than estimates, and random search over the candidate basin is measured flat. No spelling-side lever remains.",
-   "mechanism": "loop.c:1631 threshold*savings*lifetime >= insn_count, with savings and lifetime pinned at 1 (H7), insn_count-alone needing +64 (K8/K10), threshold-alone needing 23 hoists (K9), and the compound path needing 13 (K14) -- all three bounded by the same 6-instruction target preheader and 59-instruction target loop",
-   "next_probe": "Do not dispatch another spelling or search modality here. A future session should read hypotheses.md H6/H7 and K13/K14 first; the shape is proven reproducible and the search space is measured empty, so any probe that re-derives either is wasted."
+   "hypothesis": "Nothing on the spelling side remains: loop.c:1631 is closed on every input by measurement, and the BYTE-COUNT COUPLING law (H8) explains why no future spelling can open it. Do NOT dispatch a spelling, structural, permuter or other search modality on this body \u2014 every such session will re-derive K8/K10/K13/K14/K15/K16.",
+   "mechanism": "loop.c:1631 with savings and lifetime pinned at 1 (loop.c:791/793) reduces the test to threshold vs insn_count; threshold is a build-configuration scalar (loop.c:532) and insn_count is byte-coupled (H8), so both terms are outside C's reach at the required magnitudes.",
+   "next_probe": "The only non-redundant probe left is a forensics pass on the SECOND half of the residual: read the .greg/.sched dumps for the candidate build and determine whether the mfhi-temp seat (our t2 vs target t1) is a pure consequence of the 0x91A2B3C5 hoist freeing t1, or an INDEPENDENT second residual. If independent it is a genuinely new sub-target worth a session; if consequent (expected), the function is fully characterised and the driver has its exhaustion evidence."
   },
   {
-   "hypothesis": "The residual is a single scalar, `threshold`, whose original value must have been in [56,58]; the shipped chassis supplies 122 (119 after the first hoist) because n_non_fixed_regs counts a 32-register FP file the PS1 R3000A does not have.",
-   "mechanism": "loop.c:532 threshold=(loop_has_call?1:2)*(1+n_non_fixed_regs); regclass.c:380-387 counts hard regs with !fixed_regs[i]",
-   "next_probe": "BARRED for grind sessions by the standing Judge constraint on this function (CC_FLAGS / cc1 configuration / buildconfig are not a lever and may not be re-filed). Recorded as the measured cause only, not as a proposed action."
+   "hypothesis": "CLOSED RECORD (root cause, barred as a lever): the residual is the scalar `threshold`, whose original value must have been in [56,58]; the shipped chassis supplies 122 because n_non_fixed_regs counts a 32-register hard-float file the PS1 R3000A does not have.",
+   "mechanism": "loop.c:532 threshold=(loop_has_call?1:2)*(1+n_non_fixed_regs); regclass.c:380-387 counts hard regs with !fixed_regs[i].",
+   "next_probe": "NONE \u2014 barred for grind sessions by the standing Judge constraint and by the 2026-09-01 18:33 ruling at docs/grind/decisions.md:19776, which additionally established that the global variant would BREAK the oracle (func_800324D0 regresses 0 -> 3). Recorded as the measured cause only; must not be re-filed in any shape, including as calibration evidence for an escalation."
   },
   {
-   "hypothesis": "If a future ruling ever re-opens the chassis question, func_800324D0 (code6cac_b) regresses 0 -> 3 under a threshold of 58 and needs an ordinary structural re-grind to <= 58 RTL insns in its loop (currently 72).",
-   "mechanism": "the same loop.c:1631 test in reverse: 122 >= 72 hoists its `li 255`, 58 < 72 does not",
+   "hypothesis": "CLOSED RECORD (dependency): if a future owner ruling ever re-opens the chassis question, func_800324D0 (code6cac_b) needs an ordinary structural re-grind to <= 58 RTL insns in its loop (currently 72).",
+   "mechanism": "the same loop.c:1631 test in reverse \u2014 122 >= 72 hoists its `li 255`, 58 < 72 does not.",
    "next_probe": "Not actionable from this function's queue slot; carried forward so the dependency is not lost."
   }
  ],

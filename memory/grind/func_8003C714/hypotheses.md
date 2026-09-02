@@ -472,3 +472,217 @@ reproduces the s2/s3 movable table verbatim (`Loop from 25 to 146: 56 real insns
 - probe: The same k-sweep: none of the k bodies contains a call, so loop_has_call is false and threshold starts at 122 in every one of them; read the k=16 assembly (tmp/grind/func_8003C714/s4/kdumps/k16.s) for the constant's final placement.
 - result: Refuted. At k>=13 the movable is declined with loop_has_call FALSE, and k16.s emits `li $2,-1851654144` (0x91A2B3C5) INSIDE the loop directly under the loop-top label `.L133:`, feeding `mult $3,$2`. This is the first no-call reproduction of the target's construct on the shipped chassis; it does not open a path (the preheader budget still forecloses it) but it removes the last doubt that the decision, and not the chassis, is what produces the target's shape.
 - verdict: CONFIRMED
+
+## s5 (2026-09-01, synthesis modality)
+
+Chassis re-check first, before anything was spent: `memory/grind/func_8003C714/candidate.c`
+spliced over the `INCLUDE_ASM` line at `src/code6cac_c2.c:629`,
+`& tools/wteng.ps1 main sandbox func_8003C714 --disable all` prints **score 15,
+target_insns 104, build_insns 105**. Identical to s1-s4. The dispatch brief's
+"HEAD honest floor: measurement unavailable" is a driver-side measurement gap,
+not chassis drift — the floor is 15 and every banked conclusion is still
+chassis-current. `src/code6cac_c2.c` was restored to the `INCLUDE_ASM` line
+before the session closed.
+
+This session's job was to MERGE four sessions of work into one attack rather
+than open a new spelling axis. Merging surfaced one pass-ordering fact that no
+prior session had used, and that fact turned out to be testable, so the session
+spent its measurements there instead of on re-derivation.
+
+### The fact nobody had used: three deletion points bracket loop.c
+
+`tools/gcc-2.7.2/toplev.c` `rest_of_compilation`, read directly this session:
+
+    2865  cse_main                     (cse1)
+    2866  delete_dead_from_cse         <-- DCE, BEFORE loop
+    2895  loop_optimize                <-- scan_loop / move_movables / strength_reduce
+    2926  cse_main                     (cse2)
+    2984  flow_analysis                <-- full life analysis + DCE, AFTER loop
+    3004  combine_instructions         <-- AFTER loop
+    3028  schedule_insns               (sched1)
+
+`insn_count` — the right-hand side of the `loop.c:1631` desirability test that
+IS this function's entire residual — is computed by `count_loop_regs_set`
+(`loop.c:2989-3092`) as simply `++count` for every insn of `GET_RTX_CLASS == 'i'`
+between `loop_start` and `end`. It therefore counts INSN, JUMP_INSN and
+CALL_INSN alike, including insns that are semantically dead, and it is taken
+BEFORE `strength_reduce` deletes giv arithmetic and long before flow/combine run.
+
+That opens a precise question the ledger had only answered for ONE channel
+(K10, which measured constructs folded at expand/cse1): **is there an ordinary-C
+construct whose RTL survives cse1 + `delete_dead_from_cse`, is counted by
+`count_loop_regs_set`, and is then deleted for zero bytes by a LATER pass
+(strength_reduce's `combine_givs`, flow's DCE, or combine)?** If such a channel
+existed at any density, the +64 insn_count that K8/K10 priced at ~400 score
+points would be free and the function would reopen. Both halves are now measured.
+
+### KILLED
+
+- **K15 — dead in-loop computation adds ZERO to `insn_count`.** The dead-code
+  channel is closed at `toplev.c:2866`: `delete_dead_from_cse` runs after cse1
+  and BEFORE `loop_optimize`, so a dead insn is already a NOTE when
+  `count_loop_regs_set` counts class-'i' insns. Probe: `gen_dead.py` sweep of
+  k = 0/4/8/16/32 chained dead ALU ops (`dead = *(s32 *)(src + 4); dead ^= C1;
+  dead += C2; ...` with `dead` never read), each compiled `cc1 -O2 ... -dL` and
+  its per-function movable table read:
+
+      k=0   Loop from 25 to 146: 56 real insns.   asm 107 lines
+      k=4   Loop from 25 to 167: 56 real insns.   asm 107 lines
+      k=8   Loop from 25 to 185: 56 real insns.   asm 107 lines
+      k=16  Loop from 25 to 221: 56 real insns.   asm 107 lines
+      k=32  Loop from 25 to 293: 56 real insns.   asm 107 lines
+
+  `insn_count` PINNED at 56 across a 32-fold sweep; emitted function
+  byte-identical (107 asm lines) at every k. The growing UID range (146 -> 293)
+  is the positive control: the insns WERE created by expand and then deleted, so
+  this is a real deletion, not a failure to generate. Banked as
+  `rejected/dead-locals-deleted-before-loop-counts-them.c`.
+
+- **K16 — the "counted by loop.c, deleted later for free" channel does not exist
+  from the address/giv direction either.** This was the strongest remaining
+  candidate: a chain of pointer temporaries (`q0 = dst + 1; q1 = q0 + 1; ...;
+  q15[0x11] = v/1800;`) whose adds a human would expect to survive to loop.c
+  (they are genuine SETs with genuine uses, so `delete_dead_from_cse` cannot
+  touch them) and then be re-absorbed for zero bytes either by
+  `strength_reduce`'s `combine_givs` (they are all givs of biv `i` with the same
+  stride, differing by constants) or by `combine` folding the add into the
+  memory displacement. Probe: `gen_chain.py` sweep k = 0/1/2/4/8/16:
+
+      k=0   Loop from 25 to 146: 56 real insns.   asm 107 lines
+      k=1   Loop from 25 to 149: 56 real insns.   asm 107 lines
+      k=2   Loop from 25 to 152: 56 real insns.   asm 107 lines
+      k=4   Loop from 25 to 158: 56 real insns.   asm 107 lines
+      k=8   Loop from 25 to 170: 56 real insns.   asm 107 lines
+      k=16  Loop from 25 to 194: 56 real insns.   asm 107 lines
+
+  Again PINNED at 56 with a byte-identical function. The chain never reaches
+  loop.c at all: cse1 folds the whole `dst + 1 + 1 + ... + 1 + 0x11` chain into
+  the single memory reference, so the constructs die UPSTREAM exactly as K10's
+  masks did. Banked as `rejected/giv-pointer-chain-folds-at-cse1.c`.
+
+- **HARNESS VALIDATION (this is why the two nulls above are trustworthy).** The
+  identical sweep driver (`tmp/grind/func_8003C714/s5/sweep.sh`) was re-run over
+  s4's `gen_k.py` as a positive control and reproduced K14 exactly:
+
+      k=0   56 real insns   moved, no "not desirable"    asm 107 lines
+      k=12  82 real insns   moved, no "not desirable"    asm 157 lines
+      k=13  84 real insns   2x "not desirable"           asm 159 lines
+      k=16  90 real insns   7x "not desirable"           asm 173 lines
+
+  The instrument moves when the thing it measures moves. K15/K16 are real nulls.
+
+### CONFIRMED — the merged law this function has been circling for four sessions
+
+- **H8 — BYTE-COUNT COUPLING: on this chassis, `loop.c`'s `insn_count` is a
+  faithful proxy for the function's emitted instruction count. Byte-neutral C is
+  count-neutral C; count-positive C is byte-positive C. There is no free
+  variable.** Every construct family measured across s2-s5 lands on the same
+  line and none is off it:
+
+  | construct family | probe | d insn_count | d emitted |
+  |---|---|---|---|
+  | redundant `& 0xFF` masks | K10 (s3) | 0 | 0 |
+  | dead ALU chains, k<=32 | K15 (s5) | 0 | 0 |
+  | pointer/address chains, k<=16 | K16 (s5) | 0 | 0 |
+  | inlined index addressing | K8 (s2) | +2 | +3 insns / +13 score |
+  | invariant const movables, k=16 | K14 (s4) | +34 | +66 asm lines |
+
+  The mechanism behind the law is now named, not guessed: everything cheap
+  enough to be free is deleted at expand, cse1 or `delete_dead_from_cse` — all
+  three of which run BEFORE `loop_optimize` — and everything that survives to
+  `loop_optimize` also survives `flow`/`combine`/`reload` to the assembler.
+  The two passes that run AFTER loop and could in principle have provided a free
+  deletion (`flow_analysis`, `combine_instructions`) never get anything to
+  delete, because cse1 already took it.
+
+  **Consequence — this closes `loop.c:1631` by construction rather than by
+  search.** The test the residual hangs on is
+  `threshold * savings * m->lifetime >= insn_count` with `savings == 1` and
+  `lifetime == 1` pinned (H7), i.e. `119 >= insn_count`. Declining the movable
+  needs either `insn_count >= 120` at zero extra hoists (+64 RTL insns) or
+  `insn_count >= 84` with 13 extra hoists (K14, +28 RTL insns AND 13 extra
+  preheader instructions). By H8 both requirements convert 1:1-or-worse into
+  emitted instructions, against a target whose ENTIRE body is 104 instructions,
+  whose loop is 59 and whose preheader is 6 with every one of those 6 already
+  accounted for. The cheapest of the three routes overshoots the whole function's
+  byte budget by roughly a factor of two. Ordinary C on the shipped chassis
+  cannot reach distance 0 on this function, and that statement now rests on a
+  measured law rather than on five separately-argued negatives.
+
+### FRONTIER (reset for the next session — 1 live item, 2 closed records)
+
+1. **LIVE (and the only live item): nothing on the spelling side. Do not
+   dispatch a spelling, search, or structural modality here.** The `loop.c:1631`
+   inputs are all measured (threshold H7/K9/K14; insn_count K8/K10/K15/K16;
+   savings and lifetime pinned at 1 by construction; admission K9 + the
+   `count_loop_regs_set` `may_not_move` paths re-read this session and closed —
+   both require the MAGIC pseudo to be set in two basic blocks, and it is
+   compiler-generated by `expand_divmod`'s `force_reg`, set exactly once, with
+   no C-level handle on it). Random search is measured flat (K13, 66,016
+   iterations, zero finds). What a next session CAN still add that is not
+   re-derivation: a `forensics` pass that reads the emitted `.greg`/`.sched`
+   dumps to confirm the mfhi-seat half of the residual (t2 vs t1) is a pure
+   consequence of the hoist rather than an independent second residual — if it
+   is independent, that is a genuinely new sub-target; if it is consequent
+   (expected), the function is fully characterised.
+2. **CLOSED RECORD — root cause.** The residual is the scalar `threshold`
+   (`loop.c:532`, `(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`), 122 on
+   the shipped chassis because `regclass.c:380-387` counts a 32-register
+   hard-float file the PS1 R3000A does not have; the original value must have
+   been in [56,58]. This is recorded as the measured CAUSE only. It is BARRED as
+   a lever and as an escalation ground by the standing Judge constraint and by
+   the 2026-09-01 18:33 ruling (`docs/grind/decisions.md:19776`), which also
+   established that the global variant would BREAK the oracle
+   (`func_800324D0` 0 -> 3). Do not re-file it in any shape.
+3. **CLOSED RECORD — dependency.** If a future owner ruling ever re-opens the
+   chassis question, `func_800324D0` (code6cac_b) needs an ordinary structural
+   re-grind to <= 58 RTL insns in its loop (currently 72). Not actionable from
+   this function's queue slot; carried so the dependency is not lost.
+
+## [s5] Dead in-loop computations survive to loop.c and inflate its insn_count, giving a byte-free route to the insn_count >= 120 that loop.c:1631 requires.
+- mechanism: count_loop_regs_set (loop.c:2989-3092) increments its count for EVERY insn of GET_RTX_CLASS 'i' in the loop range, with no liveness filter, so semantically dead insns would be counted; the hope was that flow_analysis (toplev.c:2984, AFTER loop) would then delete them for zero bytes
+- probe: tmp/grind/func_8003C714/s5/gen_dead.py sweep k = 0, 4, 8, 16, 32 of chained dead ALU ops on a loaded value, each preprocessed and compiled with the shipped cc1 (-O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -dL) and its per-function movable table read from the .loop dump; emitted asm line count taken from the same run
+- result: insn_count PINNED at 56 for every k (loop UID range grows 146 -> 293, proving the insns were created and then deleted), emitted function byte-identical (107 asm lines) at every k. The deletion point is toplev.c:2866 `delete_dead_from_cse`, which runs after cse1 and BEFORE loop_optimize at toplev.c:2895 — the dead insns are NOTEs before loop.c ever counts them. Banked as rejected/dead-locals-deleted-before-loop-counts-them.c.
+- verdict: KILLED
+
+## [s5] Chained address temporaries are real SETs with real uses (so cse1's DCE cannot remove them), reach loop.c and are counted, and are then re-absorbed for zero bytes by strength_reduce's combine_givs or by combine folding the add into the memory displacement — a byte-free insn_count channel.
+- mechanism: the temps are all general givs of biv i with identical stride differing by constants, exactly the shape combine_givs merges; and combine_instructions (toplev.c:3004) runs after loop_optimize (toplev.c:2895), so an add folded into a load/store displacement would be free
+- probe: tmp/grind/func_8003C714/s5/gen_chain.py sweep k = 0, 1, 2, 4, 8, 16 (q0 = dst + 1; q1 = q0 + 1; ...; store through q<k-1> at the residual offset so the addressed byte is unchanged), same compile-and-read-the-dump harness
+- result: insn_count PINNED at 56 for every k, emitted function byte-identical (107 asm lines) at every k. The chain never reaches loop.c: cse1 folds the entire add chain into the single memory reference, so the construct dies UPSTREAM exactly as K10's redundant masks did. The post-loop passes never receive anything to delete. Banked as rejected/giv-pointer-chain-folds-at-cse1.c.
+- verdict: KILLED
+
+## [s5] The s5 sweep harness is sensitive enough for its two null results to be trusted.
+- mechanism: positive control — run the identical driver over s4's gen_k.py, whose behaviour is independently banked as K14
+- probe: bash tmp/grind/func_8003C714/s5/sweep.sh gen_k.py ctl 0 12 13 16
+- result: reproduced K14 exactly — k=0: 56 real insns / 107 asm lines; k=12: 82 / 157, all movables moved; k=13: 84 / 159 with two "not desirable"; k=16: 90 / 173 with seven "not desirable". The instrument moves when the measured quantity moves.
+- verdict: CONFIRMED
+
+## [s5] On this chassis loop.c's insn_count is a faithful proxy for emitted instruction count — byte-neutral C is count-neutral C and count-positive C is byte-positive C, so loop.c:1631 is closed by construction rather than by search.
+- mechanism: every deletion opportunity cheap enough to be byte-free (constant folding at expand, cse1 value numbering and address folding, delete_dead_from_cse) occurs BEFORE loop_optimize; everything that survives loop_optimize also survives flow, combine, reload and the assembler, so the two post-loop deletion passes never receive a free insn
+- probe: five construct families measured across s2-s5 — redundant masks (K10, 0/0), dead ALU chains k<=32 (K15, 0/0), pointer chains k<=16 (K16, 0/0), inlined index addressing (K8, +2 insn_count / +13 score), invariant const movables k=16 (K14, +34 insn_count / +66 asm lines)
+- result: no family is off the line. Declining the 0x91A2B3C5 movable needs insn_count >= 120 with no extra hoists (+64 RTL insns) or insn_count >= 84 with 13 extra hoists (+28 RTL insns plus 13 preheader instructions); the target's whole body is 104 instructions, its loop 59 and its preheader 6 with all six accounted for. Cheapest route overshoots the entire function's byte budget by about 2x.
+- verdict: CONFIRMED
+
+## [s5] Dead in-loop computations survive to loop.c and inflate its insn_count, giving a byte-free route to the insn_count >= 120 that loop.c:1631 requires.
+- mechanism: count_loop_regs_set (tools/gcc-2.7.2/loop.c:2989-3092) increments its count for EVERY insn of GET_RTX_CLASS 'i' in the loop range with no liveness filter, so dead insns would be counted; flow_analysis (toplev.c:2984) runs AFTER loop_optimize (toplev.c:2895) and would then delete them for zero bytes.
+- probe: tmp/grind/func_8003C714/s5/gen_dead.py sweep k = 0,4,8,16,32 of chained dead ALU ops on a loaded value (dead = *(s32 *)(src + 4); dead ^= C1; dead += C2; ... with dead never read), each compiled with the shipped cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -dL and its .loop movable table + emitted asm line count read.
+- result: insn_count PINNED at 56 at every k (k=0/4/8/16/32 -> 'Loop from 25 to 146/167/185/221/293: 56 real insns.'), emitted function byte-identical (107 asm lines) at every k. The growing UID range proves the insns were created and then deleted: the deletion point is delete_dead_from_cse at toplev.c:2866, which runs after cse1 and BEFORE loop_optimize. Banked as rejected/dead-locals-deleted-before-loop-counts-them.c.
+- verdict: KILLED
+
+## [s5] Chained address temporaries are real SETs with real uses (so cse1 DCE cannot remove them), reach loop.c and are counted, then are re-absorbed for zero bytes by strength_reduce's combine_givs or by combine folding the add into the memory displacement — a byte-free insn_count channel.
+- mechanism: the temps are all general givs of biv i with identical stride differing by constants (the combine_givs shape), and combine_instructions (toplev.c:3004) runs after loop_optimize (toplev.c:2895), so an add folded into a load/store displacement would cost nothing.
+- probe: tmp/grind/func_8003C714/s5/gen_chain.py sweep k = 0,1,2,4,8,16 (q0 = dst + 1; q1 = q0 + 1; ...; q<k-1>[0x21-k] = v/1800, so the addressed byte is unchanged), same compile-and-read-the-dump harness.
+- result: insn_count PINNED at 56 at every k (146/149/152/158/170/194 UID ranges, all '56 real insns.'), emitted function byte-identical (107 asm lines) at every k. cse1 folds the entire add chain into the single memory reference, so the construct dies UPSTREAM of loop.c exactly as K10's redundant masks did; the post-loop passes are never handed anything to delete. Banked as rejected/giv-pointer-chain-folds-at-cse1.c.
+- verdict: KILLED
+
+## [s5] The s5 sweep harness is sensitive enough for its two null results to be trusted.
+- mechanism: positive control — run the identical driver over s4's gen_k.py, whose behaviour is independently banked as K14.
+- probe: bash tmp/grind/func_8003C714/s5/sweep.sh gen_k.py ctl 0 12 13 16
+- result: Reproduced K14 exactly: k=0 -> 56 real insns / 107 asm lines, all movables moved; k=12 -> 82 / 157, all moved; k=13 -> 84 / 159 with two 'not desirable'; k=16 -> 90 / 173 with seven 'not desirable'. The instrument moves when the measured quantity moves.
+- verdict: CONFIRMED
+
+## [s5] H8 — BYTE-COUNT COUPLING: on this chassis loop.c's insn_count is a faithful proxy for the function's emitted instruction count, so byte-neutral C is count-neutral C and loop.c:1631 is closed by construction rather than by search.
+- mechanism: Every deletion opportunity cheap enough to be byte-free happens BEFORE loop_optimize — constant folding at expand, cse1 value numbering and address folding (toplev.c:2865), delete_dead_from_cse (toplev.c:2866) — and everything that survives loop_optimize (toplev.c:2895) also survives flow (2984), combine (3004), reload and the assembler. The two post-loop DCE-capable passes never receive a free insn.
+- probe: Five construct families measured across s2-s5 against the same instrument: redundant &0xFF masks (K10), dead ALU chains k<=32 (K15), pointer/giv chains k<=16 (K16), inlined index addressing (K8), invariant const movables k=16 (K14).
+- result: No family is off the line: 0/0, 0/0, 0/0, +2 insn_count / +13 score, +34 insn_count / +66 asm lines. Declining the 0x91A2B3C5 movable needs insn_count >= 120 with no extra hoists (+64 RTL insns) or insn_count >= 84 with 13 extra hoists (+28 RTL insns AND 13 extra preheader instructions); the target's whole body is 104 instructions, its loop 59, its preheader 6 with all six already accounted for. The cheapest route overshoots the entire function's byte budget by roughly 2x.
+- verdict: CONFIRMED

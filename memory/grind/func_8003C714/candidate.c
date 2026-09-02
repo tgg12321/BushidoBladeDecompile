@@ -18,7 +18,7 @@
  *    the giv value and forces a `move a0,a3` copy. sched1 hoists the addiu into
  *    the 4th mult's mfhi shadow exactly as target.
  *
- * [s2 2026-09-01 UPDATE] This body is BYTE-EXACT (distance 0, 104==104) — but
+ * [s2 2026-09-01 UPDATE] This body is BYTE-EXACT (distance 0, 104==104) ï¿½ but
  * only when cc1 is told the PS1 has no FPU. Add `-msoft-float` (or the 32
  * `-ffixed-$f0..$f31`) to CC_FLAGS and this exact C scores 0; with the shipped
  * CC_FLAGS it scores 15. Mechanism: loop.c:532
@@ -34,7 +34,7 @@
  * 104 target / 105 build, movable table identical. s3 added the first POSITIVE
  * evidence that this body is the right C: when loop.c:1631 is made to decline
  * the 0x91A2B3C5 movable (diagnostic form s3/body_callD.c), the SHIPPED cc1
- * emits `lui v0,0x91a2 / lw v1 / ori v0,0xb3c5 / mult v1,v0` — the target's
+ * emits `lui v0,0x91a2 / lw v1 / ori v0,0xb3c5 / mult v1,v0` ï¿½ the target's
  * 8003C754..8003C760 quartet, instruction for instruction. The residual is the
  * desirability arithmetic alone; savings and lifetime are both pinned at their
  * structural minimum of 1 (loop.c:791/793), so the product equals `threshold`.
@@ -55,6 +55,27 @@
  * (8003C73C..8003C750, six instructions) has room for zero. See hypotheses.md
  * K13/K14 and rejected/invariant-hoist-threshold-decrement-needs-13-preheader-insns.c.
  *
+ *
+ * [s5 2026-09-01 UPDATE, synthesis modality] Re-verified once more on the
+ * current chassis: score 15, 104 target / 105 build. This session merged s1-s4
+ * into one law instead of opening a new spelling axis, and measured the one
+ * channel the ledger had left half-open. BYTE-COUNT COUPLING (H8): on this
+ * chassis loop.c's `insn_count` is a faithful proxy for the emitted instruction
+ * count -- byte-neutral C is count-neutral C. Mechanism, read from
+ * tools/gcc-2.7.2/toplev.c this session: every deletion opportunity cheap enough
+ * to be byte-free happens BEFORE loop_optimize (expand folding, cse1 at
+ * toplev.c:2865, delete_dead_from_cse at toplev.c:2866), and everything that
+ * survives loop_optimize (toplev.c:2895) also survives flow (2984), combine
+ * (3004), reload and the assembler. Two new measured nulls support it: dead
+ * in-loop ALU chains at k = 4/8/16/32 leave insn_count PINNED at 56 with a
+ * byte-identical function (K15), and pointer/giv chains at k = 1..16 do the same
+ * (K16) -- with the identical harness reproducing K14's k=13 flip as a positive
+ * control. Consequence: declining the 0x91A2B3C5 movable needs +64 RTL insns
+ * (no extra hoists) or +28 RTL insns plus 13 extra preheader instructions, and
+ * by H8 both convert 1:1-or-worse into bytes against a 104-instruction target
+ * with a 6-instruction preheader. loop.c:1631 is closed BY CONSTRUCTION, not by
+ * search. Do not open another spelling, structural or search modality on this
+ * body. See hypotheses.md H8/K15/K16 and the s5 frontier.
  * Remaining d15 residual = ONE loop.c decision + its seat fallout:
  *  build hoists the 0x91A2B3C5 (/1800 magic) const load to the preheader
  *  (movable, savings 1, life 1, threshold 122 vs insn_count ~56); target has it
