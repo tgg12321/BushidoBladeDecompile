@@ -159,3 +159,24 @@ COMPLETED-C in pure C on 2026-08-20 and needs nothing.)
 The load-bearing negative is unchanged and applies with full force to the
 widened set: membership closes the TAIL ISLAND only, when the function's
 pure-C body independently reaches sandbox 0 under the normal grind gates.
+
+## Condition 3 clarified (owner ruling 2026-09-02) — the template IS the SDK macro body
+
+Owner ruling 2026-09-02 (docs/grind/decisions.md "2026-09-02 — OWNER RULING",
+Ruling A; informed — both audits' island flags, the three func_800300B4 layer-1
+FAILs and the operator's SOTN-practice argument were before the owner):
+condition 3's "template" is the body of the named Sony PsyQ GTE macro the island
+reproduces. GPR instructions that are the macro's own published text — e.g.
+`gte_ldlv0`'s `lhu/lhu/sll/or` VX0/VY0 pack (PsyQ 4.5 `inline_c.h:101-110`) —
+are part of the template and ADMITTED. Nothing outside the named macro body may
+be in the island; every island comment must cite the macro name and header line.
+Grounds: SOTN `#include`s Sony's `inline_c.h` and calls the macros by name, so
+the pack is literally SDK text there; the pack is measured unreachable from C at
+compiler-source level (func_800300B4 H4/H29/H30, `local-alloc.c:2207/2249`); the
+2026-09-01 func_800203B4 grant already authorized this exact spelling.
+
+Honest bucket for EVERY carrier is COMPLETED-INLINE-ASM-CANONICAL (allowlist
+line required) — never COMPLETED-C. Since 2026-09-02 the driver enforces this on
+the Judge PASS path (island count > 0 and not allowlisted ⇒ grant door or refuse).
+Preferred future form: a BB2-local GTE macro header so the source reads
+`gte_ldlv0(vec)` (same bytes, the SOTN idiom).

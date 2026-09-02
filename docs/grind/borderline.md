@@ -552,3 +552,12 @@ local-alloc on all three of its decision points (s5 H27 priority, s6 H29 suggest
 ordering + reference budget) — are now enumerated to exhaustion with named predicates. The whole
 remaining distance between func_800300B4 and COMPLETED-C is the owner's cluster-condition-3
 reading recorded at the head of this entry, and no source-side input to any pass remains untried.
+
+### 2026-09-02 owner ruling — the func_800300B4 and func_8002FF20 entries above are SPENT
+Owner ruling 2026-09-02 (decisions.md "2026-09-02 — OWNER RULING", Ruling A) answers the
+condition-3 question YES: the verbatim PsyQ macro body (incl. gte_ldlv0's lhu/lhu/sll/or pack)
+is the template. Executed: allowlist lines for func_8002E838 / func_80031890 (mislabeled
+COMPLETED-C on 2026-09-02 01:27/01:34 — reclassified COMPLETED-INLINE-ASM-CANONICAL); registry
+rows for func_80031890 + func_8002FF20 (named in the 2026-09-01 widened-anchor grant);
+`grant_rescan --apply` on func_800300B4 + func_8002FF20 (bans superseded, returned to active).
+Their candidates still pass layer-1, the Judge and full-build SHA1 before landing.

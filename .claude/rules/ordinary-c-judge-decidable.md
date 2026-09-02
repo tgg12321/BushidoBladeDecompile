@@ -154,6 +154,20 @@ The 18 `escalated` items resolve as follows:
   2026-07-27 standing ruling; each item's reason points at its latest
   decisions.md entry).
 
+## Ruling 4 (owner, 2026-09-02) — compound-assignment splits are ordinary C
+
+Splitting one assignment into consecutive compound assignments on the SAME
+variable — `ratio *= 0x103B; ratio >>= 12;` for `ratio = (ratio * 0x103B) >> 12;`,
+or `v = a; v += b;` for `v = a + b;` — is a semantically-truthful spelling under
+Ruling 1(3), provided no statement is dead, no annotation is needed and no pad
+is introduced. It is NOT a construct requiring a family entry, and a reviewer
+may not FAIL it on the ground that the agent chose it after observing register
+allocation. This supersedes the provisional caveat in the 2026-06-13
+split-init-accumulation directive ("adjacent spellings need their own ruling").
+Multi-WRITE carriers whose extra write is dead remain banned (unchanged).
+Record: docs/grind/decisions.md 2026-09-02 OWNER RULING, Ruling B
+(_spu_2pitch 10eadce5 stands as COMPLETED-C).
+
 ## What this ruling does NOT change
 
 - The completion bar, the oracle, the cheat catalog for non-C mechanisms,

@@ -20579,3 +20579,64 @@ RULING REQUEST — ban 1 (the island-2 block) is LIFTED; this is my call, not ru
 ## 2026-09-02 08:12 — func_800300B4 — layer-1 review — **FAIL**
 
 Island 2's gte_ldlv0 GPR data-pack (lhu/lhu/sll/or) is admitted only via an in-pipeline 'Judge ruling' (decisions.md:20575) resolving a genuine cluster-condition-3 family-scope question that judge-sole-gate rule 4 reserves for the owner via the borderline ledger, never for in-pipeline self-adjudication.
+
+## 2026-09-02 — OWNER RULING (two clarifications, informed) — SDK GTE-macro bodies under cluster condition 3; compound-assignment splits are ordinary C
+
+**Provenance.** Owner (Trenton), 2026-09-02, in conversation, after the operator's
+audit of the five overnight single-session completions and a fresh layer-2
+cheat-reviewer pass on each. Presented before the ruling: both audits
+(`check_completion_integrity.py`, `audit_asm_cheats.py`) flagging func_8002E838 /
+func_80031890 as unauthorized island carriers; the three layer-1 FAILs on the
+identical island in func_800300B4; the layer-2 FAIL on _spu_2pitch's ratio split;
+and the operator's opinion on each. Owner, verbatim: **"I agree go ahead"**.
+Record lands before code per [[ruling-record-lands-before-code]].
+
+### Ruling A — cop2-addressing-preamble-cluster condition 3 admits the verbatim body of a named PsyQ GTE macro
+
+Condition 3 ("in-island GPR instructions limited to the cop2 addressing
+preamble — nothing else may be swallowed into the template") is CLARIFIED, not
+widened: the "template" is the body of the Sony PsyQ GTE macro the island
+reproduces. GPR instructions that are the macro's own published text — e.g.
+`gte_ldlv0`'s `lhu/lhu/sll/or` VX0/VY0 pack (PsyQ 4.5 `inline_c.h:101-110`) — are
+part of the template and admitted. Nothing OUTSIDE the named macro body may be in
+the island. Grounds: SOTN's own practice is to `#include` Sony's `inline_c.h` and
+call the macros by name, so the pack is literally the SDK text there; the pack is
+measured unreachable from C at compiler-source level (func_800300B4 H4/H29/H30,
+`local-alloc.c:2207/2249`); the 2026-09-01 func_800203B4 owner grant already
+authorized this exact spelling. Each island must cite the macro name and header
+line in its comment. Honest bucket for every carrier is
+COMPLETED-INLINE-ASM-CANONICAL — never COMPLETED-C.
+
+Consequences executed with this ruling: allowlist lines for func_8002E838
+(49d6927e) and func_80031890 (1a2e49e4), whose Match commits were mislabeled
+COMPLETED-C; registry rows for func_80031890 and func_8002FF20 (both named in the
+2026-09-01 widened-anchor grant, decisions.md:18082); `grant_rescan --apply` on
+func_800300B4 and func_8002FF20 so their banked score-0 candidates re-adjudicate
+through the normal gates (layer-1, Judge, SHA1) with the island-2 bans superseded.
+Preferred future form: a BB2-local GTE macro header so source reads
+`gte_ldlv0(vec)` (same bytes, SOTN idiom).
+
+### Ruling B — splitting a compound update into two statements is ordinary C
+
+`ratio *= 0x103B; ratio >>= 12;` versus `ratio = (ratio * 0x103B) >> 12;` — and
+in general any split of one assignment into consecutive compound assignments on
+the SAME variable with no dead statement, no annotation, no pad — is a
+semantically-truthful spelling under [[ordinary-c-judge-decidable]] Ruling 1(3).
+It is NOT a construct needing a family entry, and the provisional caveat in the
+2026-06-13 split-init-accumulation directive ("adjacent spellings need their own
+ruling") is superseded by the 2026-08-31 ruling and by this one. _spu_2pitch
+(10eadce5) stands as COMPLETED-C. Multi-write carriers whose extra write is dead
+remain banned (unchanged).
+
+### Ruling C (process) — a Judge PASS on an island-carrying body routes through the grant door
+
+The driver merged two island-carrying bodies as COMPLETED-C because
+`grant_canonical_asm` ran only on verdict ESCALATE and the PASS path never read
+the Judge's prose note. Fix executed with this ruling: before `queue done`, the
+PASS path counts non-cop2 islands in the applied body; if any and the function is
+not yet in `inline_asm_canonical.txt`, it executes the grant through the existing
+evidence doors (STRONG scan tier or owner-cluster registry) and titles the commit
+COMPLETED-INLINE-ASM-CANONICAL; if no door admits it, the merge is REFUSED and a
+constraint banked. Layer-2 review of the overnight completions: func_80043BD0,
+func_80043D34 PASS (pure C, net cheat removal); _spu_2pitch PASS under Ruling B;
+func_8002E838, func_80031890 reclassified under Ruling A.
