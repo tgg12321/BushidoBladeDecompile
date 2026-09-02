@@ -1,12 +1,16 @@
-/* func_800300B4 candidate - s1 (2026-09-02), re-measured s1b and s1c (recon, 2026-09-02): sandbox --disable all == 0 (83/83).
- * Island 2 (gte_ldv0 pack lhu/lhu/sll/or + mtc2) is character-identical to the on-main, owner-granted
- * func_800203B4 island (inline_asm_canonical.txt:367, src/code6cac.c:1858-1870) and to the Judge-PASSed
- * cluster sibling func_8002E838 (decisions.md:20262, src/code6cac_b.c:1245-1255). The layer-1-prescribed
- * pack-in-C respelling measures 19 (rejected/pack-in-c-island2-*.c). Island-2 ban LIFTED by ruling
- * 2026-09-02 07:30 (decisions.md:20474): the gte_ldv0 macro-body pack is inside the sanctioned island unit.
- * Owner-cluster canonical-asm member (tools/grinder/owner_cluster_grants.txt:23).
- * One FAKE: do-while(0) wrap around gte_stlvnl (flow.c loop-note ref weighting
- * seats &mac in s2 ahead of arg0 in s3; see evidence.md E2). */
+/* func_800300B4 candidate - s1 (2026-09-02); re-measured s1b, s1c, s1d, s1e (recon, 2026-09-02): sandbox --disable all == 0
+ * (83/83), verify-oracle ok (s1). Owner-cluster canonical-asm member (tools/grinder/owner_cluster_grants.txt:23).
+ * Three PsyQ libgte inline-macro islands in the older-SDK `move $12,%0` spelling (the cluster's materialize-then-copy
+ * signature): gte_SetRotMatrix, gte_ldlv0 (+ gte_rtv0 MVMVA .word 0x4A486012), gte_stlvnl. Island 2 is gte_ldlv0 - "load a
+ * 32-bit VECTOR into V0" - whose body in PsyQ Run-time Library Release 4.5 inline_c.h:101-110 is verbatim
+ * lhu $13,4(%0); lhu $12,0(%0); sll $13,$13,16; or $12,$12,$13; mtc2 $12,$0; lwc2 $1,8(%0) (clobbers $12,$13); the target
+ * differs only by the `move $12,%0` prefix + one-register temp shift (H10: the 4.5-verbatim spelling scores 7 = exactly that;
+ * the pack-in-C respelling scores 19 as a class, H4). It is NOT gte_ldv0 (the SVECTOR loader, a pure lwc2 pair) - earlier
+ * records used that misnomer. See evidence.md s1e.
+ * STATUS 2026-09-02 s1e: island 2 is under a layer-1 mechanical BAN (decisions.md:20470, :20478) pending the s1e
+ * ruling-request on provenance grounds; re-apply this file unchanged when the ban is lifted.
+ * One FAKE: do-while(0) wrap around gte_stlvnl (flow.c loop-note ref weighting seats &mac in s2 ahead of arg0 in s3;
+ * see evidence.md E2; fake_ablate keep-all 0 / drop-1 13). */
 /* kengo:?  |  GTE rotate+translate of the object's local vector, then dispatch */
 void func_800300B4(u8 *arg0) {
     s32 mac[3];
@@ -35,9 +39,12 @@ void func_800300B4(u8 *arg0) {
         "ctc2   $14, $3\n"
         "ctc2   $15, $4\n"
         :: "r"(mat) : "$12", "$13", "$14", "$15");
-    /* PsyQ libgte inline macro gte_ldv0(r) - load the SVECTOR at r into
-     * VXY0/VZ0 ($0/$1), then the 2-cycle GTE load delay and gte_rtv0()
-     * (MVMVA sf=1, rotation matrix x V0, no translation - cop2 0x0486012). */
+    /* PsyQ libgte inline macro gte_ldlv0(r) - load the 32-bit VECTOR at r
+     * into V0: pack vx/vy (s32 -> s16 halves) into VXY0 ($0), lwc2 vz into
+     * VZ0 ($1). Body verbatim from PsyQ 4.5 inline_c.h:101-110 (lhu/lhu/sll/or/
+     * mtc2/lwc2, clobbers $12,$13) in the older-SDK `move $12,%0` spelling.
+     * Then the 2-cycle GTE load delay and gte_rtv0() (MVMVA sf=1, rotation
+     * matrix x V0, no translation - cop2 0x0486012). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"
