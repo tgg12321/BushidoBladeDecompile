@@ -20466,3 +20466,7 @@ owner-held enumeration row.
 **Artifacts:** `tmp/grind/func_800480C0/s11/{scan_hand_coded.txt,fake_ablate.txt,entry.md}`,
 `memory/grind/func_800480C0/{candidate.c,evidence.md,hypotheses.md,rejected/}`,
 prior packet at decisions.md:20282 and its FAIL at decisions.md:20349.
+
+## 2026-09-02 07:20 — func_800300B4 — layer-1 review — **FAIL**
+
+Island 2 (gte_ldv0/rtv0) swallows the SVECTOR s16-unpack GPR arithmetic (lhu/lhu/sll/or) into the 'canonical' asm block, violating the cop2-addressing-preamble-cluster grant's own mechanical condition 3 ('in-island GPR instructions limited to the cop2 addressing preamble — nothing else may be swallowed into the template'); the do-while(0) wrap on island 3 is otherwise conforming.

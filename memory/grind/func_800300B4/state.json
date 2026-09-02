@@ -1,0 +1,20 @@
+{
+ "func": "func_800300B4",
+ "file": "code6cac_b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: Island 2 (gte_ldv0/rtv0) swallows the SVECTOR s16-unpack GPR arithmetic (lhu/lhu/sll/or) into the 'canonical' asm block, violating the cop2-addressing-preamble-cluster grant's own mechanical condition 3 ('in-island GPR instructions limited to the cop2 addressing preamble \u2014 nothing else may be swallowed into the template'); the do-while(0) wrap on island 3 is otherwise conforming. Next action: Restructure island 2: compute the SVECTOR pack as ordinary C (a local `u32 packed = ...;` from the two s16 halfword reads/shift/or \u2014 semantically identical, and something GCC "
+ ],
+ "banned_constructs": [
+  "__asm__ volatile block for gte_ldv0/gte_rtv0 containing `lhu $14,4($12)`, `lhu $13,0($12)`, `sll $14,$14,16`, `or $13,$13,$14` ahead of `mtc2 $13,$0`",
+  "Self-vet's characterization of island 2 as 'the exact spelling of the integrated cluster sibling func_8002FC80' and its fallback citation to inline_asm_canonical.txt:174 (LoadAverageShort12, a GTE-leaf-wrapper authorization under a different family/policy)"
+ ],
+ "kills": [],
+ "ladder_skip": 10,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-02T11:58:49.332355+00:00"
+}
