@@ -576,3 +576,8 @@ disposition taken: inline_asm_canonical.txt entry written by the driver per owne
 category: canonical-asm-grant
 evidence: scan_hand_coded --single func_800325E0 tier=OWNER-CLUSTER (cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)) (driver-verified); judge ESCALATE packet in docs/grind/decisions.md (2026-09-02)
 disposition taken: inline_asm_canonical.txt entry written by the driver per owner ruling 2026-08-18; function stays ACTIVE for canonical-asm integration.
+
+## 2026-09-02 — func_800861BC — integration-handoff
+category: integration-handoff
+evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-02 — func_800861BC — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
+disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: func_800861BC include/sound.h; function stays ACTIVE.

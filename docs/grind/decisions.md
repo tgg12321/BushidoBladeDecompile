@@ -20710,3 +20710,110 @@ RE-ACTIVATION / NOT A FORECLOSURE. Nothing here is an endgame lock: the C is pro
 ## 2026-09-02 14:20 — func_800861BC — DISCARDED-SESSION MARKER (driver-stamped)
 
 Text appended above by session s1 of func_800861BC, which the driver DISCARDED as invalid (owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md names func_800861BC). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
+
+## 2026-09-02 — func_800861BC — **OWNER-ESCALATION — INTEGRATION HANDOFF (bytes oracle-proven; scope widening: include/sound.h; candidate gate structurally unpassable — named-symbol LO16 addend residual 18 of 18, real 0)**
+
+Re-filed by s1 (recon, second dispatch) with the mandated OWNER-ESCALATION title; the 2026-09-02 entry above
+this one was the same finding under a title the driver could not validate. Nothing terminal is claimed here:
+the C is finished and proven; only the landing surface and the candidate gate are outside the session contract.
+
+WHAT WAS PROVEN THIS SESSION (all re-measured, not credited from the discarded session). func_800861BC is Sony
+LIBSND `_SsVmDoAllocate` (psyz vm_aloc2.c analog). The banked header-form tree,
+`memory/grind/func_800861BC/integration_patch.diff` (touches exactly include/sound.h and src/main.c), gives:
+- `sandbox func_800861BC --disable all` = 18 at 132/132, rules_dropped 0
+  (tmp/grind/func_800861BC/s1/v9_header_form_pairdiff.txt; filt.py: real=0 noise=18). Every one of the 18
+  hunks is the same instruction with only the LO16 immediate differing — `lh a1,26(a1)` vs `lh a1,0(a1)`,
+  `addiu v1,v1,28` vs `addiu v1,v1,0`, etc.: our object relocates `D_801027F0+N`, the INCLUDE_ASM reference
+  object relocates splat's per-word symbol `D_8010280A`/`D_8010280C`/... at addend 0. Both resolve to the same
+  address at link.
+- `verify-oracle --rebuild --allow-dirty` on that tree: ok:true, build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa
+  (tmp/grind/func_800861BC/s1/verify_oracle_header.txt); `nm build/src/main.o` shows `T func_800861BC` — the
+  function is compiled from C, no asm object linked. Prong (e) byte-neutrality for every other consumer of the
+  nine merged symbols (src/main.c lines ~923, 1101, 1143, 1178-1201, 1219, 1259-1266) is therefore measured on
+  the exact tree to be landed.
+- The C body carries no construct: no volatile, no inline asm, no register pin, no dead local/store, no pad, no
+  pointer pun, no FAKE annotation. The only non-trivial spelling is a `static inline vmSetStartAddr()` helper
+  (write the start-address shadow register + set the dirty bit) called from both if/else arms — an ordinary
+  helper (src/main.c already has `static inline` sites), whose mechanism is recorded in evidence.md.
+
+FAMILY + PRONGS. Header declaration `struct struct_svm D_801027F0` under the frozen "Per-word splat symbol ->
+aggregate merge" family (`.claude/rules/no-new-park-categories.md:238`; precedent commit e788983a). (a) object
+model predates the grind: the original binary derives &D_8010280A as `addiu $t1,$v1,-2` from `$v1=&D_8010280C`
+(asm/funcs/func_800861BC.s:4-6) — base+offset addressing across two splat names; psyz's header-canonical
+`struct struct_svm` (tmp/psyq_prov/psyz/decomp/src/libsnd/libsnd_private.h:148-172) places all nine BB2 fields
+at exactly the BB2 offsets; the matched sibling func_800871D4's comment already maps D_8010280A <- _svm_cur.voice;
+named_syms.txt:3604. (b) the declaration is that struct with psyz's field names. (c) complete: all nine per-word
+externs deleted from C, every consumer rewritten (grep src/ include/ = zero remaining handles; the asm/funcs/*.s
+references keep their undefined_syms_auto.txt names exactly as in e788983a — ten other .s files reference
+these symbols, so the linker-script names must stay). (d) header-canonical in include/sound.h (the sound/SPU
+header), never TU-local. (e) oracle SHA1 on the merged tree; layer-2 review is the operator step below.
+
+THE TWO BLOCKERS, both confirmed in the driver's own source this session:
+(A) SURFACE. include/sound.h is outside the single-stem scope. Grantable: a Judge ESCALATE(integration-handoff)
+    with `scope_paths=[include/sound.h]` is the designed remedy, and since f45b33cd (Fix A, 2026-08-22) the
+    session scope check honours scope_allow.txt grants, so the grant is no longer inert.
+(B) GATE. `Invoke-CandidatePath` (tools/grinder/grind.ps1:578-583) rejects any candidate unless
+    `sandbox --disable all` prints score 0. For THIS function that number is 18 by construction and no spelling
+    can move it: `engine/score.py:61` deliberately does not mask named-symbol LO16 addends, the reference object
+    is the INCLUDE_ASM'd asm naming nine distinct per-word symbols at addend 0, and the struct spelling — the
+    only spelling that reproduces the target's `addiu $t1,$v1,-2` (explow.c force_reg + cse.c use_related_value
+    on offsets of ONE symbol; separate scalars measured 37, hypotheses.md H7) — necessarily addresses every field
+    as `D_801027F0+N` with N != 0 (the base field at +0 is never accessed). Fix B (oracle-SHA1 acceptance at a
+    non-zero addend-only residual) was DECLINED in f45b33cd on two grounds; ground 2 was "No function is currently
+    known to need Fix B" — this function is that case, at 18 of 18 rather than 80038170's 1. Once the patch is
+    landed and `engine build` regenerates build/src/main.o from the C, the sandbox reads 0 by construction (the
+    same post-landing behaviour f45b33cd observed on func_80038170), so `queue regen` will not resurrect it.
+    A scope grant alone therefore cannot land this function: the next session would re-prove the same 18/oracle
+    pair and be discarded at gate (B). Please do not spend a cycle on that.
+
+OPERATOR STEPS (mirrors cbcfda04 / 2fb471ac for func_80038170; each pre-verified this session):
+1. `git apply memory/grind/func_800861BC/integration_patch.diff` (include/sound.h + src/main.c only).
+2. `& tools/wteng.ps1 main build` -> expect SHA1 == oracle (verified: verify_oracle_header.txt).
+3. Fresh layer-2 `cheat-reviewer` on the diff (self-vet: memory/grind/func_800861BC/self_vet.md).
+4. `& tools/wteng.ps1 main queue done func_800861BC` -> COMPLETED-C; close the ledger.
+5. Follow-up (unmeasured, its own item): func_80087CAC's FAKE pointer alias to `_svm_cur.seq_sep_no`
+   (src/main.c, `ptr = &D_801027F0.seq_sep_no`) may retire under natural field access by the same explow.c
+   force_reg mechanism.
+
+RE-ACTIVATION / NOT A FORECLOSURE. The decompilation is complete. Re-activation needs only one of: an operator
+landing (steps above), or a pipeline change the owner already authorized in cbcfda04 item 2 (an oracle-SHA1
+acceptance path for addend-only residuals — the operator declined it; this function is the concrete case the
+refusal said did not exist). Ledger: memory/grind/func_800861BC/ (evidence.md, hypotheses.md, self_vet.md,
+candidate.c, integration_patch.diff, merged_main_s1.diff, rejected/).
+
+## 2026-09-02 14:36 — func_800861BC — ruling: INTEGRATION HANDOFF filed for func_800861BC : 2026-09-02 — func_800861BC — OWNER — **ESCALATE**
+
+INTEGRATION HANDOFF GRANTED. func_800861BC (Sony LIBSND _SsVmDoAllocate). The work is finished and honest; the only blocker is a commit surface — include/sound.h — that a grind session may not stage. Grant: scope_paths=[include/sound.h]. src/main.c is the function's own stem and already in scope.
+
+WHAT I VERIFIED MYSELF (not credited from the ledger). I did not trust the session's oracle capture (tmp/grind/func_800861BC/s1/verify_oracle_header.txt is a 317-byte TRUNCATED JSON, and build/src/main.o on disk at the time of this ruling is the reverted INCLUDE_ASM form, so neither corroborated the claim). Instead I built the banked tree independently in a scratch copy outside the repo (tmp, since deleted; repo left untouched — git status unchanged): copied src/ + include/ + the root build files, symlinked tools/ asm/ disc/, applied memory/grind/func_800861BC/integration_patch.diff with GNU patch, and ran a full clean `make`. Result: build/bb2.exe SHA1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, and objdump of that tree's build/src/main.o shows func_800861BC compiled from C with 30 relocations against D_801027F0 in its body (i.e. the C body, not an asm object, produced the matching bytes). The bytes claim HOLDS, and it holds for every other consumer of the nine merged symbols too, because it is a full-EXE SHA1 on the exact tree to be landed.
+
+THE SANDBOX RESIDUAL OF 18 IS NOT A BYTE DIFFERENCE. v9_header_form_pairdiff.txt is 132 insns vs 132 insns, and all 18 hunks are the same instruction with only the LO16 immediate differing because the symbol NAME differs: ours relocates D_801027F0+N, the INCLUDE_ASM reference relocates splat's per-word name at addend 0. I checked the arithmetic on every one: +7=D_801027F7, +12=D_801027FC, +24=D_80102808, +26=D_8010280A, +28=D_8010280C, +30=D_8010280E, and D_80102A78+6/+8/+10 = D_80102A7E/80/82. Identical addresses after link — which is exactly why the full build reproduces the oracle. engine/score.py:57-62 documents that named-symbol HI16/LO16 addends are DELIBERATELY not masked (they are normally source-level intent), so a symbol-merge change scores nonzero by construction. Per CLAUDE.md non-negotiable #2, the oracle is the only truth and isolated scores are hints.
+
+FAMILY + PRONGS (per-word splat symbol -> aggregate merge, .claude/rules/no-new-park-categories.md:238; precedent e788983a). (a) Object model predates the session: asm/funcs/func_800861BC.s:4-6 derives &D_8010280A as `addiu $t1,$v1,-2` off &D_8010280C — base+offset addressing across two splat names in the ORIGINAL binary; psyz's header-canonical `struct struct_svm` (libsnd_private.h) carries exactly these fields, and I checked all nine offsets against the psyz field order (prog_tones..field_0x1e) — every merged address lands on the field the patch names. (b) The declaration is that struct, psyz field names, no magic strides. (c) Complete: grep of the patched src/ + include/ finds ZERO remaining per-word C handles (only a comment). The names stay in undefined_syms_auto.txt because ten .s files still reference them — I confirmed the sanctioned precedent e788983a did exactly the same (D_80101EDA / D_80102326 are still in undefined_syms_auto.txt today). (d) Header-canonical in include/sound.h, not TU-local, no per-use pointer pun (the pointer-alias chassis that WOULD violate prong (d) is banked as rejected/separate-scalars-pointer-alias-pun.c and measured 37). (e) Byte-neutrality for every other consumer verified by my own full-build SHA1 above.
+
+THE REST OF THE BODY IS ORDINARY C. No volatile, no inline asm, no register pin, no dead store, no pad, no FAKE annotation in the landed form (I grepped the diff). The `static inline vmSetStartAddr()` helper does two real stores (start-address shadow register + dirty bit) on both paths and is a coherent named operation; src/main.c already carries a `static inline` (_memcpy, line 2179). Even if the spelling was chosen after watching codegen, it is semantically truthful, and per .claude/rules/ordinary-c-judge-decidable.md that is the method of matching decomp, not a cheat. The ProgAtr typedef is moved verbatim from src/main.c to the header (same definition, sibling at ~main.c:1431 already casts D_800FF6A0 the same way). The `*(s16*)((u8*)&D_800F4E1E + voice*54)` byte pun is a real store into the stride-54 _svm_voice record table pending that table's own merge — the same interim spelling the matched sibling already uses. No new-family question arises; nothing here is outside the frozen list. banned_constructs is empty, so no unban is needed.
+
+ONE THING THE DRIVER SHOULD KNOW (it is the reason this is a handoff and not a normal next-session landing). Invoke-CandidatePath (tools/grinder/grind.ps1:578-583) requires `sandbox --disable all` == 0, and for THIS function that number is 18 for every struct spelling and cannot be driven lower: the merge is the only chassis measured to reproduce the target's `addiu $t1,$v1,-2` (separate scalars measured 37, hypotheses.md H7 — I read the banked rejects), and any struct spelling necessarily addresses fields at nonzero addends. So a scope grant ALONE will not land it: the next session will re-prove the same 18/oracle pair and be discarded at the candidate gate, exactly as func_80038170 was discarded twice before the operator landed it by hand (2fb471ac) after Fix B was declined in f45b33cd on the ground that "no function is currently known to need Fix B". This function is that case, at 18 of 18 rather than 1. Changing that gate is a pipeline change above my authority and outside the add-scope-allow path, so I am not granting it — but the operator landing is four steps and each is pre-verified: apply integration_patch.diff, build (SHA1 == oracle, re-confirmed by me today), fresh layer-2 cheat-reviewer, `queue done`. Once landed, build/src/main.o is regenerated from the C and the sandbox reads 0 by construction, so `queue regen` will not resurrect it.
+
+## 2026-09-02 — func_800861BC — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-09-02)** — verdict ESCALATE (integration-handoff): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+INTEGRATION HANDOFF GRANTED. func_800861BC (Sony LIBSND _SsVmDoAllocate). The work is finished and honest; the only blocker is a commit surface — include/sound.h — that a grind session may not stage. Grant: scope_paths=[include/sound.h]. src/main.c is the function's own stem and already in scope.
+
+WHAT I VERIFIED MYSELF (not credited from the ledger). I did not trust the session's oracle capture (tmp/grind/func_800861BC/s1/verify_oracle_header.txt is a 317-byte TRUNCATED JSON, and build/src/main.o on disk at the time of this ruling is the reverted INCLUDE_ASM form, so neither corroborated the claim). Instead I built the banked tree independently in a scratch copy outside the repo (tmp, since deleted; repo left untouched — git status unchanged): copied src/ + include/ + the root build files, symlinked tools/ asm/ disc/, applied memory/grind/func_800861BC/integration_patch.diff with GNU patch, and ran a full clean `make`. Result: build/bb2.exe SHA1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, and objdump of that tree's build/src/main.o shows func_800861BC compiled from C with 30 relocations against D_801027F0 in its body (i.e. the C body, not an asm object, produced the matching bytes). The bytes claim HOLDS, and it holds for every other consumer of the nine merged symbols too, because it is a full-EXE SHA1 on the exact tree to be landed.
+
+THE SANDBOX RESIDUAL OF 18 IS NOT A BYTE DIFFERENCE. v9_header_form_pairdiff.txt is 132 insns vs 132 insns, and all 18 hunks are the same instruction with only the LO16 immediate differing because the symbol NAME differs: ours relocates D_801027F0+N, the INCLUDE_ASM reference relocates splat's per-word name at addend 0. I checked the arithmetic on every one: +7=D_801027F7, +12=D_801027FC, +24=D_80102808, +26=D_8010280A, +28=D_8010280C, +30=D_8010280E, and D_80102A78+6/+8/+10 = D_80102A7E/80/82. Identical addresses after link — which is exactly why the full build reproduces the oracle. engine/score.py:57-62 documents that named-symbol HI16/LO16 addends are DELIBERATELY not masked (they are normally source-level intent), so a symbol-merge change scores nonzero by construction. Per CLAUDE.md non-negotiable #2, the oracle is the only truth and isolated scores are hints.
+
+FAMILY + PRONGS (per-word splat symbol -> aggregate merge, .claude/rules/no-new-park-categories.md:238; precedent e788983a). (a) Object model predates the session: asm/funcs/func_800861BC.s:4-6 derives &D_8010280A as `addiu $t1,$v1,-2` off &D_8010280C — base+offset addressing across two splat names in the ORIGINAL binary; psyz's header-canonical `struct struct_svm` (libsnd_private.h) carries exactly these fields, and I checked all nine offsets against the psyz field order (prog_tones..field_0x1e) — every merged address lands on the field the patch names. (b) The declaration is that struct, psyz field names, no magic strides. (c) Complete: grep of the patched src/ + include/ finds ZERO remaining per-word C handles (only a comment). The names stay in undefined_syms_auto.txt because ten .s files still reference them — I confirmed the sanctioned precedent e788983a did exactly the same (D_80101EDA / D_80102326 are still in undefined_syms_auto.txt today). (d) Header-canonical in include/sound.h, not TU-local, no per-use pointer pun (the pointer-alias chassis that WOULD violate prong (d) is banked as rejected/separate-scalars-pointer-alias-pun.c and measured 37). (e) Byte-neutrality for every other consumer verified by my own full-build SHA1 above.
+
+THE REST OF THE BODY IS ORDINARY C. No volatile, no inline asm, no register pin, no dead store, no pad, no FAKE annotation in the landed form (I grepped the diff). The `static inline vmSetStartAddr()` helper does two real stores (start-address shadow register + dirty bit) on both paths and is a coherent named operation; src/main.c already carries a `static inline` (_memcpy, line 2179). Even if the spelling was chosen after watching codegen, it is semantically truthful, and per .claude/rules/ordinary-c-judge-decidable.md that is the method of matching decomp, not a cheat. The ProgAtr typedef is moved verbatim from src/main.c to the header (same definition, sibling at ~main.c:1431 already casts D_800FF6A0 the same way). The `*(s16*)((u8*)&D_800F4E1E + voice*54)` byte pun is a real store into the stride-54 _svm_voice record table pending that table's own merge — the same interim spelling the matched sibling already uses. No new-family question arises; nothing here is outside the frozen list. banned_constructs is empty, so no unban is needed.
+
+ONE THING THE DRIVER SHOULD KNOW (it is the reason this is a handoff and not a normal next-session landing). Invoke-CandidatePath (tools/grinder/grind.ps1:578-583) requires `sandbox --disable all` == 0, and for THIS function that number is 18 for every struct spelling and cannot be driven lower: the merge is the only chassis measured to reproduce the target's `addiu $t1,$v1,-2` (separate scalars measured 37, hypotheses.md H7 — I read the banked rejects), and any struct spelling necessarily addresses fields at nonzero addends. So a scope grant ALONE will not land it: the next session will re-prove the same 18/oracle pair and be discarded at the candidate gate, exactly as func_80038170 was discarded twice before the operator landed it by hand (2fb471ac) after Fix B was declined in f45b33cd on the ground that "no function is currently known to need Fix B". This function is that case, at 18 of 18 rather than 1. Changing that gate is a pipeline change above my authority and outside the add-scope-allow path, so I am not granting it — but the operator landing is four steps and each is pre-verified: apply integration_patch.diff, build (SHA1 == oracle, re-confirmed by me today), fresh layer-2 cheat-reviewer, `queue done`. Once landed, build/src/main.o is regenerated from the C and the sandbox reads 0 by construction, so `queue regen` will not resurrect it.
+
+

@@ -1,0 +1,40 @@
+{
+ "func": "func_800861BC",
+ "file": "main",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 18,
+   "modality": "recon",
+   "headline": "func_800861BC (Sony LIBSND _SsVmDoAllocate) bytes re-proven on the header-canonical aggregate-merge tree (integration_patch.diff: include/sound.h + src/main.c; verify-oracle SHA1 == oracle; sandbox 18"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Landing integration_patch.diff (include/sound.h + src/main.c) yields COMPLETED-C: build SHA1 == oracle, layer-2 PASS on a construct-free body, queue done accepts.",
+   "mechanism": "aggregate-merge family (no-new-park-categories.md:238, precedent e788983a); the sandbox reads 18 only until build/src/main.o is regenerated from the C, then 0 by construction.",
+   "next_probe": "operator: git apply memory/grind/func_800861BC/integration_patch.diff; & tools/wteng.ps1 main build; fresh cheat-reviewer on the diff; queue done func_800861BC"
+  },
+  {
+   "hypothesis": "After the merge lands, func_80087CAC's FAKE pointer alias to _svm_cur.seq_sep_no (src/main.c ptr = &D_801027F0.seq_sep_no) retires under natural field access.",
+   "mechanism": "explow.c memory_address force_reg materializes a struct-offset address into a pseudo exactly as the FAKE alias does by hand.",
+   "next_probe": "replace the alias with direct D_801027F0.seq_sep_no accesses in func_80087CAC; sandbox func_80087CAC --disable all; expect 0 (its own queue item)"
+  },
+  {
+   "hypothesis": "If layer-2 rejects the static-inline helper, candidate_v4_dup_arms.c (FAKE-annotated duplicated-statement-into-arms) is byte-identical.",
+   "mechanism": "jump2 cross-jump merges the two literal copies of the dirty|=8 statement into the shared tail, same anchor effect as the inlined helper.",
+   "next_probe": "swap the body for candidate_v4_dup_arms.c in the patched tree; sandbox (expect 18 / real 0) and verify-oracle"
+  }
+ ],
+ "judge_constraints": [
+  "integration-handoff EXECUTED (pipeline, 2026-09-02): scope grant: func_800861BC include/sound.h. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
+ ],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-02T18:54:22.124153+00:00"
+}
