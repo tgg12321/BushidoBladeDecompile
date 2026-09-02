@@ -360,3 +360,77 @@ diff_h14.txt, v_h14_packC_nested.c, qtydbg_h14.txt, qtydbg_packA.txt, run_qty_s1
 - [s1] Borderline entry docs/grind/borderline.md:370 amended with an addendum: island named gte_ldlv0 with PsyQ 4.5 inline_c.h:101-110 provenance, the 07:59 PASS / 08:12 FAIL sequence, and the measured ban-compliant floor.
 
 - [s1] src/code6cac_b.c restored to INCLUDE_ASM at session end; no engine/tools/rules files touched.
+
+## s2 (2026-09-02, structural, HEAD ca605c18) — the seat swap is REACHABLE in the ban-compliant chassis; floor 19 -> 11
+
+Chassis re-measured first: `v_packC_A` (pack-in-C island 2, single do-while(0) wrap on island 3)
+= sandbox 19, identical to s1b/s1g/s1h. Nothing moved.
+
+### E-s2-1 — the exact seat model (measured, not inferred)
+`qty_compare_1` (tools/gcc-2.7.2/local-alloc.c:1670) ranks quantities by
+`floor_log2(n_refs) * n_refs * qty_size / (qty_death - qty_birth)`. The four call-crossing
+quantities of this function, read straight out of BB2_QTY_DEBUG on the pack-in-C chassis
+(`tmp/grind/func_800300B4/s1/qtydbg_packA.txt:602-624`):
+
+| quantity | birth | death | refs | priority | seat (build) | seat (target) |
+|---|---|---|---|---|---|---|
+| `lookup` (reg75) | 84 | 92 | 3 | 3/8 = .375 | $s0 | $s0 |
+| `&dir` (reg104) | 72 | 98 | 4 | 8/26 = .307 | $s1 | $s1 |
+| `arg0` (reg72) | 2 | 96 | 9 | 27/94 = .287 | **$s2** | $s3 |
+| `&mac` (reg114) | 32 | 94 | 6 | 12/62 = .194 | **$s3** | $s2 |
+
+So the 12-insn seat residual is exactly "&mac must rank between arg0 and &dir".
+
+### E-s2-2 — arg0's 9 refs are invariant in the pack-in-C chassis
+7 refs are byte-pinned (the incoming `move s3,a0` def plus `arg0[6]`, `arg0[9]`, the
+`arg0+0x2C` island operand, `arg0+0xC`, `*(s16*)(arg0+2)`, `arg0[10]`); the C-side pack adds
+exactly 2 more (the two halfword loads), whatever the spelling. Measured: addressing island 2
+off `arg0` itself and deleting the `lv` addiu (`v_arg0direct_wrap`) leaves refs at 9
+(`tmp/grind/func_800300B4/s2/qty_v_arg0direct_wrap.txt:621`) and scores 20. In the 0-form
+(pack inside the asm) arg0 has 7 refs = 14/94 = .149 — this is the structural reason the
+ban-compliant chassis is strictly harder than the 0-form one: the pack pushes arg0 from the
+floor_log2 bucket 2 into bucket 3 and its priority from .149 to .287.
+
+### E-s2-3 — no C construct can add refs to &mac (generalizes s1's H2)
+`s32 *m = mac;` used for the island-3 asm operand, all three translation adds and both tail
+calls leaves the &mac quantity at refs=4 (`qty_v_ptrmac_nowrap.txt:604`) and scores 31 (= the
+no-wrap pack-in-C baseline). Every `mac[i]` expands to a frame MEM and cse propagates the
+pointer back to sp+16. &mac's achievable ref counts are therefore only {4, 6, 8, 10, ...} via
+flow.c loop_depth weighting, i.e. priorities {.129, .194, .387, .484} at its pinned lifetime 62
+— and the window the seat needs, (.287, .307), contains none of them. That is the complete
+reason the single wrap (19) and the nested wrap (H14, 21) both fail.
+
+### E-s2-4 — the fix: raise &dir instead of squeezing &mac (NEW, floor 19 -> 11)
+Widening the window from above works: a `do { func_8002F2D0(mtx, dir); } while (0);` wrap puts
+&dir's def and first use at loop_depth 2 (refs 4 -> 6, priority 8/26 -> 12/26 = .462), so the
+nested-wrap &mac at .387 now sits BELOW &dir and ABOVE arg0. Measured seats: lookup $s0,
+&dir $s1, &mac $s2, arg0 $s3 — all four on target (`qty_v_model_macdir.txt:617-623`).
+`sandbox --disable all` = **11** (`sb_v_model_macdir.txt`), down from 19; all 12 seat-swap insns
+are gone.
+
+Wrap-placement sweep (all with the nested island-3 wrap): call only = 11; call+lookup
+statement = 16; MulMatrix0+call = 27; call+lookup+`func_80049718` = 11; lookup hoisted out of
+that wrap = 36. Two placements tie at 11 with different 4-insn tails.
+
+### E-s2-5 — residual 11 = 7 + 4, and the 7 is now cheaper by composition
+The remaining 4 is pure instruction ORDER in the tail introduced by the dir wrap's loop notes:
+`addiu s1,sp,32` (the &dir def, now inside the loop region) is hoisted ahead of `move a0,s0`,
+and `lh v0,2(s3)` ahead of `li a1,1`. The nested-mac wrap alone does not perturb these (s1's
+`diff_h14.txt` shows both pairs as context), so the 4 belongs to the dir wrap specifically.
+The other 7 is the island-2 pack (H4 class kill). Structural improvement inside it: computing
+`packed` BEFORE defining `lv` (`v_macdir_lvlate`, `v_macdir_lvlate_u16`) stops `lv` from
+overlapping the pack temps, so `lv` is seated in $v0 and the target's `addiu v0,s3,44` +
+`move t4,v0` pair MATCHES for the first time; the metric stays 11 because the four pack insns
+move ahead of them.
+
+- [s2] Chassis re-measured at dispatch: pack-in-C form A = sandbox 19 (83/83), identical to s1b/s1g/s1h; candidate.c (the 0-form carrying the banned island-2 block) was not applied or submitted this session.
+
+- [s2] Seat model measured, not inferred: the four call-crossing quantities on the pack-in-C chassis are lookup 3/8 = .375 ($s0), &dir 8/26 = .307 ($s1), arg0 27/94 = .287 ($s2, target wants $s3), &mac 12/62 = .194 ($s3, target wants $s2) - qtydbg_packA.txt:602-624 read against local-alloc.c:1670.
+
+- [s2] &mac's ref count is only movable by flow.c loop_depth weighting, in steps of +2 (achievable priorities .129/.194/.387/.484 at its pinned lifetime 62), and the window it must hit, (.287, .307), contains none of them - this is the complete reason both the single wrap (19) and the nested wrap (21, s1 H14) fail.
+
+- [s2] arg0 = 9 refs is invariant in the pack-in-C chassis (7 byte-pinned + exactly 2 from the C-side pack); in the 0-form it is 7 (.149), which is the structural reason the ban-compliant chassis is strictly harder than the 0-form one.
+
+- [s2] New floor 11 measured with the nested island-3 wrap + a do-while(0) on func_8002F2D0: all four seats on target, all 12 seat-swap insns gone (sb_v_model_macdir.txt, diff_v_model_macdir.txt).
+
+- [s2] Residual 11 decomposes as 7 (island-2 C pack, s1 H4 class kill at local-alloc.c:2249) + 4 (tail insn order perturbed by the dir wrap's loop notes; s1 diff_h14.txt shows the nested mac wrap alone leaves those pairs matching).

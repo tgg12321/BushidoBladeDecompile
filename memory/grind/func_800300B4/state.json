@@ -1,26 +1,37 @@
 {
  "func": "func_800300B4",
  "file": "code6cac_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 19,
    "modality": "recon",
    "headline": "recon s1h: chassis re-measured on HEAD db16e520 (0-form still 0 but carries the banned island-2 gte_ldlv0 block; ban-compliant pack-in-C floor 19); H14 nested do-while(0) seat recovery KILLED (21, &ma"
+  },
+  {
+   "session": 2,
+   "floor": 11,
+   "modality": "structural",
+   "headline": "Ban-compliant floor 19 -> 11: raising &dir's local-alloc priority (not &mac's) lands all four call-crossing seats on target; residual is the 7-insn island-2 pack plus 4 tail-order insns owned by the d"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The island-2 residual (7 insns) has no C-side form: pack-in-C is class-dead (H4) and every asm spelling of the pack is the banned construct; the ban-compliant floor is fixed at 19 until the owner answers the condition-3 question.",
-   "mechanism": "policy residual (cop2-addressing-preamble-cluster condition 3 vs a verbatim SDK macro body), owner-only per the 08:12 layer-1 FAIL and judge-sole-gate rule 4.",
-   "next_probe": "none in-pipeline; the ladder should advance to escalation with docs/grind/borderline.md:370 (+ s1h addendum) as the record. Do not re-request a ruling (07:59 PASS was already refused by layer-1 as owner-only)."
+   "hypothesis": "The 4 remaining tail-order insns in the 11-form are a scheduling artifact of the dir wrap's loop notes and may yield to a device that gives &dir 6 refs without a loop note.",
+   "mechanism": "NOTE_INSN_LOOP_BEG splits the region containing the &dir def; sched then hoists addiu s1,sp,32 past move a0,s0.",
+   "next_probe": "pwsh tools/grinder/dump.ps1 func_800300B4 with best_ban_compliant.c applied; read the .sched dump to confirm the split, then look for a non-loop-note way to raise &dir (H16 says no C construct adds refs to a frame-array address, so this may be a class kill waiting to be written)."
   },
   {
-   "hypothesis": "The arg0/&mac seat swap in the pack-in-C chassis cannot be closed by loop-depth weighting at any wrap depth or placement (integer window empty with arg0 at 9 or 8 refs).",
-   "mechanism": "local-alloc.c qty_compare_1 priority arithmetic, measured in qtydbg_packA.txt / qtydbg_h14.txt.",
-   "next_probe": "only if a spelling makes the C-side halfword reads NOT arg0-based without a cheat (none known: cse folds lv[i] to 44/48(arg0)); otherwise skip."
+   "hypothesis": "The 7-insn island-2 residual is unchanged by any C spelling (s1 H4) but its composition is now 5+2 after the lv-late reordering; a spelling that also lands the two lhu on a base register would close it.",
+   "mechanism": "local-alloc.c:2249 find_free_reg allocates hard regs in numeric order, so with $v0/$v1 free no C temp reaches $13/$14.",
+   "next_probe": "none in-pipeline: it needs $2..$11 unavailable at the pack, which no natural C form produces. Do not re-derive."
+  },
+  {
+   "hypothesis": "The 11-form's three do-while(0) FAKEs make it a floor bound, not a submission; the 0-form (candidate.c, sandbox 0) remains blocked only by the island-2 ban.",
+   "mechanism": "policy residual (cop2-addressing-preamble-cluster condition 3 vs a verbatim Sony SDK macro body), owner-only per the 08:12 layer-1 FAIL and judge-sole-gate rule 4.",
+   "next_probe": "none - the record is docs/grind/borderline.md:370; do not re-request the ruling."
   }
  ],
  "judge_constraints": [
@@ -44,6 +55,30 @@
    "measured_on": "HEAD db16e520, pack-in-C island 2 (no banned construct), islands 1/3 as banked, FAKE = nested do-while(0) on island 3 only",
    "predicate_cite": "",
    "result": "sandbox 21 (single wrap: 19). arg0 reaches s3 but &mac priority .387 > lookup .375 -> s0, cascading lookup/&dir/&mtx one"
+  },
+  {
+   "session": 2,
+   "statement": "A C-level pointer to the mac frame array (s32 *m = mac; driving the island-3 asm operand, the three translation adds and both tail calls) raises the &mac quantity's ref count in the pack-in-C chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ca605c18, pack-in-C island 2 (no banned construct), islands 1/3 as banked, FAKE = none / single do-while(0) on island 3",
+   "predicate_cite": "",
+   "result": "sandbox 31 (= the no-wrap pack-in-C baseline) and 26 with the wrap; the &mac quantity is unchanged at birth=32 death=94 "
+  },
+  {
+   "session": 2,
+   "statement": "Addressing island 2 off arg0 itself (operand \"r\"(arg0), lwc2 $1,0x34($12)) lowers arg0's ref count from 9 by deleting the lv addiu, moving arg0 below &mac in the local-alloc order.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ca605c18, pack-in-C island 2 (no banned construct), single do-while(0) wrap on island 3",
+   "predicate_cite": "",
+   "result": "sandbox 20 (worse than 19). arg0 stays at refs=9 (qty_v_arg0direct_wrap.txt:621) because the asm operand is itself an ar"
+  },
+  {
+   "session": 2,
+   "statement": "The 4-insn tail-order cost the dir wrap introduces can be removed by moving the wrap's boundaries.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ca605c18, pack-in-C island 2 (no banned construct), nested do-while(0) on island 3 plus one do-while(0) on the func_8002F2D0 call",
+   "predicate_cite": "",
+   "result": "11 / 16 / 27 / 11 / 36. The two 11s carry different but equally-sized 4-insn tails. GCC emits the &dir def immediately b"
   }
  ],
  "ladder_skip": 30,

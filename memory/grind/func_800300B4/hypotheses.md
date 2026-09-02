@@ -150,3 +150,80 @@ docs/grind/borderline.md:370 and cannot be answered in-pipeline per the 08:12 la
 - probe: apply candidate.c / v_packC_A.c over the INCLUDE_ASM line; canonical + sandbox --disable all (canonical_s1h.txt, sandbox_s1h_cand.txt, sandbox_s1h_packA.txt).
 - result: canonical ASM-PARTIAL 11/83 cop2; candidate sandbox 0 (83/83, rules_dropped 0); pack-in-C A sandbox 19 = 7 island-2 insns + 12 seat-swap insns, identical to s1b/s1g.
 - verdict: CONFIRMED
+
+## s2 (2026-09-02, structural, HEAD ca605c18) — ban-compliant floor 19 -> 11
+
+- H16 KILLED (instance) — a C-level pointer to the `mac` frame array (`s32 *m = mac;` driving the
+  island-3 asm operand, the three translation adds and both tail calls) raises the &mac quantity's
+  ref count. Measured sandbox 31 with refs unchanged at 4 (qty_v_ptrmac_nowrap.txt:604); cse
+  propagates the pointer and every `mac[i]` stays a sp+16 frame MEM. Generalizes H2 from pointer
+  COPIES to pointer-BASED USES.
+  measured_on: HEAD ca605c18, pack-in-C island 2, no do-while wrap.
+- H17 KILLED (instance) — addressing island 2 off `arg0` (operand `"r"(arg0)`, `lwc2 $1,0x34($12)`)
+  lowers arg0's ref count by deleting the `lv` addiu. Measured sandbox 20 with arg0 refs still 9
+  (qty_v_arg0direct_wrap.txt:621): the asm operand is itself an arg0 reference, and the form also
+  loses the target's `addiu v0,s3,44`.
+  measured_on: HEAD ca605c18, pack-in-C island 2 + single do-while wrap on island 3.
+- H18 CONFIRMED — the 12-insn seat residual is reachable in the ban-compliant chassis by raising
+  &dir instead of squeezing &mac. `do { func_8002F2D0(mtx, dir); } while (0);` (dir refs 4 -> 6,
+  priority .307 -> .462) plus the nested island-3 wrap (&mac .387) orders the four call-crossing
+  quantities lookup(.375) > dir(.462)... i.e. dir $s1, lookup $s0, mac $s2, arg0 $s3 — all on
+  target. sandbox 19 -> 11 (sb_v_model_macdir.txt). Best ban-compliant form banked at
+  memory/grind/func_800300B4/best_ban_compliant.c. NOT a submission: three do-while(0) FAKEs.
+- H19 KILLED (instance) — the 4-insn tail-order cost of the dir wrap can be removed by moving the
+  wrap boundaries. Five placements measured: call only = 11, call+lookup = 16, MulMatrix0+call = 27,
+  call+lookup+func_80049718 = 11, lookup hoisted out = 36. The &dir def is emitted immediately
+  before its first use, so every placement that doubles its refs also puts the def inside the loop
+  region, and the loop notes hoist `addiu s1,sp,32` past `move a0,s0`.
+  measured_on: HEAD ca605c18, pack-in-C island 2 + nested island-3 wrap.
+- H20 CONFIRMED — computing `packed` before defining `lv` seats `lv` in $v0 (it no longer overlaps
+  the pack temps), so the target's `addiu v0,s3,44` + `move t4,v0` pair matches. Metric unchanged
+  at 11 but the island residual is now 5 substitutions + 2 additions instead of 7 substitutions;
+  banked as the best ban-compliant spelling.
+
+Frontier:
+  (1) Ban-compliant floor is 11 (was 19). Residual = 7 island-2 pack insns (H4 class kill,
+      local-alloc.c:2249) + 4 tail-order insns owned by the dir wrap (H19). Next probe for the 4:
+      run `pwsh tools/grinder/dump.ps1 func_800300B4` on best_ban_compliant.c and read the .sched
+      dump to confirm the loop-note block split, then look for a device that gives &dir 6 refs
+      without a loop note (none known — H16 says no C construct adds refs).
+  (2) The 11-form carries three do-while(0) FAKEs and is a floor/mechanism bound, not a candidate.
+      The 0-form (candidate.c) is still 0 and still blocked by the island-2 ban.
+  (3) Do NOT re-probe: pointer aliases of mac (H16), arg0-ref reduction by island-2 spelling (H17),
+      wrap placement for the dir wrap (H19), &mac-only ref weighting at any depth (H14).
+
+## [s2] A C-level pointer to the mac frame array (s32 *m = mac; driving the island-3 asm operand, the three translation adds and both tail calls) raises the &mac quantity's ref count in the pack-in-C chassis.
+- mechanism: local-alloc.c:1670 qty_compare_1 priority = floor_log2(refs)*refs*size/(death-birth); the lever would be extra references to the &mac pseudo.
+- probe: tmp/grind/func_800300B4/s2/v_ptrmac_nowrap.c + v_ptrmac_wrap.c; sandbox --disable all; BB2_QTY_DEBUG trace qty_v_ptrmac_nowrap.txt.
+- result: sandbox 31 (= the no-wrap pack-in-C baseline) and 26 with the wrap; the &mac quantity is unchanged at birth=32 death=94 refs=4 (qty_v_ptrmac_nowrap.txt:604). cse propagates the pointer, so every mac[i] stays an sp+16 frame MEM and never references the pseudo. Generalizes s1's H2 from pointer copies to pointer-based uses.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ca605c18, pack-in-C island 2 (no banned construct), islands 1/3 as banked, FAKE = none / single do-while(0) on island 3
+
+## [s2] Addressing island 2 off arg0 itself (operand "r"(arg0), lwc2 $1,0x34($12)) lowers arg0's ref count from 9 by deleting the lv addiu, moving arg0 below &mac in the local-alloc order.
+- mechanism: local-alloc.c:1670 qty_compare_1; arg0 at 9 refs sits in floor_log2 bucket 3 (27/94 = .287), at 7 refs it would fall to bucket 2 (14/94 = .149).
+- probe: tmp/grind/func_800300B4/s2/v_arg0direct_wrap.c; sandbox --disable all; BB2_QTY_DEBUG trace qty_v_arg0direct_wrap.txt.
+- result: sandbox 20 (worse than 19). arg0 stays at refs=9 (qty_v_arg0direct_wrap.txt:621) because the asm operand is itself an arg0 reference, and the form additionally loses the target's addiu v0,s3,44. arg0's 9 refs are invariant in this chassis: 7 byte-pinned refs (def + six uses) plus exactly 2 from the C-side pack however spelled.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ca605c18, pack-in-C island 2 (no banned construct), single do-while(0) wrap on island 3
+
+## [s2] The 12-insn arg0/&mac seat residual of the pack-in-C chassis can be closed by raising &dir's local-alloc priority (widening the window from above) instead of squeezing &mac into the (.287, .307) gap.
+- mechanism: local-alloc.c:1670 qty_compare_1 + flow.c loop_depth ref weighting: a do-while(0) around func_8002F2D0(mtx, dir) puts &dir's def and first use at loop_depth 2 (refs 4 -> 6, priority 8/26 = .307 -> 12/26 = .462), so the nested-wrap &mac (24/62 = .387) sits below &dir and above arg0 (27/94 = .287).
+- probe: tmp/grind/func_800300B4/s2/v_model_macdir.c and v_macdir2.c; sandbox --disable all; BB2_QTY_DEBUG trace qty_v_model_macdir.txt; diff_v_model_macdir.txt.
+- result: sandbox 11 (from 19). All four call-crossing quantities land on the target seats: lookup $s0, &dir $s1, &mac $s2, arg0 $s3 (qty_v_model_macdir.txt:617-623); every one of the 12 seat-swap insns is gone. Residual 11 = 7 island-2 pack insns + 4 tail-order insns. Form banked at memory/grind/func_800300B4/best_ban_compliant.c; it carries three do-while(0) FAKEs and is a floor/mechanism bound, not a submission.
+- verdict: CONFIRMED
+
+## [s2] The 4-insn tail-order cost the dir wrap introduces can be removed by moving the wrap's boundaries.
+- mechanism: NOTE_INSN_LOOP_BEG/END from the do-while(0) split the region around the &dir def, and the scheduler hoists addiu s1,sp,32 past move a0,s0 (and lh v0,2(s3) past li a1,1).
+- probe: five placements measured with the nested island-3 wrap held fixed: call only (v_model_macdir), call+lookup (v_macdir_lookup), MulMatrix0+call (v_macdir_wide), call+lookup+func_80049718 (v_macdir2), lookup hoisted out (v_macdir3).
+- result: 11 / 16 / 27 / 11 / 36. The two 11s carry different but equally-sized 4-insn tails. GCC emits the &dir def immediately before its first use, so any placement that doubles its refs also puts the def inside the loop region; no placement measured here avoids the hoist.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ca605c18, pack-in-C island 2 (no banned construct), nested do-while(0) on island 3 plus one do-while(0) on the func_8002F2D0 call
+
+## [s2] Computing packed before defining lv seats lv in $v0 so the target's addiu v0,s3,44 + move t4,v0 pair matches.
+- mechanism: local-alloc find_free_reg: with lv defined after the pack, lv's live range no longer overlaps the pack temps, so it can reuse $2 instead of being pushed out to $a1.
+- probe: tmp/grind/func_800300B4/s2/v_macdir_lvlate.c and v_macdir_lvlate_u16.c; sandbox + diff_v_macdir_lvlate_u16.txt.
+- result: both 11; the diff shows addiu v0,s3,44 and move t4,v0 as matching context for the first time, so the island-2 residual is now 5 substitutions + 2 additions instead of 7 substitutions. Banked as the best ban-compliant spelling.
+- verdict: CONFIRMED
