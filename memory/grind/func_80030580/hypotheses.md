@@ -188,3 +188,120 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## Session 3 (2026-09-02, structural) - floor 2 (flat); the frame residual has a generative law
+
+### CONFIRMED
+- H3.1 slots = max(0, indexed-Judge lookup sites - 1), one 8-byte `ctx=spill_new` each.
+  Measured 0/1/2/3/4 sites -> vars 0/0/8/16/24 (j0read, j1only, base, j3read, j4read).
+  The target's vars=24 needs FOUR source-level sites while emitting only the two
+  `lh %lo(Judge)` loads it actually has.
+- H3.2 The generator is the array-INDEXED global fold `(mem (plus (reg idx) (symbol_ref)))`.
+  Constant-address global reads do not orphan (otherglob/otherglob2 stay at vars=8).
+- H3.3 The target's exact frame IS reachable on this chassis: `dupXZ` (both velocity
+  statements duplicated) measures vars=24 with three spill_new slots - at a cost of 199
+  fdiff body lines. The frame is not the obstacle; a byte-neutral 4-site spelling is.
+
+### KILLED (all instance kills; chassis = candidate.c/draft3 body at sandbox 2, no FAKE constructs)
+- K3.1 s2's recipe reading ("one slot per DISTINCT global folded across a CODE_LABEL").
+  Refuted by the corpus census: func_80041E10 has three orphan slots with no branch or
+  label in its body, and func_80042874 has six from six indexed lookups of ONE global.
+- K3.2 26 further structural respellings on new axes (ternary-shaped `/32` and `/2`,
+  block-scope `extern` redeclaration, integer-cast address arithmetic, `%` and `~` mask
+  spellings, HImode/QImode narrow intermediates, redundant global-address expressions
+  that CSE merges, TU-wide array declaration of Judge) all measure vars=8.
+- K3.3 Cross-jump-mediated duplication of a Judge-dependent statement into the kind
+  chain's arms does not come out byte-neutral (arms2 +17, armsvx_keep +73, armsvx +84).
+
+### FRONTIER (highest value first)
+- F3.1 A byte-neutral 3rd and 4th indexed-Judge site. Only jump2 cross-jumping removes
+  bytes after combine, so the duplicate's merged code must coincide with insns the target
+  already emits. Probe: enumerate the target's own cross-jump merge points
+  (asm/funcs/func_80030580.s) and try placing a duplicate lookup so its emitted insns are
+  exactly the ones already at the merge tail. Cheapest measured duplicate so far is
+  arms2 at +17 fdiff.
+- F3.2 Why "sites - 1" and not "sites"? One site's address pseudo always escapes and gets
+  a hard register. If that site can be made to orphan too, THREE sites suffice (and a 3rd
+  site costs less body than a 4th: j3read +18 vs j4read +25). Probe: read the .lreg/.greg
+  dumps for j3read and diff the surviving pseudo's class against the two that orphan.
+- F3.3 Other `ctx=spill_new` generators that cost no bytes. func_80041E10's three orphans
+  come from constant-offset STORES into a global array (`sh $x,g_anim_select+k`), a shape
+  our function does not have; func_8001B478 / SetDrawEnv / func_800460E4 / func_80041AC8
+  are further 3-slot witnesses whose RTL shapes have not been read. Probe: classify each
+  witness's orphan source, then look for one our function could carry byte-neutrally.
+
+## [s3] The number of 8-byte combine-orphan spill slots in func_80030580 equals the number of source-level indexed `(&Judge)[...]` lookup sites minus one
+- mechanism: each indexed global read creates its own address pseudo `idx*2 + &Judge`; combine folds the read into `(mem (plus (reg idx) (symbol_ref "Judge")))`, the pseudo dies with no home for its REG_DEAD note, combine emits a bare `(use (reg N))`, lreg gives the pseudo no register class and reload1 alter_reg hands it an 8-byte stack slot that nothing ever touches. Exactly one site per function escapes this and keeps a hard register.
+- probe: tmp/grind/func_80030580/s3/frame3.py variants j0read (both lookups replaced by 0), j1only (second lookup replaced by 0), base (the candidate, 2 sites), j3read (a third lookup added to the vel-y store), j4read (a third and fourth) - each measured for vars=, the FRAMEDBG census, the ($sp) count and fdiff vs s1/var_base.s
+- result: vars = 0, 0, 8, 16, 24 for 0, 1, 2, 3, 4 sites, with 0/0/1/2/3 ctx=spill_new slots respectively. The target's 24 bytes therefore correspond to FOUR source-level lookup sites, while asm/funcs/func_80030580.s contains exactly two lui %hi(Judge) / lh %lo(Judge)($at) pairs (lines 59/61 and 76/78) in straight-line code.
+- verdict: CONFIRMED
+
+## [s3] The orphan generator is any read of a global, including constant-address scalar reads
+- mechanism: combine folds a global's symbol_ref pseudo into the mem operand of the access, so any global read should leave a dying address pseudo
+- probe: frame3.py variants otherglob (+ D_8008EBA0 added to the vel-y store) and otherglob2 (+ D_8008EBA0 + D_80101E02)
+- result: both stay at vars=8 with the single spill_new slot (bodydiff 6 and 10). A constant-address global read folds to lh %lo(SYM)($at) and needs no index register, so no `plus` pseudo exists to orphan. Only the ARRAY-INDEXED form `(mem (plus (reg idx) (symbol_ref)))` generates a slot.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s3] Session-2's recipe reading - one slot per DISTINCT global folded across a CODE_LABEL - describes the generator
+- mechanism: s2 read the single orphan off the .combine dump as (use (reg 110)) emitted after code_label 99 (the /32 bgez target) and generalised from display.c's get_cs/get_ce, whose two globals are folded inside a ternary
+- probe: tmp/grind/func_80030580/s3/census3.py over every src/*.c, reporting any function with >=3 ctx=spill_new slots or a leaf (args=0, regs=0, sp_acc=0) with vars>=24
+- result: text1a_post:func_80041E10 (src/text1a_post.c:465) carries THREE orphan slots with vars=24, regs=0, args=0, sp_acc=0 - our target's exact frame signature - and its emitted body contains no branch and no label at all (three divide-by-255 mult/mfhi sequences and three sh $x,g_anim_select+k stores). text1a_c:func_80042874 (src/text1a_c.c:193) carries SIX slots from roughly six indexed lookups of the SINGLE global Judge. The CODE_LABEL is incidental and the "distinct global" count is not the quantity that matters.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-corpus census with the instrumented cc1 (BB2_FRAME_DEBUG=1) over every src/*.c at HEAD, no FAKE constructs present
+
+## [s3] Structural respellings on the ternary, block-scope-extern, integer-cast-address, mask-spelling, narrow-mode and redundant-global-address axes raise vars above 8 on this chassis
+- mechanism: a different expand/cse tree could leave additional folded address pseudos to orphan, each worth an 8-byte reload spill slot
+- probe: 26 variants through tmp/grind/func_80030580/s3/frame3.py + extra3.py: d32tern, div2tern, bothtern, d32tern_x, jlocalext, alllocalext, jlocalext_late, s32addr, s32addr1, s32addr2, modmask, judgearr, hi1, hi2, hi12, qi6, hitest, hiarg, notmask, notmask2, notmaskboth, hloc, hloc2, tblglob0, tblglob2, tblglob4, tbl2decl, objglob, dupread
+- result: every one measured vars=8 with exactly one ctx=spill_new slot. 17 are body-neutral and are banked in evidence.md as composable, notably judgearr (TU-wide `extern s16 Judge[];` with Judge[i] indexing, TUdiff=0 so the rest of code6cac_b.c is unaffected), the three block-scope extern redeclarations, the integer-cast address spellings, and dupread. The ternary spelling of the /32 that mirrors display.c's get_cs/get_ce costs 41 fdiff lines, so the witness's ternary shape does not transfer.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s3] A byte-neutral third and fourth indexed-Judge site can be obtained by duplicating a Judge-dependent statement so that CSE or jump2 cross-jumping removes the extra emitted code
+- mechanism: CSE before combine, or cross-jumping after it, could delete the duplicate's insns while the duplicate's own address pseudo still orphans during combine
+- probe: frame3.py variants dupread (same lookup assigned twice to one local), dupX / dupZ / dupXZ (the velocity statements duplicated in place), arms2 (vel.x duplicated into the two already-cross-jumped kind-chain arms), armsvx_keep (into all four arms, original kept), armsvx (moved into all four arms)
+- result: dupread is byte-neutral but CSE deletes the pseudo too, leaving vars=8. Every duplicate that survives to combine adds emitted insns: dupX +15 fdiff (vars=16), dupZ +16 (vars=16), dupXZ +199 (vars=24 - the target's exact frame with three slots), arms2 +17 (vars=16), armsvx_keep +73 (vars=16), armsvx +84 (vars=8). The frame is reachable; on this chassis no measured duplication of a Judge-dependent statement is byte-neutral.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s3] The number of 8-byte combine-orphan spill slots in func_80030580 equals the number of source-level indexed (&Judge)[...] lookup sites minus one
+- mechanism: Each indexed global read creates its own address pseudo (idx*2 + &Judge); combine folds the read into (mem (plus (reg idx) (symbol_ref "Judge"))), the pseudo dies with no home for its REG_DEAD note, combine emits a bare (use (reg N)), lreg gives the pseudo no register class, and reload1 alter_reg hands it an 8-byte stack slot that no instruction ever touches. Exactly one site per function escapes this and keeps a hard register.
+- probe: tmp/grind/func_80030580/s3/frame3.py variants j0read (both lookups replaced by 0), j1only (second lookup replaced by 0), base (the candidate, 2 sites), j3read (a third lookup added to the vel-y store) and j4read (a third and a fourth), each measured with the instrumented cc1 (BB2_FRAME_DEBUG=1) for vars=, the FRAMEDBG slot census, the ($sp) access count and fdiff vs s1/var_base.s
+- result: vars = 0, 0, 8, 16, 24 for 0, 1, 2, 3, 4 sites, with 0/0/1/2/3 ctx=spill_new slots respectively. The target's 24 locals bytes therefore correspond to FOUR source-level lookup sites, while asm/funcs/func_80030580.s carries exactly two lui %hi(Judge) / lh %lo(Judge)($at) pairs (lines 59/61 and 76/78) in straight-line code with no nearby labels.
+- verdict: CONFIRMED
+
+## [s3] The orphan generator is any read of a global, including a constant-address scalar read
+- mechanism: combine folds a global's symbol_ref pseudo into the mem operand of the access, so any global read should leave a dying address pseudo behind
+- probe: frame3.py variants otherglob (a read of D_8008EBA0 added to the vel-y store) and otherglob2 (D_8008EBA0 + D_80101E02)
+- result: Both stayed at vars=8 with the single ctx=spill_new slot (bodydiff 6 and 10). A constant-address global read folds to lh %lo(SYM)($at) and needs no index register, so there is no plus-pseudo to orphan. Only the array-indexed form (mem (plus (reg idx) (symbol_ref))) generates a slot.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s3] Session 2's recipe reading - one slot per DISTINCT global folded into lh %lo(SYM)(at) across a CODE_LABEL - describes the generator for this frame
+- mechanism: s2 read the single orphan off the .combine dump as (use (reg 110)) emitted after code_label 99 (the /32 bgez target) and generalised from display.c's get_cs/get_ce, whose two distinct globals are folded inside a ternary
+- probe: tmp/grind/func_80030580/s3/census3.py compiled every src/*.c with the instrumented cc1 and reported any function with >=3 ctx=spill_new slots, plus any leaf (args=0, regs=0, sp_acc=0) with vars>=24
+- result: text1a_post:func_80041E10 (src/text1a_post.c:465) carries THREE orphan slots at vars=24, regs=0, args=0, sp_acc=0 - our target's exact frame signature - and its emitted body contains no branch and no label at all (three divide-by-255 mult/mfhi sequences and three sh $x,g_anim_select+k stores). text1a_c:func_80042874 (src/text1a_c.c:193) carries SIX slots from roughly six indexed lookups of the SINGLE global Judge. The CODE_LABEL is incidental and the distinct-global count is not the governing quantity.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-corpus census with the instrumented cc1 (BB2_FRAME_DEBUG=1) over every src/*.c at HEAD, no FAKE constructs present
+
+## [s3] Structural respellings on the ternary, block-scope-extern, integer-cast-address, mask, narrow-mode and redundant-global-address axes raise vars above 8 on this chassis
+- mechanism: a different expand/cse tree could leave additional folded address pseudos to orphan, each worth an 8-byte reload spill slot
+- probe: 26 variants through tmp/grind/func_80030580/s3/frame3.py + extra3.py: d32tern, div2tern, bothtern, d32tern_x, jlocalext, alllocalext, jlocalext_late, s32addr, s32addr1, s32addr2, modmask, judgearr, hi1, hi2, hi12, qi6, hitest, hiarg, notmask, notmask2, notmaskboth, hloc, hloc2, tblglob0, tblglob2, tblglob4, tbl2decl, objglob, dupread
+- result: Every one measured vars=8 with exactly one ctx=spill_new slot. 17 are body-neutral and are banked in evidence.md as free to compose - notably judgearr (TU-wide extern s16 Judge[]; with Judge[i] indexing, TUdiff=0 so the rest of code6cac_b.c stays byte-identical), the three block-scope extern redeclarations, the integer-cast address spellings and dupread. The ternary spelling of the /32 that mirrors get_cs/get_ce costs 41 fdiff lines, so the witness's ternary shape does not transfer.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present
+
+## [s3] A byte-neutral third and fourth indexed-Judge site can be obtained by duplicating a Judge-dependent statement so that CSE or jump2 cross-jumping removes the duplicate's emitted code
+- mechanism: CSE before combine, or cross-jumping after it, could delete the duplicate's insns while the duplicate's own address pseudo still dies during combine and orphans into a spill slot
+- probe: frame3.py variants dupread (the same lookup assigned twice to one local), dupX / dupZ / dupXZ (the velocity statements duplicated in place), arms2 (vel.x duplicated into the two already-cross-jumped kind-chain arms), armsvx_keep (into all four arms with the original kept) and armsvx (moved into all four arms)
+- result: dupread is byte-neutral but CSE deletes the pseudo along with the read, leaving vars=8. Every duplicate that survives to combine adds emitted insns: dupX +15 fdiff (vars=16), dupZ +16 (vars=16), dupXZ +199 (vars=24 - the target's exact frame, three slots), arms2 +17 (vars=16), armsvx_keep +73 (vars=16), armsvx +84 (vars=8). The frame is reachable; no measured duplication of a Judge-dependent statement is byte-neutral on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c/draft3 chassis (sandbox --disable all = 2 re-measured this session), no FAKE constructs present

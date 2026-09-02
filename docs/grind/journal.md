@@ -1501,3 +1501,4 @@
 - 2026-09-02 14:56 func_80043DE0 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-02 15:16 func_80030580 s1 [recon] floor=2: func_80030580 s1 recon: clean pure-C rewrite 45->2; body byte-identical, only the 24-byte phantom frame (ours 8) remains; mechanism = combine.c REG_DEAD-orphan USE slots
 - 2026-09-02 15:34 func_80030580 s2 [structural] floor=2: Floor flat at 2; the 16 missing frame bytes are now TYPED - a corpus census proves the target's vars=24 is three 8-byte combine-orphan spill slots, not a BLKmode temp, and 44 structural respellings all measure vars=8.
+- 2026-09-02 15:49 func_80030580 s3 [structural] floor=2: Frame residual now has a generative law: orphan spill slots = (indexed-Judge lookup sites - 1), so the target's vars=24 means FOUR source-level lookups; dupXZ hits vars=24 exactly but costs 199 body lines.

@@ -195,3 +195,119 @@ lookup's combination, not the first.
 - [s2] 44 structural variants measured at vars=8 with one slot; 15 of them are body-neutral and banked as composable, including the sibling func_80032064 idioms (hand-spelled /32 and (s32)*(&Judge + i)) that s1 had flagged as the next thing to port - they transfer cleanly but are frame-inert.
 
 - [s2] Reusable instruments written this session: tmp/grind/func_80030580/s2/frame2.py + extra2.py (variant sweep printing vars=, the FRAMEDBG census, the ($sp) count and fdiff) and census2.py (corpus-wide leaf frame census).
+
+## Session 3 (2026-09-02, structural) — floor 2 (flat); the frame residual now has a GENERATIVE LAW
+
+### Chassis re-measured this session
+`sandbox func_80030580 --disable all` = **2** with candidate.c (= s1/draft3.c) applied to
+src/code6cac_b.c. Unchanged: body byte-identical, residual is `addiu sp,-0x18` (vars=24)
+vs ours `-8` (vars=8).
+
+### THE DECISIVE NEW DATUM — orphan slots scale with the number of INDEXED Judge sites
+Measured with the s2/s3 harness (`tmp/grind/func_80030580/s3/frame3.py`, instrumented cc1,
+`BB2_FRAME_DEBUG=1`), by adding/removing whole `(&Judge)[...]` lookup sites:
+
+    j0read  (0 lookup sites)  vars= 0   0 spill_new
+    j1only  (1 lookup site)   vars= 0   0 spill_new
+    base    (2 lookup sites)  vars= 8   spill_new_p110
+    j3read  (3 lookup sites)  vars=16   spill_new_p110 + p130
+    j4read  (4 lookup sites)  vars=24   spill_new_p110 + p130 + p143
+
+**The law is `slots = max(0, sites - 1)`, one 8-byte `ctx=spill_new` slot each.** The
+target's vars=24 therefore requires **FOUR source-level indexed-Judge lookup sites**, of
+which the emitted loads for two must disappear again — the target's bytes contain exactly
+two `lui %hi(Judge)` + `lh %lo(Judge)($at)` pairs (asm/funcs/func_80030580.s:59/61 and
+76/78) and no labels anywhere near them (straight-line block 0x80030644-0x800306D0).
+
+### The generator is the INDEXED fold, not a global read as such
+`otherglob` / `otherglob2` add one and two reads of unrelated constant-address globals
+(`D_8008EBA0`, `D_80101E02`) — both stay at vars=8 (bodydiff 6 / 10). A global read whose
+address needs no index register is folded into a plain `lh %lo(SYM)($at)` and orphans
+nothing. The orphan comes specifically from the `(mem (plus (reg idx) (symbol_ref)))`
+fold, i.e. an ARRAY-INDEXED global read. This kills the s2 reading of the recipe as
+"one slot per DISTINCT global".
+
+### s2's "CODE_LABEL is required" reading is also dead
+New 3-orphan witness found by a whole-corpus census (`tmp/grind/func_80030580/s3/census3.py`
+over every `src/*.c`, filtering for >=3 `ctx=spill_new` or a leaf with vars>=24):
+**`text1a_post:func_80041E10` (src/text1a_post.c:465)** — `vars=24, regs=0, args=0,
+sp_acc=0`, three `ctx=spill_new` slots — exactly the target's frame signature. Its body
+contains **no branch and no label at all** (three `mult`/`mfhi` divide-by-255 sequences
+and three `sh $x,g_anim_select+k` stores). So the CODE_LABEL that s2 saw next to our
+`insn 393 (use (reg 110))` is incidental, not a precondition.
+The direct N-orphan witness for our own generator is **`text1a_c:func_80042874`
+(src/text1a_c.c:193)** — ~6 indexed `Judge[...]` lookups, 6 `ctx=spill_new` slots, vars=48.
+Other >=3-spill functions in the corpus: code6cac:func_8001B478 (3), display:SetDrawEnv /
+SetDrawEnv2 (3 each), text1a_c:func_80042A88 (6), text1a_c2:func_800460E4 (3),
+text1a_post:func_80041AC8 (3), text1b:func_80060E38 (9).
+
+### Why a 3rd/4th site cannot (yet) be added for free
+- A duplicate whose value CSE can prove redundant is deleted **pseudo and all**:
+  `dupread` (`sn = Judge[A]; sn = Judge[A];`) is byte-neutral (fdiff 0) and stays at
+  vars=8. So the extra site must survive to combine.
+- The only byte-REMOVING pass after combine is jump2 cross-jumping (2.7.2 order: jump,
+  cse, loop, cse2, flow, **combine**, sched, lreg, greg, reload, jump2, sched2, reorg).
+  Every extra site measured so far costs emitted insns: `dupX` +15 fdiff (vars=16),
+  `dupZ` +16 (vars=16), `dupXZ` +199 (**vars=24** — the right frame, wrong body),
+  `j3read` +18 (vars=16), `arms2` (vel.x duplicated into the two already-cross-jumped
+  kind-chain arms 1 and 3) +17 (vars=16), `armsvx_keep` +73 (vars=16), `armsvx`
+  (moved into all four arms) +84 (vars=8).
+
+### Structural variants measured this session — all body-neutral ones still vars=8
+Harness: `tmp/grind/func_80030580/s3/frame3.py` (+ `extra3.py`), same shape as s2's but
+it also applies FILE-level substitutions (declaration levers) and prints `TUdiff` = how
+many lines of the REST of the TU changed, so a declaration lever is only usable at
+TUdiff=0. Reference full-TU asm: `tmp/grind/func_80030580/s3/tu_ref.s`.
+
+Body-neutral (fdiff 0) and vars=8 — free to compose, banked:
+`jlocalext`, `alllocalext`, `jlocalext_late` (block-scope `extern` redeclaration of
+Judge / D_8008E194 / D_80106A78), `s32addr`, `s32addr1`, `s32addr2` (Judge address via
+`*(s16 *)((s32)&Judge + (idx * 2))`), `modmask` (`% 0x1000` for `& 0xFFF`),
+**`judgearr`** (TU-wide `extern s16 Judge[];` + `Judge[i]` at every use site in
+code6cac_b.c — TUdiff = 0, so it is safe for the other matched functions in the file),
+`hi1`, `qi6`, `hitest`, `hiarg`, `notmask` (`& ~0xF000`), `notmask2` (`& ~(-0x1000)`),
+`notmaskboth`, `hloc`, `dupread`, `tblglob0`, `tbl2decl` (a redundant second
+`&D_8008E194 + arg1*7` local that CSE merges).
+
+Body-CHANGING this session (recorded so they are never re-proposed): `d32tern` (41 —
+the `/32` as a ternary `(v<0 ? v+0x1F : v) >> 5`; the get_cs/get_ce ternary shape does
+NOT transfer), `div2tern` (199), `bothtern` (216), `d32tern_x` (206), `hi2` (2),
+`hi12` (2), `hloc2` (2), `tblglob2` (46), `tblglob4` (152), `objglob` (33), `j3read` (18),
+`j4read` (25), `j1only` (157), `j0read` (177), `dupX` (15), `dupZ` (16), `dupXZ` (199),
+`arms2` (17), `armsvx` (84), `armsvx_keep` (73), `otherglob` (6), `otherglob2` (10).
+
+### Note for the next session: the F2.1 forensics probe is NOT available to a grind session
+s2's frontier asked for a `BB2_COMBINE_DEBUG` print inside `distribute_notes`. That means
+editing `tools/gcc-2.7.2/combine.c`, which the grind-session contract forbids
+(`NEVER edit .claude/rules/engine/tools/Makefile/*.ld`). The `slots = sites - 1` law above
+was obtained without it and supersedes the question it was asked to answer.
+
+- [s3] Orphan spill slots scale as `slots = max(0, indexed-Judge sites - 1)`: 0/1 sites -> vars=0, 2 -> 8, 3 -> 16, 4 -> 24 (variants j0read/j1only/base/j3read/j4read). The target's vars=24 needs FOUR source-level lookup sites while emitting only two `lh %lo(Judge)` loads.
+- [s3] The generator is the ARRAY-INDEXED global fold `(mem (plus (reg idx) (symbol_ref)))`, not a global read in general: adding one or two reads of constant-address globals (otherglob/otherglob2) leaves vars=8.
+- [s3] s2's "one slot per DISTINCT global, needs a CODE_LABEL" recipe is refuted: text1a_post:func_80041E10 (src/text1a_post.c:465) has vars=24/regs=0/args=0/sp_acc=0 with three spill_new and NO branch or label in its body; text1a_c:func_80042874 (src/text1a_c.c:193) has 6 spill_new from ~6 indexed Judge lookups.
+- [s3] A CSE-redundant duplicate lookup is deleted pseudo and all (dupread: fdiff 0, vars=8); an extra site must survive to combine, and the only byte-removing pass after combine is jump2 cross-jumping, so a byte-neutral 3rd/4th site must be a duplicate whose merged code coincides with insns the target already emits.
+- [s3] dupXZ (both velocity statements duplicated) reaches the target's exact vars=24 with three spill_new slots but costs 199 fdiff lines - the frame is reachable, the byte-neutral spelling is not yet found.
+- [s3] `judgearr` (TU-wide `extern s16 Judge[];` with `Judge[i]` indexing in code6cac_b.c) is body-neutral AND TU-neutral (TUdiff=0) - a free composable declaration change for any future lever.
+- [s3] Instruments: tmp/grind/func_80030580/s3/frame3.py + extra3.py (variant sweep with FILE-level declaration levers and a TUdiff column) and census3.py + run_census3.sh (whole-corpus census for functions with >=3 orphan slots).
+
+- [s3] Chassis re-measured this session: sandbox func_80030580 --disable all = 2 with candidate.c (= s1/draft3.c) applied to src/code6cac_b.c; body byte-identical, residual is addiu sp,-0x18 (vars=24) vs ours -8 (vars=8).
+
+- [s3] GENERATIVE LAW: orphan spill slots = max(0, indexed-Judge lookup sites - 1). Measured 0/1/2/3/4 sites -> vars 0/0/8/16/24 with 0/0/1/2/3 ctx=spill_new slots (variants j0read, j1only, base, j3read, j4read). The target's vars=24 therefore corresponds to FOUR source-level lookup sites.
+
+- [s3] The generator is the ARRAY-INDEXED global fold (mem (plus (reg idx) (symbol_ref))). Constant-address global reads produce no orphan: otherglob (+D_8008EBA0) and otherglob2 (+D_8008EBA0 +D_80101E02) both stay at vars=8.
+
+- [s3] New 3-orphan witness with our target's exact frame signature: text1a_post:func_80041E10 (src/text1a_post.c:465) - vars=24, regs=0, args=0, sp_acc=0, three ctx=spill_new - and its body contains no branch and no label at all. This refutes s2's CODE_LABEL precondition. text1a_c:func_80042874 (src/text1a_c.c:193) is the direct N-orphan witness: six ctx=spill_new from roughly six indexed Judge lookups of ONE global.
+
+- [s3] Other >=3-orphan functions found by the corpus census: code6cac:func_8001B478 (3), display:SetDrawEnv and SetDrawEnv2 (3 each), text1a_c:func_80042A88 (6), text1a_c2:func_800460E4 (3), text1a_post:func_80041AC8 (3), text1b:func_80060E38 (9).
+
+- [s3] The target's bytes contain exactly two Judge accesses (lui %hi(Judge) at asm/funcs/func_80030580.s:59 and :76, lh %lo(Judge)($at) at :61 and :78) inside a straight-line block, so two of the four source-level sites must be removed after combine - and the only byte-removing pass after combine in GCC 2.7.2's order (jump, cse, loop, cse2, flow, combine, sched, lreg, greg, reload, jump2, sched2, reorg) is jump2 cross-jumping.
+
+- [s3] A CSE-redundant duplicate is deleted pseudo and all: dupread (sn = Judge[A]; sn = Judge[A];) is byte-neutral (fdiff 0) and stays at vars=8. An extra site must survive to combine to buy a slot.
+
+- [s3] dupXZ (both velocity statements duplicated, four sites) measures the target's exact vars=24 with three ctx=spill_new slots at a cost of 199 fdiff body lines - proof the frame is reachable on this chassis, banked as rejected/dup-judge-reads-frame-24-body-199.c.
+
+- [s3] 17 further body-neutral respellings banked as composable, including judgearr (TU-wide extern s16 Judge[]; with Judge[i] indexing - TUdiff = 0, so the other matched functions in code6cac_b.c are unaffected), block-scope extern redeclarations of Judge / D_8008E194 / D_80106A78, *(s16 *)((s32)&Judge + (idx * 2)), % 0x1000 and & ~0xF000 / & ~(-0x1000) mask spellings, a (u16) cast on the first index, and a redundant second &D_8008E194 + arg1*7 local.
+
+- [s3] s2's frontier probe (a BB2_COMBINE_DEBUG print inside distribute_notes) is NOT available to a grind session: it requires editing tools/gcc-2.7.2/combine.c, which the session contract forbids. The sites-1 law was obtained without it and supersedes the question that probe was asked to answer.
+
+- [s3] src/code6cac_b.c was restored to HEAD at the end of the session; the working tree carries only memory/grind/func_80030580/ ledger changes.

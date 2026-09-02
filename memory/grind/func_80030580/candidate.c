@@ -9,6 +9,32 @@
  * getting one slot per DISTINCT global folded into `lh %lo(SYM)(at)` across a
  * CODE_LABEL. This form produces exactly one such slot, from the SECOND Judge lookup.
  *
+ * SESSION 3 SUPERSEDES THAT RECIPE. The generative law, measured by adding and removing
+ * whole lookup sites (s3 variants j0read/j1only/base/j3read/j4read):
+ *     slots = max(0, number of source-level indexed `(&Judge)[...]` sites - 1)
+ * 0/1/2/3/4 sites -> vars 0/0/8/16/24. So the target's 24 bytes correspond to FOUR
+ * source-level lookup sites, even though the target's bytes contain exactly two
+ * `lui %hi(Judge)` / `lh %lo(Judge)($at)` pairs. The generator is specifically the
+ * array-INDEXED fold `(mem (plus (reg idx) (symbol_ref)))`; constant-address global
+ * reads add nothing (s3 otherglob/otherglob2). s2's "one slot per DISTINCT global
+ * across a CODE_LABEL" reading is refuted by text1a_post:func_80041E10
+ * (src/text1a_post.c:465): vars=24, regs=0, args=0, sp_acc=0, three orphan slots, and
+ * no branch or label anywhere in its body.
+ *
+ * The frame IS reachable: s3's dupXZ (four sites) measures vars=24 with three slots -
+ * but the duplicates are emitted (+199 fdiff). The open problem is a byte-neutral 3rd
+ * and 4th site: CSE deletes a redundant duplicate pseudo and all (dupread, fdiff 0,
+ * vars 8), and the only byte-removing pass after combine is jump2 cross-jumping, so the
+ * duplicate's merged code has to coincide with insns the target already emits. Cheapest
+ * measured duplicate: arms2 (+17 fdiff, vars=16).
+ *
+ * Additional s3 body-neutral composables: block-scope `extern` redeclarations of any of
+ * the three globals; `*(s16 *)((s32)&Judge + (idx * 2))`; `% 0x1000` and `& ~0xF000` /
+ * `& ~(-0x1000)` mask spellings; a `(u16)` cast on the first index; a redundant second
+ * `&D_8008E194 + arg1 * 7` local; and `judgearr` - declaring `extern s16 Judge[];`
+ * TU-wide and indexing `Judge[i]`, which leaves the REST of code6cac_b.c byte-identical
+ * (TUdiff = 0).
+ *
  * Load-bearing shapes (measured, s1+s2): for-loop with `i++, obj += 0x64` in the header
  * (i++ BEFORE the pointer bump); if/else-if chain (not switch) with the case-1 and
  * case-3 bodies written identically (cross-jumped); vel x,y,z stores then the two +=
