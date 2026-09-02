@@ -137,6 +137,12 @@ owner to audit after the fact. You are spawned for exactly two situations:
     independently re-verifies the tier and, on STRONG, executes the
     inline_asm_canonical.txt grant and logs it to docs/grind/borderline.md.
     You never write the grant yourself — you stay read-only.
+    (Since owner Ruling C 2026-09-02 a plain PASS on an island-carrying body
+    is also safe: the driver counts non-cop2 islands before `queue done`,
+    runs the same grant doors — STRONG tier or owner-cluster registry — and
+    titles the merge COMPLETED-INLINE-ASM-CANONICAL, or REFUSES the merge if
+    no door admits it. Do not rely on prose notes to the driver; they are
+    not parsed.)
   - `integration-handoff` — the function's honest bytes are PROVEN (verify the
     banked form + measurements yourself: sandbox 0 AND full-build SHA1 evidence
     in the ledger) and the ONLY blocker is a commit surface a grind session may

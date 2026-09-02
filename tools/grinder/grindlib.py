@@ -1065,6 +1065,39 @@ def grant_canonical_asm(root, func, tier, date):
     return line
 
 
+def island_count(root, func, stem):
+    """(n_islands, allowlisted) for the APPLIED body of `func` in src/<stem>.c.
+
+    Owner Ruling C 2026-09-02 (decisions.md "2026-09-02 — OWNER RULING"): two
+    cluster members (func_8002E838, func_80031890) merged as COMPLETED-C because
+    the Judge said PASS (with a prose "write the allowlist line" note the driver
+    never parses) and the engine gate scores cop2 islands as non-cheat
+    ([[cop2-island-completed-c-gate-gap]]). The PASS path now asks this
+    question BEFORE `queue done`: n>0 and not allowlisted => the grant door
+    (grant_canonical_asm) must admit the function or the merge is refused.
+    Uses the SAME island scanner as tools/audit_asm_cheats.py /
+    tools/check_completion_integrity.py so the three can never disagree."""
+    tools_dir = os.path.join(root, "tools")
+    if tools_dir not in sys.path:
+        sys.path.insert(0, tools_dir)
+    import audit_asm_cheats as AAC  # noqa: E402
+    src = os.path.join(root, "src", f"{stem}.c")
+    n = 0
+    if os.path.isfile(src):
+        with open(src, encoding="utf-8", errors="replace") as f:
+            text = f.read()
+        for _f, _line, _n, fname, _insns in AAC.scan_c_body_smuggled_work(text, f"{stem}.c"):
+            if fname == func:
+                n += 1
+    allow = os.path.join(root, "inline_asm_canonical.txt")
+    listed = False
+    if os.path.isfile(allow):
+        with open(allow, encoding="utf-8") as f:
+            listed = any(ln.strip() and not ln.strip().startswith("#")
+                         and ln.strip().split()[0] == func for ln in f)
+    return n, listed
+
+
 MODALITY_PLAYBOOK = {
     "recon": ("Baseline + map. Run canonical + sandbox for the honest floor; scan for "
               "sibling/duplicate analogs (tmp/duplicates_leads.txt, tools/find_duplicates.py); "
@@ -1724,6 +1757,11 @@ if __name__ == "__main__":
             print("grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated — evidence gate failed)")
             sys.exit(1)
         print(line)
+    elif cmd == "island-count":
+        # island-count <root> <func> <stem>  -> "<n> yes|no"  (n = non-cop2-whitelist
+        # multi-insn __asm__ islands in the applied body; yes = already allowlisted)
+        n, listed = island_count(sys.argv[2], sys.argv[3], sys.argv[4])
+        print(f"{n} {'yes' if listed else 'no'}")
     elif cmd == "log-borderline":
         # log-borderline <root> <func> <category> <evidence> <disposition> <date>
         log_borderline(sys.argv[2], sys.argv[3], sys.argv[4],

@@ -745,6 +745,45 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         return
     }
     if ($v.verdict -eq 'PASS') {
+        # Owner Ruling C 2026-09-02 (decisions.md "2026-09-02 — OWNER RULING"): a
+        # Judge PASS on an island-carrying body must go through the canonical-asm
+        # grant door BEFORE `queue done`. The engine gate scores cop2 islands as
+        # non-cheat, so without this check the function lands titled COMPLETED-C
+        # with no allowlist line (func_8002E838 49d6927e, func_80031890 1a2e49e4).
+        $bucket = 'COMPLETED-C'
+        $isl = (python tools/grinder/grindlib.py island-count . $func $stem 2>$null | Out-String).Trim()
+        $nIsl = 0; $listed = $false
+        if ($isl -match '^(\d+)\s+(yes|no)') { $nIsl = [int]$Matches[1]; $listed = ($Matches[2] -eq 'yes') }
+        if ($nIsl -gt 0 -and -not $listed) {
+            $gdate = Get-Date -Format 'yyyy-MM-dd'
+            $tier = 'LOW'
+            try { $sc = (python tools/scan_hand_coded.py --single $func 2>$null | Out-String)
+                  if ($sc -match 'tier=(\w+)') { $tier = $Matches[1] } } catch { }
+            $granted = (python tools/grinder/grindlib.py grant-canonical-asm . $func $tier $gdate 2>&1 | Out-String).Trim()
+            if ($LASTEXITCODE -ne 0) {
+                # No evidence door admits the islands: refuse the merge, keep the
+                # candidate as evidence, bank the constraint. Never lands as C.
+                $reason = ("MERGE REFUSED (owner Ruling C 2026-09-02): the Judge PASSed a body carrying $nIsl " +
+                           "non-cop2-whitelist inline-asm island(s) but func is not allowlisted and no grant door " +
+                           "admits it (scan tier $tier, not in tools/grinder/owner_cluster_grants.txt). Either the " +
+                           "islands are C-expressible (respell them in C) or the function needs an owner cluster " +
+                           "row. gate: $granted")
+                $reason = $reason.Substring(0, [Math]::Min(500, $reason.Length))
+                Log "${func}: MERGE REFUSED after judge PASS — island-carrying body with no grant door; banking constraint."
+                Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\candidate.c") -ErrorAction SilentlyContinue
+                git -C $Root add -- metrics/events.jsonl 2>$null
+                git -C $Root checkout -- . 2>$null
+                Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore canonical build/
+                python tools/grinder/grindlib.py constrain . $func $reason | Out-Null
+                git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+                git -C $Root commit -m "grind: $func merge refused — unallowlisted islands, constraint banked [skip-park-src-guard]" 2>$null | Out-Null
+                Journal "${func}: MERGE REFUSED after judge PASS — $nIsl unallowlisted inline-asm island(s), no grant door; constraint banked."
+                return
+            }
+            Log "${func}: judge PASS on an island-carrying body — canonical-asm grant executed via the PASS path (tier $tier)."
+            $listed = $true
+        }
+        if ($nIsl -gt 0 -and $listed) { $bucket = 'COMPLETED-INLINE-ASM-CANONICAL' }
         $qd = Invoke-Eng @('queue', 'done', $func)
         if ($qd -notmatch '"ok"\s*:\s*true') {
             # A Judge-PASSed, bytes-proven candidate that queue done still
@@ -782,18 +821,21 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         # tree has to be exactly the tree that passed the full-build SHA1 gate, or a
         # Match lands missing a load-bearing edit and the next rebuild breaks.
         $extraScope = @(Get-ExtraScope $func)
-        git -C $Root add -- "src/$stem.c" $extraScope engine/queue.json tools/prologue_config.json tools/frame_fix_funcs.txt tools/delay_slot_ra_funcs.txt "memory/grind/$func" 2>$null
-        git -C $Root commit -m "Match: $func — COMPLETED-C (grinder, $sessionsTaken sessions)" | Out-Null
+        # inline_asm_canonical.txt rides along when the PASS-path grant wrote it
+        # (owner Ruling C 2026-09-02) so the allowlist line lands in the same
+        # byte-verified commit as the body it authorizes.
+        git -C $Root add -- "src/$stem.c" $extraScope engine/queue.json tools/prologue_config.json tools/frame_fix_funcs.txt tools/delay_slot_ra_funcs.txt "memory/grind/$func" inline_asm_canonical.txt 2>$null
+        git -C $Root commit -m "Match: $func — $bucket (grinder, $sessionsTaken sessions)" | Out-Null
         Add-Decision $func 'final call' 'PASS' $v.justification
         # R5 (modality-effectiveness 2026-08-19): record the CLOSING modality —
         # without it the closer is only inferable from the ladder, and the one
         # discriminator available showed ~1/3 of inferred credit was wrong.
-        Journal "$func COMPLETED-C after $sessionsTaken sessions (closer: s$sessionN [$modality])."
+        Journal "$func $bucket after $sessionsTaken sessions (closer: s$sessionN [$modality])."
         Remove-Item -Recurse -Force (Join-Path $Root "memory\grind\$func")
         git -C $Root add -A -- memory/grind docs/grind 2>$null
         git -C $Root add -- metrics/events.jsonl 2>$null
         git -C $Root commit -m "grinder: close ledger for $func" | Out-Null
-        Log "${func}: MERGED — COMPLETED-C."
+        Log "${func}: MERGED — $bucket."
     } else {
         # Ordering matters: the rejected-form Copy-Item must read the still-dirty
         # src BEFORE the broad checkout; every LEDGER write (Add-Decision,
