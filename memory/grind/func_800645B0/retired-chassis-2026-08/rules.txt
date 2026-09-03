@@ -1,1 +1,0 @@
-regfix.txt:1832: func_800645B0: reorder 3,1,2 @ 1-3
