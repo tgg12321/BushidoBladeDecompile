@@ -2481,3 +2481,104 @@ Banked: `rejected/s16-N2-p10-read-before-zero-store-load-fills-target-nop-65insn
 - [s16] D_800A347C moved early measures 67-68 instructions / score 7-8 across Q1-Q8 and L5, reproducing s15's H-family result on two further geometries; S6 or S8 used as the window donor measures 6-14 across Z1-ZA.
 
 - [s16] The function's residual is now bracketed by two ordinary-C bodies that each hold one half of it at 66 instructions: E2/candidate.c holds both register seats and target's 25/26/27 group but only two loads; K7 holds all three loads in target's slots and registers but seats the +2 value in $v0.
+
+
+## [s17 2026-09-03 - rederive modality] Re-derivation of the read decomposition, and the four-condition law that governs this residual
+
+### 1. Chassis / kill re-audit (mandated)
+`sandbox func_80060A68 --disable all` on today's HEAD, with the s14 apply harness:
+E2 (candidate.c's body) = **2 / build 66 / target 66**, two `lw ?,0x10($v1)` loads at slots 11 ($a1)
+and 19 ($a0).  K7 = **5 / build 66 / target 66**, three loads at slots 11 ($a1), 19 ($a0), 22 ($a0).
+Both reproduce the s15/s16 numbers exactly, so the chassis has not moved.  Neither body (nor any of
+the 56 bodies measured this session) carries a FAKE construct, so `tools/fake_ablate.py` has nothing
+to ablate; the s15/s16 instance kills remain chassis-current.
+
+### 2. The rederive: the three 0x10 reads were REDECOMPOSED, not permuted (families A, B, C)
+Every prior session permuted the same twelve statements.  s17 changed the decomposition itself:
+* **A family (8 bodies)** - the `p10` pointer local is DELETED and the +4 read is written inline,
+  `temp_a1 = *(u16 *)(*(s32 *)(outer + 0x10) + 4);`.
+* **B family (3 bodies)** - `p10` is kept but feeds the +0 read (`*(u16 *)(outer + 0x18) =
+  *(u16 *)(p10 + 0);`), the +2 and +4 reads inline.
+* **C family (4 bodies)** - `p10` feeds the +2 read, the +0 and +4 reads inline.
+
+Result: 3-8 at 66-68 instructions and **not one of the fifteen emits any `lw ?,0x10($v1)` at
+slot 11**; the third load lands at 18/21/24-28.  Target's slot-11 load is the head of a LONG pointer
+pseudo (born slot 11, dying at `lhu $a1,0x4($a1)` at slot 28).  An inline `*(s32 *)(outer + 0x10)`
+inside a halfword read creates a two-insn pointer pseudo instead, which local-alloc seats in $v0/$a0
+and sched2 never hoists.  The `p10` local is load-bearing structure, not a spelling choice.  Best of
+the family is A2 = 3 / 66 (banked).
+
+### 3. The four-condition law, read out of the local-alloc ground truth
+`tools/ra_solver/local_extract.py text1b --func func_80060A68` (QTYDBG) on K7, E3, G1, H3.  Writing
+S1 = the 0x18 store with the inline +0 read, S2 = `temp2 = ` the +2 read, S3 = the 0x1A store,
+S5 = `D_800A3478 = outer + 0x18;`, S7 = `D_800A347C = outer + 0x20;`, P = `p10 = *(s32 *)(outer +
+0x10);`, S6 = `temp_a1 = *(u16 *)(p10 + 4);`, S4 = `idx = *(u16 *)outer;`:
+
+* **R1 (three loads)** - a store must separate each consecutive pair of `*(s32 *)(outer + 0x10)`
+  reads (the s15 cse rule; both v1-based and gp-based stores separate).
+* **R2 (the +2 value seats in $a0)** - reg74 has refs 2, so with S2 and S3 adjacent its span is 2 and
+  its priority is 10000, the maximum a refs-2 quantity can reach (`floor_log2(refs)*refs*size*10000/
+  (death-birth)`, local-alloc.c:1649-1685); it is then allocated 5th of 25 and first-fit
+  (local-alloc.c:1563-1580) hands it $v0.  It can only be pushed to $a0 by LENGTHENING its range -
+  i.e. by putting a statement between S2 and S3 - so that a span-2 $v0 quantity inside that range is
+  allocated first.  Measured: K7 (nothing in the window) reg74 got=2; E3/G1/H3 (S5 or S7 in the
+  window) reg74 got=4.
+* **R3 (p10 seats in $a1)** - reg75 needs a span-2 $v0 quantity inside [P, S6] (so $v0 is taken) and
+  `idx` live across it (so $a0 is taken; idx is argument-suggested $a0 and is allocated in the
+  suggested pass).  Measured: K7 reg75 got=5 with S5's addiu at [44,46] inside it; G1 reg75 got=2
+  with nothing inside it.
+* **R4 (the load is emitted at slot 11)** - p10's read must not follow a gp-based store.  sched2
+  disambiguates `mem(v1+0x10)` from the v1-based 0x18/0x1A/0x20/0x24/0x28 stores and freely hoists
+  the load above them, but it cannot disambiguate it from `sw $v0,%gp_rel(D_800A3478)($gp)`.  Every
+  s17 body whose P follows either gp store emits the load in the slot immediately after that store
+  (26-28); every body with P before both gp stores that also satisfies R3 emits it at slot 11.
+
+**The bind:** the only two span-2 $v0 quantities this function owns are the addiu halves of the two
+gp stores, S5 and S7.  R2 needs one of them between S2 and S3; R4 needs P before both of them; and
+R1 needs a store between S2 and P.  A copy statement is the only non-gp store that can occupy that
+last slot, and moving a copy costs 10-15 (H-s16-4, re-confirmed by s17's M family).
+
+### 4. H3 - target's whole stream with ONE instruction relocated (the new closest-by-structure body)
+`H3 = C1,C2,C3,S1,S2,S5,S3,P,S4,S7,S6,S8` measures 5 / build 67 / target 66.  Slot-for-slot it is
+target's stream with `lw $a1,0x10($v1)` moved from slot 11 to slot 26 (immediately after the
+`sw $v0,%gp(D_800A3478)` at 25), everything between shifted one slot earlier, and a nop at slot 32.
+Both target register seats are held (reg74 got=4, reg75 got=5) and all three loads are present.  This
+is the first body in the campaign to hold both seats, three loads AND target's complete opcode
+sequence at once; its whole residual is one instruction's position.  Banked at
+`rejected/s17-H3-target-stream-with-the-a1-load-displaced-by-the-gp-store-score5-67insns.c`.
+
+### 5. The s16 frontier's named next probe is closed
+s16 asked for the D_800A347C addiu/store pair (S7) to be swept as the window donor on the spine that
+already has the slot-11 load.  Seven placements measured (G2 9/66, G3 7/66, G4 7/66, G5 9/66, GA 7/66,
+HC 7/66, HD 7/67, HE 7/67).  S7 is a gp store exactly like S5: it buys the $a0 seat by R2 and destroys
+the slot-11 load by R4, and it additionally drags target's slots 30/31 addiu/sw %gp(D_800A347C) pair
+into the 25/26 window where target puts the D_800A3478 pair.  Neither gp store can be the window donor
+while the slot-11 load survives.
+
+### 6. Other s17 negatives
+* P placed among the copy statements with S5 in the +2 window (J4, J5, J6, J7): both seats, three
+  loads, but the load is emitted at 23-24 and the body is 67 - being textually early is not
+  sufficient for the hoist.
+* S7 used as the cse separator between the +2 read and the p10 read (G2, G5, GA, GB): 7-9 / 66.
+* S5 moved after S6 on the K7 spine (J1, J2, J3): R3 fails, p10 falls back to $v0/$a0, 7-9.
+* Copy-as-separator bodies with P before the gp store (M1, M2, M3, M5, M6, M7): M2/M6/M7 DO put the
+  load at slot 11 in $a1 with both seats, but the moved copy costs an instruction and 10-13 points -
+  the same price H-s16-4 recorded, now confirmed on a different spine.
+
+Artifacts: `tmp/grind/func_80060A68/s17/` (56 disassemblies, gen*.py, sweep.sh, qty.sh, H3.sched2).
+
+- [s17] Chassis unchanged: E2 = 2 / build 66 / target 66 and K7 = 5 / build 66 / target 66 on today's HEAD, matching the s15/s16 records exactly; no FAKE construct exists in any live body, so fake_ablate has nothing to ablate.
+
+- [s17] The p10 pointer local is load-bearing structure, not a spelling: fifteen bodies that delete it or reassign it to the +0 or +2 read (families A, B, C) all fail to put any lw ?,0x10($v1) at slot 11, because target's slot-11 load heads a pointer pseudo that lives from slot 11 to slot 28 and an inline read creates only a two-insn pseudo.
+
+- [s17] The +2 halfword value can only be pushed out of $v0 by LENGTHENING its live range: with its read and store adjacent it has refs 2 / span 2, the maximum priority a refs-2 quantity can reach under local-alloc.c:1649-1685, and first-fit (local-alloc.c:1563-1580) then hands it $v0. QTYDBG confirms got=2 on K7 and got=4 on every body with a statement in that window.
+
+- [s17] p10 reaches $a1 exactly when a span-2 $v0 quantity lies inside its live range and idx (argument-suggested $a0) is live across it; QTYDBG shows reg75 got=5 on K7/H3 and got=2 on E3/G1.
+
+- [s17] sched2 freely hoists lw ?,0x10($v1) above the v1-based 0x18 / 0x1A / 0x20 / 0x24 / 0x28 stores but never above sw $v0,%gp_rel(D_800A3478)($gp): in all 56 bodies measured this session, a p10 read placed after either gp store has its load emitted in the slot immediately following that store (26-28), and only bodies whose p10 read precedes both gp stores ever reach slot 11.
+
+- [s17] The bind is now single-valued: the only two span-2 $v0 quantities the function owns are the addiu halves of the two gp stores; the $a0 seat needs one of them inside the +2 value's range while the slot-11 load needs the p10 read ahead of both, and the only non-gp store that can separate the +2 read from the p10 read is a copy statement, which costs an instruction and 10-13 points.
+
+- [s17] H3 (C1,C2,C3,S1,S2,S5,S3,P,S4,S7,S6,S8) = 5 / build 67 / target 66 is target's entire instruction stream with exactly one instruction relocated -- the lw $a1,0x10($v1) from slot 11 to slot 26 -- plus the nop that follows; both target register seats and all three loads are present and it carries no FAKE construct.
+
+- [s17] s16's named next_probe (the D_800A347C pair as the window donor on the slot-11 spine) is closed at 7-9 across eight placements; both gp stores behave identically under the seat rule and the hoist rule.

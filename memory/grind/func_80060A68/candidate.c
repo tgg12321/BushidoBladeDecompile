@@ -1,3 +1,44 @@
+/* [s17 2026-09-03 - rederive modality.  BODY UNCHANGED (still the E2 body, re-measured
+ * 2 / build 66 / target 66 on today's HEAD).  The s17 header is prepended; every earlier
+ * header below is intact.]
+ *
+ * WHAT s17 ADDS.
+ *
+ * (1) THE READ DECOMPOSITION WAS REDERIVED, NOT PERMUTED.  Fifteen bodies delete or reassign
+ *     the `p10` pointer local - the +4 read written inline with no pointer local at all
+ *     (A family), p10 feeding the +0 read instead (B), p10 feeding the +2 read instead (C).
+ *     All measure 3-8 at 66-68 and NONE puts a `lw ?,0x10($v1)` at slot 11.  The p10 local is
+ *     load-bearing: target's slot-11 load heads a pointer pseudo that lives from slot 11 to
+ *     the `lhu $a1,0x4($a1)` at slot 28, and only a source-level pointer local read well
+ *     before its halfword use produces a pseudo of that shape.
+ *
+ * (2) THE FOUR-CONDITION LAW (QTYDBG ground truth, local-alloc.c:1649-1685 priority and
+ *     1563-1580 first-fit).  R1 three loads = a store between each consecutive pair of 0x10
+ *     reads.  R2 the +2 value seats $a0 = its live range must be LENGTHENED (adjacent read and
+ *     store give it refs 2 / span 2 = priority 10000, the maximum, which first-fits to $v0), so
+ *     that a span-2 $v0 quantity inside the range is allocated first.  R3 p10 seats $a1 = a
+ *     span-2 $v0 quantity inside [p10 read, +4 read] plus `idx` live across it.  R4 the load
+ *     is emitted at slot 11 = the p10 read must not follow a gp-based store, because sched2
+ *     disambiguates mem(v1+0x10) from the v1-based 0x18/0x1A/0x20.. stores but not from
+ *     `sw $v0,%gp_rel(D_800A3478)($gp)`.  THE BIND: the only two span-2 $v0 quantities this
+ *     function owns are the addiu halves of the two gp stores, and R2 wants one of them
+ *     between the +2 read and the 0x1A store while R4 wants the p10 read ahead of both.
+ *
+ * (3) H3 IS THE NEW CLOSEST-BY-STRUCTURE BODY.  C1,C2,C3,S1,S2,S5,S3,P,S4,S7,S6,S8 measures
+ *     5 / build 67 / target 66 and is TARGET'S ENTIRE STREAM with one instruction relocated:
+ *     `lw $a1,0x10($v1)` at slot 26 (right behind the gp store that blocks it) instead of
+ *     slot 11, plus the resulting nop at slot 32.  Both target seats, all three loads, no FAKE
+ *     construct.  See rejected/s17-H3-*.
+ *
+ * (4) s16's NAMED NEXT PROBE IS CLOSED.  The D_800A347C pair (S7) as the window donor on the
+ *     slot-11 spine: seven placements, 7-9 every time (rejected/s17-G3-*).  Both gp stores
+ *     behave identically under R2 and R4.
+ *
+ * NEXT.  The question is now single-valued: find a span-2, refs-2 quantity that can occupy $v0
+ * strictly inside the +2 value's live range and that is NOT one of the two gp stores, so the
+ * p10 read can stay ahead of both.  A copy statement does it (M2/M6/M7 reach slot 11 with both
+ * seats) but costs an instruction and 10-13 points.  See hypotheses.md H-s17-1..6.
+ */
 /* [s16 2026-09-03 - forensics modality.  BODY UNCHANGED (still the E2 body, 2 / build 66 /
  * target 66); the s16 header below is prepended, the s15 header that follows is intact.
  *

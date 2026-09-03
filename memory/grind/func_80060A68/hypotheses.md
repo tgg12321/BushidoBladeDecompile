@@ -1754,3 +1754,109 @@ three 0x10 reads are separated by their own stores and three loads are guarantee
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: today's HEAD chassis, 8 bodies, zero FAKE constructs
+
+
+## [s17] E2 and K7 re-measure exactly as s15/s16 recorded them on today's HEAD chassis, and no body in the campaign's live set carries a FAKE construct.
+- mechanism: Mandated kill re-audit before any new probe. If the chassis had drifted, every banked spelling conclusion would need re-measuring.
+- probe: Applied E2 (candidate.c's body) and K7 through tmp/grind/func_80060A68/s14/apply.py and measured both with `sandbox func_80060A68 --disable all`; disassembled both and extracted the QTYDBG quantity table with tools/ra_solver/local_extract.py.
+- result: E2 = 2 / build 66 / target 66 with loads at slots 11 ($a1) and 19 ($a0); K7 = 5 / build 66 / target 66 with loads at 11 ($a1), 19 ($a0), 22 ($a0) and reg74 got=2. Identical to the s15/s16 records. No FAKE construct exists in either body, so tools/fake_ablate.py has nothing to ablate.
+- verdict: CONFIRMED
+
+### H-s17-1 (KILLED, instance) - redecomposing the three 0x10 reads never reaches the slot-11 load.
+Probe: fifteen bodies that change the DECOMPOSITION rather than the statement order - A family (8),
+p10 deleted entirely and the +4 read written inline; B family (3), p10 feeding the +0 read; C family
+(4), p10 feeding the +2 read. Result: 3-8 at 66-68 instructions, and no `lw ?,0x10($v1)` at slot 11
+in any of them; the late load lands at 18/21/24-28. Target's slot-11 load heads a long pointer pseudo
+(slot 11 to slot 28); an inline read creates a two-insn pointer pseudo that local-alloc seats in
+$v0/$a0 and sched2 does not hoist. Measured on today's HEAD chassis, zero FAKE constructs.
+
+### H-s17-2 (CONFIRMED) - the residual is governed by four conditions and by which quantity can sit in which window.
+R1 three loads: a store between each consecutive pair of 0x10 reads. R2 the +2 value seats $a0: its
+range [S2,S3] must be LENGTHENED (a refs-2 span-2 quantity has priority 10000, the maximum, and
+first-fits into $v0; local-alloc.c:1649-1685 / 1563-1580) so that a span-2 $v0 quantity inside it is
+allocated first. R3 p10 seats $a1: a span-2 $v0 quantity inside [P,S6] plus `idx` (argument-suggested
+$a0) live across it. R4 the load is emitted at slot 11: p10's read must not follow a gp-based store,
+because sched2 disambiguates mem(v1+0x10) from the v1-based stores but not from
+`sw $v0,%gp_rel(D_800A3478)($gp)`. The only two span-2 $v0 quantities the function owns are the addiu
+halves of the two gp stores, so R2 and R4 compete for the same two statements. QTYDBG ground truth on
+K7 (reg74 got=2, reg75 got=5), E3 (reg74 got=4, reg75 got=2), G1 (same as E3), H3 (reg74 got=4,
+reg75 got=5).
+
+### H-s17-3 (CONFIRMED) - target's complete instruction stream, both register seats and all three loads are held simultaneously by one ordinary-C body, with a single instruction out of place.
+H3 = C1,C2,C3,S1,S2,S5,S3,P,S4,S7,S6,S8 measures 5 / build 67 / target 66 and is target's stream with
+`lw $a1,0x10($v1)` relocated from slot 11 to slot 26 (the slot immediately after the
+`sw $v0,%gp(D_800A3478)` that blocks it), everything between shifted one slot earlier, and a nop at
+slot 32 as the 67th instruction. No FAKE construct. Banked at
+rejected/s17-H3-target-stream-with-the-a1-load-displaced-by-the-gp-store-score5-67insns.c.
+
+### H-s17-4 (KILLED, instance) - the D_800A347C addiu/store pair is not a usable window donor.
+Probe: G2, G3, G4, G5, GA, HC, HD, HE - seven placements of S7 in and around the window between the
++2 read and the 0x1A store, on the K7 spine and its neighbours (this was s16's named next_probe).
+Result: 7-9 at 66-67 instructions in every one. S7 is a gp store, so it buys the $a0 seat by R2 and
+destroys the slot-11 load by R4 exactly as S5 does, and it additionally pulls target's slots 30/31
+addiu/sw %gp(D_800A347C) pair into the 25/26 window. Measured on today's HEAD chassis, zero FAKE
+constructs.
+
+### H-s17-5 (KILLED, instance) - reading p10 among the copy statements does not by itself hoist its load to slot 11.
+Probe: J4, J5, J6, J7 place the p10 read between the copies (a copy store is its cse separator, and
+it precedes both gp stores) while D_800A3478 stays inside the +2 value's range. Result: both seats and
+three loads, but the load is emitted at slot 23-24 and every body is 67 instructions (5-7). Being
+textually early is not sufficient for the hoist. Measured on today's HEAD chassis, zero FAKE constructs.
+
+### H-s17-6 (KILLED, instance) - a copy statement moved to separate the +2 read from the p10 read reproduces the s16 nine-point price on a new spine.
+Probe: M1, M2, M3, M5, M6, M7 - the only non-gp store available between the +2 read and the p10 read
+is a copy, so these bodies move copy 3 (or copy 2) there, letting P precede the gp store. Result:
+M2, M6 and M7 DO emit the load at slot 11 in $a1 with both seats and three loads, but each is 67
+instructions and scores 10-13; M1, M3, M5 are 11-15. The moved copy's lw/lw/sw triple schedules after
+the 0x18/0x1A block in every one, exactly as H-s16-4 recorded on the L1 spine. Measured on today's
+HEAD chassis, zero FAKE constructs.
+
+## [s17] E2 and K7 re-measure exactly as s15/s16 recorded them on today's HEAD chassis, and no body in the campaign's live set carries a FAKE construct.
+- mechanism: Mandated kill re-audit: chassis-relative conclusions are void if the chassis drifted, and a lever measured with a FAKE carrier on the same pseudo is not a kill.
+- probe: Applied E2 (candidate.c's body) and K7 through tmp/grind/func_80060A68/s14/apply.py, measured both with `sandbox func_80060A68 --disable all`, disassembled both, and extracted the QTYDBG quantity table with tools/ra_solver/local_extract.py text1b --func func_80060A68.
+- result: E2 = 2 / build 66 / target 66, loads at slots 11 ($a1) and 19 ($a0). K7 = 5 / build 66 / target 66, loads at 11 ($a1), 19 ($a0), 22 ($a0), reg74 got=2. Both identical to the recorded numbers. Neither body contains a FAKE construct, so tools/fake_ablate.py has nothing to ablate; the s15/s16 instance kills are chassis-current.
+- verdict: CONFIRMED
+
+## [s17] Fifteen bodies that redecompose the three *(s32 *)(outer + 0x10) reads -- the +4 read written inline with no pointer local (A family), p10 feeding the +0 read instead (B family), p10 feeding the +2 read instead (C family) -- measure 3 to 8 and put no lw ?,0x10($v1) at slot 11.
+- mechanism: Target's slot-11 load heads a pointer pseudo that lives from slot 11 to the lhu $a1,0x4($a1) at slot 28. An inline *(s32 *)(outer + 0x10) inside a halfword read creates a two-insn pointer pseudo instead, which local-alloc seats in $v0/$a0 and sched2 does not hoist.
+- probe: A1-A8, B1-B3, C1x-C4x: fifteen ordinary-C bodies generated by tmp/grind/func_80060A68/s17/genA.py, each measured with `sandbox func_80060A68 --disable all` and disassembled; load slots and registers recorded per body.
+- result: Scores 3-8 at 66-68 instructions. Third load at slots 18/21/24-28 in $v0 or $a0; never at 11. Best is A2 = 3 / 66 (banked at rejected/s17-A2-plus4-read-inline-no-p10-local-third-load-never-hoists-score3.c). The p10 local is load-bearing structure, not a spelling choice.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis (src/text1b.c restored to HEAD after the session), 15 bodies, zero FAKE constructs in any of them
+
+## [s17] Four conditions govern this residual and the two gp stores are the only statements that can satisfy two of them, so those two conditions compete for the same two statements.
+- mechanism: R1 three loads = a store between each consecutive pair of 0x10 reads. R2 the +2 value seats $a0 = its range must be lengthened, because with its read and store adjacent it has refs 2 / span 2 = priority 10000 (floor_log2(refs)*refs*size*10000/(death-birth), local-alloc.c:1649-1685) which first-fits to $v0 (local-alloc.c:1563-1580); only a span-2 $v0 quantity allocated earlier and enclosed by its range pushes it to $a0. R3 p10 seats $a1 = a span-2 $v0 quantity inside [p10 read, +4 read] plus idx (argument-suggested $a0) live across it. R4 the load is emitted at slot 11 = the p10 read must not follow a gp-based store, since sched2 disambiguates mem(v1+0x10) from the v1-based 0x18/0x1A/0x20 stores but not from sw $v0,%gp_rel(D_800A3478)($gp). The function's only span-2 $v0 quantities are the addiu halves of the two gp stores.
+- probe: QTYDBG quantity tables extracted for K7, E3, G1 and H3 with tools/ra_solver/local_extract.py, cross-read against 56 disassemblies measured this session.
+- result: K7 (nothing between the +2 read and the 0x1A store): reg74 birth 36 death 38 got=2, reg75 birth 40 death 48 got=5, load at 11. E3/G1 (gp store in the window): reg74 got=4, reg75 got=2, load at 26. H3 (gp store in the window, D_800A347C inside p10's range): reg74 got=4 AND reg75 got=5, load at 26 because the p10 read follows the gp store. Every s17 body with the p10 read after either gp store emits the load in the slot immediately after that store.
+- verdict: CONFIRMED
+
+## [s17] One ordinary-C body, H3, emits target's complete 66-instruction opcode sequence with both target register seats and all three 0x10 loads, differing only by the position of the lw $a1,0x10($v1) and the nop that follows from it.
+- mechanism: H3 = C1,C2,C3,S1,S2,S5,S3,P,S4,S7,S6,S8 satisfies R1, R2 (D_800A3478 inside the +2 value's range) and R3 (D_800A347C inside p10's range) but violates R4 (the p10 read follows the D_800A3478 gp store), so sched2 chains the load behind that store.
+- probe: Generated by tmp/grind/func_80060A68/s17/genH.py, measured with the sandbox, disassembled to tmp/grind/func_80060A68/s17/H3.dis and diffed slot-by-slot against tmp/grind/func_80060A68/s14/target.ops; QTYDBG table extracted; sched2 dump captured to tmp/grind/func_80060A68/s17/H3.sched2.
+- result: 5 / build 67 / target 66. The load sits at slot 26 (immediately after sw $v0,%gp(D_800A3478) at 25) instead of target's slot 11; slots 12-25 shift one earlier; a nop appears at slot 32 as the 67th instruction. reg74 got=4, reg75 got=5. No FAKE construct. Banked at rejected/s17-H3-target-stream-with-the-a1-load-displaced-by-the-gp-store-score5-67insns.c. This is the first body in the campaign to hold both seats, three loads and target's complete opcode sequence at once.
+- verdict: CONFIRMED
+
+## [s17] The D_800A347C addiu/store pair used as the donor in the window between the +2 read and the 0x1A store measures 7 to 9 in all eight placements tried.
+- mechanism: S7 is a gp store exactly like S5, so it buys the $a0 seat by R2 and blocks the p10 load by R4 identically, and it additionally drags target's slots 30/31 addiu / sw %gp(D_800A347C) pair into the 25/26 window where target puts the D_800A3478 pair.
+- probe: G2, G3, G4, G5, GA, HC, HD, HE -- eight ordinary-C bodies sweeping S7 through and around that window on the K7 spine and its neighbours; this was s16's named next_probe. Each measured with the sandbox and disassembled.
+- result: 7-9 at 66-67 instructions in every one; no body reaches the score-2 class and none puts a load at slot 11. Banked at rejected/s17-G3-D_800A347C-pair-as-the-window-donor-on-the-K7-spine-score7.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 8 bodies, zero FAKE constructs
+
+## [s17] Reading p10 among the copy statements, with the D_800A3478 gp store inside the +2 value's range, gives both register seats and three loads but emits the load at slot 23 or 24 and costs 67 instructions.
+- mechanism: A copy store is a cse separator for the p10 read and the read then precedes both gp stores, so R1 and R4's textual precondition hold; but the copy region's own scheduling changes and the load is not selected for slot 11.
+- probe: J4, J5, J6, J7 -- four ordinary-C bodies placing the p10 read at each copy-region gap with the gp store left in the +2 window. Measured with the sandbox and disassembled.
+- result: 5-7 at 67 instructions; loads at 18, 23 ($v0) and 24 ($a1) with a nop at slot 21 where target puts lw $a0,0x10($v1). Being textually early is not sufficient for the slot-11 hoist. Banked at rejected/s17-J4-p10-read-among-the-copies-with-the-gp-store-in-the-window-score5-67insns.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 4 bodies, zero FAKE constructs
+
+## [s17] Moving a copy statement to act as the non-gp separator between the +2 read and the p10 read does reach the slot-11 load with both seats, but every such body is 67 instructions and scores 10 to 15.
+- mechanism: The copy is the only non-gp store that can sit between those two reads, which lets the p10 read precede both gp stores (R4) while a gp store still occupies the +2 value's window (R2); but the moved copy's own lw/lw/sw triple schedules after the 0x18/0x1A block instead of target's slots 16/18/20.
+- probe: M1, M2, M3, M5, M6, M7 -- six ordinary-C bodies from tmp/grind/func_80060A68/s17/genM.py, each measured with the sandbox and disassembled for load slots and registers.
+- result: M2, M6, M7 emit lw $a1,0x10($v1) at slot 11 with reg74 in $a0 and reg75 in $a1 and three loads -- but at 67 instructions and 10-13 points. M1, M3, M5 are 11-15. This re-confirms s16's H-s16-4 price on a different spine.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 6 bodies, zero FAKE constructs
