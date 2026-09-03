@@ -4018,3 +4018,152 @@ orderings (S, S2, Z1, Z2, Z3): 8-40, never 127 instructions.
 - [s33] Declaration order over the merged variable is exactly inert on this chassis (K3/K4/K5/K6 all 10), re-confirming the s11/s12/s32 inertness sweeps.
 
 - [s33] OPEN CONTRADICTION: loop 1's exit tail written as a fresh *(u8 **)(ctx + 0xC) read and written as p = q; converge to the same addu a0,a3,zero, even though cse's EBB provably ends at the loop-body CODE_LABEL (cse.c:8039) and the exit tail sits in a fresh EBB with a cleared memory table. Target carries both the preheader copy and a real lw a0,0xC(s2) reload; no measured form has produced both.
+
+## [s34] SYNTHESIS — the residual is re-localized: every remaining instruction gap
+## is ONE combine deletion, and the join-shape chassis proves cse is not the obstacle
+
+Chassis re-audit first (mandated). `sandbox func_80017848 --disable all` over the
+HEAD `src/ings.c:719` INCLUDE_ASM anchor with the cell body pasted in:
+BASE (`candidate.c`, the s9 V1 body) = **3** at 127 target / 127 build insns;
+K1 (the s33 `slots`-merge escape-#9 form, the instance kill whose stream sits
+closest to target) = **10** at 127/127; AK = **14** at 127/127. All three tie
+their banked numbers exactly, so the floor-3 chassis is unchanged from s33.
+No FAKE construct exists anywhere in this function's tree — no form in 34
+sessions has ever carried one — so `tools/fake_ablate.py` has nothing to ablate
+and the cell re-measurements above ARE the kill re-audit. All s34 cell scores:
+`tmp/grind/func_80017848/s34/scores.txt`.
+
+- [s34] TARGET'S TWO LOOPS ARE STRUCTURALLY IDENTICAL, and the ledger's "loop-1
+  exit tail" is a misnomer that has shaped 25 sessions of search. Normalising
+  `asm/funcs/func_80017848.s` (`tmp/grind/func_80017848/s34/T.txt`) shows both
+  loops share one nine-instruction opening:
+    `lw a0,0xC(s2)` / `sll a1,s4,6` / `addu v0,a1,a0` / `lw v0,GUARD(v0)` /
+    `blez v0,...` / `addu v1,zero,zero` / `addu a3,a0,zero` / `lw a2,0x10(s2)` /
+    `addu a0,a1,a3`
+  with GUARD = 0x1C for loop 1 and 0x20 for loop 2. The residual instruction the
+  ledger calls "loop 1's exit tail" is loop 2's copy of `lw a0,0xC(s2)`, i.e. the
+  record-pointer read that precedes loop 2's GUARD — it lives at the JOIN, after
+  loop 1's `if` closes, not inside it. Every previously banked chassis puts that
+  read (or a `p = q` copy) INSIDE loop 1's if-block, which is why loop 2's
+  preheader then had no available `mem[ctx+0xC]` to fold against.
+
+- [s34] THE JOIN-SHAPE CHASSIS (new; cells P0-P4). Moving that read out of the
+  `if` to the join makes the C structurally identical to target for both loops:
+
+      p = *(u8 **)(ctx + 0xC); sh = slot_a << 6; i = 0;
+      t = sh + (s32)p; t = *(s32 *)(t + 0x1C);
+      if (i < t) { q = *(u8 **)(ctx + 0xC); lnk = ...0x10; base = sh + (s32)q; do {} while (); }
+      i = 0; sh2 = slot_a << 6;
+      p = *(u8 **)(ctx + 0xC);              <- AT THE JOIN, not inside the if
+      t2 = sh2 + (s32)p; t2 = *(s32 *)(t2 + 0x20);
+      if (i < t2) { q = *(u8 **)(ctx + 0xC); base = sh2 + (s32)q; do {} while (); }
+
+  P0 (distinct q/q2) and P1 (one shared q) both score **6 at 127/125**. The two
+  missing instructions are exactly the two preheader copies.
+
+- [s34] E-s34-1, THE CENTRAL MEASUREMENT: on the join chassis BOTH redundant
+  preheader reads DO survive cse as reg-reg copies, and BOTH are deleted by
+  COMBINE. Fresh `-da` dumps for P1 are in `tmp/grind/func_80017848/dumps/`
+  (digests: `s34/P1_cse.txt`, `s34/P1_cse2.txt`, `s34/P1_combine.txt`).
+  In `ings.cse` AND `ings.cse2`, loop 1's preheader is
+
+    insn 83 `(set (reg/v:SI 80) (reg/v:SI 79))`      <- q = p, the folded copy
+    insn 86 `(set (reg/v:SI 77) (mem (plus (reg 72) (const_int 16))))`
+    insn 89 `(set (reg/v:SI 81) (plus (reg/v:SI 84) (reg/v:SI 80)))`  <- base reads q
+
+  i.e. cse.c:826 `make_regs_eqv` DID promote the new register `q` to canonical
+  (both s32/E-s32-3 conditions hold on this chassis: `q`'s last mention is in
+  loop 2, past the EBB end, and later than `p`'s), so the copy is NOT trivially
+  dead and cse keeps it. In `ings.combine` insn 83 is GONE and insn 89 reads
+  `reg79` (p) directly, carrying `REG_DEAD (reg79)`. Loop 2 behaves identically.
+  CONSEQUENCE: the cse-fold half of the problem is SOLVED by the join shape, and
+  the whole remaining gap in this function is one question asked twice —
+  "how does a use-once reg-reg copy survive combine at zero instruction cost".
+  This supersedes the s31/s32 account in which loop 2's preheader read "can never
+  be folded because the EBB is flushed at the join label": the flush is real, but
+  the join block's own `lw ctx+0xC` re-establishes `mem[ctx+0xC]` as an available
+  expression for the rest of that EBB, and loop 2's preheader is in it.
+
+- [s34] E-s34-2, THE ZERO-COST ESCAPE SET IS EXHAUSTED BY READING can_combine_p
+  AGAINST THIS GEOMETRY (`tools/gcc-2.7.2/combine.c:880-928`). Target's preheader
+  contains exactly three insns — copy, links load, base add — so:
+    * `all_adjacent` is 0 (the links load separates i2 from i3), so the
+      `use_crosses_set_p` test at combine.c:914 IS evaluated; it fires only if a
+      register of the copy's SOURCE is set strictly between i2 and i3, and the
+      links load is the only insn there. Making it set the copy's source means
+      the record pointer and the links pointer become ONE pseudo (escape #9).
+    * combine.c:902 `succ && ! all_adjacent && reg_used_between_p (dest, succ, i3)`
+      requires `succ != 0`, i.e. a THREE-insn combination, which requires the
+      base add's other feeder (the shift) to carry an in-block LOG_LINK. Target
+      computes the shift once, in the GUARD block (`sll a1,s4,6` feeds both the
+      guard add and the base add), so flow.c:2102 builds no link for it.
+    * `INSN_CUID (insn) < last_call_cuid` needs a CALL between the copy and the
+      base add; this function's only call is after both loops.
+    * `find_reg_note (i3, REG_NO_CONFLICT, dest)` needs a multi-word/DImode
+      sequence — a banned family.
+    * escape #1 (a second use downstream of i3) and escape #8 (a missing
+      LOG_LINK from a cross-block use) are already priced dead at 6-22 and
+      8-40 respectively (s31, s32/E-s32-7).
+  So `use_crosses_set_p` is the only zero-cost escape this geometry admits.
+
+- [s34] E-s34-3, AND ESCAPE #9 CANNOT BE BYTE-EXACT, FOR A REASON THAT IS NOW
+  CHASSIS-INDEPENDENT. Firing combine.c:914 forces one C variable — hence one
+  GCC 2.7.2 pseudo, hence one hard register — to carry BOTH a record-pointer role
+  and a links role. Target seats those roles in DIFFERENT registers everywhere:
+  loop 1 `a0`(pointer) / `a2`(links), loop 2 `a0`(pointer) / `a2`(links), top
+  guard `v1`(pointer). Measured on the join chassis this session: Q1 (both loops
+  merge p+links) = **14 at 127/127**, reproducing AK's number and its four-way
+  substitution residual from a different chassis; Q2 (loop 1 merges slots+links,
+  loop 2 merges p+links) = **15 at 127/127**. K1's 10 remains the best
+  exact-instruction-stream form ever measured. Together with s31's empty goal
+  derivation and s32's independent re-derivation, escape #9 now carries three
+  independent negatives.
+
+- [s34] E-s34-4: hoisting loop 2's links read into a named local is NOT inert on
+  the join chassis, and the sign depends on whether the local is shared. P4
+  (fresh `lnk2`) = **4 at 127/125** — the best join-shape cell, one point off the
+  floor with two instructions still missing — while P2/P3 (loop 2's links hoisted
+  into loop 1's `lnk`) = 12. Sharing `q` across both preheaders is exactly inert
+  against distinct `q`/`q2` (P0 = P1 = 6), re-confirming the s11/s12/s32/s33
+  naming-and-declaration inertness sweeps on a new chassis.
+
+- [s34] E-s34-5: the combine.c:902 three-insn path was probed and NOT provoked.
+  R1 recomputes loop 2's preheader shift as `(slot_a << 5) << 1` to defeat cse's
+  available-expression fold; the build is still **125 insns (score 6)**, i.e. the
+  two shifts are re-merged before combine and no second in-block feeder exists.
+  A real probe of combine.c:902 needs a second feeder that survives to combine,
+  and target spends only one `sll` for both the guard add and the base add.
+
+- [s34] THE MERGED READING FOR s35+. Three facts now bracket the answer:
+  (1) target's preheader copy is use-once (s31); (2) combine deletes a use-once
+  copy on every chassis measured, including the structurally target-identical one
+  (E-s34-1); (3) the only zero-cost escape from combine forces a pseudo merge
+  target's register assignment does not admit (E-s34-2, E-s34-3). At least one of
+  these must have a false premise, and the weakest is (2)'s implicit premise that
+  target's copy is a COPY at combine time. The join chassis makes that testable
+  for the first time, because it reproduces target's exact block structure: the
+  next question is not which C spelling saves the copy, but which pass could emit
+  `addu a3,a0,zero` into an already-combined preheader — loop.c's 14
+  `emit_move_insn` sites (closed in s28 by score, never by dump) are the only
+  producer in the s28/s29/s30 census still unread on a chassis whose preheader is
+  block-for-block target's.
+
+- [s34] Chassis re-audit (mandated) reproduces every reference number on the HEAD src/ings.c:719 INCLUDE_ASM anchor: BASE (candidate.c) = 3 at 127/127, K1 (the closest-to-target instance kill) = 10 at 127/127, AK = 14 at 127/127. No FAKE construct exists anywhere in this function's tree, so tools/fake_ablate.py has nothing to ablate and these re-measurements are the kill re-audit.
+
+- [s34] Target's two loops open with one identical nine-instruction sequence - lw a0,0xC(s2) / sll a1,s4,6 / addu v0,a1,a0 / lw v0,GUARD(v0) / blez / addu v1,zero,zero / addu a3,a0,zero / lw a2,0x10(s2) / addu a0,a1,a3 - with GUARD = 0x1C for loop 1 and 0x20 for loop 2 (tmp/grind/func_80017848/s34/T.txt). The ledger's 'loop 1 exit tail' residual instruction is loop 2's copy of the record-pointer read and belongs at the JOIN, outside loop 1's if-block.
+
+- [s34] NEW CHASSIS: the join shape (loop-1 reload moved to the join) is block-for-block target's structure and scores 6 at 127/125 (P0, P1); the two missing instructions are exactly the two preheader copies. Banked as memory/grind/func_80017848/candidate_alt_join_shape_6.c.
+
+- [s34] DUMP-PROVEN: on the join chassis cse KEEPS both preheader copies. ings.cse and ings.cse2 show insn 83 (set (reg/v:SI 80) (reg/v:SI 79)) with insn 89's base add reading reg80 - cse.c:826 make_regs_eqv promoted the copy destination to canonical, so the copy is not trivially dead. ings.combine has insn 83 deleted and insn 89 reading reg79 with REG_DEAD. Combine, not cse, is the whole remaining obstacle, in BOTH loops.
+
+- [s34] This supersedes s31/s32's account that loop 2's preheader read can never be cse-folded because the EBB is flushed at the join label: the flush is real, but the join block's own lw ctx+0xC re-establishes mem[ctx+0xC] as available for the rest of that EBB, which contains loop 2's preheader.
+
+- [s34] can_combine_p read end to end at tools/gcc-2.7.2/combine.c:880-928 against target's three-insn preheader: all_adjacent is 0 so combine.c:914 use_crosses_set_p is evaluated but needs the links load to set the copy's source (the pointer/links pseudo merge); combine.c:902 needs succ != 0 hence a three-insn combination hence a second in-block LOG_LINK on the base add, and target computes its one sll a1,s4,6 in the guard block where flow.c:2102 builds no link; the last_call_cuid path needs a call inside the preheader; the REG_NO_CONFLICT path needs a DImode sequence.
+
+- [s34] Escape #9 measured on the join chassis: Q1 (both loops merge p and links) = 14 at 127/127 with a pure register-permutation residual, Q2 (slots+links then p+links) = 15 at 127/127. K1's 10 stands as the best exact-instruction-stream form in 34 sessions.
+
+- [s34] R1 (loop 2's preheader shift recomputed as (slot_a << 5) << 1) still builds 125 insns at score 6 - the two shifts re-merge before combine, so no second in-block feeder and no three-insn try_combine attempt was created; the combine.c:902 path remains unprobed rather than measured.
+
+- [s34] Inertness re-confirmed on the new chassis: P0 = P1 = 6 exactly (shared vs distinct copy destination). The links carrier is NOT inert: P4 (fresh lnk2) = 4 vs P2/P3 (shared lnk) = 12.
+
+- [s34] Merged reading for s35+: three facts bracket the answer - target's copy is use-once (s31); combine deletes a use-once copy on every chassis measured including the block-identical one (s34); the zero-cost escape from combine forces a pseudo merge target's register assignment does not admit (s34). The weakest premise is that target's copy is a COPY at combine time, and the join chassis makes that testable for the first time on target's own block structure.

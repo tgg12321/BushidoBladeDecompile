@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 33,
- "current_modality": "structural",
+ "session_count": 34,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -201,23 +201,29 @@
    "floor": 3,
    "modality": "structural",
    "headline": "Floor holds at 3 (127/127, chassis re-audited); the loop-2 guard two-step is byte-free with a fresh variable (H4 = a second score-3 chassis) and combine.c:914's use_crosses_set_p escape is shown NOT t"
+  },
+  {
+   "session": 34,
+   "floor": 3,
+   "modality": "synthesis",
+   "headline": "Residual re-localized: target's two loops open with the same nine instructions, and on the new join-shape chassis cse produces BOTH preheader copies (make_regs_eqv promotion, dump-proven) while combin"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The convergence of loop 1's exit tail (fresh read and p = q; both emit addu a0,a3,zero) is produced by a pass other than cse, and naming it names the same mechanism that plants target's use-once preheader copy - because target's function contains the copy AND the reload simultaneously, which no combine-escape story explains.",
-   "mechanism": "cse.c:8039 ends the extended basic block at any CODE_LABEL, and loop 1's body label has two predecessors, so the exit tail's redundant load should not be foldable. Since it folds anyway, either loop.c hoists/sinks it (loop.c is the largest copy producer in the s28 census at 14 emit_move_insn sites and was closed by measurement, never by dump) or cse's follow-jumps path reaches the tail through data->path. Both explanations are decidable from a dump read, and both would change what 'the copy survives combine' means for loop 2 as well.",
-   "next_probe": "Read the FRESH H4 dumps already on disk (tmp/grind/func_80017848/dumps/ings.cse, .loop, .cse2, .combine - generated this session with H4 applied). Locate the exit-tail insn that reads *(u8 **)(ctx + 0xC) in ings.rtl, then follow its UID across .cse, .loop and .cse2 to find the pass that converts it to a register copy. If loop.c is the converter, re-open the loop.c leg of the s28 census with a dump instead of a score."
+   "hypothesis": "Target's preheader copy is emitted by loop.c into an already-formed preheader rather than surviving from source, which is why it is use-once and why no combine escape explains it.",
+   "mechanism": "loop.c is the largest emit_move_insn producer in the s28 census (14 sites) and is the only producer in that census closed by SCORE alone and never by a dump. Its preheader emissions (loop-invariant hoists and giv/biv initializations) land exactly where target's addu a3,a0,zero sits - after the blez, before the links load - and run BEFORE combine, so a copy loop.c creates would still have to survive combine; but a copy loop.c creates for a value whose use is inside the loop body would not have the single in-block LOG_LINK that kills ours.",
+   "next_probe": "On the join chassis (candidate_alt_join_shape_6.c, already applied-and-dumped once this session), read tmp/grind/func_80017848/dumps/ings.loop for func_80017848 and locate every insn loop.c ADDED to either preheader; compare against ings.cse2. Then build cells that give the base pointer a loop-carried shape loop.c would hoist or strength-reduce (e.g. the record pointer advanced by the loop instead of indexed by i), and check ings.loop for an emitted preheader move. This is the first producer probe run on a chassis whose preheader is block-for-block target's."
   },
   {
-   "hypothesis": "The use_crosses_set_p escape can be made free by choosing a merge partner whose FIRST role target already seats in $a2 - or by shortening the merge partner's live range so it does not displace loop 1's links pointer.",
-   "mechanism": "K1's entire 10-point residual is one seat chain: slots is read in loop 2's preheader, so it stays live from the top guard through loop 1, takes $a2, and pushes loop-1 lnk to $a3 and loop-1 q to $t0. If slots were re-defined inside loop 1's arm (so its live range restarts after loop 1), the chain would have nothing to displace. The obstacle measured this session is that any such re-definition must be an instruction target already spends - and target's only candidate is the exit-tail lw a0,0xC(s2), which currently binds to p.",
-   "next_probe": "On the K1 chassis, sweep the merge partner's re-definition point: (a) slots re-assigned in loop 1's exit tail INSTEAD of p, with loop 2's guard reading slots and p left dead after loop 1; (b) the same with a single pointer used for the top guard and loop 2 but a separate one for loop 1; (c) loop 1's links variable made the merge partner. Score each and, for every cell reaching 127 build insns, run s33/dis.sh and check whether the seat chain collapses to the loop-2 copy alone."
+   "hypothesis": "Escape #1 (a second use of the copy destination downstream of the base add) is cheaper on the join chassis than on the BASE chassis, because cse's make_regs_eqv promotion already makes the base add read the copy destination, so a second use no longer has to fight a fold.",
+   "mechanism": "s31 priced escape-1 sites on the BASE chassis at 6 (in-body), 9 (bottom test), 12 (pre-join) and 19-22 (post-loop), and s31's cell P failed specifically because cse re-folded sh2 + (s32)q back onto the available base pseudo before combine ran. On the join chassis the promotion goes the other way - the base add reads q, not p - so a bottom-test or in-body use of q is no longer a redundant recomputation of an available expression and may survive to combine as a genuine second reference.",
+   "next_probe": "On the P1 and P4 bodies, sweep second-use sites for q that replace an instruction target already spends: (a) the do-while bottom test written through q, (b) the in-body base+i address written through q, (c) loop 2's guard pointer read replaced by q where the value is provably live. Score each and, for every cell reaching 127 build insns, run tmp/grind/func_80017848/s34/dis.sh and check whether the residual is instruction-level or seat-level."
   },
   {
-   "hypothesis": "The three-insn combine path - can_combine_p(i1, i3, NULL, i2) refusing on `succ && ! all_adjacent && reg_used_between_p (dest, succ, i3)` at combine.c:902 - is still the only can_combine_p refusal never spelled, and unlike the use_crosses_set_p escape it requires no pseudo merge and no second use.",
-   "mechanism": "The refusal only fires when combine attempts a THREE-insn combination, i.e. when the base add carries TWO LOG_LINKS. On the H4 chassis the base add reads sh2 (set in the guard block) and q2 (set in the preheader), so it has exactly one in-block link. A second in-block single-set feeder requires the shift value to be recomputed in the preheader without cse folding it back onto the guard's sh2 - the same invalidation problem the t2 two-step solved for the guard's add.",
-   "next_probe": "On body_H4.c, build cells whose loop-2 preheader recomputes the shift into a fresh variable after invalidating sh2 (e.g. sh2 reused as a load destination in the guard, mirroring the t2 two-step), with the links load placed between the copy and the base add so both feeders carry LOG_LINKS. Then read tmp/grind/func_80017848/dumps/ings.combine for whether try_combine reports a three-insn attempt at that insn; if no attempt is made, record combine.c:902 as unreachable for this CFG and close the last can_combine_p path."
+   "hypothesis": "combine.c:902 (succ && !all_adjacent && reg_used_between_p (dest, succ, i3)) is still unspelled, and reaching it needs a second in-block feeder for the base add that cse cannot equate with the guard's shift.",
+   "mechanism": "The refusal fires only on a three-insn combination, i.e. when the base add carries two LOG_LINKS. R1's (slot_a << 5) << 1 failed because combine's shift simplification re-merges it before try_combine looks at the add. A feeder that is not an arithmetic identity of the guard's shift - derived from t2, from a subtraction, or from a differently-typed intermediate - would survive to combine and create the second link.",
+   "next_probe": "On body_P1.c, build cells whose loop-2 preheader recomputes the base's shift operand through an expression cse cannot equate with sh2 (e.g. via the guard's t2 value, or a subtraction of two already-live quantities), then read tmp/grind/func_80017848/dumps/ings.combine for whether try_combine reports a three-insn attempt at the base add. If no attempt is made even with two in-block LOG_LINKS present, record combine.c:902 as measured-unreachable for this CFG with the dump as the predicate evidence."
   }
  ],
  "judge_constraints": [],
@@ -430,6 +436,14 @@
    "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus cells BASE/SYM/H4, floor-3 chassis, no FAKE constructs",
    "predicate_cite": "",
    "result": "H4 scores 3 at 127/127 and its diff is the SAME three instructions as the candidate's: the exit tail still comes out as "
+  },
+  {
+   "session": 34,
+   "statement": "The use_crosses_set_p escape (combine.c:914) measures 14 (Q1, both loops merging p and links) and 15 (Q2, loop 1 merging slots and links, loop 2 merging p and links) at 127/127 on the join chassis, ag",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus the P0/P1/P2/P3/P4/Q1/Q2/R1 cell bodies, floor-3 chassis (BASE re-measured 3 at 127/127, K1 10 at 127/127, AK 14 at 127/127), no FAKE constructs anywhere in",
+   "predicate_cite": "",
+   "result": "Q1 = 14 at 127/127 - the complete 127-instruction stream with a pure register-permutation residual, reproducing AK's num"
   }
  ]
 }

@@ -961,3 +961,26 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  *     destination first mentioned before the cse block start to canonical, and
  *     outside cells S/Z it is still unexploited.
  */
+/* [s34 SYNTHESIS ADDENDUM - body unchanged, re-measured 3 at 127/127.]
+ * s34 re-localized the residual.  Normalising the target listing shows BOTH loops
+ * open with the SAME nine instructions (lw a0,0xC(s2) / sll a1,s4,6 / addu v0,a1,a0 /
+ * lw v0,GUARD(v0) / blez / addu v1,zero,zero / addu a3,a0,zero / lw a2,0x10(s2) /
+ * addu a0,a1,a3), so what this ledger has called "loop 1's exit tail" is really loop
+ * 2's record-pointer read AT THE JOIN, outside loop 1's if-block.  Moving it there
+ * (the JOIN-SHAPE chassis, banked as candidate_alt_join_shape_6.c, score 6 at 127/125)
+ * makes the C block-for-block identical to target and, per the fresh -da dumps,
+ * makes cse produce BOTH of target's preheader copies: cse.c:826 make_regs_eqv
+ * promotes the copy destination to canonical, the base add reads it (ings.cse2
+ * insns 83/89), and the copy is no longer trivially dead.  COMBINE then deletes
+ * both (ings.combine insn 89 reads reg79 with REG_DEAD).  So this candidate's
+ * header account above - "cse folds the redundant load into a copy combine never
+ * sees" - is superseded twice over: combine always sees it, and this body's loop-1
+ * copy is bought solely by the `p = q;` second use (escape 1), which is exactly the
+ * instruction target spends on `lw a0,0xC(s2)` instead.  The whole remaining gap is
+ * one question asked twice: how a use-once reg-reg copy survives combine at zero
+ * instruction cost.  s34 read can_combine_p (combine.c:880-928) against target's
+ * three-insn preheader and found use_crosses_set_p the only zero-cost refusal it
+ * admits; firing it merges the record pointer and the links pointer into one pseudo,
+ * which target seats in two different hard registers (a0/v1 vs a2), measured at
+ * 14 (Q1) and 15 (Q2) on the join chassis and 10 (K1) / 14 (AK) elsewhere.
+ */
