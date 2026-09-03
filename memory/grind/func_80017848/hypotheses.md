@@ -3455,3 +3455,61 @@ to target. Cell scores: `tmp/grind/func_80017848/s34/scores.txt`.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: source reading of tools/gcc-2.7.2/combine.c against the P4 dump geometry (tmp/grind/func_80017848/dumps/ings.combine); floor-3 chassis re-audited this session; no FAKE constructs anywhere in the tree
+
+## s36 hypotheses (2026-09-03, escalation)
+
+- H-s36-1 (KILLED, instance): On the BASE floor-carrier chassis, giving loop 2's
+  redundant `*(u8 **)(ctx + 0xC)` read a named carrier `q2` plus a second use
+  that is EVALUATED BEFORE the base add — s35's frontier item 1, ported from the
+  join chassis to the chassis that actually carries the floor — leaves the
+  preheader copy in target's position at no instruction cost.
+  mechanism: s35's B1/B2 showed on the join chassis that a second use of the copy
+  destination survives combine via the added_sets_2 path (combine.c:1458) but
+  lands the copy AFTER the base add, because cse materialises the second use's
+  own address expression late. A use that is a data dependency of something
+  emitted earlier should force the copy to precede it.
+  probe: cells D1 (bottom test through q2), D2 (body element address through q2),
+  D3 (guard and base sharing the read, read hoisted above the guard), D4 (q2 plus
+  a post-loop `p = q2`), each applied over the HEAD src/ings.c:719 INCLUDE_ASM
+  anchor and scored with `sandbox func_80017848 --disable all`.
+  result: D1 = 5 at 127/128, D2 = 6 at 127/128, D3 = 31 at 127/124, D4 = 3 at
+  127/127 (an exact tie with BASE in both score and instruction count). The
+  earlier-evaluated second use does not reposition the copy for free — it pays
+  for its own address expression and overshoots the target instruction count by
+  one, which is strictly worse than the join-chassis B1/B2 result it was meant to
+  improve on. The frontier item is spent.
+  kill_scope: instance
+  measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus the D1/D2/D3/D4 cell
+  bodies on the BASE (candidate) chassis; BASE re-measured 3 at 127/127 this
+  session; no FAKE constructs anywhere in the tree.
+
+- H-s36-2 (KILLED, instance): The closest-to-target banked instance kill (Q1,
+  s34) scores differently on the current chassis or with FAKE constructs ablated,
+  so the flat floor is an artefact of a stale measurement.
+  mechanism: the driver's standing kill-re-audit requirement — an instance kill
+  measured under a different chassis or with a FAKE carrier occupying its target
+  pseudo is not a kill (func_8002EA24 s8).
+  probe: re-applied tmp/grind/func_80017848/s34/body_Q1.c over the current HEAD
+  anchor and re-scored; ran tools/fake_ablate.py against candidate.c.
+  result: Q1 = 14 at 127/127, exactly its banked number; fake_ablate reports no
+  FAKE-annotated constructs to ablate. The chassis has not drifted and no banked
+  kill in this ledger rests on a FAKE carrier.
+  kill_scope: instance
+  measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus body_Q1.c; BASE 3 at
+  127/127; no FAKE constructs anywhere in the tree.
+
+## [s36] On the BASE floor-carrier chassis, giving loop 2's redundant *(u8 **)(ctx + 0xC) read a named carrier q2 plus a second use evaluated BEFORE the base add (s35 frontier item 1, ported from the join chassis to the chassis that carries the floor) leaves the preheader copy in target's position at no instruction cost.
+- mechanism: s35's B1/B2 showed on the join chassis that a second use of the copy destination survives combine via the added_sets_2 path (combine.c:1458) but lands the copy AFTER the base add, because cse materialises the second use's own address expression late. A use that is a data dependency of something emitted earlier should force the copy to precede it.
+- probe: Cells D1 (loop-2 bottom test through q2), D2 (body element address through q2), D3 (guard and base sharing one hoisted read), D4 (q2 plus a post-loop p = q2), each applied over the HEAD src/ings.c:719 INCLUDE_ASM anchor and scored with sandbox func_80017848 --disable all.
+- result: D1 = 5 at 127 target / 128 build insns, D2 = 6 at 127/128, D3 = 31 at 127/124, D4 = 3 at 127/127 (exact tie with BASE in score and instruction count). The earlier-evaluated second use does not reposition the copy for free: it materialises its own address expression as an extra instruction and overshoots the target instruction count, strictly worse than the join-chassis B1/B2 result it was meant to improve on. D3 collapses to a single pointer pseudo with no copy at all, reconfirming the s35 A1/A2 merge kill on a second chassis. D4 is the third independent confirmation (s33 F4, s35 E1/E3/E4) that a post-loop second use is byte-neutral here.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus the D1/D2/D3/D4 cell bodies on the BASE (candidate) chassis; BASE re-measured 3 at 127/127 this session; no FAKE constructs anywhere in the tree
+
+## [s36] The closest-to-target banked instance kill (Q1, s34 - target's complete 127-instruction stream with a pure register-permutation residual) scores differently on the current chassis or with FAKE constructs ablated, so the flat floor is an artefact of a stale measurement.
+- mechanism: Driver-mandated kill re-audit: an instance kill measured on a different chassis, or with a FAKE carrier occupying its target pseudo, is not a kill (func_8002EA24 s8 precedent).
+- probe: Re-applied tmp/grind/func_80017848/s34/body_Q1.c over the current HEAD anchor and re-scored; ran python3 tools/fake_ablate.py --func func_80017848 --file ings --candidate memory/grind/func_80017848/candidate.c.
+- result: Q1 = 14 at 127/127, exactly its banked s34 number. fake_ablate prints 'no FAKE-annotated constructs found ... nothing to ablate'. The chassis has not drifted since s35 and no banked kill in this ledger rests on a FAKE carrier.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus tmp/grind/func_80017848/s34/body_Q1.c; BASE 3 at 127/127; no FAKE constructs anywhere in the tree

@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 35,
- "current_modality": "synthesis",
+ "session_count": 36,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -213,23 +213,29 @@
    "floor": 3,
    "modality": "synthesis",
    "headline": "Floor holds at 3 (127/127, chassis re-audited); K1 is shown NOT to be instruction-exact so BASE is the closest form, five new spellings of the preheader copy are exactly inert on the join chassis, esc"
+  },
+  {
+   "session": 36,
+   "floor": 3,
+   "modality": "escalation",
+   "headline": "Floor re-audited at 3 (127/127); s35 frontier item 1 measured dead on the floor-carrier chassis, both endgame-lock gates FAIL, foreclosure record filed at decisions.md:21464."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A second use of the preheader copy's destination that must be EVALUATED BEFORE the base add will leave the copy in target's position, where B1/B2's second uses (bottom test, body address) left it after.",
-   "mechanism": "B1/B2 prove on the join chassis that a second use of q survives to combine and buys one instruction (125 -> 126) - the added_sets_2 path at combine.c:1458 keeps the copy alive because the destination is no longer dead at i3. What they got wrong is ordering: cse materialises the second use's own address expression after the base add, giving addu a1,a1,a0 / addu a0,a1,zero. A second use that is a data dependency of something emitted before the base add (the guard comparison operand, loop 1's exit condition, the first body statement hoisted into the preheader) would force the copy to precede it.",
-   "next_probe": "On tmp/grind/func_80017848/s35/body_P4.c sweep second-use sites for q that are evaluated before the base add: (a) the loop-2 guard's own comparison written through q rather than p, (b) the first body statement made loop-invariant so loop.c hoists it into the preheader ahead of the base add, (c) loop 1's exit condition reading q. Score each cell AND run tmp/grind/func_80017848/s35/dis.sh on every cell reaching 126 or 127 - judge by the copy's POSITION relative to the base add, not by score, because B1 at 126 scored worse than P4 at 125."
+   "hypothesis": "A family grant covering a construct that can place a use-once register copy at a join-successor preheader without paying for its own address expression would re-open the residual; no such family is on the frozen list today.",
+   "mechanism": "Loop 2's guard block is a JOIN (loop 1's skip branch blez $v0, .L8001791C at asm/funcs/func_80017848.s:62 lands on it), so cse's extended basic block cannot reach loop 2's preheader and the redundant load is never folded to a copy there; every C-level spelling of the copy at that point has been measured dead.",
+   "next_probe": "On a future grant_rescan.py --apply hit, re-measure the BASE chassis with the newly granted construct spelling loop 2's preheader copy, then diff copy POSITION against target with tmp/grind/func_80017848/s36/dis.sh."
   },
   {
-   "hypothesis": "Q1 (s34, 14 at 127/127) is target's exact 127-instruction stream with a pure register permutation, and the solver suite has never been run on it - s31's EMPTY goal derivation was obtained on cell E, a different chassis with a different merged-pseudo set, so Q1's goal may be non-empty and its seat residual may be a solvable search rather than a hand-priced dead end.",
-   "mechanism": "tools/ra_solver models GCC 2.7.2's whole allocation stack and was validated 13/13 with sort order MATCH on this function in s31. goal_from_tgt.py aligns build against target and derives the seat constraints; it returned empty on cell E only because that chassis merged p and links across BOTH loops so one pseudo had to hold two of target's hard registers. Q1's merge is the same shape but the surrounding pseudo set and live ranges differ, and C1/C2 show the merge cost decomposes per loop, so the constraint system is not obviously the same one.",
-   "next_probe": "Apply tmp/grind/func_80017848/s34/body_Q1.c, then run tools/ra_solver/extract.py and simulate.py to confirm the forward model still reproduces the .lreg/.greg dump on this chassis, then goal_from_tgt.py goal ings func_80017848 --show. If the goal is non-empty, run inverse.py for ranked C-lever vectors and spell the top ones. If it is empty for the same reason as cell E, record that as a second independent confirmation of E-s34-3 with the report banked."
+   "hypothesis": "An SOTN-master (PSX / GCC 2.7.2) precedent exhibiting the copy-then-redefine-source preheader idiom in a NON-nested-loop context would convert the s18 decomp.me twin (scratch 19TpT, func_8009C6D8, matching) into a citable precedent and re-open gate (b).",
+   "mechanism": "Gate (b) requires an in-hand SOTN-master file:line or commit; the present census over docs/reference/sotn-construct-index.md is negative, and 19TpT's free copy depends on an enclosing loop keeping the source live - a precondition this function has been measured unable to buy (tail re-reads through a live local cost 19-22; fabricating an enclosing loop is the s12 duplicated-region family at 35).",
+   "next_probe": "Re-run the construct-index census after any index regeneration, filtering PSX-tagged entries for a preheader reg-reg copy whose source is redefined by the very next add."
   },
   {
-   "hypothesis": "Premise (2) - that combine deletes a use-once reg-reg copy whose single in-block use is the next-but-one insn - has never been tested in isolation, only inside this function; if it does NOT hold in a minimal test case under the project's exact CC_FLAGS, the difference between the two contexts is the whole answer.",
-   "mechanism": "Every measurement supporting premise (2) is an enumeration over this function's chassis space. can_combine_p's refusal set was read and closed, but reading a refusal set is not the same as observing the pass on the minimal geometry: a small standalone function isolates the copy from this function's 15 locals, its two loops, its argument moves and its call, all of which change LOG_LINK order, cuid distances and combine's reg_last_set bookkeeping.",
-   "next_probe": "Write a small standalone C function into a scratch translation unit that expands to exactly (set r_b r_a) / (set r_c (mem ...)) / (set r_d (plus r_e r_b)) in one basic block - a redundant pointer read cse will fold, a load of an unrelated pointer, then an add reading the folded register - and compile it with the project's exact CC_FLAGS plus -da. Read .cse2 and .combine. If combine deletes the copy there too, premise (2) is confirmed as a predicate rather than an enumeration and the frontier collapses to items 1 and 2; if it does not, diff the two contexts insn by insn to find what protects it."
+   "hypothesis": "Premise (2) - that combine deletes a use-once reg-reg copy whose single in-block use is the next-but-one insn - has never been tested on minimal geometry outside this function; a negative there would name the protecting context.",
+   "mechanism": "Every measurement supporting premise (2) is an enumeration over this function's chassis space; a standalone function isolates the copy from this function's 15 locals, two loops, argument moves and call, all of which change LOG_LINK order, cuid distances and combine's reg_last_set bookkeeping.",
+   "next_probe": "Compile a scratch TU expanding to exactly (set r_b r_a) / (set r_c (mem ...)) / (set r_d (plus r_e r_b)) in one block under the project's exact CC_FLAGS plus -da, and read .cse2 / .combine. Carried forward unspent from s35 - it is a toolchain finding of the kind that would re-activate this item."
   }
  ],
  "judge_constraints": [],
@@ -498,6 +504,22 @@
    "measured_on": "source reading of tools/gcc-2.7.2/combine.c against the P4 dump geometry (tmp/grind/func_80017848/dumps/ings.combine); floor-3 chassis re-audited this session; no FAKE constructs anywhere in the tree",
    "predicate_cite": "",
    "result": "The frontier item is retired without spending cells. s34's R1 negative was not a failure to provoke the path; provoking "
+  },
+  {
+   "session": 36,
+   "statement": "On the BASE floor-carrier chassis, giving loop 2's redundant *(u8 **)(ctx + 0xC) read a named carrier q2 plus a second use evaluated BEFORE the base add (s35 frontier item 1, ported from the join chas",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus the D1/D2/D3/D4 cell bodies on the BASE (candidate) chassis; BASE re-measured 3 at 127/127 this session; no FAKE constructs anywhere in the tree",
+   "predicate_cite": "",
+   "result": "D1 = 5 at 127 target / 128 build insns, D2 = 6 at 127/128, D3 = 31 at 127/124, D4 = 3 at 127/127 (exact tie with BASE in"
+  },
+  {
+   "session": 36,
+   "statement": "The closest-to-target banked instance kill (Q1, s34 - target's complete 127-instruction stream with a pure register-permutation residual) scores differently on the current chassis or with FAKE constru",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus tmp/grind/func_80017848/s34/body_Q1.c; BASE 3 at 127/127; no FAKE constructs anywhere in the tree",
+   "predicate_cite": "",
+   "result": "Q1 = 14 at 127/127, exactly its banked s34 number. fake_ablate prints 'no FAKE-annotated constructs found ... nothing to"
   }
  ]
 }

@@ -4217,3 +4217,84 @@ and the cell re-measurements above ARE the kill re-audit. All s34 cell scores:
 - [s35] THE SHARPENED CONTRADICTION for s36+: four premises bracket the residual and one must be false because the matching C exists - (1) target's copy is use-once, (2) combine deletes such a copy on every chassis measured including the block-identical one, (3) can_combine_p's refusal set is closed and its one zero-cost member forces a pseudo merge target's a0/a2 seating does not admit, (4) no post-combine pass can create a plain copy here. Premise (2) is the only one still resting on enumeration rather than a cited predicate, and its untried space is narrow: a second use whose value must be evaluated BEFORE the base add.
 
 - [s35] 9 new disproven forms banked under memory/grind/func_80017848/rejected/ (234 total); P4 banked as memory/grind/func_80017848/candidate_alt_join_p4_4.c; candidate.c unchanged (BASE, 3); src/ings.c restored to its committed INCLUDE_ASM state.
+
+## s36 (2026-09-03, modality `escalation` — disposition session)
+
+Chassis re-audited before any probe: `sandbox func_80017848 --disable all` with
+`memory/grind/func_80017848/candidate.c` applied over the HEAD
+`src/ings.c:719 INCLUDE_ASM` anchor = **3 at 127 target / 127 build insns,
+scorable**. The floor is unchanged for the ninth consecutive session.
+
+- [s36] KILL RE-AUDIT (driver-mandated). The instance kill whose form sits
+  closest to the target instruction stream is Q1 (s34: the use_crosses_set_p
+  merge on the join chassis, target's complete 127-instruction stream with a
+  pure register-permutation residual). Re-measured this session on the current
+  chassis: **Q1 = 14 at 127/127**, reproducing its banked number exactly. FAKE
+  ablation is vacuous here and was confirmed mechanically:
+  `python3 tools/fake_ablate.py --func func_80017848 --file ings --candidate
+  memory/grind/func_80017848/candidate.c` prints "no FAKE-annotated constructs
+  found ... nothing to ablate". No kill in this ledger was ever measured with a
+  FAKE carrier occupying a target pseudo, because the function has never carried
+  a FAKE construct in any cell.
+
+- [s36] FRONTIER ITEM 1 (a second use of the preheader copy's destination
+  evaluated BEFORE the base add) measured on the BASE (floor-carrier) chassis
+  rather than s35's join chassis, which is the combination s35 left untried.
+  Four cells, all with a named local `q2` holding loop 2's redundant
+  `*(u8 **)(ctx + 0xC)` read:
+      D1  bottom test through q2  (`while (i < *(s32*)(sh2 + (s32)q2 + 0x20))`)
+          = **5 at 127/128**
+      D2  body element address through q2                = **6 at 127/128**
+      D3  guard and base sharing one read of q2 (the read hoisted above the
+          guard, so the guard's own comparison is the earlier use)
+                                                          = **31 at 127/124**
+      D4  q2 + a post-loop `p = q2;` second use           = **3 at 127/127**
+  D1 and D2 both OVERSHOOT the target instruction count: the second use does not
+  merely reposition the copy, it materialises its own address expression as an
+  extra instruction, so the build reaches 128 against target's 127 and the
+  score rises. D3 collapses to a single pointer pseudo (124 insns, no copy at
+  all, +28 points) — the same shape as the s35 A1/A2 merge kill, reconfirmed on
+  a second chassis. D4 ties BASE exactly in score AND instruction count, the
+  third independent confirmation (s33 F4, s35 E1/E3/E4) that a post-loop second
+  use of the copy destination is byte-neutral on this function.
+
+- [s36] GATE (a), canonical-asm evidence: **FAILED**, unchanged from s17.
+  `python3 tools/scan_hand_coded.py --single func_80017848` →
+  `HAND_CODED: tier=LOW score=0/8 (func_80017848, 127 insns)`, all eight signals
+  clear (S1 0 multu/mflo pairs, S2 no empty-body branches, S3 127 insns/7
+  spills/12 distinct regs, S4 max load burst 3, S5 no high-similarity siblings,
+  S6 no BIOS jumptable pattern, S7 all callee-save uses have $sp saves, S8 no
+  redundant mask-before-shift). Not STRONG; not one signal.
+
+- [s36] What holds the byte-match today: nothing but the original assembly.
+  `asmfix.txt` and `regfix.txt` no longer exist in the tree (the rules-to-zero
+  milestone, 2026-08-25), and `src/ings.c:719` is
+  `INCLUDE_ASM("asm/funcs", func_80017848);` per the asm-until-matched ruling.
+  There is zero cheat-asm and zero regfix carrying this function; the s17 entry's
+  "two asmfix rules" description is superseded.
+
+- [s36] GATE (b), in-hand SOTN-master precedent for the closing construct:
+  **FAILED**. `docs/reference/sotn-construct-index.md` (2,746 lines) contains
+  zero entries matching preheader / dead-copy / redundant-register-copy
+  constructs. There is in any case no closing CONSTRUCT to cite a precedent for:
+  the residual is a three-instruction emission-order-plus-seat difference with no
+  identified C-level handle, not a coercion or spelling family awaiting sanction.
+  The one piece of external prior art the ledger holds (s18's decomp.me scratch
+  19TpT) is not SOTN master and was already shown to require a nested-loop
+  precondition this function cannot buy.
+
+- [s36] Chassis re-audit: sandbox func_80017848 --disable all with candidate.c applied = 3 at 127 target / 127 build insns, scorable - ninth consecutive session at 3.
+
+- [s36] Exhaustion window counted post-unpark only: state.json exhaustion_base = 27, so sessions 28-35 = 8 consecutive flat sessions across 4 distinct modalities (forensics s28/s29, rederive s30/s31, structural s32/s33, synthesis s34/s35). The 2026-09-02 foreclosure-mechanics ruling's fresh window is satisfied on its own terms; the owner's named probe was spent inside it as progress, not as a disposition.
+
+- [s36] GATE (a) canonical-asm FAILED: tools/scan_hand_coded.py --single func_80017848 returns tier=LOW score=0/8 with all eight signals clear (0 multu/mflo pairs, no empty-body branches, 127 insns / 7 spills / 12 distinct regs, max load burst 3, no high-similarity siblings, no BIOS jumptable pattern, all callee-save uses have $sp saves, no redundant mask-before-shift).
+
+- [s36] GATE (b) SOTN-master precedent FAILED: docs/reference/sotn-construct-index.md (2,746 lines) has zero preheader / dead-copy / redundant-register-copy entries, and there is no closing construct to cite a precedent for - the residual is a three-instruction emission-order-plus-seat difference with no C-level handle. The only external prior art (s18's decomp.me scratch 19TpT) is not SOTN master and needs a nested-loop precondition this function cannot buy.
+
+- [s36] What holds the byte-match today is nothing but the original assembly: asmfix.txt and regfix.txt no longer exist in the tree (rules-to-zero, 2026-08-25) and src/ings.c:719 is INCLUDE_ASM("asm/funcs", func_80017848); per the asm-until-matched ruling. Zero cheat-asm, zero regfix rules - the s17 entry's 'two asmfix rules' description is superseded by the migration.
+
+- [s36] Floor 3 <= ENDGAME_LOCK_MAX_FLOOR (5), so the 2026-07-27 standing ruling is this residual's subject and the RESOLVED BY STANDING RULING title is the correct one (owner ruling 2026-09-02, foreclosure mechanics).
+
+- [s36] Cumulative exhaustion: 35 prior sessions, 237 banked rejected forms, 32 instance kills + 1 class kill (predicate tools/gcc-2.7.2/local-alloc.c:251), five permuter campaigns totalling 180,472 iterations with zero engine-scored improvements on four chassis.
+
+- [s36] src/ings.c was restored to the committed HEAD INCLUDE_ASM anchor after the last measurement; git status shows only ledger / decisions / metrics changes plus the three new rejected/ cells.

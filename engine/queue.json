@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80017848",
-      "file": "ings",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
-      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18614 \u2014 ## 2026-09-01 \u2014 func_80017848 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**"
-    },
-    {
       "func": "func_80033550",
       "file": "code6cac_b",
       "distance": 4,
@@ -1716,17 +1706,28 @@
       "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
       "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18515 \u2014 2026-09-01 \u2014 func_80060A68 \u2014 RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED",
       "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md - '## 2026-09-03 - func_80060A68 - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**'"
+    },
+    {
+      "func": "func_80017848",
+      "file": "ings",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "foreclosed",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18614 \u2014 ## 2026-09-01 \u2014 func_80017848 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**",
+      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:21464 - 2026-09-03 func_80017848 (src/ings.c) - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED"
     }
   ],
   "counts": {
     "total": 193,
-    "active": 189,
+    "active": 188,
     "by_status": {
-      "active": 189,
-      "foreclosed": 4
+      "active": 188,
+      "foreclosed": 5
     },
     "by_verdict": {
-      "C": 162,
+      "C": 161,
       "ASM-PARTIAL": 27
     }
   }

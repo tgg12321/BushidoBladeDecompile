@@ -21460,3 +21460,117 @@ behind every kill above. (iii) An honest early consumer of `*(s32 *)(outer + 0x1
 from the sibling cluster func_80060B70 / func_80061250 / func_80061658 / func_80061710 (the
 last is COMPLETED-C) — the standing fidelity lead, still unexamined at the source level.
 (iv) An owner unpark. Until then: FORECLOSED, silently, queue advances.
+
+## 2026-09-03 — func_80017848 (src/ings.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Proof-of-foreclosure record filed by grind session 36 in driver-assigned
+`escalation` modality. This is a RECORD, not a question: nothing is pending on the
+owner and no packet is addressed to anyone (owner ruling 2026-08-31,
+`.claude/rules/ordinary-c-judge-decidable.md`). The honest pure-C floor is **3**,
+which is at or below `ENDGAME_LOCK_MAX_FLOOR = 5`, so the 2026-07-27 standing
+ruling IS this residual's subject and the endgame-lock title applies (owner ruling
+2026-09-02, foreclosure mechanics).
+
+### The exhaustion window is the fresh one, not the pre-unpark one
+This function was foreclosed on 2026-09-01 (Ruling-A unpark, re-foreclosed after a
+single session) and returned to active on 2026-09-03 under the 2026-09-02
+foreclosure-mechanics ruling with `exhaustion_base = 27` stamped in
+`memory/grind/func_80017848/state.json`. The window counted here is entirely
+post-base: sessions **28-35, eight consecutive sessions, floor flat at 3**, across
+**four distinct modalities** — forensics (s28, s29), rederive (s30, s31),
+structural (s32, s33), synthesis (s34, s35) — plus this session's escalation. The
+owner's named probe from the unpark reason was spent inside that window (s28's
+copy-producer census) and was banked as `progress`, not as a disposition. The
+trigger fired on the fresh window, exactly as Ruling 1 intends.
+
+### Chassis re-audit and the last untried lever (this session)
+`sandbox func_80017848 --disable all` = **3 at 127 target / 127 build insns,
+scorable**, with `memory/grind/func_80017848/candidate.c` applied over the HEAD
+`src/ings.c:719 INCLUDE_ASM` anchor. Residual (three instructions, unchanged since
+s9):
+
+    loop-1 exit tail:  target `lw a0,12(s2)`     ours `addu a0,a3,zero`
+    loop-2 preheader:  target `addu a3,a0,zero`  ours `lw v0,12(s2)`
+                       target `addu a0,a1,a3`    ours `addu a0,a1,v0`
+
+The s35 frontier's item 1 — a second use of the preheader copy's destination
+*evaluated before the base add*, ported from s35's join chassis to the BASE
+chassis that actually carries the floor, which is the combination s35 left untried
+— was measured this session in four cells: D1 (bottom test through the named
+carrier) = 5 at 127/128, D2 (body element address through it) = 6 at 127/128, D3
+(guard and base sharing one read) = 31 at 127/124, D4 (post-loop second use) = 3
+at 127/127, an exact tie with BASE. An earlier-evaluated second use pays for its
+own address expression and OVERSHOOTS the target instruction count, so it is
+strictly worse than the join-chassis result it was meant to improve on. The
+mandated kill re-audit reproduced the closest-to-target banked form exactly (Q1 =
+14 at 127/127) and `tools/fake_ablate.py` confirmed there is no FAKE construct
+anywhere in this function's cells to ablate, so no banked kill rests on a FAKE
+carrier. Cells banked at `memory/grind/func_80017848/rejected/s36_*.c`.
+
+### GATE (a) — canonical-asm evidence: **FAILED**
+    $ python3 tools/scan_hand_coded.py --single func_80017848
+      HAND_CODED: tier=LOW  score=0/8  (func_80017848, 127 insns)
+      S1 0 multu/mflo pairs · S2 no empty-body branches · S3 127 insns, 7 spills,
+      12 distinct regs · S4 max load burst 3 · S5 no high-similarity siblings ·
+      S6 no BIOS jumptable pattern · S7 all callee-save uses have $sp saves ·
+      S8 no redundant mask-before-shift
+Not STRONG, not a single signal — ordinary GCC 2.7.2 output, independently
+corroborated by the 124-of-127-instruction pure-C reconstruction. The
+canonical-asm grant path does not apply.
+
+### GATE (b) — in-hand SOTN-master precedent: **FAILED**
+`docs/reference/sotn-construct-index.md` (2,746 lines) yields zero preheader /
+dead-copy / redundant-register-copy entries. There is no closing CONSTRUCT to cite
+a precedent for: the residual is a three-instruction emission-order-plus-seat
+difference with no identified C-level handle, not a coercion or spelling family
+awaiting sanction. The only external prior art in the ledger (s18's decomp.me
+scratch 19TpT, `func_8009C6D8`, gcc2.7.2-cdk, matching) is not SOTN master and
+requires a nested-loop precondition this function cannot buy (its outer loop keeps
+the copy's source live for free; func_80017848 has no nested loop and nothing live
+across loop 2, and every tail re-read routed through a live local measures 19-22).
+
+### What holds the byte-match today
+Nothing but the original assembly. `asmfix.txt` and `regfix.txt` no longer exist in
+the tree (rules-to-zero milestone, 2026-08-25) and `src/ings.c:719` is
+`INCLUDE_ASM("asm/funcs", func_80017848);` per the 2026-08-19 asm-until-matched
+ruling. Zero cheat-asm, zero regfix rules. The s17 entry's "two asmfix rules"
+description is superseded by the migration, not by any change to this function.
+
+### Evidence pointers
+- `memory/grind/func_80017848/evidence.md` (4,219+ lines) and `hypotheses.md`
+  (3,457+ lines); 35 prior sessions; **237 banked rejected forms** in
+  `memory/grind/func_80017848/rejected/`.
+- **32 instance kills + 1 class kill** in `state.json`, including: the complete
+  GCC 2.7.2 copy-producer census (s28, class kill, predicate
+  `tools/gcc-2.7.2/local-alloc.c:251`); reload1.c measured to emit zero insns here
+  (s29); integrate.c inline-argument copies measured at 30-45 (s30); the
+  `use_crosses_set_p` merge priced per-loop and symmetric at 12 points a side
+  (s33/s35); `optimize_reg_copy_2` closed analytically and by measurement (s16);
+  `can_combine_p`'s seven refusal paths enumerated and all closed (s17); loop.c
+  proven by dump to add no reg-reg move to either preheader (s35).
+- Five permuter campaigns, 180,472 iterations, zero engine-scored improvements on
+  four chassis, with the permuter's ranking measurably anti-correlated with engine
+  distance on this function (reproduced five times).
+- The structural fact behind the wall (s10, from the target listing itself):
+  loop 1's skip branch `blez $v0, .L8001791C` (`asm/funcs/func_80017848.s:62`)
+  lands on loop 2's guard, so loop 2's guard block is a JOIN and cse's extended
+  basic block cannot reach loop 2's preheader. Loop 1's copy is a cse-folded
+  redundant load that survives combine; loop 2's copy cannot be, and every C-level
+  spelling of a reg-reg copy at that point is now measured dead.
+
+### Re-activation triggers
+1. A family grant (or a `grant_rescan.py --apply` hit) covering a construct that
+   can place a use-once register copy at a join-successor preheader without paying
+   for its own address expression — no such family exists on the frozen list today.
+2. A toolchain finding that identifies a pass, other than the eight censused
+   producers, capable of emitting a plain reg-reg copy at that site.
+3. An SOTN-master (PSX/GCC-2.7.2) precedent exhibiting the copy-then-redefine-source
+   preheader idiom in a NON-nested-loop context, which would convert the s18
+   decomp.me twin into a citable precedent and re-open gate (b).
+4. An owner `queue unpark`, which resets the exhaustion window afresh under the
+   2026-09-02 ruling.
+
+### Disposition
+Both gates fail. Foreclosed silently under the 2026-07-27 standing ruling; the
+queue advances. The best pure-C form (distance 3) remains at
+`memory/grind/func_80017848/candidate.c` with its full derivation in the header.
