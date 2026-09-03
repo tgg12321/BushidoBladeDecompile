@@ -1107,3 +1107,58 @@ other stalled ledgers that describe an unreachable register seat around a run of
 consecutive D_<addr> stores through one base pointer. Grep the foreclosure
 entries for that shape and check named_syms.txt for a committed stride/record
 census row on the base before spending RA sessions.
+
+
+## s17 (2026-09-03, rederive) — H-s17-1 CONFIRMED
+
+STATEMENT: Declaring the slot-state flag object as the 6-byte array the
+committed naming census and func_80033510 both describe (`extern u8
+D_800A3918[6];`) removes the banned per-use pointer pun `*(&D_800A3918 + i)`
+from the body with no change to the emitted bytes.
+
+MECHANISM: The pun and the array subscript denote the same lvalue at the same
+address with the same u8 type, so RTL expansion produces the identical
+`lui %hi(D_800A3918); addu $at,$at,$v1; lbu/sb %lo(D_800A3918)($at)` pattern.
+The change is entirely at the declaration; the difference is what the C claims
+the storage IS, not what it computes.
+
+PROBE: applied edits 1-5 above; `sandbox func_80033550 --disable all` and
+`verify-oracle`.
+
+RESULT: score 0, target_insns 34, build_insns 34, rules_dropped 0; build_sha1
+62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, build_matches true. The
+floor moved 4 -> 0 and the function is a pure-C byte match with zero cheat-asm,
+zero FAKE constructs, zero dead locals and no wrap.
+
+VERDICT: CONFIRMED.
+
+
+## s18 (2026-09-03, rederive) â€” RE-VERIFICATION OF THE s17 FORM, UNCHANGED
+
+s17 produced this form and measured it to 0, but its session was DISCARDED by the
+driver validator, not by a reviewer: `tools/grinder/grindlib.py`'s family-block
+matcher is `(?im)^\s*FAMILY\s*:`, and the s17 self_vet.md happened to wrap a T5
+prose sentence so that the word "family:" began a line ("...matches no forbidden
+
+family: it is not a pin, not asm, ..."). That counted as a SECOND claimed
+sanctioned family with no quoted SCOPE sentence, and the outcome was rejected
+before any reviewer saw the diff. Nothing about the C was in question.
+
+s18 action: re-applied tmp/grind/func_80033550/s17/full_diff.patch verbatim
+(`git apply --check` clean against HEAD), rewrapped the offending self_vet
+sentence, and re-measured everything from scratch rather than quoting s17:
+
+  sandbox func_80033550 --disable all -> score 0, target_insns 34, build_insns 34,
+      scorable true, rules_dropped 0   (tmp/grind/func_80033550/s17/sandbox_s18.json)
+  verify-oracle -> ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa
+      == oracle, build_matches true    (tmp/grind/func_80033550/s17/verify_oracle_s18.txt)
+
+VERDICT: CONFIRMED, independently on the 2026-09-03 HEAD chassis.
+
+LESSON FOR THE NEXT SESSION (applies to every function, not just this one): the
+self_vet validator is a line-anchored regex over the whole file, so ordinary
+prose can manufacture a phantom claim. Never let a line begin with `FAMILY:`,
+`SCOPE:` or `PRECEDENT:` (case-insensitively) except inside a real
+SANCTIONED-FAMILY-CLAIMS block. Run the validator directly before writing the
+outcome:
+  python3 -c "import sys;sys.path.insert(0,'tools/grinder');import grindlib;print(grindlib.validate_self_vet('.','<func>'))"

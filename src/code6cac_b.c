@@ -2870,7 +2870,20 @@ void func_80033510(void) {
         } while (i >= 0);
     }
 }
-INCLUDE_ASM("asm/funcs", func_80033550);
+void func_80033550(LeafPos *arg0) {
+    s32 i;
+
+    for (i = 0; i < 6; i++) {
+        if (D_800A3918[i] == 0) {
+            break;
+        }
+    }
+    if (i == 6) {
+        return;
+    }
+    D_800A3918[i] = 1;
+    D_80107850[i] = *arg0;
+}
 
 INCLUDE_ASM("asm/funcs", func_800335D8);
 void func_80033898(void) {

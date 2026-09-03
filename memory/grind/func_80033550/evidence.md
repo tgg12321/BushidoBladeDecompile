@@ -1355,3 +1355,64 @@ authoring to an s17 landing vet: same constructs, same single sanctioned-family
 claim (per-word splat symbol -> aggregate merge, owner ruling 2026-08-17,
 .claude/rules/no-new-park-categories.md:238), prong (e) re-grounded on this
 session's own verify-oracle rather than s16's.
+
+
+## s17 (2026-09-03, rederive) — LANDED: sandbox 0 / SHA1 == oracle, in-tree
+
+The s16 form was bytes-proven but layer-1 FAILed on a SECOND instance of the
+same anti-pattern its LeafPos merge had just fixed: the slot-state flag byte was
+still read and written through `*(&D_800A3918 + i)`, a per-use pointer pun on a
+symbol declared `extern u8 D_800A3918;` (a scalar) that the diff's own evidence
+proved is a 6-byte array. That construct is now a `banned_constructs` entry.
+
+s17 fixed it at the declaration, as the reviewer prescribed, and landed the
+whole thing inside the 2026-09-03 pipeline scope grant
+(`func_80033550 include/code6cac.h undefined_syms_auto.txt named_syms.txt`):
+
+  1. include/code6cac.h:240      `extern u8 D_800A3918;` -> `extern u8 D_800A3918[6];`
+  2. include/code6cac.h:478-480  three per-word `extern s32` -> `LeafPos` typedef
+                                 + `extern LeafPos D_80107850[6];`
+  3. undefined_syms_auto.txt:995-996  delete D_80107854 / D_80107858
+  4. named_syms.txt:2562-2563    delete g_leaf_position_table_plus_4 / _plus_8
+  5. src/code6cac_b.c:2873       INCLUDE_ASM -> the body
+
+MEASURED THIS SESSION with all five in place:
+  sandbox func_80033550 --disable all -> score 0, target_insns 34,
+    build_insns 34, rules_dropped 0     (tmp/grind/func_80033550/s17/sandbox_final.json)
+  verify-oracle -> build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle,
+    build_matches true                  (tmp/grind/func_80033550/s17/build_final.txt)
+  full diff of all four files:           tmp/grind/func_80033550/s17/full_diff.patch
+
+NEW EVIDENCE FOUND THIS SESSION (prong (a) for the flag array, second merge):
+  - named_syms.txt:1554 committed census row
+      g_leaf_slot_state = 0x800A3918;  /* 6-byte slot state table
+                                          (per-leaf counter byte) */
+    with :1555  g_leaf_slot_state_end = 0x800A391E;  /* end marker for slot
+                                          iteration (6 bytes after base) */
+  - src/code6cac_b.c:2856-2870 — func_80033510, ALREADY COMPLETED-C, clears
+    exactly six bytes downward from base+5 (`p2 = &D_800A391D; i = 5; do { *p2 = 0;
+    i--; p2--; } while (i >= 0);`). That is the array's own initializer, written
+    in C and byte-matched long before this grind opened. Independent, in-tree,
+    predating confirmation of the 6-byte shape.
+  - D_800A3918 has NO other C declaration or consumer anywhere in src/ or
+    include/ (grep, this session), and no per-word sibling symbols exist for it
+    in undefined_syms_auto.txt or named_syms.txt — so prong (c) completeness for
+    that merge required no deletions, only the corrected declaration.
+
+DISCLOSED, NOT FOLDED: D_800A391D (named_syms.txt:824, `g_motion_select_byte`)
+sits at base+5 and therefore aliases D_800A3918[5]. It is a distinct pre-existing
+splat symbol with consumers outside this function (func_80033510 at
+src/code6cac_b.c:2865, plus unused externs in six other TUs), so retiring it in
+favour of `&D_800A3918[5]` is a project-wide symbol change beyond this function's
+granted surface. This diff neither creates nor uses that alias. Banked as a
+follow-on in the frontier.
+
+
+## s18 re-measurement (2026-09-03)
+
+The bytes-proven form is chassis-independent across the s17->s18 boundary: the
+s17 patch applies cleanly to the current HEAD, and both gates were re-run this
+session with identical results (sandbox 0/34/34/0-rules; verify-oracle SHA1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa). The s17 discard was a self_vet.md
+paperwork regex false positive (grindlib `^\s*FAMILY\s*:` matched a wrapped
+prose line), not a finding against the C.

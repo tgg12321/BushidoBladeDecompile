@@ -1,60 +1,143 @@
-# SELF-VET � func_80033550  (s17, 2026-09-03, forensics modality � LANDING SESSION)
+# SELF-VET — func_80033550  (session 18, 2026-09-03; re-measured in full this session)
 
-This is a candidate-ready submission. The integration-handoff scope grant for
-func_80033550 (include/code6cac.h, undefined_syms_auto.txt, named_syms.txt) was
-executed by the pipeline on 2026-09-03 (tools/grinder/scope_allow.txt), so the
-canonical aggregate-merge spelling banked by s16 is landed here in src/ and on
-the three granted surfaces, and re-measured in place THIS session:
+CONSTRUCTS: (1) aggregate merge of splat per-word scalars D_80107850/54/58 into
+one canonical `extern LeafPos D_80107850[6];` declaration in include/code6cac.h,
+with both per-word siblings deleted from include/code6cac.h,
+undefined_syms_auto.txt:995-996 and named_syms.txt:2562-2563; (2) declaration
+correction of the slot-state flag object from `extern u8 D_800A3918;` (scalar)
+to `extern u8 D_800A3918[6];` in include/code6cac.h; (3) the function body —
+an ordinary `for` search loop, an early `return`, `D_800A3918[i] = 1;` and a
+struct assignment `D_80107850[i] = *arg0;`. No FAKE construct, no dead local,
+no wrap, no cast, no pointer pun, no volatile, no asm.
 
-  `sandbox func_80033550 --disable all` = score 0, target_insns 34,
-  build_insns 34, rules_dropped 0   (tmp/grind/func_80033550/s17/sandbox_final.json)
-  `verify-oracle` = ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa
-  == oracle, build_matches true      (tmp/grind/func_80033550/s17/verify_oracle.txt)
+## T1 semantic purpose
+(1) and (2) are DECLARATIONS, not statements: they change what the C says the
+storage IS. Both are load-bearing for meaning, not just bytes — with the
+scalar declarations the source cannot even express "store the caller's record
+into slot i" or "read flag i" without address arithmetic. (3) every statement
+is required by the specification: find the first free slot of six, bail if
+none, mark it taken, write the caller's position record into it. Delete any
+line and the function stops doing its job. Nothing in the diff is
+behaviour-neutral.
 
-The vet body below is inherited verbatim from the s16 authoring of the same
-form (the diff is byte-identical to the banked one) with prong (e) updated to
-this session's own measurement.
+## T2 human-programmer
+Yes — this is the form a programmer writes from the spec, and it is strictly
+simpler than the alternative. `D_80107850[i] = *arg0;` and `D_800A3918[i]` are
+what you write when you know the data layout; the previous spellings
+(`*(&D_800A3918 + i)`, and the banned `*(Word3 *)(((u8 *)(&D_80107850)) + i*12)`)
+are what you are forced to write when the declarations lie about the layout.
+A reader asks "why is this here?" about the OLD form, not this one. The magic
+stride constant 12 has disappeared from the C entirely.
 
-CONSTRUCTS: (1) canonical aggregate declaration `typedef struct { s32 x, y, z; } LeafPos; extern LeafPos D_80107850[6];` in include/code6cac.h replacing three per-word `extern s32` splat scalars, with the per-word symbols deleted from undefined_syms_auto.txt and named_syms.txt; (2) parameter retyped `s32 *arg0` -> `LeafPos *arg0`; (3) `D_80107850[i] = *arg0;` (struct assignment); (4) `*(&D_800A3918 + i)` byte-flag indexing (pre-existing in every banked form since s1, unchanged).
+## T3 GCC-internals justification
+No. Each line is justified by program logic alone; the diff would be written
+this way by someone who had never heard of GCC's allocator. A GCC mechanism
+(the MIPS block-move expansion in the struct assignment keeps the source
+address register live across all three loads, so pseudo 72's conflict set grows
+from {2,3,4,29} to {2,3,4,5,6,29} and global.c's pass-0 first-free lands on
+$a3 instead of $a1) EXPLAINS why the correct object model happens to match the
+target — but it is not the reason any construct is present, and no construct
+exists solely to reach that mechanism. The mechanism is a consequence of
+writing the truth, not the motivation for a device.
 
-## T1 semantic purpose: Every construct is load-bearing. (1) declares the actual storage layout the original binary uses — six 12-byte records, proven by func_800335D8's `addiu $s2,$s2,0xC` table walk; (2) gives the parameter the type the call site actually passes (a pointer to one such record); (3) IS the function's whole semantic payload — copy the caller's record into the free slot; deleting any of them changes what the function does. Nothing here is behaviour-neutral decoration.
-## T2 human-programmer: Yes — this is the form a human writing the original would produce. A programmer with the spec ("find the first free leaf slot, mark it used, store the caller's position record there") writes a record type, an array of six, and `table[i] = *src;`. The three-scalar-load/three-scalar-store spelling the ledger ground for fifteen sessions is the LESS natural form; it exists only as an artifact of splat inventing one C symbol per word.
-## T3 GCC-internals justification: The GCC mechanism (block-move expansion keeping the source address live, which grows hard_reg_conflicts[72] so find_reg pass-0 lands on $a3) EXPLAINS why the natural form matches, but it is not the reason the construct is written this way. The program logic alone justifies every line: a 12-byte record table indexed by slot, assigned from the caller's record. No construct is present that the semantics do not already require, and nothing is shaped to a pass's internals.
-## T4 permuter/search provenance: No permuter, no automated search. The form came from reading asm/funcs/func_800335D8.s (stride-12 base-register walk) and named_syms.txt:1556 (committed 12-byte-stride census row) — i.e. from the object model, not from a spelling search. It passes detectors because there is nothing to detect, not because a detector missed a spelling.
-## T5 family check: The declaration merge is squarely the sanctioned "per-word splat symbol -> aggregate merge" family (owner ruling 2026-08-17), claimed below with all five prongs satisfied. The rest (a struct assignment, a retyped parameter, an array subscript) is ordinary C and belongs to no coercion family. Explicitly NOT present: the BANNED per-use byte-pointer pun `*(Word3 *)(((u8 *)(&D_80107850)) + i * 12) = *(Word3 *) arg0;` — that spelling is what this form replaces, and the reason it is replaced is precisely that it dodged prongs (c) and (d) of this family.
-## T6 naming-announces-intent: No pad/dummy/unused/spill/slack names anywhere. `LeafPos`, `x/y/z`, `arg0`, `i` — all name real values. Every declared entity is read and written.
+## T4 permuter/search provenance
+No. Provenance is the object model, established by committed naming-census rows
+that predate this grind by two months (the named_syms.txt row for 0x80107850
+dates to commit e44dcd95, 2026-05-17; this function's grind opened 2026-07-21)
+and by base-register stride indexing in the ORIGINAL BINARY in a different
+function (asm/funcs/func_800335D8.s: `&D_80107850` into $s2 at 0x800335EC/F0,
+walked with `addiu $s2, $s2, 0xC` at 0x80033704). Six permuter campaigns across
+s4/s5 (~138k iterations) never found this; it came from reading the data layout.
+
+## T5 family check
+Constructs (1) and (2) are both instances of the sanctioned "Per-word splat
+symbol → aggregate merge" family (owner ruling 2026-08-17), claimed below with
+all five prongs answered. Construct (3) is ordinary C and matches no
+forbidden family at all: it is not a pin, not asm, not a barrier, not a
+volatile coercion, not a dead store, not a dead local, not a wrap, not a
+manufactured branch, not a duplicated statement, not a cast. It is notably NOT a respelling of either
+banned construct — both bans are on PER-USE POINTER PUNS at the call site, and
+this diff removes address arithmetic from the body rather than respelling it:
+the fix lives at the declaration, which is exactly the defect each ban named.
+
+## T6 naming-announces-intent
+No. One name is introduced: the type `LeafPos` (the census calls the table a
+"position array"; the members are x/y/z). Every other identifier is the
+pre-existing splat name. No `pad`, `dummy`, `unused`, `spill`, `tmp`, `slack`.
+Every declared object is read and written.
 
 SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: per-word splat symbol -> aggregate merge (owner ruling 2026-08-17)
+  FAMILY: Per-word splat symbol → aggregate merge (owner ruling 2026-08-17)
   SCOPE: "two or more splat-invented `D_<addr>` scalars may be replaced by a single aggregate declaration."
   PRECEDENT: .claude/rules/no-new-park-categories.md:238
-  PRONGS:
-    (a) object model established by evidence independent of and predating this
-        session: named_syms.txt:1556 (committed naming census — "12-byte stride
-        per leaf, 6 entries = 72-byte position array") and base-register stride
-        indexing in the original binary at asm/funcs/func_800335D8.s
-        (&D_80107850 -> $s2, `addiu $s2,$s2,0xC` per iteration, six iterations
-        bounded by D_800A391E = D_800A3918+6).
-    (b) the merged declaration reflects that documented shape: a 6-entry table
-        of 12-byte records, `extern LeafPos D_80107850[6];`. The stride is
-        carried by the type, not by a magic number — the use site is
-        `D_80107850[i]`, with no `i * 12` anywhere.
-    (c) complete: D_80107854 and D_80107858 are removed from include/code6cac.h,
-        from undefined_syms_auto.txt:995-996 and from named_syms.txt:2562-2563,
-        leaving exactly one C handle per storage location. Measured: full build
-        still links and SHA1s to the oracle with all three deletions applied.
-    (d) spelled at the canonical declaration in the shared header
-        (include/code6cac.h), never TU-local, no per-use pointer pun.
-    (e) byte-neutral for every other consumer: the only other reader of the
-        table (func_800335D8) is still INCLUDE_ASM and untouched; no C consumer
-        of the per-word symbols exists (grep, re-confirmed s17); `verify-oracle`
-        re-run s17 with the complete merge and the body in place in src/:
-        ok true, build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
-        oracle, build_matches true. Layer-1 + layer-2 cheat-reviewer run on
-        this landing diff.
 
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct. The aggregate-merge family does
-not mandate a /* FAKE */ annotation (it is a declaration-correctness family, not
-a last-resort codegen lever), and this form contains no dead store, no wrap, no
-constant holder, no alias and no pad. The `do { } while (0)` wrap the previous
-candidate carried is deleted along with the scalar-triple tail.
+  Prongs, for construct (1) — D_80107850/54/58 → LeafPos D_80107850[6]:
+  (a) Object model independent of and predating the byte-chasing:
+      named_syms.txt:1556 committed census row
+      `g_leaf_position_table = 0x80107850;  /* 12-byte stride per leaf, 6
+      entries = 72-byte position array */` (committed 2026-05-17, e44dcd95),
+      PLUS base-register stride indexing in the original binary in a DIFFERENT
+      function: asm/funcs/func_800335D8.s loads &D_80107850 into $s2
+      (0x800335EC/F0) and walks with `addiu $s2, $s2, 0xC` (0x80033704), six
+      iterations. This is stride evidence, not adjacency
+      ([[splat-symbol-names-are-not-evidence]] respected).
+  (b) Declaration reflects that shape: a 6-entry table of 12-byte records,
+      `extern LeafPos D_80107850[6];` with `LeafPos = {s32 x, y, z}`. The stride
+      lives in the type; the disqualifying magic-stride index (`i * 12`) is
+      absent — the use site is `D_80107850[i] = *arg0;`.
+  (c) Complete: both merged per-word symbols removed from C
+      (include/code6cac.h:479-480) AND from the splat symbol configs
+      (undefined_syms_auto.txt:995-996, named_syms.txt:2562-2563), leaving
+      exactly one C handle per storage location.
+  (d) Spelled at the canonical declaration in the shared header
+      include/code6cac.h — not TU-local, no per-use pointer pun anywhere.
+  (e) Byte-neutral for every other consumer: grep over src/ and include/ finds
+      no C consumer of D_80107854/D_80107858; the only other reader of the
+      table (func_800335D8) is still INCLUDE_ASM and unaffected; full
+      `verify-oracle` this session returned build_sha1
+      62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, build_matches true.
+      Layer-2 cheat-reviewer still owed at acceptance.
+
+  Prongs, for construct (2) — D_800A3918 scalar → u8 D_800A3918[6]:
+  (a) named_syms.txt:1554 committed census row
+      `g_leaf_slot_state = 0x800A3918;  /* 6-byte slot state table (per-leaf
+      counter byte) */`, with :1555 recording `g_leaf_slot_state_end =
+      0x800A391E; /* end marker for slot iteration (6 bytes after base) */`.
+      Corroborated in the original binary (func_800335D8.s walks the flag array
+      at stride 1 in lockstep with the 12-byte table, bounded by D_800A391E)
+      and in already-COMPLETED-C source: src/code6cac_b.c:2856-2870
+      (func_80033510) clears exactly six bytes downward from base+5.
+  (b) Declaration reflects that shape: a FLAT 6-byte array where the evidence
+      shows a flat array of per-slot bytes — not a struct. No stride constant.
+  (c) Complete: `extern u8 D_800A3918[6];` is the ONLY C declaration of that
+      object anywhere in src/ or include/ (grep, this session), and there are
+      no per-word sibling symbols for 0x800A3918 in undefined_syms_auto.txt or
+      named_syms.txt to delete — so exactly one C handle per storage location
+      is already the post-state. Two neighbours are deliberately NOT folded and
+      are disclosed here rather than hidden:
+        - D_800A391E is the one-past-the-end iteration bound (base+6) per
+          named_syms.txt:1555 — it is not an element, and the layer-1 reviewer
+          that prescribed this fix said so explicitly. It keeps its own
+          declaration and symbol.
+        - D_800A391D (named_syms.txt:824, `g_motion_select_byte`) occupies
+          base+5 and therefore aliases D_800A3918[5]. It is a distinct
+          pre-existing splat symbol with consumers OUTSIDE this function
+          (src/code6cac_b.c:2865 in func_80033510, plus unused externs in six
+          other TUs), so retiring it is a project-wide symbol change outside
+          this function's granted surface (`func_80033550 include/code6cac.h
+          undefined_syms_auto.txt named_syms.txt`). It is banked as a follow-on
+          in the ledger frontier, not smuggled: this diff neither creates nor
+          uses that alias.
+  (d) Spelled at the canonical declaration in include/code6cac.h:240. The body
+      uses `D_800A3918[i]` — the per-use pointer pun `*(&D_800A3918 + i)`
+      (a `banned_constructs` entry) is DELETED by this diff, not respelled.
+  (e) Byte-neutral for every other consumer: there is no other C consumer at
+      all; full `verify-oracle` SHA1 == oracle as above. Layer-2 still owed.
+
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct. The diff contains zero
+`/* FAKE */` constructs: the aggregate-merge family's prong list does not
+mandate an annotation (unlike the dead-store, constant-holder, pointer-alias,
+duplicated-statement, dead-array and do-while(0) families), and no construct in
+this diff belongs to any annotation-requiring family. Both changed declarations
+declare real objects; every statement in the body is semantically load-bearing.
+The previous candidate's `do { } while (0);` wrap is gone.

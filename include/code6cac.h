@@ -237,7 +237,10 @@ extern u8 D_800A3912;
 extern u8 D_800A3913;
 extern u8 D_800A3914;
 extern u8 D_800A3915;
-extern u8 D_800A3918;
+/* 6-byte per-leaf slot state table (named_syms.txt: g_leaf_slot_state,
+   "6-byte slot state table (per-leaf counter byte)"; D_800A391E is the
+   separate end marker recorded at named_syms.txt:1555, not an element). */
+extern u8 D_800A3918[6];
 extern u8 D_800A391E;
 extern u8 D_800A391F;
 extern u8 D_800A3920;
@@ -475,9 +478,15 @@ extern u8 D_80106A82;
 extern u8 D_801077AF;
 extern u8 D_801077B0;
 extern u8 D_801077BA;
-extern s32 D_80107850;
-extern s32 D_80107854;
-extern s32 D_80107858;
+/* 12-byte per-leaf record table (named_syms.txt: g_leaf_position_table,
+   "12-byte stride per leaf, 6 entries = 72-byte position array"). */
+typedef struct {
+    s32 x;
+    s32 y;
+    s32 z;
+} LeafPos;
+
+extern LeafPos D_80107850[6];
 
 /* Functions */
 extern void func_8001B748(Rec44 *, Rec1C *, Rec1C *, s32, s32, s32);
