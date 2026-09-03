@@ -2104,3 +2104,164 @@ ruling-request, not a measurement, and it is moot while the floor is 2.
 - probe: (i) prong (c) re-derived first-hand: grep -rlE 'D_800A149[456]' asm/ plus the dlabel definitions in asm/data/7D920.data.s; (ii) two aggregate-access spellings on the candidate base reached through a cast pointer at the existing symbol (rd1 volatile, rd2 plain), scored with sandbox.
 - result: Prong (c) is UNSATISFIABLE: the bytes are DEFINED in assembly (asm/data/7D920.data.s:31050/31056/31062, plus :31069 D_800A1498 whose first word is .word D_800A1494) and five asm-only consumers reference them - getintr.s (22 sites), CD_cw.s (8), func_800817A0.s = CD_flush (8), func_800819C4.s (8), func_80081E1C.s (2) - so the per-word symbols must stay in the splat config and any CD_intr declaration is a second handle on the same storage (the g_stage_id failure verbatim, decisions.md:10722). And the aggregate loses on measurement anyway: rd1 = 41 score / 173 insns, rd2 = 37 / 172, against the floor of 2 / 179.
 - verdict: KILLED
+
+## s69 (forensics, 2026-09-03) — the residual read out of BOTH passes, end to end
+
+Chassis re-verified live: candidate.c = score 2 / 179 insns / 0 rules; s67's d01 = 7, y02 = 6,
+e02 = 8 — every inherited measurement reproduces.
+
+### H-s69-A — CONFIRMED by dump (s63 had this by source reading only)
+**Statement.** In sched.c's `rank_for_schedule` the class rung (data / anti-output / independent
+relative to `last_scheduled_insn`) collapses to class 3 on BOTH sides at every contested decision
+in block 3, so `INSN_LUID` is the operative ordering rung in both scheduling passes.
+**Probe.** Instrumented cc1 with `BB2_RANK_DEBUG`/`BB2_PRIO_DEBUG`/`BB2_SCHED_DEBUG` over
+src/system.c carrying candidate.c (`tmp/grind/CD_ready/s69/cand.sched.txt`, 1.27 MB).
+**Result.** Every `RANKDBG` line printed for CD_ready block 3 in BOTH passes reads
+`cls=3 ... cls2=3 val=0`. The decisive one is `RANKDBG last=122 y=120 cls=3 x=106 cls2=3 val=0`,
+present identically at pass-1 clock 13 and pass-2 clock 13.
+**Verdict: CONFIRMED.** s63's inference is now a measurement.
+
+### H-s69-B — CONFIRMED: the 56/57 transposition is one named LUID comparison, and the C-order input that flips it is named
+**Statement.** The floor's two-instruction residual is the pass-1/pass-2 tie between insn 106
+(`sll $a0,$a0,2`, the t0 shift) and insn 120 (`addu $v0,$v0,$s5`, the arg5 address add), decided
+by `INSN_LUID(120) - INSN_LUID(106)`; GCC 2.7.2 schedules each block BACKWARD, so the insn picked
+FIRST is emitted LAST. Making the t0 shift's C statement follow the arg5 address/load statement
+raises its LUID above 120's and emits the target's order.
+**Mechanism.** sched.c:2464 `return INSN_LUID (tmp) - INSN_LUID (tmp2);` after the priority and
+class rungs tie. Pass-1 LUIDs are RTL emission order = C statement order (candidate: 106 luid 6,
+120 luid 12 -> 120 picked at clock 13, emitted after 106). Pass-2 LUIDs are the pass-1 OUTPUT
+order (106 luid 6, 120 luid 7), so pass 2 reproduces the same answer.
+**Probe.** g01 (t0 shift+addu moved after the arg5 load), g06 (same, `pp` hoisted to the head),
+g03 (whole t0 chain incl. its byte load moved after), g05 (arg5 addu split out and hoisted above
+the t0 shift). Scored, then g06 disassembled against asm/funcs/CD_ready.s.
+**Result.** g01 = 6, g06 = 6, g03 = 7, g05 = 15 — all 179 insns, 0 rules. **g06's instruction
+ORDER is the target's for the entire block**: build 55/56/57/58/61/62/63 are
+`sll $v0` / `addu $v0,$v0,$s5` / `sll` / `lw` / `addu` / `sll $v0` / `sw`, matching the target
+slot for slot. Its whole score-6 residual is register naming: the t0 chain sits in `$v1` where
+the target has `$a0`, and the arg5 value sits in `$a0` where the target has `$v1`.
+**Verdict: CONFIRMED.** After 62 sessions the ordering half of this residual is solved ON THE
+CANDIDATE CHASSIS (previously only on the s67 d01/k03 side bases) by an ordinary statement
+reorder with no new construct.
+
+### H-s69-C — CONFIRMED: the seat half is a closed-form fixed point coupled to H-s69-B
+**Statement.** Holding the target's instruction order necessarily shortens the t0-shift
+quantity's live range by exactly one insn, which raises its `qty_compare_1` priority from 1.0000
+to 1.3333 — an EXACT tie with the arg5-value quantity — and the tie is broken by quantity number
+(birth order), which the target's own order fixes in the t0 shift's favour. That is why order and
+seats have measured anti-correlated for eight sessions.
+**Mechanism.** local-alloc.c:1660 `qty_compare_1` computes
+`pri = (floor_log2(qty_n_refs) * qty_n_refs * qty_size) / (qty_death - qty_birth) * 10000`
+and ties on `*q1 - *q2` (the quantity number = order of first reference in the block).
+**Probe.** Instrumented-cc1 `BB2_QTY_DEBUG`/`BB2_SUGG_DEBUG` local-alloc dumps of candidate.c
+(`tmp/grind/CD_ready/s63/cand.qty.txt`) and g06 (`tmp/grind/CD_ready/s69/g06.qty.txt`), block 3,
+with each quantity identified against the disassembly.
+**Result.** Block 3 carries exactly four quantities. Identification (unit = 2*index+4 over the
+block's insn list, verified against both disassemblies):
+  - reg110  22-30 refs 8  = the D_800A11D5 chain      pri 3.0000  -> ord 0, `$v0`
+  - arg5 ADDRESS (cand reg104 18-20 / g06 reg102 16-20)
+  - **t0 SHIFT** : candidate reg102 birth 16 death 24 (span 8) pri **1.0000** -> ord 3 -> `$a0` OK
+                   g06       reg104 birth 18 death 24 (span 6) pri **1.3333** -> ord 2 -> `$v1` X
+  - **arg5 VALUE**: reg97 birth 20 death 26 (span 6) refs 4 pri **1.3333** in BOTH
+                   candidate -> ord 2 -> `$v1` OK ; g06 -> ord 3 -> `$a0` X
+In g06 the two 1.3333 priorities are an exact tie and `*q1 - *q2` hands ord 2 (and `$v1`) to the
+t0 shift because it is born one insn earlier — which is exactly what the target's order requires.
+**Verdict: CONFIRMED.** Every input of `qty_compare_1` except `qty_n_refs` is pinned by the
+target's instruction sequence: `qty_size` is 1 for both, `qty_death - qty_birth` is 6 for both,
+and the quantity numbers follow birth order, which is the order itself. The ONLY free input is
+`qty_n_refs`, and it must move by at least 1 (t0 shift down to <= 3, or arg5 value up to >= 5).
+
+### H-s69-D — KILLED: buying the reference count with a loop note on the g06 (order-perfect) base
+**Statement.** The s67-B depth-lowering axis (split the sanctioned tbl_125c wrap so `t0 *= 4`
+falls into a bare loop-depth-1 gap, halving its refs 4 -> 2) and the s67-E depth-raising axis
+(nest the arg5 def and/or the call so the arg5 value's refs reach 5 or 6) close the seat tie once
+the order is already the target's.
+**Mechanism.** flow.c accumulates `reg_n_refs += loop_depth` per mention;
+NOTE_INSN_LOOP_BEG/END set the depth. Predicted priorities: t0 shift at depth 1 -> refs 2 ->
+0.3333; arg5 value at refs 5 -> 1.6666, at refs 6 -> 2.0000. Either ordering closes the tie.
+**Probe.** h01 (t0 shift alone bare), h02 (same on the g01 order), h03 (t0 shift and addu bare),
+control h04 (same split boundary, NOTHING bare, all depths held at 2); j01 (t0 statements at
+depth 2, everything else at depth 3), j02 (arg5 def nested), j03 (call nested, refs 5),
+j04 (arg5 def AND call nested, refs 6).
+**Result.** h01 12, h02 12, h03 15, **control h04 12**; j01 10 at 180 insns, j02 12, j03 10,
+j04 10. Every one is worse than g06's 6, and h04 proves the whole 6-point loss is the note pair
+itself, not the depth change: re-bracketing with nothing bare costs exactly as much as the bare
+gap does.
+**Verdict: KILLED.** On the order-perfect base the loop note is a sched1 region boundary in this
+block (s67-A's finding, re-derived here on a different base), so it destroys the very ordering the
+base was built to hold. Refs cannot be bought with a note once the order is correct.
+
+### H-s69-E — KILLED: buying the reference count with a same-value re-store (no note)
+**Statement.** A sanctioned dead store to a LOCAL (`arg5 = arg5;`) adds two mentions to the arg5
+value's `reg_n_refs` without a loop note, lifting it from 4 to 6 and breaking the tie.
+**Mechanism.** flow.c counts every mention of a pseudo; a self-copy is two mentions.
+**Probe.** k01 (`arg5 = arg5;` immediately after the load), k02 (immediately before the call),
+k03 (`t0 = t0;` control), each scored, and k01 re-dumped with BB2_QTY_DEBUG.
+**Result.** All three score 6 — byte-identical to g06 — and k01's block-3 local-alloc dump is
+line-for-line identical to g06's: `reg97 ... refs=4`, unchanged. flow.c's `delete_noop_moves`
+removes the self-copy BEFORE `reg_n_refs` is accumulated, so the mentions never exist.
+**Verdict: KILLED.** Same-value re-stores are refs-inert on this function, not merely byte-inert.
+
+### THE FRONTIER AFTER s69
+The residual is now a single arithmetic sentence with a single free variable:
+  **on any base whose sched1 output is the target's instruction order, the t0-shift quantity and
+  the arg5-value quantity both have `qty_size` 1, span 6 and `qty_n_refs` 4, hence identical
+  `qty_compare_1` priority 13333, and the tie goes to the t0 shift on quantity number. Closing
+  the function requires moving exactly one reference count by one, with zero loop notes.**
+Enumerated inputs and their status:
+  - `qty_size`   — 1 for both; changing it means a DImode value, i.e. extra instructions. Dead.
+  - `qty_death - qty_birth` — 6 for both, pinned by the target's own instruction order. Dead.
+  - quantity number — birth order, pinned by the same order. Dead.
+  - `qty_n_refs` via loop depth — the only demonstrated lever; costs >= 4 points of order damage
+    on this base (H-s69-D). Dead as spelled so far.
+  - `qty_n_refs` via extra mentions — self-copies are deleted before counting (H-s69-E); any
+    surviving extra mention is an extra instruction, off the 179-insn parity.
+  - the sched2 class rung as an escape from the coupling: making sched1 emit the CANDIDATE order
+    (span 8, correct seats) and letting sched2 transpose requires `insn_cost(120 -> 122) > 1`,
+    i.e. the arg5 address producer must be a 2-cycle function unit (a load). Node 120 is
+    `unit=-1 icost=1` and every ALU op on this target is; only a load qualifies, which is an
+    extra instruction. Recorded as the one structurally-identified escape, priced.
+Next session's cheapest untried probes, in order:
+  1. a refs lever that is not `loop_depth`: does any GCC-2.7.2 construct give a pseudo a mention
+     that survives to flow.c but emits no instruction? (Candidates never tried here: a mention
+     inside a REG_EQUAL/REG_NOTE-only position, a use consumed by a peephole/`combine` merge, a
+     second use folded into an addressing mode of an insn that already exists.)
+  2. a note placement OUTSIDE block 3 that still changes block-3 loop depth — every wrap measured
+     so far has been inside the do_timeout block, so its note lands in the same scheduling region.
+     A wrap whose BEG/END notes both sit in the *predecessor* block would raise depth for block 3
+     without adding a region boundary inside it. Untried in 69 sessions.
+  3. re-run the g06 family through the permuter (rich passes) — the base is new and no campaign
+     has ever started from an order-perfect body on this chassis.
+
+## [s69] In sched.c's rank_for_schedule the class rung collapses to class 3 on both sides at every contested decision in CD_ready block 3, in BOTH scheduling passes, so INSN_LUID is the operative ordering rung.
+- mechanism: rank_for_schedule (tools/gcc-2.7.2/sched.c:2408-2464) ranks by INSN_PRIORITY, then by dependence class relative to last_scheduled_insn, then by INSN_LUID. s63 inferred the class collapse by source reading; this session measured it.
+- probe: Instrumented cc1 (tools/gcc-2.7.2/cc1) run over src/system.c carrying candidate.c with BB2_SCHED_DEBUG + BB2_RANK_DEBUG + BB2_PRIO_DEBUG, captured to tmp/grind/CD_ready/s69/cand.sched.txt (1.27 MB); block 3 of pass 1 read at line 7218, of pass 2 at line 8594.
+- result: Every RANKDBG line emitted for CD_ready block 3 in both passes reads cls=3 ... cls2=3 val=0. The decisive line, identical at pass-1 clock 13 and pass-2 clock 13, is 'RANKDBG last=122 y=120 cls=3 x=106 cls2=3 val=0'.
+- verdict: CONFIRMED
+
+## [s69] The floor's two-instruction residual is the single LUID comparison between insn 106 (sll $a0,$a0,2, the t0 shift) and insn 120 (addu $v0,$v0,$s5, the arg5 address add), and moving the two t0 statements after the arg5 load raises 106's LUID above 120's and emits the target's instruction sequence.
+- mechanism: GCC 2.7.2 schedules each block BACKWARD, so the insn picked first is emitted last. Pass-1 LUIDs are RTL emission order = C statement order (106 luid 6, 120 luid 12), and pass-2 LUIDs are the pass-1 OUTPUT order (106 luid 6, 120 luid 7), so both passes return INSN_LUID(120) - INSN_LUID(106) > 0 and emit 106 before 120.
+- probe: Four C reorderings spliced into src/system.c and scored with `sandbox CD_ready --disable all`: g01 (t0 shift+addu moved after the arg5 load), g06 (same with pp hoisted to the block head), g03 (whole t0 chain incl. its byte load moved after), g05 (arg5 addu split out and hoisted above the t0 shift); g06 then disassembled against asm/funcs/CD_ready.s with tmp/grind/CD_ready/s69/adiff.py.
+- result: g01 = 6, g06 = 6, g03 = 7, g05 = 15, all at 179 insns and 0 rules. g06's build slots 55/56/57/58/61/62/63 are sll $v0 / addu $v0,$v0,$s5 / sll / lw / addu / sll $v0 / sw - the target's sequence for the entire block. Its whole score-6 residual is register naming (t0 chain in $v1 where the target has $a0, arg5 value in $a0 where the target has $v1). Banked as memory/grind/CD_ready/progress/s69-g06-order-perfect-on-candidate-chassis-seats-swapped-6.c.
+- verdict: CONFIRMED
+
+## [s69] Holding the target's instruction order shortens the t0-shift quantity's live range from span 8 to span 6, raising its qty_compare_1 priority from 1.0000 to 1.3333 into an exact tie with the arg5-value quantity, and local-alloc breaks that tie on quantity number in the t0 shift's favour - so order and seats are coupled by construction.
+- mechanism: local-alloc.c:1660 qty_compare_1 scores floor_log2(qty_n_refs)*qty_n_refs*qty_size/(qty_death-qty_birth) scaled by 10000 and ties on *q1 - *q2, the quantity number, which is the order of first reference in the block.
+- probe: Instrumented-cc1 BB2_QTY_DEBUG/BB2_SUGG_DEBUG local-alloc dumps of candidate.c (tmp/grind/CD_ready/s63/cand.qty.txt) and of g06 (tmp/grind/CD_ready/s69/g06.qty.txt), block 3, with each of the four quantities identified against the two disassemblies.
+- result: candidate.c: t0 shift = reg102 birth 16 death 24, refs 4, pri 1.0000 -> ord 3 -> got 4 ($a0, correct); arg5 value = reg97 birth 20 death 26, refs 4, pri 1.3333 -> ord 2 -> got 3 ($v1, correct). g06: t0 shift = reg104 birth 18 death 24, refs 4, pri 1.3333 -> ord 2 -> got 3 ($v1, wrong); arg5 value = reg97 unchanged at 20-26 refs 4 pri 1.3333 -> ord 3 -> got 4 ($a0, wrong). The two priorities are bit-identical and the quantity number decides. qty_size is 1 for both, span is 6 for both, and both are pinned by the target's own sequence, leaving qty_n_refs as the single free input.
+- verdict: CONFIRMED
+
+## [s69] On the order-perfect g06 base, a loop note - either splitting the sanctioned tbl_125c do-while(0) so the t0 shift falls into a bare depth-1 gap (refs 4 -> 2) or nesting the arg5 def and/or the printf call to raise the arg5 value's refs to 5 or 6 - closes the qty_compare_1 tie.
+- mechanism: flow.c accumulates reg_n_refs += loop_depth per mention, loop_depth being incremented at NOTE_INSN_LOOP_BEG and decremented at NOTE_INSN_LOOP_END; the predicted priorities are 0.3333 for the t0 shift at depth 1 and 1.6666 (refs 5) or 2.0000 (refs 6) for the arg5 value.
+- probe: Eight variants scored with `sandbox CD_ready --disable all`: h01 (t0 shift alone in a bare gap), h02 (same on the g01 order), h03 (t0 shift and addu bare), control h04 (identical split boundary with NOTHING bare, all depths held at 2), j01 (t0 statements at depth 2, everything else at depth 3), j02 (arg5 def nested), j03 (printf nested, refs 5), j04 (arg5 def and printf nested, refs 6).
+- result: h01 12, h02 12, h03 15, h04 12, j01 10 (180 insns), j02 12, j03 10, j04 10 - every one worse than g06's 6. The control h04 is the decisive measurement: re-bracketing with nothing bare costs exactly as much as the bare gap, so the whole 6-point loss is the note pair and none of it is the depth change. Bodies banked as rejected/s69-h01-*, s69-h04-*, s69-j03-*, s69-j04-*.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-03, candidate.c floor re-verified at 2/179/0; g06 order-perfect base carrying the sanctioned tbl_125c do-while(0) wrap, the pp pointer-alias and the v0 staging FAKEs
+
+## [s69] A same-value re-store of a local (arg5 = arg5;) adds two mentions to the arg5 value's reg_n_refs without a loop note, lifting it from 4 to 6 and breaking the qty_compare_1 tie.
+- mechanism: flow.c counts every mention of a pseudo when accumulating reg_n_refs, and a self-copy is two mentions (one set, one use), so a sanctioned dead store to a LOCAL should be a note-free refs lever.
+- probe: k01 (arg5 = arg5; immediately after the load), k02 (immediately before the printf call) and control k03 (t0 = t0;) on the g06 base, each scored with `sandbox CD_ready --disable all`; k01 then re-dumped with BB2_QTY_DEBUG (tmp/grind/CD_ready/s69/k01.qty.txt) and its block 3 compared line for line against g06's.
+- result: k01 = 6, k02 = 6, k03 = 6 - all byte-identical to g06 - and k01's block-3 local-alloc dump is line-for-line identical to g06's, including 'QTYDBG blk=3 ord=3 qty=2 reg1=97 birth=20 death=26 refs=4 got=4'. The refs never move: flow.c's delete_noop_moves removes the self-copy before reg_n_refs is accumulated, so the extra mentions do not exist by the time the counter runs.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-03, g06 order-perfect base (score 6/179/0) carrying the sanctioned tbl_125c do-while(0) wrap, the pp pointer-alias and the v0 staging FAKEs

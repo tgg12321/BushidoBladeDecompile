@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 68,
- "current_modality": "escalation",
+ "session_count": 69,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -417,23 +417,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "s68 escalation: owner Ruling A discharged in full (Ruling D executed first-hand - prong (c) structurally unsatisfiable via five asm-only consumers, aggregate measures 41/37 vs floor 2), both live fron"
+  },
+  {
+   "session": 69,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s69 forensics: the 62-session ORDERING half is SOLVED on the candidate chassis (g06 emits the target's exact instruction sequence for the whole block, score 6/179/0) and the residual is reduced to clo"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F3 (unchanged, and now the ONLY open question on this body): the `volatile u8 *idx_1496;` in candidate.c is covered by .claude/rules/legitimate-volatile-interrupt-touched.md rather than by the volatile-coercion ban. This is a completion blocker, not a floor lever - it is moot while the floor is 2 and only becomes live at score 0.",
-   "mechanism": "Prong 1 is satisfied with citations at every link (IRQ writer getintr at asm/funcs/getintr.s:304; handler installed by InterruptCallback(2, &D_80081F1C) at src/system.c:609 and :630). Prong 2's harm is shown by controlled measurement - removing the qualifier alone moves 179 insns to 178 and score 2 to 4. What is open is that prong 2's shape list is exact (spin-wait / double-read-across-sequence-point / IRQ-mutated-loop-bound) and this poll loop has body work (VSync() and getintr() calls between successive reads of *idx_1496), plus the absent volatile_extern_allowlist.txt entry for D_800A1494/95/96.",
-   "next_probe": "This is a ruling-request, not a measurement. Question: does prong 2 admit a poll loop with body work when the double-read harm is shown by controlled measurement, and do the already-shipped matched in-TU declarations at src/system.c:549-551 and :748-749 plus the matched pointer-arithmetic shape at :770-771 constitute the allowlist grant for D_800A1496? Raise it only if a re-activation trigger makes the two-instruction residual attackable again."
+   "hypothesis": "There is a refs lever that is not loop_depth: a construct that gives a pseudo a mention surviving to flow.c's reg_n_refs accumulation while emitting no instruction, which would move the arg5 value from 4 refs to 5 or 6 with zero loop notes and close the tie on the g06 order-perfect base.",
+   "mechanism": "qty_compare_1's only free input on an order-perfect base is qty_n_refs (H-s69-C). loop_depth is dead (H-s69-D: notes are sched1 region boundaries here) and self-copies are dead (H-s69-E: delete_noop_moves precedes the counter). What has never been enumerated is which OTHER RTL positions flow.c counts - a mention inside a REG_EQUAL/REG_NOTE, a use consumed by a combine merge, or a second use folded into the addressing mode of an insn that already exists.",
+   "next_probe": "Read flow.c's reg_n_refs accumulation loop first and list exactly which rtx positions it walks (does it count REG_NOTES? does it count uses inside a MEM address?). Then spell one C form per counted-but-instruction-free position on the g06 base and re-dump with BB2_QTY_DEBUG, checking refs(reg97) before checking the score."
   },
   {
-   "hypothesis": "Re-activation trigger 1 (the strongest one, and it is a WHOLE-CLUSTER unlock): once the asm-only consumers of D_800A1494/95/96 are decompiled to C, prong (c) of the sanctioned aggregate family becomes satisfiable and Ruling D can be spent for real across CD_sync, CD_ready and CD_datasync together.",
-   "mechanism": "Prong (c) requires the merge be COMPLETE - every per-word symbol removed from C AND from the splat symbol config, one C handle per storage location. Today five asm bodies (getintr, CD_cw, func_800817A0, func_800819C4, func_80081E1C) plus the asm data definition force the per-word symbols to survive, making any CD_intr declaration a second handle.",
-   "next_probe": "Not a probe for this function: it is a dependency on those five functions reaching C. When they do, re-run Ruling D's two components here (the prong-(c) check, then the aggregate scoring) from tmp/grind/CD_ready/s68/rd1.c / rd2.c."
+   "hypothesis": "A loop note placed OUTSIDE block 3 - both its BEG and END in the predecessor block - raises block 3's loop_depth without introducing a scheduling-region boundary inside block 3, giving the refs change without the order damage that killed H-s69-D.",
+   "mechanism": "s67-A and H-s69-D both show the damage comes from the note acting as a sched1 region boundary INSIDE the block being scheduled. Every wrap measured in 69 sessions has been placed inside the do_timeout block. flow.c's loop_depth is a running counter over the whole insn stream, so a BEG in an earlier block that is closed after block 3 would raise block 3's depth with no note between block 3's own insns.",
+   "next_probe": "Wrap from before the do_timeout label (or from the loop head) through the end of the do_timeout block in a do-while(0), so both notes land outside block 3's insn range; measure the score, then dump BB2_QTY_DEBUG and check whether refs in block 3 doubled while the block-3 RANKDBG stream is unchanged."
   },
   {
-   "hypothesis": "Re-activation trigger 2: a sanctioned family whose mechanism reaches INSN_LUID-tie ordering or allocno birth order WITHOUT a byte-neutrality requirement would re-open the coupled sched2 / qty_compare_1 fixed point that is this function's entire residual.",
-   "mechanism": "s63 read the tie-breaker out of sched.c (rank_for_schedule's class rung collapses to class 3 on this target, leaving INSN_LUID = C statement order as the only ordering lever) and s66 reduced the seat half to closed form (with the target's instruction sequence held, every qty_compare_1 input except the loop-depth-weighted reg_n_refs is FORCED). s67 then showed an empty do{}while(0) is byte-neutral NOWHERE in this block - the loop note is a sched1 region boundary here - so a reference count can never be bought for free on this function. Order and seat are each independently reachable and anti-correlated through that one lever.",
-   "next_probe": "None available under current rule text; this is a rules-side trigger, not a measurement. Also worth a periodic cheap re-check: a matched libcd bios.c body for CD_ready appearing upstream in psyz / sozud psy-q-decomp would close the function by provenance instead of by search."
+   "hypothesis": "The g06 order-perfect base is productive permuter territory that has never been searched: no campaign in 69 sessions has started from a body whose sched1 output is already the target's instruction sequence on this chassis.",
+   "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies whose residual mixed order and seats. g06's residual is a single local-alloc tie, so a permuter run scores a much narrower neighbourhood and its rich passes may find a refs perturbation that hand-derivation missed.",
+   "next_probe": "Import memory/grind/CD_ready/progress/s69-g06-order-perfect-on-candidate-chassis-seats-swapped-6.c as a permuter base (mind the nonmatchings/ scope-break noted in memory), run one fresh-seed window with tools/permuter_campaign.py wait, harvest and --stop inside the same turn."
   }
  ],
  "judge_constraints": [
@@ -446,5 +452,23 @@
  "created": "2026-07-07T06:07:47.638269+00:00",
  "exhaustion_base": 68,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.475494+00:00"
+ "last_unpark_at": "2026-09-03T01:44:08.475494+00:00",
+ "kills": [
+  {
+   "session": 69,
+   "statement": "On the order-perfect g06 base, a loop note - either splitting the sanctioned tbl_125c do-while(0) so the t0 shift falls into a bare depth-1 gap (refs 4 -> 2) or nesting the arg5 def and/or the printf ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-03, candidate.c floor re-verified at 2/179/0; g06 order-perfect base carrying the sanctioned tbl_125c do-while(0) wrap, the pp pointer-alias and the v0 staging FAKEs",
+   "predicate_cite": "",
+   "result": "h01 12, h02 12, h03 15, h04 12, j01 10 (180 insns), j02 12, j03 10, j04 10 - every one worse than g06's 6. The control h"
+  },
+  {
+   "session": 69,
+   "statement": "A same-value re-store of a local (arg5 = arg5;) adds two mentions to the arg5 value's reg_n_refs without a loop note, lifting it from 4 to 6 and breaking the qty_compare_1 tie.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-03, g06 order-perfect base (score 6/179/0) carrying the sanctioned tbl_125c do-while(0) wrap, the pp pointer-alias and the v0 staging FAKEs",
+   "predicate_cite": "",
+   "result": "k01 = 6, k02 = 6, k03 = 6 - all byte-identical to g06 - and k01's block-3 local-alloc dump is line-for-line identical to"
+  }
+ ]
 }

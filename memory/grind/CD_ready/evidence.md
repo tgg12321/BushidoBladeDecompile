@@ -2269,3 +2269,103 @@ whole basin depends on. The arg5 chain's path length is structurally fixed.
 - [s68] SIBLING CONSEQUENCE (a fact for CD_datasync's next session, not a disposition of it): the prong-(c) finding is symbol-level. The Ruling D scope grant cannot be spent by any of CD_sync / CD_ready / CD_datasync while CD_cw, getintr, func_800819C4, func_800817A0 and func_80081E1C remain assembly-only consumers of D_800A1494/95/96. This session re-derived that first-hand for CD_ready rather than inheriting CD_sync's s107 statement.
 
 - [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=68
+
+## s69 (forensics, 2026-09-03) — banked facts
+
+- [s69] Chassis re-measured live before any probe: `sandbox CD_ready --disable all` on
+  memory/grind/CD_ready/candidate.c = **score 2, build_insns 179, target_insns 179,
+  rules_dropped 0**. The three s67 side bases also reproduce exactly: d01 = 7, y02 = 6, e02 = 8,
+  all 179/0. Nothing in the inherited ledger has drifted.
+
+- [s69] **GCC 2.7.2 schedules each basic block BACKWARD.** The `SCHEDDBG PICK clock=N` stream for
+  CD_ready block 3 begins with the block's JUMP and ends with its first insn; the emitted order is
+  the reverse of the pick order. Any future session reading a `.sched` dump on this project must
+  apply that inversion — reading the pick stream forwards inverts every conclusion. Confirmed on
+  both passes (`tmp/grind/CD_ready/s69/cand.sched.txt`, pass 1 at line 7218, pass 2 at line 8594).
+
+- [s69] The block-3 insn identities are now pinned (candidate.c compile, cross-checked against the
+  disassembly and against asm/funcs/CD_ready.s):
+  `91` = `la $a0,D_800161B8`, `93` = `jal puts`, `99` = `lbu` of `idx_1494[0]` (t0 byte),
+  `115` = `lbu` of `idx_1494[1]` (arg5 byte), `141` = `lw $a1,D_800F19C0`,
+  `117` = `sll` of the arg5 index, `106` = **`sll $a0,$a0,2`, the t0 shift**,
+  `120` = **`addu $v0,$v0,$s5`, the arg5 address add**, `122` = `lw` of the arg5 VALUE,
+  `128` = `lbu D_800A11D5`, `111` = `addu $a0,$a0,$s5` (t0 address), `133` = `sll` of the
+  D_800A11D5 byte, `137` = `sw $v1,0x10($sp)` (the 5th argument store), `143` = `lw $a2`,
+  `145` = `lw $a3,0($a0)`, `139` = `la $a0,D_800161C8`, `147` = `jal printf`, `152` = `jal
+  CD_flush`, `165`/`167` = the block tail.
+
+- [s69] The floor's entire two-instruction residual is ONE comparison:
+  `RANKDBG last=122 y=120 cls=3 x=106 cls2=3 val=0` — the class rung ties at 3/3, so
+  sched.c:2464 falls through to `INSN_LUID(120) - INSN_LUID(106)`. On candidate.c that is
+  12 - 6 = +6 in pass 1 and 7 - 6 = +1 in pass 2, both positive, so 120 is picked first and
+  therefore EMITTED LAST — the transposition. Pass-2 LUIDs are simply the pass-1 output order,
+  which is why the two passes cannot disagree.
+
+- [s69] **The ordering half of the residual is solved on the candidate chassis.** Moving the two
+  t0 statements (`t0 *= 4; t0 = (s32)((u8 *)tbl_125c + t0);`) to AFTER the arg5 load raises the
+  t0 shift's LUID above the arg5 addu's and emits the target's exact instruction sequence for the
+  whole block. Bodies: `memory/grind/CD_ready/progress/s69-g06-order-perfect-on-candidate-chassis-seats-swapped-6.c`
+  (score 6, 179 insns, 0 rules) and the `pp`-unmoved twin g01 (also 6). This is an ordinary
+  statement reorder — no new construct, no annotation needed for the reorder itself.
+
+- [s69] **The seat half is a closed-form fixed point, and it is COUPLED to the ordering fix by
+  construction.** local-alloc.c:1660 `qty_compare_1` scores
+  `floor_log2(qty_n_refs) * qty_n_refs * qty_size / (qty_death - qty_birth)`, tie-broken by
+  quantity number. Block 3 has four quantities. On candidate.c the t0-shift quantity spans 8
+  (birth 16, death 24) giving pri 1.0000 — the lowest — so it is allocated LAST and receives
+  `$a0`, the target's seat, while the arg5-value quantity (span 6, pri 1.3333) takes `$v1`.
+  Fixing the order moves the t0 shift one insn later, shortening its span to 6; its pri becomes
+  1.3333, an EXACT tie with the arg5 value, and `*q1 - *q2` gives ord 2 (and `$v1`) to the t0
+  shift because it is born first — which the target's order itself guarantees. Dumps:
+  `tmp/grind/CD_ready/s63/cand.qty.txt` vs `tmp/grind/CD_ready/s69/g06.qty.txt`.
+
+- [s69] Consequence, stated as the search space: with the target's instruction sequence held,
+  `qty_size` (1 for both), `qty_death - qty_birth` (6 for both) and the quantity numbers (birth
+  order) are all pinned by that sequence. `qty_n_refs` is the ONLY free input, and it must move by
+  at least one step: the t0 shift down to <= 3 refs, or the arg5 value up to >= 5.
+
+- [s69] Loop notes cannot buy that reference count on the order-perfect base. Eight variants
+  measured: the wrap-split family h01/h02/h03 = 12/12/15 and the nesting family j01/j02/j03/j04 =
+  10/12/10/10, against g06's 6. The decisive one is the control **h04 (same split boundary,
+  nothing left bare, every depth held at 2) = 12** — identical to h01, so the entire 6-point loss
+  is the note pair itself and none of it is the depth change. The loop note is a sched1 region
+  boundary in this block (s67-A), so any note that changes the depth also destroys the ordering
+  the base exists to hold.
+
+- [s69] Same-value re-stores are **refs-inert**, not merely byte-inert, on this function.
+  `arg5 = arg5;` after the load (k01), before the call (k02) and `t0 = t0;` (k03) all score 6 and
+  are byte-identical to g06; k01's block-3 local-alloc dump is line-for-line identical to g06's
+  (`reg97 ... refs=4`). flow.c's `delete_noop_moves` runs before `reg_n_refs` is accumulated, so
+  the extra mentions never reach the counter. This retires the sanctioned dead-store family as a
+  refs lever on CD_ready.
+
+- [s69] The one structurally-identified escape from the order/seat coupling, priced: if sched1
+  emitted the CANDIDATE order (t0-shift span 8, correct seats) and sched2 then transposed the
+  pair, both halves would hold at once. sched2 would need the class rung to break the tie, i.e.
+  `insn_cost(120 -> 122) > 1`. Node 120 is `unit=-1 icost=1`; on this machine description only
+  function-unit-0 insns (loads) carry icost 2, so the arg5 ADDRESS would have to be produced by a
+  load. That is an extra instruction and breaks 179-parity. Recorded so no future session
+  re-derives it.
+
+- [s69] Artifacts: `tmp/grind/CD_ready/s69/cand.sched.txt` (1.27 MB, BB2_SCHED/RANK/PRIO over the
+  whole TU), `g06.qty.txt`, `k01.qty.txt`, plus the generators `gen.py`/`gen2.py`/`gen3.py`/
+  `gen4.py`, the dump driver `sched.sh`, the block extractor `ext.py` and the target-aligned
+  disassembly differ `adiff.py`.
+
+- [s69] Chassis re-measured live before any probe: candidate.c = score 2, build_insns 179, target_insns 179, rules_dropped 0; the s67 side bases also reproduce exactly (d01 = 7, y02 = 6, e02 = 8, all 179/0). No drift.
+
+- [s69] GCC 2.7.2 schedules each basic block BACKWARD: the SCHEDDBG PICK stream starts at the block's JUMP and ends at its first insn, so the emitted order is the REVERSE of the pick order. Any future reading of a .sched dump on this project must apply that inversion.
+
+- [s69] Block-3 insn identities are pinned: 99 = lbu idx_1494[0] (t0 byte), 115 = lbu idx_1494[1] (arg5 byte), 141 = lw $a1,D_800F19C0, 117 = sll of the arg5 index, 106 = sll $a0,$a0,2 (t0 shift), 120 = addu $v0,$v0,$s5 (arg5 address), 122 = lw of the arg5 VALUE, 128 = lbu D_800A11D5, 111 = addu $a0,$a0,$s5 (t0 address), 133 = sll of the D_800A11D5 byte, 137 = sw $v1,0x10($sp), 143 = lw $a2, 145 = lw $a3,0($a0), 147 = jal printf.
+
+- [s69] The ordering half of the residual is SOLVED on the candidate chassis, not just on the s67 side bases: an ordinary statement reorder (t0 shift and t0 addu moved after the arg5 load) emits the target's exact instruction sequence for the whole do_timeout block, at 179 insns and 0 rules, with no new construct.
+
+- [s69] The seat half is a closed-form fixed point coupled to that fix: with the target's order held, the t0-shift and arg5-value quantities both have qty_size 1, span 6 and qty_n_refs 4, hence bit-identical qty_compare_1 priority 13333, and the tie goes to the t0 shift on quantity number - which is birth order, which is the order itself.
+
+- [s69] Search space after s69: of the four qty_compare_1 inputs, qty_size (1 for both), qty_death-qty_birth (6 for both) and the quantity number are all pinned by the target's instruction sequence. qty_n_refs is the only free input and must move by one step (t0 shift to <= 3 refs, or arg5 value to >= 5).
+
+- [s69] Both known ways of moving qty_n_refs are now dead on the order-perfect base: loop notes cost >= 4 points of order damage (control h04 proves the loss is the note, not the depth), and same-value re-stores never reach the counter (delete_noop_moves).
+
+- [s69] The one structurally-identified escape from the order/seat coupling, priced so nobody re-derives it: for sched1 to emit the CANDIDATE order (span 8, correct seats) while sched2 transposes the pair, sched2's class rung would have to break the tie, i.e. insn_cost(120 -> 122) > 1. Node 120 is unit=-1 icost=1; only function-unit-0 insns (loads) carry icost 2 on this machine description, so the arg5 address would have to be produced by a load - an extra instruction, off 179-parity.
+
+- [s69] F3 is unchanged and still the only completion-blocker on this body: whether prong 2 of .claude/rules/legitimate-volatile-interrupt-touched.md admits the idx_1496 poll loop, and whether the shipped in-TU declarations constitute the volatile_extern_allowlist.txt grant. Moot while the floor is 2.

@@ -1,3 +1,30 @@
+/* s69 UPDATE (2026-09-03, forensics). This body is UNCHANGED and remains the floor at masked 2
+ * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). s69 read the
+ * residual out of BOTH GCC passes with the instrumented cc1 and reduced it to closed form:
+ *   1. CONFIRMED: GCC 2.7.2 schedules each block BACKWARD - the SCHEDDBG PICK stream is the
+ *      REVERSE of the emitted order. Read any .sched dump on this project with that inversion.
+ *   2. CONFIRMED: this body's two-instruction residual is exactly one comparison,
+ *      `RANKDBG last=122 y=120 cls=3 x=106 cls2=3 val=0`; the class rung ties 3/3 and sched.c
+ *      falls through to INSN_LUID. insn 106 = `sll $a0,$a0,2` (the t0 shift), insn 120 =
+ *      `addu $v0,$v0,$s5` (the arg5 address add).
+ *   3. CONFIRMED (the ordering half is SOLVED on this chassis): moving `t0 *= 4;` and
+ *      `t0 = (s32)((u8 *)tbl_125c + t0);` to AFTER the arg5 load raises 106's LUID above 120's
+ *      and emits the TARGET'S EXACT instruction sequence for the whole block. See
+ *      progress/s69-g06-order-perfect-on-candidate-chassis-seats-swapped-6.c (score 6, 179, 0).
+ *      Its residual is purely register naming.
+ *   4. CONFIRMED (and this is why 3. does not close it): fixing the order shortens the t0-shift
+ *      quantity from span 8 to span 6, raising its qty_compare_1 priority from 1.0000 to 1.3333 -
+ *      an EXACT tie with the arg5-value quantity - and local-alloc.c:1683 breaks that tie on
+ *      quantity number, which the target's own order pins in the t0 shift's favour. Order and
+ *      seats are coupled BY CONSTRUCTION, which is the anti-correlation s61-s67 kept measuring.
+ *   5. KILLED: loop notes cannot buy the one reference count that would break the tie on the
+ *      order-perfect base (h01/h02/h03 = 12/12/15, j01-j04 = 10/12/10/10; the decisive control
+ *      h04 - same split boundary, nothing bare - is also 12, so the whole loss is the note).
+ *   6. KILLED: same-value re-stores (`arg5 = arg5;`) are REFS-inert, not just byte-inert -
+ *      flow.c's delete_noop_moves runs before reg_n_refs is accumulated (k01 dump == g06 dump).
+ * The ONE open question on this body is still F3 (the volatile prong-2 / allowlist ruling for
+ * idx_1496) - documented below and moot while the floor is 2.
+ */
 /* s68 UPDATE (2026-09-01, escalation). This body is UNCHANGED and remains the floor at masked 2
  * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0).
  * s68 killed BOTH of the s67 frontier axes with dump-level mechanism and discharged the owner's
