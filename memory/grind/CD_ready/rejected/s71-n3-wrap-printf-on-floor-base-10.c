@@ -1,40 +1,3 @@
-/* s71 UPDATE (2026-09-03, rederive). This body is UNCHANGED and remains the floor at masked 2
- * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). s71 closed the
- * s70 frontier's first two items and opened a pass-level one. What a future session inherits:
- *   1. KILL RE-AUDIT (mandated) DISCHARGED, and it kills the s70 frontier's item 2: stacking an
- *      in-block loop note on the q02 free-depth base is NOT cheaper. The printf-only wrap scores
- *      10 on the g06 base and 10 on q02; the nested version scores 10 on both. Note cost is
- *      independent of the enclosing depth.
- *   2. CONFIRMED, and this is the session's real result: the ASYMMETRIC reg_n_refs s70 named as
- *      the residual's only remaining requirement IS reachable - a note pair around the printf
- *      alone gives the arg5-value quantity refs 5 (or 6 when nested) against the t0-shift
- *      quantity's 4, the first asymmetry measured in 71 sessions. It does NOT flip the seat,
- *      because the same note is a sched1 region boundary and the re-order it causes moves the
- *      t0-shift span from 6 to 4 and the arg5-value span from 6 to 8. qty_compare_1 divides by
- *      that span: pri1 2.0000 vs pri2 1.2500 (single) / 1.5000 (nested). On this block the refs
- *      asymmetry and the span damage are the SAME event.
- *   3. KILLED: carrying the arg5 value in an already-multiply-set variable (`v0 = *(s32 *)(v0 +
- *      (s32)tbl_125c);`) really does delete reg97 from local-alloc - block 3 drops to three
- *      quantities and the tie ceases to exist - but it measures 12 on both bases, because `v0`
- *      already carries the arg5 index and reusing it serialises the block. The t0-side mirrors
- *      through `v0` measure 12 / 13 / 10.
- *   4. CONFIRMED (invariance): with the target's instruction sequence held, six byte-neutral
- *      respellings of the printf-argument block - named address pointer, shift folded into the
- *      address expression, inline `(t0 << 2)`, a fresh index local replacing the v0 staging, a
- *      dead prefix store - all reproduce block 3's quantity table row for row. Respelling the
- *      block does not move any qty_compare_1 input.
- *   5. KILLED: loop notes on THIS body (the floor). Five placements measured; four of them leave
- *      the 179-instruction basin outright (181 insns) and none improves on 2.
- *   6. NEW FRONTIER, read from the compiler: block_alloc has a SUGGESTION PASS
- *      (local-alloc.c:1507-1526) that seats every quantity carrying a hard-register suggestion
- *      BEFORE qty_compare_1 is consulted at all. Suggestions come only from combine_regs
- *      (local-alloc.c:1856-1885), reached for any insn with an `=` output operand 0 and a REG
- *      input operand when one of the two is a hard register. All four block-3 quantities print
- *      copysugg= EMPTY. A C spelling that puts the arg5 value or the t0 shift temp in an insn
- *      with a hard register bypasses the ten-session tie entirely - unprobed.
- * The ONE open question on this body is still F3 (the volatile prong-2 / allowlist ruling for
- * idx_1496) - documented below and moot while the floor is 2.
- */
 /* s70 UPDATE (2026-09-03, rederive). This body is UNCHANGED and remains the floor at masked 2
  * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). s70 spent the
  * rederive rung and enumerated the last unread compiler predicate. What a future session inherits:
@@ -283,7 +246,9 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     v0 = idx_1494[1]; /* FAKE: index staged through the (dead-here) v0 var per staged-value-reused-variable (owner-sanctioned 2026-07-03); v0's prior value is dead (re-set below before any read) */
     v0 <<= 2; /* FAKE: continued staging per staged-value-reused-variable */
     arg5 = *(s32 *)(v0 + (s32)tbl_125c);
+    do { /* FAKE: do-while(0) note pair placed as a sched1 region boundary to force the target's ALU emission order; mechanism: sched.c region formation vs rank_for_schedule INSN_LUID tie; lever-exhaustion: memory/grind/CD_ready/hypotheses.md s66-s70 */
     debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
+    } while (0);
   }
   cdrom_ClearIrq();
   } while (0);

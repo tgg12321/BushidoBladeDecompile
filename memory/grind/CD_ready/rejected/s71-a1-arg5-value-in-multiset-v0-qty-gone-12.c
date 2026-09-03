@@ -1,106 +1,3 @@
-/* s71 UPDATE (2026-09-03, rederive). This body is UNCHANGED and remains the floor at masked 2
- * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). s71 closed the
- * s70 frontier's first two items and opened a pass-level one. What a future session inherits:
- *   1. KILL RE-AUDIT (mandated) DISCHARGED, and it kills the s70 frontier's item 2: stacking an
- *      in-block loop note on the q02 free-depth base is NOT cheaper. The printf-only wrap scores
- *      10 on the g06 base and 10 on q02; the nested version scores 10 on both. Note cost is
- *      independent of the enclosing depth.
- *   2. CONFIRMED, and this is the session's real result: the ASYMMETRIC reg_n_refs s70 named as
- *      the residual's only remaining requirement IS reachable - a note pair around the printf
- *      alone gives the arg5-value quantity refs 5 (or 6 when nested) against the t0-shift
- *      quantity's 4, the first asymmetry measured in 71 sessions. It does NOT flip the seat,
- *      because the same note is a sched1 region boundary and the re-order it causes moves the
- *      t0-shift span from 6 to 4 and the arg5-value span from 6 to 8. qty_compare_1 divides by
- *      that span: pri1 2.0000 vs pri2 1.2500 (single) / 1.5000 (nested). On this block the refs
- *      asymmetry and the span damage are the SAME event.
- *   3. KILLED: carrying the arg5 value in an already-multiply-set variable (`v0 = *(s32 *)(v0 +
- *      (s32)tbl_125c);`) really does delete reg97 from local-alloc - block 3 drops to three
- *      quantities and the tie ceases to exist - but it measures 12 on both bases, because `v0`
- *      already carries the arg5 index and reusing it serialises the block. The t0-side mirrors
- *      through `v0` measure 12 / 13 / 10.
- *   4. CONFIRMED (invariance): with the target's instruction sequence held, six byte-neutral
- *      respellings of the printf-argument block - named address pointer, shift folded into the
- *      address expression, inline `(t0 << 2)`, a fresh index local replacing the v0 staging, a
- *      dead prefix store - all reproduce block 3's quantity table row for row. Respelling the
- *      block does not move any qty_compare_1 input.
- *   5. KILLED: loop notes on THIS body (the floor). Five placements measured; four of them leave
- *      the 179-instruction basin outright (181 insns) and none improves on 2.
- *   6. NEW FRONTIER, read from the compiler: block_alloc has a SUGGESTION PASS
- *      (local-alloc.c:1507-1526) that seats every quantity carrying a hard-register suggestion
- *      BEFORE qty_compare_1 is consulted at all. Suggestions come only from combine_regs
- *      (local-alloc.c:1856-1885), reached for any insn with an `=` output operand 0 and a REG
- *      input operand when one of the two is a hard register. All four block-3 quantities print
- *      copysugg= EMPTY. A C spelling that puts the arg5 value or the t0 shift temp in an insn
- *      with a hard register bypasses the ten-session tie entirely - unprobed.
- * The ONE open question on this body is still F3 (the volatile prong-2 / allowlist ruling for
- * idx_1496) - documented below and moot while the floor is 2.
- */
-/* s70 UPDATE (2026-09-03, rederive). This body is UNCHANGED and remains the floor at masked 2
- * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). s70 spent the
- * rederive rung and enumerated the last unread compiler predicate. What a future session inherits:
- *   1. KILLED (rederive): the ORIGINAL PsyQ libcd source shape is in hand -
- *      tmp/closer/sotn_bios.c:260-286 is CD_ready(int mode, u_char *result) with set_alarm (:95),
- *      get_alarm (:102) and callback (:210) inlined - and transplanted faithfully onto BB2 symbols
- *      it measures 57 at 174 build insns (r1, direct globals) and 55 at 178 (r2, Intr triple via
- *      one base pointer). Both are SHORT of the target's 179: the natural while(1) + short-circuit
- *      `||` control flow is a different basin, not a perturbation of this one. At block level the
- *      natural subscript spellings of the printf arguments bottom out at 7 (r4/r6; r3/r3b/r5 = 14,
- *      r7 = 8) - dropping the `pp` alias sinks the D_800F19C0 load from emitted slot 53/54 to
- *      61/62. Do not re-transplant the source shape.
- *   2. KILLED (class): flow.c has four `reg_n_refs[regno] += loop_depth;` sites, but :2329 and
- *      :2725 are inside `#ifdef AUTO_INC_DEC` and config/mips/mips.h:2175-2179 leaves
- *      HAVE_PRE/POST_INCREMENT commented out. The two live sites (:2081, :2515) are reached only
- *      from propagate_block, which walks PATTERN (insn) (flow.c:1584). REG_NOTES are NEVER walked.
- *      The s69 frontier's "which other RTL positions does flow.c count?" is answered: none.
- *   3. KILLED: the sanctioned F1 combine-foldable copy chain-extender (`a5b = arg5;` and a
- *      two-link version, plus the t0 mirror) is refs-INERT - byte-identical to the g06 base and
- *      block-3 quantity dumps line-for-line identical (refs 4/4/4/8). The copy is copy-propagated
- *      away before flow.c, a different mechanism from s69's self-stores with the same outcome.
- *   4. CONFIRMED, NEW AND POSITIVE: a do-while(0) whose note pair BRACKETS block 3 from outside
- *      (a second wrap opened above the `cnt` test and the `do_timeout:` label, NESTED over the
- *      existing in-block wrap) raises every block-3 qty_n_refs by one loop_depth level -
- *      4/4/4/8 -> 6/6/6/12 - at ZERO byte cost, instruction sequence unchanged. Every in-block
- *      placement s69 measured cost 4-9 points. Base:
- *      progress/s70-q02-note-outside-block3-byte-neutral-refs-lever-6.c. The un-nested form (just
- *      relocating the existing BEG) does NOT raise the depth at all.
- *   5. KILLED (class): that free depth lever cannot break the seat tie by itself. qty1 (reg104,
- *      the t0 shift temp) and qty2 (reg97, the arg5 value) have identical mention counts, spans
- *      and sizes, so a UNIFORM depth change multiplies both qty_n_refs equally and pri1 == pri2 at
- *      every depth; local-alloc.c:1683 then breaks the tie on quantity number, which the target's
- *      own instruction order pins in qty1's favour. Only an ASYMMETRIC refs change moves the seat.
- *   6. KILL RE-AUDIT (mandated) DISCHARGED: s69's k01 self-store kill re-measured across the full
- *      47-variant fake_ablate grid on the current chassis - keep-all and drop-[self-store] are
- *      both 6/179 and byte-identical, every other subset >= 7. No FAKE carrier was masking it.
- * The ONE open question on this body is still F3 (the volatile prong-2 / allowlist ruling for
- * idx_1496) - documented below and moot while the floor is 2.
- */
-/* s69 UPDATE (2026-09-03, forensics). This body is UNCHANGED and remains the floor at masked 2
- * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). s69 read the
- * residual out of BOTH GCC passes with the instrumented cc1 and reduced it to closed form:
- *   1. CONFIRMED: GCC 2.7.2 schedules each block BACKWARD - the SCHEDDBG PICK stream is the
- *      REVERSE of the emitted order. Read any .sched dump on this project with that inversion.
- *   2. CONFIRMED: this body's two-instruction residual is exactly one comparison,
- *      `RANKDBG last=122 y=120 cls=3 x=106 cls2=3 val=0`; the class rung ties 3/3 and sched.c
- *      falls through to INSN_LUID. insn 106 = `sll $a0,$a0,2` (the t0 shift), insn 120 =
- *      `addu $v0,$v0,$s5` (the arg5 address add).
- *   3. CONFIRMED (the ordering half is SOLVED on this chassis): moving `t0 *= 4;` and
- *      `t0 = (s32)((u8 *)tbl_125c + t0);` to AFTER the arg5 load raises 106's LUID above 120's
- *      and emits the TARGET'S EXACT instruction sequence for the whole block. See
- *      progress/s69-g06-order-perfect-on-candidate-chassis-seats-swapped-6.c (score 6, 179, 0).
- *      Its residual is purely register naming.
- *   4. CONFIRMED (and this is why 3. does not close it): fixing the order shortens the t0-shift
- *      quantity from span 8 to span 6, raising its qty_compare_1 priority from 1.0000 to 1.3333 -
- *      an EXACT tie with the arg5-value quantity - and local-alloc.c:1683 breaks that tie on
- *      quantity number, which the target's own order pins in the t0 shift's favour. Order and
- *      seats are coupled BY CONSTRUCTION, which is the anti-correlation s61-s67 kept measuring.
- *   5. KILLED: loop notes cannot buy the one reference count that would break the tie on the
- *      order-perfect base (h01/h02/h03 = 12/12/15, j01-j04 = 10/12/10/10; the decisive control
- *      h04 - same split boundary, nothing bare - is also 12, so the whole loss is the note).
- *   6. KILLED: same-value re-stores (`arg5 = arg5;`) are REFS-inert, not just byte-inert -
- *      flow.c's delete_noop_moves runs before reg_n_refs is accumulated (k01 dump == g06 dump).
- * The ONE open question on this body is still F3 (the volatile prong-2 / allowlist ruling for
- * idx_1496) - documented below and moot while the floor is 2.
- */
 /* s68 UPDATE (2026-09-01, escalation). This body is UNCHANGED and remains the floor at masked 2
  * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0).
  * s68 killed BOTH of the s67 frontier axes with dump-level mechanism and discharged the owner's
@@ -276,14 +173,14 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     s32 arg5;
     s32 t0;
     void **pp;
-    t0 = idx_1494[0];
     pp = (void **)&D_800F19C0; /* FAKE: pointer-alias staging (staged-value-reused-variable / pointer-alias, owner-sanctioned 2026-07-03) - the D_800F19C0 load placed early so the a1 arg loads at the target slot */
-    t0 *= 4;
-    t0 = (s32)((u8 *)tbl_125c + t0);
+    t0 = idx_1494[0];
     v0 = idx_1494[1]; /* FAKE: index staged through the (dead-here) v0 var per staged-value-reused-variable (owner-sanctioned 2026-07-03); v0's prior value is dead (re-set below before any read) */
     v0 <<= 2; /* FAKE: continued staging per staged-value-reused-variable */
-    arg5 = *(s32 *)(v0 + (s32)tbl_125c);
-    debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
+    v0 = *(s32 *)(v0 + (s32)tbl_125c);
+    t0 *= 4;
+    t0 = (s32)((u8 *)tbl_125c + t0);
+    debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, v0);
   }
   cdrom_ClearIrq();
   } while (0);

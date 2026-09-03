@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 70,
+ "session_count": 71,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -429,23 +429,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "Rederive rung spent and dead (original libcd source shape transplanted: 55-57 at 174/178 insns, block-level natural spellings bottom at 7); flow.c's reg_n_refs positions enumerated (REG_NOTES never co"
+  },
+  {
+   "session": 71,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "The asymmetric reg_n_refs the residual needs is REACHABLE and self-cancelling (refs 5-or-6 vs 4, but the same note moves the spans 6/6 -> 4/8 and qty_compare_1 divides by span); s70's q02-makes-notes-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The one instruction-free refs position flow.c leaves is a SECOND occurrence of the same pseudo inside ONE surviving insn's pattern, so there is a C spelling of the arg5 value whose consuming insn mentions reg97 twice, giving it 3 mentions (refs 6 at depth 2) against reg104's 2 and breaking the qty_compare_1 tie on the order-perfect base with no extra instruction.",
-   "mechanism": "s70 enumerated flow.c's accumulation: reg_n_refs is the loop_depth-weighted count of a pseudo's occurrences in the PATTERNS of insns that exist at flow.c time (flow.c:1584, :2081, :2515), and mark_used_regs recurses through the whole pattern, so two REG occurrences in one pattern are counted twice for one instruction. reg97 currently has exactly two: its set by `lw $v1,0($v0)` (emitted slot 58) and its use by `sw $v1,0x10($sp)` (slot 63). Any MIPS pattern of the form (set X (op R R)) or a two-operand compare/select on the same pseudo would count twice.",
-   "next_probe": "Grep tools/gcc-2.7.2/config/mips/mips.md for insn patterns whose RTL template mentions the same operand register twice and that MIPS emits as a single instruction (candidates: `addu R,R,R` from `x + x`, `sltu`/`subu` self-forms, `and R,R,R` from `x & x`). Then spell each as C on the g06 order-perfect base in a position where the arg5 VALUE is the doubled operand and the result is still what printf's 5th argument must be, measure with tmp/grind/CD_ready/s70/measure.ps1, and check refs(reg97) in the BB2_QTY_DEBUG dump BEFORE looking at the score - the dump is the discriminator, the score is downstream of it."
+   "hypothesis": "The local-alloc SUGGESTION PASS bypasses the ten-session qty_compare_1 tie entirely: if either block-3 quantity acquires a hard-register suggestion it is seated at local-alloc.c:1507-1526 before qty_compare_1 is ever called, so the 1.3333-versus-1.3333 tie and its quantity-number tie-break never run. Giving the t0-shift quantity a suggestion of $a0, or the arg5-value quantity a suggestion of $v1, closes the seat half on the order-perfect base with no change to the instruction sequence.",
+   "mechanism": "block_alloc runs two allocation loops. The first (local-alloc.c:1507-1526) seats every quantity with qty_phys_num_sugg or qty_phys_num_copy_sugg non-zero, ordered by qty_sugg_compare_1; only the leftovers reach the qty_compare_1 ordering at local-alloc.c:1560-1569. Suggestions are set by combine_regs (local-alloc.c:1856-1885), which local-alloc.c:1281-1295 calls for any insn carrying an `=` output operand 0 and a REG input operand when one of the two is a hard register - so a C spelling that puts one of these two values into an insn alongside a hard register (an argument register, a return-value register, a frame/GP base register reached through a `p`-constraint address operand at local-alloc.c:1276-1284) creates one.",
+   "next_probe": "On the g06 order-perfect base, enumerate the block-3 insns that already touch a hard register (the four printf argument setups plus the call) and spell C that routes the t0 address or the arg5 value through one of them without adding an instruction - e.g. computing the t0 address into the same value printf's 4th argument load uses, or expressing the arg5 index through an addressing form whose operand carries a `p` constraint so local-alloc.c:1276-1284 reduces it to a REG. Measure with tmp/grind/CD_ready/s71/measure.ps1 and read the copysugg= column of the BB2_QTY_DEBUG dump (tmp/grind/CD_ready/s71/qtyrun.sh, run under WSL) BEFORE the score - a non-empty copysugg on qty1 or qty2 is the win condition, and the score is downstream of it."
   },
   {
-   "hypothesis": "With uniform depth now FREE (s70's q02 outer bracket), the s69 in-block note family should be re-priced on top of it: an in-block note no longer has to buy depth, only asymmetry, so a placement whose sched1 region boundary happens to fall on a scheduling-indifferent seam may now cost 0 instead of the 4-9 points s69 measured.",
-   "mechanism": "Every s69 h/j variant paid twice - once for the depth it needed and once for the region boundary. On the q02 base the enclosing depth is already 3, so a single in-block END/BEG pair that raises only reg97's death mention (the sw at emitted slot 63) is a smaller perturbation than the whole-block re-nesting s69 measured, and s70 showed the note cost is placement-specific rather than intrinsic (outside-block notes cost nothing).",
-   "next_probe": "Take progress/s70-q02-note-outside-block3-byte-neutral-refs-lever-6.c as the base and re-run the s69 h01-h04 and j01-j04 placements on top of it (the printf-nesting j03 shape is the one that puts the boundary between reg104's death at slot 61 and reg97's death at slot 63). Score each, and for every one that stays at 6 or better, dump BB2_QTY_DEBUG and check whether qty2's refs exceeded qty1's - an asymmetric 8-vs-6 is the win condition."
+   "hypothesis": "qty_size is the one qty_compare_1 input never probed on this function. pri = floor_log2(refs)*refs*size/span, and s69/s70/s71 have now pinned refs (symmetric under uniform depth, asymmetric only together with span damage), span (pinned by the target's order) and the quantity number (birth order, pinned by the same order). A size-2 arg5-value quantity would give pri2 = 2.6667 against pri1's 1.3333 with everything else held.",
+   "mechanism": "qty_size[q] is the number of hard registers the quantity needs, i.e. 1 for SImode and 2 for DImode. Every C shape measured so far keeps the arg5 value SImode because printf's 5th argument is a 32-bit word in the target's `sw $v1,0x10($sp)`.",
+   "next_probe": "Enumerate whether ANY C spelling gives the value a DImode (or otherwise size-2) pseudo while still emitting exactly the target's single `lw`/`sw` pair - most likely it cannot, since a DImode quantity implies two-word moves, but the arithmetic makes it the last unmeasured qty_compare_1 input and one measurement settles it. Spell it on the g06 base, check build_insns stays 179 before looking at the score, and read qty2's size column in the dump."
   },
   {
-   "hypothesis": "The g06/q02 order-perfect base is productive permuter territory that has never been searched: no campaign in 70 sessions has started from a body whose sched1 output is already the target's instruction sequence on this chassis.",
-   "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies whose residual mixed order and seats. g06's residual is a single local-alloc tie and q02 adds a free depth dial on top, so a permuter run scores a much narrower neighbourhood and its rich passes may find the asymmetric refs perturbation hand-derivation has not.",
-   "next_probe": "Import progress/s70-q02-note-outside-block3-byte-neutral-refs-lever-6.c as a permuter base (mind the root-level nonmatchings/ scope-break recorded in memory/project/grinder-nonmatchings-scope-break.md), run one fresh-seed window with `python3 tools/permuter_campaign.py wait --dir <ws>`, then harvest and `--stop` inside the same turn."
+   "hypothesis": "The g06/q02 order-perfect base is still untried permuter territory - no campaign in 71 sessions has been seeded from a body whose sched1 output is already the target's instruction sequence.",
+   "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies whose residual mixed order and seats, so the search wandered across both. g06's residual is a single local-alloc tie and q02 adds a free depth dial on top, so the scored neighbourhood is far narrower.",
+   "next_probe": "Build a FRESH workspace - the existing tmp/perm_mar* workspaces are unusable: they predate -mel, predate the naming wave (they compile `marionation_Exec`), and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1. Mirror engine/buildconfig.py's flags exactly, validate the scorer reproduces the known 6 for g06 and 2 for candidate.c before launching, then run ONE fresh-seed window with `python3 tools/permuter_campaign.py wait --dir <ws>`, harvest and `--stop` inside the same turn. Mind the root-level nonmatchings/ scope-break in memory/project/grinder-nonmatchings-scope-break.md."
   }
  ],
  "judge_constraints": [
@@ -515,6 +521,38 @@
    "measured_on": "HEAD chassis 2026-09-03, k01 form across all 47 subsets of its nine FAKE units (including the all-removed and none-removed controls).",
    "predicate_cite": "",
    "result": "KILLED (the re-audit finds no masking; s69's kill stands). keep-all = 6/179 and drop-[arg5 self-store] = 6/179 are byte-"
+  },
+  {
+   "session": 71,
+   "statement": "Stacking s69's in-block loop-note placements on the s70 q02 free-depth base makes them cheaper than the 4-9 points they cost on the g06 base.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-03; candidate.c re-verified live at 2/179/0, g06 at 6/179/0 and q02 at 6/179/0 before any probe. Both bases carry their full inherited FAKE sets (pointer-alias pp, v0 index stagin",
+   "predicate_cite": "",
+   "result": "d1g = 10, d1q = 10, d2g = 10, d2q = 10 - bit-identical costs on both bases against their common baseline of 6. f1g = 10,"
+  },
+  {
+   "session": 71,
+   "statement": "That measured refs asymmetry (arg5 value 5 or 6 against the t0 shift temp's 4) flips the local-alloc seat so the arg5 value takes $v1 on the order-perfect base.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-03, g06 order-perfect base (6/179/0) carrying its full inherited FAKE set; dumps tmp/grind/CD_ready/s71/d1g.qty.txt and d2g.qty.txt taken with the instrumented cc1 at tools/gcc-2.",
+   "predicate_cite": "",
+   "result": "The spans are not held. The note is a sched1 region boundary, so the block re-orders: the t0-shift quantity goes 18-24 ("
+  },
+  {
+   "session": 71,
+   "statement": "Carrying the arg5 value in an already-multiply-set variable removes its pseudo from local-alloc, dissolving the qty_compare_1 tie and letting global-alloc seat the value at $v1 on the order-perfect ba",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-03, g06 (6/179/0) and q02 (6/179/0) bases with their full inherited FAKE sets.",
+   "predicate_cite": "",
+   "result": "The mechanism works exactly as predicted: a1's block-3 quantity table drops from four quantities to three and reg97 is g"
+  },
+  {
+   "session": 71,
+   "statement": "The floor body (candidate.c, score 2, seats already correct) admits a do-while(0) note placement in the do_timeout block that repairs its remaining two-instruction ALU transposition.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-03, candidate.c (the floor body) with its full inherited FAKE set, re-verified live at 2/179/0 immediately before and after the batch.",
+   "predicate_cite": "",
+   "result": "n1 = 12 at 181 build insns, n2 = 8 at 181, n3 = 10 at 179, n4 = 12 at 181, n5 = 8 at 181, against the floor's 2 at 179. "
   }
  ]
 }

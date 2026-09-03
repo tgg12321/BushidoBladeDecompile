@@ -2349,3 +2349,152 @@ Next session's cheapest untried probes, in order:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-03, k01 form across all 47 subsets of its nine FAKE units (including the all-removed and none-removed controls).
+
+
+## s71 (rederive, 2026-09-03)
+
+Modality: rederive. Frontier inherited from s70: (1) find a C spelling whose surviving insn pattern
+mentions the arg5-value pseudo twice; (2) re-price s69's in-block loop notes on top of s70's free
+outside-the-block depth lever (q02); (3) permuter on the order-perfect base. 26 variants measured,
+9 instrumented-cc1 quantity dumps read. Floor unchanged at 2.
+
+- h01 [KILLED, instance] Stacking s69's in-block loop-note placements on the s70 q02 free-depth base
+  makes them cheaper than the 4-9 points they cost on the g06 base.
+  mechanism: s70 argued each s69 placement paid twice, once for depth and once for the sched1
+  region boundary; on q02 the depth is already bought from outside the block.
+  probe: the printf-only wrap and the nested printf wrap, each generated on BOTH bases
+  (tmp/grind/CD_ready/s71/d1g.c, d1q.c, d2g.c, d2q.c), measured with s71/measure.ps1.
+  result: d1g = 10, d1q = 10, d2g = 10, d2q = 10 - identical on both bases, against the common
+  baseline of 6. The note cost does not depend on the enclosing depth. Also measured: a wrap around
+  the two t0 statements costs 10 on g06 and 19 on q02 (f1g/f1q). This discharges the mandated kill
+  re-audit for s69's note kill and closes the s70 frontier's second item.
+  measured_on: HEAD chassis 2026-09-03; candidate.c re-verified at 2/179/0, g06 at 6/179/0 and q02
+  at 6/179/0 before any probe; both bases carry their full inherited FAKE sets.
+
+- h02 [CONFIRMED] An in-block loop note raises the arg5-value quantity's qty_n_refs ABOVE the
+  t0-shift quantity's - the asymmetry s70 named as the residual's only remaining requirement.
+  mechanism: flow.c:2515 weights each pattern mention by the loop_depth at that insn; a note pair
+  containing the arg5 value's death insn (printf's 5th-argument store) but neither of the t0 shift
+  temp's two insns raises exactly one of the four mentions.
+  probe: d1 (printf wrapped once) and d2 (printf wrapped twice) on the g06 base, BB2_QTY_DEBUG
+  block-3 records read BEFORE the score, per the s70 frontier's instruction.
+  result: g06 base is qty1 refs 4 / qty2 refs 4; d1 is qty1 4 / qty2 5; d2 is qty1 4 / qty2 6. The
+  asymmetry is real and it is the first one measured on this function.
+
+- h03 [KILLED, instance] That asymmetry flips the seat.
+  mechanism: qty_compare_1 (local-alloc.c:1659-1684) ranks on
+  floor_log2(refs)*refs*size/(death-birth); with refs 5-or-6 against 4 and spans held at 6, qty2's
+  priority would exceed qty1's and qty2 would be allocated first, taking $v1.
+  probe: the same d1/d2 dumps, reading the birth/death columns as well as refs.
+  result: the spans are NOT held. The note is a sched1 region boundary, so the block re-orders:
+  qty1 goes 18-24 (span 6) -> 16-20 (span 4) and qty2 goes 20-26 (span 6) -> 18-26 (span 8).
+  pri1 becomes 2.0000 while pri2 is only 1.2500 (d1) or 1.5000 (d2), so qty1 keeps got=3 ($v1) and
+  qty2 keeps got=4 ($a0), and the score is 10 rather than 6. On this block the refs asymmetry and
+  the span damage are produced by the same event and the span term dominates.
+  measured_on: HEAD chassis 2026-09-03, g06 order-perfect base with its full inherited FAKE set;
+  dumps tmp/grind/CD_ready/s71/d1g.qty.txt, d2g.qty.txt.
+
+- h04 [KILLED, instance] Removing the arg5-value pseudo from local-alloc altogether - by carrying
+  the loaded value in an already-multiply-set variable so its REG_N_DEATHS exceeds 1 - dissolves
+  the tie and lets global-alloc seat the value at $v1.
+  mechanism: block_alloc only creates quantities for pseudos it can treat as local single-death
+  values; a multiply-set carrier is skipped, exactly as reg98 (the `t0` variable) already is.
+  probe: a1 - `v0 = *(s32 *)(v0 + (s32)tbl_125c);` with `v0` passed as printf's 5th argument, on
+  both the g06 and q02 bases; plus the t0-side mirrors e1/e2/e3 staging the address chain through
+  `v0`.
+  result: the mechanism works exactly as predicted - a1's block-3 quantity table drops to THREE
+  quantities and reg97 is gone (tmp/grind/CD_ready/s71/a1g.qty.txt) - but the score is 12 on both
+  bases: `v0` already carries the arg5 INDEX two statements earlier, so reusing it serialises the
+  block and the target's emission order is lost. e1 = 12, e2 = 13, e3 = 10.
+  measured_on: HEAD chassis 2026-09-03, g06 and q02 bases with their full inherited FAKE sets.
+
+- h05 [CONFIRMED] With the target's instruction sequence held, no byte-neutral respelling of the
+  printf-argument block measured this session moves any qty_compare_1 input.
+  mechanism: the block's quantities are formed from the insns, and the insns are what the order
+  pins; C-level naming, pointer-vs-cast spelling and shift placement change only pseudo numbers.
+  probe: six shapes on the g06 base - b1 (dead prefix store), c1 (shift folded into the address
+  expression), g1 (named `s32 *ap` for the arg5 address), g6 (`(t0 << 2)` inline), g7 (a FRESH
+  index local replacing the `v0` staging entirely), plus the non-neutral controls g3/g4 (named
+  pointer for the t0 address, 9) and g5 (one pointer variable reused for both addresses, 16).
+  result: b1, c1, g1, g6, g7 all score 6 and all reproduce block 3's quantity table row-for-row
+  (qty0 16-20 refs4 got 2, qty1 18-24 refs4 got 3, qty2 20-26 refs4 got 4, qty3 22-30 refs8 got 2),
+  differing only in pseudo numbers. g7 additionally moves qty0 to birth 10 / refs 12 and re-orders
+  the ALLOC sequence to 0,3,1,2 - and the qty1/qty2 rows are STILL identical.
+
+- h06 [KILLED, instance] The floor body (candidate.c, score 2, seats already correct) admits a
+  do-while(0) note placement in the do_timeout block that repairs the remaining ALU transposition.
+  mechanism: s67's six-position empty-wrap sweep was run against a score-6 side base, never against
+  the floor; a note pair is a sched1 region boundary and could in principle force the target's
+  emission order rather than perturb it.
+  probe: five placements on candidate.c - n1 (t0 chain wrapped), n2 (arg5 chain wrapped), n3
+  (printf wrapped), n4 (t0 chain wrapped, arg5 chain bare), n5 (the mirror).
+  result: n1 = 12 at 181 build insns, n2 = 8 at 181, n3 = 10 at 179, n4 = 12 at 181, n5 = 8 at 181.
+  Four of the five leave the 179-instruction basin outright; none improves on 2.
+  measured_on: HEAD chassis 2026-09-03, candidate.c (the floor body) with its full inherited FAKE
+  set, re-verified at 2/179/0 immediately before the batch.
+
+- h07 [CONFIRMED, read from the compiler] There is a second allocation pass in block_alloc that
+  never reaches qty_compare_1, and CD_ready's block-3 quantities are all excluded from it.
+  mechanism: local-alloc.c:1495-1526 sorts by qty_sugg_compare_1 and seats every quantity with
+  qty_phys_num_sugg or qty_phys_num_copy_sugg non-zero BEFORE the qty_compare_1 ordering at
+  local-alloc.c:1560-1569. Suggestions are set only by combine_regs (local-alloc.c:1856-1885),
+  reached from local-alloc.c:1281-1295 for any insn with an `=` output operand 0 and a REG input
+  operand, when one of the two is a hard register.
+  probe: read local-alloc.c:1180-1300, :1495-1575 and :1836-1900, cross-checked against the
+  `copysugg=` column the instrumented cc1 already prints.
+  result: all four block-3 quantities print copysugg= EMPTY in every dump taken this session. For
+  reg97 the exclusion is structural on this body: its set is a load whose operand 1 is a MEM
+  (constraint `m`, so the PLUS/MULT address reduction at local-alloc.c:1276-1284 never fires and r1
+  is not a REG) and its death is a store into printf's 5th-argument stack slot, whose operand 0 is
+  a MEM rather than a register. Neither insn can hand reg97 a hard-register suggestion. This is a
+  pass-level route around the ten-session tie and it has never been probed from the C side.
+
+## [s71] Stacking s69's in-block loop-note placements on the s70 q02 free-depth base makes them cheaper than the 4-9 points they cost on the g06 base.
+- mechanism: s70 argued each s69 in-block placement paid twice - once for the loop_depth it needed and once for the sched1 region boundary - so on q02, where block 3's depth is already bought by a note pair that brackets the block from the predecessor, an in-block note would only have to pay for the asymmetry.
+- probe: The printf-only wrap and the nested printf wrap generated on BOTH bases (tmp/grind/CD_ready/s71/d1g.c, d1q.c, d2g.c, d2q.c) plus the t0-chain wrap (f1g/f1q), spliced into src/system.c and scored with the cheat-invisible sandbox via tmp/grind/CD_ready/s71/measure.ps1.
+- result: d1g = 10, d1q = 10, d2g = 10, d2q = 10 - bit-identical costs on both bases against their common baseline of 6. f1g = 10, f1q = 19. The cost of an in-block note pair on this block does not depend on the enclosing loop depth, so the free outside-the-block depth lever buys nothing when combined with one. This also discharges the mandated kill re-audit: s69's in-block note kill was re-measured on the newest chassis and on the newest (q02) base and it stands.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-03; candidate.c re-verified live at 2/179/0, g06 at 6/179/0 and q02 at 6/179/0 before any probe. Both bases carry their full inherited FAKE sets (pointer-alias pp, v0 index staging, the tbl_125c do-while(0), the 0xFF constant holders, the nested idx_1496 wrap, and on q02 additionally the predecessor-bracket wrap).
+
+## [s71] An in-block loop note raises the arg5-value quantity's qty_n_refs above the t0-shift quantity's on the order-perfect base.
+- mechanism: flow.c:2515 weights every pattern mention by the loop_depth in force at that insn. A note pair that contains the arg5 value's death insn (the sw into printf's 5th-argument stack slot) but neither of the t0 shift temp's two insns raises exactly one of the four mentions, which is the asymmetry s70 named as the residual's only remaining requirement.
+- probe: d1 (printf statement wrapped in one do-while(0)) and d2 (wrapped twice) on the g06 order-perfect base; the instrumented cc1's BB2_QTY_DEBUG block-3 quantity records were read BEFORE the score, per the s70 frontier's instruction (tmp/grind/CD_ready/s71/d1g.qty.txt, d2g.qty.txt).
+- result: g06 base prints qty1 (reg104, t0 shift temp) refs=4 and qty2 (reg97, arg5 value) refs=4. d1 prints qty1 refs=4, qty2 refs=5. d2 prints qty1 refs=4, qty2 refs=6. This is the first asymmetric reg_n_refs state measured on CD_ready in 71 sessions, and it confirms the mechanism s70 derived from the flow.c enumeration.
+- verdict: CONFIRMED
+
+## [s71] That measured refs asymmetry (arg5 value 5 or 6 against the t0 shift temp's 4) flips the local-alloc seat so the arg5 value takes $v1 on the order-perfect base.
+- mechanism: qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1659-1684) ranks quantities on floor_log2(qty_n_refs) * qty_n_refs * qty_size / (qty_death - qty_birth); with the spans held at 6 as s69 showed the target's order pins them, refs 5 or 6 against 4 would give the arg5 value the higher priority, allocate it first and hand it $v1.
+- probe: The same d1/d2 BB2_QTY_DEBUG dumps, reading the birth and death columns alongside refs, then the sandbox score for each form.
+- result: The spans are not held. The note is a sched1 region boundary, so the block re-orders: the t0-shift quantity goes 18-24 (span 6) to 16-20 (span 4) and the arg5-value quantity goes 20-26 (span 6) to 18-26 (span 8). pri1 becomes 2.0000 while pri2 is only 1.2500 (d1) or 1.5000 (d2), so the t0 shift keeps got=3 ($v1) and the arg5 value keeps got=4 ($a0), and the score is 10 rather than the base's 6. On this block the refs asymmetry and the span damage are produced by one and the same event, and the span term outruns the refs term in both directions.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-03, g06 order-perfect base (6/179/0) carrying its full inherited FAKE set; dumps tmp/grind/CD_ready/s71/d1g.qty.txt and d2g.qty.txt taken with the instrumented cc1 at tools/gcc-2.7.2/cc1.
+
+## [s71] Carrying the arg5 value in an already-multiply-set variable removes its pseudo from local-alloc, dissolving the qty_compare_1 tie and letting global-alloc seat the value at $v1 on the order-perfect base.
+- mechanism: block_alloc only forms quantities for pseudos it can treat as local single-death values; a multiply-set carrier is skipped and falls through to global-alloc, exactly as reg98 (the t0 variable) already does on this body, where global-alloc seats it at $a0 correctly.
+- probe: a1 - the load written into v0 (`v0 = *(s32 *)(v0 + (s32)tbl_125c);`) with v0 passed as printf's 5th argument - on the g06 and q02 bases, plus the t0-side mirrors e1 (both t0 statements staged through v0), e2 (the add only) and e3 (the shift only). Scores plus the BB2_QTY_DEBUG block-3 dump for a1g.
+- result: The mechanism works exactly as predicted: a1's block-3 quantity table drops from four quantities to three and reg97 is gone entirely (tmp/grind/CD_ready/s71/a1g.qty.txt), so the tie no longer exists. The score is 12 on both bases: v0 already carries the arg5 INDEX two statements earlier, so reusing it serialises the block and the target's emission order is lost. e1 = 12, e2 = 13, e3 = 10, all at 179 insns and 0 rules.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-03, g06 (6/179/0) and q02 (6/179/0) bases with their full inherited FAKE sets.
+
+## [s71] With the target's instruction sequence held, byte-neutral respellings of the printf-argument block move a qty_compare_1 input.
+- mechanism: The block's local-alloc quantities are formed from the insns, and the insns are what the emission order pins; C-level naming, pointer-versus-cast spelling and shift placement were expected to at least perturb the pseudo webs.
+- probe: Six shapes on the g06 base, each measured and each dumped or cross-checked: b1 (a dead prefix store `arg5 = v0;`), c1 (the t0 shift folded into the address expression), g1 (a named `s32 *ap` pointer for the arg5 address with `arg5 = *ap;`), g6 (the shift written `(t0 << 2)` inline in the address expression), g7 (the v0 index staging replaced by a fresh local `ai`), plus the non-neutral controls g3/g4 (named pointer for the t0 address) and g5 (one pointer variable reused for both addresses).
+- result: b1, c1, g1, g6 and g7 all score 6 at 179 insns and 0 rules, and all reproduce block 3's quantity table row for row - qty0 16-20 refs4 got 2, qty1 18-24 refs4 got 3, qty2 20-26 refs4 got 4, qty3 22-30 refs8 got 2, ALLOC order 3,0,1,2 - differing only in pseudo numbers. g7 additionally moves qty0 to birth 10 with refs 12 and re-orders ALLOC to 0,3,1,2, and the qty1/qty2 rows are still identical. The non-neutral controls cost points instead (g3 = 9, g4 = 9, g5 = 16). Recorded as a CONFIRMED invariance so no future session re-spells the block hoping to move the seats.
+- verdict: CONFIRMED
+
+## [s71] The floor body (candidate.c, score 2, seats already correct) admits a do-while(0) note placement in the do_timeout block that repairs its remaining two-instruction ALU transposition.
+- mechanism: s67's six-position empty-wrap sweep was run against a score-6 side base and never against the floor itself; a note pair is a sched1 region boundary, so on a body whose only residual is a scheduling transposition it could in principle force the target's emission order rather than perturb it.
+- probe: Five placements generated on candidate.c by tmp/grind/CD_ready/s71/gen4.py and scored: n1 (the two t0 statements wrapped), n2 (the arg5 chain wrapped), n3 (the printf wrapped), n4 (t0 chain wrapped with the arg5 chain left bare), n5 (the mirror).
+- result: n1 = 12 at 181 build insns, n2 = 8 at 181, n3 = 10 at 179, n4 = 12 at 181, n5 = 8 at 181, against the floor's 2 at 179. Four of the five leave the 179-instruction basin outright, and none improves on 2.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-03, candidate.c (the floor body) with its full inherited FAKE set, re-verified live at 2/179/0 immediately before and after the batch.
+
+## [s71] block_alloc has a second allocation pass that seats quantities before qty_compare_1 is consulted, and CD_ready's block-3 quantities are all excluded from it.
+- mechanism: tools/gcc-2.7.2/local-alloc.c:1495-1526 sorts the quantities by qty_sugg_compare_1 and seats every quantity for which qty_phys_num_sugg or qty_phys_num_copy_sugg is non-zero, BEFORE the qty_compare_1 ordering at local-alloc.c:1560-1569. Suggestions are created in exactly one place, combine_regs (local-alloc.c:1856-1885), which is reached from local-alloc.c:1281-1295 for ANY insn with an `=` output operand 0 and a REG input operand - not only for copy insns - whenever one of the two is a hard register.
+- probe: Read local-alloc.c:1180-1300, :1495-1575 and :1836-1900, and cross-checked against the copysugg= column the instrumented cc1 already prints in every BB2_QTY_DEBUG record taken this session.
+- result: All four block-3 quantities print copysugg= EMPTY in all nine dumps. For the arg5 value the exclusion is structural on this body: its set is a load whose operand 1 is a MEM (constraint `m`, so the PLUS/MULT address reduction at local-alloc.c:1276-1284 never fires and r1 is never a REG) and its death is a store into printf's 5th-argument stack slot, whose operand 0 is a MEM rather than a register. A quantity that acquired a hard-register suggestion would never reach the 1.3333-versus-1.3333 tie that has held this function since s65 - this is the first pass-level route around it and it has not been probed from the C side.
+- verdict: CONFIRMED
