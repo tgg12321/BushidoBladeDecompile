@@ -1,8 +1,8 @@
 {
  "func": "func_80062020",
  "file": "text1b",
- "session_count": 12,
- "current_modality": "escalation",
+ "session_count": 13,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -81,23 +81,29 @@
    "floor": 4,
    "modality": "escalation",
    "headline": "Ruling-A named probe EXECUTED and KILLED on six grounds (cse2's nsets/QImode skip and max_qty abandon are block-granular, QImode needs a conditional jump, max_qty needs ~250+ insns, and cse2 is a no-o"
+  },
+  {
+   "session": 13,
+   "floor": 4,
+   "modality": "synthesis",
+   "headline": "Floor re-measured 4; the previous run's score-0 body adjudicated a cheat and banked as rejected; 117 new ordinary-C shapes measured (0 hits) and the residual restated as a use-count law with a flow.c "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A spelling found on a SIMPLER member of the 32-function same-symbol dual-address-form species transfers back to func_80062020 at zero extra cost and would re-activate it.",
-   "mechanism": "tmp/grind/func_80062020/s9/scan4.py identified 32 functions in SLUS-00663 exhibiting the identical arrangement, none matched in pure C. func_80061064 (D_800F1150) is the immediate data-region neighbour; CD_cw and SpuSetReverbModeParam are shorter bodies where the arrangement may appear WITHOUT the surrounding loop.",
+   "hypothesis": "There is a C construct that gives ONE address def TWO uses and a SECOND def ONE use for the same row, without any dead statement - i.e. the row pointer has a genuine second consumer, so it is naturally live across the c- and b-stores and then re-derived for a reason the program needs.",
+   "mechanism": "H-s13-8's law: flow.c:2102 grants combine's LOG_LINK only to a def that dies at its single use in the block, so the target's asymmetry (shared base at DISP8/DISP4 plus one folded LOSUM) is exactly a 2-use def plus a 1-use def of the same address value. Every form tried so far reaches two defs only by writing the same expression twice (dead) or two different expressions (banned). What has NOT been tried is a reading of the function in which the a-column write belongs to a different logical operation than the b/c writes - e.g. 'clear the flag word' as a step distinct from 'clear the payload' - so that the second def has a program reason to exist.",
+   "next_probe": "Extend sweep13n.py with candidate readings in which the a-column has a distinct role (a separate clear step, a value that is not literally the constant 0 in source, a write ordered against a different condition), and for any shape that shifts the arrangement read the .combine dump via `pwsh tools/grinder/dump.ps1 func_80062020` to confirm the LOG_LINK on the second def rather than inferring it from the asm."
+  },
+  {
+   "hypothesis": "A spelling found on a SIMPLER member of the 32-function same-symbol dual-address-form species transfers back to func_80062020 at zero extra cost and re-activates it.",
+   "mechanism": "tmp/grind/func_80062020/s9/scan4.py identified 32 functions in SLUS-00663 with the identical arrangement, none matched in pure C. func_80061064 (D_800F1150) is the immediate data-region neighbour; CD_cw and SpuSetReverbModeParam are shorter bodies where the arrangement may appear WITHOUT the surrounding loop, which would isolate the use-count problem from the loop's live values.",
    "next_probe": "When one of those functions reaches the queue top, read asm/funcs/func_80061064.s for a minimal instance and solve it there; any admissible spelling that closes it is a re-activation trigger for this entry."
   },
   {
    "hypothesis": "An owner class grant covering the same-symbol dual-address-form residual would close func_80062020 and 31 siblings in one act.",
-   "mechanism": "The construct is byte-proven (distance 0 + full-build oracle SHA1) and its generic shape is exhibited in shipped SOTN PSX/GCC-2.7.2 code; the only barrier is that the frozen family list does not cover it and extending that list is owner-only. Two Judges and two layer-1 reviews have FAILed it on the merits under the current list.",
-   "next_probe": "No grind action. If the owner ever extends the frozen list to this shape, unpark func_80062020 and resubmit memory/grind/func_80062020/rejected/layer1-fail-0831-2231.c unchanged - it already measures distance 0 with SHA1 == oracle."
-  },
-  {
-   "hypothesis": "A toolchain-fidelity finding about COMBINE (not cse2) handling of `(mem (plus reg symbol_ref))` would make the target arrangement reachable from a uniform spelling.",
-   "mechanism": "s12 measured cse2 to be a no-op on the epilogue block in both uniform poles, so the all-LO_SUM pole is produced by combine at toplev.c:3004 folding each surviving `(mem (plus reg symbol_ref))` into a lui/addu/%lo triple, and the all-DISP pole never contains a symbol_ref at all. The residual therefore lives in combine's per-insn address folding, not in any cse2 block gate.",
-   "next_probe": "No grind action here. Any project-wide finding about cc1 2.7.2 combine divergence on `(plus reg symbol_ref)` addresses should re-check this function's residual against the s9/s12 pole measurements (35 / 39 vs target 38)."
+   "mechanism": "The construct is byte-proven (distance 0 plus full-build oracle SHA1) and its generic shape is exhibited in shipped SOTN PSX/GCC-2.7.2 code; the only barrier is that the frozen family list does not cover it and extending that list is owner-only. Two Judges and two layer-1 reviews have FAILed it on the merits under the current list.",
+   "next_probe": "No grind action. If the owner ever extends the frozen list to this shape, resubmit memory/grind/func_80062020/rejected/layer1-fail-0831-2231.c unchanged - it already measures distance 0 with SHA1 == oracle."
   }
  ],
  "judge_constraints": [
@@ -116,5 +122,55 @@
  "pending_fixup": null,
  "exhaustion_base": 12,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.518301+00:00"
+ "last_unpark_at": "2026-09-03T01:44:08.518301+00:00",
+ "kills": [
+  {
+   "session": 13,
+   "statement": "The score-0 body produced by the previous (discarded) s13 run is an admissible ordinary-C form under duplicated-statement-into-arms.",
+   "kill_scope": "instance",
+   "measured_on": "2026-09-03 chassis (sandbox cheat_asm_stripped 165, honest floor 4); the body carries two FAKE-annotated constructs (identical-arms conditional + pointer self-assignment), both present when it measure",
+   "predicate_cite": "",
+   "result": "FAILS T1 (both arms identical - the conditional selects nothing; the pointer re-assignment stores the value it already h"
+  },
+  {
+   "session": 13,
+   "statement": "A uniform ordinary-C epilogue spelling emits the target arrangement DISP8 | DISP4 | LOSUM[D_800F1198] if the search crosses base kind, access shape, column order and index spelling together instead of",
+   "kill_scope": "instance",
+   "measured_on": "2026-09-03 chassis, honest floor 4 (cheat_asm_stripped 165), no FAKE construct present in any of the 102 shapes",
+   "predicate_cite": "",
+   "result": "0 of 102 hit the target. The space partitions into exactly three buckets: all-LOSUM with no shared base (24 shapes); all"
+  },
+  {
+   "session": 13,
+   "statement": "Bucket (iii) - the uniform shapes that already mix both address forms - can be steered into the target by reordering the three columns so the symbolic store is emitted last.",
+   "kill_scope": "instance",
+   "measured_on": "2026-09-03 chassis, honest floor 4, 36 bucket-(iii) shapes across all 6 column orders, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "The LOSUM always attaches to the FIRST-emitted column and carries that column's constant folded into the symbol (LOSUM[D"
+  },
+  {
+   "session": 13,
+   "statement": "A REAL statement the function must execute anyway can play the carrier role the dead conditional played, breaking the address unification between the terminator b- and a-stores without adding dead cod",
+   "kill_scope": "instance",
+   "measured_on": "2026-09-03 chassis, honest floor 4, 7 shapes, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "All seven measure DISP8 | DISP4 | DISP0. A real intervening STORE does not split the address chain at all - only a contr"
+  },
+  {
+   "session": 13,
+   "statement": "A walking pointer or walking index gives each terminator store its own single-use address def using only ordinary C statements (p--, k -= 4), which is the def shape combine needs in order to fold one ",
+   "kill_scope": "instance",
+   "measured_on": "2026-09-03 chassis, honest floor 4, 8 shapes, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "No shape hits the target. Walking POINTER forms give DISP0 | DISP0 | DISP-4 (three independent bases, 28 insns); walking"
+  },
+  {
+   "session": 13,
+   "statement": "The two address spellings in the target correspond to two distinct C OBJECTS rather than one lvalue respelled, so some declaration pair would make the target arrangement ordinary C.",
+   "kill_scope": "instance",
+   "measured_on": "2026-09-03, reasoned against the target bytes in asm/funcs/func_80062020.s; no compile, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Two separate C objects cannot interleave at stride 12 inside each other's elements, so no declaration pair reproduces th"
+  }
+ ]
 }

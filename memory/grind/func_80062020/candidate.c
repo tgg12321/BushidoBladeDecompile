@@ -1,3 +1,9 @@
+/* s13 RE-MEASURE (synthesis, 2026-09-03, second run): this body, pasted over the
+ * INCLUDE_ASM line at src/text1b.c:3932, measures sandbox func_80062020 --disable all
+ * = score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 165.
+ * It remains the best UNCONTESTED form. src/ was reverted to HEAD after the measurement.
+ * Do NOT replace it with the dead-conditional body that measures 0 - that body is a cheat
+ * and is banked at rejected/epilogue-deadcond-identical-arms-crossjump-score0-s13.c. */
 /* MIGRATION NOTE (operator, 2026-09-01): main carries INCLUDE_ASM for this
  * function (asm-until-matched, owner ruling 2026-08-19). Any "HEAD"/"main"
  * state claims in the comments below predate that migration and describe the
