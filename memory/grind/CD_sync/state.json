@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 108,
+ "session_count": 109,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -657,23 +657,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics: the 6-insn a0/v1 exchange that separates the g3 (order-perfect) basin from h5 is ONE exact tie in local-alloc.c::qty_compare_1 (both contested qtys pri=3333), and sched2 is measured to be a"
+  },
+  {
+   "session": 109,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics: reg_n_refs is built by flow.c BEFORE combine (toplev.c:2983 vs 3004), so the s108 refs-lift frontier was well-posed - but all six byte-level spellings are intercepted, four by the front end"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "In the g3 order-perfect basin, giving the arg5-VALUE qty a third reference lifts its qty_compare_1 priority from 3333 to 5000 (floor_log2(3)*3/6) without touching any birth/death index, breaking the tie in the direction that yields the target a0/v1 assignment.",
-   "mechanism": "refs is the one qty_compare_1 input that is not pinned by the target's instruction spacing: birth and death are fixed by the (order-perfect) post-sched1 stream, but reg_n_refs is counted at local-alloc time and a reference that combine/reload folds away before final emission still counts. p100 already carries a REG_EQUIV (mem sp+16) note, so a re-read of arg5 through its own equivalent stack slot is the natural candidate shape.",
-   "next_probe": "On the g3 base (memory/grind/CD_sync/rejected/s108_g3_arg5_first_regexchange.c), enumerate byte-neutral third-read spellings of arg5 - duplicate-read into the surrounding arms per .claude/rules/split-read-defeats-hoist.md, and a re-read through the REG_EQUIV slot - and for each read the block=3 BB2_QTY_DEBUG table with tmp/grind/CD_sync/s108/schedcap.py: accept only a form where qty(arg5-value) pri != 3333 AND build_insns stays 160, then score it."
+   "hypothesis": "The a0/v1 exchange can be won on the find_free_reg arm instead of the qty_compare_1 arm: giving the t0-shift qty a hard-register copy-suggestion of $a0 (or the arg5-value qty one of $v1) makes find_free_reg take the suggested seat regardless of allocation order, leaving the 3333/3333 tie and the target emission order both untouched.",
+   "mechanism": "local-alloc.c's block_alloc records qty_phys_sugg / qty_phys_copy_sugg whenever a pseudo is copied to or from a hard register while live, and find_free_reg prefers a suggested register over the plain free-register walk. This session measured both contested qtys entering find_free_reg with nsugg=0 ncopysugg=0 - the arm is entirely unexercised at this site - while blk=0 qty=0 of the same function shows nsugg=1 sugg=2, proving the mechanism fires under this chassis. This is a DIFFERENT axis from every priority/order probe in 108 sessions of ledger: it does not need refs, birth, death or LUID to move.",
+   "next_probe": "On the g3 base, enumerate C spellings that put one of the two contested values into a hard-register copy while live - e.g. reassigning which window expression supplies debug_printf's 4th argument (passed in $a3) versus the stack-passed 5th, or routing one value through a call/return position - and for each read the block=3 SUGGDBG-QTY line for ncopysugg/nsugg/copysugg/sugg and the SUGGDBG-FFR used mask. Accept only a form where a contested qty shows a non-empty sugg list AND build_insns stays 160, then score it."
+  },
+  {
+   "hypothesis": "The qty_size term of qty_compare_1 (unprobed in 109 sessions) can break the 3333/3333 tie: a size-2 quantity scores 6666 with refs unchanged, and combine_regs can raise qty_size for an EXISTING qty (the 'if (usize < ssize)' branch at local-alloc.c:1935-1946) without a DImode value ever being emitted.",
+   "mechanism": "qty_size enters the priority numerator directly. It is set from the qty's mode at creation but is RAISED in combine_regs when a wider pseudo is tied into an existing qty, with a paired reg_offset fixup, so the tie itself can be byte-neutral. Every prior probe in this ledger moved refs, birth, death or LUID; size has never been measured.",
+   "next_probe": "Enumerate spellings that tie a wider-mode pseudo into the arg5-value qty (e.g. a same-storage view of the loaded word through a wider type at a point where the value is already dead) and read qty_size / chgsize off the block=3 SUGGDBG-QTY line; reject anything whose build_insns leaves 160."
   },
   {
    "hypothesis": "A matched libcd bios.c body for CD_sync appears upstream in psyz / sozud psy-q-decomp, closing the function by provenance instead of by search.",
    "mechanism": "BB2 links Sony's prebuilt PsyQ BIOS.OBJ verbatim (memory/closer/libcd-groundtruth.md: all 1,526 .text words masked-identical), so a matched upstream body IS the original source shape.",
    "next_probe": "Re-fetch Xeeynamo/psyz decomp/src/libcd/bios.c and check whether line ~94 is still INCLUDE_ASM for CD_sync (it was, as of s105 2026-08-25)."
-  },
-  {
-   "hypothesis": "Once the asm-only consumers of D_800A1494/95/96 (CD_cw, getintr, func_800819C4, func_800817A0, func_80081E1C) are decompiled to C, prong (c) of the sanctioned aggregate family becomes satisfiable and owner Ruling D can be spent across the whole libcd Intr cluster.",
-   "mechanism": "Prong (c) fails today only because those consumers force the per-word splat symbols to survive in the splat symbol config, making any aggregate a second handle.",
-   "next_probe": "Re-run the s107 p1-p4 aggregate sweep at the canonical shared-header site with the per-word symbols retired, after those five functions reach C; verify byte-neutrality for every matched consumer with verify-oracle --rebuild before scoring."
   }
  ],
  "judge_constraints": [
@@ -701,6 +707,14 @@
    "measured_on": "h5 chassis (memory/grind/CD_sync/candidate.c, 160/160, masked 2), FAKE chain-extender + pp alias present; sched2 block=3 telemetry",
    "predicate_cite": "",
    "result": "KILLED. At sched2 reload_completed==1, so birthing_insn_p returns 0 and no block=3 insn carries a sentinel; every insn s"
+  },
+  {
+   "session": 109,
+   "statement": "In the g3 order-perfect basin the a0/v1 exchange can be won by a C spelling that raises reg_n_refs on the arg5-VALUE pseudo to 3 or 4, lifting its qty_compare_1 priority off the 3333 tie with the t0-s",
+   "kill_scope": "instance",
+   "measured_on": "g3 order-perfect base (memory/grind/CD_sync/rejected/s108_g3_arg5_first_regexchange.c), control 6/160, build_insns 160, rules_dropped 0; FAKE chain-extender on idx_1495 and the pp pointer-alias both p",
+   "predicate_cite": "",
+   "result": "KILLED for all six; zero probes at or below the g3 control of 6, and not one moved qty_n_refs off 2. Two interceptors me"
   }
  ]
 }

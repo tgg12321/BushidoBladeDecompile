@@ -2026,3 +2026,74 @@ All five banked under `memory/grind/CD_sync/rejected/s108_*.c`.
 - [s108] Probe scores this session, all 160/160: p1 arg5-first 6, p2 t0-shift-deferred 2 (alternate h5 spelling with target registers), p3 addr-in-ix-carrier 6, p4 fresh t0-addr local 9, p5 single-expr t0 addr 9. All five banked under memory/grind/CD_sync/rejected/s108_*.c.
 
 - [s108] New reusable tooling: tmp/grind/CD_sync/s108/schedcap.py (exact cpp|cc1 front half with the instrumented cc1 plus arbitrary BB2_*_DEBUG env hooks, -da dumps + telemetry), probe.py (window-variant splicer), ndiff.py (per-index diff using engine.score.normalized_insns - the engine's own normalization; the older mnemonic-only odiff.py could not render this residual).
+
+## s109 [forensics] — where reg_n_refs actually comes from, and why the refs axis has no byte-neutral carrier here
+
+Durable pass-attribution facts established this session (all read out of
+`tools/gcc-2.7.2/` source and cross-checked against instrumented-cc1 dumps;
+artifacts in `tmp/grind/CD_sync/s109/`):
+
+- **`reg_n_refs` is a flow.c product, not a local-alloc product.** It is
+  allocated and zeroed at `flow.c:1281-1282` and incremented (by `loop_depth`,
+  = 1 outside loops) at `flow.c:2081`, `2329`, `2515`, `2725`, all inside
+  `flow_analysis`. `toplev.c` calls `flow_analysis` at line **2983**, i.e.
+  BEFORE `combine_instructions` (**3004**), `schedule_insns` pass 1 (**3033**)
+  and `local_alloc` (**3049**). local-alloc then simply copies it:
+  `qty_n_refs[qty] = reg_n_refs[regno]` (`local-alloc.c:297`).
+  Consequence, and this is the whole reason the axis looked open: a reference
+  that COMBINE folds away still counts, but a reference that **cse or expand**
+  removes does not. The four `reg_scan` calls (`toplev.c:2826/2859/2922/2925`)
+  are unrelated to this array; they build `reg_n_sets`/`reg_basic_block`.
+- **Only two things can move `qty_n_refs` after flow:** `optimize_reg_copy_1`
+  transfers refs between a copy's src and dest (`local-alloc.c:781-783`,
+  `913-914`), and `combine_regs` SUMS them when it ties two pseudos into one
+  qty (`local-alloc.c:1932`). Both need a reg-reg copy still present at
+  local_alloc time. Measured here: cse deletes ours ~120 insns earlier.
+- **`update_equiv_regs` doubles `reg_live_length` for any pseudo carrying a
+  REG_EQUIV note** (`local-alloc.c:1063`) and the in-tree comment states
+  explicitly that this "does not affect the priority in local-alloc" — it is a
+  global.c-only effect. So the REG_EQUIV (mem sp+16) note on the arg5 pseudo,
+  which the s108 frontier proposed re-reading through, is inert for the
+  block-local tie that actually decides this function's residual.
+
+**The insn-count ladder is the cheap forensic instrument** (CD_sync segment of
+the `-da` dumps, counting `^\(insn`): base
+`rtl=100 jump=98 cse=92 loop=92 cse2=92 flow=91 combine=70 lreg=69 greg=69`.
+Any candidate construct can be located to a pass in one read:
+`arg5 = arg5;` gives rtl=100 (identical to base) ⇒ dropped by **expand**, never
+in RTL; `arg5b = arg5;` gives rtl=101 jump=99 cse=92 ⇒ deleted by **cse_main**
+(`toplev.c:2861`). Both land 90+ insns before flow counts refs, which is why
+both measured byte-identical to the base (score 6, build_insns 160) and left
+the block=3 qty table bit-for-bit unchanged.
+
+**Variable reuse is not a refs lever in this compiler.** The C front end gives
+every assigned VALUE a fresh pseudo and copies it into the DECL pseudo; cse
+deletes the copies, so a C local that is assigned four times contributes FOUR
+independent refs-2 pseudos at flow time, not one refs-8 pseudo. Measured: the
+q2 flow-dump register profile (pseudo numbers AND mention counts) is identical
+to the base's, and its block=3 qty table still reads refs=2 for every qty. The
+four merge spellings (q1/q2/q3/q4) regress to 9/8/9/9 purely by reshaping
+birth/death and the qty COUNT — q1 collapses block 3 from four local qtys to
+three and evicts the arg5-value qty from block-local allocation altogether.
+
+**Chassis re-audit (mandated):** `tools/fake_ablate.py` over `candidate.c`
+reproduces the floor at **2 / 160** on the current chassis and shows both FAKE
+units load-bearing and super-additive — drop chain-extender 15/159, drop pp
+alias 17/161, drop both 30/160. The s108 kills were therefore not
+carrier-masked, and the ledger floor of 2 is current, not historical.
+
+- [s109] reg_n_refs - the sole refs input to local-alloc's qty_compare_1 (via qty_n_refs[qty] = reg_n_refs[regno], local-alloc.c:297) - is built entirely by flow.c: allocated/zeroed at flow.c:1281-1282, incremented at flow.c:2081, 2329, 2515, 2725. toplev.c calls flow_analysis at line 2983, BEFORE combine (3004), sched1 (3033) and local_alloc (3049). The four reg_scan calls (toplev.c:2826/2859/2922/2925) do not touch this array.
+
+- [s109] Only two things can move qty_n_refs after flow: optimize_reg_copy_1 transferring refs across a copy (local-alloc.c:781-783, 913-914) and combine_regs summing them when tying two pseudos into one qty (local-alloc.c:1932). Both require a reg-reg copy still present at local_alloc; measured here, cse deletes ours at toplev.c:2861.
+
+- [s109] update_equiv_regs doubles reg_live_length for any pseudo carrying a REG_EQUIV note (local-alloc.c:1063) and the in-tree comment states it 'does not affect the priority in local-alloc' - a global.c-only effect. The REG_EQUIV (mem sp+16) note on the arg5 pseudo, which the s108 frontier proposed re-reading through, is therefore inert for the block-local tie that decides this residual.
+
+- [s109] Insn-count ladder over the CD_sync segment of the -da dumps is a one-read pass locator: base rtl=100 jump=98 cse=92 loop=92 cse2=92 flow=91 combine=70 lreg=69 greg=69. A same-value re-store gives rtl=100 (identical) so it is dropped by expand and never reaches RTL. A plain local copy gives rtl=101 jump=99 cse=92, so it is deleted by cse_main. Both die 90+ insns before flow counts refs.
+
+- [s109] C-level variable reuse does not accumulate references on one pseudo in GCC 2.7.2: each assigned value gets a fresh pseudo copied into the DECL pseudo, cse deletes the copies, and the flow-time register profile of q2 (pseudo numbers AND mention counts) is identical to the base's with every block=3 qty still at refs=2.
+
+- [s109] g3 basin block=3 qty table (re-measured this session, unchanged from s108): qty0 reg106 birth10 death20 refs6 got=2; qty3 reg114 birth22 death30 refs4 got=2; qty1 reg108 birth18 death24 refs2 got=3 ($v1, the t0 shift); qty2 reg100 birth20 death26 refs2 got=4 ($a0, the arg5 value) - the inverse of the target, decided purely by the qty-index tiebreak after an exact 3333/3333 priority tie.
+
+- [s109] The SUGGDBG-FFR lines show both contested qtys enter find_free_reg with ncopysugg=0 nsugg=0, i.e. NEITHER carries a hard-register suggestion - so the suggestion arm of find_free_reg is completely unexercised at this site, while other CD_sync blocks (blk=0 qty=0 nsugg=1 sugg=2) show the mechanism does fire elsewhere in this same function.
+
+- [s109] Chassis re-audit: candidate.c re-scores 2/160 on the current chassis; its two FAKE units cost 13 and 15 points individually and 28 jointly when ablated, so the recorded floor is current and un-masked.
