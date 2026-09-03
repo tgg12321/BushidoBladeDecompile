@@ -2582,3 +2582,125 @@ Artifacts: `tmp/grind/func_80060A68/s17/` (56 disassemblies, gen*.py, sweep.sh, 
 - [s17] H3 (C1,C2,C3,S1,S2,S5,S3,P,S4,S7,S6,S8) = 5 / build 67 / target 66 is target's entire instruction stream with exactly one instruction relocated -- the lw $a1,0x10($v1) from slot 11 to slot 26 -- plus the nop that follows; both target register seats and all three loads are present and it carries no FAKE construct.
 
 - [s17] s16's named next_probe (the D_800A347C pair as the window donor on the slot-11 spine) is closed at 7-9 across eight placements; both gp stores behave identically under the seat rule and the hoist rule.
+
+
+## [s18 2026-09-03 - rederive modality] The separator law, and target's load geometry without `temp2`
+
+### 0. Mandated chassis / kill re-audit
+`sandbox func_80060A68 --disable all` on today's HEAD, s14 apply harness:
+E2 (candidate.c's body) = **2 / build 66 / target 66**, loads at slots 11 ($a1) and 19 ($a0).
+K7 = **5 / 66**, loads 11 ($a1) / 19 ($a0) / 22 ($a0).  H3 = **5 / build 67**, loads 18 / 21 / 26.
+All three reproduce the s15/s16/s17 records instruction-for-instruction, so the chassis has not
+moved.  None of the 74 bodies measured this session carries a FAKE construct, so
+`tools/fake_ablate.py` has nothing to ablate and the s15-s17 instance kills stay chassis-current.
+
+### 1. The rederive: R4 is a *register* law, not only a *position* law
+s17 recorded R4 as "the p10 read must not follow a gp-based store".  s18's Z family disproves that
+as a sufficient condition and replaces it with a two-part statement.
+
+`Z1..Z9` (9 bodies) put the p10 read SECOND in the body - `S1, P, S6, S8, S2, S5, S3, ...` - so that
+the 0x1C store (`*(u16 *)(outer + 0x1C) = temp_a1;`) is the cse separator between the p10 read and
+the +2 read.  Every one of the three `*(s32 *)(outer + 0x10)` reads therefore precedes BOTH gp
+stores, which is exactly what R4 asked for.  Result: 9-11 / 66, loads at 19 ($a0), 22 ($a0) and
+**25 ($v0)** - the p10 load is *not* at slot 11 even though nothing is in front of it.  Reason: with
+S6 immediately after P, p10's pseudo has span 2 and there is no $v0 donor inside [P, S6], so R3
+fails, local-alloc seats p10 in $v0, and a $v0-seated load cannot be hoisted past the $v0 traffic in
+slots 12-24.  **Corrected law: the slot-11 load is a consequence of the $a1 SEAT (R3), not of textual
+earliness; R4 is a second, independent necessary condition on top of it.**
+
+### 2. The separator law, and why the copy store always costs a nop
+Combining R2/R3 (both donors must be gp addiu halves - the only span-2 $v0 quantities the function
+owns) with the corrected R4 gives a closed chain on this chassis:
+
+* R3 needs a gp store strictly inside [P, S6] => that gp store is AFTER the p10 read.
+* R4 needs every 0x10 read - including the +2 read - to precede that gp store, otherwise its load is
+  pinned to the slot immediately after it (measured again this session: the Y family below).
+* R1 needs a store between each consecutive pair of 0x10 reads.  The 0x18 store covers one pair.
+  The 0x1A store (S3) and the 0x1C store (S8) cannot cover the other pair, because R2 puts S3 after a
+  gp store and S8 is downstream of S6.  **So the second separator can only be a copy store.**
+
+Measured price of that copy store, 48 bodies, uniform:
+
+* **M1-M8, W1-WB (17 bodies)** - one whole copy statement moved into the window between the +2 read
+  and the p10 read.  Best is T61/T62 = 10 / **67**, loads 11 ($a1) / 17 ($a0) / 20 ($a0).  The 67th
+  instruction is always the same nop: the moved copy's `lw $v0,0xC($v1)` and `lw $v0,0x8($v0)` end up
+  adjacent (M2 slots 21/23 with the nop at 24), because local-alloc gives the moved copy $v0 for both
+  the pointer and the value, whereas target's C3 uses $a0 for the pointer (slot 16) and $v0 for the
+  value (slot 18) with the 0x24 store filling the delay.
+* **T11-T65 (30 bodies)** - a systematic sweep of WHICH copy is the separator and WHERE the 0x18/0x1A
+  pair sits inside the copy block, x 5 tail orders.  Prefixes that move C1 or C2 reach 66 instructions
+  (T41/T42/T51/T52/T55, score 15-16) but then the p10 load falls to slot 24-25; the only prefix that
+  keeps the slot-11 $a1 load (`C1,C2,S1,S2,C3,P`) is 67 in all five tails.  **No member of the
+  copy-store-separator family measured this session is simultaneously 66 instructions and slot-11.**
+* **V1-V9 (10 bodies)** - the copy statement SPLIT so only its `sw` moves into the window
+  (`cv = *(s32 *)(*(s32 *)(outer + 0xC) + 8); ... *(s32 *)(outer + 0x28) = cv;`).  The split is
+  byte-neutral when the two halves stay adjacent (control VC = 5 / 67, identical to the unsplit H3),
+  but as a separator it measures **12-14** at 65-67: the `cv` pseudo is long-lived, takes a seat, and
+  pushes p10 to $a2 and both halfword pointers to $v0 (V1 loads 11 $a2 / 19 $v0 / 22 $v0).
+  Splitting a copy is strictly worse than moving it.
+
+### 3. The Y family - a new score-5 class that holds the slot-11 load with NO copy moved
+`Y1 = C1,C2,C3, S1, P, S4, S5, S6, S2, S7, S3, S8` (and Y6/Y8/Y9, the same spine with `idx`
+re-placed) measures **5 / 66** with loads at 11 ($a1), 19 ($a0), 26 ($v0).  Slots 0-20 are
+byte-identical to target.  The p10 read sits immediately after the 0x18 store, so the 0x18 store is
+its cse separator and no copy has to move; the first gp store then sits inside [P, S6] and buys the
+$a1 seat.  Its whole residual is that the +2 read, being downstream of that gp store, has its load
+pinned at slot 26 in $v0 - the mirror image of H3's residual.  Y2/Y3/Y4/Y5/Y7/YA/YB (7 more bodies)
+permute the same spine at 6-9.  Banked as
+`rejected/s18-Y1-p10-read-hoisted-above-the-plus2-read-third-load-pinned-behind-gp-store-score5-66insns.c`.
+
+### 4. U2 - target's exact load geometry with NO `temp2` local at all
+`U2 = C1,C2,C3, S1, S3i, P, S4, S5, S6, S7, S8`, where `S3i` is the +2 read written INLINE into its
+own store (`*(u16 *)(outer + 0x1A) = *(u16 *)(*(s32 *)(outer + 0x10) + 2);`), measures **5 / 66** with
+loads at **11 ($a1), 19 ($a0), 22 ($a0) - target's geometry exactly**, and no `temp2` declaration
+anywhere in the body.  The fused 0x1A store is a zero-cost cse separator between the +2 read and the
+p10 read, which is what the copy store was being paid a nop for.  This REFINES s16's "the temp2 named
+intermediate is load-bearing": that conclusion was drawn from R1-R8, which inlined *all three* reads
+and also deleted `p10`; with `p10` kept, inlining only the +2 read is free.
+U2's residual is slots 24-29 and is the same single seat as K7's: the +2 halfword value lands in $v0
+where target needs $a0, so the 0x1A store fires at 26 ahead of the addiu/gp-store pair instead of
+behind it.  On the U spine that seat has no source-level donor site, because a fused read+store
+statement has no interior in which to place one.  U1/U3-U8 (7 more) measure 5-9.  Banked as
+`rejected/s18-U2-inline-0x1A-store-gives-targets-exact-load-geometry-without-temp2-score5-66insns.c`.
+
+### 5. Where the campaign stands after s18
+Three ordinary-C bodies now each hold a different two-thirds of the residual at 66 instructions:
+E2 (both seats + target's 25/26/27 group, two loads, score 2), K7/U2 (all three loads in target's
+slots and registers, +2 value in $v0, score 5), Y1 (slots 0-20 byte-identical, slot-11 $a1 load, +2
+load pinned at 26, score 5).  The single thing none of them has is a *free* store between the +2 read
+and the p10 read that leaves the +2 read upstream of the gp store: the fused 0x1A store gives it for
+free but removes the donor site (U family), a gp store gives it but pins the load (Y/H family), and a
+copy store gives it but costs a load-delay nop (M/W/T family).
+
+Artifacts: `tmp/grind/func_80060A68/s18/` (74 disassemblies, gen18.py, genV/genY/genZ/genW/genT/genU.py,
+sweep.sh, dis.sh, bodies/).
+
+- [s18] Chassis re-audit: E2 = 2 / 66, K7 = 5 / 66, H3 = 5 / 67 on today's HEAD, all identical to the s15-s17 records; 74 s18 bodies, zero FAKE constructs, nothing for fake_ablate.py to ablate.
+
+- [s18] R4 corrected: nine Z bodies place every 0x10 read ahead of both gp stores using the 0x1C store as the second cse separator, and the p10 load still comes out at slot 25 in $v0 (9-11 / 66) -- textual earliness is not sufficient; the slot-11 hoist follows from the $a1 SEAT (R3), which needs a span-2 $v0 donor strictly inside [p10 read, +4 read].
+
+- [s18] The second cse separator can only be a copy store once R2 and R3 are satisfied, and a moved copy costs one load-delay nop: 17 M/W bodies and 30 T bodies (48 total) -- the only prefix that keeps the slot-11 $a1 load (C1,C2,S1,S2,C3,P) measures 67 instructions in all five tail orders, best score 10.
+
+- [s18] Splitting a copy statement so only its sw moves (cv = <value>; ... *(s32*)(outer+0x28) = cv;) is byte-neutral when the halves stay adjacent (VC = 5/67, identical to the unsplit H3) but measures 12-14 as a separator across V1-V9, because the cv pseudo takes a seat and pushes p10 to $a2 and both halfword pointers to $v0.
+
+- [s18] New score-5 class Y1/Y6/Y8/Y9 = C1,C2,C3,S1,P,S4,S5,S6,S2,S7,S3,S8 at 5 / 66 with slots 0-20 byte-identical to target and loads at 11 ($a1) / 19 ($a0) / 26 ($v0); no copy is moved, the 0x18 store is p10's cse separator, and the only residual is the +2 read being downstream of the gp store.
+
+- [s18] U2 = C1,C2,C3,S1,S3i,P,S4,S5,S6,S7,S8 (the +2 read written inline into its own 0x1A store, no temp2 local anywhere) measures 5 / 66 and reproduces target's exact three-load geometry 11 ($a1) / 19 ($a0) / 22 ($a0); s16's "temp2 is load-bearing" was measured on bodies that also deleted p10, and does not hold when p10 is kept.
+
+- [s18] On the U spine the +2 value's $a0 seat has no source-level donor site, because a fused read+store statement has no interior; U2's residual is therefore the same single local-alloc seat as K7's, reached with strictly fewer locals.
+
+- [s18] Chassis re-audit (mandated): E2 = 2 / build 66 / target 66, K7 = 5 / 66 and H3 = 5 / 67 on today's HEAD, instruction-for-instruction identical to the s15-s17 records; none of the 74 bodies measured this session carries a FAKE construct, so tools/fake_ablate.py had nothing to ablate and the s15-s17 instance kills remain chassis-current.
+
+- [s18] R4 restated: the slot-11 lw $a1,0x10($v1) is a consequence of p10's $a1 SEAT, not of the p10 read being textually early. Nine Z bodies satisfy s17's positional R4 for all three 0x10 reads and still emit the p10 load at slot 25 in $v0 (9-11 / 66), because with the +4 read immediately after the p10 read there is no span-2 $v0 donor inside p10's range.
+
+- [s18] The separator chain is now closed on this chassis: R3 forces a gp store after the p10 read, corrected R4 forces every 0x10 read before that gp store, R1 forces a store between consecutive 0x10 reads, the 0x1A store is pushed downstream of a gp store by R2 and the 0x1C store is downstream of the +4 read - so the second separator is either a copy store or the fused 0x1A store.
+
+- [s18] Price of the copy store as that separator, measured on 47 bodies: the only prefix that keeps the slot-11 $a1 load (C1,C2,S1,S2,C3,P) is 67 instructions in all five tail orders (best 10), the 67th instruction being a load-delay nop caused by local-alloc handing the moved copy $v0 for both its pointer and its value; prefixes that move C1 or C2 are 66 but put the p10 load at slot 24-25.
+
+- [s18] Splitting a copy so that only its sw moves is byte-neutral when the halves stay adjacent (control VC = 5 / 67, identical to the unsplit H3) but measures 12-14 as a separator across V1-V9, because the detached value pseudo takes a seat and pushes p10 to $a2 and both halfword pointers to $v0.
+
+- [s18] Y1 (C1,C2,C3,S1,P,S4,S5,S6,S2,S7,S3,S8) is a new score-5 class at 66 instructions whose slots 0-20 are byte-identical to target, holding the slot-11 $a1 load with no copy moved; its whole residual is the +2 read sitting downstream of the gp store, which pins that read's load at slot 26 in $v0.
+
+- [s18] U2 (C1,C2,C3,S1,S3i,P,S4,S5,S6,S7,S8) reproduces target's exact three-load geometry (11 $a1, 19 $a0, 22 $a0) at 66 instructions with NO temp2 local at all, because a fused read+store is a free cse separator; s16's 'temp2 is load-bearing' was measured on bodies that also deleted p10 and does not hold when p10 is kept.
+
+- [s18] Three ordinary-C bodies now each hold a different two-thirds of the residual at 66 instructions: E2 (both register seats and target's 25/26/27 group, two loads, score 2), K7/U2 (all three loads in target's slots and registers, +2 value in $v0, score 5), Y1 (slots 0-20 exact, slot-11 $a1 load, +2 load pinned at 26, score 5).

@@ -1860,3 +1860,121 @@ HEAD chassis, zero FAKE constructs.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: today's HEAD chassis, 6 bodies, zero FAKE constructs
+
+
+## s18 (2026-09-03, rederive modality) - 74 bodies, all ordinary C, zero FAKE constructs
+
+Chassis re-audit first (mandated): E2 = 2 / build 66 / target 66, K7 = 5 / 66, H3 = 5 / 67 on
+today's HEAD, all identical to the s15-s17 records.  No FAKE construct exists in any live body, so
+`tools/fake_ablate.py` had nothing to ablate; the s15-s17 instance kills remain chassis-current.
+
+### H-s18-1  KILLED (instance)
+**Statement.** On the E2/K7 chassis, splitting a copy statement into a value local plus a separate
+store (`cv = *(s32 *)(*(s32 *)(outer + 0xC) + 8); ... *(s32 *)(outer + 0x28) = cv;`) and using the
+detached store as the cse separator between the +2 read and the p10 read measures 12-14 across the
+nine bodies V1-V9.
+**Mechanism probed.** s17's frontier named "a span-2 refs-2 quantity that can take $v0 strictly
+inside the +2 halfword value's live range without being one of the two gp stores".  A detached copy
+store is a store with no addiu, so the hope was a free separator.
+**Result.** The control VC (halves left adjacent) measures 5 / 67 - bit-identical to the unsplit H3 -
+so the split itself is byte-neutral.  As a separator it is not: `cv` becomes a long-lived pseudo, is
+allocated early, and displaces the three quantities that matter.  V1 = 14 / 67 with loads at 11
+($a2), 19 ($v0), 22 ($v0); V3 = 14 / 66; V7 (C2 split) = 12 / 66; V8 (C1 split) = 13 / 66.  Splitting
+is strictly worse than moving the whole statement (M family, 10-13).
+**measured_on.** today's HEAD chassis, 10 bodies (V1-V9 + control VC), zero FAKE constructs.
+
+### H-s18-2  KILLED (instance)  - and it CORRECTS s17's R4
+**Statement.** Placing every `*(s32 *)(outer + 0x10)` read ahead of both gp stores by using the 0x1C
+store as the second cse separator (spine `S1, P, S6, S8, S2, S5, S3, ...`) leaves the p10 load at
+slot 25 in $v0 in all nine bodies Z1-Z9, at 9-11 / 66.
+**Mechanism probed.** s17 recorded R4 as a purely positional law ("the p10 read must not follow a
+gp-based store").  If that were sufficient, this spine - which satisfies it for all three reads -
+would give the slot-11 load.
+**Result.** It does not.  With S6 immediately after P, p10's pseudo has span 2 and no $v0 donor lies
+inside [P, S6], so R3 fails and local-alloc seats p10 in $v0; a $v0-seated pointer load cannot be
+hoisted past the $v0 traffic in slots 12-24.  The slot-11 load is a consequence of the $a1 SEAT, and
+R4 is a second necessary condition layered on top of it, not a sufficient one.  This is the single
+most important correction s18 makes to the recorded law.
+**measured_on.** today's HEAD chassis, 9 bodies, zero FAKE constructs.
+
+### H-s18-3  KILLED (instance)
+**Statement.** On the spine where a copy store is the cse separator between the +2 read and the p10
+read, no member measured this session is simultaneously 66 instructions and emits its `lw $a1,0x10($v1)`
+at slot 11: the 30 bodies T11-T65 (6 copy-block prefixes x 5 tail orders) and the 17 bodies M1-M8 /
+W1-WB all land either at 67 instructions with the slot-11 load or at 66 instructions with the load at
+slot 24-25.
+**Mechanism probed.** The chain R3 (gp donor inside [P, S6]) + corrected R4 (every 0x10 read upstream
+of that gp store) + R1 (a store between consecutive reads) forces the second separator to be a copy
+store, because the 0x1A store must sit downstream of a gp store for R2 and the 0x1C store is
+downstream of S6.  The question was whether the copy store's own three instructions can be made to
+land in target's slots 16/18/20.
+**Result.** They cannot on any prefix tried.  Only the prefix `C1,C2,S1,S2,C3,P` keeps the slot-11
+$a1 load, and in all five tails it is 67 instructions, best score 10 (T61/T62): local-alloc gives the
+moved copy $v0 for both its pointer and its value, its two loads end up adjacent, and a load-delay nop
+is inserted (M2 slots 21/23 with the nop at 24).  Target's C3 instead uses $a0 for the pointer at slot
+16 and $v0 for the value at slot 18, with the 0x24 store filling the delay.  Prefixes that move C1 or
+C2 instead reach 66 instructions (T41/T42/T51/T52/T55) but drop the p10 load to slot 24-25.
+**measured_on.** today's HEAD chassis, 47 bodies, zero FAKE constructs.
+
+### H-s18-4  CONFIRMED
+**Statement.** `Y1 = C1,C2,C3, S1, P, S4, S5, S6, S2, S7, S3, S8` reaches 5 / build 66 / target 66
+with slots 0-20 byte-identical to target and loads at 11 ($a1), 19 ($a0), 26 ($v0), moving no copy
+statement and inventing no local.
+**Mechanism.** The p10 read placed immediately after the 0x18 store uses that store as its cse
+separator for free; the first gp store, sitting inside [P, S6], supplies R3's donor and buys the $a1
+seat, so the load hoists to slot 11.
+**Result.** Confirmed at 5 / 66.  Its residual is exactly one instruction's provenance: the +2 read
+is downstream of the gp store, so its load is pinned at slot 26 in $v0 instead of slot 22 in $a0 -
+the mirror image of H3's residual.  Y2/Y3/Y4/Y5/Y7/YA/YB permute the spine at 6-9.  Banked at
+`rejected/s18-Y1-p10-read-hoisted-above-the-plus2-read-third-load-pinned-behind-gp-store-score5-66insns.c`.
+
+### H-s18-5  CONFIRMED - and it REFINES s16's "temp2 is load-bearing"
+**Statement.** `U2 = C1,C2,C3, S1, S3i, P, S4, S5, S6, S7, S8`, with the +2 read written inline into
+its own 0x1A store and no `temp2` local declared anywhere, measures 5 / build 66 / target 66 and
+reproduces target's exact three-load geometry: `lw $a1,0x10($v1)` at slot 11, `lw $a0,0x10($v1)` at
+slots 19 and 22.
+**Mechanism.** A fused read+store statement carries its own cse separator, so the 0x1A store
+separates the +2 read from the p10 read at zero instruction cost - the thing the copy store was being
+charged a nop for.  s16's R1-R8 (which measured 10-12) inlined all three reads AND deleted `p10`;
+inlining only the +2 read while keeping `p10` costs nothing.
+**Result.** Confirmed at 5 / 66, residual slots 24-29, identical single-seat residual to K7 (the +2
+halfword value in $v0 where target needs $a0) but reached with one fewer local.  Note the structural
+cost: a fused read+store has no source-level interior, so on the U spine R2's donor site does not
+exist at all.  Banked at
+`rejected/s18-U2-inline-0x1A-store-gives-targets-exact-load-geometry-without-temp2-score5-66insns.c`.
+
+## [s18] Splitting a copy statement into a value local plus a detached store (cv = *(s32 *)(*(s32 *)(outer + 0xC) + 8); ... *(s32 *)(outer + 0x28) = cv;) and using the detached store as the cse separator between the +2 read and the p10 read measures 12-14 across the nine bodies V1-V9.
+- mechanism: s17's frontier asked for a span-2 refs-2 quantity that can take $v0 strictly inside the +2 value's live range without being one of the two gp stores. A detached copy store is a store with no addiu, so it looked like a free separator that leaves the gp stores available as donors.
+- probe: Nine bodies V1-V9 (C3, C2 and C1 each split in turn, crossed with the tail orders that keep a gp addiu inside both [S2,S3] and [P,S6]) plus a control VC in which the two halves stay adjacent; each applied to src/text1b.c with tmp/grind/func_80060A68/s14/apply.py and scored with sandbox --disable all, with the 0x10 load slots and registers read out of the objdump.
+- result: The control VC measures 5 / build 67 - bit-identical to the unsplit H3 - so the split itself is byte-neutral. As a separator it is not: cv becomes a long-lived pseudo, is allocated early and displaces the three quantities that matter. V1 = 14 / 67 with loads at 11 ($a2), 19 ($v0), 22 ($v0); V3 = 14 / 66; V7 (C2 split) = 12 / 66; V8 (C1 split) = 13 / 66. Splitting a copy is strictly worse than moving the whole statement (M family, 10-13). Banked at rejected/s18-V1-split-copy-store-as-separator-cv-pseudo-destroys-all-three-seats-score14.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis (src/text1b.c restored to HEAD after the session), 10 bodies, zero FAKE constructs in any of them
+
+## [s18] Placing every *(s32 *)(outer + 0x10) read ahead of both gp stores by using the 0x1C store as the second cse separator (spine C1,C2,C3,S1,P,S6,S8,S2,S5,S3,S7) leaves the p10 load at slot 25 in $v0 in the nine bodies Z1-Z9, at 9-11 / build 66.
+- mechanism: s17 recorded R4 as a purely positional law - the p10 read must not follow a gp-based store, because sched2 cannot disambiguate sw $v0,%gp_rel(D_800A3478)($gp) from mem(v1+0x10). If that condition were sufficient, this spine, which satisfies it for all three reads, would produce target's slot-11 load.
+- probe: Nine bodies Z1-Z9 permuting idx, the 0x1C store and the two gp stores on that spine; each measured with sandbox --disable all and the 0x10 load slots/registers read from the objdump.
+- result: It does not produce the slot-11 load: 9-11 / 66 with loads at 19 ($a0), 22 ($a0), 25 ($v0) in every one. With the +4 read immediately after the p10 read, p10's pseudo has span 2 and no $v0 donor lies inside [P, S6], so R3 fails, local-alloc seats p10 in $v0, and a $v0-seated pointer load is not hoisted past the $v0 traffic in slots 12-24. This corrects the recorded law: the slot-11 load follows from the $a1 SEAT (R3), and R4 is a second necessary condition layered on it rather than a sufficient one. Banked at rejected/s18-Z4-all-three-reads-precede-both-gp-stores-but-no-donor-in-p10-range-score9.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 9 bodies, zero FAKE constructs in any of them
+
+## [s18] On the spine where a copy store is the cse separator between the +2 read and the p10 read, the 47 bodies measured this session (T11-T65, M1-M8, W1-WB) land either at 67 instructions with the lw $a1,0x10($v1) at slot 11 or at 66 instructions with that load at slot 24-25; none of the 47 is both 66 instructions and slot-11.
+- mechanism: R3 (the donor is a gp addiu, so a gp store sits after the p10 read) plus the corrected R4 (every 0x10 read must precede that gp store) plus R1 (a store between consecutive 0x10 reads) leaves the copy store as the only candidate for the second separator, because the 0x1A store must sit downstream of a gp store for R2 and the 0x1C store is downstream of the +4 read. The open question was whether the moved copy's own three instructions can be made to land in target's slots 16/18/20.
+- probe: 30 bodies T11-T65 - six copy-block prefixes (which copy is the separator, where the 0x18/0x1A pair sits inside the copy block) crossed with five tail orders - plus the 17 earlier-shape bodies M1-M8 and W1-WB; each measured with sandbox --disable all, recording build_insns and the 0x10 load slots/registers, and M2's objdump read instruction-by-instruction to locate the 67th instruction.
+- result: Only the prefix C1,C2,S1,S2,C3,P keeps the slot-11 $a1 load, and in all five tail orders it is 67 instructions, best score 10 (T61/T62, loads 11 $a1 / 17 $a0 / 20 $a0). The 67th instruction is always the same load-delay nop: local-alloc gives the moved copy $v0 for both its pointer and its value, so its lw $v0,0xC($v1) and lw $v0,0x8($v0) end up adjacent (M2 slots 21/23, nop at 24), whereas target's C3 uses $a0 for the pointer at slot 16 and $v0 for the value at slot 18 with the 0x24 store filling the delay. Prefixes that move C1 or C2 instead reach 66 instructions (T41/T42/T51/T52/T55, score 15-16) but drop the p10 load to slot 24-25. Banked at rejected/s18-T61-copy-store-separator-keeps-slot11-a1-load-but-costs-a-load-delay-nop-67insns.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 47 bodies, zero FAKE constructs in any of them
+
+## [s18] Y1 = C1,C2,C3,S1,P,S4,S5,S6,S2,S7,S3,S8 reaches 5 / build 66 / target 66 with slots 0-20 byte-identical to target and 0x10 loads at slots 11 ($a1), 19 ($a0) and 26 ($v0), while moving no copy statement and inventing no local.
+- mechanism: The p10 read placed immediately after the 0x18 store uses that store as its cse separator at zero cost; the first gp store, sitting inside [p10 read, +4 read], supplies R3's donor and buys the $a1 seat, so the pointer load hoists to slot 11.
+- probe: Eleven bodies Y1-YB sweeping idx, the +4 read, the 0x1C store and the two gp stores around that spine; measured with sandbox --disable all with the 0x10 load slots/registers read from the objdump, and Y1's stream compared slot-by-slot against asm/funcs/func_80060A68.s.
+- result: Confirmed at 5 / 66. Y6/Y8/Y9 are the same class; Y2/Y3/Y4/Y5/Y7/YA/YB measure 6-9. Y1's residual is one instruction's provenance: because the +2 read is downstream of the gp store, its address load is pinned at slot 26 in $v0 instead of slot 22 in $a0, and the tail (idx read, 0x1A store, addiu/gp-store pair) follows from that. It is the mirror image of s17's H3 residual and the first body in the campaign to hold the slot-11 $a1 load at 66 instructions without moving a copy statement. Banked at rejected/s18-Y1-p10-read-hoisted-above-the-plus2-read-third-load-pinned-behind-gp-store-score5-66insns.c.
+- verdict: CONFIRMED
+
+## [s18] U2 = C1,C2,C3,S1,S3i,P,S4,S5,S6,S7,S8, with the +2 read written inline into its own 0x1A store and no temp2 local declared anywhere, measures 5 / build 66 / target 66 and reproduces target's exact three-load geometry: lw $a1,0x10($v1) at slot 11 and lw $a0,0x10($v1) at slots 19 and 22.
+- mechanism: A fused read+store statement carries its own cse separator, so the 0x1A store separates the +2 read from the p10 read at zero instruction cost - which is exactly what the copy store was being charged a load-delay nop for.
+- probe: Eight bodies U1-U8 built on the inline-0x1A spine with the tail permuted; measured with sandbox --disable all and U2's objdump compared slot-by-slot against asm/funcs/func_80060A68.s.
+- result: Confirmed at 5 / 66, residual slots 24-29, the same single local-alloc seat as K7 (the +2 halfword value lands in $v0 where target needs $a0, so the 0x1A store fires at slot 26 ahead of the addiu/gp-store pair instead of behind it) but reached with one fewer local. This refines s16's finding that the temp2 named intermediate is load-bearing: that was measured on R1-R8, which inlined all three reads AND deleted p10; with p10 kept, inlining only the +2 read costs nothing. The structural cost of the U spine is that a fused read+store has no source-level interior, so R2's donor site does not exist on it. U1/U3-U8 measure 5-9. Banked at rejected/s18-U2-inline-0x1A-store-gives-targets-exact-load-geometry-without-temp2-score5-66insns.c.
+- verdict: CONFIRMED

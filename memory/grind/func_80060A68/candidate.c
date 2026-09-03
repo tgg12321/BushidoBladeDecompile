@@ -1,3 +1,53 @@
+/* [s18 2026-09-03 - rederive modality.  BODY UNCHANGED (still the E2 body, re-measured
+ * 2 / build 66 / target 66 on today's HEAD).  The s18 header is prepended; every earlier
+ * header below is intact.]
+ *
+ * WHAT s18 ADDS.  74 ordinary-C bodies, no FAKE construct anywhere.
+ *
+ * (1) R4 IS CORRECTED, AND IT IS THE SESSION'S MAIN FINDING.  s17 recorded R4 as a purely
+ *     positional law - "the p10 read must not follow a gp-based store".  The Z family
+ *     (nine bodies, spine S1, P, S6, S8, S2, S5, S3, ... which uses the 0x1C store as the
+ *     second cse separator) puts ALL THREE 0x10 reads ahead of BOTH gp stores and STILL
+ *     emits the p10 load at slot 25 in $v0, at 9-11 / 66.  The slot-11 load is a
+ *     consequence of the $a1 SEAT (R3: a span-2 $v0 donor strictly inside [p10 read, +4
+ *     read]); R4 is a second necessary condition on top of it, never a sufficient one.
+ *
+ * (2) THE SEPARATOR LAW.  Chaining R3 (the donor is a gp addiu, so a gp store sits after
+ *     the p10 read), corrected R4 (every 0x10 read must precede that gp store) and R1 (a
+ *     store between consecutive 0x10 reads) leaves exactly one candidate for the second
+ *     separator: a copy store.  Its price was measured on 47 bodies (M1-M8, W1-WB, and the
+ *     30-body T sweep of which copy moves x where the 0x18/0x1A pair sits x 5 tail orders).
+ *     The only prefix that keeps the slot-11 $a1 load, C1,C2,S1,S2,C3,P, is 67 instructions
+ *     in all five tails (best 10): local-alloc gives the moved copy $v0 for both its
+ *     pointer and its value, its two loads land adjacent, and a load-delay nop appears.
+ *     Prefixes that move C1 or C2 instead are 66 but drop the p10 load to slot 24-25.
+ *     Splitting a copy so only its `sw` moves (V1-V9) is byte-neutral when the halves stay
+ *     adjacent (control VC = 5 / 67 == unsplit H3) but measures 12-14 as a separator,
+ *     because the detached value pseudo takes a seat and pushes p10 to $a2.
+ *
+ * (3) U2 - TARGET'S EXACT LOAD GEOMETRY WITH NO `temp2` LOCAL AT ALL.  C1,C2,C3, S1, S3i,
+ *     P, S4, S5, S6, S7, S8 - where S3i is the +2 read written inline into its own 0x1A
+ *     store - measures 5 / 66 with loads at 11 ($a1), 19 ($a0), 22 ($a0).  A fused
+ *     read+store carries its own cse separator for free.  This refines s16's "the temp2
+ *     named intermediate is load-bearing", which was measured on bodies that also deleted
+ *     p10.  The catch: a fused statement has no source-level interior, so R2's donor site
+ *     does not exist on that spine; U2's residual is K7's single seat, reached with one
+ *     fewer local.  See rejected/s18-U2-*.
+ *
+ * (4) Y1 - A NEW SCORE-5 CLASS THAT HOLDS THE SLOT-11 LOAD WITH NO COPY MOVED.
+ *     C1,C2,C3, S1, P, S4, S5, S6, S2, S7, S3, S8 is 5 / 66 with SLOTS 0-20 BYTE-IDENTICAL
+ *     to target; the p10 read uses the 0x18 store as its separator and the gp store inside
+ *     [P, S6] buys the $a1 seat.  Its whole residual is that the +2 read sits downstream of
+ *     that gp store, pinning its load at slot 26 in $v0 - the mirror image of H3's
+ *     residual.  See rejected/s18-Y1-*.
+ *
+ * NEXT.  Three 66-instruction bodies now each hold a different two-thirds of the residual
+ * (E2 both seats + target's 25/26/27 group but two loads; K7/U2 all three loads in target's
+ * slots and registers but the +2 value in $v0; Y1 slots 0-20 exact with the +2 load pinned
+ * at 26).  What none has is a FREE store between the +2 read and the p10 read that leaves
+ * the +2 read upstream of the gp store.  The named next probes are in hypotheses.md
+ * H-s18-1..5 and in the session frontier.
+ */
 /* [s17 2026-09-03 - rederive modality.  BODY UNCHANGED (still the E2 body, re-measured
  * 2 / build 66 / target 66 on today's HEAD).  The s17 header is prepended; every earlier
  * header below is intact.]
