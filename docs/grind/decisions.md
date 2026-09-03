@@ -21172,3 +21172,7 @@ on every unparked function; nothing is pre-accepted.
 **Consequence the owner accepts.** The queue is easiest-first and the grinder takes
 the top, so the seventeen returned items (distance 1..20) sit ahead of the fresh tail
 (distance 39+) and each gets at least a full fresh window before any disposition.
+
+## 2026-09-02 21:15 — func_800645B0 — layer-1 review — **FAIL**
+
+The do-while(0) wrap (C1) is the exact form this ledger already banked as REJECTED in session 5 and is the fourth respelling of this function's own banned scheduler-tie-steer construct; citing the do-while-zero-exception family does not launder a mechanism this project has already ruled out three times for this specific function.

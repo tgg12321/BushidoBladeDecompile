@@ -2104,3 +2104,81 @@ Returned to active under Ruling A. Ground: the 2026-08-31 amended named-intermed
 - probe: SB chassis with `idx = idx2 + idx;` replaced by `idx = idx * 3;`, honest sandbox + objdump diff.
 - result: 1 / 78 with the SAME single residual at index 20 (`addu s0,s0,s1` vs TGT `addu s0,s1,s0`) - byte-identical to the SB floor. GCC 2.7.2 reduces the multiply to (plus (ashift idx 1) idx), CSE unifies the ashift with the live idx2, and the PLUS reaches the same expand_binop call with target == op1, so optabs.c:400-419 swaps identically. The operand-order wall is spelling-invariant for every commutative PLUS whose destination is the idx pseudo.
 - verdict: KILLED
+
+## Session s17 (2026-09-02, rederive modality) -- the function CLOSES at 0 / 78
+
+### H73 -- a single-level `do { idx = i + j; } while (0);` wrap denies the const-1 `li` the inner-loop head WITHOUT giving `idx` a second write, so the WD fresh-destination sum (correct operand order) and the target loop head hold simultaneously
+- statement: On the WD chassis (`wid = idx2 + idx;` fresh destination for the *3
+  word offset), wrapping the inner-loop slot-index assignment in a single-level
+  `do { idx = i + j; } while (0);` reproduces the target's inner-loop head, its
+  back-edge delay slot AND its `addu $s0,$s1,$s0` operand order at the same
+  time, giving honest sandbox distance 0 at 78 / 78 instructions.
+- mechanism: cc1's first-pass scheduler.  GCC 2.7.2's `schedule_block` is a
+  BACKWARD list scheduler, so a higher-priority insn is picked first and
+  therefore emitted later.  Unwrapped, the index `addu` is single-set (the sum
+  went to `wid`), so `birthing_insn_p` (tools/gcc-2.7.2/sched.c:2505) is true
+  for it and `adjust_priority` (sched.c:2543) lifts it to `max_priority`
+  (0x7F000001), while the const-1 `li` -- whose dest is multi-set through the
+  `val` LICM-defeat reuse -- keeps priority 1; the `addu` is picked first and
+  emitted last, handing the loop head to the `li`.  With the wrap, the emitted
+  `NOTE_INSN_LOOP_BEG` / `code_label` / `NOTE_INSN_LOOP_CONT` /
+  `NOTE_INSN_LOOP_END` sequence around the assignment changes the block's REG
+  notes such that the `li` takes `adjust_priority`'s `n_deaths != 0` arm
+  (`INSN_PRIORITY >>= 1`, priority 1 -> 0) instead of its `case 0:` arm, so the
+  `li` is picked at clock=5 and the still-lifted `addu` is picked LAST at
+  clock=6 -- i.e. emitted FIRST at the loop head, whence reorg.c steals it into
+  the back-edge delay slot as the target does.
+- probe: `tmp/grind/func_800645B0/s17/dw.c` applied over the `INCLUDE_ASM` line;
+  `sandbox func_800645B0 --disable all`; then `tmp/grind/func_800645B0/s17/
+  diff.py` against `build/src/text1b.o`.  Mechanism read from instrumented-cc1
+  scheduler transcripts `wd.scheddbg.txt` vs `dw.scheddbg.txt`
+  (`BB2_SCHED_DEBUG=1`, `tools/gcc-2.7.2/cc1`, driver
+  `tmp/grind/func_800645B0/s17/sched_dump.sh`), sliced at
+  `SCHEDDBG FUNC func=func_800645B0 pass=1`, plus the `dw.rtl` function slice
+  for the note/label shape.
+- result: score **0**, target_insns 78, build_insns 78, rules_dropped 0;
+  `diff.py` prints `78 78` and no differing lines.  The unwrapped control
+  (`wd.c`) measures 3 / 78 on the same tree in the same session, and the
+  previous floor form (SB) re-measures 1 / 78, so the delta is attributable to
+  the wrap alone.  Scheduler transcripts: unwrapped `ADJPRI insn=38 deaths=0
+  birth=1 maxpri=2130706433 pri=1` (index addu) / `ADJPRI insn=41 deaths=0
+  birth=0 ... pri=1` (const-1 li); wrapped `ADJPRI insn=41 ... birth=1 ...`
+  (index addu, `PICK clock=6 picked=41`) with the li (insn 53) demoted to
+  `pri=0` and `PICK clock=5 picked=53`.
+- verdict: CONFIRMED
+- POLICY NOTE.  This exact wrap was found by the session-5 permuter campaign on
+  2026-08-12 and banked as REJECTED
+  (`rejected/permuter-bare-do-while0-wrapper-outside-carveout.c`) on the ground
+  that the do-while(0) carve-out "applies ONLY to the LABEL_OUTSIDE_LOOP_P /
+  reorg.c relax_delay_slots invert-jump interaction".  The owner ruling of
+  2026-07-06 had already abolished that scoping
+  (`.claude/rules/do-while-zero-exception.md:29-33` -- sanctioned "for ANY
+  codegen effect, including register allocation").  Sessions s6-s16 inherited
+  the stale rejection and spent themselves searching for a natural-geometry
+  substitute for a device that was already permitted.  The generalisable lesson:
+  a `rejected/` header that cites a rule SCOPE must be re-checked against the
+  rule file, because bank headers freeze scopes that rulings move.
+
+### H74 -- folding the *3 sum and the word->byte scale into one statement is byte-equivalent to the two-statement k chassis
+- statement: `idx = (idx2 + idx) << 2;` on the SB chassis measures 12 / 78 at 78
+  build insns with every opcode and every position exact, identical to the
+  two-statement `wid = idx2 + idx; idx = wid << 2;` ("k") form s16 banked.
+- mechanism: the inner PLUS does reach `expand_binop` with a destination
+  distinct from `idx` (so optabs.c:398-421 does NOT swap, and index 20 is the
+  target's operand order), and the outer shift does restore
+  `reg_n_sets[idx] == 2` (so `birthing_insn_p` does not lift the loop-top
+  `addu`).  Both halves are won; what is lost is the allocation -- `idx` and
+  `idx2` swap their callee-saved seats ($s1 / $s0) and the sum lands in the
+  caller-saved $v1 instead of coalescing into `idx`'s seat.  s16's
+  `inverse.py global` already returned NEGATIVE for the k goal
+  {"74":16,"78":16,"73":3} and for every narrowed sub-goal.
+- probe: `tmp/grind/func_800645B0/s17/r1.c`, honest sandbox + `diff.py`.
+- result: 12 / 78, 78 build insns; the twelve differences are exactly the k
+  permutation (11, 14, 19, 20, 21, 22, 23, 28, 39, 50, 57, 65 -- all register
+  names, no opcode or position differences).  Banked:
+  `rejected/compound-sum-and-scale-folds-to-the-k-seat-permutation-12of78.c`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: SB chassis with the compound `idx = (idx2 + idx) << 2;`
+  statement, no FAKE constructs beyond the standing `val` LICM-defeat reuse;
+  honest `sandbox --disable all` on the 2026-09-02 tree.

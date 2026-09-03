@@ -1,3 +1,17 @@
+/* ***** SUPERSEDED 2026-09-02 (grind session s17) *****
+ * THIS REJECTION WAS WRONG AND COST TWELVE SESSIONS.  The scope it quotes
+ * below ("the carve-out ... applies ONLY to the LABEL_OUTSIDE_LOOP_P /
+ * reorg.c relax_delay_slots invert-jump interaction") had ALREADY been
+ * abolished by the owner ruling of 2026-07-06, six weeks before this file
+ * was written: .claude/rules/do-while-zero-exception.md:29-33 sanctions
+ * `do { <any body> } while (0);` for ANY codegen effect, including register
+ * allocation.  Session s17 restored this form under the live scope, measured
+ * it at honest distance 0 / 78 with rules_dropped 0, attributed its mechanism
+ * from instrumented-cc1 scheduler dumps, and shipped it: see
+ * memory/grind/func_800645B0/candidate.c, self_vet.md, and evidence.md's
+ * s17 block.  KEPT ON FILE ONLY AS A PROCESS RECORD -- do not treat anything
+ * below as a live rejection.
+ */
 /* REJECTED (session 5, permuter modality, 2026-08-12) — NOT proposed.
  *
  * decomp-permuter find `tmp/grind/func_800645B0/s5/ws3/output-0-2` on the CA

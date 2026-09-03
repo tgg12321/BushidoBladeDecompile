@@ -1530,3 +1530,4 @@
 - 2026-09-02 func_80022F34 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 11, exhaustion window reset at session 9.
 - 2026-09-02 func_8003C714 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 15, exhaustion window reset at session 9.
 - 2026-09-02 func_800480C0 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 20, exhaustion window reset at session 11.
+- 2026-09-02 21:15 func_800645B0: LAYER-1 FAILED a sandbox-0 candidate — The do-while(0) wrap (C1) is the exact form this ledger already banked as REJECTED in session 5 and is the fourth respelling of this function's own banned scheduler-tie-steer construct; citing the do-while-zero-exception family does not launder a mechanism this project has already ruled out three times for this specific function.
