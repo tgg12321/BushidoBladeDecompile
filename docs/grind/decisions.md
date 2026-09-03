@@ -21720,3 +21720,136 @@ The LeafPos/D_80107850 aggregate merge is legitimate and satisfies the 2026-08-1
 ## 2026-09-03 15:17 — func_80033550 — final call — **PASS**
 
 Bytes re-verified by me: sandbox --disable all = 0 (34/34, rules_dropped 0) and verify-oracle build_sha1 == 62efab4f... == oracle. The C body is an honest reading of asm/funcs/func_80033550.s (flag scan, i==6 early return, sb 1, 12-byte record store via the sll/addu/sll *12 index) with zero FAKE constructs, zero inline asm, no do-while wrap, and no build-time output rewriting; both banned_constructs (the per-use byte-pointer pun on D_80107850 and *(&D_800A3918 + i)) are DELETED, not respelled -- the fix lives at the declaration. Construct (1) D_80107850/54/58 -> LeafPos D_80107850[6] sits in the 2026-08-17 per-word-splat -> aggregate-merge family (.claude/rules/no-new-park-categories.md:238) and I verified all five prongs independently: (a) named_syms.txt:1556 census row committed e44dcd95 2026-05-17, predating the 2026-07-21 grind, plus stride evidence in the original binary (asm/funcs/func_800335D8.s: &D_80107850 into $s2, addiu $s2,0xC); (b) record type, no magic stride at the use site; (c) complete -- D_80107854/58 gone from undefined_syms_auto.txt and named_syms.txt, and grep over src/ + include/ finds no remaining C consumer; (d) canonical shared-header declaration; (e) oracle rebuild green. Construct (2) extern u8 D_800A3918[6] needs no family at all -- it is one splat scalar widened to the array the binary literally indexes and the committed census row (named_syms.txt:1554) documents; a semantically truthful declaration is ordinary C per .claude/rules/ordinary-c-judge-decidable.md, so the self_vet's belt-and-braces family claim for it is harmless over-citation, not a defect. Disclosed and accepted: D_800A391D (named_syms.txt:824) pre-exists as a separate handle aliasing D_800A3918[5]; it was not created by this diff, is consumed by already-completed func_80033510, and retiring it is a project-wide symbol change outside the granted surface -- banked as a follow-on in the ledger frontier. Diff touches only the three granted scope paths plus src/code6cac_b.c. Full evidence: memory/grind/func_80033550/self_vet.md, evidence.md, hypotheses.md, rejected/.
+
+## 2026-09-03 — CD_ready (src/system.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (post-unpark window run to exhaustion; both endgame gates fail; the s76 frontier's named shape measured dead on both live bases)
+
+**What this is.** Grind session 77 (`escalation` modality) on `CD_ready` @ `0x80081030`
+(`src/system.c:379`, currently `INCLUDE_ASM("asm/funcs", CD_ready);`; formerly ledgered under the
+splat-era name `marionation_Exec`). This is a PROOF-OF-FORECLOSURE RECORD under the owner's standing
+auto-ruling of 2026-07-27 (`.claude/rules/endgame-lock-disposition.md`), filed silently per the
+2026-08-31 ruling (`.claude/rules/ordinary-c-judge-decidable.md`). It is not a question, not a
+decision packet, and nothing here asks the owner for anything.
+
+**Why this window is a legitimate exhaustion and not a repeat of 2026-09-01.** The owner's
+2026-09-02 foreclosure-mechanics ruling re-activated this item with the exhaustion window RESET,
+because the 2026-09-01 re-foreclosure landed one session after an unpark. That window has now been
+run in full: sessions 69-77 (forensics, rederive x2, structural x2, synthesis x3, escalation) each
+measured and banked new mechanism, the driver re-assigned `escalation` only after the floor stayed
+flat across all of them, and the 2026-09-02 owner directive's named probe ("work the ladder from its
+next rung") was executed this session and killed with dumps.
+
+**Function identity (settled, not re-derived).** PsyQ 3.5 libcd `CD_ready(int mode, u_char *result)`
+— 179/179 words masked-identical against the library object, name string `"CD_ready"` @ `0x80016248`
+(`memory/closer/libcd-groundtruth.md:40-52`, `memory/closer/libcd-identity.md:7-8`). Compiler output
+from the frozen toolchain, not hand-written assembly.
+
+### The residual, stated exactly
+
+The floor body (`memory/grind/CD_ready/candidate.c`, re-verified live this session at **score 2,
+build 179 == target 179, rules_dropped 0**) emits every one of target block-3 slots 51-67 with the
+TARGET'S REGISTERS and differs from the target by **one adjacent transposition of two independent
+ALU instructions**: it emits `sll $a0,$a0,2` (the t0 shift, insn 106) before `addu $v0,$v0,$s5`
+(the arg5 address add, insn 120), where the target has them the other way round. Both seats are
+already correct on this body. That transposition is the whole 2-point residual.
+
+Root cause, read out of the instrumented cc1 across sessions 69-76 and unchanged this session:
+`rank_for_schedule` ties both insns on priority and on class (`RANKDBG last=122 y=120 cls=3 x=106
+cls2=3 val=0`) because `birthing_insn_p` (`tools/gcc-2.7.2/sched.c:2504-2528`) holds for both — each
+destination pseudo has `reg_n_sets == 1` — so `adjust_priority` (`sched.c:2571-2590`) raises both to
+`max_priority` and the comparison falls through to `INSN_LUID`, i.e. raw RTL stream position.
+
+Three independent routes to the target's block-3 order are on record — s69's `g06` (statement
+interleave, 6), s75's `r3` (a nested `do {} while (0)` in the [11..12] parity region, 5), s76's `b2`
+(remove insn 120's birth boost, 12) — and **all three cost the local-alloc seats**, because fixing
+the order shortens the t0-shift quantity from span 8 to span 6, which raises its `qty_compare_1`
+priority to an exact tie with the arg5-value quantity, and `local-alloc.c:1683` breaks that tie on
+quantity number, which the target's own emission order pins in the t0 shift's favour. Order and
+seats are coupled by construction. Every `qty_compare_1` input is now measured: refs move only with
+loop depth (s70/s71), span and quantity number are pinned by the target's own order, and size costs
+an instruction (s72's DImode kill).
+
+### Gate (a) — canonical-asm: **FAILS**
+
+`python3 tools/scan_hand_coded.py --single CD_ready`, run this session
+(`tmp/grind/CD_ready/s77/scan_hand_coded.txt`):
+
+    HAND_CODED: tier=LOW  score=2/8  (CD_ready, 179 insns)
+      Reason: no strong hand-coded indicators
+      [ ] S1 multu pacing   [ ] S2 empty branch   [ ] S6 BIOS jumptable
+      [X] S4 front loads (4 loads in 8-insn window @ insn 51)
+      [X] S5 cluster (1 approx-sibling: CD_sync, jaccard=0.64)
+
+All three STRONG signals (S1/S2/S6) are absent. The two set signals are weak and both are explained
+by the function's identity: S4 is the printf argument block this ledger has been grinding, S5 is the
+sibling libcd routine `CD_sync` from the same object. Consistent with the identity evidence — this
+is GCC 2.7.2 output, so the canonical-asm grant path does not apply.
+
+### Gate (b) — in-hand SOTN-master precedent for the closing construct: **FAILS**
+
+There is no NEW construct to cite. The residual is an emission-order transposition at seats that are
+already correct, and every C-level device this project has sanctioned for that job has been spelled
+and measured on this body: statement reorder (s69 g06 and the s75 u01-u12 twelve-permutation sweep),
+`do {} while (0)` loop notes at every in-block and out-of-block position (s67, s70, s71, s75),
+variable reuse and staged values (s72-s76), dead stores and self-assigns (s69 k01 — REFS-inert,
+because `flow.c`'s `delete_noop_moves` runs before `reg_n_refs` is accumulated), named intermediates
+(s76 c-series), and the aggregate merge (s68 Ruling D — prong (c) structurally unsatisfiable: five
+asm-only consumers of `D_800A1494/95/96`).
+
+Census run first-hand this session against `docs/reference/sotn-construct-index.md`, PSX rows only:
+the sole scheduler-adjacent families are `match_comment` (229 hits — codegen-reason COMMENTS, not a
+construct) and `new_var_temp` (20 hits, e.g. `src/dra/cd.c:520-522`,
+`src/main/psxsdk/libsnd/vmanager.c:352`), which is the already-sanctioned named-local family that
+this body already uses twice (`new_var`, `new_var3`). **Negative census — a failed gate, not an open
+question** (owner ruling 2026-08-24, reaffirmed 2026-08-31).
+
+### What holds the residual open
+
+Nothing cheat-shaped is or was in play: the body carries no register pin, no `__asm__`, no
+scheduling barrier, and `rules_dropped 0` on every measurement in this session and the last eight.
+The gap is 2 masked points of pure scheduler tie-breaking. This is NOT a bytes-proven integration
+handoff — the bytes have never been reached, honestly or otherwise.
+
+### Exhaustion evidence (pointers, not re-derivation)
+
+* **77 sessions**, **9 distinct modalities** (`memory/grind/CD_ready/state.json` floor_history:
+  structural x19, rederive x15, forensics x13, permuter x12, synthesis x11, escalation x4, solver,
+  recon, wip-import). Floor **flat at 2 since s60**; before that flat at 4 for 59 sessions.
+* **271 rejected forms** banked in `memory/grind/CD_ready/rejected/` (7 added this session).
+* **Three permuter campaigns** (s4, s5, s59) plus the closer-phase campaigns; none reached below the
+  banked floor. `memory/project/permuter-closability-evaluated.md` records the class result.
+* **This session's probe** — the s76 frontier's one named unexplored shape, a `birthing_insn_p`
+  de-boost carrier whose two surviving sets are both inside block 3 and both feed real printf
+  arguments — measured on BOTH live bases and dead on both: floor body p1 16 / p4 14 / p3 21 /
+  p6 16 against a floor of 2; r3 base q1 10 / q1b 11 / q1c 21 against a floor of 5. BB2_SCHED_DEBUG
+  block-3 dumps show why: naming the address into a carrier and re-setting it shifts every block-3
+  `INSN_LUID`, so the de-boost cannot be spelled without moving the very tie it arbitrates.
+  (`memory/grind/CD_ready/hypotheses.md` [s77] item 1.)
+* **Mandated kill re-audit discharged, and a tool blocker fixed.** s76 recorded `tools/fake_ablate.py`
+  as unusable here; that was a naming-wave artifact — `candidate.c` predates the wave and the tool
+  splices verbatim while `tmp/grind/CD_ready/s63/splice.py` applies the rename map. With the rename
+  applied first, the full 38-variant grid builds: **keep-all 2/179 and no subset beats it**
+  (`tmp/grind/CD_ready/s77/ablate_renamed.txt`). No FAKE carrier is masking a lever at the floor.
+
+### Re-activation triggers
+
+Any one of these makes the residual attackable again and warrants an owner unpark:
+
+1. A class grant covering a device that changes `INSN_LUID` ordering without changing RTL statement
+   order (nothing in the frozen family list does this today; owner-only to extend).
+2. A toolchain finding that decouples `local-alloc`'s `qty_compare_1` span/quantity-number tie from
+   the emitted instruction order — the coupling is the entire 77-session see-saw.
+3. A permuter campaign seeded from `r3` (5) and `b2` (12) on a workspace rebuilt against
+   `engine/buildconfig.py`'s current flags. No campaign in 77 sessions has been seeded from a body
+   whose residual is two independently root-caused facts; the frontier entry in
+   `memory/grind/CD_ready/state.json` carries the exact build recipe and the two scope hazards
+   (`memory/project/instrumented-cc1-location.md`, `memory/project/grinder-nonmatchings-scope-break.md`).
+4. A matched libcd `bios.c` body for `CD_ready` appearing upstream in psyz / sozud
+   (`memory/reference/psyz-psyq40-decomp.md`) — version-correct source would settle the statement
+   order the scheduler is reading.
+
+**References.** Ledger `memory/grind/CD_ready/{evidence.md,hypotheses.md,candidate.c,state.json,
+rejected/}` (s77 sections appended this session); artifacts `tmp/grind/CD_ready/s77/`
+(scan_hand_coded.txt, ablate_renamed.txt, ablate_candidate.txt, p1/p3/p4/p6/q1/q1b/q1c.c,
+p1.sched.txt, p4.sched.txt); prior records decisions.md 2026-09-01 (CD_ready), 2026-08-30
+(CD_ready), 2026-09-02 (foreclosure mechanics, Rulings 1-3 and the retroactive unpark list);
+sibling dispositions CD_sync and CD_datasync.

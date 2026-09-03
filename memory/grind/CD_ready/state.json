@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 76,
- "current_modality": "synthesis",
+ "session_count": 77,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -465,23 +465,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "Synthesis: the floor body's whole residual is one adjacent ALU transposition with every seat already correct, and a NEW pass-level rung (sched.c birthing_insn_p / adjust_priority) reproduces the targe"
+  },
+  {
+   "session": 77,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Disposition session: the s76 frontier's one named unexplored shape (birthing_insn_p de-boost carrier with two real in-block sets) measured dead on BOTH live bases (7 forms, 10-21 vs floors of 2 and 5)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A de-boost carrier whose two surviving sets are BOTH inside the do_timeout block, both feeding real printf arguments, removes insn 120's birth boost without moving the arg5-address pseudo out of local-alloc - giving the target's order (proven by b2) on a body whose seats are still the floor's.",
-   "mechanism": "birthing_insn_p needs reg_n_sets>1 on the SET_DEST pseudo (sched.c:2504-2528); local-alloc keeps a pseudo as a local quantity only while all its references sit in one basic block. b1/b2/b3 satisfied the first and broke the second (the carrier also lives in another block, so global-alloc seats it at $s0/$a3); c3/c5 kept it local but their first set was a copy that cse/flow propagated away; c6/c9 kept it local with two real sets but staged the t0 deref early, moving 'lw $a3' off slot 67.",
-   "next_probe": "Spell a carrier whose first set is a value block 3 ALREADY computes and consumes in place - the D_800A11DC[D_800A11D5] index chain is the obvious one (idx = D_800A11D5; ... idx = v0 + (s32)tbl_125c; arg5 = *(s32 *)idx; with the a2 argument taken from the first value). Verify with BB2_SCHED_DEBUG that 'ADJPRI insn=120 ... birth=0' and 'PICK clock=13 picked=106' before reading the score, and check the .lreg/.greg dumps to confirm the carrier is still a local quantity rather than in the global allocno list."
-  },
-  {
-   "hypothesis": "On the r3 base (score 5, block-3 order target-exact from slot 53) the transposed leading lbu pair is a readiness-time artefact, not a tie, and it closes by making the arg5 chain's sll (insn 108) schedule one clock earlier so insn 106 re-enters the ready list alongside insn 99.",
-   "mechanism": "r3's dump shows 99 picked at clock 18 with 106 absent from that ready list and 'BLOCKAGE unit=0 clock=19 raw_tick=21 adj_tick=19 maxb=3 exec=106 last=99' - 106 became ready only after its single dependent 108 was picked at clock 17 and then missed the memory unit's issue slot. On the floor body the analogous pair are both ready at clock 17 and the LUID tie resolves correctly. So r3's lbu residual is a two-clock readiness gap, a different rung from every LUID probe s61-s75 ran.",
-   "next_probe": "Dump BB2_SCHED_DEBUG for r3 variants that shorten the arg5 chain's tail by one dependence step (or lengthen the t0 chain's), reading the clock at which insn 106 enters the ready list rather than the score. If 106 and 99 can be made ready in the same clock the pair reverts to a LUID tie, which r3's RTL order already resolves in the target's favour - that alone is 2 of r3's 5 points, and would leave only reg98's $a3 seat."
-  },
-  {
-   "hypothesis": "A permuter campaign seeded from r3 (score 5) and from b2 (score 12, order-perfect without a note) finds the last spelling by search; no campaign in 76 sessions has been seeded from a body whose residual is two independently root-caused facts.",
+   "hypothesis": "A permuter campaign seeded from r3 (5) and b2 (12) finds the last spelling by search; no campaign in 77 sessions has been seeded from a body whose residual is two independently root-caused facts.",
    "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies at masked 4+ whose residual mixed order and seats across the whole block. r3's residual is one global-alloc seat plus one scheduler readiness gap, and b2's is one local-alloc seat set; the permuter's statement-reordering and variable-splitting passes act on exactly the RTL-position and reg_n_sets inputs both facts depend on.",
-   "next_probe": "Build a FRESH workspace mirroring engine/buildconfig.py's flags exactly (the tmp/perm_mar* workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1). Validate the scorer reproduces 5 for r3, 12 for b2 and 2 for candidate.c before launching, then run fresh-seed windows with 'python3 tools/permuter_campaign.py wait --dir <ws>', harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break in memory/project/grinder-nonmatchings-scope-break.md."
+   "next_probe": "Build a FRESH workspace mirroring engine/buildconfig.py's flags exactly (the tmp/perm_mar* workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1). Validate the scorer reproduces 5 for r3, 12 for b2 and 2 for candidate.c before launching, then run fresh-seed windows with `python3 tools/permuter_campaign.py wait --dir <ws>`, harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break in memory/project/grinder-nonmatchings-scope-break.md."
+  },
+  {
+   "hypothesis": "On the r3 base (score 5, block-3 order target-exact from slot 53) the transposed leading lbu pair is a readiness-time artefact, not a tie, and it closes by making the arg5 chain's sll schedule one clock earlier so insn 106 re-enters the ready list alongside insn 99.",
+   "mechanism": "r3's dump shows 99 picked at clock 18 with 106 absent from that ready list and 'BLOCKAGE unit=0 clock=19 raw_tick=21 adj_tick=19 maxb=3 exec=106 last=99' - 106 became ready only after its single dependent 108 was picked at clock 17 and then missed the memory unit's issue slot. On the floor body the analogous pair are both ready at clock 17 and the LUID tie resolves correctly. This is a different rung from every LUID probe s61-s77 ran; note s75's u01-u12 sweep already killed twelve dependence-respecting statement permutations at 5, so the probe must change the dependence CHAIN LENGTH, not the statement order.",
+   "next_probe": "Dump BB2_SCHED_DEBUG for r3 variants that shorten the arg5 chain's tail by one dependence step (or lengthen the t0 chain's), reading the clock at which insn 106 enters the ready list rather than the score. If 106 and 99 can be made ready in the same clock the pair reverts to a LUID tie, which r3's RTL order already resolves in the target's favour - that alone is 2 of r3's 5 points, leaving only reg98's $a3 seat."
+  },
+  {
+   "hypothesis": "A version-correct libcd bios.c body for CD_ready appearing upstream (psyz / sozud) settles the statement order the scheduler is reading, which is the one input 77 sessions have had to guess.",
+   "mechanism": "The residual is entirely INSN_LUID, i.e. RTL statement position, and every route found so far trades order against local-alloc seats. The original source's statement order would fix the LUIDs by construction rather than by search, and memory/reference/psyz-psyq40-decomp.md records psyz as the version-correct PsyQ decomp with 308 matched library bodies.",
+   "next_probe": "Re-check psyz / sozud upstream for a matched libcd bios.c CD_ready body (and CD_sync, the proven sibling in the same object). Mind memory/reference/psyq-reference-c-version-skew.md: BB2 links PsyQ 3.5 (bios.c v1.86 1997/03/28), so a 4.0-era body is a lead, not a drop-in."
   }
  ],
  "judge_constraints": [
@@ -711,6 +717,14 @@
    "measured_on": "HEAD chassis 2026-09-03, r3 with its full 11-unit FAKE set present; the tool's own unit-dropping is what fails, not a scoring result.",
    "predicate_cite": "",
    "result": "KILLED as a procedure on this body: r3's 11 FAKE units include three nested do-while(0) wraps and two staging lines whos"
+  },
+  {
+   "session": 77,
+   "statement": "The s76 frontier's named shape - a birthing_insn_p de-boost carrier whose two surviving sets are BOTH inside block 3 and BOTH feed real printf arguments - does not reach the target's block-3 order at ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-03; candidate.c re-verified live at 2/179/0 and the s75 r3 base at 5/179/0 in the same batches. The p-series carries the floor body's full inherited 8-unit FAKE set; the q-series ",
+   "predicate_cite": "",
+   "result": "p1 16, p4 14, p3 21 (181 insns), p6 16; q1 10, q1b 11 (180 insns), q1c 21. Both bases re-verified live in the same batch"
   }
  ]
 }

@@ -1,97 +1,3 @@
-/* s77 UPDATE (2026-09-03, escalation/disposition). This body is UNCHANGED and remains the floor at
- * masked 2 (re-verified live this session: score 2, build 179, target 179, rules_dropped 0).
- * s77 was the driver-assigned DISPOSITION session for the window the owner reset on 2026-09-02.
- * What a future session inherits:
- *   1. THE s76 FRONTIER SHAPE IS DEAD ON BOTH LIVE BASES. A birthing_insn_p de-boost carrier whose
- *      two surviving sets are BOTH inside block 3 and BOTH feed real printf arguments (the named
- *      unexplored shape) measures 16/14/21/16 on this body against its floor of 2, and 10/11/21 on
- *      the r3 base against its floor of 5. Dumps show the mechanism: naming the arg5 address into a
- *      carrier and re-setting it shifts EVERY block-3 INSN_LUID, so the de-boost cannot be spelled
- *      without moving the very tie it is meant to arbitrate. Forms in rejected/s77-*.c.
- *   2. TOOL FIX for every future re-audit here: tools/fake_ablate.py reports ERR None for every
- *      variant of THIS file only because the body predates the naming wave and the tool splices it
- *      verbatim (tmp/grind/CD_ready/s63/splice.py applies the rename map, fake_ablate does not).
- *      Apply the rename map to a copy first and the grid builds. Also pass the EXACT grid size to
- *      --max-variants; the tool refuses rather than truncating. s76 recorded this as a tool limit;
- *      it is not.
- *   3. THE FLOOR IS NOT A FAKE ARTIFACT. Full 38-variant ablation grid on the renamed copy:
- *      keep-all = 2/179 and NO subset beats it (the only other 2, drop-[v0 <<= 2], is 178 insns and
- *      off the parity basin). All eight FAKE units are load-bearing.
- *   4. DISPOSITION FILED: docs/grind/decisions.md 2026-09-03 CD_ready, RESOLVED BY STANDING RULING
- *      (2026-07-27): FORECLOSED. Gate (a) scan_hand_coded tier=LOW 2/8 (S1/S2/S6 all absent);
- *      gate (b) SOTN construct-index census negative. Re-activation triggers are listed there.
- */
-/* s76 UPDATE (2026-09-03, synthesis). This body is UNCHANGED and remains the floor at masked 2
- * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). s76 identified
- * and measured a pass-level rung no session in 75 had looked at, and wrote the residual out
- * instruction by instruction. What a future session inherits:
- *   1. THE RESIDUAL, FULLY LISTED. This body emits every one of target slots 51-67 with the
- *      TARGET'S REGISTERS and differs only by transposing slots 56 and 57 - it emits
- *      `sll $a0,$a0,2` (the t0 shift) before `addu $v0,$v0,$s5` (the arg5 address add), where the
- *      target has them the other way round. Both seats are already correct on this body; the whole
- *      residual is one adjacent swap of two independent ALU insns.
- *   2. NEW RUNG: sched.c `adjust_priority` / `birthing_insn_p` (sched.c:2504-2528, 2571-2590).
- *      The contested pair (insn 106, luid 6, vs insn 120, luid 12) has nominal priority 2 each,
- *      but BOTH are raised to max_priority because `birthing_insn_p` holds -
- *      `reg_n_sets[SET_DEST] == 1`. That boost is what pushes the comparison down to the INSN_LUID
- *      rung s69 recorded. It is C-controllable: give the destination pseudo a second surviving set
- *      and the boost disappears.
- *   3. CONFIRMED: de-boosting insn 120 emits the TARGET'S EXACT block-3 order with NO loop note.
- *      Form b2 (`status = v0 + (s32)tbl_125c; arg5 = *(s32 *)status;`) prints
- *      `ADJPRI insn=120 deaths=0 birth=0` and `PICK clock=13 picked=106 / 14 picked=120`, giving
- *      the target's sequence instruction for instruction. Saved as
- *      progress/s76-b2-birth-deboost-target-block3-order-no-loop-note-12.c. This is the third
- *      independent route to the order-perfect emission (after s69's g06 and s75's r3) and the only
- *      one needing neither a statement reorder nor a do-while(0).
- *   4. KILLED (instance): every de-boost carrier spelled so far. A carrier with two SURVIVING sets
- *      has to be a variable that also leaves block 3, so the arg5-address pseudo leaves local-alloc
- *      and global-alloc seats it in $s0/$a3 (b2's diff: `addu $s0,$v0,$s5`). Scores a1 15, a3 15,
- *      b1 16, b2 12, b3 29, c1 9, c4 6, c6 11, c9 10. Controls c3/c5 (copy first-set) are
- *      BYTE-IDENTICAL to this body - a plain copy is propagated away before flow.c, the mirror of
- *      s69's delete_noop_moves finding - and a5 (de-boosting insn 106 instead) is 8, which pins the
- *      attribution on insn 120's boost specifically.
- *   5. THE COUPLING, stated exactly: the lbu pair (slots 51/52) and the ALU pair (56/57) are BOTH
- *      INSN_LUID ties resolved by the same chain-order fact in opposite directions, so no
- *      wholesale reversal of the two chains can satisfy both. The routes that satisfy both (g06,
- *      b2, r3) all SPLIT chain B, and all three then lose the local-alloc seats.
- * The ONE open question on this body is still F3 (the volatile prong-2 / allowlist ruling for
- * idx_1496) - documented below and moot while the floor is 2.
- */
-/* s75 UPDATE (2026-09-03, synthesis). This body is UNCHANGED and remains the floor at masked 2
- * (re-verified live at 2/179/0 at the start of s75, with the g06 order-perfect base at 6/179/0).
- * The session's result is a NEW BASE, not a new floor - read it before spending a probe:
- *   1. PARITY THEOREM for the do-while(0) refs lever. In the target's block-3 order the two tied
- *      quantities' mentions interleave t0 sll (7), arg5 lw (8), t0 addu (10), arg5 sw (12), so a
- *      note pair moves the qty_compare_1 tie only when its region covers an ODD number of one
- *      quantity's mentions. Exactly four contiguous regions favour the arg5 value: [8..9], [8..12],
- *      [11..12], [12..12]. [7..10] favours the t0 temp. Everything else is symmetric and inert.
- *   2. The [8..9]/[8..12] half is DEAD: a note between the two `t0` statements changes reg98's
- *      death count, so the t0 variable itself enters local-alloc as one refs-12 span-22 quantity
- *      (pri 1.636) and beats the arg5 value outright. Scores 11/12/11/11/11. This is the root
- *      cause of s66's "the t0 chain collapses" note.
- *   3. The [11..12] half WORKS. Wrapping ONLY the debug_printf statement, with `a2i = D_800A11D5;`
- *      and `t0 = (s32)((u8 *)tbl_125c + t0);` hoisted above it, puts the arg5 `sw` (and nothing of
- *      the t0 chain) at depth 2+n, so arg5 refs = 4+n and its priority is floor_log2(4+n)*(4+n)/10
- *      against the t0 temp's 8/6 = 1.3333 -- 1.000 at n=1, 1.200 at n=2, 1.400 at n=3. At n=3 the
- *      ALLOC order flips and BOTH contested seats come out at the target's registers for the first
- *      time in 75 sessions on an order-perfect-derived body (arg5 value -> $v1, t0 shift temp ->
- *      $a0). Adding the `a1v = (s32)*pp;` hoist restores the D_800F19C0 argument load to slots
- *      53/54, and the result -- progress/s75-r3-nested-note-refs-flip-seats-block3-order-exact-5.c,
- *      score 5 -- emits block 3 instruction-for-instruction like the target from slot 53 to 67.
- *   4. r3's WHOLE residual is five instructions with two causes: the two leading lbu's are
- *      transposed (slots 51/52), and reg98 (the `t0` variable, global-allocated) sits at $a3
- *      instead of $a0, costing slots 57/61/67. `.greg` names the mechanism exactly:
- *      `;; 98 preferences: 7` and `;; 98 conflicts: ... 2 3 4 5 6 29` -- hard reg 4 is in reg98's
- *      conflict set BECAUSE local-alloc seated the shift temp there (`106 in 4`), so find_reg falls
- *      through to the $a3 preference recorded from `lw $a3, 0(reg98)`. On THIS floor body reg98 and
- *      the shift temp share $a0. Winning the local seat and sharing $a0 are coupled through that
- *      conflict, and that coupling is the next session's target.
- *   5. KILLED on r3 (instance): twelve dependence-respecting permutations of the pre-wrap statements
- *      all score exactly 5 (u07 alone 15), and three t0-chain respellings score 11/7/7. Neither the
- *      lbu order nor reg98's seat responds to statement order or to t0 spelling.
- *   6. KILLED (instance): the w/x/y boundary family (wrap opening above the arg5 load) wins the arg5
- *      seat at n=1 but the shift temp is then allocated after it and loses $a0 (gets $a2): 5/5/14/19.
- */
 /* s74 UPDATE (2026-09-03, synthesis). This body is UNCHANGED and remains the floor at masked 2
  * (re-verified live at the start of s74 together with three side bases: candidate.c 2/179/0,
  * g06 6/179/0, s73's r6 5/179/0, s67's y02 6/179/0 - no drift). What a future session inherits:
@@ -474,15 +380,27 @@ s32 marionation_Exec(s32 a0, u8 *a1)
   {
     s32 arg5;
     s32 t0;
+    s32 a5a;
+    s32 a2i;
     void **pp;
     t0 = idx_1494[0];
-    pp = (void **)&D_800F19C0; /* FAKE: pointer-alias staging (staged-value-reused-variable / pointer-alias, owner-sanctioned 2026-07-03) - the D_800F19C0 load placed early so the a1 arg loads at the target slot */
-    t0 *= 4;
-    t0 = (s32)((u8 *)tbl_125c + t0);
-    v0 = idx_1494[1]; /* FAKE: index staged through the (dead-here) v0 var per staged-value-reused-variable (owner-sanctioned 2026-07-03); v0's prior value is dead (re-set below before any read) */
+    pp = (void **)&D_800F19C0; /* FAKE: pointer-alias staging (staged-value-reused-variable / pointer-alias, owner-sanctioned 2026-07-03) */
+    v0 = idx_1494[1]; /* FAKE: index staged through the (dead-here) v0 var per staged-value-reused-variable (owner-sanctioned 2026-07-03) */
     v0 <<= 2; /* FAKE: continued staging per staged-value-reused-variable */
-    arg5 = *(s32 *)(v0 + (s32)tbl_125c);
-    debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
+    a5a = v0 + (s32)tbl_125c;
+    t0 *= 4;
+    arg5 = *(s32 *)a5a;
+    a2i = D_800A11D5;
+    t0 = (s32)((u8 *)tbl_125c + t0);
+    a5a = (s32)*pp;
+    do { /* FAKE: nested do-while(0) loop notes; each level adds 1 to flow.c loop_depth for the enclosed arg5 sw only, raising reg_n_refs and so the local-alloc.c qty_compare_1 priority of the arg5 value above the t0 shift temp (single level insufficient: measured pri still below at n=1 and n=2). do-while-zero-exception 2026-07-06 */
+    do { /* FAKE: nested do-while(0) loop notes; each level adds 1 to flow.c loop_depth for the enclosed arg5 sw only, raising reg_n_refs and so the local-alloc.c qty_compare_1 priority of the arg5 value above the t0 shift temp (single level insufficient: measured pri still below at n=1 and n=2). do-while-zero-exception 2026-07-06 */
+    do { /* FAKE: nested do-while(0) loop notes; each level adds 1 to flow.c loop_depth for the enclosed arg5 sw only, raising reg_n_refs and so the local-alloc.c qty_compare_1 priority of the arg5 value above the t0 shift temp (single level insufficient: measured pri still below at n=1 and n=2). do-while-zero-exception 2026-07-06 */
+    debug_printf(&D_800161C8, (void *)a5a, D_800A11DC[a2i], *(s32 *)t0, arg5);
+    } while (0);
+    } while (0);
+    } while (0);
+
   }
   cdrom_ClearIrq();
   } while (0);

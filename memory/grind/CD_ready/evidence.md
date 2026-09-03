@@ -3163,3 +3163,57 @@ whole basin depends on. The arg5 chain's path length is structurally fixed.
 - [s76] Every qty_compare_1 input for the seat half is now measured across s70-s76: refs move only with loop_depth (a note), span and quantity number are pinned by the target's own emission order (birth order), and qty_size costs an instruction (s72's DImode kill at 181 insns).
 
 - [s76] 13 forms measured this session, all at build 179 / rules_dropped 0; 11 new rejected forms banked (264 total) and one new progress base saved. candidate.c is unchanged as a body and remains the floor at 2/179/0; only its header gained the s76 summary.
+
+## s77 (escalation, 2026-09-03) — disposition session
+
+- [s77] CHASSIS RE-VERIFIED LIVE. `memory/grind/CD_ready/candidate.c` spliced over the
+  `INCLUDE_ASM("asm/funcs", CD_ready);` marker via `tmp/grind/CD_ready/s63/splice.py` and scored
+  with `& tools/wteng.ps1 main sandbox CD_ready --disable all`: **score 2, build_insns 179,
+  target 179, rules_dropped 0**. The s75 r3 base re-scores at **5/179/0** in the same session.
+  No drift from s69–s76.
+- [s77] `python3 tools/scan_hand_coded.py --single CD_ready` (artifact
+  `tmp/grind/CD_ready/s77/scan_hand_coded.txt`): **tier=LOW score=2/8**, reason "no strong
+  hand-coded indicators". S1 (multu pacing), S2 (empty branch) and S6 (BIOS jumptable) — the three
+  STRONG signals the endgame-lock gate requires — are all ABSENT. The two set signals are S4
+  (4 loads in an 8-insn window at insn 51, i.e. the printf argument block this ledger has been
+  grinding) and S5 (approx-sibling CD_sync, jaccard 0.64), neither of which is a strong signal.
+  This is consistent with the identity evidence: CD_ready is PsyQ 3.5 libcd `bios.c` output from
+  GCC 2.7.2, i.e. compiler output, not hand-written assembly.
+- [s77] The s76 frontier's named shape is measured and dead on both live bases (seven forms,
+  scores 10–21 against floors of 2 and 5). See hypotheses.md [s77] item 1 for the full mechanism
+  and the BB2_SCHED_DEBUG reading: the de-boost cannot be spelled without moving the very INSN_LUIDs
+  it is trying to arbitrate.
+- [s77] MANDATED KILL RE-AUDIT DISCHARGED, and a tool blocker recorded by s76 is now FIXED for
+  future sessions: `tools/fake_ablate.py` reports `ERR None` for every variant of
+  `memory/grind/CD_ready/candidate.c` only because that body predates the naming wave and the tool
+  splices verbatim (the splice script applies the rename map, the ablation tool does not). Rename
+  first (`tmp/grind/CD_ready/s77/cand_renamed.c`) and the full 38-variant grid builds. Result:
+  **keep-all 2/179 and no subset beats it** (`tmp/grind/CD_ready/s77/ablate_renamed.txt`); the only
+  other 2 is drop-[`v0 <<= 2`] at 178 insns, off the parity basin. No FAKE carrier is masking a
+  lever at the floor. Also note the tool REFUSES (does not truncate) when the grid exceeds
+  `--max-variants`; pass the exact grid size.
+- [s77] Gate (b) precedent census against `docs/reference/sotn-construct-index.md` is NEGATIVE —
+  the only PSX-tagged scheduler-adjacent families are `match_comment` (not a construct) and
+  `new_var_temp` (already sanctioned, already used twice in this body). Nothing unspent.
+- [s77] DISPOSITION FILED. Both endgame-lock AND-gates fail (scan LOW; no in-hand SOTN-master
+  precedent for the closing construct). Floor 2 <= ENDGAME_LOCK_MAX_FLOOR 5, 77 sessions, 9 distinct
+  modalities, floor flat at 2 since s60. Record appended to `docs/grind/decisions.md` under
+  **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**; outcome returned `owner-gated` citing it.
+
+- [s77] Chassis re-verified live: memory/grind/CD_ready/candidate.c spliced over the INCLUDE_ASM marker scores 2/179/0 (target 179), and the s75 r3 base scores 5/179/0. No drift from s69-s76.
+
+- [s77] The residual is one adjacent transposition of two independent ALU instructions on a body whose seats are already correct: candidate.c emits `sll $a0,$a0,2` (insn 106) before `addu $v0,$v0,$s5` (insn 120) where the target has them reversed; rank_for_schedule ties both on priority and class and falls through to INSN_LUID.
+
+- [s77] All three known routes to the target's block-3 order (s69 g06 statement interleave = 6, s75 r3 nested do-while(0) note = 5, s76 b2 birth de-boost = 12) cost the local-alloc seats, because fixing the order shortens the t0-shift quantity's span from 8 to 6 and local-alloc.c:1683 then breaks the resulting exact qty_compare_1 tie on quantity number, which the target's own emission order pins against us. Order and seats are coupled by construction.
+
+- [s77] The s76 frontier's named unexplored shape is now measured on both live bases and dead on both (7 forms, 10-21 against floors of 2 and 5), with BB2_SCHED_DEBUG dumps attributing the loss to LUID displacement rather than to the de-boost itself.
+
+- [s77] Mandated kill re-audit discharged: the full 38-variant FAKE-ablation grid on the floor body gives keep-all 2/179 with no subset beating it, so no FAKE carrier masks a lever here. This also fixes a tool blocker s76 recorded as a limitation - fake_ablate needs the naming-wave rename applied to candidate.c first, and needs the exact grid size passed to --max-variants.
+
+- [s77] Gate (a) canonical-asm FAILS: scan_hand_coded tier=LOW score=2/8, S1/S2/S6 all absent. Gate (b) precedent FAILS: negative SOTN construct-index census, no unspent device for an emission-order transposition at fixed seats.
+
+- [s77] Exhaustion: 77 sessions across 9 distinct modalities (structural x19, rederive x15, forensics x13, permuter x12, synthesis x11, escalation x4, solver, recon, wip-import); floor flat at 2 since s60 and at 4 for the 59 sessions before that; 271 rejected forms banked (7 added this session); three permuter campaigns (s4, s5, s59) plus the closer-phase campaigns, none below the banked floor.
+
+- [s77] Nothing cheat-shaped is or was in play: rules_dropped is 0 on every measurement in this session and the last eight, and src/system.c is restored clean (INCLUDE_ASM marker intact) - this is NOT a bytes-proven integration handoff, the bytes have never been reached.
+
+- [s77] Foreclosure record filed this session at docs/grind/decisions.md:21724 with both gates' evidence, the exhaustion pointers, and four re-activation triggers.

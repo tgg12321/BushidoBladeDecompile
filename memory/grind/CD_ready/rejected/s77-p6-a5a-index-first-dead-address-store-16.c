@@ -1,26 +1,3 @@
-/* s77 UPDATE (2026-09-03, escalation/disposition). This body is UNCHANGED and remains the floor at
- * masked 2 (re-verified live this session: score 2, build 179, target 179, rules_dropped 0).
- * s77 was the driver-assigned DISPOSITION session for the window the owner reset on 2026-09-02.
- * What a future session inherits:
- *   1. THE s76 FRONTIER SHAPE IS DEAD ON BOTH LIVE BASES. A birthing_insn_p de-boost carrier whose
- *      two surviving sets are BOTH inside block 3 and BOTH feed real printf arguments (the named
- *      unexplored shape) measures 16/14/21/16 on this body against its floor of 2, and 10/11/21 on
- *      the r3 base against its floor of 5. Dumps show the mechanism: naming the arg5 address into a
- *      carrier and re-setting it shifts EVERY block-3 INSN_LUID, so the de-boost cannot be spelled
- *      without moving the very tie it is meant to arbitrate. Forms in rejected/s77-*.c.
- *   2. TOOL FIX for every future re-audit here: tools/fake_ablate.py reports ERR None for every
- *      variant of THIS file only because the body predates the naming wave and the tool splices it
- *      verbatim (tmp/grind/CD_ready/s63/splice.py applies the rename map, fake_ablate does not).
- *      Apply the rename map to a copy first and the grid builds. Also pass the EXACT grid size to
- *      --max-variants; the tool refuses rather than truncating. s76 recorded this as a tool limit;
- *      it is not.
- *   3. THE FLOOR IS NOT A FAKE ARTIFACT. Full 38-variant ablation grid on the renamed copy:
- *      keep-all = 2/179 and NO subset beats it (the only other 2, drop-[v0 <<= 2], is 178 insns and
- *      off the parity basin). All eight FAKE units are load-bearing.
- *   4. DISPOSITION FILED: docs/grind/decisions.md 2026-09-03 CD_ready, RESOLVED BY STANDING RULING
- *      (2026-07-27): FORECLOSED. Gate (a) scan_hand_coded tier=LOW 2/8 (S1/S2/S6 all absent);
- *      gate (b) SOTN construct-index census negative. Re-activation triggers are listed there.
- */
 /* s76 UPDATE (2026-09-03, synthesis). This body is UNCHANGED and remains the floor at masked 2
  * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). s76 identified
  * and measured a pass-level rung no session in 75 had looked at, and wrote the residual out
@@ -473,6 +450,7 @@ s32 marionation_Exec(s32 a0, u8 *a1)
 
   {
     s32 arg5;
+    s32 a5a;
     s32 t0;
     void **pp;
     t0 = idx_1494[0];
@@ -481,8 +459,10 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     t0 = (s32)((u8 *)tbl_125c + t0);
     v0 = idx_1494[1]; /* FAKE: index staged through the (dead-here) v0 var per staged-value-reused-variable (owner-sanctioned 2026-07-03); v0's prior value is dead (re-set below before any read) */
     v0 <<= 2; /* FAKE: continued staging per staged-value-reused-variable */
+    a5a = D_800A11DC[D_800A11D5];
     arg5 = *(s32 *)(v0 + (s32)tbl_125c);
-    debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
+    debug_printf(&D_800161C8, *pp, a5a, *(s32 *)t0, arg5);
+    a5a = v0 + (s32)tbl_125c;
   }
   cdrom_ClearIrq();
   } while (0);
